@@ -470,6 +470,9 @@ Bool_t AliAnalysisTaskJetShapeDeriv::FillHistograms()
       	  //#it{M}_{det} - #it{M}_{part}; #it{p}_{T,det} - #it{p}_{T,part}; #it{M}_{unsub} - #it{M}_{part}; #it{p}_{T,unsub} - #it{p}_{T,part}; #it{M}_{det};  #it{M}_{unsub}; #it{p}_{T,det}; #it{p}_{T,unsub}; #rho ; #rho_{m}
       	  Double_t varsp2[10] = {var-var2, ptjet1-ptJetR, mUnsubjet1 - var2, ptUnsubjet1 - ptJetR, var2, mUnsubjet1, ptjet1, ptUnsubjet1, fRho, fRhoM};
       	  fhnDeltaMassAndBkgInfo->Fill(varsp2);
+      	  
+      	  Double_t varsp3[6] = {(var-var2)/var2, (ptjet1-ptJetR)/ptJetR, var2, ptJetR, fRho, fRhoM};
+      	  fhnResolution->Fill(varsp3);
       }
     }
     if(fCreateTree) {

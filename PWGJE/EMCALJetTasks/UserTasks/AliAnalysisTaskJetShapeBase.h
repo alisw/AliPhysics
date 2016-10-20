@@ -112,6 +112,7 @@ class AliAnalysisTaskJetShapeBase : public AliAnalysisTaskEmcalJet {
   THnSparse     **fhnMassResponse;                                 //!<! Msub vs Mtrue vs PtCorr vs PtTrue vs DR
   //THnSparse     **fhnDeltaMass;                                    //!<! deltaM vs deltapT
   THnSparse      *fhnDeltaMassAndBkgInfo;                          //!<! DeltaM, DeltapT bkg-unsubtracted M and pT, rho and rhom 
+  THnSparse      *fhnResolution;                                    //!<! Contains mass and pT resolution
   TH1F 	        *fhNJetsSelEv;                                      //!<! number of selected signal jets per event
   TH2F          *fhRjetTrvspTj;                                     //!<! distance in R between each jetO and embedded single track (those below fRadius are rejected)
   TH2F          *fhJetEtaPhiOvl;                                       //!<! eta-phi distribution of the selected signal jets
