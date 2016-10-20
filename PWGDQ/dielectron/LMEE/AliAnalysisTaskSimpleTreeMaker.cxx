@@ -49,7 +49,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
   fPIDResponse(0),
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100), 
-  fPtMin(0.4),
+  fPtMin(0.2),
   fPtMax(10),
   fEtaMin(-0.8),
   fEtaMax(0.8),
@@ -81,7 +81,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
   fPIDResponse(0),
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100), 
-  fPtMin(0.4),
+  fPtMin(0.2),
   fPtMax(10),
   fEtaMin(-0.8),
   fEtaMax(0.8),
@@ -152,14 +152,14 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
   } 
   fQAhist->Fill("Events_ESDcheck",1);
   numEvents += 1;
-  
+
   // Process also MC truth  
   mcEvent = MCEvent();
-  if (!mcEvent) {
+  if( fIsMC && mcEvent ){
     AliError("Could not retrieve MC event");
     return;
+    fQAhist->Fill("Events_MCcheck",1);
   }
-  fQAhist->Fill("Events_MCcheck",1);
   
 
   // check event cuts
