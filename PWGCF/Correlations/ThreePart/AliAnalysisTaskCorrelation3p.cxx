@@ -491,8 +491,12 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     if(t->IsA()==AliESDtrack::Class())if(!IsSelectedTrackESD(t))continue;
     if(t->IsA()==AliAODTrack::Class())if(!IsSelectedTrackAOD(t))continue;
     if(t->IsA()==AliFilteredTrack::Class()){dynamic_cast<AliFilteredTrack*>(t)->Calculate();if(!IsSelectedTrackFiltered(t))continue;}
-    if(t->Pt()>maxpt)triggerid = j;
+    if(t->Pt()>maxpt){
+      triggerid = j;
+      maxpt = t->Pt();
+    }
   }
+  FillHistogram("trackPt_leading",maxpt);
   for (int i=0; i<nofTracks; i++) {
     Double_t Weight = 1.0;
     AliVParticle* t=pEvent->GetTrack(i);
@@ -505,7 +509,6 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     FillHistogram("trackUnselectedTheta",t->Theta(),1.0);
     if (!IsSelected(t)) continue;
     //In the case where we only want leading triggers, cut away all non associated that are not the leading:
-    if(fLeading&&!IsSelectedAssociated(t) &&i!=triggerid) continue;
     if(fWeights){
       Int_t etabin = fWeights->GetXaxis()->FindBin(t->Eta());
       if(t->Pt()<2.0){
@@ -519,6 +522,7 @@ Int_t AliAnalysisTaskCorrelation3p::GetTracks(TObjArray* allrelevantParticles, A
     if(allrelevantParticles){
 	AliFilteredTrack * filp = new AliFilteredTrack(*t);
 	filp->SetEff(Weight);
+	if(fLeading&&(i==triggerid))filp->SetLeading();
       allrelevantParticles->Add(filp);
     }
     if(fQA){
@@ -876,8 +880,10 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 20));
   fOutput->Add(new TH1D("trackPt"   			, "trackPt"   				, 1000,  0, 200));
   fOutput->Add(new TH1D("trackPt_leading"		, "trackPt_leading_track"		, 1000,  0, 200));
-  fOutput->Add(new TH1D("trackPtconstrained"	   	, "trackPt for tracks constrained to the vertex"   , 1000,  0, 200));
-  fOutput->Add(new TH1D("trackPtnotconstrained"  	, "trackPt for tracks not constrained to the vertex"   , 1000,  0, 200));
+  if(fisAOD){
+    fOutput->Add(new TH1D("trackPtconstrained"	   	, "trackPt for tracks constrained to the vertex"   , 1000,  0, 200));
+    fOutput->Add(new TH1D("trackPtnotconstrained"  	, "trackPt for tracks not constrained to the vertex"   , 1000,  0, 200));
+  }
   fOutput->Add(new TH1D("trackAssociatedPt" , "Pt of associated Tracks", 1000, fMinAssociatedPt, fMaxAssociatedPt));
   fOutput->Add(new TH1D("trackTriggerPt" , "Pt of Trigger Tracks", 1000, fMinTriggerPt, fMaxTriggerPt));
   fOutput->Add(new TH1D("trackUnselectedPhi"  , "trackPhi"  ,  180,  0., 2*TMath::Pi()));
@@ -889,33 +895,9 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   fOutput->Add(new TH1D("trackTriggerTheta", "trackTheta",  180, 0.0, TMath::Pi()));
   fOutput->Add(new TH1D("trackAssociatedTheta", "trackTheta",  180, 0.0, TMath::Pi()));
   fOutput->Add(new TH1D("Ntriggers","Number of triggers per event",50,-0.5,49.5));
-  fOutput->Add(new TH1D("NAssociated","Number of Associated per event",200,-0.5,199.5));
-  fOutput->Add(new TH1D("NAssociatedETriggered","Number of Associated per event that contains a trigger.",200,-0.5,199.5));
-  if(fWeights)fOutput->Add(fWeights);
-  if(fWeightshpt)fOutput->Add(fWeightshpt);
-  if(fpTfunction)fOutput->Add(fpTfunction);
+  fOutput->Add(new TH1D("NAssociated","Number of Associated per event",100,-0.5,99.5));
+  fOutput->Add(new TH1D("NAssociatedETriggered","Number of Associated per event that contains a trigger.",100,-0.5,99.5));
 
-  //   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
-//     fOutput->Add(new TH1D("clusterCount", "clusterCount", 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterCountphos", "clusterCountphos", 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterCountemcal", "clusterCountemcal", 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterPtPHOS"   , "clusterPtPHOS"   , 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterPtEMCAL"   , "clusterPtEMCAL"   , 1000,  0, 2000));
-//     fOutput->Add(new TH1D("clusterPhiPHOS"  , "clusterPhiPHOS"  ,  180,  0., 2*TMath::Pi()));
-//     fOutput->Add(new TH1D("clusterPhiEMCAL"  , "clusterPhiEMCAL"  ,  180,  0., 2*TMath::Pi()));
-//     fOutput->Add(new TH1D("clusterThetaPHOS", "clusterThetaPHOS",  180, -1.*TMath::Pi(), TMath::Pi()));
-//     fOutput->Add(new TH1D("clusterThetaEMCAL", "clusterThetaEMCAL",  180, -1.*TMath::Pi(), TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0count", "pi0count", 1000, 0, 2000));
-//     fOutput->Add(new TH1D("pi0countPHOS", "pi0countPHOS", 1000, 0, 2000));
-//     fOutput->Add(new TH1D("pi0countEMCAL", "pi0countEMCAL", 1000, 0, 2000));
-//     fOutput->Add(new TH1D("pi0ptphos","pi0ptphos", 1000, 0, 2000));  
-//     fOutput->Add(new TH1D("pi0phiphos","pi0phiphos",180, 0.,2*TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0ThetaPHOS", "pi0ThetaPHOS",180, -1.*TMath::Pi(), TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0ptemcal", "pi0ptemcal", 1000,0,2000));  
-//     fOutput->Add(new TH1D("pi0phiemcal", "pi0phiemcal", 180, 0., 2*TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0thetaemcal", "pi0thetaemcal",180,-1.*TMath::Pi(), TMath::Pi()));
-//     fOutput->Add(new TH1D("pi0TriggerPt","Pt of Trigger pi0s", 1000, fMinTriggerPt,fMaxTriggerPt));
-//   }
 //   fOutput->Add(new TH1D("vzeroMult" , "V0 Multiplicity",  200,  0, 30000));
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centrality", "Centrality before and after selection",  100,  0, 100,2,0,1));
   if(!fisDstTree||(fCollisionType==pp))fOutput->Add(new TH2D("multiplicity", "Multiplicity of tracks,  before and after selection",  100,  0, fMaxNumberOfTracksInPPConsidered,2,0,1));
@@ -976,35 +958,7 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
     histtrackshpt->SetTitle("Tracks in Centrality vs Vertex");
     fOutput->Add(histtrackshpt);    
   }
-//   if (ftrigger == AliAnalysisTaskCorrelation3p::pi0 || ftrigger == AliAnalysisTaskCorrelation3p::pi0MC){
-//     TH1D * PhosClustersperRun = new TH1D("PhosClustersperRun", "# clusters in Phos per Run", fNruns, 0, 1);
-//     TH1D * PhosPionsperRun = new TH1D("PhosPionsperRun", "# Pi0s in Phos per Run.", fNruns, 0, 1);
-//     TH1D * PhosSelectedPionsperRun = new TH1D("PhosSelectedPionsperRun", "# selected Pi0 triggers in Phos per Run.", fNruns, 0, 1);
-//     TH1D * EmcalClustersperRun = new TH1D("EmcalClustersperRun", "# clusters in Emcal per Run.", fNruns, 0,1);
-//     TH1D * EmcalPionsperRun = new TH1D("EmcalPionsperRun", "# Pi0s in Emcal per Run.", fNruns, 0,1);
-//     TH1D * EmcalSelectedPionsperRun = new TH1D("EmcalSelectedPionsperRun", "# selected Pi0 triggers in Emcal per Run.", fNruns, 0,1);
-//     for(int i=0; i<fNruns; i++){
-//       TString lable = Form("%i",fRunNumberList[i]);
-// 
-//       PhosClustersperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       PhosClustersperRun->GetXaxis()->LabelsOption("v");
-//       PhosPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       PhosPionsperRun->GetXaxis()->LabelsOption("v");
-//       PhosSelectedPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       PhosSelectedPionsperRun->GetXaxis()->LabelsOption("v");
-//       EmcalClustersperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       EmcalClustersperRun->GetXaxis()->LabelsOption("v");
-//       EmcalPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       EmcalPionsperRun->GetXaxis()->LabelsOption("v");
-//       EmcalSelectedPionsperRun->GetXaxis()->SetBinLabel(i+1, lable);
-//       EmcalSelectedPionsperRun->GetXaxis()->LabelsOption("v");
-//       }
-//     fOutput->Add(PhosClustersperRun);
-//     fOutput->Add(PhosPionsperRun);
-//     fOutput->Add(PhosSelectedPionsperRun);
-//     fOutput->Add(EmcalClustersperRun);
-//     fOutput->Add(EmcalPionsperRun);
-//     fOutput->Add(EmcalSelectedPionsperRun);}
+
 }
 
 void AliAnalysisTaskCorrelation3p::InitializeEffHistograms()

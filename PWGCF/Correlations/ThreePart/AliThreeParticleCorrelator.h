@@ -422,38 +422,18 @@ class AliThreeParticleCorrelator : public TNamed {
     //if fLeading is true, it returns only the leading track in pT
     if (!arrayParticles) return ;
     factiveTriggers.clear();
-    if(fLeading){
-      TIter nexttrigger(arrayParticles);
-      TObject* otrigger=NULL;
-      AliVParticle * nowtrigger = NULL;
-      while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
-	AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
-	if (!ptrigger) continue;
-	if (nowtrigger)if(nowtrigger->Pt()>ptrigger->Pt()) continue;//only keep the highest pT one.
-	nowtrigger = ptrigger;
-      }//end while loop
+    TIter nexttrigger(arrayParticles);
+    TObject* otrigger=NULL;
+    while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
+      AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
+      if (!ptrigger) continue;
+      if (fLeading&&(dynamic_cast<AliFilteredTrack*>(ptrigger)))if(!dynamic_cast<AliFilteredTrack*>(ptrigger)->IsLeading())continue;
       for (typename vector<C*>::iterator o=fCorrelations.begin(),e=fCorrelations.end();o!=e; o++) {
-	if (!(*o)->CheckTrigger(nowtrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
-	factiveTriggers.push_back(nowtrigger);
+	if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
+	factiveTriggers.push_back(ptrigger);
       }
-      return;
-    }
-    else{
-      TIter nexttrigger(arrayParticles);
-      TObject* otrigger=NULL;
-      while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
-	AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
-	if (!ptrigger) continue;
-	for (typename vector<C*>::iterator o=fCorrelations.begin(),e=fCorrelations.end();o!=e; o++) {
-	  if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
-	  factiveTriggers.push_back(ptrigger);
-	}
-      }//end while loop
+    }//end while loop
     return ;
-    }
-
-    
-
   }
   void MakeTriggers(const TObjArray* arrayParticles, TObjArray* outarrayParticles,bool fLeading) {
     /// create a particle array with reduced data objects
@@ -461,39 +441,21 @@ class AliThreeParticleCorrelator : public TNamed {
     //if fLeading is true, it returns only the leading track in pT
     if (!arrayParticles||!outarrayParticles) return ;
     factiveTriggers.clear();
-    if(fLeading){
-      TIter nexttrigger(arrayParticles);
-      TObject* otrigger=NULL;
-      AliVParticle * nowtrigger = NULL;
-      while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
-	AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
-	if (!ptrigger) continue;
-	if (nowtrigger)if(nowtrigger->Pt()>ptrigger->Pt()) continue;//only keep the highest pT one.
-	nowtrigger = ptrigger;
-      }//end while loop
+    TIter nexttrigger(arrayParticles);
+    TObject* otrigger=NULL;
+    while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
+      AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
+      if (!ptrigger) continue;
+      if (fLeading&&(dynamic_cast<AliFilteredTrack*>(ptrigger)))if(!dynamic_cast<AliFilteredTrack*>(ptrigger)->IsLeading())continue;
       for (typename vector<C*>::iterator o=fCorrelations.begin(),e=fCorrelations.end();o!=e; o++) {
-	if (!(*o)->CheckTrigger(nowtrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
-	factiveTriggers.push_back(nowtrigger);	  
-	AliFilteredTrack * outtrigger = new AliFilteredTrack(*dynamic_cast<AliFilteredTrack*>(nowtrigger));
+	if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
+	factiveTriggers.push_back(ptrigger);
+	AliFilteredTrack * outtrigger = new AliFilteredTrack(*dynamic_cast<AliFilteredTrack*>(ptrigger));
 	outarrayParticles->Add(outtrigger);
       }
-      return;
-    }
-    else{
-      TIter nexttrigger(arrayParticles);
-      TObject* otrigger=NULL;
-      while ((otrigger=nexttrigger())!=NULL) {//loop over all in the array.
-	AliVParticle* ptrigger=reinterpret_cast<AliVParticle*>(otrigger);
-	if (!ptrigger) continue;
-	for (typename vector<C*>::iterator o=fCorrelations.begin(),e=fCorrelations.end();o!=e; o++) {
-	  if (!(*o)->CheckTrigger(ptrigger, true)) continue;//check for each correlation, if it is a trigger in it. If not, reject.
-	  factiveTriggers.push_back(ptrigger);
-	  AliFilteredTrack * outtrigger = new AliFilteredTrack(*dynamic_cast<AliFilteredTrack*>(ptrigger));
-	  outarrayParticles->Add(outtrigger);
-	}
-      }//end while loop
-      return ;
-    }
+    }//end while loop
+    return ;
+
   }
   
   

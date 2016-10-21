@@ -42,6 +42,7 @@ AliFilteredTrack::AliFilteredTrack()
   memset(fP, 0, sizeof(fP));
   Calculate();
   SetBit(kSignBit); // default 'plus'
+  SetBit(kLeading,false);//is not leading
 }
 
 // AliFilteredTrack::AliFilteredTrack(float pt, float phi, float theta, int charge)
@@ -74,6 +75,8 @@ AliFilteredTrack::AliFilteredTrack(const AliFilteredTrack& other)
   // copy constructor
   Set(other);
   Calculate();
+  SetBit(kLeading,false);//is not leading
+  
 }
 
 AliFilteredTrack::AliFilteredTrack(const AliVParticle& other)
@@ -89,6 +92,7 @@ AliFilteredTrack::AliFilteredTrack(const AliVParticle& other)
 {
   // copy constructor
   Set(other);
+  SetBit(kLeading,false);//is not leading
 }
 
 AliFilteredTrack::AliFilteredTrack(const TMCParticle& other)
@@ -107,6 +111,7 @@ AliFilteredTrack::AliFilteredTrack(const TMCParticle& other)
   Set(p);
   if (other.GetKF()<0) SetBit(kSignBit);
   else ResetBit(kSignBit);
+  SetBit(kLeading,false);//is not leading
 }
 
 AliFilteredTrack::AliFilteredTrack(const AliAODTrack& other)
@@ -122,6 +127,7 @@ AliFilteredTrack::AliFilteredTrack(const AliAODTrack& other)
 {
   // copy constructor
   Set(other);
+  SetBit(kLeading,false);//is not leading
 }
 
 AliFilteredTrack& AliFilteredTrack::operator=(const AliFilteredTrack& other)
