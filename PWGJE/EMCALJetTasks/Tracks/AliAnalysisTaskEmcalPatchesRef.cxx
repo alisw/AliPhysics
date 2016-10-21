@@ -96,6 +96,7 @@ AliAnalysisTaskEmcalPatchesRef::~AliAnalysisTaskEmcalPatchesRef() {
  * + Patch eta-phi map - separated by patch type - for different trigger classes and different min. energies
  */
 void AliAnalysisTaskEmcalPatchesRef::UserCreateOutputObjects(){
+  AliAnalysisTaskEmcal::UserCreateOutputObjects();
   AliInfoStream() <<  "Creating histograms for task " << GetName() << std::endl;
 
   if(fRequestAnalysisUtil && ! fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
