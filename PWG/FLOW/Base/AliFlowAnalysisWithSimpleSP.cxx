@@ -366,9 +366,9 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
   }
 */
 
-  if((!fWeightsList) && (!fScaling)) fHistProQaQbNorm->Fill(dQaQb, 1.);//dQaQb/dNa/dNb,dWa*dWb);  //Fill (QaQb/NaNb) with weight (WaWb).
-  else if (fScaling && (!fWeightsList)) fHistProQaQbNorm->Fill(dQaQb/dNa/dNb,1.);
-  else if ((!fScaling) && fWeightsList) fHistProQaQbNorm->Fill(dQaQb, dWa*dWb);
+  if((!fWeights) && (!fScaling)) fHistProQaQbNorm->Fill(dQaQb, 1.);//dQaQb/dNa/dNb,dWa*dWb);  //Fill (QaQb/NaNb) with weight (WaWb).
+  else if (fScaling && (!fWeights)) fHistProQaQbNorm->Fill(dQaQb/dNa/dNb,1.);
+  else if ((!fScaling) && fWeights) fHistProQaQbNorm->Fill(dQaQb, dWa*dWb);
   else fHistProQaQbNorm->Fill(dQaQb/dNa/dNb,dWa*dWb); 
   //needed for the error calculation:
   if(fWeights) {
@@ -467,7 +467,7 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
     }
 
     Double_t dUQ = vU*vQm;
-
+/*
     if(fV0SanityCheck) {
       Double_t test = dUQ/dNq*dQaQb/dNa/dNb;
       if(test > 1e9 || test < 1e-9) return;
@@ -477,7 +477,7 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
       if(test > 1e9 || test < 1e-9) return;
     }
 
-
+*/
 
 
     //fill the profile histograms
