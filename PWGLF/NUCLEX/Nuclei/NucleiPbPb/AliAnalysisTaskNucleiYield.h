@@ -26,7 +26,9 @@
 #include <TArrayF.h>
 #include <AliPIDResponse.h>
 #include <AliPID.h>
+#include "AliNuclexEventCuts.h"
 
+class TF1;
 class TH2F;
 class TH3F;
 class AliFlowTrackCuts;
@@ -95,6 +97,7 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
+  AliNuclexEventCuts fEventCut;
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
@@ -102,9 +105,12 @@ private:
   Bool_t AcceptTrack(AliAODTrack *t, Double_t dca[2]);
   Bool_t PassesPIDSelection(AliAODTrack *t);
   Float_t HasTOF(AliAODTrack *t);
+  float  GetTPCsigmas(AliVTrack *t);
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
+  
+  TF1                  *fTOFfunction;           //!<! TOF signal function
 
   TList                *fList;                  ///<  Output list
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
@@ -206,6 +212,7 @@ private:
   TH3F                 *fMTOFphiSignal;         //!<! *(Data only)* TOF signal for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCphiCounts;         //!<! *(Data only)* TPC counts for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCeLoss;             //!<! *(Data only)* TPC dE/dx for matter
+  TH3F                 *fTOFtemplates[5];       //!<! *(Data only)* TOF signal templates for pi/k/p/d/t
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiYield, 1);
