@@ -86,7 +86,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fTreeObservableTagging(0)
 
 {
-   for(Int_t i=0;i<14;i++){
+   for(Int_t i=0;i<17;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -131,7 +131,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   
 {
   // Standard constructor.
-  for(Int_t i=0;i<14;i++){
+  for(Int_t i=0;i<17;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
   
@@ -198,12 +198,12 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
     if(hn)hn->Sumw2();
   }
 
-    TH1::AddDirectory(oldStatus);
-    const Int_t nVar = 14;
-    const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
-    fTreeObservableTagging = new TTree(nameoutput, nameoutput);
-  
  
+  TH1::AddDirectory(oldStatus);
+  const Int_t nVar = 18;
+  const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
+  fTreeObservableTagging = new TTree(nameoutput, nameoutput);
+  
  
   TString *fShapesVarNames = new TString [nVar];
 
@@ -226,6 +226,10 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[12] = "lesubMatch";
   //fShapesVarNames[12] = "sigma2Match";
   fShapesVarNames[13]="weightPythia";
+  fShapesVarNames[14]="ntrksEvt";
+  fShapesVarNames[15]="rhoVal";
+  fShapesVarNames[16]="rhoMassVal";
+  fShapesVarNames[17]="ptUnsub";
 
    for(Int_t ivar=0; ivar < nVar; ivar++){
     cout<<"looping over variables"<<endl;
@@ -288,8 +292,28 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
 
   }
   
+  
+  AliParticleContainer *partContAn = GetParticleContainer(0);
+  TClonesArray *trackArrayAn = partContAn->GetArray();
+  Int_t ntracksEvt = trackArrayAn->GetEntriesFast();
+  
+  Float_t rhoVal=0, rhoMassVal = 0.;
   if(jetCont) {
+
     jetCont->ResetCurrentID();
+    if ((fJetShapeSub==kConstSub) || (fJetShapeSub==kDerivSub)){
+      //rho                                                                                                   
+      AliRhoParameter* rhoParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoSparseR020"));
+      if (!rhoParam) {
+	Printf("%s: Could not retrieve rho %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoName().Data());
+      } else rhoVal = rhoParam->GetVal();
+      //rhom                                                                                                                                                          
+      AliRhoParameter* rhomParam = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject("RhoMassSparseR020"));
+      if (!rhomParam) {
+	Printf("%s: Could not retrieve rho_m %s (some histograms will be filled with zero)!", GetName(), jetCont->GetRhoMassName().Data());	
+      } else rhoMassVal = rhomParam->GetVal();
+    }
+    
     while((jet1 = jetCont->GetNextAcceptJet())) {
       if (!jet1) continue;
       AliEmcalJet* jet2 = 0x0;
@@ -300,16 +324,16 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       Int_t ilab=-1, jlab=-1;
       
       if(fSemigoodCorrect && (fJetSelection != kRecoil)){
-      Double_t disthole=RelativePhi(jet1->Phi(),fHolePos);
-      if(TMath::Abs(disthole)<fHoleWidth){
-      continue;}
-    } 
- 
-       Float_t dphiRecoil = 0.;
-       if (fJetSelection == kRecoil){
+	Double_t disthole=RelativePhi(jet1->Phi(),fHolePos);
+	if(TMath::Abs(disthole)<fHoleWidth){
+	  continue;}
+      } 
+      
+      Float_t dphiRecoil = 0.;
+      if (fJetSelection == kRecoil){
         dphiRecoil = RelativePhi(triggerHadron->Phi(), jet1->Phi());
         if (TMath::Abs(dphiRecoil) < (TMath::Pi() - fangWindowRecoil)) {
-         // Printf("Recoil jets back to back not found! continuing");
+	  // Printf("Recoil jets back to back not found! continuing");
           continue;
         }
         
@@ -317,18 +341,17 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         //Printf(" ************ FILLING HISTOS****** shapeSub = %d, triggerHadron = %f, jet1 = %f", fJetShapeSub, triggerHadron->Pt(), jet1->Pt());
         fhPhi->Fill(RelativePhi(triggerHadron->Phi(), jet1->Phi()));
         
-       }
+      }
       
       
       fShapesVar[0] = 0.;
       if(fJetShapeType == kDetEmbPartPythia){
         AliJetContainer *jetContTrue = GetJetContainer(1);
         AliJetContainer *jetContUS = GetJetContainer(2);
-        
+	
         if(fJetShapeSub==kConstSub){
-          
-          for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
-              jetUS = jetContUS->GetJet(i);
+	  for(Int_t i = 0; i<jetContUS->GetNJets(); i++) {
+	    jetUS = jetContUS->GetJet(i);
             if(jetUS->GetLabel()==jet1->GetLabel()) {
               ifound++;
               if(ifound==1) ilab = i;
@@ -368,6 +391,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       }
       
       
+
       if (fJetShapeType == kPythiaDef){
         
         AliJetContainer *jetContTrue = GetJetContainer(1);
@@ -456,18 +480,20 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       Double_t ptSubtracted = 0;
       if (fJetShapeSub==kConstSub) ptSubtracted= jet1->Pt();
       
-      else if (fJetShapeSub==kDerivSub)  ptSubtracted=jet1->Pt()-GetRhoVal(0)*jet1->Area();
+      else if (fJetShapeSub==kDerivSub)  {
+	ptSubtracted=jet1->Pt()-GetRhoVal(0)*jet1->Area();
+      }
       
       else if (fJetShapeSub==kNoSub) {
         if ((fJetShapeType==kData) || (fJetShapeType==kDetEmbPartPythia)) ptSubtracted=jet1->Pt()-GetRhoVal(0)*jet1->Area();
         else if ((fJetShapeType==kPythiaDef) || (fJetShapeType==kMCTrue) || (fJetShapeType==kGenOnTheFly)) ptSubtracted= jet1->Pt();
       }
+
+      //Printf("ptSubtracted=%f,fPtThreshold =%f ", ptSubtracted, fPtThreshold);
       if (ptSubtracted < fPtThreshold) continue;
       
       if (fOneConstSelectOn == kTRUE) fNbOfConstvspT->Fill(GetJetNumberOfConstituents(jet1,0), ptSubtracted);
       if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1)) continue;
-
-
 
   
       fShapesVar[1] = ptSubtracted;
@@ -533,8 +559,10 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
       fShapesVar[11] = circMatch;
       fShapesVar[12] = lesubMatch;
       fShapesVar[13] = kWeight;
-  
-    
+      fShapesVar[14] = ntracksEvt;
+      fShapesVar[15] = rhoVal;
+      fShapesVar[16] = rhoMassVal;
+      fShapesVar[17] = jet1->Pt();
 
 
       fTreeObservableTagging->Fill();
