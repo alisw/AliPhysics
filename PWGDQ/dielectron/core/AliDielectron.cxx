@@ -226,7 +226,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   //
   // Named constructor
   //
-  
+
 }
 
 //________________________________________________________________
@@ -260,9 +260,9 @@ void AliDielectron::Init()
   //
 
   if(GetHasMC()) AliDielectronMC::Instance()->SetHasMC(GetHasMC());
-   
+
   if(fEventProcess) InitPairCandidateArrays();
-   
+
   if (fCfManagerPair) {
     fCfManagerPair->SetSignalsMC(fSignalsMC);
     fCfManagerPair->InitialiseContainer(fPairFilter);
@@ -313,7 +313,7 @@ void AliDielectron::Init()
     fQAmonitor->AddEventFilter(&fEventFilter);
     fQAmonitor->Init();
   }
-  
+
   if(fHistos) {
     (*fUsedVars)|= (*fHistos->GetUsedVars());
   }
@@ -357,7 +357,7 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     return 0;
   }
 
-  // modify event numbers in MC so that we can identify new events 
+  // modify event numbers in MC so that we can identify new events
   // in AliDielectronV0Cuts (not neeeded for collision data)
   if(GetHasMC()) {
     ev1->SetBunchCrossNumber(1);
@@ -443,9 +443,20 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   }
 
   // TPC event plane correction
-  if (ev1 && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0)) 
+  if (ev1 && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0))
     EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1);
-
+  // QnFramework est. 2016 auto-correlation removal
+  if(fPreFilterEventPlane && (fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0) ){
+    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+    if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
+        dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) ){
+      if(flowQnVectorTask != NULL){
+        AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+        TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+        if(qnlist != NULL)  AliDielectron::CorrectQnEventplanes(0,1,qnlist,fTracks[0],fTracks[1]);
+      }
+    }
+  }
   if (!fNoPairing){
     // create pairs and fill pair candidate arrays
     for (Int_t itrackArr1=0; itrackArr1<4; ++itrackArr1){
@@ -481,13 +492,13 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if (fHistos && fSignalsMC) FillMCHistograms(ev1);
   if (fHistos) FillHistograms(ev1);
   // fill histo array with event information only
-  if (fHistoArray && fHistoArray->IsEventArray()) 
+  if (fHistoArray && fHistoArray->IsEventArray())
     fHistoArray->Fill(0,const_cast<Double_t *>(AliDielectronVarManager::GetData()),0x0,0x0);
 
   // clear arrays
   if (!fDontClearArrays) ClearArrays();
 
-  // reset TPC EP and unique identifiers for v0 cut class 
+  // reset TPC EP and unique identifiers for v0 cut class
   AliDielectronVarManager::SetTPCEventPlane(0x0);
   if(GetHasMC()) { // only for MC needed
     for (Int_t iCut=0; iCut<fTrackFilter.GetCuts()->GetEntries();++iCut) {
@@ -637,9 +648,9 @@ void AliDielectron::FillHistogramsTracks(TObjArray **tracks)
 {
   //
   // Fill Histogram information for tracks after prefilter
-  // ignore mixed events - for prefilter, only single tracks +/- are relevant 
+  // ignore mixed events - for prefilter, only single tracks +/- are relevant
   //
-  
+
   TString  className,className2;
   Double_t values[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::SetFillMap(fUsedVars);
@@ -681,7 +692,7 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
   //
   // Fill Histogram information for tracks and pairs
   //
-  
+
   TString  className,className2;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
   AliDielectronVarManager::SetFillMap(fUsedVars);
@@ -748,7 +759,7 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
     }
     if (legClass) arrLegs.Clear();
   }
-  
+
 }
 
 //________________________________________________________________
@@ -774,10 +785,10 @@ void AliDielectron::FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFil
     className.Form("Pair_%s",fgkPairClassNames[type]);
     className2.Form("Track_Legs_%s",fgkPairClassNames[type]);
   }
-  
+
   Bool_t pairClass=fHistos->GetHistogramList()->FindObject(className.Data())!=0x0;
   Bool_t legClass=fHistos->GetHistogramList()->FindObject(className2.Data())!=0x0;
-  
+
   //fill pair information
   if (pairClass){
     AliDielectronVarManager::Fill(pair, values);
@@ -788,7 +799,7 @@ void AliDielectron::FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFil
     AliVParticle *d1=pair->GetFirstDaughterP();
     AliDielectronVarManager::Fill(d1, values);
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
-    
+
     AliVParticle *d2=pair->GetSecondDaughterP();
     AliDielectronVarManager::Fill(d2, values);
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
@@ -824,7 +835,7 @@ void AliDielectron::FillTrackArrays(AliVEvent * const ev, Int_t eventNr)
     if (charge>0)      fTracks[eventNr*2].Add(particle);
     else if (charge<0) fTracks[eventNr*2+1].Add(particle);
 
-  
+
   }
 }
 
@@ -834,7 +845,7 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
   //
   // Prefilter tracks and tracks from pairs
   // Needed for rejection in the Q-Vector of the event plane
-  // remove contribution of all tracks to the Q-vector that are in invariant mass window 
+  // remove contribution of all tracks to the Q-vector that are in invariant mass window
   //
 
   AliEventplane *evplane = const_cast<AliVEvent *>(ev)->GetEventplane();
@@ -869,7 +880,7 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
         UInt_t cutMask=fEventPlanePreFilter.IsSelected(track);
         //apply cut
         if (cutMask==selectedMask) continue;
-        
+
         mapRemovedTracks.Add(track,track);
         cQX += (eptask->GetWeight(track) * TMath::Cos(2*track->Phi()) / rms[0]);
         cQY += (eptask->GetWeight(track) * TMath::Sin(2*track->Phi()) / rms[1]);
@@ -1121,6 +1132,94 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
 }
 
 //________________________________________________________________
+void AliDielectron::CorrectQnEventplanes(Int_t arr1, Int_t arr2, TList *qnlist,TObjArray arrTracks1, TObjArray arrTracks2){
+  //
+  // Function to remove auto-correlations from the eventplanes estimated with the QnFramework est. 2016
+  //  Checks the track array for particle pairs in the Jpsi mass window and removes their QnVector contributions
+  //
+
+  Int_t nRemovedTracks = 0;
+  Float_t cQX=0., cQY=0.;
+  if(fEventPlanePreFilter.GetCuts()->GetEntries()) UInt_t selectedMask=(1<<fEventPlanePreFilter.GetCuts()->GetEntries())-1;
+
+
+  // POI (particle of interest) rejection
+  Int_t pairIndex=GetPairIndex(arr1,arr2);
+
+  Int_t ntrack1=arrTracks1.GetEntriesFast();
+  Int_t ntrack2=arrTracks2.GetEntriesFast();
+  AliDielectronPair candidate;
+  candidate.SetKFUsage(fUseKF);
+
+  UInt_t selectedMask=(1<<fEventPlanePOIPreFilter.GetCuts()->GetEntries())-1;
+  for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
+    Int_t end=ntrack2;
+    if (arr1==arr2) end=itrack1;
+    Bool_t accepted=kFALSE;
+    AliAODTrack *track1= (AliAODTrack*) arrTracks1.UncheckedAt(itrack1);
+    // Check track cuts from the Qn framework for track-array 1
+    if(!(track1->TestFilterBit(256) || track1->TestFilterBit(512))) continue;
+    if((track1->Eta() < -.8) || (track1->Eta() > .8)) continue;
+    if((track1->Pt() < .2) || (track1->Pt() > 5.)) continue;
+    for (Int_t itrack2=0; itrack2<end; ++itrack2){
+      AliAODTrack *track2= (AliAODTrack*) arrTracks2.UncheckedAt(itrack2);
+
+      // Check track cuts from the Qn framework for track-array 2
+      if (!track1 || !track2) continue;
+      if(!(track2->TestFilterBit(256) || track2->TestFilterBit(512))) continue;
+      if((track2->Eta() < -.8) || (track2->Eta() > .8)) continue;
+      if((track2->Pt() < .2) || (track2->Pt() > 5.)) continue;
+
+      //create the pair
+      candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
+                          static_cast<AliVTrack*>(track2), fPdgLeg2);
+      candidate.SetType(pairIndex);
+      candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
+
+      //event plane pair cuts
+      UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
+      //sum the contribution to the qVector of the tracks passing the EventPlanePOIPreFilter
+      if (cutMask==selectedMask){
+        cQX += TMath::Cos(2*track1->Phi());
+        cQX += TMath::Cos(2*track2->Phi());
+        cQY += TMath::Sin(2*track1->Phi());
+        cQY += TMath::Sin(2*track2->Phi());
+        nRemovedTracks += 2;
+      }
+    }
+  }
+  AliQnCorrectionsQnVector *qnVectorPlain = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","plain","plain");
+  AliQnCorrectionsQnVector *qnVectorRec = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","rec","rec");
+  AliQnCorrectionsQnVector *qnVectorTwist = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","twist","twist");
+  if(qnVectorPlain != NULL){
+    Float_t qnPlainX = qnVectorPlain->Qx(2);
+    Float_t qnPlainY = qnVectorPlain->Qy(2);
+    if(qnVectorRec != NULL){
+      Float_t qnRecX = qnVectorRec->Qx(2);
+      Float_t qnRecY = qnVectorRec->Qy(2);
+      Float_t qnCorrX = qnPlainX - qnRecX; // Correction from QnFramework on X value
+      Float_t qnCorrY = qnPlainY - qnRecY; // Correction from QnFramework on Y value
+      Int_t M = qnVectorPlain->GetN(); // Number of used tracks
+      Float_t qnWOautoCorrX = (qnPlainX*M - cQX)/(M - nRemovedTracks) -qnCorrX;
+      Float_t qnWOautoCorrY = (qnPlainY*M - cQY)/(M - nRemovedTracks) -qnCorrY;
+      qnVectorRec->SetQx(2,qnWOautoCorrX);
+      qnVectorRec->SetQy(2,qnWOautoCorrY);
+    }
+    if(qnVectorTwist != NULL){
+      Float_t qnTwistX = qnVectorTwist->Qx(2);
+      Float_t qnTwistY = qnVectorTwist->Qy(2);
+      Float_t qnCorrX = qnPlainX - qnTwistX; // Correction from QnFramework on X value
+      Float_t qnCorrY = qnPlainY - qnTwistY; // Correction from QnFramework on Y value
+      Int_t M = qnVectorPlain->GetN(); // Number of used tracks
+      Float_t qnWOautoCorrX = (qnPlainX*M - cQX)/(M - nRemovedTracks) -qnCorrX;
+      Float_t qnWOautoCorrY = (qnPlainY*M - cQY)/(M - nRemovedTracks) -qnCorrY;
+      qnVectorTwist->SetQx(2,qnWOautoCorrX);
+      qnVectorTwist->SetQy(2,qnWOautoCorrY);
+    }
+  }
+}
+
+//________________________________________________________________
 void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, const AliVEvent *ev, Int_t prefilterN )
 {
   //
@@ -1147,7 +1246,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
   UInt_t selectedMask= (1<<pairPreFilter->GetCuts()->GetEntries())-1 ;
   UInt_t selectedMaskPair=(1<<fPairFilter.GetCuts()->GetEntries())-1;
 
-  Int_t nRejPasses = 1; //for fPreFilterUnlikeOnly and no set flag 
+  Int_t nRejPasses = 1; //for fPreFilterUnlikeOnly and no set flag
   if (prefilterAllSigns) nRejPasses = 3;
 
   for (Int_t iRP=0; iRP < nRejPasses; ++iRP) {
@@ -1224,7 +1323,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
             partner1[itrack1] = itrack2;
             partner2[itrack2] = itrack1;
           }
-          
+
           if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,&candidate);
           if (fHistos) FillHistogramsPair(&candidate,kTRUE);
           //set flags for track removal
@@ -1299,7 +1398,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
   //compress the track arrays
   arrTracks1.Compress();
   arrTracks2.Compress();
-  
+
   AliAnalysisFilter * pairPreFilterLegs = prefilterN == 1 ? &fPairPreFilterLegs1 : &fPairPreFilterLegs2;
   //apply leg cuts after the pre filter
   if ( pairPreFilterLegs->GetCuts()->GetEntries()>0 ) {
@@ -1308,17 +1407,17 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
     for (Int_t itrack=0; itrack<arrTracks1.GetEntriesFast();++itrack){
       //test cuts
       UInt_t cutMask=pairPreFilterLegs->IsSelected(arrTracks1.UncheckedAt(itrack));
-      
+
       //apply cut
       if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);
     }
     arrTracks1.Compress();
-    
+
     //in case of like sign don't loop over second array
     if (arr1==arr2) {
       arrTracks2=arrTracks1;
     } else {
-      
+
       //loop over tracks from array 2
       for (Int_t itrack=0; itrack<arrTracks2.GetEntriesFast();++itrack){
       //test cuts
@@ -1327,7 +1426,7 @@ void AliDielectron::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1,
         if (cutMask!=selectedMask) arrTracks2.AddAt(0x0,itrack);
       }
       arrTracks2.Compress();
-      
+
     }
   }
   //For unlike-sign monitor track-cuts:
@@ -1361,7 +1460,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2, const AliVEvent *ev)
   candidate->SetKFUsage(fUseKF);
 
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
-  
+
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
     Int_t end=ntrack2;
     if (arr1==arr2) end=itrack1;
@@ -1402,7 +1501,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2, const AliVEvent *ev)
       //histogram array for the pair
       if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
 
-      //add the candidate to the candidate array 
+      //add the candidate to the candidate array
       PairArray(pairIndex)->Add(candidate);
       //get a new candidate
       candidate=new AliDielectronPair;
@@ -1420,7 +1519,7 @@ void AliDielectron::FillPairArrayTR()
   // select pairs and fill pair candidate arrays
   //
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
-  
+
   while ( fTrackRotator->NextCombination() ){
     if(fTrackRotator->SameTracks() ) continue;
     AliDielectronPair candidate;
@@ -1428,13 +1527,13 @@ void AliDielectron::FillPairArrayTR()
     candidate.SetTracks(&fTrackRotator->GetKFTrackP(), &fTrackRotator->GetKFTrackN(),
                         fTrackRotator->GetVTrackP(),fTrackRotator->GetVTrackN());
     candidate.SetType(kEv1PMRot);
-    
+
     //pair cuts
     UInt_t cutMask=fPairFilter.IsSelected(&candidate);
-    
+
     //CF manager for the pair
     if (fCfManagerPair) fCfManagerPair->Fill(cutMask,&candidate);
-    
+
     //apply cut
     if (cutMask==selectedMask) {
 
@@ -1453,7 +1552,7 @@ void AliDielectron::FillDebugTree()
   //
   // Fill Histogram information for tracks and pairs
   //
-  
+
   //Fill Debug tree
   AliDielectronVarManager::SetFillMap(fDebugTree->GetUsedVars());
   for (Int_t i=0; i<10; ++i){
@@ -1956,4 +2055,3 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
   }
 
 }
-
