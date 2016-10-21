@@ -43,6 +43,8 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
 
 
    void SetHarmonic(Int_t iHarmonic)          { fHarmonic = iHarmonic; }
+   void SetWeights(Bool_t weights)            { fWeights = weights; }
+   void SetScaling(Bool_t scaling)            { fScaling = scaling; }
    void SetApplyCorrectionForNUA(Bool_t iVal) { fApplyCorrectionForNUA = iVal?1:0; }
    void SetNormalizationType(Int_t iVal)      { fNormalizationType = iVal; }
    void SetV0SanityCheck(Bool_t t)            { fV0SanityCheck = t;}
@@ -81,7 +83,9 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
    Bool_t fMinimalBook;          // flag to turn off QA and minimize FlowCommonHist
    Int_t fUsePhiWeights;         // use phi weights
    Int_t fApplyCorrectionForNUA; // apply correction for non-uniform acceptance
-   Int_t fHarmonic;              // harmonic 
+   Int_t fHarmonic;              // harmonic
+   Bool_t fWeights;              // use evnet weights
+   Bool_t fScaling;              // use qvec scaling 
    Int_t fNormalizationType;     // 0: EP mode || 1: SP mode
    Bool_t fV0SanityCheck;        // test to suppress NaN/inf values
    Int_t fTotalQvector;          // 1:Qa 2:Qb 3:QaQb

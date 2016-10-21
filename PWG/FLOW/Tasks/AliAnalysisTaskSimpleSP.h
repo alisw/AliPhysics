@@ -40,6 +40,8 @@ class AliAnalysisTaskSimpleSP : public AliAnalysisTaskSE {
   Bool_t GetApplyCorrectionForNUA() const {return this->fApplyCorrectionForNUA;};
   
   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
+  void SetUseWeights(Bool_t weights) {fWeights = weights; }
+  void SetUseScaling(Bool_t scaling) {fScaling = scaling; }
   Int_t GetHarmonic() const {return this->fHarmonic;};   
 
   void SetBehaveAsEP() { fNormalizationType = 0; }
@@ -67,6 +69,8 @@ class AliAnalysisTaskSimpleSP : public AliAnalysisTaskSE {
   Bool_t fApplyCorrectionForNUA; // apply automatic correction for non-uniform acceptance 
   
   Int_t fHarmonic;               // harmonic
+  Bool_t fWeights;               // use event weights
+  Bool_t fScaling;               // use q-vector scaling
   Int_t fNormalizationType;      // 0: EP mode || 1: SP mode (default)
   Bool_t fV0SanityCheck;          // 14102016 test flag
 
