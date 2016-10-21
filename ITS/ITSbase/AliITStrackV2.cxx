@@ -332,8 +332,8 @@ Bool_t AliITStrackV2::Invariant() const {
     firstCall = kFALSE;
     Float_t bz = GetBz();
     for (Int_t lay=0; lay<AliITSgeomTGeo::kNLayers; lay++) {
-      maxMisalErrY2 = TMath::Max(maxMisalErrY2,recopar->GetClusterMisalErrorY(lay,bz));
-      maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,recopar->GetClusterMisalErrorZ(lay,bz));
+      maxMisalErrY2 = TMath::Max(maxMisalErrY2,(double)recopar->GetClusterMisalErrorY(lay,bz));
+      maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,(double)recopar->GetClusterMisalErrorZ(lay,bz));
     }
     maxMisalErrY2 *= maxMisalErrY2;
     maxMisalErrZ2 *= maxMisalErrZ2;
