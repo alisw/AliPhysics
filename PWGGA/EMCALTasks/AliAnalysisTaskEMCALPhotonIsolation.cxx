@@ -3344,7 +3344,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       
         //check photons in EMCAL //to be redefined with fIsoConeR
       if(!fTPC4Iso){
-      if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.798 || phi>(TMath::Pi()-fIsoConeRadius)))
+      if((TMath::Abs(eta)>0.67-fIsoConeRadius ) || (phi < 1.798 || phi>(TMath::Pi()-fIsoConeRadius-0.03)))
         continue;
       }
       else{
