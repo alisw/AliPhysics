@@ -18,7 +18,6 @@
 //#include "AliBalancePsi.h"
 //#include "AliAnalysisTaskPIDBF.h"
 Bool_t kUseNSigmaPID = kTRUE;
-Double_t nSigmaMax = 3.0;
 Bool_t kUseBayesianPID = kFALSE;
 Double_t gMinAcceptedProbability = 0.7;
 
@@ -41,6 +40,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 				   Int_t minNClustersTPC = -1,
 				   Bool_t kUsePID = kTRUE,
                                    Int_t ParticleType_ = 0,
+                                   Int_t DetectorType_ =0,
                                    Bool_t bResonancesCut = kTRUE,
 				   Bool_t bHBTcut = kTRUE,
 				   Double_t HBTCutValue = 0.02,
@@ -56,13 +56,12 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
 				   TString analysisTypeUser="AOD",
 				   Bool_t bVertexBinning=kTRUE,
 				   Double_t sigmaElectronRejection=3,
+                                   Double_t nSigmaMax = 3.0,
 				   Bool_t electronExclusiveRejection=kFALSE,
 				   TString correctionFileName = "",
 			           Int_t nCentralityArrayBinsForCorrection = -1,
 	                           Double_t *gCentralityArrayForCorrections = 0x0,
-                                   Bool_t bMomentumOrdering = kTRUE,
-                                   Bool_t qaCorrection=kFALSE,
-                                   Bool_t rawType=kFALSE) {
+                                   Bool_t bMomentumOrdering = kTRUE) {
   // Creates a balance function analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -145,9 +144,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
   
   //Event characteristics scheme
   taskBF->SetEventClass(fArgEventClass);
-  taskBF->SetQACorrection(qaCorrection);
-  taskBF->SetRawType(rawType);   // rawType partilce in MCAOD reco : 16.06.2016(at ALICE CENTRE , VECC, Kolkata)
-  //taskBF->SetCustomBinning("centralityVertex:0,80");
+//  taskBF->SetCustomBinning("pTVertex: 0.2,0.6,2.0");
   //taskBF->SetCustomBinning("multiplicity:0,260");
   
   if(fArgEventClass == "Multiplicity") {
@@ -173,8 +170,8 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
    if(correctionFileName != "")
     taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
     
-
   //+++++++++++++++++++++
+
 
   taskBF->SetAnalysisObject(bf);
   if(gRunShuffling) taskBF->SetShufflingObject(bfs);
@@ -222,6 +219,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
       else if(kUseNSigmaPID)
  	taskBF->SetUseNSigmaPID(nSigmaMax);
         taskBF->SetParticleType(ParticleType_);   // Added  Noor Alam
+        taskBF->SetDetectorPID(DetectorType_);   // Added  Noor Alam
         taskBF->SetTPCPtMinMax(ptMin,kTPCPtMax); // TPC Pt min and max (N.Alam )
         taskBF->SetTOFPtMinMax(kTPCPtMax,ptMax); // TOF Pt min and max (N.Alam)
       //   N.A taskBF->SetParticleOfInterest(AliAnalysisTaskPIDBF::kKaon);
@@ -267,6 +265,7 @@ AliAnalysisTaskPIDBF *AddTaskPIDBF(Double_t centrMin=0.,
       else if(kUseNSigmaPID)
         taskBF->SetUseNSigmaPID(nSigmaMax);
         taskBF->SetParticleType(ParticleType_);   // Added  Noor Alam
+        taskBF->SetDetectorPID(DetectorType_);   // Added  Noor Alam
         taskBF->SetTPCPtMinMax(ptMin,kTPCPtMax); // TPC Pt min and max (N.Alam )
         taskBF->SetTOFPtMinMax(kTPCPtMax,ptMax); // TOF Pt min and max (N.Alam)
       //   N.A taskBF->SetParticleOfInterest(AliAnalysisTaskPIDBF::kKaon);
