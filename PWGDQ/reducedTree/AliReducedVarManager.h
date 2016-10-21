@@ -52,6 +52,7 @@ class AliReducedVarManager : public TObject {
     kINT7              = BIT(1), // V0AND trigger, offline V0 selection
     kMUON              = BIT(2), // Muon trigger, offline SPD or V0 selection
     kHighMult          = BIT(3), // High-multiplicity trigger (threshold defined online), offline SPD or V0 selection
+    kHighMultSPD    = BIT(3), // offline SPD high multiplicity trigger
     kEMC1              = BIT(4), // EMCAL trigger
     kCINT5             = BIT(5), // Minimum bias trigger without SPD. i.e. interaction trigger, offline V0 selection
     kCMUS5             = BIT(6), // Muon trigger, offline V0 selection
@@ -70,6 +71,7 @@ class AliReducedVarManager : public TObject {
     kEMCEJE            = BIT(14), // EMCAL jet patch trigger
     kEMCEGA            = BIT(15), // EMCAL gamma trigger
     kCentral           = BIT(16), // PbPb central collision trigger
+    kHighMultV0    = BIT(16), // offline V0 high multiplicity trigger
     kSemiCentral       = BIT(17), // PbPb semicentral collision trigger
     kDG5               = BIT(18), // Double gap diffractive
     kZED               = BIT(19), // ZDC electromagnetic dissociation
@@ -343,6 +345,7 @@ class AliReducedVarManager : public TObject {
     kPairThetaHE,       
     kPairPhiHE,
     kPairQualityFlag,
+    kDMA,                        // Distance of minimal approach
     // Track-only variables -------------------------------------
     kPtTPC,     
     kPhiTPC,    
