@@ -93,6 +93,7 @@ public:
   //void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
   void SetFillEventPlaneInfo(Bool_t flag=kTRUE)    {fFillEventPlaneInfo = flag;}
   void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
+  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE)   {fWriteEventsWithNoSelectedTracks = flag;}
   
  private:
 
@@ -111,7 +112,8 @@ public:
   
   Int_t    fTreeWritingOption;     // one of the options described by ETreeWritingOptions
   Bool_t fWriteTree;                   // if kFALSE don't write the tree, use task only to produce on the fly reduced events
-
+  Bool_t fWriteEventsWithNoSelectedTracks;   // write events without any selected tracks
+  
   Bool_t fFillTrackInfo;             // fill track information
   Bool_t fFillV0Info;                // fill the V0 information
   Bool_t fFillGammaConversions;      // fill gamma conversions
@@ -170,6 +172,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 2); //Analysis Task for creating a reduced event information tree 
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 3); //Analysis Task for creating a reduced event information tree 
 };
 #endif

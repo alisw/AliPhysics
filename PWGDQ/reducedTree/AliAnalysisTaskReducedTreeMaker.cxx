@@ -87,6 +87,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(kTRUE),
+  fWriteEventsWithNoSelectedTracks(kTRUE),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -141,6 +142,7 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(writeTree),
+  fWriteEventsWithNoSelectedTracks(kTRUE),
   fFillTrackInfo(kTRUE),
   fFillV0Info(kTRUE),
   fFillGammaConversions(kTRUE),
@@ -329,8 +331,10 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   
   // Retrieve FMD histogram
   //
-  if(fWriteTree)
-    fTree->Fill();
+  if(fWriteTree) {
+    if(fWriteEventsWithNoSelectedTracks) fTree->Fill();
+    if(!fWriteEventsWithNoSelectedTracks && fReducedEvent->fNtracks[1]>0) fTree->Fill();
+  }
         
   // if there are candidate pairs, add the information to the reduced tree
   //if(fFillFriendInfo) PostData(3, fFriendTree);
@@ -443,6 +447,19 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   
   AliReducedEventInfo* eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
   if(!eventInfo) return;
+  
+  if(multSelection) {
+     eventInfo->fMultiplicityEstimators[0] = multSelection->GetMultiplicityPercentile("OnlineV0M");
+     eventInfo->fMultiplicityEstimators[1] = multSelection->GetMultiplicityPercentile("OnlineV0A");
+     eventInfo->fMultiplicityEstimators[2] = multSelection->GetMultiplicityPercentile("OnlineV0C");
+     eventInfo->fMultiplicityEstimators[3] = multSelection->GetMultiplicityPercentile("ADM");
+     eventInfo->fMultiplicityEstimators[4] = multSelection->GetMultiplicityPercentile("ADA");
+     eventInfo->fMultiplicityEstimators[5] = multSelection->GetMultiplicityPercentile("ADC");
+     eventInfo->fMultiplicityEstimators[6] = multSelection->GetMultiplicityPercentile("SPDClusters");
+     eventInfo->fMultiplicityEstimators[7] = multSelection->GetMultiplicityPercentile("SPDTracklets");
+     eventInfo->fMultiplicityEstimators[8] = multSelection->GetMultiplicityPercentile("RefMult05");
+     eventInfo->fMultiplicityEstimators[9] = multSelection->GetMultiplicityPercentile("RefMult08");
+  }
   
   AliVVertex* eventVtxSPD = 0x0;
   if(isESD) eventVtxSPD = const_cast<AliESDVertex*>(esdEvent->GetPrimaryVertexSPD());

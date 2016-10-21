@@ -55,6 +55,17 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     SPDnSingleClusters()              const {return fSPDnSingle;}
   Int_t     TracksPerTrackingFlag(Int_t flag) const {return (flag>=0 && flag<32 ? fNtracksPerTrackingFlag[flag] : -999);}
   
+  Float_t   MultEstimatorOnlineV0M()   const {return fMultiplicityEstimators[0];}
+  Float_t   MultEstimatorOnlineV0A()   const {return fMultiplicityEstimators[1];}
+  Float_t   MultEstimatorOnlineV0C()   const {return fMultiplicityEstimators[2];}
+  Float_t   MultEstimatorADM()   const {return fMultiplicityEstimators[3];}
+  Float_t   MultEstimatorADA()   const {return fMultiplicityEstimators[4];}
+  Float_t   MultEstimatorADC()   const {return fMultiplicityEstimators[5];}
+  Float_t   MultEstimatorSPDClusters()   const {return fMultiplicityEstimators[6];}
+  Float_t   MultEstimatorSPDTracklets()   const {return fMultiplicityEstimators[7];}
+  Float_t   MultEstimatorRefMult05()   const {return fMultiplicityEstimators[8];}
+  Float_t   MultEstimatorRefMult08()   const {return fMultiplicityEstimators[9];}
+  
   Float_t   MultChannelVZERO(Int_t channel)   const {return (channel>=0 && channel<=63 ? fVZEROMult[channel] : -999.);}
   Float_t   MultVZEROA()                      const;
   Float_t   MultVZEROC()                      const;
@@ -126,6 +137,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fTimeStamp;             // time stamp of the event                
   UInt_t    fEventType;             // event type                             
   ULong64_t fTriggerMask;           // trigger mask
+  Float_t   fMultiplicityEstimators[10];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
   Bool_t    fIsSPDPileupMultBins;   // identified as pileup event by SPD in multiplicity bins
@@ -171,7 +183,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo(const AliReducedEventInfo &c);
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 4);
+  ClassDef(AliReducedEventInfo, 5);
 };
 
 #endif
