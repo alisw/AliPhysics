@@ -32,6 +32,7 @@
 #include <THnSparse.h>
 #include <TSystem.h>
 #include <TObjectTable.h>
+#include "AliMultSelection.h"
 
 #include "AliAnalysisTaskFlavourJetCorrelations.h"
 #include "AliAODHandler.h"
@@ -311,7 +312,17 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    if(!iseventselected) return kFALSE;
    
    fhstat->Fill(1);
-   fhCentDjet->Fill(fCent);
+    Float_t lPercentile = 300;
+    AliMultSelection *MultSelection = 0x0;
+    MultSelection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+    if(!MultSelection) {
+        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+        AliWarning("AliMultSelection object not found!");
+    }else{
+        lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+    }
+
+    fhCentDjet->Fill(lPercentile);
    
     AliJetContainer* JetCont = GetJetContainer(0);
     if(!JetCont) return kFALSE;

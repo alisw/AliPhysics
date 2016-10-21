@@ -47,6 +47,7 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
 #include "AliStack.h"
+#include "AliAnalysisVertexingHF.h"
 
 #include "AliAnalysisTaskSEDmesonsFilterCJ.h"
 
@@ -480,11 +481,15 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   fNCand = 0;
   fNSBCand = 0;
 
+  //Fill the vertex info of the candidates
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
+
   for (Int_t icharm = 0; icharm < nD; icharm++) {   //loop over D candidates
     Int_t isSelected = 0;
 
     AliAODRecoDecayHF2Prong* charmCand = static_cast<AliAODRecoDecayHF2Prong*>(fArrayDStartoD0pi->At(icharm)); // D candidates
     if (!charmCand) continue;
+    if(!(vHF->FillRecoCand(fAodEvent,charmCand))) continue;
 
     Int_t nprongs = charmCand->GetNProngs();
     AliDebug(2, Form("Candidate is %d, and nprongs = %d", fCandidateType, nprongs));
@@ -518,6 +523,8 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
       ProcessD0(charmCand, isSelected);
     }
   } // end of D cand loop
+
+  delete vHF;
 
   AliDebug(2, "Loop done");
 
