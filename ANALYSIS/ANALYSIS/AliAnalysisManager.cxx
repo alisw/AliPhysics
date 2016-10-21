@@ -2853,7 +2853,7 @@ void AliAnalysisManager::SetGlobalStr(const char *key, const char *value)
 // can be then retrieved by a given analysis macro via GetGlobalStr(key).
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AliAnalysisManager::SetGlobalStr", "No analysis manager defined");
+      AliErrorClass("No analysis manager defined");
       return;
    }   
    Bool_t valid = kFALSE;
@@ -2885,7 +2885,7 @@ void AliAnalysisManager::SetGlobalInt(const char *key, Int_t value)
 // can be then retrieved by a given analysis macro via GetGlobalInt(key).
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AliAnalysisManager::SetGlobalStr", "No analysis manager defined");
+      AliErrorClass("No analysis manager defined");
       return;
    }   
    Bool_t valid = kFALSE;
@@ -2918,7 +2918,7 @@ void AliAnalysisManager::SetGlobalDbl(const char *key, Double_t value)
 // can be then retrieved by a given analysis macro via GetGlobalInt(key).
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
-      ::Error("AliAnalysisManager::SetGlobalStr", "No analysis manager defined");
+      AliErrorClass("No analysis manager defined");
       return;
    }   
    Bool_t valid = kFALSE;
