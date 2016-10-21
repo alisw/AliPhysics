@@ -50,6 +50,8 @@ fMinimalBook(kFALSE),
 fUsePhiWeights(0),
 fApplyCorrectionForNUA(0),
 fHarmonic(2),
+fWeights(kFALSE),
+fScaling(kTRUE),
 fNormalizationType(1),
 fV0SanityCheck(0),
 fTotalQvector(3),
@@ -358,16 +360,24 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
   }
   Double_t dWq = fNormalizationType ? dNq: 1; // SP corresponds to true
   dNq = fNormalizationType ? dNq: vQm.Mod(); // SP corresponds to true
-
+/*
   if(fV0SanityCheck) {
       if(IsEqualRel(dQaQb/dNa/dNb,0.,1e-9) || dQaQb/dNa/dNb > 1e4 || IsEqualRel(dNa,0.,1e-9) || IsEqualRel(dNb,0.,1e-9) || IsEqualRel(dWa*dWb,0.,1e-9)) return;
   }
+*/
 
-
-  fHistProQaQbNorm->Fill(1., 1.);//dQaQb/dNa/dNb,dWa*dWb);  //Fill (QaQb/NaNb) with weight (WaWb).
+  if((!fWeightsList) && (!fScaling)) fHistProQaQbNorm->Fill(dQaQb, 1.);//dQaQb/dNa/dNb,dWa*dWb);  //Fill (QaQb/NaNb) with weight (WaWb).
+  else if (fScaling && (!fWeightsList)) fHistProQaQbNorm->Fill(dQaQb/dNa/dNb,1.);
+  else if ((!fScaling) && fWeightsList) fHistProQaQbNorm->Fill(dQaQb, dWa*dWb);
+  else fHistProQaQbNorm->Fill(dQaQb/dNa/dNb,dWa*dWb); 
   //needed for the error calculation:
-  fHistSumOfWeights -> Fill(1.);//dWa*dWb);
-  fHistSumOfWeights -> Fill(2.);//pow(dWa*dWb,2.));
+  if(fWeights) {
+      fHistSumOfWeights -> Fill(dWa*dWb);
+      fHistSumOfWeights -> Fill(pow(dWa*dWb,2.));
+  } else {
+      fHistSumOfWeights -> Fill(1.);//dWa*dWb);
+      fHistSumOfWeights -> Fill(2.);//pow(dWa*dWb,2.));}
+  } 
   //needed for correcting non-uniform acceptance: 
   fHistProNUAq->Fill(1.,vQa.Y()/dNa,dWa); // to get <<sin(phi_a)>>
   fHistProNUAq->Fill(2.,vQa.X()/dNa,dWa); // to get <<cos(phi_a)>>
@@ -480,16 +490,32 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
       fHistProUQ[iPOI][1]->Fill(dEta,dUQ/dNq,dWq); //Fill (uQ/Nq') with weight (Nq')
       //needed for the error calculation:
       /////// very sensitive for NaN/inf for RPs with V0
-      fHistProUQQaQb[iPOI][0]-> Fill(dPt, 1.);// ,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      if((!fWeights) && (!fScaling)) {
+       fHistProUQQaQb[iPOI][0]-> Fill(dPt, 1.);// ,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
       fHistProUQQaQb[iPOI][1]-> Fill(dEta, 1.);//,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      fHistSumOfWeightsu[iPOI][1][2]->Fill(dEta);//,dNq*dWa*dWb);// sum of Nq'*Na*Nb
+     
+      } else if (fWeights && (!fScaling)) {
+        fHistProUQQaQb[iPOI][0]-> Fill(dPt, dUQ*dQaQb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      fHistProUQQaQb[iPOI][1]-> Fill(dEta, dUQ*dQaQb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      fHistSumOfWeightsu[iPOI][1][2]->Fill(dEta,dNq*dWa*dWb);// sum of Nq'*Na*Nb
+    
+      } else if ((!fWeights) && fScaling) {
+         fHistProUQQaQb[iPOI][0]-> Fill(dPt, dUQ/dNq*dQaQb/dNa/dNb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      fHistProUQQaQb[iPOI][1]-> Fill(dEta, dUQ/dNq*dQaQb/dNa/dNb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      fHistSumOfWeightsu[iPOI][1][2]->Fill(dEta);// sum of Nq'*Na*Nb
+   
+      } else {
+          fHistProUQQaQb[iPOI][0]-> Fill(dPt,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      fHistProUQQaQb[iPOI][1]-> Fill(dEta,dUQ/dNq*dQaQb/dNa/dNb,dWq*dWa*dWb); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
+      fHistSumOfWeightsu[iPOI][1][2]->Fill(dEta,dNq*dWa*dWb);// sum of Nq'*Na*Nb
+      }
       ///////end of sensitivity
       fHistSumOfWeightsu[iPOI][0][0]->Fill(dPt ,dWq);        // sum of Nq'     
       fHistSumOfWeightsu[iPOI][0][1]->Fill(dPt ,pow(dWq,2.));// sum of Nq'^2     
       fHistSumOfWeightsu[iPOI][0][2]->Fill(dPt ,dWq*dWa*dWb);// sum of Nq'*Na*Nb     
       fHistSumOfWeightsu[iPOI][1][0]->Fill(dEta,dWq);        // sum of Nq'     
       fHistSumOfWeightsu[iPOI][1][1]->Fill(dEta,pow(dWq,2.));// sum of Nq'^2     
-      ////// very sensitive for NaN/inf for RPs with V0
-      fHistSumOfWeightsu[iPOI][1][2]->Fill(dEta);//,dNq*dWa*dWb);// sum of Nq'*Na*Nb
       //NUA:
       fHistProNUAu[iPOI][0][0]->Fill(dPt,dUY,1.); //sin u
       fHistProNUAu[iPOI][0][1]->Fill(dPt,dUX,1.); //cos u
