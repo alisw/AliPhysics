@@ -40,7 +40,7 @@ ClassImp(AliRDHFCutsDstoKKpi);
 
 //--------------------------------------------------------------------------
 AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const char* name) : 
-AliRDHFCuts(name),
+  AliRDHFCuts(name),
   fCutOnResonances(kTRUE),
   fPidOption(0),
   fMaxPtStrongPid(0.),
@@ -49,7 +49,11 @@ AliRDHFCuts(name),
   fDistToMaxProb(0.01),
   fBayesThreshold(0.05),
   fWeightKKpi(1.),
-  fWeightpiKK(1.)
+  fWeightpiKK(1.),
+  fUsed0MeasMinusExpCut(kFALSE),
+  fMaxd0MeasMinusExp(0x0),
+  fUsed0Cut(kFALSE),
+  fMaxd0(0x0)
 {
   //
   // Default Constructor
@@ -99,25 +103,25 @@ AliRDHFCuts(name),
 			 kFALSE};
   SetVarNames(20,varNames,isUpperCut);
   Bool_t forOpt[20]={kFALSE,
-		    kFALSE,
-		    kFALSE,
-		    kFALSE,
-		    kFALSE,
-		    kFALSE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-		    kFALSE,
-		    kTRUE,
-		    kTRUE,
-		    kFALSE,
-		    kFALSE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE,
-		    kTRUE};
+		     kFALSE,
+		     kFALSE,
+		     kFALSE,
+		     kFALSE,
+		     kFALSE,
+		     kTRUE,
+		     kTRUE,
+		     kTRUE,
+		     kTRUE,
+		     kTRUE,
+		     kFALSE,
+		     kTRUE,
+		     kTRUE,
+		     kFALSE,
+		     kFALSE,
+		     kTRUE,
+		     kTRUE,
+		     kTRUE,
+		     kTRUE};
 		    
   SetVarsForOpt(11,forOpt);
   Float_t limits[2]={0,999999999.};
@@ -149,12 +153,17 @@ AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi &source) :
   fDistToMaxProb(source.fDistToMaxProb),
   fBayesThreshold(source.fBayesThreshold),
   fWeightKKpi(source.fWeightKKpi),
-  fWeightpiKK(source.fWeightpiKK)
+  fWeightpiKK(source.fWeightpiKK),
+  fUsed0MeasMinusExpCut(source.fUsed0MeasMinusExpCut),
+  fMaxd0MeasMinusExp(0x0),
+  fUsed0Cut(source.fUsed0Cut),
+  fMaxd0(0x0)
 {
   //
   // Copy constructor
   //
-
+  if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
+  if(source.fMaxd0) Setd0Cut(source.fnPtBins,source.fMaxd0);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &source)
@@ -175,8 +184,42 @@ AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &s
   fBayesThreshold=source.fBayesThreshold;
   fWeightKKpi=source.fWeightKKpi;
   fWeightpiKK=source.fWeightpiKK;
+  fUsed0MeasMinusExpCut=source.fUsed0MeasMinusExpCut;
+  fUsed0Cut=source.fUsed0Cut;
+  if(source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fnPtBins,source.fMaxd0MeasMinusExp);
+  if(source.fMaxd0) Setd0Cut(source.fnPtBins,source.fMaxd0);
 
   return *this;
+}
+
+//---------------------------------------------------------------------------
+void AliRDHFCutsDstoKKpi::Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval) {
+  //
+  // store the cuts
+  //
+  if(nPtBins!=fnPtBins) {
+    printf("Wrong number of pt bins: it has to be %d\n",fnPtBins);
+    AliFatal("exiting");
+  }
+  if(!fMaxd0MeasMinusExp)  fMaxd0MeasMinusExp = new Float_t[fnPtBins];
+  for(Int_t ib=0; ib<fnPtBins; ib++) fMaxd0MeasMinusExp[ib] = cutval[ib];
+  fUsed0MeasMinusExpCut=kTRUE;
+  return;
+}
+
+//---------------------------------------------------------------------------
+void AliRDHFCutsDstoKKpi::Setd0Cut(Int_t nPtBins, Float_t *cutval) {
+  //
+  // store the cuts
+  //
+  if(nPtBins!=fnPtBins) {
+    printf("Wrong number of pt bins: it has to be %d\n",fnPtBins);
+    AliFatal("exiting");
+  }
+  if(!fMaxd0)  fMaxd0 = new Float_t[fnPtBins];
+  for(Int_t ib=0; ib<fnPtBins; ib++) fMaxd0[ib] = cutval[ib];
+  fUsed0Cut=kTRUE;
+  return;
 }
 
 
@@ -291,12 +334,12 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
     if(TMath::Abs(pdgdaughters[0])==321){
       
       Double_t phimass01=d->InvMass2Prongs(0,1,321,321);
-       vars[iter]=TMath::Abs(phimass01-mPDGPhi);
-       // vars[iter]=dd->InvMass2Prongs(0,1,321,321);
+      vars[iter]=TMath::Abs(phimass01-mPDGPhi);
+      // vars[iter]=dd->InvMass2Prongs(0,1,321,321);
     }else{
       Double_t phimass12=d->InvMass2Prongs(1,2,321,321);
-       vars[iter]=TMath::Abs(phimass12-mPDGPhi);
-       // vars[iter]=dd->InvMass2Prongs(1,2,321,321);      
+      vars[iter]=TMath::Abs(phimass12-mPDGPhi);
+      // vars[iter]=dd->InvMass2Prongs(1,2,321,321);      
     }
   }
   if(fVarsForOpt[13]){
@@ -541,9 +584,9 @@ Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
     else if(iDaught==2){
       if(isKaon<0) okpiKK=kFALSE;
       if(isPion<0) okKKpi=kFALSE;
-       if(fPidOption==kStrong && rd->Pt()<fMaxPtStrongPid){
-	 if(isKaon<=0) okpiKK=kFALSE;
-	 if(isPion<=0) okKKpi=kFALSE;
+      if(fPidOption==kStrong && rd->Pt()<fMaxPtStrongPid){
+	if(isKaon<=0) okpiKK=kFALSE;
+	if(isPion<=0) okKKpi=kFALSE;
       }
       if(fPidOption==kStrongPDep && rd->Pt()<fMaxPtStrongPid){
 	if(isKaon<=0 && track->P()<fMaxPStrongPidK) okpiKK=kFALSE;  
@@ -800,7 +843,28 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
     
-     // unset recalculated primary vertex when not needed any more
+    // d0meas-exp
+    if(fUsed0MeasMinusExpCut){
+      Double_t dd0max=0;
+      for(Int_t ipr=0; ipr<3; ipr++) {
+	Double_t diffIP, errdiffIP;
+	d->Getd0MeasMinusExpProng(ipr,aod->GetMagneticField(),diffIP,errdiffIP);
+	Double_t normdd0=0.;
+	if(errdiffIP>0) normdd0=diffIP/errdiffIP;
+	if(ipr==0) dd0max=normdd0;
+	else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
+      }
+      if(TMath::Abs(dd0max)>fMaxd0MeasMinusExp[ptbin]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }
+      
+    // d0
+    if(fUsed0Cut){
+      Double_t d0=d->ImpParXY()*10000.;
+      if(TMath::Abs(d0)>fMaxd0[ptbin]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+    }
+      
+
+    // unset recalculated primary vertex when not needed any more
     CleanOwnPrimaryVtx(d,aod,origownvtx);
       
     
@@ -879,7 +943,7 @@ UInt_t AliRDHFCutsDstoKKpi::GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const{
   sigmaTOFKaonHyp=TMath::Abs(sigmaTOFKaonHyp);
   sigmaTOFProtonHyp=TMath::Abs(sigmaTOFProtonHyp);
 
- if (oksigmaTPCPionHyp && sigmaTPCPionHyp>0.){
+  if (oksigmaTPCPionHyp && sigmaTPCPionHyp>0.){
     if (sigmaTPCPionHyp<1.) bitmap+=1<<kTPCPionLess1;
     else{
       if (sigmaTPCPionHyp<2.) bitmap+=1<<kTPCPionMore1Less2;
