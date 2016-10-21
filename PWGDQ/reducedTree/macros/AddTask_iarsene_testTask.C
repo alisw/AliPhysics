@@ -65,7 +65,7 @@ void Setup(AliReducedAnalysisTest* processor, TString prod /*="LHC10h"*/) {
   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
-  evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
+  //evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
   AliReducedEventCut* evCut2 = new AliReducedEventCut("VertexZ","Vertex selection");
   evCut2->AddCut(AliReducedVarManager::kVtxZ, -25.0, 25.0);
   processor->AddEventCut(evCut1);
@@ -198,7 +198,7 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
       man->AddHistogram(classStr.Data(),"CentZNA","Centrality(ZNA)",kFALSE, 100, 0.0, 100.0, AliReducedVarManager::kCentZNA);
       man->AddHistogram(classStr.Data(),"CentQuality","Centrality quality",kFALSE, 100, -50.5, 49.5, AliReducedVarManager::kCentQuality);
       man->AddHistogram(classStr.Data(),"NTracksTotal","Number of total tracks per event",kFALSE,500,0.,20000.,AliReducedVarManager::kNtracksTotal);
-      man->AddHistogram(classStr.Data(),"NTracksSelected","Number of selected tracks per event",kFALSE,500,0.,20000.,AliReducedVarManager::kNtracksSelected);
+      man->AddHistogram(classStr.Data(),"NTracksSelected","Number of selected tracks per event",kFALSE,200,0.,200.,AliReducedVarManager::kNtracksSelected);
       man->AddHistogram(classStr.Data(),"EventNumberInESDFile","Event number in ESD file",kFALSE, 1000, 0.0, 1000.0, AliReducedVarManager::kEventNumberInFile);
       man->AddHistogram(classStr.Data(),"BC","Bunch crossing",kFALSE,3500,0.,3500.,AliReducedVarManager::kBC);
       man->AddHistogram(classStr.Data(),"EventType","Event type",kFALSE,100,0.,100.,AliReducedVarManager::kEventType);

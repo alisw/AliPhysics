@@ -67,10 +67,10 @@ const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager:
 };
 
 const Char_t* AliReducedVarManager::fgkOfflineTriggerNames[64] = {
-    "MB",               "INT7",        "MUON",             "HighMult",          "EMC1", 
+    "MB",               "INT7",        "MUON",             "HighMult/HighMultSPD",          "EMC1", 
     "CINT5",            "CMUS5/MUSPB", "MUSH7/MUSHPB",     "MUL7/MuonLikePB",   "MUU7/MuonUnlikePB", 
     "EMC7",             "MUS7",        "PHI1",             "PHI7/PHOSPb",       "EMCEJE",
-    "EMCEGA",           "Central",     "SemiCentral",      "DG5",               "ZED",         
+    "EMCEGA",           "Central/HighMultV0",     "SemiCentral",      "DG5",               "ZED",         
     "SPI7",             "CINT8",       "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8",  
     "MuonUnlikeLowPt8", "N/A",         "UserDefined",      "N/A",               "N/A",         
     "FastOnly",         "N/A",         "N/A",              "N/A",               "N/A",  
@@ -949,6 +949,11 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
     usePolarization = kTRUE;
   if(usePolarization)
     GetThetaPhiCM(t1, t2, values[kPairThetaHE], values[kPairPhiHE], values[kPairThetaCS], values[kPairPhiCS]);
+  
+  if(fgUsedVars[kDMA] && (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
+     TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
+     values[kDMA]=TMath::Sqrt((ti1->HelixX()-ti2->HelixX())*(ti1->HelixX()-ti2->HelixX())+(ti1->HelixY()-ti2->HelixY())*(ti1->HelixY()-ti2->HelixY()))-ti1->HelixR()-ti2->HelixR();   
+  }
 }
 
 

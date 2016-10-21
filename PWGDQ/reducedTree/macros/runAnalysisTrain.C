@@ -1,14 +1,16 @@
 // Grid running parameters
-TString gGridRunMode = "full";
+TString gGridRunMode = "test";
 TString gRootVersion = "v5-34-30-alice6-2";
 TString gAlirootVersion = "v5-08-18-1";
-TString gAliphysicsVersion = "vAN-20161009-1";
-TString gGridDataDir = "/alice/data/2015/LHC15o";
+TString gAliphysicsVersion = "vAN-20161019-1";
+//TString gGridDataDir = "/alice/data/2015/LHC15o";
+TString gGridDataDir = "/alice/data/2016/LHC16l";
 //TString gGridDataDir = "/alice/cern.ch/user/i/iarsene/work/outputDst";
 //TString gGridDataPattern = "*/pass1/*/AliESDs.root";
-TString gGridDataPattern = "*/pass1/PWGDQ/DQ_PbPb/231_20161009-2048/*/dstTree.root";
+//TString gGridDataPattern = "*/pass1/PWGDQ/DQ_PbPb/231_20161009-2048/*/dstTree.root";
+TString gGridDataPattern = "*/pass1/*/AliESDs.root";
 TString gGridWorkingDir = "work";
-TString gGridOutputDir = "outputTestNew7";
+TString gGridOutputDir = "outputTestNew10";
 Int_t gGridMaxInputFileNumber = 10;
 
 //______________________________________________________________________________________________________________________________________
@@ -87,14 +89,16 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    if(inputTypeStr.Contains("esd") || inputTypeStr.Contains("aod")) {         // no need if we run over reduced events
       //==== Physics Selection ====
       gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+      Bool_t mcAnalysisFlag = kFALSE;
+      Bool_t applyPileupCuts = kFALSE;
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(mcAnalysisFlag, applyPileupCuts);
 
       //===== ADD CENTRALITY: ===
       if(!prod.CompareTo("LHC10h") || !prod.CompareTo("LHC11h")) {         // Run-1 Pb-Pb
         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
         AddTaskCentrality();
       }
-      if(!prod.CompareTo("LHC15o")) {         // Run-2 Pb-Pb
+      if(!prod.CompareTo("LHC15o") || !prod.CompareTo("LHC16l")) {         // Run-2 Pb-Pb
          gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
          AddTaskMultSelection();
       }      
@@ -158,5 +162,6 @@ TChain* makeChain(const Char_t* filename, const Char_t* inputType) {
       chain->AddFile(line);
     }
   }
+  cout << "Number of events in chain: " << chain->GetEntries() << endl;
   return chain;
 }
