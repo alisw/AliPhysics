@@ -36,7 +36,7 @@ void FillVTXntuple(TFile* f,TNtuple* ntvertex, Int_t iRun, Float_t *xntVertex);
 void FillPileUpntuple(TFile* f,TNtuple* ntpileup, Int_t iRun, Float_t *xntPileup);
 void FillPIDntuple(TFile* f,TNtuple* nt, Int_t nrun, Float_t *xntPID);
 void FillDCAntuple(TFile* f,TNtuple* nt, Int_t nrun, Float_t *xntDCA);
-void AliITSQAtrend_2016(TString runListFile="lista_2016.txt",TString ntupleFileName="TrendingITS_2016.root");
+void AliITSQAtrend(TString runListFile="lista_2016.txt",TString ntupleFileName="TrendingITS_2016.root");
 Double_t LangausFun(Double_t *x, Double_t *par);
 
 Bool_t WriteInputTextFileFromMonalisaListOfRuns(TString outtxtfilename,Int_t* listofrunsfromMonalisa,Int_t nruns,TString pathbeforRunN="alice/data/2012/LHC12a/",TString pathafterRunN="pass1/QAresults.root");
@@ -4958,7 +4958,7 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
 
 //____________________________________________________________________________
 //____________________________________________________________________________
-void AliITSQAtrend_2016(TString runListFile,TString ntupleFileName){
+void AliITSQAtrend(TString runListFile,TString ntupleFileName){
 
   TGrid::Connect("alien://");
 // myfile<<"vediamo se funziona"<<endl;
@@ -7257,7 +7257,7 @@ void FillPIDntuple(TFile* f,TNtuple* nt, Int_t nrun, Float_t *xntPID){
         return;
     }
     
-    TDirectoryFile *fListData = (TDirectoryFile*)QAdata->Get("PIDqa");
+    TList *fListData = (TList*)QAdata->Get("PIDqa");
     if(!fListData){
         Printf("PIDqa/PIDqa directory not found... return!");
         return;
