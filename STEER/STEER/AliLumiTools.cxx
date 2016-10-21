@@ -20,6 +20,7 @@
 
 Double_t AliLumiTools::fgMuEst = -1; // by default - dummy
 Double_t AliLumiTools::fgXSecEst = -1; // by default - dummy
+Double_t AliLumiTools::fgScaleFactor = 1.;
 
 //___________________________________________________________________
 TGraph* AliLumiTools::GetLumiGraph(Int_t tp, Int_t run, const char * ocdbPathDef)
@@ -90,7 +91,7 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
     double t = tref + t0 + dt/2;
     if (dt&0x1) t += 0.5;
     vecRateT[nRateAcc] = t;
-    vecRate[nRateAcc] = (rate1-rate0)/dt*1e6; // convert from Hz/b to Hz/ub
+    vecRate[nRateAcc] = (rate1-rate0)/dt*1e6*fgScaleFactor; // convert from Hz/b to Hz/ub
     //    printf("%lld %lld -> %lld %lld %e\n",t0,t1, tref + t0 + dt/2,dt,rate1);
     t0 = t1;
     rate0 = rate1;
@@ -207,7 +208,7 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
     Double_t refLumi = refRate/refSigma;
     //printf("%f %f\n",t2,refLumi);
     if (nAcc==0) vtime[nAcc]=Double_t(t1);
-    vlumi[nAcc]=refLumi; 
+    vlumi[nAcc]=refLumi*fgScaleFactor;
     vlumiErr[nAcc]=refCounts > 0 ? refLumi/TMath::Sqrt(refCounts) : 0.0;   
     vtime[++nAcc]=Double_t(t2);
     fgMuEst += refMu;

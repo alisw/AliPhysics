@@ -20,7 +20,10 @@ class AliLumiTools : public TObject
   static Double_t GetXSectEstimate() {return fgXSecEst;}
   //
   static Float_t  GetScaleDnDeta2pp13TeV(int run=-1,const char * ocdbPathDef="raw://"); 
-
+  //
+  static Double_t GetScaleFactor() {return fgScaleFactor;}
+  static void     SetScaleFactor(double v=1) {fgScaleFactor = v;}
+  //
  protected:
   static Bool_t GetLumiCTPRefClass(int run, TString& refClass, double &refSigma, double &refEff);
   static TObject* GetCDBObjectForRun(int run, const char* path, const char* ocdbPathDef);
@@ -28,6 +31,7 @@ class AliLumiTools : public TObject
  protected:
   static Double_t fgMuEst;     // mu estimate
   static Double_t fgXSecEst;   // X-section to be used for conversion to IR
+  static Double_t fgScaleFactor; // user settable scaling factor to tweak the lumi
 
  private:  // dummy
   AliLumiTools(const AliLumiTools& src);
