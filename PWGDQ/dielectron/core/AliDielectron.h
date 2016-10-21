@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 //#####################################################
-//#                                                   # 
+//#                                                   #
 //#             Class AliDielectron                   #
 //#         Main Class for e+e- analysis              #
 //#                                                   #
@@ -50,7 +50,7 @@ public:
       kEv1PEv2M, kEv1MEv2M, kEv2PM,
       kEv2MM, kEv1PMRot };
   enum ELegType  { kEv1P, kEv1M, kEv2P, kEv2M };
-  
+
   AliDielectron();
   AliDielectron(const char* name, const char* title);
   virtual ~AliDielectron();
@@ -102,8 +102,8 @@ public:
   Bool_t HasCandidatesLikeSign() const {
     return (GetPairArray(0)&&GetPairArray(2)) ? (GetPairArray(0)->GetEntriesFast()>0 || GetPairArray(2)->GetEntriesFast()>0) : 0;
   }
-  
-  Bool_t HasCandidatesTR() const {return GetPairArray(10)?GetPairArray(10)->GetEntriesFast()>0:0;} 
+
+  Bool_t HasCandidatesTR() const {return GetPairArray(10)?GetPairArray(10)->GetEntriesFast()>0:0;}
   void SetCFManagerPair(AliDielectronCF * const cf) { fCfManagerPair=cf; }
   AliDielectronCF* GetCFManagerPair() const { return fCfManagerPair; }
 
@@ -143,7 +143,7 @@ public:
   void SetDontClearArrays(Bool_t dontClearArrays=kTRUE) { fDontClearArrays=dontClearArrays; }
   Bool_t DontClearArrays() const { return fDontClearArrays; }
 
-  void AddSignalMC(AliDielectronSignalMC* signal);  
+  void AddSignalMC(AliDielectronSignalMC* signal);
 
   void SetDebugTree(AliDielectronDebugTree * const tree) { fDebugTree=tree; }
 
@@ -193,8 +193,8 @@ private:
   AliAnalysisFilter fPairPreFilterLegs1; // Leg filter after the pair prefilter cuts
   AliAnalysisFilter fPairPreFilterLegs2; // Leg filter after the pair prefilter cuts
   AliAnalysisFilter fPairFilter;     // pair cuts
-  AliAnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts  
-  AliAnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter  
+  AliAnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts
+  AliAnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter
 
   Int_t fPdgMother;     // pdg code of mother tracks
   Int_t fPdgLeg1;       // pdg code leg1
@@ -247,18 +247,19 @@ private:
 
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTracks1, TObjArray arrTracks2, const AliVEvent *ev);
+  void CorrectQnEventplanes(Int_t arr1, Int_t arr2, TList *qnlist, TObjArray arrTracks1, TObjArray arrTracks2);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, const AliVEvent *ev, Int_t prefilterN);
   void FillPairArrays(Int_t arr1, Int_t arr2, const AliVEvent *ev = 0x0);
   void FillPairArrayTR();
-  
+
   Int_t GetPairIndex(Int_t arr1, Int_t arr2) const {return arr1>=arr2?arr1*(arr1+1)/2+arr2:arr2*(arr2+1)/2+arr1;}
 
   void InitPairCandidateArrays();
   void ClearArrays();
-  
+
   TObjArray* PairArray(Int_t i);
   TObject* InitEffMap(TString filename);
-  
+
   static const char* fgkTrackClassNames[4];   //Names for track arrays
   static const char* fgkPairClassNames[11];   //Names for pair arrays
 
@@ -270,7 +271,7 @@ private:
   TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
 
   void ProcessMC(AliVEvent *ev1);
-  
+
   void  FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly=kFALSE);
   void  FillMCHistograms(const AliVEvent *ev);
   void  FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal);
@@ -282,7 +283,7 @@ private:
 
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
-  
+
   ClassDef(AliDielectron,16);
 };
 
