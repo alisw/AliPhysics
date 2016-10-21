@@ -16,24 +16,31 @@ const string AliNuclexEventCuts::fgkLabels[2] = {"raw","selected"};
 
 ClassImp(AliNuclexEventCuts);
 
+/// Standard constructor with null selection
+///
 AliNuclexEventCuts::AliNuclexEventCuts() : TNamed("AliNuclexEventCuts","AliNuclexEventCuts"),
-  fRequireTrackVertex{true},
-  fMinVtz{-10.f},
-  fMaxVtz{10.f},
-  fMaxDeltaSpdTrackAbsolute{0.2f},
-  fMaxDeltaSpdTrackNsigmaSPD{10.f},
-  fMaxDeltaSpdTrackNsigmaTrack{20.f},
+  fRequireTrackVertex{false},
+  fMinVtz{-1000.f},
+  fMaxVtz{1000.f},
+  fMaxDeltaSpdTrackAbsolute{1000.f},
+  fMaxDeltaSpdTrackNsigmaSPD{1000.f},
+  fMaxDeltaSpdTrackNsigmaTrack{20000.f},
   //fMaxDispersionSPDvertex{0.03f},
-  //fMaxResolutionSPDvertex{0.25f},
-  fRejectDAQincomplete{true},
-  fRejectPileupSPD{5},
-  fCentralityFramework{2},
-  fMinCentrality{0.f},
-  fMaxCentrality{90.f},
+  fMaxResolutionSPDvertex{1000.f},
+  fRejectDAQincomplete{false},
+  fSPDpileupMinContributors{1000},
+  fSPDpileupMinZdist{-1.f},
+  fSPDpileupNsigmaZdist{-1.f},
+  fSPDpileupNsigmaDiamXY{-1.f},
+  fSPDpileupNsigmaDiamZ{-1.f},
+  fCentralityFramework{0},
+  fMinCentrality{-1000.f},
+  fMaxCentrality{1000.f},
+  fMaxDeltaEstimators{1000.f},
+  fRequireExactTriggerMask{false},
+  fTriggerMask{AliVEvent::kAny},
   fCentEstimators{"V0M","CL0"},
-  fCentPercentiles{-1.f},
-  fMaxDeltaEstimators{7.5f},
-  fTriggerMask{AliVEvent::kINT7}
+  fCentPercentiles{-1.f}
 {
 }
 
@@ -45,11 +52,15 @@ void AliNuclexEventCuts::SetupLHC15o() {
   fMaxDeltaSpdTrackNsigmaSPD = 10.f;
   fMaxDeltaSpdTrackNsigmaTrack = 20.f;
   //fMaxDispersionSPDvertex = 0.03f;
-  //fMaxResolutionSPDvertex = 0.25f;
+  fMaxResolutionSPDvertex = 0.25f;
 
   fRejectDAQincomplete = true;
 
-  fRejectPileupSPD = 5;
+  fSPDpileupMinContributors = 5;
+  fSPDpileupMinZdist = 0.8;
+  fSPDpileupNsigmaZdist = 3.;
+  fSPDpileupNsigmaDiamXY = 2.;
+  fSPDpileupNsigmaDiamZ = 5.;
 
   fCentralityFramework = 2;
   fCentEstimators[0] = "V0M";
@@ -87,13 +98,14 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev, TList *qaList) {
   int pass = true;
 
   /// Rejection of the DAQ incomplete events
-  if (ev->IsIncompleteDAQ()) pass = false;
+  if (fRejectDAQincomplete && ev->IsIncompleteDAQ()) pass = false;
   else if (fCutStats != nullptr) fCutStats->Fill(1);
 
   /// Trigger mask
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  if ((handl->IsEventSelected() & fTriggerMask) != fTriggerMask) pass = false;
+  auto selected_trigger = handl->IsEventSelected() & fTriggerMask;
+  if ((selected_trigger != fTriggerMask && fRequireExactTriggerMask) || !selected_trigger) pass = false;
   else if (fCutStats != nullptr) fCutStats->Fill(2);
 
   /// Vertex selection
@@ -109,13 +121,13 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev, TList *qaList) {
   double nsigTot = TMath::Abs(dz) / errTot, nsigTrc = TMath::Abs(dz) / errTrc;
   if (((vtTrc->GetNContributors() < 2 && fRequireTrackVertex) || vtSPD->GetNContributors() < 1) || // Check if SPD vertex is there and (if required) check if Track vertex is present.
       (TMath::Abs(dz) > fMaxDeltaSpdTrackAbsolute || nsigTot > fMaxDeltaSpdTrackNsigmaSPD || nsigTrc > fMaxDeltaSpdTrackNsigmaTrack) || // discrepancy track-SPD vertex
-      (vtx->GetZ() < fMinVtz || vtx->GetZ() > fMaxVtz))  // min-max limits of the vertex z
-     // (vtSPD->IsFromVertexerZ() && (vtSPD->GetDispersion()>fMaxDispersionSPDvertex || vtSPD->GetZRes()>fMaxResolutionSPDvertex))) // quality cut on vertexer SPD z
+      (vtx->GetZ() < fMinVtz || vtx->GetZ() > fMaxVtz) || // min-max limits of the vertex z
+      (vtSPD->IsFromVertexerZ() && TMath::Sqrt(covSPD[5]) > fMaxResolutionSPDvertex)) // quality cut on vertexer SPD z
     pass = false;
   else if (fCutStats != nullptr) fCutStats->Fill(3);
 
   /// SPD pile-up rejection
-  if (ev->IsPileupFromSPD(fRejectPileupSPD,0.8,3.,2.,5.)) pass = false; // pile-up
+  if (ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ)) pass = false; // pile-up
   else if (fCutStats != nullptr) fCutStats->Fill(4);
 
   /// Centrality cuts:
@@ -182,4 +194,22 @@ void AliNuclexEventCuts::AddQAplotsToList(TList *qaList) {
     qaList->Add(fMultCentCorrelation[iS]);
   }
 
+}
+
+float AliNuclexEventCuts::GetCentrality (unsigned int estimator) { 
+  if (estimator > 1) {
+    /// Escalate to Fatal
+    ::Fatal("AliNuclexEventCuts::GetCentrality","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
+    return -1.f;
+  } else 
+    return fCentPercentiles[estimator];
+}
+
+string AliNuclexEventCuts::GetCentralityEstimator (unsigned int estimator) { 
+  if (estimator > 1) {
+    /// Escalate to Fatal
+    ::Fatal("AliNuclexEventCuts::GetCentralityEstimator","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
+    return "";
+  } else 
+    return fCentEstimators[estimator];
 }
