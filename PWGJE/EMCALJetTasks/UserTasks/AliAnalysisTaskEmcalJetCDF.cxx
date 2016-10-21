@@ -1517,5 +1517,33 @@ TObject* NS_AliAnalysisTaskEmcalJetCDF::AddTaskEmcalJetCDF ( const char* ntracks
   return cdfTask;
   }
 
+/// Set parameters of a jet container
+/// \param AliJetContainer* jetCont : jet container pointer
+/// \param Float_t jetptmin : min pt of jets in this container (default = 1.)
+/// \param Float_t jetptmax : max pt of jets in this container (default = 500.)
+/// \param Float_t jetareacutperc : cut jets under percentage of area given by algo radius (default = 0.)
+/// \param Int_t leadhadtype : 0 = charged, 1 = neutral, 2 = both (default = 2)
+/// \param Int_t nLeadJets : how many jets are to be considered the leading jet(s) (default = 1)
+/// \param Float_t mintrackpt : min track constituent pt to accept the jet (default = 0.15)
+/// \param Float_t maxtrackpt : max track constituent pt to accept the jet (default = 1000.)
+/// \return AliJetContainer*
+TObject* NS_AliAnalysisTaskEmcalJetCDF::jetContSetParams (AliJetContainer* jetCont,
+                                      Float_t jetptmin, Float_t jetptmax, Float_t jetareacutperc,
+                                      Int_t leadhadtype, Int_t nLeadJets,
+                                      Float_t mintrackpt, Float_t maxtrackpt
+                                      )
+{
+  if (!jetCont) { return NULL; }
+  jetCont->SetJetPtCut ( jetptmin );
+  jetCont->SetJetPtCutMax ( jetptmax );
+  jetCont->SetPercAreaCut ( jetareacutperc );
+  jetCont->SetLeadingHadronType ( leadhadtype ); // 0 = charged, 1 = neutral, 2 = both
+  jetCont->SetNLeadingJets(nLeadJets);
+  jetCont->SetMinTrackPt(mintrackpt);
+  jetCont->SetMaxTrackPt(maxtrackpt);
+
+  return jetCont;
+}
+
 // kate: indent-mode none; indent-width 2; replace-tabs on;
 
