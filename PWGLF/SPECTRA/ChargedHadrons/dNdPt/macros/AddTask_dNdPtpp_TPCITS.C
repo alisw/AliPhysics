@@ -71,16 +71,16 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =223 , char *mode ="default"){
   if(stParticleMode.Contains("Pion")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCPion);}
   else if (stParticleMode.Contains("Proton")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCProton);}
   else if (stParticleMode.Contains("Kaon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCKaon);}
+  else if (stParticleMode.Contains("RemainingRest")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
   else if (stParticleMode.Contains("Rest")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCRest);}
   else if (stParticleMode.Contains("Plus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kPlus);}
   else if (stParticleMode.Contains("Minus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMinus);}
-  else if (stParticleMod.Contains("SigmaPlus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
-  else if (stParticleMod.Contains("SigmaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
-  else if (stParticleMod.Contains("Electron")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCElectron);}
-  else if (stParticleMod.Contains("Muon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCMuon);}
-  else if (stParticleMod.Contains("XiMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
-  else if (stParticleMod.Contains("OmegaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCOmegaMinus);}
-  else if (stParticleMod.Contains("RemainingRest")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
+  else if (stParticleMode.Contains("SigmaPlus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
+  else if (stParticleMode.Contains("SigmaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
+  else if (stParticleMode.Contains("Electron")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCElectron);}
+  else if (stParticleMode.Contains("Muon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCMuon);}
+  else if (stParticleMode.Contains("XiMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
+  else if (stParticleMode.Contains("OmegaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCOmegaMinus);}
   else{fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kAllPart);}
   // Change binning
   const Int_t ptNbins = 81;
