@@ -6,6 +6,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TF1.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TParticle.h>
@@ -42,6 +43,21 @@ using TMath::TwoPi;
 ClassImp(AliAnalysisTaskNucleiYield);
 ///\endcond
 
+const TString kNames[5]= {"pion","kaon","proton","deuteron","triton"};
+const AliPID::EParticleType kSpecies[5] = {AliPID::kPion, AliPID::kKaon, AliPID::kProton, AliPID::kDeuteron, AliPID::kTriton};
+
+static double TOFsignal(double *x, double *par) {
+  double &norm = par[0];
+  double &mean = par[1];
+  double &sigma = par[2];
+  double &tail = par[3];
+
+  if (x[0] <= (tail + mean))
+    return norm * TMath::Gaus(x[0], mean, sigma);
+  else
+    return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
+}
+
 /// Method for the correct logarithmic binning of histograms.
 ///
 /// \param h Histogram that has to be correctly binned
@@ -69,7 +85,7 @@ static void BinLogAxis(const TH1 *h) {
 /// \param taskname Name of the task
 /// \param partname Name of the analysed particle
 ///
-  AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
+AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
   ,fList(0x0)
   ,fPDG(0x0)
@@ -156,8 +172,8 @@ static void BinLogAxis(const TH1 *h) {
   ,fRequireMinCentrality(0.)
   ,fRequireMaxCentrality(80.)
   ,fEnableFlattening(true)
-  ,fTriggerMask(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral)
-  ,fEnableLogAxisInPerformancePlots(true) {
+   ,fTriggerMask(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral)
+   ,fEnableLogAxisInPerformancePlots(true) {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
@@ -308,6 +324,13 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     fList->Add(fMTOFsignal);
     fList->Add(fMTPCcounts);
 
+    for (int iS = 0; iS < 5; ++iS) {
+      fTOFtemplates[iS] = new TH3F(Form("fTOFtemplates%i",iS),
+          Form("%s;Centrality (%%);#it{p}_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",kNames[iS].Data()),
+          nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
+      fList->Add(fTOFtemplates[iS]);
+    }
+
     fATOFphiSignal = new TH3F("fATOFphiSignal",
         ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
         64,0.,TMath::TwoPi(),28,0.2,3.,
@@ -335,6 +358,9 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     }
   }
 
+  fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
+
+  fEventCut.AddQAplotsToList(fList);
   PostData(1,fList);
 }
 
@@ -352,52 +378,21 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     return;
   }
 
-  /// If the setup is fine the current event is loaded in memory together with the analysis manager
-  /// and the event handler.
-  AliVEvent *ev = dynamic_cast<AliVEvent*> (InputEvent());
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-
-  /// The first check perfomed is on the physics selection output stored in the mask given by the
-  /// handler.
-  UInt_t mask = handl->IsEventSelected();
-  if (!(mask & 0xffffffff)) {
-    PostData(1, fList);
-    return;
-  }
-
-  /// This mask contains also the information about the trigger of this events. For this analysis
-  /// central, semi-central and minimum bias events are kept.
-  if (!(mask & fTriggerMask)) {
+  AliVEvent *ev = InputEvent();
+  if (!fEventCut.AcceptEvent(ev, fList)) {
     PostData(1, fList);
     return;
   }
 
   /// To perform the majority of the analysis - and also this one - the standard PID handler is
   /// required.
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
   fPID = handl->GetPIDResponse();
 
-  /// The centrality selection in PbPb uses the percentile determined with V0.
-  float centrality = -1.f;
-  if (!fNewCentralityFramework) {
-    AliCentrality *centr = ev->GetCentrality();
-    centrality = centr->GetCentralityPercentile("V0M");
-  } else {
-    AliMultSelection *centr = (AliMultSelection*)ev->FindListObject("MultSelection");
-    centrality = centr->GetMultiplicityPercentile("V0M", kTRUE);
-  }
-  if (centrality < fRequireMinCentrality || centrality > fRequireMaxCentrality) {
-    PostData(1, fList);
-    return;
-  }
 
-  /// Primary vertex displacement cut. This cut is harcoded and it is equal to 10 cm of max
-  /// displacement in z with respect to the center of the coordinate system.
-  fPrimaryVertex = (AliVVertex*)ev->GetPrimaryVertex();
-  if(TMath::Abs(fPrimaryVertex->GetZ()) > 10.) {
-    PostData(1, fList);
-    return;
-  }
+  /// The centrality selection in PbPb uses the percentile determined with V0.
+  float centrality = fEventCut.GetCentrality();
 
   /// The magnetic field cut - enabled only if fRequireMagneticField \f$\neq 0\f$ - selects only
   /// events with magnetic field with the same sign of fRequireMagneticField
@@ -488,7 +483,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fATPCeLoss->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
       }
       if (!PassesPIDSelection(track)) continue;
-      float tpc_n_sigma = fPID->GetTPCResponse().GetNumberOfSigmas(track, fParticle);
+      float tpc_n_sigma = GetTPCsigmas(track);
       if (track->Charge() > 0) {
         fMDCAxyTPC->Fill(centrality, pT, dca[0]);
         fMDCAzTPC->Fill(centrality, pT, dca[1]);
@@ -509,6 +504,18 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       } else {
         fATOFsignal->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);
         fATOFphiSignal->Fill(track->Phi(),pT,m - fPDGMassOverZ * fPDGMassOverZ);
+      }
+
+      AliTOFPIDResponse& tofPid = fPID->GetTOFResponse();
+      for (int iS = 0; iS < 5; ++iS) {
+        const float expt0 = tofPid.GetExpectedSignal(track,kSpecies[iS]);
+        const float sigma = tofPid.GetExpectedSigma(track->P(),expt0,kSpecies[iS]);
+        const float smearing = fTOFfunction->GetRandom() + gRandom->Gaus(0., sqrt(sigma * sigma - tofPid.GetTimeResolution() * tofPid.GetTimeResolution()));
+        const float expBeta = track->GetIntegratedLength() / ((expt0 + smearing) * LIGHT_SPEED);
+        if (expBeta > EPS) {
+          const float expM = track->P() * track->P() * (1.f / (expBeta * expBeta) - 1.f);
+          fTOFtemplates[iS]->Fill(centrality,pT,expM - fPDGMassOverZ * fPDGMassOverZ); 
+        }
       }
     }
 
@@ -668,6 +675,21 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
       fCustomTPCpid.AddAt(par[i],i);
     fCustomTPCpid.AddAt(sigma, 5);
   }
+}
+
+float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
+  if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
+    AliTPCPIDResponse &tpcPidResp = fPID->GetTPCResponse();
+    return tpcPidResp.GetNumberOfSigmas(t, fParticle);
+  } else {
+    const float p = t->GetTPCmomentum() / fPDGMassOverZ;
+    const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
+        fCustomTPCpid[2], fCustomTPCpid[3],
+        fCustomTPCpid[4]);
+    return (t->GetTPCsignal() - r) / (fCustomTPCpid[5] * r);
+  }
+
+
 }
 
 /// This function checks if the track passes the PID selection
