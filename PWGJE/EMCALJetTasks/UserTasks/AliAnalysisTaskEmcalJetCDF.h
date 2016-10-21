@@ -114,6 +114,27 @@ namespace NS_AliAnalysisTaskEmcalJetCDF {
                                 const char* tag        = "CDF"
                               );
 
+  /// Set parameters of a jet container
+  /// \param AliJetContainer* jetCont : jet container pointer
+  /// \param Float_t jetptmin : min pt of jets in this container (default = 1.)
+  /// \param Float_t jetptmax : max pt of jets in this container (default = 500.)
+  /// \param Float_t jetareacutperc : cut jets under percentage of area given by algo radius (default = 0.)
+  /// \param Int_t leadhadtype : 0 = charged, 1 = neutral, 2 = both (default = 2)
+  /// \param Int_t nLeadJets : how many jets are to be considered the leading jet(s) (default = 1)
+  /// \param Float_t mintrackpt : min track constituent pt to accept the jet (default = 0.15)
+  /// \param Float_t maxtrackpt : max track constituent pt to accept the jet (default = 1000.)
+  /// \return AliJetContainer*
+  TObject* jetContSetParams (
+                             AliJetContainer* jetCont,
+                             Float_t jetptmin = 1.,
+                             Float_t jetptmax = 500.,
+                             Float_t jetareacutperc = 0.,
+                             Int_t leadhadtype = 2,
+                             Int_t nLeadJets = 1,
+                             Float_t mintrackpt = 0.15,
+                             Float_t maxtrackpt = 1000.
+                            );
+
 }
 
 #endif
