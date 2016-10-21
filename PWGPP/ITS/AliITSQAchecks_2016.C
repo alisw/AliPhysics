@@ -42,13 +42,13 @@ void PlotPID(TFile* fildat,TCanvas**& clist,Int_t& cnum);
 
 
 //_______________________________________________________________________
-//void AliITSQAchecks_pp_2016(TString option="local",             // local analysis version
+//void AliITSQAchecks_pp(TString option="local",             // local analysis version
 //                              Int_t nRun=257912,
 //                              TString filenamedata= "QAresults_barrel_257912.root",
 //                              TString filenameMC="QAresults_barrel_257912.root",
 //                              Int_t nRunMC=257912){
 
-/*void AliITSQAchecks_pp_2016(TString option="grid",                // grid analysis version
+/*void AliITSQAchecks_pp(TString option="grid",                // grid analysis version
                                        Int_t nRun=244540,
 //                                       //TString filenamedata="alien:///alice/cern.ch/user/g/germain/data/2016/LHC16c/000251255/quiet_beams_pass1/QAresults.root",
 //                                       //TString filenameMC="alien:///alice/cern.ch/user/g/germain/data/2016/LHC16c/000251255/quiet_beams_pass1/QAresults.root",
@@ -56,7 +56,7 @@ void PlotPID(TFile* fildat,TCanvas**& clist,Int_t& cnum);
                                        TString filenameMC="alien:///alice/data/2015/LHC15n/000244540/pass2/QAresults.root",
                                        Int_t nRunMC=245829){
 */
-void AliITSQAchecks_2016(TString option="grid",                // grid analysis version
+void AliITSQAchecks(TString option="grid",                // grid analysis version
                                       Int_t nRun=244340,
                                       //                                  TString filenamedata="alien:///alice/data/2015/LHC15o/000245064/lowIR_standaloneITS/QAresults.root",
                                       TString filenamedata="alien:///alice/data/2015/LHC15n/000244340/pass2/PWGPP/DPG_pp/3_20161012-1435/AnalysisResults.root",
