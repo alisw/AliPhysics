@@ -55,6 +55,8 @@ AliAnalysisTaskSimpleSP::AliAnalysisTaskSimpleSP(const char *name, Bool_t usePhi
   fRelDiffMsub(1.0),
   fApplyCorrectionForNUA(kFALSE),
   fHarmonic(2),
+  fWeights(kFALSE),
+  fScaling(kTRUE),
   fNormalizationType(1),
   fV0SanityCheck(0),
   fTotalQvector(NULL) 
@@ -87,6 +89,8 @@ AliAnalysisTaskSimpleSP::AliAnalysisTaskSimpleSP() :
   fRelDiffMsub(1.0),
   fApplyCorrectionForNUA(kFALSE),
   fHarmonic(0),
+  fWeights(kFALSE),
+  fScaling(kTRUE),
   fNormalizationType(1),
   fV0SanityCheck(0),
   fTotalQvector(NULL) 
@@ -131,6 +135,8 @@ void AliAnalysisTaskSimpleSP::UserCreateOutputObjects()
   fSP->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
   // harmonic: 
   fSP->SetHarmonic(fHarmonic);
+  fSP->SetWeights(fWeights);
+  fSP->SetScaling(fScaling);
   fSP->SetNormalizationType( fNormalizationType );
   fSP->SetV0SanityCheck(fV0SanityCheck);
   // total Q-vector:
