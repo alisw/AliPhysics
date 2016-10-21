@@ -1291,7 +1291,8 @@ void AliMultSelectionTask::UserExec(Option_t *)
 	lSelection -> SetThisEventPassesTrackletVsCluster   ( fEvSel_PassesTrackletVsCluster   ); 
 	lSelection -> SetThisEventIsNotAsymmetricInVZERO    ( fEvSel_IsNotAsymmetricInVZERO    ); 
 	lSelection -> SetThisEventIsNotIncompleteDAQ        ( fEvSel_IsNotIncompleteDAQ        ); 
-
+    lSelection -> SetThisEventHasGoodVertex2016         ( fEvSel_HasGoodVertex2016         );
+        
         if( lMultCuts->GetTriggerCut()    && ! fEvSel_Triggered           )
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejTrigger);
 
@@ -1320,7 +1321,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
             lSelection->SetEvSelCode(AliMultSelectionCuts::kRejIncompleteDAQ);
     
         if( lMultCuts->GetHasGoodVertex2016()    && ! fEvSel_HasGoodVertex2016 )
-            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejIncompleteDAQ);
+            lSelection->SetEvSelCode(AliMultSelectionCuts::kRejNotGoodVertex2016);
         
         //Just in case you want to store it for debugging
         fEvSelCode = lSelection->GetEvSelCode();
