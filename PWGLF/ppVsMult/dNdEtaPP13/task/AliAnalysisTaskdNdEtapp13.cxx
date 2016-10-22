@@ -749,6 +749,7 @@ if (fUseBCMod & !fUseMC){
     ((TH2*)fHistosCustom->UncheckedAt(kHTotalNchNoPhSel))->Fill(totalNch,fCurrCentBin, fWeight);
     ((TH2*)fHistosCustom->UncheckedAt(kHZVtxMCNoPhSel))->Fill(fVtxMC[2],fCurrCentBin, fWeight);
     if (fIsSelected) ((TH2*)fHistosCustom->UncheckedAt(kHZVtxMCNoVtSel))->Fill(fVtxMC[2],fCurrCentBin, fWeight);
+
     if ((fVtxMC[2] < fZVertexMin || fVtxMC[2] > fZVertexMax)) hstat->Fill(kBinEntries+kEvInMltBin + kEntriesPerBin*fCurrCentBin, fWeight);
     //
   }
