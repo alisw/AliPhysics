@@ -291,8 +291,6 @@ protected:
 	TF1 *fTPCClusterErrorParamY; // parameterization of the TPC cluster error in y and z
 	TF1 *fTPCClusterErrorParamZ; // parameterization of the TPC cluster error in y and z
 	const Double_t *fTPCClusterErrInner; // systematic error of the cluster - used to downscale the information
-	const Double_t *fTPCClusterErrInnerDeepY; // systematic error of the Y cluster err for additional, slow decaying distortions
-	const Double_t *fTPCClusterErrInnerDeepZ; // systematic error of the Z cluster err for additional, slow decaying distortions
 	const Double_t *fTPCSystematicErr; // systematic errors in the track parameters - to be added to TPC covariance matrix
 	const Double_t *fTPCClusterErr; // systematic error of the cluster - used e.g in OpenGG run to provide better cluster to track association efficiency
 	Bool_t fTPCUseSystematicCorrelation; // switch to use the correlation for the sys

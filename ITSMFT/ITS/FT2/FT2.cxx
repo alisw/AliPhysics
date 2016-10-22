@@ -138,8 +138,6 @@ fITSRec(0)
 ,fTPCClusterErrorParamY(0)
 ,fTPCClusterErrorParamZ(0)
 ,fTPCClusterErrInner(0)
-,fTPCClusterErrInnerDeepY(0)
-,fTPCClusterErrInnerDeepZ(0)
 ,fTPCSystematicErr(0)
 ,fTPCClusterErr(0)
 ,fTPCUseSystematicCorrelation(0)
@@ -290,8 +288,6 @@ void FT2::InitDetector(Bool_t addTPC,Float_t scEdge)
 	fTPCRecoParam = calib->GetRecoParam(1); // to be checked with marian
 	//
 	fTPCClusterErrInner						= fTPCRecoParam->GetSystematicErrorClusterInner();
-	fTPCClusterErrInnerDeepY			= fTPCRecoParam->GetSystematicErrorClusterInnerDeepY();
-	fTPCClusterErrInnerDeepZ			= fTPCRecoParam->GetSystematicErrorClusterInnerDeepZ();
 	fTPCClusterErr								= fTPCRecoParam->GetSystematicErrorCluster();
 	fTPCSystematicErr							= fTPCRecoParam->GetSystematicError();
 	fTPCUseSystematicCorrelation	= fTPCRecoParam->GetUseSystematicCorrelation();
@@ -537,9 +533,9 @@ Bool_t FT2::ProcessTrack(TParticle* part, AliVertex* vtx)
 		}
 		//
 		Double_t pointChi[3] = {1./AliMathBase::BetheBlochAleph(0.0001+part->P()/TDatabasePDG::Instance()->GetParticle(fProbe.fAbsPdgCode)->Mass()),
-			abs(part->Eta()),fTrueMCtrackMult};
+					abs(part->Eta()),double(fTrueMCtrackMult)};
 		//
-		Double_t pointMatch[3] = {fNClTPC,TMath::Abs(part->Eta()),(1./part->Pt())};
+		Double_t pointMatch[3] = {double(fNClTPC),TMath::Abs(part->Eta()),(1./part->Pt())};
 		//
 		Double_t templateFmcMatchingEff = fItsTpcMatchingfMC->Eval(pointMatch);
 		//
@@ -1053,7 +1049,7 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 	Double_t point[3] = {
 		1./AliMathBase::BetheBlochAleph(0.0001+part->P()/TDatabasePDG::Instance()->GetParticle(fProbe.fAbsPdgCode)->Mass()),
 		abs(part->Eta()),
-		fTrueMCtrackMult};
+		double(fTrueMCtrackMult)};
 	//
 	
 	
@@ -1206,7 +1202,6 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 			addErrY=fTPCClusterErrInner[0]*TMath::Exp(-drY/fTPCClusterErrInner[1]);
 			Double_t addErrZ = addErrY;
 			//
-			if (fTPCClusterErrInnerDeepY[0]>0) addErrY += fTPCClusterErrInnerDeepY[0]*TMath::Exp(-drY/fTPCClusterErrInnerDeepY[1]);
 			tpcSigY+=addErrY*addErrY;
 			tpcSigY+=fTPCClusterErr[0]*fTPCClusterErr[0];
 			//
@@ -1216,7 +1211,6 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 			if(tpcLr.isEdge) tpcSigZ+=0.5;
 			tpcSigZ*=tpcSigZ;
 			//
-			if (fTPCClusterErrInnerDeepZ[0]>0) addErrZ += fTPCClusterErrInnerDeepZ[0]*TMath::Exp(-drY/fTPCClusterErrInnerDeepZ[1]);
 			tpcSigZ+=addErrZ*addErrZ;
 			tpcSigZ+=fTPCClusterErr[1]*fTPCClusterErr[1];
 			//
@@ -1233,8 +1227,6 @@ Bool_t FT2::ReconstructProbe(TParticle* part)
 			printf("InnerErr[1]\t\t%f\n",fTPCClusterErrInner[1]);
 			printf("sigma_Y?\t\t%f\n",fTPCClusterErrorParamY->Eval(zDriftLength));
 			printf("drY?\t\t\t%f\n",drY);
-			printf("DeepY[0]?\t\t%f\n",fTPCClusterErrInnerDeepY[0]);
-			printf("DeepY[1]?\t\t%f\n",fTPCClusterErrInnerDeepY[1]);
 			printf("fTPCClusterErr[0]?\t%f\n",fTPCClusterErr[0]);
 			printf("sigma_Z?\t\t%f\n",fTPCClusterErrorParamZ->Eval(zDriftLength));
 //			printf("drZ?\t\t\t%f\n",drZ);
