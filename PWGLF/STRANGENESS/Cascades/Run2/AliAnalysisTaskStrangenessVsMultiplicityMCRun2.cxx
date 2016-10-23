@@ -1295,6 +1295,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             
             lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            lCascVtxer.SetCuts(fCascadeVertexerSels);
             
             lV0vtxer.Tracks2V0vertices(lESDevent);
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
@@ -1304,6 +1307,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             
             lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+            
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            lCascVtxer.SetCuts(fCascadeVertexerSels);
             
             lV0vtxer.Tracks2V0vertices(lESDevent);
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
