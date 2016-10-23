@@ -444,6 +444,8 @@ void AddSPmethod(char *name, double minEtaA, double maxEtaA, double minEtaB, dou
    tskSP->SetHarmonic(harmonic);
    tskSP->SetTotalQvector(Qvector);
    //tskSP->SetBehaveAsEP();
+   tskSP->SetUseWeights(kFALSE);
+   tskSP->SetUseScaling(kTRUE);
    if (shrink) tskSP->SetBookOnlyBasicCCH(kTRUE);
    mgr->AddTask(tskSP);
    mgr->ConnectInput(tskSP, 0, flowEvent2);
