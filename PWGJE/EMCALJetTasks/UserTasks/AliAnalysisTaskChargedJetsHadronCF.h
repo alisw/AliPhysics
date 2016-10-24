@@ -29,11 +29,14 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   // ######### SETTERS/GETTERS
-  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t matchMinPt, Double_t matchMaxPt, Int_t nLeading)
+  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t maxSharedFraction, Double_t maxEmbeddingOffset,  Double_t matchMinPt, Double_t matchMaxPt, Int_t nLeading)
   {
     fJetMatchingMaxDistance = maxDistance;
     fJetMatchingArrayName = matchArray;
     fJetMatchingMinSharedFraction = minSharedFraction;
+    fJetMatchingMaxSharedFraction = maxSharedFraction;
+    fJetMatchingMaxEmbeddingOffset = maxEmbeddingOffset;
+
     fJetMatchingMinPt = matchMinPt;
     fJetMatchingMaxPt = matchMaxPt;
     fJetMatchingUseOnlyNLeading = nLeading; // currently only 1,2, or 0 (all) possible
@@ -89,6 +92,8 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TString                     fJetMatchingArrayName;                    ///< Name of array used to match jets
   Double_t                    fJetMatchingMaxDistance;                  ///< Max distance allowed to accept a matching jet (for embedding)
   Double_t                    fJetMatchingMinSharedFraction;            ///< An embedded jet must carry this pt fraction to be accepted
+  Double_t                    fJetMatchingMaxSharedFraction;            ///< An embedded jet must NOT carry more than max fraction + max embedding offset
+  Double_t                    fJetMatchingMaxEmbeddingOffset;           ///< An embedded jet must NOT carry more than max fraction + max embedding offset
   Double_t                    fJetMatchingMinPt;                        ///< Min pt cut applied on the matchArray jets
   Double_t                    fJetMatchingMaxPt;                        ///< Max pt cut applied on the matchArray jets
   Int_t                       fJetMatchingUseOnlyNLeading;              ///< Number of matched leading jets that will be used
