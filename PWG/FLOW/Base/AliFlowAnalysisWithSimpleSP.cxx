@@ -152,7 +152,7 @@ void AliFlowAnalysisWithSimpleSP::Init() {
   fHistProConfig->Fill(4,fHarmonic);
   fHistList->Add(fHistProConfig);
 
-  fHistProQaQbNorm = new TProfile("FlowPro_QaQbNorm_SP","FlowPro_QaQbNorm_SP", 1, 0.5, 1.5,"s");
+  fHistProQaQbNorm = new TProfile("FlowPro_QaQbNorm_SP","FlowPro_QaQbNorm_SP", 10000, -1000, 1000);
   fHistProQaQbNorm->SetYTitle("<QaQb/Na/Nb>");
   errorRelated->Add(fHistProQaQbNorm);
 
@@ -249,11 +249,12 @@ void AliFlowAnalysisWithSimpleSP::Init() {
     fHistProQNorm->SetYTitle("<|Qa+Qb|>");
     tQARelated->Add(fHistProQNorm);
 
-    fHistProQaQb  = new TProfile("FlowPro_QaQb_SP","FlowPro_QaQb_SP",         1,0.5,1.5,"s");
+    fHistProQaQb  = new TH1D("FlowPro_QaQb_SP","FlowPro_QaQb_SP", 10000,-100,100);
     fHistProQaQb->SetYTitle("<QaQb>");
+    fHistProQaQb->StatOverflows(kTRUE); 
     tQARelated->Add(fHistProQaQb);
 
-    fHistProQaQbM = new TProfile("FlowPro_QaQbvsM_SP","FlowPro_QaQbvsM_SP",1000,0.0,10000);
+    fHistProQaQbM = new TH1D("FlowPro_QaQbvsM_SP","FlowPro_QaQbvsM_SP",1000,0.0,10000);
     fHistProQaQbM->SetYTitle("<QaQb>");
     fHistProQaQbM->SetXTitle("M");
     fHistProQaQbM->Sumw2();
@@ -284,9 +285,10 @@ void AliFlowAnalysisWithSimpleSP::Init() {
     fResolution->SetXTitle("Cos2(#phi_a - #phi_b)");
     tQARelated->Add(fResolution);
 
-    fHistQaQb = new TH1D("Flow_QaQb_SP","Flow_QaQb_SP",200,-100.,100.);
+    fHistQaQb = new TH1D("Flow_QaQb_SP","Flow_QaQb_SP",20000,-100.,100.);
     fHistQaQb->SetYTitle("dN/dQaQb");
     fHistQaQb->SetXTitle("dQaQb");
+    fHistQaQb->StatOverflows(kTRUE);
     tQARelated->Add(fHistQaQb);
 
     fHistQaQbCos = new TH1D("Flow_QaQbCos_SP","Flow_QaQbCos_SP",63,0.,TMath::Pi());
@@ -372,19 +374,26 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
   // this profile stores the scalar product of the two 
   // subevent q-vectors (the denominator or 'resolution' of the
   // measurement)
-  fHistProQaQbNorm->Fill(1., dQaQb/dNa/dNb); 
+  // fHistProQaQbNorm->Fill(1., dQaQb/dNa/dNb); 
 
   //loop over the tracks of the event
   AliFlowTrackSimple*   pTrack = NULL; 
   Int_t iNumberOfTracks = anEvent->NumberOfTracks(); 
+  Double_t dMq = 0;
   for (Int_t i=0;i<iNumberOfTracks;i++) {
+    // so this is a track loop ...
     pTrack = anEvent->GetTrack(i) ; 
     if (!pTrack) continue;
     Double_t dPhi = pTrack->Phi();
     Double_t dPt  = pTrack->Pt();
     Double_t dEta = pTrack->Eta();
 
+    // make sure it's not a vzero track
+    if(TMath::Abs(dEta) > 0.9) continue;
+    else printf(" doing correlation with dEta %.4f \n", dEta);
+
     //calculate vU
+    // this is the track q-vecotr (small u)
     TVector2 vU;
     Double_t dUX = TMath::Cos(fHarmonic*dPhi);
     Double_t dUY = TMath::Sin(fHarmonic*dPhi);
@@ -392,8 +401,9 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
 
     //      01    10     11   <===   fTotalQVector
     // Q ?= Qa or Qb or QaQb
+    // this will be the vector for hte scalar product itself
     vQm.Set(0.0,0.0); //start the loop fresh
-    Double_t dMq=0;
+    dMq=0;
     if( (fTotalQvector%2)>0 ) { // 01 or 11
       vQm += vQa;
       dMq += dMa;
@@ -403,58 +413,8 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
       dMq += dMb;
     }
 
-    //remove track if in subevent
-    for(Int_t inSubEvent=0; inSubEvent<2; ++inSubEvent) {
-      if( !pTrack->InSubevent( inSubEvent ) )
-        continue;
-      if(inSubEvent==0)
-        if( (fTotalQvector%2)!=1 )
-          continue;
-      if(inSubEvent==1)
-        if( fTotalQvector<2 )
-          continue;
-      Double_t dW=1;
-      //Double_t dPhiCenter = dPhi;
-      //if phi weights are used
-      if(fUsePhiWeights && fPhiWeightsSub[inSubEvent]) {
-        Int_t iNBinsPhiSub = fPhiWeightsSub[inSubEvent]->GetNbinsX();
-        Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub/TMath::TwoPi()));
-        dW = fPhiWeightsSub[inSubEvent]->GetBinContent(phiBin);
-        //dPhiCenter = fPhiWeightsSub[inSubEvent]->GetBinCenter(phiBin);
-      }
-      //Double_t dQmX = vQm.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter);
-      //Double_t dQmY = vQm.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter);
-      //vQm.Set(dQmX,dQmY);
-      
-      //subtrack the track from the Q vector, but only if it was used to construct this
-      //Q vector: i.e. check wether it has the same tags and is in the same subevent
-      //this is especially important for the daughters (as for the mother it is already checked)
-      //commented out for now as for the V0 this is a null-op by definition
-      //Int_t numberOfsubtractedDaughters=vQm.SubtractTrackWithDaughters(pTrack,dW);
-      
-      //if(!fMinimalBook) {
-      //  fHistNumberOfSubtractedDaughters->Fill(numberOfsubtractedDaughters);
-      //}
-
-      dMq = dMq-dW*pTrack->Weight();
-    }
     dNq = dMq;//fNormalizationType ? dMq : vQm.Mod();
     dWq = 1;//fNormalizationType ? dMq : 1;
-
-    //Filling QA (for compatibility with previous version)
-    if(!fMinimalBook) {
-      // equal to the 'norm' flavor if scaling is set to false
-      fHistProQaQb->Fill(1,vQa*vQb);
-      fHistProQaQbM->Fill(anEvent->GetNumberOfRPs()+0.5,(vQa*vQb)/dMa/dMb,dMa*dMb);
-      fHistQaQbCos->Fill(TMath::ACos((vQa*vQb)/vQa.Mod()/vQb.Mod()));
-      fResolution->Fill( TMath::Cos( vQa.Phi()-vQb.Phi() ) );
-      fHistQaQb->Fill(vQa*vQb);
-      fHistMaMb->Fill(dMb,dMa);
-      fHistProQNorm->Fill(1,vQm.Mod()/dMq,dMq);
-      fHistQNormQaQbNorm->Fill((vQa*vQb)/dMa/dMb,vQm.Mod()/dMq);
-      fHistQaNormMa->Fill(dMa,vQa.Mod()/dMa);
-      fHistQbNormMb->Fill(dMb,vQb.Mod()/dMb);
-    }
 
     // this little guy is the enumerator of the final equation
     Double_t dUQ = vU*vQm;
@@ -487,6 +447,21 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
     */
     }
   }//loop over tracks
+    //Filling QA (for compatibility with previous version)
+    if(!fMinimalBook) {
+      // equal to the 'norm' flavor if scaling is set to false
+  //    fHistProQaQb->Fill(1,vQa*vQb);
+  //    fHistProQaQbM->Fill(anEvent->GetNumberOfRPs()+0.5,(vQa*vQb)/dMa/dMb,dMa*dMb);
+      fHistQaQbCos->Fill(TMath::ACos((vQa*vQb)/vQa.Mod()/vQb.Mod()));
+      fResolution->Fill( TMath::Cos( vQa.Phi()-vQb.Phi() ) );
+      fHistQaQb->Fill(vQa*vQb/dNa/dNb);
+      fHistMaMb->Fill(dMb,dMa);
+  //    fHistProQNorm->Fill(1,vQm.Mod()/dMq,dMq);
+      fHistQNormQaQbNorm->Fill((vQa*vQb)/dMa/dMb,vQm.Mod()/dMq);
+      fHistQaNormMa->Fill(dMa,vQa.Mod()/dMa);
+      fHistQbNormMb->Fill(dMb,vQb.Mod()/dMb);
+    }
+
 
 }
 
@@ -503,6 +478,7 @@ void AliFlowAnalysisWithSimpleSP::GetOutputHistograms(TList *outputListHistos){
   TList *uQ = (TList*) fHistList->FindObject("uQ");
   TList *nua = (TList*) fHistList->FindObject("NUA");
   TList *error = (TList*) fHistList->FindObject("error");
+  TList* tQARelated = (TList*) fHistList->FindObject("QA");
 
   fHistProQaQbNorm = (TProfile*) error->FindObject("FlowPro_QaQbNorm_SP");
   if(!fHistProQaQbNorm) printf("Error loading fHistProQaQbNorm\n");
@@ -533,6 +509,7 @@ void AliFlowAnalysisWithSimpleSP::GetOutputHistograms(TList *outputListHistos){
     fUsePhiWeights = (Int_t) fHistProConfig->GetBinContent(3);
     fHarmonic = (Int_t) fHistProConfig->GetBinContent(4);
   }
+  fHistQaQb = (TH1D*)tQARelated->FindObject("Flow_QaQb_SP");
 }            
 
 //--------------------------------------------------------------------            
@@ -547,21 +524,25 @@ void AliFlowAnalysisWithSimpleSP::Finish() {
   
   printf("*************************************\n");
   printf("*************************************\n");
-  printf("      Integrated flow from           \n");
+  printf("      Integrated flow from  SIMPLE         \n");
   printf("         Scalar Product              \n\n");
-  if(!fNormalizationType)
-    printf("          (BehaveAsEP)               \n\n");
   
   //Calculate reference flow
   //----------------------------------
   //weighted average over (QaQb/NaNb) with weight (NaNb)
-  Double_t dEntriesQaQb = fHistProQaQbNorm->GetEntries();
+  
+  
+  if(!fHistQaQb) {
+      printf(" PANIC: run with full booking !");
+      return;
+  }
+  Double_t dEntriesQaQb = fHistQaQb->GetEntries();
   if( dEntriesQaQb < 1 )
     return;
-  Double_t dQaQb  = fHistProQaQbNorm->GetBinContent(1);
+  Double_t dQaQb  = fHistQaQb->GetMean();
   if( dQaQb < 0 )
     return;
-  Double_t dSpreadQaQb = fHistProQaQbNorm->GetBinError(1);
+  Double_t dSpreadQaQb = fHistQaQb->GetRMS();
 
   /*
   //NUA qq:
@@ -574,7 +555,13 @@ void AliFlowAnalysisWithSimpleSP::Finish() {
   printf("QaQb = %f +- %f\n", dQaQb, (dSpreadQaQb/TMath::Sqrt(dEntriesQaQb)) );
   */
   
-  // this is the `resolution' 
+  // this is the `resolution'
+  if(dQaQb <= .0 ) {
+    printf(" Panic! the average of QaQb <= 0! Probably you need to run on more events !\n");
+    printf("  \tusing dummy value 1 to avoid segfault \n");
+    dQaQb = 1.;
+    dSpreadQaQb = 1.;
+  }  
   Double_t dV = TMath::Sqrt(dQaQb);
   
   printf("ResSub (sqrt of scalar product of sub-event qvectors) = %f\n", dV );
@@ -636,10 +623,8 @@ void AliFlowAnalysisWithSimpleSP::Finish() {
       fCommonHistsRes->FillDifferentialFlowPtRP(  b, dv2pro, dv2ProErr);   
     if( (iRFPorPOI==0)&&(iPTorETA==1) )
       fCommonHistsRes->FillDifferentialFlowEtaRP( b, dv2pro, dv2ProErr);   
-    if( (iRFPorPOI==1)&&(iPTorETA==0) ) {
-      fCommonHistsRes->FillDifferentialFlowPtPOI( b, dv2pro, dv2ProErr);
-      cout << " differential v2 in pt bin " << b << " is " << dv2pro << " +- " << dv2ProErr << endl;
-    }   
+    if( (iRFPorPOI==1)&&(iPTorETA==0) ) 
+      fCommonHistsRes->FillDifferentialFlowPtPOI( b, dv2pro, dv2ProErr); 
     if( (iRFPorPOI==1)&&(iPTorETA==1) )
       fCommonHistsRes->FillDifferentialFlowEtaPOI(b, dv2pro, dv2ProErr);
     //printf("POI %d | PT %d >>> %f +- %f\n",iRFPorPOI,iPTorETA,dv2pro,dv2ProErr);
