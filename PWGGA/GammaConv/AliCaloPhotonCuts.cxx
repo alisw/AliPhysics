@@ -802,7 +802,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterM20M02BeforeQA->Sumw2();
         fHistClusterM20M02AfterQA->Sumw2();
       }
-//----------------
+      //----------------
     }
   }
 
@@ -824,7 +824,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiExotics     = new TH2F(Form("EtaPhi_Exotics %s",GetCutNumber().Data()),"EtaPhi_Exotics",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
       fHistograms->Add(fHistClusterEtavsPhiExotics);
     }
-    fHistClusterEM02Exotics           = new TH2F(Form("EVsM02_Exotics %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",100,0,50,40,0,4);
+    fHistClusterEM02Exotics           = new TH2F(Form("EVsM02_Exotics %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",100,0,50,200,0,4);
     fHistograms->Add(fHistClusterEM02Exotics);
     fHistClusterEnergyvsNCellsExotics = new TH2F(Form("ClusterEnergyVsNCells_Exotics %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_Exotics",100,0,50,50,0,50);
     fHistograms->Add(fHistClusterEnergyvsNCellsExotics);
@@ -2251,7 +2251,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
   if( !fUseDistTrackToCluster ) return;
 
   // not yet fully implemented + tested for PHOS
-  if( fClusterType != 1) return;
+//   if( fClusterType != 1) return;
 
   fVectorMatchedClusterIDs.clear();
 
