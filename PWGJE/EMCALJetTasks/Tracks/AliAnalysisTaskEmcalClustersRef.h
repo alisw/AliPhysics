@@ -3,9 +3,6 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <string>
-#include <vector>
-
 #include "AliAnalysisTaskEmcalTriggerBase.h"
 #include "AliCutValueRange.h"
 #include <TCustomBinning.h>
