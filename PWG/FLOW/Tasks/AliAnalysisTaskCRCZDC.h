@@ -305,8 +305,8 @@ private:
 // TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
 // TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
  TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
- TProfile *fZNCTower[fCRCMaxnRun][5];		//! ZNC tower spectra
- TProfile *fZNATower[fCRCMaxnRun][5];		//! ZNA tower spectra
+// TProfile *fZNCTower[fCRCMaxnRun][5];		//! ZNC tower spectra
+// TProfile *fZNATower[fCRCMaxnRun][5];		//! ZNA tower spectra
  TClonesArray* fStack; //!
  TList *fSpectraMCList;   //! list with pt spectra
  TH1F *fPtSpecGen[10];		//! PtSpecGen
