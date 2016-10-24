@@ -97,6 +97,7 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
   task->SetTreeInactiveBranch("fTracks.fTrackLength");
   task->SetTreeInactiveBranch("fTracks.fMassForTracking");
+  task->SetTreeInactiveBranch("fTracks.fChi2TPCConstrainedVsGlobal");
   //task->SetTreeInactiveBranch("fTracks.fITSclusterMap");
   task->SetTreeInactiveBranch("fTracks.fITSSharedclusterMap");
   task->SetTreeInactiveBranch("fTracks.fITSsignal");
@@ -108,6 +109,7 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fTracks.fTPCClusterMap");
   task->SetTreeInactiveBranch("fTracks.fTPCsignal");
   task->SetTreeInactiveBranch("fTracks.fTPCsignalN");
+  task->SetTreeInactiveBranch("fTracks.fTPCnSig*");
   task->SetTreeInactiveBranch("fTracks.fTPCchi2");
   task->SetTreeInactiveBranch("fTracks.fTPCActiveLength");
   task->SetTreeInactiveBranch("fTracks.fTPCGeomLength");
@@ -123,6 +125,7 @@ AliAnalysisTask *AddTask_oton_TTree(Int_t reducedEventType=-1, Bool_t writeTree=
   task->SetTreeInactiveBranch("fTracks.fTOFdx");
   task->SetTreeInactiveBranch("fTracks.fTOFdz");
   task->SetTreeInactiveBranch("fTracks.fTOFchi2");
+  task->SetTreeInactiveBranch("fTracks.fTOFnSig*");
   task->SetTreeInactiveBranch("fTracks.fTOFdeltaBC");
   task->SetTreeInactiveBranch("fTracks.fTRDpid*");
   task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
