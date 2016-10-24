@@ -16,7 +16,6 @@
 #include <bitset>
 #include <iostream>
 #include <map>
-#include <sstream>
 #include <vector>
 
 #include <TArrayD.h>
@@ -193,14 +192,14 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     // fill histograms allEta
     for(const auto & trg : fSelectedTriggers){
       selpatches = nullptr;
-      if(trg.Contains("EJ2") != std::string::npos) selpatches = &ej2patches;
-      if(trg.Contains("DJ2") != std::string::npos) selpatches = &dj2patches;
-      if(trg.Contains("EJ1") != std::string::npos) selpatches = &ej1patches;
-      if(trg.Contains("DJ1") != std::string::npos) selpatches = &dj1patches;
-      if(trg.Contains("EG2") != std::string::npos) selpatches = &eg2patches;
-      if(trg.Contains("DG2") != std::string::npos) selpatches = &dg2patches;
-      if(trg.Contains("EG1") != std::string::npos) selpatches = &eg1patches;
-      if(trg.Contains("DG1") != std::string::npos) selpatches = &dg1patches;
+      if(trg.Contains("EJ2")) selpatches = &ej2patches;
+      if(trg.Contains("DJ2")) selpatches = &dj2patches;
+      if(trg.Contains("EJ1")) selpatches = &ej1patches;
+      if(trg.Contains("DJ1")) selpatches = &dj1patches;
+      if(trg.Contains("EG2")) selpatches = &eg2patches;
+      if(trg.Contains("DG2")) selpatches = &dg2patches;
+      if(trg.Contains("EG1")) selpatches = &eg1patches;
+      if(trg.Contains("DG1")) selpatches = &dg1patches;
       FillClusterHistograms(trg.Data(), energy, et, eta, phi, nullptr);
     }
   }
