@@ -423,13 +423,13 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
 //________________________________________________________________________
 void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
- for(Int_t r=0;r<fCRCMaxnRun;r++) {
-  fCRCQVecListRun[r] = NULL;
-   for(Int_t i=0;i<5;i++) {
-     fZNCTower[r][i] = NULL;
-     fZNATower[r][i] = NULL;
-   }
- }
+// for(Int_t r=0;r<fCRCMaxnRun;r++) {
+//  fCRCQVecListRun[r] = NULL;
+//   for(Int_t i=0;i<fnCen;i++) {
+//     fPtPhiEtaRbRFB128[r][i] = NULL;
+//     fPtPhiEtaRbRFB768[r][i] = NULL;
+//   }
+// }
 //  for(Int_t k=0;k<fCRCnTow;k++) {
 //    fhnTowerGain[k] = NULL;
 //    for(Int_t i=0;i<fnCen;i++) {
@@ -504,19 +504,19 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fSpectraMCList->SetName("Spectra");
   fOutput->Add(fSpectraMCList);
   
- Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,4.5,5.,6.,7.,8.};
- for(Int_t c=0; c<10; c++) {
-   fPtSpecGen[c] = new TH1F(Form("fPtSpecGen[%d]",c), Form("fPtSpecGen[%d]",c), 24, xmin);
-   fSpectraMCList->Add(fPtSpecGen[c]);
-   fPtSpecFB32[c] = new TH1F(Form("fPtSpecFB32[%d]",c), Form("fPtSpecFB32[%d]",c), 24, xmin);
-   fSpectraMCList->Add(fPtSpecFB32[c]);
-   fPtSpecFB96[c] = new TH1F(Form("fPtSpecFB96[%d]",c), Form("fPtSpecFB96[%d]",c), 24, xmin);
-   fSpectraMCList->Add(fPtSpecFB96[c]);
-   fPtSpecFB128[c] = new TH1F(Form("fPtSpecFB128[%d]",c), Form("fPtSpecFB128[%d]",c), 24, xmin);
-   fSpectraMCList->Add(fPtSpecFB128[c]);
-   fPtSpecFB768[c] = new TH1F(Form("fPtSpecFB768[%d]",c), Form("fPtSpecFB768[%d]",c), 24, xmin);
-   fSpectraMCList->Add(fPtSpecFB768[c]);
- }
+  Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,4.5,5.,6.,7.,8.};
+  for(Int_t c=0; c<10; c++) {
+    fPtSpecGen[c] = new TH1F(Form("fPtSpecGen[%d]",c), Form("fPtSpecGen[%d]",c), 24, xmin);
+    fSpectraMCList->Add(fPtSpecGen[c]);
+    fPtSpecFB32[c] = new TH1F(Form("fPtSpecFB32[%d]",c), Form("fPtSpecFB32[%d]",c), 24, xmin);
+    fSpectraMCList->Add(fPtSpecFB32[c]);
+    fPtSpecFB96[c] = new TH1F(Form("fPtSpecFB96[%d]",c), Form("fPtSpecFB96[%d]",c), 24, xmin);
+    fSpectraMCList->Add(fPtSpecFB96[c]);
+    fPtSpecFB128[c] = new TH1F(Form("fPtSpecFB128[%d]",c), Form("fPtSpecFB128[%d]",c), 24, xmin);
+    fSpectraMCList->Add(fPtSpecFB128[c]);
+    fPtSpecFB768[c] = new TH1F(Form("fPtSpecFB768[%d]",c), Form("fPtSpecFB768[%d]",c), 24, xmin);
+    fSpectraMCList->Add(fPtSpecFB768[c]);
+  }
  
  fAnalysisUtil = new AliAnalysisUtils();
  
@@ -732,12 +732,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fCRCQVecListRun[r]->SetOwner(kTRUE);
   fOutput->Add(fCRCQVecListRun[r]);
    
-   for(Int_t i=0;i<5;i++) {
-     fZNCTower[r][i] = new TProfile(Form("fZNCTower[%d][%d]",r,i),Form("fZNCTower[%d][%d]",r,i),100,0.,100.);
-     fCRCQVecListRun[r]->Add(fZNCTower[r][i]);
-     fZNATower[r][i] = new TProfile(Form("fZNATower[%d][%d]",r,i),Form("fZNATower[%d][%d]",r,i),100,0.,100.);
-     fCRCQVecListRun[r]->Add(fZNATower[r][i]);
-   }
+//   for(Int_t i=0;i<fnCen;i++) {
+//     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
+//     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB128[r][i]);
+//     fPtPhiEtaRbRFB768[r][i] = new TH3F(Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
+//     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
+//   }
  }
  
  PostData(2, fOutput);
@@ -1213,11 +1213,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       for(Int_t i=0; i<5; i++){
         zncEnergy += towZNC[i];
         znaEnergy += towZNA[i];
-        if(fZNCTower[RunBin][i]) fZNCTower[RunBin][i]->Fill(centrperc,towZNC[i]/1000.);
-        if(fZNATower[RunBin][i]) fZNATower[RunBin][i]->Fill(centrperc,towZNA[i]/1000.);
       }
-      fFlowEvent->SetZNCEnergy(towZNC[0]);
-      fFlowEvent->SetZNAEnergy(towZNA[0]);
+      fFlowEvent->SetZNCEnergy(zncEnergy/2.);
+      fFlowEvent->SetZNAEnergy(znaEnergy/2.);
       
       Int_t CenBin = GetCenBin(centrperc);
       if(CenBin==-1) return;
