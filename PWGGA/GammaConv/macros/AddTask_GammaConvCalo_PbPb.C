@@ -74,7 +74,8 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
                                   Bool_t    enableSortingMCLabels           = kTRUE,                  // enable sorting for MC cluster labels
                                   Bool_t    runLightOutput                  = kFALSE,                 // switch to run light output (only essential histograms for afterburner)
                                   Bool_t    doFlattening                    = kFALSE,                 // switch on centrality flattening for LHC11h
-                                  TString   fileNameInputForCentFlattening  = ""                      // file name for centrality flattening  
+                                  TString   fileNameInputForCentFlattening  = "",                     // file name for centrality flattening
+                                  Bool_t    doPrimaryTrackMatching          = kTRUE                   // enable basic track matching for all primary tracks to cluster
 
                                 ) {
 
@@ -168,6 +169,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
+  task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
 
   //create cut handler
   CutHandlerConvCalo cuts;
