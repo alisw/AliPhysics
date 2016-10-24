@@ -1489,8 +1489,8 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
   tReturnParams.useCustomFilter = true;
 
   tReturnParams.removeMisID = true;
-  tReturnParams.minInvMassReject = LambdaMass-0.005683;
-  tReturnParams.maxInvMassReject = LambdaMass+0.005683;
+  tReturnParams.minInvMassReject = LambdaMass-0.009;
+  tReturnParams.maxInvMassReject = LambdaMass+0.009;
 
   tReturnParams.useSimpleMisID = false;
   tReturnParams.buildMisIDHistograms = true;
