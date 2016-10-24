@@ -65,7 +65,6 @@ AliCorrelation3p::AliCorrelation3p(const char* name,TArrayD MBinEdges, TArrayD Z
 {
   // default constructor
 }
-
 AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
   : TNamed(other)
   , fHistograms((other.fHistograms!=NULL?(new TObjArray(*other.fHistograms)):NULL))
@@ -89,7 +88,6 @@ AliCorrelation3p::AliCorrelation3p(const AliCorrelation3p& other)
 {
   // copy constructor
 }
-
 AliCorrelation3p& AliCorrelation3p::operator=(const AliCorrelation3p& other)
 {
   // assignment operator
@@ -98,7 +96,6 @@ AliCorrelation3p& AliCorrelation3p::operator=(const AliCorrelation3p& other)
   new (this) AliCorrelation3p(other);
   return *this;
 }
-
 AliCorrelation3p::~AliCorrelation3p()
 {
   // destructor
@@ -111,7 +108,6 @@ AliCorrelation3p::~AliCorrelation3p()
   // note: mixed event is an external pointer
   fMixedEvent=NULL;
 }
-
 void AliCorrelation3p::Copy(TObject &object) const
 {
   /// overloaded from TObject: copy to target object
@@ -126,7 +122,6 @@ void AliCorrelation3p::Copy(TObject &object) const
   *target=*this;
   const_cast<AliCorrelation3p*>(this)->fMixedEvent=backupME;
 }
-
 int AliCorrelation3p::Init(const char* arguments)
 {
   /// init class and create histograms
@@ -224,7 +219,7 @@ int AliCorrelation3p::Init(const char* arguments)
     a->AddAt(new TH1D(GetNameHist("hApT"			 ,i,j),"Associated pT"					 ,100,0.0     ,(fMaxAssociatedPt>fMinAssociatedPt?fMaxAssociatedPt:fMinAssociatedPt)),GetNumberHist(kHistAssociatedpT		,i,j));
     a->AddAt(new TH1D(GetNameHist("hAphi"			 ,i,j),"Associated phi"					 ,270,-.5*gkPii ,2.5*gkPii						        	    ),GetNumberHist(kHistAssociatedPhi		,i,j));
     a->AddAt(new TH1D(GetNameHist("hAeta"			 ,i,j),"Associated eta"					 ,100,-3.0    ,3.0						        	    ),GetNumberHist(kHistAssociatedEta		,i,j));
-    a->AddAt(new TH1D(GetNameHist("hNAssoc"			 ,i,j),"Number of associated"				 ,100,0	     ,500						       		    ),GetNumberHist(kHistNassoc			,i,j));
+//     a->AddAt(new TH1D(GetNameHist("hNAssoc"			 ,i,j),"Number of associated"				 ,100,0	     ,500						       		    ),GetNumberHist(kHistNassoc			,i,j));
     a->AddAt(new TH1D(GetNameHist("hNTriggers"                   ,i,j),"Number of triggers in this bin filled."          ,1   ,0      ,1                                                        	    ),GetNumberHist(kHistNTriggers              ,i,j));
     a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2p"	 ,i,j),"#Delta#Phi vs #Delta#eta"			 ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*gkPii,1.5*gkPii			       ),GetNumberHist(khPhiEta	   ,i,j));//"classical" 2 particle correlation
     a->AddAt(new TH2D(GetNameHist("hDeltaPhiVsDeltaEta2a"	 ,i,j),"#Delta#Phi_{12} vs #Delta#eta_{12}"		 ,nbinseta ,-2.0*fAcceptanceCut,2.0*fAcceptanceCut,nbinsphi,-0.5*gkPii,1.5*gkPii			       ),GetNumberHist(khPhiEtaa   ,i,j));// 2 particle correlation with two associated
@@ -236,7 +231,6 @@ int AliCorrelation3p::Init(const char* arguments)
   TH1::AddDirectory(statusAddDirectory);
   return 0;
 }
-
 int AliCorrelation3p::SetMultVZ(Double_t Mult, Double_t Vz)
 {
   fMultiplicity=Mult;
@@ -249,7 +243,6 @@ int AliCorrelation3p::SetMultVZ(Double_t Mult, Double_t Vz)
   HistFill(GetNumberHist(khQAtocheckadressing,fMBin,fVzBin),1.0);
   return 1;
 }
-
 bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
 {
   // check trigger particle cuts
@@ -273,7 +266,6 @@ bool AliCorrelation3p::CheckTrigger( AliVParticle* ptrigger, bool doHistogram)
   }
   return true;
 }
-
 bool AliCorrelation3p::CheckAssociated( AliVParticle* p, bool doHistogram)
 {
   // check associated particle cuts
@@ -296,19 +288,15 @@ bool AliCorrelation3p::CheckAssociated( AliVParticle* p, bool doHistogram)
   }
   return true;
 }
-
 int AliCorrelation3p::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  AliVParticle* p2, const double weight)
 {
   /// fill histograms from particles, fills each histogram exactly once.
-//   Double_t fillweight = 1.0;
   if (!ptrigger || !p1 || !p2) {AliWarning("failed fill");return -EINVAL;}
   if ((ptrigger->Pt()<p1->Pt())||(ptrigger->Pt()<p2->Pt())) {return 0;}
-//   HistFill(GetNumberHist(kHistNassoc,fMBin,fVzBin),weight);
   // phi difference associated 1 to trigger particle
   Double_t DeltaPhi1 = ptrigger->Phi() - p1->Phi();
   if (DeltaPhi1<-0.5*gkPii) DeltaPhi1 += 2*gkPii;
   if (DeltaPhi1>1.5*gkPii)  DeltaPhi1 -= 2*gkPii;
-  
   // phi difference associated 2 to trigger particle
   Double_t DeltaPhi2 = ptrigger->Phi() - p2->Phi();
   if (DeltaPhi2<-0.5*gkPii) DeltaPhi2 += 2*gkPii;
@@ -318,30 +306,20 @@ int AliCorrelation3p::Fill( AliVParticle* ptrigger,  AliVParticle* p1,  AliVPart
   if(TMath::Abs(DeltaPhi1-DeltaPhi2)<1.0E-10&&TMath::Abs(DeltaEta12)<1.0E-10)	return 0;//Track duplicate, reject.
   if(TMath::Abs(p1->Eta()-ptrigger->Eta())<1.0E-10)				return 0;//Track duplicate, reject.
   if(TMath::Abs(p2->Eta()-ptrigger->Eta())<1.0E-10)				return 0;//Track duplicate, reject.
-//   fillweight *= static_cast<AliFilteredTrack*>(ptrigger)->GetEff();
-//   fillweight *= static_cast<AliFilteredTrack*>(p1)->GetEff();
-//   fillweight *= static_cast<AliFilteredTrack*>(p2)->GetEff();
-//   fillweight *= weight;
   HistFill(GetNumberHist(khPhiPhiDEta,fMBin,fVzBin),DeltaEta12,DeltaPhi1,DeltaPhi2, weight);
   return 0;
 }
-
 int AliCorrelation3p::Fill(AliVParticle* ptrigger,AliVParticle* p1,const double weight)
 {
   /// fill histograms from particles
-//   Double_t fillweight = 1.0;  
   if (!ptrigger || !p1) return -EINVAL;
   if (ptrigger->Pt()<=p1->Pt()) return 0;
   // phi difference associated  to trigger particle
   Double_t DeltaPhi = ptrigger->Phi() - p1->Phi();
-//   while(DeltaPhi<-0.5*Pii||DeltaPhi>1.5*Pii){
   if (DeltaPhi<-0.5*gkPii) DeltaPhi += 2*gkPii;
   if (DeltaPhi>1.5*gkPii)  DeltaPhi -= 2*gkPii;
-//   }
   // eta difference
   Double_t DeltaEta  = ptrigger->Eta() - p1->Eta();
-//   fillweight *= dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();
-//   fillweight *= dynamic_cast<AliFilteredTrack*>(p1)->GetEff();
   HistFill(GetNumberHist(khPhiEta,fMBin,fVzBin),DeltaEta,DeltaPhi, weight);//2p correlation
   return 0;
 }
@@ -359,20 +337,17 @@ int AliCorrelation3p::Filla(AliVParticle* p1,AliVParticle* p2,const double weigh
   HistFill(GetNumberHist(khPhiEtaa,fMBin,fVzBin),DeltaEta,DeltaPhi, weight);//2p correlation
   return 0;
 }
-
 int AliCorrelation3p::FillTrigger(AliVParticle* ptrigger)
 {
   Double_t fillweight = dynamic_cast<AliFilteredTrack*>(ptrigger)->GetEff();    
   HistFill(GetNumberHist(kHistNTriggers,fMBin,fVzBin),0.5,fillweight);//Increments number of triggers by weight. Call before filling with any associated.
   return 1;
 }
-
 void AliCorrelation3p::Clear(Option_t * /*option*/)
 {
   /// overloaded from TObject: cleanup
   return TObject::Clear();
 }
-
 void AliCorrelation3p::Print(Option_t *option) const
 {
   /// overloaded from TObject: print info
@@ -399,7 +374,6 @@ void AliCorrelation3p::Print(Option_t *option) const
     fMixedEvent->Print(Form("%s noruler", option));
   }
 }
-
 TObject* AliCorrelation3p::FindObject(const char *name) const
 {
   /// overloaded from TObject: find object by name
@@ -409,7 +383,6 @@ TObject* AliCorrelation3p::FindObject(const char *name) const
   }
   return NULL;
 }
-
 TObject* AliCorrelation3p::FindObject(const TObject *obj) const
 {
   /// overloaded from TObject: find object by pointer
@@ -419,7 +392,6 @@ TObject* AliCorrelation3p::FindObject(const TObject *obj) const
   }
   return NULL;
 }
-
 void AliCorrelation3p::SaveAs(const char *filename,Option_t */*option*/) const
 {
   /// overloaded from TObject: save to file
@@ -432,7 +404,6 @@ void AliCorrelation3p::SaveAs(const char *filename,Option_t */*option*/) const
   if (fHistograms) fHistograms->Write();
   output->Close();
 }
-
 AliCorrelation3p& AliCorrelation3p::operator+=(const AliCorrelation3p& other)
 {
   /// add histograms from another instance
@@ -469,7 +440,6 @@ int AliCorrelation3p::Merge(TCollection* li)
    }
    return 0;
 }
-
 const char* AliCorrelation3p::GetNameHist(const char* name, Int_t MBin, Int_t ZBin) const
 {
   if((MBin>(fMBinEdges.GetSize()-1))||(ZBin>(fZBinEdges.GetSize()-1)))return name;//Index out of bounds
@@ -479,14 +449,12 @@ const char* AliCorrelation3p::GetNameHist(const char* name, Int_t MBin, Int_t ZB
   Double_t Zhigh = fZBinEdges.At(ZBin+1);
   return Form("%sM(%4.2f)->(%4.2f)Z(%4.2f)->(%4.2f)",name,Mlow,Mhigh,Zlow,Zhigh);
 }
-
 Int_t AliCorrelation3p::GetNumberHist(Int_t khist, Int_t Mbin, Int_t ZBin) const
 {
   if((Mbin>(fMBinEdges.GetSize()-1))||(ZBin>(fZBinEdges.GetSize()-1)))return -1;//Index out of bounds
   int offset = kNonbinnedhists;//Offset so the extra histograms come first.
   return offset+khist+(Mbin+ZBin*(fMBinEdges.GetSize()))*kNofHistograms;//increase the number by number of hists for each M+zbin.
 }
-
 Int_t AliCorrelation3p::GetMultBin(Double_t Mult)
 {
   int Nbins = fMBinEdges.GetSize()-1;
@@ -494,7 +462,6 @@ Int_t AliCorrelation3p::GetMultBin(Double_t Mult)
   //if nothing happened in the loop, return -1:
   return -1;
 }
-
 Int_t AliCorrelation3p::GetZBin(Double_t Zvert)
 {
   int Nbins = fZBinEdges.GetSize()-1;
@@ -502,7 +469,6 @@ Int_t AliCorrelation3p::GetZBin(Double_t Zvert)
   //if nothing happened in the loop, return -1:
   return -1;
 }
-
 void AliCorrelation3p::HistFill(Int_t Histn,Double_t Val1)
 {
   if(Histn>=0)dynamic_cast<TH1D*>(fHistograms->At(Histn))->Fill(Val1);
@@ -529,7 +495,6 @@ void AliCorrelation3p::HistFill(Int_t Histn,Double_t Val1, Double_t Val2, Double
   if(Histn>=0)dynamic_cast<TH3F*>(fHistograms->At(Histn))->Fill(Val1,Val2,Val3, weight);
   else dynamic_cast<TH1D*>(fHistograms->At(GetNumberHist(kNofHistograms,fMBinEdges.GetSize()-1,fZBinEdges.GetSize())+1))->Fill(0.5);//wrong histn
 }
-
 TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, Int_t lastbin, const char* name, Bool_t baverage) const
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
@@ -652,7 +617,6 @@ TH2D* AliCorrelation3p::slice(TH3F* hist, const char* option, Int_t firstbin, In
   }  
   return Slice;
 }
-
 void AliCorrelation3p::AddSlice(TH3F* hist,TH2D* AddTo, const char* option, Int_t firstbin, Int_t lastbin, const char* name, Bool_t baverage) const
 {//option should be xy,zy,yx,zx,xz or yz.
   TString o = TString(option);
@@ -776,7 +740,6 @@ void AliCorrelation3p::AddSlice(TH3F* hist,TH2D* AddTo, const char* option, Int_
   AddTo->Add(Slice);
   delete Slice;
 }
-
 TH2D* AliCorrelation3p::DetaDphiAss(TH3F* hist, const char* name)
 {
   Double_t Pii = TMath::Pi();
@@ -802,8 +765,6 @@ TH2D* AliCorrelation3p::DetaDphiAss(TH3F* hist, const char* name)
   }}
   return DetaDphiAss;
 }
-
-
 TH2D* AliCorrelation3p::DeltaEtaCut(TH3F* hist, const char* option, const char* name, Bool_t baverage) const
 {
   //option can be: sameside    = if deltaPhi_1<pi/2, deltaPhi_2<pi/2 and  if deltaPhi_1>pi/2, deltaPhi_2>pi/2
@@ -862,36 +823,37 @@ TH2D* AliCorrelation3p::DeltaEtaCut(TH3F* hist, const char* option, const char* 
   Result->SetEntries(Result->GetEffectiveEntries());
   return Result;
 }
-
  TH2D * AliCorrelation3p::AveragePhi(TH3F* hist,const char* name,bool sameside){
   Double_t Pii = TMath::Pi();
   TH2D * DetaDPhiAv = (TH2D*)hist->Project3D(Form("%s_yx",name));DetaDPhiAv->Reset("m");
-  for(int x = 1;x<=hist->GetNbinsX();x++){for(int y=1;y<=hist->GetNbinsY();y++){for(int z=1;z<=hist->GetNbinsZ();z++){
-    Double_t content = hist->GetBinContent(x,y,z);
-    Double_t errorsq   = hist->GetBinError(x,y,z)*hist->GetBinError(x,y,z);
-    Double_t DPhi1 = hist->GetYaxis()->GetBinCenter(y);
-    Double_t DPhi2 = hist->GetZaxis()->GetBinCenter(z);
-    if(sameside){//if sameside, only collect when both associated are on the same side.
-      if((DPhi1<Pii/2.0)&&(DPhi2<Pii/2.0));
-      else if((DPhi1>Pii/2.0)&&(DPhi2>Pii/2.0));
-      else continue;
-    }    
-    Double_t DPhi12Av = 0.5*(DPhi1 + DPhi2);
-    while(DPhi12Av<-0.5*Pii||DPhi12Av>1.5*Pii){
-      if (DPhi12Av<-0.5*Pii) DPhi12Av += 2*Pii;
-      if (DPhi12Av>1.5*Pii)  DPhi12Av -= 2*Pii;
+  for(int x = 1;x<=hist->GetNbinsX();x++){
+    for(int y=1;y<=hist->GetNbinsY();y++){
+      for(int z=1;z<=hist->GetNbinsZ();z++){
+	Double_t content = hist->GetBinContent(x,y,z);
+	Double_t errorsq   = hist->GetBinError(x,y,z)*hist->GetBinError(x,y,z);
+	Double_t DPhi1 = hist->GetYaxis()->GetBinCenter(y);
+	Double_t DPhi2 = hist->GetZaxis()->GetBinCenter(z);
+	if(sameside){//if sameside, only collect when both associated are on the same side.
+	  if((DPhi1<Pii/2.0)&&(DPhi2<Pii/2.0));
+	  else if((DPhi1>Pii/2.0)&&(DPhi2>Pii/2.0));
+	  else continue;
+	}    
+	Double_t DPhi12Av = 0.5*(DPhi1 + DPhi2);
+	while(DPhi12Av<-0.5*Pii||DPhi12Av>1.5*Pii){
+	  if (DPhi12Av<-0.5*Pii) DPhi12Av += 2*Pii;
+	  if (DPhi12Av>1.5*Pii)  DPhi12Av -= 2*Pii;
+	}
+
+	Int_t Dphibin = DetaDPhiAv->GetYaxis()->FindBin(DPhi12Av);
+	content += DetaDPhiAv->GetBinContent(x,Dphibin);
+	errorsq += DetaDPhiAv->GetBinError(x,Dphibin)* DetaDPhiAv->GetBinError(x,Dphibin);
+	DetaDPhiAv->SetBinContent(x,Dphibin,content);
+	DetaDPhiAv->SetBinError(x,Dphibin,TMath::Sqrt(errorsq));
+      }
     }
-
-    Int_t Dphibin = DetaDPhiAv->GetYaxis()->FindBin(DPhi12Av);
-    content += DetaDPhiAv->GetBinContent(x,Dphibin);
-    errorsq += DetaDPhiAv->GetBinError(x,Dphibin)* DetaDPhiAv->GetBinError(x,Dphibin);
-    DetaDPhiAv->SetBinContent(x,Dphibin,content);
-    DetaDPhiAv->SetBinError(x,Dphibin,TMath::Sqrt(errorsq));
-  }}}
+  }
   return DetaDPhiAv;
- }
-
-
+}
 TCanvas* AliCorrelation3p::Makecanvas(TH1D* histtopl, TH1D* histtopm, TH1D* histtopr,TH1D* histmidl,TH1D* histmidm, TH1D* histmidr,TH1D* histbotl,TH1D* histbotm, TH1D* histbotr, const char* name, Bool_t Stats)
 {
   TCanvas * Canvas = new TCanvas(name);
@@ -934,7 +896,6 @@ TCanvas* AliCorrelation3p::Makecanvas(TH1D* histtopl, TH1D* histtopm, TH1D* hist
   histbotr->Draw("E");
   return Canvas;
 }
-
 TCanvas* AliCorrelation3p::Makecanvas(TH2D* histtopl, TH2D* histtopr, TH2D* histbotl, TH2D* histbotr, const char* name, Bool_t Stats)
 {
   TCanvas * Canvas = new TCanvas(name);
@@ -953,7 +914,6 @@ TCanvas* AliCorrelation3p::Makecanvas(TH2D* histtopl, TH2D* histtopr, TH2D* hist
   histbotr->Draw("surf3");
   return Canvas;
 }
-
 TCanvas* AliCorrelation3p::Makecanvas(TH2D* hist, const char* name, Bool_t Stats)
 {
   TCanvas * Canvas = new TCanvas(name);
@@ -986,7 +946,6 @@ TCanvas* AliCorrelation3p::Makecanvas(TH2D* hist, const char* name, Bool_t Stats
   projX->Draw("E");
   return Canvas;
 }
-
 Double_t AliCorrelation3p::FindScalingfactor(const char* scalingmethod,TH2D* sighist,TH2D*mixhist)
 {
   TString selector=TString(scalingmethod);
@@ -1074,7 +1033,6 @@ Double_t AliCorrelation3p::FindScalingfactor(const char* scalingmethod,TH2D* sig
   }
   return scalingfactor;
 }
-
 Double_t AliCorrelation3p::GetPoint(TH1* hist, Double_t xpoint, Double_t ypoint, Double_t zpoint)
 {
   //Returns the content of the bin with the corresponding points.
@@ -1101,8 +1059,6 @@ Double_t AliCorrelation3p::GetPoint(TH1* hist, Double_t xpoint, Double_t ypoint,
   }
   return bincontent;
 }
-
-
 void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist)
 {
   TH1D* hist11d = dynamic_cast<TH1D*>(histtoadd);
@@ -1254,7 +1210,6 @@ void AliCorrelation3p::AddHists(Bool_t isAverage, TH1* histtoadd, TH1* addedhist
     return ;    
   }
 }
-
 TH1 * AliCorrelation3p::PrepareHist(int HistLocation,const char* HistName,const char* title, const char* xaxis, const char* yaxis,const char* zaxis,bool mixed){
   TH1* Hist;
   if(!mixed)Hist= dynamic_cast<TH1*>(fHistograms->At(HistLocation)->Clone(HistName));
@@ -1279,7 +1234,6 @@ TH1 * AliCorrelation3p::PrepareHist(int HistLocation,const char* HistName,const 
   }  
   return Hist;
 }
-
 TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xaxis, const char* yaxis,const char* zaxis, bool scale, TParameter<double> * par){
   Double_t LeastContent = 1.0;//Least amount in mixed to scale.
   Hist->SetTitle(title);
@@ -1307,7 +1261,6 @@ TH1 * AliCorrelation3p::PrepareHist(TH1* Hist,const char* title, const char* xax
   }  
   return Hist;
 }
-
 int AliCorrelation3p::MakeResultsFile(const char* scalingmethod, bool recreate,bool fakecor)
 {//This function makes a new file that contains all the histograms in all versions possible.
   //if fakecor is true, META1/2 and METrigger are "faked" by smearing out 2d histograms.
