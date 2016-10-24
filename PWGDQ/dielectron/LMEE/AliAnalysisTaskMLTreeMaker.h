@@ -176,7 +176,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   AliESDtrackCuts* fESDTrackCuts;
   
   Int_t gMultiplicity;
-  
+  Int_t mcTrackIndex;
   AliMCEvent* fMcArray; 
 
   std::vector<Double_t> EsigTPC;
@@ -192,7 +192,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> KsigITS;
 
   Bool_t hasMC;
-  Bool_t IsHij;
+  Bool_t Rej;
  
   std::vector<Double_t> MCpt;
   std::vector<Double_t> MCeta;
