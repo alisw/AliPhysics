@@ -187,6 +187,9 @@ fTracksConeEtaPt(0),
 fTracksConeEtaM02(0),
 fHistXsection(0),
 fHistTrials(0),
+fPtTracksVSpTNC(0),
+fCTdistVSpTNC(0),
+fPtTracksVSpTNC_MC(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -343,6 +346,9 @@ fTracksConeEtaPt(0),
 fTracksConeEtaM02(0),
 fHistXsection(0),
 fHistTrials(0),
+fPtTracksVSpTNC(0),
+fCTdistVSpTNC(0),
+fPtTracksVSpTNC_MC(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -779,7 +785,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fTestLocalIndexE->Sumw2();
     fOutput->Add(fTestLocalIndexE);
 
-    fTestEtaPhiCone= new TH2D("hTestEtatPhiCone","Test eta phi neutral clusters candidates",200,0.,100.,200,0.,100.);
+    fTestEtaPhiCone= new TH2D("hTestEtatPhiCone","Test eta phi neutral clusters candidates",200,0,TMath::TwoPi(),140,-.7,.7);
     fTestEtaPhiCone->SetXTitle("phi");
     fTestEtaPhiCone->SetYTitle("eta");
     fTestEtaPhiCone->Sumw2();
@@ -848,6 +854,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // fphietaOthers = new TH3D("hphietaOthers","Test eta phi others",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
     // fOutput->Add(fphietaOthers);
   
+  fPtTracksVSpTNC = new TH2F ("hChargedptSpecVSpT","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
+  fPtTracksVSpTNC->Sumw2();
+  fOutput->Add(fPtTracksVSpTNC);
+  
+  fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,200,-.5,.5);
+  fCTdistVSpTNC->Sumw2();
+  fOutput->Add(fCTdistVSpTNC);
+  
+  
   if(fIsMC){
       //CREATE THE TH2 specific for the MC Analysis Maybe to be added in the THNSparse, or cloning two or three axes and add the specific MC Truth info
     fHistXsection = new TH1F("fHistXsection", "fHistXsection", 1, 0, 1);
@@ -858,8 +873,13 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fHistTrials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
     fOutput->Add(fHistTrials);
   
+    fPtTracksVSpTNC_MC = new TH2F ("hChargedptSpecVSpT_MC","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
+    fPtTracksVSpTNC_MC->Sumw2();
+    fOutput->Add(fPtTracksVSpTNC_MC);
   }
 
+  
+  
   PostData(1, fOutput);
     //     //   return;
 }
@@ -1133,6 +1153,15 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       if(vecCOI.Pt()<5.) continue;
       
         //      Printf("Inside Run: Passing to FillGeneralHistograms for cluster with ID: %d, Pt: %.3f, Eta: %.3f, Phi: %.3f",index,vecCOI.Pt(),vecCOI.Eta(),vecCOI.Phi());
+      for (auto it : tracksANA->accepted()){
+        AliVTrack *tr = static_cast<AliVTrack*>(it);
+        if(!tr) {
+          AliError("No track found");
+          return kFALSE;
+        }
+        fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
+      }
+      
       FillGeneralHistograms(coi,vecCOI,index);
     }
     
@@ -1267,10 +1296,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
   
   AliTrackContainer* tracks = GetTrackContainer(0);
   AliVTrack* mt = 0;
+  TLorentzVector vecClust;
+  clust->GetMomentum(vecClust,fVertex);
   
   Int_t nbMObj = clust -> GetNTracksMatched();
-  
   if(tracks->GetTrackFilterType()!=AliEmcalTrackSelection::kTPCOnlyTracks)  AliError(Form("NO TPC only tracks"));
+  
+  Double_t distCT=0.;
   
   if (nbMObj == 0) return kFALSE;
   
@@ -1310,6 +1342,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       fDeltaETAClusTrack->Fill(deta);
       fDeltaPHIClusTrack->Fill(dphi);
     }
+    distCT=TMath::Sqrt(deta*deta+dphi*dphi);
+    fCTdistVSpTNC->Fill(vecClust.Pt(),distCT);
+    
+      //      Printf("dphimin %g dphi %g   i %d  matchidx %d",dphimin,dphi,i, matchidxphi);
+    
     if(TMath::Abs(dphi)<fdphicut && TMath::Abs(deta)<fdetacut){
       if(fQA){
         fDeltaETAClusTrackMatch->Fill(deta);
@@ -3043,16 +3080,18 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   if(fCaloCells)
     nlm = GetNLM(coi,fCaloCells);
   
-//  Printf("cluster ID %d with nlm %d . M02 BEFORE possible smearing %.4lf . Do we set the smearing ? %s ",coi->GetID(),nlm, m02COI = coi->GetM02(), fSSsmearing? "Yes":"No");
+    //  Printf("cluster ID %d with nlm %d . M02 BEFORE possible smearing %.4lf . Do we set the smearing ? %s ",coi->GetID(),nlm, m02COI = coi->GetM02(), fSSsmearing? "Yes":"No");
   
   if(fSSsmearing){
-    if(coi->GetID()%3==0 && coi->GetM02()>0.1 && fSSsmear_mean!=0){
+    if(coi->GetM02()>0.1){
       
       if(fWhich==0){
           //      Printf("Smearing for all clusters");
         if((fSSsmearwidth != 0.)){
           TRandom3 *ran=new TRandom3(0);
           Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+          
+          if(fSSsmear_mean==0 || (fSSsmear_mean!=0 && coi->GetID()%3==0))
           m02COI = coi->GetM02() + smear;
         }
         else {
@@ -3066,6 +3105,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
           if((fSSsmearwidth != 0.)){
             TRandom3 *ran=new TRandom3(0);
             Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean==0 || (fSSsmear_mean!=0 && coi->GetID()%3==0))
             m02COI = coi->GetM02() + smear;
           }
           else {
@@ -3399,6 +3439,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         mcpp = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
         
         if(!mcpp) {continue;}
+        
+        if(mcpp->Charge()!=0 && mcpp->GetStatus()>10)
+          fPtTracksVSpTNC_MC->Fill(eT,mcpp->Pt());
         
         if(fIsoMethod==2)
           if((mcpp->Charge())==0) {continue;}
