@@ -82,7 +82,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
                                 Double_t  bremSmear                     = 1.,
                                 Double_t  smearPar                      = 0.,                     // conv photon smearing params
-                                Double_t  smearParConst                 = 0.                      // conv photon smearing params
+                                Double_t  smearParConst                 = 0.,                     // conv photon smearing params
+                                Bool_t    doPrimaryTrackMatching        = kTRUE                   // enable basic track matching for all primary tracks to cluster
               ) {
   
   Int_t isHeavyIon = 0;
@@ -178,6 +179,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
+  task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
 
   //create cut handler
   CutHandlerConvCalo cuts;

@@ -52,6 +52,7 @@
 #include "AliEmcalTenderTask.h"
 #include "AliPHOSTenderSupply.h"
 #include "AliOADBContainer.h"
+#include "AliESDtrackCuts.h"
 #include <vector>
 
 class iostream;
@@ -2056,7 +2057,7 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
   
   // check phi range
   if (fUsePhiCut ){
-        if (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut){
+    if (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut){
       if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
       return kFALSE;
     }
@@ -2246,7 +2247,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 }
 
 //________________________________________________________________________
-void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight, Bool_t doPlot){
+void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight, Bool_t isEMCalOnly){
 
   if( !fUseDistTrackToCluster ) return;
 
@@ -2278,15 +2279,38 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
     }
   }
 
+  // if not EMCal only reconstruction (-> hybrid PCM+EMCal), use only primary tracks for basic track matching procedure
+  AliESDtrackCuts *EsdTrackCuts = 0x0;
+  if(!isEMCalOnly && esdev){
+    // Using standard function for setting Cuts
+    Int_t runNumber = event->GetRunNumber();
+    // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+    if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+    // else if run2 data use 2015 PbPb cuts
+    }else if (runNumber>=209122){
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+    // else use 2011 version of track cuts
+    }else{
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+    }
+    EsdTrackCuts->SetMaxDCAToVertexZ(2);
+    EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+    EsdTrackCuts->SetPtRange(0.15);
+  }
+
 //  cout << "MatchTracksToClusters: " << event->GetNumberOfTracks() << ", " << fIsPureCalo << ", " << fUseDistTrackToCluster << endl;
 
   for (Int_t itr=0;itr<event->GetNumberOfTracks();itr++){
     AliExternalTrackParam *trackParam = 0;
     AliVTrack *inTrack = 0x0;
-//    cout << "-------------------------LOOPING: " << itr << endl;
     if(esdev){
       inTrack = esdev->GetTrack(itr);
+      if(!inTrack) continue;
       AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
+      if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
+         if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+      }
 
       const AliExternalTrackParam *in = esdt->GetInnerParam();
       if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
@@ -2305,7 +2329,14 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         }
       }
 
+      if(!inTrack) continue;
       AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
+      if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
+        if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+        if(fabs(aodt->Eta())>0.8) continue;
+        if(aodt->Pt()<0.15) continue;
+      }
+
       Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
       aodt->GetPxPyPz(pxpypz);
       aodt->GetXYZ(xyz);
@@ -2377,12 +2408,12 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       Float_t dR2 = dPhi*dPhi + dEta*dEta;
 //      cout << "dEta/dPhi: " << dEta << ", " << dPhi << " - ";
 //      cout << dR2 << endl;
-      if(doPlot && fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2), weight);
-      if(doPlot && fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi, weight);
+      if(isEMCalOnly && fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2), weight);
+      if(isEMCalOnly && fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi, weight);
 
       Float_t clusM02 = (Float_t) cluster->GetM02();
       Float_t clusM20 = (Float_t) cluster->GetM20();
-      if(doPlot && !fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
+      if(isEMCalOnly && !fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
         if(inTrack->Charge() > 0) {
           fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi, weight);
           fHistClusterdPhidPtPosTracksBeforeQA->Fill(dPhi, inTrack->Pt(), weight);
@@ -2417,12 +2448,12 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       if(match_dEta && match_dPhi){
         fVectorMatchedClusterIDs.push_back(cluster->GetID());
 //        cout << "MATCHED!!!!!!!!!!!!!!!!!!!!!!!!! - " << cluster->GetID() << endl;
-        if(doPlot){
+        if(isEMCalOnly){
           if(fHistClusterdEtadPtAfterQA) fHistClusterdEtadPtAfterQA->Fill(dEta,inTrack->Pt());
           if(fHistClusterdPhidPtAfterQA) fHistClusterdPhidPtAfterQA->Fill(dPhi,inTrack->Pt());
         }
         break;
-      } else if(doPlot){
+      } else if(isEMCalOnly){
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
         if(fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi, weight);
         if(fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR, weight);
@@ -2436,6 +2467,11 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
     }
 
     delete trackParam;
+  }
+
+  if(EsdTrackCuts){
+    delete EsdTrackCuts;
+    EsdTrackCuts=0x0;
   }
 
   return;

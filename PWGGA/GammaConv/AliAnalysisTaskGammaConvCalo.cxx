@@ -324,7 +324,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
   doConvGammaShowerShapeTree(kFALSE),
-  fEnableSortForClusMC(kFALSE)
+  fEnableSortForClusMC(kFALSE),
+  fDoPrimaryTrackMatching(kFALSE)
 {
   
 }
@@ -594,7 +595,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
   doConvGammaShowerShapeTree(kFALSE),
-  fEnableSortForClusMC(kFALSE)
+  fEnableSortForClusMC(kFALSE),
+  fDoPrimaryTrackMatching(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2344,7 +2346,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
-  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
+  if(fDoPrimaryTrackMatching) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
   
   // vertex
   Double_t vertex[3] = {0,0,0};
