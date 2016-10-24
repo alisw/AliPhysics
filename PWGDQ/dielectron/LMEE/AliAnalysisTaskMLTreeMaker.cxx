@@ -117,14 +117,14 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   motherlabel(0),
   charge(0.),      
   runn(0),      
-  IsHij(kFALSE),
+  Rej(kFALSE),
   fPIDResponse(0),
   n(0),
   cent(0),
   vertx(0),
   verty(0),
   vertz(0),
-//  NClustersITS(0),
+  mcTrackIndex(0),
   NCrossedRowsTPC(0),
   NClustersTPC(0),
   HasSPDfirstHit(0), 
@@ -192,14 +192,14 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   motherlabel(0),
   charge(0.),      
   runn(0),      
-  IsHij(kFALSE),
+  Rej(kFALSE),
   fPIDResponse(0),
   n(0),
   cent(0),
   vertx(0),
   verty(0),
   vertz(0),
-//  NClustersITS(0),
+  mcTrackIndex(0),
   NCrossedRowsTPC(0),
   NClustersTPC(0),
   HasSPDfirstHit(0), 
@@ -482,19 +482,30 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           fQAHist->Fill("After MC check, bef. Hij",1); 
       
           if(!iTracks){                             //check for first track if Hijing was the event gen
-            IsHij=kFALSE;
+            Rej=kFALSE;
             coHeader = dynamic_cast<AliGenCocktailEventHeader*> (mcEvent->GenEventHeader());
             if (!coHeader){
-              AliError(Form("Could not receive coHeader -> IsHij set to kFALSE!! no rejection of enhanced sources!!"));
+              AliError(Form("Could not receive coHeader -> Rej set to kFALSE!! no rejection of enhanced sources!!"));
               //continue;
             }
             else{
                 TList* list = coHeader->GetHeaders();
-                if(list->FindObject("Hijing")) IsHij = kTRUE;
+//                if(list->FindObject("Hijing")) Rej = kTRUE;
+                
+                AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
+                
+                do{
+                    mcTrackIndex = mcTrack->GetMother();                    
+                    mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(mcTrack->GetMother()));
+
+                }
+                while(!(mcTrack->GetMother() < 0));
+                
+                if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
             }
           }
           //Reject non-Hijing BG tracks    
-          if (IsHij && !(mcEvent->IsFromBGEvent(abs(esdTrack->GetLabel())))){
+          if (Rej){
             AliError(Form("Reject non-Hijing BG tracks!!"));
             continue;
           }
