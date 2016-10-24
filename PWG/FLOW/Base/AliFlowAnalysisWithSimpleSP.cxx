@@ -33,6 +33,9 @@
 #include "AliFlowCommonHistResults.h"
 #include "AliFlowAnalysisWithSimpleSP.h"
 
+using std::cout;
+using std::endl;
+
 //////////////////////////////////////////////////////////////////////////////
 // AliFlowAnalysisWithSimpleSP:
 // Description: Maker to analyze Flow from the Scalar Product method.
