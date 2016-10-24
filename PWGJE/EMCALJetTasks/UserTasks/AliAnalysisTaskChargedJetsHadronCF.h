@@ -29,7 +29,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   // ######### SETTERS/GETTERS
-  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t maxSharedFraction, Double_t maxEmbeddingOffset,  Double_t matchMinPt, Double_t matchMaxPt, Int_t nLeading)
+  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t maxSharedFraction, Double_t maxEmbeddingOffset,  Double_t matchMinPt, Double_t matchMaxPt, Int_t nLeading, const char* vetoArray = 0, Double_t minVetoJetPt = 0, Double_t maxVetoJetPt = 0)
   {
     fJetMatchingMaxDistance = maxDistance;
     fJetMatchingArrayName = matchArray;
@@ -40,6 +40,10 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
     fJetMatchingMinPt = matchMinPt;
     fJetMatchingMaxPt = matchMaxPt;
     fJetMatchingUseOnlyNLeading = nLeading; // currently only 1,2, or 0 (all) possible
+
+    fJetVetoArrayName = vetoArray;
+    fJetVetoMinPt = minVetoJetPt;
+    fJetVetoMaxPt = maxVetoJetPt;
   }
 
   void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
@@ -97,6 +101,10 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Double_t                    fJetMatchingMinPt;                        ///< Min pt cut applied on the matchArray jets
   Double_t                    fJetMatchingMaxPt;                        ///< Max pt cut applied on the matchArray jets
   Int_t                       fJetMatchingUseOnlyNLeading;              ///< Number of matched leading jets that will be used
+  TClonesArray               *fJetVetoArray;                            //!<! Array of jets imported into task used for veto a matching/embedding
+  TString                     fJetVetoArrayName;                        ///< Name of array used for veto jets
+  Double_t                    fJetVetoMinPt;                            ///< Min pt cut applied on the fJetVetoArray jets
+  Double_t                    fJetVetoMaxPt;                            ///< Max pt cut applied on the fJetVetoArray jets
   std::vector<AliEmcalJet*>   fMatchedJets;                             ///< Jets matched in an event (embedded)
   std::vector<AliEmcalJet*>   fMatchedJetsReference;                    ///< Jets matched in an event (reference)
   TRandom3*                   fRandom;                                  ///< random number generator
