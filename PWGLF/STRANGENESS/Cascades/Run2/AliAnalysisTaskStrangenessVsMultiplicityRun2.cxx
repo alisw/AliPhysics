@@ -220,6 +220,9 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
+fTreeCascVarPosTotMom(-1),
+fTreeCascVarNegTotMom(-1),
+fTreeCascVarBachTotMom(-1),
 fTreeCascVarCentrality(0),
 //Histos
       fHistEventCounter(0),
@@ -333,6 +336,9 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
+fTreeCascVarPosTotMom(-1),
+fTreeCascVarNegTotMom(-1),
+fTreeCascVarBachTotMom(-1),
       fTreeCascVarCentrality(0),
 //Histos
       fHistEventCounter(0),
@@ -533,6 +539,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNegInnerP",&fTreeCascVarNegInnerP,"fTreeCascVarNegInnerP/F");
             fTreeCascade->Branch("fTreeCascVarBachInnerP",&fTreeCascVarBachInnerP,"fTreeCascVarBachInnerP/F");
         }
+        fTreeCascade->Branch("fTreeCascVarPosTotMom",&fTreeCascVarPosTotMom,"fTreeCascVarPosTotMom/F");
+        fTreeCascade->Branch("fTreeCascVarNegTotMom",&fTreeCascVarNegInnerP,"fTreeCascVarNegTotMom/F");
+        fTreeCascade->Branch("fTreeCascVarBachTotMom",&fTreeCascVarBachInnerP,"fTreeCascVarBachTotMom/F");
         //------------------------------------------------
     }
     //------------------------------------------------
@@ -1107,6 +1116,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarBachNSigmaPion  = -100;
         fTreeCascVarBachNSigmaKaon  = -100;
 
+        fTreeCascVarBachTotMom = -1;
+        fTreeCascVarPosTotMom  = -1;
+        fTreeCascVarNegTotMom  = -1;
+        
         Short_t  lChargeXi = -2;
         //Double_t lV0toXiCosineOfPointingAngle = 0. ;
 
@@ -1173,9 +1186,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
         xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
 
-        //fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
-        //fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
-        //fTreeCascVarNegTransMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] );
+        fTreeCascVarBachTotMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2] );
+        fTreeCascVarPosTotMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] + lPMom[2]*lPMom[2] );
+        fTreeCascVarNegTotMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] + lNMom[2]*lNMom[2] );
         
         //------------------------------------------------
         // TPC dEdx information
