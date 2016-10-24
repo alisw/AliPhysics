@@ -17,7 +17,7 @@ class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
-const Int_t nVar = 18;
+const Int_t nVar = 20;
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -76,7 +76,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetSharedFractionPtMin(Double_t SharedFractionPtMin) {fSharedFractionPtMin=SharedFractionPtMin;}
   void SetDerivativeSubtractionOrder(Int_t Order)              {fDerivSubtrOrder = Order;}
   void SetFullTree(Bool_t FullTree)                         {fFullTree = FullTree;}
-
+  void SetBetaSD(Double_t BetaSD)                           {fBeta_SD = BetaSD;}
+  void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
+  
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
 
  protected:
@@ -92,7 +94,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            SubJetOrdering(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Index);
   Double_t                            SubJetFraction(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Add, Bool_t Loss);
   Double_t                            NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
-  Double_t                            fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0);
+  Double_t                            fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
  
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
@@ -122,6 +124,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            Background_Fluc;
   Int_t                               fDerivSubtrOrder;
   Bool_t                              fFullTree;
+  Double_t                            fBeta_SD;
+  Double_t                            fZCut;
 
   Bool_t                              fNsubMeasure;
   
