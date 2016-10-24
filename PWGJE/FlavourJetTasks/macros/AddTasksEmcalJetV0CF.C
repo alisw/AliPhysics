@@ -121,10 +121,10 @@ Bool_t AddTasksEmcalJetV0CF()
   }
 //=============================================================================
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalSetup.C");
-  AliEmcalSetupTask *taskSetupEMCal = AddTaskEmcalSetup();
-  if (wTriggerMask)  taskSetupEMCal->SelectCollisionCandidates(wTriggerMask);
-  taskSetupEMCal->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
+  AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+  if (wTriggerMask)  taskCDB->SelectCollisionCandidates(wTriggerMask);
+  taskCDB->SetFallBackToRaw(kTRUE);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
   AliEmcalPicoTrackMaker *taskPicoTrackRD = AddTaskEmcalPicoTrackMaker(sUsedTrksRD.Data(),
