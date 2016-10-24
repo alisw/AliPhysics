@@ -94,7 +94,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   ,fIsMC(kFALSE)
   ,fPID(0x0)
   ,fMagField(0.f)
-  ,fPrimaryVertex(0x0)
   ,fDCAzLimit(10.)
   ,fDCAzNbins(400)
   ,fPtCorrectionA(3)
@@ -583,7 +582,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
     if (nSDD < fRequireSDDrecPoints) return kFALSE;
     if (fRequireVetoSPD && nSPD > 0) return kFALSE;
     Double_t cov[3];
-    if (!track->PropagateToDCA(fPrimaryVertex, fMagField, 100, dca, cov)) return kFALSE;
+    if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return kFALSE;
     if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
   }
