@@ -85,6 +85,8 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetMatchingArrayName(""),
   fJetMatchingMaxDistance(0.3),
   fJetMatchingMinSharedFraction(0.5),
+  fJetMatchingMaxSharedFraction(1.5),
+  fJetMatchingMaxEmbeddingOffset(20.),
   fJetMatchingMinPt(0.0),
   fJetMatchingMaxPt(999.0),
   fJetMatchingUseOnlyNLeading(0),
@@ -135,6 +137,8 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetMatchingArrayName(""),
   fJetMatchingMaxDistance(0.3),
   fJetMatchingMinSharedFraction(0.5),
+  fJetMatchingMaxSharedFraction(1.5),
+  fJetMatchingMaxEmbeddingOffset(20.),
   fJetMatchingMinPt(0.0),
   fJetMatchingMaxPt(999.0),
   fJetMatchingUseOnlyNLeading(0),
@@ -792,6 +796,9 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
         continue;
       // Cut jets with too small pT
       if(embeddedJet->Pt() - fJetsCont->GetRhoVal()*embeddedJet->Area() < fJetMatchingMinSharedFraction*probeJet->Pt())
+        continue;
+      // Cut jets with too high pT
+      if(embeddedJet->Pt() - fJetsCont->GetRhoVal()*embeddedJet->Area() > (fJetMatchingMaxSharedFraction*probeJet->Pt() + fJetMatchingMaxEmbeddingOffset))
         continue;
 
       // Search for the best match
