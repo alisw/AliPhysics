@@ -74,7 +74,8 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
                                 Float_t   maxFacPtHard                = 3,                    // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader          = "",                   // period Name for V0Reader
                                 Bool_t    enableSortingMCLabels       = kTRUE,                // enable sorting for MC cluster labels
-                                Bool_t    runLightOutput              = kFALSE                // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    runLightOutput              = kFALSE,               // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    doPrimaryTrackMatching      = kTRUE                 // enable basic track matching for all primary tracks to cluster
 ) {
 
   Int_t isHeavyIon = 2;
@@ -172,6 +173,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
+  task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
 
   //create cut handler
   CutHandlerConvCalo cuts;
@@ -394,7 +396,6 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
-    
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
