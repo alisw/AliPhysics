@@ -68,7 +68,7 @@ void AliNuclexEventCuts::SetupLHC15o() {
   fCentEstimators[1] = "CL0";
   fMinCentrality = 0.f;
   fMaxCentrality = 90.f;
-  fMaxDeltaEstimators = 7.5f;
+  //fMaxDeltaEstimators = 7.5f;
 
   fTriggerMask = AliVEvent::kINT7;
 
