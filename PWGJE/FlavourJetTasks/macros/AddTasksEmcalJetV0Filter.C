@@ -108,7 +108,6 @@ Bool_t AddTasksEmcalJetV0Filter()
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskCDBconnect.C");
   AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
-  if (wTriggerMask)  taskCDB->SelectCollisionCandidates(wTriggerMask);
   taskCDB->SetFallBackToRaw(kTRUE);
 
   if (bIsInfoAOD) {
