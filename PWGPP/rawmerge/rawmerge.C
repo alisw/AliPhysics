@@ -1,7 +1,7 @@
 //
 // Macro to create the "raw" data file with selected events
 // source is 
-//     $ALICE_PHYSICS/../src/PWGPP/rawmerge/rawmerge.C
+//     $ALICE_PHYSICS/../src/PWGPP/rawmerge/rawmerge.C+
 // 
 // Original code: 
 //    marian.ivanov@cern.ch
@@ -9,6 +9,26 @@
 //       mikolaj.krzewicki@cern.ch
 //       mesut.arslandok@cern.ch
 //
+
+#include <fstream>
+#include <iostream>
+#include "TMath.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TString.h"
+#include "TEnv.h"
+#include "TSystem.h"
+#include "TAlienCollection.h"
+#include "TGrid.h"
+#include "TStopwatch.h"
+
+#include "AliSysInfo.h"
+
+Bool_t makeAlienInputEventList( TString outputFileName="wn.list",
+                                TString referenceFileName="filteredEvents.list",
+                                TString inputCollectionName="wn.xml" );
+
+
 void rawmerge( TString inputFileName="wn.xml",
                TString fullEventListFileName="event.list",
                TString outputFileNameTMP="filtered.root", Int_t timeOut=30)
@@ -59,10 +79,10 @@ void rawmerge( TString inputFileName="wn.xml",
   TFile *ofile=0;
   TTree *itree=0;
   TTree *otree=0;
-  Long64_t ievent=0;
+  ULong64_t ievent=0;
   Int_t ofilenumber=0;
   Int_t lineNumber=0;
-  Int_t eventold=0;
+  ULong64_t eventold=0;
   Double_t realTime=0;
 
   while (files.good())
@@ -86,7 +106,7 @@ void rawmerge( TString inputFileName="wn.xml",
     triggerType.Clear();
     if (triggerTypeobjstr) triggerType=triggerTypeobjstr->String();
 
-    printf("> processing \"%s\" event %d trigger \"%s\"...\n",iURI.Data(),ievent,triggerType.Data());
+    printf("> processing \"%s\" event %llu trigger \"%s\"...\n",iURI.Data(),ievent,triggerType.Data());
     if (ievent==eventold && iURI==iURIold)
     {
       printf("duplicated continue\n");
@@ -154,7 +174,7 @@ void rawmerge( TString inputFileName="wn.xml",
     itree->GetEntry(ievent);
     AliSysInfo::AddStamp((iURI+"_GetEnd").Data(),1000,lineNumber); // get entry + file counter
     eventold=ievent;
-    printf("filling event %i in file %s\n",ievent,ofile->GetName());
+    printf("filling event %llu in file %s\n",ievent,ofile->GetName());
     AliSysInfo::AddStamp((iURI+"_FillBegin").Data(),2001,lineNumber); // get entry + file counter
     otree->Fill();
     AliSysInfo::AddStamp((iURI+"_FillEnd").Data(),2000,lineNumber); // get entry + file counter
@@ -182,7 +202,7 @@ void rawmerge( TString inputFileName="wn.xml",
 
      //write the file and close
     ofile->Write();
-    printf("closing file: %s with %i entries\n",ofile->GetName(),nEntries);
+    printf("closing file: %s with %llu entries\n",ofile->GetName(),nEntries);
     delete ofile;
 
      //remove empty files
@@ -193,14 +213,14 @@ void rawmerge( TString inputFileName="wn.xml",
   }
 }
 
-Bool_t makeAlienInputEventList( TString outputFileName="wn.list",
-                                TString referenceFileName="filteredEvents.list",
-                                TString inputCollectionName="wn.xml" )
+Bool_t makeAlienInputEventList( TString outputFileName,
+                                TString referenceFileName,
+                                TString inputCollectionName )
 {
-  TAlienCollection *coll = TAlienCollection::Open(inputCollectionName);
+  TAlienCollection *coll = (TAlienCollection *)TAlienCollection::Open(inputCollectionName);
   if (!coll)
   {
-      ::Error("makeAlienInputEventList", "Cannot open collection from %s", xmlfile);
+    ::Error("makeAlienInputEventList", "Cannot open collection from %s", inputCollectionName.Data());
       return NULL;
   }
   TString configLine;
