@@ -1214,8 +1214,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         zncEnergy += towZNC[i];
         znaEnergy += towZNA[i];
       }
-      fFlowEvent->SetZNCEnergy(zncEnergy/2.);
-      fFlowEvent->SetZNAEnergy(znaEnergy/2.);
+      fFlowEvent->SetZNCEnergy(towZNC[0]);
+      fFlowEvent->SetZNAEnergy(towZNA[0]);
       
       Int_t CenBin = GetCenBin(centrperc);
       if(CenBin==-1) return;
