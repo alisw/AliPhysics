@@ -90,6 +90,10 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetMatchingMinPt(0.0),
   fJetMatchingMaxPt(999.0),
   fJetMatchingUseOnlyNLeading(0),
+  fJetVetoArray(),
+  fJetVetoArrayName(""),
+  fJetVetoMinPt(0),
+  fJetVetoMaxPt(0),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -142,6 +146,10 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetMatchingMinPt(0.0),
   fJetMatchingMaxPt(999.0),
   fJetMatchingUseOnlyNLeading(0),
+  fJetVetoArray(),
+  fJetVetoArrayName(""),
+  fJetVetoMinPt(0),
+  fJetVetoMaxPt(0),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -320,6 +328,13 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
   else if(fJetOutputMode==4 || fJetOutputMode==5)
     AliFatal(Form("fJetMatchingArrayName must be set in jet output mode 4 or 5."));
 
+  // ### Import veto jets for matching (optional)
+  if(fJetVetoArrayName != "")
+  {
+    fJetVetoArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fJetVetoArrayName.Data())));
+    if(!fJetVetoArray)
+      AliFatal(Form("Importing jets for veto failed! Array '%s' not found!", fJetVetoArrayName.Data()));
+  }
 
   // ### Jets tree (optional)
   if(fExtractionPercentage)
@@ -769,6 +784,21 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
 {
   fMatchedJets.clear();
   fMatchedJetsReference.clear();
+
+  // Check for a jet veto here
+  if(fJetVetoArray)
+  {
+    for(Int_t i=0; i<fJetVetoArray->GetEntries(); i++)
+    {
+      AliEmcalJet* vetoJet = static_cast<AliEmcalJet*>(fJetVetoArray->At(i));
+      UInt_t   dummy = 0;
+      if(!fJetsCont->AcceptJet(vetoJet , dummy))
+        continue;
+      // if veto jet found -> return
+      if((vetoJet->Pt() >= fJetVetoMinPt) || (vetoJet->Pt() < fJetVetoMaxPt))
+        return;
+    }
+  }
 
   // Search for all matches above a certain threshold
   for(Int_t i=0; i<fJetMatchingArray->GetEntries(); i++)
