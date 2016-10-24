@@ -28,7 +28,7 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
 		    kTopologicalStudy = 1,
 		    kTwoTrackStudy = 2};
     AliAnalysisV0Lam();
-    AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents);
+    AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents, Bool_t testNoTwoTrackCuts);
     virtual ~AliAnalysisV0Lam();
     virtual void UserCreateOutputObjects();
     virtual void Exec(Option_t *option);
@@ -69,7 +69,8 @@ class AliAnalysisV0Lam : public AliAnalysisTaskSE {
     int    fNumberOfCfVariableCutValues; //Only different from above if doing variable avg sep cuts
     int    fVariableCutType;             //DCA, CosP, Mass... which is being varied
     int    fNominalTopCutIndex;    //Index of nominal topological cut value
-    
+
+    Bool_t fTestNoTTC;
     int    fNumberVariableAvgSepCuts;
     bool   fIsUsingVariableAvgSepCut;
     bool   fIsMCEvent;
