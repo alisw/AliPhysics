@@ -1564,8 +1564,8 @@ void AliFlowEvent::Get2Qsub(AliFlowVector* Qarray, Int_t n, TList *weightsList, 
   vA.Set(QxcnCor, QycnCor);
   vB.Set(QxanCor, QyanCor);
  
-  vB.SetMult(sumMa);
-  vA.SetMult(sumMc);
+  //vB.SetMult(sumMa);
+  //vA.SetMult(sumMc);
  }
 
  Qarray[0] = vA;

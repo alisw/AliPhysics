@@ -61,7 +61,7 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
   
    TList*    GetHistList()      const { return fHistList; }
    TProfile* GetHistProConfig() const { return fHistProConfig; }
-   TProfile* GetHistProUQ(Int_t iRFPorPOI, Int_t iPTorETA) const { return fHistProUQ[iRFPorPOI][iPTorETA]; }
+   TH1D* GetHistProUQ(Int_t iRFPorPOI, Int_t iPTorETA) const { return fHistProUQ[iRFPorPOI][iPTorETA]; }
    TProfile* GetHistProQaQbNorm() const  { return fHistProQaQbNorm; }
    TProfile* GetHistProNUAq()     const  { return fHistProNUAq; }
    TProfile* GetHistProNUAu(Int_t iRFPorPOI, Int_t iPTorETA, Int_t iIMorRE) const { return fHistProNUAu[iRFPorPOI][iPTorETA][iIMorRE]; }
@@ -99,8 +99,8 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
 
    //QAHists
    TProfile* fHistProQNorm; // QNorm
-   TProfile* fHistProQaQb; // QaQb
-   TProfile* fHistProQaQbM; // QaQb/MaMb
+   TH1D* fHistProQaQb; // QaQb
+   TH1D* fHistProQaQbM; // QaQb/MaMb
    TH2D* fHistMaMb;         // MaMb
    TH2D* fHistQNormQaQbNorm; // QNorm vs QaQbNorm
    TH2D* fHistQaNormMa; // QaNorm Ma
