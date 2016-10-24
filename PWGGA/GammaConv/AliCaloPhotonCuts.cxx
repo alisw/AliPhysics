@@ -2438,11 +2438,24 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
       if(fUsePtDepTrackToCluster){
+        Float_t tempEta = 0.;
+        Float_t tempPhi = 0.;
+        if(!isEMCalOnly){
+          tempEta = fFuncPtDepEta->GetParameter(0);
+          tempPhi = fFuncPtDepPhi->GetParameter(0);
+          fFuncPtDepEta->SetParameter(0,tempEta/2);
+          fFuncPtDepPhi->SetParameter(0,tempPhi/2);
+        }
         if( TMath::Abs(dEta) < fFuncPtDepEta->Eval(inTrack->Pt())) match_dEta = kTRUE;
         else match_dEta = kFALSE;
 
         if( TMath::Abs(dPhi) < fFuncPtDepPhi->Eval(inTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
+
+        if(!isEMCalOnly){
+          fFuncPtDepEta->SetParameter(0,tempEta);
+          fFuncPtDepPhi->SetParameter(0,tempPhi);
+        }
       }
 
       if(match_dEta && match_dPhi){
@@ -3037,29 +3050,29 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = kTRUE;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.016, 0.007, 3.);
+      fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
 
       fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.06, 0.007, 3.);
+      fFuncPtDepPhi->SetParameters(0.075, 0.015, 2.);
       break;
     case 8:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = kTRUE;
       fUsePtDepTrackToCluster = kTRUE;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.025, 0.01, 3.);
+      fFuncPtDepEta->SetParameters(0.06, 0.010, 2.5);
 
       fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.08, 0.01, 3.);
+      fFuncPtDepPhi->SetParameters(0.15, 0.015, 2.);
       break;
     case 9:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = kTRUE;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.012, 0.005, 3.);
+      fFuncPtDepEta->SetParameters(0.06, 0.015, 2.5);
 
       fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.04, 0.005, 3.);
+      fFuncPtDepPhi->SetParameters(0.15, 0.020, 2.);
       break;
 
     default:
