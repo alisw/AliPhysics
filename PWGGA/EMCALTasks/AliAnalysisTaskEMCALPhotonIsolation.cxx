@@ -3400,8 +3400,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         
         if(!mcpp) {continue;}
         
-        if(fTPC4Iso)
-          if((mcpp->GetPdgCode())==22) {continue;}
+        if(fIsoMethod==2)
+          if((mcpp->Charge())==0) {continue;}
         
         if(mcpp->GetStatus()>10) {continue;}
         
