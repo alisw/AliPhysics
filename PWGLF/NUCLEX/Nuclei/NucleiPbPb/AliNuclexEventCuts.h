@@ -22,8 +22,9 @@ class AliNuclexEventCuts : public TNamed {
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
     /// is convenient having special setters in this case.
-    float         GetCentrality (unsigned int estimator = 0);
-    string        GetCentralityEstimator (unsigned int estimator = 0);
+    float             GetCentrality (unsigned int estimator = 0) const;
+    string            GetCentralityEstimator (unsigned int estimator = 0) const;
+    const AliVVertex* GetPrimaryVertex() const { return fPrimaryVertex; }
 
     void          SetCentralityEstimators (string first = "V0M", string second = "CL0") { fCentEstimators[0] = first; fCentEstimators[1] = second; }
     void          SetCentralityRange (float min, float max) { fMinCentrality = min; fMaxCentrality = max; }
@@ -58,6 +59,7 @@ class AliNuclexEventCuts : public TNamed {
   private:
     string        fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
     float         fCentPercentiles[2];            ///< Centrality percentiles 
+    AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
 
     ClassDef(AliNuclexEventCuts,2)
 };
