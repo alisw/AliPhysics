@@ -2063,6 +2063,9 @@ void AliJJetJtAnalysis::FillPythia(TObjArray *Jets, int iContainer){
       double jetPt = jetCandidate->Pt();
       if(jetPt > (*fJetTriggPtBorders)[1]){ //If the origin particle is energetic enough
         iBin = GetBin(fJetTriggPtBorders,jetPt);
+        if(iBin < 0) {  
+          continue;
+        }
         //cout << endl << "Parent Jet: " << endl;
         int found = 0;
 
@@ -2417,6 +2420,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
           if(!track) continue;
           if(!track->IsTrue(1)) continue;
           iBinDet = GetBin(fJetTriggPtBorders,(*fJetPt)[icon2]); // fill jetPt histos	
+          if(iBinDet < 0) continue;
           if(mcTrack && (TMath::Abs(track->GetLabel()) == TMath::Abs(mcTrack->GetLabel())) ){ //If the track labels match
             /*cout << "Found match: " << endl;
               cout << "Reco track index: " << icon2             << " mc Track index:  " << icon << endl;
@@ -2489,6 +2493,7 @@ void AliJJetJtAnalysis::FillCorrelation(TObjArray *Jets, TObjArray *MCJets, int 
   double effCorrection;
   for(int icon2 = 0 ; icon2 < fTracks->GetEntries() ; icon2++){
     iBinDet = GetBin(fJetTriggPtBorders,(*fJetPt)[icon2]); // fill jetPt histos	
+    if(iBinDet < 0) continue;
     AliJBaseTrack * track = (AliJBaseTrack*) fTracks->At(icon2);
     if(!track) continue;
     if(!track->IsTrue(1)) continue;
@@ -2534,6 +2539,7 @@ void AliJJetJtAnalysis::FillRandomBackground(double jetpT, double jetE, TObjArra
   int iBin, iptaBin=0;
   int jBin=0;
   iBin = GetBin(fJetTriggPtBorders,jetpT); // fill jetPt histos
+  if(iBin < 0 ) return;
 
 
 
