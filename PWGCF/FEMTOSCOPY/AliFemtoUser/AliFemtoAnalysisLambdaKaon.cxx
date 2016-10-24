@@ -1378,15 +1378,15 @@ AliFemtoAnalysisLambdaKaon::DefaultLambdaCutParams()
   tReturnParams.minPurityMass = LambdaMass-0.035;
   tReturnParams.maxPurityMass = LambdaMass+0.035;
 
-  tReturnParams.useCustomFilter = false;
+  tReturnParams.useCustomFilter = true;
 
   tReturnParams.removeMisID = true;
-  tReturnParams.minInvMassReject = K0ShortMass-0.003677;
-  tReturnParams.maxInvMassReject = K0ShortMass+0.003677;
+  tReturnParams.minInvMassReject = K0ShortMass-0.009;
+  tReturnParams.maxInvMassReject = K0ShortMass+0.009;
 
-  tReturnParams.useSimpleMisID = true;
+  tReturnParams.useSimpleMisID = false;
   tReturnParams.buildMisIDHistograms = true;
-  tReturnParams.useCustomMisID = false;
+  tReturnParams.useCustomMisID = true;
 
   tReturnParams.eta = 0.8;
   tReturnParams.minPt = 0.4;
@@ -1432,15 +1432,15 @@ AliFemtoAnalysisLambdaKaon::DefaultAntiLambdaCutParams()
   tReturnParams.minPurityMass = LambdaMass-0.035;
   tReturnParams.maxPurityMass = LambdaMass+0.035;
 
-  tReturnParams.useCustomFilter = false;
+  tReturnParams.useCustomFilter = true;
 
   tReturnParams.removeMisID = true;
-  tReturnParams.minInvMassReject = K0ShortMass-0.003677;
-  tReturnParams.maxInvMassReject = K0ShortMass+0.003677;
+  tReturnParams.minInvMassReject = K0ShortMass-0.009;
+  tReturnParams.maxInvMassReject = K0ShortMass+0.009;
 
-  tReturnParams.useSimpleMisID = true;
+  tReturnParams.useSimpleMisID = false;
   tReturnParams.buildMisIDHistograms = true;
-  tReturnParams.useCustomMisID = false;
+  tReturnParams.useCustomMisID = true;
 
   tReturnParams.eta = 0.8;
   tReturnParams.minPt = 0.4;
@@ -1486,15 +1486,15 @@ AliFemtoAnalysisLambdaKaon::DefaultK0ShortCutParams()
   tReturnParams.minPurityMass = K0ShortMass-0.070;
   tReturnParams.maxPurityMass = K0ShortMass+0.070;
 
-  tReturnParams.useCustomFilter = false;
+  tReturnParams.useCustomFilter = true;
 
   tReturnParams.removeMisID = true;
   tReturnParams.minInvMassReject = LambdaMass-0.005683;
   tReturnParams.maxInvMassReject = LambdaMass+0.005683;
 
-  tReturnParams.useSimpleMisID = true;
+  tReturnParams.useSimpleMisID = false;
   tReturnParams.buildMisIDHistograms = true;
-  tReturnParams.useCustomMisID = false;
+  tReturnParams.useCustomMisID = true;
 
   tReturnParams.eta = 0.8;
   tReturnParams.minPt = 0.2;
@@ -1554,8 +1554,8 @@ AliFemtoAnalysisLambdaKaon::DefaultKchCutParams(int aCharge)
   tReturnParams.maxImpactXY = 2.4;
   tReturnParams.maxImpactZ = 3.0;
 
-  tReturnParams.useCustomFilter = false;
-  tReturnParams.useCustomMisID = false;
+  tReturnParams.useCustomFilter = true;
+  tReturnParams.useCustomMisID = true;
   tReturnParams.useElectronRejection = true;
   tReturnParams.usePionRejection = true;
 
