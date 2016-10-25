@@ -155,7 +155,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const TString& aParamString="")
 
     int tBeginDirNameModifier = 1;
     if(tCutVariations.cutName[1] == TString("|")) tBeginDirNameModifier = 2;
-    TString tDirNameModifier = tCutVariations.cutName(tBeginDirNameModifier, tCutVariations.cutName.Length() - 1) + TString("|") + TString::Format("%0.2f",tCutVariations.valuesToVary[iCutVal]);
+    TString tDirNameModifier = tCutVariations.cutName(tBeginDirNameModifier, tCutVariations.cutName.Length() - 1) + TString("|") + TString::Format("%0.6f",tCutVariations.valuesToVary[iCutVal]);
     tDirNameModifier.ReplaceAll("|","_");
 
     // loop over centrality ranges
@@ -489,7 +489,7 @@ BuildConfiguration(
           TObjString *tSubRange_it = NULL;
           while(tSubRange_it = (TObjString*)tNextSubRange())
           {
-            TString tNext = TString::Format("%0.2f", tSubRange_it->String().Atof());
+            TString tNext = TString::Format("%f", tSubRange_it->String().Atof());
 
             tCmd = tCutVariationsName + ".valuesToVary.push_back(" + tNext + ");";
             cout << "I-BuildConfiguration: `" << tCmd << "`\n";
