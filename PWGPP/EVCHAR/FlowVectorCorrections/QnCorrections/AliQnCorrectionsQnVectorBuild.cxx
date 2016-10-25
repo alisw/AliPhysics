@@ -170,8 +170,8 @@ void AliQnCorrectionsQnVectorBuild::NormalizeQoverSquareRootOfM() {
   else {
     for(Int_t h = 1; h < fHighestHarmonic + 1; h++){
       if ((fHarmonicMask & harmonicNumberMask[h]) == harmonicNumberMask[h]) {
-        fQnX[h] += fQnX[h] / TMath::Sqrt(fSumW);
-        fQnY[h] += fQnY[h] / TMath::Sqrt(fSumW);
+        fQnX[h] = fQnX[h] / TMath::Sqrt(fSumW);
+        fQnY[h] = fQnY[h] / TMath::Sqrt(fSumW);
       }
     }
   }
