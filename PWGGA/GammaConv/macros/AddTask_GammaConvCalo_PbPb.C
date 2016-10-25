@@ -414,6 +414,16 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
   AliConversionMesonCuts **analysisMesonCuts  = new AliConversionMesonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
+    //create AliCaloTrackMatcher instance, if there is none present
+    TString caloCutPos = cuts.GetClusterCut(i);
+    caloCutPos.Resize(1);
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName,caloCutPos.Atoi());
+      fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      mgr->AddTask(fTrackMatcher);
+      mgr->ConnectInput(fTrackMatcher,0,cinput);
+    }
     
     analysisEventCuts[i] = new AliConvEventCuts();
 //     if ( trainConfig == 1){
@@ -459,6 +469,7 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
         
     analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
