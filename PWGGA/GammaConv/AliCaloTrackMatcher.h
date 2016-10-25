@@ -13,7 +13,6 @@ using namespace std;
 class AliCaloTrackMatcher : public AliAnalysisTaskSE {
 
  public:
-
    AliCaloTrackMatcher(const char *name, Int_t clusterType);
    //Uncopyable & operator=(const Uncopyable&);
 
@@ -23,8 +22,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    virtual void UserExec(Option_t *option);
    virtual void Terminate(Option_t *);
 
-   void Initialize(Int_t runNumber);
-   void ProcessEvent(AliVEvent *event);
+   TList* GetCaloTrackMatcherHistograms() {return fListHistos;}
 
    void SetV0ReaderName(TString name)    {fV0ReaderName = name; return;}
    void SetMatchingResidual(Float_t res) {fMatchingResidual = res; return;}
@@ -37,6 +35,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    vector<Int_t> GetMatchedClusterIDsForTrack(Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
 
  private:
+   //typedefs
    typedef pair<Int_t, Int_t> pairInt;
    typedef pair<Float_t, Float_t> pairFloat;
    typedef map<pairInt, Int_t> mapT;
@@ -44,6 +43,12 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    AliCaloTrackMatcher (const AliCaloTrackMatcher&); // not implemented
    AliCaloTrackMatcher & operator=(const AliCaloTrackMatcher&); // not implemented
 
+   // private methods
+   void Initialize(Int_t runNumber);
+   void ProcessEvent(AliVEvent *event);
+   void SetLogBinningYTH2(TH2* histoRebin);
+
+   //basic variables/objects
    Int_t                 fClusterType;            // EMCal(1), PHOS(2) or not running (0)
    TString               fV0ReaderName;           // Name of V0Reader
    Double_t              fMatchingWindow;         // matching window to prevent unnecessary propagations
@@ -59,6 +64,10 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    Int_t                 fNEntries;               // number of current TrackID/ClusterID -> Eta/Phi connections
    vector<pairFloat>     fVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific
    mapT                  fMap_TrID_ClID_ToIndex;  // map tuple of (trackID,clusterID) to index in vector vecDeltaEtaDeltaPhi
+
+   //histos
+   TList*                fListHistos;             // list with histogram(s)
+   TH2F*                 fHistControlMatches;     // bookkeeping for processed tracks/clusters and succesful matches
 
    ClassDef(AliCaloTrackMatcher,1)
 };
