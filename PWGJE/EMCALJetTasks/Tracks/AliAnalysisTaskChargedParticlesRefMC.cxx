@@ -48,6 +48,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
+#include "AliOADBContainer.h"
 #include "AliVVertex.h"
 
 #include "AliAnalysisTaskChargedParticlesRefMC.h"
@@ -59,9 +60,6 @@ ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC)
 
 namespace EMCalTriggerPtAnalysis {
 
-/**
- * Dummy constructor
- */
 AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         AliAnalysisTaskEmcal(),
         fTrackCuts(nullptr),
@@ -75,16 +73,13 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fEtaLabCut(-0.5, 0.5),
         fEtaCmsCut(-0.13, 0.13),
         fPhiCut(0., TMath::TwoPi()),
-        fFracPtHard(-1)
+        fFracPtHard(-1),
+        fNameAcceptanceOADB()
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
   SetNeedEmcalGeom(true);
 }
 
-/**
- * Main constructor
- * @param name Name of the task
- */
 AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const char* name):
         AliAnalysisTaskEmcal(name, true),
         fTrackCuts(nullptr),
@@ -98,23 +93,19 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fEtaLabCut(-0.5, 0.5),
         fEtaCmsCut(-0.13, 0.13),
         fPhiCut(0., TMath::TwoPi()),
-        fFracPtHard(-1)
+        fFracPtHard(-1),
+        fNameAcceptanceOADB()
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
   SetNeedEmcalGeom(true);
 }
 
-/**
- * Destuctor
- */
 AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
   //if(fTrackCuts) delete fTrackCuts;
   if(fTriggerSelection) delete fTriggerSelection;
   if(fHistos) delete fHistos;
 }
-/**
- * Create the output histograms
- */
+
 void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
@@ -280,8 +271,56 @@ bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
   return true;
 }
 
-bool AliAnalysisTaskChargedParticlesRefMC::Run() {  // Select event
+void AliAnalysisTaskChargedParticlesRefMC::ExecOnce(){
+  AliAnalysisTaskEmcal::ExecOnce();
 
+  if(!fLocalInitialized) {
+    AliErrorStream() << GetName() << ": Failed initializing AliAnalysisTaskEmcal" << std::endl;
+    return;
+  }
+
+  // Load acceptance OADB
+  if(fNameAcceptanceOADB && fTriggerSelection){
+    AliOADBContainer acceptanceCont;
+    acceptanceCont.InitFromFile(fNameAcceptanceOADB.Data(), "AliEmcalTriggerAcceptance");
+    TObjArray *acceptanceMaps = dynamic_cast<TObjArray *>(acceptanceCont.GetObject(fInputEvent->GetRunNumber()));
+    TH2 *map(nullptr);
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG1")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG2")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG2, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG1")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG2")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ1")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ2")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ2, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ1")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ2")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+    }
+  }
+}
+
+bool AliAnalysisTaskChargedParticlesRefMC::Run() {
   // MonteCarlo Loop
   // Histograms
   // - Full eta (-0.8, 0.8), new binning
@@ -395,17 +434,6 @@ bool AliAnalysisTaskChargedParticlesRefMC::Run() {  // Select event
   return true;
 }
 
-/**
- * Fill track histograms
- * @param eventclass Trigger class fired
- * @param weight \f$ p_{t} \f$-hard dependent weight
- * @param pt track \f$ p_{t} \f$
- * @param etalab Track \f$ \eta \f$ in lab frame
- * @param etacent Track \f$ \eta \f$ in cms frame
- * @param phi Track \f$ \eta \f$ in lab frame
- * @param etacut Track accepted by \f$ \eta \f$ cut
- * @param inEmcal Track in EMCAL \f$ \phi \f$ acceptance
- */
 void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
     const char *eventclass,
     Double_t weight,
@@ -474,22 +502,12 @@ void AliAnalysisTaskChargedParticlesRefMC::FillTrackHistos(
 }
 
 
-/**
- * Set the track selection
- * @param cutname Name of the track cuts
- * @param isAOD check whether we run on ESDs or AODs
- */
 void AliAnalysisTaskChargedParticlesRefMC::InitializeTrackCuts(TString cutname, bool isAOD){
   SetTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
 }
 
 
 
-/**
- * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
- * @param triggerpatches Trigger patches found by the trigger maker
- * @return String with EMCAL trigger decision
- */
 TString AliAnalysisTaskChargedParticlesRefMC::GetFiredTriggerClasses(const TClonesArray* triggerpatches) {
   TString triggerstring = "";
   Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0;
@@ -521,14 +539,6 @@ TString AliAnalysisTaskChargedParticlesRefMC::GetFiredTriggerClasses(const TClon
   return triggerstring;
 }
 
-/**
- * Check in a transparent way for ESDs and AODs whether the particle is physical primary or not
- * -# AOD: Information stored in the AliAODMCParticle
- * -# ESD: Information needs to be retrieved from the stack via the label of the MC particle
- * @param part The particle to check
- * @param mcevent The MC event containing the stack (ESD only)
- * @return True if particle is a physical primary particle, false otherwise
- */
 Bool_t AliAnalysisTaskChargedParticlesRefMC::IsPhysicalPrimary(const AliVParticle* const part, AliMCEvent* const mcevent) {
   Bool_t physprim = false;
   const AliAODMCParticle *aodmc = dynamic_cast<const AliAODMCParticle *>(part);
