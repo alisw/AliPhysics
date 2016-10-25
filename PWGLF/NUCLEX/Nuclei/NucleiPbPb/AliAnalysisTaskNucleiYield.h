@@ -90,7 +90,7 @@ public:
   void SetUseNewCentralityFramework (bool useIt) { fNewCentralityFramework = useIt; }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
   void SetTriggerMask (ULong_t mask) { fTriggerMask = mask; }
-  
+
   void SetEnableLogarithmicBinning (bool useit) { fEnableLogAxisInPerformancePlots = useit; }
 
   virtual void   UserCreateOutputObjects();
@@ -109,13 +109,14 @@ private:
 
   Bool_t Flatten(float cent);
   void PtCorrection(float &pt, bool positiveCharge);
-  
+
   TF1                  *fTOFfunction;           //!<! TOF signal function
 
   TList                *fList;                  ///<  Output list
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
   Float_t               fPDGMass;               ///<  PDG mass
   Float_t               fPDGMassOverZ;          ///<  PDG mass over z
+  float                 fCharge;                ///<  Charge of the particle of interest (absolute value)
   Bool_t                fIsMC;                  ///<  Switch between MC and data
   Bool_t                fFillOnlyEventHistos;   ///<  Set treu to fill only event related histograms
 
