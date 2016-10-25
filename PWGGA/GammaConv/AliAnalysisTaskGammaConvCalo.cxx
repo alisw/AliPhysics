@@ -55,6 +55,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
+#include "AliCaloTrackMatcher.h"
 #include <vector>
 #include <map>
 
@@ -2038,6 +2039,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
     if (fV0Reader->GetV0FindingEfficiencyHistograms())
       fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
+  for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+  }
 
 
       
