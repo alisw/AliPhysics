@@ -244,7 +244,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 /// \param pass E.g. 'pass2' or 'passMC'
 /// Returns the tree with the information from the corresponding resource
 /// \return TTree* with corresponding resource
-TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Bool_t buildIndex){
+TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_t buildIndex){
   TString internalFilename = ""; // Resulting path to the file
   TString internalLocation = fLocalStorageDirectory; // Gets expanded in this function to the right directory
   TString externalLocation = "";
@@ -283,7 +283,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Bool
   TTreeSRedirector::FixLeafNameBug(tree);
   if (tree != 0x0) {
     AliInfo("-- Successfully read in tree");
-    if (buildIndex) BuildIndex(tree, type);
+    if (buildIndex==1) BuildIndex(tree, type);
   } else {
     AliError("Error while reading tree");
   }
