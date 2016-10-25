@@ -247,8 +247,9 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
 
   // Random cone plots
   AddHistogram2D<TH2D>("hRandomConePt", "Random cone p_{T} distribution", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hRandomConePtCut3GeV", "Random cone p_{T} distribution, cut p_{T} > 3 GeV/c", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
   AddHistogram2D<TH2D>("hRandomConeRawPt", "Random cone p_{T} distribution (no bgrd. correction)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
-  AddHistogram2D<TH2D>("hRandomConeRawPtCut3GeV", "Random cone p_{T} distribution (no bgrd. correction), cut p_{T} > 3 GeV/c", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hRandomConeRawPtCut3GeV", "Random cone p_{T} distribution (no bgrd. correction), cut p_{T} > 3 GeV/c", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
 
   // Leading/subleading, background ...
 
@@ -717,6 +718,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 
   // ####### Event properties
   FillHistogram("hRandomConePt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
+  FillHistogram("hRandomConePtCut3GeV", tmpRandConePt3GeV - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
   FillHistogram("hRandomConeRawPt", tmpRandConePt, fCent); 
   FillHistogram("hRandomConeRawPtCut3GeV", tmpRandConePt3GeV, fCent);
 
