@@ -390,7 +390,6 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
 
     // make sure it's not a vzero track
     if(TMath::Abs(dEta) > 0.9) continue;
-    else printf(" doing correlation with dEta %.4f \n", dEta);
 
     //calculate vU
     // this is the track q-vecotr (small u)
@@ -452,14 +451,14 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
       // equal to the 'norm' flavor if scaling is set to false
   //    fHistProQaQb->Fill(1,vQa*vQb);
   //    fHistProQaQbM->Fill(anEvent->GetNumberOfRPs()+0.5,(vQa*vQb)/dMa/dMb,dMa*dMb);
-      fHistQaQbCos->Fill(TMath::ACos((vQa*vQb)/vQa.Mod()/vQb.Mod()));
-      fResolution->Fill( TMath::Cos( vQa.Phi()-vQb.Phi() ) );
+      //fHistQaQbCos->Fill(TMath::ACos((vQa*vQb)/vQa.Mod()/vQb.Mod()));
+      //fResolution->Fill( TMath::Cos( vQa.Phi()-vQb.Phi() ) );
       fHistQaQb->Fill(vQa*vQb/dNa/dNb);
-      fHistMaMb->Fill(dMb,dMa);
+      //fHistMaMb->Fill(dMb,dMa);
   //    fHistProQNorm->Fill(1,vQm.Mod()/dMq,dMq);
-      fHistQNormQaQbNorm->Fill((vQa*vQb)/dMa/dMb,vQm.Mod()/dMq);
-      fHistQaNormMa->Fill(dMa,vQa.Mod()/dMa);
-      fHistQbNormMb->Fill(dMb,vQb.Mod()/dMb);
+      //fHistQNormQaQbNorm->Fill((vQa*vQb)/dMa/dMb,vQm.Mod()/dMq);
+      //fHistQaNormMa->Fill(dMa,vQa.Mod()/dMa);
+      //fHistQbNormMb->Fill(dMb,vQb.Mod()/dMb);
     }
 
 
@@ -539,6 +538,7 @@ void AliFlowAnalysisWithSimpleSP::Finish() {
   Double_t dEntriesQaQb = fHistQaQb->GetEntries();
   if( dEntriesQaQb < 1 )
     return;
+  fHistQaQb->GetXaxis()->SetRangeUser(-10.,10.);
   Double_t dQaQb  = fHistQaQb->GetMean();
   if( dQaQb < 0 )
     return;
