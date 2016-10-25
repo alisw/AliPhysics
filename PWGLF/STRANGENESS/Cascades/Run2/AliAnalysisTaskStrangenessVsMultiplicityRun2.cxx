@@ -540,8 +540,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachInnerP",&fTreeCascVarBachInnerP,"fTreeCascVarBachInnerP/F");
         }
         fTreeCascade->Branch("fTreeCascVarPosTotMom",&fTreeCascVarPosTotMom,"fTreeCascVarPosTotMom/F");
-        fTreeCascade->Branch("fTreeCascVarNegTotMom",&fTreeCascVarNegInnerP,"fTreeCascVarNegTotMom/F");
-        fTreeCascade->Branch("fTreeCascVarBachTotMom",&fTreeCascVarBachInnerP,"fTreeCascVarBachTotMom/F");
+        fTreeCascade->Branch("fTreeCascVarNegTotMom",&fTreeCascVarNegTotMom,"fTreeCascVarNegTotMom/F");
+        fTreeCascade->Branch("fTreeCascVarBachTotMom",&fTreeCascVarBachTotMom,"fTreeCascVarBachTotMom/F");
         //------------------------------------------------
     }
     //------------------------------------------------
