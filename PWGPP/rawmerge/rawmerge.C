@@ -21,6 +21,8 @@
 #include "TAlienCollection.h"
 #include "TGrid.h"
 #include "TStopwatch.h"
+#include "AliRawVEvent.h"
+#include "AliRawEventHeaderBase.h"
 
 #include "AliSysInfo.h"
 
@@ -52,8 +54,7 @@ void rawmerge( TString inputFileName="wn.xml",
   TFile::SetOpenTimeout(timeOut);
   printf(" ------ TFile open timeout limit = %ds ------ \n",TFile::GetOpenTimeout()); 
   
-  if (inputFileName.Contains(".xml"))
-  {
+  if (inputFileName.Contains(".xml")){
     TString tmp=inputFileName+".list";
     makeAlienInputEventList(tmp,fullEventListFileName,inputFileName);
     inputFileName=tmp;
@@ -62,13 +63,12 @@ void rawmerge( TString inputFileName="wn.xml",
   Int_t eventNumber;
   ifstream files;
   files.open(inputFileName.Data());
-  if (!files.is_open())
-  {
+  if (!files.is_open()){
     fprintf(stderr,"error: could not read event list file \"%s\". Exiting.\n",inputFileName.Data());
     return;
   }
    
-   //TSeqCollection* listOfFiles = (TSeqCollection*)gROOT->GetListOfFiles();
+  //TSeqCollection* listOfFiles = (TSeqCollection*)gROOT->GetListOfFiles();
   TList* listOfFiles = new TList();
   TString outputFileName;
   TString line;
@@ -79,14 +79,18 @@ void rawmerge( TString inputFileName="wn.xml",
   TFile *ofile=0;
   TTree *itree=0;
   TTree *otree=0;
-  ULong64_t ievent=0;
+  Long64_t ievent=0;
+  ULong64_t igid=0;
   Int_t ofilenumber=0;
   Int_t lineNumber=0;
-  ULong64_t eventold=0;
+  Long64_t eventold=0;
+  ULong64_t igidOld=0;
   Double_t realTime=0;
+  //
+  AliRawVEvent*    fEvent=0;              // event
+  TBranch *fEventBranch = 0;              // branch for event header   
 
-  while (files.good())
-  {
+  while (files.good()){
     TStopwatch timer; timer.Start();
     ++lineNumber;
       //read the line, do some checks
@@ -97,8 +101,7 @@ void rawmerge( TString inputFileName="wn.xml",
     if (iURIobjstr) iURI=iURIobjstr->String();
     TObjString* ieventobjstr = (TObjString*)entries->At(1);
     if (ieventobjstr) ievent = ieventobjstr->String().Atoi();
-    if (iURI.IsNull() || !ieventobjstr)
-    {
+    if (iURI.IsNull() || !ieventobjstr){
       printf("malformed line: %s, skipping...\n",line.Data());
       continue;
     }
@@ -107,43 +110,38 @@ void rawmerge( TString inputFileName="wn.xml",
     if (triggerTypeobjstr) triggerType=triggerTypeobjstr->String();
 
     printf("> processing \"%s\" event %llu trigger \"%s\"...\n",iURI.Data(),ievent,triggerType.Data());
-    if (ievent==eventold && iURI==iURIold)
-    {
+    if (ievent==eventold && iURI==iURIold){
       printf("duplicated continue\n");
       continue;
     }
     //
-    if (!iURIold.Contains(iURI.Data()))
-    {
-         //if a new file - open it
+    if (!iURIold.Contains(iURI.Data())){
+      //if a new file - open it
       printf("new file: %s\n",iURI.Data());
       delete ifile;
       ifile=0;
       AliSysInfo::AddStamp((iURI+"_OpenBegin").Data(),11,lineNumber); // open + file counter
       ifile=TFile::Open(iURI.Data());
       AliSysInfo::AddStamp((iURI+"_OpenEnd").Data(),10,lineNumber); // open + file counter
-      if (!ifile)
-      {
+      if (!ifile){
         fprintf(stderr,"warning: could not open file for event \"%s\", skipping it...\n",iURI.Data());
         continue;
       }
     }
-    else
-    {
-         //if same file, reuse it
+    else{
+      //if same file, reuse it
       printf("using already open file: %s\n",iURI.Data());
     }
     iURIold=iURI;
     AliSysInfo::AddStamp((iURI+"_Begin").Data(),100,lineNumber); // dump file   + event   counter within file
     //
     TTree *itree=dynamic_cast<TTree*>(ifile->Get("RAW"));
-    if (!itree)
-    {
+    if (!itree){
       fprintf(stderr,"warning: could not find RAW tree for event \"%s\", skipping it...\n",iURI.Data());
       continue;
     }
-
-      // manage output files
+    
+    // manage output files
     if (!triggerType.IsNull()) triggerType.Prepend("_");
     outputFileName=outputFileNameTMP;
     outputFileName.ReplaceAll(".root","");
@@ -151,12 +149,10 @@ void rawmerge( TString inputFileName="wn.xml",
     outputFileName+=".root";
       
     ofile=dynamic_cast<TFile*>(listOfFiles->FindObject(outputFileName.Data()));
-    if (!ofile) 
-    {
+    if (!ofile) {
       printf("< creating output file \"%s\"\n",outputFileName.Data());
       ofile=TFile::Open(outputFileName,"recreate");
-      if (!ofile)
-      {
+      if (!ofile){
         fprintf(stderr,"error: could not create output file: \"%s\" Exiting.\n",outputFileName.Data());
         return;
       }
@@ -164,21 +160,42 @@ void rawmerge( TString inputFileName="wn.xml",
     }
     ofile->cd();
     otree=dynamic_cast<TTree*>(ofile->Get("RAW"));
-    if (!otree) 
-    {
+    if (!otree) {
       otree=itree->CloneTree(0);
     }
 
-    otree->CopyAddresses(itree);
+    fEventBranch = itree->GetBranch("rawevent");  // as in AliRawReaderRoot::AliRawReaderRoot  
+    fEventBranch->SetAddress(&fEvent);           // access event header
+
     AliSysInfo::AddStamp((iURI+"_GetBegin").Data(),1001,lineNumber); // get entry + file counter
-    itree->GetEntry(ievent);
+    Int_t size= itree->GetEntry(ievent);
+    Int_t readEntry=itree->GetReadEntry();   
+    otree->CopyAddresses(itree);
+
+    Bool_t isOK=kTRUE;    
     AliSysInfo::AddStamp((iURI+"_GetEnd").Data(),1000,lineNumber); // get entry + file counter
-    eventold=ievent;
-    printf("filling event %llu in file %s\n",ievent,ofile->GetName());
+    ULong64_t  timeStamp;
+    {
+      const UInt_t *id  = fEvent->GetHeader()->GetP("Id");                             // copy of AliRawReaderRoot::GetEventId()
+      ULong64_t  period = id ? (((id)[0]>>4)&0x0fffffff): 0;                           // AliRawReader::Get<>
+      ULong64_t  orbit  = id ? ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)) : 0; // AliRawReader::Get<>
+      ULong64_t  bcID   =  id ? ((id)[1]&0x00000fff) : 0;                              // AliRawReader::Get<>
+      igid    = (((ULong64_t)period << 36) | ((ULong64_t)orbit << 12) |(ULong64_t)bcID); // AliRawReader::GetEventIdAsLong() 
+      timeStamp=fEvent->GetHeader()->Get("Timestamp");  
+      if (igid==igidOld){  // check debugger
+	isOK=kFALSE;
+	Int_t sizeNew=itree->GetEntry(ievent);
+	Int_t readEntryNew=itree->GetReadEntry(); 
+	fEvent->GetHeader()->Dump();      
+      }      
+    }
+    printf("filling event (%llu)  gid (%llu) timestamp (%llu) in file %s\n",ievent,igid, timeStamp, ofile->GetName());
     AliSysInfo::AddStamp((iURI+"_FillBegin").Data(),2001,lineNumber); // get entry + file counter
     otree->Fill();
     AliSysInfo::AddStamp((iURI+"_FillEnd").Data(),2000,lineNumber); // get entry + file counter
-      //otree->CopyEntries(itree,Form("Entry$==%d",ievent),1);
+    eventold=ievent;
+    igidOld=igid;  
+    //otree->CopyEntries(itree,Form("Entry$==%d",ievent),1);
 
       // reset input
     itree->ResetBranchAddresses();
