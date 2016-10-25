@@ -138,6 +138,12 @@ class AliJetShapeOpeningAngle_kt : public fastjet::FunctionOfPseudoJet<Double32_
   Double32_t result(const fastjet::PseudoJet &jet) const;
 };
 
+class AliJetShapeOpeningAngleSD_CA : public fastjet::FunctionOfPseudoJet<Double32_t>{
+ public:
+  virtual std::string description() const{return "Opening Angle of Soft Dropped Subjet Axes with Cambridge Aachen";}
+  Double32_t result(const fastjet::PseudoJet &jet) const;
+};
+
 
 
 #endif

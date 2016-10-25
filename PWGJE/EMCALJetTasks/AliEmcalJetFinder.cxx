@@ -295,8 +295,6 @@ Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pC
 //=============================================================================
 
   AliParticleContainer *pContTrks = pContJets->GetParticleContainer();
-  if (!pContTrks) cout << "Null Particle Container" <<endl;
-  if (pContTrks) cout << "AliEmcalJetFinder Number of jet tracks :   "<< pJet->GetNumberOfTracks()<<endl;
   if (pContTrks) for (Int_t i=0; i<pJet->GetNumberOfTracks(); i++) {
     AliVParticle *pTrk = pJet->TrackAt(i, pContTrks->GetArray()); if (!pTrk) continue;
     AddInputVector(pTrk->Px(), pTrk->Py(), pTrk->Pz(), pTrk->E(), pJet->TrackAt(i)+100);

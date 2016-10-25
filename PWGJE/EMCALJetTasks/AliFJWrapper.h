@@ -59,6 +59,7 @@ class AliFJWrapper
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet2subjettiness_kt()       const {return fGenSubtractorInfoJet2subjettiness_kt ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet3subjettiness_kt()       const {return fGenSubtractorInfoJet3subjettiness_kt ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngle_kt()       const {return fGenSubtractorInfoJetOpeningAngle_kt ; }
+  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngleSD_CA()       const {return fGenSubtractorInfoJetOpeningAngleSD_CA ; }
   const std::vector<fastjet::PseudoJet>                      GetConstituentSubtrJets()            const {return fConstituentSubtrJets            ; }
   const std::vector<fastjet::PseudoJet>                      GetGroomedJets()            const {return fGroomedJets            ; }
   Int_t CreateGenSub();          // fastjet::contrib::GenericSubtractor
@@ -86,6 +87,7 @@ class AliFJWrapper
   virtual Int_t DoGenericSubtractionJet2subjettiness_kt();
   virtual Int_t DoGenericSubtractionJet3subjettiness_kt();
   virtual Int_t DoGenericSubtractionJetOpeningAngle_kt();
+  virtual Int_t DoGenericSubtractionJetOpeningAngleSD_CA();
   virtual Int_t DoConstituentSubtraction();
   virtual Int_t DoSoftDrop();
   
@@ -177,6 +179,7 @@ class AliFJWrapper
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet2subjettiness_kt;       //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet3subjettiness_kt;       //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngle_kt;       //!
+  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngleSD_CA;       //!
 #endif
   Bool_t                                   fDoFilterArea;         //!
   Bool_t                                   fLegacyMode;           //!
@@ -263,6 +266,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fGenSubtractorInfoJet2subjettiness_kt ( )
   , fGenSubtractorInfoJet3subjettiness_kt ( )
   , fGenSubtractorInfoJetOpeningAngle_kt ( )
+  , fGenSubtractorInfoJetOpeningAngleSD_CA ( )
 #endif
   , fDoFilterArea      (false)
   , fLegacyMode        (false)
@@ -1015,6 +1019,27 @@ Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngle_kt() {
     if(fInclusiveJets[i].perp()>1.e-4)
       double subtracted_shape = (*fGenSubtractor)(shapeOpeningAngle_kt, fInclusiveJets[i], infoOpeningAngle_kt);
     fGenSubtractorInfoJetOpeningAngle_kt.push_back(infoOpeningAngle_kt);
+  }
+#endif
+  return 0;
+}
+
+//_________________________________________________________________________________________________
+Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngleSD_CA() {
+  //Do generic subtraction for 2subjettiness axes opening angle on sofdropped jet uing Cambridge Aachen
+#ifdef FASTJET_VERSION
+  CreateGenSub();
+
+  // Define jet shape
+  AliJetShapeOpeningAngleSD_CA shapeOpeningAngleSD_CA;
+
+  // clear the generic subtractor info vector
+  fGenSubtractorInfoJetOpeningAngleSD_CA.clear();
+  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fj::contrib::GenericSubtractorInfo infoOpeningAngleSD_CA;
+    if(fInclusiveJets[i].perp()>1.e-4)
+      double subtracted_shape = (*fGenSubtractor)(shapeOpeningAngleSD_CA, fInclusiveJets[i], infoOpeningAngleSD_CA);
+    fGenSubtractorInfoJetOpeningAngleSD_CA.push_back(infoOpeningAngleSD_CA);
   }
 #endif
   return 0;
