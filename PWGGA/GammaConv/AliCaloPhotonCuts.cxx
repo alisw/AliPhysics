@@ -53,6 +53,7 @@
 #include "AliPHOSTenderSupply.h"
 #include "AliOADBContainer.h"
 #include "AliESDtrackCuts.h"
+#include "AliCaloTrackMatcher.h"
 #include <vector>
 
 class iostream;
@@ -105,6 +106,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fDoLightOutput(kFALSE),
   fIsJetJet(kFALSE),
   fV0ReaderName("V0ReaderV1"),
+  fCaloTrackMatcherName("CaloTrackMatcher_1"),
   fPeriodName(""),
   fCurrentMC(kNoMC),
   fClusterType(0),
@@ -257,6 +259,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fDoLightOutput(ref.fDoLightOutput),
   fIsJetJet(ref.fIsJetJet),
   fV0ReaderName(ref.fV0ReaderName),
+  fCaloTrackMatcherName(ref.fCaloTrackMatcherName),
   fPeriodName(ref.fPeriodName),
   fCurrentMC(ref.fCurrentMC),
   fClusterType(ref.fClusterType),
@@ -2336,80 +2339,23 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         if(fabs(aodt->Eta())>0.8) continue;
         if(aodt->Pt()<0.15) continue;
       }
-
-      Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
-      aodt->GetPxPyPz(pxpypz);
-      aodt->GetXYZ(xyz);
-      aodt->GetCovarianceXYZPxPyPz(cv);
-      trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
     }
 
-    if (!trackParam) {AliError("Could not get TrackParameters, continue");continue;}
-    AliExternalTrackParam emcParam(*trackParam);
-    Float_t eta, phi, pt;
-
-    //propagate tracks to emc surfaces
-    if(fClusterType == 1){
-      if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 440., 0.139, 20., eta, phi, pt)) {
-        delete trackParam;
-        continue;
-      }
-
-      if( TMath::Abs(eta) > 0.75 ) {
-        delete trackParam;
-        continue;
-      }
-      // Save some time and memory in case of no DCal present
-      if( nModules < 13 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())){
-        delete trackParam;
-        continue;
-      }
-    }else if(fClusterType == 2){
-      if( !AliTrackerBase::PropagateTrackToBxByBz(&emcParam, 460., 0.139, 20, kTRUE, 0.8, -1)){
-        delete trackParam;
-        continue;
-      }
-//to do: implement of distance checks
-    }
-
-    Float_t dEta=-999, dPhi=-999;
+    AliCaloTrackMatcher* trackMatcherInstance = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
     Float_t clsPos[3] = {0.,0.,0.};
-    Double_t exPos[3] = {0.,0.,0.};
-    if (!emcParam.GetXYZ(exPos)) continue;
-
-//    cout << "-: " << trackParam << endl;
-//    cout << "eta/phi: " << eta << ", " << phi << endl;
-//    cout << "nClus: " << nClus << endl;
     for(Int_t iclus=0;iclus < nClus;iclus++){
       AliVCluster* cluster = event->GetCaloCluster(iclus);
       if (!cluster) continue;
-//      cout << "-------------------------LOOPING: " << iclus << ", " << cluster->GetID() << endl;
+      Float_t dEta, dPhi;
+      if(!trackMatcherInstance->GetTrackClusterMatchingResidual(inTrack->GetID(),cluster->GetID(),dEta,dPhi)) continue;
       cluster->GetPosition(clsPos);
-      Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
-      if (dR > 100) continue;
-      Double_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
-//      TVector3 vecC(clsPos);
-//      cout << "eta/phi: " << vecC.Eta() << ", " << vecC.Phi() << endl;
-      AliExternalTrackParam trackParamTmp(emcParam);//Retrieve the starting point every time before the extrapolation
-      if(fClusterType == 1){
-        if (!cluster->IsEMCAL()) continue;
-        if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, 0.139, 5., dEta, dPhi)) continue;
-      }else if(fClusterType == 2){
-        if (!cluster->IsPHOS()) continue;
-        if(!AliTrackerBase::PropagateTrackToBxByBz(&trackParamTmp, clusterR, 0.139, 5., kTRUE, 0.8, -1)) continue;
-        Double_t trkPos[3] = {0,0,0};
-        trackParamTmp.GetXYZ(trkPos);
-        TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-        TVector3 clsPosVec(clsPos);
-        dPhi = clsPosVec.DeltaPhi(trkPosVec);
-        dEta = clsPosVec.Eta()-trkPosVec.Eta();
-      }
-
+      Float_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
       Float_t dR2 = dPhi*dPhi + dEta*dEta;
 //      cout << "dEta/dPhi: " << dEta << ", " << dPhi << " - ";
 //      cout << dR2 << endl;
       if(isEMCalOnly && fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2), weight);
       if(isEMCalOnly && fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi, weight);
+      if(isEMCalOnly && fHistClusterRBeforeQA) fHistClusterRBeforeQA->Fill(clusterR, weight);
 
       Float_t clusM02 = (Float_t) cluster->GetM02();
       Float_t clusM20 = (Float_t) cluster->GetM20();

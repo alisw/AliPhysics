@@ -153,6 +153,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
+    void        SetCaloTrackMatcherName(TString name)          {fCaloTrackMatcherName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
 
     void        CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC);
@@ -264,6 +265,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     //for NonLinearity correction
     TString   fV0ReaderName;                            // Name of V0Reader
+    TString   fCaloTrackMatcherName;                    // Name of global TrackMatching instance
     TString   fPeriodName;                              // PeriodName of MC
     MCSet     fCurrentMC;                               // enum for current MC set being processed
     
@@ -407,7 +409,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,30)
+    ClassDef(AliCaloPhotonCuts,31)
 };
 
 #endif
