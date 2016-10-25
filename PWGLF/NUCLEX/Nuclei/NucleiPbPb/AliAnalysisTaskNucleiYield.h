@@ -87,9 +87,7 @@ public:
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetPhiRegions (bool pos,int n, float *regions) { fPhiRegions[int(pos)].Set(n,regions); }
-  void SetUseNewCentralityFramework (bool useIt) { fNewCentralityFramework = useIt; }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
-  void SetTriggerMask (ULong_t mask) { fTriggerMask = mask; }
 
   void SetEnableLogarithmicBinning (bool useit) { fEnableLogAxisInPerformancePlots = useit; }
 
@@ -161,13 +159,11 @@ private:
   Float_t               fRequireMaxMomentum;    ///<  Cut in momentum for TPC only spectrum
   Float_t               fRequireTrackLength;    ///<  Cut on the track length
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
-  Bool_t                fNewCentralityFramework;///<  Use the new centrality framework
 
   Float_t               fRequireMinCentrality;  ///<  Max centrality
   Float_t               fRequireMaxCentrality;  ///<  Min centrality
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
-  ULong_t               fTriggerMask;           ///<  Mask of the accepted triggers
-  Bool_t               fEnableLogAxisInPerformancePlots; ///< Switch on/off logarithmic bins
+  Bool_t                fEnableLogAxisInPerformancePlots; ///< Switch on/off logarithmic bins
 
   AliPID::EParticleType fParticle;              ///<  Particle specie
   TArrayF               fCentBins;              ///<  Centrality bins

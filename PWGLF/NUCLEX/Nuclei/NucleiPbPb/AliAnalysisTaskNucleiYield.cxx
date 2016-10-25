@@ -57,7 +57,6 @@ static double TOFsignal(double *x, double *par) {
 
   if (x[0] <= (tail + mean))
     return norm * TMath::Gaus(x[0], mean, sigma);
-  else
     return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
 }
 
@@ -171,11 +170,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   ,fMTOFphiSignal(0x0)
   ,fMTPCphiCounts(0x0)
   ,fMTPCeLoss(0x0)
-  ,fNewCentralityFramework(false)
   ,fRequireMinCentrality(0.)
   ,fRequireMaxCentrality(80.)
   ,fEnableFlattening(true)
-  ,fTriggerMask(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral)
   ,fEnableLogAxisInPerformancePlots(true) {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
