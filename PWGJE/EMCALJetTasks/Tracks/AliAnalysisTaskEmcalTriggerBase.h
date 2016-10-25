@@ -138,6 +138,15 @@ public:
    */
   void SetOnlineTriggerThreshold(const TString &triggerclass, Int_t threshold);
 
+  /**
+   * Set the name of teh OADB container with trigger acceptance maps. Trigger
+   * acceptance maps will be used in the trigger offline selection to mimic
+   * the acceptance observed in data. Only useful in simulations and the mimicing
+   * of the trigger in min. bias data.
+   * @param[in] nameAcceptanceOADB Location of the OADB container with the acceptance maps
+   */
+  void SetTiggerAcceptanceOADB(const TString &nameAcceptanceOADB) { fNameAcceptanceOADB = nameAcceptanceOADB; }
+
 protected:
   /**
    * Steering of object creation. Handles general objects (histogram manager
@@ -296,6 +305,7 @@ protected:
   AliOADBContainer                *fMaskedFastorOADB;         //!<! Container with masked fastors
   std::vector<int>                fMaskedFastors;             ///< List of masked fastors
   TObjArray                       fOnlineTriggerThresholds;   ///< Trigger thresholds applied at online level
+  TString                         fNameAcceptanceOADB;        ///< Name of the OADB container with the trigger acceptance
 
   Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
