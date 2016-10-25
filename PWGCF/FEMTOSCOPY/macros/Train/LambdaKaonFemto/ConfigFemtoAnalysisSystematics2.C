@@ -574,6 +574,11 @@ BuildParticleConfiguration(
       if(tParticleType.EqualTo("ALL")) tDesiredName = TString("ALL");
       if(tParticleType.EqualTo("ALLV0S")) tDesiredName = TString("ALLV0S");
       if(tParticleType.EqualTo(tDesiredName)) tCmd = tV0CutVarName + "." + tParticleCut(0, tParticleCut.Length());
+
+      if(tParticleType.EqualTo("CLAM"))  //do for both Lam and ALam
+      {
+        if(aV0CutParams.particlePDGType==AFALK::kPDGLam || aV0CutParams.particlePDGType==AFALK::kPDGALam) tCmd = tV0CutVarName + "." + tParticleCut(0, tParticleCut.Length());
+      }
     }
 
     if(!tCmd.IsNull())
