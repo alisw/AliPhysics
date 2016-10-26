@@ -226,14 +226,12 @@ fCachedRunNum(0)
   fhPMCvsPMQ[i] = 0x0;
  }
  for(Int_t r=0; r<fCRCMaxnRun; r++) {
-  fRunList[r] = 0;
+   fRunList[r] = 0;
  }
-//  for(Int_t c=0; c<fnCen; c++) {
-//    for(Int_t k=0; k<8; k++) {
-//      fTowerGainEq[c][k] =  NULL;
-//    }
-//  }
- this->InitializeRunArrays();
+  for(Int_t c=0; c<2; c++) {
+    fTowerGainEq[c] =  NULL;
+  }
+  this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(1);
   gRandom->SetSeed(fMyTRandom3->Integer(65539));
   for(Int_t c=0; c<10; c++) {
@@ -378,11 +376,9 @@ fCachedRunNum(0)
  for(Int_t r=0; r<fCRCMaxnRun; r++) {
   fRunList[r] = 0;
  }
-//  for(Int_t c=0; c<fnCen; c++) {
-//    for(Int_t k=0; k<8; k++) {
-//      fTowerGainEq[c][k] =  NULL;
-//    }
-//  }
+  for(Int_t c=0; c<2; c++) {
+    fTowerGainEq[c] =  NULL;
+  }
  this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(iseed);
  gRandom->SetSeed(fMyTRandom3->Integer(65539));
@@ -414,7 +410,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
  delete fFlowEvent;
  delete fFlowTrack;
  delete fCutsEvent;
-// delete fTowerEqList;
+ if (fTowerEqList)  delete fTowerEqList;
  if (fAnalysisUtil) delete fAnalysisUtil;
  if (fQAList) delete fQAList;
  if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
@@ -423,8 +419,11 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
 //________________________________________________________________________
 void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
-// for(Int_t r=0;r<fCRCMaxnRun;r++) {
-//  fCRCQVecListRun[r] = NULL;
+  for(Int_t r=0;r<fCRCMaxnRun;r++) {
+    fCRCQVecListRun[r] = NULL;
+    fZNCTower[r] = NULL;
+    fZNATower[r] = NULL;
+  }
 //   for(Int_t i=0;i<fnCen;i++) {
 //     fPtPhiEtaRbRFB128[r][i] = NULL;
 //     fPtPhiEtaRbRFB768[r][i] = NULL;
@@ -492,12 +491,10 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   fCenDis = new TH1F("fCenDis", "fCenDis", 100, 0., 100.);
   fOutput->Add(fCenDis);
-//  for(Int_t c=0; c<fnCen; c++) {
-//    for(Int_t k=0; k<8; k++) {
-//      fTowerGainEq[c][k] =  new TH3D();
-//      fOutput->Add(fTowerGainEq[c][k]);
-//    }
-//  }
+  for(Int_t c=0; c<2; c++) {
+    fTowerGainEq[c] = new TH1D();
+    fOutput->Add(fTowerGainEq[c]);
+  }
  
   fSpectraMCList = new TList();
   fSpectraMCList->SetOwner(kTRUE);
@@ -692,11 +689,11 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   // 12 low IR: 244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392
   // 80 high IR ("CentralBarrelTracking" good runs): 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246540, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683
   
-  Int_t dRun15h[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
+  Int_t dRun15h[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
  
  if(fDataSet==k2010) {fCRCnRun=92;}
  if(fDataSet==k2011) {fCRCnRun=119;}
- if(fDataSet==k2015) {fCRCnRun=92;}
+ if(fDataSet==k2015) {fCRCnRun=90;}
  if(fDataSet==kAny) {fCRCnRun=1;}
  
  Int_t d=0;
@@ -723,22 +720,29 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
 //    }
 //  }
 
- Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
+  Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
   Double_t phimin[] = {0.,TMath::Pi()/8.,2*TMath::Pi()/8.,3*TMath::Pi()/8.,4*TMath::Pi()/8.,5*TMath::Pi()/8.,6*TMath::Pi()/8.,7*TMath::Pi()/8.,8*TMath::Pi()/8.,9*TMath::Pi()/8.,10*TMath::Pi()/8.,11*TMath::Pi()/8.,12*TMath::Pi()/8.,13*TMath::Pi()/8.,14*TMath::Pi()/8.,15*TMath::Pi()/8.,16*TMath::Pi()/8.};
   Double_t etamin[] = {-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
- for(Int_t r=0;r<fCRCnRun;r++) {
-  fCRCQVecListRun[r] = new TList();
-  fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
-  fCRCQVecListRun[r]->SetOwner(kTRUE);
-  fOutput->Add(fCRCQVecListRun[r]);
-   
-//   for(Int_t i=0;i<fnCen;i++) {
-//     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
-//     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB128[r][i]);
-//     fPtPhiEtaRbRFB768[r][i] = new TH3F(Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
-//     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
-//   }
- }
+  for(Int_t r=0;r<fCRCnRun;r++) {
+    fCRCQVecListRun[r] = new TList();
+    fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
+    fCRCQVecListRun[r]->SetOwner(kTRUE);
+    fOutput->Add(fCRCQVecListRun[r]);
+    
+    fZNCTower[r] = new TProfile(Form("fZNCTower[%d]",fRunList[r]),Form("fZNCTower[%d]",fRunList[r]),100,0.,100.,"s");
+    fZNCTower[r]->Sumw2();
+    fCRCQVecListRun[r]->Add(fZNCTower[r]);
+    fZNATower[r] = new TProfile(Form("fZNATower[%d]",fRunList[r]),Form("fZNATower[%d]",fRunList[r]),100,0.,100.,"s");
+    fZNATower[r]->Sumw2();
+    fCRCQVecListRun[r]->Add(fZNATower[r]);
+    
+    //   for(Int_t i=0;i<fnCen;i++) {
+    //     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
+    //     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB128[r][i]);
+    //     fPtPhiEtaRbRFB768[r][i] = new TH3F(Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),Form("fPtPhiEtaRbRFB768[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
+    //     fCRCQVecListRun[r]->Add(fPtPhiEtaRbRFB768[r][i]);
+    //   }
+  }
  
  PostData(2, fOutput);
 }
@@ -765,6 +769,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if(fRunList[c]==RunNum) RunBin=bin;
     else bin++;
   }
+  if(RunBin==-1) return;
   if(fDataSet==kAny) RunBin=0;
  
  //DEFAULT - automatically takes care of everything
@@ -1207,55 +1212,49 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       // Get centroid from ZDCs *******************************************************
       
-      Double_t Enucl = (RunNum < 209122 ? 1380. : 2510.);
+      Double_t Enucl = (RunNum < 209122 ? 1380. : 2511.);
       Double_t xyZNC[2]={999.,999.}, xyZNA[2]={999.,999.};
       Float_t zncEnergy=0., znaEnergy=0.;
       for(Int_t i=0; i<5; i++){
         zncEnergy += towZNC[i];
         znaEnergy += towZNA[i];
       }
-      fFlowEvent->SetZNCEnergy(towZNC[0]);
-      fFlowEvent->SetZNAEnergy(towZNA[0]);
+      Double_t ZNCcalib=1., ZNAcalib=1.;
+      if(fTowerEqList) {
+        if(RunNum!=fCachedRunNum) {
+          fTowerGainEq[0] = (TH1D*)(fTowerEqList->FindObject(Form("fZNCTower[%d]",RunNum)));
+          fTowerGainEq[1] = (TH1D*)(fTowerEqList->FindObject(Form("fZNATower[%d]",RunNum)));
+        }
+        if(fTowerGainEq[0]) ZNCcalib = fTowerGainEq[0]->GetBinContent(fTowerGainEq[0]->FindBin(centrperc));
+        if(fTowerGainEq[1]) ZNAcalib = fTowerGainEq[1]->GetBinContent(fTowerGainEq[1]->FindBin(centrperc));
+      }
+      
+      fFlowEvent->SetZNCEnergy(towZNC[0]*ZNCcalib);
+      fFlowEvent->SetZNAEnergy(towZNA[0]*ZNAcalib);
+      fZNCTower[RunBin]->Fill(centrperc,towZNC[0]*ZNCcalib);
+      fZNATower[RunBin]->Fill(centrperc,towZNA[0]*ZNAcalib);
       
       Int_t CenBin = GetCenBin(centrperc);
       if(CenBin==-1) return;
       Double_t zvtxpos[3]={0.,0.,0.};
       fFlowEvent->GetVertexPosition(zvtxpos);
       
-      Int_t RunNum=fFlowEvent->GetRun();
-//      if(fTowerEqList) {
-//        if(RunNum!=fCachedRunNum) {
-//          for(Int_t c=0; c<fnCen; c++) {
-//            for(Int_t i=0; i<8; i++) {
-//              fTowerGainEq[c][i] = (TH3D*)(fTowerEqList->FindObject(Form("fhnTowerGainEqFactor[%d][%d]",c,i)));
-//            }
-//          }
-//        }
-//      }
-      Double_t AvTowerGain[8] = {1., 1., 1., 1., 1., 1., 1., 1.};
-      
       if (fUseMCCen) {
         aodZDC->GetZNCentroidInPbPb(Enucl, xyZNC, xyZNA);
       } else {
-        // set tower gain equalization, if available
-//        if(fTowerEqList) {
-//          for(Int_t i=0; i<8; i++) {
-//            if(fTowerGainEq[CenBin][i]) AvTowerGain[i] = fTowerGainEq[CenBin][i]->GetBinContent(fTowerGainEq[CenBin][i]->FindBin(zvtxpos[0],zvtxpos[1],zvtxpos[2]));
-//          }
-//        }
         const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
         const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
         Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
         Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
         for(Int_t i=0; i<4; i++) {
           if(towZNC[i+1]>0.) {
-            wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i];
+            wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
             numXZNC += x[i]*wZNC;
             numYZNC += y[i]*wZNC;
             denZNC += wZNC;
           }
           if(towZNA[i+1]>0.) {
-            wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4];
+            wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
             numXZNA += x[i]*wZNA;
             numYZNA += y[i]*wZNA;
             denZNA += wZNA;
@@ -1282,27 +1281,16 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Float_t MulA=0., MulC=0.;
       for(Int_t i=0; i<4; i++) {
         if(towZNC[i+1]>0.) {
-          MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i];
+          MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha);
         }
         if(towZNA[i+1]>0.) {
-          MulA += TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4];
+          MulA += TMath::Power(towZNA[i+1], fZDCGainAlpha);
         }
       }
       
       fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
       fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
       fFlowEvent->SetZDC2Qsub(xyZNC,MulC,xyZNA,MulA);
-      
-//      for(Int_t i=0; i<4; i++) {
-//        if(towZNC[i+1]>0.) {
-//          fhnTowerGainVtx[CenBin][i]->Fill(zvtxpos[0],zvtxpos[1],zvtxpos[2],TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
-//          fhnTowerGain[i]->Fill(centrperc,TMath::Power(towZNC[i+1], fZDCGainAlpha)*AvTowerGain[i]);
-//        }
-//        if(towZNA[i+1]>0.) {
-//          fhnTowerGainVtx[CenBin][i+4]->Fill(zvtxpos[0],zvtxpos[1],zvtxpos[2],TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
-//          fhnTowerGain[i+4]->Fill(centrperc,TMath::Power(towZNA[i+1], fZDCGainAlpha)*AvTowerGain[i+4]);
-//        }
-//      }
       
       // ******************************************************************************
       
