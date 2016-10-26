@@ -1,15 +1,7 @@
-/*
- * 
- * Last modified:  12/02/2016
- * By: Edgar Perez Lezama <eperezle@cern.ch>, GSI-Darmstadt
- * By: Julius Gronefeld <jgronefe@cern.ch>, GSI-Darmstadt
- * 
- */
-
-void AddTask_dNdPtpp_TPCITS(Int_t cutMode =223 , char *mode ="default"){
+void AddTask_dNdPtpp_TPCITS(Int_t cutMode =222 , char *particleMode ="default", char* eventTrigger="kINT7"){
   
- 
-  TString stParticleMode(mode);
+  TString stEventTrigger(eventTrigger);
+  TString stParticleMode(particleMode);
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {Error("AddTask_dNdPtpp_TPCITS", "No analysis manager found.");return 0;}
@@ -49,23 +41,20 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =223 , char *mode ="default"){
   task->SetUseMCInfo(hasMC);
 
   // trigger selection: MB
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(stEventTrigger.Contains("kINT7")) task->SelectCollisionCandidates(AliVEvent::kINT7);
+  else if(stEventTrigger.Contains("kMB")) task->SelectCollisionCandidates(AliVEvent::kMB);
 
 
   // Create cut analysis object  
-
-  AlidNdPtAnalysis *fdNdPtAnalysispp = new AlidNdPtAnalysis("fdNdPtAnalysis","dN/dPt Analysis with TPC-ITS tracking");
+  AlidNdPtAnalysis *fdNdPtAnalysispp = new AlidNdPtAnalysis("dNdPtAnalysis","dN/dPt Analysis");
   fdNdPtAnalysispp->SetEventCuts(evtCuts);
   fdNdPtAnalysispp->SetAcceptanceCuts(accCuts);
   fdNdPtAnalysispp->SetTrackCuts(esdTrackCuts);
-  fdNdPtAnalysispp->SetAnalysisMode(AlidNdPtHelper::kTPCITS); 
-  fdNdPtAnalysispp->SetTriggerMask(AliVEvent::kINT7);
-  fdNdPtAnalysispp->SetUsePileUpRejection(kTRUE);
-  fdNdPtAnalysispp->SetUseSPDClusterVsTrackletRejection(kTRUE);
-  fdNdPtAnalysispp->SetRequireCompleteDAQ(kTRUE);
-  fdNdPtAnalysispp->SetUseTOFBunchCrossing(kFALSE);
-  fdNdPtAnalysispp->SetTriggerClass("");
-  
+  fdNdPtAnalysispp->SetAnalysisMode(AlidNdPtHelper::kTPCITS);
+  fdNdPtAnalysispp->SetCentralityEstimator("V0M");
+  if(stEventTrigger.Contains("kINT7")) fdNdPtAnalysispp->SetTriggerMask(AliVEvent::kINT7);
+  else if(stEventTrigger.Contains("kMB")) fdNdPtAnalysispp->SetTriggerMask(AliVEvent::kMB);
+
   
   // SetParticleMode
   if(stParticleMode.Contains("Pion")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCPion);}
@@ -73,14 +62,14 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =223 , char *mode ="default"){
   else if (stParticleMode.Contains("Kaon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCKaon);}
   else if (stParticleMode.Contains("RemainingRest")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
   else if (stParticleMode.Contains("Rest")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCRest);}
-  else if (stParticleMode.Contains("Plus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kPlus);}
-  else if (stParticleMode.Contains("Minus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMinus);}
   else if (stParticleMode.Contains("SigmaPlus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
   else if (stParticleMode.Contains("SigmaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
-  else if (stParticleMode.Contains("Electron")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCElectron);}
-  else if (stParticleMode.Contains("Muon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCMuon);}
   else if (stParticleMode.Contains("XiMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
   else if (stParticleMode.Contains("OmegaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCOmegaMinus);}
+  else if (stParticleMode.Contains("Plus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kPlus);}
+  else if (stParticleMode.Contains("Minus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMinus);}
+  else if (stParticleMode.Contains("Electron")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCElectron);}
+  else if (stParticleMode.Contains("Muon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCMuon);}
   else{fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kAllPart);}
   // Change binning
   const Int_t ptNbins = 81;
@@ -113,5 +102,4 @@ void AddTask_dNdPtpp_TPCITS(Int_t cutMode =223 , char *mode ="default"){
     
   mgr->ConnectOutput(task, 1, coutput);
 }
-
 
