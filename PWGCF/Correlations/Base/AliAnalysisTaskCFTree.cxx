@@ -542,33 +542,46 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
 
     if (fTracks) {
       fTracks->Clear();
-      Int_t countNch = 0;
-      Int_t countNch09 = 0;
-      Int_t countNch14 = 0;
+      fNchTPC = 0;
+
+      if (fInputEvent->InheritsFrom("AliAODEvent"))
+        fitssatrackcuts->ExtractAndSetPrimaryVertex(fInputEvent);
+
       for (Int_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
-        AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(ipart);
-        if (!track) continue;
-        UInt_t mask = GetFilterMap(track);
-        if ( track->InheritsFrom("AliAODTrack") ) {
-	  fitssatrackcuts->ExtractAndSetPrimaryVertex(fInputEvent);
-	}
-        if(fTrackFilterBit==2){//we are saving only ITSsa, It's a muon_calo_production!
-          if((mask & (1<<1)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<0.9) countNch++; // with pt > 0.2 and within |eta|<0.9
-        }else if((mask & (1<<0)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<0.9) countNch++; // with pt > 0.2 and within |eta|<0.9
+        const AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(ipart);
+        if (!track)
+          continue;
+        const UInt_t mask = GetFilterMap(track);
 
-	if ( !(mask==0 && fTrackFilterBit==0) ){ //this would apply the fbit selection only to tracks with mask defined
-	  if(!(mask & fTrackFilterBit))continue; //filter bit cut
-	}
-        else if ( track->InheritsFrom("AliAODTrack") && !(fitssatrackcuts->AcceptTrack((AliAODTrack*)track)) ) continue;
+        // count tracks with with pt > 0.2 and within |eta| < 0.9;
+        // if selecting only ITSsa tracks, count those, otherwise count all primaries
+        const Bool_t considerTrack = fTrackFilterBit == 2 ? mask & 0x2 : mask & 0x1;
+        if(considerTrack && (track->Pt() > 0.2) && (TMath::Abs(track->Eta()) < 0.9))
+          fNchTPC++;
 
-        if (track->InheritsFrom("AliAODTrack")) AddTrack(track,mask,0);
+        // track selection based on filter mask (if set)
+        // or ITSsa cuts
+	if (fTrackFilterBit != 0) {
+          if (mask & fTrackFilterBit == 0)
+            continue;
+        }
+        else if (track->InheritsFrom("AliAODTrack")) {
+          if (!fitssatrackcuts->AcceptTrack((AliAODTrack*)track))
+            continue;
+        }
+        else {
+          AliWarning("Track not covered by a selection cut, letting it pass ...");
+        }
+
+        if (track->InheritsFrom("AliAODTrack")) {
+          AddTrack(track,mask,0);
+        }
         else if (track->InheritsFrom("AliESDtrack")) {
           if (mask)                           AddTrack(track,mask,1);
           if (mask & fHybridConstrainedMask)  AddTrack(track,mask,2);
           if (mask & fTPConlyConstrainedMask) AddTrack(track,mask,3);
         }
       }
-      fNchTPC = countNch;
     }
 
     if (fTracklets){
@@ -795,7 +808,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
 
 
 //-----------------------------------------------------------------------------
-UInt_t AliAnalysisTaskCFTree::GetFilterMap(AliVTrack* track){
+UInt_t AliAnalysisTaskCFTree::GetFilterMap(const AliVTrack* track){
   UInt_t mask = 0;
   if (track->InheritsFrom("AliAODTrack")) {
     AliAODTrack* part = (AliAODTrack*) track;
@@ -824,7 +837,7 @@ UInt_t AliAnalysisTaskCFTree::GetFilterMap(AliVTrack* track){
 
 
 //-----------------------------------------------------------------------------
-AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVTrack* track, UInt_t mask, UInt_t flag){
+AliCFParticle* AliAnalysisTaskCFTree::AddTrack(const AliVTrack* track, UInt_t mask, UInt_t flag){
 
   // skip neutral mc trackicles
   Char_t charge = track->Charge();
