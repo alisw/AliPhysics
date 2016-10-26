@@ -188,97 +188,101 @@ void AliReducedAnalysisTest::Process() {
   AliReducedBaseTrack* track = 0x0;
   TClonesArray* trackList = fEvent->GetTracks();
   TIter nextTrack(trackList);
-  for(Int_t it=0; it<fEvent->NTracks(); ++it) {
-    track = (AliReducedBaseTrack*)nextTrack();
+  if(trackList) {
+    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
+      track = (AliReducedBaseTrack*)nextTrack();
     
-    if(!IsTrackSelected(track)) continue;
-    AliReducedVarManager::FillTrackInfo(track,fValues);
-    fHistosManager->FillHistClass("TrackQA_AllTracks_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      if(!IsTrackSelected(track)) continue;
+      AliReducedVarManager::FillTrackInfo(track,fValues);
+      fHistosManager->FillHistClass("TrackQA_AllTracks_ITS_TPC_TRD_TOF_EMCAL", fValues);
     
-    AliReducedTrackInfo* trackInfo = NULL;
-    if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
+      AliReducedTrackInfo* trackInfo = NULL;
+      if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
     
-    if(trackInfo) {
-      for(UShort_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
-        AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
-        fHistosManager->FillHistClass("TrackingFlags", fValues);
+      if(trackInfo) {
+        for(UShort_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+          AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
+          fHistosManager->FillHistClass("TrackingFlags", fValues);
+        }
       }
-    }
-    for(UShort_t iflag=0; iflag<64; ++iflag) {
-      AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
-      fHistosManager->FillHistClass("TrackQualityFlags", fValues);
-    }
-    if(trackInfo) {
-      for(Int_t iLayer=0; iLayer<6; ++iLayer) {
-        AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
-        fHistosManager->FillHistClass("ITSclusterMap", fValues);
+      for(UShort_t iflag=0; iflag<64; ++iflag) {
+        AliReducedVarManager::FillTrackQualityFlag(track, iflag, fValues);
+        fHistosManager->FillHistClass("TrackQualityFlags", fValues);
       }
-      for(Int_t iLayer=0; iLayer<8; ++iLayer) {
-        AliReducedVarManager::FillTPCclusterBitFlag(trackInfo, iLayer, fValues);
-        fHistosManager->FillHistClass("TPCclusterMap", fValues);
+      if(trackInfo) {
+        for(Int_t iLayer=0; iLayer<6; ++iLayer) {
+          AliReducedVarManager::FillITSlayerFlag(trackInfo, iLayer, fValues);
+          fHistosManager->FillHistClass("ITSclusterMap", fValues);
+        }
+        for(Int_t iLayer=0; iLayer<8; ++iLayer) {
+          AliReducedVarManager::FillTPCclusterBitFlag(trackInfo, iLayer, fValues);
+          fHistosManager->FillHistClass("TPCclusterMap", fValues);
+        }
       }
-    }
-    if(track->IsGammaLeg()) fHistosManager->FillHistClass("TrackQA_GammaLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    if(track->IsK0sLeg()) fHistosManager->FillHistClass("TrackQA_K0sLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    if(track->IsLambdaLeg()) {
-      if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-      else fHistosManager->FillHistClass("TrackQA_LambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    }
-    if(track->IsPureLambdaLeg()) {
-      if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureLambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-      else fHistosManager->FillHistClass("TrackQA_PureLambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    }
-    if(track->IsALambdaLeg()) {
-      if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_ALambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-      else fHistosManager->FillHistClass("TrackQA_ALambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    }
-    if(track->IsPureALambdaLeg()) {
-      if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureALambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-      else fHistosManager->FillHistClass("TrackQA_PureALambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
-    }  
-  }  // end loop over tracks
+      if(track->IsGammaLeg()) fHistosManager->FillHistClass("TrackQA_GammaLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      if(track->IsPureGammaLeg()) fHistosManager->FillHistClass("TrackQA_PureGammaLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      if(track->IsK0sLeg()) fHistosManager->FillHistClass("TrackQA_K0sLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      if(track->IsPureK0sLeg()) fHistosManager->FillHistClass("TrackQA_PureK0sLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      if(track->IsLambdaLeg()) {
+        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_LambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+        else fHistosManager->FillHistClass("TrackQA_LambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      }
+      if(track->IsPureLambdaLeg()) {
+        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureLambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+        else fHistosManager->FillHistClass("TrackQA_PureLambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      }
+      if(track->IsALambdaLeg()) {
+        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_ALambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+        else fHistosManager->FillHistClass("TrackQA_ALambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      }
+      if(track->IsPureALambdaLeg()) {
+        if(track->Charge()>0) fHistosManager->FillHistClass("TrackQA_PureALambdaPosLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+        else fHistosManager->FillHistClass("TrackQA_PureALambdaNegLeg_ITS_TPC_TRD_TOF_EMCAL", fValues);
+      }  
+    }  // end loop over tracks
+  }  // end if(trackList)  
     
   TClonesArray* pairList = fEvent->GetPairs();
   TIter nextPair(pairList);
   AliReducedPairInfo* pair = 0x0;
   fValues[AliReducedVarManager::kNpairsSelected] = 0.;
-  for(Int_t ip=0; ip<pairList->GetEntries(); ++ip) {
-    pair = (AliReducedPairInfo*)nextPair();
+  if(pairList) {
+    for(Int_t ip=0; ip<pairList->GetEntries(); ++ip) {
+      pair = (AliReducedPairInfo*)nextPair();
     
-    if(!IsPairSelected(pair)) continue;
+      if(!IsPairSelected(pair)) continue;
     
-    TString pairTypeStr = "";
-    if(pair->PairType()==0) pairTypeStr = "Offline";
-    if(pair->PairType()==1) pairTypeStr = "OnTheFly";
+      TString pairTypeStr = "";
+      if(pair->PairType()==0) pairTypeStr = "Offline";
+      if(pair->PairType()==1) pairTypeStr = "OnTheFly";
       
-    for(UShort_t iflag=0; iflag<32; ++iflag) {
-      AliReducedVarManager::FillPairQualityFlag(pair, iflag, fValues);
-      fHistosManager->FillHistClass(Form("PairQualityFlags_%s",pairTypeStr.Data()), fValues);
-    }
+      for(UShort_t iflag=0; iflag<32; ++iflag) {
+        AliReducedVarManager::FillPairQualityFlag(pair, iflag, fValues);
+        fHistosManager->FillHistClass(Form("PairQualityFlags_%s",pairTypeStr.Data()), fValues);
+      }
       
-    AliReducedVarManager::FillPairInfo(pair, fValues);
-    switch (pair->CandidateId()) {
-      case AliReducedPairInfo::kGammaConv :
-        fHistosManager->FillHistClass(Form("PairQA_%sGamma",pairTypeStr.Data()),fValues);
-	if(pair->IsPureV0Gamma()) fHistosManager->FillHistClass(Form("PairQA_%sPureGamma",pairTypeStr.Data()),fValues);
-        break;
-      case AliReducedPairInfo::kK0sToPiPi :
-	fHistosManager->FillHistClass(Form("PairQA_%sK0s",pairTypeStr.Data()),fValues);
-	if(pair->IsPureV0K0s()) fHistosManager->FillHistClass(Form("PairQA_%sPureK0s",pairTypeStr.Data()),fValues);
-	break;
-      case AliReducedPairInfo::kLambda0ToPPi :
-	fHistosManager->FillHistClass(Form("PairQA_%sLambda", pairTypeStr.Data()),fValues);
-	if(pair->IsPureV0Lambda()) fHistosManager->FillHistClass(Form("PairQA_%sPureLambda",pairTypeStr.Data()),fValues);
-	break;
-      case AliReducedPairInfo::kALambda0ToPPi :
-	fHistosManager->FillHistClass(Form("PairQA_%sALambda", pairTypeStr.Data()),fValues);
-	if(pair->IsPureV0ALambda()) fHistosManager->FillHistClass(Form("PairQA_%sPureALambda",pairTypeStr.Data()),fValues);
-	break;
-    };
-    fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
-  }  // end loop over pairs
+      AliReducedVarManager::FillPairInfo(pair, fValues);
+      switch (pair->CandidateId()) {
+        case AliReducedPairInfo::kGammaConv :
+          fHistosManager->FillHistClass(Form("PairQA_%sGamma",pairTypeStr.Data()),fValues);
+	  if(pair->IsPureV0Gamma()) fHistosManager->FillHistClass(Form("PairQA_%sPureGamma",pairTypeStr.Data()),fValues);
+          break;
+        case AliReducedPairInfo::kK0sToPiPi :
+	  fHistosManager->FillHistClass(Form("PairQA_%sK0s",pairTypeStr.Data()),fValues);
+	  if(pair->IsPureV0K0s()) fHistosManager->FillHistClass(Form("PairQA_%sPureK0s",pairTypeStr.Data()),fValues);
+	  break;
+        case AliReducedPairInfo::kLambda0ToPPi :
+	  fHistosManager->FillHistClass(Form("PairQA_%sLambda", pairTypeStr.Data()),fValues);
+	  if(pair->IsPureV0Lambda()) fHistosManager->FillHistClass(Form("PairQA_%sPureLambda",pairTypeStr.Data()),fValues);
+	  break;
+        case AliReducedPairInfo::kALambda0ToPPi :
+	  fHistosManager->FillHistClass(Form("PairQA_%sALambda", pairTypeStr.Data()),fValues);
+	  if(pair->IsPureV0ALambda()) fHistosManager->FillHistClass(Form("PairQA_%sPureALambda",pairTypeStr.Data()),fValues);
+	  break;
+      };
+      fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
+    }  // end loop over pairs
+  }  // end if(pairList)
     
   fHistosManager->FillHistClass("Event_AfterCuts", fValues);
 }
