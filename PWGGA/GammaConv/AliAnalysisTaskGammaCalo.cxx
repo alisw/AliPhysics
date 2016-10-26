@@ -55,6 +55,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
+#include "AliCaloTrackMatcher.h"
 #include <vector>
 #include <map>
 
@@ -1517,6 +1518,10 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms())
         fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
 
+  for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+  }
       
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
@@ -1859,7 +1864,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
   
   // True Photon
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
-    if (TruePhotonCandidate->IsLargestComponentPhoton() || TruePhotonCandidate->IsLargestComponentElectron() )fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
+    if (TruePhotonCandidate->IsLargestComponentPhoton() || (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()))
+        fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       else if (fDoClusterQA > 0) fHistoTrueClusEMNonLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
     if (fDoClusterQA > 0){
       if (TruePhotonCandidate->IsLargestComponentPhoton()){ 
@@ -1999,7 +2005,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
   
   // True Photon
   if(fIsFromMBHeader && !fIsOverlappingWithOtherHeader){
-    if (TruePhotonCandidate->IsLargestComponentPhoton() || TruePhotonCandidate->IsLargestComponentElectron() )fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
+    if (TruePhotonCandidate->IsLargestComponentPhoton() || (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()))
+        fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       else if (fDoClusterQA > 0) fHistoTrueClusEMNonLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
     if (fDoClusterQA > 0){
       if (TruePhotonCandidate->IsLargestComponentPhoton()) {

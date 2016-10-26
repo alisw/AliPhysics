@@ -57,9 +57,6 @@ ClassImp(AliAnalysisTaskCorrelation3p)
 // Paul Baetzing || pbatzing@cern.ch
 //
 
-// using std::string;
-// using std::cin;
-// using std::stringstream;
 
 AliAnalysisTaskCorrelation3p::AliAnalysisTaskCorrelation3p()
   : AliAnalysisTaskSE("AliAnalysisTaskCorrelation3p")
@@ -358,8 +355,6 @@ void AliAnalysisTaskCorrelation3p::UserExec(Option_t* /*option*/)
 {
   if(fgenerate){execgenerate();return;}//Toy MC generator, skips all data processing.
   fNEventsParsed +=1;
-//   if(fNEventsParsed<fStartAtEvent) return;
-//   if(fNEventsToProcess>0&&fNEventsProcessed>=fNEventsToProcess)return;
   // process the event
   TObject* pInput=InputEvent();
   if (!pInput) {AliError("failed to get input");return;}
@@ -810,13 +805,7 @@ void AliAnalysisTaskCorrelation3p::GetCentralityAndVertex(AliVEvent* pEvent)
 Bool_t AliAnalysisTaskCorrelation3p::SelectEvent()
 {//This function provides the event cuts for this class.
   if(fisDstTree){
-    if(fCollisionType == pp){
-    FillHistogram("multiplicity",fMultiplicity,0.75);
-    }
-    if(fCollisionType == PbPb){
-      FillHistogram("centrality",fCentralityPercentile,0.75);
-    }
-    FillHistogram("vertex",fVertex[2],0.75);
+    return kTRUE;
   }
   if(fCollisionType==pp&&!fisDstTree){//With pp, the following cuts are applied:
     FillHistogram("multiplicity",fMultiplicity,0.25);
@@ -872,12 +861,8 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   
   if (!fOutput) return;
   //QA histograms
-//   fOutput->Add(new TH3D("TrackDCAandonITS","DCA tangential vs DCA longitudinal vs Is in the first two ITS layers",50,-2,2,50,-5,5,2,-0.5,1.5));
-//   fOutput->Add(new TH3D("TrackDCAandonITSselected","DCA tangential vs DCA longitudinal vs Is in the first two ITS layers for selected events",50,-2,2,50,-5,5,2,-0.5,1.5));
-//   fOutput->Add(new TH3D("Eventbeforeselection","Vertex vs Multiplicity vs Centrality before event selection.", 50,-15,15,50,0,4000,50,0,100));
-//   fOutput->Add(new TH3D("Eventafterselection","Vertex vs Multiplicity vs Centrality after event selection.", 50,-15,15,50,0,4000,50,0,100));
-  fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 15000));
-  fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 20));
+  fOutput->Add(new TH1D("trackCount", "trackCount", 1000,  0, 1000));
+  fOutput->Add(new TH1D("trackUnselectedPt"   , "trackPt"   , 1000,  0, 200));
   fOutput->Add(new TH1D("trackPt"   			, "trackPt"   				, 1000,  0, 200));
   fOutput->Add(new TH1D("trackPt_leading"		, "trackPt_leading_track"		, 1000,  0, 200));
   if(fisAOD){
@@ -894,14 +879,16 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
   fOutput->Add(new TH1D("trackTheta", "trackTheta",  180, 0.0, TMath::Pi()));
   fOutput->Add(new TH1D("trackTriggerTheta", "trackTheta",  180, 0.0, TMath::Pi()));
   fOutput->Add(new TH1D("trackAssociatedTheta", "trackTheta",  180, 0.0, TMath::Pi()));
-  fOutput->Add(new TH1D("Ntriggers","Number of triggers per event",50,-0.5,49.5));
-  fOutput->Add(new TH1D("NAssociated","Number of Associated per event",100,-0.5,99.5));
-  fOutput->Add(new TH1D("NAssociatedETriggered","Number of Associated per event that contains a trigger.",100,-0.5,99.5));
+  fOutput->Add(new TH1D("Ntriggers","Number of triggers per event",10,-0.5,9.5));
+  fOutput->Add(new TH1D("NAssociated","Number of Associated per event",20,-0.5,19.5));
+  fOutput->Add(new TH1D("NAssociatedETriggered","Number of Associated per event that contains a trigger.",20,-0.5,19.5));
 
 //   fOutput->Add(new TH1D("vzeroMult" , "V0 Multiplicity",  200,  0, 30000));
-  if(fCollisionType==PbPb)fOutput->Add(new TH2D("centrality", "Centrality before and after selection",  100,  0, 100,2,0,1));
-  if(!fisDstTree||(fCollisionType==pp))fOutput->Add(new TH2D("multiplicity", "Multiplicity of tracks,  before and after selection",  100,  0, fMaxNumberOfTracksInPPConsidered,2,0,1));
-  fOutput->Add(new TH2D("vertex", "Vertex of tracks,selected vs unselected",  100,  -15.0, 15.0,2,0,1));
+  if(!fisDstTree){
+    if(fCollisionType==PbPb)fOutput->Add(new TH2D("centrality", "Centrality before and after selection",  100,  0, 100,2,0,1));
+    if(fCollisionType==pp)fOutput->Add(new TH2D("multiplicity", "Multiplicity of tracks,  before and after selection",  100,  0, fMaxNumberOfTracksInPPConsidered,2,0,1));
+    fOutput->Add(new TH2D("vertex", "Vertex of tracks,selected vs unselected",  100,  -15.0, 15.0,2,0,1));
+  }
   if(fCollisionType==PbPb)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, 100, 100, -10, 10));
   if(fCollisionType==pp)fOutput->Add(new TH2D("centVsZVertex", "centvszvertex", 100, 0, fMaxNumberOfTracksInPPConsidered, 100, -10, 10));
 
@@ -948,17 +935,6 @@ void AliAnalysisTaskCorrelation3p::InitializeQAhistograms()
     fOutput->Add(NTracksCent);
     fOutput->Add(NEventsCent);
   }
-  if(fQA&&fWeights&&fWeightshpt){
-    TH3D * histtrackslpt = (TH3D*)(fWeights->Clone("Track_Cent_Vertex_lpT"));
-    histtrackslpt->Reset();
-    histtrackslpt->SetTitle("Tracks in Centrality vs Vertex vs pT");
-    fOutput->Add(histtrackslpt);
-    TH2D * histtrackshpt = (TH2D*)(fWeightshpt->Clone("Track_Cent_Vertex_eta"));
-    histtrackshpt->Reset();    
-    histtrackshpt->SetTitle("Tracks in Centrality vs Vertex");
-    fOutput->Add(histtrackshpt);    
-  }
-
 }
 
 void AliAnalysisTaskCorrelation3p::InitializeEffHistograms()

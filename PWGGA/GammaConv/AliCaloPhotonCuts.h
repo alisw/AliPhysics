@@ -153,6 +153,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        SetLightOutput( Bool_t flag )                  {fDoLightOutput = flag; return;}
     //correct NonLinearity
     void        SetV0ReaderName(TString name)                  {fV0ReaderName = name; return;}
+    void        SetCaloTrackMatcherName(TString name)          {fCaloTrackMatcherName = name; return;}
     MCSet       FindEnumForMCSet(TString namePeriod);
 
     void        CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isMC);
@@ -189,7 +190,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, Int_t isMC, Double_t weight);
 
     Bool_t      MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight=1.);
-    void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t doPlot = kTRUE);
+    void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t isEMCalOnly = kTRUE);
     Bool_t      CheckClusterForTrackMatch(AliVCluster* cluster);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
@@ -264,6 +265,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     //for NonLinearity correction
     TString   fV0ReaderName;                            // Name of V0Reader
+    TString   fCaloTrackMatcherName;                    // Name of global TrackMatching instance
     TString   fPeriodName;                              // PeriodName of MC
     MCSet     fCurrentMC;                               // enum for current MC set being processed
     
@@ -347,7 +349,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH1F*     fHistDispersionAfterQA;                   // dispersion after cluster quality cuts
     TH1F*     fHistNLMBeforeQA;                         // number of local maxima in cluster before acceptance cuts
     TH1F*     fHistNLMAfterQA;                          // number of local maxima in cluster after cluster quality cuts
-    TH2F*     fHistNLMAvsNLMBBeforeQA;                  // number of local maxima in cluster after cluster quality cuts
+//     TH2F*     fHistNLMAvsNLMBBeforeQA;                  // number of local maxima in cluster after cluster quality cuts
     TH2F*     fHistNLMVsNCellsAfterQA;                  // number of local maxima vs Ncells in cluster after cluster quality cuts
     TH2F*     fHistNLMVsEAfterQA;                       // number of local maxima vs E in cluster after cluster quality cuts
     //More histograms
@@ -407,7 +409,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,30)
+    ClassDef(AliCaloPhotonCuts,31)
 };
 
 #endif

@@ -67,7 +67,7 @@ public:
     void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-    void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t fEMCalnSigma, Double_t fTPCnSigma, Double_t evPlaneV0);
+    void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0);
     void GetWeightAndDecay(TParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
     Bool_t InclElecTrackCuts(AliAODTrack *ietrack);
     Bool_t AssElecTrackCuts(AliAODTrack *aetrack);
@@ -142,10 +142,7 @@ private:
     TH2F                  *fTrigger;		//! check trigger
     TH1F                  *fNoEvents;		//! no of events
     TH1F                  *fTrkpt;		//! track pt
-    TH2F                  *fTrkEovPBef;		//! track E/p before HFE pid
-    TH2F                  *fTrkEovPAft;		//! track E/p after HFE pid
-    TH2F                  *fdEdxBef;		//! track dEdx vs p before HFE pid
-    TH2F                  *fdEdxAft;		//! track dEdx vs p after HFE pid
+    
     TH2F                  *fElecPtULSInvmassCut[3];//! electron pt, ULS pair, invariant mass cut
     TH2F                  *fElecPtLSInvmassCut[3]; //! electron pt, LS pair, invariant mass cut
     TH2F                  *fElecPtInvmassCut[3];   //! electron pt, invariant mass cut
@@ -175,13 +172,6 @@ private:
     TH1F                  *fPi0Pt[3];		//! primary pi0 pt to compute the weight
     TH1F                  *fEtaPt[3];		//! primary eta pt to compute the weight
     
-    TH1F                  *fTot_pi0e;		//! inclusive electron
-    TH1F                  *fPhot_pi0e;		//! ULS pair
-    TH1F                  *fPhotBCG_pi0e;		//! LS pair
-    TH1F                  *fTot_etae;		//! inclusive electron
-    TH1F                  *fPhot_etae;		//! ULS pair
-    TH1F                  *fPhotBCG_etae;		//! LS pair
-    
     TH2F                  *fHistITSnSig[3];      //! ITS sigma vs p
     TH2F                  *fHistTOFnSig[3];      //! TOF sigma vs p
     TH2F                  *fHistTPCnSig[3];      //! TPC sigma vs p
@@ -190,6 +180,10 @@ private:
     TH2F                  *fHistTPCnSigITSTOFcut[3];      //! TPC sigma vs p (ITS+TOF cuts)
     TH2F                  *fHistTPCnSigEop[3];      //! TPC sigma vs E/p
     TH2F                  *fHistTPCnSigEMCalnSig[3];      //! TPC sigma vs EMCal Sig
+    
+    TH2F                  *fEoverPsignalTPC[3];    //! E/p for electrons (TPC cut)
+    TH2F                  *fEoverPsignalTPCM02[3];    //! E/p for electrons (TPCcut + M02 cuts)
+    TH2F                  *fEoverPbackg[3];    //! E/p for background
     
     TString fExpectedCorrectionPass;
     TString fAlternativeCorrectionPass;

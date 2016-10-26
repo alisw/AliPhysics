@@ -40,7 +40,8 @@ AliNuclexEventCuts::AliNuclexEventCuts() : TNamed("AliNuclexEventCuts","AliNucle
   fRequireExactTriggerMask{false},
   fTriggerMask{AliVEvent::kAny},
   fCentEstimators{"V0M","CL0"},
-  fCentPercentiles{-1.f}
+  fCentPercentiles{-1.f},
+  fPrimaryVertex{nullptr}
 {
 }
 
@@ -67,7 +68,7 @@ void AliNuclexEventCuts::SetupLHC15o() {
   fCentEstimators[1] = "CL0";
   fMinCentrality = 0.f;
   fMaxCentrality = 90.f;
-  fMaxDeltaEstimators = 7.5f;
+  //fMaxDeltaEstimators = 7.5f;
 
   fTriggerMask = AliVEvent::kINT7;
 
@@ -125,6 +126,7 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev, TList *qaList) {
       (vtSPD->IsFromVertexerZ() && TMath::Sqrt(covSPD[5]) > fMaxResolutionSPDvertex)) // quality cut on vertexer SPD z
     pass = false;
   else if (fCutStats != nullptr) fCutStats->Fill(3);
+  fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 
   /// SPD pile-up rejection
   if (ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ)) pass = false; // pile-up
@@ -196,7 +198,7 @@ void AliNuclexEventCuts::AddQAplotsToList(TList *qaList) {
 
 }
 
-float AliNuclexEventCuts::GetCentrality (unsigned int estimator) { 
+float AliNuclexEventCuts::GetCentrality (unsigned int estimator) const { 
   if (estimator > 1) {
     /// Escalate to Fatal
     ::Fatal("AliNuclexEventCuts::GetCentrality","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
@@ -205,7 +207,7 @@ float AliNuclexEventCuts::GetCentrality (unsigned int estimator) {
     return fCentPercentiles[estimator];
 }
 
-string AliNuclexEventCuts::GetCentralityEstimator (unsigned int estimator) { 
+string AliNuclexEventCuts::GetCentralityEstimator (unsigned int estimator) const { 
   if (estimator > 1) {
     /// Escalate to Fatal
     ::Fatal("AliNuclexEventCuts::GetCentralityEstimator","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);

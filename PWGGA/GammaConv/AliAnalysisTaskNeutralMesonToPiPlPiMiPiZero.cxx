@@ -51,6 +51,7 @@
 #include "AliMultiplicity.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.h"
+#include "AliCaloTrackMatcher.h"
 #include <vector>
 
 
@@ -866,6 +867,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 		}
 		
 	}	
+
+    for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
+      AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+      if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+    }
 		
 	fPionSelector=(AliPrimaryPionSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("PionSelector");
 	if(!fPionSelector){printf("Error: No PionSelector");return;} // GetV0Reader

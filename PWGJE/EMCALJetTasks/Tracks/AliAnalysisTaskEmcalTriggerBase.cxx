@@ -247,6 +247,46 @@ void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
       SetOnlineTriggerThreshold("DMC7", 0);
     }
   }
+
+  // Load acceptance OADB
+  if(fNameAcceptanceOADB && fTriggerSelection){
+    AliOADBContainer acceptanceCont;
+    acceptanceCont.InitFromFile(fNameAcceptanceOADB.Data(), "AliEmcalTriggerAcceptance");
+    TObjArray *acceptanceMaps = dynamic_cast<TObjArray *>(acceptanceCont.GetObject(fInputEvent->GetRunNumber()));
+    TH2 *map(nullptr);
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG1")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG2")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG2, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG1")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG2")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ1")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ2")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ2, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ1")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+    }
+    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ2")))){
+      map->SetDirectory(nullptr);
+      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+    }
+  }
 }
 
 void AliAnalysisTaskEmcalTriggerBase::RunChanged(Int_t runnumber){

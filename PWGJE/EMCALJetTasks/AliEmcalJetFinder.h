@@ -31,7 +31,7 @@ class AliEmcalJetFinder : public TNamed
     void                          FillEtaHistogram(TH1* histogram);
     void                          FillPhiHistogram(TH1* histogram);
 
-    Double_t                      Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pContJets, Double_t dVtx[3], Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option=0, Int_t Measure=0);
+    Double_t                      Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pContJets, Double_t dVtx[3], Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option=0, Int_t Measure=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
 
     Int_t                         GetJets(AliEmcalJet*& jets)     {jets = fJetArray[0]; return fJetCount;}
     AliEmcalJet*                  GetJet(Int_t index)             {return fJetArray[index];}

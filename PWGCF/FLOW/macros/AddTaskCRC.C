@@ -3,6 +3,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
                              TString sDataSet="2010",
+                             TString sIntRuns="low",
                              TString EvTrigger="MB",
                              Bool_t bCalculateEbEFlow=kFALSE,
                              Bool_t bUseCRCRecenter=kFALSE,
@@ -27,6 +28,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              Bool_t bUsePhiEtaWeights=kFALSE,
+                             Bool_t bUsePhiEtaCuts=kFALSE,
                              Bool_t bSetQAZDC=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
@@ -548,10 +550,13 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetUsePhiEtaWeights(bUsePhiEtaWeights);
  if(bUsePhiEtaWeights) {
    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-   if(sDataSet=="2015") {
-     if(AODfilterBit==32) PhiEtaWeightsFileName += "15oHI_FB32_PhiEtaPtWeights.root";
-     if(AODfilterBit==96) PhiEtaWeightsFileName += "15oHI_FB96_PhiEtaPtWeights.root";
-     if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_PhiEtaPtWeights.root";
+   if(sDataSet=="2015" && sIntRuns=="high") {
+     if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
+     if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
+   }
+   if(sDataSet=="2015" && sIntRuns=="low") {
+     if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oLI_FB32_CenPhiEtaWeights.root";
+     if(AODfilterBit==768) PhiEtaWeightsFileName += "15oLI_FB768_CenPhiEtaWeights.root";
    }
   TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
   if(!PhiEtaWeightsFile) {
@@ -559,17 +564,46 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    exit(1);
   }
    gROOT->cd();
-  TList* PhiEtaWeightsList = (TList*)(PhiEtaWeightsFile->FindObjectAny("PhiEtaPt Weights"));
+  TList* PhiEtaWeightsList = (TList*)(PhiEtaWeightsFile->FindObjectAny("CenPhiEta Weights"));
   if(PhiEtaWeightsList) {
    taskQC->SetWeightsList(PhiEtaWeightsList);
-   cout << "PhiPtEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
+   cout << "CenPhiEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
   }
   else {
-   cout << "ERROR: PhiPtEtaWeightsList not found!" << endl;
+   cout << "ERROR: CenPhiEtaWeightsList not found!" << endl;
    exit(1);
   }
    delete PhiEtaWeightsFile;
  } // end of if(bUsePhiEtaWeights)
+  taskQC->SetUsePhiEtaCuts(bUsePhiEtaCuts);
+  if(bUsePhiEtaCuts) {
+    TString PhiEtaCutsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+    if(sDataSet=="2015" && sIntRuns=="high") {
+      if(AODfilterBit==32) PhiEtaCutsFileName +=  "15oHI_FB32_CenPhiEtaCut.root";
+      if(AODfilterBit==768) PhiEtaCutsFileName += "15oHI_FB768_CenPhiEtaCut.root";
+    }
+    if(sDataSet=="2015" && sIntRuns=="low") {
+      if(AODfilterBit==32) PhiEtaCutsFileName +=  "15oLI_FB32_CenPhiEtaCut.root";
+      if(AODfilterBit==768) PhiEtaCutsFileName += "15oLI_FB768_CenPhiEtaCut.root";
+    }
+      
+    TFile* PhiEtaCutsFile = TFile::Open(PhiEtaCutsFileName,"READ");
+    if(!PhiEtaCutsFile) {
+      cout << "ERROR: PhiEtaCutsFile not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* PhiEtaCutsList = (TList*)(PhiEtaCutsFile->FindObjectAny("CenPhiEta Cut"));
+    if(PhiEtaCutsList) {
+      taskQC->SetPhiEtaCutsList(PhiEtaCutsList);
+      cout << "CenPhiEta cuts set (from " <<  PhiEtaCutsFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: PhiEtaCutsList not found!" << endl;
+      exit(1);
+    }
+    delete PhiEtaCutsFile;
+  } // end of if(bUsePhiEtaCuts)
 
  // connect the task to the analysis manager
  mgr->AddTask(taskQC);

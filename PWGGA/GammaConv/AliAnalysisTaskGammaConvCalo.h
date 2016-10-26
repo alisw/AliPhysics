@@ -65,6 +65,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void ProcessConversionPhotonsForMissingTagsAOD  ();
     
     // switches for additional analysis streams or outputs
+    void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
     void SetLightOutput                 ( Bool_t flag )                                     { fDoLightOutput = flag                       ;}
     void SetDoMesonAnalysis             ( Bool_t flag )                                     { fDoMesonAnalysis = flag                     ;}
     void SetDoMesonQA                   ( Int_t flag )                                      { fDoMesonQA = flag                           ;}
@@ -422,13 +423,14 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Double_t                fWeightJetJetMC;                                    // weight for Jet-Jet MC 
     Bool_t                  doConvGammaShowerShapeTree;                         // flag for tree with conv gamma R vs energy vs shower shape
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
+    Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries
     
     
   private:
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 33);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 34);
 };
 
 #endif

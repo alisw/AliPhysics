@@ -3,6 +3,7 @@
 // ROOT includes
 #include <TAxis.h>
 #include <TChain.h>
+#include <TDatabasePDG.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -10,6 +11,7 @@
 #include <TList.h>
 #include <TMath.h>
 #include <TParticle.h>
+#include <TParticlePDG.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TRandom3.h>
@@ -17,6 +19,7 @@
 // ALIROOT includes
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliPDG.h"
 #include "AliPID.h"
 #include "AliMultSelection.h"
 #include "AliTPCPIDResponse.h"
@@ -54,7 +57,6 @@ static double TOFsignal(double *x, double *par) {
 
   if (x[0] <= (tail + mean))
     return norm * TMath::Gaus(x[0], mean, sigma);
-  else
     return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
 }
 
@@ -91,10 +93,10 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   ,fPDG(0x0)
   ,fPDGMass(0)
   ,fPDGMassOverZ(0)
+  ,fCharge(1.f)
   ,fIsMC(kFALSE)
   ,fPID(0x0)
   ,fMagField(0.f)
-  ,fPrimaryVertex(0x0)
   ,fDCAzLimit(10.)
   ,fDCAzNbins(400)
   ,fPtCorrectionA(3)
@@ -168,12 +170,10 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   ,fMTOFphiSignal(0x0)
   ,fMTPCphiCounts(0x0)
   ,fMTPCeLoss(0x0)
-  ,fNewCentralityFramework(false)
   ,fRequireMinCentrality(0.)
   ,fRequireMaxCentrality(80.)
   ,fEnableFlattening(true)
-   ,fTriggerMask(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral)
-   ,fEnableLogAxisInPerformancePlots(true) {
+  ,fEnableLogAxisInPerformancePlots(true) {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
@@ -193,6 +193,13 @@ AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
 /// \return void
 ///
 void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
+
+  AliPDG a;
+  a.AddParticlesToPdgDataBase();
+  TDatabasePDG* pdg = TDatabasePDG::Instance();
+  TParticlePDG* poi = pdg->GetParticle(fPDG);
+  fCharge = std::abs(poi->Charge() / 3);
+
   fList = new TList();
   fList->SetOwner(kTRUE);
 
@@ -446,7 +453,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
     Double_t dca[2];
     if (!AcceptTrack(track,dca)) continue;
     const float beta = HasTOF(track);
-    float pT = track->Pt();
+    float pT = track->Pt() * fCharge;
     if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
     if (fIsMC) {
       AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
@@ -514,7 +521,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         const float expBeta = track->GetIntegratedLength() / ((expt0 + smearing) * LIGHT_SPEED);
         if (expBeta > EPS) {
           const float expM = track->P() * track->P() * (1.f / (expBeta * expBeta) - 1.f);
-          fTOFtemplates[iS]->Fill(centrality,pT,expM - fPDGMassOverZ * fPDGMassOverZ); 
+          fTOFtemplates[iS]->Fill(centrality,pT,expM - fPDGMassOverZ * fPDGMassOverZ);
         }
       }
     }
@@ -583,7 +590,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
     if (nSDD < fRequireSDDrecPoints) return kFALSE;
     if (fRequireVetoSPD && nSPD > 0) return kFALSE;
     Double_t cov[3];
-    if (!track->PropagateToDCA(fPrimaryVertex, fMagField, 100, dca, cov)) return kFALSE;
+    if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return kFALSE;
     if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
   }

@@ -2120,12 +2120,8 @@ Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const {
 Bool_t AliMultSelectionTask::IsHijing() const {
     //Function to check if this is Hijing MC
     Bool_t lReturnValue = kFALSE;
-    AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
-    AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-    AliStack*    stack=0;
-    AliMCEvent*  mcEvent=0;
-    AliGenHijingEventHeader* hHijing=0;
-    if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+    AliMCEvent*  mcEvent = MCEvent();
+    if (mcEvent) {
         AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
         if (mcGenH->InheritsFrom(AliGenHijingEventHeader::Class())){
             //Option 1: Just Hijing
@@ -2147,14 +2143,11 @@ Bool_t AliMultSelectionTask::IsHijing() const {
 Bool_t AliMultSelectionTask::IsDPMJet() const { 
     //Function to check if this is DPMJet
         Bool_t lReturnValue = kFALSE;
-        AliAnalysisManager* anMan = AliAnalysisManager::GetAnalysisManager();
-        AliMCEventHandler* eventHandler = (AliMCEventHandler*)anMan->GetMCtruthEventHandler();
-        AliStack*    stack=0;
-        AliMCEvent*  mcEvent=0;
-        if (eventHandler && (mcEvent=eventHandler->MCEvent()) && (stack=mcEvent->Stack())) {
+        AliMCEvent*  mcEvent = MCEvent();
+        if (mcEvent) {
             AliGenEventHeader* mcGenH = mcEvent->GenEventHeader();
             if (mcGenH->InheritsFrom(AliGenDPMjetEventHeader::Class())) {
-		//DPMJet Header is there!
+                //DPMJet Header is there!
                 lReturnValue = kTRUE;
             }
         }

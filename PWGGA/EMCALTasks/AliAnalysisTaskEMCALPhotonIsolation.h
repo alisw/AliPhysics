@@ -294,6 +294,9 @@ protected:
   TH3D        *fTracksConeEtaM02;
   TH1F        *fHistXsection;
   TH1F        *fHistTrials;
+  TH2F        *fPtTracksVSpTNC;                //!<!
+  TH2F        *fCTdistVSpTNC;                  //!<!
+  TH2F        *fPtTracksVSpTNC_MC;             //!<!
   
   THnSparse   *fOutputTHnS;                    //!<! 1st Method 4 Output
   THnSparse   *fOutMCTruth;                    //!<! 1st Method 4 MC truth Output //Isolation on pTMax
@@ -319,7 +322,7 @@ private:
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 8);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 9);    //EMCAL Neutrals base analysis task
                                                        /// \endcond
 };
 #endif

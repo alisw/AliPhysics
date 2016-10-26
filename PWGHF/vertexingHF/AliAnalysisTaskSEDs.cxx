@@ -490,21 +490,23 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       xminReco[0]  = 1.75;
       xmaxReco[0]  = 2.15;
       
-      nBinsReco[1] = 15; //pt
+      nBinsReco[1] = 16; //pt
       xminReco[1]  = 0.;
-      xmaxReco[1]  = 15.;
+      xmaxReco[1]  = 16.;
       
-      nBinsReco[2] = 15; //#Delta Mass(KK)
+      nBinsReco[2] = 12; //#Delta Mass(KK)
+      xmaxReco[2]  = 12.;
+
       nBinsReco[3] = 7; //dlen
       nBinsReco[4] = 7; //dlenxy
       nBinsReco[5] = 10; //ndlenxy
       
       nBinsReco[6] = 6; //cosP
-      xminReco[6]  = 0.94;
+      xminReco[6]  = 0.97;
       xmaxReco[6]  = 1.0;
       
       nBinsReco[7] = 6; //cosPxy
-      xminReco[7]  = 0.94;
+      xminReco[7]  = 0.97;
       xmaxReco[7]  = 1.0;
   }
   

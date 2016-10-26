@@ -257,5 +257,15 @@ Double32_t AliJetShapeOpeningAngle_kt::result(const fastjet::PseudoJet &jet) con
   return Result;
 }
 
+Double32_t AliJetShapeOpeningAngleSD_CA::result(const fastjet::PseudoJet &jet) const {
+  if (!jet.has_constituents()) 
+    return 0;
+  AliFJWrapper *fFastjetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
+  Double32_t Result = fFastjetWrapper->AliFJWrapper::NSubjettinessDerivativeSub(2,0,0.2,1.0,0.4,jet,3,0,0,0.1);
+  fFastjetWrapper->Clear();
+  delete fFastjetWrapper;
+  return Result;
+}
+
 #endif
 

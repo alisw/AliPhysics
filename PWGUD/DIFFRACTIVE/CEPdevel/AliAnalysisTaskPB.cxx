@@ -1206,7 +1206,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   evbuf->SetEventNumber(fEvent);
     
   // check event with ALiPhysicsSelection
-  if (fMCEvent)  fPhysicsSelection->SetAnalyzeMC(kTRUE);
+  if (fMCEvent) fPhysicsSelection->SetAnalyzeMC(kTRUE);
   evbuf->SetPhyssel(fPhysicsSelection->IsCollisionCandidate(fESDEvent)>0);      
   // printf("Event is selected: %u\n",
   //  fPhysicsSelection->IsCollisionCandidate(fESDEvent));
@@ -1440,6 +1440,8 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     // add normal tracks to event buffer
     Double_t mom[3];
     Double_t stat,nsig,probs[AliPID::kSPECIES];
+    //Int_t nMC = 0;
+    //TLorentzVector aa = TLorentzVector(0,0,0,0);
     for (Int_t ii=0; ii<nch; ii++) {
     
       AliVTrack *tmptrk = fTracks->GetTrack(ii);
@@ -1483,8 +1485,10 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
       // get MC truth
       Int_t MCind = tmptrk->GetLabel();
       if (fMCEvent && MCind >= 0) {
+        
         TParticle* part = stack->Particle(MCind);
-        //printf("MC mass: %f\n", part->GetMass());
+        // printf("MC particle (%i): %f/%f/%f - %f/%f\n",
+        //  ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
         
         // set MC mass and momentum
         TLorentzVector lv;
@@ -1493,11 +1497,21 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
         trk->SetMCPID(part->GetPdgCode());
         trk->SetMCMass(part->GetMass());
         trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
+        
+        //nMC++;
+        //aa += lv;
       }
       
       evbuf->AddTrack(trk);
     }
-
+    
+    // if (nMC == 2) {
+    //   printf("Total energy, mass, and pt of saved tracks: %f / %f /%f \n",aa.E(),aa.M(),aa.Pt());
+    // }
+    
+    
+    
+    
     // add soft tracks to event buffer
     for (Int_t ii=nch; ii<ncombined; ii++) {
     
@@ -2566,11 +2580,12 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
         part->GetPdgCode() != 2212) {
         fMCCDSystem += TLorentzVector(part->Px(),part->Py(),part->Pz(),part->Energy());
         
-        // printf("2nd generation particle: %f/%f/%f - %f\n",
-        //   part->Px(),part->Py(),part->Pz(),part->Energy());
+        printf("2nd generation particle: %f/%f/%f - %f/%f\n",
+           part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
+
       }
     }
-    // printf("Total energy and mass of 2nd generation particles: %f / %f \n",fMCCDSystem.E(),fMCCDSystem.M());
+    // printf("Total energy, mass, and pt of 2nd generation particles: %f / %f /%f \n",fMCCDSystem.E(),fMCCDSystem.M(),fMCCDSystem.Pt());
   
   } else if (fMCGenerator == "DPMJET") {
     
