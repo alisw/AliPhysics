@@ -159,11 +159,12 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root";
     TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
     gROOT->cd();
-    if(ZDCTowerEqFile) {
-      taskFE->SetTowerEqList((TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib")));
+    TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib"));
+    if(ZDCTowerEqList) {
+      taskFE->SetTowerEqList(ZDCTowerEqList);
       cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
     } else {
-      cout << "ERROR: ZDCTowerEqFile not found!" << endl;
+      cout << "ERROR: ZDCTowerEqList not found!" << endl;
       exit(1);
     }
     delete ZDCTowerEqFile;
