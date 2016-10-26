@@ -16,7 +16,7 @@
 //*************************************************************************
 
 /* $Id$ */
-
+#include "THnSparse.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliHFAfterBurner.h"
@@ -37,6 +37,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC}; //Event plane to be calculated in the task
   enum FlowMethod{kEP,kSP,kEvShape}; // Event Plane, Scalar Product or Event Shape Engeneering methods
+  enum q2Method{kq2TPC,kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}; // q2 for Event Shape to be calculated in the task
   //  enum SubEvents{kFullTPC,kPosTPC,kNegTPC,kSingleV0Side}; //Sub-events for V0 EP
     
   AliAnalysisTaskSEHFv2();
@@ -86,6 +87,9 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
 						       const char *expectedstep,
 						       const char *altstep);
 
+  void SetSeparateD0D0bar(Bool_t separate) {fSeparateD0D0bar=separate;}
+  void Setq2Method(Int_t q2method) {fq2Meth=q2method;}
+  
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -106,7 +110,10 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, const TVector2* q,AliEventplane *pl,const TVector2* qsub1,const TVector2* qsub2);
   Float_t GetEventPlaneForCandidateNewQnFw(AliAODRecoDecayHF* d, const TList *list);
   //  Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
-    
+  
+  void CreateSparseForEvShapeAnalysis();
+  Double_t Getq2(TList* qnlist);
+  
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
   TH1F* fhEventsInfo;           //! histogram send on output slot 1
@@ -136,10 +143,13 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   TString fDetTPCConfName[3];
   TString fDetV0ConfName[3];
   TString fNormMethod;
-    
+  THnSparseF* fHistMassPtCos2Phiq2Centr; //THnSparse for the analysis of v2 as a function of q2
+  Int_t fq2Meth;                //flag to select q2 method
+  Bool_t fSeparateD0D0bar;      //flag to activate the separation of D0 from D0bar in the THnSparse
+
   AliAnalysisTaskSEHFv2::FlowMethod fFlowMethod;
     
-  ClassDef(AliAnalysisTaskSEHFv2,5); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFv2,6); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif
