@@ -797,7 +797,7 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
       if(!fJetsCont->AcceptJet(vetoJet , dummy))
         continue;
       // if veto jet found -> return
-      if((vetoJet->Pt() >= fJetVetoMinPt) && (vetoJet->Pt() < fJetVetoMaxPt))
+      if((vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() >= fJetVetoMinPt) && (vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() < fJetVetoMaxPt))
         return;
     }
   }
