@@ -27,6 +27,7 @@
 #include "AliMCVertex.h"
 #include "AliStack.h"
 #include "TPDGCode.h"
+#include "Nuclei/NucleiPbPb/AliNuclexEventCuts.h"
 #include "AliAnalysisTaskHypTritEventTree.h"
 #include "AliReducedHypTritEvent.h"
 
@@ -38,7 +39,6 @@ ClassImp(AliAnalysisTaskHypTritEventTree)
 // Default Constructor
 AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   :AliAnalysisTaskSE("AliAnalysisTaskHypTritEventTree"),
-  fEvent(0),
   fInputHandler(0),
   fPID(0),
   fReducedEvent(0),
@@ -60,13 +60,16 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fNV0Cand(),
   fMcGenRecCounter(),
   fMCtrue(0),
+  fEventCuts(),
+  fPeriod(),
+  fBetheSplines(),
+  fBetheParams(),
   fPidQa(0) {
 }
 
 // Constructor
 AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *name)
   :AliAnalysisTaskSE(name),
-  fEvent(0),
   fInputHandler(0),
   fPID(0),
   fReducedEvent(0),
@@ -88,6 +91,10 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fNV0Cand(),
   fMcGenRecCounter(),
   fMCtrue(0),
+  fEventCuts(),
+  fPeriod(),
+  fBetheSplines(),
+  fBetheParams(),
   fPidQa(0) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -123,6 +130,9 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistogramList->Add(fHistdEdx);
   fHistogramList->Add(fHistNumEvents);
 
+  fEventCuts.SetupLHC15o();
+  fEventCuts.AddQAplotsToList(fHistogramList);
+
   fTree = new TTree("tree","fTree");
   fReducedEvent = new AliReducedHypTritEvent();
   fTree->Branch("event","AliReducedHypTritEvent",&fReducedEvent,32000,99);
@@ -152,8 +162,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     if (!fStack) return;
   }
   // Data
-  fEvent = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!fEvent) {
+  AliESDEvent* event = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!event) {
     AliError("Could not get ESD Event.\n");
     return;
   }
@@ -165,35 +175,40 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     fMCGenRec[i] = -1;
   }
   fHistNumEvents->Fill(0);
-  const AliESDVertex *vertex = fEvent->GetPrimaryVertexTracks();
-    if (vertex->GetNContributors() < 1) {
-      vertex = fEvent->GetPrimaryVertexSPD();
-      if (vertex->GetNContributors() < 1) {
-        PostData(1,fHistogramList);
-        return;
-      }
-    }
-  if (TMath::Abs(vertex->GetZ()) > 10) {
-    PostData(1, fHistogramList);
-    return;
-  }
-  TriggerSelection();
-  AliMultSelection* multSelection = dynamic_cast<AliMultSelection*>(fEvent->FindListObject("MultSelection"));
   Float_t centrality = -1;
-  if ( multSelection ){
-     centrality = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
-  } else {
-     AliInfo("Didn't find MultSelection.\n");
+  const AliESDVertex *vertex = event->GetPrimaryVertexTracks();
+  if (fPeriod == 2010 || fPeriod == 2011) {
+      if (vertex->GetNContributors() < 1) {
+        vertex = event->GetPrimaryVertexSPD();
+        if (vertex->GetNContributors() < 1) {
+          PostData(1,fHistogramList);
+          return;
+        }
+      }
+    if (TMath::Abs(vertex->GetZ()) > 10) {
+      PostData(1, fHistogramList);
+      return;
+    }
+    centrality = event->GetCentrality()->GetCentralityPercentile("V0M");
   }
-  Int_t runNumber = fEvent->GetRunNumber();
+  if (fPeriod == 2015) {
+    if(!fEventCuts.AcceptEvent(event, fHistogramList)) {
+      PostData(1,fHistogramList);
+      return;
+    }
+    // 0 = V0M
+    centrality = fEventCuts.GetCentrality(0);
+  }
   if(!fMCtrue){
     if (centrality < 0.0 || centrality > 100.0 ) {
       return;
     }
   }
+  Int_t runNumber = event->GetRunNumber();
+  TriggerSelection();
   fHistNumEvents->Fill(1);
   fReducedEvent->fCentrality = centrality;
-  fMagneticField  = fEvent->GetMagneticField();
+  fMagneticField  = event->GetMagneticField();
   fPrimaryVertex.SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
   fReducedEvent->fVertexPosition = fPrimaryVertex;
   fReducedEvent->fRunNumber = runNumber;
@@ -213,8 +228,8 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     AliESDtrackCuts* trackCutsPid = new AliESDtrackCuts("trackCutsPid", "trackCutsPid");
     trackCutsPid = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,0);
     trackCutsPid->SetEtaRange(-0.9,0.9);
-    for (Int_t itrack = 0; itrack < fEvent->GetNumberOfTracks(); itrack++) {
-      AliESDtrack* track = fEvent->GetTrack(itrack);
+    for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++) {
+      AliESDtrack* track = event->GetTrack(itrack);
       if (!trackCutsPid->AcceptTrack(track)) continue;
       Double_t momentum = track->GetInnerParam()->GetP();
       fHistdEdx->Fill(momentum * track->GetSign(), track->GetTPCsignal());
@@ -223,22 +238,24 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   }
 
   // V0 loop
-  for (Int_t ivertex = 0; ivertex < fEvent->GetNumberOfV0s(); ivertex++) {
-    fV0 = fEvent->GetV0(ivertex);
+  for (Int_t ivertex = 0; ivertex < event->GetNumberOfV0s(); ivertex++) {
+    fV0 = event->GetV0(ivertex);
     Bool_t isreconstructed = kFALSE;
     isreconstructed = fV0->GetOnFlyStatus();
     if (!isreconstructed) continue;
     Bool_t v0ChargeCorrect = kTRUE;
-    AliESDtrack* trackN = fEvent->GetTrack(fV0->GetIndex(0));
-    AliESDtrack* trackP = fEvent->GetTrack(fV0->GetIndex(1));
+    AliESDtrack* trackN = event->GetTrack(fV0->GetIndex(0));
+    AliESDtrack* trackP = event->GetTrack(fV0->GetIndex(1));
     // Checks charge because of bug in V0 interface.
     if (trackN->GetSign() > 0 ) {
-      trackN = fEvent->GetTrack(fV0->GetIndex(1));
-      trackP = fEvent->GetTrack(fV0->GetIndex(0));
+      trackN = event->GetTrack(fV0->GetIndex(1));
+      trackP = event->GetTrack(fV0->GetIndex(0));
       v0ChargeCorrect = kFALSE;
     }
     if (!trackCutsV0.AcceptTrack(trackN)) continue;
     if (!trackCutsV0.AcceptTrack(trackP)) continue;
+    if (trackN->GetTPCsignal() > 1500 || trackP->GetTPCsignal() > 1500) continue;
+    if (trackN->GetP() > 10 || trackP->GetP() > 10) continue;
     Bool_t pionPositive     = kFALSE;
     Bool_t pionNegative     = kFALSE;
     Bool_t protonPositive   = kFALSE;
@@ -249,35 +266,34 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     Bool_t tritonNegative   = kFALSE;
     Bool_t helium3Positive  = kFALSE;
     Bool_t helium3Negative  = kFALSE;
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kPion)) < 3 && trackP->GetSign() > 0) {
+    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kPion)) < 3) {
       pionPositive = kTRUE;
     }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kPion)) < 3 && trackN->GetSign() < 0) {
+    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kPion)) < 3) {
       pionNegative = kTRUE;
     }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kProton)) < 3 && trackN->GetSign() < 0) {
-      protonNegative = kTRUE;
-    }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kProton)) < 3 && trackP->GetSign() > 0) {
-      protonPositive = kTRUE;
-    }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kDeuteron)) < 3 && trackN->GetSign() < 0) {
-      deuteronNegative = kTRUE;
-    }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kDeuteron)) < 3 && trackP->GetSign() > 0) {
-      deuteronPositive = kTRUE;
-    }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kTriton)) < 3 && trackN->GetSign() < 0) {
-      tritonNegative = kTRUE;
-     }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kTriton)) < 3 && trackP->GetSign() > 0) {
-      tritonPositive = kTRUE;
-     }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kHe3)) < 4 && trackN->GetSign() < 0) {
-       helium3Negative = kTRUE;
-     }
-    if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kHe3)) < 4 && trackP->GetSign() > 0) {
-       helium3Positive = kTRUE;
+    if (fBetheSplines) {
+      if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kTriton)) < 3) {
+        tritonPositive = kTRUE;
+      } else if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kTriton)) < 3) {
+        tritonNegative = kTRUE;
+      }
+      if (TMath::Abs(fPID->NumberOfSigmasTPC(trackP, AliPID::kHe3)) < 4) {
+        helium3Positive = kTRUE;
+      } else if (TMath::Abs(fPID->NumberOfSigmasTPC(trackN, AliPID::kHe3)) < 4) {
+         helium3Negative = kTRUE;
+      }
+    } else {
+      if (TMath::Abs(Bethe(*trackP, AliPID::ParticleMass(AliPID::kHe3),  2, fBetheParams[0])) < 4) {
+        helium3Positive = kTRUE;
+      } else if (TMath::Abs(Bethe(*trackN, AliPID::ParticleMass(AliPID::kHe3), 2, fBetheParams[0])) < 4) {
+        helium3Negative = kTRUE;
+      }
+      if (TMath::Abs(Bethe(*trackP, AliPID::ParticleMass(AliPID::kTriton), 1, fBetheParams[1])) < 3) {
+        tritonPositive = kTRUE;
+      } else if (TMath::Abs(Bethe(*trackN, AliPID::ParticleMass(AliPID::kTriton), 1, fBetheParams[1])) < 3) {
+        tritonNegative = kTRUE;
+      }
     }
     if (helium3Positive && pionNegative) {
       SetMomentum( 2, v0ChargeCorrect);
@@ -304,6 +320,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 void AliAnalysisTaskHypTritEventTree::Terminate(const Option_t*) {
   if (!GetOutputData(0)) return;
 }
+
 /// Sets momentum of a pair of identified tracks with a given charge
 /// \param charge charge of nuclei
 /// \param v0Charge corrects for mistake in AliESDv0. It is true when the charge was correctly set
@@ -370,8 +387,13 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fP = fMomPos;
     reducedHe->fDedx = trackN.GetTPCsignal();
     reducedPi->fDedx = trackP.GetTPCsignal();
-    reducedHe->fDedxSigma = fPID->NumberOfSigmasTPC(&trackN, typeNeg);
-    reducedHe->fDedxSigmaTriton = fPID->NumberOfSigmasTPC(&trackN, AliPID::kTriton);
+    if (fBetheSplines) {
+      reducedHe->fDedxSigma = fPID->NumberOfSigmasTPC(&trackN, typeNeg);
+      reducedHe->fDedxSigmaTriton = fPID->NumberOfSigmasTPC(&trackN, AliPID::kTriton);
+    } else {
+      reducedHe->fDedxSigma = Bethe(trackN, AliPID::ParticleMass(typeNeg), 2, fBetheParams[0]);
+      reducedHe->fDedxSigmaTriton = Bethe(trackN, AliPID::ParticleMass(AliPID::kTriton), 1, fBetheParams[1]);
+    }
     reducedPi->fDedxSigma = fPID->NumberOfSigmasTPC(&trackP, typePos);
     reducedHe->fDca = TMath::Abs(trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
     reducedPi->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -387,8 +409,17 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fP = fMomNeg;
     reducedHe->fDedx = trackP.GetTPCsignal();
     reducedPi->fDedx = trackN.GetTPCsignal();
-    reducedHe->fDedxSigma = fPID->NumberOfSigmasTPC(&trackP, typePos);
-    reducedHe->fDedxSigmaTriton = fPID->NumberOfSigmasTPC(&trackP, AliPID::kTriton);
+    if (fBetheSplines) {
+      reducedHe->fDedxSigma = fPID->NumberOfSigmasTPC(&trackP, typePos);
+      reducedHe->fDedxSigmaTriton = fPID->NumberOfSigmasTPC(&trackP, AliPID::kTriton);
+    } else {
+      reducedHe->fDedxSigma = Bethe(trackP, AliPID::ParticleMass(typePos), 2, fBetheParams[0]);
+      reducedHe->fDedxSigmaTriton = Bethe(trackP, AliPID::ParticleMass(AliPID::kTriton), 1, fBetheParams[1]);
+    }
+    reducedPi->fDedxSigma = fPID->NumberOfSigmasTPC(&trackP, typePos);
+    reducedHe->fDca = TMath::Abs(trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
+    reducedPi->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
+    reducedPi->fEta = trackP.Eta();
     reducedPi->fDedxSigma = fPID->NumberOfSigmasTPC(&trackN, typeNeg);
     reducedHe->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
     reducedPi->fDca = TMath::Abs(trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
@@ -500,4 +531,14 @@ Bool_t AliAnalysisTaskHypTritEventTree::TriggerSelection() {
   Bool_t isTriggered = kTRUE;
   if (fReducedEvent->fTrigger == 0) isTriggered = kFALSE;
   return isTriggered;
+}
+/// Calculates number of sigma deviation from expected dE/dx in TPC
+/// \param track particle track
+/// \param mass mass hypothesis of particle
+/// \param charge particle charge hypothesis
+/// \param params Parameters of Aleph parametrization of Bethe Energy-loss
+Double_t AliAnalysisTaskHypTritEventTree::Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params){
+  Double_t measured = charge*charge*AliExternalTrackParam::BetheBlochAleph(charge*track.GetInnerParam()->GetP()/mass,params[0],params[1],params[2],params[3],params[4]);
+  Double_t sigma = TMath::Abs(measured*params[5] - measured);
+  return (track.GetTPCsignal() - measured) / sigma;
 }
