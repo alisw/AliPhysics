@@ -49,6 +49,8 @@
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
 
+#include "AliPIDResponse.h"
+
 // root
 #include "TMath.h"
 #include "TFile.h"
@@ -153,6 +155,7 @@ fStoreMcTracklets(0),
 fStoreMcMuons(0),
 fStoreTrackInfo(0),
 fStorePidInfo(0),
+fStoreNsigma(kFALSE),
 fStoreAodDCAInfo(0),
 fStoreMuonOrigin(0),
 fApplyPhysicsSelectionCut(0),
@@ -275,6 +278,8 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   for (Int_t i=AliCFTreeMapping::kDCAxy; i<AliCFTreeMapping::kMappingTracks; i++) {
     if (fStoreAodDCAInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
   }
+  for (Int_t i=AliCFTreeMapping::kNsigmaTPCe; i<=AliCFTreeMapping::kNsigmaTOFp; i++)
+    fMapping->MappingTracks()[i] = fStoreNsigma ? iParameter++ : -1;
 
   iParameter=0; // Mapping Tracklets
   for (Int_t i=0; i<AliCFTreeMapping::kMappingTracklets; i++) {
@@ -734,6 +739,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
           Int_t additionalParameterIndex = 0;
           if (fStoreTrackInfo) additionalParameterIndex+=10;
           if (fStorePidInfo)   additionalParameterIndex+=3;
+          if (fStoreNsigma)    additionalParameterIndex+=8;
           if (fStoreMcTracks)  additionalParameterIndex+=1;
           additionalParameterIndex -= 1;
           for(Int_t jpart = 0; jpart<fTracks->GetEntriesFast(); jpart++)
@@ -881,6 +887,7 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(const AliVTrack* track, UInt_t ma
   Int_t nAdditionalParameters = 0;
   if (fStoreTrackInfo) nAdditionalParameters+=10;
   if (fStorePidInfo)   nAdditionalParameters+=3;
+  if (fStoreNsigma)    nAdditionalParameters+=8;
   if (fStoreMcTracks)  nAdditionalParameters+=1;
   AliCFParticle* cftrack = new ((*fTracks)[fTracks->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,mask,nAdditionalParameters);
   if (fStoreTrackInfo && flag==0){
@@ -919,6 +926,30 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(const AliVTrack* track, UInt_t ma
     cftrack->SetAt(ncl,fMapping->MappingTracks()[AliCFTreeMapping::kTPCsignalN]);
     cftrack->SetAt(dedx,fMapping->MappingTracks()[AliCFTreeMapping::kdEdx]);
     cftrack->SetAt(beta,fMapping->MappingTracks()[AliCFTreeMapping::kbeta]);
+  }
+
+  if (fStoreNsigma) {
+    const AliPIDResponse *pidResponse = ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+    if (pidResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) {
+      cftrack->SetAt(pidResponse->NumberOfSigmasTPC(track, AliPID::kElectron),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTPCe]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTPC(track, AliPID::kPion),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTPCpi]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTPC(track, AliPID::kKaon),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTPCk]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTPC(track, AliPID::kProton),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTPCp]);
+    }
+    if (pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
+      cftrack->SetAt(pidResponse->NumberOfSigmasTOF(track, AliPID::kElectron),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTOFe]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTOF(track, AliPID::kPion),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTOFpi]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTOF(track, AliPID::kKaon),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTOFk]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTOF(track, AliPID::kProton),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTOFp]);
+    }
   }
 
   if(fStoreMcTracks)
