@@ -52,7 +52,8 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *particleMode ="default"
   fdNdPtAnalysisPbPb->SetTrackCuts(esdTrackCuts);
   fdNdPtAnalysisPbPb->SetAnalysisMode(AlidNdPtHelper::kTPCITS);
   fdNdPtAnalysisPbPb->SetCentralityEstimator("V0M");
-  fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kINT7);
+  if(stEventTrigger.Contains("kINT7")) fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kINT7);
+  else if(stEventTrigger.Contains("kMB")) fdNdPtAnalysisPbPb->SetTriggerMask(AliVEvent::kMB);
 
   
   // SetParticleMode
