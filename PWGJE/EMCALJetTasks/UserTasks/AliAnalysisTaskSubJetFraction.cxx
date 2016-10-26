@@ -1230,19 +1230,15 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  */
 	  if(fJetShapeSub==kNoSub || fJetShapeSub==kDerivSub) fShapesVar[0]= Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  else fShapesVar[0]=Jet1->Pt(); 
-	  // fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
-	  fShapesVar[2]=0.0;
+	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
 	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  // fShapesVar[6]=fjNSubJettiness(Jet1,0,3,0,1,0);
-	  fShapesVar[6]=0.0;
-	  //  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
-	  fShapesVar[8]=0.0;
+	  fShapesVar[6]=fjNSubJettiness(Jet1,0,3,0,1,0);
+	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
 	  fShapesVar[10]=Jet1->GetNumberOfTracks();
-	  fShapesVar[12]=0.0;
+	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
 	  AliEmcalJetFinder *Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder");
 	  if (fFullTree){
-	    //fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,2);
-	    fShapesVar[14]=0.0;
+	    fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,2);
 	    fShapesVar[16]=SubJetFraction(Jet1, Reclusterer1, 1, 0, kTRUE, kFALSE);
 	    fShapesVar[18]=SubJetFraction(Jet1, Reclusterer1, 2, 0, kTRUE, kFALSE);
 	  }
