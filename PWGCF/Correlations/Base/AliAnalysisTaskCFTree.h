@@ -59,6 +59,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   void SetStoreMcMuons(Bool_t val=kTRUE)     { fStoreMcMuons     = val; }
   void SetStoreTrackInfo(Bool_t val=kTRUE)   { fStoreTrackInfo   = val; }
   void SetStorePidInfo(Bool_t val=kTRUE)     { fStorePidInfo     = val; }
+  void SetStoreNsigma(Bool_t val=kTRUE)      { fStoreNsigma      = val; }
   void SetStoreAodDCAInfo(Bool_t val=kTRUE)  { fStoreAodDCAInfo  = val; }
   void SetStoreMuonOrigin(Bool_t val=kTRUE)  { fStoreMuonOrigin  = val; }
   void SetIs13TeV(Bool_t val=kTRUE)          { fIs13TeV          = val; }
@@ -164,6 +165,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   Bool_t fStoreTrackInfo;     // if kTRUE - Store additional track info on tracks
   Bool_t fStoreAodDCAInfo;    // if kTRUE - Store dca track info on AOD tracks
   Bool_t fStorePidInfo;       // if kTRUE - Store PID info for tracks
+  Bool_t fStoreNsigma;        // if kTRUE - Store TPC and TOF Nsigma for e, pi, K, p
   Bool_t fStoreMuonOrigin;    // if kTRUE - Store muon origin in a TClonesArray of TObjStrings
   Bool_t fApplyPhysicsSelectionCut; // skip events not passing fSelectionBit mask
   Bool_t fStoreOnlyEventsWithMuons; // if kTRUE store only events with at least one muon
