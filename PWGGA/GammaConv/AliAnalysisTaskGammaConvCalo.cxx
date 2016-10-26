@@ -55,6 +55,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
+#include "AliCaloTrackMatcher.h"
 #include <vector>
 #include <map>
 
@@ -324,7 +325,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
   doConvGammaShowerShapeTree(kFALSE),
-  fEnableSortForClusMC(kFALSE)
+  fEnableSortForClusMC(kFALSE),
+  fDoPrimaryTrackMatching(kFALSE)
 {
   
 }
@@ -594,7 +596,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
   doConvGammaShowerShapeTree(kFALSE),
-  fEnableSortForClusMC(kFALSE)
+  fEnableSortForClusMC(kFALSE),
+  fDoPrimaryTrackMatching(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -2037,6 +2040,11 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     if (fV0Reader->GetV0FindingEfficiencyHistograms())
       fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
+  for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
+    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+    if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+  }
+
 
       
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -2344,7 +2352,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
-  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
+  if(fDoPrimaryTrackMatching) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kFALSE);
   
   // vertex
   Double_t vertex[3] = {0,0,0};

@@ -526,6 +526,87 @@ void AddVZERO(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManage
   VZERO->AddDetectorConfiguration(VZEROconfQoverQlength);
     
 
+    /* the VZEROA detector configuration */
+    AliQnCorrectionsDetectorConfigurationChannels *VZEROAconfQoverSqrtM =
+    new AliQnCorrectionsDetectorConfigurationChannels(
+                                                      "VZEROAQoverSqrtM",
+                                                      CorrEventClasses,
+                                                      64, /* number of channels */
+                                                      4); /* number of harmonics: 1, 2, 3 and 4 */
+    VZEROAconfQoverSqrtM->SetChannelsScheme(VZEROchannels[0], channelGroups);
+    /* let's configure the Q vector calibration */
+    VZEROAconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
+    /* lets configure the equalization of input data */
+    AliQnCorrectionsInputGainEqualization *eqAQoverSqrtM = new AliQnCorrectionsInputGainEqualization();
+    eqAQoverSqrtM->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
+    eqAQoverSqrtM->SetShift(1.0);
+    eqAQoverSqrtM->SetScale(0.1);
+    eqAQoverSqrtM->SetUseChannelGroupsWeights(kTRUE);
+    VZEROAconfQoverSqrtM->AddCorrectionOnInputData(eqAQoverSqrtM);
+    /* let's add the Q vector recentering correction step */
+    /* we don't configure it, so we create it anonymous */
+    VZEROAconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+    /* let's add the Q vector alignment correction step */
+    AliQnCorrectionsQnVectorAlignment *alignAQoverSqrtM = new AliQnCorrectionsQnVectorAlignment();
+    alignAQoverSqrtM->SetHarmonicNumberForAlignment(2);
+    alignAQoverSqrtM->SetReferenceConfigurationForAlignment("TPCQoverSqrtM");
+    VZEROAconfQoverSqrtM->AddCorrectionOnQnVector(alignAQoverSqrtM);
+    /* lets configrure the QA histograms */
+    VZEROAconfQoverSqrtM->SetQACentralityVar(varForEventMultiplicity);
+    VZEROAconfQoverSqrtM->SetQAMultiplicityAxis(100, 0.0, 500.0);
+    /* let's configure the twist and rescale correction step */
+    AliQnCorrectionsQnVectorTwistAndRescale *twScaleAQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
+    twScaleAQoverSqrtM->SetApplyTwist(kTRUE);
+    twScaleAQoverSqrtM->SetApplyRescale(kTRUE);
+    twScaleAQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
+    twScaleAQoverSqrtM->SetReferenceConfigurationsForTwistAndRescale("TPCQoverSqrtM","VZEROCQoverSqrtM");
+    /* now we add it to the detector configuration */
+    VZEROAconfQoverSqrtM->AddCorrectionOnQnVector(twScaleAQoverSqrtM);
+    
+    /* add the configuration to the detector */
+    VZERO->AddDetectorConfiguration(VZEROAconfQoverSqrtM);
+    
+    /* the VZEROC detector configuration */
+    AliQnCorrectionsDetectorConfigurationChannels *VZEROCconfQoverSqrtM =
+    new AliQnCorrectionsDetectorConfigurationChannels(
+                                                      "VZEROCQoverSqrtM",
+                                                      CorrEventClasses,
+                                                      64, /* number of channels */
+                                                      4); /* number of harmonics: 1, 2, 3 and 4 */
+    VZEROCconfQoverSqrtM->SetChannelsScheme(VZEROchannels[1], channelGroups);
+    /* let's configure the Q vector calibration */
+    VZEROCconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
+    /* lets configure the equalization of input data */
+    AliQnCorrectionsInputGainEqualization *eqAQoverSqrtM = new AliQnCorrectionsInputGainEqualization();
+    eqAQoverSqrtM->SetEqualizationMethod(AliQnCorrectionsInputGainEqualization::GEQUAL_averageEqualization);
+    eqAQoverSqrtM->SetShift(1.0);
+    eqAQoverSqrtM->SetScale(0.1);
+    eqAQoverSqrtM->SetUseChannelGroupsWeights(kTRUE);
+    VZEROCconfQoverSqrtM->AddCorrectionOnInputData(eqAQoverSqrtM);
+    /* let's add the Q vector recentering correction step */
+    /* we don't configure it, so we create it anonymous */
+    VZEROCconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+    /* let's add the Q vector alignment correction step */
+    AliQnCorrectionsQnVectorAlignment *alignAQoverSqrtM = new AliQnCorrectionsQnVectorAlignment();
+    alignAQoverSqrtM->SetHarmonicNumberForAlignment(2);
+    alignAQoverSqrtM->SetReferenceConfigurationForAlignment("TPCQoverSqrtM");
+    VZEROCconfQoverSqrtM->AddCorrectionOnQnVector(alignAQoverSqrtM);
+    /* lets configrure the QA histograms */
+    VZEROCconfQoverSqrtM->SetQACentralityVar(varForEventMultiplicity);
+    VZEROCconfQoverSqrtM->SetQAMultiplicityAxis(100, 0.0, 500.0);
+    /* let's configure the twist and rescale correction step */
+    AliQnCorrectionsQnVectorTwistAndRescale *twScaleAQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
+    twScaleAQoverSqrtM->SetApplyTwist(kTRUE);
+    twScaleAQoverSqrtM->SetApplyRescale(kTRUE);
+    twScaleAQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_correlations);
+    twScaleAQoverSqrtM->SetReferenceConfigurationsForTwistAndRescale("TPCQoverSqrtM","VZEROAQoverSqrtM");
+    /* now we add it to the detector configuration */
+    VZEROCconfQoverSqrtM->AddCorrectionOnQnVector(twScaleAQoverSqrtM);
+    
+    /* add the configuration to the detector */
+    VZERO->AddDetectorConfiguration(VZEROCconfQoverSqrtM);
+    
+
     
   /* the full VZERO detector configuration */
   AliQnCorrectionsDetectorConfigurationChannels *VZEROconfQoverSqrtM =
@@ -793,7 +874,7 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
       cutsTPCQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
     }
   }
-  TPCconf->SetCuts(cutsTPCQoverQlength);
+  TPCconfQoverQlength->SetCuts(cutsTPCQoverQlength);
     
   /* add the configuration to the detector */
   TPC->AddDetectorConfiguration(TPCconfQoverQlength);
@@ -844,7 +925,7 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
       cutsTPCNegEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
     }
   }
-  TPCconf->SetCuts(cutsTPCNegEtaQoverQlength);
+  TPCNegEtaconfQoverQlength->SetCuts(cutsTPCNegEtaQoverQlength);
   TPC->AddDetectorConfiguration(TPCNegEtaconfQoverQlength);
 
   /* the TPC eta > 0 detector configuration */
@@ -893,7 +974,7 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
       cutsTPCPosEtaQoverQlength->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
     }
   }
-  TPCconf->SetCuts(cutsTPCPosEtaQoverQlength);
+  TPCPosEtaconfQoverQlength->SetCuts(cutsTPCPosEtaQoverQlength);
     
   /* add the configuration to the detector */
   TPC->AddDetectorConfiguration(TPCPosEtaconfQoverQlength);
@@ -944,10 +1025,112 @@ void AddTPC(AliAnalysisTaskFlowVectorCorrections *task, AliQnCorrectionsManager*
       cutsTPCQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
     }
   }
-  TPCconf->SetCuts(cutsTPCQoverSqrtM);
+  TPCconfQoverSqrtM->SetCuts(cutsTPCQoverSqrtM);
     
   /* add the configuration to the detector */
   TPC->AddDetectorConfiguration(TPCconfQoverSqrtM);
+    
+    /* the TPC detector configuration */
+    AliQnCorrectionsDetectorConfigurationTracks *TPCNegEtaconfQoverSqrtM =
+    new AliQnCorrectionsDetectorConfigurationTracks(
+                                                    "TPCNegEtaQoverSqrtM",
+                                                    CorrEventClasses,
+                                                    4); /* number of harmonics: 1, 2, 3 and 4 */
+    /* let's configure the Q vector calibration */
+    TPCNegEtaconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
+    /* let's add the Q vector recentering correction step */
+    /* we don't configure it, so we create it anonymous */
+    TPCNegEtaconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+    /* let's add the Q vector twist correction step */
+    AliQnCorrectionsQnVectorTwistAndRescale *twScaleNegEtaQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
+    twScaleNegEtaQoverSqrtM->SetApplyTwist(kTRUE);
+    twScaleNegEtaQoverSqrtM->SetApplyRescale(kFALSE);
+    twScaleNegEtaQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
+    TPCNegEtaconfQoverSqrtM->AddCorrectionOnQnVector(twScaleNegEtaQoverSqrtM);
+    
+    /* define the cuts to apply */
+    isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+    AliQnCorrectionsCutsSet *cutsTPCNegEtaQoverSqrtM = new AliQnCorrectionsCutsSet();
+    if(!isESD){
+        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
+        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
+        cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    }
+    else {
+        Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
+        task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
+        if(UseTPConlyTracks){
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+        }
+        else{
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,-0.8,0.));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
+            cutsTPCNegEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+        }
+    }
+    TPCNegEtaconfQoverSqrtM->SetCuts(cutsTPCNegEtaQoverSqrtM);
+    
+    /* add the configuration to the detector */
+    TPC->AddDetectorConfiguration(TPCNegEtaconfQoverSqrtM);
+    
+    /* the TPC detector configuration */
+    AliQnCorrectionsDetectorConfigurationTracks *TPCPosEtaconfQoverSqrtM =
+    new AliQnCorrectionsDetectorConfigurationTracks(
+                                                    "TPCPosEtaQoverSqrtM",
+                                                    CorrEventClasses,
+                                                    4); /* number of harmonics: 1, 2, 3 and 4 */
+    /* let's configure the Q vector calibration */
+    TPCPosEtaconfQoverSqrtM->SetQVectorNormalizationMethod(AliQnCorrectionsQnVector::QVNORM_QoverSqrtM);
+    /* let's add the Q vector recentering correction step */
+    /* we don't configure it, so we create it anonymous */
+    TPCPosEtaconfQoverSqrtM->AddCorrectionOnQnVector(new AliQnCorrectionsQnVectorRecentering());
+    /* let's add the Q vector twist correction step */
+    AliQnCorrectionsQnVectorTwistAndRescale *twScalePosEtaQoverSqrtM = new AliQnCorrectionsQnVectorTwistAndRescale();
+    twScalePosEtaQoverSqrtM->SetApplyTwist(kTRUE);
+    twScalePosEtaQoverSqrtM->SetApplyRescale(kFALSE);
+    twScalePosEtaQoverSqrtM->SetTwistAndRescaleMethod(AliQnCorrectionsQnVectorTwistAndRescale::TWRESCALE_doubleHarmonic);
+    TPCPosEtaconfQoverSqrtM->AddCorrectionOnQnVector(twScalePosEtaQoverSqrtM);
+    
+    /* define the cuts to apply */
+    isESD=mgr->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
+    AliQnCorrectionsCutsSet *cutsTPCPosEtaQoverSqrtM = new AliQnCorrectionsCutsSet();
+    if(!isESD){
+        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kFilterBitMask768,0.5,1.5));
+        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
+        cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+    }
+    else {
+        Bool_t UseTPConlyTracks=kFALSE;   // Use of TPC standalone tracks or Global tracks (only for ESD analysis)
+        task->SetUseTPCStandaloneTracks(UseTPConlyTracks);
+        if(UseTPConlyTracks){
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-3.0,3.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-3.0,3.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCnclsIter1,70.0,161.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2Iter1,0.2,4.0));
+        }
+        else{
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaXY,-0.3,0.3));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kDcaZ,-0.3,0.3));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kEta,0.,0.8));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kPt,0.2,5.));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCncls,70.0,161.0));
+            cutsTPCPosEtaQoverSqrtM->Add(new AliQnCorrectionsCutWithin(VAR::kTPCchi2,0.2,4.0));
+        }
+    }
+    TPCPosEtaconfQoverSqrtM->SetCuts(cutsTPCPosEtaQoverSqrtM);
+    
+    /* add the configuration to the detector */
+    TPC->AddDetectorConfiguration(TPCPosEtaconfQoverSqrtM);
     
 
     

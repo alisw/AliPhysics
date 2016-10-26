@@ -283,7 +283,7 @@ void AliEmcalJetFinder::FillEtaHistogram(TH1* histogram)
 
 
 //________________________________________________________________________
-Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pContJets,  Double_t dVtx[3], Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option, Int_t Measure){
+Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pContJets,  Double_t dVtx[3], Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option, Int_t Measure, Double_t Beta_SD, Double_t ZCut){
   
   fJetCount = 0;
   for (UInt_t j=0; j<fJetArray.size(); j++) {
@@ -295,8 +295,6 @@ Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pC
 //=============================================================================
 
   AliParticleContainer *pContTrks = pContJets->GetParticleContainer();
-  if (!pContTrks) cout << "Null Particle Container" <<endl;
-  if (pContTrks) cout << "AliEmcalJetFinder Number of jet tracks :   "<< pJet->GetNumberOfTracks()<<endl;
   if (pContTrks) for (Int_t i=0; i<pJet->GetNumberOfTracks(); i++) {
     AliVParticle *pTrk = pJet->TrackAt(i, pContTrks->GetArray()); if (!pTrk) continue;
     AddInputVector(pTrk->Px(), pTrk->Py(), pTrk->Pz(), pTrk->E(), pJet->TrackAt(i)+100);
@@ -332,7 +330,7 @@ Double_t AliEmcalJetFinder::Nsubjettiness(AliEmcalJet *pJet, AliJetContainer *pC
   // if(fJetAlgorithm==1) fFastjetWrapper->SetAlgorithm(fastjet::kt_algorithm);  
   if(fRecombScheme>=0) fFastjetWrapper->SetRecombScheme(static_cast<fastjet::RecombinationScheme>(fRecombScheme));
   if (Measure==1) return fFastjetWrapper->AliFJWrapper::NSubjettiness(N,Algorithm,Radius, Beta, Option,1);
-  else return fFastjetWrapper->AliFJWrapper::NSubjettiness(N,Algorithm,Radius, Beta, Option);
+  else return fFastjetWrapper->AliFJWrapper::NSubjettiness(N,Algorithm,Radius, Beta, Option,0,Beta_SD,ZCut);
   
 }
 

@@ -22,6 +22,7 @@
 #pragma link C++ class AliConversionMesonCuts+;
 #pragma link C++ class AliDalitzElectronCuts+;
 #pragma link C++ class AliDalitzElectronSelector+;
+#pragma link C++ class AliCaloTrackMatcher+;
 
 // User tasks
 #pragma link C++ class AliAnalysisTaskPi0v2+;

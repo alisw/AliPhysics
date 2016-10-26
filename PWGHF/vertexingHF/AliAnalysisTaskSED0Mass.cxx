@@ -1049,6 +1049,18 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
 
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fNentries->Fill(21);
+      return;
+    }
+    fNentries->Fill(22);
+  }
+
   TString bname;
   if(fArray==0){ //D0 candidates
     // load D0->Kpi candidates
@@ -1108,17 +1120,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
-  if(fAODProtection>=0){
-    //   Protection against different number of events in the AOD and deltaAOD
-    //   In case of discrepancy the event is rejected.
-    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
-    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
-      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
-      fNentries->Fill(21);
-      return;
-    }
-    fNentries->Fill(22);
-  }
+
 
   fCounter->StoreEvent(aod,fCuts,fReadMC); 
   //fCounter->StoreEvent(aod,fReadMC); 

@@ -189,19 +189,19 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
      fListHistMultistrangeQA->Add(fHistMassOmegaPlus);                                                                                                    
   }
   if(! fHistCascadeMultiplicityXiMinus) {
-     fHistCascadeMultiplicityXiMinus = new TH1F("fHistCascadeMultiplicityXiMinus","Xi Minus per event;Nbr of Xi Minus/Evt;Events", 20, 0, 20);
+     fHistCascadeMultiplicityXiMinus = new TH1F("fHistCascadeMultiplicityXiMinus","Xi Minus per event;Nbr of Xi Minus/Evt;Events", 50, 0, 50);
      fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiMinus);
   } 
   if(! fHistCascadeMultiplicityXiPlus) {
-     fHistCascadeMultiplicityXiPlus = new TH1F("fHistCascadeMultiplicityXiPlus","Xi Plus per event;Nbr of Xi Plus/Evt;Events", 20, 0, 20);
+     fHistCascadeMultiplicityXiPlus = new TH1F("fHistCascadeMultiplicityXiPlus","Xi Plus per event;Nbr of Xi Plus/Evt;Events", 50, 0, 50);
      fListHistMultistrangeQA->Add(fHistCascadeMultiplicityXiPlus);
   }
   if(! fHistCascadeMultiplicityOmegaMinus) {
-     fHistCascadeMultiplicityOmegaMinus = new TH1F("fHistCascadeMultiplicityOmegaMinus","Omega Minus per event;Nbr of Omega Minus/Evt;Events", 20, 0, 20);
+     fHistCascadeMultiplicityOmegaMinus = new TH1F("fHistCascadeMultiplicityOmegaMinus","Omega Minus per event;Nbr of Omega Minus/Evt;Events", 50, 0, 50);
      fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaMinus);
   }
   if(! fHistCascadeMultiplicityOmegaPlus) {
-     fHistCascadeMultiplicityOmegaPlus = new TH1F("fHistCascadeMultiplicityOmegaPlus","Omega Plus per event;Nbr of Omega Plus/Evt;Events", 20, 0, 20);
+     fHistCascadeMultiplicityOmegaPlus = new TH1F("fHistCascadeMultiplicityOmegaPlus","Omega Plus per event;Nbr of Omega Plus/Evt;Events", 50, 0, 50);
      fListHistMultistrangeQA->Add(fHistCascadeMultiplicityOmegaPlus);
   }
 
@@ -227,7 +227,7 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       lNbBinsPerVar[10] = 25;     //DcaNegToPrimVertex           :  [0.0,0.24,100.0]    -> Rec.Cut = 0.05
       lNbBinsPerVar[11] = 150;    //InvMassXi                    :   2-MeV/c2 bins
       lNbBinsPerVar[12] = 120;    //InvMassOmega                 :   2-MeV/c2 bins
-      lNbBinsPerVar[13] = 100;    //XiTransvMom                  :  [0.0,10.0]
+      lNbBinsPerVar[13] = 150;    //XiTransvMom                  :  [0.0,15.0]
       lNbBinsPerVar[14] = 110;    //Y(Xi)                        :   0.02 in rapidity units
       lNbBinsPerVar[15] = 110;    //Y(Omega)                     :   0.02 in rapidity units
       lNbBinsPerVar[16] = 112;    //Proper lenght of cascade       
@@ -292,7 +292,7 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
        //12 - InvMassOmega
       fCFContCascadeCuts->SetBinLimits(12, 1.62, 1.74);
        //13 - XiTransvMom
-      fCFContCascadeCuts->SetBinLimits(13, 0.0, 10.0);
+      fCFContCascadeCuts->SetBinLimits(13, 0.0, 15.0);
        //14 - Y(Xi)
       fCFContCascadeCuts->SetBinLimits(14, -1.1, 1.1);
        //15 - Y(Omega)
@@ -351,8 +351,8 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       const Int_t  lNbVariablesMC  =  7; 
       //Array for the number of bins in each dimension :
       Int_t lNbBinsPerVarMC[lNbVariablesMC] = {0};
-      lNbBinsPerVarMC[0] = 100;    //Total momentum        : [0.0,10.0]
-      lNbBinsPerVarMC[1] = 100;    //Transverse momentum   : [0.0,10.0]
+      lNbBinsPerVarMC[0] = 200;    //Total momentum        : [0.0,20.0]
+      lNbBinsPerVarMC[1] = 200;    //Transverse momentum   : [0.0,20.0]
       lNbBinsPerVarMC[2] = 110;    //Y                     : [-1.1,1.1]  
       lNbBinsPerVarMC[3] = 200;    //eta                   : [-10, 10]
       lNbBinsPerVarMC[4] = 200;    //theta                 : [-10, 190] 
@@ -362,9 +362,9 @@ void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects()
       fCFContCascadeMCgen = new AliCFContainer("fCFContCascadeMCgen","Container for MC gen cascade ", lNbStepsMC, lNbVariablesMC, lNbBinsPerVarMC );
       //Setting the bin limits 
        //0 - Total Momentum
-      fCFContCascadeMCgen->SetBinLimits(0, 0.0, 10.0);
+      fCFContCascadeMCgen->SetBinLimits(0, 0.0, 20.0);
        //1 - Transverse Momentum 
-      fCFContCascadeMCgen->SetBinLimits(1, 0.0, 10.0);
+      fCFContCascadeMCgen->SetBinLimits(1, 0.0, 20.0);
        //2 - Y
       fCFContCascadeMCgen->SetBinLimits(2, -1.1, 1.1);
        //3 - Eta

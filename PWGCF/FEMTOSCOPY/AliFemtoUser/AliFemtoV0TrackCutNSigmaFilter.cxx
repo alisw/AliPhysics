@@ -666,7 +666,7 @@ bool AliFemtoV0TrackCutNSigmaFilter::IsMisIDAntiLambda(const AliFemtoV0* aV0)
 {
   if(fUseCustomAntiLambdaRejectionFilters)
   {
-    if(aV0->MassAntiLambda()<fInvMassRejectAntiLambdaMin && aV0->MassAntiLambda()>fInvMassRejectAntiLambdaMax) return false;
+    if(aV0->MassAntiLambda()<fInvMassRejectAntiLambdaMin || aV0->MassAntiLambda()>fInvMassRejectAntiLambdaMax) return false;
     if(!fAntiLambdaRejectionFilters[0].Pass(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) return false;
     if(!fAntiLambdaRejectionFilters[1].Pass(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP())) return false;
     return true;
