@@ -148,7 +148,7 @@ public:
  void SetCentralityEstimator(TString centrest = "V0M") {fCentrEstimator=centrest;}
  void SetDataSet(DataSet cDataSet) {fDataSet = cDataSet;}
  void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
- void SetTowerEqList(TList* const kList) {this->fTowerEqList = kList;};
+ void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone();};
  TList* GetTowerEqList() const {return this->fTowerEqList;};
  virtual Int_t GetCenBin(Double_t Centrality);
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
@@ -304,9 +304,9 @@ private:
  Int_t fRunList[fCRCMaxnRun];                   //! Run list
 // TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
 // TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
- TList *fCRCQVecListRun[fCRCMaxnRun];           //! Q Vectors list per run
-// TProfile *fZNCTower[fCRCMaxnRun][5];		//! ZNC tower spectra
-// TProfile *fZNATower[fCRCMaxnRun][5];		//! ZNA tower spectra
+ TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
+ TProfile *fZNCTower[fCRCMaxnRun];		//! ZNC tower spectra
+ TProfile *fZNATower[fCRCMaxnRun];		//! ZNA tower spectra
  TClonesArray* fStack; //!
  TList *fSpectraMCList;   //! list with pt spectra
  TH1F *fPtSpecGen[10];		//! PtSpecGen
@@ -319,7 +319,7 @@ private:
  AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
  AliCentrality* fCentrality; //!
   TList *fTowerEqList;   // list with weights
-  TH3D *fTowerGainEq[fnCen][8]; //!
+  TH1D *fTowerGainEq[2]; //!
   Int_t fCachedRunNum;   //
  
  ClassDef(AliAnalysisTaskCRCZDC,6);

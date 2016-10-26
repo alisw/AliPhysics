@@ -28,7 +28,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              Bool_t bUsePhiEtaWeights=kFALSE,
-                             Bool_t bUsePhiEtaCuts=kFALSE,
+                             Bool_t bCalibEZDC=kFALSE,
                              Bool_t bSetQAZDC=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
@@ -77,6 +77,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Bool_t bCalculateCRC2=kFALSE;
  Float_t MaxDevZN=10.;
  Bool_t bCalculateCRCVZ=kFALSE;
+  Bool_t bUsePhiEtaCuts=kFALSE;
  TString PhiEtaWeightsFileName="";
  Double_t dDCAxy=1000.;
  Double_t dDCAz=1000.;
@@ -153,15 +154,20 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       cout << "ERROR: ZDCTowerEqFile not found!" << endl;
       exit(1);
     }
-    TList* ZDCTowerEqList = (TList*)(ZDCTowerEqFile->FindObjectAny("ZDC"));
-    if(ZDCTowerEqList) {
-      taskFE->SetTowerEqList(ZDCTowerEqList);
+  } // end of if(sDataSet=="2010" && !bZDCMCCen)
+  if(bCalibEZDC) {
+    TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root";
+    TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
+    gROOT->cd();
+    if(ZDCTowerEqFile) {
+      taskFE->SetTowerEqList((TList*)(ZDCTowerEqFile->FindObjectAny("EZNcalib")));
       cout << "ZDCTowerEq set (from " <<  ZDCTowerEqFileName.Data() << ")" << endl;
     } else {
-      cout << "ERROR: ZDCTowerEqList not found!" << endl;
+      cout << "ERROR: ZDCTowerEqFile not found!" << endl;
       exit(1);
     }
-  } // end of if(sDataSet=="2010" && !bZDCMCCen)
+    delete ZDCTowerEqFile;
+  }
   
   // add the task to the manager
  mgr->AddTask(taskFE);
