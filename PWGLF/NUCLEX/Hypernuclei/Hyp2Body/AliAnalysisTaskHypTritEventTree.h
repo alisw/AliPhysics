@@ -24,6 +24,7 @@ class AliReducedHypTritEvent;
 #include "AliReducedHypTritEvent.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliStack.h"
+#include "Nuclei/NucleiPbPb/AliNuclexEventCuts.h"
 
 class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
  public:
@@ -34,9 +35,11 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(const Option_t*);
   void SetPidQa(Bool_t pidQa = kTRUE) {fPidQa = pidQa;};
+  void SetPeriod(Int_t period = 2015) {fPeriod = period;};
+  void SetBetheSplines(Bool_t betheSplines = kTRUE ) {fBetheSplines = betheSplines;};
+  void SetParams(Int_t paramsType, Double_t params[6]) {for(Int_t i; i < 6; i++) fBetheParams[paramsType][i] = params[i];};
 
  private:
-  AliESDEvent            *fEvent;               //!<! ESD event
   AliESDInputHandler     *fInputHandler;        //!<! Input handler
   AliESDpid              *fPID;                 //!<! ESD pid
   AliReducedHypTritEvent *fReducedEvent;        //<   Reduced event containing he3 and pi
@@ -59,16 +62,22 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Int_t                   fMcGenRecCounter;     //!<! Number of matched particles in one MC event
   Bool_t                  fPidQa;               //< Flag for activating pid qa histogram
   Bool_t                  fMCtrue;              //< Flag for activating MC analysis (set automatically)
+  AliNuclexEventCuts      fEventCuts;           //< 2015 event cuts as advised by PDG (AliNuclexEventCuts)
+  Int_t		                fPeriod;              //< Data period for centrality selector
+  Bool_t                  fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
+  Double_t                fBetheParams[2][6];   //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
 
   void MCStackLoop(AliStack *stack);
   void SetMomentum(Int_t charge, Bool_t v0Charge);
   void CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos);
   Bool_t TriggerSelection();
+  Double_t Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params);
 
   AliAnalysisTaskHypTritEventTree(const AliAnalysisTaskHypTritEventTree&);
   AliAnalysisTaskHypTritEventTree &operator=(const AliAnalysisTaskHypTritEventTree&);
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskHypTritEventTree, 2);
+  ClassDef(AliAnalysisTaskHypTritEventTree, 3);
   /// \endcond
 };
 #endif
