@@ -71,6 +71,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF3Prong *rd3);
   Bool_t FillRecoCand(AliVEvent *event,AliAODRecoDecayHF2Prong *rd2);
   Bool_t FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF *rc,Bool_t isDStar,Bool_t recoSecVtx=kFALSE);
+  Bool_t RecoSecondaryVertexForCascades(AliVEvent *event, AliAODRecoCascadeHF *rc);
   void PrintStatus() const;
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }
@@ -148,12 +149,12 @@ class AliAnalysisVertexingHF : public TNamed {
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
     fTrackFilterSoftPi = trackF;
   }
-  void SetTrackFilterBachelor(AliAnalysisFilter* trackF) { 
+  void SetTrackFilterBachelor(AliAnalysisFilter* trackF) {
     /// switch off the TOF selection that cannot be applied with AODTracks
     TList *l = (TList*)trackF->GetCuts();
     AliESDtrackCuts *tcuts = (AliESDtrackCuts*)l->FindObject("AliESDtrackCuts");
     if(tcuts->GetFlagCutTOFdistance()) tcuts->SetFlagCutTOFdistance(kFALSE);
-    fTrackFilterBachelor = trackF; 
+    fTrackFilterBachelor = trackF;
   }
   AliAnalysisFilter* GetTrackFilter() const { return fTrackFilter; }
   AliAnalysisFilter* GetTrackFilterSoftPi() const { return fTrackFilterSoftPi; }
@@ -410,7 +411,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
   void SetParametersAtVertex(AliESDtrack* esdt, const AliExternalTrackParam* extpar) const;
-  
+
   Bool_t SingleTrkCuts(AliESDtrack *trk,Float_t centralityperc, Bool_t &okDisplaced,Bool_t &okSoftPi, Bool_t &ok3prong, Bool_t &okBachelor) const;
 
   void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd,Int_t bit);

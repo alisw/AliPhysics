@@ -1959,6 +1959,148 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
   return kTRUE;
 }
 //---------------------------------------------------------------------------
+Bool_t AliAnalysisVertexingHF::RecoSecondaryVertexForCascades(AliVEvent *event, AliAODRecoCascadeHF *rc)
+{
+  ///
+  /// Reconstruct secondary vertex for cascades stored in standard dAOD (i.e. not reduced,
+  /// otherwise the method FillRecoCasc should be used) at analysis level.
+  ///
+  
+  
+  if (rc->GetIsFilled()==0) return kFALSE; // Reduced dAOD with candidates not yet refilled
+  if (!fAODMap) MapAODtracks(event);       // Fill the AOD index map if it is not yet done
+  
+  
+  // - Get bachelor and V0 from the cascade
+  AliAODTrack *trackB = dynamic_cast<AliAODTrack*> (rc->GetBachelor());
+  if (!trackB) return kFALSE;
+  
+  AliAODv0 *v0 = dynamic_cast<AliAODv0*> (rc->Getv0());
+  if (!v0) return kFALSE;
+  
+  
+  // - Cast bachelor (AOD->ESD) and V0 (AliAODv0->AliNeutralTrackParam)
+  AliESDtrack *esdB = new AliESDtrack(trackB);
+  if (!esdB) return kFALSE;
+  
+  const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+  if (!trackVV0) return kFALSE;
+  
+  AliNeutralTrackParam *trackV0 = new AliNeutralTrackParam(trackVV0);
+  if (!trackV0) return kFALSE;
+  
+  TObjArray *twoTrackArrayCasc = new TObjArray(2);
+  twoTrackArrayCasc->AddAt(esdB, 0);
+  twoTrackArrayCasc->AddAt(trackV0, 1);
+  
+  
+  Double_t dispersion, xdummy, ydummy, pos[3], cov[6];
+  
+  
+  // - Some ingredients will be needed:
+  // magnetic field
+  fBzkG = (Double_t) event->GetMagneticField();
+  
+  // primary vertex
+  const AliVVertex *vprimary = event->GetPrimaryVertex();
+  vprimary->GetXYZ(pos);
+  vprimary->GetCovarianceMatrix(cov);
+  fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
+  
+  // vertexer
+  if (!fVertexerTracks) fVertexerTracks = new AliVertexerTracks(fBzkG);
+  
+  
+  // - Compute the DCA and the decay vertex
+  Double_t dca = esdB->GetDCA(trackV0, fBzkG, xdummy, ydummy);
+  AliAODVertex *vtxCasc = ReconstructSecondaryVertex(twoTrackArrayCasc, dispersion, kFALSE);
+  
+  if (!vtxCasc) {
+    twoTrackArrayCasc->Clear();
+    twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
+    delete fV1;  fV1=0;
+    delete esdB; esdB=0;
+    delete vtxCasc; vtxCasc=0;
+    delete trackV0; trackV0=0;
+    trackB=0; v0=0;
+    return kFALSE;
+  }
+  
+  
+  // - Linking the cascade with the new secondary vertex
+  vtxCasc->SetParent(rc);
+  rc->SetSecondaryVtx(vtxCasc);
+  AddDaughterRefs(vtxCasc, (AliAODEvent*)event, twoTrackArrayCasc);
+  vtxCasc->AddDaughter(v0);
+  rc->SetPrimaryVtxRef((AliAODVertex*)event->GetPrimaryVertex());
+  
+  
+  // - Propagate tracks to secondary vertex, to get momenta
+  Double_t momentum[3], px[2], py[2], pz[2], d0[2], d0err[2], d0z0[2], covd0z0[3];
+  esdB->PropagateToDCA(vtxCasc, fBzkG, kVeryBig);
+  trackV0->PropagateToDCA(vtxCasc, fBzkG, kVeryBig);
+  esdB->GetPxPyPz(momentum);
+  px[0] = momentum[0]; py[0] = momentum[1]; pz[0] = momentum[2];
+  trackV0->GetPxPyPz(momentum);
+  px[1] = momentum[0]; py[1] = momentum[1]; pz[1] = momentum[2];
+  
+  
+  // - Propagate tracks to primary vertex, to get impact parameters
+  AliAODVertex *primVertexAOD = PrimaryVertex(twoTrackArrayCasc, event);
+  if (!primVertexAOD) {
+    twoTrackArrayCasc->Clear();
+    twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
+    delete fV1;  fV1=0;
+    delete esdB; esdB=0;
+    delete vtxCasc; vtxCasc=0;
+    delete trackV0; trackV0=0;
+    trackB=0; v0=0;
+    return kFALSE;
+  }
+  
+  esdB->PropagateToDCA(primVertexAOD, fBzkG, kVeryBig, d0z0, covd0z0);
+  d0[0]    = d0z0[0];
+  d0err[0] = TMath::Sqrt(covd0z0[0]);
+  trackV0->PropagateToDCA(primVertexAOD, fBzkG, kVeryBig, d0z0, covd0z0);
+  d0[1]    = d0z0[0];
+  d0err[1] = TMath::Sqrt(covd0z0[0]);
+  
+  
+  // - Get PID info from ESD
+  Double_t esdpid[10];
+  Double_t esdpid0[5] = {0., 0., 0., 0., 0.};
+  Double_t esdpid1[5] = {0., 0., 0., 0., 0.};
+  if (esdB->GetStatus()&AliESDtrack::kESDpid) esdB->GetESDpid(esdpid0);
+  for (Int_t ipid=0; ipid<5; ipid++) {
+    esdpid[ipid]   = esdpid0[ipid];
+    esdpid[5+ipid] = esdpid1[ipid];
+  }
+  
+  
+  // - Set data members
+  rc->SetOwnPrimaryVtx(primVertexAOD);
+  rc->SetDCA(dca);
+  rc->SetPxPyPzProngs(2, px, py, pz);
+  rc->Setd0Prongs(2, d0);
+  rc->Setd0errProngs(2, d0err);
+  rc->SetCharge(esdB->Charge());
+  rc->SetPID(2, esdpid);
+  
+  rc->SetIsFilled(2); // To clean the newly reconstructed secondary vertex with the CleanUp task
+  
+  
+  twoTrackArrayCasc->Clear();
+  twoTrackArrayCasc->Delete();  delete twoTrackArrayCasc;
+  delete fV1; fV1=0;
+  delete primVertexAOD; primVertexAOD=0;
+  delete esdB;    esdB=0;
+  delete trackV0; trackV0=0;
+  trackB=0; v0=0;
+  
+  return kTRUE;
+}
+
+//---------------------------------------------------------------------------
 AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
 							 TObjArray *twoTrackArray,AliVEvent *event,
 							 AliAODVertex *secVert,
