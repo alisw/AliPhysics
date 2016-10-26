@@ -70,8 +70,8 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   AliAnalysisTaskCFTree(const  AliAnalysisTaskCFTree &task);
   AliAnalysisTaskCFTree& operator=(const  AliAnalysisTaskCFTree &task);
 
-  UInt_t GetFilterMap(AliVTrack* part);
-  AliCFParticle* AddTrack(AliVTrack* track, UInt_t mask, UInt_t flag=0);
+  UInt_t GetFilterMap(const AliVTrack* part);
+  AliCFParticle* AddTrack(const AliVTrack* track, UInt_t mask, UInt_t flag=0);
 
   AliAnalysisFilter* fTrackFilter; // track filter used in ESD analysis
   UInt_t fHybridConstrainedMask;       // Filter mask for hybrid constrained tracks (ESD analysis)
