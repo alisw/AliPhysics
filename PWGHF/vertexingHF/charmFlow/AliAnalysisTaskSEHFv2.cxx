@@ -111,8 +111,10 @@ AliAnalysisTaskSE(),
   fAODProtection(1),
   fUseNewQnCorrFw(kTRUE),
   fFlowMethod(kEP),
-  fNormMethod("QoverQlength")
-
+  fNormMethod("QoverQlength"),
+  fHistMassPtCos2Phiq2Centr(0x0),
+  fq2Meth(kq2TPC),
+  fSeparateD0D0bar(kFALSE)
 {
   // Default constructor
   for(int i = 0; i < 3; i++) {
@@ -147,7 +149,10 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fAODProtection(1),
   fUseNewQnCorrFw(kTRUE),
   fFlowMethod(kEP),
-  fNormMethod("QoverQlength")
+  fNormMethod("QoverQlength"),
+  fHistMassPtCos2Phiq2Centr(0x0),
+  fq2Meth(kq2TPC),
+  fSeparateD0D0bar(kFALSE)
 {
   // standard constructor
   for(int i = 0; i < 3; i++) {
@@ -332,7 +337,6 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     fHistCentrality[i]->Sumw2();
     fOutput->Add(fHistCentrality[i]);
   }
-
    
   int index=0;
   for(int iDet = 0; iDet < 3; iDet++) {
@@ -345,85 +349,104 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
-    TH2F* hMPtCand=new TH2F(Form("hMPtCand%s",centrname.Data()),Form("Mass vs pt %s;pt (GeV);M (GeV/c^{2})",centrname.Data()),120,0,24.,fNMassBins,fLowmasslimit,fUpmasslimit);
-    fOutput->Add(hMPtCand);//For <pt> calculation
+    if(fFlowMethod!=kEvShape) {
+      TH2F* hMPtCand=new TH2F(Form("hMPtCand%s",centrname.Data()),Form("Mass vs pt %s;pt (GeV);M (GeV/c^{2})",centrname.Data()),120,0,24.,fNMassBins,fLowmasslimit,fUpmasslimit);
+      fOutput->Add(hMPtCand);//For <pt> calculation
 
+      //Candidate distributions
+      TString suffAB_SP="";
+      TString suffBA_SP="";
 
-    //Candidate distributions
-    TString suffAB_SP="";
-    TString suffBA_SP="";
+      for(Int_t i=0;i<fNPtBins;i++){
+        // Delta Phi histograms
+        Double_t maxphi = TMath::Pi();
+        if (fDecChannel == 2) maxphi = TMath::PiOver2();
+        TH2F* hMdeltaphi=new TH2F(Form("hMdeltaphi_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi %s;#Delta#phi;M (GeV/c^{2})",centrname.Data()),96,0,maxphi,fNMassBins,fLowmasslimit,fUpmasslimit);
+        fOutput->Add(hMdeltaphi);//for phi bins analysis
+        if(fFlowMethod==kSP) {
+          suffAB_SP = "AB";
+          suffBA_SP = "BA";
+        }
+        TH2F* hMc2deltaphi=new TH2F(Form("hMc2deltaphi%s_pt%d%s",suffAB_SP.Data(),i,centrname.Data()),Form("Mass vs cos2#Delta#phi (%s) (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",suffAB_SP.Data(),i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+        fOutput->Add(hMc2deltaphi);
+        TH2F* hMc2deltaphi_2=0x0;
+        if(fFlowMethod==kSP)hMc2deltaphi_2=new TH2F(Form("hMc2deltaphi%s_pt%d%s",suffBA_SP.Data(),i,centrname.Data()),Form("Mass vs cos2#Delta#phi (%s) (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",suffBA_SP.Data(),i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+        fOutput->Add(hMc2deltaphi_2);
+        TH2F* hMs2deltaphi=new TH2F(Form("hMs2deltaphi_pt%d%s",i,centrname.Data()),Form("Mass vs sin2#Delta#phi (p_{t} bin %d %s);sin2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+        fOutput->Add(hMs2deltaphi);
       
-    for(Int_t i=0;i<fNPtBins;i++){ 
+        // phi histograms (for systematics)
+        TH2F* hCos2PhiMass=new TH2F(Form("hCos2phiMass_pt%d%s",i,centrname.Data()),Form("Mass vs cos(2#phi) %s;cos(2#phi);M (GeV/c^{2})",centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+        fOutput->Add(hCos2PhiMass);
+        TH2F* hSin2PhiMass=new TH2F(Form("hSin2phiMass_pt%d%s",i,centrname.Data()),Form("Mass vs sin(2#phi) %s;sin(2#phi);M (GeV/c^{2})",centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+        fOutput->Add(hSin2PhiMass);
 
-      // Delta Phi histograms
-      Double_t maxphi = TMath::Pi();
-      if (fDecChannel == 2) maxphi = TMath::PiOver2();
-      TH2F* hMdeltaphi=new TH2F(Form("hMdeltaphi_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi %s;#Delta#phi;M (GeV/c^{2})",centrname.Data()),96,0,maxphi,fNMassBins,fLowmasslimit,fUpmasslimit);
-      fOutput->Add(hMdeltaphi);//for phi bins analysis
-      if(fFlowMethod==kSP) {
-	suffAB_SP = "AB";
-	suffBA_SP = "BA";
+        // Histos using MC truth
+        if (fReadMC){
+          TH2F* hMc2deltaphiS=new TH2F(Form("hMc2deltaphiS_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+          fOutput->Add(hMc2deltaphiS);
+          TH2F * hMdeltaphiS=new TH2F(Form("hMdeltaphiS_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi (p_{t} bin %d %s);#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),96,0,2*TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
+          fOutput->Add(hMdeltaphiS);
+          TH2F* hMc2deltaphiB=new TH2F(Form("hMc2deltaphiB_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+          fOutput->Add(hMc2deltaphiB);
+          TH2F * hMdeltaphiB=new TH2F(Form("hMdeltaphiB_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi (p_{t} bin %d %s);#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),96,0,2*TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
+          fOutput->Add(hMdeltaphiB);
+          if((fDecChannel != AliAnalysisTaskSEHFv2::kDplustoKpipi) &&(fDecChannel != AliAnalysisTaskSEHFv2::kDstartoKpipi)){
+            TH2F* hMc2deltaphiR=new TH2F(Form("hMc2deltaphiR_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
+            fOutput->Add(hMc2deltaphiR);
+            TH2F* hMdeltaphiR=new TH2F(Form("hMdeltaphiR_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi (p_{t} bin %d %s);#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),96,0,2*TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
+            fOutput->Add(hMdeltaphiR);
+          }
+        }
       }
-      TH2F* hMc2deltaphi=new TH2F(Form("hMc2deltaphi%s_pt%d%s",suffAB_SP.Data(),i,centrname.Data()),Form("Mass vs cos2#Delta#phi (%s) (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",suffAB_SP.Data(),i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-      fOutput->Add(hMc2deltaphi);
-      TH2F* hMc2deltaphi_2=0x0;
-      if(fFlowMethod==kSP)hMc2deltaphi_2=new TH2F(Form("hMc2deltaphi%s_pt%d%s",suffBA_SP.Data(),i,centrname.Data()),Form("Mass vs cos2#Delta#phi (%s) (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",suffBA_SP.Data(),i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-      fOutput->Add(hMc2deltaphi_2);
-      TH2F* hMs2deltaphi=new TH2F(Form("hMs2deltaphi_pt%d%s",i,centrname.Data()),Form("Mass vs sin2#Delta#phi (p_{t} bin %d %s);sin2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-      fOutput->Add(hMs2deltaphi);
+      // Event Plane
+      TH2F* hEvPlane=new TH2F(Form("hEvPlane%s",centrname.Data()),Form("VZERO/TPC Event plane angle %s;#phi Ev Plane (TPC);#phi Ev Plane (VZERO);Entries",centrname.Data()),200,0.,TMath::Pi(),200,0.,TMath::Pi());
+      fOutput->Add(hEvPlane);
+      TH1F* hEvPlaneA=new TH1F(Form("hEvPlaneA%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
+      fOutput->Add(hEvPlaneA);
+      TH1F* hEvPlaneB=new TH1F(Form("hEvPlaneB%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
+      fOutput->Add(hEvPlaneB);
+      TH1F* hEvPlaneCand=new TH1F(Form("hEvPlaneCand%s",centrname.Data()),Form("Event plane angle - Event plane angle per candidate %s;#phi(Ev Plane Candidate);Entries",centrname.Data()),200,-TMath::Pi(),TMath::Pi());
+      fOutput->Add(hEvPlaneCand);
       
-      // phi histograms (for systematics)
-      TH2F* hCos2PhiMass=new TH2F(Form("hCos2phiMass_pt%d%s",i,centrname.Data()),Form("Mass vs cos(2#phi) %s;cos(2#phi);M (GeV/c^{2})",centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-      fOutput->Add(hCos2PhiMass);
-      TH2F* hSin2PhiMass=new TH2F(Form("hSin2phiMass_pt%d%s",i,centrname.Data()),Form("Mass vs sin(2#phi) %s;sin(2#phi);M (GeV/c^{2})",centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-      fOutput->Add(hSin2PhiMass);
+      
+      // histos for EP resolution
+      TH1F* hEvPlaneReso=new TH1F(Form("hEvPlaneReso%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
+      fOutput->Add(hEvPlaneReso);
+      if(fEventPlaneMeth>=kTPCVZERO){
+	TH1F* hEvPlaneReso2=new TH1F(Form("hEvPlaneReso2%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{C});Entries",centrname.Data()),220,-1.1,1.1);
+	fOutput->Add(hEvPlaneReso2);
+	TH1F* hEvPlaneReso3=new TH1F(Form("hEvPlaneReso3%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{B}-#psi_{C});Entries",centrname.Data()),220,-1.1,1.1);
+	fOutput->Add(hEvPlaneReso3);
+      }
 
-      // Histos using MC truth
-      if (fReadMC){
-	TH2F* hMc2deltaphiS=new TH2F(Form("hMc2deltaphiS_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-	fOutput->Add(hMc2deltaphiS);
-	TH2F * hMdeltaphiS=new TH2F(Form("hMdeltaphiS_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi (p_{t} bin %d %s);#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),96,0,2*TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
-	fOutput->Add(hMdeltaphiS);
-	TH2F* hMc2deltaphiB=new TH2F(Form("hMc2deltaphiB_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-	fOutput->Add(hMc2deltaphiB);
-	TH2F * hMdeltaphiB=new TH2F(Form("hMdeltaphiB_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi (p_{t} bin %d %s);#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),96,0,2*TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
-	fOutput->Add(hMdeltaphiB);
-	if((fDecChannel != AliAnalysisTaskSEHFv2::kDplustoKpipi) &&(fDecChannel != AliAnalysisTaskSEHFv2::kDstartoKpipi)){
-	  TH2F* hMc2deltaphiR=new TH2F(Form("hMc2deltaphiR_pt%d%s",i,centrname.Data()),Form("Mass vs cos2#Delta#phi (p_{t} bin %d %s);cos2#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),100,-1.,1.,fNMassBins,fLowmasslimit,fUpmasslimit);
-	  fOutput->Add(hMc2deltaphiR);
-	  TH2F* hMdeltaphiR=new TH2F(Form("hMdeltaphiR_pt%d%s",i,centrname.Data()),Form("Mass vs #Delta#phi (p_{t} bin %d %s);#Delta#phi;M (GeV/c^{2})",i,centrname.Data()),96,0,2*TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
-	  fOutput->Add(hMdeltaphiR);
-	}
+      // histos for EPsystematics
+      TH1F *hCos2EP=new TH1F(Form("hCos2EP%s",centrname.Data()),Form("cos(2PsiEP) %s;cos2(#psi_{EP});Entries",centrname.Data()),100,-1.,1.);
+      fOutput->Add(hCos2EP);
+      TH1F *hSin2EP=new TH1F(Form("hSin2EP%s",centrname.Data()),Form("sin(2PsiEP) %s;sin2(#psi_{EP});Entries",centrname.Data()),100,-1.,1.);
+      fOutput->Add(hSin2EP);
+    }
+    else {
+      TString q2axisname="q_{2}^{TPC}";
+      if(fq2Meth==kq2PosTPC) {q2axisname="q_{2}^{pos TPC}";}
+      else if(fq2Meth==kq2NegTPC) {q2axisname="q_{2}^{neg TPC}";}
+      else if(fq2Meth==kq2VZERO) {q2axisname="q_{2}^{V0}";}
+      else if(fq2Meth==kq2VZEROA) {q2axisname="q_{2}^{V0A}";}
+      else if(fq2Meth==kq2VZEROC) {q2axisname="q_{2}^{V0C}";}
+      
+      // histos for EP resolution vs q2
+      TH2F* hEvPlaneResoVsq2=new TH2F(Form("hEvPlaneResoVsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{A}-#psi_{B});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,100,0,10.);
+      fOutput->Add(hEvPlaneResoVsq2);
+      if(fEventPlaneMeth>=kTPCVZERO){
+        TH2F* hEvPlaneReso2Vsq2=new TH2F(Form("hEvPlaneReso2Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{A}-#psi_{C});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,100,0,10.);
+        fOutput->Add(hEvPlaneReso2Vsq2);
+        TH2F* hEvPlaneReso3Vsq2=new TH2F(Form("hEvPlaneReso3Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{B}-#psi_{C});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,100,0.,10.);
+        fOutput->Add(hEvPlaneReso3Vsq2);
       }
     }
-
-
-    // Event Plane
-    TH2F* hEvPlane=new TH2F(Form("hEvPlane%s",centrname.Data()),Form("VZERO/TPC Event plane angle %s;#phi Ev Plane (TPC);#phi Ev Plane (VZERO);Entries",centrname.Data()),200,0.,TMath::Pi(),200,0.,TMath::Pi());
-    fOutput->Add(hEvPlane);
-    TH1F* hEvPlaneA=new TH1F(Form("hEvPlaneA%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
-    fOutput->Add(hEvPlaneA);
-    TH1F* hEvPlaneB=new TH1F(Form("hEvPlaneB%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
-    fOutput->Add(hEvPlaneB);
-    TH1F* hEvPlaneCand=new TH1F(Form("hEvPlaneCand%s",centrname.Data()),Form("Event plane angle - Event plane angle per candidate %s;#phi(Ev Plane Candidate);Entries",centrname.Data()),200,-TMath::Pi(),TMath::Pi());
-    fOutput->Add(hEvPlaneCand);
-
-    // histos for EP resolution
-    TH1F* hEvPlaneReso=new TH1F(Form("hEvPlaneReso%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{B});Entries",centrname.Data()),220,-1.1,1.1);
-    fOutput->Add(hEvPlaneReso);
-    if(fEventPlaneMeth>=kTPCVZERO){
-      TH1F* hEvPlaneReso2=new TH1F(Form("hEvPlaneReso2%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{A}-#psi_{C});Entries",centrname.Data()),220,-1.1,1.1);
-      fOutput->Add(hEvPlaneReso2);
-      TH1F* hEvPlaneReso3=new TH1F(Form("hEvPlaneReso3%s",centrname.Data()),Form("Event plane angle Resolution %s;cos2(#psi_{B}-#psi_{C});Entries",centrname.Data()),220,-1.1,1.1);
-      fOutput->Add(hEvPlaneReso3);
-    }
-
-    // histos for EPsystematics    
-    TH1F *hCos2EP=new TH1F(Form("hCos2EP%s",centrname.Data()),Form("cos(2PsiEP) %s;cos2(#psi_{EP});Entries",centrname.Data()),100,-1.,1.);
-    fOutput->Add(hCos2EP);
-    TH1F *hSin2EP=new TH1F(Form("hSin2EP%s",centrname.Data()),Form("sin(2PsiEP) %s;sin2(#psi_{EP});Entries",centrname.Data()),100,-1.,1.);
-    fOutput->Add(hSin2EP);
   }
+  
+  if(fFlowMethod==kEvShape) {CreateSparseForEvShapeAnalysis();}
   
   PostData(1,fhEventsInfo);
   PostData(2,fOutput);
@@ -434,6 +457,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 {
+  
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
@@ -525,7 +549,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
-  
+
   // load MC particles
   if(fReadMC){
     
@@ -570,6 +594,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   Double_t eventplaneqncorrTPC[3];
   Double_t eventplaneqncorrVZERO[3];
   TList *qnlist = 0x0;
+  
   if(fUseNewQnCorrFw) {
     /////////////////////////////////////////////////////////////
     //////////////          GET Qn vectors         //////////////
@@ -603,7 +628,13 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       fHistEvPlaneQncorrVZERO[iDet]->Fill(eventplaneqncorrVZERO[iDet]);
     }
   }
-    
+
+  //get q2 for event shape anaylsis
+  Double_t q2=-1;
+  if(fFlowMethod==kEvShape) {
+    q2 = Getq2(qnlist);
+    if(q2<0) return;
+  }
   
   AliEventplane *pl=aod->GetEventplane();
   if(!pl){
@@ -657,48 +688,47 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     rpangleeventA = rpangleTPC;
     if(fSubEvents==2||fEventPlaneMeth==kVZERO){
       if(fUseNewQnCorrFw) {
-	rpangleeventA = eventplaneqncorrTPC[1];
-	rpangleeventB = eventplaneqncorrTPC[2];
+        rpangleeventA = eventplaneqncorrTPC[1];
+        rpangleeventB = eventplaneqncorrTPC[2];
         
       }
       else {
-	qsub1 = pl->GetQsub1();
-	qsub2 = pl->GetQsub2();
-	if(!qsub1 || !qsub2){
-	  fhEventsInfo->Fill(11);
-	  return;
-	}
-	rpangleeventA = qsub1->Phi()/2.;
-	rpangleeventB = qsub2->Phi()/2.;
+        qsub1 = pl->GetQsub1();
+        qsub2 = pl->GetQsub2();
+        if(!qsub1 || !qsub2){
+          fhEventsInfo->Fill(11);
+          return;
+        }
+        rpangleeventA = qsub1->Phi()/2.;
+        rpangleeventB = qsub2->Phi()/2.;
       }
     }
     if(fEventPlaneMeth!=kTPC){
       //VZERO EP and resolution
       if(fUseNewQnCorrFw) {
-	rpangleeventC=eventplaneqncorrVZERO[0];
-	if(fEventPlaneMeth==kVZEROA||fEventPlaneMeth==kVZEROC||(fEventPlaneMeth==kTPCVZERO&&fSubEvents==3)){
-	  rpangleeventB= eventplaneqncorrVZERO[1];
-	  rpangleeventC= eventplaneqncorrVZERO[2];
-	  if(fEventPlaneMeth==kVZEROA)rpangleVZERO=rpangleeventB;
-	  else if(fEventPlaneMeth==kVZEROC)rpangleVZERO=rpangleeventC;
-	}
-	if(fFlowMethod==kSP && fEventPlaneMeth>=kVZERO){
-	  rpangleeventB = eventplaneqncorrVZERO[1];
-	  rpangleeventC = eventplaneqncorrVZERO[2];
-	}
+        rpangleeventC=eventplaneqncorrVZERO[0];
+        if(fEventPlaneMeth==kVZEROA||fEventPlaneMeth==kVZEROC||(fEventPlaneMeth==kTPCVZERO&&fSubEvents==3)){
+          rpangleeventB= eventplaneqncorrVZERO[1];
+          rpangleeventC= eventplaneqncorrVZERO[2];
+          if(fEventPlaneMeth==kVZEROA)rpangleVZERO=rpangleeventB;
+          else if(fEventPlaneMeth==kVZEROC)rpangleVZERO=rpangleeventC;
+        }
+        if(fFlowMethod==kSP && fEventPlaneMeth>=kVZERO){
+          rpangleeventB = eventplaneqncorrVZERO[1];
+          rpangleeventC = eventplaneqncorrVZERO[2];
+        }
       }
       else {
-	rpangleVZERO=GetPhi0Pi(pl->GetEventplane("V0",aod,fV0EPorder));
-	rpangleeventC=rpangleVZERO;
-	if(fEventPlaneMeth==kVZEROA||fEventPlaneMeth==kVZEROC||(fEventPlaneMeth==kTPCVZERO&&fSubEvents==3)){
-	  rpangleeventB= GetPhi0Pi(pl->GetEventplane("V0A",aod,fV0EPorder));
-	  rpangleeventC= GetPhi0Pi(pl->GetEventplane("V0C",aod,fV0EPorder));
-	  if(fEventPlaneMeth==kVZEROA)rpangleVZERO=rpangleeventB;
-	  else if(fEventPlaneMeth==kVZEROC)rpangleVZERO=rpangleeventC;
-	}
+        rpangleVZERO=GetPhi0Pi(pl->GetEventplane("V0",aod,fV0EPorder));
+        rpangleeventC=rpangleVZERO;
+        if(fEventPlaneMeth==kVZEROA||fEventPlaneMeth==kVZEROC||(fEventPlaneMeth==kTPCVZERO&&fSubEvents==3)){
+          rpangleeventB= GetPhi0Pi(pl->GetEventplane("V0A",aod,fV0EPorder));
+          rpangleeventC= GetPhi0Pi(pl->GetEventplane("V0C",aod,fV0EPorder));
+          if(fEventPlaneMeth==kVZEROA)rpangleVZERO=rpangleeventB;
+          else if(fEventPlaneMeth==kVZEROC)rpangleVZERO=rpangleeventC;
+        }
       }
     }
-    
     
     if(fEventPlaneMeth>kTPCVZERO)eventplane=rpangleVZERO;
     else{
@@ -717,32 +747,50 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   
   if(fDebug>2)printf("Filling EP-related histograms\n");
   //Filling EP-related histograms
-  ((TH2F*)fOutput->FindObject(Form("hEvPlane%s",centrbinname.Data())))->Fill(rpangleTPC,rpangleVZERO); // reaction plane angle without autocorrelations removal
-  ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso%s",centrbinname.Data())))->Fill(planereso); //RP resolution   
-  ((TH1F*)fOutput->FindObject(Form("hCos2EP%s",centrbinname.Data())))->Fill(TMath::Cos(2*eventplane)); // syst check
-  ((TH1F*)fOutput->FindObject(Form("hSin2EP%s",centrbinname.Data())))->Fill(TMath::Sin(2*eventplane)); // syst check
+  if(fFlowMethod!=kEvShape) {
+    ((TH2F*)fOutput->FindObject(Form("hEvPlane%s",centrbinname.Data())))->Fill(rpangleTPC,rpangleVZERO); // reaction plane angle without autocorrelations removal
+    ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso%s",centrbinname.Data())))->Fill(planereso); //RP resolution
+    ((TH1F*)fOutput->FindObject(Form("hCos2EP%s",centrbinname.Data())))->Fill(TMath::Cos(2*eventplane)); // syst check
+    ((TH1F*)fOutput->FindObject(Form("hSin2EP%s",centrbinname.Data())))->Fill(TMath::Sin(2*eventplane)); // syst check
     
-  if(fEventPlaneMeth>kTPCVZERO||fEtaGap){
-    ((TH1F*)fOutput->FindObject(Form("hEvPlaneA%s",centrbinname.Data())))->Fill(rpangleeventA); //Angle of first subevent
-    ((TH1F*)fOutput->FindObject(Form("hEvPlaneB%s",centrbinname.Data())))->Fill(rpangleeventB); //Angle of second subevent
+    if(fEventPlaneMeth>kTPCVZERO||fEtaGap){
+      ((TH1F*)fOutput->FindObject(Form("hEvPlaneA%s",centrbinname.Data())))->Fill(rpangleeventA); //Angle of first subevent
+      ((TH1F*)fOutput->FindObject(Form("hEvPlaneB%s",centrbinname.Data())))->Fill(rpangleeventB); //Angle of second subevent
+    }
   }
+  else {
+    ((TH1F*)fOutput->FindObject(Form("hEvPlaneResoVsq2%s",centrbinname.Data())))->Fill(planereso,q2); //RP resolution vs q2
+  }
+  
   if(fEventPlaneMeth>kTPCVZERO||fSubEvents==3){
     Double_t deltaSub=rpangleeventA-rpangleeventC;
     if(TMath::Abs(deltaSub)>TMath::Pi()/2.){// difference of subevents reaction plane angle cannot be bigger than phi/2
       if(deltaSub>0.) deltaSub-=TMath::Pi();
       else deltaSub +=TMath::Pi();
     } 
-    TH1F* htmp1=(TH1F*)fOutput->FindObject(Form("hEvPlaneReso2%s",centrbinname.Data()));
-    if(htmp1) htmp1->Fill(TMath::Cos(2.*deltaSub)); //RP resolution   
+    if(fFlowMethod!=kEvShape) {
+      TH1F* htmp1=(TH1F*)fOutput->FindObject(Form("hEvPlaneReso2%s",centrbinname.Data()));
+      if(htmp1) htmp1->Fill(TMath::Cos(2.*deltaSub)); //RP resolution
+    }
+    else {
+      TH2F* htmp1=(TH2F*)fOutput->FindObject(Form("hEvPlaneReso2Vsq2%s",centrbinname.Data()));
+      if(htmp1) htmp1->Fill(TMath::Cos(2.*deltaSub),q2); //RP resolution vs q2
+    }
     deltaSub =rpangleeventB-rpangleeventC;
     if(TMath::Abs(deltaSub)>TMath::Pi()/2.){// difference of subevents reaction plane angle cannot be bigger than phi/2
       if(deltaSub>0.) deltaSub-=TMath::Pi();
       else deltaSub +=TMath::Pi();
-    } 
-    TH1F* htmp2=(TH1F*)fOutput->FindObject(Form("hEvPlaneReso3%s",centrbinname.Data()));
-    if(htmp2) htmp2->Fill(TMath::Cos(2.*deltaSub)); //RP resolution   
+    }
+    if(fFlowMethod!=kEvShape) {
+      TH1F* htmp2=(TH1F*)fOutput->FindObject(Form("hEvPlaneReso3%s",centrbinname.Data()));
+      if(htmp2) htmp2->Fill(TMath::Cos(2.*deltaSub)); //RP resolution
+    }
+    else {
+      TH2F* htmp2=(TH2F*)fOutput->FindObject(Form("hEvPlaneReso3Vsq2%s",centrbinname.Data()));
+      if(htmp2) htmp2->Fill(TMath::Cos(2.*deltaSub),q2); //RP resolution vs q2
+    }
   }
-
+  
   if(fDebug>2)printf("Loop on D candidates\n");
 
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
@@ -793,11 +841,11 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     
     if(fEventPlaneMeth<=kTPCVZERO){
       if(fUseNewQnCorrFw) {
-	eventplane = GetEventPlaneForCandidateNewQnFw(d,qnlist); // remove autocorrelations for new Qn fw
-	if(eventplane==-999) eventplane = rpangleTPC;
+        eventplane = GetEventPlaneForCandidateNewQnFw(d,qnlist); // remove autocorrelations for new Qn fw
+        if(eventplane==-999) eventplane = rpangleTPC;
       }
       else eventplane = GetEventPlaneForCandidate(d,q,pl,qsub1,qsub2); // remove autocorrelations
-      ((TH1F*)fOutput->FindObject(Form("hEvPlaneCand%s",centrbinname.Data())))->Fill(rpangleTPC-eventplane);
+      if(fFlowMethod!=kEvShape) ((TH1F*)fOutput->FindObject(Form("hEvPlaneCand%s",centrbinname.Data())))->Fill(rpangleTPC-eventplane);
     }
     
     Double_t phi=d->Phi();
@@ -806,33 +854,140 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     Float_t deltaphi2 = -1.;
     if(fFlowMethod == kSP) {
       if(fEventPlaneMeth <= kTPCVZERO) {
-	if(d->Eta()<0.)
-	  deltaphi = GetPhi0Pi(phi-eventplaneqncorrTPC[2]); //TPCPosEta
-	else {
-	  deltaphi = GetPhi0Pi(phi-eventplaneqncorrTPC[1]); //TPCNegEta
-	  deltaphi2 = 1.;
-	}
+        if(d->Eta()<0.)
+          deltaphi = GetPhi0Pi(phi-eventplaneqncorrTPC[2]); //TPCPosEta
+        else {
+          deltaphi = GetPhi0Pi(phi-eventplaneqncorrTPC[1]); //TPCNegEta
+          deltaphi2 = 1.;
+        }
       }
       else {
-	deltaphi  = GetPhi0Pi(phi-eventplaneqncorrVZERO[1]); //V0A
-	deltaphi2 = GetPhi0Pi(phi-eventplaneqncorrVZERO[2]); //V0C
+        deltaphi  = GetPhi0Pi(phi-eventplaneqncorrVZERO[1]); //V0A
+        deltaphi2 = GetPhi0Pi(phi-eventplaneqncorrVZERO[2]); //V0C
       }
     }
 
     //fill the histograms with the appropriate method
-    if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
-    else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
-    else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
-    else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
-    
+    if(fFlowMethod!=kEvShape) {
+      if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
+      else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
+      else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
+      else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,deltaphi2);
+    }
+    else {      
+      if(!fUseNewQnCorrFw){
+	printf("ERROR: event shape analysis implemented only with new Qn correction framework\n"); 
+	return;
+      }
+      
+      //fill the THnSparseF
+      if((fDecChannel==0 || fDecChannel==2) && isSelected) {
+        Double_t sparsearray[5] = {invMass[0],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
+        fHistMassPtCos2Phiq2Centr->Fill(sparsearray);
+      }
+      else if(fDecChannel==1) {
+        if(fSeparateD0D0bar) {
+          if(isSelected==1 || isSelected==3) {
+            Double_t sparsearray1[6] = {invMass[0],d->Pt(),TMath::Cos(2*deltaphi),q2,centr,(Double_t)isSelected};
+            fHistMassPtCos2Phiq2Centr->Fill(sparsearray1);
+          }
+          if(isSelected>=2) {
+            Double_t sparsearray2[6] = {invMass[1],d->Pt(),TMath::Cos(2*deltaphi),q2,centr,(Double_t)isSelected};
+            fHistMassPtCos2Phiq2Centr->Fill(sparsearray2);
+          }
+        }
+        else {
+          if(isSelected==1 || isSelected==3) {
+            Double_t sparsearray1[5] = {invMass[0],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
+            fHistMassPtCos2Phiq2Centr->Fill(sparsearray1);
+          }
+          if(isSelected>=2) {
+            Double_t sparsearray2[5] = {invMass[1],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
+            fHistMassPtCos2Phiq2Centr->Fill(sparsearray2);
+          }
+        }
+      }
+      else if(fDecChannel==3) {
+        if(isSelected==1 || isSelected==3) {
+          Double_t sparsearray1[5] = {invMass[0],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
+          fHistMassPtCos2Phiq2Centr->Fill(sparsearray1);
+        }
+        if(isSelected>=2) {
+          Double_t sparsearray2[5] = {invMass[1],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
+          fHistMassPtCos2Phiq2Centr->Fill(sparsearray2);
+        }
+      }
+    }
     delete [] invMass;
   }
-  
+ 
   delete vHF;
   PostData(1,fhEventsInfo);
   PostData(2,fOutput);
 
   return;
+}
+
+void AliAnalysisTaskSEHFv2::CreateSparseForEvShapeAnalysis() {
+  /// Sparse for v2 analysis as a function of q2
+ 
+  Int_t nptbins=40;
+  Double_t ptmin=0.;
+  Double_t ptmax=40.;
+  
+  Int_t ncos2phibins=100;
+  Double_t mincos2phi=-1.;
+  Double_t maxcos2phi=1.;
+  
+  Int_t nq2bins=20;
+  Double_t minq2=0.;
+  Double_t maxq2=10.;
+  
+  Int_t ncentrbins = (fMaxCentr-fMinCentr)*10/fCentBinSizePerMil;
+  
+  TString massaxisname;
+  if(fDecChannel==0) massaxisname = "M_{K#pi#pi} (GeV/c^{2})";
+  else if(fDecChannel==1) massaxisname = "M_{K#pi} (GeV/c^{2})";
+  else if(fDecChannel==2) massaxisname = "M_{K#pi#pi}-M_{K#pi} (GeV/c^{2})";
+  else if(fDecChannel==3) massaxisname = "M_{KK#pi} (GeV/c^{2})";
+  
+  Int_t naxes=5;
+  
+  if(fSeparateD0D0bar && fDecChannel==1) {
+    Int_t npartantipartbins=3;
+    Double_t minpartantipart=0.5;
+    Double_t maxpartantipart=3.5;
+    
+    Int_t nbins[6]={fNMassBins,nptbins,ncos2phibins,nq2bins,ncentrbins,npartantipartbins};
+    Double_t xmin[6]={fLowmasslimit,ptmin,mincos2phi,minq2,(Double_t)fMinCentr,minpartantipart};
+    Double_t xmax[6]={fUpmasslimit,ptmax,maxcos2phi,maxq2,(Double_t)fMaxCentr,maxpartantipart};
+    
+    naxes=6;
+    
+    fHistMassPtCos2Phiq2Centr=new THnSparseF("hMassPtCos2Phiq2","Mass vs. pt vs. Cos(2#Delta#phi) vs. q_{2} vs. centr vs. D0-D0bar",naxes,nbins,xmin,xmax);
+  }
+  else {
+    Int_t nbins[5]={fNMassBins,nptbins,ncos2phibins,nq2bins,ncentrbins};
+    Double_t xmin[5]={fLowmasslimit,ptmin,mincos2phi,minq2,(Double_t)fMinCentr};
+    Double_t xmax[5]={fUpmasslimit,ptmax,maxcos2phi,maxq2,(Double_t)fMaxCentr};
+    
+    fHistMassPtCos2Phiq2Centr=new THnSparseF("hMassPtCos2Phiq2","Mass vs. pt vs. Cos(2#Delta#phi) vs. q_{2} vs. centr",naxes,nbins,xmin,xmax);
+  }
+  
+  TString q2axisname="q_{2}^{TPC}";
+  if(fq2Meth==kq2PosTPC) {q2axisname="q_{2}^{pos TPC}";}
+  else if(fq2Meth==kq2NegTPC) {q2axisname="q_{2}^{neg TPC}";}
+  else if(fq2Meth==kq2VZERO) {q2axisname="q_{2}^{V0}";}
+  else if(fq2Meth==kq2VZEROA) {q2axisname="q_{2}^{V0A}";}
+  else if(fq2Meth==kq2VZEROC) {q2axisname="q_{2}^{V0C}";}
+  
+  TString axTit[6]={massaxisname,"p_{T} (GeV/c)","Cos(2#Delta#phi)",q2axisname,"centrality","part-antipart"};
+  
+  for(Int_t iax=0; iax<naxes; iax++)
+    fHistMassPtCos2Phiq2Centr->GetAxis(iax)->SetTitle(axTit[iax].Data());
+  
+  fOutput->Add(fHistMassPtCos2Phiq2Centr);
+  
 }
 
 //***************************************************************************
@@ -1477,7 +1632,32 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFv2::GetQnVectorFromList(const
   return theQnVector;
 }
 
+//________________________________________________________________________
+Double_t AliAnalysisTaskSEHFv2::Getq2(TList* qnlist)
+{
+  if(!qnlist) {return -1;}
 
+  const AliQnCorrectionsQnVector* qnVect = 0x0;
+  
+  if(fq2Meth==kq2TPC)
+    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetTPCConfName[0].Data(),fNormMethod.Data()), "latest", "plain");
+  else if(fq2Meth==kq2NegTPC)
+    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetTPCConfName[1].Data(),fNormMethod.Data()), "latest", "plain");
+  else if(fq2Meth==kq2PosTPC)
+    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetTPCConfName[2].Data(),fNormMethod.Data()), "latest", "plain");
+  else if(fq2Meth==kq2VZERO)
+    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetV0ConfName[0].Data(),fNormMethod.Data()), "latest", "raw");
+  else if(fq2Meth==kq2VZEROA)
+    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetV0ConfName[1].Data(),fNormMethod.Data()), "latest", "raw");
+  else if(fq2Meth==kq2VZEROC)
+    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetV0ConfName[2].Data(),fNormMethod.Data()), "latest", "raw");
+  else {return -1;}
+
+  if(!qnVect) {return -1;}
+  
+  Double_t q2 = TMath::Sqrt(qnVect->Qx(2)*qnVect->Qx(2)+qnVect->Qy(2)*qnVect->Qy(2)); //qnVect->Length();
+  return q2;
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskSEHFv2::Terminate(Option_t */*option*/)
