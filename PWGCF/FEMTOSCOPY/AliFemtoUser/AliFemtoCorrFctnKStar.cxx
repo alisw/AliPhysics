@@ -1,15 +1,9 @@
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-// AliFemtoCorrFctnKStar:                                                 //
-// a simple KStar correlation function                                    //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCorrFctnKStar.cxx
+///
 
 #include "AliFemtoCorrFctnKStar.h"
 
-#ifdef __ROOT__
-ClassImp(AliFemtoCorrFctnKStar)
-#endif
 
 const float DFLT_KStarMin = 0.0, DFLT_KStarMax = 1.0,
             DFLT_kTMin    = 0.0, DFLT_kTMax    = 5.0,
@@ -38,55 +32,57 @@ const int DFLT_NbinsDEta = 1000,
 
 //____________________________
 AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar():
-  AliFemtoCorrFctnKStar("CorrFctnKStar",DFLT_NbinsKStar,DFLT_KStarMin,DFLT_KStarMax)
+  AliFemtoCorrFctnKStar("CorrFctnKStar", DFLT_NbinsKStar, DFLT_KStarMin, DFLT_KStarMax)
 {
 // no-op
 }
 
 
 //____________________________
-AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title, const int& nbins, const float& KStarLo, const float& KStarHi):
+AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title,
+                                             const int nbins,
+                                             const float KStarLo,
+                                             const float KStarHi):
   AliFemtoCorrFctn(),
   fTitle(title),
   fNbinsKStar(nbins),
   fKStarLow(KStarLo),
   fKStarHigh(KStarHi),
-  fNumerator(0),
-  fDenominator(0),
-  fRatio(0),
-  fkTMonitor(0),
+  fNumerator(nullptr),
+  fDenominator(nullptr),
+  fRatio(nullptr),
+  fkTMonitor(nullptr),
   fDetaDphiscal(kFALSE),
   fPairKinematics(kFALSE),
   fRaddedps(1.2),
-  fNumDEtaDPhiS(0),
-  fDenDEtaDPhiS(0),
-  fPairKStar(0),
+  fNumDEtaDPhiS(nullptr),
+  fDenDEtaDPhiS(nullptr),
+  fPairKStar(nullptr),
 
   fBuildkTBinned(kFALSE),
-  fNumerator_kT(0),
-  fDenominator_kT(0),
+  fNumerator_kT(nullptr),
+  fDenominator_kT(nullptr),
 
   fBuildmTBinned(kFALSE),
-  fNumerator_mT(0),
-  fDenominator_mT(0),
+  fNumerator_mT(nullptr),
+  fDenominator_mT(nullptr),
 
   fBuild3d(kFALSE),
-  fNumerator3d(0),
-  fDenominator3d(0)
+  fNumerator3d(nullptr),
+  fDenominator3d(nullptr)
 {
-  fNumerator      = new TH1D(TString::Format("Num%s", title), 
-                            "KStar - Numerator; k*(GeV/c);",
-                             nbins,KStarLo,KStarHi);
-  fDenominator    = new TH1D(TString::Format("Den%s", title),
-                            "KStar - Denominator; k*(GeV/c);",
-                             nbins,KStarLo,KStarHi);
-  fRatio          = new TH1D(TString::Format("Rat%s", title),
-                            "KStar - Ratio; k*(GeV/c);",
-                             nbins,KStarLo,KStarHi);
-  fkTMonitor      = new TH1D(TString::Format("kTDep%s", title),
-                            "kT Dependence; kT(GeV/c)",
-                             DFLT_NbinskT,DFLT_kTMin,DFLT_kTMax);
-
+  fNumerator = new TH1D(TString::Format("Num%s", fTitle.Data()),
+                        "KStar - Numerator; k*(GeV/c);",
+                        nbins, KStarLo, KStarHi);
+  fDenominator = new TH1D(TString::Format("Den%s", fTitle.Data()),
+                          "KStar - Denominator; k*(GeV/c);",
+                          nbins, KStarLo, KStarHi);
+  fRatio = new TH1D(TString::Format("Rat%s", fTitle.Data()),
+                    "KStar - Ratio; k*(GeV/c);",
+                    nbins, KStarLo, KStarHi);
+  fkTMonitor = new TH1D(TString::Format("kTDep%s", fTitle.Data()),
+                        "kT Dependence; kT(GeV/c)",
+                        DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
 
   // to enable error bar calculation...
   fNumerator->Sumw2();
@@ -96,9 +92,14 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title, const int& nbins
 }
 
 //____________________________
-AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrFctn) :
+AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrFctn):
   AliFemtoCorrFctn(aCorrFctn),
+  fTitle(aCorrFctn.fTitle),
   fNbinsKStar(aCorrFctn.fNbinsKStar),
+
+  fNumerator(aCorrFctn.fNumerator ? new TH1D(*aCorrFctn.fNumerator) : nullptr),
+  fDenominator(aCorrFctn.fDenominator ? new TH1D(*aCorrFctn.fDenominator) : nullptr),
+
   fKStarLow(aCorrFctn.fKStarLow),
   fKStarHigh(aCorrFctn.fKStarHigh),
   fDetaDphiscal(aCorrFctn.fDetaDphiscal),
@@ -109,23 +110,12 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrF
   fBuild3d(aCorrFctn.fBuild3d)
 {
   // copy constructor
-  if(aCorrFctn.fTitle)
-  {
-    fTitle = new char[strlen(aCorrFctn.fTitle)+1];
-    strcpy(const_cast<char*>(fTitle), aCorrFctn.fTitle);
-  }
-  else fTitle = 0;
+  fRatio = (aCorrFctn.fRatio) ? new TH1D(*aCorrFctn.fRatio) : nullptr;
+  fkTMonitor =(aCorrFctn.fkTMonitor) ? static_cast<TH1D*>(aCorrFctn.fkTMonitor->Clone()) : nullptr;
 
-  if(aCorrFctn.fNumerator) fNumerator = new TH1D(*aCorrFctn.fNumerator);
-    else fNumerator = 0;
-  if(aCorrFctn.fDenominator) fDenominator = new TH1D(*aCorrFctn.fDenominator);
-    else fDenominator = 0;
-  if(aCorrFctn.fRatio) fRatio = new TH1D(*aCorrFctn.fRatio);
-    else fRatio = 0;
-  if(aCorrFctn.fkTMonitor) fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
-    else fkTMonitor = 0;
   if(aCorrFctn.fNumDEtaDPhiS) fNumDEtaDPhiS = new TH2D(*aCorrFctn.fNumDEtaDPhiS);
     else fNumDEtaDPhiS = 0;
+
   if(aCorrFctn.fDenDEtaDPhiS) fDenDEtaDPhiS = new TH2D(*aCorrFctn.fDenDEtaDPhiS);
     else fDenDEtaDPhiS = 0;
 
@@ -149,7 +139,8 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrF
 
 }
 //____________________________
-AliFemtoCorrFctnKStar::~AliFemtoCorrFctnKStar(){
+AliFemtoCorrFctnKStar::~AliFemtoCorrFctnKStar()
+{
   // destructor
   delete fNumerator;
   delete fDenominator;
@@ -164,15 +155,14 @@ AliFemtoCorrFctnKStar::~AliFemtoCorrFctnKStar(){
   delete fDenominator_mT;
   delete fNumerator3d;
   delete fDenominator3d;
-
-
 }
 //_________________________
 AliFemtoCorrFctnKStar& AliFemtoCorrFctnKStar::operator=(const AliFemtoCorrFctnKStar& aCorrFctn)
 {
   // assignment operator
-  if(this == &aCorrFctn)
+  if (this == &aCorrFctn) {
     return *this;
+  }
 
   AliFemtoCorrFctn::operator=(aCorrFctn);
 
@@ -185,13 +175,8 @@ AliFemtoCorrFctnKStar& AliFemtoCorrFctnKStar::operator=(const AliFemtoCorrFctnKS
   fBuildkTBinned = aCorrFctn.fBuildkTBinned;
   fBuildmTBinned = aCorrFctn.fBuildmTBinned;
   fBuild3d = aCorrFctn.fBuild3d;
-  
-  if(aCorrFctn.fTitle)
-  {
-    fTitle = new char[strlen(aCorrFctn.fTitle)+1];
-    strcpy(const_cast<char*>(fTitle), aCorrFctn.fTitle);
-  }
-  else fTitle = 0;
+
+  fTitle = aCorrFctn.fTitle;
 
   if(fNumerator) delete fNumerator;
     fNumerator = new TH1D(*aCorrFctn.fNumerator);
@@ -229,19 +214,14 @@ AliFemtoCorrFctnKStar& AliFemtoCorrFctnKStar::operator=(const AliFemtoCorrFctnKS
 
 
 //____________________________
-AliFemtoString AliFemtoCorrFctnKStar::Report(){
+AliFemtoString AliFemtoCorrFctnKStar::Report()
+{
   // construct report
-  string stemp = "KStar Correlation Function Report:\n";
-  char ctemp[100];
-  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
-  stemp += ctemp;
-  snprintf(ctemp , 100, "Number of entries in ratio:\t%E\n",fRatio->GetEntries());
-  stemp += ctemp;
-  //  stemp += mCoulombWeight->Report();
-  AliFemtoString returnThis = stemp;
-  return returnThis;
+  TString report = "KStar Correlation Function Report:\n";
+  report += TString::Format("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
+  report += TString::Format("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
+  report += TString::Format("Number of entries in ratio:\t%E\n", fRatio->GetEntries());
+  return AliFemtoString(report);
 }
 
 //______________________________
@@ -278,12 +258,14 @@ TList* AliFemtoCorrFctnKStar::GetOutputList()
 }
 
 //_________________________
-void AliFemtoCorrFctnKStar::Finish(){
-  fRatio->Divide(fNumerator,fDenominator,1.0,1.0);
+void AliFemtoCorrFctnKStar::Finish()
+{
+  fRatio->Divide(fNumerator, fDenominator, 1.0, 1.0);
 }
 
 //____________________________
-void AliFemtoCorrFctnKStar::Write(){
+void AliFemtoCorrFctnKStar::Write()
+{
   // Write out neccessary objects
   fNumerator->Write();
   fDenominator->Write();
@@ -307,15 +289,16 @@ void AliFemtoCorrFctnKStar::Write(){
     fNumerator3d->Write();
     fDenominator3d->Write();
   }
-
 }
 
 
 //____________________________
-void AliFemtoCorrFctnKStar::AddRealPair(AliFemtoPair* aPair){
+void AliFemtoCorrFctnKStar::AddRealPair(AliFemtoPair* aPair)
+{
   // add true pair
-  if(fPairCut)
-    if(!fPairCut->Pass(aPair)) return;
+  if (fPairCut && !fPairCut->Pass(aPair)) {
+    return;
+  }
 
   double tKStar = fabs(aPair->KStar());
 
@@ -329,10 +312,12 @@ void AliFemtoCorrFctnKStar::AddRealPair(AliFemtoPair* aPair){
 }
 
 //____________________________
-void AliFemtoCorrFctnKStar::AddMixedPair(AliFemtoPair* aPair){
+void AliFemtoCorrFctnKStar::AddMixedPair(AliFemtoPair* aPair)
+{
   // add mixed (background) pair
-  if(fPairCut)
-    if(!fPairCut->Pass(aPair)) return;
+  if (fPairCut && !fPairCut->Pass(aPair)) {
+    return;
+  }
 
   double weight = 1.0;
   double tKStar = fabs(aPair->KStar());
@@ -444,21 +429,21 @@ float AliFemtoCorrFctnKStar::CalcMt(const AliFemtoPair* aPair)
 }
 
 //____________________________
-void AliFemtoCorrFctnKStar::SetCalculateDetaDphis(Bool_t dedpsc, Double_t rad) 
+void AliFemtoCorrFctnKStar::SetCalculateDetaDphis(Bool_t dedpsc, Double_t rad)
 {
   fDetaDphiscal = dedpsc;
   fRaddedps = rad;
 
   if(fDetaDphiscal && (!fNumDEtaDPhiS || !fDenDEtaDPhiS))
   {
-    fNumDEtaDPhiS   = new TH2D(TString::Format("NumDEtaDPhiS%s", fTitle),
-                              "dPhiS vs dEta - Numerator",
-                               DFLT_NbinsDPhiS,DFLT_DPhiSMin,DFLT_DPhiSMax,
-                               DFLT_NbinsDEta,DFLT_DEtaMin,DFLT_DEtaMax);
-    fDenDEtaDPhiS   = new TH2D(TString::Format("DenDEtaDPhiS%s", fTitle),
-                              "dPhiS vs dEta - Denominator",
-                               DFLT_NbinsDPhiS,DFLT_DPhiSMin,DFLT_DPhiSMax,
-                               DFLT_NbinsDEta,DFLT_DEtaMin,DFLT_DEtaMax);
+    fNumDEtaDPhiS = new TH2D(TString::Format("NumDEtaDPhiS%s", fTitle.Data()),
+                             "dPhiS vs dEta - Numerator",
+                             DFLT_NbinsDPhiS,DFLT_DPhiSMin,DFLT_DPhiSMax,
+                             DFLT_NbinsDEta,DFLT_DEtaMin,DFLT_DEtaMax);
+    fDenDEtaDPhiS = new TH2D(TString::Format("DenDEtaDPhiS%s", fTitle.Data()),
+                             "dPhiS vs dEta - Denominator",
+                             DFLT_NbinsDPhiS,DFLT_DPhiSMin,DFLT_DPhiSMax,
+                             DFLT_NbinsDEta,DFLT_DEtaMin,DFLT_DEtaMax);
     fNumDEtaDPhiS->Sumw2();
     fDenDEtaDPhiS->Sumw2();
   }
@@ -469,27 +454,26 @@ void AliFemtoCorrFctnKStar::SetCalculatePairKinematics(Bool_t pk)
 {
   fPairKinematics = pk;
 
-  if(fPairKinematics && !fPairKStar)
-  {
-    fPairKStar      = new TNtuple(TString::Format("PairKStar%s", fTitle),
-                                 "Pair Kinematics", 
-                                 "KStarMag:KStarOut:KStarSide:KStarLong");
+  if (fPairKinematics && !fPairKStar) {
+    fPairKStar = new TNtuple(TString::Format("PairKStar%s", fTitle.Data()),
+                             "Pair Kinematics",
+                             "KStarMag:KStarOut:KStarSide:KStarLong");
   }
 }
 
 //____________________________
-void AliFemtoCorrFctnKStar::SetBuildkTBinned(Bool_t aBuild) 
+void AliFemtoCorrFctnKStar::SetBuildkTBinned(Bool_t aBuild)
 {
   fBuildkTBinned = aBuild;
 
   if(fBuildkTBinned && (!fNumerator_kT || !fDenominator_kT))
   {
-    fNumerator_kT   = new TH2F(TString::Format("KStarVskTNum%s", fTitle),
-                               "KStar vs kT Numerator; k*(GeV); k_T (GeV);",
-                                fNbinsKStar, fKStarLow, fKStarHigh,
-                                DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
+    fNumerator_kT = new TH2F(TString::Format("KStarVskTNum%s", fTitle.Data()),
+                             "KStar vs kT Numerator; k*(GeV); k_T (GeV);",
+                             fNbinsKStar, fKStarLow, fKStarHigh,
+                             DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
 
-    fDenominator_kT = new TH2F(TString::Format("KStarVskTDen%s", fTitle),
+    fDenominator_kT = new TH2F(TString::Format("KStarVskTDen%s", fTitle.Data()),
                            "KStar vs kT Denominator; k* (GeV); k_T (GeV)",
                            fNbinsKStar, fKStarLow, fKStarHigh,
                            DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
@@ -499,17 +483,17 @@ void AliFemtoCorrFctnKStar::SetBuildkTBinned(Bool_t aBuild)
 }
 
 //____________________________
-void AliFemtoCorrFctnKStar::SetBuildmTBinned(Bool_t aBuild) 
+void AliFemtoCorrFctnKStar::SetBuildmTBinned(Bool_t aBuild)
 {
   fBuildmTBinned = aBuild;
 
   if(fBuildmTBinned && (!fNumerator_mT || !fDenominator_mT))
   {
-    fNumerator_mT   = new TH2F(TString::Format("KStarVsmTNum%s", fTitle),
-                               "KStar vs m_{T} Numerator; k*(GeV); m_{T} (GeV);",
-                                fNbinsKStar, fKStarLow, fKStarHigh,
-                                DFLT_NbinsmT, DFLT_mTMin, DFLT_mTMax);
-    fDenominator_mT = new TH2F(TString::Format("KStarVsmTDen%s", fTitle),
+    fNumerator_mT = new TH2F(TString::Format("KStarVsmTNum%s", fTitle.Data()),
+                             "KStar vs m_{T} Numerator; k*(GeV); m_{T} (GeV);",
+                             fNbinsKStar, fKStarLow, fKStarHigh,
+                             DFLT_NbinsmT, DFLT_mTMin, DFLT_mTMax);
+    fDenominator_mT = new TH2F(TString::Format("KStarVsmTDen%s", fTitle.Data()),
                                "KStar vs m_{T} Denominator; k* (GeV); m_{T} (GeV)",
                                 fNbinsKStar, fKStarLow, fKStarHigh,
                                 DFLT_NbinsmT, DFLT_mTMin, DFLT_mTMax);
@@ -519,34 +503,23 @@ void AliFemtoCorrFctnKStar::SetBuildmTBinned(Bool_t aBuild)
 }
 
 //____________________________
-void AliFemtoCorrFctnKStar::SetBuild3d(Bool_t aBuild) 
+void AliFemtoCorrFctnKStar::SetBuild3d(Bool_t aBuild)
 {
   fBuild3d = aBuild;
 
   if(fBuild3d && (!fNumerator3d || !fDenominator3d))
   {
-    fNumerator3d    = new TH3F(TString::Format("Num3d%s",fTitle),
-                              "KStar3d - Numerator; k*(GeV/c);",
-                               DFLT_NbinsKStarOut, DFLT_KStarOutMin, DFLT_KStarOutMax,
-                               DFLT_NbinsKStarSide, DFLT_KStarSideMin, DFLT_KStarSideMax,
-                               DFLT_NbinsKStarLong, DFLT_KStarLongMin, DFLT_KStarLongMax);
-    fDenominator3d  = new TH3F(TString::Format("Den3d%s",fTitle),
+    fNumerator3d = new TH3F(TString::Format("Num3d%s", fTitle.Data()),
+                            "KStar3d - Numerator; k*(GeV/c);",
+                            DFLT_NbinsKStarOut, DFLT_KStarOutMin, DFLT_KStarOutMax,
+                            DFLT_NbinsKStarSide, DFLT_KStarSideMin, DFLT_KStarSideMax,
+                            DFLT_NbinsKStarLong, DFLT_KStarLongMin, DFLT_KStarLongMax);
+    fDenominator3d = new TH3F(TString::Format("Den3d%s", fTitle.Data()),
                               "KStar3d - Denominator; k*(GeV/c);",
-                               DFLT_NbinsKStarOut, DFLT_KStarOutMin, DFLT_KStarOutMax,
-                               DFLT_NbinsKStarSide, DFLT_KStarSideMin, DFLT_KStarSideMax,
-                               DFLT_NbinsKStarLong, DFLT_KStarLongMin, DFLT_KStarLongMax);
+                              DFLT_NbinsKStarOut, DFLT_KStarOutMin, DFLT_KStarOutMax,
+                              DFLT_NbinsKStarSide, DFLT_KStarSideMin, DFLT_KStarSideMax,
+                              DFLT_NbinsKStarLong, DFLT_KStarLongMin, DFLT_KStarLongMax);
     fNumerator3d->Sumw2();
     fDenominator3d->Sumw2();
   }
 }
-
-
-
-
-
-
-
-
-
-
-

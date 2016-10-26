@@ -1,14 +1,8 @@
-// file AliFemtoCorrFctnKStar.h
+///
+/// \file AliFemtoCorrFctnKStar.h
+///
 
-/*
- *  class AliFemtoCorrFctnKStar.h
- *  Based off AliFemtoQinvCorrFctn and Kubera's AliFemtoCorrFctnKStar
- *  brief A simple KStar correlation function
- *
- *  authors:  Andrew Kubera, Ohio State University, <andrew.kubera@cern.ch>
- *            Jesse Buxton, Ohio State University, <jesse.thomas.buxton@cern.ch>
- *
- */
+#pragma once
 
 #ifndef ALIFEMTOCORRFCTNKSTAR_H
 #define ALIFEMTOCORRFCTNKSTAR_H
@@ -18,18 +12,40 @@
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TNtuple.h"
-
+#include "TString.h"
 
 #include "AliFemtoCorrFctn.h"
 
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 
+
+/// \class AliFemtoCorrFctnKStar
+/// \brief A simple KStar correlation function
+///
+/// Based off AliFemtoQinvCorrFctn and Kubera's AliFemtoCorrFctnKStar
+///
+///  \authors  Andrew Kubera, Ohio State University, <andrew.kubera@cern.ch>
+///            Jesse Buxton, Ohio State University, <jesse.thomas.buxton@cern.ch>
+///
 class AliFemtoCorrFctnKStar : public AliFemtoCorrFctn {
 public:
+
+  /// Default Constructor
+  ///
+  /// Title is set to "CorrFctnKStar", consult source file for other default values.
+  ///
   AliFemtoCorrFctnKStar();
-  AliFemtoCorrFctnKStar(const char* title, const int& nbins, const float& KStarLo, const float& KStarHi); //If non-default values are desired for other binning,
-                                                                                                          //use methods SetKStarVskTBins, SetKStarVsmTBins, etc.
+
+  /// Constructor
+  ///
+  /// If non-default values are desired for other binning,
+  /// use methods SetKStarVskTBins, SetKStarVsmTBins, etc.
+  AliFemtoCorrFctnKStar(const char* title,
+                        const int nbins,
+                        const float KStarLo,
+                        const float KStarHi);
+
   AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrFctn);
   virtual ~AliFemtoCorrFctnKStar();
 
@@ -75,7 +91,7 @@ public:
   TH1D* Ratio();
 
 protected:
-  const char* fTitle;
+  TString fTitle;
   int fNbinsKStar;
   double fKStarLow, fKStarHigh;
   TH1D* fNumerator;          // numerator - real pairs
@@ -106,12 +122,6 @@ protected:
   Bool_t fBuild3d;
   TH3F *fNumerator3d;
   TH3F *fDenominator3d;
-
-
-
-#ifdef __ROOT__
-  ClassDef(AliFemtoCorrFctnKStar, 1)
-#endif
 };
 
 inline TH1D* AliFemtoCorrFctnKStar::Numerator(){return fNumerator;}
