@@ -240,6 +240,10 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
     AddHistogram2D<TH2D>("hEmbeddingDeltaEta", "Matched jet #Delta #eta distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #eta", "dN^{Matched}/dp_{T}d#eta");
     AddHistogram2D<TH2D>("hEmbeddingDeltaPhi", "Matched jet #Delta #phi distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #phi", "dN^{Matched}/dp_{T}d#phi");
     AddHistogram2D<TH2D>("hEmbeddingPtCorr", "Matched jet p_{T} distributions", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
+    AddHistogram2D<TH2D>("hEmbeddingPtCorr010", "Matched jet p_{T} distributions (0-10%% centrality)", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
+    AddHistogram2D<TH2D>("hEmbeddingPtCorr1030", "Matched jet p_{T} distributions (10-30%% centrality)", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
+    AddHistogram2D<TH2D>("hEmbeddingPtCorr3050", "Matched jet p_{T} distributions (30-50%% centrality)", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
+    AddHistogram2D<TH2D>("hEmbeddingPtCorr5090", "Matched jet p_{T} distributions (50-90%% centrality)", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
 
     AddHistogram1D<TH1D>("hEmbeddingJetPt", "Embedded jets p_{T} distribution", "", 200, -50., 150., "p_{T, jet} (GeV/c)", "dN/dp_{T}");
     AddHistogram2D<TH2D>("hEmbeddingJetPhiEta", "Embedded jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
@@ -707,6 +711,14 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       FillHistogram("hEmbeddingDeltaEta", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), deltaPhi);
       FillHistogram("hEmbeddingDeltaPhi", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), deltaEta);
       FillHistogram("hEmbeddingPtCorr", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
+      if(fCent >= 0 && fCent < 10)
+        FillHistogram("hEmbeddingPtCorr010", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
+      else if (fCent >= 10 && fCent < 30)
+        FillHistogram("hEmbeddingPtCorr1030", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
+      else if (fCent >= 30 && fCent < 50)
+        FillHistogram("hEmbeddingPtCorr3050", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
+      else if (fCent >= 50 && fCent < 90)
+        FillHistogram("hEmbeddingPtCorr5090", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
       FillHistogram("hEmbeddingJetPt", fMatchedJetsReference[i]->Pt());
       FillHistogram("hEmbeddingJetPhiEta", fMatchedJetsReference[i]->Phi(), fMatchedJetsReference[i]->Eta()); 
     }
