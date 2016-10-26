@@ -79,7 +79,8 @@ public:
    * - Jet patches (16x16 FAST-ors)
    * - Gamma patches (2x2 FAST-ors)
    * - Level0 patches (2x2 FAST-ors, using L0 amplitude and L0 times for the selection)
-   * @param inputevent Input ESD/AOD event, used for kinematics calculation
+   * @param[in] inputevent Input ESD/AOD event, used for kinematics calculation
+   * @param[in] useL0amp if true the Level0 amplitude is used
    * @return Array of reconstructed trigger patches
    */
   TObjArray *CreateTriggerPatches(const AliVEvent *inputevent, Bool_t useL0amp=kFALSE);
@@ -113,13 +114,13 @@ public:
 
   /**
    * Provide the EMCAL geometry to the trigger maker Kernel
-   * @param geo
+   * @param[in] geo EMCAL geometry
    */
   void SetGeometry(const AliEMCALGeometry *const geo) { fGeometry = geo; }
 
   /**
    * Set the trigger bit configuration applied for the given data set
-   * @param config Trigger bit config applied
+   * @param[in] config Trigger bit config applied
    */
   void SetTriggerBitConfig(const AliEMCALTriggerBitConfig *const config);
 
@@ -132,21 +133,21 @@ public:
 
   /**
    * Set thresholds applied to FastORs and offline cells before patch reconstruction
-   * @param l0 Threshold for L0 FastOR amplitudes
-   * @param l1 Threshold for L1 FastOR amplitudes
-   * @param cell Threshold for cell amplitudes
+   * @param[in] l0 Threshold for L0 FastOR amplitudes
+   * @param[in] l1 Threshold for L1 FastOR amplitudes
+   * @param[in] cell Threshold for cell amplitudes
    */
   void SetFastORandCellThresholds(Int_t l0, Int_t l1, Int_t cell) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; fMinCellAmp = cell; }
 
   /**
    * Add a FastOR bad channel to the list
-   * @param absId Absolute ID of the bad channel
+   * @param[in] absId Absolute ID of the bad channel
    */
   void AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
 
   /**
    * Read the FastOR bad channel map from a standard stream
-   * @param stream A reference to a standard stream to read from (can be a file stream)
+   * @param[in] stream A reference to a standard stream to read from (can be a file stream)
    */
   void ReadFastORBadChannelFromStream(std::istream& stream);
 
@@ -157,25 +158,25 @@ public:
 
   /**
    * Read the FastOR bad channel map from a text file
-   * @param fname Path and name of the file
+   * @param[in] fname Path and name of the file
    */
   void ReadFastORBadChannelFromFile(const char* fname);
 
   /**
    * Add an offline bad channel to the set
-   * @param absId Absolute ID of the bad channel
+   * @param[in] absId Absolute ID of the bad channel
    */
   void AddOfflineBadChannel(Short_t absId) { fOfflineBadChannels.insert(absId); }
 
   /**
    * Read the offline bad channel map from a standard stream
-   * @param stream A reference to a standard stream to read from (can be a file stream)
+   * @param[in] stream A reference to a standard stream to read from (can be a file stream)
    */
   void ReadOfflineBadChannelFromStream(std::istream& stream);
 
   /**
    * Read the offline bad channel map from a text file
-   * @param fname Path and name of the file
+   * @param[in] fname Path and name of the file
    */
   void ReadOfflineBadChannelFromFile(const char* fname);
 
@@ -186,20 +187,20 @@ public:
 
   /**
    * Read the FastOR pedestals from a standard stream
-   * @param stream A reference to a standard stream to read from (can be a file stream)
+   * @param[in] stream A reference to a standard stream to read from (can be a file stream)
    */
   void ReadFastORPedestalFromStream(std::istream& stream);
 
   /**
    * Read the FastOR pedestals from a text file
-   * @param fname Path and name of the file
+   * @param[in] fname Path and name of the file
    */
   void ReadFastORPedestalFromFile(const char* fname);
 
   /**
    * Set the pedestal value for a FastOR
-   * @param absId Absolute ID of a FastOR
-   * @param ped   Pedestal value
+   * @param[in] absId Absolute ID of a FastOR
+   * @param[in] ped   Pedestal value
    */
   void SetFastORPedestal(Short_t absId, Float_t ped);
 
@@ -217,7 +218,7 @@ public:
 
   /**
    * Set cut on the minimum cell amplitude
-   * @param minamp Min cell amplitude accepted
+   * @param[in] minamp Min cell amplitude accepted
    */
   void SetMinFEEAmplitude(Double_t minamp) { fMinCellAmplitude = minamp; }
 
@@ -237,16 +238,13 @@ public:
 
   /**
    * Read the calo trigger data
-   * @param trigger Input calo trigger data
-   * @param timeMin Minimum L0 time
-   * @param timeMax Maximum L0 time
-   * @param applyTimeCut If true, only L0 amoplitudes in the range timeMin, timeMax are considered
+   * @param[in] trigger Input calo trigger data
    */
   void ReadTriggerData(AliVCaloTrigger *trigger);
 
   /**
    * Read the EMCAL cell data
-   * @param cells EMCAL cell data
+   * @param[in] cells EMCAL cell data
    */
   void ReadCellData(AliVCaloCells *cells);
 
@@ -258,21 +256,21 @@ public:
 
   /**
    * Add a L1 trigger algorithm
-   * @param rowmin Minimum row value
-   * @param rowmax Maximum row value
-   * @param bitmask Offline bit mask to be applied to the patches
-   * @param patchSize Size of the patches
-   * @param subregionSize Size of the sliding sub region
+   * @param[in] rowmin Minimum row value
+   * @param[in] rowmax Maximum row value
+   * @param[in] bitmask Offline bit mask to be applied to the patches
+   * @param[in] patchSize Size of the patches
+   * @param[in] subregionSize Size of the sliding sub region
    */
   void AddL1TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
 
   /**
    * Set the L0 algorithm
-   * @param rowmin Minimum row value
-   * @param rowmax Maximum row value
-   * @param bitmask Offline bit mask to be applied to the patches
-   * @param patchSize Size of the patches
-   * @param subregionSize Size of the sliding sub region
+   * @param[in] rowmin Minimum row value
+   * @param[in] rowmax Maximum row value
+   * @param[in] bitmask Offline bit mask to be applied to the patches
+   * @param[in] patchSize Size of the patches
+   * @param[in] subregionSize Size of the sliding sub region
    */
   void SetL0TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
 
@@ -321,26 +319,27 @@ protected:
   /**
    * Accept trigger patch as Level0 patch. Level0 patches are identified as 2x2 FASTOR patches
    * in the same TRU
-   * @param trg Triggers object with the pointer set to the patch to inspect
+   * @param[in] col Starting coloumn of the patch
+   * @param[in] row Starting row of the patch
    * @return the status of the patch (not L0, candidate, fired)
    */
   ELevel0TriggerStatus_t CheckForL0(Int_t col, Int_t row) const;
 
   /**
    * Check from the bitmask whether the patch is a gamma patch
-   * @param patch Patch to check
+   * @param[in] patch Patch to check
    * @return True if patch is a gamma patch
    */
   Bool_t IsGammaPatch(const AliEMCALTriggerRawPatch &patch) const;
   /**
    * Check from the bitmask whether the patch is a jet patch
-   * @param patch Patch to check
+   * @param[in] patch Patch to check
    * @return True if patch is a jet patch
    */
   Bool_t IsJetPatch(const AliEMCALTriggerRawPatch &patch) const;
   /**
    * Check from the bitmask whether the patch is a background patch
-   * @param patch Patch to check
+   * @param[in] patch Patch to check
    * @return True if patch is a background patch
    */
   Bool_t IsBkgPatch(const AliEMCALTriggerRawPatch &patch) const;

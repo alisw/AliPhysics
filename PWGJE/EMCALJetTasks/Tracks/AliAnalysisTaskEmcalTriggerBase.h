@@ -145,7 +145,7 @@ public:
    * of the trigger in min. bias data.
    * @param[in] nameAcceptanceOADB Location of the OADB container with the acceptance maps
    */
-  void SetTiggerAcceptanceOADB(const TString &nameAcceptanceOADB) { fNameAcceptanceOADB = nameAcceptanceOADB; }
+  void SetTriggerAcceptanceOADB(const TString &nameAcceptanceOADB) { fNameAcceptanceOADB = nameAcceptanceOADB; }
 
 protected:
   /**

@@ -280,40 +280,49 @@ void AliAnalysisTaskChargedParticlesRefMC::ExecOnce(){
   }
 
   // Load acceptance OADB
-  if(fNameAcceptanceOADB && fTriggerSelection){
-    AliOADBContainer acceptanceCont;
+  if(fNameAcceptanceOADB.Length() && fTriggerSelection){
+    AliDebugStream(1) << GetName() << ": Loading acceptance map from OADB file " <<  fNameAcceptanceOADB << std::endl;
+    AliOADBContainer acceptanceCont("AliEmcalTriggerAcceptance");
     acceptanceCont.InitFromFile(fNameAcceptanceOADB.Data(), "AliEmcalTriggerAcceptance");
     TObjArray *acceptanceMaps = dynamic_cast<TObjArray *>(acceptanceCont.GetObject(fInputEvent->GetRunNumber()));
     TH2 *map(nullptr);
     if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG1")))){
+      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG1" << std::endl;
       map->SetDirectory(nullptr);
       fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG1, map);
     }
     if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG2")))){
+      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG2" << std::endl;
       map->SetDirectory(nullptr);
       fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG2, map);
     }
     if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG1")))){
+      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG1" << std::endl;
       map->SetDirectory(nullptr);
       fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
     }
     if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG2")))){
+      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG2" << std::endl;
       map->SetDirectory(nullptr);
       fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
     }
     if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ1")))){
+      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ1" << std::endl;
       map->SetDirectory(nullptr);
       fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ1, map);
     }
     if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ2")))){
+      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ2" << std::endl;
       map->SetDirectory(nullptr);
       fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ2, map);
     }
     if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ1")))){
+      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ1" << std::endl;
       map->SetDirectory(nullptr);
       fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
     }
     if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ2")))){
+      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ2" << std::endl;
       map->SetDirectory(nullptr);
       fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
     }
