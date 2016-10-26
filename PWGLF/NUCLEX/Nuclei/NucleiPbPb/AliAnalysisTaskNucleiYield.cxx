@@ -3,7 +3,6 @@
 // ROOT includes
 #include <TAxis.h>
 #include <TChain.h>
-#include <TDatabasePDG.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
@@ -11,7 +10,6 @@
 #include <TList.h>
 #include <TMath.h>
 #include <TParticle.h>
-#include <TParticlePDG.h>
 #include <TClonesArray.h>
 #include <TTree.h>
 #include <TRandom3.h>
@@ -57,6 +55,7 @@ static double TOFsignal(double *x, double *par) {
 
   if (x[0] <= (tail + mean))
     return norm * TMath::Gaus(x[0], mean, sigma);
+  else
     return norm * TMath::Gaus(tail + mean, mean, sigma) * TMath::Exp(-tail * (x[0] - tail - mean) / (sigma * sigma));
 }
 
@@ -90,6 +89,7 @@ static void BinLogAxis(const TH1 *h) {
 AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
   ,fList(0x0)
+  ,fCutVec()
   ,fPDG(0x0)
   ,fPDGMass(0)
   ,fPDGMassOverZ(0)
@@ -139,7 +139,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   ,fPtBins(0x0)
   ,fCustomTPCpid(0)
   ,fFlatteningProbs(0)
-  ,fPhiRegions()
   ,fCentrality(0x0)
   ,fFlattenedCentrality(0x0)
   ,fCentralityClasses(0x0)
@@ -158,8 +157,6 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   ,fMDCASecondaryTOF(0x0)
   ,fATOFsignal(0x0)
   ,fATPCcounts(0x0)
-  ,fATOFphiSignal(0x0)
-  ,fATPCphiCounts(0x0)
   ,fATPCeLoss(0x0)
   ,fMDCAxyTPC(0x0)
   ,fMDCAzTPC(0x0)
@@ -167,13 +164,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   ,fMDCAzTOF(0x0)
   ,fMTOFsignal(0x0)
   ,fMTPCcounts(0x0)
-  ,fMTOFphiSignal(0x0)
-  ,fMTPCphiCounts(0x0)
   ,fMTPCeLoss(0x0)
-  ,fRequireMinCentrality(0.)
-  ,fRequireMaxCentrality(80.)
-  ,fEnableFlattening(true)
-  ,fEnableLogAxisInPerformancePlots(true) {
+   ,fEnableFlattening(true)
+   ,fEnableLogAxisInPerformancePlots(true) {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
@@ -187,18 +180,13 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
 ///
 AliAnalysisTaskNucleiYield::~AliAnalysisTaskNucleiYield(){
   if (fList) delete fList;
+  if (fTOFfunction) delete fTOFfunction;
 }
 
 /// This function creates all the histograms and all the objects in general used during the analysis
 /// \return void
 ///
 void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
-
-  AliPDG a;
-  a.AddParticlesToPdgDataBase();
-  TDatabasePDG* pdg = TDatabasePDG::Instance();
-  TParticlePDG* poi = pdg->GetParticle(fPDG);
-  fCharge = std::abs(poi->Charge() / 3);
 
   fList = new TList();
   fList->SetOwner(kTRUE);
@@ -218,15 +206,6 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   fList->Add(fCentrality);
   fList->Add(fCentralityClasses);
   fList->Add(fFlattenedCentrality);
-
-  fATPCphiCounts = new TH2F("fATPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
-      36,0.2,2.);
-  fMTPCphiCounts = new TH2F("fMTPCphiCounts",";#phi;p_{T} (GeV/c);Counts",64,0.,TMath::TwoPi(),
-      36,0.2,2.);
-  if (fRequireMinEnergyLoss > 0. || fPhiRegions[0].GetSize() > 0 || fPhiRegions[1].GetSize() > 0) {
-    fList->Add(fATPCphiCounts);
-    fList->Add(fMTPCphiCounts);
-  }
 
   if (fIsMC) {
     fMTotal = new TH2F("fMTotal",";Centrality (%);p_{T} (GeV/c); Counts",
@@ -338,34 +317,21 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       fList->Add(fTOFtemplates[iS]);
     }
 
-    fATOFphiSignal = new TH3F("fATOFphiSignal",
-        ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
-        64,0.,TMath::TwoPi(),28,0.2,3.,
-        fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
-    fMTOFphiSignal = new TH3F("fMTOFphiSignal",
-        ";#phi;p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
-        64,0.,TMath::TwoPi(),28,0.2,3.,
-        fTOFnBins,fTOFlowBoundary,fTOFhighBoundary);
-    if (fRequireMinEnergyLoss > 0.) {
-      fList->Add(fMTOFphiSignal);
-      fList->Add(fATOFphiSignal);
-    }
-
     fATPCeLoss = new TH2F("fATPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
         2400,0,2400);
     fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
         2400,0,2400);
-    if (fEnablePerformance || fRequireMinEnergyLoss > 0.) {
-      if (fEnableLogAxisInPerformancePlots) {
-        BinLogAxis(fMTPCeLoss);
-        BinLogAxis(fATPCeLoss);
-      }
-      fList->Add(fMTPCeLoss);
-      fList->Add(fATPCeLoss);
+    if (fEnableLogAxisInPerformancePlots) {
+      BinLogAxis(fMTPCeLoss);
+      BinLogAxis(fATPCeLoss);
     }
+    fList->Add(fMTPCeLoss);
+    fList->Add(fATPCeLoss);
   }
 
   fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
+  if (fTOFfunctionPars.GetSize() == 4)
+    fTOFfunction->SetParameters(fTOFfunctionPars.GetArray());
 
   fEventCut.AddQAplotsToList(fList);
   PostData(1,fList);
@@ -466,7 +432,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fMPtCorrection->Fill(pT,part->Pt() - pT);
         if (beta > 0) {
           if (part->IsPhysicalPrimary()) {
-            fMTPCphiCounts->Fill(centrality,part->Pt(),track->Phi());
             fMDCAPrimaryTOF->Fill(centrality,part->Pt(),dca[0]);
             fMITS_TPC_TOF->Fill(centrality,part->Pt());
           } else {
@@ -479,7 +444,6 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
           fAITS_TPC->Fill(centrality,part->Pt());
           if (beta > 0) {
             fAITS_TPC_TOF->Fill(centrality,part->Pt());
-            fATPCphiCounts->Fill(centrality,part->Pt(),track->Phi());
           }
         }
       }
@@ -495,9 +459,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fMDCAxyTPC->Fill(centrality, pT, dca[0]);
         fMDCAzTPC->Fill(centrality, pT, dca[1]);
         fMTPCcounts->Fill(centrality, pT, tpc_n_sigma);
-        fMTPCphiCounts->Fill(track->Phi(),pT);
       } else {
-        fATPCphiCounts->Fill(track->Phi(),pT);
         fATPCcounts->Fill(centrality, pT, tpc_n_sigma);
       }
       if (beta < 1.e-10) continue;
@@ -507,21 +469,21 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         fMDCAxyTOF->Fill(centrality, pT, dca[0]);
         fMDCAzTOF->Fill(centrality, pT, dca[1]);
         fMTOFsignal->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);
-        fMTOFphiSignal->Fill(track->Phi(),pT,m - fPDGMassOverZ * fPDGMassOverZ);
       } else {
         fATOFsignal->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);
-        fATOFphiSignal->Fill(track->Phi(),pT,m - fPDGMassOverZ * fPDGMassOverZ);
       }
 
-      AliTOFPIDResponse& tofPid = fPID->GetTOFResponse();
-      for (int iS = 0; iS < 5; ++iS) {
-        const float expt0 = tofPid.GetExpectedSignal(track,kSpecies[iS]);
-        const float sigma = tofPid.GetExpectedSigma(track->P(),expt0,kSpecies[iS]);
-        const float smearing = fTOFfunction->GetRandom() + gRandom->Gaus(0., sqrt(sigma * sigma - tofPid.GetTimeResolution() * tofPid.GetTimeResolution()));
-        const float expBeta = track->GetIntegratedLength() / ((expt0 + smearing) * LIGHT_SPEED);
-        if (expBeta > EPS) {
-          const float expM = track->P() * track->P() * (1.f / (expBeta * expBeta) - 1.f);
-          fTOFtemplates[iS]->Fill(centrality,pT,expM - fPDGMassOverZ * fPDGMassOverZ);
+      if (fTOFfunctionPars.GetSize() == 4) {
+        AliTOFPIDResponse& tofPid = fPID->GetTOFResponse();
+        for (int iS = 0; iS < 5; ++iS) {
+          const float expt0 = tofPid.GetExpectedSignal(track,kSpecies[iS]);
+          const float sigma = tofPid.GetExpectedSigma(track->P(),expt0,kSpecies[iS]);
+          const float smearing = fTOFfunction->GetRandom() + gRandom->Gaus(0., sqrt(sigma * sigma - tofPid.GetTimeResolution() * tofPid.GetTimeResolution()));
+          const float expBeta = track->GetIntegratedLength() / ((expt0 + smearing) * LIGHT_SPEED);
+          if (expBeta > EPS) {
+            const float expM = track->P() * track->P() * (1.f / (expBeta * expBeta) - 1.f);
+            fTOFtemplates[iS]->Fill(centrality,pT,expM - fPDGMassOverZ * fPDGMassOverZ);
+          }
         }
       }
     }
@@ -549,28 +511,15 @@ void AliAnalysisTaskNucleiYield::Terminate(Option_t *) {
 ///
 Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[2]) {
   ULong_t status = track->GetStatus();
+  fCutVec.SetPtEtaPhiM(track->Pt() * fCharge, track->Eta(), track->Phi(), fPDGMass);
   if (!(status & AliVTrack::kTPCrefit) && fRequireTPCrefit) return kFALSE;
   if (track->Eta() < fRequireEtaMin || track->Eta() > fRequireEtaMax) return kFALSE;
-  if (track->Y(fPDGMass) < fRequireYmin || track->Y(fPDGMass) > fRequireYmax) return kFALSE;
+  if (fCutVec.Rapidity() < fRequireYmin || fCutVec.Rapidity() > fRequireYmax) return kFALSE;
   AliAODVertex *vtx1 = (AliAODVertex*)track->GetProdVertex();
   if(Int_t(vtx1->GetType()) == AliAODVertex::kKink && fRequireNoKinks) return kFALSE;
   if (track->Chi2perNDF() > fRequireMaxChi2) return kFALSE;
   if (track->GetTPCsignal() < fRequireMinEnergyLoss) return kFALSE;
   if (fRequireMaxMomentum > 0 && track->P() > fRequireMaxMomentum) return kFALSE;
-
-  /// If phi regions are defined, take only the tracks inside the selected phi regions.
-  const int iPhi = int((track->Charge() > 0) ^ (fMagField > 0.));
-  if (fPhiRegions[iPhi].GetSize() > 0) {
-    bool phi_flag = false;
-    const float phi = track->Phi();
-    for (int i = 0; i < fPhiRegions[iPhi].GetSize(); i+=2) {
-      if (phi > fPhiRegions[iPhi][i] && phi < fPhiRegions[iPhi][i + 1]) {
-        phi_flag = true;
-        break;
-      }
-    }
-    if (!phi_flag) return kFALSE;
-  }
 
   /// ITS related cuts
   dca[0] = 0.;
@@ -765,6 +714,7 @@ void AliAnalysisTaskNucleiYield::SetParticleType(AliPID::EParticleType part) {
   fParticle = part;
   fPDGMass = AliPID::ParticleMass(part);
   fPDGMassOverZ = AliPID::ParticleMassZ(part);
+  fCharge = AliPID::ParticleCharge(fParticle);
 }
 
 /// This function provides the flattening of the centrality distribution.
