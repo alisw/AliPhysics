@@ -1489,6 +1489,7 @@ private:
   TProfile *fTPCQHist[fCRCnHar][2];  //! Run-by-run TPCQvecHist
   TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
   TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
+  TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
   TH1D *fZDCESEMaxHist[2]; //!
@@ -1684,7 +1685,7 @@ private:
   TList *fFlowQCHOList;    //! QC high order List
   const static Int_t fFlowNHarmHighOrd = 2;
   const static Int_t fFlowQCHONHist = 4;
-  const static Int_t fFlowQCHOCenBin = 20;
+  const static Int_t fFlowQCHOCenBin = 100;
   TProfile *fFlowQCIntCorHOPro[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
   TH1D *fFlowQCIntCorHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
   TH1D *fFlowQCIntQCHOHist[fFlowNHarmHighOrd][fFlowQCHONHist]; //!
