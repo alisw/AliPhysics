@@ -1,37 +1,41 @@
-/*
- * AliEmcalTriggerOfflineSelection.cxx
- *
- *  Created on: Feb 23, 2016
- *      Author: markus
- */
+/**************************************************************************
+ * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 #include <TClonesArray.h>
+#include <TH2.h>
+#include <TRandom.h>
 
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 
+/// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEmcalTriggerOfflineSelection)
+/// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
 AliEmcalTriggerOfflineSelection::AliEmcalTriggerOfflineSelection() {
-  enum EmcalTriggerClass{
-    kCPREL0 = 0,
-    kCPREG1,
-    kCPREG2,
-    kCPREJ1,
-    kCPREJ2,
-    kCPRntrig
-  };
+  memset(fOfflineEnergyThreshold, 0, sizeof(Double_t) * kTrgn);
+  memset(fAcceptanceMaps, 0, sizeof(TH2 *) * kTrgn);
 }
 
-/**
- * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
- * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
- * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
- * @param trgcls Trigger class for which to apply additional offline patch selection
- * @param triggerpatches Array of trigger patches
- * @return True if at least on patch above threshold is found or no cut is applied
- */
+AliEmcalTriggerOfflineSelection::~AliEmcalTriggerOfflineSelection(){
+  for(int itrg = 0; itrg < kTrgn; itrg++){
+    if(fAcceptanceMaps[itrg]) delete fAcceptanceMaps[itrg];
+  }
+}
+
 Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
   if(fOfflineEnergyThreshold[trgcls] < 0) return true;
   bool isSingleShower = IsSingleShower(trgcls);
@@ -45,7 +49,16 @@ Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgc
     } else {
       if(!patch->IsJetLowSimple()) continue;
     }
-    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]) nfound++;
+    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]){
+      // Handle offline acceptance maps (if providede)
+      if(fAcceptanceMaps[trgcls]){
+        double acceptanceprob = fAcceptanceMaps[trgcls]->GetBinContent(patch->GetColStart(), patch->GetRowStart()),
+                patchprob = gRandom->Uniform(0., 1.);
+        if(patchprob < acceptanceprob) nfound++;
+      } else{
+        nfound++;
+      }
+    }
   }
   return nfound > 0;
 }

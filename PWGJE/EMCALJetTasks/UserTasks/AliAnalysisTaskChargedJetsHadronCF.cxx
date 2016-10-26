@@ -85,9 +85,15 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetMatchingArrayName(""),
   fJetMatchingMaxDistance(0.3),
   fJetMatchingMinSharedFraction(0.5),
+  fJetMatchingMaxSharedFraction(1.5),
+  fJetMatchingMaxEmbeddingOffset(20.),
   fJetMatchingMinPt(0.0),
   fJetMatchingMaxPt(999.0),
   fJetMatchingUseOnlyNLeading(0),
+  fJetVetoArray(),
+  fJetVetoArrayName(""),
+  fJetVetoMinPt(0),
+  fJetVetoMaxPt(0),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -135,9 +141,15 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetMatchingArrayName(""),
   fJetMatchingMaxDistance(0.3),
   fJetMatchingMinSharedFraction(0.5),
+  fJetMatchingMaxSharedFraction(1.5),
+  fJetMatchingMaxEmbeddingOffset(20.),
   fJetMatchingMinPt(0.0),
   fJetMatchingMaxPt(999.0),
   fJetMatchingUseOnlyNLeading(0),
+  fJetVetoArray(),
+  fJetVetoArrayName(""),
+  fJetVetoMinPt(0),
+  fJetVetoMaxPt(0),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -235,8 +247,9 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
 
   // Random cone plots
   AddHistogram2D<TH2D>("hRandomConePt", "Random cone p_{T} distribution", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hRandomConePtCut3GeV", "Random cone p_{T} distribution, cut p_{T} > 3 GeV/c", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
   AddHistogram2D<TH2D>("hRandomConeRawPt", "Random cone p_{T} distribution (no bgrd. correction)", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
-  AddHistogram2D<TH2D>("hRandomConeRawPtCut3GeV", "Random cone p_{T} distribution (no bgrd. correction), cut p_{T} > 3 GeV/c", "", 400, -100., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hRandomConeRawPtCut3GeV", "Random cone p_{T} distribution (no bgrd. correction), cut p_{T} > 3 GeV/c", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
 
   // Leading/subleading, background ...
 
@@ -316,6 +329,13 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
   else if(fJetOutputMode==4 || fJetOutputMode==5)
     AliFatal(Form("fJetMatchingArrayName must be set in jet output mode 4 or 5."));
 
+  // ### Import veto jets for matching (optional)
+  if(fJetVetoArrayName != "")
+  {
+    fJetVetoArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fJetVetoArrayName.Data())));
+    if(!fJetVetoArray)
+      AliFatal(Form("Importing jets for veto failed! Array '%s' not found!", fJetVetoArrayName.Data()));
+  }
 
   // ### Jets tree (optional)
   if(fExtractionPercentage)
@@ -698,6 +718,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 
   // ####### Event properties
   FillHistogram("hRandomConePt", tmpRandConePt - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
+  FillHistogram("hRandomConePtCut3GeV", tmpRandConePt3GeV - fJetsCont->GetRhoVal()*fJetsCont->GetJetRadius()*fJetsCont->GetJetRadius()*TMath::Pi(), fCent);
   FillHistogram("hRandomConeRawPt", tmpRandConePt, fCent); 
   FillHistogram("hRandomConeRawPtCut3GeV", tmpRandConePt3GeV, fCent);
 
@@ -766,6 +787,21 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
   fMatchedJets.clear();
   fMatchedJetsReference.clear();
 
+  // Check for a jet veto here
+  if(fJetVetoArray)
+  {
+    for(Int_t i=0; i<fJetVetoArray->GetEntries(); i++)
+    {
+      AliEmcalJet* vetoJet = static_cast<AliEmcalJet*>(fJetVetoArray->At(i));
+      UInt_t   dummy = 0;
+      if(!fJetsCont->AcceptJet(vetoJet , dummy))
+        continue;
+      // if veto jet found -> return
+      if((vetoJet->Pt() >= fJetVetoMinPt) && (vetoJet->Pt() < fJetVetoMaxPt))
+        return;
+    }
+  }
+
   // Search for all matches above a certain threshold
   for(Int_t i=0; i<fJetMatchingArray->GetEntries(); i++)
   {
@@ -792,6 +828,9 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
         continue;
       // Cut jets with too small pT
       if(embeddedJet->Pt() - fJetsCont->GetRhoVal()*embeddedJet->Area() < fJetMatchingMinSharedFraction*probeJet->Pt())
+        continue;
+      // Cut jets with too high pT
+      if(embeddedJet->Pt() - fJetsCont->GetRhoVal()*embeddedJet->Area() > (fJetMatchingMaxSharedFraction*probeJet->Pt() + fJetMatchingMaxEmbeddingOffset))
         continue;
 
       // Search for the best match

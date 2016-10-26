@@ -67,6 +67,10 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties():
   fJetShapeOpeningAnglektSecondDer(0),
   fJetShapeOpeningAnglektFirstSub(0),
   fJetShapeOpeningAnglektSecondSub(0),
+  fJetShapeOpeningAngleSDCAFirstDer(0),
+  fJetShapeOpeningAngleSDCASecondDer(0),
+  fJetShapeOpeningAngleSDCAFirstSub(0),
+  fJetShapeOpeningAngleSDCASecondSub(0),
   fSoftDropZg(0),
   fSoftDropdR(0)
 {
@@ -126,6 +130,10 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties(const AliEmcalJetShapePro
   fJetShapeOpeningAnglektSecondDer(jet.fJetShapeOpeningAnglektSecondDer),
   fJetShapeOpeningAnglektFirstSub(jet.fJetShapeOpeningAnglektFirstSub),
   fJetShapeOpeningAnglektSecondSub(jet.fJetShapeOpeningAnglektSecondSub),
+  fJetShapeOpeningAngleSDCAFirstDer(jet.fJetShapeOpeningAngleSDCAFirstDer),
+  fJetShapeOpeningAngleSDCASecondDer(jet.fJetShapeOpeningAngleSDCASecondDer),
+  fJetShapeOpeningAngleSDCAFirstSub(jet.fJetShapeOpeningAngleSDCAFirstSub),
+  fJetShapeOpeningAngleSDCASecondSub(jet.fJetShapeOpeningAngleSDCASecondSub),
   fSoftDropZg(jet.fSoftDropZg),
   fSoftDropdR(jet.fSoftDropdR)
 
@@ -187,6 +195,10 @@ AliEmcalJetShapeProperties& AliEmcalJetShapeProperties::operator=(const AliEmcal
   fJetShapeOpeningAnglektSecondDer = jet.fJetShapeOpeningAnglektSecondDer;
   fJetShapeOpeningAnglektFirstSub  = jet.fJetShapeOpeningAnglektFirstSub;
   fJetShapeOpeningAnglektSecondSub = jet.fJetShapeOpeningAnglektSecondSub;
+  fJetShapeOpeningAngleSDCAFirstDer  = jet.fJetShapeOpeningAngleSDCAFirstDer;
+  fJetShapeOpeningAngleSDCASecondDer = jet.fJetShapeOpeningAngleSDCASecondDer;
+  fJetShapeOpeningAngleSDCAFirstSub  = jet.fJetShapeOpeningAngleSDCAFirstSub;
+  fJetShapeOpeningAngleSDCASecondSub = jet.fJetShapeOpeningAngleSDCASecondSub;
   fSoftDropZg = jet.fSoftDropZg;
   fSoftDropdR = jet.fSoftDropdR;
 

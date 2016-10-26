@@ -39,8 +39,13 @@ CEPEventBuffer::CEPEventBuffer()
 CEPEventBuffer::~CEPEventBuffer()
 {
 
-  this->Reset();
+  //this->Reset();
   // printf("A CEPEventBuffer was reset...\n");
+  //for (Int_t ii=0; ii<ftrb.GetEntries(); ii++)  {
+  //  ftrb[ii]->Delete();
+  //}
+  fCEPTracks->Delete();
+  delete fCEPTracks;
   
 }
 
@@ -59,7 +64,7 @@ void CEPEventBuffer::Reset()
   fisPileup      = kFALSE;
 
   // clear the track list
-  //ftrb.Clear();
+  fCEPTracks->Clear();
   fnumTracks     = 0;
   fnumSoftTracks = 0;
   fnumResiduals  = 0;

@@ -706,6 +706,7 @@ Int_t AliRDHFCuts::CheckMatchingAODdeltaAODevents(){
   AliAODHandler* aodHandler = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   TTree *treeAOD      = aodHandler->GetTree();
   TTree *treeDeltaAOD = treeAOD->GetFriend("aodTree");
+  if(!treeDeltaAOD || !treeAOD) return -1;
   if(treeDeltaAOD && treeAOD){
     if(treeAOD->GetEntries()!=treeDeltaAOD->GetEntries()){
       printf("AliRDHFCuts::CheckMatchingAODdeltaAODevents: Difference in number of entries in main and friend tree, skipping event\n");

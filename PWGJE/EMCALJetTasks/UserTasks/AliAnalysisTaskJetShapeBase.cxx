@@ -289,17 +289,17 @@ void AliAnalysisTaskJetShapeBase::UserCreateOutputObjects()
   Double_t minDpT = -50.;
   Double_t maxDpT = 50.;
 
-  Int_t    nBinsRpT  = 100;
-  Double_t minRpT = 0.;
-  Double_t maxRpT = 10.;
+  Int_t    nBinsRpT  = 160;
+  Double_t minRpT = -8.;
+  Double_t maxRpT = 8.;
   
-  Int_t    nBinsRM  = 50;
-  Double_t minRM = 0.;
-  Double_t maxRM = 5.;
+  Int_t    nBinsRM  = 160;
+  Double_t minRM = -8.;
+  Double_t maxRM = 8.;
   if(fSmallSyst) {
-  	 nBinsRM  = 20;
-  	 minRM = 0.;
-  	 maxRM = 2.;
+  	 nBinsRM  = 100;
+  	 minRM = -5.;
+  	 maxRM = 5.;
   	  
   }
   const Int_t nBinsDRToLJ  = 20; //distance to leading jet in Pb-Pb only event

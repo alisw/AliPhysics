@@ -52,6 +52,8 @@
 #include "AliEmcalTenderTask.h"
 #include "AliPHOSTenderSupply.h"
 #include "AliOADBContainer.h"
+#include "AliESDtrackCuts.h"
+#include "AliCaloTrackMatcher.h"
 #include <vector>
 
 class iostream;
@@ -104,6 +106,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fDoLightOutput(kFALSE),
   fIsJetJet(kFALSE),
   fV0ReaderName("V0ReaderV1"),
+  fCaloTrackMatcherName("CaloTrackMatcher_1"),
   fPeriodName(""),
   fCurrentMC(kNoMC),
   fClusterType(0),
@@ -180,7 +183,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Bool_t isJetJet, const char *name,const cha
   fHistDispersionAfterQA(NULL),
   fHistNLMBeforeQA(NULL),
   fHistNLMAfterQA(NULL),
-  fHistNLMAvsNLMBBeforeQA(NULL),
+//   fHistNLMAvsNLMBBeforeQA(NULL),
   fHistClusterEnergyvsMod(NULL),
   fHistNCellsBigger100MeVvsMod(NULL),
   fHistNCellsBigger1500MeVvsMod(NULL),
@@ -256,6 +259,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fDoLightOutput(ref.fDoLightOutput),
   fIsJetJet(ref.fIsJetJet),
   fV0ReaderName(ref.fV0ReaderName),
+  fCaloTrackMatcherName(ref.fCaloTrackMatcherName),
   fPeriodName(ref.fPeriodName),
   fCurrentMC(ref.fCurrentMC),
   fClusterType(ref.fClusterType),
@@ -330,7 +334,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistDispersionAfterQA(NULL),
   fHistNLMBeforeQA(NULL),
   fHistNLMAfterQA(NULL),
-  fHistNLMAvsNLMBBeforeQA(NULL),
+//   fHistNLMAvsNLMBBeforeQA(NULL),
   fHistNLMVsNCellsAfterQA(NULL),
   fHistNLMVsEAfterQA(NULL),
   fHistClusterEnergyvsMod(NULL),
@@ -562,8 +566,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistograms->Add(fHistNLMBeforeQA);
     fHistNLMAfterQA                 = new TH1F(Form("NLM_afterClusterQA %s",GetCutNumber().Data()),"NLM_afterClusterQA",10,0,10);
     fHistograms->Add(fHistNLMAfterQA);
-    fHistNLMAvsNLMBBeforeQA         = new TH2F(Form("NLMAvsNLMB_beforeClusterQA %s",GetCutNumber().Data()),"NLMAvsNLMB_beforeClusterQA",10,0,10,10,0,10);
-    fHistograms->Add(fHistNLMAvsNLMBBeforeQA);
+//     fHistNLMAvsNLMBBeforeQA         = new TH2F(Form("NLMAvsNLMB_beforeClusterQA %s",GetCutNumber().Data()),"NLMAvsNLMB_beforeClusterQA",10,0,10,10,0,10);
+//     fHistograms->Add(fHistNLMAvsNLMBBeforeQA);
     fHistNLMVsNCellsAfterQA         = new TH2F(Form("NLM_NCells_afterClusterQA %s",GetCutNumber().Data()),"NLM_NCells_afterClusterQA",10,0,10,50,0,50);
     fHistograms->Add(fHistNLMVsNCellsAfterQA);
     fHistNLMVsEAfterQA              = new TH2F(Form("NLM_E_afterClusterQA %s",GetCutNumber().Data()),"NLM_E_afterClusterQA",10,0,10,500,0,50);
@@ -596,7 +600,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistDispersionAfterQA->Sumw2();
       fHistNLMBeforeQA->Sumw2();
       fHistNLMAfterQA->Sumw2();
-      fHistNLMAvsNLMBBeforeQA->Sumw2();
+//       fHistNLMAvsNLMBBeforeQA->Sumw2();
       fHistNLMVsNCellsAfterQA->Sumw2();
       fHistNLMVsEAfterQA->Sumw2();
       if(fExtendedMatchAndQA > 1 || fIsPureCalo > 0){
@@ -802,7 +806,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterM20M02BeforeQA->Sumw2();
         fHistClusterM20M02AfterQA->Sumw2();
       }
-//----------------
+      //----------------
     }
   }
 
@@ -824,7 +828,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiExotics     = new TH2F(Form("EtaPhi_Exotics %s",GetCutNumber().Data()),"EtaPhi_Exotics",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
       fHistograms->Add(fHistClusterEtavsPhiExotics);
     }
-    fHistClusterEM02Exotics           = new TH2F(Form("EVsM02_Exotics %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",100,0,50,40,0,4);
+    fHistClusterEM02Exotics           = new TH2F(Form("EVsM02_Exotics %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",100,0,50,200,0,4);
     fHistograms->Add(fHistClusterEM02Exotics);
     fHistClusterEnergyvsNCellsExotics = new TH2F(Form("ClusterEnergyVsNCells_Exotics %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_Exotics",100,0,50,50,0,50);
     fHistograms->Add(fHistClusterEnergyvsNCellsExotics);
@@ -1068,7 +1072,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   
   Int_t nLM = GetNumberOfLocalMaxima(cluster, event);
-  Int_t nLMGustavo = fEMCALCaloUtils->GetNumberOfLocalMaxima(cluster, event->GetEMCALCells()) ;
+//   Int_t nLMGustavo = fEMCALCaloUtils->GetNumberOfLocalMaxima(cluster, event->GetEMCALCells()) ;
 //   cout << "mine: " << nLM << "\t Gustavo: " << nLMGustavo << endl;
   
   // Fill Histos before Cuts
@@ -1079,7 +1083,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fHistM20BeforeQA) fHistM20BeforeQA->Fill(cluster->GetM20(), weight);
   if(fHistDispersionBeforeQA) fHistDispersionBeforeQA->Fill(cluster->GetDispersion(), weight);
   if(fHistNLMBeforeQA) fHistNLMBeforeQA->Fill(nLM, weight);
-  if(fHistNLMAvsNLMBBeforeQA) fHistNLMAvsNLMBBeforeQA->Fill(nLM, nLMGustavo, weight);
+//   if(fHistNLMAvsNLMBBeforeQA) fHistNLMAvsNLMBBeforeQA->Fill(nLM, nLMGustavo, weight);
   if(fHistClusterEM02BeforeQA) fHistClusterEM02BeforeQA->Fill(cluster->E(),cluster->GetM02(), weight);
 
   AliVCaloCells* cells = NULL;
@@ -2056,7 +2060,7 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
   
   // check phi range
   if (fUsePhiCut ){
-        if (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut){
+    if (phiCluster < fMinPhiCut || phiCluster > fMaxPhiCut){
       if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
       return kFALSE;
     }
@@ -2246,12 +2250,12 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 }
 
 //________________________________________________________________________
-void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight, Bool_t doPlot){
+void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight, Bool_t isEMCalOnly){
 
   if( !fUseDistTrackToCluster ) return;
 
   // not yet fully implemented + tested for PHOS
-  if( fClusterType != 1) return;
+//   if( fClusterType != 1) return;
 
   fVectorMatchedClusterIDs.clear();
 
@@ -2278,15 +2282,38 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
     }
   }
 
+  // if not EMCal only reconstruction (-> hybrid PCM+EMCal), use only primary tracks for basic track matching procedure
+  AliESDtrackCuts *EsdTrackCuts = 0x0;
+  if(!isEMCalOnly && esdev){
+    // Using standard function for setting Cuts
+    Int_t runNumber = event->GetRunNumber();
+    // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+    if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+    // else if run2 data use 2015 PbPb cuts
+    }else if (runNumber>=209122){
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+    // else use 2011 version of track cuts
+    }else{
+      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+    }
+    EsdTrackCuts->SetMaxDCAToVertexZ(2);
+    EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+    EsdTrackCuts->SetPtRange(0.15);
+  }
+
 //  cout << "MatchTracksToClusters: " << event->GetNumberOfTracks() << ", " << fIsPureCalo << ", " << fUseDistTrackToCluster << endl;
 
   for (Int_t itr=0;itr<event->GetNumberOfTracks();itr++){
     AliExternalTrackParam *trackParam = 0;
     AliVTrack *inTrack = 0x0;
-//    cout << "-------------------------LOOPING: " << itr << endl;
     if(esdev){
       inTrack = esdev->GetTrack(itr);
+      if(!inTrack) continue;
       AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
+      if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
+         if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+      }
 
       const AliExternalTrackParam *in = esdt->GetInnerParam();
       if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
@@ -2305,84 +2332,34 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
         }
       }
 
+      if(!inTrack) continue;
       AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
-      Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
-      aodt->GetPxPyPz(pxpypz);
-      aodt->GetXYZ(xyz);
-      aodt->GetCovarianceXYZPxPyPz(cv);
-      trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
+      if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
+        if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+        if(fabs(aodt->Eta())>0.8) continue;
+        if(aodt->Pt()<0.15) continue;
+      }
     }
 
-    if (!trackParam) {AliError("Could not get TrackParameters, continue");continue;}
-    AliExternalTrackParam emcParam(*trackParam);
-    Float_t eta, phi, pt;
-
-    //propagate tracks to emc surfaces
-    if(fClusterType == 1){
-      if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 440., 0.139, 20., eta, phi, pt)) {
-        delete trackParam;
-        continue;
-      }
-
-      if( TMath::Abs(eta) > 0.75 ) {
-        delete trackParam;
-        continue;
-      }
-      // Save some time and memory in case of no DCal present
-      if( nModules < 13 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())){
-        delete trackParam;
-        continue;
-      }
-    }else if(fClusterType == 2){
-      if( !AliTrackerBase::PropagateTrackToBxByBz(&emcParam, 460., 0.139, 20, kTRUE, 0.8, -1)){
-        delete trackParam;
-        continue;
-      }
-//to do: implement of distance checks
-    }
-
-    Float_t dEta=-999, dPhi=-999;
+    AliCaloTrackMatcher* trackMatcherInstance = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
     Float_t clsPos[3] = {0.,0.,0.};
-    Double_t exPos[3] = {0.,0.,0.};
-    if (!emcParam.GetXYZ(exPos)) continue;
-
-//    cout << "-: " << trackParam << endl;
-//    cout << "eta/phi: " << eta << ", " << phi << endl;
-//    cout << "nClus: " << nClus << endl;
     for(Int_t iclus=0;iclus < nClus;iclus++){
       AliVCluster* cluster = event->GetCaloCluster(iclus);
       if (!cluster) continue;
-//      cout << "-------------------------LOOPING: " << iclus << ", " << cluster->GetID() << endl;
+      Float_t dEta, dPhi;
+      if(!trackMatcherInstance->GetTrackClusterMatchingResidual(inTrack->GetID(),cluster->GetID(),dEta,dPhi)) continue;
       cluster->GetPosition(clsPos);
-      Double_t dR = TMath::Sqrt(TMath::Power(exPos[0]-clsPos[0],2)+TMath::Power(exPos[1]-clsPos[1],2)+TMath::Power(exPos[2]-clsPos[2],2));
-      if (dR > 100) continue;
-      Double_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
-//      TVector3 vecC(clsPos);
-//      cout << "eta/phi: " << vecC.Eta() << ", " << vecC.Phi() << endl;
-      AliExternalTrackParam trackParamTmp(emcParam);//Retrieve the starting point every time before the extrapolation
-      if(fClusterType == 1){
-        if (!cluster->IsEMCAL()) continue;
-        if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, 0.139, 5., dEta, dPhi)) continue;
-      }else if(fClusterType == 2){
-        if (!cluster->IsPHOS()) continue;
-        if(!AliTrackerBase::PropagateTrackToBxByBz(&trackParamTmp, clusterR, 0.139, 5., kTRUE, 0.8, -1)) continue;
-        Double_t trkPos[3] = {0,0,0};
-        trackParamTmp.GetXYZ(trkPos);
-        TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-        TVector3 clsPosVec(clsPos);
-        dPhi = clsPosVec.DeltaPhi(trkPosVec);
-        dEta = clsPosVec.Eta()-trkPosVec.Eta();
-      }
-
+      Float_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
       Float_t dR2 = dPhi*dPhi + dEta*dEta;
 //      cout << "dEta/dPhi: " << dEta << ", " << dPhi << " - ";
 //      cout << dR2 << endl;
-      if(doPlot && fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2), weight);
-      if(doPlot && fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi, weight);
+      if(isEMCalOnly && fHistDistanceTrackToClusterBeforeQA)fHistDistanceTrackToClusterBeforeQA->Fill(TMath::Sqrt(dR2), weight);
+      if(isEMCalOnly && fHistClusterdEtadPhiBeforeQA) fHistClusterdEtadPhiBeforeQA->Fill(dEta, dPhi, weight);
+      if(isEMCalOnly && fHistClusterRBeforeQA) fHistClusterRBeforeQA->Fill(clusterR, weight);
 
       Float_t clusM02 = (Float_t) cluster->GetM02();
       Float_t clusM20 = (Float_t) cluster->GetM20();
-      if(doPlot && !fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
+      if(isEMCalOnly && !fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
         if(inTrack->Charge() > 0) {
           fHistClusterdEtadPhiPosTracksBeforeQA->Fill(dEta, dPhi, weight);
           fHistClusterdPhidPtPosTracksBeforeQA->Fill(dPhi, inTrack->Pt(), weight);
@@ -2407,22 +2384,35 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
 
       if(fUsePtDepTrackToCluster){
+        Float_t tempEta = 0.;
+        Float_t tempPhi = 0.;
+        if(!isEMCalOnly){
+          tempEta = fFuncPtDepEta->GetParameter(0);
+          tempPhi = fFuncPtDepPhi->GetParameter(0);
+          fFuncPtDepEta->SetParameter(0,tempEta/2);
+          fFuncPtDepPhi->SetParameter(0,tempPhi/2);
+        }
         if( TMath::Abs(dEta) < fFuncPtDepEta->Eval(inTrack->Pt())) match_dEta = kTRUE;
         else match_dEta = kFALSE;
 
         if( TMath::Abs(dPhi) < fFuncPtDepPhi->Eval(inTrack->Pt())) match_dPhi = kTRUE;
         else match_dPhi = kFALSE;
+
+        if(!isEMCalOnly){
+          fFuncPtDepEta->SetParameter(0,tempEta);
+          fFuncPtDepPhi->SetParameter(0,tempPhi);
+        }
       }
 
       if(match_dEta && match_dPhi){
         fVectorMatchedClusterIDs.push_back(cluster->GetID());
 //        cout << "MATCHED!!!!!!!!!!!!!!!!!!!!!!!!! - " << cluster->GetID() << endl;
-        if(doPlot){
+        if(isEMCalOnly){
           if(fHistClusterdEtadPtAfterQA) fHistClusterdEtadPtAfterQA->Fill(dEta,inTrack->Pt());
           if(fHistClusterdPhidPtAfterQA) fHistClusterdPhidPtAfterQA->Fill(dPhi,inTrack->Pt());
         }
         break;
-      } else if(doPlot){
+      } else if(isEMCalOnly){
         if(fHistDistanceTrackToClusterAfterQA)fHistDistanceTrackToClusterAfterQA->Fill(TMath::Sqrt(dR2), weight);
         if(fHistClusterdEtadPhiAfterQA) fHistClusterdEtadPhiAfterQA->Fill(dEta, dPhi, weight);
         if(fHistClusterRAfterQA) fHistClusterRAfterQA->Fill(clusterR, weight);
@@ -2436,6 +2426,11 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
     }
 
     delete trackParam;
+  }
+
+  if(EsdTrackCuts){
+    delete EsdTrackCuts;
+    EsdTrackCuts=0x0;
   }
 
   return;
@@ -3001,29 +2996,29 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = kTRUE;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.016, 0.007, 3.);
+      fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
 
       fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.06, 0.007, 3.);
+      fFuncPtDepPhi->SetParameters(0.075, 0.015, 2.);
       break;
     case 8:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = kTRUE;
       fUsePtDepTrackToCluster = kTRUE;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.025, 0.01, 3.);
+      fFuncPtDepEta->SetParameters(0.06, 0.010, 2.5);
 
       fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.08, 0.01, 3.);
+      fFuncPtDepPhi->SetParameters(0.15, 0.015, 2.);
       break;
     case 9:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       fUsePtDepTrackToCluster = kTRUE;
       fFuncPtDepEta = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.012, 0.005, 3.);
+      fFuncPtDepEta->SetParameters(0.06, 0.015, 2.5);
 
       fFuncPtDepPhi = new TF1("func", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.04, 0.005, 3.);
+      fFuncPtDepPhi->SetParameters(0.15, 0.020, 2.);
       break;
 
     default:

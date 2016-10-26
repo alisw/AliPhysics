@@ -49,6 +49,8 @@
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
 
+#include "AliPIDResponse.h"
+
 // root
 #include "TMath.h"
 #include "TFile.h"
@@ -153,6 +155,7 @@ fStoreMcTracklets(0),
 fStoreMcMuons(0),
 fStoreTrackInfo(0),
 fStorePidInfo(0),
+fStoreNsigma(kFALSE),
 fStoreAodDCAInfo(0),
 fStoreMuonOrigin(0),
 fApplyPhysicsSelectionCut(0),
@@ -275,6 +278,8 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   for (Int_t i=AliCFTreeMapping::kDCAxy; i<AliCFTreeMapping::kMappingTracks; i++) {
     if (fStoreAodDCAInfo) fMapping->MappingTracks()[i]=iParameter++; else fMapping->MappingTracks()[i]=-1;
   }
+  for (Int_t i=AliCFTreeMapping::kNsigmaTPCe; i<=AliCFTreeMapping::kNsigmaTOFp; i++)
+    fMapping->MappingTracks()[i] = fStoreNsigma ? iParameter++ : -1;
 
   iParameter=0; // Mapping Tracklets
   for (Int_t i=0; i<AliCFTreeMapping::kMappingTracklets; i++) {
@@ -542,33 +547,46 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
 
     if (fTracks) {
       fTracks->Clear();
-      Int_t countNch = 0;
-      Int_t countNch09 = 0;
-      Int_t countNch14 = 0;
+      fNchTPC = 0;
+
+      if (fInputEvent->InheritsFrom("AliAODEvent"))
+        fitssatrackcuts->ExtractAndSetPrimaryVertex(fInputEvent);
+
       for (Int_t ipart=0;ipart<fInputEvent->GetNumberOfTracks();ipart++){
-        AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(ipart);
-        if (!track) continue;
-        UInt_t mask = GetFilterMap(track);
-        if ( track->InheritsFrom("AliAODTrack") ) {
-	  fitssatrackcuts->ExtractAndSetPrimaryVertex(fInputEvent);
-	}
-        if(fTrackFilterBit==2){//we are saving only ITSsa, It's a muon_calo_production!
-          if((mask & (1<<1)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<0.9) countNch++; // with pt > 0.2 and within |eta|<0.9
-        }else if((mask & (1<<0)) && track->Pt()>0.2 && TMath::Abs(track->Eta())<0.9) countNch++; // with pt > 0.2 and within |eta|<0.9
+        const AliVTrack* track = (AliVTrack*) fInputEvent->GetTrack(ipart);
+        if (!track)
+          continue;
+        const UInt_t mask = GetFilterMap(track);
 
-	if ( !(mask==0 && fTrackFilterBit==0) ){ //this would apply the fbit selection only to tracks with mask defined
-	  if(!(mask & fTrackFilterBit))continue; //filter bit cut
-	}
-        else if ( track->InheritsFrom("AliAODTrack") && !(fitssatrackcuts->AcceptTrack((AliAODTrack*)track)) ) continue;
+        // count tracks with with pt > 0.2 and within |eta| < 0.9;
+        // if selecting only ITSsa tracks, count those, otherwise count all primaries
+        const Bool_t considerTrack = fTrackFilterBit == 2 ? mask & 0x2 : mask & 0x1;
+        if(considerTrack && (track->Pt() > 0.2) && (TMath::Abs(track->Eta()) < 0.9))
+          fNchTPC++;
 
-        if (track->InheritsFrom("AliAODTrack")) AddTrack(track,mask,0);
+        // track selection based on filter mask (if set)
+        // or ITSsa cuts
+	if (fTrackFilterBit != 0) {
+          if (mask & fTrackFilterBit == 0)
+            continue;
+        }
+        else if (track->InheritsFrom("AliAODTrack")) {
+          if (!fitssatrackcuts->AcceptTrack((AliAODTrack*)track))
+            continue;
+        }
+        else {
+          AliWarning("Track not covered by a selection cut, letting it pass ...");
+        }
+
+        if (track->InheritsFrom("AliAODTrack")) {
+          AddTrack(track,mask,0);
+        }
         else if (track->InheritsFrom("AliESDtrack")) {
           if (mask)                           AddTrack(track,mask,1);
           if (mask & fHybridConstrainedMask)  AddTrack(track,mask,2);
           if (mask & fTPConlyConstrainedMask) AddTrack(track,mask,3);
         }
       }
-      fNchTPC = countNch;
     }
 
     if (fTracklets){
@@ -721,6 +739,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
           Int_t additionalParameterIndex = 0;
           if (fStoreTrackInfo) additionalParameterIndex+=10;
           if (fStorePidInfo)   additionalParameterIndex+=3;
+          if (fStoreNsigma)    additionalParameterIndex+=8;
           if (fStoreMcTracks)  additionalParameterIndex+=1;
           additionalParameterIndex -= 1;
           for(Int_t jpart = 0; jpart<fTracks->GetEntriesFast(); jpart++)
@@ -795,7 +814,7 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
 
 
 //-----------------------------------------------------------------------------
-UInt_t AliAnalysisTaskCFTree::GetFilterMap(AliVTrack* track){
+UInt_t AliAnalysisTaskCFTree::GetFilterMap(const AliVTrack* track){
   UInt_t mask = 0;
   if (track->InheritsFrom("AliAODTrack")) {
     AliAODTrack* part = (AliAODTrack*) track;
@@ -824,7 +843,7 @@ UInt_t AliAnalysisTaskCFTree::GetFilterMap(AliVTrack* track){
 
 
 //-----------------------------------------------------------------------------
-AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVTrack* track, UInt_t mask, UInt_t flag){
+AliCFParticle* AliAnalysisTaskCFTree::AddTrack(const AliVTrack* track, UInt_t mask, UInt_t flag){
 
   // skip neutral mc trackicles
   Char_t charge = track->Charge();
@@ -868,6 +887,7 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVTrack* track, UInt_t mask, UI
   Int_t nAdditionalParameters = 0;
   if (fStoreTrackInfo) nAdditionalParameters+=10;
   if (fStorePidInfo)   nAdditionalParameters+=3;
+  if (fStoreNsigma)    nAdditionalParameters+=8;
   if (fStoreMcTracks)  nAdditionalParameters+=1;
   AliCFParticle* cftrack = new ((*fTracks)[fTracks->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,mask,nAdditionalParameters);
   if (fStoreTrackInfo && flag==0){
@@ -906,6 +926,30 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVTrack* track, UInt_t mask, UI
     cftrack->SetAt(ncl,fMapping->MappingTracks()[AliCFTreeMapping::kTPCsignalN]);
     cftrack->SetAt(dedx,fMapping->MappingTracks()[AliCFTreeMapping::kdEdx]);
     cftrack->SetAt(beta,fMapping->MappingTracks()[AliCFTreeMapping::kbeta]);
+  }
+
+  if (fStoreNsigma) {
+    const AliPIDResponse *pidResponse = ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+    if (pidResponse->CheckPIDStatus(AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) {
+      cftrack->SetAt(pidResponse->NumberOfSigmasTPC(track, AliPID::kElectron),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTPCe]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTPC(track, AliPID::kPion),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTPCpi]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTPC(track, AliPID::kKaon),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTPCk]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTPC(track, AliPID::kProton),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTPCp]);
+    }
+    if (pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
+      cftrack->SetAt(pidResponse->NumberOfSigmasTOF(track, AliPID::kElectron),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTOFe]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTOF(track, AliPID::kPion),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTOFpi]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTOF(track, AliPID::kKaon),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTOFk]);
+      cftrack->SetAt(pidResponse->NumberOfSigmasTOF(track, AliPID::kProton),
+                     fMapping->MappingTracks()[AliCFTreeMapping::kNsigmaTOFp]);
+    }
   }
 
   if(fStoreMcTracks)

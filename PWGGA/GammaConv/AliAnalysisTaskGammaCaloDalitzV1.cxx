@@ -57,6 +57,7 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliInputEventHandler.h"
+#include "AliCaloTrackMatcher.h"
 #include <vector>
 
 ClassImp(AliAnalysisTaskGammaCaloDalitzV1)
@@ -1667,7 +1668,11 @@ void AliAnalysisTaskGammaCaloDalitzV1::UserCreateOutputObjects(){
 		if((AliConvEventCuts*)fV0Reader->GetEventCuts())
 			if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms())
 				fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
-	
+
+    for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
+      AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i",iMatcherTask)));
+      if(temp) fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
+    }
 			
 	fElecSelector=(AliDalitzElectronSelector*)AliAnalysisManager::GetAnalysisManager()->GetTask("ElectronSelector");
 	if(!fElecSelector){printf("Error: No ElectronSelector");return;} // GetV0Reader

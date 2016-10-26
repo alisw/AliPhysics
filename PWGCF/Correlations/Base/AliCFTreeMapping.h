@@ -17,7 +17,8 @@ class AliCFTreeMapping : public TObject {
   AliCFTreeMapping();
   virtual ~AliCFTreeMapping();
 
-  enum {kStatus=0, kITSClusterMap, kTPCNCrossedRows, kTPCNclsF, kTPCnclsS,  kTPCncls, kChi2perNDF,kX, kY, kZ, kTPCsignalN, kdEdx, kbeta, kLabel, kDCAxy, kDCAz, kMappingTracks};
+  enum {kStatus=0, kITSClusterMap, kTPCNCrossedRows, kTPCNclsF, kTPCnclsS,  kTPCncls, kChi2perNDF,kX, kY, kZ, kTPCsignalN, kdEdx, kbeta, kLabel, kDCAxy, kDCAz,
+        kNsigmaTPCe, kNsigmaTPCpi, kNsigmaTPCk, kNsigmaTPCp, kNsigmaTOFe, kNsigmaTOFpi, kNsigmaTOFk, kNsigmaTOFp, kMappingTracks};
   enum {kTklptMC=0, kTkletaMC, kTklphiMC, kTklpdg, kMappingTracklets};
   enum {kMuonDCA=0, kMuonChi2perNDF, kMuonRabs, kMuonpDCA, kMuonMCPt, kMuonMCEta, kMuonMCPhi, kMuonMCPdg, kMuonMCprimPt, kMuonMCprimEta, kMuonMCprimPhi, kMuonMCprimPdg, kMuonMCoriginpt, kMuonMCoriginEta, kMuonMCoriginPhi, kMuonMCoriginPdg, kMappingMuons};
   enum {kMCindex=0, kMCLabel, kMCIsPhysPrim, kMCmotherpdg, kMappingMCTracks};

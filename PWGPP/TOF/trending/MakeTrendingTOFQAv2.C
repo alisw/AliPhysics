@@ -502,7 +502,16 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
       spreadPiDiffTimeErr=(hPionDiff->GetFunction("gaus"))->GetParError(2);
     }
   }
-
+  TCanvas *cTimeCalib = new TCanvas("cTimeCalib","cTimeCalib",800,600);
+  gStyle->SetOptStat(10);
+  gStyle->SetOptFit();
+  cTimeCalib->cd();
+  gPad->SetLogy();
+  MakeUpHisto(hPionDiff, "", 1, kBlue+1, 1); 
+  hPionDiff->Draw();
+  TString plotDir(".");
+  if (savePng) cTimeCalib->Print(Form("%s/%i_TOFtime.png", plotDir.Data(), runNumber));
+   
   //Retrieve plots for t-texp-t0
   TH1F * hDiffTimeT0fillPion=(TH1F*)pidList->FindObject("hExpTimePiFillSub_all"); 
   TH2F * hDiffTimeT0TOFPion1GeV=(TH2F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");
@@ -564,7 +573,6 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   MakeUpHisto(hResTOF, "", 1, kBlue+1, 1); 
   hResTOF->Draw();
 
-  TString plotDir(".");
   if (savePng) cTOFresolution->Print(Form("%s/%i_TOFresolution.png", plotDir.Data(), runNumber));
   if (saveHisto) {
     trendFile->cd();

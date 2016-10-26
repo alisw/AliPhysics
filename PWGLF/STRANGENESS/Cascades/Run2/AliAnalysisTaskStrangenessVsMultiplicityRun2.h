@@ -276,6 +276,10 @@ private:
     Float_t fTreeCascVarPosdEdx; //!
     Float_t fTreeCascVarBachdEdx; //!
 
+    Float_t fTreeCascVarNegTotMom; //!
+    Float_t fTreeCascVarPosTotMom; //!
+    Float_t fTreeCascVarBachTotMom; //!
+    
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
 
