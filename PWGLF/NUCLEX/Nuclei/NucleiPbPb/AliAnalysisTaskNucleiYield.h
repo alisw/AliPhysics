@@ -23,9 +23,11 @@
 #include "AliAnalysisTaskSE.h"
 #include <Rtypes.h>
 #include <TString.h>
+#include <TArrayD.h>
 #include <TArrayF.h>
 #include <AliPIDResponse.h>
 #include <AliPID.h>
+#include <TLorentzVector.h>
 #include "AliNuclexEventCuts.h"
 
 class TF1;
@@ -76,8 +78,6 @@ public:
   void SetRequireTrackLength(float len) { fRequireTrackLength = len; }
   void SetForceMassAndZ(float mass, float z = 1) { fPDGMass = mass; fPDGMassOverZ = mass / z; }
 
-  void SetCentralityLimits(float min, float max) { fRequireMinCentrality = min; fRequireMaxCentrality = max; }
-
   void SetCentBins (Int_t nbins, Float_t *bins);
   void SetDCABins (Int_t nbins, Float_t min, Float_t max);
   void SetDCABins (Int_t nbins, Float_t* bins);
@@ -86,7 +86,6 @@ public:
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
-  void SetPhiRegions (bool pos,int n, float *regions) { fPhiRegions[int(pos)].Set(n,regions); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
 
   void SetEnableLogarithmicBinning (bool useit) { fEnableLogAxisInPerformancePlots = useit; }
@@ -96,6 +95,7 @@ public:
   virtual void   Terminate(Option_t *);
 
   AliNuclexEventCuts fEventCut;
+  TArrayD            fTOFfunctionPars;
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
   AliAnalysisTaskNucleiYield &operator=(const AliAnalysisTaskNucleiYield &source);
@@ -111,6 +111,7 @@ private:
   TF1                  *fTOFfunction;           //!<! TOF signal function
 
   TList                *fList;                  ///<  Output list
+  TLorentzVector        fCutVec;                ///<  Vector used to perform some cuts
   Int_t                 fPDG;                   ///<  PDG code of the particle of interest
   Float_t               fPDGMass;               ///<  PDG mass
   Float_t               fPDGMassOverZ;          ///<  PDG mass over z
@@ -160,8 +161,6 @@ private:
   Float_t               fRequireTrackLength;    ///<  Cut on the track length
   Bool_t                fFixForLHC14a6;         ///<  Switch on/off the fix for the MC centrality distribution
 
-  Float_t               fRequireMinCentrality;  ///<  Max centrality
-  Float_t               fRequireMaxCentrality;  ///<  Min centrality
   Bool_t                fEnableFlattening;      ///<  Switch on/off the flattening
   Bool_t                fEnableLogAxisInPerformancePlots; ///< Switch on/off logarithmic bins
 
@@ -171,7 +170,6 @@ private:
   TArrayF               fPtBins;                ///<  Transverse momentum bins
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
-  TArrayF               fPhiRegions[2];            ///<  Azimuthal angle region where the analysis is performed
 
   // Event related histograms
   TH1F                 *fCentrality;            //!<! Events centrality distribution
@@ -196,8 +194,6 @@ private:
   // Data histograms
   TH3F                 *fATOFsignal;            //!<! *(Data only)* TOF signal for anti-matter
   TH3F                 *fATPCcounts;            //!<! *(Data only)* TPC counts for anti-matter
-  TH3F                 *fATOFphiSignal;         //!<! *(Data only)* TOF signal for anti-matter as a function of \f$\phi\f$
-  TH2F                 *fATPCphiCounts;         //!<! *(Data only)* TPC counts for anti-matter as a function of \f$\phi\f$
   TH2F                 *fATPCeLoss;             //!<! *(Data only)* TPC dE/dx for anti-matter
   TH3F                 *fMDCAxyTPC;             //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fMDCAzTPC;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
@@ -205,8 +201,6 @@ private:
   TH3F                 *fMDCAzTOF;              //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC+TOF tracks
   TH3F                 *fMTOFsignal;            //!<! *(Data only)* TOF signal for matter
   TH3F                 *fMTPCcounts;            //!<! *(Data only)* TPC counts for matter
-  TH3F                 *fMTOFphiSignal;         //!<! *(Data only)* TOF signal for matter as a function of \f$\phi\f$
-  TH2F                 *fMTPCphiCounts;         //!<! *(Data only)* TPC counts for matter as a function of \f$\phi\f$
   TH2F                 *fMTPCeLoss;             //!<! *(Data only)* TPC dE/dx for matter
   TH3F                 *fTOFtemplates[5];       //!<! *(Data only)* TOF signal templates for pi/k/p/d/t
 
