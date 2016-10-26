@@ -1,7 +1,7 @@
-void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *mode ="default"){
+void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *particleMode ="default", char* eventTrigger="kINT7"){
   
- 
-  TString stParticleMode(mode);
+  TString stEventTrigger(eventTrigger);
+  TString stParticleMode(particleMode);
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {Error("AddTask_dNdPtPbPb_TPCITS", "No analysis manager found.");return 0;}
@@ -41,7 +41,8 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *mode ="default"){
   task->SetUseMCInfo(hasMC);
 
   // trigger selection: MB
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(stEventTrigger.Contains("kINT7")) task->SelectCollisionCandidates(AliVEvent::kINT7);
+  else if(stEventTrigger.Contains("kMB")) task->SelectCollisionCandidates(AliVEvent::kMB);
 
 
   // Create cut analysis object  
@@ -58,16 +59,16 @@ void AddTask_dNdPtPbPb_TPCITS(Int_t cutMode =222 , char *mode ="default"){
   if(stParticleMode.Contains("Pion")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCPion);}
   else if (stParticleMode.Contains("Proton")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCProton);}
   else if (stParticleMode.Contains("Kaon")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCKaon);}
-  else if (stParticleMode.Contains("RemainingRest")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
+  else if (stParticleMode.Contains("RemainingRest")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCRemainingRest);}
   else if (stParticleMode.Contains("Rest")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCRest);}
+  else if (stParticleMode.Contains("SigmaPlus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
+  else if (stParticleMode.Contains("SigmaMinus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
+  else if (stParticleMode.Contains("XiMinus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
+  else if (stParticleMode.Contains("OmegaMinus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCOmegaMinus);}
   else if (stParticleMode.Contains("Plus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kPlus);}
   else if (stParticleMode.Contains("Minus")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMinus);}
-  else if (stParticleMode.Contains("SigmaPlus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaPlus);}
-  else if (stParticleMode.Contains("SigmaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCSigmaMinus);}
-  else if (stParticleMode.Contains("Electron")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCElectron);}
-  else if (stParticleMode.Contains("Muon")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCMuon);}
-  else if (stParticleMode.Contains("XiMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCXiMinus);}
-  else if (stParticleMode.Contains("OmegaMinus")){fdNdPtAnalysispp->SetParticleMode(AlidNdPtHelper::kMCOmegaMinus);}
+  else if (stParticleMode.Contains("Electron")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCElectron);}
+  else if (stParticleMode.Contains("Muon")){fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kMCMuon);}
   else{fdNdPtAnalysisPbPb->SetParticleMode(AlidNdPtHelper::kAllPart);}
   // Change binning
   const Int_t ptNbins = 81;
