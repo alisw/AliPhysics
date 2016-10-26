@@ -404,8 +404,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fShapesVarNames[9] = "OpeningAngle_Truth";
     fShapesVarNames[10] = "JetMultiplicity";
     fShapesVarNames[11] = "JetMultiplicity_Truth";
-    fShapesVarNames[12] = "OpeningAngle_SD";
-    fShapesVarNames[13] = "OpeningAngle_SD_Truth";
+    fShapesVarNames[12] = "OpeningAngleSD";
+    fShapesVarNames[13] = "OpeningAngleSD_Truth";
     fShapesVarNames[14] = "DeltaR";
     fShapesVarNames[15] = "DeltaR_Truth";
     fShapesVarNames[16] = "Frac1";
@@ -434,8 +434,8 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fShapesVarNames[9] = "OpeningAngle_Truth";
     fShapesVarNames[10] = "JetMultiplicity";
     fShapesVarNames[11] = "JetMultiplicity_Truth";
-    fShapesVarNames[12] = "OpeningAngle_SD";
-    fShapesVarNames[13] = "OpeningAngle_SD_Truth";
+    fShapesVarNames[12] = "OpeningAngleSD";
+    fShapesVarNames[13] = "OpeningAngleSD_Truth";
     
     for(Int_t ivar=0; ivar < nVarMin; ivar++){
       cout<<"looping over variables"<<endl;

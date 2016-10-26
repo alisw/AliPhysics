@@ -1322,8 +1322,6 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   fj::PseudoJet Soft_Dropped_Jet=Soft_Drop(fFilteredJets[0]);
   Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().delta_R();
 
-  
-   cout << "Before Nsubjettiness fjwrapper result returned" <<endl; 
   if (Option==0) return Result;
   else if (Option==1 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
   else if (Option==2 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
