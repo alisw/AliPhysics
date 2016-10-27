@@ -1935,7 +1935,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessClusters()
 		else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
 
 		if ( !clus ) continue;
-		if ( !((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fIsMC) ){ delete clus; continue;}
+		if ( !((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,1.,i) ){ delete clus; continue;}
 		
 		// TLorentzvector with cluster
 		TLorentzVector clusterVector;
