@@ -1430,13 +1430,17 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if ( classification == 3)
       fHistClusterTMEffiInput->Fill(cluster->E(), 5); // Ga cl sub ch match      
 
-    vector<Int_t> labelsMatchedTracks     = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
-                                                                                            fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-    if (classification < 4)
-      fHistClusterENMatchesNeutral->Fill(cluster->E(), labelsMatchedTracks.size());
+    Int_t nlabelsMatchedTracks      = 0;
+    if (!fUsePtDepTrackToCluster)
+      nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
+                                                                                       fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
     else 
-      fHistClusterENMatchesCharged->Fill(cluster->E(), labelsMatchedTracks.size());
-    labelsMatchedTracks.clear();
+      nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
+    if (classification < 4)
+      fHistClusterENMatchesNeutral->Fill(cluster->E(), nlabelsMatchedTracks);
+    else 
+      fHistClusterENMatchesCharged->Fill(cluster->E(), nlabelsMatchedTracks);
+    
   }  
   
   
@@ -1459,8 +1463,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         if ( classification == 3)
           fHistClusterTMEffiInput->Fill(cluster->E(), 15); // Ga cl sub ch match
 
-        vector<Int_t> labelsMatchedTracks     = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
-                                                                                                fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+        vector<Int_t> labelsMatchedTracks;
+        if (!fUsePtDepTrackToCluster)
+          labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
+                                                                                          fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+        else 
+          labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
+        
         Int_t idHighestPt = -1;
         Double_t ptMax    = -1;
         Double_t eMax     = -1;
@@ -1491,12 +1500,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           fHistClusterEvsTrackECharged->Fill(cluster->E(), eMax);
           if (foundLead ){
             fHistClusterTMEffiInput->Fill(cluster->E(), 10); //Ch cl match w lead
-            fHistClusterEvsTrackECharged->Fill(cluster->E(), eLead);
+            fHistClusterEvsTrackEChargedLead->Fill(cluster->E(), eLead);
           }
         }    
         if (classification == 4){
           fHistClusterEvsTrackEConv->Fill(cluster->E(), eMax);
-          if (foundLead )
+          if (foundLead)
           fHistClusterTMEffiInput->Fill(cluster->E(), 17); //conv cl match w lead
         }
         if (classification == 0 )
