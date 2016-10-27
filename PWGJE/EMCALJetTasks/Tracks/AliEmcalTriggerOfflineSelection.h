@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
+#include <TString.h>
 
 class TClonesArray;
 class TH2;
@@ -42,7 +43,7 @@ namespace EMCalTriggerPtAnalysis {
  * Attention: This class takes over ownership and expects the histogram to not belong to a
  * directory. In case no acceptance map is providede, no acceptance mimicing is applied.
  */
-class AliEmcalTriggerOfflineSelection {
+class AliEmcalTriggerOfflineSelection : public TObject {
 public:
   /**
    * @enum EmcalTriggerClass
@@ -126,7 +127,15 @@ public:
    */
   static Bool_t IsDCAL(EmcalTriggerClass cls);
 
+  /**
+   * Get the name of the trigger class as string representation
+   * @param[in] cls EMCAL/DCAL trigger class
+   * @return Name of the trigger class
+   */
+  static const TString &GetTriggerName(EmcalTriggerClass cls) { return fgkTriggerNames[cls]; }
+
 protected:
+  static const TString        fgkTriggerNames[kTrgn];                     ///< Names of the various trigger classes
   Double_t                    fOfflineEnergyThreshold[kTrgn];             ///< Thresholds applied on offline energy
   const TH2                   *fAcceptanceMaps[kTrgn];                    ///< Online acceptance distribution
 
