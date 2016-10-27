@@ -150,9 +150,9 @@ void AliAnalysisTaskEmcalJetSample::AllocateCellHistograms()
 
   fHistManager.CreateHistoGroup(groupname);
   for (Int_t cent = 0; cent < fNcentBins; cent++) {
-    histname = TString::Format("%s/histCellEnergyvsAbsId_%d", groupname.Data(), cent);
-    histtitle = TString::Format("%s;cell abs. ID;#it{E}_{cell} (GeV);counts", histname.Data());
-    fHistManager.CreateTH2(histname, histtitle, 20000, 0, 20000, fNbins / 2, fMinBinPt, fMaxBinPt / 2);
+    histname = TString::Format("%s/histCellEnergy_%d", groupname.Data(), cent);
+    histtitle = TString::Format("%s;#it{E}_{cell} (GeV);counts", histname.Data());
+    fHistManager.CreateTH1(histname, histtitle, 300, 0, 150);
 
     histname = TString::Format("%s/histNCells_%d", groupname.Data(), cent);
     histtitle = TString::Format("%s;number of cells;events", histname.Data());
@@ -453,12 +453,11 @@ void AliAnalysisTaskEmcalJetSample::DoCellLoop()
   histname = TString::Format("%s/histNCells_%d", fCaloCellsName.Data(), fCentBin);
   fHistManager.FillTH1(histname, ncells);
 
-  histname = TString::Format("%s/histCellEnergyvsAbsId_%d", fCaloCellsName.Data(), fCentBin);
+  histname = TString::Format("%s/histCellEnergy_%d", fCaloCellsName.Data(), fCentBin);
   for (Short_t pos = 0; pos < ncells; pos++) {
     Double_t amp   = fCaloCells->GetAmplitude(pos);
-    Short_t absId  = fCaloCells->GetCellNumber(pos);
-
-    fHistManager.FillTH2(histname, absId, amp);
+    
+    fHistManager.FillTH1(histname, amp);
   }
 }
 
