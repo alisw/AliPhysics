@@ -24,6 +24,7 @@
 #include "AliEMCALRecoUtils.h"
 #include "AliAODCaloCluster.h"
 #include "AliCalorimeterUtils.h"
+#include "AliCaloTrackMatcher.h"
 #include <vector>
 
 
@@ -247,6 +248,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TList      *fHistograms;
     TList      *fHistExtQA;
 
+    AliCaloTrackMatcher* fCaloTrackMatcher;             // pointer to CaloTrackMatcher
     AliEMCALGeometry*   fGeomEMCAL;                     // pointer to EMCAL geometry
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
     AliCalorimeterUtils* fEMCALCaloUtils;               // pointer to CalorimeterUtils for EMCal
@@ -409,7 +411,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,31)
+    ClassDef(AliCaloPhotonCuts,32)
 };
 
 #endif
