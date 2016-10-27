@@ -1078,7 +1078,9 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
                   ipbins =1000;
 
                 }
-
+              //High-res 2d templates/  low-res 3d
+              if(id==0)  ipbins =3000;
+              else if (id==1)ipbins=200;
               if((fIsPythia||(!fIsPythia && ifl==4))/*&&(!fCorrrectionSamplingMode)*/)  AddHistogramm(Form("%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
                                                                                                       Form("%s%s%s%s%s%s;;",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
                                                                                                       ptbins,ptlow,pthigh,ipbins,iplow,iphigh);
