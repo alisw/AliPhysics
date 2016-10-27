@@ -76,8 +76,6 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
 ) {
   
   Int_t isHeavyIon = 2;
-  Bool_t runJetJetAndQAwithCaloPhotonCuts = kFALSE;
-  if(isMC == 2 && enableExtMatchAndQA > 1) runJetJetAndQAwithCaloPhotonCuts = kTRUE;
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr           = AliAnalysisManager::GetAnalysisManager();
@@ -273,7 +271,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
-    analysisClusterCuts[i]        = new AliCaloPhotonCuts(runJetJetAndQAwithCaloPhotonCuts);
+    analysisClusterCuts[i]        = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
@@ -283,7 +281,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
-    analysisClusterMergedCuts[i]  = new AliCaloPhotonCuts(runJetJetAndQAwithCaloPhotonCuts);
+    analysisClusterMergedCuts[i]  = new AliCaloPhotonCuts(isMC);
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
     analysisClusterMergedCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterMergedCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);

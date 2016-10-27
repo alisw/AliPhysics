@@ -400,7 +400,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                 = 1,      
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
   
-    analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
+    analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
