@@ -85,6 +85,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
   
     TF1*                        fPtParametrization[13];           //!
     TF1*                        fPtParametrizationProton;         //!
+    TF1*                        fPtParametrizationPi0;            //!
     TObjString*                 fCocktailSettings[9];             //!
     TH1D*                       fMtScalingFactors;                //!
   
@@ -92,7 +93,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     AliAnalysisTaskHadronicCocktailMC(const AliAnalysisTaskHadronicCocktailMC&);              // Prevent copy-construction
     AliAnalysisTaskHadronicCocktailMC &operator=(const AliAnalysisTaskHadronicCocktailMC&);   // Prevent assignment
   
-    ClassDef(AliAnalysisTaskHadronicCocktailMC, 2);
+    ClassDef(AliAnalysisTaskHadronicCocktailMC, 3);
 };
 
 #endif
