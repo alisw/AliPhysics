@@ -50,16 +50,9 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
     
     if(Is2015){
         
-        gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/macros/AddTaskFlowQnVectorCorrections.C");
-        AliAnalysisDataContainer *corrTask = AddTaskFlowQnVectorCorrections();
-        
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
         AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut,UseNewEP,period);
-        
-        
-//        taskMB->SetExpectedCorrectionPass(szCorrectionPass.Data());
-//        taskMB->SetAlternativeCorrectionPass(szAltCorrectionPass.Data());
-        
+
         mgr->AddTask(taskMB);
         
         taskMB->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -74,6 +67,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
         AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(name1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
         mgr->ConnectInput(taskMB, 0, cinput);
+//        mgr->ConnectInput(taskMB, 1, corrTask);
         mgr->ConnectOutput(taskMB, 1, coutput1);
     }
     

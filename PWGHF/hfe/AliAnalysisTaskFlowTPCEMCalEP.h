@@ -71,6 +71,7 @@ public:
     void GetWeightAndDecay(TParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
     Bool_t InclElecTrackCuts(AliAODTrack *ietrack);
     Bool_t AssElecTrackCuts(AliAODTrack *aetrack);
+    const AliQnCorrectionsQnVector *GetQnVectorFromList( const TList *list,const char *subdetector,const char *expectedstep,const char *altstep);
     void InitParameters();
     
     
@@ -82,7 +83,7 @@ public:
     Double_t GetSigmaEMCalMC(Double_t EoverP, Double_t pt, Int_t iCent) const;
     
     Double_t GetCentWeight(Int_t centbin);
-    Double_t GetEPweight(Int_t bin);
+    Double_t GetEPweight(Int_t bin, Int_t iCent);
     Bool_t   RejectEvent(Double_t cent, Int_t centbin);
     Bool_t   RejectEventPlane(Double_t EP, Int_t EPbin);
     Bool_t   IsFromHFdecay(TParticle *particle);
