@@ -81,6 +81,7 @@ set(SRCS
     AliMCVertex.cxx
     AliMergeableCollection.cxx
     AliMixedEvent.cxx
+    AliMultSelectionBase.cxx
     AliNeutralTrackParam.cxx
     AliOADBContainer.cxx
     AliPDG.cxx
