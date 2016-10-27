@@ -646,6 +646,19 @@ bool AliFemtoV0TrackCutNSigmaFilter::IsMisIDK0s(const AliFemtoV0* aV0)
     if(aV0->MassK0Short()<fInvMassRejectK0sMin || aV0->MassK0Short()>fInvMassRejectK0sMax) return false;
     if(!fK0sRejectionFilters[0].Pass(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) return false;
     if(!fK0sRejectionFilters[1].Pass(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) return false;
+
+    //TODO: Currently testing the addition of the following final cut
+    // At this point, the V0 passes as both a (Anti)Lambda (particle of interest) and a K0Short (MisID to be removed)
+    // For now, use mass to decide winner
+    double tK0ShortMass = 0.497614, tLambdaMass = 1.115683;
+    if((fParticleType==kLambda) && (TMath::Abs(aV0->MassLambda()-tLambdaMass) < TMath::Abs(aV0->MassK0Short()-tK0ShortMass))) return false;
+    else if((fParticleType==kAntiLambda) && (TMath::Abs(aV0->MassAntiLambda()-tLambdaMass) < TMath::Abs(aV0->MassK0Short()-tK0ShortMass))) return false;
+    else
+    {
+      cerr << "E-AliFemtoV0TrackCutNSigmaFilter::IsMisIDK0s: Invalid fParticleType "
+              "selection '" << fParticleType << "'.  This method should only be used when selecting Lambdas or AntiLambdas!!!!!" << endl;
+    }
+
     return true;
   }
   else return AliFemtoV0TrackCut::IsMisIDK0s(aV0);
@@ -658,6 +671,13 @@ bool AliFemtoV0TrackCutNSigmaFilter::IsMisIDLambda(const AliFemtoV0* aV0)
     if(aV0->MassLambda()<fInvMassRejectLambdaMin || aV0->MassLambda()>fInvMassRejectLambdaMax) return false;
     if(!fLambdaRejectionFilters[0].Pass(aV0->PtPos(), aV0->PosNSigmaTPCP(), aV0->PosNSigmaTOFP())) return false;
     if(!fLambdaRejectionFilters[1].Pass(aV0->PtNeg(), aV0->NegNSigmaTPCPi(), aV0->NegNSigmaTOFPi())) return false;
+
+    //TODO: Currently testing the addition of the following final cut
+    // At this point, the V0 passes as both a K0Short (particle of interest) and a Lambda (MisID to be removed)
+    // For now, use mass to decide winner
+    double tK0ShortMass = 0.497614, tLambdaMass = 1.115683;
+    if(TMath::Abs(aV0->MassK0Short()-tK0ShortMass) < TMath::Abs(aV0->MassLambda()-tLambdaMass)) return false;
+
     return true;
   }
   else return AliFemtoV0TrackCut::IsMisIDLambda(aV0);
@@ -669,6 +689,13 @@ bool AliFemtoV0TrackCutNSigmaFilter::IsMisIDAntiLambda(const AliFemtoV0* aV0)
     if(aV0->MassAntiLambda()<fInvMassRejectAntiLambdaMin || aV0->MassAntiLambda()>fInvMassRejectAntiLambdaMax) return false;
     if(!fAntiLambdaRejectionFilters[0].Pass(aV0->PtPos(), aV0->PosNSigmaTPCPi(), aV0->PosNSigmaTOFPi())) return false;
     if(!fAntiLambdaRejectionFilters[1].Pass(aV0->PtNeg(), aV0->NegNSigmaTPCP(), aV0->NegNSigmaTOFP())) return false;
+
+    //TODO: Currently testing the addition of the following final cut
+    // At this point, the V0 passes as both a K0Short (particle of interest) and a AntiLambda (MisID to be removed)
+    // For now, use mass to decide winner
+    double tK0ShortMass = 0.497614, tLambdaMass = 1.115683;
+    if(TMath::Abs(aV0->MassK0Short()-tK0ShortMass) < TMath::Abs(aV0->MassAntiLambda()-tLambdaMass)) return false;
+
     return true;
   }
   else return AliFemtoV0TrackCut::IsMisIDAntiLambda(aV0);
