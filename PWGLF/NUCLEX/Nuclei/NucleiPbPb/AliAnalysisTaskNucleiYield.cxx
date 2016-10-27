@@ -36,7 +36,7 @@
 #include "AliAODVertex.h"
 
 #define LIGHT_SPEED 2.99792457999999984e-02 // in the units that TOF likes
-#define EPS 1.e-15
+#define EPS 1.e-16
 
 using TMath::TwoPi;
 
@@ -88,85 +88,73 @@ static void BinLogAxis(const TH1 *h) {
 ///
 AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
-  ,fList(0x0)
-  ,fCutVec()
-  ,fPDG(0x0)
-  ,fPDGMass(0)
-  ,fPDGMassOverZ(0)
-  ,fCharge(1.f)
-  ,fIsMC(kFALSE)
-  ,fPID(0x0)
-  ,fMagField(0.f)
-  ,fDCAzLimit(10.)
-  ,fDCAzNbins(400)
-  ,fPtCorrectionA(3)
-  ,fPtCorrectionM(3)
-  ,fTOFlowBoundary(-2.4)
-  ,fTOFhighBoundary(3.6)
-  ,fTOFnBins(75)
-  ,fDisableITSatHighPt(100.f)
-  ,fDisableTPCpidAtHighPt(100.f)
-  ,fEnablePerformance(kFALSE)
-  ,fEnablePtCorrection(kTRUE)
-  ,fRequireITSrefit(kTRUE)
-  ,fRequireTPCrefit(kTRUE)
-  ,fRequireNoKinks(kTRUE)
-  ,fRequireITSrecPoints(2u)
-  ,fRequireITSsignal(0u)
-  ,fRequireSDDrecPoints(0u)
-  ,fRequireSPDrecPoints(1u)
-  ,fRequireTPCrecPoints(70u)
-  ,fRequireTPCsignal(70u)
-  ,fRequireEtaMin(-0.8f)
-  ,fRequireEtaMax(0.8f)
-  ,fRequireYmin(-0.5f)
-  ,fRequireYmax(0.5f)
-  ,fRequireMaxChi2(4.f)
-  ,fRequireMaxDCAxy(0.5f)
-  ,fRequireMaxDCAz(1.f)
-  ,fRequireTPCpidSigmas(3.f)
-  ,fRequireITSpidSigmas(-1.f)
-  ,fRequireTOFpidSigmas(-1.f)
-  ,fRequireMinEnergyLoss(0.)
-  ,fRequireMagneticField(0)
-  ,fRequireVetoSPD(kFALSE)
-  ,fRequireMaxMomentum(-1.)
-  ,fRequireTrackLength(350.f)
-  ,fFixForLHC14a6(kTRUE)
-  ,fParticle(AliPID::kUnknown)
-  ,fCentBins(0x0)
-  ,fDCABins(0x0)
-  ,fPtBins(0x0)
-  ,fCustomTPCpid(0)
-  ,fFlatteningProbs(0)
-  ,fCentrality(0x0)
-  ,fFlattenedCentrality(0x0)
-  ,fCentralityClasses(0x0)
-  ,fProduction(0x0)
-  ,fAITS_TPC(0x0)
-  ,fAITS_TPC_TOF(0x0)
-  ,fATotal(0x0)
-  ,fAPtCorrection(0x0)
-  ,fMITS_TPC(0x0)
-  ,fMITS_TPC_TOF(0x0)
-  ,fMTotal(0x0)
-  ,fMPtCorrection(0x0)
-  ,fMDCAPrimaryTPC(0x0)
-  ,fMDCASecondaryTPC(0x0)
-  ,fMDCAPrimaryTOF(0x0)
-  ,fMDCASecondaryTOF(0x0)
-  ,fATOFsignal(0x0)
-  ,fATPCcounts(0x0)
-  ,fATPCeLoss(0x0)
-  ,fMDCAxyTPC(0x0)
-  ,fMDCAzTPC(0x0)
-  ,fMDCAxyTOF(0x0)
-  ,fMDCAzTOF(0x0)
-  ,fMTOFsignal(0x0)
-  ,fMTPCcounts(0x0)
-  ,fMTPCeLoss(0x0)
-   ,fEnableFlattening(true)
-   ,fEnableLogAxisInPerformancePlots(true) {
+  ,fEventCut{new AliNuclexEventCuts}
+   ,fList{nullptr}
+   ,fCutVec{}
+   ,fPDG{0}
+   ,fPDGMass{0}
+   ,fPDGMassOverZ{0}
+   ,fCharge{1.f}
+   ,fIsMC{false}
+   ,fPID{nullptr}
+   ,fMagField{0.f}
+   ,fDCAzLimit{10.}
+   ,fDCAzNbins{400}
+   ,fPtCorrectionA{3}
+   ,fPtCorrectionM{3}
+   ,fTOFlowBoundary{-2.4}
+   ,fTOFhighBoundary{3.6}
+   ,fTOFnBins{75}
+   ,fDisableITSatHighPt{100.f}
+   ,fDisableTPCpidAtHighPt{100.f}
+   ,fEnablePtCorrection{false}
+   ,fRequireITSrefit{true}
+   ,fRequireTPCrefit{true}
+   ,fRequireNoKinks{true}
+   ,fRequireITSrecPoints{2u}
+   ,fRequireITSsignal{0u}
+   ,fRequireSDDrecPoints{0u}
+   ,fRequireSPDrecPoints{1u}
+   ,fRequireTPCrecPoints{70u}
+   ,fRequireTPCsignal{70u}
+   ,fRequireEtaMin{-0.8f}
+   ,fRequireEtaMax{0.8f}
+   ,fRequireYmin{-0.5f}
+   ,fRequireYmax{0.5f}
+   ,fRequireMaxChi2{4.f}
+   ,fRequireMaxDCAxy{0.5f}
+   ,fRequireMaxDCAz{1.f}
+   ,fRequireTPCpidSigmas{3.f}
+   ,fRequireITSpidSigmas{-1.f}
+   ,fRequireTOFpidSigmas{-1.f}
+   ,fRequireMinEnergyLoss{0.}
+   ,fRequireVetoSPD{false}
+   ,fRequireMaxMomentum{-1.}
+   ,fRequireTrackLength{350.f}
+   ,fFixForLHC14a6{true}
+   ,fParticle{AliPID::kUnknown}
+   ,fCentBins{0}
+   ,fDCABins{0}
+   ,fPtBins{0}
+   ,fCustomTPCpid{0}
+   ,fFlatteningProbs{0}
+   ,fFlattenedCentrality{nullptr}
+   ,fCentralityClasses{nullptr}
+   ,fProduction{nullptr}
+   ,fReconstructed{{nullptr}}
+   ,fTotal{nullptr}
+   ,fPtCorrection{nullptr}
+   ,fDCAPrimary{{nullptr}}
+   ,fDCASecondary{{nullptr}}
+   ,fDCASecondaryWeak{{nullptr}}
+   ,fTOFsignal{nullptr}
+   ,fTPCcounts{nullptr}
+   ,fTPCeLoss{nullptr}
+   ,fDCAxy{{nullptr}}
+   ,fDCAz{{nullptr}}
+   ,fTOFtemplates{nullptr}
+   ,fEnableFlattening{true}
+   ,fEnableLogAxisInPerformancePlots{true} {
      gRandom->SetSeed(0); //TODO: provide a simple method to avoid "complete randomness"
      Float_t aCorrection[3] = {-2.10154e-03,-4.53472e-01,-3.01246e+00};
      Float_t mCorrection[3] = {-2.00277e-03,-4.93461e-01,-3.05463e+00};
@@ -198,58 +186,44 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   const Float_t *centBins = fCentBins.GetArray();
   const Float_t *dcaBins = fDCABins.GetArray();
 
-  fCentrality = new TH1F("fCentrality",";Centrality (%);Events / 1%;",100,0.,100.);
   fCentralityClasses = new TH1F("fCentralityClasses",";Centrality classes(%);Events / Class;",
       nCentBins,centBins);
   fFlattenedCentrality = new TH1F("fFlattenCentrality","After the flattening;Centrality (%); \
       Events / 1%;",100,0.,100.);
-  fList->Add(fCentrality);
   fList->Add(fCentralityClasses);
   fList->Add(fFlattenedCentrality);
 
+  char   letter[2] = {'A','M'};
+  string tpctof[2] = {"TPC","TOF"};
+  string tpctofMC[2] = {"TPC","TPC_TOF"};
+
   if (fIsMC) {
-    fMTotal = new TH2F("fMTotal",";Centrality (%);p_{T} (GeV/c); Counts",
-        nCentBins,centBins,nPtBins,pTbins);
-    fATotal = new TH2F("fATotal",";Centrality (%);p_{T} (GeV/c); Counts",
-        nCentBins,centBins,nPtBins,pTbins);
-    fMITS_TPC = new TH2F("fMITS_TPC",";Centrality (%);p_{T} (GeV/c); Counts",
-        nCentBins,centBins,nPtBins,pTbins);
-    fAITS_TPC = new TH2F("fAITS_TPC",";Centrality (%);p_{T} (GeV/c); Counts",
-        nCentBins,centBins,nPtBins,pTbins);
-    fMITS_TPC_TOF = new TH2F("fMITS_TPC_TOF",";Centrality (%);p_{T} (GeV/c); Counts",
-        nCentBins,centBins,nPtBins,pTbins);
-    fAITS_TPC_TOF = new TH2F("fAITS_TPC_TOF",";Centrality (%);p_{T} (GeV/c); Counts",
-        nCentBins,centBins,nPtBins,pTbins);
-    fMDCAPrimaryTPC = new TH3F("fMDCAPrimaryTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
-        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-    fMDCASecondaryTPC = new TH3F("fMDCASecondaryTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
-        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-    fMDCAPrimaryTOF = new TH3F("fMDCAPrimaryTOF",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
-        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-    fMDCASecondaryTOF = new TH3F("fMDCASecondaryTOF",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
-        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-    fAPtCorrection = new TH2F("fAPtCorrection",
-        ";p_{T}^{rec} (GeV/c);p_{T}^{MC}-p_{T}^{rec} (GeV/c);Entries",
-        160,0.4,6.,80,-1.,1.);
-    fMPtCorrection = new TH2F("fMPtCorrection",
-        ";p_{T}^{rec} (GeV/c);p_{T}^{MC}-p_{T}^{rec} (GeV/c);Entries",
-        160,0.4,6.,80,-1.,1.);
     fProduction = new TH1F("fProduction",";p (GeV/c);Entries",100,-10,10);
-
     fList->Add(fProduction);
-    fList->Add(fMTotal);
-    fList->Add(fATotal);
-    fList->Add(fMITS_TPC);
-    fList->Add(fAITS_TPC);
-    fList->Add(fMITS_TPC_TOF);
-    fList->Add(fAITS_TPC_TOF);
-    fList->Add(fMDCAPrimaryTPC);
-    fList->Add(fMDCASecondaryTPC);
-    fList->Add(fMDCAPrimaryTOF);
-    fList->Add(fMDCASecondaryTOF);
-    fList->Add(fAPtCorrection);
-    fList->Add(fMPtCorrection);
 
+    for (int iC = 0; iC < 2; ++iC) {
+      fTotal[iC] = new TH2F(Form("f%cTotal",letter[iC]),";Centrality (%);p_{T} (GeV/c); Counts",
+          nCentBins,centBins,nPtBins,pTbins);
+      fPtCorrection[iC] = new TH2F(Form("f%cPtCorrection",letter[iC]),
+          ";p_{T}^{rec} (GeV/c);p_{T}^{MC}-p_{T}^{rec} (GeV/c);Entries",
+          160,0.4,6.,80,-1.,1.);
+      fList->Add(fTotal[iC]);
+      fList->Add(fPtCorrection[iC]);
+      for (int iT = 0; iT < 2; ++iT) {
+        fReconstructed[iT][iC] = new TH2F(Form("f%cITS_%s",letter[iC],tpctofMC[iT].data()),";Centrality (%);p_{T} (GeV/c); Counts",
+            nCentBins,centBins,nPtBins,pTbins);
+        fDCAPrimary[iT][iC] = new TH3F(Form("f%cDCAPrimary%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+            nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
+        fDCASecondary[iT][iC] = new TH3F(Form("f%cDCASecondary%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+            nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
+        fDCASecondaryWeak[iT][iC] = new TH3F(Form("f%cDCASecondaryWeak%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+            nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
+        fList->Add(fReconstructed[iT][iC]);
+        fList->Add(fDCAPrimary[iT][iC]);
+        fList->Add(fDCASecondary[iT][iC]);
+        fList->Add(fDCASecondaryWeak[iT][iC]);
+      }
+    }
   } else {
 
     float tofBins[fTOFnBins + 1];
@@ -260,55 +234,35 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     const float deltaDCAz = 2.f * fDCAzLimit / fDCAzNbins;
     for (int i = 0; i <= fDCAzNbins; ++i)
       dcazBins[i] = i * deltaDCAz - fDCAzLimit;
-    const int nTpcBins = 40;
-    float tpcBins[nTpcBins + 1];
-    for (int i = 0; i <= nTpcBins; ++i) {
-      tpcBins[i] = -4.f + i * 0.2f;
-    }
-    const int nTPCptBins = 30;
-    float tpcPtBins[nTPCptBins + 1];
-    for (int i = 0; i <= nTPCptBins; ++i) {
-      tpcPtBins[i] = 0.5 + 0.05 * i;
-    }
-    const int nTPCeLossBins = 800;
-    float tpcElossBins[nTPCeLossBins + 1];
-    for (int i = 0; i <= nTPCeLossBins; ++i) {
-      tpcElossBins[i] = i * 2.f;
-    }
-
     const int nSigmaBins = 240;
     float sigmaBins[nSigmaBins + 1];
     for (int i = 0; i <= nSigmaBins; ++i)
       sigmaBins[i] = -6.f + i * 0.05;
 
-    fATOFsignal = new TH3F("fATOFsignal",
-        ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
-        nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fATPCcounts = new TH3F("fATPCcounts",";Centrality (%);p_{T} (GeV/c); n_{#sigma} d",
-        nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
-    fMDCAxyTPC = new TH3F("fMDCAxyTPC",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
-        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-    fMDCAzTPC = new TH3F("fMDCAzTPC",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
-        nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
-    fMDCAxyTOF = new TH3F("fMDCAxyTOF",";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
-        nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
-    fMDCAzTOF = new TH3F("fMDCAzTOF",";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
-        nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
-    fMTOFsignal = new TH3F("fMTOFsignal",
-        ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
-        nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
-    fMTPCcounts = new TH3F("fMTPCcounts",";Centrality (%);p_{T} (GeV/c); n_{#sigma} d",
-        nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+    for (int iC = 0; iC < 2; ++iC) {
+      fTOFsignal[iC] = new TH3F(Form("f%cTOFsignal",letter[iC]),
+          ";Centrality (%);p_{T} (GeV/c);m_{TOF}^{2}-m_{PDG}^{2} (GeV/c^{2})^{2}",
+          nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
+      fTPCcounts[iC] = new TH3F(Form("f%cTPCcounts",letter[iC]),";Centrality (%);p_{T} (GeV/c); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,nSigmaBins,sigmaBins);
+      fTPCeLoss[iC] = new TH2F(Form("f%cTPCeLoss",letter[iC]),";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
+          2400,0,2400);
+      if (fEnableLogAxisInPerformancePlots)
+        BinLogAxis(fTPCeLoss[iC]);
 
+      fList->Add(fTOFsignal[iC]);
+      fList->Add(fTPCeLoss[iC]);
+      fList->Add(fTPCcounts[iC]);
 
-    fList->Add(fATOFsignal);
-    fList->Add(fATPCcounts);
-    fList->Add(fMDCAxyTPC);
-    fList->Add(fMDCAzTPC);
-    fList->Add(fMDCAxyTOF);
-    fList->Add(fMDCAzTOF);
-    fList->Add(fMTOFsignal);
-    fList->Add(fMTPCcounts);
+      for (int iT = 0; iT < 2; ++iT) {
+        fDCAxy[iT][iC] = new TH3F(Form("f%cDCAxy%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{xy} (cm)",
+            nCentBins,centBins,nPtBins,pTbins,nDCAbins,dcaBins);
+        fDCAz[iT][iC] = new TH3F(Form("f%cDCAz%s",letter[iC],tpctof[iT].data()),";Centrality (%);p_{T} (GeV/c); DCA_{z} (cm)",
+            nCentBins,centBins,nPtBins,pTbins,fDCAzNbins,dcazBins);
+        fList->Add(fDCAxy[iT][iC]);
+        fList->Add(fDCAz[iT][iC]);
+      }
+    }
 
     for (int iS = 0; iS < 5; ++iS) {
       fTOFtemplates[iS] = new TH3F(Form("fTOFtemplates%i",iS),
@@ -316,24 +270,14 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,fTOFnBins,tofBins);
       fList->Add(fTOFtemplates[iS]);
     }
-
-    fATPCeLoss = new TH2F("fATPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
-        2400,0,2400);
-    fMTPCeLoss = new TH2F("fMTPCeLoss",";p (GeV/c);TPC dE/dx (a.u.);Entries",196 * 2,0.2,10.,
-        2400,0,2400);
-    if (fEnableLogAxisInPerformancePlots) {
-      BinLogAxis(fMTPCeLoss);
-      BinLogAxis(fATPCeLoss);
-    }
-    fList->Add(fMTPCeLoss);
-    fList->Add(fATPCeLoss);
   }
 
   fTOFfunction = new TF1("fTOFfunction", TOFsignal, -2440., 2440., 4);
   if (fTOFfunctionPars.GetSize() == 4)
     fTOFfunction->SetParameters(fTOFfunctionPars.GetArray());
 
-  fEventCut.AddQAplotsToList(fList);
+  fEventCut->AddQAplotsToList(fList);
+  fList->Add(fEventCut);
   PostData(1,fList);
 }
 
@@ -352,7 +296,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
 
   AliVEvent *ev = InputEvent();
-  if (!fEventCut.AcceptEvent(ev, fList)) {
+  if (!fEventCut->AcceptEvent(ev, fList)) {
     PostData(1, fList);
     return;
   }
@@ -365,22 +309,16 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
 
   /// The centrality selection in PbPb uses the percentile determined with V0.
-  float centrality = fEventCut.GetCentrality();
+  float centrality = fEventCut->GetCentrality();
 
-  /// The magnetic field cut - enabled only if fRequireMagneticField \f$\neq 0\f$ - selects only
-  /// events with magnetic field with the same sign of fRequireMagneticField
+  /// The magnetic field
   fMagField = ev->GetMagneticField();
-  if (fRequireMagneticField != 0 && fRequireMagneticField * fMagField < 0.) {
-    PostData(1, fList);
-    return;
-  }
 
   /// At the stage of event selection the Flattening is applied. This technique makes flat the
   /// centrality distribution using a pseudo-random selection based on prior probabilities.
   /// A complete description of this technique is present in the documentation of the Flatten
   /// function.
 
-  fCentrality->Fill(centrality);
   if (Flatten(centrality) && fEnableFlattening) {
     PostData(1, fList);
     return;
@@ -388,90 +326,70 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   fCentralityClasses->Fill(centrality);
   fFlattenedCentrality->Fill(centrality);
 
-  TClonesArray *stack = 0x0;
+  TClonesArray *stack = nullptr;
   if (fIsMC) {
     // get branch "mcparticles"
     stack = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-    if (!stack) {
-      PostData(1, fList);
-      return;
-    }
+    if (!stack)
+      ::Fatal("AliAnalysisTaskNucleiYield::UserExec","MC analysis requested on a sample without the MC particle array.");
 
     /// Making the list of the deuterons we want to measure
     for (int iMC = 0; iMC < stack->GetEntriesFast(); ++iMC) {
       AliAODMCParticle *part = (AliAODMCParticle*)stack->UncheckedAt(iMC);
-      const int pdg = part->GetPdgCode();
-      if (pdg == fPDG) fProduction->Fill(part->P());
-      else if (pdg == -fPDG) fProduction->Fill(-part->P());
+      const int pdg = std::abs(part->GetPdgCode());
+      const int iC = part->Charge() > 0 ? 1 : 0;
+      const float mult = part->Charge() > 0 ? 1.f : -1.f;
+      if (pdg != fPDG) continue; 
+      fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
-      if (pdg == fPDG) {
-        if (part->IsPhysicalPrimary()) fMTotal->Fill(centrality,part->Pt());
-      } else if (pdg == -fPDG) {
-        if (part->IsPhysicalPrimary()) fATotal->Fill(centrality,part->Pt());
-      }
+      if (part->IsPhysicalPrimary()) fTotal[iC]->Fill(centrality,part->Pt());
     }
   }
 
   /// Checking how many deuterons in acceptance are reconstructed well
   for (Int_t iT = 0; iT < (Int_t)ev->GetNumberOfTracks(); ++iT) {
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
+
     if (track->GetID() <= 0) continue;
     Double_t dca[2];
     if (!AcceptTrack(track,dca)) continue;
     const float beta = HasTOF(track);
+    const int iTof = beta > EPS ? 1 : 0;
     float pT = track->Pt() * fCharge;
     if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
+
     if (fIsMC) {
       AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
       if (!part) continue;
-      if (part->GetPdgCode() == fPDG) {
-        if (part->IsPhysicalPrimary()) {
-          fMITS_TPC->Fill(centrality,part->Pt());
-          fMDCAPrimaryTPC->Fill(centrality,part->Pt(),dca[0]);
-        } else fMDCASecondaryTPC->Fill(centrality,part->Pt(),dca[0]);
-        fMPtCorrection->Fill(pT,part->Pt() - pT);
-        if (beta > 0) {
-          if (part->IsPhysicalPrimary()) {
-            fMDCAPrimaryTOF->Fill(centrality,part->Pt(),dca[0]);
-            fMITS_TPC_TOF->Fill(centrality,part->Pt());
-          } else {
-            fMDCASecondaryTOF->Fill(centrality,part->Pt(),dca[0]);
-          }
-        }
-      } else if (part->GetPdgCode() == -fPDG) {
-        fAPtCorrection->Fill(pT,part->Pt() - pT);
-        if (part->IsPhysicalPrimary()) {
-          fAITS_TPC->Fill(centrality,part->Pt());
-          if (beta > 0) {
-            fAITS_TPC_TOF->Fill(centrality,part->Pt());
-          }
+      const int iC = part->Charge() > 0 ? 1 : 0;
+      if (std::abs(part->GetPdgCode()) == fPDG) {
+        for (int iR = iTof; iR >= 0; iR--) {
+          fReconstructed[iR][iC]->Fill(centrality,part->Pt());
+          if (part->IsPhysicalPrimary())
+            fDCAPrimary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
+          else if (part->IsSecondaryFromMaterial())
+            fDCASecondary[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
+          else
+            fDCASecondaryWeak[iR][iC]->Fill(centrality,part->Pt(),dca[0]);
         }
       }
     } else {
-      if (track->Charge() > 0) {
-        fMTPCeLoss->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
-      } else {
-        fATPCeLoss->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
-      }
+      const int iC = track->Charge();
+      fTPCeLoss[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
+
       if (!PassesPIDSelection(track)) continue;
       float tpc_n_sigma = GetTPCsigmas(track);
-      if (track->Charge() > 0) {
-        fMDCAxyTPC->Fill(centrality, pT, dca[0]);
-        fMDCAzTPC->Fill(centrality, pT, dca[1]);
-        fMTPCcounts->Fill(centrality, pT, tpc_n_sigma);
-      } else {
-        fATPCcounts->Fill(centrality, pT, tpc_n_sigma);
+      fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
+
+      for (int iR = iTof; iR >= 0; iR--) {
+        fDCAxy[iR][iC]->Fill(centrality, pT, dca[0]);
+        fDCAz[iR][iC]->Fill(centrality, pT, dca[1]);
       }
-      if (beta < 1.e-10) continue;
+
+      if (iTof == 0) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
-      const float m = track->GetTPCmomentum() * track->GetTPCmomentum() * (1.f / (beta * beta) - 1.f);
-      if (track->Charge() > 0) {
-        fMDCAxyTOF->Fill(centrality, pT, dca[0]);
-        fMDCAzTOF->Fill(centrality, pT, dca[1]);
-        fMTOFsignal->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);
-      } else {
-        fATOFsignal->Fill(centrality, pT, m - fPDGMassOverZ * fPDGMassOverZ);
-      }
+      const float m2 = track->P() * track->P() * (1.f / (beta * beta) - 1.f);
+      fTOFsignal[iC]->Fill(centrality, pT, m2 - fPDGMassOverZ * fPDGMassOverZ);
 
       if (fTOFfunctionPars.GetSize() == 4) {
         AliTOFPIDResponse& tofPid = fPID->GetTOFResponse();
@@ -539,7 +457,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
     if (nSDD < fRequireSDDrecPoints) return kFALSE;
     if (fRequireVetoSPD && nSPD > 0) return kFALSE;
     Double_t cov[3];
-    if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return kFALSE;
+    if (!track->PropagateToDCA(fEventCut->GetPrimaryVertex(), fMagField, 100, dca, cov)) return kFALSE;
     if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
   }

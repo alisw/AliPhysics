@@ -19,7 +19,7 @@
 AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
     AliPID::EParticleType part = AliPID::kDeuteron,
     Int_t pdgCode = 1000010020,
-    TString tskname = "",
+    TString tskname = "deuteron",
     TString suffix = "") {
 
   // Get the current analysis manager
@@ -47,7 +47,6 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
   float p[5] = {7.25105e-01,4.99820e+01,2.35714e-10,2.49196e+00,1.41570e+01};
   deu->SetCustomTPCpid(p,0.08f);
   deu->SetRequireTPCpidSigmas(4.f);
-  deu->fEventCut.SetupLHC15o();
   float cent[11] = {0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f};
   deu->SetCentBins(10, cent);
   deu->SetUseFlattening(false);
@@ -57,8 +56,7 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
     6.0, 6.50, 7.0, 8.00, 9.0, 10.0
   };
   deu->SetPtBins(35,pt);
-  deu->SetCentralityLimits(0.,90.);
-
+  
   float dcabins[32] = {
     -0.50,-0.40,-0.30,-0.20,-0.15,-0.12,-0.10,-0.09,-0.08,-0.07,
     -0.06,-0.05,-0.04,-0.03,-0.02,-0.01, 0.00, 0.01, 0.02, 0.03,
