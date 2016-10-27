@@ -26,7 +26,7 @@ using namespace std;
 ClassImp(AliMultSelection);
 //________________________________________________________________
 AliMultSelection::AliMultSelection() :
-  TNamed(), fNEsts(0), fEvSelCode(0), fEstimatorList(0x0),
+  AliMultSelectionBase(), fNEsts(0), fEvSelCode(0), fEstimatorList(0x0),
 fThisEvent_VtxZCut(0),
 fThisEvent_IsNotPileup(0),
 fThisEvent_IsNotPileupMV(0),
@@ -44,7 +44,7 @@ fThisEvent_HasGoodVertex2016(0)
 }
 //________________________________________________________________
 AliMultSelection::AliMultSelection(const char * name, const char * title):
-TNamed(name,title), fNEsts(0), fEvSelCode(0), fEstimatorList(0x0),
+AliMultSelectionBase(name,title), fNEsts(0), fEvSelCode(0), fEstimatorList(0x0),
 fThisEvent_VtxZCut(0),
 fThisEvent_IsNotPileup(0),
 fThisEvent_IsNotPileupMV(0),
@@ -63,7 +63,7 @@ fThisEvent_HasGoodVertex2016(0)
 }
 //________________________________________________________________
 AliMultSelection::AliMultSelection(const AliMultSelection& lCopyMe)
-: TNamed(lCopyMe),
+: AliMultSelectionBase(lCopyMe),
 fNEsts(0),
 fEvSelCode(lCopyMe.fEvSelCode),
 fEstimatorList(0), 
@@ -86,7 +86,7 @@ fThisEvent_HasGoodVertex2016(lCopyMe.fThisEvent_HasGoodVertex2016)
 }
 //________________________________________________________________
 AliMultSelection::AliMultSelection(AliMultSelection *lCopyMe)
-    : TNamed(*lCopyMe),
+    : AliMultSelectionBase(*lCopyMe),
       fNEsts(0),
       fEstimatorList(0)
 {
