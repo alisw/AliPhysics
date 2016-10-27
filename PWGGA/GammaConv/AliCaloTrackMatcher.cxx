@@ -527,6 +527,32 @@ Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t
 
   return matched;
 }
+
+//________________________________________________________________________
+Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi){
+  Int_t matched = 0;
+  multimap<Int_t,Int_t>::iterator it;
+  for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it){
+    if(it->first == clusterID){
+      Float_t tempDEta, tempDPhi;
+      AliVTrack* tempTrack = event->GetVTrack(it->second);
+      if(!tempTrack) continue;
+      if(GetTrackClusterMatchingResidual(it->second,it->first,tempDEta,tempDPhi)){
+        Bool_t match_dEta = kFALSE;
+        Bool_t match_dPhi = kFALSE;
+        if( TMath::Abs(tempDEta) < fFuncPtDepEta->Eval(tempTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+        
+        if (match_dPhi && match_dEta )matched++;
+      }
+    }
+  }
+  return matched;
+}
+
 //________________________________________________________________________
 Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   Int_t matched = 0;
@@ -547,9 +573,36 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
       }
     }
   }
-
   return matched;
 }
+
+//________________________________________________________________________
+Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi){
+  Int_t matched = 0;
+  multimap<Int_t,Int_t>::iterator it;
+  AliVTrack* tempTrack = event->GetVTrack(trackID);
+  if(!tempTrack) return matched;
+  for (it=fMapTrackToCluster.begin(); it!=fMapTrackToCluster.end(); ++it){
+    if(it->first == trackID){
+      Float_t tempDEta, tempDPhi;
+      if(GetTrackClusterMatchingResidual(it->first,it->second,tempDEta,tempDPhi)){
+        Bool_t match_dEta = kFALSE;
+        Bool_t match_dPhi = kFALSE;
+        if( TMath::Abs(tempDEta) < fFuncPtDepEta->Eval(tempTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+        
+        if (match_dPhi && match_dEta )matched++;
+
+      }
+    }
+  }
+  return matched;
+}
+
+
 //________________________________________________________________________
 vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedTracks;
@@ -570,9 +623,35 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event
       }
     }
   }
-
   return tempMatchedTracks;
 }
+
+//________________________________________________________________________
+vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID,  TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi){
+  vector<Int_t> tempMatchedTracks;
+  multimap<Int_t,Int_t>::iterator it;
+  for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it){
+    if(it->first == clusterID){
+      Float_t tempDEta, tempDPhi;
+      AliVTrack* tempTrack = event->GetVTrack(it->second);
+      if(!tempTrack) continue;
+      if(GetTrackClusterMatchingResidual(it->second,it->first,tempDEta,tempDPhi)){
+        Bool_t match_dEta = kFALSE;
+        Bool_t match_dPhi = kFALSE;
+        if( TMath::Abs(tempDEta) < fFuncPtDepEta->Eval(tempTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+        
+        if (match_dPhi && match_dEta )tempMatchedTracks.push_back(it->second);
+
+      }
+    }
+  }
+  return tempMatchedTracks;
+}
+
 //________________________________________________________________________
 vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedClusters;
@@ -594,6 +673,31 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event
     }
   }
 
+  return tempMatchedClusters;
+}
+
+//________________________________________________________________________
+vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi){
+  vector<Int_t> tempMatchedClusters;
+  multimap<Int_t,Int_t>::iterator it;
+  AliVTrack* tempTrack = event->GetVTrack(trackID);
+  if(!tempTrack) return tempMatchedClusters;
+  for (it=fMapTrackToCluster.begin(); it!=fMapTrackToCluster.end(); ++it){
+    if(it->first == trackID){
+      Float_t tempDEta, tempDPhi;
+      if(GetTrackClusterMatchingResidual(it->first,it->second,tempDEta,tempDPhi)){
+        Bool_t match_dEta = kFALSE;
+        Bool_t match_dPhi = kFALSE;
+        if( TMath::Abs(tempDEta) < fFuncPtDepEta->Eval(tempTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+        
+        if (match_dPhi && match_dEta )tempMatchedClusters.push_back(it->second);
+      }
+    }
+  }
   return tempMatchedClusters;
 }
 
@@ -640,6 +744,33 @@ Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, In
 
   return matched;
 }
+
+//________________________________________________________________________
+Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi){
+  Int_t matched = 0;
+  multimap<Int_t,Int_t>::iterator it;
+  for (it=fSecMapClusterToTrack.begin(); it!=fSecMapClusterToTrack.end(); ++it){
+    if(it->first == clusterID){
+      Float_t tempDEta, tempDPhi;
+      AliVTrack* tempTrack = event->GetVTrack(it->second);
+      if(!tempTrack) continue;
+      if(GetTrackClusterMatchingResidual(it->second,it->first,tempDEta,tempDPhi)){
+        Bool_t match_dEta = kFALSE;
+        Bool_t match_dPhi = kFALSE;
+        if( TMath::Abs(tempDEta) < fFuncPtDepEta->Eval(tempTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+        
+        if (match_dPhi && match_dEta )matched++;
+      }
+    }
+  }
+
+  return matched;
+}
+
 //________________________________________________________________________
 Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   Int_t matched = 0;
@@ -663,6 +794,34 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, In
 
   return matched;
 }
+
+//________________________________________________________________________
+Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi){
+  Int_t matched = 0;
+  multimap<Int_t,Int_t>::iterator it;
+  AliVTrack* tempTrack = event->GetVTrack(trackID);
+  if(!tempTrack) return matched;
+  for (it=fSecMapTrackToCluster.begin(); it!=fSecMapTrackToCluster.end(); ++it){
+    if(it->first == trackID){
+      Float_t tempDEta, tempDPhi;
+      if(GetTrackClusterMatchingResidual(it->first,it->second,tempDEta,tempDPhi)){
+        Bool_t match_dEta = kFALSE;
+        Bool_t match_dPhi = kFALSE;
+        if( TMath::Abs(tempDEta) < fFuncPtDepEta->Eval(tempTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+        
+        if (match_dPhi && match_dEta )matched++;
+
+      }
+    }
+  }
+
+  return matched;
+}
+
 //________________________________________________________________________
 vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedTracks;
@@ -686,6 +845,33 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *ev
 
   return tempMatchedTracks;
 }
+
+//________________________________________________________________________
+vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi){
+  vector<Int_t> tempMatchedTracks;
+  multimap<Int_t,Int_t>::iterator it;
+  for (it=fSecMapClusterToTrack.begin(); it!=fSecMapClusterToTrack.end(); ++it){
+    if(it->first == clusterID){
+      Float_t tempDEta, tempDPhi;
+      AliVTrack* tempTrack = event->GetVTrack(it->second);
+      if(!tempTrack) continue;
+      if(GetTrackClusterMatchingResidual(it->second,it->first,tempDEta,tempDPhi)){
+        Bool_t match_dEta = kFALSE;
+        Bool_t match_dPhi = kFALSE;
+        if( TMath::Abs(tempDEta) < fFuncPtDepEta->Eval(tempTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+        
+        if (match_dPhi && match_dEta )tempMatchedTracks.push_back(it->second);
+      }
+    }
+  }
+
+  return tempMatchedTracks;
+}
+
 //________________________________________________________________________
 vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedClusters;
@@ -709,6 +895,33 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *ev
 
   return tempMatchedClusters;
 }
+
+//________________________________________________________________________
+vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi){
+  vector<Int_t> tempMatchedClusters;
+  multimap<Int_t,Int_t>::iterator it;
+  AliVTrack* tempTrack = event->GetVTrack(trackID);
+  if(!tempTrack) return tempMatchedClusters;
+  for (it=fSecMapTrackToCluster.begin(); it!=fSecMapTrackToCluster.end(); ++it){
+    if(it->first == trackID){
+      Float_t tempDEta, tempDPhi;
+      if(GetTrackClusterMatchingResidual(it->first,it->second,tempDEta,tempDPhi)){
+        Bool_t match_dEta = kFALSE;
+        Bool_t match_dPhi = kFALSE;
+        if( TMath::Abs(tempDEta) < fFuncPtDepEta->Eval(tempTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(tempDPhi) < fFuncPtDepPhi->Eval(tempTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+        
+        if (match_dPhi && match_dEta )tempMatchedClusters.push_back(it->second);
+      }
+    }
+  }
+
+  return tempMatchedClusters;
+}
+
 
 //________________________________________________________________________
 void AliCaloTrackMatcher::SetLogBinningYTH2(TH2* histoRebin){
