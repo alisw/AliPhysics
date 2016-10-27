@@ -1090,7 +1090,7 @@ Bool_t IsTPCSignal=kFALSE;
 Bool_t IsTOFSignal=kFALSE;
 
 if(trackAOD->GetTPCsignal() >0.0) IsTPCSignal=kTRUE;
-if(IsTOFPID(trackAOD) && Beta(trackAOD) >0.0) IsTOFSignal=kTRUE;
+if(IsTOFPID(trackAOD) && (Beta(trackAOD) >0.0 && Beta(trackAOD)<=1.0)) IsTOFSignal=kTRUE;
 
 
 
@@ -1630,7 +1630,7 @@ Double_t AliAnalysisTaskEffContPIDBF::GetNsigmas(AliPIDResponse* PIDresponse , A
 
 
    if(tofIsOk) {
-   if(Beta(track) >0.0)
+   if(Beta(track) >0.0 && Beta(track)<=1.0)
    fHasTOFPID=kTRUE;
    }
 

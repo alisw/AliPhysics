@@ -3,7 +3,8 @@
 
 // Analysis task for the PID BF code:
 // Base Class : AliBalancePsi.cxx
-// Noor Alam(VECC, Kolkata) : sk.noor.alam@cern.ch
+// Noor Alam(VECC, Kolkata) : sk.noor.alam@cern.ch, noor1989phyalam@gmail.com
+// Supervisor: Subhasis Chattopadhyay: sub.chattopadhyay@gmail.com
 //[Special thanks to Michael Weber(m.weber@cern.ch) and Panos Christakoglou(panos.christakoglou@cern.ch)] 
 
 
