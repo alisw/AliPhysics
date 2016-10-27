@@ -676,12 +676,12 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					anetaphitpc[aniter]->AddCorrFctn(cdedpetaphinocorr[aniter]);
 					if(ichg==31 || ichg==33) //LL, ALAL
                                         {
-					  cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),150,0.0,1.5); //femto qinv, for identical mass particles
+					  cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),150,0.0,6.0); //femto qinv, for identical mass particles
 					  anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
 					}
 					if(ichg==0 || ichg==1) //PP, aPaP
                                         {
-					  cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),750,0.0,1.5); //femto qinv, for identical mass particles
+					  cqinvtpc[aniter] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%i", chrgs[ichg], imult),750,0.0,6.0); //femto qinv, for identical mass particles
 					  anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
 					}
 					if(ichg==2) //PaP
