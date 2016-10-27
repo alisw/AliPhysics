@@ -84,6 +84,7 @@
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
 
+
 ClassImp(AliAnalysisTaskFlowTPCEMCalEP)
 
 using std::cout;
@@ -413,7 +414,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if (cent<0 || cent>=50) return;
     
     
-    Double_t evPlaneV0A = 0, evPlaneV0C = 0, evPlaneV0 = 0, evPlaneTPC = 0;
+    Double_t evPlaneV0A = -9., evPlaneV0C = -9., evPlaneV0 = -9., evPlaneTPC = -9.;
     Double_t wEvent = 1.;
     
     if (fUseNewEP){
@@ -421,24 +422,34 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections *> (AliAnalysisManager::GetAnalysisManager()->GetTask("FlowQnVectorCorrections"));
         
         if (flowQnVectorTask != NULL) {
-            /* AliQnCorrectionsManager *fFlowQnVectorMgr; shall be a member of the user's analysis task */
-            /* and store the framework manager */
             fFlowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-            fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
-            
+            //fFlowQnVectorMgr->GetQnVectorList()->Print("",-1);
         }
         else {
             AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
             return;
         }
         
+        TList *qnlist = 0x0;
+        qnlist = fFlowQnVectorMgr->GetQnVectorList();
+        if (!qnlist) {
+            AliWarning("qnlist not found!!");
+            return;
+        }
+
+        //if (qnlist) cout<<"qn list found!!!!!!!!!!!!!!!!!!!!!"<<endl;
+        
         const AliQnCorrectionsQnVector *qnTPC;
         const AliQnCorrectionsQnVector *qnV0A;
         const AliQnCorrectionsQnVector *qnV0C;
         
-        qnTPC = fFlowQnVectorMgr->GetDetectorQnVector("TPC");
-        qnV0A = fFlowQnVectorMgr->GetDetectorQnVector("VZEROA");
-        qnV0C = fFlowQnVectorMgr->GetDetectorQnVector("VZEROC");
+        qnTPC = GetQnVectorFromList(qnlist, "TPC", "plain", "raw");
+        qnV0A = GetQnVectorFromList(qnlist, "qnV0A", "plain", "raw");
+        qnV0C = GetQnVectorFromList(qnlist, "qnV0C", "plain", "raw");
+        
+//        qnTPC = fFlowQnVectorMgr->GetDetectorQnVector("TPC");
+//        qnV0A = fFlowQnVectorMgr->GetDetectorQnVector("VZEROA");
+//        qnV0C = fFlowQnVectorMgr->GetDetectorQnVector("VZEROC");
         
         if (qnTPC != NULL) evPlaneTPC = qnTPC->EventPlane(2);
         if (qnV0A != NULL) evPlaneV0A = qnV0A->EventPlane(2);
@@ -453,6 +464,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         fEPres[1]->Fill(cent,GetCos2DeltaPhi(evPlaneV0C,evPlaneTPC));
         fEPres[2]->Fill(cent,GetCos2DeltaPhi(evPlaneV0A,evPlaneTPC));
         
+        
+        evPlaneV0 =evPlaneV0C ; // just for test!!!
+        
+        fevPlaneV0[iCent]->Fill(evPlaneV0);
+        
     }
     
     if (!fUseNewEP){
@@ -460,7 +476,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         // Centrality flattening
         
         Bool_t rejectToFlattenCent = kFALSE;
-        Bool_t weightToFlattenCent = kFALSE;
+        Bool_t weightToFlattenCent = kTRUE;
         
         Bool_t rejectEvent = kFALSE;
         Int_t centBin = fCent->FindBin(cent);
@@ -502,9 +518,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         Double_t EPweight = 1.;
         
         Bool_t rejectToFlattenEP = kFALSE;
-        Bool_t weightToFlattenEP = kFALSE;
+        Bool_t weightToFlattenEP = kTRUE;
         
-        if (weightToFlattenEP) EPweight = GetEPweight(epBin);
+        if (weightToFlattenEP) EPweight = GetEPweight(epBin,iCent);
         wEvent = EPweight*centWeight;
         
         Bool_t rejectEventPlane = kFALSE;
@@ -702,16 +718,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             }
         }
         
-        Int_t clsId = track->GetEMCALcluster();
-        if (clsId>0){
-            AliAODCaloCluster *cluster = fAOD->GetCaloCluster(clsId);//check
-            if(cluster && cluster->IsEMCAL()){
-                clsE = cluster->E();
-                m20 = cluster->GetM20();
-                m02 = cluster->GetM02();
-            }
-        }
-        
         p = track->P();
         phi = track->Phi();
         dEdx = track->GetTPCsignal();
@@ -719,6 +725,21 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
         fITSnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasITS(track, AliPID::kElectron) : 1000;
         fTOFnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTOF(track, AliPID::kElectron) : 1000;
+        
+        Double_t emcphimim = 1.39;
+        Double_t emcphimax = 3.265;
+        
+        Int_t clsId = track->GetEMCALcluster();
+        if (clsId>0){
+            AliAODCaloCluster *cluster = fAOD->GetCaloCluster(clsId);//check
+            if(cluster && cluster->IsEMCAL() && phi>emcphimim && phi<emcphimax){
+                clsE = cluster->E();
+                m20 = cluster->GetM20();
+                m02 = cluster->GetM02();
+            }
+        }
+        
+
         
         // not implemented yet for 2015
         //if(fIsMC) fEMCalnSigma = GetSigmaEMCalMC(EovP, pt, iCent);
@@ -734,15 +755,21 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         if (pt>2) fHistTPCnSigEop[iCent]->Fill(fTPCnSigma,EovP);
         if (pt>2) fHistTPCnSigEMCalnSig[iCent]->Fill(fTPCnSigma,fEMCalnSigma);
         
+        
+        if (pt<3 && fTPCnSigma>0  && fTPCnSigma<3 && fTOFnSigma>-2 && fTOFnSigma<2 && fITSnSigma>-2 && fITSnSigma<2)
+            fEoverPsignalTPC[iCent]->Fill(pt,EovP);
+        
+        if (pt>=3 && fTPCnSigma>-1  && fTPCnSigma<3) fEoverPsignalTPC[iCent]->Fill(pt,EovP);
+        
+        if (fTPCnSigma>-1  && fTPCnSigma<3 && m02>0.02 && m02<0.3) fEoverPsignalTPCM02[iCent]->Fill(pt,EovP);
+        if (fTPCnSigma>-5  && fTPCnSigma<-3.5) fEoverPbackg[iCent]->Fill(pt,EovP);
+        
         if (pt<3){
             if (fITSnSigma<-2 || fITSnSigma>2) continue;
             if (fTOFnSigma<-2 || fTOFnSigma>2) continue;
             if (fTPCnSigma<0  || fTPCnSigma>3) continue;
         }
         
-        if (fTPCnSigma>-1  && fTPCnSigma<3) fEoverPsignalTPC[iCent]->Fill(pt,EovP);
-        if (fTPCnSigma>-1  && fTPCnSigma<3 && m02>0.02 && m02<0.3) fEoverPsignalTPCM02[iCent]->Fill(pt,EovP);
-        if (fTPCnSigma>-5  && fTPCnSigma<-3.5) fEoverPbackg[iCent]->Fill(pt,EovP);
         
         dphi = GetDeltaPhi(phi,evPlaneV0);
         cosdphi = GetCos2DeltaPhi(phi,evPlaneV0);
@@ -780,8 +807,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         
         
         Double_t corr[7]={static_cast<Double_t>(iCent),pt,fTPCnSigma,EovP,dphi,cosdphi,0.};
-        //if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA ) fCorr->Fill(corr,wEvent);
-        fCorr->Fill(corr);
+        fCorr->Fill(corr,wEvent);
         
         SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0,EovP,fTPCnSigma,evPlaneV0);
         fInclElec[iCent]->Fill(pt,0.);
@@ -1284,18 +1310,29 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetCentWeight(Int_t centbin){
     // Get cebtrality weight for flattening (0-10%)
     Int_t wBin = centbin-1;
     if (wBin<0 || wBin>9) return 1;
-    Double_t weightcent[] = {0.996425,0.987564,0.966774,0.966422,0.967739,0.991296,0.983746,0.991528,1.01627,1.15803};
     
-    return weightcent[wBin];
+    if (fWhichPeriod==2011){
+        Double_t weightcent[] = {0.996425,0.987564,0.966774,0.966422,0.967739,0.991296,0.983746,0.991528,1.01627,1.15803};
+        return weightcent[wBin];
+    }
+    
+    if (fWhichPeriod==2015){
+        Double_t weightcent[] = {1.00441,0.999597,0.999517,0.999507,0.999649,0.999283,0.999666,0.99951,0.999394,0.999485};
+        return weightcent[wBin];
+    }
+    
+    else
+        return 1;
+    
 }
 //_________________________________________
-Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEPweight(Int_t bin)
+Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEPweight(Int_t bin, Int_t iCent)
 {
-    //Get event plane weight for flattening (0-10%)
+    //Get event plane weight for flattening
     Int_t wBin = bin-1;
     if (wBin<0 || wBin>99) return 1;
     
-    if (fWhichPeriod==2011){
+    if (fWhichPeriod==2011 && iCent==0){
         Double_t weightEP[] = {
             0.982991,0.988171,0.9899237,0.9914497,0.9906325,0.9956888,0.9972689,1.000973,1.002418,1.006948,
             1.007226,1.008336,1.01335,1.011154,1.018333,1.019898,1.026543,1.023092,1.028325,1.026844,
@@ -1308,9 +1345,54 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEPweight(Int_t bin)
             0.9610214,0.9614648,0.9591571,0.9603319,0.9610102,0.9675955,0.9609205,0.9605896,
             0.9625102,0.9589448,0.9624427,0.966783,0.9632197,0.9626284,0.9706073,0.9693101,
             0.9717702,0.9703041,0.9747158,0.9741852,0.9755416,0.9798203,0.9797912,0.9790047,0.9802287};
-        
         return weightEP[wBin];
     }
+    
+    if (fWhichPeriod==2015 && iCent==0){
+        Double_t weightEP[] = {
+            0.973914,0.966993,0.965672,0.963712,0.960045,0.956476,0.950277,0.946806,0.943463,0.940825,
+            0.93614,0.931359,0.9305,0.925571,0.92469,0.925216,0.919276,0.920457,0.916642,0.914368,
+            0.920269,0.918602,0.922843,0.919984,0.921338,0.927387,0.924402,0.925999,0.932253,0.93329,
+            0.938218,0.944999,0.948569,0.949461,0.959602,0.972347,0.973659,0.979171,0.983525,0.994905,
+            0.99968,1.00558,1.0115,1.01978,1.02969,1.03895,1.04168,1.04536,1.05951,1.06122,
+            1.06038,1.07297,1.07644,1.07012,1.07884,1.08196,1.0809,1.08975,1.08716,1.08548,
+            1.08538,1.09225,1.08233,1.08725,1.08868,1.08359,1.087,1.07784,1.0757,1.07094,
+            1.07284,1.0776,1.06449,1.07286,1.05787,1.05861,1.04914,1.05653,1.05081,1.03951,
+            1.04044,1.03734,1.02986,1.01915,1.02697,1.02088,1.01577,1.01029,1.0081,1.0124,
+            1.00109,0.997445,0.995353,0.996374,0.991111,0.988454,0.983032,0.983172,0.978019,0.972857};
+        return weightEP[wBin];
+    }
+
+    if (fWhichPeriod==2015 && iCent==1){
+        Double_t weightEP[] = {
+            0.996076,0.990221,0.994366,0.987992,0.986511,0.983266,0.983224,0.977671,0.974447,0.971244,
+            0.965005,0.964951,0.963008,0.956021,0.957552,0.952022,0.95382,0.950101,0.953375,0.950352,
+            0.952027,0.949728,0.952035,0.952742,0.95481,0.956931,0.95628,0.957993,0.958721,0.963276,
+            0.964477,0.969764,0.966897,0.974835,0.973854,0.978222,0.984634,0.987663,0.995971,1.00027,
+            1.00719,1.01316,1.01295,1.02477,1.02878,1.03206,1.04044,1.0428,1.04487,1.04613,
+            1.05293,1.05438,1.05678,1.05647,1.05818,1.05301,1.05522,1.05411,1.04824,1.04775,
+            1.04576,1.04149,1.03924,1.03667,1.03695,1.03444,1.02967,1.03172,1.03047,1.02956,
+            1.02521,1.0241,1.01965,1.02047,1.01926,1.0222,1.00993,1.01188,1.01158,1.01139,
+            1.00735,1.00739,1.00276,1.00367,0.995799,0.997767,0.9945,0.998059,1.00061,0.995756,
+            0.998437,0.995709,1.00109,0.994699,0.997776,0.99737,1.00331,0.998245,0.995871,0.99299};
+        return weightEP[wBin];
+    }
+    
+    if (fWhichPeriod==2015 && iCent==2){
+        Double_t weightEP[] = {
+            0.988976,0.98572,0.987085,0.981873,0.979138,0.980245,0.97458,0.969915,0.966464,0.958588,
+            0.958306,0.958248,0.950522,0.953947,0.952742,0.950097,0.950357,0.947756,0.949941,0.952441,
+            0.949711,0.951997,0.953755,0.955147,0.956948,0.957596,0.957573,0.959893,0.964721,0.968515,
+            0.966962,0.968772,0.968664,0.975869,0.983702,0.981753,0.985076,0.989997,1.00021,1.0082,
+            1.00865,1.01677,1.02724,1.0269,1.03676,1.04114,1.04834,1.04418,1.05015,1.05704,
+            1.05682,1.06196,1.05924,1.06517,1.05863,1.05905,1.05259,1.05768,1.0523,1.04626,
+            1.04595,1.03879,1.03954,1.03899,1.03678,1.03524,1.03161,1.03299,1.03235,1.02935,
+            1.03097,1.02623,1.02722,1.02345,1.0232,1.02147,1.02105,1.01631,1.01202,1.00845,
+            1.00767,1.0061,1.00757,1.00302,0.999704,0.995877,0.993068,0.992803,0.993291,0.991993,
+            0.99276,0.99069,0.993547,0.990369,0.992041,0.996005,0.995567,0.992074,0.992973,0.989776};
+        return weightEP[wBin];
+    }
+    
     else
         return 1;
 }
@@ -1651,6 +1733,38 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::AssElecTrackCuts(AliAODTrack *aetrack)
     
     return kTRUE;
     
+}
+//________________________________________________________________________
+const AliQnCorrectionsQnVector *AliAnalysisTaskFlowTPCEMCalEP::GetQnVectorFromList(const TList *list,
+                                                                           const char *subdetector,
+                                                                           const char *expectedstep,
+                                                                           const char *altstep)
+{
+    AliQnCorrectionsQnVector *theQnVector = NULL;
+    
+    TList *pQvecList = dynamic_cast<TList*> (list->FindObject(subdetector));
+    if (pQvecList != NULL) {
+        /* the detector is present */
+        if (TString(expectedstep).EqualTo("latest"))
+            theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+        else
+            theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expectedstep);
+        
+        if (theQnVector == NULL || !(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)) {
+            /* the Qn vector for the expected step was not there */
+            if (TString(altstep).EqualTo("latest"))
+                theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
+            else
+                theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altstep);
+        }
+    }
+    if (theQnVector != NULL) {
+        /* check the Qn vector quality */
+        if (!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0))
+        /* not good quality, discarded */
+            theQnVector = NULL;
+    }
+    return theQnVector;
 }
 //_________________________________________
 void AliAnalysisTaskFlowTPCEMCalEP::InitParameters()
