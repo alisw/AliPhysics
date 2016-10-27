@@ -133,6 +133,7 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
 
 void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   fSelectedTriggers.clear();
+  Bool_t isMC = MCEvent() != nullptr;
 
   TString triggerstring = "";
   if(fTriggerStringFromPatches){
@@ -143,33 +144,44 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
       emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ1] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1");
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2");
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG1] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2");
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ1] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1");
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2");
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1");
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2");
-  emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CDMC7");
+  for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcalTriggers[itrg] = true;
+  if(!isMC){
+    // In case of data use information from the physics selection and event record
+    // Further cleanup of trigger events can be performed depending on the presence
+    // of recalc patches (after masking hot fastors in the trigger maker) above
+    // threshold
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ1] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1");
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2");
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG1] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2");
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ1] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1");
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2");
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1");
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2");
+    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CDMC7");
+    // Online selection / rejection
+    if(fRejectNoiseEvents || fSelectNoiseEvents){
+      if(fRejectNoiseEvents){
+        for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
+          if(emcalTriggers[itrg])
+            emcalTriggers[itrg] &= SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));
+        }
+      } else {
+        for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
+          if(emcalTriggers[itrg])
+            emcalTriggers[itrg] &= !SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));
+        }
+      }
+    }
+  }
+  // Apply offline trigger selection: In this case cuts are performed on the
+  // patch energy from EMCAL cells after calibration. This method is most relevant
+  // for simulations. It can have a special use case in data in case a stronger
+  // offline selection is applied in addition to the online selection.
   if(fTriggerPatchInfo && fTriggerSelection){
     for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++)
       emcalTriggers[itrg] &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg), fTriggerPatchInfo);
-  }
-  // Online selection / rejection
-  if(fRejectNoiseEvents || fSelectNoiseEvents){
-    if(fRejectNoiseEvents){
-      for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
-        if(emcalTriggers[itrg])
-          emcalTriggers[itrg] &= SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));
-      }
-    } else {
-      for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
-        if(emcalTriggers[itrg])
-          emcalTriggers[itrg] &= !SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));
-      }
-    }
   }
   if(isMinBias) fSelectedTriggers.push_back("MB");
   if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]){
@@ -200,7 +212,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     fSelectedTriggers.push_back("EG2");
     if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0])) fSelectedTriggers.push_back("EG2excl");
   }
-  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1]){
+  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG1]){
     fSelectedTriggers.push_back("EG1");
     if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2])) fSelectedTriggers.push_back("EG1excl");
   }

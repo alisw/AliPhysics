@@ -12,12 +12,15 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
+
 #include <TClonesArray.h>
 #include <TH2.h>
 #include <TRandom.h>
 
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
+#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEmcalTriggerOfflineSelection)
@@ -25,8 +28,12 @@ ClassImp(EMCalTriggerPtAnalysis::AliEmcalTriggerOfflineSelection)
 
 namespace EMCalTriggerPtAnalysis {
 
+const TString AliEmcalTriggerOfflineSelection::fgkTriggerNames[AliEmcalTriggerOfflineSelection::kTrgn] = {
+    "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"
+};
+
 AliEmcalTriggerOfflineSelection::AliEmcalTriggerOfflineSelection() {
-  memset(fOfflineEnergyThreshold, 0, sizeof(Double_t) * kTrgn);
+  for(int itrg = 0; itrg < kTrgn; itrg++) fOfflineEnergyThreshold[itrg] = 100000.;  // unimplemented triggers get very high threshold assinged, so that the result is automatically false
   memset(fAcceptanceMaps, 0, sizeof(TH2 *) * kTrgn);
 }
 
@@ -38,29 +45,41 @@ AliEmcalTriggerOfflineSelection::~AliEmcalTriggerOfflineSelection(){
 
 Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
   if(fOfflineEnergyThreshold[trgcls] < 0) return true;
-  bool isSingleShower = IsSingleShower(trgcls);
+  AliDebugStream(1) << "Applying offline threshold " << fOfflineEnergyThreshold[trgcls] << " for trigger class " << GetTriggerName(trgcls) << std::endl;
+  bool isSingleShower = IsSingleShower(trgcls), isDCAL = IsDCAL(trgcls);
   int nfound = 0;
   AliEMCALTriggerPatchInfo *patch = NULL;
-  for(TIter patchIter = TIter(triggerpatches).Begin(); patchIter != TIter::End(); ++patchIter){
-    patch = static_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
+  for(auto patchIter : *triggerpatches){
+    patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
     if(!patch->IsOfflineSimple()) continue;
+    if((isDCAL && !patch->IsDCalPHOS()) || (!isDCAL && patch->IsDCalPHOS())) continue;      // reject patches in opposite detector
     if(isSingleShower){
      if(!patch->IsGammaLowSimple()) continue;
     } else {
       if(!patch->IsJetLowSimple()) continue;
     }
     if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]){
+      AliDebugStream(2) << GetTriggerName(trgcls) << " patch above threshold (" << patch->GetPatchE() << " | " << fOfflineEnergyThreshold[trgcls] << ")" <<  std::endl;
       // Handle offline acceptance maps (if providede)
+      // sampling means probe (random value) has to be
       if(fAcceptanceMaps[trgcls]){
         double acceptanceprob = fAcceptanceMaps[trgcls]->GetBinContent(patch->GetColStart(), patch->GetRowStart()),
                 patchprob = gRandom->Uniform(0., 1.);
-        if(patchprob < acceptanceprob) nfound++;
+        AliDebugStream(2) << "Sampling trigger " << GetTriggerName(trgcls) << ": Efficiency(" << acceptanceprob << "), sampled (" << patchprob << ")" << std::endl;
+        if(patchprob < acceptanceprob){
+          AliDebugStream(2) << "Patch selected" << std::endl;
+          nfound++;
+        }
       } else{
         nfound++;
       }
     }
   }
-  return nfound > 0;
+  if(nfound){
+    AliDebugStream(1) << "Event selected for trigger class " << GetTriggerName(trgcls) << ", " << nfound << " good patch(es) found" << std::endl;
+    return true;
+  }
+  return false;
 }
 
 Bool_t AliEmcalTriggerOfflineSelection::IsSingleShower(EmcalTriggerClass cls){
