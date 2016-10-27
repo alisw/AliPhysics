@@ -29,19 +29,19 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    void SetMatchingWindow(Float_t win) {fMatchingWindow = win; return;}
 
    Bool_t GetTrackClusterMatchingResidual(Int_t trackID, Int_t clusterID, Float_t &dEta, Float_t &dPhi);
-   Int_t GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
-   Int_t GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
-   vector<Int_t> GetMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
-   vector<Int_t> GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
+   Int_t GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
+   Int_t GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
+   vector<Int_t> GetMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
+   vector<Int_t> GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
 
     // for cluster <-> V0-track matching
     Bool_t PropagateV0TrackToClusterAndGetMatchingResidual(AliVTrack* inSecTrack, AliVCluster* cluster, AliVEvent* event, Float_t &dEta, Float_t &dPhi);
     Bool_t IsSecTrackClusterAlreadyTried(Int_t trackID, Int_t clusterID);
     Bool_t GetSecTrackClusterMatchingResidual(Int_t trackID, Int_t clusterID, Float_t &dEta, Float_t &dPhi);
-    Int_t GetNMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
-    Int_t GetNMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
-    vector<Int_t> GetMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
-    vector<Int_t> GetMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
+    Int_t GetNMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
+    Int_t GetNMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
+    vector<Int_t> GetMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
+    vector<Int_t> GetMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
 
  private:
    //typedefs
