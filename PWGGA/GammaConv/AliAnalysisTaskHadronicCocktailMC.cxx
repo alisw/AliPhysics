@@ -86,6 +86,7 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(): AliAnaly
   fParticleListNames(NULL),
   fPtParametrization{NULL},
   fPtParametrizationProton(NULL),
+  fPtParametrizationPi0(NULL),
   fCocktailSettings{NULL},
   fMtScalingFactors(NULL),
   fUserInfo(NULL),
@@ -128,6 +129,7 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(const char 
   fParticleListNames(NULL),
   fPtParametrization{NULL},
   fPtParametrizationProton(NULL),
+  fPtParametrizationPi0(NULL),
   fCocktailSettings{NULL},
   fMtScalingFactors(NULL),
   fUserInfo(NULL),
@@ -187,6 +189,7 @@ void AliAnalysisTaskHadronicCocktailMC::UserCreateOutputObjects(){
       if (fHasMother[i]) fUserInfo->Add(fPtParametrization[i]);
     }
     if (fPtParametrizationProton) fUserInfo->Add(fPtParametrizationProton);
+    if (fPtParametrizationPi0)    fUserInfo->Add(fPtParametrizationPi0);
     
     // cocktail settings
     Double_t ptMin, ptMax;
@@ -339,6 +342,7 @@ void AliAnalysisTaskHadronicCocktailMC::GetAndSetPtParametrizations(AliGenEMCock
   
   for (Int_t i=0; i<13; i++) fPtParametrization[i] = NULL;
   fPtParametrizationProton = NULL;
+  fPtParametrizationPi0    = NULL;
   
   TF1* fct        = NULL;
   TString fctName = "";
@@ -360,6 +364,7 @@ void AliAnalysisTaskHadronicCocktailMC::GetAndSetPtParametrizations(AliGenEMCock
       if (fctName.BeginsWith("2114_pt") && fHasMother[11]) fPtParametrization[11]  = fct;
       if (fctName.BeginsWith("2214_pt") && fHasMother[12]) fPtParametrization[12]  = fct;
       if (fctName.BeginsWith("2212_pt")) fPtParametrizationProton = fct;
+      if (fctName.BeginsWith("111_pt"))  fPtParametrizationPi0    = fct;
     }
   }
 }
