@@ -1170,6 +1170,8 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
   Float_t LTMpart_Phi = 0;
   Float_t LTMpart_Pt = 0;
   
+  Float_t dPhi = 0;
+  
   Float_t nCloseByTracks = 0;
   
   if(fIsMC){
@@ -1179,6 +1181,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
       if(!gammaForLTM) return;
       if(!MCConversionPhotonCheck(gammaForLTM)) continue;
       gamma_Eta = gammaForLTM->Eta(); gamma_Phi = gammaForLTM->Phi(); gamma_Pt = gammaForLTM->Pt();
+      if( gamma_Eta > 0.9 || gamma_Eta < -0.9 ) continue;
       if(gamma_Eta==0 || gamma_Phi==0 || gamma_Pt==0)continue;
       nCloseByTracks = 0;
       for(Int_t j = 0; j < fInputEvent->GetNumberOfTracks(); j++){
@@ -1186,7 +1189,9 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
         if (LTMpart == NULL) return;
         LTMpart_Eta = LTMpart->Eta(); LTMpart_Phi = LTMpart->Phi(); LTMpart_Pt = LTMpart->Pt();
         if(LTMpart_Eta==0 || LTMpart_Phi==0 || LTMpart_Pt==0)continue;
-        if(TMath::Sqrt(pow((LTMpart_Eta-gamma_Eta),2)+pow((LTMpart_Phi-gamma_Phi),2))<0.2) nCloseByTracks+=1;
+        dPhi = TMath::Abs(LTMpart_Phi-gamma_Phi);
+        if(dPhi > TMath::Pi()) dPhi = TMath::Abs(dPhi-2.0*TMath::Pi());
+        if(TMath::Sqrt(pow((LTMpart_Eta-gamma_Eta),2)+pow(dPhi,2))<0.2) nCloseByTracks+=1;
       }
 //       cout << "nCloseByTracks MCgen= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
       hLTMPt_MC[fiCut]->Fill(nCloseByTracks,gamma_Pt);
@@ -1204,7 +1209,9 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
       if (LTMpart == NULL) return;
       LTMpart_Eta = LTMpart->Eta(); LTMpart_Phi = LTMpart->Phi(); LTMpart_Pt = LTMpart->Pt();
       if(LTMpart_Eta==0 || LTMpart_Phi==0 || LTMpart_Pt==0)continue;
-      if(TMath::Sqrt(pow((LTMpart_Eta-gamma_Eta),2)+pow((LTMpart_Phi-gamma_Phi),2))<0.2) nCloseByTracks+=1;
+      dPhi = TMath::Abs(LTMpart_Phi-gamma_Phi);
+      if(dPhi > TMath::Pi()) dPhi = TMath::Abs(dPhi-2.0*TMath::Pi());
+      if(TMath::Sqrt(pow((LTMpart_Eta-gamma_Eta),2)+pow(dPhi,2))<0.2) nCloseByTracks+=1;
     }
 //     cout << "nCloseByTracks= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
     hLTMPt[fiCut]->Fill(nCloseByTracks,gamma_Pt);
@@ -1285,6 +1292,7 @@ Bool_t AliAnalysisTaskGammaConvFlow::MCConversionPhotonCheck( TParticle *MCPhoto
   TParticle *posDaughter = (TParticle*)fMCStack->Particle(MCPhoton->GetFirstDaughter());
   TParticle *negDaughter = (TParticle*)fMCStack->Particle(MCPhoton->GetLastDaughter());
   if(posDaughter==NULL || negDaughter==NULL) return kFALSE;
+  if(posDaughter->GetUniqueID() != 5 || negDaughter->GetUniqueID() != 5) return kFALSE;
   Int_t pdgCodePos = 0; 
   Int_t pdgCodeNeg = 0;
   Bool_t IsItPhoton = kFALSE;
@@ -1353,6 +1361,7 @@ void AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate(){
       if(gamma2_Eta==0 || gamma2_Phi==0 || gamma2_Pt==0)continue;
       gamma2_Vtx_x = gamma2->GetConversionX(); gamma2_Vtx_y = gamma2->GetConversionY(); gamma2_Vtx_z = gamma2->GetConversionZ();
       dPhi = TMath::Abs(gamma2_Phi-gamma1_Phi);
+      if(dPhi > TMath::Pi()) dPhi = TMath::Abs(dPhi-2.0*TMath::Pi());
       dRconvVtx = TMath::Sqrt(pow(gamma2_Vtx_x-gamma1_Vtx_x,2)+pow(gamma2_Vtx_y-gamma1_Vtx_y,2)+pow(gamma2_Vtx_z-gamma1_Vtx_z,2));
       hdPhidRcandidates[fiCut]->Fill(dPhi,dRconvVtx);
       if(fIsMC){
