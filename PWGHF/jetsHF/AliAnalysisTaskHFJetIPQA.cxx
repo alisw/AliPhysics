@@ -85,6 +85,8 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(): AliAnalysisTaskEmcalJet("A
   fh2dAcceptedTracksEtaPhiPerLayer{0,0,0,0,0,0}
 {
   fOutput2 =0x0;
+  fDisableWeightingMC= kFALSE;
+  fSkipMeanSigmaCorrection= kFALSE;
   DefineOutput(1,  TList::Class()) ;
   for(Int_t i =0 ; i<498;++i)for(Int_t j =0 ; j<19;++j)  fBackgroundFactorLinus[j][i]=1.;
 }
@@ -125,6 +127,9 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysi
   fPhiUdsgEvt(100),
   fh2dAcceptedTracksEtaPhiPerLayer{0,0,0,0,0,0}
 {
+
+   fDisableWeightingMC= kFALSE;
+   fSkipMeanSigmaCorrection= kFALSE;
   fOutput2 =0x0;
   DefineOutput(1,  TList::Class()) ;
   for(Int_t i =0 ; i<498;++i)for(Int_t j =0 ; j<19;++j)  fBackgroundFactorLinus[j][i]=1; //set default to 1
@@ -238,18 +243,19 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       else {
           for(Int_t it = 0; it <1;++it){
               Double_t x= trackV->Pt();
-              if(!fCorrrectionSamplingMode) SubtractMean (dca,trackV);
-              if(!fCorrrectionSamplingMode && fIsPythia) {
-                  //Add delta Sigma from smearing
-                  Double_t xpt = trackV->Pt();
-                  if(xpt >8)  xpt = 8;
-                  Double_t valmc   = fGraphSigmaMC->Eval(xpt);
-                  Double_t valdata =   fGraphSigmaData->Eval(xpt);
-                  valmc *=1e-4;
-                  valdata *=1e-4;
-                  Double_t deltaSigma = valdata*valdata-valmc*valmc;
-                  cov[0] =  cov[0] + deltaSigma;
-                }
+              if(!fSkipMeanSigmaCorrection){
+                  if(!fCorrrectionSamplingMode) SubtractMean (dca,trackV);
+                  if(!fCorrrectionSamplingMode && fIsPythia) {
+                      //Add delta Sigma from smearing
+                      Double_t xpt = trackV->Pt();
+                      if(xpt >8)  xpt = 8;
+                      Double_t valmc   = fGraphSigmaMC->Eval(xpt);
+                      Double_t valdata =   fGraphSigmaData->Eval(xpt);
+                      valmc *=1e-4;
+                      valdata *=1e-4;
+                      Double_t deltaSigma = valdata*valdata-valmc*valmc;
+                      cov[0] =  cov[0] + deltaSigma;
+                    }}
 
               weight =1;
               FillHist("fh2dTracksImpParXY",GetValImpactParameter(kXY,dca,cov),trackV->Pt(),1);
@@ -366,7 +372,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           else {
               double val = CalculateJetProb(jetrec);
               switch(jetflavour)
-              {
+                {
                 case 0:
                   FillHist(Form("JetProbability_%s","Unidentified"),jetpt,val);
                   break;
@@ -381,7 +387,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                   break;
                 default:
                   break;
-              }
+                }
             }
         }
 
@@ -409,21 +415,22 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
           if(hasSIP)
             {
-              if(!fCorrrectionSamplingMode) SubtractMean (dca,trackV);
-              if(!fCorrrectionSamplingMode && fIsPythia) {
-                  //Add delta Sigma from smearing
-                  Double_t xpt = trackV->Pt();
-                  if(xpt >8)  xpt = 8;
+              if(!fSkipMeanSigmaCorrection){
+                  if(!fCorrrectionSamplingMode) SubtractMean (dca,trackV);
+                  if(!fCorrrectionSamplingMode && fIsPythia) {
+                      //Add delta Sigma from smearing
+                      Double_t xpt = trackV->Pt();
+                      if(xpt >8)  xpt = 8;
 
-                  Double_t valmc   = fGraphSigmaMC->Eval(xpt);
-                  Double_t valdata =   fGraphSigmaData->Eval(xpt);
+                      Double_t valmc   = fGraphSigmaMC->Eval(xpt);
+                      Double_t valdata =   fGraphSigmaData->Eval(xpt);
 
-                  valmc *=1e-4;
-                  valdata *=1e-4;
-                  Double_t deltaSigma = valdata*valdata-valmc*valmc;
-                  cov[0] =  cov[0] + deltaSigma;
+                      valmc *=1e-4;
+                      valdata *=1e-4;
+                      Double_t deltaSigma = valdata*valdata-valmc*valmc;
+                      cov[0] =  cov[0] + deltaSigma;
+                    }
                 }
-
 
               if(abs(dca[0])>1.) continue;
               if(abs(dca[1])>2.) continue;
@@ -2724,7 +2731,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::IsJetTaggedTC(int n, double thres)
 
 Bool_t AliAnalysisTaskHFJetIPQA::IsJetTaggedJetProb(double thresProb)
 {
-return kTRUE;
+  return kTRUE;
 }
 //###############################################################################################################
 
