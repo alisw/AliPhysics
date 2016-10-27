@@ -148,7 +148,7 @@ void AliAnalysisTaskCDPWA::TrackInfo::Fill(AliESDtrack *tr, AliPIDResponse *pidR
 	if (fMC) {
 		AliStack *stack = fMCevt->Stack();
 		if (!stack) return;
-		TParticle *cu_pt = (TParticle*)stack->Particle(tr->GetID());
+		TParticle *cu_pt = (TParticle*)stack->Particle(TMath::Abs(tr->GetLabel()));
 		if (!cu_pt) return;
 		if (cu_pt->GetFirstMother() == -1) {
 			fMotherID = -1;
@@ -1097,9 +1097,9 @@ void AliAnalysisTaskCDPWA::UserExec(Option_t *)
 			}
 		}
 		if (fDG_Det[7]) {
-			hMult_Ref[0]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC, 1.8));
-			hMult_Ref[1]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSSA, 1.8));
-			hMult_Ref[2]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTracklets, 1.8));
+			hMult_Ref[0]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSTPC, 0.9));
+			hMult_Ref[1]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTrackletsITSSA, 0.9));
+			hMult_Ref[2]->Fill(AliESDtrackCuts::GetReferenceMultiplicity(fESDEvent, AliESDtrackCuts::kTracklets, 0.9));
 		}
 	}
 	if (fIsMC) {
