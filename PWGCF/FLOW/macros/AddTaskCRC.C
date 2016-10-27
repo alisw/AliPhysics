@@ -180,7 +180,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if(analysisTypeUser == "MCkine" || analysisTypeUser == "MCAOD" || analysisTypeUser == "ESD") {
     // method used for centrality determination
     if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-    if(sCentrEstimator=="TPC") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+    if(sCentrEstimator=="TRK") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
     if(sCentrEstimator=="CL1") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1clusters);
     if (sDataSet == "2010" || sDataSet == "2011") {
       cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
@@ -200,7 +200,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    }
   // method used for centrality determination
   if(sCentrEstimator=="V0")  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-  if(sCentrEstimator=="TPC") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+  if(sCentrEstimator=="TRK") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
   if(sCentrEstimator=="CL1") cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1clusters);
   AliFlowTrackCuts* RefMultCuts = new AliFlowTrackCuts("RefMultCuts");
   RefMultCuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
@@ -378,7 +378,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetCRC2nEtaBins(CRC2nEtaBins);
  taskQC->SetCalculateCME(bCalculateCME);
  taskQC->SetCalculateFlowQC(bCalculateFlow);
- if(ZDCCalibFileName != "" && bUseZDC) taskQC->SetCalculateFlowZDC(bCalculateFlow);
+ if(bUseZDC) taskQC->SetCalculateFlowZDC(bCalculateFlow);
  if(bUseVZERO) taskQC->SetCalculateFlowVZ(bCalculateFlow);
  taskQC->SetFlowQCCenBin(NumCenBins);
  taskQC->SetFlowQCDeltaEta(DeltaEta);

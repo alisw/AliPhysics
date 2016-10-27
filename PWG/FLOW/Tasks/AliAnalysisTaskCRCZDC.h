@@ -246,23 +246,11 @@ private:
  //
  TH1F *fhZNCPM[5];		//! ZNC PM high res.
  TH1F *fhZNAPM[5];		//! ZNA PM high res.
- TH1F *fhZPCPM[5];		//! ZPC PM high res.
- TH1F *fhZPAPM[5];		//! ZPA PM high res.
- TH1F *fhZEM[2];		//! ZEM PM high res.
- TH1F *fhZNCPMlg[5];		//! ZNC PM low res.
- TH1F *fhZNAPMlg[5];		//! ZNA PM low res.
- TH1F *fhZPCPMlg[5];		//! ZPC PM low res.
- TH1F *fhZPAPMlg[5];		//! ZPA PM low res.
- TH1F *fhTDCraw[6];		//! raw TDC histos
- TH1F *fhTDC[6];		//! corrected TDC histos
  //
  TH1F *fhZNCPMQiPMC[4];	//! PMQi/PMC for ZNC
  TH1F *fhZNAPMQiPMC[4];	//! PMQi/PMC for ZNA
- TH1F *fhZPCPMQiPMC[4];	//! PMQi/PMC for ZPC
- TH1F *fhZPAPMQiPMC[4];	//! PMQi/PMC for ZPA
  //
  TH2F *fhZNCvsZNA;		//! ZNC vs ZNA;
- TH2F *fhZPCvsZPA;		//! ZPC vs ZPA;
  TH2F *fhZDCCvsZDCCA;		//! ZDCC vs ZDCCA
  TH2F *fhZNCvsZPC;		//! ZNC vs ZPC;
  TH2F *fhZNAvsZPA;		//! ZNA vs ZPA;
@@ -274,7 +262,6 @@ private:
  TH2F *fhDebunch;		//! Debunch;
  TH2F *fhZNCcentroid;		//! ZNC centroid
  TH2F *fhZNAcentroid;		//! ZNA centroid
- TH2F *fhPMCvsPMQ[4];		//! PMC vs sum PMQi
  //
  TH1F *fhAsymm;		//! ZN asymmetry
  TH2F *fhZNAvsAsymm;		//! ZNA vs asymmetry
@@ -282,18 +269,9 @@ private:
  //
  TH2F *fhZNCvscentrality;	//! ZNC vs. centrality
  TH2F *fhZNAvscentrality;	//! ZNA vs. centrality
- TH2F *fhZPCvscentrality;	//! ZPC vs. centrality
- TH2F *fhZPAvscentrality;	//! ZPA vs. centrality
  //
  TH2F *fhZNCpmcvscentr;	//! ZNC vs. centrality
  TH2F *fhZNApmcvscentr;   	//! ZNA vs. centrality
- TH2F *fhZPCpmcvscentr;   	//! ZPC vs. centrality
- TH2F *fhZPApmcvscentr;   	//! ZPA vs. centrality
- //
- TH1F *fhZNCpmcLR;		//! ZPA PMC low res. chain
- TH1F *fhZNApmcLR;		//! ZNA PMC low res. chain
- TH1F *fhZPCpmcLR;		//! ZPC  PMC low res. chain
- TH1F *fhZPApmcLR;		//! ZPA PMC low res. chain
  
  const static Int_t fCRCMaxnRun = 211;
  const static Int_t fCRCnTow = 8;
@@ -305,8 +283,8 @@ private:
 // TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
 // TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
  TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
- TProfile *fZNCTower[fCRCMaxnRun];		//! ZNC tower spectra
- TProfile *fZNATower[fCRCMaxnRun];		//! ZNA tower spectra
+// TProfile *fZNCTower[fCRCMaxnRun];		//! ZNC tower spectra
+// TProfile *fZNATower[fCRCMaxnRun];		//! ZNA tower spectra
  TClonesArray* fStack; //!
  TList *fSpectraMCList;   //! list with pt spectra
  TH1F *fPtSpecGen[10];		//! PtSpecGen
@@ -319,7 +297,7 @@ private:
  AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
  AliCentrality* fCentrality; //!
   TList *fTowerEqList;   // list with weights
-  TH1D *fTowerGainEq[2]; //!
+  TH1D *fTowerGainEq[2][5]; //!
   Int_t fCachedRunNum;   //
  
  ClassDef(AliAnalysisTaskCRCZDC,6);
