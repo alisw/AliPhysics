@@ -505,7 +505,7 @@ Bool_t AliCaloTrackMatcher::GetTrackClusterMatchingResidual(Int_t trackID, Int_t
   return kTRUE;
 }
 //________________________________________________________________________
-Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
+Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   Int_t matched = 0;
   multimap<Int_t,Int_t>::iterator it;
   for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it){
@@ -515,11 +515,11 @@ Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t
       if(!tempTrack) continue;
       if(GetTrackClusterMatchingResidual(it->second,it->first,tempDEta,tempDPhi)){
         if(tempTrack->Charge()>0){
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg < tempDPhi) && (tempDPhi < dPhiPos) ) matched++;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) matched++;
         }else if(tempTrack->Charge()<0){
-          dPhiNeg*=-1;
-          dPhiPos*=-1;
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg > tempDPhi) && (tempDPhi > dPhiPos) ) matched++;
+          dPhiMin*=-1;
+          dPhiMax*=-1;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) matched++;
         }
       }
     }
@@ -528,7 +528,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t
   return matched;
 }
 //________________________________________________________________________
-Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
+Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   Int_t matched = 0;
   multimap<Int_t,Int_t>::iterator it;
   AliVTrack* tempTrack = event->GetVTrack(trackID);
@@ -538,11 +538,11 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
       Float_t tempDEta, tempDPhi;
       if(GetTrackClusterMatchingResidual(it->first,it->second,tempDEta,tempDPhi)){
         if(tempTrack->Charge()>0){
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg < tempDPhi) && (tempDPhi < dPhiPos) ) matched++;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) matched++;
         }else if(tempTrack->Charge()<0){
-          dPhiNeg*=-1;
-          dPhiPos*=-1;
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg > tempDPhi) && (tempDPhi > dPhiPos) ) matched++;
+          dPhiMin*=-1;
+          dPhiMax*=-1;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) matched++;
         }
       }
     }
@@ -551,7 +551,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
   return matched;
 }
 //________________________________________________________________________
-vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
+vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedTracks;
   multimap<Int_t,Int_t>::iterator it;
   for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it){
@@ -561,11 +561,11 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event
       if(!tempTrack) continue;
       if(GetTrackClusterMatchingResidual(it->second,it->first,tempDEta,tempDPhi)){
         if(tempTrack->Charge()>0){
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg < tempDPhi) && (tempDPhi < dPhiPos) ) tempMatchedTracks.push_back(it->second);
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) tempMatchedTracks.push_back(it->second);
         }else if(tempTrack->Charge()<0){
-          dPhiNeg*=-1;
-          dPhiPos*=-1;
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg > tempDPhi) && (tempDPhi > dPhiPos) ) tempMatchedTracks.push_back(it->second);
+          dPhiMin*=-1;
+          dPhiMax*=-1;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) tempMatchedTracks.push_back(it->second);
         }
       }
     }
@@ -574,7 +574,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event
   return tempMatchedTracks;
 }
 //________________________________________________________________________
-vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
+vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedClusters;
   multimap<Int_t,Int_t>::iterator it;
   AliVTrack* tempTrack = event->GetVTrack(trackID);
@@ -584,11 +584,11 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event
       Float_t tempDEta, tempDPhi;
       if(GetTrackClusterMatchingResidual(it->first,it->second,tempDEta,tempDPhi)){
         if(tempTrack->Charge()>0){
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg < tempDPhi) && (tempDPhi < dPhiPos) ) tempMatchedClusters.push_back(it->second);
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) tempMatchedClusters.push_back(it->second);
         }else if(tempTrack->Charge()<0){
-          dPhiNeg*=-1;
-          dPhiPos*=-1;
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg > tempDPhi) && (tempDPhi > dPhiPos) ) tempMatchedClusters.push_back(it->second);
+          dPhiMin*=-1;
+          dPhiMax*=-1;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) tempMatchedClusters.push_back(it->second);
         }
       }
     }
@@ -618,7 +618,7 @@ Bool_t AliCaloTrackMatcher::IsSecTrackClusterAlreadyTried(Int_t trackID, Int_t c
   else return kTRUE;
 }
 //________________________________________________________________________
-Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
+Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   Int_t matched = 0;
   multimap<Int_t,Int_t>::iterator it;
   for (it=fSecMapClusterToTrack.begin(); it!=fSecMapClusterToTrack.end(); ++it){
@@ -628,11 +628,11 @@ Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, In
       if(!tempTrack) continue;
       if(GetTrackClusterMatchingResidual(it->second,it->first,tempDEta,tempDPhi)){
         if(tempTrack->Charge()>0){
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg < tempDPhi) && (tempDPhi < dPhiPos) ) matched++;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) matched++;
         }else if(tempTrack->Charge()<0){
-          dPhiNeg*=-1;
-          dPhiPos*=-1;
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg > tempDPhi) && (tempDPhi > dPhiPos) ) matched++;
+          dPhiMin*=-1;
+          dPhiMax*=-1;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) matched++;
         }
       }
     }
@@ -641,7 +641,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, In
   return matched;
 }
 //________________________________________________________________________
-Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
+Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   Int_t matched = 0;
   multimap<Int_t,Int_t>::iterator it;
   AliVTrack* tempTrack = event->GetVTrack(trackID);
@@ -651,11 +651,11 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, In
       Float_t tempDEta, tempDPhi;
       if(GetTrackClusterMatchingResidual(it->first,it->second,tempDEta,tempDPhi)){
         if(tempTrack->Charge()>0){
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg < tempDPhi) && (tempDPhi < dPhiPos) ) matched++;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) matched++;
         }else if(tempTrack->Charge()<0){
-          dPhiNeg*=-1;
-          dPhiPos*=-1;
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg > tempDPhi) && (tempDPhi > dPhiPos) ) matched++;
+          dPhiMin*=-1;
+          dPhiMax*=-1;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) matched++;
         }
       }
     }
@@ -664,7 +664,7 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, In
   return matched;
 }
 //________________________________________________________________________
-vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
+vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedTracks;
   multimap<Int_t,Int_t>::iterator it;
   for (it=fSecMapClusterToTrack.begin(); it!=fSecMapClusterToTrack.end(); ++it){
@@ -674,11 +674,11 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *ev
       if(!tempTrack) continue;
       if(GetTrackClusterMatchingResidual(it->second,it->first,tempDEta,tempDPhi)){
         if(tempTrack->Charge()>0){
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg < tempDPhi) && (tempDPhi < dPhiPos) ) tempMatchedTracks.push_back(it->second);
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) tempMatchedTracks.push_back(it->second);
         }else if(tempTrack->Charge()<0){
-          dPhiNeg*=-1;
-          dPhiPos*=-1;
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg > tempDPhi) && (tempDPhi > dPhiPos) ) tempMatchedTracks.push_back(it->second);
+          dPhiMin*=-1;
+          dPhiMax*=-1;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) tempMatchedTracks.push_back(it->second);
         }
       }
     }
@@ -687,7 +687,7 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *ev
   return tempMatchedTracks;
 }
 //________________________________________________________________________
-vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
+vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedClusters;
   multimap<Int_t,Int_t>::iterator it;
   AliVTrack* tempTrack = event->GetVTrack(trackID);
@@ -697,11 +697,11 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *ev
       Float_t tempDEta, tempDPhi;
       if(GetTrackClusterMatchingResidual(it->first,it->second,tempDEta,tempDPhi)){
         if(tempTrack->Charge()>0){
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg < tempDPhi) && (tempDPhi < dPhiPos) ) tempMatchedClusters.push_back(it->second);
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin < tempDPhi) && (tempDPhi < dPhiMax) ) tempMatchedClusters.push_back(it->second);
         }else if(tempTrack->Charge()<0){
-          dPhiNeg*=-1;
-          dPhiPos*=-1;
-          if( (dEtaNeg < tempDEta) && (tempDEta < dEtaPos) && (dPhiNeg > tempDPhi) && (tempDPhi > dPhiPos) ) tempMatchedClusters.push_back(it->second);
+          dPhiMin*=-1;
+          dPhiMax*=-1;
+          if( (dEtaMin < tempDEta) && (tempDEta < dEtaMax) && (dPhiMin > tempDPhi) && (tempDPhi > dPhiMax) ) tempMatchedClusters.push_back(it->second);
         }
       }
     }
