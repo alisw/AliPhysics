@@ -35,15 +35,15 @@ class AliMultSelection;
 #include "AliSelectNonHFE.h"
 
 class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
-  public:
+public:
     AliAnalysisTaskEHCorrel();
     AliAnalysisTaskEHCorrel(const char *name);
     virtual ~AliAnalysisTaskEHCorrel();
-
+    
     virtual void   UserCreateOutputObjects();
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
-
+    
     Bool_t  PassEventSelect(AliVEvent *fVevent);
     void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
     void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
@@ -58,7 +58,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SelectNonHFElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
     TObjArray* CloneAndReduceTrackList();
     void    MixedEvent(AliVTrack *track, THnSparse *SparseMixEHCorrl);
-
+    
     void    SetCentralitySelection(Double_t centMin, Double_t centMax) {fCentralityMin = centMin; fCentralityMax = centMax;};
     void    SetTPCnsigCut(Double_t nsigMin, Double_t nsigMax) {fTPCnSigmaMin = nsigMin; fTPCnSigmaMax= nsigMax;};
     void    SetM02Cut(Double_t m02Min, Double_t m02Max) {fM02Min = m02Min; fM02Max = m02Max;};
@@ -66,15 +66,15 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetEovPCut(Double_t eovpMin, Double_t eovpMax) {fEovPMin = eovpMin; fEovPMax = eovpMax;};
     void    SetHadronCutCase(Int_t hadCutCase) {fHadCutCase = hadCutCase;};
     void    SetTriggerElePtCut(Bool_t trigElePtcut) {fTrigElePtCut = trigElePtcut;};
-
-
-  private:
+    
+    
+private:
     AliVEvent 		    *fVevent;//!V event object
     AliAODEvent 		*fAOD;//!AOD object
     const AliVVertex    *fpVtx; //!
     AliPIDResponse      *fpidResponse; //!pid response
     AliMultSelection    *fMultSelection;//!
-
+    
     Double_t            fCentrality;//!
     Double_t            fCentralityMin;//
     Double_t            fCentralityMax;//
@@ -99,7 +99,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fHadCutCase;//
     AliEventPoolManager *fPoolMgr;//!
     Bool_t              fTrigElePtCut;//!
-
+    
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events
     TH1F                *fVtxZ;//!
@@ -111,7 +111,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH1F                *fMultiplicityPass;//!
     TH1F                *fHistClustE;//!
     TH2F                *fEMCClsEtaPhi;//!
-
+    
     TH1F                *fNegTrkIDPt;//!
     TH1F                *fTrkPt;//!
     TH1F                *fTrketa;//!
@@ -136,45 +136,48 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH1F                *fInclsElecPt;//!
     TH2F                *fHadEop;//!
     TH1F                *fHadPt_AftEID;//!
-
+    TH1F                *fULSElecPt;//!
+    TH1F                *fLSElecPt;//!
+    
     TH2F                *fHadronPhiPt;//!
     TH1F                *fHadronPhi;//!
     TH1F                *fHadronPhiTPChalf;//!
     TH1F                *fHadronPt;//!
-
+    
     TH1F                *fInvmassLS;//!
     TH1F                *fInvmassULS;//!
     TH2F                *fInvmassLSPt;//!
     TH2F                *fInvmassULSPt;//!
-
+    
     TH1F                *fNoMixedEvents;//!
     TH2F                *fMixStatCent;//!
     TH2F                *fMixStatVtxZ;//!
-
+    
     THnSparse           *fSprsHadHCorrl;//!
     THnSparse           *fSprsInclusiveEHCorrl;//!
     THnSparse           *fSprsLSEHCorrl;//!
     THnSparse           *fSprsULSEHCorrl;//!
+    THnSparse           *fSprsMixHadHCorrl;//!
     THnSparse           *fSprsMixInclusiveEHCorrl;//!
     THnSparse           *fSprsMixLSEHCorrl;//!
     THnSparse           *fSprsMixULSEHCorrl;//!
-
-
+    
+    
     AliAnalysisTaskEHCorrel(const AliAnalysisTaskEHCorrel&); // not implemented
     AliAnalysisTaskEHCorrel& operator=(const AliAnalysisTaskEHCorrel&); // not implemented
-
+    
     ClassDef(AliAnalysisTaskEHCorrel, 2); //!example of analysis
 };
 
 class AliehDPhiBasicParticle : public AliVParticle
 {
-  public:
+public:
     AliehDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
-      : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
     {
     }
     ~AliehDPhiBasicParticle() {}
-
+    
     // kinematics
     virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
     virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
@@ -182,35 +185,35 @@ class AliehDPhiBasicParticle : public AliVParticle
     virtual Double_t Pt() const { return fpT; }
     virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
     virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
+    
     virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
     virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
     virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
     virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
-
+    
     virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
     virtual Double_t Phi()        const { return fPhi; }
     virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
-
-
+    
+    
     virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
     virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
-
+    
     virtual Double_t Eta()        const { return fEta; }
     virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
-
+    
     virtual Short_t Charge()      const { return fCharge; }
     virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
     // PID
     virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
     virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
-
-  private:
+    
+private:
     Float_t fEta;      // eta
     Float_t fPhi;      // phi
     Float_t fpT;       // pT
     Short_t fCharge;   // charge
-
+    
     ClassDef( AliehDPhiBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 #endif
