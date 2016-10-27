@@ -303,10 +303,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   // LHC13g  
   } else if (trainConfig == 60){  // EMCAL clusters, EMCEGA triggers
     cuts.AddCut("00010113","1111121063032220000","0163103100000050"); 
-    cuts.AddCut("00010013","1111121063032220000","0163103100000050"); // without pile-up correction
-    cuts.AddCut("00052013","1111121063032220000","0163103100000050"); // EMC7
-    cuts.AddCut("00083013","1111121063032220000","0163103100000050"); // EMCEG1,
-    cuts.AddCut("00085013","1111121063032220000","0163103100000050"); // EMCEG2,
+//     cuts.AddCut("00010013","1111121063032220000","0163103100000050"); // without pile-up correction
+//     cuts.AddCut("00052013","1111121063032220000","0163103100000050"); // EMC7
+//     cuts.AddCut("00083013","1111121063032220000","0163103100000050"); // EMCEG1,
+//     cuts.AddCut("00085013","1111121063032220000","0163103100000050"); // EMCEG2,
     
   // Variations INT7 trigger
   } else if (trainConfig == 61){  // min Energy 
@@ -921,7 +921,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
-    analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
+    analysisClusterCuts[i] = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
