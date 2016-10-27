@@ -45,10 +45,10 @@ class AliCFContainer;
 class AliESDAD;
 class AliMultVariable;
 class AliMultEstimator;
+class AliMultInput;
 class AliMultSelection;
 class AliMultSelectionCuts;
-class AliOADBMultSelection; 
-
+class AliOADBMultSelection;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
