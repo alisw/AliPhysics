@@ -164,7 +164,6 @@ fCentrUpLim(100.),
 fCentrEstimator("V0M"),
 fOutput(0x0),
 fhZNCvsZNA(0x0),
-fhZPCvsZPA(0x0),
 fhZDCCvsZDCCA(0x0),
 fhZNCvsZPC(0x0),
 fhZNAvsZPA(0x0),
@@ -181,16 +180,6 @@ fhZNAvsAsymm(0x0),
 fhZNCvsAsymm(0x0),
 fhZNCvscentrality(0x0),
 fhZNAvscentrality(0x0),
-fhZPCvscentrality(0x0),
-fhZPAvscentrality(0x0),
-fhZNCpmcvscentr(0x0),
-fhZNApmcvscentr(0x0),
-fhZPCpmcvscentr(0x0),
-fhZPApmcvscentr(0x0),
-fhZNCpmcLR(0x0),
-fhZNApmcLR(0x0),
-fhZPCpmcLR(0x0),
-fhZPApmcLR(0x0),
 fCRCnRun(0),
 fZDCGainAlpha(0.395),
 fDataSet(kAny),
@@ -206,30 +195,18 @@ fCachedRunNum(0)
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
   fhZNAPM[i] = 0x0;
-  fhZPCPM[i] = 0x0;
-  fhZPAPM[i] = 0x0;
-  fhZNCPMlg[i] = 0x0;
-  fhZNAPMlg[i] = 0x0;
-  fhZPCPMlg[i] = 0x0;
-  fhZPAPMlg[i] = 0x0;
- }
- for(int i=0; i<2; i++) fhZEM[i] = 0x0;
- for(int i=0; i<6; i++){
-  fhTDCraw[i] = 0x0;
-  fhTDC[i] = 0x0;
  }
  for(int i=0; i<4; i++){
   fhZNCPMQiPMC[i] = 0x0;
   fhZNAPMQiPMC[i] = 0x0;
-  fhZPCPMQiPMC[i] = 0x0;
-  fhZPAPMQiPMC[i] = 0x0;
-  fhPMCvsPMQ[i] = 0x0;
  }
  for(Int_t r=0; r<fCRCMaxnRun; r++) {
    fRunList[r] = 0;
  }
   for(Int_t c=0; c<2; c++) {
-    fTowerGainEq[c] =  NULL;
+    for(Int_t i=0; i<5; i++) {
+      fTowerGainEq[c][i] =  NULL;
+    }
   }
   this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(1);
@@ -307,7 +284,6 @@ fCentrUpLim(100.),
 fCentrEstimator("V0M"),
 fOutput(0x0),
 fhZNCvsZNA(0x0),
-fhZPCvsZPA(0x0),
 fhZDCCvsZDCCA(0x0),
 fhZNCvsZPC(0x0),
 fhZNAvsZPA(0x0),
@@ -324,16 +300,6 @@ fhZNAvsAsymm(0x0),
 fhZNCvsAsymm(0x0),
 fhZNCvscentrality(0x0),
 fhZNAvscentrality(0x0),
-fhZPCvscentrality(0x0),
-fhZPAvscentrality(0x0),
-fhZNCpmcvscentr(0x0),
-fhZNApmcvscentr(0x0),
-fhZPCpmcvscentr(0x0),
-fhZPApmcvscentr(0x0),
-fhZNCpmcLR(0x0),
-fhZNApmcLR(0x0),
-fhZPCpmcLR(0x0),
-fhZPApmcLR(0x0),
 fDataSet(kAny),
 fCRCnRun(0),
 fZDCGainAlpha(0.395),
@@ -354,30 +320,18 @@ fCachedRunNum(0)
  for(int i=0; i<5; i++){
   fhZNCPM[i] = 0x0;
   fhZNAPM[i] = 0x0;
-  fhZPCPM[i] = 0x0;
-  fhZPAPM[i] = 0x0;
-  fhZNCPMlg[i] = 0x0;
-  fhZNAPMlg[i] = 0x0;
-  fhZPCPMlg[i] = 0x0;
-  fhZPAPMlg[i] = 0x0;
- }
- for(int i=0; i<2; i++) fhZEM[i] = 0x0;
- for(int i=0; i<6; i++){
-  fhTDCraw[i] = 0x0;
-  fhTDC[i] = 0x0;
  }
  for(int i=0; i<4; i++){
   fhZNCPMQiPMC[i] = 0x0;
   fhZNAPMQiPMC[i] = 0x0;
-  fhZPCPMQiPMC[i] = 0x0;
-  fhZPAPMQiPMC[i] = 0x0;
-  fhPMCvsPMQ[i] = 0x0;
  }
  for(Int_t r=0; r<fCRCMaxnRun; r++) {
   fRunList[r] = 0;
  }
   for(Int_t c=0; c<2; c++) {
-    fTowerGainEq[c] =  NULL;
+    for(Int_t i=0; i<5; i++) {
+      fTowerGainEq[c][i] =  NULL;
+    }
   }
  this->InitializeRunArrays();
  fMyTRandom3 = new TRandom3(iseed);
@@ -421,8 +375,8 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
   for(Int_t r=0;r<fCRCMaxnRun;r++) {
     fCRCQVecListRun[r] = NULL;
-    fZNCTower[r] = NULL;
-    fZNATower[r] = NULL;
+//    fZNCTower[r] = NULL;
+//    fZNATower[r] = NULL;
   }
 //   for(Int_t i=0;i<fnCen;i++) {
 //     fPtPhiEtaRbRFB128[r][i] = NULL;
@@ -492,8 +446,10 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fCenDis = new TH1F("fCenDis", "fCenDis", 100, 0., 100.);
   fOutput->Add(fCenDis);
   for(Int_t c=0; c<2; c++) {
-    fTowerGainEq[c] = new TH1D();
-    fOutput->Add(fTowerGainEq[c]);
+    for(Int_t i=0; i<5; i++) {
+      fTowerGainEq[c][i] = new TH1D();
+      fOutput->Add(fTowerGainEq[c][i]);
+    }
   }
  
   fSpectraMCList = new TList();
@@ -527,30 +483,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fhZNAPM[i] = new TH1F(hname, hname, 200, -50., 140000);
   fOutput->Add(fhZNAPM[i]);
   //
-  sprintf(hname,"hZPCPM%d",i);
-  fhZPCPM[i] = new TH1F(hname, hname, 200, -50., 50000);
-  fOutput->Add(fhZPCPM[i]);
-  //
-  sprintf(hname,"hZPAPM%d",i);
-  fhZPAPM[i] = new TH1F(hname, hname, 200, -50., 50000);
-  fOutput->Add(fhZPAPM[i]);
-  //
-  sprintf(hname,"hZNCPMlg%d",i);
-  fhZNCPMlg[i] = new TH1F(hname, hname, 200, -50., 140000);
-  fOutput->Add(fhZNCPMlg[i]);
-  //
-  sprintf(hname,"hZNAPMlg%d",i);
-  fhZNAPMlg[i] = new TH1F(hname, hname, 200, -50., 140000);
-  fOutput->Add(fhZNAPMlg[i]);
-  //
-  sprintf(hname,"hZPCPMlg%d",i);
-  fhZPCPMlg[i] = new TH1F(hname, hname, 200, -50., 50000);
-  fOutput->Add(fhZPCPMlg[i]);
-  //
-  sprintf(hname,"hZPAPMlg%d",i);
-  fhZPAPMlg[i] = new TH1F(hname, hname, 200, -50., 50000);
-  fOutput->Add(fhZPAPMlg[i]);
-  //
   if(i<4){
    //
    char hnamenc[20];
@@ -562,67 +494,11 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
    sprintf(hnamena, "hZNAPMQ%dPMC",i+1);
    fhZNAPMQiPMC[i] = new TH1F(hnamena, hnamena, 100, 0., 1.);
    fOutput->Add(fhZNAPMQiPMC[i]);
-   //
-   char hnamepc[20];
-   sprintf(hnamepc, "hZPCPMQ%dPMC",i+1);
-   fhZPCPMQiPMC[i] = new TH1F(hnamepc, hnamepc, 100, 0., 1.);
-   fOutput->Add(fhZPCPMQiPMC[i]);
-   //
-   char hnamepa[20];
-   sprintf(hnamepa, "hZPAPMQ%dPMC",i+1);
-   fhZPAPMQiPMC[i] = new TH1F(hnamepa, hnamepa, 100, 0., 1.);
-   fOutput->Add(fhZPAPMQiPMC[i]);
   }
- }
- for(int i=0; i<6; i++){
-  if(i==0){
-   fhZEM[i] = new TH1F("hZEM1","hZEM1",200,-10.,1190.);
-   fhTDCraw[i] = new TH1F("hTDCZEM1raw", "hTDCZEM1raw", 200, -200., 0.);
-   fhTDC[i] = new TH1F("hTDCZEM1", "hTDCZEM1", 200, -150., 50.);
-   fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZNC","hPMCvsPMQZNC",200,-10.,140000,200,-10.,140000);
-   //
-   fOutput->Add(fhZEM[i]);
-   fOutput->Add(fhPMCvsPMQ[i]);
-  }
-  else if(i==1){
-   fhZEM[i] = new TH1F("hZEM2","hZEM2",200,-10.,1190.);
-   fhTDCraw[i] = new TH1F("hTDCZEM2raw", "hTDCZEM2raw", 200, -200., 0.);
-   fhTDC[i] = new TH1F("hTDCZEM2", "hTDCZEM2", 200, -150., 50.);
-   fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZPC","hPMCvsPMQZPC",200,-10.,50000,200,-10.,50000);
-   //
-   fOutput->Add(fhZEM[i]);
-   fOutput->Add(fhPMCvsPMQ[i]);
-  }
-  else if(i==2){
-   fhTDCraw[i] = new TH1F("hTDCZNCraw", "hTDCZNCraw", 200, -200., 0.);
-   fhTDC[i] = new TH1F("hTDCZNC", "hTDCZNC", 200, -150., 50.);
-   fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZNA","hPMCvsPMQZNA",200,-10.,140000,200,-10.,140000);
-   //
-   fOutput->Add(fhPMCvsPMQ[i]);
-  }
-  else if(i==3){
-   fhTDCraw[i] = new TH1F("hTDCZPCraw", "hTDCZPCraw", 200, -200., 0.);
-   fhTDC[i] = new TH1F("hTDCZPC", "hTDCZPC", 200, -150., 50.);
-   fhPMCvsPMQ[i] = new TH2F("hPMCvsPMQZPA","hPMCvsPMQZPA",200,-10.,50000,200,-10.,50000);
-   //
-   fOutput->Add(fhPMCvsPMQ[i]);
-  }
-  else if(i==4){
-   fhTDCraw[i] = new TH1F("hTDCZNAraw", "hTDCZNAraw", 200, -200., 0.);
-   fhTDC[i] = new TH1F("hTDCZNA", "hTDCZNA", 200, -150., 50.);
-  }
-  else if(i==5){
-   fhTDCraw[i] = new TH1F("hTDCZPAraw", "hTDCZPAraw", 200, -200., 0.);
-   fhTDC[i] = new TH1F("hTDCZPA", "hTDCZPA", 200, -150., 50.);
-  }
-  //
-  fOutput->Add(fhTDC[i]);
  }
 
  fhZNCvsZNA = new TH2F("hZNCvsZNA","hZNCvsZNA",200,-50.,140000,200,-50.,140000);
  fOutput->Add(fhZNCvsZNA);
- fhZPCvsZPA = new TH2F("hZPCvsZPA","hZPCvsZPA",200,-50.,50000,200,-50.,50000);
- fOutput->Add(fhZPCvsZPA);
  fhZDCCvsZDCCA = new TH2F("hZDCCvsZDCCA","hZDCCvsZDCCA",200,0.,180000.,200,0.,200000.);
  fOutput->Add(fhZDCCvsZDCCA);
  fhZNCvsZPC = new TH2F("hZNCvsZPC","hZNCvsZPC",200,-50.,50000,200,-50.,140000);
@@ -657,28 +533,6 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
  fOutput->Add(fhZNCvscentrality);
  fhZNAvscentrality = new TH2F("hZNAvscentrality","ZNA vs. centrality",100,0.,100.,100,0.,100.);
  fOutput->Add(fhZNAvscentrality);
- fhZPCvscentrality = new TH2F("hZPCvscentrality","ZPC vs. centrality",100,0.,100.,100,0.,100.);
- fOutput->Add(fhZPCvscentrality);
- fhZPAvscentrality = new TH2F("hZPAvscentrality","ZPA vs. centrality",100,0.,100.,100,0.,100.);
- fOutput->Add(fhZPAvscentrality);
- 
- fhZNCpmcvscentr = new TH2F("hZNCpmcvscentr","ZNC PMC vs. centrality",100,0.,100.,100,0.,100.);
- fOutput->Add(fhZNCpmcvscentr);
- fhZNApmcvscentr = new TH2F("hZNApmcvscentr","ZNA PMC vs. centrality",100,0.,100.,100,0.,100.);
- fOutput->Add(fhZNApmcvscentr);
- fhZPCpmcvscentr = new TH2F("hZPCpmcvscentr","ZPC PMC vs. centrality",100,0.,100.,100,0.,100.);
- fOutput->Add(fhZPCpmcvscentr);
- fhZPApmcvscentr = new TH2F("hZPApmcvscentr","ZPA PMC vs. centrality",100,0.,100.,100,0.,100.);
- fOutput->Add(fhZPApmcvscentr);
- 
- fhZNCpmcLR = new TH1F("hZNCpmcLR","ZNC PMC lr", 100, 0., 10.);
- fOutput->Add(fhZNCpmcLR);
- fhZNApmcLR = new TH1F("hZNApmcLR","ZNA PMC lr", 100, 0., 10.);
- fOutput->Add(fhZNApmcLR);
- fhZPCpmcLR = new TH1F("hZPCpmcLR","ZPC PMC lr", 100, 0., 10.);
- fOutput->Add(fhZPCpmcLR);
- fhZPApmcLR = new TH1F("hZPApmcLR","ZPA PMC lr", 100, 0., 10.);
- fOutput->Add(fhZPApmcLR);
  
  //********************************************************************
  
@@ -729,12 +583,12 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fCRCQVecListRun[r]->SetOwner(kTRUE);
     fOutput->Add(fCRCQVecListRun[r]);
     
-    fZNCTower[r] = new TProfile(Form("fZNCTower[%d]",fRunList[r]),Form("fZNCTower[%d]",fRunList[r]),100,0.,100.,"s");
-    fZNCTower[r]->Sumw2();
-    fCRCQVecListRun[r]->Add(fZNCTower[r]);
-    fZNATower[r] = new TProfile(Form("fZNATower[%d]",fRunList[r]),Form("fZNATower[%d]",fRunList[r]),100,0.,100.,"s");
-    fZNATower[r]->Sumw2();
-    fCRCQVecListRun[r]->Add(fZNATower[r]);
+//    fZNCTower[r] = new TProfile(Form("fZNCTower[%d]",fRunList[r]),Form("fZNCTower[%d]",fRunList[r]),100,0.,100.,"s");
+//    fZNCTower[r]->Sumw2();
+//    fCRCQVecListRun[r]->Add(fZNCTower[r]);
+//    fZNATower[r] = new TProfile(Form("fZNATower[%d]",fRunList[r]),Form("fZNATower[%d]",fRunList[r]),100,0.,100.,"s");
+//    fZNATower[r]->Sumw2();
+//    fCRCQVecListRun[r]->Add(fZNATower[r]);
     
     //   for(Int_t i=0;i<fnCen;i++) {
     //     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
@@ -834,11 +688,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    if (McEvent && McEvent->GenEventHeader()) fFlowEvent->SetMCReactionPlaneAngle(McEvent);
    
    // run-by-run QA
-   centr = fFlowEvent->GetCentrality();
-   Int_t CenBin = -1;
-   CenBin = GetCenBin(centr);
-   if(CenBin==-1) return;
-   
 //   for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
 //     AliAODTrack* track = (AliAODTrack*)aod->GetTrack(jTracks);
 //     if(!track) continue;
@@ -1196,51 +1045,82 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Float_t energyZEM1 = (Float_t) (aodZDC->GetZEM1Energy());
       Float_t energyZEM2 = (Float_t) (aodZDC->GetZEM2Energy());
       
-      const Double_t * towZNC = aodZDC->GetZNCTowerEnergy();
-      const Double_t * towZPC = aodZDC->GetZPCTowerEnergy();
-      const Double_t * towZNA = aodZDC->GetZNATowerEnergy();
-      const Double_t * towZPA = aodZDC->GetZPATowerEnergy();
-      //
-      const Double_t * towZNClg = aodZDC->GetZNCTowerEnergyLR();
-      const Double_t * towZNAlg = aodZDC->GetZNATowerEnergyLR();
-      //
-      Double_t towZPClg[5], towZPAlg[5]={0.};
-      for(Int_t it=0; it<5; it++){
-        towZPClg[it] = 8*towZPC[it];
-        towZPAlg[it] = 8*towZNA[it];
-      }
+      const Double_t * towZNCraw = aodZDC->GetZNCTowerEnergy();
+      const Double_t * towZNAraw = aodZDC->GetZNATowerEnergy();
       
       // Get centroid from ZDCs *******************************************************
       
       Double_t Enucl = (RunNum < 209122 ? 1380. : 2511.);
       Double_t xyZNC[2]={999.,999.}, xyZNA[2]={999.,999.};
+      Double_t towZNC[5]={0.}, towZNA[5]={0.};
+      
+      Double_t ZNCcalib=1., ZNAcalib=1.;
+      if(fTowerEqList) {
+        if(RunNum!=fCachedRunNum) {
+          for(Int_t i=0; i<5; i++) {
+            fTowerGainEq[0][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNCTower[%d][%d]",RunNum,i)));
+            fTowerGainEq[1][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNATower[%d][%d]",RunNum,i)));
+          }
+        }
+        for(Int_t i=0; i<5; i++) {
+          if(fTowerGainEq[0][i]) towZNC[i] = towZNCraw[i]*fTowerGainEq[0][i]->GetBinContent(fTowerGainEq[0][i]->FindBin(centrperc));
+          if(fTowerGainEq[1][i]) towZNA[i] = towZNAraw[i]*fTowerGainEq[1][i]->GetBinContent(fTowerGainEq[1][i]->FindBin(centrperc));
+        }
+      } else {
+        for(Int_t i=0; i<5; i++) {
+          towZNC[i] = towZNCraw[i];
+          towZNA[i] = towZNAraw[i];
+        }
+      }
+      
+      if(RunNum>=245829) towZNA[2] = 0.;
       Float_t zncEnergy=0., znaEnergy=0.;
       for(Int_t i=0; i<5; i++){
         zncEnergy += towZNC[i];
         znaEnergy += towZNA[i];
       }
-      Double_t ZNCcalib=1., ZNAcalib=1.;
-      if(fTowerEqList) {
-        if(RunNum!=fCachedRunNum) {
-          fTowerGainEq[0] = (TH1D*)(fTowerEqList->FindObject(Form("fZNCTower[%d]",RunNum)));
-          fTowerGainEq[1] = (TH1D*)(fTowerEqList->FindObject(Form("fZNATower[%d]",RunNum)));
-        }
-        if(fTowerGainEq[0]) ZNCcalib = fTowerGainEq[0]->GetBinContent(fTowerGainEq[0]->FindBin(centrperc));
-        if(fTowerGainEq[1]) ZNAcalib = fTowerGainEq[1]->GetBinContent(fTowerGainEq[1]->FindBin(centrperc));
-      }
-      
-      fFlowEvent->SetZNCEnergy(towZNC[0]*ZNCcalib);
-      fFlowEvent->SetZNAEnergy(towZNA[0]*ZNAcalib);
-      fZNCTower[RunBin]->Fill(centrperc,towZNC[0]*ZNCcalib);
-      fZNATower[RunBin]->Fill(centrperc,towZNA[0]*ZNAcalib);
-      
-      Int_t CenBin = GetCenBin(centrperc);
-      if(CenBin==-1) return;
-      Double_t zvtxpos[3]={0.,0.,0.};
-      fFlowEvent->GetVertexPosition(zvtxpos);
+      if(RunNum>=245829) znaEnergy *= 8./7.;
+      fFlowEvent->SetZNCEnergy(towZNC[0]);
+      fFlowEvent->SetZNAEnergy(towZNA[0]);
+//      fZNCTower[RunBin]->Fill(centrperc,towZNC[0]);
+//      fZNATower[RunBin]->Fill(centrperc,towZNC[0]-towZNC[1]-towZNC[3]-towZNC[4]);
       
       if (fUseMCCen) {
-        aodZDC->GetZNCentroidInPbPb(Enucl, xyZNC, xyZNA);
+        const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+        const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+        const Float_t alpha=0.395;
+        Float_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC;
+        Float_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA;
+        for(Int_t i=0; i<4; i++){
+          wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
+          numXZNC += x[i]*wZNC;
+          numYZNC += y[i]*wZNC;
+          denZNC += wZNC;
+          
+          if(i==1) wZNA = TMath::Power(towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4], fZDCGainAlpha);
+          else wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
+          numXZNA += x[i]*wZNA;
+          numYZNA += y[i]*wZNA;
+          denZNA += wZNA;
+        }
+        if(denZNC!=0){
+          Float_t nSpecnC = zncEnergy/Enucl;
+          cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
+          xyZNC[0] = cZNC*numXZNC/denZNC;
+          xyZNC[1] = cZNC*numYZNC/denZNC;
+        }
+        else{
+          xyZNC[0] = xyZNC[1] = 999.;
+        }
+        if(denZNA!=0){
+          Float_t nSpecnA = znaEnergy/Enucl;
+          cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
+          xyZNA[0] = cZNA*numXZNA/denZNA;
+          xyZNA[1] = cZNA*numYZNA/denZNA;
+        }
+        else{
+          xyZNA[0] = xyZNA[1] = 999.;
+        }
       } else {
         const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
         const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
@@ -1300,37 +1180,14 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       for(int i=0; i<5; i++){
         fhZNCPM[i]->Fill(towZNC[i]);
-        fhZNCPMlg[i]->Fill(towZNClg[i]);
         if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
-        fhZNCpmcLR->Fill(towZNClg[0]/1000.);
       }
-      fhPMCvsPMQ[0]->Fill(towZNC[1]+towZNC[2]+towZNC[3]+towZNC[4], towZNC[0]);
-      for(int i=0; i<5; i++){
-        fhZPCPM[i]->Fill(towZPC[i]);
-        fhZPCPMlg[i]->Fill(towZPClg[i]);
-        if(((i<4) && towZPC[0]>0.)) fhZPCPMQiPMC[i]->Fill(towZPC[i+1]/towZPC[0]);
-        fhZPCpmcLR->Fill(towZPClg[0]/1000.);
-      }
-      fhPMCvsPMQ[1]->Fill(towZPC[1]+towZPC[2]+towZPC[3]+towZPC[4], towZPC[0]);
       for(int i=0; i<5; i++){
         fhZNAPM[i]->Fill(towZNA[i]);
-        fhZNAPMlg[i]->Fill(towZNAlg[i]);
         if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
-        fhZNApmcLR->Fill(towZNAlg[0]/1000.);
       }
-      fhPMCvsPMQ[2]->Fill(towZNA[1]+towZNA[2]+towZNA[3]+towZNA[4], towZNA[0]);
-      for(int i=0; i<5; i++){
-        fhZPAPM[i]->Fill(towZPA[i]);
-        fhZPAPMlg[i]->Fill(towZPAlg[i]);
-        if(((i<4) && towZPA[0]>0.)) fhZPAPMQiPMC[i]->Fill(towZPA[i+1]/towZPA[0]);
-        fhZPApmcLR->Fill(towZPAlg[0]/1000.);
-      }
-      fhPMCvsPMQ[3]->Fill(towZPA[1]+towZPA[2]+towZPA[3]+towZPA[4], towZPA[0]);
-      fhZEM[0]->Fill(energyZEM1);
-      fhZEM[1]->Fill(energyZEM2);
       
       fhZNCvsZNA->Fill(energyZNA, energyZNC);
-      fhZPCvsZPA->Fill(energyZPA, energyZPC);
       fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
       fhZNCvsZPC->Fill(energyZPC, energyZNC);
       fhZNAvsZPA->Fill(energyZPA, energyZNA);
@@ -1347,13 +1204,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       fhZNCvscentrality->Fill(centrperc, energyZNC/1000.);
       fhZNAvscentrality->Fill(centrperc, energyZNA/1000.);
-      fhZPCvscentrality->Fill(centrperc, energyZPC/1000.);
-      fhZPAvscentrality->Fill(centrperc, energyZPA/1000.);
-      
-      fhZNCpmcvscentr->Fill(centrperc, towZNC[0]/1380.);
-      fhZNApmcvscentr->Fill(centrperc, towZNA[0]/1380.);
-      fhZPCpmcvscentr->Fill(centrperc, towZPC[0]/1380.);
-      fhZPApmcvscentr->Fill(centrperc, towZPA[0]/1380.);
       
     } // PHYSICS SELECTION
     

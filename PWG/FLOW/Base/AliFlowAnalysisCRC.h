@@ -1508,7 +1508,7 @@ private:
   TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec
-  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][4]; //! Vtx positions re-centered Qvec in cen bins
+//  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][4]; //! Vtx positions re-centered Qvec in cen bins
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TH3D *fCRCZDCEP[6]; //! EPs
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
@@ -1636,7 +1636,7 @@ private:
   
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
-  const static Int_t fFlowNPro = 14;
+  const static Int_t fFlowNPro = 9;
   const static Int_t fFlowNNUA = 4;
   TProfile *fFlowSPZDCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //! correlation profile, [CRCBin][eg]
   TProfile *fFlowSPZDCCorNUA[fCRCMaxnCen][fFlowNPro]; //! NUA profile, [CRCBin][eg]
