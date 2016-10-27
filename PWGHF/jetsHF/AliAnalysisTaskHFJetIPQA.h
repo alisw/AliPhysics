@@ -79,6 +79,7 @@ public:
   void PartiallyRotateMatrixY(TMatrixD &m, double ang_rad);
   void RotateVectorY(TVector3 &v, double ang_rad);
   void DisableCompositionCorrection(Bool_t val = kTRUE){fDisableWeightingMC = val;}
+  void DisableMeanSigma(Bool_t val=kTRUE){fSkipMeanSigmaCorrection = val;}
 private:
   void DoJetLoop(); //jet matching function 2/4
   void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching=0);
@@ -163,6 +164,7 @@ private:
   AliVertexerTracks *fVertexer;//!
   Bool_t fDoJetProbabilityAnalysis;
   Bool_t fDisableWeightingMC;
+  Bool_t fSkipMeanSigmaCorrection;
   Bool_t fESD ;
   Bool_t fMcEvtSampled;//
   Bool_t fCorrrectionSamplingMode;//
