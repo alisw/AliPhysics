@@ -65,6 +65,7 @@ AliCaloTrackMatcher::AliCaloTrackMatcher(const char *name, Int_t clusterType) : 
   fSecNEntries(1),
   fSecVectorDeltaEtaDeltaPhi(0),
   fSecMap_TrID_ClID_ToIndex(),
+  fSecMap_TrID_ClID_AlreadyTried(),
   fListHistos(NULL),
   fHistControlMatches(NULL),
   fSecHistControlMatches(NULL)
@@ -85,7 +86,10 @@ AliCaloTrackMatcher::~AliCaloTrackMatcher(){
     fSecMapClusterToTrack.clear();
     fSecVectorDeltaEtaDeltaPhi.clear();
     fSecMap_TrID_ClID_ToIndex.clear();
+    fSecMap_TrID_ClID_AlreadyTried.clear();
 
+    if(fHistControlMatches) delete fHistControlMatches;
+    if(fSecHistControlMatches) delete fSecHistControlMatches;
     if(fListHistos != NULL){
       delete fListHistos;
     }
@@ -102,6 +106,7 @@ void AliCaloTrackMatcher::Terminate(Option_t *){
   fSecMapClusterToTrack.clear();
   fSecVectorDeltaEtaDeltaPhi.clear();
   fSecMap_TrID_ClID_ToIndex.clear();
+  fSecMap_TrID_ClID_AlreadyTried.clear();
 }
 
 //________________________________________________________________________
@@ -156,6 +161,7 @@ void AliCaloTrackMatcher::Initialize(Int_t runNumber){
   fSecNEntries = 1;
   fSecVectorDeltaEtaDeltaPhi.clear();
   fSecMap_TrID_ClID_ToIndex.clear();
+  fSecMap_TrID_ClID_AlreadyTried.clear();
 
   if(fRunNumber == -1 || fRunNumber != runNumber){
     if(fClusterType == 1){
@@ -172,42 +178,19 @@ void AliCaloTrackMatcher::Initialize(Int_t runNumber){
 //________________________________________________________________________
 void AliCaloTrackMatcher::UserExec(Option_t *){
 
-  // process only for EMCal (1) or PHOS (2) clusters
+  // main method of AliCaloTrackMatcher, first initialize and then process event
+
+  //DebugV0Matching();
+
+  // do processing only for EMCal (1) or PHOS (2) clusters, otherwise do nothing
   if(fClusterType == 1 || fClusterType == 2){
     Initialize(fInputEvent->GetRunNumber());
     ProcessEvent(fInputEvent);
   }
 
-//  DEBUGGING SECTION
-//  cout << "******************************" << endl;
-//  cout << "******************************" << endl;
-//  cout << "NEW EVENT !" << endl;
-//  cout << "vector etaphi:" << endl;
-//  cout << fVectorDeltaEtaDeltaPhi.size() << endl;
-//  cout << "multimap" << endl;
-//  mapT::iterator iter = fMap_TrID_ClID_ToIndex.begin();
-//  for (iter = fMap_TrID_ClID_ToIndex.begin(); iter != fMap_TrID_ClID_ToIndex.end(); ++iter){
-//       Float_t dEta, dPhi = 0;
-//       GetTrackClusterMatchingResidual(iter->first.first,iter->first.second,dEta,dPhi);
-//       cout << "  [" << iter->first.first << "/" << iter->first.second << ", " << iter->second << "] - (" << dEta << "/" << dPhi << ")" << endl;
-//   }
-//  cout << "mapTrackToCluster" << endl;
-//  AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(fInputEvent);
-//  for (Int_t itr=0;itr<esdev->GetNumberOfTracks();itr++){
-//    AliVTrack *inTrack = esdev->GetTrack(itr);
-//    if(!inTrack) continue;
-//    cout << itr << " - " << GetNMatchedClusterIDsForTrack(inTrack->GetID(),5,-5,5,-5) << "\t\t";
-//  }
-//  cout << endl;
-//  multimap<Int_t,Int_t>::iterator it;
-//  for (it=fMapTrackToCluster.begin(); it!=fMapTrackToCluster.end(); ++it) cout << it->first << " => " << it->second << '\n';
-//  cout << "mapClusterToTrack" << endl;
-//  Int_t tempClus = it->second;
-//  for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it) cout << it->first << " => " << it->second << '\n';
-//  vector<Int_t> tempTracks = GetMatchedTrackIDsForCluster(tempClus, 5, -5, 5, -5);
-//  for(Int_t iJ=0; iJ<tempTracks.size();iJ++){
-//    cout << tempClus << " - " << tempTracks.at(iJ) << endl;
-//  }
+  //DebugMatching();
+
+  return;
 }
 
 //________________________________________________________________________
@@ -354,9 +337,22 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
 Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliVTrack* inSecTrack, AliVCluster* cluster, AliVEvent* event, Float_t &dEta, Float_t &dPhi){
 
   //if V0-track to cluster match is already available return stored residuals
-  if(GetSecTrackClusterMatchingResidual(inSecTrack->GetID(),cluster->GetID(), dEta, dPhi)) return kTRUE;
+  if(GetSecTrackClusterMatchingResidual(inSecTrack->GetID(),cluster->GetID(), dEta, dPhi)){
+//cout << "RESIDUAL ALREADY AVAILABLE! - " << dEta << "/" << dPhi << endl;
+    return kTRUE;
+  }
 
+  if(IsSecTrackClusterAlreadyTried(inSecTrack->GetID(),cluster->GetID())){
+//cout << "PROPAGATION ALREADY FAILED! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
+    return kFALSE;
+  }
+
+//cout << "running matching! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
   //if match has not yet been computed, go on:
+  Int_t nModules = 0;
+  if(fClusterType == 1) nModules = fGeomEMCAL->GetNumberOfSuperModules();
+  else if(fClusterType == 2) nModules = fGeomPHOS->GetNModules();
+
   AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodev = 0;
   if (!esdev) {
@@ -380,13 +376,22 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
   AliAODTrack *aodt = 0;
   if (!esdt) {
     aodt = dynamic_cast<AliAODTrack*>(inSecTrack);
-    if (!aodt){AliError("Track is neither ESD nor AOD, continue");return kFALSE;}
+    if (!aodt){
+      AliError("Track is neither ESD nor AOD, continue");
+      fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
+      return kFALSE;
+    }
   }
 
   AliExternalTrackParam *trackParam = 0;
   if (esdt) {
     const AliExternalTrackParam *in = esdt->GetInnerParam();
-    if (!in){AliDebug(2, "Could not get InnerParam of Track, continue"); fSecHistControlMatches->Fill(1.,inSecTrack->Pt()); return kFALSE;}
+    if (!in){
+      AliDebug(2, "Could not get InnerParam of Track, continue");
+      fSecHistControlMatches->Fill(1.,inSecTrack->Pt());
+      fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
+      return kFALSE;
+    }
     trackParam = new AliExternalTrackParam(*in);
   } else {
     Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
@@ -395,7 +400,12 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
     aodt->GetCovarianceXYZPxPyPz(cv);
     trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
   }
-  if(!trackParam){AliError("Could not get TrackParameters, continue"); fSecHistControlMatches->Fill(1.,inSecTrack->Pt()); return kFALSE;}
+  if(!trackParam){
+    AliError("Could not get TrackParameters, continue");
+    fSecHistControlMatches->Fill(1.,inSecTrack->Pt());
+    fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
+    return kFALSE;
+  }
 
   Bool_t propagated = kFALSE;
   AliExternalTrackParam emcParam(*trackParam);
@@ -409,18 +419,30 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
       if( TMath::Abs(eta) > 0.8 ) {
         delete trackParam;
         fSecHistControlMatches->Fill(3.,inSecTrack->Pt());
+        fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
         return kFALSE;
       }
       // Save some time and memory in case of no DCal present
       if( nModules < 13 && ( phi < 60*TMath::DegToRad() || phi > 200*TMath::DegToRad())){
         delete trackParam;
         fSecHistControlMatches->Fill(3.,inSecTrack->Pt());
+        fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
         return kFALSE;
       }
 
       propagated = AliEMCALRecoUtils::ExtrapolateTrackToCluster(&emcParam, cluster, 0.000510999, 5, dEtaTemp, dPhiTemp);
-      if(!propagated){delete trackParam; fSecHistControlMatches->Fill(4.,inSecTrack->Pt()); return kFALSE;}
-    }else{delete trackParam; fSecHistControlMatches->Fill(2.,inSecTrack->Pt()); return kFALSE;}
+      if(!propagated){
+        delete trackParam;
+        fSecHistControlMatches->Fill(4.,inSecTrack->Pt());
+        fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
+        return kFALSE;
+      }
+    }else{
+      delete trackParam;
+      fSecHistControlMatches->Fill(2.,inSecTrack->Pt());
+      fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
+      return kFALSE;
+    }
 
   }else if(cluster->IsPHOS()){
     propagated = AliTrackerBase::PropagateTrackToBxByBz(&emcParam, clusterR, 0.000510999, 20, kTRUE, 0.8, -1);
@@ -431,13 +453,23 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
       TVector3 clsPosVec(clusterPosition);
       dPhiTemp = clsPosVec.DeltaPhi(trkPosVec);
       dEtaTemp = clsPosVec.Eta()-trkPosVec.Eta();
-    }else{delete trackParam; fSecHistControlMatches->Fill(2.,inSecTrack->Pt()); return kFALSE;}
+    }else{
+      delete trackParam;
+      fSecHistControlMatches->Fill(2.,inSecTrack->Pt());
+      fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
+      return kFALSE;}
   }
 
   if (propagated){
     Float_t dR2 = dPhiTemp*dPhiTemp + dEtaTemp*dEtaTemp;
 //cout << dEtaTemp << " - " << dPhiTemp << " - " << dR2 << endl;
-    if(dR2 > fMatchingResidual){fSecHistControlMatches->Fill(5.,inSecTrack->Pt()); return kFALSE;}
+    if(dR2 > fMatchingResidual){
+      fSecHistControlMatches->Fill(5.,inSecTrack->Pt());
+      fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
+      cout << "NO MATCH! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
+      delete trackParam;
+      return kFALSE;
+    }
 //cout << "MATCHED!!!!!!!" << endl;
 
     fSecMapTrackToCluster.insert(make_pair(inSecTrack->GetID(),cluster->GetID()));
@@ -453,6 +485,7 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
     return kTRUE;
   }else AliFatal("Fatal error in AliCaloTrackMatcher, track is labeled as sucessfully propagated although this should be impossible!");
 
+  fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
   delete trackParam;
   return kFALSE;
 }
@@ -537,7 +570,6 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(Int_t trackID, F
 //________________________________________________________________________
 //________________________________________________________________________
 //________________________________________________________________________
-
 Bool_t AliCaloTrackMatcher::GetSecTrackClusterMatchingResidual(Int_t trackID, Int_t clusterID, Float_t &dEta, Float_t &dPhi){
   Int_t position = fSecMap_TrID_ClID_ToIndex[make_pair(trackID,clusterID)];
   if(position == 0) return kFALSE;
@@ -546,6 +578,12 @@ Bool_t AliCaloTrackMatcher::GetSecTrackClusterMatchingResidual(Int_t trackID, In
   dEta = tempEtaPhi.first;
   dPhi = tempEtaPhi.second;
   return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliCaloTrackMatcher::IsSecTrackClusterAlreadyTried(Int_t trackID, Int_t clusterID){
+  Int_t position = fSecMap_TrID_ClID_AlreadyTried[make_pair(trackID,clusterID)];
+  if(position == 0) return kFALSE;
+  else return kTRUE;
 }
 //________________________________________________________________________
 Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg){
@@ -620,5 +658,77 @@ void AliCaloTrackMatcher::SetLogBinningYTH2(TH2* histoRebin){
   for(Int_t i=1; i<=bins; ++i) newbins[i] = factor * newbins[i-1];
   axisafter->Set(bins, newbins);
   delete [] newbins;
+  return;
+}
+
+//________________________________________________________________________
+void AliCaloTrackMatcher::DebugV0Matching(){
+  if(fSecVectorDeltaEtaDeltaPhi.size()>0){
+    cout << "******************************" << endl;
+    cout << "******************************" << endl;
+    cout << "NEW EVENT !" << endl;
+    cout << "vector etaphi:" << endl;
+    cout << fSecVectorDeltaEtaDeltaPhi.size() << endl;
+    cout << "multimap" << endl;
+    mapT::iterator iter = fSecMap_TrID_ClID_ToIndex.begin();
+    for (iter = fSecMap_TrID_ClID_ToIndex.begin(); iter != fSecMap_TrID_ClID_ToIndex.end(); ++iter){
+      Float_t dEta, dPhi = 0;
+      if(!GetSecTrackClusterMatchingResidual(iter->first.first,iter->first.second,dEta,dPhi)) continue;
+      cout << "  [" << iter->first.first << "/" << iter->first.second << ", " << iter->second << "] - (" << dEta << "/" << dPhi << ")" << endl;
+    }
+    cout << "mapTrackToCluster" << endl;
+    AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(fInputEvent);
+    for (Int_t itr=0;itr<esdev->GetNumberOfTracks();itr++){
+      AliVTrack *inTrack = esdev->GetTrack(itr);
+      if(!inTrack) continue;
+      cout << itr << " - " << GetNMatchedClusterIDsForSecTrack(inTrack->GetID(),5,-5,5,-5) << "\t\t";
+    }
+    cout << endl;
+    multimap<Int_t,Int_t>::iterator it;
+    for (it=fSecMapTrackToCluster.begin(); it!=fSecMapTrackToCluster.end(); ++it) cout << it->first << " => " << it->second << '\n';
+    cout << "mapClusterToTrack" << endl;
+    Int_t tempClus = it->second;
+    for (it=fSecMapClusterToTrack.begin(); it!=fSecMapClusterToTrack.end(); ++it) cout << it->first << " => " << it->second << '\n';
+    vector<Int_t> tempTracks = GetMatchedSecTrackIDsForCluster(tempClus, 5, -5, 5, -5);
+    for(Int_t iJ=0; iJ<tempTracks.size();iJ++){
+      cout << tempClus << " - " << tempTracks.at(iJ) << endl;
+    }
+  }
+  return;
+}
+
+//________________________________________________________________________
+void AliCaloTrackMatcher::DebugMatching(){
+  if(fVectorDeltaEtaDeltaPhi.size()>0){
+    cout << "******************************" << endl;
+    cout << "******************************" << endl;
+    cout << "NEW EVENT !" << endl;
+    cout << "vector etaphi:" << endl;
+    cout << fVectorDeltaEtaDeltaPhi.size() << endl;
+    cout << "multimap" << endl;
+    mapT::iterator iter = fMap_TrID_ClID_ToIndex.begin();
+    for (iter = fMap_TrID_ClID_ToIndex.begin(); iter != fMap_TrID_ClID_ToIndex.end(); ++iter){
+      Float_t dEta, dPhi = 0;
+      if(!GetTrackClusterMatchingResidual(iter->first.first,iter->first.second,dEta,dPhi)) continue;
+      cout << "  [" << iter->first.first << "/" << iter->first.second << ", " << iter->second << "] - (" << dEta << "/" << dPhi << ")" << endl;
+    }
+    cout << "mapTrackToCluster" << endl;
+    AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(fInputEvent);
+    for (Int_t itr=0;itr<esdev->GetNumberOfTracks();itr++){
+      AliVTrack *inTrack = esdev->GetTrack(itr);
+      if(!inTrack) continue;
+      cout << itr << " - " << GetNMatchedClusterIDsForTrack(inTrack->GetID(),5,-5,5,-5) << "\t\t";
+    }
+    cout << endl;
+    multimap<Int_t,Int_t>::iterator it;
+    for (it=fMapTrackToCluster.begin(); it!=fMapTrackToCluster.end(); ++it) cout << it->first << " => " << it->second << '\n';
+    cout << "mapClusterToTrack" << endl;
+    Int_t tempClus = it->second;
+    for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it) cout << it->first << " => " << it->second << '\n';
+    vector<Int_t> tempTracks = GetMatchedTrackIDsForCluster(tempClus, 5, -5, 5, -5);
+    for(Int_t iJ=0; iJ<tempTracks.size();iJ++){
+      cout << tempClus << " - " << tempTracks.at(iJ) << endl;
+    }
+  }
   return;
 }

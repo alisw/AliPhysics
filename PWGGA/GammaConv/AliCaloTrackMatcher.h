@@ -37,6 +37,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     // for cluster <-> V0-track matching
     Bool_t PropagateV0TrackToClusterAndGetMatchingResidual(AliVTrack* inSecTrack, AliVCluster* cluster, AliVEvent* event, Float_t &dEta, Float_t &dPhi);
 
+    Bool_t IsSecTrackClusterAlreadyTried(Int_t trackID, Int_t clusterID);
     Bool_t GetSecTrackClusterMatchingResidual(Int_t trackID, Int_t clusterID, Float_t &dEta, Float_t &dPhi);
     Int_t GetNMatchedClusterIDsForSecTrack(Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
     Int_t GetNMatchedSecTrackIDsForCluster(Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
@@ -57,7 +58,11 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    void ProcessEvent(AliVEvent *event);
    void SetLogBinningYTH2(TH2* histoRebin);
 
-   //basic variables/objects
+   // debug methods
+   void DebugMatching();
+   void DebugV0Matching();
+
+   // basic variables/objects
    Int_t                 fClusterType;            // EMCal(1), PHOS(2) or not running (0)
    TString               fV0ReaderName;           // Name of V0Reader
    Double_t              fMatchingWindow;         // matching window to prevent unnecessary propagations
@@ -81,6 +86,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    Int_t                 fSecNEntries;               // number of current V0-trackIDs/clusterID -> Eta/Phi connections
    vector<pairFloat>     fSecVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific V0-trackIDs/clusterID
    mapT                  fSecMap_TrID_ClID_ToIndex;  // map tuple of (V0-trackID,clusterID) to index in vector fSecVectorDeltaEtaDeltaPhi
+   mapT                  fSecMap_TrID_ClID_AlreadyTried;  // map tuple of (V0-trackID,clusterID) to matching outcome, successful or not
 
    //histos
    TList*                fListHistos;             // list with histogram(s)
