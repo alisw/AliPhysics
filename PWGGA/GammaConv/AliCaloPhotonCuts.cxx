@@ -886,12 +886,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(10,"Ch cl match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(11,"Ch cl match w lead");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(12,"Ne cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(13,"Ne cl match w e+-");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(13,"");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(14,"Ne cl sub ch match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(15,"Ga cl match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(16,"Ga cl sub ch match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(17,"conv cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(18,"");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(18,"conv cl match w lead");
         fHistClusterTMEffiInput->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
         fHistograms->Add(fHistClusterTMEffiInput);
         
@@ -1407,7 +1407,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // 4: Gamma conv cluster
   // 5: Charged cluster
   Int_t classification  = -1;
-  
+  Long_t leadMCLabel    = -1;
+  if (isESD) 
+    leadMCLabel         = ((AliESDCaloCluster*)cluster)->GetLabel();
+  else 
+    leadMCLabel         = ((AliAODCaloCluster*)cluster)->GetLabel();
+    
   // TM efficiency histograms before TM
   if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
     classification    = ClassifyClusterForTMEffi(cluster, event, mcEvent, isESD); 
@@ -1423,18 +1428,23 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if (classification == 2 || classification == 3)
       fHistClusterTMEffiInput->Fill(cluster->E(), 4); // Ga cl match
     if ( classification == 3)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 5); // Ga cl sub ch match
-      
+      fHistClusterTMEffiInput->Fill(cluster->E(), 5); // Ga cl sub ch match      
+
+    vector<Int_t> labelsMatchedTracks     = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
+                                                                                            fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+    if (classification < 4)
+      fHistClusterENMatchesNeutral->Fill(cluster->E(), labelsMatchedTracks.size());
+    else 
+      fHistClusterENMatchesCharged->Fill(cluster->E(), labelsMatchedTracks.size());
+    labelsMatchedTracks.clear();
   }  
+  
+  
   if (fVectorMatchedClusterIDs.size()>0){
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
       // TM efficiency histos after TM
       if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
-        AliCaloTrackMatcher* trackMatcherInstance = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
-        
-    //         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(10,"Ch cl match w lead");
-    //         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(12,"Ne cl match w e+-");
         fHistClusterTMEffiInput->Fill(cluster->E(), 8);
         if (classification == 5 )
           fHistClusterTMEffiInput->Fill(cluster->E(), 9); //Ch cl match
@@ -1449,13 +1459,56 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         if ( classification == 3)
           fHistClusterTMEffiInput->Fill(cluster->E(), 15); // Ga cl sub ch match
 
+        vector<Int_t> labelsMatchedTracks     = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
+                                                                                                fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+        Int_t idHighestPt = -1;
+        Double_t ptMax    = -1;
+        Double_t eMax     = -1;
+        Bool_t foundLead  = kFALSE;
+        Double_t eLead    = -1;
+        Int_t idLead      = -1;
+        for (Int_t i = 0; i < (Int_t)labelsMatchedTracks.size(); i++){
+          AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatchedTracks.at(i)));
+          if (ptMax < currTrack->Pt()){
+            ptMax               = currTrack->Pt();
+            eMax                = currTrack->E();
+            idHighestPt         = labelsMatchedTracks.at(i);
+          }
+          if (classification == 4 || classification == 5){
+            Long_t mcLabelTrack = -1;
+            if (isESD)
+              mcLabelTrack      = TMath::Abs(((AliESDtrack*)currTrack)->GetLabel());
+            else  
+              mcLabelTrack      = TMath::Abs(((AliAODTrack*)currTrack)->GetLabel());
+            if (mcLabelTrack!= -1 && mcLabelTrack == leadMCLabel){
+              foundLead         = kTRUE;
+              eLead             = currTrack->E();
+              idLead            = labelsMatchedTracks.at(i);
+            }  
+          }  
+        }
+        if (classification == 5){
+          fHistClusterEvsTrackECharged->Fill(cluster->E(), eMax);
+          if (foundLead ){
+            fHistClusterTMEffiInput->Fill(cluster->E(), 10); //Ch cl match w lead
+            fHistClusterEvsTrackECharged->Fill(cluster->E(), eLead);
+          }
+        }    
+        if (classification == 4){
+          fHistClusterEvsTrackEConv->Fill(cluster->E(), eMax);
+          if (foundLead )
+          fHistClusterTMEffiInput->Fill(cluster->E(), 17); //conv cl match w lead
+        }
+        if (classification == 0 )
+          fHistClusterEvsTrackENeutral->Fill(cluster->E(), eMax);    
+        if (classification == 1)  
+          fHistClusterEvsTrackENeutralSubCharged->Fill(cluster->E(), eMax);
+        if (classification == 2)
+          fHistClusterEvsTrackEGamma->Fill(cluster->E(), eMax);    
+        if (classification == 3)
+          fHistClusterEvsTrackEGammaSubCharged->Fill(cluster->E(), eMax);    
         
-      //     fHistClusterEvsTrackECharged->Fill(cluster->E(), track->E());
-      //     fHistClusterEvsTrackEChargedLead->Fill(cluster->E(), track->E());
-      //     fHistClusterEvsTrackENeutral->Fill(cluster->E(), track->E());
-      //     fHistClusterEvsTrackENeutralSubCharged->Fill(cluster->E(), track->E());
-      //     fHistClusterENMatchesNeutral->Fill(cluster->E(), nMatches);
-      //     fHistClusterENMatchesCharged->Fill(cluster->E(), nMatches);
+        labelsMatchedTracks.clear();
       }
 
       return kFALSE;
