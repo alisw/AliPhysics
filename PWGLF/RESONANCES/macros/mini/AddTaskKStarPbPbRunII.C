@@ -98,8 +98,8 @@ AliRsnMiniAnalysisTask * AddTaskKStarPbPbRunII(
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
-   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPbPbRunII.C");
-   gROOT->LoadMacro("ConfigKStarPbPbRunII.C");
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPbPbRunII.C");
+   //gROOT->LoadMacro("ConfigKStarPbPbRunII.C");
    if (!ConfigKStarPbPbRunII(task, isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,nsigmaPi,nsigmaK, enableMonitor)) return 0x0;
 
    //
