@@ -34,6 +34,15 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    vector<Int_t> GetMatchedTrackIDsForCluster(Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
    vector<Int_t> GetMatchedClusterIDsForTrack(Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
 
+    // for cluster <-> V0-track matching
+    Bool_t PropagateV0TrackToClusterAndGetMatchingResidual(AliVTrack* inSecTrack, AliVCluster* cluster, AliVEvent* event, Float_t &dEta, Float_t &dPhi);
+
+    Bool_t GetSecTrackClusterMatchingResidual(Int_t trackID, Int_t clusterID, Float_t &dEta, Float_t &dPhi);
+    Int_t GetNMatchedClusterIDsForSecTrack(Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
+    Int_t GetNMatchedSecTrackIDsForCluster(Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
+    vector<Int_t> GetMatchedSecTrackIDsForCluster(Int_t clusterID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
+    vector<Int_t> GetMatchedClusterIDsForSecTrack(Int_t trackID, Float_t dEtaPos, Float_t dEtaNeg, Float_t dPhiPos, Float_t dPhiNeg);
+
  private:
    //typedefs
    typedef pair<Int_t, Int_t> pairInt;
@@ -62,14 +71,23 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
    multimap<Int_t,Int_t> fMapClusterToTrack;      // connects a given cluster ID with all associated track IDs
 
    Int_t                 fNEntries;               // number of current TrackID/ClusterID -> Eta/Phi connections
-   vector<pairFloat>     fVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific
-   mapT                  fMap_TrID_ClID_ToIndex;  // map tuple of (trackID,clusterID) to index in vector vecDeltaEtaDeltaPhi
+   vector<pairFloat>     fVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific TrackID/ClusterID
+   mapT                  fMap_TrID_ClID_ToIndex;  // map tuple of (trackID,clusterID) to index in vector fVectorDeltaEtaDeltaPhi
+
+   // for cluster <-> V0-track matching (running with different mass hypthesis)
+   multimap<Int_t,Int_t> fSecMapTrackToCluster;      // connects a given secondary track ID with all associated cluster IDs
+   multimap<Int_t,Int_t> fSecMapClusterToTrack;      // connects a given cluster ID with all associated secondary track IDs
+
+   Int_t                 fSecNEntries;               // number of current V0-trackIDs/clusterID -> Eta/Phi connections
+   vector<pairFloat>     fSecVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific V0-trackIDs/clusterID
+   mapT                  fSecMap_TrID_ClID_ToIndex;  // map tuple of (V0-trackID,clusterID) to index in vector fSecVectorDeltaEtaDeltaPhi
 
    //histos
    TList*                fListHistos;             // list with histogram(s)
    TH2F*                 fHistControlMatches;     // bookkeeping for processed tracks/clusters and succesful matches
+   TH2F*                 fSecHistControlMatches;  // bookkeeping for processed V0-tracks/clusters and succesful matches
 
-   ClassDef(AliCaloTrackMatcher,1)
+   ClassDef(AliCaloTrackMatcher,2)
 };
 
 #endif
