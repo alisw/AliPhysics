@@ -789,6 +789,10 @@ public:
   TProfile* GetCRCZDCQVecACorrHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecACorr[r][c];};
   void SetCRCZDCQVecCCorrHist(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecCCorr[r][c] = TH;};
   TProfile* GetCRCZDCQVecCCorrHist(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecCCorr[r][c];};
+  void SetCRCZDCQVecEP(TH1D* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecEP[r][c] = TH;};
+  TH1D* GetCRCZDCQVecEP(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecEP[r][c];};
+  void SetCRCZDCQVecRes(TProfile* const TH, Int_t const r, Int_t const c) {this->fCRCZDCQVecRes[r][c] = TH;};
+  TProfile* GetCRCZDCQVecRes(Int_t const r, Int_t const c) const {return this->fCRCZDCQVecRes[r][c];};
   void SetCRCZDCQVecCov(TProfile* const TH, Int_t const r, Int_t const i) {this->fCRCZDCQVecCov[r][i] = TH;};
   TProfile* GetCRCZDCQVecCov(Int_t const r, Int_t const i) const {return this->fCRCZDCQVecCov[r][i];};
   
@@ -868,8 +872,6 @@ public:
   TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
   void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
   TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
-  void SetZNCentroid(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCentroid[eg][h] = n;};
-  TH2F* GetZNCentroid(Int_t const eg, Int_t const h) const {return this->fhZNCentroid[eg][h];};
   void SetZNSpectra(TH1F* const n, Int_t const eg, Int_t const h) {this->fhZNSpectra[eg][h] = n;};
   TH1F* GetZNSpectra(Int_t const eg, Int_t const h) const {return this->fhZNSpectra[eg][h];};
   void SetZNCvsZNA(TH2F* const n, Int_t const h) {this->fhZNCvsZNA[h] = n;};
@@ -1507,10 +1509,11 @@ private:
   TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
   TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
+  TH1D *fCRCZDCQVecEP[fCRCMaxnRun][2]; //! ZN event planes
+  TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec
 //  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][4]; //! Vtx positions re-centered Qvec in cen bins
   //  TProfile2D *fCRCZDCResCenEn; //!
-  // TH3D *fCRCZDCEP[6]; //! EPs
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
   Double_t fEvPlZDCAflat;
@@ -1737,7 +1740,6 @@ private:
   Double_t fZDCESELC2tot;
   Double_t *fCorrMap; //!
   Double_t fCenWeightEbE;
-  TH2F* fhZNCentroid[fCRCMaxnCen][2]; //! Centroid position x-y
   TH1F* fhZNSpectra[fCRCMaxnCen][2]; //! ZN spectra
   TH2F* fhZNCvsZNA[fCRCMaxnCen]; //! ZNA-ZNC correlation
   TH2F* fhZNCenvsMul[fCRCMaxnCen][2]; //! rad vs mul
@@ -1772,7 +1774,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 25);
+  ClassDef(AliFlowAnalysisCRC, 26);
   
 };
 
