@@ -545,10 +545,28 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111111063932220000","0163103100000050"); //
   } else if (trainConfig == 113){  // trackMatching variations
     cuts.AddCut("00010113","1111111063032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111111066032220000","0163103100000050"); //
     cuts.AddCut("00010113","1111111067032220000","0163103100000050"); //
     cuts.AddCut("00010113","1111111068032220000","0163103100000050"); //
     cuts.AddCut("00010113","1111111069032220000","0163103100000050"); //
     
+    //std with pT dep track matching
+  } else if (trainConfig == 115){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111066032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111066032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111066032220000","0163103100000050"); // std
+  } else if (trainConfig == 116){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 117){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111068032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111068032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111068032220000","0163103100000050"); // std
+  } else if (trainConfig == 118){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111069032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111069032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111069032220000","0163103100000050"); // std
 
   } else if (trainConfig == 120){ // EMCAL clusters pp 8 TeV - no SPD PileUp
     cuts.AddCut("00010113","1111111063032220000","0163103100000050"); // std
