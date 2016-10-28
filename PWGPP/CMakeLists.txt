@@ -86,6 +86,7 @@ set ( SRCS6
   ITS/AliAnalysisTaskITSTrackingCheck.cxx
   ITS/AliAnalysisTaskSDDRP.cxx
   ITS/AliAnalysisTaskSEImpParRes.cxx
+  ITS/AliAnalysisTaskSEImpParResSparse.cxx
   ITS/AliAnalysisTaskSPD.cxx
   ITS/AliMeanVertexCalibTask.cxx
   ITS/AliMeanVertexPreprocessorOffline.cxx
