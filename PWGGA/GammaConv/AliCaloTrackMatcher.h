@@ -13,7 +13,7 @@ using namespace std;
 class AliCaloTrackMatcher : public AliAnalysisTaskSE {
 
   public:
-    AliCaloTrackMatcher(const char *name, Int_t clusterType);
+    AliCaloTrackMatcher(const char *name="CaloTrackMatcher_0", Int_t clusterType=0);
     //Uncopyable & operator=(const Uncopyable&);
 
     virtual ~AliCaloTrackMatcher();                            //virtual destructor
