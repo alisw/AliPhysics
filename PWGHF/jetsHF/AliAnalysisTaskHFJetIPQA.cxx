@@ -228,7 +228,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           continue;
         }
       IncHist("fh1dTracksAccepeted",2);
-      if(!fCorrrectionSamplingMode)SmearTrackHybrid(trackV); //Hybrid  approach
+      if(!fCorrrectionSamplingMode && !fSkipMeanSigmaCorrection)SmearTrackHybrid(trackV); //Hybrid  approach
       FillHist("fh2dAcceptedTracksEtaPhi",trackV->Eta(),trackV->Phi(),1);
       //Calculate impact parameters and fill histogramm
       Bool_t hasIPSuccess = kFALSE;
@@ -410,7 +410,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
           if (!IsTrackAccepted(trackV,fItsClustersInputGlobal)) continue;
           Bool_t hasSIP =kFALSE;
-          if(!fCorrrectionSamplingMode) SmearTrackHybrid(trackV);
+          if(!fCorrrectionSamplingMode&&!fSkipMeanSigmaCorrection) SmearTrackHybrid(trackV);
           if(CalculateJetSignedTrackImpactParameter(trackV,jetrec,dca,cov,sign,dcatrackjet,lineardecaylenth))hasSIP =kTRUE;
 
           if(hasSIP)
