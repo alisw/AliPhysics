@@ -97,6 +97,7 @@ class AliHFCorrelator : public TNamed
 	Bool_t PoolUpdate(const TObjArray* associatedTracks=NULL);// updates the event pool
 	Double_t SetCorrectPhiRange(Double_t phi); // sets all the angles in the correct range
 	void SetPidAssociated() {fhadcuts->SetPidAssociated();}
+    	void SetStoreInfoSoftPiME(Bool_t storeInfoSoftPiME) {fStoreInfoSoftPiME=storeInfoSoftPiME;}
 
 	//getters
 	AliEventPool* GetPool() {return fPool;}
@@ -104,14 +105,14 @@ class AliHFCorrelator : public TNamed
 	AliHFAssociatedTrackCuts* GetSelectionCuts() {return fhadcuts;}
 	AliReducedParticle* GetAssociatedParticle() {return fReducedPart;}
     
-    AliRDHFCuts*  GetDMesonCutObject(){return fDMesonCutObject;}
+        AliRDHFCuts*  GetDMesonCutObject(){return fDMesonCutObject;}
 	
 	Int_t GetNofTracks(){return fNofTracks;}
 	Int_t GetNofEventsInPool(){return fPoolContent;}
 
 	Double_t GetDeltaPhi(){return fDeltaPhi;} // Delta Phi, needs to be called after the method correlate 
 	Double_t GetDeltaEta(){return fDeltaEta;} // Delta Eta
-    Double_t GetCentrality(){return fMultCentr;} // centrality or multiplicity
+    	Double_t GetCentrality(){return fMultCentr;} // centrality or multiplicity
 	
 	Double_t GetAssociatedKZeroInvariantmass(){return fk0InvMass;}
 	Double_t *GetMultBinLimits() const {return fMultBinLimits;}
@@ -167,11 +168,13 @@ class AliHFCorrelator : public TNamed
 	Double_t fDeltaEta; // delta eta between D meson and associated track
 	
 	Double_t fk0InvMass; // KZero invariant mass
-	 Int_t fnMultBins;  // number of Mult bins (add)
-	 Int_t fnMultBinLimits; // "number of limits", that is fnMultBins+1 (add)
-	 Double_t* fMultBinLimits; //[fnMultBinLimits]  Mult bins (add)
-	 Double_t fMinMultCand; /// minimum mult of the candidate
-	 Double_t fMaxMultCand; /// minimum mult of the candidate
+	Int_t fnMultBins;  // number of Mult bins (add)
+	Int_t fnMultBinLimits; // "number of limits", that is fnMultBins+1 (add)
+	Double_t* fMultBinLimits; //[fnMultBinLimits]  Mult bins (add)
+	Double_t fMinMultCand; /// minimum mult of the candidate
+	Double_t fMaxMultCand; /// minimum mult of the candidate
+
+    Bool_t fStoreInfoSoftPiME; //save info on px, py, pz, E to use soft-pi cut in ME online analysis
 
 	ClassDef(AliHFCorrelator,4); // class for HF correlations
 };
