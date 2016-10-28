@@ -44,6 +44,7 @@ class AliReducedParticle : public AliVParticle
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi);
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge);
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge,Double_t weight);
+  AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel, Int_t trackid, Double_t impPar, Bool_t checkSoftPi, Short_t charge,Double_t weight, Double_t px, Double_t py, Double_t pz, Double_t Epion);
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Int_t mcLabel);
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, int charge, int orginmother); 
   AliReducedParticle(Double_t eta, Double_t phi, Double_t pt, Double_t invmass, int ptbin, int orginmother=0);
@@ -64,11 +65,12 @@ class AliReducedParticle : public AliVParticle
   virtual int GetOriginMother() const {return fOriginMother;}
   void SetWeight(Double_t weight){fWeight=weight;}
   Double_t GetWeight(){return fWeight;}
+  virtual Double_t Px()         const { return fpx; }
+  virtual Double_t Py()         const { return fpy; }
+  virtual Double_t Pz()         const { return fpz; }
+  virtual Double_t Epion()      const { return fE; }  
   
   // kinematics
-  virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
-  virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
   virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
   virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
   
@@ -108,6 +110,10 @@ class AliReducedParticle : public AliVParticle
   Short_t fCharge;     // charge of the associated track
   Double_t fInvMass;   // Invariant mass of Dmeson
   Double_t fWeight;   // track weight (e.g. 1/efficiency)
+  Double_t fpx;        // px
+  Double_t fpy;        // py
+  Double_t fpz;        // pz
+  Double_t fE;         // E (with pion mass assumption)
   int fPtBin;          // Ptbin of Dmesons
   int fOriginMother;   //  Holds the origin motherquark (process)
   

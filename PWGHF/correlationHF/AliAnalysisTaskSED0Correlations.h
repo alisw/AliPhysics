@@ -115,7 +115,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void CreateCorrelationsObjs();
   void CalculateCorrelations(AliAODRecoDecayHF2Prong* d, Int_t labD0=-1, TClonesArray* mcArray=0x0);
   void CalculateCorrelationsMCKine(AliAODMCParticle* d, TClonesArray* mcArray=0x0);
-  void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origD0, Int_t PdgD0, AliReducedParticle* track, Int_t ptbin, Int_t type, Double_t wg=1.);
+  void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origD0, Int_t PdgD0, AliReducedParticle* track, Int_t ptbin, Int_t type, Int_t softpiME, Double_t wg=1.);
   Int_t CheckTrackOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* mcArray) const;
   Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
