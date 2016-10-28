@@ -54,6 +54,53 @@
 #include "AliTreePlayer.h"
 #include "TStatToolkit.h"
 
+void addTPCAliases(TTree * tree){
+  // add aliases which are not yet in default TPC tree (will be added during reprocessing of QA)
+  // 
+  //   code from -    void  AliTPCPerformanceSummary::MakeMissingChambersAliases(TTree * tree){
+  //   code can not be compiled from ALICE_PHYSICS ...
+  //          
+ tree->SetAlias("sectorNclMissing70","Sum$((max(grNclSectorNegA.fY,grNclSectorPosA.fY)/grNclPhiMedian.fElements[0])<0.7)+Sum$((max(grNclSectorNegC.fY,grNclSectorPosC.fY)/grNclPhiMedian.fElements[0])<0.7)");  
+  // Missing chambers according StandardQA - using Ncl:phi  histogram.  
+  //  Counter:  sum( Ncl_sector/<Ncl>_median < 70% ) 
+  tree->SetAlias("sectorNtrMissing70","Sum$((18*grNtrSectorPosC.fY/Sum$(grNtrSectorPosC.fY))<0.7)+Sum$((18*grNtrSectorPosA.fY/Sum$(grNtrSectorPosA.fY))<0.7)");
+  // Missing chambers according StandardQA - using Ncl:phi  track counter
+  //  Counter sum( Ntr_sector/<Ntr>_median < 70% ) 
+  tree->SetAlias("ocdbStatusCounter","hasRawQA*Sum$(grOCDBStatus.fY<0.75)");               // counter status for the OCDB
+  tree->SetAlias("rawLowQMaxCounter75","Sum$((grRawQMax.fY)<0.75)");                       // counter small gain based on RAW QA  Qmax 
+  tree->SetAlias("rawLowOccupancyCounter75","Sum$((grRawLocalMax.fY)<0.75)");              // counter small occupancy (either gain or fraction of time)
+  tree->SetAlias("rawLowCounter75","Sum$(((grRawQMax.fY)<0.75||(grRawLocalMax.fY)<0.75))*(-1+2*(grRawQMax.fEY<0.03))");
+  // counter outliers 75 (Qmax or occupancy based)  
+  // for laser data Q is not reliable - disable decission for data with big RMS 
+  tree->SetAlias("ocdbHVStatusCounter","Sum$(grROCHVStatus.fY<0.5)");                      // chambers not active  - according  HV decission
+  tree->SetAlias("ocdbLowerHVCounter50","Sum$(grROCHVMedian.fY<(grROCHVNominal.fY-50))");    // chambers not active  - according  maximal diff of HV
+  tree->SetAlias("qaClOccupancyCounter60","(Sum$((36*TPC_Occ_IROC.fElements)<0.60)+Sum$((36*TPC_Occ_OROC.fElements)<0.60))");   // missing chambers according cluster occupancy
+
+  // dEdx outlier alaiases
+  tree->SetAlias("normdEdxSector","(36*meanMIPvsSector.fElements/Sum$(meanMIPvsSector.fElements))");  
+  // dEdx_{sector}/<dEdx>
+  tree->SetAlias("wrongdEdxSectorCounter5","Sum$(abs(normdEdxSector-1)>0.05)&&rawLowCounter75==0&&sectorNtrMissing70<36");  
+  tree->SetAlias("wrongdEdxSectorCounter2","Sum$(abs(normdEdxSector-1)>0.02)&&rawLowCounter75==0&&sectorNtrMissing70<36");  
+  // dEdx_{sector}/<dEdx>
+  tree->SetAlias("disabledGoodChambers","(sectorNclMissing70>0||sectorNtrMissing70>0)&&rawLowCounter75==0&&sectorNtrMissing70<36");
+  //
+  // disabled good chambers counter
+  // 
+  tree->SetAlias("emptyQA","(sectorNtrMissing70==36)");
+  //
+  //
+  tree->SetAlias("rctMismatch","(QA.TPC.global_Outlier&&(!QA.TPC.global_PhysAcc))&&MonALISA.RCT.tpc_value>0");  
+  tree->SetAlias("QA.TPC_Events","(entriesVertX+entriesVertY+entriesVertZ)/3.");
+  tree->SetAlias("TPC_Status","(1*global_Warning+10*global_Outlier)");
+  tree->SetAlias("meanTPCncl_Status","(1*meanTPCncl_Warning+10*meanTPCncl_Outlier+100*(meanTPCncl_PhysAcc==0))");
+  tree->SetAlias("PID_Status", "(1*MIPquality_Warning+10*MIPquality_Outlier+100*(MIPquality_PhysAcc==0))");
+  tree->SetAlias("DCAz_Status", "(1*dcaz_Warning+10*dcaz_Outlier+100*(dcaz_PhysAcc==0))");
+  tree->SetAlias("DCAr_Status", "(1*dcar_Warning+10*dcar_Outlier+100*(dcar_PhysAcc==0))");
+  tree->SetAlias("tpcItsMatch_Status", "(1*tpcItsMatch_Warning+10*tpcItsMatch_Outlier+100*(tpcItsMatch_PhysAcc==0))");
+  tree->SetAlias("itsTpcPulls_Status", "(1*itsTpcPulls_Warning+10*itsTpcPulls_Outlier+100*(itsTpcPulls_PhysAcc==0))");
+}
+
+
 void qatpcAddMetadata(TTree*tree, Int_t verbose){
   //
   // Set metadata infomation 
@@ -63,6 +110,7 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
     return;
   }
   ::Info("qatpcAddMetadata","Start processing Tree %s",tree->GetName());
+  addTPCAliases(tree);
   TObjArray * branches=tree->GetListOfBranches();
   // Clasigication of variables
   //   regular expression to defined automaticaly some variables following naming conventions - used to define classes/Axis/legends 
@@ -207,19 +255,6 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
   }
   
   
-  //
-  tree->SetAlias("rctMismatch","(QA.TPC.global_Outlier&&(!QA.TPC.global_PhysAcc))&&MonALISA.RCT.tpc_value>0");  
-  //
-  tree->SetAlias("QA.TPC_Events","(entriesVertX+entriesVertY+entriesVertZ)/3.");
-  tree->SetAlias("TPC_Status","(1*global_Warning+10*global_Outlier)");
-  tree->SetAlias("meanTPCncl_Status","(1*meanTPCncl_Warning+10*meanTPCncl_Outlier+100*(meanTPCncl_PhysAcc==0))");
-  tree->SetAlias("PID_Status", "(1*MIPquality_Warning+10*MIPquality_Outlier+100*(MIPquality_PhysAcc==0))");
-  tree->SetAlias("DCAz_Status", "(1*dcaz_Warning+10*dcaz_Outlier+100*(dcaz_PhysAcc==0))");
-  tree->SetAlias("DCAr_Status", "(1*dcar_Warning+10*dcar_Outlier+100*(dcar_PhysAcc==0))");
-  tree->SetAlias("tpcItsMatch_Status", "(1*tpcItsMatch_Warning+10*tpcItsMatch_Outlier+100*(tpcItsMatch_PhysAcc==0))");
-  tree->SetAlias("itsTpcPulls_Status", "(1*itsTpcPulls_Warning+10*itsTpcPulls_Outlier+100*(itsTpcPulls_PhysAcc==0))");
-
-
 
   // Fill Based and  custom metadata
   //
