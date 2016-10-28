@@ -98,6 +98,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 ,fAssTPCnCut(80)
 ,fAssITSrefitCut(kTRUE)
 ,fUseNewEP(kTRUE)
+,fUseTender(kTRUE)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -106,6 +107,8 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 ,fCentrality(0)
 ,fMC(0)
 ,fStack(0)
+,fTracks_tender(0)
+,fCaloClusters_tender(0)
 ,fOutputList(0)
 //,fTrackCuts(0)
 //,fAssTrackCuts(0)
@@ -199,6 +202,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 ,fAssTPCnCut(80)
 ,fAssITSrefitCut(kTRUE)
 ,fUseNewEP(kTRUE)
+,fUseTender(kTRUE)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -207,6 +211,8 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 ,fCentrality(0)
 ,fMC(0)
 ,fStack(0)
+,fTracks_tender(0)
+,fCaloClusters_tender(0)
 ,fOutputList(0)
 //,fTrackCuts(0)
 //,fAssTrackCuts(0)
@@ -303,6 +309,8 @@ AliAnalysisTaskFlowTPCEMCalEP::~AliAnalysisTaskFlowTPCEMCalEP()
     delete fPID;
     delete fCFM;
     delete fPIDqa;
+    delete fTracks_tender;
+    delete fCaloClusters_tender;
     //delete fTrackCuts;
     //delete fAssTrackCuts;
 }
@@ -338,6 +346,19 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         AliWarning("PID not initialised, get from Run no");
         fPID->InitializePID(fAOD->GetRunNumber());
     }
+    
+    if(fUseTender){
+        fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+        
+        if (!fTracks_tender || !fCaloClusters_tender) return;
+    }
+    
+    
+    
+    Int_t ntracks = -999;
+    if(!fUseTender) ntracks = fVevent->GetNumberOfTracks();
+    if(fUseTender)  ntracks = fTracks_tender->GetEntries();
     
     
     if(fIsMC)fMC = MCEvent();
@@ -436,16 +457,14 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             AliWarning("qnlist not found!!");
             return;
         }
-
-        //if (qnlist) cout<<"qn list found!!!!!!!!!!!!!!!!!!!!!"<<endl;
         
         const AliQnCorrectionsQnVector *qnTPC;
         const AliQnCorrectionsQnVector *qnV0A;
         const AliQnCorrectionsQnVector *qnV0C;
         
-        qnTPC = GetQnVectorFromList(qnlist, "TPC", "plain", "raw");
-        qnV0A = GetQnVectorFromList(qnlist, "qnV0A", "plain", "raw");
-        qnV0C = GetQnVectorFromList(qnlist, "qnV0C", "plain", "raw");
+        qnTPC = GetQnVectorFromList(qnlist, "TPC", fExpectedCorrectionPass.Data(),fAlternativeCorrectionPass.Data());
+        qnV0A = GetQnVectorFromList(qnlist, "VZEROA", fExpectedCorrectionPass.Data(),fAlternativeCorrectionPass.Data());
+        qnV0C = GetQnVectorFromList(qnlist, "VZEROC", fExpectedCorrectionPass.Data(), fAlternativeCorrectionPass.Data());
         
 //        qnTPC = fFlowQnVectorMgr->GetDetectorQnVector("TPC");
 //        qnV0A = fFlowQnVectorMgr->GetDetectorQnVector("VZEROA");
@@ -554,15 +573,18 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         
         Double_t Qx2pos = 0., Qy2pos = 0., Qx2neg = 0., Qy2neg = 0., Qweight = 1;
         
-        for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
+        for(Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
             
-            AliVParticle* vparticle = fVevent->GetTrack(iTracks);
-            if (!vparticle){
-                printf("ERROR: Could not receive track %d\n", iTracks);
+            
+            AliVParticle* Vtrack = 0x0;
+            if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
+            if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
+            
+            if (!Vtrack) {
+                printf("ERROR: Could not receive track for EP %d\n", iTracks);
                 continue;
             }
-            
-            AliAODTrack *trackEP = dynamic_cast<AliAODTrack*>(vparticle);
+            AliAODTrack *trackEP = dynamic_cast<AliAODTrack*>(Vtrack);
             
             if (!trackEP) {
                 printf("ERROR: Could not receive track %d\n", iTracks);
@@ -639,15 +661,17 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     Bool_t IsSameEvent = kFALSE;
     
     // Track loop
-    for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) {
+    for(Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
         
-        AliVParticle* vparticle = fVevent->GetTrack(iTracks);
-        if (!vparticle){
-            printf("ERROR: Could not receive track %d\n", iTracks);
+        AliVParticle* Vtrack = 0x0;
+        if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
+        if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
+        
+        if (!Vtrack) {
+            printf("ERROR: Could not receive tagged  track %d\n", iTracks);
             continue;
         }
-        
-        AliAODTrack *track = dynamic_cast<AliAODTrack*>(vparticle);
+        AliAODTrack *track = dynamic_cast<AliAODTrack*>(Vtrack);
         if(!track) continue;
         
         if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
@@ -721,7 +745,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         p = track->P();
         phi = track->Phi();
         dEdx = track->GetTPCsignal();
-        EovP = clsE/p;
+        
         fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
         fITSnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasITS(track, AliPID::kElectron) : 1000;
         fTOFnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTOF(track, AliPID::kElectron) : 1000;
@@ -731,7 +755,10 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         
         Int_t clsId = track->GetEMCALcluster();
         if (clsId>0){
-            AliAODCaloCluster *cluster = fAOD->GetCaloCluster(clsId);//check
+            AliVCluster *cluster=0x0;
+            if(!fUseTender) cluster = (AliVCluster*)fVevent->GetCaloCluster(clsId);
+            if(fUseTender) cluster = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(clsId));
+            
             if(cluster && cluster->IsEMCAL() && phi>emcphimim && phi<emcphimax){
                 clsE = cluster->E();
                 m20 = cluster->GetM20();
@@ -739,7 +766,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             }
         }
         
-
+        EovP = clsE/p;
+        
         
         // not implemented yet for 2015
         //if(fIsMC) fEMCalnSigma = GetSigmaEMCalMC(EovP, pt, iCent);
@@ -927,7 +955,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
     
     fTPCsubEPres = new TH1F("fTPCsubEPres","TPC subevent plane resolution",100,-1,1);
     fOutputList->Add(fTPCsubEPres);
-    
     
     //iCent,pt,fTPCnSigma,EovP,dphi,cosdphi,iDecay
     Int_t binsv2[7]=   {3,20,40,40,4        ,20,7};
@@ -1505,18 +1532,26 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
     Bool_t flagPhotonicElec = kFALSE;
     Bool_t flagPhotonicElecBCG = kFALSE;
     
-    for(Int_t jTracks = 0; jTracks<fAOD->GetNumberOfTracks(); jTracks++){
+    Int_t ntracks = -999;
+    if(!fUseTender) ntracks = fVevent->GetNumberOfTracks();
+    if(fUseTender)  ntracks = fTracks_tender->GetEntries();
+    
+    
+    for(Int_t jTracks = 0; jTracks < ntracks; jTracks++){
         
         if(jTracks==iTracks) continue;
         
-        AliVParticle* vAssoparticle = fVevent->GetTrack(jTracks);
-        if (!vAssoparticle){
-            printf("ERROR: Could not receive track %d\n", jTracks);
+        AliVParticle* Vassotrack = 0x0;
+        if(!fUseTender) Vassotrack  = fVevent->GetTrack(jTracks);
+        if(fUseTender) Vassotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jTracks));
+        
+        if (!Vassotrack) {
+            printf("ERROR: Could not receive associated track %d\n", jTracks);
             continue;
         }
-        
-        AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(vAssoparticle);
+        AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(Vassotrack);
         if(!trackAsso) continue;
+        
         
         Double_t pt=-999., ptAsso=-999., nTPCsigmaAsso=-999.;
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;

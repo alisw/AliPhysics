@@ -58,10 +58,11 @@ public:
     
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     AliHFEpid *GetPID() const { return fPID; }
-    void SetExpectedCorrectionPass(const char *pass) { fExpectedCorrectionPass = pass; }
-    void SetAlternativeCorrectionPass(const char *pass) { fAlternativeCorrectionPass = pass; }
+    void SetExpectedCorrectionPass(const char *pass1) { fExpectedCorrectionPass = pass1; }
+    void SetAlternativeCorrectionPass(const char *pass2) { fAlternativeCorrectionPass = pass2; }
     
     void SetEP(Bool_t UseNewEP) {fUseNewEP = UseNewEP;};
+    void SetTender(Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
     void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};
     void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
@@ -99,6 +100,7 @@ private:
     Int_t                 fAssTPCnCut;		// TPC number of clusters for associated electron
     Bool_t                fAssITSrefitCut;	// ITS refit for associated electron
     Bool_t                fUseNewEP;          // Use new EP framework
+    Bool_t                fUseTender;          // Use tender
     
     // AliESDEvent        	*fESD;	            	 //! ESD object
     AliAODEvent           *fAOD;                  //! AOD object
@@ -109,6 +111,10 @@ private:
     
     AliMCEvent            *fMC;                   //! MC object
     AliStack              *fStack;		//! stack
+    
+    TClonesArray  *fTracks_tender;              //Tender tracks
+    TClonesArray  *fCaloClusters_tender;        //Tender clusters
+    
     
     TList              	*fOutputList;		 //! output list
     
