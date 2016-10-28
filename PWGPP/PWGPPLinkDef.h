@@ -65,6 +65,7 @@
 #pragma link C++ class AliAnalysisTaskITSsaTracks+;
 #pragma link C++ class AliAnalysisTaskITSAlignQA+;
 #pragma link C++ class AliAnalysisTaskSEImpParRes+;
+#pragma link C++ class AliAnalysisTaskSEImpParResSparse+;
 #pragma link C++ class AliTrackMatchingTPCITSCosmics+;
 #pragma link C++ class AliAnalysisTaskV0QA+;
 #pragma link C++ class AliMaterialBudget+;
