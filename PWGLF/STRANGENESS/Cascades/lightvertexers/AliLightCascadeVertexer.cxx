@@ -175,6 +175,9 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          Double_t dca=PropagateToDCA(pv0,pbt,b);
          if (dca > fDCAmax) continue;
 
+          //eta cut - test
+          if (TMath::Abs(pbt->Eta())>fMaxEta) continue;
+          
          AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
 	 //PH         if (cascade.GetChi2Xi() > fChi2max) continue;
 
