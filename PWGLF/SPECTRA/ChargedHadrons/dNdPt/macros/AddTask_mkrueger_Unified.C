@@ -75,7 +75,7 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified()
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("mkrueger_dNdPt",
 							   TList::Class(),
 							   AliAnalysisManager::kOutputContainer,
-							   "AnalysisResults_mkrueger_dNdPt.root");
+							   "AnalysisResults.root");
 
 
 
