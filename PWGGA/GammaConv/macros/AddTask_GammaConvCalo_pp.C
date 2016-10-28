@@ -1072,7 +1072,9 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
 
   // ************************************* EMCAL cuts ****************************************************
   // 7 TeV
-  } else if (trainConfig == 201){ // EMCAL clusters pp 7 TeV
+  } else if (trainConfig == 200){ // EMCAL clusters pp 7 TeV, pT dep matching
+    cuts.AddCut("00000113","00200009327000008250400000","1111111067032230000","0163103100000010"); // std
+  } else if (trainConfig == 201){ // EMCAL clusters pp 7 TeV, std matching
     cuts.AddCut("00000113","00200009327000008250400000","1111111063032230000","0163103100000010"); // std
   } else if (trainConfig == 202){ //EMCAL minEnergy variation
     cuts.AddCut("00000113","00200009327000008250400000","1111111063022230000","0163103100000010"); //0.6 GeV/c
@@ -1106,6 +1108,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00000113","00200009327000008250400000","1111111093032230000","0163103100000010"); // time
   } else if (trainConfig == 207){ // EMCAL track matching variations
     cuts.AddCut("00000113","00200009327000008250400000","1111111063032230000","0163103100000010"); // track matching variations
+    cuts.AddCut("00000113","00200009327000008250400000","1111111066032230000","0163103100000010"); //
     cuts.AddCut("00000113","00200009327000008250400000","1111111067032230000","0163103100000010"); //
     cuts.AddCut("00000113","00200009327000008250400000","1111111068032230000","0163103100000010"); //
     cuts.AddCut("00000113","00200009327000008250400000","1111111069032230000","0163103100000010"); //
