@@ -141,6 +141,9 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
 //---> Flag controlling trigger selection
         fTrigType(AliVEvent::kMB),
 
+//---> Min pT to save candidate
+       fMinPtToSave( 0.55 ),
+
 //---> Variables for fTreeEvent
       fCentrality(0),
 
@@ -257,6 +260,9 @@ fkUseLightVertexer ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
+
+//---> Min pT to save candidate
+fMinPtToSave( 0.55 ),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
@@ -1425,6 +1431,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Random denial
         Bool_t lKeepCascade = kTRUE;
         if(fkDownScaleCascade && ( fRand->Uniform() > fDownScaleFactorCascade )) lKeepCascade = kFALSE;
+        
+        //Lowest pT cutoff (this is all background anyways)
+        if( fTreeCascVarPt < fMinPtToSave ) lKeepCascade = kFALSE; 
         
         if( fkSaveCascadeTree && lKeepCascade &&
            (

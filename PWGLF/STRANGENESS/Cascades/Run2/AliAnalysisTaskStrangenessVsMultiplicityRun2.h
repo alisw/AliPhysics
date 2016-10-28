@@ -138,7 +138,11 @@ public:
         fCascadeVertexerSels[7] = lParameter;
     }
 //---------------------------------------------------------------------------------------
-//Superlight mode: add another configuration, please
+    void SetMinPt     ( Float_t lMinPt ) {
+        fMinPtToSave = lMinPt;
+    }
+//---------------------------------------------------------------------------------------
+    //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
     void AddConfiguration( AliCascadeResult *lCascadeResult );
 //---------------------------------------------------------------------------------------
@@ -180,6 +184,8 @@ private:
     
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+    
+    Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output 
 
 //===========================================================================================
 //   Variables for Event Tree
