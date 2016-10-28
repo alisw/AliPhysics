@@ -30,7 +30,8 @@ void ExtractOutput(
    Bool_t singleBinSB=kTRUE, //kTRUE=a single mass bin is used in the THnSparse for storing the sideband corlelations (used by D0 to save space)
    Int_t npools=9, //number of pools for the event-mixing
    Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
-   Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1.) //deltaEta ranges for correlation distributions
+   Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions  
+   Bool_t subtractSoftPiME=kFALSE) //***NOTE: AVAILABLE ONLY FOR ONLINE CORRELATION APPROACH*** remove likely soft pions (via inv.mass cut) also in ME distributions ***NOTE
 {
 
   //Create and set the correlation plotter class
@@ -49,6 +50,7 @@ void ExtractOutput(
   plotter->SetCorrectPoolsSeparately(poolByPool);
   plotter->SetDeltaEtaRange(deltaEtaMin,deltaEtaMax);
   plotter->ReadTTreeOutputFiles(treeSE,treeME);
+  plotter->SetSubtractSoftPiInMEdistr(subtractSoftPiME);
   if(!flagSpecie) return;
 
   plotter->SetDebugLevel(0); //0 = get main results; 1 = get full list of plots; 2 = get debug printouts

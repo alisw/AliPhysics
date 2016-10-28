@@ -502,13 +502,17 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   //Histograms definition
   TH2D* hSE_Sign[fNpools][fNpTbins];
   TH2D* hME_Sign[fNpools][fNpTbins];  
+  TH2D* hME_Sign_SoftPi[fNpools][fNpTbins];  
   TH2D* hSE_Sideb[fNpools][fNpTbins];
   TH2D* hME_Sideb[fNpools][fNpTbins];
+  TH2D* hME_Sideb_SoftPi[fNpools][fNpTbins];  
 
   TH2D* hSE_Sign_PtInt[fNpools];
   TH2D* hME_Sign_PtInt[fNpools];
+  TH2D* hME_Sign_SoftPi_PtInt[fNpools];
   TH2D* hSE_Sideb_PtInt[fNpools];
   TH2D* hME_Sideb_PtInt[fNpools];
+  TH2D* hME_Sideb_SoftPi_PtInt[fNpools];
 
   TH2D* hCorr_Sign_PtInt[fNpools];
   TH2D* hCorr_Sideb_PtInt[fNpools];
@@ -533,12 +537,20 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
       hME_Sign[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax);
       hSE_Sideb[iPool][iBin] = GetCorrelHisto(kSE,kSideb,iPool,iBin,thrMin,thrMax);
       hME_Sideb[iPool][iBin] = GetCorrelHisto(kME,kSideb,iPool,iBin,thrMin,thrMax);
+      if(fSubtractSoftPiME) {
+        hME_Sign_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax,2); //2 = pick only bin2 of softpi axis (#5), i.e. pick the fake softpions
+        hME_Sideb_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax,2);
+      }
 
       //Scale bkg plots by ratio of signal region/sidebands
       hSE_Sideb[iPool][iBin]->Scale(fScaleFactor[iBin]);
       hME_Sideb[iPool][iBin]->Scale(fScaleFactor[iBin]);
       hSE_Sideb[iPool][iBin]->SetEntries(hSE_Sideb[iPool][iBin]->GetEntries()*fScaleFactor[iBin]);
       hME_Sideb[iPool][iBin]->SetEntries(hME_Sideb[iPool][iBin]->GetEntries()*fScaleFactor[iBin]);
+      if(fSubtractSoftPiME) {
+        hME_Sideb_SoftPi[iPool][iBin]->Scale(fScaleFactor[iBin]);
+        hME_Sideb_SoftPi[iPool][iBin]->SetEntries(hME_Sideb_SoftPi[iPool][iBin]->GetEntries()*fScaleFactor[iBin]); 
+      }
 
       if(fDebug>=1) { 
 	TCanvas *c = new TCanvas(Form("cInput_%d_%d_%1.1fto%1.1f",iPool,iBin,thrMin,thrMax),Form("InputCorr_%s_pool%d_bin%d_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),iPool,iBin,thrMin,thrMax),100,100,1200,900);
@@ -564,18 +576,27 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
         hME_Sign_PtInt[iPool] = (TH2D*)hME_Sign[iPool][iBin]->Clone(Form("hME_Sign_PtInt_p%d",iPool));
         hSE_Sideb_PtInt[iPool] = (TH2D*)hSE_Sideb[iPool][iBin]->Clone(Form("hSE_Sideb_PtInt_p%d",iPool));
         hME_Sideb_PtInt[iPool] = (TH2D*)hME_Sideb[iPool][iBin]->Clone(Form("hME_Sideb_PtInt_p%d",iPool));
+        if(fSubtractSoftPiME) {
+	  hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));
+          hME_Sideb_SoftPi_PtInt[iPool] = (TH2D*)hME_Sideb_SoftPi[iPool][iBin]->Clone(Form("hME_Sideb_SoftPi_PtInt_p%d",iPool));
+        }
       }
       else {
         hSE_Sign_PtInt[iPool]->Add(hSE_Sign[iPool][iBin]);
         hME_Sign_PtInt[iPool]->Add(hME_Sign[iPool][iBin]);
         hSE_Sideb_PtInt[iPool]->Add(hSE_Sideb[iPool][iBin]);
         hME_Sideb_PtInt[iPool]->Add(hME_Sideb[iPool][iBin]);
+        if(fSubtractSoftPiME) {
+	  hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
+          hME_Sideb_SoftPi_PtInt[iPool]->Add(hME_Sideb_SoftPi[iPool][iBin]);
+        }
       }
 
     } // end of pT for
 
-    NormalizeMEplot(hME_Sign_PtInt[iPool]);
-    NormalizeMEplot(hME_Sideb_PtInt[iPool]);
+    //Normalize ME plots and (if requested) remove the softpion-compatible tracks
+    NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
+    NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
 
     //Apply Event Mixing Correction
     hCorr_Sign_PtInt[iPool] = (TH2D*)hSE_Sign_PtInt[iPool]->Clone(Form("hCorr_Sign_PtInt_p%d",iPool));
@@ -897,13 +918,13 @@ void AliDhCorrelationExtraction::MergeCorrelPlotsVsPtTTree(TH3D* &h3D, Int_t SEo
 }
 
 //___________________________________________________________________________________________
-TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME) {
 
   switch(fDmesonSpecies) {
 
-    case (kD0toKpi): {
+    case (kD0toKpi): {  //in this case, it can also extract fake softpions from ME analysis (from online correl analysis only)
       if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDzeroTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
-      else return GetCorrelHistoDzero(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      else return GetCorrelHistoDzero(SEorME,SorSB,pool,pTbin,thrMin,thrMax,softPiME);
       break;
     } //end case D0
 
@@ -919,10 +940,10 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_
       break;
     } //end case D*
 
-  case (kDxHFE): {
-    return GetCorrelHistoDxHFE(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
-    break;
-  } //end case DxHFE
+    case (kDxHFE): {
+      return GetCorrelHistoDxHFE(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      break;
+    } //end case DxHFE
 
     default:    
       printf("Error! Wrong setting in the D meson specie - Returning...\n");
@@ -933,7 +954,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_
 
 
 //___________________________________________________________________________________________
-TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME) {
 
   TH2D* h2D = new TH2D(); //pointer to be returned
 
@@ -971,6 +992,12 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB,
     if(etaLowBin < 1) etaLowBin = 1;
     hsparse->GetAxis(2)->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
     hsparse->GetAxis(3)->SetRange(ptBinTrMin,ptBinTrMax); //Apply cut on pT
+    if(fSubtractSoftPiME) {
+      if(hsparse->GetNdimensions()==5) hsparse->GetAxis(4)->SetRange(softPiME,2); //Apply cut on softpi axis (bin1=accepted tracks, bin2=fake softpi)
+      else printf("*** Removal of fake-softpi from ME distributions not possible! Info not saved in the online analysis! ***\n");
+    } else {
+      if(hsparse->GetNdimensions()==5) hsparse->GetAxis(4)->SetRange(1,2); //just to be sure that everything is considered when projecting (though only bin1 will be filled)
+    }
     if(fDebug>=2 && pool==0) printf("Bin ranges - pT: %d-%d, dEta: %d-%d\n",ptBinTrMin,ptBinTrMax,etaLowBin,etaHighBin);
     h3D = (TH3D*)hsparse->Projection(1,2,0);//x,y,z axes
   }
@@ -1388,15 +1415,20 @@ void AliDhCorrelationExtraction::GetSBScalingFactor(Int_t i, TH1F* &histo) {
 
 
 //___________________________________________________________________________________________
-void AliDhCorrelationExtraction::NormalizeMEplot(TH2D* &histoME) {
+void AliDhCorrelationExtraction::NormalizeMEplot(TH2D* &histoME, TH2D* &histoMEsoftPi) {
 
   Double_t bin0phi = histoME->GetXaxis()->FindBin(0.);
   Double_t bin0eta = histoME->GetYaxis()->FindBin(0.);
 
+  //evaluate the normalization (from ALL tracks, including possible fake softpions) -> **histoME indeed includes bin1+bin2 of THnSparse, i.e. all the tracks**
   Double_t factorAdd = 0;
   for(int in=-1;in<=0;in++) factorAdd+=histoME->GetBinContent(bin0phi+in,bin0eta);
   for(int in=-1;in<=0;in++) factorAdd+=histoME->GetBinContent(bin0phi+in,bin0eta-1);
   factorAdd/=4.;
+
+  if(fSubtractSoftPiME) histoME->Add(histoMEsoftPi,-1); //remove the tracks compatible with soft pion (if requested)
+
+  //apply the normalization
   histoME->Scale(1./factorAdd);
 
 }
