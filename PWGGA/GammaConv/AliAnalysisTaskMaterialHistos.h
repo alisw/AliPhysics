@@ -81,7 +81,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		UChar_t 					fKind;						//
 		Int_t 						fIsHeavyIon;			//
 		Int_t 						fIsMC;					           	//
-    AliVEvent*        fInputEvent;                                //
+		AliVEvent*        fInputEvent;                                //
 		AliMCEvent*       fMCEvent;				         //
 		AliStack*         fMCStack;                                   //
 		Int_t             fnCuts;                      //
@@ -95,14 +95,19 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hESDConversionR;                //!  
 		TH2F**            hESDConversionAsymP;            //!  
 		TH1F**            hESDConversionMidPtR;           //!
+		TH1F**            hESDConversionHighPtR;           //!
+		TH1F**            hESDConversionEtaPR;           //!
+		TH1F**            hESDConversionEtaNR;           //!
 		TH3F**            hESDConversionRInBins;          //!
 		TH3F**            hESDConversionPhiInBins;        //!
 		TH1F**            hESDConversionEta;              //!  
 		TH1F**            hESDConversionMidPtEta;         //!
+		TH1F**            hESDConversionHighPtEta;         //!
 		TH1F**            hESDConversionPt;              //!
 		TH1F**            hESDConversionPt5cm;              //!
 		TH1F**           	hESDConversionDCA;             //!
 		TH1F**           	hESDConversionMidPtDCA;        //!
+		TH1F**           	hESDConversionHighPtDCA;        //!
 		TH1F**           	hESDConversionPsiPair;         //!
 		TH1F**           	hESDConversionChi2;            //!
 		TH1F**           	hESDConversionMass;            //!
@@ -110,39 +115,54 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
  		TH2F**            hMCConversionMappingRPhi;      //!
 		TH1F**            hMCConversionR;                //!  
 		TH1F**            hMCConversionMidPtR;           //!  
+		TH1F**            hMCConversionHighPtR;           //! 
+		TH1F**            hMCConversionEtaPR;           //!   
+		TH1F**            hMCConversionEtaNR;           //!   
 		TH1F**            hMCConversionEta;              //!  
 		TH1F**            hMCConversionMidPtEta;         //!
+		TH1F**            hMCConversionHighPtEta;         //!
 		TH1F**            hMCConversionPt;               //!
 		TH1F**            hMCAllGammaPt;                 //!
 		TH2F**            hMCTrueConversionMappingRPhi;      //!
 		TH2F**            hMCTrueConversionMappingRZ;        //!
 		TH1F**            hMCTrueConversionR;                //!  
 		TH1F**            hMCTrueConversionMidPtR;           //!  
+		TH1F**            hMCTrueConversionHighPtR;           //!  
+		TH1F**            hMCTrueConversionEtaPR;           //!  
+		TH1F**            hMCTrueConversionEtaNR;           //!  
 		TH1F**            hMCTrueConversionEta;              //!  
 		TH1F**            hMCTrueConversionMidPtEta;         //!
+		TH1F**            hMCTrueConversionHighPtEta;         //!
 		TH1F**            hMCTrueConversionPt;               //!
 		TH1F**            hMCTrueConversionPt5cm;               //!
-  	TH2F**            hMCTrueConversionAsymP;            //!
+		TH2F**            hMCTrueConversionAsymP;            //!
 		TH1F**            hMCTrueConversionDCA;              //!
 		TH1F**            hMCTrueConversionMidPtDCA;         //!
+		TH1F**            hMCTrueConversionHighPtDCA;         //!
 		TH1F**            hMCTrueConversionPsiPair;          //!
 		TH1F**            hMCTrueConversionChi2;             //!
 		TH1F**            hMCTrueConversionMass;             //!
 
 		TH1F**            hMCTruePi0DalConversionR;                //!  
 		TH1F**            hMCTruePi0DalConversionMidPtR;           //!  
+		TH1F**            hMCTruePi0DalConversionHighPtR;           //!  
 		TH1F**            hMCTruePi0DalConversionEta;              //!  
 		TH1F**            hMCTruePi0DalConversionMidPtEta;         //!
+		TH1F**            hMCTruePi0DalConversionHighPtEta;         //!
 		TH1F**            hMCTruePi0DalConversionPt;              //!
 		TH1F**            hMCTrueEtaDalConversionR;                //!  
 		TH1F**            hMCTrueEtaDalConversionMidPtR;           //!  
+		TH1F**            hMCTrueEtaDalConversionHighPtR;           //!  
 		TH1F**            hMCTrueEtaDalConversionEta;              //!  
 		TH1F**            hMCTrueEtaDalConversionMidPtEta;         //!
+		TH1F**            hMCTrueEtaDalConversionHighPtEta;         //!
 		TH1F**            hMCTrueEtaDalConversionPt;              //!
 		TH1F**            hMCTrueCombConversionR;                //!  
 		TH1F**            hMCTrueCombConversionMidPtR;           //!  
+		TH1F**            hMCTrueCombConversionHighPtR;           //!  
 		TH1F**            hMCTrueCombConversionEta;              //!  
 		TH1F**            hMCTrueCombConversionMidPtEta;         //!
+		TH1F**            hMCTrueCombConversionHighPtEta;         //!
 		TH1F**            hMCTrueCombConversionPt;              //!
 		//		Bool_t            fDoHistosForMaterial;     // flag for using Trees for Material Budget evaluation
 
@@ -150,7 +170,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 6);
+        ClassDef(AliAnalysisTaskMaterialHistos, 7);
 };
 
 #endif

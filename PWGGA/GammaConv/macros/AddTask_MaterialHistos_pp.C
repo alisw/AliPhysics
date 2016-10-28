@@ -79,6 +79,28 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
                                 TString periodNameAnchor        = "",
                                 Bool_t 	enableV0findingEffi     = kFALSE              // enables V0finding efficiency histograms
       ){
+
+  // ================= Load Librariers =================================
+  gSystem->Load("libCore");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libMinuit");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libESD");
+  gSystem->Load("libAOD");
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");  
+  gSystem->Load("libCDB");
+  gSystem->Load("libSTEER");
+  gSystem->Load("libSTEERBase");
+  gSystem->Load("libTender");
+  gSystem->Load("libTenderSupplies");
+  gSystem->Load("libPWGflowBase");
+  gSystem->Load("libPWGflowTasks");
+  gSystem->Load("libPWGGAGammaConv");
+  
   
   Int_t IsHeavyIon = 0;
   // ================== GetAnalysisManager ===============================
@@ -101,6 +123,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "00000000000000000500000000";
   //"00200008400000002200000000";
+  
   TString cutnumberEvent = "00000103"; 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
@@ -113,8 +136,14 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cutnumberPhoton = "10000000000000000500000000";
   }
 
+  if (trainConfig ==  8 ) {
+    cutnumberPhoton = "00000009266300008804004000";
+  }
+ if (trainConfig ==  108 ) {
+    cutnumberPhoton = "10000009266300008804004000";
+  }
 
-  
+
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
@@ -213,6 +242,12 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00000103", "00000009366320005804404000");
     cuts.AddCut("00000103", "00000009366300005804404000");
     cuts.AddCut("00000103", "00000009366300005854404000");
+ } else if (trainConfig == 8) {
+    cuts.AddCut("00000103", "00000009266300008804004000");
+    cuts.AddCut("00000103", "00000009266300008800404000");
+ } else if (trainConfig == 9) {
+    cuts.AddCut("00010103", "00000009266300008804004000");
+    cuts.AddCut("00010103", "00000009266300008800404000");
 
     // Offline V0Finder is used
 
@@ -244,7 +279,14 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00000103", "10000009366320005804404000");
     cuts.AddCut("00000103", "10000009366300005804404000");
     cuts.AddCut("00000103", "10000009366300005854404000");
+ } else if (trainConfig == 108) {
+    cuts.AddCut("00000103", "10000009266300008804004000");
+    cuts.AddCut("00000103", "10000009266300008800404000");
+ } else if (trainConfig == 109) {
+    cuts.AddCut("00010103", "10000009266300008804004000");
+    cuts.AddCut("00010103", "10000009266300008800404000");
 
+ 
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
 
