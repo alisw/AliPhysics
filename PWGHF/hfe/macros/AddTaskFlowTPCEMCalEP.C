@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut, Int_t period, Bool_t UseNewEP, TString ID="ContName")
+AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut, Int_t period, Bool_t UseNewEP, Bool_t UseTender, TString ID="ContName", TString pass1, TString pass2)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -51,8 +51,8 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
     if(Is2015){
         
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
-        AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut,UseNewEP,period);
-
+        AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,AssPtCut,AssTPCnCut,AssITSrefitCut,TPCnCut,UseNewEP,UseTender,period,pass1,pass2);
+        
         mgr->AddTask(taskMB);
         
         taskMB->SelectCollisionCandidates(AliVEvent::kINT7);
