@@ -230,6 +230,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","1111101020032220000","0163103100000050"); // timing to 500ns
     cuts.AddCut("00003113","1111101020032000000","0163103100000050"); // timing to 500ns, no M02 cuts == exactly Jasons cuts
     cuts.AddCut("00003113","1111101021032000000","0163103100000050"); // timing to 500ns, no M02, mild TM cut
+  } else if (trainConfig == 10){  // trackMatching variations pt dependent
+    cuts.AddCut("00003113","1111121057032220000","0163103100000050"); // MB
+    cuts.AddCut("00003113","1111121058032220000","0163103100000050"); //
+    cuts.AddCut("00003113","1111121059032220000","0163103100000050"); //
   
     
   } else if (trainConfig == 20){  // min Energy EMC1
@@ -269,6 +273,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00051013","1111121054032220000","0163103100000050"); //
     cuts.AddCut("00051013","1111121055032220000","0163103100000050"); //
     cuts.AddCut("00051013","1111121056032220000","0163103100000050"); //
+  } else if (trainConfig == 26){  // trackMatching variations pt dependent
+    cuts.AddCut("00051013","1111121057032220000","0163103100000050"); // MB
+    cuts.AddCut("00051013","1111121058032220000","0163103100000050"); //
+    cuts.AddCut("00051013","1111121059032220000","0163103100000050"); //
     
   // ************************************* Calibration configuration EMC ********************************
   } else if (trainConfig == 40){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1) with TM
@@ -347,6 +355,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111121064032220000","0163103100000050"); //
     cuts.AddCut("00010113","1111121065032220000","0163103100000050"); //
     cuts.AddCut("00010113","1111121066032220000","0163103100000050"); //
+  } else if (trainConfig == 67){  // trackMatching variations pt dept
+    cuts.AddCut("00010113","1111121067032220000","0163103100000050"); 
+    cuts.AddCut("00010113","1111121068032220000","0163103100000050"); //
+    cuts.AddCut("00010113","1111121069032220000","0163103100000050"); //
 
   // Variations EMC7 trigger
   } else if (trainConfig == 70){  // min Energy EMC7
@@ -387,6 +399,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1111121064032220000","0163103100000050"); //
     cuts.AddCut("00052013","1111121065032220000","0163103100000050"); //
     cuts.AddCut("00052013","1111121066032220000","0163103100000050"); //
+  } else if (trainConfig == 76){  // trackMatching variations pt dependent
+    cuts.AddCut("00052013","1111121067032220000","0163103100000050"); 
+    cuts.AddCut("00052013","1111121068032220000","0163103100000050"); //
+    cuts.AddCut("00052013","1111121069032220000","0163103100000050"); //
     
   // Variations EG2 trigger  
   } else if (trainConfig == 80){  // min Energy 
@@ -427,6 +443,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00085013","1111121064032220000","0163103100000050"); //
     cuts.AddCut("00085013","1111121065032220000","0163103100000050"); //
     cuts.AddCut("00085013","1111121066032220000","0163103100000050"); //
+  } else if (trainConfig == 86){  // trackMatching variations pt dependent
+    cuts.AddCut("00085013","1111121067032220000","0163103100000050"); 
+    cuts.AddCut("00085013","1111121068032220000","0163103100000050"); //
+    cuts.AddCut("00085013","1111121069032220000","0163103100000050"); //
 
   // Variations EG1 trigger    
   } else if (trainConfig == 91){  // min Energy EMC1
@@ -467,6 +487,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00083013","1111121064032220000","0163103100000050"); //
     cuts.AddCut("00083013","1111121065032220000","0163103100000050"); //
     cuts.AddCut("00083013","1111121066032220000","0163103100000050"); //
+  } else if (trainConfig == 97){  // trackMatching variations pt dependent
+    cuts.AddCut("00083013","1111121067032220000","0163103100000050"); 
+    cuts.AddCut("00083013","1111121068032220000","0163103100000050"); //
+    cuts.AddCut("00083013","1111121069032220000","0163103100000050"); //
         
 // 8 TeV configs
 
