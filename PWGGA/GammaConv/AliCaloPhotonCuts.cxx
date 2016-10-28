@@ -872,26 +872,30 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistograms->Add(fHistClusterdPhidPtNegTracksTrueMatched);
 
         // TM efficiency histograms
-        fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterEFine, minClusterELog, maxClusterELog, 18, -0.5, 17.5);
+        fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterEFine, minClusterELog, maxClusterELog, 22, -0.5, 21.5);
         SetLogBinningXTH2(fHistClusterTMEffiInput);
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(1,"All cl");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(2,"Ch cl");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(3,"Ne cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(4,"Ne cl");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(4,"Ne cl sub ch");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(5,"Ga cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(6,"Ga cl");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(6,"Ga cl sub ch");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(7,"conv cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(8,"");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(9,"All cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(10,"Ch cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(11,"Ch cl match w lead");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(12,"Ne cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(13,"");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(8,"Ch cl prim");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(9,"El cl");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(10,"All cl match");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(11,"Ch cl match");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(12,"Ch cl match w lead");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(13,"Ne cl match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(14,"Ne cl sub ch match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(15,"Ga cl match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(16,"Ga cl sub ch match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(17,"conv cl match");
         fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(18,"conv cl match w lead");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(19,"Ch cl match");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(20,"Ch cl match w lead");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(21,"El cl match");
+        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"El cl match w lead");
         fHistClusterTMEffiInput->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
         fHistograms->Add(fHistClusterTMEffiInput);
         
@@ -1406,21 +1410,27 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // 3: Gamma cluster sub charged
   // 4: Gamma conv cluster
   // 5: Charged cluster
+  // 6: Electron
+  // 7: prim charged cluster
   Int_t classification  = -1;
   Long_t leadMCLabel    = -1;
   if (isESD) 
     leadMCLabel         = ((AliESDCaloCluster*)cluster)->GetLabel();
   else 
     leadMCLabel         = ((AliAODCaloCluster*)cluster)->GetLabel();
-    
+  
   // TM efficiency histograms before TM
   if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
     classification    = ClassifyClusterForTMEffi(cluster, event, mcEvent, isESD); 
-    fHistClusterTMEffiInput->Fill(cluster->E(), 0); //All cl match
+    fHistClusterTMEffiInput->Fill(cluster->E(), 0); //All cl 
     if (classification == 5 )
-      fHistClusterTMEffiInput->Fill(cluster->E(), 1); //Ch cl match
+      fHistClusterTMEffiInput->Fill(cluster->E(), 1); //Ch cl 
+    if (classification == 7 )
+      fHistClusterTMEffiInput->Fill(cluster->E(), 7); //Ch cl 
     if (classification == 4)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 6); //conv cl match
+      fHistClusterTMEffiInput->Fill(cluster->E(), 6); //conv electron cl 
+    if (classification == 6)
+      fHistClusterTMEffiInput->Fill(cluster->E(), 8); // electron cl 
     if (classification == 0 || classification == 1)
       fHistClusterTMEffiInput->Fill(cluster->E(), 2); // Ne cl match
     if (classification == 0 || classification == 1)
@@ -1436,7 +1446,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
                                                                                        fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
     else 
       nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
-    if (classification < 4)
+    if (classification < 4 && classification > -1)
       fHistClusterENMatchesNeutral->Fill(cluster->E(), nlabelsMatchedTracks);
     else 
       fHistClusterENMatchesCharged->Fill(cluster->E(), nlabelsMatchedTracks);
@@ -1449,20 +1459,25 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
       // TM efficiency histos after TM
       if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
-        fHistClusterTMEffiInput->Fill(cluster->E(), 8);
+
+        fHistClusterTMEffiInput->Fill(cluster->E(), 9);
         if (classification == 5 )
-          fHistClusterTMEffiInput->Fill(cluster->E(), 9); //Ch cl match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 10); //Ch cl match
         if (classification == 4)
           fHistClusterTMEffiInput->Fill(cluster->E(), 16); //conv cl match
         if (classification == 0 || classification == 1)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 11); // Ne cl match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 12); // Ne cl match
         if (classification == 0 || classification == 1)
           fHistClusterTMEffiInput->Fill(cluster->E(), 13); // Ne cl sub ch match
         if (classification == 2 || classification == 3)
           fHistClusterTMEffiInput->Fill(cluster->E(), 14); // Ga cl match
         if ( classification == 3)
           fHistClusterTMEffiInput->Fill(cluster->E(), 15); // Ga cl sub ch match
-
+        if ( classification == 7)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 18); // Ch prim cl match
+        if ( classification == 6)
+          fHistClusterTMEffiInput->Fill(cluster->E(), 20); // El cl match
+          
         vector<Int_t> labelsMatchedTracks;
         if (!fUsePtDepTrackToCluster)
           labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
@@ -1483,7 +1498,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             eMax                = currTrack->E();
             idHighestPt         = labelsMatchedTracks.at(i);
           }
-          if (classification == 4 || classification == 5){
+          if (classification == 4 || classification == 5 || classification == 6 || classification == 7){
             Long_t mcLabelTrack = -1;
             if (isESD)
               mcLabelTrack      = TMath::Abs(((AliESDtrack*)currTrack)->GetLabel());
@@ -1496,10 +1511,15 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
             }  
           }  
         }
-        if (classification == 5){
+        if (classification == 5 || classification == 7 || classification == 6){
           fHistClusterEvsTrackECharged->Fill(cluster->E(), eMax);
           if (foundLead ){
-            fHistClusterTMEffiInput->Fill(cluster->E(), 10); //Ch cl match w lead
+            if (classification == 5)
+              fHistClusterTMEffiInput->Fill(cluster->E(), 11); //Ch cl match w lead
+            if (classification == 7)
+              fHistClusterTMEffiInput->Fill(cluster->E(), 19); //Ch prim cl match w lead
+            if (classification == 6)
+              fHistClusterTMEffiInput->Fill(cluster->E(), 21); //El cl match w lead
             fHistClusterEvsTrackEChargedLead->Fill(cluster->E(), eLead);
           }
         }    
@@ -4635,10 +4655,18 @@ Bool_t AliCaloPhotonCuts::AcceptCellByBadChannelMap(Int_t absID ){
 // 3: Gamma cluster sub charged
 // 4: Gamma conv cluster
 // 5: Charged cluster
+// 6: electron
+// 7: primary charged
 //_______________________________________________________________________________
 Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliVEvent* mcEvent, Bool_t isESD){
   Int_t* mclabelsCluster  = cluster->GetLabels();
   Int_t classification    = -1;
+  
+  const AliVVertex* primVtxMC   = mcEvent->GetPrimaryVertex();
+  Double_t mcProdVtxX   = primVtxMC->GetX();
+  Double_t mcProdVtxY   = primVtxMC->GetY();
+  Double_t mcProdVtxZ   = primVtxMC->GetZ();
+
   if (isESD){
     AliStack* fMCStack    = NULL;
     if(mcEvent){
@@ -4658,11 +4686,20 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
           classification      = 2;
       } else {
         classification        = 5;
-        if (particleLead->GetPdgCode() == 11 || particleLead->GetPdgCode() == -11) 
+        if (particleLead->GetPdgCode() == 11 || particleLead->GetPdgCode() == -11){
+          classification      = 6;
           if (particleLead->GetMother(0) > -1)
             if (((TParticle*)fMCStack->Particle(particleLead->GetMother(0)))->GetPdgCode() == 22)
               classification  = 4;
-          
+        } else {
+            Double_t deltaX = particleLead->Vx() - mcProdVtxX;
+            Double_t deltaY = particleLead->Vy() - mcProdVtxY;
+            Double_t deltaZ = particleLead->Vz() - mcProdVtxZ;
+
+            Double_t realRadius3D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
+            if (realRadius3D < 5.0)
+              classification  = 7;
+        }  
       }
       if ((classification == 0 || classification == 2) && cluster->GetNLabels() > 1){
         Bool_t goOut = kFALSE;
@@ -4693,11 +4730,20 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
       } else {
         classification        = 5;
         if (particleLead->GetPdgCode() == 11 || particleLead->GetPdgCode() == -11) {
+          classification      = 6;
           if (particleLead->GetMother() > -1){
             AliAODMCParticle* mother    = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particleLead->GetMother()));
             if (mother->GetPdgCode() == 22)
               classification  = 4;
           }
+        } else {
+          Double_t deltaX = particleLead->Xv() - mcProdVtxX;
+          Double_t deltaY = particleLead->Yv() - mcProdVtxY;
+          Double_t deltaZ = particleLead->Zv() - mcProdVtxZ;
+
+          Double_t realRadius3D = TMath::Sqrt(deltaX*deltaX+deltaY*deltaY+deltaZ*deltaZ);
+          if (realRadius3D < 5.0)
+            classification    = 7;
         }  
       }
       if ((classification == 0 || classification == 2) && cluster->GetNLabels() > 1){
