@@ -152,17 +152,17 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16a2c,        // anchored LHC15h pass 1
         kLHC15l1a2,       // anchored LHC15n pass 1
         kLHC15l1b2,       // anchored LHC15n pass 1
-        kLHC15k1a1,       // LHC15o low IR
-        kLHC15k1a2,       // LHC15o low IR
-        kLHC15k1a3,       // LHC15o low IR
+        kLHC15k1a1,       // LHC15o low IR firstPhysics
+        kLHC15k1a2,       // LHC15o low IR firstPhysics
+        kLHC15k1a3,       // LHC15o low IR firstPhysics
+	kLHC16j7,         // LHC15o low IR pass4
         kLHC16g1,         // anchored LHC15o pass1 - general purpose
         kLHC16g1a,        // anchored LHC15o pass1 - general purpose 0-10%
         kLHC16g1b,        // anchored LHC15o pass1 - general purpose 10-50%
         kLHC16g1c,        // anchored LHC15o pass1 - general purpose 50-90%
-        kLHC16h4a,        // anchored LHC15o pass1 - injected signals 0-10%
-        kLHC16h4b,        // anchored LHC15o pass1 - injected signals 10-50%
-        kLHC16h4b2,       // anchored LHC15o pass1 - injected signals 10-50% with TPC gas corrections
-        kLHC16h4c,        // anchored LHC15o pass1 - incected signals 50-90%
+        kLHC16g2,         // anchored LHC15o pass1 - general purpose EPOS-LHC
+        kLHC16g3,         // anchored LHC15o pass1 - general purpose DPMJET
+        kLHC16h4,         // anchored LHC15o pass1 - injected signals 0-100%
         kLHC16h2a,        // anchored LHC15o pass1 - jet-jet 0-10%
         kLHC16h2b,        // anchored LHC15o pass1 - jet-jet 10-50%
         kLHC16h2c,        // anchored LHC15o pass1 - jet-jet 50-90%
