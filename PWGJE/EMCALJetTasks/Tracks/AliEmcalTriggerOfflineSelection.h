@@ -137,7 +137,7 @@ public:
 protected:
   static const TString        fgkTriggerNames[kTrgn];                     ///< Names of the various trigger classes
   Double_t                    fOfflineEnergyThreshold[kTrgn];             ///< Thresholds applied on offline energy
-  const TH2                   *fAcceptanceMaps[kTrgn];                    ///< Online acceptance distribution
+  const TH2                   *fAcceptanceMaps[kTrgn];                    //!<! Online acceptance distribution
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerOfflineSelection, 1);
