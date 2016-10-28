@@ -1,5 +1,5 @@
 /***************************************************************************
-  priyanka.sett@cern.ch - last modified on 13/10/2016
+  priyanka.sett@cern.ch - last modified on 27/10/2016
   for L* in pp 13 TeV analysis
 
 
@@ -168,7 +168,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    eventCuts->AddCut(cutEventUtils);
    eventCuts->AddCut(cutVertex);
    eventCuts->SetCutScheme(Form("%s&%s",cutEventUtils->GetName(),cutVertex->GetName()));
-   
+   cout<< "--------------"<< cutVertex <<"cm ---------------- "<<endl;
    
    
    // set cuts in task
