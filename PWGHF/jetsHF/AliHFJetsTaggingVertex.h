@@ -1,3 +1,4 @@
+
 #ifndef ALIHFJETSTAGGINGVERTEX_H
 #define ALIHFJETSTAGGINGVERTEX_H
 
@@ -14,11 +15,11 @@ class TObjArray;
 
 //--AliRoot--
 #include "AliPID.h"
+#include "AliESDtrack.h"
 
 class AliAODEvent;
 class AliAODVertex;
 class AliEmcalJet;
-class AliESDtrack;
 class AliESDVertex;
 
 //--AliHFJetsClass--
@@ -29,66 +30,77 @@ class AliESDVertex;
 //-------------------------------------------------------------------------------------
 
 class AliHFJetsTaggingVertex : public AliHFJetsTagging {
-  
+
 public:
-  
+
   // Constructors
   AliHFJetsTaggingVertex();
-  
-  AliHFJetsTaggingVertex(const char *name);
-  
+
+  AliHFJetsTaggingVertex(const char* name);
+
   // Destructor
   virtual ~AliHFJetsTaggingVertex();
-  
-  // Assignment operator
-  AliHFJetsTaggingVertex &operator=(const AliHFJetsTaggingVertex &corr);
-  
-  Int_t FindVertices(const AliEmcalJet *jet,
-                     TClonesArray      *fTrackArrayIn,
-                     AliAODEvent       *aodEvent,
-                     AliESDVertex      *primaryESDVertex,
-                     Double_t           magZkG,
-                     TClonesArray      *arrayVtxHF,
-                     map_int_bool      *mapV0gTrks,
-                     vctr_pair_dbl_int &vecVtxDisp);
-  
-  AliAODVertex *ReconstructSecondaryVertex(TObjArray     *trkArray,
-                                           AliESDVertex  *v1,
-                                           Double_t       magzkG,
-                                           Double_t      &sigmaVtx) const;
-  
-  void     SetCuts(AliRDHFJetsCutsVertex *cuts);
-  
-  void     GetVtxPxy(AliAODVertex *vtx, Double_t *pxyzSum);
-  
-  Double_t GetVertexInvariantMass(AliAODVertex *vtx,
-                                  Double_t massParticle = AliPID::ParticleMass(AliPID::kPion));
-  
-  Int_t    GetNTracksFromCommonVertex(AliAODVertex *vtx,
-                                      const TClonesArray *mcPart,
-                                      Int_t    &mcVert,
-                                      Double_t &xVtxMC,
-                                      Double_t &yVtxMC,
-                                      Int_t    &nFromBandD,
-                                      Int_t    &nFromD,
-                                      Int_t    &nFromPromptD);
 
- private:
-  
-  AliRDHFJetsCutsVertex *fCutsHFjets;  // jet cut object
-  
-  TObjArray             *fTrackArray;  //! track array
-  
+  // Assignment operator
+  AliHFJetsTaggingVertex& operator=(const AliHFJetsTaggingVertex& corr);
+
+  Int_t FindVertices(const AliEmcalJet* jet,
+                     TClonesArray*      fTrackArrayIn,
+                     AliAODEvent*       aodEvent,
+                     AliESDVertex*      primaryESDVertex,
+                     Double_t           magZkG,
+                     TClonesArray*      arrayVtxHF,
+                     map_int_bool*      mapV0gTrks,
+                     vctr_pair_dbl_int& vecVtxDisp,
+                     Int_t&             nDauRejCount);
+
+  AliAODVertex* ReconstructSecondaryVertex(TObjArray*     trkArray,
+                                           AliESDVertex*  v1,
+                                           Double_t       magzkG,
+                                           Double_t&      sigmaVtx) const;
+
+  void     SetCuts(AliRDHFJetsCutsVertex* cuts);
+
+  void     GetVtxPxy(AliAODVertex* vtx, Double_t* pxyzSum);
+
+  Double_t GetVertexInvariantMass(AliAODVertex* vtx,
+                                  Double_t massParticle = AliPID::ParticleMass(AliPID::kPion));
+
+  Int_t    GetNTracksFromCommonVertex(AliAODVertex* vtx,
+                                      const TClonesArray* mcPart,
+                                      Int_t&    mcVert,
+                                      Double_t& xVtxMC,
+                                      Double_t& yVtxMC,
+                                      Int_t&    nFromBandD,
+                                      Int_t&    nFromD,
+                                      Int_t&    nFromPromptD);
+protected:
+
+  void DeleteTmpESDTracks(vctr_pair_int_esdTrk& vecESDTrks)
+  {
+    for (vctr_pair_int_esdTrk::iterator it = vecESDTrks.begin(); it != vecESDTrks.end(); ++it) {
+      AliESDtrack* lESDtrk = (* it).second;
+      if (lESDtrk)
+        delete lESDtrk;
+    }
+  };
+
+private:
+
+  AliRDHFJetsCutsVertex* fCutsHFjets;  // jet cut object
+
+  TObjArray*             fTrackArray;  //! track array
+
   ClassDef(AliHFJetsTaggingVertex, 2);
 };
 
 //-------------------------------------------------------------------------------------
-inline void AliHFJetsTaggingVertex::SetCuts(AliRDHFJetsCutsVertex *cuts) {
-
+inline void AliHFJetsTaggingVertex::SetCuts(AliRDHFJetsCutsVertex* cuts)
+{
   if (fCutsHFjets)
     delete fCutsHFjets;
-  
-  fCutsHFjets = (AliRDHFJetsCutsVertex *)cuts->Clone("fCutsHFjets");
+
+  fCutsHFjets = (AliRDHFJetsCutsVertex*)cuts->Clone("fCutsHFjets");
 }
 
 #endif
