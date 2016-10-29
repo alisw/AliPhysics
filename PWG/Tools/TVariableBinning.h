@@ -1,22 +1,21 @@
-#ifndef TLINEARBINNING_H
-#define TLINEARBINNING_H
+#ifndef TVARIABLEBINNING_H
+#define TVARIABLEBINNING_H
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-class TArrayD;
-
 #include <exception>
 #include <Rtypes.h>
+#include <TArrayD.h>
 #include <TBinning.h>
 
 /**
- * @class TLinearBinning
- * @brief Class creating a linear binning, used in the histogram manager
+ * @class TVariableBinning
+ * @brief Class creating a variable binning, used in the histogram manager
  * @author Markus Fasel
  * @ingroup Histmanager
  * @since May 31st, 2016
  *
- * This class creates a linear binning. For this the user must provide
+ * This class creates a varible (non-linear) binning. For this the user must provide
  * - A minimum
  * - A maximum
  * - The number of bins
@@ -24,14 +23,28 @@ class TArrayD;
  * The information can be set either in the constructor
  *
  * ~~~{.cxx}
- * TLinearBinning mybinning(100, -10., 10.);
+ * TArrayD binedges;
+ * binedges[0] = 0.;
+ * binedges[1] = 0.5;
+ * binedges[2] = 1;
+ * binedges[3] = 2.;
+ * binedges[4] = 5.;
+ * binedges[5] = 10.;
+ * TVariableBinning mybinning(binedges);
  * ~~~
  *
  * or using the set function
  *
  * ~~~{.cxx}
- * TLinearBinning mybinning;
- * mybinning.Set(100, -10, 10);
+ * TArrayD binedges;
+ * binedges[0] = 0.;
+ * binedges[1] = 0.5;
+ * binedges[2] = 1;
+ * binedges[3] = 2.;
+ * binedges[4] = 5.;
+ * binedges[5] = 10.;
+ * TVariableBinning mybinning;
+ * mybinning.Set(binedges);
  * ~~~
  *
  * The binning can be converted to a TArrayD which contains the bin edges in increasing order:
@@ -44,7 +57,7 @@ class TArrayD;
  * @note In case the binning is used together with the THistManager the last step is done by the
  * THistManager and does not need to be performed by the user.
  */
-class TLinearBinning : public TBinning{
+class TVariableBinning : public TBinning{
 public:
 
   /**
@@ -79,20 +92,25 @@ public:
   /**
    * Constructor
    */
-  TLinearBinning();
+  TVariableBinning();
 
   /**
-   * Constructor, defining the limits and the number of bins
+   * Constructor, defining the bin edges from a c-array
    * @param[in] nbins Number of bins
-   * @param[in] min Minimum bin edge of the binning
-   * @param[in] max Maximum bin edge of the binning
+   * @param[in] binedges Bin edges
    */
-  TLinearBinning(Int_t nbins, Double_t min, Double_t max);
+  TVariableBinning(Int_t nbins, const Double_t* binedges);
+
+  /**
+   * Constructor, defining the bin edges from a ROOT-array
+   * @param[in] binedges Bin edges
+   */
+  TVariableBinning(const TArrayD &binedges);
 
   /**
    * Destructor
    */
-  virtual ~TLinearBinning() {}
+  virtual ~TVariableBinning() {}
 
   /**
    * Implementation of the copy function for the linear binning class
@@ -101,31 +119,32 @@ public:
   virtual TBinning *MakeCopy() const;
 
   /**
-   * Set the binning with minimum, maximum and number of bins
+   * Set the binning from a c-array
    * @param[in] nbins Number of bins
-   * @param[in] min Minimum of the binning
-   * @param[in] max Maximum of the binning
+   * @param[in] binedges Bin edges
    */
-  inline void Set(Int_t nbins, Double_t min, Double_t max);
+  inline void Set(Int_t nbins, const Double_t *binedges);
 
   /**
-   * Converting the linear binning in a set of bin edges
+   * Set the binning from a ROOT array
+   * @param[in] binedges Bin edges
+   */
+  void Set(const TArrayD &binedges) { fBinEdges = binedges; }
+
+
+  /**
+   * Converting the variable binning in a set of bin edges
    * @param binedges
    */
   virtual void CreateBinEdges(TArrayD &binedges) const;
 
 private:
-  Int_t                                 fNbins;     ///< Number of bins
-  Double_t                              fMinimum;   ///< Minimum of the binning
-  Double_t                              fMaximum;   ///< Maximum of the binning
-  Bool_t                                fLimitsSet; ///< Switch indicating that the binning is initialized
+  TArrayD                         fBinEdges;
 };
 
-void TLinearBinning::Set(Int_t nbins, Double_t min, Double_t max){
-  fMinimum = min;
-  fMaximum = max;
-  fNbins = nbins;
-  fLimitsSet = true;
+void TVariableBinning::Set(Int_t nbins, const Double_t *binedges){
+  fBinEdges.Set(nbins+1);
+  for(int i = 0; i < nbins + 1; i++) fBinEdges[i] = binedges[i];
 }
 
-#endif /* TLINEARBINNING_H */
+#endif /* TVARIABLEBINNING_H */
