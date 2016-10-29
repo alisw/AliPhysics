@@ -55,6 +55,7 @@ set ( SRCS1
   AliTaskCDBconnect.cxx
   AliTrackComparison.cxx
   AliTrackComparisonESD.cxx
+  AliOfflineTrigger.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
