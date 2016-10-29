@@ -41,6 +41,7 @@ ClassImp(AliEmcalCorrectionCellContainer);
  */
 AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   AliAnalysisTaskSE("AliEmcalCorrectionTask"),
+  fSuffix(""),
   fUserConfiguration(),
   fUserConfigurationFilename(""),
   fUserConfigurationString(""),
@@ -87,6 +88,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
  */
 AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   AliAnalysisTaskSE(name),
+  fSuffix(""),
   fUserConfiguration(),
   fUserConfigurationFilename(""),
   fUserConfigurationString(""),
@@ -345,6 +347,14 @@ void AliEmcalCorrectionTask::Initialize()
   else {
     AliError("Analysis manager not found!");
   }
+
+  // Determine the suffix of the correction task
+  std::string tempName = GetName();
+  std::size_t foundSuffix = tempName.find("_");
+  if (foundSuffix != std::string::npos) {
+    // +1 to skip "_"
+    fSuffix = tempName.substr(foundSuffix + 1).c_str();
+  }
   
   // Initialize YAML configuration
   InitializeConfiguration();
@@ -383,16 +393,71 @@ void AliEmcalCorrectionTask::Initialize()
  *
  *
  */
-void AliEmcalCorrectionTask::RetrieveExecutionOrder(std::vector <std::string> & executionOrder)
+void AliEmcalCorrectionTask::RetrieveExecutionOrder(std::vector <std::string> & correctionComponents)
 {
+  std::vector <std::string> executionOrder;
+  // executionOrder determines the order of tasks to execute, but it doesn't name the particular tasks
   AliEmcalCorrectionComponent::GetProperty("executionOrder", executionOrder, fUserConfiguration, fDefaultConfiguration, true);
+
+  // Possible components to create
+  // Use set so that the possible components are not repeated
+  std::set <std::string> possibleComponents;
+  for (auto node : fUserConfiguration) {
+    possibleComponents.insert(node.first.as<std::string>());
+  }
+  for (auto node : fDefaultConfiguration) {
+    possibleComponents.insert(node.first.as<std::string>());
+  }
+
+  // Determine the correction names associated with the correction task
+  std::string expectedComponentName = "";
+  bool foundSuffixComponent = false;
+  bool foundComponent = false;
+  // Execution order determines the order that corrections should be added to our exeuction list
+  for (auto & execName : executionOrder)
+  {
+    expectedComponentName = TString::Format("%s_%s", execName.c_str(), fSuffix.c_str()).Data();
+    foundComponent = false;
+
+    foundComponent = CheckPossibleNamesForComponentName(expectedComponentName, possibleComponents);
+    if (foundComponent) {
+      foundSuffixComponent = true;
+      correctionComponents.push_back(expectedComponentName);
+      continue;
+    }
+    else {
+      if (foundSuffixComponent == true) {
+        AliFatal(TString::Format("Found earlier component %s with suffix %s, but could not found component %s with that same suffix!", correctionComponents.back().c_str(), fSuffix.c_str(), execName.c_str()));
+      }
+      else {
+        expectedComponentName = execName;
+        foundComponent = CheckPossibleNamesForComponentName(expectedComponentName, possibleComponents);
+        correctionComponents.push_back(expectedComponentName);
+      }
+    }
+  }
+
   // Need to append "AliEmcalCorrection" to allow the tasks to be found!
-  AliDebug(2, "Creating EMCal Correction Components: ");
-  for (auto & component : executionOrder)
+  AliDebug(2, "Found EMCal Correction Components: ");
+  for (auto & component : correctionComponents)
   {
     component = "AliEmcalCorrection" + component;
     AliDebug(2, TString::Format("%s", component.c_str()) );
   }
+}
+
+bool AliEmcalCorrectionTask::CheckPossibleNamesForComponentName(std::string & name, std::set <std::string> & possibleComponents)
+{
+  bool foundComponent = false;
+  for (auto & possibleComponent : possibleComponents)
+  {
+    if (possibleComponent == name) {
+      foundComponent = true;
+      break;
+    }
+  }
+
+  return foundComponent;
 }
 
 /**
@@ -402,13 +467,13 @@ void AliEmcalCorrectionTask::RetrieveExecutionOrder(std::vector <std::string> & 
 void AliEmcalCorrectionTask::InitializeComponents()
 {
   // Create a function to handle creation and configuration of the all of the created module
-  std::vector<std::string> executionOrder;
-  RetrieveExecutionOrder(executionOrder);
+  std::vector<std::string> correctionComponents;
+  RetrieveExecutionOrder(correctionComponents);
 
   // Iterate over the list
   AliEmcalCorrectionComponent * component = 0;
   bool componentEnabled = false;
-  for (auto componentName : executionOrder)
+  for (auto componentName : correctionComponents)
   {
     componentEnabled = false;
     AliEmcalCorrectionComponent::GetProperty("enabled", componentEnabled, fUserConfiguration, fDefaultConfiguration, true, componentName);
@@ -419,7 +484,8 @@ void AliEmcalCorrectionTask::InitializeComponents()
     }
 
     //Printf("Attempting to add task: %s", tempString->GetString().Data());
-    component = AliEmcalCorrectionComponentFactory::createInstance(componentName);
+    std::string noPrefixComponentName = componentName.substr(0, componentName.find("_" + fSuffix));
+    component = AliEmcalCorrectionComponentFactory::createInstance(noPrefixComponentName);
     if (!component)
     {
       AliFatal(TString::Format("Failed to create requested component %s!", componentName.c_str()));
@@ -1032,9 +1098,9 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
     component->SetEMCALGeometry(fGeom);
 
     // Add the requested cells to the component
-    AliDebugStream(3) << "Adding CaloCells" << std::endl;
+    //AliDebugStream(3) << "Adding CaloCells" << std::endl;
     AddContainersToComponent(component, kCaloCells);
-    AliDebugStream(3) << "Added CaloCells" << std::endl;
+    //AliDebugStream(3) << "Added CaloCells" << std::endl;
 
     // Component ExecOnce()
     component->ExecOnce();

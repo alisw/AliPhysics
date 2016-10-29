@@ -172,6 +172,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 #endif
 
   Bool_t                      RetrieveEventObjects();
+  bool                        CheckPossibleNamesForComponentName(std::string & name, std::set <std::string> & possibleComponents);
   void                        ExecOnceComponents();
   void                        UserCreateOutputObjectsComponents();
 
@@ -187,6 +188,8 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   std::string fUserConfigurationFilename;                 //!<! User YAML configruation filename
   std::string fDefaultConfigurationFilename;              //!<! Default YAML configuration filename
+
+  std::string fSuffix;                                    ///< Suffix of the Correction Task (used to select components)
 
   std::vector <AliEmcalCorrectionComponent *> fCorrectionComponents; ///< Contains the correction components
   bool fConfigurationInitialized;                         ///< True if the YAML files are initialized
