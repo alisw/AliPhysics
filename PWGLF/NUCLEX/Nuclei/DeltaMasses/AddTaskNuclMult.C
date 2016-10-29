@@ -8,7 +8,7 @@ AliAnalysisTaskSE *AddTaskNuclMult(){
   //To set the track cuts (useful only for ESDs)
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("esdTrackCuts", "Standard2010");
   //esdTrackCuts=esdTrackCuts->GetStandardITSTPCTrackCuts2010(kFALSE,0);
-  //corresponding to:
+  //corresponding to (with SetMaxDCAToVertexZ(2) also):
   esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
@@ -16,7 +16,7 @@ AliAnalysisTaskSE *AddTaskNuclMult(){
   // ITS
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  esdTrackCuts->SetMaxDCAToVertexZ(2);
+  //esdTrackCuts->SetMaxDCAToVertexZ(2);
   esdTrackCuts->SetDCAToVertex2D(kFALSE);
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
@@ -24,42 +24,37 @@ AliAnalysisTaskSE *AddTaskNuclMult(){
     
   AliPPVsMultUtils *fAliPPVsMultUtils = new AliPPVsMultUtils();
 
-  const Int_t Nmult_0 = 15;//0//12;//number of multiplicity bins (VZERO Amplitude Estimator)
-  const Int_t Ntask_0 = Nmult_0+1;//Nmult_0;//+1 for integrated multiplicity
-  Float_t multiplicityRanges_0[Nmult_0+1] = {0,5,10,15,20,25,30,35,40,45,50,60,70,80,90,100};//{0,5,10,15,20,25,30,35,40,45,50,70,100};//{0};
+  const Int_t Ntask = 2;
+  
+  Float_t DCAzMax[Ntask] = {1.,10.};
 
-  AliAnalysisNuclMult *task_0[Ntask_0];
-  for(Int_t i=0;i<Ntask_0;i++) {
-    task_0[i] = new AliAnalysisNuclMult("AliAnalysisNuclMult");
-    mgr->AddTask(task_0[i]);
+  AliAnalysisNuclMult *task[Ntask];
+  for(Int_t i=0;i<Ntask;i++) {
+    task[i] = new AliAnalysisNuclMult("AliAnalysisNuclMult");
+    mgr->AddTask(task[i]);
   }
   
-  for(Int_t i=0;i<Ntask_0;i++) {
-    task_0[i]->SetESDtrackCutsObj(esdTrackCuts);
-    task_0[i]->SetPPVsMultUtilsObj(fAliPPVsMultUtils);
-    //task_0[i]->SetMultiplicityRange(multiplicityRanges_0[i],multiplicityRanges_0[i+1]);
-    if(i<Nmult_0) task_0[i]->SetMultiplicityRange(multiplicityRanges_0[i],multiplicityRanges_0[i+1]);
-    else task_0[i]->SetMultiplicityRange(0,100);
+  for(Int_t i=0;i<Ntask;i++) {
+    task[i]->SetESDtrackCutsObj(esdTrackCuts);
+    task[i]->SetPPVsMultUtilsObj(fAliPPVsMultUtils);
+    task[i]->SetMultiplicityRange(0,100);
+    task[i]->SetDCAzMax(DCAzMax[i]);
   }
   
-  AliAnalysisDataContainer *cinput_0[Ntask_0];
-  AliAnalysisDataContainer *cOutputL_0[Ntask_0];
-  for(Int_t i=0;i<Ntask_0;i++) {
+  AliAnalysisDataContainer *cinput[Ntask];
+  AliAnalysisDataContainer *cOutputL[Ntask];
+  for(Int_t i=0;i<Ntask;i++) {
     //input
     Char_t name[1000];
-    //snprintf(name,1000,"cchain1_multMin=%.02f_multMax=%.02f",multiplicityRanges_0[i],multiplicityRanges_0[i+1]);
-    if(i<Nmult_0) snprintf(name,1000,"cchain1_multMin=%.02f_multMax=%.02f",multiplicityRanges_0[i],multiplicityRanges_0[i+1]);
-    else snprintf(name,1000,"cchain1_multMin=%.02f_multMax=%.02f",0.,100.);
-    cinput_0[i] = mgr->CreateContainer(name,TChain::Class(),AliAnalysisManager::kInputContainer);
-    mgr->ConnectInput(task_0[i],0,mgr->GetCommonInputContainer());
+    snprintf(name,1000,"cchain1_out_DCAzMax=%.1f",DCAzMax[i]);
+    cinput[i] = mgr->CreateContainer(name,TChain::Class(),AliAnalysisManager::kInputContainer);
+    mgr->ConnectInput(task[i],0,mgr->GetCommonInputContainer());
     
     //output  
-    //snprintf(name,1000,"multMin=%.02f_multMax=%.02f",multiplicityRanges_0[i],multiplicityRanges_0[i+1]);
-    if(i<Nmult_0) snprintf(name,1000,"multMin=%.02f_multMax=%.02f",multiplicityRanges_0[i],multiplicityRanges_0[i+1]);
-    else snprintf(name,1000,"multMin=%.02f_multMax=%.02f",0.,100.);
-    cOutputL_0[i] = mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
-    mgr->ConnectOutput(task_0[i],1,cOutputL_0[i]);
+    snprintf(name,1000,"out_DCAzMax=%.1f",DCAzMax[i]);
+    cOutputL[i] = mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
+    mgr->ConnectOutput(task[i],1,cOutputL[i]);
   }
   
-  return task_0[0];
+  return task[0];
 }
