@@ -51,6 +51,8 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
     multMax=multiplicityMax;
   };
   
+  void SetDCAzMax(Float_t max=1.) {DCAzMax = max;};
+
  private:
   
   AliAnalysisNuclMult(const AliAnalysisNuclMult &old); 
@@ -67,46 +69,52 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   Float_t multMin;                                //  min. multiplicity accepted
   Float_t multMax;                                //  max. multiplicity accepted
   
-  TH1I *htriggerMask;                             //! trigger mask
-  TH1I *htriggerMask_noMB;                        //! trigger mask for no MB events
+  Float_t DCAzMax;                                //  DCAz max 
+
+  TH1F *htriggerMask[2];                          //! trigger mask
   TH1F *hzvertex;                                 //! z-vertex distribution
-  TH1I *hNevent;                                  //! To check the event selection
+  TH1F *hNevent;                                  //! To check the event selection
 
-  TH1I *hV0mult;                                  //! selected V0 multiplicity distribution
-  TH1I *hTrackMult;                               //! number of ITS+TPC tracklets
-  
-  TH1I *hCheckTrackSel;                           //! To check the track selection
+  TH1F *hV0mult;                                  //! selected V0 multiplicity distribution
+  TH1F *hTracklets;                               //! 
+  TH2F *hTrackletsVsV0mult;                       //!
 
-  TH1I *hnTPCclusters[2];                         //! number of TPC clusters
-  TH1D *hchi2TPC[2];                              //! chi2 per TPC cluster 
-  TH1I *hisTPCrefit[2];                           //! if kTPCrefit
-  TH1I *hisITSrefit[2];                           //! if kITSrefit
-  TH1I *hnSPD[2];                                 //! number of SPD rec. points
-  TH1I *hnKinkDaughters[2];                       //! number of kink daughters
-  TH1D *hsigmaToVtx[2];                           //! number of sigma to the vertex
-  TH1D *hchi2ITS[2];                              //! chi2 per ITS cluster 
-  TH1D *heta[2];                                  //! eta dist.
-  TH1I *hisPropagatedToDca[2];                    //! kPropagatedToDca
+  TH1F *hrapidity[2];                             //!
+
+  TH1F *hCheckTrackSel;                           //! To check the track selection
+
+  TH1F *hnTPCclusters[2];                         //! number of TPC clusters
+  TH1F *hchi2TPC[2];                              //! chi2 per TPC cluster 
+  TH1F *hisTPCrefit[2];                           //! if kTPCrefit
+  TH1F *hisITSrefit[2];                           //! if kITSrefit
+  TH1F *hnSPD[2];                                 //! number of SPD rec. points
+  TH1F *hnKinkDaughters[2];                       //! number of kink daughters
+  TH1F *hsigmaToVtx[2];                           //! number of sigma to the vertex
+  TH1F *hchi2ITS[2];                              //! chi2 per ITS cluster 
+  TH1F *heta[2];                                  //! eta dist.
+  TH1F *hisPropagatedToDca[2];                    //! kPropagatedToDca
 
   TF1 *fptCorr[1];                                //! pT corrections for (anti-)deuteron
 
   TH2F *fdEdxVSp[2];                              //! dedx vs pTPC
   TProfile *hDeDxExp[9];                          //! TPC splines
-  TH2F *fNsigmaTPC[18];                           //! NsigmaTPC vs. pT
+  TH3F *fNsigmaTPC[18];                           //! NsigmaTPC vs. pT
 
-  TH3F *fDca[18];                                 //! DCAxy vs DCAz
+  TH3F *fDca[2][18];                              //! DCAxy, DCAz
 
   TH2F *fNsigmaTOF[18];                           //! NsigmaTOF vs. pT
   TH2F *fBetaTOFvspt[2];                          //! beta (TOF) vs pT
   TProfile *hBetaExp[9];                          //! TOF expected beta
   
-  TH2F *fM2tof[2];                                //! m2 vs pT
-  TH2F *fM2vspt[18];                              //! m2 vs pT (TPC cut)
+  TH3F *fM2tof[2];                                //! M2 vs pT
+  TH3F *fM2vspt[18];                              //! M2 vs pT (TPC cut)
 
   void EventSelectionMonitor();
 
   Bool_t IsInsideMultiplicityBin(Float_t multiplicity);
   
+  Double_t GetRapidity(AliVTrack *track);
+
   Bool_t AcceptTrack(AliVTrack *track, Double_t &DCAxy, Double_t &DCAz);
 
   void TrackSelectionMonitor(Int_t nTPCclusters, Double_t chi2TPC, Bool_t isTPCrefit, Bool_t isITSrefit, Int_t nSPD, Int_t nKinkDaughters, Double_t chi2ITS, Bool_t isPropagatedToDca, Double_t DCAxy, Double_t DCAz, Double_t eta);
@@ -123,7 +131,7 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   
   Double_t GetM2(Double_t p, Double_t beta);
 
-  ClassDef(AliAnalysisNuclMult, 5);
+  ClassDef(AliAnalysisNuclMult, 6);
 };
 
 #endif
