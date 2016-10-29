@@ -10,6 +10,8 @@
 #pragma link C++ class AliAnalysisTaskVtXY+;
 #pragma link C++ class AliESDresolParams+;
 #pragma link C++ class AliESDresolMakerFast+;
+#pragma link C++ class AliOfflineTrigger+;
+
 
 #pragma link C++ class AliAnalysisTaskGlobalQA+;
 
