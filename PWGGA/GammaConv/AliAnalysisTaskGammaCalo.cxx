@@ -240,6 +240,13 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   tTrueInvMassROpenABPtFlag(NULL),
+  tSigInvMassPtAlphaTheta(NULL),
+  tBckInvMassPtAlphaTheta(NULL),
+  fInvMassTreeInvMass(0),
+  fInvMassTreePt(0),
+  fInvMassTreeAlpha(0),
+  fInvMassTreeTheta(0),
+  fInvMassTreeMixPool(0),
   fInvMass(-1),
   fRconv(-1),
   fOpenRPrim(-1),
@@ -451,6 +458,13 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
   tTrueInvMassROpenABPtFlag(NULL),
+  tSigInvMassPtAlphaTheta(NULL),
+  tBckInvMassPtAlphaTheta(NULL),
+  fInvMassTreeInvMass(0),
+  fInvMassTreePt(0),
+  fInvMassTreeAlpha(0),
+  fInvMassTreeTheta(0),
+  fInvMassTreeMixPool(0),
   fInvMass(-1),
   fRconv(-1),
   fOpenRPrim(-1),
@@ -655,6 +669,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fHistoClusGammaPt                 = new TH1F*[fnCuts];
   fHistoClusGammaE                  = new TH1F*[fnCuts];
   fHistoClusOverlapHeadersGammaPt   = new TH1F*[fnCuts];
+
+  if (fDoMesonQA == 4 && fIsMC == 0){
+    fTreeList                       = new TList*[fnCuts];
+    tSigInvMassPtAlphaTheta         = new TTree*[fnCuts];
+    tBckInvMassPtAlphaTheta         = new TTree*[fnCuts];
+  }
   
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     TString cutstringEvent    = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
@@ -843,6 +863,29 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherEtaPtAlpha[iCut]->Sumw2();
         fHistoMotherPi0PtOpenAngle[iCut]->Sumw2();
         fHistoMotherEtaPtOpenAngle[iCut]->Sumw2();
+      }
+
+      if (fDoMesonQA == 4 && fIsMC == 0){
+        fTreeList[iCut] = new TList();
+        fTreeList[iCut]->SetName(Form("%s_%s_%s InvMass Tree",cutstringEvent.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
+        fTreeList[iCut]->SetOwner(kTRUE);
+        fCutFolder[iCut]->Add(fTreeList[iCut]);
+
+        tSigInvMassPtAlphaTheta[iCut] = new TTree("Sig_InvMass_Pt_Alpha_Theta_MixPool","Sig_InvMass_Pt_Alpha_Theta_MixPool");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("InvMass",&fInvMassTreeInvMass,"fInvMassTreeInvMass/F");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("Pt",&fInvMassTreePt,"fInvMassTreePt/F");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("Alpha",&fInvMassTreeAlpha,"fInvMassTreeAlpha/F");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("Theta",&fInvMassTreeTheta,"fInvMassTreeTheta/F");
+        tSigInvMassPtAlphaTheta[iCut]->Branch("MixPool",&fInvMassTreeMixPool,"fInvMassTreeMixPool/I");
+        fTreeList[iCut]->Add(tSigInvMassPtAlphaTheta[iCut]);
+
+        tBckInvMassPtAlphaTheta[iCut] = new TTree("Bck_InvMass_Pt_Alpha_Theta_MixPool","Bck_InvMass_Pt_Alpha_Theta_MixPool");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("InvMass",&fInvMassTreeInvMass,"fInvMassTreeInvMass/F");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("Pt",&fInvMassTreePt,"fInvMassTreePt/F");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("Alpha",&fInvMassTreeAlpha,"fInvMassTreeAlpha/F");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("Theta",&fInvMassTreeTheta,"fInvMassTreeTheta/F");
+        tBckInvMassPtAlphaTheta[iCut]->Branch("MixPool",&fInvMassTreeMixPool,"fInvMassTreeMixPool/I");
+        fTreeList[iCut]->Add(tBckInvMassPtAlphaTheta[iCut]);
       }
 
     }
@@ -1095,7 +1138,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fMCList[iCut]->Add(fHistoMCPi0WOEvtWeightInAccPt[iCut]);
           fHistoMCEtaWOEvtWeightInAccPt[iCut] = new TH1F("MC_EtaWOEvtWeightInAcc_Pt","MC_EtaWOEvtWeightInAcc_Pt",nBinsPt, minPt, maxPt);
           fMCList[iCut]->Add(fHistoMCEtaWOEvtWeightInAccPt[iCut]);
-          if (fDoMesonQA > 0 && fIsMC == 2){
+          if (fDoMesonQA > 0  && fDoMesonQA < 3 && fIsMC == 2){
             fHistoMCPi0PtJetPt[iCut]  = new TH2F("MC_Pi0_Pt_JetPt","MC_Pi0_Pt_JetPt",nBinsQAPt, minQAPt, maxQAPt,200,0,200);
             fHistoMCPi0PtJetPt[iCut]->Sumw2();
             SetLogBinningXTH2(fHistoMCPi0PtJetPt[iCut]);
@@ -2529,6 +2572,25 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             Double_t sparesFill[4] = {pi0cand->M(),pi0cand->Pt(),(Double_t)zbin,(Double_t)mbin};
             fSparseMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
           }
+
+          if(fDoMesonQA == 4  && fIsMC == 0 && (pi0cand->Pt() > 13.) ){
+            Int_t zbin = 0;
+            Int_t mbin = 0;
+            if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->BackgroundHandlerType() == 0){
+              zbin = fBGHandler[fiCut]->GetZBinIndex(fInputEvent->GetPrimaryVertex()->GetZ());
+              if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
+                mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
+              } else {
+                mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fClusterCandidates->GetEntries());
+              }
+            }
+            fInvMassTreeInvMass = pi0cand->M();
+            fInvMassTreePt = pi0cand->Pt();
+            fInvMassTreeAlpha = fabs(pi0cand->GetAlpha());
+            fInvMassTreeTheta = pi0cand->GetOpeningAngle();
+            fInvMassTreeMixPool = zbin*100 + mbin;
+            tSigInvMassPtAlphaTheta[fiCut]->Fill();
+          }
         
           if(fIsMC> 0){
             if(fInputEvent->IsA()==AliESDEvent::Class())
@@ -3263,6 +3325,15 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
             }
             if(!fDoLightOutput && fabs(backgroundCandidate->GetAlpha())<0.1)
               fHistoMotherBackInvMassPtAlpha[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
+
+            if(fDoMesonQA == 4 && fIsMC == 0 && (backgroundCandidate->Pt() > 13.) ){
+              fInvMassTreeInvMass = backgroundCandidate->M();
+              fInvMassTreePt = backgroundCandidate->Pt();
+              fInvMassTreeAlpha = fabs(backgroundCandidate->GetAlpha());
+              fInvMassTreeTheta = backgroundCandidate->GetOpeningAngle();
+              fInvMassTreeMixPool = zbin*100 + mbin;
+              tBckInvMassPtAlphaTheta[fiCut]->Fill();
+            }
           }
           delete backgroundCandidate;
           backgroundCandidate = 0x0;
@@ -3290,6 +3361,14 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
               if(!fDoLightOutput && fabs(backgroundCandidate->GetAlpha())<0.1)
                 fHistoMotherBackInvMassPtAlpha[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), fWeightJetJetMC);
               
+              if(fDoMesonQA == 4 && fIsMC == 0 && (backgroundCandidate->Pt() > 13.) ){
+                fInvMassTreeInvMass = backgroundCandidate->M();
+                fInvMassTreePt = backgroundCandidate->Pt();
+                fInvMassTreeAlpha = fabs(backgroundCandidate->GetAlpha());
+                fInvMassTreeTheta = backgroundCandidate->GetOpeningAngle();
+                fInvMassTreeMixPool = zbin*100 + mbin;
+                tBckInvMassPtAlphaTheta[fiCut]->Fill();
+              }
             }
             delete backgroundCandidate;
             backgroundCandidate = 0x0;

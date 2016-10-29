@@ -297,7 +297,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fInvMassRTOF;                                         //! InvMass at R=375 cm,
     Float_t               fPt;                                                  //! momentum, 
     UChar_t               iFlag;                                                //! flag (0 = gamma, 1 = pi0, 2 = eta)
-    
+
+    // tree for alpha/opening angle studies
+    TTree**               tSigInvMassPtAlphaTheta;                              //! array of trees
+    TTree**               tBckInvMassPtAlphaTheta;                              //! array of trees
+    Float_t               fInvMassTreeInvMass;
+    Float_t               fInvMassTreePt;
+    Float_t               fInvMassTreeAlpha;
+    Float_t               fInvMassTreeTheta;
+    Int_t                 fInvMassTreeMixPool;
+
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
 //    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
@@ -327,7 +336,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 25);
+    ClassDef(AliAnalysisTaskGammaCalo, 26);
 };
 
 #endif
