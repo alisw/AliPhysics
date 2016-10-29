@@ -92,7 +92,7 @@ public:
   virtual void   UserExec(Option_t *);
   virtual void   Terminate(Option_t *);
 
-  AliNuclexEventCuts *fEventCut;
+  AliNuclexEventCuts  fEventCut;
   TArrayD             fTOFfunctionPars;
 private:
   AliAnalysisTaskNucleiYield (const AliAnalysisTaskNucleiYield &source);
