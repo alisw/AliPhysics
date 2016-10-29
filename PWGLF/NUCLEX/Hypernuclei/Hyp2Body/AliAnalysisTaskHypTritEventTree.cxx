@@ -130,7 +130,7 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistogramList->Add(fHistdEdx);
   fHistogramList->Add(fHistNumEvents);
 
-  fEventCuts.SetupLHC15o();
+  //fEventCuts.SetupLHC15o();
   fEventCuts.AddQAplotsToList(fHistogramList);
 
   fTree = new TTree("tree","fTree");
@@ -192,7 +192,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
     centrality = event->GetCentrality()->GetCentralityPercentile("V0M");
   }
   if (fPeriod == 2015) {
-    if(!fEventCuts.AcceptEvent(event, fHistogramList)) {
+    if(!fEventCuts.AcceptEvent(event)) {
       PostData(1,fHistogramList);
       return;
     }

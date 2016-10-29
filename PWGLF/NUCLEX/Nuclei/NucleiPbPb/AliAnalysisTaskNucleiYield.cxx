@@ -88,7 +88,7 @@ static void BinLogAxis(const TH1 *h) {
 ///
 AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
-  ,fEventCut{new AliNuclexEventCuts}
+  ,fEventCut{true}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -276,8 +276,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   if (fTOFfunctionPars.GetSize() == 4)
     fTOFfunction->SetParameters(fTOFfunctionPars.GetArray());
 
-  fEventCut->AddQAplotsToList(fList);
-  fList->Add(fEventCut);
+  fList->Add(&fEventCut);
   PostData(1,fList);
 }
 
@@ -296,7 +295,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
   }
 
   AliVEvent *ev = InputEvent();
-  if (!fEventCut->AcceptEvent(ev, fList)) {
+  if (!fEventCut.AcceptEvent(ev)) {
     PostData(1, fList);
     return;
   }
@@ -309,7 +308,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
 
   /// The centrality selection in PbPb uses the percentile determined with V0.
-  float centrality = fEventCut->GetCentrality();
+  float centrality = fEventCut.GetCentrality();
 
   /// The magnetic field
   fMagField = ev->GetMagneticField();
@@ -374,7 +373,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
         }
       }
     } else {
-      const int iC = track->Charge();
+      const int iC = (track->Charge() > 0) ? 1 : 0;
       fTPCeLoss[iC]->Fill(track->GetTPCmomentum(),track->GetTPCsignal());
 
       if (!PassesPIDSelection(track)) continue;
@@ -457,7 +456,7 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
     if (nSDD < fRequireSDDrecPoints) return kFALSE;
     if (fRequireVetoSPD && nSPD > 0) return kFALSE;
     Double_t cov[3];
-    if (!track->PropagateToDCA(fEventCut->GetPrimaryVertex(), fMagField, 100, dca, cov)) return kFALSE;
+    if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return kFALSE;
     if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
   }

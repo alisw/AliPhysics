@@ -290,7 +290,7 @@ void AliAnalysisTaskNucleiYieldESD::UserExec(Option_t *){
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
 
   /// Use the event cut class to apply the required selections
-  if (!fEventCuts.AcceptEvent(ev,fList)) {
+  if (!fEventCuts.AcceptEvent(ev)) {
     PostData(1, fList);
     return;
   }
