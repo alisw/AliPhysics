@@ -32,6 +32,12 @@ public:
   virtual ~TBinning() {}
 
   /**
+   * virtual function creating a copy of the current binning
+   * @return Copy of the current binning
+   */
+  virtual TBinning * MakeCopy() const = 0;
+
+  /**
    * Function creating bin edges from a descripition
    * To be implemented by classes inheriting from TBinning
    * @param [out] binedges Target array of bin edges
