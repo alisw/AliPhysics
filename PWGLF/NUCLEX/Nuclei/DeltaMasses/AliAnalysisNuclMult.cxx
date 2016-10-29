@@ -47,12 +47,12 @@ AliAnalysisNuclMult::AliAnalysisNuclMult():
   fList(new TList()),
   multMin(0.),
   multMax(100.),
-  htriggerMask(NULL),
-  htriggerMask_noMB(NULL),
+  DCAzMax(1.),
   hzvertex(NULL),
   hNevent(NULL),
   hV0mult(NULL),
-  hTrackMult(NULL),
+  hTracklets(NULL),
+  hTrackletsVsV0mult(NULL),
   hCheckTrackSel(NULL)
 {
   fList->SetName("results");
@@ -69,12 +69,12 @@ AliAnalysisNuclMult::AliAnalysisNuclMult(const char *name):
   fList(new TList()),
   multMin(0.),
   multMax(100.),
-  htriggerMask(NULL),
-  htriggerMask_noMB(NULL),
+  DCAzMax(1.),
   hzvertex(NULL),
   hNevent(NULL),
   hV0mult(NULL),
-  hTrackMult(NULL),
+  hTracklets(NULL),
+  hTrackletsVsV0mult(NULL),
   hCheckTrackSel(NULL)
 {
   DefineOutput(1, TList::Class());
@@ -93,58 +93,63 @@ void AliAnalysisNuclMult::UserCreateOutputObjects()
   snprintf(nameSpec[0],20,"e^{+}"); snprintf(nameSpec[1],20,"#mu^{+}"); snprintf(nameSpec[2],20,"#pi^{+}"); snprintf(nameSpec[3],20,"K^{+}"); snprintf(nameSpec[4],20,"p"); snprintf(nameSpec[5],20,"d"); snprintf(nameSpec[6],20,"t"); snprintf(nameSpec[7],20,"^{3}He"); snprintf(nameSpec[8],20,"^{4}He");
   snprintf(nameSpec[9],20,"e^{-}"); snprintf(nameSpec[10],20,"#mu^{-}"); snprintf(nameSpec[11],20,"#pi^{-}"); snprintf(nameSpec[12],20,"K^{-}"); snprintf(nameSpec[13],20,"#bar{p}"); snprintf(nameSpec[14],20,"#bar{d}"); snprintf(nameSpec[15],20,"#bar{t}"); snprintf(nameSpec[16],20,"^{3}#bar{He}"); snprintf(nameSpec[17],20,"^{4}#bar{He}");
   
-  htriggerMask = new TH1I("htriggerMask","Trigger mask. Attention: before to cut on multiplicity",32,0,32);
+  htriggerMask[0] = new TH1F("htriggerMask","Trigger mask (before the event selection)",32,0,32);
   const Char_t *xaxisTitle[32]={"kMB","kINT7","kMUON","kHighMult","kEMC1","kCINT5","kCMUS5","kMUSH7","kMUL7","kMUU7","kEMC7","kEMC8","kMUS7","kPHI1","kPHI7","kEMCEJE","kEMCEGA","kCentral","kSemiCentral","kDG5","kZED","kSPI7","kSPI","kINT8","kMuonSingleLowPt8","kMuonSingleHighPt8","kMuonLikeLowPt8","kMuonUnlikeLowPt8","kMuonUnlikeLowPt0","kTRD","kFastOnly","kUserDefined"};
   for(Int_t i=0;i<32;i++) {
-    htriggerMask->Fill(xaxisTitle[i],0);
+    htriggerMask[0]->Fill(xaxisTitle[i],0);
   }
   
-  htriggerMask_noMB = new TH1I("htriggerMask_noMB","Trigger mask excluding MB events. Attention: before to cut on multiplicity",32,0,32);
+  htriggerMask[1] = new TH1F("htriggerMask_noMB","Trigger mask excluding MB events (before the event selection)",32,0,32);
   for(Int_t i=0;i<32;i++) {
-    htriggerMask_noMB->Fill(xaxisTitle[i],0);
+    htriggerMask[1]->Fill(xaxisTitle[i],0);
   }
 
   hzvertex = new TH1F("hzvertex","z-vertex distribution. After (only) the trigger selection and the selection of INEL. collisions. Therefore it's filled before the other event cuts;z_{vtx}",1000,-50,50);
  
-  hNevent = new TH1I("hNevent","Event counter. To check the event selection compare the last bin with the number of hV0mult entries",7,0,7);
-  const Char_t *xaxisTitle2[7]={"kMB || kHighMult","IsINELgtZERO","IsAcceptedVertexPosition","HasNoInconsistentSPDandTrackVertices","IsNotPileupSPDInMultBins","IsEventSelected","InsideMultiplicityBin"};
+  hNevent = new TH1F("hNevent","Event counter. To check the event selection compare the last bin with the number of hV0mult entries",7,0,7);
+  const Char_t *xaxisTitle2[7]={"kMB","IsINELgtZERO","IsAcceptedVertexPosition","HasNoInconsistentSPDandTrackVertices","IsNotPileupSPDInMultBins","IsEventSelected","InsideMultiplicityBin"};
 for(Int_t i=0;i<7;i++) {
     hNevent->Fill(xaxisTitle2[i],0);
   }
   
-  hV0mult = new TH1I("hV0mult","Multiplicity distribution (after cuts on event);V0M Multiplicity Percentile",1000,0,100);
+  hV0mult = new TH1F("hV0mult","Multiplicity distribution (after the event selection);V0M Multiplicity Percentile",100,0,100);
 
-  hTrackMult = new TH1I("hTrackMult","Mid-pseudo-rapidity estimator of multiplicity;kTrackletsITSTPC (|#eta|<0.8)",1000,0,1000);
+  hTracklets = new TH1F("hTracklets","Mid-pseudo-rapidity estimator of multiplicity;Number of tracklets",1000,0,1000);
   
-  hCheckTrackSel = new TH1I("hCheckTrackSel","Number of tracks per event after the track selection",12,0,12);
-  const Char_t *xaxisTitle3[12]={"|y|<0.5","nTPCclusters>=70","chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca","|DCAxy|<1","|DCAz|<1","|#eta|<0.8"};
+  hTrackletsVsV0mult = new TH2F("hTrackletsVsV0mult",";V0M Multiplicity Percentile;Number of tracklets",100,0,100,1000,0,1000);
+
+  hrapidity[0] = new TH1F("hrapidity_0","Rapidity (assuming deuteron mass) before |y|<0.5 cut;rapidity",1000,-5,5);
+  hrapidity[1] = new TH1F("hrapidity_1","Rapidity (assuming deuteron mass) after |y|<0.5 cut;rapidity",1000,-5,5);
+
+  hCheckTrackSel = new TH1F("hCheckTrackSel","Number of tracks per event after the track selection",12,0,12);
+  const Char_t *xaxisTitle3[12]={"|y|<0.5","nTPCclusters>=70","chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca","|DCAxy|<0.5","|DCAz|<1","|#eta|<0.8"};
   for(Int_t i=0;i<12;i++) {
     hCheckTrackSel->Fill(xaxisTitle3[i],0);
   }
 
-  hnTPCclusters[0] = new TH1I("hnTPCclusters_0","Number of TPC clusters (before track cuts)",200,0,200);
-  hchi2TPC[0] = new TH1D("hchi2TPC_0","#chi^{2} per TPC cluster (before track cuts)",1000,0,100);
-  hisTPCrefit[0] = new TH1I("hisTPCrefit_0","kTPCrefit (before track cuts)",2,0,2);
-  hisITSrefit[0] = new TH1I("hisITSrefit_0","kITSrefit (before track cuts)",2,0,2);
-  hnSPD[0] = new TH1I("hnSPD_0","Number of SPD rec. points (before track cuts)",3,0,3);
-  hnKinkDaughters[0] = new TH1I("hnKinkDaughters_0","Number of Kink Daughters (before track cuts)",40,0,40);
-  hsigmaToVtx[0] = new TH1D("hsigmaToVtx_0","Number of sigma to the vertex (before track cuts)",400,0,40);
-  hchi2ITS[0] = new TH1D("hchi2ITS_0","#chi^{2} per ITS cluster (before track cuts)",1000,0,100);
+  hnTPCclusters[0] = new TH1F("hnTPCclusters_0","Number of TPC clusters (before track cuts)",200,0,200);
+  hchi2TPC[0] = new TH1F("hchi2TPC_0","#chi^{2} per TPC cluster (before track cuts)",1000,0,100);
+  hisTPCrefit[0] = new TH1F("hisTPCrefit_0","kTPCrefit (before track cuts)",2,0,2);
+  hisITSrefit[0] = new TH1F("hisITSrefit_0","kITSrefit (before track cuts)",2,0,2);
+  hnSPD[0] = new TH1F("hnSPD_0","Number of SPD rec. points (before track cuts)",3,0,3);
+  hnKinkDaughters[0] = new TH1F("hnKinkDaughters_0","Number of Kink Daughters (before track cuts)",40,0,40);
+  hsigmaToVtx[0] = new TH1F("hsigmaToVtx_0","Number of sigma to the vertex (before track cuts)",400,0,40);
+  hchi2ITS[0] = new TH1F("hchi2ITS_0","#chi^{2} per ITS cluster (before track cuts)",1000,0,100);
   
-  heta[0] = new TH1D("heta_0","#eta (before track cuts);#eta",200,-1,1);
-  hisPropagatedToDca[0] = new TH1I("hisPropagatedToDca_0","kPropagatedToDca (before track cuts)",2,0,2);
+  heta[0] = new TH1F("heta_0","#eta (before track cuts);#eta",200,-1,1);
+  hisPropagatedToDca[0] = new TH1F("hisPropagatedToDca_0","kPropagatedToDca (before track cuts)",2,0,2);
   
-  hnTPCclusters[1] = new TH1I("hnTPCclusters_1","Number of TPC clusters (after track cuts)",200,0,200);
-  hchi2TPC[1] = new TH1D("hchi2TPC_1","#chi^{2} per TPC cluster (after track cuts)",1000,0,100);
-  hisTPCrefit[1] = new TH1I("hisTPCrefit_1","kTPCrefit (after track cuts)",2,0,2);
-  hisITSrefit[1] = new TH1I("hisITSrefit_1","kITSrefit (after track cuts)",2,0,2);
-  hnSPD[1] = new TH1I("hnSPD_1","Number of SPD rec. points (after track cuts)",3,0,3);
-  hnKinkDaughters[1] = new TH1I("hnKinkDaughters_1","Number of Kink Daughters (after track cuts)",40,0,40);
-  hsigmaToVtx[1] = new TH1D("hsigmaToVtx_1","Number of sigma to the vertex (after track cuts)",400,0,40);
-  hchi2ITS[1] = new TH1D("hchi2ITS_1","#chi^{2} per ITS cluster (after track cuts)",1000,0,100);
+  hnTPCclusters[1] = new TH1F("hnTPCclusters_1","Number of TPC clusters (after track cuts)",200,0,200);
+  hchi2TPC[1] = new TH1F("hchi2TPC_1","#chi^{2} per TPC cluster (after track cuts)",1000,0,100);
+  hisTPCrefit[1] = new TH1F("hisTPCrefit_1","kTPCrefit (after track cuts)",2,0,2);
+  hisITSrefit[1] = new TH1F("hisITSrefit_1","kITSrefit (after track cuts)",2,0,2);
+  hnSPD[1] = new TH1F("hnSPD_1","Number of SPD rec. points (after track cuts)",3,0,3);
+  hnKinkDaughters[1] = new TH1F("hnKinkDaughters_1","Number of Kink Daughters (after track cuts)",40,0,40);
+  hsigmaToVtx[1] = new TH1F("hsigmaToVtx_1","Number of sigma to the vertex (after track cuts)",400,0,40);
+  hchi2ITS[1] = new TH1F("hchi2ITS_1","#chi^{2} per ITS cluster (after track cuts)",1000,0,100);
     
-  heta[1] = new TH1D("heta_1","#eta (after track cuts);#eta",200,-1,1);
-  hisPropagatedToDca[1] = new TH1I("hisPropagatedToDca_1","kPropagatedToDca (after track cuts)",2,0,2);
+  heta[1] = new TH1F("heta_1","#eta (after track cuts);#eta",200,-1,1);
+  hisPropagatedToDca[1] = new TH1F("hisPropagatedToDca_1","kPropagatedToDca (after track cuts)",2,0,2);
   
   fptCorr[0] = new TF1("fptCorr_d","[0]-[1]*TMath::Exp(-[2]*x)",0,10);
   fptCorr[0]->FixParameter(0,-3.97081e-03);
@@ -153,8 +158,8 @@ for(Int_t i=0;i<7;i++) {
   fptCorr[0]->GetXaxis()->SetTitle("p_{T}^{reco} (GeV/c)");
   fptCorr[0]->GetYaxis()->SetTitle("p_{T}^{reco} - p_{T}^{true} (GeV/c)");
 
-  fdEdxVSp[0] = new TH2F("fdEdxVSp_pos","TPC dE/dx (positive charge); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);//100,500//500,2000
-  fdEdxVSp[1] = new TH2F("fdEdxVSp_neg","TPC dE/dx (negative charge); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);
+  fdEdxVSp[0] = new TH2F("fdEdxVSp_pos","TPC dE/dx (positive charges); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);
+  fdEdxVSp[1] = new TH2F("fdEdxVSp_neg","TPC dE/dx (negative charges); p_{TPC}/|z| (GeV/c); dE/dx_{TPC} (a.u.)",200,0,10,1000,0,2000);
 
   Char_t name_hDeDxExp[9][200];
   Char_t title_hDeDxExp[9][200];
@@ -168,18 +173,26 @@ for(Int_t i=0;i<7;i++) {
   Char_t title_fNsigmaTPC[18][200];
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fNsigmaTPC[iS],200,"NsigmaTPC_%s",nameSpec[iS]);
-    snprintf(title_fNsigmaTPC[iS],200,"n#sigma_{TPC} (%s);p_{T} (GeV/c);n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS]);
-    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmaTPC[iS] = new TH2F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],200,0,10,1000,-50,50);
-    else fNsigmaTPC[iS] = new TH2F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,0,10,1,-10,10);
+    snprintf(title_fNsigmaTPC[iS],200,"n#sigma_{TPC} (%s);p_{T} (GeV/c);V0M Multiplicity Percentile;n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmaTPC[iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],200,0,10,25,0,100,1000,-50,50);
+    else fNsigmaTPC[iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,0,10,1,0,100,1,-10,10);
   }
 
   Char_t name_fDca[18][200];
   Char_t title_fDca[18][200];
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fDca[iS],200,"fDca_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"DCA of %s;DCA_{xy} (cm);DCA_{z} (cm);p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-1.0,1.0,100,-1.0,1.0,100,0,5);
-    else fDca[iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-1.0,1.0,1,-2.0,2.0,1,0,5);
+    snprintf(name_fDca[iS],200,"fDca_xy_%s",nameSpec[iS]);
+    snprintf(title_fDca[iS],200,"%s;DCA_{xy} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-0.5,0.5,25,0,100,100,0,5);
+    else fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,0,100,1,0,5);
+
+    snprintf(name_fDca[iS],200,"fDca_z_%s",nameSpec[iS]);
+    snprintf(title_fDca[iS],200,"%s;DCA_{z} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
+      if(DCAzMax>9.99 && DCAzMax<10.01) fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1000,-DCAzMax,DCAzMax,25,0,100,100,0,5);
+      else fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],100,-DCAzMax,DCAzMax,25,0,100,100,0,5);
+    }
+    else fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-DCAzMax,DCAzMax,1,0,100,1,0,5);
   }
     
   Char_t name_fNsigmaTOF[18][200];
@@ -191,8 +204,8 @@ for(Int_t i=0;i<7;i++) {
     else fNsigmaTOF[iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,0,10,1,-10,10);
   }
 
-  fBetaTOFvspt[0] = new TH2F("fBetaTOFvspt_pos","#beta_{TOF} (positive charge);p_{T}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);//500,520//200,260
-  fBetaTOFvspt[1] = new TH2F("fBetaTOFvspt_neg","#beta_{TOF} (negative charge);p_{T}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);
+  fBetaTOFvspt[0] = new TH2F("fBetaTOFvspt_pos","#beta_{TOF} (positive charges);p_{T}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);//500,520//200,260
+  fBetaTOFvspt[1] = new TH2F("fBetaTOFvspt_neg","#beta_{TOF} (negative charges);p_{T}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);
 
   Char_t name_hBetaExp[9][200];
   Char_t title_hBetaExp[9][200];
@@ -202,27 +215,30 @@ for(Int_t i=0;i<7;i++) {
     hBetaExp[iS] = new TProfile(name_hBetaExp[iS],title_hBetaExp[iS],200,0,10,0.4,1.05,"");
   }
 
-  fM2tof[0] = new TH2F("fM2tof_pos","m^{2}_{TOF} (positive charge);p_{T} (GeV/c); m^{2}_{TOF} (GeV^{2}/c^{4})",200,0,10,500,0,10);
-  fM2tof[1] = new TH2F("fM2tof_neg","m^{2}_{TOF} (negative charge);p_{T} (GeV/c); m^{2}_{TOF} (GeV^{2}/c^{4})",200,0,10,500,0,10);
+  fM2tof[0] = new TH3F("fM2tof_pos","m^{2}_{TOF} (positive charges);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",200,0,10,25,0,100,500,0,10);
+  fM2tof[1] = new TH3F("fM2tof_neg","m^{2}_{TOF} (negative charges);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",200,0,10,25,0,100,500,0,10);
   
   Char_t name_fM2vspt[18][200];
   Char_t title_fM2vspt[18][200];
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fM2vspt[iS],200,"fM2vspt_%s",nameSpec[iS]);
-    snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} (3#sigma TPC dE/dx cut on %s);p_{T} (GeV/c); m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fM2vspt[iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],200,0,10,500,0,10);
-    else fM2vspt[iS] = new TH2F(name_fM2vspt[iS],title_fM2vspt[iS],1,0,10,1,0,10);
+    snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} (3#sigma TPC dE/dx cut on %s);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fM2vspt[iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],200,0,10,25,0,100,500,0,10);
+    else fM2vspt[iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],1,0,10,1,0,100,1,0,10);
   }
     
   if(multMin<1e-18 && multMax>99) {//plots added only for integrated multiplicity
-    fList->Add(htriggerMask);
-    fList->Add(htriggerMask_noMB);
+    fList->Add(htriggerMask[0]);
+    fList->Add(htriggerMask[1]);
     fList->Add(hzvertex);
     fList->Add(hNevent);
   }
 
   fList->Add(hV0mult);
-  fList->Add(hTrackMult);
+  fList->Add(hTracklets);
+  fList->Add(hTrackletsVsV0mult);
+  
+  for(Int_t i=0;i<2;i++) fList->Add(hrapidity[i]);
   
   fList->Add(hCheckTrackSel);
   
@@ -249,8 +265,11 @@ for(Int_t i=0;i<7;i++) {
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[4+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[5+9*i]);
 
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][5+9*i]);
+  
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][5+9*i]);
   
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[2+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[3+9*i]);
@@ -289,20 +308,20 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
   //Trigger mask filled:
   for(Int_t i=0;i<32;i++) {
     unsigned bit=(1<<i);//shift of 1 of i positions
-    if(inputHandler->IsEventSelected() & bit) htriggerMask->Fill(i);
+    if(inputHandler->IsEventSelected() & bit) htriggerMask[0]->Fill(i);
   }
   //for no MB events:
   if(!(inputHandler->IsEventSelected() & AliVEvent::kMB)) {
     for(Int_t i=0;i<32;i++) {
       unsigned bit=(1<<i);
-      if(inputHandler->IsEventSelected() & bit) htriggerMask_noMB->Fill(i);
+      if(inputHandler->IsEventSelected() & bit) htriggerMask[1]->Fill(i);
     }
   }
   
   //------------------------- Event selection:
   this->EventSelectionMonitor();
   
-  if(!fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kMB) && !fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kHighMult)) return;
+  if(!fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kMB)) return;
   
   Float_t mult = fPPVsMultUtils->GetMultiplicityPercentile(fEvent, "V0M", kFALSE);//kFALSE because I made the event selection before
   
@@ -310,8 +329,9 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
   hV0mult->Fill(mult);
   //------------------------- Event selection (end)
 
-  Int_t Ntracklets=fESDtrackCuts->GetReferenceMultiplicity((AliESDEvent*)fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
-  hTrackMult->Fill(Ntracklets);
+  Int_t Ntracklets = fPPVsMultUtils->GetStandardReferenceMultiplicity(fEvent, kFALSE);//kFALSE because I made the event selection before
+  hTracklets->Fill(Ntracklets);
+  hTrackletsVsV0mult->Fill(mult,Ntracklets);
   
   Int_t nTracks = fEvent->GetNumberOfTracks();
   
@@ -323,18 +343,20 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
       continue;
     }
     
-    Double_t rapidity = track->Y();
+    Double_t rapidity = this->GetRapidity(track);
     
     //------------------------- Track cuts:
    
     //rapidity cut:
+    hrapidity[0]->Fill(rapidity);
     if(TMath::Abs(rapidity)>0.5) continue;
-    
+    hrapidity[1]->Fill(rapidity);
+
     Double_t DCAxy, DCAz;
     if(!this->AcceptTrack(track, DCAxy, DCAz)) continue;
     
     //------------------------- Track cuts (end)
-        
+    
     Short_t charge = track->Charge();
     Double_t pt = track->Pt();
 
@@ -345,18 +367,24 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     this->PtCorr(pt, nsigmaTPC);
     
     for(Int_t iS=0;iS<9;iS++){
-      if(charge>0) fNsigmaTPC[iS]->Fill(pt,nsigmaTPC[iS]);
-      else if(charge<0) fNsigmaTPC[iS+9]->Fill(pt,nsigmaTPC[iS]);
+      if(charge>0) fNsigmaTPC[iS]->Fill(pt,mult,nsigmaTPC[iS]);
+      else if(charge<0) fNsigmaTPC[iS+9]->Fill(pt,mult,nsigmaTPC[iS]);
     }
 
     //DCA filled:
     for(Int_t iS=0;iS<9;iS++){
       if(TMath::Abs(nsigmaTPC[iS])<3) {
-	if(charge>0) fDca[iS]->Fill(DCAxy,DCAz,pt);
-	else if(charge<0) fDca[iS+9]->Fill(DCAxy,DCAz,pt);
+	if(charge>0) {
+	  fDca[0][iS]->Fill(DCAxy,mult,pt);
+	  fDca[1][iS]->Fill(DCAz,mult,pt);
+	}
+	else if(charge<0) {
+	  fDca[0][iS+9]->Fill(DCAxy,mult,pt);
+	  fDca[1][iS+9]->Fill(DCAz,mult,pt);
+	}
       }
     }
-  
+    
     //TOF matching required:
     if(!this->IsTOFmatching(track)) continue;
     
@@ -367,13 +395,13 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     //mass determination:
     Double_t m2 = this->GetM2(p, beta);
     
-    if(charge>0) fM2tof[0]->Fill(pt,m2);
-    else if(charge<0) fM2tof[1]->Fill(pt,m2);
+    if(charge>0) fM2tof[0]->Fill(pt,mult,m2);
+    else if(charge<0) fM2tof[1]->Fill(pt,mult,m2);
     
     for(Int_t iS=0;iS<9;iS++){
       if(TMath::Abs(nsigmaTPC[iS])<3) {
-	if(charge>0) fM2vspt[iS]->Fill(pt,m2);
-	else if(charge<0) fM2vspt[iS+9]->Fill(pt,m2);
+	if(charge>0) fM2vspt[iS]->Fill(pt,mult,m2);
+	else if(charge<0) fM2vspt[iS+9]->Fill(pt,mult,m2);
       }
     }
 
@@ -387,11 +415,11 @@ void AliAnalysisNuclMult::Terminate(Option_t *) {
 //_____________________________________________________________________________
 void AliAnalysisNuclMult::EventSelectionMonitor() {
   
-  if(fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kMB) || fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kHighMult)) {
+  if(fPPVsMultUtils->IsEventSelected(fEvent, AliVEvent::kMB)) {
     hNevent->Fill(5);
   }
   
-  if(fPPVsMultUtils->IsSelectedTrigger(fEvent, AliVEvent::kMB) || fPPVsMultUtils->IsSelectedTrigger(fEvent, AliVEvent::kHighMult)) {
+  if(fPPVsMultUtils->IsSelectedTrigger(fEvent, AliVEvent::kMB)) {
     hNevent->Fill(0);
     
     if(fPPVsMultUtils->IsINELgtZERO(fEvent)) {
@@ -425,6 +453,21 @@ Bool_t AliAnalysisNuclMult::IsInsideMultiplicityBin(Float_t multiplicity) {
   if(multiplicity < multMin || multiplicity > multMax+1e-18) return kFALSE;
 
   return kTRUE;
+}
+//_____________________________________________________________________________
+Double_t AliAnalysisNuclMult::GetRapidity(AliVTrack *track) {
+
+  Double_t p = track->P();
+  Double_t pz = track->Pz();
+  Double_t massOverZ = AliPID::ParticleMassZ(AliPID::kDeuteron);
+  
+  Double_t E = TMath::Sqrt(p*p+massOverZ*massOverZ);
+  Double_t rapidity;
+  
+  if((E-pz)>1e-18) rapidity = 0.5*TMath::Log((E+pz)/(E-pz));
+  else rapidity = -99;
+    
+  return rapidity;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisNuclMult::AcceptTrack(AliVTrack *track, Double_t &DCAxy, Double_t &DCAz) {
@@ -469,9 +512,9 @@ Bool_t AliAnalysisNuclMult::AcceptTrack(AliVTrack *track, Double_t &DCAxy, Doubl
   
   if(!isPropagatedToDca) return kFALSE;
 
-  if(TMath::Abs(DCAxy)>1.0) return kFALSE;
+  if(TMath::Abs(DCAxy)>0.5) return kFALSE;
 
-  if(TMath::Abs(DCAz)>1.0) return kFALSE;
+  if(TMath::Abs(DCAz)>DCAzMax) return kFALSE;
 
   if(TMath::Abs(eta)>0.8) return kFALSE;
 
@@ -517,7 +560,7 @@ void AliAnalysisNuclMult::TrackSelectionMonitor(Int_t nTPCclusters, Double_t chi
 		if(isPropagatedToDca) {
 		  hCheckTrackSel->Fill(8);
 		  
-		  if(TMath::Abs(DCAxy)<1.0) {
+		  if(TMath::Abs(DCAxy)<0.5) {
 		    hCheckTrackSel->Fill(9);
 		    
 		    if(TMath::Abs(DCAz)<1.0) {//temporary set to 2.0
@@ -585,12 +628,12 @@ Bool_t AliAnalysisNuclMult::IsTOFmatching(AliVTrack *track) {
 //_____________________________________________________________________________
 void AliAnalysisNuclMult::GetExpTOFtime(AliVTrack *track, Double_t p, Double_t exptimes[9]) {
 
-  Double_t massOverZ[9] = {0.000511,0.105658,0.139570,0.493677,0.938272,1.875612859,2.808921005,1.404195741,1.863689620};
-
   track->GetIntegratedTimes(exptimes);
   //Integrated times of nuclei:
+  Double_t m_proton = AliPID::ParticleMass(4);
   for(Int_t iN=5;iN<9;iN++) {
-    if(p>1e-18) exptimes[iN] = exptimes[4]*exptimes[4]*(massOverZ[iN]*massOverZ[iN]/p/p+1)/(massOverZ[4]*massOverZ[4]/p/p+1);
+    Double_t massOverZ = AliPID::ParticleMassZ(iN);
+    if(p>1e-18) exptimes[iN] = exptimes[4]*exptimes[4]*(massOverZ*massOverZ/p/p+1)/(m_proton*m_proton/p/p+1);
     exptimes[iN] = TMath::Sqrt(exptimes[iN]);
   }  
   
