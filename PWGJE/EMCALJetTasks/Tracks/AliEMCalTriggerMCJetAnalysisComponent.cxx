@@ -16,6 +16,7 @@
 #include <vector>
 
 #include <THistManager.h>
+#include <TLinearBinning.h>
 #include <TMath.h>
 #include <TString.h>
 
@@ -74,26 +75,26 @@ void AliEMCalTriggerMCJetAnalysisComponent::CreateHistos() {
   GetAllTriggerNamesAndTitles(triggerCombinations);
 
   // Create axis definitions
-  const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
+  const TBinning *ptbinning = fBinning->GetBinning("pt"),
       *jetptbinning = fBinning->GetBinning("jetpt"),
       *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi"),
       *vertexbinning = fBinning->GetBinning("zvertex");
 
   const TAxis *trackaxes[6] = {
-      DefineAxis("trackpt", ptbinning),
-      DefineAxis("jettpt", jetptbinning ? jetptbinning : ptbinning),
-      DefineAxis("eta", etabinning),
-      DefineAxis("phi", phibinning),
-      DefineAxis("zvertex", vertexbinning),
-      DefineAxis("mbtrigger", 2, -0.5, 1.5)
+      DefineAxis("trackpt", *ptbinning),
+      DefineAxis("jettpt", jetptbinning ? *jetptbinning : *ptbinning),
+      DefineAxis("eta", *etabinning),
+      DefineAxis("phi", *phibinning),
+      DefineAxis("zvertex", *vertexbinning),
+      DefineAxis("mbtrigger", TLinearBinning(2, -0.5, 1.5))
   };
 
   const TAxis *jetaxes[4] = {
-      DefineAxis("jetpt", jetptbinning ? jetptbinning : ptbinning),
-      DefineAxis("jeteta", etabinning),
-      DefineAxis("jetphi", phibinning),
-      DefineAxis("zvertex", vertexbinning)
+      DefineAxis("jetpt", jetptbinning ? *jetptbinning : *ptbinning),
+      DefineAxis("jeteta", *etabinning),
+      DefineAxis("jetphi", *phibinning),
+      DefineAxis("zvertex", *vertexbinning)
   };
 
   // Build histograms

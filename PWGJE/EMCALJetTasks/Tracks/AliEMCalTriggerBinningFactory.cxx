@@ -31,136 +31,47 @@ void AliEMCalTriggerBinningFactory::Create(AliEMCalTriggerBinningComponent* cons
   /*
    * See header file for details
    */
-  TArrayD binLimits;
-  if(!data->GetBinning("pt")){
-    CreateRAAPtBinning(binLimits);
-    data->SetBinning("pt", binLimits);
-  }
-  if(!data->GetBinning("eta")){
-    CreateDefaultEtaBinning(binLimits);
-    data->SetBinning("eta", binLimits);
-  }
-  if(!data->GetBinning("phi")){
-    CreateLinearBinning(binLimits, 100, 0, 2*TMath::Pi());
-    data->SetBinning("phi", binLimits);
-  }
-  if(!data->GetBinning("zvertex")){
-    CreateDefaultZVertexBinning(binLimits);
-    data->SetBinning("zvertex", binLimits);
-  }
-  if(!data->GetBinning("centrality")){
-    CreateLinearBinning(binLimits, 5, 0., 100.);
-    data->SetBinning("centrality", binLimits);
-  }
+  if(!data->GetBinning("pt")) data->SetBinning("pt", new DefaultPtBinning);
+  if(!data->GetBinning("eta")) data->SetBinning("eta", new DefaultEtaBinning);
+  if(!data->GetBinning("phi")) data->SetBinning("phi", new TLinearBinning(100, 0., 2*TMath::Pi()));
+  if(!data->GetBinning("zvertex")) data->SetBinning("zvertex", new DefaultZVertexBinning);
+  if(!data->GetBinning("centrality")) data->SetBinning("centrality", new TLinearBinning(5, 0., 100.));
 }
 
-void AliEMCalTriggerBinningFactory::CreateMarkusPtBinning(TArrayD &binning) const{
+AliEMCalTriggerBinningFactory::MarkusPtBinning::MarkusPtBinning():
+  TCustomBinning()
+{
   /*
    * See header file for details
    */
-  std::vector<double> mybinning;
-  std::map<double,double> definitions;
-  definitions.insert(std::pair<double,double>(2.5, 0.1));
-  definitions.insert(std::pair<double,double>(7., 0.25));
-  definitions.insert(std::pair<double,double>(10., 0.5));
-  definitions.insert(std::pair<double,double>(15., 1.));
-  definitions.insert(std::pair<double,double>(20., 2.5));
-  definitions.insert(std::pair<double,double>(30., 5.));
-  definitions.insert(std::pair<double,double>(100., 10.));
-  definitions.insert(std::pair<double, double>(200., 20.));
-  double currentval = 0;
-  mybinning.push_back(currentval);
-  for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
-    double limit = id->first, binwidth = id->second;
-    while(currentval < limit){
-      currentval += binwidth;
-      mybinning.push_back(currentval);
-    }
-  }
-  binning.Set(mybinning.size());
-  int ib = 0;
-  for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
-    binning[ib++] = *it;
+  SetMinimum(0);
+  AddStep(2.5, 0.1);
+  AddStep(7., 0.25);
+  AddStep(10., 0.5);
+  AddStep(15., 1.);
+  AddStep(20., 2.5);
+  AddStep(30., 5.);
+  AddStep(100., 10.);
+  AddStep(200., 20.);
 }
 
-void AliEMCalTriggerBinningFactory::CreateRAAPtBinning(TArrayD& binning) const {
+AliEMCalTriggerBinningFactory::DefaultPtBinning::DefaultPtBinning() :
+    TCustomBinning()
+{
   /*
    * See header file for details
    */
-  std::vector<double> mybinning;
-  std::map<double,double> definitions;
-  definitions.insert(std::pair<double, double>(1, 0.05));
-  definitions.insert(std::pair<double, double>(2, 0.1));
-  definitions.insert(std::pair<double, double>(4, 0.2));
-  definitions.insert(std::pair<double, double>(7, 0.5));
-  definitions.insert(std::pair<double, double>(16, 1));
-  definitions.insert(std::pair<double, double>(36, 2));
-  definitions.insert(std::pair<double, double>(40, 4));
-  definitions.insert(std::pair<double, double>(50, 5));
-  definitions.insert(std::pair<double, double>(100, 10));
-  definitions.insert(std::pair<double, double>(200, 20));
-  double currentval = 0.;
-  mybinning.push_back(currentval);
-  for(std::map<double,double>::iterator id = definitions.begin(); id != definitions.end(); ++id){
-    double limit = id->first, binwidth = id->second;
-    while(currentval < limit){
-      currentval += binwidth;
-      mybinning.push_back(currentval);
-    }
-  }
-  binning.Set(mybinning.size());
-  int ib = 0;
-  for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
-    binning[ib++] = *it;
-}
-
-
-void AliEMCalTriggerBinningFactory::CreateDefaultZVertexBinning(TArrayD &binning) const {
-  /*
-   * See header file for details
-   */
-  std::vector<double> mybinning;
-  double currentval = -10;
-  mybinning.push_back(currentval);
-  while(currentval < 10.){
-    currentval += 5.;
-    mybinning.push_back(currentval);
-  }
-  binning.Set(mybinning.size());
-  int ib = 0;
-  for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
-    binning[ib++] = *it;
-}
-
-void AliEMCalTriggerBinningFactory::CreateDefaultEtaBinning(TArrayD& binning) const {
-  /*
-   * See header file for details
-   */
-  std::vector<double> mybinning;
-  double currentval = -0.8;
-  mybinning.push_back(currentval);
-  while(currentval < 0.8){
-    currentval += 0.1;
-    mybinning.push_back(currentval);
-  }
-  binning.Set(mybinning.size());
-  int ib = 0;
-  for(std::vector<double>::iterator it = mybinning.begin(); it != mybinning.end(); ++it)
-    binning[ib++] = *it;
-}
-
-void AliEMCalTriggerBinningFactory::CreateLinearBinning(TArrayD& binning, int nbins, double min, double max){
-  /*
-   * See header file for details
-   */
-  double binwidth = (max-min)/static_cast<double>(nbins);
-  binning.Set(nbins+1);
-  binning[0] = min;
-  double currentlimit = min + binwidth;
-  for(int ibin = 0; ibin < nbins; ibin++){
-    binning[ibin+1] = currentlimit;
-    currentlimit += binwidth;
-  }
+  SetMinimum(0);
+  AddStep(1, 0.05);
+  AddStep(2, 0.1);
+  AddStep(4, 0.2);
+  AddStep(7, 0.5);
+  AddStep(16, 1);
+  AddStep(36, 2);
+  AddStep(40, 4);
+  AddStep(50, 5);
+  AddStep(100, 10);
+  AddStep(200, 20);
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
