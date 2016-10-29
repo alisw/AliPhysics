@@ -18,6 +18,7 @@
 
 #include <TArrayD.h>
 #include <TAxis.h>
+#include <TBinning.h>
 #include <THnSparse.h>
 #include <THistManager.h>
 
@@ -68,12 +69,12 @@ void AliEMCalTriggerEventCounterAnalysisComponent::CreateHistos() {
     }
   }
 
-  AliEMCalTriggerBinningDimension *vertexbinning = fBinning->GetBinning("zvertex");
+  const TBinning *vertexbinning = fBinning->GetBinning("zvertex");
 
   for(std::map<std::string,std::string>::iterator it = triggerCombinations.begin(); it != triggerCombinations.end(); ++it){
     const std::string name = it->first, &title = it->second;
     // Create event-based histogram
-    fHistos->CreateTH1(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), vertexbinning->GetNumberOfBins(), vertexbinning->GetBinLimits());
+    fHistos->CreateTH1(Form("hEventHist%s", name.c_str()), Form("Event-based data for %s events; pileup rejection; z_{V} (cm)", title.c_str()), *vertexbinning);
   }
 
   // Make correlation histogram for different trigger classes

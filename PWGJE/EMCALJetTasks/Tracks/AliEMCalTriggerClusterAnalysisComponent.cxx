@@ -19,6 +19,7 @@
 #include <TAxis.h>
 #include <TClonesArray.h>
 #include <THistManager.h>
+#include <TLinearBinning.h>
 #include <TLorentzVector.h>
 
 #include "AliLog.h"
@@ -67,7 +68,7 @@ void AliEMCalTriggerClusterAnalysisComponent::CreateHistos() {
   GetAllTriggerNamesAndTitles(triggerCombinations);
 
   // Create axis definitions
-  const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
+  const TBinning *ptbinning = fBinning->GetBinning("pt"),
       *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi"),
       *vertexbinning = fBinning->GetBinning("zvertex");
@@ -79,11 +80,11 @@ void AliEMCalTriggerClusterAnalysisComponent::CreateHistos() {
   */
 
   const TAxis *clusteraxes[5] = {
-      DefineAxis("energy", ptbinning),
-      DefineAxis("eta", etabinning),
-      DefineAxis("phi", phibinning),
-      DefineAxis("zvertex", vertexbinning),
-      DefineAxis("mbtrigger", 2, -0.5, 1.5)
+      DefineAxis("energy", *ptbinning),
+      DefineAxis("eta", *etabinning),
+      DefineAxis("phi", *phibinning),
+      DefineAxis("zvertex", *vertexbinning),
+      DefineAxis("mbtrigger", TLinearBinning(2, -0.5, 1.5))
   };
 
   // Build histograms

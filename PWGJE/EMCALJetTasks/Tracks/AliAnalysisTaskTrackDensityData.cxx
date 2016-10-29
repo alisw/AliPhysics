@@ -61,43 +61,47 @@ void AliAnalysisTaskTrackDensityData::UserCreateOutputObjects(){
   AliEMCalTriggerBinningFactory bininit;
   bininit.Create(fBinHandler);
 
-  const TArrayD &trackptbinning = fBinHandler->GetBinning("pt")->GetBinning(),
-          &jetptbinning = fBinHandler->GetBinning("jetpt")->GetBinning(),
-          &contributorbinning = fBinHandler->GetBinning("contributors")->GetBinning(),
-          &jetradii = fBinHandler->GetBinning("jetradii")->GetBinning(),
-          &ptminsteps = fBinHandler->GetBinning("ptmin")->GetBinning(),
-          &jetptlarge = fBinHandler->GetBinning("jetlarge")->GetBinning();
+  const TBinning *trackptbinning = fBinHandler->GetBinning("pt"),
+          *jetptbinning = fBinHandler->GetBinning("jetpt"),
+          *contributorbinning = fBinHandler->GetBinning("contributors"),
+          *jetradii = fBinHandler->GetBinning("jetradii"),
+          *ptminsteps = fBinHandler->GetBinning("ptmin"),
+          *jetptlarge = fBinHandler->GetBinning("jetlarge");
 
-  fHistos->CreateTH1("hTrackPtSel", "Pt spectrum of selected tracks", trackptbinning);
-  fHistos->CreateTH1("hTrackPtSelEvent", "Pt spectrum of selected tracks (directly from the input event)", trackptbinning);
-  fHistos->CreateTH2("hJetMultiplicity", "Multiplicity of particles in jets", jetptbinning, contributorbinning);
-  fHistos->CreateTH2("hParticlePtJet", "Correlation between track pt and jet pt", jetptbinning, trackptbinning);
+  fHistos->CreateTH1("hTrackPtSel", "Pt spectrum of selected tracks", *trackptbinning);
+  fHistos->CreateTH1("hTrackPtSelEvent", "Pt spectrum of selected tracks (directly from the input event)", *trackptbinning);
+  fHistos->CreateTH2("hJetMultiplicity", "Multiplicity of particles in jets", *jetptbinning, *contributorbinning);
+  fHistos->CreateTH2("hParticlePtJet", "Correlation between track pt and jet pt", *jetptbinning, *trackptbinning);
 
-  for(int irad  = 0; irad < jetradii.GetSize()-1; irad++){
-    for(int ptstep = 0; ptstep <ptminsteps.GetSize(); ptstep++){
+  TArrayD jrad, ptms, jptl;
+  jetradii->CreateBinEdges(jrad);
+  ptminsteps->CreateBinEdges(ptms);
+  jetptlarge->CreateBinEdges(jptl);
+  for(int irad  = 0; irad < jrad.GetSize()-1; irad++){
+    for(int ptstep = 0; ptstep <ptms.GetSize(); ptstep++){
       fHistos->CreateTH2(Form("trackDensityJet_r%d_%d_minpt%d",
-                              static_cast<int>(jetradii[irad] * 100.),
-                              static_cast<int>(jetradii[irad+1] * 100.),
-                              static_cast<int>(ptminsteps[ptstep] * 10.)),
+                              static_cast<int>(jrad[irad] * 100.),
+                              static_cast<int>(jrad[irad+1] * 100.),
+                              static_cast<int>(ptms[ptstep] * 10.)),
                          Form("Density of tracks with p_{t} > %f GeV/c in r [%.2f, %.2f]; p_{t, jet} (GeV/c); Number of tracks",
-                             ptminsteps[ptstep],
-                             jetradii[irad],
-                             jetradii[irad+1]),
+                             ptms[ptstep],
+                             jrad[irad],
+                             jrad[irad+1]),
                          200, 0., 200.,
                          102, -0.5, 100.5);
     }
-    for(int jetptbin = 0 ; jetptbin < jetptlarge.GetSize()-1; jetptbin++){
+    for(int jetptbin = 0 ; jetptbin < jptl.GetSize()-1; jetptbin++){
       fHistos->CreateTH2(Form("trackDensityParticle_r%d_%d_jetpt%d_%d",
-                              static_cast<int>(jetradii[irad] * 100.),
-                              static_cast<int>(jetradii[irad+1] * 100.),
-                              static_cast<int>(jetptlarge[jetptbin]),
-                              static_cast<int>(jetptlarge[jetptbin+1])),
+                              static_cast<int>(jrad[irad] * 100.),
+                              static_cast<int>(jrad[irad+1] * 100.),
+                              static_cast<int>(jptl[jetptbin]),
+                              static_cast<int>(jptl[jetptbin+1])),
                          Form("Density of tracks in jet with p_{t} [%.1f, %.1f] in r[%.2f,%2f]",
-                             jetptlarge[jetptbin],
-                             jetptlarge[jetptbin+1],
-                             jetradii[irad],
-                             jetradii[irad+1]),
-                         trackptbinning, contributorbinning);
+                             jptl[jetptbin],
+                             jptl[jetptbin+1],
+                             jrad[irad],
+                             jrad[irad+1]),
+                         *trackptbinning, *contributorbinning);
     }
   }
 
@@ -118,9 +122,10 @@ bool AliAnalysisTaskTrackDensityData::Run(){
   AliTrackContainer *tcont = GetTrackContainer(fNameTrackContainer.Data());
   AliEmcalJet *myjet = NULL;
   AliVParticle *jetparticle = NULL;
-  const TArrayD &particlePtBinning = this->fBinHandler->GetBinning("pt")->GetBinning(),
-                &jetradii = this->fBinHandler->GetBinning("jetradii")->GetBinning(),
-                &ptminsteps = fBinHandler->GetBinning("ptmin")->GetBinning();
+  TArrayD particlePtBinning, jetradii, ptminsteps;
+  fBinHandler->GetBinning("pt")->CreateBinEdges(particlePtBinning);
+  fBinHandler->GetBinning("jetradii")->CreateBinEdges(jetradii);
+  fBinHandler->GetBinning("ptmin")->CreateBinEdges(ptminsteps);
   for(int ipart = 0; ipart < InputEvent()->GetNumberOfTracks(); ipart++){
     jetparticle = InputEvent()->GetTrack(ipart);
     if(TMath::Abs(jetparticle->Eta()) > 0.8) continue;
@@ -186,7 +191,9 @@ int AliAnalysisTaskTrackDensityData::GetParticleMultiplicity(const AliEmcalJet &
 }
 
 void AliAnalysisTaskTrackDensityData::FindJetPtBin(const AliEmcalJet *const jet, double &ptmin, double &ptmax) const {
-  const TArrayD &jetptlarge = fBinHandler->GetBinning("jetlarge")->GetBinning();
+  TArrayD jetptlarge;
+  const TBinning *jptlbin = fBinHandler->GetBinning("jetlarge");
+  jptlbin->CreateBinEdges(jetptlarge);
   ptmin = ptmax = -1;
   double jetpt = TMath::Abs(jet->Pt());
   for(int ptstep = 0; ptstep < jetptlarge.GetSize() - 1; ptstep++){

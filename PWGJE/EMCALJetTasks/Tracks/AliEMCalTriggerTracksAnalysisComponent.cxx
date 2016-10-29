@@ -16,6 +16,7 @@
 
 #include <TAxis.h>
 #include <TClass.h>
+#include <TBinning.h>
 #include <THistManager.h>
 
 #include "AliEMCalTriggerAnaClassManager.h"
@@ -82,22 +83,10 @@ void AliEMCalTriggerTracksAnalysisComponent::CreateHistos() {
  * \param binning binning information
  * \return the new axis
  */
-TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, const AliEMCalTriggerBinningDimension* binning) {
-  TAxis *result = new TAxis(binning->GetNumberOfBins(), binning->GetBinLimits());
-  result->SetName(name);
-  return result;
-}
-
-/**
- * Create and define axis
- * \param name Name of the axis
- * \param nbins number of bins
- * \param min min. range
- * \param max max. range
- * \return the new axis
- */
-TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, int nbins, double min, double max) {
-  TAxis *result = new TAxis(nbins, min, max);
+TAxis* AliEMCalTriggerTracksAnalysisComponent::DefineAxis(const char* name, const TBinning &binning) {
+  TArrayD binedges;
+  binning.CreateBinEdges(binedges);
+  TAxis *result = new TAxis(binedges.GetSize() - 1, binedges.GetArray());
   result->SetName(name);
   return result;
 }
@@ -153,4 +142,3 @@ void EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent::PrintTrigge
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
-
