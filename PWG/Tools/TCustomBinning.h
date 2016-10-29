@@ -93,6 +93,12 @@ public:
   virtual ~TCustomBinning() {}
 
   /**
+   * Implementation of the copy function for the custom binning class
+   * @return Copy of this binning with the exact same bin edges
+   */
+  virtual TBinning *MakeCopy() const;
+
+  /**
    * Set the minumum (the lowest bin edge). As the
    * bin edges are calculated based on the minumum this
    * information is cructial to be provided by the user.

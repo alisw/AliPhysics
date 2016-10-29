@@ -12,51 +12,36 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#include <cfloat>
-#include <vector>
-#include <TArrayD.h>
-#include <TLinearBinning.h>
-#include <TMath.h>
+#include <TVariableBinning.h>
 
-TLinearBinning::TLinearBinning():
+TVariableBinning::TVariableBinning():
   TBinning(),
-  fNbins(0),
-  fMinimum(0),
-  fMaximum(0),
-  fLimitsSet(kFALSE)
+  fBinEdges()
 {
 
 }
 
-TLinearBinning::TLinearBinning(Int_t nbins, Double_t min, Double_t max):
+TVariableBinning::TVariableBinning(Int_t nbins, const Double_t *binedges):
   TBinning(),
-  fNbins(nbins),
-  fMinimum(min),
-  fMaximum(max),
-  fLimitsSet(kTRUE)
+  fBinEdges()
+{
+  Set(nbins, binedges);
+}
+
+TVariableBinning::TVariableBinning(const TArrayD &binedges):
+  TBinning(),
+  fBinEdges(binedges)
 {
 
 }
 
-void TLinearBinning::CreateBinEdges(TArrayD &binedges) const {
-  if(!fLimitsSet){
+void TVariableBinning::CreateBinEdges(TArrayD &binedges) const {
+  if(!fBinEdges.GetSize()){
     throw LimitsNotSetException();
   }
-  double binwidth = (fMaximum - fMinimum) / fNbins;
-
-  std::vector<double> tmpedges;
-  double currentmin = fMinimum;
-  tmpedges.push_back(currentmin);
-  while((currentmin < fMaximum) && (TMath::Abs(currentmin - fMaximum) > DBL_EPSILON)){
-    currentmin += binwidth;
-    tmpedges.push_back(currentmin);
-  }
-
-  binedges.Set(tmpedges.size());
-  int bincounter = 0;
-  for(auto binedge : tmpedges) binedges[bincounter++] = binedge;
+  binedges = fBinEdges;
 }
 
-TBinning *TLinearBinning::MakeCopy() const {
-  return new TLinearBinning(*this);
+TBinning *TVariableBinning::MakeCopy() const {
+  return new TVariableBinning(*this);
 }

@@ -27,9 +27,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisHelperJetTasks.cxx 
-  AliBasicParticle.cxx 
-  AliTHn.cxx 
+  AliAnalysisHelperJetTasks.cxx
+  AliBasicParticle.cxx
+  AliTHn.cxx
   AliPWGHistoTools.cxx
   AliPWGFunc.cxx
   AliLatexTable.cxx
@@ -40,6 +40,7 @@ set(SRCS
   AliNamedString.cxx
   TCustomBinning.cxx
   TLinearBinning.cxx
+  TVariableBinning.cxx
   THistManager.cxx
   AliJSONReader.cxx
   AliJSONData.cxx
@@ -57,7 +58,7 @@ set(HDRS
 # Statically build YAML
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable additional yaml tests and tools")
 add_subdirectory(yaml-cpp)
-  
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
@@ -86,7 +87,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
