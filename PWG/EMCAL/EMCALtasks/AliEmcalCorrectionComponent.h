@@ -90,6 +90,9 @@ class AliEmcalCorrectionComponent : public TNamed {
   template<typename T> static bool GetPropertyFromNodes(const YAML::Node & node, const YAML::Node & sharedParametersNode, std::string propertyName, T & property, const std::string correctionName, const std::string configurationType, int nodesDeep = 0);
   template<typename T> static bool GetPropertyFromNode(const YAML::Node & node, std::string propertyName, T & property);
 
+  template<typename T> static typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_same<T, std::string>::value && !std::is_same<T, bool>::value>::type PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage);
+  template<typename T> static typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, std::string>::value || std::is_same<T, bool>::value>::type PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage);
+
   YAML::Node              fUserConfiguration;
   YAML::Node              fDefaultConfiguration;
 #endif
@@ -234,7 +237,7 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
       // if it is requested through the user configuration.
       std::string sharedValueName = "";
       // Necessary because it fails on vectors and other complex objects that are YAML sequences.
-      if (std::is_arithmetic<T>::value || std::is_same<T, std::string>::value)
+      if (std::is_arithmetic<T>::value || std::is_same<T, std::string>::value || std::is_same<T, bool>::value)
       {
         // Retrieve value as string to check for shared value
         sharedValueName = node[propertyName].as<std::string>();
@@ -265,7 +268,9 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
       // Inform about the result
       if (retrievalResult == true)
       {
-        AliDebugClass(2, TString::Format("Succeeded in retrieveing %s", tempMessage.str().c_str()));
+        // Add the retrieved value to the message (only if trivially printable)
+        PrintRetrievedPropertyValue(property, tempMessage);
+        AliDebugClassStream(2) << "Succeeded in retrieveing " << tempMessage.str() << std::endl;
         returnValue = true;
       }
       else
@@ -323,6 +328,31 @@ bool AliEmcalCorrectionComponent::GetPropertyFromNodes(const YAML::Node & node, 
   }
 
   return returnValue;
+}
+
+/**
+ *
+ * NOTE: This function retunrs void! See: https://stackoverflow.com/a/29044828
+ *
+ */
+template<typename T>
+typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, std::string>::value || std::is_same<T, bool>::value>::type
+AliEmcalCorrectionComponent::PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage)
+{
+  //AliDebugClassStream(2) << " with value " << property;
+  tempMessage << " with value \"" << property << "\"";
+}
+
+/**
+ *
+ *
+ */
+template<typename T>
+typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_same<T, std::string>::value && !std::is_same<T, bool>::value>::type
+AliEmcalCorrectionComponent::PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage)
+{
+  // Cannot easily print these types, so just note that is the case!
+  tempMessage << " with a value that cannot be trivially printed";
 }
 
 /**
