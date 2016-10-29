@@ -1,5 +1,5 @@
-AliEmcalCorrectionTask* AddTaskEmcalCorrectionTask()
-{  
+AliEmcalCorrectionTask* AddTaskEmcalCorrectionTask(const char * suffix = "")
+{
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,17 +19,15 @@ AliEmcalCorrectionTask* AddTaskEmcalCorrectionTask()
   }
   
   TString name = "AliEmcalCorrectionTask";
+  if (suffix != "") {
+    name += TString::Format("_%s", suffix);
+  }
   
   AliEmcalCorrectionTask* mgrTask = static_cast<AliEmcalCorrectionTask *>(mgr->GetTask(name.Data()));
   if (mgrTask) return mgrTask;
   
-  // Create the task that manages
+  // Create the task that manages the corrections
   AliEmcalCorrectionTask* correctionTask = new AliEmcalCorrectionTask(name.Data());
-  // Set the filenames in the run macro before initializing the configuration!
-  //correctionTask->SetUserConfigurationFilename("");
-  //correctionTask->SetDefaultConfigurationFilename("AliEmcalCorrectionConfiguration.yaml");
-  // InitializeConfiguration() should be run in the run macro!
-  //correctionTask->InitializeConfiguration();
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
@@ -44,9 +42,9 @@ AliEmcalCorrectionTask* AddTaskEmcalCorrectionTask()
   outputContainerName += "_histos";
   
   AliAnalysisDataContainer * cOutput = mgr->CreateContainer(outputContainerName.Data(),
-                                                            TList::Class(),
-                                                            AliAnalysisManager::kOutputContainer,
-                                                            Form("%s", AliAnalysisManager::GetCommonFileName()));
+                               TList::Class(),
+                               AliAnalysisManager::kOutputContainer,
+                               Form("%s", AliAnalysisManager::GetCommonFileName()));
   
   mgr->ConnectInput(correctionTask, 0, cInput);
   mgr->ConnectOutput(correctionTask, 1, cOutput);
