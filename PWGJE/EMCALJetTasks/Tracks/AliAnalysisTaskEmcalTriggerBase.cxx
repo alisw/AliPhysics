@@ -56,6 +56,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fRejectNoiseEvents(false)
 {
   SetNeedEmcalGeom(true);
+  SetMakeGeneralHistograms(kTRUE);
   SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
@@ -78,6 +79,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fRejectNoiseEvents(false)
 {
   SetNeedEmcalGeom(true);
+  SetMakeGeneralHistograms(kTRUE);
   SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
