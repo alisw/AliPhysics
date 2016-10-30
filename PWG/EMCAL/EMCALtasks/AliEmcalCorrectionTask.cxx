@@ -53,6 +53,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fForceBeamType(kNA),
   fRunPeriod(""),
   fConfigurationInitialized(false),
+  fOrderedComponentsToExecute(),
 
   fEventInitialized(false),
   fCent(0),
@@ -100,6 +101,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fForceBeamType(kNA),
   fRunPeriod(""),
   fConfigurationInitialized(false),
+  fOrderedComponentsToExecute(),
 
   fEventInitialized(false),
   fCent(0),
@@ -364,6 +366,9 @@ void AliEmcalCorrectionTask::Initialize()
     AliFatal("YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!");
   }
 
+  // Determine component exeuction order
+  DetermineComponentsToExecute(fOrderedComponentsToExecute);
+
   // Setup input objects
   // Setup Cells
   // Cannot do this entirely yet because we need input objects
@@ -393,7 +398,7 @@ void AliEmcalCorrectionTask::Initialize()
  *
  *
  */
-void AliEmcalCorrectionTask::RetrieveExecutionOrder(std::vector <std::string> & correctionComponents)
+void AliEmcalCorrectionTask::DetermineComponentsToExecute(std::vector <std::string> & correctionComponents)
 {
   std::vector <std::string> executionOrder;
   // executionOrder determines the order of tasks to execute, but it doesn't name the particular tasks
@@ -488,13 +493,9 @@ bool AliEmcalCorrectionTask::CheckPossibleNamesForComponentName(std::string & na
  */
 void AliEmcalCorrectionTask::InitializeComponents()
 {
-  // Create a function to handle creation and configuration of the all of the created module
-  std::vector<std::string> correctionComponents;
-  RetrieveExecutionOrder(correctionComponents);
-
-  // Iterate over the list
+  // Iterate over the ordered components list and create the components
   AliEmcalCorrectionComponent * component = 0;
-  for (auto componentName : correctionComponents)
+  for (auto componentName : fOrderedComponentsToExecute)
   {
     //Printf("Attempting to add task: %s", tempString->GetString().Data());
     std::string noPrefixComponentName = componentName.substr(0, componentName.find("_" + fSuffix));
@@ -739,12 +740,10 @@ void AliEmcalCorrectionTask::CreateInputObjects(InputObject_t inputObjectType)
   AliDebugStream(2) << "userInputObjectNode: " << userInputObjectNode << std::endl;
   AliDebugStream(2) << "defaultInputObjectNode: " << defaultInputObjectNode << std::endl;
 
-  // Determine which containers we need based on which are requested by correction tasks
+  // Determine which containers we need based on which are requested by the enabled correction tasks
   std::set <std::string> requestedContainers;
-  std::vector <std::string> executionOrder;
   std::vector <std::string> componentRequest;
-  RetrieveExecutionOrder(executionOrder);
-  for ( auto & componentName : executionOrder )
+  for ( auto & componentName : fOrderedComponentsToExecute )
   {
     componentRequest.clear();
     // Not required because not all components will have all kinds of containers
