@@ -217,7 +217,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * from old run number). Can be used for run-dependent initializations (i.e.
    * setting parameters from the OADB)
    */
-  virtual void                RunChanged(Int_t newrun)          {}
+  virtual void                RunChanged(Int_t /*newrun*/)          {}
 
   /**
    * Interface for user code executed when the first event is called.
