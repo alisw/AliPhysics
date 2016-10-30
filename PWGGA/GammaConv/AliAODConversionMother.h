@@ -16,6 +16,7 @@
 #include "AliAODConversionPhoton.h"
 #include "AliKFConversionMother.h"
 #include "AliKFParticle.h"
+#include "AliV0ParticleStrange.h"
 
 class AliAODConversionMother : public AliAODConversionParticle{
 
@@ -33,6 +34,8 @@ class AliAODConversionMother : public AliAODConversionParticle{
 		AliAODConversionMother(AliAODConversionMother *meson, AliAODConversionPhoton *gamma);
 		// Constructor Mother particle from two mesons
 		AliAODConversionMother(AliAODConversionMother *meson1, AliAODConversionMother *meson2);
+    // Contructor Mother particle from V0 and photon
+    AliAODConversionMother(AliV0ParticleStrange *v0, AliAODConversionPhoton *gamma);
 
 		
 		//Destructor
