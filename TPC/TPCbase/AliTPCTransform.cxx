@@ -550,6 +550,7 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
 	fCurrentMapScaling = fLumiGraphRun ? 1.0 : 0.0;
 	if (fCorrMapLumiCOG>0) {
 	  double lumi = fLumiGraphRun ? fLumiGraphRun->Eval(fCurrentTimeStamp) : 0.0;
+	  if (lumi<0) lumi = 0;
 	  fCurrentMapScaling = lumi/fCorrMapLumiCOG;
 	  AliInfoF("Luminosity scaling factor %.3f will be used for time %ld (Lumi: current: %.2e COG:%.2e)",
 		   fCurrentMapScaling,fCurrentTimeStamp,lumi,fCorrMapLumiCOG);
