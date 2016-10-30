@@ -152,7 +152,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void SetupConfigurationFilePath(std::string & filename, bool userFile = false);
 
   void InitializeConfiguration();
-  void RetrieveExecutionOrder(std::vector <std::string> & componentsToAdd);
+  void DetermineComponentsToExecute(std::vector <std::string> & componentsToExecute);
   void InitializeComponents();
 
   void SetCellsObjectInCellContainerBasedOnProperties(AliEmcalCorrectionCellContainer * cellContainer);
@@ -191,6 +191,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   std::string fSuffix;                                    ///< Suffix of the Correction Task (used to select components)
 
+  std::vector <std::string> fOrderedComponentsToExecute;  ///< Order of components to execute
   std::vector <AliEmcalCorrectionComponent *> fCorrectionComponents; ///< Contains the correction components
   bool fConfigurationInitialized;                         ///< True if the YAML files are initialized
 
@@ -218,7 +219,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   TList * fOutput;                                        //!<! Output for histograms
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionTask, 2); // EMCal correction task
+  ClassDef(AliEmcalCorrectionTask, 3); // EMCal correction task
   /// \endcond
 };
 
