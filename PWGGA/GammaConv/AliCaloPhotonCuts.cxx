@@ -1100,7 +1100,7 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
 
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
-    if(!fCaloTrackMatcher){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
+    if(!fCaloTrackMatcher && fUseDistTrackToCluster ){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
 
     if(!fDoLightOutput){
       Int_t nMaxCellsEMCAL  = fNMaxEMCalModules*48*24;
@@ -1165,7 +1165,7 @@ void AliCaloPhotonCuts::InitializePHOS (AliVEvent *event){
 
     //retrieve pointer to trackMatcher Instance
     if(fUseDistTrackToCluster) fCaloTrackMatcher = (AliCaloTrackMatcher*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloTrackMatcherName.Data());
-    if(!fCaloTrackMatcher){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
+    if(!fCaloTrackMatcher && fUseDistTrackToCluster){ AliFatal("CaloTrackMatcher instance could not be initialized!");}
 
     fPHOSInitialized = kTRUE;
     fPHOSCurrentRun = event->GetRunNumber();
@@ -1440,21 +1440,22 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if ( classification == 3)
       fHistClusterTMEffiInput->Fill(cluster->E(), 5); // Ga cl sub ch match      
 
-    Int_t nlabelsMatchedTracks      = 0;
-    if (!fUsePtDepTrackToCluster)
-      nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
-                                                                                       fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-    else 
-      nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
-    if (classification < 4 && classification > -1)
-      fHistClusterENMatchesNeutral->Fill(cluster->E(), nlabelsMatchedTracks);
-    else 
-      fHistClusterENMatchesCharged->Fill(cluster->E(), nlabelsMatchedTracks);
-    
+    if (fUseDistTrackToCluster){  
+      Int_t nlabelsMatchedTracks      = 0;
+      if (!fUsePtDepTrackToCluster)
+        nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta, 
+                                                                                        fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+      else 
+        nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
+      if (classification < 4 && classification > -1)
+        fHistClusterENMatchesNeutral->Fill(cluster->E(), nlabelsMatchedTracks);
+      else 
+        fHistClusterENMatchesCharged->Fill(cluster->E(), nlabelsMatchedTracks);
+    }
   }  
   
   
-  if (fVectorMatchedClusterIDs.size()>0){
+  if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster){
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
       // TM efficiency histos after TM
