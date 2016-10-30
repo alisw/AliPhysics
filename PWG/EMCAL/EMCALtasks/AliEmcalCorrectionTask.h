@@ -155,6 +155,8 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void DetermineComponentsToExecute(std::vector <std::string> & componentsToExecute);
   void InitializeComponents();
 
+  void CheckForUnmatchedUserSettings();
+
   void SetCellsObjectInCellContainerBasedOnProperties(AliEmcalCorrectionCellContainer * cellContainer);
   void CheckForContainerArray(AliEmcalContainer * cont, InputObject_t objectType);
 
@@ -169,6 +171,8 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void SetupContainer(InputObject_t inputObjectType, std::string containerName, YAML::Node & userNode, YAML::Node & defaultNode);
 
   AliEmcalContainer * AddContainer(InputObject_t contType, std::string & containerName, YAML::Node & userNode, YAML::Node & defaultNode);
+
+  void GetPropertyNamesFromNode(const std::string & componentName, const YAML::Node & node, std::set <std::string> & propertyNames, const bool nodeRequired);
 #endif
 
   Bool_t                      RetrieveEventObjects();

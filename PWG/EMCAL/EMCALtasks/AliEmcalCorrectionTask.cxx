@@ -369,6 +369,9 @@ void AliEmcalCorrectionTask::Initialize()
   // Determine component exeuction order
   DetermineComponentsToExecute(fOrderedComponentsToExecute);
 
+  // Check for user defined settings that are not in the default file
+  CheckForUnmatchedUserSettings();
+
   // Setup input objects
   // Setup Cells
   // Cannot do this entirely yet because we need input objects
@@ -485,6 +488,82 @@ bool AliEmcalCorrectionTask::CheckPossibleNamesForComponentName(std::string & na
   }
 
   return foundComponent;
+}
+
+/**
+ *
+ *
+ */
+void AliEmcalCorrectionTask::GetPropertyNamesFromNode(const std::string & componentName, const YAML::Node & node, std::set <std::string> & propertyNames, const bool nodeRequired)
+{
+  YAML::Node tempNode;
+  AliEmcalCorrectionComponent::GetProperty(componentName, tempNode, YAML::Node(), node, nodeRequired, "");
+  for (auto propertyName : tempNode)
+  {
+    propertyNames.insert(propertyName.first.as<std::string>());
+  }
+}
+
+/**
+ * Check each property defined in the user file for a match to the properties in the default configuration file.
+ * The default configuration file should have all possible properties defined, so can be treated as a reference.
+ * Thus, if there is a property defined in the user file that cannot be found in the default file, then it must
+ * be a typo and we should alert the user.
+ */
+void AliEmcalCorrectionTask::CheckForUnmatchedUserSettings()
+{
+  // Names of properties for a particular component in the user and default configurations
+  std::set <std::string> userPropertyNames;
+  std::set <std::string> defaultPropertyNames;
+  // Notes whether a match was found between user and default properties
+  bool foundMatch = false;
+  std::string tempComponentName = "";
+
+  // Loop over all components
+  for (const auto componentName : fOrderedComponentsToExecute)
+  {
+    // Reset for each loop
+    userPropertyNames.clear();
+    defaultPropertyNames.clear();
+    // We need to remove "AliEmcalCorrection" so that the correction will be found in the configuration
+    // "AliEmcalCorrection" is 18 characters
+    tempComponentName = componentName.substr(componentName.find("AliEmcalCorrection")+18);
+
+    AliDebugStream(2) << "Checking component " << componentName << " for unmatched user settings" << std::endl;
+
+    // Get the user property names
+    GetPropertyNamesFromNode(tempComponentName, fUserConfiguration, userPropertyNames, false);
+
+    // Get the same from default
+    // Not required here because the default configuration may not have the specialized component
+    GetPropertyNamesFromNode(tempComponentName, fDefaultConfiguration, defaultPropertyNames, false);
+
+    // We need to check the base correction as well to fill out the options
+    if (tempComponentName.find("_") != std::string::npos) {
+      // Get the base user component
+      GetPropertyNamesFromNode(tempComponentName.substr(0, tempComponentName.find("_")), fUserConfiguration, userPropertyNames, false);
+
+      // Required here because the default must have the base component!
+      GetPropertyNamesFromNode(tempComponentName.substr(0, tempComponentName.find("_")), fDefaultConfiguration, defaultPropertyNames, true);
+    }
+
+    // Check each property defined in the user file for a match to the properties in the default file
+    for (auto userPropertyName : userPropertyNames)
+    {
+      AliDebugStream(2) << "Checking property " << userPropertyName << std::endl;
+      foundMatch = false;
+      for (auto defaultPropertyName : defaultPropertyNames)
+      {
+        if (userPropertyName == defaultPropertyName) {
+          AliDebugStream(2) << "Found match of " << userPropertyName << " with " << defaultPropertyName << std::endl;
+          foundMatch = true;
+        }
+      }
+      if (foundMatch == false) {
+        AliFatal(TString::Format("Property \"%s:%s\" defined in the user configuration file cannot be found in the default configuration file! Check the spelling in your user file!", tempComponentName.c_str(), userPropertyName.c_str()));
+      }
+    }
+  }
 }
 
 /**
@@ -678,7 +757,6 @@ void AliEmcalCorrectionTask::SetupContainersFromInputNodes(InputObject_t inputOb
     }
 
     AliDebug(2, TString::Format("Processing container %s of inputType %d", containerName.c_str(), inputObjectType));
-    //std::cout << "Container: " << containerName << std::endl << userInputObjectNode << std::endl << defaultInputObjectNode;
     if (inputObjectType == kCluster || inputObjectType == kTrack) {
       SetupContainer(inputObjectType, containerName, userInputObjectNode, defaultInputObjectNode);
     }
@@ -737,20 +815,21 @@ void AliEmcalCorrectionTask::CreateInputObjects(InputObject_t inputObjectType)
   GetNodeForInputObjects(userInputObjectNode, fUserConfiguration, inputObjectName, false);
   GetNodeForInputObjects(defaultInputObjectNode, fDefaultConfiguration, inputObjectName, true);
 
-  AliDebugStream(2) << "userInputObjectNode: " << userInputObjectNode << std::endl;
-  AliDebugStream(2) << "defaultInputObjectNode: " << defaultInputObjectNode << std::endl;
+  AliDebugStream(3) << "userInputObjectNode: " << userInputObjectNode << std::endl;
+  AliDebugStream(3) << "defaultInputObjectNode: " << defaultInputObjectNode << std::endl;
 
   // Determine which containers we need based on which are requested by the enabled correction tasks
   std::set <std::string> requestedContainers;
   std::vector <std::string> componentRequest;
-  for ( auto & componentName : fOrderedComponentsToExecute )
+  for ( const auto & componentName : fOrderedComponentsToExecute )
   {
     componentRequest.clear();
     // Not required because not all components will have all kinds of containers
-    AliEmcalCorrectionComponent::GetProperty(inputObjectName + "Names", componentRequest, fUserConfiguration, fDefaultConfiguration, false, componentName);
+    // "AliEmcalCorrection" is 18 characters
+    AliEmcalCorrectionComponent::GetProperty(inputObjectName + "Names", componentRequest, fUserConfiguration, fDefaultConfiguration, false, componentName.substr(componentName.find("AliEmcalCorrection")+18));
     for ( auto & req : componentRequest )
     {
-      //std::cout << "Component " << componentName << " requested container name " << req << std::endl;
+      AliDebugStream(3) << "Component " << componentName << " requested container name " << req << std::endl;
       requestedContainers.insert(req);
     }
   }
@@ -1027,7 +1106,6 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
   // Need to be of the form "clusterContainersNames"
   inputObjectName = inputObjectName + "Names";
 
-  //std::cout << "inputObjectName: " << inputObjectName << std::endl;
   std::vector <std::string> inputObjects;
   // Not required, because not all components need Clusters or Tracks
   AliEmcalCorrectionComponent::GetProperty(inputObjectName.c_str(), inputObjects, fUserConfiguration, fDefaultConfiguration, false, component->GetName());
