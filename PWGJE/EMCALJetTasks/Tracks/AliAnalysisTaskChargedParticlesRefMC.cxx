@@ -78,6 +78,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
   SetNeedEmcalGeom(true);
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const char* name):
@@ -98,6 +99,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
 {
   SetCaloTriggerPatchInfoName("EmcalTriggers");
   SetNeedEmcalGeom(true);
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 AliAnalysisTaskChargedParticlesRefMC::~AliAnalysisTaskChargedParticlesRefMC() {
