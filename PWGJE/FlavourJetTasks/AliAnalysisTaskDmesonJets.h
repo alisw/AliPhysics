@@ -75,7 +75,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     kFromCharm    = BIT(4),
     kFromBottom   = BIT(5),
     kFromTop      = BIT(6),
-    kFromGluon    = BIT(7)
+    kFromGluon    = BIT(7),
+    kAnyOrigin    = kUnknownQuark | kFromDown | kFromUp | kFromStrange | kFromCharm | kFromBottom | kFromTop | kFromGluon
   };
 
   enum EMesonDecayChannel_t {
