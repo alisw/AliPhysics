@@ -978,6 +978,11 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
             return 1E20;
 	 }
 
+	 if (s.EqualTo("TEST")) {
+	   MultSelection->PrintInfo();
+	   return 50.;
+	 }
+
 	 return MultSelection->GetMultiplicityPercentile(s.Data());
       } else {
          AliError(Form("String '%s' does not define a possible multiplicity/centrality computation", fCentralityType.Data()));
