@@ -717,7 +717,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     pointz2[0]=10000.*dz[1];
     pullrphi[0]=dz[0]/TMath::Sqrt(covdz[0]);
     pullz[0]=dz[1]/TMath::Sqrt(covdz[2]);
-    Printf("point %f",pointrphi[0]);
+    //    Printf("point %f",pointrphi[0]);
 
     if(fReadMC) primaryVtx=vtxESDTrue;
     else if(fSkipTrack) primaryVtx=vtxVSkip;
