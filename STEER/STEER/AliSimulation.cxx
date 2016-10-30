@@ -1177,7 +1177,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 	if (!lumi) AliFatal("Failed to get lumi graph");
 	int nb = 1+deltaT/60.;
 	TH1F hlumi("hlumi","",nb,fTimeStart,fTimeEnd);
-	for (int ib=1;ib<=nb;ib++) hlumi.SetBinContent(ib,lumi->Eval(hlumi.GetBinCenter(ib)));
+	for (int ib=1;ib<=nb;ib++) hlumi.SetBinContent(ib,lumi->Eval(TMath::Max(0.,hlumi.GetBinCenter(ib))));
 	delete lumi;
 	for (int i=0;i<fNEvents;i++) fOrderedTimeStamps[i] = time_t(hlumi.GetRandom());
 	AliInfoF("Ordered %d TimeStamps will be generated between %ld:%ld according to CTP Lumi profile",
