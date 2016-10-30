@@ -413,26 +413,48 @@ void AliEmcalCorrectionTask::RetrieveExecutionOrder(std::vector <std::string> & 
   std::string expectedComponentName = "";
   bool foundSuffixComponent = false;
   bool foundComponent = false;
+  bool componentEnabled = true;
   // Execution order determines the order that corrections should be added to our exeuction list
   for (auto & execName : executionOrder)
   {
     expectedComponentName = TString::Format("%s_%s", execName.c_str(), fSuffix.c_str()).Data();
     foundComponent = false;
+    componentEnabled = false;
 
     foundComponent = CheckPossibleNamesForComponentName(expectedComponentName, possibleComponents);
     if (foundComponent) {
-      foundSuffixComponent = true;
-      correctionComponents.push_back(expectedComponentName);
+      // Check if the component is enabled
+      AliEmcalCorrectionComponent::GetProperty("enabled", componentEnabled, fUserConfiguration, fDefaultConfiguration, true, expectedComponentName);
+      // If enabled, then store the name so that it can be executed
+      if (componentEnabled == true) {
+        foundSuffixComponent = true;
+        correctionComponents.push_back(expectedComponentName);
+      }
+      else {
+        AliInfo(TString::Format("Component %s is disabled and will not be run!", expectedComponentName.c_str()));
+      }
+
+
       continue;
     }
     else {
-      if (foundSuffixComponent == true) {
-        AliFatal(TString::Format("Found earlier component %s with suffix %s, but could not found component %s with that same suffix!", correctionComponents.back().c_str(), fSuffix.c_str(), execName.c_str()));
+      // Look for the normal component
+      expectedComponentName = execName;
+      foundComponent = CheckPossibleNamesForComponentName(expectedComponentName, possibleComponents);
+      // Check if it is enabled
+      AliEmcalCorrectionComponent::GetProperty("enabled", componentEnabled, fUserConfiguration, fDefaultConfiguration, true, expectedComponentName);
+
+      if (componentEnabled == true) {
+        if (foundSuffixComponent == true) {
+          AliFatal(TString::Format("Found earlier component %s with suffix \"%s\", but could not found component %s with that same suffix!", correctionComponents.back().c_str(), fSuffix.c_str(), expectedComponentName.c_str()));
+        }
+        else {
+          // Take the normal component and store it to be executed
+          correctionComponents.push_back(expectedComponentName);
+        }
       }
       else {
-        expectedComponentName = execName;
-        foundComponent = CheckPossibleNamesForComponentName(expectedComponentName, possibleComponents);
-        correctionComponents.push_back(expectedComponentName);
+        AliInfo(TString::Format("Component %s is disabled and will not be run!", expectedComponentName.c_str()));
       }
     }
   }
@@ -472,17 +494,8 @@ void AliEmcalCorrectionTask::InitializeComponents()
 
   // Iterate over the list
   AliEmcalCorrectionComponent * component = 0;
-  bool componentEnabled = false;
   for (auto componentName : correctionComponents)
   {
-    componentEnabled = false;
-    AliEmcalCorrectionComponent::GetProperty("enabled", componentEnabled, fUserConfiguration, fDefaultConfiguration, true, componentName);
-    if (componentEnabled == false)
-    {
-      AliInfo(TString::Format("Component %s is disabled and will not be run!", componentName.c_str()));
-      continue;
-    }
-
     //Printf("Attempting to add task: %s", tempString->GetString().Data());
     std::string noPrefixComponentName = componentName.substr(0, componentName.find("_" + fSuffix));
     component = AliEmcalCorrectionComponentFactory::createInstance(noPrefixComponentName);
@@ -733,18 +746,13 @@ void AliEmcalCorrectionTask::CreateInputObjects(InputObject_t inputObjectType)
   RetrieveExecutionOrder(executionOrder);
   for ( auto & componentName : executionOrder )
   {
-    bool componentEnabled = false;
-    AliEmcalCorrectionComponent::GetProperty("enabled", componentEnabled, fUserConfiguration, fDefaultConfiguration, true, componentName);
-    if (componentEnabled)
+    componentRequest.clear();
+    // Not required because not all components will have all kinds of containers
+    AliEmcalCorrectionComponent::GetProperty(inputObjectName + "Names", componentRequest, fUserConfiguration, fDefaultConfiguration, false, componentName);
+    for ( auto & req : componentRequest )
     {
-      componentRequest.clear();
-      // Not required because not all components will have all kinds of containers
-      AliEmcalCorrectionComponent::GetProperty(inputObjectName + "Names", componentRequest, fUserConfiguration, fDefaultConfiguration, false, componentName);
-      for ( auto & req : componentRequest )
-      {
-        //std::cout << "Component " << componentName << " requested container name " << req << std::endl;
-        requestedContainers.insert(req);
-      }
+      //std::cout << "Component " << componentName << " requested container name " << req << std::endl;
+      requestedContainers.insert(req);
     }
   }
 
