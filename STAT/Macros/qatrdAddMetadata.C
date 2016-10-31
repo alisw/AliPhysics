@@ -59,7 +59,7 @@ void qatrdAddMetadata(TTree*tree, Int_t verbose){
     ::Error("qatrdAddMetadata","Start processing. Emtpy tree");
     return;
   }
-  ::Info("qatrdAddMetadata","Start processing Tree %s",tree->GetName());
+  if (verbose>0) ::Info("qatrdAddMetadata","Start processing Tree %s",tree->GetName());
   TObjArray * branches=tree->GetListOfBranches();
   // Clasigication of variables
   //   regular expression to defined automaticaly some variables following naming conventions - used to define classes/Axis/legends 
@@ -207,12 +207,12 @@ void qatrdAddMetadata(TTree*tree, Int_t verbose){
   //
   TList * mlist = (TList*)(tree->GetUserInfo()->FindObject("metaTable"));
   mlist->Sort();
-  if ((verbose&1)>0){
+  if ((verbose&64)>0){ // if print all flag (bitmask should be symbolic from the AliExternalInfo::xxx )
     mlist->Print();
   }
-  if ((verbose&2)>0){
+  if ((verbose&4)>0){
     AliTreePlayer::selectMetadata(tree, "[class==\"\"]",0)->Print();
   }
-  ::Info("qatrdAddMetadata","End");
+  if (verbode>0) ::Info("qatrdAddMetadata","End");
 
 }
