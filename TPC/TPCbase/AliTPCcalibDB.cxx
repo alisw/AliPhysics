@@ -1813,7 +1813,7 @@ Int_t AliTPCcalibDB::GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72])
   time_t mapsT[nMaps];
   for (int i=0;i<nMaps;i++) {
     mapsT[i] = ((AliTPCChebCorr*)arrMaps->At(i))->GetTimeStampCenter();
-    if (mapsT[i]<tGRPmin || mapsT[i]>tCentGRP) mapsT[i] = tCentGRP;
+    if (mapsT[i]<tGRPmin || mapsT[i]>tGRPmax) mapsT[i] = tCentGRP;
   }
   //
   delete arrMaps; // we don't need anymore these maps, Transform will load according to time stamp

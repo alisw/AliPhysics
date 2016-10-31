@@ -57,6 +57,7 @@ AliTPCChebCorr::AliTPCChebCorr()
   ,fZMaxAbs(-1)
   ,fTimeStampStart(0)
   ,fTimeStampEnd(0xffffffff)
+  ,fLumiInfo(0)
   ,fZScaleI(0)
   ,fY2XScaleI(0)
   ,fDeadZone(0)
@@ -82,6 +83,7 @@ AliTPCChebCorr::AliTPCChebCorr(const char* name, const char* title,
   ,fZMaxAbs(-1)
   ,fTimeStampStart(0)
   ,fTimeStampEnd(0xffffffff)
+  ,fLumiInfo(0)
   ,fZScaleI(0)
   ,fY2XScaleI(0)
   ,fDeadZone(deadZone)
@@ -219,8 +221,9 @@ void AliTPCChebCorr::Print(const Option_t* opt) const
   printf("%s:%s Cheb2D[%c] Param: %d slices in %+.1f<%s<%+.1f %d per sector. DeadZone: %.1fcm\n",
 	 GetName(),GetTitle(),GetUseFloatPrec()?'F':'S',
 	 fNStacksZ,-fZMaxAbs,GetUseZ2R() ? "Z/R":"Z",fZMaxAbs,fNStacksSect,fDeadZone);
-  printf("Run used: %d Time span: %ld:%ld TimeDependent flag: %s Field type: %s\n",
-	 GetRun(),fTimeStampStart,fTimeStampEnd,GetTimeDependent() ? "ON ":"OFF", fgkFieldTypeName[fFieldType]);
+  printf("Run used: %d Time span: %ld:%ld TimeDependent flag: %s Field type: %s LumiInfo: %+.2f\n",
+	 GetRun(),fTimeStampStart,fTimeStampEnd,GetTimeDependent() ? "ON ":"OFF", 
+	 fgkFieldTypeName[fFieldType],fLumiInfo);
   TString opts = opt; opts.ToLower();
   if (opts.Contains("p") && TestBit(kParamDone)) {
     for (int iz=0;iz<fNStacksZ;iz++) {
@@ -296,6 +299,7 @@ Double_t AliTPCChebCorr::GetLuminosityCOG(TGraph* lumi, time_t tmin, time_t tmax
     norm    += wgh;
   }
   if (norm>0) lumiCOG /= norm;
+  if (IsLumiInfoScale()) lumiCOG *= -fLumiInfo;
   return lumiCOG;
 }
 
