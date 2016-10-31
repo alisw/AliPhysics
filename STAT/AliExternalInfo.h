@@ -100,6 +100,8 @@ public:
 
   static const TString& GetDefaultConfig() { return fgkDefaultConfig; }
   static void BuildHashIndex(TTree* tree, const char *chbranchName,  const char *chindexName);
+  static void PrintMapSelected(std::map<TString, TString> infoMap, const char *expName="", const char *expValue="");
+  void   PrintConfigSelected(const char *expName="", const char *expValue="");
 public:
   //private:
   Bool_t BuildIndex(TTree* tree, TString type);
@@ -114,7 +116,7 @@ public:
   // Bool_t fCopyDataToLocalStorage;
   TString fConfigLocation;                          ///< location of the config file
   TString fLocalStorageDirectory;                   ///< location of the local cache directory
-  std::map<TString, TString> fLocationTimeOutMap;   ///< map with configuration parameters
+  std::map<TString, TString> fConfigMap;            ///< map with tree DB configuration parameters
   TTree* fTree;                                     ///< master tree with friends
   TChain* fChain;                                   ///< master chain with friends
   std::map<TString, TChain*> fChainMap;             ///< map of chains

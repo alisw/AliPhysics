@@ -37,6 +37,7 @@
 #pragma link C++ class std::map<std::string,TTree*>+;
 #pragma link C++ class std::map<std::string,TTree*>+;
 #pragma link C++ class std::map<TString, TString>+;
+#pragma link C++ operators std::map<TString, TString>::iterator;
 #pragma link C++ class std::map<std::string,TObject*>+;
 /*
 // RS At the moment is not recognized by the CINT...
