@@ -1018,7 +1018,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiExotics     = new TH2F(Form("EtaPhi_Exotics %s",GetCutNumber().Data()),"EtaPhi_Exotics",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
       fHistograms->Add(fHistClusterEtavsPhiExotics);
     }
-    fHistClusterEM02Exotics           = new TH2F(Form("EVsM02_Exotics %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",nBinsClusterEFine,minClusterELog,maxClusterELog,200,0,4);
+    fHistClusterEM02Exotics           = new TH2F(Form("EVsM02_Exotics %s",GetCutNumber().Data()),"EVsM02_afterClusterQA",nBinsClusterEFine,minClusterELog,maxClusterELog,200,0,2);
     SetLogBinningXTH2(fHistClusterEM02Exotics);
     fHistograms->Add(fHistClusterEM02Exotics);
     fHistClusterEnergyvsNCellsExotics = new TH2F(Form("ClusterEnergyVsNCells_Exotics %s",GetCutNumber().Data()),"ClusterEnergyVsNCells_Exotics",nBinsClusterECoarse,minClusterELog,maxClusterELog,50,0,50);
@@ -1319,10 +1319,43 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if(fUseExoticCluster && IsExoticCluster(cluster, event, energyStar)){
     if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//3
     if (fDoExoticsQA){
-      if(fHistClusterEtavsPhiExotics) fHistClusterEtavsPhiExotics->Fill(phiCluster, etaCluster, weight);
-      if(fHistClusterEM02Exotics) fHistClusterEM02Exotics->Fill(cluster->E(), cluster->GetM02(), weight);
-      if(fHistClusterEnergyvsNCellsExotics) fHistClusterEnergyvsNCellsExotics->Fill(cluster->E(), cluster->GetNCells(), weight);
-      if(fHistClusterEEstarExotics) fHistClusterEEstarExotics->Fill(cluster->E(),energyStar, weight);
+      // replay cuts
+      Bool_t failed     = kFALSE;
+      Bool_t failedM02  = kFALSE;
+      if (fUseMinEnergy)
+        if(cluster->E() < fMinEnergy)
+          failed = kTRUE;
+      if (fUseNCells)
+        if(cluster->GetNCells() < fMinNCells) 
+          failed = kTRUE;
+      if (fUseNLM)
+        if( nLM < fMinNLM || nLM > fMaxNLM ) 
+          failed = kTRUE;
+      if (fUseM02 == 1){
+        if( cluster->GetM02()< fMinM02 || cluster->GetM02() > fMaxM02 ) 
+          failedM02  = kTRUE;
+      } else if (fUseM02 ==2 ) {
+        if( cluster->GetM02()< CalculateMinM02(fMinM02CutNr, cluster->E()) || 
+            cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()) ) 
+          failedM02  = kTRUE;
+      }  
+      if (fUseM20)
+        if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 ) 
+          failed = kTRUE;
+      if (fUseDispersion)
+        if( cluster->GetDispersion()> fMaxDispersion) 
+          failed = kTRUE;
+      if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster)
+        if( CheckClusterForTrackMatch(cluster) )
+          failed = kTRUE;
+      if ( !( failed || failedM02 ) ){  
+        if(fHistClusterEtavsPhiExotics) fHistClusterEtavsPhiExotics->Fill(phiCluster, etaCluster, weight);
+        if(fHistClusterEnergyvsNCellsExotics) fHistClusterEnergyvsNCellsExotics->Fill(cluster->E(), cluster->GetNCells(), weight);
+        if(fHistClusterEEstarExotics) fHistClusterEEstarExotics->Fill(cluster->E(),energyStar, weight);
+      }
+      if ( !failed ){
+        if(fHistClusterEM02Exotics) fHistClusterEM02Exotics->Fill(cluster->E(), cluster->GetM02(), weight);
+      }  
     }  
     return kFALSE;
   }
