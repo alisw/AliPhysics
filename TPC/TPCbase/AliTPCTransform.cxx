@@ -528,7 +528,7 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
       case AliTPCRecoParam::kCorrMapNoScaling     : break;
       case AliTPCRecoParam::kCorrMapGlobalScalingLumi: 
 	// load lumi graph used for map (run may be different from current one if the map is default one)
-	if (!fCorrMapCache0->IsLumiInfoCOG()) {
+	if (!fCorrMapCache0->IsLumiInfoCOG() || fCurrentRecoParam->GetUseLumiType()!=AliLumiTools::kLumiCTP ) {
 	  if (!fLumiGraphMap) { // default lumi graph is not loaded and COG is not stored
 	    //if (!fLumiGraphMap || fLumiGraphMap->GetUniqueID()!=fCorrMapCache0->GetRun()) {
 	    //if (fLumiGraphMap) delete fLumiGraphMap;
@@ -550,8 +550,10 @@ Bool_t AliTPCTransform::UpdateTimeDependentCache()
 					fCurrentRecoParam->GetUseLumiType());
 	}
 	if (needToLoad) {  // calculate average luminosity used for current corr. map
-	  if (fCorrMapCache0->IsLumiInfoCOG()) fCorrMapLumiCOG = fCorrMapCache0->GetLumiInfo();
-	  else fCorrMapLumiCOG = fLumiGraphMap ? fCorrMapCache0->GetLuminosityCOG(fLumiGraphMap) : 0.0; // recalculate lumi for new map
+	  if (fCorrMapCache0->IsLumiInfoCOG() && fCurrentRecoParam->GetUseLumiType()==AliLumiTools::kLumiCTP) 
+	    fCorrMapLumiCOG = fCorrMapCache0->GetLumiInfo();
+	  else 
+	    fCorrMapLumiCOG = fLumiGraphMap ? fCorrMapCache0->GetLuminosityCOG(fLumiGraphMap) : 0.0; // recalculate lumi for new map
 	  if (!fCorrMapLumiCOG) AliError("No Correction map Lumi COG and rescaling with luminosity cannot be done, will use constant map");
 	}
 	//
