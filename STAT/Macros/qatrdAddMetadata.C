@@ -43,12 +43,13 @@
 
 
 */
-
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TTree.h"
 #include "TPRegexp.h"
 #include "TList.h"
 #include "AliTreePlayer.h"
 #include "TStatToolkit.h"
+#endif
 
 void qatrdAddMetadata(TTree*tree, Int_t verbose){
   //

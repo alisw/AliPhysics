@@ -64,12 +64,14 @@
 	   
 
 */
+#if !defined(__CINT__) || defined(__MAKECINT__)
 
 #include "TTree.h"
 #include "TPRegexp.h"
 #include "TList.h"
 #include "AliTreePlayer.h"
 #include "TStatToolkit.h"
+#endif
 
 void qaitsAddMetadata(TTree*tree, Int_t verbose){
   //

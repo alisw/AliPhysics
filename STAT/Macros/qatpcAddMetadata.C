@@ -47,12 +47,13 @@
 
 
 */
-
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TTree.h"
 #include "TPRegexp.h"
 #include "TList.h"
 #include "AliTreePlayer.h"
 #include "TStatToolkit.h"
+#endif
 
 void addTPCAliases(TTree * tree){
   // add aliases which are not yet in default TPC tree (will be added during reprocessing of QA)
@@ -233,11 +234,11 @@ void qatpcAddMetadata(TTree*tree, Int_t verbose){
       brClass+=" Class:";
       brClass+=branch->GetClassName();
     }
-    TPRegexp emptyB("^\ *");
-    emptyB.Substitute(brClass,"");
-    emptyB.Substitute(brTitle,"");
-    emptyB.Substitute(brAxisTitle,"");
-    emptyB.Substitute(brLegend,"");
+ //    TPRegexp emptyB("^\ *");
+//     emptyB.Substitute(brClass,"");
+//     emptyB.Substitute(brTitle,"");
+//     emptyB.Substitute(brAxisTitle,"");
+//     emptyB.Substitute(brLegend,"");
 
     //
     TStatToolkit::AddMetadata(tree,TString::Format("%s.Description",branches->At(ibr)->GetName()).Data(),
