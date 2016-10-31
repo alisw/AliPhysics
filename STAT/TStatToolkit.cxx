@@ -1548,6 +1548,149 @@ Int_t  TStatToolkit::SetStatusAlias(TTree * tree, const char * expr, const char 
   return entries;
 }
 
+
+/// Build anchor aliases and check consistency of aliases strings
+/// Input:
+/// \param  tree       - input tree
+/// \param  doCheck    - force check of the variables if valid formulas are used (slow down execution)
+/// \param  verbose    - verbosity level 
+/// \param sTrendVars  - semicolomn seprated list of tuples with 5 elements
+///           tuple:      (variable, variableAnchor,  deltaWarning,deltaError, PhysAcc) 
+///          <variable>_AnchorWarning:= |variable-variableAnchor|>deltaWarning
+///          <variable>_AnchorError:= |variable-variableAnchor|>deltaError
+///          <variable>_AnchorPhysAcceptable:= |variable-variableAnchor|>PhysAcc
+///  Example configuration:
+/*
+  TString sTrendVars=";";   
+  // Ncl
+  sTrendVars+="QA.TPC.meanTPCncl,TPC.Anchor.meanTPCncl,5,10,5;";       // delta Ncl  warning 5 ,  error 10     (nominal ~ 100-140)
+  sTrendVars+="QA.TPC.meanTPCnclF,TPC.Anchor.meanTPCnclF,0.02,0.05,0.05;"; // delta NclF  warning 2%,  error 5%    (nominal ~ 90%)
+  // dcaR resolution
+  sTrendVars+="QA.TPC.dcarAP0,TPC.Anchor.dcarAP0,0.02,0.05,0.02;";     // dcarAP0;  warning 0.02cm; error 0.05 cm  (nominal ~ 0.2 cm)
+
+*/    
+void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCheck, Int_t verbose){  
+  const char* aType[4]={"Warning","Error","PhysAcc"};
+  TObjArray *aTrendVars  = sTrendVars.Tokenize(";");
+  Int_t entries= aTrendVars->GetEntries();
+  const Int_t kMaxEntries=100;
+  for (Int_t ientry=0; ientry<entries; ientry++){
+    TString variables[kMaxEntries];
+    Bool_t isOK=kTRUE;
+    TObjArray *descriptor=TString(aTrendVars->At(ientry)->GetName()).Tokenize(",");
+    // check if valid sysntax
+    if (descriptor->GetEntries()!=5){
+      ::Error("makeAnchorAlias"," Invalid status descriptor. %s has %d mebers instead of 5 (variable, deltaWarning,deltaError, PhysAcc) ",aTrendVars->At(ientry)->GetName(),descriptor->GetEntries());
+      continue;
+    }
+    // check individual variables
+    for (Int_t ivar=0; ivar<5; ivar++){
+      variables[ivar]=descriptor->At(ivar)->GetName();
+      if (doCheck&1>0){  // check input formulas in case specified
+	TTreeFormula *form=new TTreeFormula("dummy",descriptor->At(ivar)->GetName(),tree);
+	if (form->GetTree()==NULL){
+	  isOK=kFALSE;
+	  ::Error("makeAnchorAlias"," Invalid element %d,  %s in %s",ivar, descriptor->At(ivar)->GetName(),aTrendVars->At(ientry)->GetName());
+	  continue;
+	}      
+      }
+    }
+    if (!isOK) continue;
+    for (Int_t itype=0; itype<3; itype++){
+      TString aName=TString::Format("%s_%s",variables[1].Data(), aType[itype]);
+      TString aValue=TString::Format("abs(%s-%s)<%s",variables[0].Data(), variables[1].Data(),variables[2+itype].Data());
+      tree->SetAlias(aName.Data(),aValue.Data());
+      if ((doCheck&2)>0){
+	TTreeFormula *form=new TTreeFormula("dummy",aName.Data(),tree);
+	if (form->GetTree()==NULL){
+	  isOK=kFALSE;
+	  ::Error("makeAnchorAlias","Alias not valid  \t%s\t%s", aName.Data(),aValue.Data());
+	}
+      }
+      if (verbose>0){
+	::Info("makeAnchorAlias","SetAlias\t%s\t%s", aName.Data(),aValue.Data());
+      }      
+    }
+    
+    delete descriptor;
+  }
+  delete aTrendVars;
+}
+
+///  ==============================================================
+///   Build combined aliases as a logical OR  of subexpressions
+///          and check consistency  for combined status 
+///   \param tree             - input tree
+///   \param doCheck          - flag to check validity of aliases (time consuminng to evaluat formulas)
+///   \param verbose          - specify verbosity (verbode>0 recomended)
+///   \param sCombinedStatus  - coma separated list of expression
+///                           - <combinedAlias, expr0, expr1, expr2, ....>  
+///   Example: make combined status for the ncl and DCAResol
+///    TString sCombinedStatus=";";
+///    sCombinedStatus+="ncl,TPC.Anchor.meanTPCncl,TPC.Anchor.meanTPCnclF;";               // Status number of clusters and findable clusters
+///    sCombinedStatus+="dcarResol,TPC.Anchor.dcarAP0,TPC.Anchor.dcarAP1,TPC.Anchor.dcarCP0,TPC.Anchor.dcarCP1;";  // Status: DCA resolution
+
+///  ==============================================================
+void TStatToolkit::MakeCombinedAlias(TTree * tree, TString& sCombinedStatus, Bool_t doCheck, Int_t verbose ){
+  const char* aType[3]={"_Warning","_Error","_PhysAcc"};
+  TObjArray *aTrendStatus  = sCombinedStatus.Tokenize(";");
+  Int_t entries= aTrendStatus->GetEntries();
+  const Int_t kMaxEntries=100;
+  for (Int_t ientry=0; ientry<entries; ientry++){
+    TString variables[kMaxEntries];
+    Bool_t isOK=kTRUE;
+    TObjArray *descriptor=TString(aTrendStatus->At(ientry)->GetName()).Tokenize(",");
+    // check if valid sysntax
+    Int_t nElems=descriptor->GetEntries();
+    if (nElems<2){
+      ::Error("makeCombinedAlias"," Invalid combined status descriptor. Too few entries %d in status %s", nElems, aTrendStatus->At(ientry)->GetName());
+      continue;
+    }
+    // check individual variables
+    TString aliasName[3], aliasContent[3];
+    for (Int_t ivar=0; ivar<nElems; ivar++){
+      if ((doCheck&1)>0 &&ivar>0) {
+	TTreeFormula *form=new TTreeFormula("dummy",descriptor->At(ivar)->GetName(),tree);
+	isOK=form->GetTree()!=NULL;
+      }
+      if (!isOK){
+	isOK=kFALSE;
+	::Error("makeCombinedAlias"," Invalid element %d,  %s in %s ",ivar, descriptor->At(ivar)->GetName(),aTrendStatus->At(ientry)->GetName());
+	break;
+      }else{
+	variables[ivar]=descriptor->At(ivar)->GetName();
+	for (Int_t iType=0; iType<3; iType++){ //type loop	  
+	  if (ivar==0) {
+	    aliasName[iType]=descriptor->At(ivar)->GetName();
+	    aliasName[iType]+=aType[iType];
+	  }
+	  else{
+	    if (ivar==1) aliasContent[iType]="(";
+	    aliasContent[iType]+=descriptor->At(ivar)->GetName();
+	    aliasContent[iType]+=aType[iType];
+	    if (ivar<nElems-1)  aliasContent[iType]+="||";
+	    if (ivar==nElems-1) aliasContent[iType]+=")";
+	  }
+	}
+      }
+    }
+    if (isOK){
+      for (Int_t iType=0; iType<3; iType++){
+	tree->SetAlias(aliasName[iType].Data(), aliasContent[iType].Data());
+	if (verbose>0){
+	  ::Info("makeCombinedAlias","SetAlias\t%s\t%s", aliasName[iType].Data(),aliasContent[iType].Data());
+	}   
+      }
+    }
+    if (!isOK) continue;
+    delete descriptor;
+  }
+  delete aTrendStatus;
+}  
+
+
+
+
 TMultiGraph*  TStatToolkit::MakeStatusMultGr(TTree * tree, const char * expr, const char * cut, const char * alias, Int_t igr) 
 {
   //

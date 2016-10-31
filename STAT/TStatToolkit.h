@@ -110,7 +110,10 @@ namespace TStatToolkit
   // TTree function for the trending
   //
   Int_t  MakeStatAlias(TTree * tree, const char * expr, const char * cut, const char * alias);
+  void   MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCheck, Int_t verbose);
+  void   MakeCombinedAlias(TTree * tree, TString& sCombinedStatus, Bool_t doCheck, Int_t verbose );
   Int_t  SetStatusAlias(TTree * tree, const char * expr, const char * cut, const char * alias);
+
   TMultiGraph*  MakeStatusMultGr(TTree * tree, const char * expr, const char * cut, const char * alias, Int_t igr=0);  
   void  AddStatusPad(TCanvas* c1, Float_t padratio, Float_t bottommargin);
   void  DrawMultiGraph(TMultiGraph *graph, Option_t * option); // 
