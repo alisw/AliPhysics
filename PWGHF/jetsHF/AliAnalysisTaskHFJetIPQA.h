@@ -99,7 +99,7 @@ private:
   Bool_t CalculateJetSignedTrackImpactParameter(AliVTrack * track,AliEmcalJet * jet ,Double_t *impar, Double_t * cov, Double_t &sign, Double_t &dcajetrack, Double_t &lineardecaylength);
   Bool_t IsV0PhotonFromBeamPipeDaughter(const AliAODTrack* track);
   Bool_t IsV0PhotonFromBeamPipeDaughter(const AliESDtrack* track);
-  Bool_t IsTrackAccepted(AliVTrack* track,Int_t n=6);
+  Bool_t IsTrackAccepted(const AliVTrack* track,Int_t n=6);
   Bool_t MatchJetsGeometricDefault(); //jet matching function 1/4
   Bool_t ParticleIsPossibleSource(Int_t pdg);
   Bool_t IsSelectionParticle( AliAODMCParticle * mcpart ,Int_t &pdg,Double_t &pT,Int_t &idx  );

@@ -129,7 +129,7 @@ AliAnalysisTaskHFJetIPQA::AliAnalysisTaskHFJetIPQA(const char *name): AliAnalysi
 {
 
    fDisableWeightingMC= kFALSE;
-   fSkipMeanSigmaCorrection= kFALSE;
+   fSkipMeanSigmaCorrection= kTRUE;
   fOutput2 =0x0;
   DefineOutput(1,  TList::Class()) ;
   for(Int_t i =0 ; i<498;++i)for(Int_t j =0 ; j<19;++j)  fBackgroundFactorLinus[j][i]=1; //set default to 1
@@ -193,6 +193,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Notify()
 }
 // ########################################################################################  Main Loop
 Bool_t AliAnalysisTaskHFJetIPQA::Run(){
+
+   // Printf("fSkipMeanSigmaCorrection %i",(int)fSkipMeanSigmaCorrection);
   fEtaBEvt.clear();
   fPhiBEvt.clear();
   fEtaCEvt.clear();
@@ -228,7 +230,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           continue;
         }
       IncHist("fh1dTracksAccepeted",2);
-      if(!fCorrrectionSamplingMode && !fSkipMeanSigmaCorrection)SmearTrackHybrid(trackV); //Hybrid  approach
+    // if(!fCorrrectionSamplingMode) if(!fSkipMeanSigmaCorrection)SmearTrackHybrid(trackV); //Hybrid  approach
       FillHist("fh2dAcceptedTracksEtaPhi",trackV->Eta(),trackV->Phi(),1);
       //Calculate impact parameters and fill histogramm
       Bool_t hasIPSuccess = kFALSE;
@@ -237,6 +239,15 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       cov[0]=-9999;
       cov[1]=-9999;
       cov[2]=-9999;
+
+
+      //Test what happens if i run the DCA calculation twice in a row
+        CalculateTrackImpactParameter(trackV,dca,cov);
+        Printf("1. %f %f -> %f %f %f ",dca[0],dca[1],cov[0],cov[1],cov[2]);
+        CalculateTrackImpactParameter(trackV,dca,cov);
+        Printf("2. %f %f -> %f %f %f ",dca[0],dca[1],cov[0],cov[1],cov[2]);
+
+
 
       if (CalculateTrackImpactParameter(trackV,dca,cov))hasIPSuccess =kTRUE;
       if(!hasIPSuccess)  continue;
@@ -315,8 +326,11 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
   jetconrec->ResetCurrentID();
   Double_t jetpt=0;
 
-  while ((jetrec = jetconrec->GetNextJet()))
+
+
+  while ((jetrec = jetconrec->GetLeadingJet("rho")))
     {
+          if(!jetrec) break;
       jetpt = jetrec->Pt();
       if(!(jetconrec->GetRhoParameter() == 0x0)){
           jetpt = jetpt - jetconrec->GetRhoVal() * jetrec->Area();
@@ -353,7 +367,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
           else if(jetflavour==2)FillHist("fh1dJetRecPtc",jetpt,1);
           else if(jetflavour==3)FillHist("fh1dJetRecPtb",jetpt,1);
         }
-      if(!(fJetCutsHF->IsJetSelected(jetrec))) continue;
+      if(!(fJetCutsHF->IsJetSelected(jetrec))) break;
       FillHist("fh1dJetRecEtaPhiAccepted",jetrec->Eta(),jetrec->Phi(),1);
       FillHist("fh1dJetRecPtAccepted",jetpt,1);
       if(fIsPythia){
@@ -410,7 +424,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
 
           if (!IsTrackAccepted(trackV,fItsClustersInputGlobal)) continue;
           Bool_t hasSIP =kFALSE;
-          if(!fCorrrectionSamplingMode&&!fSkipMeanSigmaCorrection) SmearTrackHybrid(trackV);
+        //  if(!fCorrrectionSamplingMode) if(!fSkipMeanSigmaCorrection) SmearTrackHybrid(trackV);
           if(CalculateJetSignedTrackImpactParameter(trackV,jetrec,dca,cov,sign,dcatrackjet,lineardecaylenth))hasSIP =kTRUE;
 
           if(hasSIP)
@@ -433,7 +447,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
                 }
 
               if(abs(dca[0])>1.) continue;
-              if(abs(dca[1])>2.) continue;
+             // if(abs(dca[1])>2.) continue;
               if(lineardecaylenth > 10.) continue;
               if (dcatrackjet > 0.07) continue;
               Double_t cursImParXY =TMath::Abs(GetValImpactParameter(kXY,dca,cov))*sign;
@@ -501,7 +515,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::Run(){
       sImpParXYZ.clear();
       sImpParXYSig.clear();
       sImpParXYZSig.clear();
-    }
+   break;
+      }
   return kTRUE;
 }
 //###############################################################################################################
@@ -862,12 +877,15 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
   fESDTrackCut->SetRequireTPCRefit();
   fESDTrackCut->SetEtaRange(-0.9,0.9);
   fESDTrackCut->SetAcceptKinkDaughters(kFALSE);
-  fESDTrackCut->SetDCAToVertex2D(kTRUE);
+  fESDTrackCut->SetDCAToVertex2D(kFALSE);
   fESDTrackCut->SetMaxChi2PerClusterTPC(4);
   fESDTrackCut->SetMinNClustersTPC(120);
   fESDTrackCut->SetMaxChi2PerClusterITS(4);
   fESDTrackCut->SetMaxRel1PtUncertainty(0.1);
   fESDTrackCut->SetMaxFractionSharedTPCClusters(0.4);
+  fESDTrackCut->SetMaxDCAToVertexZ(1E10);
+  fESDTrackCut->SetMaxDCAToVertexXY(1E10);
+
 
   // AliAnalysisTaskEmcal::UserCreateOutputObjects();
   Double_t xomega[10] ={0,1.00993,1.40318,1.7428,2.04667,2.35055,2.77061,3.39623,4.40616,1000};
@@ -1079,8 +1097,8 @@ void AliAnalysisTaskHFJetIPQA::UserCreateOutputObjects(){
 
                 }
               //High-res 2d templates/  low-res 3d
-              if(id==0)  ipbins =3000;
-              else if (id==1)ipbins=200;
+              if(id==0)  ipbins =1000;
+              else if (id==1)ipbins=1;
               if((fIsPythia||(!fIsPythia && ifl==4))/*&&(!fCorrrectionSamplingMode)*/)  AddHistogramm(Form("%s%s%s%s%s%s",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
                                                                                                       Form("%s%s%s%s%s%s;;",base,dim[id],typ[it],flavour[ifl],ordpar[io],special[is]),
                                                                                                       ptbins,ptlow,pthigh,ipbins,iplow,iphigh);
@@ -1173,15 +1191,16 @@ Bool_t AliAnalysisTaskHFJetIPQA::CalculateTrackImpactParameter(AliESDtrack * tra
       AliDebug(1, "No esd event available\n");
       return kFALSE;
     }
-  vtxESDSkip = ( AliVVertex *)esdevent->GetPrimaryVertex();
+  vtxESDSkip = ( AliVVertex *)esdevent->GetPrimaryVertexTracks();
   if(!vtxESDSkip) return kFALSE;
   //case ESD track: take copy constructor
   const AliESDtrack *tmptrack = dynamic_cast<const AliESDtrack *>(track);
   if(tmptrack ){
-      if( vtxESDSkip->GetNContributors() < 30&& !useTRUEvtx){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+      if( vtxESDSkip->GetNContributors() < 0&& !useTRUEvtx){ // if vertex contributor is smaller than 30, recalculate the primary vertex
           if(!fVertexer) {
               fVertexer = new AliVertexerTracks(eev->GetMagneticField());
             }
+          Printf("THIS SHOULD NOT BE CALLED");
           fVertexer->SetITSMode();
           fVertexer->SetMinClusters(6);
           fVertexer->SetMinTracks(4);
@@ -1191,7 +1210,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::CalculateTrackImpactParameter(AliESDtrack * tra
           Float_t diamondcovxy[3];
           esdevent->GetDiamondCovXY(diamondcovxy);
           Double_t pos[3]={esdevent->GetDiamondX(),esdevent->GetDiamondY(),0.};
-          Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,10.*10.};
+          Double_t cov[6]={diamondcovxy[0],diamondcovxy[1],diamondcovxy[2],0.,0.,5.*5.};
           AliESDVertex diamond(pos,cov,1.,1);
           fVertexer->SetVtxStart(&diamond);
 
@@ -1204,9 +1223,9 @@ Bool_t AliAnalysisTaskHFJetIPQA::CalculateTrackImpactParameter(AliESDtrack * tra
       if(vtxESDSkip){
           AliESDtrack * esdtrack = new AliESDtrack (*tmptrack);
           if(useTRUEvtx) {
-              vtxESDSkip = (AliVVertex * )MCEvent()->GetPrimaryVertex();
+              vtxESDSkip = (AliVVertex * )MCEvent()->GetPrimaryVertexTracks();
             }
-          if(esdtrack->PropagateToDCA(vtxESDSkip, eev->GetMagneticField(), kBeampiperadius, impar, cov)){
+          if(esdtrack->PropagateToDCA(vtxESDSkip, 0/*eev->GetMagneticField()*/, kBeampiperadius, impar, cov)){
               if(esdtrack->GetSigmaY2()<0. || esdtrack->GetSigmaZ2()<0.) {
                   if(isRecalcVertex&&vtxESDSkip)  {
                       delete vtxESDSkip;
@@ -1225,7 +1244,7 @@ Bool_t AliAnalysisTaskHFJetIPQA::CalculateTrackImpactParameter(AliESDtrack * tra
                       delete esdtrack;
                       esdtrack=0x0;}
                 }
-              if(abs(impar[1])>2.)return kFALSE;
+             // if(abs(impar[1])>2.)return kFALSE;
               if(esdtrack) {
                   delete esdtrack;
                   esdtrack=0x0;}
@@ -1402,13 +1421,13 @@ Bool_t AliAnalysisTaskHFJetIPQA::CalculateJetSignedTrackImpactParameter(AliESDtr
       AliDebug(1, "No esd event available\n");
       return kFALSE;
     }
-  const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
+  const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertexTracks();
   if(!vtxESDSkip) return kFALSE;
   //case ESD track: take copy constructor
   const AliESDtrack *tmptrack = dynamic_cast<const AliESDtrack *>(track);
   if(tmptrack){
-
-      if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
+//Disable mag field
+      if( vtxESDSkip->GetNContributors() < 0){ // if vertex contributor is smaller than 30, recalculate the primary vertex
           if(!fVertexer) {
               fVertexer = new AliVertexerTracks(eev->GetMagneticField());
             }
@@ -1435,7 +1454,8 @@ Bool_t AliAnalysisTaskHFJetIPQA::CalculateJetSignedTrackImpactParameter(AliESDtr
 
       if(vtxESDSkip){
           AliESDtrack esdtrack(*tmptrack);
-          if(esdtrack.PropagateToDCA(vtxESDSkip, eev->GetMagneticField(), kBeampiperadius, impar, cov)){
+          //Propagate w/o mga field
+          if(esdtrack.PropagateToDCA(vtxESDSkip, 0/*eev->GetMagneticField()*/, kBeampiperadius, impar, cov)){
               if(esdtrack.GetSigmaY2()<0. || esdtrack.GetSigmaZ2()<0.) {
                   if(isRecalcVertex&&vtxESDSkip)  {
                       delete vtxESDSkip;
@@ -1449,8 +1469,17 @@ Bool_t AliAnalysisTaskHFJetIPQA::CalculateJetSignedTrackImpactParameter(AliESDtr
               Double_t posdcatrack[3]= {0.,0.,0.};
               esdtrack.GetXYZ(posdcatrack);
               vtxESDSkip->GetXYZ(pos);
-              Double_t ipvector3[3] = { posdcatrack[0] - pos[0], posdcatrack[1] - pos[1], posdcatrack[2] - pos[2] };
-              sign =TMath::Sign(1.,ipvector3[0]*jet->Px() +ipvector3[1]*jet->Py()+ipvector3[2]*jet->Pz() );
+
+
+              Double_t ipvector3[3] = { posdcatrack[0] - pos[0], posdcatrack[1] - pos[1],/* posdcatrack[2] - pos[2]*/};
+
+//REPLACE sign
+            //  sign =TMath::Sign(1.,ipvector3[0]*jet->Px() +ipvector3[1]*jet->Py()/*+ipvector3[2]*jet->Pz() */);
+
+              sign = ipvector3[0]*jet->Px() +ipvector3[1]*jet->Py() /(sqrt(jet->Px()*jet->Px()+jet->Py()*jet->Py()))/(sqrt(ipvector3[0]*ipvector3[0]+ipvector3[1]*ipvector3[1]));
+
+              //Stabilize Sign definition
+
               // Calculate decay legnth and track jet DCA against new vertex
 
 
@@ -1460,13 +1489,14 @@ Bool_t AliAnalysisTaskHFJetIPQA::CalculateJetSignedTrackImpactParameter(AliESDtr
               Double_t bcv[21] = { 0 };
               AliExternalTrackParam bjetparam(bpos, bpxpypz, bcv, (Short_t)0);
               Double_t xa = 0., xb = 0.;
-              bjetparam.GetDCA(&esdtrack, eev->GetMagneticField(), xa, xb);
+              //No mag field
+              bjetparam.GetDCA(&esdtrack, 0/*eev->GetMagneticField()*/, xa, xb);
 
 
               Double_t xyz[3] = { 0., 0., 0. };
               Double_t xyzb[3] = { 0., 0., 0. };
-              bjetparam.GetXYZAt(xa, eev->GetMagneticField(), xyz);
-              esdtrack.GetXYZAt(xb, eev->GetMagneticField(), xyzb);
+              bjetparam.GetXYZAt(xa, /*eev->GetMagneticField()*/ 0, xyz);
+              esdtrack.GetXYZAt(xb, /*eev->GetMagneticField()*/0, xyzb);
               Double_t  bdecaylength =
                   TMath::Sqrt(
                     (bpos[0] - xyz[0]) * (bpos[0] - xyz[0]) +
@@ -1550,7 +1580,7 @@ Double_t AliAnalysisTaskHFJetIPQA::GetValImpactParameter(TTypeImpPar type,Double
     }
   return result;
 }// ########################################################################################Track Selection
-Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAccepted(AliVTrack* track,Int_t n){
+Bool_t AliAnalysisTaskHFJetIPQA::IsTrackAccepted(const AliVTrack* track ,Int_t n){
   //Negative n -> SPD any , positve n ->SPD both
   if(track->GetX() >3 )return kFALSE; //valid propagation to dca only in beam pipe
   if(fESD){
@@ -1895,7 +1925,7 @@ void AliAnalysisTaskHFJetIPQA::SmearTrackHybrid(AliVTrack *track)
   if (!track || !fIsPythia) return;
   if (!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)))return;
   if (TESTBIT(track->GetITSClusterMap(),7)) return;
-
+Printf("Smearing");
   AliExternalTrackParam et;et.CopyFromVTrack(track);
   Double_t *param=const_cast<Double_t*>(et.GetParameter());
   if(track->GetX()>3 ) return;
@@ -2743,7 +2773,7 @@ void AliAnalysisTaskHFJetIPQA::GetUDGResolutionFunctionHists(AliVTrack * track,A
   if(!fGraphSigmaData)return;
 
 
-  SmearTrackHybrid(track);
+  //SmearTrackHybrid(track);
   int corridx=0;
   double  weight = GetMonteCarloCorrectionFactor(track,corridx);
   if(weight <0) return;
