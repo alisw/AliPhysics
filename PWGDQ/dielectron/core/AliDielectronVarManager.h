@@ -553,6 +553,17 @@ public:
     kQnDiffFMDAy_FMDCx,
     kQnDiffFMDAy_FMDCy,
 
+    // Flow estimators for measured Jpsis
+
+    kQnDeltaPhiTPCrpH2,
+    kQnDeltaPhiV0ArpH2,
+    kQnDeltaPhiV0CrpH2,
+    kQnDeltaPhiSPDrpH2,
+    kQnTPCrpH2FlowV2,
+    kQnV0ArpH2FlowV2,
+    kQnV0CrpH2FlowV2,
+    kQnSPDrpH2FlowV2,
+
     // End of Eventplane variables from Qn Framework
 
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
@@ -1998,7 +2009,16 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kPairPlaneAngle3Ran)) values[AliDielectronVarManager::kPairPlaneAngle3Ran]= pair->GetPairPlaneAngle(values[kRandomRP],3);
   if(Req(kPairPlaneAngle4Ran)) values[AliDielectronVarManager::kPairPlaneAngle4Ran]= pair->GetPairPlaneAngle(values[kRandomRP],4);
 
+  // Calculate v2 of Jpsi using the EP from the 2016 est. qVecQnFramework
 
+  if(Req(kQnDeltaPhiTPCrpH2) || Req(kQnTPCrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiTPCrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnTPCrpH2]);
+  if(Req(kQnDeltaPhiV0ArpH2) || Req(kQnV0ArpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0ArpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0ArpH2]);
+  if(Req(kQnDeltaPhiV0CrpH2) || Req(kQnV0CrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0CrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0CrpH2]);
+  if(Req(kQnDeltaPhiSPDrpH2) || Req(kQnSPDrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiSPDrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnSPDrpH2]);
+  if(Req(kQnTPCrpH2FlowV2)) values[AliDielectronVarManager::kQnTPCrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiTPCrpH2] );
+  if(Req(kQnV0ArpH2FlowV2)) values[AliDielectronVarManager::kQnV0ArpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0ArpH2] );
+  if(Req(kQnV0CrpH2FlowV2)) values[AliDielectronVarManager::kQnV0CrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiV0CrpH2] );
+  if(Req(kQnSPDrpH2FlowV2)) values[AliDielectronVarManager::kQnSPDrpH2FlowV2]    = TMath::Cos( 2.*values[AliDielectronVarManager::kQnDeltaPhiSPDrpH2] );
 
   AliDielectronMC *mc=AliDielectronMC::Instance();
 
