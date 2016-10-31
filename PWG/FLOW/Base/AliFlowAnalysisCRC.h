@@ -1630,9 +1630,9 @@ private:
   TH1D *fPtDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPtDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPtDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
-  TH1D *fEtaDiffQRe[fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][eta]
-  TH1D *fEtaDiffQIm[fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][eta]
-  TH1D *fEtaDiffMul[fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][eta]
+  TH1D *fEtaDiffQRe[2][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][eta]
+  TH1D *fEtaDiffQIm[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][eta]
+  TH1D *fEtaDiffMul[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][eta]
   TH1D *fPtDiffQReEG[2][fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPtDiffQImEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPtDiffMulEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
@@ -1649,8 +1649,9 @@ private:
   TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //!
   TProfile *fFlowSPZDCIntNUA[fFlowNNUA]; //!
   TProfile *fFlowSPZDCv1Pro[4]; //!
-  TProfile *fFlowSPZDCv1etaPro[4]; //!
-  TH1D *fFlowSPZDCv1etaHist[4]; //!
+  const static Int_t fkNHistv1eta = 7;
+  TProfile *fFlowSPZDCv1etaPro[fkNHistv1eta]; //!
+  TH1D *fFlowSPZDCv1etaHist[fkNHistv1eta]; //!
   
   // Flow QC
   TList *fFlowQCList;    //! QC List
@@ -1728,6 +1729,7 @@ private:
   TH1D *fMultHist; //! TPC Multiplicity distribution
   TH1D *fV0MMultHist; //! V0M Multiplicity distribution
   TH1D *fCenHist; //! Centrality distribution
+  TH1D *fEventCounter; //! Event counter for different methods
   TH2F *fVtxHist[3]; //! primary vertex
   TH1D* fCenWeightsHist; //! Centrality weights
   TH1D* fCenWeigCalHist; //! Centrality weights
@@ -1774,7 +1776,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 26);
+  ClassDef(AliFlowAnalysisCRC, 27);
   
 };
 
