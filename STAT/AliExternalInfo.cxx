@@ -26,9 +26,10 @@ ClassImp(AliExternalInfo)
 
 const TString AliExternalInfo::fgkDefaultConfig="$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg";
 
-AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLocation/*, Bool_t copyToLocalStorage*/) :
+AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLocation, Int_t verbose/*, Bool_t copyToLocalStorage*/) :
                                 /*fCopyDataToLocalStorage(copyToLocalStorage),*/
                                 TObject(),
+				fVerbose(verbose),
                                 fConfigLocation(configLocation),
                                 fLocalStorageDirectory(localStorageDirectory),
                                 fConfigMap(),
@@ -41,55 +42,83 @@ AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLo
   if (gSystem->Getenv("AliExternalInfoCache")!=NULL){
     if (localStorageDirectory.Length()<2)   fLocalStorageDirectory=gSystem->Getenv("AliExternalInfoCache");
   }
-  ReadConfig();
+  ReadConfig(configLocation, fVerbose);
 }
 
 AliExternalInfo::~AliExternalInfo() {}
 
 
-/// Reads the configuration file. Lines beginning with an '#' are ignored.
+/// Reads the configuration files. Lines beginning with an '#' are ignored.
+/// 
 /// Use the format which is in the config.cfg by default. Adding ressources like the ones already
 /// there should work without problems.
-void AliExternalInfo::ReadConfig(){
-  TString configFileName=gSystem->ExpandPathName(fConfigLocation.Data());
-  if (gSystem->AccessPathName(configFileName)) {
-    AliError(TString::Format("Could not find config file '%s'", configFileName.Data()));
-    const TString defaultConfigFileName=gSystem->ExpandPathName(fgkDefaultConfig);
-    if (defaultConfigFileName!=configFileName) {
-      AliError("Using default config file instead");
-      configFileName=defaultConfigFileName;
-    }
+/// \param configLocation - semicolon separated configuration list
+///                       - applied as in CSS 
+/// \param verbose        - verbosity
+void AliExternalInfo::ReadConfig( TString configLocation, Int_t verbose){
+
+  if (fConfigLocation.Length()==0){
+    configLocation=AliExternalInfo::fgkDefaultConfig+";AliExternalInfo.cfg;"+configLocation;
   }
 
-  std::ifstream configFile(configFileName);
-  if (!configFile.is_open()) {
-    AliError(TString::Format("Could not open config file '%s'", configFileName.Data()));
+  TObjArray *configArray = configLocation.Tokenize(";");
+  fConfigLocation+=configLocation;
+  fConfigLocation+=";";
+
+  Int_t nConfig=configArray->GetEntries();
+  if (nConfig==0){
+    ::Error("AliExternalInfo::ReadConfig","Invalid configuration description %s",configLocation.Data());
     return;
   }
 
-  //
-  std::string line;
-  while (std::getline(configFile, line)){
-    TString temp_line(line.c_str()); // Use TString for easier handling
-
-    if (temp_line.EqualTo("")) continue; // Ignore empty lines
-    // temp_line = temp_line.Strip(TString::EStripType::kBoth, ' '); // Strip trailing and leading spaces
-    temp_line = temp_line.Strip(TString::kBoth, ' '); // Strip trailing and leading spaces
-    if (temp_line.First('#') == 0) continue; // If line starts with a '#' treat is as a comment
-
-    TObjArray arrTokens = (*(temp_line.Tokenize(' ')));
-    const TString key(arrTokens.At(0)->GetName());
-    const TString value(arrTokens.At(1)->GetName());
-
-    fConfigMap[key] = value;
+  for (Int_t iConfig=0; iConfig<nConfig; iConfig++){
+    TString cName=configArray->At(iConfig)->GetName();
+    if (cName=="default") cName="$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg";    
+    if (cName.Length()==0) continue;
+    TString configFileName=gSystem->ExpandPathName(cName.Data());
+    if (verbose>0){
+      ::Info("AliExternalInfo::ReadConfig","Path: %s\t%s",cName.Data(), configFileName.Data());
+    }
+    if (gSystem->AccessPathName(configFileName)!=0) {   // be aware of strange convention for the gSystem->AccessPathName - 0 mean it is OK
+      AliError(TString::Format("Could not find config file '%s'", configFileName.Data()));
+      const TString defaultConfigFileName=gSystem->ExpandPathName(fgkDefaultConfig);
+      if (defaultConfigFileName!=configFileName) {
+	AliError("Using default config file instead");
+	configFileName=defaultConfigFileName;
+      }
+    }
+    
+    std::ifstream configFile(configFileName);
+    if (!configFile.is_open()) {
+      AliError(TString::Format("Could not open config file '%s'", configFileName.Data()));
+      return;
+    }
+    
+    //
+    std::string line;
+    while (std::getline(configFile, line)){
+      TString temp_line(line.c_str()); // Use TString for easier handling
+      
+      if (temp_line.EqualTo("")) continue; // Ignore empty lines
+      // temp_line = temp_line.Strip(TString::EStripType::kBoth, ' '); // Strip trailing and leading spaces
+      temp_line = temp_line.Strip(TString::kBoth, ' '); // Strip trailing and leading spaces
+      if (temp_line.First('#') == 0) continue; // If line starts with a '#' treat is as a comment
+      
+      TObjArray arrTokens = (*(temp_line.Tokenize(' ')));
+      const TString key(arrTokens.At(0)->GetName());
+      const TString value(arrTokens.At(1)->GetName());
+      
+      fConfigMap[key] = value;
+    }
   }
+  delete configArray;
   return;
 }
 
 /// Prints out the config which was read in previously. Useful to check if anything went wrong
 void AliExternalInfo::PrintConfig(){
   // Loop through the map (Would be much easier in c++11)
-  std::cout << "User defined resources are:\n";
+  AliInfo("User defined resources are\n");
   // looping over map with const_iterator
   typedef std::map<TString,TString>::const_iterator it_type;
   for(it_type iterator = fConfigMap.begin(); iterator != fConfigMap.end(); ++iterator) {
@@ -221,7 +250,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
       TTree tree(treeName, treeName);
 
       if ( (tree.ReadFile(mifFilePath+"RunFix", "", '\"')) > 0) {
-        AliInfo("-- Successfully read in tree");
+        if (fVerbose>1) AliInfo("Successfully read in tree");
       }
       else {
         AliError("-- Error while reading tree");
@@ -230,7 +259,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 
       tree.Write();
       tempfile.Close();
-      AliInfo(TString::Format("Write tree to file: %s", internalFilename.Data()));
+      if (fVerbose>0) AliInfo(TString::Format("Write tree to file: %s", internalFilename.Data()));
       return kTRUE;
     }
   }
@@ -261,13 +290,22 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   // Setting up all the local variables
   SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
 
-  std::cout << "internalFilename: " << internalFilename << " rootFileName: " << rootFileName << std::endl;
-
+  //std::cout << "internalFilename: " << internalFilename << " rootFileName: " << rootFileName << std::endl;
+  if (fVerbose>1) AliInfo(TString::Format("Caching start internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
   if (gSystem->AccessPathName(internalFilename.Data()) == kTRUE) {
     if (Cache(type, period, pass) == kFALSE) {
-      std::cout << "Caching of ressource was not successful; Nullpointer is returned!\n" << std::endl;
+      AliError(TString::Format("Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
       return tree;
     }
+  }else{
+    Bool_t downloadNeeded = IsDownloadNeeded(internalFilename, type);
+    if (downloadNeeded){
+      AliInfo(TString::Format("Caching %s", internalFilename.Data()).Data());
+      if (Cache(type, period, pass) == kFALSE) {
+	AliError(TString::Format("Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
+	return tree;
+      }
+    }    
   }
 
   // Creating and returning the tree from the file
@@ -282,7 +320,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   delete arr;
   TTreeSRedirector::FixLeafNameBug(tree);
   if (tree != 0x0) {
-    AliInfo("-- Successfully read in tree");
+    if (fVerbose>1) AliInfo(TString::Format("Successfully read %s/%s",internalFilename.Data(), tree->GetName()));
     if (buildIndex==1) BuildIndex(tree, type);
   } else {
     AliError("Error while reading tree");
@@ -301,8 +339,8 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   //
 
   if (metadataMacro.Length()>0){  // rename branch  with index if specified in configuration file
-    printf("Processing metadata macro:\n gROOT->ProcessLine(.x %s((TTree*)%p,0);",     metadataMacro.Data(),tree);
-    gROOT->ProcessLine(TString::Format(".x %s((TTree*)%p,0);",metadataMacro.Data(),tree).Data());
+    if (fVerbose>1) printf("Processing metadata macro:\n gROOT->ProcessLine(.x %s((TTree*)%p,%d);",     metadataMacro.Data(),tree, fVerbose);
+    gROOT->ProcessLine(TString::Format(".x %s((TTree*)%p,%d);",metadataMacro.Data(),tree,fVerbose).Data());
   }
 
   return tree;

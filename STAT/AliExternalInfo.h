@@ -9,6 +9,13 @@
 /// resources in ALICE, like the RCT, logbook, QA...
 ///
 /// For the correct usage of this class you need to have a certificate which does not need typing in your password.
+
+
+/// \author Carsten Klein <Carsten.Klein@cern.ch>, Goethe Universität Frankfurt 
+/// \date Jan 18, 2016
+/// \author Marian Ivanov marian.ivanov@cern.ch (modifications)
+
+
 /**
 
 Examples:
@@ -43,8 +50,9 @@ TTree* treeEVSQA15fPass1 = b.GetTree("QA.EVS", "LHC15f", "pass2");
 b.GetFriendsTree()->Draw("TPC.tpcItsMatchA:EVS.interactionRate","TPC.meanMult>0", "*");
 c1.SaveAs("c1.png");
 */
-/// \author Carsten Klein <Carsten.Klein@cern.ch>, Goethe Universität Frankfurt
-/// \date Jan 18, 2016
+
+
+
 
 #include <map>
 
@@ -56,10 +64,11 @@ class TChain;
 
 class AliExternalInfo : public TObject {
 public:
-  AliExternalInfo (TString localStorageDirectory = ".", TString configLocation = "$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg"/*, Bool_t copyToLocalStorage = kTRUE*/);
+  AliExternalInfo (TString localStorageDirectory = ".", TString configLocation = "", Int_t verbose=1/*, Bool_t copyToLocalStorage = kTRUE*/);
   virtual ~AliExternalInfo();
-  void ReadConfig();
+  void ReadConfig( TString configLocation = "$ALICE_ROOT/STAT/Macros/AliExternalInfo.cfg", Int_t verbose=0);
   void PrintConfig();
+  void   PrintConfigSelected(const char *expName="", const char *expValue="");
   Bool_t Cache(TString type="", TString period = "", TString pass=""); // Downloads the tree in the working directory
   Bool_t CacheMC()                                                      {return Cache("MonALISA.MC", "", "");}
   Bool_t CacheRCT(TString period, TString pass)                         {return Cache("MonALISA.RCT", period, pass);}
@@ -101,7 +110,6 @@ public:
   static const TString& GetDefaultConfig() { return fgkDefaultConfig; }
   static void BuildHashIndex(TTree* tree, const char *chbranchName,  const char *chindexName);
   static void PrintMapSelected(std::map<TString, TString> infoMap, const char *expName="", const char *expValue="");
-  void   PrintConfigSelected(const char *expName="", const char *expValue="");
 public:
   //private:
   Bool_t BuildIndex(TTree* tree, TString type);
@@ -112,7 +120,7 @@ public:
   const TString Wget(TString& mifFilePath, const TString& internalLocation, TString rootFileName, const TString& externalLocation);
   const TString CreatePath(TString type, TString period, TString pass);
   Bool_t IsDownloadNeeded(TString file, TString type);
-
+  Int_t fVerbose;                                   ///< verbosity flag 
   // Bool_t fCopyDataToLocalStorage;
   TString fConfigLocation;                          ///< location of the config file
   TString fLocalStorageDirectory;                   ///< location of the local cache directory
