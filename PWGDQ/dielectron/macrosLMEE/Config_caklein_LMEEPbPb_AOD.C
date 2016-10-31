@@ -1,19 +1,26 @@
 //#include "AliDielectron.h"
-//#include "PWGDQ/dielectron/macrosLMEE/LMEECutLib.C"
-// #include "LMEECutLib_caklein.C"
+
 void      InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void      InitCF(AliDielectron* die, Int_t cutDefinition);
-TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max);
-TVectorD *GetVector(Int_t var);
+TVectorD* BinsToVector(Int_t nbins, Double_t min, Double_t max);
+TVectorD* GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx};
 
-// TString names=("ITSTPCTOFif_trkSPDfirst_1_kSemi_pt300;ITSTPCTOFif_trkSPDfirst_1_kSemi_pt500");//;ITSTPCTOFif_trkSPDfirst5cls_4_kSemi;ITS2gevTPCTOFif_trkSPDfirst_5_tight_kSemi");
-// TString names=("ITSTPCTOFif_trkSPDfirst_1_kSemi_pt300");//;ITSTPCTOFif_trkSPDfirst5cls_4_kSemi;ITS2gevTPCTOFif_trkSPDfirst_5_tight_kSemi");
-TString names=("ITSTPCTOFif_trkSPDfirst_kINT7_pt400;ITSTPCTOFif_trkSPDfirst_kINT7_pt400_woPID");//;ITSTPCTOFif_trkSPDfirst5cls_4_kSemi;ITS2gevTPCTOFif_trkSPDfirst_5_tight_kSemi");
-TObjArray *arrNames=names.Tokenize(";");
-const Int_t nDie=arrNames->GetEntries();
-Bool_t MCenabled=kFALSE;//needed for LMEEcutlib
-Bool_t isQAtask=kFALSE;
+//   "kPbPb2015_pidV0_pt400", kITSTPCTOFif_trkSPDfirst_kINT7_pt100_woPID
+//    kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq, kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif
+ TString names=("kPbPb2015_Pt400_mastermind;kPbPb2015_Pt400_mastermind2;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
+ // TString names=("kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
+
+
+TObjArray *arrNames = names.Tokenize(";");
+const Int_t nDie = arrNames->GetEntries();
+
+
+Bool_t MCenabled = kFALSE;//needed for LMEEcutlib
+Bool_t isQAtask = kFALSE;
+
+Bool_t SetMixing = kTRUE;
+Bool_t SetPairing = kTRUE;
 
 
 AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE)
@@ -36,8 +43,115 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
 
   cout << "cutDefinition = " << cutDefinition << endl;
   // Setup Analysis Selection
-  if (cutDefinition==0) {
-    AnaCut.SetPIDAna(LMEECutLib::kITSTPCTOFif_trkSPDfirst_kINT7_pt400);
+  if (cutDefinition == -100) {
+      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_ITSSA);
+      AnaCut.SetTrackSelectionAna(LMEECutLib::kITSSA);
+      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+      AnaCut.SetCentrality(LMEECutLib::kPbPb_00to90);
+      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  if (cutDefinition == 0) {
+      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton);
+      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  if (cutDefinition == 1) {
+      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton2);
+      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  if (cutDefinition == 2) {
+      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq);
+      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  if (cutDefinition == 3) {
+      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif);
+      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  else if (cutDefinition == -100) {
+      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq);
+      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+      AnaCut.SetPairCutsAna(LMEECutLib::kPairCutsAna);
+
+      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+  else if (cutDefinition == -100) {
+      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif);
+      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+      AnaCut.SetPairCutsAna(LMEECutLib::kPairCutsAna);
+
+      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+  }
+
+
+  else if (cutDefinition==-100) {
+    AnaCut.SetPIDAna(LMEECutLib::kITSTPCTOFif_trkSPDfirst_kINT7_pt100_woPID);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
@@ -51,22 +165,23 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
     AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
     // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
   }
-  else if (cutDefinition==1) {
-    AnaCut.SetPIDAna(LMEECutLib::kITSTPCTOFif_trkSPDfirst_kINT7_pt400_woPID);
-    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+  else if (cutDefinition==-100) {
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_pidV0_pt400);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
-    AnaCut.SetPreFilterType(LMEECutLib::kPreFilterAllSigns);
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
     AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
     AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-    AnaCut.SetPairCutsPre(LMEECutLib::kInvM0to030MeV_OpAng0to060mrad);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
 
     AnaCut.SetCentrality(LMEECutLib::kPbPb_00to90);
     AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
     AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
     // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
-    die->SetNoPairing();
   }
+
+
   else {
     cout << " =============================== " << endl;
     cout << " ==== INVALID CONFIGURATION ==== " << endl;
@@ -77,17 +192,17 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
   // POSSIBLE FURTHER SETTINGS
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   // deactivate pairing to check track cuts or run with loose pid cuts:
-  // die->SetNoPairing();
+  if(SetPairing != kTRUE){
+    die->SetNoPairing();
+  }
   // apply correct Pre-Filter Scheme, if necessary
-  if (AnaCut.GetPreFilterType() == LMEECutLib::kPreFilterAllSigns)  {
-    die->SetPreFilterAllSigns();
-  }
-  else if (AnaCut.GetPreFilterType() == LMEECutLib::kPreFilterUnlikeOnly) {
-    die->SetPreFilterUnlikeOnly();
-  }
+  // if (AnaCut.GetPreFilterType() == LMEECutLib::kPreFilterAllSigns)  {
+  //   die->SetPreFilterAllSigns();
+  // }
+  // else if (AnaCut.GetPreFilterType() == LMEECutLib::kPreFilterUnlikeOnly) {
+  //   die->SetPreFilterUnlikeOnly();
+  // }
 
-
-  // --------------------------------------------------
 
   //
   // Now configure task
@@ -108,8 +223,7 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
     }
     // set initial track filter.
     // the function 'GetPIDCutsPre()' must also call 'GetTrackCutsPre()'!
-
-  die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsPre(AnaCut) );
+    die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsPre(AnaCut) );
 
     // set Prefilter. "remove all tracks from the Single track arrays that pass the cuts in this filter" (comment in AliDielectron.cxx)
     // cuts = REJECTION!!!
@@ -117,18 +231,17 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
 
     // "apply leg cuts after the pre filter" (comment in AliDielectron.cxx)
     // the function 'GetPIDCutsAna()' must also call 'GetTrackCutsAna()'!
-  die->GetPairPreFilterLegs().AddCuts( LMcutlib->GetPIDCutsAna(AnaCut) );
+    die->GetPairPreFilterLegs().AddCuts( LMcutlib->GetPIDCutsAna(AnaCut) );
 
     // set Pairfilter.
     // cuts = SELECTION!!!
-  die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(AnaCut, kFALSE) );
+    die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(AnaCut, kFALSE) );
 
   }
   // --------------------------------------------------
   // without Rejection Step
   // --------------------------------------------------
-  else
-  {
+  else {
     if (isESD) {
       die->GetTrackFilter().AddCuts( LMcutlib->GetESDTrackCutsAna(AnaCut) );
     }
@@ -138,14 +251,16 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
   }
   // -------------------------------------------------
 
-
   AliDielectronTrackRotator* rot= 0x0;
   //To save time and as it is not 100% test, rotation switched off
   /*AliDielectronTrackRotator *rot= LMcutlib->GetTrackRotator(selectedPID);
    die->SetTrackRotator(rot);
-   */
-  AliDielectronMixingHandler* mix = LMcutlib->GetMixingHandler(AnaCut);
-  die->SetMixingHandler(mix);
+  */
+  if (SetMixing == kTRUE){
+    std::cout << "MIXING ACTIVATED" << std::endl;
+    AliDielectronMixingHandler* mix = LMcutlib->GetMixingHandler(AnaCut);
+    die->SetMixingHandler(mix);
+  }
 
   // histogram setup
   // only if an AliDielectronHistos object is attached to the
@@ -232,97 +347,100 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 
   //add histograms to event class
   histos->UserHistogram("Event","nEvents","",1,0.,1.,AliDielectronVarManager::kNevents);
-  histos->UserHistogram("Event","RunNumber","",AliDielectronHelper::MakeArbitraryBinning("244917,244918"),AliDielectronVarManager::kRunNumber);
-  histos->UserHistogram("Event","Centrality","","-1,0,10,20,30,40,50,60,70,80,90,100,101;#events",AliDielectronVarManager::kCentralityNew);
+  // histos->UserHistogram("Event","RunNumber","",AliDielectronHelper::MakeArbitraryBinning("244917,244918"),AliDielectronVarManager::kRunNumber);
+  // histos->UserHistogram("Event","Centrality","","-1,0,10,20,30,40,50,60,70,80,90,100,101;#events",AliDielectronVarManager::kCentralityNew);
   histos->UserHistogram("Event","centrality","",100,0.,100,AliDielectronVarManager::kCentralityNew);
-  histos->UserHistogram("Event","centrality_SPD","",100,0.,100,AliDielectronVarManager::kCentralityCL1);
-  histos->UserHistogram("Event","nESDTracks","",8000,0,80000,AliDielectronVarManager::kNTrk);
-  histos->UserHistogram("Event","Nacc","",8000,0,8000,AliDielectronVarManager::kNacc);
-  histos->UserHistogram("Event","RefMultTPConly","",8000,0,8000,AliDielectronVarManager::kRefMultTPConly);
-  histos->UserHistogram("Event","epTPC","",240,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kTPCrpH2uc);
-  histos->UserHistogram("Event","epV0AC","",240,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kv0ACrpH2);
-  histos->UserHistogram("Event","epV0AC_epTPC","",120,-TMath::PiOver2(),TMath::PiOver2(),120,-TMath::PiOver2(),TMath::PiOver2(),AliDielectronVarManager::kTPCrpH2uc,AliDielectronVarManager::kv0ACrpH2);
+  // histos->UserHistogram("Event","centrality_SPD","",100,0.,100,AliDielectronVarManager::kCentralityCL1);
+  // histos->UserHistogram("Event","nESDTracks","",8000,0,80000,AliDielectronVarManager::kNTrk);
+  // histos->UserHistogram("Event","Nacc","",8000,0,8000,AliDielectronVarManager::kNacc);
+  // histos->UserHistogram("Event","RefMultTPConly","",8000,0,8000,AliDielectronVarManager::kRefMultTPConly);
+  // histos->UserHistogram("Event","epTPC","",240,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kTPCrpH2uc);
+  // histos->UserHistogram("Event","epV0AC","",240,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kv0ACrpH2);
+  // histos->UserHistogram("Event","epV0AC_epTPC","",120,-TMath::PiOver2(),TMath::PiOver2(),120,-TMath::PiOver2(),TMath::PiOver2(),AliDielectronVarManager::kTPCrpH2uc,AliDielectronVarManager::kv0ACrpH2);
 
 
   //add histograms to Track classes
   // axis labels are set to the values in 'AliDielectronVarManager.cxx' if the histogram title is empty or starts with ';'! [see AliDielectronHistos::AdaptNameTitle(...)]
   histos->UserHistogram("Track","Pt",";Pt [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPt);
-  histos->UserHistogram("Track","Px",";Px [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPx);
-  histos->UserHistogram("Track","Py",";Py [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPy);
-  histos->UserHistogram("Track","Pz",";Pz [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPz);
-  histos->UserHistogram("Track","P_PIn",";p (GeV/c);p_{in} (GeV/c)",
-                        GetVector(kP2D), GetVector(kP2D), AliDielectronVarManager::kP,AliDielectronVarManager::kPIn);
+  // histos->UserHistogram("Track","Px",";Px [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPx);
+  // histos->UserHistogram("Track","Py",";Py [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPy);
+  // histos->UserHistogram("Track","Pz",";Pz [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPz);
+  // histos->UserHistogram("Track","P_PIn",";p (GeV/c);p_{in} (GeV/c)",
+                        // GetVector(kP2D), GetVector(kP2D), AliDielectronVarManager::kP,AliDielectronVarManager::kPIn);
 
   // ITS
-  histos->UserHistogram("Track","ITS_dEdx_P",";p (GeV/c);ITS signal (arb units)",
-                        GetVector(kP2D), BinsToVector(700,0.,700.), AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal);
+  // histos->UserHistogram("Track","ITS_dEdx_P",";p (GeV/c);ITS signal (arb units)",
+  //                       GetVector(kP2D), BinsToVector(700,0.,700.), AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal);
   histos->UserHistogram("Track","ITSnSigmaEle_P",";p (GeV/c);n#sigma_{ele}^{ITS}",
                         GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle);
-  histos->UserHistogram("Track","ITSnSigmaPio_P",";p (GeV/c);n#sigma_{pion}^{ITS}",
-                        GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPio);
-  histos->UserHistogram("Track","ITSnSigmaKao_P",";p (GeV/c);n#sigma_{kaon}^{ITS}",
-                        GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaKao);
+  // histos->UserHistogram("Track","ITSnSigmaPio_P",";p (GeV/c);n#sigma_{pion}^{ITS}",
+  //                       GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPio);
+  // histos->UserHistogram("Track","ITSnSigmaKao_P",";p (GeV/c);n#sigma_{kaon}^{ITS}",
+  //                       GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaKao);
 //histos->UserHistogram("Track","ITSnSigmaPro_P",";p (GeV/c);n#sigma_{proton}^{ITS}",
 //                      GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPro);
   // TPC
-  histos->UserHistogram("Track","TPC_dEdx_P",";p_{in} (GeV/c);TPC signal (arb units)",
-                        GetVector(kP2D), GetVector(kTPCdEdx), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal);
+  // histos->UserHistogram("Track","TPC_dEdx_P",";p_{in} (GeV/c);TPC signal (arb units)",
+  //                       GetVector(kP2D), GetVector(kTPCdEdx), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal);
+  // histos->UserHistogram("Track","TPCnSigmaEle_P",";p_{in} (GeV/c);n#sigma_{ele}^{TPC}",
+  //                       GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","TPCnSigmaEle_P",";p_{in} (GeV/c);n#sigma_{ele}^{TPC}",
-                        GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
+                        AliDielectronHelper::MakeLinBinning(500,  0.,5.), AliDielectronHelper::MakeLinBinning(100,  -5,5.), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","TPCnSigmaEle_Eta",";Eta;n#sigma_{ele}^{TPC}",
                         GetVector(kEta2D), GetVector(kSigmaEle), AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle);
-  histos->UserHistogram("Track","TPCnSigmaEle_Nacc",";N_{acc}; n#sigma_{ele}^{TPC}",
-                        BinsToVector(100,0.,5000.), GetVector(kSigmaEle), AliDielectronVarManager::kNacc,AliDielectronVarManager::kTPCnSigmaEle);
-  histos->UserHistogram("Track","TPCnSigmaEle_RefMultTPConly",";N_{TPC ref}; n#sigma_{ele}^{TPC}",
-                        BinsToVector(100,0.,5000.), GetVector(kSigmaEle), AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCnSigmaEle);
-  histos->UserHistogram("Track","TPCnSigmaEle_RunNumber",";run;n#sigma_{ele}^{TPC}",
-                        GetVector(kRuns), GetVector(kSigmaEle), AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kTPCnSigmaEle);
+  // histos->UserHistogram("Track","TPCnSigmaEle_Nacc",";N_{acc}; n#sigma_{ele}^{TPC}",
+  //                       BinsToVector(100,0.,5000.), GetVector(kSigmaEle), AliDielectronVarManager::kNacc,AliDielectronVarManager::kTPCnSigmaEle);
+  // histos->UserHistogram("Track","TPCnSigmaEle_RefMultTPConly",";N_{TPC ref}; n#sigma_{ele}^{TPC}",
+  //                       BinsToVector(100,0.,5000.), GetVector(kSigmaEle), AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCnSigmaEle);
+  // histos->UserHistogram("Track","TPCnSigmaEle_RunNumber",";run;n#sigma_{ele}^{TPC}",
+  //                       GetVector(kRuns), GetVector(kSigmaEle), AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","TPCnSigmaPio_P",";p_{in} (GeV/c);n#sigma_{pion}^{TPC}",
                         GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio);
-  histos->UserHistogram("Track","TPCnSigmaKao_P",";p_{in} (GeV/c);n#sigma_{kaon}^{TPC}",
-                        GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
+  // histos->UserHistogram("Track","TPCnSigmaKao_P",";p_{in} (GeV/c);n#sigma_{kaon}^{TPC}",
+  //                       GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
+  histos->UserHistogram("Track","TPCnSigmaEle_Eta",";Eta;n#sigma_{ele}^{TPC};p_{in} (GeV/c)",
+                        GetVector(kEta3D), GetVector(kSigmaEle), AliDielectronVarManager::kEta, AliDielectronVarManager::kTPCnSigmaEle);
+  histos->UserHistogram("Track","TPCnSigmaEle_Phi",";Phi;n#sigma_{ele}^{TPC};p_{in} (GeV/c)",
+                        GetVector(kEta3D), GetVector(kSigmaEle), AliDielectronVarManager::kPhi, AliDielectronVarManager::kTPCnSigmaEle);
 
-  if (isQAtask) {
-    histos->UserHistogram("Track","TPC_dEdx_Eta",";Eta;TPC signal (arb units)",
-                          GetVector(kEta2D), GetVector(kTPCdEdx), AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal);
-    histos->UserHistogram("Track","TPC_dEdx_Eta_P",";Eta;TPC signal (arb units);p_{in} (GeV/c)",
-                          GetVector(kEta3D), GetVector(kTPCdEdx), GetVector(kP2D),
-                          AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal,AliDielectronVarManager::kPIn);
-    histos->UserHistogram("Track","TPC_dEdx_P_RunNumber",";p_{in} (GeV/c);TPC signal (arb units);run",
-                          GetVector(kP2D), GetVector(kTPCdEdx), GetVector(kRuns),
-                          AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,AliDielectronVarManager::kRunNumber);
-    histos->UserHistogram("Track","TPCnSigmaEle_P_dEdx",";p_{in} (GeV/c);n#sigma_{ele}^{TPC};TPC signal (arb units)",
-                          GetVector(kP2D), GetVector(kSigmaEle), GetVector(kTPCdEdx),
-                          AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kTPCsignal);
-
-    histos->UserHistogram("Track","TPCnSigmaEle_Eta_P",";Eta;n#sigma_{ele}^{TPC};p_{in} (GeV/c)",
-                          GetVector(kEta3D), GetVector(kSigmaEle), GetVector(kP2D),
-                          AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kPIn);
-    histos->UserHistogram("Track","TPCnSigmaEle_Eta_Nacc",";Eta;n#sigma_{ele}^{TPC};N_{acc}",
-                          GetVector(kEta3D), GetVector(kSigmaEle), BinsToVector(100,0.,5000.),
-                          AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kNacc);
-    histos->UserHistogram("Track","TPCnSigmaEle_Eta_RefMultTPConly",";Eta;n#sigma_{ele}^{TPC};N_{TPC ref}",
-                          GetVector(kEta3D), GetVector(kSigmaEle), BinsToVector(100,0.,5000.),
-                          AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRefMultTPConly);
-    histos->UserHistogram("Track","TPCnSigmaEle_Eta_RunNumber",";Eta;n#sigma_{ele}^{TPC};run",
-                          GetVector(kEta3D), GetVector(kSigmaEle), GetVector(kRuns),
-                          AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRunNumber);
-    histos->UserHistogram("Track","TPCnSigmaEle_RefMultTPConly_RunNumber",";N_{TPC ref};n#sigma_{ele}^{TPC};run",
-                          BinsToVector(100,0.,5000.), GetVector(kSigmaEle), GetVector(kRuns),
-                          AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRunNumber);
-    histos->UserHistogram("Track","TPCnSigmaEle_RefMultTPConly_Nacc",";N_{TPC ref};n#sigma_{ele}^{TPC};N_{acc}",
-                          BinsToVector(100,0.,5000.), GetVector(kSigmaEle), BinsToVector(100,0.,5000.),
-                          AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kNacc);
-
-    histos->UserHistogram("Track","TPCnSigmaPio_P",";p_{in} (GeV/c);n#sigma_{pion}^{TPC}",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio);
-    histos->UserHistogram("Track","TPCnSigmaKao_P",";p_{in} (GeV/c);n#sigma_{kaon}^{TPC}",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
-    histos->UserHistogram("Track","TPCnSigmaPro_P",";p_{in} (GeV/c);n#sigma_{proton}^{TPC}",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro);
-    histos->UserHistogram("Track","TPCnSigmaKao_Eta",";Eta;n#sigma_{kaon}^{TPC}",
-                          GetVector(kEta2D), GetVector(kSigmaOther), AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaKao);
-  }
+  // if (isQAtask) {
+  //   histos->UserHistogram("Track","TPC_dEdx_Eta",";Eta;TPC signal (arb units)",
+  //                         GetVector(kEta2D), GetVector(kTPCdEdx), AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal);
+  //   histos->UserHistogram("Track","TPC_dEdx_Eta_P",";Eta;TPC signal (arb units);p_{in} (GeV/c)",
+  //                         GetVector(kEta3D), GetVector(kTPCdEdx), GetVector(kP2D),
+  //                         AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCsignal,AliDielectronVarManager::kPIn);
+  //   histos->UserHistogram("Track","TPC_dEdx_P_RunNumber",";p_{in} (GeV/c);TPC signal (arb units);run",
+  //                         GetVector(kP2D), GetVector(kTPCdEdx), GetVector(kRuns),
+  //                         AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal,AliDielectronVarManager::kRunNumber);
+  //   histos->UserHistogram("Track","TPCnSigmaEle_P_dEdx",";p_{in} (GeV/c);n#sigma_{ele}^{TPC};TPC signal (arb units)",
+  //                         GetVector(kP2D), GetVector(kSigmaEle), GetVector(kTPCdEdx),
+  //                         AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kTPCsignal);
+  //
+  //   histos->UserHistogram("Track","TPCnSigmaEle_Eta_Nacc",";Eta;n#sigma_{ele}^{TPC};N_{acc}",
+  //                         GetVector(kEta3D), GetVector(kSigmaEle), BinsToVector(100,0.,5000.),
+  //                         AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kNacc);
+  //   histos->UserHistogram("Track","TPCnSigmaEle_Eta_RefMultTPConly",";Eta;n#sigma_{ele}^{TPC};N_{TPC ref}",
+  //                         GetVector(kEta3D), GetVector(kSigmaEle), BinsToVector(100,0.,5000.),
+  //                         AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRefMultTPConly);
+  //   histos->UserHistogram("Track","TPCnSigmaEle_Eta_RunNumber",";Eta;n#sigma_{ele}^{TPC};run",
+  //                         GetVector(kEta3D), GetVector(kSigmaEle), GetVector(kRuns),
+  //                         AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRunNumber);
+  //   histos->UserHistogram("Track","TPCnSigmaEle_RefMultTPConly_RunNumber",";N_{TPC ref};n#sigma_{ele}^{TPC};run",
+  //                         BinsToVector(100,0.,5000.), GetVector(kSigmaEle), GetVector(kRuns),
+  //                         AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kRunNumber);
+  //   histos->UserHistogram("Track","TPCnSigmaEle_RefMultTPConly_Nacc",";N_{TPC ref};n#sigma_{ele}^{TPC};N_{acc}",
+  //                         BinsToVector(100,0.,5000.), GetVector(kSigmaEle), BinsToVector(100,0.,5000.),
+  //                         AliDielectronVarManager::kRefMultTPConly,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kNacc);
+  //
+  //   histos->UserHistogram("Track","TPCnSigmaPio_P",";p_{in} (GeV/c);n#sigma_{pion}^{TPC}",
+  //                         GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio);
+  //   histos->UserHistogram("Track","TPCnSigmaKao_P",";p_{in} (GeV/c);n#sigma_{kaon}^{TPC}",
+  //                         GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
+  //   histos->UserHistogram("Track","TPCnSigmaPro_P",";p_{in} (GeV/c);n#sigma_{proton}^{TPC}",
+  //                         GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro);
+  //   histos->UserHistogram("Track","TPCnSigmaKao_Eta",";Eta;n#sigma_{kaon}^{TPC}",
+  //                         GetVector(kEta2D), GetVector(kSigmaOther), AliDielectronVarManager::kEta,AliDielectronVarManager::kTPCnSigmaKao);
+  // }
 
   // TRD
   // TRD variables need lot of computing time. since a performance update by Julian, they will not be computed if not needed! (status 7.3.14)
@@ -332,37 +450,38 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //                        GetVector(kP2D), 100,0.,1.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTRDprobPio);
 
   // TOF
-  histos->UserHistogram("Track","TOFbeta_P",";p_{in} (GeV/c);TOF beta",
-                        GetVector(kP2D), BinsToVector(120,0.,1.2) ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta);
+  // histos->UserHistogram("Track","TOFbeta_P",";p_{in} (GeV/c);TOF beta",
+  //                       GetVector(kP2D), BinsToVector(120,0.,1.2) ,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFbeta);
   histos->UserHistogram("Track","TOFnSigmaEle_P",";p_{in} (GeV/c);TOF number of sigmas Electrons",
                         GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle);
-  if (isQAtask) {
-    histos->UserHistogram("Track","TOFnSigmaPio_P",";p_{in} (GeV/c);TOF number of sigmas Pions",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPio);
-    histos->UserHistogram("Track","TOFnSigmaKao_P",";p_{in} (GeV/c);TOF number of sigmas Kaons",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaKao);
-    histos->UserHistogram("Track","TOFnSigmaPro_P",";p_{in} (GeV/c);TOF number of sigmas Protons",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro);
-  }
-  // 2D-PID
-  if (isQAtask) {
-    histos->UserHistogram("Track","PIn_TPCnSigmaEle_ITSnSigmaEle",";p_{in} (GeV/c);n#sigma_{ele}^{TPC};n#sigma_{ele}^{ITS}",
-                          50,0.,2.5, 160,-12.,20., 150,-10.,20.,
-                          AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kITSnSigmaEle);
-    histos->UserHistogram("Track","PIn_TPCnSigmaEle_TOFnSigmaEle",";p_{in} (GeV/c);n#sigma_{ele}^{TPC};TOF number of sigmas Electrons",
-                          50,0.,2.5, 160,-12.,20., 50,-5.,5.,
-                          AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kTOFnSigmaEle);
-  }
+  // if (isQAtask) {
+  //   histos->UserHistogram("Track","TOFnSigmaPio_P",";p_{in} (GeV/c);TOF number of sigmas Pions",
+  //                         GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPio);
+  //   histos->UserHistogram("Track","TOFnSigmaKao_P",";p_{in} (GeV/c);TOF number of sigmas Kaons",
+  //                         GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaKao);
+  //   histos->UserHistogram("Track","TOFnSigmaPro_P",";p_{in} (GeV/c);TOF number of sigmas Protons",
+  //                         GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaPro);
+  // }
+  // // 2D-PID
+  // if (isQAtask) {
+  //   histos->UserHistogram("Track","PIn_TPCnSigmaEle_ITSnSigmaEle",";p_{in} (GeV/c);n#sigma_{ele}^{TPC};n#sigma_{ele}^{ITS}",
+  //                         50,0.,2.5, 160,-12.,20., 150,-10.,20.,
+  //                         AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kITSnSigmaEle);
+  //   histos->UserHistogram("Track","PIn_TPCnSigmaEle_TOFnSigmaEle",";p_{in} (GeV/c);n#sigma_{ele}^{TPC};TOF number of sigmas Electrons",
+  //                         50,0.,2.5, 160,-12.,20., 50,-5.,5.,
+  //                         AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,AliDielectronVarManager::kTOFnSigmaEle);
+  // }
 
   // Eta and Phi
   histos->UserHistogram("Track","Eta","",200,-2,2,AliDielectronVarManager::kEta);
   histos->UserHistogram("Track","Phi","",120,0.,TMath::TwoPi(),AliDielectronVarManager::kPhi);
+  histos->UserHistogram("Track","Phi_Pt","",200,0,10.,120,0.,TMath::TwoPi(),AliDielectronVarManager::kPt, AliDielectronVarManager::kPhi);
   histos->UserHistogram("Track","Eta_Phi","",100,-1,1,120,0,TMath::TwoPi(),AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
 
   // DCA
   histos->UserHistogram("Track","dXY","",200,-2.,2.,AliDielectronVarManager::kImpactParXY);
   histos->UserHistogram("Track","dZ" ,"",400,-4.,4.,AliDielectronVarManager::kImpactParZ);
-  histos->UserHistogram("Track","dXY_dZ","",100,-1.,1.,150,-3.,3.,AliDielectronVarManager::kImpactParXY,AliDielectronVarManager::kImpactParZ);
+  // histos->UserHistogram("Track","dXY_dZ","",100,-1.,1.,150,-3.,3.,AliDielectronVarManager::kImpactParXY,AliDielectronVarManager::kImpactParZ);
 
   // Quality
   histos->UserHistogram("Track","TPCcrossedRowsOverFindable",";TPC crossed rows over findable clusters;#tracks",120,0.,1.2,AliDielectronVarManager::kNFclsTPCfCross);
@@ -375,26 +494,26 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   histos->UserHistogram("Track","TPCclsDiff",";TPC cluster difference;#tracks",200,0,20.,AliDielectronVarManager::kTPCclsDiff);
   histos->UserHistogram("Track","TPCsignalN",";TPC number PID clusters;#tracks",160,-0.5,159.5,AliDielectronVarManager::kTPCsignalN);
 
-  if (isQAtask) {
-    histos->UserHistogram("Track","TPCcrossedRows_TPCnCls",";TPC number clusters;TPC crossed rows",
-                          160,-0.5,159.5, 160,-0.5,159.5, AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
-    histos->UserHistogram("Track","TPCcrossedRows_Pt",";Pt [GeV];TPC crossed rows",
-                          GetVector(kP2D), BinsToVector(160,-0.5,159.5), AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
-    histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Pt",";Pt [GeV];TPC crossed rows over findable",
-                          GetVector(kP2D), BinsToVector(120,0.,1.2), AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCfCross);
-    histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Eta",";Eta;TPC crossed rows over findable",
-                          100,-1,1, 120,0.,1.2, AliDielectronVarManager::kEta,AliDielectronVarManager::kNFclsTPCfCross);
-    histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Phi",";Phi;TPC crossed rows over findable",
-                          120,0.,TMath::TwoPi(), 120,0.,1.2, AliDielectronVarManager::kPhi,AliDielectronVarManager::kNFclsTPCfCross);
-  }
+  // if (isQAtask) {
+  //   histos->UserHistogram("Track","TPCcrossedRows_TPCnCls",";TPC number clusters;TPC crossed rows",
+  //                         160,-0.5,159.5, 160,-0.5,159.5, AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
+  //   histos->UserHistogram("Track","TPCcrossedRows_Pt",";Pt [GeV];TPC crossed rows",
+  //                         GetVector(kP2D), BinsToVector(160,-0.5,159.5), AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
+  //   histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Pt",";Pt [GeV];TPC crossed rows over findable",
+  //                         GetVector(kP2D), BinsToVector(120,0.,1.2), AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCfCross);
+  //   histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Eta",";Eta;TPC crossed rows over findable",
+  //                         100,-1,1, 120,0.,1.2, AliDielectronVarManager::kEta,AliDielectronVarManager::kNFclsTPCfCross);
+  //   histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Phi",";Phi;TPC crossed rows over findable",
+  //                         120,0.,TMath::TwoPi(), 120,0.,1.2, AliDielectronVarManager::kPhi,AliDielectronVarManager::kNFclsTPCfCross);
+  // }
 
   if (!isQAtask)
   {
     //add histograms to Pair classes
-    histos->UserHistogram("Pair","InvMass","",500,0.,5.,AliDielectronVarManager::kM);
-    histos->UserHistogram("Pair","PairPt","",160,0.,8., AliDielectronVarManager::kPt);
-    histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
-    histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
+    // histos->UserHistogram("Pair","InvMass","",500,0.,5.,AliDielectronVarManager::kM);
+    // histos->UserHistogram("Pair","PairPt","",160,0.,8., AliDielectronVarManager::kPt);
+    // histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY);
+    // histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle);
 
     //2D and 3D histograms
     histos->UserHistogram("Pair","InvMass_PairPt",";Inv. Mass [GeV];Pair Pt [GeV];#pairs",
@@ -406,12 +525,12 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass [GeV];Pair Pt [GeV];PhiV",
                           GetVector(kMee), GetVector(kPtee), GetVector(kPhiV),
                           AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-    histos->UserHistogram("Pair","InvMass_PairPt_OpeningAngle",";Inv. Mass [GeV];Pair Pt [GeV];Opening Angle",
-                          GetVector(kMee), GetVector(kPtee), GetVector(kOpAng),
-                          AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
-    histos->UserHistogram("Pair","InvMass_PhivPair_OpeningAngle",";Inv. Mass [GeV];PhiV;Opening Angle",
-                          GetVector(kMee500), GetVector(kPhiV), GetVector(kOpAng2),
-                          AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair, AliDielectronVarManager::kOpeningAngle);
+    // histos->UserHistogram("Pair","InvMass_PairPt_OpeningAngle",";Inv. Mass [GeV];Pair Pt [GeV];Opening Angle",
+    //                       GetVector(kMee), GetVector(kPtee), GetVector(kOpAng),
+    //                       AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
+    // histos->UserHistogram("Pair","InvMass_PhivPair_OpeningAngle",";Inv. Mass [GeV];PhiV;Opening Angle",
+    //                       GetVector(kMee500), GetVector(kPhiV), GetVector(kOpAng2),
+    //                       AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair, AliDielectronVarManager::kOpeningAngle);
 
     //opening angle and PhiV
     histos->UserHistogram("Pair","InvMass_OpeningAngle",";Inv. Mass [GeV];Opening Angle;#pairs",
@@ -420,43 +539,43 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Pair","InvMass_PhivPair",";Inv. Mass [GeV];PhiV;#pairs",
                           GetVector(kMee), GetVector(kPhiV),
                           AliDielectronVarManager::kM, AliDielectronVarManager::kPhivPair);
-    histos->UserHistogram("Pair","PairPt_OpeningAngle",";Pair Pt [GeV];Opening Angle;#pairs",
-                          GetVector(kPtee), GetVector(kOpAng),
-                          AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
-    histos->UserHistogram("Pair","PairPt_PhivPair",";Pair Pt [GeV];PhiV;#pairs",
-                          GetVector(kPtee), GetVector(kPhiV),
-                          AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-    histos->UserHistogram("Pair","OpeningAngle_PhivPair",";Opening Angle;PhiV;#pairs",
-                          GetVector(kOpAng), GetVector(kPhiV),
-                          AliDielectronVarManager::kOpeningAngle, AliDielectronVarManager::kPhivPair);
+    // histos->UserHistogram("Pair","PairPt_OpeningAngle",";Pair Pt [GeV];Opening Angle;#pairs",
+    //                       GetVector(kPtee), GetVector(kOpAng),
+    //                       AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
+    // histos->UserHistogram("Pair","PairPt_PhivPair",";Pair Pt [GeV];PhiV;#pairs",
+    //                       GetVector(kPtee), GetVector(kPhiV),
+    //                       AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
+    // histos->UserHistogram("Pair","OpeningAngle_PhivPair",";Opening Angle;PhiV;#pairs",
+    //                       GetVector(kOpAng), GetVector(kPhiV),
+    //                       AliDielectronVarManager::kOpeningAngle, AliDielectronVarManager::kPhivPair);
 
     //centrality
-    histos->UserHistogram("Pair","InvMass_Centrality",";Inv. Mass [GeV];Centrality;#pairs",
-                          GetVector(kMee), BinsToVector(102,-1,101),
-                          AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew);
-    histos->UserHistogram("Pair","PairPt_Centrality",";Pair Pt [GeV];Centrality;#pairs",
-                          GetVector(kPtee), BinsToVector(102,-1,101),
-                          AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
+    // histos->UserHistogram("Pair","InvMass_Centrality",";Inv. Mass [GeV];Centrality;#pairs",
+    //                       GetVector(kMee), BinsToVector(102,-1,101),
+    //                       AliDielectronVarManager::kM, AliDielectronVarManager::kCentralityNew);
+    // histos->UserHistogram("Pair","PairPt_Centrality",";Pair Pt [GeV];Centrality;#pairs",
+    //                       GetVector(kPtee), BinsToVector(102,-1,101),
+    //                       AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
 
 
 
     //add histograms to Track classes
     histos->UserHistogram("Pre","Pt",";Pt [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPt);
-    histos->UserHistogram("Pre","Px",";Px [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPx);
-    histos->UserHistogram("Pre","Py",";Py [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPy);
-    histos->UserHistogram("Pre","Pz",";Pz [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPz);
+    // histos->UserHistogram("Pre","Px",";Px [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPx);
+    // histos->UserHistogram("Pre","Py",";Py [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPy);
+    // histos->UserHistogram("Pre","Pz",";Pz [GeV];#tracks",200,0,10.,AliDielectronVarManager::kPz);
 
-    histos->UserHistogram("Pre","ITS_dEdx_P",";p (GeV/c);ITS signal (arb units)",
-                          GetVector(kP2D), BinsToVector(700,0.,700.), AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal);
-    histos->UserHistogram("Pre","TPC_dEdx_P",";p_{in} (GeV/c);TPC signal (arb units)",
-                          GetVector(kP2D), BinsToVector(120,0.,120.), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal);
+    // histos->UserHistogram("Pre","ITS_dEdx_P",";p (GeV/c);ITS signal (arb units)",
+    //                       GetVector(kP2D), BinsToVector(700,0.,700.), AliDielectronVarManager::kP,AliDielectronVarManager::kITSsignal);
+    // histos->UserHistogram("Pre","TPC_dEdx_P",";p_{in} (GeV/c);TPC signal (arb units)",
+    //                       GetVector(kP2D), BinsToVector(120,0.,120.), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCsignal);
 
     histos->UserHistogram("Pre","ITSnSigmaEle_P",";p (GeV/c);n#sigma_{ele}^{ITS}",
                           GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle);
-    histos->UserHistogram("Pre","ITSnSigmaPio_P",";p (GeV/c);n#sigma_{pion}^{ITS}",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPio);
-    histos->UserHistogram("Pre","ITSnSigmaKao_P",";p (GeV/c);n#sigma_{kaon}^{ITS}",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaKao);
+    // histos->UserHistogram("Pre","ITSnSigmaPio_P",";p (GeV/c);n#sigma_{pion}^{ITS}",
+    //                       GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPio);
+    // histos->UserHistogram("Pre","ITSnSigmaKao_P",";p (GeV/c);n#sigma_{kaon}^{ITS}",
+    //                       GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaKao);
     //histos->UserHistogram("Pre","ITSnSigmaPro_P",";p (GeV/c);n#sigma_{proton}^{ITS}",
     //                      GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaPro);
 
@@ -464,10 +583,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
                           GetVector(kP2D), GetVector(kSigmaEle), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle);
     histos->UserHistogram("Pre","TPCnSigmaPio_P",";p_{in} (GeV/c);n#sigma_{pion}^{TPC}",
                           GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio);
-    histos->UserHistogram("Pre","TPCnSigmaKao_P",";p_{in} (GeV/c);n#sigma_{kaon}^{TPC}",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
-    histos->UserHistogram("Pre","TPCnSigmaPro_P",";p_{in} (GeV/c);n#sigma_{proton}^{TPC}",
-                          GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro);
+    // histos->UserHistogram("Pre","TPCnSigmaKao_P",";p_{in} (GeV/c);n#sigma_{kaon}^{TPC}",
+    //                       GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
+    // histos->UserHistogram("Pre","TPCnSigmaPro_P",";p_{in} (GeV/c);n#sigma_{proton}^{TPC}",
+    //                       GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro);
 
   }// end: (!isQAtask)
 
@@ -488,13 +607,13 @@ TVectorD *GetVector(Int_t var)
 
     case kSigmaEle:
       if (isQAtask) return AliDielectronHelper::MakeLinBinning(100,-10.,10.);
-      else          return AliDielectronHelper::MakeLinBinning( 50, -5., 5.);
+      else          return AliDielectronHelper::MakeLinBinning(100,-10.,10.);
     case kSigmaOther:
       if (isQAtask) return AliDielectronHelper::MakeLinBinning(100,-20.,20.);
       else          return AliDielectronHelper::MakeLinBinning( 50,-10.,10.);
     case kTPCdEdx:
-      if (isQAtask) return AliDielectronHelper::MakeLinBinning(120,  0.,120.);
-      else          return AliDielectronHelper::MakeLinBinning( 50, 50.,100.);
+      if (isQAtask) return AliDielectronHelper::MakeLinBinning(140,  0.,140.);
+      else          return AliDielectronHelper::MakeLinBinning(140,  0.,140.);
 
     case kMee:    return AliDielectronHelper::MakeArbitraryBinning("0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,
                                                                    0.10, 0.14, 0.18, 0.22, 0.26, 0.30, 0.34, 0.38, 0.42, 0.46,
@@ -517,10 +636,13 @@ TVectorD *GetVector(Int_t var)
                                                                    0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,
                                                                    1.00, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, 1.40, 1.45,
                                                                    1.50, 1.55, 1.60, 1.65, 1.70, 1.75, 1.80, 1.85, 1.90, 1.95,
-                                                                   2.00, 2.10, 2.20, 2.30, 2.40,
-                                                                   2.50, 2.60, 2.70, 2.80, 2.90,
-                                                                   3.00, 3.10, 3.20, 3.30, 3.40,
-                                                                   3.50, 4.00, 4.50, 5.00, 5.50, 6.00, 6.50, 7.00, 7.50, 8.00
+                                                                   2.00, 2.05, 2.10, 2.15, 2.20, 2.25, 2.30, 2.35, 2.40, 2.45,
+                                                                   2.50, 2.55, 2.60, 2.65, 2.70, 2.75, 2.80, 2.85, 2.90, 2.95,
+                                                                   3.00, 3.10, 3.20, 3.30, 3.40, 3.50, 3.60, 3.70, 3.80, 3.90,
+                                                                   4.00, 4.10, 4.20, 4.30, 4.40, 4.50, 4.60, 4.70, 4.80, 4.90,
+                                                                   5.00, 5.25, 5.50, 5.75,
+                                                                   6.00, 6.25, 6.50, 6.75,
+                                                                   7.00, 7.5, 8.00
                                                                    ");
       //2.00, 2.05, 2.10, 2.15, 2.20, 2.25, 2.30, 2.35, 2.40, 2.45,
       //2.50, 2.55, 2.60, 2.65, 2.70, 2.75, 2.80, 2.85, 2.90, 2.95,
