@@ -213,6 +213,6 @@ void qatrdAddMetadata(TTree*tree, Int_t verbose){
   if ((verbose&4)>0){
     AliTreePlayer::selectMetadata(tree, "[class==\"\"]",0)->Print();
   }
-  if (verbode>0) ::Info("qatrdAddMetadata","End");
+  if (verbose>0) ::Info("qatrdAddMetadata","End");
 
 }

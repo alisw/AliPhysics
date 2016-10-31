@@ -57,8 +57,14 @@ AliExternalInfo::~AliExternalInfo() {}
 /// \param verbose        - verbosity
 void AliExternalInfo::ReadConfig( TString configLocation, Int_t verbose){
 
+  // Prepend config files on first load
   if (fConfigLocation.Length()==0){
-    configLocation=AliExternalInfo::fgkDefaultConfig+";AliExternalInfo.cfg;"+configLocation;
+    // Check if local config exists
+    if(!gSystem->AccessPathName("AliExternalInfo.cfg")){ // false if file exists
+      configLocation=AliExternalInfo::fgkDefaultConfig+";AliExternalInfo.cfg;"+configLocation;
+    } else{
+      configLocation=AliExternalInfo::fgkDefaultConfig+configLocation;
+    }
   }
 
   TObjArray *configArray = configLocation.Tokenize(";");
