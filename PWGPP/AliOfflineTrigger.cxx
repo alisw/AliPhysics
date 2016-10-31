@@ -124,7 +124,7 @@ void AliOfflineTrigger::DumpGIDRAWReader(const char *rawFile){
   TPRegexp reg1(".root$");
   reg1.Substitute(chunkName,"");
 
-  ofstream file_out("gidrawReader.list");
+  std::ofstream file_out("gidrawReader.list");
   //  file_out<<"gid/D:eventCounter/D:period/D:orbit/D:bcid/D:fname/C:eventID/D\n";  // print header
   file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
   Int_t counter=0;
@@ -194,7 +194,7 @@ void  AliOfflineTrigger::DumpGIDRAWTree(const char *rawFile){
   }
   Int_t nevents=tree->GetEntries();
 
-  ofstream file_out("gidrawTree.list");
+  std::ofstream file_out("gidrawTree.list");
   //  file_out<<"gid/D:eventCounter/D:period/D:orbit/D:bcid/D:fname/C:eventID/D\n";  // print headaer
   file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
   
@@ -263,7 +263,7 @@ void  AliOfflineTrigger::DumpGIDESD(const char * chinput, const char *trigger,co
   SetTriggerAlias(esdTree,trigger);
   entries=esdTree->Draw("gid:Entry$:fPeriodNumber:fOrbitNumber:fBunchCrossNumber:fEventNumberInFile:fTimeStamp",trigger,"goffpara");
   //
-  ofstream file_out(choutput);
+  std::ofstream file_out(choutput);
   file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
 
   if (entries>0) for (Int_t i=0;i<entries; i++){    
