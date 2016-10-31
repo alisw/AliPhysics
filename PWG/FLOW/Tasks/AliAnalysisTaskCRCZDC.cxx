@@ -1082,15 +1082,13 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       if(RunNum>=245829) znaEnergy *= 8./7.;
       fFlowEvent->SetZNCEnergy(towZNC[0]);
       fFlowEvent->SetZNAEnergy(towZNA[0]);
-//      fZNCTower[RunBin]->Fill(centrperc,towZNC[0]);
-//      fZNATower[RunBin]->Fill(centrperc,towZNC[0]-towZNC[1]-towZNC[3]-towZNC[4]);
+      
+      const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+      const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+      Float_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC;
+      Float_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA;
       
       if (fUseMCCen) {
-        const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-        const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-        const Float_t alpha=0.395;
-        Float_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC;
-        Float_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA;
         for(Int_t i=0; i<4; i++){
           wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
           numXZNC += x[i]*wZNC;
@@ -1122,10 +1120,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           xyZNA[0] = xyZNA[1] = 999.;
         }
       } else {
-        const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-        const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-        Float_t numXZNC=0., numYZNC=0., denZNC=0., wZNC;
-        Float_t numXZNA=0., numYZNA=0., denZNA=0., wZNA;
         for(Int_t i=0; i<4; i++) {
           if(towZNC[i+1]>0.) {
             wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
@@ -1158,19 +1152,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         }
       }
       
-      Float_t MulA=0., MulC=0.;
-      for(Int_t i=0; i<4; i++) {
-        if(towZNC[i+1]>0.) {
-          MulC += TMath::Power(towZNC[i+1], fZDCGainAlpha);
-        }
-        if(towZNA[i+1]>0.) {
-          MulA += TMath::Power(towZNA[i+1], fZDCGainAlpha);
-        }
-      }
-      
       fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
       fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
-      fFlowEvent->SetZDC2Qsub(xyZNC,MulC,xyZNA,MulA);
+      fFlowEvent->SetZDC2Qsub(xyZNC,wZNC,xyZNA,wZNA);
       
       // ******************************************************************************
       
