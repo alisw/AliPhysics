@@ -533,6 +533,15 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"QnFMDAx_FMDCyDiffH2",       "FMDA^{Qn}_{x}-FMDC^{Qn}_{y}",                 ""},
   {"QnFMDAy_FMDCxDiffH2",       "FMDA^{Qn}_{y}-FMDC^{Qn}_{x}",                 ""},
   {"QnFMDAy_FMDCyDiffH2",       "FMDA^{Qn}_{y}-FMDC^{Qn}_{y}",                 ""},
+//
+  {"QnDeltaPhiTPCrpH2",         "#phi^{pair}-#Psi^{TPC}",                     ""},
+  {"QnDeltaPhiV0ArpH2",         "#phi^{pair}-#Psi^{V0A}",                     ""},
+  {"QnDeltaPhiV0CrpH2",         "#phi^{pair}-#Psi^{V0C}",                     ""},
+  {"QnDeltaPhiSPDrpH2",         "#phi^{pair}-#Psi^{SPD}",                     ""},
+  {"QnTPCrpH2FlowV2",           "cos(2(#phi^{pair}-#Psi^{TPC}))",             ""},
+  {"QnV0ArpH2FlowV2",           "cos(2(#phi^{pair}-#Psi^{V0A}))",             ""},
+  {"QnV0CrpH2FlowV2",           "cos(2(#phi^{pair}-#Psi^{V0C}))",             ""},
+  {"QnSPDrpH2FlowV2",           "cos(2(#phi^{pair}-#Psi^{SPD}))",             ""},
   // End of Eventplane variables from Qn Framework
 
   {"NTrk",                   "N_{trk}",                                            ""},
