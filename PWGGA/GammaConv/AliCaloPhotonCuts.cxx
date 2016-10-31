@@ -3057,6 +3057,11 @@ Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
     if (!fUseEtaCut) fUseEtaCut=1;
     fMinEtaCut = -0.13;
     break;
+  case 5:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=-0.7;
+    break;
+    
   default:
     AliError(Form("MinEta Cut not defined %d",minEta));
     return kFALSE;
@@ -3088,10 +3093,11 @@ Bool_t AliCaloPhotonCuts::SetMaxEtaCut(Int_t maxEta)
   case 4: 
     if (!fUseEtaCut) fUseEtaCut=1;
     fMaxEtaCut= 0.13;
+    break;    
+  case 5:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=0.7;
     break;
-    
-    
-    
   default:
     AliError(Form("MaxEta Cut not defined %d",maxEta));
     return kFALSE;
