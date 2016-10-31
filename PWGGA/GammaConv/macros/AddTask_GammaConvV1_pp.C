@@ -924,7 +924,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
-    if (trainConfig > 106 && trainConfig < 115 || trainConfig == 78){
+    if (trainConfig > 106 && trainConfig < 115 || trainConfig == 78 || trainConfig == 89){
         enableClustersForTrigger  = kTRUE;
         analysisClusterCuts[i]    = new AliCaloPhotonCuts();
         analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
