@@ -3450,7 +3450,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // VZEROA Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkV0A = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROA","latest","raw");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkV0A = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROA","latest","latest");
   TVector2 *qVectorV0A = new TVector2(-200.,-200.);
   if(qVecQnFrameworkV0A != NULL){
     bV0AqVector = kTRUE;
@@ -3461,7 +3461,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // VZEROC Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkV0C = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROC","latest","raw");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkV0C = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROC","latest","latest");
   TVector2 *qVectorV0C = new TVector2(-200.,-200.);
   if(qVecQnFrameworkV0C != NULL){
     bV0CqVector = kTRUE;
@@ -3483,7 +3483,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // FMDA Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDA","latest","raw");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDA","latest","latest");
   TVector2 *qVectorFMDA = new TVector2(-200.,-200.);
   if(qVecQnFrameworkFMDA != NULL){
     bFMDAqVector = kTRUE;
@@ -3494,7 +3494,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // FMDC Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDC","latest","raw");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDC","latest","latest");
   TVector2 *qVectorFMDC = new TVector2(-200.,-200.);
   if(qVecQnFrameworkFMDC != NULL){
     bFMDCqVector = kTRUE;
