@@ -283,6 +283,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000013","1111141050032230000","0163403100000050"); // tm variation
     cuts.AddCut("80000013","1111141055032230000","0163403100000050"); // tm variation
     cuts.AddCut("80000013","1111141051032230000","0163403100000040"); // min opening angle 0.75 cell diag
+    cuts.AddCut("80000013","1111141051032230000","0163403100000050"); // min opening angle 1 cell diag
     cuts.AddCut("80000013","1111141051032230000","0163403100000060"); // min opening angle 2 cell diag
   
   //EMC7
@@ -312,6 +313,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80052013","1111141050032230000","0163403100000050"); // tm variation
     cuts.AddCut("80052013","1111141055032230000","0163403100000050"); // tm variation
     cuts.AddCut("80052013","1111141051032230000","0163403100000040"); // min opening angle 0.75 cell diag
+    cuts.AddCut("80052013","1111141051032230000","0163403100000050"); // min opening angle 1 cell diag
     cuts.AddCut("80052013","1111141051032230000","0163403100000060"); // min opening angle 2 cell diag
 
   //EG1
@@ -341,6 +343,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80083013","1111141050032230000","0163403100000050"); // tm variation
     cuts.AddCut("80083013","1111141055032230000","0163403100000050"); // tm variation
     cuts.AddCut("80083013","1111141051032230000","0163403100000040"); // min opening angle 0.75 cell diag
+    cuts.AddCut("80083013","1111141051032230000","0163403100000050"); // min opening angle 1 cell diag
     cuts.AddCut("80083013","1111141051032230000","0163403100000060"); // min opening angle 2 cell diag
    //EG2
   } else if(trainConfig == 70){ // default cutstring and first set of variations nonlinearity
@@ -369,6 +372,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80085013","1111141050032230000","0163403100000050"); // tm variation
     cuts.AddCut("80085013","1111141055032230000","0163403100000050"); // tm variation
     cuts.AddCut("80085013","1111141051032230000","0163403100000040"); // min opening angle 0.75 cell diag
+    cuts.AddCut("80085013","1111141051032230000","0163403100000050"); // min opening angle 1 cell diag
     cuts.AddCut("80085013","1111141051032230000","0163403100000060"); // min opening angle 2 cell diag
 
   //all default triggers
