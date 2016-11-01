@@ -1570,7 +1570,7 @@ Int_t  TStatToolkit::SetStatusAlias(TTree * tree, const char * expr, const char 
 
 */    
 void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCheck, Int_t verbose){  
-  const char* aType[4]={"Warning","Error","PhysAcc"};
+  const char* aType[4]={"Warning","Outlier","PhysAcc"};
   TObjArray *aTrendVars  = sTrendVars.Tokenize(";");
   Int_t entries= aTrendVars->GetEntries();
   const Int_t kMaxEntries=100;
@@ -1629,10 +1629,9 @@ void TStatToolkit::MakeAnchorAlias(TTree * tree, TString& sTrendVars, Int_t doCh
 ///    TString sCombinedStatus=";";
 ///    sCombinedStatus+="ncl,TPC.Anchor.meanTPCncl,TPC.Anchor.meanTPCnclF;";               // Status number of clusters and findable clusters
 ///    sCombinedStatus+="dcarResol,TPC.Anchor.dcarAP0,TPC.Anchor.dcarAP1,TPC.Anchor.dcarCP0,TPC.Anchor.dcarCP1;";  // Status: DCA resolution
-
 ///  ==============================================================
 void TStatToolkit::MakeCombinedAlias(TTree * tree, TString& sCombinedStatus, Bool_t doCheck, Int_t verbose ){
-  const char* aType[3]={"_Warning","_Error","_PhysAcc"};
+  const char* aType[3]={"_Warning","_Outlier","_PhysAcc"};
   TObjArray *aTrendStatus  = sCombinedStatus.Tokenize(";");
   Int_t entries= aTrendStatus->GetEntries();
   const Int_t kMaxEntries=100;
