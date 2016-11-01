@@ -300,6 +300,9 @@ private:
     Int_t   fTreeCascVarIsPhysicalPrimary; //!
     Int_t   fTreeCascVarPID;         //!
     
+    //Well, why not? Let's give it a shot
+    Int_t   fTreeCascVarSwappedPID;         //!
+    
 //===========================================================================================
 //   Histograms
 //===========================================================================================
