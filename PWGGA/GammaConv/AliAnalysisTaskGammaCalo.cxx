@@ -2378,28 +2378,30 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
       }
       
-      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(particle,AODMCTrackArray)){
-        if(particle->GetMother() >-1){
-          AliAODMCParticle *tmpMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother()));
-          if(tmpMother->GetMother() >-1){
-            AliAODMCParticle *tmpGrandMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(tmpMother->GetMother()));
-            if(tmpGrandMother->GetPdgCode() == 310) {
-              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
-            } else if (tmpGrandMother->GetPdgCode() == 130) {
-              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),1.,fWeightJetJetMC);
-            } else if (tmpGrandMother->GetPdgCode() == 3122) {
-              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),2.,fWeightJetJetMC);
-            } else if (tmpGrandMother->GetPdgCode() == 221) {
-              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),3.,fWeightJetJetMC);
+      if(!fDoLightOutput) {
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedAODMC(particle,AODMCTrackArray)){
+          if(particle->GetMother() >-1){
+            AliAODMCParticle *tmpMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(particle->GetMother()));
+            if(tmpMother->GetMother() >-1){
+              AliAODMCParticle *tmpGrandMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(tmpMother->GetMother()));
+              if(tmpGrandMother->GetPdgCode() == 310) {
+                fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
+              } else if (tmpGrandMother->GetPdgCode() == 130) {
+                fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),1.,fWeightJetJetMC);
+              } else if (tmpGrandMother->GetPdgCode() == 3122) {
+                fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),2.,fWeightJetJetMC);
+              } else if (tmpGrandMother->GetPdgCode() == 221) {
+                fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),3.,fWeightJetJetMC);
+              } else {
+                if( !(TMath::Abs(tmpMother->GetPdgCode()) == 11 && tmpGrandMother->GetPdgCode() == 22) )
+                  fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
+              }
             } else {
-              if( !(TMath::Abs(tmpMother->GetPdgCode()) == 11 && tmpGrandMother->GetPdgCode() == 22) )
-                fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
+              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
             }
           } else {
             fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
           }
-        } else {
-          fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
         }
       }
       
@@ -2581,22 +2583,24 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
       }
       
-      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(particle,fMCStack)){
-        if (particle->GetMother(0) > -1 && fMCStack->Particle(particle->GetMother(0))->GetMother(0) > -1) {
-          if (fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
-            fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
-          } else if (fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 130) {
-            fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),1.,fWeightJetJetMC);
-          } else if (fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 3122) {
-            fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),2.,fWeightJetJetMC);
-          } else if (fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 221) {
-            fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),3.,fWeightJetJetMC);
+      if(!fDoLightOutput) {
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedMC(particle,fMCStack)){
+          if (particle->GetMother(0) > -1 && fMCStack->Particle(particle->GetMother(0))->GetMother(0) > -1) {
+            if (fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
+              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),0.,fWeightJetJetMC);
+            } else if (fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 130) {
+              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),1.,fWeightJetJetMC);
+            } else if (fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 3122) {
+              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),2.,fWeightJetJetMC);
+            } else if (fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 221) {
+              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),3.,fWeightJetJetMC);
+            } else {
+              if ( !(TMath::Abs(fMCStack->Particle(particle->GetMother(0))->GetPdgCode()) == 11 && fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 22) )
+                fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
+            }
           } else {
-            if ( !(TMath::Abs(fMCStack->Particle(particle->GetMother(0))->GetPdgCode()) == 11 && fMCStack->Particle(fMCStack->Particle(particle->GetMother(0))->GetMother(0))->GetPdgCode() == 22) )
-              fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
+            fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
           }
-        } else {
-          fHistoMCAllSecondaryGammaPt[fiCut]->Fill(particle->Pt(),4.,fWeightJetJetMC);
         }
       }
   
