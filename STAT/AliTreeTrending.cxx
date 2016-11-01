@@ -38,6 +38,11 @@
 #include "TROOT.h"
 #include "AliTreeTrending.h"
 
+using std::cout;
+using std::cerr;
+using std::endl;
+
+
 
 ClassImp(AliTreeTrending)
 
