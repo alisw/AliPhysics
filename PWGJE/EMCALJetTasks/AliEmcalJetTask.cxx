@@ -24,6 +24,10 @@
 #include <AliVParticle.h>
 #include <AliEMCALGeometry.h>
 
+#include <AliAnalysisManager.h>
+#include <AliVEventHandler.h>
+#include <AliMultiInputEventHandler.h>
+
 #include "AliTLorentzVector.h"
 #include "AliEmcalJet.h"
 #include "AliEmcalParticle.h"
@@ -846,4 +850,152 @@ Bool_t AliEmcalJetTask::IsJetInDcal(Double_t eta, Double_t phi, Double_t r)
       return kTRUE;
   }
   return kFALSE;
+}
+
+/**
+ * Add an instance of this class to the analysis manager
+ * @param nTracks name of the track collection
+ * @param nClusters name of the calorimeter cluster collection
+ * @param jetAlgo jet finding algorithm (anti-kt, kt, etc.)
+ * @param radius jet resolution parameter (0.2, 0.4, tyc.)
+ * @param jetType full, charged or neutral
+ * @param minTrPt cut on the minimum transverse momentum of tracks
+ * @param minClPt cut on the minimum transverse momentum of calorimeter clusters
+ * @param ghostArea area of ghost particles (determines the jet area resolution)
+ * @param reco recombination scheme
+ * @param tag addtional information to be appended at the end of the output jet collection name
+ * @param minJetPt cut on the minimum jet pt
+ * @param lockTask lock the task - no further changes are possible if kTRUE
+ * @param bFillGhosts add ghosts particles among the jet constituents in the output
+ * @return a pointer to the new AliEmcalJetTask instance
+ */
+AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
+  const TString nTracks, const TString nClusters,
+  const AliJetContainer::EJetAlgo_t jetAlgo, const Double_t radius, const AliJetContainer::EJetType_t jetType,
+  const Double_t minTrPt, const Double_t minClPt,
+  const Double_t ghostArea, const AliJetContainer::ERecoScheme_t reco,
+  const TString tag, const Double_t minJetPt,
+  const Bool_t lockTask, const Bool_t bFillGhosts
+)
+{
+  // Get the pointer to the existing analysis manager via the static access method
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskEmcalJet", "No analysis manager to connect to.");
+    return 0;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler) {
+    ::Error("AddTaskEmcalJet", "This task requires an input event handler");
+    return 0;
+  }
+
+  EDataType_t dataType = kUnknownDataType;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString trackName(nTracks);
+  TString clusName(nClusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  AliParticleContainer* partCont = 0;
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
+    partCont = mcpartCont;
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+    partCont = trackCont;
+  }
+  else if (!trackName.IsNull()) {
+    partCont = new AliParticleContainer(trackName);
+  }
+  if (partCont) partCont->SetParticlePtCut(minTrPt);
+
+  AliClusterContainer* clusCont = 0;
+  if (!clusName.IsNull()) {
+    clusCont = new AliClusterContainer(clusName);
+    clusCont->SetClusECut(0.);
+    clusCont->SetClusPtCut(0.);
+    clusCont->SetClusHadCorrEnergyCut(minClPt);
+    clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
+
+  switch (jetType) {
+  case AliJetContainer::kChargedJet:
+    if (partCont) partCont->SetCharge(AliParticleContainer::kCharged);
+    break;
+  case AliJetContainer::kNeutralJet:
+    if (partCont) partCont->SetCharge(AliParticleContainer::kNeutral);
+    break;
+  default:
+    break;
+  }
+
+  TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, partCont, clusCont, tag);
+
+  Printf("Jet task name: %s", name.Data());
+
+  AliEmcalJetTask* mgrTask = static_cast<AliEmcalJetTask *>(mgr->GetTask(name.Data()));
+  if (mgrTask) return mgrTask;
+
+  AliEmcalJetTask* jetTask = new AliEmcalJetTask(name);
+  jetTask->SetJetType(jetType);
+  jetTask->SetJetAlgo(jetAlgo);
+  jetTask->SetRecombScheme(reco);
+  jetTask->SetRadius(radius);
+  if (partCont) jetTask->AdoptParticleContainer(partCont);
+  if (clusCont) jetTask->AdoptClusterContainer(clusCont);
+  jetTask->SetJetsName(tag);
+  jetTask->SetMinJetPt(minJetPt);
+  jetTask->SetGhostArea(ghostArea);
+
+  if (bFillGhosts) jetTask->SetFillGhost();
+  if (lockTask) jetTask->SetLocked();
+
+  // Final settings, pass to manager and set the containers
+
+  mgr->AddTask(jetTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(jetTask, 0, cinput);
+
+  TObjArray* cnt = mgr->GetContainers();
+
+  return jetTask;
 }

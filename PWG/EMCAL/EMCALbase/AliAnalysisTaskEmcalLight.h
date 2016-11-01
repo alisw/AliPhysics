@@ -66,6 +66,16 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
  public:
 
   /**
+   * @enum EDataType_t
+   * @brief Switch for the data type
+   */
+  enum EDataType_t {
+    kUnknownDataType,
+    kESD,
+    kAOD
+  };
+
+  /**
    * @enum EBeamType_t
    * @brief Switch for the beam type
    */
@@ -74,15 +84,6 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
     kpp       = 0, //!< Proton-Proton
     kAA       = 1, //!< Nucleus-Nucleus
     kpA       = 2  //!< Proton-Nucleus
-  };
-
-  /**
-   * @enum EDataType_t
-   * @brief Switch for the data type
-   */
-  enum EDataType_t {
-    kAOD = 0,
-    kESD = 1
   };
 
   AliAnalysisTaskEmcalLight();

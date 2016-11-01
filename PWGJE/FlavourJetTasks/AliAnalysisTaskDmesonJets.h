@@ -473,6 +473,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   virtual Bool_t       Run();
   virtual Bool_t       FillHistograms();
 
+  static AliAnalysisTaskDmesonJets* AddTaskDmesonJets(TString ntracks = "usedefault", TString nclusters = "usedefault", TString nMCpart = "", Int_t nMaxTrees = 2, TString suffix = "");
+
  protected:
 
   virtual void SetOutputTypeInternal(EOutputType_t b)             { fOutputType         = b; }

@@ -27,6 +27,8 @@
 // Aliroot general
 #include "AliLog.h"
 #include "AliEMCALGeometry.h"
+#include "AliAnalysisManager.h"
+#include "AliVEventHandler.h"
 
 // Aliroot HF
 #include "AliAODRecoCascadeHF.h"
@@ -2411,3 +2413,111 @@ Int_t AliAnalysisTaskDmesonJets::PostDataFromAnalysisEngine(const AnalysisEngine
     return -1;
   }
 }
+
+/// Create an instance of this class and add it to the analysis manager
+///
+/// \param ntracks name of the track collection
+/// \param nclusters name of the calorimeter cluster collection
+/// \param nMCpart name of the MC particle collection
+/// \param nMaxTrees number of output trees
+/// \param suffix additional suffix that can be added at the end of the task name
+/// \return pointer to the new AliAnalysisTaskDmesonJets task
+AliAnalysisTaskDmesonJets* AliAnalysisTaskDmesonJets::AddTaskDmesonJets(TString ntracks, TString nclusters, TString nMCpart, Int_t nMaxTrees, TString suffix)
+{
+  // Get the pointer to the existing analysis manager via the static access method
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskDmesonJets", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler) {
+    ::Error("AddTaskEmcalJetSpectraQA", "This task requires an input event handler");
+    return NULL;
+  }
+
+  EDataType_t dataType = kUnknownDataType;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  // Init the task and do settings
+  if (ntracks == "usedefault") {
+    if (dataType == kESD) {
+      ntracks = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      ntracks = "tracks";
+    }
+    else {
+      ntracks = "";
+    }
+  }
+
+  if (nclusters == "usedefault") {
+    if (dataType == kESD) {
+      nclusters = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      nclusters = "caloClusters";
+    }
+    else {
+      nclusters = "";
+    }
+  }
+
+  if (nMCpart == "usedefault") {
+    nMCpart = "mcparticles"; // Always needs AliAODMCParticle objects
+  }
+
+  TString name("AliAnalysisTaskDmesonJets");
+  if (strcmp(suffix, "") != 0) {
+    name += TString::Format("_%s", suffix.Data());
+  }
+
+  AliAnalysisTaskDmesonJets* jetTask = new AliAnalysisTaskDmesonJets(name, nMaxTrees);
+  jetTask->SetVzRange(-10,10);
+
+  if (!ntracks.IsNull()) {
+    AliHFTrackContainer* trackCont = new AliHFTrackContainer(ntracks);
+    jetTask->AdoptParticleContainer(trackCont);
+  }
+
+  if (!nMCpart.IsNull()) {
+    AliMCParticleContainer* partCont = new AliHFAODMCParticleContainer(nMCpart);
+    partCont->SetEtaLimits(-1.5, 1.5);
+    jetTask->AdoptParticleContainer(partCont);
+  }
+
+  jetTask->AddClusterContainer(nclusters);
+
+  // Final settings, pass to manager and set the containers
+  mgr->AddTask(jetTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer* cinput1 = mgr->GetCommonInputContainer();
+  TString contname1(name);
+  contname1 += "_histos";
+  AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(contname1.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s", AliAnalysisManager::GetCommonFileName()));
+
+  mgr->ConnectInput(jetTask, 0, cinput1);
+  mgr->ConnectOutput(jetTask, 1, coutput1);
+
+  for (Int_t i = 0; i < nMaxTrees; i++) {
+    TString contname = TString::Format("%s_tree_%d", name.Data(), i);
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer(contname.Data(),
+        TTree::Class(),AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput(jetTask, 2+i, coutput);
+  }
+  return jetTask;
+}
+
