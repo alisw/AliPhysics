@@ -87,13 +87,15 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    //else
    task->SelectCollisionCandidates(triggerMask);
 
+   /*
    AliMultSelectionTask *taskm = AddTaskMultSelection();
 
    if(isMC == 1)
      {
        taskm->SetAlternateOADBforEstimators( "LHC15f" );     
      }
-   
+   */
+
    if (isPP) {
      //     task->UseMultiplicity("QUALITY");
      if (MultBins == 1) task->UseMultiplicity("AliMultSelection_V0M"); // for multiplicity percentile
