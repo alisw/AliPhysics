@@ -22,6 +22,9 @@
 #include <THnSparse.h>
 #include <THashList.h>
 
+#include <AliVEventHandler.h>
+#include <AliAnalysisManager.h>
+
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
@@ -906,4 +909,120 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
     if (fHistManager.FindObject(histname))
       fHistManager.FillTH1(histname, 1. * zero / fNTotTracks);
   }
+}
+
+//________________________________________________________________________
+AliAnalysisTaskEmcalJetQA* AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(TString ntracks, TString nclusters, TString ncells, TString suffix)
+{
+  // Get the pointer to the existing analysis manager via the static access method
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskEmcalJetQA", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler) {
+    ::Error("AddTaskEmcalJetQA", "This task requires an input event handler");
+    return NULL;
+  }
+
+  EDataType_t dataType = kUnknownDataType;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  // Init the task and do settings
+
+  if (ntracks == "usedefault") {
+    if (dataType == kESD) {
+      ntracks = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      ntracks = "tracks";
+    }
+    else {
+      ntracks = "";
+    }
+  }
+
+  if (nclusters == "usedefault") {
+    if (dataType == kESD) {
+      nclusters = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      nclusters = "caloClusters";
+    }
+    else {
+      nclusters = "";
+    }
+  }
+
+  if (ncells == "usedefault") {
+    if (dataType == kESD) {
+      ncells = "EMCALCells";
+    }
+    else if (dataType == kAOD) {
+      ncells = "emcalCells";
+    }
+    else {
+      ncells = "";
+    }
+  }
+
+  TString name("AliAnalysisTaskEmcalJetQA");
+  if (!ntracks.IsNull()) {
+    name += "_";
+    name += ntracks;
+  }
+  if (!nclusters.IsNull()) {
+    name += "_";
+    name += nclusters;
+  }
+  if (!ncells.IsNull()) {
+    name += "_";
+    name += ncells;
+  }
+  if (!suffix.IsNull() != 0) {
+    name += "_";
+    name += suffix;
+  }
+
+  AliAnalysisTaskEmcalJetQA* qaTask = new AliAnalysisTaskEmcalJetQA(name);
+  qaTask->SetCaloCellsName(ncells);
+  qaTask->SetVzRange(-10,10);
+
+  if (ntracks == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = qaTask->AddMCParticleContainer(ntracks);
+    mcpartCont->SelectPhysicalPrimaries(kTRUE);
+  }
+  else if (ntracks == "tracks" || ntracks == "Tracks") {
+    AliTrackContainer* trackCont = qaTask->AddTrackContainer(ntracks);
+    trackCont->SetFilterHybridTracks(kTRUE);
+  }
+  else if (!ntracks.IsNull()) {
+    qaTask->AddParticleContainer(ntracks);
+  }
+  qaTask->AddClusterContainer(nclusters);
+
+  // Final settings, pass to manager and set the containers
+  mgr->AddTask(qaTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+
+  TString contName(name);
+  contName += "_histos";
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(),
+                  TList::Class(),AliAnalysisManager::kOutputContainer,
+                  Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput  (qaTask, 0,  cinput1 );
+  mgr->ConnectOutput (qaTask, 1, coutput1 );
+
+  return qaTask;
 }

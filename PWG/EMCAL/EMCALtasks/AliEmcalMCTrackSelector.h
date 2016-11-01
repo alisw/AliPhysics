@@ -29,6 +29,7 @@ class AliEmcalMCTrackSelector : public AliAnalysisTaskSE {
   void                      ConvertMCParticles(AliMCEvent* mcEvent, TClonesArray* partOut, AliNamedArrayI* partMap=0);    // for ESD analysis
   void                      CopyMCParticles(TClonesArray* partIn, TClonesArray* partOut, AliNamedArrayI* partMap=0); // for AOD analysis
   
+  static AliEmcalMCTrackSelector* AddTaskMCTrackSelector(TString outname = "mcparticles", Bool_t nk = kFALSE, Bool_t ch = kFALSE, Double_t etamax = 1, Bool_t physPrim = kTRUE);
  protected:
   virtual Bool_t            AcceptParticle(AliAODMCParticle* part) const;
   

@@ -48,6 +48,8 @@
 #include "AliAnalysisUtils.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalPythiaInfo.h"
+#include "AliESDInputHandler.h"
+#include "AliMultiInputEventHandler.h"
 
 #include "AliMultSelection.h"
 
@@ -1994,6 +1996,37 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
   if(pythiaGenHeader){ 
     Float_t ptWeight=pythiaGenHeader->EventWeight(); 
     fPythiaInfo->SetPythiaEventWeight(ptWeight);}
-
-  
 }
+
+/**
+ * Add a ESD handler to the analysis manager
+ * @return pointer to the new ESD handler
+ */
+AliESDInputHandler* AliAnalysisTaskEmcal::AddESDHandler()
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddESDHandler", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  AliESDInputHandler *esdHandler = new AliESDInputHandler();
+
+  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+  if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
+    AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
+    multiInputHandler->AddInputEventHandler(esdHandler);
+  }
+  else {
+    if (!inputHandler) {
+      mgr->SetInputEventHandler(esdHandler);
+    }
+    else {
+      ::Error("AddESDHandler", "inputHandler is NOT null. ESD handler was NOT added !!!");
+      return NULL;
+    }
+  }
+
+  return esdHandler;
+}
+

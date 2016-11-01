@@ -113,6 +113,22 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
   void                   SetType(Int_t t);
 
+  static AliEmcalJetTask* AddTaskEmcalJet(
+      const TString nTracks                      = "usedefault",
+      const TString nClusters                    = "usedefault",
+      const AliJetContainer::EJetAlgo_t jetAlgo  = AliJetContainer::antikt_algorithm,
+      const Double_t radius                      = 0.4,
+      const AliJetContainer::EJetType_t jetType  = AliJetContainer::kFullJet,
+      const Double_t minTrPt                     = 0.15,
+      const Double_t minClPt                     = 0.30,
+      const Double_t ghostArea                   = 0.005,
+      const AliJetContainer::ERecoScheme_t reco  = AliJetContainer::pt_scheme,
+      const TString tag                          = "Jet",
+      const Double_t minJetPt                    = 0.,
+      const Bool_t lockTask                      = kTRUE,
+      const Bool_t bFillGhosts                   = kFALSE
+    );
+
 #if !defined(__CINT__) && !defined(__MAKECINT__)
   static FJJetAlgo       ConvertToFJAlgo(EJetAlgo_t algo);
   static FJRecoScheme    ConvertToFJRecoScheme(ERecoScheme_t reco);

@@ -20,6 +20,7 @@ class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
 class AliAODTrack;
 class AliEmcalPythiaInfo;
+class AliESDInputHandler;
 
 #include "Rtypes.h"
 
@@ -65,6 +66,16 @@ class AliEmcalPythiaInfo;
  */
 class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  public:
+
+  /**
+   * @enum EDataType_t
+   * @brief Switch for the data type
+   */
+  enum EDataType_t {
+    kUnknownDataType,
+    kESD,
+    kAOD
+  };
 
   /**
    * @enum BeamType
@@ -251,6 +262,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
+  static AliESDInputHandler*  AddESDHandler();
 
   static Double_t             fgkEMCalDCalPhiDivide;       ///<  phi value used to distinguish between DCal and EMCal
 
