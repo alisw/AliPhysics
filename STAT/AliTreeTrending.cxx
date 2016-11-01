@@ -41,6 +41,9 @@
 
 ClassImp(AliTreeTrending)
 
+using std::cout;
+using std::endl;
+
 // constants
 const Int_t   kMaxCanvasWidth=3000;
 const Int_t   kMinCanvasWidth=1000;
