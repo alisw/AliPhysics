@@ -89,6 +89,9 @@ AliTPCseed::AliTPCseed():
   }
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  for (int i=5;i--;) fLSCovY[i] = 0;
+  for (int i=3;i--;) fLSCovZ[i] = 0;
+
 }
 
 AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
@@ -149,6 +152,10 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = s.fOverlapLabels[i];
+  
+  for (int i=5;i--;) fLSCovY[i] = s.fLSCovY[i];
+  for (int i=3;i--;) fLSCovZ[i] = s.fLSCovZ[i];
+
 }
 
 
@@ -206,6 +213,8 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   for (Int_t i=0;i<9;i++) fDEDX[i] = fDEDX[i];
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+  for (int i=5;i--;) fLSCovY[i] = 0;
+  for (int i=3;i--;) fLSCovZ[i] = 0;
 }
 
 AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
@@ -255,6 +264,10 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
 
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
+
+  for (int i=5;i--;) fLSCovY[i] = 0;
+  for (int i=3;i--;) fLSCovZ[i] = 0;
+
 }
 
 AliTPCseed::~AliTPCseed(){
@@ -333,6 +346,10 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
     for(Int_t i = 0;i<12;++i)fOverlapLabels[i] = param.fOverlapLabels[i];
     fMAngular = param.fMAngular;
     fCircular = param.fCircular;
+
+    for (int i=5;i--;) fLSCovY[i] = param.fLSCovY[i];
+    for (int i=3;i--;) fLSCovZ[i] = param.fLSCovZ[i];
+
   }
   return (*this);
 }
@@ -419,7 +436,9 @@ void AliTPCseed::Reset(Bool_t all)
   fNFoundable = 0;
   SetChi2(0);
   ResetCovariance(10.);
-
+  for (int i=5;i--;) fLSCovY[i] = 0;
+  for (int i=3;i--;) fLSCovZ[i] = 0;
+  //
   if (all){   
     for (Int_t i=kMaxRow;i--;) SetClusterIndex2(i,-3);
     if (fClusterPointer) {
@@ -592,7 +611,22 @@ Bool_t AliTPCseed::Update(const AliCluster *c, Double_t chisq, Int_t index)
  
 
   if (!AliTPCtrack::Update(&cl,chisq,index)) return kFALSE;
-  
+  // increment moments for LSM cov.matrix
+  {
+    double wy = fErrorY2>0 ? 1./fErrorY2 : 1e-6;
+    double wz = fErrorZ2>0 ? 1./fErrorZ2 : 1e-6;
+    double x1 = cl.GetX(), x2 = x1*x1, x3 = x2*x1, x4 = x2*x2;
+    fLSCovY[0] += wy;
+    fLSCovY[1] += wy*x1;
+    fLSCovY[2] += wy*x2;
+    fLSCovY[3] += wy*x3;
+    fLSCovY[4] += wy*x4;
+    //
+    fLSCovZ[0] += wz;
+    fLSCovZ[1] += wz*x1;
+    fLSCovZ[2] += wz*x2;
+  }
+  //
   if (fCMeanSigmaY2p30<0){
     fCMeanSigmaY2p30= c->GetSigmaY2();   //! current mean sigma Y2 - mean30%
     fCMeanSigmaZ2p30= c->GetSigmaZ2();   //! current mean sigma Z2 - mean30%    

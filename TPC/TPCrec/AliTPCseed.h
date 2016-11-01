@@ -146,6 +146,9 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
   Float_t GetCMeanSigmaY2p30R() const {return fCMeanSigmaY2p30R;}
   Float_t GetCMeanSigmaZ2p30R() const {return fCMeanSigmaZ2p30R;}
      //
+  const Double_t *GetLSCovY() const {return fLSCovY;}
+  const Double_t *GetLSCovZ() const {return fLSCovZ;}
+
      //
 
   Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=kMaxRow, Bool_t shapeNorm=kTRUE, Int_t posNorm=0, Int_t padNorm=0,Int_t returnVal=0);
@@ -209,6 +212,8 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      UChar_t fNCDEDX[4];          // number of clusters for dedx measurment
      UChar_t  fNCDEDXInclThres[4]; // number of clusters for dedx measurment including sub-threshold clusters
      Double_t fTPCr[AliPID::kSPECIES];   // rough PID according TPC   
+     Double_t fLSCovY[5];      // sum x^i/sigmaYi^2, i=0,4 for LSM matrix
+     Double_t fLSCovZ[2];      // sum x^i/sigmaZi^2, i=0,2 for LSM matrix
      //
      UChar_t   fSeedType;         //seeding type
      UChar_t   fSeed1;            //first row for seeding
@@ -218,7 +223,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      Float_t fMAngular;           // mean angular factor
      Int_t   fPoolID;              //! id in the pool
      AliTPCTrackerPoints fTrackPointsArr;  // track points - array track points
-     ClassDef(AliTPCseed,10)
+     ClassDef(AliTPCseed,11)
 };
 
 

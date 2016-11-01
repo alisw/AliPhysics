@@ -9787,8 +9787,58 @@ void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
   float fluctCorr = AliTPCReconstructor::GetRecoParam()->GetDistFluctCorrelation(); // distortion fluctuations correlation 
 
   double corY[6]={0},corZ[3]={0},jacobC = kB2C*GetBz()/2;
-  float xArr[kMaxRow][3], xRef = t->GetX();
+  float xArr[kMaxRow][3];
+  double xRef = t->GetX(), xRef2 = xRef*xRef, xRef3 = xRef2*xRef, xRef4 = xRef2*xRef2;
   float gammaY[kMaxRow],gammaZ[kMaxRow]; // sysErr^2 / totErr^4
+  //
+  // build LSM Cov matrix
+  Bool_t fieldOn = TMath::Abs(jacobC)>1e-9;
+  double detYI=0,detZI=0, covLSM[15];
+  memset(covLSM,0,15*sizeof(double));
+  double &SY00 = covLSM[0], &SY10 = covLSM[3], &SY11 = covLSM[5], &SY20 = covLSM[10], &SY21 = covLSM[12], &SY22 = covLSM[14];
+  double &SZ00 = covLSM[2], &SZ10 = covLSM[7], &SZ11 = covLSM[9];
+  //
+  Bool_t lsmOK = kFALSE;
+  while(1) {
+    const double *lsCovY = t->GetLSCovY(), *lsCovZ = t->GetLSCovZ();
+    double y0 = lsCovY[0], 
+      y1 = lsCovY[1] - xRef*y0, 
+      y2 = lsCovY[2] - 2*xRef*lsCovY[1] + xRef2*y0,
+      y3 = lsCovY[3] - 3*xRef*lsCovY[2] + 3*xRef2*lsCovY[1] - xRef3*y0,
+      y4 = lsCovY[4] - 4*xRef*lsCovY[3] + 6*xRef2*lsCovY[2] - 4*xRef3*lsCovY[1] + xRef4*y0;
+    double z0 = lsCovZ[0], 
+      z1 = lsCovZ[1] - xRef*z0, 
+      z2 = lsCovZ[2] - 2*xRef*lsCovZ[1] + xRef2*z0;
+    double y1p2 = y1*y1, y2p2 = y2*y2, y3p2 = y3*y3;
+    detZI = (z0*z2-z1*z1);
+    if (TMath::Abs(detZI)<1e-12) break;
+    detZI = 1./detZI;
+    SZ00 = z2*detZI; 
+    SZ10 =-z1*detZI;  
+    SZ11 = z0*detZI;
+    //
+    if (fieldOn) {
+      double jacobCI = 1./jacobC;
+      detYI = (y2*(y2p2 - 2*y1*y3) + y0*y3p2 + y4*(y1p2 - y0*y2));
+      if (TMath::Abs(detYI)<1e-12) break;
+      detYI = 1./detYI;
+      SY00 = (y3p2-y2*y4)*detYI;
+      SY10 = (y1*y4-y2*y3)*detYI;         SY11 = (y2p2-y0*y4)*detYI;
+      SY20 = (y2p2-y1*y3)*detYI*jacobCI;  SY21 = (y0*y3-y1*y2)*detYI*jacobCI; SY22 = (y1p2-y0*y2)*detYI*jacobCI*jacobCI;
+    }
+    else {
+      detYI = (y0*y2-y1*y1);
+      if (TMath::Abs(detYI)<1e-12) break;
+      detYI = 1./detYI;
+      SY00 = y2*detYI; 
+      SY10 =-y1*detYI;  SY11 = y0*detYI;    
+    }
+    lsmOK = kTRUE;
+    break;
+  }
+  //
+  if (!lsmOK) AliWarningF("Building LSM cov.matrix failed, will use Kalman cov.matrix, pT=%.3f",t->Pt());
+  //
   int nclFit = 0;
   for (int ip=kMaxRow;ip--;) {
     int index = t->GetClusterIndex2(ip);
@@ -9808,7 +9858,7 @@ void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
     for (int col=0;col<=row;col++) { // matrix is symmetric
       for (int ip=0;ip<nclFit;ip++) {
 	for (int jp=0;jp<nclFit;jp++) {
-	  double corr = (ip==jp ? 1.0:fluctCorr) * amplCorr;
+	  double corr = (ip==jp ? 1.0:fluctCorr) * amplCorr; // actually for ip==jp should be 0, but the effect is negligable
 	  double xprod = xArr[ip][row]*xArr[jp][col]*corr;
 	  corY[cnt] += xprod*gammaY[ip]*gammaY[jp];
 	  if (row<2) corZ[cnt] += xprod*gammaZ[ip]*gammaZ[jp];
@@ -9823,15 +9873,16 @@ void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
   corY[4] *= jacobC;
   corY[5] *= jacobC*jacobC;
   //
+  double *covP = (double*)t->GetCovariance();
+  if (!lsmOK) memcpy(covLSM,covP,15*sizeof(double));
   //
-  double *covP = (double*)t->GetCovariance(),
-    &C00=covP[0],
-    &C10=covP[1] ,&C11=covP[2],
-    &C20=covP[3] ,&C21=covP[4] ,&C22=covP[5],
-    &C30=covP[6] ,&C31=covP[7] ,&C32=covP[8] ,&C33=covP[9],
-    &C40=covP[10],&C41=covP[11],&C42=covP[12],&C43=covP[13],&C44=covP[14];
+  double &C00=covLSM[0],
+    &C10=covLSM[1] ,&C11=covLSM[2],
+    &C20=covLSM[3] ,&C21=covLSM[4] ,&C22=covLSM[5],
+    &C30=covLSM[6] ,&C31=covLSM[7] ,&C32=covLSM[8] ,&C33=covLSM[9],
+    &C40=covLSM[10],&C41=covLSM[11],&C42=covLSM[12],&C43=covLSM[13],&C44=covLSM[14];
   double &g00=corY[0],&g11=corZ[0],&g20=corY[1],&g22=corY[2],&g31=corZ[1],&g33=corZ[2],&g40=corY[3],&g42=corY[4],&g44=corY[5];
-
+  
   double
     cg00=C00*g00 + C20*g20 + C40*g40, cg01=C10*g11 + C30*g31, cg02=C00*g20 + C20*g22 + C40*g42, cg03=C10*g31 + C30*g33, cg04=C00*g40 + C20*g42 + C40*g44,
     cg10=C10*g00 + C21*g20 + C41*g40, cg11=C11*g11 + C31*g31, cg12=C10*g20 + C21*g22 + C41*g42, cg13=C11*g31 + C31*g33, cg14=C10*g40 + C21*g42 + C41*g44,
@@ -9856,17 +9907,19 @@ void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
     a43 = C30*cg40 + C31*cg41 + C32*cg42 + C33*cg43 + C43*cg44, 
     a44 = C40*cg40 + C41*cg41 + C42*cg42 + C43*cg43 + C44*cg44;
   //
-  // make sure diagonal elements are positive
-  if (a00<0) a00 = 0;
-  if (a11<0) a11 = 0;
-  if (a22<0) a22 = 0;
-  if (a33<0) a33 = 0;
-  if (a44<0) a44 = 0;
-  //    
+  if (lsmOK) memcpy(covLSM,covP,15*sizeof(double)); // here we need original cov matrix from Kalman fit
   C00 += a00;
   C10 += a10;  C11 += a11;
   C20 += a20;  C21 += a21;  C22 += a22;
   C30 += a30;  C31 += a31;  C32 += a32;  C33 += a33;
   C40 += a40;  C41 += a41;  C42 += a42;  C43 += a43;  C44 += a44;
-  
+  //
+  // make sure the matrix was not screwed up, since some diagonal aII might be negative
+  const double kFC = 0.01;
+  if (C00 < kFC*covP[0] || C11 < kFC*covP[2] || C22 < kFC*covP[5] || C33 < kFC*covP[9] || C44 < kFC*covP[14]) {
+    AliWarningF("Corrupted covariance, will not modify matrix. pT=%.3f",t->Pt());
+    return;
+  }
+  //    
+  memcpy(covP,covLSM,15*sizeof(double));
 }
