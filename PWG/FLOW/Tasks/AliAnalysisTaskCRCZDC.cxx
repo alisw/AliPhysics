@@ -677,7 +677,12 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
    fFlowEvent->SetCentrality(centr);
    fFlowEvent->SetCentralityCL1(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
    fFlowEvent->SetCentralityTRK(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK"));
-   fFlowEvent->SetNITSCL1(((AliVAODHeader*)aod->GetHeader())->GetNumberOfITSClusters(1));
+//   fFlowEvent->SetNITSCL1(((AliVAODHeader*)aod->GetHeader())->GetNumberOfITSClusters(1));
+   Double_t SumV0=0.;
+   for(Int_t i=0; i<64; i++) {
+     if(std::isfinite(aod->GetVZEROEqMultiplicity(i))) SumV0 += aod->GetVZEROEqMultiplicity(i);
+   }
+   fFlowEvent->SetNITSCL1(SumV0);
    
    Double_t vtxpos[3]={0.,0.,0.};
    vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
