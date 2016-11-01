@@ -1750,13 +1750,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Here's where it all happens: please swap stuff around
         //...and "Keep Calm and Carry On"
         if (lChargeXi < 0){
-            Int_t lblPosV0DghterSwapped = lblPosV0Dghter;
-            Int_t lblNegV0DghterSwapped = lblBach;
-            Int_t lblBachSwapped        = lblNegV0Dghter;
+            lblPosV0DghterSwapped = lblPosV0Dghter;
+            lblNegV0DghterSwapped = lblBach;
+            lblBachSwapped        = lblNegV0Dghter;
         }else{
-            Int_t lblPosV0DghterSwapped = lblBach;
-            Int_t lblNegV0DghterSwapped = lblNegV0Dghter;
-            Int_t lblBachSwapped        = lblPosV0Dghter;
+            lblPosV0DghterSwapped = lblBach;
+            lblNegV0DghterSwapped = lblNegV0Dghter;
+            lblBachSwapped        = lblPosV0Dghter;
         }
         
         TParticle* mcPosV0DghterSwapped = lMCstack->Particle( lblPosV0DghterSwapped );
