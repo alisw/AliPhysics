@@ -4217,7 +4217,10 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
     case 41:
       label_case_41:
       if(isMC>0){
-        if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ) energy /= FunctionNL_kSDM(energy, 0.995*0.978578, -3.80517, -0.581197);//v4
+        if( fCurrentMC==k13b2_efix || fCurrentMC == k16c3a || fCurrentMC == k16c3b || fCurrentMC == k16c3c ){
+          energy /= FunctionNL_kSDM(energy, 0.995*0.978578, -3.80517, -0.581197);//v4
+          energy /= FunctionNL_kSDM(energy, 0.996179, -5.33609, -0.477463);//v5
+        }
           //energy /= FunctionNL_kSDM(energy, 0.977118, -3.46238, -0.575729);v0
           //energy /= FunctionNL_kSDM(energy, 0.975357, -3.54572, -0.398501);v1
           //energy /= FunctionNL_kSDM(energy, 0.9936*0.976721, -3.60967, -0.43353);//v2
