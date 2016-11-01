@@ -37,6 +37,7 @@ set(SRCS
     AliExternalInfo.cxx
     AliFFTsmoother.cxx   
     AliTreePlayer.cxx
+    AliTreeTrending.cxx
   )
 
 # Headers from sources
