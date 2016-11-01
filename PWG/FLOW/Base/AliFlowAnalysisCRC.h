@@ -56,8 +56,8 @@ class AliFlowVector;
 class AliFlowAnalysisCRC : public TNamed {
 public:
   AliFlowAnalysisCRC(const char* name="AliFlowAnalysisCRC",
-                     Int_t nCen=7,
-                     Double_t CenWidth=10.);
+                       Int_t nCen=7,
+                       Double_t CenWidth=10.);
   virtual ~AliFlowAnalysisCRC();
   
   enum CorrelationWeights { kMultiplicity,
@@ -1512,7 +1512,7 @@ private:
   TH1D *fCRCZDCQVecEP[fCRCMaxnRun][2]; //! ZN event planes
   TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec
-//  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][4]; //! Vtx positions re-centered Qvec in cen bins
+  //  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][4]; //! Vtx positions re-centered Qvec in cen bins
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
   Double_t fEvPlZDCCflat;
@@ -1649,7 +1649,7 @@ private:
   TH1D *fFlowSPZDCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowNPro]; //!
   TProfile *fFlowSPZDCIntNUA[fFlowNNUA]; //!
   TProfile *fFlowSPZDCv1Pro[4]; //!
-  const static Int_t fkNHistv1eta = 7;
+  const static Int_t fkNHistv1eta = 13;
   TProfile *fFlowSPZDCv1etaPro[fkNHistv1eta]; //!
   TH1D *fFlowSPZDCv1etaHist[fkNHistv1eta]; //!
   
