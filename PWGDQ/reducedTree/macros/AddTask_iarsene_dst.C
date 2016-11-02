@@ -74,7 +74,7 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   if(reducedEventType!=-1)
     task->SetTreeWritingOption(reducedEventType);
   task->SetWriteTree(writeTree);
-  task->SetWriteEventsWithNoSelectedTracks(kFALSE);
+  //task->SetWriteEventsWithNoSelectedTracks(kFALSE);
   
   SetInactiveBranches(task);
   
@@ -185,10 +185,10 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    task->SetTreeInactiveBranch("fTracks.fHelixCenter*");
    task->SetTreeInactiveBranch("fTracks.fHelixRadius");
    //task->SetTreeInactiveBranch("fTracks.fITSclusterMap");
-   //task->SetTreeInactiveBranch("fTracks.fITSSharedClusterMap");
+   task->SetTreeInactiveBranch("fTracks.fITSSharedClusterMap");
    task->SetTreeInactiveBranch("fTracks.fITSsignal");
    task->SetTreeInactiveBranch("fTracks.fITSnSig*");
-   //task->SetTreeInactiveBranch("fTracks.fITSchi2");
+   task->SetTreeInactiveBranch("fTracks.fITSchi2");
    //task->SetTreeInactiveBranch("fTracks.fTPCNcls");
    //task->SetTreeInactiveBranch("fTracks.fTPCCrossedRows");
    //task->SetTreeInactiveBranch("fTracks.fTPCNclsF");

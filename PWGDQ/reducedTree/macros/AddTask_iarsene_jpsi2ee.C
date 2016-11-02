@@ -65,6 +65,10 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   // Setup histograms, handlers, cuts, etc.
   //
    
+  TFile* corrFile = TFile::Open("/home/iarsene/work/ALICE/treeAnalysis/newdst/development/test/CorrMaps_CentralityNew.root");
+  AliReducedVarManager::SetTPCelectronCorrectionMaps((TH2F*)corrFile->Get("CorrMapCentroid"), (TH2F*)corrFile->Get("CorrMapWidth"), AliReducedVarManager::kEta, AliReducedVarManager::kCentVZERO);
+  corrFile->Close();
+   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
   evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
@@ -80,7 +84,7 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   trackCut1->AddCut(AliReducedVarManager::kTPCncls, 70.,160.0);
   trackCut1->AddCut(AliReducedVarManager::kTPCnSig+AliReducedVarManager::kProton, 3.5, 1.0e+30);
   trackCut1->AddCut(AliReducedVarManager::kTPCnSig+AliReducedVarManager::kPion, 3.5, 1.0e+30);
-  trackCut1->AddCut(AliReducedVarManager::kTPCnSig+AliReducedVarManager::kElectron, -3.0, 4.0);
+  trackCut1->AddCut(AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron, -3.0, 4.0);
   trackCut1->SetRejectKinks();
   trackCut1->SetRequestITSrefit();
   trackCut1->SetRequestTPCrefit();
@@ -161,10 +165,10 @@ void SetupMixingHandler(AliReducedAnalysisJpsi2ee* task) {
    handler->SetEventVariables(AliReducedVarManager::kCentVZERO,AliReducedVarManager::kVtxZ,AliReducedVarManager::kVZERORP+6+1);
    Float_t centLims[14] = {0.0, 5.0, 10., 15.0, 20., 25., 30.,  35., 40., 50., 60., 70.,80.,90.};
    //Float_t zLims[11] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
-   Float_t zLims[5] = {-10.,-5.,0.,5.,10.};
+   Float_t zLims[2] = {-10.,10.};
    Float_t epLims[2] = {-10000.,10000.};
    handler->SetCentralityLimits(14,centLims);
-   handler->SetEventVertexLimits(5,zLims);
+   handler->SetEventVertexLimits(2,zLims);
    handler->SetEventPlaneLimits(2,epLims);
 }
 
@@ -240,6 +244,13 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
     runNBins = 400;
     runHistRange[0] = 195300.;
     runHistRange[1] = 195700.;
+  }
+  
+  // pp at 13 TeV
+  if(!prod.CompareTo("LHC16l")) {
+     runNBins = 1140;
+     runHistRange[0] = 258880.;
+     runHistRange[1] = 260020.;
   }
   
   const Int_t kNBCBins = 3600;
@@ -329,6 +340,10 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
                      100,0.0,10.0,AliReducedVarManager::kPin,80,-4.0,4.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kElectron);
         man->AddHistogram(classStr.Data(),"TPCnsigElectron_Eta","TPC N_{#sigma} electron vs. #eta",kFALSE,
                           36,-0.9,0.9,AliReducedVarManager::kEta,80,-4.0,4.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kElectron);
+        man->AddHistogram(classStr.Data(),"TPCnsigElectronCorrected_Pin","Corrected TPC N_{#sigma} electron vs. inner param P",kFALSE,
+                          100,0.0,10.0,AliReducedVarManager::kPin,80,-4.0,4.0,AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron);
+        man->AddHistogram(classStr.Data(),"TPCnsigElectronCorrected_Eta","TPC N_{#sigma} electron vs. #eta",kFALSE,
+                          36,-0.9,0.9,AliReducedVarManager::kEta,80,-4.0,4.0,AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron);
 	man->AddHistogram(classStr.Data(),"TPCnsigElectron_Run","TPC N_{#sigma} electron vs. run",kTRUE,
                      runNBins, runHistRange[0], runHistRange[1], AliReducedVarManager::kRunNo,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kElectron);
       
@@ -338,21 +353,21 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
       continue;
     }  // end if "TrackQA"
         
-    const Int_t kNMassBins = 101;
+    const Int_t kNMassBins = 121;
     Double_t massBins[kNMassBins];
-    for(Int_t i=0; i<kNMassBins; ++i) massBins[i] = 0.0 + i*0.05; 
+    for(Int_t i=0; i<kNMassBins; ++i) massBins[i] = 0.0 + i*0.04; 
     
-    const Int_t kNPtBins = 105;
+    const Int_t kNPtBins = 55;
     Double_t ptBins[kNPtBins];
-    for(Int_t i=0; i<=100; ++i) ptBins[i] = 0.0+ i*0.005;
-    ptBins[101] = 1.5; ptBins[102] = 4.5; ptBins[103] = 10.0; ptBins[104] = 20.0;
+    for(Int_t i=0; i<=50; ++i) ptBins[i] = 0.0+ i*0.01;
+    ptBins[51] = 1.5; ptBins[52] = 4.5; ptBins[53] = 10.0; ptBins[54] = 20.0;
     
     const Int_t kNCentBins = 14;
     //Double_t centBins[kNCentBins] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,50.,60.,70.,90.};
     Double_t centBins[kNCentBins] = {0.0, 5.0, 10., 15.0, 20., 25., 30., 35., 40., 50., 60., 70.,80.,90.};
     
-    const Int_t kNVtxBins = 5;
-    Double_t vtxBins[kNVtxBins] = {-10.,-5.,0.,5.,10.};
+    const Int_t kNVtxBins = 2;
+    Double_t vtxBins[kNVtxBins] = {-10.,10.};
     
     const Int_t kNEPbins = 2;
     Double_t epBins[kNEPbins] = {-0.5*TMath::Pi()*10000.,0.5*TMath::Pi()*10000.};

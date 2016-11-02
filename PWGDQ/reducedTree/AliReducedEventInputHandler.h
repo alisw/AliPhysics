@@ -8,6 +8,7 @@
 
 #include "AliInputEventHandler.h"
 #include "AliReducedBaseEvent.h"
+//#include "AliReducedEventInfo.h"
 class TTree;
 
 class AliReducedEventInputHandler : public AliInputEventHandler {
@@ -24,6 +25,7 @@ class AliReducedEventInputHandler : public AliInputEventHandler {
     virtual Bool_t                             Init(Option_t* /*opt*/) {return kTRUE;}
     virtual Bool_t                             Init(TTree* tree, Option_t* opt);
                  AliReducedBaseEvent* GetReducedEvent() const {return fReducedEvent;}
+//                  AliReducedEventInfo*   GetReducedEvent() const {return fReducedEvent;}
     virtual Bool_t                             BeginEvent(Long64_t entry);
     virtual Bool_t                             Notify() { return AliVEventHandler::Notify();};
     virtual Bool_t                             Notify(const char* path);
@@ -38,6 +40,7 @@ class AliReducedEventInputHandler : public AliInputEventHandler {
     
     Int_t  fEventInputOption;                          // one of the options listed in EReducedEventInputType
     AliReducedBaseEvent* fReducedEvent;   //! Pointer to the event
+    //AliReducedEventInfo* fReducedEvent;   //! Pointer to the event
     
     ClassDef(AliReducedEventInputHandler, 2);
 };
