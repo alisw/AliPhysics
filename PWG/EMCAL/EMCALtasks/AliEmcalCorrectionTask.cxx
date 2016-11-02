@@ -155,15 +155,8 @@ void AliEmcalCorrectionTask::SetupConfigurationFilePath(std::string & filename, 
 {
   if (filename != "")
   {
-    // Handle if in AliPhysics
-    // Check for and replace $ALICE_PHYSICS with the actual path if needed
-    std::size_t alicePhysicsPathLocation = filename.find("$ALICE_PHYSICS");
-    if (alicePhysicsPathLocation != std::string::npos)
-    {
-      TString alicePhysicsPath = gSystem->Getenv("ALICE_PHYSICS");
-      // "$ALICE_PHYSICS "is 14 characters
-      filename.replace(alicePhysicsPathLocation, alicePhysicsPathLocation + 14, alicePhysicsPath.Data());
-    }
+    // Handle if in AliPhysics and includes $ALICE_PHYSICS
+    filename = gSystem->ExpandPathName(filename.c_str());
 
     // Handle grid
     if(filename.find("alien://") != std::string::npos)
