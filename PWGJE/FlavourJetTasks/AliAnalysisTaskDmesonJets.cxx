@@ -84,6 +84,29 @@ Double_t AliAnalysisTaskDmesonJets::AliJetInfo::GetDistance(const AliJetInfo& je
 ClassImp(AliAnalysisTaskDmesonJets::AliDmesonJetInfo);
 /// \endcond
 
+/// Copy constructor
+///
+/// \param source AliDmesonJetInfo object to copy from
+AliAnalysisTaskDmesonJets::AliDmesonJetInfo::AliDmesonJetInfo(const AliDmesonJetInfo &source) :
+  fDmesonParticle(source.fDmesonParticle),
+  fD(source.fD),
+  fSoftPionPt(source.fSoftPionPt),
+  fInvMass2Prong(source.fInvMass2Prong),
+  fJets(source.fJets),
+  fMCLabel(source.fMCLabel),
+  fReconstructed(source.fReconstructed)
+{
+}
+
+/// Assignment operator
+///
+/// \param source AliDmesonJetInfo object to copy from
+AliAnalysisTaskDmesonJets::AliDmesonJetInfo& AliAnalysisTaskDmesonJets::AliDmesonJetInfo::operator=(const AliDmesonJetInfo& source)
+{
+  new (this) AliDmesonJetInfo(source);
+  return *this;
+}
+
 /// Reset all fields to their default values
 void AliAnalysisTaskDmesonJets::AliDmesonJetInfo::Reset()
 {

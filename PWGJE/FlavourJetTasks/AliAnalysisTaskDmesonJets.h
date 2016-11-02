@@ -137,7 +137,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   class AliDmesonJetInfo {
   public:
     AliDmesonJetInfo() : fDmesonParticle(0), fD(), fSoftPionPt(0), fInvMass2Prong(0), fJets(), fMCLabel(-1), fReconstructed(kFALSE) {}
-
+    AliDmesonJetInfo(const AliDmesonJetInfo &source);
+    AliDmesonJetInfo& operator=(const AliDmesonJetInfo& source);
     virtual ~AliDmesonJetInfo() {;}
 
     AliVParticle      *fDmesonParticle          ; //!<! pointer to the particle object
