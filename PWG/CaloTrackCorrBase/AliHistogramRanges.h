@@ -313,6 +313,10 @@ public:
   Float_t GetHistoPtInConeMin()          const { return fHistoPtInConeMin  ; }
   Float_t GetHistoPtInConeMax()          const { return fHistoPtInConeMax  ; }
 
+  Int_t   GetHistoNOpeningAngleBins()    const { return fHistoOpAngleBins ; }
+  Float_t GetHistoOpeningAngleMin()      const { return fHistoOpAngleMin  ; }
+  Float_t GetHistoOpeningAngleMax()      const { return fHistoOpAngleMax  ; }
+
   
 private:    
   
@@ -410,6 +414,9 @@ private:
   Int_t    fHistoNPtInConeBins;               ///< Number of bins in Isolation PtInCone histogram.
   Float_t  fHistoPtInConeMax;                 ///< Isolation PtInCone maximum in histogram.
   Float_t  fHistoPtInConeMin;                 ///< Isolation PtInCone maximum in histogram.
+  Int_t    fHistoOpAngleBins;                 ///< Number of bins in pair opening angle axis.
+  Float_t  fHistoOpAngleMax ;                 ///< Maximum value of pair opening angle histogram range.
+  Float_t  fHistoOpAngleMin ;                 ///< Minimum value of pair opening angle histogram range.
 
   /// Copy constructor not implemented.
   AliHistogramRanges(              const AliHistogramRanges & h) ; 
@@ -418,7 +425,7 @@ private:
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliHistogramRanges,5) ;
+  ClassDef(AliHistogramRanges,6) ;
   /// \endcond
 
 } ;
