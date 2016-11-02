@@ -88,6 +88,15 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Initialize()
   GetProperty("Eexcl", fEexclCell);
   GetProperty("doTrackClus", fDoTrackClus);
 
+  if (!fEsdMode && fParticleCollArray.GetEntries() > 1) {
+    AliWarning("================================================================================");
+    AliWarning("== Added multiple particle containers when running with AOD!");
+    AliWarning("== Particle selection of the first particle container will be applied");
+    AliWarning("== to _ALL_ particles! If you need a different selection, then change");
+    AliWarning("== the order of adding the containers so that the desired container is first!");
+    AliWarning("================================================================================");
+  }
+
   return kTRUE;
 }
 
@@ -229,8 +238,8 @@ void AliEmcalCorrectionClusterHadronicCorrection::UserCreateOutputObjects()
  */
 void AliEmcalCorrectionClusterHadronicCorrection::ExecOnce()
 {
-  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusCont);
-  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fPartCont);
+  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusterCollArray);
+  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fParticleCollArray);
 }
 
 /**
@@ -242,38 +251,42 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Run()
   
   // Run the hadronic correction
   // loop over all clusters
-  fClusCont->ResetCurrentID();
   AliVCluster *cluster = 0;
-  
-  while ((cluster = fClusCont->GetNextAcceptCluster())) {
-    
-    Double_t energyclus = 0;
-    if (fCreateHisto) {
-      fHistEbefore->Fill(fCent, cluster->GetNonLinCorrEnergy());
-      fHistNclusvsCent->Fill(fCent);
+  AliClusterContainer * clusCont = 0;
+  TIter nextClusCont(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
+    auto clusItCont = clusCont->accepted_momentum();
+    for (AliClusterIterableMomentumContainer::iterator clusIterator = clusItCont.begin(); clusIterator != clusItCont.end(); ++clusIterator) {
+      cluster = static_cast<AliVCluster *>(clusIterator->second);
+
+      Double_t energyclus = 0;
+      if (fCreateHisto) {
+        fHistEbefore->Fill(fCent, cluster->GetNonLinCorrEnergy());
+        fHistNclusvsCent->Fill(fCent);
+      }
+
+      // apply correction / subtraction
+      // to subtract only the closest track set fHadCor to a %
+      // to subtract all tracks within the cut set fHadCor to %+1
+      if (fHadCorr > 1) {
+        energyclus = ApplyHadCorrAllTracks(fClusterContainerUtils.GlobalIndexFromLocalIndex(clusCont, clusIterator.current_index()), fHadCorr - 1);
+      }
+      else if (fHadCorr > 0) {
+        energyclus = ApplyHadCorrOneTrack(fClusterContainerUtils.GlobalIndexFromLocalIndex(clusCont, clusIterator.current_index()), fHadCorr);
+      }
+      else {
+        energyclus = cluster->GetNonLinCorrEnergy();
+      }
+
+      if (energyclus < 0) energyclus = 0;
+
+      cluster->SetHadCorrEnergy(energyclus);
+
+      if (fCreateHisto) fHistEafter->Fill(fCent, energyclus);
+
     }
-    
-    // apply correction / subtraction
-    // to subtract only the closest track set fHadCor to a %
-    // to subtract all tracks within the cut set fHadCor to %+1
-    if (fHadCorr > 1) {
-      energyclus = ApplyHadCorrAllTracks(fClusterContainerUtils.GlobalIndexFromLocalIndex(fClusCont, fClusCont->GetCurrentID()), fHadCorr - 1);
-    }
-    else if (fHadCorr > 0) {
-      energyclus = ApplyHadCorrOneTrack(fClusterContainerUtils.GlobalIndexFromLocalIndex(fClusCont, fClusCont->GetCurrentID()), fHadCorr);
-    }
-    else {
-      energyclus = cluster->GetNonLinCorrEnergy();
-    }
-    
-    if (energyclus < 0) energyclus = 0;
-    
-    cluster->SetHadCorrEnergy(energyclus);
-    
-    if (fCreateHisto) fHistEafter->Fill(fCent, energyclus);
-    
   }
-  
+
   return kTRUE;
 }
 
@@ -535,7 +548,9 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
     else {
       track = static_cast<AliVTrack*>(cluster->GetTrackMatched(i));
       UInt_t rejectionReason = 0;
-      if (!fPartCont->AcceptParticle(track, rejectionReason)) track = 0;
+      AliParticleContainer * partCont = GetParticleContainer(0);
+      if (!partCont) { AliError("No particle container available!"); }
+      if (!partCont->AcceptParticle(track, rejectionReason)) track = 0;
     }
     
     if (!track) continue;
@@ -627,7 +642,9 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrOneTrack(Int_t
     else {
       track = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));
       UInt_t rejectionReason = 0;
-      if (!fPartCont->AcceptParticle(track, rejectionReason)) track = 0;
+      AliParticleContainer * partCont = GetParticleContainer(0);
+      if (!partCont) { AliError("No particle container available!"); }
+      if (!partCont->AcceptParticle(track, rejectionReason)) track = 0;
     }
   }
   
@@ -784,7 +801,9 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
         else {
           track = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));
           UInt_t rejectionReason = 0;
-          if (!fPartCont->AcceptParticle(track, rejectionReason)) track = 0;
+          AliParticleContainer * partCont = GetParticleContainer(0);
+          if (!partCont) { AliError("No particle container available!"); }
+          if (!partCont->AcceptParticle(track, rejectionReason)) track = 0;
         }
         if (track) {
           Int_t centbinchm = fCentBin;

@@ -193,8 +193,12 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   std::string embeddedCellEnergyTypeStr = "";
   GetProperty("embeddedCellEnergyType", embeddedCellEnergyTypeStr);
   fEmbeddedCellEnergyType = fgkEmbeddedCellEnergyTypeMap.at(embeddedCellEnergyTypeStr);
-  //fEmbeddedCellEnergyType = AliEmcalCorrectionClusterizer::kFEEData;
-  Printf("embeddedCellEnergyType: %d",fEmbeddedCellEnergyType);
+  //Printf("embeddedCellEnergyType: %d",fEmbeddedCellEnergyType);
+
+  // Only support one cluster container for the clusterizer!
+  if (fClusterCollArray.GetEntries() > 1) {
+    AliFatal("Passed more than one cluster container to the clusterizer, but the clusterizer only supports one cluster container!");
+  }
   
   return kTRUE;
 }
@@ -216,8 +220,14 @@ Bool_t AliEmcalCorrectionClusterizer::Run()
   
   fEsd = dynamic_cast<AliESDEvent*>(fEvent);
   fAod = dynamic_cast<AliAODEvent*>(fEvent);
+
+  // Only support one cluster container in the clusterizer!
+  AliClusterContainer * clusCont = GetClusterContainer(0);
+  if (!clusCont) {
+    AliFatal("Could not retrieve cluster container!");
+  }
   
-  fCaloClusters = fClusCont->GetArray();
+  fCaloClusters = clusCont->GetArray();
 
   // If cells are empty, clear clusters and return
   if (fCaloCells->GetNumberOfCells()<=0)

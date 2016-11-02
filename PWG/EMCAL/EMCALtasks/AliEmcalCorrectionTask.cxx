@@ -682,13 +682,13 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
     {
       AliEmcalContainer * cont = GetClusterContainer(str.c_str());
       AliDebugStream(2) << "Adding cluster container " << str << " of array " << cont->GetArrayName() << " to component " << component->GetName() << std::endl;
-      component->SetClusterContainer(GetClusterContainer(str.c_str()));
+      component->AdoptClusterContainer(GetClusterContainer(str.c_str()));
     }
     else if (inputObjectType == kTrack)
     {
       AliEmcalContainer * cont = GetParticleContainer(str.c_str());
       AliDebugStream(2) << "Adding particle container " << str << " of array " << cont->GetArrayName() << " to component " << component->GetName() << std::endl;
-      component->SetParticleContainer(GetParticleContainer(str.c_str()));
+      component->AdoptParticleContainer(GetParticleContainer(str.c_str()));
     }
     else if (inputObjectType == kCaloCells)
     {

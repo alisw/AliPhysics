@@ -46,8 +46,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fGeom(0),
   fIsEmbedded(kFALSE),
   fMinMCLabel(0),
-  fClusCont(0),
-  fPartCont(0),
+  fClusterCollArray(),
+  fParticleCollArray(),
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
@@ -82,8 +82,8 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fGeom(0),
   fIsEmbedded(kFALSE),
   fMinMCLabel(0),
-  fClusCont(0),
-  fPartCont(0),
+  fClusterCollArray(),
+  fParticleCollArray(),
   fCaloCells(0),
   fRecoUtils(0),
   fOutput(0),
@@ -401,3 +401,104 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   
   return 1;
 }
+
+/**
+ * Create new track container and attach it to the task. The name
+ * provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new track container
+ */
+AliTrackContainer* AliEmcalCorrectionComponent::AddTrackContainer(const char *n)
+{
+  if (TString(n).IsNull()) return 0;
+
+  AliTrackContainer* cont = new AliTrackContainer(n);
+
+  fParticleCollArray.Add(cont);
+
+  return cont;
+}
+
+/**
+ * Create new particle container and attach it to the task. The name
+ * provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new particle container
+ */
+AliParticleContainer* AliEmcalCorrectionComponent::AddParticleContainer(const char *n) 
+{
+  if (TString(n).IsNull()) return 0;
+
+  AliParticleContainer* cont = new AliParticleContainer(n);
+
+  fParticleCollArray.Add(cont);
+
+  return cont;
+}
+
+/**
+ * Create new cluster container and attach it to the task. The name
+ * provided to this function must match the name of the array attached
+ * to the new container inside the input event.
+ * @param[in] n Name of the container and the array the container points to
+ * @return Pointer to the new cluster container
+ */
+AliClusterContainer* AliEmcalCorrectionComponent::AddClusterContainer(const char *n)
+{
+  if (TString(n).IsNull()) return 0;
+
+  AliClusterContainer* cont = new AliClusterContainer(n);
+
+  fClusterCollArray.Add(cont);
+
+  return cont;
+}
+
+/**
+ * Get \f$ i^{th} \f$ particle container attached to this task
+ * @param[in] i Index of the particle container
+ * @return Particle container found for the given index (NULL if no particle container exists for that index)
+ */
+AliParticleContainer* AliEmcalCorrectionComponent::GetParticleContainer(Int_t i) const 
+{
+  if (i<0 || i>fParticleCollArray.GetEntriesFast()) return 0;
+  AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
+  return cont;
+}
+
+/**
+ * Get \f$ i^{th} \f$ cluster container attached to this task
+ * @param[in] i Index of the cluster container
+ * @return Cluster container found for the given index (NULL if no cluster container exists for that index)
+ */
+AliClusterContainer* AliEmcalCorrectionComponent::GetClusterContainer(Int_t i) const
+{
+  if (i<0 || i>fClusterCollArray.GetEntriesFast()) return 0;
+  AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
+  return cont;
+}
+
+/**
+ * Find particle container attached to this task according to its name
+ * @param[in] name Name of the particle container
+ * @return Particle container found under the given name
+ */
+AliParticleContainer* AliEmcalCorrectionComponent::GetParticleContainer(const char *name) const 
+{
+  AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.FindObject(name));
+  return cont;
+}
+
+/**
+ * Find cluster container attached to this task according to its name
+ * @param[in] name Name of the cluster container
+ * @return Cluster container found under the given name
+ */
+AliClusterContainer* AliEmcalCorrectionComponent::GetClusterContainer(const char *name) const
+{
+  AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.FindObject(name));
+  return cont;
+}
+

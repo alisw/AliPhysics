@@ -115,10 +115,39 @@ void AliEmcalCorrectionClusterTrackMatcher::UserCreateOutputObjects()
 {   
   AliEmcalCorrectionComponent::UserCreateOutputObjects();
 
+  // Determine all particle container array names for naming the AliEmcalParticle array
+  std::string particleContainerNames = "";
+  bool firstLoop = true;
+  AliParticleContainer * partCont = 0;
+  TIter nextPartCont(&fParticleCollArray);
+  while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
+    if (firstLoop != true) {
+      particleContainerNames += "_";
+    }
+    else {
+      firstLoop = false;
+    }
+    particleContainerNames += partCont->GetArrayName();
+  }
+  // Determine all cluster container array names for naming the AliEmcalParticle array
+  std::string clusterContainerNames = "";
+  firstLoop = true;
+  AliClusterContainer * clusCont = 0;
+  TIter nextClusCont(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
+    if (firstLoop != true) {
+      clusterContainerNames += "_";
+    }
+    else {
+      firstLoop = false;
+    }
+    clusterContainerNames += clusCont->GetArrayName();
+  }
+
   fEmcalTracks = new TClonesArray("AliEmcalParticle");
-  fEmcalTracks->SetName(Form("EmcalTracks_%s", fPartCont->GetArrayName().Data()));
+  fEmcalTracks->SetName(Form("EmcalTracks_%s", particleContainerNames.c_str()));
   fEmcalClusters = new TClonesArray("AliEmcalParticle");
-  fEmcalClusters->SetName(Form("EmcalClusters_%s", fClusCont->GetArrayName().Data()));
+  fEmcalClusters->SetName(Form("EmcalClusters_%s", clusterContainerNames.c_str()));
  
   // Create my user objects.
   if (fCreateHisto){
@@ -151,8 +180,8 @@ void AliEmcalCorrectionClusterTrackMatcher::UserCreateOutputObjects()
  */
 void AliEmcalCorrectionClusterTrackMatcher::ExecOnce()
 {
-  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusCont);
-  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fPartCont);
+  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusterCollArray);
+  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fParticleCollArray);
 }
 
 /**
@@ -209,42 +238,47 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
 {
   fEmcalTracks->Delete();
   fEmcalClusters->Delete();
-  
+
   fNEmcalTracks = 0;
   fNEmcalClusters = 0;
-  
+
   AliVCluster* cluster = 0;
   AliVTrack* track = 0;
   
-  fClusCont->ResetCurrentID();
-  while ((cluster = static_cast<AliVCluster*>(fClusCont->GetNextAcceptCluster()))) {
-    
-    // Clears the matching info
-    cluster->SetEmcCpvDistance(-1);
-    cluster->SetTrackDistance(1024, 1024);
-    AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(cluster);
-    AliESDCaloCluster *ec = 0;
-    if (ac) {
-      const Int_t N = ac->GetNTracksMatched();
-      AliDebug(2, TString::Format("Number of matched tracks: %d", N));
-      for (Int_t i = N - 1; i >= 0; i--) {
-        TObject *ptr = ac->GetTrackMatched(i);
-        ac->RemoveTrackMatched(ptr);
-        AliDebug(2, TString::Format("N tracks matched: %i of %i", ac->GetNTracksMatched(), N));
+  AliClusterContainer * clusCont = 0;
+  TIter nextClusCont(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
+    auto clusItCont = clusCont->accepted_momentum();
+    for (AliClusterIterableMomentumContainer::iterator clusIterator = clusItCont.begin(); clusIterator != clusItCont.end(); ++clusIterator) {
+      cluster = static_cast<AliVCluster *>(clusIterator->second);
+
+      // Clears the matching info
+      cluster->SetEmcCpvDistance(-1);
+      cluster->SetTrackDistance(1024, 1024);
+      AliAODCaloCluster *ac = dynamic_cast<AliAODCaloCluster*>(cluster);
+      AliESDCaloCluster *ec = 0;
+      if (ac) {
+        const Int_t N = ac->GetNTracksMatched();
+        AliDebug(2, TString::Format("Number of matched tracks: %d", N));
+        for (Int_t i = N - 1; i >= 0; i--) {
+          TObject *ptr = ac->GetTrackMatched(i);
+          ac->RemoveTrackMatched(ptr);
+          AliDebug(2, TString::Format("N tracks matched: %i of %i", ac->GetNTracksMatched(), N));
+        }
       }
+      else {
+        ec = dynamic_cast<AliESDCaloCluster*>(cluster);
+        TArrayI *arr = ec->GetTracksMatched();
+        if (arr) arr->Set(0);
+      }
+
+      // Create AliEmcalParticle objects to handle the matching
+      AliEmcalParticle* emcalCluster = new ((*fEmcalClusters)[fNEmcalClusters])
+      AliEmcalParticle(cluster, fClusterContainerUtils.GlobalIndexFromLocalIndex(clusCont, clusIterator.current_index()), fVertex[0], fVertex[1], fVertex[2], AliVCluster::kNonLinCorr);
+      emcalCluster->SetMatchedPtr(fEmcalTracks);
+
+      fNEmcalClusters++;
     }
-    else {
-      ec = dynamic_cast<AliESDCaloCluster*>(cluster);
-      TArrayI *arr = ec->GetTracksMatched();
-      if (arr) arr->Set(0);
-    }
-    
-    // Create AliEmcalParticle objects to handle the matching
-    AliEmcalParticle* emcalCluster = new ((*fEmcalClusters)[fNEmcalClusters])
-    AliEmcalParticle(cluster, fClusterContainerUtils.GlobalIndexFromLocalIndex(fClusCont, fClusCont->GetCurrentID()), fVertex[0], fVertex[1], fVertex[2], AliVCluster::kNonLinCorr);
-    emcalCluster->SetMatchedPtr(fEmcalTracks);
-    
-    fNEmcalClusters++;
   }
   
   Double_t mass;
@@ -256,58 +290,63 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
     // use pion mass, and fUseDCA to determine starting point of propagation
     mass = 0.1396;
   }
-  fPartCont->ResetCurrentID();
-  while ((track = static_cast<AliVTrack*>(fPartCont->GetNextAcceptParticle()))) {
+  AliParticleContainer * partCont = 0;
+  TIter nextPartCont(&fParticleCollArray);
+  while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
+    auto partItCont = partCont->accepted_momentum();
+    for (AliParticleIterableMomentumContainer::iterator partIterator = partItCont.begin(); partIterator != partItCont.end(); ++partIterator) {
+      track = static_cast<AliVTrack *>(partIterator->second);
 
-    // Clears the matching info
-    track->ResetStatus(AliVTrack::kEMCALmatch);
-    track->SetEMCALcluster(-1);
+      // Clears the matching info
+      track->ResetStatus(AliVTrack::kEMCALmatch);
+      track->SetEMCALcluster(-1);
 
-    // Propagate tracks if requested
-    Bool_t propthistrack = kFALSE;
-    if (fDoPropagation) {
-      propthistrack = kTRUE;
-    }
-    else if (!track->IsExtrapolatedToEMCAL()) {
-      if (fAttemptProp) {
+      // Propagate tracks if requested
+      Bool_t propthistrack = kFALSE;
+      if (fDoPropagation) {
         propthistrack = kTRUE;
       }
-      else if (fAttemptPropMatch && IsTrackInEmcalAcceptance(track)) {
-        propthistrack = kTRUE;
+      else if (!track->IsExtrapolatedToEMCAL()) {
+        if (fAttemptProp) {
+          propthistrack = kTRUE;
+        }
+        else if (fAttemptPropMatch && IsTrackInEmcalAcceptance(track)) {
+          propthistrack = kTRUE;
+        }
       }
-    }
-    if (propthistrack) {
-      
-      // Check if track comes from a particular MC generator, do not include it if it is not a selected one
-      Int_t mcLabel = TMath::Abs(track->GetLabel());
-      TString genName;
-      if( fMCEvent && fMCGenerToAcceptForTrack && fNMCGenerToAccept > 0 )
-      {
-        fMCEvent->GetCocktailGenerator(mcLabel,genName);
+      if (propthistrack) {
         
-        Bool_t generOK = kFALSE;
-        for(Int_t ig = 0; ig < fNMCGenerToAccept; ig++)
+        // Check if track comes from a particular MC generator, do not include it if it is not a selected one
+        Int_t mcLabel = TMath::Abs(track->GetLabel());
+        TString genName;
+        if( fMCEvent && fMCGenerToAcceptForTrack && fNMCGenerToAccept > 0 )
         {
-          if ( genName.Contains(fMCGenerToAccept[ig]) ) generOK = kTRUE;
+          fMCEvent->GetCocktailGenerator(mcLabel,genName);
+          
+          Bool_t generOK = kFALSE;
+          for(Int_t ig = 0; ig < fNMCGenerToAccept; ig++)
+          {
+            if ( genName.Contains(fMCGenerToAccept[ig]) ) generOK = kTRUE;
+          }
+          
+          if ( !generOK ) continue;
         }
         
-        if ( !generOK ) continue;
+        // Propagate the track
+        AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA);
       }
       
-      // Propagate the track
-      AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist, mass, 20, 0.35, kFALSE, fUseDCA);
+      // Create AliEmcalParticle objects to handle the matching
+      AliEmcalParticle* emcalTrack = new ((*fEmcalTracks)[fNEmcalTracks]) AliEmcalParticle(track, fParticleContainerUtils.GlobalIndexFromLocalIndex(partCont, partIterator.current_index()));
+      emcalTrack->SetMatchedPtr(fEmcalClusters);
+      
+      AliDebug(2, Form("Now adding track (pT = %.3f, eta = %.3f, phi = %.3f)"
+                       "Phi, Eta on EMCal = %.3f, %.3f",
+                       emcalTrack->Pt(), emcalTrack->Eta(), emcalTrack->Phi(),
+                       track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal()));
+      
+      fNEmcalTracks++;
     }
-    
-    // Create AliEmcalParticle objects to handle the matching
-    AliEmcalParticle* emcalTrack = new ((*fEmcalTracks)[fNEmcalTracks]) AliEmcalParticle(track, fParticleContainerUtils.GlobalIndexFromLocalIndex(fPartCont, fPartCont->GetCurrentID()));
-    emcalTrack->SetMatchedPtr(fEmcalClusters);
-    
-    AliDebug(2, Form("Now adding track (pT = %.3f, eta = %.3f, phi = %.3f)"
-                     "Phi, Eta on EMCal = %.3f, %.3f",
-                     emcalTrack->Pt(), emcalTrack->Eta(), emcalTrack->Phi(),
-                     track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal()));
-    
-    fNEmcalTracks++;
   }
 }
 
