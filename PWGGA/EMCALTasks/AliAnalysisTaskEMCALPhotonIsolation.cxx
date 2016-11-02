@@ -190,6 +190,8 @@ fHistTrials(0),
 fPtTracksVSpTNC(0),
 fCTdistVSpTNC(0),
 fPtTracksVSpTNC_MC(0),
+fpi0VSclusterVSIsolation(0),
+fpi0VSM02VSIsolation(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -349,6 +351,8 @@ fHistTrials(0),
 fPtTracksVSpTNC(0),
 fCTdistVSpTNC(0),
 fPtTracksVSpTNC_MC(0),
+fpi0VSclusterVSIsolation(0),
+fpi0VSM02VSIsolation(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -873,9 +877,22 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fHistTrials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
     fOutput->Add(fHistTrials);
   
-    fPtTracksVSpTNC_MC = new TH2F ("hChargedptSpecVSpT_MC","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
+    fPtTracksVSpTNC_MC = new TH2F ("hChargedptSpecVSpT_MC","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,50.);
     fPtTracksVSpTNC_MC->Sumw2();
     fOutput->Add(fPtTracksVSpTNC_MC);
+    
+    fpi0VSclusterVSIsolation = new TH3F ("hpi0VSclusterVSisolation","Energy pi0 vs cluster Energy vs Isolation",95,5.,100.,95,5.,100.,100,0.,100.);
+    fpi0VSclusterVSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
+    fpi0VSclusterVSIsolation->SetYTitle("cluster E");
+    fpi0VSclusterVSIsolation->SetZTitle("Isolation");
+    fOutput->Add(fpi0VSclusterVSIsolation);
+    
+    fpi0VSM02VSIsolation = new TH3F ("fpi0VSM02VSIsolation","Energy pi0 vs cluster M02 vs Isolation",95,5.,100.,500,0.,5.,100,0.,100.);
+    fpi0VSM02VSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
+    fpi0VSM02VSIsolation->SetYTitle("cluster M02");
+    fpi0VSM02VSIsolation->SetZTitle("Isolation");
+    fOutput->Add(fpi0VSM02VSIsolation);
+    
   }
 
   
@@ -2513,6 +2530,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             else
               clusterFromPromptPhoton=7;//contribution from one daughter
           }
+          fpi0VSclusterVSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, isolation);
+          fpi0VSM02VSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), ss, isolation);
         }
         else{
             //printf("  of a non considered meson/baryon");
@@ -2586,11 +2605,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
             AliAODMCParticle *aunt=static_cast<AliAODMCParticle*>(fAODMCParticles->At(idxaunt1));
             if(( aunt->Phi() - phiTrue ) < 0.01 && ( aunt->Eta() - etaTrue ) < 0.01 ){
               enTrue += aunt->E()*TMath::Sin(aunt->Theta());
-              clusterFromPromptPhoton=7;//contribution from both daughters
+              clusterFromPromptPhoton=6;//contribution from both daughters
             }
             else
-              clusterFromPromptPhoton=6;//contribution from one daughter
+              clusterFromPromptPhoton=7;//contribution from one daughter
           }
+          fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
+          fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
+
         }
         else
           clusterFromPromptPhoton=8;//Undefined
@@ -2629,6 +2651,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
     //clusterFromPP=11 -> clusterlabel= Charged hadronic particle.
   
   if(fWho==1) fOutClustMC->Fill(outputvalueMCmix);
+  
   return;
 }
   //__________________________________________________________________________________________________________________________
