@@ -170,6 +170,10 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
 
   TTree   *fTree;    //!<! Output tree
 
+private:
+  AliAnalysisTaskEmcalJetTreeBase(const AliAnalysisTaskEmcalJetTreeBase&);            // not implemented
+  AliAnalysisTaskEmcalJetTreeBase &operator=(const AliAnalysisTaskEmcalJetTreeBase&); // not implemented
+
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalJetTreeBase, 1)
   /// \endcond
