@@ -382,7 +382,7 @@ void AliV0ReaderV1::UserCreateOutputObjects()
     if(fHistograms==NULL){
       fHistograms = new TList();
       fHistograms->SetOwner(kTRUE);
-      fHistograms->SetName(Form("V0FindingEfficiencyInput_%s",fEventCuts->GetCutNumber().Data()));
+      fHistograms->SetName(Form("V0FindingEfficiencyInput_%s_%s",fEventCuts->GetCutNumber().Data(),fConversionCuts->GetCutNumber().Data()));
     }
 
     fHistoMCGammaPtvsR         = new TH2F("MCconvGamma_Pt_R","MC converted gamma Pt vs R (|eta| < 0.9)",250,0.0,25,400,0,200);

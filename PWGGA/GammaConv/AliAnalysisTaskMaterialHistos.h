@@ -114,6 +114,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 
  		TH2F**            hMCConversionMappingRPhi;      //!
 		TH1F**            hMCConversionR;                //!  
+		TH2F**            hMCConversionPtvsR;                //!  
 		TH1F**            hMCConversionMidPtR;           //!  
 		TH1F**            hMCConversionHighPtR;           //! 
 		TH1F**            hMCConversionEtaPR;           //!   
@@ -126,6 +127,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH2F**            hMCTrueConversionMappingRPhi;      //!
 		TH2F**            hMCTrueConversionMappingRZ;        //!
 		TH1F**            hMCTrueConversionR;                //!  
+		TH2F**            hMCTrueConversionPtvsR;                //!  
 		TH1F**            hMCTrueConversionMidPtR;           //!  
 		TH1F**            hMCTrueConversionHighPtR;           //!  
 		TH1F**            hMCTrueConversionEtaPR;           //!  
@@ -170,7 +172,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 7);
+        ClassDef(AliAnalysisTaskMaterialHistos, 8);
 };
 
 #endif
