@@ -453,7 +453,6 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     }
     //might be needed
     Long64_t lAcceptedEvents;
-    Long64_t lAcceptedEventsPerRun[1000];
     
     //=========================================
     // Determine Calibration Information 
@@ -496,7 +495,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 //==== Floating Point Calibration Engine ====
                 lRunStats[iRun] = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),"","goff");
                 cout<<"--- Sorting estimator "<<fSelection->GetEstimator(iEst)->GetName()<<"..."<<flush;
-
+                
                 TMath::Sort(ntot,sTree[iRun]->GetV1(),index);
                 cout<<" Done! Getting Boundaries... "<<flush;
                 
@@ -508,15 +507,14 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     TString lCondition = fSelection->GetEstimator(iEst)->GetDefinition();
                     lCondition.Append(Form("> %.10f",fSelection->GetEstimator(iEst)->GetAnchorPoint() ) );
                     lAcceptedEvents = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),lCondition.Data(),"goff");
-                    lAcceptedEventsPerRun[iRun] = lAcceptedEvents;
+                    lRunStats[iRun] = lAcceptedEvents;
                 }
                 lNrawBoundaries[0] = 0.0; //Defined OK even if anchored
                 //Overwrite lower boundary in case this has a negative minimum...
                 if ( lMinEst[iEst][iRun] < 0 ) {
-		  lNrawBoundaries[0] = lMinEst[iEst][iRun]; 
-		  cout<<"Min Value Override, Negative..."<<flush;
-		}
-                
+                    lNrawBoundaries[0] = lMinEst[iEst][iRun];
+                    cout<<"Min Value Override, Negative..."<<flush;
+                }
                 
                 for( Long_t lB=1; lB<lNDesiredBoundaries; lB++) {
                     Long64_t position = (Long64_t) ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) );
@@ -547,14 +545,14 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                             }
                         }
                     }
-                }                
+                }
                 
-                cout<<" Done! Saving... "<<endl; 
+                cout<<" Done! Saving... "<<endl;
                 //Should not be the source of excessive memory consumption...
                 //...but can be rearranged if needed!
                 hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNDesiredBoundaries-1,lNrawBoundaries);
                 hCalib[iRun][iEst]->SetDirectory(0);
-		hCalib[iRun][iEst]->SetBinContent(0,100.5); //Just in case correction functions screw up the values ... 
+                hCalib[iRun][iEst]->SetBinContent(0,100.5); //Just in case correction functions screw up the values ...
                 for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++){
                     hCalib[iRun][iEst] -> SetBinContent(ibin, lMiddleOfBins[ibin-1]);
                     
@@ -637,7 +635,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         cout<<"=================================================================================="<<endl;
         //Protection against saving a calibration object that has been acquired
         //with insufficient statistics
-        if ( lAcceptedEventsPerRun[iRun] > 1000){
+        if ( lRunStats[iRun] > 1000){
             if ( !lAutoDiscover ) {
                 oadbContMS->AppendObject(oadbMultSelection, fFirstRun[iRun], fLastRun[iRun] );
             }else{
