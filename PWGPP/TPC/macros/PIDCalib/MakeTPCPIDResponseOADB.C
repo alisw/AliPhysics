@@ -111,19 +111,24 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   // ===| 2015 |================================================================
   // first iteration of 15f
   // used for all 2015 so far
-  // pass1
+  // ---| pass1 |---------------------------------------------------------------
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/ben/data/15f.pass1/splines_15f.pass1.root",     208505, 228930, 1); //a-f (+15g low field)
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/LHC15g.pass1_megarun/splines_LHC15g.pass1_megarun.root",     228931, 229245, 1); //15g low field
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15h.pass1/v1/splines_15h.pass1.root", 229246, 235169, 1);
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15i.pass1/v1/splines_15i.pass1.root", 235170, 236866, 1);
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15j.pass1/v1/splines_15j.pass1.root", 236867, 244299, 1); //j-m
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15n.pass1/v1/splines_15n.pass1.root", 244300, 244639, 1);
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15o.pass1_highIR/v1/splines_15o.pass1.root", 244640, 999999, 1); // 15o high IR
-  // pass2
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15o.pass1_highIR/v1/splines_15o.pass1.root", 244640, 247173, 1); // 15o high IR
+  // ---| pass2 |---------------------------------------------------------------
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15f.pass2/splines_15f.pass2.root", 208505, 244299, 2); //a-f
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15n.pass2/v1/splines_15n.pass2.root", 244300, 244639, 2);
-  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15o.pass2/v1/splines_15o.pass2.root", 244640, 999999, 2, "",
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15o.pass2/v1/splines_15o.pass2.root", 244640, 247173, 2, "",
                               "-1.077e-06,-4.999e-05,-9.812e-03,2.492e-02,0 ; -5.562e-07, 1.644e-06, -0.5 ; 0.,0.,0.,0.");
+
+  // ===| 2016 |================================================================
+  // for the moment use 16l splines for all 2016 data
+  // ---| pass1 |---------------------------------------------------------------
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/16l.pass1/v1/splines_16l.pass1.root", 247174, 999999, 1);
 
 
 /*
