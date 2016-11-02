@@ -11,6 +11,7 @@
 #include <TObject.h>
 #include <TString.h>
 #include <TChain.h>
+#include <TH2F.h>
 
 class AliReducedBaseEvent;
 class AliReducedEventInfo;
@@ -373,8 +374,9 @@ class AliReducedVarManager : public TObject {
     kTPCnclsRatio2,      // TPCncls / TPCCrossedRows    
     kTPCsignal,         
     kTPCsignalN,
-    kTPCnSig,           
-    kTOFbeta=kTPCnSig+4,
+    kTPCnSig,  
+    kTPCnSigCorrected=kTPCnSig+4,
+    kTOFbeta=kTPCnSigCorrected+4,
     kTOFtime,
     kTOFdx,
     kTOFdz,
@@ -487,6 +489,8 @@ class AliReducedVarManager : public TObject {
 
   //static TString* GetVarNames();
   //static TString* GetVarUnits();
+
+  static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
   
  private:
   static Float_t fgBeamMomentum;                  // beam energy (needed when calculating polarization angles) 
@@ -503,7 +507,12 @@ class AliReducedVarManager : public TObject {
 			    Float_t &thetaCS, Float_t &phiCS,
 			    Float_t leg1Mass=fgkParticleMass[kElectron], Float_t leg2Mass=fgkParticleMass[kElectron]);
   static void GetLegMassAssumption(Int_t id, Float_t& m1, Float_t& m2);
-    
+
+  static TH2F* fgTPCelectronCentroidMap;
+  static TH2F* fgTPCelectronWidthMap;
+  static Variables fgVarDependencyX;        // varX in the 2-D electron correction maps
+  static Variables fgVarDependencyY;        // varY in the 2-D electron correction maps
+  
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
