@@ -95,6 +95,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
  	hESDConversionMass(NULL),         
 	hMCConversionMappingRPhi(NULL),
 	hMCConversionR(NULL),
+	hMCConversionPtvsR(NULL),
 	hMCConversionMidPtR(NULL),
 	hMCConversionHighPtR(NULL),
 	hMCConversionEtaPR(NULL),
@@ -107,6 +108,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 	hMCTrueConversionMappingRPhi(NULL),
 	hMCTrueConversionMappingRZ(NULL),
 	hMCTrueConversionR(NULL),
+	hMCTrueConversionPtvsR(NULL),
 	hMCTrueConversionMidPtR(NULL),
 	hMCTrueConversionHighPtR(NULL),
 	hMCTrueConversionEtaPR(NULL),
@@ -211,6 +213,7 @@ fConversionCutArray(NULL),
  	hESDConversionMass(NULL),         
   hMCConversionMappingRPhi(NULL),
 	hMCConversionR(NULL),
+	hMCConversionPtvsR(NULL),
 	hMCConversionMidPtR(NULL),
 	hMCConversionHighPtR(NULL),
 	hMCConversionEtaPR(NULL),
@@ -223,6 +226,7 @@ fConversionCutArray(NULL),
   hMCTrueConversionMappingRPhi(NULL),
   hMCTrueConversionMappingRZ(NULL),
 	hMCTrueConversionR(NULL),
+	hMCTrueConversionPtvsR(NULL),
 	hMCTrueConversionMidPtR(NULL),
 	hMCTrueConversionHighPtR(NULL),
 	hMCTrueConversionEtaPR(NULL),
@@ -327,6 +331,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	
 	hMCConversionMappingRPhi       = new TH2F*[fnCuts];
 	hMCConversionR                 = new TH1F*[fnCuts];
+	hMCConversionPtvsR             = new TH2F*[fnCuts];
 	hMCConversionMidPtR            = new TH1F*[fnCuts];
 	hMCConversionHighPtR            = new TH1F*[fnCuts];
 	hMCConversionEtaPR            = new TH1F*[fnCuts];
@@ -340,6 +345,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	hMCTrueConversionMappingRPhi   = new TH2F*[fnCuts];
 	hMCTrueConversionMappingRZ     = new TH2F*[fnCuts];
 	hMCTrueConversionR             = new TH1F*[fnCuts];
+	hMCTrueConversionPtvsR         = new TH2F*[fnCuts];
 	hMCTrueConversionMidPtR        = new TH1F*[fnCuts];
 	hMCTrueConversionHighPtR        = new TH1F*[fnCuts];
 	hMCTrueConversionEtaPR        = new TH1F*[fnCuts];
@@ -537,6 +543,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	    fMCList[iCut]->Add(hMCConversionMappingRPhi[iCut]);
 	    hMCConversionR[iCut]               = new TH1F("MC_ConversionMapping_R","MC_ConversionMapping_R",nBinsR,0.,200.);
 	    fMCList[iCut]->Add(hMCConversionR[iCut]);
+	    hMCConversionPtvsR[iCut]               = new TH2F("MC_ConversionMapping_Pt_R","MC_ConversionMapping_Pt_R",nBinsPt,0.,20.,nBinsR,0.,200.);
+	    fMCList[iCut]->Add(hMCConversionPtvsR[iCut]);
 	    hMCConversionMidPtR[iCut]          = new TH1F("MC_ConversionMappingMidPt_R","MC_ConversionMappingMidPt_R",nBinsR,0.,200.);
 	    fMCList[iCut]->Add(hMCConversionMidPtR[iCut]);	
 	    hMCConversionHighPtR[iCut]          = new TH1F("MC_ConversionMappingHighPt_R","MC_ConversionMappingHighPt_R",nBinsR,0.,200.);
@@ -567,6 +575,11 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	    
 	    hMCTrueConversionR[iCut]               = new TH1F("ESD_TrueConversionMapping_R","ESD_TrueConversionMapping_R",nBinsR,0.,200.);
 	    fTrueList[iCut]->Add(hMCTrueConversionR[iCut]);
+
+	    hMCTrueConversionPtvsR[iCut]               = new TH2F("ESD_TrueConversionMapping_Pt_R","ESD_TrueConversionMapping_Pt_R",nBinsPt,0.,20.,nBinsR,0.,200.);
+	    fTrueList[iCut]->Add(hMCTrueConversionPtvsR[iCut]);
+
+
 	    hMCTrueConversionMidPtR[iCut]          = new TH1F("ESD_TrueConversionMappingMidPt_R","ESD_TrueConversionMappingMidPt_R",nBinsR,0.,200.);
 	    fTrueList[iCut]->Add(hMCTrueConversionMidPtR[iCut]);	
 	    
@@ -705,7 +718,10 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	  if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())
 	    if(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms())
 	      fOutputList->Add(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
-	
+	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
+	  if (fV0Reader->GetV0FindingEfficiencyHistograms())
+	    fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 	  if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
 	  if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms()){
@@ -849,6 +865,7 @@ void AliAnalysisTaskMaterialHistos::FillMCTree(Int_t stackPos){
     hMCConversionEta[fiCut]->Fill(candidate->Eta());             
     hMCConversionPt[fiCut]->Fill(candidate->Pt());                          
     hMCConversionR[fiCut]->Fill(daughter1->R());      
+    hMCConversionPtvsR[fiCut]->Fill(candidate->Pt(),daughter1->R());      
     if (fGammaMCConvPt>minPt && fGammaMCConvPt<maxPt){
       hMCConversionMidPtR[fiCut]->Fill(daughter1->R());    
     }else if(fGammaMCConvPt>minPtHigh && fGammaMCConvPt<maxPtHigh){
@@ -945,6 +962,9 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     if(gamma->GetPhotonP()!=0){
       asym=negTrack->P()/gamma->GetPhotonP();
     }
+    Double_t mcPhotonPt = 0.;
+    Double_t mcPhotonR = 0.;
+
     fKind = 9;	
     
     if(fIsMC>0){
@@ -1020,6 +1040,8 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 	  else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
 	    if(pdgCode == 22 && gammaIsPrimary){
 	      fKind = 0; // primary photons
+	      mcPhotonR= negDaughter->R();
+	      mcPhotonPt=gamma->GetMCParticle(fMCStack)->Pt();
 	    } else if (pdgCode == 22){
 	      fKind = 5; //secondary photons
 	    }		
@@ -1095,6 +1117,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 	  hMCTrueConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
 	}
 	hMCTrueConversionR[fiCut]->Fill(gamma->GetConversionRadius());  
+	hMCTrueConversionPtvsR[fiCut]->Fill(mcPhotonPt,mcPhotonR);
 	hMCTrueConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
 	hMCTrueConversionPsiPair[fiCut]->Fill(gamma->GetPsiPair()); 
 	hMCTrueConversionChi2[fiCut]->Fill(gamma->GetChi2perNDF());    
