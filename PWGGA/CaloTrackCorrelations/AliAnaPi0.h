@@ -169,7 +169,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
                                              Float_t  pt1,     Float_t  pt2,
                                              Int_t    ncells1, Int_t    ncells2,
                                              Double_t mass,    Double_t pt,     Double_t asym,
-                                             Double_t deta,    Double_t dphi);
+                                             Double_t deta,    Double_t dphi,   Double_t angle);
   
   void         FillArmenterosThetaStar(Int_t pdg);
 
@@ -395,6 +395,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPrimPi0AccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH1F *   fhPrimPi0AccPtOpAngCuts[10];//!<! Spectrum of primary with accepted daughters, different opening angles
   TH2F *   fhPrimPi0Y ;                //!<! Rapidity distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccY ;             //!<! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0Yeta ;             //!<! PseudoRapidity distribution of primary particles  vs pT
@@ -418,6 +419,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPrimEtaAccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH1F *   fhPrimEtaAccPtOpAngCuts[10];//!<! Spectrum of primary with accepted daughters, different opening angles
   TH2F *   fhPrimEtaY ;                //!<! Rapidity distribution of primary particles vs pT
   TH2F *   fhPrimEtaAccY ;             //!<! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimEtaYeta ;             //!<! PseudoRapidity distribution of primary particles vs pT
@@ -513,6 +515,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhReOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number  
 //  TH2F *  fhReOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other 
 
+  TH2F *  fhReOpAngleBinPairClusterMassMCTruePi0[10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, true pi0 decay pairs from MC 
+  TH2F *  fhReOpAngleBinPairClusterMassMCTrueEta[10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, true eta decay pairs from MC
+  
   TH2F *  fhMiOpAngleBinMinClusterEtaPhi       [10] ; //!<! Eta-Phi location of lowest energy cluster in pair, depending on opening angle cut, mixed event
   TH2F *  fhMiOpAngleBinMaxClusterEtaPhi       [10] ; //!<! Eta-Phi location of highest energy cluster in pair, depending on opening angle cut, mixed event
 //TH2F *  fhMiOpAngleBinMinClusterColRow       [10] ; //!<! Column and row location of main cell of lowest energy cluster in pair, depending on opening angle cut, mixed event
@@ -527,7 +532,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhMiOpAngleBinPairClusterMass        [10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, mixed event  
   TH2F *  fhMiOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number, mixed event  
 //TH2F *  fhMiOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other, mixed event 
-
+  
   TH2F *  fhPtBinClusterEtaPhi                 [10] ; //!<! Eta-Phi location of cluster in different energy bins.
   TH2F *  fhPtBinClusterColRow                 [10] ; //!<! Column and row location of cluster in different energy bins.
 
@@ -538,7 +543,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,33) ;
+  ClassDef(AliAnaPi0,34) ;
   /// \endcond
   
 } ;
