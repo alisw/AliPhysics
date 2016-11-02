@@ -1066,6 +1066,11 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbTrigAnalysisLHC15o1->SetZDCCorrParameters(-123.1, 123.1, 2., 2.);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o1, 245726, 245793);
   
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC16do = new AliOADBTriggerAnalysis("lhc16do");
+  oadbTrigAnalysisLHC16do->SetV0MOnVsOfA(-65.42);
+  oadbTrigAnalysisLHC16do->SetV0MOnVsOfB(7.43);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC16do, 252235, 264035);
+  
   oadbTrigAnalysisZDC1->Print();
   oadbTrigAnalysisZDC2->Print();
   oadbTrigAnalysisZDC3->Print();
