@@ -21,6 +21,7 @@ using std::ifstream;
 #include <TMath.h>
 #include <TLorentzVector.h>
 #include <TChain.h>
+#include <TH2F.h>
 //#include <TObject.h>
 
 #include "AliReducedBaseEvent.h"
@@ -104,6 +105,10 @@ TString AliReducedVarManager::fgVariableUnits[AliReducedVarManager::kNVars] = {"
 AliReducedBaseEvent* AliReducedVarManager::fgEvent = 0x0;
 AliReducedEventPlaneInfo* AliReducedVarManager::fgEventPlane = 0x0;
 Bool_t AliReducedVarManager::fgUsedVars[AliReducedVarManager::kNVars] = {kFALSE};
+TH2F* AliReducedVarManager::fgTPCelectronCentroidMap = 0x0;
+TH2F* AliReducedVarManager::fgTPCelectronWidthMap = 0x0;
+AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyX = kNothing;
+AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyY = kNothing;
 
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
@@ -227,6 +232,11 @@ void AliReducedVarManager::SetVariableDependencies() {
     }
   }
   if(fgUsedVars[kPtSquared]) fgUsedVars[kPt]=kTRUE;  
+  if(fgUsedVars[kTPCnSigCorrected+kElectron]) {
+     fgUsedVars[kTPCnSig+kElectron] = kTRUE; 
+     fgUsedVars[fgVarDependencyX] = kTRUE; 
+     fgUsedVars[fgVarDependencyY] = kTRUE;
+  }
 }
 
 //__________________________________________________________________
@@ -756,6 +766,18 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
     values[kTPCnSig+specie] = pinfo->TPCnSig(specie);
     values[kTOFnSig+specie] = pinfo->TOFnSig(specie);
     values[kBayes+specie]   = pinfo->GetBayesProb(specie);
+  }
+  if(fgUsedVars[kTPCnSigCorrected+kElectron] && fgTPCelectronCentroidMap && fgTPCelectronWidthMap) {
+     Int_t binX = fgTPCelectronCentroidMap->GetXaxis()->FindBin(values[fgVarDependencyX]);
+     if(binX==0) binX = 1;
+     if(binX==fgTPCelectronCentroidMap->GetXaxis()->GetNbins()+1) binX -= 1;
+     Int_t binY = fgTPCelectronCentroidMap->GetYaxis()->FindBin(values[fgVarDependencyY]);
+     if(binY==0) binY==1;
+     if(binY==fgTPCelectronCentroidMap->GetYaxis()->GetNbins()+1) binY -= 1;
+     Float_t centroid = fgTPCelectronCentroidMap->GetBinContent(binX, binY);
+     Float_t width = fgTPCelectronWidthMap->GetBinContent(binX, binY);
+     if(TMath::Abs(width)<1.0e-6) width = 1.;
+     values[kTPCnSigCorrected+kElectron] = (values[kTPCnSig+kElectron] - centroid)/width;   
   }
 
   values[kTRDpidProbabilitiesLQ1D]   = pinfo->TRDpidLQ1D(0);
@@ -1497,6 +1519,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTPCnSig+1]         = "TPC n_{#sigma}^{#pi}";         fgVariableUnits[kTPCnSig+1] = "#sigma";
   fgVariableNames[kTPCnSig+2]         = "TPC n_{#sigma}^{K}";           fgVariableUnits[kTPCnSig+2] = "#sigma";
   fgVariableNames[kTPCnSig+3]         = "TPC n_{#sigma}^{p}";           fgVariableUnits[kTPCnSig+3] = "#sigma";
+  fgVariableNames[kTPCnSigCorrected]         = "TPC n_{#sigma}^{e} - corrected";           fgVariableUnits[kTPCnSigCorrected] = "#sigma";  
+  fgVariableNames[kTPCnSigCorrected+1]    = "TPC n_{#sigma}^{#pi} - corrected";         fgVariableUnits[kTPCnSigCorrected+1] = "#sigma";
+  fgVariableNames[kTPCnSigCorrected+2]    = "TPC n_{#sigma}^{K} - corrected";           fgVariableUnits[kTPCnSigCorrected+2] = "#sigma";
+  fgVariableNames[kTPCnSigCorrected+3]    = "TPC n_{#sigma}^{p} - corrected";           fgVariableUnits[kTPCnSigCorrected+3] = "#sigma";
   fgVariableNames[kTOFbeta]           = "TOF #beta";                    fgVariableUnits[kTOFbeta] = "";
   fgVariableNames[kTOFtime]           = "TOF time";                     fgVariableUnits[kTOFtime] = "ps";
   fgVariableNames[kTOFdx]             = "TOF dx";                       fgVariableUnits[kTOFdx] = "mm";
@@ -1583,4 +1609,17 @@ TChain* AliReducedVarManager::GetChain(const Char_t* filename, Int_t howMany, In
   }
   cout << " done" << endl;
   return chain;
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, AliReducedVarManager::Variables varX, AliReducedVarManager::Variables varY) {
+   //
+   // initialize the electron TPC pid correction maps
+   //
+   fgVarDependencyX = varX;
+   fgVarDependencyY = varY;
+   fgTPCelectronCentroidMap = (TH2F*)centroidMap->Clone(Form("AliReducedVarManager_TPCelectronCentroidMap"));
+   fgTPCelectronCentroidMap->SetDirectory(0x0);
+   fgTPCelectronWidthMap = (TH2F*)widthMap->Clone(Form("AliReducedVarManager_TPCelectronWidthMap"));
+   fgTPCelectronWidthMap->SetDirectory(0x0);
 }
