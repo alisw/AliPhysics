@@ -591,19 +591,18 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
   // If it is not found, then there will be nothing to iterate over, so we don't need to explicitly check the return value
   for (auto const & str : inputObjects)
   {
-    // TODO: Generalize to arrays for clusters and tracks...
     // NOTE: The AliEmcalContainer derived objects operate differently than the cells. The containers should be added during initialization while the cells should be added during ExecOnce()!
     if (inputObjectType == kCluster)
     {
       AliEmcalContainer * cont = GetClusterContainer(str.c_str());
       AliDebugStream(2) << "Adding cluster container " << str << " of array " << cont->GetArrayName() << " to component " << component->GetName() << std::endl;
-      component->SetClusterContainer(GetClusterContainer(str.c_str()));
+      component->AdoptClusterContainer(GetClusterContainer(str.c_str()));
     }
     else if (inputObjectType == kTrack)
     {
       AliEmcalContainer * cont = GetParticleContainer(str.c_str());
       AliDebugStream(2) << "Adding particle container " << str << " of array " << cont->GetArrayName() << " to component " << component->GetName() << std::endl;
-      component->SetParticleContainer(GetParticleContainer(str.c_str()));
+      component->AdoptParticleContainer(GetParticleContainer(str.c_str()));
     }
     else if (inputObjectType == kCaloCells)
     {

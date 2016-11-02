@@ -82,43 +82,50 @@ Bool_t AliEmcalCorrectionClusterExotics::Run()
   AliDebug(3, Form("%s", __PRETTY_FUNCTION__));
   AliEmcalCorrectionComponent::Run();
   
-  if (!fClusCont) return kFALSE;
-  
   // loop over clusters
-  fClusCont->ResetCurrentID();
   AliVCluster *clus = 0;
-  while ((clus = fClusCont->GetNextCluster())) {
-    if (!clus->IsEMCAL()) continue;
-    
-    if (fCreateHisto) {
-      Float_t pos[3] = {0.};
-      clus->GetPosition(pos);
-      TVector3 vec(pos);
-      fEtaPhiDistBefore->Fill(vec.Eta(),vec.Phi());
-    }
-    
-    Bool_t exResult = kFALSE;
-    
-    if (fRecoUtils) {
-      if (fRecoUtils->IsRejectExoticCluster()) {
-        Bool_t exRemoval = fRecoUtils->IsRejectExoticCell();
-        fRecoUtils->SwitchOnRejectExoticCell();                  //switch on temporarily
-        exResult = fRecoUtils->IsExoticCluster(clus, fCaloCells);
-        if (!exRemoval) fRecoUtils->SwitchOffRejectExoticCell(); //switch back off
-        
-        clus->SetIsExotic(exResult);
-      }
-    }
-    
-    if (fCreateHisto) {
-      if (exResult) {
-        fEnergyExoticClusters->Fill(clus->E());
-      }
-      else {
+  AliClusterContainer * clusCont = 0;
+  TIter nextClusCont(&fClusterCollArray);
+  while ((clusCont = static_cast<AliClusterContainer*>(nextClusCont()))) {
+
+    if (!clusCont) continue;
+    auto clusItCont = clusCont->all_momentum();
+
+    for (AliClusterIterableMomentumContainer::iterator clusIterator = clusItCont.begin(); clusIterator != clusItCont.end(); ++clusIterator) {
+      clus = static_cast<AliVCluster *>(clusIterator->second);
+
+      if (!clus->IsEMCAL()) continue;
+
+      if (fCreateHisto) {
         Float_t pos[3] = {0.};
         clus->GetPosition(pos);
         TVector3 vec(pos);
-        fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
+        fEtaPhiDistBefore->Fill(vec.Eta(),vec.Phi());
+      }
+
+      Bool_t exResult = kFALSE;
+
+      if (fRecoUtils) {
+        if (fRecoUtils->IsRejectExoticCluster()) {
+          Bool_t exRemoval = fRecoUtils->IsRejectExoticCell();
+          fRecoUtils->SwitchOnRejectExoticCell();                  //switch on temporarily
+          exResult = fRecoUtils->IsExoticCluster(clus, fCaloCells);
+          if (!exRemoval) fRecoUtils->SwitchOffRejectExoticCell(); //switch back off
+
+          clus->SetIsExotic(exResult);
+        }
+      }
+
+      if (fCreateHisto) {
+        if (exResult) {
+          fEnergyExoticClusters->Fill(clus->E());
+        }
+        else {
+          Float_t pos[3] = {0.};
+          clus->GetPosition(pos);
+          TVector3 vec(pos);
+          fEtaPhiDistAfter->Fill(vec.Eta(), vec.Phi());
+        }
       }
     }
   }
