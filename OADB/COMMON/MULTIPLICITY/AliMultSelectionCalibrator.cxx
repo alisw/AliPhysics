@@ -453,6 +453,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     }
     //might be needed
     Long64_t lAcceptedEvents;
+    Long64_t lAcceptedEventsPerRun[1000];
     
     //=========================================
     // Determine Calibration Information 
@@ -507,6 +508,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                     TString lCondition = fSelection->GetEstimator(iEst)->GetDefinition();
                     lCondition.Append(Form("> %.10f",fSelection->GetEstimator(iEst)->GetAnchorPoint() ) );
                     lAcceptedEvents = sTree[iRun]->Draw(fSelection->GetEstimator(iEst)->GetDefinition(),lCondition.Data(),"goff");
+                    lAcceptedEventsPerRun[iRun] = lAcceptedEvents;
                 }
                 lNrawBoundaries[0] = 0.0; //Defined OK even if anchored
                 //Overwrite lower boundary in case this has a negative minimum...
@@ -633,10 +635,14 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         fsels->PrintInfo();
         cuts->Print(); 
         cout<<"=================================================================================="<<endl;
-        if ( !lAutoDiscover ) {
-            oadbContMS->AppendObject(oadbMultSelection, fFirstRun[iRun], fLastRun[iRun] );
-        }else{
-            oadbContMS->AppendObject(oadbMultSelection, lRunNumbers[iRun], lRunNumbers[iRun] );
+        //Protection against saving a calibration object that has been acquired
+        //with insufficient statistics
+        if ( lAcceptedEventsPerRun[iRun] > 1000){
+            if ( !lAutoDiscover ) {
+                oadbContMS->AppendObject(oadbMultSelection, fFirstRun[iRun], fLastRun[iRun] );
+            }else{
+                oadbContMS->AppendObject(oadbMultSelection, lRunNumbers[iRun], lRunNumbers[iRun] );
+            }
         }
         
         Bool_t lThisIsReference = kFALSE;
