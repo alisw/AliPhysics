@@ -327,13 +327,17 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 //  Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
 //  Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
 //  Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
-  Int_t tdbins    = GetHistogramRanges()->GetHistoDiffTimeBins() ;
+  Int_t tdbins    = GetHistogramRanges()->GetHistoDiffTimeBins();
   Float_t tdmax   = GetHistogramRanges()->GetHistoDiffTimeMax();
   Float_t tdmin   = GetHistogramRanges()->GetHistoDiffTimeMin();
   Int_t ntimebins = GetHistogramRanges()->GetHistoTimeBins();         
   Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();         
   Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();
 
+  Int_t   nopanbins = GetHistogramRanges()->GetHistoNOpeningAngleBins();
+  Float_t opanmin   = GetHistogramRanges()->GetHistoOpeningAngleMin()  ;
+  Float_t opeanmax  = GetHistogramRanges()->GetHistoOpeningAngleMax()  ;
+  
   // Start with pure MC kinematics histograms
   // In case other tasks just need this info like AliAnaPi0EbE
   if(IsDataMC())
@@ -546,21 +550,21 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     {
       fhPrimPi0OpeningAngle  = new TH2F
       ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}, in acceptance",
-       nptbins,ptmin,ptmax,200,0,0.7);
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opeanmax);
       fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAngle) ;
 
       fhPrimPi0OpeningAnglePhotonCuts  = new TH2F
       ("hPrimPi0OpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#pi^{0}} in acceptance",
-       nptbins,ptmin,ptmax,200,0,0.7);
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opeanmax);
       fhPrimPi0OpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAnglePhotonCuts->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAnglePhotonCuts) ;
       
       fhPrimPi0OpeningAngleAsym  = new TH2F
       ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, in acceptance, #it{p}_{T}>5 GeV/#it{c}",
-       100,0,1,200,0,0.7);
+       100,0,1,nopanbins,opanmin,opeanmax);
       fhPrimPi0OpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
       fhPrimPi0OpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimPi0OpeningAngleAsym) ;
@@ -574,21 +578,21 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhPrimEtaOpeningAngle  = new TH2F
       ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}, in acceptance",
-       nptbins,ptmin,ptmax,200,0,0.7);
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opeanmax);
       fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAngle) ;
 
       fhPrimEtaOpeningAnglePhotonCuts  = new TH2F
       ("hPrimEtaOpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#eta}, in acceptance",
-       nptbins,ptmin,ptmax,200,0,0.7);
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opeanmax);
       fhPrimEtaOpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAnglePhotonCuts->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAnglePhotonCuts) ;
       
       fhPrimEtaOpeningAngleAsym  = new TH2F
       ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}, in acceptance",
-       100,0,1,200,0,0.7);
+       100,0,1,nopanbins,opanmin,opeanmax);
       fhPrimEtaOpeningAngleAsym->SetXTitle("|#it{A}|=| (#it{E}_{1}-#it{E}_{2}) / (#it{E}_{1}+#it{E}_{2}) |");
       fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
