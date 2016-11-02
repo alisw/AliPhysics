@@ -80,6 +80,9 @@ AliITSUv2::AliITSUv2()
   ,fUpGeom(0)
   ,fStaveModelIB(kIBModel0)
   ,fStaveModelOB(kOBModel0)
+  ,fAddGammaConv(0)
+  ,fGammaConvDiam(0)
+  ,fGammaConvXPos(0)
 {
   //    Standard default constructor
   // Inputs:
@@ -113,6 +116,9 @@ AliITSUv2::AliITSUv2(const char *title, Int_t nlay)
   ,fUpGeom(0)
   ,fStaveModelIB(kIBModel0)
   ,fStaveModelOB(kOBModel0)
+  ,fAddGammaConv(0)
+  ,fGammaConvDiam(0)
+  ,fGammaConvXPos(0)
 {
   //    Standard constructor for the Upgrade geometry.
   // Inputs:
@@ -125,34 +131,40 @@ AliITSUv2::AliITSUv2(const char *title, Int_t nlay)
   for (Int_t j=0; j<fNLayers; j++)
     fLayerName[j].Form("%s%d",AliITSUGeomTGeo::GetITSSensorPattern(),j); // See AliITSUv2Layer
   //
-  fLayTurbo     = new Bool_t[fNLayers];
-  fLayPhi0      = new Double_t[fNLayers];
-  fLayRadii     = new Double_t[fNLayers];
-  fLayZLength   = new Double_t[fNLayers];
-  fStavPerLay   = new Int_t[fNLayers];
-  fUnitPerStave = new Int_t[fNLayers];
-  fChipThick    = new Double_t[fNLayers];
-  fStaveWidth   = new Double_t[fNLayers];
-  fStaveTilt    = new Double_t[fNLayers];
-  fSensThick    = new Double_t[fNLayers];
-  fChipTypeID   = new UInt_t[fNLayers];
-  fBuildLevel   = new Int_t[fNLayers];
+  fLayTurbo      = new Bool_t[fNLayers];
+  fLayPhi0       = new Double_t[fNLayers];
+  fLayRadii      = new Double_t[fNLayers];
+  fLayZLength    = new Double_t[fNLayers];
+  fStavPerLay    = new Int_t[fNLayers];
+  fUnitPerStave  = new Int_t[fNLayers];
+  fChipThick     = new Double_t[fNLayers];
+  fStaveWidth    = new Double_t[fNLayers];
+  fStaveTilt     = new Double_t[fNLayers];
+  fSensThick     = new Double_t[fNLayers];
+  fChipTypeID    = new UInt_t[fNLayers];
+  fBuildLevel    = new Int_t[fNLayers];
+  fAddGammaConv  = new Bool_t[fNLayers];
+  fGammaConvDiam = new Double_t[fNLayers];
+  fGammaConvXPos = new Double_t[fNLayers];
 
 
   fUpGeom = new AliITSUv2Layer*[fNLayers];
   
   if (fNLayers > 0) { // if not, we'll Fatal-ize in CreateGeometry
     for (Int_t j=0; j<fNLayers; j++) {
-      fLayPhi0[j]      = 0;
-      fLayRadii[j]     = 0.;
-      fLayZLength[j]   = 0.;
-      fStavPerLay[j]   = 0;
-      fUnitPerStave[j] = 0;
-      fStaveWidth[j]   = 0.;
-      fSensThick[j]    = 0.;
-      fChipTypeID[j]   = 0;
-      fBuildLevel[j]   = 0;
-      fUpGeom[j]       = 0;
+      fLayPhi0[j]       = 0;
+      fLayRadii[j]      = 0.;
+      fLayZLength[j]    = 0.;
+      fStavPerLay[j]    = 0;
+      fUnitPerStave[j]  = 0;
+      fStaveWidth[j]    = 0.;
+      fSensThick[j]     = 0.;
+      fChipTypeID[j]    = 0;
+      fBuildLevel[j]    = 0;
+      fUpGeom[j]        = 0;
+      fAddGammaConv[j]  = kFALSE;
+      fGammaConvDiam[j] = 0.;
+      fGammaConvXPos[j] = 0.;
     }
   }
 }
@@ -183,6 +195,9 @@ AliITSUv2::~AliITSUv2() {
   delete [] fWrapRMax;
   delete [] fWrapZSpan;
   delete [] fLay2WrapV;
+  delete [] fAddGammaConv;
+  delete [] fGammaConvDiam;
+  delete [] fGammaConvXPos;
 }
 
 //______________________________________________________________________
@@ -330,6 +345,32 @@ void AliITSUv2::DefineWrapVolume(Int_t id, Double_t rmin,Double_t rmax, Double_t
 }
 
 //______________________________________________________________________
+void AliITSUv2::AddGammaConversionRods(const Int_t nlay,
+				       const Double_t diam,
+				       const Double_t xPos) {
+  //     Define whether to put the Gamma Conversion Rods
+  //     (not in the Inner Barrel)
+  // Inputs:
+  //          nlay    layer number
+  //          diam    rod diameter
+  //          xPos    X position in Half Ladder Reference System
+  // Outputs:
+  //   none.
+  // Return:
+  //   none.
+
+  if (nlay >= fNLayers || nlay < 0) {
+    AliError(Form("Wrong layer number (%d)",nlay));
+    return;
+  }
+
+  fAddGammaConv[nlay] = kTRUE;
+  fGammaConvDiam[nlay] = diam;
+  fGammaConvXPos[nlay] = xPos;
+
+}
+
+//______________________________________________________________________
 void AliITSUv2::CreateGeometry() {
 
   // Create the geometry and insert it in the mother volume ITSV
@@ -399,6 +440,10 @@ void AliITSUv2::CreateGeometry() {
     fUpGeom[j]->SetNUnits(fUnitPerStave[j]);
     fUpGeom[j]->SetChipType(fChipTypeID[j]);
     fUpGeom[j]->SetBuildLevel(fBuildLevel[j]);
+    //
+    if (fAddGammaConv[j])
+      fUpGeom[j]->AddGammaConversionRods(fGammaConvDiam[j],fGammaConvXPos[j]);
+    //
     if (j < 3)
       fUpGeom[j]->SetStaveModel(fStaveModelIB);
     else
@@ -689,6 +734,10 @@ void AliITSUv2::CreateMaterials() {
 	AliMedium(27,  "CarbonFoam$",27,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 
 	// --------------------------- 
+
+ //Tungsten (for gamma converter rods)
+ AliMaterial(28,"TUNGSTEN$",183.84,74,19.25,999,999);
+ AliMedium(28,  "TUNGSTEN$",28,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
 }
 
 //______________________________________________________________________
@@ -734,6 +783,7 @@ void AliITSUv2::DefineLayer(Int_t nlay, double phi0, Double_t r,
   fSensThick[nlay] = dthick;
   fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
+  fAddGammaConv[nlay] = kFALSE;
     
 }
 
@@ -784,6 +834,7 @@ void AliITSUv2::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
   fSensThick[nlay] = dthick;
   fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
+  fAddGammaConv[nlay] = kFALSE;
 
 }
 

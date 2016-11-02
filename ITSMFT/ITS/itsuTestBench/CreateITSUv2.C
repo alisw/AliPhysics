@@ -100,6 +100,9 @@ void CreateITSUv2()
       nChipsPerStaveLr *= nChipsPerModule;
       ITS->DefineLayer(idLr, phi0, rLr, nChipsPerStaveLr*seg0->Dz(), nStaveLr, nModPerStaveLr, 
 		       kSiThickOB, seg0->Dy(), seg0->GetChipTypeID(),kBuildLevel);
+//      ITS->AddGammaConversionRods(layerNumber,diameter,XPosition);
+//                                   0-based      [cm]      [cm]
+//      ITS->AddGammaConversionRods(3,0.1,0.0); // Ex.
     } else {
       turbo = radii2Turbo(tdr5dat[idLr][kRmn],rLr,tdr5dat[idLr][kRmx],seg0->Dx());	
       ITS->DefineLayerTurbo(idLr, phi0, rLr, nChipsPerStaveLr*seg0->Dz(), nStaveLr, nChipsPerStaveLr, 

@@ -280,6 +280,9 @@ AliITSUv2Layer::AliITSUv2Layer():
   fIsTurbo(0),
   fBuildLevel(0),
   fStaveModel(AliITSUv2::kIBModelDummy),
+  fAddGammaConv(kFALSE),
+  fGammaConvDiam(0),
+  fGammaConvXPos(0),
   fNHandleCreated(0),
   fN_DCDC_Created(0),
   fN_DCCNT_Created(0),
@@ -311,6 +314,9 @@ AliITSUv2Layer::AliITSUv2Layer(Int_t debug):
   fIsTurbo(0),
   fBuildLevel(0),
   fStaveModel(AliITSUv2::kIBModelDummy),
+  fAddGammaConv(kFALSE),
+  fGammaConvDiam(0),
+  fGammaConvXPos(0),
   fNHandleCreated(0),
   fN_DCDC_Created(0),
   fN_DCCNT_Created(0),
@@ -342,6 +348,9 @@ AliITSUv2Layer::AliITSUv2Layer(Int_t lay, Int_t debug):
   fIsTurbo(0),
   fBuildLevel(0),
   fStaveModel(AliITSUv2::kIBModelDummy),
+  fAddGammaConv(kFALSE),
+  fGammaConvDiam(0),
+  fGammaConvXPos(0),
   fNHandleCreated(0),
   fN_DCDC_Created(0),
   fN_DCCNT_Created(0),
@@ -374,6 +383,9 @@ AliITSUv2Layer::AliITSUv2Layer(Int_t lay, Bool_t turbo, Int_t debug):
   fIsTurbo(turbo),
   fBuildLevel(0),
   fStaveModel(AliITSUv2::kIBModelDummy),
+  fAddGammaConv(kFALSE),
+  fGammaConvDiam(0),
+  fGammaConvXPos(0),
   fNHandleCreated(0),
   fN_DCDC_Created(0),
   fN_DCCNT_Created(0),
@@ -407,6 +419,9 @@ AliITSUv2Layer::AliITSUv2Layer(const AliITSUv2Layer &s):
   fIsTurbo(s.fIsTurbo),
   fBuildLevel(s.fBuildLevel),
   fStaveModel(s.fStaveModel),
+  fAddGammaConv(s.fAddGammaConv),
+  fGammaConvDiam(s.fGammaConvDiam),
+  fGammaConvXPos(s.fGammaConvXPos),
   fNHandleCreated(s.fNHandleCreated),
   fN_DCDC_Created(s.fN_DCDC_Created),
   fN_DCCNT_Created(s.fN_DCCNT_Created),
@@ -430,21 +445,24 @@ AliITSUv2Layer& AliITSUv2Layer::operator=(const AliITSUv2Layer &s)
   //
   if(&s == this) return *this;
 
-  fLayerNumber = s.fLayerNumber;
-  fPhi0        = s.fPhi0;
-  fLayRadius   = s.fLayRadius;
-  fZLength     = s.fZLength;
-  fSensorThick = s.fSensorThick;
-  fChipThick   = s.fChipThick;
-  fStaveWidth  = s.fStaveWidth;
-  fStaveTilt   = s.fStaveTilt;
-  fNStaves     = s.fNStaves;
-  fNModules    = s.fNModules;
-  fNChips      = s.fNChips;
-  fIsTurbo     = s.fIsTurbo;
-  fChipTypeID  = s.fChipTypeID;
-  fBuildLevel  = s.fBuildLevel;
-  fStaveModel  = s.fStaveModel;
+  fLayerNumber   = s.fLayerNumber;
+  fPhi0          = s.fPhi0;
+  fLayRadius     = s.fLayRadius;
+  fZLength       = s.fZLength;
+  fSensorThick   = s.fSensorThick;
+  fChipThick     = s.fChipThick;
+  fStaveWidth    = s.fStaveWidth;
+  fStaveTilt     = s.fStaveTilt;
+  fNStaves       = s.fNStaves;
+  fNModules      = s.fNModules;
+  fNChips        = s.fNChips;
+  fIsTurbo       = s.fIsTurbo;
+  fChipTypeID    = s.fChipTypeID;
+  fBuildLevel    = s.fBuildLevel;
+  fStaveModel    = s.fStaveModel;
+  fAddGammaConv  = s.fAddGammaConv;
+  fGammaConvDiam = s.fGammaConvDiam;
+  fGammaConvXPos = s.fGammaConvXPos;
 
   //
   // #pnamwong
@@ -467,6 +485,34 @@ AliITSUv2Layer::~AliITSUv2Layer() {
   //
   // Destructor
   //
+}
+
+//________________________________________________________________________
+void AliITSUv2Layer::AddGammaConversionRods(const Double_t diam,
+					    const Double_t xPos){
+//
+// Adds the gamma conversion rods for the current layer
+//
+// Input:
+//         diam : the rods diameter
+//         diam : the rods X position in the Half Stave refernce system
+//
+// Output:
+//
+// Return:
+//
+// Created:      26 Oct 2016  Mario Sitta
+//
+
+  if (fLayerNumber < fgkNumberOfInnerLayers) {
+    AliError("No Gamma Conversion Rods in the Inner Layers!");
+    return;
+  }
+
+  fAddGammaConv = kTRUE; // By default set to False in the constructor
+  fGammaConvDiam = diam;
+  fGammaConvXPos = xPos;
+
 }
 
 //________________________________________________________________________
@@ -3296,6 +3342,10 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
 					  rCoolMax+yCFleece+yGraph,
 					  zlen, 180., 360.);
 
+  TGeoTube *gammaConvRod;
+  if (fAddGammaConv)
+    gammaConvRod = new TGeoTube("GammaConver", 0, 0.5*fGammaConvDiam, zlen);
+
   TGeoBBox *flex1_5cm  = new TGeoBBox("Flex1MV_5cm",xHalfSt,yFlex1/2,flexOverlap/2);
   TGeoBBox *flex2_5cm  = new TGeoBBox("Flex2MV_5cm",xHalfSt,yFlex2/2,flexOverlap/2);
 
@@ -3304,6 +3354,8 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
 	  + fleeccent->GetDY() + graphlat->GetDY() + fleeclat->GetDY();
   if (fStaveModel == AliITSUv2::kOBModel2)
     yHalfSt += 2*glue->GetDY();
+//IB  if (fAddGammaConv)
+//IB   yHalfSt += fGammaConvDiam;
 
   xtru[0] = xHalfSt;
   ytru[0] = 0;
@@ -3367,6 +3419,7 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   TGeoMedium *medFGS003       = mgr->GetMedium("ITS_FGS003$"); //amec thermasol
   TGeoMedium *medAir          = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medGlue         = mgr->GetMedium("ITS_GLUE$");
+  TGeoMedium *medTungsten     = mgr->GetMedium("ITS_TUNGSTEN$");
 
 
   TGeoVolume *busAlVol = new TGeoVolume("PowerBusAlVol", busAl , medAluminum);
@@ -3455,6 +3508,15 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   fleectubVol->SetLineColor(kViolet);
   fleectubVol->SetFillColor(fleectubVol->GetLineColor());
   fleectubVol->SetFillStyle(4000); // 0% transparent
+
+  TGeoVolume *gammaConvRodVol;
+  if (fAddGammaConv) {
+    gammaConvRodVol = new TGeoVolume("GammaConversionRod",
+				     gammaConvRod, medTungsten);
+    gammaConvRodVol->SetLineColor(kBlack);
+    gammaConvRodVol->SetFillColor(gammaConvRodVol->GetLineColor());
+    gammaConvRodVol->SetFillStyle(4000); // 0% transparent
+  }
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSHalfStavePattern(), fLayerNumber);
   TGeoVolume *halfStaveVol  = new TGeoVolume(volname, halfStave, medAir);
@@ -3578,6 +3640,13 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
     halfStaveVol->AddNode(fleecvertVol,4,new TGeoTranslation( xpos, ypos1, 0));
   }
 
+  // Add the Gamma Converter Rod (only on Layer 3) - M.S. 17 Oct 2016
+    if (fAddGammaConv) {
+    xpos = fGammaConvXPos;
+    ypos1 = ypos - (coldPlate->GetDY() +2*graphlat->GetDY()
+                  +2*fleeclat->GetDY() +gammaConvRod->GetRmax());
+    halfStaveVol->AddNode(gammaConvRodVol,1,new TGeoTranslation(xpos, ypos1, 0));
+  }
 
   // Add the end-stave connectors
   TGeoVolume *connectorASide, *connectorCSide;
@@ -4925,6 +4994,53 @@ TGeoVolume* AliITSUv2Layer::CreateModuleOuterB(const TGeoManager *mgr){
 
   // Done, return the module
   return modVol;
+}
+
+//________________________________________________________________________
+Double_t AliITSUv2Layer::GetGammaConversionRodDiam()
+{
+//
+// Gets the diameter of the gamma conversion rods, if defined
+//
+//
+// Input:
+//
+// Output:
+//
+// Return:
+//         the diameter of the gamma conversion rods for this layer
+//
+// Created:      26 Oct 2016  Mario Sitta
+//
+
+  if (fAddGammaConv)
+    return fGammaConvDiam;
+  else
+    AliWarning("Gamma Conversion rods not defined for this layer");  
+}
+
+//________________________________________________________________________
+Double_t AliITSUv2Layer::GetGammaConversionRodXPos()
+{
+//
+// Gets the X position of the gamma conversion rods, if defined
+//
+//
+// Input:
+//
+// Output:
+//
+// Return:
+//         the X position of the gamma conversion rods for this layer
+//         in the Half Stave reference system
+//
+// Created:      26 Oct 2016  Mario Sitta
+//
+
+  if (fAddGammaConv)
+    return fGammaConvXPos;
+  else
+    AliWarning("Gamma Conversion rods not defined for this layer");  
 }
 
 //________________________________________________________________________

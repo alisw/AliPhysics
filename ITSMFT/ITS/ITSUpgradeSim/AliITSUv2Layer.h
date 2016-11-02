@@ -37,6 +37,7 @@ class AliITSUv2Layer : public TObject {
     AliITSUv2Layer& operator=(const AliITSUv2Layer &source);
     virtual ~AliITSUv2Layer();
     //
+    Bool_t    HasGammaConversionRods() const {return fAddGammaConv;};
     Bool_t    IsTurbo() const {return fIsTurbo;};
 
     Double_t  GetChipThick()   const {return fChipThick;};
@@ -57,6 +58,8 @@ class AliITSUv2Layer : public TObject {
     //
     Int_t     GetBuildLevel()           const {return fBuildLevel;}
     AliITSUv2::AliITSUModel_t GetStaveModel() const {return fStaveModel;}
+    Double_t  GetGammaConversionRodDiam();
+    Double_t  GetGammaConversionRodXPos();
     //
     void      SetChipThick(Double_t t)       {fChipThick = t;};
     void      SetStaveTilt(Double_t t);
@@ -70,6 +73,9 @@ class AliITSUv2Layer : public TObject {
     void      SetChipType(Int_t tp)          {fChipTypeID = tp;}
     void      SetBuildLevel(Int_t buildLevel){fBuildLevel=buildLevel;}
     void      SetStaveModel(AliITSUv2::AliITSUModel_t model) {fStaveModel=model;}
+    //
+    void      AddGammaConversionRods(const Double_t diam, const Double_t xPos);
+
     virtual void CreateLayer(TGeoVolume *moth);
 
     virtual void CreateBarrelLayer(TGeoVolume* moth);	// #pnamwong
@@ -231,6 +237,10 @@ class AliITSUv2Layer : public TObject {
     Int_t     fBuildLevel;  // Used for material studies
 
     AliITSUv2::AliITSUModel_t fStaveModel; // The stave model
+
+    Bool_t    fAddGammaConv;   // True to add Gamma Conversion Rods
+    Double_t  fGammaConvDiam;  // Vector of Gamma Conversion Rod Diameters
+    Double_t  fGammaConvXPos;  // Vector of Gamma Conversion Rod X Position
     
     // ---------------------------------
     // #pnamwong
