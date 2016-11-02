@@ -9799,8 +9799,8 @@ void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
   double &SZ00 = covLSM[2], &SZ10 = covLSM[7], &SZ11 = covLSM[9];
   //
   Bool_t lsmOK = kFALSE;
-  while(1) {
-    const double *lsCovY = t->GetLSCovY(), *lsCovZ = t->GetLSCovZ();
+  const double *lsCovY = t->GetLSCovY(), *lsCovZ = t->GetLSCovZ();  
+  while(lsCovY[0]) { // if 1st element is 0, then no accumulation was done - recovered seed
     double y0 = lsCovY[0], 
       y1 = lsCovY[1] - xRef*y0, 
       y2 = lsCovY[2] - 2*xRef*lsCovY[1] + xRef2*y0,
@@ -9837,7 +9837,12 @@ void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
     break;
   }
   //
-  if (!lsmOK) AliWarningF("Building LSM cov.matrix failed, will use Kalman cov.matrix, pT=%.3f",t->Pt());
+  /*
+  if (!lsmOK) { // this is allowed since recovered seeds (no TPCout) don't accumulate LSM info
+    AliWarningF("Building LSM cov.matrix failed, will use Kalman cov.matrix, pT=%.3f",t->Pt());
+    t->Print();
+  }
+  */
   //
   int nclFit = 0;
   for (int ip=kMaxRow;ip--;) {
@@ -9921,5 +9926,13 @@ void AliTPCtracker::AddSystCovariance(AliTPCseed* t)
     return;
   }
   //    
+  /*
+  // check for nan
+  for (int i=0;i<15;i++) {
+    if (TMath::IsNaN(covLSM[i])) {
+      printf("NAN at %d\n",i);
+    }
+  }
+  */
   memcpy(covP,covLSM,15*sizeof(double));
 }
