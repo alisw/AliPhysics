@@ -213,7 +213,7 @@ class AliTPCseed : public AliTPCtrack, public AliVTPCseed {
      UChar_t  fNCDEDXInclThres[4]; // number of clusters for dedx measurment including sub-threshold clusters
      Double_t fTPCr[AliPID::kSPECIES];   // rough PID according TPC   
      Double_t fLSCovY[5];      // sum x^i/sigmaYi^2, i=0,4 for LSM matrix
-     Double_t fLSCovZ[2];      // sum x^i/sigmaZi^2, i=0,2 for LSM matrix
+     Double_t fLSCovZ[3];      // sum x^i/sigmaZi^2, i=0,2 for LSM matrix
      //
      UChar_t   fSeedType;         //seeding type
      UChar_t   fSeed1;            //first row for seeding
