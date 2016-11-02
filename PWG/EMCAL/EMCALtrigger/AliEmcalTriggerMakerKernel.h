@@ -229,7 +229,7 @@ public:
    * as well.
    * @param[in] doApply If true the online masking is applied to offline patch energies
    */
-  void SetApplyOnlineBadChannelMaskingToOffline(Bool_t doApply = kTRUE);
+  void SetApplyOnlineBadChannelMaskingToOffline(Bool_t doApply = kTRUE) { fApplyOnlineBadChannelsToOffline = doApply; }
 
   /**
    * Reset data grids
