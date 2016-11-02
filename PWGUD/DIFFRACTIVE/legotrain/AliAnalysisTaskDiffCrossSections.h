@@ -16,6 +16,9 @@ class AliESDEvent;
 #include <TString.h>
 #include <TBits.h>
 #include <TClonesArray.h>
+#include <TVector3.h>
+#include <TVectorD.h>
+#include <TMatrixD.h>
 
 #include "AliESDVertex.h"
 #include "AliAnalysisTaskSE.h"
@@ -27,7 +30,7 @@ public:
 
   AliAnalysisTaskDiffCrossSections(const char *name="AliAnalysisTaskDiffCrossSections");
   virtual ~AliAnalysisTaskDiffCrossSections();
-  
+
   virtual void NotifyRun();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
@@ -37,7 +40,9 @@ public:
   void SetMCType(TString s) { fMCType = s; }
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
 
-  TString GetTreeName() const { 
+  void SetDetectorsUsed(TString det) { fDetectorsUsed = det; }
+
+  TString GetTreeName() const {
     TString s = "TE";
     if (!fIsMC && fTriggerSelection != "") {
       s += fTriggerSelection;
@@ -75,7 +80,7 @@ public:
     Int_t     fRunNumber;
     UShort_t  fnTrklet;
     UShort_t  fL2Inputs;
-    UShort_t  fOrbitID;  
+    UShort_t  fOrbitID;
 
   } ;
 
@@ -101,7 +106,7 @@ public:
 
     Float_t    fTime[2];            //
     Float_t    fCharge[2];          //
-    Char_t     fBB[2];              // 
+    Char_t     fBB[2];              //
     Char_t     fBG[2];              //
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
@@ -120,7 +125,7 @@ public:
 
   class TreeData : public TObject {
   public:
-    TreeData() 
+    TreeData()
       : TObject()
       , fEventInfo()
       , fVtxInfo()
@@ -165,15 +170,17 @@ public:
 
 protected:
   void SetBranches(TTree* t);
+  TVector3 GetRandomVtxPosition() const;
 
-private:  
+private:
   AliAnalysisTaskDiffCrossSections(const AliAnalysisTaskDiffCrossSections&); // not implemented
   AliAnalysisTaskDiffCrossSections& operator=(const AliAnalysisTaskDiffCrossSections&); // not implemented
 
   Bool_t           fIsMC;                //
   TString          fMCType;              //
   TString          fTriggerSelection;    //
-
+  TString          fDetectorsUsed;       //
+  
   AliTriggerAnalysis fTriggerAnalysis;   //!
   AliAnalysisUtils   fAnalysisUtils;     //!
 
@@ -182,7 +189,15 @@ private:
   TBits            fFiredChipMap;        //!
   TreeData         fTreeData;            //!
   MCInfo           fMCInfo;              //!
-  
+
+  TVectorD         fMeanVtxPos;          //!
+  TMatrixD         fMeanVtxCov;          //!
+  TMatrixD         fMeanVtxU;            //!
+  Int_t            fEventType;    //!
+  Double_t         fEtaL;         //!
+  Double_t         fEtaR;         //!
+  Double_t         fEtaGap;       //!
+  Double_t         fEtaGapCenter; //!
   ClassDef(AliAnalysisTaskDiffCrossSections, 1);
 } ;
 
