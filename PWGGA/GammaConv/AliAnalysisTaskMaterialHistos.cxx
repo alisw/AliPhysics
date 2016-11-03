@@ -718,9 +718,10 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	  if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())
 	    if(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms())
 	      fOutputList->Add(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
-	if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
-	  if (fV0Reader->GetV0FindingEfficiencyHistograms())
-	    fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+
+	// if(fV0Reader && fV0Reader->GetProduceV0FindingEfficiency())
+	//   if (fV0Reader->GetV0FindingEfficiencyHistograms())
+	//     fOutputList->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
 
 	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 	  if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
