@@ -7,8 +7,12 @@ class TH2F;
 
 /**
  * @class AliEmcalCorrectionClusterExotics
- * @brief Exotic cluster removal in the EMCal correction framework
+ * @brief Exotic cluster removal in the EMCal correction framework. 
  * @ingroup EMCALCOREFW
+ *
+ * "Exotic" clusters are energetic clusters where most energy deposition is concentrated in one single cell. This clusters are not reproduced in MC simulations and are believed to arise from neutrons showering directly into the APD. These clusters need to be flagged, so that they can be easily rejected during the analysis.
+ 
+ The "exotic" flag can be retrieved using `cluster->GetIsExotic()`. "Exotic" clusters can be easily rejected if clusters are accessed using an AliClusterContainer object. "Exotic" cluster removal is switched on by default in AliClusterContainer, however **it is necessary to run the ClusterExotics component (via AliEmcalCorrectionTask) to flag "exotic" cluster beforehand**.
  *
  * Based on code in AliEmcalClusterMaker.
  *

@@ -5,8 +5,10 @@
 
 /**
  * @class AliEmcalCorrectionCellBadChannel
- * @brief Bad channel correction component in the EMCal correction framework
+ * @brief Bad channel correction component in the EMCal correction framework. 
  * @ingroup EMCALCOREFW
+ *
+ * Sets cells marked as bad to E = 0, using OADB bad channel map. The original cell information in the event **will be overwritten**.
  *
  * Based on code in AliEMCALTenderSupply.
  *
