@@ -925,6 +925,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     if (trainConfig > 106 && trainConfig < 115 || trainConfig == 78 || trainConfig == 89){
+        TString caloCutPos = cuts.GetClusterCut(i);
+        caloCutPos.Resize(1);
+        TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+        if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+          AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+          fTrackMatcher->SetV0ReaderName(V0ReaderName);
+          mgr->AddTask(fTrackMatcher);
+          mgr->ConnectInput(fTrackMatcher,0,cinput);
+        }
+
         enableClustersForTrigger  = kTRUE;
         analysisClusterCuts[i]    = new AliCaloPhotonCuts();
         analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
