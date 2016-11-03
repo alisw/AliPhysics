@@ -143,7 +143,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   TString fDetTPCConfName[3];
   TString fDetV0ConfName[3];
   TString fNormMethod;
-  THnSparseF* fHistMassPtCos2Phiq2Centr; //THnSparse for the analysis of v2 as a function of q2
+  THnSparseF* fHistMassPtPhiq2Centr; //THnSparse for the analysis of v2 as a function of q2
   Int_t fq2Meth;                //flag to select q2 method
   Bool_t fSeparateD0D0bar;      //flag to activate the separation of D0 from D0bar in the THnSparse
 
