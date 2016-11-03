@@ -67,6 +67,8 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   };
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
+  // Hidden from CINT since it cannot handle these maps well
+  /// Relates string to the cluster energy enumeration for YAML configuration
   std::map <std::string, AliVCluster::VCluUserDefEnergy_t> clusterEnergyTypeMap = {
     {"kNonLinCorr", AliVCluster::kNonLinCorr },
     {"kHadCorr", AliVCluster::kHadCorr },
@@ -74,6 +76,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
     {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
   };
 
+  /// Relates string to the track filter enumeration for YAML configuration
   std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> trackFilterTypeMap = {
     {"kNoTrackFilter", AliEmcalTrackSelection::kNoTrackFilter },
     {"kCustomTrackFilter", AliEmcalTrackSelection::kCustomTrackFilter },
@@ -101,10 +104,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
    */
   virtual Bool_t Run();
 
-  // Options
-  void SetUserConfigurationFilename(std::string name) { fUserConfigurationFilename = name; }
-  void SetDefaultConfigurationFilename(std::string name) { fDefaultConfigurationFilename = name; }
-
+  /// Initialize the YAML configuration and correction tasks. Should be called from a run macro!
   void Initialize();
 
   // Containers and cells
@@ -128,36 +128,52 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   void                        RemoveClusterContainer(Int_t i=0)                     { fClusterCollArray.RemoveAt(i)                       ; } 
   AliEmcalCorrectionCellContainer *GetCellContainer(const std::string & cellsContainerName) const;
 
-  void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
-  void                        SetRunPeriod(const char* runPeriod)                   { fRunPeriod = runPeriod; fRunPeriod.ToLower(); }
-  const TString &             GetRunPeriod()                                  const { return fRunPeriod; }
-
-  void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
-
-  const std::vector<AliEmcalCorrectionComponent *> & CorrectionComponents() { return fCorrectionComponents; }
-
+  // YAML options
+  void SetUserConfigurationFilename(std::string name) { fUserConfigurationFilename = name; }
+  void SetDefaultConfigurationFilename(std::string name) { fDefaultConfigurationFilename = name; }
   bool WriteConfigurationFile(std::string filename, bool userConfig = false);
 
-  // Determine branch name using the "usedefault" pattern
+  // Options
+  const TString &             GetRunPeriod()                                  const { return fRunPeriod; }
+  void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
+  void                        SetRunPeriod(const char* runPeriod)                   { fRunPeriod = runPeriod; fRunPeriod.ToLower(); }
+  // Centrality options
+  void                        SetUseNewCentralityEstimation(Bool_t b)               { fUseNewCentralityEstimation = b                     ; }
+  virtual void                SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }
+  void                        SetCentRange(Double_t min, Double_t max)              { fMinCent           = min  ; fMaxCent = max          ; }
+
+  /// Direct access to the correction components
+  const std::vector<AliEmcalCorrectionComponent *> & CorrectionComponents() { return fCorrectionComponents; }
+
+  /// Determine branch name using the "usedefault" pattern
   static std::string DetermineUseDefaultName(InputObject_t contType, bool esdMode, bool returnObjectType = false);
 
-  // Get the proper event based on whether embedding is enabled or not
+  /// Get the proper event based on whether embedding is enabled or not
   static AliVEvent * GetEvent(AliVEvent * inputEvent, bool isEmbedding = false);
 
  private:
   AliEmcalCorrectionTask(const AliEmcalCorrectionTask &);             // Not implemented
   AliEmcalCorrectionTask &operator=(const AliEmcalCorrectionTask &);  // Not implemented
 
+  // Utility functions
   static inline bool DoesFileExist(const std::string & filename);
   void SetupConfigurationFilePath(std::string & filename, bool userFile = false);
 
-  void InitializeConfiguration();
+  // Initialization functions
+  /** Determines which components to execute based on which are selected via speciailization (ie suffix),
+   * as well as which are enabled.
+   */
   void DetermineComponentsToExecute(std::vector <std::string> & componentsToExecute);
+  /// Setup user and default configuration files
+  void InitializeConfiguration();
+  /// Checks configuration for properties that are defined in the user file, but not the default, which is usually a typo
+  void CheckForUnmatchedUserSettings();
+  /// Initializes components based on the configuration
   void InitializeComponents();
 
-  void CheckForUnmatchedUserSettings();
-
+  /// Cell container helper function
   void SetCellsObjectInCellContainerBasedOnProperties(AliEmcalCorrectionCellContainer * cellContainer);
+  /// Checks whether a container branch exists in the event
   void CheckForContainerArray(AliEmcalContainer * cont, InputObject_t objectType);
 
   std::string GetInputFieldNameFromInputObjectType(InputObject_t inputObjectType);
@@ -187,7 +203,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   YAML::Node              fDefaultConfiguration;          /// Default YAML Configuration
 #endif
 
-  std::string             fUserConfigurationString;       ///< Store the User YAML configuration as a string so that it can be streamed
+  std::string             fUserConfigurationString;       ///< Store the user YAML configuration as a string so that it can be streamed
   std::string             fDefaultConfigurationString;    ///< Store the default YAML configuration as a string so that it can be streamed
 
   std::string fUserConfigurationFilename;                 //!<! User YAML configruation filename
@@ -195,9 +211,9 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
   std::string fSuffix;                                    ///< Suffix of the Correction Task (used to select components)
 
-  std::vector <std::string> fOrderedComponentsToExecute;  ///< Order of components to execute
+  std::vector <std::string> fOrderedComponentsToExecute;  ///< Ordered set of components to execute
   std::vector <AliEmcalCorrectionComponent *> fCorrectionComponents; ///< Contains the correction components
-  bool fConfigurationInitialized;                         ///< True if the YAML files are initialized
+  bool fConfigurationInitialized;                         ///< True if the YAML configuration files are initialized
 
   bool                        fIsEsd;                      ///< File type
   TString                     fRunPeriod;                  ///< Run period (passed by user)
