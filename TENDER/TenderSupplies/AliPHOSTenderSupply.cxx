@@ -1032,8 +1032,11 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
     const Float_t sE =-1.11128e-10;
     
     //Slewing correction LHC15xx  2 values does not depend on trigger.
-    const Double_t sA15 = -3.37e-9;//-3.37 ± 0.02 for pp at 5 TeV LHC15n and 15o
-    const Double_t sB15 = 6.37e-9;//6.37 ± 0.02 for pp at 5 TeV LHC15n and 15o
+//     const Double_t sA15 = -3.37e-9;//-3.37 ± 0.02 for pp at 5 TeV LHC15n and 15o
+//     const Double_t sB15 = 6.37e-9;//6.37 ± 0.02 for pp at 5 TeV LHC15n and 15o
+    const Double_t saturate = -4.42; //-4.42  ± 0.02  for pp at 5 TeV LHC15n
+    const Double_t slope1   =  4.82;  // 4.82  ± 0.02  for pp at 5 TeV LHC15n
+    const Double_t slope2   = -0.100;//-0.100 ± 0.006 for pp at 5 TeV LHC15n
 
 
   
@@ -1062,7 +1065,8 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
     //Slewing correction
     if(eMax>0 && fRunNumber>209122){ //Run2
        if(fRunNumber<252603) //before LHC16e
-         tMax-= sA15+sB15/clu->E();
+        tMax-=(saturate + slope1/eMax + slope2/(eMax*eMax))*1e-9;    
+//          tMax-= sA15+sB15/clu->E();
        else           
          tMax-= sA+sB/eMax+sC/eMax/eMax+sD/eMax/eMax/eMax+sE/eMax/eMax/eMax/eMax ;
     }
@@ -1074,7 +1078,8 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
     //Slewing correction
     if(eMaxHG>0 && fRunNumber>209122 ){ 
        if(fRunNumber<252603) //before LHC16e
-         tMax-= sA15+sB15/clu->E();
+        tMax-=(saturate + slope1/eMax + slope2/(eMax*eMax))*1e-9;    
+//          tMax-= sA15+sB15/clu->E();
        else           
          tMax-= sA+sB/eMaxHG+sC/eMaxHG/eMaxHG+sD/eMaxHG/eMaxHG/eMaxHG+sE/eMaxHG/eMaxHG/eMaxHG/eMaxHG ;
     }
