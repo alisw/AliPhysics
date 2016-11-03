@@ -12,7 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <algorithm>
 #include <iostream>
+#include <vector>
 
 #include <TClonesArray.h>
 #include <TH2.h>
@@ -49,6 +51,7 @@ Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgc
   bool isSingleShower = IsSingleShower(trgcls), isDCAL = IsDCAL(trgcls);
   int nfound = 0;
   AliEMCALTriggerPatchInfo *patch = NULL;
+  std::vector<double> patchefficiencies;
   for(auto patchIter : *triggerpatches){
     patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
     if(!patch->IsOfflineSimple()) continue;
@@ -60,24 +63,29 @@ Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgc
     }
     if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]){
       AliDebugStream(2) << GetTriggerName(trgcls) << " patch above threshold (" << patch->GetPatchE() << " | " << fOfflineEnergyThreshold[trgcls] << ")" <<  std::endl;
-      // Handle offline acceptance maps (if providede)
-      // sampling means probe (random value) has to be
       if(fAcceptanceMaps[trgcls]){
-        double acceptanceprob = fAcceptanceMaps[trgcls]->GetBinContent(patch->GetColStart(), patch->GetRowStart()),
-                patchprob = gRandom->Uniform(0., 1.);
-        AliDebugStream(2) << "Sampling trigger " << GetTriggerName(trgcls) << ": Efficiency(" << acceptanceprob << "), sampled (" << patchprob << ")" << std::endl;
-        if(patchprob < acceptanceprob){
-          AliDebugStream(2) << "Patch selected" << std::endl;
-          nfound++;
-        }
+        // Handle azimuthal inefficiencies of the trigger observed online:
+        // For each patch provide an efficiency. Once all patches in the event
+        // is determined, only the patch with the maximum efficiency is chosen.
+        // The event is selected in this case if the sample value is below the
+        // efficiency for the chosen patch.
+        double peff = fAcceptanceMaps[trgcls]->GetBinContent(patch->GetColStart(), patch->GetRowStart());
+        patchefficiencies.push_back(peff);
+        AliDebugStream(2) << "Spatial Efficiency " << peff
+            << " for trigger patch at position (" << patch->GetColStart()
+            << "," << patch->GetRowStart() << ")" << std::endl;
       } else{
-        nfound++;
+        patchefficiencies.push_back(1.);
       }
     }
   }
-  if(nfound){
-    AliDebugStream(1) << "Event selected for trigger class " << GetTriggerName(trgcls) << ", " << nfound << " good patch(es) found" << std::endl;
-    return true;
+  if(patchefficiencies.size()){
+    std::sort(patchefficiencies.begin(), patchefficiencies.end(), std::greater<double>());
+    double sample = gRandom->Uniform(0., 1.);
+    if(sample < patchefficiencies[0]){
+      AliDebugStream(1) << "Event selected for trigger class " << GetTriggerName(trgcls) << ", " << nfound << " good patch(es) found" << std::endl;
+      return true;
+    }
   }
   return false;
 }
