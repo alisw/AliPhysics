@@ -150,6 +150,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistDCApeSemi(0),
   fHistDCAhaSemi(0),
   fHisthfeTof(0),
+  fHistTotalAccPhi(0),
+  fHistTotalAccEta(0),
   fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
@@ -244,6 +246,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistDCApeSemi(0),
   fHistDCAhaSemi(0),
   fHisthfeTof(0),
+  fHistTotalAccPhi(0),
+  fHistTotalAccEta(0),
   fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
@@ -498,6 +502,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHisthfeTof = new TH2D("fHisthfeTof", "hfe vs. Tof; p_{T}(GeV/c); time (ns)", 300,0,30,20000,-200,200);
   fOutputList->Add(fHisthfeTof);
+
+  fHistTotalAccPhi = new TH2D("fHistTotalAccPhi","total electron acceptance in phi",50,0,0.5,620,0,6.2);
+  fOutputList->Add(fHistTotalAccPhi);
+ 
+  fHistTotalAccEta = new TH2D("fHistTotalAccEta","total electron acceptance in eta",50,0,0.5,700,-0.7,0.7);
+  fOutputList->Add(fHistTotalAccEta);
 
   fHistOtherEle = new TH1D("fHistOtherEle", "remaining X->e", 10000,-0.5,9999.5);
   fOutputList->Add(fHistOtherEle);
@@ -960,7 +970,12 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Bool_t fFlagNonHFE=kFALSE;  // ULS
       Bool_t fFlagNonLsHFE=kFALSE;  // LS
       
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max){ //rough cuts
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
+        {
+          fHistTotalAccPhi->Fill(1.0/track->Pt(),TrkPhi);
+          fHistTotalAccEta->Fill(1.0/track->Pt(),TrkEta);
+
+ 
       //if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE);
