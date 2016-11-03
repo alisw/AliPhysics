@@ -22,11 +22,9 @@ class TProfile;
 class TDirectoryFile;
 
 /////////////////////////////////////////////////////////////////////////////
-// Description: Maker to analyze Flow from the Event Plane method.
-//              Adaptation based on Scalar Product
-// authors: Naomi van del Kolk (kolk@nikhef.nl)
-//          Ante Bilandzic (anteb@nikhef.nl)
-// mods:    Carlos Perez (cperez@nikhef.nl)
+// Description: Simple scalar product method
+// author: Redmer Alexander Bertens (rbertens@cern.ch)
+//         but cloned from the original Scalar Product task
 /////////////////////////////////////////////////////////////////////////////
  
 class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
@@ -74,9 +72,6 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
  private:
    AliFlowAnalysisWithSimpleSP(const AliFlowAnalysisWithSimpleSP& anAnalysis);            //copy constructor
    AliFlowAnalysisWithSimpleSP& operator=(const AliFlowAnalysisWithSimpleSP& anAnalysis); //assignment operator
-   Double_t CalculateStatisticalError( Int_t RFPorPOI, Int_t PTorETA, Int_t bin, Double_t errV ) const;
-   Double_t ComputeResolution( Double_t x ) const;
-   Double_t FindXi( Double_t res, Double_t prec ) const;
 
       
    Int_t fDebug ;                // flag for analysis: more print statements

@@ -38,7 +38,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
                                        Float_t deltaPhiMass = 0.0003, // dM in which to look for phi 
                                        Float_t POIPtMax = 5., // max pt of daughterp particles
                                        Bool_t shrinkSP = kFALSE, // shrink output
-                                       Bool_t fullUforVZERO_SP = kFALSE, // do full u for VZERO_SP
+                                       Bool_t fullUforVZERO_SP = kTRUE, // do full u for VZERO_SP
                                        Bool_t debug = kTRUE) // macro debug mode, for task's debug mode see header
 {
    // some defaults that have been removed as function arguments (august 30 2012)
