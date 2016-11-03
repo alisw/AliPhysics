@@ -67,6 +67,8 @@ public:
   enum DataSet { k2010,
     k2011,
     k2015,
+    k2015HIR,
+    k2015LIR,
     kAny
   };
   
@@ -197,6 +199,7 @@ public:
   virtual void RecenterCRCQVec();
   virtual void RecenterCRCQVecZDC();
   virtual Bool_t PassQAZDCCuts();
+  virtual Bool_t MultCut2015o();
   virtual void CalculateCRCCorr();
   virtual void CalculateCRCVZERO();
   virtual void CalculateCRCZDC();
@@ -1658,6 +1661,8 @@ private:
   const static Int_t fkNHistv1eta = 17;
   TProfile *fFlowSPZDCv1etaPro[fkNHistv1eta]; //!
   TH1D *fFlowSPZDCv1etaHist[fkNHistv1eta]; //!
+  const static Int_t fkNHistQVecCorrv1eta = 6;
+  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
   
   // Flow QC
   TList *fFlowQCList;    //! QC List
@@ -1714,6 +1719,7 @@ private:
   TH1D *fFlowSCv2vsZNv1PtHist[fSCv2vsZNHarm][fSCv2vsZNPtBins][3]; //!
   TH1D *fFlowSCv2vsZNv1PtFinalHist[fSCv2vsZNHarm][fSCv2vsZNPtBins][3]; //!
   TProfile2D *fFlowSCMultvsZN; //!
+  TProfile2D *fFlowSCAvPtvsZN; //!
   
   // Flow SP VZ
   TList *fFlowSPVZList;    //! SPVZ List
@@ -1764,6 +1770,10 @@ private:
   TH2F* fhCenvsMul[fZDCESEnCl+1]; //! cen vs mul
   TH2F* fhCenvsSpec[fZDCESEnCl+1]; //! cen vs spec
   TH2F* fhZNvsMul; //! cen vs mul
+  TH1F* fMultCutMin; //!
+  TH1F* fMultCutMax; //!
+  TH1F* fEZNCutMin; //!
+  TH1F* fEZNCutMax; //!
   Double_t fVtxPos[3]; // primary vertex position (x,y,z)
   TF1 *fPolMin[2]; //!
   TF1 *fPolMax[2]; //!
