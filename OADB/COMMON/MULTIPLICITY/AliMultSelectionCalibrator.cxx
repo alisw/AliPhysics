@@ -525,7 +525,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                         Double_t lFractionAccepted = (((Double_t) lAcceptedEvents )/((Double_t) ntot));
                         Double_t lScalingFactor    = lFractionAccepted/((0.01)*lAnchorPercentile);
                         //Make sure: if AnchorPercentile requested, cut at AnchorPoint
-                        position = (Long64_t) ( ((Double_t)(position)) * lScalingFactor );
+                        position = (Long64_t) ( ( 0.01 * ((Double_t)(ntot)* lDesiredBoundaries[lB] ) ) * lScalingFactor );
                         if(position > ntot-1 ) position = ntot-1; //protection !
                     }
                     //cout<<"Position requested: "<<position<<flush;
