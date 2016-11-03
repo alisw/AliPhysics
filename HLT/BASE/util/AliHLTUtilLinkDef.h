@@ -35,6 +35,8 @@
 #pragma link C++ class AliHLTCorruptorComponent+;
 #pragma link C++ class AliHLTESDTrackCuts+;
 #pragma link C++ class AliHLTObjectRenamer+;
+#pragma link C++ class AliOptionParser+;
+#pragma link C++ class AliHLTexampleMergeableContainer+;
 #ifdef ZMQ
 #pragma link C++ class AliZMQhistViewer;
 #pragma link C++ class AliZMQMTviewerGUI;

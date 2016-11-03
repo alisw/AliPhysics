@@ -64,6 +64,8 @@ set(SRCS
     AliHLTRootFileWriterComponent.cxx
     AliHLTRootSchemaEvolutionComponent.cxx
     AliHLTObjectRenamer.cxx
+    AliOptionParser.cxx
+    AliHLTexampleMergeableContainer.cxx
    )
 
 if(ZEROMQ_FOUND) 
