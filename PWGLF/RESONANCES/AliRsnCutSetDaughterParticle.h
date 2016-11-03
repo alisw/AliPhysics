@@ -62,6 +62,7 @@ public:
     kTPCpidphipp2015,//TPC cuts for phi in pp 13 TeV (LHC15f)
     kTPCTOFpidTunedPbPbTOFveto, // Pb-Pb cuts tuned for Pb-Pb 2010/2011 (TOF veto)
     kTPCTOFpidTunedPbPbTOFneed, // Pb-Pb cuts tuned for Pb-Pb 2010/2011 (TOF needed)
+    kTOFTPCpidDelta,         //cuts for Delta
     kNDaughterCuts
   };
 
