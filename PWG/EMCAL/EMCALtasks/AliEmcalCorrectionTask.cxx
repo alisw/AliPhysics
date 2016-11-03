@@ -148,8 +148,9 @@ inline bool AliEmcalCorrectionTask::DoesFileExist(const std::string & filename)
 }
 
 /**
- * Handles expanding ALICE_PHYSICS and copying the file from the grid if necessary.
- *
+ * Handles opening configuration file, including in AliPhysics and on the grid.
+ * Cannot just use TFile::Open() because the YAML file is just text.
+ * In the case of a file on the grid, it is copied locally.
  */
 void AliEmcalCorrectionTask::SetupConfigurationFilePath(std::string & filename, bool userFile)
 {
@@ -265,7 +266,7 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   }
 
   // Save configuration into strings so that they can be streamed
-  // Need the stringstream because yaml implements streamers
+  // Need the stringstream because YAML implements streamers
   std::stringstream tempConfiguration;
   tempConfiguration << fUserConfiguration;
   fUserConfigurationString = tempConfiguration.str();

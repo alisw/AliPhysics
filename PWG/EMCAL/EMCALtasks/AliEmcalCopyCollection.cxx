@@ -46,8 +46,7 @@ AliEmcalCopyCollection::AliEmcalCopyCollection(std::string name, AliEmcalCorrect
 }
 
 /**
- *
- *
+ * Used to determine the input type (ESD or AOD).
  */
 void AliEmcalCopyCollection::UserCreateOutputObjects()
 {
@@ -73,8 +72,8 @@ void AliEmcalCopyCollection::UserCreateOutputObjects()
 }
 
 /**
- *
- *
+ * Creates a new collection during the first event and 
+ * then copies the collection into it each event.
  */
 void AliEmcalCopyCollection::UserExec(Option_t * option)
 {
@@ -91,8 +90,8 @@ void AliEmcalCopyCollection::UserExec(Option_t * option)
 }
 
 /**
- *
- *
+ * Steers creation of a new collection in the event. It supports the "usedefault"
+ * pattern to determine the input collection branch name.
  */
 void AliEmcalCopyCollection::CreateNewObjectBranch()
 {
@@ -133,7 +132,11 @@ void AliEmcalCopyCollection::CreateNewObjectBranch()
 }
 
 /**
- * Create a new branch for the new collection.
+ * Create a new branch for the new collection. It checks to ensure that the object does not
+ * already exist in the input event before creating it.
+ *
+ * Note that cells and clusters/tracks are handled differently due to the different types
+ * used to store each branch (Ali*CaloCells and TClonesArray respectively).
  */
 void AliEmcalCopyCollection::NewBranch()
 {
@@ -179,8 +182,9 @@ void AliEmcalCopyCollection::NewBranch()
 }
 
 /**
+ * Copies from the collection branch to the new collection branch.
  *
- *
+ * Cells, clusters, and tracks are all handled individually.
  */
 void AliEmcalCopyCollection::CopyBranchToNewObject()
 {
@@ -226,8 +230,6 @@ void AliEmcalCopyCollection::CopyBranchToNewObject()
         // Calls copy constructor to create a new track at position i in newTracks
         AliESDtrack *newTrack = dynamic_cast<AliESDtrack *>(new ((*newTracks)[i]) AliESDtrack(*currentTrack));
 
-        // Assign new process ID so that it is from the current process as opposed to the old one copied from the current track
-        //TProcessID::AssignID(newTrack);
         // Reset properties of the track to fix TRefArray errors later.
         // Particular combination is from AODTrackFilterTask
         // Resetting the TProcessID of the track is not sufficient!
@@ -241,30 +243,12 @@ void AliEmcalCopyCollection::CopyBranchToNewObject()
         // Calls copy constructor to create a new track at position i in newTracks
         AliAODTrack *newTrack = dynamic_cast<AliAODTrack *>(new ((*newTracks)[i]) AliAODTrack(*currentTrack));
 
-        // TEMP
-        /*if (i == 5 || i == 7)
-        {
-          std::cout << "Track properties:" << std::endl;
-          currentTrack->Print();
-          newTrack->Print();
-          std::cout << "ProcessID for current track: " << TProcessID::GetProcessWithUID(currentTrack)->GetName() << "/" << TProcessID::GetProcessWithUID(currentTrack)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(currentTrack) << std::endl;
-          std::cout << "ProcessID for new track: " << TProcessID::GetProcessWithUID(newTrack)->GetName() << "/" << TProcessID::GetProcessWithUID(newTrack)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(newTrack) << std::endl;
-        }*/
-
-        // Assign new process ID so that it is from the current process as opposed to the old one copied from the current track
-        //TProcessID::AssignID(newTrack);
         // Reset properties of the track to fix TRefArray errors later.
         // Particular combination is from AODTrackFilterTask
         // Resetting the TProcessID of the track is not sufficient!
         newTrack->SetUniqueID(0);
         newTrack->ResetBit(TObject::kHasUUID);
         newTrack->ResetBit(TObject::kIsReferenced);
-
-        /*if (i == 5 || i == 7)
-        {
-          std::cout << "ProcessID for new track after assign ID: " << TProcessID::GetProcessWithUID(newTrack)->GetName() << "/" << TProcessID::GetProcessWithUID(newTrack)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(newTrack) << std::endl;
-          std::cout << "ProcessID for newTracks: " << TProcessID::GetProcessWithUID(newTracks)->GetName() << "/" << TProcessID::GetProcessWithUID(newTracks)->GetTitle() << ". Memory Address: " << TProcessID::GetProcessWithUID(newTracks) << std::endl;
-        }*/
       }
     }
     AliDebug(3, Form("after  copy:\t currentTracks->GetEntries(): %d \t newTracks->GetEntries(): %d", currentTracks->GetEntries(), newTracks->GetEntries()));
@@ -272,8 +256,10 @@ void AliEmcalCopyCollection::CopyBranchToNewObject()
 }
 
 /**
+ * Copies clusters from an one TClonesArray to another.
  *
- *
+ * This function is from AliAnalysisTaskEMCALClusterizeFast, but modified to copy ALL
+ * clusters so that PHOS clusters can be used in the EMCal framework.
  */
 void AliEmcalCopyCollection::CopyClusters(TClonesArray *orig, TClonesArray *dest)
 {
