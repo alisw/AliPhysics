@@ -10,10 +10,38 @@ class AliVParticle;
 
 /**
  * @class AliEmcalCorrectionClusterTrackMatcher
- * @brief Cluster-track matcher component in the EMCal correction framework
+ * @brief Cluster-track matcher component in the EMCal correction framework. 
  * @ingroup EMCALCOREFW
  *
- * Based on code in AliEmcalClusTrackMatcherTask.
+ * Tracks and clusters are matched using a simple geometrical algorithm. Multiple tracks can be matched to a single cluster; however only one cluster can be matched to a track. The default configuration of the task is such that it will attempt track propagation to the EMCal surface (440 cm) if the track is not already propagated. This means that the OCDB has to be loaded beforehand (e.g. using the CDBConnect task), as well as the geometry (handled automatically by AliEmcalCorrectionTask). This should usually work in both AOD and ESD events.
+ 
+ The number of tracks matched to a cluster can be retrieved using `cluster->GetNTracksMatched()`. Unfortunately the method to access the tracks matched to a cluster depend on the data format. For ESD clusters (AliESDCaloClusters):
+ ~~~{.cxx}
+ Int_t iTrack = cluster->GetTrackMatchedIndex(i);
+ ~~~
+ will return the position of the track in the array. The integer i is a number from 0 to `cluster->GetNTracksMatched() -1`. A pointer to the track object can be retrieved using:
+ ~~~{.cxx}
+ AliVTrack* track = static_cast<AliVTrack*>(GetParticleContainer(0)->GetParticle(iTrack));
+ ~~~
+ (assuming that the task is derived from AliAnalysisTaskEmcal or AliAnalysisTaskEmcalJet).
+ 
+ For AOD clusters (AliAODCaloClusters) the method:
+ ~~~{.cxx}
+ AliVTrack* track = static_cast<AliVTrack*>(cluster->GetTrackMatched(i));
+ ~~~
+ will directly return a pointer to the matched track.
+ 
+ To get the cluster matched to a track one can use (both ESD and AOD):
+ ~~~{.cxx}
+ Int_t iCluster = track->GetEMCALcluster();
+ ~~~
+ This will return the index of the cluster. To get a pointer to the cluster object:
+ ~~~{.cxx}
+ AliVCluster *cluster = GetClusterContainer(0)->GetCluster(iCluster);
+ ~~~
+ (again assuming that the task is derived from AliAnalysisTaskEmcal or AliAnalysisTaskEmcalJet).
+ *
+ * Based on code in AliEmcalClusTrackMatcherTask. 
  *
  * @author Constantin Loizides, LBNL, AliEmcalClusTrackMatcherTask
  * @author Salvatore Aiola, LBNL, AliEmcalClusTrackMatcherTask

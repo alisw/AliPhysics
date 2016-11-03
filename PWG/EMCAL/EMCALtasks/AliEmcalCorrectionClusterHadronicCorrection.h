@@ -8,8 +8,14 @@ class TH2;
 
 /**
  * @class AliEmcalCorrectionClusterHadronicCorrection
- * @brief Hadronic correction component in the EMCal correction framework
+ * @brief Hadronic correction component in the EMCal correction framework. 
  * @ingroup EMCALCOREFW
+ *
+ * Charged particles deposit some energy in the calorimeter. Most of the charged particle are hadrons, such as pions, kaons and protons. The hadronic response of the calorimeter has been studied in some details. Most of the high energetic particles ( > 1 GeV) only release a small amount of energy. These are usually called "minimum ionizing particles" (MIP). Occasionally hadrons may interact strongly with the nuclei of the material in the calorimeter and start a hadronic shower. In this case the energy deposition is much higher. High momentum muons are also MIP, but they never shower in the calorimeter. Finally electrons do shower in the calorimeter, in a way that is quite similar to a shower initiated by a photon.
+ 
+ All charged particles are measured in the tracking detectors (ITS+TPC+TOF). To avoid double counting their contribution to the jet energy flow, they need to be subtracted cluster-by-cluster. This is done by matching EMCal/DCal clusters with charged tracks and then subtracting a certain fraction of the matched tracks from the cluster energy. The most common choice is to subtract 100% of the momentum of the sum of the matched tracks.
+ 
+ The energy of the cluster **after** the hadronic correction can be obtained using the method `cluster->GetHadCorrEnergy()`.
  *
  * Based on code in AliHadCorrTask.
  *

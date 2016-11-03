@@ -9,19 +9,29 @@ correction, or cluster-track matching, etc. The set of corrections to run, as we
 parameters, is set in a YAML configuration file. A default config file containing the centralized standard set of parameters is
 shared by all users, and each user additionally writes their own user config file, overwriting desired variables.
 
+The motivation of this new approach is the following:
+- Centralize code so that there are not many similar versions of code used by different people
+- Provide a simple and unified interface to make life easier for both users and developers
+- Reduce likelihood of mistakes for users (make it obvious to a user if they are deviating from a recommended config, and avoid setting arguments through ``AddTask`` macros)
+
+The following correction components are available:
+- [CellBadChannel](\ref AliEmcalCorrectionCellBadChannel) -- Sets cells marked as bad to E = 0, using OADB bad channel map.
+- [CellEnergy](\ref AliEmcalCorrectionCellEnergy) -- Performs energy calibration of cells, using OADB calibration.
+- [CellTimeCalib](\ref AliEmcalCorrectionCellTimeCalib) -- Performs time calibration of cells, using OADB calibration.
+- [Clusterizer](\ref AliEmcalCorrectionClusterizer) -- Clusterizes a collection of cells into a collection of clusters.
+- [ClusterExotics](\ref AliEmcalCorrectionClusterExotics) -- Flags exotic clusters for removal from the cluster collection.
+- [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
+- [ClusterTrackMatcher](\ref AliEmcalCorrectionClusterTrackMatcher) -- Matches each track to a single cluster, if they are in close enough proximity.
+- [ClusterHadronicCorrection](\ref AliEmcalCorrectionClusterHadronicCorrection) -- For clusters that have one or more matched tracks, reduces the cluster energy in order to avoid overestimating the particle's energy.
+
 This new correction task unifies what was previously done by tasks such as:
- - EMCal Tender
- - ClusterMaker
- - ClusterizerFast
- - ClusTrackMatcher
- - HadCorr
+ - [EMCal Tender](\ref AliEMCALTenderSupply)
+ - [ClusterMaker](\ref AliEmcalClusterMaker)
+ - [ClusterizerFast](\ref AliAnalysisTaskEMCALClusterizeFast)
+ - [ClusTrackMatcher](\ref AliEmcalClusTrackMatcherTask)
+ - [HadCorr](\ref AliHadCorrTask)
 
 ...and other similar tasks.
-
-The motivation of this new approach is the following:
- - Centralize code so that there are not many similar versions of code used by different people
- - Provide a simple and unified interface to make life easier for both users and developers
- - Reduce likelihood of mistakes for users (make it obvious to a user if they are deviating from a recommended config, and avoid setting arguments through ``AddTask`` macros)
 
 # Prerequisites
 

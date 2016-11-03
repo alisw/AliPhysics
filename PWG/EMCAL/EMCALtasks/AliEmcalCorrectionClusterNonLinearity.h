@@ -7,8 +7,12 @@
 
 /**
  * @class AliEmcalCorrectionClusterNonLinearity
- * @brief Cluster energy non-linearity correction component in the EMCal correction framework
+ * @brief Cluster energy non-linearity correction component in the EMCal correction framework. 
  * @ingroup EMCALCOREFW
+ *
+ * Non-linearity correction to the cluster energy is necessary because the response of the calorimeter is not linear for very low momentum particles or very high momentum (shower leakage).
+ 
+ The energy of the cluster **after** the non-linearity correction can be retrieved using the method `cluster->GetNonLinCorrEnergy()`.
  *
  * Based on code in AliEmcalClusterMaker.
  *
