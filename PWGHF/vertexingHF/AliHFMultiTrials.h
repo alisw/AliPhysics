@@ -80,6 +80,10 @@ class AliHFMultiTrials : public TNamed {
   Bool_t DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad=0x0);
   void SaveToRoot(TString fileName, TString option="recreate") const;
   void DrawHistos(TCanvas* cry) const;
+  TH1F* SetTemplateRefl(const TH1F *hTemplRefl);
+
+  void SetFixRefoS(Float_t refloS){fFixRefloS=refloS;}
+
 
   enum EBkgFuncCases{ kExpoBkg, kLinBkg, kPol2Bkg, kPol3Bkg, kPol4Bkg, kPol5Bkg, kNBkgFuncCases };
   enum EFitParamCases{ kFixSigFreeMean, kFixSigUpFreeMean, kFixSigDownFreeMean, kFreeSigFreeMean, kFixSigFixMean, kFreeSigFixMean, kNFitConfCases};
@@ -144,14 +148,15 @@ class AliHFMultiTrials : public TNamed {
 
   TH1F** fHistoRawYieldDistBinC;  /// histo with bin counts from subsamples of trials
   TH2F** fHistoRawYieldTrialBinC; /// histo with bin counts from subsamples of trials
-
+  TH1F *fhTemplRefl;        /// template of reflection contribution
+  Float_t fFixRefloS;
   TNtuple* fNtupleMultiTrials; /// tree
  
   Double_t fMinYieldGlob;   /// minimum yield
   Double_t fMaxYieldGlob;   /// maximum yield
 
   /// \cond CLASSIMP    
-  ClassDef(AliHFMultiTrials,2); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFMultiTrials,3); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 
