@@ -492,66 +492,66 @@ public:
     kQnDiffFMDA_FMDC,
 
     // // Average XX YX XY differences for 2nd harmonics from QnCorrections framework est. 2016
-    kQnDiffTPCx_V0Ax,
-    kQnDiffTPCx_V0Ay,
-    kQnDiffTPCy_V0Ax,
-    kQnDiffTPCy_V0Ay,
-    kQnDiffTPCx_V0Cx,
-    kQnDiffTPCx_V0Cy,
-    kQnDiffTPCy_V0Cx,
-    kQnDiffTPCy_V0Cy,
-    kQnDiffTPCx_SPDx,
-    kQnDiffTPCx_SPDy,
-    kQnDiffTPCy_SPDx,
-    kQnDiffTPCy_SPDy,
-    kQnDiffTPCx_FMDAx,
-    kQnDiffTPCx_FMDAy,
-    kQnDiffTPCy_FMDAx,
-    kQnDiffTPCy_FMDAy,
-    kQnDiffTPCx_FMDCx,
-    kQnDiffTPCx_FMDCy,
-    kQnDiffTPCy_FMDCx,
-    kQnDiffTPCy_FMDCy,
-    kQnDiffV0Ax_V0Cx,
-    kQnDiffV0Ax_V0Cy,
-    kQnDiffV0Ay_V0Cx,
-    kQnDiffV0Ay_V0Cy,
-    kQnDiffV0Ax_SPDx,
-    kQnDiffV0Ax_SPDy,
-    kQnDiffV0Ay_SPDx,
-    kQnDiffV0Ay_SPDy,
-    kQnDiffV0Ax_FMDAx,
-    kQnDiffV0Ax_FMDAy,
-    kQnDiffV0Ay_FMDAx,
-    kQnDiffV0Ay_FMDAy,
-    kQnDiffV0Ax_FMDCx,
-    kQnDiffV0Ax_FMDCy,
-    kQnDiffV0Ay_FMDCx,
-    kQnDiffV0Ay_FMDCy,
-    kQnDiffV0Cx_FMDAx,
-    kQnDiffV0Cx_FMDAy,
-    kQnDiffV0Cy_FMDAx,
-    kQnDiffV0Cy_FMDAy,
-    kQnDiffV0Cx_FMDCx,
-    kQnDiffV0Cx_FMDCy,
-    kQnDiffV0Cy_FMDCx,
-    kQnDiffV0Cy_FMDCy,
-    kQnDiffV0Cx_SPDx,
-    kQnDiffV0Cx_SPDy,
-    kQnDiffV0Cy_SPDx,
-    kQnDiffV0Cy_SPDy,
-    kQnDiffSPDx_FMDAx,
-    kQnDiffSPDx_FMDAy,
-    kQnDiffSPDy_FMDAx,
-    kQnDiffSPDy_FMDAy,
-    kQnDiffSPDx_FMDCx,
-    kQnDiffSPDx_FMDCy,
-    kQnDiffSPDy_FMDCx,
-    kQnDiffSPDy_FMDCy,
-    kQnDiffFMDAx_FMDCx,
-    kQnDiffFMDAx_FMDCy,
-    kQnDiffFMDAy_FMDCx,
-    kQnDiffFMDAy_FMDCy,
+    kQnCorrTPCx_V0Ax,
+    kQnCorrTPCx_V0Ay,
+    kQnCorrTPCy_V0Ax,
+    kQnCorrTPCy_V0Ay,
+    kQnCorrTPCx_V0Cx,
+    kQnCorrTPCx_V0Cy,
+    kQnCorrTPCy_V0Cx,
+    kQnCorrTPCy_V0Cy,
+    kQnCorrTPCx_SPDx,
+    kQnCorrTPCx_SPDy,
+    kQnCorrTPCy_SPDx,
+    kQnCorrTPCy_SPDy,
+    kQnCorrTPCx_FMDAx,
+    kQnCorrTPCx_FMDAy,
+    kQnCorrTPCy_FMDAx,
+    kQnCorrTPCy_FMDAy,
+    kQnCorrTPCx_FMDCx,
+    kQnCorrTPCx_FMDCy,
+    kQnCorrTPCy_FMDCx,
+    kQnCorrTPCy_FMDCy,
+    kQnCorrV0Ax_V0Cx,
+    kQnCorrV0Ax_V0Cy,
+    kQnCorrV0Ay_V0Cx,
+    kQnCorrV0Ay_V0Cy,
+    kQnCorrV0Ax_SPDx,
+    kQnCorrV0Ax_SPDy,
+    kQnCorrV0Ay_SPDx,
+    kQnCorrV0Ay_SPDy,
+    kQnCorrV0Ax_FMDAx,
+    kQnCorrV0Ax_FMDAy,
+    kQnCorrV0Ay_FMDAx,
+    kQnCorrV0Ay_FMDAy,
+    kQnCorrV0Ax_FMDCx,
+    kQnCorrV0Ax_FMDCy,
+    kQnCorrV0Ay_FMDCx,
+    kQnCorrV0Ay_FMDCy,
+    kQnCorrV0Cx_FMDAx,
+    kQnCorrV0Cx_FMDAy,
+    kQnCorrV0Cy_FMDAx,
+    kQnCorrV0Cy_FMDAy,
+    kQnCorrV0Cx_FMDCx,
+    kQnCorrV0Cx_FMDCy,
+    kQnCorrV0Cy_FMDCx,
+    kQnCorrV0Cy_FMDCy,
+    kQnCorrV0Cx_SPDx,
+    kQnCorrV0Cx_SPDy,
+    kQnCorrV0Cy_SPDx,
+    kQnCorrV0Cy_SPDy,
+    kQnCorrSPDx_FMDAx,
+    kQnCorrSPDx_FMDAy,
+    kQnCorrSPDy_FMDAx,
+    kQnCorrSPDy_FMDAy,
+    kQnCorrSPDx_FMDCx,
+    kQnCorrSPDx_FMDCy,
+    kQnCorrSPDy_FMDCx,
+    kQnCorrSPDy_FMDCy,
+    kQnCorrFMDAx_FMDCx,
+    kQnCorrFMDAx_FMDCy,
+    kQnCorrFMDAy_FMDCx,
+    kQnCorrFMDAy_FMDCy,
 
     // Flow estimators for measured Jpsis
 
@@ -3435,7 +3435,7 @@ inline AliQnCorrectionsQnVector* AliDielectronVarManager::GetQnVectorFromList(
 //________________________________________________________________
 inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t * const values){
   Bool_t bTPCqVector(kFALSE), bV0AqVector(kFALSE), bV0CqVector(kFALSE), bSPDqVector(kFALSE), bFMDAqVector(kFALSE), bFMDCqVector(kFALSE);
-  for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnDiffFMDAy_FMDCy; i++) {
+  for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
     values[i] = -999.;
   }
   // TPC Eventplane q-Vector
@@ -3508,38 +3508,38 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   if(bTPCqVector){
     if(bV0AqVector){
       values[AliDielectronVarManager::kQnDiffTPC_V0A] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnV0ArpH2]);
-      values[kQnDiffTPCx_V0Ax] = values[kQnTPCxH2] - values[kQnV0AxH2];
-      values[kQnDiffTPCx_V0Ay] = values[kQnTPCxH2] - values[kQnV0AyH2];
-      values[kQnDiffTPCy_V0Ax] = values[kQnTPCyH2] - values[kQnV0AxH2];
-      values[kQnDiffTPCy_V0Ay] = values[kQnTPCyH2] - values[kQnV0AyH2];
+      values[kQnCorrTPCx_V0Ax] = values[kQnTPCxH2] * values[kQnV0AxH2];
+      values[kQnCorrTPCx_V0Ay] = values[kQnTPCxH2] * values[kQnV0AyH2];
+      values[kQnCorrTPCy_V0Ax] = values[kQnTPCyH2] * values[kQnV0AxH2];
+      values[kQnCorrTPCy_V0Ay] = values[kQnTPCyH2] * values[kQnV0AyH2];
     }
     if(bV0CqVector){
       values[AliDielectronVarManager::kQnDiffTPC_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
-      values[kQnDiffTPCx_V0Cx] = values[kQnTPCxH2] - values[kQnV0CxH2];
-      values[kQnDiffTPCx_V0Cy] = values[kQnTPCxH2] - values[kQnV0CyH2];
-      values[kQnDiffTPCy_V0Cx] = values[kQnTPCyH2] - values[kQnV0CxH2];
-      values[kQnDiffTPCy_V0Cy] = values[kQnTPCyH2] - values[kQnV0CyH2];
+      values[kQnCorrTPCx_V0Cx] = values[kQnTPCxH2] * values[kQnV0CxH2];
+      values[kQnCorrTPCx_V0Cy] = values[kQnTPCxH2] * values[kQnV0CyH2];
+      values[kQnCorrTPCy_V0Cx] = values[kQnTPCyH2] * values[kQnV0CxH2];
+      values[kQnCorrTPCy_V0Cy] = values[kQnTPCyH2] * values[kQnV0CyH2];
     }
     if(bSPDqVector){
       values[AliDielectronVarManager::kQnDiffTPC_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
-      values[kQnDiffTPCx_SPDx] = values[kQnTPCxH2] - values[kQnSPDxH2];
-      values[kQnDiffTPCx_SPDy] = values[kQnTPCxH2] - values[kQnSPDyH2];
-      values[kQnDiffTPCy_SPDx] = values[kQnTPCyH2] - values[kQnSPDxH2];
-      values[kQnDiffTPCy_SPDy] = values[kQnTPCyH2] - values[kQnSPDyH2];
+      values[kQnCorrTPCx_SPDx] = values[kQnTPCxH2] * values[kQnSPDxH2];
+      values[kQnCorrTPCx_SPDy] = values[kQnTPCxH2] * values[kQnSPDyH2];
+      values[kQnCorrTPCy_SPDx] = values[kQnTPCyH2] * values[kQnSPDxH2];
+      values[kQnCorrTPCy_SPDy] = values[kQnTPCyH2] * values[kQnSPDyH2];
     }
     if(bFMDAqVector){
       values[AliDielectronVarManager::kQnDiffTPC_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnDiffTPCx_FMDAx] = values[kQnTPCxH2] - values[kQnFMDAxH2];
-      values[kQnDiffTPCx_FMDAy] = values[kQnTPCxH2] - values[kQnFMDAyH2];
-      values[kQnDiffTPCy_FMDAx] = values[kQnTPCyH2] - values[kQnFMDAxH2];
-      values[kQnDiffTPCy_FMDAy] = values[kQnTPCyH2] - values[kQnFMDAyH2];
+      values[kQnCorrTPCx_FMDAx] = values[kQnTPCxH2] * values[kQnFMDAxH2];
+      values[kQnCorrTPCx_FMDAy] = values[kQnTPCxH2] * values[kQnFMDAyH2];
+      values[kQnCorrTPCy_FMDAx] = values[kQnTPCyH2] * values[kQnFMDAxH2];
+      values[kQnCorrTPCy_FMDAy] = values[kQnTPCyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
       values[AliDielectronVarManager::kQnDiffTPC_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnDiffTPCx_FMDCx] = values[kQnTPCxH2] - values[kQnFMDCxH2];
-      values[kQnDiffTPCx_FMDCy] = values[kQnTPCxH2] - values[kQnFMDCyH2];
-      values[kQnDiffTPCy_FMDCx] = values[kQnTPCyH2] - values[kQnFMDCxH2];
-      values[kQnDiffTPCy_FMDCy] = values[kQnTPCyH2] - values[kQnFMDCyH2];
+      values[kQnCorrTPCx_FMDCx] = values[kQnTPCxH2] * values[kQnFMDCxH2];
+      values[kQnCorrTPCx_FMDCy] = values[kQnTPCxH2] * values[kQnFMDCyH2];
+      values[kQnCorrTPCy_FMDCx] = values[kQnTPCyH2] * values[kQnFMDCxH2];
+      values[kQnCorrTPCy_FMDCy] = values[kQnTPCyH2] * values[kQnFMDCyH2];
     }
   }
 
@@ -3547,55 +3547,55 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   if(bV0AqVector){
     if(bV0CqVector){
       values[AliDielectronVarManager::kQnDiffV0A_V0C] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnV0CrpH2]);
-      values[kQnDiffV0Ax_V0Cx] = values[kQnV0AxH2] - values[kQnV0CxH2];
-      values[kQnDiffV0Ax_V0Cy] = values[kQnV0AxH2] - values[kQnV0CyH2];
-      values[kQnDiffV0Ay_V0Cx] = values[kQnV0AyH2] - values[kQnV0CxH2];
-      values[kQnDiffV0Ay_V0Cy] = values[kQnV0AyH2] - values[kQnV0CyH2];
+      values[kQnCorrV0Ax_V0Cx] = values[kQnV0AxH2] * values[kQnV0CxH2];
+      values[kQnCorrV0Ax_V0Cy] = values[kQnV0AxH2] * values[kQnV0CyH2];
+      values[kQnCorrV0Ay_V0Cx] = values[kQnV0AyH2] * values[kQnV0CxH2];
+      values[kQnCorrV0Ay_V0Cy] = values[kQnV0AyH2] * values[kQnV0CyH2];
     }
     if(bSPDqVector){
       values[AliDielectronVarManager::kQnDiffV0A_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
-      values[kQnDiffV0Ax_SPDx] = values[kQnV0AxH2] - values[kQnSPDxH2];
-      values[kQnDiffV0Ax_SPDy] = values[kQnV0AxH2] - values[kQnSPDyH2];
-      values[kQnDiffV0Ay_SPDx] = values[kQnV0AyH2] - values[kQnSPDxH2];
-      values[kQnDiffV0Ay_SPDy] = values[kQnV0AyH2] - values[kQnSPDyH2];
+      values[kQnCorrV0Ax_SPDx] = values[kQnV0AxH2] * values[kQnSPDxH2];
+      values[kQnCorrV0Ax_SPDy] = values[kQnV0AxH2] * values[kQnSPDyH2];
+      values[kQnCorrV0Ay_SPDx] = values[kQnV0AyH2] * values[kQnSPDxH2];
+      values[kQnCorrV0Ay_SPDy] = values[kQnV0AyH2] * values[kQnSPDyH2];
     }
     if(bFMDAqVector){
       values[AliDielectronVarManager::kQnDiffV0A_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnDiffV0Ax_FMDAx] = values[kQnV0AxH2] - values[kQnFMDAxH2];
-      values[kQnDiffV0Ax_FMDAy] = values[kQnV0AxH2] - values[kQnFMDAyH2];
-      values[kQnDiffV0Ay_FMDAx] = values[kQnV0AyH2] - values[kQnFMDAxH2];
-      values[kQnDiffV0Ay_FMDAy] = values[kQnV0AyH2] - values[kQnFMDAyH2];
+      values[kQnCorrV0Ax_FMDAx] = values[kQnV0AxH2] * values[kQnFMDAxH2];
+      values[kQnCorrV0Ax_FMDAy] = values[kQnV0AxH2] * values[kQnFMDAyH2];
+      values[kQnCorrV0Ay_FMDAx] = values[kQnV0AyH2] * values[kQnFMDAxH2];
+      values[kQnCorrV0Ay_FMDAy] = values[kQnV0AyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
       values[AliDielectronVarManager::kQnDiffV0A_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0ArpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-      values[kQnDiffV0Ax_FMDCx] = values[kQnV0AxH2] - values[kQnFMDCxH2];
-      values[kQnDiffV0Ax_FMDCy] = values[kQnV0AxH2] - values[kQnFMDCyH2];
-      values[kQnDiffV0Ay_FMDCx] = values[kQnV0AyH2] - values[kQnFMDCxH2];
-      values[kQnDiffV0Ay_FMDCy] = values[kQnV0AyH2] - values[kQnFMDCyH2];
+      values[kQnCorrV0Ax_FMDCx] = values[kQnV0AxH2] * values[kQnFMDCxH2];
+      values[kQnCorrV0Ax_FMDCy] = values[kQnV0AxH2] * values[kQnFMDCyH2];
+      values[kQnCorrV0Ay_FMDCx] = values[kQnV0AyH2] * values[kQnFMDCxH2];
+      values[kQnCorrV0Ay_FMDCy] = values[kQnV0AyH2] * values[kQnFMDCyH2];
     }
   }
   // V0C Diff
   if(bV0CqVector){
     if(bSPDqVector){
       values[AliDielectronVarManager::kQnDiffV0C_SPD] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnSPDrpH2]);
-      values[kQnDiffV0Cx_SPDx] = values[kQnV0CxH2] - values[kQnSPDxH2];
-      values[kQnDiffV0Cx_SPDy] = values[kQnV0CxH2] - values[kQnSPDyH2];
-      values[kQnDiffV0Cy_SPDx] = values[kQnV0CyH2] - values[kQnSPDxH2];
-      values[kQnDiffV0Cy_SPDy] = values[kQnV0CyH2] - values[kQnSPDyH2];
+      values[kQnCorrV0Cx_SPDx] = values[kQnV0CxH2] * values[kQnSPDxH2];
+      values[kQnCorrV0Cx_SPDy] = values[kQnV0CxH2] * values[kQnSPDyH2];
+      values[kQnCorrV0Cy_SPDx] = values[kQnV0CyH2] * values[kQnSPDxH2];
+      values[kQnCorrV0Cy_SPDy] = values[kQnV0CyH2] * values[kQnSPDyH2];
     }
     if(bFMDAqVector){
       values[AliDielectronVarManager::kQnDiffV0C_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnDiffV0Cx_FMDAx] = values[kQnV0CxH2] - values[kQnFMDAxH2];
-      values[kQnDiffV0Cx_FMDAy] = values[kQnV0CxH2] - values[kQnFMDAyH2];
-      values[kQnDiffV0Cy_FMDAx] = values[kQnV0CyH2] - values[kQnFMDAxH2];
-      values[kQnDiffV0Cy_FMDAy] = values[kQnV0CyH2] - values[kQnFMDAyH2];
+      values[kQnCorrV0Cx_FMDAx] = values[kQnV0CxH2] * values[kQnFMDAxH2];
+      values[kQnCorrV0Cx_FMDAy] = values[kQnV0CxH2] * values[kQnFMDAyH2];
+      values[kQnCorrV0Cy_FMDAx] = values[kQnV0CyH2] * values[kQnFMDAxH2];
+      values[kQnCorrV0Cy_FMDAy] = values[kQnV0CyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
       values[AliDielectronVarManager::kQnDiffV0C_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnV0CrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-      values[kQnDiffV0Cx_FMDCx] = values[kQnV0CxH2] - values[kQnFMDCxH2];
-      values[kQnDiffV0Cx_FMDCy] = values[kQnV0CxH2] - values[kQnFMDCyH2];
-      values[kQnDiffV0Cy_FMDCx] = values[kQnV0CyH2] - values[kQnFMDCxH2];
-      values[kQnDiffV0Cy_FMDCy] = values[kQnV0CyH2] - values[kQnFMDCyH2];
+      values[kQnCorrV0Cx_FMDCx] = values[kQnV0CxH2] * values[kQnFMDCxH2];
+      values[kQnCorrV0Cx_FMDCy] = values[kQnV0CxH2] * values[kQnFMDCyH2];
+      values[kQnCorrV0Cy_FMDCx] = values[kQnV0CyH2] * values[kQnFMDCxH2];
+      values[kQnCorrV0Cy_FMDCy] = values[kQnV0CyH2] * values[kQnFMDCyH2];
     }
   }
 
@@ -3603,27 +3603,27 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   if(bSPDqVector){
     if(bFMDAqVector){
       values[AliDielectronVarManager::kQnDiffSPD_FMDA] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnSPDrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
-      values[kQnDiffSPDx_FMDAx] = values[kQnSPDxH2] - values[kQnFMDAxH2];
-      values[kQnDiffSPDx_FMDAy] = values[kQnSPDxH2] - values[kQnFMDAyH2];
-      values[kQnDiffSPDy_FMDAx] = values[kQnSPDyH2] - values[kQnFMDAxH2];
-      values[kQnDiffSPDy_FMDAy] = values[kQnSPDyH2] - values[kQnFMDAyH2];
+      values[kQnCorrSPDx_FMDAx] = values[kQnSPDxH2] * values[kQnFMDAxH2];
+      values[kQnCorrSPDx_FMDAy] = values[kQnSPDxH2] * values[kQnFMDAyH2];
+      values[kQnCorrSPDy_FMDAx] = values[kQnSPDyH2] * values[kQnFMDAxH2];
+      values[kQnCorrSPDy_FMDAy] = values[kQnSPDyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
       values[AliDielectronVarManager::kQnDiffSPD_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnSPDrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-      values[kQnDiffSPDx_FMDCx] = values[kQnSPDxH2] - values[kQnFMDCxH2];
-      values[kQnDiffSPDx_FMDCy] = values[kQnSPDxH2] - values[kQnFMDCyH2];
-      values[kQnDiffSPDy_FMDCx] = values[kQnSPDyH2] - values[kQnFMDCxH2];
-      values[kQnDiffSPDy_FMDCy] = values[kQnSPDyH2] - values[kQnFMDCyH2];
+      values[kQnCorrSPDx_FMDCx] = values[kQnSPDxH2] * values[kQnFMDCxH2];
+      values[kQnCorrSPDx_FMDCy] = values[kQnSPDxH2] * values[kQnFMDCyH2];
+      values[kQnCorrSPDy_FMDCx] = values[kQnSPDyH2] * values[kQnFMDCxH2];
+      values[kQnCorrSPDy_FMDCy] = values[kQnSPDyH2] * values[kQnFMDCyH2];
     }
   }
 
   // FMDA Diff
   if(bFMDAqVector && bFMDCqVector){
     values[AliDielectronVarManager::kQnDiffFMDA_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnFMDArpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
-    values[kQnDiffFMDAx_FMDCx] = values[kQnFMDAxH2] - values[kQnFMDCxH2];
-    values[kQnDiffFMDAx_FMDCy] = values[kQnFMDAxH2] - values[kQnFMDCyH2];
-    values[kQnDiffFMDAy_FMDCx] = values[kQnFMDAyH2] - values[kQnFMDCxH2];
-    values[kQnDiffFMDAy_FMDCy] = values[kQnFMDAyH2] - values[kQnFMDCyH2];
+    values[kQnCorrFMDAx_FMDCx] = values[kQnFMDAxH2] * values[kQnFMDCxH2];
+    values[kQnCorrFMDAx_FMDCy] = values[kQnFMDAxH2] * values[kQnFMDCyH2];
+    values[kQnCorrFMDAy_FMDCx] = values[kQnFMDAyH2] * values[kQnFMDCxH2];
+    values[kQnCorrFMDAy_FMDCy] = values[kQnFMDAyH2] * values[kQnFMDCyH2];
   }
 }
 
