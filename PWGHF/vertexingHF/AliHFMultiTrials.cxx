@@ -77,6 +77,8 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fHistoSignifTrial(0x0),
   fHistoRawYieldDistBinC(0x0),
   fHistoRawYieldTrialBinC(0x0),
+  fhTemplRefl(0x0),
+  fFixRefloS(0),
   fNtupleMultiTrials(0x0),
   fMinYieldGlob(0),
   fMaxYieldGlob(0)
@@ -98,6 +100,7 @@ AliHFMultiTrials::~AliHFMultiTrials(){
   delete [] fRebinSteps;
   delete [] fLowLimFitSteps;
   delete [] fUpLimFitSteps;
+  if(fhTemplRefl) delete fhTemplRefl;
 }
 
 //________________________________________________________________________
@@ -212,6 +215,12 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 		if(typeb==kPol5Bkg) fitter->SetBackHighPolDegree(5);
 	      }
 	      fitter->SetReflectionSigmaFactor(0);
+	      //if D0 Reflection
+	      if(fhTemplRefl){
+		fitter=new AliHFMassFitterVAR(hRebinned,hmin,hmax,1,typeb,2);
+		fitter->SetTemplateReflections((TH1*)fhTemplRefl);
+		fitter->SetFixReflOverS(fFixRefloS,kTRUE);
+	      }
 	      if(fFitOption==1) fitter->SetUseChi2Fit();
 	      fitter->SetInitialGaussianMean(fMassD);
 	      fitter->SetInitialGaussianSigma(fSigmaGausMC);
@@ -521,4 +530,10 @@ Bool_t AliHFMultiTrials::DoFitWithPol3Bkg(TH1F* histoToFit, Double_t  hmin, Doub
 
   delete hCutTmp;
   return kTRUE;
-}  
+}
+//__________________________________________________________________________________
+TH1F* AliHFMultiTrials::SetTemplateRefl(const TH1F *h) {
+  fhTemplRefl=(TH1F*)h->Clone("hTemplRefl");
+  return fhTemplRefl;
+}
+
