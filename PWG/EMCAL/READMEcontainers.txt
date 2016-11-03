@@ -92,6 +92,9 @@ From the cluster, energy can be retrieved as:
   ~~~{.cxx}
   cluster->E()
   ~~~
+  This energy usually:
+  - implements cell-level energy/time calibrations and bad channel removal
+  - does not include cluster-level non-linearity correction or any analysis-specific corrections (such as the "hadronic correction")
 
 - Energy after non-linearity correction
   ~~~{.cxx}

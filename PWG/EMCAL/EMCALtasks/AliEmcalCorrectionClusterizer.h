@@ -7,9 +7,19 @@
 
 /**
  * @class AliEmcalCorrectionClusterizer
- * @brief EMCal clusterizer component in the EMCal correction framework
+ * @brief EMCal clusterizer component in the EMCal correction framework. 
  * @ingroup EMCALCOREFW
  * 
+ * Clusterizes a collection of cells into a collection of clusters.
+ *
+ * For some datasets one needs to re-run the clusterizer from the cells. This is dataset-specific. Analyzers that are unfamiliar with a specific dataset should communicate with EMCal/DCal detector experts to determine whether the basic corrections and the bad channel map were already available and used in a specific ESD/AOD production. 
+ *
+ * The clusterizer type and the time cuts are to be chosen appropriately for each dataset. Usually the v1 clusterizer is used for pp and the v2 clusterizer is used for PbPb. Sometimes for pp reference runs with the same collision energy as PbPb the v2 clusterizer is employed, but this is analysis dependent. EMCal detector experts are to be contacted for the time cuts.
+ *
+ * The clusterizer will use as input the cell branch specified in the YAML config, and as output will rewrite the cluster branch specified in the YAML config.
+ *
+ * At this point the energy of the cluster will be available through `cluster->E()` where cluster is the pointer to the AliAODCaloCluster or AliESDCaloCluster object.
+ *
  * Based on code in AliAnalysisTaskEMCALClusterizeFast, in turn based on code by Deepa Thomas.
  *
  * @author Constantin Loizides, LBNL, AliAnalysisTaskEMCALClusterizeFast
