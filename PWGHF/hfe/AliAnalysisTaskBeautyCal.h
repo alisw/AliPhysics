@@ -161,6 +161,9 @@ private:
 
     TH2D        *fHisthfeTof;//!ele cand SPD or
 
+    TH2D        *fHistTotalAccPhi;
+    TH2D        *fHistTotalAccEta;
+
     TH1D        *fHistHFEcorr;//!ele cand SPD or
 
     AliHFEcuts  *fhfeCuts;
