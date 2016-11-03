@@ -112,7 +112,7 @@ AliAnalysisTaskSE(),
   fUseNewQnCorrFw(kTRUE),
   fFlowMethod(kEP),
   fNormMethod("QoverQlength"),
-  fHistMassPtCos2Phiq2Centr(0x0),
+  fHistMassPtPhiq2Centr(0x0),
   fq2Meth(kq2TPC),
   fSeparateD0D0bar(kFALSE)
 {
@@ -150,7 +150,7 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fUseNewQnCorrFw(kTRUE),
   fFlowMethod(kEP),
   fNormMethod("QoverQlength"),
-  fHistMassPtCos2Phiq2Centr(0x0),
+  fHistMassPtPhiq2Centr(0x0),
   fq2Meth(kq2TPC),
   fSeparateD0D0bar(kFALSE)
 {
@@ -350,7 +350,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
     if(fFlowMethod!=kEvShape) {
-      TH2F* hMPtCand=new TH2F(Form("hMPtCand%s",centrname.Data()),Form("Mass vs pt %s;pt (GeV);M (GeV/c^{2})",centrname.Data()),120,0,24.,fNMassBins,fLowmasslimit,fUpmasslimit);
+      TH2F* hMPtCand=new TH2F(Form("hMPtCand%s",centrname.Data()),Form("Mass vs pt %s;p_{t} (GeV/c);M (GeV/c^{2})",centrname.Data()),200,0,100.,fNMassBins,fLowmasslimit,fUpmasslimit);
       fOutput->Add(hMPtCand);//For <pt> calculation
 
       //Candidate distributions
@@ -882,39 +882,39 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       
       //fill the THnSparseF
       if((fDecChannel==0 || fDecChannel==2) && isSelected) {
-        Double_t sparsearray[5] = {invMass[0],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
-        fHistMassPtCos2Phiq2Centr->Fill(sparsearray);
+        Double_t sparsearray[4] = {invMass[0],d->Pt(),deltaphi,q2};
+        fHistMassPtPhiq2Centr->Fill(sparsearray);
       }
       else if(fDecChannel==1) {
         if(fSeparateD0D0bar) {
           if(isSelected==1 || isSelected==3) {
-            Double_t sparsearray1[6] = {invMass[0],d->Pt(),TMath::Cos(2*deltaphi),q2,centr,(Double_t)isSelected};
-            fHistMassPtCos2Phiq2Centr->Fill(sparsearray1);
+            Double_t sparsearray1[5] = {invMass[0],d->Pt(),deltaphi,q2,(Double_t)isSelected};
+            fHistMassPtPhiq2Centr->Fill(sparsearray1);
           }
           if(isSelected>=2) {
-            Double_t sparsearray2[6] = {invMass[1],d->Pt(),TMath::Cos(2*deltaphi),q2,centr,(Double_t)isSelected};
-            fHistMassPtCos2Phiq2Centr->Fill(sparsearray2);
+            Double_t sparsearray2[5] = {invMass[1],d->Pt(),deltaphi,q2,(Double_t)isSelected};
+            fHistMassPtPhiq2Centr->Fill(sparsearray2);
           }
         }
         else {
           if(isSelected==1 || isSelected==3) {
-            Double_t sparsearray1[5] = {invMass[0],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
-            fHistMassPtCos2Phiq2Centr->Fill(sparsearray1);
+            Double_t sparsearray1[4] = {invMass[0],d->Pt(),deltaphi,q2};
+            fHistMassPtPhiq2Centr->Fill(sparsearray1);
           }
           if(isSelected>=2) {
-            Double_t sparsearray2[5] = {invMass[1],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
-            fHistMassPtCos2Phiq2Centr->Fill(sparsearray2);
+            Double_t sparsearray2[4] = {invMass[1],d->Pt(),deltaphi,q2};
+            fHistMassPtPhiq2Centr->Fill(sparsearray2);
           }
         }
       }
       else if(fDecChannel==3) {
         if(isSelected==1 || isSelected==3) {
-          Double_t sparsearray1[5] = {invMass[0],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
-          fHistMassPtCos2Phiq2Centr->Fill(sparsearray1);
+          Double_t sparsearray1[4] = {invMass[0],d->Pt(),deltaphi,q2};
+          fHistMassPtPhiq2Centr->Fill(sparsearray1);
         }
         if(isSelected>=2) {
-          Double_t sparsearray2[5] = {invMass[1],d->Pt(),TMath::Cos(2*deltaphi),q2,centr};
-          fHistMassPtCos2Phiq2Centr->Fill(sparsearray2);
+          Double_t sparsearray2[4] = {invMass[1],d->Pt(),deltaphi,q2};
+          fHistMassPtPhiq2Centr->Fill(sparsearray2);
         }
       }
     }
@@ -935,15 +935,13 @@ void AliAnalysisTaskSEHFv2::CreateSparseForEvShapeAnalysis() {
   Double_t ptmin=0.;
   Double_t ptmax=40.;
   
-  Int_t ncos2phibins=100;
-  Double_t mincos2phi=-1.;
-  Double_t maxcos2phi=1.;
+  Int_t nphibins=96;
+  Double_t minphi=0.;
+  Double_t maxphi = TMath::Pi();
   
-  Int_t nq2bins=20;
+  Int_t nq2bins=100;
   Double_t minq2=0.;
   Double_t maxq2=10.;
-  
-  Int_t ncentrbins = (fMaxCentr-fMinCentr)*10/fCentBinSizePerMil;
   
   TString massaxisname;
   if(fDecChannel==0) massaxisname = "M_{K#pi#pi} (GeV/c^{2})";
@@ -951,27 +949,27 @@ void AliAnalysisTaskSEHFv2::CreateSparseForEvShapeAnalysis() {
   else if(fDecChannel==2) massaxisname = "M_{K#pi#pi}-M_{K#pi} (GeV/c^{2})";
   else if(fDecChannel==3) massaxisname = "M_{KK#pi} (GeV/c^{2})";
   
-  Int_t naxes=5;
+  Int_t naxes=4;
   
   if(fSeparateD0D0bar && fDecChannel==1) {
     Int_t npartantipartbins=3;
     Double_t minpartantipart=0.5;
     Double_t maxpartantipart=3.5;
     
-    Int_t nbins[6]={fNMassBins,nptbins,ncos2phibins,nq2bins,ncentrbins,npartantipartbins};
-    Double_t xmin[6]={fLowmasslimit,ptmin,mincos2phi,minq2,(Double_t)fMinCentr,minpartantipart};
-    Double_t xmax[6]={fUpmasslimit,ptmax,maxcos2phi,maxq2,(Double_t)fMaxCentr,maxpartantipart};
+    Int_t nbins[5]={fNMassBins,nptbins,nphibins,nq2bins,npartantipartbins};
+    Double_t xmin[5]={fLowmasslimit,ptmin,minphi,minq2,(Double_t)minpartantipart};
+    Double_t xmax[5]={fUpmasslimit,ptmax,maxphi,maxq2,(Double_t)maxpartantipart};
     
-    naxes=6;
+    naxes=5;
     
-    fHistMassPtCos2Phiq2Centr=new THnSparseF("hMassPtCos2Phiq2","Mass vs. pt vs. Cos(2#Delta#phi) vs. q_{2} vs. centr vs. D0-D0bar",naxes,nbins,xmin,xmax);
+    fHistMassPtPhiq2Centr=new THnSparseF("hMassPtPhiq2Centr","Mass vs. pt vs. #Delta#phi vs. q_{2} vs. D0-D0bar",naxes,nbins,xmin,xmax);
   }
   else {
-    Int_t nbins[5]={fNMassBins,nptbins,ncos2phibins,nq2bins,ncentrbins};
-    Double_t xmin[5]={fLowmasslimit,ptmin,mincos2phi,minq2,(Double_t)fMinCentr};
-    Double_t xmax[5]={fUpmasslimit,ptmax,maxcos2phi,maxq2,(Double_t)fMaxCentr};
+    Int_t nbins[4]={fNMassBins,nptbins,nphibins,nq2bins};
+    Double_t xmin[4]={fLowmasslimit,ptmin,minphi,minq2};
+    Double_t xmax[4]={fUpmasslimit,ptmax,maxphi,maxq2};
     
-    fHistMassPtCos2Phiq2Centr=new THnSparseF("hMassPtCos2Phiq2","Mass vs. pt vs. Cos(2#Delta#phi) vs. q_{2} vs. centr",naxes,nbins,xmin,xmax);
+    fHistMassPtPhiq2Centr=new THnSparseF("hMassPtPhiq2Centr","Mass vs. pt vs. #Delta#phi vs. q_{2}",naxes,nbins,xmin,xmax);
   }
   
   TString q2axisname="q_{2}^{TPC}";
@@ -981,12 +979,12 @@ void AliAnalysisTaskSEHFv2::CreateSparseForEvShapeAnalysis() {
   else if(fq2Meth==kq2VZEROA) {q2axisname="q_{2}^{V0A}";}
   else if(fq2Meth==kq2VZEROC) {q2axisname="q_{2}^{V0C}";}
   
-  TString axTit[6]={massaxisname,"p_{T} (GeV/c)","Cos(2#Delta#phi)",q2axisname,"centrality","part-antipart"};
+  TString axTit[5]={massaxisname,"p_{T} (GeV/c)","#Delta#phi",q2axisname,"part-antipart"};
   
   for(Int_t iax=0; iax<naxes; iax++)
-    fHistMassPtCos2Phiq2Centr->GetAxis(iax)->SetTitle(axTit[iax].Data());
+    fHistMassPtPhiq2Centr->GetAxis(iax)->SetTitle(axTit[iax].Data());
   
-  fOutput->Add(fHistMassPtCos2Phiq2Centr);
+  fOutput->Add(fHistMassPtPhiq2Centr);
   
 }
 
