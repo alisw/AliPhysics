@@ -52,7 +52,7 @@ class AliVZERODigitizer: public AliDigitizer {
    void AddSDigit(Int_t pmnumber, Int_t nbins, Float_t *charges, Int_t *labels);
    TClonesArray* DigitsArray(); 
    TClonesArray* SDigitsArray(); 
-   void ResetDigits();
+   void ResetDigits(Option_t* opt="");
 						
    AliVZEROCalibData *GetCalibData() const;
 

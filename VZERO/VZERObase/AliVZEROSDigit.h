@@ -20,6 +20,7 @@ class AliVZEROSDigit: public AliDigit  {
     Int_t   PMNumber()   const {return fPMNumber;}
     Int_t   GetNBins()   const {return fNBins;}
     Float_t*GetCharges() const {return fCharges;}
+    virtual void Clear(const Option_t* opt="");
 
   private:
     AliVZEROSDigit(const AliVZEROSDigit& /*sdigit*/); 

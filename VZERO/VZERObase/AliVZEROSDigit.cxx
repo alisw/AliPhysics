@@ -64,7 +64,11 @@ AliVZEROSDigit::~AliVZEROSDigit()
     fCharges = NULL;
   }
 }
-
+void AliVZEROSDigit::Clear(const Option_t* )
+{
+  if (fCharges) delete [] fCharges;
+  fCharges = NULL;
+}
 //__________________________________________________________________________
 void AliVZEROSDigit::Print(const Option_t*) const
 {

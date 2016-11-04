@@ -289,13 +289,13 @@ void AliVZERODigitizer::AddSDigit(Int_t pmnumber, Int_t nbins, Float_t *charges,
 	 
 }
 //____________________________________________________________________________
-void AliVZERODigitizer::ResetDigits()
+void AliVZERODigitizer::ResetDigits(Option_t* opt)
 {
 
 // Clears Digits
 
   fNdigits = 0;
-  if (fDigits) fDigits->Clear();
+  if (fDigits) fDigits->Clear(opt);
 }
 
 //____________________________________________________________________________
@@ -542,7 +542,7 @@ void AliVZERODigitizer::WriteDigits(AliLoader *loader)
   treeD->Fill();
   loader->WriteDigits("OVERWRITE");  
   loader->UnloadDigits();     
-  ResetDigits();
+  ResetDigits("C");
 }
 
 void AliVZERODigitizer::WriteSDigits(AliLoader *loader)
@@ -568,7 +568,7 @@ void AliVZERODigitizer::WriteSDigits(AliLoader *loader)
   treeS->Fill();
   loader->WriteSDigits("OVERWRITE");  
   loader->UnloadSDigits();     
-  ResetDigits();
+  ResetDigits("C");
 }
 
 void AliVZERODigitizer::ReadSDigits()
