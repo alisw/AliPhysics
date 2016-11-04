@@ -27,6 +27,9 @@
 ClassImp(AliParticleContainer);
 /// \endcond
 
+// Properly instantiate the object
+AliEmcalContainerUtils <TClonesArray, AliVParticle> AliParticleContainer::fgEmcalContainerUtils;
+
 /**
  * Default constructor.
  */
@@ -441,6 +444,22 @@ const char* AliParticleContainer::GetTitle() const
   }
 
   return trackString.Data();
+}
+
+/**
+ * Connect the container to the array with content stored inside the virtual event.
+ * The object name in the event must match the name given in the constructor.
+ *
+ * Additionally register the array into the index map.
+ *
+ * @param event Input event containing the array with content.
+ */
+void AliParticleContainer::SetArray(const AliVEvent * event)
+{
+  AliEmcalContainer::SetArray(event);
+
+  // Register TClonesArray in index map
+  fgEmcalContainerUtils.RegisterArray(GetArray());
 }
 
 /**

@@ -125,9 +125,10 @@ class AliEmcalContainer : public TObject {
   virtual TObject *operator[](int index) const = 0;
 
   virtual Bool_t              ApplyKinematicCuts(const AliTLorentzVector& mom, UInt_t &rejectionReason) const;
-  TClonesArray               *GetArray() const                      { return fClArray                   ; }
+  TClonesArray               *GetArray()                      const { return fClArray                   ; }
   const TString&              GetArrayName()                  const { return fClArrayName               ; }
   const TString&              GetClassName()                  const { return fClassName                 ; }
+  TClass                     *GetClass()                      const { return fClArray == 0 ? 0 : fClArray->GetClass(); }
   Double_t                    GetMinE()                       const { return fMinE  ; }
   Double_t                    GetMaxE()                       const { return fMaxE  ; }
   Double_t                    GetMinPt()                      const { return fMinPt  ; }

@@ -229,6 +229,13 @@ void AliEmcalCorrectionClusterHadronicCorrection::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
+void AliEmcalCorrectionClusterHadronicCorrection::ExecOnce()
+{
+  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusCont);
+  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fPartCont);
+}
+
+//________________________________________________________________________
 Bool_t AliEmcalCorrectionClusterHadronicCorrection::Run()
 {
   // Run
@@ -253,10 +260,10 @@ Bool_t AliEmcalCorrectionClusterHadronicCorrection::Run()
     // to subtract only the closest track set fHadCor to a %
     // to subtract all tracks within the cut set fHadCor to %+1
     if (fHadCorr > 1) {
-      energyclus = ApplyHadCorrAllTracks(fClusCont->GetCurrentID(), fHadCorr - 1);
+      energyclus = ApplyHadCorrAllTracks(fClusterContainerUtils.GlobalIndexFromLocalIndex(fClusCont, fClusCont->GetCurrentID()), fHadCorr - 1);
     }
     else if (fHadCorr > 0) {
-      energyclus = ApplyHadCorrOneTrack(fClusCont->GetCurrentID(), fHadCorr);
+      energyclus = ApplyHadCorrOneTrack(fClusterContainerUtils.GlobalIndexFromLocalIndex(fClusCont, fClusCont->GetCurrentID()), fHadCorr);
     }
     else {
       energyclus = cluster->GetNonLinCorrEnergy();
@@ -512,7 +519,7 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
 {
   // Do the loop over matched tracks for the cluster.
   
-  AliVCluster* cluster = fClusCont->GetCluster(icluster);
+  AliVCluster* cluster = fClusterContainerUtils.GetObjectFromGlobalIndex(icluster);
   
   if (!cluster) return;
   
@@ -523,7 +530,10 @@ void AliEmcalCorrectionClusterHadronicCorrection::DoMatchedTracksLoop(Int_t iclu
     
     if (fEsdMode) {
       Int_t itrack = cluster->GetTrackMatchedIndex(i);
-      if (itrack >= 0) track = static_cast<AliVTrack*>(fPartCont->GetAcceptParticle(itrack));
+      if (itrack >= 0) {
+        auto res = fParticleContainerUtils.LocalIndexFromGlobalIndex(itrack);
+        track = static_cast<AliVTrack*>(res.second->GetAcceptParticle(res.first));
+      }
     }
     else {
       track = static_cast<AliVTrack*>(cluster->GetTrackMatched(i));
@@ -603,7 +613,7 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrOneTrack(Int_t
 {
   // Apply the hadronic correction with one track only.
   
-  AliVCluster* cluster = fClusCont->GetCluster(icluster);
+  AliVCluster* cluster = fClusterContainerUtils.GetObjectFromGlobalIndex(icluster);
   
   Double_t energyclus = cluster->GetNonLinCorrEnergy();
   
@@ -612,7 +622,10 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrOneTrack(Int_t
   if (cluster->GetNTracksMatched() > 0) {
     if (fEsdMode) {
       Int_t itrack = cluster->GetTrackMatchedIndex(0);
-      if (itrack >= 0) track = static_cast<AliVTrack*>(fPartCont->GetAcceptParticle(itrack));
+      if (itrack >= 0) {
+        auto res = fParticleContainerUtils.LocalIndexFromGlobalIndex(itrack);
+        track = static_cast<AliVTrack*>(res.second->GetAcceptParticle(res.first));
+      }
     }
     else {
       track = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));
@@ -690,7 +703,7 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
 {
   // Apply the hadronic correction with all tracks.
   
-  AliVCluster* cluster = fClusCont->GetCluster(icluster);
+  AliVCluster* cluster = fClusterContainerUtils.GetObjectFromGlobalIndex(icluster);
   
   Double_t energyclus = cluster->GetNonLinCorrEnergy();
   Double_t cNcells = cluster->GetNCells();
@@ -766,7 +779,10 @@ Double_t AliEmcalCorrectionClusterHadronicCorrection::ApplyHadCorrAllTracks(Int_
         AliVTrack* track = 0;
         if (fEsdMode) {
           Int_t itrack = cluster->GetTrackMatchedIndex(0);
-          if (itrack >= 0) track = static_cast<AliVTrack*>(fPartCont->GetAcceptParticle(itrack));
+          if (itrack >= 0) {
+            auto res = fParticleContainerUtils.LocalIndexFromGlobalIndex(itrack);
+            track = static_cast<AliVTrack*>(res.second->GetAcceptParticle(res.first));
+          }
         }
         else {
           track = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));

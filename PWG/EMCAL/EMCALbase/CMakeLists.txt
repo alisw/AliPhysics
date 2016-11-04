@@ -36,6 +36,7 @@ set(SRCS
   AliClusterContainer.cxx
   AliEmcalContainer.cxx
   AliEmcalDownscaleFactorsOCDB.cxx
+  AliEmcalContainerUtils.cxx
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx

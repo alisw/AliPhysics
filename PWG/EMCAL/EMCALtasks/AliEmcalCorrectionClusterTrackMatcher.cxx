@@ -32,6 +32,8 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fMaxDistance(0.1),
   fUpdateTracks(kTRUE),
   fUpdateClusters(kTRUE),
+  fClusterContainerUtils(),
+  fParticleContainerUtils(),
   fEmcalTracks(0),
   fEmcalClusters(0),
   fNEmcalTracks(0),
@@ -114,6 +116,13 @@ void AliEmcalCorrectionClusterTrackMatcher::UserCreateOutputObjects()
     }
     fOutput->SetOwner(kTRUE);
   }
+}
+
+//________________________________________________________________________
+void AliEmcalCorrectionClusterTrackMatcher::ExecOnce()
+{
+  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusCont);
+  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fPartCont);
 }
 
 //________________________________________________________________________
@@ -200,7 +209,7 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
     
     // Create AliEmcalParticle objects to handle the matching
     AliEmcalParticle* emcalCluster = new ((*fEmcalClusters)[fNEmcalClusters])
-    AliEmcalParticle(cluster, fClusCont->GetCurrentID(), fVertex[0], fVertex[1], fVertex[2], AliVCluster::kNonLinCorr);
+    AliEmcalParticle(cluster, fClusterContainerUtils.GlobalIndexFromLocalIndex(fClusCont, fClusCont->GetCurrentID()), fVertex[0], fVertex[1], fVertex[2], AliVCluster::kNonLinCorr);
     emcalCluster->SetMatchedPtr(fEmcalTracks);
     
     fNEmcalClusters++;
@@ -229,7 +238,7 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
     if (propthistrack) AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track, fPropDist);
     
     // Create AliEmcalParticle objects to handle the matching
-    AliEmcalParticle* emcalTrack = new ((*fEmcalTracks)[fNEmcalTracks]) AliEmcalParticle(track, fPartCont->GetCurrentID());
+    AliEmcalParticle* emcalTrack = new ((*fEmcalTracks)[fNEmcalTracks]) AliEmcalParticle(track, fParticleContainerUtils.GlobalIndexFromLocalIndex(fPartCont, fPartCont->GetCurrentID()));
     emcalTrack->SetMatchedPtr(fEmcalClusters);
     
     AliDebug(2, Form("Now adding track (pT = %.3f, eta = %.3f, phi = %.3f)"

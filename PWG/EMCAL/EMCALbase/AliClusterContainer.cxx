@@ -27,6 +27,9 @@
 ClassImp(AliClusterContainer);
 /// \endcond
 
+// Properly instantiate the object
+AliEmcalContainerUtils <TClonesArray, AliVCluster> AliClusterContainer::fgEmcalContainerUtils;
+
 /**
  * Default constructor.
  */
@@ -403,6 +406,22 @@ void AliClusterContainer::SetClusUserDefEnergyCut(Int_t t, Double_t cut)
   else {
     fMinE = cut;
   }
+}
+
+/**
+ * Connect the container to the array with content stored inside the virtual event.
+ * The object name in the event must match the name given in the constructor.
+ *
+ * Additionally register the array into the index map.
+ *
+ * @param event Input event containing the array with content.
+ */
+void AliClusterContainer::SetArray(const AliVEvent * event)
+{
+  AliEmcalContainer::SetArray(event);
+
+  // Register TClonesArray in index map
+  fgEmcalContainerUtils.RegisterArray(GetArray());
 }
 
 /**
