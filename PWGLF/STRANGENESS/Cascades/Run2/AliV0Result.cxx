@@ -58,7 +58,12 @@ fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
-    if( lMassHypo == AliV0Result::kK0Short      ) lThisMass = 0.497;
+    Double_t lMassWindow = 0.1; // Default : good for Lambdas, not good for K0
+    
+    if( lMassHypo == AliV0Result::kK0Short      ){
+        lThisMass = 0.497;
+        lMassWindow = 0.15; // will be 300 MeV/c^2 wide
+    }
     if( lMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
     if( lMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
@@ -88,14 +93,17 @@ fCutMCUseMCProperties(kTRUE)
 {
     // Constructor
     Double_t lThisMass = 0;
-    if( lMassHypo == AliV0Result::kK0Short      ) lThisMass = 0.497;
+    Double_t lMassWindow = 0.1 ;
+    
+    if( lMassHypo == AliV0Result::kK0Short      ){
+        lThisMass = 0.497;
+        lMassWindow = 0.15; // will be 300 MeV/c^2 wide
+    }
     if( lMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
     if( lMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
     const Long_t lNMassBins = 400;
-    
-    Double_t lMassWindow = 0.1 ;
     Double_t lMassDelta = (lMassWindow * 2.) / lNMassBins;
     Double_t lMassBins[lNMassBins+1];
     
@@ -127,12 +135,17 @@ fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
 {
     // Constructor
     Double_t lThisMass = 0;
-    if( fMassHypo == AliV0Result::kK0Short      ) lThisMass = 0.497;
+    Double_t lMassWindow = 0.1 ;
+    
+    if( fMassHypo == AliV0Result::kK0Short      ){
+        lThisMass = 0.497;
+        lMassWindow = 0.15; // will be 300 MeV/c^2 wide
+    }
     if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-lMassWindow,lThisMass+lMassWindow);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -160,12 +173,17 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe)
     
     // Constructor
     Double_t lThisMass = 0;
-    if( fMassHypo == AliV0Result::kK0Short      ) lThisMass = 0.497;
+    Double_t lMassWindow = 0.1 ;
+    
+    if( fMassHypo == AliV0Result::kK0Short      ){
+        lThisMass = 0.497;
+        lMassWindow = 0.15; // will be 300 MeV/c^2 wide
+    }
     if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-lMassWindow,lThisMass+lMassWindow);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -208,12 +226,17 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     }
     // Constructor
     Double_t lThisMass = 0;
-    if( fMassHypo == AliV0Result::kK0Short      ) lThisMass = 0.497;
+    Double_t lMassWindow = 0.1 ;
+    
+    if( fMassHypo == AliV0Result::kK0Short      ){
+        lThisMass = 0.497;
+        lMassWindow = 0.15; // will be 300 MeV/c^2 wide
+    }
     if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-lMassWindow,lThisMass+lMassWindow);
     fHisto->Sumw2();
     
     return *this;
