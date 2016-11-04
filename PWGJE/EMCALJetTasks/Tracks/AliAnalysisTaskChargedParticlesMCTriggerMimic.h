@@ -25,7 +25,9 @@ class AliEMCalTriggerWeightHandler;
 /**
  * @class AliAnalysisTaskChargedParticlesMCTriggerMimic
  * @brief Lightweight task, mimicing EMCAL triggers in MC
+ * @ingroup PWGJETASKS
  * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
+ * @since Aug 4, 2016
  *
  * Similar to AliAnalysisTaskChargedParticlesRefMC, however:
  * - No split in trigger classes - this has to be don on subwagon level
