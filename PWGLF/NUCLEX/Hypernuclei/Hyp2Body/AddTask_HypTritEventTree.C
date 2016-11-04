@@ -9,10 +9,14 @@ AliAnalysisTask *AddTask_HypTritEventTree(UInt_t triggerMask = AliVEvent::kINT7,
   task->SetPidQa(pidQa);
   task->SetPeriod(period);
   task->SetBetheSplines(betheSplines);
-  Double_t he3Params[6] = {2.49505,20.1217,-0.508448,1.98187,0.446416, 1.05701};
-  Double_t tParams[6] = {2.3413,19.3046,21.1714,2.1373,-6.90549, 1.09347};
-  task->SetParams(0, he3Params);
-  task->SetParams(1, tParams);
+  // MC LHC12d3
+//  Double_t he3Params[6] = {1.79043,18.0066,0.00212257,2.24677,4.25945,0.06892};
+//  Double_t tParams[6] = {2.32603,19.2492,30.7943,2.16971,-8.11114, 0.09311};
+  // DATA LHC15o
+  Double_t he3Params[6] = {2.45605,19.8067,-0.774729,1.96279,0.172695, 0.05655};
+  Double_t tParams[6] = {2.32603,19.2492,30.7943,2.16971,-8.11114, 0.09311};
+  task->SetParamsHe(he3Params);
+  task->SetParamsT(tParams);
   //Data Containers
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 =
