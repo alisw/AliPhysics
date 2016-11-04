@@ -37,6 +37,7 @@ set(SRCS
   AliEmcalContainer.cxx
   AliEmcalDownscaleFactorsOCDB.cxx
   AliEmcalAODFilterBitCuts.cxx
+  AliEmcalContainerUtils.cxx
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx

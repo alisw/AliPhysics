@@ -3,6 +3,10 @@
 
 #include "AliEmcalCorrectionComponent.h"
 
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include "AliEmcalContainerUtils.h"
+#endif
+
 class TH1;
 class TH2;
 
@@ -35,6 +39,7 @@ class AliEmcalCorrectionClusterHadronicCorrection : public AliEmcalCorrectionCom
   // Sets up and runs the task
   Bool_t Initialize();
   void UserCreateOutputObjects();
+  void ExecOnce();
   Bool_t Run();
   
 protected:
@@ -54,6 +59,12 @@ protected:
   Double_t               fHadCorr;                   ///< hadronic correction (fraction)
   Double_t               fEexclCell;                 ///< energy/cell that we cannot subtract from the clusters
   Bool_t                 fDoExact;                   ///< do exact correction (embedding only)
+
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  // Handle mapping between index and containers
+  AliEmcalContainerUtils <AliClusterContainer, AliVCluster> fClusterContainerUtils;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerUtils <AliParticleContainer, AliVParticle> fParticleContainerUtils; //!<! Mapping between index and particle containers
+#endif
   
   // QA plots
   TH2                   *fHistMatchEtaPhi[10][9][2];  //!<!deta vs. dphi of matched cluster-track pairs

@@ -10,6 +10,9 @@ class AliVEvent;
 class AliTLorentzVector;
 
 #include "AliEmcalContainer.h"
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include "AliEmcalContainerUtils.h"
+#endif
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
 typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliVParticle, EMCALIterableContainer::operator_star_object<AliVParticle> > AliParticleIterableContainer;
@@ -72,10 +75,14 @@ class AliParticleContainer : public AliEmcalContainer {
   void                        SetCharge(EChargeCut_t c)                         { fChargeCut = c       ; }
   void                        SelectHIJING(Bool_t s)                            { if (s) fGeneratorIndex = 0; else fGeneratorIndex = -1; }
   void                        SetGeneratorIndex(Short_t i)                      { fGeneratorIndex = i  ; }
+  void                        SetArray(const AliVEvent * event);
 
   const char*                 GetTitle() const;
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
+  /// Get the EMCal container utils associated with particle containers
+  static const AliEmcalContainerUtils <TClonesArray, AliVParticle>& GetEmcalContainerUtils() { return fgEmcalContainerUtils; }
+
   const AliParticleIterableContainer      all() const;
   const AliParticleIterableContainer      accepted() const;
 
@@ -84,6 +91,10 @@ class AliParticleContainer : public AliEmcalContainer {
 #endif
 
  protected:
+
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  static AliEmcalContainerUtils <TClonesArray, AliVParticle> fgEmcalContainerUtils; //!<! Mapping from containers to indices
+#endif
 
   Double_t                    fMinDistanceTPCSectorEdge;      ///< require minimum distance to edge of TPC sector edge
   EChargeCut_t                fChargeCut;                     ///< select particles according to their charge

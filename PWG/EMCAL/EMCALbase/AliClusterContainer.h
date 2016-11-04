@@ -11,6 +11,9 @@ class AliVEvent;
 #include <AliVCluster.h>
 
 #include "AliEmcalContainer.h"
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include "AliEmcalContainerUtils.h"
+#endif
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
 typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliVCluster, EMCALIterableContainer::operator_star_object<AliVCluster> > AliClusterIterableContainer;
@@ -67,6 +70,7 @@ class AliClusterContainer : public AliEmcalContainer {
   void                        SetIncludePHOS(Bool_t b)                     { fIncludePHOS = b       ; }
   void                        SetPhosMinNcells(Int_t n)                    { fPhosMinNcells = n; }
   void                        SetPhosMinM02(Double_t m)                    { fPhosMinM02 = m; }
+  void                        SetArray(const AliVEvent * event);
   void                        SetClusUserDefEnergyCut(Int_t t, Double_t cut);
   Double_t                    GetClusUserDefEnergyCut(Int_t t) const;
 
@@ -79,12 +83,14 @@ class AliClusterContainer : public AliEmcalContainer {
   const char*                 GetTitle() const;
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
+  /// Get the EMCal container utils associated with particle containers
+  static const AliEmcalContainerUtils <TClonesArray, AliVCluster>& GetEmcalContainerUtils() { return fgEmcalContainerUtils; }
+
   const AliClusterIterableContainer      all() const;
   const AliClusterIterableContainer      accepted() const;
 
   const AliClusterIterableMomentumContainer      all_momentum() const;
   const AliClusterIterableMomentumContainer      accepted_momentum() const;
-
 #endif
 
  protected:
@@ -99,6 +105,10 @@ class AliClusterContainer : public AliEmcalContainer {
   virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const;
 
   
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  static AliEmcalContainerUtils <TClonesArray, AliVCluster> fgEmcalContainerUtils; //!<! Mapping from containers to indices
+#endif
+
   Double_t         fClusTimeCutLow;             ///< low time cut for clusters
   Double_t         fClusTimeCutUp;              ///< up time cut for clusters
   Bool_t           fExoticCut;                  ///< reject clusters marked as "exotic"
