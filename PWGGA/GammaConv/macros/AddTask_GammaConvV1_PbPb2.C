@@ -30,15 +30,15 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
                                 Int_t         isMC                          = 0,                                // run MC
                                 Int_t         enableQAMesonTask             = 0,                                // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t         enableQAPhotonTask            = 0,                                // enable additional QA task
-                                TString     fileNameInputForWeighting       = "MCSpectraInput.root",            // path to file for weigting input
-                                Bool_t         doWeighting                  = kFALSE,                           // enable Weighting
-                                TString     cutnumberAODBranch              = "100000006008400000001500000",    // cutnumber with which AODs have been filtered
-                                Bool_t         enableV0findingEffi          = kFALSE,                           // enables V0finding efficiency histograms
-                                Bool_t         enableTriggerMimicking       = kFALSE,                           // enable trigger mimicking
-                                Bool_t         enableTriggerOverlapRej      = kFALSE,                           // enable trigger overlap rejection
-                                Float_t        maxFacPtHard                 = 3.,                               // maximum factor between hardest jet and ptHard generated
-                                TString        periodNameV0Reader           = "",
-                                Bool_t         runLightOutput               = kFALSE                            // switch to run light output (only essential histograms for afterburner)
+                                TString       fileNameInputForWeighting     = "MCSpectraInput.root",            // path to file for weigting input
+                                Bool_t        doWeighting                   = kFALSE,                           // enable Weighting
+                                TString       cutnumberAODBranch            = "100000006008400000001500000",    // cutnumber with which AODs have been filtered
+                                Bool_t        enableV0findingEffi           = kFALSE,                           // enables V0finding efficiency histograms
+                                Bool_t        enableTriggerMimicking        = kFALSE,                           // enable trigger mimicking
+                                Bool_t        enableTriggerOverlapRej       = kFALSE,                           // enable trigger overlap rejection
+                                Float_t       maxFacPtHard                  = 3.,                               // maximum factor between hardest jet and ptHard generated
+                                TString       periodNameV0Reader            = "",
+                                Bool_t        runLightOutput                = kFALSE                            // switch to run light output (only essential histograms for afterburner)
                           ) {
 
   Int_t isHeavyIon = 1;
@@ -100,6 +100,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
+      fCuts->SetProcessAODCheck(enableV0findingEffi); // if enableV0findingEffi is kTRUE, also check for V0s to be contained in AliAODs and AliAODGammaConversion.root
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
