@@ -2610,7 +2610,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
         }
         
         if( angleBin >= 0 && angleBin < fNAngleCutBins)
-          fhReOpAngleBinPairClusterMassMCTruePi0[angleBin]->Fill(fPi0Mom.Pt(), pt, GetEventWeight());
+          fhReOpAngleBinPairClusterMassMCTruePi0[angleBin]->Fill(fPi0Mom.Pt(), mass, GetEventWeight());
       }
       
     }
@@ -2691,7 +2691,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
         }
         
         if( angleBin >= 0 && angleBin < fNAngleCutBins)
-          fhReOpAngleBinPairClusterMassMCTrueEta[angleBin]->Fill(fPi0Mom.Pt(), pt, GetEventWeight());
+          fhReOpAngleBinPairClusterMassMCTrueEta[angleBin]->Fill(fPi0Mom.Pt(), mass, GetEventWeight());
       }
     }
     else if(ancPDG==-2212)
