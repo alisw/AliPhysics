@@ -248,6 +248,13 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA(const char* name):
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
 	, hDCAz_MS(0)
+	, hMC_GenMass(0)
+	, hMC_GenpT(0)
+	, hMC_CDEvtType(0)
+	, hMC_CDGenMass(0)
+	, hMC_CD2piGenMass(0)
+	, hMC_CDGenpT(0)
+	, hMC_CD2piGenpT(0)
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -364,6 +371,13 @@ AliAnalysisTaskCDPWA::AliAnalysisTaskCDPWA():
 	, fMult_Rec_NG_Process(0x0)
 	, fIsDGTrigger(0)
 	, hDCAz_MS(0)
+	, hMC_GenMass(0)
+	, hMC_GenpT(0)
+	, hMC_CDEvtType(0)
+	, hMC_CDGenMass(0)
+	, hMC_CD2piGenMass(0)
+	, hMC_CDGenpT(0)
+	, hMC_CD2piGenpT(0)
 {
 	for (Int_t i = 0; i < 10; i++) {
 		if (i < 2) {
@@ -453,6 +467,13 @@ AliAnalysisTaskCDPWA::~AliAnalysisTaskCDPWA()
 	if (fMult_Rec_DG_Process) delete fMult_Rec_DG_Process;
 	if (fMult_Rec_NG_Process) delete fMult_Rec_NG_Process;
 	if (hDCAz_MS) delete hDCAz_MS;
+	if (hMC_GenMass) delete hMC_GenMass;
+	if (hMC_GenpT) delete hMC_GenpT;
+	if (hMC_CDEvtType) delete hMC_CDEvtType;
+	if (hMC_CDGenMass) delete hMC_CDGenMass;
+	if (hMC_CD2piGenMass) delete hMC_CD2piGenMass;
+	if (hMC_CDGenpT) delete hMC_CDGenpT;
+	if (hMC_CD2piGenpT) delete hMC_CD2piGenpT;
 	for (Int_t i = 0; i < 10; i++) {
 		if (i<2) {
 			if (fV0Time[i]) delete fV0Time[i];
@@ -809,6 +830,34 @@ void AliAnalysisTaskCDPWA::UserCreateOutputObjects()
 					fList->Add(hMC_PassType[i]);
 				}
 			}
+		}
+		if (!hMC_GenMass) {
+			hMC_GenMass = new TH1D("hMC_GenMass","",100000,0,1000);
+			fList->Add(hMC_GenMass);
+		}
+		if (!hMC_GenpT) {
+			hMC_GenpT = new TH1D("hMC_GenpT","",1000,0,10);
+			fList->Add(hMC_GenpT);
+		}
+		if (!hMC_CDEvtType) {
+			hMC_CDEvtType = new TH1D("hMC_CDEvtType","",kEvtAll,0,kEvtAll);
+			fList->Add(hMC_CDEvtType);
+		}
+		if (!hMC_CDGenMass) {
+			hMC_CDGenMass = new TH1D("hMC_CDGenMass","",100000,0,1000);
+			fList->Add(hMC_CDGenMass);
+		}
+		if (!hMC_CD2piGenMass) {
+			hMC_CD2piGenMass = new TH1D("hMC_CD2piGenMass","",100000,0,1000);
+			fList->Add(hMC_CD2piGenMass);
+		}
+		if (!hMC_CDGenpT) {
+			hMC_CDGenpT = new TH1D("hMC_CDGenpT","",100000,0,1000);
+			fList->Add(hMC_CDGenpT);
+		}
+		if (!hMC_CD2piGenpT) {
+			hMC_CD2piGenpT = new TH1D("hMC_CD2piGenpT","",100000,0,1000);
+			fList->Add(hMC_CD2piGenpT);
 		}
 	}
 	for (Int_t i = 0; i < 2; i++) {
@@ -1522,10 +1571,45 @@ Bool_t AliAnalysisTaskCDPWA::DoMCPWA()
 	Int_t gapCv0fmd = 0;
 	Int_t gapCad = 0;
 	Int_t central = 0;
+	Int_t tmpCha_Pi = 0;
+	Int_t tmpCha_Ka = 0;
+	Int_t tmpN_Pi = 0;
+	Int_t tmpN_Ka = 0;
+	Int_t fMCEvtType = kEvtelse;
+	TLorentzVector tmp2piSum(0,0,0,0);
+	TLorentzVector tmpSum(0,0,0,0);
+	TLorentzVector tmplv(0,0,0,0);
+	TLorentzVector eta_max, eta_min;
+	Double_t dmax=-999., dmin=999.;
 	for (Int_t iTracks = 0; iTracks <  nPrimaries; ++iTracks) {
 		TParticle *part = (TParticle*)stack->Particle(iTracks);
 		if (!part) continue;
 		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) && part->GetStatusCode() == 1) {
+//			hMC_GenMass->Fill(part->GetCalcMass());
+//			hMC_GenpT->Fill(part->Pt());
+
+			tmplv.SetPxPyPzE(part->Px(),part->Py(),part->Pz(),part->Energy());
+			//Pion
+			if (TMath::Abs(part->GetPdgCode()) == 211) {
+				tmpCha_Pi += part->GetPdgCode();
+				tmpN_Pi++;
+				tmp2piSum += tmplv;
+			}
+			//Kaon
+			if (TMath::Abs(part->GetPdgCode()) == 321) {
+				tmpCha_Ka += part->GetPdgCode();
+				tmpN_Ka++;
+			}
+			if (iTracks != 0 && iTracks != 1) tmpSum += tmplv;
+			if (part->Eta() > dmax) {
+				eta_max = tmplv;
+				dmax = part->Eta();
+			}
+			if (part->Eta() < dmin) {
+				eta_min = tmplv;
+				dmin = part->Eta();
+			}
+
 			for (Int_t i = 0; i < kBinMCAll; i++) {
 				if (i == fMCProcessType) fMC_Eta[i]->Fill(part->Eta());
 			}
@@ -1539,6 +1623,30 @@ Bool_t AliAnalysisTaskCDPWA::DoMCPWA()
 			if (part->Eta() < -1.9 && part->Eta() > -3.7) gapCv0fmd++;
 			if (part->Eta() < -4.92 && part->Eta() > -6.96) gapCad++;
 		}
+	}
+
+	tmpSum = tmpSum - eta_max - eta_min;
+	hMC_GenMass->Fill(tmpSum.M());
+	hMC_GenpT->Fill(tmpSum.Pt());
+
+	//Only for CD
+	if (fMCProcessType == kBinCD) {
+		hMC_CDGenMass->Fill(tmpSum.M());
+		hMC_CDGenpT->Fill(tmpSum.Pt());
+		if (tmpCha_Pi == 0 && tmpN_Pi == 2) {
+			fMCEvtType = kEvt2pi;//2pi
+			hMC_CD2piGenMass->Fill(tmp2piSum.M());
+			hMC_CD2piGenpT->Fill(tmp2piSum.Pt());
+		}
+		else if (tmpCha_Pi == 0 && tmpN_Pi == 2) fMCEvtType = kEvt4pi;//4pi
+		else if (tmpCha_Pi == 0 && tmpN_Pi >= 1) fMCEvtType = kEvtnpi;//npi - 2pi - 4pi
+
+		if (tmpCha_Ka == 0 && tmpN_Ka == 2) fMCEvtType = kEvt2ka;//2ki
+		else if (tmpCha_Ka == 0 && tmpN_Ka >=1) fMCEvtType = kEvtnka;//nki-2ki
+
+		fEventInfo.fCDType = fMCEvtType;
+
+		hMC_CDEvtType->Fill(fMCEvtType);
 	}
 
 	if (fMultRegionsMC) {
