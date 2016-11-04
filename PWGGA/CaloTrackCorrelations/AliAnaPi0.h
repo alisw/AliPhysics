@@ -123,7 +123,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SetAsymCutsAt (Int_t p,Float_t v){ if(p < 10)fAsymCuts[p] = v    ; }
   void         SetNCellCutsAt(Int_t p,Int_t v)  { if(p < 10)fCellNCuts[p]= v    ; }
   void         SetPIDBitsAt  (Int_t p,Int_t v)  { if(p < 10)fPIDBits[p]  = v    ; }
-  void         SetAngleCutBin(Int_t p,Int_t v)  { if(p < 10)fAngleCutBinsArray[p]= v; }
+  void         SetAngleCutBin(Int_t p,Float_t v){ if(p < 10)fAngleCutBinsArray[p]= v; }
   
   void         SwitchOnFillSSCombinations()     { fFillSSCombinations  = kTRUE  ; }
   void         SwitchOffFillSSCombinations()    { fFillSSCombinations  = kFALSE ; }
