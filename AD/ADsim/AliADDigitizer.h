@@ -55,7 +55,7 @@ public:
   void AddSDigit(Int_t pmnumber, Int_t nbins, Float_t *charges, Int_t *labels);
   TClonesArray* DigitsArray();
   TClonesArray* SDigitsArray();
-  void ResetDigits();
+  void ResetDigits(Option_t* opt="");
 
   AliADCalibData *GetCalibData() const;
   void GetTimeSlewingSplines();

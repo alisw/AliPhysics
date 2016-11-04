@@ -25,19 +25,19 @@ AliADSDigit::AliADSDigit()
     fCharges(NULL)
 {
   // Standard default
-  // constructor 
+  // constructor
 }
 
 //__________________________________________________________________________
 AliADSDigit::AliADSDigit(Int_t pmnumber,
-                         Int_t nbins, 
+                         Int_t nbins,
                          Float_t *charges,
                          Int_t *labels)
   :AliDigit(),
    fPMNumber(pmnumber),
    fNBins(nbins),
    fCharges(NULL)
-{  
+{
   // Constructor
   // Used in the digitizer
   fCharges = new Float_t[fNBins];
@@ -65,6 +65,12 @@ AliADSDigit::~AliADSDigit()
   }
 }
 
+void AliADSDigit::Clear(Option_t* )
+{
+  if (fCharges)
+    delete [] fCharges;
+  fCharges = NULL;
+}
 //__________________________________________________________________________
 void AliADSDigit::Print(const Option_t*) const
 {

@@ -731,7 +731,7 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
   treeD->Fill();
   loader->WriteDigits("OVERWRITE");
   loader->UnloadDigits();
-  ResetDigits();
+  ResetDigits("C");
 }
 
 //____________________________________________________________________________
@@ -756,7 +756,7 @@ void AliADDigitizer::WriteSDigits(AliLoader *loader)
   treeS->Fill();
   loader->WriteSDigits("OVERWRITE");
   loader->UnloadSDigits();
-  ResetDigits();
+  ResetDigits("C");
 }
 
 
@@ -778,12 +778,12 @@ void AliADDigitizer::AddSDigit(Int_t pmnumber, Int_t nbins, Float_t *charges, In
 
 }
 //____________________________________________________________________________
-void AliADDigitizer::ResetDigits()
+void AliADDigitizer::ResetDigits(Option_t *opt)
 {
   // Clears Digits
   fNdigits = 0;
   if (fDigits)
-    fDigits->Clear();
+    fDigits->Clear(opt);
 }
 
 //____________________________________________________________________________
