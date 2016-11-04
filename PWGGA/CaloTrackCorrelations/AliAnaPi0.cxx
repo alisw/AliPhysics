@@ -336,8 +336,8 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
   Int_t   nopanbins = GetHistogramRanges()->GetHistoNOpeningAngleBins();
   Float_t opanmin   = GetHistogramRanges()->GetHistoOpeningAngleMin()  ;
-  Float_t opeanmax  = GetHistogramRanges()->GetHistoOpeningAngleMax()  ;
-  
+  Float_t opanmax   = GetHistogramRanges()->GetHistoOpeningAngleMax()  ;
+    
   // Start with pure MC kinematics histograms
   // In case other tasks just need this info like AliAnaPi0EbE
   if(IsDataMC())
@@ -550,21 +550,21 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     {
       fhPrimPi0OpeningAngle  = new TH2F
       ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}, in acceptance",
-       nptbins,ptmin,ptmax,nopanbins,opanmin,opeanmax);
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAngle) ;
 
       fhPrimPi0OpeningAnglePhotonCuts  = new TH2F
       ("hPrimPi0OpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#pi^{0}} in acceptance",
-       nptbins,ptmin,ptmax,nopanbins,opanmin,opeanmax);
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhPrimPi0OpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAnglePhotonCuts->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAnglePhotonCuts) ;
       
       fhPrimPi0OpeningAngleAsym  = new TH2F
       ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, in acceptance, #it{p}_{T}>5 GeV/#it{c}",
-       100,0,1,nopanbins,opanmin,opeanmax);
+       100,0,1,nopanbins,opanmin,opanmax);
       fhPrimPi0OpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
       fhPrimPi0OpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimPi0OpeningAngleAsym) ;
@@ -578,21 +578,21 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhPrimEtaOpeningAngle  = new TH2F
       ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}, in acceptance",
-       nptbins,ptmin,ptmax,nopanbins,opanmin,opeanmax);
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAngle) ;
 
       fhPrimEtaOpeningAnglePhotonCuts  = new TH2F
       ("hPrimEtaOpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#eta}, in acceptance",
-       nptbins,ptmin,ptmax,nopanbins,opanmin,opeanmax);
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhPrimEtaOpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAnglePhotonCuts->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAnglePhotonCuts) ;
       
       fhPrimEtaOpeningAngleAsym  = new TH2F
       ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}, in acceptance",
-       100,0,1,nopanbins,opanmin,opeanmax);
+       100,0,1,nopanbins,opanmin,opanmax);
       fhPrimEtaOpeningAngleAsym->SetXTitle("|#it{A}|=| (#it{E}_{1}-#it{E}_{2}) / (#it{E}_{1}+#it{E}_{2}) |");
       fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
@@ -1723,6 +1723,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhReOpAngleBinPairClusterMassPerSM[icut]->SetYTitle("SM");
       outputContainer->Add(fhReOpAngleBinPairClusterMassPerSM[icut]) ;
 
+      fhReOpAngleBinPairClusterMass[icut] = new TH2F
+      (Form("hReOpAngleBin%d_PairCluster_Mass",icut),
+       Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhReOpAngleBinPairClusterMass[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
+      fhReOpAngleBinPairClusterMass[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
+      outputContainer->Add(fhReOpAngleBinPairClusterMass[icut]) ;
+      
       if(IsDataMC())
       {
         fhReOpAngleBinPairClusterMassMCTruePi0[icut] = new TH2F
@@ -1855,14 +1863,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetXTitle("#it{E}_{low}/ #it{E}_{high}");
         outputContainer->Add(fhMiOpAngleBinPairClusterRatioPerSM[icut]) ;
         
-        fhMiOpAngleBinPairClusterMass[icut] = new TH2F
-        (Form("hMiOpAngleBin%d_PairCluster_Mass",icut),
-         Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
-         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
-        fhMiOpAngleBinPairClusterMass[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
-        fhMiOpAngleBinPairClusterMass[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
-        outputContainer->Add(fhMiOpAngleBinPairClusterMass[icut]) ;
-        
         fhMiOpAngleBinPairClusterMassPerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_PairCluster_MassPerSM",icut),
          Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
@@ -1870,7 +1870,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMiOpAngleBinPairClusterMassPerSM[icut]->SetXTitle("#it{M} (GeV/#it{c}^2)");
         fhMiOpAngleBinPairClusterMassPerSM[icut]->SetYTitle("SM");
         outputContainer->Add(fhMiOpAngleBinPairClusterMassPerSM[icut]) ;
-
+        
+        fhMiOpAngleBinPairClusterMass[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_PairCluster_Mass",icut),
+         Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhMiOpAngleBinPairClusterMass[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
+        fhMiOpAngleBinPairClusterMass[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
+        outputContainer->Add(fhMiOpAngleBinPairClusterMass[icut]) ;
         
 //        fhMiOpAngleBinPairClusterAbsIdMaxCell[icut] = new TH2F
 //        (Form("hMiOpAngleBin%d_PairCluster_AbsIdCell",icut),
@@ -3204,7 +3211,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       //
       // Fill histograms for different opening angle bins
       if(fFillOpAngleCutHisto)
-      {
+      {        
         Int_t angleBin = -1;
         for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
         {
@@ -3214,7 +3221,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         
         if( angleBin >= 0 && angleBin < fNAngleCutBins)
         {
-          
           Float_t e1   = fPhotonMom1.E();
           Float_t e2   = fPhotonMom2.E();
 
@@ -3263,10 +3269,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             absIdMax2 = absIdMax1;
             absIdMax1 = tmp;
           }
- 
+
           fhReOpAngleBinMinClusterEPerSM[angleBin]->Fill(e2,mod2,GetEventWeight()) ; 
           fhReOpAngleBinMaxClusterEPerSM[angleBin]->Fill(e1,mod1,GetEventWeight()) ; 
-
+          
           fhReOpAngleBinMinClusterTimePerSM[angleBin]->Fill(t2,mod2,GetEventWeight()) ; 
           fhReOpAngleBinMaxClusterTimePerSM[angleBin]->Fill(t1,mod1,GetEventWeight()) ; 
           
@@ -3275,20 +3281,21 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 
           fhReOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()) ;
           if(mod2 == mod1)  fhReOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
-          
+                    
           if(e1 > 0.01) fhReOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
           
           fhReOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()) ;
           fhReOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()) ;
-          
+                    
           GetModuleNumberCellIndexesAbsCaloMap(absIdMax2,GetCalorimeter(), icol2, irow2, iRCU2, icolAbs2, irowAbs2);
           
           //fhReOpAngleBinPairClusterAbsIdMaxCell[angleBin]->Fill(absIdMax1,absIdMax2,GetEventWeight());
-          
+
           fhReOpAngleBinMinClusterColRow[angleBin]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
           fhReOpAngleBinMaxClusterColRow[angleBin]->Fill(icolAbs1,irowAbs1,GetEventWeight()) ;
         }
-      }
+      } // fFillOpAngleHisto
+
       
       // Fill histograms with pair assymmetry
       if(fFillAsymmetryHisto)
@@ -3307,7 +3314,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         else if ( p1->GetFiducialArea() != 0 && p2->GetFiducialArea() != 0 )
           fhReSecondaryCellOutTimeWindow->Fill(pt, m, GetEventWeight());
       }
-      
+
       //---------
       // MC data
       //---------
@@ -3382,6 +3389,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 //          }
 //        }
       }// multiple cuts analysis
+      
     }// second same event particle
   }// first cluster
   
