@@ -10,13 +10,15 @@ ClassImp(AliReducedHypTritEvent)
 AliReducedHypTritTrack::AliReducedHypTritTrack() :
   TObject(),
   fP(),
+  fPtrack(-1),
   fDca(-1),
   fDedx(-1),
   fDedxSigma(-9999),
   fDedxSigmaTriton(-9999),
   fEta(-999),
   fPhi(-999),
-  fTpcNClusters(-1) {
+  fTpcNClusters(-1),
+  fGeoLength(-1) {
 }
 
 AliReducedHypTritTrack::~AliReducedHypTritTrack() {

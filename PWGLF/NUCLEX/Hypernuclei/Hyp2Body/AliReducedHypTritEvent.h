@@ -28,6 +28,7 @@ class AliReducedHypTritTrack : public TObject {
 
   // Getters
   TLorentzVector P() const {return fP;}
+  Float_t Ptrack() const {return fPtrack;}
   Float_t Dca() const {return fDca;}
   Float_t Phi() const {return fPhi;}
   Float_t Eta() const {return fEta;}
@@ -38,6 +39,7 @@ class AliReducedHypTritTrack : public TObject {
 
  private:
   TLorentzVector fP;               //< 4 momentum of track
+  Float_t        fPtrack;          //< Total momentum of Track
   Float_t        fDca;             //< DCA to prim vertex
   Float_t        fDedx;            //< specific energyloss in TPC of track
   Float_t        fDedxSigma;       //< dEdx sigma
@@ -45,11 +47,11 @@ class AliReducedHypTritTrack : public TObject {
   Float_t        fEta;             //< eta of track
   Float_t        fPhi;             //< phi of track
   Float_t        fTpcNClusters;    //< number of clusters
-
+  Float_t        fGeoLength;       //< geometric length cut
 
 AliReducedHypTritTrack(const AliReducedHypTritTrack&);
 AliReducedHypTritTrack &operator = (const AliReducedHypTritTrack&);
-ClassDef(AliReducedHypTritTrack, 1)
+ClassDef(AliReducedHypTritTrack, 3)
 };
 
 class AliReducedHypTritV0 : public TObject {
@@ -94,7 +96,7 @@ class AliReducedHypTritV0 : public TObject {
 
   AliReducedHypTritV0(const AliReducedHypTritV0&);
   AliReducedHypTritV0 &operator = (const AliReducedHypTritV0&);
-  ClassDef(AliReducedHypTritV0, 1);
+  ClassDef(AliReducedHypTritV0, 3);
 };
 
 class AliReducedHypTritEvent : public TObject {
@@ -125,7 +127,7 @@ class AliReducedHypTritEvent : public TObject {
 
   AliReducedHypTritEvent(const AliReducedHypTritEvent&);
   AliReducedHypTritEvent &operator = (const AliReducedHypTritEvent&);
-  ClassDef(AliReducedHypTritEvent, 1);
+  ClassDef(AliReducedHypTritEvent, 3);
 };
 
 #endif
