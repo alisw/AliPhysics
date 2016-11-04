@@ -2353,6 +2353,18 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
     fMinOpanCutMeson  = 0.0404; // minimum 2 EMCal cell diagonals
     fMinOpanPtDepCut  = kFALSE;
     break;
+  case 7:      //
+    fMinOpanCutMeson  = 0.0303; // minimum 1.5 EMCal cell diagonal
+    fMinOpanPtDepCut  = kFALSE;
+    break;
+  case 8:      //
+    fMinOpanCutMeson  = 0.02525; // minimum 1.25 EMCal cell diagonal
+    fMinOpanPtDepCut  = kFALSE;
+    break;
+  case 9:      //
+    fMinOpanCutMeson  = 0.03535; // minimum 1.75 EMCal cell diagonal
+    fMinOpanPtDepCut  = kFALSE;
+    break;
   default:
     cout<<"Warning:minOpanMesonCut  not defined "<<minOpanMesonCut<<endl;
     return kFALSE;
