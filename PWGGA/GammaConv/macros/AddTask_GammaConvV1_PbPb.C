@@ -74,12 +74,12 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
                                 Bool_t    enableTriggerOverlapRej         = kFALSE,                         // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                    = 3.,                             // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader              = "",
-                                Bool_t    doMultiplicityWeighting         = kFALSE,                  //
-                                TString   fileNameInputForMultWeighing    = "Multiplicity.root",    //
+                                Bool_t    doMultiplicityWeighting         = kFALSE,                         //
+                                TString   fileNameInputForMultWeighing    = "Multiplicity.root",            //
                                 TString   periodNameAnchor                = "",
-                                Bool_t    runLightOutput                  = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
-                                Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
-                                TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
+                                Bool_t    runLightOutput                  = kFALSE,                         // switch to run light output (only essential histograms for afterburner)
+                                Int_t     enableMatBudWeightsPi0          = 0,                              // 1 = three radial bins, 2 = 10 radial bins
+                                TString   filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
                           )  {
 
   Int_t isHeavyIon = 1;
@@ -155,6 +155,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
+      fCuts->SetProcessAODCheck(enableV0findingEffi); // if enableV0findingEffi is kTRUE, also check for V0s to be contained in AliAODs and AliAODGammaConversion.root
       if(trainConfig == 182 || trainConfig == 183 || trainConfig == 184 || trainConfig == 185){
         fCuts->SetDodEdxSigmaCut(kFALSE);
       }

@@ -214,6 +214,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
   fPreSelCut(kFALSE),
+  fProcessAODCheck(kFALSE),
   fProfileContainingMaterialBudgetWeights(NULL),
   fMaterialBudgetWeightsInitialized(kFALSE)
 {
@@ -346,6 +347,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
   fPreSelCut(ref.fPreSelCut),
+  fProcessAODCheck(ref.fProcessAODCheck),
   fProfileContainingMaterialBudgetWeights(ref.fProfileContainingMaterialBudgetWeights),
   fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized)
 {
@@ -968,7 +970,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   }
 
   // check if V0 from AliAODGammaConversion.root is actually contained in AOD by checking if V0 exists with same tracks
-  if(event->IsA()==AliAODEvent::Class()) {
+  if(event->IsA()==AliAODEvent::Class() && fPreSelCut && ( fIsHeavyIon != 1 || (fIsHeavyIon == 1 && fProcessAODCheck) )) {
     AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(event);
 
     Bool_t bFound = kFALSE;
