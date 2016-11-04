@@ -403,9 +403,10 @@ public:
   TH2F *   fhEtaPhiCell;                        //!<! eta vs phi, cells
    
   TH1F *   fhTime;                              //!<! Time measured in towers/crystals
- //TH2F *   fhTimeVz;                            //!<! Time measured in towers/crystals vs vertex z component, for E > 0.5
+//TH2F *   fhTimeVz;                            //!<! Time measured in towers/crystals vs vertex z component, for E > 0.5
   TH2F *   fhTimeId;                            //!<! Time vs Absolute cell Id
   TH2F *   fhTimeAmp;                           //!<! Time vs Amplitude
+  TH2F *   fhTimePerSMPerBC[4];                 //!<! Time vs SM number for BC%4=0,1,2,3
   
   TH2F *   fhAmpIdLowGain;                      //!<! Amplitude measured in towers/crystals vs id of tower, low gain towers
   TH2F *   fhTimeIdLowGain;                     //!<! Time vs Absolute cell Id, low gain
@@ -607,7 +608,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,33) ;
+  ClassDef(AliAnaCalorimeterQA,34) ;
   /// \endcond
 
 } ;

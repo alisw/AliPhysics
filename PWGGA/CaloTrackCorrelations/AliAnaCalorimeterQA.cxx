@@ -135,7 +135,7 @@ fhNCells(0),                           fhNCellsCutAmpMin(0),
 fhAmplitude(0),                        fhAmpId(0),                             
 fhEtaPhiAmpCell(0),                    fhEtaPhiCell(0),
 fhTime(0),                             //fhTimeVz(0),
-fhTimeId(0),                           fhTimeAmp(0),
+fhTimeId(0),                           fhTimeAmp(0), 
 fhAmpIdLowGain(0),                     fhTimeIdLowGain(0),                     fhTimeAmpLowGain(0),
 
 fhCellECross(0),
@@ -276,6 +276,8 @@ fhTrackMatchedDEtaPosMod(0),           fhTrackMatchedDPhiPosMod(0)
     fhEBinClusterColRow[i] = 0 ;
     fhEBinCellColRow   [i] = 0 ; 
   }
+  
+  for(Int_t bc = 0; bc < 4; bc++) fhTimePerSMPerBC[bc] = 0 ;
   
   InitParameters();
 }
@@ -578,7 +580,10 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           fhTime   ->Fill(time,       GetEventWeight());
           fhTimeId ->Fill(time, id  , GetEventWeight());
           fhTimeAmp->Fill(amp , time, GetEventWeight());
-            
+
+          Int_t bc = (GetReader()->GetInputEvent()->GetBunchCrossNumber())%4;
+          fhTimePerSMPerBC[bc]->Fill(time, nModule, GetEventWeight());
+          
           fhGridCellsTime->Fill(icolAbs, irowAbs, time);
           if(!highG) fhGridCellsTimeLowGain->Fill(icolAbs, irowAbs, time);
             
@@ -3088,6 +3093,16 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTimeAmp->SetYTitle("#it{t}_{cell} (ns)");
     fhTimeAmp->SetXTitle("#it{E}_{cell} (GeV)");
     outputContainer->Add(fhTimeAmp);
+    
+    for(Int_t bc = 0; bc < 4; bc++)
+    {
+      fhTimePerSMPerBC[bc]  = new TH2F (Form("hTimePerSM_BC%d",bc),
+                                        Form("#it{t}_{cell} vs super-module, for BC/4=%d",bc),
+                                        ntimebins,timemin,timemax,fNModules,0,fNModules); 
+      fhTimePerSMPerBC[bc]->SetXTitle("#it{t}_{cell} (ns)");
+      fhTimePerSMPerBC[bc]->SetYTitle("Module");
+      outputContainer->Add(fhTimePerSMPerBC[bc]);
+    }
     
     fhTimeIdLowGain  = new TH2F ("hTimeIdLG","Low gain: #it{t}_{cell} vs Absolute Id",
                           ntimebins,timemin,timemax,fNMaxRows*fNMaxCols*fNModules,0,fNMaxRows*fNMaxCols*fNModules);
