@@ -126,6 +126,8 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fdEdx(0),
   fTPCNpts(0),
   fTPCnsig(0),
+  fTPCnsigMcEle(0),
+  fTPCnsigMcHad(0),
   fTPCnsig_Pi(0),
   fTPCnsigEta0(0),
   fTPCnsigEta1(0),
@@ -148,6 +150,8 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fHistNsigEop_Semi(0),
   fHistNsigEop_Peri(0),
   fHistEop(0),
+  fHistMcEopEle(0),
+  fHistMcEopHad(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -241,6 +245,8 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fdEdx(0),
   fTPCNpts(0),
   fTPCnsig(0),
+  fTPCnsigMcEle(0),
+  fTPCnsigMcHad(0),
   fTPCnsig_Pi(0),
   fTPCnsigEta0(0),
   fTPCnsigEta1(0),
@@ -263,6 +269,8 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fHistNsigEop_Semi(0),
   fHistNsigEop_Peri(0),
   fHistEop(0),
+  fHistMcEopEle(0),
+  fHistMcEopHad(0),
   fM20(0),
   fM02(0),
   fM20EovP(0),
@@ -286,7 +294,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
 {
   //Default constructor
 
-  fvalueElectron = new Double_t[10];
+  fvalueElectron = new Double_t[9];
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -452,6 +460,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fTPCnsig = new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
   fOutputList->Add(fTPCnsig);
 
+  fTPCnsigMcEle = new TH2F("fTPCnsigMcEle","All Track TPC Nsigma distribution (MC electron);p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
+  fOutputList->Add(fTPCnsigMcEle);
+
+  fTPCnsigMcHad = new TH2F("fTPCnsigMcHad","All Track TPC Nsigma distribution (MC hadron);p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
+  fOutputList->Add(fTPCnsigMcHad);
+
   fTPCnsig_Pi = new TH2F("fTPCnsig_Pi","All Track TPC Nsigma distribution wrt pion;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
   fOutputList->Add(fTPCnsig_Pi);
 
@@ -504,6 +518,11 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
   fOutputList->Add(fHistEop);
 
+  fHistMcEopEle = new TH2F("fHistMcEopEle", "E/p distribution (MC electron);p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+  fOutputList->Add(fHistMcEopEle);
+
+  fHistMcEopHad = new TH2F("fHistMcEopHad", "E/p distribution (MC hadron);p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
+  fOutputList->Add(fHistMcEopHad);
 
   fHistdEdxEop = new TH2F("fHistdEdxEop", "E/p vs dE/dx;E/p;dE/dx", 60, 0.0, 3.0, 500,0,160);
   fOutputList->Add(fHistdEdxEop);
@@ -579,10 +598,10 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fMCcheckMother = new TH2F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5,50,0,50);
   fOutputList->Add(fMCcheckMother);
 
-  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
-  Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5,  -5,   0};
-  Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  15 , 100};
-  fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
+  Int_t bins[9]=      {8, 280, 160, 200, 200, 200,    3, 100,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
+  Double_t xmin[9]={-0.5,   2,  -8,   0,   0,   0, -0.5,  -5,   0};
+  Double_t xmax[9]={ 7.5,  30,   8,   2,   2,   2,  2.5,  15 , 100};
+  fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;eID;nSigma_Pi;cent;",9,bins,xmin,xmax);
   fOutputList->Add(fSparseElectron);
 
 
@@ -1046,6 +1065,15 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
     fdEdx->Fill(TrkP,dEdx);
     fTPCNpts->Fill(TrkP,track->GetTPCsignalN());
     fTPCnsig->Fill(TrkP,fTPCnSigma);
+    if(pid_ele==1.0)
+      {
+       fTPCnsigMcEle->Fill(TrkP,fTPCnSigma);
+      }
+    else
+      {
+       fTPCnsigMcHad->Fill(TrkP,fTPCnSigma);
+      }
+
     fTPCnsig_Pi->Fill(TrkP,fTPCnSigma_Pi);
 
     if(TrkPt>2.0)fTPCnsigEta0->Fill(TrkEta,fTPCnSigma);
@@ -1173,10 +1201,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       fvalueElectron[3] = eop;
       fvalueElectron[4] = clustMatch->GetM20();
       fvalueElectron[5] = clustMatch->GetM02();
-      fvalueElectron[6] = sqm02m20;
-      fvalueElectron[7] = pid_ele;
-      fvalueElectron[8] = fTPCnSigma_Pi;
-      fvalueElectron[9] = centrality;
+      fvalueElectron[6] = pid_ele;
+      fvalueElectron[7] = fTPCnSigma_Pi;
+      fvalueElectron[8] = centrality;
 
       if(fFlagSparse && track->Pt()>2.0){
         fSparseElectron->Fill(fvalueElectron);
@@ -1188,7 +1215,15 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       ////////////////////////////////////////////////
  
       if(fTPCnSigma > -1 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
-
+      if(pid_ele==1.0)
+        {
+         fHistMcEopEle->Fill(track->Pt(),eop);
+        }
+      else
+        {
+         fHistMcEopHad->Fill(track->Pt(),eop);
+        }
+ 
      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.2 && m02 > 0.006 && m02 < 0.35){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM);
