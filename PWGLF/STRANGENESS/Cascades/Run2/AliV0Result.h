@@ -28,8 +28,8 @@ public:
     AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins);
     
     //Specific uses
-    AliV0Result(AliV0Result *lCopyMe);
-    AliV0Result(const AliV0Result& lCopyMe);
+    AliV0Result(AliV0Result *lCopyMe, TString lNewName );
+    AliV0Result(const AliV0Result& lCopyMe, TString lNewName );
     ~AliV0Result();
     
     void Clear(Option_t* = "") {}; //dummy
@@ -74,7 +74,8 @@ public:
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
     Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
     
-    TH3F* GetHistogram () { return fHisto; } 
+    TH3F* GetHistogram       ()       { return fHisto; }
+    TH3F* GetHistogramToCopy () const { return fHisto; }
     
     Bool_t HasSameCuts( AliV0Result *lCompare );
     void Print();
@@ -102,11 +103,12 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliV0Result, 5)
+    ClassDef(AliV0Result, 6)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
     // 4 - fixes to constructor, destructor, tuning
     // 5 - Use MC true pT, y flag added
+    // 6 - Adjustments, tuning, constructor improvements
 };
 #endif

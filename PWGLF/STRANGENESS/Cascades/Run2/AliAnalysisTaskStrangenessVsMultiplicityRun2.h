@@ -145,6 +145,8 @@ public:
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
     void AddConfiguration( AliCascadeResult *lCascadeResult );
+    void AddStandardV0Configuration();
+    void AddStandardCascadeConfiguration();
 //---------------------------------------------------------------------------------------
     
 

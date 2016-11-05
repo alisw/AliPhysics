@@ -29,8 +29,8 @@ public:
     AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins);
     
     //Specific uses
-    AliCascadeResult(AliCascadeResult *lCopyMe);
-    AliCascadeResult(const AliCascadeResult& lCopyMe);
+    AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName);
+    AliCascadeResult(const AliCascadeResult& lCopyMe, TString lNewName);
     ~AliCascadeResult();
     
     void Clear(Option_t* = "") {}; //dummy
@@ -77,7 +77,7 @@ public:
     //Getters for Cascade Cuts
     Double_t GetCutDCAV0ToPV        () const { return fCutDCAV0ToPV; }
     Double_t GetCutV0Mass           () const { return fCutV0Mass; }
-    Double_t GetCutDCABachToPV         () const { return fCutDCABachToPV; }
+    Double_t GetCutDCABachToPV      () const { return fCutDCABachToPV; }
     Double_t GetCutDCACascDaughters () const { return fCutDCACascDaughters; }
     Double_t GetCutCascCosPA        () const { return fCutCascCosPA; }
     Double_t GetCutCascRadius       () const { return fCutCascRadius; }
@@ -92,7 +92,8 @@ public:
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
     Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
     
-    TH3F* GetHistogram () { return fHisto; }
+    TH3F* GetHistogram       ()       { return fHisto; }
+    TH3F* GetHistogramToCopy () const { return fHisto; }
     
     Bool_t HasSameCuts( AliCascadeResult *lCompare );
     void Print();
@@ -128,12 +129,13 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 6)
+    ClassDef(AliCascadeResult, 7)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
     // 4 - Xi rejection added
     // 5 - fixes to constructor, destructor, tuning
     // 6 - addition of UseMCProperties flag
+    // 7 - Adjustments, tuning, constructor improvements
 };
 #endif
