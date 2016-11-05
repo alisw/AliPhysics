@@ -313,10 +313,14 @@ public:
   Float_t GetHistoPtInConeMin()          const { return fHistoPtInConeMin  ; }
   Float_t GetHistoPtInConeMax()          const { return fHistoPtInConeMax  ; }
 
+  // Opening angle
+  
+  void    SetHistoOpeningAngleRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+   fHistoOpAngleBins = n ; fHistoOpAngleMax = max ; fHistoOpAngleMin = min  ; }
+  
   Int_t   GetHistoNOpeningAngleBins()    const { return fHistoOpAngleBins ; }
   Float_t GetHistoOpeningAngleMin()      const { return fHistoOpAngleMin  ; }
   Float_t GetHistoOpeningAngleMax()      const { return fHistoOpAngleMax  ; }
-
   
 private:    
   
