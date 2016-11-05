@@ -130,6 +130,8 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fUseTOFBC(kFALSE)
   ,fFilterOutliers(kTRUE)
   ,fFatalOnMissingDrift(kTRUE)
+  ,fCreateCorrection(kTRUE)
+  ,fCreateDistortion(kFALSE)
   ,fMaxFitYErr2(1.0)
   ,fMaxFitXErr2(9.)
   ,fMaxFitXYCorr(0.95)
@@ -568,9 +570,10 @@ void AliTPCDcalibRes::ProcessFromLocalBinnedTrees()
   //
   //  ProcessDispersions();
   //
-  CreateCorrectionObject();
-  //
+  if (fCreateCorrection) CreateCorrectionObject();
   WriteResTree();
+  if (fCreateDistortion) CreateDistortionObject();
+
   //
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
@@ -588,7 +591,7 @@ void AliTPCDcalibRes::ReProcessFromResVoxTree(const char* resTreeFile, Bool_t ba
   //  delete fChebCorr; fChebCorr = 0;
   //  delete fChebDist; fChebDist = 0;
   //
-  CreateCorrectionObject();
+  if (fCreateCorrection) CreateCorrectionObject();
   //
   if (backup) { 
     TString inps = resTreeFile;
@@ -600,6 +603,7 @@ void AliTPCDcalibRes::ReProcessFromResVoxTree(const char* resTreeFile, Bool_t ba
     }
   }
   WriteResTree();
+  if (fCreateDistortion) CreateDistortionObject();
   //
   sw.Stop();
   AliInfoF("timing: real: %.3f cpu: %.3f",sw.RealTime(), sw.CpuTime());
@@ -755,6 +759,7 @@ void AliTPCDcalibRes::Init()
     fNBProdSectG[i] = fNBProdSectG[i+1]*fNBins[i+1];
   }
   //
+  if (!fLumiCTPGraph) fLumiCTPGraph = AliLumiTools::GetLumiFromCTP(fRun);
   AliSysInfo::AddStamp("Init",0,0,0,0);
   //
   fInitDone = kTRUE;
@@ -3921,6 +3926,7 @@ void AliTPCDcalibRes::CreateCorrectionObject()
 {
   // create correction object for given time slice
 
+  AliInfo("Creating correcton Chebyshev parameterization");
   AliSysInfo::AddStamp("CreateCorrectionObject",0,0,0,0);
   //  
   // check if there are failures
@@ -3975,8 +3981,9 @@ void AliTPCDcalibRes::CreateCorrectionObject()
   fChebCorr->SetTracksRate(ExtractTrackRate());
   //
   // calculate weighted lumi
-  fLumiCTPGraph = AliLumiTools::GetLumiFromCTP(fRun);
+  if (!fLumiCTPGraph) fLumiCTPGraph = AliLumiTools::GetLumiFromCTP(fRun);
   fLumiCOG = fChebCorr->GetLuminosityCOG(fLumiCTPGraph);
+  fChebCorr->SetLumiInfo(fLumiCOG);
   //
   AliSysInfo::AddStamp("CreateCorrectionObject",1,0,0,0);
 }
@@ -4479,6 +4486,7 @@ void trainDist(int xslice, float* tzLoc, float distLoc[AliTPCDcalibRes::kResDim]
 void AliTPCDcalibRes::CreateDistortionObject()
 {
   // create distortion object for given time slice
+  AliInfo("Creating distortion Chebyshev parameterization");
   AliSysInfo::AddStamp("CreateDistortionObject",0,0,0,0);
   // check if there are failures
   Bool_t create = kTRUE;
@@ -4533,7 +4541,9 @@ void AliTPCDcalibRes::CreateDistortionObject()
   // store ratio of dndeta to pp@13TeV
   float rat2pp = AliLumiTools::GetScaleDnDeta2pp13TeV(fRun);
   fChebDist->SetScaleDnDeta2pp13TeV(rat2pp);
-
+  if (!fLumiCTPGraph) fLumiCTPGraph = AliLumiTools::GetLumiFromCTP(fRun);
+  fLumiCOG = fChebDist->GetLuminosityCOG(fLumiCTPGraph);
+  fChebDist->SetLumiInfo(fLumiCOG);
   AliSysInfo::AddStamp("CreateDistortionObject",1,0,0,0);
 }
 

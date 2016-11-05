@@ -396,6 +396,11 @@ class AliTPCDcalibRes: public TNamed
   Bool_t   GetSwitchCache()                 const {return fSwitchCache;}
   Bool_t   GetApplyZt2Zc()                  const {return fApplyZt2Zc;}
   Bool_t   GetUseErrorInSmoothing()         const {return fUseErrInSmoothing;}
+
+  Bool_t   GetCreateCorrection()            const {return fCreateCorrection;}
+  Bool_t   GetCreateDistortion()            const {return fCreateDistortion;}
+  void     SetCreateCorrection(Bool_t v=kTRUE)    {fCreateCorrection = v;}
+  void     SetCreateDistortion(Bool_t v=kTRUE)    {fCreateDistortion = v;}
   
   const TString& GetOCDBPath()              const {return fOCDBPath;}
   const TString& GetReisdualList()          const {return fResidualList;}
@@ -465,6 +470,8 @@ class AliTPCDcalibRes: public TNamed
   Bool_t   fUseTOFBC;                // require TOF BC validation
   Bool_t   fFilterOutliers;          // reject outliers
   Bool_t   fFatalOnMissingDrift;     // if vdrift is needed by absent, produce fatal
+  Bool_t   fCreateCorrection;        // request to create Cheb correction
+  Bool_t   fCreateDistortion;        // request to create Cheb distortion
   Float_t  fMaxFitYErr2;             // cut on median fit Y err^2
   Float_t  fMaxFitXErr2;             // cut on median fit X err^2
   Float_t  fMaxFitXYCorr;            // cut on max correlation of X,Y errors in median fit
@@ -599,7 +606,7 @@ class AliTPCDcalibRes: public TNamed
   static const Float_t kTPCRowX[]; // X of the pad-row
   static const Float_t kTPCRowDX[]; // pitch in X
 
-  ClassDef(AliTPCDcalibRes,16);
+  ClassDef(AliTPCDcalibRes,17);
 };
 
 //________________________________________________________________
