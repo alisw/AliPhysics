@@ -2010,7 +2010,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx() &&
                 
                 //Check 5: Xi rejection for Omega analysis
-                ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus || lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )
+                ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus && lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram

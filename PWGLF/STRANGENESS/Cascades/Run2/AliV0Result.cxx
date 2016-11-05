@@ -114,7 +114,7 @@ fCutMCUseMCProperties(kTRUE)
     fHisto->Sumw2();
 }
 //________________________________________________________________
-AliV0Result::AliV0Result(const AliV0Result& lCopyMe)
+AliV0Result::AliV0Result(const AliV0Result& lCopyMe, TString lNewName)
 : TNamed(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
 fCutV0Radius(lCopyMe.fCutV0Radius),
@@ -133,6 +133,8 @@ fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
 fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
 {
+    SetName( lNewName.Data() ); 
+    
     // Constructor
     Double_t lThisMass = 0;
     Double_t lMassWindow = 0.1 ;
@@ -144,15 +146,15 @@ fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
     if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
-    //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-lMassWindow,lThisMass+lMassWindow);
-    fHisto->Sumw2();
+    //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
+    fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
 }
 //________________________________________________________________
-AliV0Result::AliV0Result(AliV0Result *lCopyMe)
+AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     : TNamed(*lCopyMe),
       fHisto(0)
 {
+    SetName(lNewName.Data()); 
     fMassHypo = lCopyMe->GetMassHypothesis();
     fCutV0Radius = lCopyMe->GetCutV0Radius();
     fCutDCANegToPV = lCopyMe->GetCutDCANegToPV();
@@ -182,9 +184,8 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe)
     if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
-    //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-lMassWindow,lThisMass+lMassWindow);
-    fHisto->Sumw2();
+    //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
+    fHisto = (TH3F*) lCopyMe->GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
 }
 //________________________________________________________________
 AliV0Result::~AliV0Result(){
@@ -199,6 +200,7 @@ AliV0Result::~AliV0Result(){
 AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
 {
     if (&lCopyMe == this) return *this;
+    //Careful with names
     SetName(lCopyMe.GetName());
     SetTitle(lCopyMe.GetTitle());
 
@@ -235,9 +237,8 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
     if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
-    //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-lMassWindow,lThisMass+lMassWindow);
-    fHisto->Sumw2();
+    //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
+    fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
     
     return *this;
 }
@@ -300,6 +301,7 @@ void AliV0Result::Print()
     cout<<"    AliV0Result Configuration      "<<endl;
     cout<<"========================================"<<endl;
     cout<<" Object Name........: "<<this->GetName()<<endl;
+    cout<<" Histogram Name.....: "<<fHisto->GetName()<<endl;
     if( fMassHypo == AliV0Result::kK0Short      ) cout<<" Mass Hypothesis....: K0Short"<<endl;
     if( fMassHypo == AliV0Result::kLambda       ) cout<<" Mass Hypothesis....: Lambda"<<endl;
     if( fMassHypo == AliV0Result::kAntiLambda   ) cout<<" Mass Hypothesis....: AntiLambda"<<endl;
