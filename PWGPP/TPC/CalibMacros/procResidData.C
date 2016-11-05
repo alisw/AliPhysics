@@ -234,5 +234,21 @@ AliTPCDcalibRes*  CreateSetCalib(int run,int tmin,int tmax,const char* inp)
     clbn->SetNominalTimeBinPrec(envs.Atof());
   }
   //
+  envs = gSystem->Getenv("distCreateDistortion");
+  if (!envs.IsNull()) {
+    envs.ToLower();
+    Bool_t extrDist=clbn->GetCreateDistortion();
+    if      (envs.Contains("true")) extrDist = kTRUE;
+    else if (envs.Contains("false")) extrDist = kFALSE;
+    else {
+      ::Error("CreateResCalib","Wrong distCreateDistortion = %s",envs.Data());
+      exit(1);
+    }
+    //
+    ::Info("CreateResCalib","SetCreateDistortion %s",envs.Data());
+    clbn->SetCreateDistortion(extrDist);
+  }
+
+  //
   return clbn;
 }
