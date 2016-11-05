@@ -1838,7 +1838,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     Long_t lCentbinnumb = sizeof(lCentbinlimits)/sizeof(Double_t) - 1;
     
     // TStrings for output names
-    TString lParticleName[] = {"XiMinus", "XiPlus",  "Lambda", "AntiLambda"};
+    TString lParticleName[] = {"XiMinus", "XiPlus",  "OmegaMinus", "OmegaPlus"};
     TString lConfName[]     = {"Loose",   "Central", "Tight"     };
     TString lCutName[]      = {"DCANegToPV","DCAPosToPV","DCAV0Daughters","V0CosPA","V0Radius","DCAV0ToPV",
         "V0Mass","DCABachToPV","DCACascDaughters","CascRadius","CascCosPA","ProperLifetime",
