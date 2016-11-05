@@ -64,9 +64,11 @@ targetOCDBDir=${ALIEN_JDL_TARGETOCDBDIR-$targetOCDBDir}
 [[ -z $corr || "$corr" == "0" ]] && corr="0" || corr="1"
 [[ -z $dist || "$dist" == "0" ]] && dist="0" || dist="1"
 
-# if neither of corr or dist is defined, impose correction only
-[[ "$corr" == "0" && "$dist" == "0" ]] && corr="1"
-
+# if neither of corr or dist is defined, impose both 
+if [[ "$corr" == "0" && "$dist" == "0" ]] ; then
+  corr="1"
+  dist="1"
+fi
 
 echo "inputFileList = $inputFileList"
 echo "startRun      = $startRun"
@@ -85,13 +87,15 @@ if [[ ! -f "$locMacro" ]] ; then cp $macroName ./ ; fi
 
 [ -e ocdb.log ] && rm ocdb.log
 
-if [ "$corr" == "1" ]; then
-    time aliroot -b -q "${locMacro}(\"$inputFileList\", $startRun, $endRun, \"$targetOCDBDir\",1)" >> ocdb.log
-fi
-#
-if [ "$dist" == "1" ]; then
-    time aliroot -b -q "${locMacro}(\"$inputFileList\", $startRun, $endRun, \"$targetOCDBDir\",0)" >> ocdb.log
-fi
+time aliroot -b -q "${locMacro}(\"$inputFileList\", $startRun, $endRun, \"$targetOCDBDir\",$corr ,$dist)" >> ocdb.log
+
+#if [ "$corr" == "1" ]; then
+#    time aliroot -b -q "${locMacro}(\"$inputFileList\", $startRun, $endRun, \"$targetOCDBDir\",1)" >> ocdb.log
+#fi
+##
+#if [ "$dist" == "1" ]; then
+#    time aliroot -b -q "${locMacro}(\"$inputFileList\", $startRun, $endRun, \"$targetOCDBDir\",0)" >> ocdb.log
+#fi
 
 
 												      
