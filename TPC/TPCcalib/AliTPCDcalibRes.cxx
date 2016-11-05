@@ -131,7 +131,7 @@ AliTPCDcalibRes::AliTPCDcalibRes(int run,Long64_t tmin,Long64_t tmax,const char*
   ,fFilterOutliers(kTRUE)
   ,fFatalOnMissingDrift(kTRUE)
   ,fCreateCorrection(kTRUE)
-  ,fCreateDistortion(kFALSE)
+  ,fCreateDistortion(kTRUE)
   ,fMaxFitYErr2(1.0)
   ,fMaxFitXErr2(9.)
   ,fMaxFitXYCorr(0.95)
