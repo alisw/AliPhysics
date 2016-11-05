@@ -240,11 +240,16 @@ void AliAnaPi0::InitParameters()
   fPIDBits[0] = 0;   fPIDBits[1] = 2; //  fPIDBits[2] = 4; fPIDBits[3] = 6;// check, no cut,  dispersion, neutral, dispersion&&neutral
   for(Int_t i = fNPIDBits; i < 10; i++)fPIDBits[i] = 0;
   
-  fNAngleCutBins = 7;
-  fAngleCutBinsArray[0] = 0.014; fAngleCutBinsArray[1] = 0.035;   fAngleCutBinsArray[2] = 0.07; fAngleCutBinsArray[3] = 0.5;
-  fAngleCutBinsArray[4] = 0.95 ; fAngleCutBinsArray[5] = 1.03 ;   fAngleCutBinsArray[6] = 1.1 ; fAngleCutBinsArray[7] = 1.4 ;
-  for(Int_t i = fNAngleCutBins+1; i < 11; i++)fAngleCutBinsArray[i] = 1000;
-
+//  fNAngleCutBins = 7;
+//  fAngleCutBinsArray[0] = 0.014; fAngleCutBinsArray[1] = 0.035;   fAngleCutBinsArray[2] = 0.07; fAngleCutBinsArray[3] = 0.5;
+//  fAngleCutBinsArray[4] = 0.95 ; fAngleCutBinsArray[5] = 1.03 ;   fAngleCutBinsArray[6] = 1.1 ; fAngleCutBinsArray[7] = 1.4 ;
+//  for(Int_t i = fNAngleCutBins+1; i < 11; i++)fAngleCutBinsArray[i] = 1000;
+  fNAngleCutBins = 10;
+  Float_t cellsize = 0.0143;
+  fAngleCutBinsArray[0] =  0;           fAngleCutBinsArray[1] = 1*cellsize;   fAngleCutBinsArray[2] = 0.02; // 1.5*cellsize
+  fAngleCutBinsArray[3] =  2*cellsize;  fAngleCutBinsArray[4] = 3*cellsize;   fAngleCutBinsArray[5] = 6*cellsize;  
+  fAngleCutBinsArray[6] = 12*cellsize;  fAngleCutBinsArray[7] = 24*cellsize;  fAngleCutBinsArray[8] = 48*cellsize; 
+  fAngleCutBinsArray[9] = 96*cellsize;  fAngleCutBinsArray[10]= 128*cellsize; 
 }
 
 //_______________________________________
@@ -1231,7 +1236,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   if(fFillAngleHisto)
   {
     fhRealOpeningAngle  = new TH2F
-    ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,280,0,1.4);
+    ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
     fhRealOpeningAngle->SetYTitle("#theta(rad)");
     fhRealOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
     outputContainer->Add(fhRealOpeningAngle) ;
@@ -1245,7 +1250,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     if(DoOwnMix())
     {
       fhMixedOpeningAngle  = new TH2F
-      ("hMixedOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,280,0,1.4);
+      ("hMixedOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhMixedOpeningAngle->SetYTitle("#theta(rad)");
       fhMixedOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhMixedOpeningAngle) ;
@@ -1264,7 +1269,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhRealOpeningAnglePerSM[ism]  = new TH2F
         (Form("hRealOpeningAngleMod_%d",ism),
          Form("Angle between all #gamma pair vs E_{#pi^{0}}, SM %d",ism),
-         nptbins,ptmin,ptmax,280,0,1.4);
+         nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
         fhRealOpeningAnglePerSM[ism]->SetYTitle("#theta(rad)");
         fhRealOpeningAnglePerSM[ism]->SetXTitle("E_{ #pi^{0}} (GeV)");
         outputContainer->Add(fhRealOpeningAnglePerSM[ism]) ;
@@ -1274,7 +1279,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           fhMixedOpeningAnglePerSM[ism]  = new TH2F
           (Form("hMixedOpeningAngleMod_%d",ism),
            Form("Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs, SM %d",ism),
-           nptbins,ptmin,ptmax,280,0,1.4);
+           nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
           fhMixedOpeningAnglePerSM[ism]->SetYTitle("#theta(rad)");
           fhMixedOpeningAnglePerSM[ism]->SetXTitle("E_{ #pi^{0}} (GeV)");
           outputContainer->Add(fhMixedOpeningAnglePerSM[ism]) ;
@@ -1629,7 +1634,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     {
       fhReOpAngleBinMinClusterEtaPhi[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMin_EtaPhi",icut),
-       Form("#eta vs #phi, cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("#eta vs #phi, cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhReOpAngleBinMinClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
       fhReOpAngleBinMinClusterEtaPhi[icut]->SetXTitle("#eta");
@@ -1637,7 +1642,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
       fhReOpAngleBinMaxClusterEtaPhi[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMax_EtaPhi",icut),
-       Form("#eta vs #phi, cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("#eta vs #phi, cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        netabins,etamin,etamax,nphibins,phimin,phimax);
       fhReOpAngleBinMaxClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
       fhReOpAngleBinMaxClusterEtaPhi[icut]->SetXTitle("#eta");
@@ -1645,7 +1650,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
       fhReOpAngleBinMinClusterColRow[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMin_ColRow",icut),
-       Form("highest #it{E} cell, column vs row, cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("highest #it{E} cell, column vs row, cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
       fhReOpAngleBinMinClusterColRow[icut]->SetYTitle("row");
       fhReOpAngleBinMinClusterColRow[icut]->SetXTitle("column");
@@ -1653,7 +1658,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhReOpAngleBinMaxClusterColRow[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMax_ColRow",icut),
-       Form("highest #it{E} cell, column vs row, cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("highest #it{E} cell, column vs row, cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
       fhReOpAngleBinMaxClusterColRow[icut]->SetYTitle("row");
       fhReOpAngleBinMaxClusterColRow[icut]->SetXTitle("column");
@@ -1661,7 +1666,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
       fhReOpAngleBinMinClusterEPerSM[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMin_EPerSM",icut),
-       Form("cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        nptbins,ptmin,ptmax,20,0,20);
       fhReOpAngleBinMinClusterEPerSM[icut]->SetYTitle("SM");
       fhReOpAngleBinMinClusterEPerSM[icut]->SetXTitle("#it{E} (GeV/#it{c})");
@@ -1669,7 +1674,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhReOpAngleBinMaxClusterEPerSM[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMax_EPerSM",icut),
-       Form("cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        nptbins,ptmin,ptmax,20,0,20);
       fhReOpAngleBinMaxClusterEPerSM[icut]->SetYTitle("SM");
       fhReOpAngleBinMaxClusterEPerSM[icut]->SetXTitle("#it{E} (GeV/#it{c})");
@@ -1677,7 +1682,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
       fhReOpAngleBinMinClusterTimePerSM[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMin_TimePerSM",icut),
-       Form("cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        ntimebins,timemin,timemax,20,0,20);
       fhReOpAngleBinMinClusterTimePerSM[icut]->SetYTitle("SM");
       fhReOpAngleBinMinClusterTimePerSM[icut]->SetXTitle("#it{t} (ns)");
@@ -1685,7 +1690,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhReOpAngleBinMaxClusterTimePerSM[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMax_TimePerSM",icut),
-       Form("cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        ntimebins,timemin,timemax,20,0,20);
       fhReOpAngleBinMaxClusterTimePerSM[icut]->SetYTitle("SM");
       fhReOpAngleBinMaxClusterTimePerSM[icut]->SetXTitle("#it{t} (ns)");
@@ -1693,7 +1698,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhReOpAngleBinMinClusterNCellPerSM[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMin_NCellPerSM",icut),
-       Form("cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        30,0,30,20,0,20);
       fhReOpAngleBinMinClusterNCellPerSM[icut]->SetYTitle("SM");
       fhReOpAngleBinMinClusterNCellPerSM[icut]->SetXTitle("# cells");
@@ -1701,7 +1706,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhReOpAngleBinMaxClusterNCellPerSM[icut] = new TH2F
       (Form("hReOpAngleBin%d_ClusterMax_NCellPerSM",icut),
-       Form("cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        30,0,30,20,0,20);
       fhReOpAngleBinMaxClusterNCellPerSM[icut]->SetYTitle("SM");
       fhReOpAngleBinMaxClusterNCellPerSM[icut]->SetXTitle("# cells");
@@ -1709,7 +1714,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
       fhReOpAngleBinPairClusterRatioPerSM[icut] = new TH2F
       (Form("hReOpAngleBin%d_PairCluster_RatioPerSM",icut),
-       Form("cluster pair #it{E}_{high}/ #it{E}_{low}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair #it{E}_{high}/ #it{E}_{low}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        100,0,1,20,0,20);
       fhReOpAngleBinPairClusterRatioPerSM[icut]->SetYTitle("SM");
       fhReOpAngleBinPairClusterRatioPerSM[icut]->SetXTitle("#it{E}_{low}/ #it{E}_{high}");
@@ -1717,7 +1722,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
       fhReOpAngleBinPairClusterMassPerSM[icut] = new TH2F
       (Form("hReOpAngleBin%d_PairCluster_MassPerSM",icut),
-       Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        nmassbins,massmin,massmax,20,0,20);
       fhReOpAngleBinPairClusterMassPerSM[icut]->SetXTitle("#it{M} (GeV/#it{c}^2)");
       fhReOpAngleBinPairClusterMassPerSM[icut]->SetYTitle("SM");
@@ -1725,7 +1730,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
       fhReOpAngleBinPairClusterMass[icut] = new TH2F
       (Form("hReOpAngleBin%d_PairCluster_Mass",icut),
-       Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
        nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
       fhReOpAngleBinPairClusterMass[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
       fhReOpAngleBinPairClusterMass[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
@@ -1737,7 +1742,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         {
           fhReOpAngleBinPairClusterMassMCTruePi0[icut] = new TH2F
           (Form("hReOpAngleBin%d_PairCluster_MassMCTruePi0",icut),
-           Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f, true mc #pi^{0}",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+           Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f, true mc #pi^{0}",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
            nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
           fhReOpAngleBinPairClusterMassMCTruePi0[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
           fhReOpAngleBinPairClusterMassMCTruePi0[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
@@ -1745,7 +1750,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
           
           fhReOpAngleBinPairClusterMassMCTrueEta[icut] = new TH2F
           (Form("hReOpAngleBin%d_PairCluster_MassMCTrueEta",icut),
-           Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f, true mc #eta",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+           Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f, true mc #eta",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
            nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
           fhReOpAngleBinPairClusterMassMCTrueEta[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
           fhReOpAngleBinPairClusterMassMCTrueEta[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
@@ -1754,14 +1759,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhPrimPi0AccPtOpAngCuts[icut]  = new TH1F
         (Form("hPrimPi0AccPt_OpAngleBin%d",icut),
-         Form("Primary #pi^{0} #it{p}_{T} with both photons in acceptance, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("Primary #pi^{0} #it{p}_{T} with both photons in acceptance, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          nptbins,ptmin,ptmax) ;
         fhPrimPi0AccPtOpAngCuts[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPrimPi0AccPtOpAngCuts[icut]) ;
 
         fhPrimEtaAccPtOpAngCuts[icut]  = new TH1F
         (Form("hPrimEtaAccPt_OpAngleBin%d",icut),
-         Form("Primary #eta #it{p}_{T} with both photons in acceptance, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("Primary #eta #it{p}_{T} with both photons in acceptance, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          nptbins,ptmin,ptmax) ;
         fhPrimEtaAccPtOpAngCuts[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPrimEtaAccPtOpAngCuts[icut]) ;
@@ -1769,7 +1774,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       
 //       fhReOpAngleBinPairClusterAbsIdMaxCell[icut] = new TH2F
 //      (Form("hReOpAngleBin%d_PairCluster_AbsIdCell",icut),
-//       Form("cluster pair Abs Cell ID low #it{E} vs high #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+//       Form("cluster pair Abs Cell ID low #it{E} vs high #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
 //       //17664,0,17664,17664,0,17664);
 //       1689,0,16896,1689,0,16896);
 //      fhReOpAngleBinPairClusterAbsIdMaxCell[icut]->SetYTitle("AbsId-higher");
@@ -1780,7 +1785,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       {
         fhMiOpAngleBinMinClusterEtaPhi[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMin_EtaPhi",icut),
-         Form("#eta vs #phi, mixed cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("#eta vs #phi, mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          netabins,etamin,etamax,nphibins,phimin,phimax);
         fhMiOpAngleBinMinClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
         fhMiOpAngleBinMinClusterEtaPhi[icut]->SetXTitle("#eta");
@@ -1788,7 +1793,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinMaxClusterEtaPhi[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMax_EtaPhi",icut),
-         Form("#eta vs #phi, mixed cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("#eta vs #phi, mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          netabins,etamin,etamax,nphibins,phimin,phimax);
         fhMiOpAngleBinMaxClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
         fhMiOpAngleBinMaxClusterEtaPhi[icut]->SetXTitle("#eta");
@@ -1796,7 +1801,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
 //        fhMiOpAngleBinMinClusterColRow[icut] = new TH2F
 //        (Form("hMiOpAngleBin%d_ClusterMin_ColRow",icut),
-//         Form("highest #it{E} cell, column vs row, mixed cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+//         Form("highest #it{E} cell, column vs row, mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
 //         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
 //        fhMiOpAngleBinMinClusterColRow[icut]->SetYTitle("row");
 //        fhMiOpAngleBinMinClusterColRow[icut]->SetXTitle("column");
@@ -1804,7 +1809,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 //        
 //        fhMiOpAngleBinMaxClusterColRow[icut] = new TH2F
 //        (Form("hMiOpAngleBin%d_ClusterMax_ColRow",icut),
-//         Form("highest #it{E} cell, column vs row, mixed cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+//         Form("highest #it{E} cell, column vs row, mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
 //         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
 //        fhMiOpAngleBinMaxClusterColRow[icut]->SetYTitle("row");
 //        fhMiOpAngleBinMaxClusterColRow[icut]->SetXTitle("column");
@@ -1812,7 +1817,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinMinClusterEPerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMin_EPerSM",icut),
-         Form("mixed cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          nptbins,ptmin,ptmax,20,0,20);
         fhMiOpAngleBinMinClusterEPerSM[icut]->SetYTitle("SM");
         fhMiOpAngleBinMinClusterEPerSM[icut]->SetXTitle("#it{E} (GeV/#it{c})");
@@ -1820,7 +1825,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinMaxClusterEPerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMax_EPerSM",icut),
-         Form("mixed cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          nptbins,ptmin,ptmax,20,0,20);
         fhMiOpAngleBinMaxClusterEPerSM[icut]->SetYTitle("SM");
         fhMiOpAngleBinMaxClusterEPerSM[icut]->SetXTitle("#it{E} (GeV/#it{c})");
@@ -1828,7 +1833,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinMinClusterTimePerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMin_TimePerSM",icut),
-         Form("mixed cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          ntimebins,timemin,timemax,20,0,20);
         fhMiOpAngleBinMinClusterTimePerSM[icut]->SetYTitle("SM");
         fhMiOpAngleBinMinClusterTimePerSM[icut]->SetXTitle("#it{t} (ns)");
@@ -1836,7 +1841,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinMaxClusterTimePerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMax_TimePerSM",icut),
-         Form("mixed cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          ntimebins,timemin,timemax,20,0,20);
         fhMiOpAngleBinMaxClusterTimePerSM[icut]->SetYTitle("SM");
         fhMiOpAngleBinMaxClusterTimePerSM[icut]->SetXTitle("#it{t} (ns)");
@@ -1844,7 +1849,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 
         fhMiOpAngleBinMinClusterNCellPerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMin_NCellPerSM",icut),
-         Form("mixed cluster pair lower #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          30,0,30,20,0,20);
         fhMiOpAngleBinMinClusterNCellPerSM[icut]->SetYTitle("SM");
         fhMiOpAngleBinMinClusterNCellPerSM[icut]->SetXTitle("# cells");
@@ -1852,7 +1857,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinMaxClusterNCellPerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_ClusterMax_NCellPerSM",icut),
-         Form("mixed cluster pair higher #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          30,0,30,20,0,20);
         fhMiOpAngleBinMaxClusterNCellPerSM[icut]->SetYTitle("SM");
         fhMiOpAngleBinMaxClusterNCellPerSM[icut]->SetXTitle("# cells");
@@ -1860,7 +1865,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinPairClusterRatioPerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_PairCluster_RatioPerSM",icut),
-         Form("mixed cluster pair #it{E}_{high}/ #it{E}_{low}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("mixed cluster pair #it{E}_{high}/ #it{E}_{low}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          100,0,1,20,0,20);
         fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetYTitle("SM");
         fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetXTitle("#it{E}_{low}/ #it{E}_{high}");
@@ -1868,7 +1873,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinPairClusterMassPerSM[icut] = new TH2F
         (Form("hMiOpAngleBin%d_PairCluster_MassPerSM",icut),
-         Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          nmassbins,massmin,massmax,20,0,20);
         fhMiOpAngleBinPairClusterMassPerSM[icut]->SetXTitle("#it{M} (GeV/#it{c}^2)");
         fhMiOpAngleBinPairClusterMassPerSM[icut]->SetYTitle("SM");
@@ -1876,7 +1881,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         fhMiOpAngleBinPairClusterMass[icut] = new TH2F
         (Form("hMiOpAngleBin%d_PairCluster_Mass",icut),
-         Form("cluster pair #it{M}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
          nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
         fhMiOpAngleBinPairClusterMass[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
         fhMiOpAngleBinPairClusterMass[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
@@ -1884,7 +1889,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
 //        fhMiOpAngleBinPairClusterAbsIdMaxCell[icut] = new TH2F
 //        (Form("hMiOpAngleBin%d_PairCluster_AbsIdCell",icut),
-//         Form("mixed cluster pair Abs Cell ID low #it{E} vs high #it{E}, pair %1.3f<#theta<%1.3f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+//         Form("mixed cluster pair Abs Cell ID low #it{E} vs high #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
 //         ntimebins,timemin,timemax,20,0,20);
 //        fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetYTitle("AbsId-higher");
 //        fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetXTitle("AbsId-lower");
