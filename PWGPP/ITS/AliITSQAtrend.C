@@ -455,22 +455,22 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
     hVarSSD2p->SetMarkerColor(38);
     hVarSSD2p->SetMarkerStyle(21);
     
-    TH1F *hFlagSSD1n = new TH1F("hFlagSSD1n","SDD inner; run number; SSD1 n-strips alarm flag",kRunsToPlot,0.,kRunsToPlot);
+    TH1F *hFlagSSD1n = new TH1F("hFlagSSD1n","SSD inner; run number; SSD1 n-strips alarm flag",kRunsToPlot,0.,kRunsToPlot);
     hFlagSSD1n->SetLineColor(6);
     hFlagSSD1n->SetMarkerColor(6);
     hFlagSSD1n->SetMarkerStyle(20);
     
-    TH1F *hFlagSSD1p = new TH1F("hFlagSSD1p","SDD inner; run number; SSD1 p-strips alarm flag",kRunsToPlot,0.,kRunsToPlot);
+    TH1F *hFlagSSD1p = new TH1F("hFlagSSD1p","SSD inner; run number; SSD1 p-strips alarm flag",kRunsToPlot,0.,kRunsToPlot);
     hFlagSSD1p->SetLineColor(kMagenta+2);
     hFlagSSD1p->SetMarkerColor(kMagenta+2);
     hFlagSSD1p->SetMarkerStyle(21);
     
-    TH1F *hFlagSSD2n = new TH1F("hFlagSSD2n","SDD inner; run number; SSD2 n-strips alarm flag",kRunsToPlot,0.,kRunsToPlot);
+    TH1F *hFlagSSD2n = new TH1F("hFlagSSD2n","SSD inner; run number; SSD2 n-strips alarm flag",kRunsToPlot,0.,kRunsToPlot);
     hFlagSSD2n->SetLineColor(9);
     hFlagSSD2n->SetMarkerColor(9);
     hFlagSSD2n->SetMarkerStyle(20);
     
-    TH1F *hFlagSSD2p = new TH1F("hFlagSSD2p","SDD inner; run number; SSD2 p-strips alarm flag",kRunsToPlot,0.,kRunsToPlot);
+    TH1F *hFlagSSD2p = new TH1F("hFlagSSD2p","SSD inner; run number; SSD2 p-strips alarm flag",kRunsToPlot,0.,kRunsToPlot);
     hFlagSSD2p->SetLineColor(38);
     hFlagSSD2p->SetMarkerColor(38);
     hFlagSSD2p->SetMarkerStyle(21);
@@ -488,7 +488,7 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
         if(82.>MPVdEdxLay5 || MPVdEdxLay5>83.) dEdx5=0.5;
         hFlagdEdx5->SetBinContent(i+1,dEdx5);
         hFlagdEdx5->SetBinError(i+1,0.01);
-        hFlagdEdx5->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+        hFlagdEdx5->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrunSSD));
 
     histodEdxLay6->SetBinContent(i+1,MPVdEdxLay6);
     histodEdxLay6->SetBinError(i+1,errMPVdEdxLay6);
@@ -497,7 +497,7 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
         if(82.>MPVdEdxLay6 || MPVdEdxLay6>83.) dEdx6=1.5;
         hFlagdEdx6->SetBinContent(i+1,dEdx6);
         hFlagdEdx6->SetBinError(i+1,0.01);
-        hFlagdEdx6->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+        hFlagdEdx6->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrunSSD));
 
     histoChargeRatioLay5->SetBinContent(i+1,ChargeRatioL5);
     histoChargeRatioLay5->SetBinError(i+1,errChargeratioL5);
@@ -506,7 +506,7 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
         if(-0.01>ChargeRatioL5 || ChargeRatioL5>0.01) ChR5=0.5;
         hFlagChR5->SetBinContent(i+1,ChR5);
         hFlagChR5->SetBinError(i+1,0.01);
-        hFlagChR5->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+        hFlagChR5->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrunSSD));
 
     histoChargeRatioLay6->SetBinContent(i+1,ChargeRatioL6);
     histoChargeRatioLay6->SetBinError(i+1,errChargeratioL6);
@@ -515,7 +515,7 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
         if(-0.01>ChargeRatioL6 || ChargeRatioL6>0.01) ChR6=1.5;
         hFlagChR6->SetBinContent(i+1,ChR6);
         hFlagChR6->SetBinError(i+1,0.01);
-        hFlagChR6->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+        hFlagChR6->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrunSSD));
 
     histoEmpty->SetBinContent(i+1,moduleOff);
     histoEmpty->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrunSSD));
@@ -549,8 +549,8 @@ void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
     for(Int_t t=0;t<kRunsToPlot;t++){
         
         if(t==0){
-            diff1n=0.0,diff1p=0.0;
-            diff2n=0.2,diff2p=0.2;
+            diff1n=0.0,diff1p=0.1;
+            diff2n=0.2,diff2p=0.3;
         }
         else{
             diff1n=(histoFracBadn5->GetBinContent(t+1)-histoFracBadn5->GetBinContent(t))/histoFracBadn5->GetBinContent(t);
@@ -1985,21 +1985,31 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
 
   }
  //--------  Draw Vertex histograms ---------
-    
+    gStyle->SetOptStat(0);
     TCanvas *cVertexDisto;
     if(hVx->GetEntries()>0){
    cVertexDisto=new TCanvas("cVertexDisto","cVertexDisto",1200,800);
   cVertexDisto->Divide(3,2);
   cVertexDisto->cd(1);
   hVx->SetMinimum(0.065);
-  hVx->SetMaximum(0.085);
+  hVx->SetMaximum(0.105);
     hVx->GetYaxis()->SetTitle("Vertex X coordinate");
     hVx->GetXaxis()->SetTitle("run number");
   hVx->Draw();
   if(hVxSPD->GetBinContent(1)>0)hVxSPD->Draw("same");
+        TLegend* legVtx=new TLegend(0.70,0.83,1.00,0.93);
+        legVtx->SetFillColor(kWhite);
+        legVtx->SetFillStyle(1001);
+        TLegendEntry* entVtx;
+        entVtx=legVtx->AddEntry(hVx,"Tracks vertex","PL");
+        entVtx->SetTextColor(hVx->GetMarkerColor());
+        entVtx=legVtx->AddEntry(hVxSPD,"Tracklets vertex","PL");
+        entVtx->SetTextColor(hVxSPD->GetMarkerColor());
+        legVtx->Draw();
+
   cVertexDisto->cd(2);
-    if(hVySPD->GetEntries()>0){  // pp runs
-  hVy->SetMinimum(0.32);
+    if(hVySPD->GetEntries()>0){  // pp runs and pPb runs
+  hVy->SetMinimum(0.28);
   hVy->SetMaximum(0.38);
     }
     else{                       // PbPb runs
@@ -2010,6 +2020,8 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hVy->GetXaxis()->SetTitle("run number");
   hVy->Draw();
   if(hVySPD->GetBinContent(1)>0)hVySPD->Draw("same");
+  legVtx->Draw();
+
   cVertexDisto->cd(3);
 //   hVz->SetMinimum(-1.);
 //   hVz->SetMaximum(1.);
@@ -2017,6 +2029,8 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hVz->GetXaxis()->SetTitle("run number");
   hVz->Draw();
   if(hVzSPD->GetBinContent(1)>0)hVzSPD->Draw("same");
+        legVtx->Draw();
+
   cVertexDisto->cd(4);
   hSigmaVx->SetMinimum(0.);
   hSigmaVx->SetMaximum(0.1);
@@ -2024,6 +2038,8 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hSigmaVx->GetXaxis()->SetTitle("run number");
   hSigmaVx->Draw();
   if(hSigmaVxSPD->GetBinContent(1)>0)hSigmaVxSPD->Draw("same");
+        legVtx->Draw();
+
   cVertexDisto->cd(5);
  hSigmaVy->SetMinimum(0.);
  hSigmaVy->SetMaximum(0.2);
@@ -2031,6 +2047,7 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hSigmaVy->GetXaxis()->SetTitle("run number");
   hSigmaVy->Draw();
   if(hSigmaVySPD->GetBinContent(1)>0)hSigmaVySPD->Draw("same");
+        legVtx->Draw();
   cVertexDisto->cd(6);
 //   hSigmaVz->SetMinimum(6.);
 //   hSigmaVz->SetMaximum(10.);
@@ -2038,6 +2055,8 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hSigmaVz->GetXaxis()->SetTitle("run number");
   hSigmaVz->Draw();
   if(hSigmaVzSPD->GetBinContent(1)>0)hSigmaVzSPD->Draw("same");
+        legVtx->Draw();
+
   cVertexDisto->SaveAs("Vertex_trend.pdf");
 //    pdfFileNames+=" Vertex_trend.pdf";
     }
@@ -2661,7 +2680,16 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     tf4->SetNDC();
     tf4->SetTextColor(1);
     tf4->Draw();
-
+        TLegend* legSDD=new TLegend(0.90,0.85,0.95,1.00);
+        legSDD->SetFillColor(kWhite);
+        legSDD->SetFillStyle(1001);
+        TLegendEntry* entSDD;
+        entSDD=legSDD->AddEntry(histoFracDead3,"Layer 3","PL");
+        entSDD->SetTextColor(histoFracDead3->GetMarkerColor());
+        entSDD=legSDD->AddEntry(histoFracDead4,"Layer 4","PL");
+        entSDD->SetTextColor(histoFracDead4->GetMarkerColor());
+        legSDD->Draw();
+        
     cfrac->cd(2);
     hVarSDD1->SetMarkerStyle(20);
     hVarSDD1->SetMarkerColor(kOrange+1);
@@ -2685,6 +2713,7 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     tf4_1->SetNDC();
     tf4_1->SetTextColor(1);
     tf4_1->Draw();
+        legSDD->Draw();
     
     
     cfrac->cd(3);
@@ -2711,6 +2740,7 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     tf4_2->SetNDC();
     tf4_2->SetTextColor(1);
     tf4_2->Draw();
+        legSDD->Draw();
 
     cfrac->SaveAs("SDDmodulesON_trend.pdf");
 //    pdfFileNames+=" SDDmodulesON_trend.pdf";
@@ -2762,7 +2792,7 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
   TLegendEntry* ent=leg2->AddEntry(histodEdxTB0,"Small drift time","PL");
   ent=leg2->AddEntry(histodEdxTB5,"Large drift time","PL");
   ent->SetTextColor(histodEdxTB5->GetMarkerColor());
-  leg2->SetFillStyle(0);
+  leg2->SetFillStyle(1001);
   leg2->Draw();
   TLatex* tc1=new TLatex(0.2,0.85,"SDD charge in different drift regions");
   tc1->SetNDC();
@@ -2800,7 +2830,7 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
   ent=leg2b->AddEntry(histodEdxLay5,"Layer 5","PL");
   ent=leg2b->AddEntry(histodEdxLay6,"Layer 6","PL");
   ent->SetTextColor(histodEdxLay4->GetMarkerColor());
-  leg2b->SetFillStyle(0);
+  leg2b->SetFillStyle(1001);
   leg2b->Draw();
   TLatex* tc2=new TLatex(0.2,0.85,"SDD and SSD charge in different layers");
   tc2->SetNDC();
@@ -2830,11 +2860,11 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hFlagmeanTime->SetMarkerSize(0.5);
     hFlagmeanTime->SetMarkerStyle(21);
     hFlagmeanTime->Draw("same");
-    TLatex* td1=new TLatex(0.2,0.45,"SDD: 490 ns<Min Time<510 ns: OK=1, ALARM=0.5");
+    TLatex* td1=new TLatex(0.12,0.45,"SDD: 490 ns<Min Time<510 ns: OK=1, ALARM=0.5");
     td1->SetNDC();
     td1->SetTextColor(1);
     td1->Draw();
-    TLatex* td1a=new TLatex(0.2,0.8,"SDD: 3180 ns<Mean Time<3240 ns: OK=2, ALARM=1.5");
+    TLatex* td1a=new TLatex(0.12,0.8,"SDD: 3180 ns<Mean Time<3240 ns: OK=2, ALARM=1.5");
     td1a->SetNDC();
     td1a->SetTextColor(1);
     td1a->Draw();
@@ -2853,11 +2883,11 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hFlagdEdx4->SetLineColor(kBlue);
     hFlagdEdx4->SetMarkerSize(0.5);
     hFlagdEdx4->Draw("same");
-    TLatex* td1b=new TLatex(0.2,0.45,"SDD: 83<dEdx3<85: OK=1, ALARM=0.5");
+    TLatex* td1b=new TLatex(0.12,0.45,"SDD1: 83<dEdx3<85: OK=1, ALARM=0.5");
     td1b->SetNDC();
     td1b->SetTextColor(1);
     td1b->Draw();
-    TLatex* td1c=new TLatex(0.2,0.8,"SDD: 83<dEdx4<85: OK=2, ALARM=1.5");
+    TLatex* td1c=new TLatex(0.12,0.8,"SDD2: 83<dEdx4<85: OK=2, ALARM=1.5");
     td1c->SetNDC();
     td1c->SetTextColor(1);
     td1c->Draw();
@@ -2877,11 +2907,11 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hFlagChR6->SetLineColor(9);
     hFlagChR6->SetMarkerSize(0.5);
     hFlagChR6->Draw("same");
-    TLatex* td1bb=new TLatex(0.2,0.45,"SSD: -0.01<Charge Ratio L5<0.01: OK=1, ALARM=0.5");
+    TLatex* td1bb=new TLatex(0.12,0.45,"SSD: -0.01<Charge Ratio L5<0.01: OK=1, ALARM=0.5");
     td1bb->SetNDC();
     td1bb->SetTextColor(1);
     td1bb->Draw();
-    TLatex* td1cb=new TLatex(0.2,0.8,"SSD: -0.01<Charge Ratio L6<0.01: OK=2, ALARM=1.5");
+    TLatex* td1cb=new TLatex(0.12,0.8,"SSD: -0.01<Charge Ratio L6<0.01: OK=2, ALARM=1.5");
     td1cb->SetNDC();
     td1cb->SetTextColor(1);
     td1cb->Draw();
@@ -2901,11 +2931,11 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hFlagdEdx6->SetLineColor(9);
     hFlagdEdx6->SetMarkerSize(0.5);
     hFlagdEdx6->Draw("same");
-    TLatex* td1b2=new TLatex(0.2,0.45,"SSD: 82<dEdx5<83: OK=1, ALARM=0.5");
+    TLatex* td1b2=new TLatex(0.12,0.45,"SSD: 82<dEdx5<83: OK=1, ALARM=0.5");
     td1b2->SetNDC();
     td1b2->SetTextColor(1);
     td1b2->Draw();
-    TLatex* td1c2=new TLatex(0.2,0.8,"SSD: 82<dEdx6<83: OK=2, ALARM=1.5");
+    TLatex* td1c2=new TLatex(0.12,0.8,"SSD: 82<dEdx6<83: OK=2, ALARM=1.5");
     td1c2->SetNDC();
     td1c2->SetTextColor(1);
     td1c2->Draw();
@@ -3015,23 +3045,24 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hVarSSD1n->SetMaximum(0.5);
     hVarSSD1n->GetXaxis()->SetTitle("run number");
     hVarSSD1n->Draw();
+        hVarSSD1n->SetTitle("");
     hVarSSD1p->SetLineColor(kMagenta+2);
     hVarSSD1p->SetMinimum(0);
     hVarSSD1p->SetMaximum(0.2);
     hVarSSD1p->Draw("same");
     hVarSSD2n->Draw("same");
     hVarSSD2p->Draw("same");
-    TLegend* legBad3=new TLegend(0.7,0.75,0.88,0.95);
-     TLegendEntry* ent=legBad3->AddEntry(hVarSSD1n,"Layer5 n-side","PL");
-    ent->SetTextColor(hVarSSD1n->GetMarkerColor());
-    ent=legBad3->AddEntry(hVarSSD1p,"Layer5 p-side","PL");
-    ent->SetTextColor(hVarSSD1p->GetMarkerColor());
-    ent=legBad3->AddEntry(hVarSSD2n,"Layer6 n-side","PL");
-    ent->SetTextColor(hVarSSD2n->GetMarkerColor());
-    ent=legBad3->AddEntry(hVarSSD2p,"Layer6 p-side","PL");
-    ent->SetTextColor(hVarSSD2p->GetMarkerColor());
-    legBad3->SetFillStyle(0);
-    legBad3->Draw();
+    TLegend* legBad3txt=new TLegend(0.8,0.75,0.98,0.95);
+     TLegendEntry* enttxt=legBad3txt->AddEntry(hVarSSD1n,"Layer5 n-side","PL");
+    enttxt->SetTextColor(hVarSSD1n->GetMarkerColor());
+    enttxt=legBad3txt->AddEntry(hVarSSD1p,"Layer5 p-side + 0.1","PL");
+    enttxt->SetTextColor(hVarSSD1p->GetMarkerColor());
+    enttxt=legBad3txt->AddEntry(hVarSSD2n,"Layer6 n-side + 0.2","PL");
+    enttxt->SetTextColor(hVarSSD2n->GetMarkerColor());
+    enttxt=legBad3txt->AddEntry(hVarSSD2p,"Layer6 p-side + 0.3","PL");
+    enttxt->SetTextColor(hVarSSD2p->GetMarkerColor());
+    legBad3txt->SetFillStyle(1001);
+    legBad3txt->Draw();
     TLatex* tcbad5a=new TLatex(0.2,0.85,"#DeltaN/N bad n/p strips Layer 5 & 6");
     tcbad5a->SetNDC();
     tcbad5a->SetTextColor(1);
@@ -3042,12 +3073,24 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hFlagSSD1n->SetMaximum(2.5);
     hFlagSSD1n->GetXaxis()->SetTitle("run number");
     hFlagSSD1n->Draw();
+        hFlagSSD1n->SetTitle("");
     hFlagSSD1p->SetLineColor(kMagenta+2);
     hFlagSSD1p->SetMinimum(0);
     hFlagSSD1p->SetMaximum(0.2);
     hFlagSSD1p->Draw("same");
     hFlagSSD2n->Draw("same");
     hFlagSSD2p->Draw("same");
+        TLegend* legBad3=new TLegend(0.8,0.80,0.98,1.00);
+        TLegendEntry* ent=legBad3->AddEntry(hVarSSD1n,"Layer5 n-side","PL");
+        ent->SetTextColor(hVarSSD1n->GetMarkerColor());
+        ent=legBad3->AddEntry(hVarSSD1p,"Layer5 p-side","PL");
+        ent->SetTextColor(hVarSSD1p->GetMarkerColor());
+        ent=legBad3->AddEntry(hVarSSD2n,"Layer6 n-side","PL");
+        ent->SetTextColor(hVarSSD2n->GetMarkerColor());
+        ent=legBad3->AddEntry(hVarSSD2p,"Layer6 p-side","PL");
+        ent->SetTextColor(hVarSSD2p->GetMarkerColor());
+        legBad3->SetFillStyle(1001);
+        legBad3->Draw();
     legBad3->Draw();
     TLatex* tcbad5b=new TLatex(0.2,0.85,"SSD Layer 5 & 6 n/p strips alarm flag: tolerance = 1%");
     tcbad5b->SetNDC();
@@ -3381,12 +3424,13 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     cPixel->cd(1);
     hFracSPD1->SetMaximum(1.2);
     hFracSPD1->SetMinimum(0);
+        hFracSPD1->SetTitle("");
     hFracSPD1->Draw("p");
     hFracSPD2->Draw("same,p");
     
-    TLegend* lSPD=new TLegend(0.9,0.8,1,1);
-    lSPD->AddEntry(hFracSPD1,"Frac. SPD1 ON","l");
-    lSPD->AddEntry(hFracSPD2,"Frac. SPD2 ON","l");
+    TLegend* lSPD=new TLegend(0.8,0.8,1,1);
+    lSPD->AddEntry(hFracSPD1,"Frac. SPD1 ON","Pl");
+    lSPD->AddEntry(hFracSPD2,"Frac. SPD2 ON","Pl");
     lSPD->Draw();
     TLatex* tSPD=new TLatex(0.2,0.3,"Fraction of SPD half staves ON");
     tSPD->SetNDC();
@@ -3405,6 +3449,7 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     hVarSPD1->SetMaximum(0.3);
     hVarSPD1->SetMinimum(-0.1);
     hVarSPD1->Draw("p");
+        hVarSPD1->SetTitle("");
     TLatex* tf4a_1=new TLatex(0.2,0.35,"#DeltaN/N -- Layer 1");
     tf4a_1->SetNDC();
     tf4a_1->SetTextColor(1);
@@ -3414,11 +3459,16 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     tf4a_2->SetNDC();
     tf4a_2->SetTextColor(1);
     tf4a_2->Draw();
+        TLegend* lSPD1=new TLegend(0.85,0.8,0.98,1);
+        lSPD1->AddEntry(hFracSPD1,"SPD1","Pl");
+        lSPD1->AddEntry(hFracSPD2,"SPD2 + 0.2","Pl");
+        lSPD1->Draw();
     
     cPixel->cd(3);
     hFlagSPD1->SetMaximum(2.5);
     hFlagSPD1->SetMinimum(-0.0);
     hFlagSPD1->Draw("p");
+        hFlagSPD1->SetTitle("");
     TLatex* tf4a_3=new TLatex(0.2,0.30,"Status flag Layer 1: 1=OK, 0.5=ALARM");
     tf4a_3->SetNDC();
     tf4a_3->SetTextColor(1);
@@ -3428,6 +3478,10 @@ TH1F *hpileupSPD = new TH1F("hpileupSPD","Fraction of tracks with SPD pileup",kR
     tf4a_4->SetNDC();
     tf4a_4->SetTextColor(1);
     tf4a_4->Draw();
+        TLegend* lSPD1a=new TLegend(0.9,0.8,0.98,1);
+        lSPD1a->AddEntry(hFracSPD1,"SPD1","Pl");
+        lSPD1a->AddEntry(hFracSPD2,"SPD2","Pl");
+        lSPD1a->Draw();
     
     cPixel->SaveAs("Pixel_trend.pdf");
     //  pdfFileNames+=" Pixel_trend.pdf";
@@ -5363,7 +5417,7 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
         lentrail = 50;
         lenfill=30;
     }
-    else if(aux.Contains("LHC16o/")){
+    else if(aux.Contains("LHC13b/")){
         lentrail = 27;
         lenfill=30;
     }
@@ -5594,18 +5648,22 @@ void FillITSSAntuple(TFile* f,TNtuple* nt, Int_t nrun, Float_t *xntSA){
     Float_t efracTpi[6]={0.,0.,0.,0.,0.,0.};
 
     if(is2d){
+        if(hNclu->GetBinContent(1)>0){
         for(Int_t iLay=0; iLay<6; iLay++){
 //            fracTpi[iLay]=hNcluPion->GetBinContent(iLay+2)/hNcluPion->GetBinContent(1);
 //            efracTpi[iLay]=TMath::Sqrt(fracTpi[iLay]*(1-fracTpi[iLay])/hNcluPion->GetBinContent(1));
             fracTpi[iLay]=hNclu->GetBinContent(iLay+2)/hNclu->GetBinContent(1);
             efracTpi[iLay]=TMath::Sqrt(fracTpi[iLay]*(1-fracTpi[iLay])/hNclu->GetBinContent(1));
         }
+        }
     }
     else
     {
         for(Int_t iLay=0; iLay<6; iLay++){
+            if(hNcluPion->GetBinContent(1)>0){
                 fracTpi[iLay]=hNcluPion->GetBinContent(iLay+2)/hNcluPion->GetBinContent(1);
                 efracTpi[iLay]=TMath::Sqrt(fracTpi[iLay]*(1-fracTpi[iLay])/hNcluPion->GetBinContent(1));
+        }
         }
     }
 
@@ -6326,7 +6384,7 @@ void FillSSDntuple(TFile* f,TNtuple* ntssd, Int_t iRun, Float_t *xntSSD){
     TH1F* bad_n=(TH1F*)lSSD->FindObject("Bad-n-strips");
  // find number of merged subjobs
     Int_t max_p=0;
-    Int_t bad_n5=0, bad_p5=0, bad_n6=0, bad_p6=0;
+    Float_t bad_n5=0, bad_p5=0, bad_n6=0, bad_p6=0;
     Float_t n_subjobs=0;
     if(bad_n && bad_p){
     //    Int_t max_n=0; // not used: same maximum for both histos

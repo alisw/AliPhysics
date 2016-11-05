@@ -57,13 +57,21 @@ void PlotPID(TFile* fildat,TCanvas**& clist,Int_t& cnum);
                                        Int_t nRunMC=245829){
 */
 void AliITSQAchecks(TString option="grid",                // grid analysis version
-                                      Int_t nRun=244340,
-                                      //                                  TString filenamedata="alien:///alice/data/2015/LHC15o/000245064/lowIR_standaloneITS/QAresults.root",
-                                      TString filenamedata="alien:///alice/data/2015/LHC15n/000244340/pass2/PWGPP/DPG_pp/3_20161012-1435/AnalysisResults.root",
-                                      //                                  TString filenameMC="../Trending/MC/QAresults_245064.root", // merge parziale
-                                      TString filenameMC="alien:///alice/data/2015/LHC15n/000244340/pass2/PWGPP/DPG_pp/3_20161012-1435/AnalysisResults.root",
-                                      Int_t nRunMC=244340){
+                         Int_t nRun=245952,
+                         //                                  TString filenamedata="alien:///alice/data/2015/LHC15o/000245064/lowIR_standaloneITS/QAresults.root",
+                         TString filenamedata="alien:///alice/data/2015/LHC15o/000245952/pass1/QAresults.root",
+                         //                                  TString filenameMC="../Trending/MC/QAresults_245064.root", // merge parziale
+                         TString filenameMC="alien:///alice/sim/2016/LHC16g1a/245952/QAresults.root",
+                         Int_t nRunMC=245952){
 
+/*void AliITSQAchecks(TString option="grid",                // grid analysis version
+                         Int_t nRun=262425,
+                         //                                  TString filenamedata="alien:///alice/data/2015/LHC15o/000245064/lowIR_standaloneITS/QAresults.root",
+                         TString filenamedata="alien:///alice/data/2016/LHC16o/000262425/cpass1_pass1/QAresults_barrel.root",
+                         //                                  TString filenameMC="../Trending/MC/QAresults_245064.root", // merge parziale
+                         TString filenameMC="alien:///alice/data/2016/LHC16o/000262425/cpass1_pass1/QAresults_barrel.root",
+                         Int_t nRunMC=262425){
+*/
   // THIS MACRO SHOULD BE COMPILED. IT DOES NOT WORK WITH THE INTERPRETER
   // option:  "local" if filenamedata is the name of a local file
   //          "grid" if on alien
@@ -84,7 +92,9 @@ void AliITSQAchecks(TString option="grid",                // grid analysis versi
   
 // N.B.: PID option shpuld be used for ppass productions only
 //    TString selection("pileup");
-    TString selection("general ITSSA SPD SDD SSD vertex ITSTPC pileup PID");
+    
+//    TString selection("general ITSSA SPD SDD SSD vertex ITSTPC pileup PID");
+    TString selection("ITSTPC");
 //    TString selection("ITSSA SPD vertex pileup");
  
   // TString selection("vertex"); 
@@ -2291,29 +2301,6 @@ Bool_t PlotITSTPCMatchingEff(TFile *f, TFile *fMC, TCanvas**& clist,Int_t& cnum)
     spdFrac0->Draw("p");
     spdFrac1->Draw("p");
 
-  //
-  // Efficiencies for PERIPHERAL
-  //
-  dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
-  if(dir) list = (TList*)dir->Get("cOutputITS");
-  if(!list) return kFALSE;
-
-  fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
-  fHistPtITSMI6InAcc = (TH1F*)list->FindObject("fHistPtITSMI6InAcc");
-  fHistPtITSMI5InAcc = (TH1F*)list->FindObject("fHistPtITSMI5InAcc");
-  fHistPtITSMI4InAcc = (TH1F*)list->FindObject("fHistPtITSMI4InAcc");
-  fHistPtITSMI3InAcc = (TH1F*)list->FindObject("fHistPtITSMI3InAcc");
-  fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
-  fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
-  fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
-  fHistPtITSTPCsel = (TH1F*)list->FindObject("fHistPtITSTPCsel");
-  fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
-  fHistPtITSMIge2InAcc->Add(fHistPtITSMI5InAcc);
-  fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
-  fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
-  fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
-
-
   cITSTPCmatch->SaveAs("TPCITSmatching.pdf");
   pdfFileNames+=" TPCITSmatching.pdf";
 
@@ -2517,29 +2504,6 @@ Bool_t PlotITSTPCMatchingEff(TFile *f, TFile *fMC, TCanvas**& clist,Int_t& cnum)
     spdFrac0MC->Draw("p");
     spdFrac1MC->Draw("p");
     
-
-    //
-    // Efficiencies for PERIPHERAL --- non viene usata ...??
-    //
-    dirMC=(TDirectoryFile*)fMC->GetDirectory("ITS_Performance");
-    if(dirMC) listMC = (TList*)dirMC->Get("cOutputITS");
-    if(!listMC) return kFALSE;
-    
-    fHistPtTPCInAccMC = (TH1F*)listMC->FindObject("fHistPtTPCInAcc");
-    fHistPtITSMI6InAccMC = (TH1F*)listMC->FindObject("fHistPtITSMI6InAcc");
-    fHistPtITSMI5InAccMC = (TH1F*)listMC->FindObject("fHistPtITSMI5InAcc");
-    fHistPtITSMI4InAccMC = (TH1F*)listMC->FindObject("fHistPtITSMI4InAcc");
-    fHistPtITSMI3InAccMC = (TH1F*)listMC->FindObject("fHistPtITSMI3InAcc");
-    fHistPtITSMI2InAccMC = (TH1F*)listMC->FindObject("fHistPtITSMI2InAcc");
-    fHistPtITSMISPDInAccMC = (TH1F*)listMC->FindObject("fHistPtITSMISPDInAcc");
-    fHistPtITSMIoneSPDInAccMC = (TH1F*)listMC->FindObject("fHistPtITSMIoneSPDInAcc");
-    fHistPtITSTPCselMC = (TH1F*)listMC->FindObject("fHistPtITSTPCsel");
-    fHistPtITSMIge2InAccMC = (TH1F*)fHistPtITSMI6InAccMC->Clone("fHistPtITSMIge2InAccMC");
-    fHistPtITSMIge2InAccMC->Add(fHistPtITSMI5InAccMC);
-    fHistPtITSMIge2InAccMC->Add(fHistPtITSMI4InAccMC);
-    fHistPtITSMIge2InAccMC->Add(fHistPtITSMI3InAccMC);
-    fHistPtITSMIge2InAccMC->Add(fHistPtITSMI2InAccMC);
-
     
     cITSTPCmatchMC->SaveAs("TPCITSmatchingMC.pdf");
     pdfFileNames+=" TPCITSmatchingMC.pdf";
@@ -2549,7 +2513,168 @@ Bool_t PlotITSTPCMatchingEff(TFile *f, TFile *fMC, TCanvas**& clist,Int_t& cnum)
     cITSTOFmatchMC->SaveAs("TOFITSmatchingMC.pdf");
     pdfFileNames+=" TOFITSmatchingMC.pdf";
 
+//
+// MC/DATA efficiency ratios
+//
     
+    Int_t nPtBins=34;
+    Float_t xPtBins[35]={0,0.025,0.05,0.075,0.1,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.3,0.325,0.35,0.375,0.4,0.5,0.6,0.7,0.8,1.0,1.5,2.,2.5,3,4,5,6,8,10,15,20,25,30};
+    Float_t num[nPtBins], denom[nPtBins], ratio[nPtBins];
+    Float_t ernum[nPtBins], erdenom[nPtBins], erratio[nPtBins];
+
+// TPCITS ME ratios
+
+    TH1F *ratio456data = (TH1F *)fHistPtITSMI6InAcc->Clone("ratio456data");
+    ratio456data->Add(fHistPtITSMI5InAcc);
+    ratio456data->Add(fHistPtITSMI4InAcc);
+
+    TH1F *ratio456MC = (TH1F *)fHistPtITSMI6InAccMC->Clone("ratio456MC");
+    ratio456MC->Add(fHistPtITSMI5InAccMC);
+    ratio456MC->Add(fHistPtITSMI4InAccMC);
+
+    TH1F *ratio456 = new TH1F("ratio456","ratio between MC and data TPCITS efficiency, tracks with>=4 hit; p_{t} [GeV/c]; MC eff/DATA eff",nPtBins,xPtBins);
+
+    TH1F *ratio2any = new TH1F("ratio2any","ratio between MC and data TPCITS efficiency, tracks with 2SPD+any hit; p_{t} [GeV/c]; MC eff/DATA eff",nPtBins,xPtBins);
+
+    
+    
+    for(Int_t cc=0;cc<nPtBins;cc++){                // 4-5-6 clusters
+        num[cc]=ratio456MC->GetBinContent(cc);
+        ernum[cc]=ratio456MC->GetBinError(cc);
+        denom[cc]=ratio456data->GetBinContent(cc);
+        erdenom[cc]=ratio456data->GetBinError(cc);
+        if(denom[cc] > 0.){
+            ratio[cc]=num[cc]/denom[cc];
+            erratio[cc]=num[cc]/denom[cc] * TMath::Sqrt((ernum[cc]/num[cc])*(ernum[cc]/num[cc])+(erdenom[cc]/denom[cc])*(erdenom[cc]/denom[cc]));
+//            erratio[cc]=TMath::Sqrt(TMath::Abs(num[cc]*(1-num[cc]/denom[cc])))/denom[cc];
+            if(erratio[cc] == 0.) erratio[cc]=0.01;
+        }
+        else{
+            ratio[cc]=0.0;
+            erratio[cc]=0.01;
+        }
+        ratio456->SetBinContent(cc+1,ratio[cc]);
+        ratio456->SetBinError(cc+1,erratio[cc]);
+    }
+    
+    for(Int_t cc=0;cc<nPtBins;cc++){            // 2 SPD + any
+        num[cc]=fHistPtITSMISPDInAccMC->GetBinContent(cc);
+        ernum[cc]=fHistPtITSMISPDInAccMC->GetBinError(cc);
+        denom[cc]=fHistPtITSMISPDInAcc->GetBinContent(cc);
+        erdenom[cc]=fHistPtITSMISPDInAcc->GetBinError(cc);
+        if(denom[cc] > 0.){
+            ratio[cc]=num[cc]/denom[cc];
+            erratio[cc]=num[cc]/denom[cc] * TMath::Sqrt((ernum[cc]/num[cc])*(ernum[cc]/num[cc])+(erdenom[cc]/denom[cc])*(erdenom[cc]/denom[cc]));
+//            erratio[cc]=TMath::Sqrt(TMath::Abs(num[cc]*(1-num[cc]/denom[cc])))/denom[cc];
+            if(erratio[cc] == 0.) erratio[cc]=0.01;
+        }
+        else{
+            ratio[cc]=0.0;
+            erratio[cc]=0.01;
+        }
+        ratio2any->SetBinContent(cc+1,ratio[cc]);
+        ratio2any->SetBinError(cc+1,erratio[cc]);
+    }
+    
+    // TOFITS ME ratios
+
+    TH1F *ratio456dataTOF = (TH1F *)fHistPtITSMI6InAccTOF->Clone("ratio456dataTOF");
+    ratio456dataTOF->Add(fHistPtITSMI5InAccTOF);
+    ratio456dataTOF->Add(fHistPtITSMI4InAccTOF);
+    
+    TH1F *ratio456MCTOF = (TH1F *)fHistPtITSMI6InAccTOFMC->Clone("ratio456MCTOF");
+    ratio456MCTOF->Add(fHistPtITSMI5InAccTOFMC);
+    ratio456MCTOF->Add(fHistPtITSMI4InAccTOFMC);
+    
+    TH1F *ratio456TOF = new TH1F("ratio456","ratio of MC and data TOFITS efficiency, tracks with>=4 hit; p_{t} [GeV/c]; MC eff/DATA eff",nPtBins,xPtBins);
+
+    TH1F *ratio2anyTOF = new TH1F("ratio2any","ratio of MC and data TOFITS efficiency, tracks with 2SPD+any hit; p_{t} [GeV/c]; MC eff/DATA eff",nPtBins,xPtBins);
+    
+
+    for(Int_t cc=0;cc<nPtBins;cc++){                // 4-5-6 clusters
+        num[cc]=ratio456MCTOF->GetBinContent(cc);
+        ernum[cc]=ratio456MCTOF->GetBinError(cc);
+        denom[cc]=ratio456dataTOF->GetBinContent(cc);
+        erdenom[cc]=ratio456dataTOF->GetBinError(cc);
+        if(denom[cc] > 0.){
+            ratio[cc]=num[cc]/denom[cc];
+            erratio[cc]=num[cc]/denom[cc] * TMath::Sqrt((ernum[cc]/num[cc])*(ernum[cc]/num[cc])+(erdenom[cc]/denom[cc])*(erdenom[cc]/denom[cc]));
+//            erratio[cc]=TMath::Sqrt(TMath::Abs(num[cc]*(1-num[cc]/denom[cc])))/denom[cc];
+            if(erratio[cc] == 0.0) erratio[cc]=0.01;
+        }
+        else{
+            ratio[cc]=0.0;
+            erratio[cc]=0.01;
+        }
+        ratio456TOF->SetBinContent(cc+1,ratio[cc]);
+        ratio456TOF->SetBinError(cc+1,erratio[cc]);
+    }
+    
+    for(Int_t cc=0;cc<nPtBins;cc++){                // 2 SPD + any
+        num[cc]=fHistPtITSMISPDInAccTOFMC->GetBinContent(cc);
+        ernum[cc]=fHistPtITSMISPDInAccTOFMC->GetBinError(cc);
+        denom[cc]=fHistPtITSMISPDInAccTOF->GetBinContent(cc);
+        erdenom[cc]=fHistPtITSMISPDInAccTOF->GetBinError(cc);
+        if(denom[cc] > 0.){
+            ratio[cc]=num[cc]/denom[cc];
+            erratio[cc]=num[cc]/denom[cc] * TMath::Sqrt((ernum[cc]/num[cc])*(ernum[cc]/num[cc])+(erdenom[cc]/denom[cc])*(erdenom[cc]/denom[cc]));
+//            erratio[cc]=TMath::Sqrt(TMath::Abs(num[cc]*(1-num[cc]/denom[cc])))/denom[cc];
+            if(erratio[cc] == 0.0) erratio[cc]=0.01;
+        }
+        else{
+            ratio[cc]=0.0;
+            erratio[cc]=0.01;
+        }
+        ratio2anyTOF->SetBinContent(cc+1,ratio[cc]);
+        ratio2anyTOF->SetBinError(cc+1,erratio[cc]);
+    }
+
+    ctitle = GetRunNumber()+"ITS-TPC matchMC/matchDATA ratio";
+    TCanvas* cMatchRatio = new TCanvas("cMatchRatio",ctitle,10,10,1000,1000);
+    cMatchRatio->Divide(1,2);
+    cMatchRatio->cd(1);
+    ratio2any->SetLineColor(2);
+    ratio2any->SetMaximum(2.0);
+    ratio2any->SetMinimum(0);
+    ratio2any->GetXaxis()->SetRangeUser(0.1,30);
+    ratio2any->Draw();
+    TLine *l1 = new TLine(0.,1.,30.,1.);
+    l1->SetLineColor(kGreen+1);
+    l1->Draw();
+    cMatchRatio->cd(2);
+    ratio456->SetLineColor(4);
+    ratio456->SetMaximum(2.0);
+    ratio456->SetMinimum(0);
+    ratio456->GetXaxis()->SetRangeUser(0.1,30);
+    ratio456->Draw();
+    TLine *l1b = new TLine(0.,1.,30.,1.);
+    l1b->SetLineColor(kOrange+1);
+    l1b->Draw();
+    cMatchRatio->Update();
+    cMatchRatio->SaveAs("MatchRatio_TPCITS.pdf");
+    pdfFileNames+=" MatchRatio_TPCITS.pdf";
+
+    ctitle = GetRunNumber()+"TOF-TPC matchMC/matchDATA ratio";
+    TCanvas* cMatchRatioTOF = new TCanvas("cMatchRatioTOF",ctitle,10,10,1000,1000);
+    cMatchRatioTOF->Divide(1,2);
+    cMatchRatioTOF->cd(1);
+    ratio2anyTOF->SetLineColor(2);
+    ratio2anyTOF->SetMaximum(2.0);
+    ratio2anyTOF->SetMinimum(0);
+    ratio2anyTOF->GetXaxis()->SetRangeUser(0.1,30);
+    ratio2anyTOF->Draw();
+    l1->Draw();
+    cMatchRatioTOF->cd(2);
+    ratio456TOF->SetLineColor(4);
+    ratio456TOF->SetMaximum(2.0);
+    ratio456TOF->SetMinimum(0);
+    ratio456TOF->GetXaxis()->SetRangeUser(0.1,30);
+    ratio456TOF->Draw();
+    l1b->Draw();
+    cMatchRatioTOF->Update();
+    cMatchRatioTOF->SaveAs("MatchRatio_TOFITS.pdf");
+    pdfFileNames+=" MatchRatio_TOFITS.pdf";
+
     return kTRUE;
 }
 
