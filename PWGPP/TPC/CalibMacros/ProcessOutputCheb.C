@@ -2,7 +2,8 @@ void PrintProcStatus(int status) {
   ::Info("ProcessOutput","processing ends with status %d",status);
 }
 
-Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, const char* ocdbStorage, Bool_t corr=kTRUE) {
+Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, const char* ocdbStorage, 
+			 Bool_t corr=kTRUE, Bool_t dist=kTRUE) {
 
   // macro that process a list of files (xml or txt) to produce then the
   // OCDB entry for the TPC SP Distortion calibration; inspired by
@@ -82,8 +83,10 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   TObject *nextfile;
   TString snextfile;
   TIter next(listoffiles);   
-  TObjArray* a = new TObjArray();
-  a->SetOwner(kTRUE);
+  TObjArray* acorr = new TObjArray();
+  TObjArray* adist = new TObjArray();
+  acorr->SetOwner(kTRUE);
+  adist->SetOwner(kTRUE);
 
 
   Int_t lowStatJobs = 0;
@@ -108,13 +111,25 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     else {
       ::Info("ProcessOutput","stat is OK :%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
     }
-    AliTPCChebCorr* c = corr ? dcalibRes->GetChebCorrObject() : dcalibRes->GetChebDistObject();
-    if (!c) {
-      ::Error("ProcessOutput","Did not find %s Cheb.parm in %s",corr ? "Correction":"Distortion" ,snextfile.Data());
-      PrintProcStatus(kStatusFail);
-      exit(1);
+    if (corr) { 
+      AliTPCChebCorr* c = dcalibRes->GetChebCorrObject();
+      if (!c) {
+	::Error("ProcessOutput","Did not find %s Cheb.parm in %s",corr ? "Correction":"Distortion" ,snextfile.Data());
+	PrintProcStatus(kStatusFail);
+	exit(1);
+      }
+      acorr->Add(c);
     }
-    a->Add(c);
+    if (dist) { // 
+      AliTPCChebDist* d = dcalibRes->GetChebDistObject();
+      if (!d) {
+	::Error("ProcessOutput","Did not find %s Cheb.parm in %s",corr ? "Correction":"Distortion" ,snextfile.Data());
+	//PrintProcStatus(kStatusFail);
+	//exit(1);
+      }
+      else adist->Add(d);
+    }
+    //
     nJobs++;
   }
   if (lowStatJobs) {
@@ -122,11 +137,22 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     PrintProcStatus(kStatusNoUpdate);
   }
   else {
-    a->Print();
-    CreateCorrMapObjTime(a, startRun, endRun, ocdbStorage);
+    if (corr) {
+      printf("Corrections\n");
+      acorr->Print();
+      CreateCorrMapObjTime(acorr, startRun, endRun, ocdbStorage);
+    }
+    if (dist && adist->GetEntries()) {
+      printf("Distortions\n");
+      adist->Print();
+      CreateCorrMapObjTime(adist, startRun, endRun, ocdbStorage);
+    }
     PrintProcStatus(kStatusOK);
   }
-  delete a;
+  acorr->SetOwner(kFALSE);
+  adist->SetOwner(kFALSE);
+  delete acorr;
+  delete adist;
   delete listoffiles;
   
   return kTRUE;
