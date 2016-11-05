@@ -55,6 +55,9 @@ extractEnvVars()
     # number of tracks for closure test, hardly will be done of the grid
     export distNTracksClosureTest=${ALIEN_JDL_DISTNTRACKSCLOSURETEST-$distNTracksClosureTest}
     #
+    # extract correction map for MC (must be undefined or "true" or "false"
+    export distCreateDistortion=${ALIEN_JDL_DISTCREATEDISTORTION-$distCreateDistortion}
+    
     echo ""
     echo "Listing all env.vars"
     printenv
