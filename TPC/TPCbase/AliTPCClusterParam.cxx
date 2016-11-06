@@ -934,6 +934,7 @@ Float_t  AliTPCClusterParam::GetError0Par(Int_t dim, Int_t type, Float_t z, Floa
   value += fParamS0Par[dim][type][4]*angle*angle*angle*angle;
   value += fParamS0Par[dim][type][5]*z*angle*angle;
   value  = TMath::Sqrt(TMath::Abs(value));
+  if (value<0.01) value = 0.01;
   return value;
 }
 
