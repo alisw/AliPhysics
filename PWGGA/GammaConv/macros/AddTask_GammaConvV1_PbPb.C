@@ -1706,7 +1706,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
   } else if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0){
     TObjString *Header1 = new TObjString("BOX");
     HeaderList->Add(Header1);
-  } else if (periodName.CompareTo("LHC16h4b")==0 || periodName.CompareTo("LHC16h4b2")==0){
+  } else if (periodName.CompareTo("LHC16h4")==0){
     if (headerSelectionInt == 1){ 
       TObjString *Header1 = new TObjString("Injector (pi0)_1");
       HeaderList->Add(Header1);
