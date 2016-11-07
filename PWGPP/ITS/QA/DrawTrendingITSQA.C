@@ -2053,7 +2053,17 @@ if(hMeanVx->GetEntries()>0){
     hMeanVx->GetXaxis()->SetTitle("run number");
     hMeanVx->Draw();
     if(hMeanVxSPD->GetBinContent(1)>0)hMeanVxSPD->Draw("same");
-        cVertexDisto->cd(2);
+    TLegend* legVtx=new TLegend(0.70,0.83,1.00,0.93);
+    legVtx->SetFillColor(kWhite);
+    legVtx->SetFillStyle(1001);
+    TLegendEntry* entVtx;
+    entVtx=legVtx->AddEntry(hMeanVx,"Tracks vertex","PL");
+    entVtx->SetTextColor(hMeanVx->GetMarkerColor());
+    entVtx=legVtx->AddEntry(hMeanVxSPD,"Tracklets vertex","PL");
+    entVtx->SetTextColor(hMeanVxSPD->GetMarkerColor());
+    legVtx->Draw();
+    
+    cVertexDisto->cd(2);
         if(hMeanVySPD->GetEntries()>0){  // pp runs
             hMeanVy->SetMinimum(0.32);
             hMeanVy->SetMaximum(0.38);
@@ -2066,34 +2076,43 @@ if(hMeanVx->GetEntries()>0){
     hMeanVy->GetXaxis()->SetTitle("run number");
     hMeanVy->Draw();
     if(hMeanVySPD->GetBinContent(1)>0)hMeanVySPD->Draw("same");
-        cVertexDisto->cd(3);
+    legVtx->Draw();
+
+    cVertexDisto->cd(3);
         //   hVz->SetMinimum(-1.);
         //   hVz->SetMaximum(1.);
         hMeanVz->GetYaxis()->SetTitle("Vertex Z coordinate");
         hMeanVz->GetXaxis()->SetTitle("run number");
         hMeanVz->Draw();
         if(hMeanVzSPD->GetBinContent(1)>0)hMeanVzSPD->Draw("same");
-        cVertexDisto->cd(4);
+    legVtx->Draw();
+
+    cVertexDisto->cd(4);
         hSigmaVx->SetMinimum(0.);
         hSigmaVx->SetMaximum(0.1);
         hSigmaVx->GetYaxis()->SetTitle("sigma on x coordinate");
         hSigmaVx->GetXaxis()->SetTitle("run number");
         hSigmaVx->Draw();
         if(hSigmaVxSPD->GetBinContent(1)>0)hSigmaVxSPD->Draw("same");
-        cVertexDisto->cd(5);
+    legVtx->Draw();
+
+    cVertexDisto->cd(5);
         hSigmaVy->SetMinimum(0.);
         hSigmaVy->SetMaximum(0.2);
         hSigmaVy->GetYaxis()->SetTitle("sigma on y coordinate");
         hSigmaVy->GetXaxis()->SetTitle("run number");
         hSigmaVy->Draw();
         if(hSigmaVySPD->GetBinContent(1)>0)hSigmaVySPD->Draw("same");
-        cVertexDisto->cd(6);
+    legVtx->Draw();
+
+    cVertexDisto->cd(6);
         //   hSigmaVz->SetMinimum(6.);
         //   hSigmaVz->SetMaximum(10.);
         hSigmaVz->GetYaxis()->SetTitle("sigma on z coordinate");
         hSigmaVz->GetXaxis()->SetTitle("run number");
         hSigmaVz->Draw();
         if(hSigmaVzSPD->GetBinContent(1)>0)hSigmaVzSPD->Draw("same");
+    legVtx->Draw();
         cVertexDisto->SaveAs("Vertex_trend.pdf");
         //    pdfFileNames+=" Vertex_trend.pdf";
         }
@@ -2320,6 +2339,15 @@ if(histoFracDead3->GetEntries()>0){
     tf4->SetNDC();
     tf4->SetTextColor(kAzure+1);
     tf4->Draw();
+    TLegend* legSDD=new TLegend(0.90,0.85,0.95,1.00);
+    legSDD->SetFillColor(kWhite);
+    legSDD->SetFillStyle(1001);
+    TLegendEntry* entSDD;
+    entSDD=legSDD->AddEntry(histoFracDead3,"Layer 3","PL");
+    entSDD->SetTextColor(histoFracDead3->GetMarkerColor());
+    entSDD=legSDD->AddEntry(histoFracDead4,"Layer 4","PL");
+    entSDD->SetTextColor(histoFracDead4->GetMarkerColor());
+    legSDD->Draw();
     
     cfrac->cd(2);
     histoFlagON3->SetMarkerStyle(20);
@@ -2976,9 +3004,9 @@ TCanvas* cpu;
         histoFracSPD1->Draw("p");
         histoFracSPD2->Draw("same,p");
         
-        TLegend* lSPD=new TLegend(0.9,0.8,1,1);
-        lSPD->AddEntry(histoFracSPD1,"Frac. SPD1 ON","l");
-        lSPD->AddEntry(histoFracSPD2,"Frac. SPD2 ON","l");
+        TLegend* lSPD=new TLegend(0.8,0.8,1,1);
+        lSPD->AddEntry(histoFracSPD1,"Frac. SPD1 ON","Pl");
+        lSPD->AddEntry(histoFracSPD2,"Frac. SPD2 ON","Pl");
         lSPD->Draw();
         TLatex* tSPD=new TLatex(0.2,0.3,"Fraction of SPD half staves ON");
         tSPD->SetNDC();
@@ -3007,9 +3035,9 @@ TCanvas* cpu;
         tf4a_4->SetNDC();
         tf4a_4->SetTextColor(1);
         tf4a_4->Draw();
-        TLegend* lSPD2=new TLegend(0.9,0.8,1,1);
-        lSPD2->AddEntry(histoFlagON1,"Status SPD1 ON","l");
-        lSPD2->AddEntry(histoFlagON2,"Status SPD2 ON","l");
+        TLegend* lSPD2=new TLegend(0.8,0.8,1,1);
+        lSPD2->AddEntry(histoFlagON1,"Status SPD1 ON","Pl");
+        lSPD2->AddEntry(histoFlagON2,"Status SPD2 ON","Pl");
         lSPD2->Draw();
 
         
