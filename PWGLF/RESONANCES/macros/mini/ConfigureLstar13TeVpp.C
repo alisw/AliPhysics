@@ -208,7 +208,7 @@ Bool_t ConfigureLstar13TeVpp
     // pair cuts
     outm->SetPairCuts(cutsPair);
     // binnings
-    outm->AddAxis(imID, 300, 1.4, 1.7);
+    outm->AddAxis(imID, 800, 1.4, 2.2);
 
     outm->AddAxis(ptID, 100, 0.0, 10.0); //default use mother pt
     //outm->AddAxis(OpAn, 20, -10.0, 10.0);
