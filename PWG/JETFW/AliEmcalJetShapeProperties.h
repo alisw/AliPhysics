@@ -153,16 +153,6 @@ public:
   Double_t          GetFirstOrderSubtractedOpeningAngle_kt()            const { return fJetShapeOpeningAnglektFirstSub                   ; }
   Double_t          GetSecondOrderSubtractedOpeningAngle_kt()           const { return fJetShapeOpeningAnglektSecondSub                  ; }
 
-  //OpeningAngle with SoftDrop Cambridge Aachen
-  void              SetFirstDerivativeOpeningAngleSD_CA(Double_t d)             { fJetShapeOpeningAngleSDCAFirstDer = d                      ; }
-  void              SetSecondDerivativeOpeningAngleSD_CA(Double_t d)            { fJetShapeOpeningAngleSDCASecondDer = d                     ; }
-  void              SetFirstOrderSubtractedOpeningAngleSD_CA(Double_t d)        { fJetShapeOpeningAngleSDCAFirstSub = d                      ; }
-  void              SetSecondOrderSubtractedOpeningAngleSD_CA(Double_t d)       { fJetShapeOpeningAngleSDCASecondSub = d                     ; }
-  Double_t          GetFirstDerivativeOpeningAngleSD_CA()                 const { return fJetShapeOpeningAngleSDCAFirstDer                   ; }
-  Double_t          GetSecondDerivativeOpeningAngleSD_CA()                const { return fJetShapeOpeningAngleSDCASecondDer                  ; }
-  Double_t          GetFirstOrderSubtractedOpeningAngleSD_CA()            const { return fJetShapeOpeningAngleSDCAFirstSub                   ; }
-  Double_t          GetSecondOrderSubtractedOpeningAngleSD_CA()           const { return fJetShapeOpeningAngleSDCASecondSub                  ; }
-
   //SoftDrop
   void              SetSoftDropZg(Double_t d)                                 { fSoftDropZg = d                      ; }
   void              SetSoftDropdR(Double_t d)                                 { fSoftDropdR = d                      ; }
@@ -232,11 +222,6 @@ protected:
   Double_t          fJetShapeOpeningAnglektSecondDer;        //!<!   result from shape derivatives for jet OpeningAngle_kt: 2nd derivative
   Double_t          fJetShapeOpeningAnglektFirstSub;         //!<!   result from shape derivatives for jet OpeningAngle_kt: 1st order subtracted
   Double_t          fJetShapeOpeningAnglektSecondSub;        //!<!   result from shape derivatives for jet OpeningAngle_kt: 2nd order subtracted
-
-  Double_t          fJetShapeOpeningAngleSDCAFirstDer;         //!<!   result from shape derivatives for jet OpeningAngle_SDCA: 1st derivative (Soft drop Cambridge Aachen)
-  Double_t          fJetShapeOpeningAngleSDCASecondDer;        //!<!   result from shape derivatives for jet OpeningAngle_SDCA: 2nd derivative (Soft drop Cambridge Aachen)
-  Double_t          fJetShapeOpeningAngleSDCAFirstSub;         //!<!   result from shape derivatives for jet OpeningAngle_SDCA: 1st order subtracted (Soft drop Cambridge Aachen)
-  Double_t          fJetShapeOpeningAngleSDCASecondSub;        //!<!   result from shape derivatives for jet OpeningAngle_SDCA: 2nd order subtracted (Soft drop Cambridge Aachen)
 
   Double_t          fSoftDropZg;                             //!<!   SoftDrop groomed momentum fraction
   Double_t          fSoftDropdR;                             //!<!   SoftDrop deltaR
