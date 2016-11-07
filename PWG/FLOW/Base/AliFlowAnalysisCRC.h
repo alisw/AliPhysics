@@ -1678,7 +1678,7 @@ private:
   const static Int_t fkNHistv1eta = 17;
   TProfile *fFlowSPZDCv1etaPro[fkNHistv1eta]; //!
   TH1D *fFlowSPZDCv1etaHist[fkNHistv1eta]; //!
-  const static Int_t fkNHistQVecCorrv1eta = 6;
+  const static Int_t fkNHistQVecCorrv1eta = 10;
   TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
   TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
   
