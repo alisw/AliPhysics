@@ -20052,6 +20052,10 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
       fCRCQVecEtaHist[fRunBin][3]->Fill(fCentralityEBE,etab,QetPIm/QetPM,fCenWeightEbE);
       fCRCQVecEtaHist[fRunBin][4]->Fill(fCentralityEBE,etab,QetNRe/QetNM,fCenWeightEbE);
       fCRCQVecEtaHist[fRunBin][5]->Fill(fCentralityEBE,etab,QetNIm/QetNM,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][6]->Fill(fCentralityEBE,etab,ZARe,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][7]->Fill(fCentralityEBE,etab,ZAIm,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][8]->Fill(fCentralityEBE,etab,ZCRe,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][9]->Fill(fCentralityEBE,etab,ZCIm,fCenWeightEbE);
     }
   }
   
