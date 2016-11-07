@@ -624,11 +624,13 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
             myfile <<"MESSAGE: Vertex QA TList found" << endl;
             FillVertexBranches(VertxList);
             myfile <<"MESSAGE: Vertex branches filled" << endl;
+            cout <<"MESSAGE: Vertex branches filled" << endl;
         }
     }
     
    ///////////////////////  SSD Part
     TDirectoryFile * SSDQAdir=(TDirectoryFile*)fin->Get("PWGPPdEdxSSDQA");
+    if(!SSDQAdir) SSDQAdir=(TDirectoryFile*)fin->Get("PWG1dEdxSSDQA");
     if (SSDQAdir) {
         Printf("MESSAGE: SSD QA directory found in input file");
         myfile <<"MESSAGE: SSD QA directory found in input file" << endl;
@@ -652,11 +654,11 @@ Int_t MakeTrendingITSQA(TString qafilename,       // full path of the QA output;
         TList * SDDList=(TList*)SDDQAdir->Get("coutputRP");
         if(SDDList){
             printf("MESSAGE: SDD QA directory found in input file.\n");
-            myfile <<"MESSAGE: SSD QA TList found" << endl;
-            cout <<"MESSAGE: SSD QA TList found" << endl;
+            myfile <<"MESSAGE: SDD QA TList found" << endl;
+            cout <<"MESSAGE: SDD QA TList found" << endl;
             FillSDDBranches(SDDList);
-            myfile <<"MESSAGE: SSD branches filled" << endl;
-            cout <<"MESSAGE: SSD branches filled" << endl;
+            myfile <<"MESSAGE: SDD branches filled" << endl;
+            cout <<"MESSAGE: SDD branches filled" << endl;
         }
     }
     
@@ -962,7 +964,7 @@ void FillSSDBranches(TList * SSDList){
         TH1F* bad_n=(TH1F*)SSDList->FindObject("Bad-n-strips");
         // find number of merged subjobs
         Int_t max_p=0;
-        Int_t bad_n5=0, bad_p5=0, bad_n6=0, bad_p6=0;
+        Float_t bad_n5=0., bad_p5=0., bad_n6=0., bad_p6=0.;
         
         if(bad_p&&bad_n){
             Float_t n_subjobs=0;
@@ -989,9 +991,13 @@ void FillSSDBranches(TList * SSDList){
         if(MPVL5>80. && MPVL5<85.) FlagdEdx5=1.; else FlagdEdx5=0.;
         if(MPVL6>80. && MPVL6<85.) FlagdEdx6=1.; else FlagdEdx6=0.;
         if(FracBadn5 < 0.2) FlagSSD1n=1.0; else FlagSSD1n=0.;
+        if(FracBadn5==-999.)FlagSSD1n=-999.;
         if(FracBadp5 < 0.2) FlagSSD1p=1.0; else FlagSSD1p=0.;
+        if(FracBadp5==-999.)FlagSSD1p=-999.;
         if(FracBadn6 < 0.2) FlagSSD2n=1.0; else FlagSSD2n=0.;
+        if(FracBadn6==-999.)FlagSSD2n=-999.;
         if(FracBadp6 < 0.2) FlagSSD2p=1.0; else FlagSSD2p=0.;
+        if(FracBadp6==-999.)FlagSSD2p=-999.;
         
     } // check on QAcharge and QAchargeRatio
 
@@ -1209,8 +1215,8 @@ void FillSPDBranches(TList * SPDList){
             FracSPD2=(Float_t)nHSsOuter/80.;
             errFracSPD2=TMath::Sqrt(nHSsOuter)/80.;
             
-            if(FracSPD1 > 0.75) FlagSPD1=1.; else FracSPD1=0.;
-            if(FracSPD2 > 0.90) FlagSPD2=1.; else FracSPD2=0.;
+            if(FracSPD1 > 0.75) FlagSPD1=1.; else FlagSPD1=0.;
+            if(FracSPD2 > 0.90) FlagSPD2=1.; else FlagSPD2=0.;
         }
     }
 
