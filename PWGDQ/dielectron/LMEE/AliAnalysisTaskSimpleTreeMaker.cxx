@@ -23,6 +23,8 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 
+#include "TSystem.h"
+#include <string>
 #include "AliAnalysisTaskSimpleTreeMaker.h"
 
 /*************** Tree Maker Class **********************
@@ -36,7 +38,7 @@
 
 ClassImp(AliAnalysisTaskSimpleTreeMaker)
 
-Int_t numEvents = 0;
+Int_t eventNum = 0;
 
 AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
   AliAnalysisTaskSE(),
@@ -48,7 +50,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
   fESDtrackCuts(0),
   fPIDResponse(0),
   fCentralityPercentileMin(0),
-  fCentralityPercentileMax(100), 
+  fCentralityPercentileMax(80), 
   fPtMin(0.2),
   fPtMax(10),
   fEtaMin(-0.8),
@@ -65,7 +67,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
   fPIDcutTOF(kFALSE),
   fPionPIDcutTPC(kFALSE),
   isIonColl(kFALSE),
-  fIsMC(kTRUE)
+  fIsMC(kTRUE),
+  gridPID(-1)
 {
 
 }
@@ -80,7 +83,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
   fESDtrackCuts(0),
   fPIDResponse(0),
   fCentralityPercentileMin(0),
-  fCentralityPercentileMax(100), 
+  fCentralityPercentileMax(80), 
   fPtMin(0.2),
   fPtMax(10),
   fEtaMin(-0.8),
@@ -97,7 +100,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
   fPIDcutTOF(kFALSE),
   fPionPIDcutTPC(kFALSE),
   isIonColl(kFALSE),
-  fIsMC(kTRUE)
+  fIsMC(kTRUE),
+  gridPID(-1)
 {
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
   fESDtrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
@@ -129,10 +133,17 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
      
   fPIDResponse = inputHandler->GetPIDResponse();
   if (!fPIDResponse){
-	  return;} 
+    AliFatal("This task needs the PID response attached to the inputHandler");
+	  return;
+  } 
 
   fStream = new TTreeStream("tracks");
   fTree   = (TTree*)fStream->GetTree();
+
+  //Get grid PID
+  const char* gridIDchar = gSystem->Getenv("ALIEN_PROC_ID");
+  std::string str(gridIDchar);
+  SetGridPID(str);
    
   fQAhist = new TH1F("h1", "Event and track QA", 6, 0, 1);
   PostData(1, fTree);
@@ -151,16 +162,17 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     return;
   } 
   fQAhist->Fill("Events_ESDcheck",1);
-  numEvents += 1;
 
   // Process also MC truth  
   mcEvent = MCEvent();
-  if( fIsMC && mcEvent ){
-    AliError("Could not retrieve MC event");
-    return;
+  if( fIsMC ){
+    if( !mcEvent ){
+      AliError("Could not retrieve MC event");
+      return;
+    }
     fQAhist->Fill("Events_MCcheck",1);
   }
-  
+  eventNum += 1;
 
   // check event cuts
   if( IsEventAccepted(esdEvent) == 0){ 
@@ -171,7 +183,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
   // PID Response task active?
   fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
 
-  if (!fPIDResponse){ AliFatal("This Task needs the PID response attached to the inputHandler"); }
+  if (!fPIDResponse){ AliFatal("This task needs the PID response attached to the inputHandler"); }
   
   AliESDVertex* vertex = (AliESDVertex*)esdEvent->GetPrimaryVertex();
 
@@ -200,7 +212,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
 
   Int_t eventTracks = esdEvent->GetNumberOfTracks();
   Int_t runNumber = esdEvent->GetRunNumber();
-  Int_t numTracks = 0;
   
   //Loop over tracks for event
   for (Int_t iTrack = 0; iTrack < eventTracks; iTrack++){ 
@@ -241,7 +252,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     }
     
     fQAhist->Fill("Tracks_PIDcuts",1); 
-    numTracks += 1;
 
     //Get rest of nSigma values for pion and kaon
     Double_t PnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion);
@@ -349,7 +359,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     "pdg="        << iPdg <<
     "pdgMother="  << iPdgMother <<
     "runNumber="  << runNumber << 
-    "numEvents="  << numEvents <<
+    "eventNum="   << eventNum <<
+    "gridPID="    << gridPID <<
     "\n";
   }
 
