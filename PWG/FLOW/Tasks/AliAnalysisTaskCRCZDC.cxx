@@ -187,7 +187,8 @@ fStack(0x0),
 fCutTPC(kFALSE),
 fCenDis(0x0),
 fMultSelection(0x0),
-fCentrality(0x0),
+fPileUpCount(0x0),
+fPileUpMultSelCount(0x0),
 fTowerEqList(NULL),
 fSpectraMCList(NULL),
 fCachedRunNum(0)
@@ -312,7 +313,8 @@ fStack(0x0),
 fCutTPC(kFALSE),
 fCenDis(0x0),
 fMultSelection(0x0),
-fCentrality(0x0),
+fPileUpCount(0x0),
+fPileUpMultSelCount(0x0),
 fTowerEqList(NULL),
 fCachedRunNum(0)
 {
@@ -445,6 +447,25 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   fCenDis = new TH1F("fCenDis", "fCenDis", 100, 0., 100.);
   fOutput->Add(fCenDis);
+  fPileUpCount = new TH1F("fPileUpCount", "fPileUpCount", 10, 0., 10.);
+  fPileUpCount->GetXaxis()->SetBinLabel(1,"plpMV");
+  fPileUpCount->GetXaxis()->SetBinLabel(2,"fromSPD");
+  fPileUpCount->GetXaxis()->SetBinLabel(3,"RefMultiplicityComb08");
+  fPileUpCount->GetXaxis()->SetBinLabel(4,"IncompleteDAQ");
+  fPileUpCount->GetXaxis()->SetBinLabel(5,"abs(V0M-CL1)>7.5");
+  fPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
+  fPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
+  fOutput->Add(fPileUpCount);
+  fPileUpMultSelCount = new TH1F("fPileUpMultSelCount", "fPileUpMultSelCount", 10, 0., 10.);
+  fPileUpMultSelCount->GetXaxis()->SetBinLabel(1,"IsNotPileup");
+  fPileUpMultSelCount->GetXaxis()->SetBinLabel(2,"IsNotPileupMV");
+  fPileUpMultSelCount->GetXaxis()->SetBinLabel(3,"IsNotPileupInMultBins");
+  fPileUpMultSelCount->GetXaxis()->SetBinLabel(4,"InconsistentVertices");
+  fPileUpMultSelCount->GetXaxis()->SetBinLabel(5,"TrackletVsCluster");
+  fPileUpMultSelCount->GetXaxis()->SetBinLabel(6,"AsymmetricInVZERO");
+  fPileUpMultSelCount->GetXaxis()->SetBinLabel(7,"IncompleteDAQ");
+  fPileUpMultSelCount->GetXaxis()->SetBinLabel(8,"GoodVertex2016");
+  fOutput->Add(fPileUpMultSelCount);
   for(Int_t c=0; c<2; c++) {
     for(Int_t i=0; i<5; i++) {
       fTowerGainEq[c][i] = new TH1D();
@@ -651,17 +672,71 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
        if(fDataSet!=k2015) {
          if (fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
        } else {
+         // pileup from AliMultSelection
+         if(!fMultSelection->GetThisEventIsNotPileup()) fPileUpMultSelCount->Fill(0.5);
+         if(!fMultSelection->GetThisEventIsNotPileupMV()) fPileUpMultSelCount->Fill(1.5);
+         if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) fPileUpMultSelCount->Fill(2.5);
+         if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) fPileUpMultSelCount->Fill(3.5);
+         if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) fPileUpMultSelCount->Fill(4.5);
+         if(!fMultSelection->GetThisEventIsNotAsymmetricInVZERO()) fPileUpMultSelCount->Fill(5.5);
+         if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) fPileUpMultSelCount->Fill(6.5);
+         if(!fMultSelection->GetThisEventHasGoodVertex2016()) fPileUpMultSelCount->Fill(7.5);
+         
+         Bool_t BisPileup=kFALSE;
+         
          // pile-up a la Dobrin for LHC15o
-         if (plpMV(aod)) return;
-         
+         if (plpMV(aod)) {
+           fPileUpCount->Fill(0.5);
+           BisPileup=kTRUE;
+         }
+       
          Short_t isPileup = aod->IsPileupFromSPD(3);
-         if (isPileup != 0) return;
+         if (isPileup != 0) {
+           fPileUpCount->Fill(1.5);
+           BisPileup=kTRUE;
+         }
          
-         if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) return;
+         if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
+           fPileUpCount->Fill(2.5);
+           BisPileup=kTRUE;
+         }
          
-         if (aod->IsIncompleteDAQ()) return;
+         if (aod->IsIncompleteDAQ())  {
+           fPileUpCount->Fill(3.5);
+           BisPileup=kTRUE;
+         }
          
-         if(fabs(centr-centrCL1)>7.5) return;
+         if(fabs(centr-centrCL1)>7.5)  {
+           fPileUpCount->Fill(4.5);
+           BisPileup=kTRUE;
+         }
+         
+         // check vertex consistency
+         const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
+         const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
+         
+         if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
+           fPileUpCount->Fill(5.5);
+           BisPileup=kTRUE;
+         }
+         
+         double covTrc[6], covSPD[6];
+         vtTrc->GetCovarianceMatrix(covTrc);
+         vtSPD->GetCovarianceMatrix(covSPD);
+         
+         double dz = vtTrc->GetZ() - vtSPD->GetZ();
+         
+         double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+         double errTrc = TMath::Sqrt(covTrc[5]);
+         double nsigTot = dz/errTot;
+         double nsigTrc = dz/errTrc;
+         
+         if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
+           fPileUpCount->Fill(6.5);
+           BisPileup=kTRUE;
+         }
+         
+         if(BisPileup) return;
        }
      }
    }
@@ -701,7 +776,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 //     if (track->TestFilterBit(128)) fPtPhiEtaRbRFB128[RunBin][CenBin]->Fill(track->Pt(),track->Phi(),track->Eta());
 //     if (track->TestFilterBit(768)) fPtPhiEtaRbRFB768[RunBin][CenBin]->Fill(track->Pt(),track->Phi(),track->Eta());
 //   }
-  
+   fCenDis->Fill(centr);
+   
  }
  
   if (fAnalysisType == "MCAOD") {
@@ -1159,7 +1235,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       fhZNCcentroid->Fill(xyZNC[0], xyZNC[1]);
       fhZNAcentroid->Fill(xyZNA[0], xyZNA[1]);
-      fFlowEvent->SetZDC2Qsub(xyZNC,wZNC,xyZNA,wZNA);
+      fFlowEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA);
       
       // ******************************************************************************
       
@@ -1243,7 +1319,7 @@ Double_t AliAnalysisTaskCRCZDC::GetWDist(const AliVVertex* v0, const AliVVertex*
   double cov0[6],cov1[6];
   v0->GetCovarianceMatrix(cov0);
   v1->GetCovarianceMatrix(cov1);
-  
+  vVb(0,0) = cov0[0]+cov1[0];
   vVb(1,1) = cov0[2]+cov1[2];
   vVb(2,2) = cov0[5]+cov1[5];
   vVb(1,0) = vVb(0,1) = cov0[1]+cov1[1];
@@ -1253,7 +1329,6 @@ Double_t AliAnalysisTaskCRCZDC::GetWDist(const AliVVertex* v0, const AliVVertex*
   dist = vVb(0,0)*dx*dx + vVb(1,1)*dy*dy + vVb(2,2)*dz*dz
   +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
   return dist>0 ? TMath::Sqrt(dist) : -1;
-  
 }
 //________________________________________________________________________
 

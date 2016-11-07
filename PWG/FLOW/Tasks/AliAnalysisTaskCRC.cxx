@@ -118,6 +118,7 @@ fFlowQCCenBin(100),
 fFlowQCDeltaEta(0.4),
 fCenBinWidth(10.),
 fDataSet(""),
+fInteractionRate(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
 fCRCZDCCalibList(NULL),
@@ -262,6 +263,7 @@ fFlowQCCenBin(100),
 fFlowQCDeltaEta(0.4),
 fCenBinWidth(10.),
 fDataSet(""),
+fInteractionRate(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
 fCRCZDCCalibList(NULL),
@@ -352,6 +354,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
   if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
+  if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
+  if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   fQC->SetCalculateCRC(fCalculateCRC);
   fQC->SetCalculateCRCPt(fCalculateCRCPt);
   fQC->SetCalculateCME(fCalculateCME);
@@ -525,6 +529,8 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
   if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
   if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
+  if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
+  if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   fQC->SetRunList();
   
   if(fListHistos) {
