@@ -38,7 +38,8 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
                                 Bool_t        enableTriggerOverlapRej       = kFALSE,                           // enable trigger overlap rejection
                                 Float_t       maxFacPtHard                  = 3.,                               // maximum factor between hardest jet and ptHard generated
                                 TString       periodNameV0Reader            = "",
-                                Bool_t        runLightOutput                = kFALSE                            // switch to run light output (only essential histograms for afterburner)
+                                Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
+                                Bool_t        processAODcheckForV0s         = kFALSE                            // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
                           ) {
 
   Int_t isHeavyIon = 1;
@@ -100,7 +101,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
       fCuts->SetIsHeavyIon(isHeavyIon);
       fCuts->SetV0ReaderName(V0ReaderName);
       fCuts->SetLightOutput(runLightOutput);
-      fCuts->SetProcessAODCheck(enableV0findingEffi); // if enableV0findingEffi is kTRUE, also check for V0s to be contained in AliAODs and AliAODGammaConversion.root
+      fCuts->SetProcessAODCheck(processAODcheckForV0s); // if processAODcheckForV0s is kTRUE, also check for V0s to be contained in AliAODs and AliAODGammaConversion.root
       if(fCuts->InitializeCutsFromCutString(cutnumberPhoton.Data())){
         fV0ReaderV1->SetConversionCuts(fCuts);
         fCuts->SetFillCutHistograms("",kTRUE);
