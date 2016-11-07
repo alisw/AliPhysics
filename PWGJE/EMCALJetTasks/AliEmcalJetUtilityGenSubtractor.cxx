@@ -150,7 +150,6 @@ void AliEmcalJetUtilityGenSubtractor::Prepare(AliFJWrapper& fjw)
    fjw.DoGenericSubtractionJet2subjettiness_kt();
    fjw.DoGenericSubtractionJet3subjettiness_kt();
    fjw.DoGenericSubtractionJetOpeningAngle_kt();
-   fjw.DoGenericSubtractionJetOpeningAngleSD_CA();
  }
 }
 
@@ -294,14 +293,6 @@ void AliEmcalJetUtilityGenSubtractor::ProcessJet(AliEmcalJet* jet, Int_t ij, Ali
       jet->GetShapeProperties()->SetSecondDerivativeOpeningAngle_kt(jetOpeningAnglektInfo[ij].second_derivative());
       jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_kt(jetOpeningAnglektInfo[ij].first_order_subtracted());
       jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_kt(jetOpeningAnglektInfo[ij].second_order_subtracted());
-    }
-    std::vector<fastjet::contrib::GenericSubtractorInfo> jetOpeningAngleSDCAInfo = fjw.GetGenSubtractorInfoJetOpeningAngleSD_CA();
-    Int_t nOpeningAngleSD_CA = (Int_t)jetOpeningAngleSDCAInfo.size();
-    if(nOpeningAngleSD_CA > ij && nOpeningAngleSD_CA > 0) {
-      jet->GetShapeProperties()->SetFirstDerivativeOpeningAngleSD_CA(jetOpeningAngleSDCAInfo[ij].first_derivative());
-      jet->GetShapeProperties()->SetSecondDerivativeOpeningAngleSD_CA(jetOpeningAngleSDCAInfo[ij].second_derivative());
-      jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngleSD_CA(jetOpeningAngleSDCAInfo[ij].first_order_subtracted());
-      jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngleSD_CA(jetOpeningAngleSDCAInfo[ij].second_order_subtracted());
     }
   }
 

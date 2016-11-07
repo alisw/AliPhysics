@@ -1557,10 +1557,6 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngle_kt();
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_kt();
     }
-    else if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==2) && (Algorithm==0) && (Beta==1.0) && (Option==3) && (Beta_SD==0) && (ZCut==0.1)){
-      if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtractedOpeningAngleSD_CA();
-      else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngleSD_CA();
-    }
     else{
       AliJetContainer *JetCont = GetJetContainer(JetContNb);
       AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
