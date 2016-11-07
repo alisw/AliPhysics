@@ -13,21 +13,28 @@ Bool_t      useSysInfo          = kFALSE; // use sys info
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
-Int_t       iESDMCLabelAddition= 1;
+Int_t       iMUONCDBConnect    = 0;      // Task to load MUON OCDB objects                       (> 1 = use parfile)
+Int_t       iESDMCLabelAddition= 1;      // Recompute MC labels for MUON                         (> 1 = use parfile)
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
-Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD
-Int_t       iMUONRefit         = 0;      // Refit ESD muon tracks before producing AODs
-Int_t       iMUONPerformance   = 0;      // Task to study the muon performances in MC simulation
-Int_t       iMUONEfficiency    = 0;      // Task to measure the muon efficiency
+Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
+Int_t       iMUONRefit         = 0;      // Refit ESD muon tracks before producing AODs          (> 1 = use parfile)
+Int_t       iMUONRefitVtx      = 0;      // Refit ESD muon tracks at vtx before producing AODs   (> 1 = use parfile)
+Int_t       iMUONQA            = 0;      // run muon QA task on ESDs                             (> 1 = use parfile)
+Int_t       iMUONPerformance   = 1;      // Task to study the muon performances in MC simulation (> 1 = use parfile)
+Int_t       iMUONEfficiency    = 1;      // Task to measure the muon efficiency                  (> 1 = use parfile)
 
-// ### Configuration macros used for each module
+// ### Configuration macros used for each module and OCDB settings
 //==============================================================================
+TString defaultStorage = VAR_OCDB_PATH;
+TString alignStorage = VAR_REC_ALIGNDATA;
+Int_t alignVersion = -1;
+Int_t alignSubVersion = -1;
+TString recoParamStorage = "";
 
 // Temporaries.
-class AliOADBPhysicsSelection;
-AliOADBPhysicsSelection *CreateOADBphysicsSelection();
 void AODmerge();
 void AddAnalysisTasks(Int_t);
+Bool_t LoadAnalysisLibraries();
 TChain *CreateChain();
 
 //______________________________________________________________________________
@@ -37,11 +44,12 @@ void AODtrainsim(Int_t merge=0)
   // merge = 0: production
   // merge = 1: intermediate merging
   // merge = 2: final merging + terminate
+  // merge = 3: terminate only
 
   if (merge) {
     TGrid::Connect("alien://");
     if (!gGrid || !gGrid->IsConnected()) {
-      ::Error("QAtrain", "No grid connection");
+      ::Error("AODtrainsim.C", "No grid connection");
       return;
     }
   }
@@ -64,6 +72,12 @@ void AODtrainsim(Int_t merge=0)
   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", "Production train");
   if (useSysInfo) mgr->SetNSysInfo(100);
 
+  // Load ParFiles
+  if (!LoadAnalysisLibraries()) {
+    ::Error("AODtrainsim.C", "Could not load analysis libraries");
+    return;
+  }
+  
   // Create input handler (input container created automatically)
   // ESD input handler
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
@@ -86,7 +100,7 @@ void AODtrainsim(Int_t merge=0)
 
   AddAnalysisTasks(merge);
   if (merge) {
-    AODmerge();
+    if (merge < 3) AODmerge();
     if (merge > 1) {
       mgr->InitAnalysis();
       mgr->SetGridHandler(new AliAnalysisAlien());
@@ -118,53 +132,105 @@ void AddAnalysisTasks(Int_t merge){
   // Tender and supplies. Needs to be called for every event.
   //
 
+  if (iMUONCDBConnect) {
+    if (iMUONCDBConnect > 1) gROOT->LoadMacro("AddTaskMuonCDBConnect.C");
+    else gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskMuonCDBConnect.C");
+    AliAnalysisTaskMuonCDBConnect *cdbConnect = AddTaskMuonCDBConnect();
+    if (!defaultStorage.IsNull()) cdbConnect->SetDefaultStorage(defaultStorage.Data());
+    if (!alignStorage.IsNull() || alignVersion >= 0 || alignSubVersion >= 0)
+      cdbConnect->SetAlignStorage(alignStorage.Data(), alignVersion, alignSubVersion);
+    if (!recoParamStorage.IsNull()) cdbConnect->SetRecoParamStorage(recoParamStorage.Data());
+    cdbConnect->LoadMagField();
+    cdbConnect->LoadGeometry();
+    cdbConnect->LoadMapping();
+  }
+  
+  UInt_t offlineTriggerMask = 0;
   if (usePhysicsSelection) {
     // Physics selection task
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     mgr->RegisterExtraFile("event_stat.root");
     AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kTRUE);
+    offlineTriggerMask = AliVEvent::kAny;
   }
+  
   // Centrality (only Pb-Pb)
   if (iCollision && useCentrality) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-    AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-    taskCentrality->SelectCollisionCandidates(AliVEvent::kAny);
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+    AliMultSelectionTask *mult = AddTaskMultSelection(kFALSE);
   }
-
+  
+  // track selection
+  AliMuonTrackCuts *trackCuts = 0x0;
+  if (iMUONEfficiency) {
+    trackCuts = new AliMuonTrackCuts("stdCuts", "stdCuts");
+    trackCuts->SetAllowDefaultParams();
+    trackCuts->SetFilterMask(AliMuonTrackCuts::kMuMatchLpt | AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuThetaAbs | AliMuonTrackCuts::kMuPdca);
+    trackCuts->SetIsMC(kTRUE);
+  }
+  
   if (iMUONRefit) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskMuonRefit.C");
+    if (iMUONRefit > 1) gROOT->LoadMacro("AddTaskMuonRefit.C");
+    else gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskMuonRefit.C");
     AliAnalysisTaskMuonRefit* refit = AddTaskMuonRefit(-1., -1., kTRUE, -1., -1.);
-    refit->SetDefaultStorage(VAR_OCDB_PATH);
-    refit->SetAlignStorage(VAR_REC_ALIGNDATA);
+    if (!defaultStorage.IsNull()) refit->SetDefaultStorage(defaultStorage.Data());
+    if (!alignStorage.IsNull()) refit->SetAlignStorage(alignStorage.Data());
     refit->RemoveMonoCathodClusters(kTRUE, kFALSE);
   }
-
+  
+  if (iMUONRefitVtx) {
+    if (iMUONRefitVtx > 1) gROOT->LoadMacro("AddTaskMuonRefitVtx.C");
+    else gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskMuonRefitVtx.C");
+    AliAnalysisTaskMuonRefitVtx* refitVtx = AddTaskMuonRefitVtx(kFALSE, kFALSE, kTRUE);
+    if (!defaultStorage.IsNull()) refitVtx->SetDefaultStorage(defaultStorage.Data());
+  }
+  
   if(iESDMCLabelAddition) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskESDMCLabelAddition.C");
+    if(iESDMCLabelAddition > 1) gROOT->LoadMacro("AddTaskESDMCLabelAddition.C");
+    else gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskESDMCLabelAddition.C");
     AliAnalysisTaskESDMCLabelAddition *esdmclabel = AddTaskESDMCLabelAddition();
-    esdmclabel->SetDefaultStorage(VAR_OCDB_PATH);
-    esdmclabel->SetAlignStorage(VAR_REC_ALIGNDATA);
+    if (!defaultStorage.IsNull()) esdmclabel->SetDefaultStorage(defaultStorage.Data());
+    if (!alignStorage.IsNull()) esdmclabel->SetAlignStorage(alignStorage.Data());
+    if (!recoParamStorage.IsNull()) esdmclabel->SetRecoParamStorage(recoParamStorage.Data());
     esdmclabel->DecayAsFake(kTRUE);
   }
-
+  
+  if (iMUONQA) {
+    if (iMUONQA > 1) gROOT->LoadMacro("AddTaskMuonQA.C");
+    else gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskMuonQA.C");
+    AliAnalysisTaskMuonQA* muonQA = AddTaskMuonQA(kFALSE, kFALSE, kFALSE, 0);
+    if (usePhysicsSelection) muonQA->SelectCollisionCandidates(offlineTriggerMask);
+    muonQA->SetTrackCuts(trackCuts);
+  }
+  
   if (useMC && useTR && iMUONPerformance) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/AddTaskMuonPerformance.C");
+    if (iMUONPerformance > 1) gROOT->LoadMacro("AddTaskMuonPerformance.C");
+    else gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/AddTaskMuonPerformance.C");
     AliAnalysisTaskMuonPerformance* muonPerformance = AddTaskMuonPerformance();
-    if (usePhysicsSelection) muonPerformance->SelectCollisionCandidates(AliVEvent::kAny);
-    muonPerformance->SetDefaultStorage(VAR_OCDB_PATH);
-    muonPerformance->SetAlignStorage(VAR_REC_ALIGNDATA);
+    if (usePhysicsSelection) muonPerformance->SelectCollisionCandidates(offlineTriggerMask);
+    if (!defaultStorage.IsNull()) muonPerformance->SetDefaultStorage(defaultStorage.Data());
+    if (!alignStorage.IsNull()) muonPerformance->SetAlignStorage(alignStorage.Data());
+    if (!recoParamStorage.IsNull()) muonPerformance->SetRecoParamStorage(recoParamStorage.Data());
     muonPerformance->UseMCKinematics(kTRUE);
     muonPerformance->SetMCTrigLevelFromMatchTrk(kTRUE);
   }
-
+  
   if (iMUONEfficiency) {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/AddTaskMUONTrackingEfficiency.C");
-    AliAnalysisTaskMuonTrackingEff* muonEfficiency = AddTaskMUONTrackingEfficiency(kTRUE, kTRUE);
-    if (usePhysicsSelection) muonEfficiency->SelectCollisionCandidates(AliVEvent::kAny);
-    muonEfficiency->SetDefaultStorage(VAR_OCDB_PATH);
-    muonEfficiency->SetAlignStorage(VAR_REC_ALIGNDATA);
+    if (iMUONEfficiency > 1) gROOT->LoadMacro("AddTaskMUONTrackingEfficiency.C");
+    else gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/AddTaskMUONTrackingEfficiency.C");
+    AliAnalysisTaskMuonTrackingEff* muonEfficiency = AddTaskMUONTrackingEfficiency(kFALSE,kTRUE,"");
+    if (usePhysicsSelection) muonEfficiency->SelectCollisionCandidates(offlineTriggerMask);
+    if (!defaultStorage.IsNull()) muonEfficiency->SetDefaultStorage(defaultStorage.Data());
+    if (!alignStorage.IsNull()) muonEfficiency->SetAlignStorage(alignStorage.Data());
+    if (!recoParamStorage.IsNull()) muonEfficiency->SetRecoParamStorage(recoParamStorage.Data());
+    muonEfficiency->SetMuonTrackCuts(*trackCuts);
+    muonEfficiency->SetMuonPtCut(VAR_EFFTASK_PTMIN);
     muonEfficiency->UseMCLabel(kTRUE);
+    muonEfficiency->EnableDisplay(kFALSE);
   }
+  
+  TString addExtraTasks = VAR_EXTRATASKS_CONFIGMACRO;
+  if (!addExtraTasks.IsNull()) gROOT->ProcessLineSync(TString::Format(".x %s",addExtraTasks.Data()));
 
   if (iESDfilter) {
     //  ESD filter task configuration.
@@ -197,12 +263,29 @@ void AddAnalysisTasks(Int_t merge){
 }
 
 //______________________________________________________________________________
+Bool_t LoadAnalysisLibraries()
+{
+  // Load ParFiles.
+  if (iMUONQA > 1) {
+    if (!AliAnalysisAlien::SetupPar("PWGPPMUONlite.par")) return kFALSE;
+  }
+  if ((iMUONRefit > 1) || (iMUONRefitVtx > 1) || (iESDMCLabelAddition > 1) || (iMUONCDBConnect > 1)) {
+    if (!AliAnalysisAlien::SetupPar("PWGmuondep.par")) return kFALSE;
+  }
+  if ((useMC && useTR && (iMUONPerformance > 1)) || (iMUONEfficiency > 1)) {
+    if (!AliAnalysisAlien::SetupPar("PWGPPMUONdep.par")) return kFALSE;
+  }
+  ::Info("AODtrainsim.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
+  return kTRUE;
+}
+
+//______________________________________________________________________________
 TChain *CreateChain()
 {
   // Create the input chain
   chain = new TChain("esdTree");
   if (gSystem->AccessPathName("AliESDs.root"))
-    ::Error("AnalysisTrainNew.C::CreateChain", "File: AliESDs.root not in ./data dir");
+    ::Error("AODtrainsim.C::CreateChain", "File: AliESDs.root not in ./data dir");
   else
     chain->Add("AliESDs.root");
   if (chain->GetNtrees()) return chain;

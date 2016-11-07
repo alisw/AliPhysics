@@ -118,9 +118,9 @@ public:
   
   TObjArray* TemplateFileList() const;
   
-  void AddToTemplateFileList(const char* filename);
+  void AddToTemplateFileList(const char* filename, Bool_t alsoForMerging = kFALSE);
 
-  void AddToLocalFileList(const char* filename);
+  void AddToLocalFileList(const char* filename, Bool_t alsoForMerging = kFALSE);
 
   void AddIncludePath(const char* pathList) const;
 
