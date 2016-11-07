@@ -13,7 +13,7 @@
 
 //______________________________________________________________________________
 void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs.root",
-		       TString rootVersion = "", TString aliphysicsVersion = "vAN-20160524-1", Int_t nSteps = 5,
+		       TString rootVersion = "", TString aliphysicsVersion = "vAN-20161011-1", Int_t nSteps = 3,
 		       Bool_t selectPhysics = kTRUE, Bool_t selectTrigger = kTRUE, Bool_t matchTrig = kTRUE,
 		       Bool_t applyAccCut = kTRUE, Bool_t applyPDCACut = kTRUE, Double_t minMomentum = 0., Double_t minPt = 0.,
                        Bool_t isMC = kFALSE, Bool_t correctForSystematics = kTRUE, Int_t extrapMode = 1,
@@ -54,6 +54,7 @@ void RunMuonResolution(TString smode = "local", TString inputFileName = "AliESDs
     gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
     
     // compile analysis macro locally
+    //if (!AliAnalysisAlien::SetupPar("PWGPPMUONdep.par")) return kFALSE;
     if (smode == "saf3") gROOT->LoadMacro("MuonResolution.C++g");
     else gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/MUON/dep/MuonResolution.C++g");
     MuonResolution(smode, inputFileName, rootVersion, aliphysicsVersion, nSteps, selectPhysics, selectTrigger, matchTrig, applyAccCut, applyPDCACut, minMomentum, minPt, isMC, correctForSystematics, extrapMode, shiftHalfCh, shiftDE, nevents);
