@@ -528,16 +528,17 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   }
   /*if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   else muonResolution->SetDefaultStorage("raw://");*/
-  muonResolution->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2015/OCDB");
+  muonResolution->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB");
   if (mode != kProof) muonResolution->ShowProgressBar();
   muonResolution->PrintClusterRes(kTRUE, kTRUE);
   muonResolution->SetStartingResolution(clusterResNB, clusterResB);
   muonResolution->RemoveMonoCathodClusters(kTRUE, kFALSE);
 //  muonResolution->FitResiduals(kFALSE);
 //  muonResolution->ImproveTracks(kTRUE);
-//  muonResolution->ReAlign("", -1, -1, "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC15_realign_all_4");
-//  muonResolution->ReAlign("", 6, -1, "");
+//  muonResolution->ReAlign("", -1, -1, "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC16_realign");
+//  muonResolution->ReAlign("", 1, 0, "");
 //  muonResolution->SetAlignStorage("", 5);
+//  muonResolution->SetMuonSign(-1);
   
   if (shiftHalfCh) {
     muonResolution->SetHalfChShift(halfChShiftNB, halfChShiftB);

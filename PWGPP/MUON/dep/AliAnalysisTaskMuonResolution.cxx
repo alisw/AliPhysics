@@ -102,6 +102,7 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution() :
   fGaus(NULL),
   fMinMomentum(0.),
   fMinPt(0.),
+  fSign(0),
   fExtrapMode(1),
   fCorrectForSystematics(kTRUE),
   fRemoveMonoCathCl(kFALSE),
@@ -155,6 +156,7 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
   fGaus(NULL),
   fMinMomentum(0.),
   fMinPt(0.),
+  fSign(0),
   fExtrapMode(1),
   fCorrectForSystematics(kTRUE),
   fRemoveMonoCathCl(kFALSE),
@@ -453,8 +455,8 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
     // apply standard track cuts if any
     if (fMuonTrackCuts && !fMuonTrackCuts->IsSelected(esdTrack)) continue;
     
-    // select positive or negative tracks
-    //if (esdTrack->Charge() < 0) continue;
+    // select positive and/or negative tracks
+    if (fSign*esdTrack->Charge() < 0) continue;
     
     // skip tracks with not enough clusters
     //if (esdTrack->GetNClusters() < 8) continue;
