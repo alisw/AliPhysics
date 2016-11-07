@@ -33,7 +33,9 @@ fCutMCUseMCProperties(kTRUE)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F("fHisto","", 20,0,100, 200,0,20, 400,0,2);
+    //Warning: This has super-fine binning in all dimensions!
+    //It may be quite costly to use, memory-wise!
+    fHisto = new TH3F("fHisto","", 100,0,100, 200,0,20, 400,0,2);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -68,7 +70,9 @@ fCutMCUseMCProperties(kTRUE)
     if( lMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
-    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
+    //Warning: This has super-fine binning in all dimensions!
+    //It may be quite costly to use, memory-wise!
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 100,0,100, 200,0,20, 400,lThisMass-lMassWindow,lThisMass+lMassWindow);
     fHisto->Sumw2();
 }
 //________________________________________________________________
@@ -107,7 +111,7 @@ fCutMCUseMCProperties(kTRUE)
     Double_t lMassDelta = (lMassWindow * 2.) / lNMassBins;
     Double_t lMassBins[lNMassBins+1];
     
-    for( Long_t ibound = 0; ibound<lNMassBins+1; ibound++) lMassBins[ibound] = (lThisMass-0.1) + ( ( (Double_t) ibound )*lMassDelta );
+    for( Long_t ibound = 0; ibound<lNMassBins+1; ibound++) lMassBins[ibound] = (lThisMass-lMassWindow) + ( ( (Double_t) ibound )*lMassDelta );
     
     //Main output histogram: Centrality, mass, transverse momentum
     fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNPtBins, lPtBins, lNMassBins, lMassBins );
