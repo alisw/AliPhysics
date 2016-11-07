@@ -68,10 +68,6 @@
 #include <vector>
 #include <fstream>
 using std::ifstream;
-namespace
-{
-  Int_t splitLevel=10;
-}
 
 ClassImp(AliMuonAccEffSubmitter)
 
@@ -118,6 +114,8 @@ fUseAODMerging(kFALSE)
   
   SetVar("VAR_OCDB_PATH",Form("\"%s\"",ocdbPath.Data()));
   SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.root,AliAOD.Muons.root\"");
+  SetVar("VAR_EFFTASK_PTMIN","-1.");
+  SetVar("VAR_EXTRATASKS_CONFIGMACRO","\"\"");
 
   SetVar("VAR_GENPARAM_INCLUDE","AliGenMUONlib.h");
   SetVar("VAR_GENPARAM_NPART","1");
@@ -261,7 +259,7 @@ fUseAODMerging(kFALSE)
   
   AddToTemplateFileList("CheckESD.C");
   AddToTemplateFileList("CheckAOD.C");
-  AddToTemplateFileList("AODtrainsim.C");
+  AddToTemplateFileList("AODtrainsim.C", kTRUE);
 //  AddToTemplateFileList("validation.sh");
   
   AddToTemplateFileList("Config.C");
@@ -296,7 +294,6 @@ Bool_t AliMuonAccEffSubmitter::Generate(const char* jdlname) const
 Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
 {
   /// Create the JDL for merging jobs
-  /// FIXME: not checked !
   
   AliDebug(1,"");
 
@@ -307,7 +304,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
     return kFALSE;
   }
   
-  Bool_t final = TString(name).Contains("merge",TString::kIgnoreCase);
+  Bool_t final = TString(name).Contains("final",TString::kIgnoreCase);
 
   (*os) << "# Generated merging jdl (production mode)" << std::endl
   << "# $1 = run number" << std::endl
@@ -316,7 +313,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
 
   OutputToJDL(*os,"Packages",GetMapValue("AliPhysics"));
   
-  OutputToJDL(*os,"Executable","AOD_merge.sh");
+  OutputToJDL(*os,"Executable",Form("%s/AOD_merge.sh",RemoteDir().Data()));
   
   OutputToJDL(*os,"Price","1");
 
@@ -333,30 +330,47 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   
   OutputToJDL(*os,"Validationcommand",Form("%s/validation_merge.sh",RemoteDir().Data()));
   
-  OutputToJDL(*os,"TTL","14400");
+  OutputToJDL(*os,"TTL","7200");
   
   OutputToJDL(*os,"OutputArchive",
-    "log_archive.zip:stderr,stdout@disk=1",
-    "root_archive.zip:AliAOD.root,AliAOD.Muons.root,AnalysisResults.root@disk=3"
+    //"log_archive.zip:stderr,stdout@disk=1",
+    "root_archive.zip:AliAOD.root,AliAOD.Muons.root,Merged.QA.Data.root,AnalysisResults.root@disk=2"
          );
   
   OutputToJDL(*os,"Arguments",(final ? "2":"1")); // for AOD_merge.sh, 1 means intermediate merging stage, 2 means final merging
   
+  TObjArray files;
+  files.SetOwner(kTRUE);
+  TIter next(LocalFileList());
+  TObjString* file;
+  
+  while ( ( file = static_cast<TObjString*>(next())) )
+  {
+    if ( file->TestBit(BIT(23)) )
+    {
+      files.Add(new TObjString(Form("LF:%s/%s",RemoteDir().Data(),file->String().Data())));
+    }
+  }
+  
+  if ( final )
+  {
+    files.Add(new TObjString(Form("LF:%s/$1/wn.xml",MergedDir().Data())));
+  }
+  
+  OutputToJDL(*os,"InputFile",files);
+  
   if ( !final )
   {
-    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrainsim.C",RemoteDir().Data()));
-    OutputToJDL(*os,"OutputDir",Form("%s/$1/Stage_$2/#alien_counter_03i#",RemoteDir().Data()));
-    OutputToJDL(*os,"InputDataCollection",Form("%s/$1/Stage_$2.xml,nodownload",RemoteDir().Data()));
+    OutputToJDL(*os,"OutputDir",Form("%s/$1/Stage_$2/#alien_counter_03i#",MergedDir().Data()));
+    OutputToJDL(*os,"InputDataCollection",Form("LF:%s/$1/Stage_$2.xml,nodownload",MergedDir().Data()));
     OutputToJDL(*os,"split","se");
-    OutputToJDL(*os,"SplitMaxInputFileNumber",GetSplitMaxInputFileNumber());
+    OutputToJDL(*os,"SplitMaxInputFileNumber",Form("%d",GetSplitMaxInputFileNumber()));
     OutputToJDL(*os,"InputDataListFormat","xml-single");
     OutputToJDL(*os,"InputDataList","wn.xml");
   }
   else
   {
-    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrainsim.C",RemoteDir().Data()),
-           Form("LF:%s/$1/wn.xml",RemoteDir().Data()));
-    OutputToJDL(*os,"OutputDir",Form("%s/$1",RemoteDir().Data()));
+    OutputToJDL(*os,"OutputDir",Form("%s/$1",MergedDir().Data()));
   }
   
   return kTRUE;
@@ -500,16 +514,8 @@ Bool_t AliMuonAccEffSubmitter::Merge(Int_t stage, Bool_t dryRun)
 {
   /// Submit multiple merging jobs with the format "submit AOD_merge(_final).jdl run# (stage#)".
   /// Also produce the xml collection before sending jobs
-  /// Initial AODs will be taken from fRemoteDir/[RUNNUMBER] while the merged
-  /// ones will be put into fMergedDir/AODs/[RUNNUMBER]
-  ///
-  /// Example:
-  /// - inDir = "/alice/sim/2012/LHC12a10_bis" (where to find the data to merge)
-  ///         = 0x0 --> inDir = homeDir/outDir/resDir
-  /// - outDir = "Sim/LHC11h/embedding/AODs" (where to store merged results)
-  /// - runList.txt must contains the list of run number
-  /// - stage=0 --> final merging / stage>0 --> intermediate merging i
-  ///
+  /// Initial AODs will be taken from RemoteDir/[RUNNUMBER] while the merged
+  /// ones will be put into MergedDir/[RUNNUMBER]
   
   if (!RemoteDirectoryExists(MergedDir().Data())) {
     AliError(Form("directory %s does not exist", MergedDir().Data()));
@@ -569,7 +575,7 @@ Bool_t AliMuonAccEffSubmitter::Merge(Int_t stage, Bool_t dryRun)
     TString wn = (stage > 0) ? Form("Stage_%d.xml", stage) : "wn.xml";
     TString find = (lastStage == 0) ?
     Form("alien_find -x %s %s/%d *root_archive.zip", wn.Data(), RemoteDir().Data(), run) :
-    Form("alien_find -x %s %s/%d/Stage_%d *root_archive.zip", wn.Data(), RemoteDir().Data(), run, lastStage);
+    Form("alien_find -x %s %s/%d/Stage_%d *root_archive.zip", wn.Data(), MergedDir().Data(), run, lastStage);
     gSystem->Exec(Form("%s 1> %s 2>/dev/null", find.Data(), wn.Data()));
     gSystem->Exec(Form("grep -c /event %s > __nfiles__", wn.Data()));
     ifstream f2("__nfiles__");
@@ -582,9 +588,9 @@ Bool_t AliMuonAccEffSubmitter::Merge(Int_t stage, Bool_t dryRun)
       printf(" ! collection of files to merge is empty\n");
       gSystem->Exec(Form("rm -f %s", wn.Data()));
       continue;
-    } else if (stage > 0 && nFiles.Atoi() <= splitLevel && !reply.BeginsWith("y")) {
+    } else if (stage > 0 && nFiles.Atoi() <= GetSplitMaxInputFileNumber() && !reply.BeginsWith("y")) {
       if (!reply.BeginsWith("n")) {
-        printf(" ! number of files to merge <= split level (%d). Continue? [Y/n] ", splitLevel);
+        printf(" ! number of files to merge <= split level (%d). Continue? [Y/n] ", GetSplitMaxInputFileNumber());
         fflush(stdout);
         reply.Gets(stdin,kTRUE);
         reply.ToLower();
@@ -697,8 +703,6 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if (!IsValid()) return kFALSE;
   
-  if ( fRootOutToKeep.Contains("AliAOD.Muons.root") && ! fRootOutToKeep.Contains("AliAOD.root") ) SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.Muons.root\"");
-
   TString smode(mode);
   smode.ToUpper();
   
@@ -1145,6 +1149,7 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
   
   Int_t nJobs(0);
   Int_t nEvts(0);
+  Bool_t failedRun(kFALSE);
   
   AliAnalysisTriggerScalers* ts(0x0);
   
@@ -1202,6 +1207,7 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
       res = gGrid->Command(query);
     }
     
+    Bool_t done = kFALSE;
     if (res)
     {
       TString cjobId1 = res->GetKey(0,"jobId");
@@ -1216,11 +1222,18 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
       {
         std::cout << "DONE" << std::endl;
         std::cout << Form("   --> the job Id is: %s",cjobId1.Data()) << std::endl << std::endl;
+        done = kTRUE;
       }
     }
     else
     {
       std::cout << " FAILED" << std::endl << std::endl;
+    }
+    
+    if (!dryRun && !done)
+    {
+      gSystem->Exec(Form("echo %d >> __failed__", runNumber));
+      failedRun = kTRUE;
     }
     
     delete res;
@@ -1230,6 +1243,14 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
   << "total number of jobs = " << nJobs << std::endl
   << "total number of generated events = " << nEvts << std::endl
   << std::endl;
+  
+  if (failedRun)
+  {
+    AliInfo("\n--------------------\n");
+    AliInfo("list of failed runs:\n");
+    gSystem->Exec("cat __failed__");
+    gSystem->Exec("rm -f __failed__");
+  }
   
   delete ts;
   
