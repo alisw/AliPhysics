@@ -238,10 +238,11 @@ private:
     AliMultVariable *fZpaFired;
     AliMultVariable *fZpcFired;
     
-    Int_t    fNTracks;             //!  no. tracks
-    Int_t    fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
-    Int_t    fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
-    Int_t    fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
+    AliMultVariable *fNTracks;             //!  no. tracks
+    AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
+    AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
+    AliMultVariable *fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
+    
     Int_t fCurrentRun;
     
     Float_t fQuantiles[100]; //! percentiles
