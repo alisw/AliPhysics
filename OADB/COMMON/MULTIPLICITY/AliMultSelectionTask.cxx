@@ -447,7 +447,17 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fZpaFired = new AliMultVariable("fZpaFired");
     fZpaFired->SetIsInteger(kTRUE);  
     fZpcFired = new AliMultVariable("fZpcFired"); 
-    fZpcFired->SetIsInteger(kTRUE); 
+    fZpcFired->SetIsInteger(kTRUE);
+    
+    //Track counters (now useable as AliMultVariables as well)
+    fNTracks =                  new AliMultVariable("fNTracks");
+    fNTracks->SetIsInteger(kTRUE);
+    fNTracksGlobal2015 =        new AliMultVariable("fNTracksGlobal2015");
+    fNTracksGlobal2015->SetIsInteger(kTRUE);
+    fNTracksGlobal2015Trigger = new AliMultVariable("fNTracksGlobal2015Trigger");
+    fNTracksGlobal2015Trigger->SetIsInteger(kTRUE);
+    fNTracksITSsa2010 =         new AliMultVariable("fNTracksITSsa2010");
+    fNTracksITSsa2010->SetIsInteger(kTRUE);
 
     fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
 
@@ -492,6 +502,10 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fZncFired ); 
     fInput->AddVariable( fZpaFired ); 
     fInput->AddVariable( fZpcFired ); 
+    fInput->AddVariable( fNTracks                  );
+    fInput->AddVariable( fNTracksGlobal2015        );
+    fInput->AddVariable( fNTracksGlobal2015Trigger );
+    fInput->AddVariable( fNTracksITSsa2010         );
     fInput->AddVariable( fEvSel_VtxZ );
 
     if( fkCalibration ) {
@@ -520,11 +534,6 @@ void AliMultSelectionTask::UserCreateOutputObjects()
         //A.T. FIXME change into AliMultVariable
         fTreeEvent->Branch("fnContributors", &fnContributors, "fnContributors/I");
 
-        fTreeEvent->Branch("fNTracks",      &fNTracks, "fNTracks/I");
-        fTreeEvent->Branch("fNTracksGlobal2015",      &fNTracksGlobal2015, "fNTracksGlobal2015/I");
-        fTreeEvent->Branch("fNTracksGlobal2015Trigger",      &fNTracksGlobal2015Trigger, "fNTracksGlobal2015Trigger/I");
-        fTreeEvent->Branch("fNTracksITSsa2010",     &fNTracksITSsa2010, "fNTracksITSsa2010/I");
-        
         if( fkDebugIsMC ) {
             fTreeEvent->Branch("fMC_NPart",      &fMC_NPart, "fMC_NPart/I");
             fTreeEvent->Branch("fMC_NColl",      &fMC_NColl, "fMC_NColl/I");
@@ -1141,8 +1150,9 @@ void AliMultSelectionTask::UserExec(Option_t *)
     //Setting variables to non-sense values
     fRefMultEta5 -> SetValueInteger ( -5 ); //not acquired
     fRefMultEta8 -> SetValueInteger ( -5 ); //not acquired
-    fNTracks         = -10;
+    fNTracks                    -> SetValueInteger( -10 );
 
+    
     //Set ZDC variables to defaults
     fZncEnergy->SetValue(-1e6);
     fZpcEnergy->SetValue(-1e6);
@@ -1158,6 +1168,33 @@ void AliMultSelectionTask::UserExec(Option_t *)
     fZncFired->SetValueInteger( 0 );
     fZpaFired->SetValueInteger( 0 );
     fZpcFired->SetValueInteger( 0 );
+    
+    //Set Track Counters to zero
+    fNTracksGlobal2015          -> SetValueInteger( 0 );
+    fNTracksGlobal2015Trigger   -> SetValueInteger( 0 );
+    fNTracksITSsa2010           -> SetValueInteger( 0 );
+    
+    //Count tracks with various selections
+    for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
+        AliVTrack *track = lVevent -> GetVTrack( itrack );
+        if ( !track ) continue;
+        
+        //Only ITSsa tracks
+        if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
+            fNTracksITSsa2010 -> SetValueInteger( fNTracksITSsa2010->GetValueInteger() + 1);
+        }
+        
+        if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
+        
+        //Only for accepted tracks
+        fNTracksGlobal2015 -> SetValueInteger( fNTracksGlobal2015->GetValueInteger() + 1);
+        
+        //Count accepted + TOF time window (info from Alberica)
+        //Warning: 30 is a value that is good for Pb-Pb (12.5 is more appropriate for pp)
+        if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 )
+            fNTracksGlobal2015Trigger -> SetValueInteger( fNTracksGlobal2015Trigger->GetValueInteger() + 1);
+    }
+    
     if(lVerbose) Printf("Doing ESD/AOD part...");
     if (lVevent->InheritsFrom("AliESDEvent")) {
         AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(lVevent);
@@ -1177,7 +1214,7 @@ void AliMultSelectionTask::UserExec(Option_t *)
         }
 
         //A.T.
-        fNTracks    = fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esdevent,kTRUE):-1;
+        fNTracks -> SetValueInteger( fTrackCuts ? (Short_t)fTrackCuts->GetReferenceMultiplicity(esdevent,kTRUE):-1 );
 
         // ***** ZDC info
         AliESDZDC *lESDZDC = esdevent->GetESDZDC();
@@ -1375,42 +1412,33 @@ void AliMultSelectionTask::UserExec(Option_t *)
         fHistQASelected_TrackletsVsV0M -> Fill( lV0M, ltracklets );
         fHistQASelected_TrackletsVsCL0 -> Fill( lCL0, ltracklets );
         fHistQASelected_TrackletsVsCL1 -> Fill( lCL1, ltracklets );
-
-        //Track information
-        fNTracksGlobal2015        = 0 ;
-        fNTracksGlobal2015Trigger = 0;
-        fNTracksITSsa2010 = 0;
         
+        //Track momentum QA
         for(Long_t itrack = 0; itrack<lVevent->GetNumberOfTracks(); itrack++) {
             AliVTrack *track = lVevent -> GetVTrack( itrack );
             if ( !track ) continue;
-
+            
             //Only ITSsa tracks
             if ( fTrackCutsITSsa2010 -> AcceptVTrack (track) ) {
-                fNTracksITSsa2010 ++; // count them
                 fHistQASelected_PtITSsaVsV0M -> Fill( lV0M, track->Pt() );
                 fHistQASelected_PtITSsaVsCL0 -> Fill( lCL0, track->Pt() );
                 fHistQASelected_PtITSsaVsCL1 -> Fill( lCL1, track->Pt() );
             }
-
+            
             if ( !fTrackCutsGlobal2015 -> AcceptVTrack (track) ) continue;
             
             //Only for accepted tracks
-            fNTracksGlobal2015 ++; //count them
             fHistQASelected_PtGlobalVsV0M -> Fill( lV0M, track->Pt() );
             fHistQASelected_PtGlobalVsCL0 -> Fill( lCL0, track->Pt() );
             fHistQASelected_PtGlobalVsCL1 -> Fill( lCL1, track->Pt() );
-            
-            //Count accepted + TOF time window (info from Alberica)
-            //Warning: 30 is a value that is good for Pb-Pb (12.5 is more appropriate for pp)
-            if ( TMath::Abs( track -> GetTOFExpTDiff() ) < 30 ) fNTracksGlobal2015Trigger ++;
         }
-        fHistQASelected_NTracksGlobalVsV0M -> Fill( lV0M, fNTracksGlobal2015 );
-        fHistQASelected_NTracksGlobalVsCL0 -> Fill( lCL0, fNTracksGlobal2015 );
-        fHistQASelected_NTracksGlobalVsCL1 -> Fill( lCL1, fNTracksGlobal2015 );
-        fHistQASelected_NTracksITSsaVsV0M  -> Fill( lV0M, fNTracksITSsa2010 );
-        fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, fNTracksITSsa2010 );
-        fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, fNTracksITSsa2010 );
+        
+        fHistQASelected_NTracksGlobalVsV0M -> Fill( lV0M, fNTracksGlobal2015->GetValueInteger() );
+        fHistQASelected_NTracksGlobalVsCL0 -> Fill( lCL0, fNTracksGlobal2015->GetValueInteger() );
+        fHistQASelected_NTracksGlobalVsCL1 -> Fill( lCL1, fNTracksGlobal2015->GetValueInteger() );
+        fHistQASelected_NTracksITSsaVsV0M  -> Fill( lV0M, fNTracksITSsa2010->GetValueInteger() );
+        fHistQASelected_NTracksITSsaVsCL0  -> Fill( lCL0, fNTracksITSsa2010->GetValueInteger() );
+        fHistQASelected_NTracksITSsaVsCL1  -> Fill( lCL1, fNTracksITSsa2010->GetValueInteger() );
         //=============================================================================
         
         //Add to AliVEvent

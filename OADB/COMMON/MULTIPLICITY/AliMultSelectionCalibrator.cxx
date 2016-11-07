@@ -798,6 +798,16 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     AliMultVariable *fZpcFired = new AliMultVariable("fZpcFired"); 
     fZpcFired->SetIsInteger(kTRUE); 
     
+    //Track counters (now useable as AliMultVariables as well)
+    fNTracks =                  new AliMultVariable("fNTracks");
+    fNTracks->SetIsInteger(kTRUE);
+    fNTracksGlobal2015 =        new AliMultVariable("fNTracksGlobal2015");
+    fNTracksGlobal2015->SetIsInteger(kTRUE);
+    fNTracksGlobal2015Trigger = new AliMultVariable("fNTracksGlobal2015Trigger");
+    fNTracksGlobal2015Trigger->SetIsInteger(kTRUE);
+    fNTracksITSsa2010 =         new AliMultVariable("fNTracksITSsa2010");
+    fNTracksITSsa2010->SetIsInteger(kTRUE);
+    
     //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
@@ -839,7 +849,11 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fZnaFired ); 
     fInput->AddVariable( fZncFired ); 
     fInput->AddVariable( fZpaFired ); 
-    fInput->AddVariable( fZpcFired );   
+    fInput->AddVariable( fZpcFired );
+    fInput->AddVariable( fNTracks                  );
+    fInput->AddVariable( fNTracksGlobal2015        );
+    fInput->AddVariable( fNTracksGlobal2015Trigger );
+    fInput->AddVariable( fNTracksITSsa2010         );
     fInput->AddVariable( fEvSel_VtxZ  );
     //============================================================
     
