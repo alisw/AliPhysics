@@ -675,6 +675,14 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
         delete container;
         break;
       }
+      AliMergeable* unpackable = dynamic_cast<AliMergeable*>(object);
+      if (unpackable) {
+        if (fVerbose) printf("unpacking custom AliMergeable container %p\n", unpackable);
+        GetObjects(unpackable, &fListOfObjects);
+        if (fVerbose) printf("deleting custom AliMergeable container %p\n", unpackable);
+        delete unpackable;
+        break;
+      }
     }
 
     if (TCollection* collection = dynamic_cast<TCollection*>(object)) {
@@ -838,6 +846,7 @@ Int_t DoSend(void* socket)
     aliZMQmsg messageCopy;
     alizmq_msg_copy(&messageCopy, &message);
     sentBytes += alizmq_msg_send(&messageCopy, fZMQresetBroadcast, 0);
+    fNumberOfMessagesSent++;
     if (fVerbose) printf("a copy was broadcasted, %i bytes\n", sentBytes);
     alizmq_msg_close(&messageCopy);
   }
