@@ -46,7 +46,7 @@ class AliFJWrapper
   Bool_t                                  GetLegacyMode()            { return fLegacyMode; }
   Bool_t                                  GetDoFilterArea()          { return fDoFilterArea; }
   Double_t                                NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Int_t Option=0, Int_t Measure=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
-  Double32_t                              NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option=0, Int_t Measure=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
+  Double32_t                              NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option=0, Int_t Measure=0);
 #ifdef FASTJET_VERSION
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetMass()        const {return fGenSubtractorInfoJetMass        ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetAngularity()  const {return fGenSubtractorInfoJetAngularity  ; }
@@ -59,7 +59,6 @@ class AliFJWrapper
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet2subjettiness_kt()       const {return fGenSubtractorInfoJet2subjettiness_kt ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJet3subjettiness_kt()       const {return fGenSubtractorInfoJet3subjettiness_kt ; }
   const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngle_kt()       const {return fGenSubtractorInfoJetOpeningAngle_kt ; }
-  const std::vector<fastjet::contrib::GenericSubtractorInfo> GetGenSubtractorInfoJetOpeningAngleSD_CA()       const {return fGenSubtractorInfoJetOpeningAngleSD_CA ; }
   const std::vector<fastjet::PseudoJet>                      GetConstituentSubtrJets()            const {return fConstituentSubtrJets            ; }
   const std::vector<fastjet::PseudoJet>                      GetGroomedJets()            const {return fGroomedJets            ; }
   Int_t CreateGenSub();          // fastjet::contrib::GenericSubtractor
@@ -87,7 +86,6 @@ class AliFJWrapper
   virtual Int_t DoGenericSubtractionJet2subjettiness_kt();
   virtual Int_t DoGenericSubtractionJet3subjettiness_kt();
   virtual Int_t DoGenericSubtractionJetOpeningAngle_kt();
-  virtual Int_t DoGenericSubtractionJetOpeningAngleSD_CA();
   virtual Int_t DoConstituentSubtraction();
   virtual Int_t DoSoftDrop();
   
@@ -179,7 +177,6 @@ class AliFJWrapper
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet2subjettiness_kt;       //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJet3subjettiness_kt;       //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngle_kt;       //!
-  std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetOpeningAngleSD_CA;       //!
 #endif
   Bool_t                                   fDoFilterArea;         //!
   Bool_t                                   fLegacyMode;           //!
@@ -266,7 +263,6 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fGenSubtractorInfoJet2subjettiness_kt ( )
   , fGenSubtractorInfoJet3subjettiness_kt ( )
   , fGenSubtractorInfoJetOpeningAngle_kt ( )
-  , fGenSubtractorInfoJetOpeningAngleSD_CA ( )
 #endif
   , fDoFilterArea      (false)
   , fLegacyMode        (false)
@@ -1025,27 +1021,6 @@ Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngle_kt() {
 }
 
 //_________________________________________________________________________________________________
-Int_t AliFJWrapper::DoGenericSubtractionJetOpeningAngleSD_CA() {
-  //Do generic subtraction for 2subjettiness axes opening angle on sofdropped jet uing Cambridge Aachen
-#ifdef FASTJET_VERSION
-  CreateGenSub();
-
-  // Define jet shape
-  AliJetShapeOpeningAngleSD_CA shapeOpeningAngleSD_CA;
-
-  // clear the generic subtractor info vector
-  fGenSubtractorInfoJetOpeningAngleSD_CA.clear();
-  for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
-    fj::contrib::GenericSubtractorInfo infoOpeningAngleSD_CA;
-    if(fInclusiveJets[i].perp()>1.e-4)
-      double subtracted_shape = (*fGenSubtractor)(shapeOpeningAngleSD_CA, fInclusiveJets[i], infoOpeningAngleSD_CA);
-    fGenSubtractorInfoJetOpeningAngleSD_CA.push_back(infoOpeningAngleSD_CA);
-  }
-#endif
-  return 0;
-}
-
-//_________________________________________________________________________________________________
 Int_t AliFJWrapper::DoConstituentSubtraction() {
   //Do constituent subtraction
 #ifdef FASTJET_VERSION
@@ -1331,10 +1306,9 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
 
 
 
-Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option, Int_t Measure, Double_t Beta_SD, Double_t ZCut){ //For derivative subtraction
+Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Double_t Radius, Double_t Beta, Double_t JetR, fastjet::PseudoJet jet, Int_t Option, Int_t Measure){ //For derivative subtraction
 
   Double_t Result=-1;
-  Double_t Result_SoftDrop=-1;
   std::vector<fastjet::PseudoJet> SubJet_Axes;
   fj::PseudoJet SubJet1_Axis;
   fj::PseudoJet SubJet2_Axis;
@@ -1413,15 +1387,10 @@ Double32_t AliFJWrapper::NSubjettinessDerivativeSub(Int_t N, Int_t Algorithm, Do
     else if (DeltaPhi > TMath::Pi()) DeltaPhi -= (2*TMath::Pi());
   }
 
-  //Added for quality control of the DeltaR-Nsubjettiness variable (comparing Nsubjettiness and soft drop results)
-  fj::contrib::SoftDrop Soft_Drop(Beta_SD,ZCut);  
-  fj::PseudoJet Soft_Dropped_Jet=Soft_Drop(jet);
-  Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().delta_R();
     
   if (Option==0) return Result;
   else if (Option==1 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
   else if (Option==2 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
-  else if (Option==3 && N==2) return Result_SoftDrop;
   else return -2;
 
 }
