@@ -122,6 +122,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   void SetTPCconstrainedGlobalChi2(Double_t number){
     fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(number);
   }
+
+  void SetGridPID( std::string string){
+    gridPID = std::stoi(string);
+  }
   
  private:
  
@@ -149,15 +153,15 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   Bool_t fIsMC;
   
   Double_t fPtMin;// minimum pT threshold (default = 0)
-  Double_t fPtMax;// maximum pT threshold (default = 1000)
-  Double_t fEtaMin;// minimum eta threshold (default = -10)
-  Double_t fEtaMax;// maximum eta threshold (default = 10)
+  Double_t fPtMax;// maximum pT threshold (default = 10)
+  Double_t fEtaMin;// minimum eta threshold (default = -0.8)
+  Double_t fEtaMax;// maximum eta threshold (default = 0.8)
 
  
   Double_t fESigTPCMin; 
   Double_t fESigTPCMax; 
 
-    //Values and flags for PID cuts in ITS and TOF
+  //Values and flags for PID cuts in ITS and TOF
   Double_t fESigITSMin;
   Double_t fESigITSMax;
   Double_t fESigTOFMin;
@@ -172,6 +176,9 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
   Bool_t fPionPIDcutTPC;
   Bool_t isIonColl;
+
+  //Grid PID
+  Int_t gridPID;
 
   ClassDef(AliAnalysisTaskSimpleTreeMaker, 1); //
 
