@@ -209,6 +209,8 @@ public:
   Double_t GetCenBinWidth() const {return this->fCenBinWidth;};
   void SetDataSet(TString const n) {this->fDataSet = n;};
   TString GetDataSet() const {return this->fDataSet;};
+  void SetInteractionRate(TString const n) {this->fInteractionRate = n;};
+  TString GetInteractionRate() const {return this->fInteractionRate;}
   void SetCorrWeight(TString const n) {this->fCorrWeight = n;};
   TString GetCorrWeight() const {return this->fCorrWeight;};
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
@@ -318,6 +320,7 @@ private:
   Double_t fFlowQCDeltaEta;
   Double_t fCenBinWidth;
   TString fDataSet;
+  TString fInteractionRate;
   TString fCorrWeight;
   TList *fQVecList;       // list with weights
   TList *fCRCZDCCalibList; // ZDC calibration
