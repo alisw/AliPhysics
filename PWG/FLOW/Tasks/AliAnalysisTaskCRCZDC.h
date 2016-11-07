@@ -294,8 +294,9 @@ private:
  TH1F *fPtSpecFB768[10];  //! PtSpecRec FB768
  Bool_t fCutTPC;
  TH1F *fCenDis; //! centrality distribution
+ TH1F *fPileUpCount; //! centrality distribution
+ TH1F *fPileUpMultSelCount; //! centrality distribution
  AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
- AliCentrality* fCentrality; //!
   TList *fTowerEqList;   // list with weights
   TH1D *fTowerGainEq[2][5]; //!
   Int_t fCachedRunNum;   //
