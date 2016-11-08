@@ -133,7 +133,7 @@ class AliEmcalCorrectionComponent : public TNamed {
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
 /**
- *
+ * Get the requested property from the YAML configuration.
  *
  */
 template<typename T>
