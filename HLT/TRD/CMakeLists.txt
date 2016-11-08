@@ -56,12 +56,18 @@ set(SRCS
     AliHLTTRDTracklet.cxx
     AliHLTTRDUtils.cxx
     AliTRDonlineTrackingDataContainer.cxx
+    tracking/AliHLTTRDtrack.cxx
+    tracking/AliHLTTRDTracker.cxx
+    tracking/AliHLTTRDTrackerComponent.cxx
+    tracking/AliHLTTRDTrackletReaderComponent.cxx
+    tracking/AliHLTTRDTrackletWord.cxx
    )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS}
     AliHLTTRDTrackletWordArray.h
+    tracking/AliHLTTRDSpacePoint.h
 )
 
 # Generate the dictionary

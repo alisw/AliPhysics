@@ -38,6 +38,8 @@ public:
   static const AliHLTComponentDataType fgkMCMcalibrationDataType; // MCM Calibration data
   static const AliHLTComponentDataType fgkCalibrationDataType; // Calibration with TRDtracks
   static const AliHLTComponentDataType fgkEORCalibrationDataType;//Calibration end of run
+  static const AliHLTComponentDataType fgkTRDTrackletDataType; // TRD tracklets from raw data
+  static const AliHLTComponentDataType fgkTRDSpacePointDataType; // TRD space point calculated from tracklet
 
   static const AliHLTComponentDataType fgkSimpleIntegerDataType;//Sample
 
