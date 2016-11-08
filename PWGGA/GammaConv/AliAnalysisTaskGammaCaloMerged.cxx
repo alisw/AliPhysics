@@ -1386,6 +1386,8 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
 
   // match tracks to clusters
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent);
+  // match tracks to clusters also for mergedCutArray
+  ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent);
 
   // vertex
   Double_t vertex[3] = {0};
