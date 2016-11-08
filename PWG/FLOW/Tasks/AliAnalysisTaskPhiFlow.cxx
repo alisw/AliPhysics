@@ -402,7 +402,7 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
    multSelection = static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
    if(multSelection) {
        fCentrality = multSelection->GetMultiplicityPercentile("V0M");
-       if(fCentrality > fCentralityMin && fCentrality < fCentralityMax) {
+       if(fCentrality > fCentralityMin && fCentrality < fCentralityMax && TMath::Abs(fCentrality - multSelection->GetMultiplicityPercentile("CL0")) < 7.5 && multSelection->GetMultiplicityPercentile("CL1") < 90) {
            fCentralityPass->Fill(fCentrality);
            return kTRUE;
        } else {
