@@ -1324,12 +1324,17 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   Double_t DCAz = track->ZAtDCA();
   if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
     // re-evaluate the dca as it seems to not be natively present
-    AliAODTrack copy(*track);       // stack copy
-    Double_t b[2] = {-99. -99.};
-    Double_t bCov[3] = {-99., -99., -99.};
-    if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
-      DCAxy = b[0];
-      DCAz = b[1];
+    // allowed only for tracks inside the beam pipe
+    Double_t pos[3] = {-99., -99., -99.};
+    track->GetPosition(pos);
+    if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
+      AliAODTrack copy(*track);       // stack copy
+      Double_t b[2] = {-99., -99.};
+      Double_t bCov[3] = {-99., -99., -99.};
+      if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
+        DCAxy = b[0];
+        DCAz = b[1];
+      }
     }
   }
 
