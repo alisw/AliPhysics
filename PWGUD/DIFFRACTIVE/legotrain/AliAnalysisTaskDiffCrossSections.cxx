@@ -626,9 +626,9 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
       } else if ((TMath::Abs(fEtaL) < 1 &&
 		  TMath::Abs(fEtaR) < 1)) {
 	fEventType = 2;
-      } else if (fEtaR < 1) {
+      } else if (fEtaR < +1) {
 	fEventType = -1;
-      } else if (fEtaL > 1) {
+      } else if (fEtaL > -1) {
 	fEventType = +1;
       } else {
 	fEventType = 2;
