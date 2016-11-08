@@ -1453,7 +1453,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     leadMCLabel         = ((AliAODCaloCluster*)cluster)->GetLabel();
   
   // TM efficiency histograms before TM
-  if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && fUseDistTrackToCluster){
+  if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && fUseDistTrackToCluster && !fDoLightOutput){
     classification    = ClassifyClusterForTMEffi(cluster, event, mcEvent, isESD); 
     fHistClusterTMEffiInput->Fill(cluster->E(), 0); //All cl 
     if (classification == 5 )
@@ -1490,7 +1490,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
       // TM efficiency histos after TM
-      if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
+      if (fIsMC && isMC && !fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
 
         fHistClusterTMEffiInput->Fill(cluster->E(), 9);
         if (classification == 5 )
