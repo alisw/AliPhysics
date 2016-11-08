@@ -528,7 +528,7 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   // AD
   const AliESDAD *esdAD = esdEvent->GetADData();
   if (fDetectorsUsed.Contains("AD") && esdAD) {
-    for (Int_t side=0; side<1; ++side) {
+    for (Int_t side=0; side<2; ++side) {
       if (side==0 && !fDetectorsUsed.Contains("ADC"))
 	continue;
       if (side==1 && !fDetectorsUsed.Contains("ADA"))
