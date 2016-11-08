@@ -402,10 +402,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *hMC_GenMass;//!
 		TH1D *hMC_GenpT;//!
 		TH1D *hMC_CDEvtType;//!
-		TH1D *hMC_CDGenMass;//!
-		TH1D *hMC_CD2piGenMass;//!
-		TH1D *hMC_CDGenpT;//!
-		TH1D *hMC_CD2piGenpT;//!
+		TH1D *hMC_CDGenMass[7];//!
+		TH1D *hMC_CDGenpT[7];//!
+//		TH2D *hMC_CDGenMasspT[7];//!
 		// -------------------------------------------------------------------
 
 		ClassDef(AliAnalysisTaskCDPWA, 1);
