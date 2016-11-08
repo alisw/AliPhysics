@@ -355,7 +355,7 @@ void AliV0Result::InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLam
                                            Long_t lNCentBins, Double_t *lCentBins)
 //Initialize feeddown matrix
 {
-    if( fMassHypo != AliV0Result::kK0Short){
+    if( fMassHypo == AliV0Result::kK0Short){
         cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
         cout<<"    Cannot set up feeddown matrix for K0Short, exiting!"<<endl;
         cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
