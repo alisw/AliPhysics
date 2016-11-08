@@ -3,7 +3,7 @@ GenerateDocumentation01() {
     //based on all OADBs currently deployed in the AliPhysics
     //directory specified here:
 
-    TString lPathToOADBs = "$ALICE_PHYSICS/../src/OADB/COMMON/MULTIPLICITY/data/";
+    TString lPathToOADBs = "$HOME/alice/ali-master/AliPhysics/OADB/COMMON/MULTIPLICITY/data/";
     cout<<"Expanding path name..."<<endl;
     gSystem->ExpandPathName( lPathToOADBs );
     cout<< "Expanded to: "<<lPathToOADBs.Data()<<endl;
@@ -43,12 +43,20 @@ GenerateDocumentation01() {
                 cout<<" -> Opening OADB and checking for information ... "<<endl;
 
                 //Mod time
-                Long_t id,size,flags,mt;
-                gSystem->GetPathInfo(Form("%s%s",lPathToOADBs.Data(),fname.Data()),&id,&size,&flags,&mt);
-                TTimeStamp st(mt);
-                cout<<"Date : "<<st.GetDate()<<endl;
-                lTime.Append(Form("%i",st.GetDate()));
-
+                //Long_t id,size,flags,mt;
+                //gSystem->GetPathInfo(Form("%s%s",lPathToOADBs.Data(),fname.Data()),&id,&size,&flags,&mt);
+                //TTimeStamp st(mt);
+                //cout<<"Date : "<<st.GetDate()<<endl;
+                //lTime.Append(Form("%i",st.GetDate()));
+                
+                //Modification time, as per git command:
+                // git log -1 --format="%ai" -- OADB-blablabla.root
+                lTime = gSystem->GetFromPipe(Form("cd %s; git log -1 --format=\"%%ai\" -- OADB-%s.root", lPathToOADBs.Data(), lProdName.Data()));
+            
+                cout<<"======================================================"<<endl;
+                cout<<lTime.Data()<<endl;
+                cout<<"======================================================"<<endl;
+                
                 TFile * f = new TFile (Form("%s%s",lPathToOADBs.Data(),fname.Data()));
                 AliOADBContainer * oadbContMS = (AliOADBContainer*) f->Get("MultSel");
                 cout<<" ---> contains this many runs: "<<oadbContMS->GetNumberOfEntries()<<endl;
