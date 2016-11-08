@@ -1033,3 +1033,25 @@ AliAnalysisTaskEmcalJetQA* AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(TString 
 
   return qaTask;
 }
+
+/**
+ * Add this task to the QA train
+ * \param runnumber Run number
+ */
+void AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA_QAtrain(Int_t runnumber)
+{
+  EBeamType_t beam = BeamTypeFromRunNumber(runnumber);
+  Int_t nCentBins = 0;
+  if (beam == kpA || beam == kAA) nCentBins = 4;
+  std::vector<std::string> triggerClasses = {"CINT7", "CEMC7", "CDMC7", "EG1", "EG2", "EJ1", "EJ2", "DG1", "DG2", "DJ1", "DJ2" };
+  for (auto triggerClass : triggerClasses) {
+    TString suffix(triggerClass.c_str());
+    suffix.ReplaceAll("-", "_");
+    AliAnalysisTaskEmcalJetQA* task = AddTaskEmcalJetQA("", "usedefault", "usedefault", "CaloQA_default", suffix);
+    task->AddAcceptedTriggerClass(triggerClass.c_str());
+    task->SetForceBeamType(beam);
+    if (runnumber == 0 || (runnumber >= 265077 && runnumber <= 999999)) { // Run-2 p-Pb (LHC16q): disabling vertex cut
+      task->SetVzRange(-999,999);
+    }
+  }
+}

@@ -73,7 +73,7 @@ public:
   void                        SetIsEmbedded(Bool_t i)                              { fIsEmbedded        = i           ; }
 
   static AliAnalysisTaskEmcalJetQA* AddTaskEmcalJetQA(TString ntracks = "usedefault", TString nclusters = "usedefault", TString ncells = "usedefault", TString subdir = "", TString suffix = "");
-
+  static void AddTaskEmcalJetQA_QAtrain(Int_t runnumber);
 protected:
 
   void                        ExecOnce()                                                    ;
