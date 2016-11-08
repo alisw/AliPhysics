@@ -23,6 +23,8 @@
 #include <AliEMCALTriggerFastOR.h>
 #include <AliEMCALTriggerConstants.h>
 #include <AliEMCALTriggerOnlineQAPP.h>
+#include <AliVEventHandler.h>
+#include <AliAnalysisManager.h>
 
 #include "AliEMCALTriggerOfflineQAPP.h"
 #include "AliEmcalTriggerQATask.h"
@@ -40,7 +42,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask() :
   AliAnalysisTaskEmcalLight(),
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(),
-  fADCperBin(20),
+  fADCperBin(16),
   fMinAmplitude(0),
   fDCalPlots(kTRUE),
   fMinTimeStamp(0),
@@ -59,7 +61,7 @@ AliEmcalTriggerQATask::AliEmcalTriggerQATask(const char *name, UInt_t nCentBins,
   AliAnalysisTaskEmcalLight(name,kTRUE),
   fTriggerPatchesName("EmcalTriggers"),
   fEMCALTriggerQA(),
-  fADCperBin(20),
+  fADCperBin(16),
   fMinAmplitude(0),
   fDCalPlots(kTRUE),
   fMinTimeStamp(0),
@@ -282,5 +284,98 @@ void AliEmcalTriggerQATask::SetADCperBin(Int_t n)
   AliEMCALTriggerQA* qa = 0;
   while ((qa = static_cast<AliEMCALTriggerQA*>(next()))) {
     qa->SetADCperBin(n);
+  }
+}
+
+/**
+ * Create a new instance of the AliEmcalTriggerQATask and adds it to the analysis manager.
+ * \param triggerPatchesName name of the trigger patch collection
+ * \param cellsName name of the EMCal cell collection
+ * \param triggersName name of the primitive trigger objects (FastORs)
+ * \param nCentBins number of centrality bins
+ * \param online switch to use the online (HLT) or offline components
+ * \param suffix to be added at the end of the task name
+ * \param sudbir directory inside of the root file where the output objects will be stored
+ * \return a pointer to the new instance of the class
+ */
+AliEmcalTriggerQATask* AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(TString triggerPatchesName, TString cellsName, TString triggersName, Int_t nCentBins, Bool_t online, TString subdir, TString suffix)
+{
+  // Get the pointer to the existing analysis manager via the static access method
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AliEmcalTriggerQATask", "No analysis manager to connect to.");
+    return 0;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  if (!evhand) {
+    ::Error("AliEmcalTriggerQATask", "This task requires an input event handler");
+    return 0;
+  }
+
+  // Init the task and do settings
+  TString taskName("AliEmcalTriggerQATask");
+  if (!suffix.IsNull()) {
+    taskName += "_";
+    taskName += suffix;
+  }
+  AliEmcalTriggerQATask* eTask = new AliEmcalTriggerQATask(taskName, nCentBins, online);
+  eTask->SetTriggerPatchesName(triggerPatchesName);
+  if(triggersName.IsNull()) {
+    if (evhand->InheritsFrom("AliESDInputHandler")) {
+      triggersName = "EMCALTrigger";
+      ::Info("AddTaskEmcalTriggerQA", "ESD analysis, triggersName = \"%s\"", triggersName.Data());
+    }
+    else {
+      triggersName = "emcalTrigger";
+      ::Info("AddTaskEmcalTriggerQA", "AOD analysis, triggersName = \"%s\"", triggersName.Data());
+    }
+  }
+  if(cellsName.IsNull()) {
+    if (evhand->InheritsFrom("AliESDInputHandler")) {
+      cellsName = "EMCALCells";
+      ::Info("AddTaskEmcalTriggerQA", "ESD analysis, cellsName = \"%s\"", cellsName.Data());
+    }
+    else {
+      cellsName = "emcalCells";
+      ::Info("AddTaskEmcalTriggerQA", "AOD analysis, cellsName = \"%s\"", cellsName.Data());
+    }
+  }
+  eTask->SetCaloTriggersName(triggersName);
+  eTask->SetCaloCellsName(cellsName);
+
+  // Final settings, pass to manager and set the containers
+  mgr->AddTask(eTask);
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
+  mgr->ConnectInput  (eTask, 0,  cinput1 );
+
+  TString commonoutput;
+  if (subdir.IsNull()) {
+    commonoutput = mgr->GetCommonFileName();
+  }
+  else {
+    commonoutput = TString::Format("%s:%s", mgr->GetCommonFileName(), subdir.Data());
+  }
+  TString contOutName(Form("%s_histos", taskName.Data()));
+  mgr->ConnectOutput(eTask, 1, mgr->CreateContainer(contOutName, TList::Class(), AliAnalysisManager::kOutputContainer, commonoutput.Data()));
+
+  return eTask;
+}
+
+void AliEmcalTriggerQATask::AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber)
+{
+  EBeamType_t beam = BeamTypeFromRunNumber(runnumber);
+  Int_t nCentBins = 0;
+  if (beam == kpA || beam == kAA) nCentBins = 4;
+  std::vector<std::string> triggerClasses = {"CINT7-B-NOPF-CENT" "CEMC7-B-NOPF-CENT" "CDMC7-B-NOPF-CENT"
+      "CEMC7EG1-B-NOPF-CENT" "CEMC7EG2-B-NOPF-CENT" "CEMC7EJ1-B-NOPF-CENT" "CEMC7EJ2-B-NOPF-CENT"
+      "CDMC7DG1-B-NOPF-CENT" "CDMC7DG2-B-NOPF-CENT" "CDMC7DJ1-B-NOPF-CENT" "CDMC7DJ2-B-NOPF-CENT" };
+  for (auto triggerClass : triggerClasses) {
+    TString suffix(triggerClass.c_str());
+    suffix.ReplaceAll("-", "_");
+    AliEmcalTriggerQATask* task = AddTaskEmcalTriggerQA("EmcalTriggers", "", "", nCentBins, kFALSE, "CaloQA_default", suffix);
+    task->AddAcceptedTriggerClass(triggerClass.c_str());
   }
 }
