@@ -512,7 +512,7 @@ AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
   }
  
   if(bUseCRCRecenter) {
-    TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_Q1etacalib.root";
+    TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_Q1etacalib_test.root";
     TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
     if(!QVecWeightsFile) {
       cout << "ERROR: QVecWeightsFile not found!" << endl;
