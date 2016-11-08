@@ -71,7 +71,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     
     // BG HandlerSettings
     void SetMoveParticleAccordingToVertex(Bool_t flag)            {fMoveParticleAccordingToVertex = flag;}
-    void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Int_t fDoPhotonQA, Double_t PhiParticle[]);
+    void FillPhotonCombinatorialBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode[], Double_t PhiParticle[]);
+    void FillPhotonCombinatorialMothersHistESD(TParticle *daughter,TParticle *mother);
+    void FillPhotonCombinatorialMothersHistAOD(AliAODMCParticle *daughter, AliAODMCParticle* motherCombPart);
     void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
     void UpdateEventByEventData();
     void SetLogBinningXTH2(TH2* histoRebin);
@@ -211,6 +213,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoTrueConvGammaEta;                       //!
     TH2F**                            fHistoTrueConvGammaPsiPairPt;                 //!
     TH2F**                            fHistoCombinatorialPt;                        //!
+    TH3F**                            fHistoCombinatorialMothersPt;                 //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_ek;             //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_ep;             //!
     TH2F**                            fHistoCombinatorialPtDeltaPhi_epi;            //!
@@ -302,7 +305,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 38);
+    ClassDef(AliAnalysisTaskGammaConvV1, 39);
 };
 
 #endif
