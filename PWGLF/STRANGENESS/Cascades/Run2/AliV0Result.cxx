@@ -29,7 +29,8 @@ fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
-fCutMCUseMCProperties(kTRUE)
+fCutMCUseMCProperties(kTRUE),
+fHistoFeeddown(0)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, mass, transverse momentum
@@ -56,7 +57,8 @@ fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
-fCutMCUseMCProperties(kTRUE)
+fCutMCUseMCProperties(kTRUE),
+fHistoFeeddown(0) //do not initialize by default
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -93,7 +95,8 @@ fCutTPCdEdx(3.0),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
-fCutMCUseMCProperties(kTRUE)
+fCutMCUseMCProperties(kTRUE),
+fHistoFeeddown(0) //do not initialize by default
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -152,6 +155,10 @@ fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
+    
+    //Copy feeddown matrix, if it exists
+    if( fHistoFeeddown )
+        fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
@@ -190,6 +197,10 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe->GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
+    
+    //Copy feeddown matrix, if it exists
+    if( fHistoFeeddown )
+        fHistoFeeddown = (TH3F*) lCopyMe->GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
 }
 //________________________________________________________________
 AliV0Result::~AliV0Result(){
@@ -244,6 +255,10 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
     
+    //Copy feeddown matrix, if it exists
+    if( fHistoFeeddown )
+        fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    
     return *this;
 }
 
@@ -265,6 +280,10 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
             }
             //... if all fine, add this histogram
             GetHistogram()->Add(xh->GetHistogram());
+            
+            //... if feeddown is defined, add that as well 
+            if ( GetHistogramFeeddown() )
+                GetHistogramFeeddown()->Add(xh->GetHistogramFeeddown());
         }
     }
     return (Long64_t) GetHistogram()->GetEntries();
@@ -329,3 +348,28 @@ void AliV0Result::Print()
     cout<<"========================================"<<endl;
     return;
 }
+
+//________________________________________________________________
+void AliV0Result::InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
+                                           Long_t lNXiPtPins, Double_t *lXiPtPins,
+                                           Long_t lNCentBins, Double_t *lCentBins)
+//Initialize feeddown matrix
+{
+    if( fMassHypo != AliV0Result::kK0Short){
+        cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+        cout<<"    Cannot set up feeddown matrix for K0Short, exiting!"<<endl;
+        cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+        return;
+    }
+    
+    if( fHistoFeeddown ){
+        cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+        cout<<"       Feeddown matrix already exists, please check! "<<endl;
+        cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+        return;
+    }
+    
+    //Initialize
+    fHistoFeeddown = new TH3F( Form("fHistoFeeddown_%s",GetName()), "", lNLambdaPtBins, lLambdaPtBins, lNXiPtPins, lXiPtPins, lNCentBins, lCentBins );
+}
+
