@@ -1736,7 +1736,7 @@ private:
   TProfile *fFlowSCv2vsZNv1PtPro[fSCv2vsZNHarm][fSCv2vsZNPtBins][3]; //!
   TH1D *fFlowSCv2vsZNv1PtHist[fSCv2vsZNHarm][fSCv2vsZNPtBins][3]; //!
   TH1D *fFlowSCv2vsZNv1PtFinalHist[fSCv2vsZNHarm][fSCv2vsZNPtBins][3]; //!
-  TProfile2D *fFlowSCMultvsZN; //!
+  TH3F *fFlowSCMultvsZN; //!
   TProfile2D *fFlowSCAvPtvsZN; //!
   
   // Flow SP VZ

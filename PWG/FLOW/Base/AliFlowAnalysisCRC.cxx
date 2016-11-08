@@ -19837,7 +19837,7 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
               fFlowSCv2vsZNv1Pro[hsc][0]->Fill(fCentralityEBE,IQC2EG*(fZNCen+fZNAen),IQM2EG);
               fFlowSCv2vsZNv1Pro[hsc][1]->Fill(fCentralityEBE,(QARe*ZARe+QAIm*ZAIm)*(QBRe*ZCRe+QBIm*ZCIm)/IQM2EG,IQM2EG);
               fFlowSCv2vsZNv1Pro[hsc][2]->Fill(fCentralityEBE,(QAIm*ZARe-QARe*ZAIm)*(QBIm*ZCRe-QBRe*ZCIm)/IQM2EG,IQM2EG);
-              fFlowSCMultvsZN->Fill(fCentralityEBE,fZNCen+fZNAen,QAM+QBM);
+              fFlowSCMultvsZN->Fill(fCentralityEBE,fZNCen+fZNAen,QAM0+QBM0);
               AvPt /= (QAM+QBM);
               fFlowSCAvPtvsZN->Fill(fCentralityEBE,fZNCen+fZNAen,AvPt);
             }
@@ -28240,7 +28240,7 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
       }
     }
   }
-  fFlowSCMultvsZN = new TProfile2D("fFlowSCMultvsZN","fFlowSCMultvsZN",100,0.,100.,300,0.,150.);
+  fFlowSCMultvsZN = new TH3F("fFlowSCMultvsZN","fFlowSCMultvsZN",100,0.,100.,150,0.,150.,375,0.,1125.);
   fFlowQCList->Add(fFlowSCMultvsZN);
   fFlowSCAvPtvsZN = new TProfile2D("fFlowSCAvPtvsZN","fFlowSCAvPtvsZN",100,0.,100.,300,0.,150.);
   fFlowQCList->Add(fFlowSCAvPtvsZN);
