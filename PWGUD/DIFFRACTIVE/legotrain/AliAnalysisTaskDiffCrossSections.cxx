@@ -222,6 +222,35 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent,
   for (Int_t ch=0; ch<64; ++ch)
     fCharge[ch/32] += esdV0->GetMultiplicity(ch);
 }
+void AliAnalysisTaskDiffCrossSections::FMDInfo::Fill(const AliESDEvent *esdEvent) {
+  for (Int_t i=0; i<5; ++i)
+    fMult[i] = 0.0f;
+
+  const AliESDFMD* esdFMD = esdEvent->GetFMDData();
+  const Float_t fFMDLowCut = 0.2;
+  const Int_t idx[4][2] = {
+    {0, 0},
+    {0, 0},
+    {1, 2},
+    {3, 4}
+  };
+  for (UShort_t d=1; d<4; ++d) {
+    const UShort_t nRng(d == 1 ? 1 : 2);
+    for (UShort_t i=0; i<nRng; ++i) {
+      const Char_t   r    = (i == 0 ? 'I' : 'O'); // ring
+      const UShort_t nSec = (i == 0 ?  20 :  40); // sector
+      const UShort_t nStr = (i == 0 ? 512 : 256); // strip
+      for (UShort_t s=0; s<nSec; ++s) {
+	for (UShort_t t=0; t<nStr; ++t) {
+	  const Float_t fmdMult = esdFMD->Multiplicity(d, r, s, t);
+	  if (fmdMult < fFMDLowCut || fmdMult == AliESDFMD::kInvalidMult)
+	    continue;
+	  fMult[idx[d][i]] += 1;
+	}
+      }
+    }
+  }
+}
 
 
 AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *name)
@@ -229,7 +258,8 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fIsMC(kFALSE)
   , fMCType("")
   , fTriggerSelection("")
-  , fDetectorsUsed("ADA ADC V0 V0 FMD SPD")
+  , fDetectorsUsed("ADA ADC V0 FMD SPD")
+  , fUseBranch("")
   , fTriggerAnalysis()
   , fAnalysisUtils()
   , fTE(NULL)
@@ -259,8 +289,10 @@ AliAnalysisTaskDiffCrossSections::~AliAnalysisTaskDiffCrossSections()
 
 void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
   t->Branch("AliAnalysisTaskDG::TreeData", &fTreeData);
-  t->Branch("FastOrMap",    &fFastOrMap,    32000, 0);
-  //  t->Branch("FiredChipMap", &fFiredChipMap, 32000, 0);
+  if (fUseBranch.Contains("FastOrMap"))
+    t->Branch("FastOrMap",    &fFastOrMap,    32000, 0);
+  if (fUseBranch.Contains("FiredChipMap"))
+    t->Branch("FiredChipMap", &fFiredChipMap, 32000, 0);
   if (fIsMC)
     t->Branch("AliAnalysisTaskDG::MCInfo", &fMCInfo);
 
@@ -461,6 +493,7 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   fTreeData.fIsIncompleteDAQ          = esdEvent->IsIncompleteDAQ();
   fTreeData.fIsSPDClusterVsTrackletBG = fAnalysisUtils.IsSPDClusterVsTrackletBG(esdEvent);
   fTreeData.fV0Info.FillV0(esdEvent, fTriggerAnalysis);
+  fTreeData.fFMDInfo.Fill(esdEvent);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
 
   fTreeData.fVtxInfo.Fill(esdEvent->GetPrimaryVertexSPD());
