@@ -1320,9 +1320,9 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
   
-  Double_t DCAxy=999., DCAz=999.;
-  
-  if (fUseAODFilterBit && (fAODFilterBit == 1 || fAODFilterBit == 32)) {
+  Double_t DCAxy = track->DCA();
+  Double_t DCAz = track->ZAtDCA();
+  if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
     // re-evaluate the dca as it seems to not be natively present
     AliAODTrack copy(*track);       // stack copy
     Double_t b[2] = {-99. -99.};
@@ -1331,9 +1331,6 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
       DCAxy = b[0];
       DCAz = b[1];
     }
-  } else {
-    DCAxy = track->DCA();
-    DCAz = track->ZAtDCA();
   }
 
   if (fCutDCAToVertexXY && TMath::Abs(DCAxy)>GetMaxDCAToVertexXY()) pass=kFALSE;
