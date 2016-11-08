@@ -912,7 +912,7 @@ void AliAnalysisTaskEmcalJetQA::DoTrackLoop()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskEmcalJetQA* AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(TString ntracks, TString nclusters, TString ncells, TString suffix)
+AliAnalysisTaskEmcalJetQA* AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(TString ntracks, TString nclusters, TString ncells, TString subdir, TString suffix)
 {
   // Get the pointer to the existing analysis manager via the static access method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1016,11 +1016,18 @@ AliAnalysisTaskEmcalJetQA* AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(TString 
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
 
-  TString contName(name);
-  contName += "_histos";
+  TString contName = TString::Format("%s_histos", name.Data());
+  TString commonoutput;
+  if (subdir.IsNull()) {
+    commonoutput = mgr->GetCommonFileName();
+  }
+  else {
+    commonoutput = TString::Format("%s:%s", mgr->GetCommonFileName(), subdir.Data());
+  }
+
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(),
                   TList::Class(),AliAnalysisManager::kOutputContainer,
-                  Form("%s", AliAnalysisManager::GetCommonFileName()));
+                  commonoutput);
   mgr->ConnectInput  (qaTask, 0,  cinput1 );
   mgr->ConnectOutput (qaTask, 1, coutput1 );
 

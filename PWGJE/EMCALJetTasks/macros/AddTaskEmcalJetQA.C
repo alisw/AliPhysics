@@ -7,5 +7,5 @@ AliAnalysisTaskEmcalJetQA* AddTaskEmcalJetQA(
   const char* suffix             = ""
 )
 {  
-  return AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(ntracks, nclusters, ncells, suffix);
+  return AliAnalysisTaskEmcalJetQA::AddTaskEmcalJetQA(ntracks, nclusters, ncells, "", suffix);
 }

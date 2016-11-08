@@ -72,7 +72,7 @@ public:
   void                        SetPtBin(Float_t w, Float_t max)                     { fPtBinWidth        = w; fMaxPt = max ; }
   void                        SetIsEmbedded(Bool_t i)                              { fIsEmbedded        = i           ; }
 
-  static AliAnalysisTaskEmcalJetQA* AddTaskEmcalJetQA(TString ntracks = "usedefault", TString nclusters = "usedefault", TString ncells = "usedefault", TString suffix = "");
+  static AliAnalysisTaskEmcalJetQA* AddTaskEmcalJetQA(TString ntracks = "usedefault", TString nclusters = "usedefault", TString ncells = "usedefault", TString subdir = "", TString suffix = "");
 
 protected:
 
