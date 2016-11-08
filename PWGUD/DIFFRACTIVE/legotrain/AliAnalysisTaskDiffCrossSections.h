@@ -9,6 +9,7 @@ class TList;
 class AliESDHeader;
 class AliESDAD;
 class AliESDVZERO;
+class AliESDFMD;
 class AliMCEvemt;
 class AliESDEvent;
 
@@ -41,6 +42,7 @@ public:
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
 
   void SetDetectorsUsed(TString det) { fDetectorsUsed = det; }
+  void SetUseBranch(TString b)       { fUseBranch = b; }
 
   TString GetTreeName() const {
     TString s = "TE";
@@ -123,6 +125,16 @@ public:
     Char_t     fNcontr; //
   } ;
 
+  struct FMDInfo {
+    FMDInfo() {
+      for (Int_t i=0; i<5; ++i)
+       	fMult[i] = 0;
+    }
+    void Fill(const AliESDEvent*);
+
+    Int_t   fMult[5];   // A-side: 1,2i,2o; C-side: 3i,3o
+  } ;
+
   class TreeData : public TObject {
   public:
     TreeData()
@@ -130,6 +142,7 @@ public:
       , fEventInfo()
       , fVtxInfo()
       , fV0Info()
+      , fFMDInfo()
       , fADInfo()
       , fPhysSelBits(0)
       , fIsIncompleteDAQ(kFALSE)
@@ -138,11 +151,12 @@ public:
     EventInfo fEventInfo;
     VtxInfo   fVtxInfo;
     ADV0      fV0Info;
+    FMDInfo   fFMDInfo;
     ADV0      fADInfo;
     UInt_t    fPhysSelBits;
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
-    ClassDef(TreeData, 1);
+    ClassDef(TreeData, 2);
   } ;
 
   class MCInfo : public TObject {
@@ -180,7 +194,8 @@ private:
   TString          fMCType;              //
   TString          fTriggerSelection;    //
   TString          fDetectorsUsed;       //
-  
+  TString          fUseBranch;           //
+
   AliTriggerAnalysis fTriggerAnalysis;   //!
   AliAnalysisUtils   fAnalysisUtils;     //!
 

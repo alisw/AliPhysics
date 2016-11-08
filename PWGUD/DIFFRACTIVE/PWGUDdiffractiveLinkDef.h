@@ -31,6 +31,7 @@
 #pragma link C++ class AliAnalysisTaskDiffCrossSections+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::EventInfo+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::VtxInfo+;
+#pragma link C++ class AliAnalysisTaskDiffCrossSections::FMDInfo+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::ADV0+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::TreeData+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::MCInfo+;
