@@ -50,6 +50,8 @@ fWeights(kFALSE),
 fScaling(kTRUE),
 fNormalizationType(1),
 fV0SanityCheck(0),
+fExternalResolution(-999.),
+fExternalResErr(0.),
 fTotalQvector(3),
 fWeightsList(NULL),
 fHistList(NULL),
@@ -543,9 +545,19 @@ void AliFlowAnalysisWithSimpleSP::Finish() {
   for(Int_t b=1; b != iNbins[iPTorETA]+1; ++b) {
     Double_t duQpro = fHistProUQ[iRFPorPOI][iPTorETA]->GetBinContent(b);
     Double_t dv2pro = -999.;
-    if( TMath::Abs(dV!=0.) ) { dv2pro = duQpro/dV; }
-    Double_t dv2ProErr = fHistProUQ[iRFPorPOI][iPTorETA]->GetBinError(b)/dV;
-    
+    if( TMath::Abs(dV!=0.) && fExternalResolution < 0 ) { dv2pro = duQpro/dV; }
+    else if(fExternalResolution > 0) { dv2pro = duQpro / fExternalResolution; }
+    Double_t dv2ProErr = fHistProUQ[iRFPorPOI][iPTorETA]->GetBinError(b);
+    if(fExternalResErr > 0) { 
+        // do default error propagation for a fraction where
+        Double_t a(0), b(0), t(0);
+        if(dv2ProErr > 0) a = duQpro*duQpro/(dv2ProErr*dv2ProErr);      // squared relative error
+        if(fExternalResErr > 0) b = fExternalResolution*fExternalResolution/(fExternalResErr*fExternalResErr);
+        t = duQpro*fExternalResolution/(dv2ProErr*fExternalResErr);
+        t = dv2pro*dv2pro*(a + b -2.*t);
+        if(t>0) dv2ProErr =  TMath::Sqrt(t);
+    }
+
     if( (iRFPorPOI==0)&&(iPTorETA==0) )
       fCommonHistsRes->FillDifferentialFlowPtRP(  b, dv2pro, dv2ProErr);   
     if( (iRFPorPOI==0)&&(iPTorETA==1) )

@@ -46,6 +46,9 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
    void SetApplyCorrectionForNUA(Bool_t iVal) { fApplyCorrectionForNUA = iVal?1:0; }
    void SetNormalizationType(Int_t iVal)      { fNormalizationType = iVal; }
    void SetV0SanityCheck(Bool_t t)            { fV0SanityCheck = t;}
+   void SetExternalResolution(Float_t r, Float_t s)      { 
+       fExternalResolution = r;
+       fExternalResErr = s;}
    Bool_t IsEqualRel(double dX, double dY, double epsilon) {            
           return TMath::Abs(dX - dY) <= epsilon; 
    } 
@@ -83,6 +86,8 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
    Bool_t fScaling;              // use qvec scaling 
    Int_t fNormalizationType;     // 0: EP mode || 1: SP mode
    Bool_t fV0SanityCheck;        // test to suppress NaN/inf values
+   Float_t fExternalResolution;  // external resolution (only used when set)
+   Float_t fExternalResErr;      // uncertainty of external resolution
    Int_t fTotalQvector;          // 1:Qa 2:Qb 3:QaQb
 
    TList*     fWeightsList;      // list holding input histograms with phi weights
