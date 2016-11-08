@@ -19999,6 +19999,10 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
       fTPCEtaHist[3] = (TProfile2D*)(fCRCQVecWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCQVecEtaHist[%d][%d]",fRunNum,3)));
       fTPCEtaHist[4] = (TProfile2D*)(fCRCQVecWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCQVecEtaHist[%d][%d]",fRunNum,4)));
       fTPCEtaHist[5] = (TProfile2D*)(fCRCQVecWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCQVecEtaHist[%d][%d]",fRunNum,5)));
+      fTPCEtaHist[6] = (TProfile2D*)(fCRCQVecWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCQVecEtaHist[%d][%d]",fRunNum,6)));
+      fTPCEtaHist[7] = (TProfile2D*)(fCRCQVecWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCQVecEtaHist[%d][%d]",fRunNum,7)));
+      fTPCEtaHist[8] = (TProfile2D*)(fCRCQVecWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCQVecEtaHist[%d][%d]",fRunNum,8)));
+      fTPCEtaHist[9] = (TProfile2D*)(fCRCQVecWeightsList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCQVecEtaHist[%d][%d]",fRunNum,9)));
     }
   }
   
@@ -20014,6 +20018,18 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
     Double_t QetM  = QetPM+QetNM;
     Double_t etab = fEtaDiffQRe[0][0]->GetBinCenter(et);
     if(QetPM>0. && QetNM>0.) {
+      
+      fCRCQVecEtaHist[fRunBin][0]->Fill(fCentralityEBE,etab,QetRe/QetM,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][1]->Fill(fCentralityEBE,etab,QetIm/QetM,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][2]->Fill(fCentralityEBE,etab,QetPRe/QetPM,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][3]->Fill(fCentralityEBE,etab,QetPIm/QetPM,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][4]->Fill(fCentralityEBE,etab,QetNRe/QetNM,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][5]->Fill(fCentralityEBE,etab,QetNIm/QetNM,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][6]->Fill(fCentralityEBE,etab,ZARe,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][7]->Fill(fCentralityEBE,etab,ZAIm,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][8]->Fill(fCentralityEBE,etab,ZCRe,fCenWeightEbE);
+      fCRCQVecEtaHist[fRunBin][9]->Fill(fCentralityEBE,etab,ZCIm,fCenWeightEbE);
+      
       if(fUseCRCRecenter) {
         if(fTPCEtaHist[0]) QetRe -= fTPCEtaHist[0]->GetBinContent(fTPCEtaHist[0]->FindBin(fCentralityEBE,etab))*QetM;
         if(fTPCEtaHist[1]) QetIm -= fTPCEtaHist[1]->GetBinContent(fTPCEtaHist[1]->FindBin(fCentralityEBE,etab))*QetM;
@@ -20021,6 +20037,10 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
         if(fTPCEtaHist[3]) QetPIm -= fTPCEtaHist[3]->GetBinContent(fTPCEtaHist[3]->FindBin(fCentralityEBE,etab))*QetPM;
         if(fTPCEtaHist[4]) QetNRe -= fTPCEtaHist[4]->GetBinContent(fTPCEtaHist[4]->FindBin(fCentralityEBE,etab))*QetNM;
         if(fTPCEtaHist[5]) QetNIm -= fTPCEtaHist[5]->GetBinContent(fTPCEtaHist[5]->FindBin(fCentralityEBE,etab))*QetNM;
+        if(fTPCEtaHist[6]) ZARe -= fTPCEtaHist[6]->GetBinContent(fTPCEtaHist[6]->FindBin(fCentralityEBE,etab));
+        if(fTPCEtaHist[7]) ZAIm -= fTPCEtaHist[7]->GetBinContent(fTPCEtaHist[7]->FindBin(fCentralityEBE,etab));
+        if(fTPCEtaHist[8]) ZCRe -= fTPCEtaHist[8]->GetBinContent(fTPCEtaHist[8]->FindBin(fCentralityEBE,etab));
+        if(fTPCEtaHist[9]) ZCIm -= fTPCEtaHist[9]->GetBinContent(fTPCEtaHist[9]->FindBin(fCentralityEBE,etab));
       }
       
       if(fCentralityEBE>10. && fCentralityEBE<60.) {
@@ -20043,19 +20063,6 @@ void AliFlowAnalysisCRC::CalculateFlowSPZDC()
         fFlowSPZDCv1etaPro[15]->Fill(etab,ZCRe,fCenWeightEbE);
         fFlowSPZDCv1etaPro[16]->Fill(etab,ZCIm,fCenWeightEbE);
       }
-    }
-    // terms for re-centering
-    if(QetPM>0. && QetNM>0.) {
-      fCRCQVecEtaHist[fRunBin][0]->Fill(fCentralityEBE,etab,QetRe/QetM,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][1]->Fill(fCentralityEBE,etab,QetIm/QetM,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][2]->Fill(fCentralityEBE,etab,QetPRe/QetPM,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][3]->Fill(fCentralityEBE,etab,QetPIm/QetPM,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][4]->Fill(fCentralityEBE,etab,QetNRe/QetNM,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][5]->Fill(fCentralityEBE,etab,QetNIm/QetNM,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][6]->Fill(fCentralityEBE,etab,ZARe,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][7]->Fill(fCentralityEBE,etab,ZAIm,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][8]->Fill(fCentralityEBE,etab,ZCRe,fCenWeightEbE);
-      fCRCQVecEtaHist[fRunBin][9]->Fill(fCentralityEBE,etab,ZCIm,fCenWeightEbE);
     }
   }
   
