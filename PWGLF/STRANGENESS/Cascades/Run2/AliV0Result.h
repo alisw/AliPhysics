@@ -56,6 +56,11 @@ public:
     void SetCutMCPDGCodeAssociation ( Bool_t lCut ) { fCutMCPDGCodeAssociation = lCut; }
     void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
     
+    //Feeddown matrix initializer
+    void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
+                                  Long_t lNXiPtPins, Double_t *lXiPtPins,
+                                  Long_t lNCentBins, Double_t *lCentBins );
+    
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetCutV0Radius       () const { return fCutV0Radius; }
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
@@ -76,6 +81,9 @@ public:
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
+
+    TH3F* GetHistogramFeeddown       ()       { return fHistoFeeddown; }
+    TH3F* GetHistogramFeeddownToCopy () const { return fHistoFeeddown; }
     
     Bool_t HasSameCuts( AliV0Result *lCompare );
     void Print();
@@ -102,13 +110,15 @@ private:
     Bool_t fCutMCUseMCProperties; //Use true MC pT, y
     
     TH3F *fHisto; //Histogram for storing output with these configurations
+    TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 6)
+    ClassDef(AliV0Result, 7)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
     // 4 - fixes to constructor, destructor, tuning
     // 5 - Use MC true pT, y flag added
     // 6 - Adjustments, tuning, constructor improvements
+    // 7 - First implementation of feeddown matrix as standard output 
 };
 #endif

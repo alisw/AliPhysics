@@ -1186,11 +1186,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Step 1: Sweep members of the output object TList and fill all of them as appropriate
         Int_t lNumberOfConfigurations = fListV0->GetEntries();
         //AliWarning(Form("[V0 Analyses] Processing different configurations (%i detected)",lNumberOfConfigurations));
-        TH3F *histoout         = 0x0;
+        TH3F *histoout                 = 0x0;
+        TH3F *histooutfeeddown         = 0x0;
         AliV0Result *lV0Result = 0x0;
         for(Int_t lcfg=0; lcfg<lNumberOfConfigurations; lcfg++){
+            histoout                 = 0x0;
+            histooutfeeddown         = 0x0;
+            
+            //Acquire result objects
             lV0Result = (AliV0Result*) fListV0->At(lcfg);
-            histoout  = lV0Result->GetHistogram();
+            histoout          = lV0Result->GetHistogram();
+            histooutfeeddown  = lV0Result->GetHistogramFeeddown();
             
             Float_t lMass = 0;
             Float_t lRap  = 0;
@@ -1251,15 +1257,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 fTreeVariableLeastNbrCrossedRows > lV0Result->GetCutLeastNumberOfCrossedRows() &&
                 fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
                 
-                // - MC specific: either don't associate (if not requested) or associate
-                // - FIXME: the 2D efficiency matrix needs to be filled according to Xi momentum as well.
-                // - This problem still has to be addressed in this case.
-                // - Different Options:
-                //    - Use TTree (will eventually become a problem as well, though with association might be OK)
-                //    - Create another out histogram in AliV0Result to be able to do the momentum correlations?
-                ( ! (lV0Result->GetCutMCPhysicalPrimary())    || fTreeVariablePrimaryStatus == 1 ) &&
-                ( ! (lV0Result->GetCutMCLambdaFromPrimaryXi())|| (fTreeVariablePrimaryStatusMother == 1 && fTreeVariablePIDMother == lPDGCodeXiMother) ) &&
-                ( ! (lV0Result->GetCutMCPDGCodeAssociation()) || fTreeVariablePID == lPDGCode     ) &&
+
                 
                 //Check 4: TPC dEdx selections
                 TMath::Abs(lNegdEdx)<lV0Result->GetCutTPCdEdx() &&
@@ -1269,11 +1267,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )
                 )
             {
-                //This satisfies all my conditionals! Fill histogram
-                if( !lV0Result -> GetCutMCUseMCProperties() ){
-                    histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
-                }else{
-                    histoout -> Fill ( fCentrality, fTreeVariablePtMC, lMass );
+                //Regular fill histogram here
+                if (
+                    ( ! (lV0Result->GetCutMCPhysicalPrimary())    || fTreeVariablePrimaryStatus == 1 ) &&
+                    ( ! (lV0Result->GetCutMCLambdaFromPrimaryXi())|| (fTreeVariablePrimaryStatusMother == 1 && fTreeVariablePIDMother == lPDGCodeXiMother) ) &&
+                    ( ! (lV0Result->GetCutMCPDGCodeAssociation()) || fTreeVariablePID == lPDGCode     )
+                    ){
+                    //This satisfies all my conditionals! Fill histogram
+                    if( !lV0Result -> GetCutMCUseMCProperties() ){
+                        histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
+                    }else{
+                        histoout -> Fill ( fCentrality, fTreeVariablePtMC, lMass );
+                    }
+                }
+                
+                //Fill feeddown matrix, please
+                if (
+                    histooutfeeddown &&
+                    (fTreeVariablePrimaryStatusMother == 1 && fTreeVariablePIDMother == lPDGCodeXiMother) &&
+                    (  fTreeVariablePID == lPDGCode     )
+                    ){
+                    //Warning: has to be filled with perfect properties
+                    //Rough invariant mass selection: could be better, but would be a correction
+                    //of the correction -> left as further improvement
+                    if( TMath::Abs(lMass-1.116) < 0.010 )
+                        histooutfeeddown -> Fill ( fTreeVariablePt, fTreeVariablePtMother, fCentrality );
                 }
             }
         }
