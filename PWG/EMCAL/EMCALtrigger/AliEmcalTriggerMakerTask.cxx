@@ -59,7 +59,7 @@ AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask():
 }
 
 AliEmcalTriggerMakerTask::AliEmcalTriggerMakerTask(const char *name, Bool_t doQA):
-  AliAnalysisTaskEmcal("AliEmcalTriggerMakerTask", kTRUE),
+  AliAnalysisTaskEmcal("AliEmcalTriggerMakerTask", doQA),
   fTriggerMaker(NULL),
   fV0(NULL),
   fCaloTriggersOutName("EmcalTriggers"),
