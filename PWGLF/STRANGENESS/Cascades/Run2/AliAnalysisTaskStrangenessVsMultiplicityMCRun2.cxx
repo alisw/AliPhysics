@@ -2118,7 +2118,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddConfiguration( AliCascad
 
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
+void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration()
 //Meant to add some standard V0 analysis Configuration + its corresponding systematics
 {
     // STEP 1: Decide on binning (needed to improve on memory consumption)
@@ -2303,7 +2303,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfiguration()
+void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfiguration()
 //Meant to add some standard cascade analysis Configuration + its corresponding systematics
 {
     // STEP 1: Decide on binning (needed to improve on memory consumption)
