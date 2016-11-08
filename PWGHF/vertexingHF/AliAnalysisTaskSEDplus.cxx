@@ -1575,9 +1575,9 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0};
 
   //dimensions for THnSparse for BFeed
-  Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,84};
-  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,ptmin,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,-2};
-  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,ptmax,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,40};
+  Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,84};
+  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,-2};
+  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,40};
 
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
