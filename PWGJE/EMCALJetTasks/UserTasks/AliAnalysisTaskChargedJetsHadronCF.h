@@ -46,6 +46,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
     fJetVetoMaxPt = maxVetoJetPt;
   }
 
+  void                        SetConstPtFilterBit(Int_t val)   { fConstPtFilterBit = val; }
   void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
   void                        SetJetParticleArrayName(const char* name)   { fJetParticleArrayName = name; }
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
@@ -87,6 +88,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Double_t                    fEventExtractionMinJetPt;                 ///< minimum jet pt of recorded events
   Double_t                    fEventExtractionMaxJetPt;                 ///< maximum jet pt of recorded events
   
+  Int_t                       fConstPtFilterBit;                        ///< For const pt plot, filter bit
   Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
   TClonesArray               *fJetsOutput;                              //!<! Array of basic correlation particles attached to the event (jets)
   TClonesArray               *fTracksOutput;                            //!<! Array of basic correlation particles attached to the event (tracks)
