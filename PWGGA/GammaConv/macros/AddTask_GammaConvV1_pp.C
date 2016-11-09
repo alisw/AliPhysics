@@ -848,11 +848,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000113", "00200009227300008250404000", "0252103500000000"); // variation BG scheme track mult
     cuts.AddCut("00000113", "00200009227300008250404000", "0152107500000000"); // alpha meson 0.85
     cuts.AddCut("00000113", "00200009227300008250404000", "0152105500000000"); // alpha meson 0.75
+    //----------                Pedro and Hikari testing the efficiency
+  } else if (trainConfig == 139) {
+     cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
+  } else if (trainConfig == 140) {
+     cuts.AddCut("00003123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
-  
+    
 	if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
     cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
