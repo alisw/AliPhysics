@@ -157,7 +157,8 @@ fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
     fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
     
     //Copy feeddown matrix, if it exists
-    if( fHistoFeeddown )
+    fHistoFeeddown = 0x0;
+    if( lCopyMe.GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
 }
 //________________________________________________________________
@@ -199,7 +200,8 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fHisto = (TH3F*) lCopyMe->GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
     
     //Copy feeddown matrix, if it exists
-    if( fHistoFeeddown )
+    fHistoFeeddown = 0x0;
+    if( lCopyMe->GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe->GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
 }
 //________________________________________________________________
@@ -256,7 +258,8 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
     
     //Copy feeddown matrix, if it exists
-    if( fHistoFeeddown )
+    fHistoFeeddown = 0x0;
+    if( lCopyMe.GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
     
     return *this;
@@ -281,8 +284,8 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
             //... if all fine, add this histogram
             GetHistogram()->Add(xh->GetHistogram());
             
-            //... if feeddown is defined, add that as well 
-            if ( GetHistogramFeeddown() )
+            //... if feeddown matrices are both defined, merge that as well, please  
+            if ( fHistoFeeddown && xh->GetHistogramFeeddown() )
                 GetHistogramFeeddown()->Add(xh->GetHistogramFeeddown());
         }
     }

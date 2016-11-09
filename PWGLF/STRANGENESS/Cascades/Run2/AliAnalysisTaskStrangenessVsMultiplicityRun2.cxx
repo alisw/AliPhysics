@@ -120,100 +120,102 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultip
     : AliAnalysisTaskSE(), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
-        fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
+fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
 
 //---> Flags controlling V0 TTree output
-        fkSaveV0Tree       ( kTRUE ),
-        fkDownScaleV0      ( kTRUE  ),
-        fDownScaleFactorV0 ( 0.001  ),
-        fkPreselectDedx ( kFALSE ),
-        fkDebugWrongPIDForTracking ( kFALSE ),
+fkSaveV0Tree       ( kTRUE ),
+fkDownScaleV0      ( kTRUE  ),
+fDownScaleFactorV0 ( 0.001  ),
+fkPreselectDedx ( kFALSE ),
+fkDebugWrongPIDForTracking ( kFALSE ),
+fkDebugBump(kFALSE),
 
 //---> Flags controlling Cascade TTree output
-        fkSaveCascadeTree       ( kTRUE  ),
-        fkDownScaleCascade      ( kTRUE  ),
-        fDownScaleFactorCascade ( 0.001  ),
+fkSaveCascadeTree       ( kTRUE  ),
+fkDownScaleCascade      ( kTRUE  ),
+fDownScaleFactorCascade ( 0.001  ),
 
 //---> Flags controlling Vertexers
-        fkRunVertexers    ( kFALSE ),
-        fkUseLightVertexer ( kTRUE ),
+fkRunVertexers    ( kFALSE ),
+fkUseLightVertexer ( kTRUE ),
 
 //---> Flag controlling trigger selection
-        fTrigType(AliVEvent::kMB),
+fTrigType(AliVEvent::kMB),
 
 //---> Min pT to save candidate
-       fMinPtToSave( 0.55 ),
+fMinPtToSave( 0.55 ),
+fMaxPtToSave( 100.00 ),
 
 //---> Variables for fTreeEvent
-      fCentrality(0),
+fCentrality(0),
 
 //---> Variables for fTreeV0
-      fTreeVariableChi2V0(0),
-      fTreeVariableDcaV0Daughters(0),
-      fTreeVariableDcaV0ToPrimVertex(0),
-      fTreeVariableDcaPosToPrimVertex(0),
-      fTreeVariableDcaNegToPrimVertex(0),
-      fTreeVariableV0CosineOfPointingAngle(0),
-      fTreeVariableV0Radius(0),
-      fTreeVariablePt(0),
-      fTreeVariableRapK0Short(0),
-      fTreeVariableRapLambda(0),
-      fTreeVariableInvMassK0s(0),
-      fTreeVariableInvMassLambda(0),
-      fTreeVariableInvMassAntiLambda(0),
-      fTreeVariableAlphaV0(0),
-      fTreeVariablePtArmV0(0),
-      fTreeVariableNegEta(0),
-      fTreeVariablePosEta(0),
+fTreeVariableChi2V0(0),
+fTreeVariableDcaV0Daughters(0),
+fTreeVariableDcaV0ToPrimVertex(0),
+fTreeVariableDcaPosToPrimVertex(0),
+fTreeVariableDcaNegToPrimVertex(0),
+fTreeVariableV0CosineOfPointingAngle(0),
+fTreeVariableV0Radius(0),
+fTreeVariablePt(0),
+fTreeVariableRapK0Short(0),
+fTreeVariableRapLambda(0),
+fTreeVariableInvMassK0s(0),
+fTreeVariableInvMassLambda(0),
+fTreeVariableInvMassAntiLambda(0),
+fTreeVariableAlphaV0(0),
+fTreeVariablePtArmV0(0),
+fTreeVariableNegEta(0),
+fTreeVariablePosEta(0),
 
-      fTreeVariableNSigmasPosProton(0),
-      fTreeVariableNSigmasPosPion(0),
-      fTreeVariableNSigmasNegProton(0),
-      fTreeVariableNSigmasNegPion(0),
+fTreeVariableNSigmasPosProton(0),
+fTreeVariableNSigmasPosPion(0),
+fTreeVariableNSigmasNegProton(0),
+fTreeVariableNSigmasNegPion(0),
 
-    fTreeVariablePosPIDForTracking(-1),
-    fTreeVariableNegPIDForTracking(-1),
-    fTreeVariablePosdEdx(-1),
-    fTreeVariableNegdEdx(-1),
-    fTreeVariablePosInnerP(-1),
-    fTreeVariableNegInnerP(-1),
+fTreeVariablePosPIDForTracking(-1),
+fTreeVariableNegPIDForTracking(-1),
+fTreeVariablePosdEdx(-1),
+fTreeVariableNegdEdx(-1),
+fTreeVariablePosInnerP(-1),
+fTreeVariableNegInnerP(-1),
 
-      fTreeVariableDistOverTotMom(0),
-      fTreeVariableLeastNbrCrossedRows(0),
-      fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+fTreeVariableDistOverTotMom(0),
+fTreeVariableLeastNbrCrossedRows(0),
+fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
-      fTreeVariableCentrality(0),
+fTreeVariableCentrality(0),
 
 //---> Variables for fTreeCascade
-      fTreeCascVarCharge(0),
-      fTreeCascVarMassAsXi(0),
-      fTreeCascVarMassAsOmega(0),
-      fTreeCascVarPt(0),
-      fTreeCascVarRapXi(0),
-      fTreeCascVarRapOmega(0),
-      fTreeCascVarNegEta(0),
-      fTreeCascVarPosEta(0),
-      fTreeCascVarBachEta(0),
-      fTreeCascVarDCACascDaughters(0),
-      fTreeCascVarDCABachToPrimVtx(0),
-      fTreeCascVarDCAV0Daughters(0),
-      fTreeCascVarDCAV0ToPrimVtx(0),
-      fTreeCascVarDCAPosToPrimVtx(0),
-      fTreeCascVarDCANegToPrimVtx(0),
-      fTreeCascVarCascCosPointingAngle(0),
-      fTreeCascVarCascRadius(0),
-      fTreeCascVarV0Mass(0),
-      fTreeCascVarV0CosPointingAngle(0),
-      fTreeCascVarV0CosPointingAngleSpecial(0),
-      fTreeCascVarV0Radius(0),
-      fTreeCascVarLeastNbrClusters(0),
-      fTreeCascVarDistOverTotMom(0),
-      fTreeCascVarNegNSigmaPion(0),
-      fTreeCascVarNegNSigmaProton(0),
-      fTreeCascVarPosNSigmaPion(0),
-      fTreeCascVarPosNSigmaProton(0),
-      fTreeCascVarBachNSigmaPion(0),
-      fTreeCascVarBachNSigmaKaon(0),
+fTreeCascVarCharge(0),
+fTreeCascVarMassAsXi(0),
+fTreeCascVarMassAsOmega(0),
+fTreeCascVarPt(0),
+fTreeCascVarRapXi(0),
+fTreeCascVarRapOmega(0),
+fTreeCascVarNegEta(0),
+fTreeCascVarPosEta(0),
+fTreeCascVarBachEta(0),
+fTreeCascVarDCACascDaughters(0),
+fTreeCascVarDCABachToPrimVtx(0),
+fTreeCascVarDCAV0Daughters(0),
+fTreeCascVarDCAV0ToPrimVtx(0),
+fTreeCascVarDCAPosToPrimVtx(0),
+fTreeCascVarDCANegToPrimVtx(0),
+fTreeCascVarCascCosPointingAngle(0),
+fTreeCascVarCascRadius(0),
+fTreeCascVarV0Mass(0),
+fTreeCascVarV0CosPointingAngle(0),
+fTreeCascVarV0CosPointingAngleSpecial(0),
+fTreeCascVarV0Radius(0),
+fTreeCascVarLeastNbrClusters(0),
+fTreeCascVarDistOverTotMom(0),
+fTreeCascVarNegNSigmaPion(0),
+fTreeCascVarNegNSigmaProton(0),
+fTreeCascVarPosNSigmaPion(0),
+fTreeCascVarPosNSigmaProton(0),
+fTreeCascVarBachNSigmaPion(0),
+fTreeCascVarBachNSigmaKaon(0),
 fTreeCascVarPosPIDForTracking(-1),
 fTreeCascVarNegPIDForTracking(-1),
 fTreeCascVarBachPIDForTracking(-1),
@@ -223,13 +225,32 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
-fTreeCascVarPosTotMom(-1),
-fTreeCascVarNegTotMom(-1),
-fTreeCascVarBachTotMom(-1),
+//fTreeCascVarPosTotMom(-1),
+//fTreeCascVarNegTotMom(-1),
+//fTreeCascVarBachTotMom(-1),
+
+//Variables for debugging the invariant mass bump
+//Full momentum information
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+//Track Labels (check for duplicates, etc)
+fTreeCascVarNegIndex(0),
+fTreeCascVarPosIndex(0),
+fTreeCascVarBachIndex(0),
+//Event Number (check same-event index mixups)
+fTreeCascVarEventNumber(0),
+
 fTreeCascVarCentrality(0),
 //Histos
-      fHistEventCounter(0),
-      fHistCentrality(0)
+fHistEventCounter(0),
+fHistCentrality(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -248,6 +269,7 @@ fkDownScaleV0      ( kTRUE  ),
 fDownScaleFactorV0 ( 0.001  ),
 fkPreselectDedx ( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
+fkDebugBump( kFALSE ),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -263,33 +285,34 @@ fTrigType(AliVEvent::kMB),
 
 //---> Min pT to save candidate
 fMinPtToSave( 0.55 ),
+fMaxPtToSave( 100.00 ),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
 
 //---> Variables for fTreeV0
-      fTreeVariableChi2V0(0),
-      fTreeVariableDcaV0Daughters(0),
-      fTreeVariableDcaV0ToPrimVertex(0),
-      fTreeVariableDcaPosToPrimVertex(0),
-      fTreeVariableDcaNegToPrimVertex(0),
-      fTreeVariableV0CosineOfPointingAngle(0),
-      fTreeVariableV0Radius(0),
-      fTreeVariablePt(0),
-      fTreeVariableRapK0Short(0),
-      fTreeVariableRapLambda(0),
-      fTreeVariableInvMassK0s(0),
-      fTreeVariableInvMassLambda(0),
-      fTreeVariableInvMassAntiLambda(0),
-      fTreeVariableAlphaV0(0),
-      fTreeVariablePtArmV0(0),
-      fTreeVariableNegEta(0),
-      fTreeVariablePosEta(0),
+fTreeVariableChi2V0(0),
+fTreeVariableDcaV0Daughters(0),
+fTreeVariableDcaV0ToPrimVertex(0),
+fTreeVariableDcaPosToPrimVertex(0),
+fTreeVariableDcaNegToPrimVertex(0),
+fTreeVariableV0CosineOfPointingAngle(0),
+fTreeVariableV0Radius(0),
+fTreeVariablePt(0),
+fTreeVariableRapK0Short(0),
+fTreeVariableRapLambda(0),
+fTreeVariableInvMassK0s(0),
+fTreeVariableInvMassLambda(0),
+fTreeVariableInvMassAntiLambda(0),
+fTreeVariableAlphaV0(0),
+fTreeVariablePtArmV0(0),
+fTreeVariableNegEta(0),
+fTreeVariablePosEta(0),
 
-      fTreeVariableNSigmasPosProton(0),
-      fTreeVariableNSigmasPosPion(0),
-      fTreeVariableNSigmasNegProton(0),
-      fTreeVariableNSigmasNegPion(0),
+fTreeVariableNSigmasPosProton(0),
+fTreeVariableNSigmasPosPion(0),
+fTreeVariableNSigmasNegProton(0),
+fTreeVariableNSigmasNegPion(0),
 
 fTreeVariablePosPIDForTracking(-1),
 fTreeVariableNegPIDForTracking(-1),
@@ -298,41 +321,41 @@ fTreeVariableNegdEdx(-1),
 fTreeVariablePosInnerP(-1),
 fTreeVariableNegInnerP(-1),
 
-      fTreeVariableDistOverTotMom(0),
-      fTreeVariableLeastNbrCrossedRows(0),
-      fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+fTreeVariableDistOverTotMom(0),
+fTreeVariableLeastNbrCrossedRows(0),
+fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
-      fTreeVariableCentrality(0),
+fTreeVariableCentrality(0),
 //---> Variables for fTreeCascade
-      fTreeCascVarCharge(0),
-      fTreeCascVarMassAsXi(0),
-      fTreeCascVarMassAsOmega(0),
-      fTreeCascVarPt(0),
-      fTreeCascVarRapXi(0),
-      fTreeCascVarRapOmega(0),
-      fTreeCascVarNegEta(0),
-      fTreeCascVarPosEta(0),
-      fTreeCascVarBachEta(0),
-      fTreeCascVarDCACascDaughters(0),
-      fTreeCascVarDCABachToPrimVtx(0),
-      fTreeCascVarDCAV0Daughters(0),
-      fTreeCascVarDCAV0ToPrimVtx(0),
-      fTreeCascVarDCAPosToPrimVtx(0),
-      fTreeCascVarDCANegToPrimVtx(0),
-      fTreeCascVarCascCosPointingAngle(0),
-      fTreeCascVarCascRadius(0),
-      fTreeCascVarV0Mass(0),
-      fTreeCascVarV0CosPointingAngle(0),
-      fTreeCascVarV0CosPointingAngleSpecial(0),
-      fTreeCascVarV0Radius(0),
-      fTreeCascVarLeastNbrClusters(0),
-      fTreeCascVarDistOverTotMom(0),
-      fTreeCascVarNegNSigmaPion(0),
-      fTreeCascVarNegNSigmaProton(0),
-      fTreeCascVarPosNSigmaPion(0),
-      fTreeCascVarPosNSigmaProton(0),
-      fTreeCascVarBachNSigmaPion(0),
-      fTreeCascVarBachNSigmaKaon(0),
+fTreeCascVarCharge(0),
+fTreeCascVarMassAsXi(0),
+fTreeCascVarMassAsOmega(0),
+fTreeCascVarPt(0),
+fTreeCascVarRapXi(0),
+fTreeCascVarRapOmega(0),
+fTreeCascVarNegEta(0),
+fTreeCascVarPosEta(0),
+fTreeCascVarBachEta(0),
+fTreeCascVarDCACascDaughters(0),
+fTreeCascVarDCABachToPrimVtx(0),
+fTreeCascVarDCAV0Daughters(0),
+fTreeCascVarDCAV0ToPrimVtx(0),
+fTreeCascVarDCAPosToPrimVtx(0),
+fTreeCascVarDCANegToPrimVtx(0),
+fTreeCascVarCascCosPointingAngle(0),
+fTreeCascVarCascRadius(0),
+fTreeCascVarV0Mass(0),
+fTreeCascVarV0CosPointingAngle(0),
+fTreeCascVarV0CosPointingAngleSpecial(0),
+fTreeCascVarV0Radius(0),
+fTreeCascVarLeastNbrClusters(0),
+fTreeCascVarDistOverTotMom(0),
+fTreeCascVarNegNSigmaPion(0),
+fTreeCascVarNegNSigmaProton(0),
+fTreeCascVarPosNSigmaPion(0),
+fTreeCascVarPosNSigmaProton(0),
+fTreeCascVarBachNSigmaPion(0),
+fTreeCascVarBachNSigmaKaon(0),
 fTreeCascVarPosPIDForTracking(-1),
 fTreeCascVarNegPIDForTracking(-1),
 fTreeCascVarBachPIDForTracking(-1),
@@ -342,13 +365,32 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
-fTreeCascVarPosTotMom(-1),
-fTreeCascVarNegTotMom(-1),
-fTreeCascVarBachTotMom(-1),
-      fTreeCascVarCentrality(0),
+//fTreeCascVarPosTotMom(-1),
+//fTreeCascVarNegTotMom(-1),
+//fTreeCascVarBachTotMom(-1),
+
+//Variables for debugging the invariant mass bump
+//Full momentum information
+fTreeCascVarNegPx(0),
+fTreeCascVarNegPy(0),
+fTreeCascVarNegPz(0),
+fTreeCascVarPosPx(0),
+fTreeCascVarPosPy(0),
+fTreeCascVarPosPz(0),
+fTreeCascVarBachPx(0),
+fTreeCascVarBachPy(0),
+fTreeCascVarBachPz(0),
+//Track Labels (check for duplicates, etc)
+fTreeCascVarNegIndex(0),
+fTreeCascVarPosIndex(0),
+fTreeCascVarBachIndex(0),
+//Event Number (check same-event index mixups)
+fTreeCascVarEventNumber(0),
+
+fTreeCascVarCentrality(0),
 //Histos
-      fHistEventCounter(0),
-      fHistCentrality(0)
+fHistEventCounter(0),
+fHistCentrality(0)
 {
 
     //Re-vertex: Will only apply for cascade candidates
@@ -389,7 +431,9 @@ fTreeCascVarBachTotMom(-1),
     
     //Special Debug Options (more to be added as needed)
     // A - Study Wrong PID for tracking bug
+    // B - Study invariant mass *B*ump
     if ( lExtraOptions.Contains("A") ) fkDebugWrongPIDForTracking = kTRUE;
+    if ( lExtraOptions.Contains("B") ) fkDebugBump                = kTRUE;
 
 }
 
@@ -545,10 +589,26 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNegInnerP",&fTreeCascVarNegInnerP,"fTreeCascVarNegInnerP/F");
             fTreeCascade->Branch("fTreeCascVarBachInnerP",&fTreeCascVarBachInnerP,"fTreeCascVarBachInnerP/F");
         }
-        fTreeCascade->Branch("fTreeCascVarPosTotMom",&fTreeCascVarPosTotMom,"fTreeCascVarPosTotMom/F");
-        fTreeCascade->Branch("fTreeCascVarNegTotMom",&fTreeCascVarNegTotMom,"fTreeCascVarNegTotMom/F");
-        fTreeCascade->Branch("fTreeCascVarBachTotMom",&fTreeCascVarBachTotMom,"fTreeCascVarBachTotMom/F");
         //------------------------------------------------
+        if ( fkDebugBump ){
+            //Variables for debugging the invariant mass bump
+            //Full momentum information
+            fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
+            fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
+            fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
+            fTreeCascade->Branch("fTreeCascVarNegPx",&fTreeCascVarNegPx,"fTreeCascVarNegPx/F");
+            fTreeCascade->Branch("fTreeCascVarNegPy",&fTreeCascVarNegPy,"fTreeCascVarNegPy/F");
+            fTreeCascade->Branch("fTreeCascVarNegPz",&fTreeCascVarNegPz,"fTreeCascVarNegPz/F");
+            fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
+            fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
+            fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+            //Track Labels (check for duplicates, etc)
+            fTreeCascade->Branch("fTreeCascVarNegIndex",&fTreeCascVarNegIndex,"fTreeCascVarNegIndex/I");
+            fTreeCascade->Branch("fTreeCascVarPosIndex",&fTreeCascVarPosIndex,"fTreeCascVarPosIndex/I");
+            fTreeCascade->Branch("fTreeCascVarBachIndex",&fTreeCascVarBachIndex,"fTreeCascVarBachIndex/I");
+            //Event Number (check same-event index mixups)
+            fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
+        }
     }
     //------------------------------------------------
     // Particle Identification Setup
@@ -706,8 +766,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
         return;
     }
-
+    
     fHistEventCounter->Fill(1.5);
+    
+    //Bookkeep event number for debugging
+    fTreeCascVarEventNumber =
+    ( ( ((ULong64_t)lESDevent->GetPeriodNumber() ) << 36 ) |
+     ( ((ULong64_t)lESDevent->GetOrbitNumber () ) << 12 ) |
+     ((ULong64_t)lESDevent->GetBunchCrossNumber() )  );
     
     //Fill centrality histogram
     fHistCentrality->Fill(fCentrality);
@@ -1122,9 +1188,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarBachNSigmaPion  = -100;
         fTreeCascVarBachNSigmaKaon  = -100;
 
-        fTreeCascVarBachTotMom = -1;
-        fTreeCascVarPosTotMom  = -1;
-        fTreeCascVarNegTotMom  = -1;
+        //fTreeCascVarBachTotMom = -1;
+        //fTreeCascVarPosTotMom  = -1;
+        //fTreeCascVarNegTotMom  = -1;
         
         Short_t  lChargeXi = -2;
         //Double_t lV0toXiCosineOfPointingAngle = 0. ;
@@ -1178,6 +1244,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         AliESDtrack *nTrackXi		= lESDevent->GetTrack( lIdxNegXi );
         AliESDtrack *bachTrackXi	= lESDevent->GetTrack( lBachIdx );
 
+        fTreeCascVarNegIndex  = lIdxNegXi;
+        fTreeCascVarPosIndex  = lIdxPosXi;
+        fTreeCascVarBachIndex = lBachIdx;
+        
         if (!pTrackXi || !nTrackXi || !bachTrackXi ) {
             AliWarning("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ...");
             continue;
@@ -1192,9 +1262,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
         xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
 
-        fTreeCascVarBachTotMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2] );
-        fTreeCascVarPosTotMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] + lPMom[2]*lPMom[2] );
-        fTreeCascVarNegTotMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] + lNMom[2]*lNMom[2] );
+        //fTreeCascVarBachTotMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] + lBMom[2]*lBMom[2] );
+        //fTreeCascVarPosTotMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] + lPMom[2]*lPMom[2] );
+        //fTreeCascVarNegTotMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] + lNMom[2]*lNMom[2] );
+        
+        fTreeCascVarNegPx = lNMom[0];
+        fTreeCascVarNegPy = lNMom[1];
+        fTreeCascVarNegPz = lNMom[2];
+        fTreeCascVarPosPx = lPMom[0];
+        fTreeCascVarPosPy = lPMom[1];
+        fTreeCascVarPosPz = lPMom[2];
+        fTreeCascVarBachPx = lBMom[0];
+        fTreeCascVarBachPy = lBMom[1];
+        fTreeCascVarBachPz = lBMom[2];
         
         //------------------------------------------------
         // TPC dEdx information
@@ -1434,6 +1514,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         //Lowest pT cutoff (this is all background anyways)
         if( fTreeCascVarPt < fMinPtToSave ) lKeepCascade = kFALSE; 
+        if( fTreeCascVarPt > fMaxPtToSave ) lKeepCascade = kFALSE;
         
         if( fkSaveCascadeTree && lKeepCascade &&
            (
