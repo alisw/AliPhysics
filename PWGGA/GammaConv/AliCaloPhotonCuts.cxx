@@ -1468,23 +1468,23 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // TM efficiency histograms before TM
   if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && fUseDistTrackToCluster && !fDoLightOutput){
     classification    = ClassifyClusterForTMEffi(cluster, event, mcEvent, isESD); 
-    fHistClusterTMEffiInput->Fill(cluster->E(), 0, weight); //All cl 
+    fHistClusterTMEffiInput->Fill(cluster->E(), 0., weight); //All cl 
     if (classification == 5 )
-      fHistClusterTMEffiInput->Fill(cluster->E(), 1, weight); //Ch cl 
+      fHistClusterTMEffiInput->Fill(cluster->E(), 1., weight); //Ch cl 
     if (classification == 7 )
-      fHistClusterTMEffiInput->Fill(cluster->E(), 7, weight); //Ch cl 
+      fHistClusterTMEffiInput->Fill(cluster->E(), 7., weight); //Ch cl 
     if (classification == 4)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 6, weight); //conv electron cl 
+      fHistClusterTMEffiInput->Fill(cluster->E(), 6., weight); //conv electron cl 
     if (classification == 6)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 8, weight); // electron cl 
+      fHistClusterTMEffiInput->Fill(cluster->E(), 8., weight); // electron cl 
     if (classification == 0 || classification == 1)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 2, weight); // Ne cl match
+      fHistClusterTMEffiInput->Fill(cluster->E(), 2., weight); // Ne cl match
     if (classification == 1)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 3, weight); // Ne cl sub ch match
+      fHistClusterTMEffiInput->Fill(cluster->E(), 3., weight); // Ne cl sub ch match
     if (classification == 2 || classification == 3)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 4, weight); // Ga cl match
+      fHistClusterTMEffiInput->Fill(cluster->E(), 4., weight); // Ga cl match
     if ( classification == 3)
-      fHistClusterTMEffiInput->Fill(cluster->E(), 5, weight); // Ga cl sub ch match      
+      fHistClusterTMEffiInput->Fill(cluster->E(), 5., weight); // Ga cl sub ch match      
 
     Int_t nlabelsMatchedTracks      = 0;
     if (!fUsePtDepTrackToCluster)
@@ -1505,23 +1505,23 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       // TM efficiency histos after TM
       if (fIsMC && isMC && !fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
 
-        fHistClusterTMEffiInput->Fill(cluster->E(), 9, weight);
+        fHistClusterTMEffiInput->Fill(cluster->E(), 9., weight);
         if (classification == 5 )
-          fHistClusterTMEffiInput->Fill(cluster->E(), 10, weight); //Ch cl match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 10., weight); //Ch cl match
         if (classification == 4)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 16, weight); //conv cl match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 16., weight); //conv cl match
         if (classification == 0 || classification == 1)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 12, weight); // Ne cl match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 12., weight); // Ne cl match
         if ( classification == 1)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 13, weight); // Ne cl sub ch match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 13., weight); // Ne cl sub ch match
         if (classification == 2 || classification == 3)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 14, weight); // Ga cl match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 14., weight); // Ga cl match
         if ( classification == 3)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 15, weight); // Ga cl sub ch match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 15., weight); // Ga cl sub ch match
         if ( classification == 7)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 18, weight); // Ch prim cl match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 18., weight); // Ch prim cl match
         if ( classification == 6)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 20, weight); // El cl match
+          fHistClusterTMEffiInput->Fill(cluster->E(), 20., weight); // El cl match
           
         vector<Int_t> labelsMatchedTracks;
         if (!fUsePtDepTrackToCluster)
@@ -1560,18 +1560,18 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           fHistClusterEvsTrackECharged->Fill(cluster->E(), eMax, weight);
           if (foundLead ){
             if (classification == 5)
-              fHistClusterTMEffiInput->Fill(cluster->E(), 11, weight); //Ch cl match w lead
+              fHistClusterTMEffiInput->Fill(cluster->E(), 11., weight); //Ch cl match w lead
             if (classification == 7)
-              fHistClusterTMEffiInput->Fill(cluster->E(), 19, weight); //Ch prim cl match w lead
+              fHistClusterTMEffiInput->Fill(cluster->E(), 19., weight); //Ch prim cl match w lead
             if (classification == 6)
-              fHistClusterTMEffiInput->Fill(cluster->E(), 21, weight); //El cl match w lead
+              fHistClusterTMEffiInput->Fill(cluster->E(), 21., weight); //El cl match w lead
             fHistClusterEvsTrackEChargedLead->Fill(cluster->E(), eLead, weight);
           }
         }    
         if (classification == 4){
           fHistClusterEvsTrackEConv->Fill(cluster->E(), eMax, weight);
           if (foundLead)
-          fHistClusterTMEffiInput->Fill(cluster->E(), 17, weight); //conv cl match w lead
+          fHistClusterTMEffiInput->Fill(cluster->E(), 17., weight); //conv cl match w lead
         }
         if (classification == 0 )
           fHistClusterEvsTrackENeutral->Fill(cluster->E(), eMax, weight);    
