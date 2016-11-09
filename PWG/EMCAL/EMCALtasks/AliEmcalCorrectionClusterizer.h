@@ -7,8 +7,8 @@
 
 /**
  * @class AliEmcalCorrectionClusterizer
- * @brief EMCal clusterizer component in the EMCal correction framework. 
  * @ingroup EMCALCOREFW
+ * @brief EMCal clusterizer component in the EMCal correction framework.
  * 
  * Clusterizes a collection of cells into a collection of clusters.
  *
