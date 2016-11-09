@@ -38,6 +38,7 @@
 #include <AliRhoParameter.h>
 #include <AliLocalRhoParameter.h>
 #include <AliAnalysisTaskLocalRho.h>
+#include "AliMultSelection.h"
 
 class AliAnalysisTaskLocalRho;
 using namespace std;
@@ -301,10 +302,23 @@ Bool_t AliAnalysisTaskLocalRho::Run()
   if(!(InputEvent()||fTracks||fJets||fRho)) return kFALSE;
   if(!fInitialized) fInitialized = InitializeAnalysis();
   // get the centrality bin (necessary for some control histograms
+  if(InputEvent()->GetRunNumber()>200000)
+  {
+      Float_t lPercentile = 300;
+      AliMultSelection *MultSelection = 0x0;
+      MultSelection = (AliMultSelection*)InputEvent()->FindListObject("MultSelection");
+      if(!MultSelection) {
+          //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+          AliWarning("AliMultSelection object not found!");
+      }else{
+          lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+      }
+      fCent = lPercentile;
+  }
   fInCentralitySelection = -1;
-  Double_t cent(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+
   for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) {
-    if(cent >= fCentralityClasses->At(i) && cent <= fCentralityClasses->At(1+i)) {
+    if(fCent >= fCentralityClasses->At(i) && fCent <= fCentralityClasses->At(1+i)) {
       fInCentralitySelection = i;
       break; }
   }
