@@ -25,9 +25,9 @@ The following correction components are available:
 - [ClusterHadronicCorrection](\ref AliEmcalCorrectionClusterHadronicCorrection) -- For clusters that have one or more matched tracks, reduces the cluster energy in order to avoid overestimating the particle's energy.
 
 This new correction task unifies what was previously done by tasks such as:
- - [EMCal Tender](\ref AliEMCALTenderSupply)
- - [ClusterMaker](\ref AliEmcalClusterMaker)
+ - [EMCal Tender](\ref AliEmcalTenderTask)
  - [ClusterizerFast](\ref AliAnalysisTaskEMCALClusterizeFast)
+ - [ClusterMaker](\ref AliEmcalClusterMaker)
  - [ClusTrackMatcher](\ref AliEmcalClusTrackMatcherTask)
  - [HadCorr](\ref AliHadCorrTask)
 
@@ -48,6 +48,13 @@ corrections, and how to test your analysis results in the new vs. old correction
 There are two steps:
 - [Configure the Correction Add Task](\ref configureEMCalCorrectionRunMacro)
 - [Configure the Corrections](\ref configureEMCalCorrections)
+
+# Switching to the EMCal Corrections Framework
+
+For those who are switching to this framework, a special page has been prepared to explain the process.
+This page explains how to configure the correction framework alongside the previous set of corrections, allowing
+you to test and show that you get the same results with the new and old corrections!
+For the instructions, please see \subpage READMEemcCorrectionsChange.
 
 # Configure the Correction Add Task (or train wagon)            {#configureEMCalCorrectionRunMacro}
 
@@ -96,53 +103,48 @@ We will discuss a number of features including:
 To discuss the configuration and introduce, consider the configuration excerpt below as an example:
 
 ~~~
-# This is a comment!
-# The next line sets the cell branch name - note that we support the "usedefault" pattern of setting containers branch names.
-cellBranchName: "usedefault"   # Anything after a "hash" symbol is a comment.
-# This defines the "sharedParamters" section.
-inputObjects:
-    cells:
+# This is a comment! Comments can also be on inline - everything after the hash is a comment
+inputObjects:                               # Define all of the input objects for the corretions
+    cells:                                  # Configure cells
         # The user can select the name of each container
         # The names don't need to correspond to any particular scheme
         defaultCells:
+            # Note that we support the "usedefault" pattern of setting branch names.
             branchName: "usedefault"
-    clusterContainers:
+    clusterContainers:                      # Configure clusters
         # The user can select the name of each container
         # The names don't need to correspond to any particular scheme
-        defaultClusterContainer:
+        defaultClusterContainer:            # Name of a cluster input (corresponds to a cluster container)
             # Sets the branch name
             branchName: "usedefault"
             # Takes all default cuts!
-        defaultClusterContainer_1:
+        defaultClusterContainer_1:          # Name of another cluster input which inherits from defaultClusterContainer
             # The branch name is inherited from defaultClusterContainer!
-            minE: 0.0                        # Formerly clusterEMin
-            minPt: 0.0                       # Formerly clusterPtMin
-        defaultClusterContainer_2:
+            minE: 0.0                       # Cluster min E
+            minPt: 0.0                      # Cluster min pt
+        defaultClusterContainer_2:          # Name of another cluster input which inherits from defaultClusterContainer
             # The branch name is inherited from defaultClusterContainer!
-            minE: 0.0                        # Formerly clusterEMin
-            minPt: 0.0                       # Formerly clusterPtMin
+            minE: 0.0                       # Cluster min E
+            minPt: 0.0                      # Cluster min pt
             # Handled particularly for cluster containers
-            clusNonLinCorrEnergyCut: 0.15        # formerly "minPt" and then clusterNonLinCorrEnergyMin
+            clusNonLinCorrEnergyCut: 0.15   # formerly "minPt" in the non-linearity AddTask()
     trackContainers:
         # The user can select the name of each container
         # The names don't need to correspond to any particular scheme
-        defaultTrackContainer:
+        defaultTrackContainer:              # Name of a track input (corresponds to a track container)
             # Sets the branch name
             branchName: "usedefault"
             # Takes all default cuts!
-        defaultTrackContainer_1:
+        defaultTrackContainer_1:            # Name of another track input which inherits from defaultTrackContainer
             # The branch name is inherited from defaultClusterContainer!
-            minPt: 0.15                    # formerly "minPt"
-            # Can set AODFilterBits or track filters
-            trackFilterType: kHybridTracks
-            #aodFilterBits:
+            minPt: 0.15                    # Track min pt
+            trackFilterType: kHybridTracks          # Set the track filter type. Check the documentation for possible values
+            #aodFilterBits:                         # Can also set AOD filter bits. Check the docuemntation for more information
             #    - 16
             #    - 1
 sharedParameters:
-    # These are parameters shared by multiple correction components.
-    clusterBranchName: "usedefault"
-    trackBranchName: "usedefault"
-# This defines the settings for the "AliEmcalCorrectionCellEnergy" correction.
+    # You can define here any parameters that you would like to share between tasks. See the documentation for more information
+# This next section defines the settings for the "AliEmcalCorrectionCellEnergy" correction.
 # Note how the "AliEmcalCorrection" part of the name is not required when defining the settings
 CellEnergy:
     # All tasks can be enabled or disabled by setting the "enabled" property.
@@ -316,13 +318,6 @@ AliEmcalCorrectionTask * correctionTaskSpecialized = AddTaskEmcalCorrectionTask(
 Note that in doing this, it is then required that all additional corrections after the first specialized component are also specialized. This is necessary to make the users intentions clear. Continuing with the two clusterizers example, if we then want to run the cluster-track matcher, then we must created both ``ClusterTrackMatcher`` and ``ClusterTrackMatcher_mySpecialization`` with the proper configuration.
 
 It is extremely important to be careful to avoid apply corrections multiple times to the same collections! For instance, if running two clusterizers on the same cells collection, then the cell corrections must be disabled for one of the two corrections! If the above example had used the same cells, then it would have been required to disable them in one correction task (say, the "mySpecialization" task).
-
-# Switching to the EMCal Corrections Framework
-
-For those who are switching to this framework, a special page has been prepared to explain the process.
-This page explains how to configure the correction framework alongside the previous set of corrections, allowing
-you to test and show that you get the same results with the new and old corrections!
-For the instructions, please see \subpage READMEemcCorrectionsChange.
 
 # Details on the framework and the corrections
 
