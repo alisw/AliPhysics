@@ -40,6 +40,9 @@ public:
   virtual AliFemtoModelCorrFctn* Clone();
 
   Double_t GetQinvTrue(AliFemtoPair*);
+  
+  //Special MC analysis for K selected by PDG code -->
+  void SetKaonPDG(Bool_t aSetKaonAna);
 
 protected:
   AliFemtoModelManager *fManager; // Link back to the manager to get the weights
@@ -56,6 +59,9 @@ protected:
 
 
 private:
+  
+  //Special MC analysis for K selected by PDG code -->
+  Bool_t fKaonPDG;
 
 #ifdef __ROOT__
   /// \cond CLASSIMP

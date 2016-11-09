@@ -92,7 +92,13 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
-
+  //Special MC analysis for pi,K,p,e slected by PDG code -->
+  void SetPionAnalysis(Bool_t aSetPionAna);
+  void SetKaonAnalysis(Bool_t aSetKaonAna);
+  void SetProtonAnalysis(Bool_t aSetProtonAna);
+  void SetElectronAnalysis(Bool_t aSetElectronAna);
+  //Special MC analysis for pi,K,p,e slected by PDG code <--
+  
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
   virtual AliFemtoTrack *CopyAODtoFemtoTrack(AliAODTrack *tAodTrack
@@ -150,6 +156,14 @@ private:
   TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
+
+  //Special MC analysis for pi,K,p,e slected by PDG code -->
+  Bool_t fIsKaonAnalysis; // switch for Kaon analysis
+  Bool_t fIsProtonAnalysis; // switch for Proton analysis
+  Bool_t fIsPionAnalysis; // switch for Pion analysis
+  Bool_t fIsElectronAnalysis; // e+e- are taken (for gamma cut tuning)
+  //Special MC analysis for pi,K,p,e slected by PDG code <--
+
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
