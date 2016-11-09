@@ -1,130 +1,127 @@
-configurationName: "Default configuration"     # Optional - Simply for user convenience
-period: ""                                     # Must match the value given to the correction add task
-pass: ""                                       # Attempts to automatically retrieve the pass if not specified
+configurationName: "Default configuration"          # Optional - Simply for user convenience
+period: ""                                          # This value in the user configuration must match the value given to the correction add task
+pass: ""                                            # Attempts to automatically retrieve the pass if not specified
+# Look at the documentation for a full explanation of the input objects!
 inputObjects:
-    cells:
-        defaultCells:
-            branchName: "usedefault"
-        defaultCellsEmbedded:
-            branchName: "usedefault"
-            embedding: true
-    clusterContainers:
-        defaultClusterContainer:
-            # Sets the branch name
-            branchName: "usedefault"
-            #branchName: "sharedParameters:clusterBranchName"
-            # Takes all default cuts!
-        defaultClusterContainer_1:
-            # The branch name is inherited from defaultClusterContainer!
-            minE: 0.0                        # Formerly clusterEMin
-            minPt: 0.0                       # Formerly clusterPtMin
-        defaultClusterContainer_2:
-            # The branch name is inherited from defaultClusterContainer!
-            minE: 0.0                        # Formerly clusterEMin
-            minPt: 0.0                       # Formerly clusterPtMin
-            # We will handle this particularly for cluster containers
-            clusNonLinCorrEnergyCut: 0.15        # formerly "minPt" and then clusterNonLinCorrEnergyMin
-    trackContainers:
+    cells:                                          # Configure cells
+        defaultCells:                               # Name of a cell input
+            branchName: "usedefault"                # Sets the branch name. "usedefault" is supported
+    clusterContainers:                              # Configure clusters
         # The user can select the name of each container
         # The names don't need to correspond to any particular scheme
-        defaultTrackContainer:
-            # Sets the branch name
-            branchName: "usedefault"
-            #branchName: "sharedParameters:trackBranchName"
-            # Takes all default cuts!
-        defaultTrackContainer_1:
+        # Each cluster input corresponds to a cluster container
+        defaultClusterContainer:                    # Name of a cluster input
+            branchName: "usedefault"                # Set the branch name. "usedefault" is supported
+            # This cluster input takes all default cuts!
+        defaultClusterContainer_1:                  # Name of another cluster input which inherits from defaultClusterContainer
             # The branch name is inherited from defaultClusterContainer!
-            minPt: 0.15                    # formerly "minPt"
-            # Can set AODFilterBits or track filters
-            trackFilterType: kHybridTracks
-            #aodFilterBits: [16, 1]
-            #aodFilterBits:
+            minE: 0.0                               # Cluster min E. Formerly clusterEMin
+            minPt: 0.0                              # Cluster min pt. Formerly clusterPtMin
+        defaultClusterContainer_2:                  # Name of another cluster input which inherits from defaultClusterContainer
+            # The branch name is inherited from defaultClusterContainer!
+            minE: 0.0                               # Cluster min E.
+            minPt: 0.0                              # Cluster min pt.
+            clusNonLinCorrEnergyCut: 0.15           # Cluster non-linearity min E. Formerly "minPt" in the non-linearity AddTask() 
+    trackContainers:                                # Configure tracks
+        # The user can select the name of each container
+        # The names don't need to correspond to any particular scheme
+        # Each track input corresponds to a cluster container
+        defaultTrackContainer:                      # Name of a track input
+            branchName: "usedefault"                # Set the branch name. "usedefault" is supported.
+            # This track input takes all default cuts!
+        defaultTrackContainer_1:                    # Name of another track input which inherits from defaultTrackContainer
+            # The branch name is inherited from defaultTrackContainer!
+            minPt: 0.15                             # Track min pt.
+            trackFilterType: kHybridTracks          # Set the track filter type. Check the documentation for possible values
+            #aodFilterBits: [16, 1]                 # Can also set AOD filter bits. Check the docuemntation for more information
+            #aodFilterBits:                         # Either format is acceptable
             #    - 16
             #    - 1
 sharedParameters:
-    # These are parameters shared by multiple tasks
-    clusterBranchName: "usedefault"
-    trackBranchName: "usedefault"
-CellEnergy:
-    enabled: true
-    createHistos: true
-    cellsNames:
-        - defaultCells
-CellBadChannel:
-    enabled: true
-    createHistos: true
-    cellsNames:
-        - defaultCells
-CellTimeCalib:
-    enabled: true
-    createHistos: true
-    cellsNames:
-        - defaultCells
-Clusterizer:
-    enabled: true
-    createHistos: true
-    clusterizer: kClusterizerv2
-    cellE: 0.05
-    seedE: 0.1
-    cellTimeMin: -1                    # Min cell time (s)
-    cellTimeMax: +1                    # Max cell time (s)
-    clusterTimeLength: 1               # Maximum time difference between the digits inside EMC cluster (s)
-    w0: 4.5
-    recalDistToBadChannels: false
-    recalShowerShape: false
-    remapMcAod: false                  # Switch for the remaping for the MC labels in AOD productions
-    enableFracEMCRecalc: false         # Enables the recalculation of the MC labels including the fractional energy on cell level
-    setCellMCLabelFromCluster: 0       # Enables setting the cell MC label from the cluster. There are different modes depending on the value
-    removeNMCGenerators: 0             # set number of accepted MC generators input (only for enableFracEMCRecalc=1)
-    enableMCGenRemovTrack: true        # apply the MC generators rejection also for track matching
-    removeMCGen1: ""                   # name of generator input to be accepted
-    removeMCGen2: ""                   # name of generator input to be accepted
-    diffEAggregation: 0.03             # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
-    cellsNames:
-        - defaultCells
-    clusterContainersNames:
-        - defaultClusterContainer
-ClusterExotics:
-    enabled: true
-    createHistos: true
-    cellsNames:
-        - defaultCells
-    clusterContainersNames:
-        - defaultClusterContainer_1
-ClusterNonLinearity:
-    enabled: true
-    createHistos: true
-    nonLinFunct: kBeamTestCorrectedv3
-    cellsNames:
-        - defaultCells
-    clusterContainersNames:
-        - defaultClusterContainer_1
-ClusterTrackMatcher:
-    enabled: true
-    createHistos: true
-    maxDist: 0.1
-    updateClusters: true
-    updateTracks: true
-    cellsNames:
-        - defaultCells
-    clusterContainersNames:
-        - defaultClusterContainer_2
-    trackContainersNames:
-        - defaultTrackContainer
-ClusterHadronicCorrection:
-    enabled: true
-    createHistos: true
-    phiMatch: 0.030
-    etaMatch: 0.015
-    hadCorr: 2.
-    Eexcl: 0
-    doTrackClus: true
-    cellsNames:
-        - defaultCells
-    clusterContainersNames:
-        - defaultClusterContainer_2
-    trackContainersNames:
-        - defaultTrackContainer_1
+    # You can define here any parameters that you would like to share between tasks. See the documentation for more information
+CellEnergy:                                         # Cell Energy correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+CellBadChannel:                                     # Bad channel removal at the cell level component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+CellTimeCalib:                                      # Cell Time Calibration component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+Clusterizer:                                        # Clusterizer component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    clusterizer: kClusterizerv2                     # Type of clusterizer to use. Possible options are defined in the header of the clusterizer
+    cellE: 0.05                                     # Minimum cell energy
+    seedE: 0.1                                      # Seed energy threshold
+    cellTimeMin: -1                                 # Min cell time (s)
+    cellTimeMax: +1                                 # Max cell time (s)
+    clusterTimeLength: 1                            # Maximum time difference between the digits inside EMC cluster (s)
+    w0: 4.5                                         # w0
+    recalDistToBadChannels: false                   # True will recalculate the distance to bad channels
+    recalShowerShape: false                         # True will recalculate the shower shape
+    remapMcAod: false                               # Switch for the remaping for the MC labels in AOD productions
+    enableFracEMCRecalc: false                      # Enables the recalculation of the MC labels including the fractional energy on cell level
+    setCellMCLabelFromCluster: 0                    # Enables setting the cell MC label from the cluster. There are different modes depending on the value
+    removeNMCGenerators: 0                          # set number of accepted MC generators input (only for enableFracEMCRecalc=1)
+    enableMCGenRemovTrack: true                     # apply the MC generators rejection also for track matching
+    removeMCGen1: ""                                # name of generator input to be accepted
+    removeMCGen2: ""                                # name of generator input to be accepted
+    diffEAggregation: 0.03                          # difference E in aggregation of cells (i.e. stop aggregation if E_{new} > E_{prev} + diffEAggregation)
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer                   # This object is defined above in the cluster section of the input objects
+ClusterExotics:                                     # Cluster exotics identification component (actual removal is handled by the cluster container)
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterNonLinearity:                                # Cluster non-linearity correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    nonLinFunct: kBeamTestCorrectedv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_1                 # This object is defined above in the cluster section of the input objects
+ClusterTrackMatcher:                                # Cluster-track matcher component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    maxDist: 0.1                                    # Max distance between a matched cluster and track
+    updateClusters: true                            # Update the matching information in the cluster
+    updateTracks: true                              # Update the matching information in the track
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
+    trackContainersNames:                           # Names of the track input objects which should be attached to the correection
+        - defaultTrackContainer                     # This object is defined above in the track section of the input objects
+ClusterHadronicCorrection:                          # Cluster hadronic correction component
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    phiMatch: 0.030                                 # Phi match value
+    etaMatch: 0.015                                 # Eta match value
+    hadCorr: 2.                                     # Hadronic correction mode. See the task for further details
+    Eexcl: 0                                        # Cell energy that cannot be subtracted
+    doTrackClus: true                               # Loop over tracks first
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
+    clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
+        - defaultClusterContainer_2                 # This object is defined above in the cluster section of the input objects
+    trackContainersNames:                           # Names of the track input objects which should be attached to the correection
+        - defaultTrackContainer_1                   # This object is defined above in the track section of the input objects
+# Determines the order of execution for the correction components. Only experts needs to be any changes here!
+# Just because it is listed here does not mean it will be executed! That is determined by the "enabled" property
+# of each correction component
 executionOrder:
     - CellEnergy
     - CellBadChannel
