@@ -326,8 +326,10 @@ fTreeVariableDcaNegToPrimVertex(0),
 fTreeVariableV0CosineOfPointingAngle(0),
 fTreeVariableV0Radius(0),
 fTreeVariablePt(0),
+fTreeVariablePtMC(0),
 fTreeVariableRapK0Short(0),
 fTreeVariableRapLambda(0),
+fTreeVariableRapMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -369,8 +371,10 @@ fTreeCascVarCharge(0),
 fTreeCascVarMassAsXi(0),
 fTreeCascVarMassAsOmega(0),
 fTreeCascVarPt(0),
+fTreeCascVarPtMC(0),
 fTreeCascVarRapXi(0),
 fTreeCascVarRapOmega(0),
+fTreeCascVarRapMC(0),
 fTreeCascVarNegEta(0),
 fTreeCascVarPosEta(0),
 fTreeCascVarBachEta(0),
@@ -1807,7 +1811,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         Int_t lblMotherBachelor    = mcBach->GetFirstMother();
         
         // Extra: check mother particle pdg code completely independently
-        // Meant to provide extra info related to the bump 
+        // Meant to provide extra info related to the bump
         if ( lblMotherPosV0Dghter > -1 ){
             TParticle *lPosMother = lMCstack->Particle( lblMotherPosV0Dghter );
             fTreeCascVarPIDPositiveMother = lPosMother->GetPdgCode();
