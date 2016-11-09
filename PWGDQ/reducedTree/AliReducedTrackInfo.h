@@ -46,6 +46,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t  ITSSharedClusterMap()   const {return fITSSharedClusterMap;}
   Bool_t   ITSLayerHit(Int_t layer) const {return (layer>=0 && layer<6 ? (fITSclusterMap&(1<<layer)) : kFALSE);};
   Bool_t   ITSClusterIsShared(Int_t layer) const {return (layer>=0 && layer<6 ? (fITSSharedClusterMap&(1<<layer)) : kFALSE);};
+  UShort_t     ITSnSharedCls() const;
   Float_t  ITSsignal()              const {return fITSsignal;}
   Float_t  ITSnSig(Int_t specie)    const {return (specie>=0 && specie<=3 ? fITSnSig[specie] : -999.);}
   Float_t  ITSchi2()                const {return fITSchi2;}
@@ -163,6 +164,17 @@ inline UShort_t AliReducedTrackInfo::ITSncls() const
   UShort_t ncls=0;
   for(Int_t i=0; i<6; ++i) ncls += (ITSLayerHit(i) ? 1 : 0);
   return ncls;
+}
+
+//_______________________________________________________________________________
+inline UShort_t AliReducedTrackInfo::ITSnSharedCls() const
+{
+   //
+   // ITS number of shared clusters from the shared cluster map
+   //
+   UShort_t ncls=0;
+   for(Int_t i=0; i<6; ++i) ncls += (ITSClusterIsShared(i) ? 1 : 0);
+   return ncls;
 }
 
 

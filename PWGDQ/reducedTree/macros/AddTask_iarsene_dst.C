@@ -125,10 +125,11 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    task->SetTreeInactiveBranch("fL1TriggerInputs");
    task->SetTreeInactiveBranch("fL2TriggerInputs");
    task->SetTreeInactiveBranch("fBC");
-   task->SetTreeInactiveBranch("fTimeStamp");
+   //task->SetTreeInactiveBranch("fTimeStamp");
    task->SetTreeInactiveBranch("fEventType");
    //task->SetTreeInactiveBranch("fTriggerMask");
    //task->SetTreeInactiveBranch("fMultiplicityEstimators*");
+   //task->SetTreeInactiveBranch("fMultiplicityEstimatorPercentiles*");
    //task->SetTreeInactiveBranch("fIsPhysicsSelection");
    //task->SetTreeInactiveBranch("fIsSPDPileup");
    //task->SetTreeInactiveBranch("fIsSPDPileupMultBins");
@@ -147,7 +148,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fSPDFiredChips*");
    //task->SetTreeInactiveBranch("fITSClusters*");
    //task->SetTreeInactiveBranch("fSPDnSingle");
-   task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
+   //task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
    task->SetTreeInactiveBranch("fVZEROMult*");
    //task->SetTreeInactiveBranch("fVZEROTotalMult*");
    task->SetTreeInactiveBranch("fZDCnEnergy*");
@@ -185,10 +186,10 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    task->SetTreeInactiveBranch("fTracks.fHelixCenter*");
    task->SetTreeInactiveBranch("fTracks.fHelixRadius");
    //task->SetTreeInactiveBranch("fTracks.fITSclusterMap");
-   task->SetTreeInactiveBranch("fTracks.fITSSharedClusterMap");
+   //task->SetTreeInactiveBranch("fTracks.fITSSharedClusterMap");
    task->SetTreeInactiveBranch("fTracks.fITSsignal");
    task->SetTreeInactiveBranch("fTracks.fITSnSig*");
-   task->SetTreeInactiveBranch("fTracks.fITSchi2");
+   //task->SetTreeInactiveBranch("fTracks.fITSchi2");
    //task->SetTreeInactiveBranch("fTracks.fTPCNcls");
    //task->SetTreeInactiveBranch("fTracks.fTPCCrossedRows");
    //task->SetTreeInactiveBranch("fTracks.fTPCNclsF");
@@ -207,7 +208,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    task->SetTreeInactiveBranch("fTracks.fTOFmismatchProbab");
    task->SetTreeInactiveBranch("fTracks.fTOFchi2");
    task->SetTreeInactiveBranch("fTracks.fTOFnSig*");
-   //task->SetTreeInactiveBranch("fTracks.fTOFdeltaBC");
+   task->SetTreeInactiveBranch("fTracks.fTOFdeltaBC");
    task->SetTreeInactiveBranch("fTracks.fTRDntracklets*");
    task->SetTreeInactiveBranch("fTracks.fTRDpid*");
    task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
