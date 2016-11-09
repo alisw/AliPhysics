@@ -187,29 +187,29 @@ Bool_t AliJJetTask::FillHistograms()
   }
 
   //FIXME Search by container name
-  AliMCParticleContainer * mcTracksCont = GetMCParticleContainer("mcparticles");
-  if(debug > 0){
-    cout << "MCParticleContainer name: " << mcTracksCont->GetName() << endl;
-  }
-  if( mcTracksCont ){
-    if(debug > 0){
-      cout << "mcTracksCont->GetNParticles(): " << mcTracksCont->GetNParticles() << endl;
-    }
-    int tracks = 0;
-    for (int itrack = 0; itrack<mcTracksCont->GetNParticles(); itrack++){
-      AliAODMCParticle *track = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(itrack));
-      new (fJMCTracks[itrack]) AliJMCTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
-      tracks++;
-      AliJMCTrack * particle = static_cast<AliJMCTrack*>(fJMCTracks[itrack]);
-      if(track->IsPhysicalPrimary()){
-        particle->SetPrimary();
+  if(fIsMC){
+    AliMCParticleContainer * mcTracksCont = GetMCParticleContainer("mcparticles");
+    if( mcTracksCont ){
+      if(debug > 0){
+        cout << "MCParticleContainer name: " << mcTracksCont->GetName() << endl;
+        cout << "mcTracksCont->GetNParticles(): " << mcTracksCont->GetNParticles() << endl;
       }
-      particle->SetPdgCode(track->GetPdgCode());
-      particle->SetLabel(track->GetLabel());
-      particle->SetMother(track->GetMother(),track->GetMother());
-    }     
-    if(debug > 0){
-      cout << "Number of accepted tracks: " << tracks << endl;
+      int tracks = 0;
+      for (int itrack = 0; itrack<mcTracksCont->GetNParticles(); itrack++){
+        AliAODMCParticle *track = static_cast<AliAODMCParticle*>(mcTracksCont->GetParticle(itrack));
+        new (fJMCTracks[itrack]) AliJMCTrack(track->Px(),track->Py(), track->Pz(), track->E(), itrack,0,track->Charge());
+        tracks++;
+        AliJMCTrack * particle = static_cast<AliJMCTrack*>(fJMCTracks[itrack]);
+        if(track->IsPhysicalPrimary()){
+          particle->SetPrimary();
+        }
+        particle->SetPdgCode(track->GetPdgCode());
+        particle->SetLabel(track->GetLabel());
+        particle->SetMother(track->GetMother(),track->GetMother());
+      }     
+      if(debug > 0){
+        cout << "Number of accepted tracks: " << tracks << endl;
+      }
     }
   }
 
