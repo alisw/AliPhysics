@@ -462,15 +462,15 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
      eventInfo->fMultiplicityEstimatorPercentiles[9] = multSelection->GetMultiplicityPercentile("RefMult08");
      AliMultEstimator* estimator = 0x0;
      estimator = multSelection->GetEstimator("OnlineV0M"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("OnlineV0A"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("OnlineV0C"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("ADM"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("ADA"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("ADC"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("SPDClusters"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("SPDTracklets"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("RefMult05"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();
-     estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[0] = estimator->GetValue();     
+     estimator = multSelection->GetEstimator("OnlineV0A"); if(estimator) eventInfo->fMultiplicityEstimators[1] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("OnlineV0C"); if(estimator) eventInfo->fMultiplicityEstimators[2] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("ADM"); if(estimator) eventInfo->fMultiplicityEstimators[3] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("ADA"); if(estimator) eventInfo->fMultiplicityEstimators[4] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("ADC"); if(estimator) eventInfo->fMultiplicityEstimators[5] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("SPDClusters"); if(estimator) eventInfo->fMultiplicityEstimators[6] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("SPDTracklets"); if(estimator) eventInfo->fMultiplicityEstimators[7] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("RefMult05"); if(estimator) eventInfo->fMultiplicityEstimators[8] = estimator->GetValue();
+     estimator = multSelection->GetEstimator("RefMult08"); if(estimator) eventInfo->fMultiplicityEstimators[9] = estimator->GetValue();     
   }
   
   AliVVertex* eventVtxSPD = 0x0;
