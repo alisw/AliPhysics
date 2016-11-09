@@ -116,7 +116,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
   fNClustersITSMin(INT_MIN),  
-  fUseAODFilterBit(kFALSE),
+  fUseAODFilterBit(kTRUE),
   fAODFilterBit(1),
   fCutDCAToVertexXY(kFALSE),
   fCutDCAToVertexZ(kFALSE),
@@ -244,7 +244,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
   fNClustersITSMin(INT_MIN),
-  fUseAODFilterBit(kFALSE),
+  fUseAODFilterBit(kTRUE),
   fAODFilterBit(1),
   fCutDCAToVertexXY(kFALSE),
   fCutDCAToVertexZ(kFALSE),
@@ -1319,29 +1319,28 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (GetRequireITSRefit() && !(track->GetStatus() & AliESDtrack::kITSrefit) ) pass=kFALSE;
   
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
-  
+  cout << "usebit" << fUseAODFilterBit << "pass" << pass << endl;
   Double_t DCAxy = track->DCA();
   Double_t DCAz = track->ZAtDCA();
-  if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
-    // re-evaluate the dca as it seems to not be natively present
-    // allowed only for tracks inside the beam pipe
-    Double_t pos[3] = {-99., -99., -99.};
-    track->GetPosition(pos);
-    if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
-      AliAODTrack copy(*track);       // stack copy
-      Double_t b[2] = {-99., -99.};
-      Double_t bCov[3] = {-99., -99., -99.};
-      if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
-        DCAxy = b[0];
-        DCAz = b[1];
+  if(fCutDCAToVertexXY || fCutDCAToVertexZ) {
+    if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
+      // re-evaluate the dca as it seems to not be natively present
+      // allowed only for tracks inside the beam pipe
+      Double_t pos[3] = {-99., -99., -99.};
+      track->GetPosition(pos);
+      if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
+        AliAODTrack copy(*track);       // stack copy
+        Double_t b[2] = {-99., -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
+          DCAxy = b[0];
+          DCAz = b[1];
+        }
       }
     }
+    if (TMath::Abs(DCAxy)>GetMaxDCAToVertexXY()) pass=kFALSE;
+    if (TMath::Abs(DCAz)>GetMaxDCAToVertexZ()) pass=kFALSE;
   }
-
-  if (fCutDCAToVertexXY && TMath::Abs(DCAxy)>GetMaxDCAToVertexXY()) pass=kFALSE;
-
-  if (fCutDCAToVertexZ && TMath::Abs(DCAz)>GetMaxDCAToVertexZ()) pass=kFALSE;
-
   Double_t dedx = track->GetTPCsignal();
   if(fCutMinimalTPCdedx) {
     if (dedx < fMinimalTPCdedx) pass=kFALSE;
