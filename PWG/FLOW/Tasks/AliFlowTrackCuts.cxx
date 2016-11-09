@@ -1319,7 +1319,6 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (GetRequireITSRefit() && !(track->GetStatus() & AliESDtrack::kITSrefit) ) pass=kFALSE;
   
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
-  cout << "usebit" << fUseAODFilterBit << "pass" << pass << endl;
   Double_t DCAxy = track->DCA();
   Double_t DCAz = track->ZAtDCA();
   if(fCutDCAToVertexXY || fCutDCAToVertexZ) {
