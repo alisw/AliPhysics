@@ -98,6 +98,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fCent(0),
   fVtxZ(0),
   fHistClustE(0),
+  fHistClustEtime(0),
   fHistClustEcent(0),
   fEMCClsEtaPhi(0),
   fHistClustEEG1(0),
@@ -194,6 +195,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fCent(0), 
   fVtxZ(0),
   fHistClustE(0),
+  fHistClustEtime(0),
   fHistClustEcent(0),
   fEMCClsEtaPhi(0),
   fHistClustEEG1(0),
@@ -341,6 +343,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
   fOutputList->Add(fHistClustE);
+
+  fHistClustEtime = new TH1F("fHistClustEtime", "EMCAL cluster energy distribution with time; Cluster E;counts", 5000, 0.0, 50.0);
+  fOutputList->Add(fHistClustEtime);
 
   fHistClustEcent = new TH2F("fHistClustEcent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,5000, 0.0, 50.0);
   fOutputList->Add(fHistClustEcent);
@@ -705,6 +710,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(emcphi > 1.39 && emcphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
       if(emcphi > 4.53 && emcphi < 5.708) fClsTypeDCAL = kTRUE; //DCAL  : 260 < phi < 327
 
+      Float_t tof = clust->GetTOF()*1e+9; // ns
+
       //----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
       if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
         if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
@@ -714,6 +721,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       Double_t clustE = clust->E();
       fHistClustE->Fill(clustE);
+      if(tof>-30 && tof<30)fHistClustEtime->Fill(clustE);
       if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);
 
@@ -929,6 +937,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       }
 
       Float_t tof = clustMatch->GetTOF()*1e+9; // ns
+      if(tof<-30 && tof>30)continue; // timing cut
 
       //EMCAL EID info
       Double_t eop = -1.0;
