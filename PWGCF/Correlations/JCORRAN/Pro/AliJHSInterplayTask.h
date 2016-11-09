@@ -11,6 +11,7 @@
 #include "AliJEfficiency.h"
 #include "AliJFFlucAnalysis.h"
 #include "AliMCParticle.h"
+#include "AliJJetTask.h"
 
 //#include <fstream>
 
@@ -54,12 +55,15 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		void RegisterList(TClonesArray* listToFill, TClonesArray* listFromToFill,double lpt, double hpt);
 		void SetPtHardMin( double pthardmin ){fPtHardMin = pthardmin; };
 		void SetPtHardMax( double pthardmax ){fPtHardMax = pthardmax; };
+		void SetJetTaskName(TString name){ fJetTaskName=name; }
 
 	private:
 		TDirectory           *fOutput;     // Output
 
 		AliAnalysisUtils *fAnaUtils;
 		AliJFFlucAnalysis *fFFlucAna;
+		AliJJetTask           * fJetTask;
+		TString fJetTaskName;
 
 		AliJCard * fCard;
 		AliJHistos *fHistos;
