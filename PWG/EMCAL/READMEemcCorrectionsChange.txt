@@ -3,9 +3,6 @@
 Switching to the EMCal correction framework is a straightforward process. It should be possible to configure with
 your desired settings in less than an hour.
 
-Before using the EMCal correction framework, it is extremely important that your code is updated enough that it is using
-EMCal containers with your analysis. See [here](\ref READMEchangefw) for instructions to update, if you need. 
-
 # Transition your correction settings to the EMCal Corrections Framework
 
 If you plan to test and verify that everything works the same (which we strongly encourage!) be certain not to delete your previous corrections!
@@ -16,7 +13,7 @@ Follow the same procedure as described on \ref READMEemcCorrections.
 
 # Test and verify the changes                     {#emcalCorrectionsVerifyChanges}
 
-To test and verify the changes, we have a general procedure, as well as tools to help verify automatically. **NOTE: This procedure only works for analyses already using EMCal Containers! Older tasks must first update to at least use EMCal containers to use this tool!**
+To test and verify the changes, we have a general procedure, as well as tools to help verify automatically. **NOTE: This procedure only works for analyses already using EMCal Containers! Older tasks must first update to at least use EMCal containers to use this tool!** See [here](\ref READMEchangefw) for instructions to update, if you need. Alternatively, you can test without EMCal containers, but these instructions **do not** apply.
 
 The general procedure is as follows:
 
@@ -145,7 +142,19 @@ In exceptional cases, you will need to pass the name corresponding to the name o
 python compareHistos.py -f ../exampleDir/AnalysisResults.root -n MyAnalysisOutputListFromNewCorrections -o MyAnalysisOutputListFromOldCorrections
 ~~~
 
-If the outputs do not match initially, please double check your settings! If they still do not match, then please let us know!
+If the outputs do not match initially, please double check your settings! If they still do not match, then consider running a statistical bin-by-bin comparsion. To do so, use the ``-s`` option:
+
+~~~{.sh}
+python compareHistos.py -f ../exampleDir/AnalysisResults.root -s
+~~~
+
+When running this statistical test, you can set the threshold for the fractional disagreement using the ``-t`` option:
+
+~~~{.sh}
+python compareHistos.py -f ../exampleDir/AnalysisResults.root -s -t 0.01
+~~~
+
+After all that, if they still do not match, then please let us know!
 
 Help for the script is available with `python compareHistos.py --help`. (If you are using aliBuild, you'll need to set your ``$PYTHONPATH`` variable. In bash, you can do this by setting ``export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH``. Other shells may vary.)
 

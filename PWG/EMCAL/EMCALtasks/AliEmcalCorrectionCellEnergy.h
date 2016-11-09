@@ -5,8 +5,8 @@
 
 /**
  * @class AliEmcalCorrectionCellEnergy
- * @brief Energy calibration correction component in the EMCal correction framework. 
  * @ingroup EMCALCOREFW
+ * @brief Energy calibration correction component in the EMCal correction framework.
  *
  * Performs energy calibration of cells, using OADB calibration. The original cell information in the event **will be overwritten**.
  *

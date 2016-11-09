@@ -2,7 +2,7 @@ configurationName: "Default configuration"          # Optional - Simply for user
 period: ""                                          # This value in the user configuration must match the value given to the correction add task
 pass: ""                                            # Attempts to automatically retrieve the pass if not specified
 # Look at the documentation for a full explanation of the input objects!
-inputObjects:
+inputObjects:                                       # Define all of the input objects for the corrections
     cells:                                          # Configure cells
         defaultCells:                               # Name of a cell input
             branchName: "usedefault"                # Sets the branch name. "usedefault" is supported
@@ -39,6 +39,8 @@ inputObjects:
             #    - 1
 sharedParameters:
     # You can define here any parameters that you would like to share between tasks. See the documentation for more information
+# This defines the settings for the "AliEmcalCorrectionCellEnergy" correction.
+# Note how the "AliEmcalCorrection" part of the name is not required when defining the settings
 CellEnergy:                                         # Cell Energy correction component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
