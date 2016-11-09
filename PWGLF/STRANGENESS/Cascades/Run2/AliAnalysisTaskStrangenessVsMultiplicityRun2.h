@@ -141,6 +141,9 @@ public:
     void SetMinPt     ( Float_t lMinPt ) {
         fMinPtToSave = lMinPt;
     }
+    void SetMaxPt     ( Float_t lMaxPt ) {
+        fMaxPtToSave = lMaxPt;
+    }
 //---------------------------------------------------------------------------------------
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
@@ -174,6 +177,7 @@ private:
     Double_t fDownScaleFactorV0;
     Bool_t fkPreselectDedx;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
+    Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
@@ -188,7 +192,8 @@ private:
     Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
     Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
     
-    Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output 
+    Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
 
 //===========================================================================================
 //   Variables for Event Tree
@@ -284,10 +289,24 @@ private:
     Float_t fTreeCascVarNegdEdx; //!
     Float_t fTreeCascVarPosdEdx; //!
     Float_t fTreeCascVarBachdEdx; //!
-
-    Float_t fTreeCascVarNegTotMom; //!
-    Float_t fTreeCascVarPosTotMom; //!
-    Float_t fTreeCascVarBachTotMom; //!
+    
+    //Variables for debugging the invariant mass bump
+    //Full momentum information
+    Float_t fTreeCascVarNegPx; //!
+    Float_t fTreeCascVarNegPy; //!
+    Float_t fTreeCascVarNegPz; //!
+    Float_t fTreeCascVarPosPx; //!
+    Float_t fTreeCascVarPosPy; //!
+    Float_t fTreeCascVarPosPz; //!
+    Float_t fTreeCascVarBachPx; //!
+    Float_t fTreeCascVarBachPy; //!
+    Float_t fTreeCascVarBachPz; //!
+    //Track Labels (check for duplicates, etc)
+    Int_t fTreeCascVarNegIndex; //!
+    Int_t fTreeCascVarPosIndex; //!
+    Int_t fTreeCascVarBachIndex; //!
+    //Event Number (check same-event index mixups)
+    ULong64_t fTreeCascVarEventNumber; //!
     
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
