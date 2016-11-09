@@ -152,7 +152,7 @@ AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
       exit(1);
     }
   } // end of if(sDataSet=="2010" && !bZDCMCCen)
-  if(bCalibEZDC) {
+  if(bCalibEZDC && sDataSet=="2015") {
     TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root";
     TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
     gROOT->cd();
