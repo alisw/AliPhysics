@@ -65,6 +65,16 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Float_t   MultEstimatorSPDTracklets()   const {return fMultiplicityEstimators[7];}
   Float_t   MultEstimatorRefMult05()   const {return fMultiplicityEstimators[8];}
   Float_t   MultEstimatorRefMult08()   const {return fMultiplicityEstimators[9];}
+  Float_t   MultEstimatorPercentileOnlineV0M()   const {return fMultiplicityEstimatorPercentiles[0];}
+  Float_t   MultEstimatorPercentileOnlineV0A()   const {return fMultiplicityEstimatorPercentiles[1];}
+  Float_t   MultEstimatorPercentileOnlineV0C()   const {return fMultiplicityEstimatorPercentiles[2];}
+  Float_t   MultEstimatorPercentileADM()   const {return fMultiplicityEstimatorPercentiles[3];}
+  Float_t   MultEstimatorPercentileADA()   const {return fMultiplicityEstimatorPercentiles[4];}
+  Float_t   MultEstimatorPercentileADC()   const {return fMultiplicityEstimatorPercentiles[5];}
+  Float_t   MultEstimatorPercentileSPDClusters()   const {return fMultiplicityEstimatorPercentiles[6];}
+  Float_t   MultEstimatorPercentileSPDTracklets()   const {return fMultiplicityEstimatorPercentiles[7];}
+  Float_t   MultEstimatorPercentileRefMult05()   const {return fMultiplicityEstimatorPercentiles[8];}
+  Float_t   MultEstimatorPercentileRefMult08()   const {return fMultiplicityEstimatorPercentiles[9];}
   
   Float_t   MultChannelVZERO(Int_t channel)   const {return (channel>=0 && channel<=63 ? fVZEROMult[channel] : -999.);}
   Float_t   MultVZEROA()                      const;
@@ -138,6 +148,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fEventType;             // event type                             
   ULong64_t fTriggerMask;           // trigger mask
   Float_t   fMultiplicityEstimators[10];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
+  Float_t   fMultiplicityEstimatorPercentiles[10];   // multiplicity estimators: "OnlineV0M", "OnlineV0A", "OnlineV0C", "ADM", "ADA", "ADC", "SPDClusters", "SPDTracklets", "RefMult05", "RefMult08"
   Bool_t    fIsPhysicsSelection;    // PhysicsSelection passed event
   Bool_t    fIsSPDPileup;           // identified as pileup event by SPD
   Bool_t    fIsSPDPileupMultBins;   // identified as pileup event by SPD in multiplicity bins
@@ -183,7 +194,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   AliReducedEventInfo(const AliReducedEventInfo &c);
   AliReducedEventInfo& operator= (const AliReducedEventInfo &c);
 
-  ClassDef(AliReducedEventInfo, 5);
+  ClassDef(AliReducedEventInfo, 6);
 };
 
 #endif

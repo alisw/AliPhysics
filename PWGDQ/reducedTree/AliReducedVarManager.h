@@ -151,23 +151,31 @@ class AliReducedVarManager : public TObject {
   
   enum Variables {
     kNothing = -1,
+    // Run wise variables (LHC and ALICE GRP information)
+    kTotalLuminosity = 0,   // total run delivered lumi
+    kBeamIntensity0,    // beam 0 intensity
+    kBeamIntensity1,    // beam 1 intensity
+    kLHCFillNumber,     // LHC fill number
+    kDipolePolarity,    // dipole magnet polarity
+    kL3Polarity,        // L3 magnet polarity
+    kRunTimeStart,   // run start time
+    kRunTimeEnd,     // run end time
+    kNRunWiseVariables,
+    
     // Event wise variables
-    kEventTag = 0,      // event tag
+    kEventTag = kNRunWiseVariables,      // event tag
     kEventNumberInFile, // event number in file
     kL0TriggerInput,    // L0 trigger input
     kL1TriggerInput,    // L1 trigger input
     kL2TriggerInput,    // L2 trigger input
     kRunNo,             // run number         
-    kLHCFillNumber,     // LHC fill number
     kBeamEnergy,        // LHC beam energy
     kDetectorMask,      // detector mask
     kNumberOfDetectors, // number of active detectors
-    kDipolePolarity,    // dipole magnet polarity
-    kL3Polarity,        // L3 magnet polarity
-    kBeamIntensity0,    // beam 0 intensity
-    kBeamIntensity1,    // beam 1 intensity
     kBC,                // bunch crossing     
     kTimeStamp,         // time stamp of the event
+    kTimeRelativeSOR,   // time relative to the start of run, in minutes
+    kTimeRelativeSORfraction,   // time relative to the start of runs, expressed as fraction of the whole run duration 
     kEventType,         // event type
     kTriggerMask,       // trigger mask       
     kOnlineTriggersFired,// 1 if fired, 0 if not fired, for each trigger
@@ -214,7 +222,7 @@ class AliReducedVarManager : public TObject {
     kCentQuality,       // centrality quality   
     kNV0total,          // total number of V0s in the esd      
     kNV0selected,       // number of V0s selected              
-    kNpairsSelected,    // number of selected dielectron pairs per event  
+    kNpairsSelected,    // number of selected pairs per event  
     kNDplusToK0sPiplusSelected,       // D+           -> K0s pi+
     kNDplusToK0sKplusSelected,        // D+           -> K0s K+
     kNDplusToPhiPiplusSelected,       // D+           -> phi pi+
@@ -487,16 +495,16 @@ class AliReducedVarManager : public TObject {
   static TString GetVarName(Int_t var) {return fgVariableNames[var];} 
   static TString GetVarUnit(Int_t var) {return fgVariableUnits[var];} 
 
-  //static TString* GetVarNames();
-  //static TString* GetVarUnits();
-
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
+  static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
+  static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   
  private:
+  static Int_t     fgCurrentRunNumber;               // current run number
   static Float_t fgBeamMomentum;                  // beam energy (needed when calculating polarization angles) 
   static AliReducedBaseEvent* fgEvent;            // pointer to the current event
   static AliReducedEventPlaneInfo* fgEventPlane;  // pointer to the current event plane
-  static Bool_t fgUsedVars[kNVars];              // array of flags toggled in the histogram manager 
+  static Bool_t fgUsedVars[kNVars];              // array of flags toggled when the corresponding variable is required (e.g., in the histogram manager, in cuts, mixing handler, etc.) 
                                                  //   when a variable is used
   static void SetVariableDependencies();       // toggle those variables on which other used variables might depend 
   
@@ -508,10 +516,19 @@ class AliReducedVarManager : public TObject {
 			    Float_t leg1Mass=fgkParticleMass[kElectron], Float_t leg2Mass=fgkParticleMass[kElectron]);
   static void GetLegMassAssumption(Int_t id, Float_t& m1, Float_t& m2);
 
-  static TH2F* fgTPCelectronCentroidMap;
-  static TH2F* fgTPCelectronWidthMap;
+  static TH2F* fgTPCelectronCentroidMap;    // TPC electron centroid 2D map
+  static TH2F* fgTPCelectronWidthMap;       // TPC electron width 2D map
   static Variables fgVarDependencyX;        // varX in the 2-D electron correction maps
   static Variables fgVarDependencyY;        // varY in the 2-D electron correction maps
+  
+  static TH1F* fgRunTotalLuminosity;      // total luminosity, GRP/GRP/LHCData::GetLumiAliceSBDelivered()
+  static TH1F* fgRunTotalIntensity0;        // total intensity beam 1, GRP/GRP/LHCData::GetTotalIntensity(0)
+  static TH1F* fgRunTotalIntensity1;         // total intensity beam 2, GRP/GRP/LHCData::GetTotalIntensity(1)
+  static TH1I* fgRunLHCFillNumber;         // LHC fill number, GRP/GRP/LHCData::GetFillNumber()
+  static TH1I* fgRunDipolePolarity;          // dipole magnet polarity, GRP/GRP/Data::GetDipolePolarity()
+  static TH1I* fgRunL3Polarity;                // L3 magnet polarity, GRP/GRP/Data::GetL3Polarity()
+  static TH1I* fgRunTimeStart;                // run start time, GRP/GRP/Data::GetTimeStart()
+  static TH1I* fgRunTimeEnd;                  // run stop time, GRP/GRP/Data::GetTimeEnd()
   
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  

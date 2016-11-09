@@ -99,7 +99,8 @@ const Double_t AliReducedVarManager::fgkVZEROCz = 90.0;    // cm
 const Double_t AliReducedVarManager::fgkVZEROminMult = 0.0;   // minimum VZERO channel multiplicity
 const Float_t  AliReducedVarManager::fgkTPCQvecRapGap = 0.8;    // symmetric interval in the middle of the TPC excluded from EP calculation
       Float_t  AliReducedVarManager::fgBeamMomentum = 1380.;   // beam momentum in GeV/c
-      
+     
+Int_t      AliReducedVarManager::fgCurrentRunNumber = -1;
 TString AliReducedVarManager::fgVariableNames[AliReducedVarManager::kNVars] = {""};
 TString AliReducedVarManager::fgVariableUnits[AliReducedVarManager::kNVars] = {""};
 AliReducedBaseEvent* AliReducedVarManager::fgEvent = 0x0;
@@ -109,6 +110,14 @@ TH2F* AliReducedVarManager::fgTPCelectronCentroidMap = 0x0;
 TH2F* AliReducedVarManager::fgTPCelectronWidthMap = 0x0;
 AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyX = kNothing;
 AliReducedVarManager::Variables AliReducedVarManager::fgVarDependencyY = kNothing;
+TH1F* AliReducedVarManager::fgRunTotalLuminosity = 0x0;
+TH1F* AliReducedVarManager::fgRunTotalIntensity0 = 0x0;
+TH1F* AliReducedVarManager::fgRunTotalIntensity1 = 0x0;
+TH1I* AliReducedVarManager::fgRunLHCFillNumber = 0x0;
+TH1I* AliReducedVarManager::fgRunDipolePolarity = 0x0;
+TH1I* AliReducedVarManager::fgRunL3Polarity = 0x0;
+TH1I* AliReducedVarManager::fgRunTimeStart = 0x0;
+TH1I* AliReducedVarManager::fgRunTimeEnd = 0x0;
 
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
@@ -277,9 +286,26 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   
   EVENT* event = (EVENT*)baseEvent;
   
+  // fill GRP information if available (needed for the first event filled and whenever the run changes)
+  if(fgCurrentRunNumber!=baseEvent->RunNo()) {
+    fgCurrentRunNumber = baseEvent->RunNo();
+    if(fgRunTotalLuminosity) values[kTotalLuminosity] = fgRunTotalLuminosity->GetBinContent(fgRunTotalLuminosity->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgRunTotalIntensity0) values[kBeamIntensity0] = fgRunTotalIntensity0->GetBinContent(fgRunTotalIntensity0->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgRunTotalIntensity1) values[kBeamIntensity1] = fgRunTotalIntensity1->GetBinContent(fgRunTotalIntensity1->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgRunLHCFillNumber) values[kLHCFillNumber] = fgRunLHCFillNumber->GetBinContent(fgRunLHCFillNumber->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgRunDipolePolarity) values[kDipolePolarity] = fgRunDipolePolarity->GetBinContent(fgRunDipolePolarity->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgRunL3Polarity) values[kL3Polarity] = fgRunL3Polarity->GetBinContent(fgRunL3Polarity->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgRunTimeStart) values[kRunTimeStart] = fgRunTimeStart->GetBinContent(fgRunTimeStart->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    if(fgRunTimeEnd) values[kRunTimeEnd] = fgRunTimeEnd->GetBinContent(fgRunTimeEnd->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+  }
+  
   values[kEventNumberInFile]    = event->EventNumberInFile();
   values[kBC]                   = event->BC();
   values[kTimeStamp]            = event->TimeStamp();
+  if(fgUsedVars[kTimeRelativeSOR]) values[kTimeRelativeSOR] = (event->TimeStamp() - values[kRunTimeStart]) / 60.;
+  if(fgUsedVars[kTimeRelativeSORfraction] && 
+     (values[kRunTimeEnd]-values[kRunTimeStart])>1.)   // the run should be longer than 1 second ... 
+    values[kTimeRelativeSORfraction] = (event->TimeStamp() - values[kRunTimeStart]) / (values[kRunTimeEnd] - values[kRunTimeStart]);
   values[kEventType]            = event->EventType();
   values[kTriggerMask]          = event->TriggerMask();
   values[kIsPhysicsSelection]   = (event->IsPhysicsSelection() ? 1.0 : 0.0);
@@ -1215,10 +1241,15 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNumberOfDetectors]    = "Number of active detectors";      fgVariableUnits[kNumberOfDetectors]    = "";  
   fgVariableNames[kDipolePolarity]       = "Dipole magnet polarity";          fgVariableUnits[kDipolePolarity]       = "";
   fgVariableNames[kL3Polarity]           = "L3 magnet polarity";              fgVariableUnits[kL3Polarity]           = "";
+  fgVariableNames[kTotalLuminosity]  = "Run luminosity";                    fgVariableUnits[kTotalLuminosity]  = "";
   fgVariableNames[kBeamIntensity0]       = "Beam 0 intensity";                fgVariableUnits[kBeamIntensity0]       = "";
   fgVariableNames[kBeamIntensity1]       = "Beam 1 intensity";                fgVariableUnits[kBeamIntensity1]       = "";
+  fgVariableNames[kRunTimeStart]         = "Run start time";                fgVariableUnits[kRunTimeStart] = "sec";
+  fgVariableNames[kRunTimeEnd]         = "Run end time";                fgVariableUnits[kRunTimeEnd] = "sec";
   fgVariableNames[kBC]                   = "Bunch crossing";                  fgVariableUnits[kBC]                   = "";
   fgVariableNames[kTimeStamp]            = "Time stamp";                      fgVariableUnits[kTimeStamp]            = "";
+  fgVariableNames[kTimeRelativeSOR]   = "Event time from SOR";      fgVariableUnits[kTimeRelativeSOR]  = "min";
+  fgVariableNames[kTimeRelativeSORfraction] = "Event time from SOR";   fgVariableUnits[kTimeRelativeSORfraction] = "fraction of total run duration";
   fgVariableNames[kEventType]            = "Event type";                      fgVariableUnits[kEventType]            = "";
   fgVariableNames[kTriggerMask]          = "Trigger mask";                    fgVariableUnits[kTriggerMask]          = "";
   fgVariableNames[kOnlineTrigger]        = "Online trigger";                  fgVariableUnits[kOnlineTrigger]        = "";
@@ -1616,10 +1647,70 @@ void AliReducedVarManager::SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F*
    //
    // initialize the electron TPC pid correction maps
    //
+   if(varX>kNVars || varX<=kNothing) {
+      cout << "AliReducedVarManager::SetTPCelectronCorrectionMaps() The X-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Correction maps not used! Check it out!" << endl;
+      return;
+   }
+   if(varY>kNVars || varY<=kNothing) {
+      cout << "AliReducedVarManager::SetTPCelectronCorrectionMaps() The Y-dependency variable is not a valid variable defined in AliReducedVarManager" << endl;
+      cout << "                           Correction maps not used! Check it out!" << endl;
+      return;
+   }
    fgVarDependencyX = varX;
    fgVarDependencyY = varY;
-   fgTPCelectronCentroidMap = (TH2F*)centroidMap->Clone(Form("AliReducedVarManager_TPCelectronCentroidMap"));
-   fgTPCelectronCentroidMap->SetDirectory(0x0);
-   fgTPCelectronWidthMap = (TH2F*)widthMap->Clone(Form("AliReducedVarManager_TPCelectronWidthMap"));
-   fgTPCelectronWidthMap->SetDirectory(0x0);
+   if(centroidMap) {
+     fgTPCelectronCentroidMap = (TH2F*)centroidMap->Clone(Form("AliReducedVarManager_TPCelectronCentroidMap"));
+     fgTPCelectronCentroidMap->SetDirectory(0x0);
+   }
+   if(widthMap) {
+     fgTPCelectronWidthMap = (TH2F*)widthMap->Clone(Form("AliReducedVarManager_TPCelectronWidthMap"));
+     fgTPCelectronWidthMap->SetDirectory(0x0);
+   }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber) {
+   //
+   // initialize the LHC data histograms
+   //
+   if(totalLumi) {
+      fgRunTotalLuminosity = (TH1F*)totalLumi->Clone("AliReducedVarManager_TotalLuminosity");
+      fgRunTotalLuminosity->SetDirectory(0x0);
+   }
+   if(totalInt0) {
+      fgRunTotalIntensity0 = (TH1F*)totalInt0->Clone("AliReducedVarManager_TotalIntensity0");
+      fgRunTotalIntensity0->SetDirectory(0x0);
+   }
+   if(totalInt1) {
+      fgRunTotalIntensity1 = (TH1F*)totalInt1->Clone("AliReducedVarManager_TotalIntensity1");
+      fgRunTotalIntensity1->SetDirectory(0x0);
+   }
+   if(fillNumber) {
+      fgRunLHCFillNumber = (TH1I*)fillNumber->Clone("AliReducedVarManager_LHCFillNumber");
+      fgRunLHCFillNumber->SetDirectory(0x0);
+   }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop) {
+   //
+   // initialize the GRP data histograms
+   //
+   if(dipolePolarity) {
+      fgRunDipolePolarity = (TH1I*)dipolePolarity->Clone("AliReducedVarManager_DipolePolarity");
+      fgRunDipolePolarity->SetDirectory(0x0);
+   }
+   if(l3Polarity) {
+      fgRunL3Polarity = (TH1I*)l3Polarity->Clone("AliReducedVarManager_L3Polarity");
+      fgRunL3Polarity->SetDirectory(0x0);
+   }
+   if(timeStart) {
+      fgRunTimeStart = (TH1I*)timeStart->Clone("AliReducedVarManager_TimeStart");
+      fgRunTimeStart->SetDirectory(0x0);
+   }
+   if(timeStop) {
+      fgRunTimeEnd = (TH1I*)timeStop->Clone("AliReducedVarManager_TimeEnd");
+      fgRunTimeEnd->SetDirectory(0x0);
+   }
 }
