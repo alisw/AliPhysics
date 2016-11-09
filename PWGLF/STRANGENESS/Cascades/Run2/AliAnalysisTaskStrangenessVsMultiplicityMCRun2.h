@@ -140,15 +140,21 @@ public:
     void SetCascVertexerCascadeMaxRadius     ( Double_t lParameter ) {
         fCascadeVertexerSels[7] = lParameter;
     }
-//---------------------------------------------------------------------------------------
-//Superlight mode: add another configuration, please
+    //---------------------------------------------------------------------------------------
+    void SetMinPt     ( Float_t lMinPt ) {
+        fMinPtToSave = lMinPt;
+    }
+    void SetMaxPt     ( Float_t lMaxPt ) {
+        fMaxPtToSave = lMaxPt;
+    }
+    //---------------------------------------------------------------------------------------
+    //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
     void AddConfiguration( AliCascadeResult *lCascadeResult );
     //Standard configurations
     void AddStandardV0Configuration();
     void AddStandardCascadeConfiguration();
-//---------------------------------------------------------------------------------------
-    
+    //---------------------------------------------------------------------------------------
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -174,10 +180,14 @@ private:
     Bool_t fkPreselectDedx;
     Bool_t fkPreselectPID;
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
+    Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
     Double_t fDownScaleFactorCascade;
+    
+    Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
     
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
@@ -296,12 +306,36 @@ private:
     Float_t fTreeCascVarPosdEdx; //!
     Float_t fTreeCascVarBachdEdx; //!
 
+    //Variables for debugging the invariant mass bump
+    //Full momentum information
+    Float_t fTreeCascVarNegPx; //!
+    Float_t fTreeCascVarNegPy; //!
+    Float_t fTreeCascVarNegPz; //!
+    Float_t fTreeCascVarPosPx; //!
+    Float_t fTreeCascVarPosPy; //!
+    Float_t fTreeCascVarPosPz; //!
+    Float_t fTreeCascVarBachPx; //!
+    Float_t fTreeCascVarBachPy; //!
+    Float_t fTreeCascVarBachPz; //!
+    //Track Labels (check for duplicates, etc)
+    Int_t fTreeCascVarNegIndex; //!
+    Int_t fTreeCascVarPosIndex; //!
+    Int_t fTreeCascVarBachIndex; //!
+    //Event Number (check same-event index mixups)
+    ULong64_t fTreeCascVarEventNumber; //!
+    
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
 
     //MC-only Variabless
     Int_t   fTreeCascVarIsPhysicalPrimary; //!
     Int_t   fTreeCascVarPID;         //!
+    Int_t   fTreeCascVarPIDNegative;         //!
+    Int_t   fTreeCascVarPIDPositive;         //!
+    Int_t   fTreeCascVarPIDBachelor;         //!
+    Int_t   fTreeCascVarPIDNegativeMother;         //!
+    Int_t   fTreeCascVarPIDPositiveMother;         //!
+    Int_t   fTreeCascVarPIDBachelorMother;         //!
     
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
