@@ -128,14 +128,14 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTimeStamp");
    task->SetTreeInactiveBranch("fEventType");
    //task->SetTreeInactiveBranch("fTriggerMask");
-   //task->SetTreeInactiveBranch("fMultiplicityEstimators*");
-   //task->SetTreeInactiveBranch("fMultiplicityEstimatorPercentiles*");
+   task->SetTreeInactiveBranch("fMultiplicityEstimators*");
+   task->SetTreeInactiveBranch("fMultiplicityEstimatorPercentiles*");
    //task->SetTreeInactiveBranch("fIsPhysicsSelection");
    //task->SetTreeInactiveBranch("fIsSPDPileup");
    //task->SetTreeInactiveBranch("fIsSPDPileupMultBins");
    task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
-   task->SetTreeInactiveBranch("fVtxTPC*");
-   task->SetTreeInactiveBranch("fNVtxTPCContributors");
+   //task->SetTreeInactiveBranch("fVtxTPC*");
+   //task->SetTreeInactiveBranch("fNVtxTPCContributors");
    task->SetTreeInactiveBranch("fVtxSPD*");
    task->SetTreeInactiveBranch("fNVtxSPDContributors");
    //task->SetTreeInactiveBranch("fNpileupSPD");
@@ -153,8 +153,8 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fVZEROTotalMult*");
    task->SetTreeInactiveBranch("fZDCnEnergy*");
    task->SetTreeInactiveBranch("fZDCpEnergy*");
-   task->SetTreeInactiveBranch("fZDCnTotalEnergy*");
-   task->SetTreeInactiveBranch("fZDCpTotalEnergy*");
+   //task->SetTreeInactiveBranch("fZDCnTotalEnergy*");
+   //task->SetTreeInactiveBranch("fZDCpTotalEnergy*");
    task->SetTreeInactiveBranch("fT0amplitude*");
    task->SetTreeInactiveBranch("fT0TOF*");
    task->SetTreeInactiveBranch("fT0TOFbest*");
@@ -174,9 +174,9 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTracks.fQualityFlags");
    //task->SetTreeInactiveBranch("fTracks.fTrackId");
    //task->SetTreeInactiveBranch("fTracks.fStatus");
-   task->SetTreeInactiveBranch("fTracks.fTPCPhi");
-   task->SetTreeInactiveBranch("fTracks.fTPCPt");
-   task->SetTreeInactiveBranch("fTracks.fTPCEta");
+   //task->SetTreeInactiveBranch("fTracks.fTPCPhi");
+   //task->SetTreeInactiveBranch("fTracks.fTPCPt");
+   //task->SetTreeInactiveBranch("fTracks.fTPCEta");
    //task->SetTreeInactiveBranch("fTracks.fMomentumInner");
    //task->SetTreeInactiveBranch("fTracks.fDCA*");
    task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
@@ -199,8 +199,8 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTracks.fTPCsignalN");
    //task->SetTreeInactiveBranch("fTracks.fTPCnSig*");
    //task->SetTreeInactiveBranch("fTracks.fTPCchi2");
-   task->SetTreeInactiveBranch("fTracks.fTPCActiveLength");
-   task->SetTreeInactiveBranch("fTracks.fTPCGeomLength");
+   //task->SetTreeInactiveBranch("fTracks.fTPCActiveLength");
+   //task->SetTreeInactiveBranch("fTracks.fTPCGeomLength");
    //task->SetTreeInactiveBranch("fTracks.fTOFbeta");
    task->SetTreeInactiveBranch("fTracks.fTOFtime");
    task->SetTreeInactiveBranch("fTracks.fTOFdx");
@@ -269,7 +269,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   //trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,70.0,161.0);
   cuts->AddCut(trackCuts);
   AliDielectronTrackCuts* trackCuts2 = new AliDielectronTrackCuts("trackCuts2","track cuts");
-  trackCuts2->SetRequireITSRefit(kTRUE);
+  //trackCuts2->SetRequireITSRefit(kTRUE);
   trackCuts2->SetRequireTPCRefit(kTRUE);
   cuts->AddCut(trackCuts2);
     //}
