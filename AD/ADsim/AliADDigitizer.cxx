@@ -724,7 +724,7 @@ void AliADDigitizer::WriteDigits(AliLoader *loader)
       if (tempadc > 1023) tempadc = 1023;
       chargeADC[j] = tempadc;
     }
-    AddDigit(i, fLeadingTime[i], fTimeWidth[i], Bool_t((10+fEvenOrOdd)%2), chargeADC, fBBFlag[i], fBGFlag[i], fLabels[i]);
+    if(!fCalibData->IsChannelDead(i)) AddDigit(i, fLeadingTime[i], fTimeWidth[i], Bool_t((10+fEvenOrOdd)%2), chargeADC, fBBFlag[i], fBGFlag[i], fLabels[i]);
   }
   delete [] chargeADC;
 
@@ -750,7 +750,7 @@ void AliADDigitizer::WriteSDigits(AliLoader *loader)
   //fAD->MakeBranchInTree(treeS,"AD",&fDigits,8000,"");
 
   for (Int_t ipmt=0; ipmt < 16; ++ipmt) {
-    AddSDigit(ipmt,fNBins[ipmt],fTime[ipmt],fLabels[ipmt]);
+    if(!fCalibData->IsChannelDead(ipmt)) AddSDigit(ipmt,fNBins[ipmt],fTime[ipmt],fLabels[ipmt]);
   }
 
   treeS->Fill();
