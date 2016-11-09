@@ -2433,6 +2433,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
             lNV0++;
         }
     }
+    for (Int_t iconf = 0; iconf<lNV0; iconf++) 
+      AddConfiguration(lV0Result[iconf]); 
+    
     cout<<"Added "<<lNV0<<" V0 configurations to output."<<endl;
 }
 
@@ -2685,6 +2688,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
             lN++;
         }
     }
+    
+    for (Int_t iconf = 0; iconf<lN; iconf++) 
+      AddConfiguration(lCascadeResult[iconf]); 
+    
     cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
     
 }
