@@ -170,6 +170,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fInvmassULS_MCtrue(0),
   fInvmassPi0Dalitz(0),
   fMCcheckMother(0),
+  fMCneutral(0),
   fSparseElectron(0),
   fvalueElectron(0)
 {
@@ -289,6 +290,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fInvmassULS_MCtrue(0),
   fInvmassPi0Dalitz(0),
   fMCcheckMother(0),
+  fMCneutral(0),
   fSparseElectron(0),
   fvalueElectron(0)
 {
@@ -597,6 +599,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   */
   fMCcheckMother = new TH2F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5,50,0,50);
   fOutputList->Add(fMCcheckMother);
+
+  fMCneutral = new TH2F("fMCneutral","pi0 and eta pT from Hijing and enhance",6,-0.5,5.5,500,0,50);
+  fOutputList->Add(fMCneutral);
 
   Int_t bins[9]=      {8, 280, 160, 200, 200, 200,    3, 100,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
   Double_t xmin[9]={-0.5,   2,  -8,   0,   0,   0, -0.5,  -5,   0};
@@ -1454,6 +1459,11 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
       if(pdgGen==111 || pdgGen==221)
         {
          PtPi0 = fMCparticle->Pt();
+         if(pdgGen==111 && iHijing==0)fMCneutral->Fill(0.0,fMCparticle->Pt());
+         if(pdgGen==111 && iHijing==1)fMCneutral->Fill(1.0,fMCparticle->Pt());
+         if(pdgGen==221 && iHijing==0)fMCneutral->Fill(2.0,fMCparticle->Pt());
+         if(pdgGen==221 && iHijing==1)fMCneutral->Fill(3.0,fMCparticle->Pt());
+
          Int_t Ndecay = fMCparticle->GetNDaughters();
          if(Ndecay==3)
            {
