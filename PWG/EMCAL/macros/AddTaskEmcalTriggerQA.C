@@ -15,5 +15,5 @@ AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(
     Bool_t      online              = kFALSE,
     const char* suffix              = "")
 {
-  return AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(triggerPatchesName, cellsName, triggersName, nCentBins, online, suffix);
+  return AliEmcalTriggerQATask::AddTaskEmcalTriggerQA(triggerPatchesName, cellsName, triggersName, nCentBins, online, "", suffix);
 }
