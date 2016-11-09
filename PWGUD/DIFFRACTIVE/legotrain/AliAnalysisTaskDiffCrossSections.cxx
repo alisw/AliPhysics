@@ -13,6 +13,7 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
+#include "AliStack.h"
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
 #include "AliESDVertex.h"
@@ -33,7 +34,7 @@ ClassImp(AliAnalysisTaskDiffCrossSections);
 ClassImp(AliAnalysisTaskDiffCrossSections::TreeData);
 ClassImp(AliAnalysisTaskDiffCrossSections::MCInfo);
 
-void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, TString mcType) {
+void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, TString mcType, Bool_t useSDFromGenerator) {
   fEventType = kInvalid;
   if (!mcEvent)
     AliFatal("NULL == mcEvent");
@@ -115,23 +116,152 @@ void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, T
     }
   }
 
-  const AliStack* stack  = dynamic_cast<const AliStack *>(const_cast<AliMCEvent*>(mcEvent)->Stack());
+  AliStack* stack  = dynamic_cast<AliStack *>(const_cast<AliMCEvent*>(mcEvent)->Stack());
   if (!stack)
     AliFatal("NULL == stack");
   const Int_t npart = stack->GetNprimary();
 
-  TLorentzVector v;
   fDiffMass[0] = fDiffMass[1] = -1.0f;
-  for (Int_t i=0, counter=0, n=stack->GetNprimary(); i<n; ++i) {
-    const TParticle *p = const_cast<AliStack*>(stack)->Particle(i);
-    if (!p)
-      continue;
-    if (pdgDiff_p > 0 && p->GetPdgCode() == pdgDiff_p) {
-      p->Momentum(v);
-      AliInfoF("found diff(%d): m=%f eta=%f", counter++, v.M(), v.Eta());
-      fDiffMass[v.Eta()>0] = v.M(); // eta>0,<0 -> SDL,SDR to be verified
+  if (useSDFromGenerator) {
+    TLorentzVector v;
+    for (Int_t i=0, counter=0, n=stack->GetNprimary(); i<n; ++i) {
+      const TParticle *p = const_cast<AliStack*>(stack)->Particle(i);
+      if (!p)
+	continue;
+      if (pdgDiff_p > 0 && p->GetPdgCode() == pdgDiff_p) {
+	p->Momentum(v);
+	AliInfoF("found diff(%d): m=%f eta=%f", counter++, v.M(), v.Eta());
+	fDiffMass[v.Eta()>0] = v.M(); // eta>0,<0 <-> SDL,SDR
+      }
+    }
+  } else { // determine SD + SD mass without coorperation from MC generator
+    Int_t    side =  0;
+    Double_t mass = -1;
+    const Bool_t isSD = FindSingleDiffraction(stack, mcType, side, mass);
+    AliInfoF("    isSD=%d side=%d mass=%6.1f type=%.0f mL=%6.1f mR=%6.1f",
+	     isSD, side, mass,
+	     fEventType, fDiffMass[0], fDiffMass[1]);
+    if (isSD) {
+      fEventType         = (side==1 ? kSDR : kSDL);
+      fDiffMass[side==1] = mass;
+      AliInfoF("*** isSD=%d side=%d mass=%6.1f type=%.0f mL=%6.1f mR=%6.1f",
+	       isSD, side, mass,
+	       fEventType, fDiffMass[0], fDiffMass[1]);
     }
   }
+}
+
+// based on code by M. Poghosyan
+Bool_t AliAnalysisTaskDiffCrossSections::MCInfo::FindSingleDiffraction(AliStack *stack, TString mcType,
+								       Int_t &side, Double_t &mass) const
+{
+  side =  0;
+  mass = -1;
+  const Int_t pdgStable[20] = {
+    22,   // Photon
+    11,   // Electron
+    12,   // Electron Neutrino
+    13,   // Muon
+    14,   // Muon Neutrino
+    15,   // Tau
+    16,   // Tau Neutrino
+    211,  // Pion
+    321,  // Kaon
+    311,  // K0
+    130,  // K0s
+    310,  // K0l
+    2212, // Proton
+    2112, // Neutron
+    3122, // Lambda_0
+    3112, // Sigma Minus
+    3222, // Sigma Plus
+    3312, // Xsi Minus
+    3322, // Xsi0
+    3334  // Omega
+  };
+  const Int_t kNstable=sizeof(pdgStable)/sizeof(Int_t);
+
+  Int_t  idx[2] = {   -1,   -1 };
+  Double_t y[2] = {  0.0,  0.0 };
+  Double_t E_cms = 0.0;
+  for (Int_t i0=(mcType.Contains("PHOJET") ? 2 : 0), i=i0, n=stack->GetNtrack(); i<n; i++) {
+    const TParticle *part = stack->Particle(i);
+    if (!part)
+      continue;
+
+    const Bool_t isCollProton = (i-i0 < 2 && part->GetPdgCode() == 2212);
+    if (isCollProton)
+      E_cms += part->Energy();
+
+    if (part->GetStatusCode() != 1)
+      continue;
+
+    const Int_t pdg = TMath::Abs(part->GetPdgCode());
+    Bool_t isStable = kFALSE;
+    for (Int_t i1=0; i1<kNstable && !isStable; ++i1)
+      isStable = (pdg == pdgStable[i1]);
+
+    if (!isStable)
+      continue;
+
+    const Double_t yp = part->Y();
+    if (idx[0] == -1) {
+      y[0]   = yp;
+      idx[0] = i;
+    } else if (yp < y[0]) {
+      y[0]   = yp;
+      idx[0] = i;
+    }
+    if (idx[1] == -1) {
+      y[1]   = yp;
+      idx[1] = i;
+    } else if (yp > y[1]) {
+      y[1]   = yp;
+      idx[1] = i;
+    }
+  }
+
+  if (idx[0] < 0 && idx[1] < 0)
+    return kFALSE;
+
+  y[0] = TMath::Abs(y[0]);
+  y[1] = TMath::Abs(y[1]);
+
+  const TParticle *p[2] = {
+    stack->Particle(idx[0]),
+    stack->Particle(idx[1])
+  };
+  const Int_t pdg[2] = {
+    p[0]->GetPdgCode(),
+    p[1]->GetPdgCode()
+  };
+
+  Int_t i=-1;
+  if (pdg[0]==2212 && pdg[1]==2212) {
+    i = idx[y[1]>y[0]];
+    if (y[1] == y[0])
+      i = idx[gRandom->Uniform(0,1) > 0.5];
+  } else if (pdg[0]==2212) {
+    i = idx[0];
+  } else if (pdg[1]==2212) {
+    i = idx[1];
+  }
+  if (i < 0)
+    return kFALSE;
+
+  const TParticle *psel = stack->Particle(i);
+  const Double_t E  = psel->Energy();
+  const Double_t P  = psel->P();
+  const Double_t M2 = (E_cms-E-P)*(E_cms-E+P);
+  mass = (M2 > 0 ? TMath::Sqrt(M2) : -2.0);
+
+  if (i == idx[0])
+    side = +1;
+
+  if (i == idx[1])
+    side = -1;
+
+  return kTRUE;
 }
 
 void AliAnalysisTaskDiffCrossSections::EventInfo::Fill(const AliESDEvent* esdEvent) {
@@ -259,6 +389,7 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fMCType("")
   , fTriggerSelection("")
   , fDetectorsUsed("ADA ADC V0 FMD SPD")
+  , fUseSDFromGenerator(kTRUE)
   , fUseBranch("")
   , fTriggerAnalysis()
   , fAnalysisUtils()
@@ -506,7 +637,7 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   fTreeData.fEventInfo.fnSPDClusters[1] = mult->GetNumberOfITSClusters(1);
 
   if (fIsMC)
-    fMCInfo.Fill(MCEvent(), fMCType);
+    fMCInfo.Fill(MCEvent(), fMCType, fUseSDFromGenerator);
 
   const AliESDVertex *esdVertex = esdEvent->GetPrimaryVertex();
   TVector3 vertexPosition(esdVertex->GetX(),

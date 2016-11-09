@@ -12,6 +12,7 @@ class AliESDVZERO;
 class AliESDFMD;
 class AliMCEvemt;
 class AliESDEvent;
+class AliStack;
 
 #include <TObject.h>
 #include <TString.h>
@@ -40,6 +41,7 @@ public:
   void SetIsMC(Bool_t b=kTRUE) { fIsMC = b; }
   void SetMCType(TString s) { fMCType = s; }
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
+  void SetUseSDFromGenerator(Bool_t b) { fUseSDFromGenerator = b; }
 
   void SetDetectorsUsed(TString det) { fDetectorsUsed = det; }
   void SetUseBranch(TString b)       { fUseBranch = b; }
@@ -175,7 +177,9 @@ public:
       : TObject() {}
     virtual ~MCInfo() {}
 
-    void Fill(const AliMCEvent *, TString);
+    void   Fill(const AliMCEvent *, TString, Bool_t);
+    Bool_t FindSingleDiffraction(AliStack *stack, TString mcType,
+				 Int_t &side, Double_t &mass) const;
 
     Float_t fEventType;    //[-3,5,3]
     Float_t fDiffMass[2];  // 0 -> L, 1 -> R
@@ -195,6 +199,7 @@ private:
   TString          fTriggerSelection;    //
   TString          fDetectorsUsed;       //
   TString          fUseBranch;           //
+  Bool_t           fUseSDFromGenerator;  //
 
   AliTriggerAnalysis fTriggerAnalysis;   //!
   AliAnalysisUtils   fAnalysisUtils;     //!
