@@ -929,31 +929,14 @@ public:
   void SetFlowQCIntCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorHist[eg][k] = TP;};
   TH1D* GetFlowQCIntCorNUAHist(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorNUAHist[eg][h];};
   void SetFlowQCIntCorNUAHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorNUAHist[eg][k] = TP;};
-  TProfile* GetFlowQCNewCenPro(Int_t const eg, Int_t const h) const {return this->fFlowQCNewCenPro[eg][h];};
-  void SetFlowQCNewCenPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCNewCenPro[eg][k] = TP;};
-  TH1D* GetFlowQCNewCenHist(Int_t const eg, Int_t const h) const {return this->fFlowQCNewCenHist[eg][h];};
-  void SetFlowQCNewCenHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCNewCenHist[eg][k] = TP;};
-  TProfile* GetFlowQCMetricCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCMetricCorPro[eg][h];};
-  void SetFlowQCMetricCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMetricCorPro[eg][k] = TP;};
-  TH1D* GetFlowQCMetricCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCMetricCorHist[eg][h];};
-  void SetFlowQCMetricCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCMetricCorHist[eg][k] = TP;};
   TProfile* GetFlowQCIntCorProEG(Int_t const eg) const {return this->fFlowQCIntCorProEG[eg];};
   void SetFlowQCIntCorProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCIntCorProEG[eg] = TP;};
   TProfile* GetFlowQCIntCorNUAProEG(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorNUAProEG[eg][h];};
   void SetFlowQCIntCorNUAProEG(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorNUAProEG[eg][k] = TP;};
+  TH1D* GetFlowQCIntCorNUAHistEG(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorNUAHistEG[eg][h];};
+  void SetFlowQCIntCorNUAHistEG(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorNUAHistEG[eg][k] = TP;};
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
-  TH1D* GetFlowQCIntCorNUAHistEG(Int_t const eg) const {return this->fFlowQCIntCorNUAHistEG[eg];};
-  void SetFlowQCIntCorNUAHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorNUAHistEG[eg] = TP;};
-  TProfile* GetFlowQCNewCenProEG(Int_t const eg) const {return this->fFlowQCNewCenProEG[eg];};
-  void SetFlowQCNewCenProEG(TProfile* const TP, Int_t const eg) {this->fFlowQCNewCenProEG[eg] = TP;};
-  TH1D* GetFlowQCNewCenHistEG(Int_t const eg) const {return this->fFlowQCNewCenHistEG[eg];};
-  void SetFlowQCNewCenHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCNewCenHistEG[eg] = TP;};
-  
-  TProfile2D* GetFlowQCMetric2DProEG(Int_t const eg, Int_t const bng) const {return this->fFlowQCMetric2DProEG[eg][bng];};
-  void SetFlowQCMetric2DProEG(TProfile2D* const TP, Int_t const eg, Int_t const bng) {this->fFlowQCMetric2DProEG[eg][bng] = TP;};
-  TH2D* GetFlowQCMetric2DHistEG(Int_t const eg, Int_t const bng) const {return this->fFlowQCMetric2DHistEG[eg][bng];};
-  void SetFlowQCMetric2DHistEG(TH2D* const TP, Int_t const eg, Int_t const bng) {this->fFlowQCMetric2DHistEG[eg][bng] = TP;};
   
   void SetFlowQCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCFinalPtDifHist[c][eg][h] = TH;};
   TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
@@ -1532,7 +1515,8 @@ private:
   TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
   TH2D *fCRCZDCQVecEP[fCRCMaxnRun][4]; //! ZN event planes
   TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
-  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][4]; //! Vtx positions re-centered Qvec
+  const static Int_t fkCRCnCQVecVtxPos = 14;
+  TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   //  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][4]; //! Vtx positions re-centered Qvec in cen bins
   //  TProfile2D *fCRCZDCResCenEn; //!
   // TProfile2D *fCRCZDCQ2[8]; //! Q2
@@ -1685,7 +1669,7 @@ private:
   // Flow QC
   TList *fFlowQCList;    //! QC List
   const static Int_t fFlowQCNPro = 4;
-  const static Int_t fFlowQCNNUA = 4;
+  const static Int_t fFlowQCNNUA = 10;
   Int_t fFlowQCCenBin; //
   Double_t fFlowQCDeltaEta; //
   TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
@@ -1696,21 +1680,12 @@ private:
   TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
   TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
-  TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][3]; //!
+  TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
   
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
   TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
-  TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm]; //!
-  
-  TProfile *fFlowQCNewCenPro[fFlowNHarm][3]; //!
-  TH1D *fFlowQCNewCenHist[fFlowNHarm][3]; //!
-  TProfile *fFlowQCMetricCorPro[fFlowNHarm][3]; //!
-  TH1D *fFlowQCMetricCorHist[fFlowNHarm][3]; //!
-  TProfile *fFlowQCNewCenProEG[fFlowNHarm]; //!
-  TH1D *fFlowQCNewCenHistEG[fFlowNHarm]; //!
-  TProfile2D *fFlowQCMetric2DProEG[fFlowNHarm][4]; //!
-  TH2D *fFlowQCMetric2DHistEG[fFlowNHarm][4]; //!
+  TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
   
   TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
   TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
