@@ -3344,7 +3344,8 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
 
   TGeoTube *gammaConvRod;
   if (fAddGammaConv)
-    gammaConvRod = new TGeoTube("GammaConver", 0, 0.5*fGammaConvDiam, zlen);
+    gammaConvRod = new TGeoTube("GammaConver", 0, 0.5*fGammaConvDiam,
+				zlen - fgkOBCPConnHollowZLen);
 
   TGeoBBox *flex1_5cm  = new TGeoBBox("Flex1MV_5cm",xHalfSt,yFlex1/2,flexOverlap/2);
   TGeoBBox *flex2_5cm  = new TGeoBBox("Flex2MV_5cm",xHalfSt,yFlex2/2,flexOverlap/2);
@@ -3354,8 +3355,8 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
 	  + fleeccent->GetDY() + graphlat->GetDY() + fleeclat->GetDY();
   if (fStaveModel == AliITSUv2::kOBModel2)
     yHalfSt += 2*glue->GetDY();
-//IB  if (fAddGammaConv)
-//IB   yHalfSt += fGammaConvDiam;
+  if (fAddGammaConv)
+    yHalfSt += fGammaConvDiam;
 
   xtru[0] = xHalfSt;
   ytru[0] = 0;
@@ -3365,6 +3366,7 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
   ytru[2] = ytru[1];
   xtru[3] = xtru[2];
   ytru[3] = ytru[2] - (coolTube->GetRmax() + fleectub->GetRmax());
+  if (fAddGammaConv) ytru[3] -= fGammaConvDiam;
   xtru[4] = fgkOBCoolTubeXDist/2 - fleectub->GetRmax();
   ytru[4] = ytru[3];
   xtru[5] = xtru[4];
@@ -3390,6 +3392,8 @@ TGeoVolume* AliITSUv2Layer::CreateStaveModelOuterB12(const TGeoManager *mgr){
 				     fgkOBCPConnBlockZLen/2);
 
   // The StaveStruct container, a Composite Shape
+  if (fAddGammaConv)
+    yHalfSt -= fGammaConvDiam;
   ypos = 2*yHalfSt + connAside->GetDY() - fgkOBCPConnHollowYHei;
   zpos = zlen + connAside->GetDZ() - fgkOBCPConnHollowZLen;
   snprintf(volname, 30, "transAsideOB%d", fLayerNumber);
