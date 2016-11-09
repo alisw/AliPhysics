@@ -176,6 +176,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
     THnSparse        *fInvmassPi0Dalitz;//!Invmass of ULS
     TH2F        *fMCcheckMother;
+    TH2F        *fMCneutral;
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
