@@ -58,8 +58,8 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetEtaGapFeatureForEventplaneFromTracks (Bool_t etaGap) {fEtaGap = etaGap;}
   void SetCentralityBinWidthPerMil(Int_t w){fCentBinSizePerMil=w;}
   void SetFlowMethod(AliAnalysisTaskSEHFv2::FlowMethod meth){fFlowMethod=meth;}
+  void SetNormMethod(TString normmethod="QoverQlength") {fNormMethod=normmethod;}
 
-    
   void SetNTPCSubEvents(Int_t nsub);
   void Set2TPCEPSubEvents(){SetNTPCSubEvents(2);}
   void Set3TPCEPSubEvents(){SetNTPCSubEvents(3);}
@@ -72,7 +72,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetEventPlanesCompatibility(Float_t comp) {fEventPlanesComp=comp;}
   void SetUseNewQnCorrFw(Bool_t flag) {fUseNewQnCorrFw=flag;}
   //void SetSubEvents(Int_t subev){if(subev>=kFullTPC&&subev<=kSingleV0Side)fSubEvents=subev;}
-    
+  
   Int_t GetEventPlaneMethod()const {return fEventPlaneMeth;}
   Int_t GetNTPCSubEvents()const {return fSubEvents;}
   Float_t GetEventPlanesCompatibility()const {return fEventPlanesComp;}
