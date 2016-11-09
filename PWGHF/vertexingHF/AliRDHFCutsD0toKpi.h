@@ -57,6 +57,10 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Int_t IsSelectedPIDdefault(AliAODRecoDecayHF *rd);
   Int_t IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const;
   void SetUseSpecialCuts(Bool_t useSpecialCuts) {fUseSpecialCuts=useSpecialCuts;}
+  void Setd0MeasMinusExpCut(UInt_t nPtBins, Float_t *cutval);
+  void SetFlatd0MeasMinusExpCut(Float_t value);
+  void SetImpParDCut(UInt_t nPtBins, Float_t *cutval);
+  void SetFlatImpParDCut(Float_t value);
   void SetMaximumPtSpecialCuts(Double_t pt) { fPtMaxSpecialCuts=pt; }
   void SetMaximumPforPID(Double_t p){fmaxPtrackForPID=p;}
   Double_t GetMaximumPforPID(){return fmaxPtrackForPID;}
@@ -103,7 +107,8 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Bool_t GetCombPID() const {return fCombPID;}
   void SetBayesProbThreshold(Double_t thresh){fProbThreshold=thresh;}
   Double_t GetBayesProbThreshold() const {return fProbThreshold;}
-  
+
+  virtual void PrintAll()const;  
 
  protected:
   
@@ -115,6 +120,11 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   
   Bool_t fUseKF;           /// flag to switch on/off D0 selection via KF 
   Double_t fPtLowPID;      /// transverse momentum below which the strong PID is applied
+//new cuts
+  UInt_t fUseImpParDCut; /// switch for cut on D0 ImpParXY; =0 --> not used, >0 value represents array size (it has to coincide with fnPtBins)
+  Float_t *fMaxImpParD;        //[fnPtBins] cut values on D0 ImpParXY
+  UInt_t fUsed0MeasMinusExpCut; /// switch for cut on d0meas-d0exp; =0 --> not used, >0 value represents array size (it has to coincide with fnPtBins)
+  Float_t *fMaxd0MeasMinusExp;//[fnPtBins] cut values on d0meas-d0exp;
   Double_t fPtMaxSpecialCuts; /// transverse momentum below which the special cuts are applied
   
                               ///  if set to zero, used for all pt
@@ -131,7 +141,7 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Int_t fBayesianCondition;   /// Switch for conition applied to kaons
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsD0toKpi,11);  /// class for cuts on AOD reconstructed D0->Kpi
+  ClassDef(AliRDHFCutsD0toKpi,12);  /// class for cuts on AOD reconstructed D0->Kpi
   /// \endcond
 };
 
