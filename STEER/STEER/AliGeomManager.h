@@ -104,7 +104,7 @@ public:
   AliGeomManager(const AliGeomManager&);
   AliGeomManager& operator=(const AliGeomManager&);
 
-  static TGeoHMatrix* GetMatrix(TGeoPNEntry * const pne);
+  static TGeoHMatrix* GetMatrix(TGeoPNEntry *pne);
   static TGeoHMatrix* GetOrigGlobalMatrix(TGeoPNEntry * const pne);
   static Bool_t       GetOrigGlobalMatrixFromPath(const char *path, TGeoHMatrix &m);
 

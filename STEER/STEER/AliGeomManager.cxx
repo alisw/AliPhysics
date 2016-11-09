@@ -1174,7 +1174,7 @@ void AliGeomManager::InitPNEntriesLUT()
 }
 
 //______________________________________________________________________
-TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry * const pne) 
+TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry *pne)
 {
   // Get the global transformation matrix for a given PNEntry
   // by quering the TGeoManager
@@ -1184,15 +1184,13 @@ TGeoHMatrix* AliGeomManager::GetMatrix(TGeoPNEntry * const pne)
     return NULL;
   }
 
+  // if matrix already known --> return it
   TGeoPhysicalNode *pnode = pne->GetPhysicalNode();
   if (pnode) return pnode->GetMatrix();
 
-  const char* path = pne->GetTitle();
-  if (!fgGeometry->cd(path)) {
-    AliErrorClass(Form("Volume path %s not valid!",path));
-    return NULL;
-  }
-  return fgGeometry->GetCurrentMatrix();
+  // otherwise calculate it from title and attach via TGeoPhysicalNode
+  pne->SetPhysicalNode(new TGeoPhysicalNode(pne->GetTitle()));
+  return pne->GetPhysicalNode()->GetMatrix();
 }
 
 //______________________________________________________________________
