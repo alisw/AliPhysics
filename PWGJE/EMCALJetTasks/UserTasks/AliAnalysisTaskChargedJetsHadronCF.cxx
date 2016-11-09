@@ -201,6 +201,7 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
 
   // Change the event rejection histogram -> Add a custom value
   fHistEventRejection->GetXaxis()->SetBinLabel(14,"JetCrit");
+  fHistEventRejection->GetXaxis()->SetBinLabel(15,"JetVeto");
 
   // Track QA plots
   AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 300, 0., 300., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
@@ -854,7 +855,10 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
         continue;
       // if veto jet found -> return
       if((vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() >= fJetVetoMinPt) && (vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() < fJetVetoMaxPt))
+      {
+        fHistEventRejection->Fill("JetVeto", 1);
         return;
+      }
     }
   }
 
