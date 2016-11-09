@@ -52,7 +52,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef() :
     fYshift(0.465),
     fEtaSign(1),
     fEtaLabCut(-0.5, 0.5),
-    fEtaCmsCut(-0.13, 0.13),
+    fEtaCmsCut(-2., 2.),
     fPhiCut(0., TMath::TwoPi()),
     fStudyPID(false)
 {
@@ -64,7 +64,7 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fYshift(0.465),
     fEtaSign(1),
     fEtaLabCut(-0.5, 0.5),
-    fEtaCmsCut(-0.13, 0.13),
+    fEtaCmsCut(-2., 2.),
     fPhiCut(0., TMath::TwoPi()),
     fStudyPID(false)
 {
@@ -152,7 +152,7 @@ Bool_t AliAnalysisTaskChargedParticlesRef::Run() {
     Double_t etacent = -1. * checktrack->Eta() - TMath::Abs(fYshift);
     etacent *= fEtaSign;
 
-    if(!fEtaCmsCut.IsInRange(etacent)) continue;
+    if(!fEtaCmsCut.IsInRange(etacent)) continue;    // Apply eta-cent cut
     if(!fTrackCuts->IsTrackAccepted(checktrack)) continue;
 
     for(const auto &t : fSelectedTriggers){
@@ -192,7 +192,7 @@ void AliAnalysisTaskChargedParticlesRef::FillTrackHistos(
 {
   Double_t weight = GetTriggerWeight(eventclass);
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << eventclass << " in particle histograms." << std::endl;
-  double kinepointall[3] = {TMath::Abs(pt), etalab, phi}, kinepointcent[3] = {TMath::Abs(pt), etalab, phi};
+  double kinepointall[3] = {TMath::Abs(pt), etalab, phi}, kinepointcent[3] = {TMath::Abs(pt), etacent, phi};
   fHistos->FillTH3(Form("hPtEtaPhiAll%s", eventclass.Data()), kinepointall, weight);
   fHistos->FillTH3(Form("hPtEtaPhiCent%s", eventclass.Data()), kinepointcent, weight);
   if(inEmcal){
