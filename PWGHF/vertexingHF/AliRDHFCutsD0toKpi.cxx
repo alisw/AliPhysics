@@ -47,6 +47,10 @@ ClassImp(AliRDHFCutsD0toKpi);
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) :
   AliRDHFCuts(name),
+  fUseImpParDCut(0),
+  fMaxImpParD(0x0),     
+  fUsed0MeasMinusExpCut(0),   
+  fMaxd0MeasMinusExp(0x0),
   fUseSpecialCuts(kFALSE),
   fLowPt(kTRUE),
   fDefaultPID(kFALSE),
@@ -107,7 +111,7 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) :
 
   fWeightsNegative = new Double_t[AliPID::kSPECIES];
   fWeightsPositive = new Double_t[AliPID::kSPECIES];
-
+  
   for (Int_t i = 0; i<AliPID::kSPECIES; i++) {
     fWeightsPositive[i] = 0.;
     fWeightsNegative[i] = 0.;
@@ -117,6 +121,10 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) :
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   AliRDHFCuts(source),   
+  fUseImpParDCut(source.fUseImpParDCut),
+  fMaxImpParD(0x0),
+  fUsed0MeasMinusExpCut(source.fUsed0MeasMinusExpCut),
+  fMaxd0MeasMinusExp(0x0),
   fUseSpecialCuts(source.fUseSpecialCuts),
   fLowPt(source.fLowPt),
   fDefaultPID(source.fDefaultPID),
@@ -135,7 +143,8 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   //
   // Copy constructor
   //
-
+  if(source.fUsed0MeasMinusExpCut&&source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fUsed0MeasMinusExpCut,source.fMaxd0MeasMinusExp);
+  if(source.fUseImpParDCut&&source.fMaxImpParD) SetImpParDCut(source.fUseImpParDCut,source.fMaxImpParD);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &source)
@@ -146,6 +155,10 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   if(&source == this) return *this;
 
   AliRDHFCuts::operator=(source); 
+  fUseImpParDCut=source.fUseImpParDCut;
+  if(source.fUseImpParDCut&&source.fMaxImpParD) SetImpParDCut(source.fUseImpParDCut,source.fMaxImpParD);
+  fUsed0MeasMinusExpCut=source.fUsed0MeasMinusExpCut;
+  if(source.fUsed0MeasMinusExpCut&&source.fMaxd0MeasMinusExp) Setd0MeasMinusExpCut(source.fUsed0MeasMinusExpCut,source.fMaxd0MeasMinusExp);
   fUseSpecialCuts=source.fUseSpecialCuts;
   fLowPt=source.fLowPt;
   fDefaultPID=source.fDefaultPID;
@@ -179,9 +192,72 @@ AliRDHFCutsD0toKpi::~AliRDHFCutsD0toKpi()
     delete[] fWeightsNegative;
     fWeightsNegative = 0;
   }
+  if (fMaxd0MeasMinusExp){
+    delete [] fMaxd0MeasMinusExp;
+    fMaxd0MeasMinusExp =0;
+  }
+  if (fMaxImpParD){
+    delete [] fMaxImpParD;
+    fMaxImpParD =0;
+  }
+
 }
 
 //---------------------------------------------------------------------------
+void AliRDHFCutsD0toKpi::SetFlatd0MeasMinusExpCut(Float_t value){
+  // set the same selection on normalized d0Meas-d0Exp for all pt bins
+  Float_t cuts[fnPtBins];
+  for(Int_t ip=0;ip<fnPtBins;ip++){
+    cuts[ip]=value;
+  }
+  Setd0MeasMinusExpCut(fnPtBins,cuts);
+}
+
+//---------------------------------------------------------------------------
+void AliRDHFCutsD0toKpi::Setd0MeasMinusExpCut(UInt_t nPtBins, Float_t *cutval) {
+  //
+  // store the cuts
+  //
+  if(nPtBins!=fnPtBins) {
+    AliFatal(Form("Wrong number of pt bins: it has to be %d, exiting",fnPtBins));
+  }
+  if(!fMaxd0MeasMinusExp)  fMaxd0MeasMinusExp = new Float_t[fnPtBins];
+  else {
+    delete [] fMaxd0MeasMinusExp;
+      fMaxd0MeasMinusExp = new Float_t[fnPtBins];
+  }
+  for(Int_t ib=0; ib<fnPtBins; ib++) fMaxd0MeasMinusExp[ib] = cutval[ib];
+  fUsed0MeasMinusExpCut=nPtBins;
+  return;
+}
+//---------------------------------------------------------------------------
+void AliRDHFCutsD0toKpi::SetFlatImpParDCut(Float_t value){
+  // set the same selection on normalized d0Meas-d0Exp for all pt bins
+  Float_t cuts[fnPtBins];
+  for(Int_t ip=0;ip<fnPtBins;ip++){
+    cuts[ip]=value;
+  }
+  SetImpParDCut(fnPtBins,cuts);
+}
+
+//---------------------------------------------------------------------------
+void AliRDHFCutsD0toKpi::SetImpParDCut(UInt_t nPtBins, Float_t *cutval) {
+  //
+  // store the cuts
+  //
+  if(nPtBins!=fnPtBins) {
+    AliFatal(Form("Wrong number of pt bins: it has to be %d\n",fnPtBins));
+  }
+  if(!fMaxImpParD)  fMaxImpParD = new Float_t[fnPtBins];
+  else {
+    delete [] fMaxImpParD;
+    fMaxImpParD = new Float_t[fnPtBins];
+  }
+  for(Int_t ib=0; ib<fnPtBins; ib++) fMaxImpParD[ib] = cutval[ib];
+  fUseImpParDCut=nPtBins;
+  return;
+}
+//_____________________________________________________________________________
 void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters,AliAODEvent *aod) {
   // 
   // Fills in vars the values of the variables 
@@ -295,6 +371,13 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   fIsSelectedCuts=0;
   fIsSelectedPID=0;
 
+  if(fUsed0MeasMinusExpCut&&fUsed0MeasMinusExpCut!=fnPtBins) {
+    AliFatal(Form("Wrong number of pt bins for D imp par cut: it has to be %d\n",fnPtBins));
+  }
+  if(fUseImpParDCut&&fUseImpParDCut!=fnPtBins) {
+    AliFatal(Form("Wrong number of pt bins for D imp par cut: it has to be %d\n",fnPtBins));
+  }
+
   if(!fCutsRD){
     cout<<"Cut matrice not inizialized. Exit..."<<endl;
     return 0;
@@ -393,7 +476,33 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
         if (okD0bar) returnvalueCuts=2; //cuts passed as D0bar
         if (okD0 && okD0bar) returnvalueCuts=3; //cuts passed as D0 and D0bar
       }
-
+      //Topomatic
+        if(fUsed0MeasMinusExpCut){ 
+        Double_t dd0max=0.;
+        for(Int_t ipr=0; ipr<2; ipr++) {
+        Double_t diffIP, errdiffIP;
+        d->Getd0MeasMinusExpProng(ipr,aod->GetMagneticField(),diffIP,errdiffIP);
+        Double_t normdd0=0.;
+        if(errdiffIP>0.) normdd0=diffIP/errdiffIP;
+        if(ipr==0) dd0max=normdd0;
+        else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
+      }
+      if(fMaxd0MeasMinusExp[ptbin]>=0.){
+       if(TMath::Abs(dd0max)>fMaxd0MeasMinusExp[ptbin]) {CleanOwnPrimaryVtx(d,aod,origownvtx);  return 0;}
+       }else{
+       if(TMath::Abs(dd0max)<TMath::Abs(fMaxd0MeasMinusExp[ptbin])) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+      }
+      }
+     //ImpactParameterCand
+     if(fUseImpParDCut){
+      Double_t d0=d->ImpParXY()*10000.;//cut value in cm. 
+      if(fMaxImpParD[ptbin]>=0.){//keep the region within the cut
+      if(TMath::Abs(d0)>fMaxImpParD[ptbin]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+      }else{//keep the region outside the cut
+      if(TMath::Abs(d0)<TMath::Abs(fMaxImpParD[ptbin])) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+      }
+      }//impact parameter cut
+      
       // call special cuts
       Int_t special=1;
       if(fUseSpecialCuts && (pt<fPtMaxSpecialCuts)) special=IsSelectedSpecialCuts(d);
@@ -440,8 +549,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
 }
 
 //------------------------------------------------------------------------------------------
-Int_t AliRDHFCutsD0toKpi::IsSelectedKF(AliAODRecoDecayHF2Prong *d,
-    AliAODEvent* aod) const {
+Int_t AliRDHFCutsD0toKpi::IsSelectedKF(AliAODRecoDecayHF2Prong *d,AliAODEvent* aod) const {
   //
   // Apply selection using KF-vertexing
   //
@@ -2063,4 +2171,25 @@ void AliRDHFCutsD0toKpi::CalculateBayesianWeights(AliAODRecoDecayHF* d)
       fPidHF->GetPidCombined()->ComputeProbabilities(aodtrack[daught], fPidHF->GetPidResponse(), fWeightsNegative);
     }
   }
+}
+//___________________________________________________________
+void AliRDHFCutsD0toKpi::PrintAll() const {
+  //
+  // print all cuts values
+  // 
+  AliRDHFCuts::PrintAll();
+    if(fUsed0MeasMinusExpCut){
+    printf("Cuts on d0meas-d0exp:\n");
+    for(Int_t ib=0;ib<fUsed0MeasMinusExpCut;ib++){
+      printf("%f   ",fMaxd0MeasMinusExp[ib]);
+    }
+    printf("\n");
+    }
+    if(fUseImpParDCut){
+    printf("Cuts on d0:\n");
+    for(Int_t ib=0;ib<fUseImpParDCut;ib++){
+      printf("%f   ",fMaxImpParD[ib]);
+    }
+    printf("\n");
+   }
 }
