@@ -42,6 +42,7 @@
 
 #include "AliJHistos.h"
 #include "AliJEbeHistos.h"
+#include "AliJJet.h"
 
 
 ClassImp(AliJHSInterplayTask)
@@ -50,6 +51,8 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	: AliAnalysisTaskSE(), fOutput(0x0),
 	fAnaUtils(NULL),
 	fFFlucAna(NULL),
+	fJetTask(NULL),
+	fJetTaskName(""),
 	fCard(NULL),
 	fHistos(NULL),
 	fEfficiency(NULL),
@@ -74,11 +77,13 @@ AliJHSInterplayTask::AliJHSInterplayTask()
 	// Constructor
 }
 //________________________________________________________________________
-AliJHSInterplayTask::AliJHSInterplayTask(const char *name) 
-	: AliAnalysisTaskSE(name), 
+	AliJHSInterplayTask::AliJHSInterplayTask(const char *name) 
+: AliAnalysisTaskSE(name), 
 	fOutput(0x0), 
 	fAnaUtils(0x0),
 	fFFlucAna(0x0),
+	fJetTask(0x0),
+	fJetTaskName(""),
 	fCard(0x0),
 	fHistos(0x0),
 	fEfficiency(0x0),
@@ -101,7 +106,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const char *name)
 	IsKinematicOnly(kFALSE),
 	fPtHardMin(0),
 	fPtHardMax(0),
-        TagThisEvent(kFALSE)
+	TagThisEvent(kFALSE)
 {
 
 	// Constructor
@@ -120,6 +125,8 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	fOutput(a.fOutput),
 	fAnaUtils(a.fAnaUtils),
 	fFFlucAna(a.fFFlucAna),
+	fJetTask(a.fJetTask),
+	fJetTaskName(a.fJetTaskName),
 	fCard(a.fCard),
 	fHistos(a.fHistos),
 	fEfficiency(a.fEfficiency),
@@ -142,7 +149,7 @@ AliJHSInterplayTask::AliJHSInterplayTask(const AliJHSInterplayTask& a):
 	IsKinematicOnly(a.IsKinematicOnly),
 	fPtHardMin(a.fPtHardMin),
 	fPtHardMax(a.fPtHardMax),
-        TagThisEvent(a.TagThisEvent)
+	TagThisEvent(a.TagThisEvent)
 {
 	//copy constructor
 }
@@ -205,6 +212,10 @@ void AliJHSInterplayTask::UserCreateOutputObjects(){
 	//fVnMethod 	= int (fCard->Get("VnMethod"));
 	fESMethod 	= int (fCard->Get("ESMethod"));
 
+	//=== Get AnalysisManager
+	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	// Add JJet
+	fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
 	fFFlucAna->SetDebugLevel(1);
@@ -394,7 +405,18 @@ void AliJHSInterplayTask::UserExec(Option_t *) {
 		}
 	}
 
-	if(fESMethod==1) { // Leading particle
+	if(fESMethod==2) { // jet
+		// Make a decision for running the analysis or not
+		// analyze the events only if we find a pt > PtHardMin
+		TObjArray *fjets = (TObjArray*)fJetTask->GetAliJJetList(1);
+	        //cout << "N_jets = "<< fjets->GetEntriesFast();	
+		for (int ijet = 0; ijet<fjets->GetEntriesFast(); ijet++){
+			AliJJet *jet = dynamic_cast<AliJJet*>( fjets->At(ijet) );
+			double ptt = jet->Pt();
+			//cout << ijet<<" pt = "<< ptt << endl;
+			if( ptt > fPtHardMin && ptt < fPtHardMax ) TagThisEvent = kTRUE;
+		}
+	} else if(fESMethod==1) { // Leading particle
 		// Make a decision for running the analysis or not
 		// analyze the events only if we find a pt > PtHardMin
 		if( pT_max > fPtHardMin && pT_max < fPtHardMax ) TagThisEvent = kTRUE;
