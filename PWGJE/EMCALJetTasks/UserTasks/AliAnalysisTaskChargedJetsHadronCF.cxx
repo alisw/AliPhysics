@@ -76,6 +76,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fEventExtractionPercentage(0),
   fEventExtractionMinJetPt(0),
   fEventExtractionMaxJetPt(0),
+  fConstPtFilterBit(1024),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -132,6 +133,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fEventExtractionPercentage(0),
   fEventExtractionMinJetPt(0),
   fEventExtractionMaxJetPt(0),
+  fConstPtFilterBit(1024),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
   fTracksOutput(),
@@ -232,6 +234,13 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hJetConstituentPt_Cent10_30", "Jet constituent p_{T} distribution vs. jet p_T (background subtracted), 10-30 centrality", "", 400, -100., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "dN^{Tracks}/d^{2}p_{T}");
   AddHistogram2D<TH2D>("hJetConstituentPt_Cent30_50", "Jet constituent p_{T} distribution vs. jet p_T (background subtracted), 30-50 centrality", "", 400, -100., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "dN^{Tracks}/d^{2}p_{T}");
   AddHistogram2D<TH2D>("hJetConstituentPt_Cent50_90", "Jet constituent p_{T} distribution vs. jet p_T (background subtracted), 50-90 centrality", "", 400, -100., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "dN^{Tracks}/d^{2}p_{T}");
+
+
+  AddHistogram2D<TH2D>(Form("hJetConstituentPt_Cent0_100_FilterBit%i", fConstPtFilterBit), "Jet constituent p_{T} distribution vs. jet p_T (background subtracted)", "", 400, -100., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "dN^{Tracks}/d^{2}p_{T}");
+  AddHistogram2D<TH2D>(Form("hJetConstituentPt_Cent0_10_FilterBit%i", fConstPtFilterBit), "Jet constituent p_{T} distribution vs. jet p_T (background subtracted), 0-10 centrality", "", 400, -100., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "dN^{Tracks}/d^{2}p_{T}");
+  AddHistogram2D<TH2D>(Form("hJetConstituentPt_Cent10_30_FilterBit%i", fConstPtFilterBit), "Jet constituent p_{T} distribution vs. jet p_T (background subtracted), 10-30 centrality", "", 400, -100., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "dN^{Tracks}/d^{2}p_{T}");
+  AddHistogram2D<TH2D>(Form("hJetConstituentPt_Cent30_50_FilterBit%i", fConstPtFilterBit), "Jet constituent p_{T} distribution vs. jet p_T (background subtracted), 30-50 centrality", "", 400, -100., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "dN^{Tracks}/d^{2}p_{T}");
+  AddHistogram2D<TH2D>(Form("hJetConstituentPt_Cent50_90_FilterBit%i", fConstPtFilterBit), "Jet constituent p_{T} distribution vs. jet p_T (background subtracted), 50-90 centrality", "", 400, -100., 300., 300, 0., 300., "p_{T, jet} (GeV/c)", "p_{T, track} (GeV/c)", "dN^{Tracks}/d^{2}p_{T}");
 
 
   AddHistogram2D<TH2D>("hJetConstituentCount_Cent0_100", "Jet constituent count vs. jet p_T (background subtracted)", "", 400, -100., 300., 200, 0., 200., "p_{T, jet} (GeV/c)", "Count", "dN^{Jets}/dNdp_{T}");
@@ -519,16 +528,41 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJ
     if(!constituent) 
       continue;
 
+    Bool_t filterConditionFulfilled = kFALSE;
+    AliAODTrack* aodTrack = static_cast<AliAODTrack*>(constituent);
+    if (aodTrack)
+      filterConditionFulfilled = aodTrack->TestFilterBit(fConstPtFilterBit);
+
     // Fill jet constituent plots
     FillHistogram("hJetConstituentPt_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+    if(filterConditionFulfilled)
+      FillHistogram(Form("hJetConstituentPt_Cent0_100_FilterBit%i", fConstPtFilterBit), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
     if( (fCent >= 0) && (fCent < 10) )
+    {
       FillHistogram("hJetConstituentPt_Cent0_10", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+      if(filterConditionFulfilled)
+        FillHistogram(Form("hJetConstituentPt_Cent0_10_FilterBit%i", fConstPtFilterBit), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+    }
     else if( (fCent >= 10) && (fCent < 30) )
+    {
       FillHistogram("hJetConstituentPt_Cent10_30", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+      if(filterConditionFulfilled)
+        FillHistogram(Form("hJetConstituentPt_Cent10_30_FilterBit%i", fConstPtFilterBit), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+    }
     else if( (fCent >= 30) && (fCent < 50) )
+    {
       FillHistogram("hJetConstituentPt_Cent30_50", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+      if(filterConditionFulfilled)
+        FillHistogram(Form("hJetConstituentPt_Cent30_50_FilterBit%i", fConstPtFilterBit), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+    }
     else if( (fCent >= 50) && (fCent < 90) )
+    {
       FillHistogram("hJetConstituentPt_Cent50_90", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+      if(filterConditionFulfilled)
+        FillHistogram(Form("hJetConstituentPt_Cent50_90_FilterBit%i", fConstPtFilterBit), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
+    }
+
+
 
   }
 
