@@ -288,6 +288,8 @@ Bool_t  AliCaloTrackReader::AcceptParticleMCLabel(Int_t mcLabel)
     if ( genName.Contains(fMCGenerToAccept[ig]) ) generOK = kTRUE;
   }
   
+  if ( !generOK ) AliDebug(1, Form("skip label %d, gen %s",mcLabel,genName.Data()) );
+
   return generOK;
 }
 
@@ -1707,8 +1709,8 @@ void AliCaloTrackReader::FillInputCTS()
 void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus)
 {
   // Accept clusters with the proper label
-  if(clus->GetLabel() >=0 )  // -1 corresponds to noisy MC
-  {
+  if ( clus->GetLabel() >= 0 )  // -1 corresponds to noisy MC
+  { 
     if ( !AcceptParticleMCLabel(clus->GetLabel()) ) return ;
   }
   
