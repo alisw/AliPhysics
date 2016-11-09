@@ -303,10 +303,6 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
  
   if(fDebug > 1) printf("AnalysisTaskSEHFv2::UserCreateOutputObjects() \n");
 
-  if(fFlowMethod==kEP) fNormMethod = "QoverQlength";
-  else if(fFlowMethod==kSP) fNormMethod = "QoverM";
-  else if(fFlowMethod==kEvShape) fNormMethod = "QoverSqrtM";
-
   fhEventsInfo = new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",14,-0.5,13.5);
   fhEventsInfo->GetXaxis()->SetBinLabel(1,"nEventsRead");
   fhEventsInfo->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
@@ -1638,17 +1634,17 @@ Double_t AliAnalysisTaskSEHFv2::Getq2(TList* qnlist)
   const AliQnCorrectionsQnVector* qnVect = 0x0;
   
   if(fq2Meth==kq2TPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetTPCConfName[0].Data(),fNormMethod.Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[0].Data()), "latest", "plain");
   else if(fq2Meth==kq2NegTPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetTPCConfName[1].Data(),fNormMethod.Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), "latest", "plain");
   else if(fq2Meth==kq2PosTPC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetTPCConfName[2].Data(),fNormMethod.Data()), "latest", "plain");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), "latest", "plain");
   else if(fq2Meth==kq2VZERO)
-    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetV0ConfName[0].Data(),fNormMethod.Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[0].Data()), "latest", "raw");
   else if(fq2Meth==kq2VZEROA)
-    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetV0ConfName[1].Data(),fNormMethod.Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[1].Data()), "latest", "raw");
   else if(fq2Meth==kq2VZEROC)
-    qnVect = GetQnVectorFromList(qnlist, Form("%s%s",fDetV0ConfName[2].Data(),fNormMethod.Data()), "latest", "raw");
+    qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[2].Data()), "latest", "raw");
   else {return -1;}
 
   if(!qnVect) {return -1;}
