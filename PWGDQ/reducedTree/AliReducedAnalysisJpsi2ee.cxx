@@ -27,6 +27,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee() :
   AliReducedAnalysisTaskSE(),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fMixingHandler(new AliMixingHandler()),
+  fOptionRunMixing(kTRUE),
   fEventCuts(),
   fTrackCuts(),
   fPreFilterTrackCuts(),
@@ -49,6 +50,7 @@ AliReducedAnalysisJpsi2ee::AliReducedAnalysisJpsi2ee(const Char_t* name, const C
   AliReducedAnalysisTaskSE(name,title),
   fHistosManager(new AliHistogramManager("Histogram Manager", AliReducedVarManager::kNVars)),
   fMixingHandler(new AliMixingHandler()),
+  fOptionRunMixing(kTRUE),
   fEventCuts(),
   fTrackCuts(),
   fPreFilterTrackCuts(),
@@ -203,12 +205,15 @@ void AliReducedAnalysisJpsi2ee::Process() {
      cout << "ERROR: AliReducedAnalysisJpsi2ee::Process() needs AliReducedEventInfo events" << endl;
      return;
   }
+  if(fEventCounter%100000==0) cout << "Event no. " << fEventCounter << endl;
+  fEventCounter++;
   
   AliReducedVarManager::SetEvent(fEvent);
   
   //cout << "############ E v e n t #################" << endl;
-  // reset the values array
-  for(Int_t i=0; i<AliReducedVarManager::kNVars; ++i) fValues[i]=-9999.;
+  // reset the values array, keep only the run wise data (LHC and ALICE GRP information)
+  // NOTE: the run wise data will be updated automatically in the VarManager in case a run change is detected
+  for(Int_t i=AliReducedVarManager::kNRunWiseVariables; i<AliReducedVarManager::kNVars; ++i) fValues[i]=-9999.;
   
   // fill event information before event cuts
   AliReducedVarManager::FillEventInfo(fEvent, fValues);
@@ -221,11 +226,6 @@ void AliReducedAnalysisJpsi2ee::Process() {
   if(!IsEventSelected(fEvent)) return;
   //cout << "### Event SELECTED " << endl;
   
-  // fill event info histograms after cuts
-  // TODO: move this to the end of the event loop since some event info can be track counters, which are 
-  //   updated during the track loop
-  fHistosManager->FillHistClass("Event_AfterCuts", fValues);
-  
   // select tracks
   RunTrackSelection();
     
@@ -237,19 +237,24 @@ void AliReducedAnalysisJpsi2ee::Process() {
   //RunSameEventPairing("PairPrefilterSE");
   RunPrefilter();
   
+  fValues[AliReducedVarManager::kNtracksPosAnalyzed] = fPosTracks.GetEntries();
+  fValues[AliReducedVarManager::kNtracksNegAnalyzed] = fNegTracks.GetEntries();
+  fValues[AliReducedVarManager::kNtracksAnalyzed] = fValues[AliReducedVarManager::kNtracksNegAnalyzed]+fValues[AliReducedVarManager::kNtracksPosAnalyzed];
+  
   // Fill track histograms
   FillTrackHistograms();
   
   // Feed the selected tracks to the event mixing handler 
-  fMixingHandler->FillEvent(&fPosTracks, &fNegTracks, fValues, AliReducedPairInfo::kJpsiToEE);
+  if(fOptionRunMixing)
+    fMixingHandler->FillEvent(&fPosTracks, &fNegTracks, fValues, AliReducedPairInfo::kJpsiToEE);
   
   // Do the same event pairing
   RunSameEventPairing();
  
+  // fill event info histograms after cuts
+  fHistosManager->FillHistClass("Event_AfterCuts", fValues);
   //fMixingHandler->PrintMixingLists(10);
   // Done
-  if(fEventCounter%100000==0) cout << "Event no. " << fEventCounter << endl;
-  fEventCounter++;
 }
 
 
@@ -333,6 +338,8 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
    //
    // Run the same event pairing
    //
+   fValues[AliReducedVarManager::kNpairsSelected] = 0;
+   
    TIter nextPosTrack(&fPosTracks);
    TIter nextNegTrack(&fNegTracks);
    
@@ -359,6 +366,7 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
          if(IsPairSelected(fValues)) {
             //cout << "$$$$$$ pair is selected" << endl;
             FillPairHistograms(pTrack->GetFlags() & nTrack->GetFlags(), 1, pairClass);    // 1 is for +- pairs 
+            fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
          }
       }  // end loop over negative tracks
       
@@ -374,6 +382,7 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
          if(IsPairSelected(fValues)) {
             //cout << "$$$$$$ pair is selected" << endl;
             FillPairHistograms(pTrack->GetFlags() & pTrack2->GetFlags(), 0, pairClass);       // 0 is for ++ pairs 
+            fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
          }
       }  // end loop over positive tracks
    }  // end loop over positive tracks
@@ -395,6 +404,7 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
          if(IsPairSelected(fValues)) {
             //cout << "$$$$$$ pair is selected" << endl;
             FillPairHistograms(nTrack->GetFlags() & nTrack2->GetFlags(), 2, pairClass);      // 2 is for -- pairs
+            fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
          }
       }  // end loop over negative tracks
    }  // end loop over negative tracks
@@ -515,6 +525,7 @@ void AliReducedAnalysisJpsi2ee::Finish() {
   //
   // run stuff after the event loop
   //
-   fMixingHandler->RunLeftoverMixing(AliReducedPairInfo::kJpsiToEE);
+   if(fOptionRunMixing)
+     fMixingHandler->RunLeftoverMixing(AliReducedPairInfo::kJpsiToEE);
    //cout << "*********************************************************  Finish is ending" << endl;
 }

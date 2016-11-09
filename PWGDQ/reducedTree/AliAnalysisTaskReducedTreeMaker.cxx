@@ -449,16 +449,27 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   if(!eventInfo) return;
   
   if(multSelection) {
-     eventInfo->fMultiplicityEstimators[0] = multSelection->GetMultiplicityPercentile("OnlineV0M");
-     eventInfo->fMultiplicityEstimators[1] = multSelection->GetMultiplicityPercentile("OnlineV0A");
-     eventInfo->fMultiplicityEstimators[2] = multSelection->GetMultiplicityPercentile("OnlineV0C");
-     eventInfo->fMultiplicityEstimators[3] = multSelection->GetMultiplicityPercentile("ADM");
-     eventInfo->fMultiplicityEstimators[4] = multSelection->GetMultiplicityPercentile("ADA");
-     eventInfo->fMultiplicityEstimators[5] = multSelection->GetMultiplicityPercentile("ADC");
-     eventInfo->fMultiplicityEstimators[6] = multSelection->GetMultiplicityPercentile("SPDClusters");
-     eventInfo->fMultiplicityEstimators[7] = multSelection->GetMultiplicityPercentile("SPDTracklets");
-     eventInfo->fMultiplicityEstimators[8] = multSelection->GetMultiplicityPercentile("RefMult05");
-     eventInfo->fMultiplicityEstimators[9] = multSelection->GetMultiplicityPercentile("RefMult08");
+     eventInfo->fMultiplicityEstimatorPercentiles[0] = multSelection->GetMultiplicityPercentile("OnlineV0M");
+     eventInfo->fMultiplicityEstimatorPercentiles[1] = multSelection->GetMultiplicityPercentile("OnlineV0A");
+     eventInfo->fMultiplicityEstimatorPercentiles[2] = multSelection->GetMultiplicityPercentile("OnlineV0C");
+     eventInfo->fMultiplicityEstimatorPercentiles[3] = multSelection->GetMultiplicityPercentile("ADM");
+     eventInfo->fMultiplicityEstimatorPercentiles[4] = multSelection->GetMultiplicityPercentile("ADA");
+     eventInfo->fMultiplicityEstimatorPercentiles[5] = multSelection->GetMultiplicityPercentile("ADC");
+     eventInfo->fMultiplicityEstimatorPercentiles[6] = multSelection->GetMultiplicityPercentile("SPDClusters");
+     eventInfo->fMultiplicityEstimatorPercentiles[7] = multSelection->GetMultiplicityPercentile("SPDTracklets");
+     eventInfo->fMultiplicityEstimatorPercentiles[8] = multSelection->GetMultiplicityPercentile("RefMult05");
+     eventInfo->fMultiplicityEstimatorPercentiles[9] = multSelection->GetMultiplicityPercentile("RefMult08");
+     eventInfo->fMultiplicityEstimators[0] = multSelection->GetEstimator("OnlineV0M")->GetValue();
+     eventInfo->fMultiplicityEstimators[1] = multSelection->GetEstimator("OnlineV0A")->GetValue();
+     eventInfo->fMultiplicityEstimators[2] = multSelection->GetEstimator("OnlineV0C")->GetValue();
+     eventInfo->fMultiplicityEstimators[3] = multSelection->GetEstimator("ADM")->GetValue();
+     eventInfo->fMultiplicityEstimators[4] = multSelection->GetEstimator("ADA")->GetValue();
+     eventInfo->fMultiplicityEstimators[5] = multSelection->GetEstimator("ADC")->GetValue();
+     eventInfo->fMultiplicityEstimators[6] = multSelection->GetEstimator("SPDClusters")->GetValue();
+     eventInfo->fMultiplicityEstimators[7] = multSelection->GetEstimator("SPDTracklets")->GetValue();
+     eventInfo->fMultiplicityEstimators[8] = multSelection->GetEstimator("RefMult05")->GetValue();
+     eventInfo->fMultiplicityEstimators[9] = multSelection->GetEstimator("RefMult08")->GetValue();
+     
   }
   
   AliVVertex* eventVtxSPD = 0x0;
@@ -998,7 +1009,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
     trackInfo->fTOFnSig[1]   = values[AliDielectronVarManager::kTOFnSigmaPio];
     trackInfo->fTOFnSig[2]   = values[AliDielectronVarManager::kTOFnSigmaKao];
     trackInfo->fTOFnSig[3]   = values[AliDielectronVarManager::kTOFnSigmaPro];
-   
+    
     Double_t trdProbab[AliPID::kSPECIES]={0.0};
     if(isESD) {
        trackInfo->fMassForTracking = esdTrack->GetMassForTracking();
@@ -1011,7 +1022,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       trackInfo->fTrackId          = (UShort_t)esdTrack->GetID();
       const AliExternalTrackParam* tpcInner = esdTrack->GetTPCInnerParam();
 
-      trackInfo->fITSSharedClusterMap = esdTrack->GetITSSharedClusterMap();
+      //trackInfo->fITSSharedClusterMap = esdTrack->GetITSSharedClusterMap();
+      for(Int_t i=0; i<6; ++i) {
+         if(esdTrack->HasSharedPointOnITSLayer(i)) trackInfo->fITSSharedClusterMap |= (1<<i);
+      }
       
       Float_t xyDCA,zDCA;
       Double_t helixinfo[6];
@@ -1088,7 +1102,10 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
       trackInfo->fMassForTracking = aodTrack->GetMassForTracking();
       trackInfo->fChi2TPCConstrainedVsGlobal = aodTrack->GetChi2TPCConstrainedVsGlobal(); 
       
-      trackInfo->fITSSharedClusterMap = aodTrack->GetITSSharedClusterMap();
+      //trackInfo->fITSSharedClusterMap = aodTrack->GetITSSharedClusterMap();
+      for(Int_t i=0; i<6; ++i) {
+         if(aodTrack->HasSharedPointOnITSLayer(i)) trackInfo->fITSSharedClusterMap |= (1<<i);
+      }
       
       const AliExternalTrackParam* tpcInner = aodTrack->GetInnerParam();
       Float_t xyDCA,zDCA;

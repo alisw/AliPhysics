@@ -37,7 +37,8 @@ public:
   void AddPrefilterTrackCut(AliReducedInfoCut* cut) {fPreFilterTrackCuts.Add(cut);}
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
   void AddPrefilterPairCut(AliReducedInfoCut* cut) {fPreFilterPairCuts.Add(cut);}
-    
+  void SetRunEventMixing(Bool_t option) {fOptionRunMixing = option;};
+  
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   virtual AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
@@ -47,6 +48,8 @@ public:
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
    AliMixingHandler*         fMixingHandler;    // mixing handler
+   
+   Bool_t fOptionRunMixing;   // true: run event mixing, false: no event mixing
    
    TList fEventCuts;               // array of event cuts
    TList fTrackCuts;               // array of track cuts
