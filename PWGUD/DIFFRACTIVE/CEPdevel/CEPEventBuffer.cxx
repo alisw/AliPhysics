@@ -44,8 +44,16 @@ CEPEventBuffer::~CEPEventBuffer()
   //for (Int_t ii=0; ii<ftrb.GetEntries(); ii++)  {
   //  ftrb[ii]->Delete();
   //}
-  fCEPTracks->Delete();
-  delete fCEPTracks;
+	if (fCEPTracks) {
+		fCEPTracks->SetOwner(kTRUE);
+		fCEPTracks->Clear();
+		delete fCEPTracks;
+		fCEPTracks = 0x0;
+	}
+
+  //fCEPTracks->Delete();
+  //delete fCEPTracks;
+  //fCEPTracks = 0x0;
   
 }
 
