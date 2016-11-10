@@ -105,4 +105,8 @@ AliEmcalTriggerOfflineSelection *AliEmcalAnalysisFactory::TriggerSelectionFactor
   return result;
 }
 
+TString AliEmcalAnalysisFactory::ClusterContainerNameFactory(Bool_t isAOD){
+  return isAOD ? "CaloClusters" : "caloClusters";
+}
+
 } /* namespace EMCalTriggerPtAnalysis */
