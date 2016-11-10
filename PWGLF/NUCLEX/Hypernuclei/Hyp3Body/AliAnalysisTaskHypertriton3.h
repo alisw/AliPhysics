@@ -260,6 +260,10 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistMassHypertriton_SemiCent;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 10-50%
   TH1F               *fHistMassAntiHypertriton_SemiCent;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 10-50%
 
+  TH2F               *fHistMassHyp_Lifetime;                //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$ + anti-\f$H^{3}_{\Lambda}\f$ vs lifetime
+  TH2F               *fHistMassHyp_Lifetime_M;              //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$ vs lifetime
+  TH2F               *fHistMassHyp_Lifetime_A;              //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$ vs lifetime
+
   TH1F               *fHistMassHypertriton_LS_Cent;         //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 0-10%
   TH1F               *fHistMassAntiHypertriton_LS_Cent;     //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 0-10%
   TH1F               *fHistMassHypertriton_LS_SemiCent;     //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 10-50%
