@@ -117,8 +117,6 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistPtMatch(0),
   fClsEAftMatch(0),
   fClsEtaPhiAftMatch(0),
-  fClsEtaPhiAftMatchEMCin(0),
-  fClsEtaPhiAftMatchEMCout(0),
   fHistdEdxEop(0),
   fHistNsigEop(0),
   fHistEop(0),
@@ -153,7 +151,6 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHisthfeTof(0),
   fHistTotalAccPhi(0),
   fHistTotalAccEta(0),
-  fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -214,8 +211,6 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistPtMatch(0),
   fClsEAftMatch(0),
   fClsEtaPhiAftMatch(0),
-  fClsEtaPhiAftMatchEMCin(0),
-  fClsEtaPhiAftMatchEMCout(0),
   fHistdEdxEop(0),
   fHistNsigEop(0),
   fHistEop(0),
@@ -250,7 +245,6 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHisthfeTof(0),
   fHistTotalAccPhi(0),
   fHistTotalAccEta(0),
-  fHistOtherEle(0),
   fHistHFEcorr(0),
   fhfeCuts(0) 
 {
@@ -338,31 +332,31 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fCent = new TH1F("fCent","Centrality",100,0,100);
   fOutputList->Add(fCent);
 
-  fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",1000,-50,50);
+  fVtxZ = new TH1F("fVtxZ","Z vertex position;Vtx_{z};counts",100,-50,50);
   fOutputList->Add(fVtxZ);
 
-  fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
+  fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustE);
 
-  fHistClustEtime = new TH1F("fHistClustEtime", "EMCAL cluster energy distribution with time; Cluster E;counts", 5000, 0.0, 50.0);
+  fHistClustEtime = new TH1F("fHistClustEtime", "EMCAL cluster energy distribution with time; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustEtime);
 
-  fHistClustEcent = new TH2F("fHistClustEcent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,5000, 0.0, 50.0);
+  fHistClustEcent = new TH2F("fHistClustEcent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,500, 0.0, 50.0);
   fOutputList->Add(fHistClustEcent);
 
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhi);
 
-  fHistClustEEG1 = new TH1F("fHistClustEEG1", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
+  fHistClustEEG1 = new TH1F("fHistClustEEG1", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustEEG1);
 
-  fHistClustEEG1cent = new TH2F("fHistClustEEG1cent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,5000, 0.0, 50.0);
+  fHistClustEEG1cent = new TH2F("fHistClustEEG1cent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,500, 0.0, 50.0);
   fOutputList->Add(fHistClustEEG1cent);
 
-  fHistClustEEG2 = new TH1F("fHistClustEEG2", "EMCAL cluster energy distribution; Cluster E;counts", 5000, 0.0, 50.0);
+  fHistClustEEG2 = new TH1F("fHistClustEEG2", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustEEG2);
 
-  fHistClustEEG2cent = new TH2F("fHistClustEEG2cent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,5000, 0.0, 50.0);
+  fHistClustEEG2cent = new TH2F("fHistClustEEG2cent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,500, 0.0, 50.0);
   fOutputList->Add(fHistClustEEG2cent);
 
   fEMCClsEtaPhiEG1 = new TH2F("fEMCClsEtaPhiEG1","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
@@ -375,7 +369,7 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0);
   fOutputList->Add(fNegTrkIDPt);
 
-  fTrkPt = new TH1F("fTrkPt","p_{T} distribution of all tracks;p_{T} (GeV/c);counts",1000,0,100);
+  fTrkPt = new TH1F("fTrkPt","p_{T} distribution of all tracks;p_{T} (GeV/c);counts",600,0,60);
   fOutputList->Add(fTrkPt);
 
   fTrketa = new TH1F("fTrketa","All Track #eta distribution;#eta;counts",100,-1.5,1.5);
@@ -387,23 +381,17 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fdEdx = new TH2F("fdEdx","All Track dE/dx distribution;p (GeV/c);dE/dx",200,0,20,500,0,160);
   fOutputList->Add(fdEdx);
 
-  fTPCNpts = new TH2F("fTPCNpts","All track TPC Npoints used for dE/dx calculation;p (GeV/c);N points",200,0,20,200,0.,200.);
+  fTPCNpts = new TH2F("fTPCNpts","All track TPC Npoints used for dE/dx calculation;p (GeV/c);N points",20,0,20,200,0.,200.);
   fOutputList->Add(fTPCNpts);
 
-  fTPCnsig = new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",1000,0,50,200,-10,10);
+  fTPCnsig = new TH2F("fTPCnsig","All Track TPC Nsigma distribution;p (GeV/c);#sigma_{TPC-dE/dx}",500,0,50,200,-10,10);
   fOutputList->Add(fTPCnsig);
 
-  fHistPtMatch = new TH1F("fHistPtMatch", "p_{T} distribution of tracks matched to EMCAL;p_{T} (GeV/c);counts",1000, 0.0, 100.0);
+  fHistPtMatch = new TH1F("fHistPtMatch", "p_{T} distribution of tracks matched to EMCAL;p_{T} (GeV/c);counts",600, 0.0, 60.0);
   fOutputList->Add(fHistPtMatch);
 
   fClsEtaPhiAftMatch = new TH2F("fClsEtaPhiAftMatch","EMCAL cluster #eta and #phi distribution after track matching;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fClsEtaPhiAftMatch);
-
-  fClsEtaPhiAftMatchEMCin = new TH2F("fClsEtaPhiAftMatchEMCin","EMCAL cluster #eta and #phi distribution after track matching inside EMC #phi acceptence;#eta;#phi",100,-0.9,0.9,200,0,6.3);
-  fOutputList->Add(fClsEtaPhiAftMatchEMCin);
-
-  fClsEtaPhiAftMatchEMCout = new TH2F("fClsEtaPhiAftMatchEMCout","EMCAL cluster #eta and #phi distribution after track matching outside EMC #phi acceptence;#eta;#phi",100,-0.9,0.9,200,0,6.3);
-  fOutputList->Add(fClsEtaPhiAftMatchEMCout);
 
 
   fHistEop = new TH2F("fHistEop", "E/p distribution;p_{T} (GeV/c);E/p", 400,0,40,60, 0.0, 3.0);
@@ -427,38 +415,37 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fM02 = new TH2F ("fM02","M02 vs pt distribution",200,0,20,400,0,2);
   fOutputList->Add(fM02);
 
-  fM20EovP = new TH2F ("fM20EovP","M20 vs E/p distribution",400,0,3,400,0,2);
+  fM20EovP = new TH2F ("fM20EovP","M20 vs E/p distribution",100,0,2,200,0,2);
   fOutputList->Add(fM20EovP);
 
-  fM02EovP = new TH2F ("fM02EovP","M02 vs E/p distribution",400,0,3,400,0,2);
+  fM02EovP = new TH2F ("fM02EovP","M02 vs E/p distribution",100,0,2,200,0,2);
   fOutputList->Add(fM02EovP);
 
-  fInvmassLS = new TH2F("fInvmassLS", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 30,0,30,200,0,0.4);
+  fInvmassLS = new TH2F("fInvmassLS", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 30,0,30,150,0,0.3);
   fOutputList->Add(fInvmassLS);
 
-  fInvmassULS = new TH2F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 30,0,30,200,0,0.4);
+  fInvmassULS = new TH2F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 30,0,30,150,0,0.3);
   fOutputList->Add(fInvmassULS);
 
+  /*
   fInvmassHfLS = new TH2F("fInvmassHfLS", "Invmass HF of LS for pt^{e}>3; mass(GeV/c^2); counts;", 4000,-0.2,0.2, 3000,0,6);
   fOutputList->Add(fInvmassHfLS);
 
   fInvmassHfULS = new TH2F("fInvmassHfULS", "Invmass HF of ULS for pt^{e}>3; mass(GeV/c^2); counts;", 4000,-0.2,0.2, 3000,0,6);
   fOutputList->Add(fInvmassHfULS);
+  */
 
   fMCcheckMother = new TH1F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5);
   fOutputList->Add(fMCcheckMother);
 
-  //Int_t bins[8]={8,500,200,400,400,400,400,400}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  //Double_t xmin[8]={-0.5,0,-10,0,0,0,0,0};
-  //Double_t xmax[8]={7.5,25,10,2,2,2,2,2};
-  //fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm20;sqrtm02;",8,bins,xmin,xmax);
-  //Int_t bins[10]={8,500,200,400,400,400,400,3,200,10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  //Double_t xmin[10]={-0.5,   0,  -8,   0,   0,   0,    0, -0.5, -8,   0};
-  Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
-  Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5,  -5,   0};
-  Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  15 , 100};
-  fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
-  fOutputList->Add(fSparseElectron);
+  if(fFlagSparse)
+    {
+     Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
+     Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5,  -5,   0};
+     Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  15 , 100};
+     fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
+     fOutputList->Add(fSparseElectron);
+    }
 
   fHistPhoReco0 = new TH1D("fHistPhoReco0", "total pho in sample; p_{T}(GeV/c)", 30,0,30);
   fOutputList->Add(fHistPhoReco0);
@@ -469,43 +456,43 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fHistPhoReco2 = new TH1D("fHistPhoReco2", "non-reco pho in sample; p_{T}(GeV/c)", 30,0,30);
   fOutputList->Add(fHistPhoReco2);
 
-  fHistDCAinc = new TH2D("fHistDCAinc", "DCA of inclusive e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAinc = new TH2D("fHistDCAinc", "DCA of inclusive e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAinc);
  
-  fHistDCApho = new TH2D("fHistDCApho", "DCA of pho e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCApho = new TH2D("fHistDCApho", "DCA of pho e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCApho);
 
-  fHistDCAcomb = new TH2D("fHistDCAcomb", "DCA of comb e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAcomb = new TH2D("fHistDCAcomb", "DCA of comb e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAcomb);
 
-  fHistDCAhfe = new TH2D("fHistDCAhfe", "DCA of hfe e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAhfe = new TH2D("fHistDCAhfe", "DCA of hfe e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAhfe);
 
-  fHistDCAhad = new TH2D("fHistDCAhad", "DCA of bg hadron; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAhad = new TH2D("fHistDCAhad", "DCA of bg hadron; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAhad);
 
-  fHistDCAde = new TH2D("fHistDCAde", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAde = new TH2D("fHistDCAde", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAde);
  
-  fHistDCAbe = new TH2D("fHistDCAbe", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAbe = new TH2D("fHistDCAbe", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAbe);
 
-  fHistDCApe = new TH2D("fHistDCApe", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCApe = new TH2D("fHistDCApe", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCApe);
 
-  fHistDCAdeSemi = new TH2D("fHistDCAdeSemi", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAdeSemi = new TH2D("fHistDCAdeSemi", "DCA of D-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAdeSemi);
  
-  fHistDCAbeSemi = new TH2D("fHistDCAbeSemi", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAbeSemi = new TH2D("fHistDCAbeSemi", "DCA of B-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAbeSemi);
 
-  fHistDCApeSemi = new TH2D("fHistDCApeSemi", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCApeSemi = new TH2D("fHistDCApeSemi", "DCA of pi0/eta-> e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCApeSemi);
 
-  fHistDCAhaSemi = new TH2D("fHistDCAhaSemi", "DCA of hadron; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,4000,-0.2,0.2);
+  fHistDCAhaSemi = new TH2D("fHistDCAhaSemi", "DCA of hadron; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAhaSemi);
 
-  fHisthfeTof = new TH2D("fHisthfeTof", "hfe vs. Tof; p_{T}(GeV/c); time (ns)", 300,0,30,20000,-200,200);
+  fHisthfeTof = new TH2D("fHisthfeTof", "hfe vs. Tof; p_{T}(GeV/c); time (ns)", 300,0,30,9000,-180,180);
   fOutputList->Add(fHisthfeTof);
 
   fHistTotalAccPhi = new TH2D("fHistTotalAccPhi","total electron acceptance in phi",50,0,0.5,620,0,6.2);
@@ -513,9 +500,6 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
  
   fHistTotalAccEta = new TH2D("fHistTotalAccEta","total electron acceptance in eta",50,0,0.5,700,-0.7,0.7);
   fOutputList->Add(fHistTotalAccEta);
-
-  fHistOtherEle = new TH1D("fHistOtherEle", "remaining X->e", 10000,-0.5,9999.5);
-  fOutputList->Add(fHistOtherEle);
 
   fHistHFEcorr = new TH1D("fHistHFEcorr", "HFE corr", 720,-3.6,3.6);
   fOutputList->Add(fHistHFEcorr);
@@ -928,14 +912,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       fClsEtaPhiAftMatch->Fill(emceta,emcphi);
 
-      if(TrkPhi > 1.396  && TrkPhi < 3.141) //emc acceptance (80 to 180 degrees)
-      {
-        fClsEtaPhiAftMatchEMCin->Fill(emceta,emcphi);
-      }
-      else{
-        fClsEtaPhiAftMatchEMCout->Fill(emceta,emcphi);
-      }
-
       Float_t tof = clustMatch->GetTOF()*1e+9; // ns
       if(tof<-30 && tof>30)continue; // timing cut
 
@@ -960,20 +936,20 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
 
-      //EID THnsparse
-      fvalueElectron[0] = trigger;
-      fvalueElectron[1] = track->Pt();
-      fvalueElectron[2] = fTPCnSigma;
-      fvalueElectron[3] = eop;
-      fvalueElectron[4] = clustMatch->GetM20();
-      fvalueElectron[5] = clustMatch->GetM02();
-      fvalueElectron[6] = sqm02m20;
-      fvalueElectron[7] = pid_ele;
-      fvalueElectron[8] = fTPCnSigma_Pi;
-      fvalueElectron[9] = centrality;
-
       if(fFlagSparse && track->Pt()>2.0){
-        fSparseElectron->Fill(fvalueElectron);
+         //EID THnsparse
+         fvalueElectron[0] = trigger;
+         fvalueElectron[1] = track->Pt();
+         fvalueElectron[2] = fTPCnSigma;
+         fvalueElectron[3] = eop;
+         fvalueElectron[4] = clustMatch->GetM20();
+         fvalueElectron[5] = clustMatch->GetM02();
+         fvalueElectron[6] = sqm02m20;
+         fvalueElectron[7] = pid_ele;
+         fvalueElectron[8] = fTPCnSigma_Pi;
+         fvalueElectron[9] = centrality;
+
+         fSparseElectron->Fill(fvalueElectron);
       }
 
       Bool_t fFlagNonHFE=kFALSE;  // ULS
@@ -1021,7 +997,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           if(pid_ele!=1.0)fHistDCAhaSemi->Fill(track->Pt(),DCAxy);
           Bool_t iknown = kFALSE;
           if(pid_eleD || pid_eleB || pid_eleP)iknown = kTRUE;
-          if(!iknown && pid_ele==1.0)fHistOtherEle->Fill(pidM);
          }
      
         if(fFlagNonLsHFE)fHistDCAcomb->Fill(track->Pt(),DCAxy);  // LS
@@ -1238,10 +1213,10 @@ void AliAnalysisTaskBeautyCal::CalInvmassHF(Int_t itrack, AliVTrack *track, Doub
     Int_t MassCorrect;
     MassCorrect = recg.GetMass(mass,width);
 
-    if(fFlagLS)
-      if(track->Pt()>3) fInvmassHfLS->Fill(DCAhf,mass);
-    if(fFlagULS)
-      if(track->Pt()>3) fInvmassHfULS->Fill(DCAhf,mass);
+    //if(fFlagLS)
+      //if(track->Pt()>3) fInvmassHfLS->Fill(DCAhf,mass);
+    //if(fFlagULS)
+      //if(track->Pt()>3) fInvmassHfULS->Fill(DCAhf,mass);
   
   }
 
