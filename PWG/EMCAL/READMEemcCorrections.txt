@@ -213,6 +213,7 @@ __Clusters__ (Includes all options for EMCal Containers):
 | --------------------- | --------------------------------- |
 | clusNonLinCorrEnergyCut | Double determining the cluster non-linearity energy cut |
 | clusHadCorrEnergyCut  | Double determining the cluster hadronic cluster energy cut |
+| includePHOS           | True if PHOS cluster should be included |
 
 __Tracks__ (Includes all options for EMCal Containers):
 | Property              | Value                             |

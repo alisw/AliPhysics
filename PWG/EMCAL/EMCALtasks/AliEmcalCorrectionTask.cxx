@@ -1020,6 +1020,13 @@ void AliEmcalCorrectionTask::SetupContainer(InputObject_t inputObjectType, std::
       AliDebugStream(2) << clusterContainer->GetName() << ": Setting clusHadCorrEnergyCut of " << tempDouble << std::endl;
       clusterContainer->SetClusHadCorrEnergyCut(tempDouble);
     }
+
+    // SetIncludePHOS
+    result = AliEmcalCorrectionComponent::GetProperty("includePHOS", tempBool, userNode, defaultNode, false, containerName);
+    if (result) {
+      AliDebugStream(2) << clusterContainer->GetName() << ": Setting Include PHOS to " << (tempBool ? "enabled" : "disabled") << std::endl;
+      clusterContainer->SetIncludePHOS(tempBool);
+    }
   }
 
   // Track specific
