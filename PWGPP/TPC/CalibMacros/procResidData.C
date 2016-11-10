@@ -126,7 +126,7 @@ AliTPCDcalibRes*  CreateSetCalib(int run,int tmin,int tmax,const char* inp)
   envs = gSystem->Getenv("distNBinsY");;
   if (envs.IsDigit()) {
     ::Info("CreateResCalib","SetNY2XBins %s",envs.Data());
-    clbn->SetNZ2XBins(envs.Atoi());
+    clbn->SetNY2XBins(envs.Atoi());
   }
   //
   // binning <<<<<<<<<<<<<<<<<<<<<<<<<
