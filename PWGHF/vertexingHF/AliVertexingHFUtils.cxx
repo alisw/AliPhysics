@@ -1939,6 +1939,9 @@ Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod, Double_t etaMin, D
     if(pt<ptMin || pt>ptMax) continue;
     Bool_t fb1 = tr->TestFilterBit(filtbit1);
     Bool_t fb2 = tr->TestFilterBit(filtbit2);
+    Bool_t tpcRefit=tr->GetStatus() & AliAODTrack::kTPCrefit;
+    if(filtbit1==0 && !tpcRefit) fb1=kFALSE;
+    if(filtbit2==0 && !tpcRefit) fb2=kFALSE;
     if( !(fb1 || fb2) ) continue;    
     Double_t px=pt*TMath::Cos(phi);
     Double_t py=pt*TMath::Sin(phi);
@@ -2001,6 +2004,9 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
     }
     Bool_t fb1 = tr->TestFilterBit(filtbit1);
     Bool_t fb2 = tr->TestFilterBit(filtbit2);
+    Bool_t tpcRefit=tr->GetStatus() & AliAODTrack::kTPCrefit;
+    if(filtbit1==0 && !tpcRefit) fb1=kFALSE;
+    if(filtbit2==0 && !tpcRefit) fb2=kFALSE;
     if( !(fb1 || fb2) ) continue;    
     ptArr[nSelTracks]=pt;
     phiArr[nSelTracks]=phi;
