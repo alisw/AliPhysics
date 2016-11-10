@@ -23,6 +23,8 @@ public:
 
   void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min, max); fRequestCentrality = true; }
 
+  static AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRef(TString nClusters = "usedefault");
+
 protected:
   virtual void CreateUserObjects() {}
   virtual void CreateUserHistos();

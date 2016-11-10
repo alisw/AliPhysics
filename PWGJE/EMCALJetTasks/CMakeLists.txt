@@ -106,6 +106,7 @@ set(SRCS
     Tracks/AliAnalysisTaskChargedParticlesRef.cxx
     Tracks/AliAnalysisTaskChargedParticlesRefMC.cxx
     Tracks/AliAnalysisTaskChargedParticlesMCTriggerMimic.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx

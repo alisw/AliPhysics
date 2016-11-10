@@ -29,20 +29,23 @@
 #include <TParameter.h>
 #include <TMath.h>
 
+#include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
-#include "AliCentrality.h"
 #include "AliClusterContainer.h"
+#include "AliEmcalAnalysisFactory.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalList.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
-#include "AliOADBContainer.h"
-#include "AliVCluster.h"
-#include "AliVVertex.h"
 #include "AliMultSelection.h"
 #include "AliMultEstimator.h"
+#include "AliVCluster.h"
+#include "AliVEvent.h"
+#include "AliVEventHandler.h"
+#include "AliVVertex.h"
 
 #include "AliAnalysisTaskEmcalClustersRef.h"
 
@@ -368,6 +371,39 @@ double AliAnalysisTaskEmcalClustersRef::GetPatchEnergy(TObject *o) const {
   energy = patch->GetPatchE();
   return energy;
 }
+
+AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalClusterRef(TString nClusters){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef("emcalClusterQA");
+  mgr->AddTask(task);
+
+  // Adding cluster container
+  TString clusName(nClusters == "usedefault" ? AliEmcalAnalysisFactory::ClusterContainerNameFactory(mgr->GetInputEventHandler()->InheritsFrom("AliAODInputHandler")) : nClusters);
+  task->AddClusterContainer(clusName.Data());
+  task->SetClusterContainer(clusName);
+
+  // Set Energy thresholds for additional patch selection:
+  // These are events with offline patches of a given type where the trigger reached already the plateau
+  // These numers are determined as:
+  // EMC7: 3.5 GeV
+  // EG1:  14 GeV
+  // EG2:  8 GeV
+  // EJ1:  22 GeV
+  // EJ2:  12 GeV
+  task->SetOfflineTriggerSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+  );
+
+  TString outfile(mgr->GetCommonFileName());
+  outfile += ":ClusterQA";
+
+  task->ConnectInput(0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer("ClusterResults", AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+
+  return task;
+}
+
 
 /**
  * Create new energy binning
