@@ -238,8 +238,8 @@ void AliPBTracks::ApplyCuts()
 		else {
 			CutTrack(fESDEvent, 1);
 		}
-
 		fNcombined = fNch + fNsoft;
+    
 		for (Int_t iSoft = 0; iSoft < fNsoft; iSoft++) {
 			Int_t iTrk = 0;
 			while (iTrk < fNch) {

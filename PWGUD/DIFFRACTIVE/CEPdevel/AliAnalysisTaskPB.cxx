@@ -1440,8 +1440,6 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     // add normal tracks to event buffer
     Double_t mom[3];
     Double_t stat,nsig,probs[AliPID::kSPECIES];
-    //Int_t nMC = 0;
-    //TLorentzVector aa = TLorentzVector(0,0,0,0);
     for (Int_t ii=0; ii<nch; ii++) {
     
       AliVTrack *tmptrk = fTracks->GetTrack(ii);
@@ -1497,21 +1495,13 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
         trk->SetMCPID(part->GetPdgCode());
         trk->SetMCMass(part->GetMass());
         trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
-        
-        //nMC++;
-        //aa += lv;
+
       }
       
       evbuf->AddTrack(trk);
     }
     
-    // if (nMC == 2) {
-    //   printf("Total energy, mass, and pt of saved tracks: %f / %f /%f \n",aa.E(),aa.M(),aa.Pt());
-    // }
-    
-    
-    
-    
+        
     // add soft tracks to event buffer
     for (Int_t ii=nch; ii<ncombined; ii++) {
     
@@ -1581,6 +1571,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     
     // fill tree if not all events are to be saved
     if ( !(fAnalysisStatus & AliPBBase::kBitSaveAllCD)) {
+      // printf("Saving only accepted events!");
       fPWAtree->Fill();
       PostOutputs();
     }
@@ -1589,10 +1580,8 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   
   
   // fill tree if events needs to be saved
-  if ( 
-    ncombined <= fnumTracksMax ||
-    ( (fAnalysisStatus & AliPBBase::kBitSaveAllCD) &&
-      fMCprocessType == AliPBBase::kBinCD ) ) {
+  if ( (fAnalysisStatus & AliPBBase::kBitSaveAllCD) ) {
+    // printf("Saving all events!");
     fPWAtree->Fill();
     PostOutputs();
   }
