@@ -61,7 +61,9 @@ void AddTask_GammaConvFlow_PbPb2(
                                Bool_t isMC = kFALSE
                                ) {
   
-  Int_t isHeavyIon = 1;
+  Int_t isHeavyIon;
+  if(trainConfig == 69) isHeavyIon = 0;
+  else isHeavyIon = 1;
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -324,6 +326,8 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("54800013", "00200009007000008270400000"); //psipaircut = 0.07
     cuts.AddCut("54800013", "00200009007000008250600000"); //cos p angle cut = 0.9
     cuts.AddCut("54800013", "00200009007000008250300000"); //cos p angle cut = 0.75
+  } else if (trainConfig == 69) {
+    cuts.AddCut("00000113", "00200009007000008250400000");
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -370,7 +374,7 @@ void AddTask_GammaConvFlow_PbPb2(
     TString totalCutString = Form("%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data());
     flowEvent[i] = mgr->CreateContainer(Form("FlowContainer_%s_%s",uniqueID.Data(),totalCutString.Data()), AliFlowEventSimple::Class(), AliAnalysisManager::kExchangeContainer);
     mgr->ConnectOutput(task, 2+i, flowEvent[i]);
-    
+
     Double_t NFilterBinValues[20];
     if(FilterVariable==7 && NFilterBins == 4){
       task->SetFilterVariable(2,MinFilter,MaxFilter);
@@ -393,7 +397,7 @@ void AddTask_GammaConvFlow_PbPb2(
         NFilterBinValues[1] = MaxFilter;
       }
     }
-    
+
     for(Int_t j=0;j<NFilterBins;j++){
       AliFlowTrackSimpleCuts *POIfilterVZERO = new AliFlowTrackSimpleCuts();
       if(FilterVariable==7){
@@ -401,12 +405,15 @@ void AddTask_GammaConvFlow_PbPb2(
       }else{
         POIfilterVZERO->SetMassMin(NFilterBinValues[j]); POIfilterVZERO->SetMassMax(NFilterBinValues[j+1]);
       }
-      
-      if(debug) cout << "    --> Created IO containers " << flowEvent[i] << endl;
-      AddSPmethod(Form("SPVZEROQa_in_%s_%i", uniqueID.Data(), j), "Qa", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
-      if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-      AddSPmethod(Form("SPVZEROQb_in_%s_%i", uniqueID.Data(), j), "Qb", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
-      if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
+
+      if(isHeavyIon==0) cout << "not doing SP analysis" << endl;
+      else {
+        if(debug) cout << "    --> Created IO containers " << flowEvent[i] << endl;
+        AddSPmethod(Form("SPVZEROQa_in_%s_%i", uniqueID.Data(), j), "Qa", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
+        if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
+        AddSPmethod(Form("SPVZEROQb_in_%s_%i", uniqueID.Data(), j), "Qb", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
+        if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
+      }
     }
   }
   
