@@ -703,6 +703,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       //VZERO EP and resolution
       if(fUseNewQnCorrFw) {
         rpangleeventC=eventplaneqncorrVZERO[0];
+        rpangleVZERO=eventplaneqncorrVZERO[0];
         if(fEventPlaneMeth==kVZEROA||fEventPlaneMeth==kVZEROC||(fEventPlaneMeth==kTPCVZERO&&fSubEvents==3)){
           rpangleeventB= eventplaneqncorrVZERO[1];
           rpangleeventC= eventplaneqncorrVZERO[2];
