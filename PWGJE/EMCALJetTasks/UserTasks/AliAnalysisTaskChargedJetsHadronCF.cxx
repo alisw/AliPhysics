@@ -95,6 +95,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetVetoArrayName(""),
   fJetVetoMinPt(0),
   fJetVetoMaxPt(0),
+  fJetVetoJetByJet(0),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -152,6 +153,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetVetoArrayName(""),
   fJetVetoMinPt(0),
   fJetVetoMaxPt(0),
+  fJetVetoJetByJet(0),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -250,6 +252,9 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   // Embedding plots
   if(fJetOutputMode == 4  || fJetOutputMode == 5)
   {
+    if(fJetVetoJetByJet)
+      AddHistogram1D<TH1D>("hJetVeto", "Number of vetoed/accepted jets", "e1p", 2, 0., 2., "Accepted/Vetoed", "dN^{Events}/dN^{veto}");
+
     AddHistogram2D<TH2D>("hEmbeddingDeltaR", "Matched jet #Delta R distribution", "", 200, -50., 150., 100, 0, 1.0, "p_{T, jet} (GeV/c)", "#Delta R", "dN^{Matched}/dp_{T}dR");
     AddHistogram2D<TH2D>("hEmbeddingDeltaEta", "Matched jet #Delta #eta distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #eta", "dN^{Matched}/dp_{T}d#eta");
     AddHistogram2D<TH2D>("hEmbeddingDeltaPhi", "Matched jet #Delta #phi distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #phi", "dN^{Matched}/dp_{T}d#phi");
@@ -845,7 +850,7 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
   fMatchedJetsReference.clear();
 
   // Check for a jet veto here
-  if(fJetVetoArray)
+  if(!fJetVetoJetByJet && fJetVetoArray)
   {
     for(Int_t i=0; i<fJetVetoArray->GetEntries(); i++)
     {
@@ -960,16 +965,54 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
     // Add jets
     if(matchedLeading)
     {
-      fMatchedJets.push_back(matchedLeading);
-      fMatchedJetsReference.push_back(refLeading);
+      if(!fJetVetoJetByJet || !IsJetVetoed(matchedLeading))
+      {
+        fMatchedJets.push_back(matchedLeading);
+        fMatchedJetsReference.push_back(refLeading);
+      }
     }
     if(matchedSubLeading && fJetMatchingUseOnlyNLeading >= 2)
     {
-      fMatchedJets.push_back(matchedSubLeading);
-      fMatchedJetsReference.push_back(refSubLeading);
+      if(!fJetVetoJetByJet || !IsJetVetoed(matchedSubLeading))
+      {
+        fMatchedJets.push_back(matchedSubLeading);
+        fMatchedJetsReference.push_back(refSubLeading);
+      }
     }
   }
 
+}
+
+//________________________________________________________________________
+inline Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetVetoed(AliEmcalJet* jet)
+{
+  // Check if this jet can be matched with a veto jet
+  if(fJetVetoArray && jet)
+  {
+    for(Int_t j=0; j<fJetVetoArray->GetEntries(); j++)
+    {
+      UInt_t dummy = 0;
+      AliEmcalJet* vetoJet = static_cast<AliEmcalJet*>(fJetVetoArray->At(j));
+      // Check if veto jet is accepted and high enough in pT
+      if(!fJetsCont->AcceptJet(vetoJet , dummy))
+        continue;
+      if(!((vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() >= fJetVetoMinPt) && (vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() < fJetVetoMaxPt)))
+        continue;
+
+      // Check matching distance
+      Double_t deltaEta = (jet->Eta()-vetoJet->Eta());
+      Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-vetoJet->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-vetoJet->Phi()));
+      Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
+
+      if (deltaR <= fJetMatchingMaxDistance)
+      {
+        FillHistogram("hJetVeto", 1.5); // jet vetoed
+        return kTRUE;
+      }
+    }
+  }
+  FillHistogram("hJetVeto", 0.5); // jet accepted
+  return kFALSE;
 }
 
 //________________________________________________________________________

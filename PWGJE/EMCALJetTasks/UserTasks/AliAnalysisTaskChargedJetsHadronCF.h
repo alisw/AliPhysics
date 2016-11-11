@@ -29,7 +29,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   // ######### SETTERS/GETTERS
-  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t maxSharedFraction, Double_t maxEmbeddingOffset,  Double_t matchMinPt, Double_t matchMaxPt, Int_t nLeading, const char* vetoArray = 0, Double_t minVetoJetPt = 0, Double_t maxVetoJetPt = 0)
+  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t maxSharedFraction, Double_t maxEmbeddingOffset,  Double_t matchMinPt, Double_t matchMaxPt, Int_t nLeading, const char* vetoArray = 0, Double_t minVetoJetPt = 0, Double_t maxVetoJetPt = 0, Bool_t jetVetoJetByJet = kFALSE)
   {
     fJetMatchingMaxDistance = maxDistance;
     fJetMatchingArrayName = matchArray;
@@ -44,6 +44,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
     fJetVetoArrayName = vetoArray;
     fJetVetoMinPt = minVetoJetPt;
     fJetVetoMaxPt = maxVetoJetPt;
+    fJetVetoJetByJet = jetVetoJetByJet;
   }
 
   void                        SetConstPtFilterBit(Int_t val)   { fConstPtFilterBit = val; }
@@ -107,6 +108,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TString                     fJetVetoArrayName;                        ///< Name of array used for veto jets
   Double_t                    fJetVetoMinPt;                            ///< Min pt cut applied on the fJetVetoArray jets
   Double_t                    fJetVetoMaxPt;                            ///< Max pt cut applied on the fJetVetoArray jets
+  Bool_t                      fJetVetoJetByJet;                         ///< If true, the jet veto will be applied on a jet-by-jet basis
   std::vector<AliEmcalJet*>   fMatchedJets;                             ///< Jets matched in an event (embedded)
   std::vector<AliEmcalJet*>   fMatchedJetsReference;                    ///< Jets matched in an event (reference)
   TRandom3*                   fRandom;                                  ///< random number generator
@@ -143,6 +145,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   template <class T> T*       AddHistogram3D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0, Int_t zBins = 100, Double_t zMin = 0.0, Double_t zMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
 
   // ######### HELPER FUNCTIONS
+  Bool_t                      IsJetVetoed(AliEmcalJet* jet);
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   Double_t                    CalculateFakeFactor(AliEmcalJet* jet);
   void                        GetInitialCollisionJets();
