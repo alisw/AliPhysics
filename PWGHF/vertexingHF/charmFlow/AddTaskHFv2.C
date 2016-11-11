@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", Int_t flagep=0 /*0=tracks,1=V0,2=v0A,3=V0C*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskSEHFv2::FlowMethod meth=AliAnalysisTaskSEHFv2::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskSEHFv2::q2Method q2meth=AliAnalysisTaskSEHFv2::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskSEHFv2::EventPlaneMeth flagep=AliAnalysisTaskSEHFv2::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskSEHFv2::FlowMethod meth=AliAnalysisTaskSEHFv2::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskSEHFv2::q2Method q2meth=AliAnalysisTaskSEHFv2::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D
@@ -84,17 +84,16 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user
   v2Task->SetMaxCentrality(maxC);
   v2Task->SetDebugLevel(0);
   v2Task->SetV0EventPlaneOrder(2);
-  if(flagep==0) {
-    v2Task->SetTPCEP();
+  v2Task->SetEventPlaneMethod(flagep);
+  if(flagep==AliAnalysisTaskSEHFv2::kTPC) {
     suffix+="TPC";
-  } else if(flagep==1) {
-    v2Task->SetVZEROEP();
-    suffix+="VZERO";
-  } else if(flagep==2) {
-    v2Task->SetVZEROAEP();
+  } else if(flagep==AliAnalysisTaskSEHFv2::kTPCVZERO) {
+    suffix+="TPCVZERO";
+  } else if(flagep==AliAnalysisTaskSEHFv2::kVZERO) {
+      suffix+="VZERO";
+  } else if(flagep==AliAnalysisTaskSEHFv2::kVZEROA) {
     suffix+="VZEROA";
-  }else if(flagep==3) {
-    v2Task->SetVZEROCEP();
+  } else if(flagep==AliAnalysisTaskSEHFv2::kVZEROC) {
     suffix+="VZEROC";
   }
   v2Task->SetFlowMethod(meth);
