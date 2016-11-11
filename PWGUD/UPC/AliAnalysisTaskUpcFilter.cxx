@@ -309,6 +309,8 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   trgClasses[23] = trigger.Contains("CTEST59-B");   // !0VBA & !0VBC & !0UBA & !0UBC & 0STP
   trgClasses[24] = trigger.Contains("CTEST60-B");   // !0VBA & !0VBC & !0UBA & !0UBC & 0OM2
   trgClasses[25] = trigger.Contains("CTEST61-B");   // !0VBA & !0VBC & !0UBA & !0UBC & 0OMU
+  
+  trgClasses[26] = trigger.Contains("CMUP14-B");   //Michal, 0MSL & !0VBA & !0UBA
 
   //end of list of trigger classes
 
