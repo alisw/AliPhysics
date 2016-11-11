@@ -552,8 +552,13 @@ AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
  if(bUsePhiEtaWeights) {
    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
    if(sDataSet=="2015" && sIntRuns=="high") {
-     if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
-     if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
+     if(!bUsePtWeights) {
+       if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
+       if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
+     } else {
+       if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_pteff_CenPhiEtaWeights.root";
+       if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff_CenPhiEtaWeights.root";
+     }
    }
    if(sDataSet=="2015" && sIntRuns=="low") {
      if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oLI_FB32_CenPhiEtaWeights.root";
