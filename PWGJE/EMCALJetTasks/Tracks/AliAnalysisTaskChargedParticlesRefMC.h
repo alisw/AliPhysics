@@ -150,6 +150,20 @@ public:
    */
   void SetTriggerAcceptanceOADB(const TString &name) { fNameAcceptanceOADB = name; }
 
+  /**
+   * Preconfigure task. Intended for subwagon configuration inside the train.
+   * @param[in] suffix Suffix of the subwagon
+   * @return Preconfigured task
+   */
+  static AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedParticlesRefMC(const TString &suffix);
+
+  /**
+   * Configure task fully with a default configuration. Not intended for subwagons
+   * @param[in] cutname Name of the cut configuration
+   * @return Fully-configured task
+   */
+  static AliAnalysisTaskChargedParticlesRefMC *AddTaskChargedParticlesRefMCDefault(const TString &cutname = "standard");
+
 protected:
 
   /**

@@ -23,7 +23,20 @@ public:
 
   void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min, max); fRequestCentrality = true; }
 
-  static AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClusterRef(TString nClusters = "usedefault");
+  /**
+   * Preconfigure task so that it can be used in subwagons
+   * @param[in] nClusters Name of the input cluster container
+   * @param[in] suffix Suffix of the subwagon
+   * @return Preconfigure task
+   */
+  static AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClustersRef(const TString &nClusters = "usedefault", const TString &suffix = "");
+
+  /**
+   *
+   * @param[in] nClusters Name of the input cluster container
+   * @return Fully configured task
+   */
+  static AliAnalysisTaskEmcalClustersRef *AddTaskEmcalClustersRefDefault(const TString &nClusters = "usedefault");
 
 protected:
   virtual void CreateUserObjects() {}

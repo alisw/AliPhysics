@@ -372,7 +372,34 @@ double AliAnalysisTaskEmcalClustersRef::GetPatchEnergy(TObject *o) const {
   return energy;
 }
 
-AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalClusterRef(TString nClusters){
+AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalClustersRef(const TString &nclusters, const TString &suffix){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString clusName(nclusters == "usedefault" ? AliEmcalAnalysisFactory::ClusterContainerNameFactory(mgr->GetInputEventHandler()->InheritsFrom("AliAODInputHandler")) : nclusters);
+
+  TString taskname = "emcalClusterQA_" + suffix;
+
+  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef(taskname.Data());
+  task->AddClusterContainer(clusName);
+  task->SetClusterContainer(clusName);
+  mgr->AddTask(task);
+
+  TString outfile(mgr->GetCommonFileName());
+  outfile += ":ClusterQA_" + TString(suffix);
+  TString containername = "ClusterResults_" + TString(suffix);
+  printf("Outfile: %s, container: %s\n", outfile.Data(), containername.Data());
+
+  task->ConnectInput(0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(containername.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+
+  return task;
+}
+
+AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalClustersRefDefault(const TString &nClusters){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef("emcalClusterQA");
