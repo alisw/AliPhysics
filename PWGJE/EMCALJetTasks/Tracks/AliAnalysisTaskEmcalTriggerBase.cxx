@@ -40,9 +40,12 @@ namespace EMCalTriggerPtAnalysis {
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   AliAnalysisTaskEmcal(),
   fTriggerSelection(nullptr),
+  fUseTriggerBits(kTRUE),
+  fRequireBunchCrossing(kTRUE),
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
+  fRequireAnalysisUtils(kTRUE),
   fVertexCut(-10., 10.),
   fNameDownscaleOADB(""),
   fDownscaleOADB(nullptr),
@@ -63,9 +66,12 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *name):
   AliAnalysisTaskEmcal(name, true),
   fTriggerSelection(nullptr),
+  fUseTriggerBits(kTRUE),
+  fRequireBunchCrossing(kTRUE),
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
+  fRequireAnalysisUtils(kTRUE),
   fVertexCut(-10., 10.),
   fNameDownscaleOADB(""),
   fDownscaleOADB(nullptr),
@@ -91,7 +97,7 @@ AliAnalysisTaskEmcalTriggerBase::~AliAnalysisTaskEmcalTriggerBase() {
 
 void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  if(!fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
+  if(fRequireAnalysisUtils && !fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
 
   fHistos = new THistManager(Form("Histos_%s", GetName()));
 
@@ -113,10 +119,13 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
   //if(!fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.)) return;         // reject pileup event
   if(vtx->GetNContributors() < 1) return false;
-  if(fInputEvent->IsA() == AliESDEvent::Class() && fAliAnalysisUtils->IsFirstEventInChunk(fInputEvent)) return false;
-  if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;       // Apply new vertex cut
 
-  if(!fAliAnalysisUtils->IsVertexSelected2013pA(fInputEvent))return false;       // Apply new vertex cut
+  if(fRequireAnalysisUtils){
+    if(fInputEvent->IsA() == AliESDEvent::Class() && fAliAnalysisUtils->IsFirstEventInChunk(fInputEvent)) return false;
+    if(fAliAnalysisUtils->IsPileUpEvent(fInputEvent)) return false;       // Apply new vertex cut
+    if(!fAliAnalysisUtils->IsVertexSelected2013pA(fInputEvent))return false;       // Apply new vertex cut
+  }
+
   if(!fVertexCut.IsInRange(fVertex[2])) return false;
   if(!IsUserEventSelected()) return false;
 
@@ -143,6 +152,9 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   } else {
     triggerstring = fInputEvent->GetFiredTriggerClasses();
   }
+
+  if(fRequireBunchCrossing && ! triggerstring.Contains("-B-")) return;
+
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
       emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
@@ -152,16 +164,23 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     // Further cleanup of trigger events can be performed depending on the presence
     // of recalc patches (after masking hot fastors in the trigger maker) above
     // threshold
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ1] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ1");
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("EJ2");
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG1] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG1"),
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("EG2");
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CEMC7");
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ1] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ1");
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2] = (selectionstatus & AliVEvent::kEMCEJE) && triggerstring.Contains("DJ2");
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG1");
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2] = (selectionstatus & AliVEvent::kEMCEGA) && triggerstring.Contains("DG2");
-    emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] = (selectionstatus & AliVEvent::kEMC7) && triggerstring.Contains("CDMC7");
+    if(fUseTriggerBits){
+      const std::array<ULong_t, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerBits = {
+          AliVEvent::kEMCEJE, AliVEvent::kEMCEJE, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMC7,
+          AliVEvent::kEMCEJE, AliVEvent::kEMCEJE, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMC7
+      };
+      for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++)
+        emcalTriggers[iclass] &= (selectionstatus & kSelectTriggerBits[iclass]);
+    }
+
+    // Apply cut on the trigger string - this basically discriminates high- and low-threshold
+    // triggers
+    const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
+        "EJ1", "EJ2", "EG1", "EG2", "CEMC7", "DJ1", "DJ2", "DG1", "DG2", "CDMC7"
+    };
+    for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++)
+      emcalTriggers[iclass] &= triggerstring.Contains(kSelectTriggerStrings[iclass]);
+
     // Online selection / rejection
     if(fRejectNoiseEvents || fSelectNoiseEvents){
       if(fRejectNoiseEvents){

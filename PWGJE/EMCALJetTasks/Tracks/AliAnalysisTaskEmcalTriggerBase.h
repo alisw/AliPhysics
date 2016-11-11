@@ -139,6 +139,29 @@ public:
   void SetOnlineTriggerThreshold(const TString &triggerclass, Int_t threshold);
 
   /**
+   * Defining whether to require trigger bits. Attention: Relies on the presence
+   * of the physics selection - to be switched off in case of new data. By default
+   * trigger bits are required.
+   * @param[in] doUse If true trigger bits are required, if false not
+   */
+  void SetUseTriggerBits(Bool_t doUse) { fUseTriggerBits = doUse; }
+
+  /**
+   * Defining whether to require bunch crossing events. To be switch off in case of
+   * noise studies (i.e. beam-empty or empty-empty events). By default bunch crossing
+   * is required
+   * @param[in] doRequire If true bunch-bunch crossing is required.
+   */
+  void SetRequireBunchCrossing(Bool_t doRequire) { fRequireBunchCrossing = doRequire; }
+
+  /**
+   * Define whether cuts in AliAnalysisUtils are used in the event selection. Not to be
+   * applied on new data or data from muon_calo_pass1
+   * @param[in] doRequire If true AliAnalysisUtils are used in addition for the event selection
+   */
+  void SetRequireAnalysisUtils(Bool_t doRequire) { fRequireAnalysisUtils = doRequire; }
+
+  /**
    * Set the name of teh OADB container with trigger acceptance maps. Trigger
    * acceptance maps will be used in the trigger offline selection to mimic
    * the acceptance observed in data. Only useful in simulations and the mimicing
@@ -292,10 +315,13 @@ protected:
 
   THistManager                    *fHistos;                   ///< Task Histogram container
 
+  Bool_t                          fUseTriggerBits;            ///< Switch whether using trigger bits (relies on physics selection)
+  Bool_t                          fRequireBunchCrossing;      ///< Require bunch-bunch events (tag -B- in trigger string)
   AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
   Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   std::vector<TString>            fSelectedTriggers;          //!<! Triggers selected for given event
 
+  Bool_t                          fRequireAnalysisUtils;      ///< Switch whether to require event selection in AliAnalysisUtils
   AliCutValueRange<double>        fVertexCut;                 ///< Cut on the z-position of the primary vertex
 
   TString                         fNameDownscaleOADB;         ///< Name of the downscale OADB container
