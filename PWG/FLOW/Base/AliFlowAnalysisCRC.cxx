@@ -20133,7 +20133,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     IQM2 = QM*QM-QM2;
     if(QM0>1 && TMath::Abs(IQM2)>1.e-6) {
       IQC2[hr] = (QRe*QRe+QIm*QIm-QM2)/IQM2;
-      fFlowQCIntCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],IQM2*fCenWeightEbE);
+      fFlowQCIntCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],IQM2);
       fFlowQCRefCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],IQM2*fCenWeightEbE);
     }
     
@@ -20146,21 +20146,21 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
                   + (pow(Q2Re2,2)+pow(Q2Im2,2))
                   - 4.*QM2*(pow(QRe,2)+pow(QIm,2))
                   - 6.*QM4 + 2.*QM2*QM2) / IQM4;
-      fFlowQCIntCorPro[hr][1]->Fill(fCentralityEBE,IQC4[hr],IQM4*fCenWeightEbE);
+      fFlowQCIntCorPro[hr][1]->Fill(fCentralityEBE,IQC4[hr],IQM4);
       fFlowQCRefCorPro[hr][1]->Fill(fCentralityEBE,IQC4[hr],IQM4*fCenWeightEbE);
     }
     
     // NUA
     if(QM0>0 && TMath::Abs(QM)>1.e-6) {
-      fFlowQCIntCorNUAPro[hr][0]->Fill(fCentralityEBE,QRe/QM,QM*fCenWeightEbE);
-      fFlowQCIntCorNUAPro[hr][1]->Fill(fCentralityEBE,QIm/QM,QM*fCenWeightEbE);
+      fFlowQCIntCorNUAPro[hr][0]->Fill(fCentralityEBE,QRe/QM,QM);
+      fFlowQCIntCorNUAPro[hr][1]->Fill(fCentralityEBE,QIm/QM,QM);
       fFlowQCRefCorPro[hr][3]->Fill(fCentralityEBE,QRe/QM,QM*fCenWeightEbE);
       fFlowQCRefCorPro[hr][4]->Fill(fCentralityEBE,QIm/QM,QM*fCenWeightEbE);
     }
     Double_t dM11 = QM*QM - QM2; // dM11 = sum_{i,j=1,i!=j}^M w_i w_j
     if(QM0>1 && TMath::Abs(dM11)>1.e-6) {
-      fFlowQCIntCorNUAPro[hr][2]->Fill(fCentralityEBE,(2.*QRe*QIm-Q2Im2)/dM11,dM11*fCenWeightEbE);      //sin(n*(phi1+phi2))
-      fFlowQCIntCorNUAPro[hr][3]->Fill(fCentralityEBE,(QRe*QRe-QIm*QIm-Q2Re2)/dM11,dM11*fCenWeightEbE); //cos(n*(phi1+phi2))
+      fFlowQCIntCorNUAPro[hr][2]->Fill(fCentralityEBE,(2.*QRe*QIm-Q2Im2)/dM11,dM11);      //sin(n*(phi1+phi2))
+      fFlowQCIntCorNUAPro[hr][3]->Fill(fCentralityEBE,(QRe*QRe-QIm*QIm-Q2Re2)/dM11,dM11); //cos(n*(phi1+phi2))
       fFlowQCRefCorPro[hr][5]->Fill(fCentralityEBE,(2.*QRe*QIm-Q2Im2)/dM11,dM11*fCenWeightEbE);
       fFlowQCRefCorPro[hr][6]->Fill(fCentralityEBE,(QRe*QRe-QIm*QIm-Q2Re2)/dM11,dM11*fCenWeightEbE);
     }
@@ -20170,12 +20170,12 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
                                      + QRe*Q2Im2-QIm*Q2Re2
                                      + 2.*QM2*QIm
                                      - 2.*QIm3) / dM111;
-      fFlowQCIntCorNUAPro[hr][4]->Fill(fCentralityEBE,sinP1nM1nM1nW1W1W1,dM111*fCenWeightEbE); //sin(n*(phi1-phi2-phi3))
+      fFlowQCIntCorNUAPro[hr][4]->Fill(fCentralityEBE,sinP1nM1nM1nW1W1W1,dM111); //sin(n*(phi1-phi2-phi3))
       Double_t cosP1nM1nM1nW1W1W1 = (QRe*(pow(QRe,2)+pow(QIm,2))
                                      - QRe*Q2Re2-QIm*Q2Im2
                                      - 2.*QM2*QRe
                                      + 2.*QRe3) / dM111;
-      fFlowQCIntCorNUAPro[hr][5]->Fill(fCentralityEBE,cosP1nM1nM1nW1W1W1,dM111*fCenWeightEbE); //cos(n*(phi1-phi2-phi3))
+      fFlowQCIntCorNUAPro[hr][5]->Fill(fCentralityEBE,cosP1nM1nM1nW1W1W1,dM111); //cos(n*(phi1-phi2-phi3))
       fFlowQCRefCorPro[hr][7]->Fill(fCentralityEBE,sinP1nM1nM1nW1W1W1,dM111*fCenWeightEbE);
       fFlowQCRefCorPro[hr][8]->Fill(fCentralityEBE,cosP1nM1nM1nW1W1W1,dM111*fCenWeightEbE);
     }
@@ -20195,24 +20195,24 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     }
     
     IQM2EG = QAM*QBM;
-    if(QAM0+QBM0>1) {
+    if(QAM0>0 && QBM0>0 && TMath::Abs(IQM2EG)>1.e-6) {
       if(IQM2EG) {
         IQC2EG[hr] = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
-        fFlowQCIntCorProEG[hr]->Fill(fCentralityEBE,IQC2EG[hr],IQM2EG*fCenWeightEbE);
+        fFlowQCIntCorProEG[hr]->Fill(fCentralityEBE,IQC2EG[hr],IQM2EG);
         fFlowQCRefCorPro[hr][2]->Fill(fCentralityEBE,IQC2EG[hr],IQM2EG*fCenWeightEbE);
       }
     }
     
     // NUA
     if(QAM0>0 && TMath::Abs(QAM)>1.e-6) {
-      fFlowQCIntCorNUAProEG[hr][0]->Fill(fCentralityEBE,QARe/QAM,QAM*fCenWeightEbE);
-      fFlowQCIntCorNUAProEG[hr][1]->Fill(fCentralityEBE,QAIm/QAM,QAM*fCenWeightEbE);
+      fFlowQCIntCorNUAProEG[hr][0]->Fill(fCentralityEBE,QARe/QAM,QAM);
+      fFlowQCIntCorNUAProEG[hr][1]->Fill(fCentralityEBE,QAIm/QAM,QAM);
       fFlowQCRefCorPro[hr][9]->Fill(fCentralityEBE,QARe/QAM,QAM*fCenWeightEbE);
       fFlowQCRefCorPro[hr][10]->Fill(fCentralityEBE,QAIm/QAM,QAM*fCenWeightEbE);
     }
     if(QBM0>0 && TMath::Abs(QBM)>1.e-6) {
-      fFlowQCIntCorNUAProEG[hr][2]->Fill(fCentralityEBE,QBRe/QBM,QBM*fCenWeightEbE);
-      fFlowQCIntCorNUAProEG[hr][3]->Fill(fCentralityEBE,QBIm/QBM,QBM*fCenWeightEbE);
+      fFlowQCIntCorNUAProEG[hr][2]->Fill(fCentralityEBE,QBRe/QBM,QBM);
+      fFlowQCIntCorNUAProEG[hr][3]->Fill(fCentralityEBE,QBIm/QBM,QBM);
       fFlowQCRefCorPro[hr][11]->Fill(fCentralityEBE,QBRe/QBM,QBM*fCenWeightEbE);
       fFlowQCRefCorPro[hr][12]->Fill(fCentralityEBE,QBIm/QBM,QBM*fCenWeightEbE);
     }
@@ -20236,7 +20236,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       qpM3 = fPtDiffMul[3][0]->GetBinContent(pt+1);
       
       Double_t dQM2 = qpM0*QM-qpM;
-      if(qpM0>1 && QM0>1) {
+      if(qpM0>0 && QM0>0 && TMath::Abs(dQM2)>1.e-6) {
         Double_t dQC2 = (qpRe0*QRe+qpIm0*QIm-qpM)/dQM2;
         fFlowQCCorPro[fCenBin][hr][1]->Fill(FillPtBin,dQC2,dQM2*fCenWeightEbE);
         // NUA
@@ -20248,7 +20248,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       
       Double_t dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qpM*(QM*QM-QM2)+2.*(qpM3-qpM2*QM));
       
-      if(qpM0>1 && QM0>3) {
+      if(qpM0>0 && QM0>2 && TMath::Abs(dQM4)>1.e-6) {
         Double_t dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
                          - qp2Re*(pow(QRe,2.)-pow(QIm,2.))
                          - 2.*qp2Im*QRe*QIm
@@ -20300,7 +20300,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       Double_t qpAM0 = fPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
       
       dQM2 = qpAM*QBM;
-      if(qpAM0>1 && QBM0>1) {
+      if(qpAM0>0 && QBM0>0 && TMath::Abs(dQM2)>1.e-6) {
         Double_t dQC2 = (qpARe*QBRe+qpAIm*QBIm)/dQM2;
         fFlowQCCorPro[fCenBin][hr][3]->Fill(FillPtBin,dQC2,dQM2*fCenWeightEbE);
         // NUA
