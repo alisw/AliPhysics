@@ -1,4 +1,4 @@
-AliAnalysisTaskSE *AddTaskNuclMult(){
+AliAnalysisTaskSE *AddTaskNuclMult(Bool_t isMC=kFALSE){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
@@ -35,6 +35,7 @@ AliAnalysisTaskSE *AddTaskNuclMult(){
   }
   
   for(Int_t i=0;i<Ntask;i++) {
+    task[i]->SetIsMC(isMC);
     task[i]->SetESDtrackCutsObj(esdTrackCuts);
     task[i]->SetPPVsMultUtilsObj(fAliPPVsMultUtils);
     task[i]->SetMultiplicityRange(0,100);
