@@ -113,6 +113,20 @@ public:
    */
   void SetTrackPhiCut(double phimin, double phimax) { fPhiCut.SetLimits(phimin, phimax); }
 
+  /**
+   * Preconfigure task so that it can be used in subwagons
+   * @param[in] suffix Suffix of the subwagon
+   * @return Preconfigured task
+   */
+  static AliAnalysisTaskChargedParticlesRef *AddTaskChargedParticlesRef(const TString &suffix);
+
+  /**
+   * Fully configure task, not intended for subwagons. Using a default cut configuration.
+   * @param[in] cutname Name of the track cuts
+   * @return Fully configured task
+   */
+  static AliAnalysisTaskChargedParticlesRef *AddTaskChargedParticlesRefDefault(const TString &cutname = "standard");
+
 protected:
 
   /**
