@@ -55,40 +55,30 @@ ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef)
 
 namespace EMCalTriggerPtAnalysis {
 
-/**
- * Dummy (I/O) constructor
- */
 AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     AliAnalysisTaskEmcalTriggerBase(),
     fNameClusterContainer(""),
     fCentralityRange(-999., 999.),
     fRequestCentrality(false),
-    fEventCentrality(-1)
+    fEventCentrality(-1),
+    fEnergyDefinition(kDefaultEnergy)
 {
 }
 
-/**
- * Named constructor
- * @param name Name of the task
- */
 AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *name) :
     AliAnalysisTaskEmcalTriggerBase(name),
     fNameClusterContainer(""),
     fCentralityRange(-999., 999.),
     fRequestCentrality(false),
-    fEventCentrality(-1)
+    fEventCentrality(-1),
+    fEnergyDefinition(kDefaultEnergy)
 {
 }
 
-/**
- * Destructor
- */
 AliAnalysisTaskEmcalClustersRef::~AliAnalysisTaskEmcalClustersRef() {
 }
 
-/**
- * Creates output histograms: distribution of cluster energy for different trigger classes and number of events
- */
+
 void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
 
   EnergyBinning energybinning;
@@ -160,11 +150,6 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
   return true;
 }
 
-
-/**
- *
- * @param
- */
 bool AliAnalysisTaskEmcalClustersRef::Run(){
   AliDebugStream(1) << GetName() << ": UserExec start" << std::endl;
 
@@ -185,10 +170,18 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     if(!clust->IsEMCAL()) continue;
     if(clust->GetIsExotic()) continue;
 
+    // Distinguish energy definition
+    switch(fEnergyDefinition){
+    case kDefaultEnergy: energy = clust->E(); break;
+    case kNonLinCorrEnergy: energy = clust->GetNonLinCorrEnergy(); break;
+    case kHadCorrEnergy: energy = clust->GetHadCorrEnergy(); break;
+    };
+
     TLorentzVector posvec;
     energy = clust->GetNonLinCorrEnergy();
-    et = posvec.Et();
     clust->GetMomentum(posvec, fVertex);
+    posvec.SetE(energy);        // use energy definition as selected in the task
+    et = posvec.Et();
     eta = posvec.Eta();
     phi = posvec.Phi();
 
@@ -257,14 +250,6 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
   }
 }
 
-/**
- * Fill event-based histograms. Monitored are
- * - Number of events
- * - Centrality percentile (if available)
- * - z-position of the primary vertex
- * In case a downscaling correction is avaiable it is applied to all
- * histograms as a weight.
- */
 void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
   for(const auto &t : fSelectedTriggers){
     Double_t weight = GetTriggerWeight(t);
@@ -274,13 +259,6 @@ void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
   }
 }
 
-/**
- * Check whether cluster is inside a trigger patch which has fired the trigger
- * @param[in] etaclust \f$ \eta \f$ of the cluster at center
- * @param[in] phiclust \f$ \phi \f$ of the cluster at center
- * @param[in] fTriggerPatches List of trigger patches which have fired the trigger
- * @return[in] True if the cluster can be correlated to a triggerpatch fired the trigger, false otherwise
- */
 Bool_t AliAnalysisTaskEmcalClustersRef::CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *fTriggerPatches) const {
   Bool_t hasfound = kFALSE;
   for(TIter patchIter = TIter(fTriggerPatches).Begin(); patchIter != TIter::End(); ++patchIter){
@@ -298,14 +276,6 @@ Bool_t AliAnalysisTaskEmcalClustersRef::CorrelateToTrigger(Double_t etaclust, Do
   return hasfound;
 }
 
-/**
- * Find all patches in an event which could have fired the trigger
- * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
- * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker
- * @param triggerclass EMCAL trigger class firing
- * @param fTriggerPatches Trigger patches found in the event
- * @return List of patches which could have fired the trigger
- */
 void AliAnalysisTaskEmcalClustersRef::FindPatchesForTrigger(TString triggerclass, const TClonesArray * fTriggerPatches, TList &foundtriggers) const {
   foundtriggers.Clear();
   if(!fTriggerPatches) return;
