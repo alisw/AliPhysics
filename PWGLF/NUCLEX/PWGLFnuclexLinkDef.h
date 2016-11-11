@@ -18,7 +18,6 @@
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
-#pragma link C++ class AliAnalysisMCNuclMult+;
 /// * DeuteronpA
 #pragma link C++ class AliAnalysisDeuteronpA+;
 #pragma link C++ class AliAnalysisDeuteronTree+;
