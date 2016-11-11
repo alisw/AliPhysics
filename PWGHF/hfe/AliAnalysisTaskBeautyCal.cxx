@@ -119,6 +119,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fClsEtaPhiAftMatch(0),
   fHistdEdxEop(0),
   fHistNsigEop(0),
+  fHistNsigEopCheck(0),
   fHistEop(0),
   fHistEopHad(0),
   fHistEopHad2(0),
@@ -213,6 +214,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fClsEtaPhiAftMatch(0),
   fHistdEdxEop(0),
   fHistNsigEop(0),
+  fHistNsigEopCheck(0),
   fHistEop(0),
   fHistEopHad(0),
   fHistEopHad2(0),
@@ -346,7 +348,8 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhi);
-
+ 
+  /*
   fHistClustEEG1 = new TH1F("fHistClustEEG1", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustEEG1);
 
@@ -364,7 +367,7 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fEMCClsEtaPhiEG2 = new TH2F("fEMCClsEtaPhiEG2","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhiEG2);
-  //
+  */
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0);
   fOutputList->Add(fNegTrkIDPt);
@@ -408,6 +411,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistNsigEop = new TH2F ("fHistNsigEop", "E/p vs TPC nsig",60, 0.0, 3.0, 200, -10,10);
   fOutputList->Add(fHistNsigEop);
+
+  fHistNsigEopCheck = new TH2F ("fHistNsigEopCheck", "E/p vs TPC nsig af ele sel",60, 0.0, 3.0, 200, -10,10);
+  fOutputList->Add(fHistNsigEopCheck);
 
   fM20 = new TH2F ("fM20","M20 vs pt distribution",200,0,20,400,0,2);
   fOutputList->Add(fM20);
@@ -495,7 +501,7 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fHisthfeTof = new TH2D("fHisthfeTof", "hfe vs. Tof; p_{T}(GeV/c); time (ns)", 300,0,30,9000,-180,180);
   fOutputList->Add(fHisthfeTof);
 
-  fHistTotalAccPhi = new TH2D("fHistTotalAccPhi","total electron acceptance in phi",50,0,0.5,620,0,6.2);
+  fHistTotalAccPhi = new TH2D("fHistTotalAccPhi","total electron acceptance in phi",50,0,0.5,310,0,6.2);
   fOutputList->Add(fHistTotalAccPhi);
  
   fHistTotalAccEta = new TH2D("fHistTotalAccEta","total electron acceptance in eta",50,0,0.5,700,-0.7,0.7);
@@ -709,6 +715,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);
 
+      /*
       //-----Plots for EMC trigger
       Bool_t hasfiredEG1=0;
       Bool_t hasfiredEG2=0;
@@ -723,7 +730,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         if(centrality>-1)fHistClustEEG2cent->Fill(centrality,clustE);
         fEMCClsEtaPhiEG2->Fill(emceta,emcphi);
       }
-
+     */
     }
   }
 
@@ -913,7 +920,10 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fClsEtaPhiAftMatch->Fill(emceta,emcphi);
 
       Float_t tof = clustMatch->GetTOF()*1e+9; // ns
-      if(tof<-30 && tof>30)continue; // timing cut
+      if(!fMCarray)
+         {
+          if(tof<-30 && tof>30)continue; // timing cut on data
+         }
 
       //EMCAL EID info
       Double_t eop = -1.0;
@@ -955,12 +965,23 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Bool_t fFlagNonHFE=kFALSE;  // ULS
       Bool_t fFlagNonLsHFE=kFALSE;  // LS
       
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
+      Double_t mimSig = -1.0;
+      Double_t maxSig =  3.0;
+      if(fMCarray) // nSigma cut in MC
+        {
+         mimSig = -10.0;
+         maxSig =  10.0;
+        }
+
+      //cout << "mimSig = " << mimSig << endl;
+      //cout << "maxSig = " << maxSig << endl;
+ 
+      if(fTPCnSigma > mimSig && fTPCnSigma < maxSig && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
         {
           fHistTotalAccPhi->Fill(1.0/track->Pt(),TrkPhi);
           fHistTotalAccEta->Fill(1.0/track->Pt(),TrkEta);
-
- 
+          fHistNsigEopCheck->Fill(eop,fTPCnSigma);
+     
       //if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
         SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE);
@@ -989,7 +1010,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
           fHisthfeTof->Fill(track->Pt(),tof);
           //----- MC
-          if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
+          //if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
           if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleB)fHistDCAbeSemi->Fill(track->Pt(),DCAxy);
           if(pid_eleP)fHistDCApeSemi->Fill(track->Pt(),DCAxy);
