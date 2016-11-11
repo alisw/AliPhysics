@@ -123,6 +123,7 @@ private:
     TH2F        *fClsEtaPhiAftMatch;//!EMC Cluster eta phi distribution after track matching
     TH2F        *fHistdEdxEop;//!E/p vs dedx
     TH2F        *fHistNsigEop;//!E/p vs dedx
+    TH2F        *fHistNsigEopCheck;//!E/p vs dedx
     TH2F        *fHistEop;//!pt vs E/p
     TH2F        *fHistEopHad;//!pt vs E/p
     TH2F        *fHistEopHad2;//!pt vs E/p
