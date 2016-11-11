@@ -24,6 +24,7 @@ class AliEMCALTrack;
 class AliMagF;
 class AliESDEvent;
 class AliAODEvent;
+class AliAODMCParticle;
 class AliVEvent;
 class AliEMCALGeometry;
 class AliEMCALRecoUtils;
@@ -69,7 +70,7 @@ public:
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0);
-    void GetWeightAndDecay(TParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
+    void GetWeightAndDecay(AliAODMCParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
     Bool_t InclElecTrackCuts(AliAODTrack *ietrack);
     Bool_t AssElecTrackCuts(AliAODTrack *aetrack);
     const AliQnCorrectionsQnVector *GetQnVectorFromList( const TList *list,const char *subdetector,const char *expectedstep,const char *altstep);
@@ -87,9 +88,9 @@ public:
     Double_t GetEPweight(Int_t bin, Int_t iCent);
     Bool_t   RejectEvent(Double_t cent, Int_t centbin);
     Bool_t   RejectEventPlane(Double_t EP, Int_t EPbin);
-    Bool_t   IsFromHFdecay(TParticle *particle);
-    Bool_t   IsFromLMdecay(TParticle *particle);
-    Bool_t   IsPrimary(TParticle *particle);
+    Bool_t   IsFromHFdecay(AliAODMCParticle *particle);
+    Bool_t   IsFromLMdecay(AliAODMCParticle *particle);
+    Bool_t   IsPrimary(AliAODMCParticle *particle);
     
 private:
     
@@ -110,7 +111,10 @@ private:
     AliCentrality         *fCentrality;
     
     AliMCEvent            *fMC;                   //! MC object
-    AliStack              *fStack;		//! stack
+    AliStack              *fStack;              //! stack
+    AliAODMCParticle      *fMCparticle;         //! MC particle
+    TClonesArray          *fMCarray;            //! MC array
+
     
     TClonesArray  *fTracks_tender;              //Tender tracks
     TClonesArray  *fCaloClusters_tender;        //Tender clusters
