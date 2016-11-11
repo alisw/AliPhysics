@@ -38,7 +38,8 @@ AliReducedHypTritV0::AliReducedHypTritV0() :
   fMcTruth(0),
   fRapidity(-999),
   fParticleSpecies(0),
-  fCharge(-999) {
+  fCharge(-999),
+  fOnFlyStatus() {
   if (!fPiTrack) fPiTrack = new AliReducedHypTritTrack();
   if (!fHeTrack) fHeTrack = new AliReducedHypTritTrack();
 }

@@ -69,6 +69,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree()
   fBetheParamsHe(),
   fBetheParamsT(),
   fPidQa(0) {
+
   }
 
 // Constructor
@@ -136,31 +137,31 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistMcGen = new TH1F("fHistMcGen","mc generated; ct (cm);counts",40,0,40);
   fHistMcRec = new TH1F("fHistMcRec","mc reconstructed; ct (cm);counts",40,0,40);
 
-  TF1 *tBethe = new TF1("tBethe","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
-  tBethe->SetParameters(fBetheParamsT[0], fBetheParamsT[1],
-    fBetheParamsT[2],fBetheParamsT[3],
-    fBetheParamsT[4], 1, AliPID::ParticleMass(AliPID::kTriton), 1);
-  TF1 *tBetheU = new TF1("tBetheU","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
-  tBetheU->SetParameters(fBetheParamsT[0], fBetheParamsT[1],
-    fBetheParamsT[2],fBetheParamsT[3],
-    fBetheParamsT[4], 1, AliPID::ParticleMass(AliPID::kTriton), 1+3*fBetheParamsT[5]);
-  TF1 *tBetheL = new TF1("tBetheL","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
-  tBetheL->SetParameters(fBetheParamsT[0], fBetheParamsT[1],
-    fBetheParamsT[2],fBetheParamsT[3],
-    fBetheParamsT[4], 1, AliPID::ParticleMass(AliPID::kTriton), 1-3*fBetheParamsT[5]);
-
-  TF1 *bethe = new TF1("heBethe","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
-  bethe->SetParameters(fBetheParamsHe[0], fBetheParamsHe[1],
-    fBetheParamsHe[2],fBetheParamsHe[3],
-    fBetheParamsHe[4], 2, AliPID::ParticleMass(AliPID::kHe3), 1);
-  TF1 *betheU = new TF1("heBetheU","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
-  betheU->SetParameters(fBetheParamsHe[0], fBetheParamsHe[1],
-    fBetheParamsHe[2],fBetheParamsHe[3],
-    fBetheParamsHe[4], 2, AliPID::ParticleMass(AliPID::kHe3), 1+3*fBetheParamsHe[5]);
-  TF1 *betheL = new TF1("heBetheL","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
-  betheL->SetParameters(fBetheParamsHe[0], fBetheParamsHe[1],
-    fBetheParamsHe[2],fBetheParamsHe[3],
-    fBetheParamsHe[4], 2, AliPID::ParticleMass(AliPID::kHe3), 1-3*fBetheParamsHe[5]);
+//  TF1 *tBethe = new TF1("tBethe","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
+//  tBethe->SetParameters(fBetheParamsT[0], fBetheParamsT[1],
+//    fBetheParamsT[2],fBetheParamsT[3],
+//    fBetheParamsT[4], 1, AliPID::ParticleMass(AliPID::kTriton), 1);
+//  TF1 *tBetheU = new TF1("tBetheU","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
+//  tBetheU->SetParameters(fBetheParamsT[0], fBetheParamsT[1],
+//    fBetheParamsT[2],fBetheParamsT[3],
+//    fBetheParamsT[4], 1, AliPID::ParticleMass(AliPID::kTriton), 1+3*fBetheParamsT[5]);
+//  TF1 *tBetheL = new TF1("tBetheL","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
+//  tBetheL->SetParameters(fBetheParamsT[0], fBetheParamsT[1],
+//    fBetheParamsT[2],fBetheParamsT[3],
+//    fBetheParamsT[4], 1, AliPID::ParticleMass(AliPID::kTriton), 1-3*fBetheParamsT[5]);
+//
+//  TF1 *bethe = new TF1("heBethe","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
+//  bethe->SetParameters(fBetheParamsHe[0], fBetheParamsHe[1],
+//    fBetheParamsHe[2],fBetheParamsHe[3],
+//    fBetheParamsHe[4], 2, AliPID::ParticleMass(AliPID::kHe3), 1);
+//  TF1 *betheU = new TF1("heBetheU","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
+//  betheU->SetParameters(fBetheParamsHe[0], fBetheParamsHe[1],
+//    fBetheParamsHe[2],fBetheParamsHe[3],
+//    fBetheParamsHe[4], 2, AliPID::ParticleMass(AliPID::kHe3), 1+3*fBetheParamsHe[5]);
+//  TF1 *betheL = new TF1("heBetheL","[7]*[5]*[5]*AliExternalTrackParam::BetheBlochAleph([5]*x/([6]),[0],[1],[2],[3],[4])",0,25);
+//  betheL->SetParameters(fBetheParamsHe[0], fBetheParamsHe[1],
+//    fBetheParamsHe[2],fBetheParamsHe[3],
+//    fBetheParamsHe[4], 2, AliPID::ParticleMass(AliPID::kHe3), 1-3*fBetheParamsHe[5]);
 
   fHistogramList = new TList();
   fHistogramList->SetOwner(kTRUE);
@@ -170,12 +171,12 @@ void AliAnalysisTaskHypTritEventTree::UserCreateOutputObjects() {
   fHistogramList->Add(fHistNumEvents);
   fHistogramList->Add(fHistMcGen);
   fHistogramList->Add(fHistMcRec);
-  fHistogramList->Add(tBethe);
-  fHistogramList->Add(tBetheU);
-  fHistogramList->Add(tBetheL);
-  fHistogramList->Add(bethe);
-  fHistogramList->Add(betheU);
-  fHistogramList->Add(betheL);
+  //fHistogramList->Add(tBethe);
+  //fHistogramList->Add(tBetheU);
+  //fHistogramList->Add(tBetheL);
+  //fHistogramList->Add(bethe);
+  //fHistogramList->Add(betheU);
+  //fHistogramList->Add(betheL);
 
   fEventCuts.AddQAplotsToList(fHistogramList);
 
@@ -286,9 +287,6 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   // V0 loop
   for (Int_t ivertex = 0; ivertex < event->GetNumberOfV0s(); ivertex++) {
     fV0 = event->GetV0(ivertex);
-    Bool_t isreconstructed = kFALSE;
-    isreconstructed = fV0->GetOnFlyStatus();
-    if (!isreconstructed) continue;
     Bool_t v0ChargeCorrect = kTRUE;
     AliESDtrack* trackN = event->GetTrack(fV0->GetIndex(0));
     AliESDtrack* trackP = event->GetTrack(fV0->GetIndex(1));
@@ -430,6 +428,7 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
   reducedV0->fMcTruth = 0;
   reducedV0->fRapidity = v0Y;
   reducedV0->fParticleSpecies = typeNeg * 100 + typePos;
+  reducedV0->fOnFlyStatus = fV0->GetOnFlyStatus();
   if (charge < 0) {
     reducedHe->fP = fMomNeg;
     reducedPi->fP = fMomPos;
@@ -568,6 +567,8 @@ void AliAnalysisTaskHypTritEventTree::MCStackLoop(AliStack *stack) {
             reducedHe->fDedxSigmaTriton = mcReducedHe->fDedxSigmaTriton;
             reducedHe->fDedxSigma = mcReducedHe->fDedxSigma;
             reducedHe->fPtrack = mcReducedHe->fPtrack;
+            reducedPi->fPtrack = mcReducedHe->fPtrack;
+            reducedV0->fOnFlyStatus = mcReducedV0->fOnFlyStatus;
           }
         }
         nV0Gen = nV0Gen +1;
