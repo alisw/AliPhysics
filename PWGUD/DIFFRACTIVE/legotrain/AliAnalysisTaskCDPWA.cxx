@@ -1737,6 +1737,7 @@ void AliAnalysisTaskCDPWA::DetermineProcessType() {
 			}
 		}
 		else if (st_header == "AliGenDPMjetEventHeader") {//Phojet
+			fIsPhojet = kTRUE;
 			fMCprocess = ((AliGenDPMjetEventHeader*)header)->ProcessType();
 			switch(fMCprocess) {
 				case 2: fMCProcessType = kBinEL; break;
