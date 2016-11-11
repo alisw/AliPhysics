@@ -23198,10 +23198,10 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
           
           Double_t NUAcor = 0.;
           if(fNUAforCRC) {
-            Double_t QARe = fFlowQCIntCorNUAProEG[i][0]->GetBinContent(c+1);
-            Double_t QAIm = fFlowQCIntCorNUAProEG[i][1]->GetBinContent(c+1);
-            Double_t QBRe = fFlowQCIntCorNUAProEG[i][2]->GetBinContent(c+1);
-            Double_t QBIm = fFlowQCIntCorNUAProEG[i][3]->GetBinContent(c+1);
+            Double_t QARe = fFlowQCIntCorNUAHistEG[i][0]->GetBinContent(c+1);
+            Double_t QAIm = fFlowQCIntCorNUAHistEG[i][1]->GetBinContent(c+1);
+            Double_t QBRe = fFlowQCIntCorNUAHistEG[i][2]->GetBinContent(c+1);
+            Double_t QBIm = fFlowQCIntCorNUAHistEG[i][3]->GetBinContent(c+1);
             NUAcor = QARe*QBRe+QAIm*QBIm;
           }
           
@@ -23313,12 +23313,12 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
       Double_t Cn4 = QC4-2.*QC2*QC2;
       Double_t Cn4E = pow(pow(QC4Err,2.)+pow(4.*QC2*QC2Err,2.),0.5);
       if(fNUAforCRC) {
-        Double_t Cos1 = fFlowQCIntCorNUAPro[hr][0]->GetBinContent(pt);
-        Double_t Sin1 = fFlowQCIntCorNUAPro[hr][1]->GetBinContent(pt);
-        Double_t Sin1P2 = fFlowQCIntCorNUAPro[hr][2]->GetBinContent(pt);
-        Double_t Cos1P2 = fFlowQCIntCorNUAPro[hr][3]->GetBinContent(pt);
-        Double_t Sin1M2M3 = fFlowQCIntCorNUAPro[hr][4]->GetBinContent(pt);
-        Double_t Cos1M2M3 = fFlowQCIntCorNUAPro[hr][5]->GetBinContent(pt);
+        Double_t Cos1 = fFlowQCIntCorNUAHist[hr][0]->GetBinContent(pt);
+        Double_t Sin1 = fFlowQCIntCorNUAHist[hr][1]->GetBinContent(pt);
+        Double_t Sin1P2 = fFlowQCIntCorNUAHist[hr][2]->GetBinContent(pt);
+        Double_t Cos1P2 = fFlowQCIntCorNUAHist[hr][3]->GetBinContent(pt);
+        Double_t Sin1M2M3 = fFlowQCIntCorNUAHist[hr][4]->GetBinContent(pt);
+        Double_t Cos1M2M3 = fFlowQCIntCorNUAHist[hr][5]->GetBinContent(pt);
         Cn4 = Cn4 - 4.*Cos1*Cos1M2M3 + 4.*Sin1*Sin1M2M3 - Cos1P2*Cos1P2 - Sin1P2*Sin1P2
         + 4.*Cos1P2*(Cos1*Cos1 - Sin1*Sin1) + 8.*Sin1P2*Sin1*Cos1
         + 8.*QC2*(Cos1*Cos1 + Sin1*Sin1) - 6.*pow(Cos1*Cos1 + Sin1*Sin1,2.);
@@ -23381,6 +23381,7 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
           }
         }
       } // end of for(Int_t pt=1;pt<=100;pt++)
+      fFlowQCRefCorPro[hr][j]->GetXaxis()->SetRange(1,fFlowQCRefCorPro[hr][j]->GetNbinsX());
     } // end of for(Int_t j=0; j<5; j++)
     
     for (Int_t h=0; h<fCRCnCen; h++) {
@@ -23472,8 +23473,8 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         Double_t Dn4E = pow( pow(qp4Err,2.)+pow(2.*qp2*QC2Err,2.)+pow(2.*QC2*qp2Err,2.),0.5);
         
         if(fNUAforCRC) {
-          Double_t Cosq = fFlowQCCorNUAPro[h][hr][1]->GetBinContent(pt);
-          Double_t Sinq = fFlowQCCorNUAPro[h][hr][0]->GetBinContent(pt);
+          Double_t Cosq = fFlowQCCorNUAHist[h][hr][1]->GetBinContent(pt);
+          Double_t Sinq = fFlowQCCorNUAHist[h][hr][0]->GetBinContent(pt);
           Double_t Cos1 = fFlowQCRefCorHist[hr][3]->GetBinContent(h+1); // <<cos(n*phi1)>>
           Double_t Sin1 = fFlowQCRefCorHist[hr][4]->GetBinContent(h+1); // <<sin(n*phi1)>>
           Dn2 = Dn2 - Cosq*Cos1 - Sinq*Sin1;
@@ -23492,14 +23493,14 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
           Double_t cosP1nPhi1P1nPhi2 = fFlowQCRefCorHist[hr][6]->GetBinContent(h+1);  //cos(n*(phi1+phi2))
           Double_t sinP1nPhi1M1nPhi2M1nPhi3 = fFlowQCRefCorHist[hr][7]->GetBinContent(h+1);  //sin(n*(phi1-phi2-phi3))
           Double_t cosP1nPhi1M1nPhi2M1nPhi3 = fFlowQCRefCorHist[hr][8]->GetBinContent(h+1); //cos(n*(phi1-phi2-phi3))
-          Double_t sinP1nPsi = fFlowQCCorNUAPro[h][hr][0]->GetBinContent(pt); // <<sin n(Psi)>>
-          Double_t cosP1nPsi = fFlowQCCorNUAPro[h][hr][1]->GetBinContent(pt); // <<cos n(Psi)>>
-          Double_t sinP1nPsi1P1nPhi2 = fFlowQCCorNUAPro[h][hr][2]->GetBinContent(pt); // <<sin n(psi1+phi2)>>
-          Double_t cosP1nPsi1P1nPhi2 = fFlowQCCorNUAPro[h][hr][3]->GetBinContent(pt); // <<cos n(psi1+phi2)>>
-          Double_t sinP1nPsi1P1nPhi2M1nPhi3 = fFlowQCCorNUAPro[h][hr][4]->GetBinContent(pt); // <<sin n(psi1+phi2-phi3)>>
-          Double_t cosP1nPsi1P1nPhi2M1nPhi3 = fFlowQCCorNUAPro[h][hr][5]->GetBinContent(pt); // <<cos n(psi1+phi2-phi3)>>
-          Double_t sinP1nPsi1M1nPhi2M1nPhi3 = fFlowQCCorNUAPro[h][hr][6]->GetBinContent(pt); // <<sin n(psi1-phi2-phi3)>>
-          Double_t cosP1nPsi1M1nPhi2M1nPhi3 = fFlowQCCorNUAPro[h][hr][7]->GetBinContent(pt); // <<cos n(psi1-phi2-phi3)>>
+          Double_t sinP1nPsi = fFlowQCCorNUAHist[h][hr][0]->GetBinContent(pt); // <<sin n(Psi)>>
+          Double_t cosP1nPsi = fFlowQCCorNUAHist[h][hr][1]->GetBinContent(pt); // <<cos n(Psi)>>
+          Double_t sinP1nPsi1P1nPhi2 = fFlowQCCorNUAHist[h][hr][2]->GetBinContent(pt); // <<sin n(psi1+phi2)>>
+          Double_t cosP1nPsi1P1nPhi2 = fFlowQCCorNUAHist[h][hr][3]->GetBinContent(pt); // <<cos n(psi1+phi2)>>
+          Double_t sinP1nPsi1P1nPhi2M1nPhi3 = fFlowQCCorNUAHist[h][hr][4]->GetBinContent(pt); // <<sin n(psi1+phi2-phi3)>>
+          Double_t cosP1nPsi1P1nPhi2M1nPhi3 = fFlowQCCorNUAHist[h][hr][5]->GetBinContent(pt); // <<cos n(psi1+phi2-phi3)>>
+          Double_t sinP1nPsi1M1nPhi2M1nPhi3 = fFlowQCCorNUAHist[h][hr][6]->GetBinContent(pt); // <<sin n(psi1-phi2-phi3)>>
+          Double_t cosP1nPsi1M1nPhi2M1nPhi3 = fFlowQCCorNUAHist[h][hr][7]->GetBinContent(pt); // <<cos n(psi1-phi2-phi3)>>
           Dn4 = Dn4 - cosP1nPsi*cosP1nPhi1M1nPhi2M1nPhi3
               + sinP1nPsi*sinP1nPhi1M1nPhi2M1nPhi3
               - cosP1nPhi*cosP1nPsi1M1nPhi2M1nPhi3
@@ -23549,8 +23550,8 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         Double_t Dn2EGE = qp2EGErr;
         
         if(fNUAforCRC) {
-          Double_t Cosq = fFlowQCCorNUAPro[h][hr][8]->GetBinContent(pt);
-          Double_t Sinq = fFlowQCCorNUAPro[h][hr][9]->GetBinContent(pt);
+          Double_t Cosq = fFlowQCCorNUAHist[h][hr][8]->GetBinContent(pt);
+          Double_t Sinq = fFlowQCCorNUAHist[h][hr][9]->GetBinContent(pt);
           Double_t CosA = fFlowQCRefCorHist[hr][9]->GetBinContent(h+1);
           Double_t SinA = fFlowQCRefCorHist[hr][10]->GetBinContent(h+1);
           Double_t CosB = fFlowQCRefCorHist[hr][11]->GetBinContent(h+1);
