@@ -556,7 +556,7 @@ float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
     return tpcPidResp.GetNumberOfSigmas(t, fParticle);
   } else {
     const float p = t->GetTPCmomentum() / fPDGMassOverZ;
-    const float r = AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
+    const float r = fCharge * fCharge * AliExternalTrackParam::BetheBlochAleph(p, fCustomTPCpid[0], fCustomTPCpid[1],
         fCustomTPCpid[2], fCustomTPCpid[3],
         fCustomTPCpid[4]);
     return (t->GetTPCsignal() - r) / (fCustomTPCpid[5] * r);
