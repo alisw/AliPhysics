@@ -943,6 +943,11 @@ public:
   void SetFlowQCSpectra(TH1D* const TH, Int_t const c) {this->fFlowQCSpectra[c] = TH;};
   TH1D* GetFlowQCSpectra(Int_t const c) const {return this->fFlowQCSpectra[c];};
   
+  TProfile* GetFlowQCRefCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorPro[eg][h];};
+  void SetFlowQCRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorPro[eg][k] = TP;};
+  TH1D* GetFlowQCRefCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorHist[eg][h];};
+  void SetFlowQCRefCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorHist[eg][k] = TP;};
+  
   void SetFlowSCv2vsZNv1Pro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Pro[c][eg] = TP;};
   TProfile* GetFlowSCv2vsZNv1Pro(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1Pro[c][eg];};
   void SetFlowSCv2vsZNv1Hist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Hist[c][eg] = TP;};
@@ -1515,7 +1520,7 @@ private:
   TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
   TH2D *fCRCZDCQVecEP[fCRCMaxnRun][4]; //! ZN event planes
   TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
-  const static Int_t fkCRCnCQVecVtxPos = 14;
+  const static Int_t fkCRCnCQVecVtxPos = 4;
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   //  TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][4]; //! Vtx positions re-centered Qvec in cen bins
   //  TProfile2D *fCRCZDCResCenEn; //!
@@ -1687,6 +1692,9 @@ private:
   TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
   TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
   
+  TProfile *fFlowQCRefCorPro[fFlowNHarm][13]; //!
+  TH1D *fFlowQCRefCorHist[fFlowNHarm][13]; //!
+  
   TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
   TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
@@ -1792,7 +1800,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 28);
+  ClassDef(AliFlowAnalysisCRC, 29);
   
 };
 
