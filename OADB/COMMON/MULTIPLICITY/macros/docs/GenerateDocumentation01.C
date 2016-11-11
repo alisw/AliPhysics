@@ -32,6 +32,8 @@ GenerateDocumentation01() {
             TString lProdName = fname;
             TString lCalibRuns = "";
             TString lTime = "";
+            
+            TString lCommitMessage = "";
             TString lEvSels = "";
             TString lEstims = ""; 
 	    TString lEstimPerRun = ""; 
@@ -52,9 +54,18 @@ GenerateDocumentation01() {
                 //Modification time, as per git command:
                 // git log -1 --format="%ai" -- OADB-blablabla.root
                 lTime = gSystem->GetFromPipe(Form("cd %s; git log -1 --format=\"%%ai\" -- OADB-%s.root", lPathToOADBs.Data(), lProdName.Data()));
-            
+                lCommitMessage = gSystem->GetFromPipe(Form("cd %s; git log -1 --oneline -- OADB-%s.root", lPathToOADBs.Data(), lProdName.Data()));
                 cout<<"======================================================"<<endl;
                 cout<<lTime.Data()<<endl;
+                cout<<"Commit Message Text: "<<lCommitMessage.Data()<<endl;
+                //Will now append lCommitMessage to lTime
+                lCommitMessage.Prepend(" <noautolink><element title=\"Last Commit Message: ");
+                lCommitMessage.Append("\"> %ICONURL{help}% </element></noautolink>");
+                
+                lTime.Append(lCommitMessage);
+                
+                cout<<" lTime string, final: "<<lTime.Data()<<endl;
+                
                 cout<<"======================================================"<<endl;
                 
                 TFile * f = new TFile (Form("%s%s",lPathToOADBs.Data(),fname.Data()));
