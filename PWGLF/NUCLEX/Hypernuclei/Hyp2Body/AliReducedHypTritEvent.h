@@ -51,7 +51,7 @@ class AliReducedHypTritTrack : public TObject {
 
 AliReducedHypTritTrack(const AliReducedHypTritTrack&);
 AliReducedHypTritTrack &operator = (const AliReducedHypTritTrack&);
-ClassDef(AliReducedHypTritTrack, 3)
+ClassDef(AliReducedHypTritTrack, 4)
 };
 
 class AliReducedHypTritV0 : public TObject {
@@ -76,6 +76,7 @@ class AliReducedHypTritV0 : public TObject {
   Float_t Y() const {return fRapidity;}
   Short_t Charge() const {return fCharge;}
   Short_t Species() const {return fParticleSpecies;}
+  Bool_t  OnFlyStatus() const {return fOnFlyStatus;}
 
 
  private:
@@ -92,11 +93,12 @@ class AliReducedHypTritV0 : public TObject {
   Float_t                 fRapidity;         //< Rapidity of V0
   Short_t                 fCharge;           //< anti or particle
   Short_t                 fParticleSpecies;  //< particle species
+  Bool_t                  fOnFlyStatus;       //< ontheflyStatus
 
 
   AliReducedHypTritV0(const AliReducedHypTritV0&);
   AliReducedHypTritV0 &operator = (const AliReducedHypTritV0&);
-  ClassDef(AliReducedHypTritV0, 3);
+  ClassDef(AliReducedHypTritV0, 4);
 };
 
 class AliReducedHypTritEvent : public TObject {
@@ -127,7 +129,7 @@ class AliReducedHypTritEvent : public TObject {
 
   AliReducedHypTritEvent(const AliReducedHypTritEvent&);
   AliReducedHypTritEvent &operator = (const AliReducedHypTritEvent&);
-  ClassDef(AliReducedHypTritEvent, 3);
+  ClassDef(AliReducedHypTritEvent, 4);
 };
 
 #endif

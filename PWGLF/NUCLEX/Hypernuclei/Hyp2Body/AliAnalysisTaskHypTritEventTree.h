@@ -69,8 +69,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   AliNuclexEventCuts      fEventCuts;           //< 2015 event cuts as advised by PDG (AliNuclexEventCuts)
   Int_t		                fPeriod;              //< Data period for centrality selector
   Bool_t                  fBetheSplines;        //< Switch between built in BetheSplines and personal Fit
-  Double_t                fBetheParamsHe[6];   //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
-  Double_t                fBetheParamsT[6];   //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
+  Double_t                fBetheParamsHe[6];    //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
+  Double_t                fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
 
   void MCStackLoop(AliStack *stack);
   void SetMomentum(Int_t charge, Bool_t v0Charge);
