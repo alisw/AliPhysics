@@ -24,9 +24,9 @@ class AliESDtrackCuts;
 class AliPPVsMultUtils;
 class AliPIDResponse;
 // for Monte Carlo:
-//class AliMCEventHandler;
-//class AliMCEvent;
-//class AliStack;
+class AliMCEventHandler;
+class AliMCEvent;
+class AliStack;
 //class AliVParticle;
 
 class AliAnalysisNuclMult : public AliAnalysisTaskSE {
@@ -41,6 +41,8 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
+
+  void SetIsMC(Bool_t IsMC=kFALSE) {isMC = IsMC;};
 
   void SetESDtrackCutsObj(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;};
   
@@ -58,13 +60,21 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   AliAnalysisNuclMult(const AliAnalysisNuclMult &old); 
   AliAnalysisNuclMult& operator=(const AliAnalysisNuclMult &source);
 
+  Bool_t isMC;                                    //  Are they real data or MC?
+
   AliESDEvent* fESD;                              //! ESD object
   AliVEvent* fEvent;                              //! general object
+  AliMCEventHandler* eventHandler;                //! MCEventHandler
+  AliMCEvent* mcEvent;                            //! MCEvent
+  AliStack* fStack;                               //! Stack
+  
   AliESDtrackCuts *fESDtrackCuts;                 //  ESD track cuts object
   AliPPVsMultUtils *fPPVsMultUtils;               //  for multiplicity estimator
   AliPIDResponse *fPIDResponse;                   //! pointer to PID response
 
   TList *fList;                                   //! output container
+
+  Int_t stdPdg[18];                               //! Pdg code of e,mu,pi,K,p,d,t,He3,He4
   
   Float_t multMin;                                //  min. multiplicity accepted
   Float_t multMax;                                //  max. multiplicity accepted
@@ -109,6 +119,19 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   TH3F *fM2tof[2];                                //! M2 vs pT
   TH3F *fM2vspt[18];                              //! M2 vs pT (TPC cut)
 
+  TH3F *fNsigmas[18];                             //!
+
+  //Only for MC:
+  TH2F *hpdg[1];                                  //! pdg label (after event selection)
+
+  TH2F *hpt[4][3][18];                            //! pT distributions
+
+  TH2F *fptRecoVsTrue[2][18];                     //! pT reco vs. true
+
+  TH3F *fmcDca[3][2][18];                         //! DCAxy, DCAz
+
+  TH2F *fmcNsigmaTOF[3][2][18];                   //!
+
   void EventSelectionMonitor();
 
   Bool_t IsInsideMultiplicityBin(Float_t multiplicity);
@@ -127,11 +150,17 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
 
   void GetExpTOFtime(AliVTrack *track, Double_t p, Double_t exptimes[9]);
   
-  Double_t GetBeta(AliVTrack *track, Double_t pt);
+  Double_t GetBeta(AliVTrack *track, Double_t pt, Double_t nsigmaTOF[9]);
   
   Double_t GetM2(Double_t p, Double_t beta);
 
-  ClassDef(AliAnalysisNuclMult, 6);
+  //Methods called only on MC analysis:
+  void ForPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec);
+  
+  Bool_t IsTOFgoodmatching(AliVTrack *track, Int_t label, Double_t nsigmaTOF[9], Int_t kSpec, Double_t t_pt, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
+  //---
+  
+  ClassDef(AliAnalysisNuclMult, 7);
 };
 
 #endif
