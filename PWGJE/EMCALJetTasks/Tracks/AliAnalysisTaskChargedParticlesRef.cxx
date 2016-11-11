@@ -22,6 +22,8 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 
+#include "AliAnalysisDataContainer.h"
+#include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODInputHandler.h"
 #include "AliAODTrack.h"
@@ -35,6 +37,8 @@
 #include "AliInputEventHandler.h"
 #include "AliPIDResponse.h"
 #include "AliTOFPIDResponse.h"
+#include "AliVEvent.h"
+#include "AliVEventHandler.h"
 #include "AliVVertex.h"
 
 #include "AliEMCalTriggerExtraCuts.h"
@@ -224,6 +228,58 @@ void AliAnalysisTaskChargedParticlesRef::FillPIDHistos(
 
 void AliAnalysisTaskChargedParticlesRef::InitializeTrackCuts(TString cutname, bool isAOD){
   SetEMCALTrackSelection(AliEmcalAnalysisFactory::TrackCutsFactory(cutname, isAOD));
+}
+
+AliAnalysisTaskChargedParticlesRef *AliAnalysisTaskChargedParticlesRef::AddTaskChargedParticlesRef(const TString &suffix){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  TString taskname = "chargedParticleQA_" + suffix;
+
+  AliAnalysisTaskChargedParticlesRef *task = new AliAnalysisTaskChargedParticlesRef(taskname);
+  mgr->AddTask(task);
+
+  TString outfile(mgr->GetCommonFileName());
+  outfile += ":ChargedParticleQA_" + suffix;
+  TString containername = "TrackResults_" + suffix;
+
+  task->ConnectInput(0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(containername.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+
+  return task;
+}
+
+AliAnalysisTaskChargedParticlesRef *AliAnalysisTaskChargedParticlesRef::AddTaskChargedParticlesRefDefault(const TString &cutname){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  AliAnalysisTaskChargedParticlesRef *task = new AliAnalysisTaskChargedParticlesRef("chargedParticleQA");
+  mgr->AddTask(task);
+
+  // Set Energy thresholds for additional patch selection:
+  // These are events with offline patches of a given type where the trigger reached already the plateau
+  // These numers are determined as:
+  // EMC7: 5 GeV
+  // EG1:  14 GeV
+  // EG2:  8 GeV
+  // EJ1:  22 GeV
+  // EJ2:  12 GeV
+  mgr->AddTask(task);
+  task->SetOfflineTriggerSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+  );
+  task->SetEMCALTrackSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
+          cutname,
+          mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
+      )
+  );
+
+  TString outfile(mgr->GetCommonFileName());
+  outfile += ":ChargedParticleQA_%s" + cutname;
+
+  task->ConnectInput(0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_%s", cutname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+
+  return task;
 }
 
 AliAnalysisTaskChargedParticlesRef::PtBinning::PtBinning():

@@ -31,6 +31,7 @@
 #include <TSystem.h>
 #include <TTree.h>
 
+#include "AliAnalysisDataContainer.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODMCHeader.h"
@@ -38,6 +39,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
 #include "AliEmcalAnalysisFactory.h"
+#include "AliEmcalList.h"
 #include "AliEmcalTrackSelection.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliEMCALTriggerPatchInfo.h"
@@ -49,6 +51,8 @@
 #include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliOADBContainer.h"
+#include "AliVEvent.h"
+#include "AliVEventHandler.h"
 #include "AliVVertex.h"
 
 #include "AliAnalysisTaskChargedParticlesRefMC.h"
@@ -559,6 +563,59 @@ Bool_t AliAnalysisTaskChargedParticlesRefMC::IsPhysicalPrimary(const AliVParticl
     physprim = mcevent->IsPhysicalPrimary(part->GetLabel());
   }
   return physprim;
+}
+
+AliAnalysisTaskChargedParticlesRefMC *AliAnalysisTaskChargedParticlesRefMC::AddTaskChargedParticlesRefMC(const TString &name){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  TString taskname = "chargedParticleMCQA_" + name;
+
+  AliAnalysisTaskChargedParticlesRefMC *task = new AliAnalysisTaskChargedParticlesRefMC(taskname.Data());
+  task->SetJetPtFactor(4.);
+  task->SetTrackPtFactor(1.5);
+  mgr->AddTask(task);
+
+  TString outfile(mgr->GetCommonFileName());
+  outfile += ":ChargedParticleQA_" + name;
+
+  task->ConnectInput(0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults_%s", name.Data()), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+
+  return task;
+}
+
+AliAnalysisTaskChargedParticlesRefMC *AliAnalysisTaskChargedParticlesRefMC::AddTaskChargedParticlesRefMCDefault(const TString &cutname){
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+  AliAnalysisTaskChargedParticlesRefMC *task = new AliAnalysisTaskChargedParticlesRefMC(Form("chargedParticleMCQA_%s", cutname.Data()));
+  task->SetJetPtFactor(4.);
+  task->SetTrackPtFactor(1.5);
+  // Set Energy thresholds for additional patch selection:
+  // These are events with offline patches of a given type where the trigger reached already the plateau
+  // These numers are determined as:
+  // EMC7: 5 GeV
+  // EG1:  14 GeV
+  // EG2:  8 GeV
+  // EJ1:  22 GeV
+  // EJ2:  12 GeV
+  mgr->AddTask(task);
+  task->SetOfflineTriggerSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TriggerSelectionFactory(5, 14, 8, 22, 12)
+  );
+  task->SetTrackSelection(
+      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
+          cutname,
+          mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
+      )
+  );
+
+  TString outfile(mgr->GetCommonFileName());
+  outfile += ":ChargedParticleQA" + cutname;
+
+  task->ConnectInput(0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("TrackResults", cutname.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, outfile.Data()));
+
+  return task;
 }
 
 /**
