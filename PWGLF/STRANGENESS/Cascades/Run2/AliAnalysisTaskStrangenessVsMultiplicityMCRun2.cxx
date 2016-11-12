@@ -249,6 +249,16 @@ fTreeCascVarPosPz(0),
 fTreeCascVarBachPx(0),
 fTreeCascVarBachPy(0),
 fTreeCascVarBachPz(0),
+
+fTreeCascVarNegPxMC(0),
+fTreeCascVarNegPyMC(0),
+fTreeCascVarNegPzMC(0),
+fTreeCascVarPosPxMC(0),
+fTreeCascVarPosPyMC(0),
+fTreeCascVarPosPzMC(0),
+fTreeCascVarBachPxMC(0),
+fTreeCascVarBachPyMC(0),
+fTreeCascVarBachPzMC(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
@@ -422,6 +432,15 @@ fTreeCascVarPosPz(0),
 fTreeCascVarBachPx(0),
 fTreeCascVarBachPy(0),
 fTreeCascVarBachPz(0),
+fTreeCascVarNegPxMC(0),
+fTreeCascVarNegPyMC(0),
+fTreeCascVarNegPzMC(0),
+fTreeCascVarPosPxMC(0),
+fTreeCascVarPosPyMC(0),
+fTreeCascVarPosPzMC(0),
+fTreeCascVarBachPxMC(0),
+fTreeCascVarBachPyMC(0),
+fTreeCascVarBachPzMC(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
@@ -675,6 +694,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
             fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
             fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+            
+            fTreeCascade->Branch("fTreeCascVarPosPxMC",&fTreeCascVarPosPxMC,"fTreeCascVarPosPxMC/F");
+            fTreeCascade->Branch("fTreeCascVarPosPyMC",&fTreeCascVarPosPyMC,"fTreeCascVarPosPyMC/F");
+            fTreeCascade->Branch("fTreeCascVarPosPzMC",&fTreeCascVarPosPzMC,"fTreeCascVarPosPzMC/F");
+            fTreeCascade->Branch("fTreeCascVarNegPxMC",&fTreeCascVarNegPxMC,"fTreeCascVarNegPxMC/F");
+            fTreeCascade->Branch("fTreeCascVarNegPyMC",&fTreeCascVarNegPyMC,"fTreeCascVarNegPyMC/F");
+            fTreeCascade->Branch("fTreeCascVarNegPzMC",&fTreeCascVarNegPzMC,"fTreeCascVarNegPzMC/F");
+            fTreeCascade->Branch("fTreeCascVarBachPxMC",&fTreeCascVarBachPxMC,"fTreeCascVarBachPxMC/F");
+            fTreeCascade->Branch("fTreeCascVarBachPyMC",&fTreeCascVarBachPyMC,"fTreeCascVarBachPyMC/F");
+            fTreeCascade->Branch("fTreeCascVarBachPzMC",&fTreeCascVarBachPzMC,"fTreeCascVarBachPzMC/F");
             //Track Labels (check for duplicates, etc)
             fTreeCascade->Branch("fTreeCascVarNegIndex",&fTreeCascVarNegIndex,"fTreeCascVarNegIndex/I");
             fTreeCascade->Branch("fTreeCascVarPosIndex",&fTreeCascVarPosIndex,"fTreeCascVarPosIndex/I");
@@ -1453,6 +1482,24 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //------------------------------------------------
         //Double_t lTrkgPrimaryVtxRadius3D = -500.0;
         //Double_t lBestPrimaryVtxRadius3D = -500.0;
+        fTreeCascVarNegPx = 0.0;
+        fTreeCascVarNegPy = 0.0;
+        fTreeCascVarNegPz = 0.0;
+        fTreeCascVarPosPx = 0.0;
+        fTreeCascVarPosPy = 0.0;
+        fTreeCascVarPosPz = 0.0;
+        fTreeCascVarBachPx = 0.0;
+        fTreeCascVarBachPy = 0.0;
+        fTreeCascVarBachPz = 0.0;
+        fTreeCascVarNegPxMC = 0.0;
+        fTreeCascVarNegPyMC = 0.0;
+        fTreeCascVarNegPzMC = 0.0;
+        fTreeCascVarPosPxMC = 0.0;
+        fTreeCascVarPosPyMC = 0.0;
+        fTreeCascVarPosPzMC = 0.0;
+        fTreeCascVarBachPxMC = 0.0;
+        fTreeCascVarBachPyMC = 0.0;
+        fTreeCascVarBachPzMC = 0.0;
 
         // - 1st part of initialisation : variables needed to store AliESDCascade data members
         Double_t lEffMassXi      = 0. ;
@@ -1809,6 +1856,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
         TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
         TParticle* mcBach        = lMCstack->Particle( lblBach );
+        
+        //Get MC information
+        fTreeCascVarNegPxMC = mcNegV0Dghter->Px();
+        fTreeCascVarNegPyMC = mcNegV0Dghter->Py();
+        fTreeCascVarNegPzMC = mcNegV0Dghter->Pz();
+        fTreeCascVarPosPxMC = mcPosV0Dghter->Px();
+        fTreeCascVarPosPyMC = mcPosV0Dghter->Py();
+        fTreeCascVarPosPzMC = mcPosV0Dghter->Pz();
+        fTreeCascVarBachPxMC = mcBach->Px();
+        fTreeCascVarBachPyMC = mcBach->Py();
+        fTreeCascVarBachPzMC = mcBach->Pz();
         
         //fTreeCascVarPosTransvMomentumMC = mcPosV0Dghter->Pt();
         //fTreeCascVarNegTransvMomentumMC = mcNegV0Dghter->Pt();
