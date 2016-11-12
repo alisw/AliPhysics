@@ -321,6 +321,9 @@ private:
     Int_t fTreeCascVarNegIndex; //!
     Int_t fTreeCascVarPosIndex; //!
     Int_t fTreeCascVarBachIndex; //!
+    Int_t fTreeCascVarNegLabel; //!
+    Int_t fTreeCascVarPosLabel; //!
+    Int_t fTreeCascVarBachLabel; //!
     //Event Number (check same-event index mixups)
     ULong64_t fTreeCascVarEventNumber; //!
     

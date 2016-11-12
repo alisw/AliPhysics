@@ -253,6 +253,9 @@ fTreeCascVarBachPz(0),
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
 fTreeCascVarBachIndex(0),
+fTreeCascVarNegLabel(0),
+fTreeCascVarPosLabel(0),
+fTreeCascVarBachLabel(0),
 //Event Number (check same-event index mixups)
 fTreeCascVarEventNumber(0),
 
@@ -423,6 +426,9 @@ fTreeCascVarBachPz(0),
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
 fTreeCascVarBachIndex(0),
+fTreeCascVarNegLabel(0),
+fTreeCascVarPosLabel(0),
+fTreeCascVarBachLabel(0),
 //Event Number (check same-event index mixups)
 fTreeCascVarEventNumber(0),
 
@@ -673,6 +679,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNegIndex",&fTreeCascVarNegIndex,"fTreeCascVarNegIndex/I");
             fTreeCascade->Branch("fTreeCascVarPosIndex",&fTreeCascVarPosIndex,"fTreeCascVarPosIndex/I");
             fTreeCascade->Branch("fTreeCascVarBachIndex",&fTreeCascVarBachIndex,"fTreeCascVarBachIndex/I");
+            fTreeCascade->Branch("fTreeCascVarNegLabel",&fTreeCascVarNegLabel,"fTreeCascVarNegLabel/I");
+            fTreeCascade->Branch("fTreeCascVarPosLabel",&fTreeCascVarPosLabel,"fTreeCascVarPosLabel/I");
+            fTreeCascade->Branch("fTreeCascVarBachLabel",&fTreeCascVarBachLabel,"fTreeCascVarBachLabel/I");
             //Event Number (check same-event index mixups)
             fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
         }
@@ -1792,6 +1801,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         // Abs value = needed ! question of quality track association ...
         Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
         Int_t lblBach        = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
+        
+        fTreeCascVarPosIndex = pTrackXi->GetLabel();
+        fTreeCascVarNegIndex = nTrackXi->GetLabel();
+        fTreeCascVarBachIndex = bachTrackXi->GetLabel();
         
         TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
         TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
