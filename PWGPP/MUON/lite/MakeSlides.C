@@ -380,7 +380,7 @@ void MakePreamble ( ofstream &outFile )
   outFile << "    #1\\hspace*{2ex}" << endl;
   outFile << "  \\end{beamercolorbox}}%" << endl;
   outFile << " }}" << endl;
-  outFile << "\\changeFootline{\\insertframenumber{} / \\inserttotalframenumber}" << endl;
+  outFile << "\\changeFootline{\\insertframenumber / \\inserttotalframenumber}" << endl;
   outFile << "\\setbeamertemplate{headline}{}" << endl;
   outFile << endl;
   outFile << endl;
@@ -463,7 +463,8 @@ void StartAppendix ( ofstream &outFile )
   outFile << endl;
   outFile << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   outFile << "\\appendix" << endl;
-  outFile << "\\changeFootline{A.\\insertframenumber{}}" << endl;
+  outFile << "\\renewcommand{\\theframenumber}{A.\\arabic{framenumber}}" << endl;
+  outFile << "\\changeFootline{\\theframenumber}" << endl;
   outFile << "\\hypersetup{hidelinks}" << endl;
   outFile << "\\section{\\huge Backup slides}" << endl;
 }
@@ -528,7 +529,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
 
   StartAppendix(outFile);
   MakeSingleFigureSlide("Physics Selection Cut on selected triggers:",trackerQA,"Physics selection effects",outFile);
-  MakeSingleFigureSlide("<X> of clusters - associated to a track - in chamber i",trackerQA,"Average cluster position per chamber",outFile);
+  MakeSingleFigureSlide("<X> of clusters - associated to a track - in chamber i",trackerQA,"Average cluster position per chamber",outFile,"","clustersPosition");
   MakeSingleFigureSlide("averaged normalized",trackerQA,"Tracking quality",outFile);
 
   MakeTriggerRPCslide(triggerQA,outFile);
