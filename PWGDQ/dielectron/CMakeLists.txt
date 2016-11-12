@@ -62,6 +62,7 @@ set(SRCS
       core/AliDielectronPair.cxx
       core/AliDielectronPairLegCuts.cxx
       core/AliDielectronPID.cxx
+      core/AliDielectronQnEPcorrection.cxx
       core/AliDielectronSignalMC.cxx
       core/AliDielectronTrackCuts.cxx
       core/AliDielectronTrackRotator.cxx

@@ -1,3 +1,13 @@
+/**
+* @Author: Pascal Dillenseger <pascaldillenseger>
+* @Date:   2016-10-21, 11:52:17
+* @Email:  pdillens@cern.ch
+* @Last modified by:   pascaldillenseger
+* @Last modified time: 2016-11-12, 22:21:36
+*/
+
+
+
 #ifndef ALIDIELECTRON_H
 #define ALIDIELECTRON_H
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
@@ -73,6 +83,7 @@ public:
   AliAnalysisFilter& GetPairPreFilterLegs2() { return fPairPreFilterLegs2; }
   AliAnalysisFilter& GetEventPlanePreFilter(){ return fEventPlanePreFilter; }
   AliAnalysisFilter& GetEventPlanePOIPreFilter(){ return fEventPlanePOIPreFilter; }
+  AliDielectronQnEPcorrection* GetQnTPCACcuts(){ return fQnTPCACcuts; }
 
   void  SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
   void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2) { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
@@ -170,6 +181,7 @@ public:
   void SetCentroidCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
+  void SetQnTPCACcuts(AliDielectronQnEPcorrection *acCuts){ fQnTPCACcuts = acCuts; fACremovalIsSetted = kTRUE;}
   void SaveDebugTree();
   Bool_t DoEventProcess() const { return fEventProcess; }
   void SetEventProcess(Bool_t setValue=kTRUE) { fEventProcess=setValue; }
@@ -179,6 +191,7 @@ private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
+
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
   TH1 *fPostPIDWdthCorr;    // post pid correction object for electron sigma widths in TPC
   TH1 *fPostPIDCntrdCorrITS;// post pid correction object for electron sigma centroids in ITS
@@ -195,6 +208,7 @@ private:
   AliAnalysisFilter fPairFilter;     // pair cuts
   AliAnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts
   AliAnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter
+  AliDielectronQnEPcorrection *fQnTPCACcuts; // QnFramework est. 2016 ac removal
 
   Int_t fPdgMother;     // pdg code of mother tracks
   Int_t fPdgLeg1;       // pdg code leg1
@@ -229,6 +243,7 @@ private:
   AliDielectronMixingHandler *fMixing; // handler for event mixing
 
   Bool_t fPreFilterEventPlane;  //Filter for the Eventplane determination in TPC
+  Bool_t fACremovalIsSetted;
   Bool_t fLikeSignSubEvents;    //Option for dividing into subevents, sub1 ++ sub2 --
   Bool_t fPreFilterUnlikeOnly1;  //Apply PreFilter either in +- or to ++/--/+- individually
   Bool_t fPreFilterLikeOnly1;    //Apply PreFilter either in -- and ++ or to ++/--/+- individually
@@ -247,7 +262,6 @@ private:
 
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTracks1, TObjArray arrTracks2, const AliVEvent *ev);
-  void CorrectQnEventplanes(Int_t arr1, Int_t arr2, TList *qnlist, TObjArray arrTracks1, TObjArray arrTracks2);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2, const AliVEvent *ev, Int_t prefilterN);
   void FillPairArrays(Int_t arr1, Int_t arr2, const AliVEvent *ev = 0x0);
   void FillPairArrayTR();
