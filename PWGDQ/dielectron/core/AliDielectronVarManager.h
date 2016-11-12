@@ -1,3 +1,13 @@
+/**
+* @Author: Pascal Dillenseger <pascaldillenseger>
+* @Date:   2016-11-03, 15:14:35
+* @Email:  pdillens@cern.ch
+* @Last modified by:   pascaldillenseger
+* @Last modified time: 2016-11-12, 22:25:16
+*/
+
+
+
 #ifndef ALIDIELECTRONVARMANAGER_H
 #define ALIDIELECTRONVARMANAGER_H
 
@@ -72,6 +82,7 @@
 #include "AliDielectronMC.h"
 #include "AliDielectronPID.h"
 #include "AliDielectronHelper.h"
+#include "AliDielectronQnEPcorrection.h"
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -660,6 +671,7 @@ public:
   static void SetEventData(const Double_t data[AliDielectronVarManager::kNMaxValues]);
   static Bool_t GetDCA(const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0=0);
   static void SetTPCEventPlane(AliEventplane *const evplane);
+  static void SetTPCEventPlaneACremoval(AliDielectronQnEPcorrection *acCuts) {fgQnEPacRemoval = acCuts; fgEventPlaneACremoval = kTRUE;}
   static void GetVzeroRP(const AliVEvent* event, Double_t* qvec, Int_t sideOption);      // 0- V0A; 1- V0C; 2- V0A+V0C
   static void GetZDCRP(const AliVEvent* event, Double_t qvec[][2]);
   static AliAODVertex* GetVertex(const AliAODEvent *event, AliAODVertex::AODVtx_t vtype);
@@ -679,7 +691,6 @@ public:
 
   static Double_t GetValue(ValueTypes var) {return fgData[var];}
   static void SetValue(ValueTypes var, Double_t val) { fgData[var]=val; }
-  static AliQnCorrectionsQnVector* GetQnVectorFromList(TList *list, const char *subdetector, const char *expectedstep, const char *altstep);
 
 
 private:
@@ -724,6 +735,8 @@ private:
 
   static TString          fgZDCRecenteringFile; // file with ZDC Q-vector averages needed for event plane recentering
   static TProfile3D      *fgZDCRecentering[3][2];   // 2 VZERO sides x 2 Q-vector components
+  static AliDielectronQnEPcorrection *fgQnEPacRemoval; //! filter for auto correlation removal within Qn Framework
+  static Bool_t fgEventPlaneACremoval;
   static Double_t CalculateEPDiff(Double_t detArp, Double_t detBrp);
 
 
@@ -2010,8 +2023,23 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   if(Req(kPairPlaneAngle4Ran)) values[AliDielectronVarManager::kPairPlaneAngle4Ran]= pair->GetPairPlaneAngle(values[kRandomRP],4);
 
   // Calculate v2 of Jpsi using the EP from the 2016 est. qVecQnFramework
+  Double_t qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
+  if(fgEventPlaneACremoval)
+    if(fgQnEPacRemoval->IsSelected(pair)){
+      AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+      if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask = dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) ){
+        if(flowQnVectorTask != NULL){
+          AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
+          TList *qnlist = flowQnVectorMgr->GetQnVectorList();
+          if(qnlist != NULL){
+            qnTPCeventplane = fgQnEPacRemoval->GetACcorrectedQnTPCEventplane(pair, qnlist); // Remove auto correlations from the eventplane for the given pair
+          }
+          if(qnTPCeventplane == -999.) qnTPCeventplane = values[AliDielectronVarManager::kQnTPCrpH2];
+        }
+      }
+    }
 
-  if(Req(kQnDeltaPhiTPCrpH2) || Req(kQnTPCrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiTPCrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnTPCrpH2]);
+  if(Req(kQnDeltaPhiTPCrpH2) || Req(kQnTPCrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiTPCrpH2]  = TVector2::Phi_mpi_pi(phi - qnTPCeventplane);
   if(Req(kQnDeltaPhiV0ArpH2) || Req(kQnV0ArpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0ArpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0ArpH2]);
   if(Req(kQnDeltaPhiV0CrpH2) || Req(kQnV0CrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiV0CrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnV0CrpH2]);
   if(Req(kQnDeltaPhiSPDrpH2) || Req(kQnSPDrpH2FlowV2))   values[AliDielectronVarManager::kQnDeltaPhiSPDrpH2]  = TVector2::Phi_mpi_pi(phi - values[AliDielectronVarManager::kQnSPDrpH2]);
@@ -3400,46 +3428,13 @@ inline void AliDielectronVarManager::FillValues(const TParticle *particle, Doubl
 }*/
 
 //________________________________________________________________
-inline AliQnCorrectionsQnVector* AliDielectronVarManager::GetQnVectorFromList(
-    TList *list,
-    const char *subdetector,
-    const char *expectedstep,
-    const char *altstep){
-
-  AliQnCorrectionsQnVector *theQnVector = NULL;
-
-  TList *pQvecList = dynamic_cast<TList*> (list->FindObject(subdetector));
-  if (pQvecList != NULL) {
-    /* the detector is present */
-    if (TString(expectedstep).EqualTo("latest"))
-      theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
-    else
-      theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expectedstep);
-
-    if (theQnVector == NULL) {
-      /* the Qn vector for the expected step was not there */
-      if (TString(altstep).EqualTo("latest"))
-        theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();
-      else
-        theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(altstep);
-    }
-  }
-  if (theQnVector != NULL) {
-    /* check the Qn vector quality */
-    if (!(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0))
-      /* not good quality, discarded */
-      theQnVector = NULL;
-  }
-  return theQnVector;
-}
-//________________________________________________________________
 inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t * const values){
   Bool_t bTPCqVector(kFALSE), bV0AqVector(kFALSE), bV0CqVector(kFALSE), bSPDqVector(kFALSE), bFMDAqVector(kFALSE), bFMDCqVector(kFALSE);
   for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
     values[i] = -999.;
   }
   // TPC Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","latest","latest");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkTPC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,"TPC","latest","latest");
   TVector2 *qVectorTPC = new TVector2(-200.,-200.);
   if(qVecQnFrameworkTPC != NULL){
     bTPCqVector = kTRUE;
@@ -3450,7 +3445,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // VZEROA Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkV0A = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROA","latest","latest");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkV0A = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,"VZEROA","latest","latest");
   TVector2 *qVectorV0A = new TVector2(-200.,-200.);
   if(qVecQnFrameworkV0A != NULL){
     bV0AqVector = kTRUE;
@@ -3461,7 +3456,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // VZEROC Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkV0C = AliDielectronVarManager::GetQnVectorFromList(qnlist,"VZEROC","latest","latest");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkV0C = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,"VZEROC","latest","latest");
   TVector2 *qVectorV0C = new TVector2(-200.,-200.);
   if(qVecQnFrameworkV0C != NULL){
     bV0CqVector = kTRUE;
@@ -3472,7 +3467,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // SPD Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkSPD = AliDielectronVarManager::GetQnVectorFromList(qnlist,"SPD","latest","latest");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkSPD = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,"SPD","latest","latest");
   TVector2 *qVectorSPD = new TVector2(-200.,-200.);
   if(qVecQnFrameworkSPD != NULL){
     bSPDqVector = kTRUE;
@@ -3483,7 +3478,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // FMDA Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDA","latest","latest");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDA = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,"FMDA","latest","latest");
   TVector2 *qVectorFMDA = new TVector2(-200.,-200.);
   if(qVecQnFrameworkFMDA != NULL){
     bFMDAqVector = kTRUE;
@@ -3494,7 +3489,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
   }
 
   // FMDC Eventplane q-Vector
-  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = AliDielectronVarManager::GetQnVectorFromList(qnlist,"FMDC","latest","latest");
+  const AliQnCorrectionsQnVector *qVecQnFrameworkFMDC = AliDielectronQnEPcorrection::GetQnVectorFromList(qnlist,"FMDC","latest","latest");
   TVector2 *qVectorFMDC = new TVector2(-200.,-200.);
   if(qVecQnFrameworkFMDC != NULL){
     bFMDCqVector = kTRUE;

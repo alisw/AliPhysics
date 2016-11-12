@@ -1,3 +1,13 @@
+/**
+* @Author: Pascal Dillenseger <pascaldillenseger>
+* @Date:   2016-10-21, 11:52:17
+* @Email:  pdillens@cern.ch
+* @Last modified by:   pascaldillenseger
+* @Last modified time: 2016-11-12, 22:22:02
+*/
+
+
+
 /*************************************************************************
 * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -116,6 +126,7 @@ AliDielectron::AliDielectron() :
   fPairFilter("PairFilter"),
   fEventPlanePreFilter("EventPlanePreFilter"),
   fEventPlanePOIPreFilter("EventPlanePOIPreFilter"),
+  fQnTPCACcuts(0x0),
   fPdgMother(443),
   fPdgLeg1(11),
   fPdgLeg2(11),
@@ -134,6 +145,7 @@ AliDielectron::AliDielectron() :
   fDebugTree(0x0),
   fMixing(0x0),
   fPreFilterEventPlane(kFALSE),
+  fACremovalIsSetted(kFALSE),
   fLikeSignSubEvents(kFALSE),
   fPreFilterUnlikeOnly1(kFALSE),
   fPreFilterLikeOnly1(kFALSE),
@@ -183,6 +195,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fPairFilter("PairFilter"),
   fEventPlanePreFilter("EventPlanePreFilter"),
   fEventPlanePOIPreFilter("EventPlanePOIPreFilter"),
+  fQnTPCACcuts(0x0),
   fPdgMother(443),
   fPdgLeg1(11),
   fPdgLeg2(11),
@@ -201,6 +214,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fDebugTree(0x0),
   fMixing(0x0),
   fPreFilterEventPlane(kFALSE),
+  fACremovalIsSetted(kFALSE),
   fLikeSignSubEvents(kFALSE),
   fPreFilterUnlikeOnly1(kFALSE),
   fPreFilterLikeOnly1(kFALSE),
@@ -446,16 +460,8 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   if (ev1 && fPreFilterEventPlane && ( fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0))
     EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1);
   // QnFramework est. 2016 auto-correlation removal
-  if(fPreFilterEventPlane && (fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0) ){
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    if( AliAnalysisTaskFlowVectorCorrections *flowQnVectorTask =
-        dynamic_cast<AliAnalysisTaskFlowVectorCorrections*> (man->GetTask("FlowQnVectorCorrections")) ){
-      if(flowQnVectorTask != NULL){
-        AliQnCorrectionsManager *flowQnVectorMgr = flowQnVectorTask->GetAliQnCorrectionsManager();
-        TList *qnlist = flowQnVectorMgr->GetQnVectorList();
-        if(qnlist != NULL)  AliDielectron::CorrectQnEventplanes(0,1,qnlist,fTracks[0],fTracks[1]);
-      }
-    }
+  if(fACremovalIsSetted){
+    AliDielectronVarManager::SetTPCEventPlaneACremoval(fQnTPCACcuts);
   }
   if (!fNoPairing){
     // create pairs and fill pair candidate arrays
@@ -1129,94 +1135,6 @@ void AliDielectron::EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTra
     delete qcsub2;
   } // end: ESD or AOD case
 
-}
-
-//________________________________________________________________
-void AliDielectron::CorrectQnEventplanes(Int_t arr1, Int_t arr2, TList *qnlist,TObjArray arrTracks1, TObjArray arrTracks2){
-  //
-  // Function to remove auto-correlations from the eventplanes estimated with the QnFramework est. 2016
-  //  Checks the track array for particle pairs in the Jpsi mass window and removes their QnVector contributions
-  //
-
-  Int_t nRemovedTracks = 0;
-  Float_t cQX=0., cQY=0.;
-  if(fEventPlanePreFilter.GetCuts()->GetEntries()) UInt_t selectedMask=(1<<fEventPlanePreFilter.GetCuts()->GetEntries())-1;
-
-
-  // POI (particle of interest) rejection
-  Int_t pairIndex=GetPairIndex(arr1,arr2);
-
-  Int_t ntrack1=arrTracks1.GetEntriesFast();
-  Int_t ntrack2=arrTracks2.GetEntriesFast();
-  AliDielectronPair candidate;
-  candidate.SetKFUsage(fUseKF);
-
-  UInt_t selectedMask=(1<<fEventPlanePOIPreFilter.GetCuts()->GetEntries())-1;
-  for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
-    Int_t end=ntrack2;
-    if (arr1==arr2) end=itrack1;
-    Bool_t accepted=kFALSE;
-    AliAODTrack *track1= (AliAODTrack*) arrTracks1.UncheckedAt(itrack1);
-    // Check track cuts from the Qn framework for track-array 1
-    if(!(track1->TestFilterBit(256) || track1->TestFilterBit(512))) continue;
-    if((track1->Eta() < -.8) || (track1->Eta() > .8)) continue;
-    if((track1->Pt() < .2) || (track1->Pt() > 5.)) continue;
-    for (Int_t itrack2=0; itrack2<end; ++itrack2){
-      AliAODTrack *track2= (AliAODTrack*) arrTracks2.UncheckedAt(itrack2);
-
-      // Check track cuts from the Qn framework for track-array 2
-      if (!track1 || !track2) continue;
-      if(!(track2->TestFilterBit(256) || track2->TestFilterBit(512))) continue;
-      if((track2->Eta() < -.8) || (track2->Eta() > .8)) continue;
-      if((track2->Pt() < .2) || (track2->Pt() > 5.)) continue;
-
-      //create the pair
-      candidate.SetTracks(static_cast<AliVTrack*>(track1), fPdgLeg1,
-                          static_cast<AliVTrack*>(track2), fPdgLeg2);
-      candidate.SetType(pairIndex);
-      candidate.SetLabel(AliDielectronMC::Instance()->GetLabelMotherWithPdg(&candidate,fPdgMother));
-
-      //event plane pair cuts
-      UInt_t cutMask=fEventPlanePOIPreFilter.IsSelected(&candidate);
-      //sum the contribution to the qVector of the tracks passing the EventPlanePOIPreFilter
-      if (cutMask==selectedMask){
-        cQX += TMath::Cos(2*track1->Phi());
-        cQX += TMath::Cos(2*track2->Phi());
-        cQY += TMath::Sin(2*track1->Phi());
-        cQY += TMath::Sin(2*track2->Phi());
-        nRemovedTracks += 2;
-      }
-    }
-  }
-  AliQnCorrectionsQnVector *qnVectorPlain = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","plain","plain");
-  AliQnCorrectionsQnVector *qnVectorRec = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","rec","rec");
-  AliQnCorrectionsQnVector *qnVectorTwist = AliDielectronVarManager::GetQnVectorFromList(qnlist,"TPC","twist","twist");
-  if(qnVectorPlain != NULL){
-    Float_t qnPlainX = qnVectorPlain->Qx(2);
-    Float_t qnPlainY = qnVectorPlain->Qy(2);
-    if(qnVectorRec != NULL){
-      Float_t qnRecX = qnVectorRec->Qx(2);
-      Float_t qnRecY = qnVectorRec->Qy(2);
-      Float_t qnCorrX = qnPlainX - qnRecX; // Correction from QnFramework on X value
-      Float_t qnCorrY = qnPlainY - qnRecY; // Correction from QnFramework on Y value
-      Int_t M = qnVectorPlain->GetN(); // Number of used tracks
-      Float_t qnWOautoCorrX = (qnPlainX*M - cQX)/(M - nRemovedTracks) -qnCorrX;
-      Float_t qnWOautoCorrY = (qnPlainY*M - cQY)/(M - nRemovedTracks) -qnCorrY;
-      qnVectorRec->SetQx(2,qnWOautoCorrX);
-      qnVectorRec->SetQy(2,qnWOautoCorrY);
-    }
-    if(qnVectorTwist != NULL){
-      Float_t qnTwistX = qnVectorTwist->Qx(2);
-      Float_t qnTwistY = qnVectorTwist->Qy(2);
-      Float_t qnCorrX = qnPlainX - qnTwistX; // Correction from QnFramework on X value
-      Float_t qnCorrY = qnPlainY - qnTwistY; // Correction from QnFramework on Y value
-      Int_t M = qnVectorPlain->GetN(); // Number of used tracks
-      Float_t qnWOautoCorrX = (qnPlainX*M - cQX)/(M - nRemovedTracks) -qnCorrX;
-      Float_t qnWOautoCorrY = (qnPlainY*M - cQY)/(M - nRemovedTracks) -qnCorrY;
-      qnVectorTwist->SetQx(2,qnWOautoCorrX);
-      qnVectorTwist->SetQy(2,qnWOautoCorrY);
-    }
-  }
 }
 
 //________________________________________________________________
