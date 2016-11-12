@@ -55,6 +55,7 @@ public:
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void FindMother(AliAODMCParticle* part, int &label, int &pid);
+    void CheckMCgen(AliAODMCHeader* fMCheader);
     Bool_t IsDdecay(int mpid);
     Bool_t IsBdecay(int mpid);
     Bool_t IsPdecay(int mpid);
@@ -69,6 +70,7 @@ private:
     AliVEvent   *fVevent;  //!event object
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
+    AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
     AliCFManager 	   	*fCFM;                  //!Correction Framework Manager
     
@@ -143,7 +145,9 @@ private:
     TH1D        *fHistPhoReco0;//!ele cand SPD or
     TH1D        *fHistPhoReco1;//!ele cand SPD or
     TH1D        *fHistPhoReco2;//!ele cand SPD or
-
+    
+    TH1D        *fHistMCorgD;
+    TH1D        *fHistMCorgB;
     TH2D        *fHistDCAinc;//!ele cand SPD or
     TH2D        *fHistDCApho;//!ele cand SPD or
     TH2D        *fHistDCAcomb;//!ele cand SPD or
