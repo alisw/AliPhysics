@@ -1,3 +1,13 @@
+/**
+* @Author: Pascal Dillenseger <pascaldillenseger>
+* @Date:   2016-11-03, 15:14:35
+* @Email:  pdillens@cern.ch
+* @Last modified by:   pascaldillenseger
+* @Last modified time: 2016-11-11, 17:21:19
+*/
+
+
+
 /*************************************************************************
 * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -622,6 +632,8 @@ TString         AliDielectronVarManager::fgZDCRecenteringFile = "";
 TProfile2D*     AliDielectronVarManager::fgVZEROCalib[64] = {0x0};
 TProfile2D*     AliDielectronVarManager::fgVZERORecentering[2][2] = {{0x0,0x0},{0x0,0x0}};
 TProfile3D*     AliDielectronVarManager::fgZDCRecentering[3][2] = {{0x0,0x0},{0x0,0x0},{0x0,0x0}};
+AliDielectronQnEPcorrection* AliDielectronVarManager::fgQnEPacRemoval = 0x0;
+Bool_t          AliDielectronVarManager::fgEventPlaneACremoval = kFALSE;
 Int_t           AliDielectronVarManager::fgCurrentRun = -1;
 Double_t        AliDielectronVarManager::fgData[AliDielectronVarManager::kNMaxValues] = {0.};
 //________________________________________________________________
