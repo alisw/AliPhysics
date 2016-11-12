@@ -233,6 +233,10 @@ private:
    Bool_t               fUsePidResponse;//use pid response instead of aliflowbayesianpid object for pid
    AliPIDCombined*      fPIDCombined;   // pid combined
    Bool_t               fPileUp;        // cut pile up
+   TF1                  *fLowCut;       //!
+   TF1                  *fHighCut;      //!
+   TF1                  *fMultTOFLowCut;//!
+   TF1                  *fMultTOFHighCut;//! 
 
    AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
    AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
