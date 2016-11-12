@@ -1849,9 +1849,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrackXi->GetLabel() );
         Int_t lblBach        = (Int_t) TMath::Abs( bachTrackXi->GetLabel() );
         
-        fTreeCascVarPosIndex = pTrackXi->GetLabel();
-        fTreeCascVarNegIndex = nTrackXi->GetLabel();
-        fTreeCascVarBachIndex = bachTrackXi->GetLabel();
+        fTreeCascVarPosLabel = pTrackXi->GetLabel();
+        fTreeCascVarNegLabel = nTrackXi->GetLabel();
+        fTreeCascVarBachLabel = bachTrackXi->GetLabel();
         
         TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
         TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
