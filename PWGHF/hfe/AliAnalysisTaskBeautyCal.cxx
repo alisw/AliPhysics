@@ -76,6 +76,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fVevent(0),
   fESD(0),
   fAOD(0),
+  fMCheader(0),
   fpidResponse(0),
   fCFM(0),
   fFlagSparse(kFALSE),
@@ -171,6 +172,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fVevent(0),
   fESD(0),
   fAOD(0),
+  fMCheader(0),
   fpidResponse(0),
   fCFM(0),
   fFlagSparse(kFALSE),
@@ -462,6 +464,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fHistPhoReco2 = new TH1D("fHistPhoReco2", "non-reco pho in sample; p_{T}(GeV/c)", 30,0,30);
   fOutputList->Add(fHistPhoReco2);
 
+  fHistMCorgD = new TH1D("fHistMCorgD","MC org D",40,0,40);
+  fOutputList->Add(fHistMCorgD);
+
+  fHistMCorgB = new TH1D("fHistMCorgB","MC org B",40,0,40);
+  fOutputList->Add(fHistMCorgB);
+
   fHistDCAinc = new TH2D("fHistDCAinc", "DCA of inclusive e; p_{T}(GeV/c);DCAxchargexMag.", 40,0,40,2000,-0.2,0.2);
   fOutputList->Add(fHistDCAinc);
  
@@ -565,6 +573,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     //return;
   }
   if(fAOD)fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+
+  fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 
   ///////////////////
   //PID initialised//
@@ -1360,6 +1370,67 @@ Bool_t AliAnalysisTaskBeautyCal::IsPdecay(int mpid)
     return kFALSE;
    } 
 }
+
+//_____________________________________________________________________
+void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
+{
+ TList *lh=fMCheader->GetCocktailHeaders();
+ Int_t NpureMC = 0;
+ if(lh)
+    {     
+     //cout << "<------- lh = " << lh << " ; NproAll = "<<  lh->GetEntries() << endl; 
+
+     for(int igene=0; igene<lh->GetEntries(); igene++)
+        {
+         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+         if(gh)
+           {
+            //cout << "<------- imc = "<< gh->GetName() << endl;     
+            //cout << "<-------- Ncont = " << gh->NProduced() << endl;
+            if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
+           }
+        }
+    }
+
+ for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+     {
+      Bool_t iEnhance = kFALSE;
+      if(imc>=NpureMC)iEnhance = kTRUE;
+      Int_t iHijing = 1;  // select particles from Hijing or PYTHIA
+
+      fMCparticle = (AliAODMCParticle*) fMCarray->At(imc);
+      Int_t pdgGen = TMath::Abs(fMCparticle->GetPdgCode());
+      if(TMath::Abs(pdgGen)!=11)continue;
+      Double_t pdgEta = fMCparticle->Eta(); 
+      if(TMath::Abs(pdgEta)>0.6)continue;
+    
+      Int_t pdgMom = -99;
+      Int_t labelMom = -1;
+      FindMother(fMCparticle,labelMom,pdgMom);
+
+      if(pdgMom==-1 && iEnhance)iHijing = 0;  // select particles orogonally from enhance
+
+      //if(iHijing ==0)
+      if(pdgMom>0)
+        {
+         AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
+         if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
+            {
+             fHistMCorgD->Fill(fMCparticleMom->Pt());
+             //cout << "orgD : " << pdgMom << " ; " << pdgGen << endl;
+            }
+         if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
+           {
+            fHistMCorgB->Fill(fMCparticleMom->Pt());
+             //cout << "orgB : " << pdgMom << " ; " << pdgGen << endl;
+           }
+        }
+
+     }
+
+ return;
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskBeautyCal::FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta,Double_t emcphi)
 {
