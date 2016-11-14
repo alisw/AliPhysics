@@ -419,6 +419,54 @@ int AliHLTGlobalPromptRecoQAComponent::DoInit(int argc, const char** argv)
     fAxes["nHLTInSize"].set( 100, 0., 200e6, &fnHLTInSize );
     fAxes["nHLTOutSize"].set( 100, 0., 70e6, &fnHLTOutSize );
   }//End Axes for Pb-Pb
+  else if (mgr.GetGRPData()->GetBeamType() == "p-Pb" ||
+      mgr.GetGRPData()->GetBeamType() == "pPb" ||
+      mgr.GetGRPData()->GetBeamType() == "p-A" ||
+      mgr.GetGRPData()->GetBeamType() == "pA" )
+  {//Start Axes for p-Pb
+    fAxes["nClustersSPD"].set( 100, 0., 1000.,  &fnClustersSPD );
+    fAxes["rawSizeSPD"].set( 100, 0., 15e3, &frawSizeSPD );
+    fAxes["nClustersSDD"].set( 100, 0., 1e3,  &fnClustersSDD );
+    fAxes["rawSizeSDD"].set( 100, 0., 50e3, &frawSizeSDD );
+    fAxes["nClustersSSD"].set( 100, 0., 1200,  &fnClustersSSD );
+    fAxes["rawSizeSSD"].set( 100, 0., 100e3, &frawSizeSSD );
+    fAxes["nClustersITS"].set( 100, 0., 10e3, &fnClustersITS );
+    fAxes["rawSizeITS"].set( 100, 0., 100e3, &frawSizeITS );
+    fAxes["rawSizeVZERO"].set( 100, 0., 6e3, &frawSizeVZERO );
+    fAxes["rawSizeEMCAL"].set( 100, 0., 100e3, &frawSizeEMCAL );
+    fAxes["rawSizeZDC"].set( 100, 0., 10e3, &frawSizeZDC );
+    fAxes["nClustersTPC"].set( 100, 0., 1.8e6, &fnClustersTPC );
+    fAxes["rawSizeTPC"].set( 100, 0., 40e6, &frawSizeTPC );
+    fAxes["hwcfSizeTPC"].set( 100, 0., 40e6, &fhwcfSizeTPC );
+    fAxes["clusterSizeTPCtransformed"].set( 100, 0., 1., &fclusterSizeTPCtransformed );
+    fAxes["clusterSizeTPC"].set( 100, 0., 6500e3, &fclusterSizeTPC );
+    fAxes["compressedSizeTPC"].set( 100, 0., 10e6, &fcompressedSizeTPC );
+    fAxes["nITSSAPtracks"].set( 100, 0., 140., &fnITSSAPtracks );
+    fAxes["nTPCtracklets"].set( 100, 0., 7e3, &fnTPCtracklets );
+    fAxes["nTPCtracks"].set( 100, 0., 5e3, &fnTPCtracks );
+    fAxes["nITSTracks"].set( 100, 0., 5e3, &fnITSTracks );
+    fAxes["nITSOutTracks"].set( 100, 5e3, 1., &fnITSOutTracks );
+    fAxes["vZEROMultiplicity"].set( 100, 0., 40e3, &fvZEROMultiplicity );
+    fAxes["vZEROTriggerChargeA"].set( 100, 0., 3.5e3, &fvZEROTriggerChargeA );
+    fAxes["vZEROTriggerChargeC"].set( 100, 0., 3.5e3, &fvZEROTriggerChargeC );
+    fAxes["vZEROTriggerChargeAC"].set( 100, 0., 7e3, &fvZEROTriggerChargeAC );
+    fAxes["zdcZNC"].set( 100, 0., 1e3, &fzdcZNC );
+    fAxes["zdcZNA"].set( 100, 0., 1e3, &fzdcZNA );
+    fAxes["zdcZNAC"].set( 100, 0., 2e3, &fzdcZNAC );
+    fAxes["zdcRecoSize"].set( 100, 0., 1., &fzdcRecoSize );
+    fAxes["emcalRecoSize"].set( 100, 0., 1., &femcalRecoSize );
+    fAxes["emcalTRU"].set( 100, 0., 1., &femcalTRU );
+    fAxes["emcalSTU"].set( 100, 0., 1., &femcalSTU );
+    fAxes["compressionRatio"].set( 100, 0., 8., &fcompressionRatio );
+    fAxes["compressionRatioFull"].set( 100, 0., 12., &fcompressionRatioFull );
+    fAxes["hltRatio"].set( 100, 0., 1., &fhltRatio );
+    fAxes["nESDSize"].set( 100, 0., 1., &fnESDSize );
+    fAxes["nESDFriendSize"].set( 100, 0., 1., &fnESDFriendSize );
+    fAxes["nFlatESDSize"].set( 100, 0., 1., &fnFlatESDSize );
+    fAxes["nFlatESDFriendSize"].set( 100, 0., 1., &fnFlatESDFriendSize );
+    fAxes["nHLTInSize"].set( 100, 0., 40e6, &fnHLTInSize );
+    fAxes["nHLTOutSize"].set( 100, 0., 10e6, &fnHLTOutSize );
+  }//End Axes for p-Pb
   else
   {//Start Axes for pp
     fAxes["nClustersSPD"].set( 100, 0., 800.,  &fnClustersSPD );
