@@ -138,6 +138,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistPhoReco0(0),
   fHistPhoReco1(0),
   fHistPhoReco2(0),
+  fHistMCorgD(0),
+  fHistMCorgB(0),
   fHistDCAinc(0),
   fHistDCApho(0),
   fHistDCAcomb(0),
@@ -234,6 +236,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistPhoReco0(0),
   fHistPhoReco1(0),
   fHistPhoReco2(0),
+  fHistMCorgD(0),
+  fHistMCorgB(0),
   fHistDCAinc(0),
   fHistDCApho(0),
   fHistDCAcomb(0),
@@ -677,6 +681,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   fNevents->Fill(2); //events after z vtx cut
   fCent->Fill(centrality); //centrality dist.
 
+  if(fMCarray)CheckMCgen(fMCheader);
+
   /////////////////////////////
   //EMCAL cluster information//
   /////////////////////////////
@@ -821,6 +827,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //cout << "AOD track cuts" << endl;
       if(atrack->GetTPCNcls() < 80) continue;
       if(atrack->GetITSNcls() < 3) continue;
+      if(TMath::Abs(atrack->Eta()) > 0.6) continue;
       if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
 
@@ -1403,7 +1410,9 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
       if(TMath::Abs(pdgGen)!=11)continue;
       Double_t pdgEta = fMCparticle->Eta(); 
       if(TMath::Abs(pdgEta)>0.6)continue;
-    
+      Double_t pTtrue = fMCparticle->Pt(); 
+      if(pTtrue>1.0)continue;
+
       Int_t pdgMom = -99;
       Int_t labelMom = -1;
       FindMother(fMCparticle,labelMom,pdgMom);
@@ -1416,12 +1425,12 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
          AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
          if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
             {
-             fHistMCorgD->Fill(fMCparticleMom->Pt());
+             fHistMCorgD->Fill(fMCparticle->Pt());
              //cout << "orgD : " << pdgMom << " ; " << pdgGen << endl;
             }
          if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
            {
-            fHistMCorgB->Fill(fMCparticleMom->Pt());
+            fHistMCorgB->Fill(fMCparticle->Pt());
              //cout << "orgB : " << pdgMom << " ; " << pdgGen << endl;
            }
         }

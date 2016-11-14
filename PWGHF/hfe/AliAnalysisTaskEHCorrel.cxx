@@ -334,7 +334,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
-  Int_t trackDepth = 100000;
+  Int_t trackDepth = 75000;
   Int_t poolsize   = 1000;
 
   Int_t nZvtxBins  = 6;
@@ -522,7 +522,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fNoMixedEvents = new TH1F("fNoMixedEvents","No of mixing events",1,-0.5,0.5);
   fOutputList->Add(fNoMixedEvents);
 
-  Int_t nEventBins =100;
+  Int_t nEventBins =200;
   Double_t EventBins[nEventBins+1];
   for(int i=0; i < nEventBins+1; i++)
     EventBins[i] = i;
@@ -547,9 +547,9 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
 
   //------THnsparse------
-  Int_t bin[6] = {50,50,64,100,nZvtxBins,nCentralityBins}; //ptElec, ptHad,Dphi, Deta
+  Int_t bin[6] = {30,20,32,50,nZvtxBins,nCentralityBins}; //ptElec, ptHad,Dphi, Deta
   Double_t xmin[6] = {0,0,-TMath::Pi()/2,-1.8,0,0};
-  Double_t xmax[6] = {50,50,(3*TMath::Pi())/2,1.8,6,6};
+  Double_t xmax[6] = {30,20,(3*TMath::Pi())/2,1.8,6,6};
 
   fSprsHadHCorrl = new THnSparseD("fSprsHadHCorrl","Sparse for Dphi and Deta hadrons;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
   fOutputList->Add(fSprsHadHCorrl);
