@@ -30,6 +30,19 @@
 ClassImp(AliRecInfoCuts)
 
 //_____________________________________________________________________________
+AliRecInfoCuts::AliRecInfoCuts() : AliESDtrackCuts()
+, fMinTPCsignalN(0)
+, fMaxAbsTanTheta(0)
+, fMinNClustersTRD(0)
+, fTPCITSMatchingRadius(0)
+, fTPCTRDMatchingRadius(0)
+, fMinNTrackletsTRD(0)
+{
+  // init data members with defaults
+  InitME();
+}
+
+//_____________________________________________________________________________
 AliRecInfoCuts::AliRecInfoCuts(const Char_t* name,const Char_t *title) : AliESDtrackCuts(name, title)
 , fMinTPCsignalN(0)
 , fMaxAbsTanTheta(0)
