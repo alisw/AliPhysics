@@ -33,7 +33,6 @@ xEBorders		0.0 0.2 0.4 0.6  1.0
 #KlongBorders            8    12 
 #xEBorders		0.6  1.0
 
-
 #--- JFG --- 
 #TriggPtBorders                2 3 4     8       15
 #AssocPtBorders          0.5 1 2 3 4   6 8
@@ -66,6 +65,7 @@ TriggerFiducialEtaCut 0.4 #
 
 #======= From Jiri's EMCAL analysis but still in AliJCORRAN.cxx, around line 300 
 eventBC -1 # select only events in BC modulo 4; -1 to disable
+JetSel	1
 
 Jet:PtBins              0 10 15 20 30 60 80 100 140 180 240 500
 Jet:PtPairBins          0 10 15 20 30 60 80 100 140 180 240 500
