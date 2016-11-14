@@ -71,9 +71,8 @@ AliAnalysisCuts(that)
 , fMinTPCSignal(that.fMinTPCSignal)
 , fMaxTPCSignal(that.fMaxTPCSignal)
 , fMinTrackLength(that.fMinTrackLength)
-, aTrackParticles(new TArrayI(kNParticles))
+, aTrackParticles(new TArrayI(*that.aTrackParticles))
 {
-  *aTrackParticles = *that.aTrackParticles;
 }
 
 //_____________________________________________________________________________
@@ -85,8 +84,10 @@ AliMCInfoCuts& AliMCInfoCuts::operator=(const AliMCInfoCuts& that)
   fMinTPCSignal = that.fMinTPCSignal;
   fMaxTPCSignal = that.fMaxTPCSignal;
   fMinTrackLength = that.fMinTrackLength;
-  if (!aTrackParticles) aTrackParticles = new TArrayI(1);
-  aTrackParticles = that.aTrackParticles;
+  if (!aTrackParticles)
+    aTrackParticles = new TArrayI(*that.aTrackParticles);
+  else
+    *aTrackParticles = *that.aTrackParticles;
   return *this;
 }
 
