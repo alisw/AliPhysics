@@ -1115,6 +1115,10 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
       fHistMassAntiHypertriton_Cent = new TH1F("fHistMassAntiHypertriton_LS_Cent","Invarian mass spectrum - Like Sign; inv mass #bar{d}+#bar{p}+#pi^{-} (GeV/c^{2});entries",500,2.9,3.4);
       fHistMassHypertriton_SemiCent = new TH1F("fHistMassHypertriton_LS_SemiCent","Invarian mass spectrum - Like Sign; inv mass d+p+#pi^{+} (GeV/c^{2});entries",500,2.9,3.4);
       fHistMassAntiHypertriton_SemiCent = new TH1F("fHistMassAntiHypertriton_LS_SemiCent","Invarian mass spectrum - Like Sign; inv mass #bar{d}+#bar{p}+#pi^{-} (GeV/c^{2});entries",500,2.9,3.4);
+      fHistMassHyp_Lifetime = new TH2F("fHistMassHyp_Lifetime_LS","Inv mass vs c#it{t}; mass (GeV/#it{c}^{2}); c#it{t} (cm)",500,2.9,3.4,80,0.,40.);
+      fHistMassHyp_Lifetime_M = new TH2F("fHistMassHyp_Lifetime_LS_M","Inv mass vs c#it{t}; d+p+#pi^{+} (GeV/#it{c}^{2}); c#it{t} (cm)",500,2.9,3.4,80,0.,40.);
+      fHistMassHyp_Lifetime_A = new TH2F("fHistMassHyp_Lifetime_LS_A","Inv mass vs c#it{t}; #bar{d} + #bar{p} + #pi^{-} (GeV/#it{c}^{2}); c#it{t} (cm)",500,2.9,3.4,80,0.,40.);
+
   }
 
   if(fMC){
