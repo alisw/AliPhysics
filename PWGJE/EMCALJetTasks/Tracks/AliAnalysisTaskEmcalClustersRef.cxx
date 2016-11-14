@@ -61,6 +61,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fCentralityRange(-999., 999.),
     fRequestCentrality(false),
     fEventCentrality(-1),
+    fCentralityEstimator("V0M"),
     fEnergyDefinition(kDefaultEnergy)
 {
 }
@@ -71,6 +72,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fCentralityRange(-999., 999.),
     fRequestCentrality(false),
     fEventCentrality(-1),
+    fCentralityEstimator("V0M"),
     fEnergyDefinition(kDefaultEnergy)
 {
 }
@@ -136,7 +138,7 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
       return false;
     }
     if(mult->IsEventSelected()) return false;
-    fEventCentrality = mult->GetEstimator("V0M")->GetPercentile();
+    fEventCentrality = mult->GetEstimator(fCentralityEstimator)->GetPercentile();
     AliDebugStream(1) << GetName() << ": Centrality " <<  fEventCentrality << std::endl;
     if(!fCentralityRange.IsInRange(fEventCentrality)){
       AliDebugStream(1) << GetName() << ": reject centrality: " << fEventCentrality << std::endl;

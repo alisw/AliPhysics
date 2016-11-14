@@ -171,7 +171,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
           AliVEvent::kEMCEJE, AliVEvent::kEMCEJE, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMC7
       };
       for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++)
-        emcalTriggers[iclass] &= (selectionstatus & kSelectTriggerBits[iclass]);
+        emcalTriggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
     }
 
     // Apply cut on the trigger string - this basically discriminates high- and low-threshold
