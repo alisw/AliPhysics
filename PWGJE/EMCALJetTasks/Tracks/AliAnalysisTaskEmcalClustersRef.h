@@ -79,6 +79,13 @@ public:
   void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min, max); fRequestCentrality = true; }
 
   /**
+   * Set the centrality estimator used to select centrality ranges. By
+   * default V0M will be used
+   * @param[in] centest Name of the centrality estimator
+   */
+  void SetUserCentralityEstimator(TString centest) { fCentralityEstimator = centest; }
+
+  /**
    * Preconfigure task so that it can be used in subwagons
    * @param[in] nClusters Name of the input cluster container
    * @param[in] suffix Suffix of the subwagon
@@ -197,6 +204,7 @@ protected:
   AliCutValueRange<double>            fCentralityRange;           ///< Selected centrality range
   Bool_t                              fRequestCentrality;         ///< Switch on request for centrality range
   Double_t                            fEventCentrality;           //!<! Current event centrality
+  TString                             fCentralityEstimator;       ///< Centrality estimator (default: V0M for PbPb)
 
   EnergyDefinition_t                  fEnergyDefinition;          ///< Energy definition used for a given cluster
 
