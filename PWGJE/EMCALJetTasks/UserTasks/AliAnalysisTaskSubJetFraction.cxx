@@ -747,7 +747,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
       if(TMath::Abs(HoleDistance)+fHoleWidth+fJetRadius>TMath::Pi()-fRecoilAngularWindow) return 0;
     }
     fhPtTriggerHadron->Fill(TriggerHadron->Pt()); //Needed for per trigger Normalisation
-    fhPhiTriggerHadronEventPlane->Fill(RelativePhi(TriggerHadron->Phi(),((AliVAODHeader*)InputEvent()->GetHeader())->GetEventplane()));
+    fhPhiTriggerHadronEventPlane->Fill(RelativePhi(TriggerHadron->Phi(),fEPV0)); //fEPV0 is the event plane from AliAnalysisTaskEmcal
   }
 
   
@@ -824,7 +824,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
 	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,4,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont1->GetParticleContainer()->GetArray())->Pt();
-	  fShapesVar[18]=RelativePhi(Jet1->Phi(),((AliVAODHeader*)InputEvent()->GetHeader())->GetEventplane());
+	  fShapesVar[18]=RelativePhi(Jet1->Phi(),fEPV0);
 	  if (fFullTree){
 	    fShapesVar[20]=fjNSubJettiness(Jet1,0,2,0,1,2);
 	    Reclusterer1 = Recluster(Jet1, 0, fSubJetRadius, fSubJetMinPt, fSubJetAlgorithm, "SubJetFinder_1");
@@ -841,7 +841,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    fShapesVar[13]=fjNSubJettiness(Jet4,3,2,0,1,3,fBeta_SD,fZCut);
 	    fShapesVar[15]=fjNSubJettiness(Jet4,3,2,0,1,4,fBeta_SD,fZCut);
 	    fShapesVar[17]=Jet4->GetLeadingTrack(JetCont4->GetParticleContainer()->GetArray())->Pt();
-	    fShapesVar[19]=RelativePhi(Jet4->Phi(),((AliVAODHeader*)InputEvent()->GetHeader())->GetEventplane());
+	    fShapesVar[19]=RelativePhi(Jet4->Phi(),fEPV0);
 	    if (fFullTree){
 	      fShapesVar[21]=fjNSubJettiness(Jet4,3,2,0,1,2);
 	      Reclusterer4=Recluster(Jet4, 3, fSubJetRadius, 0, fSubJetAlgorithm, "SubJetFinder_4");
