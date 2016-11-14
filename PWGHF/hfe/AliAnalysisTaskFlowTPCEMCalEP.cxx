@@ -36,6 +36,8 @@
 #include "AliAODHandler.h"
 #include "AliVEvent.h"
 #include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
 
 #include "AliAnalysisTaskFlowTPCEMCalEP.h"
 #include "TGeoGlobalMagField.h"
@@ -110,6 +112,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 ,fStack(0)
 ,fMCparticle(0)
 ,fMCarray(0)
+,fMCheader(0)
 ,fTracks_tender(0)
 ,fCaloClusters_tender(0)
 ,fOutputList(0)
@@ -216,6 +219,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 ,fStack(0)
 ,fMCparticle(0)
 ,fMCarray(0)
+,fMCheader(0)
 ,fTracks_tender(0)
 ,fCaloClusters_tender(0)
 ,fOutputList(0)
@@ -340,7 +344,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         return;
     }
     
-    fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     
     if(!fCuts){
         AliError("HFE cuts not available");
@@ -360,6 +363,19 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         if (!fTracks_tender || !fCaloClusters_tender) return;
     }
     
+    
+    fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+    fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    
+    Int_t NpureMC = -1;
+    
+    if (fMCheader){
+    TList *lh=fMCheader->GetCocktailHeaders();
+    if(lh){
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(0); //  0 for HIJING
+        NpureMC = gh->NProduced();
+    }
+    }
     
     
     Int_t ntracks = -999;
@@ -438,7 +454,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if (cent>=0  && cent<10) iCent=0;
     if (cent>=10 && cent<30) iCent=1;
     if (cent>=30 && cent<50) iCent=2;
-    if (cent<0 || cent>=50) return;
+    if (!fUseNewEP && (cent<0 || cent>=50)) return;
+    if (fUseNewEP && (cent<=30 || cent>=50)) return; // only calibration for 30-50% at the moment
     
     
     // Centrality flattening
@@ -465,7 +482,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     // Event plane
     Bool_t rejectToFlattenEP = kFALSE, weightToFlattenEP = kFALSE, rejectEventPlane = kFALSE;
     
-    Double_t evPlaneV0A = -9., evPlaneV0C = -9., evPlaneV0 = -9., evPlaneTPC = -9., evPlaneTPCneg = -9., evPlaneTPCpos = -9.;
+    Double_t evPlaneV0A = -999., evPlaneV0C = -999., evPlaneV0 = -999., evPlaneTPC = -999., evPlaneTPCneg = -999., evPlaneTPCpos = -999.;
     
     TList *qnlist = 0x0;
     
@@ -484,7 +501,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             return;
         }
         
-        
         qnlist = fFlowQnVectorMgr->GetQnVectorList();
         if (!qnlist) {
             AliWarning("qnlist not found!!");
@@ -500,21 +516,23 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         qnTPCneg  = GetQnVectorFromList(qnlist, "TPCNegEta", "latest", "plain");
         
         // new way to get the EP, test it later
-        // qnTPC = fFlowQnVectorMgr->GetDetectorQnVector("TPC");
+//         qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZERO", "latest", "raw");
+//         qnTPCpos = fFlowQnVectorMgr->GetDetectorQnVector("TPCPosEta", "latest", "plain");
+//         qnTPCneg = fFlowQnVectorMgr->GetDetectorQnVector("TPCNegEta", "latest", "plain");
+
         
         if (qnTPCpos != NULL)  evPlaneTPCpos = qnTPCpos->EventPlane(2);
         if (qnTPCneg != NULL)  evPlaneTPCneg = qnTPCneg->EventPlane(2);
         if (qnV0 != NULL)      evPlaneV0 = qnV0->EventPlane(2);
         
-        if(evPlaneTPCpos > TMath::Pi()) evPlaneTPCpos = evPlaneTPCpos - TMath::Pi();
-        if(evPlaneTPCneg > TMath::Pi()) evPlaneTPCneg = evPlaneTPCneg - TMath::Pi();
-        if(evPlaneV0 > TMath::Pi())     evPlaneV0 = evPlaneV0 - TMath::Pi();
-        
+        if(evPlaneTPCpos <0) evPlaneTPCpos += TMath::Pi();
+        if(evPlaneTPCneg <0) evPlaneTPCneg += TMath::Pi();
+        if(evPlaneV0 <0)     evPlaneV0 += TMath::Pi();
         
     }
     
     
-
+    
     
     if (!fUseNewEP){
         
@@ -553,7 +571,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             rejectEventPlane = RejectEventPlane(evPlaneV0,epBin);
             //if (iCent==0 && GetCollisionCandidates()!=AliVEvent::kEMCEGA && rejectEventPlane) return;
         }
-
+        
         
         // Event plane resolutions
         
@@ -619,7 +637,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     
     // centrality after flattening
     if (weightToFlattenCent) fCentAftFlt->Fill(cent,wEvent);
-
+    
     if (weightToFlattenEP){
         fEPres[0]->Fill(cent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCpos),wEvent);
         fEPres[1]->Fill(cent,GetCos2DeltaPhi(evPlaneV0,evPlaneTPCneg),wEvent);
@@ -635,6 +653,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     
     // Selection of pi0 and eta in MC to compute the weight
     
+    Bool_t isPrimary = kFALSE, isFromLMdecay = kTRUE, isFromHFdecay=kTRUE;
+    
     if(fMCarray){
         Int_t nParticles = fMCarray->GetEntries();
         for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
@@ -642,17 +662,25 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             int fPDG = particle->GetPdgCode();
             double pTMC = particle->Pt();
             
+            Bool_t iEnhance = kFALSE;
+            if(iParticle>=NpureMC)iEnhance = kTRUE;
+            
             Double_t etaMC = particle->Eta();
             if (TMath::Abs(etaMC)>1.2)continue;
             
-            Bool_t isMotherPrimary = IsPrimary(particle);
-            Bool_t isFromLMdecay = IsFromLMdecay(particle);
-            Bool_t isFromHFdecay = IsFromHFdecay(particle);
+            isPrimary = IsPrimary(particle);
+            isFromLMdecay = IsFromLMdecay(particle);
+            isFromHFdecay = IsFromHFdecay(particle);
             
-            if (isMotherPrimary || (!isFromHFdecay && !isFromLMdecay)){
-                if(fPDG==111) fPi0Pt[iCent]->Fill(pTMC); //pi0
-                if(fPDG==221) fEtaPt[iCent]->Fill(pTMC); //eta
+            if (isPrimary){
+                if(fPDG==111) fPi0Pt[iCent]->Fill(iEnhance,pTMC); //pi0
+                if(fPDG==221) fEtaPt[iCent]->Fill(iEnhance,pTMC); //eta
             }
+            if (!isFromHFdecay && !isFromLMdecay){
+                if(fPDG==111) fPi0Pt[iCent]->Fill(iEnhance+2,pTMC); //pi0
+                if(fPDG==221) fEtaPt[iCent]->Fill(iEnhance+2,pTMC); //eta
+            }
+            
         }
     }//MC
     
@@ -713,7 +741,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         
         
         if (track->Pt()<0.5) continue;
-
+        
         Bool_t kinkmotherpass = kTRUE;
         for(Int_t kinkmother = 0; kinkmother < nMotherKink; kinkmother++) {
             if(track->GetID() == listofmotherkink[kinkmother]) {
@@ -817,10 +845,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         Int_t partPDG = -99;
         Double_t partPt = -99.;
         Bool_t MChijing;
-
-        SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0,EovP,fTPCnSigma,evPlaneV0);
         
-
         if (pt<3){
             if (fITSnSigma<-2 || fITSnSigma>2) continue;
             if (fTOFnSigma<-2 || fTOFnSigma>2) continue;
@@ -836,11 +861,15 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             }
         }
         
-        if (pt<3 || (pt>=3 && fTPCnSigma>=-1 && fTPCnSigma<3 && EovP>0.8 && EovP<1.2))
-            fInclElec[iCent]->Fill(pt,0.);
-        
-        Double_t corr[7]={static_cast<Double_t>(iCent),pt,fTPCnSigma,EovP,dphi,cosdphi,0.};
-        fCorr->Fill(corr,wEvent);
+        if(!fMCarray){
+            SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0,EovP,fTPCnSigma,evPlaneV0);
+            
+            if (pt<3 || (pt>=3 && fTPCnSigma>=-1 && fTPCnSigma<3 && EovP>0.8 && EovP<1.2))
+                fInclElec[iCent]->Fill(pt,0.);
+            
+            Double_t corr[7]={static_cast<Double_t>(iCent),pt,fTPCnSigma,EovP,dphi,cosdphi,0.};
+            fCorr->Fill(corr,wEvent);
+        }
         
         // MC
         if(fMCarray){
@@ -851,9 +880,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
                     partPDG = fMCparticle->GetPdgCode();
                     partPt = fMCparticle->Pt();
                     
-                    MChijing = fMC->IsFromBGEvent(TMath::Abs(label));
-                    Int_t iHijing = 1;
-                    if(!MChijing) iHijing = 0; // 0 if enhanced sample
+                    Bool_t iEnhance = kFALSE;
+                    
+                    if(label>=NpureMC)iEnhance = kTRUE;
                     
                     GetWeightAndDecay(fMCparticle,iCent,iDecay,MCweight);
                     
@@ -867,7 +896,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
                     if (pt<3 || (pt>=3 && fTPCnSigma>=-1 && fTPCnSigma<3 && EovP>0.8 && EovP<1.2))
                         fInclElec[iCent]->Fill(pt,(Double_t)iDecay);
                     
-                    SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iHijing,iDecay,EovP,fTPCnSigma,evPlaneV0);
+                    SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iEnhance,iDecay,EovP,fTPCnSigma,evPlaneV0);
                     
                 }// end particle
             }// end label
@@ -968,7 +997,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
     fCorr->Sumw2();
     fOutputList->Add(fCorr);
     
-    //iCent,pt,mass,fFlagLS,iHijing,iDecay,EovP,fTPCnSigma,dphiPhotElec
+    //iCent,pt,mass,fFlagLS,iEnhance,iDecay,EovP,fTPCnSigma,dphiPhotElec
     Int_t binsv3[9]=   {3,20,30 ,2,2,7,40,40,4};
     Double_t xminv3[9]={0,0 ,0  ,0,0,0,0 ,-5,0};
     Double_t xmaxv3[9]={3,10,0.3,2,2,7,2 , 5,TMath::Pi()};
@@ -1037,11 +1066,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
         fOpeningAngleULS[i]->Sumw2();
         fOutputList->Add(fOpeningAngleULS[i]);
         
-        fPi0Pt[i] = new TH1F(Form("fPi0Pt%d",i), "Pi0 weight",100,0,50);
+        fPi0Pt[i] = new TH2F(Form("fPi0Pt%d",i), "Pi0 weight",4,0,4,100,0,50);
         fPi0Pt[i]->Sumw2();
         fOutputList->Add(fPi0Pt[i]);
         
-        fEtaPt[i] = new TH1F(Form("fEtaPt%d",i), "Eta weight",100,0,50);
+        fEtaPt[i] = new TH2F(Form("fEtaPt%d",i), "Eta weight",4,0,4,100,0,50);
         fEtaPt[i]->Sumw2();
         fOutputList->Add(fEtaPt[i]);
         
@@ -1527,7 +1556,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPrimary(AliAODMCParticle *particle)
 }
 //_________________________________________
 void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec,
-                                                           Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0)
+                                                           Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iEnhance, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0)
 {
     //Identify non-heavy flavour electrons using Invariant mass method
     
@@ -1641,7 +1670,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
         
         recg.GetMass(mass,width);
         
-        Double_t elecMC[10]={(Double_t)iCent,pt,mass,(Double_t)fFlagLS,(Double_t)iHijing,(Double_t)iDecay, EovP, fTPCnSigma,dphiPhotElec};
+        Double_t elecMC[10]={(Double_t)iCent,pt,mass,(Double_t)fFlagLS,(Double_t)iEnhance,(Double_t)iDecay, EovP, fTPCnSigma,dphiPhotElec};
         fElecMC->Fill(elecMC);
         
         if(fFlagLS) fInvmassLS[iCent]->Fill(mass,pt);

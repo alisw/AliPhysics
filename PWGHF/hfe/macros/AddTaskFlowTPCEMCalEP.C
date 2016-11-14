@@ -11,10 +11,10 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
         return NULL;
     }
     TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-//    if (type=="AOD"){
-//        ::Error("AddTaskFlowTPCEMCalEP", "The tasks exits because AODs are in input");
-//        return NULL;
-//    }
+    //    if (type=="AOD"){
+    //        ::Error("AddTaskFlowTPCEMCalEP", "The tasks exits because AODs are in input");
+    //        return NULL;
+    //    }
     Bool_t MCthere=kFALSE;
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
     if(!mcH){
@@ -23,29 +23,31 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
         MCthere=kTRUE;
     }
     
-    //Event plane task
-    AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
-    eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
+    if (!UseNewEP){
+        //Event plane task
+        AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
+        eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA | AliVEvent::kEMCEJE);
+        
+        eventplaneTask->SetTrackType("TPC");
+        eventplaneTask->SetUsePtWeight();
+        eventplaneTask->SetUsePhiWeight();
+        eventplaneTask->SetSaveTrackContribution();
+        
+        mgr->AddTask(eventplaneTask);
+        
+        TString containerName0 = mgr->GetCommonFileName();
+        containerName0 += ":PWGHF_hfeCalEventPlane";
+        containerName0 += ID;
+        
+        TString name0 = "EPStat";
+        name0 += ID;
+        
+        AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
+        AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(name0.Data(),TList::Class(), AliAnalysisManager::kOutputContainer,containerName0.Data());
+        mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
+        mgr->ConnectOutput(eventplaneTask,1,coutput1);
+    }
     
-    eventplaneTask->SetTrackType("TPC");
-    eventplaneTask->SetUsePtWeight();
-    eventplaneTask->SetUsePhiWeight();
-    eventplaneTask->SetSaveTrackContribution();
-    
-    mgr->AddTask(eventplaneTask);
-    
-    TString containerName0 = mgr->GetCommonFileName();
-    containerName0 += ":PWGHF_hfeCalEventPlane";
-    containerName0 += ID;
-    
-    TString name0 = "EPStat";
-    name0 += ID;
-    
-    AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(name0.Data(),TList::Class(), AliAnalysisManager::kOutputContainer,containerName0.Data());
-    mgr->ConnectInput(eventplaneTask, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(eventplaneTask,1,coutput1);
-
     Bool_t Is2015 = kTRUE;
     
     if(Is2015){
@@ -67,7 +69,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t AssPtCut, Int_t AssTPCnCut, Bool
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
         AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(name1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
         mgr->ConnectInput(taskMB, 0, cinput);
-//        mgr->ConnectInput(taskMB, 1, corrTask);
+        //        mgr->ConnectInput(taskMB, 1, corrTask);
         mgr->ConnectOutput(taskMB, 1, coutput1);
     }
     
