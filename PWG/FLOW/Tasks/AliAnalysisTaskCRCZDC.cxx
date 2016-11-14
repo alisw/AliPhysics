@@ -484,18 +484,18 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fSpectraMCList->SetName("Spectra");
     fOutput->Add(fSpectraMCList);
     
-    Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,4.5,5.,6.,7.,8.};
+    Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,9.,20.};
     for(Int_t j=0; j<2; j++) {
       for(Int_t c=0; c<10; c++) {
-        fPtSpecGen[j][c] = new TH1F(Form("fPtSpecGen[%d][%d]",j,c), Form("fPtSpecGen[%d][%d]",j,c), 24, xmin);
+        fPtSpecGen[j][c] = new TH1F(Form("fPtSpecGen[%d][%d]",j,c), Form("fPtSpecGen[%d][%d]",j,c), 23, xmin);
         fSpectraMCList->Add(fPtSpecGen[j][c]);
-        fPtSpecFB32[j][c] = new TH1F(Form("fPtSpecFB32[%d][%d]",j,c), Form("fPtSpecFB32[%d][%d]",j,c), 24, xmin);
+        fPtSpecFB32[j][c] = new TH1F(Form("fPtSpecFB32[%d][%d]",j,c), Form("fPtSpecFB32[%d][%d]",j,c), 23, xmin);
         fSpectraMCList->Add(fPtSpecFB32[j][c]);
-        fPtSpecFB96[j][c] = new TH1F(Form("fPtSpecFB96[%d][%d]",j,c), Form("fPtSpecFB96[%d][%d]",j,c), 24, xmin);
+        fPtSpecFB96[j][c] = new TH1F(Form("fPtSpecFB96[%d][%d]",j,c), Form("fPtSpecFB96[%d][%d]",j,c), 23, xmin);
         fSpectraMCList->Add(fPtSpecFB96[j][c]);
-        fPtSpecFB128[j][c] = new TH1F(Form("fPtSpecFB128[%d][%d]",j,c), Form("fPtSpecFB128[%d][%d]",j,c), 24, xmin);
+        fPtSpecFB128[j][c] = new TH1F(Form("fPtSpecFB128[%d][%d]",j,c), Form("fPtSpecFB128[%d][%d]",j,c), 23, xmin);
         fSpectraMCList->Add(fPtSpecFB128[j][c]);
-        fPtSpecFB768[j][c] = new TH1F(Form("fPtSpecFB768[%d][%d]",j,c), Form("fPtSpecFB768[%d][%d]",j,c), 24, xmin);
+        fPtSpecFB768[j][c] = new TH1F(Form("fPtSpecFB768[%d][%d]",j,c), Form("fPtSpecFB768[%d][%d]",j,c), 23, xmin);
         fSpectraMCList->Add(fPtSpecFB768[j][c]);
       }
     }
@@ -663,6 +663,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     Float_t centr=300, centrCL1=300;
     if(fDataSet!=k2015) {
       centr = fCutsEvent->GetCentrality(InputEvent(),McEvent);
+      centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
     } else {
       fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
       if(!fMultSelection) {
@@ -679,6 +680,51 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
       if(fRejectPileUp) {
         if(fDataSet!=k2015) {
+          // check anyway pileup
+          if (plpMV(aod)) {
+            fPileUpCount->Fill(0.5);
+          }
+          
+          Short_t isPileup = aod->IsPileupFromSPD(3);
+          if (isPileup != 0) {
+            fPileUpCount->Fill(1.5);
+          }
+          
+          if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
+            fPileUpCount->Fill(2.5);
+          }
+          
+          if (aod->IsIncompleteDAQ())  {
+            fPileUpCount->Fill(3.5);
+          }
+          
+          if(fabs(centr-centrCL1)>7.5)  {
+            fPileUpCount->Fill(4.5);
+          }
+          
+          // check vertex consistency
+          const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
+          const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
+          
+          if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
+            fPileUpCount->Fill(5.5);
+          }
+          
+          double covTrc[6], covSPD[6];
+          vtTrc->GetCovarianceMatrix(covTrc);
+          vtSPD->GetCovarianceMatrix(covSPD);
+          
+          double dz = vtTrc->GetZ() - vtSPD->GetZ();
+          
+          double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+          double errTrc = TMath::Sqrt(covTrc[5]);
+          double nsigTot = dz/errTot;
+          double nsigTrc = dz/errTrc;
+          
+          if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
+            fPileUpCount->Fill(6.5);
+          }
+          
           if (fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
         } else {
           // pileup from AliMultSelection
@@ -838,7 +884,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Int_t lp = TMath::Abs(track->GetLabel());
       
       // general kinematic & quality cuts
-      if (track->Pt() < .2 || track->Pt() > 8. || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70)  continue;
+      if (track->Pt() < .2 || track->Pt() > 20. || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70)  continue;
       
       //      Double_t DCAxy = track->DCA();
       //      Double_t DCAz = track->ZAtDCA();
@@ -871,9 +917,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         if (track->TestFilterBit(768)) fPtSpecFB768[1][CenBin]->Fill(track->Pt());
       }
       
+      fCenDis->Fill(centr);
     }
     
-    // generated (physical primaries)xw
+    // generated (physical primaries)
     
     for(Int_t jTracks = 0; jTracks<fStack->GetEntriesFast(); jTracks++) {
       AliAODMCParticle *MCpart = (AliAODMCParticle*)fStack->At(jTracks);
@@ -882,7 +929,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         continue;
       }
       // kinematic cuts
-      if ( MCpart->Pt() < .2 || MCpart->Pt() > 8. || TMath::Abs(MCpart->Eta()) > .8 ) continue;
+      if ( MCpart->Pt() < .2 || MCpart->Pt() > 20. || TMath::Abs(MCpart->Eta()) > .8 ) continue;
       // select charged primaries
       if ( MCpart->Charge() == 0. || !MCpart->IsPhysicalPrimary()) continue;
       

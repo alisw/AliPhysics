@@ -356,6 +356,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
   if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
+  if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);
+  if(fInteractionRate.EqualTo("neg"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kNeg);
   fQC->SetCalculateCRC(fCalculateCRC);
   fQC->SetCalculateCRCPt(fCalculateCRCPt);
   fQC->SetCalculateCME(fCalculateCME);
@@ -531,6 +533,8 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
   if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
+  if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);
+  if(fInteractionRate.EqualTo("neg"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kNeg);
   fQC->SetRunList();
   
   if(fListHistos) {
