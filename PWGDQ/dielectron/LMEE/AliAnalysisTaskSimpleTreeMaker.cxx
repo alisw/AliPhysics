@@ -68,6 +68,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
   fPionPIDcutTPC(kFALSE),
   isIonColl(kFALSE),
   fIsMC(kTRUE),
+  isGRIDanalysis(kTRUE),
   gridPID(-1)
 {
 
@@ -101,6 +102,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
   fPionPIDcutTPC(kFALSE),
   isIonColl(kFALSE),
   fIsMC(kTRUE),
+  isGRIDanalysis(kTRUE),
   gridPID(-1)
 {
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
@@ -141,9 +143,14 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects() {
   fTree   = (TTree*)fStream->GetTree();
 
   //Get grid PID
-  const char* gridIDchar = gSystem->Getenv("ALIEN_PROC_ID");
-  std::string str(gridIDchar);
-  SetGridPID(str);
+  if( isGRIDanalysis ){
+    const char* gridIDchar = gSystem->Getenv("ALIEN_PROC_ID");
+    std::string str(gridIDchar);
+    SetGridPID(str);
+  }
+  else{ 
+    gridPID = -1;
+  }
    
   fQAhist = new TH1F("h1", "Event and track QA", 6, 0, 1);
   PostData(1, fTree);
@@ -326,42 +333,77 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *) {
     }
 
     //Stream values into tree
-    (*fStream)    << "tracks" <<
-    "pt="         << pt << 
-    "eta="        << eta << 
-    "phi="        << phi << 
-    "EsigITS="    << EnSigmaITS <<
-    "EsigTPC="    << EnSigmaTPC <<
-    "EsigTOF="    << EnSigmaTOF <<
-    "PsigITS="    << PnSigmaITS <<
-    "PsigTPC="    << PnSigmaTPC <<
-    "PsigTOF="    << PnSigmaTOF <<
-    "KsigITS="    << KnSigmaITS <<
-    "KsigTPC="    << KnSigmaTPC <<
-    "KsigTOF="    << KnSigmaTOF <<
-    "charge="     << charge <<
-    "ITSsignal="  << ITSsignal <<
-    "TPCsignal="  << TPCsignal << 
-    "TOFsignal="  << TOFsignal <<
-    "vertexX="    << primaryVertex[0] <<
-    "vertexY="    << primaryVertex[1] <<
-    "vertexZ="    << primaryVertex[2] <<
-    "nITS="       << nITS <<
-    "nITSshared=" << nITS_shared << 
-    "DCAxy="      << DCAxy <<
-    "DCAz="       << DCAz <<
-    "chi2ITS="    << chi2ITS <<
-    "chi2TPC="    << chi2TPC <<
-    "goldenChi2=" << goldenChi2 <<
-    "mcEta="      << mcEta <<
-    "mcPhi="      << mcPhi <<
-    "mcPt="       << mcPt <<
-    "pdg="        << iPdg <<
-    "pdgMother="  << iPdgMother <<
-    "runNumber="  << runNumber << 
-    "eventNum="   << eventNum <<
-    "gridPID="    << gridPID <<
-    "\n";
+    if( fIsMC ){
+      (*fStream)    << "tracks" <<
+      "pt="         << pt << 
+      "eta="        << eta << 
+      "phi="        << phi << 
+      "EsigITS="    << EnSigmaITS <<
+      "EsigTPC="    << EnSigmaTPC <<
+      "EsigTOF="    << EnSigmaTOF <<
+      "PsigITS="    << PnSigmaITS <<
+      "PsigTPC="    << PnSigmaTPC <<
+      "PsigTOF="    << PnSigmaTOF <<
+      "KsigITS="    << KnSigmaITS <<
+      "KsigTPC="    << KnSigmaTPC <<
+      "KsigTOF="    << KnSigmaTOF <<
+      "charge="     << charge <<
+      "ITSsignal="  << ITSsignal <<
+      "TPCsignal="  << TPCsignal << 
+      "TOFsignal="  << TOFsignal <<
+      "vertexX="    << primaryVertex[0] <<
+      "vertexY="    << primaryVertex[1] <<
+      "vertexZ="    << primaryVertex[2] <<
+      "nITS="       << nITS <<
+      "nITSshared=" << nITS_shared << 
+      "DCAxy="      << DCAxy <<
+      "DCAz="       << DCAz <<
+      "chi2ITS="    << chi2ITS <<
+      "chi2TPC="    << chi2TPC <<
+      "goldenChi2=" << goldenChi2 <<
+      "mcEta="      << mcEta <<
+      "mcPhi="      << mcPhi <<
+      "mcPt="       << mcPt <<
+      "pdg="        << iPdg <<
+      "pdgMother="  << iPdgMother <<
+      "runNumber="  << runNumber << 
+      "eventNum="   << eventNum <<
+      "gridPID="    << gridPID <<
+      "\n";
+    }
+    else{
+      (*fStream)    << "tracks" <<
+      "pt="         << pt << 
+      "eta="        << eta << 
+      "phi="        << phi << 
+      "EsigITS="    << EnSigmaITS <<
+      "EsigTPC="    << EnSigmaTPC <<
+      "EsigTOF="    << EnSigmaTOF <<
+      "PsigITS="    << PnSigmaITS <<
+      "PsigTPC="    << PnSigmaTPC <<
+      "PsigTOF="    << PnSigmaTOF <<
+      "KsigITS="    << KnSigmaITS <<
+      "KsigTPC="    << KnSigmaTPC <<
+      "KsigTOF="    << KnSigmaTOF <<
+      "charge="     << charge <<
+      "ITSsignal="  << ITSsignal <<
+      "TPCsignal="  << TPCsignal << 
+      "TOFsignal="  << TOFsignal <<
+      "vertexX="    << primaryVertex[0] <<
+      "vertexY="    << primaryVertex[1] <<
+      "vertexZ="    << primaryVertex[2] <<
+      "nITS="       << nITS <<
+      "nITSshared=" << nITS_shared << 
+      "DCAxy="      << DCAxy <<
+      "DCAz="       << DCAz <<
+      "chi2ITS="    << chi2ITS <<
+      "chi2TPC="    << chi2TPC <<
+      "goldenChi2=" << goldenChi2 <<
+      "runNumber="  << runNumber << 
+      "eventNum="   << eventNum <<
+      "gridPID="    << gridPID <<
+      "\n";
+    }
   }
 
 }
