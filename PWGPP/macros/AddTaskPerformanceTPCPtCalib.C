@@ -80,7 +80,7 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kFALSE, Bool_
   //
   // Create TPC-ESD track reconstruction cuts
   //
-  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts(); 
+  AliRecInfoCuts *pRecInfoCuts = new AliRecInfoCuts("pRecInfoCuts"); 
   if(pRecInfoCuts) {
     pRecInfoCuts->SetMaxDCAToVertexXY(3.0);
     pRecInfoCuts->SetMaxDCAToVertexZ(3.0);
@@ -95,7 +95,7 @@ AliPerformanceTask* AddTaskPerformanceTPCPtCalib(Bool_t bUseMCInfo=kFALSE, Bool_
   //
   // Create TPC-MC track reconstruction cuts
   //
-  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
+  AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts("pMCInfoCuts");
   if(pMCInfoCuts) {
     pMCInfoCuts->SetMinTrackLength(70);
   } 

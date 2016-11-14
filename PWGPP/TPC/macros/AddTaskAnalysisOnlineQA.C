@@ -20,7 +20,7 @@ AliAnalysisTask* AddTaskAnalysisOnlineQA()
     AliPerformanceTask* task = new AliPerformanceTask("PerformanceQA");
     mgr->AddTask(task);
 
-    AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts();
+    AliRecInfoCuts *pRecInfoCutsTPC = new AliRecInfoCuts("pRecInfoCutsTPC");
     pRecInfoCutsTPC->SetMaxDCAToVertexXY(2.4);
     pRecInfoCutsTPC->SetMaxDCAToVertexZ(3.0);
     pRecInfoCutsTPC->SetRequireSigmaToVertex(kFALSE);
@@ -31,7 +31,7 @@ AliAnalysisTask* AddTaskAnalysisOnlineQA()
     pRecInfoCutsTPC->SetDCAToVertex2D(kFALSE);
     pRecInfoCutsTPC->SetHistogramsOn(kFALSE);
 
-    AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts();
+    AliMCInfoCuts  *pMCInfoCuts = new AliMCInfoCuts("pMCInfoCuts");
     if(pMCInfoCuts) {
         pMCInfoCuts->SetMinTrackLength(70);
     }
