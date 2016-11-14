@@ -3,7 +3,7 @@
 * @Date:   2016-10-21, 11:52:17
 * @Email:  pdillens@cern.ch
 * @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-12, 22:22:02
+* @Last modified time: 2016-11-14, 15:56:20
 */
 
 
@@ -111,6 +111,8 @@ AliDielectron::AliDielectron() :
   TNamed("AliDielectron","AliDielectron"),
   fCutQA(kFALSE),
   fQAmonitor(0x0),
+  fPostPIDCntrdCorrArr(0x0),
+  fPostPIDWdthCorrArr(0x0),
   fPostPIDCntrdCorr(0x0),
   fPostPIDWdthCorr(0x0),
   fPostPIDCntrdCorrITS(0x0),
@@ -180,6 +182,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   TNamed(name,title),
   fCutQA(kFALSE),
   fQAmonitor(0x0),
+  fPostPIDCntrdCorrArr(0x0),
+  fPostPIDWdthCorrArr(0x0),
   fPostPIDCntrdCorr(0x0),
   fPostPIDWdthCorr(0x0),
   fPostPIDCntrdCorrITS(0x0),
@@ -250,6 +254,8 @@ AliDielectron::~AliDielectron()
   // Default destructor
   //
   if (fQAmonitor) delete fQAmonitor;
+  if (fPostPIDCntrdCorrArr) delete fPostPIDCntrdCorrArr;
+  if (fPostPIDWdthCorrArr) delete fPostPIDWdthCorrArr;
   if (fPostPIDCntrdCorr) delete fPostPIDCntrdCorr;
   if (fPostPIDWdthCorr) delete fPostPIDWdthCorr;
   if (fPostPIDCntrdCorrITS) delete fPostPIDCntrdCorrITS;
@@ -380,6 +386,21 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
   }
 
   // set pid correction function to var manager
+
+  // from an array of objects for run-wise differences
+  if(fPostPIDCntrdCorrArr){
+    TString key;
+    key.Form("Centroid_%d",ev1->GetRunNumber());
+    TH1* hCent = (TH1*) fPostPIDCntrdCorrArr->FindObject(key.Data());
+    AliDielectronPID::SetCentroidCorrFunction((TH1*) hCent->Clone());
+  }
+  if(fPostPIDWdthCorrArr){
+    TString key;
+    key.Form("Width_%d",ev1->GetRunNumber());
+    TH1* hWidth = (TH1*) fPostPIDWdthCorrArr->FindObject(key.Data());
+    AliDielectronPID::SetWidthCorrFunction((TH1*) hWidth->Clone());
+  }
+  // from one object for the full period
   if(fPostPIDCntrdCorr)     AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
   if(fPostPIDWdthCorr)      AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
   if(fPostPIDCntrdCorrITS)  AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
@@ -1671,6 +1692,109 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
 
   } //loop: MCsignals
 
+}
+
+//______________________________________________
+void AliDielectron::SetCentroidCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  fPostPIDCntrdCorrArr = new TObjArray();
+  Int_t nEntries = arrFun->GetEntriesFast();
+  Bool_t bHisto = kFALSE; // bool to check if histos or functions are used
+  if((arrFun->At(1))->IsA() == TH1::Class()) bHisto = kTRUE;
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  TString key;
+  TH1 *histo;
+
+  for (Int_t i = 0; i < nEntries; i++) {
+    key = arrFun->At(i)->GetName();
+    if(!key.IsDigit()){
+      AliFatal("The stored functions in the PID correction array have a wrong naming scheme - please store them with the according run number as the name!");
+      return;
+    }
+    key.Form("Centroid_%d",key.Atoi());
+    // if TF1s are stored in the array
+    if(!bHisto){
+      TF1 *fun = (TF1*) arrFun->At(i);
+      AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      fPostPIDCntrdCorrArr->Add((TH1*)fun->GetHistogram()->Clone(key.Data()));
+      histo = (TH1*) fPostPIDCntrdCorrArr->At(i);
+      histo->GetListOfFunctions()->AddAt(fun, 0);
+    }
+    // if TH1s are stored in the array
+    if(bHisto){
+      TH1 *fun = (TH1*) arrFun->At(i);
+      AliDielectronHistos::StoreVariables(fun, valType);
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      fPostPIDCntrdCorrArr->Add((TH1*)fun->Clone(key.Data()));
+      histo = (TH1*) fPostPIDCntrdCorrArr->At(i);
+    }
+    if(histo){
+      // check for corrections and add their variables to the fill map
+      printf("POST TPC PID CORRECTION added for centroids:  ");
+      switch(histo->GetDimension()) {
+      case 3: printf(" %s, ",histo->GetZaxis()->GetName());
+      case 2: printf(" %s, ",histo->GetYaxis()->GetName());
+      case 1: printf(" %s ",histo->GetXaxis()->GetName());
+      }
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+
+//______________________________________________
+void AliDielectron::SetWidthCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  fPostPIDWdthCorrArr = new TObjArray();
+  Int_t nEntries = arrFun->GetEntriesFast();
+  Bool_t bHisto = kFALSE; // bool to check if histos or functions are used
+  if((arrFun->At(1))->IsA() == TH1::Class()) bHisto = kTRUE;
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  TString key;
+  TH1 *histo;
+  for (Int_t i = 0; i < nEntries; i++) {
+    key = arrFun->At(i)->GetName();
+    if(!key.IsDigit()){
+      AliFatal("The stored functions in the PID correction array have a wrong naming scheme - please store them with the according run number as the name!");
+      return;
+    }
+    key.Form("Width_%d",key.Atoi());
+    // if TF1s are stored in the array
+    if(!bHisto){
+      TF1 *fun = (TF1*) arrFun->At(i);
+      AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      fPostPIDWdthCorrArr->Add((TH1*)fun->GetHistogram()->Clone(key.Data()));
+      TH1 *histo = (TH1*) fPostPIDWdthCorrArr->At(i);
+      histo->GetListOfFunctions()->AddAt(fun, 0);
+    }
+    // if TH1s are stored in the array
+    if(bHisto){
+      TH1 *fun = (TH1*) arrFun->At(i);
+      AliDielectronHistos::StoreVariables(fun, valType);
+      // clone temporare histogram, otherwise it will not be streamed to file!
+      fPostPIDWdthCorrArr->Add((TH1*)fun->Clone(key.Data()));
+      TH1 *histo = (TH1*) fPostPIDWdthCorrArr->At(i);
+    }
+    if(histo){
+      // check for corrections and add their variables to the fill map
+      printf("POST TPC PID CORRECTION added for centroids:  ");
+      switch(histo->GetDimension()) {
+      case 3: printf(" %s, ",histo->GetZaxis()->GetName());
+      case 2: printf(" %s, ",histo->GetYaxis()->GetName());
+      case 1: printf(" %s ",histo->GetXaxis()->GetName());
+      }
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
 }
 
 //______________________________________________
