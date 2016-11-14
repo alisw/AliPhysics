@@ -56,6 +56,7 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		void SetPtHardMin( double pthardmin ){fPtHardMin = pthardmin; };
 		void SetPtHardMax( double pthardmax ){fPtHardMax = pthardmax; };
 		void SetJetTaskName(TString name){ fJetTaskName=name; }
+		void SetJetSel(int iS){ fJetSel=iS; }
 
 	private:
 		TDirectory           *fOutput;     // Output
@@ -64,7 +65,7 @@ class AliJHSInterplayTask : public AliAnalysisTaskSE {
 		AliJFFlucAnalysis *fFFlucAna;
 		AliJJetTask           * fJetTask;
 		TString fJetTaskName;
-
+		int fJetSel;
 		AliJCard * fCard;
 		AliJHistos *fHistos;
 
