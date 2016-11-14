@@ -31,8 +31,7 @@
 #include "AliHLTConfigurationHandler.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"
-//#include "AliGRPManager.h"
-//#include "AliGRPObject.h"
+#include "AliHLTBaseVGRPAccess.h"
 #include "TList.h"
 #include "AliHLTErrorGuard.h"
 
@@ -125,17 +124,7 @@ int AliHLTTask::CreateComponent(AliHLTConfiguration* pConfiguration, AliHLTCompo
 	// currently just set to NULL.
 	iResult=pCH->CreateComponent(pConf->GetComponentID(), pComponent);
 	if (pComponent && iResult>=0) {
-	  static bool grpInitialized = false;
-	  //static const AliGRPObject *grpObj = NULL;
-	  if (grpInitialized == false)
-	  {
-	    /*static AliGRPManager grp;
-	    grp.ReadGRPEntry();
-	    const AliGRPObject *grpObjTmp = grp.GetGRPData();
-	    grpObj = grpObjTmp;*/
-	    grpInitialized = true;
-	  }
-	  //if (grpObj) pComponent->SetTimeStamp(grpObj->GetTimeStart());
+	  pComponent->SetTimeStamp(AliHLTBaseVGRPAccess::GetStartTime());
 	
 	  TString description;
 	  description.Form("chainid=%s", GetName());
@@ -173,17 +162,7 @@ int AliHLTTask::Deinit()
   fpComponent=NULL;
   if (pComponent) {
     //HLTDebug("delete component %s (%p)", pComponent->GetComponentID(), pComponent); 
-    static bool grpInitialized = false;
-    //static const AliGRPObject *grpObj = NULL;
-    if (grpInitialized == false)
-    {
-      /*static AliGRPManager grp;
-      grp.ReadGRPEntry();
-      const AliGRPObject *grpObjTmp = grp.GetGRPData();
-      grpObj = grpObjTmp;*/
-      grpInitialized = true;
-    }
-    //if (grpObj) pComponent->SetTimeStamp(grpObj->GetTimeEnd());
+    pComponent->SetTimeStamp(AliHLTBaseVGRPAccess::GetEndTime());
 
     pComponent->Deinit();
     delete pComponent;

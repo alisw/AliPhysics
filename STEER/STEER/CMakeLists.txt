@@ -74,6 +74,7 @@ set(SRCS
     AliHelix.cxx
     AliHit.cxx
     AliHitMap.cxx
+    AliHLTBaseGRPAccess.cxx
     AliHLTSimulation.cxx
     AliHLTVEventInputHandler.cxx
     AliKink.cxx

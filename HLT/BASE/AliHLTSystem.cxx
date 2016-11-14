@@ -39,8 +39,7 @@
 #include "AliHLTControlTask.h"
 #include "AliHLTDataBuffer.h"
 #include "AliHLTMisc.h"
-//#include "AliGRPManager.h"
-//#include "AliGRPObject.h"
+#include "AliHLTBaseVGRPAccess.h"
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TStopwatch.h>
@@ -708,25 +707,15 @@ int AliHLTSystem::SendControlEvent(AliHLTComponentDataType dt)
       AliHLTTask* pTask=(AliHLTTask*)obj;
       AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
       AliHLTUInt32_t timestamp = 0;
-      static bool grpInitialized = false;
-      //static const AliGRPObject *grpObj = NULL;
-      if (grpInitialized == false)
-      {
-        /*static AliGRPManager grp;
-        grp.ReadGRPEntry();
-        const AliGRPObject *grpObjTmp = grp.GetGRPData();
-        grpObj = grpObjTmp;*/
-        grpInitialized = true;
-      }
       if (dt==kAliHLTDataTypeSOR)
       {
         eventType=gkAliEventTypeStartOfRun;
-        //if (grpObj) timestamp = grpObj->GetTimeStart();
+        timestamp = AliHLTBaseVGRPAccess::GetStartTime();
       }
       else if (dt==kAliHLTDataTypeEOR)
       {
         eventType=gkAliEventTypeEndOfRun;
-        //if (grpObj) timestamp = grpObj->GetTimeEnd();
+        timestamp = AliHLTBaseVGRPAccess::GetEndTime();
       }
       else HLTWarning("unknown control event %s", AliHLTComponent::DataType2Text(dt).c_str());
       iResult=pTask->ProcessTask(-1, eventType, 0, timestamp);
