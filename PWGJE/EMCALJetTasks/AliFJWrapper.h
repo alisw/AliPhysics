@@ -1293,14 +1293,19 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   }
 
   //Added for quality control of the DeltaR-Nsubjettiness variable (comparing Nsubjettiness and soft drop results)
-  fj::contrib::SoftDrop Soft_Drop(Beta_SD,ZCut);  
+  fj::contrib::SoftDrop Soft_Drop(Beta_SD,ZCut);
+  Soft_Drop.set_tagging_mode(); //if the first two subjets fail the soft drop criteria a jet = 0 is returned
   fj::PseudoJet Soft_Dropped_Jet=Soft_Drop(fFilteredJets[0]);
-  Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().delta_R();
+  if (Soft_Dropped_Jet==0) Result_SoftDrop=-1;
+  else{
+    if (Option==3) Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().delta_R();
+    if (Option==4) Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().symmetry();
+  }
 
   if (Option==0) return Result;
   else if (Option==1 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
   else if (Option==2 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
-  else if (Option==3 && N==2) return Result_SoftDrop;
+  else if ((Option==3 || Option==4) && N==2) return Result_SoftDrop;
   else return -2;
 }
 
