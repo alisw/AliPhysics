@@ -3,7 +3,7 @@
 * @Date:   2016-11-11, 11:39:13
 * @Email:  pdillens@cern.ch
 * @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-11, 18:04:06
+* @Last modified time: 2016-11-14, 11:14:44
 */
 
 
@@ -164,7 +164,6 @@ Double_t AliDielectronQnEPcorrection::GetACcorrectedQnTPCEventplane(const AliDie
       return tpcEPangle;
     }
   }
-  printf("VarManager %d %f\n",__LINE__, tpcEPangle);
   return -tpcEPangle;
 }
 
