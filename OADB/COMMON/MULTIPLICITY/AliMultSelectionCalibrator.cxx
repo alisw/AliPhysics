@@ -289,6 +289,9 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
     Double_t lMaxEst[lNEstimators][lMax];
     Double_t lMinEst[lNEstimators][lMax];
     
+    //Sanity check. If insane, add kNoCalib histogram
+    Bool_t lInsane[lNEstimators][lMax];
+    
     //Index of first value above anchor point threshold
     Long64_t lAnchorEst[lNEstimators][lMax];
     
@@ -297,6 +300,7 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
         for(Long_t iRun=0; iRun<lMax; iRun++) lMaxEst[iEst][iRun] = -1e+3;
         for(Long_t iRun=0; iRun<lMax; iRun++) lMinEst[iEst][iRun] = 1e+6; //not more than a million, I hope?
         for(Long_t iRun=0; iRun<lMax; iRun++) lAnchorEst[iEst][iRun] = -1; //invalid index
+        for(Long_t iRun=0; iRun<lMax; iRun++) lInsane[iEst][iRun] = kFALSE; //we're nice people. We assume no insanity unless there's proof otherwise
     }
 
     //Add Timer
@@ -449,6 +453,11 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 lAvEst[iEst][iRun] /= ( (Double_t) (sTree[iRun]->GetEntries()) );
             }
             cout<<" Min = "<<lMinEst[iEst][iRun]<<", Max = "<<lMaxEst[iEst][iRun]<<", Av = "<<lAvEst[iEst][iRun]<<endl;
+            
+            if ( TMath::Abs( lMinEst[iEst][iRun] - lMaxEst[iEst][iRun] ) < 1e-6 ){
+                lInsane[iEst][iRun] = kTRUE; //No valid information to do calibration, please be careful !
+            }
+            
         }
     }
     //might be needed
@@ -548,22 +557,33 @@ Bool_t AliMultSelectionCalibrator::Calibrate() {
                 }
                 
                 cout<<" Done! Saving... "<<endl;
-                //Should not be the source of excessive memory consumption...
-                //...but can be rearranged if needed!
-                hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNDesiredBoundaries-1,lNrawBoundaries);
-                hCalib[iRun][iEst]->SetDirectory(0);
-                hCalib[iRun][iEst]->SetBinContent(0,100.5); //Just in case correction functions screw up the values ...
-                for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++){
-                    hCalib[iRun][iEst] -> SetBinContent(ibin, lMiddleOfBins[ibin-1]);
-                    
-                    //override in case anchored!
-                    if( fSelection->GetEstimator(iEst)->GetUseAnchor() ){
-                        if ( hCalib[iRun][iEst]->GetBinCenter(ibin) < fSelection->GetEstimator(iEst)->GetAnchorPoint() ){
-                            //Override, this is useless!
-                            //Alberica's recommendation: outside of user range to be sure!
-                            hCalib[iRun][iEst] -> SetBinContent(ibin, 100.5);
+                
+                if( lInsane[iEst][iRun] == kFALSE) {
+                    //Create a sane calibration histogram
+                    //Should not be the source of excessive memory consumption...
+                    //...but can be rearranged if needed!
+                    hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",lNDesiredBoundaries-1,lNrawBoundaries);
+                    hCalib[iRun][iEst]->SetDirectory(0);
+                    hCalib[iRun][iEst]->SetBinContent(0,100.5); //Just in case correction functions screw up the values ...
+                    for(Long_t ibin=1; ibin<hCalib[iRun][iEst]->GetNbinsX()+1; ibin++){
+                        hCalib[iRun][iEst] -> SetBinContent(ibin, lMiddleOfBins[ibin-1]);
+                        
+                        //override in case anchored!
+                        if( fSelection->GetEstimator(iEst)->GetUseAnchor() ){
+                            if ( hCalib[iRun][iEst]->GetBinCenter(ibin) < fSelection->GetEstimator(iEst)->GetAnchorPoint() ){
+                                //Override, this is useless!
+                                //Alberica's recommendation: outside of user range to be sure!
+                                hCalib[iRun][iEst] -> SetBinContent(ibin, 100.5);
+                            }
                         }
                     }
+                }else{
+                    hCalib[iRun][iEst] = new TH1F(Form("hCalib_%i_%s",lRunNumbers[iRun],fSelection->GetEstimator(iEst)->GetName()),"",1,0,1);
+                    hCalib[iRun][iEst]->SetDirectory(0);
+                    //There was insufficient information to generate a meaningful calibration for this estimator! 
+                    hCalib[iRun][iEst]->SetBinContent(0,AliMultSelectionCuts::kNoCalib);
+                    hCalib[iRun][iEst]->SetBinContent(1,AliMultSelectionCuts::kNoCalib);
+                    hCalib[iRun][iEst]->SetBinContent(2,AliMultSelectionCuts::kNoCalib);
                 }
                 //==== End Floating Point Calibration Engine ====
             } else {
