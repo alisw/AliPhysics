@@ -73,6 +73,8 @@ public:
   enum InteractionRate {
     kHigh, // >0.9
     kLow,  // <0.6
+    kPos, // mag.field pol.+
+    kNeg,  // mag.field pol.-
     kAll
   };
   
@@ -947,6 +949,8 @@ public:
   void SetFlowQCRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorPro[eg][k] = TP;};
   TH1D* GetFlowQCRefCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorHist[eg][h];};
   void SetFlowQCRefCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorHist[eg][k] = TP;};
+  TH1D* GetFlowQCRefCorFinal(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorFinal[eg][h];};
+  void SetFlowQCRefCorFinal(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorFinal[eg][k] = TP;};
   
   void SetFlowSCv2vsZNv1Pro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Pro[c][eg] = TP;};
   TProfile* GetFlowSCv2vsZNv1Pro(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1Pro[c][eg];};
@@ -1694,6 +1698,7 @@ private:
   
   TProfile *fFlowQCRefCorPro[fFlowNHarm][13]; //!
   TH1D *fFlowQCRefCorHist[fFlowNHarm][13]; //!
+  TH1D *fFlowQCRefCorFinal[fFlowNHarm][3]; //!
   
   TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
   TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
