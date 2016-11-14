@@ -123,8 +123,11 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
     fESDtrackCuts->SetMaxChi2TPCConstrainedGlobal(number);
   }
 
-  void SetGridPID( std::string string){
+  void SetGridPID(std::string string){
     gridPID = std::stoi(string);
+  }
+  void GRIDanalysis(Bool_t answer){
+    isGRIDanalysis = answer;
   }
   
  private:
@@ -178,6 +181,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   Bool_t isIonColl;
 
   //Grid PID
+  Bool_t isGRIDanalysis;
   Int_t gridPID;
 
   ClassDef(AliAnalysisTaskSimpleTreeMaker, 1); //
