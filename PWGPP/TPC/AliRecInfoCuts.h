@@ -15,7 +15,10 @@ class AliVEvent;
 class AliRecInfoCuts : public AliESDtrackCuts
 {
 public:
-  AliRecInfoCuts(const Char_t* name ="AliRecInfoCuts", const Char_t *title ="");
+  AliRecInfoCuts();
+  AliRecInfoCuts(const Char_t* name, const Char_t *title ="");
+  AliRecInfoCuts(const AliRecInfoCuts& that);
+  AliRecInfoCuts& operator=(const AliRecInfoCuts& that);
   virtual ~AliRecInfoCuts() {;}
  
   // setters 
@@ -51,9 +54,6 @@ private:
   Float_t fTPCITSMatchingRadius; // TPC-ITS matching radius
   Float_t fTPCTRDMatchingRadius; // TPC-TRD matching radius
   Int_t   fMinNTrackletsTRD; // min number of TRD tracklets
-
-  AliRecInfoCuts(const AliRecInfoCuts&); // not implemented
-  AliRecInfoCuts& operator=(const AliRecInfoCuts&); // not implemented
 
   ClassDef(AliRecInfoCuts, 1)
 };

@@ -31,11 +31,14 @@ class AliRecInfoCuts;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
+#include "AliMergeable.h"
+#include "AliRecInfoCuts.h"
+#include "AliMCInfoCuts.h"
 
-class AliPerformanceTPC : public AliPerformanceObject {
+class AliPerformanceTPC : public AliPerformanceObject, public AliMergeable {
 public :
-  //AliPerformanceTPC(); 
-  AliPerformanceTPC(const Char_t* name="AliPerformanceTPC", const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE, Bool_t useSparse = kTRUE);
+  AliPerformanceTPC();
+  AliPerformanceTPC(const Char_t* name, const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE, Bool_t useSparse = kTRUE);
 
   virtual ~AliPerformanceTPC();
 
@@ -68,9 +71,15 @@ public :
   TFolder *ExportToFolder(TObjArray * array=0);
 
   // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-   
+  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts) {
+    if (!cuts) return;
+    if (!fCutsRC) fCutsRC=new AliRecInfoCuts(*cuts); else *fCutsRC = *cuts;
+  }
+  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts) {
+    if (!cuts) return;
+    if (!fCutsMC) fCutsMC=new AliMCInfoCuts(*cuts); else *fCutsMC = *cuts;
+  }
+
   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
 
