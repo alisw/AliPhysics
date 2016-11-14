@@ -3,7 +3,7 @@
 * @Date:   2016-10-21, 11:52:17
 * @Email:  pdillens@cern.ch
 * @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-12, 22:21:36
+* @Last modified time: 2016-11-14, 15:33:53
 */
 
 
@@ -171,6 +171,8 @@ public:
   void InitLegEffMap(TString filename)  { fLegEffMap=InitEffMap(filename)  ;}
   void InitPairEffMap(TString filename) { fPairEffMap=InitEffMap(filename) ;}
 
+  void SetCentroidCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -192,6 +194,8 @@ private:
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
 
+  TObjArray *fPostPIDCntrdCorrArr;   //! post pid correction array containing the run-wise objects for electron sigma centroids in TPC
+  TObjArray *fPostPIDWdthCorrArr;    //! post pid correction array containing the run-wise objects for electron sigma widths in TPC
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
   TH1 *fPostPIDWdthCorr;    // post pid correction object for electron sigma widths in TPC
   TH1 *fPostPIDCntrdCorrITS;// post pid correction object for electron sigma centroids in ITS
