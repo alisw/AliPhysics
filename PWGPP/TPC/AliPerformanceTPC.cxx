@@ -118,7 +118,6 @@ TH3D *h_tpc_track_neg_recvertex_3_5_6 = 0;
 TH3D *h_tpc_track_neg_recvertex_4_5_6 = 0;
 
 //_____________________________________________________________________________
-/*
 AliPerformanceTPC::AliPerformanceTPC():
   AliPerformanceObject("AliPerformanceTPC"),
   fTPCClustHisto(0),
@@ -126,19 +125,15 @@ AliPerformanceTPC::AliPerformanceTPC():
   fTPCTrackHisto(0),
   fFolderObj(0),
 
-  // Cuts 
-  fCutsRC(0),  
-  fCutsMC(0),  
+  // Cuts
+  fCutsRC(0),
+  fCutsMC(0),
 
-  // histogram folder 
+  // histogram folder
   fAnalysisFolder(0),
-  
   fUseHLT(kFALSE)
-
 {
-  Init();
 }
-*/
 
 //_____________________________________________________________________________
 AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int_t analysisMode,Bool_t hptGenerator, Int_t run, Bool_t highMult, Bool_t useSparse):
@@ -155,29 +150,31 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   // histogram folder 
   fAnalysisFolder(0),
   fUseHLT(kFALSE)
-
 {
 
 // named constructor
-  // 
+  //
   SetAnalysisMode(analysisMode);
   SetHptGenerator(hptGenerator);
   fUseSparse = useSparse;
   Init();
 }
 
-
 //_____________________________________________________________________________
 AliPerformanceTPC::~AliPerformanceTPC()
 {
   // destructor
-   
-    if(fTPCClustHisto) delete fTPCClustHisto; fTPCClustHisto=0;
-    if(fTPCEventHisto) delete fTPCEventHisto; fTPCEventHisto=0;
-    if(fTPCTrackHisto) delete fTPCTrackHisto; fTPCTrackHisto=0;
-    if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
-    if(fFolderObj) delete fFolderObj; fFolderObj=0;
-    
+
+  //members
+    delete fTPCClustHisto;
+    delete fTPCEventHisto;
+    delete fTPCTrackHisto;
+    delete fFolderObj;
+    delete fCutsMC;
+    delete fCutsRC;
+    delete fAnalysisFolder;
+
+    //globals, need to set to null
     if(h_tpc_clust_0_1_2) delete h_tpc_clust_0_1_2; h_tpc_clust_0_1_2=0;
     if(h_tpc_event_recvertex_0) delete h_tpc_event_recvertex_0; h_tpc_event_recvertex_0=0;
     if(h_tpc_event_recvertex_1) delete h_tpc_event_recvertex_1; h_tpc_event_recvertex_1=0;
