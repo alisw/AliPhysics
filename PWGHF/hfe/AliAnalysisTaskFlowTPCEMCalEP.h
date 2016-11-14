@@ -25,6 +25,8 @@ class AliMagF;
 class AliESDEvent;
 class AliAODEvent;
 class AliAODMCParticle;
+class AliAODMCHeader;
+class AliGenEventHeader;
 class AliVEvent;
 class AliEMCALGeometry;
 class AliEMCALRecoUtils;
@@ -114,6 +116,7 @@ private:
     AliStack              *fStack;              //! stack
     AliAODMCParticle      *fMCparticle;         //! MC particle
     TClonesArray          *fMCarray;            //! MC array
+    AliAODMCHeader        *fMCheader;
 
     
     TClonesArray  *fTracks_tender;              //Tender tracks
@@ -180,8 +183,8 @@ private:
     TH2F                  *fChargPartV2[3];	//! CosDeltaPhi vs pt of charged particle for trigger correction
     TH2F                  *fMtcPartV2[3];		//! CosDeltaPhi vs pt of matched particle for trigger correction
     
-    TH1F                  *fPi0Pt[3];		//! primary pi0 pt to compute the weight
-    TH1F                  *fEtaPt[3];		//! primary eta pt to compute the weight
+    TH2F                  *fPi0Pt[3];		//! primary pi0 pt to compute the weight
+    TH2F                  *fEtaPt[3];		//! primary eta pt to compute the weight
     
     TH2F                  *fHistITSnSig[3];      //! ITS sigma vs p
     TH2F                  *fHistTOFnSig[3];      //! TOF sigma vs p
