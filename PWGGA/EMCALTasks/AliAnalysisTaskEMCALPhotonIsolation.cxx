@@ -191,7 +191,10 @@ fPtTracksVSpTNC(0),
 fCTdistVSpTNC(0),
 fPtTracksVSpTNC_MC(0),
 fpi0VSclusterVSIsolation(0),
+fpi0VSclusterVSM02(0),
 fpi0VSM02VSIsolation(0),
+fPhiTracksVSclustPt(0),
+fEtaTracksVSclustPt(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -352,7 +355,10 @@ fPtTracksVSpTNC(0),
 fCTdistVSpTNC(0),
 fPtTracksVSpTNC_MC(0),
 fpi0VSclusterVSIsolation(0),
+fpi0VSclusterVSM02(0),
 fpi0VSM02VSIsolation(0),
+fPhiTracksVSclustPt(0),
+fEtaTracksVSclustPt(0),
 fOutputTHnS(0),
 fOutMCTruth(0),
 fOutClustMC(0),
@@ -858,9 +864,17 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     // fphietaOthers = new TH3D("hphietaOthers","Test eta phi others",250,-0.8,0.8, 250, 1.2, 3.4,200,0.,1.);
     // fOutput->Add(fphietaOthers);
   
-  fPtTracksVSpTNC = new TH2F ("hChargedptSpecVSpT","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
+  fPtTracksVSpTNC = new TH2F ("hTrackPtSpecVSpT","Charged Particle spectrum vs pT Candidate",70,0.,70.,200,0.,20.);
   fPtTracksVSpTNC->Sumw2();
   fOutput->Add(fPtTracksVSpTNC);
+  
+  fPhiTracksVSclustPt  = new TH2F("hPhiTracks_vs_clustPT","Tracks phi distr vs pT Candidate",70, 0.,70., 200,0.,TMath::TwoPi());
+  fPhiTracksVSclustPt->Sumw2();
+  fOutput->Add(fPhiTracksVSclustPt);
+  
+  fEtaTracksVSclustPt  = new TH2F("hEtaTracks_vs_clustPT","Tracks eta distr vs pT Candidate",70, 0.,70., 90,-0.9,0.9);
+  fEtaTracksVSclustPt->Sumw2();
+  fOutput->Add(fEtaTracksVSclustPt);
   
   fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,200,-.5,.5);
   fCTdistVSpTNC->Sumw2();
@@ -885,14 +899,22 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fpi0VSclusterVSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
     fpi0VSclusterVSIsolation->SetYTitle("cluster E");
     fpi0VSclusterVSIsolation->SetZTitle("Isolation");
+    fpi0VSclusterVSIsolation->Sumw2();
     fOutput->Add(fpi0VSclusterVSIsolation);
     
     fpi0VSM02VSIsolation = new TH3F ("fpi0VSM02VSIsolation","Energy pi0 vs cluster M02 vs Isolation",95,5.,100.,500,0.,5.,100,0.,100.);
     fpi0VSM02VSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
     fpi0VSM02VSIsolation->SetYTitle("cluster M02");
     fpi0VSM02VSIsolation->SetZTitle("Isolation");
+    fpi0VSM02VSIsolation->Sumw2();
     fOutput->Add(fpi0VSM02VSIsolation);
     
+    fpi0VSclusterVSM02 = new TH3F ("fpi0VSclusterVSM02","Energy pi0 vs Energy cluster vs cluster M02 ",95,5.,100.,500,0.,5.,100,0.,100.);
+    fpi0VSclusterVSM02->SetXTitle("particle (#pi^{0} or #eta) E");
+    fpi0VSclusterVSM02->SetYTitle("cluster E");
+    fpi0VSclusterVSM02->SetZTitle("cluster M02");
+    fpi0VSclusterVSM02->Sumw2();
+    fOutput->Add(fpi0VSclusterVSM02);
   }
 
   
@@ -1177,6 +1199,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
           return kFALSE;
         }
         fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
+        fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+        fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
       }
       
       FillGeneralHistograms(coi,vecCOI,index);
@@ -2531,6 +2555,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
               clusterFromPromptPhoton=7;//contribution from one daughter
           }
           fpi0VSclusterVSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, isolation);
+          fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS,ss);
           fpi0VSM02VSIsolation->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), ss, isolation);
         }
         else{
@@ -2611,6 +2636,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
               clusterFromPromptPhoton=7;//contribution from one daughter
           }
           fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
+          fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS,ss);
           fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
 
         }
