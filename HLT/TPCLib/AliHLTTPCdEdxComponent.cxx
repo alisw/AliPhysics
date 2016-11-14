@@ -47,8 +47,6 @@
 #include "AliTPCcalibDB.h"
 #include "AliTPCRecoParam.h"
 #include "AliTPCTransform.h"
-#include "AliGRPManager.h"
-#include "AliGRPObject.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp( AliHLTTPCdEdxComponent )
@@ -279,10 +277,6 @@ int AliHLTTPCdEdxComponent::DoInit( int argc, const char** argv )
     HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
     return -ENODEV;
   }
-
-  AliGRPManager mgr;
-  mgr.ReadGRPEntry();
-  SetTimeStamp(mgr.GetGRPData()->GetTimeStart());
 
   AliTPCcalibDB::Instance()->SetRun(GetRunNo());
   AliTPCcalibDB::Instance()->UpdateRunInformations(GetRunNo());
