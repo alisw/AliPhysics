@@ -143,7 +143,7 @@ Int_t AliTOFQAChecker::CheckRaws(TH1* histo, Int_t specie)
   Double_t maxTOFrawTot = 15.;//ns
 
   Float_t minTOFrawINT7hits = 10;
-  Float_t maxTOFrawINT7hits = 70;
+  Float_t maxTOFrawINT7hits = 150; //for pA at 5 and 8 TeV; = 70 for pp 13 TeV
  
   TString histname = histo->GetName();
   TPaveText * text = 0x0;
