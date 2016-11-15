@@ -12,6 +12,7 @@
 #include "TObjString.h"
 #include "TArrayI.h"
 #include "TPRegexp.h"
+#include "TRegexp.h"
 #endif
 
 //_________________________________
@@ -229,7 +230,7 @@ Bool_t MakeTriggerRPCslide ( TString filename, ofstream &outFile, Bool_t outlier
 }
 
 //_________________________________
-void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
+void MakeSummary ( TString period, ofstream &outFile )
 {
   BeginFrame("Summary I",outFile);
   outFile << "General informations" << endl;
@@ -273,10 +274,16 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   outFile << "MCH and MUON data quality:" << endl;
   MakeDefaultItem(outFile);
   EndFrame(outFile);
+}
 
+//_________________________________
+void MakeRunSummary ( ofstream &outFile, TString trackerQA, ifstream* inFile = 0x0 )
+{
   TString runList = GetRunList(trackerQA);
   TObjArray* runListArr = runList.Tokenize(",");
   runListArr->Sort();
+
+  Bool_t readSummary = ( inFile ) ? kTRUE : kFALSE;
 
   TString romanNum[10] = {"I","II","III","IV","V","VI","VII","VIII","IX","X"};
 
@@ -288,6 +295,7 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
   if ( nRuns%nRunsPerPage > 0 ) nPages++;
 
   Int_t irun = 0;
+  Int_t readRun = -2, currRun = -1;
 
   for ( Int_t ipage=0; ipage<nPages; ipage++ ) {
     TString title = "Run summary";
@@ -295,41 +303,55 @@ void MakeSummary ( TString period, ofstream &outFile, TString trackerQA )
     BeginFrame(title,outFile);
     outFile << " \\begin{columns}[onlytextwidth,T]" << endl;
     outFile << "  \\footnotesize" << endl;
-    outFile << "  \\column{0.5\\textwidth}" << endl;
-    outFile << "  \\centering" << endl;
-    outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
-    outFile << "   \\hline" << endl;
-    if ( nRuns == 0 ) {
-      outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
-    }
-    else {
-      while ( irun<nRuns ) {
-        outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun++))->GetString().Atoi() << "}{}" << endl;
-        if ( irun%nRunsPerColumn == 0 ) break;
+    for ( Int_t icol=0; icol<2; icol++ ) {
+      Bool_t needsHline = ( icol == 0 || irun < nRuns );
+      outFile << "  \\column{0.5\\textwidth}" << endl;
+      outFile << "  \\centering" << endl;
+      outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
+      if ( needsHline ) outFile << "   \\hline" << endl;
+      if ( nRuns == 0 ) {
+        outFile << "   \\runTab[\\errorColor]{xxx}{xxx}" << endl;
       }
-    }
+      else {
+        while ( irun<nRuns ) {
+          currRun = static_cast<TObjString*>(runListArr->UncheckedAt(irun++))->GetString().Atoi();
+          Bool_t isNew = kTRUE;
+          TString readLines = "", currLine = "";
+          while ( readSummary ) {
+            currLine.ReadLine(*inFile,kFALSE);
+            if ( currLine.Contains("runTab") ) {
+              TString sRun = currLine(TRegexp("{[0-9][0-9][0-9][0-9][0-9][0-9]}"));
+              sRun.Remove(TString::kLeading,'{');
+              sRun.Remove(TString::kTrailing,'}');
+              readRun = sRun.Atoi();
+              if ( readRun <= currRun ) readLines += currLine + "\n";
+              if ( readRun == currRun ) {
+                isNew = kFALSE;
+                break;
+              }
+            }
+            else if ( currLine.Contains("colorLegend") ) readSummary = kFALSE;
+          }
+          if ( isNew ) outFile << "   \\runTab{" << currRun << "}{}" << endl;
+          else outFile << readLines.Data();
+          if ( irun%nRunsPerColumn == 0 ) break;
+        }
+      }
 
-    outFile << "   \\hline" << endl;
-    outFile << "  \\end{tabular}" << endl;
-    outFile << endl;
-    outFile << "  \\column{0.5\\textwidth}" << endl;
-    outFile << "  \\begin{tabular}{|cp{0.63\\textwidth}|}" << endl;
-    Bool_t hasRuns = ( irun < nRuns );
-    if ( hasRuns ) outFile << "   \\hline" << endl;
-    while ( irun<nRuns ) {
-      outFile << "   \\runTab{" << static_cast<TObjString*>(runListArr->At(irun++))->GetString().Atoi() << "}{}" << endl;
-      if ( irun%nRunsPerColumn == 0 ) break;
-    }
-    if ( hasRuns ) outFile << "   \\hline" << endl;
-    if ( ipage == nPages -1 ) {
-      outFile << "   \\hline" << endl;
-      outFile << "   \\colorLegend" << endl;
-      outFile << "   \\hline" << endl;
-    }
-    outFile << "  \\end{tabular}" << endl;
-    outFile << " \\end{columns}" << endl;
-    EndFrame(outFile);
-  }
+      if ( needsHline ) outFile << "   \\hline" << endl;
+      if ( icol == 1 && ipage == nPages -1 ) {
+        outFile << "   \\hline" << endl;
+        outFile << "   \\colorLegend" << endl;
+        outFile << "   \\hline" << endl;
+      }
+      outFile << "  \\end{tabular}" << endl;
+      if ( icol == 0 ) outFile << endl;
+      else {
+        outFile << " \\end{columns}" << endl;
+        EndFrame(outFile);
+      }
+    } // loop on columns
+  } // loop on pages
 
   delete runListArr;
 }
@@ -386,12 +408,12 @@ void MakePreamble ( ofstream &outFile )
   outFile << endl;
   outFile << "\\newcommand{\\badForPassColor}{magenta!50!white}" << endl;
   outFile << "\\newcommand{\\errorColor}{red!50!white}" << endl;
-  outFile << "\\newcommand{\\newColor}{blue!20!white}" << endl;
+//  outFile << "\\newcommand{\\newColor}{blue!20!white}" << endl;
   outFile << "\\newcommand{\\notInLogColor}{black!20!white}" << endl;
   outFile << "\\newcommand{\\pendingColor}{yellow!50!white}" << endl;
   outFile << "\\newcommand{\\warningColor}{orange!50!white}" << endl;
   outFile << "\\newcommand{\\colorLegend}{" << endl;
-  outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\newColor}{~~} = newly analyzed}\\\\" << endl;
+//  outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\newColor}{~~} = newly analyzed}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\notInLogColor}{~~} = non-selected from e-logbook}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\pendingColor}{~~} = pending statement}\\\\" << endl;
   outFile << "  \\multicolumn{2}{|l|}{\\colorbox{\\warningColor}{~~} = possible problem}\\\\" << endl;
@@ -485,13 +507,47 @@ void WriteRunList ( TString trackerQA, TString outFilename = "runListQA.txt" )
   PdfToTxt(trackerQA,kTRUE);
 }
 
+
 //_________________________________
-void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.pdf", TString triggerQA = "QA_muon_trigger.pdf", TString  texFilename = "muonQA.tex", TString outRunList = "" )
+void UpdateExisting ( TString texFilename, TString trackerQA )
 {
-  if ( gSystem->AccessPathName(texFilename.Data()) == 0 ) {
-    printf("Output file %s already exists\nPlease remove it!\n", texFilename.Data());
-    return;
+  TString backupFile = texFilename;
+  backupFile.Append(".backup");
+  printf("Copying existing file into %s\n",backupFile.Data());
+  TFile::Cp(texFilename.Data(),backupFile);
+  ofstream outFile(texFilename.Data(),std::ofstream::out | std::ofstream::trunc);
+  ifstream inFile(backupFile.Data());
+  TString currLine = "", frameTitle = "";
+  Int_t nBlanks = 0;
+  while ( ! inFile.eof() ) {
+    currLine.ReadLine(inFile,kFALSE);
+    // Avoid too many blank lines
+    if ( currLine.IsNull() ) {
+      nBlanks++;
+      if ( nBlanks > 2 ) continue;
+    }
+    else nBlanks = 0;
+    if ( currLine == "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" ) {
+      frameTitle.ReadLine(inFile,kFALSE);
+      currLine += Form("\n%s",frameTitle.Data());
+      frameTitle.ReadLine(inFile,kFALSE);
+      currLine += Form("\n%s",frameTitle.Data());
+      if ( frameTitle.Contains("frametitle") && frameTitle.Contains("Run summary") ) {
+        MakeRunSummary(outFile, trackerQA, &inFile);
+        while ( currLine != "\\end{frame}" ) {
+          currLine.ReadLine(inFile);
+        }
+        continue;
+      }
+    }
+    outFile << currLine.Data() << endl;
   }
+  inFile.close();
+}
+
+//_________________________________
+void MakeSlides ( TString period, TString pass, TString triggerList, TString authors, TString trackerQA = "QA_muon_tracker.pdf", TString triggerQA = "QA_muon_trigger.pdf", TString texFilename = "muonQA.tex", TString outRunList = "" )
+{
 
   TString hasGs = gSystem->GetFromPipe("which gs");
   if ( hasGs.IsNull() ) {
@@ -499,54 +555,61 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     return;
   }
 
-  EscapeSpecialChars(period);
-  EscapeSpecialChars(pass);
-
-  TObjArray* trigList = triggerList.Tokenize(",");
-
-  ofstream outFile(texFilename);
-  outFile << "%TriggerList=" << triggerList.Data() << endl;
-  MakePreamble(outFile);
-  BeginSlides(period,pass,authors,outFile);
-
-  MakeSummary(period,outFile,trackerQA);
-
-  MakeSingleFigureSlide("Selections: RUN",trackerQA,"Number of events per trigger",outFile);
-  MakeSingleFigureSlide("L2A from QA",triggerQA,"Reconstruction: reconstructed triggers in QA wrt L2A from OCDB scalers",outFile);
-  MakeTriggerSlide(triggerQA,outFile);
-
-  for ( Int_t itrig=0; itrig<trigList->GetEntries(); itrig++ ) {
-    TString currTrig = trigList->At(itrig)->GetName();
-    TString shortTrig = GetTriggerShort(currTrig);
-    MakeSingleFigureSlide("Number of Tracks",trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
-    MakeSingleFigureSlide("Number of Tracks&for high mult.",trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,currTrig,"",kFALSE);
-    MakeSingleFigureSlide("Sum of trigger tracks (matched + trigger-only) / # events in",trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
-    MakeSingleFigureSlide("Matched tracks charge asymmetry for&with acc. cuts",trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile,currTrig);
-    MakeSingleFigureSlide("Identified beam-gas tracks (pxDCA cuts) in matched tracks for",trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);
+  if ( gSystem->AccessPathName(texFilename.Data()) == 0 ) {
+    printf("Output file %s already exists: updating it\n", texFilename.Data());
+    UpdateExisting(texFilename, trackerQA);
   }
-  MakeSingleFigureSlide("averaged number of associated clusters or of the number of chamber hit per track",trackerQA,"Average number of clusters per track and dispersion",outFile);
-  MakeSingleFigureSlide("averaged number of clusters in chamber i per track",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
+  else {
+    EscapeSpecialChars(period);
+    EscapeSpecialChars(pass);
 
-  StartAppendix(outFile);
-  MakeSingleFigureSlide("Physics Selection Cut on selected triggers:",trackerQA,"Physics selection effects",outFile);
-  MakeSingleFigureSlide("<X> of clusters - associated to a track - in chamber i",trackerQA,"Average cluster position per chamber",outFile,"","clustersPosition");
-  MakeSingleFigureSlide("averaged normalized",trackerQA,"Tracking quality",outFile);
+    TObjArray* trigList = triggerList.Tokenize(",");
 
-  MakeTriggerRPCslide(triggerQA,outFile);
-  MakeTriggerRPCslide(triggerQA,outFile,kTRUE);
-  MakeSingleFigureSlide("Trigger Lpt cut per run",trackerQA,"Trigger \\pt\\ cut",outFile);
+    ofstream outFile(texFilename);
+    outFile << "%TriggerList=" << triggerList.Data() << endl;
+    MakePreamble(outFile);
+    BeginSlides(period,pass,authors,outFile);
 
-  BeginFrame("Hardware issues",outFile);
-  outFile << "MUON Trigger" << endl;
-  MakeDefaultItem(outFile);
-  outFile << endl;
-  outFile << "MUON tracker" << endl;
-  MakeDefaultItem(outFile);
-  EndFrame(outFile);
+    MakeSummary(period,outFile);
+    MakeRunSummary(outFile, trackerQA);
 
-  EndSlides(outFile);
+    MakeSingleFigureSlide("Selections: RUN",trackerQA,"Number of events per trigger",outFile);
+    MakeSingleFigureSlide("L2A from QA",triggerQA,"Reconstruction: reconstructed triggers in QA wrt L2A from OCDB scalers",outFile);
+    MakeTriggerSlide(triggerQA,outFile);
 
-  delete trigList;
+    for ( Int_t itrig=0; itrig<trigList->GetEntries(); itrig++ ) {
+      TString currTrig = trigList->At(itrig)->GetName();
+      TString shortTrig = GetTriggerShort(currTrig);
+      MakeSingleFigureSlide("Number of Tracks",trackerQA,Form("Muon tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
+      MakeSingleFigureSlide("Number of Tracks&for high mult.",trackerQA,Form("Muon tracks / event in %s events (central collisions)",shortTrig.Data()),outFile,currTrig,"",kFALSE);
+      MakeSingleFigureSlide("Sum of trigger tracks (matched + trigger-only) / # events in",trackerQA,Form("Muon tracker-trigger tracks / event in %s events",shortTrig.Data()),outFile,currTrig);
+      MakeSingleFigureSlide("Matched tracks charge asymmetry for&with acc. cuts",trackerQA,Form("Charge asymmetry in %s events",shortTrig.Data()),outFile,currTrig);
+      MakeSingleFigureSlide("Identified beam-gas tracks (pxDCA cuts) in matched tracks for",trackerQA,Form("Rel. num. of beam-gas tracks (id. by p$\\times$DCA cuts) in %s events",shortTrig.Data()),outFile,currTrig);
+    }
+    MakeSingleFigureSlide("averaged number of associated clusters or of the number of chamber hit per track",trackerQA,"Average number of clusters per track and dispersion",outFile);
+    MakeSingleFigureSlide("averaged number of clusters in chamber i per track",trackerQA,"Average number of clusters per chamber",outFile,"","clustersPerChamber");
+
+    StartAppendix(outFile);
+    MakeSingleFigureSlide("Physics Selection Cut on selected triggers:",trackerQA,"Physics selection effects",outFile);
+    MakeSingleFigureSlide("<X> of clusters - associated to a track - in chamber i",trackerQA,"Average cluster position per chamber",outFile,"","clustersPosition");
+    MakeSingleFigureSlide("averaged normalized",trackerQA,"Tracking quality",outFile);
+
+    MakeTriggerRPCslide(triggerQA,outFile);
+    MakeTriggerRPCslide(triggerQA,outFile,kTRUE);
+    MakeSingleFigureSlide("Trigger Lpt cut per run",trackerQA,"Trigger \\pt\\ cut",outFile);
+
+    BeginFrame("Hardware issues",outFile);
+    outFile << "MUON Trigger" << endl;
+    MakeDefaultItem(outFile);
+    outFile << endl;
+    outFile << "MUON tracker" << endl;
+    MakeDefaultItem(outFile);
+    EndFrame(outFile);
+
+    EndSlides(outFile);
+
+    delete trigList;
+  }
 
   if ( ! outRunList.IsNull() ) WriteRunList(trackerQA, outRunList);
 
