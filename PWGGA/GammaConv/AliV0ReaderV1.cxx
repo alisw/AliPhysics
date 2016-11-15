@@ -91,6 +91,7 @@ AliV0ReaderV1::AliV0ReaderV1(const char *name) : AliAnalysisTaskSE(name),
   fDeltaAODBranchName("GammaConv"),
   fDeltaAODFilename("AliAODGammaConversion.root"),
   fRelabelAODs(kFALSE),
+  fPreviousV0ReaderPerformsAODRelabeling(0),
   fEventIsSelected(kFALSE),
   fNumberOfPrimaryTracks(0),
   fPeriodName(""),
@@ -1168,6 +1169,34 @@ void AliV0ReaderV1::FindDeltaAODBranchName(){
 }
 //________________________________________________________________________
 void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate){
+
+  if(fPreviousV0ReaderPerformsAODRelabeling == 2) return;
+  else if(fPreviousV0ReaderPerformsAODRelabeling == 0){
+    printf("Running AODs! Determine if V0Reader '%s' should perform relabeling\n",this->GetName());
+    TObjArray* obj = (TObjArray*)AliAnalysisManager::GetAnalysisManager()->GetTasks();
+    Int_t iPosition = obj->IndexOf(this);
+    Bool_t prevV0ReaderRunningButNotRelabeling = kFALSE;
+    for(Int_t i=iPosition-1; i>=0; i--){
+     if( (obj->At(i))->IsA() == AliV0ReaderV1::Class()){
+       AliV0ReaderV1* tempReader = (AliV0ReaderV1*) obj->At(i);
+       if( tempReader->AreAODsRelabeled() && tempReader->IsReaderPerformingRelabeling() == 1){
+         fPreviousV0ReaderPerformsAODRelabeling = 2;
+         prevV0ReaderRunningButNotRelabeling = kFALSE;
+         printf("V0Reader '%s' is running before this V0Reader '%s': do _NOT_ relabel AODs by current reader!\n",tempReader->GetName(),this->GetName());
+         break;
+       }else prevV0ReaderRunningButNotRelabeling = kTRUE;
+     }
+    }
+    if(prevV0ReaderRunningButNotRelabeling) AliFatal(Form("There are V0Readers before '%s', but none of them is relabeling!",this->GetName()));
+
+    if(fPreviousV0ReaderPerformsAODRelabeling == 2) return;
+    else{
+      printf("This V0Reader '%s' is first to be processed: do relabel AODs by current reader!\n",this->GetName());
+      fPreviousV0ReaderPerformsAODRelabeling = 1;
+    }
+  }
+
+  if(fPreviousV0ReaderPerformsAODRelabeling != 1) AliFatal(Form("In %s: fPreviousV0ReaderPerformsAODRelabeling = '%i' - while it should be impossible it is something different than '1'!",this->GetName(),fPreviousV0ReaderPerformsAODRelabeling));
 
   // Relabeling For AOD Event
   // ESDiD -> AODiD
