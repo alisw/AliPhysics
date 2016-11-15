@@ -246,10 +246,10 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
 
   TH1F * hT0BestVsRun=new TH1F("hT0BestVsRun","start time by best_t0;;t0 Best (ps)",nRuns,0., nRuns);
   hT0BestVsRun->SetDrawOption("E1");
-  hT0BestVsRun->SetLineColor(kBlue);
+  hT0BestVsRun->SetLineColor(kOrange);
   hT0BestVsRun->SetLineWidth(2);
   hT0BestVsRun->SetMarkerStyle(20);
-  hT0BestVsRun->SetMarkerColor(kBlue);
+  hT0BestVsRun->SetMarkerColor(kOrange);
 
   TH1F * hT0FillVsRun=new TH1F("hT0FillVsRun","start time by fill_t0;;t0 Fill (ps)",nRuns,0., nRuns);
   hT0FillVsRun->SetDrawOption("E1");
@@ -288,10 +288,10 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
 
   TH1F * hT0BestVsRunRes=new TH1F("hT0BestVsRunRes","#sigma of best_t0;; #sigma t0 Best (ps)",nRuns,0., nRuns);
   hT0BestVsRunRes->SetDrawOption("E1");
-  hT0BestVsRunRes->SetLineColor(kBlue);
+  hT0BestVsRunRes->SetLineColor(kOrange);
   hT0BestVsRunRes->SetLineWidth(2);
   hT0BestVsRunRes->SetMarkerStyle(20);
-  hT0BestVsRunRes->SetMarkerColor(kBlue);
+  hT0BestVsRunRes->SetMarkerColor(kOrange);
 
   TH1F * hT0FillVsRunRes=new TH1F("hT0FillVsRunRes","fill_t0;; #sigmat0 Fill (ps)",nRuns,0., nRuns);
   hT0FillVsRunRes->SetDrawOption("E1");
@@ -645,40 +645,47 @@ Int_t DrawTrendingTOFQA(TString mergedTrendFile = "trending.root", // trending t
   
   //Plot start time trend
   TCanvas* cStartTimeSummary = new TCanvas("cStartTimeSummary","cStartTimeSummary",50, 50,1050, 550);
-  hT0TOFVsRun->GetYaxis()->SetRangeUser(-50.,50.);
+  hT0TOFVsRun->GetYaxis()->SetRangeUser(-100.,100.);
   hT0TOFVsRun->GetYaxis()->SetTitle("Start Time (ps)");
   hT0TOFVsRun->Draw();
   hT0T0ACVsRun->Draw("same");
   hT0T0AVsRun->Draw("same");
   hT0T0CVsRun->Draw("same");
+  hT0BestVsRun->Draw("same");
   gPad->SetGridy();
   gPad->SetTitle("Start Time by different methods");
-  TLegend * cLegSTS = new TLegend(0.6,0.75,0.9,0.9);
+  TLegend * cLegSTS = new TLegend(0.6,0.7,0.9,0.9);
+  cLegSTS->SetFillStyle(1001);
+  cLegSTS->SetFillColor(kWhite);
   cLegSTS->SetNColumns(2);
-  cLegSTS->SetFillStyle(0);
-  cLegSTS->SetBorderSize(0);
+  cLegSTS->SetBorderSize(1);
   cLegSTS->AddEntry(hT0TOFVsRun,"TOF_T0","lp");
   cLegSTS->AddEntry(hT0T0ACVsRun,"T0AC_T0","lp");
   cLegSTS->AddEntry(hT0T0AVsRun,"T0A_T0","lp");
   cLegSTS->AddEntry(hT0T0CVsRun,"T0C_T0","lp");
+  cLegSTS->AddEntry(hT0BestVsRun, "Best_T0","lp");
   cLegSTS->Draw();
   cStartTimeSummary->Print(Form("%s/cStartTimeSummary.png",plotDir.Data()));
 
   TCanvas* cStartTimeResolutionSummary = new TCanvas("cStartTimeResolutionSummary","cStartTimeResolutionSummary",50, 50,1050, 550);
-  hT0TOFVsRunRes->GetYaxis()->SetRangeUser(0.,300.);
+  hT0TOFVsRunRes->GetYaxis()->SetRangeUser(0.,200.);
   hT0TOFVsRunRes->GetYaxis()->SetTitle("#sigma Start Time (ps)");
   hT0TOFVsRunRes->Draw();
   hT0T0ACVsRunRes->Draw("same");
   hT0T0AVsRunRes->Draw("same");
   hT0T0CVsRunRes->Draw("same");
-  TLegend * cLegSTRS = new TLegend(0.6,0.75,0.9,0.9);
-  cLegSTRS->SetFillStyle(0);
+  hT0BestVsRunRes->Draw("same");
+  TLegend * cLegSTRS = new TLegend(0.6,0.7,0.9,0.9);
+  cLegSTRS->SetFillStyle(1001);
+  cLegSTRS->SetFillColor(kWhite);
   cLegSTRS->SetNColumns(2);
-  cLegSTRS->SetBorderSize(0);
+  cLegSTRS->SetBorderSize(1);
   cLegSTRS->AddEntry(hT0TOFVsRunRes,"TOF_T0 res.","lp");
   cLegSTRS->AddEntry(hT0T0ACVsRunRes,"T0AC_T0 res.","lp");
   cLegSTRS->AddEntry(hT0T0AVsRunRes,"T0A_T0 res.","lp");
   cLegSTRS->AddEntry(hT0T0CVsRunRes,"T0C_T0 res.","lp");
+  cLegSTRS->AddEntry(hT0BestVsRunRes, "Best_T0 res.","lp");
+    
   cLegSTRS->Draw();
   cStartTimeResolutionSummary->Print(Form("%s/cStartTimeResolutionSummary.png",plotDir.Data()));
 
