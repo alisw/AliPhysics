@@ -13,20 +13,22 @@
 #include "TNamed.h"
 #include "TFolder.h"
 #include "THnSparse.h"
+#include "AliMergeable.h"
 
 class TTree;
 class AliMCEvent;
-//class AliESDEvent;
 class AliVEvent;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
 class AliVfriendEvent;
 class AliESDVertex;
+class TRootIoCtor;
+#include "AliRecInfoCuts.h"
+#include "AliMCInfoCuts.h"
 
-
-class AliPerformanceObject : public TNamed {
+class AliPerformanceObject : public AliMergeable, public TNamed {
 public :
-  AliPerformanceObject(); 
+  AliPerformanceObject(TRootIoCtor*); 
   AliPerformanceObject(const char* name="AliPerformanceObject", const char* title="AliPerformanceObject", Int_t run=-1, Bool_t highMult=kFALSE); 
   virtual ~AliPerformanceObject();
 
@@ -43,7 +45,7 @@ public :
   virtual void Exec(AliMCEvent* const infoMC=0, AliVEvent* const infoRC=0, AliVfriendEvent* const vfriendEvent=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE) = 0;
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list=0) = 0;
+  virtual Long64_t Merge(TCollection* list=0) = 0;
 
   // project to 1d,2d,3d
   // is called from FinishTaskOuput() in AliPerformanceTask
@@ -62,9 +64,14 @@ public :
   virtual void AnalyseFinal() { ; }
   virtual TCollection* GetListOfDrawableObjects(){ return 0; }
 
-  // 
-  virtual void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) = 0;
-  virtual void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) = 0; 
+  // Selection cuts
+  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts) {
+    if (!cuts) return;
+    fCutsRC = *cuts;
+  }
+  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts) {
+    fCutsMC = *cuts;
+  }
 
   // set and get analysisMode
   void SetAnalysisMode(const Int_t analysisMode=0) {fAnalysisMode = analysisMode;} 
@@ -82,7 +89,7 @@ public :
 
   // trigger class selection
   void SetTriggerClass(const Char_t *triggerClass) { fTriggerClass = triggerClass; }
-  const Char_t* GetTriggerClass() const { return fTriggerClass; }
+  const Char_t* GetTriggerClass() const { return fTriggerClass.Data(); }
 
   // use track vertex
   void SetUseTrackVertex(Bool_t trackVtx = kTRUE) { fUseTrackVertex = trackVtx; }
@@ -129,7 +136,7 @@ protected:
   Bool_t fHptGenerator; // hpt event generator
 
   // trigger class
-  const Char_t * fTriggerClass;
+  TString fTriggerClass;
 
   // use track vertex
   Bool_t fUseTrackVertex; // use track vertex
@@ -143,11 +150,12 @@ protected:
 
   Bool_t fUseTOFBunchCrossing; // use TOFBunchCrossing, default is yes
   Bool_t fUseSparse;
-    
-  AliPerformanceObject(const AliPerformanceObject&); // not implemented
-  AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,9);
+  // Global cuts objects
+  AliRecInfoCuts fCutsRC;  // selection cuts for reconstructed tracks
+  AliMCInfoCuts  fCutsMC;  // selection cuts for MC tracks
+
+  ClassDef(AliPerformanceObject,10);
 };
 
 #endif

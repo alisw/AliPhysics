@@ -39,8 +39,6 @@
 
 // 
 #include "AliExternalTrackParam.h"
-#include "AliRecInfoCuts.h" 
-#include "AliMCInfoCuts.h" 
 #include "AliLog.h" 
 #include "AliTracker.h" 
 #include "AliVEvent.h"
@@ -57,15 +55,23 @@ using namespace std;
 ClassImp(AliPerformanceEff)
 
 //_____________________________________________________________________________
+AliPerformanceEff::AliPerformanceEff(TRootIoCtor* b):
+  AliPerformanceObject(b),
+  // histograms
+  fEffHisto(0),
+  fEffSecHisto(0),
+  // histogram folder 
+  fAnalysisFolder(0)
+{
+  // io constructor
+}
+
+//_____________________________________________________________________________
 AliPerformanceEff::AliPerformanceEff(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):  AliPerformanceObject(name,title),
 
   // histograms
   fEffHisto(0),
   fEffSecHisto(0),
-
-  // Cuts 
-  fCutsRC(0), 
-  fCutsMC(0),
 
   // histogram folder 
   fAnalysisFolder(0)
@@ -157,12 +163,6 @@ void AliPerformanceEff::Init()
   fEffSecHisto->GetAxis(10)->SetTitle("nClones");
   fEffSecHisto->GetAxis(11)->SetTitle("nFakes");
   fEffSecHisto->Sumw2();
-
-  // init cuts
-  if(!fCutsMC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  if(!fCutsRC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
 
   // init folder
   fAnalysisFolder = CreateFolder("folderEff","Analysis Efficiency Folder");
@@ -276,7 +276,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliVEvent *const v
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC.IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
 
 
     
@@ -389,7 +389,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliVEvent *cons
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC.IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
 
     // transform Pdg to Pid
     Int_t pid = TransformToPID(mcPart);
@@ -512,7 +512,7 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliVEvent *cons
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC.IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
 
     // transform Pdg to Pid
     Int_t pid = TransformToPID(mcPart);
@@ -618,7 +618,7 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliVEvent 
     }
 
     // Only 5 charged particle species (e,mu,pi,K,p)
-    if (fCutsMC->IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
+    if (fCutsMC.IsPdgParticle(TMath::Abs(mcPart->GetPdgCode())) == kFALSE) continue; 
 
     // transform Pdg to Pid
     Int_t pid = TransformToPID(mcPart);
@@ -716,11 +716,11 @@ Int_t AliPerformanceEff::TransformToPID(TParticle *mcPart)
 // (e.g. K+/K- = 321/-321; e+/e- = -11/11 ) 
 
   Int_t pid = -1;
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetEM() ) pid = 0; 
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetMuM() ) pid = 1; 
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetPiP() ) pid = 2; 
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetKP() ) pid = 3; 
-  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC->GetProt() ) pid = 4; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetEM() ) pid = 0; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetMuM() ) pid = 1; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetPiP() ) pid = 2; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetKP() ) pid = 3; 
+  if( TMath::Abs(mcPart->GetPdgCode())==fCutsMC.GetProt() ) pid = 4; 
 
 return pid;
 }
@@ -739,7 +739,7 @@ Bool_t AliPerformanceEff::IsFindable(const AliMCEvent *mcEvent, Int_t label)
   Int_t counter;
   Float_t tpcTrackLength = mcParticle->GetTPCTrackLength(AliTracker::GetBz(),0.05,counter,3.0); 
   //printf("tpcTrackLength %f \n", tpcTrackLength);
-  return (tpcTrackLength>fCutsMC->GetMinTrackLength());
+  return (tpcTrackLength>fCutsMC.GetMinTrackLength());
 }
 
 //_____________________________________________________________________________
@@ -755,7 +755,7 @@ Bool_t AliPerformanceEff::IsRecTPC(AliVTrack *vTrack)
   if(!track) return recStatus;
   
 
-  if(vTrack->GetTPCNcls()>fCutsRC->GetMinNClustersTPC()) recStatus = kTRUE;
+  if(vTrack->GetTPCNcls()>fCutsRC.GetMinNClustersTPC()) recStatus = kTRUE;
 
   return recStatus;
 }
@@ -772,7 +772,7 @@ Bool_t AliPerformanceEff::IsRecTPCITS(AliVTrack *vTrack)
 
   if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return recStatus; // TPC refit
   if ((vTrack->GetStatus()&AliVTrack::kITSrefit)==0) return recStatus; // ITS refit
-  if (vTrack && vTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return recStatus;  // min. nb. ITS clusters
+  if (vTrack && vTrack->GetITSclusters(0)<fCutsRC.GetMinNClustersITS()) return recStatus;  // min. nb. ITS clusters
 
   recStatus = kTRUE;
   return recStatus;
@@ -791,10 +791,10 @@ Bool_t AliPerformanceEff::IsRecConstrained(AliVTrack *vTrack)
   Bool_t recStatus = kFALSE;
 
   if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return kFALSE; // TPC refit
-  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return kFALSE; // min. nb. TPC clusters
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return kFALSE; // min. nb. TPC clusters
   const AliExternalTrackParam * track = vTrack->GetConstrainedParam();
   if(!track) return recStatus;
-  if(vTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return kFALSE;  // min. nb. ITS clusters
+  if(vTrack->GetITSclusters(0)<fCutsRC.GetMinNClustersITS()) return kFALSE;  // min. nb. ITS clusters
   recStatus = kTRUE;
   return recStatus;
 }
