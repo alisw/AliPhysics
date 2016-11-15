@@ -41,13 +41,14 @@ using namespace std;
 ClassImp(AliPerformanceObject)
 
 //_____________________________________________________________________________
-AliPerformanceObject::AliPerformanceObject():
+AliPerformanceObject::AliPerformanceObject(TRootIoCtor*):
+  AliMergeable(),
   TNamed("AliPerformanceObject","AliPerformanceObject"),
   fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(-1),
   fHptGenerator(kFALSE),
-  fTriggerClass(0),
+  fTriggerClass(),
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(kFALSE),
   fUseKinkDaughters(kTRUE),
@@ -55,17 +56,18 @@ AliPerformanceObject::AliPerformanceObject():
   fUseTOFBunchCrossing(kFALSE),
   fUseSparse(1)
 {
-  // constructor
+  // io constructor
 }
 
 //_____________________________________________________________________________
 AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, Int_t run, Bool_t highMult):
+  AliMergeable(),
   TNamed(name,title),
   fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(run),
   fHptGenerator(kFALSE),
-  fTriggerClass(0),
+  fTriggerClass(),
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(highMult),
   fUseKinkDaughters(kTRUE),
