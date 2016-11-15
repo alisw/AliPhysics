@@ -34,6 +34,6 @@ class AliCFTreeMapping : public TObject {
   Int_t fMappingMuons [kMappingMuons];		//  mapping array of positions of additional parameters of the AliCFParticle muons
   Int_t fMappingMCTracks[kMappingMCTracks];	//  mapping array of positions of additional parameters of the AliCFParticle MC generated tracks
 
-  ClassDef(AliCFTreeMapping,1);
+  ClassDef(AliCFTreeMapping,2);
 };
 #endif
