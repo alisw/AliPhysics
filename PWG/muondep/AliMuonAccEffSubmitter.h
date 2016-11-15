@@ -13,7 +13,9 @@
 class AliMuonAccEffSubmitter : public AliMuonGridSubmitter
 {
 public:
-  AliMuonAccEffSubmitter(const char* generator="GenParamCustom",
+
+  AliMuonAccEffSubmitter(Bool_t localOnly=kFALSE);
+  AliMuonAccEffSubmitter(const char* generator,
                          Bool_t localOnly=kFALSE,
                          const char* generatorVersion="8125");
 
@@ -69,7 +71,8 @@ public:
 
   TString OCDBPath() const { return GetMapValue("OCDBPath"); }
   
-  TString SnapshotDir() const { return GetMapValue("OCDBsnapshot"); }
+  TString RemoteSnapshotDir() const { return GetMapValue("OCDBsnapshot"); }
+  TString LocalSnapshotDir() const { return GetMapValue("Snapshot"); }
 
   Int_t SplitRunList(const char* inputList, int maxJobs=1500);
   
@@ -78,7 +81,13 @@ private:
   Bool_t GenerateRunJDL(const char* name) const;
   
   Bool_t GenerateMergeJDL(const char* name) const;
-  
+
+  void SetDefaultVariables();
+
+  void SetLocalOnly();
+
+  void SetupCommon(Bool_t localOnly);
+
   TString ReferenceTrigger() const { return GetMapValue("ReferenceTrigger"); }
   
   void UpdateLocalFileList(Bool_t clearSnapshots=kFALSE);

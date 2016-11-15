@@ -36,7 +36,7 @@ void sim(Int_t nev=VAR_EVENTS_PER_JOB)
   {
     simulator.SetTriggerConfig("MUON");
     simulator.SetMakeSDigits("MUON");
-    simulator.SetMakeDigits("MUON");// ITS"); // ITS needed to propagate the simulated vertex
+    simulator.SetMakeDigits("MUON");
   }
 
   if ( VAR_PURELY_LOCAL ) {
@@ -48,13 +48,17 @@ void sim(Int_t nev=VAR_EVENTS_PER_JOB)
     simulator.UseMagFieldFromGRP();
 
     // MUON Tracker
-    if ( VAR_USE_RAW_ALIGN )
+    
+    if (!VAR_OCDB_SNAPSHOT)
     {
-      simulator.SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Full");
-    }
-    else
-    {
-      simulator.SetSpecificStorage("MUON/Align/Data",VAR_SIM_ALIGNDATA);
+        if ( VAR_USE_RAW_ALIGN )
+        {
+        simulator.SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Full");
+        }
+        else
+        {
+        simulator.SetSpecificStorage("MUON/Align/Data",VAR_SIM_ALIGNDATA);
+        }
     }
 
     // ITS
