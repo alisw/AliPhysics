@@ -161,7 +161,7 @@ fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
-fCentrEstimator("V0M"),
+fCentrEstimator(kV0M),
 fOutput(0x0),
 fhZNCvsZNA(0x0),
 fhZDCCvsZDCCA(0x0),
@@ -284,7 +284,7 @@ fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
-fCentrEstimator("V0M"),
+fCentrEstimator(kV0M),
 fOutput(0x0),
 fhZNCvsZNA(0x0),
 fhZDCCvsZDCCA(0x0),
@@ -660,18 +660,22 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   if (fAnalysisType == "AUTOMATIC") {
     
     // get centrality
-    Float_t centr=300, centrCL1=300;
+    Float_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
     if(fDataSet!=k2015) {
-      centr = fCutsEvent->GetCentrality(InputEvent(),McEvent);
+      centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
       centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
+      centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
+      centrTRK = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK");
     } else {
       fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
       if(!fMultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
       }else{
-        centr = fMultSelection->GetMultiplicityPercentile("V0M");
+        centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
         centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+        centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
+        centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
       }
     }
     
@@ -698,7 +702,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             fPileUpCount->Fill(3.5);
           }
           
-          if(fabs(centr-centrCL1)>7.5)  {
+          if(fabs(centrV0M-centrCL1)>7.5)  {
             fPileUpCount->Fill(4.5);
           }
           
@@ -761,7 +765,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             BisPileup=kTRUE;
           }
           
-          if(fabs(centr-centrCL1)>7.5)  {
+          if(fabs(centrV0M-centrCL1)>7.5)  {
             fPileUpCount->Fill(4.5);
             BisPileup=kTRUE;
           }
@@ -804,9 +808,13 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     fFlowEvent->Fill( fCutsRP, fCutsPOI );
     
     fFlowEvent->SetReferenceMultiplicity(fCutsEvent->GetReferenceMultiplicity(InputEvent(),McEvent));
-    fFlowEvent->SetCentrality(centr);
-    fFlowEvent->SetCentralityCL1(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1"));
-    fFlowEvent->SetCentralityTRK(((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK"));
+    
+    if(fCentrEstimator==kV0M) fFlowEvent->SetCentrality(centrV0M);
+    if(fCentrEstimator==kCL0) fFlowEvent->SetCentrality(centrCL0);
+    if(fCentrEstimator==kCL1) fFlowEvent->SetCentrality(centrCL1);
+    if(fCentrEstimator==kTRK) fFlowEvent->SetCentrality(centrTRK);
+    fFlowEvent->SetCentralityCL1(centrCL1);
+    fFlowEvent->SetCentralityTRK(centrTRK);
     //   fFlowEvent->SetNITSCL1(((AliVAODHeader*)aod->GetHeader())->GetNumberOfITSClusters(1));
     Double_t SumV0=0.;
     for(Int_t i=0; i<64; i++) {
@@ -831,7 +839,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     //     if (track->TestFilterBit(128)) fPtPhiEtaRbRFB128[RunBin][CenBin]->Fill(track->Pt(),track->Phi(),track->Eta());
     //     if (track->TestFilterBit(768)) fPtPhiEtaRbRFB768[RunBin][CenBin]->Fill(track->Pt(),track->Phi(),track->Eta());
     //   }
-    fCenDis->Fill(centr);
+    fCenDis->Fill(centrV0M);
     
   }
   

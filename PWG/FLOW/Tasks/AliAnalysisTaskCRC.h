@@ -211,6 +211,8 @@ public:
   TString GetDataSet() const {return this->fDataSet;};
   void SetInteractionRate(TString const n) {this->fInteractionRate = n;};
   TString GetInteractionRate() const {return this->fInteractionRate;}
+  void SetSelectCharge(TString const n) {this->fSelectCharge = n;};
+  TString GetSelectCharge() const {return this->fSelectCharge;}
   void SetCorrWeight(TString const n) {this->fCorrWeight = n;};
   TString GetCorrWeight() const {return this->fCorrWeight;};
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
@@ -321,6 +323,7 @@ private:
   Double_t fCenBinWidth;
   TString fDataSet;
   TString fInteractionRate;
+  TString fSelectCharge;
   TString fCorrWeight;
   TList *fQVecList;       // list with weights
   TList *fCRCZDCCalibList; // ZDC calibration
