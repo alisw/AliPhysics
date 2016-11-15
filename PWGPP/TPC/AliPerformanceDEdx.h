@@ -19,15 +19,14 @@ class AliVEvent;
 class AliVfriendEvent;
 class AliMCEvent;
 class AliVTrack;
-class AliRecInfoCuts;
-class AliMCInfoCuts;
-
+class TRootIoCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceDEdx : public AliPerformanceObject {
 public :
+  AliPerformanceDEdx(TRootIoCtor*);
   AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE, Bool_t useSparse=kTRUE);
   
   virtual ~AliPerformanceDEdx();
@@ -39,7 +38,7 @@ public :
     virtual void Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list);
 
   // Analyse output histograms
   virtual void Analyse();
@@ -66,14 +65,8 @@ public :
   // produce summary (currently not used)
   virtual TTree* CreateSummary();
 
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0)   {fCutsMC = cuts;} 
   void FilldEdxHisotgram(double *vDeDxHisto);
     
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
-
   //
   // TPC dE/dx 
   //
@@ -92,10 +85,6 @@ private:
   THnSparseF *fDeDxHisto; //-> signal:phi:y:z:snp:tgl:ncls:p:nclsDEdx:nclsF
   TObjArray* fFolderObj; // array of analysed histograms
   
-  // Selection cuts
-  AliRecInfoCuts*  fCutsRC; // selection cuts for reconstructed tracks
-  AliMCInfoCuts*   fCutsMC; // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
   
@@ -103,7 +92,7 @@ private:
   AliPerformanceDEdx(const AliPerformanceDEdx&); // not implemented
   AliPerformanceDEdx& operator=(const AliPerformanceDEdx&); // not implemented
 
-  ClassDef(AliPerformanceDEdx,6);
+  ClassDef(AliPerformanceDEdx,7);
 };
 
 #endif
