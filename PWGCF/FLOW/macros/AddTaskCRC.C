@@ -18,6 +18,7 @@ AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
                              Double_t dMinClusTPC=70,
                              Double_t dDCAxy=1000.,
                              Double_t dDCAz=1000.,
+                             TString sSelecCharge="",
                              Bool_t bCutTPCbound=kFALSE,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
@@ -119,7 +120,10 @@ AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
  // create instance of the class
  AliAnalysisTaskCRCZDC* taskFE = new AliAnalysisTaskCRCZDC(taskFEname, "", bCutsQA);
  taskFE->SetCentralityRange(centrMin,centrMax);
- taskFE->SetCentralityEstimator("V0M");
+  if(sCentrEstimator=="V0")  taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kV0M);
+  if(sCentrEstimator=="TRK") taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kTRK);
+  if(sCentrEstimator=="CL1") taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kCL1);
+  if(sCentrEstimator=="CL0") taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kCL0);
  taskFE->SetRejectPileUp(kTRUE);
  taskFE->SetUseMCCen(bZDCMCCen);
  taskFE->SetZDCGainAlpha(ZDCGainAlpha);
@@ -348,6 +352,7 @@ AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
  taskQC->SetCenBinWidth(CenBinWidth);
  taskQC->SetDataSet(sDataSet);
  taskQC->SetInteractionRate(sIntRate);
+ taskQC->SetSelectCharge(sSelecCharge);
  // set thei triggers
  if (EvTrigger == "Cen")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);

@@ -78,9 +78,10 @@ public:
     kAll
   };
   
-  enum MagnetPol { kMAll,
-    kMPos,
-    kMNeg
+  enum SelectCharge {
+    kPosCh,
+    kNegCh,
+    kAllCh
   };
   
   // 0.) methods called in the constructor:
@@ -1077,8 +1078,8 @@ public:
   DataSet GetDataSet() const {return this->fDataSet;}
   void SetInteractionRate(InteractionRate set) {this->fInteractionRate = set;};
   InteractionRate GetInteractionRate() const {return this->fInteractionRate;}
-  void SetMPolSelec(MagnetPol set) {this->fMPolSelec = set;};
-  MagnetPol GetMPolSelec() const {return this->fMPolSelec;}
+  void SetSelectCharge(SelectCharge set) {this->fSelectCharge = set;};
+  SelectCharge GetSelectCharge() const {return this->fSelectCharge;}
   void SetCorrWeightTPC(CorrelationWeights weights) {this->fCorrWeightTPC = weights;};
   CorrelationWeights GetCorrWeightTPC() const {return this->fCorrWeightTPC;};
   void SetCorrWeightVZ(CorrelationWeights weights) {this->fCorrWeightVZ = weights;};
@@ -1477,7 +1478,7 @@ private:
   Int_t fCRCnRun;
   DataSet fDataSet;
   InteractionRate fInteractionRate;
-  MagnetPol fMPolSelec;
+  SelectCharge fSelectCharge;
   TArrayI fRunList;    // Run list
   TList *fCRCQVecList; //! Q Vectors list
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
@@ -1805,7 +1806,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 29);
+  ClassDef(AliFlowAnalysisCRC, 30);
   
 };
 

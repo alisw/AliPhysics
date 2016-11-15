@@ -290,7 +290,7 @@ fCRCIntRbRList(NULL),
 fCRCnRun(211),
 fDataSet(kAny),
 fInteractionRate(kAll),
-fMPolSelec(kMAll),
+fSelectCharge(kAllCh),
 fCRCQVecList(NULL),
 fCRCQVecWeightsList(NULL),
 fCRCZDCCalibList(NULL),
@@ -747,6 +747,10 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         dPt  = aftsTrack->Pt();
         dEta = aftsTrack->Eta();
         dCharge = aftsTrack->Charge();
+        
+        if(fSelectCharge==kPosCh && dCharge<0.) continue;
+        if(fSelectCharge==kNegCh && dCharge>0.) continue;
+        
         cw = (dCharge > 0. ? 0 : 1);
         wPhi = 1.;
         wPt  = 1.;
@@ -754,6 +758,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         wTrack = 1.;
         wPhiEta = 1.;
         wProbCut = 0.;
+        
         //    if(fUsePhiWeights && fPhiWeightsRPs && fnBinsPhi) // determine phi weight for POI:
         //    {
         //     wPhi = fPhiWeightsPOIs[cw]->GetBinContent(1+(Int_t)(TMath::Floor(dPhi*fnBinsPhi/TMath::TwoPi())));
@@ -21479,30 +21484,30 @@ void AliFlowAnalysisCRC::FinalizeReducedCorrelations(TString type, TString ptOrE
 Bool_t AliFlowAnalysisCRC::CheckRunFullTPCFlow(Int_t RunNum)
 {
   Bool_t pass=kFALSE;
-  if(fDataSet==k2011) {
-    Int_t ListMPos[24] = {170309, 170308, 170306, 170270, 170269, 170268, 170230, 170228, 170204, 170203, 170193, 170163, 170159, 170155, 170081, 170027, 169923, 169859, 169858, 169855, 169846, 169838, 169837, 169835};
-    Int_t ListMNeg[44] = {169417, 169415, 169411, 169238, 169167, 169160, 169156, 169148, 169145, 169144, 169138, 169094, 169091, 169035, 168992, 168988, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168460, 168458, 168362, 168361, 168342, 168341, 168325, 168322, 168311, 168310, 168115, 168108, 168107, 168105, 168076, 168069, 167988, 167987, 167985, 167920, 167915};
-    switch (fMPolSelec) {
-      case kMAll:
-        pass=kTRUE;
-        break;
-        
-      case kMPos:
-        for(int i=0; i<24; i++) {
-          if(RunNum==ListMPos[i]) pass=kTRUE;
-        }
-        break;
-        
-      case kMNeg:
-        for(int i=0; i<44; i++) {
-          if(RunNum==ListMNeg[i]) pass=kTRUE;
-        }
-        break;
-    }
-  }
-  else {
-    pass=kTRUE;
-  }
+//  if(fDataSet==k2011) {
+//    Int_t ListMPos[24] = {170309, 170308, 170306, 170270, 170269, 170268, 170230, 170228, 170204, 170203, 170193, 170163, 170159, 170155, 170081, 170027, 169923, 169859, 169858, 169855, 169846, 169838, 169837, 169835};
+//    Int_t ListMNeg[44] = {169417, 169415, 169411, 169238, 169167, 169160, 169156, 169148, 169145, 169144, 169138, 169094, 169091, 169035, 168992, 168988, 168826, 168777, 168514, 168512, 168511, 168467, 168464, 168460, 168458, 168362, 168361, 168342, 168341, 168325, 168322, 168311, 168310, 168115, 168108, 168107, 168105, 168076, 168069, 167988, 167987, 167985, 167920, 167915};
+//    switch (fMPolSelec) {
+//      case kMAll:
+//        pass=kTRUE;
+//        break;
+//        
+//      case kMPos:
+//        for(int i=0; i<24; i++) {
+//          if(RunNum==ListMPos[i]) pass=kTRUE;
+//        }
+//        break;
+//        
+//      case kMNeg:
+//        for(int i=0; i<44; i++) {
+//          if(RunNum==ListMNeg[i]) pass=kTRUE;
+//        }
+//        break;
+//    }
+//  }
+//  else {
+//    pass=kTRUE;
+//  }
   return pass;
 }
 
@@ -23521,12 +23526,15 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
       }
       fFlowQCRefCorFinal[hr][0]->SetBinContent(h+1,Cn2);
       fFlowQCRefCorFinal[hr][0]->SetBinError(h+1,Cn2E);
-      if(Cn4>0) {
-        fFlowQCRefCorFinal[hr][1]->SetBinContent(h+1,Cn4);
-        fFlowQCRefCorFinal[hr][1]->SetBinError(h+1,Cn4E);
-      }
-      fFlowQCRefCorFinal[hr][2]->SetBinContent(h+1,Cn2EG);
-      fFlowQCRefCorFinal[hr][2]->SetBinError(h+1,Cn2EGE);
+      Int_t sign = (Cn4<0?1:-1);
+      Double_t Flow4 = sign*pow(fabs(Cn4),0.25);
+      Double_t Flow4E = fabs(Flow4/(4.*Cn4))*Cn4E;
+      fFlowQCRefCorFinal[hr][1]->SetBinContent(h+1,Flow4);
+      fFlowQCRefCorFinal[hr][1]->SetBinError(h+1,Flow4E);
+      Double_t Flow2 = pow(fabs(Cn2EG),0.5);
+      Double_t Flow2E = fabs(Flow2/(2.*Cn2EG))*Cn2EGE;
+      fFlowQCRefCorFinal[hr][2]->SetBinContent(h+1,Flow2);
+      fFlowQCRefCorFinal[hr][2]->SetBinError(h+1,Flow2E);
       
       // pt-differential
       for(Int_t pt=1; pt<=fPtDiffNBins; pt++) {
