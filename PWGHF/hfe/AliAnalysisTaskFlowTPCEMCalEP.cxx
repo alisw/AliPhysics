@@ -370,11 +370,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     Int_t NpureMC = -1;
     
     if (fMCheader){
-    TList *lh=fMCheader->GetCocktailHeaders();
-    if(lh){
-        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(0); //  0 for HIJING
-        NpureMC = gh->NProduced();
-    }
+        TList *lh=fMCheader->GetCocktailHeaders();
+        if(lh){
+            AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(0); //  0 for HIJING
+            NpureMC = gh->NProduced();
+        }
     }
     
     
@@ -511,15 +511,15 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         const AliQnCorrectionsQnVector *qnTPCneg;
         const AliQnCorrectionsQnVector *qnV0;
         
-        qnV0      = GetQnVectorFromList(qnlist, "VZERO", "latest", "raw");
-        qnTPCpos  = GetQnVectorFromList(qnlist, "TPCPosEta", "latest", "plain");
-        qnTPCneg  = GetQnVectorFromList(qnlist, "TPCNegEta", "latest", "plain");
+        qnV0      = GetQnVectorFromList(qnlist, "VZEROQoverM", "latest", "raw");
+        qnTPCpos  = GetQnVectorFromList(qnlist, "TPCPosEtaQoverM", "latest", "plain");
+        qnTPCneg  = GetQnVectorFromList(qnlist, "TPCNegEtaQoverM", "latest", "plain");
         
         // new way to get the EP, test it later
-//         qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZERO", "latest", "raw");
-//         qnTPCpos = fFlowQnVectorMgr->GetDetectorQnVector("TPCPosEta", "latest", "plain");
-//         qnTPCneg = fFlowQnVectorMgr->GetDetectorQnVector("TPCNegEta", "latest", "plain");
-
+        //         qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZERO", "latest", "raw");
+        //         qnTPCpos = fFlowQnVectorMgr->GetDetectorQnVector("TPCPosEta", "latest", "plain");
+        //         qnTPCneg = fFlowQnVectorMgr->GetDetectorQnVector("TPCNegEta", "latest", "plain");
+        
         
         if (qnTPCpos != NULL)  evPlaneTPCpos = qnTPCpos->EventPlane(2);
         if (qnTPCneg != NULL)  evPlaneTPCneg = qnTPCneg->EventPlane(2);
@@ -887,12 +887,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
                     GetWeightAndDecay(fMCparticle,iCent,iDecay,MCweight);
                     
                     Double_t corr[7]={static_cast<Double_t>(iCent),pt,fTPCnSigma,EovP,dphi,cosdphi,static_cast<Double_t>(iDecay)};
-                    //fCorr->Fill(corr,MCweight); weight not implemented yet
-                    fCorr->Fill(corr);
+                    fCorr->Fill(corr,MCweight);
                     
                     if (TMath::Abs(partPDG)!=11) continue;
                     
-                    //fInclElec[iCent]->Fill(pt,(Double_t)iDecay,MCweight);  weight not implemented yet
+                    fInclElec[iCent]->Fill(pt,(Double_t)iDecay,MCweight);
                     if (pt<3 || (pt>=3 && fTPCnSigma>=-1 && fTPCnSigma<3 && EovP>0.8 && EovP<1.2))
                         fInclElec[iCent]->Fill(pt,(Double_t)iDecay);
                     
@@ -1176,6 +1175,34 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT, Int_t iCe
             if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
         }
     }
+    
+    
+    if (fWhichPeriod==2015){
+        
+        if (iCent==0){
+            double parLowPt[4] = {0.24391,0.776573,14.5647,16.5887};
+            double parHighPt[4] = {0.904165,0.412194,4.00567,6.19943};
+            
+            if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
+            if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
+        }
+        if (iCent==1){
+            double parLowPt[4] = {9.02023,0.952634,9.53571,14.5909};
+            double parHighPt[4] = {0.670683,0.354173,3.81873,5.98829};
+            
+            if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
+            if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
+        }
+        if (iCent==2){
+            double parLowPt[4] = {0.0003684,0.403476,16.0135,11.6549};
+            double parHighPt[4] = {1.16472,0.546184,3.72218,6.50084};
+            
+            if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
+            if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
+        }
+    }
+    
+    
     return weight;
 }
 //_________________________________________
@@ -1207,6 +1234,31 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT, Int_t iCe
             if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
         }
     }
+    
+    if (fWhichPeriod==2015){
+        if (iCent==0){
+            double parLowPt[4] = {0.210832,0.230859,5.25035,5.48219};
+            double parHighPt[4] = {9.18534,0.688547,4.2008,7.57016};
+            
+            if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
+            if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
+        }
+        if (iCent==1){
+            double parLowPt[4] = {0.0606017,0.184059,6.29752,5.54173};
+            double parHighPt[4] = {9.9616,0.706925,4.00359,7.53403};
+            
+            if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
+            if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
+        }
+        if (iCent==2){
+            double parLowPt[4] = {0.128178,0.228773,5.01049,5.49639};
+            double parHighPt[4] = {14.5792,0.870677,4.19146,8.23386};
+            
+            if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
+            if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
+        }
+    }
+    
     return weight;
 }
 //_________________________________________
@@ -1671,23 +1723,14 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
         recg.GetMass(mass,width);
         
         Double_t elecMC[10]={(Double_t)iCent,pt,mass,(Double_t)fFlagLS,(Double_t)iEnhance,(Double_t)iDecay, EovP, fTPCnSigma,dphiPhotElec};
-        fElecMC->Fill(elecMC);
+        fElecMC->Fill(elecMC,weight);
         
-        if(fFlagLS) fInvmassLS[iCent]->Fill(mass,pt);
-        if(fFlagULS) fInvmassULS[iCent]->Fill(mass,pt);
+        if(fFlagLS) fInvmassLS[iCent]->Fill(mass,pt,weight);
+        if(fFlagULS) fInvmassULS[iCent]->Fill(mass,pt,weight);
         
-        if(mass<fInvmassCut) fElecPtInvmassCut[iCent]->Fill(pt,iDecay);
-        if(mass<fInvmassCut && fFlagULS) fElecPtULSInvmassCut[iCent]->Fill(pt,iDecay);
-        if(mass<fInvmassCut && fFlagLS) fElecPtLSInvmassCut[iCent]->Fill(pt,iDecay);
-        
-        //        fElecMC->Fill(elecMC,weight);
-        //
-        //        if(fFlagLS) fInvmassLS[iCent]->Fill(mass,pt,weight);
-        //        if(fFlagULS) fInvmassULS[iCent]->Fill(mass,pt,weight);
-        //
-        //        if(mass<fInvmassCut) fElecPtInvmassCut[iCent]->Fill(pt,iDecay,weight);
-        //        if(mass<fInvmassCut && fFlagULS) fElecPtULSInvmassCut[iCent]->Fill(pt,iDecay,weight);
-        //        if(mass<fInvmassCut && fFlagLS) fElecPtLSInvmassCut[iCent]->Fill(pt,iDecay,weight);
+        if(mass<fInvmassCut) fElecPtInvmassCut[iCent]->Fill(pt,iDecay,weight);
+        if(mass<fInvmassCut && fFlagULS) fElecPtULSInvmassCut[iCent]->Fill(pt,iDecay,weight);
+        if(mass<fInvmassCut && fFlagLS) fElecPtLSInvmassCut[iCent]->Fill(pt,iDecay,weight);
     }
     fFlagPhotonicElec = flagPhotonicElec;
     fFlagPhotonicElecBCG = flagPhotonicElecBCG;
