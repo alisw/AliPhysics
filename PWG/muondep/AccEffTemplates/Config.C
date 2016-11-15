@@ -36,12 +36,24 @@
 //--- Functions ---
 class AliGenPythia;
 
+//_________________________________________________________
+void LoadPhotos( void )
+{
+  // old evtgen libraries
+    std::cout << "LoadPhotos" << std::endl;
+     gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8210/xmldoc"));
+  gSystem->Load("libPhotos" );
+  gSystem->Load("libEvtGen");
+  gSystem->Load("libTEvtGen");
+}
+
 void Config()
 {
   // Libraries required by geant321
 #if defined(__CINT__)
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
   gSystem->Load("libgeant321");
+  LoadPhotos();
 #endif
 
   
