@@ -2317,6 +2317,8 @@ if(histoFracDead3->GetEntries()>0){
     cfrac=new TCanvas("cfrac","Fraction of SDD modules ON",900,900);
     cfrac->Divide(1,3);
     cfrac->cd(1);
+    histoFracDead3->SetMinimum(0.0);
+    histoFracDead3->SetMaximum(1.2);
     histoFracDead3->SetMarkerStyle(20);
     histoFracDead3->SetMarkerColor(kOrange+1);
     histoFracDead3->SetLineColor(kOrange+1);
@@ -2328,6 +2330,8 @@ if(histoFracDead3->GetEntries()>0){
     tf3->SetNDC();
     tf3->SetTextColor(kOrange+1);
     tf3->Draw();
+    histoFracDead4->SetMinimum(0.0);
+    histoFracDead4->SetMaximum(1.2);
     histoFracDead4->SetMarkerStyle(20);
     histoFracDead4->SetMarkerColor(kAzure+1);
     histoFracDead4->SetLineColor(kAzure+1);
@@ -3024,7 +3028,7 @@ TCanvas* cpu;
         
         cPixel->cd(2);
         histoFlagON1->SetMaximum(2.5);
-        histoFlagON1->SetMinimum(-0.0);
+        histoFlagON1->SetMinimum(0.0);
         histoFlagON1->Draw("p");
         TLatex* tf4a_3=new TLatex(0.2,0.30,"Status flag Layer 1: 1=OK, 0=ALARM");
         tf4a_3->SetNDC();
