@@ -11,12 +11,13 @@
 #include "AliAnalysisCuts.h"
 
 class TArrayI;
+class TRootIoCtor;
 
 class AliMCInfoCuts : public AliAnalysisCuts
 {
 public:
-  AliMCInfoCuts();
-  AliMCInfoCuts(const Char_t* name, const Char_t *title ="");
+  AliMCInfoCuts(TRootIoCtor*);
+  AliMCInfoCuts(const Char_t* name="", const Char_t *title ="");
   AliMCInfoCuts(const AliMCInfoCuts& that);
   AliMCInfoCuts& operator=(const AliMCInfoCuts& that);
   virtual ~AliMCInfoCuts(); 

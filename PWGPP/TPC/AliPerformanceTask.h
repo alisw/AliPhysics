@@ -26,7 +26,7 @@ class TNtuple;
 class AliPerformanceTask : public AliAnalysisTask {
  public:
     AliPerformanceTask();
-    AliPerformanceTask(const char *name);
+    AliPerformanceTask(const char *name, const char* title="");
     virtual ~AliPerformanceTask();
   
   virtual void   CreateOutputObjects();
@@ -43,6 +43,7 @@ class AliPerformanceTask : public AliAnalysisTask {
 
   // Use V friend
   void SetUseVfriend(Bool_t useVFriend = kFALSE) {fUseVfriend = useVFriend;}
+  void SetUseESDfriend(Bool_t useFriend = kFALSE) {SetUseVfriend(useFriend);}
 
   // Use HLT ESD
   void SetUseHLT(Bool_t useHLT = kFALSE) {fUseHLT = useHLT;}

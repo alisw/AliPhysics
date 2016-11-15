@@ -21,13 +21,13 @@ class AliVfriendEvent;
 class AliMCEvent; 
 class AliMCParticle; 
 class AliVtrack;
-class AliRecInfoCuts;
-class AliMCInfoCuts;
+class TRootIoCtor;
 
 #include "AliPerformanceObject.h"
 
 class AliPerformanceEff : public AliPerformanceObject {
 public :
+  AliPerformanceEff(TRootIoCtor*);
   AliPerformanceEff(const Char_t* name="AliPerformanceEff",const Char_t*title="AliPerformanceEff",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE);
   virtual ~AliPerformanceEff();
 
@@ -38,7 +38,7 @@ public :
   virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vFriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list);
 
   // Analyse output histograms 
   virtual void Analyse();
@@ -65,14 +65,6 @@ public :
   Bool_t IsFindable(const AliMCEvent *mcEvent, Int_t label);
   Int_t TransformToPID(TParticle *mcPart);
 
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;} 
-  
-  // Getters
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;} 
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
-
   THnSparseF* GetEffHisto() const {return fEffHisto;}
   THnSparseF* GetEffSecHisto() const {return fEffSecHisto;}
 
@@ -88,17 +80,13 @@ private:
   THnSparseF *fEffHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:charge
   THnSparseF *fEffSecHisto; //-> mceta:mcphi:mcpt:pid:isPrim:recStatus:findable:mcR:mother_phi:mother_eta:charge
 
-  // Global cuts objects
-  AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
-  AliMCInfoCuts*  fCutsMC;     // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   AliPerformanceEff(const AliPerformanceEff&); // not implemented
   AliPerformanceEff& operator=(const AliPerformanceEff&); // not implemented
 
-  ClassDef(AliPerformanceEff,2);
+  ClassDef(AliPerformanceEff,3);
 };
 
 #endif

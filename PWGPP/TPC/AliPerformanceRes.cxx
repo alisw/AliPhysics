@@ -63,14 +63,22 @@ ClassImp(AliPerformanceRes)
 Double_t AliPerformanceRes::fgkMergeEntriesCut=5000000.; //5*10**6 tracks (small default to keep default memory foorprint low)
 
 //_____________________________________________________________________________
+AliPerformanceRes::AliPerformanceRes(TRootIoCtor* b):
+  AliPerformanceObject(b),
+  fResolHisto(0),
+  fPullHisto(0),
+
+  // histogram folder 
+  fAnalysisFolder(0)
+{
+  // io constructor	
+}
+
+//_____________________________________________________________________________
 AliPerformanceRes::AliPerformanceRes(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):
   AliPerformanceObject(name,title),
   fResolHisto(0),
   fPullHisto(0),
-
-  // Cuts 
-  fCutsRC(0),  
-  fCutsMC(0),  
 
   // histogram folder 
   fAnalysisFolder(0)
@@ -185,12 +193,6 @@ void AliPerformanceRes::Init(){
   fPullHisto->GetAxis(9)->SetTitle("1/p_{Tmc} (GeV/c)^{-1}");
   fPullHisto->Sumw2();
 
-  // Init cuts 
-  if(!fCutsMC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  if(!fCutsRC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
-
   // init folder
   fAnalysisFolder = CreateFolder("folderRes","Analysis Resolution Folder");
 }
@@ -240,10 +242,10 @@ void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
   //printf("charge %d \n",particle->GetPDG()->Charge());
   
   // Only 5 charged particle species (e,mu,pi,K,p)
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
@@ -256,10 +258,10 @@ void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
   Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
   // nb. TPC clusters cut
-  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return;
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   { 
     if(mcpt == 0) return;
     double Bz = vEvent->GetMagneticField();
@@ -354,10 +356,10 @@ void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
 
 
   // Only 5 charged particle species (e,mu,pi,K,p)
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t mceta =  particle->Eta();
   Float_t mcphi =  particle->Phi();
@@ -367,14 +369,14 @@ void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
   Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
   if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
-  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
-  if(vTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters
+  if(vTrack->GetITSclusters(0)<fCutsRC.GetMinNClustersITS()) return;  // min. nb. ITS clusters
   
   Float_t deltaPtTPC=0, deltaYTPC=0, deltaZTPC=0, deltaPhiTPC=0, deltaLambdaTPC=0; 
   Float_t pull1PtTPC=0, pullYTPC=0, pullZTPC=0, pullPhiTPC=0, pullLambdaTPC=0; 
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   { 
     if(mcpt == 0) return;
     Double_t trackYvert = vTrack->Yv(); // ****  should initialize to zero
@@ -479,10 +481,10 @@ void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliVTrack *co
   //printf("charge %d \n",particle->GetPDG()->Charge());
 
   // Only 5 charged particle species (e,mu,pi,K,p)
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t mceta =  particle->Eta();
   Float_t mcphi =  particle->Phi();
@@ -492,13 +494,13 @@ void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliVTrack *co
   Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
   if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
-  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   { 
 
     if(mcpt == 0) return;
@@ -616,10 +618,10 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   TParticle *particle = mcParticle->Particle();
   if(!particle) return;
 
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Double_t mclocal[4]; //Rotated x,y,Px,Py mc-coordinates - the MC data should be rotated since the track is propagated best along x
   Double_t c = TMath::Cos(track->GetAlpha());
@@ -653,7 +655,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   Float_t mctgl = TMath::Tan(TMath::ATan2(ref0->Pz(),ref0->Pt()));
 
   if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
-  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
@@ -662,7 +664,7 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   Bool_t isPrimary;
   if ( IsUseTrackVertex() )
   {
-    isPrimary = TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ();
+    isPrimary = TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ();
   }
   else
   {
@@ -761,10 +763,10 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliVTrack *co
   TParticle *particle = mcParticle->Particle();
   if(!particle) return;
 
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   // calculate alpha angle
   Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
@@ -787,13 +789,13 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliVTrack *co
   Float_t mctgl = TMath::Tan(TMath::ATan2(ref0->Pz(),ref0->Pt()));
 
   if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
-  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   { 
     if(mcpt == 0) return;
     

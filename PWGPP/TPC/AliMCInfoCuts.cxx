@@ -32,7 +32,7 @@ using namespace std;
 ClassImp(AliMCInfoCuts)
 
 //_____________________________________________________________________________
-AliMCInfoCuts::AliMCInfoCuts() : 
+AliMCInfoCuts::AliMCInfoCuts(TRootIoCtor*) : 
 AliAnalysisCuts()
 , fMinRowsWithDigits(0)
 , fMaxR(0)
@@ -40,9 +40,9 @@ AliAnalysisCuts()
 , fMinTPCSignal(0)
 , fMaxTPCSignal(0)
 , fMinTrackLength(0)
-, aTrackParticles(0)
+, aTrackParticles(NULL)
 {
-  // default constructor 
+  // io ctor
 }
 
 //_____________________________________________________________________________
@@ -54,7 +54,7 @@ AliMCInfoCuts::AliMCInfoCuts(const Char_t* name,const Char_t *title) :
 , fMinTPCSignal(0)
 , fMaxTPCSignal(0)
 , fMinTrackLength(0)
-, aTrackParticles(0)
+, aTrackParticles(NULL)
 {
   // default constructor 
   

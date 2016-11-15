@@ -79,7 +79,6 @@ ClassImp(AliPerformanceTPC)
 Bool_t AliPerformanceTPC::fgMergeTHnSparse = kFALSE;
 Bool_t AliPerformanceTPC::fgUseMergeTHnSparse = kFALSE;
 
-
 //Cluster Histograms
 TH3D *h_tpc_clust_0_1_2 = 0;
 
@@ -117,21 +116,18 @@ TH3D *h_tpc_track_neg_recvertex_3_5_6 = 0;
 TH3D *h_tpc_track_neg_recvertex_4_5_6 = 0;
 
 //_____________________________________________________________________________
-AliPerformanceTPC::AliPerformanceTPC():
+AliPerformanceTPC::AliPerformanceTPC(TRootIoCtor*):
   AliPerformanceObject("AliPerformanceTPC"),
   fTPCClustHisto(0),
   fTPCEventHisto(0),
   fTPCTrackHisto(0),
   fFolderObj(0),
 
-  // Cuts
-  fCutsRC(0),
-  fCutsMC(0),
-
   // histogram folder
   fAnalysisFolder(0),
   fUseHLT(kFALSE)
 {
+  // io ctor
 }
 
 //_____________________________________________________________________________
@@ -141,10 +137,6 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
   fTPCEventHisto(0),
   fTPCTrackHisto(0),
   fFolderObj(0),
-
-  // Cuts 
-  fCutsRC(0),  
-  fCutsMC(0),  
 
   // histogram folder 
   fAnalysisFolder(0),
@@ -160,6 +152,31 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
 }
 
 //_____________________________________________________________________________
+AliPerformanceTPC::AliPerformanceTPC(const AliPerformanceTPC& that):
+  AliPerformanceObject(that),
+  fTPCClustHisto(that.fTPCClustHisto),
+  fTPCEventHisto(that.fTPCEventHisto),
+  fTPCTrackHisto(that.fTPCTrackHisto),
+  fFolderObj(NULL),
+  fAnalysisFolder(NULL),
+  fUseHLT(that.fUseHLT)
+{
+}
+
+//_____________________________________________________________________________
+AliPerformanceTPC& AliPerformanceTPC::operator=(const AliPerformanceTPC& that)
+{
+  AliPerformanceObject::operator=(that);
+  fTPCClustHisto = that.fTPCClustHisto;
+  fTPCEventHisto = that.fTPCEventHisto;
+  fTPCTrackHisto = that.fTPCTrackHisto;
+  fFolderObj = NULL;
+  fAnalysisFolder = NULL;
+  fUseHLT = that.fUseHLT;
+  return *this;
+}
+
+//_____________________________________________________________________________
 AliPerformanceTPC::~AliPerformanceTPC()
 {
   // destructor
@@ -169,8 +186,6 @@ AliPerformanceTPC::~AliPerformanceTPC()
     delete fTPCEventHisto;
     delete fTPCTrackHisto;
     delete fFolderObj;
-    delete fCutsMC;
-    delete fCutsRC;
     delete fAnalysisFolder;
 
     //globals, need to set to null
@@ -457,14 +472,6 @@ void AliPerformanceTPC::Init()
         fFolderObj->Add(h_tpc_track_neg_recvertex_2_5_6);
     }
 
-  // Init cuts 
-  if(!fCutsMC) {
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  }
-  if(!fCutsRC) {
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object"); 
-  }
-
   // init folder
 
   //delete []binsCOverPt;
@@ -536,14 +543,14 @@ void AliPerformanceTPC::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTra
   // select primaries
   //
   Double_t dcaToVertex = -1;
-  if( fCutsRC->GetDCAToVertex2D() ) 
+  if( fCutsRC.GetDCAToVertex2D() ) 
   {
-    dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ()); 
+    dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC.GetMaxDCAToVertexXY()/fCutsRC.GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC.GetMaxDCAToVertexZ()/fCutsRC.GetMaxDCAToVertexZ()); 
   }
-  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
-  if(nClust < fCutsRC->GetMinNClustersTPC()) return;
+  if(fCutsRC.GetDCAToVertex2D() && dcaToVertex > 1) return;
+  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC.GetMaxDCAToVertexXY()) return;
+  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC.GetMaxDCAToVertexZ()) return;
+  if(nClust < fCutsRC.GetMinNClustersTPC()) return;
 
   //Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,qpt,vertStatus};
   Double_t vTPCTrackHisto[10] = {static_cast<Double_t>(nClust),static_cast<Double_t>(chi2PerCluster),static_cast<Double_t>(clustPerFindClust),static_cast<Double_t>(dca[0]),static_cast<Double_t>(dca[1]),static_cast<Double_t>(eta),static_cast<Double_t>(phi),static_cast<Double_t>(pt),static_cast<Double_t>(q),static_cast<Double_t>(vertStatus)};
@@ -634,14 +641,14 @@ void AliPerformanceTPC::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const v
     if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
     
     Double_t dcaToVertex = -1;
-    if( fCutsRC->GetDCAToVertex2D() )
+    if( fCutsRC.GetDCAToVertex2D() )
     {
-        dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ());
+        dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC.GetMaxDCAToVertexXY()/fCutsRC.GetMaxDCAToVertexXY() + dca[1]*dca[1]/fCutsRC.GetMaxDCAToVertexZ()/fCutsRC.GetMaxDCAToVertexZ());
     }
-  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
-  if(nClust < fCutsRC->GetMinNClustersTPC()) return;
+  if(fCutsRC.GetDCAToVertex2D() && dcaToVertex > 1) return;
+  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC.GetMaxDCAToVertexXY()) return;
+  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC.GetMaxDCAToVertexZ()) return;
+  if(nClust < fCutsRC.GetMinNClustersTPC()) return;
 
   Double_t vTPCTrackHisto[10] = {static_cast<Double_t>(nClust),static_cast<Double_t>(chi2PerCluster),static_cast<Double_t>(clustPerFindClust),static_cast<Double_t>(dca[0]),static_cast<Double_t>(dca[1]),static_cast<Double_t>(eta),static_cast<Double_t>(phi),static_cast<Double_t>(pt),static_cast<Double_t>(q),static_cast<Double_t>(vertStatus)};
     
@@ -824,14 +831,14 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
        AliESDtrack *tpcTrack = AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(vEvent,iTrack);
         if(!tpcTrack) continue;
       // track selection
-       if(fCutsRC->AcceptVTrack(vTrack) ) {
+       if(fCutsRC.AcceptVTrack(vTrack) ) {
           mult++;
           if(tpcTrack->Charge()>0.) multP++;
           if(tpcTrack->Charge()<0.) multN++;
       }
     }
     else{//Implementing FlatESD cuts
-        if(fCutsRC->AcceptFTrack(vTrack,vEvent) ){
+        if(fCutsRC.AcceptFTrack(vTrack,vEvent) ){
             mult++;
             AliExternalTrackParam trackParams;
             vTrack->GetTrackParam(trackParams);
@@ -1016,7 +1023,7 @@ return newFolder;
 }
 
 //_____________________________________________________________________________
-Long64_t AliPerformanceTPC::Merge(TCollection* const list) 
+Long64_t AliPerformanceTPC::Merge(TCollection* list) 
 {
   // Merge list of objects (needed by PROOF)
 
