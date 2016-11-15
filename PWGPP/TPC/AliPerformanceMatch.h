@@ -25,15 +25,15 @@ class AliVfriendEvent;
 class AliVfriendTrack; 
 class AliMCEvent;
 class AliMCParticle;
-class AliMCInfoCuts;
-class AliRecInfoCuts;
 class AliExternalTrackParam;
+class TRootIoCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceMatch : public AliPerformanceObject {
 public :
+  AliPerformanceMatch(TRootIoCtor*);
   AliPerformanceMatch(const Char_t* name="AliPerformanceMatch", const Char_t* title="AliPerformanceMatch",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Bool_t useSparse=kTRUE);
   virtual ~AliPerformanceMatch();
 
@@ -44,7 +44,7 @@ public :
   virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,AliVfriendEvent *const vfriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list);
 
   // Project Histograms store in AnalysisFolder
   virtual void Analyse();
@@ -69,13 +69,6 @@ public :
 
   // Export objects to folder
   TFolder *ExportToFolder(TObjArray * array=0);
-
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-   
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}  
 
   TH1F*  MakeResol(TH2F * his, Int_t integ=0, Bool_t type=kFALSE, Int_t cut=0); 
 
@@ -124,10 +117,6 @@ private:
   
   TObjArray* fFolderObj; // array of analysed histograms  
 
-  // Global cuts objects
-  AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks
-  AliMCInfoCuts*  fCutsMC;       // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
   
@@ -136,7 +125,7 @@ private:
   AliPerformanceMatch(const AliPerformanceMatch&); // not implemented
   AliPerformanceMatch& operator=(const AliPerformanceMatch&); // not implemented
 
-  ClassDef(AliPerformanceMatch,5);
+  ClassDef(AliPerformanceMatch,6);
 };
 
 #endif

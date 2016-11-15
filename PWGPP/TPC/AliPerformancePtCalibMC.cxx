@@ -102,8 +102,6 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name, const char *t
    fESDcuts(0),
    fPions(0),
    fEtaAcceptance(0),
-   fCutsRC(0),
-   fCutsMC(0),
    fList(0),
           
    // histograms
@@ -150,8 +148,6 @@ AliPerformancePtCalibMC::AliPerformancePtCalibMC(const char *name, const char *t
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
    fPions = kFALSE;
-   fCutsRC = NULL;
-   fCutsMC = NULL;
 
    fEtaAcceptance = 0.8;
    

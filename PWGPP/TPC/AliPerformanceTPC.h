@@ -26,19 +26,18 @@ class AliStack;
 class AliVEvent;
 class AliVEvent;
 class AliVfriendEvent; 
-class AliMCInfoCuts;
-class AliRecInfoCuts;
+class TRootIoCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
-#include "AliMergeable.h"
-#include "AliRecInfoCuts.h"
-#include "AliMCInfoCuts.h"
 
-class AliPerformanceTPC : public AliPerformanceObject, public AliMergeable {
+class AliPerformanceTPC : public AliPerformanceObject {
 public :
-  AliPerformanceTPC();
-  AliPerformanceTPC(const Char_t* name, const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE, Bool_t useSparse = kTRUE);
+  AliPerformanceTPC(TRootIoCtor*);
+  AliPerformanceTPC(const Char_t* name="AliPerformanceTPC", const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE, Bool_t useSparse = kTRUE);
+
+  AliPerformanceTPC(const AliPerformanceTPC&);
+  AliPerformanceTPC& operator=(const AliPerformanceTPC&);
 
   virtual ~AliPerformanceTPC();
 
@@ -46,9 +45,9 @@ public :
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const infoMC=0, AliVEvent* const infoRC=0, AliVfriendEvent* const vfriendEvent=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE);
+  virtual void  Exec(AliMCEvent* const infoMC, AliVEvent* const infoRC, AliVfriendEvent* const vfriendEvent, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE);
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list=0);
 
   // Analyse output histograms
   virtual void Analyse();
@@ -70,19 +69,6 @@ public :
   // Export objects to folder
   TFolder *ExportToFolder(TObjArray * array=0);
 
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts) {
-    if (!cuts) return;
-    if (!fCutsRC) fCutsRC=new AliRecInfoCuts(*cuts); else *fCutsRC = *cuts;
-  }
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts) {
-    if (!cuts) return;
-    if (!fCutsMC) fCutsMC=new AliMCInfoCuts(*cuts); else *fCutsMC = *cuts;
-  }
-
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
-
   // getters
   //
   THnSparse *GetTPCClustHisto() const  { return fTPCClustHisto; }
@@ -96,7 +82,7 @@ public :
   
   void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
   Bool_t GetUseHLT() { return fUseHLT; }
-  TObjArray* GetListOfDrawableObjects() {TObjArray* tmp = fFolderObj; fFolderObj = NULL; return tmp;}
+  TCollection* GetListOfDrawableObjects() {TObjArray* tmp = fFolderObj; fFolderObj = NULL; return tmp;}
 
   virtual void ResetOutputData();
 
@@ -112,18 +98,11 @@ private:
   THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
   TObjArray* fFolderObj; // array of analysed histograms
 
-  // Global cuts objects
-  AliRecInfoCuts* fCutsRC;  // selection cuts for reconstructed tracks
-  AliMCInfoCuts*  fCutsMC;  // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   Bool_t fUseHLT; // use HLT ESD
-  AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
-  AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
-
-  ClassDef(AliPerformanceTPC,13);
+  ClassDef(AliPerformanceTPC,14);
 };
 
 #endif

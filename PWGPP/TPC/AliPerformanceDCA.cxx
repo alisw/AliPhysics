@@ -69,10 +69,6 @@ AliPerformanceDCA::AliPerformanceDCA(const Char_t* name, const Char_t* title,Int
   // DCA histograms
   fDCAHisto(0),
 
-  // Cuts 
-  fCutsRC(0), 
-  fCutsMC(0),  
-
   // histogram folder 
   fAnalysisFolder(0)
 {
@@ -133,12 +129,6 @@ void AliPerformanceDCA::Init()
    fDCAHisto->GetAxis(4)->SetTitle("phi (rad)");
    fDCAHisto->Sumw2();
 
-  // init cuts
-  if(!fCutsMC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  if(!fCutsRC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
- 
   // init folder
   fAnalysisFolder = CreateFolder("folderDCA","Analysis DCA Folder");
 }
@@ -176,7 +166,7 @@ void AliPerformanceDCA::ProcessTPC(AliStack* const stack, AliVTrack *const vTrac
   Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
   vTrack->GetImpactParametersTPC(dca,cov);
 
-  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters  
   Double_t vDCAHisto[5]={dca[0],dca[1],etpTrack->Eta(),etpTrack->Pt(),etpTrack->Phi()};
   fDCAHisto->Fill(vDCAHisto);
 
@@ -215,9 +205,9 @@ void AliPerformanceDCA::ProcessTPCITS(AliStack* const stack, AliVTrack *const vT
   Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
   Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
   vTrack->GetImpactParameters(dca,cov);
-  if(vTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
+  if(vTrack->GetITSclusters(0)<fCutsRC.GetMinNClustersITS()) return;  // min. nb. ITS clusters
   if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
-  if (vTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters  
 
   Double_t vDCAHisto[5]={dca[0],dca[1],vTrack->Eta(),vTrack->Pt(),vTrack->Phi()};
   fDCAHisto->Fill(vDCAHisto);

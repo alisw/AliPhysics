@@ -24,15 +24,15 @@ class AliVEvent;
 class AliVfriendEvent; 
 class AliMCEvent;
 class AliMCParticle;
-class AliMCInfoCuts;
-class AliRecInfoCuts;
 class AliExternalTrackParam;
+class TRootIoCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceMC : public AliPerformanceObject {
 public :
+  AliPerformanceMC(TRootIoCtor*);
   AliPerformanceMC(const Char_t* name="AliPerformanceMC", const Char_t* title="AliPerformanceMC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE);
   virtual ~AliPerformanceMC();
 
@@ -43,7 +43,7 @@ public :
   virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vfriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list);
 
   // Analyse output histograms
   virtual void Analyse();
@@ -62,13 +62,6 @@ public :
 
   // Export objects to folder
   TFolder *ExportToFolder(TObjArray * array=0);
-
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-   
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}  
 
   TH1F*  MakeResol(TH2F * his, Int_t integ=0, Bool_t type=kFALSE, Int_t cut=0); 
 
@@ -89,17 +82,13 @@ private:
   // pull histogram
   THnSparseF *fPullHisto;  //-> pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt
 
-  // Global cuts objects
-  AliRecInfoCuts*  fCutsRC;      // selection cuts for reconstructed tracks
-  AliMCInfoCuts*  fCutsMC;       // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   AliPerformanceMC(const AliPerformanceMC&); // not implemented
   AliPerformanceMC& operator=(const AliPerformanceMC&); // not implemented
 
-  ClassDef(AliPerformanceMC,1);
+  ClassDef(AliPerformanceMC,2);
 };
 
 #endif

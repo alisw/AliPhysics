@@ -79,6 +79,59 @@ using namespace std;
 ClassImp(AliPerformancePtCalib)
 
 //________________________________________________________________________
+AliPerformancePtCalib::AliPerformancePtCalib(TRootIoCtor* b):
+   AliPerformanceObject(b),
+   
+   // option parameter for AliPerformancePtCalib::Analyse()
+   fNThetaBins(0), 
+   fNPhiBins(0),
+   fMaxPhi(0),
+   fMinPhi(0),
+   fMaxTheta(0),
+   fMinTheta(0),
+   fRange(0),
+   fExclRange(0),
+   fFitGaus(0) ,
+   fDoRebin(0),
+   fRebin(0),
+   // option parameter for user defined charge/pt shift
+   fShift(0),
+   fDeltaInvP(0),
+   //options for cuts
+   fOptTPC(0),
+   fESDcuts(0),
+   fPions(0),
+   fEtaAcceptance(0),
+   fList(0),
+   // histograms
+   fHistInvPtPtThetaPhi(0),
+   fHistPtShift0(0),
+   fHistPrimaryVertexPosX(0),
+   fHistPrimaryVertexPosY(0),
+   fHistPrimaryVertexPosZ(0),
+   fHistTrackMultiplicity(0),
+   fHistTrackMultiplicityCuts(0),
+
+   fHistTPCMomentaPosP(0),
+   fHistTPCMomentaNegP(0),
+   fHistTPCMomentaPosPt(0),
+   fHistTPCMomentaNegPt(0),
+   fHistUserPtShift(0),	
+   fHistdedxPions(0),
+   //esd track cuts													 
+   fESDTrackCuts(0),
+   //pid
+   fESDpid(0),
+   // analysis folder 
+   fAnalysisFolder(0)
+{
+   for(Int_t i=0; i<100; i++) {
+     fThetaBins[i] = 0.0;
+     fPhiBins[i] = 0.0;
+   }
+}
+
+//________________________________________________________________________
 AliPerformancePtCalib::AliPerformancePtCalib(const Char_t* name, const Char_t* title):
    AliPerformanceObject(name,title),
    
@@ -102,8 +155,6 @@ AliPerformancePtCalib::AliPerformancePtCalib(const Char_t* name, const Char_t* t
    fESDcuts(0),
    fPions(0),
    fEtaAcceptance(0),
-   fCutsRC(0),
-   fCutsMC(0),
    fList(0),
    // histograms
    fHistInvPtPtThetaPhi(0),
@@ -136,8 +187,6 @@ AliPerformancePtCalib::AliPerformancePtCalib(const Char_t* name, const Char_t* t
    fOptTPC =  kTRUE;                      // read TPC tracks yes/no
    fESDcuts = kFALSE;
    fPions = kFALSE;
-   fCutsRC = NULL;
-   fCutsMC = NULL;
    
    //esd track cut options
    fEtaAcceptance = 0.8;

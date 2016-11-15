@@ -80,6 +80,18 @@ TH2D *h_tpc_dedx_mips_a_0_1 = 0;
 
 
 //_____________________________________________________________________________
+AliPerformanceDEdx::AliPerformanceDEdx(TRootIoCtor* b):
+ AliPerformanceObject(b),
+  // dEdx 
+  fDeDxHisto(0),
+  fFolderObj(0),
+  // histogram folder 
+  fAnalysisFolder(0)
+{
+  // io constructor
+}
+
+//_____________________________________________________________________________
 AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator, Bool_t useSparse):
  AliPerformanceObject(name,title),
 
@@ -87,10 +99,6 @@ AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, 
   fDeDxHisto(0),
   fFolderObj(0),
   
-  // Cuts 
-  fCutsRC(0), 
-  fCutsMC(0),
-
   // histogram folder 
   fAnalysisFolder(0)
 {
@@ -203,14 +211,6 @@ void AliPerformanceDEdx::Init()
     
    //fDeDxHisto->Sumw2();
 
-   // Init cuts
-   if(!fCutsMC) {
-     AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-   }
-   if(!fCutsRC) {
-     AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
-   }
-
    // init folder
    fAnalysisFolder = CreateFolder("folderDEdx","Analysis de/dx Folder");
 
@@ -270,13 +270,13 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliVTrack *const
   // select primaries
   //
   Double_t dcaToVertex = -1;
-  if( fCutsRC->GetDCAToVertex2D() ) 
+  if( fCutsRC.GetDCAToVertex2D() ) 
   {
-      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC->GetMaxDCAToVertexXY()/fCutsRC->GetMaxDCAToVertexXY()+dca[1]*dca[1]/fCutsRC->GetMaxDCAToVertexZ()/fCutsRC->GetMaxDCAToVertexZ());
+      dcaToVertex = TMath::Sqrt(dca[0]*dca[0]/fCutsRC.GetMaxDCAToVertexXY()/fCutsRC.GetMaxDCAToVertexXY()+dca[1]*dca[1]/fCutsRC.GetMaxDCAToVertexZ()/fCutsRC.GetMaxDCAToVertexZ());
   }
-  if(fCutsRC->GetDCAToVertex2D() && dcaToVertex > 1) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
-  if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
+  if(fCutsRC.GetDCAToVertex2D() && dcaToVertex > 1) return;
+  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC.GetMaxDCAToVertexXY()) return;
+  if(!fCutsRC.GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC.GetMaxDCAToVertexZ()) return;
 
   Float_t dedx = vTrack->GetTPCsignal();
   Int_t ncls = vTrack->GetTPCNcls();

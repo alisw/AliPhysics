@@ -11,14 +11,13 @@
 
 class AliVTrack;
 class AliVEvent;
+class TRootIoCtor;
 
 class AliRecInfoCuts : public AliESDtrackCuts
 {
 public:
-  AliRecInfoCuts();
-  AliRecInfoCuts(const Char_t* name, const Char_t *title ="");
-  AliRecInfoCuts(const AliRecInfoCuts& that);
-  AliRecInfoCuts& operator=(const AliRecInfoCuts& that);
+  AliRecInfoCuts(TRootIoCtor*);
+  AliRecInfoCuts(const Char_t* name="", const Char_t *title ="");
   virtual ~AliRecInfoCuts() {;}
  
   // setters 

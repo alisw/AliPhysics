@@ -98,8 +98,8 @@ AliPerformanceTask::AliPerformanceTask()
 }
 
 //_____________________________________________________________________________
-AliPerformanceTask::AliPerformanceTask(const char *name)
-  : AliAnalysisTask(name, "")
+AliPerformanceTask::AliPerformanceTask(const char *name, const char* title)
+  : AliAnalysisTask(name, title)
   , fVEvent(0)
   , fVfriendEvent(0)
   , fMC(0)
