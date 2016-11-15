@@ -495,7 +495,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
       xmaxReco[1]  = 16.;
       
       nBinsReco[2] = 12; //#Delta Mass(KK)
-      xmaxReco[2]  = 12.;
+      xmaxReco[2]  = 0.012;
 
       nBinsReco[3] = 7; //dlen
       nBinsReco[4] = 7; //dlenxy
