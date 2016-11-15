@@ -29,15 +29,15 @@ class AliVEvent;
 class AliVfriend; 
 class AliVfriendTrack; 
 class AliMCParticle;
-class AliMCInfoCuts;
-class AliRecInfoCuts;
 class AliESDtrackCuts;
+class TRootIoCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformancePtCalibMC : public AliPerformanceObject {
 public:
+  AliPerformancePtCalibMC(TRootIoCtor*);
   AliPerformancePtCalibMC(const char *name= "AliPerformancePtCalibMC", const char *title="AliPerformancePtCalibMC");
    virtual ~AliPerformancePtCalibMC() ;
 
@@ -82,13 +82,6 @@ public:
    // Export objects to folder
    TFolder *ExportToFolder(TObjArray * array=0);
 
-   // Selection cuts
-   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-   void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}
-    
-   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
-   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
-
 protected:
    // variables for fitting in Analyse() function
    Double_t fThetaBins[100];// array of theta bins for projection of charge/pt vs theta
@@ -120,9 +113,6 @@ private:
     
    //ESD track cut values
    Double_t fEtaAcceptance;//sets value of eta window
-   AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
-   AliMCInfoCuts*  fCutsMC;     // selection cuts for MC tracks
-
    
    TList       *fList;// list of histograms
    
@@ -170,7 +160,7 @@ private:
    AliPerformancePtCalibMC(const AliPerformancePtCalibMC&);            // not implemented 
    AliPerformancePtCalibMC& operator=(const AliPerformancePtCalibMC&); // not implemented 
 
-   ClassDef(AliPerformancePtCalibMC, 1); 
+   ClassDef(AliPerformancePtCalibMC, 2); 
 };
 
 #endif

@@ -13,8 +13,6 @@
 class AliVEvent; 
 class AliVfriendEvent; 
 class AliStack; 
-class AliRecInfoCuts;
-class AliMCInfoCuts;
 class AliESDVertex;
 class AliVTrack;
 class TH3;
@@ -22,12 +20,14 @@ class TH2;
 class TH1;
 class TString;
 class TNamed;
+class TRootIoCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceDCA : public AliPerformanceObject {
 public :
+  AliPerformanceDCA(TRootIoCtor*);
   AliPerformanceDCA(const Char_t* name="AliPerformanceDCA", const Char_t* title="AliPerformanceDCA",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE);
 
   virtual ~AliPerformanceDCA();
@@ -57,13 +57,6 @@ public :
   void ProcessTPC(AliStack* const stack, AliVTrack *const vTrack, AliVEvent* const vEvent);
   void ProcessTPCITS(AliStack* const stack, AliVTrack *const vTrack, AliVEvent* const vEvent);
 
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
-
   // getters
   THnSparse* GetDCAHisto() const {return fDCAHisto;}
 
@@ -76,17 +69,13 @@ private:
   // DCA histograms
   THnSparseF *fDCAHisto; //-> dca_r:dca_z:eta:pt:phi 
  
-  // Global cuts objects
-  AliRecInfoCuts* fCutsRC; // selection cuts for reconstructed tracks
-  AliMCInfoCuts*  fCutsMC;  // selection cuts for MC tracks
-
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   AliPerformanceDCA(const AliPerformanceDCA&); // not implemented
   AliPerformanceDCA& operator=(const AliPerformanceDCA&); // not implemented
 
-  ClassDef(AliPerformanceDCA,1);
+  ClassDef(AliPerformanceDCA,2);
 };
 
 #endif
