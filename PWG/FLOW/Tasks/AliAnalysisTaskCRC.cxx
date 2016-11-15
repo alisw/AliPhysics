@@ -119,6 +119,7 @@ fFlowQCDeltaEta(0.4),
 fCenBinWidth(10.),
 fDataSet(""),
 fInteractionRate(""),
+fSelectCharge(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
 fCRCZDCCalibList(NULL),
@@ -264,6 +265,7 @@ fFlowQCDeltaEta(0.4),
 fCenBinWidth(10.),
 fDataSet(""),
 fInteractionRate(""),
+fSelectCharge(""),
 fCorrWeight("TPCuVZuZDCu"),
 fQVecList(NULL),
 fCRCZDCCalibList(NULL),
@@ -358,6 +360,8 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);
   if(fInteractionRate.EqualTo("neg"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kNeg);
+  if(fSelectCharge.EqualTo("pos")) fQC->SetSelectCharge(AliFlowAnalysisCRC::kPosCh);
+  if(fSelectCharge.EqualTo("neg")) fQC->SetSelectCharge(AliFlowAnalysisCRC::kNegCh);
   fQC->SetCalculateCRC(fCalculateCRC);
   fQC->SetCalculateCRCPt(fCalculateCRCPt);
   fQC->SetCalculateCME(fCalculateCME);

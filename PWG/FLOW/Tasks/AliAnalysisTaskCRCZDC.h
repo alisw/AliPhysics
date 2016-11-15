@@ -59,6 +59,13 @@ public:
     kAny
   };
   
+  enum CentrEstimator {
+    kV0M,
+    kCL0,
+    kCL1,
+    kTRK
+  };
+  
   virtual void InitializeRunArrays();
   
   // Implementation of interface methods
@@ -145,7 +152,7 @@ public:
   void SetRejectPileUp( Bool_t kB ) { fRejectPileUp = kB; }
   void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
     fCentrUpLim=centrup;}
-  void SetCentralityEstimator(TString centrest = "V0M") {fCentrEstimator=centrest;}
+  void SetCentralityEstimator(CentrEstimator centrest) {fCentrEstimator=centrest;}
   void SetDataSet(DataSet cDataSet) {fDataSet = cDataSet;}
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone();};
@@ -239,7 +246,7 @@ private:
   Bool_t   fUseMCCen;           // use GetZNCentroidInPbPb, with correction from MC
   Float_t  fCentrLowLim;	// centrality lower limit
   Float_t  fCentrUpLim;		// centrality upper limit
-  TString  fCentrEstimator;     // string for the centrality estimator
+  CentrEstimator  fCentrEstimator;     // string for the centrality estimator
   Bool_t   fRejectPileUp;
   //
   TList       *fOutput;	   	//! list send on output slot 0
