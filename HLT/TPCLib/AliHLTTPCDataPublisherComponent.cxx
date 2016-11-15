@@ -497,8 +497,8 @@ int AliHLTTPCDataPublisherComponent::GetSpecificationFromEquipmentId(int id, Ali
   /// inherited from AliHLTRawReaderPublisherComponent: get specification
 
   // FIXME: add common functionality to AliHLTDAQ
-  int partition;
-  int slice;
+  AliHLTUInt32_t partition;
+  AliHLTUInt32_t slice;
   if (id < 840) {
     partition = id % 2;
     slice = (id - 768) / 2;
