@@ -287,11 +287,11 @@ int main(int argc, char **argv) {
      delete reader;
      reader= 0x0;
       // End of fill histograms
-      
+     /* free resources */
+    free(event);
+     
     }
     
-    /* free resources */
-    free(event);
     
     /* exit when last event received, no need to wait for TERM signal */
     if (eventT==END_OF_RUN) {
