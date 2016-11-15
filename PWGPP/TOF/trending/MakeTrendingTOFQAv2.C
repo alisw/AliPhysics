@@ -38,6 +38,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,                   //full path of t
 			  Bool_t fitSignalModel = kTRUE,        //set to kTRUE to perform fit with TOF signal model too for PID
 			  Double_t RangeFitNsigmaPIDmin = -2.,  //set lower limit for fitting Nsigma_TOF_ID
 			  Double_t RangeFitNsigmaPIDmax = 2.,   //set upper limit for fitting Nsigma_TOF_ID
+			  Double_t RangeTrksForTOFResMin = 10., //set lower limit to the number of tracks requested to extract the TOF resolution
+			  Double_t RangeTrksForTOFResMax = 100.,//set upper limit to the number of tracks requested to extract the TOF resolution
 			  TString ocdbStorage = "raw://",       //set the default ocdb storage
 			  Bool_t drawAll = kFALSE,              //enable display plots on canvas and save png
 			  Bool_t saveHisto = kTRUE,             //set to kTRUE to save histograms in root file
@@ -77,6 +79,8 @@ Int_t MakeTrendingTOFQA(char * runlist,
 			Int_t trainId = 0,
 			Double_t RangeFitNsigmaPIDmin = -2.0,
 			Double_t RangeFitNsigmaPIDmax = 2.0,
+			Double_t RangeTrksForTOFResMin = 10., //set lower limit to the number of tracks requested to extract the TOF resolution
+			Double_t RangeTrksForTOFResMax = 100.,//set upper limit to the number of tracks requested to extract the TOF resolution
 			Bool_t saveHisto = kTRUE,
 			Bool_t checkPIDqa = kTRUE,
 			Bool_t fitSignalModel = kTRUE,
@@ -108,7 +112,7 @@ Int_t MakeTrendingTOFQA(char * runlist,
     Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
     
     //run post-analysis
-    if (MakeTrendingTOFQAv2(infile, runNumber, isMC, checkPIDqa, fitSignalModel, RangeFitNsigmaPIDmin, RangeFitNsigmaPIDmax, "raw://", drawAll, saveHisto, kTRUE)==0){
+    if (MakeTrendingTOFQAv2(infile, runNumber, isMC, checkPIDqa, fitSignalModel, RangeFitNsigmaPIDmin, RangeFitNsigmaPIDmax, RangeTrksForTOFResMin, RangeTrksForTOFResMax, "raw://", drawAll, saveHisto, kTRUE)==0){
       filesCounter++;
     } else Printf("Post analysis not run on QA output %s", infile);
   }
@@ -123,7 +127,9 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
 			  Bool_t checkPIDqa,              //set to kTRUE to check PIDqa output for TOF
 			  Bool_t fitSignalModel,          //set to kTRUE to perform fit with TOF signal model too for PID
 			  Double_t RangeFitNsigmaPIDmin,  //set lower limit for fitting Nsigma_TOF_ID
-			  Double_t RangeFitNsigmaPIDmax,  //set upper limit for fitting Nsigma_TOF_ID		     
+			  Double_t RangeFitNsigmaPIDmax,  //set upper limit for fitting Nsigma_TOF_ID
+			  Double_t RangeTrksForTOFResMin,//set lower limit to the number of tracks requested to extract the TOF resolution
+			  Double_t RangeTrksForTOFResMax,//set upper limit to the number of tracks requested to extract the TOF resolution
 			  TString ocdbStorage,            //set the default ocdb storage
 			  Bool_t drawAll ,                //enable display plots on canvas and save png
 			  Bool_t saveHisto,               //set to kTRUE to save histograms in root file
@@ -542,9 +548,8 @@ Int_t MakeTrendingTOFQAv2(TString qafilename,             //full path of the QA 
   
   
   //---------------------------------TOF resolution plot ----------------------------------//
-  //hDiffTimeT0TOFPion1GeV=(TH2F*)pidList->FindObject("hExpTimePiT0Sub1GeV_all");
-  Int_t min = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(30.);
-  Int_t max = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(100.);
+  Int_t min = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(RangeTrksForTOFResMin);
+  Int_t max = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(RangeTrksForTOFResMax);
   TH1D* hResTOF = (TH1D*)hDiffTimeT0TOFPion1GeV->ProjectionY("hTOFres1GeV", min, max);
   //ResTOF->Draw();
   //TProfile* hStartTimeResProfile = (TProfile*) hStartTimeRes->ProfileY("hStartTimeResProfile",binminstRes,binmaxstRes);
