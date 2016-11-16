@@ -374,8 +374,10 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
 //  if (!centrality) AliError(Form("Could not receive Centrality"));  
 //            
 //  cent = centrality->GetCentralityPercentile("V0M");
+
+  AliMultSelection *MultSelection = 0x0; 
+  MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
   
-  AliMultSelection *MultSelection = (AliMultSelection * ) event->FindListObject("MultSelection");
   if( !MultSelection) {
    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
    AliWarning("AliMultSelection object not found!");
