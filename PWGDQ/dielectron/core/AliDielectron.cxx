@@ -3,7 +3,7 @@
 * @Date:   2016-10-21, 11:52:17
 * @Email:  pdillens@cern.ch
 * @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-14, 15:56:20
+* @Last modified time: 2016-11-17, 14:07:20
 */
 
 
@@ -67,6 +67,7 @@ The names are available via the function PairClassName(Int_t i)
 #include <AliVEvent.h>
 #include <AliVParticle.h>
 #include <AliVTrack.h>
+#include <AliLog.h>
 #include "AliDielectronPair.h"
 #include "AliDielectronHistos.h"
 #include "AliDielectronCF.h"
@@ -278,7 +279,6 @@ void AliDielectron::Init()
   //
   // Initialise objects
   //
-
   if(GetHasMC()) AliDielectronMC::Instance()->SetHasMC(GetHasMC());
 
   if(fEventProcess) InitPairCandidateArrays();
@@ -1695,12 +1695,12 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
 }
 
 //______________________________________________
-void AliDielectron::SetCentroidCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t vary, UInt_t varz)
+void AliDielectron::SetCentroidCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary, UInt_t varz)
 {
+  // Store the maps with the runnumber as name in the arrays
+  // bHisto has to be setted to true if histograms and not functions are used for correction
   fPostPIDCntrdCorrArr = new TObjArray();
   Int_t nEntries = arrFun->GetEntriesFast();
-  Bool_t bHisto = kFALSE; // bool to check if histos or functions are used
-  if((arrFun->At(1))->IsA() == TH1::Class()) bHisto = kTRUE;
   UInt_t valType[20] = {0};
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
   TString key;
@@ -1732,14 +1732,14 @@ void AliDielectron::SetCentroidCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t va
     }
     if(histo){
       // check for corrections and add their variables to the fill map
-      printf("POST TPC PID CORRECTION added for centroids:  ");
+      printf("POST TPC PID CORRECTION run added for %s:  ",key.Data());
       switch(histo->GetDimension()) {
       case 3: printf(" %s, ",histo->GetZaxis()->GetName());
       case 2: printf(" %s, ",histo->GetYaxis()->GetName());
       case 1: printf(" %s ",histo->GetXaxis()->GetName());
       }
+      printf("\n");
     }
-    printf("\n");
     fUsedVars->SetBitNumber(varx, kTRUE);
     fUsedVars->SetBitNumber(vary, kTRUE);
     fUsedVars->SetBitNumber(varz, kTRUE);
@@ -1747,12 +1747,12 @@ void AliDielectron::SetCentroidCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t va
 }
 
 //______________________________________________
-void AliDielectron::SetWidthCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t vary, UInt_t varz)
+void AliDielectron::SetWidthCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary, UInt_t varz)
 {
+  // Store the maps with the runnumber as name in the arrays
+  // bHisto has to be setted to true if histograms and not functions are used for correction
   fPostPIDWdthCorrArr = new TObjArray();
   Int_t nEntries = arrFun->GetEntriesFast();
-  Bool_t bHisto = kFALSE; // bool to check if histos or functions are used
-  if((arrFun->At(1))->IsA() == TH1::Class()) bHisto = kTRUE;
   UInt_t valType[20] = {0};
   valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
   TString key;
@@ -1783,14 +1783,14 @@ void AliDielectron::SetWidthCorrArr(TObjArray *arrFun, UInt_t varx, UInt_t vary,
     }
     if(histo){
       // check for corrections and add their variables to the fill map
-      printf("POST TPC PID CORRECTION added for centroids:  ");
+      printf("POST TPC PID CORRECTION added for %s:  ",key.Data());
       switch(histo->GetDimension()) {
       case 3: printf(" %s, ",histo->GetZaxis()->GetName());
       case 2: printf(" %s, ",histo->GetYaxis()->GetName());
       case 1: printf(" %s ",histo->GetXaxis()->GetName());
       }
+      printf("\n");
     }
-    printf("\n");
     fUsedVars->SetBitNumber(varx, kTRUE);
     fUsedVars->SetBitNumber(vary, kTRUE);
     fUsedVars->SetBitNumber(varz, kTRUE);
