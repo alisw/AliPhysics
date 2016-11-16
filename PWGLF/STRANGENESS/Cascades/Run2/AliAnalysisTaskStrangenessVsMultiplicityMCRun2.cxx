@@ -266,6 +266,12 @@ fTreeCascVarBachIndex(0),
 fTreeCascVarNegLabel(0),
 fTreeCascVarPosLabel(0),
 fTreeCascVarBachLabel(0),
+fTreeCascVarNegLabelMother(0),
+fTreeCascVarPosLabelMother(0),
+fTreeCascVarBachLabelMother(0),
+fTreeCascVarNegLabelGrandMother(0),
+fTreeCascVarPosLabelGrandMother(0),
+fTreeCascVarBachLabelGrandMother(0),
 //Event Number (check same-event index mixups)
 fTreeCascVarEventNumber(0),
 
@@ -277,6 +283,9 @@ fTreeCascVarPIDBachelor(0),
 fTreeCascVarPIDNegativeMother(0),
 fTreeCascVarPIDPositiveMother(0),
 fTreeCascVarPIDBachelorMother(0),
+fTreeCascVarPIDNegativeGrandMother(0),
+fTreeCascVarPIDPositiveGrandMother(0),
+fTreeCascVarPIDBachelorGrandMother(0),
 fTreeCascVarSwappedPID(0),
 fTreeCascVarIsPhysicalPrimary(0),
 
@@ -448,6 +457,12 @@ fTreeCascVarBachIndex(0),
 fTreeCascVarNegLabel(0),
 fTreeCascVarPosLabel(0),
 fTreeCascVarBachLabel(0),
+fTreeCascVarNegLabelMother(0),
+fTreeCascVarPosLabelMother(0),
+fTreeCascVarBachLabelMother(0),
+fTreeCascVarNegLabelGrandMother(0),
+fTreeCascVarPosLabelGrandMother(0),
+fTreeCascVarBachLabelGrandMother(0),
 //Event Number (check same-event index mixups)
 fTreeCascVarEventNumber(0),
 
@@ -459,6 +474,9 @@ fTreeCascVarPIDBachelor(0),
 fTreeCascVarPIDNegativeMother(0),
 fTreeCascVarPIDPositiveMother(0),
 fTreeCascVarPIDBachelorMother(0),
+fTreeCascVarPIDNegativeGrandMother(0),
+fTreeCascVarPIDPositiveGrandMother(0),
+fTreeCascVarPIDBachelorGrandMother(0),
 fTreeCascVarSwappedPID(0),
 fTreeCascVarIsPhysicalPrimary(0),
 //Histos
@@ -711,6 +729,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNegLabel",&fTreeCascVarNegLabel,"fTreeCascVarNegLabel/I");
             fTreeCascade->Branch("fTreeCascVarPosLabel",&fTreeCascVarPosLabel,"fTreeCascVarPosLabel/I");
             fTreeCascade->Branch("fTreeCascVarBachLabel",&fTreeCascVarBachLabel,"fTreeCascVarBachLabel/I");
+            //Even more parenthood information
+            fTreeCascade->Branch("fTreeCascVarNegLabelMother",&fTreeCascVarNegLabelMother,"fTreeCascVarNegLabelMother/I");
+            fTreeCascade->Branch("fTreeCascVarPosLabelMother",&fTreeCascVarPosLabelMother,"fTreeCascVarPosLabelMother/I");
+            fTreeCascade->Branch("fTreeCascVarBachLabelMother",&fTreeCascVarBachLabelMother,"fTreeCascVarBachLabelMother/I");
+            fTreeCascade->Branch("fTreeCascVarNegLabelGrandMother",&fTreeCascVarNegLabelGrandMother,"fTreeCascVarNegLabelGrandMother/I");
+            fTreeCascade->Branch("fTreeCascVarPosLabelGrandMother",&fTreeCascVarPosLabelGrandMother,"fTreeCascVarPosLabelGrandMother/I");
+            fTreeCascade->Branch("fTreeCascVarBachLabelGrandMother",&fTreeCascVarBachLabelGrandMother,"fTreeCascVarBachLabelGrandMother/I");
             //Event Number (check same-event index mixups)
             fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
         }
@@ -725,6 +750,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarPIDNegativeMother",&fTreeCascVarPIDNegativeMother,"fTreeCascVarPIDNegativeMother/I");
             fTreeCascade->Branch("fTreeCascVarPIDPositiveMother",&fTreeCascVarPIDPositiveMother,"fTreeCascVarPIDPositiveMother/I");
             fTreeCascade->Branch("fTreeCascVarPIDBachelorMother",&fTreeCascVarPIDBachelorMother,"fTreeCascVarPIDBachelorMother/I");
+            //All information possibly needed on parenthood
+            fTreeCascade->Branch("fTreeCascVarPIDNegativeGrandMother",&fTreeCascVarPIDNegativeGrandMother,"fTreeCascVarPIDNegativeGrandMother/I");
+            fTreeCascade->Branch("fTreeCascVarPIDPositiveGrandMother",&fTreeCascVarPIDPositiveGrandMother,"fTreeCascVarPIDPositiveGrandMother/I");
+            fTreeCascade->Branch("fTreeCascVarPIDBachelorGrandMother",&fTreeCascVarPIDBachelorGrandMother,"fTreeCascVarPIDBachelorGrandMother/I");
         }
         //------------------------------------------------
     }
@@ -1835,6 +1864,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarPIDPositiveMother = -9999;
         fTreeCascVarPIDNegativeMother = -9999;
         fTreeCascVarPIDBachelorMother = -9999;
+        fTreeCascVarPIDPositiveGrandMother = -9999;
+        fTreeCascVarPIDNegativeGrandMother = -9999;
+        fTreeCascVarPIDBachelorGrandMother = -9999;
+        
+        fTreeCascVarNegLabel = -1;
+        fTreeCascVarPosLabel = -1;
+        fTreeCascVarBachLabel = -1;
+        fTreeCascVarNegLabelMother = -1;
+        fTreeCascVarPosLabelMother = -1;
+        fTreeCascVarBachLabelMother = -1;
+        fTreeCascVarNegLabelGrandMother = -1;
+        fTreeCascVarPosLabelGrandMother = -1;
+        fTreeCascVarBachLabelGrandMother = -1;
         
         if(fDebug > 5)
             cout 	<< "MC EventNumber : " << lMCevent->Header()->GetEvent()
@@ -1886,14 +1928,40 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if ( lblMotherPosV0Dghter > -1 ){
             TParticle *lPosMother = lMCstack->Particle( lblMotherPosV0Dghter );
             fTreeCascVarPIDPositiveMother = lPosMother->GetPdgCode();
+            fTreeCascVarPosLabelMother = lblMotherPosV0Dghter;
+            //Go further than that, please
+            Int_t lblGrandMother = lPosMother->GetFirstMother();
+            if( lblGrandMother > -1 ){
+                TParticle *lPosGrandMother = lMCstack->Particle( lblGrandMother );
+                fTreeCascVarPIDPositiveGrandMother = lPosGrandMother->GetPdgCode();
+                fTreeCascVarPosLabelGrandMother = lblGrandMother;
+            }
         }
+        
         if ( lblMotherNegV0Dghter > -1 ){
             TParticle *lNegMother = lMCstack->Particle( lblMotherNegV0Dghter );
             fTreeCascVarPIDNegativeMother = lNegMother->GetPdgCode();
+            fTreeCascVarNegLabelMother = lblMotherPosV0Dghter;
+            //Go further than that, please
+            Int_t lblGrandMother = lNegMother->GetFirstMother();
+            if( lblGrandMother > -1 ){
+                TParticle *lNegGrandMother = lMCstack->Particle( lblGrandMother );
+                fTreeCascVarPIDNegativeGrandMother = lNegGrandMother->GetPdgCode();
+                fTreeCascVarNegLabelGrandMother = lblGrandMother;
+            }
         }
+        
         if ( lblMotherBachelor > -1 ){
             TParticle *lBachMother = lMCstack->Particle( lblMotherBachelor );
             fTreeCascVarPIDBachelorMother = lBachMother->GetPdgCode();
+            fTreeCascVarBachLabelMother = lblMotherBachelor;
+            //Go further than that, please
+            Int_t lblGrandMother = lBachMother->GetFirstMother();
+            if( lblGrandMother > -1 ){
+                TParticle *lBachGrandMother = lMCstack->Particle( lblGrandMother );
+                fTreeCascVarPIDBachelorGrandMother = lBachGrandMother->GetPdgCode();
+                fTreeCascVarBachLabelGrandMother = lblGrandMother;
+            }
         }
         
         //Rather uncivilized: Open brackets for each 'continue'
