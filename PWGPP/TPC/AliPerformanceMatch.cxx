@@ -567,7 +567,7 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEven
   } 
 
   // trigger
-  if(!bUseMC && GetTriggerClass()) {
+  if(!bUseMC && !GetTriggerClass().IsNull()) {
     Bool_t isEventTriggered = vEvent->IsTriggerClassFired(GetTriggerClass());
     if(!isEventTriggered) return; 
   }
