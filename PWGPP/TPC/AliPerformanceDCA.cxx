@@ -304,7 +304,7 @@ void AliPerformanceDCA::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   }
 
   // trigger
-  if(!bUseMC &&GetTriggerClass()) {
+  if(!bUseMC && !GetTriggerClass().IsNull()) {
     Bool_t isEventTriggered = vEvent->IsTriggerClassFired(GetTriggerClass());
     if(!isEventTriggered) return; 
   }

@@ -741,10 +741,10 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   
   // check trigger
   
-  if(!bUseMC && GetTriggerClass()) {
+  if(!bUseMC && !GetTriggerClass().IsNull()) {
     Bool_t isEventTriggered = vEvent->IsTriggerClassFired(GetTriggerClass());
     if(!isEventTriggered) {
-      printf("ERROR: Could not determine trigger class");
+      AliInfo(Form("ERROR: fired trigger %s != %s",vEvent->GetFiredTriggerClasses().Data(), GetTriggerClass().Data()));
       return;
     }
   }
@@ -798,8 +798,8 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
                      //Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
                      //Int_t i[1]={cluster->GetDetector()};
                          //transform->Transform(x,i,0,1);
-                     //printf("gx %f gy  %f  gz %f \n", cluster->GetX(), cluster->GetY(),cluster->GetZ());
-                     //printf("gclf[0] %f gclf[1]  %f  gclf[2] %f \n", gclf[0], gclf[1],  gclf[2]);
+                     //AliInfo("gx %f gy  %f  gz %f ", cluster->GetX(), cluster->GetY(),cluster->GetZ());
+                     //AliInfo("gclf[0] %f gclf[1]  %f  gclf[2] %f ", gclf[0], gclf[1],  gclf[2]);
                  
                          Int_t TPCside; 
                      if(gclf[2]>0.) TPCside=0; // A side 
@@ -828,7 +828,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     else if(GetAnalysisMode() == 1) ProcessTPCITS(stack,vTrack,vEvent,vertStatus);
     else if(GetAnalysisMode() == 2) ProcessConstrained(stack,vTrack,vEvent);
     else {
-      printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
+      AliInfo(Form("ERROR: AnalysisMode %d ",fAnalysisMode));
       return;
     }
     // TPC only
@@ -977,7 +977,7 @@ void AliPerformanceTPC::Analyse()
         fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
         fTPCTrackHisto->GetAxis(9)->SetRangeUser(-0.5,1.5);
       
-        printf("exportToFolder\n");
+        AliInfo("exportToFolder");
         // export objects to analysis folder
         fAnalysisFolder = ExportToFolder(aFolderObj);
         if (fFolderObj) delete fFolderObj;
@@ -985,7 +985,7 @@ void AliPerformanceTPC::Analyse()
         aFolderObj=0;
     }
     else{
-        printf("exportToFolder\n");
+        AliInfo("exportToFolder");
         fAnalysisFolder = ExportToFolder(fFolderObj);
     }
  

@@ -85,6 +85,13 @@ AliPerformanceObject::~AliPerformanceObject(){
 }
 
 //_____________________________________________________________________________
+void AliPerformanceObject::SetTriggerClass(const Char_t *triggerClass)
+{
+  fTriggerClass = triggerClass;
+  AliInfo(Form("TriggerMask set to %s",fTriggerClass.Data()));
+}
+
+//_____________________________________________________________________________
 void AliPerformanceObject::PrintHisto(Bool_t logz, const Char_t * outFileName) {
   // draw all histograms from the folder 
   // and store them in the output *.ps file

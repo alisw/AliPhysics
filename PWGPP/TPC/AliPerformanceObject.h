@@ -88,8 +88,8 @@ public :
   Double_t *CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax); 
 
   // trigger class selection
-  void SetTriggerClass(const Char_t *triggerClass) { fTriggerClass = triggerClass; }
-  const Char_t* GetTriggerClass() const { return fTriggerClass.Data(); }
+  void SetTriggerClass(const Char_t *triggerClass);
+  TString GetTriggerClass() const { return fTriggerClass; }
 
   // use track vertex
   void SetUseTrackVertex(Bool_t trackVtx = kTRUE) { fUseTrackVertex = trackVtx; }
