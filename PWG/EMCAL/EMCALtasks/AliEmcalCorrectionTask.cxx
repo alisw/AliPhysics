@@ -51,7 +51,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fCorrectionComponents(),
   fIsEsd(false),
   fForceBeamType(kNA),
-  fRunPeriod(""),
+  fRunPeriod("noSetRunPeriod"),
   fConfigurationInitialized(false),
   fOrderedComponentsToExecute(),
   fEventInitialized(false),
@@ -103,7 +103,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fCorrectionComponents(),
   fIsEsd(false),
   fForceBeamType(kNA),
-  fRunPeriod(""),
+  fRunPeriod("noSetRunPeriod"),
   fConfigurationInitialized(false),
   fOrderedComponentsToExecute(),
   fEventInitialized(false),
@@ -275,7 +275,7 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   }
 
   // Ensure that there is a run period
-  if (fRunPeriod == "")
+  if (fRunPeriod == "noSetRunPeriod")
   {
     AliFatal("Must pass a run period to the correction task!");
   }
@@ -297,13 +297,13 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   AliDebug(3, TString::Format("userRunPeriod: %s", userRunPeriod.Data()));
   // Normalize the user run period to lower case to ensure that we don't miss any matches
   userRunPeriod.ToLower();
-  // "" means the user wants their settings to apply to all periods
-  if (userRunPeriod != "" && userRunPeriod != "knouserfile" && userRunPeriod != fRunPeriod)
+  if (userRunPeriod != "knouserfile" && userRunPeriod != fRunPeriod)
   {
     AliFatal(TString::Format("User run period \"%s\" does not match the run period of \"%s\" passed to the correction task!", userRunPeriod.Data(), fRunPeriod.Data()));
   }
 
-  // Ensure that the user is aware
+  // "" means the user wants their settings to apply to all periods
+  // Ensure that the user is aware!
   if (userRunPeriod == "")
   {
     AliWarning("User run period is an empty string. Settings apply to all run periods!");
@@ -643,9 +643,8 @@ void AliEmcalCorrectionTask::SetupContainersFromInputNodes(InputObject_t inputOb
   {
     // The section is the container name
     //std::string containerName = it->first.as<std::string>();
-    // Skip over the sharedParamters node. TODO: May be able to remove this! Previously was a node, but now is a string
-    // Also skip if the particle or cluster container already exists
-    if (containerName == "sharedParameters" || GetParticleContainer(containerName.c_str()) || GetClusterContainer(containerName.c_str())) {
+    // Skip if the particle or cluster container already exists
+    if (GetParticleContainer(containerName.c_str()) || GetClusterContainer(containerName.c_str())) {
       continue;
     }
 
@@ -835,6 +834,14 @@ void AliEmcalCorrectionTask::SetupContainer(InputObject_t inputObjectType, std::
       AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = trackFilterTypeMap.at(tempString);
       AliDebugStream(2) << trackContainer->GetName() << ": Setting trackFilterType of " << trackFilterType << std::endl;
       trackContainer->SetTrackFilterType(trackFilterType);
+    }
+
+    // Track cuts period
+    result = AliEmcalCorrectionComponent::GetProperty("trackCutsPeriod", tempString, userNode, defaultNode, false, containerName);
+    if (result) {
+      // Need to get the enumeration
+      AliDebugStream(2) << trackContainer->GetName() << ": Setting track cuts period to " << tempString << std::endl;
+      trackContainer->SetTrackCutsPeriod(tempString.c_str());
     }
   }
 }
