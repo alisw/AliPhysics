@@ -334,6 +334,12 @@ private:
     Int_t fTreeCascVarNegLabel; //!
     Int_t fTreeCascVarPosLabel; //!
     Int_t fTreeCascVarBachLabel; //!
+    Int_t fTreeCascVarNegLabelMother; //!
+    Int_t fTreeCascVarPosLabelMother; //!
+    Int_t fTreeCascVarBachLabelMother; //!
+    Int_t fTreeCascVarNegLabelGrandMother; //!
+    Int_t fTreeCascVarPosLabelGrandMother; //!
+    Int_t fTreeCascVarBachLabelGrandMother; //!
     //Event Number (check same-event index mixups)
     ULong64_t fTreeCascVarEventNumber; //!
     
@@ -349,7 +355,9 @@ private:
     Int_t   fTreeCascVarPIDNegativeMother;         //!
     Int_t   fTreeCascVarPIDPositiveMother;         //!
     Int_t   fTreeCascVarPIDBachelorMother;         //!
-    
+    Int_t   fTreeCascVarPIDNegativeGrandMother;         //!
+    Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
+    Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
     
