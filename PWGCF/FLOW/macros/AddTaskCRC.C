@@ -1,4 +1,6 @@
-AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
+AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
+                             Double_t ptMax=50.2,
+                             TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
                              TString sDataSet="2010",
                              TString sIntRuns="low",
@@ -78,8 +80,6 @@ AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
   Bool_t bUsePhiEtaCuts=kFALSE;
  TString PhiEtaWeightsFileName="";
   Bool_t bCutsQA=kTRUE;
-  Double_t ptMin=0.2;
-  Double_t ptMax=20.2;
   Bool_t bCalculateEbEFlow=kFALSE;
   Bool_t bDivSigma=kFALSE;
   Bool_t bCalculateCRCZDC=kFALSE;
@@ -295,7 +295,7 @@ AliAnalysisTask * AddTaskCRC(TString analysisTypeUser="AOD",
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
-  cutsPOI->SetCutTPCSecbound(bCutTPCbound); // new cut for LHC15o
+  cutsPOI->SetCutTPCSecbound(bCutTPCbound,8.); // new cut for LHC15o
   cutsPOI->SetQA(bCutsQA);
  }
  if (analysisTypeUser == "ESD") {

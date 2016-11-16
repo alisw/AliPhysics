@@ -123,6 +123,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
   fCutTPCSecbound(kFALSE),
+  fCutTPCSecboundMinpt(0.2),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -251,6 +252,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
   fCutTPCSecbound(kFALSE),
+  fCutTPCSecboundMinpt(0.2),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -382,6 +384,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutMinimalTPCdedx(that.fCutMinimalTPCdedx),
   fMinimalTPCdedx(that.fMinimalTPCdedx),
   fCutTPCSecbound(that.fCutTPCSecbound),
+  fCutTPCSecboundMinpt(that.fCutTPCSecboundMinpt),
   fLinearizeVZEROresponse(that.fLinearizeVZEROresponse),
   fCentralityPercentileMin(that.fCentralityPercentileMin),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
@@ -535,6 +538,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
   fMinimalTPCdedx=that.fMinimalTPCdedx;
   fCutTPCSecbound=that.fCutTPCSecbound;
+  fCutTPCSecboundMinpt=that.fCutTPCSecboundMinpt;
   fPtTOFPIDoff=that.fPtTOFPIDoff;
   fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
@@ -1347,7 +1351,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   Double_t time[9];
   track->GetIntegratedTimes(time);
   
-  if(fCutTPCSecbound) {
+  if(fCutTPCSecbound && track->Pt()>fCutTPCSecboundMinpt) {
     Double_t xyz[3]={-9999.,-9999.,-9999.};
     const double r = 84.; // TPC IROC radius
     if (!track->GetXYZatR(r, fEvent->GetMagneticField(), xyz, NULL)) pass=kFALSE;
