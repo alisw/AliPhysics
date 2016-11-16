@@ -151,8 +151,8 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   Bool_t UserNotify();
 
   // Aditional steering functions
-  virtual Bool_t Run();
   virtual void ExecOnce();
+  virtual Bool_t Run();
 
  private:
   AliEmcalCorrectionTask(const AliEmcalCorrectionTask &);             // Not implemented
@@ -176,12 +176,12 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   Bool_t RetrieveEventObjects();
 
   // Execute component functions
-  void ExecOnceComponents();
   void UserCreateOutputObjectsComponents();
+  void ExecOnceComponents();
 
   // Initialization functions
-  void DetermineComponentsToExecute(std::vector <std::string> & componentsToExecute);
   void InitializeConfiguration();
+  void DetermineComponentsToExecute(std::vector <std::string> & componentsToExecute);
   void CheckForUnmatchedUserSettings();
   void InitializeComponents();
 
