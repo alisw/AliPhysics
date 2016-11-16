@@ -31,7 +31,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fDefaultConfiguration(),
   fCreateHisto(kTRUE),
   fRun(-1),
-  fFilepass(0),
+  fFilepass(""),
   fGetPassFromFileName(kTRUE),
   fEvent(0),
   fEsdMode(0),
@@ -70,7 +70,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fDefaultConfiguration(),
   fCreateHisto(kTRUE),
   fRun(-1),
-  fFilepass(0),
+  fFilepass(""),
   fGetPassFromFileName(kTRUE),
   fEvent(0),
   fEsdMode(0),
@@ -291,7 +291,7 @@ void AliEmcalCorrectionComponent::GetPass()
   }
   else
   {
-    AliError(Form("Pass number string not found: %s", fname.Data()));
+    AliFatal(Form("Pass number string not found: %s. Please set the pass number in the configuration!", fname.Data()));
     return;
   }
 }
