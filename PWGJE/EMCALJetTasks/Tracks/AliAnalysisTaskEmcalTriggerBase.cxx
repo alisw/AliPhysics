@@ -167,8 +167,8 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     // threshold
     if(fUseTriggerBits){
       const std::array<ULong_t, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerBits = {
-          AliVEvent::kEMCEJE, AliVEvent::kEMCEJE, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMC7,
-          AliVEvent::kEMCEJE, AliVEvent::kEMCEJE, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMC7
+    	  AliVEvent::kEMC7, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE,
+		  AliVEvent::kEMC7, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE,
       };
       for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++)
         emcalTriggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
@@ -177,7 +177,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     // Apply cut on the trigger string - this basically discriminates high- and low-threshold
     // triggers
     const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
-        "EJ1", "EJ2", "EG1", "EG2", "CEMC7", "DJ1", "DJ2", "DG1", "DG2", "CDMC7"
+    		"CEMC7", "EG1", "EG2", "EJ1", "EJ2", "CDMC7", "DG1", "DG2", "DJ1", "DJ2"
     };
     for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++)
       emcalTriggers[iclass] &= triggerstring.Contains(kSelectTriggerStrings[iclass]);
