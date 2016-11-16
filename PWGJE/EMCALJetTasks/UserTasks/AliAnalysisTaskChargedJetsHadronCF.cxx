@@ -258,11 +258,15 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
     AddHistogram2D<TH2D>("hEmbeddingDeltaR", "Matched jet #Delta R distribution", "", 200, -50., 150., 100, 0, 1.0, "p_{T, jet} (GeV/c)", "#Delta R", "dN^{Matched}/dp_{T}dR");
     AddHistogram2D<TH2D>("hEmbeddingDeltaEta", "Matched jet #Delta #eta distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #eta", "dN^{Matched}/dp_{T}d#eta");
     AddHistogram2D<TH2D>("hEmbeddingDeltaPhi", "Matched jet #Delta #phi distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #phi", "dN^{Matched}/dp_{T}d#phi");
-    AddHistogram2D<TH2D>("hEmbeddingPtCorr", "Matched jet p_{T} distributions", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
-    AddHistogram2D<TH2D>("hEmbeddingPtCorr010", "Matched jet p_{T} distributions (0-10%% centrality)", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
-    AddHistogram2D<TH2D>("hEmbeddingPtCorr1030", "Matched jet p_{T} distributions (10-30%% centrality)", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
-    AddHistogram2D<TH2D>("hEmbeddingPtCorr3050", "Matched jet p_{T} distributions (30-50%% centrality)", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
-    AddHistogram2D<TH2D>("hEmbeddingPtCorr5090", "Matched jet p_{T} distributions (50-90%% centrality)", "", 200, -50., 150., 200, -50., 150., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "dN^{Matched}/dp_{T}d#Delta p_{T}");
+    AddHistogram3D<TH3D>("hEmbeddingPtCorr010", "Matched jet p_{T} distributions (0-10%% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., 1., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+    AddHistogram3D<TH3D>("hEmbeddingPtCorr1030", "Matched jet p_{T} distributions (10-30%% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., 1., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+    AddHistogram3D<TH3D>("hEmbeddingPtCorr3050", "Matched jet p_{T} distributions (30-50%% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., 1., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+    AddHistogram3D<TH3D>("hEmbeddingPtCorr5090", "Matched jet p_{T} distributions (50-90%% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., 1., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+
+    AddHistogram3D<TH3D>("hEmbeddingPtCorrPt010", "Matched jet p_{T} distributions (0-10%% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., 1., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC p_{T}");
+    AddHistogram3D<TH3D>("hEmbeddingPtCorrPt1030", "Matched jet p_{T} distributions (10-30%% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., 1., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC p_{T}");
+    AddHistogram3D<TH3D>("hEmbeddingPtCorrPt3050", "Matched jet p_{T} distributions (30-50%% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., 1., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC p_{T}");
+    AddHistogram3D<TH3D>("hEmbeddingPtCorrPt5090", "Matched jet p_{T} distributions (50-90%% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., 1., "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC p_{T}");
 
     AddHistogram1D<TH1D>("hEmbeddingJetPt", "Embedded jets p_{T} distribution", "", 200, -50., 150., "p_{T, jet} (GeV/c)", "dN/dp_{T}");
     AddHistogram2D<TH2D>("hEmbeddingJetPhiEta", "Embedded jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
@@ -567,9 +571,6 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJetConstituents(AliEmcalJ
       if(filterConditionFulfilled)
         FillHistogram(Form("hJetConstituentPt_Cent50_90_FilterBit%i", fConstPtFilterBit), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), constituent->Pt());
     }
-
-
-
   }
 
   FillHistogram("hJetConstituentCount_Cent0_100", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->GetNumberOfTracks()); 
@@ -757,18 +758,33 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 
       Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
 
+      Double_t trackRatio = 0.;
+      Double_t ptRatio = 0.;
+      GetTrackMCRatios(fMatchedJets[i], trackRatio, ptRatio);
+
       FillHistogram("hEmbeddingDeltaR", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), deltaR);
       FillHistogram("hEmbeddingDeltaEta", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), deltaPhi);
       FillHistogram("hEmbeddingDeltaPhi", fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), deltaEta);
-      FillHistogram("hEmbeddingPtCorr", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
       if(fCent >= 0 && fCent < 10)
-        FillHistogram("hEmbeddingPtCorr010", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
+      {
+        FillHistogram3D("hEmbeddingPtCorr010", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), trackRatio);
+        FillHistogram3D("hEmbeddingPtCorrPt010", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), ptRatio);
+      }
       else if (fCent >= 10 && fCent < 30)
-        FillHistogram("hEmbeddingPtCorr1030", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
+      {
+        FillHistogram3D("hEmbeddingPtCorr1030", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), trackRatio);
+        FillHistogram3D("hEmbeddingPtCorrPt1030", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), ptRatio);
+      }
       else if (fCent >= 30 && fCent < 50)
-        FillHistogram("hEmbeddingPtCorr3050", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
+      {
+        FillHistogram3D("hEmbeddingPtCorr3050", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), trackRatio);
+        FillHistogram3D("hEmbeddingPtCorrPt3050", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), ptRatio);
+      }
       else if (fCent >= 50 && fCent < 90)
-        FillHistogram("hEmbeddingPtCorr5090", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area());
+      {
+        FillHistogram3D("hEmbeddingPtCorr5090", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), trackRatio);
+        FillHistogram3D("hEmbeddingPtCorrPt5090", fMatchedJetsReference[i]->Pt(), fMatchedJets[i]->Pt() - fJetsCont->GetRhoVal()*fMatchedJets[i]->Area(), ptRatio);
+      }
       FillHistogram("hEmbeddingJetPt", fMatchedJetsReference[i]->Pt());
       FillHistogram("hEmbeddingJetPhiEta", fMatchedJetsReference[i]->Phi(), fMatchedJetsReference[i]->Eta()); 
     }
@@ -980,6 +996,40 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
       }
     }
   }
+
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::GetTrackMCRatios(AliEmcalJet* jet, Double_t& trackRatio, Double_t& ptRatio)
+{
+  Int_t tracksFromMC = 0;
+  Int_t tracksTotal  = 0;
+  Double_t ptFromMC  = 0;
+  Double_t ptTotal   = 0;
+  for(Int_t j = 0; j < jet->GetNumberOfTracks(); j++)
+  {
+    AliVParticle* constituent = static_cast<AliVParticle*>(jet->TrackAt(j, fTracksCont->GetArray()));
+    if(!constituent) 
+      continue;
+
+    // Plots on MC percentage in jet
+    if(constituent->GetLabel() > 1000)
+    {
+      tracksFromMC++;
+      ptFromMC += constituent->Pt();
+    }
+    tracksTotal++;
+    ptTotal += constituent->Pt();
+  }
+
+
+  trackRatio = 0.;
+  if(tracksTotal)
+    trackRatio = tracksFromMC/((Double_t)tracksTotal);
+
+  ptRatio = 0.;
+  if(ptTotal)
+    ptRatio = ptFromMC/((Double_t)ptTotal);
 
 }
 
