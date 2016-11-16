@@ -116,6 +116,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseCorrectionMap(kFALSE),
   fCorrMapTimeDepMethod(kCorrMapInterpolation),
   fUseLumiType(AliLumiTools::kLumiCTP),
+  fUseMapLumiInfoCOG(kFALSE),
   fSystCovAmplitude(2.0),
   fDistFluctCorrelation(0.99),
   fDistortionFluctMCAmp(1.0),

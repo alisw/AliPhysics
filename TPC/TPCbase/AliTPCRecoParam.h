@@ -147,6 +147,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t  GetUseLumiType()               const {return fUseLumiType;}
   void   SetUseLumiType(int tp)               {fUseLumiType  =tp;}
   //
+  Bool_t GetUseMapLumiInfoCOG()         const {return fUseMapLumiInfoCOG;}
+  void   SetUseMapLumiInfoCOG(Bool_t v=kTRUE) {fUseMapLumiInfoCOG = v;}
+  //
   Int_t GetUseFieldCorrection() const {return fUseFieldCorrection;}
   Int_t GetUseComposedCorrection() const {return fUseComposedCorrection;}
   Int_t GetUseRPHICorrection() const {return fUseRPHICorrection;}
@@ -296,6 +299,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t fUseCorrectionMap;  ///< flag to use parameterized correction map (AliTPCChebCorr)
   Int_t  fCorrMapTimeDepMethod; ///< method used for correction time dependence
   Int_t  fUseLumiType;          ///< luminosity graph to be used for different lumi scalings
+  Bool_t fUseMapLumiInfoCOG;    ///< if true, try to use lumi COG record stored in Cheb.param (GetLumiInfo() if >0) 
   Float_t fSystCovAmplitude;    ///< apply syst correction to cov.matrix with this amplitude
   Float_t  fDistFluctCorrelation; ///< assumed correlation between fluctuating points
   Float_t fDistortionFluctMCAmp; ///< mult. amplitude for distortions fluctuation sigma 
@@ -324,7 +328,7 @@ public:
                                       // Use static function, other option will be to use
                                       // additional specific storage ?
   /// \cond CLASSIMP
-  ClassDef(AliTPCRecoParam, 32)
+  ClassDef(AliTPCRecoParam, 33)
   /// \endcond
 };
 
