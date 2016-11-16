@@ -282,14 +282,16 @@ int main(int argc, char **argv) {
 
 	}
 	   
-     delete start;
-     start = 0x0;
-     delete reader;
-     reader= 0x0;
+      delete start;
+      start = 0x0;
+      delete reader;
+      reader= 0x0;
       // End of fill histograms
-     /* free resources */
-    free(event);
-     
+      /* free resources */
+      //  free(event);
+      delete event;
+      event = 0x0;
+      
     }
     
     
