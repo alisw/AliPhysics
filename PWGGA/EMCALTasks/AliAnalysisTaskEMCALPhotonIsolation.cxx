@@ -749,11 +749,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
       //  fEtaPhiClus->Sumw2();
     fOutput->Add(fEtaPhiClus);
     
-    fDeltaETAClusTrack = new TH1D("h_Dz","Track-Cluster Dz ",100,-0.05,0.05);
+    fDeltaETAClusTrack = new TH1D("h_Dz","Track-Cluster Dz ",1000,-0.5,0.5);
     fDeltaETAClusTrack->Sumw2();
     fOutput->Add(fDeltaETAClusTrack);
     
-    fDeltaPHIClusTrack = new TH1D("h_Dx","Track-Cluster Dx",100,-0.05,0.05);
+    fDeltaPHIClusTrack = new TH1D("h_Dx","Track-Cluster Dx",1000,-0.5,0.5);
     fDeltaPHIClusTrack->Sumw2();
     fOutput->Add(fDeltaPHIClusTrack);
     
@@ -876,7 +876,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   fEtaTracksVSclustPt->Sumw2();
   fOutput->Add(fEtaTracksVSclustPt);
   
-  fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,200,-.5,.5);
+  fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,210,-0.1,2.);
   fCTdistVSpTNC->Sumw2();
   fOutput->Add(fCTdistVSpTNC);
   
@@ -1155,7 +1155,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
         AliDebug(1,Form("NLM = %d",nlm));
         
           // if a NLM cut is define, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
-        
+        if(coi->E()>=5. && coi->E()<70. && fQA)
+          fNLM->Fill(nlm,coi->E());
         if(fIsNLMCut && fNLMCut>0 && fNLMmin>0)
           if(nlm > fNLMCut || nlm < fNLMmin ){
             //AliWarning(Form("NLM = %d --- NLM min = %d --- NLMcut = %d",nlm,fNLMmin,fNLMCut));
@@ -1178,8 +1179,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       
       fPtaftDTBC->Fill(vecCOI.Pt());
       
-      if(coi->E()>=5. && coi->E()<70. && fQA)
-        fNLM->Fill(nlm,coi->E());
+      
       
       if(!CheckBoundaries(vecCOI))
         continue;
@@ -1248,9 +1248,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillQAHistograms(AliVCluster *coi, TLo
   fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
   
   Double_t checktof = coi->GetTOF()*1e9;
-  
+  fClusTime->Fill(checktof);
+
   if(checktof>-30. && checktof<30. && !fIsMC){
-    fClusTime->Fill(checktof);
       // fPtaftTime->Fill(vecCOI.Pt());
       //  if(!ClustTrackMatching(coi)){
       //  fPtaftTM->Fill(vecCOI.Pt());
