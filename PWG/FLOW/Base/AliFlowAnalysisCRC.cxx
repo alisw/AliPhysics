@@ -15975,12 +15975,12 @@ void AliFlowAnalysisCRC::InitializeCostantsForCRC()
   fCRCPtCenMax = 100.;
   fCRCPtwCenBin = (fCRCPtCenMax-fCRCPtCenMin)/fCRCPtnCenBin;
   
-  fPtDiffNBins = 24;
+  fPtDiffNBins = 26;
   fEtaDiffNBins = 5;
   
-  fCRCPtBins = new Double_t[25];
-  Double_t PtBins[25] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,8.,10.,14.,20.};
-  for(Int_t r=0; r<25; r++) {
+  fCRCPtBins = new Double_t[27];
+  Double_t PtBins[27] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,8.,10.,14.,20.,30.,50.};
+  for(Int_t r=0; r<27; r++) {
     fCRCPtBins[r] = PtBins[r];
   }
   
