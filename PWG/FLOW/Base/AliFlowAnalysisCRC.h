@@ -1637,8 +1637,8 @@ private:
   TH1D *fCRC2CovHist[fCRCMaxnCen][fkNCorCRC2][fkNCorCRC2]; //! Cov hist
   
   // Flow all
-  const static Int_t fFlowNHarm = 3;
-  const static Int_t fFlowNHarmMax = 12; // WARNING: MIN 8
+  const static Int_t fFlowNHarm = 5;
+  const static Int_t fFlowNHarmMax = 12; // WARNING: MIN (2*fFlowNHarm+2)
   const static Int_t fQVecPower = 5;
   Int_t fPtDiffNBins; //
   Int_t fEtaDiffNBins; //
