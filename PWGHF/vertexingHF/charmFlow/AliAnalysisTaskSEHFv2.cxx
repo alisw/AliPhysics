@@ -346,7 +346,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
     if(fFlowMethod!=kEvShape) {
-      TH2F* hMPtCand=new TH2F(Form("hMPtCand%s",centrname.Data()),Form("Mass vs pt %s;p_{t} (GeV/c);M (GeV/c^{2})",centrname.Data()),200,0,100.,fNMassBins,fLowmasslimit,fUpmasslimit);
+      TH2F* hMPtCand=new TH2F(Form("hMPtCand%s",centrname.Data()),Form("Mass vs pt %s;p_{t} (GeV/c);M (GeV/c^{2})",centrname.Data()),500,0.,50.,fNMassBins,fLowmasslimit,fUpmasslimit);
       fOutput->Add(hMPtCand);//For <pt> calculation
 
       //Candidate distributions
