@@ -127,26 +127,26 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   Double_t ptcuts[5] = {1., 2., 5., 10., 20.};
   TString species[6] = {"El", "Mu", "Pi", "Ka", "Pr", "Ot"};
   for(TString *trg = triggers; trg < triggers + sizeof(triggers)/sizeof(TString); trg++){
-    fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5);
-    fHistos->CreateTH1(Form("hVertexBefore%s", trg->Data()), Form("Vertex distribution before z-cut for trigger class %s", trg->Data()), 500, -50, 50);
-    fHistos->CreateTH1(Form("hVertexAfter%s", trg->Data()), Form("Vertex distribution after z-cut for trigger class %s", trg->Data()), 100, -10, 10);
-    fHistos->CreateTH1(Form("hPtEtaAll%s", trg->Data()), Form("Charged particle pt distribution all eta trigger %s", trg->Data()), newbinning);
-    fHistos->CreateTH1(Form("hPtEtaCent%s", trg->Data()), Form("Charged particle pt distribution central eta trigger %s", trg->Data()), newbinning);
-    fHistos->CreateTH1(Form("hPtEMCALEtaAll%s", trg->Data()), Form("Charged particle in EMCAL pt distribution all eta trigger %s", trg->Data()), newbinning);
-    fHistos->CreateTH1(Form("hPtEMCALEtaCent%s", trg->Data()), Form("Charged particle in EMCAL pt distribution central eta trigger %s", trg->Data()), newbinning);
-    fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAll%s", trg->Data()), Form("Charged particle in EMCAL (no TRD in front) pt distribution all eta trigger %s", trg->Data()), newbinning);
-    fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCent%s", trg->Data()), Form("Charged particle in EMCAL (no TRD in front) pt distribution central eta trigger %s", trg->Data()), newbinning);
-    fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAll%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution all eta trigger %s", trg->Data()), newbinning);
-    fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCent%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution central eta trigger %s", trg->Data()), newbinning);
+    fHistos->CreateTH1(Form("hEventCount%s", trg->Data()), Form("Event Counter for trigger class %s", trg->Data()), 1, 0.5, 1.5, "s");
+    fHistos->CreateTH1(Form("hVertexBefore%s", trg->Data()), Form("Vertex distribution before z-cut for trigger class %s", trg->Data()), 500, -50, 50, "s");
+    fHistos->CreateTH1(Form("hVertexAfter%s", trg->Data()), Form("Vertex distribution after z-cut for trigger class %s", trg->Data()), 100, -10, 10, "s");
+    fHistos->CreateTH1(Form("hPtEtaAll%s", trg->Data()), Form("Charged particle pt distribution all eta trigger %s", trg->Data()), newbinning, "s");
+    fHistos->CreateTH1(Form("hPtEtaCent%s", trg->Data()), Form("Charged particle pt distribution central eta trigger %s", trg->Data()), newbinning, "s");
+    fHistos->CreateTH1(Form("hPtEMCALEtaAll%s", trg->Data()), Form("Charged particle in EMCAL pt distribution all eta trigger %s", trg->Data()), newbinning, "s");
+    fHistos->CreateTH1(Form("hPtEMCALEtaCent%s", trg->Data()), Form("Charged particle in EMCAL pt distribution central eta trigger %s", trg->Data()), newbinning, "s");
+    fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAll%s", trg->Data()), Form("Charged particle in EMCAL (no TRD in front) pt distribution all eta trigger %s", trg->Data()), newbinning, "s");
+    fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCent%s", trg->Data()), Form("Charged particle in EMCAL (no TRD in front) pt distribution central eta trigger %s", trg->Data()), newbinning, "s");
+    fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAll%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution all eta trigger %s", trg->Data()), newbinning, "s");
+    fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCent%s", trg->Data()), Form("Charged particle in EMCAL (with TRD in front) pt distribution central eta trigger %s", trg->Data()), newbinning, "s");
     for(TString *piditer = species; piditer < species + sizeof(species)/sizeof(TString); ++piditer){
-      fHistos->CreateTH1(Form("hPtEtaAll%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution all eta trigger %s", piditer->Data(), trg->Data()), newbinning);
-      fHistos->CreateTH1(Form("hPtEtaCent%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution central eta trigger %s", piditer->Data(), trg->Data()), newbinning);
-      fHistos->CreateTH1(Form("hPtEMCALEtaAll%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution all eta trigger %s", piditer->Data(), trg->Data()), newbinning);
-      fHistos->CreateTH1(Form("hPtEMCALEtaCent%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution central eta trigger %s", piditer->Data(), trg->Data()), newbinning);
-      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAll%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution all eta trigger %s", piditer->Data(), trg->Data()), newbinning);
-      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCent%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution central eta trigger %s", piditer->Data(), trg->Data()), newbinning);
-      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAll%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution all eta trigger %s", piditer->Data(), trg->Data()), newbinning);
-      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCent%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution central eta trigger %s", piditer->Data(), trg->Data()), newbinning);
+      fHistos->CreateTH1(Form("hPtEtaAll%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution all eta trigger %s", piditer->Data(), trg->Data()), newbinning, "s");
+      fHistos->CreateTH1(Form("hPtEtaCent%s%s", piditer->Data(), trg->Data()), Form("Charged %s pt distribution central eta trigger %s", piditer->Data(), trg->Data()), newbinning, "s");
+      fHistos->CreateTH1(Form("hPtEMCALEtaAll%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution all eta trigger %s", piditer->Data(), trg->Data()), newbinning, "s");
+      fHistos->CreateTH1(Form("hPtEMCALEtaCent%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL pt distribution central eta trigger %s", piditer->Data(), trg->Data()), newbinning, "s");
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaAll%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution all eta trigger %s", piditer->Data(), trg->Data()), newbinning, "s");
+      fHistos->CreateTH1(Form("hPtEMCALNoTRDEtaCent%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (no TRD in front) pt distribution central eta trigger %s", piditer->Data(), trg->Data()), newbinning, "s");
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaAll%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution all eta trigger %s", piditer->Data(), trg->Data()), newbinning, "s");
+      fHistos->CreateTH1(Form("hPtEMCALWithTRDEtaCent%s%s", piditer->Data(), trg->Data()), Form("Charged %s in EMCAL (with TRD in front) pt distribution central eta trigger %s", piditer->Data(), trg->Data()), newbinning, "s");
     }
     for(int ipt = 0; ipt < 5; ipt++){
       fHistos->CreateTH1(
@@ -154,63 +154,72 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
           Form("Eta (lab) distribution without etacut for tracks with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           100,
           -1.,
-          1.
+          1.,
+		  "s"
           );
       fHistos->CreateTH1(
           Form("hEtaLabDistCutPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (lab) distribution with etacut for tracks with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           100,
           -1.,
-          1.
+          1.,
+		  "s"
           );
       fHistos->CreateTH1(
           Form("hEtaCentDistAllPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (cent) distribution without etacut for tracks with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           160,
           -1.3,
-          1.3
+          1.3,
+		  "s"
           );
       fHistos->CreateTH1(
           Form("hEtaCentDistCutPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (cent) distribution with etacut for tracks with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           160,
           -1.3,
-          1.3
+          1.3,
+		  "s"
           );
       fHistos->CreateTH1(
           Form("hEtaLabDistAllEMCALPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (lab) distribution without etacut for tracks in EMCAL with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           100,
           -1.,
-          1.
+          1.,
+		  "s"
           );
       fHistos->CreateTH1(
           Form("hEtaLabDistCutEMCALPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (lab) distribution with etacut for tracks in EMCAL with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           100,
           -1.,
-          1.
+          1.,
+		  "s"
           );
       fHistos->CreateTH1(
           Form("hEtaCentDistAllEMCALPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (cent) distribution without etacut for tracks in EMCAL with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           160,
           -1.3,
-          1.3
+          1.3,
+		  "s"
           );
       fHistos->CreateTH1(
           Form("hEtaCentDistCutEMCALPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("Eta (cent) distribution with etacut for tracks in EMCAL with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           160,
           -1.3,
-          1.3
+          1.3,
+		  "s"
           );
       fHistos->CreateTH1(
           Form("hPhiDistAllPt%d%s", static_cast<Int_t>(ptcuts[ipt]), trg->Data()),
           Form("#phi distribution of particles with Pt above %.1f GeV/c trigger %s", ptcuts[ipt], trg->Data()),
           300,
           0.,
-          2*TMath::Pi()
+          2*TMath::Pi(),
+		  "s"
           );
     }
   }

@@ -95,36 +95,36 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
   std::array<Double_t, 5> encuts = {1., 2., 5., 10., 20.};
   Int_t sectorsWithEMCAL[10] = {4, 5, 6, 7, 8, 9, 13, 14, 15, 16};
   for(auto trg : GetSupportedTriggers()){
-    fHistos->CreateTH1(Form("hEventCount%s", trg.Data()), Form("Event count for trigger class %s", trg.Data()), 1, 0.5, 1.5);
-    fHistos->CreateTH1(Form("hEventCentrality%s", trg.Data()), Form("Event centrality for trigger class %s", trg.Data()), 103, -2., 101.);
-    fHistos->CreateTH1(Form("hVertexZ%s", trg.Data()), Form("z-position of the primary vertex for trigger class %s", trg.Data()), 200, -40., 40.);
-    fHistos->CreateTH1(Form("hClusterEnergy%s", trg.Data()), Form("Cluster energy for trigger class %s", trg.Data()), energybinning);
-    fHistos->CreateTH1(Form("hClusterET%s", trg.Data()), Form("Cluster transverse energy for trigger class %s", trg.Data()), energybinning);
-    fHistos->CreateTH1(Form("hClusterEnergyFired%s", trg.Data()), Form("Cluster energy for trigger class %s, firing the trigger", trg.Data()), energybinning);
-    fHistos->CreateTH1(Form("hClusterETFired%s", trg.Data()), Form("Cluster transverse energy for trigger class %s, firing the trigger", trg.Data()), energybinning);
-    fHistos->CreateTH2(Form("hClusterEnergySM%s", trg.Data()), Form("Cluster energy versus supermodule for trigger class %s", trg.Data()), smbinning, energybinning);
-    fHistos->CreateTH2(Form("hClusterETSM%s", trg.Data()), Form("Cluster transverse energy versus supermodule for trigger class %s", trg.Data()), smbinning, energybinning);
-    fHistos->CreateTH2(Form("hClusterEnergyFiredSM%s", trg.Data()), Form("Cluster energy versus supermodule for trigger class %s, firing the trigger", trg.Data()), smbinning, energybinning);
-    fHistos->CreateTH2(Form("hClusterETFiredSM%s", trg.Data()), Form("Cluster transverse energy versus supermodule for trigger class %s, firing the trigger", trg.Data()), smbinning, energybinning);
-    fHistos->CreateTH2(Form("hEtaEnergy%s", trg.Data()), Form("Cluster energy vs. eta for trigger class %s", trg.Data()), etabinning, energybinning);
-    fHistos->CreateTH2(Form("hEtaET%s", trg.Data()), Form("Cluster transverse energy vs. eta for trigger class %s", trg.Data()), etabinning, energybinning);
-    fHistos->CreateTH2(Form("hEtaEnergyFired%s", trg.Data()), Form("Cluster energy vs. eta for trigger class %s, firing the trigger", trg.Data()), etabinning, energybinning);
-    fHistos->CreateTH2(Form("hEtaETFired%s", trg.Data()), Form("Cluster transverse energy vs. eta for trigger class %s, firing the trigger", trg.Data()), etabinning, energybinning);
+    fHistos->CreateTH1(Form("hEventCount%s", trg.Data()), Form("Event count for trigger class %s", trg.Data()), 1, 0.5, 1.5, "s");
+    fHistos->CreateTH1(Form("hEventCentrality%s", trg.Data()), Form("Event centrality for trigger class %s", trg.Data()), 103, -2., 101., "s");
+    fHistos->CreateTH1(Form("hVertexZ%s", trg.Data()), Form("z-position of the primary vertex for trigger class %s", trg.Data()), 200, -40., 40., "s");
+    fHistos->CreateTH1(Form("hClusterEnergy%s", trg.Data()), Form("Cluster energy for trigger class %s", trg.Data()), energybinning, "s");
+    fHistos->CreateTH1(Form("hClusterET%s", trg.Data()), Form("Cluster transverse energy for trigger class %s", trg.Data()), energybinning, "s");
+    fHistos->CreateTH1(Form("hClusterEnergyFired%s", trg.Data()), Form("Cluster energy for trigger class %s, firing the trigger", trg.Data()), energybinning, "s");
+    fHistos->CreateTH1(Form("hClusterETFired%s", trg.Data()), Form("Cluster transverse energy for trigger class %s, firing the trigger", trg.Data()), energybinning, "s");
+    fHistos->CreateTH2(Form("hClusterEnergySM%s", trg.Data()), Form("Cluster energy versus supermodule for trigger class %s", trg.Data()), smbinning, energybinning, "s");
+    fHistos->CreateTH2(Form("hClusterETSM%s", trg.Data()), Form("Cluster transverse energy versus supermodule for trigger class %s", trg.Data()), smbinning, energybinning, "s");
+    fHistos->CreateTH2(Form("hClusterEnergyFiredSM%s", trg.Data()), Form("Cluster energy versus supermodule for trigger class %s, firing the trigger", trg.Data()), smbinning, energybinning, "s");
+    fHistos->CreateTH2(Form("hClusterETFiredSM%s", trg.Data()), Form("Cluster transverse energy versus supermodule for trigger class %s, firing the trigger", trg.Data()), smbinning, energybinning, "s");
+    fHistos->CreateTH2(Form("hEtaEnergy%s", trg.Data()), Form("Cluster energy vs. eta for trigger class %s", trg.Data()), etabinning, energybinning, "s");
+    fHistos->CreateTH2(Form("hEtaET%s", trg.Data()), Form("Cluster transverse energy vs. eta for trigger class %s", trg.Data()), etabinning, energybinning, "s");
+    fHistos->CreateTH2(Form("hEtaEnergyFired%s", trg.Data()), Form("Cluster energy vs. eta for trigger class %s, firing the trigger", trg.Data()), etabinning, energybinning, "s");
+    fHistos->CreateTH2(Form("hEtaETFired%s", trg.Data()), Form("Cluster transverse energy vs. eta for trigger class %s, firing the trigger", trg.Data()), etabinning, energybinning, "s");
     for(int ism = 0; ism < 20; ism++){
-      fHistos->CreateTH2(Form("hEtaEnergySM%d%s", ism, trg.Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s", ism, trg.Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaETSM%d%s", ism, trg.Data()), Form("Cluster transverse energy vs. eta in Supermodule %d for trigger %s", ism, trg.Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaEnergyFiredSM%d%s", ism, trg.Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg.Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaETFiredSM%d%s", ism, trg.Data()), Form("Cluster transverse energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg.Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hEtaEnergySM%d%s", ism, trg.Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s", ism, trg.Data()), etabinning, energybinning, "s");
+      fHistos->CreateTH2(Form("hEtaETSM%d%s", ism, trg.Data()), Form("Cluster transverse energy vs. eta in Supermodule %d for trigger %s", ism, trg.Data()), etabinning, energybinning, "s");
+      fHistos->CreateTH2(Form("hEtaEnergyFiredSM%d%s", ism, trg.Data()), Form("Cluster energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg.Data()), etabinning, energybinning, "s");
+      fHistos->CreateTH2(Form("hEtaETFiredSM%d%s", ism, trg.Data()), Form("Cluster transverse energy vs. eta in Supermodule %d for trigger %s, firing the trigger", ism, trg.Data()), etabinning, energybinning, "s");
     }
     for(int isec = 0; isec < 10; isec++){
-      fHistos->CreateTH2(Form("hEtaEnergySec%d%s", sectorsWithEMCAL[isec], trg.Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s", sectorsWithEMCAL[isec], trg.Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaETSec%d%s", sectorsWithEMCAL[isec], trg.Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s", sectorsWithEMCAL[isec], trg.Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaEnergyFiredSec%d%s", sectorsWithEMCAL[isec], trg.Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s, firing the trigger", sectorsWithEMCAL[isec], trg.Data()), etabinning, energybinning);
-      fHistos->CreateTH2(Form("hEtaETFiredSec%d%s", sectorsWithEMCAL[isec], trg.Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s, firing the trigger", sectorsWithEMCAL[isec], trg.Data()), etabinning, energybinning);
+      fHistos->CreateTH2(Form("hEtaEnergySec%d%s", sectorsWithEMCAL[isec], trg.Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s", sectorsWithEMCAL[isec], trg.Data()), etabinning, energybinning, "s");
+      fHistos->CreateTH2(Form("hEtaETSec%d%s", sectorsWithEMCAL[isec], trg.Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s", sectorsWithEMCAL[isec], trg.Data()), etabinning, energybinning, "s");
+      fHistos->CreateTH2(Form("hEtaEnergyFiredSec%d%s", sectorsWithEMCAL[isec], trg.Data()), Form("Cluster energy vs.eta in tracking sector %d for trigger %s, firing the trigger", sectorsWithEMCAL[isec], trg.Data()), etabinning, energybinning, "s");
+      fHistos->CreateTH2(Form("hEtaETFiredSec%d%s", sectorsWithEMCAL[isec], trg.Data()), Form("Cluster transverse energy vs.eta in tracking sector %d for trigger %s, firing the trigger", sectorsWithEMCAL[isec], trg.Data()), etabinning, energybinning, "s");
     }
     for(auto ien : encuts){
-      fHistos->CreateTH2(Form("hEtaPhi%dG%s", static_cast<int>(ien), trg.Data()), Form("cluster #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class %s", ien, trg.Data()), 100, -0.7, 0.7, 200, 0, 2*TMath::Pi());
-      fHistos->CreateTH2(Form("hEtaPhiFired%dG%s", static_cast<int>(ien), trg.Data()), Form("cluster #eta-#phi map for clusters fired the trigger with energy larger than %f GeV/c for trigger class %s", ien, trg.Data()), 200, -0.7, 0.7, 200, 0, 2*TMath::Pi());
+      fHistos->CreateTH2(Form("hEtaPhi%dG%s", static_cast<int>(ien), trg.Data()), Form("cluster #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class %s", ien, trg.Data()), 100, -0.7, 0.7, 200, 0, 2*TMath::Pi(), "s");
+      fHistos->CreateTH2(Form("hEtaPhiFired%dG%s", static_cast<int>(ien), trg.Data()), Form("cluster #eta-#phi map for clusters fired the trigger with energy larger than %f GeV/c for trigger class %s", ien, trg.Data()), 200, -0.7, 0.7, 200, 0, 2*TMath::Pi(), "s");
     }
   }
 }
