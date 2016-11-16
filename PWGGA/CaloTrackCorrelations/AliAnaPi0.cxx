@@ -3583,7 +3583,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                   if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
                   
                   fhMi1[index]->Fill(pt, m, GetEventWeight()) ;
-                  
                   if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                   
                   if(fFillBadDistHisto)
@@ -3600,169 +3599,169 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                       }
                     }
                   }// Fill bad dist histo
+                  
+                  //-----------------------
+                  // Multi cuts analysis
+                  //-----------------------
+                  Int_t  ncell1 = p1->GetNCells();
+                  Int_t  ncell2 = p1->GetNCells();
+                  
+                  if(fMultiCutAna)
+                  {
+                    // Several pt,ncell and asymmetry cuts
+                    for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+                    {
+                      for(Int_t icell=0; icell<fNCellNCuts; icell++)
+                      {
+                        for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
+                        {
+                          Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
+                          
+                          if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]      &&
+                             p1->Pt() <   fPtCutsMax[ipt]   && p2->Pt() < fPtCutsMax[ipt]   &&
+                             a        <   fAsymCuts[iasym]                                  &&
+                             ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell] 
+                             )
+                          {
+                            //printf("MI ipt %d, iasym%d, icell %d, index %d \n",ipt, iasym, icell, index);
+                            //printf("\t %p, %p\n",fhMiPtNCellAsymCuts[index],fhMiPtNCellAsymCutsOpAngle[index]);
+                            
+                            fhMiPtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
+                            if(fFillAngleHisto)  fhMiPtNCellAsymCutsOpAngle[index]->Fill(pt, angle, GetEventWeight()) ;
+                            
+                            //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
+                          }
+                        }// pid bit cut loop
+                      }// icell loop
+                    }// pt cut loop
+                  } // Multi cut ana
+                  
+                  //
+                  // Fill histograms with opening angle
+                  if(fFillAngleHisto)
+                  {
+                    fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
+                    fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
+                  }          
+                  
+                  //
+                  // Fill histograms for different opening angle bins
+                  if(fFillOpAngleCutHisto)
+                  {
+                    Int_t angleBin = -1;
+                    for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+                    {
+                      if(angle >= fAngleCutBinsArray[ibin] && 
+                         angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+                    }
+                    
+                    if( angleBin >= 0 && angleBin < fNAngleCutBins)
+                    {
+                      Float_t e1   = fPhotonMom1.E();
+                      Float_t e2   = fPhotonMom2.E();
+                      
+                      Float_t t1   = p1->GetTime();
+                      Float_t t2   = p2->GetTime();
+                      
+                      Int_t nc1    = ncell1;
+                      Int_t nc2    = ncell2;
+                      
+                      Float_t eta1 = fPhotonMom1.Eta(); 
+                      Float_t eta2 = fPhotonMom2.Eta(); 
+                      
+                      Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+                      Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+                      
+                      Int_t   mod1 = module1;
+                      Int_t   mod2 = module2;
+                      
+                      //              // Recover original cluster
+                      //              Int_t iclus1 = -1, iclus2 = -1 ;
+                      //              AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),p1->GetCaloLabel(0),iclus1);
+                      //              AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),p2->GetCaloLabel(0),iclus2);
+                      //              
+                      //              Float_t maxCellFraction1 = 0, maxCellFraction2 = 0;
+                      //              Int_t absIdMax1 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster1,maxCellFraction1);
+                      //              Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
+                      
+                      if(e2 > e1)
+                      {
+                        e1   = fPhotonMom2.E();
+                        e2   = fPhotonMom1.E();
+                        
+                        t1   = p2->GetTime();
+                        t2   = p1->GetTime();
+                        
+                        nc1  = ncell2;
+                        nc2  = ncell1;
+                        
+                        eta1 = fPhotonMom2.Eta(); 
+                        eta2 = fPhotonMom1.Eta(); 
+                        
+                        phi1 = GetPhi(fPhotonMom2.Phi());
+                        phi2 = GetPhi(fPhotonMom1.Phi());
+                        
+                        mod1 = module2;
+                        mod2 = module1;
+                        
+                        //                Int_t tmp = absIdMax2;
+                        //                absIdMax2 = absIdMax1;
+                        //                absIdMax1 = tmp;
+                      }
+                      
+                      fhMiOpAngleBinMinClusterEPerSM[angleBin]->Fill(e2,mod2,GetEventWeight()) ; 
+                      fhMiOpAngleBinMaxClusterEPerSM[angleBin]->Fill(e1,mod1,GetEventWeight()) ; 
+                      
+                      fhMiOpAngleBinMinClusterTimePerSM[angleBin]->Fill(t2,mod2,GetEventWeight()) ; 
+                      fhMiOpAngleBinMaxClusterTimePerSM[angleBin]->Fill(t1,mod1,GetEventWeight()) ; 
+                      
+                      fhMiOpAngleBinMinClusterNCellPerSM[angleBin]->Fill(nc2,mod2,GetEventWeight()) ; 
+                      fhMiOpAngleBinMaxClusterNCellPerSM[angleBin]->Fill(nc1,mod1,GetEventWeight()) ; 
+                      
+                      fhMiOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()) ;
+                      if(mod2 == mod1)  fhMiOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
+                      
+                      if(e1 > 0.01) fhMiOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
+                      
+                      fhMiOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()) ;
+                      fhMiOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()) ;
+                      
+                      //              Int_t   icol1 = -1, icol2 = -1, icolAbs1 = -1, icolAbs2 = -1;
+                      //              Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
+                      //              Int_t   iRCU1 = -1, iRCU2 = -1;
+                      //              GetModuleNumberCellIndexesAbsCaloMap(absIdMax1,GetCalorimeter(), icol1, irow1, iRCU1, icolAbs1, irowAbs1);
+                      //              GetModuleNumberCellIndexesAbsCaloMap(absIdMax2,GetCalorimeter(), icol2, irow2, iRCU1, icolAbs2, irowAbs2);
+                      //              
+                      //              fhMiOpAngleBinPairClusterAbsIdMaxCell[angleBin]->Fill(absIdMax1,absIdMax2,GetEventWeight());
+                      //
+                      //              fhMiColRowClusterMinOpAngleBin[angleBin]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+                      //              fhMiOpAngleBinMaxClusterColRow[angleBin]->Fill(icolAbs1,irowAbs1,GetEventWeight()) ;
+                    }
+                  }
+                  
+                  // Fill histograms with pair assymmetry
+                  if(fFillAsymmetryHisto)
+                  {
+                    fhMiPtAsym->Fill(pt, a, GetEventWeight());
+                    if(m > 0.10 && m < 0.17) fhMiPtAsymPi0->Fill(pt, a, GetEventWeight());
+                    if(m > 0.45 && m < 0.65) fhMiPtAsymEta->Fill(pt, a, GetEventWeight());
+                  }
+                  
+                  // Check cell time content in cluster
+                  if ( fFillSecondaryCellTiming )
+                  {
+                    if      ( p1->GetFiducialArea() == 0 && p2->GetFiducialArea() == 0 )
+                      fhMiSecondaryCellInTimeWindow ->Fill(pt, m, GetEventWeight());
+                    
+                    else if ( p1->GetFiducialArea() != 0 && p2->GetFiducialArea() != 0 )
+                      fhMiSecondaryCellOutTimeWindow->Fill(pt, m, GetEventWeight());
+                  }
+                  
                 }//Asymmetry cut
               }// Asymmetry loop
             }//PID cut
           }//loop for histograms
-          
-          //-----------------------
-          // Multi cuts analysis
-          //-----------------------
-          Int_t  ncell1 = p1->GetNCells();
-          Int_t  ncell2 = p1->GetNCells();
-
-          if(fMultiCutAna)
-          {
-            // Several pt,ncell and asymmetry cuts
-            for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
-            {
-              for(Int_t icell=0; icell<fNCellNCuts; icell++)
-              {
-                for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
-                {
-                  Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
                   
-                  if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]      &&
-                     p1->Pt() <   fPtCutsMax[ipt]   && p2->Pt() < fPtCutsMax[ipt]   &&
-                     a        <   fAsymCuts[iasym]                                  &&
-                     ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell] 
-                     )
-                  {
-                    //printf("MI ipt %d, iasym%d, icell %d, index %d \n",ipt, iasym, icell, index);
-                    //printf("\t %p, %p\n",fhMiPtNCellAsymCuts[index],fhMiPtNCellAsymCutsOpAngle[index]);
-
-                    fhMiPtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
-                    if(fFillAngleHisto)  fhMiPtNCellAsymCutsOpAngle[index]->Fill(pt, angle, GetEventWeight()) ;
-
-                    //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
-                  }
-                }// pid bit cut loop
-              }// icell loop
-            }// pt cut loop
-          } // Multi cut ana
-          
-          //
-          // Fill histograms with opening angle
-          if(fFillAngleHisto)
-          {
-            fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
-            fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
-          }          
-          
-          //
-          // Fill histograms for different opening angle bins
-          if(fFillOpAngleCutHisto)
-          {
-            Int_t angleBin = -1;
-            for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
-            {
-              if(angle >= fAngleCutBinsArray[ibin] && 
-                 angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
-            }
-            
-            if( angleBin >= 0 && angleBin < fNAngleCutBins)
-            {
-              
-              Float_t e1   = fPhotonMom1.E();
-              Float_t e2   = fPhotonMom2.E();
-              
-              Float_t t1   = p1->GetTime();
-              Float_t t2   = p2->GetTime();
-              
-              Int_t nc1    = ncell1;
-              Int_t nc2    = ncell2;
-              
-              Float_t eta1 = fPhotonMom1.Eta(); 
-              Float_t eta2 = fPhotonMom2.Eta(); 
-              
-              Float_t phi1 = GetPhi(fPhotonMom1.Phi());
-              Float_t phi2 = GetPhi(fPhotonMom2.Phi());
-              
-              Int_t   mod1 = module1;
-              Int_t   mod2 = module2;
-              
-//              // Recover original cluster
-//              Int_t iclus1 = -1, iclus2 = -1 ;
-//              AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),p1->GetCaloLabel(0),iclus1);
-//              AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),p2->GetCaloLabel(0),iclus2);
-//              
-//              Float_t maxCellFraction1 = 0, maxCellFraction2 = 0;
-//              Int_t absIdMax1 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster1,maxCellFraction1);
-//              Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
-              
-              if(e2 > e1)
-              {
-                e1   = fPhotonMom2.E();
-                e2   = fPhotonMom1.E();
-
-                t1   = p2->GetTime();
-                t2   = p1->GetTime();
-                
-                nc1  = ncell2;
-                nc2  = ncell1;
-                
-                eta1 = fPhotonMom2.Eta(); 
-                eta2 = fPhotonMom1.Eta(); 
-                
-                phi1 = GetPhi(fPhotonMom2.Phi());
-                phi2 = GetPhi(fPhotonMom1.Phi());
-                
-                mod1 = module2;
-                mod2 = module1;
-                
-//                Int_t tmp = absIdMax2;
-//                absIdMax2 = absIdMax1;
-//                absIdMax1 = tmp;
-              }
-              
-              fhMiOpAngleBinMinClusterEPerSM[angleBin]->Fill(e2,mod2,GetEventWeight()) ; 
-              fhMiOpAngleBinMaxClusterEPerSM[angleBin]->Fill(e1,mod1,GetEventWeight()) ; 
-
-              fhMiOpAngleBinMinClusterTimePerSM[angleBin]->Fill(t2,mod2,GetEventWeight()) ; 
-              fhMiOpAngleBinMaxClusterTimePerSM[angleBin]->Fill(t1,mod1,GetEventWeight()) ; 
-
-              fhMiOpAngleBinMinClusterNCellPerSM[angleBin]->Fill(nc2,mod2,GetEventWeight()) ; 
-              fhMiOpAngleBinMaxClusterNCellPerSM[angleBin]->Fill(nc1,mod1,GetEventWeight()) ; 
-
-              fhMiOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()) ;
-              if(mod2 == mod1)  fhMiOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
-              
-              if(e1 > 0.01) fhMiOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
-              
-              fhMiOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()) ;
-              fhMiOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()) ;
-              
-//              Int_t   icol1 = -1, icol2 = -1, icolAbs1 = -1, icolAbs2 = -1;
-//              Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
-//              Int_t   iRCU1 = -1, iRCU2 = -1;
-//              GetModuleNumberCellIndexesAbsCaloMap(absIdMax1,GetCalorimeter(), icol1, irow1, iRCU1, icolAbs1, irowAbs1);
-//              GetModuleNumberCellIndexesAbsCaloMap(absIdMax2,GetCalorimeter(), icol2, irow2, iRCU1, icolAbs2, irowAbs2);
-//              
-//              fhMiOpAngleBinPairClusterAbsIdMaxCell[angleBin]->Fill(absIdMax1,absIdMax2,GetEventWeight());
-//
-//              fhMiColRowClusterMinOpAngleBin[angleBin]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
-//              fhMiOpAngleBinMaxClusterColRow[angleBin]->Fill(icolAbs1,irowAbs1,GetEventWeight()) ;
-            }
-          }
-
-          // Fill histograms with pair assymmetry
-          if(fFillAsymmetryHisto)
-          {
-            fhMiPtAsym->Fill(pt, a, GetEventWeight());
-            if(m > 0.10 && m < 0.17) fhMiPtAsymPi0->Fill(pt, a, GetEventWeight());
-            if(m > 0.45 && m < 0.65) fhMiPtAsymEta->Fill(pt, a, GetEventWeight());
-          }
-          
-          // Check cell time content in cluster
-          if ( fFillSecondaryCellTiming )
-          {
-            if      ( p1->GetFiducialArea() == 0 && p2->GetFiducialArea() == 0 )
-              fhMiSecondaryCellInTimeWindow ->Fill(pt, m, GetEventWeight());
-            
-            else if ( p1->GetFiducialArea() != 0 && p2->GetFiducialArea() != 0 )
-              fhMiSecondaryCellOutTimeWindow->Fill(pt, m, GetEventWeight());
-          }
-          
         }// second cluster loop
       }//first cluster loop
     }//loop on mixed events
