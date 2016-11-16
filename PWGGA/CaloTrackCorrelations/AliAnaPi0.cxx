@@ -1371,24 +1371,32 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
       outputContainer->Add(fhMCEtaProdVertex) ;
       
+      // Name of found ancestors of the cluster pairs. Check definitions in FillMCVsRecDataHistograms
+      TString ancestorTitle[] = {"Photon","Electron","Pi0","Eta","AntiProton","AntiNeutron","Muon & converted stable particles",
+        "Resonances","Strings","Initial state interaction","Final state radiations","Colliding protons","not found"};
+      
       for(Int_t i = 0; i<13; i++)
       {
-        fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("#it{M} vs #it{p}_{T}, origin %d",i),nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("#it{M} vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
         fhMCOrgMass[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCOrgMass[i]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhMCOrgMass[i]) ;
         
-        fhMCOrgAsym[i]= new TH2F(Form("hMCOrgAsym_%d",i),Form("#it{Asymmetry} vs #it{p}_{T}, origin %d",i),nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+        fhMCOrgAsym[i]= new TH2F(Form("hMCOrgAsym_%d",i),Form("#it{Asymmetry} vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+                                 nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
         fhMCOrgAsym[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCOrgAsym[i]->SetYTitle("A");
         outputContainer->Add(fhMCOrgAsym[i]) ;
         
-        fhMCOrgDeltaEta[i] = new TH2F(Form("hMCOrgDeltaEta_%d",i),Form("#Delta #eta of pair vs #it{p}_{T}, origin %d",i),nptbins,ptmin,ptmax,netabins,-1.4,1.4) ;
+        fhMCOrgDeltaEta[i] = new TH2F(Form("hMCOrgDeltaEta_%d",i),Form("#Delta #eta of pair vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+                                      nptbins,ptmin,ptmax,netabins,-1.4,1.4) ;
         fhMCOrgDeltaEta[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCOrgDeltaEta[i]->SetYTitle("#Delta #eta");
         outputContainer->Add(fhMCOrgDeltaEta[i]) ;
         
-        fhMCOrgDeltaPhi[i]= new TH2F(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #phi of pair vs #it{p}_{T}, origin %d",i),nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
+        fhMCOrgDeltaPhi[i]= new TH2F(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #phi of pair vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+                                     nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
         fhMCOrgDeltaPhi[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #phi (rad)");
         outputContainer->Add(fhMCOrgDeltaPhi[i]) ;
@@ -2489,7 +2497,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   Int_t status    = -1;
   Float_t prodR = -1;
   Int_t mcIndex = -1;
-  
+ 
   if(ancLabel > -1)
   {
     AliDebug(1,Form("Common ancestor label %d, pdg %d, name %s, status %d",
