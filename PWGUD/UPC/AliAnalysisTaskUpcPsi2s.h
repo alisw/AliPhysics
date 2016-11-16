@@ -130,6 +130,10 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   
   TH1D *fHistCcup8TriggersPerRun;
   TH1D *fHistCcup9TriggersPerRun;
+  TH1D *fHistCcup10TriggersPerRun;
+  TH1D *fHistCcup11TriggersPerRun;
+  TH1D *fHistCcup12TriggersPerRun;
+  TH1D *fHistCtrueTriggersPerRun;
   
   TList *fListHist;
   TH1D *fHistNeventsJPsi; 
