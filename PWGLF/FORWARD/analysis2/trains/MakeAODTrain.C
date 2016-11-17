@@ -65,7 +65,7 @@ protected:
   {
     TString cmd;
     cmd.Form("((AliForwardMultiplicityBase*)%p)->%s(%s)",
-	     tsk, call.Data(), arg.Data())
+	     task, call.Data(), arg.Data());
     gROOT->ProcessLine(cmd);
   }
   /** 
@@ -81,7 +81,7 @@ protected:
   {
     TString cmd;
     cmd.Form("((AliForwardMCMultiplicityTask*)%p)->%s(%s)",
-	     tsk, call.Data(), arg.Data())
+	     task, call.Data(), arg.Data());
     gROOT->ProcessLine(cmd);
   }
   /** 
@@ -121,7 +121,7 @@ protected:
     UShort_t sNN  = fOptions.AsInt("snn", 0);
     UShort_t fld  = fOptions.AsInt("field", 0);
     UShort_t mSt  = fOptions.AsInt("max-strips", 2);
-    Double_t thr  = fOptions.AsDouble("hit-threshold". .9);
+    Double_t thr  = fOptions.AsDouble("hit-threshold", .9);
     Bool_t   sec  = fOptions.Has("secmap");
     TString  corr = "";
     TString  dead = "";

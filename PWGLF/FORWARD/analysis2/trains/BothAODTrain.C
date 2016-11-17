@@ -61,7 +61,8 @@ public:
     fOptions.Add("dphi-shift",       "X","Bending shift",           0.0045);
     fOptions.Add("phi-overlap-cut",  "X","Phi overlap cut",         0.005);
     fOptions.Add("z-eta-overlap-cut","X","Z-Eta overlap cut",       0.05);
-    fOptions.Add("filter-str",       "X","Filter strange tracks",   0);    
+    fOptions.Add("filter-mode",   "MODE","Filter strange clusters",  0);
+    fOptions.Add("filter-weight", "FILE","File with filter weights", "");
     fOptions.Add("need-clusters",        "If set, insist on RecPoints",false);
     fOptions.Set("type", "ESD");
   }
@@ -249,6 +250,8 @@ protected:
     fRailway->LoadSource("AliAODSimpleHeader.C");
     fRailway->LoadSource("AliSimpleHeaderTask.C");    
     fRailway->LoadSource("AliAODTracklet.C");
+    fRailway->LoadSource("AliTrackletWeights.C");
+    fRailway->LoadSource("AliTrackletAODUtils.C");
     fRailway->LoadSource("AliTrackletAODTask.C");
 
     // --- Task to create simple header ------------------------------
@@ -257,7 +260,8 @@ protected:
 
     // --- Create the task using interpreter -------------------------
     Long_t             ret  =
-      gROOT->ProcessLine("AliTrackletAODTask::Create()");
+      gROOT->ProcessLine(Form("AliTrackletAODTask::Create(\"%s\")",
+			      fOptions.AsString("filter-weight")));
     AliAnalysisTaskSE* task = reinterpret_cast<AliAnalysisTaskSE*>(ret);
     if (!task) 
       Fatal("CoupleTrackletCar", "Failed to make tracklet task");
@@ -270,7 +274,7 @@ protected:
     FromOption(task, "DPhiShift",	"dphi-shift",	     0.0045);
     FromOption(task, "PhiOverlapCut",	"phi-overlap-cut"  , 0.005);
     FromOption(task, "ZEtaOverlapCut",	"z-eta-overlap-cut", 0.05);
-    FromOption(task, "FilterStrange",   "filter-str",        0);        
+    FromOption(task, "FilterMode",      "filter-mode",       0);
   }
   /** 
    * Couple tasks to run after main body 

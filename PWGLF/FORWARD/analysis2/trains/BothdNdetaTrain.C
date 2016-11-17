@@ -357,8 +357,8 @@ protected:
       << "{\n"
       << "  TString fwd=\n"
       << "    \"$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/dndeta/tracklets3\";\n"
-      << "  if (gSystem->GetEnv(\"ANA_SRC\"))\n"
-      << "    fwd = \"$ANA_SRC/dndeta/trackldwets3\";\n"
+      << "  if (gSystem->Getenv(\"ANA_SRC\"))\n"
+      << "    fwd = \"$ANA_SRC/dndeta/tracklets3\";\n"
       << "  gROOT->LoadMacro(Form(\"%s/Post.C\",fwd.Data()));\n"
       << "  const char* thisDir = \"" << fEscapedName << "\";\n";
     if (fRailway->IsMC())

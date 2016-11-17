@@ -540,7 +540,18 @@ protected:
 	path.Remove(path.Length()-1);
       } while (path.Length());
     }
+
+#if 0
+    TObjArray* comps = search.Tokenize(":");
+    Printf("Searching for %s in ", path.Data());
+    TIter nextC(comps);
+    TObject* objC = 0;
+    while ((objC = nextC())) Printf("  %s", objC->GetName());
+    comps->Delete();
+#endif 
     TString query = gSystem->Which(search, path);
+    // Printf("Got back %s", query.Data());
+
     if (gSystem->AccessPathName(query.Data())) { 
       // File not accessible
       Warning("Railway::AuxFile", "File %s not accessible", path.Data());
@@ -556,7 +567,7 @@ protected:
       }
     }
     if (copy) 
-      TFile::Cp(path, base);
+      TFile::Cp(query, base);
     else 
       gSystem->Exec(Form("ln -s %s .", query.Data()));
     return true;
