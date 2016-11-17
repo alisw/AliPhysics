@@ -303,6 +303,9 @@ private:
   TH1F *fCenDis; //! centrality distribution
   TH1F *fPileUpCount; //! centrality distribution
   TH1F *fPileUpMultSelCount; //! centrality distribution
+  TF1 *fMultTOFLowCut; //!
+  TF1 *fMultTOFHighCut; //!
+  
   AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
   TList *fTowerEqList;   // list with weights
   TH1D *fTowerGainEq[2][5]; //!

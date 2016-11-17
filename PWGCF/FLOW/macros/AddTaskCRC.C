@@ -1,5 +1,5 @@
 AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
-                             Double_t ptMax=50.2,
+                             Double_t ptMax=50.,
                              TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
                              TString sDataSet="2010",
