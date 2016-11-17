@@ -909,7 +909,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fpi0VSM02VSIsolation->Sumw2();
     fOutput->Add(fpi0VSM02VSIsolation);
     
-    fpi0VSclusterVSM02 = new TH3F ("fpi0VSclusterVSM02","Energy pi0 vs Energy cluster vs cluster M02 ",95,5.,100.,500,0.,5.,100,0.,100.);
+    fpi0VSclusterVSM02 = new TH3F ("fpi0VSclusterVSM02","Energy pi0 vs Energy cluster vs cluster M02 ",95,5.,100.,100,0.,100.,500,0.,5.);
     fpi0VSclusterVSM02->SetXTitle("particle (#pi^{0} or #eta) E");
     fpi0VSclusterVSM02->SetYTitle("cluster E");
     fpi0VSclusterVSM02->SetZTitle("cluster M02");
@@ -2636,7 +2636,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::LookforParticle(Int_t clusterlabel, Do
               clusterFromPromptPhoton=7;//contribution from one daughter
           }
           fpi0VSclusterVSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), energyCLS, isolation);
-          fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS,ss);
+          fpi0VSclusterVSM02->Fill(momP2Check->E()*TMath::Sin(momP2Check->Theta()), energyCLS, ss);
           fpi0VSM02VSIsolation->Fill(grandma->E()*TMath::Sin(grandma->Theta()), ss, isolation);
 
         }
