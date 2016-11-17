@@ -1,0 +1,224 @@
+#ifndef AliAnTOFtrack_H
+#define AliAnTOFtrack_H
+
+#include "AliUtilTOFParams.h"
+#include "TMath.h"
+
+using namespace AliUtilTOFParams;
+
+
+#define LOG_NO_INFO
+#define LOG_NO_DEBUG
+// #include "AliLog.h"
+
+#ifdef LOG_NO_INFO
+#define warningmsgAn(msg) do { } while (false)
+#define infomsgAn(msg) do { } while (false)
+#else
+#define warningmsgAn(msg) cout<<"W- AliAnTOFtrack :: "<<msg<<endl
+#define infomsgAn(msg) cout<<"I- AliAnTOFtrack :: "<<msg<<endl
+#endif
+
+#ifdef LOG_NO_DEBUG
+#define debugmsgAn(msg) do { } while (false)
+#else
+#define debugmsgAn(msg) cout<<"D- AliAnTOFtrack :: "<<yellowTxt<<msg<<endl
+#endif
+
+#define errormsgAn(msg) Error("AliAnTOFtrack","%s",msg)
+#define fatalmsgAn(msg) Fatal("AliAnTOFtrack","%s",msg)
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+//                                                                          //
+//               Class container for TOF analysis of Pi/K/p.                //
+//                                                                          //
+//////////////////////////////////////////////////////////////////////////////
+
+class TObject;
+
+class AliAnTOFtrack : public TObject{
+public:
+  //Constructors and destructor
+  AliAnTOFtrack();
+  virtual ~AliAnTOFtrack();
+  
+  //Masks
+  UChar_t         fTrkMask;                 //Mask for track information
+  UChar_t         fTPCPIDMask;              //Mask for TPC PID information
+  UShort_t        fTrkCutMask;              //Mask for Track cuts information
+  UShort_t        fDCAXYIndex;              //Binned version of the XY impact parameters
+  UShort_t        fDCAZIndex;               //Binned version of the Z impact parameters
+  Double_t        fLength;                  //Track length
+  Float_t         fLengthRatio;             //Ratio of length of the track matched and the one from a distant cluster
+  Double_t        fTOFTime;                 //Time measured by TOF
+  Float_t         fTOFMismatchTime;         //Time measured by TOF from a distant cluster
+  Float_t         fTOFExpTime[kExpSpecies]; //Expected time for all species
+  Float_t         fTOFExpSigma[kExpSpecies];//Expected sigmas for all species
+  Float_t         fT0TrkTime;               //T0 best for the event
+  Int_t           fTOFchan;                 //Channel of the matched track
+  Float_t         fEta;                     //Eta distribution of the track
+  Float_t         fPhi;                     //Phi distribution of the track
+  Double_t        fPt;                      //Transverse momentum
+  Double_t        fPTPC;                    //Momentum in the TPC
+  Int_t           fNTOFClusters;            //Number of clusters matchable to the one matched
+  Float_t         fTPCSignal;               //Signal in the TPC
+  
+  
+  //******************************
+  ////////Utility methods/////////
+  //******************************
+  
+  
+  //DCA binning
+  ///
+  /// Method to tests the DCA binning
+  void TestDCAXYBinning(){                                              
+    Int_t dim = static_cast<Int_t>(TMath::Power(2., 8.*sizeof(fDCAXYIndex)));
+    Double_t range = (2.*fDCAXYRange);
+    cout<<"fDCAXYIndex has "<<dim<<" possibilities"<<endl;
+    cout<<"DCAXY range is ["<<-fDCAXYRange<<","<<fDCAXYRange<<"] -> "<<range<<" bin width = "<<range/dim<<endl;
+    cout<<"Variable dimension is "<<dim<<" while actual bin required are "<<kDCAXYBins<<endl;
+    
+    dim = static_cast<Int_t>(TMath::Power(2., 8.*sizeof(fDCAZIndex)));
+    range = (2.*fDCAZRange);
+    cout<<"fDCAZIndex has "<<dim<<" possibilities"<<endl;
+    cout<<"DCAZ range is ["<<-fDCAZRange<<","<<fDCAZRange<<"] -> "<<range<<" bin width = "<<range/dim<<endl;
+    cout<<"Variable dimension is "<<dim<<" while actual bin required are "<<kDCAZBins<<endl;
+    
+    for (Int_t var = 0; var <=20; ++var) {
+      //       Double_t rnd = 2.*fDCAXYRange*gRandom->Rndm()-1;
+      Double_t rnd = 2.*fDCAXYRange*(Double_t)var/20.-fDCAXYRange;
+      ComputeDCABin(rnd, kTRUE);
+      
+      Double_t binlow, binup;
+      GetBinnedDCA(binlow, binup, 1);
+      
+      cout<<rnd<<" Index: "<<fDCAXYIndex<<"   ["<<binlow<<" ; "<<binup<<"] --> Diff --> ["<< binlow - rnd <<" ; "<<binup - rnd<<"]"<<endl;
+      //       cout<<rnd<<"  "<<TMath::Abs((rnd+fDCAXYRange)*kDCAXYBins/(2*fDCAXYRange))<<" Index: "<<fDCAXYIndex<<"   ["<<binlow<<" ; "<<binup<<"] -->  ["<< binlow - rnd <<" ; "<<binup - rnd<<"]"<<endl;
+    }
+    
+    //     for (Int_t c = 0 ; c <= kDCAXYBins; ++c) cout<<c<<"  "<<-fDCAXYRange+2.*fDCAXYRange*c/kDCAXYBins<<endl;
+    
+  }
+  
+  ///
+  /// Method to put the DCAxy or DCAz of the class into bins
+  void ComputeDCABin(const Double_t dca, const Bool_t xy){   
+    if(xy){
+      if(dca > fDCAXYRange){//Overflow
+        fDCAXYIndex = kDCAXYBins+2;
+        return;
+      }
+      else if(dca <= -fDCAXYRange){//Underflow
+        fDCAXYIndex = kDCAXYBins+1;
+        return;
+      }
+      fDCAXYIndex = static_cast<UShort_t>(TMath::Ceil((dca+fDCAXYRange)/((2*fDCAXYRange)/kDCAXYBins)) -1);
+    }
+    else{
+      if(dca > fDCAZRange){//Overflow
+        fDCAZIndex = kDCAZBins+2;
+        return;
+      }
+      else if(dca <= -fDCAZRange){//Underflow
+        fDCAZIndex = kDCAZBins+1;
+        return;
+      }
+      fDCAZIndex = static_cast<UShort_t>(TMath::Ceil((dca+fDCAZRange)/((2*fDCAZRange)/kDCAZBins)) -1);
+    }
+    
+  };
+  
+  ///
+  /// Method to put the DCAxy and DCAz of the class into bins
+  void ComputeDCABin(const Double_t dcaxy, const Double_t dcaz){         
+    
+    ComputeDCABin(dcaxy, (Bool_t) kTRUE);
+    ComputeDCABin(dcaz, (Bool_t) kFALSE);
+  };
+  
+  ///
+  /// Method to convert compute the bin limits of the DCA binning
+  void GetBinnedDCA(Double_t &down, Double_t &up, const Bool_t xy){      
+    if(xy){
+      if(fDCAXYIndex == kDCAXYBins+2){//Overflow
+        down = fDCAXYRange;
+        up = -999;
+        return;
+      }
+      else if(fDCAXYIndex == kDCAXYBins+1){//Underflow
+        down = -999;
+        up = -fDCAXYRange;
+        return;
+      }
+      
+      down = (Double_t) (2.*fDCAXYRange)*fDCAXYIndex/kDCAXYBins - fDCAXYRange;
+      up = (Double_t) (2.*fDCAXYRange)*(fDCAXYIndex+1)/kDCAXYBins - fDCAXYRange;
+    }
+    else{
+      if(fDCAZIndex == kDCAZBins+2){//Overflow
+        down = fDCAZRange;
+        up = -999;
+        return;
+      }
+      else if(fDCAZIndex == kDCAZBins+1){//Underflow
+        down = -999;
+        up = -fDCAZRange;
+        return;
+      }
+      
+      down = (Double_t) (2.*fDCAZRange)*fDCAZIndex/kDCAZBins - fDCAZRange;
+      up = (Double_t) (2.*fDCAZRange)*(fDCAZIndex+1)/kDCAZBins - fDCAZRange;
+    }
+  }
+  
+  ///
+  /// Method to get the value of the track DCA
+  Double_t GetDCA(const Bool_t xy){
+    Double_t u, d;
+    GetBinnedDCA(d, u, xy);
+    return d + (u-d)/2;
+  }
+  
+  //TOF utilities
+  
+  ///
+  /// Method to get the diffenece between the track time and the expected one
+  Float_t GetDeltaT(const UInt_t id){
+    if(id > kExpSpecies) fatalmsgAn("Index required is out of bound");
+    return fTOFTime - fTOFExpTime[id] - fT0TrkTime;
+  }
+  
+  ///
+  /// Method to get the diffenece between the track time and the expected one in Number of sigmas
+  Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo){
+    if(id > kExpSpecies) fatalmsgAn("Index required is out of bound");
+    return GetDeltaT(hypo)/fTOFExpSigma[id];
+  }
+  
+  //Check che cut variation
+  Bool_t PassStdCut();
+  Bool_t PassCut(const Int_t cut = -1);
+  //TPC PID
+  Bool_t IsTPCElectron(){ 
+    if(GetMaskBit(fTPCPIDMask, kIsTPCElectron)) return kTRUE; //1.5 sigma cut for Electrons in TPC
+    return kFALSE;  
+  }
+  Bool_t IsTPCPiKP(){ 
+    for(Int_t i = 0; i < 3; i++) if(!GetMaskBit(fTPCPIDMask, kIsTPCPion + i)) return kFALSE; //5 sigma cut for Pi/K/P in TPC
+    return kTRUE;
+  }
+  
+  //Particle charge
+  Bool_t IsNegative(){
+    if(GetMaskBit(fTrkMask, kNegTrk)) return kTRUE;
+    return kFALSE;
+  }
+  
+  
+  ClassDef(AliAnTOFtrack, 1);
+};
+
+#endif
