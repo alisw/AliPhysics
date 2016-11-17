@@ -179,8 +179,12 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
     		"CEMC7", "EG1", "EG2", "EJ1", "EJ2", "CDMC7", "DG1", "DG2", "DJ1", "DJ2"
     };
-    for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++)
+    if(triggerstring.Contains("EMC")) AliDebugStream(1) << GetName() << ": Trigger string " << triggerstring << std::endl;
+    for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
       emcalTriggers[iclass] &= triggerstring.Contains(kSelectTriggerStrings[iclass]);
+      if(emcalTriggers[iclass])
+        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << std::endl;
+    }
 
     // Online selection / rejection
     if(fRejectNoiseEvents || fSelectNoiseEvents){

@@ -174,13 +174,26 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
 
     // Distinguish energy definition
     switch(fEnergyDefinition){
-    case kDefaultEnergy: energy = clust->E(); break;
-    case kNonLinCorrEnergy: energy = clust->GetNonLinCorrEnergy(); break;
-    case kHadCorrEnergy: energy = clust->GetHadCorrEnergy(); break;
+    case kDefaultEnergy:
+    	AliDebugStream(2) << GetName() << ": Using cluster energy definition: default" << std::endl;
+    	energy = clust->E();
+    	break;
+    case kNonLinCorrEnergy:
+    	AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for non-linearity" << std::endl;
+    	energy = clust->GetNonLinCorrEnergy();
+    	break;
+    case kHadCorrEnergy:
+    	AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for hadronic contribution" << std::endl;
+    	energy = clust->GetHadCorrEnergy();
+    	break;
     };
 
+    AliDebugStream(2) << GetName() << ": Using energy " << energy << " (def: " << clust->E()
+    		<< " | NL: " << clust->GetNonLinCorrEnergy()
+			<< " | HD: " << clust->GetHadCorrEnergy()
+			<< ")" << std::endl;
+
     TLorentzVector posvec;
-    energy = clust->GetNonLinCorrEnergy();
     clust->GetMomentum(posvec, fVertex);
     posvec.SetE(energy);        // use energy definition as selected in the task
     et = posvec.Et();
