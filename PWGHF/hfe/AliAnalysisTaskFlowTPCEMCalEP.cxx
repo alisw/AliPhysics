@@ -388,15 +388,22 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     
     Int_t fNOtrks = fAOD->GetNumberOfTracks();
     
+    
+    // suggested by DPG to remove outliers
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     const AliAODVertex *spdVtx = fAOD->GetPrimaryVertexSPD();
     
-    Double_t pVtxZ = -999, spdVtxZ= -999;
-    pVtxZ = pVtx->GetZ();
-    spdVtxZ = spdVtx->GetZ();
+    if (pVtx->GetNContributors()<2 || spdVtx->GetNContributors()<1) return; // one of vertices is missing
     
-    if(TMath::Abs(pVtxZ)>10) return;
-    if(TMath::Abs(pVtxZ-spdVtxZ)>0.5) return;
+    double covTrc[6],covSPD[6];
+    pVtx->GetCovarianceMatrix(covTrc);
+    spdVtx->GetCovarianceMatrix(covSPD);
+    double dz = pVtx->GetZ()-spdVtx->GetZ();
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+    if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
+    
     
     fNoEvents->Fill(0);
     
@@ -1602,7 +1609,10 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPrimary(AliAODMCParticle *particle)
 {
     // Check if the particle is primary
     Bool_t isprimary = kFALSE;
-    if (particle->IsPrimary()) isprimary = kTRUE;
+    
+    Int_t idMother = particle->GetMother();
+    if (idMother==-1) isprimary = kTRUE;
+    //if (particle->IsPrimary()) isprimary = kTRUE;
     
     return isprimary;
 }
