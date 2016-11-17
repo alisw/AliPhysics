@@ -197,8 +197,6 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
 
   TF1 *f0=NULL, *f1=NULL;
   for (Int_t ch=0; ch<16; ++ch) {
-    f_Int[0]->Clear();
-    f_Int[1]->Clear();
     fTS->GetEntry(ch);
 
     fTailVsTotalCharge[ch][0] = new TGraph;
@@ -226,7 +224,11 @@ Bool_t AliADDigitizer::SetupTailVsTotalCharge()
       fTailVsTotalCharge[ch][0]->SetPoint(fTailVsTotalCharge[ch][0]->GetN(), charge0, tail);
       fTailVsTotalCharge[ch][1]->SetPoint(fTailVsTotalCharge[ch][1]->GetN(), charge1, tail);
     }
+    f_Int[0]->Clear("C");
+    f_Int[1]->Clear("C");
   }
+  delete f_Int[0];
+  delete f_Int[1];
   fTS->ResetBranchAddresses();
   return kTRUE;
 }
@@ -551,8 +553,9 @@ void AliADDigitizer::DigitizeSDigits()
 
   }
   //Fill BB and BG flags in trigger simulator
-  AliADTriggerSimulator * triggerSimulator = new AliADTriggerSimulator();
-  triggerSimulator->FillFlags(fBBFlag,fBGFlag,fLeadingTime);
+  //CM: this code seems to be dead!
+  AliADTriggerSimulator triggerSimulator;// = new AliADTriggerSimulator();
+  triggerSimulator.FillFlags(fBBFlag,fBGFlag,fLeadingTime);
 }
 
 void AliADDigitizer::AdjustPulseShapeADC()
@@ -567,8 +570,6 @@ void AliADDigitizer::AdjustPulseShapeADC()
 
   // fAdc contains not yet quantized (Float_t) and not yet clipped (at 1024) ADC values without pedestal shift and noise
   for (Int_t ch=0; ch<16; ++ch) {
-    f_Int[0]->Clear();
-    f_Int[1]->Clear();
     fTS->GetEntry(ch);
     Float_t totalCharge=0.0f;
     for (Int_t bc=0; bc<kADNClocks; ++bc) {
@@ -624,7 +625,11 @@ void AliADDigitizer::AdjustPulseShapeADC()
     AliDebugF(5, "Ch%02d: totalCharge,newCharge= %f %f  (tail=%f)", ch, totalCharge, newCharge, tail);
     if (TMath::Abs(totalCharge - newCharge) > 2.0f)
       AliWarningF("Ch%02d: difference between totalCharge=%f and newCharge=%f is too large (tail=%f)", ch, totalCharge, newCharge, tail);
+    f_Int[0]->Clear("C");
+    f_Int[1]->Clear("C");
   }
+  delete f_Int[0];
+  delete f_Int[1];
   fTS->ResetBranchAddresses();
 }
 
@@ -697,7 +702,9 @@ void AliADDigitizer::ReadSDigits()
           }
         }
       }
+      sdigitsArray->Clear("C");
     }
+    delete sdigitsArray;
     loader->UnloadSDigits();
   }
 }
@@ -782,8 +789,11 @@ void AliADDigitizer::ResetDigits(Option_t *opt)
 {
   // Clears Digits
   fNdigits = 0;
-  if (fDigits)
+  if (fDigits) {
     fDigits->Clear(opt);
+    delete fDigits;
+    fDigits = NULL;
+  }
 }
 
 //____________________________________________________________________________
