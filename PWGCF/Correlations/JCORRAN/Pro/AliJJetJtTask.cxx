@@ -137,7 +137,6 @@ AliJJetJtTask::~AliJJetJtTask()
 }
 
 //________________________________________________________________________
-
 void AliJJetJtTask::UserCreateOutputObjects()
 {  
   //=== create the jcorran outputs objects
@@ -155,10 +154,6 @@ void AliJJetJtTask::UserCreateOutputObjects()
    OpenFile(1);
    fOutput = gDirectory;//->mkdir("JDiHadronCorr");
    fOutput->cd();    
-
-   
-
-
 
    fJetTask = (AliJJetTask*)(man->GetTask( fJetTaskName));
 
@@ -192,6 +187,7 @@ void AliJJetJtTask::UserCreateOutputObjects()
 }
 
 //______________________________________________________________________________
+/// Primary loop 
 void AliJJetJtTask::UserExec(Option_t* /*option*/) 
 {
 	// Processing of one event
@@ -270,6 +266,14 @@ void AliJJetJtTask::UserExec(Option_t* /*option*/)
 
 }
 
+/// Obsolete?
+/// Find daughters of given track
+/// If daughters are primary tracks, add them as constituents to the original jet
+/// If they are not primary then keep searching for daughters
+/// \param jet Pointer to jet, i.e. the original track
+/// \param track Find daughters of this track
+/// \param mcTracksCont Monte carlo track container
+/// 
 void AliJJetJtTask::FindDaughters(AliJJet *jet, AliAODMCParticle *track, AliMCParticleContainer *mcTracksCont){
   
   for(int id = track->GetFirstDaughter(); id <= track->GetLastDaughter() ; id++){
@@ -292,13 +296,13 @@ void AliJJetJtTask::FindDaughters(AliJJet *jet, AliAODMCParticle *track, AliMCPa
 }
 
 //______________________________________________________________________________
+/// Function to initialize the parameters
 void AliJJetJtTask::Init()
 {
   // Intialisation of parameters
   AliInfo("Doing initialization") ; 
   //fJJetJtAnalysis->Init();
 }
-
 
 void AliJJetJtTask::FinishTaskOutput(){
 
