@@ -1,11 +1,15 @@
-/* Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice */
+/// \class AliJJetJtAnalysis
+/// \brief Class for jT analysis in jets
+///
+/// This is a longer description of the class. This longer description is
+/// formatted using the Markdown syntax (see below) and can span on multiple
+/// lines.
+/// 
+/// \author Tomas Snellman, tsnellma@cern.ch
+/// \author Beomkyu Kim
+/// \author Dongjo Kim
+/// \date Nov 11, 2016
 
-// Short comment describing what this class does needed!
-
-//===========================================================
-// Dummy comment, should be replaced by a real one
-//===========================================================
 
 #ifndef ALIJJETJTANALYSIS_H
 #define ALIJJETJTANALYSIS_H
@@ -130,22 +134,23 @@ class AliJJetJtAnalysis{
 
   private:
     TObjArray * fInputList; // comment needed
-    TObjArray * fJetList; // comment needed
-    TObjArray * fMCJetList; // comment needed
-    TObjArray fJetListOfList; // !comment needed
-    TObjArray fMCJetListOfList; // !comment needed
-    vector<int>               fTrackOrMCParticle;
+    TObjArray * fJetList; ///< List of jets
+    TObjArray * fMCJetList; ///< List of MC jets
+    TObjArray fJetListOfList; //!<! List of jet finders
+    TObjArray fMCJetListOfList; //!<! List of MC jet finders 
+    vector<int>               fTrackOrMCParticle; ///< Keep track of 
     vector<TClonesArray>      fJetBgListOfList;
+    TClonesArray     fpythiaJets;
     double fJetEtaCut;
     TRandom3 *frandom; // comment me
 
-    TVector  *fJetTriggPtBorders;
-    TVector  *fJetConstPtLowLimits;
-    TVector  *fJetAssocPtBorders;
+    TVector  *fJetTriggPtBorders; ///< Jet pT bin borders
+    TVector  *fJetConstPtLowLimits; ///<  Comment needed
+    TVector  *fJetAssocPtBorders; ///< Jet constituent pT bin borders
     TVector  *fDeltaRBorders;
-    TVector *fJetLeadPtBorders;
-    TVector *fJetMultBorders;
-    int nJetContainer;
+    TVector *fJetLeadPtBorders; ///< Leading track pT bin borders
+    TVector *fJetMultBorders; ///< Jet multiplicity bin borders
+    int nJetContainer; ///< Number of jet finders
 
     AliJCard * fCard; // comment needed
     AliJJetAnalysis *fJJetAnalysis;
@@ -162,15 +167,15 @@ class AliJJetJtAnalysis{
     TClonesArray *fMCTracks;
     int iConst;
 
-    TVector *fTrackJt;
-    TVector *fConstJt;
-    TVector *fTrackPt;
-    TVector *fConstPt;
-    TVector *fConstLabels;
-    TVector *fJetPt;
-    TVector *fJetPt2;
-    TVector *fTrackFound;
-    TVector *fConstFound;
+    TVector *fTrackJt; ///< Store track jT values in jet cone
+    TVector *fConstJt; ///< Store constituent jT values
+    TVector *fTrackPt; ///< Store track pT values in jet cone
+    TVector *fConstPt; ///< Store constituent jT values
+    TVector *fConstLabels; 
+    TVector *fJetPt; ///< Store jet pT values
+    TVector *fJetPt2; ///< Comment needed
+    TVector *fTrackFound; ///< Keep track of which tracks were matched with MC tracks
+    TVector *fConstFound; ///< Keep track of which constituents were matched with MC tracks
     TVector *fBin2;
     TVector *fBin3;
     TVector *fpta;
@@ -182,7 +187,7 @@ class AliJJetJtAnalysis{
     AliJHistManager * fHMG;
     AliJHistManager * fHMGMC;
 
-    AliJBin fJetFinderBin; 
+    AliJBin fJetFinderBin;
     AliJBin fJetTriggerBin; 
     AliJBin fTrkPtBin; 
     AliJBin fTrkLimPtBin; 
@@ -201,68 +206,72 @@ class AliJJetJtAnalysis{
     AliJBin fiHist2MC;
     AliJTH1D fhNumber;
     AliJTH1D fhKNumber;
-    AliJTH1D fhJetPt ;
-    AliJTH1D fhJetPtBin;
-    AliJTH1D fhJetPtMultiplicityCutBin;
-    AliJTH1D fhJetPtTrackCutBin;
-    AliJTH1D fhJetPtWeight ;
-    AliJTH1D fhJetPtWeightBin;
-    AliJTH1D fhJetMultiplicityBin;
-    AliJTH1D fhZ ;
-    AliJTH1D fhZBin;
-    AliJTH1D fhJt ;
-    AliJTH1D fhJtBin;
-    AliJTH1D fhJtWeightBin;
-    AliJTH1D fhJtWeightBinTest;
+    AliJTH1D fhJetPt; /// Jet pT distribution
+    AliJTH1D fhJetPtBin; /// Jet pT distribution in jet pT bins
+    AliJTH1D fhJetPtMultiplicityCutBin; /// Jet pT distribution in jet multiplicity bins
+    AliJTH1D fhJetPtTrackCutBin; /// Jet pT distribution in leading track pT bins
+    AliJTH1D fhJetPtWeight ; /// Jet pT distribution with \f$ \frac{1}{p_T} \f$ weight
+    AliJTH1D fhJetPtWeightBin; /// Jet pT distribution with \f$ \frac{1}{p_T} \f$ weight in jet pT bins
+    AliJTH1D fhJetMultiplicityBin; /// Jet multiplicity distribution from jet->GetConstituents()
+    AliJTH1D fhJetMultiplicityBin2; /// Jet multiplicity based on number of tracks included in the jT distribution
+    AliJTH1D fhJetConeMultiplicityBin; /// Number of tracks in constant cone around jet axis
+    AliJTH1D fhZ; /// Z distribution in jets
+    AliJTH1D fhZBin; /// Z distribution in jets in jet pT bins
+    AliJTH1D fhRBin; /// R distribution in jets in jet pT bins \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2}
+    AliJTH1D fhJt; /// Total jT distribution in jets
+    AliJTH1D fhJtBin; /// jT distribution in jets in jet pT bins
+    AliJTH1D fhJtWeightBin; /// jT distribution in jets in jet pT bins weighted with \f$ \frac{1}{j_T} \f$
+    AliJTH1D fhJtWeightBinTest; 
     AliJTH1D fhJtWeightBinTest2;
-    AliJTH1D fhLogJtWeightBin;
-    AliJTH1D fhLogJtWeight2Bin;
-    AliJTH1D fhJtWithPtCutWeightBinBin;
-    AliJTH1D fhLogJtWithPtCutWeightBinBin;
-    AliJTH1D fhLogJtWithPtCutWeight2BinBin;
-    AliJTH1D fhJtBinLimBin;
-    AliJTH1D fhJtWeightBinLimBin;
+    AliJTH1D fhLogJtWeightBin; /// log(jT) distribution in jets in jet pT bins weighted with \f$ \frac{1}{j_T} \f$
+    AliJTH1D fhLogJtWeight2Bin; /// log(jT) distribution in jets in jet pT bins weighted with \f$ \frac{1}{j_T^2} \f$
+    AliJTH1D fhJtWithPtCutWeightBinBin; /// jT distribution in jets in jet pT and track pT bins weighted with \f$ \frac{1}{j_T} \f$
+    AliJTH1D fhLogJtWithPtCutWeightBinBin; /// log(jT) distribution in jets in jet pT and track pT bins weighted with \f$ \frac{1}{j_T} \f$
+    AliJTH1D fhLogJtWithPtCutWeight2BinBin; /// Jt distribution in jets in jet pT and track pT bins weighted with \f$ \frac{1}{j_T^2} \f$
+    AliJTH1D fhJtBinLimBin; /// Comment needed
+    AliJTH1D fhJtWeightBinLimBin; /// Comment needed 
     AliJTH1D fhLogJtWeightBinLimBin;
     AliJTH1D fhLogJtWeight2BinLimBin;
 
     //Histograms for jt in cone
-    AliJTH1D fhJetConeTrkPt; //
-    AliJTH1D fhJetConeTrkPtBin; //
-    AliJTH1D fhJetConeTrkPtWeightBin; //
-    AliJTH1D fhJetConeZ;
-    AliJTH1D fhJetConeZBin;
-    AliJTH1D fhJetConeJt;
-    AliJTH1D fhJetConeJtBin;
-    AliJTH1D fhJetConeJtWeightBin;
+    AliJTH1D fhJetConeTrkPt; /// Distribution of track pT in constant cone around jet axis
+    AliJTH1D fhJetConeTrkPtBin; /// Distribution of track pT in constant cone around jet axis in jet pT bins
+    AliJTH1D fhJetConeTrkPtWeightBin; /// Distribution of track pT in constant cone around jet axis in jet pT bins with \f$\frac{1}{p_T} \f$ weight 
+    AliJTH1D fhJetConeZ; ///  Distribution of track Z in constant cone around jet axis \f$ z= \frac{p_{T,track}}{p_{T,jet}} \f$
+    AliJTH1D fhJetConeZBin; ///  Distribution of track Z in constant cone around jet axis \f$ z= \frac{p_{T,track}}{p_{T,jet}} \f$ in jet pT bins
+    AliJTH1D fhJetConeJt; /// Total jT distribution for tracks inside constant cone around jet axis
+    AliJTH1D fhJetConeJtBin; /// jT distribution for tracks inside constant cone around jet axis in jet pT bins
+    AliJTH1D fhJetConeJtWeightBin; /// jT distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT bins
     AliJTH1D fhJetConeJtWeightBinTest;
     AliJTH1D fhJetConeJtWeightBinTest2;
-    AliJTH1D fhJetConeJtWeightWithTrackCutBinBin;
-    AliJTH1D fhJetConeJtWeightWithMultiplicityCutBinBin;
-    AliJTH1D fhJetConeLogJtWeightBin;
-    AliJTH1D fhJetConeLogJtWeight2Bin;
-    AliJTH1D fhJetConeJtWithPtCutWeightBinBin;
-    AliJTH1D fhJetConeLogJtWithPtCutWeightBinBin;
-    AliJTH1D fhJetConeLogJtWithPtCutWeight2BinBin;
+    AliJTH1D fhJetConeJtWeightWithTrackCutBinBin; /// jT distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT bins and leading track pT bins
+    AliJTH1D fhJetConeJtWeightWithMultiplicityCutBinBin; /// jT distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT and jet multiplicity bins
+    AliJTH1D fhJetConeLogJtWeightBin; /// log(jT) distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT bins
+    AliJTH1D fhJetConeLogJtWeight2Bin; /// log(jT) distribution with \f$ \frac{1}{j_T^2} \f$ weight for tracks inside constant cone around jet axis in jet pT bins 
+    AliJTH1D fhJetConeJtWithPtCutWeightBinBin; /// jT distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT and track pT bins
+    AliJTH1D fhJetConeLogJtWithPtCutWeightBinBin; /// log(jT) distribution with \f$ \frac{1}{j_T} \f$ weight for tracks inside constant cone around jet axis in jet pT and track pT bins
+    AliJTH1D fhJetConeLogJtWithPtCutWeight2BinBin; /// log(jT) distribution with \f$ \frac{1}{j_T^2} \f$ weight for tracks inside constant cone around jet axis in jet pT and track pT bins
 
     //Unfolding Background histograms
-    AliJTH1D fhJetConeJtUnfBg;
-    AliJTH1D fhJetConeJtBinUnfBg;
-    AliJTH1D fhJetConeJtWeightBinUnfBg;
-    AliJTH1D fhJetConeLogJtWeightBinUnfBg;
-    AliJTH1D fhJetConeLogJtWeight2BinUnfBg;
+    AliJTH1D fhJetConeJtUnfBg; /// jT distribution of tracks inside jet cone that have no corresponding track in particle level set
+    AliJTH1D fhJetConeJtBinUnfBg; /// jT distribution of tracks inside jet cone that have no corresponding track in particle level set in jet pT bins
+    AliJTH1D fhJetConeJtWeightBinUnfBg; /// jT distribution with \f$\frac{1}{j_T}\f$ weight of tracks inside jet cone that have no corresponding track in particle level set in jet pT bins
+    AliJTH1D fhJetConeLogJtWeightBinUnfBg; /// log(jT) distribution with \f$\frac{1}{j_T}\f$ weight of tracks inside jet cone that have no corresponding track in particle level set in jet pT bins
+    AliJTH1D fhJetConeLogJtWeight2BinUnfBg; /// log(jT) distribution with \f$\frac{1}{j_T^2}\f$ weight of tracks inside jet cone that have no corresponding track in particle level set in jet pT bins
 
-    AliJTH1D fhJetBgPt ;
+    AliJTH1D fhJetBgPt; ///
     AliJTH1D fhJetBgPtBin;
-    AliJTH1D fhBgZ ;
-    AliJTH1D fhBgZBin;
-    AliJTH1D fhBgJt ;
-    AliJTH1D fhBgJtBin;
-    AliJTH1D fhBgJtWeightBin;
-    AliJTH1D fhBgLogJtWeightBin;
-    AliJTH1D fhBgLogJtWeight2Bin;
-    AliJTH1D fhBgJtWithPtCutWeightBinBin;
-    AliJTH1D fhBgLogJtWithPtCutWeightBinBin;
-    AliJTH1D fhBgLogJtWithPtCutWeight2BinBin;
+    AliJTH1D fhBgRBin; /// R distribution in background in jet pT bins \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2}
+    AliJTH1D fhBgZ; ///Background z distribution, where \f$ z = p_{track}/p_{jet} \f$. Jet refers to the jet where inclusive jT was calculated
+    AliJTH1D fhBgZBin; ///Background z distribution in jet pT bins, where \f$ z = p_{track}/p_{jet} \f$. Jet refers to the jet where inclusive jT was calculated
+    AliJTH1D fhBgJt; /// Background jT using perpendicular cone. Normalize with BgTrkNumberBin[iR][iJ]->GetEntries()
+    AliJTH1D fhBgJtBin; ///Background jT using perpendicular cone in Jet pT bins. Normalize with BgTrkNumberBin[iR][iJ]->GetEntries()
+    AliJTH1D fhBgJtWeightBin; ///Background jT weighted by \f$ \frac{1}{j_T} \f$ using perpendicular cone in Jet pT bins. Normalize with BgTrkNumberBin[iR][iJ]->GetEntries()
+    AliJTH1D fhBgLogJtWeightBin; ///Background log(jT) weighted by \f$ \frac{1}{j_T} \f$ using perpendicular cone in Jet pT bins. Normalize with BgTrkNumberBin[iR][iJ]->GetEntries()
+    AliJTH1D fhBgLogJtWeight2Bin; ///Background log(jT) weighted by \f$ \frac{1}{j_T^2} \f$ using perpendicular cone in Jet pT bins. Normalize with BgTrkNumberBin[iR][iJ]->GetEntries(). Difference ??? //FIXME
+    AliJTH1D fhBgJtWithPtCutWeightBinBin; ///Background jT weighted by \f$ \frac{1}{j_T} \f$ using perpendicular cone in Jet pT bins and in track pT bins. Normalize with BgTrkNumberBin[iR][iJ]->GetEntries()
+    AliJTH1D fhBgLogJtWithPtCutWeightBinBin; ///Background log(jT) weighted by \f$ \frac{1}{j_T} \f$ using perpendicular cone in Jet pT bins and in track pT bins. Normalize with BgTrkNumberBin[iR][iJ]->GetEntries()
+    AliJTH1D fhBgLogJtWithPtCutWeight2BinBin; ///Background log(jT) weighted by \f$ \frac{1}{j_T^2} \f$ using perpendicular cone in Jet pT bins and in track pT bins. Normalize with BgTrkNumberBin[iR][iJ]->GetEntries()
     AliJTH1D fhBgJtWithPtCutWeightBinBinSmallerR;
     AliJTH1D fhBgLogJtWithPtCutWeightBinBinSmallerR;
     AliJTH1D fhBgLogJtWithPtCutWeight2BinBinSmallerR;
@@ -287,6 +296,7 @@ class AliJJetJtAnalysis{
     //Randomized background histograms
     AliJTH1D fhBgRndmTrkPt;
     AliJTH1D fhBgRndmZ;
+    AliJTH1D fhBgRndmRBin; /// R distribution in random background in jet pT bins \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2}
     AliJTH1D fhBgRndmJt;
     AliJTH1D fhBgRndmLogJt;
     AliJTH1D fhBgRndmJtWithPtCutWeightBin;
@@ -307,7 +317,7 @@ class AliJJetJtAnalysis{
 
     //Jet Correlation Histograms
     AliJTH2D fhTrackJtCorrBin;	
-    //AliJTH3D fhTrackJtCorr2D; //FIXME
+    //AliJTH3D fhTrackJtCorr2D; //TODO
     AliJTH2D fhTrackJtCorrBinTest;	
     AliJTH2D fhTrackJtCorrBinTest2;
     AliJTH2D fhTrackPtCorr;	
@@ -322,36 +332,42 @@ class AliJJetJtAnalysis{
     AliJTH1D fhConstMatchSuccess;
 
     //PYthia correlation histograms
-    AliJTH2D fhTrackJtCorrBinPythia;	
-    AliJTH2D fhTrackPtCorrPythia;	
-    AliJTH2D fhJetPtCorrPythia;	
+    AliJTH2D fhTrackJtCorrBinPythia; /// Track jT correlation in jet pT bins between Pythia jets and measured jets
+    AliJTH2D fhTrackPtCorrPythia;	/// Track pT Correlation between tracks in Pythia jets and measured jets
+    AliJTH2D fhJetPtCorrPythia;	 /// Jet pT Correlation between Pythia jet candidates and measured jets
     AliJTH2D fhJetPtCorr2Pythia;	
     AliJTH2D fhJetPtCorrPythiaCoarse;	
-    AliJTH1D fhJetdRPythia;
+    AliJTH1D fhJetdRPythia; /// Distance R between Pythia jet candidate and reconstructed jet \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2} \f$
     AliJTH1D fhTrackMatchSuccessPythia;
-    AliJTH1D fhJetdPtPythia;
+    AliJTH1D fhJetdPtPythia; /// Difference between Pythia jet pT and reconstructed jet pT
 
     //Pythia jets histograms
-    AliJTH1D fhJetPtPythia;
-    AliJTH1D fhJetPtBinPythia;
-    AliJTH1D fhJtPythia;
-    AliJTH1D fhJtBinPythia;
-    AliJTH1D fhJtWeightBinPythia;
-    AliJTH1D fhLogJtWeightBinPythia;
-    AliJTH1D fhLogJtWeight2BinPythia;
-    AliJTH1D fhJtWithPtCutWeightBinBinPythia;
-    AliJTH1D fhLogJtWithPtCutWeightBinBinPythia;
-    AliJTH1D fhLogJtWithPtCutWeight2BinBinPythia;
+    AliJTH1D fhJetPtPythia; /// pT distribution of Pythia jet candidates
+    AliJTH1D fhJetPtBinPythia; /// pT distribution of Pythia jet candidates in jet pT bins
+    AliJTH1D fhJetMultiplicityBinPythia; /// Multiplicity distribution of pythia jet fragments in jet pT bins
+    AliJTH1D fhRBinPythia; /// R distribution in pythia \f$ R = \sqrt{\left(\Delta \phi\right)^2 + \left(\Delta \eta\right)^2} \f$
+    AliJTH1D fhZPythia; /// z distribution in pythia \f$ z = \frac{p_{track}}{p_{grandparent}} \f$
+    AliJTH1D fhZBinPythia; /// z distribution in jet pT bins in pythia \f$ z = \frac{p_{track}}{p_{grandparent}} \f$
+    AliJTH1D fhZBinPythiaRCut; /// z distribution in jet pT bins in pythia \f$ z = \frac{p_{track}}{p_{grandparent}} \f$ where \f$ R < 0.4 \f$
+    AliJTH1D fhJtPythia; /// jT distribution in pythia
+    AliJTH1D fhJtBinPythia; /// jT distribution in pythia in jet pT bins
+    AliJTH1D fhJtBinPythiaRCut; /// jT distribution in pythia in jet pT bins for tracks in R = 0.4 cone
+    AliJTH1D fhJtWeightBinPythia; /// jT distribution in pythia in jet pT bins weighted by \f$ \frac{1}{j_T} \f$
+    AliJTH1D fhLogJtWeightBinPythia;  /// log(jT) distribution in pythia in jet pT bins weighted by \f$ \frac{1}{j_T} \f$
+    AliJTH1D fhLogJtWeight2BinPythia; /// log(jT) distribution in pythia in jet pT bins weighted by \f$ \frac{1}{j_T^2} \f$
+    AliJTH1D fhJtWithPtCutWeightBinBinPythia; /// jT distribution in pythia in jet pT bins and in track pT bins weighted by \f$ \frac{1}{j_T} \f$
+    AliJTH1D fhLogJtWithPtCutWeightBinBinPythia; /// log(jT) distribution in pythia in jet pT bins and in track pT bins weighted by \f$ \frac{1}{j_T} \f$
+    AliJTH1D fhLogJtWithPtCutWeight2BinBinPythia; /// log(jT) distribution in pythia in jet pT bins and in track pT bins weighted by \f$ \frac{1}{j_T^2} \f$
 
     //Pythia background
-    AliJTH1D fhBgJtPythia;
-    AliJTH1D fhBgJtBinPythia;
-    AliJTH1D fhBgJtWeightBinPythia;
-    AliJTH1D fhBgLogJtWeightBinPythia;
-    AliJTH1D fhBgLogJtWeight2BinPythia;
-    AliJTH1D fhBgJtWithPtCutWeightBinBinPythia;
-    AliJTH1D fhBgLogJtWithPtCutWeightBinBinPythia;
-    AliJTH1D fhBgLogJtWithPtCutWeight2BinBinPythia;
+    AliJTH1D fhBgJtPythia; /// jT background for Pythia
+    AliJTH1D fhBgJtBinPythia; /// jT background for Pythia in jet pT bins
+    AliJTH1D fhBgJtWeightBinPythia; /// jT background for Pythia with \f$ \frac{1}{j_T} \f$ weight in jet pT bins
+    AliJTH1D fhBgLogJtWeightBinPythia; /// log(jT) background for Pythia with \f$ \frac{1}{j_T} \f$ weight in jet pT bins 
+    AliJTH1D fhBgLogJtWeight2BinPythia; /// log(jT) background for Pythia with \f$ \frac{1}{j_T^2} \f$ weight in jet pT bins
+    AliJTH1D fhBgJtWithPtCutWeightBinBinPythia; /// jT background for Pythia with \f$ \frac{1}{j_T} \f$ weight in jet pT bins and in track pT bins
+    AliJTH1D fhBgLogJtWithPtCutWeightBinBinPythia; /// log(jT) background for Pythia with \f$ \frac{1}{j_T} weight \f$ in jet pT bins and in track pT bins
+    AliJTH1D fhBgLogJtWithPtCutWeight2BinBinPythia; /// log(jT) background for Pythia with \f$ \frac{1}{j_T^2} \f$ weight in jet pT bins and in track pT bins
 };
 
 #endif
