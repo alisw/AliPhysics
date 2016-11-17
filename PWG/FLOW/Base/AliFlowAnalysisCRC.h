@@ -315,6 +315,7 @@ public:
   virtual Int_t GetCRCQVecBin(Int_t c, Int_t y);
   virtual Int_t GetCRCRunBin(Int_t RunNum);
   virtual Int_t GetCRCCenBin(Double_t Centrality);
+  virtual Double_t GetSumPro(TProfile *pro, Int_t bin);
   
   virtual Double_t GetSPZDChar(Int_t har, Double_t QRe,Double_t QIm,Double_t ZARe,Double_t ZAIm,Double_t ZCRe,Double_t ZCIm);
   
@@ -923,6 +924,10 @@ public:
   TH1D* GetFlowQCCorNUAHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorNUAHist[c][eg][h];};
   void SetFlowQCCorNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorNUAPro[c][eg][h] = TP;};
   TProfile* GetFlowQCCorNUAPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorNUAPro[c][eg][h];};
+  void SetFlowQCCorCovPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorCovPro[c][eg][h] = TP;};
+  TProfile* GetFlowQCCorCovPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorCovPro[c][eg][h];};
+  void SetFlowQCCorCovHist(TH1D* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorCovHist[c][eg][h] = TP;};
+  TH1D* GetFlowQCCorCovHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorCovHist[c][eg][h];};
   
   TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
   void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
@@ -1680,12 +1685,15 @@ private:
   TList *fFlowQCList;    //! QC List
   const static Int_t fFlowQCNPro = 4;
   const static Int_t fFlowQCNNUA = 10;
+  const static Int_t fFlowQCNCov = 6;
   Int_t fFlowQCCenBin; //
   Double_t fFlowQCDeltaEta; //
   TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
   TH1D *fFlowQCCorHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
   TProfile *fFlowQCCorNUAPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNNUA]; //! profile for NUA terms
   TH1D *fFlowQCCorNUAHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! final NUA terms
+  TProfile *fFlowQCCorCovPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! profile for product of correlations (for covariances)
+  TH1D *fFlowQCCorCovHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! histo for covariances
   
   TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
   TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
@@ -1806,7 +1814,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 30);
+  ClassDef(AliFlowAnalysisCRC, 31);
   
 };
 
