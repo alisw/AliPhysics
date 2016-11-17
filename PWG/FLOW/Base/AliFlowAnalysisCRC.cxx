@@ -16456,6 +16456,10 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowQC()
       for(Int_t k=0; k<fFlowQCNNUA; k++) {
         fFlowQCCorNUAPro[h][i][k] = NULL;
       }
+      for(Int_t k=0; k<fFlowQCNCov; k++) {
+        fFlowQCCorCovPro[h][i][k] = NULL;
+        fFlowQCCorCovHist[h][i][k] = NULL;
+      }
     }
     fFlowQCSpectra[h] = NULL;
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
@@ -20139,6 +20143,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
   Double_t IQC4[fFlowNHarm] = {0.};
   Double_t IQC2EG[fFlowNHarm] = {0.};
   Double_t IQM2=0., IQM4=0., IQM2EG=0.;
+  Double_t dQC2=0., dQC4=0., dQC2EG=0.;
+  Bool_t Q2f=kFALSE, Q4f=kFALSE, dQ2f=kFALSE, dQ4f=kFALSE, Q2EGf=kFALSE, dQ2EGf=kFALSE;
   
   for(Int_t hr=0; hr<fFlowNHarm; hr++) {
     
@@ -20165,6 +20171,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       IQC2[hr] = (QRe*QRe+QIm*QIm-QM2)/IQM2;
       fFlowQCIntCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],IQM2);
       fFlowQCRefCorPro[hr][0]->Fill(fCentralityEBE,IQC2[hr],IQM2*fCenWeightEbE);
+      Q2f = kTRUE;
     }
     
     IQM4 = pow(QM,4.)-6.*QM2*QM*QM+8.*QM3*QM+3.*QM2*QM2-6.*QM4;
@@ -20178,6 +20185,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
                   - 6.*QM4 + 2.*QM2*QM2) / IQM4;
       fFlowQCIntCorPro[hr][1]->Fill(fCentralityEBE,IQC4[hr],IQM4);
       fFlowQCRefCorPro[hr][1]->Fill(fCentralityEBE,IQC4[hr],IQM4*fCenWeightEbE);
+      Q4f = kTRUE;
     }
     
     // NUA
@@ -20230,6 +20238,7 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
         IQC2EG[hr] = (QARe*QBRe+QAIm*QBIm)/IQM2EG;
         fFlowQCIntCorProEG[hr]->Fill(fCentralityEBE,IQC2EG[hr],IQM2EG);
         fFlowQCRefCorPro[hr][2]->Fill(fCentralityEBE,IQC2EG[hr],IQM2EG*fCenWeightEbE);
+        Q2EGf = kTRUE;
       }
     }
     
@@ -20267,19 +20276,20 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       
       Double_t dQM2 = qpM0*QM-qpM;
       if(qpM0>0 && QM0>0 && TMath::Abs(dQM2)>1.e-6) {
-        Double_t dQC2 = (qpRe0*QRe+qpIm0*QIm-qpM)/dQM2;
+        dQC2 = (qpRe0*QRe+qpIm0*QIm-qpM)/dQM2;
         fFlowQCCorPro[fCenBin][hr][1]->Fill(FillPtBin,dQC2,dQM2*fCenWeightEbE);
         // NUA
         fFlowQCCorNUAPro[fCenBin][hr][0]->Fill(FillPtBin,qpIm0/qpM0,qpM0*fCenWeightEbE); // <<sin n(psi1)>>
         fFlowQCCorNUAPro[fCenBin][hr][1]->Fill(FillPtBin,qpRe0/qpM0,qpM0*fCenWeightEbE); // <<cos n(psi1)>>
         fFlowQCCorNUAPro[fCenBin][hr][2]->Fill(FillPtBin,(qpRe0*QIm+qpIm0*QRe-qp2Im)/dQM2,dQM2); //sin(n*(psi1+phi2))
         fFlowQCCorNUAPro[fCenBin][hr][3]->Fill(FillPtBin,(qpRe0*QRe-qpIm0*QIm-qp2Re)/dQM2,dQM2); //cos(n*(psi1+phi2))
+        dQ2f = kTRUE;
       }
       
       Double_t dQM4 = qpM0*(QM*QM*QM-3.*QM*QM2+2.*QM3)-3.*(qpM*(QM*QM-QM2)+2.*(qpM3-qpM2*QM));
       
       if(qpM0>0 && QM0>2 && TMath::Abs(dQM4)>1.e-6) {
-        Double_t dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
+        dQC4 = ((pow(QRe,2.)+pow(QIm,2.))*(qpRe0*QRe+qpIm0*QIm)
                          - qp2Re*(pow(QRe,2.)-pow(QIm,2.))
                          - 2.*qp2Im*QRe*QIm
                          - qpRe0*(QRe*Q2Re2+QIm*Q2Im2)
@@ -20321,7 +20331,16 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
                                                - 2.*qpM*QRe
                                                + 2.*qpRe2) / dM011;
         fFlowQCCorNUAPro[fCenBin][hr][7]->Fill(FillPtBin,cosP1nPsi1M1nPhi2MPhi3W2W3,dM011); //cos(n(psi1-phi2-phi3))
+        
+        dQ4f = kTRUE;
       }
+      
+      // product of correlations or covariances
+      if(Q2f && dQ2f) fFlowQCCorCovPro[fCenBin][hr][0]->Fill(FillPtBin,IQC2[hr]*dQC2,IQM2*dQM2);
+      if(Q4f && dQ2f) fFlowQCCorCovPro[fCenBin][hr][1]->Fill(FillPtBin,IQC4[hr]*dQC2,IQM4*dQM2);
+      if(Q2f && dQ4f) fFlowQCCorCovPro[fCenBin][hr][2]->Fill(FillPtBin,IQC2[hr]*dQC4,IQM2*dQM4);
+      if(dQ2f && dQ4f) fFlowQCCorCovPro[fCenBin][hr][3]->Fill(FillPtBin,dQC2*dQC4,dQM2*dQM4);
+      if(Q4f && dQ4f) fFlowQCCorCovPro[fCenBin][hr][4]->Fill(FillPtBin,IQC4[hr]*dQC4,IQM4*dQM4);
       
       // eta-gap
       Double_t qpARe = fPtDiffQReEG[0][1][hr+1]->GetBinContent(pt+1);
@@ -20329,14 +20348,18 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       Double_t qpAM  = fPtDiffMulEG[0][1][0]->GetBinContent(pt+1);
       Double_t qpAM0 = fPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
       
-      dQM2 = qpAM*QBM;
+      Double_t dQM2EG = qpAM*QBM;
       if(qpAM0>0 && QBM0>0 && TMath::Abs(dQM2)>1.e-6) {
-        Double_t dQC2 = (qpARe*QBRe+qpAIm*QBIm)/dQM2;
+        dQC2EG = (qpARe*QBRe+qpAIm*QBIm)/dQM2;
         fFlowQCCorPro[fCenBin][hr][3]->Fill(FillPtBin,dQC2,dQM2*fCenWeightEbE);
         // NUA
         fFlowQCCorNUAPro[fCenBin][hr][8]->Fill(FillPtBin,qpARe/qpAM,qpAM*fCenWeightEbE);
         fFlowQCCorNUAPro[fCenBin][hr][9]->Fill(FillPtBin,qpAIm/qpAM,qpAM*fCenWeightEbE);
+        dQ2EGf = kTRUE;
       }
+      
+      // product of correlations or covariances
+      if(Q2EGf && dQ2EGf) fFlowQCCorCovPro[fCenBin][hr][5]->Fill(FillPtBin,IQC2EG[hr]*dQC2EG,IQM2EG*dQM2EG);
       
     } // end of for(Int_t pt=0; pt<fCRCnPtBin; pt++)
     
@@ -23479,6 +23502,157 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         fFlowQCCorNUAPro[h][hr][j]->GetXaxis()->SetRange(1,fPtDiffNBins);
       } // end of for(Int_t j=0; j<fFlowQCNNUA; j++)
       
+      // calculate covariances
+      
+      // average correlations:
+      Double_t two = fFlowQCRefCorHist[hr][0]->GetBinContent(h+1); // <<2>>
+      Double_t four = fFlowQCRefCorHist[hr][1]->GetBinContent(h+1); // <<4>>
+      Double_t twoEG = fFlowQCRefCorHist[hr][2]->GetBinContent(h+1); // <<2>> EG
+      // sum of weights for correlation:
+      Double_t sumOfWeightsForTwo = GetSumPro(fFlowQCRefCorPro[hr][0],h+1);
+      Double_t sumOfWeightsForFour = GetSumPro(fFlowQCRefCorPro[hr][1],h+1);
+      Double_t sumOfWeightsForTwoEG = GetSumPro(fFlowQCRefCorPro[hr][2],h+1);
+      
+      for(Int_t pt=1;pt<=fPtDiffNBins;pt++) {
+        // average reduced correlations:
+        Double_t twoReduced = fFlowQCCorHist[h][hr][1]->GetBinContent(pt); // <<2'>>
+        Double_t fourReduced = fFlowQCCorHist[h][hr][2]->GetBinContent(pt); // <<4'>>
+        Double_t twoReducedEG = fFlowQCCorHist[h][hr][1]->GetBinContent(pt); // <<2'>> EG
+        
+        // sum of weights for reduced correlation:
+        Double_t sumOfWeightsForTwoReduced = GetSumPro(fFlowQCCorPro[h][hr][1],pt); // sum_{i=1}^{N} w_{<2'>}
+        Double_t sumOfWeightsForFourReduced = GetSumPro(fFlowQCCorPro[h][hr][2],pt); // sum_{i=1}^{N} w_{<4'>}
+        Double_t sumOfWeightsForTwoReducedEG = GetSumPro(fFlowQCCorPro[h][hr][3],pt); // sum_{i=1}^{N} w_{<2'>} EG
+        
+        // product of weights for reduced correlation:
+        Double_t productOfWeightsForTwoTwoReduced = GetSumPro(fFlowQCCorCovPro[h][hr][0],pt); // sum_{i=1}^{N} w_{<2>}w_{<2'>}
+        Double_t productOfWeightsForTwoFourReduced = GetSumPro(fFlowQCCorCovPro[h][hr][2],pt); // sum_{i=1}^{N} w_{<2>}w_{<4'>}
+        Double_t productOfWeightsForFourTwoReduced = GetSumPro(fFlowQCCorCovPro[h][hr][1],pt); // sum_{i=1}^{N} w_{<4>}w_{<2'>}
+        Double_t productOfWeightsForFourFourReduced = GetSumPro(fFlowQCCorCovPro[h][hr][4],pt); // sum_{i=1}^{N} w_{<4>}w_{<4'>}
+        Double_t productOfWeightsForTwoReducedFourReduced = GetSumPro(fFlowQCCorCovPro[h][hr][3],pt); // sum_{i=1}^{N} w_{<2'>}w_{<4'>}
+        Double_t productOfWeightsForTwoTwoReducedEG = GetSumPro(fFlowQCCorCovPro[h][hr][5],pt); // sum_{i=1}^{N} w_{<2>}w_{<2'>} EG
+        
+        // products for differential flow:
+        Double_t twoTwoReduced = fFlowQCCorCovPro[h][hr][0]->GetBinContent(pt); // <<2><2'>>
+        Double_t twoFourReduced = fFlowQCCorCovPro[h][hr][2]->GetBinContent(pt); // <<2><4'>>
+        Double_t fourTwoReduced = fFlowQCCorCovPro[h][hr][1]->GetBinContent(pt); // <<4><2'>>
+        Double_t fourFourReduced = fFlowQCCorCovPro[h][hr][4]->GetBinContent(pt); // <<4><4'>>
+        Double_t twoReducedFourReduced = fFlowQCCorCovPro[h][hr][3]->GetBinContent(pt); // <<2'><4'>>
+        Double_t twoTwoReducedEG = fFlowQCCorCovPro[h][hr][5]->GetBinContent(pt); // <<2><2'>> EG
+        
+        // denominators in the expressions for the unbiased estimators for covariances:
+        // denominator = 1 - term1/(term2*term3)
+        // prefactor = term1/(term2*term3)
+        Double_t term1 = 0.;
+        Double_t term2 = 0.;
+        Double_t term3 = 0.;
+        Double_t denominator = 0.;
+        Double_t prefactor = 0.;
+        
+        // unbiased estimators for covariances for differential flow:
+        Double_t covTwoTwoReduced = 0.; // Cov(<2>,<2'>)
+        Double_t wCovTwoTwoReduced = 0.; // Cov(<2>,<2'>) * prefactor(w_{<2>},w_{<2'>})
+        Double_t covTwoFourReduced = 0.; // Cov(<2>,<4'>)
+        Double_t wCovTwoFourReduced = 0.; // Cov(<2>,<4'>) * prefactor(w_{<2>},w_{<4'>})
+        Double_t covFourTwoReduced = 0.; // Cov(<4>,<2'>)
+        Double_t wCovFourTwoReduced = 0.; // Cov(<4>,<2'>) * prefactor(w_{<4>},w_{<2'>})
+        Double_t covFourFourReduced = 0.; // Cov(<4>,<4'>)
+        Double_t wCovFourFourReduced = 0.; // Cov(<4>,<4'>) * prefactor(w_{<4>},w_{<4'>})
+        Double_t covTwoReducedFourReduced = 0.; // Cov(<2'>,<4'>)
+        Double_t wCovTwoReducedFourReduced = 0.; // Cov(<2'>,<4'>) * prefactor(w_{<2'>},w_{<4'>})
+        
+        // <2>,<2'>:
+        term1 = productOfWeightsForTwoTwoReduced;
+        term2 = sumOfWeightsForTwo;
+        term3 = sumOfWeightsForTwoReduced;
+        if(term2*term3>0.)
+        {
+          denominator = 1.-term1/(term2*term3);
+          prefactor = term1/(term2*term3);
+          if(TMath::Abs(denominator)>1.e-6)
+          {
+            covTwoTwoReduced = (twoTwoReduced-two*twoReduced)/denominator;
+            wCovTwoTwoReduced = covTwoTwoReduced*prefactor;
+            fFlowQCCorCovHist[h][hr][0]->SetBinContent(pt,wCovTwoTwoReduced);
+          }
+        }
+        // <2>,<4'>:
+        term1 = productOfWeightsForTwoFourReduced;
+        term2 = sumOfWeightsForTwo;
+        term3 = sumOfWeightsForFourReduced;
+        if(term2*term3>0.)
+        {
+          denominator = 1.-term1/(term2*term3);
+          prefactor = term1/(term2*term3);
+          if(TMath::Abs(denominator)>1.e-6)
+          {
+            covTwoFourReduced = (twoFourReduced-two*fourReduced)/denominator;
+            wCovTwoFourReduced = covTwoFourReduced*prefactor;
+            fFlowQCCorCovHist[h][hr][1]->SetBinContent(pt,wCovTwoFourReduced);
+          }
+        }
+        // <4>,<2'>:
+        term1 = productOfWeightsForFourTwoReduced;
+        term2 = sumOfWeightsForFour;
+        term3 = sumOfWeightsForTwoReduced;
+        if(term2*term3>0.)
+        {
+          denominator = 1.-term1/(term2*term3);
+          prefactor = term1/(term2*term3);
+          if(TMath::Abs(denominator)>1.e-6)
+          {
+            covFourTwoReduced = (fourTwoReduced-four*twoReduced)/denominator;
+            wCovFourTwoReduced = covFourTwoReduced*prefactor;
+            fFlowQCCorCovHist[h][hr][2]->SetBinContent(pt,wCovFourTwoReduced);
+          }
+        }
+        // <4>,<4'>:
+        term1 = productOfWeightsForFourFourReduced;
+        term2 = sumOfWeightsForFour;
+        term3 = sumOfWeightsForFourReduced;
+        if(term2*term3>0.)
+        {
+          denominator = 1.-term1/(term2*term3);
+          prefactor = term1/(term2*term3);
+          if(TMath::Abs(denominator)>1.e-6)
+          {
+            covFourFourReduced = (fourFourReduced-four*fourReduced)/denominator;
+            wCovFourFourReduced = covFourFourReduced*prefactor;
+            fFlowQCCorCovHist[h][hr][3]->SetBinContent(pt,wCovFourFourReduced);
+          }
+        }
+        // <2'>,<4'>:
+        term1 = productOfWeightsForTwoReducedFourReduced;
+        term2 = sumOfWeightsForTwoReduced;
+        term3 = sumOfWeightsForFourReduced;
+        if(term2*term3>0.)
+        {
+          denominator = 1.-term1/(term2*term3);
+          prefactor = term1/(term2*term3);
+          if(TMath::Abs(denominator)>1.e-6)
+          {
+            covTwoReducedFourReduced = (twoReducedFourReduced-twoReduced*fourReduced)/denominator;
+            wCovTwoReducedFourReduced = covTwoReducedFourReduced*prefactor;
+            fFlowQCCorCovHist[h][hr][4]->SetBinContent(pt,wCovTwoReducedFourReduced);
+          }
+        }
+        // <2>,<2'> EG:
+        term1 = productOfWeightsForTwoTwoReducedEG;
+        term2 = sumOfWeightsForTwoEG;
+        term3 = sumOfWeightsForTwoReducedEG;
+        if(term2*term3>0.)
+        {
+          denominator = 1.-term1/(term2*term3);
+          prefactor = term1/(term2*term3);
+          if(TMath::Abs(denominator)>1.e-6)
+          {
+            covTwoTwoReduced = (twoTwoReducedEG-twoEG*twoReducedEG)/denominator;
+            wCovTwoTwoReduced = covTwoTwoReduced*prefactor;
+            fFlowQCCorCovHist[h][hr][5]->SetBinContent(pt,wCovTwoTwoReduced);
+          }
+        }
+      } // end of for(Int_t pt=1;pt<=fPtDiffNBins;pt++)
+      
       // FINALISE (calculate flow)
       
       // reference flow
@@ -23498,7 +23672,7 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
       Double_t Cos1P2 = fFlowQCRefCorHist[hr][6]->GetBinContent(h+1);
       Double_t Sin1M2M3 = fFlowQCRefCorHist[hr][7]->GetBinContent(h+1);
       Double_t Cos1M2M3 = fFlowQCRefCorHist[hr][8]->GetBinContent(h+1);
-      // change vocabulary, can be fixed
+      // change vocabulary, to be changed
       Double_t cosP1nPhi = fFlowQCRefCorHist[hr][3]->GetBinContent(h+1); // <<cos(n*phi1)>>
       Double_t sinP1nPhi = fFlowQCRefCorHist[hr][4]->GetBinContent(h+1); // <<sin(n*phi1)>>
       Double_t sinP1nPhi1P1nPhi2 = fFlowQCRefCorHist[hr][5]->GetBinContent(h+1); //sin(n*(phi1+phi2))
@@ -23582,7 +23756,19 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
   
         if(Cn2) {
           Double_t Flow2 = Dn2/sqrt(fabs(Cn2));
-          Double_t Flow2E = pow( pow(Dn2E/sqrt(fabs(Cn2)),2.) + pow(0.5*Cn2E*Dn2/pow(fabs(Cn2),1.5),2.) ,0.5);
+//          Double_t Flow2E = pow( pow(Dn2E/sqrt(fabs(Cn2)),2.) + pow(0.5*Cn2E*Dn2/pow(fabs(Cn2),1.5),2.) ,0.5);
+          Double_t Flow2E = 0.;
+          // change vocabulary, to be changed
+          Double_t two = Cn2;
+          Double_t twoError = Cn2E;
+          Double_t twoReduced = Dn2;
+          Double_t twoReducedError = Dn2E;
+          Double_t wCovTwoTwoReduced = fFlowQCCorCovHist[h][hr][0]->GetBinContent(pt);
+          Double_t v2PrimeErrorSquared = (1./4.)*pow(two,-3.)*(pow(twoReduced,2.)*pow(twoError,2.)
+                                + 4.*pow(two,2.)*pow(twoReducedError,2.)
+                                - 4.*two*twoReduced*wCovTwoTwoReduced);
+          if(v2PrimeErrorSquared>0.){Flow2E = pow(v2PrimeErrorSquared,0.5);}
+          
           if(Flow2E>0.) {
             fFlowQCFinalPtDifHist[h][hr][0]->SetBinContent(pt,Flow2);
             fFlowQCFinalPtDifHist[h][hr][0]->SetBinError(pt,Flow2E);
@@ -23591,7 +23777,39 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         
         if(Cn4) {
           Double_t Flow4 = - Dn4/pow(fabs(Cn4),0.75);
-          Double_t Flow4E = pow( pow(Dn4E/pow(fabs(Cn4),0.75),2.) + pow(0.75*Cn4E*Dn4/pow(fabs(Cn4),1.75),2.) ,0.5);
+//          Double_t Flow4E = pow( pow(Dn4E/pow(fabs(Cn4),0.75),2.) + pow(0.75*Cn4E*Dn4/pow(fabs(Cn4),1.75),2.) ,0.5);
+          Double_t Flow4E = 0.;
+          // change vocabulary, to be changed
+          Double_t two = Cn2;
+          Double_t twoError = Cn2E;
+          Double_t twoReduced = Dn2;
+          Double_t twoReducedError = Dn2E;
+          Double_t four = Cn4;
+          Double_t fourError = Cn4E;
+          Double_t fourReduced = Dn4;
+          Double_t fourReducedError = Dn4E;
+          Double_t wCovTwoTwoReduced = fFlowQCCorCovHist[h][hr][0]->GetBinContent(pt);
+          Double_t wCovTwoFourReduced = fFlowQCCorCovHist[h][hr][1]->GetBinContent(pt);
+          Double_t wCovFourTwoReduced = fFlowQCCorCovHist[h][hr][2]->GetBinContent(pt);
+          Double_t wCovFourFourReduced = fFlowQCCorCovHist[h][hr][3]->GetBinContent(pt);
+          Double_t wCovTwoReducedFourReduced = fFlowQCCorCovHist[h][hr][4]->GetBinContent(pt);
+          
+          Double_t v4PrimeErrorSquared = pow(2.*pow(two,2.)-four,-7./2.)
+                                        * (pow(2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced,2.)*pow(twoError,2.)
+                                       + (9./16.)*pow(2.*two*twoReduced-fourReduced,2.)*pow(fourError,2.)
+                                       + 4.*pow(two,2.)*pow(2.*pow(two,2.)-four,2.)*pow(twoReducedError,2.)
+                                       + pow(2.*pow(two,2.)-four,2.)*pow(fourReducedError,2.)
+//                                       - (3./2.)*(2.*two*twoReduced-fourReduced)
+//                                       * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoFour
+                                       - 4.*two*(2.*pow(two,2.)-four)
+                                       * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoTwoReduced
+                                       + 2.*(2.*pow(two,2.)-four)
+                                       * (2.*pow(two,2.)*twoReduced-3.*two*fourReduced+2.*four*twoReduced)*wCovTwoFourReduced
+                                       + 3.*two*(2.*pow(two,2.)-four)*(2.*two*twoReduced-fourReduced)*wCovFourTwoReduced
+                                       - (3./2.)*(2.*pow(two,2.)-four)*(2.*two*twoReduced-fourReduced)*wCovFourFourReduced
+                                       - 4.*two*pow(2.*pow(two,2.)-four,2.)*wCovTwoReducedFourReduced);
+          if(v4PrimeErrorSquared>0.){Flow4E = pow(v4PrimeErrorSquared,0.5);}
+          
           if(Flow4E>0.) {
             fFlowQCFinalPtDifHist[h][hr][1]->SetBinContent(pt,Flow4);
             fFlowQCFinalPtDifHist[h][hr][1]->SetBinError(pt,Flow4E);
@@ -23612,7 +23830,19 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
         
         if(Cn2EG) {
           Double_t Flow2EG = Dn2EG/sqrt(fabs(Cn2EG));
-          Double_t Flow2EGE = pow( pow(Dn2EGE/sqrt(fabs(Cn2EG)),2.) + pow(0.5*Cn2EGE*Dn2EG/pow(fabs(Cn2EG),1.5),2.) ,0.5);
+//          Double_t Flow2EGE = pow( pow(Dn2EGE/sqrt(fabs(Cn2EG)),2.) + pow(0.5*Cn2EGE*Dn2EG/pow(fabs(Cn2EG),1.5),2.) ,0.5);
+          Double_t Flow2EGE = 0.;
+          // change vocabulary, to be changed
+          Double_t two = Cn2EG;
+          Double_t twoError = Cn2EGE;
+          Double_t twoReduced = Dn2EG;
+          Double_t twoReducedError = Dn2EGE;
+          Double_t wCovTwoTwoReduced = fFlowQCCorCovHist[h][hr][5]->GetBinContent(pt);
+          Double_t v2PrimeErrorSquared = (1./4.)*pow(two,-3.)*(pow(twoReduced,2.)*pow(twoError,2.)
+                                                               + 4.*pow(two,2.)*pow(twoReducedError,2.)
+                                                               - 4.*two*twoReduced*wCovTwoTwoReduced);
+          if(v2PrimeErrorSquared>0.){Flow2EGE = pow(v2PrimeErrorSquared,0.5);}
+          
           if(Flow2EGE>0.) {
             fFlowQCFinalPtDifHist[h][hr][2]->SetBinContent(pt,Flow2EG);
             fFlowQCFinalPtDifHist[h][hr][2]->SetBinError(pt,Flow2EGE);
@@ -23627,6 +23857,16 @@ void AliFlowAnalysisCRC::FinalizeFlowQC()
   cout << endl;
   
 } // end of void AliFlowAnalysisCRC::FinalizeFlowQC()
+
+//=======================================================================================================================
+
+Double_t AliFlowAnalysisCRC::GetSumPro(TProfile *pro, Int_t bin)
+{
+  Double_t stats[6]={0.};
+  pro->GetXaxis()->SetRange(bin,bin);
+  pro->GetStats(stats);
+  return stats[0];
+}
 
 //=======================================================================================================================
 
@@ -26514,6 +26754,14 @@ void AliFlowAnalysisCRC::GetPointersForFlowQC()
         if(FlowQCCorNUAPro) { this->SetFlowQCCorNUAPro(FlowQCCorNUAPro,h,i,k); }
         else { cout<<"WARNING: FlowQCCorNUAPro is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
       }
+      for(Int_t k=0; k<fFlowQCNCov; k++) {
+        TProfile *FlowQCCorCovPro = dynamic_cast<TProfile*>(fFlowQCList->FindObject(Form("fFlowQCCorCovPro[%d][%d][%d]",h,i,k)));
+        if(FlowQCCorCovPro) { this->SetFlowQCCorCovPro(FlowQCCorCovPro,h,i,k); }
+        else { cout<<"WARNING: FlowQCCorCovPro is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+        TH1D *FlowQCCorCovHist = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCCorCovHist[%d][%d][%d]",h,i,k)));
+        if(FlowQCCorCovHist) { this->SetFlowQCCorCovHist(FlowQCCorCovHist,h,i,k); }
+        else { cout<<"WARNING: FlowQCCorCovHist is NULL in AFAWQC::GPFFQC() !!!!"<<endl; }
+      }
     }
     TH1D *FlowQCSpectra = dynamic_cast<TH1D*>(fFlowQCList->FindObject(Form("fFlowQCSpectra[%d]",h)));
     if(FlowQCSpectra) { this->SetFlowQCSpectra(FlowQCSpectra,h); }
@@ -28082,6 +28330,14 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
         fFlowQCCorNUAPro[h][i][k] = new TProfile(Form("fFlowQCCorNUAPro[%d][%d][%d]",h,i,k),Form("fFlowQCCorNUAPro[%d][%d][%d]",h,i,k),fPtDiffNBins,fCRCPtBins,"s");
         fFlowQCCorNUAPro[h][i][k]->Sumw2();
         fFlowQCList->Add(fFlowQCCorNUAPro[h][i][k]);
+      }
+      for(Int_t k=0; k<fFlowQCNCov; k++) {
+        fFlowQCCorCovPro[h][i][k] = new TProfile(Form("fFlowQCCorCovPro[%d][%d][%d]",h,i,k),Form("fFlowQCCorCovPro[%d][%d][%d]",h,i,k),fPtDiffNBins,fCRCPtBins,"s");
+        fFlowQCCorCovPro[h][i][k]->Sumw2();
+        fFlowQCList->Add(fFlowQCCorCovPro[h][i][k]);
+        fFlowQCCorCovHist[h][i][k] = new TH1D(Form("fFlowQCCorCovHist[%d][%d][%d]",h,i,k),Form("fFlowQCCorCovHist[%d][%d][%d]",h,i,k),fPtDiffNBins,fCRCPtBins);
+        fFlowQCCorCovHist[h][i][k]->Sumw2();
+        fFlowQCList->Add(fFlowQCCorCovHist[h][i][k]);
       }
     }
     fFlowQCSpectra[h] = new TH1D(Form("fFlowQCSpectra[%d]",h),Form("fFlowQCSpectra[%d]",h),fPtDiffNBins,fCRCPtBins);

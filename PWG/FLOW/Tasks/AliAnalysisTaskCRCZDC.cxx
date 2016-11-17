@@ -189,6 +189,8 @@ fCenDis(0x0),
 fMultSelection(0x0),
 fPileUpCount(0x0),
 fPileUpMultSelCount(0x0),
+fMultTOFLowCut(0x0),
+fMultTOFHighCut(0x0),
 fTowerEqList(NULL),
 fSpectraMCList(NULL),
 fCachedRunNum(0)
@@ -317,6 +319,8 @@ fCenDis(0x0),
 fMultSelection(0x0),
 fPileUpCount(0x0),
 fPileUpMultSelCount(0x0),
+fMultTOFLowCut(0x0),
+fMultTOFHighCut(0x0),
 fTowerEqList(NULL),
 fCachedRunNum(0)
 {
@@ -451,7 +455,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   fCenDis = new TH1F("fCenDis", "fCenDis", 100, 0., 100.);
   fOutput->Add(fCenDis);
-  fPileUpCount = new TH1F("fPileUpCount", "fPileUpCount", 10, 0., 10.);
+  fPileUpCount = new TH1F("fPileUpCount", "fPileUpCount", 9, 0., 9.);
   fPileUpCount->GetXaxis()->SetBinLabel(1,"plpMV");
   fPileUpCount->GetXaxis()->SetBinLabel(2,"fromSPD");
   fPileUpCount->GetXaxis()->SetBinLabel(3,"RefMultiplicityComb08");
@@ -459,8 +463,10 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fPileUpCount->GetXaxis()->SetBinLabel(5,"abs(V0M-CL1)>7.5");
   fPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
+  fPileUpCount->GetXaxis()->SetBinLabel(8,"multESDTPCDif");
+  fPileUpCount->GetXaxis()->SetBinLabel(9,"multTrkTOF");
   fOutput->Add(fPileUpCount);
-  fPileUpMultSelCount = new TH1F("fPileUpMultSelCount", "fPileUpMultSelCount", 10, 0., 10.);
+  fPileUpMultSelCount = new TH1F("fPileUpMultSelCount", "fPileUpMultSelCount", 8, 0., 8.);
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(1,"IsNotPileup");
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(2,"IsNotPileupMV");
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(3,"IsNotPileupInMultBins");
@@ -470,6 +476,14 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(7,"IncompleteDAQ");
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(8,"GoodVertex2016");
   fOutput->Add(fPileUpMultSelCount);
+  
+  fMultTOFLowCut = new TF1("fMultTOFLowCut", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 4.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x+[9]*x*x*x*x*x)", 0, 10000);
+  fMultTOFLowCut->SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
+  fOutput->Add(fMultTOFLowCut);
+  fMultTOFHighCut = new TF1("fMultTOFHighCut", "[0]+[1]*x+[2]*x*x+[3]*x*x*x + 4.*([4]+[5]*x+[6]*x*x+[7]*x*x*x+[8]*x*x*x*x+[9]*x*x*x*x*x)", 0, 10000);
+  fMultTOFHighCut->SetParameters(-1.0178, 0.333132, 9.10282e-05, -1.61861e-08, 1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15);
+  fOutput->Add(fMultTOFHighCut);
+  
   for(Int_t c=0; c<2; c++) {
     for(Int_t i=0; i<5; i++) {
       fTowerGainEq[c][i] = new TH1D();
@@ -792,6 +806,52 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           
           if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
             fPileUpCount->Fill(6.5);
+            BisPileup=kTRUE;
+          }
+          
+          // cuts on tracks
+          const Int_t nTracks = aod->GetNumberOfTracks();
+          Int_t multEsd = ((AliAODHeader*)aod->GetHeader())->GetNumberOfESDTracks();
+
+          Int_t multTrk = 0;
+          Int_t multTrkBefC = 0;
+          Int_t multTrkTOFBefC = 0;
+          Int_t multTPC = 0;
+          
+          for (Int_t it = 0; it < nTracks; it++) {
+            
+            AliAODTrack* aodTrk = (AliAODTrack*)aod->GetTrack(it);
+            if (!aodTrk){
+              delete aodTrk;
+              continue;
+            }
+            
+            if (aodTrk->TestFilterBit(32)){
+              multTrkBefC++;
+              
+              if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
+                multTrkTOFBefC++;
+              
+              if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2) && (aodTrk->Pt() < 20.))
+                multTrk++;
+            }
+            
+            if (aodTrk->TestFilterBit(128))
+              multTPC++;
+            
+          } // end of for (Int_t it = 0; it < nTracks; it++)
+          
+          Float_t multTPCn = multTPC;
+          Float_t multEsdn = multEsd;
+          Float_t multESDTPCDif = multEsdn - multTPCn*3.38;
+          
+          if (multESDTPCDif > 15000.) {
+            fPileUpCount->Fill(7.5);
+            BisPileup=kTRUE;
+          }
+          
+          if (Float_t(multTrkTOFBefC) < fMultTOFLowCut->Eval(Float_t(multTrkBefC)) || Float_t(multTrkTOFBefC) > fMultTOFHighCut->Eval(Float_t(multTrkBefC))) {
+            fPileUpCount->Fill(8.5);
             BisPileup=kTRUE;
           }
           
