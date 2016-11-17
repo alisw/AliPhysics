@@ -70,7 +70,10 @@ void AliAnalysisTaskEmcalTriggerMultiplicity::CreateUserHistos(){
     fHistos->CreateTH1(Form("VZEROCmult%s", t.Data()), Form("VZERO-C multiplicity distribution for trigger class %s", t.Data()), 1000, 0., 1000., "s");
     fHistos->CreateTH1(Form("TrackletMult%s", t.Data()), Form("SPD tracklet multiplcity for trigger class %s", t.Data()), 1000, 0., 1000., "s");
     fHistos->CreateTH1(Form("EMCALClusterMult%s", t.Data()), Form("EMCAL cluster multiplcity for trigger class %s", t.Data()), 1000, 0., 1000., "s");
-    for(auto pt : ptthresh){
+    fHistos->CreateTH1(Form("EMCALEnergyMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 1000.);
+    fHistos->CreateTH1(Form("EMCALMeanMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 100.);
+    fHistos->CreateTH1(Form("EMCALMedianMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 100.);
+     for(auto pt : ptthresh){
       fHistos->CreateTH1(Form("TrackMult%d%s", static_cast<int>(pt * 10.), t.Data()), Form("Global track multiplicity for tracks with pt > %1.f GeV/c for trigger class %s", pt, t.Data()), 1000, 0., 1000., "s");
     }
   }
@@ -120,10 +123,23 @@ bool AliAnalysisTaskEmcalTriggerMultiplicity::Run(){
   // EMCAL cluster multiplicity
   // cluster threshold 500 MeV
   Int_t nclusters(0);
+  Double_t eTotalEMCAL(0);
+  std::vector<double> allClusterEnergies;
   AliClusterContainer *clustercont = this->GetClusterContainer(0);
   for(auto clust : clustercont->all()){
-    if(clust->E() > 0.5) nclusters++;
+    if(clust->GetIsExotic()) continue;
+    if(clust->GetNonLinCorrEnergy() > 0.5){
+      nclusters++;
+      allClusterEnergies.push_back(clust->GetNonLinCorrEnergy());
+      eTotalEMCAL += clust->GetNonLinCorrEnergy();
+    }
   }
+  std::sort(allClusterEnergies.begin(), allClusterEnergies.end(), std::less<double>());
+  TArrayD sortedenergies(allClusterEnergies.size());
+  int entrycnt(0);
+  for(auto e : allClusterEnergies) sortedenergies[entrycnt++] = e;
+  Double_t emcalmean = TMath::Mean(allClusterEnergies.begin(), allClusterEnergies.end()),
+           emcalmedian = TMath::Median(sortedenergies.GetSize(), sortedenergies.GetArray());
 
   // all quantities available
   // fill histograms
@@ -133,6 +149,9 @@ bool AliAnalysisTaskEmcalTriggerMultiplicity::Run(){
     fHistos->FillTH1(Form("VZEROCmult%s", t.Data()), vzerodata->GetMTotV0C(), weight);
     fHistos->FillTH1(Form("TrackletMult%s", t.Data()), ntracklets, weight);
     fHistos->FillTH1(Form("EMCALClusterMult%s", t.Data()), nclusters, weight);
+    fHistos->FillTH1(Form("EMCALEnergyMult%s", t.Data()), eTotalEMCAL, weight);
+    fHistos->FillTH1(Form("EMCALMeanMult%s", t.Data()), emcalmean, weight);
+    fHistos->FillTH1(Form("EMCALMedianMult%s", t.Data()), emcalmedian, weight);
     for(auto tmult : trackmult) fHistos->FillTH1(Form("TrackMult%d%s", static_cast<int>(tmult.first *10.), t.Data()), tmult.second, weight);
   }
 
@@ -160,6 +179,7 @@ AliAnalysisTaskEmcalTriggerMultiplicity *AliAnalysisTaskEmcalTriggerMultiplicity
       nclusters == "usedefault" ? AliEmcalAnalysisFactory::ClusterContainerNameFactory(mgr->GetInputEventHandler()->InheritsFrom("AliAODInputHandler")) : nclusters
   );
   clustercont->SetClusECut(0.5);
+  clustercont->SetExoticCut(true);
 
   // Configuring input-/output-container
   TString outputcont("TriggerMultiplicityHistos_"), outputfile(mgr->GetCommonFileName());
