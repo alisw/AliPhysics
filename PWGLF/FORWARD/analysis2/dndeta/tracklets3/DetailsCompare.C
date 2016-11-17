@@ -506,9 +506,12 @@ struct DetailsComparer
     char**       args = new char*[argc];
     Int_t        j    = 0;
     for (Int_t i = 1; i < argc; i++) {
-      // if (!TString(argv[i]).EndsWith(".root")) continue;
+      TString tmp(argv[i]);
+      if (tmp.EndsWith(".C") ||
+	  tmp.EndsWith(".C+") ||
+	  tmp.BeginsWith("-")) continue;
       args[j] = StrDup(argv[i]);
-      // Printf("Argument %s", args[j]);
+      Printf("Argument %s", args[j]);
       j++;
     }
     args[j] = 0;

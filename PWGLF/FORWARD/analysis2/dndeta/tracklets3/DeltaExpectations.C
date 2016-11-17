@@ -42,8 +42,10 @@ class TVirtualPad;
  * 
  * @ingroup pwglf_forward_tracklets
  */
-const char* parFmt = "%-10s | %5.3f |";
+const char* parFmt = "%-10s | %6.3f |";
 const char* rowFmt = " %5.2f | %5.2f | %5.2f | %5.2f |";
+const char* eRowFmt = " %5.2f+/-%5.2f | %5.2f+/-%5.2f | "
+  "%5.2f+/-%5.2f | %5.2f+/-%5.2f |";
 struct Utilities
 {
   /** 
@@ -265,9 +267,10 @@ struct DeltaCalculations : public Utilities
      * Print a row 
      * 
      */
-    void Print() const
+    void Print(Bool_t err=false) const
     {
-      printf(rowFmt, Ps, Ss, Cs, Cb);
+      if (!err) printf(rowFmt, Ps, Ss, Cs, Cb);
+      else      printf(eRowFmt, Ps, ePs, Ss, eSs, Cs, eCs, Cb, eCb);
     }
   };
   /** 
@@ -301,13 +304,13 @@ struct DeltaCalculations : public Utilities
      * Print the particle 
      * 
      */
-    void Print()
+    void Print(Bool_t err=false)
     {
       printf(parFmt, n.Data(), w);
-      reduced.  Print();
-      expected. Print();
-      reweighed.Print();
-      asis.     Print();
+      reduced.  Print(err);
+      expected. Print(err);
+      reweighed.Print(err);
+      asis.     Print(err);
       printf("\n");
     }
     /** 
@@ -394,22 +397,32 @@ struct DeltaCalculations : public Utilities
    * Print out 
    * 
    */
-  void Print()
+  void Print(Bool_t err=false)
   {
     printf("%-18s |", "Sample");
-    printf(" %-29s |", "Reduced");
-    printf(" %-29s |", "Expected");
-    printf(" %-29s |", "Reweighed");
-    printf(" %-29s |", "As-is");
+    if (err) {
+      printf(" %-29s |", "Reduced");
+      printf(" %-29s |", "Expected");
+      printf(" %-29s |", "Reweighed");
+      printf(" %-29s |", "As-is");
+    }
+    else {
+      printf(" %-61s |", "Reduced");
+      printf(" %-61s |", "Expected");
+      printf(" %-61s |", "Reweighed");
+      printf(" %-61s |", "As-is");
+    }
     printf("\n");
     TString head(parFmt);
     for (Int_t i = 0; i < 4; i++) head.Append(rowFmt);
-    head.ReplaceAll("%5.3f", "%5s");
-    head.ReplaceAll("%5.2f", "%5s");
+    head.ReplaceAll("%6.3f", "%6s");
+    head.ReplaceAll("%5.2f", err ? "%13s" : "%5s");
     TString lne(head);
     lne.ReplaceAll("|", "+");
     lne.ReplaceAll("%5s", "-----");
+    lne.ReplaceAll("%6s", "------");
     lne.ReplaceAll("%10s", "----------");
+    lne.ReplaceAll("%13s", "-------------");
     lne.ReplaceAll(" ", "-");
     Printf(head.Data(), "Type", "W",
 	   "Ps", "Ss", "Cs", "Cb",
@@ -419,7 +432,7 @@ struct DeltaCalculations : public Utilities
     Printf(lne);
     for (ParticleList::const_iterator i = particles.begin();
 	 i != particles.end(); ++i)
-      (*i)->Print();
+      (*i)->Print(err);
     Printf(lne);
   }
   /** 
@@ -472,7 +485,7 @@ struct DeltaCalculations : public Utilities
     ret->Read(kReduced,     kind, reduced,   sub, oth, abso);
     ret->Read(kExpectation, kind, reduced,   sub, oth, abso);
     ret->Read(kReweighed,   kind, reweighed, sub, oth, abso);
-    ret->Read(kAsIs,        kind, asis,     sub, oth, abso);
+    ret->Read(kAsIs,        kind, asis,      sub, oth, abso);
     particles.push_back(ret);
     return ret;
   }
@@ -511,6 +524,7 @@ struct DeltaCalculations : public Utilities
       h->SetMarkerSize(mode == 2 ? 3.5 : 2);
       h->SetBarWidth (bW);
       h->SetDirectory(0);
+      h->SetYTitle("Fraction [%]");
       stack->Add(h, "bar0 text90");
       
       for (Int_t j = 0; j < nPart; j++) {
@@ -599,7 +613,7 @@ struct DeltaCalculations : public Utilities
     Create(1,       kOther,  redTop, rweTop, trhTop, sub, oth, abso);
 
     if (!abso) ScaleExpected();
-    Print();
+    Print(true);
 
     THStack* Ps = MakeStack(kPs, "Ps", "Signal primaries",   mode);
     THStack* Ss = MakeStack(kSs, "Ss", "Signal secondaries", mode);
@@ -609,7 +623,7 @@ struct DeltaCalculations : public Utilities
     gStyle->SetPaintTextFormat("5.2f%%");
 
     Int_t    cw = (mode == 1 ? 1600 : mode == 2 ? 800    : 1000);
-    Int_t    ch = (mode == 1 ? cw/2 : mode == 2 ? 1.5*cw : cw);
+    Int_t    ch = (mode == 1 ? cw/2 : mode == 2 ? 1.2*cw : cw);
     TCanvas* c  = new TCanvas(Form("deltaExpectation_%s_%s",
 				   bin.Data(), mid?"mid":"fwd"),
 			      "DeltaCanvas",cw,ch);
@@ -637,6 +651,28 @@ struct DeltaCalculations : public Utilities
     l->SetFillStyle(0);
     l->SetBorderSize(0);
 
+    TFile* output = TFile::Open(Form("%s.root", c->GetName()),"RECREATE");
+    output->cd();
+    THStack* stacks[] = { Ps, Ss, Cs, Cb, 0 };
+    THStack** ptr = stacks;
+    while (*ptr) {
+      THStack*    stack = *ptr;
+      TString     name  = stack->GetTitle(); name.ReplaceAll(" ","");
+      TDirectory* dir   = output->mkdir(name);
+      dir->cd();
+      stack->Write("all");
+      TIter next(stack->GetHists());
+      TH1*  hist = 0;
+      while ((hist = static_cast<TH1*>(next()))) {
+	name = hist->GetTitle(); name.ReplaceAll("-", "");
+	hist->Write(name);
+      }
+      ptr++;
+      output->cd();
+    }
+    output->Write();
+       
+    
     c->SaveAs(Form("%s.png",c->GetName()));
   }
 };
@@ -651,8 +687,9 @@ struct DeltaCalculations : public Utilities
  *
  * @ingroup pwglf_forward_tracklets
  */  
-void DeltaExpectations(Bool_t mid=true, Double_t c1=0, Double_t c2=0)
+void DeltaExpectations(Double_t c1=0, Double_t c2=5)
 {
+  Bool_t mid=true;
   DeltaCalculations cm;
   cm.Run(c1, c2, mid);
   DeltaCalculations cf;

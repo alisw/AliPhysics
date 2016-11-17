@@ -673,10 +673,14 @@ public:
    * - 1: Only propagate errors from @a ipz (no scale) 
    * - 2: Do not propagate errors or scale by @a ipz 
    *
+   * If mode is less than 2, and @a ipEff is non-zero, then we scale
+   * the histogram @a ipz by the inverse vertex efficiency.
+   * 
    * @param h     Histogram 
    * @param name  Name of projection 
    * @param mode  Mode of operation. 
    * @param ipz   Vertex distribution
+   * @param ipEff IP efficiency @f$ \varepsilon_{V}@f$ 
    * @param mask  Optional mask - if a bin is zero here, do not count
    *              it in average.
    * @param verb  Whether to be verbose 
@@ -687,6 +691,7 @@ public:
 			     const char* name,
 			     UShort_t    mode,
 			     TH1*        ipz,
+			     Double_t    ipEff=0,
 			     TH2*        mask=0,
 			     Bool_t      verb=false);
   /** 
@@ -1190,10 +1195,14 @@ AliTrackletAODUtils::GetC(TDirectory* parent, const char* name, Bool_t v)
 TDirectory*
 AliTrackletAODUtils::GetT(TDirectory* parent, const char* name, Bool_t v)
 {
+  if (!parent) {
+    if (v) ::Warning("GetT", "No parent directory passed");
+    return 0;
+  }
   TDirectory* d = parent->GetDirectory(name);
   if (!d) {
-    if (v) ::Warning("GetO", "Directory \"%s\" not found in \"%s\"",
-			name, parent->GetName());
+    if (v) ::Warning("GetT", "Directory \"%s\" not found in \"%s\"",
+		     name, parent->GetName());
     return 0;
   }
   return d;
@@ -1851,6 +1860,7 @@ TH1* AliTrackletAODUtils::AverageOverIPz(TH2*        h,
 					 const char* name,
 					 UShort_t    mode,
 					 TH1*        ipz,
+					 Double_t    ipEff, 
 					 TH2*        other,
 					 Bool_t      verb)
 {
@@ -1865,6 +1875,8 @@ TH1* AliTrackletAODUtils::AverageOverIPz(TH2*        h,
   p->SetFillStyle(0);
   p->SetYTitle(Form("#LT%s#GT", h->GetYaxis()->GetTitle()));
   p->Reset();
+  if (ipz && mode < 2 && ipEff > 1e-6) ipz->Scale(1./ipEff);
+  
   for (Int_t etaBin = 1; etaBin <= nEta; etaBin++) {
     TArrayD hv(nIPz);
     TArrayD he(nIPz);

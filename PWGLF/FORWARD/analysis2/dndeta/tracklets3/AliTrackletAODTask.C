@@ -1430,7 +1430,7 @@ void AliTrackletAODMCTask::FilterClustersTrack(TTree*   t,
     Int_t bin = PdgBin(par->GetPdgCode());
     fSeenTrackPDGs->Fill(bin);
     if (keep) fUsedTrackPDGs->Fill(bin);
-    if (fDebug > 3) 
+    if (fDebug > 1) 
       Printf("Primary parent %6d from a %6d %6s (%f)",
 	     parent, par->GetPdgCode(), keep ? "kept" : "marked", weight);
     kept.SetBitNumber(parent, keep);

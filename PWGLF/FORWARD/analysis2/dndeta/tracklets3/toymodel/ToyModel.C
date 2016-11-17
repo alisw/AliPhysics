@@ -579,30 +579,89 @@ struct ToyModel
   /** Event variable */
   Int_t        fNFree;
   /* @} */
-  /** 
-   * @{ 
-   * @name Options 
-   */
-  /** Should we track from out to in, or vice versa */
-  Bool_t fOut2In;
-  /** Should we do global tracklet selection */
-  Bool_t fGlobal;
-  /** Should we ignore already used clusters */
-  Bool_t fNoReuse;
-  /** Smear of clusters */
-  Double_t fSigma;
-  /** Cut on vertex */
-  Double_t fOffsetCut;
-  /** Should we add Noise clusters (randomly disitrbuted) */
-  Bool_t fNoise;
-  /** Should we have random sigmas */
-  Bool_t fVary;
-  /** Should we merge overlapping clusters */
-  Bool_t fMerge;
-  /** Should we make "secondary" tracks */
-  Bool_t fSecondary;
-  /* @} */
-  
+
+  struct Params {
+    /** 
+     * @{ 
+     * @name Options 
+     */
+    /** Location of inner layer */
+    Double_t fY1;
+    /** Should we track from out to in, or vice versa */
+    Bool_t fOut2In;
+    /** Should we do global tracklet selection */
+    Bool_t fGlobal;
+    /** Should we ignore already used clusters */
+    Bool_t fNoReuse;
+    /** Smear of clusters */
+    Double_t fSigma;
+    /** Cut on vertex */
+    Double_t fOffsetCut;
+    /** Should we add Noise clusters (randomly disitrbuted) */
+    Bool_t fNoise;
+    /** Should we have random sigmas */
+    Bool_t fVary;
+    /** Should we merge overlapping clusters */
+    Bool_t fMerge;
+    /** Should we make "secondary" tracks */
+    Bool_t fSecondary;
+    /* @} */
+
+    Params()
+      : fY1(.75),
+	fOut2In(true),
+	fGlobal(true),
+	fNoReuse(true),
+	fSigma(0.0008),
+	fOffsetCut(0.5),
+	fNoise(false),
+	fVary(false),
+	fMerge(false),
+	fSecondary(false)
+    {}
+    Params(const Params& o)
+      : fY1(o.fY1),
+	fOut2In(o.fOut2In),
+	fGlobal(o.fGlobal),
+	fNoReuse(o.fNoReuse),
+	fSigma(o.fSigma),
+	fOffsetCut(o.fOffsetCut),
+	fNoise(o.fNoise),
+	fVary(o.fVary),
+	fMerge(o.fMerge),
+	fSecondary(o.fSecondary)
+    {}
+    Params& operator=(const Params& o)
+    {
+      if (&o == this) return *this;
+      fY1        = o.fY1;
+      fOut2In    = o.fOut2In;
+      fGlobal    = o.fGlobal;
+      fNoReuse   = o.fNoReuse;
+      fSigma     = o.fSigma;
+      fOffsetCut = o.fOffsetCut;
+      fNoise     = o.fNoise;
+      fVary      = o.fVary;
+      fMerge     = o.fMerge;
+      fSecondary = o.fSecondary;
+      return *this;
+    }
+    void Store() const
+    {
+      (new TParameter<double>("y1",       fY1))       ->Write();
+      (new TParameter<bool>  ("out2in",   fOut2In))   ->Write();
+      (new TParameter<bool>  ("global",   fGlobal))   ->Write();
+      (new TParameter<bool>  ("noReuse",  fNoReuse))  ->Write();
+      (new TParameter<double>("sigma",    fSigma))    ->Write();
+      (new TParameter<double>("offsetCut",fOffsetCut))->Write();
+      (new TParameter<bool>  ("vary",     fVary))     ->Write();
+      (new TParameter<bool>  ("merge",    fMerge))    ->Write();
+      (new TParameter<bool>  ("secondary",fSecondary))->Write();
+    }
+  };
+  /** Our parameters */
+  Params fParams;
+    
   /**
    * Copy constructor 
    * 
@@ -620,16 +679,28 @@ struct ToyModel
       fNGood(0),
       fNFake(0),
       fNFree(0),
-      fOut2In(m.fOut2In),
-      fGlobal(m.fGlobal),
-      fNoReuse(m.fNoReuse),
-      fSigma(m.fSigma),
-      fOffsetCut(m.fOffsetCut),
-      fNoise(m.fNoise),
-      fVary(m.fVary),
-      fMerge(m.fMerge),
-      fSecondary(m.fSecondary)
+      fParams(m.fParams)
   {}
+  /** 
+   * Constructor 
+   * 
+   * @param y1 Virtical distance of layer one (between 0 and 1)
+   */
+  ToyModel(const Params& p)
+    : fTracks(),
+      fLayer1(p.fY1),
+      fLayer2(1),
+      fFrame(0),
+      fCanvas(0),
+      fStat("stat","Stats","nTrack:nTotal:nGood:nFake:nFree:nFree1:nFree2"),
+      fRecord("record","Record","nTrack:angle:off:qual:fake"),
+      fGenerated("generated","Tracks","angle:off"),
+      fNGood(0),
+      fNFake(0),
+      fNFree(0),
+      fParams(p)
+  {}
+    
   /** 
    * Constructor 
    * 
@@ -647,39 +718,37 @@ struct ToyModel
       fNGood(0),
       fNFake(0),
       fNFree(0),
-      fOut2In(true),
-      fGlobal(true),
-      fNoReuse(true),
-      fSigma(0.0008),
-      fOffsetCut(0.5),
-      fNoise(false),
-      fVary(false),
-      fMerge(false),
-      fSecondary(false)
+      fParams()
   {
   }
   /** 
    * @{ 
    * @name Set parameters 
    */
+  /** 
+   * Set all parameters 
+   * 
+   * @param p Parameters object
+   */
+  void SetParams(const Params& p) { fParams = p; }
   /** Should we track from out to in, or vice versa */
-  void SetOut2In(Bool_t x) { fOut2In = x; }
+  void SetOut2In(Bool_t x) { fParams.fOut2In = x; }
   /** Should we do global tracklet selection */
-  void SetGlobal(Bool_t x) { fGlobal = x; }
+  void SetGlobal(Bool_t x) { fParams.fGlobal = x; }
   /** Should we ignore already used clusters */
-  void SetNoReuse(Bool_t x) { fNoReuse = x; }
+  void SetNoReuse(Bool_t x) { fParams.fNoReuse = x; }
   /** Smear of clusters */
-  void SetSigma(Double_t x) { fSigma = x; }
+  void SetSigma(Double_t x) { fParams.fSigma = x; }
   /** Smear of clusters */
-  void SetOffsetCut(Double_t x) { fOffsetCut = x; }
+  void SetOffsetCut(Double_t x) { fParams.fOffsetCut = x; }
   /** Should we add Noise clusters (randomly disitrbuted) */
-  void SetNoise(Bool_t x) { fNoise = x; }
+  void SetNoise(Bool_t x) { fParams.fNoise = x; }
   /** Should we have random sigmas */
-  void SetVary(Bool_t x) { fVary = x; }
+  void SetVary(Bool_t x) { fParams.fVary = x; }
   /** Should we merge overlapping clusters */
-  void SetMerge(Bool_t x) { fMerge = x; }
+  void SetMerge(Bool_t x) { fParams.fMerge = x; }
   /** Should we make "secondary" tracks */
-  void SetSecondary(Bool_t x) { fSecondary = x; }
+  void SetSecondary(Bool_t x) { fParams.fSecondary = x; }
   /* @} */
 
   /** 
@@ -784,8 +853,8 @@ struct ToyModel
   void Trackleting()
   {
     // order of tracking 
-    Layer* ls[] = { fOut2In ? &fLayer2 : &fLayer1,
-		    fOut2In ? &fLayer1 : &fLayer2 };
+    Layer* ls[] = { fParams.fOut2In ? &fLayer2 : &fLayer1,
+		    fParams.fOut2In ? &fLayer1 : &fLayer2 };
     // Loop over first layer
     for (Layer::ClusterList::iterator i = ls[0]->fClusters.begin();
 	 i != ls[0]->fClusters.end(); i++) { 
@@ -795,12 +864,12 @@ struct ToyModel
       for (Layer::ClusterList::iterator j = ls[1]->fClusters.begin();
 	   j != ls[1]->fClusters.end(); j++) { 
 	// Create our tracklet
-	if (fNoReuse && (*j)->fUsed) {
+	if (fParams.fNoReuse && (*j)->fUsed) {
 	  /// Info("Trackleting", "Cluster already used, skipping");	  
 	  continue;
 	}
 	Tracklet* tkl = 0;
-	if (fOut2In) tkl = MakeTracklet(*i, *j);
+	if (fParams.fOut2In) tkl = MakeTracklet(*i, *j);
 	else         tkl = MakeTracklet(*j, *i);
 	if (!tkl) continue;
 	// Push to temporary store 
@@ -809,14 +878,14 @@ struct ToyModel
 	fTracklets.push_back(tkl);
       }
       // Sort temporary store
-      if (!fGlobal) {
+      if (!fParams.fGlobal) {
 	CompareTracklets c;
 	tmp.sort(c);
 	// Mark best tracklet
 	if (tmp.front()) Accept(tmp.front());
       }
     }
-    if (fGlobal) {
+    if (fParams.fGlobal) {
       // Sort _all_ tracklets by quality 
       CompareTracklets c;
       fTracklets.sort(c);
@@ -827,7 +896,7 @@ struct ToyModel
 	// If either cluster was already used, ignore this tracklet 
 	if (t->fCluster1.fUsed || t->fCluster2.fUsed) continue;
 	// Wide IPz cut 
-	if (TMath::Abs(t->fOffset) > fOffsetCut) {
+	if (TMath::Abs(t->fOffset) > fParams.fOffsetCut) {
 	  // Info("", "Discarding tracklet with offset=%f > 0.5", t->fOffset);
 	  continue;
 	}
@@ -856,7 +925,8 @@ struct ToyModel
 	   "which %4d are good, %4d fake (%4d+%4d=%4d free clusters) "
 	   "[%s %sshare]",
 	   fTracks.size(), nTotal, fNGood, fNFake, nFree1, nFree2, fNFree,
-	   fGlobal ? "Global" : "Per-cluster", fNoReuse ? "No-" : "");
+	   fParams.fGlobal ? "Global" : "Per-cluster",
+	   fParams.fNoReuse ? "No-" : "");
 #endif
     // Fill into statistics nTuple.
     fStat.Fill(fTracks.size(), nTotal, fNGood, fNFake, fNFree, nFree1, nFree2);
@@ -906,10 +976,10 @@ struct ToyModel
       fTracks.push_back(trk);
       fGenerated.Fill(trk->fAngle, trk->fOffset);
 		      
-      Double_t sigma1 = fSigma;
-      Double_t sigma2 = fSigma;
+      Double_t sigma1 = fParams.fSigma;
+      Double_t sigma2 = fParams.fSigma;
 
-      if (fVary) {
+      if (fParams.fVary) {
 	sigma1 *= gRandom->Uniform(0.5,2);
 	sigma2 *= gRandom->Uniform(0.5,2);
       }
@@ -924,18 +994,18 @@ struct ToyModel
    */
   void ClusterPost(Int_t nTracks)
   {
-    if (!fNoise || !fMerge) return;
+    if (!fParams.fNoise || !fParams.fMerge) return;
     
     for (Int_t iLayer = 0; iLayer < 2; iLayer++) {
       Layer& layer  = (iLayer == 0 ? fLayer1 : fLayer2);
-      if (fNoise) {
+      if (fParams.fNoise) {
 	Int_t  nNoise = nTracks / 10;
 	Int_t  nTries = 3;
 	Int_t  nAdded = 0;
 	for (Int_t iNoise = 0; iNoise < nNoise; iNoise++) {
 	  for (Int_t iTry = 0; iTry < nTries; iTry) {
 	    Double_t x = gRandom->Uniform(-1,+1);
-	    if (layer.AddNoise(x, fSigma)) {
+	    if (layer.AddNoise(x, fParams.fSigma)) {
 	      nAdded++;
 	      break;
 	    }
@@ -943,7 +1013,7 @@ struct ToyModel
 	} // iNoise
 	// Printf("Added %d/%d noise clusters", nAdded, nNoise);
       } // iLayer 
-      if (fMerge) layer.Merge();
+      if (fParams.fMerge) layer.Merge();
     }
   }
   /* @} */
@@ -972,11 +1042,12 @@ struct ToyModel
     const Double_t maxAng = TMath::Pi()/4;
 
     Int_t nTrk = nTracks;
-    if (varTracks > 1e-3) nTrk = Int_t(gRandom->Gaus(nTracks, varTracks)+.5);
+    if (varTracks > 1e-3) nTrk = Int_t(gRandom->Gaus(nTracks,
+						     varTracks*nTracks)+.5);
     // Create "primary" tracks 
     CreateTracks(nTrk, maxAng);
     // Possibly create "secondary" tracks 
-    if (fSecondary) CreateTracks(nTrk/10, maxAng, true);
+    if (fParams.fSecondary) CreateTracks(nTrk/10, maxAng, true);
 
     // Possibly clean up clusters, and/or add noise 
     ClusterPost(nTrk);
@@ -1336,21 +1407,20 @@ struct ToyModel
    */
   TFile* Output(const char* filename)
   {
-    TFile* out = TFile::Open(filename,"RECREATE");
+    TFile*      out = TFile::Open(filename,"RECREATE");
+    TDirectory* ret = Output(out);
+
+    return out;
+  }  
+  TDirectory* Output(TDirectory* dir)
+  {
+    dir->cd();
     fStat     .Write();
     fRecord   .Write();
     fGenerated.Write();
-    (new TParameter<bool>  ("out2in",   fOut2In))   ->Write();
-    (new TParameter<bool>  ("global",   fGlobal))   ->Write();
-    (new TParameter<bool>  ("noReuse",  fNoReuse))  ->Write();
-    (new TParameter<double>("sigma",    fSigma))    ->Write();
-    (new TParameter<double>("offsetCut",fOffsetCut))->Write();
-    (new TParameter<bool>  ("vary",     fVary))     ->Write();
-    (new TParameter<bool>  ("merge",    fMerge))    ->Write();
-    (new TParameter<bool>  ("secondary",fSecondary))->Write();
-    (new TParameter<double>("y1",       fLayer1.fY))->Write();
+    fParams   .Store();
 
-    return out;
+    return dir;
   }  
   /** 
    * Make a single event 
@@ -1375,7 +1445,8 @@ struct ToyModel
 
     for (Int_t i = 0; i <= nStep; i++) {
       Int_t m = Int_t(TMath::Power(10,1+dPower/nStep*i));
-      std::cout << "nTracks=" << std::setw(4) << int(m *(fSecondary ? 1.1 : 1))
+      std::cout << "nTracks=" << std::setw(4)
+		<< int(m *(fParams.fSecondary ? 1.1 : 1))
 		<< " " << std::flush;
       for (Int_t j = 0; j < nIter; j++) {
 	std::cout << "." << std::flush;
@@ -1384,17 +1455,17 @@ struct ToyModel
       std::cout << " done" <<std::endl;
     }
     TString tit;
-    if (fOut2In) tit.Append("Inward ");
-    else         tit.Append("Outward ");
-    if (fGlobal) tit.Append("All ");
+    if (fParams.fOut2In) tit.Append("Inward ");
+    else                 tit.Append("Outward ");
+    if (fParams.fGlobal) tit.Append("All ");
     else {
       tit.Append("Per-cluster ");
-      if (fNoReuse) tit.Append("no-shared");
+      if (fParams.fNoReuse) tit.Append("no-shared");
     }
-    if (fNoise)     tit.Append(" Noise");
-    if (fVary)      tit.Append(" Vary");
-    if (fMerge)     tit.Append(" Merge");
-    if (fSecondary) tit.Append(" Secondary");
+    if (fParams.fNoise)     tit.Append(" Noise");
+    if (fParams.fVary)      tit.Append(" Vary");
+    if (fParams.fMerge)     tit.Append(" Merge");
+    if (fParams.fSecondary) tit.Append(" Secondary");
 
     TFile* out = Output("scan.root");
     Trends(nIter, tit, out);
@@ -1500,16 +1571,16 @@ struct ToyModel
    * @return 
    */
   static ToyModel* Run(Int_t    mode,
-		    Bool_t   out2in=false,
-		    Bool_t   global=false,
-		    Bool_t   noReuse=false,
-		    Int_t    n=20,
-		    Double_t sigma=0.0008,
-		    Bool_t   noise=false,
-		    Bool_t   vary=false,
-		    Bool_t   merge=false,
-		    Bool_t   secondary=false,
-		    Double_t y1=0.75)
+		       Bool_t   out2in=false,
+		       Bool_t   global=false,
+		       Bool_t   noReuse=false,
+		       Int_t    n=20,
+		       Double_t sigma=0.0008,
+		       Bool_t   noise=false,
+		       Bool_t   vary=false,
+		       Bool_t   merge=false,
+		       Bool_t   secondary=false,
+		       Double_t y1=0.75)
   {
     ToyModel* model = new ToyModel(y1);
     model->SetOut2In(out2in);
@@ -1531,7 +1602,7 @@ struct ToyModel
     Printf("Merge clusters:     %s", merge     ? "yes" : "no");
     Printf("Make secondaries:   %s", secondary ? "yes" : "no");
     Printf("Cluster base size:  %5.3f", sigma);
-    Printf("IP cut along z:     %5.3f", model->fOffsetCut);
+    Printf("IP cut along z:     %5.3f", model->fParams.fOffsetCut);
     Printf("Layer 2 distance:   %5.3f", y1);
     Printf("%-20s %d",
 	   (mode == 1 ? "Number of steps:" :

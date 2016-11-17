@@ -181,6 +181,10 @@ public:
    * @name Set parameters on the task 
    */
   /** 
+   * @{ 
+   * @name Centrality 
+   */
+  /** 
    * Set the centrality method to use 
    * 
    * @param name Name of centrality method 
@@ -205,6 +209,34 @@ public:
   {
     SetAxis(fCentAxis, spec, "-:,");
   }
+  /** 
+   * Set the very least centrality to consider.  This is for cases
+   * where the centrality calibration of simulated data doesn't really
+   * match the real-data one, but we want to keep the original
+   * centrality bins.  E.g., for LHC15k1b1, the calibration of the
+   * DPMJet centrality does not give the same mean number of tracklets
+   * for the very most central bin.  We therefor need to rule out the
+   * event with a very large number of tracklets from the sample by
+   * setting this parameter to for example 0.1.  If this parameter is
+   * set to a negative value (default) it is not considered.
+   * 
+   * @param x Absolute lowest centrality to consider 
+   */
+  void SetAbsMinCent(Double_t x=-1) { fAbsMinCent = x; }
+  /** 
+   * Set maximum number of tracklets for fake centrality.  Note, in
+   * case of reweighting, the total number of tracklets can be
+   * non-integer.  Hence, we pass a double here. 
+   *
+   * @param maxN Set maximum 
+   */
+  void SetMaxNTracklet(Double_t maxN) { fMaxNTracklet = maxN; }
+  /* @} */
+  //------------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Interaction point 
+   */
   /** 
    * Set the @f$ \mathrm{IP}_z@f$ axis 
    * 
@@ -235,6 +267,12 @@ public:
   {
     SetAxis(fIPzAxis, spec);
   }
+  /* @} */
+  //------------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Azimuth 
+   */
   /** 
    * Set the @f$ \varphi@f$ axis 
    * 
@@ -256,6 +294,12 @@ public:
   {
     SetAxis(fPhiAxis, n, max);
   }
+  /* @} */
+  //------------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Pseudorapidity 
+   */
   /** 
    * Set the @f$ \eta@f$ axis 
    * 
@@ -286,6 +330,12 @@ public:
   {
     SetAxis(fEtaAxis, spec);
   }
+  /* @} */
+  //------------------------------------------------------------------
+  /** 
+   * @{ 
+   * @name Trackletting
+   */
   /**
    * Set @f$\delta_{\phi}@f$
    *
@@ -322,20 +372,12 @@ public:
    * @param x Value 
    */
   void SetTailMaximum(Double_t x=-1) { fTailMax = x; }
+  /* @} */
+  //------------------------------------------------------------------
   /** 
-   * Set the very least centrality to consider.  This is for cases
-   * where the centrality calibration of simulated data doesn't really
-   * match the real-data one, but we want to keep the original
-   * centrality bins.  E.g., for LHC15k1b1, the calibration of the
-   * DPMJet centrality does not give the same mean number of tracklets
-   * for the very most central bin.  We therefor need to rule out the
-   * event with a very large number of tracklets from the sample by
-   * setting this parameter to for example 0.1.  If this parameter is
-   * set to a negative value (default) it is not considered.
-   * 
-   * @param x Absolute lowest centrality to consider 
+   * @{ 
+   * @name Reweighting (deprecated)
    */
-  void SetAbsMinCent(Double_t x=-1) { fAbsMinCent = x; }
   /** 
    * Set weights.  This implementatio does nothing 
    * 
@@ -368,6 +410,7 @@ public:
    * @param veto Tracklet type veto 
    */
   virtual void SetWeightVeto(UChar_t veto=0xFF) {}
+  /* @} */
   /* @} */
   //__________________________________________________________________
   /**
@@ -1018,13 +1061,22 @@ protected:
    * Find the centrality of the event. This looks for the
    * AliMultSelection structure.
    * 
-   * @param event Event 
+   * @param event      Event 
+   * @param value      On return, estimator value 
    * @param nTracklets Number of tracklets for benchmarking centrality 
+   * @param nCl0       On return, number of clusters on layer 0
+   * @param nCl1       On return, number of clusters on layer 1
    * 
    * @return Centrality percentile, or negative number in case of
    * problems
    */
-  Double_t FindMultCentrality(AliVEvent* event, Int_t& nTracklets);
+  Double_t FindMultCentrality(AliVEvent* event,
+			      Double_t&  value,
+			      Int_t&     nTracklets,
+			      Int_t&     nCl0,
+			      Int_t&     nCl1);
+  Double_t FindMultCentrality(AliVEvent* event,
+			      Int_t&     nTracklets);
   /** 
    * Find the centrality of the event. This looks for the
    * AliCentrality structure.
@@ -1167,12 +1219,18 @@ protected:
   TProfile* fCentTracklets; //!
   /** Histogram of centrality vs average mult estimator */
   TProfile* fCentEst; //!
+  /** Histogram of correlation of clusters and tracklets */
+  TProfile2D* fCl0Cl1Tracklets;
   /** Centrality method to use */
   TString    fCentMethod;
   /** Cached index of centrality estimator */
   Int_t      fCentIdx;
   /** Cached index of tracklet estimator */
   Int_t      fTrkIdx;
+  /** Cached index of layer 0 clusters estimator */
+  Int_t      fCl0Idx;
+  /** Cached index of layer 1 clusters estimator */
+  Int_t      fCl1Idx;
   /** Centrality axis */
   TAxis      fCentAxis;
   /** Interaction point Z axis */
@@ -1195,6 +1253,8 @@ protected:
   Double_t   fDeltaCut;
   /** The absolute minimum centrality to consider  - for MC with poor match*/
   Double_t   fAbsMinCent;
+  /** Maximum number of tracklets for fake centrality */
+  Double_t   fMaxNTracklet;
   
   ClassDef(AliTrackletAODdNdeta,1); 
 };
@@ -1499,9 +1559,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta()
     fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
+    fCl0Cl1Tracklets(0),
     fCentMethod(""),
     fCentIdx(-1),
     fTrkIdx(-1),
+    fCl0Idx(-1),
+    fCl1Idx(-1),
     fCentAxis(1,0,0),
     fIPzAxis(1,0,0),
     fEtaAxis(1,0,0),
@@ -1512,7 +1575,8 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta()
     fDPhiShift(0),
     fShiftedDPhiCut(0),
     fDeltaCut(0),
-    fAbsMinCent(-1)
+    fAbsMinCent(-1),
+    fMaxNTracklet(6000)
 {}
 //____________________________________________________________________
 AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
@@ -1531,9 +1595,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
     fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
+    fCl0Cl1Tracklets(0),
     fCentMethod("V0M"),
     fCentIdx(-1),
     fTrkIdx(-1),
+    fCl0Idx(-1),
+    fCl1Idx(-1),
     fCentAxis(10,0,100),
     fIPzAxis(30,-15,+15),
     fEtaAxis(16,-2,+2),
@@ -1544,7 +1611,8 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
     fDPhiShift(0.0045),
     fShiftedDPhiCut(-1),
     fDeltaCut(1.5),
-    fAbsMinCent(-1)
+    fAbsMinCent(-1),
+    fMaxNTracklet(6000)
 {
   FixAxis(fCentAxis, "Centrality [%]");
   FixAxis(fIPzAxis,  "IP_{#it{z}} [cm]");
@@ -1571,9 +1639,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const AliTrackletAODdNdeta& o)
     fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
+    fCl0Cl1Tracklets(0),
     fCentMethod(o.fCentMethod),
     fCentIdx(o.fCentIdx),
     fTrkIdx(o.fTrkIdx),
+    fCl0Idx(o.fCl0Idx),
+    fCl1Idx(o.fCl1Idx),
     fCentAxis(o.fCentAxis),
     fIPzAxis(o.fIPzAxis),
     fEtaAxis(o.fEtaAxis),
@@ -1584,7 +1655,8 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const AliTrackletAODdNdeta& o)
     fDPhiShift(o.fDPhiShift),
     fShiftedDPhiCut(o.fShiftedDPhiCut),
     fDeltaCut(o.fDeltaCut),
-    fAbsMinCent(o.fAbsMinCent)
+    fAbsMinCent(o.fAbsMinCent),
+    fMaxNTracklet(o.fMaxNTracklet)
 {}
 //____________________________________________________________________
 AliTrackletAODdNdeta&
@@ -1604,6 +1676,8 @@ AliTrackletAODdNdeta::operator=(const AliTrackletAODdNdeta& o)
   fCentMethod     = o.fCentMethod;
   fCentIdx        = o.fCentIdx;
   fTrkIdx         = o.fTrkIdx;
+  fCl0Idx         = o.fCl0Idx;
+  fCl1Idx         = o.fCl1Idx;
   fCentAxis       = o.fCentAxis;
   fIPzAxis        = o.fIPzAxis;
   fEtaAxis        = o.fEtaAxis;
@@ -1615,6 +1689,7 @@ AliTrackletAODdNdeta::operator=(const AliTrackletAODdNdeta& o)
   fShiftedDPhiCut = o.fShiftedDPhiCut;
   fDeltaCut       = o.fDeltaCut;
   fAbsMinCent     = o.fAbsMinCent;
+  fMaxNTracklet   = o.fMaxNTracklet;
   return *this;
 }
 //____________________________________________________________________
@@ -1692,6 +1767,7 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
   Printf(" %22s: %f",   "tail Delta",	           fTailDelta);
   Printf(" %22s: %f",   "tail maximum",	           tailMax);
   Printf(" %22s: %f%%", "Absolute least c",        fAbsMinCent);
+  Printf(" %22s: %f",   "Max(Ntracklet)",          fMaxNTracklet);
   Printf(" %22s: %s (%d)", "Centrality estimator", fCentMethod.Data(),fCentIdx);
   PrintAxis(fEtaAxis);
   PrintAxis(fPhiAxis);
@@ -1838,8 +1914,17 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fContainer->Add(fCentTracklets);
   fCentEst = Make1P(fContainer,"centEstimator","",kMagenta+2, 20, fCentAxis);
   fCentEst->SetYTitle(Form("#LT%s#GT",fCentMethod.Data()));
-  TH1::SetDefaultSumw2(save);
 
+  TAxis clAxis(150, 0, 15000);
+  FixAxis(clAxis, "#it{N}_{cluster}");
+  fCl0Cl1Tracklets = Make2P(fContainer, "cl0cl1Tracklets","",kMagenta+2, 20,
+			    clAxis, clAxis);
+  fCl0Cl1Tracklets->SetXTitle(Form("Layer 0 %s", clAxis.GetTitle()));
+  fCl0Cl1Tracklets->SetYTitle(Form("Layer 1 %s", clAxis.GetTitle()));
+  fCl0Cl1Tracklets->SetZTitle("#LT#it{N}_{tracklet}#GT");
+
+  TH1::SetDefaultSumw2(save);
+  
   fStatus = MakeStatus(fContainer);
 
   typedef TParameter<double> DP;
@@ -1875,6 +1960,7 @@ Bool_t AliTrackletAODWeightedMCdNdeta::WorkerInit()
     AliFatal("No weights set!");
     return false;
   }
+  fWeights->SetDebug(fDebug);
 
   TAxis wAxis(100,0,10);
   FixAxis(wAxis,"#it{w}_{i}");
@@ -2381,7 +2467,10 @@ Double_t AliTrackletAODdNdeta::FindCompatCentrality(AliVEvent* event)
 }
 //____________________________________________________________________
 Double_t AliTrackletAODdNdeta::FindMultCentrality(AliVEvent* event,
-						  Int_t& nTracklets)
+						  Double_t&  value,
+						  Int_t&     nTracklets,
+						  Int_t&     nCl0,
+						  Int_t&     nCl1)
 {
   AliMultSelection* cent =
     static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
@@ -2391,14 +2480,26 @@ Double_t AliTrackletAODdNdeta::FindMultCentrality(AliVEvent* event,
     return -1;
   }
   if (fCentIdx < 0) {
+    TString estName(fCentMethod);
     TString trkName("SPDTracklets");
+    TString cl0Name("CL0");
+    TString cl1Name("CL1");
+    if (estName.EqualTo("fake", TString::kIgnoreCase)) estName = "V0M";
     for (Int_t i = 0; i < cent->GetNEstimators(); i++) {
       AliMultEstimator* e = cent->GetEstimator(i);
-      if (!e) continue;
-      if (fCentMethod.EqualTo(e->GetName())) fCentIdx = i;
-      if (trkName.EqualTo(e->GetName()))     fTrkIdx  = i;
+      if      (!e)                                continue;
+      if      (estName.EqualTo(e->GetName()))     fCentIdx = i;
+      if      (trkName.EqualTo(e->GetName()))     fTrkIdx  = i;
+      else if (cl0Name.EqualTo(e->GetName()))     fCl0Idx  = i;
+      else if (cl1Name.EqualTo(e->GetName()))     fCl1Idx  = i;
     }
-  }
+    if (fTrkIdx < 0) 
+      AliWarning("Index for tracklet estimator not found!");
+    if (fCl0Idx < 0) 
+      AliWarning("Index for layer 0 cluster estimator not found!"); 
+    if (fCl1Idx < 0) 
+      AliWarning("Index for layer 1 cluster estimator not found!");
+ }
   if (fCentIdx < 0) {
     AliWarningF("Centrality estimator %s not found", fCentMethod.Data());
     return -1;
@@ -2411,29 +2512,58 @@ Double_t AliTrackletAODdNdeta::FindMultCentrality(AliVEvent* event,
 		fCentMethod.Data());
     return -1;
   }
-  fCentEst->Fill(estCent->GetPercentile(), estCent->GetValue());
+  value = estCent->GetValue();
 
   // Now look up tracklet value using cached index 
-  if (fTrkIdx < 0) return estCent->GetPercentile();  
-  AliMultEstimator* estTracklets = cent->GetEstimator(fTrkIdx);
-  if (estTracklets) nTracklets = estTracklets->GetValue();
-
+  if (fTrkIdx >= 0) {
+    AliMultEstimator* est        = cent->GetEstimator(fTrkIdx);
+    if (est)          nTracklets = est->GetValue();
+  }
+  if (fCl0Idx >= 0) {
+    AliMultEstimator* est  = cent->GetEstimator(fCl0Idx);
+    if (est)          nCl0 = est->GetValue();
+  }
+  if (fCl1Idx >= 0) {
+    AliMultEstimator* est  = cent->GetEstimator(fCl1Idx);
+    if (est)          nCl1 = est->GetValue();
+  }
+  
   return estCent->GetPercentile();
+}
+//____________________________________________________________________
+Double_t AliTrackletAODdNdeta::FindMultCentrality(AliVEvent* event,
+						  Int_t& nTracklets)
+{  
+  Int_t nCl0 = 0, nCl1 = 0;
+  Double_t value = 0;
+  Double_t cent = FindMultCentrality(event, value, nTracklets, nCl0, nCl1);
+  fCentEst        ->Fill(cent, value);
+  fCl0Cl1Tracklets->Fill(nCl0, nCl1, nTracklets);
+  return cent;
 }
 //____________________________________________________________________
 Double_t AliTrackletAODdNdeta::FindFakeCentrality(AliVEvent* event,
 						  Int_t& nTracklets)
 
 {
+  Int_t nCl0 = 0, nCl1 = 0;
+  Double_t value = 0;
+  FindMultCentrality(event, value, nTracklets, nCl0, nCl1);
+
   AliAODTracklet* tracklet   = 0;
   TClonesArray*   tracklets  = FindTracklets(event);
   TIter           nextTracklet(tracklets);
   Int_t           nTracklet  = 0;
   while ((tracklet = static_cast<AliAODTracklet*>(nextTracklet()))) {
-    if (tracklet->IsMeasured()) nTracklet++;
+    if (tracklet->IsMeasured())
+      nTracklet += LookupWeight(tracklet,0,0);
   }
   nTracklets = nTracklet;
-  Double_t c = 100*(1-Float_t(nTracklet)/8000);
+  fCl0Cl1Tracklets->Fill(nCl0, nCl1, nTracklets);
+
+  if (nTracklet > fMaxNTracklet) return -1;
+
+  Double_t c = 100*(1-Float_t(nTracklet)/fMaxNTracklet);
 
   fCentEst->Fill(c, nTracklet);
   return c;
@@ -2448,6 +2578,7 @@ Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
     return 0;
   }
   Double_t centPer = -1;
+  
   if (fCentMethod.EqualTo("fake",TString::kIgnoreCase)) 
     centPer = FindFakeCentrality(event, nTracklets);  
   else if (fCentMethod.BeginsWith("OLD"))
@@ -2494,7 +2625,7 @@ Double_t AliTrackletAODWeightedMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
   if (tracklet->IsMeasured()) 
     fEtaWeight->Fill(tracklet->GetEta(), cent, w);
 
-  if (fDebug > 0) {
+  if (fDebug > 4) {
     Bool_t ok=true;
     switch (TMath::Abs(tracklet->GetParentPdg())) {
     case 310:  printf("K0s   "); break;
@@ -2739,6 +2870,9 @@ void AliTrackletAODdNdeta::CentBin::Completed()
 void 
 AliTrackletAODdNdeta::Terminate(Option_t*)
 {
+  Bool_t save = TH1::GetDefaultSumw2();
+  TH1::SetDefaultSumw2();
+  
   TString resName; resName.Form("%sResults",GetName());
   if (GetOutputData(2)) {
     Warning("Terminate", "Already have a result container, making a new one");
@@ -2767,6 +2901,7 @@ AliTrackletAODdNdeta::Terminate(Option_t*)
   }
     
   PostData(2, results);
+  TH1::SetDefaultSumw2(save);
 }
 
 
@@ -3161,7 +3296,13 @@ AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdgPart(Container*     result,
   rows->Add(rowSig, "bar0 e text30");
   rows->Add(rowBg,  "bar0 e text30");
   pdgOut->Add(rows);
-  
+
+  TH1* hK0S    = 0;
+  TH1* hKpm    = 0;
+  TH1* hLambda = 0;
+  TH1* hXi     = 0;
+  TH1* hSigma  = 0;
+  TH1* hOther  = 0;
   for (Int_t i = 1; i <= zaxis->GetNbins(); i++) {
     Int_t   pdg = TString(zaxis->GetBinLabel(i)).Atoi();
     TString nme;
@@ -3197,6 +3338,31 @@ AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdgPart(Container*     result,
     h1->SetBinContent(0,ipdg);
     total->Add(h1);
     stack->Add(h1);
+
+    TH1** ptr = 0;
+    switch (pdg) {
+    case 321:  ptr = &hKpm;   break;  // K^{+}
+    case 310:  ptr = &hK0S;   break;  // K^{0}_{S}
+      // case 3212:                   // #Sigma^{0} // Old, wrong code
+    case 3112:                        // #Sigma^{-}
+    case 3222: ptr = &hSigma; break;  // #Sigma^{+} // New, right code 	 
+      
+      // case 3322:                    // #Xi^{0}   // Old, wrong code 
+    case 3312: ptr = &hXi;    break;   // #Xi^{-}   // New, right code 
+    case 3122: ptr = &hLambda;break;   // #Lambda  
+    default:   ptr = &hOther; break;
+    }
+    if (!*ptr) {
+      *ptr = static_cast<TH1*>(h1->Clone());
+      (*ptr)->Reset();
+      (*ptr)->SetDirectory(0);
+      if (ptr == &hOther) {
+	(*ptr)->SetTitle("Other");
+	(*ptr)->SetName("0");
+      }
+    }
+    // Printf("Adding %s to %s", h1->GetName(), (*ptr)->GetName());
+    (*ptr)->Add(h1);
   }
   total->SetBinContent(0,0);
   total->Scale(1./nEvents);
@@ -3215,14 +3381,32 @@ AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdgPart(Container*     result,
   totInt->SetBinContent(3,iBg);  totInt->SetBinError(3, eBg);
   pdgOut->Add(totInt);
   
-  if (!stack->GetHists()) return true;
-  
-  Double_t sigOth = 0, eSigOth = 0, bgOth = 0, eBgOth = 0;
-  Double_t sigK0s = 0, eSigK0s = 0, bgK0s = 0, eBgK0s = 0;
-  Double_t sigKpm = 0, eSigKpm = 0, bgKpm = 0, eBgKpm = 0;
-  Double_t sigLam = 0, eSigLam = 0, bgLam = 0, eBgLam = 0;
-  Double_t sigXi0 = 0, eSigXi0 = 0, bgXi0 = 0, eBgXi0 = 0;
-  Double_t sigSig = 0, eSigSig = 0, bgSig = 0, eBgSig = 0;
+  if (!stack->GetHists()) {
+    AliWarningF("No histograms in the stack %s", stack->GetName());    
+    return true;
+  }
+  TH1*  spec[] = { hK0S, hKpm, hLambda, hXi, hSigma, hOther, 0 };
+  TH1** ptr    = spec;
+  Int_t pbin   = 1;
+  for (Int_t pbin=1; pbin<=6; pbin++) {
+    TH1*     h            = spec[pbin-1];
+    if (!h) continue;
+    h->Scale(1./  nEvents);
+    Double_t eiSig, iiSig = Integrate(h, 0,         deltaCut, eiSig);
+    Double_t eiBg,  iiBg  = Integrate(h, tailDelta, tailMax,  eiBg);
+    Double_t erS,  rS     = RatioE(iiSig, eiSig, iSig, eSig,  erS);
+    Double_t erB,  rB     = RatioE(iiBg,  eiBg,  iBg,  eBg,   erB);
+#if 0
+    Printf("%10s (%d) signal=%6.4f+/-%6.4f  background=%6.4f+/-%6.4f  "
+	   "ratios %6.4f+/-%6.4f  %6.4f+/-%6.4f",
+	   h->GetTitle(), pbin, iiSig, eiSig, iiBg, eiBg, rS, erS, rB, erB);
+#endif 
+    rowSig->SetBinContent(pbin,100*rS);
+    rowSig->SetBinError  (pbin,100*TMath::Sqrt(erS));
+    rowBg ->SetBinContent(pbin,100*rB);
+    rowBg ->SetBinError  (pbin,100*TMath::Sqrt(erB));
+    pdgOut->Add(h);
+  }
   TIter    next(stack->GetHists());
   TH1*     tmp  = 0;
   while ((tmp = static_cast<TH1*>(next()))) {
@@ -3245,61 +3429,7 @@ AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdgPart(Container*     result,
     ratioSig->SetBinError  (bin, erS);
     ratioBg ->SetBinContent(bin, rB);
     ratioBg ->SetBinError  (bin, erB);
-
-    switch (pdg) {
-    case 321:                   // K^{+}
-      sigKpm += rS; eSigKpm += erS*erS; bgKpm += rB; eBgKpm += erB*erB; break; 
-    case 310:                   // K^{0}_{S}
-      sigK0s += rS; eSigK0s += erS*erS; bgK0s += rB; eBgK0s += erB*erB; break; 
-    case 3112:                  // #Sigma^{-}
-      // case 3212:                  // #Sigma^{0} // Old, wrong code
-    case 3222:	                // #Sigma^{+} // New, right code 	 
-      // case 3114:		// #Sigma^{*-}		 
-      // case 3224:		// #Sigma^{*+}		 
-      // case 4214:		// #Sigma^{*+}_{c}		 
-      // case 4224:             // #Sigma^{*++}_{c}
-      // case 3212: 	        // #Sigma^{0}			 
-      // case 4114:      	// #Sigma^{*0}_{c}		 
-      // case 3214:             // #Sigma^{*0}	
-      sigSig += rS; eSigSig += erS*erS; bgSig += rB; eBgSig += erB*erB; break;
-      // case 3322:                  // #Xi^{0}   // Old, wrong code 
-    case 3312:                  // #Xi^{-}   // New, right code 
-      // case 3314:             // #Xi^{*-}
-      // case 3324:     	// #Xi^{*0}			 
-      // case 4132:       	// #Xi^{0}_{c}		       
-      // case 4314:             // #Xi^{*0}_{c}	
-      sigXi0 += rS; eSigXi0 += erS*erS; bgXi0 += rB; eBgXi0 += erB*erB; break; 
-      // case 4122:             // #Lambda^{+}_{c}
-    case 3122:                  // #Lambda  
-      sigLam += rS; eSigLam += erS*erS; bgLam += rB; eBgLam += erB*erB; break; 
-    default:
-      sigOth += rS; eSigOth += erS*erS; bgOth += rB; eBgOth += erB*erB; break;
-    }    
   } // while(tmp)
-  rowSig->SetBinContent(1,100*sigK0s);
-  rowSig->SetBinError  (1,100*TMath::Sqrt(eSigK0s));
-  rowSig->SetBinContent(2,100*sigKpm);
-  rowSig->SetBinError  (2,100*TMath::Sqrt(eSigKpm));
-  rowSig->SetBinContent(3,100*sigLam);
-  rowSig->SetBinError  (3,100*TMath::Sqrt(eSigLam));
-  rowSig->SetBinContent(4,100*sigXi0);
-  rowSig->SetBinError  (4,100*TMath::Sqrt(eSigXi0));
-  rowSig->SetBinContent(5,100*sigSig);
-  rowSig->SetBinError  (5,100*TMath::Sqrt(eSigSig));
-  rowSig->SetBinContent(6,100*sigOth);
-  rowSig->SetBinError  (6,100*TMath::Sqrt(eSigOth));
-  rowBg ->SetBinContent(1,100* bgK0s);
-  rowBg ->SetBinError  (1,100*TMath::Sqrt( eBgK0s));
-  rowBg ->SetBinContent(2,100* bgKpm);
-  rowBg ->SetBinError  (2,100*TMath::Sqrt( eBgKpm));
-  rowBg ->SetBinContent(3,100* bgLam);
-  rowBg ->SetBinError  (3,100*TMath::Sqrt( eBgLam));
-  rowBg ->SetBinContent(4,100* bgXi0);
-  rowBg ->SetBinError  (4,100*TMath::Sqrt( eBgXi0));
-  rowBg ->SetBinContent(5,100* bgSig);
-  rowBg ->SetBinError  (5,100*TMath::Sqrt( eBgSig));
-  rowBg ->SetBinContent(6,100* bgOth);
-  rowBg ->SetBinError  (6,100*TMath::Sqrt( eBgOth));
 
   return true;
 }
@@ -3382,7 +3512,7 @@ AliTrackletAODdNdeta::Histos::ProjectEtaPdgIPz(Container*     result,
     h2->SetLineColor(col);
     pdgOut->Add(h2);
     
-    TH1* h1 = AverageOverIPz(h2, Form("eta_%d",pdg), 1, ipz, 0, false);
+    TH1* h1 = AverageOverIPz(h2, Form("eta_%d",pdg), 1, ipz, 0, 0, false);
     h1->SetDirectory(0);
     h1->SetYTitle(Form("d#it{N}_{%s#rightarrow%s}/d#eta",
 		       nme.Data(), shn.Data()));

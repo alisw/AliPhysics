@@ -38,7 +38,9 @@ public:
       fReactionPlane   (-1),
       fProjectileNsd   (-1),
       fTargetNsd       (-1),
-      fNdd             (-1)
+      fNdd             (-1) /*,
+			      fNcluster0       (-1),
+			      fNcluster1       (-1) */
   {}
   virtual ~AliAODSimpleHeader() {}
   /** 
@@ -62,6 +64,8 @@ public:
     fProjectileNsd   = -1;
     fTargetNsd       = -1;
     fNdd             = -1;
+    // fNcluster0       = -1;
+    // fNcluster1       = -1;
   }
   /** 
    * @{ 
@@ -95,6 +99,10 @@ public:
   Int_t fTargetNsd;
   /** Double diffractive collisions */
   Int_t fNdd;
+  /** Number of clusters on first layer */
+  // Int_t fNcluster0;
+  /** Number of clusters on second layer */
+  // Int_t fNcluster1;
   /* @} */
 
   ClassDef(AliAODSimpleHeader,1); // Simple header for AODs 

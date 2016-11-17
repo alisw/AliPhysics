@@ -72,10 +72,11 @@ const TString& FormatInput(const char* inp, TString& shrt)
   static TString tmp;
   tmp = "";
   Long_t flags;
-  if (gSystem->GetFileStat(inp, 0, 0, flags, 0) != 0) {
+  if (gSystem->GetPathInfo(inp, 0, (Long_t*)0, &flags, 0) != 0) {
     Warning("FormatInput", "Cannot stat %s", inp);
     return tmp;
   }
+  Info("FormatInput", "Input=%s stat=0x%x", inp, flags);
   if (flags & 0x1) {
     shrt = inp;
     tmp.Form("%s/tracklet_dndeta.root", inp);
@@ -145,8 +146,8 @@ void Post(const char* sim,
 
   // Set inputs and output
   TString realShrt, simShrt;  
-  TString realFile = FormatInput(real);
-  TString simFile  = FormatInput(sim);
+  TString realFile = FormatInput(real, realShrt);
+  TString simFile  = FormatInput(sim,  simShrt);
   TString outFile(output && output[0] != '\0' ? output :
 		  Form("%s_%s",realShrt.Data(),simShrt.Data()));
   if (proc & 0x1) outFile.Append("_unit");

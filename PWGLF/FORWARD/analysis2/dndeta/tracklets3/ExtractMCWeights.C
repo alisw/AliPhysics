@@ -28,6 +28,7 @@ ExtractMCWeights(const char* nFile="dpmjet.root",
   gSystem->AddIncludePath("-I$ANA_SRC/dndeta/tracklets3");
   gROOT->SetMacroPath(Form("%s:scripts:$(ANA_SRC)/dndeta/tracklets3",
 			   gROOT->GetMacroPath()));  
+  gROOT->LoadMacro("AliAODTracklet.C+g");  
   gROOT->LoadMacro("AliTrackletWeights.C+g");  
   gROOT->LoadMacro("AliTrackletAODUtils.C+g");  
   gROOT->LoadMacro("PureMCWeights.C+g");  

@@ -68,7 +68,8 @@ struct TrackletAODdNdeta : public TrainSetup
     fOptions.Add("mc",                   "For MC data",             false);
     fOptions.Add("multsel",              "Enable MultSelection",    false);
     fOptions.Add("abs-min-cent","PERCENT","Absolute least cent.",   -1);
-    fOptions.Add("reweigh",    "FILE",   "File with weights",      "");
+    fOptions.Add("max-ntracklet", "N",   "For FAKE centrality",    6000);
+    fOptions.Add("reweigh",      "FILE", "File with weights",      "");
     fOptions.Add("reweigh-calc", "MODE", "prod,square,sum",        "prod");
     fOptions.Add("reweigh-mask", "MASK", "Tracklet mask for weighing", 0xFF);
     fOptions.Add("reweigh-veto", "VETO", "Tracklet veto for weighing", 0x0);
@@ -152,6 +153,8 @@ struct TrackletAODdNdeta : public TrainSetup
     const char* defCent = DefaultCentBins();
     FromOption(task, "CentralityMethod","cent", 	    "V0M");
     FromOption(task, "CentralityAxis",  "cent-bins",        defCent);
+    FromOption(task, "AbsMinCent",      "abs-min-cent",    -1.);
+    FromOption(task, "MaxNTracklet",    "max-ntracklet",    6000.);
     FromOption(task, "EtaAxis",         "eta-bins",         "r16:2");
     FromOption(task, "IPzAxis",         "ipz-bins",         "u15");
     FromOption(task, "DeltaCut",	"delta-cut",	    1.5);
@@ -160,7 +163,6 @@ struct TrackletAODdNdeta : public TrainSetup
     FromOption(task, "MaxDelta",	"max-delta",	    25.);
     FromOption(task, "DPhiShift",	"dphi-shift",	    0.0045);
     FromOption(task, "ShiftedDPhiCut",	"shifted-dphi-cut",-1.);
-    FromOption(task, "AbsMinCent",      "abs-min-cent",    -1.);
     FromOption(task, "WeightMask",      "reweigh-mask",     0xFF);
     FromOption(task, "WeightVeto",      "reweigh-veto",     0x0);
     SetOnTask (task, "WeightCalc",                          mcal);

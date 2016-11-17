@@ -19,7 +19,7 @@
  * @relates ToyModel
  */
 void
-MakeToyEvents(Bool_t full=true)
+MakeToyEvents(Int_t mode=0)
 {
   TString dir("$ALICE_PHYSICS/PWGLF/FORWARD/analysis2");
   if (gSystem->Getenv("ANA_SRC")) dir="$ANA_SRC";
@@ -38,11 +38,17 @@ MakeToyEvents(Bool_t full=true)
   m->SetMerge(false);     // Do not merge close-adjecent clusters
   m->SetSecondary(false); // Do not make secondaries 
 
-  Int_t nEvents = 500;
-  Int_t nTracks = (full ? 500 : 476);
+  Int_t   nEvents = 500;
+  Int_t   nTracks = 0;
+  TString out     = "";
+  switch (mode) {
+  case 0: nTracks = 500; out = "real.root";    break;
+  case 1: nTracks = 476; out = "reduced.root"; break;
+  case 2: nTracks = 400; out = "small.root";   break;
+  }
   m->RunDist(nEvents, nTracks);
 
-  gSystem->Rename("dist.root", full ? "real.root" : "reduced.root");
+  gSystem->Rename("dist.root", out);
 }
 //
 // EOF

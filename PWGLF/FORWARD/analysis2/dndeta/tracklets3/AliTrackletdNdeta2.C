@@ -104,6 +104,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
     kFullScale = 0x0008,
     /** Correct for decay of strange to secondary  */
     kDTFS = 0x0010,
+    /** Correct for fakes even if doing DTFS */
+    kFake = 0x0020,
     /** MC closure test */
     kClosure      = 0x01000,
     /** Debug flat */
@@ -1755,38 +1757,48 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   TDirectory* outDir = outParent->mkdir(Form("results%dd", deltaDimen));
   TDirectory* delDir = outParent->GetDirectory(Form("delta%dd", deltaDimen));
 
+  Bool_t fk = (fProc & kFake);
+  Bool_t sc = (fProc & kDTFS);
+  Bool_t rs = fRealIsSim;
+  
   TH2* scale = static_cast<TH2*>(delDir->Get("scale"));
-  TH2* realM = CopyH2(GetC(realCont, "measured"),      "etaIPz", "realM");
-  TH2* realS = CopyH2(GetC(realCont, "measured"),      "etaIPz", "realS");
-  TH2* realC = CopyH2(GetC(realCont, "measured"),      "etaIPz", "realC");
-  TH2* simM  = CopyH2(GetC(simCont,  "measured"),      "etaIPz", "simM");
-  TH2* simC  = CopyH2(GetC(simCont,  "combinatorics"), "etaIPz", "simC");
-  TH2* simG  = CopyH2(GetC(simCont,  "generated"),     "etaIPz", "simG");
-  TH2* simS  = CopyH2(GetC(simCont,  "measured"),      "etaIPz", "simS");
-  TH2* simA  = CopyH2(GetC(simCont,  "generated"),     "etaIPz", "simA");
-  TH2* simB  = CopyH2(GetC(simCont,  "combinatorics"), "etaIPz", "simB");
-  TH2* simT  = (fProc & kDTFS ?
-		CopyH2(GetC(simCont, "secondaries"),   "dtfs",   "simT") :
-		0);
-  TH2* realG = (!fRealIsSim ? 0 :
-		CopyH2(GetC(realCont,"generated"),     "etaIPz", "realG"));
+  TH2* realM =      CopyH2(GetC(realCont,"measured"),     "etaIPz", "realM");
+  TH2* realS =      CopyH2(GetC(realCont,"measured"),     "etaIPz", "realS");
+  TH2* realC = fk ? CopyH2(GetC(realCont,"measured"),     "etaIPz", "realC"):0;
+  TH2* simM  =      CopyH2(GetC(simCont, "measured"),     "etaIPz", "simM");
+  TH2* simC  = fk ? CopyH2(GetC(simCont, "combinatorics"),"etaIPz", "simC") :0;
+  TH2* simG  =      CopyH2(GetC(simCont,  "generated"),   "etaIPz", "simG");
+  TH2* simS  =      CopyH2(GetC(simCont,  "measured"),    "etaIPz", "simS");
+  TH2* simA  =      CopyH2(GetC(simCont,  "generated"),   "etaIPz", "simA");
+  TH2* simB  = fk ? CopyH2(GetC(simCont, "combinatorics"),"etaIPz", "simB") :0;
+  TH2* simT  = sc ? CopyH2(GetC(simCont, "secondaries"),  "dtfs",   "simT") :0;
+  TH2* realG = rs ? CopyH2(GetC(realCont,"generated"),    "etaIPz", "realG"):0;
   TH1* realZ = CopyH1(realCont, "ipz", "realZ");
   TH1* simZ  = CopyH1(simCont,  "ipz", "simZ");
 
+  Double_t realEt = GetD(realCont, "triggerEfficiency"); 
+  Double_t simEt  = GetD(simCont,  "triggerEfficiency"); 
+  Double_t realEz = GetD(realCont, "ipEfficiency"); 
+  Double_t simEz  = GetD(simCont,  "ipEfficiency"); 
+  
   if (scale->GetEntries() <= 0) {
     Warning("Results", "Scale has no entries");
   }
   
   // Scale combinatorial background to measured to get beta
-  simB->Divide(simM);
-  simB->SetTitle("#beta'");
-  simB->SetZTitle("#beta'");
-
-  // Substract combinatorial background from measured to get signal 
-  simS->Add(simC, -1);
-  simS->SetTitle("S'");
-  simS->SetZTitle("S'");
-
+  if (simB) {
+    simB->Divide(simM);
+    simB->SetTitle("#beta'");
+    simB->SetZTitle("#beta'");
+  }
+  
+  // Substract combinatorial background from measured to get signal
+  if (simC) {
+    simS->Add(simC, -1);
+    simS->SetTitle("S'");
+    simS->SetZTitle("S'");
+  }
+  
   // Possibly subtract secondaries from strange 
   if (simT) {
     simT->SetTitle("T'");
@@ -1800,23 +1812,30 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   simA->SetZTitle("#alpha'");
 
   // Copy simulated beta to real beta, and scale by scalar
-  TH2* realB = static_cast<TH2*>(simB->Clone("realB"));
-  realB->SetDirectory(0);
-  realB->SetTitle("#beta");
-  realB->SetZTitle("#beta");
-  realB->Multiply(scale);
-  Scale(realB, fFudge, 0);
+  TH2* realB = 0;
+  if (simB) {
+    realB = static_cast<TH2*>(simB->Clone("realB"));
+    realB->SetDirectory(0);
+    realB->SetTitle("#beta");
+    realB->SetZTitle("#beta");
+    realB->Multiply(scale);
+    Scale(realB, fFudge, 0);
+  }
   
   // Multiply real beta onto real measured to get background
-  realC->Multiply(realB);
-  realC->SetTitle("C");
-  realC->SetZTitle("C");
-
+  if (realC) { 
+    realC->Multiply(realB);
+    realC->SetTitle("C");
+    realC->SetZTitle("C");
+  }
+  
   // Substract the real background off the real measured
-  realS->Add(realC, -1);
-  realS->SetTitle("S");
-  realS->SetZTitle("S");
-
+  if (realC) {
+    realS->Add(realC, -1);
+    realS->SetTitle("S");
+    realS->SetZTitle("S");
+  }
+  
   // Possibly subtract secondaries from strange
   TH2* realT = 0;
   if (simT) {
@@ -1839,15 +1858,15 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
       fiducial->SetBinError(i,j,0);
     }
   }
-  realM->Multiply(fiducial);
-  realC->Multiply(fiducial);
-  realS->Multiply(fiducial);
-  realB->Multiply(fiducial);
-  simM ->Multiply(fiducial);
-  simC ->Multiply(fiducial);
-  simS ->Multiply(fiducial);
-  simB ->Multiply(fiducial);
-  simA ->Multiply(fiducial);
+  /*      */ realM->Multiply(fiducial);
+  if (realC) realC->Multiply(fiducial);
+  /*      */ realS->Multiply(fiducial);
+  if (realB) realB->Multiply(fiducial);
+  /*      */ simM ->Multiply(fiducial);
+  if (simC)  simC ->Multiply(fiducial);
+  /*      */ simS ->Multiply(fiducial);
+  if (simB)  simB ->Multiply(fiducial);
+  /*      */ simA ->Multiply(fiducial);
   if (simT)  simT ->Multiply(fiducial);
   if (realT) realT->Multiply(fiducial);
   
@@ -1862,33 +1881,35 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   
   // Make a stack of 1D projections
   struct Rec {
-    TH2* h;
-    TH1* s;
-    TH2* c;
-    TH1* p; 
-    Style_t sty;
-    Color_t col;
-    Float_t siz;
-    const char* tit;
+    TH2*     h;  // histogram to average 
+    TH1*     s;  // IPz distribution
+    Double_t e;  // IP efficiency 
+    TH2*     c;  // Mask for bins to use 
+    TH1*     p;  // The result 
+    Style_t sty; // Marker style 
+    Color_t col; // Color 
+    Float_t siz; // Marker size 
+    const char* tit; // Title 
   };
-  Rec      sT = { simT,    simZ,  0,      0, 30, kSpring+2,  1.4,"strangeness"};
-  Rec      sC = { simC,    simZ,  result, 0, 32, kMagenta+2, 1.4,"background"};
-  Rec      sS = { simS,    simZ,  result, 0, 27, kGreen+2,   1.8,"signal" };
-  Rec      sM = { simM,    simZ,  result, 0, 26, kBlue+2,    1.4,"measured" };
-  Rec      sG = { simG,    simZ,  0,      0, 24, kRed+2,     1.4,"generated" };
-  Rec      sB = { simB,    simZ,  0,      0, 28, kPink+2,    1.4,"#beta" };
-  Rec      rC = { realC,   realZ, result, 0, 23, kMagenta+2, 1.2,"background"};
-  Rec      rT = { realT,   realZ, 0,      0, 29, kSpring+2,  1.4,"strangeness"};
-  Rec      rS = { realS,   realZ, result, 0, 33, kGreen+2,   1.6,"signal" };
-  Rec      rM = { realM,   realZ, result, 0, 22, kBlue+2,    1.2,"measured" };
-  Rec      rR = { result,  realZ, 0,      0, 20, kRed+2,     1.3,ObsTitle() };
-  Rec      rB = { realB,   realZ, 0,      0, 34, kPink+2,    1.4,"#beta" };
-  Rec      sA = { simA,    simZ,  0,      0, 30, kSpring+2,  1.4,"#alpha" };
-  Rec      sF = { fiducial,simZ,  0,      0, 31, kSpring+2,  1.4,"fiducial" };
-  Rec      rG = { realG,   realZ, 0,      0, 24, kBlack,     1.4,"truth" };
-  Rec*     recs[]={ &rR, &sG, &rS, &sS, &rM, &sM, &rC, &sC,
-		    &rB, &sB, &sA, &sF, &rG, &rT, &sT, 0 };
-  Rec**    ptr     = recs;
+  Rec   sT = { simT,    simZ, simEz, 0,     0,30,kSpring+2, 1.4,"strangeness"};
+  Rec   sC = { simC,    simZ, simEz, result,0,32,kMagenta+2,1.4,"background"};
+  Rec   sS = { simS,    simZ, simEz, result,0,27,kGreen+2,  1.8,"signal" };
+  Rec   sM = { simM,    simZ, simEz, result,0,26,kBlue+2,   1.4,"measured" };
+  Rec   sG = { simG,    simZ, simEz, 0,     0,24,kRed+2,    1.4,"generated" };
+  Rec   sB = { simB,    simZ, simEz, 0,     0,28,kPink+2,   1.4,"#beta" };
+  Rec   rC = { realC,   realZ,realEz,result,0,23,kMagenta+2,1.2,"background"};
+  Rec   rT = { realT,   realZ,realEz,0,     0,29,kSpring+2, 1.4,"strangeness"};
+  Rec   rS = { realS,   realZ,realEz,result,0,33,kGreen+2,  1.6,"signal" };
+  Rec   rM = { realM,   realZ,realEz,result,0,22,kBlue+2,   1.2,"measured" };
+  Rec   rR = { result,  realZ,realEz,0,     0,20,kRed+2,    1.3,ObsTitle() };
+  Rec   rB = { realB,   realZ,realEz,0,     0,34,kPink+2,   1.4,"#beta" };
+  Rec   sA = { simA,    simZ, simEz, 0,     0,30,kSpring+2, 1.4,"#alpha" };
+  Rec   sF = { fiducial,simZ, simEz, 0,     0,31,kSpring+2, 1.4,"fiducial" };
+  Rec   rG = { realG,   realZ,realEz,0,     0,24,kBlack,    1.4,"truth" };
+  Rec*  recs[]={ &rR, &sG, &rS, &sS, &rM, &sM, &rC, &sC,
+		 &rB, &sB, &sA, &sF, &rG, &rT, &sT, 0 };
+  Rec** ptr   = recs;
+
   TH1*     dndeta  = 0;
   THStack* all     = new THStack("all", "");
   if (fViz & kAltMarker) {
@@ -1904,10 +1925,11 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
     if (!src->h) { ptr++; continue; }
     src->h->SetDirectory(full);
     src->p = AverageOverIPz(src->h, src->h->GetName(), 1,
-				src->s, src->c);
+			    src->s, src->e, src->c);
     src->p->SetYTitle(src->h->GetZaxis()->GetTitle());
     src->p->SetTitle(Form("%s - %s", src->h->GetTitle(), src->tit));
     src->p->SetDirectory(outDir);
+    if (src->e > 1e-3) src->p->Scale(src->e);
     if (src->h != simB && src->h != realB &&
 	src->h != simA && src->h != fiducial) all->Add(src->p);
     SetAttr(src->p, src->col, src->sty, src->siz);
@@ -1930,18 +1952,17 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
 	 "%6.1f /((1-%6.3f)*%6.1f%s)*(1-%6.3f)*(%6.1f%s)="
 	 "%6.3f * %6.3f="
 	 "%6.1f [%6.1f]",
-	 sG.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
-	 sB.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
-	 sM.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
-	 simST.Data(),
-	 rB.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
-	 rM.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
-	 realST.Data(),
-	 sA.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
-	 // 1-rB.h->GetBinContent(mi,mj), // p->GetBinContent(mi),
-	 rS.h->GetBinContent(mi,mj),   // p->GetBinContent(mi),
-	 rR.h->GetBinContent(mi,mj),   // p->GetBinContent(mb));
-	 rG.h ? rG.h->GetBinContent(mi,mj) : -1);
+	 /*  */ sG.h->GetBinContent(mi,mj),   
+	 sB.h ? sB.h->GetBinContent(mi,mj) : 0,   
+	 /*  */ sM.h->GetBinContent(mi,mj),   
+	 /*  */ simST.Data(),
+	 rB.h ? rB.h->GetBinContent(mi,mj) : 0,
+	 /*  */ rM.h->GetBinContent(mi,mj),   
+	 /*  */ realST.Data(),
+	 /*  */ sA.h->GetBinContent(mi,mj),   
+	 /*  */ rS.h->GetBinContent(mi,mj),   
+	 /*  */ rR.h->GetBinContent(mi,mj),   
+	 /*  */ rG.h ? rG.h->GetBinContent(mi,mj) : -1);
 
   if (rG.p) {
     TH1* ratio = RatioH(dndeta, rG.p, "closure");
@@ -1956,7 +1977,7 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   ratios->Add(RatioH(rC.p, sC.p, "rBackground"));
   ratios->Add(RatioH(rS.p, sS.p, "rSignal"));
   ratios->Add(RatioH(rR.p, sG.p, "rResult"));
-  ratios->Add((scaleC = AverageOverIPz(scale, scale->GetName(), 1, realZ,  0)));
+  ratios->Add((scaleC = AverageOverIPz(scale,scale->GetName(),1,realZ,0,0)));
   scaleC->SetMarkerColor(kBlack);
   scaleC->SetMarkerColor(kGray);
   scaleC->SetMarkerStyle(31);
@@ -1983,10 +2004,10 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   outDir->cd();
   all->Write();
   ratios->Write();
-  realB   ->SetDirectory(full);
-  simB    ->SetDirectory(full);
-  simA    ->SetDirectory(full);
-  fiducial->SetDirectory(full);
+  if (realB) realB   ->SetDirectory(full);
+  if (simB)  simB    ->SetDirectory(full);
+  /*      */ simA    ->SetDirectory(full);
+  /*      */ fiducial->SetDirectory(full);
 
   outParent->cd();
 

@@ -109,6 +109,7 @@ struct TrackletAODTrain : public TrainSetup
     fRailway->LoadSource("AliAODSimpleHeader.C");
     fRailway->LoadSource("AliSimpleHeaderTask.C");    
     fRailway->LoadSource("AliAODTracklet.C");
+    fRailway->LoadSource("AliTrackletWeights.C");
     fRailway->LoadSource("AliTrackletAODUtils.C");
     fRailway->LoadSource("AliTrackletAODTask.C");
 

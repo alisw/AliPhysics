@@ -193,7 +193,10 @@ struct SysErrorAdder
     ModError(gse, id, kHadronFill, l);
     return id;
   }
-  virtual const char* MakeName() const { return GetTriggerString(); } 
+  virtual const char* MakeName(Double_t eff) const
+  {
+    return GetTriggerString();
+  } 
   /** 
    * @return The systematic error from merging 
    */
@@ -243,7 +246,7 @@ struct SysErrorAdder
     reac.Append(" --> CHARGED X");
     
     GraphSysErr* gse = new GraphSysErr(10);
-    gse->SetName(MakeName());
+    gse->SetName(MakeName(eff));
     gse->SetSumLineColor(kRed+2);
     gse->SetSumLineWidth(2);
     gse->SetSumTitle("All errors");
@@ -263,7 +266,7 @@ struct SysErrorAdder
     gse->SetKey("title", "Systematic study of dNch/deta over widest "
 		"possible eta region at the LHC");
     gse->SetKey("author", "CHRISTENSEN");
-    gse->SetKey("comment", "We present dNch/deta over widest "
+    gse->SetKey("abstract", "We present dNch/deta over widest "
 		"possible eta region at the LHC");
     gse->SetKey("dscomment", "The pseudo-rapidity density of charged particle");
     gse->AddQualifier(Form("SQRT(S)%s IN GEV",
@@ -302,6 +305,16 @@ struct SysErrorAdder
     }
     return gse;
   }
+  /** 
+   * Create a systematic uncertainty adder 
+   * 
+   * @param t Trigger type 
+   * @param s System type 
+   * @param e Collision energy 
+   * @param c Centrality method
+   * 
+   * @return Newly created object 
+   */
   static SysErrorAdder* Create(const TString& t,
 			       const TString& s,
 			       UShort_t       e,
@@ -408,7 +421,7 @@ struct INELGt0Adder : public SysErrorAdder
     case 13000:  fLow = fHigh = 0.023; break;
     }    
   }
-  const char* MakeName() const { return "INELGt0"; }
+  const char* MakeName(Double_t) const { return "INELGt0"; }
   /** 
    * Get trigger systematic error 
    * 
@@ -458,6 +471,11 @@ struct NSDAdder : public SysErrorAdder
       }
     }
   }
+  const char* MakeName(Double_t e) const
+  {
+    if (e < 1e-3 || TMath::Abs(e - 1) < 1e-3) return "V0AND";
+    return "NSD";
+  }
   /** 
    * Get trigger systematic error 
    * 
@@ -470,6 +488,10 @@ struct NSDAdder : public SysErrorAdder
   }
   Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
   {
+    if (TString(gse->GetName()).EqualTo("V0AND")) {
+      gse->AddQualifier("TRIGGER", "V0AND");
+      return -1;
+    }
     gse->AddQualifier("TRIGGER", "NSD");
     return SysErrorAdder::MakeTrigger(gse, l);
   }
