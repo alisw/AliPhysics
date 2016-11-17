@@ -145,6 +145,8 @@ AliMultSelectionTask::AliMultSelectionTask()
       fAmplitude_V0CADC   (0),
       fnSPDClusters(0),
       fnTracklets(0),
+      fnTracklets08(0),
+      fnTracklets15(0),
       fnSPDClusters0(0),
       fnSPDClusters1(0),
       fnContributors(0),
@@ -262,6 +264,8 @@ AliMultSelectionTask::AliMultSelectionTask(const char *name, TString lExtraOptio
       fAmplitude_V0CADC   (0),
       fnSPDClusters(0),
       fnTracklets(0),
+      fnTracklets08(0),
+      fnTracklets15(0),
       fnSPDClusters0(0),
       fnSPDClusters1(0),
       fnContributors(0),
@@ -421,6 +425,11 @@ void AliMultSelectionTask::UserCreateOutputObjects()
 
     fnTracklets = new AliMultVariable("fnTracklets");
     fnTracklets ->SetIsInteger( kTRUE );
+    fnTracklets08 = new AliMultVariable("fnTracklets08");
+    fnTracklets08 ->SetIsInteger( kTRUE );
+    fnTracklets15 = new AliMultVariable("fnTracklets15");
+    fnTracklets15 ->SetIsInteger( kTRUE );
+    
     fRefMultEta5 = new AliMultVariable("fRefMultEta5");
     fRefMultEta5 ->SetIsInteger( kTRUE );
     fRefMultEta8 = new AliMultVariable("fRefMultEta8");
@@ -484,6 +493,8 @@ void AliMultSelectionTask::UserCreateOutputObjects()
     fInput->AddVariable( fnSPDClusters0 );
     fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets );
+    fInput->AddVariable( fnTracklets08 );
+    fInput->AddVariable( fnTracklets15 );
     fInput->AddVariable( fRefMultEta5 );
     fInput->AddVariable( fRefMultEta8 );
     fInput->AddVariable( fMultiplicity_ADA );
@@ -1176,6 +1187,10 @@ void AliMultSelectionTask::UserExec(Option_t *)
 
     //Integer Estimators
     fnTracklets->SetValueInteger(lVevent->GetMultiplicity()->GetNumberOfTracklets());
+    //Tracklets in specific eta windows
+    fnTracklets08->SetValueInteger(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 0.8));
+    fnTracklets15->SetValueInteger(AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)lVevent, AliESDtrackCuts::kTracklets, 1.5));
+    
     fnSPDClusters->SetValueInteger(lVevent->GetNumberOfITSClusters(0) + lVevent->GetNumberOfITSClusters(1));
     fnSPDClusters0 -> SetValueInteger(lVevent->GetNumberOfITSClusters(0));
     fnSPDClusters1 -> SetValueInteger(lVevent->GetNumberOfITSClusters(1));

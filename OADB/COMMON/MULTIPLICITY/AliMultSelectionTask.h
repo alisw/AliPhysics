@@ -190,6 +190,8 @@ private:
     AliMultVariable *fnSPDClusters0;
     AliMultVariable *fnSPDClusters1;
     AliMultVariable *fnTracklets; //tracklet estimator
+    AliMultVariable *fnTracklets08; //tracklet estimator
+    AliMultVariable *fnTracklets15; //tracklet estimator
     AliMultVariable *fRefMultEta5; //tracklet estimator
     AliMultVariable *fRefMultEta8; //tracklet estimator
     //AD Related
