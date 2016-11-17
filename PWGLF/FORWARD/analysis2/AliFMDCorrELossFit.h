@@ -331,6 +331,38 @@ public:
      * this object, and must clean it up.
      */
     TF1* GetF1(Int_t i=0, Double_t max=20) const;
+    /* @} */
+    /** 
+     * @{ 
+     * @name Finding cuts 
+     */
+    /** 
+     * Get MPV fraction cut, like @f$ f \Delta@f$ 
+     *
+     * @param f Fraction 
+     */
+    Double_t GetMpvCut(Double_t f) const;
+    /** 
+     * Get Xi width cut, like @f$ \Delta - f\xi@f$ 
+     *
+     * @param f scalar 
+     */
+    Double_t GetXiCut(Double_t f) const;
+    /** 
+     * Get Xi and sigma width cut, like @f$ \Delta - f(\xi+\sigma)@f$ 
+     *
+     * @param f scalar 
+     */
+    Double_t GetXiSigmaCut(Double_t f) const;
+    /** 
+     * Get average Xi and sigma width cut, like @f$ \Delta -
+     * f\left(\frac{\xi/\delta^2_{\xi}+\sigma/\delta^2_{\sigma}}{1/\delta^2_{\xi}+1/\delta^2_{\sigma}})@f$
+     * - that is, the average of @f$\xi@f$ and @f$\sigma@f$ weighted
+     * by the uncertainties.
+     *
+     * @param f scalar 
+     */
+    Double_t GetAvgXiSigmaCut(Double_t f) const;
     /** 
      * Find the x value that corresponds to a (normalized) probability
      * of @a low or less.  That is, we can use this to say: "Give me
@@ -398,23 +430,6 @@ public:
      * @return 
      */
     const Char_t* GetName() const;
-    /** 
-     * Calculate the lower bound 
-     * 
-     * @param f             Width factor
-     * @param includeSigma  Whether to include sigma
-     * 
-     * @return @f$ \Delta - f (\xi + \sigma)@f$
-     */
-    Double_t GetLowerBound(Double_t f, Bool_t includeSigma) const;
-    /** 
-     * Calculate the lower bound 
-     * 
-     * @param f             fraction of @f$\Delta@f$
-     * 
-     * @return @f$ f\Delta@f$
-     */
-    Double_t GetLowerBound(Double_t f) const;
     /** 
      * Calculate the quality 
      * 
@@ -636,88 +651,74 @@ public:
 
   /** 
    * @{ 
-   * @name Lower bounds on fits 
+   * @name Finding cuts 
    */
   /** 
-   * Get the lower validity bound of the fit. 
-   * 
+   * Get MPV fraction cut, like @f$ f \Delta@f$ 
+   *
+   * @param f Fraction 
+   */
+  Double_t GetMpvCut(UShort_t d,
+		     Char_t   r,
+		     Int_t    etaBin,
+		     Double_t f) const;
+  /** 
+   * Get Xi width cut, like @f$ \Delta - f\xi@f$ 
+   *
    * @param d            Detector
    * @param r            Ring
    * @param etaBin       Eta bin (1-based)
-   * @param f            Fraction of @f$\Delta_{mp}@f$
-   * 
-   * @return @f$ f\Delta_{mp}@f$ 
+   * @param f            scalar 
    */
-  Double_t GetLowerBound(UShort_t d, Char_t r, Int_t etaBin, 
+  Double_t GetXiCut(UShort_t d,
+		    Char_t   r,
+		    Int_t    etaBin,
+		    Double_t f) const;
+  /** 
+   * Get Xi and sigma width cut, like @f$ \Delta - f(\xi+\sigma)@f$ 
+   *
+   * @param d            Detector
+   * @param r            Ring
+   * @param etaBin       Eta bin (1-based)
+   * @param f            scalar 
+   */
+  Double_t GetXiSigmaCut(UShort_t d,
+			 Char_t   r,
+			 Int_t    etaBin,
 			 Double_t f) const;
   /** 
-   * Get the lower validity bound of the fit.
-   * 
+   * Get average Xi and sigma width cut, like @f$ \Delta -
+   * f\left(\frac{\xi/\delta^2_{\xi}+\sigma/\delta^2_{\sigma}}{1/\delta^2_{\xi}+1/\delta^2_{\sigma}})@f$
+   * - that is, the average of @f$\xi@f$ and @f$\sigma@f$ weighted
+   * by the uncertainties.
+   *
    * @param d            Detector
    * @param r            Ring
-   * @param eta          Eta value
-   * @param f            Fraction of @f$\Delta_{mp}@f$
-   * 
-   * @return @f$ f\Delta_{mp}@f$ 
+   * @param etaBin       Eta bin (1-based)
+   * @param f            scalar 
    */
-  Double_t GetLowerBound(UShort_t d, Char_t r, Double_t eta, 
-			 Double_t f) const;
+  Double_t GetAvgXiSigmaCut(UShort_t d,
+			    Char_t   r,
+			    Int_t    etaBin,
+			    Double_t f) const;
   /** 
-   * Get the lower validity bound of the fit. 
+   * Find the x value that corresponds to a (normalized) probability
+   * of @a low or less.  That is, we can use this to say: "Give me
+   * the x value under which it is unlikely that a particle gave a
+   * signal".
    * 
    * @param d            Detector
    * @param r            Ring
    * @param etaBin       Eta bin (1-based)
-   * @param p            Probability cut
-   * @param dummy        Not used
+   * @param f            scalar 
    * 
-   * @return @f$ x@f$ for which @f$ P(x>p)@f$
+   * @return Cut value, or 1000 in case of problems 
    */
-  Double_t GetLowerBound(UShort_t d, Char_t r, Int_t etaBin, 
-			 Double_t p, Bool_t dummy) const;
-  /** 
-   * Get the lower validity bound of the fit.
-   * 
-   * @param d            Detector
-   * @param r            Ring
-   * @param eta          Eta value
-   * @param p            Probability cut
-   * @param dummy        Not used
-   * 
-   * @return @f$ x@f$ for which @f$ P(x>p)@f$
-   */
-  Double_t GetLowerBound(UShort_t d, Char_t r, Double_t eta, 
-			 Double_t p, Bool_t dummy) const;
-  /** 
-   * Get the lower validity bound of the fit
-   * 
-   * @param d            Detector
-   * @param r            Ring
-   * @param etaBin       Eta bin (1-based)
-   * @param f            Factor on xi (and sigma)
-   * @param showErrors   Show errors
-   * @param includeSigma Whether to include sigma 
-   * 
-   * @return @f$ \Delta_{mp} - f(\xi+\sigma)@f$ 
-   */
-  Double_t GetLowerBound(UShort_t d, Char_t r, Int_t etaBin, 
-			 Double_t f, Bool_t showErrors,
-			 Bool_t includeSigma) const;
-  /** 
-   * Get the lower validity bound of the fit
-   * 
-   * @param d            Detector
-   * @param r            Ring
-   * @param eta          Eta value
-   * @param f            Factor on xi (and sigma)
-   * @param showErrors   Show errors
-   * @param includeSigma Whether to include sigma 
-   * 
-   * @return @f$ \Delta_{mp} - f(\xi+\sigma)@f$ 
-   */
-  Double_t GetLowerBound(UShort_t d, Char_t r, Double_t eta, 
-			 Double_t f, Bool_t showErrors,
-			 Bool_t includeSigma) const;
+  Double_t GetProbabilityCut(UShort_t d,
+			     Char_t   r,
+			     Int_t    etaBin,
+			     Double_t f) const;
+
   /** 
    * Calculate and return the overall quality of this correction
    * object. The quality is either good or bad.  The quality of the

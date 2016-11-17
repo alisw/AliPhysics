@@ -454,42 +454,6 @@ AliFMDCorrELossFit::ELossFit::GetF1(Int_t i, Double_t max) const
   
   return ret;
 }
-//____________________________________________________________________
-Double_t
-AliFMDCorrELossFit::ELossFit::FindProbabilityCut(Double_t low) const
-{
-  Double_t ret = 1000;
-  TF1*     f   = 0;
-  TGraph*  g   = 0;
-  try {
-    if (!(f = GetF1(1,5))) // First landau up to Delta/Delta_{mip}=5
-      throw TString("Didn't TF1 object");
-    if (!(g = new TGraph(f, "i")))
-      throw TString("Failed to integrate function");
-
-    Int_t    n     = g->GetN();
-    Double_t total = g->GetY()[n-1];
-    if (total <= 0) 
-      throw TString::Format("Invalid integral: %lf", total);
-
-    for (Int_t i = 0; i < n; i++) { 
-      Double_t prob = g->GetY()[i] / total;
-      if (prob > low) {
-	ret = g->GetX()[i];
-	break;
-      }
-    }
-    if (ret >= 1000) 
-      throw TString::Format("Couldn't find x value for cut %lf", low);
-  }
-  catch (const TString& str) {
-    AliWarningF("%s: %s", GetName(), str.Data());
-  }
-  if (f) delete f;
-  if (g) delete g;
-  return ret;
-}
-  
 
 //____________________________________________________________________
 const Char_t*
@@ -682,22 +646,66 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
 
 //____________________________________________________________________
 Double_t
-AliFMDCorrELossFit::ELossFit::GetLowerBound(Double_t f) const
+AliFMDCorrELossFit::ELossFit::GetMpvCut(Double_t f) const
 {
-  // 
-  // Return 
-  //    Delta * f
   return f * fDelta;
 }
 //____________________________________________________________________
 Double_t
-AliFMDCorrELossFit::ELossFit::GetLowerBound(Double_t f, 
-					    Bool_t includeSigma) const
+AliFMDCorrELossFit::ELossFit::GetXiCut(Double_t f) const
 {
-  // 
-  // Return 
-  //    Delta - f * (xi + sigma)
-  return fDelta - f * (fXi + (includeSigma ? fSigma : 0));
+  return fDelta - f * fXi;
+}
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::ELossFit::GetXiSigmaCut(Double_t f) const
+{
+  return fDelta - f * (fXi+fSigma);
+}
+
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::ELossFit::GetAvgXiSigmaCut(Double_t f) const
+{
+  Double_t sum = fXi / (fEXi*fEXi) + fSigma / (fESigma+fESigma);
+  Double_t nor = 1   / (fEXi*fEXi) + 1      / (fESigma+fESigma);
+  return fDelta - f * sum / nor;
+}
+
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::ELossFit::FindProbabilityCut(Double_t low) const
+{
+  Double_t ret = 1000;
+  TF1*     f   = 0;
+  TGraph*  g   = 0;
+  try {
+    if (!(f = GetF1(1,5))) // First landau up to Delta/Delta_{mip}=5
+      throw TString("Didn't TF1 object");
+    if (!(g = new TGraph(f, "i")))
+      throw TString("Failed to integrate function");
+
+    Int_t    n     = g->GetN();
+    Double_t total = g->GetY()[n-1];
+    if (total <= 0) 
+      throw TString::Format("Invalid integral: %lf", total);
+
+    for (Int_t i = 0; i < n; i++) { 
+      Double_t prob = g->GetY()[i] / total;
+      if (prob > low) {
+	ret = g->GetX()[i];
+	break;
+      }
+    }
+    if (ret >= 1000) 
+      throw TString::Format("Couldn't find x value for cut %lf", low);
+  }
+  catch (const TString& str) {
+    AliWarningF("%s: %s", GetName(), str.Data());
+  }
+  if (f) delete f;
+  if (g) delete g;
+  return ret;
 }
 
 //____________________________________________________________________
@@ -1183,72 +1191,59 @@ AliFMDCorrELossFit::GetOrMakeRingArray(UShort_t d, Char_t r)
 
 //____________________________________________________________________
 Double_t
-AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
-				  Double_t f) const
+AliFMDCorrELossFit::GetMpvCut(UShort_t  d,
+			     Char_t    r,
+			     Int_t     etabin,
+			     Double_t  f) const
 {
   ELossFit* fit = FindFit(d, r, etabin, 20);
   if (!fit) return -1024;
-  return fit->GetLowerBound(f);
-}
-//____________________________________________________________________
-Double_t
-AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Double_t eta,
-				  Double_t f) const
-{
-  Int_t bin = FindEtaBin(eta);
-  if (bin <= 0) return -1024;
-  return GetLowerBound(d, r, Int_t(bin), f);
-}
-//____________________________________________________________________
-Double_t
-AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
-				  Double_t p, Bool_t) const
-{
-  DGUARD(fDebug, 10, "Get probability cut for FMD%d%c etabin=%d", d, r, etabin);
-  ELossFit* fit = FindFit(d, r, etabin, 20);
-  if (!fit) return -1024;
-  return fit->FindProbabilityCut(p);
-}
-//____________________________________________________________________
-Double_t
-AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Double_t eta,
-				  Double_t p, Bool_t dummy) const
-{
-  DGUARD(fDebug, 10, "Get probability cut for FMD%d%c eta=%8.4f", d, r, eta);
-  Int_t bin = FindEtaBin(eta);
-  DMSG(fDebug, 10, "bin=%4d", bin);
-  if (bin <= 0) return -1024;
-  return GetLowerBound(d, r, Int_t(bin), p, dummy);
-}
-//____________________________________________________________________
-Double_t
-AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Int_t etabin,
-				  Double_t f, Bool_t showErrors, 
-				  Bool_t includeSigma) const
-{
-  ELossFit* fit = FindFit(d, r, etabin, 20);
-  if (!fit) { 
-    if (showErrors) {
-      AliWarning(Form("No fit for FMD%d%c @ etabin=%d", d, r, etabin));
-    }
-    return -1024;
-  }
-  return fit->GetLowerBound(f, includeSigma);
+  return fit->GetMpvCut(f);
 }
 
 //____________________________________________________________________
 Double_t
-AliFMDCorrELossFit::GetLowerBound(UShort_t  d, Char_t r, Double_t eta,
-				  Double_t f, Bool_t showErrors, 
-				  Bool_t includeSigma) const
+AliFMDCorrELossFit::GetXiCut(UShort_t  d,
+			     Char_t    r,
+			     Int_t     etabin,
+			     Double_t  f) const
 {
-  Int_t bin = FindEtaBin(eta);
-  if (bin <= 0) { 
-    if (showErrors)
-      AliError(Form("eta=%f out of bounds for FMD%d%c", eta, d, r));
-    return -1024;
-  }
-  return GetLowerBound(d, r, bin, f, showErrors, includeSigma);
+  ELossFit* fit = FindFit(d, r, etabin, 20);
+  if (!fit) return -1024;
+  return fit->GetXiCut(f);
+}
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetXiSigmaCut(UShort_t  d,
+				  Char_t    r,
+				  Int_t     etabin,
+				  Double_t  f) const
+{
+  ELossFit* fit = FindFit(d, r, etabin, 20);
+  if (!fit) return -1024;
+  return fit->GetXiSigmaCut(f);
+}
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetAvgXiSigmaCut(UShort_t  d,
+				     Char_t    r,
+				     Int_t     etabin,
+				     Double_t  f) const
+{
+  ELossFit* fit = FindFit(d, r, etabin, 20);
+  if (!fit) return -1024;
+  return fit->GetAvgXiSigmaCut(f);
+}
+//____________________________________________________________________
+Double_t
+AliFMDCorrELossFit::GetProbabilityCut(UShort_t  d,
+				      Char_t    r,
+				      Int_t     etabin,
+				      Double_t  f) const
+{
+  ELossFit* fit = FindFit(d, r, etabin, 20);
+  if (!fit) return -1024;
+  return fit->FindProbabilityCut(f);
 }
 
 //____________________________________________________________________

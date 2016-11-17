@@ -118,7 +118,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   fWeightedSum->SetFillColor(kBlue+1);
   fWeightedSum->SetXTitle("#sum_{i} i a_{i} f_{i}(#Delta)");
   fCorrections  = new TH1D("corrections", "Distribution of corrections", 
-			   100, 0, 10);
+			   60, 0, 1.2);
   fCorrections->SetFillColor(kBlue+1);
   fCorrections->SetXTitle("correction");
 
@@ -514,8 +514,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  if (c > 0) n /= c;
 	  // rh->fEvsM->Fill(mult,n);
 	  // rh->fEtaVsM->Fill(eta, n);
-	  rh->fCorr->Fill(eta, c);
-
+	  rh->fCorr  ->Fill(eta, c);
+	  
 	  // --- Accumulate Poisson statistics -----------------------
 	  Bool_t hit = (n > fHitThreshold && c > 0);
 	  if (hit) {
@@ -526,6 +526,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	      rh->fEtaBefore->Fill(oldEta);
 	      rh->fEtaAfter->Fill(oldEta);	      
 	    }
+	    rh->fSignal->Fill(eta, mult);
 	  }
 	  rh->fPoisson.Fill(t,s,hit,1./c);
 	  h->Fill(eta,phi,n);
@@ -1247,6 +1248,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
     // fEtaVsN(0),
     // fEtaVsM(0),
     fCorr(0),
+    fSignal(0),
     fDensity(0),
     fELossVsPoisson(0),
     fDiffELossPoisson(0),
@@ -1279,6 +1281,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
     // fEtaVsN(0),
     // fEtaVsM(0),
     fCorr(0),
+    fSignal(0),
     fDensity(0),
     fELossVsPoisson(0),
     fDiffELossPoisson(0),
@@ -1339,6 +1342,11 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fCorr->SetLineColor(Color());
   fCorr->SetFillColor(Color());
 
+  fSignal = new TH2D("signal", "Signal distribution", 200, -4, 6, 1000, 0, 10);
+  fSignal->SetXTitle("#eta");
+  fSignal->SetYTitle("Signal");
+  fSignal->SetDirectory(0);
+  
   fDensity = new TH2D("inclDensity", "Inclusive N_{ch} density",
 		      200, -4, 6, (r == 'I' || r == 'i' ? 20 : 40), 
 		      0, 2*TMath::Pi());
@@ -1459,6 +1467,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
     // fEtaVsN(o.fEtaVsN),
     // fEtaVsM(o.fEtaVsM),
     fCorr(o.fCorr),
+    fSignal(o.fSignal),
     fDensity(o.fDensity),
     fELossVsPoisson(o.fELossVsPoisson),
     fDiffELossPoisson(o.fDiffELossPoisson),
@@ -1506,6 +1515,7 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   // if (fEtaVsN)           delete fEtaVsN;
   // if (fEtaVsM)           delete fEtaVsM;
   if (fCorr)             delete fCorr;
+  if (fSignal)           delete fSignal;
   if (fDensity)          delete fDensity;
   if (fELossVsPoisson)   delete fELossVsPoisson;
   if (fDiffELossPoisson) delete fDiffELossPoisson;
@@ -1521,23 +1531,24 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   // fEvsM             = static_cast<TH2D*>(o.fEvsM->Clone());
   // fEtaVsN           = static_cast<TProfile*>(o.fEtaVsN->Clone());
   // fEtaVsM           = static_cast<TProfile*>(o.fEtaVsM->Clone());
-  fCorr             = static_cast<TProfile*>(o.fCorr->Clone());
-  fDensity          = static_cast<TH2D*>(o.fDensity->Clone());
-  fELossVsPoisson   = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
-  fDiffELossPoisson = static_cast<TH1D*>(o.fDiffELossPoisson->Clone());
+  fCorr                = static_cast<TProfile*>(o.fCorr->Clone());
+  fSignal              = static_cast<TH2D*>(o.fSignal->Clone());
+  fDensity             = static_cast<TH2D*>(o.fDensity->Clone());
+  fELossVsPoisson      = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
+  fDiffELossPoisson    = static_cast<TH1D*>(o.fDiffELossPoisson->Clone());
   fELossVsPoissonOut   = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
   fDiffELossPoissonOut = static_cast<TH1D*>(o.fDiffELossPoisson->Clone());
   fOutliers            = static_cast<TH1D*>(o.fOutliers->Clone());
-  fPoisson          = o.fPoisson;
-  fELoss            = static_cast<TH1D*>(o.fELoss->Clone());
-  fELossUsed        = static_cast<TH1D*>(o.fELossUsed->Clone());
-  fTotal            = static_cast<TH1D*>(o.fTotal->Clone());
-  fGood             = static_cast<TH1D*>(o.fGood->Clone());
-  fPhiAcc           = static_cast<TH2D*>(o.fPhiAcc->Clone());
-  fPhiBefore        = static_cast<TH1D*>(o.fPhiBefore->Clone());
-  fPhiAfter         = static_cast<TH1D*>(o.fPhiAfter->Clone());
-  fEtaBefore        = static_cast<TH1D*>(o.fEtaBefore->Clone());
-  fEtaAfter         = static_cast<TH1D*>(o.fEtaAfter->Clone());
+  fPoisson             = o.fPoisson;
+  fELoss               = static_cast<TH1D*>(o.fELoss->Clone());
+  fELossUsed           = static_cast<TH1D*>(o.fELossUsed->Clone());
+  fTotal               = static_cast<TH1D*>(o.fTotal->Clone());
+  fGood                = static_cast<TH1D*>(o.fGood->Clone());
+  fPhiAcc              = static_cast<TH2D*>(o.fPhiAcc->Clone());
+  fPhiBefore           = static_cast<TH1D*>(o.fPhiBefore->Clone());
+  fPhiAfter            = static_cast<TH1D*>(o.fPhiAfter->Clone());
+  fEtaBefore           = static_cast<TH1D*>(o.fEtaBefore->Clone());
+  fEtaAfter            = static_cast<TH1D*>(o.fEtaAfter->Clone());
   return *this;
 }
 //____________________________________________________________________
@@ -1592,6 +1603,7 @@ AliFMDDensityCalculator::RingHistos::CreateOutputObjects(TList* dir)
   // d->Add(fEtaVsN);
   // d->Add(fEtaVsM);
   d->Add(fCorr);
+  d->Add(fSignal);
   d->Add(fDensity);
   d->Add(fELossVsPoisson);
   d->Add(fELossVsPoissonOut);

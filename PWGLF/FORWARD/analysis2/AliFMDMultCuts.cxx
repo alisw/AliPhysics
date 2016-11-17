@@ -161,18 +161,25 @@ AliFMDMultCuts::GetMultCut(UShort_t d, Char_t r, Int_t ieta,
     switch (fMethod) { 
     case kMPVFraction:
       // Return fMPVFraction * mpv 
-      rcut = fits->GetLowerBound(d, r, ieta, param); break;
+      // rcut = fits->GetLowerBound(d, r, ieta, param); break;
+      rcut = fits->GetMpvCut(d,r,ieta,param); break;
     case kLandauWidth:
       // Return MPV - fNXi * xi
-      rcut = fits->GetLowerBound(d, r, ieta, param, errors,false);
+      // rcut = fits->GetLowerBound(d, r, ieta, param, errors,false);
+      rcut = fits->GetXiCut(d, r, ieta, param);
       break;
     case kLandauSigmaWidth:
-      // Return MPV - fNXi * xi
-      rcut = fits->GetLowerBound(d, r, ieta, param, errors,true);
+      // Return MPV - fNXi * (xi+sigma)
+      // rcut = fits->GetLowerBound(d, r, ieta, param, errors,true);
+      rcut = fits->GetXiSigmaCut(d, r, ieta, param);
       break;
     case kProbability:
       // Return probability cut 
-      rcut = fits->GetLowerBound(d, r, ieta, param, true); break;
+      // rcut = fits->GetLowerBound(d, r, ieta, param, true); break;
+      rcut = fits->GetProbabilityCut(d, r, ieta, param); break;
+    case kLandauSigmaAvg:
+      // Return MPV - fNxi*WeightedAverage(xi,sigma)
+      rcut = fits->GetAvgXiSigmaCut(d,r,ieta,param); break;
     default:
       // Return lower fit boundary
       rcut = fits->GetLowCut(); break;

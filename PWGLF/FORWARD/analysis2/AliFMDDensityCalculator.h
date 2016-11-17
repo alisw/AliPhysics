@@ -447,6 +447,7 @@ protected:
     // TProfile* fEtaVsN;         // Average uncorrected Nch vs eta
     // TProfile* fEtaVsM;         // Average corrected Nch vs eta
     TProfile* fCorr;           // Average correction vs eta
+    TH2D*     fSignal;         // Signal distribution vs eta 
     TH2D*     fDensity;        // Distribution inclusive Nch
     TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
     TH1D*     fDiffELossPoisson;// Relative difference to Poisson
@@ -504,7 +505,7 @@ protected:
   Double_t               fMaxOutliers; // Maximum ratio of outlier bins 
   Double_t               fOutlierCut;  // Maximum relative diviation 
 
-  ClassDef(AliFMDDensityCalculator,15); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,16); // Calculate Nch density 
 };
 
 #endif

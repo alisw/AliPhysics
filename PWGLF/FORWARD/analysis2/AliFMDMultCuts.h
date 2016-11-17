@@ -44,7 +44,8 @@ public:
     kFitRange, 
     kLandauWidth,
     kLandauSigmaWidth,
-    kProbability
+    kProbability,
+    kLandauSigmaAvg    
   };
   enum {
     kBad = 1024
