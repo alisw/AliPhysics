@@ -122,9 +122,9 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
      v0Filter->AddCuts(esdV0Cuts);
 
      esdfilter->SetV0Filter(v0Filter);
+     esdfilter->SetAddPCMv0s(addPCMv0s);
    }  
 
-   esdfilter->SetAddPCMv0s(addPCMv0s);
    // Enable writing of Muon AODs
    esdmuonfilter->SetWriteMuonAOD(writeMuonAOD);
    
@@ -135,7 +135,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    mgr->ConnectOutput (esdfilter,  0, mgr->GetCommonOutputContainer());
    mgr->ConnectInput  (esdmuonfilter, 0, mgr->GetCommonInputContainer());
 
-   
+  if (addPCMv0s){
     TObjArray *allContainers = mgr->GetContainers();
     Int_t containersSize = allContainers->GetSize();
     TString containerName;
@@ -159,6 +159,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
     }
     mgr->ConnectInput(esdfilter, 1, cinputPCMv0sA);
     mgr->ConnectInput(esdfilter, 2, cinputPCMv0sB);
+    mgr->ConnectOutput(esdfilter ,1, mgr->CreateContainer("v0ConsistencyChecks", TList::Class(), AliAnalysisManager::kOutputContainer, "PCMv0Checks.root")) ;
+  }
    
    if (useKineFilter) {
       mgr->ConnectInput  (kinefilter,  0, mgr->GetCommonInputContainer());

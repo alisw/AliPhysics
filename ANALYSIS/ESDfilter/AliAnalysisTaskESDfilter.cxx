@@ -133,7 +133,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fIsMuonCaloPass(kFALSE),
   fAddPCMv0s(kFALSE),
   fbitfieldPCMv0sA(NULL),
-  fbitfieldPCMv0sB(NULL)
+  fbitfieldPCMv0sB(NULL),
+  fv0Histos(NULL),
+  fHistov0List(NULL)
 {
   // Default constructor
   fV0Cuts[0] =  33.   ;   // max allowed chi2
@@ -215,7 +217,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fIsMuonCaloPass(kFALSE),
   fAddPCMv0s(kFALSE),
   fbitfieldPCMv0sA(NULL),
-  fbitfieldPCMv0sB(NULL)
+  fbitfieldPCMv0sB(NULL),
+  fv0Histos(NULL),
+  fHistov0List(NULL)
 {
   // Constructor
 
@@ -237,6 +241,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fCascadeCuts[7] = 100.   ; // max radius of the fiducial volume
   DefineInput(1,TBits::Class());	//Bit field for pcm v0s  OfflineV0Finder
   DefineInput(2,TBits::Class());	//Bit field for pcm v0s  On-FlyV0Finder
+  DefineOutput(1,TList::Class());	//TList containing PCM v0 histos for consistency checks
 }
 
 AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter()
@@ -250,7 +255,23 @@ void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
 {
   //
   // Create Output Objects conenct filter to outputtree
-  // 
+  //
+  if (fAddPCMv0s){
+    fHistov0List = new TList();
+    fHistov0List->SetName("PCMv0Checks");
+    fv0Histos = new TH1D("v0CheckHisto","",8,1,9);
+    fv0Histos->GetXaxis()->SetBinLabel(1,"All PCM On-Fly");
+    fv0Histos->GetXaxis()->SetBinLabel(2,"All PCM Offline");
+    fv0Histos->GetXaxis()->SetBinLabel(3,"PCM On-Fly & v0filter");
+    fv0Histos->GetXaxis()->SetBinLabel(4,"PCM Offline & v0filter");
+    fv0Histos->GetXaxis()->SetBinLabel(5,"PCM On-Fly & v0 cascades");
+    fv0Histos->GetXaxis()->SetBinLabel(6,"PCM Offline & v0 cascades");
+    fv0Histos->GetXaxis()->SetBinLabel(7,"PCM On-Fly not selected by filter");
+    fv0Histos->GetXaxis()->SetBinLabel(8,"PCM Offline not selected by filter");
+    fHistov0List->Add(fv0Histos);
+    fHistov0List->SetOwner(kTRUE);
+  }
+  PostData(1,fHistov0List);
   if(OutputTree())
   {
     OutputTree()->GetUserInfo()->Add(fTrackFilter);
@@ -351,6 +372,7 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
     AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
   }   
   ConvertESDtoAOD();
+  PostData(1,fHistov0List);
 }
 
 //______________________________________________________________________________
@@ -905,11 +927,25 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
     fbitfieldPCMv0sA = (TBits*) GetInputData(1);
     fbitfieldPCMv0sB = (TBits*) GetInputData(2);
   }
-  UInt_t convertInt;
+  UInt_t posInt;
   
   for (Int_t nV0 = 0; nV0 < esd.GetNumberOfV0s(); ++nV0) {
-    if (fAddPCMv0s) {convertInt = (UInt_t) nV0;}
-    if (fUsedV0[nV0]) continue; // skip if already added to the AOD
+    if (fAddPCMv0s) {posInt = (UInt_t) nV0;}
+    if (fUsedV0[nV0]){
+	if(fbitfieldPCMv0sA){
+	  if(fbitfieldPCMv0sA->TestBitNumber(posInt) && posInt <= fbitfieldPCMv0sA->GetNbits()){
+	    fv0Histos->Fill(5);
+	    fv0Histos->Fill(1);
+	  }
+	}
+	if(fbitfieldPCMv0sB){
+	  if(fbitfieldPCMv0sB->TestBitNumber(posInt) && posInt <= fbitfieldPCMv0sB->GetNbits()){
+	    fv0Histos->Fill(6);
+	    fv0Histos->Fill(2);
+	  }
+	}
+      continue; // skip if already added to the AOD
+    }
     
     AliESDv0 *v0 = esd.GetV0(nV0);
     Int_t posFromV0 = v0->GetPindex();
@@ -928,19 +964,18 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
     UInt_t selectV0 = 0;
     
     //Add PCM V0s
-    if (fAddPCMv0s){
-      if(fbitfieldPCMv0sA){
-	if(fbitfieldPCMv0sA->TestBitNumber(convertInt) && convertInt<= fbitfieldPCMv0sA->GetNbits()){
-	  selectV0 = 2;
-	}
-      }
-      if(fbitfieldPCMv0sB){
-	if(fbitfieldPCMv0sB->TestBitNumber(convertInt) && convertInt<= fbitfieldPCMv0sB->GetNbits()){
-	  selectV0 = 2;
-	}
+    if(fbitfieldPCMv0sA){
+      if(fbitfieldPCMv0sA->TestBitNumber(posInt) && posInt <= fbitfieldPCMv0sA->GetNbits()){
+	selectV0 = 2;
+	fv0Histos->Fill(1);
       }
     }
-    
+    if(fbitfieldPCMv0sB){
+      if(fbitfieldPCMv0sB->TestBitNumber(posInt) && posInt <= fbitfieldPCMv0sB->GetNbits()){
+	selectV0 = 2;
+	fv0Histos->Fill(2);
+      }
+    }
     if (fV0Filter) {
       selectV0 |= fV0Filter->IsSelected(&v0objects);
       // this is a little awkward but otherwise the 
@@ -954,6 +989,23 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
       delete v0objects.RemoveAt(3); // esdVtx created via copy construct
       esdVtx = 0;
     }
+    
+      if (fbitfieldPCMv0sA){
+	if (selectV0==3 && fbitfieldPCMv0sA->TestBitNumber(posInt)){
+	  fv0Histos->Fill(3);
+	}
+	else if (selectV0==2 && fbitfieldPCMv0sA->TestBitNumber(posInt)){
+	  fv0Histos->Fill(7);
+	}
+      }
+      if (fbitfieldPCMv0sB){
+	if (selectV0==3 && fbitfieldPCMv0sB->TestBitNumber(posInt)){
+	  fv0Histos->Fill(4);
+	}
+	else if (selectV0==2 && fbitfieldPCMv0sB->TestBitNumber(posInt)){
+	  fv0Histos->Fill(8);
+	}
+      }
     
     v0->GetXYZ(pos[0], pos[1], pos[2]);
     
