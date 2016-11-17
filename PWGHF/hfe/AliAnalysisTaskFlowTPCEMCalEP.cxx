@@ -393,6 +393,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     const AliAODVertex *pVtx = fAOD->GetPrimaryVertex();
     const AliAODVertex *spdVtx = fAOD->GetPrimaryVertexSPD();
     
+    Double_t pVtxZ = -999;
+    pVtxZ = pVtx->GetZ();
+    
     if (pVtx->GetNContributors()<2 || spdVtx->GetNContributors()<1) return; // one of vertices is missing
     
     double covTrc[6],covSPD[6];
@@ -404,6 +407,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
     if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
     
+    if(TMath::Abs(pVtxZ)>10) return;
     
     fNoEvents->Fill(0);
     
