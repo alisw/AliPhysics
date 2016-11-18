@@ -59,6 +59,14 @@ public:
   virtual ~AliAnalysisTaskEmcalClustersRef();
 
   /**
+   * Enable Sumw2 when creating the histograms. Attention: Enabling Sumw2
+   * will increase memory consumption significantly. Option should only be
+   * used in case histograms are filled with a weight.
+   * @param[in] doEnable If true Sumw2 is enabled for all histograms
+   */
+  void EnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
+
+  /**
    * Define type of energy used in the monitoring histograms
    * @param[in] edef type of energy definition
    */
@@ -143,41 +151,6 @@ protected:
    */
   void GetPatchBoundaries(TObject *o, Double_t *boundaries) const;
 
-  /**
-   * Select patch as offline simple (FEE) patch
-   * @param[in] o Patch to check
-   * @return True if the patch is an offline simple patch
-   */
-  bool IsOfflineSimplePatch(TObject *o) const;
-
-  /**
-   * Selection of patches in the DCAL acceptance
-   * @param[in] o Patch to check
-   * @return True if the patch is in the DCAL acceptance
-   */
-  bool SelectDCALPatch(TObject *o) const;
-
-  /**
-   * Selection of patches as single shower (gamma/Level0) patches
-   * @param[in] o Patch to check
-   * @return True if the patch is a single shower patch
-   */
-  bool SelectSingleShowerPatch(TObject *o) const;
-
-  /**
-   * Selection of jet patches
-   * @param[in] o Patch to check
-   * @return True if the patch is a jet patch
-   */
-  bool SelectJetPatch(TObject *o) const;
-
-  /**
-   * Get the energy of a trigger patch
-   * @param[in] o Patch to check
-   * @return Energy of the trigger patch
-   */
-  double GetPatchEnergy(TObject *o) const;
-
   void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, TList *triggerpatches);
 
   /**
@@ -207,6 +180,7 @@ protected:
   TString                             fCentralityEstimator;       ///< Centrality estimator (default: V0M for PbPb)
 
   EnergyDefinition_t                  fEnergyDefinition;          ///< Energy definition used for a given cluster
+  Bool_t                              fEnableSumw2;               ///< Enable sumw2 when creating histograms
 
 private:
 

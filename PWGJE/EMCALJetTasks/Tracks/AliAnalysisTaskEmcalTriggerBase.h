@@ -75,6 +75,14 @@ public:
   virtual ~AliAnalysisTaskEmcalTriggerBase();
 
   /**
+   * Enable / Disable histograms for the DCAL triggers. If true, DCAL trigger
+   * classes are added to the list of supported triggers and the online/offline
+   * trigger decision for DCAL triggers is evaluated.
+   * @param[in] doEnable If true DCAL triggers are enabled
+   */
+  void EnableDCALTriggers(Bool_t doEnable) { fEnableDCALTriggers = doEnable; }
+
+  /**
    * Set the name of the OADB container with the downscale factors.
    * Once it is available, downscale weights can be obtained via
    * ~~~{.cxx}
@@ -335,6 +343,7 @@ protected:
 
   Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
+  Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
 
 private:
   AliAnalysisTaskEmcalTriggerBase(const AliAnalysisTaskEmcalTriggerBase &);

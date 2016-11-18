@@ -43,13 +43,15 @@ namespace EMCalTriggerPtAnalysis {
 
 AliAnalysisTaskEmcalTriggerMultiplicity::AliAnalysisTaskEmcalTriggerMultiplicity():
     AliAnalysisTaskEmcalTriggerBase(),
-    fTrackSel(nullptr)
+    fTrackSel(nullptr),
+    fEnableSumw2(false)
 {
 }
 
 AliAnalysisTaskEmcalTriggerMultiplicity::AliAnalysisTaskEmcalTriggerMultiplicity(const char *name):
     AliAnalysisTaskEmcalTriggerBase(name),
-    fTrackSel(nullptr)
+    fTrackSel(nullptr),
+    fEnableSumw2(false)
 {
 }
 
@@ -60,21 +62,22 @@ AliAnalysisTaskEmcalTriggerMultiplicity::~AliAnalysisTaskEmcalTriggerMultiplicit
 
 void AliAnalysisTaskEmcalTriggerMultiplicity::CreateUserHistos(){
   std::vector<float> ptthresh = {0.1, 0.5, 1., 2., 5., 10.};
+  TString optionstring = fEnableSumw2 ? "s" : "";
   for(const auto &t : GetSupportedTriggers()){
     // Event counters
-    fHistos->CreateTH1(Form("hEventCount%s", t.Data()), Form("Event count trigger class %s", t.Data()), 1, 0.5, 1.5, "s");
-    fHistos->CreateTH1(Form("hVertexZ%s", t.Data()), Form("z-distribution of the primary vertex for trigger class %s", t.Data()), 200, -40., 40., "s");
+    fHistos->CreateTH1(Form("hEventCount%s", t.Data()), Form("Event count trigger class %s", t.Data()), 1, 0.5, 1.5, optionstring);
+    fHistos->CreateTH1(Form("hVertexZ%s", t.Data()), Form("z-distribution of the primary vertex for trigger class %s", t.Data()), 200, -40., 40., optionstring);
 
     // Multiplicity distributions
-    fHistos->CreateTH1(Form("VZEROAmult%s", t.Data()), Form("VZERO-A multiplicity distribution for trigger class %s", t.Data()), 1000, 0., 1000., "s");
-    fHistos->CreateTH1(Form("VZEROCmult%s", t.Data()), Form("VZERO-C multiplicity distribution for trigger class %s", t.Data()), 1000, 0., 1000., "s");
-    fHistos->CreateTH1(Form("TrackletMult%s", t.Data()), Form("SPD tracklet multiplcity for trigger class %s", t.Data()), 1000, 0., 1000., "s");
-    fHistos->CreateTH1(Form("EMCALClusterMult%s", t.Data()), Form("EMCAL cluster multiplcity for trigger class %s", t.Data()), 1000, 0., 1000., "s");
-    fHistos->CreateTH1(Form("EMCALEnergyMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 1000.);
-    fHistos->CreateTH1(Form("EMCALMeanMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 100.);
-    fHistos->CreateTH1(Form("EMCALMedianMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 100.);
+    fHistos->CreateTH1(Form("VZEROAmult%s", t.Data()), Form("VZERO-A multiplicity distribution for trigger class %s", t.Data()), 1000, 0., 1000., optionstring);
+    fHistos->CreateTH1(Form("VZEROCmult%s", t.Data()), Form("VZERO-C multiplicity distribution for trigger class %s", t.Data()), 1000, 0., 1000., optionstring);
+    fHistos->CreateTH1(Form("TrackletMult%s", t.Data()), Form("SPD tracklet multiplcity for trigger class %s", t.Data()), 1000, 0., 1000., optionstring);
+    fHistos->CreateTH1(Form("EMCALClusterMult%s", t.Data()), Form("EMCAL cluster multiplcity for trigger class %s", t.Data()), 1000, 0., 1000., optionstring);
+    fHistos->CreateTH1(Form("EMCALEnergyMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 1000., optionstring);
+    fHistos->CreateTH1(Form("EMCALMeanMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 100., optionstring);
+    fHistos->CreateTH1(Form("EMCALMedianMult%s", t.Data()), Form("EMCAL total energy for trigger class %s", t.Data()), 1000, 0., 100., optionstring);
      for(auto pt : ptthresh){
-      fHistos->CreateTH1(Form("TrackMult%d%s", static_cast<int>(pt * 10.), t.Data()), Form("Global track multiplicity for tracks with pt > %1.f GeV/c for trigger class %s", pt, t.Data()), 1000, 0., 1000., "s");
+      fHistos->CreateTH1(Form("TrackMult%d%s", static_cast<int>(pt * 10.), t.Data()), Form("Global track multiplicity for tracks with pt > %1.f GeV/c for trigger class %s", pt, t.Data()), 1000, 0., 1000., optionstring);
     }
   }
 }

@@ -45,6 +45,14 @@ public:
   virtual ~AliAnalysisTaskEmcalPatchesRef(){}
 
   /**
+   * Enable Sumw2 when creating the histograms. Attention: Enabling Sumw2
+   * will increase memory consumption significantly. Option should only be
+   * used in case histograms are filled with a weight.
+   * @param[in] doEnable If true Sumw2 is enabled for all histograms
+   */
+  void EnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
+
+  /**
    * Set centrality selection.
    * Note: Needs multiplicity task to run in front
    * @param[in] min Min. value of the centrality interval
@@ -123,6 +131,7 @@ protected:
   void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi, int col, int row);
 
   AliCutValueRange<double>            fCentralityRange;           ///< Range of accepted event centralities
+  Bool_t                              fEnableSumw2;               ///< Enable sumw2 during histogram creation
   Bool_t                              fRequestCentrality;         ///< Switch for request of centrality selection
   Double_t                            fEventCentrality;           //!<1! Event centrality
 
