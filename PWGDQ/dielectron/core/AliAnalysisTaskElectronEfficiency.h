@@ -16,11 +16,15 @@
 //#                                                         #
 //###########################################################
 /**
- Fills 3D histograms (mcPt, mcEta, mcPhi) for generated and reconstructed electrons.
+ Single efficiency: Fills 3D histograms (mcPt, mcEta, mcPhi) for generated and reconstructed electrons.
  Ratios of these for given acceptance regions give 3D track efficiencies, to be then used in a pair efficiency generator.
+ Desired electron candidates (leg & mother sources etc) are defined by adding an AliDielectronSignalMC.
  Cut instances are defined by adding AliAnalysisFilters via a Config file. Therefore also an LMEECutLib is supported.
  ---
  Additional functionalities:
+ ---
+ Pair efficiency: Fills 2D histograms (mee, ptee) for generated and reconstructed pairs, divided into sources with
+ same and different mother and heavy flavour. Uses same electron candidates as for single efficiency.
  ---
  Extraction of resolutions for p, pt, eta, theta, phi, opening angle.
  The cut setting should have wide acceptance cuts (pt, eta), but realistic track quality cuts.
@@ -89,6 +93,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetTriggerMask(ULong64_t mask)                      {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
   void          SetEventFilter(AliAnalysisCuts * const filter)      {fEventFilter=filter;} // from Mahmuts AliAnalysisTaskSingleElectron
   void          SetCentralityRange(Double_t min, Double_t max)      {fCentMin=min; fCentMax=max;}
+  void          SetUseMultSelection(Bool_t mult=kTRUE)              {fUseMultSelection=mult;}
   void          SetCutInjectedSignal(Bool_t bCutInj)                { return; } //obsolete.
   void          SetNminEleInEventForRej(UInt_t nEle)                {fNminEleInEventForRej=nEle;}
   void          SetEtaRangeGEN(Double_t min, Double_t max)          {fEtaMinGEN=min; fEtaMaxGEN=max;}
@@ -101,6 +106,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetResolutionTheta(TObjArray *resArr)               {fThetaResArr=resArr;}
   void          SetResolutionEta(TObjArray *resArr)                 {fEtaResArr=resArr;}
   void          SetResolutionPhi(TObjArray *rEle, TObjArray *rPos=0x0)  {fPhiEleResArr=rEle; if(rPos) fPhiPosResArr=rPos; else fPhiPosResArr=rEle;}
+  void          SetCalcEfficiencyGen(Bool_t b)                      {fCalcEfficiencyGen=b;}
   void          SetCalcEfficiencyRec(Bool_t b)                      {fCalcEfficiencyRec=b;}
   void          SetCalcEfficiencyPoslabel(Bool_t b)                 {fCalcEfficiencyPoslabel=b;}
 
@@ -135,7 +141,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          CreateHistoGen();
   void          CreateSupportHistos();
 
-  UInt_t        GetNCutsets() const { return fvReco_Ele.size(); } // 'cutset' and 'cutInstance' are used as synonymes in this task!
+  UInt_t        GetNCutsets() const { if(fCalcEfficiencyGen) return fvReco_Ele.size(); else return fvReco_Rec_Ele.size(); } // 'cutset' and 'cutInstance' are used as synonymes in this task!
   //AliPIDResponse* GetPIDResponse() { return fPIDResponse; }
 
  private:
@@ -173,6 +179,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t          fMaxVtxZ;
   Double_t          fCentMin;                 // should be fCentMin=-1 for pp and p-Pb
   Double_t          fCentMax;
+  Bool_t            fUseMultSelection;
   Double_t          fEtaMinGEN;
   Double_t          fEtaMaxGEN;
   Double_t          fPtMinGEN;
@@ -184,6 +191,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t*         fEtaBins;                 //! ("!" to avoid streamer error)
   Double_t*         fPhiBins;                 //! ("!" to avoid streamer error)
   TString           fsRunBins;                // for run dependency histograms
+  Bool_t            fCalcEfficiencyGen;
   Bool_t            fCalcEfficiencyRec;
   Bool_t            fCalcEfficiencyPoslabel;
 
@@ -354,6 +362,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Bool_t                          fWriteTree;
 
   //Track Variables
+  // Variables which shall be filled into the TTree for testing/debugging need to be defined in this class.
+  // Others can just be passed from the values[AliDielectronVarManager::kNMaxValues] array into the histograms.
   // these are for data and MC:
   Float_t   pxESD;
   Float_t   pyESD;
@@ -363,11 +373,15 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Float_t   signalITS;
   Float_t   signalTPC;
   Float_t   beta;
-  Float_t   kchi2ITS;
   Int_t     kNclsITS;
-  Float_t   kITSchi2Cl; // redundant
+  Float_t   kITSchi2Cl;
+  Int_t     kNclsSITS;
   Int_t     kNclsTPC;
   Float_t   kTPCchi2Cl;
+  Int_t     kNclsSTPC;
+  //Float_t   kNclsSFracTPC; // filled directly from values[] into the histogram.
+  //Float_t   kNclsSFracITS; // filled directly from values[] into the histogram.
+  //Int_t     kTPCclsDiff;   // filled directly from values[] into the histogram.
   Int_t     kNclsTPCdEdx;
   Float_t   kNFclsTPCr;
   Float_t   kNFclsTPCfCross;
@@ -407,7 +421,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiency, 5);
+  ClassDef(AliAnalysisTaskElectronEfficiency, 6);
 };
 
 #endif
