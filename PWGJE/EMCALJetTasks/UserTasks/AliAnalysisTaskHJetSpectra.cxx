@@ -88,8 +88,9 @@ fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), 
  fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
 fHistEvtSelection(0x0),fhKTAreaPt(0x0),
  fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
- fhDphiTriggerJetAccept(0x0),
+ fhDphiTriggerJetAccept(0x0), fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
+fhPtJetPrimVsPtJetRec(0x0), fhDiffPtVsPtTrackTrue(0x0),
 fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
@@ -211,9 +212,10 @@ fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), 
  fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
 fHistEvtSelection(0x0), fhKTAreaPt(0x0), 
  fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
-fhDphiTriggerJetAccept(0x0),
+fhDphiTriggerJetAccept(0x0),fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/
+fhPtJetPrimVsPtJetRec(0x0), fhDiffPtVsPtTrackTrue(0x0),
 fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
@@ -289,6 +291,7 @@ fpyVtx(3)
       fhPtTrkTruePrimRec[ic]=NULL;
       fhPtTrkTruePrimGen[ic]=NULL;
       fhPtTrkSecOrFakeRec[ic]=NULL;
+
    }
 
    //Centrality bin borders
@@ -934,6 +937,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
    //_________________________________________________________
    //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
+   Bool_t bRecPrim = kFALSE; //tags the reconstructed primary particles
 
    if(fTypeOfAnal == kEff){
 
@@ -952,7 +956,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          }
 
          //single particle efficiency and contamination
-         Bool_t bRecPrim = kFALSE; //tags the reconstructed primary particles
+     
          if(trkContRec && parContGen){ 
             trkContRec->ResetCurrentID();
             while((constTrackRec =(AliVParticle*) (trkContRec->GetNextAcceptParticle()))){
@@ -971,7 +975,9 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                      for(Int_t ic=0; ic<2; ic++){
                         if(ficb[ic]==-1) continue;
                         fhPtTrkTruePrimRec[ficb[ic]]->Fill(constTrackGen->Pt(),constTrackGen->Eta()); //this is well recontr phys primary
-                     }
+                     }                     
+                     fhDiffPtVsPtTrackTrue->Fill(constTrackGen->Pt(), constTrackRec->Pt()-constTrackGen->Pt()); 
+
                      break;
                   }//same label with rec particle
                }//loop over gen tracks
@@ -1012,14 +1018,38 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       }
  
       //Find closest gen level+rec level  jets
+      //Get momentum shift due to fake tracks
       if(jetContRec){
          jetContRec->ResetCurrentID();
          while((jetRec = jetContRec->GetNextAcceptJet())) {
             if(!jetRec) continue;
             if(!IsSignalJetInAcceptance(jetRec,kTRUE)) continue; //cuts on eta, pT ,area
 
+
+            //Get momentum shift due to fake tracks
+            Double_t sumFakeTrackPtInJet = 0.; 
+            for(Int_t iq=0; iq < jetRec->GetNumberOfTracks(); iq++) {
+               constTrackRec = static_cast<AliVParticle*> (jetRec->TrackAt(iq,trkContRec->GetArray())); 
+               if(!constTrackRec) continue;
+               bRecPrim = kFALSE; //not yet matched to generator level physical primary
+
+               parContGen->ResetCurrentID();
+               while((constTrackGen = (AliVParticle*)(parContGen->GetNextAcceptParticle()))){
+                  if(!constTrackGen) continue;
+                  if(!IsTrackInAcceptance(constTrackGen, kTRUE)) continue; //gen level physical primary
+                  if(TMath::Abs(constTrackRec->GetLabel()) == TMath::Abs(constTrackGen->GetLabel())){ 
+                     bRecPrim = kTRUE;
+                     break; 
+                  } 
+               }
+               if(!bRecPrim){ //this is a fake track
+                  sumFakeTrackPtInJet +=  constTrackRec->Pt();
+               } 
+            }
+            fhPtJetPrimVsPtJetRec->Fill(jetRec->Pt(), sumFakeTrackPtInJet/jetRec->Pt());
             //if(fDebug>20) Printf("REC JET phi=%f  eta=%f  pt=%f",jetRec->Phi(), jetRec->Eta(), jetRec->Pt());
 
+            //Find closest gen level+rec level  jets
             jetGen = 0x0;
             jetGen = jetRec->ClosestJet();
 
@@ -1381,8 +1411,25 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       }
    }
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   //   INCLUSIVE JETS RECONSTRUCTED DATA  
+   if(jetContRec){
+      jetContRec->ResetCurrentID();
+      while((jetRec = jetContRec->GetNextAcceptJet())) {
+         if(!jetRec){
+             AliError(Form("%s: Could not receive jet", GetName()));
+             continue;
+         }
+         if(!IsSignalJetInAcceptance(jetRec,kTRUE)) continue;
+                  
+         pTJet  = jetRec->Pt();
+                  
+         fhJetPhiIncl->Fill( pTJet, RelativePhi(jetRec->Phi(),0.0));
+         fhJetEtaIncl->Fill( pTJet, jetRec->Eta());
+      }
+   }
+   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    //  H+JET IN RECONSTRUCTED DATA  
-
+ 
    for(Int_t it=0; it<kTT;it++){
       if(ntriggers[it]>0 && ((AliVParticle*) trackTT[it])){
       
@@ -1795,6 +1842,13 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fhDphiTriggerJetAccept = new TH1F("fhDphiTriggerJetAccept","Deltaphi trig-jet after cut",50, -0.5*TMath::Pi(),1.5*TMath::Pi());
    if(bHistRec)  fOutput->Add(fhDphiTriggerJetAccept);
+
+   fhJetPhiIncl = new TH2F("fhJetPhiIncl","Azim dist jets vs pTjet", 50, 0, 100, 50,-TMath::Pi(),TMath::Pi());
+   if(bHistRec)  fOutput->Add((TH2F*) fhJetPhiIncl);
+
+   fhJetEtaIncl = new TH2F("fhJetEtaIncl","Eta dist inclusive jets vs pTjet", 50,0, 100, 40,-0.9,0.9);
+   if(bHistRec) fOutput->Add((TH2F*) fhJetEtaIncl);
+
    //-------------------------
    for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhCentralityMB") : 
@@ -1988,13 +2042,48 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
                                TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
  
             fhJetPtResolutionVsPtGen[ic][ir] = new TH2D(name.Data(), 
-                                                    "Resolution", 20,0,100, 35,-1.,0.4);
+                                                    "Resolution", 20,0,100, 140,-1.,0.4);
             fOutput->Add((TH2D*) fhJetPtResolutionVsPtGen[ic][ir]);
          }
       }
       
       Double_t bins [] = {0, 0.2,0.4,0.6, 0.8, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 8., 10., 20., 50.};
       Int_t nbins = sizeof(bins)/sizeof(Double_t)-1;
+ 
+      Double_t binsDiff [] = {
+       -10.0, -9.8, -9.6, -9.4, -9.2, 
+        -9.0, -8.8, -8.6, -8.4, -8.2, 
+        -8.0, -7.8, -7.6, -7.4, -7.2, 
+        -7.0, -6.8, -6.6, -6.4, -6.2, 
+        -6.0, -5.8, -5.6, -5.4, -5.2, 
+        -5.0, -4.8, -4.6, -4.4, -4.2, 
+        -4.0, -3.8, -3.6, -3.4, -3.2, 
+        -3.0, -2.8, -2.6, -2.4, -2.2, 
+        -2.0, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, 
+        -1.0,-0.95, -0.9, -0.85, -0.8, -0.75, -0.7, -0.65, -0.6, -0.55,
+        -0.5,-0.48, -0.46, -0.44, -0.42, 
+         -0.4, -0.38, -0.36, -0.34, -0.32, 
+         -0.3, -0.28, -0.26, -0.24, -0.22, 
+         -0.2, -0.18, -0.16, -0.14, -0.12, 
+         -0.1, -0.09, -0.08, -0.07,  -0.06,    
+        -0.05, -0.045, -0.04,-0.035 ,-0.03, -0.025, -0.02, -0.015, -0.01, -0.005, 
+         0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 
+         0.05, 0.06, 0.07, 0.08, 0.09,
+          0.1, 0.12, 0.14, 0.16, 0.18, 
+          0.2, 0.22, 0.24, 0.26, 0.28, 
+          0.3, 0.32, 0.34, 0.36, 0.38, 
+          0.4, 0.42, 0.44, 0.46, 0.48,  
+         0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8,0.85, 0.9, 0.95, 
+         1.0,1.1, 1.2,1.3, 1.4,1.5, 1.6, 1.7, 1.8, 1.9, 
+         2.0, 2.2, 2.4, 2.6, 2.8, 
+         3.0, 3.2, 3.4, 3.6, 3.8, 
+         4.0, 4.2, 4.4, 4.6, 4.8,
+         5.0, 5.2, 5.4, 5.6, 5.8,
+         6.0, 6.2, 6.4, 6.6, 6.8, 
+         7.0, 7.2, 7.4, 7.6, 7.8, 
+         8.0, 8.2, 8.4, 8.6, 8.8, 
+         9.0, 9.2, 9.4, 9.6, 9.8, 10.};
+      Int_t nbinsDiff = sizeof(binsDiff)/sizeof(Double_t)-1;
       
       for(Int_t ic =0; ic<icmax; ic++){
          name = (ic==0) ? Form("fhPtTrkTruePrimRecMB") : 
@@ -2019,6 +2108,14 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
          fhPtTrkSecOrFakeRec[ic] = (TH2D*) fhPtTrkTruePrimRec[ic]->Clone(name.Data());
          fOutput->Add((TH2D*) fhPtTrkSecOrFakeRec[ic]);
       }
+
+      name = Form("fhPtJetPrimVsPtJetRecMB"); 
+      fhPtJetPrimVsPtJetRec = new TH2D(name.Data(), name.Data(),50,0,50,200,0,1);
+      fOutput->Add((TH2D*) fhPtJetPrimVsPtJetRec);
+
+      name = Form("fhDiffPtVsPtTrackTrueMB"); 
+      fhDiffPtVsPtTrackTrue  = new TH2D(name.Data(), name.Data(),50,0,50, nbinsDiff,binsDiff);
+      fOutput->Add((TH2D*) fhDiffPtVsPtTrackTrue);
    }
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
