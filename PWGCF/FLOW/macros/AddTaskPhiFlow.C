@@ -20,6 +20,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
                                        Float_t centrMin = 20., // centrality selection
                                        Float_t centrMax = 40.,
                                        Double_t ITSsigma = 3., // pid mode (see task implementation)
+                                       Bool_t centralityWeights = kFALSE,
                                        Double_t ITSrange = 0.,
                                        Double_t TPCcontrol = 1.,
                                        Double_t TPCsigma = 3.,
@@ -106,9 +107,108 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
       }
       else task->SetMixingBins(c, v);
    }  
-   // set triggers
-   if (bCentralTrigger) task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-   else                 task->SelectCollisionCandidates(AliVEvent::kMB);
+   // set 
+
+
+   if(centralityWeights) {
+      TH1F *fCentrAft = new TH1F("fCentrAft","",100,0,100);
+      fCentrAft->SetBinContent(1,660708);
+      fCentrAft->SetBinContent(2,666125);
+      fCentrAft->SetBinContent(3,665923);
+      fCentrAft->SetBinContent(4,666099);
+      fCentrAft->SetBinContent(5,666222);
+      fCentrAft->SetBinContent(6,666598);
+      fCentrAft->SetBinContent(7,666605);
+      fCentrAft->SetBinContent(8,667060);
+      fCentrAft->SetBinContent(9,666981);
+      fCentrAft->SetBinContent(10,667056);
+      fCentrAft->SetBinContent(11,667211);
+      fCentrAft->SetBinContent(12,667032);
+      fCentrAft->SetBinContent(13,666964);
+      fCentrAft->SetBinContent(14,667091);
+      fCentrAft->SetBinContent(15,666939);
+      fCentrAft->SetBinContent(16,666810);
+      fCentrAft->SetBinContent(17,667017);
+      fCentrAft->SetBinContent(18,666960);
+      fCentrAft->SetBinContent(19,667167);
+      fCentrAft->SetBinContent(20,667164);
+      fCentrAft->SetBinContent(21,666959);
+      fCentrAft->SetBinContent(22,667183);
+      fCentrAft->SetBinContent(23,667058);
+      fCentrAft->SetBinContent(24,667050);
+      fCentrAft->SetBinContent(25,667300);
+      fCentrAft->SetBinContent(26,666898);
+      fCentrAft->SetBinContent(27,666976);
+      fCentrAft->SetBinContent(28,666951);
+      fCentrAft->SetBinContent(29,667141);
+      fCentrAft->SetBinContent(30,667253);
+      fCentrAft->SetBinContent(31,667055);
+      fCentrAft->SetBinContent(32,667223);
+      fCentrAft->SetBinContent(33,666850);
+      fCentrAft->SetBinContent(34,667185);
+      fCentrAft->SetBinContent(35,667266);
+      fCentrAft->SetBinContent(36,667314);
+      fCentrAft->SetBinContent(37,667367);
+      fCentrAft->SetBinContent(38,667193);
+      fCentrAft->SetBinContent(39,667280);
+      fCentrAft->SetBinContent(40,667184);
+      fCentrAft->SetBinContent(41,667233);
+      fCentrAft->SetBinContent(42,667157);
+      fCentrAft->SetBinContent(43,667286);
+      fCentrAft->SetBinContent(44,667168);
+      fCentrAft->SetBinContent(45,667446);
+      fCentrAft->SetBinContent(46,667367);
+      fCentrAft->SetBinContent(47,667275);
+      fCentrAft->SetBinContent(48,667426);
+      fCentrAft->SetBinContent(49,667289);
+      fCentrAft->SetBinContent(50,667379);
+      fCentrAft->SetBinContent(51,667041);
+      fCentrAft->SetBinContent(52,667307);
+      fCentrAft->SetBinContent(53,666942);
+      fCentrAft->SetBinContent(54,667196);
+      fCentrAft->SetBinContent(55,667267);
+      fCentrAft->SetBinContent(56,667376);
+      fCentrAft->SetBinContent(57,667129);
+      fCentrAft->SetBinContent(58,667450);
+      fCentrAft->SetBinContent(59,667256);
+      fCentrAft->SetBinContent(60,667289);
+      fCentrAft->SetBinContent(61,667158);
+      fCentrAft->SetBinContent(62,667348);
+      fCentrAft->SetBinContent(63,667098);
+      fCentrAft->SetBinContent(64,667313);
+      fCentrAft->SetBinContent(65,667091);
+      fCentrAft->SetBinContent(66,667184);
+      fCentrAft->SetBinContent(67,667224);
+      fCentrAft->SetBinContent(68,667163);
+      fCentrAft->SetBinContent(69,667171);
+      fCentrAft->SetBinContent(70,667135);
+      fCentrAft->SetBinContent(71,667148);
+      fCentrAft->SetBinContent(72,666986);
+      fCentrAft->SetBinContent(73,667070);
+      fCentrAft->SetBinContent(74,667089);
+      fCentrAft->SetBinContent(75,666924);
+      fCentrAft->SetBinContent(76,666834);
+      fCentrAft->SetBinContent(77,666956);
+      fCentrAft->SetBinContent(78,666819);
+      fCentrAft->SetBinContent(79,666773);
+      fCentrAft->SetBinContent(80,666887);
+      fCentrAft->SetBinContent(81,666254);
+      fCentrAft->SetBinContent(82,665800);
+      fCentrAft->SetBinContent(83,663988);
+      fCentrAft->SetBinContent(84,660257);
+      fCentrAft->SetBinContent(85,652916);
+      fCentrAft->SetBinContent(86,638875);
+      fCentrAft->SetBinContent(87,615796);
+      fCentrAft->SetBinContent(88,589182);
+      fCentrAft->SetBinContent(89,544037);
+      fCentrAft->SetBinContent(90,485605);
+
+   task->SetCentralityWeights(fCentrAft);
+   }
+
+
+
+
    if(debug) cout << "    --> Set trigger selection to ";
    if(debug&&bCentralTrigger) cout << " kMB, kCentral, kSemiCentral " << endl;
    if(debug&&(!bCentralTrigger)) cout << " kMB " << endl;

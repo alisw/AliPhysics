@@ -59,6 +59,7 @@ fHistProConfig(NULL),
 fHistProQaQbNorm(NULL),
 fHistSumOfWeights(NULL),
 fHistProNUAq(NULL),
+fCentralityWeight(1.),
 fHistProQNorm(NULL),
 fHistProQaQb(NULL),
 fHistProQaQbM(NULL),
@@ -68,6 +69,8 @@ fHistQaNormMa(NULL),
 fHistQbNormMb(NULL),
 fResolution(NULL),
 fHistQaQb(NULL),
+fHistQaQc(NULL),
+fHistQbQc(NULL),
 fHistQaQbCos(NULL),
 fHistNumberOfSubtractedDaughters(NULL),
 fCommonHists(NULL),
@@ -286,6 +289,18 @@ void AliFlowAnalysisWithSimpleSP::Init() {
     fHistQaQb->StatOverflows(kTRUE);
     tQARelated->Add(fHistQaQb);
 
+    fHistQaQc = new TH1D("Flow_QaQc_SP","Flow_QaQc_SP",20000,-100.,100.);
+    fHistQaQc->SetYTitle("dN/dQaQc");
+    fHistQaQc->SetXTitle("dQaQc");
+    fHistQaQc->StatOverflows(kTRUE);
+    tQARelated->Add(fHistQaQb);
+
+    fHistQbQc = new TH1D("Flow_QbQc_SP","Flow_QbQc_SP",20000,-100.,100.);
+    fHistQbQc->SetYTitle("dN/dQbQc");
+    fHistQbQc->SetXTitle("dQbQc");
+    fHistQbQc->StatOverflows(kTRUE);
+    tQARelated->Add(fHistQaQb);
+
     fHistQaQbCos = new TH1D("Flow_QaQbCos_SP","Flow_QaQbCos_SP",63,0.,TMath::Pi());
     fHistQaQbCos->SetYTitle("dN/d#phi");
     fHistQaQbCos->SetXTitle("#phi");
@@ -308,6 +323,7 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
   // Scalar Product method
   if (!anEvent) return; // for coverity
 
+  fCentralityWeight = anEvent->GetPsi5();
   // Get Q vectors for the subevents
   AliFlowVector* vQarray = new AliFlowVector[2];
   if (fUsePhiWeights)
@@ -348,6 +364,9 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
   // Q ?= Qa or Qb or QaQb
   AliFlowVector vQm;
   vQm.Set(0.0,0.0);
+  AliFlowVector vQTPC;
+  vQTPC.Set(anEvent->GetPsi2(), anEvent->GetPsi3());
+
   Double_t dNq=0;
   if( (fTotalQvector%2)>0 ) { // 01 or 11
     vQm += vQa;
@@ -420,14 +439,19 @@ void AliFlowAnalysisWithSimpleSP::Make(AliFlowEventSimple* anEvent) {
         continue;
       if( (iPOI==1)&&(!pTrack->InPOISelection(fPOItype)) )
         continue;
-      fHistProUQ[iPOI][0]->Fill(dPt ,dUQ/dNq); //Fill (uQ/Nq') with weight (Nq')
-      fHistProUQ[iPOI][1]->Fill(dEta,dUQ/dNq); //Fill (uQ/Nq') with weight (Nq')
+      fHistProUQ[iPOI][0]->Fill(dPt ,fCentralityWeight*dUQ/dNq); //Fill (uQ/Nq') with weight (Nq')
+      fHistProUQ[iPOI][1]->Fill(dEta,fCentralityWeight*dUQ/dNq); //Fill (uQ/Nq') with weight (Nq')
       //fHistProUQQaQb[iPOI][0]-> Fill(dPt,(dUQ*dUQ/dNq)/(dQaQb/dNa/dNb)); //Fill [Qu/Nq']*[QaQb/NaNb] with weight (Nq')NaNb
     }
   }//loop over tracks
     //Filling QA (for compatibility with previous version)
     if(!fMinimalBook) {
-      fHistQaQb->Fill(vQa*vQb/dNa/dNb);
+      fHistQaQb->Fill(vQa*vQb/dNa/dNb, fCentralityWeight);
+      double qc = anEvent->GetPsi2();
+
+      fHistQaQc->Fill(vQa*vQTPC, fCentralityWeight);
+      fHistQbQc->Fill(vQb*vQTPC, fCentralityWeight);
+
     }
 
 
