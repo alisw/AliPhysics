@@ -468,7 +468,7 @@ class AliReducedVarManager : public TObject {
   static void FillL0TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillL1TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
   static void FillL2TriggerInputs(AliReducedEventInfo* event, Int_t input, Float_t* values);
-  static void FillTrackingFlag(AliReducedTrackInfo* track, UShort_t flag, Float_t* values);
+  static void FillTrackingFlag(AliReducedTrackInfo* track, UInt_t flag, Float_t* values);
   static void FillTrackQualityFlag(AliReducedBaseTrack* track, UShort_t flag, Float_t* values);
   static void FillPairQualityFlag(AliReducedPairInfo* p, UShort_t flag, Float_t* values);
   static void FillTrackInfo(AliReducedBaseTrack* p, Float_t* values);

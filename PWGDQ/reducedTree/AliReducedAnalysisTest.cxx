@@ -200,7 +200,7 @@ void AliReducedAnalysisTest::Process() {
       if(track->IsA()==AliReducedTrackInfo::Class()) trackInfo = (AliReducedTrackInfo*)track;
     
       if(trackInfo) {
-        for(UShort_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+        for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
           AliReducedVarManager::FillTrackingFlag(trackInfo, iflag, fValues);
           fHistosManager->FillHistClass("TrackingFlags", fValues);
         }
