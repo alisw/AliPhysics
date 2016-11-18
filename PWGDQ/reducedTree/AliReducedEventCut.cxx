@@ -17,7 +17,9 @@ ClassImp(AliReducedEventCut)
 
 //____________________________________________________________________________
 AliReducedEventCut::AliReducedEventCut() :
-  AliReducedVarCut()
+  AliReducedVarCut(),
+  fEventTagFilterEnabled(kFALSE),
+  fEventFilter(0)
 {
   //
   // default constructor
@@ -26,7 +28,9 @@ AliReducedEventCut::AliReducedEventCut() :
 
 //____________________________________________________________________________
 AliReducedEventCut::AliReducedEventCut(const Char_t* name, const Char_t* title) :
-  AliReducedVarCut(name, title)
+  AliReducedVarCut(name, title),
+  fEventTagFilterEnabled(kFALSE),
+  fEventFilter(0)
 {
   //
   // named constructor
@@ -61,6 +65,9 @@ Bool_t AliReducedEventCut::IsSelected(TObject* obj, Float_t* values) {
    // apply cuts
    //      
    if(!obj->InheritsFrom(AliReducedBaseEvent::Class())) return kFALSE;
+   
+   AliReducedBaseEvent* event = (AliReducedBaseEvent*)obj;
+   if(fEventTagFilterEnabled && !(event->EventTag() & fEventFilter)) return kFALSE;
    
    return AliReducedVarCut::IsSelected(values);   
 }

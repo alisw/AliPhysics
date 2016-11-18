@@ -246,6 +246,9 @@ void AliReducedVarManager::SetVariableDependencies() {
      fgUsedVars[fgVarDependencyX] = kTRUE; 
      fgUsedVars[fgVarDependencyY] = kTRUE;
   }
+  if(fgUsedVars[kNTracksITSoutVsSPDtracklets] || fgUsedVars[kNTracksTPCoutVsSPDtracklets] ||
+     fgUsedVars[kNTracksTOFoutVsSPDtracklets] || fgUsedVars[kNTracksTRDoutVsSPDtracklets])
+     fgUsedVars[kSPDntracklets] = kTRUE;
 }
 
 //__________________________________________________________________
@@ -328,35 +331,38 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   for(Int_t iflag=0;iflag<32;++iflag) 
     values[kNTracksPerTrackingStatus+iflag] = event->TracksPerTrackingFlag(iflag);
   
+  // set the fgUsedVars to true as these might have been set to false in the previous event
   fgUsedVars[kNTracksTPCoutVsITSout] = kTRUE;
   fgUsedVars[kNTracksTRDoutVsITSout] = kTRUE;
   fgUsedVars[kNTracksTOFoutVsITSout] = kTRUE;
+  fgUsedVars[kNTracksTRDoutVsTPCout] = kTRUE;
+  fgUsedVars[kNTracksTOFoutVsTPCout] = kTRUE;
+  fgUsedVars[kNTracksTOFoutVsTRDout] = kTRUE;
   if(TMath::Abs(values[kNTracksPerTrackingStatus+kITSout])>0.01) {
     values[kNTracksTPCoutVsITSout] = values[kNTracksPerTrackingStatus+kTPCout]/values[kNTracksPerTrackingStatus+kITSout];
     values[kNTracksTRDoutVsITSout] = values[kNTracksPerTrackingStatus+kTRDout]/values[kNTracksPerTrackingStatus+kITSout]; 
     values[kNTracksTOFoutVsITSout] = values[kNTracksPerTrackingStatus+kTOFout]/values[kNTracksPerTrackingStatus+kITSout];
   }
   else {
-    fgUsedVars[kNTracksTPCoutVsITSout] = kFALSE;
-    fgUsedVars[kNTracksTRDoutVsITSout] = kFALSE;
-    fgUsedVars[kNTracksTOFoutVsITSout] = kFALSE;
+     // if these values are undefined, set fgUsedVars as false such that the values are not filled in histograms
+     fgUsedVars[kNTracksTPCoutVsITSout] = kFALSE; fgUsedVars[kNTracksTRDoutVsITSout] = kFALSE; fgUsedVars[kNTracksTOFoutVsITSout] = kFALSE;
   }
-  fgUsedVars[kNTracksTRDoutVsTPCout] = kTRUE;
-  fgUsedVars[kNTracksTOFoutVsTPCout] = kTRUE;
+  
   if(TMath::Abs(values[kNTracksPerTrackingStatus+kTPCout])>0.01) {
     values[kNTracksTRDoutVsTPCout] = values[kNTracksPerTrackingStatus+kTRDout]/values[kNTracksPerTrackingStatus+kTPCout];
     values[kNTracksTOFoutVsTPCout] = values[kNTracksPerTrackingStatus+kTOFout]/values[kNTracksPerTrackingStatus+kTPCout];
   }
   else {
-    fgUsedVars[kNTracksTRDoutVsTPCout] = kFALSE;
-    fgUsedVars[kNTracksTOFoutVsTPCout] = kFALSE;
+     fgUsedVars[kNTracksTRDoutVsTPCout] = kFALSE; fgUsedVars[kNTracksTOFoutVsTPCout] = kFALSE; 
   }
-  fgUsedVars[kNTracksTOFoutVsTRDout] = kTRUE;
+  
   if(TMath::Abs(values[kNTracksPerTrackingStatus+kTRDout])>0.01)
     values[kNTracksTOFoutVsTRDout] = values[kNTracksPerTrackingStatus+kTOFout]/values[kNTracksPerTrackingStatus+kTRDout];
   else
-    fgUsedVars[kNTracksTOFoutVsTRDout] = kFALSE;
-  fgUsedVars[kNTracksITSoutVsSPDtracklets] = kTRUE;
+     fgUsedVars[kNTracksTOFoutVsTRDout] = kFALSE;
+  
+  values[kSPDntracklets]   = event->SPDntracklets();
+  fgUsedVars[kNTracksITSoutVsSPDtracklets] = kTRUE;  
   fgUsedVars[kNTracksTPCoutVsSPDtracklets] = kTRUE;
   fgUsedVars[kNTracksTRDoutVsSPDtracklets] = kTRUE;
   fgUsedVars[kNTracksTOFoutVsSPDtracklets] = kTRUE;
@@ -367,15 +373,13 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     values[kNTracksTOFoutVsSPDtracklets] = values[kNTracksPerTrackingStatus+kTOFout]/values[kSPDntracklets];
   }
   else {
-    fgUsedVars[kNTracksITSoutVsSPDtracklets] = kFALSE;
-    fgUsedVars[kNTracksTPCoutVsSPDtracklets] = kFALSE;
-    fgUsedVars[kNTracksTRDoutVsSPDtracklets] = kFALSE;
-    fgUsedVars[kNTracksTOFoutVsSPDtracklets] = kFALSE;
+     fgUsedVars[kNTracksITSoutVsSPDtracklets] = kFALSE;  
+     fgUsedVars[kNTracksTPCoutVsSPDtracklets] = kFALSE;
+     fgUsedVars[kNTracksTRDoutVsSPDtracklets] = kFALSE;
+     fgUsedVars[kNTracksTOFoutVsSPDtracklets] = kFALSE;
   }
   
-  
   values[kNCaloClusters]   = event->GetNCaloClusters();
-  values[kSPDntracklets]   = event->SPDntracklets();    
   for(Int_t ieta=0;ieta<32;++ieta) values[kSPDntrackletsEta+ieta] = event->SPDntracklets(ieta);  
   for(Int_t i=0;i<2;++i) values[kSPDFiredChips+i] = event->SPDFiredChips(i+1);
   for(Int_t i=0;i<6;++i) values[kITSnClusters+i] = event->ITSClusters(i+1);
@@ -603,7 +607,7 @@ void AliReducedVarManager::FillTrackingFlags(TRACK* p, Float_t* values) {
 
 
 //_________________________________________________________________
-void AliReducedVarManager::FillTrackingFlag(TRACK* track, UShort_t flag, Float_t* values) {
+void AliReducedVarManager::FillTrackingFlag(TRACK* track, UInt_t flag, Float_t* values) {
   //
   // fill the tracking flag
   //
