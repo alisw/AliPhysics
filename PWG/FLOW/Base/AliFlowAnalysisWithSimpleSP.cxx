@@ -543,9 +543,6 @@ void AliFlowAnalysisWithSimpleSP::Finish() {
   for(Int_t iRFPorPOI=0; iRFPorPOI != 2; ++iRFPorPOI)
   for(Int_t iPTorETA=0; iPTorETA != 2; ++iPTorETA)
   for(Int_t b=1; b != iNbins[iPTorETA]+1; ++b) {
-    double entries = fHistProUQ[iRFPorPOI][iPTorETA]->GetEntries();
-    if(entries < 1) entries = 1;
-    //fHistProUQ[iRFPorPOI][iPTorETA]->SetErrorOption("s");
     Double_t duQpro = fHistProUQ[iRFPorPOI][iPTorETA]->GetBinContent(b);
     Double_t dv2pro = -999.;
     if( TMath::Abs(dV!=0.) && fExternalResolution < 0 ) { dv2pro = duQpro/dV; }
