@@ -2937,7 +2937,7 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   //
   if(!fgLegEffMap) return -1.;
 
-  if(fgLegEffMap->IsA()== THnBase::Class()) {
+  if(fgLegEffMap->InheritsFrom(THnBase::Class())) {
     THnBase *eff = static_cast<THnBase*>(fgLegEffMap);
     Int_t dim=eff->GetNdimensions();
     Int_t *idx=new Int_t[dim];
