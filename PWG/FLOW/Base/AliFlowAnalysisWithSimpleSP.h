@@ -96,6 +96,7 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
    TProfile*  fHistProQaQbNorm;  // average of QaQb
    TH1D*      fHistSumOfWeights; // holds sum of Na*Nb and (Na*Nb)^2
    TProfile*  fHistProNUAq;      // NUA related qq
+   Float_t    fCentralityWeight; // centrality weight
 
    //QAHists
    TProfile* fHistProQNorm; // QNorm
@@ -107,6 +108,8 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
    TH2D* fHistQbNormMb; // QbNorm Mb
    TH1D* fResolution; // Resolution
    TH1D* fHistQaQb; // QaQb
+   TH1D* fHistQaQc; // QaQc
+   TH1D* fHistQbQc; // QbQc
    TH1D* fHistQaQbCos; // QaQbCos
    TH1I* fHistNumberOfSubtractedDaughters; //how many daughters were subtracted during Q calculation?
 
