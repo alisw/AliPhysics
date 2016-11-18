@@ -93,7 +93,7 @@ int AliHLTTRDAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     rawInput+=publisher;
   }
   handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", rawInput.Data(),"");
-  handler->CreateConfiguration("TRD-tracker", "TRDTracker", "TRD-tracklet-reader TPC-globalmerger","-debugOutput");
+  handler->CreateConfiguration("TRD-tracker", "TRDTracker", "TRD-tracklet-reader TPC-globalmerger","");
   return 0;
 }
 
