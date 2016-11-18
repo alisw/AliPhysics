@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  * 
  **************************************************************************/
 
-#define ALIFLOWANALYSISWITHSCALARPRODUCT_CXX
+#define ALIFLOWANALYSISWITHSIMPLESP_CXX
 
 #include "TFile.h"      
 #include "TList.h"
@@ -283,23 +283,23 @@ void AliFlowAnalysisWithSimpleSP::Init() {
         fResolution->SetXTitle("Cos2(#phi_a - #phi_b)");
         tQARelated->Add(fResolution);
 
-        fHistQaQb = new TH1D("Flow_QaQb_SP","Flow_QaQb_SP",20000,-100.,100.);
+        fHistQaQb = new TH1D("Flow_QaQb_SP","Flow_QaQb_SP",20000,-1000.,1000.);
         fHistQaQb->SetYTitle("dN/dQaQb");
         fHistQaQb->SetXTitle("dQaQb");
         fHistQaQb->StatOverflows(kTRUE);
         tQARelated->Add(fHistQaQb);
 
-        fHistQaQc = new TH1D("Flow_QaQc_SP","Flow_QaQc_SP",20000,-100.,100.);
+        fHistQaQc = new TH1D("Flow_QaQc_SP","Flow_QaQc_SP",20000,-1000.,1000.);
         fHistQaQc->SetYTitle("dN/dQaQc");
         fHistQaQc->SetXTitle("dQaQc");
         fHistQaQc->StatOverflows(kTRUE);
-        tQARelated->Add(fHistQaQb);
+        tQARelated->Add(fHistQaQc);
 
-        fHistQbQc = new TH1D("Flow_QbQc_SP","Flow_QbQc_SP",20000,-100.,100.);
+        fHistQbQc = new TH1D("Flow_QbQc_SP","Flow_QbQc_SP",20000,-1000.,1000.);
         fHistQbQc->SetYTitle("dN/dQbQc");
         fHistQbQc->SetXTitle("dQbQc");
         fHistQbQc->StatOverflows(kTRUE);
-        tQARelated->Add(fHistQaQb);
+        tQARelated->Add(fHistQbQc);
 
         fHistQaQbCos = new TH1D("Flow_QaQbCos_SP","Flow_QaQbCos_SP",63,0.,TMath::Pi());
         fHistQaQbCos->SetYTitle("dN/d#phi");
@@ -502,10 +502,16 @@ void AliFlowAnalysisWithSimpleSP::GetOutputHistograms(TList *outputListHistos){
         fHarmonic = (Int_t) fHistProConfig->GetBinContent(4);
     }
     fHistQaQb = (TH1D*)tQARelated->FindObject("Flow_QaQb_SP");
-}            
+    fHistQaQc = (TH1D*)tQARelated->FindObject("Flow_QaQc_SP");
+    fHistQbQc = (TH1D*)tQARelated->FindObject("Flow_QaQc_SP");
+
+
+}   
+
+
 
 //--------------------------------------------------------------------            
-void AliFlowAnalysisWithSimpleSP::Finish() {
+void AliFlowAnalysisWithSimpleSP::Finish(Bool_t A) {
     //calculate flow and fill the AliFlowCommonHistResults
     printf("AliFlowAnalysisWithSimpleSP::Finish()\n");
 
@@ -532,7 +538,23 @@ void AliFlowAnalysisWithSimpleSP::Finish() {
     if( dEntriesQaQb < 1 )
         return;
     fHistQaQb->GetXaxis()->SetRangeUser(-10.,10.);
-    Double_t dQaQb  = fHistQaQb->GetMean();
+    //fHistQaQC->GetXaxis()->SetRangeUser(-1000., 1000.);
+    //fHistQbQc->GetXaxis()->SetRangeUser(-1000., 1000.);
+
+
+    
+    
+    Double_t dQaQb = fHistQaQb->GetMean();
+    Double_t dQaQc = fHistQaQc->GetMean();
+    Double_t dQbQc = fHistQbQc->GetMean();
+
+    if(A) {
+      dQaQb = (dQaQb*dQaQc)/dQbQc;
+      if(dQaQb>0.) dQaQb = TMath::Sqrt(dQaQb);
+    } else {
+        dQaQb = (dQaQb*dQbQc)/dQaQc;
+    }
+
     if( dQaQb < 0 )
         return;
     Double_t dSpreadQaQb = fHistQaQb->GetRMS();
