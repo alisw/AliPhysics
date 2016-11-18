@@ -387,7 +387,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fListTrig->Add(fHistCcup9TriggersPerRun);
   
   fHistCcup10TriggersPerRun = new TH1D("fHistCcup10TriggersPerRun", "fHistCcup10TriggersPerRun", 40000, 240000.5, 280000.5);
-  fListTrig->Add(fHistCcup9TriggersPerRun);
+  fListTrig->Add(fHistCcup10TriggersPerRun);
   
   fHistCcup11TriggersPerRun = new TH1D("fHistCcup11TriggersPerRun", "fHistCcup11TriggersPerRun", 40000, 240000.5, 280000.5);
   fListTrig->Add(fHistCcup11TriggersPerRun);
