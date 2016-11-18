@@ -124,6 +124,9 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMinimalTPCdedx(0.),
   fCutTPCSecbound(kFALSE),
   fCutTPCSecboundMinpt(0.2),
+  fCutTPCSecboundVar(kFALSE),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -208,6 +211,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
      fPurityFunction[i]=NULL;
   }
 
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -253,6 +258,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMinimalTPCdedx(0.),
   fCutTPCSecbound(kFALSE),
   fCutTPCSecboundMinpt(0.2),
+  fCutTPCSecboundVar(kFALSE),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -340,6 +348,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
      fPurityFunction[i]=NULL;
   }
 
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -385,6 +395,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMinimalTPCdedx(that.fMinimalTPCdedx),
   fCutTPCSecbound(that.fCutTPCSecbound),
   fCutTPCSecboundMinpt(that.fCutTPCSecboundMinpt),
+  fCutTPCSecboundVar(that.fCutTPCSecboundVar),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(that.fLinearizeVZEROresponse),
   fCentralityPercentileMin(that.fCentralityPercentileMin),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
@@ -480,7 +493,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   for(Int_t i(0); i < 180; i++) {
      fPurityFunction[i]=that.fPurityFunction[i];
   }
-    
+  
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -539,6 +554,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMinimalTPCdedx=that.fMinimalTPCdedx;
   fCutTPCSecbound=that.fCutTPCSecbound;
   fCutTPCSecboundMinpt=that.fCutTPCSecboundMinpt;
+  fCutTPCSecboundVar=that.fCutTPCSecboundVar;
+  fPhiCutLow=NULL;
+  fPhiCutHigh=NULL;
   fPtTOFPIDoff=that.fPtTOFPIDoff;
   fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
@@ -620,6 +638,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
  
   fRun = that.fRun;
   
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
+  
   return *this;
 }
 
@@ -666,8 +687,8 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
         fPurityFunction[i] = 0;
     }
   }
-
-  
+  if(fPhiCutLow) delete fPhiCutLow;
+  if(fPhiCutHigh) delete fPhiCutHigh;
 }
 
 //-----------------------------------------------------------------------
@@ -1361,6 +1382,20 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
       Double_t bnp = nb*TMath::Pi()/9.; // TPC boundaries azimuthal angle
       if(cra<bnp+dpe && cra>bnp-dpe) pass=kFALSE;
     }
+  }
+  if(fCutTPCSecboundVar) {
+    Double_t phimod = track->Phi();
+    if(fEvent->GetMagneticField() < 0)   // for negative polarity field
+      phimod = TMath::TwoPi() - phimod;
+    if(track->Charge() < 0) // for negative charge
+      phimod = TMath::TwoPi() - phimod;
+    if(phimod < 0)
+      cout << "Warning!!!!! phi < 0: " << phimod << endl;
+    
+    phimod += TMath::Pi()/18.0; // to center gap in the middle
+    phimod = fmod(phimod, TMath::Pi()/9.0);
+    if(phimod < fPhiCutHigh->Eval(track->Pt()) && phimod > fPhiCutLow->Eval(track->Pt()))
+      pass=kFALSE; // reject track
   }
 
   if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID

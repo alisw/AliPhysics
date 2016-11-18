@@ -111,7 +111,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void SetMaxSharedITSCluster(Int_t b){fCutITSclusterShared = kTRUE; fMaxITSclusterShared = b;}
   void SetMaxChi2perITSCluster(Double_t b){fCutITSChi2 = kTRUE; fMaxITSChi2 = b;}
-  void SetCutTPCSecbound( Bool_t a, Double_t ptmin=0.2) {fCutTPCSecbound = a; fCutTPCSecboundMinpt=ptmin;}
+  void SetCutTPCSecbound( Bool_t a, Double_t ptmin=0.2 ) {fCutTPCSecbound = a; fCutTPCSecboundMinpt=ptmin;}
+  void SetCutTPCSecboundVar( Bool_t a ) {fCutTPCSecboundVar = a;}
   void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
   void SetMinNClustersITS( Int_t a ) {fCutNClustersITS=kTRUE; fNClustersITSMin=a;}
   void SetClusterRequirementITS( AliESDtrackCuts::Detector det,
@@ -408,6 +409,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t fMinimalTPCdedx;       //value for minimal TPC dedx
   Bool_t fCutTPCSecbound;         // cut tracks entering TPC close to TPC sector boundaries
   Double_t fCutTPCSecboundMinpt;  // minimum pT for previous cut
+  Bool_t fCutTPCSecboundVar;         // cut tracks entering TPC close to TPC sector boundaries
+  TF1* fPhiCutLow; //!
+  TF1* fPhiCutHigh; //!
   Bool_t fLinearizeVZEROresponse; //linearize VZERO response using AliESDUtil
  
   Int_t fCentralityPercentileMin; //centrality min
