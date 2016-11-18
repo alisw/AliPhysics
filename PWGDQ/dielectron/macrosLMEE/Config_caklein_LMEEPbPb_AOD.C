@@ -8,8 +8,9 @@ enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3
 
 //   "kPbPb2015_pidV0_pt400", kITSTPCTOFif_trkSPDfirst_kINT7_pt100_woPID
 //    kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq, kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif
- TString names=("kPbPb2015_Pt400_mastermind;kPbPb2015_Pt400_mastermind2;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
- // TString names=("kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
+ // TString names=("kPbPb2015_Pt400_mastermind;kPbPb2015_Pt400_mastermind2;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
+ TString names=("kPbPb2015_Pt400_mastermind;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
+ // TString names=("noPID");
 
 
 TObjArray *arrNames = names.Tokenize(";");
@@ -73,7 +74,7 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
       AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
       // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
   }
-  if (cutDefinition == 1) {
+  if (cutDefinition == -100) {
       AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton2);
       AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
       AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
@@ -88,7 +89,7 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
       AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
       // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
   }
-  if (cutDefinition == 2) {
+  if (cutDefinition == 1) {
       AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq);
       AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
       AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
@@ -103,7 +104,7 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
       AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
       // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
   }
-  if (cutDefinition == 3) {
+  if (cutDefinition == 2) {
       AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif);
       AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
       AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
