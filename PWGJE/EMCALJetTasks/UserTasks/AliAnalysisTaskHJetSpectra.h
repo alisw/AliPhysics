@@ -27,7 +27,7 @@ class AliClusterContainer;
 #include "AliAnalysisTaskEmcalJet.h"
 
 // ANALYSIS OF HIGH PT HADRON TRIGGER ASSOCIATED SPECTRUM OF RECOIL JETS IN P+PB
-// Author Filip Krizek   (5.Nov. 2015)
+// Author Filip Krizek   (17.Nov. 2016)
 
 class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    public:
@@ -251,6 +251,9 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2F     *fhDphiTriggerJetGen[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
    TH1F     *fhDphiTriggerJetAccept; //!Dphi of accepted jets after dphi cut
 
+   TH2F     *fhJetPhiIncl;//!minimum bias phi inclusive
+   TH2F     *fhJetEtaIncl;//!minimum bias eta inclusive
+
    TH1F     *fhCentrality[kCAll];     //! centrality 
    TH1F     *fhCentralityTT[kTT];  //! centrality V0 multiplicity A+C when TT is present
    TH1F     *fhCentralityV0M;  //! centrality V0 multiplicity A+C
@@ -283,7 +286,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D*  fhPtTrkTruePrimRec[kCAll]; // pt spectrum of true reconstructed primary tracks    
    TH2D*  fhPtTrkTruePrimGen[kCAll]; // pt spectrum of true generated primary track    
    TH2D*  fhPtTrkSecOrFakeRec[kCAll]; // pt spectrum of reconstructed fake or secondary tracks    
-
+   TH2D*  fhPtJetPrimVsPtJetRec; // pt spectrum of reconstructed jets without  fake track pT vs reconstructed jet pT  
+   TH2D*  fhDiffPtVsPtTrackTrue; // track Y= rec pt - true pt   X= true track pT  
  
    TArrayD  fRhoRec[kTT];   // labels of particles on reconstructed track level
    TArrayD  fRhoMC[kTT];   // labels of particles on reconstructed track level
@@ -307,7 +311,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 17); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 18); // Charged jet analysis for pA
 
 };
 #endif
