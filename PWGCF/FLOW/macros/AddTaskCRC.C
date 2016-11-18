@@ -21,7 +21,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t dDCAxy=1000.,
                              Double_t dDCAz=1000.,
                              TString sSelecCharge="",
-                             Bool_t bCutTPCbound=kFALSE,
+                             Int_t bCutTPCbound=0,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
@@ -295,7 +295,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
-  cutsPOI->SetCutTPCSecbound(bCutTPCbound,8.); // new cut for LHC15o
+  if(bCutTPCbound==1) cutsPOI->SetCutTPCSecbound(kTRUE,ptMin); // new cut for LHC15o
+  if(bCutTPCbound==2) cutsPOI->SetCutTPCSecboundVar(kTRUE); // new cut for LHC15o
   cutsPOI->SetQA(bCutsQA);
  }
  if (analysisTypeUser == "ESD") {
