@@ -981,8 +981,8 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
     }
     // extract the spectra 
-    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityArray->At(0)));
-    if(fRho0) spectrumName = Form("fHistJetPsi2PtRho0_%i", fCentralityArray->At(0));
+    TString spectrumName(Form("fHistJetPsi3Pt_%i", fCentralityArray->At(0)));
+    if(fRho0) spectrumName = Form("fHistJetPsi3PtRho0_%i", fCentralityArray->At(0));
     if(!fInputList->FindObject(spectrumName.Data())) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
@@ -997,13 +997,13 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
     printf("Extracted %s wight weight %.2f \n", spectrumName.Data(), fCentralityWeights->At(0));
     // merge subsequent bins (if any)
     for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
-        spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+        spectrumName = Form("fHistJetPsi3Pt_%i", fCentralityArray->At(i));
         printf( " Merging with %s with weight %.4f \n", spectrumName.Data(), fCentralityWeights->At(i));
         fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())), fCentralityWeights->At(i));
     }
     // if a second list is passed, merge this with the existing one
     if(fMergeWithList) {
-        spectrumName = Form("fHistJetPsi2Pt_%i", fMergeWithCen);
+        spectrumName = Form("fHistJetPsi3Pt_%i", fMergeWithCen);
         printf( " Adding additional output %s \n", spectrumName.Data());
         fJetPtDeltaPhi->Add(((TH2D*)fMergeWithList->FindObject(spectrumName.Data())), fMergeWithWeight);
     }
@@ -1061,9 +1061,9 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
     // extract the delta pt matrices
     TString deltaptName("");
     if(!fRho0) {
-        deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(0));
+        deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi3ExLJ_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi3_%i", fCentralityArray->At(0));
     } else {
-        deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJRho0_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi2Rho0_%i", fCentralityArray->At(0));
+        deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi3ExLJRho0_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi3Rho0_%i", fCentralityArray->At(0));
     }
     fDeltaPtDeltaPhi = ((TH2D*)fInputList->FindObject(deltaptName.Data()));
     if(!fDeltaPtDeltaPhi) {
@@ -1078,13 +1078,13 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(TH1* customIn, TH1* customOut)
     fDeltaPtDeltaPhi->Scale(fCentralityWeights->At(0));
     printf("Extracted %s with weight %.2f \n", deltaptName.Data(), fCentralityWeights->At(0));
     for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
-        deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+        deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi3ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi3_%i", fCentralityArray->At(i));
         printf(" Merging with %s with weight %.4f \n", deltaptName.Data(), fCentralityWeights->At(i));
         fDeltaPtDeltaPhi->Add((TH2D*)fInputList->FindObject(deltaptName.Data()), fCentralityWeights->At(i));
     }
     // if a second list is passed, merge this with the existing one
     if(fMergeWithList) {
-        deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fMergeWithCen) : Form("fHistDeltaPtDeltaPhi2_%i", fMergeWithCen);
+        deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi3ExLJ_%i", fMergeWithCen) : Form("fHistDeltaPtDeltaPhi3_%i", fMergeWithCen);
         printf(" Adding additional data %s \n", deltaptName.Data());
         fDeltaPtDeltaPhi->Add((TH2D*)fMergeWithList->FindObject(deltaptName.Data()), fMergeWithWeight);
     }
@@ -1156,8 +1156,8 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
     }
     // extract the spectra 
-    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityArray->At(0)));
-    if(fRho0) spectrumName = Form("fHistJetPsi2PtRho0_%i", fCentralityArray->At(0));
+    TString spectrumName(Form("fHistJetPsi3Pt_%i", fCentralityArray->At(0)));
+    if(fRho0) spectrumName = Form("fHistJetPsi3PtRho0_%i", fCentralityArray->At(0));
     fJetPtDeltaPhi = ((TH2D*)fInputList->FindObject(spectrumName.Data()));
     if(!fJetPtDeltaPhi) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
@@ -1165,7 +1165,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
     }
     if(fCentralityArray) {
         for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
-            spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+            spectrumName = Form("fHistJetPsi3Pt_%i", fCentralityArray->At(i));
             fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())));
         }
     }
@@ -1175,9 +1175,9 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
     // extract the delta pt matrices
     TString deltaptName("");
     if(!fRho0) {
-        deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(0));
+        deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi3ExLJ_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi3_%i", fCentralityArray->At(0));
     } else {
-        deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJRho0_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi2Rho0_%i", fCentralityArray->At(0));
+        deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi3ExLJRho0_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi3Rho0_%i", fCentralityArray->At(0));
     }
     fDeltaPtDeltaPhi = ((TH2D*)fInputList->FindObject(deltaptName.Data()));
     if(!fDeltaPtDeltaPhi) {
@@ -1188,7 +1188,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
     }
     if(fCentralityArray) {
         for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
-            deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+            deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi3ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi3_%i", fCentralityArray->At(i));
             fDeltaPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(deltaptName.Data())));
         }
     }
