@@ -39,11 +39,12 @@ public:
   virtual ~AliAnalysisTaskEmcalTriggerMultiplicity();
 
   /**
-   * Set the virtual track selection, used to determine the
-   * track multiplicity
-   * @param[in] sel Track selection object
+   * Enable Sumw2 when creating the histograms. Attention: Enabling Sumw2
+   * will increase memory consumption significantly. Option should only be
+   * used in case histograms are filled with a weight.
+   * @param[in] doEnable If true Sumw2 is enabled for all histograms
    */
-  void SetEmcalTrackSelection(AliEmcalTrackSelection *sel) { fTrackSel = sel; }
+  void EnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
 
   /**
    * Configure internal virtual track selection used for the
@@ -55,12 +56,21 @@ public:
   void InitializeTrackCuts(const TString &cutname, bool isAOD);
 
   /**
+   * Set the virtual track selection, used to determine the
+   * track multiplicity
+   * @param[in] sel Track selection object
+   */
+  void SetEmcalTrackSelection(AliEmcalTrackSelection *sel) { fTrackSel = sel; }
+
+
+  /**
    * Create and configure trigger mutiplicity task.
    * @param[in] nclusters Name of the cluster container (default: "usedefault" - auto-configures the task)
    * @param[in] suffix Container name suffix
    * @return Fully configured task
    */
   static AliAnalysisTaskEmcalTriggerMultiplicity *AddTaskEmcalTriggerMultiplicity(const TString &nclusters = "usedefault", const TString &suffix = "");
+
 
 protected:
 
@@ -88,6 +98,7 @@ protected:
 
 private:
   AliEmcalTrackSelection                  *fTrackSel;         ///< EMCAL virtual track selection
+  Bool_t                                  fEnableSumw2;       ///< Setter for enabling Sumw2
 
   AliAnalysisTaskEmcalTriggerMultiplicity(const AliAnalysisTaskEmcalTriggerMultiplicity &);
   AliAnalysisTaskEmcalTriggerMultiplicity &operator=(const AliAnalysisTaskEmcalTriggerMultiplicity &);
