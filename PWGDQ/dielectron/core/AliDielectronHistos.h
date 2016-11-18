@@ -96,14 +96,14 @@ public:
                      Int_t nbinsX, Double_t xmin, Double_t xmax, Int_t nbinsY, Double_t ymin, Double_t ymax,
                      UInt_t valTypeX, UInt_t valTypeY, Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE,
 		     UInt_t valTypeW=kNoWeights)
-  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,nbinsY,ymin,ymax,valTypeX,valTypeY,logBinX,logBinY,valTypeW); }
+  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,nbinsY,ymin,ymax,valTypeX,valTypeY,logBinX,logBinY,"",valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      Int_t nbinsX, Double_t xmin, Double_t xmax, Int_t nbinsY, Double_t ymin, Double_t ymax,
                      Int_t nbinsZ, Double_t zmin, Double_t zmax, UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ,
                      Bool_t logBinX=kFALSE, Bool_t logBinY=kFALSE, Bool_t logBinZ=kFALSE,
 		     UInt_t valTypeW=kNoWeights)
-  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,nbinsY,ymin,ymax,nbinsZ,zmin,zmax,valTypeX,valTypeY,valTypeZ,logBinX,logBinY,logBinZ,valTypeW); }
+  { UserProfile(histClass,name,title,kNoProfile,nbinsX,xmin,xmax,nbinsY,ymin,ymax,nbinsZ,zmin,zmax,valTypeX,valTypeY,valTypeZ,logBinX,logBinY,logBinZ,"",valTypeW); }
 
   void UserHistogram(const char* histClass,const char *name, const char* title,
                      const char* binning, UInt_t valTypeX, UInt_t valTypeW=kNoWeights)
