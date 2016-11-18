@@ -68,6 +68,8 @@
 #include "AliSysInfo.h"
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
+#include "AliHLTTRDDefinitions.h"
+#include "AliHLTTRDtrack.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -131,6 +133,8 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
+  list.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginTRD);
+  list.push_back(AliHLTTRDDefinitions::fgkTRDSpacePointDataType);
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -1037,10 +1041,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   // 4. convert the HLT TRD tracks to ESD tracks                        
   if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
-       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+       pBlock!=NULL; pBlock=GetNextInputBlock()) {      
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
-    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
+   if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
       for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
 	   element!=tracks.end(); element++) {
 	
@@ -1051,9 +1055,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  default: TRDpid[i]=restProb; break;
 	  }
 	}
-	
+	AliHLTTRDtrack trdTrack(*element);
 	AliESDtrack iotrack;
-	iotrack.UpdateTrackParams(&(*element),AliESDtrack::kTRDout);
+	iotrack.UpdateTrackParams(&trdTrack,AliESDtrack::kTRDout);
 	iotrack.SetStatus(AliESDtrack::kTRDin);
 	iotrack.SetTRDpid(TRDpid);
 	
