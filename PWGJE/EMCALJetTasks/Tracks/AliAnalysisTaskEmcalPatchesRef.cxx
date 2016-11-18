@@ -46,6 +46,7 @@ namespace EMCalTriggerPtAnalysis {
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
     AliAnalysisTaskEmcalTriggerBase(),
     fCentralityRange(-999., 999.),
+    fEnableSumw2(false),
     fRequestCentrality(false),
     fEventCentrality(0)
 {
@@ -55,6 +56,7 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
 AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name):
     AliAnalysisTaskEmcalTriggerBase(name),
     fCentralityRange(-999., 999.),
+    fEnableSumw2(false),
     fRequestCentrality(false),
     fEventCentrality(0)
 {
@@ -68,18 +70,19 @@ void AliAnalysisTaskEmcalPatchesRef::CreateUserHistos(){
   TLinearBinning etabinning(100, -0.7, 0.7);
   std::array<TString, 10> patchtypes = {"EG1", "EG2", "EJ1", "EJ2", "EMC7", "DG1", "DG2", "DJ1", "DJ2", "DMC7"};
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
+  TString optionstring = fEnableSumw2 ? "s" : "";
   for(auto trg : GetSupportedTriggers()){
-    fHistos->CreateTH1(Form("hEventCount%s", trg.Data()), Form("Event count for trigger class %s", trg.Data()), 1, 0.5, 1.5, "s");
-    fHistos->CreateTH1(Form("hEventCentrality%s", trg.Data()), Form("Event centrality for trigger class %s", trg.Data()), 103, -2., 101., "s");
-    fHistos->CreateTH1(Form("hVertexZ%s", trg.Data()), Form("z-position of the primary vertex for trigger class %s", trg.Data()), 200, -40., 40., "s");
+    fHistos->CreateTH1(Form("hEventCount%s", trg.Data()), Form("Event count for trigger class %s", trg.Data()), 1, 0.5, 1.5, optionstring);
+    fHistos->CreateTH1(Form("hEventCentrality%s", trg.Data()), Form("Event centrality for trigger class %s", trg.Data()), 103, -2., 101., optionstring);
+    fHistos->CreateTH1(Form("hVertexZ%s", trg.Data()), Form("z-position of the primary vertex for trigger class %s", trg.Data()), 200, -40., 40., optionstring);
     for(auto patch : patchtypes){
-      fHistos->CreateTH1(Form("h%sPatchEnergy%s", patch.Data(), trg.Data()), Form("%s-patch energy for trigger class %s", patch.Data(), trg.Data()), energybinning, "s");
-      fHistos->CreateTH1(Form("h%sPatchET%s", patch.Data(), trg.Data()), Form("%s-patch transverse energy for trigger class %s", patch.Data(), trg.Data()), energybinning, "s");
-      fHistos->CreateTH2(Form("h%sPatchEnergyEta%s", patch.Data(), trg.Data()), Form("%s-patch energy for trigger class %s", patch.Data(), trg.Data()), energybinning, etabinning, "s");
-      fHistos->CreateTH2(Form("h%sPatchETEta%s", patch.Data(), trg.Data()), Form("%s-patch transverse energy for trigger class %s", patch.Data(), trg.Data()), energybinning, etabinning, "s");
+      fHistos->CreateTH1(Form("h%sPatchEnergy%s", patch.Data(), trg.Data()), Form("%s-patch energy for trigger class %s", patch.Data(), trg.Data()), energybinning, optionstring);
+      fHistos->CreateTH1(Form("h%sPatchET%s", patch.Data(), trg.Data()), Form("%s-patch transverse energy for trigger class %s", patch.Data(), trg.Data()), energybinning, optionstring);
+      fHistos->CreateTH2(Form("h%sPatchEnergyEta%s", patch.Data(), trg.Data()), Form("%s-patch energy for trigger class %s", patch.Data(), trg.Data()), energybinning, etabinning, optionstring);
+      fHistos->CreateTH2(Form("h%sPatchETEta%s", patch.Data(), trg.Data()), Form("%s-patch transverse energy for trigger class %s", patch.Data(), trg.Data()), energybinning, etabinning, optionstring);
       for(int ien = 0; ien < 5; ien++){
-        fHistos->CreateTH2(Form("h%sEtaPhi%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch #eta-#phi map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 100, -0.7, 0.7, 200, 0, TMath::TwoPi(), "s");
-        fHistos->CreateTH2(Form("h%sColRow%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch col-row map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 48, -0.5, 47.5, 104, -0.5, 103.5, "s");
+        fHistos->CreateTH2(Form("h%sEtaPhi%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch #eta-#phi map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 100, -0.7, 0.7, 200, 0, TMath::TwoPi(), optionstring);
+        fHistos->CreateTH2(Form("h%sColRow%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch col-row map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 48, -0.5, 47.5, 104, -0.5, 103.5, optionstring);
       }
     }
   }
@@ -165,6 +168,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
       }
     }
   }
+  return true;
 }
 
 void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi, int col, int row){

@@ -57,7 +57,8 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fOnlineTriggerThresholds(),
   fNameAcceptanceOADB(),
   fSelectNoiseEvents(false),
-  fRejectNoiseEvents(false)
+  fRejectNoiseEvents(false),
+  fEnableDCALTriggers(true)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
@@ -83,7 +84,8 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fOnlineTriggerThresholds(),
   fNameAcceptanceOADB(),
   fSelectNoiseEvents(false),
-  fRejectNoiseEvents(false)
+  fRejectNoiseEvents(false),
+  fEnableDCALTriggers(true)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
@@ -214,10 +216,6 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     fSelectedTriggers.push_back("EMC7");
     if(!isMinBias) fSelectedTriggers.push_back("EMC7excl");
   }
-  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0]){
-    fSelectedTriggers.push_back("DMC7");
-    if(!isMinBias) fSelectedTriggers.push_back("DMC7excl");
-  }
   if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2]){
     fSelectedTriggers.push_back("EJ2");
     if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0])) fSelectedTriggers.push_back("EJ2excl");
@@ -225,14 +223,6 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ1]){
     fSelectedTriggers.push_back("EJ1");
     if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2])) fSelectedTriggers.push_back("EJ1excl");
-  }
-  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2]){
-    fSelectedTriggers.push_back("DJ2");
-    if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0])) fSelectedTriggers.push_back("DJ2excl");
-  }
-  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ1]){
-    fSelectedTriggers.push_back("DJ1");
-    if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2])) fSelectedTriggers.push_back("DJ1excl");
   }
   if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2]){
     fSelectedTriggers.push_back("EG2");
@@ -242,13 +232,30 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     fSelectedTriggers.push_back("EG1");
     if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2])) fSelectedTriggers.push_back("EG1excl");
   }
-  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2]){
-    fSelectedTriggers.push_back("DG2");
-    if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0])) fSelectedTriggers.push_back("DG2excl");
-  }
-  if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1]){
-    fSelectedTriggers.push_back("DG1");
-    if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2])) fSelectedTriggers.push_back("DG1excl");
+
+  if(fEnableDCALTriggers){
+    // Handle DCAL triggers only in case DCAL triggers are enabled,
+    // otherwise ignore results of the online/offline trigger selection
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0]){
+      fSelectedTriggers.push_back("DMC7");
+      if(!isMinBias) fSelectedTriggers.push_back("DMC7excl");
+    }
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2]){
+      fSelectedTriggers.push_back("DJ2");
+      if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0])) fSelectedTriggers.push_back("DJ2excl");
+    }
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ1]){
+      fSelectedTriggers.push_back("DJ1");
+      if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2])) fSelectedTriggers.push_back("DJ1excl");
+    }
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2]){
+      fSelectedTriggers.push_back("DG2");
+      if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0])) fSelectedTriggers.push_back("DG2excl");
+    }
+    if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1]){
+      fSelectedTriggers.push_back("DG1");
+      if(!(isMinBias || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2])) fSelectedTriggers.push_back("DG1excl");
+    }
   }
 }
 
@@ -356,18 +363,20 @@ std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(){
   // Exclusive means classes without lower trigger classes (which are downscaled) -
   // in order to make samples statistically independent: MBExcl means MinBias && !EMCAL trigger
   std::vector<TString> triggers = {
-    "MB", "EMC7", "DMC7",
-    "EJ1", "EJ2", "EG1", "EG2", "DJ1", "DJ2", "DG1", "DG2",
-    "EMC7excl", "DMC7excl", "EG2excl", "EJ2excl", "DG2excl", "DJ2excl",
-    "EJ1excl", "DJ1excl", "EG1excl", "DG1excl"
+    "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "EMC7excl", "EG2excl", "EJ2excl", "EJ1excl", "EG1excl"
   };
+  std::vector<TString> dcaltriggers = {
+      "DMC7", "DJ1", "DJ2", "DG1", "DG2", "DMC7excl", "DG2excl", "DJ2excl", "DJ1excl", "DG1excl"
+  };
+  if(fEnableDCALTriggers){
+    for(const auto &t : dcaltriggers) triggers.push_back(t);
+  }
   return triggers;
 }
 
 bool AliAnalysisTaskEmcalTriggerBase::SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass trigger) const{
   AliDebugStream(1) << "Using V1 online trigger selector" << std::endl;
-  if(trigger == AliEmcalTriggerOfflineSelection::kTrgEL0 || trigger == AliEmcalTriggerOfflineSelection::kTrgEL0) return true;
-  double onlinethresholds[5] = {140., 89., 260., 127., 0.};
+  if(trigger == AliEmcalTriggerOfflineSelection::kTrgEL0 || trigger == AliEmcalTriggerOfflineSelection::kTrgDL0) return true;
   int ngood(0);
   for(auto p : *fTriggerPatchInfo){
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);

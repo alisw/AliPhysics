@@ -59,6 +59,22 @@ public:
   virtual ~AliAnalysisTaskChargedParticlesRef();
 
   /**
+   * Enable Sumw2 when creating the histograms. Attention: Enabling Sumw2
+   * will increase memory consumption significantly. Option should only be
+   * used in case histograms are filled with a weight.
+   * @param[in] doEnable If true Sumw2 is enabled for all histograms
+   */
+  void EnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
+
+  /**
+   * Set the track selection: The track cuts are generated according to predefined
+   * recipes in the AliEmcalAnalysisFactory track cuts factory
+   * @param[in] cutname Name of the track cuts
+   * @param[in] isAOD check whether we run on ESDs or AODs
+   */
+  void InitializeTrackCuts(TString cutname, bool isAOD);
+
+  /**
    * Define rapidity shift applied to convert \f$ \eta_{lab} \f$
    * to \f$ \eta_{cms} \f$
    * @param[in] yshift Rapidity shift
@@ -83,14 +99,6 @@ public:
    * @param[in] sel Virtual track selection
    */
   void SetEMCALTrackSelection(AliEmcalTrackSelection *sel) { fTrackCuts = sel; }
-
-  /**
-   * Set the track selection: The track cuts are generated according to predefined
-   * recipes in the AliEmcalAnalysisFactory track cuts factory
-   * @param[in] cutname Name of the track cuts
-   * @param[in] isAOD check whether we run on ESDs or AODs
-   */
-  void InitializeTrackCuts(TString cutname, bool isAOD);
 
   /**
    * Define cut on \f$ \eta_{lab} \f$ used to select tracks
@@ -191,6 +199,7 @@ protected:
   AliCutValueRange<double>        fPhiCut;                    ///< Cut applied in \f$\phi_{track}\f$
 
   Bool_t                          fStudyPID;                  ///< Use kinematics correlation histograms
+  Bool_t                          fEnableSumw2;               ///< Enable sumw2 during histogram creation
 
 private:
 
