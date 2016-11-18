@@ -66,7 +66,7 @@ AliAnalysisTask *AddTask_caklein_ElectronEfficiency(TString configFile="Config_c
   // Electron efficiency task
   AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("caklein_ElectronEfficiency");
   std::cout << "task created: " << task->GetName() << std::endl;
-  SetUseMultSelection(kTRUE);
+  task->SetUseMultSelection(kTRUE);
 
   //event related
   // Note: event cuts are identical for all analysis 'cutInstance's that run together!
