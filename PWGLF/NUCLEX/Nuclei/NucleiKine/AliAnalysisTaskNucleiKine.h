@@ -20,8 +20,11 @@ class AliAnalysisTaskNucleiKine : public AliAnalysisTaskSE {
     // POIs
     std::vector<int> fPdgCodes;
     enum Species {
-      kPiPlus, kPiMinus, kKplus, kKminus, kProton, kAntiProton, kNeutron, kAntiNeutron, kDeuteron, kAntiDeuteron
+      kPiPlus, kPiMinus, kKplus, kKminus, kProton, kAntiProton, kNeutron, kAntiNeutron, kDeuteron, kAntiDeuteron,
+      kLambda, kAntiLambda, kXiMinus, kXiPlus, kOmegaMinus, kOmegaPlus
     };
+
+    bool   fIgnoreCentrality;
 
   protected:
     AliAnalysisTaskNucleiKine(const AliAnalysisTaskNucleiKine& other);
