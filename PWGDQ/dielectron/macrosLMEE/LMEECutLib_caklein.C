@@ -183,7 +183,6 @@ void LMEECutLib::SetEtaCorrection(AliDielectron *die, Int_t selPID, Int_t selCen
 
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
-// the selection is hardcoded in the AddTask, currently to 'kPbPb2011_TPCTOF_Semi1'
 AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
   AliDielectronEventCuts* eventCuts = 0x0;
   switch (cutSet) {
@@ -191,8 +190,6 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
       //Basic Event Cuts for pp and Pb-Pb, additional cuts may be in the AddTask
       eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
       eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
-      //eventCuts->SetVertexType(AliDielectronEventCuts::kVtxTPC); // AOD
-      //           eventCuts->SetCentralityRange(0.0,80.0);
       eventCuts->SetRequireVertex();
       eventCuts->SetMinVtxContributors(1);
       eventCuts->SetVertexZ(-10.,10.);
@@ -389,6 +386,8 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   ptRange500to3500->AddCut(AliDielectronVarManager::kPt, 0.5, 3.5);
   AliDielectronVarCuts *ptRange400to3500 = new AliDielectronVarCuts("ptRange400to3500","ptRange400to3500");
   ptRange400to3500->AddCut(AliDielectronVarManager::kPt, 0.4, 3.5);
+  AliDielectronVarCuts *ptRange400to8000 = new AliDielectronVarCuts("ptRange400to3500","ptRange400to3500");
+  ptRange400to3500->AddCut(AliDielectronVarManager::kPt, 0.4, 8.0);
   AliDielectronVarCuts *ptRange300to3500 = new AliDielectronVarCuts("ptRange300to3500","ptRange300to3500");
   ptRange300to3500->AddCut(AliDielectronVarManager::kPt, 0.3, 3.5);
   AliDielectronVarCuts *ptRange200to3500 = new AliDielectronVarCuts("ptRange200to3500","ptRange200to3500");
@@ -435,7 +434,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // Cut out pion/kaon/proton band LHC15o but refilled when particle in TOF electron band
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
       cgPIDCutsAna->AddCut(etaRange080);
-      cgPIDCutsAna->AddCut(ptRange400to3500);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
       cgPIDCutsAna->AddCut(PID_cutoff_pion_kaon_proton_cg);
       cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
       pidCuts = cgPIDCutsAna;
@@ -445,7 +444,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // Cut out pion/kaon/proton band LHC15o
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
       cgPIDCutsAna->AddCut(etaRange080);
-      cgPIDCutsAna->AddCut(ptRange400to3500);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
       cgPIDCutsAna->AddCut(PID_cutoff_pion_kaon_proton);
       cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
       pidCuts = cgPIDCutsAna;
@@ -455,7 +454,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // ITS & TOFifavailable & TPC sigma cut for LHC15o
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
       cgPIDCutsAna->AddCut(etaRange080);
-      cgPIDCutsAna->AddCut(ptRange400to3500);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
       cgPIDCutsAna->AddCut(pid_TPCele_AsymITS_tightTOFif);
       cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
       pidCuts = cgPIDCutsAna;
@@ -464,7 +463,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // ITS & TOFrequired & TPC sigma cut for LHC15o
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
       cgPIDCutsAna->AddCut(etaRange080);
-      cgPIDCutsAna->AddCut(ptRange400to3500);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
       cgPIDCutsAna->AddCut(pid_TPCele_AsymITS_tightTOFreq);
       cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
       pidCuts = cgPIDCutsAna;
@@ -474,7 +473,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // only ITSSA tracks
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
       cgPIDCutsAna->AddCut(etaRange080);
-      cgPIDCutsAna->AddCut(ptRange400to3500);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
       cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
       pidCuts = cgPIDCutsAna;
       break;
@@ -482,7 +481,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
     // Only TOF PID for V0 selection
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
       cgPIDCutsAna->AddCut(etaRange080);
-      cgPIDCutsAna->AddCut(ptRange400to3500);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
       cgPIDCutsAna->AddCut(pid_TOFonly);
       cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
       pidCuts = cgPIDCutsAna;
