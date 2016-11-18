@@ -87,6 +87,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Bool_t                              FillHistograms();
 
   Int_t                               SelectTriggerHadron(Float_t PtMin, Float_t PtMax);
+  Double_t                            RelativePhiEventPlane(Double_t EventPlane, Double_t Phi);
   Double_t                            RelativePhi(Double_t Phi1, Double_t Phi2);
   Double_t                            Angularity(AliEmcalJet *Jet, Int_t JetContNb);
   Double_t                            PTD(AliEmcalJet *Jet, Int_t JetContNb);
