@@ -1,11 +1,11 @@
 
 //_____________________________________________________________________________________________________
-AliAnalysisTask* AddTask_iarsene_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="LHC10h", Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString tasks="dst") {
+AliAnalysisTask* AddTask_iarsene_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="LHC10h", Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString tasks="dst", TString alienPathForMacros="alien:///alice/cern.ch/user/i/iarsene/analysisMacros") {
    //
    //  AddTask macro for the TreeMaker analysis task and eventual other dependent tasks
    //
    
-   TString alienPath("alien:///alice/cern.ch/user/i/iarsene/analysisMacros");
+   TString alienPath = alienPathForMacros;
    TString alirootPath("$ALICE_PHYSICS/PWGDQ/reducedTree/macros");
    
    TObjArray* tasksArray = tasks.Tokenize(";");

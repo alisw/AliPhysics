@@ -16,12 +16,18 @@ class AliReducedEventCut : public AliReducedVarCut {
   AliReducedEventCut(const Char_t* name, const Char_t* title);
   virtual ~AliReducedEventCut();
 
+  void AddEventTagFilter(ULong64_t filter) {fEventFilter |= filter; fEventTagFilterEnabled = kTRUE;};
+  void AddEventTagFilterBit(UShort_t bit)  {if(bit>63) return; fEventFilter |= (ULong64_t(1)<<bit); fEventTagFilterEnabled = kTRUE;};
+  void EnableVertexDistanceCut()  {fEventFilter |= (ULong64_t(1)<<13); fEventTagFilterEnabled = kTRUE;};
+  
   virtual Bool_t IsSelected(TObject* obj);
   virtual Bool_t IsSelected(TObject* obj, Float_t* values);
   
  protected: 
       
   // Cuts on event specific quantities
+  Bool_t         fEventTagFilterEnabled;           // if true apply the filter to the event tag 
+  ULong64_t  fEventFilter;                             // filter for the event tag map
    
   AliReducedEventCut(const AliReducedEventCut &c);
   AliReducedEventCut& operator= (const AliReducedEventCut &c);

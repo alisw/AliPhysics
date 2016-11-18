@@ -210,7 +210,6 @@ void AliReducedAnalysisJpsi2ee::Process() {
   
   AliReducedVarManager::SetEvent(fEvent);
   
-  //cout << "############ E v e n t #################" << endl;
   // reset the values array, keep only the run wise data (LHC and ALICE GRP information)
   // NOTE: the run wise data will be updated automatically in the VarManager in case a run change is detected
   for(Int_t i=AliReducedVarManager::kNRunWiseVariables; i<AliReducedVarManager::kNVars; ++i) fValues[i]=-9999.;
@@ -218,13 +217,18 @@ void AliReducedAnalysisJpsi2ee::Process() {
   // fill event information before event cuts
   AliReducedVarManager::FillEventInfo(fEvent, fValues);
   fHistosManager->FillHistClass("Event_BeforeCuts", fValues);
-  //cout << "### Event CentVZERO: " << fValues[AliReducedVarManager::kCentVZERO] << endl;
-  //cout << "### Event VtxZ: " << fValues[AliReducedVarManager::kVtxZ] << endl;
-  //cout << "### Event VZERO-EP: " << fValues[AliReducedVarManager::kVZERORP+1] << endl;
+  for(UShort_t ibit=0; ibit<64; ++ibit) {
+     AliReducedVarManager::FillEventTagInput(fEvent, ibit, fValues);
+     fHistosManager->FillHistClass("EventTag_BeforeCuts", fValues);
+  }
+  for(UShort_t ibit=0; ibit<64; ++ibit) {
+      AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
+      fHistosManager->FillHistClass("EventTriggers_BeforeCuts", fValues);
+  }
+  
   
   // apply event selection
   if(!IsEventSelected(fEvent)) return;
-  //cout << "### Event SELECTED " << endl;
   
   // select tracks
   RunTrackSelection();
@@ -233,7 +237,7 @@ void AliReducedAnalysisJpsi2ee::Process() {
   // NOTE: Pair each track from the selected tracks list with all selected tracks in the prefilter track list
   //         If the created pair fails the pair prefilter criteria, then the selected trak is removed from the track list
   //          and further pairing
-  //FillTrackHistograms("Track_NoPrefilter");
+  //FillTrackHistograms("Track_BeforePrefilter");
   //RunSameEventPairing("PairPrefilterSE");
   RunPrefilter();
   
@@ -253,8 +257,14 @@ void AliReducedAnalysisJpsi2ee::Process() {
  
   // fill event info histograms after cuts
   fHistosManager->FillHistClass("Event_AfterCuts", fValues);
-  //fMixingHandler->PrintMixingLists(10);
-  // Done
+  for(UShort_t ibit=0; ibit<64; ++ibit) {
+     AliReducedVarManager::FillEventTagInput(fEvent, ibit, fValues);
+     fHistosManager->FillHistClass("EventTag_AfterCuts", fValues);
+  }
+  for(UShort_t ibit=0; ibit<64; ++ibit) {
+     AliReducedVarManager::FillEventOnlineTrigger(ibit, fValues);
+     fHistosManager->FillHistClass("EventTriggers_AfterCuts", fValues);
+  }
 }
 
 
@@ -269,12 +279,14 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(TString trackClass /*= "Trac
       track = (AliReducedTrackInfo*)nextPosTrack();
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, trackClass);
+      //cout << "Pos track " << i << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
    }
    TIter nextNegTrack(&fNegTracks);
    for(Int_t i=0;i<fNegTracks.GetEntries();++i) {
       track = (AliReducedTrackInfo*)nextNegTrack();
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, trackClass);
+      //cout << "Neg track " << i << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
    }
 }
 
@@ -286,6 +298,18 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(AliReducedTrackInfo* track, 
    //
    for(Int_t icut=0; icut<fTrackCuts.GetEntries(); ++icut) {
       if(track->TestFlag(icut)) fHistosManager->FillHistClass(Form("%s_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+      for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+         AliReducedVarManager::FillTrackingFlag(track, iflag, fValues);
+         fHistosManager->FillHistClass(Form("%sStatusFlags_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+      }
+      for(Int_t iLayer=0; iLayer<6; ++iLayer) {
+         AliReducedVarManager::FillITSlayerFlag(track, iLayer, fValues);
+         fHistosManager->FillHistClass(Form("%sITSclusterMap_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+      }
+      for(Int_t iLayer=0; iLayer<8; ++iLayer) {
+         AliReducedVarManager::FillTPCclusterBitFlag(track, iLayer, fValues);
+         fHistosManager->FillHistClass(Form("%sTPCclusterMap_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+      }
    }  // end loop over cuts
 }
 
@@ -309,23 +333,33 @@ void AliReducedAnalysisJpsi2ee::RunTrackSelection() {
    //
    // clear the track arrays
    fPosTracks.Clear("C"); fNegTracks.Clear("C"); fPrefilterPosTracks.Clear("C"); fPrefilterNegTracks.Clear("C");
+   
    // loop over the track list and evaluate all the track cuts
    AliReducedTrackInfo* track = 0x0;
    TClonesArray* trackList = fEvent->GetTracks();
    TIter nextTrack(trackList);
-   //cout << "### Track selection for " << fEvent->NTracks() << " tracks"  << endl;
+   Float_t nsigma = 0.;
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
-      //cout << "$$ track #" << it << ":  TrackId " << track->TrackId() << "; (px,py,pz): (" << track->Px() << "," << track->Py() << "," << track->Pz() << ")" << endl;
-      
       AliReducedVarManager::FillTrackInfo(track, fValues);
+      fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
+      for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+         AliReducedVarManager::FillTrackingFlag(track, iflag, fValues);
+         fHistosManager->FillHistClass("TrackStatusFlags_BeforeCuts", fValues);
+      }
+      for(Int_t iLayer=0; iLayer<6; ++iLayer) {
+         AliReducedVarManager::FillITSlayerFlag(track, iLayer, fValues);
+         fHistosManager->FillHistClass("TrackITSclusterMap_BeforeCuts", fValues);
+      }
+      for(Int_t iLayer=0; iLayer<8; ++iLayer) {
+         AliReducedVarManager::FillTPCclusterBitFlag(track, iLayer, fValues);
+         fHistosManager->FillHistClass("TrackTPCclusterMap_BeforeCuts", fValues);
+      }
       if(IsTrackSelected(track, fValues)) {
-         //cout << " --> selected: "; AliReducedVarManager::PrintTrackFlags(track); cout << endl;
          if(track->Charge()>0) fPosTracks.Add(track);
          if(track->Charge()<0) fNegTracks.Add(track);
       }
       if(IsTrackPrefilterSelected(track, fValues)) {
-         //cout << " --> prefilter selected: "; AliReducedVarManager::PrintTrackFlags(track); cout << endl;
          if(track->Charge()>0) fPrefilterPosTracks.Add(track);
          if(track->Charge()<0) fPrefilterNegTracks.Add(track);
       }
@@ -347,24 +381,17 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
    AliReducedTrackInfo* pTrack2=0;
    AliReducedTrackInfo* nTrack=0;
    AliReducedTrackInfo* nTrack2=0;
-   //cout << "### Run same event pairing for pair class " << pairClass.Data() << endl;
-   //cout << "### Positive / negative tracks: " << fPosTracks.GetEntries() << " / " << fNegTracks.GetEntries() << endl;
    for(Int_t ip=0; ip<fPosTracks.GetEntries(); ++ip) {
       pTrack = (AliReducedTrackInfo*)nextPosTrack();
-      //cout << "$$$$ ip #" << ip << " id: " << pTrack->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(pTrack); cout << endl;
       
       nextNegTrack.Reset();
       for(Int_t in=0; in<fNegTracks.GetEntries(); ++in) {
          nTrack = (AliReducedTrackInfo*)nextNegTrack();
-         //cout << "$$$$$$ in #" << in << " id: " << nTrack->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(nTrack); cout << endl;
          
          // verify that the two current tracks have at least 1 common bit
          if(!(pTrack->GetFlags() & nTrack->GetFlags())) continue;
-         //cout << "$$$$$$ mask: "; AliReducedVarManager::PrintBits(pTrack->GetFlags() & nTrack->GetFlags(), fTrackCuts.GetEntries()); cout<<endl;
          AliReducedVarManager::FillPairInfo(pTrack, nTrack, AliReducedPairInfo::kJpsiToEE, fValues);
-         //cout << "$$$$$$ mass/type: " << fValues[AliReducedVarManager::kMass] << "/" << fValues[AliReducedVarManager::kPairType] << endl;
          if(IsPairSelected(fValues)) {
-            //cout << "$$$$$$ pair is selected" << endl;
             FillPairHistograms(pTrack->GetFlags() & nTrack->GetFlags(), 1, pairClass);    // 1 is for +- pairs 
             fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
          }
@@ -372,15 +399,11 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
       
       for(Int_t ip2=ip+1; ip2<fPosTracks.GetEntries(); ++ip2) {
          pTrack2 = (AliReducedTrackInfo*)fPosTracks.At(ip2);
-         //cout << "$$$$$$ ip2 #" << ip2 << " id: " << pTrack2->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(pTrack2); cout << endl;
          
          // verify that the two current tracks have at least 1 common bit
          if(!(pTrack->GetFlags() & pTrack2->GetFlags())) continue;
-         //cout << "$$$$$$ mask: "; AliReducedVarManager::PrintBits(pTrack->GetFlags() & pTrack2->GetFlags(), fTrackCuts.GetEntries()); cout<<endl;
          AliReducedVarManager::FillPairInfo(pTrack, pTrack2, AliReducedPairInfo::kJpsiToEE, fValues);
-         //cout << "$$$$$$ mass/type: " << fValues[AliReducedVarManager::kMass] << "/" << fValues[AliReducedVarManager::kPairType] << endl;
          if(IsPairSelected(fValues)) {
-            //cout << "$$$$$$ pair is selected" << endl;
             FillPairHistograms(pTrack->GetFlags() & pTrack2->GetFlags(), 0, pairClass);       // 0 is for ++ pairs 
             fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
          }
@@ -390,19 +413,14 @@ void AliReducedAnalysisJpsi2ee::RunSameEventPairing(TString pairClass /*="PairSE
    nextNegTrack.Reset();
    for(Int_t in=0; in<fNegTracks.GetEntries(); ++in) {
       nTrack = (AliReducedTrackInfo*)nextNegTrack();
-      //cout << "$$$$$$ in #" << in << " id: " << nTrack->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(nTrack); cout << endl;
       
       for(Int_t in2=in+1; in2<fNegTracks.GetEntries(); ++in2) {
          nTrack2 = (AliReducedTrackInfo*)fNegTracks.At(in2);
-         //cout << "$$$$$$ in2 #" << in2 << " id: " << nTrack2->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(nTrack2); cout << endl;
          
          // verify that the two current tracks have at least 1 common bit
          if(!(nTrack->GetFlags() & nTrack2->GetFlags())) continue;
-         //cout << "$$$$$$ mask: "; AliReducedVarManager::PrintBits(nTrack->GetFlags() & nTrack2->GetFlags(), fTrackCuts.GetEntries()); cout<<endl;
          AliReducedVarManager::FillPairInfo(nTrack, nTrack2, AliReducedPairInfo::kJpsiToEE, fValues);
-         //cout << "$$$$$$ mass/type: " << fValues[AliReducedVarManager::kMass] << "/" << fValues[AliReducedVarManager::kPairType] << endl;
          if(IsPairSelected(fValues)) {
-            //cout << "$$$$$$ pair is selected" << endl;
             FillPairHistograms(nTrack->GetFlags() & nTrack2->GetFlags(), 2, pairClass);      // 2 is for -- pairs
             fValues[AliReducedVarManager::kNpairsSelected] += 1.0;
          }
@@ -423,99 +441,78 @@ void AliReducedAnalysisJpsi2ee::RunPrefilter() {
    TIter nextNegPrefilterTrack(&fPrefilterNegTracks);
    
    // First pair the positive trackes with the prefilter selected tracks
-   //cout << "##### Running the prefilter " << endl;
    AliReducedTrackInfo* track=0;
    AliReducedTrackInfo* trackPref=0;
    for(Int_t ip = 0; ip<fPosTracks.GetEntries(); ++ip) {
       track = (AliReducedTrackInfo*)nextPosTrack();
-      //cout << "$$$$$$ ip #" << ip << " id: " << track->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(track); cout << endl;
       
       nextPosPrefilterTrack.Reset();
       for(Int_t ipp = 0; ipp<fPrefilterPosTracks.GetEntries(); ++ipp) {
          trackPref = (AliReducedTrackInfo*)nextPosPrefilterTrack();
-         //cout << "$$$$$$ ipp #" << ipp << " id: " << trackPref->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(trackPref); cout << endl;
          
          if(track->TrackId()==trackPref->TrackId()) continue;       // avoid self-pairing
          AliReducedVarManager::FillPairInfo(track, trackPref, AliReducedPairInfo::kJpsiToEE, fValues);
-         //cout << "$$$$$$ mass/type: " << fValues[AliReducedVarManager::kMass] << "/" << fValues[AliReducedVarManager::kPairType] << endl;
          if(!IsPairPreFilterSelected(fValues)) {
             track->ResetFlags(); 
-            //cout << "track failed the prefilter test, breaking the prefilter tracks loop" << endl;
             break;
          }
          else {
-            //cout << "pair passed the prefilter" << endl;
          }
       }  // end loop over positive prefilter tracks
       if(!track->GetFlags()) {
          fPosTracks.Remove(track); 
-         //cout << "track removed from the positives list and continuing" << endl;
          continue;
       }
       
       nextNegPrefilterTrack.Reset();
       for(Int_t ipn = 0; ipn<fPrefilterNegTracks.GetEntries(); ++ipn) {
          trackPref = (AliReducedTrackInfo*)nextNegPrefilterTrack();
-         //cout << "$$$$$$ ipn #" << ipn << " id: " << trackPref->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(trackPref); cout << endl;
          
          AliReducedVarManager::FillPairInfo(track, trackPref, AliReducedPairInfo::kJpsiToEE, fValues);
-         //cout << "$$$$$$ mass/type: " << fValues[AliReducedVarManager::kMass] << "/" << fValues[AliReducedVarManager::kPairType] << endl;
          if(!IsPairPreFilterSelected(fValues)) {
             track->ResetFlags(); 
-            //cout << "track failed the prefilter test, breaking the prefilter tracks loop" << endl;
             break;
          }
          else {
-            //cout << "pair passed the prefilter" << endl;
          }
       }  // end loop over negative prefilter tracks
       
       if(!track->GetFlags()) {
          fPosTracks.Remove(track);
-         //cout << "track removed from the positives list" << endl;
       }
    }  // end loop over the positive tracks
 
    for(Int_t in = 0; in<fNegTracks.GetEntries(); ++in) {
       track = (AliReducedTrackInfo*)nextNegTrack();
-      //cout << "$$$$$$ in #" << in << " id: " << track->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(track); cout << endl;
       
       nextPosPrefilterTrack.Reset();
       for(Int_t ipp = 0; ipp<fPrefilterPosTracks.GetEntries(); ++ipp) {
          trackPref = (AliReducedTrackInfo*)nextPosPrefilterTrack();
-         //cout << "$$$$$$ ipp #" << ipp << " id: " << trackPref->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(trackPref); cout << endl;
          
          AliReducedVarManager::FillPairInfo(track, trackPref, AliReducedPairInfo::kJpsiToEE, fValues);
-         //cout << "$$$$$$ mass/type: " << fValues[AliReducedVarManager::kMass] << "/" << fValues[AliReducedVarManager::kPairType] << endl;
          if(!IsPairPreFilterSelected(fValues)) {
             track->ResetFlags(); 
-            //cout << "track failed the prefilter test, breaking the prefilter tracks loop" << endl;
             break;
          }
       }  // end loop over positive prefilter tracks
       if(!track->GetFlags()) {
          fNegTracks.Remove(track); 
-         //cout << "track removed from the negatives list" << endl;
          continue;
       }
       
       nextNegPrefilterTrack.Reset();
       for(Int_t ipn = 0; ipn<fPrefilterNegTracks.GetEntries(); ++ipn) {
          trackPref = (AliReducedTrackInfo*)nextNegPrefilterTrack();
-         //cout << "$$$$$$ ipn #" << ipn << " id: " << trackPref->TrackId() << ";"; AliReducedVarManager::PrintTrackFlags(trackPref); cout << endl;
          
          if(track->TrackId()==trackPref->TrackId()) continue;       // avoid self-pairing
          AliReducedVarManager::FillPairInfo(track, trackPref, AliReducedPairInfo::kJpsiToEE, fValues);
-         //cout << "$$$$$$ mass/type: " << fValues[AliReducedVarManager::kMass] << "/" << fValues[AliReducedVarManager::kPairType] << endl;
          if(!IsPairPreFilterSelected(fValues)) {
             track->ResetFlags(); 
-            //cout << "track failed the prefilter test, breaking the prefilter tracks loop" << endl;
             break;
          }
       }  // end loop over negative prefilter tracks
       if(!track->GetFlags()) {
          fNegTracks.Remove(track);
-         //cout << "track removed from the negatives list" << endl;
       }
    }  // end loop over the negative tracks
 }
@@ -527,5 +524,4 @@ void AliReducedAnalysisJpsi2ee::Finish() {
   //
    if(fOptionRunMixing)
      fMixingHandler->RunLeftoverMixing(AliReducedPairInfo::kJpsiToEE);
-   //cout << "*********************************************************  Finish is ending" << endl;
 }
