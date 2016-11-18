@@ -249,6 +249,12 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
     
    // Load the event
    AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
+
+  Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+  if (matchingAODdeltaAODlevel<=0) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return kFALSE;
+  }
    
    TClonesArray *arrayDStartoD0pi=0;
    
@@ -281,7 +287,6 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       if (!mcArray) {
       	 printf("AliAnalysisTaskSEDStarSpectra::UserExec: MC particles not found!\n");
-      	 //return kFALSE;
       }
    }
     

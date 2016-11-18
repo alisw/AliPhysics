@@ -22,6 +22,7 @@
 // A. Grelli (Utrecht University) a.grelli@uu.nl
 // X. Zhang (LBNL) XMZhang@lbl.gov
 // S. Aiola (Yale University) salvatore.aiola@cern.ch
+// S. Antônio (University of São Paulo / Utrecht University) antonio.silva@cern.ch
 //-----------------------------------------------------------------------
 
 #include <TDatabasePDG.h>
@@ -448,6 +449,12 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   //
 
   if (fInhibitTask) return kFALSE;
+
+  Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+  if (matchingAODdeltaAODlevel<=0) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return kFALSE;
+  }
 
   AliDebug(2, "Entering Run()");
 
