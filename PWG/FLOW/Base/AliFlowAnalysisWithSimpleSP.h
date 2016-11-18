@@ -36,7 +36,7 @@ class AliFlowAnalysisWithSimpleSP : public AliFlowAnalysis {
         void Init();                                       //Define output objects
         void Make(AliFlowEventSimple* anEvent);            //Main routine
         void GetOutputHistograms(TList *outputListHistos); //Copy output objects from TList
-        void Finish();                                     //Fill results
+        void Finish(Bool_t A = kFALSE);                                     //Fill results
         void WriteHistograms(TDirectoryFile *outputFileName) const; //writes histograms locally (for OnTheFly)
 
 
