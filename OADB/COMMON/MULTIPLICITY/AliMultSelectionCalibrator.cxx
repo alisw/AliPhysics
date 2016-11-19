@@ -794,6 +794,10 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fRefMultEta8->SetIsInteger( kTRUE );
     AliMultVariable *fnTracklets     = new AliMultVariable("fnTracklets");
     fnTracklets->SetIsInteger( kTRUE );
+    AliMultVariable *fnTracklets08     = new AliMultVariable("fnTracklets08");
+    fnTracklets08->SetIsInteger( kTRUE );
+    AliMultVariable *fnTracklets15     = new AliMultVariable("fnTracklets15");
+    fnTracklets15->SetIsInteger( kTRUE );
     
     //ZDC Related
     AliMultVariable *fZncEnergy = new AliMultVariable("fZncEnergy");
@@ -854,6 +858,8 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fnSPDClusters0 );
     fInput->AddVariable( fnSPDClusters1 );
     fInput->AddVariable( fnTracklets   );
+    fInput->AddVariable( fnTracklets08   );
+    fInput->AddVariable( fnTracklets15   );
     fInput->AddVariable( fRefMultEta5  );
     fInput->AddVariable( fRefMultEta8  );
     fInput->AddVariable( fZncEnergy );
