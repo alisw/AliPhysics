@@ -52,6 +52,7 @@ class AliVAODHeader : public AliVHeader {
   virtual void     SetOrbitNumber(UInt_t nOr)           = 0;
   virtual void     SetPeriodNumber(UInt_t nPer)         = 0;
   virtual void     SetBunchCrossNumber(UShort_t nBx)    = 0;
+  virtual void     SetTimeStamp(UInt_t t)               = 0;
   virtual void     SetEventType(UInt_t evttype)         = 0;
   virtual UInt_t   GetEventType()           const       = 0;
   virtual void     SetTriggerMask(ULong64_t trigMsk)    = 0;

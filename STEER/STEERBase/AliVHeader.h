@@ -24,6 +24,7 @@ class AliVHeader : public TNamed {
   virtual UShort_t  GetBunchCrossNumber()   const = 0;
   virtual UInt_t    GetOrbitNumber()        const = 0;
   virtual UInt_t    GetPeriodNumber()       const = 0;
+  virtual UInt_t    GetTimeStamp()          const = 0;
   virtual ULong64_t GetTriggerMask()        const = 0;
   virtual UChar_t   GetTriggerCluster()     const = 0;
   virtual UInt_t    GetEventType()          const = 0;

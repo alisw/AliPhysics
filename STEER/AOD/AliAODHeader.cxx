@@ -62,6 +62,7 @@ AliAODHeader::AliAODHeader() :
   fOrbitNumber(0),
   fPeriodNumber(0),
   fBunchCrossNumber(0),
+  fTimeStamp(0),
   fRefMultComb05(-999),
   fRefMultComb08(-999),
   fRefMultComb10(-999),
@@ -100,6 +101,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 			   UShort_t nBunchX,
 			   UInt_t nOrbit,
 			   UInt_t nPeriod,
+			   UInt_t tStamp,
 			   const Char_t *title) :
   AliVAODHeader(),
   fMagneticField(-999.),
@@ -131,6 +133,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
+  fTimeStamp(tStamp),
   fRefMultComb05(-999),
   fRefMultComb08(-999),
   fRefMultComb10(-999),
@@ -169,6 +172,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 			   UShort_t nBunchX,
 			   UInt_t nOrbit,
 			   UInt_t nPeriod,
+			   UInt_t tStamp,
 			   Int_t refMult,
 			   Int_t refMultPos,
 			   Int_t refMultNeg,
@@ -225,6 +229,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
   fBunchCrossNumber(nBunchX),
+  fTimeStamp(tStamp),
   fRefMultComb05(refMultComb05),
   fRefMultComb08(refMultComb08),
   fRefMultComb10(refMultComb10),
@@ -299,6 +304,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fOrbitNumber(hdr.fOrbitNumber),
   fPeriodNumber(hdr.fPeriodNumber),
   fBunchCrossNumber(hdr.fBunchCrossNumber),
+  fTimeStamp(hdr.fTimeStamp),
   fRefMultComb05(hdr.fRefMultComb05), 
   fRefMultComb08(hdr.fRefMultComb08), 
   fRefMultComb10(hdr.fRefMultComb10), 
@@ -377,6 +383,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fOrbitNumber      = hdr.fOrbitNumber;
     fPeriodNumber     = hdr.fPeriodNumber;
     fBunchCrossNumber = hdr.fBunchCrossNumber;
+    fTimeStamp        = hdr.fTimeStamp;
     fRefMultComb05    = hdr.fRefMultComb05;
     fRefMultComb08    = hdr.fRefMultComb08;
     fRefMultComb10    = hdr.fRefMultComb10;
@@ -514,6 +521,7 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("Bunch Crossing  #       : %d\n", fBunchCrossNumber);
   printf("Orbit Number #          : %d\n", fOrbitNumber);
   printf("Period Number #         : %d\n", fPeriodNumber);
+  printf("Time Stamp #            : %d\n", fTimeStamp);  
   printf("Trigger mask            : %lld\n", fTriggerMask);
   printf("Trigger mask(next50)    : %lld\n", fTriggerMaskNext50);
   printf("Trigger cluster         : %d\n", fTriggerCluster);

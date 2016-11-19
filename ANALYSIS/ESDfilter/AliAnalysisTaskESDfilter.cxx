@@ -402,6 +402,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
     header->SetOrbitNumber(esd.GetOrbitNumber());
     header->SetPeriodNumber(esd.GetPeriodNumber());
     header->SetEventType(esd.GetEventType());
+    header->SetTimeStamp(esd.GetTimeStamp());
     
     header->SetEventNumberESDFile(esd.GetHeader()->GetEventNumberInFile());
     if(const_cast<AliESDEvent&>(esd).GetCentrality()){

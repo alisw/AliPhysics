@@ -29,11 +29,12 @@ class AliAODHeader : public AliVAODHeader {
  public :
   AliAODHeader();
  
-  AliAODHeader(Int_t nRun, UShort_t nBunchX, UInt_t nOrbit, UInt_t nPeriod, const Char_t *title="");
+  AliAODHeader(Int_t nRun, UShort_t nBunchX, UInt_t nOrbit, UInt_t nPeriod, UInt_t tStamp=0, const Char_t *title="");
   AliAODHeader(Int_t nRun, 
 	       UShort_t nBunchX,
 	       UInt_t nOrbit,
 	       UInt_t nPeriod,
+	       UInt_t tStamp,
 	       Int_t refMult,
 	       Int_t refMultPos,
 	       Int_t refMultNeg,
@@ -71,6 +72,8 @@ class AliAODHeader : public AliVAODHeader {
   UShort_t  GetBunchCrossNumber()   const { return fBunchCrossNumber; }
   UInt_t    GetOrbitNumber()        const { return fOrbitNumber; }
   UInt_t    GetPeriodNumber()       const { return fPeriodNumber; }
+  void      SetTimeStamp(UInt_t timeStamp){fTimeStamp = timeStamp;}
+  UInt_t    GetTimeStamp()          const { return fTimeStamp;}
   ULong64_t GetTriggerMask()        const { return fTriggerMask; }
   ULong64_t GetTriggerMaskNext50()  const { return fTriggerMaskNext50; }
   UChar_t   GetTriggerCluster()     const { return fTriggerCluster; }
@@ -250,6 +253,7 @@ class AliAODHeader : public AliVAODHeader {
   UInt_t      fOrbitNumber;         // Orbit Number
   UInt_t      fPeriodNumber;        // Period Number
   UShort_t    fBunchCrossNumber;    // BunchCrossingNumber
+  UInt_t      fTimeStamp;           // Time stamp
   Short_t     fRefMultComb05;       // combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.5
   Short_t     fRefMultComb08;       // combined reference multiplicity (tracklets + ITSTPC) in |eta|<0.8
   Short_t     fRefMultComb10;       // combined reference multiplicity (tracklets + ITSTPC) in |eta|<1.0
@@ -275,7 +279,7 @@ class AliAODHeader : public AliVAODHeader {
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
   TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 28);
+  ClassDef(AliAODHeader, 29);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

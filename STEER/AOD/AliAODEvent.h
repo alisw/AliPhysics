@@ -115,6 +115,7 @@ class AliAODEvent : public AliVEvent {
   void     SetPeriodNumber(UInt_t n){if (fHeader) fHeader->SetPeriodNumber(n);}
   void     SetOrbitNumber(UInt_t n) {if (fHeader) fHeader->SetOrbitNumber(n);}
   void     SetBunchCrossNumber(UShort_t n) {if (fHeader) fHeader->SetBunchCrossNumber(n);}
+  void     SetTimeStamp(UInt_t tstamp) {if (fHeader) fHeader->SetTimeStamp(tstamp);}
   void     SetMagneticField(Double_t mf){if (fHeader) fHeader->SetMagneticField(mf);}
   void     SetMuonMagFieldScale(Double_t mf){if (fHeader) fHeader->SetMuonMagFieldScale(mf);}
   void     SetDiamond(Float_t xy[2],Float_t cov[3]){if (fHeader) fHeader->SetDiamond(xy,cov);}
@@ -123,6 +124,7 @@ class AliAODEvent : public AliVEvent {
   UInt_t   GetPeriodNumber() const {return fHeader ? fHeader->GetPeriodNumber() : 0;}
   UInt_t   GetOrbitNumber() const {return fHeader ? fHeader->GetOrbitNumber() : 0;}
   UShort_t GetBunchCrossNumber() const {return fHeader ? fHeader->GetBunchCrossNumber() : 0;}
+  UInt_t   GetTimeStamp() const {return fHeader ? fHeader->GetTimeStamp() : 0;}
   Double_t GetMagneticField() const {return fHeader ? fHeader->GetMagneticField() : -999.;}
   Double_t GetMuonMagFieldScale() const {return fHeader ? fHeader->GetMuonMagFieldScale() : -999.;}
   Double_t GetDiamondX() const {return fHeader ? fHeader->GetDiamondX() : -999.;}
