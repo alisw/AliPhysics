@@ -1657,7 +1657,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 
                 //Check 6: Experimental lambda rejection cut
                 (TMath::Abs(LambdaInvariantMass(lprpx,lprpy,lprpz,lpipx,lpipy,lpipz)-1.116) > lCascadeResult->GetCutSpecialLambdaRejection() )
-                
                 ){
                 //This satisfies all my conditionals! Fill histogram
                 histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
@@ -2185,7 +2184,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
 }
 
 //________________________________________________________________________
-Double_t LambdaInvariantMass( Double_t prpx, Double_t prpy, Double_t prpz, Double_t pipx, Double_t pipy, Double_t pipz){
+Double_t AliAnalysisTaskStrangenessVsMultiplicityRun2::LambdaInvariantMass( Double_t prpx, Double_t prpy, Double_t prpz, Double_t pipx, Double_t pipy, Double_t pipz){
     TLorentzVector v1; v1.SetPxPyPzE(prpx, prpy, prpz, TMath::Sqrt( prpx*prpx+prpy*prpy+prpz*prpz + 0.93826*0.93826));
     TLorentzVector v2; v2.SetPxPyPzE(pipx, pipy, pipz, TMath::Sqrt( pipx*pipx+pipy*pipy+pipz*pipz + 0.13957*0.13957));
     TLorentzVector v0 = v1+v2 ;
