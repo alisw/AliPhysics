@@ -691,7 +691,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
                 if(fPDG==111) fPi0Pt[iCent]->Fill(iEnhance+2,pTMC); //pi0
                 if(fPDG==221) fEtaPt[iCent]->Fill(iEnhance+2,pTMC); //eta
             }
-            
         }
     }//MC
     
@@ -1191,22 +1190,22 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT, Int_t iCe
     if (fWhichPeriod==2015){
         
         if (iCent==0){
-            double parLowPt[4] = {0.24391,0.776573,14.5647,16.5887};
-            double parHighPt[4] = {0.904165,0.412194,4.00567,6.19943};
+            double parLowPt[4] = {5.86698e-10,0.990496,2588.97,2459.88};
+            double parHighPt[4] = {1.45767,0.628626,6.17578,8.17214};
             
             if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
             if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==1){
-            double parLowPt[4] = {9.02023,0.952634,9.53571,14.5909};
-            double parHighPt[4] = {0.670683,0.354173,3.81873,5.98829};
+            double parLowPt[4] = {0.000785932,0.997984,4600.2,4678.44};
+            double parHighPt[4] = {1.8105,0.62284,5.42031,7.7874};
             
             if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
             if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==2){
-            double parLowPt[4] = {0.0003684,0.403476,16.0135,11.6549};
-            double parHighPt[4] = {1.16472,0.546184,3.72218,6.50084};
+            double parLowPt[4] = {2.20694e-11,0.979171,1177.76,1265.28};
+            double parHighPt[4] = {3.37849,0.824783,6.04932,9.05941};
             
             if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
             if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
@@ -1248,22 +1247,22 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT, Int_t iCe
     
     if (fWhichPeriod==2015){
         if (iCent==0){
-            double parLowPt[4] = {0.210832,0.230859,5.25035,5.48219};
-            double parHighPt[4] = {9.18534,0.688547,4.2008,7.57016};
+            double parLowPt[4] = {0.665072,0.228928,4.0578,5.74764};
+            double parHighPt[4] = {8.37282,0.66377,4.13972,7.5254};
             
             if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
             if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==1){
-            double parLowPt[4] = {0.0606017,0.184059,6.29752,5.54173};
-            double parHighPt[4] = {9.9616,0.706925,4.00359,7.53403};
+            double parLowPt[4] = {0.653545,0.246623,3.99742,5.87183};
+            double parHighPt[4] = {9.82831,0.701945,3.97517,7.56011};
             
             if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
             if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==2){
-            double parLowPt[4] = {0.128178,0.228773,5.01049,5.49639};
-            double parHighPt[4] = {14.5792,0.870677,4.19146,8.23386};
+            double parLowPt[4] = {0.593891,0.262419,3.74344,5.92648};
+            double parHighPt[4] = {11.7408,0.804274,3.96169,7.96201};
             
             if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
             if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
@@ -1574,17 +1573,16 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsFromHFdecay(AliAODMCParticle *particle)
     Int_t idMother = particle->GetMother();
     if (idMother>0){
         AliAODMCParticle* mother = (AliAODMCParticle*) fMCarray->At(idMother);
-        Int_t motherPDG = mother->GetPdgCode();
-        
+        Int_t motherPDG = TMath::Abs(mother->GetPdgCode());
+
         // c decays
-        if((TMath::Abs(motherPDG)==411) || (TMath::Abs(motherPDG)==421) || (TMath::Abs(motherPDG)==431) ||
-           (TMath::Abs(motherPDG)==4122) || (TMath::Abs(motherPDG)==4132) || (TMath::Abs(motherPDG)==4232) ||
-           (TMath::Abs(motherPDG)==43320)) isHFdecay = kTRUE;
+        if((motherPDG % 1000) / 100 == 4) isHFdecay = kTRUE;
+        if(motherPDG / 1000 == 4) isHFdecay = kTRUE;
         
         // b decays
-        if((TMath::Abs(motherPDG)==511) || (TMath::Abs(motherPDG)==521) || (TMath::Abs(motherPDG)==531) ||
-           (TMath::Abs(motherPDG)==5122) || (TMath::Abs(motherPDG)==5132) || (TMath::Abs(motherPDG)==5232) ||
-           (TMath::Abs(motherPDG)==53320)) isHFdecay = kTRUE;
+        if((motherPDG % 1000) / 100 == 5) isHFdecay = kTRUE;
+        if(motherPDG / 1000 == 5) isHFdecay = kTRUE;
+        
     }
     
     return isHFdecay;

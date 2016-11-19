@@ -169,6 +169,9 @@ private:
 
     TH1D        *fHistHFEcorr;//!ele cand SPD or
 
+    TH2D        *fHistResD;
+    TH2D        *fHistResB;
+
     AliHFEcuts  *fhfeCuts;
 
     AliAnalysisTaskBeautyCal(const AliAnalysisTaskBeautyCal&); // not implemented

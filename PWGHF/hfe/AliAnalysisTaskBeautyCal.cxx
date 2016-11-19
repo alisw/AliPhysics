@@ -156,6 +156,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistTotalAccPhi(0),
   fHistTotalAccEta(0),
   fHistHFEcorr(0),
+  fHistResD(0),
+  fHistResB(0),
   fhfeCuts(0) 
 {
   // Constructor
@@ -254,6 +256,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistTotalAccPhi(0),
   fHistTotalAccEta(0),
   fHistHFEcorr(0),
+  fHistResD(0),
+  fHistResB(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -522,6 +526,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fHistHFEcorr = new TH1D("fHistHFEcorr", "HFE corr", 720,-3.6,3.6);
   fOutputList->Add(fHistHFEcorr);
 
+  fHistResD = new TH2D("fHistResD", "D->e pT corr", 400,0.0,40.0,400,0.0,40.0);
+  fOutputList->Add(fHistResD);
+
+  fHistResB = new TH2D("fHistResB", "B->e pT corr", 400,0.0,40.0,400,0.0,40.0);
+  fOutputList->Add(fHistResB);
+
   PostData(1,fOutputList);
 }
 
@@ -681,6 +691,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   fNevents->Fill(2); //events after z vtx cut
   fCent->Fill(centrality); //centrality dist.
 
+  cout << "check MC in the event ....." << endl;
   if(fMCarray)CheckMCgen(fMCheader);
 
   /////////////////////////////
@@ -862,7 +873,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fMCcheckMother->Fill(abs(pidM));
     }
 
-    //if(abs(pdg)==11)cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
     if(pidM==443)continue; // remove enhanced J/psi in MC !
     if(pidM==-99)continue; // remove e from no mother !
 
@@ -873,6 +883,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
         if(pid_eleB)fHistDCAbe->Fill(track->Pt(),DCAxy);
         if(pid_eleP)fHistDCApe->Fill(track->Pt(),DCAxy);
+
+        if(pid_eleD)fHistResD->Fill(track->Pt(),fMCparticle->Pt());
+        if(pid_eleB)fHistResB->Fill(track->Pt(),fMCparticle->Pt()); 
+
+    if(abs(pdg)==11 && (pid_eleD || pid_eleB))cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
 
     ////////////////////
     //Track properties//
@@ -1330,7 +1345,7 @@ void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, in
    {
     label = part->GetMother();
     AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
-    pid = partM->GetPdgCode();
+    pid = TMath::Abs(partM->GetPdgCode());
    }
  else
    {
@@ -1411,7 +1426,7 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
       Double_t pdgEta = fMCparticle->Eta(); 
       if(TMath::Abs(pdgEta)>0.6)continue;
       Double_t pTtrue = fMCparticle->Pt(); 
-      if(pTtrue>1.0)continue;
+      if(pTtrue<2.0)continue;
 
       Int_t pdgMom = -99;
       Int_t labelMom = -1;
