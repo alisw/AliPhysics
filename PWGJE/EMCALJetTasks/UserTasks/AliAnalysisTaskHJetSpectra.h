@@ -217,21 +217,21 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D               *fHJetSpec[kCAll][kTT][kRho];//!  TT associated spectrum of jets
    TH2D               *fHJetSpecGen[kCAll][kTT][kRho];//!TT associated spectrum of jets
 
-   TH1F    *fhRhoTT[kCAll][kTT][kRho-1]; //! gc X=rho from perp cone, Y=centrality
-   TH1F    *fhRhoIncl[kCAll][kRho-1]; //! gc X=rho from perp cone, Y=centrality
+   TH1F    *fhRhoTT[kCAll][kTT][kRho]; //! gc X=rho from perp cone, Y=centrality
+   TH1F    *fhRhoIncl[kCAll][kRho]; //! gc X=rho from perp cone, Y=centrality
  
-   TH1F    *fARhoTT[kCAll][kTT][kRho-1]; //! jet area times rho from perp cone
+   TH1F    *fARhoTT[kCAll][kTT][kRho]; //! jet area times rho from perp cone
    //TH1F    *fARhoTTGen[kRho-1]; //! #### jet area times rho from perp cone
 
-   TH1D    *fhDeltaPt[kCAll][kTT][kRho-1]; //!  delta pT 
-   TH1D    *fhDeltaPtEmb[kCAll][kTT][kRho-1]; //! embedded delta pT 
-   TH2D    *fhDeltaPtEmb2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet 
-   TH1D    *fhDeltaPtEmbPerp[kCAll][kTT][kRho-1]; //! embedded delta pT (emb track is perp to TT)
-   TH2D    *fhDeltaPtEmbPerp2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
-   TH1D    *fhDeltaPtEmbBc2Bc[kCAll][kTT][kRho-1]; //! embedded delta pT (emb track is back-to-back in azimuth to TT)
-   TH2D    *fhDeltaPtEmbBc2Bc2D[kCAll][kTT][kRho-1]; //! embedded delta pT versus pT of the embedded jet (emb track is backtoback in azimtuh w.r.t to TT)
+   TH1D    *fhDeltaPt[kCAll][kTT][kRho]; //!  delta pT 
+   TH1D    *fhDeltaPtEmb[kCAll][kTT][kRho]; //! embedded delta pT 
+   TH2D    *fhDeltaPtEmb2D[kCAll][kTT][kRho]; //! embedded delta pT versus pT of the embedded jet 
+   TH1D    *fhDeltaPtEmbPerp[kCAll][kTT][kRho]; //! embedded delta pT (emb track is perp to TT)
+   TH2D    *fhDeltaPtEmbPerp2D[kCAll][kTT][kRho]; //! embedded delta pT versus pT of the embedded jet (emb track is perp to TT)
+   TH1D    *fhDeltaPtEmbBc2Bc[kCAll][kTT][kRho]; //! embedded delta pT (emb track is back-to-back in azimuth to TT)
+   TH2D    *fhDeltaPtEmbBc2Bc2D[kCAll][kTT][kRho]; //! embedded delta pT versus pT of the embedded jet (emb track is backtoback in azimtuh w.r.t to TT)
 
-   TH1D    *fhDeltaPtIncl[kCAll][kRho-1]; //!  delta pT from RndCone using rho from perp cone inclusive event
+   TH1D    *fhDeltaPtIncl[kCAll][kRho]; //!  delta pT from RndCone using rho from perp cone inclusive event
 
    TH2F    *fhKTAreaPt;//!KT jets area versus PT
 
@@ -311,7 +311,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 18); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 19); // Charged jet analysis for pA
 
 };
 #endif
