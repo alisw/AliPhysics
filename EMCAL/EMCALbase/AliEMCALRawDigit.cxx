@@ -59,6 +59,7 @@ AliEMCALRawDigit::~AliEMCALRawDigit()
 {
   //dtor, delete array of time samples
   if(fSamples) delete [] fSamples;
+  fSamples = NULL;
 }
 
 //____________________________________________________________________________
@@ -66,6 +67,7 @@ void AliEMCALRawDigit::Clear(Option_t *)
 {
   // clear, delete array of time samples
   if(fSamples) delete [] fSamples;
+  fSamples = NULL;
 }
 
 

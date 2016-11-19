@@ -220,7 +220,7 @@ AliEMCALDigit::~AliEMCALDigit()
 
 
 //____________________________________________________________________________
-void AliEMCALDigit::Clear(const Option_t*) 
+void AliEMCALDigit::Clear(Option_t*) 
 {
   // Delete array of primaries if any
   if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;

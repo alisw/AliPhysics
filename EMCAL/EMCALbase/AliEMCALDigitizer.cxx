@@ -249,7 +249,6 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   // must call the Calibrate() method of the SDigitizer to convert it
   // back to an energy in GeV before adding it to the Digit
   //
-  
   AliRunLoader *rl = AliRunLoader::Instance();
   AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
   
@@ -267,7 +266,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   rl->GetEvent(readEvent);
   
   TClonesArray * digits = emcalLoader->Digits() ;
-  digits->Delete() ;  //correct way to clear array when memory is
+  digits->Clear("C") ;  //correct way to clear array when memory is
   //allocated by objects stored in array
   
   // Load Geometry
@@ -837,7 +836,6 @@ void AliEMCALDigitizer::Digitize(Option_t *option)
   const Int_t nTRU = geom->GetNTotalTRU();
   TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",           nTRU*96);
   TClonesArray* digitsTRG = new TClonesArray("AliEMCALTriggerRawDigit", nTRU*96);
-  
   rl->LoadSDigits("EMCAL");
   for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++)
   {
@@ -847,21 +845,23 @@ void AliEMCALDigitizer::Digitize(Option_t *option)
     
     WriteDigits() ;
     
+#if 1
     //Trigger Digits
     //-------------------------------------
     
-    Digits2FastOR(digitsTMP, digitsTRG);
+    Digits2FastOR(digitsTMP, digitsTRG);    
     
     WriteDigits(digitsTRG);
-    
+
     (emcalLoader->TreeD())->Fill();
     
     emcalLoader->WriteDigits("OVERWRITE");
     
+#endif
     Unload();
     
-    digitsTRG  ->Delete();
-    digitsTMP  ->Delete();
+    digitsTRG  ->Clear("C");
+    digitsTMP  ->Clear("C");
     
     //-------------------------------------
     
@@ -872,7 +872,9 @@ void AliEMCALDigitizer::Digitize(Option_t *option)
     //increment the total number of Digits per run
     fDigitsInRun += emcalLoader->Digits()->GetEntriesFast() ;
   }//loop
-  
+  delete digitsTMP;
+  delete digitsTRG;
+
   if(strstr(option,"tim"))
   {
     gBenchmark->Stop("EMCALDigitizer");
@@ -995,7 +997,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
   
   delete [] timeSamples;
   
-  if (digits && digits->GetEntriesFast()) digits->Delete();
+  if (digits && digits->GetEntriesFast()) digits->Clear("C");
 }
 
 //____________________________________________________________________________
