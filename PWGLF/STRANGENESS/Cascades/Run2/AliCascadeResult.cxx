@@ -150,7 +150,7 @@ fCutProperLifetime(lCopyMe.fCutProperLifetime),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutXiRejection(lCopyMe.fCutXiRejection),
-fCutSpecialLambdaRejection(fCutSpecialLambdaRejection),
+fCutSpecialLambdaRejection(lCopyMe.fCutSpecialLambdaRejection),
 //MC specific
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),

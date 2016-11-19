@@ -2212,6 +2212,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Float_t lBachdEdx = 100;
             Short_t  lCharge = -2;
             Int_t lPDGCode = 0;
+            Float_t lprpx, lprpy, lprpz, lpipx, lpipy, lpipz;
+            lpipx = fTreeCascVarBachPx;
+            lpipy = fTreeCascVarBachPy;
+            lpipz = fTreeCascVarBachPz;
             
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiMinus     ){
                 lCharge  = -1;
@@ -2222,6 +2226,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lPosdEdx = fTreeCascVarPosNSigmaProton;
                 lBachdEdx= fTreeCascVarBachNSigmaPion;
                 lPDGCode = 3312;
+                lprpx = fTreeCascVarPosPx;
+                lprpy = fTreeCascVarPosPy;
+                lprpz = fTreeCascVarPosPz;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiPlus      ){
                 lCharge  = +1;
@@ -2232,6 +2239,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lPosdEdx = fTreeCascVarPosNSigmaPion;
                 lBachdEdx= fTreeCascVarBachNSigmaPion;
                 lPDGCode = -3312;
+                lprpx = fTreeCascVarNegPx;
+                lprpy = fTreeCascVarNegPy;
+                lprpz = fTreeCascVarNegPz;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaMinus     ){
                 lCharge  = -1;
@@ -2242,6 +2252,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lPosdEdx = fTreeCascVarPosNSigmaProton;
                 lBachdEdx= fTreeCascVarBachNSigmaKaon;
                 lPDGCode = 3334;
+                lprpx = fTreeCascVarPosPx;
+                lprpy = fTreeCascVarPosPy;
+                lprpz = fTreeCascVarPosPz;
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaPlus      ){
                 lCharge  = +1;
@@ -2252,14 +2265,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lPosdEdx = fTreeCascVarPosNSigmaPion;
                 lBachdEdx= fTreeCascVarBachNSigmaKaon;
                 lPDGCode = -3334;
+                lprpx = fTreeCascVarNegPx;
+                lprpy = fTreeCascVarNegPy;
+                lprpz = fTreeCascVarNegPz;
             }
             
             //Override rapidity for true rapidity if requested to do so
             if ( lCascadeResult -> GetCutMCUseMCProperties() ) {
                 lRap = fTreeVariableRapMC;
             }
-            
-            
             if (
                 //Check 1: Charge consistent with expectations
                 fTreeCascVarCharge == lCharge &&
@@ -2299,7 +2313,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx() &&
                 
                 //Check 5: Xi rejection for Omega analysis
-                ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus && lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )
+                ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus && lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )&&
+                
+                //Check 6: Experimental lambda rejection cut
+                (TMath::Abs(LambdaInvariantMass(lprpx,lprpy,lprpz,lpipx,lpipy,lpipz)-1.116) > lCascadeResult->GetCutSpecialLambdaRejection() )
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram
@@ -2844,3 +2861,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
     
 }
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::LambdaInvariantMass( Double_t prpx, Double_t prpy, Double_t prpz, Double_t pipx, Double_t pipy, Double_t pipz){
+    TLorentzVector v1; v1.SetPxPyPzE(prpx, prpy, prpz, TMath::Sqrt( prpx*prpx+prpy*prpy+prpz*prpz + 0.93826*0.93826));
+    TLorentzVector v2; v2.SetPxPyPzE(pipx, pipy, pipz, TMath::Sqrt( pipx*pipx+pipy*pipy+pipz*pipz + 0.13957*0.13957));
+    TLorentzVector v0 = v1+v2 ;
+    return v0.M();
+}
+
