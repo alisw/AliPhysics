@@ -147,7 +147,6 @@ public:
 //---------------------------------------------------------------------------------------
     //Function to calculate invariant mass of a pair of particles
     Double_t LambdaInvariantMass( Double_t prpx, Double_t prpy, Double_t prpz, Double_t pipx, Double_t pipy, Double_t pipz); 
-    
 //---------------------------------------------------------------------------------------
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
