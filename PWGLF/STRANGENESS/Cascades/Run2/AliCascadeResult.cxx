@@ -33,6 +33,7 @@ fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
+fCutSpecialLambdaRejection(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE)
@@ -64,6 +65,7 @@ fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
+fCutSpecialLambdaRejection(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE)
@@ -101,6 +103,7 @@ fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
+fCutSpecialLambdaRejection(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE)
@@ -146,7 +149,8 @@ fCutCascRadius(lCopyMe.fCutCascRadius),
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
-fCutXiRejection(0.008),
+fCutXiRejection(lCopyMe.fCutXiRejection),
+fCutSpecialLambdaRejection(fCutSpecialLambdaRejection),
 //MC specific
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
@@ -190,6 +194,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutLeastNumberOfClusters = lCopyMe->GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
     fCutXiRejection = lCopyMe->GetCutXiRejection();
+    fCutSpecialLambdaRejection = lCopyMe->GetCutSpecialLambdaRejection();
     
     //MC specific
     fCutMCPhysicalPrimary    = lCopyMe -> GetCutMCPhysicalPrimary();
@@ -242,6 +247,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
     fCutXiRejection = lCopyMe.GetCutXiRejection();
+    fCutSpecialLambdaRejection = lCopyMe.GetCutSpecialLambdaRejection();
     
     //MC specific
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
@@ -317,6 +323,7 @@ Bool_t AliCascadeResult::HasSameCuts(AliCascadeResult *lCompare)
     if( TMath::Abs( fCutLeastNumberOfClusters - lCompare->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutXiRejection - lCompare->GetCutXiRejection() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutSpecialLambdaRejection - lCompare->GetCutSpecialLambdaRejection() ) > 1e-6 ) lReturnValue = kFALSE;
     
     return lReturnValue;
 }
@@ -353,6 +360,8 @@ void AliCascadeResult::Print()
     cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Xi Rej (for Omega).: "<<fCutXiRejection<<endl;
+    cout<<" Wrong L rejection..: "<<fCutSpecialLambdaRejection<<endl;
+    
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;

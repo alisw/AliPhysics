@@ -59,6 +59,7 @@ public:
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
     void SetCutTPCdEdx               ( Double_t lCut ) { fCutTPCdEdx               = lCut; }
     void SetCutXiRejection           ( Double_t lCut ) { fCutXiRejection           = lCut; }
+    void SetSpeciaLambdaRejection    ( Double_t lCut ) { fCutSpecialLambdaRejection= lCut; }
     
     //MC specific
     void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
@@ -87,6 +88,7 @@ public:
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutTPCdEdx () const { return fCutTPCdEdx; }
     Double_t GetCutXiRejection () const { return fCutXiRejection; }
+    Double_t GetCutSpecialLambdaRejection () const { return fCutSpecialLambdaRejection; }
     
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
@@ -122,6 +124,7 @@ private:
     Double_t fCutLeastNumberOfClusters;
     Double_t fCutTPCdEdx;
     Double_t fCutXiRejection; //Xi rejection (for omega analysis only!) 
+    Double_t fCutSpecialLambdaRejection; //Experimental cut
     
     Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
@@ -129,7 +132,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 7)
+    ClassDef(AliCascadeResult, 8)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -137,5 +140,6 @@ private:
     // 5 - fixes to constructor, destructor, tuning
     // 6 - addition of UseMCProperties flag
     // 7 - Adjustments, tuning, constructor improvements
+    // 8 - Experimental lambda cut added
 };
 #endif
