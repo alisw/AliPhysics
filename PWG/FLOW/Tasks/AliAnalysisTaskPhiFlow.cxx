@@ -62,7 +62,7 @@ using std::endl;
 ClassImp(AliPhiMesonHelperTrack)
 
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
-    fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE), fLowCut(0), fHighCut(0), fMultTOFLowCut(0), fMultTOFHighCut(0), fHistCentralityWeights(0x0), fCentralityWeight(1.)
+    fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0),fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE), fLowCut(0), fHighCut(0), fMultTOFLowCut(0), fMultTOFHighCut(0), fHistCentralityWeights(0x0), fCentralityWeight(1.), fVertexZ(0)
 {
     // Default constructor
     for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 1000.;
@@ -79,7 +79,7 @@ AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow() : AliAnalysisTaskSE(),
 }
 //_____________________________________________________________________________
 AliAnalysisTaskPhiFlow::AliAnalysisTaskPhiFlow(const char *name) : AliAnalysisTaskSE(name),
-    fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE), fLowCut(0), fHighCut(0), fMultTOFLowCut(0), fMultTOFHighCut(0), fHistCentralityWeights(0x0), fCentralityWeight(1.)
+    fDebug(0), fIsMC(0), fEventMixing(0), fTypeMixing(0), fQA(0), fV0(0), fMassBins(1), fMinMass(-1.), fMaxMass(0.), fCutsRP(NULL), fNullCuts(0), fPIDResponse(0), fFlowEvent(0), fBayesianResponse(0), fCandidates(0), fCandidateEtaPtCut(0), fCandidateMinEta(0), fCandidateMaxEta(0), fCandidateMinPt(0), fCandidateMaxPt(0), fCandidateYCut(kFALSE), fCandidateMinY(-.5), fCandidateMaxY(.5), fNPtBins(18), fCentrality(999), fVertex(999), fAOD(0), fPoolManager(0), fOutputList(0), fEventStats(0), fCentralityPass(0), fCentralityNoPass(0), fNOPID(0), fPIDk(0), fNOPIDTOF(0), fPIDTOF(0), fPtP(0), fPtN(0), fPtKP(0), fPtKN(0), fMultCorAfterCuts(0), fMultvsCentr(0), fCentralityMin(0), fCentralityMax(100), fkCentralityMethodA(0), fkCentralityMethodB(0), fCentralityCut2010(0), fCentralityCut2011(0), fPOICuts(0), fVertexRange(0), fPhi(0), fPt(0), fEta(0), fVZEROA(0), fVZEROC(0), fTPCM(0)/*, fDeltaDipAngle(0), fDeltaDipPt(0), fApplyDeltaDipCut(0)*/, fDCAAll(0), fDCAXYQA(0), fDCAZQA(0), fDCAPrim(0), fDCASecondaryWeak(0), fDCAMaterial(0), fSubEventDPhiv2(0), fSkipEventSelection(0), fUsePidResponse(0), fPIDCombined(0), fPileUp(kTRUE), fLowCut(0), fHighCut(0), fMultTOFLowCut(0), fMultTOFHighCut(0), fHistCentralityWeights(0x0), fCentralityWeight(1.), fVertexZ(0)
 {
     // Constructor
     for(Int_t i(0); i < 7; i++) fPIDConfig[i] = 1000.;
@@ -212,12 +212,10 @@ void AliAnalysisTaskPhiFlow::AddPhiIdentificationOutputObjects()
         fOutputList->Add(fDCAXYQA);
         fDCAZQA = new TH1F("fDCAZQA", "fDCAZQA", 1000, -5, 5);
         fOutputList->Add(fDCAZQA);
-        if(fCentralityCut2010 || fCentralityCut2011) {
-            fMultCorAfterCuts = new TH2F("fMultCorAfterCuts", "TPC vs Global multiplicity (After cuts); Global multiplicity; TPC multiplicity", 100, 0, 3000, 100, 0, 3000);
-            fOutputList->Add(fMultCorAfterCuts);
-            fMultvsCentr = new TH2F("fMultvsCentr", "Multiplicity vs centrality; centrality; Multiplicity", 9, -0.5, 100.5, 101, 0, 3000);
-            fOutputList->Add(fMultvsCentr);
-        }
+        fMultCorAfterCuts = new TH2F("fMultCorAfterCuts", "centrality correlations;V0 centrality;CL0 centrality", 100, 0, 100, 100, 0, 100);
+        fOutputList->Add(fMultCorAfterCuts);
+        fMultvsCentr = new TH2F("fMultvsCentr", "multiplicty centrality;TPC multiplicity;V0 centrality", 250, 0, 5000, 100, 0, 100);
+        fOutputList->Add(fMultvsCentr);
     }
     if(fIsMC || fQA) {
         fDCAAll = new TH2F("fDCAAll", "fDCAAll", 1000, 0, 10, 1000, -5, 5);
@@ -319,6 +317,8 @@ void AliAnalysisTaskPhiFlow::UserCreateOutputObjects()
         fHistCentralityWeights = temp;
         fOutputList->Add(temp);
     }
+    fVertexZ = new TH1F("fVertexZ", "vertex Z position:vertex Z position", 90, -15, 15);
+    fOutputList->Add(fVertexZ);
 }
 //_____________________________________________________________________________
 AliEventPoolManager* AliAnalysisTaskPhiFlow::InitializeEventMixing()
@@ -550,7 +550,7 @@ Bool_t AliAnalysisTaskPhiFlow::PassesDCACut(AliAODTrack* track) const
     // fDCAConfig[0] =  0 do nothing
     // fDCAConfig[0] >  1 pt dependent dca cut
     if(fDebug > 1) cout << " *** PassesDCACut() *** " << endl;
-    if(fIsMC) return kTRUE;
+
     AliAODTrack copy(*track);
     if( (fDCAConfig[0] < 0.1) && (fDCAConfig[0] > -0.1) ) {
         if(fQA) {
@@ -944,6 +944,10 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
             if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0)
                 return;
 
+
+            fMultvsCentr->Fill(multTPCn, v0Centr);
+
+            fMultCorAfterCuts->Fill(v0Centr,cl0Centr);
             /*
                Int_t bc2 = ((AliAODHeader*)fAOD->GetHeader())->GetIRInt2ClosestInteractionMap();
                if (bc2 != 0)
@@ -965,14 +969,16 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
             double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
             double errTrc = TMath::Sqrt(covTrc[5]);
             double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
-            if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing 
+            if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20) return; // bad vertexing 
 
+            fVertexZ->Fill(dz);
 
 
         }
 
         //new function for 2015 to remove incomplete events
         if (fAOD->IsIncompleteDAQ())
+
             return;
 
 

@@ -240,6 +240,7 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         TF1                  *fMultTOFHighCut;//! 
         TH1                  *fHistCentralityWeights; // 
         Float_t              fCentralityWeight;//! 
+        TH1F                 *fVertexZ; //! z vertex position
 
         AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
         AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
