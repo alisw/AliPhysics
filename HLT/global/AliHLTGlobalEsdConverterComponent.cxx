@@ -1040,13 +1040,24 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   */
 
   // 4. convert the HLT TRD tracks to ESD tracks                        
-  if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
-       pBlock!=NULL; pBlock=GetNextInputBlock()) {      
-    fBenchmark.AddInput(pBlock->fSize);
-    vector<AliHLTGlobalBarrelTrack> tracks;
-   if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
-      for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
-	   element!=tracks.end(); element++) {
+  if (storeTracks){
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {      
+      fBenchmark.AddInput(pBlock->fSize);
+      const AliHLTTracksData* trackData = reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr);    
+      const AliHLTUInt8_t* pCurrent=reinterpret_cast<const AliHLTUInt8_t*>(trackData->fTracklets);
+      const AliHLTUInt8_t* pEnd = reinterpret_cast<const AliHLTUInt8_t*>(pBlock->fPtr) + pBlock->fSize;
+      for (unsigned i=0; i<trackData->fCount; i++) {
+	if (pCurrent+sizeof(AliHLTExternalTrackParam)>pEnd) {
+	  iResult=-EINVAL; break;
+	}
+	const AliHLTExternalTrackParam* track=reinterpret_cast<const AliHLTExternalTrackParam*>(pCurrent);
+	if (pCurrent+sizeof(AliHLTExternalTrackParam)+track->fNPoints*sizeof(UInt_t)>pEnd) {
+	  iResult=-EINVAL; break;
+	}
+	AliHLTTRDtrack trdTrack;
+	trdTrack.ConvertFrom( track );
+	pCurrent+=sizeof(AliHLTExternalTrackParam)+track->fNPoints*sizeof(UInt_t);	
 	
 	Double_t TRDpid[AliPID::kSPECIES], eProb(0.2), restProb((1-eProb)/(AliPID::kSPECIES-1)); //eprob(element->GetTRDpid...);
 	for(Int_t i=0; i<AliPID::kSPECIES; i++){
@@ -1055,27 +1066,38 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  default: TRDpid[i]=restProb; break;
 	  }
 	}
-	AliHLTTRDtrack trdTrack(*element);
-	AliESDtrack iotrack;
-	iotrack.UpdateTrackParams(&trdTrack,AliESDtrack::kTRDout);
-	iotrack.SetStatus(AliESDtrack::kTRDin);
-	iotrack.SetTRDpid(TRDpid);
+	// find corresponding ESD track
+
+	int tpcID=trdTrack.GetTPCtrackId();
+	Int_t esdID = -1;
+	if( mapTpcId2esdId.find(tpcID) != mapTpcId2esdId.end() ) esdID = mapTpcId2esdId[tpcID];
 	
-	pESD->AddTrack(&iotrack);
-	if (fVerbosity>0) element->Print();
+	// the TRD tracker assigns the TPC track used as seed for a certain track to the trackID
+
+	if( esdID<0 || esdID>=pESD->GetNumberOfTracks()) continue; 
+
+	AliESDtrack *tESD = pESD->GetTrack( esdID );	
+	if (!tESD) continue;
+
+	tESD->UpdateTrackParams(&trdTrack,AliESDtrack::kTRDout);
+	tESD->SetStatus(AliESDtrack::kTRDin);
+	tESD->SetTRDpid(TRDpid);
       }
-      HLTInfo("converted %d track(s) to AliESDtrack and added to ESD", tracks.size());
-      iAddedDataBlocks++;
-    } else if (iResult<0) {
-      HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
-	       DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);
+      if( iResult>=0 ){    
+	HLTInfo("converted %d track(s) to AliESDtrack and added to ESD", trackData->fCount);
+	iAddedDataBlocks++;
+      } else {
+	HLTError("can not extract tracks from data block of type %s (specification %08x) of size %d: error %d", 
+		 DataType2Text(pBlock->fDataType).c_str(), pBlock->fSpecification, pBlock->fSize, iResult);    
+      }
     }
   }
+
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) 
     {
       fBenchmark.AddInput(pBlock->fSize);
       AliHLTCaloClusterHeaderStruct *caloClusterHeaderPtr = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
-
+      
       HLTDebug("%d HLT clusters from spec: 0x%X", caloClusterHeaderPtr->fNClusters, pBlock->fSpecification);
 
       //AliHLTCaloClusterReader reader;
