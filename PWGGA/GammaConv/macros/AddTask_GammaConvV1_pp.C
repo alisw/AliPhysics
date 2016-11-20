@@ -87,10 +87,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               Double_t  smearPar                      = 0.,                     // conv photon smearing params
                               Double_t  smearParConst                 = 0.,                      // conv photon smearing params
                               Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
-                              TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
+                              TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
+                              TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
+                              
                             ) {
 
   Int_t isHeavyIon = 0;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
+  
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {

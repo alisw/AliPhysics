@@ -68,12 +68,16 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
                                 Bool_t    enableTriggerOverlapRej     = kFALSE,                         // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                = 3.,                             // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader          = "",
-                                Bool_t    runLightOutput              = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
-                                Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
-                                TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
+                                Bool_t    runLightOutput              = kFALSE,                         // switch to run light output (only essential histograms for afterburner)
+                                Int_t   enableMatBudWeightsPi0        = 0,                              // 1 = three radial bins, 2 = 10 radial bins
+                                TString filenameMatBudWeights         = "MCInputFileMaterialBudgetWeights.root",
+                                TString   additionalTrainConfig       = "0"                             // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
   Int_t isHeavyIon = 2;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

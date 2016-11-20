@@ -76,10 +76,14 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
                                Bool_t   enableTriggerOverlapRej     = kFALSE,                         // enable trigger overlap rejection
                                Float_t  maxFacPtHard                = 3.,                             // maximum factor between hardest jet and ptHard generated
                                TString  periodNameV0Reader          = "",
-                               Bool_t   runLightOutput              = kFALSE                          // switch to run light output (only essential histograms for afterburner)
+                               Bool_t   runLightOutput              = kFALSE,                         // switch to run light output (only essential histograms for afterburner)
+                               TString  additionalTrainConfig       = "0"                             // additional counter for trainconfig, this has to be always the last parameter
                            ) {
 
   Int_t isHeavyIon = 0;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
