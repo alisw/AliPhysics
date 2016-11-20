@@ -1058,6 +1058,7 @@ Int_t AliFJWrapper::DoSoftDrop() {
     fj::PseudoJet groomed_jet(0.,0.,0.,0.);
     if(fInclusiveJets[i].perp()>0.){
       groomed_jet = (*fSoftDrop)(fInclusiveJets[i]);
+      groomed_jet.set_user_index(i); //index of the corresponding inclusve jet
       if(groomed_jet!=0) fGroomedJets.push_back(groomed_jet);
     }
     
