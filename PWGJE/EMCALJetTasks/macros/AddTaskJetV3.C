@@ -20,6 +20,7 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
   TRandom3   *randomizer        = 0x0,
   Double_t   trackptcut         = .15,
   Bool_t     LHC10h             = kFALSE,
+  Bool_t     LHC15o             = kFALSE,
   Bool_t     addEPweights       = kFALSE,
   Bool_t     baseClassHistos    = kTRUE,
   Float_t    minEta             = -.7,
@@ -119,18 +120,23 @@ AliAnalysisTaskJetV3* AddTaskJetV3(
 
   Int_t totalRuns10h[] = {139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137544, 137541, 137539, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137230, 137162, 137161, 137135};
 
-  // set the runnumbers for either 10h or 11h
-  (LHC10h) ? jetTask->SetExpectedRuns(new TArrayI(sizeof(totalRuns10h)/sizeof(totalRuns10h[0]), totalRuns10h)) : jetTask->SetExpectedRuns(new TArrayI(sizeof(totalRuns)/sizeof(totalRuns[0]), totalRuns));
+  Int_t totalRuns15o[] = {246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
 
   Int_t semiGoodRuns[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
 
-  // set the semi-good runnumbers for 10h or 11h (10h has no semi-good numbers, so pass a NULL pointer)
-  (LHC10h) ? jetTask->SetExpectedSemiGoodRuns(0x0) : jetTask->SetExpectedSemiGoodRuns(new TArrayI(sizeof(semiGoodRuns)/sizeof(semiGoodRuns[0]), semiGoodRuns));
-
-  // and if 10h, pass this info to the task so acceptance isn't changed
+  // set the runnumbers 
   if(LHC10h) {
+      jetTask->SetExpectedRuns(new TArrayI(sizeof(totalRuns10h)/sizeof(totalRuns10h[0]), totalRuns10h));
       jetTask->SetCollisionType(AliAnalysisTaskJetV3::kPbPb10h);
       jetTask->SetNeedEmcalGeom(kFALSE);
+  }
+  else if (LHC15o) {
+      jetTask->SetExpectedRuns(new TArrayI(sizeof(totalRuns15o)/sizeof(totalRuns15o[0]), totalRuns15o));
+      jetTask->SetCollisionType(AliAnalysisTaskJetV3::kPbPb15o);
+  }
+  else {
+      jetTask->SetExpectedRuns(new TArrayI(sizeof(totalRuns)/sizeof(totalRuns[0]), totalRuns));
+      jetTask->SetExpectedSemiGoodRuns(new TArrayI(sizeof(semiGoodRuns)/sizeof(semiGoodRuns[0]), semiGoodRuns));
   }
 
   if(addEPweights) {
