@@ -625,7 +625,7 @@ public:
   
   virtual AliStack*          GetStack()              const ;
   virtual AliHeader*         GetHeader()             const ;
-  virtual AliGenEventHeader* GetGenEventHeader(TString name = "") const ;
+  virtual AliGenEventHeader* GetGenEventHeader() const ;
   
   // Filtered kinematics in AOD
   
@@ -667,11 +667,16 @@ public:
   { fNMCGenerToAccept = nGen ; 
     if      ( nGen > 5 ) fNMCGenerToAccept = 5 ; 
     else if ( nGen < 0 ) fNMCGenerToAccept = 0 ; }
+  virtual Int_t    GetNumberOfMCGeneratorsToAccept()         const { return fNMCGenerToAccept ; } 
   
   virtual void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) 
   { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
+  virtual TString GetNameOfMCGeneratorsToAccept(Int_t ig)   const { return fMCGenerToAccept[ig] ; }
   
-  Bool_t  AcceptParticleMCLabel(Int_t mcLabel);
+  Bool_t           AcceptParticleMCLabel(Int_t mcLabel)     const ;
+  
+  virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
+  virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
   
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
@@ -940,6 +945,7 @@ public:
   Int_t            fNMCGenerToAccept;              ///<  Number of MC generators that should not be included in analysis
   TString          fMCGenerToAccept[5];            ///<  List with name of generators that should not be included
 
+  TString          fMCGenerEventHeaderToAccept;    ///<  Accept events that contain at least this event header name
   
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
@@ -948,7 +954,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,75) ;
+  ClassDef(AliCaloTrackReader,76) ;
   /// \endcond
 
 } ;
