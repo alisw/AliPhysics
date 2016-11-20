@@ -74,12 +74,15 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
                             TString   fileNameInputForMultWeighing  = "Multiplicity.root",          // file for multiplicity weights
                             TString   periodNameAnchor              = "",                           // name of anchor period for weighting
                             Bool_t    enableSortingMCLabels         = kTRUE,                        // enable sorting for MC cluster labels
-                            Bool_t    runLightOutput                = kFALSE                        // switch to run light output (only essential histograms for afterburner)
-                            
+                            Bool_t    runLightOutput                = kFALSE,                       // switch to run light output (only essential histograms for afterburner)
+                            Int_t     additionalTrainConfig         = 0                             // additional counter for trainconfig
 ) {
   
   Int_t isHeavyIon = 0;
   
+  if (additionalTrainConfig > 0){
+    trainConfig = trainConfig + additionalTrainConfig;
+  }  
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -875,6 +878,41 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1111100063032220000","0163103100000050"); // -50ns, 30ns timing cut, no NL EMC7
     cuts.AddCut("00085013","1111100063032220000","0163103100000050"); // -50ns, 30ns timing cut, no NL EG2
     cuts.AddCut("00083013","1111100063032220000","0163103100000050"); // -50ns, 30ns timing cut, no NL EG1
+
+  // 2.76TeV additional configurations for y range change
+  } else if (trainConfig == 501){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
+    cuts.AddCut("00003113","1551121053032220000","0163203100000050"); // |eta| < 0.7, y < 0.7
+    cuts.AddCut("00051013","1551121053032220000","0163203100000050"); // |eta| < 0.7, y < 0.7
+    cuts.AddCut("00003113","1661121053032220000","0163703100000050"); // |eta| < 0.3
+    cuts.AddCut("00051013","1661121053032220000","0163703100000050"); // |eta| < 0.3
+  } else if (trainConfig == 502){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
+    cuts.AddCut("00003113","1551121057032220000","0163203100000050"); // |eta| < 0.7, y < 0.7
+    cuts.AddCut("00051013","1551121057032220000","0163203100000050"); // |eta| < 0.7, y < 0.7
+    cuts.AddCut("00003113","1661121057032220000","0163703100000050"); // |eta| < 0.3
+    cuts.AddCut("00051013","1661121057032220000","0163703100000050"); // |eta| < 0.3
+  } else if (trainConfig == 503){  // eta < 0.7
+    cuts.AddCut("00010113","1551121063032220000","0163203100000050"); 
+    cuts.AddCut("00052013","1551121063032220000","0163203100000050"); // EMC7
+    cuts.AddCut("00083013","1551121063032220000","0163203100000050"); // EMCEG1,
+    cuts.AddCut("00085013","1551121063032220000","0163203100000050"); // EMCEG2,
+  } else if (trainConfig == 504){  // eta < 0.3
+    cuts.AddCut("00010113","1661121063032220000","0163703100000050"); 
+    cuts.AddCut("00052013","1661121063032220000","0163703100000050"); // EMC7
+    cuts.AddCut("00083013","1661121063032220000","0163703100000050"); // EMCEG1,
+    cuts.AddCut("00085013","1661121063032220000","0163703100000050"); // EMCEG2,
+  } else if (trainConfig == 505){  // eta < 0.7, pt dependent TM
+    cuts.AddCut("00010113","1551121067032220000","0163203100000050"); 
+    cuts.AddCut("00052013","1551121067032220000","0163203100000050"); // EMC7
+    cuts.AddCut("00083013","1551121067032220000","0163203100000050"); // EMCEG1,
+    cuts.AddCut("00085013","1551121067032220000","0163203100000050"); // EMCEG2,
+  } else if (trainConfig == 506){  // eta < 0.3, pt dependent TM
+    cuts.AddCut("00010113","1661121067032220000","0163703100000050"); 
+    cuts.AddCut("00052013","1661121067032220000","0163703100000050"); // EMC7
+    cuts.AddCut("00083013","1661121067032220000","0163703100000050"); // EMCEG1,
+    cuts.AddCut("00085013","1661121067032220000","0163703100000050"); // EMCEG2,
+    
+    
+    
   } else {
     Error(Form("GammaCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

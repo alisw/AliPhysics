@@ -76,10 +76,15 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
                                   Bool_t    enableSortingMCLabels       = kTRUE,              // enable sorting for MC cluster labels
                                   Bool_t    runLightOutput              = kFALSE,             // switch to run light output (only essential histograms for afterburner)
                                   Double_t  minEnergyForExoticsCut      = 1.0,                // minimum energy to be used for exotics CutHandler
-                                  Bool_t    runQAForExotics             = kFALSE              // switch to run QA for exotic clusters
+                                  Bool_t    runQAForExotics             = kFALSE,             // switch to run QA for exotic clusters
+                                  Int_t     additionalTrainConfig       = 0                   // additional counter for trainconfig
 ) {
   
   Int_t isHeavyIon = 0;
+  if (additionalTrainConfig > 0){
+    trainConfig = trainConfig + additionalTrainConfig;
+  }  
+
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr           = AliAnalysisManager::GetAnalysisManager();
@@ -834,6 +839,24 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00010113","1111101013032200000","1111101013022110001","0163301100000000"); //INT7 1000ns timing cut, std NL NLM1
     cuts.AddCut("00052013","1111101013032200000","1111101013022110001","0163301100000000"); //EMC7 1000ns timing cut, std NL NLM1
  
+
+  // 2.76TeV additional configurations  
+  } else if (trainConfig == 501){  // new default  |eta| < 0.7, y < 0.7
+    cuts.AddCut("00003113","1551121050032200000","1551121053022000001","0163200000000000"); 
+    cuts.AddCut("00051013","1551121050032200000","1551121053022000001","0163200000000000"); 
+    cuts.AddCut("00003113","1551121057032200000","1551121057022700001","0163200000000000"); 
+    cuts.AddCut("00051013","1551121057032200000","1551121057022700001","0163200000000000"); 
+  } else if (trainConfig == 502){  // new default without mass, |eta| < 0.7, y < 0.7
+    cuts.AddCut("00010113","1551121063032200000","1551121063022700001","0163200000000000"); 
+    cuts.AddCut("00052013","1551121063032200000","1551121063022700001","0163200000000000"); 
+    cuts.AddCut("00085013","1551121063032200000","1551121063022700001","0163200000000000"); 
+    cuts.AddCut("00083013","1551121063032200000","1551121063022700001","0163200000000000"); 
+  } else if (trainConfig == 503){  // new default without mass, pt dependent TM, |eta| < 0.7, y < 0.7
+    cuts.AddCut("00010113","1551121067032200000","1551121067022700001","0163200000000000"); 
+    cuts.AddCut("00052013","1551121067032200000","1551121067022700001","0163200000000000"); 
+    cuts.AddCut("00085013","1551121067032200000","1551121067022700001","0163200000000000"); 
+    cuts.AddCut("00083013","1551121067032200000","1551121067022700001","0163200000000000"); 
+
     
     // all the cut variations
   } else {

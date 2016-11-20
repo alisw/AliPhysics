@@ -3399,35 +3399,35 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     return kTRUE;
   // matching parameters for PHOS clusters
   }else if(fClusterType == 2) {
-    switch(trackMatching)
-    case 0:
-      fUseDistTrackToCluster = kFALSE;
-      fMaxDistTrackToClusterEta = 0;
-      fMinDistTrackToClusterPhi = 0;
-      fMaxDistTrackToClusterPhi = 0;
-      break;
-    case 1:
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.005;//0.015;
-      fMinDistTrackToClusterPhi = -0.03;//-0.025;
-      fMaxDistTrackToClusterPhi = 0.03;//0.06;//0.3;
-      break;
-    case 2:
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.01;//0.015;
-      fMinDistTrackToClusterPhi = -0.09;//-0.025;
-      fMaxDistTrackToClusterPhi = 0.07;//0.07;//0.4;
-      break;
-    case 3:
-      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      fMaxDistTrackToClusterEta = 0.015;//0.02;
-      fMinDistTrackToClusterPhi = -0.15;//-0.03;
-      fMaxDistTrackToClusterPhi = 0.11;//0.1;//0.5;
-      break;
+    switch(trackMatching){
+      case 0:
+        fUseDistTrackToCluster = kFALSE;
+        fMaxDistTrackToClusterEta = 0;
+        fMinDistTrackToClusterPhi = 0;
+        fMaxDistTrackToClusterPhi = 0;
+        break;
+      case 1:
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fMaxDistTrackToClusterEta = 0.005;//0.015;
+        fMinDistTrackToClusterPhi = -0.03;//-0.025;
+        fMaxDistTrackToClusterPhi = 0.03;//0.06;//0.3;
+        break;
+      case 2:
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fMaxDistTrackToClusterEta = 0.01;//0.015;
+        fMinDistTrackToClusterPhi = -0.09;//-0.025;
+        fMaxDistTrackToClusterPhi = 0.07;//0.07;//0.4;
+        break;
+      case 3:
+        if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+        fMaxDistTrackToClusterEta = 0.015;//0.02;
+        fMinDistTrackToClusterPhi = -0.15;//-0.03;
+        fMaxDistTrackToClusterPhi = 0.11;//0.1;//0.5;
+        break;
 
-    default:
-      AliError(Form("Track Matching Cut not defined %d",trackMatching));
-      return kFALSE;
+      default:
+        AliError(Form("Track Matching Cut not defined %d",trackMatching));
+        return kFALSE;
     }
     return kTRUE;
   }
