@@ -72,10 +72,14 @@ void AddTask_GammaCalo_pPb(
                             Float_t    maxFacPtHard               = 3,                // maximum factor between hardest jet and ptHard generated
                             TString    periodNameV0Reader         = "",               // period Name for V0Reader
                             Bool_t     enableSortingMCLabels      = kTRUE,            // enable sorting for MC cluster labels
-                            Bool_t     runLightOutput             = kFALSE            // switch to run light output (only essential histograms for afterburner)
+                            Bool_t     runLightOutput             = kFALSE,           // switch to run light output (only essential histograms for afterburner)
+                            TString   additionalTrainConfig       = "0"               // additional counter for trainconfig
                            ) {
 
   Int_t isHeavyIon = 2;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

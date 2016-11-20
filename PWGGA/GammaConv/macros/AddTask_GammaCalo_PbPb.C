@@ -71,11 +71,14 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
                               Bool_t    enableSortingMCLabels           = kTRUE,                // enable sorting for MC cluster labels
                               Bool_t    runLightOutput                  = kFALSE,               // switch to run light output (only essential histograms for afterburner)
                               Bool_t    doFlattening                    = kFALSE,               // switch on centrality flattening for LHC11h
-                              TString   fileNameInputForCentFlattening  = ""                    // file name for centrality flattening  
-                              
+                              TString   fileNameInputForCentFlattening  = "",                   // file name for centrality flattening  
+                              TString   additionalTrainConfig           = "0"                   // additional counter for trainconfig
                 ) {
 
   Int_t isHeavyIon = 1;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

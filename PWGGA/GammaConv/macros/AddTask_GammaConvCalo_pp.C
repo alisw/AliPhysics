@@ -84,13 +84,13 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 Double_t  smearPar                      = 0.,                     // conv photon smearing params
                                 Double_t  smearParConst                 = 0.,                     // conv photon smearing params
                                 Bool_t    doPrimaryTrackMatching        = kTRUE,                  // enable basic track matching for all primary tracks to cluster
-                                Int_t     additionalTrainConfig         = 0                       // additional counter for trainconfig
+                                TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
               ) {
   
   Int_t isHeavyIon = 0;
-  if (additionalTrainConfig > 0){
-    trainConfig = trainConfig + additionalTrainConfig;
-  }  
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }
 
   
   
