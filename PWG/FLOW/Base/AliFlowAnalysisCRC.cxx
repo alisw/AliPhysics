@@ -20355,9 +20355,9 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       Double_t qpAM0 = fPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
       
       Double_t dQM2EG = qpAM*QBM;
-      if(qpAM0>0 && QBM0>0 && TMath::Abs(dQM2)>1.e-6) {
-        dQC2EG = (qpARe*QBRe+qpAIm*QBIm)/dQM2;
-        fFlowQCCorPro[fCenBin][hr][3]->Fill(FillPtBin,dQC2,dQM2*fCenWeightEbE);
+      if(qpAM0>0 && QBM0>0 && TMath::Abs(dQM2EG)>1.e-6) {
+        dQC2EG = (qpARe*QBRe+qpAIm*QBIm)/dQM2EG;
+        fFlowQCCorPro[fCenBin][hr][3]->Fill(FillPtBin,dQC2EG,dQM2EG*fCenWeightEbE);
         // NUA
         fFlowQCCorNUAPro[fCenBin][hr][8]->Fill(FillPtBin,qpARe/qpAM,qpAM*fCenWeightEbE);
         fFlowQCCorNUAPro[fCenBin][hr][9]->Fill(FillPtBin,qpAIm/qpAM,qpAM*fCenWeightEbE);
