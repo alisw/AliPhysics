@@ -76,10 +76,16 @@ void AddTask_GammaCaloMerged_PbPb(  Int_t     trainConfig                 = 1,  
                                     Int_t     doFlattening                    = 0,                  // enable centrality flattening
                                     Bool_t    enableDetailedPrintout          = kFALSE,             // enable detailed printout
                                     Bool_t    enableSortingMCLabels           = kTRUE,              // enable sorting for MC cluster labels
-                                    Bool_t    runLightOutput                  = kFALSE              // switch to run light output (only essential histograms for afterburner)
+                                    Bool_t    runLightOutput                  = kFALSE,             // switch to run light output (only essential histograms for afterburner)
+                                    TString   additionalTrainConfig           = "0"                 // additional counter for trainconfig, this has to be always the last parameter
 ) {
   
   Int_t isHeavyIon = 1;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
+
+  
   Bool_t runJetJetAndQAwithCaloPhotonCuts = kFALSE;
   if(isMC == 2 && enableExtMatchAndQA > 1) runJetJetAndQAwithCaloPhotonCuts = kTRUE;
   

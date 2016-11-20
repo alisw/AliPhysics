@@ -75,13 +75,13 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
                             TString   periodNameAnchor              = "",                           // name of anchor period for weighting
                             Bool_t    enableSortingMCLabels         = kTRUE,                        // enable sorting for MC cluster labels
                             Bool_t    runLightOutput                = kFALSE,                       // switch to run light output (only essential histograms for afterburner)
-                            Int_t     additionalTrainConfig         = 0                             // additional counter for trainconfig
+                            TString   additionalTrainConfig         = "0"                           // additional counter for trainconfig
 ) {
   
   Int_t isHeavyIon = 0;
   
-  if (additionalTrainConfig > 0){
-    trainConfig = trainConfig + additionalTrainConfig;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
   }  
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

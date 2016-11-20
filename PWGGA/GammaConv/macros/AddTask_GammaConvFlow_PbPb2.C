@@ -38,32 +38,38 @@ class CutHandlerConvFlow{
 };
 
 void AddTask_GammaConvFlow_PbPb2(
-                               TString uniqueID = "",
-                               Int_t harmonic=2,
-                               Int_t trainConfig = 1,  //change different set of cuts
-                               Int_t enableQAMesonTask = 0, //enable QA in AddTask_GammaConvFlow_PbPb2
-                               Int_t enableQAPhotonTask = 0, // enable additional QA task
-                               //TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                               Bool_t doWeighting = kFALSE,  //enable Weighting
-                               TString cutnumberAODBranch = "100000006008400000001500000",
-                               Bool_t BasicHistoSP = kFALSE,
-                               Bool_t debug = kFALSE,
-                               Bool_t UseMassSel = kFALSE,
-                               Float_t MinMass = 0,
-                               Float_t MaxMass = 0.2,
-                               Bool_t UseKappaSel = kFALSE,
-                               Float_t MinKappa = 0,
-                               Float_t MaxKappa = 10,
-                               Int_t FilterVariable = 1, // 1 = Mass, 2 = Kappa, 3 = MCee mass, 4 = MCee kappa, 5 = !MCee mass, 6 = !MCee kappa
-                               const Int_t NFilterBins = 1,
-                               Double_t MinFilter = 0.0,
-                               Double_t MaxFilter = 0.2,
-                               Bool_t isMC = kFALSE
+                                  TString uniqueID              = "",
+                                  Int_t harmonic                = 2,
+                                  Int_t trainConfig             = 1,                            //change different set of cuts
+                                  Int_t enableQAMesonTask       = 0,                            //enable QA in AddTask_GammaConvFlow_PbPb2
+                                  Int_t enableQAPhotonTask      = 0,                            // enable additional QA task
+                                  //TString fileNameInputForWeighting = "MCSpectraInput.root",  // path to file for weigting input
+                                  Bool_t doWeighting            = kFALSE,                       //enable Weighting
+                                  TString cutnumberAODBranch    = "100000006008400000001500000",
+                                  Bool_t BasicHistoSP           = kFALSE,
+                                  Bool_t debug                  = kFALSE,
+                                  Bool_t UseMassSel             = kFALSE,
+                                  Float_t MinMass               = 0,
+                                  Float_t MaxMass               = 0.2,
+                                  Bool_t UseKappaSel            = kFALSE,
+                                  Float_t MinKappa              = 0,
+                                  Float_t MaxKappa              = 10,
+                                  Int_t FilterVariable          = 1,                              // 1 = Mass, 2 = Kappa, 3 = MCee mass, 4 = MCee kappa, 5 = !MCee mass, 6 = !MCee kappa
+                                  const Int_t NFilterBins       = 1,
+                                  Double_t MinFilter            = 0.0,
+                                  Double_t MaxFilter            = 0.2,
+                                  Bool_t isMC                   = kFALSE,
+                                  TString additionalTrainConfig = "0"                             // additional counter for trainconfig, always has to be last parameter
                                ) {
   
-  Int_t isHeavyIon;
-  if(trainConfig == 69) isHeavyIon = 0;
-  else isHeavyIon = 1;
+  Int_t isHeavyIon = 1;
+  
+  // make use of train subwagon feature
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }
+
+  
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -326,8 +332,6 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("54800013", "00200009007000008270400000"); //psipaircut = 0.07
     cuts.AddCut("54800013", "00200009007000008250600000"); //cos p angle cut = 0.9
     cuts.AddCut("54800013", "00200009007000008250300000"); //cos p angle cut = 0.75
-  } else if (trainConfig == 69) {
-    cuts.AddCut("00000113", "00200009007000008250400000");
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -406,14 +410,11 @@ void AddTask_GammaConvFlow_PbPb2(
         POIfilterVZERO->SetMassMin(NFilterBinValues[j]); POIfilterVZERO->SetMassMax(NFilterBinValues[j+1]);
       }
 
-      if(isHeavyIon==0) cout << "not doing SP analysis" << endl;
-      else {
-        if(debug) cout << "    --> Created IO containers " << flowEvent[i] << endl;
-        AddSPmethod(Form("SPVZEROQa_in_%s_%i", uniqueID.Data(), j), "Qa", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
-        if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
-        AddSPmethod(Form("SPVZEROQb_in_%s_%i", uniqueID.Data(), j), "Qb", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
-        if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
-      }
+      if(debug) cout << "    --> Created IO containers " << flowEvent[i] << endl;
+      AddSPmethod(Form("SPVZEROQa_in_%s_%i", uniqueID.Data(), j), "Qa", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
+      if(debug) cout << "    --> Hanging SP Qa task ... succes!" << endl;
+      AddSPmethod(Form("SPVZEROQb_in_%s_%i", uniqueID.Data(), j), "Qb", harmonic, flowEvent[i], debug,uniqueID, POIfilterVZERO, trainConfig,BasicHistoSP,totalCutString);
+      if(debug) cout << "    --> Hanging SP Qb task ... succes!"<< endl;
     }
   }
   

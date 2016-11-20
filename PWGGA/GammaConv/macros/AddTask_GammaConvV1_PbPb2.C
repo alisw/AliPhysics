@@ -39,10 +39,14 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
                                 Float_t       maxFacPtHard                  = 3.,                               // maximum factor between hardest jet and ptHard generated
                                 TString       periodNameV0Reader            = "",
                                 Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
-                                Bool_t        processAODcheckForV0s         = kFALSE                            // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
+                                Bool_t        processAODcheckForV0s         = kFALSE,                           // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
+                                TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
   Int_t isHeavyIon = 1;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
