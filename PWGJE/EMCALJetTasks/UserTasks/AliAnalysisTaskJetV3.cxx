@@ -2315,7 +2315,7 @@ Bool_t AliAnalysisTaskJetV3::PassesCuts(AliVEvent* event)
     #endif
     switch (fCollisionType) {
         case kPbPb15o : {
-            return PassesExperimentalHighLumiCuts(static_cast<AliAODEvent*>(event));
+             if(!PassesExperimentalHighLumiCuts(static_cast<AliAODEvent*>(event))) return kFALSE;
         } break;
         case kJetFlowMC : {
             fInCentralitySelection = 0;
