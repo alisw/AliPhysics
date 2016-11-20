@@ -228,6 +228,9 @@ void AliAnalysisTaskSoftDrop::UserCreateOutputObjects()
   fhCorrPtZg = new TH2F("fhCorrPtZg", "#it{Z}_{g}; p_{T}^{corr} [GeV/c]; #it{Z}_{g}", 16, 0, 160, 20, 0., 0.5);
   fOutput->Add(fhCorrPtZg);
 
+  fhCorrPtPtfrac = new TH2F("fhCorrPtPtfrac", "#deltap_{T}; p_{T}^{corr} [GeV/c]; #deltap_{T}", 16, 0, 160, 80, 0., 1.0);
+  fOutput->Add(fhCorrPtPtfrac);
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -277,6 +280,7 @@ Bool_t AliAnalysisTaskSoftDrop::FillHistograms()
       }
       fhZg->Fill(jet->GetShapeProperties()->GetSoftDropZg());
       fhCorrPtZg->Fill(jet->Pt() - fJetsCont->GetRhoVal() * jet->Area(), jet->GetShapeProperties()->GetSoftDropZg());
+      fhCorrPtPtfrac->Fill(jet->Pt() - fJetsCont->GetRhoVal() * jet->Area(), jet->GetShapeProperties()->GetSoftDropPtfrac());
     }
     fNAccJets->Fill(count);
     auto jet = (AliEmcalJet*)fJetsCont->GetLeadingJet();
