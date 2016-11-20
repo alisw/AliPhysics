@@ -134,7 +134,7 @@ fFillInputBackgroundJetBranch(kFALSE),
 fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
 fMomentum(),                 fOutputContainer(0x0),           fEnergyHistogramNbins(0),
-fhNEventsAfterCut(0),        fNMCGenerToAccept(0) 
+fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept("")
 {
   for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE  [i]= 0x0 ;  
@@ -275,7 +275,7 @@ Bool_t  AliCaloTrackReader::AcceptEventWithTriggerBit()
 ///
 /// \param mcLabel label index of particle originating the cluster or track or mc stack
 //_____________________________________________________
-Bool_t  AliCaloTrackReader::AcceptParticleMCLabel(Int_t mcLabel)
+Bool_t  AliCaloTrackReader::AcceptParticleMCLabel(Int_t mcLabel) const
 {
   if( !fMC || fNMCGenerToAccept <= 0 ) return kTRUE;
   
@@ -587,7 +587,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
 TList * AliCaloTrackReader::GetCreateControlHistograms()
 {  
   
-  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 18, 0, 18) ;
+  fhNEventsAfterCut = new TH1I("hNEventsAfterCut", "Number of analyzed events", 19, 0, 19) ;
   //fhNEventsAfterCut->SetXTitle("Selection");
   fhNEventsAfterCut->SetYTitle("# events");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(1 ,"1=Input");
@@ -598,16 +598,17 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(6 ,"6=Good EMC Trigger");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(7 ,"7=!Fast Cluster");
   fhNEventsAfterCut->GetXaxis()->SetBinLabel(8 ,"8=!LED");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(9 ,"9=PtHard-Jet");
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(10,"10=PtHard-Cluster"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(11,"11=Time stamp"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(12,"12=Z vertex"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(13,"13=Primary vertex"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(14,"14=Pile-up"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(15,"15=V0AND"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(16,"16=Centrality"); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(17,"17=Track multi."); 
-  fhNEventsAfterCut->GetXaxis()->SetBinLabel(18,"18=TOF BC"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(9 ,"9=Time stamp"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(10,"10=Z vertex"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(11,"11=Primary vertex"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(12,"12=Pile-up"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(13,"13=V0AND"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(14,"14=Centrality"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(15,"15=GenHeader"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(16,"16=PtHard-Jet");
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(17,"17=PtHard-Cluster"); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(18,"18=Track multi."); 
+  fhNEventsAfterCut->GetXaxis()->SetBinLabel(19,"19=TOF BC"); 
   fOutputContainer->Add(fhNEventsAfterCut);
 
   
@@ -778,13 +779,13 @@ AliHeader* AliCaloTrackReader::GetHeader() const
 //______________________________________________________________
 /// \return pointer to Generated event header (AliGenEventHeader)
 //______________________________________________________________
-AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader(TString headerName) const
+AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader() const
 {
   if     (ReadStack() && fMC)
   {
     AliGenEventHeader * eventHeader = fMC->GenEventHeader();
     
-    if(headerName=="") return eventHeader ;
+    if(fMCGenerEventHeaderToAccept=="") return eventHeader ;
         
     AliGenCocktailEventHeader *cocktail = dynamic_cast<AliGenCocktailEventHeader *>(eventHeader);
     
@@ -798,8 +799,10 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader(TString headerName) con
     {
       AliGenEventHeader * eventHeader2 = (AliGenEventHeader*)genHeaders->At(igen) ;
       TString name = eventHeader2->GetName();
-            
-			if(name.Contains(headerName,TString::kIgnoreCase)) return eventHeader2 ;
+      //printf("ESD Event header %d %s\n",igen,name.Data());
+
+      if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase)) 
+        return eventHeader2 ;
     }
 
     return 0x0;
@@ -811,14 +814,16 @@ AliGenEventHeader* AliCaloTrackReader::GetGenEventHeader(TString headerName) con
 
     if( nGenerators <= 0)        return 0x0;
     
-    if(headerName=="") return GetAODMCHeader()->GetCocktailHeader(0);
+    if(fMCGenerEventHeaderToAccept=="") return GetAODMCHeader()->GetCocktailHeader(0);
         
     for(Int_t igen = 0; igen < nGenerators; igen++)
     {
       AliGenEventHeader * eventHeader = GetAODMCHeader()->GetCocktailHeader(igen) ;
       TString name = eventHeader->GetName();
-            
-			if(name.Contains(headerName,TString::kIgnoreCase)) return eventHeader ;
+      //printf("AOD Event header %d %s\n",igen,name.Data());
+      
+      if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase))
+        return eventHeader ;
     }
     
     return 0x0;
@@ -1196,24 +1201,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   AliDebug(1,"Pass Event trigger selection");
   
-  //---------------------------------------------------------------------------
-  // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
-  // To be used on for MC data in pT hard bins
-  //---------------------------------------------------------------------------
-  
-  if(fComparePtHardAndJetPt)
-  {
-    if(!ComparePtHardAndJetPt()) return kFALSE ;
-    AliDebug(1,"Pass Pt Hard - Jet rejection");
-    fhNEventsAfterCut->Fill(8.5);
-  }
-  
-  if(fComparePtHardAndClusterPt)
-  {
-    if(!ComparePtHardAndClusterPt()) return kFALSE ;
-    AliDebug(1,"Pass Pt Hard - Cluster rejection");
-    fhNEventsAfterCut->Fill(9.5);
-  }
 
   //------------------------------------------------------
   // Event rejection depending on time stamp
@@ -1233,7 +1220,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     }
     
     AliDebug(1,"Pass Time Stamp rejection");
-    fhNEventsAfterCut->Fill(10.5);
+    fhNEventsAfterCut->Fill(8.5);
   }
 
   //------------------------------------------------------
@@ -1245,7 +1232,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
   if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;
   
-  fhNEventsAfterCut->Fill(11.5);
+  fhNEventsAfterCut->Fill(9.5);
 
   if(fUseEventsWithPrimaryVertex)
   {
@@ -1257,7 +1244,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   AliDebug(1,"Pass primary vertex rejection");
   
-  fhNEventsAfterCut->Fill(12.5);
+  fhNEventsAfterCut->Fill(10.5);
 
   //printf("Reader : IsPileUp %d, Multi %d\n",IsPileUpFromSPD(),fInputEvent->IsPileupFromSPDInMultBins());
   
@@ -1271,7 +1258,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass Pile-Up event rejection");
     
-    fhNEventsAfterCut->Fill(13.5);
+    fhNEventsAfterCut->Fill(11.5);
   }
   
   if(fDoV0ANDEventSelection)
@@ -1290,7 +1277,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass V0AND event rejection");
     
-    fhNEventsAfterCut->Fill(14.5);
+    fhNEventsAfterCut->Fill(12.5);
   }
 
   //------------------------------------------------------
@@ -1308,11 +1295,42 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass centrality rejection");
     
+    fhNEventsAfterCut->Fill(13.5);
+  }
+  
+  //----------------------------------------------------------------
+  // Reject the event if the event header name is not
+  // the one requested among the possible generators.
+  // Needed in case of cocktail MC generation with multiple options.
+  //----------------------------------------------------------------
+  if(fMCGenerEventHeaderToAccept!="" && !GetGenEventHeader()) 
+    return kFALSE;
+  
+  fhNEventsAfterCut->Fill(14.5);
+
+  //---------------------------------------------------------------------------
+  // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
+  // To be used on for MC data in pT hard bins
+  //---------------------------------------------------------------------------
+  
+  if(fComparePtHardAndJetPt)
+  {
+    if(!ComparePtHardAndJetPt()) return kFALSE ;
+    AliDebug(1,"Pass Pt Hard - Jet rejection");
     fhNEventsAfterCut->Fill(15.5);
   }
-    
+  
+  if(fComparePtHardAndClusterPt)
+  {
+    if(!ComparePtHardAndClusterPt()) return kFALSE ;
+    AliDebug(1,"Pass Pt Hard - Cluster rejection");
+    fhNEventsAfterCut->Fill(16.5);
+  }
+  
+  //------------------------------------------------------------------
   // Recover the weight assigned to the event, if provided
   // right now only for pT-hard bins and centrality depedent weights
+  //------------------------------------------------------------------
   if ( fWeightUtils->IsWeightSettingOn() )
   {
     fWeightUtils->SetCentrality(cen);
@@ -1338,7 +1356,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     //Accept events with at least one track
     if(fTrackMult == 0 && fDoRejectNoTrackEvents) return kFALSE ;
     
-    fhNEventsAfterCut->Fill(16.5);
+    fhNEventsAfterCut->Fill(17.5);
     
     AliDebug(1,"Pass rejection of null track events");
   }
@@ -1349,7 +1367,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     AliDebug(1,"Pass rejection of events with vertex at BC!=0");
     
-    fhNEventsAfterCut->Fill(17.5);
+    fhNEventsAfterCut->Fill(18.5);
   }
   
   if(fFillEMCALCells)
