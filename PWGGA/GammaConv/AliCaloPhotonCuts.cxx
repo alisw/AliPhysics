@@ -3074,6 +3074,14 @@ Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
     if (!fUseEtaCut) fUseEtaCut=1;
     fMinEtaCut=-0.7;
     break;
+  case 6:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=-0.3;
+    break;
+  case 7:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=-0.4;
+    break;
     
   default:
     AliError(Form("MinEta Cut not defined %d",minEta));
@@ -3109,7 +3117,15 @@ Bool_t AliCaloPhotonCuts::SetMaxEtaCut(Int_t maxEta)
     break;    
   case 5:
     if (!fUseEtaCut) fUseEtaCut=1;
-    fMinEtaCut=0.7;
+    fMaxEtaCut=0.7;
+    break;
+  case 6:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMaxEtaCut=0.3;
+    break;
+  case 7:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMaxEtaCut=0.4;
     break;
   default:
     AliError(Form("MaxEta Cut not defined %d",maxEta));
@@ -3383,7 +3399,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     return kTRUE;
   // matching parameters for PHOS clusters
   }else if(fClusterType == 2) {
-    switch(trackMatching){
+    switch(trackMatching)
     case 0:
       fUseDistTrackToCluster = kFALSE;
       fMaxDistTrackToClusterEta = 0;
