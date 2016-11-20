@@ -83,10 +83,16 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 Double_t  bremSmear                     = 1.,
                                 Double_t  smearPar                      = 0.,                     // conv photon smearing params
                                 Double_t  smearParConst                 = 0.,                     // conv photon smearing params
-                                Bool_t    doPrimaryTrackMatching        = kTRUE                   // enable basic track matching for all primary tracks to cluster
+                                Bool_t    doPrimaryTrackMatching        = kTRUE,                  // enable basic track matching for all primary tracks to cluster
+                                Int_t     additionalTrainConfig         = 0                       // additional counter for trainconfig
               ) {
   
   Int_t isHeavyIon = 0;
+  if (additionalTrainConfig > 0){
+    trainConfig = trainConfig + additionalTrainConfig;
+  }  
+
+  
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1243,6 +1249,38 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00052013","00200009327000008250400000","1111100063032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EMC7
     cuts.AddCut("00085013","00200009327000008250400000","1111100063032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EG2
     cuts.AddCut("00083013","00200009327000008250400000","1111100063032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EG1
+
+  } else if (trainConfig == 501){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1)
+    cuts.AddCut("00003113","00200009327000008250400000","1551121053032230000","0163103100000010"); // |eta| < 0.7
+    cuts.AddCut("00051013","00200009327000008250400000","1551121053032230000","0163103100000010"); // |eta| < 0.7
+    cuts.AddCut("00003113","00200009327000008250400000","1661121053032230000","0163103100000010"); // |eta| < 0.3
+    cuts.AddCut("00051013","00200009327000008250400000","1661121053032230000","0163103100000010"); // |eta| < 0.3
+  } else if (trainConfig == 502){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1), pt dep TM
+    cuts.AddCut("00003113","00200009327000008250400000","1551121057032230000","0163103100000010"); // |eta| < 0.7
+    cuts.AddCut("00051013","00200009327000008250400000","1551121057032230000","0163103100000010"); // |eta| < 0.7
+    cuts.AddCut("00003113","00200009327000008250400000","1661121057032230000","0163103100000010"); // |eta| < 0.3
+    cuts.AddCut("00051013","00200009327000008250400000","1661121057032230000","0163103100000010"); // |eta| < 0.3
+  } else if (trainConfig == 503){  // LHC13g without pileup for triggers
+    cuts.AddCut("00010113","00200009327000008250400000","1551121063032230000","0163103100000010"); // INT7
+    cuts.AddCut("00052013","00200009327000008250400000","1551121063032230000","0163103100000010"); // EMC7
+    cuts.AddCut("00083013","00200009327000008250400000","1551121063032230000","0163103100000010"); // EMCEG1,
+    cuts.AddCut("00085013","00200009327000008250400000","1551121063032230000","0163103100000010"); // EMCEG2,
+  } else if (trainConfig == 504){  // LHC13g without pileup for triggers
+    cuts.AddCut("00010113","00200009327000008250400000","1661121063032230000","0163103100000010"); // INT7
+    cuts.AddCut("00052013","00200009327000008250400000","1661121063032230000","0163103100000010"); // EMC7
+    cuts.AddCut("00083013","00200009327000008250400000","1661121063032230000","0163103100000010"); // EMCEG1,
+    cuts.AddCut("00085013","00200009327000008250400000","1661121063032230000","0163103100000010"); // EMCEG2,
+  } else if (trainConfig == 505){  // LHC13g without pileup for triggers
+    cuts.AddCut("00010113","00200009327000008250400000","1551121067032230000","0163103100000010"); // INT7
+    cuts.AddCut("00052013","00200009327000008250400000","1551121067032230000","0163103100000010"); // EMC7
+    cuts.AddCut("00083013","00200009327000008250400000","1551121067032230000","0163103100000010"); // EMCEG1,
+    cuts.AddCut("00085013","00200009327000008250400000","1551121067032230000","0163103100000010"); // EMCEG2,
+  } else if (trainConfig == 506){  // LHC13g without pileup for triggers
+    cuts.AddCut("00010113","00200009327000008250400000","1661121067032230000","0163103100000010"); // INT7
+    cuts.AddCut("00052013","00200009327000008250400000","1661121067032230000","0163103100000010"); // EMC7
+    cuts.AddCut("00083013","00200009327000008250400000","1661121067032230000","0163103100000010"); // EMCEG1,
+    cuts.AddCut("00085013","00200009327000008250400000","1661121067032230000","0163103100000010"); // EMCEG2,
+    
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
