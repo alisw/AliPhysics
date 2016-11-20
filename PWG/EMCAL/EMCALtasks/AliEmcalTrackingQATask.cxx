@@ -8,8 +8,8 @@
 #include <TString.h>
 #include <Riostream.h>
 
-#include "AliPicoTrack.h"
 #include "AliESDtrack.h"
+#include "AliAODtrack.h"
 #include "AliAODMCParticle.h"
 #include "AliMCParticleContainer.h"
 #include "AliLog.h"
@@ -215,19 +215,17 @@ void AliEmcalTrackingQATask::AllocateDetectorLevelTHnSparse()
   binEdges[dim] = fIntegerHistBins;
   dim++;
 
-  if (fIsEsd) {
-    if (fDoSigma1OverPt) {
-      title[dim] = "#sigma(1/#it{p}_{T}) (GeV/#it{c})^{-1}";
-      nbins[dim] = fN1OverPtResHistBins;
-      binEdges[dim] = f1OverPtResHistBins;
-      dim++;
-    }
-    else {
-      title[dim] = "#sigma(#it{p}_{T}) / #it{p}_{T}";
-      nbins[dim] = fNPtResHistBins;
-      binEdges[dim] = fPtResHistBins;
-      dim++;
-    }    
+  if (fDoSigma1OverPt) {
+    title[dim] = "#sigma(1/#it{p}_{T}) (GeV/#it{c})^{-1}";
+    nbins[dim] = fN1OverPtResHistBins;
+    binEdges[dim] = f1OverPtResHistBins;
+    dim++;
+  }
+  else {
+    title[dim] = "#sigma(#it{p}_{T}) / #it{p}_{T}";
+    nbins[dim] = fNPtResHistBins;
+    binEdges[dim] = fPtResHistBins;
+    dim++;
   }
 
   fTracks = new THnSparseF("fTracks","fTracks",dim,nbins);
@@ -500,16 +498,39 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
 Bool_t AliEmcalTrackingQATask::FillHistograms()
 {
   // Fill the histograms.
-
+  
   fDetectorLevel->ResetCurrentID();
-  AliVTrack *track = fDetectorLevel->GetNextAcceptTrack();
-  while (track != 0) {
-    Byte_t type = fDetectorLevel->GetTrackType(fDetectorLevel->GetCurrentID());
+  AliVTrack* track;
+  for (auto trackIterator : fDetectorLevel->accepted_momentum() ) {
+    track = trackIterator.second;
+    Byte_t type = fDetectorLevel->GetTrackType(track);
     if (type <= 2) {
       Double_t sigma = 0;
+      
       if (fIsEsd) {
+        
         AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
         if (esdTrack) sigma = TMath::Sqrt(esdTrack->GetSigma1Pt2());
+        
+      } else { // AOD
+        
+        AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(track);
+        if(!aodtrack) AliFatal("Not a standard AOD");
+        
+        AliExternalTrackParam exParam;
+        
+        //get covariance matrix
+        Double_t cov[21] = {0,};
+        aodtrack->GetCovMatrix(cov);
+        Double_t pxpypz[3] = {0,};
+        aodtrack->PxPyPz(pxpypz);
+        Double_t xyz[3] = {0,};
+        aodtrack->GetXYZ(xyz);
+        Short_t sign = aodtrack->Charge();
+        exParam.Set(xyz,pxpypz,cov,sign);
+
+        sigma = TMath::Sqrt(exParam.GetSigma1Pt2());
+        
       }
 
       Int_t label = TMath::Abs(track->GetLabel());
@@ -535,14 +556,14 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
     else {
       AliError(Form("Track %d has type %d not recognized!", fDetectorLevel->GetCurrentID(), type));
     }
-
-    track = fDetectorLevel->GetNextAcceptTrack();
   }
 
   if (fGeneratorLevel) {
     fGeneratorLevel->ResetCurrentID();
-    AliAODMCParticle *part = fGeneratorLevel->GetNextAcceptMCParticle();
-    while (part != 0) {
+    AliAODMCParticle* part;
+    for (auto partIterator : fGeneratorLevel->accepted_momentum() ) {
+      part = partIterator.second;
+
       Int_t mcGen = 1;
       Byte_t findable = 0;
 
@@ -552,8 +573,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
       // select charged pions, protons, kaons , electrons, muons
       if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) findable = 1;
 
-      FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), mcGen, findable);    
-      part = fGeneratorLevel->GetNextAcceptMCParticle();
+      FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), mcGen, findable);
     }
   }
 

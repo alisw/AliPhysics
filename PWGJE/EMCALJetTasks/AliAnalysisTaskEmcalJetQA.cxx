@@ -221,10 +221,18 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
       histname = TString::Format("%s/fHistClusPosition_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{x} (cm);#it{y} (cm);#it{z} (cm)";
       fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -500, 500, 50, -500, 500, 50, -500, 500);
-
-      histname = TString::Format("%s/fHistClusPhiEtaEnergy_%d", cont->GetArrayName().Data(), i);
+      
+      histname = TString::Format("%s/fHistClusEMCalPhiEtaEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#eta;#phi;#it{E}_{cluster} (GeV)";
-      fHistManager.CreateTH3(histname.Data(), title.Data(), 50, -1, 1, 50, 0, TMath::TwoPi(), nPtBins, 0, fMaxPt);
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 100, -1, 1, 100, 0, TMath::TwoPi(), nPtBins, 0, fMaxPt);
+      
+      histname = TString::Format("%s/fHistClusDCalPhiEtaEnergy_%d", cont->GetArrayName().Data(), i);
+      title = histname + ";#eta;#phi;#it{E}_{cluster} (GeV)";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 100, -1, 1, 100, 0, TMath::TwoPi(), nPtBins, 0, fMaxPt);
+      
+      histname = TString::Format("%s/fHistClusPHOSPhiEtaEnergy_%d", cont->GetArrayName().Data(), i);
+      title = histname + ";#eta;#phi;#it{E}_{cluster} (GeV)";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 100, -1, 1, 100, 0, TMath::TwoPi(), nPtBins, 0, fMaxPt);
 
       if (fForceBeamType != kpp) {
         histname = TString::Format("%s/fHistClusDeltaPhiEPEnergy_%d", cont->GetArrayName().Data(), i);
@@ -728,68 +736,82 @@ void AliAnalysisTaskEmcalJetQA::DoClusterLoop()
         fHistManager.FillTH2(histname, clusters->GetRejectionReasonBitPosition(rejectionReason), it->first.E());
         continue;
       }
-
-      Float_t pos[3]={0};
-      it->second->GetPosition(pos);
-      histname = TString::Format("%s/fHistClusPosition_%d", clusters->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH3(histname, pos[0], pos[1], pos[2]);
-
-      Double_t phi = it->first.Phi_0_2pi();
-
-      Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
-
-      histname = TString::Format("%s/fHistClusPhiEtaEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH3(histname, it->first.Eta(), it->first.Phi_0_2pi(), it->first.E());
-
-      if (fLeadingCluster[isDcal].E() < it->first.E()) fLeadingCluster[isDcal] = it->first;
-
-      histname = TString::Format("%s/fHistClusDeltaPhiEPEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-      if (fHistManager.FindObject(histname)) {
-        Double_t ep = it->first.Phi_0_2pi() - fEPV0;
-        while (ep < 0) ep += TMath::Pi();
-        while (ep >= TMath::Pi()) ep -= TMath::Pi();
-        fHistManager.FillTH2(histname, it->first.E(), ep);
-      }
-
-      histname = TString::Format("%s/fHistNCellsEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname, it->first.E(), it->second->GetNCells());
-
-      histname = TString::Format("%s/fHistClusTimeEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH2(histname, it->first.E(), it->second->GetTOF());
-
-      if (fCaloCells) {
-        histname = TString::Format("%s/fHistFcrossEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH2(histname, it->first.E(), GetFcross(it->second, fCaloCells));
-      }
-
-      histname = TString::Format("%s/fHistClusMCEnergyFraction_%d", clusters->GetArrayName().Data(), fCentBin);
-      if (fHistManager.FindObject(histname)) {
-        fHistManager.FillTH1(histname, it->second->GetMCEnergyFraction());
-      }
-
-      histname = TString::Format("%s/fHistClusEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-      fHistManager.FillTH1(histname, it->second->E());
-
-      if (it->second->GetNonLinCorrEnergy() > 0.) {
-        histname = TString::Format("%s/fHistClusNonLinCorrEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH1(histname, it->second->GetNonLinCorrEnergy());
-      }
-
-      if (it->second->GetHadCorrEnergy() > 0.) {
-        histname = TString::Format("%s/fHistClusHadCorrEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
-        fHistManager.FillTH1(histname, it->second->GetHadCorrEnergy());
-      }
-
-      Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
-      if (sm >=0 && sm < 20) {
-        histname = TString::Format("%s/BySM/fHistClusEnergy_SM%d_%d", clusters->GetArrayName().Data(), sm, fCentBin);
+      
+      if (it->second->IsEMCAL()) {
+        
+        Float_t pos[3]={0};
+        it->second->GetPosition(pos);
+        histname = TString::Format("%s/fHistClusPosition_%d", clusters->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH3(histname, pos[0], pos[1], pos[2]);
+        
+        Double_t phi = it->first.Phi_0_2pi();
+        
+        Int_t isDcal = Int_t(phi > fgkEMCalDCalPhiDivide);
+        
+        if (isDcal == 0) {
+          histname = TString::Format("%s/fHistClusEMCalPhiEtaEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+          fHistManager.FillTH3(histname, it->first.Eta(), it->first.Phi_0_2pi(), it->first.E());
+        } else if (isDcal == 1) {
+          histname = TString::Format("%s/fHistClusDCalPhiEtaEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+          fHistManager.FillTH3(histname, it->first.Eta(), it->first.Phi_0_2pi(), it->first.E());
+        }
+        
+        if (fLeadingCluster[isDcal].E() < it->first.E()) fLeadingCluster[isDcal] = it->first;
+        
+        histname = TString::Format("%s/fHistClusDeltaPhiEPEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+        if (fHistManager.FindObject(histname)) {
+          Double_t ep = it->first.Phi_0_2pi() - fEPV0;
+          while (ep < 0) ep += TMath::Pi();
+          while (ep >= TMath::Pi()) ep -= TMath::Pi();
+          fHistManager.FillTH2(histname, it->first.E(), ep);
+        }
+        
+        histname = TString::Format("%s/fHistNCellsEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH2(histname, it->first.E(), it->second->GetNCells());
+        
+        histname = TString::Format("%s/fHistClusTimeEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH2(histname, it->first.E(), it->second->GetTOF());
+        
+        if (fCaloCells) {
+          histname = TString::Format("%s/fHistFcrossEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+          fHistManager.FillTH2(histname, it->first.E(), GetFcross(it->second, fCaloCells));
+        }
+        
+        histname = TString::Format("%s/fHistClusMCEnergyFraction_%d", clusters->GetArrayName().Data(), fCentBin);
+        if (fHistManager.FindObject(histname)) {
+          fHistManager.FillTH1(histname, it->second->GetMCEnergyFraction());
+        }
+        
+        histname = TString::Format("%s/fHistClusEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
         fHistManager.FillTH1(histname, it->second->E());
+        
+        if (it->second->GetNonLinCorrEnergy() > 0.) {
+          histname = TString::Format("%s/fHistClusNonLinCorrEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+          fHistManager.FillTH1(histname, it->second->GetNonLinCorrEnergy());
+        }
+        
+        if (it->second->GetHadCorrEnergy() > 0.) {
+          histname = TString::Format("%s/fHistClusHadCorrEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+          fHistManager.FillTH1(histname, it->second->GetHadCorrEnergy());
+        }
+        
+        Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
+        if (sm >=0 && sm < 20) {
+          histname = TString::Format("%s/BySM/fHistClusEnergy_SM%d_%d", clusters->GetArrayName().Data(), sm, fCentBin);
+          fHistManager.FillTH1(histname, it->second->E());
+        }
+        else {
+          AliError(Form("Supermodule %d does not exist!", sm));
+        }
+        
+        fNTotClusters[isDcal]++;
+        
+      } else if (it->second->IsPHOS()){
+        
+        histname = TString::Format("%s/fHistClusPHOSPhiEtaEnergy_%d", clusters->GetArrayName().Data(), fCentBin);
+        fHistManager.FillTH3(histname, it->first.Eta(), it->first.Phi_0_2pi(), it->first.E());
+        
       }
-      else {
-        AliError(Form("Supermodule %d does not exist!", sm));
-      }
-
-      fNTotClusters[isDcal]++;
     }
   }
 }
