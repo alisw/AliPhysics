@@ -16994,7 +16994,7 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
   }
   for(Int_t h=0; h<fCRCnCen; h++) {
     for (Int_t c=0; c<2; c++) {
-      fhZNSpectra[h][c] = NULL;
+      fhZNCenDis[h][c] = NULL;
     }
     fhZNCvsZNA[h] = NULL;
   }
@@ -17118,8 +17118,8 @@ void AliFlowAnalysisCRC::BookEverythingForVarious()
   }
   for(Int_t h=0; h<fCRCnCen; h++) {
     for (Int_t c=0; c<2; c++) {
-      fhZNSpectra[h][c] = new TH1F(Form("fhZNSpectra[%d][%d]",h,c), Form("fhZNSpectra[%d][%d]",h,c), 100, 0., 100.);
-      fVariousList->Add(fhZNSpectra[h][c]);
+      fhZNCenDis[h][c] = new TH2F(Form("fhZNCenDis[%d][%d]",h,c), Form("fhZNCenDis[%d][%d]",h,c), 100, -1.5, 1.5 , 100., -1.5, 1.5);
+      fVariousList->Add(fhZNCenDis[h][c]);
     }
     fhZNCvsZNA[h] = new TH2F(Form("hZNCvsZNA[%d]",h),Form("hZNCvsZNA[%d]",h), 100, 0., 100., 100, 0., 100.);
     fVariousList->Add(fhZNCvsZNA[h]);
@@ -18447,6 +18447,19 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
   }
   
   // store results
+  fhZNCenDis[fCenBin][0]->Fill(QCReR,QCImR);
+  fhZNCenDis[fCenBin][1]->Fill(QAReR,QAImR);
+  // twist, as test
+  Double_t QCReRt = QCReR;
+  Double_t QCImRt = QCImR;
+  Double_t QAReRt = QAReR;
+  Double_t QAImRt = QAImR;
+  Double_t theta = TMath::Pi()/4.;
+  QCReR = TMath::Cos(theta)*QCReRt - TMath::Sin(theta)*QCImRt;
+  QCImR = TMath::Sin(theta)*QCReRt + TMath::Cos(theta)*QCImRt;
+  QAReR = TMath::Cos(theta)*QAReRt - TMath::Sin(theta)*QAImRt;
+  QAImR = TMath::Sin(theta)*QAReRt + TMath::Cos(theta)*QAImRt;
+  
   if(QMC>0. && sqrt(QCRe*QCRe+QCIm*QCIm)<1.5) {
     fCRCZDCQVecCCorr[fRunBin][0]->Fill(fCentralityEBE,QCReR,fZDCEPweightEbE[0]);
     fCRCZDCQVecCCorr[fRunBin][1]->Fill(fCentralityEBE,QCImR,fZDCEPweightEbE[0]);
@@ -18610,8 +18623,8 @@ Bool_t AliFlowAnalysisCRC::PassQAZDCCuts()
   
   // fill QA plots
   if(PassZDCcuts) {
-    fhZNSpectra[fCenBin][0]->Fill(fZNCen);
-    fhZNSpectra[fCenBin][1]->Fill(fZNAen);
+//    fhZNCenDis[fCenBin][0]->Fill(fZNCen);
+//    fhZNCenDis[fCenBin][1]->Fill(fZNAen);
     fhZNCvsZNA[fCenBin]->Fill(fZNCen,fZNAen);
     fhZNvsCen[1]->Fill(fCentralityEBE,fZNCen+fZNAen);
     fhZNvsMul->Fill(fNITSCL1EBE,fZNCen+fZNAen,fCenWeightEbE);
@@ -27667,8 +27680,8 @@ void AliFlowAnalysisCRC::GetPointersForVarious()
   
   for(Int_t h=0; h<fCRCnCen; h++) {
     for (Int_t c=0; c<2; c++) {
-      TH1F* ZNSpectra = dynamic_cast<TH1F*>(fVariousList->FindObject(Form("fhZNSpectra[%d][%d]",h,c)));
-      if(ZNSpectra) this->SetZNSpectra(ZNSpectra,h,c);
+      TH2F* ZNCenDis = dynamic_cast<TH2F*>(fVariousList->FindObject(Form("fhZNCenDis[%d][%d]",h,c)));
+      if(ZNCenDis) this->SetZNCenDis(ZNCenDis,h,c);
     }
     TH2F* ZNCvsZNA = dynamic_cast<TH2F*>(fVariousList->FindObject(Form("fhZNCvsZNA[%d]",h)));
     if(ZNCvsZNA) this->SetZNCvsZNA(ZNCvsZNA,h);
