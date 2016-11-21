@@ -35,6 +35,7 @@ Bool_t skip3to5=kTRUE;
 Double_t markersize=1.5;
 Double_t markersizeMC=1.2;
 Bool_t drawSystMC=kTRUE;
+
 void SetMinPtDisplayData(Double_t ptmin){minptMC=ptmin;}
 void SetMaxPtDisplayData(Double_t ptmax){maxptMC=ptmax;}
 void SetMinPtDisplayMC(Double_t ptmin){minptData=ptmin;}
@@ -192,6 +193,24 @@ TCanvas *CreateCanvasWithDefaultStyle(TString name){
   cout->SetTopMargin(topMarginCanvas);
 
   return cout;
+}
+
+void ConvertTH1ToTGraphAsymmError(TH1D* h,TGraphAsymmErrors *&gr, Double_t shift) {
+  const Int_t nbinsxx=2;
+  Double_t x[nbinsxx], y[nbinsxx], ex1[nbinsxx], ex2[nbinsxx], ey1[nbinsxx], ey2[nbinsxx];
+
+  for(int i=0; i<nbinsxx; i++) {
+    x[i] = h->GetBinCenter(i+2)+shift;
+    y[i] = h->GetBinContent(i+2);
+    ex1[i] = h->GetBinCenter(i+2)-h->GetBinLowEdge(i+2)+shift;
+    ex2[i] = ex1[i]-2*shift;
+    ey1[i] = h->GetBinError(i+2);
+    ey2[i] = h->GetBinError(i+2);
+  }
+
+  gr = new TGraphAsymmErrors(nbinsxx,x,y,ex1,ex2,ey1,ey2);
+  return;
+
 }
 
 void SetPadStyle(TPad *p){
@@ -1075,14 +1094,56 @@ TCanvas* ComparePPtoPPb(Int_t binass,Int_t quantity,TPad *pd=0x0,Int_t textlegen
 //   grPP->SetMarkerSize(markersize);
   grPP->Draw("E2");
   
-  hPPb->Draw("same");
+//  hPPb->Draw("same");
+
+// p-Pb: displace the syst errors along x axis (Fabio)
+  Double_t shift=0.3;
+  Double_t binsx=grPPb->GetN();
+  for(int i=0;i<binsx;i++) {
+    Double_t x,y,ex1,ex2,ey1,ey2;
+    grPPb->GetPoint(i,x,y);
+    ex1=grPPb->GetErrorXlow(i); ex2=grPPb->GetErrorXhigh(i); ey1=grPPb->GetErrorYlow(i); ey2=grPPb->GetErrorYhigh(i);
+    grPPb->SetPoint(i,x+shift,y);
+    grPPb->SetPointError(i,ex1,ex2,ey1,ey2);
+  }
 
   grPPb->Draw("E2");
 
   TH1D* hPPbSuperimp = hPPb->Clone();
   hPPbSuperimp->SetMarkerStyle(25);
   hPPbSuperimp->SetMarkerColor(kRed+1);
-  hPPbSuperimp->Draw("same");
+//  hPPbSuperimp->Draw("same");
+
+//Conversion of pPb TH1F to TGraph to displace the points along x axis (Fabio)
+  TGraphAsymmErrors *gr_points_PPb, *gr_pointCount_PPb;
+  ConvertTH1ToTGraphAsymmError(hPPb,gr_points_PPb,shift);
+  ConvertTH1ToTGraphAsymmError(hPPb,gr_pointCount_PPb,shift);
+  gr_points_PPb->SetLineColor(colSystem[1]);
+  gr_points_PPb->SetLineWidth(2);
+  gr_points_PPb->SetMarkerColor(colSystem[1]);
+  gr_points_PPb->SetMarkerStyle(markerStyle[1]);
+  gr_points_PPb->SetMarkerSize(markersize);
+  gr_points_PPb->Draw("samePZ");
+  
+  gr_pointCount_PPb->SetLineColor(colSystem[1]);
+  gr_pointCount_PPb->SetLineWidth(2);
+  gr_pointCount_PPb->SetMarkerStyle(25);
+  gr_pointCount_PPb->SetMarkerColor(kRed+1);
+  gr_pointCount_PPb->SetMarkerSize(markersize);
+  gr_pointCount_PPb->Draw("samePZ");
+
+  if(quantity==1 && binass==2) {
+    TLatex *tlDispl=new TLatex(0.27,0.86,"p-Pb points and error boxes");
+    TLatex *tlDispl2=new TLatex(0.27,0.80,"shifted by #Delta#it{p}_{T} = +0.3 GeV/#it{c}");
+    tlDispl->SetNDC();
+    tlDispl->SetTextFont(42);
+    tlDispl->SetTextSize(0.048);
+    tlDispl->Draw();
+    tlDispl2->SetNDC();
+    tlDispl2->SetTextFont(42);
+    tlDispl2->SetTextSize(0.048);
+    tlDispl2->Draw();
+  }
 
 //   hPPb->SetLineColor(colSystem[1]);
 //   hPPb->SetLineWidth(2);
@@ -2503,4 +2564,5 @@ void CompareFitResultsPPbtoMCUniqueCanvasAwaySide(){
   return;
 
 }
+
 
