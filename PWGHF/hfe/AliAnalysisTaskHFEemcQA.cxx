@@ -1412,6 +1412,7 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
 {
  TList *lh=fMCheader->GetCocktailHeaders();
  Int_t NpureMC = 0;
+ Int_t NpureMCproc = 0; 
  if(lh)
     {     
      //cout << "<------- lh = " << lh << " ; NproAll = "<<  lh->GetEntries() << endl; 
@@ -1424,11 +1425,13 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
             //cout << "<------- imc = "<< gh->GetName() << endl;     
             //cout << "<-------- Ncont = " << gh->NProduced() << endl;
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
+            NpureMCproc += gh->NProduced();
            }
         }
     }
 
- for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+ //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+ for(int imc=0; imc<NpureMCproc; imc++)
      {
       Bool_t iEnhance = kFALSE;
       if(imc>=NpureMC)iEnhance = kTRUE;
