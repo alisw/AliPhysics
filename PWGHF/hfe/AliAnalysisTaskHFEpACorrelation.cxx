@@ -1396,12 +1396,17 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                         {
                             fNoEtaCutElectronGeneratedSignalPtEtaZvtx->Fill(fMCparticle->Pt());
                             if (EtaMC >= fEtaCutMin && EtaMC <= fEtaCutMax)
+                            {
                                 fEtaCutElectronGeneratedSignalPtEtaZvtx->Fill(fMCparticle->Pt());
+                                isHFe = kTRUE;
+                            }
 
                         }
                     }
 
                     if (!fCorrelationFlag) continue;
+                    
+                    if (!isHFe) continue;
                    
                         for (Int_t iHadron = 0 ; iHadron < fMCarray->GetEntriesFast(); iHadron++)
                         {
@@ -1421,10 +1426,6 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
                             
                             if (dPhi > 3*TMath::Pi()/2) dPhi = dPhi - 2*TMath::Pi();
                             if (dPhi < -TMath::Pi()/2)  dPhi = dPhi + 2*TMath::Pi();
-                            
-                            if (isNHFe || isOther)
-                                if (fMCparticle2->GetMother() == fMCparticle->GetMother())
-                                    continue;
                             
                             for (Int_t i = 0 ; i < fpTBins.GetSize()-1; i++)
                             {
