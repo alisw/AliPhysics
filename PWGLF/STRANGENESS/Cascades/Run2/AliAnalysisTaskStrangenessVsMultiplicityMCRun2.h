@@ -286,6 +286,7 @@ private:
     Float_t fTreeCascVarV0CosPointingAngle;           //!
     Float_t fTreeCascVarV0CosPointingAngleSpecial;    //!
     Float_t fTreeCascVarV0Radius;                     //!
+    Float_t fTreeCascVarDcaBachToBaryon;              //!
     Int_t   fTreeCascVarLeastNbrClusters;             //!
     Float_t fTreeCascVarDistOverTotMom;               //!
 

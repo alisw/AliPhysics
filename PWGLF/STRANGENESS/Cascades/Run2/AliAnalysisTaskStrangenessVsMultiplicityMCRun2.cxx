@@ -220,6 +220,7 @@ fTreeCascVarV0Mass(0),
 fTreeCascVarV0CosPointingAngle(0),
 fTreeCascVarV0CosPointingAngleSpecial(0),
 fTreeCascVarV0Radius(0),
+fTreeCascVarDcaBachToBaryon(0),
 fTreeCascVarLeastNbrClusters(0),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarNegNSigmaPion(0),
@@ -412,6 +413,7 @@ fTreeCascVarV0Mass(0),
 fTreeCascVarV0CosPointingAngle(0),
 fTreeCascVarV0CosPointingAngleSpecial(0),
 fTreeCascVarV0Radius(0),
+fTreeCascVarDcaBachToBaryon(0),
 fTreeCascVarLeastNbrClusters(0),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarNegNSigmaPion(0),
@@ -675,6 +677,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarV0CosPointingAngle",&fTreeCascVarV0CosPointingAngle,"fTreeCascVarV0CosPointingAngle/F");
         fTreeCascade->Branch("fTreeCascVarV0CosPointingAngleSpecial",&fTreeCascVarV0CosPointingAngleSpecial,"fTreeCascVarV0CosPointingAngleSpecial/F");
         fTreeCascade->Branch("fTreeCascVarV0Radius",&fTreeCascVarV0Radius,"fTreeCascVarV0Radius/F");
+        fTreeCascade->Branch("fTreeCascVarDcaBachToBaryon",&fTreeCascVarDcaBachToBaryon,"fTreeCascVarDcaBachToBaryon/F");
         fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
@@ -1881,6 +1884,32 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if(fDebug > 5)
             cout 	<< "MC EventNumber : " << lMCevent->Header()->GetEvent()
             << " / MC event Number in Run : " << lMCevent->Header()->GetEventNrInRun() << endl;
+
+        //----------------------------------------
+        // Bump studies: perform propagation
+        //----------------------------------------
+        
+        AliESDtrack *lBaryonTrack = 0x0;
+        AliESDtrack *lBachelorTrack = 0x0;
+        if ( lChargeXi == -1 ){
+            lBaryonTrack = pTrackXi;
+            lBachelorTrack = bachTrackXi;
+        }
+        if ( lChargeXi == +1 ){
+            lBaryonTrack = nTrackXi;
+            lBachelorTrack = bachTrackXi;
+        }
+        
+        fTreeCascVarDcaBachToBaryon = -100;
+        
+        Double_t bMag = lESDevent->GetMagneticField();
+        Double_t xn, xp;
+        
+        //Care has to be taken here
+        if ( lBaryonTrack && lBachelorTrack ){
+            //Attempt zero: Calculate DCA between bachelor and baryon daughter
+            fTreeCascVarDcaBachToBaryon = lBaryonTrack->GetDCA(lBachelorTrack, bMag, xn, xp);
+        }
         
         //----------------------------------------
         // Regular MC ASSOCIATION STARTS HERE
@@ -2869,4 +2898,3 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::LambdaInvariantMass( Do
     TLorentzVector v0 = v1+v2 ;
     return v0.M();
 }
-
