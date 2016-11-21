@@ -97,6 +97,7 @@ AliAnalysisTask *AddTask_reichelt_ElectronEfficiency(TString configFile="Config_
     task->SetDeltaPhiBinning(NbinsDeltaPhi,DeltaPhiMin,DeltaPhiMax);
   }
   // resolution usage
+  task->SetCalcEfficiencyGen(CalcEfficiencyGen); // will do both if Gen and Rec are set to kTRUE.
   task->SetCalcEfficiencyRec(CalcEfficiencyRec);
   if (resolutionfile.Contains("CENTRALITY")) resolutionfile.ReplaceAll("CENTRALITY",Form("%02.0f%02.0f",centMin,centMax));
   if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
