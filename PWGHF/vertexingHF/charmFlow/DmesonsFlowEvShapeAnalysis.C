@@ -14,6 +14,7 @@
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
 #include <TLegend.h>
+#include <TRandom3.h>
 
 #include "AliHFMassFitter.h"
 #include "AliRDHFCutsD0toKpi.h"
@@ -39,16 +40,16 @@
 //GLOBAL VARIABLES
 //to be set
 //input file name
-const TString infilename="AnalysisResults.root";
-const TString suffix="TPC";
+const TString infilename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/highIR_pass1/AnalysisResultsv2_EP_pass0_diffdet_topod0cut_3050.root";
+const TString suffix="_Topod0Cut_pass0_QoverM_VZERO";//"_3050_CentralCuts_TPC";
 const TString partname="Dplus";
 const Int_t minCent=30;
 const Int_t maxCent=50;
 
 //ptbins of the analysis
-const Int_t nPtBins=10;
+const Int_t nPtBins=7;
 const Int_t nPtLims=nPtBins+1;
-const Double_t PtLims[nPtLims] = {2.,3.,4.,5.,6.,8.,10.,12.,16.,24.,36.};
+const Double_t PtLims[nPtLims] = {2.,3.,4.,5.,6.,8.,12.,16.};
 
 //phi bins
 const Int_t nPhiBins=4;
@@ -56,25 +57,25 @@ const Int_t nPhiLims=nPhiBins+1;
 const Double_t PhiLims[nPhiLims]={0,TMath::Pi()/4,TMath::Pi()/2,3*TMath::Pi()/4,TMath::Pi()};
 
 //q2 cut values (absolute cut)
-const Double_t q2smalllimit=2.5;
-const Double_t q2largelimit=2.5;
+const Double_t q2smalllimit=2.;
+const Double_t q2largelimit=2.;
 
 //percentage of events with smaller/larger q2
-const Double_t q2percevents=0.5;
+const Double_t q2percevents=0.4;
 
 //EP resolution
-const Int_t evPlane=AliEventPlaneResolutionHandler::kTPCFullEta;
-Int_t evPlaneRes=AliEventPlaneResolutionHandler::kTwoEtaSub;
-const Bool_t useNcollWeight=kTRUE;
+const Int_t evPlane=AliEventPlaneResolutionHandler::kVZERO;
+Int_t evPlaneRes=AliEventPlaneResolutionHandler::kThreeSub;
+const Bool_t useNcollWeight=kFALSE;
 const Bool_t useAliHandlerForRes=kFALSE;
 
 // mass fit configuration
-const Int_t rebin[nPtBins]={5,5,5,5,5,5,5,5,5};
-const Int_t typeb=AliHFMassFitter::kExpo;  
+const Int_t rebin[]={5,5,5,5,5,5,5,5};
+const Int_t typeb=AliHFMassFitter::kExpo;  // Background: 0=expo, 1=linear, 2=pol2
 const Bool_t fixAlsoMass=kFALSE;
-const Double_t minMassForFit=1.6;
-const Double_t maxMassForFit=2.2;
-const Double_t massRangeForCounting=0.1; // GeV
+const Double_t minMassForFit=1.69;
+const Double_t maxMassForFit=2.02;
+const Double_t nSigmaForCounting=3.5;
 
 //not to be set
 enum CutMethod{kAbsCut,kPercCut}; //kAbsCut->absolute cut values, kPercCut->cut according to the % of events with smaller/larger q2
@@ -185,6 +186,7 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
         Double_t sigmaFromFit=fitter.GetSigma();
         TF1* funcB2=fitter.GetBackgroundRecalcFunc();
         utils->AveragePt(averagePt[iPt],errorPt[iPt],PtLims[iPt],PtLims[iPt+1],hmasspt,massFromFit,sigmaFromFit,funcB2,2.5,4.5,0.,3.,1);
+        if(averagePt[iPt]==0) averagePt[iPt] = (PtLims[iPt+1]+PtLims[iPt])/2;
       }
       cout << Form("Average pt %s region \n",q2regionname[iq2].Data()) << endl;
       for(Int_t iPt=0;iPt<nPtBins;iPt++) cout <<Form("%f +- %f\n",averagePt[iPt],errorPt[iPt])<<endl;
@@ -730,22 +732,22 @@ TList* LoadResolutionHistos(TList *inputlist, Double_t cutvalues[2], Int_t small
         }
       }
       htmpresos[iRes]=(TH1F*)htmpresosvsq2[iRes]->ProjectionX(Form("hEvPlane%s%s",namereso[iRes].Data(),suffixcentr.Data()),binmin,binmax);
-      resolBin=GetEventPlaneResolution(error,htmpresos[0],htmpresos[1],htmpresos[2]);
-      if(resolBin<lowestRes) lowestRes=resolBin;
-      if(resolBin>highestRes) highestRes=resolBin;
-      binCentr=(Double_t)icentr/10.+binHalfWid;
-      gResolVsCent->SetPoint(iPt,binCentr,resolBin);
-      gResolVsCent->SetPointError(iPt,binHalfWid,error);
-      ++iPt;
-      ncBin=icentr/25;
-      for(Int_t iRes=0;iRes<nSubRes;iRes++){
-        if(htmpresos[iRes]){
-          if(useNcollWeight){
-            cout << Form("Centr %d Bin %d  Ncoll %f\n",icentr,ncBin,ncoll[ncBin]) << endl;
-            htmpresos[iRes]->Scale(ncoll[ncBin]);
-          }
-          hevplresos[iRes]->Add(htmpresos[iRes]);
+    }
+    resolBin=GetEventPlaneResolution(error,htmpresos[0],htmpresos[1],htmpresos[2]);
+    if(resolBin<lowestRes) lowestRes=resolBin;
+    if(resolBin>highestRes) highestRes=resolBin;
+    binCentr=(Double_t)icentr/10.+binHalfWid;
+    gResolVsCent->SetPoint(iPt,binCentr,resolBin);
+    gResolVsCent->SetPointError(iPt,binHalfWid,error);
+    ++iPt;
+    ncBin=icentr/25;
+    for(Int_t iRes=0;iRes<nSubRes;iRes++){
+      if(htmpresos[iRes]){
+        if(useNcollWeight){
+          cout << Form("Centr %d Bin %d  Ncoll %f\n",icentr,ncBin,ncoll[ncBin]) << endl;
+          htmpresos[iRes]->Scale(ncoll[ncBin]);
         }
+        hevplresos[iRes]->Add(htmpresos[iRes]);
       }
     }
   }
@@ -856,7 +858,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
   for(Int_t iPt=0;iPt<nPtBins;iPt++){
     TH1F *histtofitfullsigma=(TH1F*)masslist->FindObject(Form("hMass_pt%d",iPt))->Clone();
     for(Int_t iPhi=0;iPhi<nPhi;iPhi++){
-      Int_t ipad=iPhi+iPt+1;
+      Int_t ipad=(iPhi)*nPtBins+iPt+1;
       Double_t signal=0,esignal=0;
       TH1F *histtofit=(TH1F*)masslist->FindObject(Form("hMass_pt%d_phi%d",iPt,iPhi))->Clone();
       if(!histtofit){
@@ -874,16 +876,20 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       fitter.SetInitialGaussianMean(massD);
       fitter.SetInitialGaussianSigma(0.012);
       Bool_t ok=fitter.MassFitter(kFALSE);
+      Double_t sigmaforcounting=0;
+      Double_t meanforcounting=0;
       if(ok){
         fitter.DrawHere(cDeltaPhi->cd(ipad),3,1);
         fitter.Signal(3,signal,esignal);
+        sigmaforcounting=fitter.GetSigma();
+        meanforcounting=fitter.GetMean();
       }
       gSignal[iPt]->SetPoint(iPhi,iPhi,signal);
       gSignal[iPt]->SetPointError(iPhi,0,0,esignal,esignal);
       TF1* fB1=fitter.GetBackgroundFullRangeFunc();
       TF1* fB2=fitter.GetBackgroundRecalcFunc();
-      Double_t minBinSum=histtofit->FindBin(massD-massRangeForCounting);
-      Double_t maxBinSum=histtofit->FindBin(massD+massRangeForCounting);
+      Double_t minBinSum=histtofit->FindBin(meanforcounting-nSigmaForCounting*sigmaforcounting);
+      Double_t maxBinSum=histtofit->FindBin(meanforcounting+nSigmaForCounting*sigmaforcounting);
       Double_t cntSig1=0.;
       Double_t cntSig2=0.;
       Double_t cntErr=0.;
@@ -918,7 +924,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     Double_t sigma=fitter.GetSigma();
     Double_t massFromFit=fitter.GetMean();
     for(Int_t iPhi=0;iPhi<nPhi;iPhi++){
-      Int_t ipad=iPhi+iPt+1;
+      Int_t ipad=(iPhi)*nPtBins+iPt+1;
       TH1F *histtofit=(TH1F*)masslist->FindObject(Form("hMass_pt%d_phi%d",iPt,iPhi))->Clone();
       histtofit->SetTitle(Form("%.f<#it{p}_{T}<%.f, #phi%d",PtLims[iPt],PtLims[iPt+1],iPhi));
       nMassBins=histtofit->GetNbinsX();
@@ -951,7 +957,6 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
 //_____________________________________________________________________________________________
 //GET EV PLANE RESOLUTION
 Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3){
- 
   Double_t resolFull=1.;
   if(evPlaneRes==AliEventPlaneResolutionHandler::kTwoRandSub ||
      evPlaneRes==AliEventPlaneResolutionHandler::kTwoChargeSub){
@@ -968,10 +973,7 @@ Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, 
   }else{
     Double_t resolSub[3];
     Double_t errors[3];
-    TH1F* hevplresos[3];
-    hevplresos[0]=hsubev1;
-    hevplresos[1]=hsubev2;
-    hevplresos[2]=hsubev3;
+    TH1F* hevplresos[3] = {hsubev1,hsubev2,hsubev3};
     for(Int_t iRes=0;iRes<3;iRes++){
       resolSub[iRes]=hevplresos[iRes]->GetMean();
       errors[iRes]=hevplresos[iRes]->GetMeanError();
@@ -1104,22 +1106,3 @@ void SetStyle() {
   gStyle->SetLegendBorderSize(0);
   gStyle->SetPalette(53);
 }
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
