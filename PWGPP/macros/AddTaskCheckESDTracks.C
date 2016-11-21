@@ -53,13 +53,24 @@ AliAnalysisTaskCheckESDTracks *AddTaskCheckESDTracks(TString suffix="",
   TString listname="clistCheckESDTracks";
   listname+=suffix.Data();
 
+  TString treeFileName="TreeOfESDTracks.root";
+  treeFileName += ":CheckESDTracksTree";
+  treeFileName += suffix.Data();
+
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(listname,
 							    TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName.Data() );
   
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ctreeESDTracks",
+							    TTree::Class(),
+							    AliAnalysisManager::kOutputContainer,
+							    treeFileName.Data() );
+  coutput2->SetSpecialOutput();
+
   mgr->ConnectInput(tasktr, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(tasktr, 1, coutput1);
+  mgr->ConnectOutput(tasktr, 2, coutput2);
   return tasktr;
 }   
 

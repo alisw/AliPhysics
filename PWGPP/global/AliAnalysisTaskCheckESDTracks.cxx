@@ -156,6 +156,7 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   }
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 
@@ -317,7 +318,6 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   for(Int_t ivar=0; ivar<usedVar; ivar++){
     fTrackTree->Branch(intVarName[ivar].Data(),&fTreeVarInt[ivar],Form("%s/I",intVarName[ivar].Data()));
   }
-  fOutput->Add(fTrackTree);
 
   fHistNEvents = new TH1F("hNEvents", "Number of processed events",15,-0.5,14.5);
   //fHistNEvents->Sumw2();
@@ -495,6 +495,7 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistInvMassAntiLambdaBadHyp);
 
   PostData(1,fOutput);
+  PostData(2,fTrackTree);
 
 }
 //______________________________________________________________________________
@@ -971,6 +972,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     }
   }
   PostData(1,fOutput);
+  PostData(2,fTrackTree);
   
 }
 //______________________________________________________________________________
