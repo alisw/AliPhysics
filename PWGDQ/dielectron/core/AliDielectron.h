@@ -168,8 +168,8 @@ public:
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
   void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
-  void InitLegEffMap(TString filename)  { fLegEffMap=InitEffMap(filename)  ;}
-  void InitPairEffMap(TString filename) { fPairEffMap=InitEffMap(filename) ;}
+  void InitLegEffMap(TString filename, TString generatedname="hGenerated", TString foundname="hFound")  { fLegEffMap=InitEffMap(filename,generatedname,foundname)  ;}
+  void InitPairEffMap(TString filename, TString generatedname="hGenerated", TString foundname="hFound") { fPairEffMap=InitEffMap(filename,generatedname,foundname) ;}
 
   void SetCentroidCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrArr(TObjArray *arrFun, Bool_t bHisto, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -276,7 +276,7 @@ private:
   void ClearArrays();
 
   TObjArray* PairArray(Int_t i);
-  TObject* InitEffMap(TString filename);
+  TObject* InitEffMap(TString filename, TString generatedname, TString foundname);
 
   static const char* fgkTrackClassNames[4];   //Names for track arrays
   static const char* fgkPairClassNames[11];   //Names for pair arrays
