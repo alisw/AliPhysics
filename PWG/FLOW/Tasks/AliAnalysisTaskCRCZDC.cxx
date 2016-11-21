@@ -826,15 +826,15 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
               continue;
             }
             
-            if (aodTrk->TestFilterBit(32)){
-              multTrkBefC++;
-              
-              if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
-                multTrkTOFBefC++;
-              
-              if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2) && (aodTrk->Pt() < 20.))
-                multTrk++;
-            }
+//            if (aodTrk->TestFilterBit(32)){
+//              multTrkBefC++;
+//              
+//              if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
+//                multTrkTOFBefC++;
+//              
+//              if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2) && (aodTrk->Pt() < 20.))
+//                multTrk++;
+//            }
             
             if (aodTrk->TestFilterBit(128))
               multTPC++;
@@ -850,10 +850,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             BisPileup=kTRUE;
           }
           
-          if (Float_t(multTrkTOFBefC) < fMultTOFLowCut->Eval(Float_t(multTrkBefC)) || Float_t(multTrkTOFBefC) > fMultTOFHighCut->Eval(Float_t(multTrkBefC))) {
-            fPileUpCount->Fill(8.5);
-            BisPileup=kTRUE;
-          }
+//          if (Float_t(multTrkTOFBefC) < fMultTOFLowCut->Eval(Float_t(multTrkBefC)) || Float_t(multTrkTOFBefC) > fMultTOFHighCut->Eval(Float_t(multTrkBefC))) {
+//            fPileUpCount->Fill(8.5);
+//            BisPileup=kTRUE;
+//          }
           
           if(BisPileup) return;
         }
