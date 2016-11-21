@@ -94,6 +94,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  NpureMCproc(0),
   fOutputList(0),
   fNevents(0),
   fCent(0),
@@ -158,6 +159,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistHFEcorr(0),
   fHistResD(0),
   fHistResB(0),
+  fHistHFmcCheck(0), 
   fhfeCuts(0) 
 {
   // Constructor
@@ -194,6 +196,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  NpureMCproc(0),
   fOutputList(0),
   fNevents(0),
   fCent(0), 
@@ -258,6 +261,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistHFEcorr(0),
   fHistResD(0),
   fHistResB(0),
+  fHistHFmcCheck(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -463,13 +467,13 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
      fOutputList->Add(fSparseElectron);
     }
 
-  fHistPhoReco0 = new TH1D("fHistPhoReco0", "total pho in sample; p_{T}(GeV/c)", 30,0,30);
+  fHistPhoReco0 = new TH1D("fHistPhoReco0", "total pho in sample; p_{T}(GeV/c)", 40,0,40);
   fOutputList->Add(fHistPhoReco0);
 
-  fHistPhoReco1 = new TH1D("fHistPhoReco1", "reco pho in sample; p_{T}(GeV/c)", 30,0,30);
+  fHistPhoReco1 = new TH1D("fHistPhoReco1", "reco pho in sample; p_{T}(GeV/c)", 40,0,40);
   fOutputList->Add(fHistPhoReco1);
 
-  fHistPhoReco2 = new TH1D("fHistPhoReco2", "non-reco pho in sample; p_{T}(GeV/c)", 30,0,30);
+  fHistPhoReco2 = new TH1D("fHistPhoReco2", "non-reco pho in sample; p_{T}(GeV/c)", 40,0,40);
   fOutputList->Add(fHistPhoReco2);
 
   fHistMCorgD = new TH1D("fHistMCorgD","MC org D",40,0,40);
@@ -531,6 +535,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistResB = new TH2D("fHistResB", "B->e pT corr", 400,0.0,40.0,400,0.0,40.0);
   fOutputList->Add(fHistResB);
+
+  fHistHFmcCheck = new TH1D("fHistHFmcCheck", "HFE mc ilabel", 4,-1.5,2.5);
+  fOutputList->Add(fHistHFmcCheck);
 
   PostData(1,fOutputList);
 }
@@ -887,7 +894,21 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         if(pid_eleD)fHistResD->Fill(track->Pt(),fMCparticle->Pt());
         if(pid_eleB)fHistResB->Fill(track->Pt(),fMCparticle->Pt()); 
 
-    if(abs(pdg)==11 && (pid_eleD || pid_eleB))cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
+    //if(abs(pdg)==11 && (pid_eleD || pid_eleB))cout << " pid_ele = " << pid_ele << " ; pidM = " << pidM << endl;
+    //if(abs(pdg)==11 && (pid_eleD || pid_eleB))cout << " NpureMCproc = " << NpureMCproc << " ; ilabel = " << ilabel << endl;
+    if(abs(pdg)==11 && (pid_eleD || pid_eleB))
+      {
+       if(ilabel<NpureMCproc+1)
+         {
+          fHistHFmcCheck->Fill(1);
+         }
+       else
+         {
+          fHistHFmcCheck->Fill(0);
+          if(pid_eleD)pid_eleD = kFALSE;
+          if(pid_eleB)pid_eleB = kFALSE;
+         }
+      }
 
     ////////////////////
     //Track properties//
@@ -1398,6 +1419,8 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
 {
  TList *lh=fMCheader->GetCocktailHeaders();
  Int_t NpureMC = 0;
+ //Int_t NpureMCproc = 0;
+ NpureMCproc = 0;
  if(lh)
     {     
      //cout << "<------- lh = " << lh << " ; NproAll = "<<  lh->GetEntries() << endl; 
@@ -1410,11 +1433,16 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
             //cout << "<------- imc = "<< gh->GetName() << endl;     
             //cout << "<-------- Ncont = " << gh->NProduced() << endl;
             if(igene==0)NpureMC = gh->NProduced();  // generate by PYTHIA or HIJING
+            NpureMCproc += gh->NProduced();  // generate by PYTHIA or HIJING
            }
         }
     }
 
- for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+ //cout << "NpureMC =" << NpureMC << endl;
+ //cout << "NpureMCproc =" << NpureMCproc << endl;
+
+ //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
+ for(int imc=0; imc<NpureMCproc; imc++)
      {
       Bool_t iEnhance = kFALSE;
       if(imc>=NpureMC)iEnhance = kTRUE;
@@ -1446,7 +1474,7 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
          if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
            {
             fHistMCorgB->Fill(fMCparticle->Pt());
-             //cout << "orgB : " << pdgMom << " ; " << pdgGen << endl;
+            //cout << "orgB : " << pdgMom << " ; " << pdgGen << endl;
            }
         }
 
