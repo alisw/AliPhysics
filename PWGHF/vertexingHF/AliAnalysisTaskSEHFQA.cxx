@@ -1252,6 +1252,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fHisWhichVertSelEv->GetXaxis()->SetBinLabel(3,"SPD-3D");
     fHisWhichVertSelEv->GetXaxis()->SetBinLabel(4,"SPD-z");
 
+    fHisnClsITSvsNtrackletsSel=new TH2F("hnClsITSvsNtrackletsSel","number of SPD clusters vs number of SPD tracklets; n. SPD clusters; Ntracklets",200,0,6000,500,0,20000); // max values should be changed for pp data to about 200 and 1000 respectively
+    fHiszvtxvsSPDzvtxSel=new TH2F("hzvtxvsSPDzvtxSel","event primary z-vertex vs SPD z-vertex; PV z-vertex [cm]; SPD z-vertex [cm]",800,-30,30,800,-30,30);
+
     fHisTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",24,-1.5,22.5,12,-10,110);
     fHisTrigCent->GetXaxis()->SetBinLabel(1,"All");
     fHisTrigCent->GetXaxis()->SetBinLabel(2,"kAny");
@@ -1393,6 +1396,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(trigCounter);
     fOutputEvSelection->Add(trigCounter2);
     fOutputEvSelection->Add(fHisWhyEvRejected);
+    fOutputEvSelection->Add(fHisnClsITSvsNtrackletsSel);
+    fOutputEvSelection->Add(fHiszvtxvsSPDzvtxSel);
 
   }
   if(fOnOff[4]){ // FLOW OBSERVABLES
@@ -2227,6 +2232,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHiszvtxSelEv->Fill(zvtx);
       fHisWhichVertSelEv->Fill(vtxTyp);
     }
+
+    const AliVVertex *vSPD = aod->GetPrimaryVertexSPD();
+    fHiszvtxvsSPDzvtxSel->Fill(vSPD->GetZ(),zvtx);
+    Int_t nCls = aod->GetNumberOfITSClusters(0) + aod->GetNumberOfITSClusters(1);
+    fHisnClsITSvsNtrackletsSel->Fill(nCls,aod->GetTracklets()->GetNumberOfTracklets());
+
   }
 
   if(!evSelected) {
