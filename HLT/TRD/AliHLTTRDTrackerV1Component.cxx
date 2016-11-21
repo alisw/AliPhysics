@@ -115,7 +115,7 @@ int AliHLTTRDTrackerV1Component::GetOutputDataTypes(AliHLTComponentDataTypeList&
   // Get the output data types
   tgtList.clear();
   tgtList.push_back(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
-  tgtList.push_back(AliHLTTRDDefinitions::fgkTracksDataType);
+  tgtList.push_back(AliHLTTRDDefinitions::fgkTracksV1DataType);
   return tgtList.size();
 }
 
@@ -313,7 +313,7 @@ int AliHLTTRDTrackerV1Component::DoEvent( const AliHLTComponentEventData& evtDat
 	  bd.fOffset = offset;
 	  bd.fSize = addedSize;
 	  bd.fSpecification = block.fSpecification;
-	  bd.fDataType = AliHLTTRDDefinitions::fgkTracksDataType;
+	  bd.fDataType = AliHLTTRDDefinitions::fgkTracksV1DataType;
 	  outputBlocks.push_back( bd );
 	  HLTDebug("BD ptr 0x%x, offset %i, size %i, dataType %s, spec 0x%x ", bd.fPtr, bd.fOffset, bd.fSize, DataType2Text(bd.fDataType).c_str(), bd.fSpecification);
 	  offset = totalSize;

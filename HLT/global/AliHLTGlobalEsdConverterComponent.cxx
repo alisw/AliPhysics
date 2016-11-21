@@ -70,6 +70,7 @@
 #include "AliFlatESDVertex.h"
 #include "AliHLTTRDDefinitions.h"
 #include "AliHLTTRDtrack.h"
+#include "AliHLTTRDTrackData.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -133,7 +134,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
-  list.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginTRD);
+  list.push_back(AliHLTTRDDefinitions::fgkTRDTrackDataType);
   list.push_back(AliHLTTRDDefinitions::fgkTRDSpacePointDataType);
 }
 
@@ -1041,23 +1042,21 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   // 4. convert the HLT TRD tracks to ESD tracks                        
   if (storeTracks){
-    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack | kAliHLTDataOriginTRD);
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTRDTrackDataType);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {      
       fBenchmark.AddInput(pBlock->fSize);
-      const AliHLTTracksData* trackData = reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr);    
-      const AliHLTUInt8_t* pCurrent=reinterpret_cast<const AliHLTUInt8_t*>(trackData->fTracklets);
-      const AliHLTUInt8_t* pEnd = reinterpret_cast<const AliHLTUInt8_t*>(pBlock->fPtr) + pBlock->fSize;
-      for (unsigned i=0; i<trackData->fCount; i++) {
-	if (pCurrent+sizeof(AliHLTExternalTrackParam)>pEnd) {
-	  iResult=-EINVAL; break;
-	}
-	const AliHLTExternalTrackParam* track=reinterpret_cast<const AliHLTExternalTrackParam*>(pCurrent);
-	if (pCurrent+sizeof(AliHLTExternalTrackParam)+track->fNPoints*sizeof(UInt_t)>pEnd) {
-	  iResult=-EINVAL; break;
-	}
+      
+      const AliHLTTRDTrackData* trackData = reinterpret_cast<const AliHLTTRDTrackData*>(pBlock->fPtr);    
+
+      if( sizeof(AliHLTTRDTrackData) < pBlock->fSize || trackData->GetSize() < pBlock->fSize ){
+	iResult=-EINVAL; break;
+      }
+
+      for (unsigned itr=0; itr<trackData->fCount; itr++) {
+
+	const AliHLTTRDTrackDataRecord &track=trackData->fTracks[itr];
 	AliHLTTRDtrack trdTrack;
 	trdTrack.ConvertFrom( track );
-	pCurrent+=sizeof(AliHLTExternalTrackParam)+track->fNPoints*sizeof(UInt_t);	
 	
 	Double_t TRDpid[AliPID::kSPECIES], eProb(0.2), restProb((1-eProb)/(AliPID::kSPECIES-1)); //eprob(element->GetTRDpid...);
 	for(Int_t i=0; i<AliPID::kSPECIES; i++){

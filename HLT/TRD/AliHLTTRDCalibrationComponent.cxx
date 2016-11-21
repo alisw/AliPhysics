@@ -92,7 +92,7 @@ void AliHLTTRDCalibrationComponent::GetInputDataTypes( vector<AliHLTComponentDat
 {
   // Get the list of input data
   list.clear(); // We do not have any requirements for our input data type(s).
-  list.push_back(AliHLTTRDDefinitions::fgkTracksDataType);
+  list.push_back(AliHLTTRDDefinitions::fgkTracksV1DataType);
 }
 
 AliHLTComponentDataType AliHLTTRDCalibrationComponent::GetOutputDataType()
@@ -297,7 +297,7 @@ Int_t AliHLTTRDCalibrationComponent::ProcessCalibration(const AliHLTComponent_Ev
   Int_t blockOrObject = 0;
   Int_t nTimeBins = -1;
 
-  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTracksDataType); pBlock; pBlock=GetNextInputBlock()) 
+  for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTracksV1DataType); pBlock; pBlock=GetNextInputBlock()) 
     {
       TCAarray[0] = fTracksArray;
       AliHLTTRDUtils::ReadTracks(TCAarray[0], pBlock->fPtr, pBlock->fSize, &nTimeBins);

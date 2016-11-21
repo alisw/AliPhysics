@@ -84,7 +84,7 @@ void AliHLTTRDTrackHistoComponent::GetInputDataTypes(AliHLTComponentDataTypeList
 {
   // see header file for class documentation
   list.clear();
-  list.push_back( AliHLTTRDDefinitions::fgkTracksDataType );
+  list.push_back( AliHLTTRDDefinitions::fgkTracksV1DataType );
 }
 
 AliHLTComponentDataType AliHLTTRDTrackHistoComponent::GetOutputDataType()
@@ -173,7 +173,7 @@ int AliHLTTRDTrackHistoComponent::DoEvent(const AliHLTComponentEventData& /*evtD
   const AliHLTComponentBlockData* iter = NULL;
   Bool_t gotData = kFALSE;
   
-  for(iter = GetFirstInputBlock(AliHLTTRDDefinitions::fgkTracksDataType); 
+  for(iter = GetFirstInputBlock(AliHLTTRDDefinitions::fgkTracksV1DataType); 
 	iter != NULL; iter = GetNextInputBlock() ) {
     
     fEvSize->Fill((iter->fSize+0.5f)/1024);

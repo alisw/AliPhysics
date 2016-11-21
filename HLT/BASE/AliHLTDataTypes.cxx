@@ -285,9 +285,6 @@ const AliHLTComponentDataType kAliHLTDataTypeOutputTriggerCounters = AliHLTCompo
 const char kAliHLTMetaDataTypeIDstring[8] = kAliHLTMetaDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeTriggerMetaBlock = AliHLTComponentDataTypeInitializer(kAliHLTMetaDataTypeIDstring, kAliHLTDataOriginPrivate);
 
-/** Container of HLT TRD tracker data */
-const AliHLTComponentDataType fgkTRDTrackDataType = AliHLTComponentDataTypeInitializer( "TRDTRACK", kAliHLTDataOriginTRD );
-
 //////////////////////////////////////////////////////////////////////////
 //
 // Data origin variables, to be used with the operator|

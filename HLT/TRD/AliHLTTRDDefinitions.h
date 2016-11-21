@@ -31,7 +31,7 @@ public:
   static const AliHLTComponentDataType fgkDigitsDataType;  // TRD digits
   static const AliHLTComponentDataType fgkClusterDataType; // Cluster
   static const AliHLTComponentDataType fgkHiLvlClusterDataType; // Cluster for offline comparation
-  static const AliHLTComponentDataType fgkTracksDataType; // Stand Alone tracks
+  static const AliHLTComponentDataType fgkTracksV1DataType; // Stand Alone tracks, V1
   static const AliHLTComponentDataType fgkOnlineDataType; // Online tracking data
   static const AliHLTComponentDataType fgkHiLvlTracksDataType; // Stand Alone tracks for offline comparation
   static const AliHLTComponentDataType fgkMCMtrackletDataType; // MCM tracklet Data
@@ -40,6 +40,7 @@ public:
   static const AliHLTComponentDataType fgkEORCalibrationDataType;//Calibration end of run
   static const AliHLTComponentDataType fgkTRDTrackletDataType; // TRD tracklets from raw data
   static const AliHLTComponentDataType fgkTRDSpacePointDataType; // TRD space point calculated from tracklet
+  static const AliHLTComponentDataType fgkTRDTrackDataType; // tracks
 
   static const AliHLTComponentDataType fgkSimpleIntegerDataType;//Sample
 
