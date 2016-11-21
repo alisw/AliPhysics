@@ -732,6 +732,10 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     }
     
     if(fEventPlaneMeth>kTPCVZERO)eventplane=rpangleVZERO;
+    else if(fEventPlaneMeth==kTPCVZERO) {
+      if(!fUseNewQnCorrFw) q = pl->GetQVector();
+      eventplane=rpangleTPC;
+    }
     else{
       if(!fUseNewQnCorrFw) q = pl->GetQVector();
       eventplane=rpangleTPCpos;
