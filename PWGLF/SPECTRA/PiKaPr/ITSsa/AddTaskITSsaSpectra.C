@@ -1,84 +1,95 @@
-AliAnalysisTaskSEITSsaSpectra *AddTaskITSsaSpectra(Int_t optNtuple=0,Int_t readMC=0,Int_t lowcut=-1,Int_t upcut=-1,Int_t hi=0){
+AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra_new(Int_t    pidMethod, // 0:kNSigCut, 1:kMeanCut, 2:kLanGaus
+                                                  Bool_t   isMC       = kFALSE, //
+                                                  Bool_t   optNtuple  = kFALSE,
+                                                  Bool_t   doMultSel  = kFALSE,
+                                                  Float_t  lowMultCut = -1,
+                                                  Float_t  upMultCut  = -1,
+                                                  const char* multEst = "V0M",
+                                                  const char* suffix  = "")
+{
   // Creates, configures and attaches to the train the task for pi, K , p spectra
   // with ITS standalone tracks
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskITSsaSpectra", "No analysis manager to connect to.");
+    ::Error("AddTaskITSsaBayes", "No analysis manager to connect to.");
     return NULL;
-  }   
-  
+  }
+
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskITSsaSpectra", "This task requires an input event handler");
+    ::Error("AddTaskITSsaBayes", "This task requires an input event handler");
     return NULL;
-  }   
-  
+  }
+
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if(type.Contains("AOD")){
-    ::Error("AddTaskITSsaSpectra", "This task requires to run on ESD");
+  if (type.Contains("AOD")) {
+    ::Error("AddUserTask", "This task requires to run on ESD");
     return NULL;
   }
-  
-  // Add MC handler (for kinematics)
-  if(readMC){
-    AliMCEventHandler* handler = new AliMCEventHandler;
-    handler->SetReadTR(kFALSE);
-    mgr->SetMCtruthEventHandler(handler);
-  }
+
+  char* pidName[3] = {"_NSigCut", "_MeanCut", "_LanGauMP"};
+  TString kContSuffix(pidName[pidMethod]);
+
   // Create and configure the task
-  
-  AliAnalysisTaskSEITSsaSpectra *taskits = new AliAnalysisTaskSEITSsaSpectra();
-  taskits->SelectCollisionCandidates();
-  taskits->SetReadMC(readMC);
+  AliAnalysisTaskSEITSsaSpectra* taskits = new AliAnalysisTaskSEITSsaSpectra();
+  taskits->SetIsMC(isMC);
   taskits->SetFillNtuple(optNtuple);
-  
-  if(hi)
-    {
-      Float_t lowcencut=(Float_t)lowcut;
-      Float_t upcencut=(Float_t)upcut;
-      taskits->SetCentralityCut(lowcencut,upcencut);
-      taskits->SetHImode();
-    }
-  else{
-    taskits->SetMultBin(lowcut,upcut);
+  taskits->SetPidTech(pidMethod);
+
+  if (doMultSel) {
+    taskits->SetDoMultSel(doMultSel);
+    taskits->SetCentEst(centEst);
+    taskits->SetMultiplicityCut(lowcut, upcut);
+    kContSuffix.Append(Form("_%s-%.1fto%.1f",
+                            multEst,
+                            (lowMultCut < 0) ?   0 : lowMultCut,
+                            (upMultCut  < 0) ? 100 :  upMultCut));
   }
-  
+
+  kContSuffix += suffix;
   mgr->AddTask(taskits);
-  
+
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================
-  TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  outputFileName += ":PWG2SpectraITSsa";
-  
-  AliAnalysisDataContainer *coutput =0x0;
-  AliAnalysisDataContainer *coutputCuts = 0x0;
-  if(hi)
-    {
-      coutput = mgr->CreateContainer(Form("clistITSsaCent%ito%i",lowcut,upcut),
-				      TList::Class(),
-				      AliAnalysisManager::kOutputContainer,
-				      outputFileName );
-    }
-  else
-    {
-      coutput = mgr->CreateContainer(Form("clistITSsaMult%ito%i",lowcut,upcut),
-				     TList::Class(),
-				     AliAnalysisManager::kOutputContainer,
-				     outputFileName );    
-    }
+  mgr->ConnectInput(taskits,  0, mgr->GetCommonInputContainer());
 
-  coutputCuts = mgr->CreateContainer(Form("DCACutMult%ito%i",lowcut,upcut),
-				     TList::Class(),
-				     AliAnalysisManager::kParamContainer,
-				     outputFileName );
-  
-  
-  mgr->ConnectInput(taskits, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskits, 1, coutput);
-  mgr->ConnectOutput(taskits, 2, coutputCuts);
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+
+  TString kMainContName("cListSpectraPiKaPrITSsa");
+  kMainContName += kContSuffix;
+
+  AliAnalysisDataContainer* kMainDataCont = NULL;
+  kMainDataCont = mgr->CreateContainer(kMainContName.Data(),
+                                       TList::Class(),
+                                       AliAnalysisManager::kOutputContainer,
+                                       outputFileName );
+  mgr->ConnectOutput(taskits, 1, kMainDataCont);
+
+  TString kDCAcutContName("cListDCAcutFunction");
+  kDCAcutContName += kContSuffix;
+
+  AliAnalysisDataContainer* kDCAcutDataCont = NULL;
+  kDCAcutDataCont = mgr->CreateContainer(kDCAcutContName.Data(),
+                                         TList::Class(),
+                                         AliAnalysisManager::kOutputContainer,
+                                         outputFileName);
+  mgr->ConnectOutput(taskits, 2, kDCAcutDataCont);
+
+  if (optNtuple) {
+    TString kNtupleContName("cListTreeInfo");
+    kNtupleContName += kContSuffix;
+
+    AliAnalysisDataContainer* kNtupleDataCont;
+    kNtupleDataCont = mgr->CreateContainer(kContSuffix.Data(),
+                                           TTree::Class(),
+                                           AliAnalysisManager::kOutputContainer,
+                                           outputFileName);
+    mgr->ConnectOutput(taskits, 3, kNtupleDataCont);
+  }
+
   return taskits;
-}   
+}
