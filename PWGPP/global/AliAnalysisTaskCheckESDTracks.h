@@ -61,6 +61,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetUseTOFbcSelection(Bool_t opt){
     fUseTOFbcSelection=opt;
   }
+  void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
+    fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
+  }
  private:
 
   enum EVarsTree {kNumOfIntVar=9, kNumOfFloatVar=34};
@@ -167,10 +170,13 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fUseTOFbcSelection;  // flag use/not use TOF for pileup rejection
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Int_t   fTriggerMask;        // mask used in physics selection
+  Int_t fNPtBins;              // number of pt intervals in histos
+  Double_t fMinPt;             // minimum pt for histos
+  Double_t fMaxPt;             // maximum pt for histos
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,2);
+  ClassDef(AliAnalysisTaskCheckESDTracks,3);
 };
 
 

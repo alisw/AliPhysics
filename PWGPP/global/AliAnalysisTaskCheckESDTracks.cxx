@@ -128,6 +128,9 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fUseTOFbcSelection(kTRUE),
   fUsePhysSel(kTRUE),
   fTriggerMask(AliVEvent::kAnyINT),
+  fNPtBins(100),
+  fMinPt(0.),
+  fMaxPt(25.),
   fReadMC(kFALSE),
   fUseMCId(kFALSE)
 {
@@ -352,40 +355,40 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
     fOutput->Add(fHistnSigmaVsPdEdxTPCsel[jsp]);
   }
 
-  fHistEtaPhiPtTPCsel = new TH3F("hEtaPhiPtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtTPCselITSref = new TH3F("hEtaPhiPtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtTPCselSPDany = new TH3F("hEtaPhiPtTPCselSPDany"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
+  fHistEtaPhiPtTPCsel = new TH3F("hEtaPhiPtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtTPCselITSref = new TH3F("hEtaPhiPtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtTPCselSPDany = new TH3F("hEtaPhiPtTPCselSPDany"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fOutput->Add(fHistEtaPhiPtTPCsel);
   fOutput->Add(fHistEtaPhiPtTPCselITSref);
   fOutput->Add(fHistEtaPhiPtTPCselSPDany);
 
-  fHistEtaPhiPtTPCselTOFbc = new TH3F("hEtaPhiPtTPCselTOFbc"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtTPCselITSrefTOFbc = new TH3F("hEtaPhiPtTPCselITSrefTOFbc"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtTPCselSPDanyTOFbc = new TH3F("hEtaPhiPtTPCselSPDanyTOFbc"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
+  fHistEtaPhiPtTPCselTOFbc = new TH3F("hEtaPhiPtTPCselTOFbc"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtTPCselITSrefTOFbc = new TH3F("hEtaPhiPtTPCselITSrefTOFbc"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtTPCselSPDanyTOFbc = new TH3F("hEtaPhiPtTPCselSPDanyTOFbc"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fOutput->Add(fHistEtaPhiPtTPCselTOFbc);
   fOutput->Add(fHistEtaPhiPtTPCselITSrefTOFbc);
   fOutput->Add(fHistEtaPhiPtTPCselSPDanyTOFbc);
 
-  fHistEtaPhiPtInnerTPCsel = new TH3F("hEtaPhiPtInnerTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerTPCselITSref = new TH3F("hEtaPhiPtInnerTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerTPCselSPDany = new TH3F("hEtaPhiPtInnerTPCselSPDany"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
+  fHistEtaPhiPtInnerTPCsel = new TH3F("hEtaPhiPtInnerTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerTPCselITSref = new TH3F("hEtaPhiPtInnerTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerTPCselSPDany = new TH3F("hEtaPhiPtInnerTPCselSPDany"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fOutput->Add(fHistEtaPhiPtInnerTPCsel);
   fOutput->Add(fHistEtaPhiPtInnerTPCselITSref);
   fOutput->Add(fHistEtaPhiPtInnerTPCselSPDany);
 
-  fHistEtaPhiPtInnerTPCselTOFbc = new TH3F("hEtaPhiPtInnerTPCselTOFbc"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerTPCselITSrefTOFbc = new TH3F("hEtaPhiPtInnerTPCselITSrefTOFbc"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerTPCselSPDanyTOFbc = new TH3F("hEtaPhiPtInnerTPCselSPDanyTOFbc"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
+  fHistEtaPhiPtInnerTPCselTOFbc = new TH3F("hEtaPhiPtInnerTPCselTOFbc"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerTPCselITSrefTOFbc = new TH3F("hEtaPhiPtInnerTPCselITSrefTOFbc"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerTPCselSPDanyTOFbc = new TH3F("hEtaPhiPtInnerTPCselSPDanyTOFbc"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fOutput->Add(fHistEtaPhiPtInnerTPCselTOFbc);
   fOutput->Add(fHistEtaPhiPtInnerTPCselITSrefTOFbc);
   fOutput->Add(fHistEtaPhiPtInnerTPCselSPDanyTOFbc);
 
-  fHistNtrackeltsPtTPCsel = new TH2F("hNtrackeltsPtTPCsel"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,40,0.,4.);
-  fHistNtrackeltsPtTPCselITSref = new TH2F("hNtrackeltsPtTPCselITSref"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,40,0.,4.);
-  fHistNtrackeltsPtTPCselSPDany = new TH2F("hNtrackeltsPtTPCselSPDany"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,40,0.,4.);
-  fHistNtrackeltsPtTPCselTOFbc = new TH2F("hNtrackeltsPtTPCselTOFbc"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,40,0.,4.);
-  fHistNtrackeltsPtTPCselITSrefTOFbc = new TH2F("hNtrackeltsPtTPCselITSrefTOFbc"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,40,0.,4.);
-  fHistNtrackeltsPtTPCselSPDanyTOFbc = new TH2F("hNtrackeltsPtTPCselSPDanyTOFbc"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,40,0.,4.);
+  fHistNtrackeltsPtTPCsel = new TH2F("hNtrackeltsPtTPCsel"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,fNPtBins,fMinPt,fMaxPt);
+  fHistNtrackeltsPtTPCselITSref = new TH2F("hNtrackeltsPtTPCselITSref"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,fNPtBins,fMinPt,fMaxPt);
+  fHistNtrackeltsPtTPCselSPDany = new TH2F("hNtrackeltsPtTPCselSPDany"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,fNPtBins,fMinPt,fMaxPt);
+  fHistNtrackeltsPtTPCselTOFbc = new TH2F("hNtrackeltsPtTPCselTOFbc"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,fNPtBins,fMinPt,fMaxPt);
+  fHistNtrackeltsPtTPCselITSrefTOFbc = new TH2F("hNtrackeltsPtTPCselITSrefTOFbc"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,fNPtBins,fMinPt,fMaxPt);
+  fHistNtrackeltsPtTPCselSPDanyTOFbc = new TH2F("hNtrackeltsPtTPCselSPDanyTOFbc"," ; N_{tracklets} ;  p_{T} (GeV/c)",200,0.,10000.,fNPtBins,fMinPt,fMaxPt);
   fOutput->Add(fHistNtrackeltsPtTPCsel);
   fOutput->Add(fHistNtrackeltsPtTPCselITSref);
   fOutput->Add(fHistNtrackeltsPtTPCselSPDany);
@@ -401,12 +404,12 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselITSref);
   fOutput->Add(fHistTPCchi2PerClusPhiPtTPCselSPDany);
   
-  fHistEtaPhiPtGoodHypProtTPCsel = new TH3F("hEtaPhiPtGoodHypProtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtGoodHypProtTPCselITSref = new TH3F("hEtaPhiPtGoodHypProtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtGoodHypProtTPCselSPDany = new TH3F("hEtaPhiPtGoodHypProtTPCselSPDany"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerGoodHypProtTPCsel = new TH3F("hEtaPhiPtInnerGoodHypProtTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerGoodHypProtTPCselITSref = new TH3F("hEtaPhiPtInnerGoodHypProtTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerGoodHypProtTPCselSPDany = new TH3F("hEtaPhiPtInnerGoodHypProtTPCselSPDany"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
+  fHistEtaPhiPtGoodHypProtTPCsel = new TH3F("hEtaPhiPtGoodHypProtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtGoodHypProtTPCselITSref = new TH3F("hEtaPhiPtGoodHypProtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtGoodHypProtTPCselSPDany = new TH3F("hEtaPhiPtGoodHypProtTPCselSPDany"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerGoodHypProtTPCsel = new TH3F("hEtaPhiPtInnerGoodHypProtTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerGoodHypProtTPCselITSref = new TH3F("hEtaPhiPtInnerGoodHypProtTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerGoodHypProtTPCselSPDany = new TH3F("hEtaPhiPtInnerGoodHypProtTPCselSPDany"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistTPCchi2PerClusPhiPtGoodHypProtTPCsel = new TH3F("hTPCchi2PerClusPhiPtGoodHypProtTPCsel"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fHistTPCchi2PerClusPhiPtGoodHypProtTPCselITSref = new TH3F("hTPCchi2PerClusPhiPtGoodHypProtTPCselITSref"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fHistTPCchi2PerClusPhiPtGoodHypProtTPCselSPDany = new TH3F("hTPCchi2PerClusPhiPtGoodHypProtTPCselSPDany"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
@@ -422,12 +425,12 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistTPCchi2PerClusPhiPtGoodHypProtTPCselSPDany);
   fOutput->Add(fHistdEdxVsPGoodHypProt);
 
-  fHistEtaPhiPtBadHypProtTPCsel = new TH3F("hEtaPhiPtBadHypProtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtBadHypProtTPCselITSref = new TH3F("hEtaPhiPtBadHypProtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtBadHypProtTPCselSPDany = new TH3F("hEtaPhiPtBadHypProtTPCselSPDany"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerBadHypProtTPCsel = new TH3F("hEtaPhiPtInnerBadHypProtTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerBadHypProtTPCselITSref = new TH3F("hEtaPhiPtInnerBadHypProtTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtInnerBadHypProtTPCselSPDany = new TH3F("hEtaPhiPtInnerBadHypProtTPCselSPDany"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
+  fHistEtaPhiPtBadHypProtTPCsel = new TH3F("hEtaPhiPtBadHypProtTPCsel"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtBadHypProtTPCselITSref = new TH3F("hEtaPhiPtBadHypProtTPCselITSref"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtBadHypProtTPCselSPDany = new TH3F("hEtaPhiPtBadHypProtTPCselSPDany"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerBadHypProtTPCsel = new TH3F("hEtaPhiPtInnerBadHypProtTPCsel"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerBadHypProtTPCselITSref = new TH3F("hEtaPhiPtInnerBadHypProtTPCselITSref"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtInnerBadHypProtTPCselSPDany = new TH3F("hEtaPhiPtInnerBadHypProtTPCselSPDany"," ; #eta_{TPC} ; #varphi_{TPC} ; p_{T,TPC} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fHistTPCchi2PerClusPhiPtBadHypProtTPCsel = new TH3F("hTPCchi2PerClusPhiPtBadHypProtTPCsel"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fHistTPCchi2PerClusPhiPtBadHypProtTPCselITSref = new TH3F("hTPCchi2PerClusPhiPtBadHypProtTPCselITSref"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
   fHistTPCchi2PerClusPhiPtBadHypProtTPCselSPDany = new TH3F("hTPCchi2PerClusPhiPtBadHypProtTPCselSPDany"," ; TPC #chi^{2}/nClusters; p_{T} (GeV/c) ; #varphi",100, 0, 10, 100, 0, 10, 72, 0, 2*TMath::Pi());
@@ -452,16 +455,16 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulGoodHypProtTPCselSPDany);
   fOutput->Add(fHistImpParXYPtMulBadHypProtTPCselSPDany);
 
-  fHistPtResidVsPtTPCselAll = new TH2F("hPtResidVsPtTPCselAll"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselGoodHypPion = new TH2F("hPtResidVsPtTPCselGoodHypPion"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselGoodHypProton = new TH2F("hPtResidVsPtTPCselGoodHypProton"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselBadHypPion = new TH2F("hPtResidVsPtTPCselBadHypPion"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselBadHypProton = new TH2F("hPtResidVsPtTPCselBadHypProton"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefAll = new TH2F("hPtResidVsPtTPCselITSrefAll"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefGoodHypPion = new TH2F("hPtResidVsPtTPCselITSrefGoodHypPion"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefGoodHypProton = new TH2F("hPtResidVsPtTPCselITSrefGoodHypProton"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefBadHypPion = new TH2F("hPtResidVsPtTPCselITSrefBadHypPion"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefBadHypProton = new TH2F("hPtResidVsPtTPCselITSrefBadHypProton"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",40,0.,4.,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselAll = new TH2F("hPtResidVsPtTPCselAll"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselGoodHypPion = new TH2F("hPtResidVsPtTPCselGoodHypPion"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselGoodHypProton = new TH2F("hPtResidVsPtTPCselGoodHypProton"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselBadHypPion = new TH2F("hPtResidVsPtTPCselBadHypPion"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselBadHypProton = new TH2F("hPtResidVsPtTPCselBadHypProton"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefAll = new TH2F("hPtResidVsPtTPCselITSrefAll"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefGoodHypPion = new TH2F("hPtResidVsPtTPCselITSrefGoodHypPion"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefGoodHypProton = new TH2F("hPtResidVsPtTPCselITSrefGoodHypProton"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefBadHypPion = new TH2F("hPtResidVsPtTPCselITSrefBadHypPion"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefBadHypProton = new TH2F("hPtResidVsPtTPCselITSrefBadHypProton"," ; p_{T,gen} (GeV/c) ; p_{T,reco}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
   fOutput->Add(fHistPtResidVsPtTPCselAll);
   fOutput->Add(fHistPtResidVsPtTPCselGoodHypPion);
   fOutput->Add(fHistPtResidVsPtTPCselGoodHypProton);
@@ -473,8 +476,8 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistPtResidVsPtTPCselITSrefBadHypPion);
   fOutput->Add(fHistPtResidVsPtTPCselITSrefBadHypProton);
  
-  fHistEtaPhiPtTPCselITSrefGood = new TH3F("hEtaPhiPtTPCselITSrefGood"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
-  fHistEtaPhiPtTPCselITSrefFake = new TH3F("hEtaPhiPtTPCselITSrefFake"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),40,0.,4.);
+  fHistEtaPhiPtTPCselITSrefGood = new TH3F("hEtaPhiPtTPCselITSrefGood"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
+  fHistEtaPhiPtTPCselITSrefFake = new TH3F("hEtaPhiPtTPCselITSrefFake"," ; #eta ; #varphi ; p_{T} (GeV/c)",20,-1.,1.,72,0.,2*TMath::Pi(),fNPtBins,fMinPt,fMaxPt);
   fOutput->Add(fHistEtaPhiPtTPCselITSrefGood);
   fOutput->Add(fHistEtaPhiPtTPCselITSrefFake);
 
