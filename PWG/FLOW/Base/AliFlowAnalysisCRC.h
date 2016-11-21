@@ -883,8 +883,8 @@ public:
   TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
   void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
   TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
-  void SetZNSpectra(TH1F* const n, Int_t const eg, Int_t const h) {this->fhZNSpectra[eg][h] = n;};
-  TH1F* GetZNSpectra(Int_t const eg, Int_t const h) const {return this->fhZNSpectra[eg][h];};
+  void SetZNCenDis(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCenDis[eg][h] = n;};
+  TH2F* GetZNCenDis(Int_t const eg, Int_t const h) const {return this->fhZNCenDis[eg][h];};
   void SetZNCvsZNA(TH2F* const n, Int_t const h) {this->fhZNCvsZNA[h] = n;};
   TH2F* GetZNCvsZNA(Int_t const h) const {return this->fhZNCvsZNA[h];};
   void SetZNvsCen(TH2F* const n, Int_t const h) {this->fhZNvsCen[h] = n;};
@@ -1810,7 +1810,7 @@ private:
   Double_t fZDCESELC2tot;
   Double_t *fCorrMap; //!
   Double_t fCenWeightEbE;
-  TH1F* fhZNSpectra[fCRCMaxnCen][2]; //! ZN spectra
+  TH2F* fhZNCenDis[fCRCMaxnCen][2]; //! ZN spectra
   TH2F* fhZNCvsZNA[fCRCMaxnCen]; //! ZNA-ZNC correlation
   TH2F* fhZNCenvsMul[fCRCMaxnCen][2]; //! rad vs mul
   TH2F* fhZNResvsMul[fCRCMaxnCen][2]; //! res vs mul
