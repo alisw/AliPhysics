@@ -84,6 +84,7 @@ private:
     TClonesArray  *fCaloClusters_tender;//Tender cluster
     
     AliAODMCParticle 	*fMCparticle;//! MC particle
+    AliAODMCParticle 	*fMCparticleGen;//! MC particle
     AliAODMCParticle 	*fMCparticleAss;//! MC particle
     TClonesArray 	*fMCarray;//! MC array
  
@@ -98,7 +99,9 @@ private:
     
     Int_t fcentMim; // mim. centrality
     Int_t fcentMax; // max. centrality
-
+    
+    Int_t NpureMCproc; // # of process in MC (no GEANT process)
+   
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fCent;//! centrality
@@ -171,6 +174,7 @@ private:
 
     TH2D        *fHistResD;
     TH2D        *fHistResB;
+    TH1D        *fHistHFmcCheck;
 
     AliHFEcuts  *fhfeCuts;
 
