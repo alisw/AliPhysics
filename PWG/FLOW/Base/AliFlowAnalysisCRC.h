@@ -315,6 +315,7 @@ public:
   virtual Int_t GetCRCQVecBin(Int_t c, Int_t y);
   virtual Int_t GetCRCRunBin(Int_t RunNum);
   virtual Int_t GetCRCCenBin(Double_t Centrality);
+  virtual Int_t GetWideCenBin(Double_t Centrality);
   virtual Double_t GetSumPro(TProfile *pro, Int_t bin);
   
   virtual Double_t GetSPZDChar(Int_t har, Double_t QRe,Double_t QIm,Double_t ZARe,Double_t ZAIm,Double_t ZCRe,Double_t ZCIm);
@@ -928,6 +929,8 @@ public:
   TProfile* GetFlowQCCorCovPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorCovPro[c][eg][h];};
   void SetFlowQCCorCovHist(TH1D* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorCovHist[c][eg][h] = TP;};
   TH1D* GetFlowQCCorCovHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorCovHist[c][eg][h];};
+  void SetFlowQCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCFinalPtDifHist[c][eg][h] = TH;};
+  TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
   
   TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
   void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
@@ -946,8 +949,6 @@ public:
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
   
-  void SetFlowQCFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCFinalPtDifHist[c][eg][h] = TH;};
-  TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
   void SetFlowQCSpectra(TH1D* const TH, Int_t const c) {this->fFlowQCSpectra[c] = TH;};
   TH1D* GetFlowQCSpectra(Int_t const c) const {return this->fFlowQCSpectra[c];};
   
@@ -957,6 +958,27 @@ public:
   void SetFlowQCRefCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorHist[eg][k] = TP;};
   TH1D* GetFlowQCRefCorFinal(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorFinal[eg][h];};
   void SetFlowQCRefCorFinal(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorFinal[eg][k] = TP;};
+  
+  void SetWideCenCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorPro[c][eg][h] = TP;};
+  TProfile* GetWideCenCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorPro[c][eg][h];};
+  void SetWideCenCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorHist[c][eg][h] = TH;};
+  TH1D* GetWideCenCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorHist[c][eg][h];};
+  void SetWideCenCorNUAHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorNUAHist[c][eg][h] = TH;};
+  TH1D* GetWideCenCorNUAHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorNUAHist[c][eg][h];};
+  void SetWideCenCorNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorNUAPro[c][eg][h] = TP;};
+  TProfile* GetWideCenCorNUAPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorNUAPro[c][eg][h];};
+  void SetWideCenCorCovPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorCovPro[c][eg][h] = TP;};
+  TProfile* GetWideCenCorCovPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorCovPro[c][eg][h];};
+  void SetWideCenCorCovHist(TH1D* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorCovHist[c][eg][h] = TP;};
+  TH1D* GetWideCenCorCovHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorCovHist[c][eg][h];};
+  void SetWideCenFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenFinalPtDifHist[c][eg][h] = TH;};
+  TH1D* GetWideCenFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenFinalPtDifHist[c][eg][h];};
+  TProfile* GetWideCenRefCorPro(Int_t const eg, Int_t const h) const {return this->fWideCenRefCorPro[eg][h];};
+  void SetWideCenRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fWideCenRefCorPro[eg][k] = TP;};
+  TH1D* GetWideCenRefCorHist(Int_t const eg, Int_t const h) const {return this->fWideCenRefCorHist[eg][h];};
+  void SetWideCenRefCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fWideCenRefCorHist[eg][k] = TP;};
+  TH1D* GetWideCenRefCorFinal(Int_t const eg, Int_t const h) const {return this->fWideCenRefCorFinal[eg][h];};
+  void SetWideCenRefCorFinal(TH1D* const TP, Int_t const eg, Int_t const k) {this->fWideCenRefCorFinal[eg][k] = TP;};
   
   void SetFlowSCv2vsZNv1Pro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Pro[c][eg] = TP;};
   TProfile* GetFlowSCv2vsZNv1Pro(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1Pro[c][eg];};
@@ -1694,6 +1716,7 @@ private:
   TH1D *fFlowQCCorNUAHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNNUA]; //! final NUA terms
   TProfile *fFlowQCCorCovPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! profile for product of correlations (for covariances)
   TH1D *fFlowQCCorCovHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! histo for covariances
+  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
   
   TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
   TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
@@ -1710,11 +1733,22 @@ private:
   TH1D *fFlowQCRefCorHist[fFlowNHarm][fFlowQCNRef]; //!
   TH1D *fFlowQCRefCorFinal[fFlowNHarm][3]; //!
   
-  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
   TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCMetricCent; //!
+  
+  const static Int_t fWideCenNCen = 4;
+  TProfile *fWideCenCorPro[fWideCenNCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
+  TH1D *fWideCenCorHist[fWideCenNCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
+  TProfile *fWideCenCorNUAPro[fWideCenNCen][fFlowNHarm][fFlowQCNNUA]; //! profile for NUA terms
+  TH1D *fWideCenCorNUAHist[fWideCenNCen][fFlowNHarm][fFlowQCNNUA]; //! final NUA terms
+  TProfile *fWideCenCorCovPro[fWideCenNCen][fFlowNHarm][fFlowQCNCov]; //! profile for product of correlations (for covariances)
+  TH1D *fWideCenCorCovHist[fWideCenNCen][fFlowNHarm][fFlowQCNCov]; //! histo for covariances
+  TH1D *fWideCenFinalPtDifHist[fWideCenNCen][fFlowNHarm][fFlowQCNPro]; //!
+  TProfile *fWideCenRefCorPro[fFlowNHarm][fFlowQCNRef]; //!
+  TH1D *fWideCenRefCorHist[fFlowNHarm][fFlowQCNRef]; //!
+  TH1D *fWideCenRefCorFinal[fFlowNHarm][3]; //!
   
   // flow QC high order
   TList *fFlowQCHOList;    //! QC high order List
@@ -1815,7 +1849,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 31);
+  ClassDef(AliFlowAnalysisCRC, 32);
   
 };
 
