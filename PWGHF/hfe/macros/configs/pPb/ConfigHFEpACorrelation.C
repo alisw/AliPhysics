@@ -64,17 +64,18 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     hfecuts->SetMinRatioTPCclusters(0.6);
     
     //ITS
-    if (SPDLayers = 0)
+    printf("ITS pixel = %d \n", SPDLayers);
+    if (SPDLayers == 0)
     {
         hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);
         printf("ITS pixel =  kBoth\n");
     }
-    else if (SPDLayers = 1)
+    else if (SPDLayers == 1)
     {
         hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
         printf("ITS pixel =  kFirst\n");
     }
-    else if (SPDLayers = 2)
+    else if (SPDLayers == 2)
     {
         hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
         printf("ITS pixel =  kAny\n");
@@ -145,11 +146,17 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     printf("EtaCutLow = %1.2f EtaCutUp = %1.2f\n",EtaCutLow,EtaCutUp);
     
     task->SetNonHFEangleCut(NonHFEangleCut);
+    printf("NonHFEangleCut = %1.2f\n",NonHFEangleCut);
+
     
     task->SetUseDCACutHadron();
     task->SetDCACutHadron(HadronDCAxy, HadronDCAz);
+    printf("Hadron DCA cut to xy = %1.2fcm z = %1.2f \n", HadronDCAxy, HadronDCAz);
+
     
     task->SetCentrality(MultiplicityLow,MultiplicityUp);
+    printf("MinMultiplicity = %1.2f MaxMultiplicy = %1.2f\n", MultiplicityLow,MultiplicityUp);
+
     
     ///_______________________________________________________________________________________________________________
     
@@ -190,7 +197,7 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     ///_______________________________________________________________________________________________________________
     
     printf("*************************************\n");
-    printf("Configuring standard Task:\n");
+    printf("Configuring Task:\n");
     pid->PrintStatus();
     printf("*************************************\n");
     
