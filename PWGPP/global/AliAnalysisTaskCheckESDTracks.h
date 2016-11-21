@@ -64,6 +64,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
     fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
   }
+
+  AliESDtrackCuts* GetTrackCutObject() const {return fTrCutsTPC;}
+
  private:
 
   enum EVarsTree {kNumOfIntVar=9, kNumOfFloatVar=34};
