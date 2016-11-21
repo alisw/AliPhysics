@@ -87,7 +87,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetDoPairing(Bool_t b=kTRUE)                        {fDoPairing=b;}
   void          SetCalcResolution(Bool_t b=kTRUE)                   {fCalcResolution=b;}
   void          SetResolutionCuts(AliAnalysisFilter *cuts)          {fResolutionCuts=cuts;}
-  void          SetKineTrackCuts(AliAnalysisFilter *cuts)           {fKineTrackCuts=cuts;}
+  void          SetKineTrackCuts(AliAnalysisFilter *cuts)           { return; } //obsolete.
   //void        SetPairCuts(AliAnalysisFilter *cuts)                {fPairCuts=cuts;}
   void          UsePhysicsSelection(Bool_t phy=kTRUE)               {fSelectPhysics=phy;}  // from AliAnalysisTaskMultiDielectron
   void          SetTriggerMask(ULong64_t mask)                      {fTriggerMask=mask;}   // from AliAnalysisTaskMultiDielectron
@@ -171,7 +171,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliAnalysisCuts*  fEventFilter;             // event filter
   Bool_t            fRequireVtx;
   UInt_t            fNminEleInEventForRej;    // should be fNminEleInEventForRej=2, because if there are less than 2 electrons, then no random ee-pair would be possible.
-  Int_t             fSupportedCutInstance;    // for debugging
+  Int_t             fSupportedCutInstance;    // all histograms in the list 'fOutputListSupportHistos' are filled for this cut instance.
   //Int_t             fEventcount;
   Bool_t            fRandomizeDaughters;      // shuffle daughters at pair creation (sorted according to pt by default, which affects PhivPair at least for Like Sign)
   TRandom3          fRandom3;
@@ -347,7 +347,6 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
 
 
   AliAnalysisFilter*              fResolutionCuts;
-  AliAnalysisFilter*              fKineTrackCuts;   // used for MC track acceptance cuts in pair efficiency calculation.
   Double_t                        fPairCutMee;      // used for pair cuts in pair efficiency calculation.
   Double_t                        fPairCutTheta;    // ''
   Double_t                        fPairCutPhiV;     // ''
@@ -421,7 +420,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiency, 6);
+  ClassDef(AliAnalysisTaskElectronEfficiency, 7);
 };
 
 #endif
