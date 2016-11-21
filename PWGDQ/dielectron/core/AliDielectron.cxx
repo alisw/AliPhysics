@@ -1990,25 +1990,26 @@ void AliDielectron::SetWidthCorrFunctionITS(TH1 *fun, UInt_t varx, UInt_t vary, 
 
 
 //______________________________________________
-TObject* AliDielectron::InitEffMap(TString filename)
+TObject* AliDielectron::InitEffMap(TString filename, TString generatedname, TString foundname)
 {
   // init an efficiency object for on-the-fly correction calculations
   if(filename.Contains("alien://") && !gGrid) TGrid::Connect("alien://",0,0,"t");
 
   TFile* file=TFile::Open(filename.Data());
   if(!file) return 0x0;
-	else printf("[I] AliDielectron::InitEffMap efficiency maps %s loaded! \n",filename.Data());
+	else printf("[I]  AliDielectron::InitEffMap efficiency maps file %s loaded! \n",filename.Data());
 
   // NOTE: the spline must have the 'variable name' stored in its fHistogram
   TSpline3 *hEff = (TSpline3*) file->Get("hEfficiency");
   //if(hEff) printf("we use a TSpline!!!!!!!!!!! \n");
-  if(hEff) return (hEff->Clone("effMap"));
-
-
-  THnBase *hGen = (THnBase*) file->Get("hGenerated");
-  THnBase *hFnd = (THnBase*) file->Get("hFound");
+  if(hEff){ 
+    printf("[II] AliDielectron::InitEffMap TSpline3 loaded! \n");
+    return (hEff->Clone("effMap"));
+  }
+  THnBase *hGen = (THnBase*) file->Get(generatedname.Data());
+  THnBase *hFnd = (THnBase*) file->Get(foundname.Data());
   if(!hFnd || !hGen) return 0x0;
-
+  printf("[II] AliDielectron::InitEffMap THnBase generated: %s and found: %s loaded! \n",generatedname.Data(),foundname.Data());
   hFnd->Divide(hGen);
   return (hFnd->Clone("effMap"));
 }
