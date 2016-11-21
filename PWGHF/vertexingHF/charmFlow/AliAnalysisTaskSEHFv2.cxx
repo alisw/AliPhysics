@@ -642,6 +642,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
   //Event plane
   Double_t eventplane=0;
   Double_t rpangleTPC=0;
+  Double_t rpangleTPCpos=0;
   Double_t rpangleVZERO=0;
   Double_t planereso=0;
   Double_t deltaPsi=0;
@@ -675,7 +676,10 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(fUseAfterBurner)fAfterBurner->SetEventPlane((Double_t)eventplane);
   }else{
     // TPC event plane
-    if(fUseNewQnCorrFw) rpangleTPC = eventplaneqncorrTPC[0];
+    if(fUseNewQnCorrFw) {
+     rpangleTPC = eventplaneqncorrTPC[0];
+     rpangleTPCpos = eventplaneqncorrTPC[1];
+    }
     else rpangleTPC = pl->GetEventplane("Q");
     if(rpangleTPC<0){
       fhEventsInfo->Fill(11);
@@ -730,7 +734,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     if(fEventPlaneMeth>kTPCVZERO)eventplane=rpangleVZERO;
     else{
       if(!fUseNewQnCorrFw) q = pl->GetQVector();
-      eventplane=rpangleTPC;
+      eventplane=rpangleTPCpos;
     }
     deltaPsi =rpangleeventA-rpangleeventB;
   }
@@ -928,9 +932,9 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 void AliAnalysisTaskSEHFv2::CreateSparseForEvShapeAnalysis() {
   /// Sparse for v2 analysis as a function of q2
  
-  Int_t nptbins=40;
+  Int_t nptbins=200;
   Double_t ptmin=0.;
-  Double_t ptmax=40.;
+  Double_t ptmax=50.;
   
   Int_t nphibins=96;
   Double_t minphi=0.;
