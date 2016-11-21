@@ -1,5 +1,7 @@
 void PrintProcStatus(int status) {
-  ::Info("ProcessOutput","processing ends with status %d",status);
+  fflush(stdout);
+  printf("extraction of TPC SP calibration status: %d\n",status);
+  fflush(stdout);
 }
 
 Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, const char* ocdbStorage, 
@@ -9,7 +11,7 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   // OCDB entry for the TPC SP Distortion calibration; inspired by
   // AliAnalysisAlien::MergeOutput for simplicity
 
-  enum {kStatusFail=-1, kStatusOK=0, kStatusNoUpdate=1};
+  enum {kStatusFail=1, kStatusOK=0, kStatusLowStatUpdate=-1};
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
   //gROOT->LoadMacro("CreateCorrMapObj.C");
@@ -18,10 +20,16 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   TObjArray *listoffiles = new TObjArray();
 
   int ntrminUser = -1;
+  int ntrminUserStop = -1;
+  float stopDefFrac = 0.7;
   TString ntrminUserS = gSystem->Getenv("distMinTracks");
   if (!ntrminUserS.IsNull() && (ntrminUser=ntrminUserS.Atoi())>0) {
-    ::Info("ProcessOutput","User provided min tracks to validate object: %d",ntrminUser);
+    ::Info("ProcessOutput","User provided min tracks to validate object as good: %d",ntrminUser);
   } 
+  TString ntrminUserStopS = gSystem->Getenv("distMinTracksStop");
+  if (!ntrminUserStopS.IsNull() && (ntrminUserStop=ntrminUserStopS.Atoi())>0) {
+    ::Info("ProcessOutput","User provided min tracks to validate object as unusable: %d",ntrminUserStop);
+  }
   
   if (filesToProcess.Contains(".xml")) {
     // Merge files pointed by the xml 
@@ -89,7 +97,7 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   adist->SetOwner(kTRUE);
 
 
-  Int_t lowStatJobs = 0;
+  Int_t lowStatJobs = 0, badStatJobs = 0;
   Int_t nJobs = 0;
   while (nextfile=next()) {
     snextfile = nextfile->GetName();
@@ -104,12 +112,15 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     int ntrUse = dcalibRes->GetNTracksUsed();
     int ntrMin = dcalibRes->GetMinTrackToUse();
     if (ntrminUser>0) ntrMin = ntrminUser;
+    int ntrMinBad = ntrminUserStop>0 ? ntrminUserStop : int(ntrMin*stopDefFrac);
+    if (ntrMinBad>=ntrMin) ntrMinBad = ntrMin;
     if (ntrUse<ntrMin) {
-      ::Error("ProcessOutput","Low stat:%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
+      ::Warning("ProcessOutput","Low stat:%d tracks used (min: %d, unusable: %d) in %s",ntrUse,ntrMin,ntrMinBad,snextfile.Data());
       lowStatJobs++;
+      if (ntrUse<ntrMinBad) badStatJobs++;
     }
     else {
-      ::Info("ProcessOutput","stat is OK :%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
+      ::Info("ProcessOutput","stat is OK :%d tracks used (min: %d, unusable: %d) in %s",ntrUse,ntrMin,ntrMinBad,snextfile.Data());
     }
     if (corr) { 
       AliTPCChebCorr* c = dcalibRes->GetChebCorrObject();
@@ -132,11 +143,16 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     //
     nJobs++;
   }
-  if (lowStatJobs) {
-    ::Error("ProcessOutput","%d out of %d timebins have low stat, will not update OCDB",lowStatJobs,nJobs);
-    PrintProcStatus(kStatusNoUpdate);
+  if (badStatJobs) {
+    ::Error("ProcessOutput","%d out of %d timebins have too low stat, will not update OCDB",badStatJobs,nJobs);
+    PrintProcStatus(kStatusFail);
   }
   else {
+    int status = kStatusOK;
+    if (lowStatJobs) {
+      ::Warning("ProcessOutput","%d out of %d timebins have low stat, still will update OCDB",lowStatJobs,nJobs);
+      status = kStatusLowStatUpdate;
+    }
     if (corr) {
       printf("Corrections\n");
       acorr->Print();
@@ -147,7 +163,7 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
       adist->Print();
       CreateCorrMapObjTime(adist, startRun, endRun, ocdbStorage);
     }
-    PrintProcStatus(kStatusOK);
+    PrintProcStatus(status);
   }
   acorr->SetOwner(kFALSE);
   adist->SetOwner(kFALSE);
