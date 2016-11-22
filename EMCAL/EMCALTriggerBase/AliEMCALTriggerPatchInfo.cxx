@@ -22,9 +22,6 @@
 ClassImp(AliEMCALTriggerPatchInfo)
 /// \endcond
 
-/**
- * Default constructor
- */
 AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo() :
   TObject(),
   fCenterGeo(),
@@ -34,7 +31,7 @@ AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo() :
   fADCAmp(0),
   fADCOfflineAmp(0),
   fTriggerBits(0),
-  fOffSet(0),            // To be set explictly by the trigger maker in order to avoid hard coding
+  fOffSet(0),            // To be set explicitly by the trigger maker in order to avoid hard coding
   fRow0(-1),
   fCol0(-1),
   fPatchSize(0),
@@ -45,11 +42,6 @@ AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo() :
   fEdgeCell[1] = -1;
 }
 
-/**
- * Copy constructor
- *
- * @param p Reference for the copy
- */
 AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo(const AliEMCALTriggerPatchInfo &p) :
   TObject(p),
   fCenterGeo(p.fCenterGeo),
@@ -71,19 +63,10 @@ AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo(const AliEMCALTriggerPatchInf
   fEdgeCell[1] = p.fEdgeCell[1];
 }
 
-/**
- * Destructor
- */
 AliEMCALTriggerPatchInfo::~AliEMCALTriggerPatchInfo()
 {
 }
 
-/**
- * Assignment operator
- *
- * @param p Reference for assignment
- * @return This object after assignment
- */
 AliEMCALTriggerPatchInfo &AliEMCALTriggerPatchInfo::operator=(const AliEMCALTriggerPatchInfo &p)
 {
   if (this != &p) {
@@ -93,9 +76,6 @@ AliEMCALTriggerPatchInfo &AliEMCALTriggerPatchInfo::operator=(const AliEMCALTrig
   return *this;
 }
 
-/**
- * Reset all fields to the default values using the standard constructor
- */
 void AliEMCALTriggerPatchInfo::Reset()
 {
   new (this) AliEMCALTriggerPatchInfo();
@@ -110,13 +90,57 @@ void AliEMCALTriggerPatchInfo::Initialize(UChar_t col0, UChar_t row0, UChar_t si
   fADCOfflineAmp = offlineAdc;
   fTriggerBits = bitmask;
   SetEdgeCell(col0*2, row0*2);
+
+  if (geom) {
+    Int_t absId=-1;
+    geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0, fRow0, absId);
+    Int_t iSM = -1, iEta = -1, iPhi = -1;
+    geom->GetPositionInSMFromAbsFastORIndex(absId, iSM, iEta, iPhi);
+    if (geom->IsDCALSM(iSM)) {
+      SetDetectorType(kDCALPHOSdet);
+    }
+    else {
+      SetDetectorType(kEMCALdet);
+    }
+  }
   RecalculateKinematics(patchE, vertex, geom);
+}
+
+void AliEMCALTriggerPatchInfo::Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, UInt_t bitmask, const AliEMCALGeometry* geom)
+{
+  fCol0 = col0;
+  fRow0 = row0;
+  fPatchSize = size;
+  fADCAmp = adc;
+  fADCOfflineAmp = offlineAdc;
+  fTriggerBits = bitmask;
+  SetEdgeCell(col0*2, row0*2);
+
+  if (geom) {
+    Int_t absId=-1;
+    geom->GetAbsFastORIndexFromPositionInEMCAL(fCol0, fRow0, absId);
+    Int_t iSM = -1, iEta = -1, iPhi = -1;
+    geom->GetPositionInSMFromAbsFastORIndex(absId, iSM, iEta, iPhi);
+    if (geom->IsDCALSM(iSM)) {
+      SetDetectorType(kDCALPHOSdet);
+    }
+    else {
+      SetDetectorType(kEMCALdet);
+    }
+  }
 }
 
 AliEMCALTriggerPatchInfo* AliEMCALTriggerPatchInfo::CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom)
 {
   AliEMCALTriggerPatchInfo* patch = new AliEMCALTriggerPatchInfo;
   patch->Initialize(col0, row0, size, adc, offlineAdc, patchE, bitmask, vertex, geom);
+  return patch;
+}
+
+AliEMCALTriggerPatchInfo* AliEMCALTriggerPatchInfo::CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, UInt_t bitmask, const AliEMCALGeometry* geom)
+{
+  AliEMCALTriggerPatchInfo* patch = new AliEMCALTriggerPatchInfo;
+  patch->Initialize(col0, row0, size, adc, offlineAdc, bitmask, geom);
   return patch;
 }
 
@@ -194,16 +218,6 @@ void AliEMCALTriggerPatchInfo::RecalculateKinematics(Double_t patchE, const TVec
     AliWarning(Form("Col: %d, Row: %d, FABSID: %d, Cell: %d", colEdge2, rowEdge2, absIdEdge2, cellIdEdge2));
   }
 
-  Int_t iSM = -1, iEta = -1, iPhi = -1;
-  geom->GetPositionInSMFromAbsFastORIndex(absId, iSM, iEta, iPhi);
-
-  if (geom->IsDCALSM(iSM)) {
-    SetDetectorType(kDCALPHOSdet);
-  }
-  else {
-    SetDetectorType(kEMCALdet);
-  }
-
   fCenterMass.SetPxPyPzE(0,0,0,0);
 
   SetCenterGeo(centerGeo, patchE);
@@ -211,12 +225,6 @@ void AliEMCALTriggerPatchInfo::RecalculateKinematics(Double_t patchE, const TVec
   SetEdge2(edge2, patchE);
 }
 
-
-/**
- * Return cell indices of the given patch in the cell array
- * @param geom EMCAL Geometry used in the run where the trigger patch was created from
- * @param cells Output array of cell indices corresponding to the given trigger patch
- */
 void AliEMCALTriggerPatchInfo::GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells ){
 
 	Int_t globCol, globRow, i, j, k, absId, cellAbsId[4];;
@@ -249,13 +257,6 @@ void AliEMCALTriggerPatchInfo::GetCellIndices( AliEMCALGeometry *geom, TArrayI *
 	
 }
 
-
-/**
- * Define Lorentz vector of the given trigger patch
- * @param lv Lorentz vector to be defined
- * @param v Patch vector position
- * @param e Patch energy
- */
 void AliEMCALTriggerPatchInfo::SetLorentzVector( TLorentzVector &lv, const TVector3 &v, Double_t e ){
   // sets the vector
   Double_t r = TMath::Sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2] ) ; 

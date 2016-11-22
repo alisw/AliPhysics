@@ -51,11 +51,34 @@ class AliEMCALTriggerPatchInfo: public TObject {
     kDCALPHOSdet = 1
   };
 
+  /**
+   * Default constructor
+   */
   AliEMCALTriggerPatchInfo();
+
+  /**
+   * Copy constructor
+   *
+   * @param p Reference for the copy
+   */
   AliEMCALTriggerPatchInfo(const AliEMCALTriggerPatchInfo &p);
+
+  /**
+   * Assignment operator
+   *
+   * @param p Reference for assignment
+   * @return This object after assignment
+   */
   AliEMCALTriggerPatchInfo &operator=(const AliEMCALTriggerPatchInfo &p);
+
+  /**
+   * Destructor
+   */
   virtual ~AliEMCALTriggerPatchInfo();
 
+  /**
+   * Reset all fields to the default values using the standard constructor
+   */
   void Reset();
 
   /**
@@ -73,6 +96,19 @@ class AliEMCALTriggerPatchInfo: public TObject {
   void Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
 
   /**
+   * Initialize patch
+   * @param col0        Start column of the patch
+   * @param row0        Start row of the patch
+   * @param size        Size of the patch
+   * @param adc         ADC signal of the patch
+   * @param offlineAdc  Offline ADC signal of the patch
+   * @param bitmask     Trigger bit mask of the patch
+   * @param geom        Pointer to the EMCal geometry object
+   */
+  void Initialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, UInt_t bitmask, const AliEMCALGeometry* geom);
+
+
+  /**
    * Allocate a new AliEMCALTriggerPatchInfo object and initialize it
    * @param col0        Start column of the patch
    * @param row0        Start row of the patch
@@ -86,6 +122,19 @@ class AliEMCALTriggerPatchInfo: public TObject {
    * @return            Pointer to a new and initialized AliEMCALTriggerPatchInfo object (caller is responsible for releasing memory)
    */
   static AliEMCALTriggerPatchInfo* CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, Double_t patchE, UInt_t bitmask, const TVector3& vertex, const AliEMCALGeometry* geom);
+
+  /**
+   * Allocate a new AliEMCALTriggerPatchInfo object and initialize it
+   * @param col0        Start column of the patch
+   * @param row0        Start row of the patch
+   * @param size        Size of the patch
+   * @param adc         ADC signal of the patch
+   * @param offlineAdc  Offline ADC signal of the patch
+   * @param bitmask     Trigger bit mask of the patch
+   * @param geom        Pointer to the EMCal geometry object
+   * @return            Pointer to a new and initialized AliEMCALTriggerPatchInfo object (caller is responsible for releasing memory)
+   */
+  static AliEMCALTriggerPatchInfo* CreateAndInitialize(UChar_t col0, UChar_t row0, UChar_t size, UInt_t adc, UInt_t offlineAdc, UInt_t bitmask, const AliEMCALGeometry* geom);
 
   /**
    * Recalculate patch kinematic variables
@@ -170,6 +219,12 @@ class AliEMCALTriggerPatchInfo: public TObject {
    * @return Cell y-position
    */
   Int_t    GetEdgeCellY() const { return fEdgeCell[1]; }
+
+  /**
+   * Return cell indices of the given patch in the cell array
+   * @param geom EMCAL Geometry used in the run where the trigger patch was created from
+   * @param cells Output array of cell indices corresponding to the given trigger patch
+   */
   void     GetCellIndices( AliEMCALGeometry *geom, TArrayI *cells );
   
   /**
@@ -455,6 +510,12 @@ class AliEMCALTriggerPatchInfo: public TObject {
    */
   void SetOfflineSimple() { }
 
+  /**
+   * Define Lorentz vector of the given trigger patch
+   * @param lv Lorentz vector to be defined
+   * @param v Patch vector position
+   * @param e Patch energy
+   */
   void SetLorentzVector( TLorentzVector &lv, const TVector3 &v, Double_t e );
 
   /**
@@ -489,7 +550,6 @@ class AliEMCALTriggerPatchInfo: public TObject {
 
 
  protected:
-  //TLorentzVector   &GetLorentzVector(const Double_t *vertex = 0)  const;
   Double_t GetPhiTransform(Double_t phiin) const;
   Double_t GetET(Double_t energy) const;
 
