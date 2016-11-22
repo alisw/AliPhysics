@@ -1738,18 +1738,6 @@ private:
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCMetricCent; //!
   
-  const static Int_t fWideCenNCen = 4;
-  TProfile *fWideCenCorPro[fWideCenNCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
-  TH1D *fWideCenCorHist[fWideCenNCen][fFlowNHarm][fFlowQCNPro]; //! <<2'>>, [CRCBin][eg]
-  TProfile *fWideCenCorNUAPro[fWideCenNCen][fFlowNHarm][fFlowQCNNUA]; //! profile for NUA terms
-  TH1D *fWideCenCorNUAHist[fWideCenNCen][fFlowNHarm][fFlowQCNNUA]; //! final NUA terms
-  TProfile *fWideCenCorCovPro[fWideCenNCen][fFlowNHarm][fFlowQCNCov]; //! profile for product of correlations (for covariances)
-  TH1D *fWideCenCorCovHist[fWideCenNCen][fFlowNHarm][fFlowQCNCov]; //! histo for covariances
-  TH1D *fWideCenFinalPtDifHist[fWideCenNCen][fFlowNHarm][fFlowQCNPro]; //!
-  TProfile *fWideCenRefCorPro[fFlowNHarm][fFlowQCNRef]; //!
-  TH1D *fWideCenRefCorHist[fFlowNHarm][fFlowQCNRef]; //!
-  TH1D *fWideCenRefCorFinal[fFlowNHarm][3]; //!
-  
   // flow QC high order
   TList *fFlowQCHOList;    //! QC high order List
   const static Int_t fFlowNHarmHighOrd = 2;
