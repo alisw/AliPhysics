@@ -54,6 +54,8 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fUsePol3Bkg(kTRUE),
   fUsePol4Bkg(kTRUE),
   fUsePol5Bkg(kFALSE),
+  fUsePowLawBkg(kFALSE),
+  fUsePowLawTimesExpoBkg(kFALSE),
   fUseFixSigUpFreeMean(kTRUE),
   fUseFixSigDownFreeMean(kTRUE),
   fUseFreeS(kTRUE),
@@ -109,7 +111,7 @@ Bool_t AliHFMultiTrials::CreateHistos(){
 
   const Int_t nCases=kNBkgFuncCases*kNFitConfCases;
 
-  TString funcBkg[kNBkgFuncCases]={"Expo","Lin","Pol2","Pol3","Pol4","Pol5"};
+  TString funcBkg[kNBkgFuncCases]={"Expo","Lin","Pol2","Pol3","Pol4","Pol5","PowLaw","PowLawExpo"};
   TString gausSig[kNFitConfCases]={"FixedS","FixedSp20","FixedSm20","FreeS","FixedMeanFixedS","FixedMeanFreeS"};
   
   Int_t totTrials=fNumOfRebinSteps*fNumOfFirstBinSteps*fNumOfLowLimFitSteps*fNumOfUpLimFitSteps;
@@ -194,6 +196,8 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 	    if(typeb==kPol3Bkg && !fUsePol3Bkg) continue;
 	    if(typeb==kPol4Bkg && !fUsePol4Bkg) continue;
 	    if(typeb==kPol5Bkg && !fUsePol5Bkg) continue;
+	    if(typeb==kPowBkg && !fUsePowLawBkg) continue;
+	    if(typeb==kPowTimesExpoBkg && !fUsePowLawTimesExpoBkg) continue;
 	    for(Int_t igs=0; igs<kNFitConfCases; igs++){
 	      if (igs==kFixSigUpFreeMean && !fUseFixSigUpFreeMean) continue;
 	      if (igs==kFixSigDownFreeMean && !fUseFixSigDownFreeMean) continue;
@@ -208,6 +212,10 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 	      AliHFMassFitterVAR*  fitter=0x0;
 	      if(typeb<=kPol2Bkg){
 		fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,typeb,types);
+	      }else if(typeb==kPowBkg){
+		fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,4,types);		
+	      }else if(typeb==kPowTimesExpoBkg){
+		fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,5,types);
 	      }else{
 		fitter=new AliHFMassFitterVAR(hRebinned,hmin, hmax,1,6,types);
 		if(typeb==kPol3Bkg) fitter->SetBackHighPolDegree(3);
