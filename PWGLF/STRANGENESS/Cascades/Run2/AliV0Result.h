@@ -47,8 +47,9 @@ public:
     void SetCutLeastNumberOfCrossedRows             ( Double_t lCut ) { fCutLeastNumberOfCrossedRows = lCut; }
     void SetCutLeastNumberOfCrossedRowsOverFindable ( Double_t lCut ) { fCutLeastNumberOfCrossedRowsOverFindable = lCut; }
     void SetCutCompetingV0Rejection ( Double_t lCut ) { fCutCompetingV0Rejection   = lCut; }
-    void SetCutArmenteros           ( Bool_t lCut   ) { fCutArmenteros = lCut; }
-    void SetCutTPCdEdx              ( Double_t lCut ) { fCutTPCdEdx    = lCut; }
+    void SetCutArmenteros           ( Bool_t lCut   ) { fCutArmenteros        = lCut; }
+    void SetCutTPCdEdx              ( Double_t lCut ) { fCutTPCdEdx           = lCut; }
+    void SetCutMinBaryonMomentum    ( Double_t lCut ) { fCutMinBaryonMomentum = lCut; }
     
     //MC specific
     void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
@@ -73,6 +74,7 @@ public:
     Double_t GetCutCompetingV0Rejection () const { return fCutCompetingV0Rejection; }
     Bool_t   GetCutArmenteros           () const { return fCutArmenteros; }
     Double_t GetCutTPCdEdx              () const { return fCutTPCdEdx; }
+    Double_t GetCutMinBaryonMomentum    () const { return fCutMinBaryonMomentum; }
     
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
     Bool_t GetCutMCLambdaFromPrimaryXi() const { return fCutMCLambdaFromPrimaryXi; }
@@ -103,6 +105,7 @@ private:
     Double_t fCutCompetingV0Rejection;
     Bool_t fCutArmenteros;
     Double_t fCutTPCdEdx;
+    Double_t fCutMinBaryonMomentum;
     
     Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
     Bool_t fCutMCLambdaFromPrimaryXi; //Checking for feeddown contributions
@@ -112,13 +115,14 @@ private:
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 7)
+    ClassDef(AliV0Result, 8)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
     // 4 - fixes to constructor, destructor, tuning
     // 5 - Use MC true pT, y flag added
     // 6 - Adjustments, tuning, constructor improvements
-    // 7 - First implementation of feeddown matrix as standard output 
+    // 7 - First implementation of feeddown matrix as standard output
+    // 8 - Addition of minimum momentum cut for baryon daughters
 };
 #endif
