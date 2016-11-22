@@ -88,7 +88,7 @@ static void BinLogAxis(const TH1 *h) {
 ///
 AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
   :AliAnalysisTaskSE(taskname.Data())
-  ,fEventCut{true}
+  ,fEventCut{false}
    ,fList{nullptr}
    ,fCutVec{}
    ,fPDG{0}
@@ -276,7 +276,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   if (fTOFfunctionPars.GetSize() == 4)
     fTOFfunction->SetParameters(fTOFfunctionPars.GetArray());
 
-  fList->Add(&fEventCut);
+  fEventCut.AddQAplotsToList(fList);
+
   PostData(1,fList);
 }
 
