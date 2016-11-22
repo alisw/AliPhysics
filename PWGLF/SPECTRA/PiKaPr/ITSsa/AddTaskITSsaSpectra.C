@@ -75,7 +75,7 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra_new(Int_t    pidMethod, // 0:
   AliAnalysisDataContainer* kDCAcutDataCont = NULL;
   kDCAcutDataCont = mgr->CreateContainer(kDCAcutContName.Data(),
                                          TList::Class(),
-                                         AliAnalysisManager::kOutputContainer,
+                                         AliAnalysisManager::kParamContainer,
                                          outputFileName);
   mgr->ConnectOutput(taskits, 2, kDCAcutDataCont);
 
