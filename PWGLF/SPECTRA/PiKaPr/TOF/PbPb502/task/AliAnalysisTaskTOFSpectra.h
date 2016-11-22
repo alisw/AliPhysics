@@ -206,11 +206,11 @@ public:
   ///
   ///Method to test masks
   void TestMasks(){
-    cout<<"Limit fEvtMask "<<kLimitfEvtMask<<" is "<<8*sizeof(fEvtMask)<<endl;
-    cout<<"Limit fTrkMask "<<kLimitfTrkMask <<" is "<<8*sizeof(fTrkMask)<<endl;
-    cout<<"Limit fTPCPIDMask "<<kLimitfTPCPIDMask <<" is "<<8*sizeof(fTPCPIDMask)<<endl;
-    cout<<"Limit fTrkCutMask "<<kLimitfTrkCutMask <<" is "<<8*sizeof(fTrkCutMask)<<endl;
-    cout<<"Limit fMCTrkMask "<<kLimitfMCTrkMask <<" is "<<8*sizeof(fMCTrkMask)<<endl;
+    std::cout<<"Limit fEvtMask "<<kLimitfEvtMask<<" is "<<8*sizeof(fEvtMask)<<std::endl;
+    std::cout<<"Limit fTrkMask "<<kLimitfTrkMask <<" is "<<8*sizeof(fTrkMask)<<std::endl;
+    std::cout<<"Limit fTPCPIDMask "<<kLimitfTPCPIDMask <<" is "<<8*sizeof(fTPCPIDMask)<<std::endl;
+    std::cout<<"Limit fTrkCutMask "<<kLimitfTrkCutMask <<" is "<<8*sizeof(fTrkCutMask)<<std::endl;
+    std::cout<<"Limit fMCTrkMask "<<kLimitfMCTrkMask <<" is "<<8*sizeof(fMCTrkMask)<<std::endl;
   }
   
   //Particle kinematics

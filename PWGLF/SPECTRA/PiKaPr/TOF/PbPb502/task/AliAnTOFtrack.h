@@ -77,15 +77,15 @@ public:
   void TestDCAXYBinning(){                                              
     Int_t dim = static_cast<Int_t>(TMath::Power(2., 8.*sizeof(fDCAXYIndex)));
     Double_t range = (2.*fDCAXYRange);
-    cout<<"fDCAXYIndex has "<<dim<<" possibilities"<<endl;
-    cout<<"DCAXY range is ["<<-fDCAXYRange<<","<<fDCAXYRange<<"] -> "<<range<<" bin width = "<<range/dim<<endl;
-    cout<<"Variable dimension is "<<dim<<" while actual bin required are "<<kDCAXYBins<<endl;
+    std::cout<<"fDCAXYIndex has "<<dim<<" possibilities"<<std::endl;
+    std::cout<<"DCAXY range is ["<<-fDCAXYRange<<","<<fDCAXYRange<<"] -> "<<range<<" bin width = "<<range/dim<<std::endl;
+    std::cout<<"Variable dimension is "<<dim<<" while actual bin required are "<<kDCAXYBins<<std::endl;
     
     dim = static_cast<Int_t>(TMath::Power(2., 8.*sizeof(fDCAZIndex)));
     range = (2.*fDCAZRange);
-    cout<<"fDCAZIndex has "<<dim<<" possibilities"<<endl;
-    cout<<"DCAZ range is ["<<-fDCAZRange<<","<<fDCAZRange<<"] -> "<<range<<" bin width = "<<range/dim<<endl;
-    cout<<"Variable dimension is "<<dim<<" while actual bin required are "<<kDCAZBins<<endl;
+    std::cout<<"fDCAZIndex has "<<dim<<" possibilities"<<std::endl;
+    std::cout<<"DCAZ range is ["<<-fDCAZRange<<","<<fDCAZRange<<"] -> "<<range<<" bin width = "<<range/dim<<std::endl;
+    std::cout<<"Variable dimension is "<<dim<<" while actual bin required are "<<kDCAZBins<<std::endl;
     
     for (Int_t var = 0; var <=20; ++var) {
       //       Double_t rnd = 2.*fDCAXYRange*gRandom->Rndm()-1;
@@ -95,7 +95,7 @@ public:
       Double_t binlow, binup;
       GetBinnedDCA(binlow, binup, 1);
       
-      cout<<rnd<<" Index: "<<fDCAXYIndex<<"   ["<<binlow<<" ; "<<binup<<"] --> Diff --> ["<< binlow - rnd <<" ; "<<binup - rnd<<"]"<<endl;
+      std::cout<<rnd<<" Index: "<<fDCAXYIndex<<"   ["<<binlow<<" ; "<<binup<<"] --> Diff --> ["<< binlow - rnd <<" ; "<<binup - rnd<<"]"<<std::endl;
       //       cout<<rnd<<"  "<<TMath::Abs((rnd+fDCAXYRange)*kDCAXYBins/(2*fDCAXYRange))<<" Index: "<<fDCAXYIndex<<"   ["<<binlow<<" ; "<<binup<<"] -->  ["<< binlow - rnd <<" ; "<<binup - rnd<<"]"<<endl;
     }
     
