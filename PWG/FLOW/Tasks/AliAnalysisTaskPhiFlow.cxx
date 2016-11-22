@@ -904,7 +904,7 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
 
                 }
 
-                if (aodTrk->TestFilterBit(128))
+                if (aodTrk->TestFilterBit(32))
                     multTPC++;
 
             }
@@ -945,9 +945,6 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
                 return;
 
 
-            fMultvsCentr->Fill(multTPCn, v0Centr);
-
-            fMultCorAfterCuts->Fill(v0Centr,cl0Centr);
             /*
                Int_t bc2 = ((AliAODHeader*)fAOD->GetHeader())->GetIRInt2ClosestInteractionMap();
                if (bc2 != 0)
@@ -973,6 +970,9 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
 
             fVertexZ->Fill(dz);
 
+            fMultvsCentr->Fill(multTPCn, v0Centr);
+
+            fMultCorAfterCuts->Fill(v0Centr,cl0Centr);
 
         }
 
