@@ -931,7 +931,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
     for (Int_t cent = 0; cent < fNcentBins; cent++)
       {
       //=====================================================================================
-      Int_t h1_nbin = 200; Double_t h1_binwidth = 1; Double_t h1_low = 0;
+      Int_t h1_nbin = 300; Double_t h1_binwidth = 1; Double_t h1_low = 0;
       Double_t h1_high = h1_low + h1_binwidth * h1_nbin; // 1GeV/bin
       histname = TString::Format("%s/histo1_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c}) (accepted);Jets", histname.Data()); // Pt distro of jets
@@ -972,14 +972,14 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
       //#####################################
 
       //=====================================================================================
-      Int_t h5_nbin = 200; Double_t h5_binwidth = 1; Double_t h5_low = 0;
+      Int_t h5_nbin = 100; Double_t h5_binwidth = 1; Double_t h5_low = 0;
       Double_t h5_high = h5_low + h5_binwidth * h5_nbin;
       histname = TString::Format("%s/histo5_%d", groupname.Data(), cent);
       histtitle = TString::Format("%s;N_{jets};Events", histname.Data()); // Distribution of jets in events
       fHistManager.CreateTH1(histname, histtitle, h5_nbin, h5_low, h5_high);
 
       //=====================================================================================
-      Int_t h7_xnbin = 120; Double_t h7_xbinwidth = 1; Double_t h7_xlow = 0;
+      Int_t h7_xnbin = 300; Double_t h7_xbinwidth = 1; Double_t h7_xlow = 0;
       Double_t h7_xhigh = h7_xlow + h7_xbinwidth * h7_xnbin;
       Int_t h7_ynbin = 100; Double_t h7_ybinwidth = 1; Double_t h7_ylow = 0;
       Double_t h7_yhigh = h7_ylow + h7_ybinwidth * h7_ynbin;
@@ -1060,7 +1060,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
       //=====================================================================================
       Int_t h15_xnbin = 60; Double_t h15_xbinwidth = 0.01; Double_t h15_xlow = 0.;
       Double_t h15_xhigh = h15_xlow + h15_xbinwidth * h15_xnbin;
-      Int_t h15_ynbin = 300; Double_t h15_ybinwidth = 1.; Double_t h15_ylow = 0.;
+      Int_t h15_ynbin = 400; Double_t h15_ybinwidth = 1.; Double_t h15_ylow = 0.;
       Double_t h15_yhigh = h15_ylow + h15_ybinwidth * h15_ynbin;
 
       //########################################################
@@ -1318,7 +1318,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
 
       //=====================================================================================
       // Distribution of dispersion d pt_D = sqrt ( sum (pt_i^2) )/sum (pt_i)
-      Int_t hptd_nbin = 21; Double_t hptd_binwidth = 0.05; Double_t hptd_low = 0.;
+      Int_t hptd_nbin = 40; Double_t hptd_binwidth = 0.05; Double_t hptd_low = 0.;
       Double_t hptd_high = hptd_low + hptd_binwidth * hptd_nbin;
 
       //########################################################
@@ -1374,7 +1374,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
       //=====================================================================================
       Int_t h_Rjt_xnbin = 60; Double_t h_Rjt_xbinwidth = 0.01; Double_t h_Rjt_xlow = 0.;
       Double_t h_Rjt_xhigh = h_Rjt_xlow + h_Rjt_xbinwidth * h_Rjt_xnbin;
-      Int_t h_Rjt_ynbin = 400; Double_t h_Rjt_ybinwidth = 0.01; Double_t h_Rjt_ylow = 0.;
+      Int_t h_Rjt_ynbin = 500; Double_t h_Rjt_ybinwidth = 0.01; Double_t h_Rjt_ylow = 0.;
       Double_t h_Rjt_yhigh = h_Rjt_ylow + h_Rjt_ybinwidth * h_Rjt_ynbin;
 
       //########################################################
@@ -1426,7 +1426,7 @@ void AliAnalysisTaskEmcalJetCDF::UserCreateOutputObjects()
       //########################################################
 
       //=====================================================================================
-      Int_t h_jt_xnbin = 400; Double_t h_jt_xbinwidth = 0.01; Double_t h_jt_xlow = 0.;
+      Int_t h_jt_xnbin = 500; Double_t h_jt_xbinwidth = 0.01; Double_t h_jt_xlow = 0.;
       Double_t h_jt_xhigh = h_jt_xlow + h_jt_xbinwidth * h_jt_xnbin;
 
       //########################################################
