@@ -110,7 +110,9 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
 //					cout << "setting Number of Cluster in TPC = " << fNclOfTPC << endl;};
   void SetCentDetName( TString CentName ){ fCentDetName = CentName;
 					cout << "setting : Cenetrality determination =" << fCentDetName.Data() << endl; };
-
+  void SetQCetaCut( Double_t QC_eta_min, Double_t QC_eta_max){ 
+					fQC_eta_min=QC_eta_min; fQC_eta_max=QC_eta_max;
+					cout << "setting : QC eta range " << fQC_eta_min << "~" << fQC_eta_max << endl; };
 
  private:
   TString fTaskName;
@@ -127,6 +129,10 @@ class AliJFFlucTask : public AliAnalysisTaskSE {
   double fPt_min;
   double fPt_max;
   double fzvtxCut;
+
+  Double_t fQC_eta_min;
+  Double_t fQC_eta_max;
+
   TString fCentDetName;
   TString fInFileName;
   Bool_t IsMC;
