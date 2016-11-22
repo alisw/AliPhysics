@@ -168,13 +168,13 @@ namespace AliUtilTOFParams {
     mask = mask&0;
   };
   inline void PrintMaskBit(UChar_t mask){
-    for(UInt_t c = 0; c < 8*sizeof(mask); c++) cout<<c<<" ";
-    cout<<endl;
+    for(UInt_t c = 0; c < 8*sizeof(mask); c++) std::cout<<c<<" ";
+    std::cout<<std::endl;
     for(UInt_t c = 0; c < 8*sizeof(mask); c++){
-      if(c > 9) cout<<" ";
-      cout<<GetMaskBit(mask, c)<<" ";
+      if(c > 9) std::cout<<" ";
+      std::cout<<GetMaskBit(mask, c)<<" ";
     }
-    cout<<endl;
+    std::cout<<std::endl;
   }
   
   //**UShort_t**
@@ -191,13 +191,13 @@ namespace AliUtilTOFParams {
     mask = mask&0;
   };
   inline void PrintMaskBit(UShort_t mask){
-    for(UInt_t c = 0; c < 8*sizeof(mask); c++) cout<<c<<" ";
-    cout<<endl;
+    for(UInt_t c = 0; c < 8*sizeof(mask); c++) std::cout<<c<<" ";
+    std::cout<<std::endl;
     for(UInt_t c = 0; c < 8*sizeof(mask); c++){
-      if(c > 9) cout<<" ";
-      cout<<GetMaskBit(mask, c)<<" ";
+      if(c > 9) std::cout<<" ";
+      std::cout<<GetMaskBit(mask, c)<<" ";
     }
-    cout<<endl;
+    std::cout<<std::endl;
   }
   
 }
