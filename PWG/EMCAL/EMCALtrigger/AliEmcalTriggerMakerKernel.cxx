@@ -57,7 +57,6 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
   fL0Threshold(0),
   fIsMC(kFALSE),
   fDebugLevel(0),
-  fMaxAbsCellTime(1.),
   fMinCellAmplitude(0.),
   fApplyOnlineBadChannelsToOffline(kFALSE),
   fConfigured(kFALSE),
@@ -71,6 +70,8 @@ AliEmcalTriggerMakerKernel::AliEmcalTriggerMakerKernel():
 {
   memset(fThresholdConstants, 0, sizeof(Int_t) * 12);
   memset(fL1ThresholdsOffline, 0, sizeof(ULong64_t) * 4);
+  fCellTimeLimits[0] = -10000.;
+  fCellTimeLimits[1] = 10000.;
 }
 
 AliEmcalTriggerMakerKernel::~AliEmcalTriggerMakerKernel() {
@@ -383,7 +384,7 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
 
     Double_t amp = cells->GetAmplitude(iCell),
              celltime = cells->GetTime(iCell);
-    if(TMath::Abs(celltime) > fMaxAbsCellTime) continue;
+    if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
     if(amp < fMinCellAmplitude) continue;
     // get position
     Int_t absId=-1;

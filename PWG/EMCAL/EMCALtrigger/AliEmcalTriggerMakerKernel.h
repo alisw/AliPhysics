@@ -210,11 +210,29 @@ public:
   void ResetFastORPedestal() { fFastORPedestal.Reset(); }
 
   /**
-   * Set the maximum time of the cell allowed to contribute to an offline
-   * trigger patch.
+   * Set symmmetric limit of the cell time allowed to accept the cell contributing to cell offline energy / offline patches.
    * @param[in] maxCellTime Maximum accepted value of the absolute cell time
    */
-  void SetMaxAbsCellTime(Double_t maxCellTime) { fMaxAbsCellTime = maxCellTime; }
+  void SetMaxAbsCellTime(Double_t maxCellTime) { fCellTimeLimits[0] = -maxCellTime; fCellTimeLimits[1] = maxCellTime; }
+
+  /**
+   * Set symmmetric limit of the cell time allowed to accept the cell contributing to cell offline energy / offline patches.
+   * @param[in] minCellTime Minimum allowed cell time
+   * @param[in] maxCellTime Maximum allowed cell time
+   */
+  void SetAcceptCellTimeRange(Double_t minCellTime, Double_t maxCellTime) { fCellTimeLimits[0] = minCellTime; fCellTimeLimits[1] = maxCellTime; }
+
+  /**
+   * Set lower cut on the cell time allowed to accept the cell contributing to cell offline energy / offline patches.
+   * @param[in] minCellTime Minimum allowed cell time
+   */
+  void SetLowerCellTimeCut(Double_t minCellTime) { fCellTimeLimits[0] = minCellTime; }
+
+  /**
+   * Set upper cut on the cell time allowed to accept the cell contributing to cell offline energy / offline patches.
+   * @param[in] minCellTime Minimum allowed cell time
+   */
+  void SetUpperCellTimeCut(Double_t maxCellTime) { fCellTimeLimits[1] = maxCellTime; }
 
   /**
    * Set cut on the minimum cell amplitude
@@ -371,7 +389,7 @@ protected:
   Int_t                                     fL0Threshold;                 ///< threshold for the L0 patches (2x2)
   Bool_t                                    fIsMC;                        ///< Set MC offset
   Int_t                                     fDebugLevel;                  ///< Debug lebel;
-  Double_t                                  fMaxAbsCellTime;              ///< Maximum allowed abs cell time (default - 1)
+  Double_t                                  fCellTimeLimits[2];           ///< Maximum allowed abs cell time (default [0] = - 10000, [1] = 10000)
   Double_t                                  fMinCellAmplitude;            ///< Minimum amplitude in cell required to be considered for filling the data grid
   Bool_t                                    fApplyOnlineBadChannelsToOffline;   ///< Apply online bad channels to offline ADC values
   Bool_t                                    fConfigured;                  ///< Switch specifying whether the trigger maker kernel has been configured for a given data set
