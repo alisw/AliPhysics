@@ -14,7 +14,6 @@
  **************************************************************************/
 #include <RVersion.h>
 #include <memory>
-#include "AliAnalysisTaskEmcal.h"
 
 #include <TClonesArray.h>
 #include <AliEmcalList.h>
@@ -26,32 +25,32 @@
 #include <TChain.h>
 #include <TKey.h>
 
-#include "AliStack.h"
+#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisUtils.h"
 #include "AliAODEvent.h"
+#include "AliAODMCHeader.h"
+#include "AliAODTrack.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalPythiaInfo.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliESDEvent.h"
-#include "AliEmcalParticle.h"
+#include "AliESDInputHandler.h"
 #include "AliEventplane.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliMultiInputEventHandler.h"
+#include "AliMultSelection.h"
+#include "AliStack.h"
+#include "AliVCaloTrigger.h"
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
-#include "AliAODTrack.h"
-#include "AliVCaloTrigger.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliAODMCHeader.h"
-#include "AliMCEvent.h"
-#include "AliAnalysisUtils.h"
-#include "AliEMCALTriggerPatchInfo.h"
-#include "AliEmcalPythiaInfo.h"
-#include "AliESDInputHandler.h"
-#include "AliMultiInputEventHandler.h"
-
-#include "AliMultSelection.h"
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
@@ -84,6 +83,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTklVsClusSPDCut(kFALSE),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
+  fMinBiasRefTrigger("CINT7-B-NOPF-ALLNOTRD"),
   fTriggerTypeSel(kND),
   fNbins(250),
   fMinBinPt(0),
@@ -108,18 +108,19 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
   fMCRejectFilter(kFALSE),
+  fCountDownscaleCorrectedEvents(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
-  fAliAnalysisUtils(0x0),
+  fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
-  fGeom(0),
-  fTracks(0),
-  fCaloClusters(0),
-  fCaloCells(0),
-  fCaloTriggers(0),
-  fTriggerPatchInfo(0),
+  fGeom(nullptr),
+  fTracks(nullptr),
+  fCaloClusters(nullptr),
+  fCaloCells(nullptr),
+  fCaloTriggers(nullptr),
+  fTriggerPatchInfo(nullptr),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -128,26 +129,27 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fNVertCont(0),
   fNVertSPDCont(0),
   fBeamType(kNA),
-  fPythiaHeader(0),
+  fPythiaHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
-  fPythiaInfo(0),
-  fOutput(0),
-  fHistEventCount(0),
-  fHistTrialsAfterSel(0),
-  fHistEventsAfterSel(0),
-  fHistXsectionAfterSel(0),
-  fHistTrials(0),
-  fHistEvents(0),
-  fHistXsection(0),
-  fHistPtHard(0),
-  fHistCentrality(0),
-  fHistZVertex(0),
-  fHistEventPlane(0),
-  fHistEventRejection(0),
-  fHistTriggerClasses(0)
+  fPythiaInfo(nullptr),
+  fOutput(nullptr),
+  fHistEventCount(nullptr),
+  fHistTrialsAfterSel(nullptr),
+  fHistEventsAfterSel(nullptr),
+  fHistXsectionAfterSel(nullptr),
+  fHistTrials(nullptr),
+  fHistEvents(nullptr),
+  fHistXsection(nullptr),
+  fHistPtHard(nullptr),
+  fHistCentrality(nullptr),
+  fHistZVertex(nullptr),
+  fHistEventPlane(nullptr),
+  fHistEventRejection(nullptr),
+  fHistTriggerClasses(nullptr),
+  fHistTriggerClassesCorr(nullptr)
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -192,6 +194,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTklVsClusSPDCut(kFALSE),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
+  fMinBiasRefTrigger("CINT7-B-NOPF-ALLNOTRD"),
   fTriggerTypeSel(kND),
   fNbins(250),
   fMinBinPt(0),
@@ -216,18 +219,19 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
   fMCRejectFilter(kFALSE),
+  fCountDownscaleCorrectedEvents(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
-  fAliAnalysisUtils(0x0),
+  fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
-  fGeom(0),
-  fTracks(0),
-  fCaloClusters(0),
-  fCaloCells(0),
-  fCaloTriggers(0),
-  fTriggerPatchInfo(0),
+  fGeom(nullptr),
+  fTracks(nullptr),
+  fCaloClusters(nullptr),
+  fCaloCells(nullptr),
+  fCaloTriggers(nullptr),
+  fTriggerPatchInfo(nullptr),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -236,26 +240,27 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fNVertCont(0),
   fNVertSPDCont(0),
   fBeamType(kNA),
-  fPythiaHeader(0),
+  fPythiaHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
   fPythiaInfo(0),
-  fOutput(0),
-  fHistEventCount(0),
-  fHistTrialsAfterSel(0),
-  fHistEventsAfterSel(0),
-  fHistXsectionAfterSel(0),
-  fHistTrials(0),
-  fHistEvents(0),
-  fHistXsection(0),
-  fHistPtHard(0),
-  fHistCentrality(0),
-  fHistZVertex(0),
-  fHistEventPlane(0),
-  fHistEventRejection(0),
-  fHistTriggerClasses(0)
+  fOutput(nullptr),
+  fHistEventCount(nullptr),
+  fHistTrialsAfterSel(nullptr),
+  fHistEventsAfterSel(nullptr),
+  fHistXsectionAfterSel(nullptr),
+  fHistTrials(nullptr),
+  fHistEvents(nullptr),
+  fHistXsection(nullptr),
+  fHistPtHard(nullptr),
+  fHistCentrality(nullptr),
+  fHistZVertex(nullptr),
+  fHistEventPlane(nullptr),
+  fHistEventRejection(nullptr),
+  fHistTriggerClasses(nullptr),
+  fHistTriggerClassesCorr(nullptr)
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -499,6 +504,16 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 #endif
   fOutput->Add(fHistTriggerClasses);
 
+  if(fCountDownscaleCorrectedEvents){
+    fHistTriggerClassesCorr = new TH1F("fHistTriggerClassesCorr","fHistTriggerClassesCorr",3,0,3);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
+    fHistTriggerClassesCorr->SetBit(TH1::kCanRebin);
+#else
+    fHistTriggerClassesCorr->SetCanExtend(TH1::kAllAxes);
+#endif
+    fOutput->Add(fHistTriggerClassesCorr);
+  }
+
   fHistEventCount = new TH1F("fHistEventCount","fHistEventCount",2,0,2);
   fHistEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
   fHistEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
@@ -537,14 +552,25 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistEventPlane->Fill(fEPV0);
   }
 
-  TObjArray* triggerClasses = InputEvent()->GetFiredTriggerClasses().Tokenize(" ");
-  TIter next(triggerClasses);
-  TObjString* triggerClass = 0;
-  while ((triggerClass = static_cast<TObjString*>(next()))) {
+  std::unique_ptr<TObjArray> triggerClasses(InputEvent()->GetFiredTriggerClasses().Tokenize(" "));
+  TObjString* triggerClass(nullptr);
+  for(auto trg : *triggerClasses){
+    triggerClass = static_cast<TObjString*>(trg);
     fHistTriggerClasses->Fill(triggerClass->GetString(), 1);
   }
-  delete triggerClasses;
-  triggerClasses = 0;
+
+  if(fCountDownscaleCorrectedEvents){
+    // downscale-corrected number of events are calculated based on the min. bias reference
+    // Formula: N_corr = N_MB * d_Trg/d_{Min_Bias}
+    if(InputEvent()->GetFiredTriggerClasses().Contains(fMinBiasRefTrigger)){
+      AliEmcalDownscaleFactorsOCDB *downscalefactors = AliEmcalDownscaleFactorsOCDB::Instance();
+      Double_t downscaleref = downscalefactors->GetDownscaleFactorForTriggerClass(fMinBiasRefTrigger);
+      for(auto t : downscalefactors->GetTriggerClasses()){
+        Double_t downscaletrg = downscalefactors->GetDownscaleFactorForTriggerClass(t);
+        fHistTriggerClassesCorr->Fill(t, downscaletrg/downscaleref);
+      }
+    }
+  }
 
   return kTRUE;
 }
@@ -584,6 +610,7 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
   if(InputEvent()->GetRunNumber() != fRunNumber){
     fRunNumber = InputEvent()->GetRunNumber();
     RunChanged(fRunNumber);
+    if(fCountDownscaleCorrectedEvents) AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
   }
 
   if (IsEventSelected()) {
