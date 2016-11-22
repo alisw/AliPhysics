@@ -854,6 +854,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 221){ // EMCAL clusters pp 7 TeV, std matching
     cuts.AddCut("00000113","1111111063032220000","0163103100000050"); // std
 
+    // pp7TeV EMCal direct photons
+  } else if (trainConfig == 251) {
+    cuts.AddCut("00000113","1111111067032260000","0163103100000050"); // std
+
   } else if (trainConfig == 299){ // EMCAL clusters pp, jet triggers
     cuts.AddCut("00045113","1111111063032220000","0163103100000050"); // std
     cuts.AddCut("00046113","1111111063032220000","0163103100000050"); // std
