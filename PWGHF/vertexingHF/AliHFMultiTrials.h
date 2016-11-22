@@ -67,6 +67,8 @@ class AliHFMultiTrials : public TNamed {
   void SetUsePol3Background(Bool_t opt=kTRUE){fUsePol3Bkg=opt;}
   void SetUsePol4Background(Bool_t opt=kTRUE){fUsePol4Bkg=opt;}
   void SetUsePol5Background(Bool_t opt=kTRUE){fUsePol5Bkg=opt;}
+  void SetUsePowerLawBackground(Bool_t opt=kTRUE){fUsePowLawBkg=opt;}
+  void SetUsePowerLawTimesExpoBackground(Bool_t opt=kTRUE){fUsePowLawTimesExpoBkg=opt;}
 
   void SetUseFixSigUpFreeMean(Bool_t opt=kTRUE) {fUseFixSigUpFreeMean=opt;}
   void SetUseFixSigDownFreeMean(Bool_t opt=kTRUE) {fUseFixSigDownFreeMean=opt;}
@@ -85,7 +87,7 @@ class AliHFMultiTrials : public TNamed {
   void SetFixRefoS(Float_t refloS){fFixRefloS=refloS;}
 
 
-  enum EBkgFuncCases{ kExpoBkg, kLinBkg, kPol2Bkg, kPol3Bkg, kPol4Bkg, kPol5Bkg, kNBkgFuncCases };
+  enum EBkgFuncCases{ kExpoBkg, kLinBkg, kPol2Bkg, kPol3Bkg, kPol4Bkg, kPol5Bkg, kPowBkg, kPowTimesExpoBkg, kNBkgFuncCases };
   enum EFitParamCases{ kFixSigFreeMean, kFixSigUpFreeMean, kFixSigDownFreeMean, kFreeSigFreeMean, kFixSigFixMean, kFreeSigFixMean, kNFitConfCases};
 
  private:
@@ -120,8 +122,10 @@ class AliHFMultiTrials : public TNamed {
   Bool_t fUsePol3Bkg;    /// switch for pol3 background
   Bool_t fUsePol4Bkg;    /// switch for pol4 background
   Bool_t fUsePol5Bkg;    /// switch for pol5 background
-  Bool_t fUseFixSigUpFreeMean;   /// switch for FixSigUpFreeMean
-  Bool_t fUseFixSigDownFreeMean; /// switch for FixSigDownFreeMean
+  Bool_t fUsePowLawBkg;  /// switch for power law background
+  Bool_t fUsePowLawTimesExpoBkg;  /// switch for power law background
+  Bool_t fUseFixSigUpFreeMean;    /// switch for FixSigUpFreeMean
+  Bool_t fUseFixSigDownFreeMean;  /// switch for FixSigDownFreeMean
   Bool_t fUseFreeS;              /// switch for FreeSigma
   Bool_t fUseFixedMeanFreeS;     ///  switch for FixedMeanFreeS
   Bool_t fUseFixSigFreeMean;     ///  switch for FixSigFreeMean
@@ -156,7 +160,7 @@ class AliHFMultiTrials : public TNamed {
   Double_t fMaxYieldGlob;   /// maximum yield
 
   /// \cond CLASSIMP    
-  ClassDef(AliHFMultiTrials,3); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFMultiTrials,4); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 
