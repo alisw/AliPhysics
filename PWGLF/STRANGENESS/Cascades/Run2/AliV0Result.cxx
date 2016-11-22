@@ -26,6 +26,7 @@ fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
+fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
@@ -54,6 +55,7 @@ fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
+fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
@@ -92,6 +94,7 @@ fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
+fCutMinBaryonMomentum(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
@@ -179,6 +182,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutCompetingV0Rejection = lCopyMe->GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe->GetCutArmenteros();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
+    fCutMinBaryonMomentum = lCopyMe->GetCutMinBaryonMomentum();
     
     fCutMCPhysicalPrimary = lCopyMe->GetCutMCPhysicalPrimary();
     fCutMCLambdaFromPrimaryXi = lCopyMe->GetCutMCLambdaFromPrimaryXi();
@@ -233,6 +237,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutCompetingV0Rejection = lCopyMe.GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe.GetCutArmenteros();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
+    fCutMinBaryonMomentum = lCopyMe.GetCutMinBaryonMomentum();
     
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
     fCutMCLambdaFromPrimaryXi = lCopyMe.GetCutMCLambdaFromPrimaryXi();
@@ -314,7 +319,8 @@ Bool_t AliV0Result::HasSameCuts(AliV0Result *lCompare)
     //if( fCutCompetingV0Rejection != lCompare->GetCutCompetingV0Rejection() ) lReturnValue = kFALSE;
     if( fCutArmenteros != lCompare->GetCutArmenteros() ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
-
+    if( TMath::Abs( fCutMinBaryonMomentum - lCompare->GetCutMinBaryonMomentum() ) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -343,6 +349,7 @@ void AliV0Result::Print()
     cout<<" Nbr Crsd Rows / Fdb: "<<fCutLeastNumberOfCrossedRowsOverFindable<<endl;
     cout<<" Armenteros (for K0): "<<fCutArmenteros<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
+    cout<<" Min baryon momentum: "<<fCutMinBaryonMomentum<<endl;
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
