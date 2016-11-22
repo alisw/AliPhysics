@@ -1621,6 +1621,15 @@ int AliHLTComponent::PushBack(const std::string& pString, const AliHLTComponentD
   return rc;
 }
 
+void AliHLTComponent::AlignOutputBufferFilled()
+{
+	if (fOutputBufferFilled % kAliHLTBlockAlignment)
+	{
+		fOutputBufferFilled += kAliHLTBlockAlignment - fOutputBufferFilled % kAliHLTBlockAlignment;
+		if (fOutputBufferFilled > fOutputBufferSize) fOutputBufferFilled = fOutputBufferSize;
+	}
+}
+
 int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, const AliHLTComponentDataType& dt, AliHLTUInt32_t spec,
 				       const void* pHeader, int iHeaderSize)
 {
@@ -1667,6 +1676,7 @@ int AliHLTComponent::InsertOutputBlock(const void* pBuffer, int iBufferSize, con
     bd.fSpecification = spec;
     fOutputBlocks.push_back( bd );
     fOutputBufferFilled+=bd.fSize;
+	AlignOutputBufferFilled();
   }
 
   return iResult;
@@ -1718,6 +1728,7 @@ AliHLTMemoryFile* AliHLTComponent::CreateMemoryFile(int capacity,
 	bd.fSpecification = spec;
 	fOutputBufferFilled+=bd.fSize;
 	fOutputBlocks.push_back( bd );
+	AlignOutputBufferFilled();
       } else {
 	HLTError("can not allocate/grow object array");
 	pFile->CloseMemoryFile(0);
@@ -2272,10 +2283,12 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
           if (compStats.size()>0 && IsDataEvent()) {
             int offset=AddComponentStatistics(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled, compStats);
             if (offset>0) fOutputBufferFilled+=offset;
+			AlignOutputBufferFilled();
           }
           if (bAddComponentTableEntry) {
             int offset=AddComponentTableEntry(fOutputBlocks, fpOutputBuffer, fOutputBufferSize, fOutputBufferFilled, parentComponentTables, processingLevel);
             if (offset>0) size+=offset;
+			AlignOutputBufferFilled();
           }
           if (forwardedBlocks.size()>0) {
             fOutputBlocks.insert(fOutputBlocks.end(), forwardedBlocks.begin(), forwardedBlocks.end());

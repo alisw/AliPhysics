@@ -937,6 +937,11 @@ class AliHLTComponent : public AliHLTLogging {
    * get the full configuration string
    */
   string GetComponentArgs() const { return fComponentArgs; }
+  
+  /**
+   * Align the output buffer for the next block
+   */
+  void AlignOutputBufferFilled();
 
  protected:
 
