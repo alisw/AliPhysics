@@ -220,7 +220,7 @@ fTreeCascVarV0Mass(0),
 fTreeCascVarV0CosPointingAngle(0),
 fTreeCascVarV0CosPointingAngleSpecial(0),
 fTreeCascVarV0Radius(0),
-fTreeCascVarDcaBachToBaryon(0),
+fTreeCascVarDCABachToBaryon(0),
 fTreeCascVarLeastNbrClusters(0),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarNegNSigmaPion(0),
@@ -413,7 +413,7 @@ fTreeCascVarV0Mass(0),
 fTreeCascVarV0CosPointingAngle(0),
 fTreeCascVarV0CosPointingAngleSpecial(0),
 fTreeCascVarV0Radius(0),
-fTreeCascVarDcaBachToBaryon(0),
+fTreeCascVarDCABachToBaryon(0),
 fTreeCascVarLeastNbrClusters(0),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarNegNSigmaPion(0),
@@ -677,7 +677,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarV0CosPointingAngle",&fTreeCascVarV0CosPointingAngle,"fTreeCascVarV0CosPointingAngle/F");
         fTreeCascade->Branch("fTreeCascVarV0CosPointingAngleSpecial",&fTreeCascVarV0CosPointingAngleSpecial,"fTreeCascVarV0CosPointingAngleSpecial/F");
         fTreeCascade->Branch("fTreeCascVarV0Radius",&fTreeCascVarV0Radius,"fTreeCascVarV0Radius/F");
-        fTreeCascade->Branch("fTreeCascVarDcaBachToBaryon",&fTreeCascVarDcaBachToBaryon,"fTreeCascVarDcaBachToBaryon/F");
+        fTreeCascade->Branch("fTreeCascVarDCABachToBaryon",&fTreeCascVarDCABachToBaryon,"fTreeCascVarDCABachToBaryon/F");
         fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
@@ -1900,7 +1900,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             lBachelorTrack = bachTrackXi;
         }
         
-        fTreeCascVarDcaBachToBaryon = -100;
+        fTreeCascVarDCABachToBaryon = -100;
         
         Double_t bMag = lESDevent->GetMagneticField();
         Double_t xn, xp;
@@ -1908,7 +1908,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Care has to be taken here
         if ( lBaryonTrack && lBachelorTrack ){
             //Attempt zero: Calculate DCA between bachelor and baryon daughter
-            fTreeCascVarDcaBachToBaryon = lBaryonTrack->GetDCA(lBachelorTrack, bMag, xn, xp);
+            fTreeCascVarDCABachToBaryon = lBaryonTrack->GetDCA(lBachelorTrack, bMag, xn, xp);
         }
         
         //----------------------------------------
@@ -2344,8 +2344,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //Check 5: Xi rejection for Omega analysis
                 ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus && lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )&&
                 
-                //Check 6: Experimental lambda rejection cut
-                (TMath::Abs(LambdaInvariantMass(lprpx,lprpy,lprpz,lpipx,lpipy,lpipz)-1.116) > lCascadeResult->GetCutSpecialLambdaRejection() )
+                //Check 6: Experimental DCA Bachelor to Baryon cut
+                ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() )
+                
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram
@@ -2889,12 +2890,4 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     
     cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
     
-}
-
-//________________________________________________________________________
-Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::LambdaInvariantMass( Double_t prpx, Double_t prpy, Double_t prpz, Double_t pipx, Double_t pipy, Double_t pipz){
-    TLorentzVector v1; v1.SetPxPyPzE(prpx, prpy, prpz, TMath::Sqrt( prpx*prpx+prpy*prpy+prpz*prpz + 0.93826*0.93826));
-    TLorentzVector v2; v2.SetPxPyPzE(pipx, pipy, pipz, TMath::Sqrt( pipx*pipx+pipy*pipy+pipz*pipz + 0.13957*0.13957));
-    TLorentzVector v0 = v1+v2 ;
-    return v0.M();
 }

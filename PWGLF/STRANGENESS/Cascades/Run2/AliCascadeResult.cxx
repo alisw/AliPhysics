@@ -28,12 +28,12 @@ fCutDCABachToPV(0.03),
 fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
 fCutCascRadius(0.4),
+fCutDCABachToBaryon(-1),
 //Miscellaneous
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
-fCutSpecialLambdaRejection(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE)
@@ -60,12 +60,12 @@ fCutDCABachToPV(0.03),
 fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
 fCutCascRadius(0.4),
+fCutDCABachToBaryon(-1),
 //Miscellaneous
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
-fCutSpecialLambdaRejection(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE)
@@ -98,12 +98,12 @@ fCutDCABachToPV(0.03),
 fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
 fCutCascRadius(0.4),
+fCutDCABachToBaryon(-1),
 //Miscellaneous
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
-fCutSpecialLambdaRejection(-1),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE)
@@ -145,12 +145,12 @@ fCutDCABachToPV(lCopyMe.fCutDCABachToPV),
 fCutDCACascDaughters(lCopyMe.fCutDCACascDaughters),
 fCutCascCosPA(lCopyMe.fCutCascCosPA),
 fCutCascRadius(lCopyMe.fCutCascRadius),
+fCutDCABachToBaryon(lCopyMe.fCutDCABachToBaryon),
 //Miscellaneous
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutXiRejection(lCopyMe.fCutXiRejection),
-fCutSpecialLambdaRejection(lCopyMe.fCutSpecialLambdaRejection),
 //MC specific
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
@@ -188,13 +188,13 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutDCACascDaughters = lCopyMe -> GetCutDCACascDaughters();
     fCutCascCosPA  = lCopyMe -> GetCutCascCosPA();
     fCutCascRadius = lCopyMe -> GetCutCascRadius();
+    fCutDCABachToBaryon = lCopyMe -> GetCutDCABachToBaryon();
     
     //Miscellaneous
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
     fCutLeastNumberOfClusters = lCopyMe->GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
     fCutXiRejection = lCopyMe->GetCutXiRejection();
-    fCutSpecialLambdaRejection = lCopyMe->GetCutSpecialLambdaRejection();
     
     //MC specific
     fCutMCPhysicalPrimary    = lCopyMe -> GetCutMCPhysicalPrimary();
@@ -241,13 +241,13 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutDCACascDaughters = lCopyMe.GetCutDCACascDaughters();
     fCutCascCosPA  = lCopyMe.GetCutCascCosPA();
     fCutCascRadius = lCopyMe.GetCutCascRadius();
+    fCutDCABachToBaryon = lCopyMe.GetCutDCABachToBaryon();
     
     //Miscellaneous
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
     fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
     fCutXiRejection = lCopyMe.GetCutXiRejection();
-    fCutSpecialLambdaRejection = lCopyMe.GetCutSpecialLambdaRejection();
     
     //MC specific
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
@@ -318,12 +318,12 @@ Bool_t AliCascadeResult::HasSameCuts(AliCascadeResult *lCompare)
     if( TMath::Abs( fCutDCACascDaughters - lCompare->GetCutDCACascDaughters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutCascCosPA - lCompare->GetCutCascCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutCascRadius - lCompare->GetCutCascRadius() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCABachToBaryon - lCompare->GetCutDCABachToBaryon() ) > 1e-6 ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutProperLifetime - lCompare->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutLeastNumberOfClusters - lCompare->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutXiRejection - lCompare->GetCutXiRejection() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutSpecialLambdaRejection - lCompare->GetCutSpecialLambdaRejection() ) > 1e-6 ) lReturnValue = kFALSE;
     
     return lReturnValue;
 }
@@ -355,13 +355,12 @@ void AliCascadeResult::Print()
     cout<<" DCA Casc Daughters.: "<<fCutDCACascDaughters<<endl;
     cout<<" Casc Cos PA........: "<<fCutCascCosPA<<endl;
     cout<<" Casc 2D Radius.....: "<<fCutCascRadius<<endl;
+    cout<<" DCA Bach to Baryon.: "<<fCutDCABachToBaryon<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
     cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Xi Rej (for Omega).: "<<fCutXiRejection<<endl;
-    cout<<" Wrong L rejection..: "<<fCutSpecialLambdaRejection<<endl;
-    
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
