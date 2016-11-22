@@ -759,6 +759,17 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 160){ // EMCAL clusters pp 8 TeV
     cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
 
+  // diff eta/rap cuts
+  } else if (trainConfig == 170){ // EMCAL clusters pp 8 TeV, |eta| < 0.7, y < 0.7
+    cuts.AddCut("00010113","1551111067032220000","0163203100000050"); //
+    cuts.AddCut("00052113","1551111067032220000","0163203100000050"); //
+    cuts.AddCut("00081113","1551111067032220000","0163203100000050"); //
+  } else if (trainConfig == 171){ // EMCAL clusters pp 8 TeV, |eta| < 0.3, y < 0.3
+    cuts.AddCut("00010113","1661111067032220000","0163703100000050"); //
+    cuts.AddCut("00052113","1661111067032220000","0163703100000050"); //
+    cuts.AddCut("00081113","1661111067032220000","0163703100000050"); //
+
+
   // pp multiplicity studies
   } else if (trainConfig == 198){ // MB - with multiplicity bins
     cuts.AddCut("00103113","1111121053032220000","0163103100000050"); // 0 -2
