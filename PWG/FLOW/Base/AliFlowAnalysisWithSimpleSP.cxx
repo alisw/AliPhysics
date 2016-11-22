@@ -503,7 +503,7 @@ void AliFlowAnalysisWithSimpleSP::GetOutputHistograms(TList *outputListHistos){
     }
     fHistQaQb = (TH1D*)tQARelated->FindObject("Flow_QaQb_SP");
     fHistQaQc = (TH1D*)tQARelated->FindObject("Flow_QaQc_SP");
-    fHistQbQc = (TH1D*)tQARelated->FindObject("Flow_QaQc_SP");
+    fHistQbQc = (TH1D*)tQARelated->FindObject("Flow_QbQc_SP");
 
 
 }   
@@ -537,7 +537,7 @@ void AliFlowAnalysisWithSimpleSP::Finish(Bool_t A) {
     Double_t dEntriesQaQb = fHistQaQb->GetEntries();
     if( dEntriesQaQb < 1 )
         return;
-    fHistQaQb->GetXaxis()->SetRangeUser(-10.,10.);
+    //fHistQaQb->GetXaxis()->SetRangeUser(-10.,10.);
     //fHistQaQC->GetXaxis()->SetRangeUser(-1000., 1000.);
     //fHistQbQc->GetXaxis()->SetRangeUser(-1000., 1000.);
 
@@ -549,10 +549,12 @@ void AliFlowAnalysisWithSimpleSP::Finish(Bool_t A) {
     Double_t dQbQc = fHistQbQc->GetMean();
 
     if(A) {
+      // now it's the resolution of A (which is vzero C) 
       dQaQb = (dQaQb*dQaQc)/dQbQc;
-      if(dQaQb>0.) dQaQb = TMath::Sqrt(dQaQb);
     } else {
-        dQaQb = (dQaQb*dQbQc)/dQaQc;
+    
+      // else we select the resolution of B (which is V0A)
+      dQaQb = (dQaQb*dQbQc)/dQaQc;
     }
 
     if( dQaQb < 0 )
@@ -565,7 +567,7 @@ void AliFlowAnalysisWithSimpleSP::Finish(Bool_t A) {
         printf("  \tusing dummy value 1 to avoid segfault \n");
         dQaQb = 1.;
         dSpreadQaQb = 1.;
-    }  
+    } 
     Double_t dV = TMath::Sqrt(dQaQb);
 
     printf("ResSub (sqrt of scalar product of sub-event qvectors) = %f\n", dV );
