@@ -132,6 +132,8 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 		Bool_t IsSCptdep = kFALSE; 
 		fEta_min = 0;
 		fEta_max = 0;
+		fQC_eta_cut_min = -0.8; // default setting 
+		fQC_eta_cut_max = 0.8; // default setting
 		fImpactParameter = -1;	
 
 		fCentBin = new Double_t[fNCent+1];
@@ -854,7 +856,7 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 				} // for max power
 		} // for max harmonics
 		//Calculate Q-vector with particle loop
-		Long64_t ntracks = fInputList->GetEntriesFast();
+		Long64_t ntracks = fInputList->GetEntriesFast(); // all tracks from Task input
 		for( Long64_t it=0; it<ntracks; it++){
 				AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 				Double_t phi = itrack->Phi();
@@ -862,16 +864,21 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 				// track Eta cut Note! pt cuts already applied in AliJFFlucTask.cxx 
 				// Do we need arbitary Eta cut for QC method?
 				// fixed eta ranged -0.8 < eta < 0.8 for QC
-//				if( TMath::Abs(eta) > fEta_max || TMath::Abs(eta) < fEta_min ) continue;
-				if( TMath::Abs(eta) > 0.8 ) continue;
+//				if( TMath::Abs(eta) > fEta_max || TMath::Abs(eta) < fEta_min ) continue; << this is SP cut
+//				if( TMath::Abs(eta) > 0.8 ) continue;  //   << this is old QC cut
+				// we need more configuration for to study eta dep of SC(m,n) with QC method.		
+				// eta cut among all tracks (this is not same with SC(m,n) SP method (SP method needs symmetric eta range)//
+				if( eta < fQC_eta_cut_min || eta > fQC_eta_cut_max) continue;  
+				/////////////////////////////////////////////////
+
 				for(int ih=0; ih<kNH; ih++){
 						for(int ik=0; ik<nKL; ik++){
 								QvectorQC[ih][ik] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
 								// this is not working (there are no eta gap for +0.6, +0.61 in this way..
 								// fix this as like SP -> 2 sub event // 
-								if( TMath::Abs(eta) > 0.5 ){
+								if( TMath::Abs(eta) > 0.5 ){  // this is for Noramlized SC ( denominator need eta gap )
 									int isub = 0;
-									if( eta > 0 ) isub = 1; // what about eta=0 ?
+									if( eta > 0 ) isub = 1; // what about eta=0?
 									 QvectorQCeta10[ih][ik][isub] += TComplex( TMath::Cos(ih*phi), TMath::Sin(ih*phi) );
 								}
 						}

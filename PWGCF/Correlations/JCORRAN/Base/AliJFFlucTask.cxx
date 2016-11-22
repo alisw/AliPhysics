@@ -72,6 +72,9 @@ AliJFFlucTask::AliJFFlucTask():
 	IsSCptdep = kFALSE;
 	IsSCwithQC= kFALSE;
 	IsEbEWeighted = kFALSE;
+	fQC_eta_min=-0.8;
+	fQC_eta_max=0.8;
+
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
@@ -111,6 +114,10 @@ AliJFFlucTask::AliJFFlucTask(const char *name,  Bool_t IsMC, Bool_t IsExcludeWea
 	IsSCptdep = kFALSE;
 	IsSCwithQC = kFALSE;
 	IsEbEWeighted = kFALSE;
+	
+	fQC_eta_min=-0.8;
+	fQC_eta_max=0.8;
+
 	for(int icent=0; icent<7; icent++){
 		for(int isub=0; isub<2; isub++){
 			h_ModuledPhi[icent][isub]=NULL;
@@ -158,6 +165,8 @@ void AliJFFlucTask::UserCreateOutputObjects()
 	fFFlucAna->SetIsSCptdep( IsSCptdep ) ;
 	fFFlucAna->SetSCwithQC( IsSCwithQC );
 	fFFlucAna->SetEbEWeight( IsEbEWeighted );
+	fFFlucAna->SetQCEtaCut( fQC_eta_min, fQC_eta_max );
+
 //	fFFlucAna->SetSCwithFineCentbin( IsSCwithFineCentBin );
 	// setting histos for phi modulation
 	if( IsPhiModule==kTRUE){
@@ -379,10 +388,10 @@ else if( IsMC == kFALSE){
 							if( fPcharge==-1 && ch>0) continue; // -1 for - particle
 						}
 						//						double track_abs_eta = TMath::Abs( track->Eta() );
-						//						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // eta cut
+						//						if( track_abs_eta > fEta_min && track_abs_eta < fEta_max){ // no eta cut in task.. do it in analysis.
 						AliJBaseTrack *itrack = new( (*TrackList)[ntrack++])AliJBaseTrack;
 						//itrack->SetID( track->GetID() );
-						itrack->SetID( TrackList->GetEntriesFast() ) ;
+						itrack->SetID( TrackList->GetEntriesFast() );
 						itrack->SetPxPyPzE( track->Px(), track->Py(), track->Pz(), track->E() );
 						itrack->SetParticleType(kJHadron);
 						itrack->SetCharge(track->Charge() );
