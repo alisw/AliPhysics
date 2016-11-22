@@ -959,27 +959,6 @@ public:
   TH1D* GetFlowQCRefCorFinal(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorFinal[eg][h];};
   void SetFlowQCRefCorFinal(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorFinal[eg][k] = TP;};
   
-  void SetWideCenCorPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorPro[c][eg][h] = TP;};
-  TProfile* GetWideCenCorPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorPro[c][eg][h];};
-  void SetWideCenCorHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorHist[c][eg][h] = TH;};
-  TH1D* GetWideCenCorHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorHist[c][eg][h];};
-  void SetWideCenCorNUAHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorNUAHist[c][eg][h] = TH;};
-  TH1D* GetWideCenCorNUAHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorNUAHist[c][eg][h];};
-  void SetWideCenCorNUAPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorNUAPro[c][eg][h] = TP;};
-  TProfile* GetWideCenCorNUAPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorNUAPro[c][eg][h];};
-  void SetWideCenCorCovPro(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorCovPro[c][eg][h] = TP;};
-  TProfile* GetWideCenCorCovPro(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorCovPro[c][eg][h];};
-  void SetWideCenCorCovHist(TH1D* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenCorCovHist[c][eg][h] = TP;};
-  TH1D* GetWideCenCorCovHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenCorCovHist[c][eg][h];};
-  void SetWideCenFinalPtDifHist(TH1D* const TH, Int_t const c, Int_t const eg, Int_t const h) {this->fWideCenFinalPtDifHist[c][eg][h] = TH;};
-  TH1D* GetWideCenFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fWideCenFinalPtDifHist[c][eg][h];};
-  TProfile* GetWideCenRefCorPro(Int_t const eg, Int_t const h) const {return this->fWideCenRefCorPro[eg][h];};
-  void SetWideCenRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fWideCenRefCorPro[eg][k] = TP;};
-  TH1D* GetWideCenRefCorHist(Int_t const eg, Int_t const h) const {return this->fWideCenRefCorHist[eg][h];};
-  void SetWideCenRefCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fWideCenRefCorHist[eg][k] = TP;};
-  TH1D* GetWideCenRefCorFinal(Int_t const eg, Int_t const h) const {return this->fWideCenRefCorFinal[eg][h];};
-  void SetWideCenRefCorFinal(TH1D* const TP, Int_t const eg, Int_t const k) {this->fWideCenRefCorFinal[eg][k] = TP;};
-  
   void SetFlowSCv2vsZNv1Pro(TProfile* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Pro[c][eg] = TP;};
   TProfile* GetFlowSCv2vsZNv1Pro(Int_t const c, Int_t const eg) const {return this->fFlowSCv2vsZNv1Pro[c][eg];};
   void SetFlowSCv2vsZNv1Hist(TH1D* const TP, Int_t const c, Int_t const eg) {this->fFlowSCv2vsZNv1Hist[c][eg] = TP;};
