@@ -2484,12 +2484,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
     // K0SHORT SELECTIONS
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
-    lcutsV0[0][0][ 0] = 0.05;    lcutsV0[0][1][ 0] =   0.1; lcutsV0[0][2][0] = 0.15; //DCANegToPV
-    lcutsV0[0][0][ 1] = 0.05;    lcutsV0[0][1][ 1] =   0.1; lcutsV0[0][2][1] = 0.15; //DCAPostToPV
-    lcutsV0[0][0][ 2] =  1.2;    lcutsV0[0][1][ 2] =   1.0; lcutsV0[0][2][2] =  0.9; //DCAV0Daughters
-    lcutsV0[0][0][ 3] = .995;    lcutsV0[0][1][ 3] = 0.998; lcutsV0[0][2][3] = .999; //V0CosPA
-    lcutsV0[0][0][ 4] = 5.00;    lcutsV0[0][1][ 4] =  5.00; lcutsV0[0][2][4] = 8.00; //V0Radius
-    lcutsV0[0][0][ 5] =   15;    lcutsV0[0][1][ 5] =    10; lcutsV0[0][2][5] =    5; //Proper Lifetime (in cm)
+    lcutsV0[0][0][ 0] =  0.1;    lcutsV0[0][1][ 0] =   0.1; lcutsV0[0][2][0] = 0.15; //DCANegToPV
+    lcutsV0[0][0][ 1] =  0.1;    lcutsV0[0][1][ 1] =   0.1; lcutsV0[0][2][1] = 0.15; //DCAPosToPV
+    lcutsV0[0][0][ 2] =  1.0;    lcutsV0[0][1][ 2] =   0.8; lcutsV0[0][2][2] =  0.7; //DCAV0Daughters
+    lcutsV0[0][0][ 3] = .998;    lcutsV0[0][1][ 3] = 0.999; lcutsV0[0][2][3] =.9995; //V0CosPA
+    lcutsV0[0][0][ 4] = 2.00;    lcutsV0[0][1][ 4] =  5.00; lcutsV0[0][2][4] = 8.00; //V0Radius
+    lcutsV0[0][0][ 5] =   15;    lcutsV0[0][1][ 5] =    10; lcutsV0[0][2][5] =    7; //Proper Lifetime (in cm)
     lcutsV0[0][0][ 6] =   70;    lcutsV0[0][1][ 6] =    70; lcutsV0[0][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[0][0][ 7] =  0.7;    lcutsV0[0][1][ 7] =   0.8; lcutsV0[0][2][7] = 0.85; //Least Ratio CrdRows/Findable
     lcutsV0[0][0][ 8] =  4.0;    lcutsV0[0][1][ 8] =   3.0; lcutsV0[0][2][8] =  2.5; //TPC dE/dx
@@ -2499,26 +2499,26 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
     // LAMBDA SELECTIONS
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
-    lcutsV0[1][0][ 0] = 0.05;    lcutsV0[1][1][ 0] =   0.1; lcutsV0[1][2][0] = 0.15; //DCANegToPV
-    lcutsV0[1][0][ 1] = 0.05;    lcutsV0[1][1][ 1] =   0.1; lcutsV0[1][2][1] = 0.15; //DCAPostToPV
-    lcutsV0[1][0][ 2] =  1.2;    lcutsV0[1][1][ 2] =   1.0; lcutsV0[1][2][2] =  0.9; //DCAV0Daughters
-    lcutsV0[1][0][ 3] = .995;    lcutsV0[1][1][ 3] = 0.998; lcutsV0[1][2][3] = .999; //V0CosPA
-    lcutsV0[1][0][ 4] = 5.00;    lcutsV0[1][1][ 4] =  5.00; lcutsV0[1][2][4] = 8.00; //V0Radius
+    lcutsV0[1][0][ 0] =  0.1;    lcutsV0[1][1][ 0] =   0.2; lcutsV0[1][2][0] = 0.30; //DCANegToPV
+    lcutsV0[1][0][ 1] =  0.1;    lcutsV0[1][1][ 1] =   0.1; lcutsV0[1][2][1] = 0.15; //DCAPosToPV
+    lcutsV0[1][0][ 2] =  1.0;    lcutsV0[1][1][ 2] =   0.8; lcutsV0[1][2][2] =  0.7; //DCAV0Daughters
+    lcutsV0[1][0][ 3] = .998;    lcutsV0[1][1][ 3] = 0.999; lcutsV0[1][2][3] =.9995; //V0CosPA
+    lcutsV0[1][0][ 4] = 2.00;    lcutsV0[1][1][ 4] =  5.00; lcutsV0[1][2][4] = 8.00; //V0Radius
     lcutsV0[1][0][ 5] =   25;    lcutsV0[1][1][ 5] =    20; lcutsV0[1][2][5] =   15; //Proper Lifetime (in cm)
     lcutsV0[1][0][ 6] =   70;    lcutsV0[1][1][ 6] =    70; lcutsV0[1][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[1][0][ 7] =  0.7;    lcutsV0[1][1][ 7] =   0.8; lcutsV0[1][2][7] = 0.85; //Least Ratio CrdRows/Findable
     lcutsV0[1][0][ 8] =  4.0;    lcutsV0[1][1][ 8] =   3.0; lcutsV0[1][2][8] =  2.5; //TPC dE/dx
     //================================================================================
-    
+
     //================================================================================
     // ANTILAMBDA SELECTIONS
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
-    lcutsV0[2][0][ 0] = 0.05;    lcutsV0[2][1][ 0] =   0.1; lcutsV0[2][2][0] = 0.15; //DCANegToPV
-    lcutsV0[2][0][ 1] = 0.05;    lcutsV0[2][1][ 1] =   0.1; lcutsV0[2][2][1] = 0.15; //DCAPostToPV
-    lcutsV0[2][0][ 2] =  1.2;    lcutsV0[2][1][ 2] =   1.0; lcutsV0[2][2][2] =  0.9; //DCAV0Daughters
-    lcutsV0[2][0][ 3] = .995;    lcutsV0[2][1][ 3] = 0.998; lcutsV0[2][2][3] = .999; //V0CosPA
-    lcutsV0[2][0][ 4] = 5.00;    lcutsV0[2][1][ 4] =  5.00; lcutsV0[2][2][4] = 8.00; //V0Radius
+    lcutsV0[2][0][ 0] =  0.1;    lcutsV0[2][1][ 0] =   0.1; lcutsV0[2][2][0] = 0.15; //DCANegToPV
+    lcutsV0[2][0][ 1] =  0.1;    lcutsV0[2][1][ 1] =   0.2; lcutsV0[2][2][1] = 0.30; //DCAPosToPV
+    lcutsV0[2][0][ 2] =  1.0;    lcutsV0[2][1][ 2] =   0.8; lcutsV0[2][2][2] =  0.7; //DCAV0Daughters
+    lcutsV0[2][0][ 3] = .998;    lcutsV0[2][1][ 3] = 0.999; lcutsV0[2][2][3] =.9995; //V0CosPA
+    lcutsV0[2][0][ 4] = 2.00;    lcutsV0[2][1][ 4] =  5.00; lcutsV0[2][2][4] = 8.00; //V0Radius
     lcutsV0[2][0][ 5] =   25;    lcutsV0[2][1][ 5] =    20; lcutsV0[2][2][5] =   15; //Proper Lifetime (in cm)
     lcutsV0[2][0][ 6] =   70;    lcutsV0[2][1][ 6] =    70; lcutsV0[2][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[2][0][ 7] =  0.7;    lcutsV0[2][1][ 7] =   0.8; lcutsV0[2][2][7] = 0.85; //Least Ratio CrdRows/Findable
