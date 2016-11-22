@@ -53,13 +53,13 @@ public:
     void SetCutDCACascDaughters ( Double_t lCut ) { fCutDCACascDaughters  = lCut; }
     void SetCutCascCosPA        ( Double_t lCut ) { fCutCascCosPA         = lCut; }
     void SetCutCascRadius       ( Double_t lCut ) { fCutCascRadius        = lCut; }
+    void SetCutDCABachToBaryon  ( Double_t lCut ) { fCutDCABachToBaryon   = lCut; }
     
     //Miscellaneous
     void SetCutProperLifetime        ( Double_t lCut ) { fCutProperLifetime        = lCut; }
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
     void SetCutTPCdEdx               ( Double_t lCut ) { fCutTPCdEdx               = lCut; }
     void SetCutXiRejection           ( Double_t lCut ) { fCutXiRejection           = lCut; }
-    void SetSpeciaLambdaRejection    ( Double_t lCut ) { fCutSpecialLambdaRejection= lCut; }
     
     //MC specific
     void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
@@ -82,13 +82,13 @@ public:
     Double_t GetCutDCACascDaughters () const { return fCutDCACascDaughters; }
     Double_t GetCutCascCosPA        () const { return fCutCascCosPA; }
     Double_t GetCutCascRadius       () const { return fCutCascRadius; }
+    Double_t GetCutDCABachToBaryon  () const { return fCutDCABachToBaryon; }
     
     //Miscellaneous
     Double_t GetCutProperLifetime () const { return fCutProperLifetime; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutTPCdEdx () const { return fCutTPCdEdx; }
     Double_t GetCutXiRejection () const { return fCutXiRejection; }
-    Double_t GetCutSpecialLambdaRejection () const { return fCutSpecialLambdaRejection; }
     
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
@@ -119,12 +119,12 @@ private:
     Double_t fCutDCACascDaughters; //ca vertexer 4
     Double_t fCutCascCosPA;        //ca vertexer 5
     Double_t fCutCascRadius;       //ca vertexer 6
+    Double_t fCutDCABachToBaryon;  //extra selection on dca bach-pos (experimental)
     
     Double_t fCutProperLifetime;
     Double_t fCutLeastNumberOfClusters;
     Double_t fCutTPCdEdx;
-    Double_t fCutXiRejection; //Xi rejection (for omega analysis only!) 
-    Double_t fCutSpecialLambdaRejection; //Experimental cut
+    Double_t fCutXiRejection; //Xi rejection (for omega analysis only!)
     
     Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
@@ -141,5 +141,6 @@ private:
     // 6 - addition of UseMCProperties flag
     // 7 - Adjustments, tuning, constructor improvements
     // 8 - Experimental lambda cut added
+    // 9 - Cleanup + experimental bach-pos DCA cut added
 };
 #endif
