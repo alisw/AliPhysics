@@ -1031,6 +1031,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             Float_t lPDGMass = -1;
             Float_t lNegdEdx = 100;
             Float_t lPosdEdx = 100;
+            Float_t lBaryonMomentum = -0.5;
             
             if ( lV0Result->GetMassHypothesis() == AliV0Result::kK0Short     ){
                 lMass    = fTreeVariableInvMassK0s;
@@ -1045,6 +1046,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 lPDGMass = 1.115683;
                 lNegdEdx = fTreeVariableNSigmasNegPion;
                 lPosdEdx = fTreeVariableNSigmasPosProton;
+                lBaryonMomentum = fTreeVariablePosInnerP;
             }
             if ( lV0Result->GetMassHypothesis() == AliV0Result::kAntiLambda  ){
                 lMass = fTreeVariableInvMassAntiLambda;
@@ -1052,6 +1054,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 lPDGMass = 1.115683;
                 lNegdEdx = fTreeVariableNSigmasNegProton;
                 lPosdEdx = fTreeVariableNSigmasPosPion;
+                lBaryonMomentum = fTreeVariableNegInnerP;
             }
             
             if (
@@ -1073,11 +1076,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeVariableLeastNbrCrossedRows > lV0Result->GetCutLeastNumberOfCrossedRows() &&
                 fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
                 
-                //Check 4: TPC dEdx selections
+                //Check 4: Minimum momentum of baryon daughter
+                ( lV0Result->GetMassHypothesis() != AliV0Result::kK0Short || lBaryonMomentum > lV0Result->GetCutMinBaryonMomentum() ) &&
+                
+                //Check 5: TPC dEdx selections
                 TMath::Abs(lNegdEdx)<lV0Result->GetCutTPCdEdx() &&
                 TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() &&
             
-                //Check 5: Armenteros-Podolanski space cut (for K0Short analysis)
+                //Check 6: Armenteros-Podolanski space cut (for K0Short analysis)
                 ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )
                 )
             {
