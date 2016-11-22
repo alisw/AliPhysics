@@ -44,7 +44,7 @@ class AliTPCChebCorr;
 class AliTPCcalibDB : public TObject
 {
  public:
-  enum EDcsGasSensor { kNeon=0, kArgon, kCO2, kN2, kH2O, kNGasSensor };
+  enum EDcsGasSensor { kNeon=0, kArgon, kCO2, kN2, kH2O, kO2, kNGasSensor };
 
   static AliTPCcalibDB* Instance();
   AliTPCcalibDB();

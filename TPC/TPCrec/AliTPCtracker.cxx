@@ -475,7 +475,9 @@ AliTPCtracker::AliTPCtracker(const AliTPCParam *par):
   //
   // crosstalk array and matrix initialization
   Int_t nROCs   = 72;
-  Int_t nTimeBinsAll  = AliTPCcalibDB::Instance()->GetMaxTimeBinAllPads() ;
+  // GetMaxTimeBinAllPads() returns the number of the maximum time bin e.g. 0-1023,
+  // so the size must be 1024
+  Int_t nTimeBinsAll  = AliTPCcalibDB::Instance()->GetMaxTimeBinAllPads() + 1;
   Int_t nWireSegments = 11;
   fCrossTalkSignalArray = new TObjArray(nROCs*4);  //  
   fCrossTalkSignalArray->SetOwner(kTRUE);
@@ -1617,7 +1619,7 @@ void  AliTPCtracker::CalculateXtalkCorrection(){
 	    Double_t norm= 2.*TMath::Exp(-1.0/(2.*rmsTime2))+2.*TMath::Exp(-4.0/(2.*rmsTime2))+1.;
 	    Double_t qTotXtalk = 0.;   
 	    Double_t qTotXtalkMissing = 0.;   
-	    for (Int_t itb=timeBinXtalk-2, idelta=-2; itb<=timeBinXtalk+2; itb++,idelta++) {        
+	    for (Int_t itb=timeBinXtalk-2, idelta=-2; itb<=timeBinXtalk+2; itb++,idelta++) {
 	      if (itb<0 || itb>=nCols) continue;
 	      Double_t missingCharge=0;
 	      Double_t trf= TMath::Exp(-idelta*idelta/(2.*rmsTime2));
@@ -2097,6 +2099,8 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
   // cluster loop
   TStopwatch sw;
   sw.Start();
+
+
   for (Int_t isector=0; isector<36; isector++){  //loop tracking sectors
     for (Int_t iside=0; iside<2; iside++){       // loop over sides A/C
       AliTPCtrackerSector &sector= (isector<18)?fInnerSec[isector%18]:fOuterSec[isector%18];
@@ -2111,13 +2115,15 @@ void  AliTPCtracker::ApplyXtalkCorrection(){
 	}else{
 	  xSector=isector+18;  // isector -18 +36   
 	  if (iside>0) xSector+=18;
-	}	
+	}
 	TMatrixD &crossTalkMatrix= *((TMatrixD*)fCrossTalkSignalArray->At(xSector));
+    const Int_t nCols=crossTalkMatrix.GetNcols();
 	Int_t wireSegmentID     = fkParam->GetWireSegment(xSector,row);
 	for (Int_t i=0;i<ncl;i++) {
 	  AliTPCclusterMI *cluster= (iside>0)?(tpcrow.GetCluster2(i)):(tpcrow.GetCluster1(i));
 	  Int_t iTimeBin=TMath::Nint(cluster->GetTimeBin());
-	  Double_t xTalk= crossTalkMatrix[wireSegmentID][iTimeBin];
+      if (iTimeBin >= nCols) continue;
+      Double_t xTalk= crossTalkMatrix[wireSegmentID][iTimeBin];
 	  cluster->SetMax(cluster->GetMax()+xTalk);
 	  const Double_t kDummy=4;
 	  Double_t sumxTalk=xTalk*kDummy; // should be calculated via time response function

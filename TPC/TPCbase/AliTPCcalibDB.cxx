@@ -136,7 +136,7 @@ AliTPCcalibDB* AliTPCcalibDB::fgInstance = 0;
 Bool_t AliTPCcalibDB::fgTerminated = kFALSE;
 TObjArray    AliTPCcalibDB::fgExBArray;    ///< array of ExB corrections
 
-const char* AliTPCcalibDB::fgkGasSensorNames[AliTPCcalibDB::kNGasSensor] = {"TPC_GC_NEON", "TPC_GC_ARGON", "TPC_GC_CO2", "TPC_GC_N2", "TPC_An_L1Sr141_H2O"};
+const char* AliTPCcalibDB::fgkGasSensorNames[AliTPCcalibDB::kNGasSensor] = {"TPC_GC_NEON", "TPC_GC_ARGON", "TPC_GC_CO2", "TPC_GC_N2", "TPC_An_L1Sr141_H2O", "TPC_An_L1Sr141_O2"};
 
 //_ singleton implementation __________________________________________________
 AliTPCcalibDB* AliTPCcalibDB::Instance()
@@ -936,7 +936,7 @@ Int_t AliTPCcalibDB::InitDeadMap()
   // ============================================================
 
   //=============================================================
-  // Setup active chnnel map
+  // Setup active channel map
   //
 
   if (!fActiveChannelMap) fActiveChannelMap=new AliTPCCalPad("ActiveChannelMap","ActiveChannelMap");
@@ -1014,7 +1014,14 @@ void AliTPCcalibDB::InitAltroData()
   // Calculate the maximum time using the 'AcqStart' cal pad object from
   // TPC/Calib/AltroConfig
   // if this object is not available, the value will return the max time bin
-  // stored in the AliTPCParam object from TPC/Calib/Parameters
+  // stored in the AliTPCParam object from TPC/Calib/Parameter
+  //
+  // The samples in the ALTRO are numbered from 0 to 1023.
+  // There is space for 15 "pre-trigger samples" which we don't make use of
+  // For AcpStart = 0 the first time bin is 15 (no pre-trigger samples).
+  // For AcqStop = 1008 the last sample is 1023
+  // Therefore 15 is added to AcqStop
+
 
   fMaxTimeBinAllPads=-1;
 
@@ -1032,7 +1039,7 @@ void AliTPCcalibDB::InitAltroData()
         if (val>maxBin) maxBin=val;
       }
     }
-    fMaxTimeBinAllPads = TMath::Nint(maxBin);
+    fMaxTimeBinAllPads = TMath::Nint(maxBin)+15;
   }
 
   if (fMaxTimeBinAllPads<0) {
