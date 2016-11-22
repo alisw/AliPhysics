@@ -44,8 +44,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
     void ProcessAODMCParticles();
-    void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate);
-    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
+    void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
+    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     
@@ -87,6 +87,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void RotateParticleAccordingToEP(AliAODConversionPhoton *gamma, Double_t previousEventEP, Double_t thisEventEP);
     void FillPhotonBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode);
     void FillPhotonPlusConversionBackgroundHist(AliAODConversionPhoton *TruePhotonCandidate, Int_t pdgCode);
+    void FillPhotonBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, AliVCluster* clus, Int_t pdgCode);
+    void FillPhotonPlusConversionBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, AliVCluster* clus, Int_t pdgCode);
     void UpdateEventByEventData();
     
     // Additional functions for convenience
@@ -142,6 +144,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
     TH1F**                fHistoClusGammaE;                                     //! array of histos with cluster, E
     TH1F**                fHistoClusOverlapHeadersGammaPt;                      //! array of histos with cluster, pt overlapping with other headers
+    TH2F**                fHistoClusGammaPtM02;                                 //! array of histos with cluster M02 vs. pt
     //histograms for pure MC quantities
     TH1I**                fHistoMCHeaders;                                      //! array of histos for header names
     TH1F**                fHistoMCAllGammaPt;                                   //! array of histos with all gamma, pT
@@ -235,9 +238,23 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // MC validated reconstructed quantities photons
     TH2F**                fHistoClusPhotonBGPt;                                 //! array of histos with cluster photon BG, pt, source
     TH2F**                fHistoClusPhotonPlusConvBGPt;                         //! array of histos with cluster photon plus conv BG, pt, source
+    TH2F**                fHistoClustPhotonElectronBGPtM02;                     //! array of histos with cluster photon BG electron, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonPionBGPtM02;                         //! array of histos with cluster photon BG pion, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonKaonBGPtM02;                         //! array of histos with cluster photon BG kaon, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonK0lBGPtM02;                          //! array of histos with cluster photon BG k0l, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonNeutronBGPtM02;                      //! array of histos with cluster photon BG neutron, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonRestBGPtM02;                         //! array of histos with cluster photon BG rest, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonPlusConvElectronBGPtM02;             //! array of histos with cluster photon plus conv BG electron, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonPlusConvPionBGPtM02;                 //! array of histos with cluster photon plus conv BG pion, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonPlusConvKaonBGPtM02;                 //! array of histos with cluster photon plus conv BG kaon, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonPlusConvK0lBGPtM02;                  //! array of histos with cluster photon plus conv BG k0l, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonPlusConvNeutronBGPtM02;              //! array of histos with cluster photon plus conv BG neutron, M02 vs. pt, source
+    TH2F**                fHistoClustPhotonPlusConvRestBGPtM02;                 //! array of histos with cluster photon plus conv BG rest, M02 vs. pt, source
     TH1F**                fHistoTrueClusGammaPt;                                //! array of histos with validated cluster (electron or photon), pt
     TH1F**                fHistoTrueClusUnConvGammaPt;                          //! array of histos with validated unconverted photon, pt
     TH1F**                fHistoTrueClusUnConvGammaMCPt;                        //! array of histos with validated unconverted photon, pt
+    TH2F**                fHistoTrueClusGammaPtM02;                             //! array of histos with validated cluster (electron or photon), M02 vs pt
+    TH2F**                fHistoTrueClusUnConvGammaPtM02;                       //! array of histos with validated unconverted photon, M02 vs pt
     TH1F**                fHistoTrueClusElectronPt;                             //! array of histos with validated electron, pt
     TH1F**                fHistoTrueClusConvGammaPt;                            //! array of histos with validated converted photon, pt
     TH1F**                fHistoTrueClusConvGammaMCPt;                          //! array of histos with validated converted photon, pt
@@ -337,7 +354,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 27);
+    ClassDef(AliAnalysisTaskGammaCalo, 28);
 };
 
 #endif
