@@ -1190,22 +1190,22 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT, Int_t iCe
     if (fWhichPeriod==2015){
         
         if (iCent==0){
-            double parLowPt[4] = {5.86698e-10,0.990496,2588.97,2459.88};
-            double parHighPt[4] = {1.45767,0.628626,6.17578,8.17214};
+            double parLowPt[4] = {2.15714e-09,0.989749,2139.29,2180.37};
+            double parHighPt[4] = {2.26395,0.65065,5.73221,8.08224};
             
             if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
             if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==1){
-            double parLowPt[4] = {0.000785932,0.997984,4600.2,4678.44};
-            double parHighPt[4] = {1.8105,0.62284,5.42031,7.7874};
+            double parLowPt[4] = {0.00675414,0.997822,3204.67,3456.25};
+            double parHighPt[4] = {1.80846,0.618655,5.39593,7.77139};
             
             if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
             if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==2){
-            double parLowPt[4] = {2.20694e-11,0.979171,1177.76,1265.28};
-            double parHighPt[4] = {3.37849,0.824783,6.04932,9.05941};
+            double parLowPt[4] = {5.60265e-06,0.473253,29.9032,19.6667};
+            double parHighPt[4] = {3.32595,0.814429,5.94336,8.96369};
             
             if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
             if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
@@ -1247,22 +1247,22 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT, Int_t iCe
     
     if (fWhichPeriod==2015){
         if (iCent==0){
-            double parLowPt[4] = {0.665072,0.228928,4.0578,5.74764};
-            double parHighPt[4] = {8.37282,0.66377,4.13972,7.5254};
+            double parLowPt[4] = {0.670591,0.230513,4.0615,5.76516};
+            double parHighPt[4] = {7.97283,0.65138,4.11838,7.48094};
             
             if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
             if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==1){
-            double parLowPt[4] = {0.653545,0.246623,3.99742,5.87183};
-            double parHighPt[4] = {9.82831,0.701945,3.97517,7.56011};
+            double parLowPt[4] = {0.647998,0.243419,3.98988,5.85645};
+            double parHighPt[4] = {9.89136,0.704666,3.97619,7.55927};
             
             if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
             if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==2){
-            double parLowPt[4] = {0.593891,0.262419,3.74344,5.92648};
-            double parHighPt[4] = {11.7408,0.804274,3.96169,7.96201};
+            double parLowPt[4] = {0.592479,0.260578,3.73886,5.92153};
+            double parHighPt[4] = {12.3131,0.814384,3.99022,8.01909};
             
             if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
             if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
