@@ -8,26 +8,7 @@ using namespace AliUtilTOFParams;
 
 
 #define LOG_NO_INFO
-#define LOG_NO_DEBUG
 // #include "AliLog.h"
-
-#ifdef LOG_NO_INFO
-#define warningmsgAn(msg) do { } while (false)
-#define infomsgAn(msg) do { } while (false)
-#else
-#define warningmsgAn(msg) cout<<"W- AliAnTOFtrack :: "<<msg<<endl
-#define infomsgAn(msg) cout<<"I- AliAnTOFtrack :: "<<msg<<endl
-#endif
-
-#ifdef LOG_NO_DEBUG
-#define debugmsgAn(msg) do { } while (false)
-#else
-#define debugmsgAn(msg) cout<<"D- AliAnTOFtrack :: "<<yellowTxt<<msg<<endl
-#endif
-
-#define errormsgAn(msg) Error("AliAnTOFtrack","%s",msg)
-#define fatalmsgAn(msg) Fatal("AliAnTOFtrack","%s",msg)
-
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -187,14 +168,14 @@ public:
   ///
   /// Method to get the diffenece between the track time and the expected one
   Float_t GetDeltaT(const UInt_t id){
-    if(id > kExpSpecies) fatalmsgAn("Index required is out of bound");
+    if(id > kExpSpecies) ::Fatal("GetDeltaT", "Index required is out of bound");
     return fTOFTime - fTOFExpTime[id] - fT0TrkTime;
   }
   
   ///
   /// Method to get the diffenece between the track time and the expected one in Number of sigmas
   Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo){
-    if(id > kExpSpecies) fatalmsgAn("Index required is out of bound");
+    if(id > kExpSpecies) ::Fatal("GetDeltaSigma", "Index required is out of bound");
     return GetDeltaT(hypo)/fTOFExpSigma[id];
   }
   
