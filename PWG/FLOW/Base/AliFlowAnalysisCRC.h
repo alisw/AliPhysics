@@ -949,8 +949,8 @@ public:
   TH1D* GetFlowQCIntCorHistEG(Int_t const eg) const {return this->fFlowQCIntCorHistEG[eg];};
   void SetFlowQCIntCorHistEG(TH1D* const TP, Int_t const eg) {this->fFlowQCIntCorHistEG[eg] = TP;};
   
-  void SetFlowQCSpectra(TH1D* const TH, Int_t const c) {this->fFlowQCSpectra[c] = TH;};
-  TH1D* GetFlowQCSpectra(Int_t const c) const {return this->fFlowQCSpectra[c];};
+  void SetFlowQCSpectra(TH2D* const TH) {this->fFlowQCSpectra = TH;};
+  TH2D* GetFlowQCSpectra() const {return this->fFlowQCSpectra;};
   
   TProfile* GetFlowQCRefCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorPro[eg][h];};
   void SetFlowQCRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorPro[eg][k] = TP;};
@@ -1712,7 +1712,7 @@ private:
   TH1D *fFlowQCRefCorHist[fFlowNHarm][fFlowQCNRef]; //!
   TH1D *fFlowQCRefCorFinal[fFlowNHarm][3]; //!
   
-  TH1D *fFlowQCSpectra[fCRCMaxnCen]; //!
+  TH2D *fFlowQCSpectra; //!
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCMetricCent; //!
