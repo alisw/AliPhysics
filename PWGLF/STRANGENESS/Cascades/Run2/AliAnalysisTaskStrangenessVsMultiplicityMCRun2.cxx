@@ -2307,7 +2307,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             
             //Override rapidity for true rapidity if requested to do so
             if ( lCascadeResult -> GetCutMCUseMCProperties() ) {
-                lRap = fTreeVariableRapMC;
+                lRap = fTreeCascVarRapMC;
             }
             if (
                 //Check 1: Charge consistent with expectations
@@ -2339,7 +2339,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 fTreeCascVarLeastNbrClusters > lCascadeResult->GetCutLeastNumberOfClusters() &&
                 
                 // - MC specific: either don't associate (if not requested) or associate
-                ( ! (lCascadeResult->GetCutMCPhysicalPrimary())    || fTreeCascVarIsPhysicalPrimary == kTRUE ) &&
+                ( ! (lCascadeResult->GetCutMCPhysicalPrimary())    || fTreeCascVarIsPhysicalPrimary == 1     ) &&
                 ( ! (lCascadeResult->GetCutMCPDGCodeAssociation()) || fTreeCascVarPID == lPDGCode            ) &&
                 
                 //Check 4: TPC dEdx selections
@@ -2354,9 +2354,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() )
                 
                 ){
-                
-                //This satisfies all my conditionals! Fill histogram
-                histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
                 
                 //This satisfies all my conditionals! Fill histogram
                 if( !lCascadeResult -> GetCutMCUseMCProperties() ){
