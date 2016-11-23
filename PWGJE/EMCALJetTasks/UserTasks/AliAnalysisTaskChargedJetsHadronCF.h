@@ -3,6 +3,77 @@
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+class THn;
+
+//###############################################################################################################################################3
+/**
+ * \class AliChargedJetsHadronCFCuts
+ * \brief Container class of cuts for AliAnalysisTaskChargedJetsHadronCF
+ *
+ *
+ *
+ * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
+ * \date Nov 20, 2016
+ */
+// 
+class AliChargedJetsHadronCFCuts
+{
+ public:
+  AliChargedJetsHadronCFCuts() {;}
+  AliChargedJetsHadronCFCuts(const char* cutName, const char* outputName, Double_t minPt, Double_t maxPt, Double_t minCent, Double_t maxCent, Double_t lowerOffset, Double_t offset2D, Double_t slope2D)
+  {
+    fCutName = cutName;
+    fOutputName = outputName;
+    fPtMin = minPt;
+    fPtMax = maxPt;
+    fCentMin = minCent;
+    fCentMax = maxCent;
+
+    fCutLowerPercentageOffset = lowerOffset;
+    fCut2DOffset = offset2D;
+    fCut2DSlope = slope2D;
+
+    fAcceptedJets = 0;
+    fArrayIndex = -1;
+  }
+  Bool_t IsCutFulfilled(Double_t pt, Double_t mcPt, Double_t cent, Double_t ptRatio)
+  {
+    // Simple kinematic cuts
+    if(pt < fPtMin || pt >= fPtMax)
+      return kFALSE;
+    if(cent < fCentMin || cent >= fCentMax)
+      return kFALSE;
+
+    // Lower MC percentage cut
+    if(ptRatio < fCutLowerPercentageOffset)
+      return kFALSE;
+
+    // Value of the 2D cut line. We cut everything above that
+    Double_t cutLineValue = fCut2DSlope*mcPt + fCut2DOffset;
+    if(ptRatio > cutLineValue)
+      return kFALSE;
+
+    return kTRUE;
+  }
+
+  ~AliChargedJetsHadronCFCuts();
+  TString     fCutName;                              ///< name of this cut
+  TString     fOutputName;                           ///< array name that is used to output objects associated with this cuts
+  Double_t    fPtMin;                                ///< valid for jets above this pT
+  Double_t    fPtMax;                                ///< valid for jets below this pT
+  Double_t    fCentMin;                              ///< valid for centralities above
+  Double_t    fCentMax;                              ///< valid for centralities below
+
+  Double_t    fCutLowerPercentageOffset;             ///< cut value
+  Double_t    fCut2DOffset;                          ///< cut value
+  Double_t    fCut2DSlope;                           ///< cut value
+
+  Int_t       fAcceptedJets;                         ///< temporary var that holds how many jets passed
+  Int_t       fArrayIndex;                           ///< array index that holds the output array index
+};
+
+//###############################################################################################################################################3
+
 /**
  * \class AliAnalysisTaskChargedJetsHadronCF
  * \brief Support task for (charged) jet-hadron correlations
@@ -15,9 +86,6 @@
  * \date Apr 21, 2016
  */
 // 
-
-class THn;
-
 class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
  public:
 
@@ -29,24 +97,28 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        Terminate(Option_t *option);
 
   // ######### SETTERS/GETTERS
-  void                        ActivateJetMatching(const char* matchArray, Double_t maxDistance, Double_t minSharedFraction, Double_t maxSharedFraction, Double_t maxEmbeddingOffset,  Double_t matchMinPt, Double_t matchMaxPt, Int_t nLeading, const char* vetoArray = 0, Double_t minVetoJetPt = 0, Double_t maxVetoJetPt = 0, Bool_t jetVetoJetByJet = kFALSE)
+  void                        ActivateJetEmbedding(const char* embArray, const char* embTrackArray, Double_t maxDistance, Int_t numMatchedJets)
   {
-    fJetMatchingMaxDistance = maxDistance;
-    fJetMatchingArrayName = matchArray;
-    fJetMatchingMinSharedFraction = minSharedFraction;
-    fJetMatchingMaxSharedFraction = maxSharedFraction;
-    fJetMatchingMaxEmbeddingOffset = maxEmbeddingOffset;
-
-    fJetMatchingMinPt = matchMinPt;
-    fJetMatchingMaxPt = matchMaxPt;
-    fJetMatchingUseOnlyNLeading = nLeading; // currently only 1,2, or 0 (all) possible
-
+    fJetEmbeddingMaxDistance      = maxDistance;
+    fJetEmbeddingArrayName        = embArray;
+    fJetEmbeddingTrackArrayName   = embTrackArray;
+    fJetEmbeddingNumMatchedJets   = numMatchedJets;
+  }
+  void                        ActivateJetVetoInEmbedding(const char* vetoArray, Double_t jetVetoMinPt, Double_t jetVetoMaxPt, Bool_t jetVetoJetByJet)
+  {
     fJetVetoArrayName = vetoArray;
-    fJetVetoMinPt = minVetoJetPt;
-    fJetVetoMaxPt = maxVetoJetPt;
-    fJetVetoJetByJet = jetVetoJetByJet;
+    fJetVetoMinPt     = jetVetoMinPt;
+    fJetVetoMaxPt     = jetVetoMaxPt;
+    fJetVetoJetByJet  = jetVetoJetByJet;
+  }
+  void                        AddJetEmbeddingCut(const char* cutName, const char* outputName, Double_t minPt, Double_t maxPt, Double_t minCent, Double_t maxCent, Double_t lowerOffset, Double_t offset2D, Double_t slope2D)
+  {
+    AliChargedJetsHadronCFCuts tmpCut(cutName, outputName, minPt, maxPt, minCent, maxCent, lowerOffset, offset2D, slope2D);
+    fJetEmbeddingCuts.push_back(tmpCut);
   }
 
+  void                        SetUsePerTrackMCPercentage(Bool_t val)   { fJetEmbeddingUsePerTrackMCPercentage = val; }
+  void                        SetUseBgrdForMCPercentage(Bool_t val)   { fJetEmbeddingUseBgrdForMCPercentage = val; }
   void                        SetConstPtFilterBit(Int_t val)   { fConstPtFilterBit = val; }
   void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
   void                        SetJetParticleArrayName(const char* name)   { fJetParticleArrayName = name; }
@@ -54,10 +126,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
   void                        SetPythiaExtractionMode(Int_t mode) {fPythiaExtractionMode = mode;}
-
-  void                        SetEventCriteriumBackground(Double_t minValue, Double_t maxValue)   {fEventCriteriumMinBackground = minValue; fEventCriteriumMaxBackground = maxValue;}
-  void                        SetEventCriteriumLeadingJets(Double_t leading, Double_t subleading, Double_t dphi) {fEventCriteriumMinLeadingJetPt = leading; fEventCriteriumMinSubleadingJetPt = subleading; fEventCriteriumMinJetDeltaPhi = dphi;}
-  void                        SetEventCriteriumSelection(Int_t type);
 
   void                        ActivateJetExtraction(Double_t percentage, Double_t minPt, Double_t maxPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt; fExtractionMaxPt = maxPt;}
   void                        ActivateEventExtraction(Double_t percentage, Double_t minJetPt, Double_t maxJetPt) {fEventExtractionPercentage = percentage; fEventExtractionMinJetPt = minJetPt; fEventExtractionMaxJetPt = maxJetPt;}
@@ -73,10 +141,8 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        AddJetToOutputArray(AliEmcalJet* jet);
   void                        AddTrackToOutputArray(AliVTrack* track);
   void                        FillHistogramsTracks(AliVTrack* track);
-  void                        FillHistogramsJets(AliEmcalJet* jet);
-  void                        FillHistogramsJetConstituents(AliEmcalJet* jet);
+  void                        FillHistogramsJets(AliEmcalJet* jet, const char* cutName);
   Bool_t                      IsJetSelected(AliEmcalJet* jet);
-  Bool_t                      IsEventCriteriumFulfilled();
 
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliTrackContainer          *fTracksCont;                              //!<! Tracks
@@ -91,19 +157,19 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   
   Int_t                       fConstPtFilterBit;                        ///< For const pt plot, filter bit
   Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
-  TClonesArray               *fJetsOutput;                              //!<! Array of basic correlation particles attached to the event (jets)
+  std::vector<TClonesArray*>  fJetsOutput;                              //!<! vector of arrays of basic correlation particles attached to the event (jets)
   TClonesArray               *fTracksOutput;                            //!<! Array of basic correlation particles attached to the event (tracks)
-  TString                     fJetParticleArrayName;                    ///< Name of fJetsOutput array
+  TString                     fJetParticleArrayName;                    ///< Name of fJetsOutput array (if one uses only one)
   TString                     fTrackParticleArrayName;                  ///< Name of fTracksOutput array
-  TClonesArray               *fJetMatchingArray;                        //!<! Array of generated jets imported into task (toy model/embedding)
-  TString                     fJetMatchingArrayName;                    ///< Name of array used to match jets
-  Double_t                    fJetMatchingMaxDistance;                  ///< Max distance allowed to accept a matching jet (for embedding)
-  Double_t                    fJetMatchingMinSharedFraction;            ///< An embedded jet must carry this pt fraction to be accepted
-  Double_t                    fJetMatchingMaxSharedFraction;            ///< An embedded jet must NOT carry more than max fraction + max embedding offset
-  Double_t                    fJetMatchingMaxEmbeddingOffset;           ///< An embedded jet must NOT carry more than max fraction + max embedding offset
-  Double_t                    fJetMatchingMinPt;                        ///< Min pt cut applied on the matchArray jets
-  Double_t                    fJetMatchingMaxPt;                        ///< Max pt cut applied on the matchArray jets
-  Int_t                       fJetMatchingUseOnlyNLeading;              ///< Number of matched leading jets that will be used
+  TClonesArray               *fJetEmbeddingArray;                       //!<! Array of generated jets imported into task (for embedding)
+  TString                     fJetEmbeddingArrayName;                   ///< Name of array used to match jets
+  TString                     fJetEmbeddingTrackArrayName;              ///< Name of array used to match tracks of jets
+  Double_t                    fJetEmbeddingMaxDistance;                 ///< Max distance allowed to accept an embedded jet
+  Int_t                       fJetEmbeddingNumMatchedJets;              ///< Number of matched leading jets that will be used
+  Bool_t                      fJetEmbeddingUsePerTrackMCPercentage;     ///< When cutting on MC percentage, calculate it per track and not for all MC tracks
+  Bool_t                      fJetEmbeddingUseBgrdForMCPercentage;      ///< When cutting on MC percentage, use bgrd. corr to calculate MC percentage
+  std::vector<AliChargedJetsHadronCFCuts> fJetEmbeddingCuts;            ///< Cuts used in jet embedding
+
   TClonesArray               *fJetVetoArray;                            //!<! Array of jets imported into task used for veto a matching/embedding
   TString                     fJetVetoArrayName;                        ///< Name of array used for veto jets
   Double_t                    fJetVetoMinPt;                            ///< Min pt cut applied on the fJetVetoArray jets
@@ -116,15 +182,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   // Criteria for the selection of jets that are passed to the correlation task
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
-  Double_t                    fMinFakeFactorPercentage;                 ///< min fake factor (percentage relative to cut profile)
-  Double_t                    fMaxFakeFactorPercentage;                 ///< max fake factor (percentage relative to cut profile)
   Int_t                       fPythiaExtractionMode;                    ///< Mode which PYTHIA-jets to extract for fJetOutputMode==6: 0: all, 1: quark-jets, 2: gluon jets
-  Int_t                       fEventCriteriumMode;                      ///< Mode of event selection
-  Double_t                    fEventCriteriumMinBackground;             ///< Minimum background
-  Double_t                    fEventCriteriumMaxBackground;             ///< Maximum background
-  Double_t                    fEventCriteriumMinLeadingJetPt;           ///< Min leading jet
-  Double_t                    fEventCriteriumMinSubleadingJetPt;        ///< Min subleading jet
-  Double_t                    fEventCriteriumMinJetDeltaPhi;            ///< Min jet delta phi in dijet criterium
 
   // Event properties
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
@@ -145,10 +203,10 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   template <class T> T*       AddHistogram3D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0, Int_t zBins = 100, Double_t zMin = 0.0, Double_t zMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
 
   // ######### HELPER FUNCTIONS
-  void                        GetTrackMCRatios(AliEmcalJet* jet, Double_t& trackRatio, Double_t& ptRatio, Double_t& ptRatioBgrdCorr);
+  void                        GetTrackMCRatios(AliEmcalJet* jet, AliEmcalJet* mcJet, Double_t& trackRatio, Double_t& ptRatio);
   Bool_t                      IsJetVetoed(AliEmcalJet* jet);
+  AliEmcalJet*                GetReferenceJet(AliEmcalJet* jet);
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
-  Double_t                    CalculateFakeFactor(AliEmcalJet* jet);
   void                        GetInitialCollisionJets();
   void                        GetMatchingJets();
 
@@ -162,7 +220,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 7) // Charged jet+h analysis support task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 8) // Charged jet+h analysis support task
   /// \endcond
 };
 
@@ -273,4 +331,6 @@ class AliBasicJet : public TObject
   ClassDef( AliBasicJet, 4); // very basic jet object
   /// \endcond
 };
+
+
 #endif
