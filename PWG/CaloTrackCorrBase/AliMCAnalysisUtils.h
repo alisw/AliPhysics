@@ -94,7 +94,8 @@ class AliMCAnalysisUtils : public TObject {
 
   Int_t          GetNOverlaps(const Int_t * label, UInt_t nlabels,
                               Int_t mctag, Int_t mesonLabel,
-                              AliCaloTrackReader * reader,Int_t *overpdg);
+                              AliCaloTrackReader * reader,
+                              Int_t *overpdg, Int_t *overlabel);
   
   //Check or set the bits produced in the above methods
   void    SetTagBit(Int_t &tag, UInt_t set) const {

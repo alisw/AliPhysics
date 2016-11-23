@@ -2005,7 +2005,8 @@ Int_t AliMCAnalysisUtils::GetNDaughters(Int_t label, const AliCaloTrackReader* r
 //_________________________________________________________________________________
 Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
                                        Int_t mctag, Int_t mesonLabel,
-                                       AliCaloTrackReader * reader, Int_t *overpdg)
+                                       AliCaloTrackReader * reader, 
+                                       Int_t *overpdg, Int_t *overlabel)
 {  
   Int_t ancPDG = 0, ancStatus = -1;
   TVector3 prodVertex;
@@ -2070,7 +2071,8 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
         labeltmp=gLabel;
       }
     }
-    overpdg[noverlaps-1] = mpdg;
+    overpdg  [noverlaps-1] = mpdg;
+    overlabel[noverlaps-1] = label[ilab];
   }
   
   return noverlaps ;
