@@ -76,6 +76,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fTrueList(NULL),
   fMCList(NULL),
   fTreeList(NULL),
+  fClusterTreeList(NULL),
   fOutputContainer(NULL),
   fClusterCandidates(NULL),
   fEventCutArray(NULL),
@@ -243,7 +244,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fVectorDoubleCountTrueClusterGammas(0),
   fMapMultipleCountTrueClusterGammas(),
   fHistoTruePi0InvMassPtAlpha(NULL),
-  fHistoTruePi0PureGammaInvMassPtAlpha(NULL),  
+  fHistoTruePi0PureGammaInvMassPtAlpha(NULL),
+  fHistCellIDvsClusterEnergy(NULL),
+  fHistCellIDvsClusterEnergyMax(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -269,6 +272,12 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fInvMassRTOF(-1),
   fPt(-1),
   iFlag(3),
+  tClusterEOverP(NULL),
+  fClusterE(0),
+  fClusterM02(0),
+  fClusterM20(0),
+  fClusterEP(0),
+  fTrackPt(0),
 //  fHistoTruePi0NonLinearity(NULL),
 //  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
@@ -289,7 +298,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fDoInOutTimingCluster(kFALSE),
   fMinTimingCluster(0),
   fMaxTimingCluster(0),
-  fEnableSortForClusMC(kFALSE)
+  fEnableSortForClusMC(kFALSE),
+  fProduceTreeEOverP(kFALSE),
+  fProduceCellIDPlots(kFALSE)
 {
   
 }
@@ -308,6 +319,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fBackList(NULL),
   fMotherList(NULL),
   fTrueList(NULL),
+  fClusterTreeList(NULL),
   fMCList(NULL),
   fTreeList(NULL),
   fOutputContainer(0),
@@ -478,6 +490,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fMapMultipleCountTrueClusterGammas(),
   fHistoTruePi0InvMassPtAlpha(NULL),
   fHistoTruePi0PureGammaInvMassPtAlpha(NULL),
+  fHistCellIDvsClusterEnergy(NULL),
+  fHistCellIDvsClusterEnergyMax(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -503,6 +517,12 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fInvMassRTOF(-1),
   fPt(-1),
   iFlag(3),
+  tClusterEOverP(NULL),
+  fClusterE(0),
+  fClusterM02(0),
+  fClusterM20(0),
+  fClusterEP(0),
+  fTrackPt(0),
 //  fHistoTruePi0NonLinearity(NULL),
 //  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
@@ -523,7 +543,9 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fDoInOutTimingCluster(kFALSE),
   fMinTimingCluster(0),
   fMaxTimingCluster(0),
-  fEnableSortForClusMC(kFALSE)
+  fEnableSortForClusMC(kFALSE),
+  fProduceTreeEOverP(kFALSE),
+  fProduceCellIDPlots(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -614,6 +636,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
 
+  if (fDoClusterQA == 2) fProduceCellIDPlots = kTRUE;
   if (fIsMC > 1){
     fDoClusterQA      = 0;
     fDoTHnSparse      = kFALSE;
@@ -697,6 +720,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMotherEtaPtOpenAngle    = new TH2F*[fnCuts];
     }
   }
+
+  if(fProduceCellIDPlots){
+    fHistCellIDvsClusterEnergy      = new TH2F*[fnCuts];
+    fHistCellIDvsClusterEnergyMax   = new TH2F*[fnCuts];
+  }
     
   fHistoClusGammaPt                 = new TH1F*[fnCuts];
   fHistoClusGammaE                  = new TH1F*[fnCuts];
@@ -708,6 +736,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fTreeList                       = new TList*[fnCuts];
     tSigInvMassPtAlphaTheta         = new TTree*[fnCuts];
     tBckInvMassPtAlphaTheta         = new TTree*[fnCuts];
+  }
+
+  if (fProduceTreeEOverP){
+    fClusterTreeList                = new TList*[fnCuts];
+    tClusterEOverP                  = new TTree*[fnCuts];
   }
   
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -904,6 +937,17 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherEtaPtOpenAngle[iCut]->Sumw2();
       }
 
+      if (fProduceCellIDPlots){
+        Int_t nMaxCells      = 12*48*24;
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetClusterType() == 2) nMaxCells = 5*56*64;
+        fHistCellIDvsClusterEnergy[iCut]         = new TH2F("CellIDvsClusterEnergy","CellIDvsClusterEnergy",100,0.5,100.,nMaxCells,0,nMaxCells);
+        SetLogBinningXTH2(fHistCellIDvsClusterEnergy[iCut]);
+        fESDList[iCut]->Add(fHistCellIDvsClusterEnergy[iCut]);
+        fHistCellIDvsClusterEnergyMax[iCut]      = new TH2F("CellIDvsClusterEnergyMax","CellIDvsClusterEnergyMax",100,0.5,100.,nMaxCells,0,nMaxCells);
+        SetLogBinningXTH2(fHistCellIDvsClusterEnergyMax[iCut]);
+        fESDList[iCut]->Add(fHistCellIDvsClusterEnergyMax[iCut]);
+      }
+
       if (fDoMesonQA == 4 && fIsMC == 0){
         fTreeList[iCut] = new TList();
         fTreeList[iCut]->SetName(Form("%s_%s_%s InvMass Tree",cutstringEvent.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
@@ -927,6 +971,20 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fTreeList[iCut]->Add(tBckInvMassPtAlphaTheta[iCut]);
       }
 
+      if (fProduceTreeEOverP ){
+        fClusterTreeList[iCut] = new TList();
+        fClusterTreeList[iCut]->SetName(Form("%s_%s EoverP Tree",cutstringEvent.Data(),cutstringCalo.Data()));
+        fClusterTreeList[iCut]->SetOwner(kTRUE);
+        fCutFolder[iCut]->Add(fClusterTreeList[iCut]);
+
+        tClusterEOverP[iCut] = new TTree("EOverP_ClusE_ClusM02_ClusM20_TrackP_TrackPt","EOverP_ClusE_ClusM02_ClusM20_TrackP_TrackPt");
+        tClusterEOverP[iCut]->Branch("ClusE",&fClusterE,"fClusterE/F");
+        tClusterEOverP[iCut]->Branch("ClusM02",&fClusterM02,"fClusterM02/F");
+        tClusterEOverP[iCut]->Branch("ClusM20",&fClusterM20,"fClusterM20/F");
+        tClusterEOverP[iCut]->Branch("ClusEP",&fClusterEP,"fClusterEP/F");
+        tClusterEOverP[iCut]->Branch("TrackPt",&fTrackPt,"fTrackPt/F");
+        fClusterTreeList[iCut]->Add(tClusterEOverP[iCut]);
+      }
     }
   }
   if(fDoMesonAnalysis){
@@ -1928,6 +1986,9 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   Double_t vertex[3] = {0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
+  Double_t maxClusterEnergy = -1;
+  map<Long_t,Int_t> mapIsClusterAccepted;
+  map<Long_t,Int_t> mapIsClusterAcceptedWithoutTrackMatch;
   // Loop over EMCal clusters
   for(Long_t i = 0; i < nclus; i++){
     
@@ -1936,7 +1997,11 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
 
     if(!clus) continue;
-    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){ delete clus; continue;}
+    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
+      if(fProduceTreeEOverP && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch() ) mapIsClusterAcceptedWithoutTrackMatch[i] = 1;
+      delete clus;
+      continue;
+    }
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
     clus->GetMomentum(clusterVector,vertex);
@@ -1948,6 +2013,10 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     AliAODConversionPhoton *PhotonCandidate=new AliAODConversionPhoton(tmpvec);
     if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
     
+    //determine maximum cluster energy in event
+    if(fProduceCellIDPlots && (clus->E() > maxClusterEnergy)) maxClusterEnergy = clus->E();
+    if(fProduceTreeEOverP || fProduceCellIDPlots) mapIsClusterAccepted[i] = 1;
+
     // Flag Photon as CaloPhoton
     PhotonCandidate->SetIsCaloPhoton();
     PhotonCandidate->SetCaloClusterRef(i);
@@ -2001,6 +2070,90 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     delete tmpvec;
   }
   
+  if(fProduceCellIDPlots){
+    for(Long_t i = 0; i < nclus; i++){
+      AliVCluster* clus = NULL;
+      if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+      else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+
+      if(!clus) continue;
+      if( mapIsClusterAccepted[i] != 1 ) { delete clus; continue;}
+
+      Int_t cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent);
+      fHistCellIDvsClusterEnergy[fiCut]->Fill(clus->E(),cellID);
+      fHistCellIDvsClusterEnergyMax[fiCut]->Fill(maxClusterEnergy,cellID);
+      delete clus;
+    }
+  }
+
+  if(fProduceTreeEOverP){
+    AliESDEvent *esdev  = dynamic_cast<AliESDEvent*>(fInputEvent);
+    AliAODEvent *aodev  = 0;
+    Bool_t isESD        = kTRUE;
+    if (!esdev) {
+      isESD             = kFALSE;
+      aodev             = dynamic_cast<AliAODEvent*>(fInputEvent);
+      if (!aodev) {
+        AliError("Task needs AOD or ESD event...");
+      }
+    }
+
+    AliESDtrackCuts *EsdTrackCuts = 0x0;
+    if(esdev){
+      // Using standard function for setting Cuts
+      Int_t runNumber = fInputEvent->GetRunNumber();
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+      // else if run2 data use 2015 PbPb cuts
+      }else if (runNumber>=209122){
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+      // else use 2011 version of track cuts
+      }else{
+        EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      EsdTrackCuts->SetPtRange(0.15);
+    }
+
+    for(Long_t i = 0; i < nclus; i++){
+      AliVCluster* clus = NULL;
+      if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
+      else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
+
+      if(!clus) continue;
+      if( mapIsClusterAcceptedWithoutTrackMatch[i] != 1 ){ delete clus; continue;}
+
+      fClusterE = clus->E();
+      fClusterM02 = clus->GetM02();
+      fClusterM20 = clus->GetM20();
+
+      Int_t labelTrackMatch = -1;
+      if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetHighestPtMatchedTrackToCluster(fInputEvent,clus,labelTrackMatch)){
+        delete clus;
+        continue;
+      }
+
+      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(labelTrackMatch));
+      if(esdev){
+        AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(currTrack);
+        if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+        fClusterEP = fClusterE/esdt->P();
+        fTrackPt = esdt->Pt();
+      }else if(aodev){
+        AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(currTrack);
+        if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+        if(fabs(aodt->Eta())>0.8) continue;
+        if(aodt->Pt()<0.15) continue;
+        fClusterEP = fClusterE/aodt->P();
+        fTrackPt = aodt->Pt();
+      }
+      tClusterEOverP[fiCut]->Fill();
+      delete clus;
+    }
+  }
+  return;
 }
 
 //________________________________________________________________________

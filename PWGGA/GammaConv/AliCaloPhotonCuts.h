@@ -146,6 +146,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     virtual Bool_t  IsSelected(TList* /*list*/)                {return kTRUE;}
 
     Bool_t      ClusterIsSelected(AliVCluster* cluster, AliVEvent *event, AliVEvent *mcEvent,Int_t isMC, Double_t weight=1., Long_t clusterID = -1);
+    Bool_t      ClusterIsSelectedBeforeTrackMatch(){return fIsCurrentClusterAcceptedBeforeTM;}
     Bool_t      ClusterIsSelectedMC(TParticle *particle,AliStack *fMCStack);
     Bool_t      ClusterIsSelectedElecMC(TParticle *particle,AliStack *fMCStack);
     Bool_t      ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray);
@@ -205,6 +206,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      CheckDistanceToBadChannel(AliVCluster* cluster, AliVEvent* event);
     Int_t       ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEvent* event, AliVEvent* mcEvent, Bool_t isESD);
     
+    std::vector<Int_t> GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster);
+    Bool_t      GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
+    Bool_t      GetHighestPtMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
+
     // Set basic merging cuts
     void        SetSeedEnergy(Double_t seed)                    {fSeedEnergy      = seed; return;}
     void        SetLocMaxCutEDiff(Double_t diffCut)             {fLocMaxCutEDiff  = diffCut; return;}
@@ -268,6 +273,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t    fDoLightOutput;                           // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Int_t     fIsMC;                                    // Flag for usage of JetJet MC
+
+    Bool_t     fIsCurrentClusterAcceptedBeforeTM;       // flag if latest checked cluster would have been accepted before track matching cut
 
     //for NonLinearity correction
     TString   fV0ReaderName;                            // Name of V0Reader
@@ -427,7 +434,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,33)
+    ClassDef(AliCaloPhotonCuts,34)
 };
 
 #endif
