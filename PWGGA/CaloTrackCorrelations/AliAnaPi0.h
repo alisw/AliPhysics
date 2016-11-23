@@ -237,16 +237,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   // ----------
   // Histograms
   // ----------
-    
-  // Event characterization
-    
-  TH1F *   fhAverTotECluster;          //!<! Average number of clusters in SM
-  TH1F *   fhAverTotECell;             //!<! Average number of cells    in SM
-  TH2F *   fhAverTotECellvsCluster;    //!<! Average number of cells    in SM
-  TH1F *   fhEDensityCluster;          //!<! Deposited energy in event per cluster
-  TH1F *   fhEDensityCell;             //!<! Deposited energy in event per cell vs cluster
-  TH2F *   fhEDensityCellvsCluster;    //!<! Deposited energy in event per cell vs cluster
-
+        
   /// REAL two-photon invariant mass distribution for different calorimeter modules.
   TH2F **  fhReMod ;                   //![fNModules]
     
@@ -356,13 +347,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// REAL two-photon opening angle distribution for different pt cut, n cell cuts and assymetry for each module.
   TH2F **  fhRePtNCellAsymCutsSMOpAngle[20] ; //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
-  
-//  /// REAL two-photon invariant mass distribution for different PID bits.
-//  TH2F **  fhRePIDBits ;               //![fNPIDBits]
-    
-//  /// REAL two-photon invariant mass distribution for different track multiplicity and assymetry cuts.
-//  TH3F **  fhRePtMult ;                //![fNAsymCuts]
-    
   TH2F *   fhReSS[3] ;                 //!<! Combine clusters with 3 different cuts on shower shape
     
   // Asymmetry vs pt, in pi0/eta regions
