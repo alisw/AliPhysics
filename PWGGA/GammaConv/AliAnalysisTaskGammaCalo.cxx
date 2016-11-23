@@ -2144,22 +2144,41 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       Int_t K_PID = 0;
       Int_t P_PID = 0;
       AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(labelTrackMatch));
+      if(!currTrack){
+        delete clus;
+        continue;
+      }
       if(esdev){
         AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(currTrack);
-        if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+        if(!EsdTrackCuts->AcceptTrack(esdt)){
+          delete clus;
+          continue;
+        }
         fClusterEP = fClusterE/esdt->P();
         fTrackPt = esdt->Pt();
       }else if(aodev){
         AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(currTrack);
-        if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
-        if(fabs(aodt->Eta())>0.8) continue;
-        if(aodt->Pt()<0.15) continue;
+        if(!aodt->IsHybridGlobalConstrainedGlobal()){
+          delete clus;
+          continue;
+        }
+        if(fabs(aodt->Eta())>0.8){
+          delete clus;
+          continue;
+        }
+        if(aodt->Pt()<0.15){
+          delete clus;
+          continue;
+        }
         fClusterEP = fClusterE/aodt->P();
         fTrackPt = aodt->Pt();
       }
 
       AliPIDResponse* pidResponse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
-      if(!pidResponse) continue;
+      if(!pidResponse){
+        delete clus;
+        continue;
+      }
       if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kElectron))<1.) e_PID = 1;
       if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kPion))<1.) Pi_PID = 1;
       if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kKaon))<1.) K_PID = 1;
