@@ -140,6 +140,14 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
       centBins = centBinsMultV0M;
       nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
     }
+    else if(strCentr == "SPDTracklets08"){
+      centBins = centBinsMultV0M;
+      nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
+    }
+    else if(strCentr == "SPDTracklets0815"){
+      centBins = centBinsMultV0M;
+      nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
+    }
 
 
 
