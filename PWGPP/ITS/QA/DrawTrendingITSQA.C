@@ -2052,7 +2052,7 @@ if(hMeanVx->GetEntries()>0){
     hMeanVx->GetYaxis()->SetTitle("Vertex X coordinate");
     hMeanVx->GetXaxis()->SetTitle("run number");
     hMeanVx->Draw();
-    if(hMeanVxSPD->GetBinContent(1)>0)hMeanVxSPD->Draw("same");
+    if(hMeanVxSPD->GetBinContent(1)>-500.)hMeanVxSPD->Draw("same");
     TLegend* legVtx=new TLegend(0.70,0.83,1.00,0.93);
     legVtx->SetFillColor(kWhite);
     legVtx->SetFillStyle(1001);
@@ -2075,16 +2075,16 @@ if(hMeanVx->GetEntries()>0){
     hMeanVy->GetYaxis()->SetTitle("Vertex Y coordinate");
     hMeanVy->GetXaxis()->SetTitle("run number");
     hMeanVy->Draw();
-    if(hMeanVySPD->GetBinContent(1)>0)hMeanVySPD->Draw("same");
+    if(hMeanVySPD->GetBinContent(1)>-500.)hMeanVySPD->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(3);
-        //   hVz->SetMinimum(-1.);
-        //   hVz->SetMaximum(1.);
+        hMeanVz->SetMinimum(-8.);
+        hMeanVz->SetMaximum(8.);
         hMeanVz->GetYaxis()->SetTitle("Vertex Z coordinate");
         hMeanVz->GetXaxis()->SetTitle("run number");
         hMeanVz->Draw();
-        if(hMeanVzSPD->GetBinContent(1)>0)hMeanVzSPD->Draw("same");
+        if(hMeanVzSPD->GetBinContent(1)>-500.)hMeanVzSPD->Draw("same");
     legVtx->Draw();
 
     cVertexDisto->cd(4);
@@ -2122,7 +2122,7 @@ if(hMeanVx->GetEntries()>0){
     //--------  Draw histograms of fraction of global tracks w/ hits in layers  -------
 
 TCanvas* cMI;
-if(histoTrackMI3->GetEntries()>0){
+if(histoTrackMI1->GetEntries()>0){
     cMI=new TCanvas("cMI"," Reconstructed Track With points in ITS");
     cMI->SetGrid();
     histoTrackMI3->Draw();
@@ -2179,7 +2179,7 @@ if(histoTrackMI3->GetEntries()>0){
     //--------  Draw histograms of fraction of SA tracks w/ hits in layers -------
 
 TCanvas* cSA;
-if(histoTrackSA3->GetEntries()>0){
+if(histoTrackSA3->GetEntries()>0 || histoTrackSA4->GetEntries()>0){
     cSA=new TCanvas("cSA"," SA Track With points in ITS");
     histoTrackSA3->Draw();
     histoTrackSA3->SetLineColor(1);
@@ -2357,10 +2357,12 @@ if(histoFracDead3->GetEntries()>0){
     histoFlagON3->SetMarkerStyle(20);
     histoFlagON3->SetMarkerColor(kOrange+1);
     histoFlagON3->SetLineColor(kOrange+1);
+    histoFlagON3->SetMinimum(0.0);
+    histoFlagON3->SetMinimum(1.6);
     histoFlagON3->Draw();
     histoFlagON3->GetYaxis()->SetTitle("Status flag");
     histoFlagON3->GetXaxis()->SetTitle("run number");
-    TLatex* tf3_1=new TLatex(0.2,0.40,"Status flag Layer 3: ON>0.8 1=OK, 0=BAD");
+    TLatex* tf3_1=new TLatex(0.2,0.40,"Status flag Layer 3: ON>0.8? 1=OK, 0=BAD");
     tf3_1->SetNDC();
     tf3_1->SetTextColor(1);
     tf3_1->Draw();
@@ -2368,10 +2370,12 @@ if(histoFracDead3->GetEntries()>0){
     histoFlagON4->SetMarkerStyle(20);
     histoFlagON4->SetMarkerColor(kAzure+1);
     histoFlagON4->SetLineColor(kAzure+1);
-    histoFlagON4->Draw("same");
+    histoFlagON4->SetMinimum(0.0);
+    histoFlagON4->SetMinimum(1.6);
+    histoFlagON4->Draw();
     histoFlagON4->GetYaxis()->SetTitle("Status flag");
     histoFlagON4->GetXaxis()->SetTitle("run number");
-    TLatex* tf4_1=new TLatex(0.2,0.65,"Status flag Layer 4: ON>0.75 1=OK, 0=BAD");
+    TLatex* tf4_1=new TLatex(0.2,0.40,"Status flag Layer 4: ON>0.75? 1=OK, 0=BAD");
     tf4_1->SetNDC();
     tf4_1->SetTextColor(1);
     tf4_1->Draw();
@@ -3225,7 +3229,7 @@ TCanvas* cpu;
     }
 
     // -------------------- Draw eta-phi TPCITS distributions per layer
-    
+/*
     TCanvas* cEtaPhi1;
     if(hOccEta1->GetEntries()>0&&hOccEta1->GetMean()>0){
         cEtaPhi1=new TCanvas("cEtaPhi1","#eta and #phi cluster occupancy, Layer 1",800, 1200);
@@ -3327,7 +3331,7 @@ TCanvas* cpu;
         cEtaPhi6->SaveAs("Layer6_eta_phi_trend.pdf");
         //    pdfFileNames+=" Chi2_tracks_trend.pdf";
     }
-
+*/
     // ------------------------- Draw ITS PID histos
     
     TCanvas* cPID;
@@ -3546,12 +3550,12 @@ TCanvas* cpu;
     if(hchi2->GetEntries()>0 && hchi2->GetBinContent(1)>0.) pdfFileNames+=" Chi2_tracks_trend.pdf";
     if(hmDCA05->GetEntries()>0 && hmDCA05->GetBinContent(1)>-500.) pdfFileNames+=" DCAtracks_trend.pdf";
     if(hmDCAz05->GetEntries()>0 && hmDCAz05->GetBinContent(1)>-500.) pdfFileNames+=" DCAztracks_trend.pdf";
-    if(hOccEta1->GetEntries()>0 && hOccEta1->GetMean()>0) pdfFileNames+=" Layer1_eta_phi_trend.pdf";
-    if(hOccEta2->GetEntries()>0 && hOccEta2->GetMean()>0) pdfFileNames+=" Layer2_eta_phi_trend.pdf";
-    if(hOccEta3->GetEntries()>0 && hOccEta3->GetMean()>0) pdfFileNames+=" Layer3_eta_phi_trend.pdf";
-    if(hOccEta4->GetEntries()>0 && hOccEta4->GetMean()>0) pdfFileNames+=" Layer4_eta_phi_trend.pdf";
-    if(hOccEta5->GetEntries()>0 && hOccEta5->GetMean()>0) pdfFileNames+=" Layer5_eta_phi_trend.pdf";
-    if(hOccEta6->GetEntries()>0 && hOccEta6->GetMean()>0) pdfFileNames+=" Layer6_eta_phi_trend.pdf";
+//    if(hOccEta1->GetEntries()>0 && hOccEta1->GetMean()>0) pdfFileNames+=" Layer1_eta_phi_trend.pdf";
+//    if(hOccEta2->GetEntries()>0 && hOccEta2->GetMean()>0) pdfFileNames+=" Layer2_eta_phi_trend.pdf";
+//    if(hOccEta3->GetEntries()>0 && hOccEta3->GetMean()>0) pdfFileNames+=" Layer3_eta_phi_trend.pdf";
+//    if(hOccEta4->GetEntries()>0 && hOccEta4->GetMean()>0) pdfFileNames+=" Layer4_eta_phi_trend.pdf";
+//    if(hOccEta5->GetEntries()>0 && hOccEta5->GetMean()>0) pdfFileNames+=" Layer5_eta_phi_trend.pdf";
+//    if(hOccEta6->GetEntries()>0 && hOccEta6->GetMean()>0) pdfFileNames+=" Layer6_eta_phi_trend.pdf";
     
         // ------------------------------- merge the pdf files to mergedITS_trend.pdf
     TString command("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=merged");
@@ -3590,12 +3594,12 @@ TCanvas* cpu;
     if(hchi2->GetEntries()>0 && hchi2->GetBinContent(1)>0.) cChi2->Write();
     if(hmDCA05->GetEntries()>0 && hmDCA05->GetBinContent(1)>-500.) cDCA->Write();
     if(hmDCAz05->GetEntries()>0 && hmDCAz05->GetBinContent(1)>-500.) cDCAz->Write();
-    if(hOccEta1->GetEntries()>0 && hOccEta1->GetMean()>0) cEtaPhi1->Write();
-    if(hOccEta2->GetEntries()>0 && hOccEta2->GetMean()>0) cEtaPhi2->Write();
-    if(hOccEta3->GetEntries()>0 && hOccEta3->GetMean()>0) cEtaPhi3->Write();
-    if(hOccEta4->GetEntries()>0 && hOccEta4->GetMean()>0) cEtaPhi4->Write();
-    if(hOccEta5->GetEntries()>0 && hOccEta5->GetMean()>0) cEtaPhi5->Write();
-    if(hOccEta6->GetEntries()>0 && hOccEta6->GetMean()>0) cEtaPhi6->Write();
+//    if(hOccEta1->GetEntries()>0 && hOccEta1->GetMean()>0) cEtaPhi1->Write();
+//    if(hOccEta2->GetEntries()>0 && hOccEta2->GetMean()>0) cEtaPhi2->Write();
+//    if(hOccEta3->GetEntries()>0 && hOccEta3->GetMean()>0) cEtaPhi3->Write();
+//    if(hOccEta4->GetEntries()>0 && hOccEta4->GetMean()>0) cEtaPhi4->Write();
+//    if(hOccEta5->GetEntries()>0 && hOccEta5->GetMean()>0) cEtaPhi5->Write();
+//    if(hOccEta6->GetEntries()>0 && hOccEta6->GetMean()>0) cEtaPhi6->Write();
     if(hNsig02->GetEntries()>0 && hNsig02->GetBinContent(1)<100.) cPID->Write();
     
     f2->Close();

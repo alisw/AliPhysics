@@ -871,7 +871,7 @@ void FillVertexBranches(TList * VertxList){
     }
     else
     {
-        myfile << "yVtxSPD not found" << endl;
+        myfile << "zVtxSPD not found" << endl;
     }
 
     if(zVtxSPDpil){
@@ -1105,8 +1105,10 @@ void FillSDDBranches(TList * SDDList){
                     cntBins+=1;
                 }
             }
-            Double_t minTime=-999.;
-            Double_t errMinTime=0.;
+//            Double_t minTime=-999.;
+//            Double_t errMinTime=0.;
+            minTime=-999.;
+            errMinTime=0.;
             if(cntBins>0){
                 averPoints/=cntBins;
                 for(Int_t iBin=1; iBin<=htimT->GetNbinsX(); iBin++){
