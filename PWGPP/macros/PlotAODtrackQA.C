@@ -4,6 +4,7 @@
 #include <TH1F.h>
 #include <TFile.h>
 #include <TF1.h>
+#include "TTree.h"
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include <TLatex.h>
@@ -22,13 +23,40 @@ TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_
 TH1D* ComputeRatio(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle);
 void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms, TGraphErrors* gRel);
 
+const Int_t totTrending=36;
+Float_t vecForTrend[totTrending];
 
-void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"){
+void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA", Int_t runNumber=111111){
 
+  TString varForTrending[totTrending];
+  for(Int_t jbit=0; jbit<12; jbit++){
+    varForTrending[2*jbit]=Form("averPtFB%d",jbit);
+    varForTrending[2*jbit+1]=Form("RatioFB%dFB0",jbit);
+  }
+  varForTrending[24]="MatchEffPt350EtaPos";
+  varForTrending[25]="MatchEffPt1000EtaPos";
+  varForTrending[26]="MatchEffPt4000EtaPos";
+  varForTrending[27]="MatchEffPt350EtaNeg";
+  varForTrending[28]="MatchEffPt1000EtaNeg";
+  varForTrending[29]="MatchEffPt4000EtaNeg";
+  varForTrending[30]="MatchEffSPDPt350EtaPos";
+  varForTrending[31]="MatchEffSPDPt1000EtaPos";
+  varForTrending[32]="MatchEffSPDPt4000EtaPos";
+  varForTrending[33]="MatchEffSPDPt350EtaNeg";
+  varForTrending[34]="MatchEffSPDPt1000EtaNeg";
+  varForTrending[35]="MatchEffSPDPt4000EtaNeg";
+ 
+  TTree* trtree=new TTree("trending","tree of trending variables");
+  trtree->Branch("nrun",&runNumber,"nrun/I");
+  for(Int_t j=0; j<totTrending; j++){
+    trtree->Branch(varForTrending[j].Data(),&vecForTrend[j],Form("%s/F",varForTrending[j].Data()));
+    vecForTrend[j]=-99.;
+  }
+  
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckAODTracks");
   TList* l=(TList*)df->Get(Form("clistCheckAODTracks%s",suffix.Data()));
-  l->ls();
+
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
@@ -110,6 +138,22 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hMatchEffVsPhiNegEtaSPDany->SetTitle("#eta<0");
   hMatchEffVsPhiPosEtaSPDany->SetTitle("#eta>0");
 
+  Int_t theBin350=hMatchEffVsPtNegEta->GetXaxis()->FindBin(0.35);
+  Int_t theBin950=hMatchEffVsPtNegEta->GetXaxis()->FindBin(0.95);
+  Int_t theBin3950=hMatchEffVsPtNegEta->GetXaxis()->FindBin(3.95);
+  vecForTrend[24]=hMatchEffVsPtPosEta->GetBinContent(theBin350);
+  vecForTrend[25]=hMatchEffVsPtPosEta->GetBinContent(theBin950);
+  vecForTrend[26]=hMatchEffVsPtPosEta->GetBinContent(theBin3950);
+  vecForTrend[27]=hMatchEffVsPtNegEta->GetBinContent(theBin350);
+  vecForTrend[28]=hMatchEffVsPtNegEta->GetBinContent(theBin950);
+  vecForTrend[29]=hMatchEffVsPtNegEta->GetBinContent(theBin3950);
+  vecForTrend[30]=hMatchEffVsPtPosEtaSPDany->GetBinContent(theBin350);
+  vecForTrend[31]=hMatchEffVsPtPosEtaSPDany->GetBinContent(theBin950);
+  vecForTrend[32]=hMatchEffVsPtPosEtaSPDany->GetBinContent(theBin3950);
+  vecForTrend[33]=hMatchEffVsPtNegEtaSPDany->GetBinContent(theBin350);
+  vecForTrend[34]=hMatchEffVsPtNegEtaSPDany->GetBinContent(theBin950);
+  vecForTrend[35]=hMatchEffVsPtNegEtaSPDany->GetBinContent(theBin3950);
+ 
   TCanvas* cme=new TCanvas("cme","MatchEff all",900,900);
   cme->Divide(2,2);
   cme->cd(1);
@@ -510,12 +554,20 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     c2->SaveAs("PtResisuals.png");
   }
 
+  TH2F* hFilterBits=(TH2F*)l->FindObject("hFilterBits");
+  hFilterBits->SetStats(0);
+  Double_t cnt0=hFilterBits->GetBinContent(1,1)+hFilterBits->GetBinContent(1,2);
+  if(cnt0>0){
+    for(Int_t jbit=0; jbit<12; jbit++){
+      Double_t cntj=hFilterBits->GetBinContent(jbit+1,1)+hFilterBits->GetBinContent(jbit+1,2);
+      vecForTrend[2*jbit+1]=cntj/cnt0;
+    }
+  }
+
   TCanvas* cip=new TCanvas("cip","FiltBits",1100,900);
   cip->Divide(2,2);
   cip->cd(1);
   gPad->SetRightMargin(0.13);
-  TH2F* hFilterBits=(TH2F*)l->FindObject("hFilterBits");
-  hFilterBits->SetStats(0);
   hFilterBits->Draw("colz");
   cip->cd(2);
   gPad->SetLogy();
@@ -539,7 +591,6 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     leg2->AddEntry(h1,Form("Filt Bit %d",jbit),"L")->SetTextColor(colors[jbit]);
   }
 
-
   for(Int_t jbit=0; jbit<12; jbit++){
     TString hname=Form("hEtaPhiPtFiltBit%d",jbit);
     TH3F* h=(TH3F*)l->FindObject(hname.Data());
@@ -549,6 +600,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hphi->SetLineWidth(lwid[jbit]);
     hphi->SetStats(0);
     TH1D* hpt1=h->ProjectionZ(Form("hPtFiltBit%d",jbit));
+    vecForTrend[2*jbit]=hpt1->GetMean();
     hpt1->SetLineColor(colors[jbit]);
     hpt1->SetLineStyle(lstyl[jbit]);
     hpt1->SetLineWidth(lwid[jbit]);
@@ -659,6 +711,13 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   ProjectDrawAndFit(hInvMassAntiLambda,"AntiLambda",fmass,1.,2.0);
   ck0->SaveAs("LambdaInvMass.png");
 
+  trtree->Fill();
+
+  TFile* fouttree=new TFile("trending.root","recreate");
+  trtree->Write();
+  fouttree->Close();
+  delete fouttree;
+
 }
 
 void ProjectDrawAndFitK0(TH2F* hInvMass2d, TF1* fmassk0, Double_t xmin, Double_t xmax){
@@ -705,6 +764,8 @@ void ProjectDrawAndFitK0(TH2F* hInvMass2d, TF1* fmassk0, Double_t xmin, Double_t
     t3->SetTextSize(0.04);
     t3->Draw();
   }
+
+
 }
 
 void ProjectDrawAndFit(TH3F* hInvMass3d, TString partName, TF1* fmass, Double_t xmin, Double_t xmax){
