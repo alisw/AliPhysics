@@ -3645,7 +3645,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       
       const UInt_t nlabels = calo->GetNLabels();
       Int_t overpdg[nlabels];
-      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels, tag, mesonLabel, GetReader(), overpdg);
+      Int_t overlab[nlabels];
+      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels, tag, mesonLabel, GetReader(), overpdg, overlab);
       
       fhMCMassPt     [mcIndex]->Fill(fMomentum.Pt(), mass, GetEventWeight());
       fhMCMassSplitPt[mcIndex]->Fill(ptSplit       , mass, GetEventWeight());

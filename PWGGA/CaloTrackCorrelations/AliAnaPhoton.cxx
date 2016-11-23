@@ -1184,7 +1184,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
         // if no photon/electron as comon ancestor (conversions), count as other particle
         const UInt_t nlabels = cluster->GetNLabels();
         Int_t overpdg[nlabels];
-        Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg);
+        Int_t overlab[nlabels];
+        Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg,overlab);
 
         //printf("N overlaps %d \n",noverlaps);
         
