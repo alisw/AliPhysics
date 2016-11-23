@@ -278,6 +278,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fClusterM20(0),
   fClusterEP(0),
   fTrackPt(0),
+  fTrackPID(0),
 //  fHistoTruePi0NonLinearity(NULL),
 //  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
@@ -523,6 +524,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fClusterM20(0),
   fClusterEP(0),
   fTrackPt(0),
+  fTrackPID(0),
 //  fHistoTruePi0NonLinearity(NULL),
 //  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
@@ -983,6 +985,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tClusterEOverP[iCut]->Branch("ClusM20",&fClusterM20,"fClusterM20/F");
         tClusterEOverP[iCut]->Branch("ClusEP",&fClusterEP,"fClusterEP/F");
         tClusterEOverP[iCut]->Branch("TrackPt",&fTrackPt,"fTrackPt/F");
+        tClusterEOverP[iCut]->Branch("TrackPID",&fTrackPID,"fTrackPID/I");
         fClusterTreeList[iCut]->Add(tClusterEOverP[iCut]);
       }
     }
@@ -2084,6 +2087,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       fHistCellIDvsClusterEnergyMax[fiCut]->Fill(maxClusterEnergy,cellID);
       delete clus;
     }
+    mapIsClusterAccepted.clear();
   }
 
   if(fProduceTreeEOverP){
@@ -2135,6 +2139,10 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         continue;
       }
 
+      Int_t e_PID = 0;
+      Int_t Pi_PID = 0;
+      Int_t K_PID = 0;
+      Int_t P_PID = 0;
       AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(labelTrackMatch));
       if(esdev){
         AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(currTrack);
@@ -2149,9 +2157,18 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         fClusterEP = fClusterE/aodt->P();
         fTrackPt = aodt->Pt();
       }
+
+      AliPIDResponse* pidResponse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
+      if(!pidResponse) continue;
+      if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kElectron))<1.) e_PID = 1;
+      if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kPion))<1.) Pi_PID = 1;
+      if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kKaon))<1.) K_PID = 1;
+      if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kProton))<1.) P_PID = 1;
+      fTrackPID = e_PID*1000 + Pi_PID*100 + K_PID*10 + P_PID;
       tClusterEOverP[fiCut]->Fill();
       delete clus;
     }
+    mapIsClusterAcceptedWithoutTrackMatch.clear();
   }
   return;
 }
