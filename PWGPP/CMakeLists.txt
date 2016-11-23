@@ -206,6 +206,7 @@ set (SRCS15
 #file ( GLOB SRCS16 "EvTrkSelection/*.cxx" )
 set ( SRCS16
   EvTrkSelection/AliAnalysisTrackingUncertainties.cxx
+  EvTrkSelection/AliAnalysisTrackingUncertaintiesAOT.cxx
   EvTrkSelection/AliCFSingleTrackEfficiencyTask.cxx
   EvTrkSelection/AliSingleTrackEffCuts.cxx
   )

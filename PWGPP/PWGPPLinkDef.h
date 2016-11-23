@@ -180,8 +180,8 @@
 #pragma link C++ class  AliGlobalFBFqa+;
 
 //EVENT AND TRACK SELECTION
-#pragma link C++ class  AliAnalysisTrackingUncertainties+;
 #pragma link C++ class  AliCFSingleTrackEfficiencyTask+;
 #pragma link C++ class  AliSingleTrackEffCuts+;
+#pragma link C++ class  AliAnalysisTrackingUncertaintiesAOT+;
 
 #endif
