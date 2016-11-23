@@ -42,10 +42,6 @@
 
 #include "AliAnalysisTaskChargedJetsHadronCF.h"
 
-using std::cout;
-using std::endl;
-
-
 //________________________________________________________________________
 AliChargedJetsHadronCFCuts::~AliChargedJetsHadronCFCuts() 
 {
@@ -209,7 +205,6 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hTrackPhiPt", "Track angular distribution in #phi vs. p_{T}", "LEGO2", 180, 0, 2*TMath::Pi(), 300, 0., 300., "#phi", "p_{T} (GeV/c)", "dN^{Tracks}/(d#phi dp_{T})");
 
   // Create plots for each embedding cut
-  cout << "loop size: " << fJetEmbeddingCuts.size() << "\n";
   for(Int_t i = -1; i<static_cast<Int_t>(fJetEmbeddingCuts.size()); i++)
   {
     const char* appendix = "";
@@ -1315,8 +1310,6 @@ template <class T> T* AliAnalysisTaskChargedJetsHadronCF::AddHistogram2D(const c
   tmpHist->SetOption(options);
   tmpHist->SetMarkerStyle(kFullCircle);
   tmpHist->Sumw2();
-
-  cout << "Adding histogram with name: " << name << endl;
 
   fOutput->Add(tmpHist);
 
