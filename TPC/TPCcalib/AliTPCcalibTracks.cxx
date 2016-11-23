@@ -479,6 +479,7 @@ void AliTPCcalibTracks::Process(AliTPCseed *track){
    // FillResolutionHistoLocal(track)
 
    // 
+  if (track->GetParameter()[4]<1e-10) return;
   Double_t scalept= TMath::Min(1./TMath::Abs(track->GetParameter()[4]),2.)/0.5;
   Bool_t   isSelected = (TMath::Exp(scalept)>fPtDownscaleRatio*gRandom->Rndm());
   if (!isSelected) return;

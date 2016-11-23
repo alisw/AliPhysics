@@ -15,6 +15,7 @@
 class TObjArray;
 class AliVfriendEvent;
 class AliVEvent;
+class AliVCuts;
 
 class AliHLTVEventInputHandler : public AliVEventHandler {
 
@@ -38,6 +39,7 @@ class AliHLTVEventInputHandler : public AliVEventHandler {
     virtual Bool_t GetEntry() {return kTRUE;}
     virtual Bool_t Terminate() {return kTRUE;}
     virtual Bool_t TerminateIO() {return kTRUE;}
+    virtual AliVCuts* GetEventSelection() const {return NULL;}
 
     // Especially needed for HLT
     virtual Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, AliVfriendEvent* /*friendEvent*/, TObjArray* /*arrTasks*/);

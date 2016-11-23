@@ -83,13 +83,13 @@ class AliInputEventHandler : public AliVEventHandler {
     //PID response
     virtual AliPIDResponse* GetPIDResponse() {return 0x0;}
     virtual void CreatePIDResponse(Bool_t /*isMC*/=kFALSE) {;}
-  
+
  protected:
     void SwitchOffBranches() const;
     void SwitchOnBranches()  const;
  private:
-    AliInputEventHandler(const AliInputEventHandler& handler);             
-    AliInputEventHandler& operator=(const AliInputEventHandler& handler);  
+    AliInputEventHandler(const AliInputEventHandler& handler);
+    AliInputEventHandler& operator=(const AliInputEventHandler& handler);
  protected:
     TTree          *fTree;         //! Pointer to the tree
     TString         fBranches;     //  List of branches to be switched off (separated by space)

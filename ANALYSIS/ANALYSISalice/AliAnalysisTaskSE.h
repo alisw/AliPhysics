@@ -9,6 +9,8 @@
 #include "AliAnalysisTask.h"
 #include "AliVEvent.h"
 
+class AliVfriendEvent;
+class AliVEventHandler;
 class AliAODEvent;
 class AliAODHeader;
 class AliTOFHeader;
@@ -61,7 +63,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
  // Getters
     virtual Int_t         DebugLevel() const  {return fDebug;     }
     virtual AliVEvent*    InputEvent() const  {return fInputEvent;}
-    virtual AliESDfriend* ESDfriend()  const  {return fESDfriend; }
+    virtual AliVfriendEvent* ESDfriend()  const  {return fESDfriend; }
     virtual AliAODEvent*  AODEvent()   const  {return fOutputAOD; }
     virtual TTree*        OutputTree() const  {return fTreeA;     }
     virtual AliMCEvent*   MCEvent()    const  {return fMCEvent;   }
@@ -87,8 +89,8 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     // IO
     Int_t                 fEntry;           //  Current entry in the chain
     AliVEvent*            fInputEvent;      //! VEvent Input
-    AliESDfriend*         fESDfriend;       //! ESD friend
-    AliInputEventHandler* fInputHandler;    //! Input Handler
+    AliVfriendEvent*      fESDfriend;       //! ESD friend
+    AliVEventHandler* fInputHandler;    //! Input Handler
     AliAODEvent*          fOutputAOD;       //! AOD out 
     AliMCEvent*           fMCEvent;         //! MC
     TTree*                fTreeA;           //  AOD output Tree

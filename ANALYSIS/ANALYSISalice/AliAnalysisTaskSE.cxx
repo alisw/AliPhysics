@@ -28,6 +28,9 @@
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
 
+
+#include "AliVfriendEvent.h"
+#include "AliVEventHandler.h"
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
 #include "AliESD.h"
@@ -186,7 +189,7 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 
    // Connect input handlers (multi input handler is handled)
     ConnectMultiHandler();
-    
+    AliInfo(Form("fInputHandler: %p",fInputHandler));
     if (fInputHandler && fInputHandler->GetTree()) {
 	if (fInputHandler->GetTree()->GetBranch("ESDfriend."))
 	    fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
@@ -376,18 +379,21 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 //
 // Was event selected ? If no event selection mechanism, the event SHOULD be selected (AG)
     UInt_t isSelected = AliVEvent::kAny;
-    if( fInputHandler && (fInputHandler->GetEventSelection() || aodH)) {
+    if( fInputHandler ) {
+      TObject* tmp = fInputHandler->GetEventSelection();
+      if( tmp || aodH) {
       // Get the actual offline trigger mask for the event and AND it with the
       // requested mask. If no mask requested select by default the event.
       if (fOfflineTriggerMask)
 	isSelected = fOfflineTriggerMask & fInputHandler->IsEventSelected();
+    }
     }
 //  Functionality below moved in the filter tasks (AG)
 //    if (handler) handler->SetFillAOD(isSelected);
 
     if( fInputHandler ) {
       fEntry = fInputHandler->GetReadEntry();
-      fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
+      fESDfriend = fInputHandler->GetVfriendEvent();
     }
     
 
@@ -864,7 +870,7 @@ void AliAnalysisTaskSE::ConnectMultiHandler()
    //
    // Connect MultiHandler
    //
-   fInputHandler = (AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+   fInputHandler = (AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler();
    fMultiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fInputHandler);
    if (fMultiInputHandler) {
       fInputHandler = dynamic_cast<AliInputEventHandler *>(fMultiInputHandler->GetFirstInputEventHandler());
