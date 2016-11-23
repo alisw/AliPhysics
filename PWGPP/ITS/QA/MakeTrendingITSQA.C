@@ -864,7 +864,7 @@ void FillVertexBranches(TList * VertxList){
         if(zVtxSPD->GetEntries()>0){
             zVtxSPD->Fit("gauszSPD","NQRL");
             meanVtxSPDz=(Float_t)fzSPD->GetParameter(1);
-            sigmaVtxSPDzErr=(Float_t)fzSPD->GetParError(1);
+            meanVtxSPDzErr=(Float_t)fzSPD->GetParError(1);
             sigmaVtxSPDz=(Float_t)fzSPD->GetParameter(2);
             sigmaVtxSPDzErr=(Float_t)fzSPD->GetParError(2);
         }
@@ -1203,7 +1203,7 @@ void FillSPDBranches(TList * SPDList){
     
     TH1F* hFiredChip=(TH1F*)SPDList->FindObject("hFiredChip");
     if(hFiredChip){
-        if(hFiredChip->GetBinContent(1)>0){
+        if(hFiredChip->GetEntries()>0){
         
             Float_t ptbin=0;
             Int_t nHSsInner=0,nHSsOuter=0;
