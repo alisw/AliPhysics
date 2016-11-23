@@ -8,7 +8,6 @@
 #include <TString.h>
 #include <TCustomBinning.h>
 
-#include <string>
 #include <vector>
 
 class TArrayD;
@@ -72,6 +71,14 @@ public:
   virtual ~AliAnalysisTaskChargedParticlesRefMC();
 
   /**
+   * Enable Sumw2 when creating the histograms. Attention: Enabling Sumw2
+   * will increase memory consumption significantly. Option should only be
+   * used in case histograms are filled with a weight.
+   * @param[in] doEnable If true Sumw2 is enabled for all histograms
+   */
+  void EnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
+
+  /**
    * Set rapidity shift originating from the asymmetric collision system.
    * The rapidity shift is applied to tracks in order to get the rapidity
    * in the cms system.
@@ -127,6 +134,12 @@ public:
    * @param[in] sel
    */
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
+
+  /**
+   * Enable PID-related plots (THnSparses, might be big)
+   * @param[in] plotPID If true then PID-related plots are enabled
+   */
+  void SetPlotPID(Bool_t plotPID) { fStudyPID = plotPID; }
 
   /**
    * Initializing pre-defined track cuts based on a track cuts name. The virtual track selection
@@ -225,17 +238,10 @@ protected:
    * @param[in] etalab Track \f$ \eta \f$ in lab frame
    * @param[in] etacent Track \f$ \eta \f$ in cms frame
    * @param[in] phi Track \f$ \eta \f$ in lab frame
-   * @param[in] etacut Track accepted by \f$ \eta \f$ cut
    * @param[in] inEmcal Track in EMCAL \f$ \phi \f$ acceptance
+   * @param[in] pid True particle species
    */
-  void FillTrackHistos(const char *eventclass, Double_t weight, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t etacut, Bool_t inEmcal, Bool_t hasTRD, const char *pid);
-
-  /**
-   * Fill histograms for PYTHIA trigger jets, before and after event selection
-   * @param[in] aftercut Switch distinguishing whether the histos are filled before or after event cut
-   * @param[in] header PYTHIA header with the trigger jet information
-   */
-  void FillTriggerJetHistograms(Bool_t aftercut, AliGenPythiaEventHeader *const header);
+  void FillTrackHistos(const TString &eventclass, Double_t weight, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal, const TString &pid);
 
   /**
    * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
@@ -286,7 +292,7 @@ private:
   THistManager                          *fHistos;                   ///< Histogram manager
   const AliEMCalTriggerWeightHandler    *fWeightHandler;            ///< Weight handler (optional)
 
-  std::vector<std::string>              fEventTriggers;             //!<! Temporary container for selected triggers
+  std::vector<TString>                  fEventTriggers;             //!<! Temporary container for selected triggers
   Double_t                              fEventWeight;               ///< Event weight
 
   Double_t                              fYshift;                    ///< Rapidity shift
@@ -295,6 +301,8 @@ private:
   AliCutValueRange<double>              fEtaCmsCut;                 ///< Cut applied in \f$\eta_{centre-of-mass}\f$ frame
   AliCutValueRange<double>              fPhiCut;                    ///< Track \f$\phi\f$ cut
   Double_t                              fFracPtHard;                ///< Cut on the maximum fraction of pt hard of any trigger jet
+  Bool_t                                fEnableSumw2;               ///< Enable sumw2 when filling histograms (by default off)
+  Bool_t                                fStudyPID;                  ///< Fill kinematics histograms with information of true particle species (default: off)
 
   TString                               fNameAcceptanceOADB;        ///< Name of the OADB container with trigger acceptance maps
 
