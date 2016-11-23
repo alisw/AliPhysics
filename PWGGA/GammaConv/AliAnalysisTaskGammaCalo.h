@@ -339,6 +339,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterM20;                                          //! cluster M20
     Float_t               fClusterEP;                                           //! cluster-track E/p
     Float_t               fTrackPt;                                             //! track Pt
+    Int_t                 fTrackPID;                                            //! track PID '0101' e,Pi,K,P
 
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
