@@ -20,6 +20,7 @@
 #pragma link C++ class AliEMCALTriggerChannelContainer+;
 #pragma link C++ class AliEMCALTriggerChannelContainer::AliEMCALTriggerChannelPosition+;
 #pragma link C++ class AliEMCALTriggerPatchInfo+;
+#pragma link C++ class AliEMCALTriggerPatchADCInfo+;
 #pragma link C++ class AliEMCALTriggerBitConfig+;
 #pragma link C++ class AliEMCALTriggerBitConfigOld+;
 #pragma link C++ class AliEMCALTriggerBitConfigNew+;

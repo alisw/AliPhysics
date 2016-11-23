@@ -33,6 +33,7 @@ set(SRCS
   AliEMCALTriggerPatchFinder.cxx
   AliEMCALTriggerAlgorithm.cxx
   AliEMCALTriggerPatchInfo.cxx
+  AliEMCALTriggerPatchADCInfo.cxx
   AliEMCALTriggerBitConfig.cxx
   AliEMCALTriggerQA.cxx
   AliEMCALTriggerOnlineQAPbPb.cxx
