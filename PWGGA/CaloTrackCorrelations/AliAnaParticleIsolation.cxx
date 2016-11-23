@@ -1591,7 +1591,9 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
       {
         const UInt_t nlabels = fCluster->GetNLabels();
         Int_t overpdg[nlabels];
-        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(fCluster->GetLabels(), nlabels,mcTag,-1,GetReader(),overpdg);
+        Int_t overlab[nlabels];
+        noverlaps = GetMCAnalysisUtils()->GetNOverlaps(fCluster->GetLabels(), nlabels, mcTag, -1,
+                                                       GetReader(), overpdg, overlab);
         
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
           fhPtNOverlap[kmcPhoton][isolated]->Fill(pt, noverlaps, GetEventWeight());
