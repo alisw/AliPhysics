@@ -42,6 +42,9 @@
 
 #include "AliAnalysisTaskChargedJetsHadronCF.h"
 
+using std::cout;
+using std::endl;
+
 
 //________________________________________________________________________
 AliChargedJetsHadronCFCuts::~AliChargedJetsHadronCFCuts() 
