@@ -183,5 +183,6 @@
 #pragma link C++ class  AliCFSingleTrackEfficiencyTask+;
 #pragma link C++ class  AliSingleTrackEffCuts+;
 #pragma link C++ class  AliAnalysisTrackingUncertaintiesAOT+;
+#pragma link C++ class  AliAnalysisTrackingUncertainties+;
 
 #endif

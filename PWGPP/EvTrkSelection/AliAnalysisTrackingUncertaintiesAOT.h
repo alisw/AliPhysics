@@ -93,8 +93,8 @@ private:
     Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
     
     TList           * fListHist;      //! output list for histograms
-    AliESDtrackCuts * fESDtrackCuts;  // cut set which is under study
-    AliESDVertex    * fVertex;
+    AliESDtrackCuts * fESDtrackCuts;  //! cut set which is under study
+    AliESDVertex    * fVertex;        // pointer to ESD vertex
     
     AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
     AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
