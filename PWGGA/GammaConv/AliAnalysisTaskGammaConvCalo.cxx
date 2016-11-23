@@ -120,7 +120,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   tESDIMClusE(0),
   tESDIMClusterM02(0),
   tESDIMClusterM20(0),
-  fDoInvMassShowerShapeTree(kFALSE),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
@@ -334,7 +333,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fWeightJetJetMC(1),
   fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
-  fDoPrimaryTrackMatching(kFALSE)
+  fDoPrimaryTrackMatching(kFALSE),
+  fDoInvMassShowerShapeTree(kFALSE)
 {
   
 }
@@ -399,7 +399,6 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   tESDIMClusE(0),
   tESDIMClusterM02(0),
   tESDIMClusterM20(0),
-  fDoInvMassShowerShapeTree(kFALSE),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
@@ -613,7 +612,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fWeightJetJetMC(1),
   fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
-  fDoPrimaryTrackMatching(kFALSE)
+  fDoPrimaryTrackMatching(kFALSE),
+  fDoInvMassShowerShapeTree(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());

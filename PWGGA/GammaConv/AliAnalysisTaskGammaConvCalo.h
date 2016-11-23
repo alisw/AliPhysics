@@ -206,7 +206,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Float_t                 tESDIMClusE;                        //! energy of clus gamma for tree
     Float_t                 tESDIMClusterM02;                   //! M02 of cluster for tree
     Float_t                 tESDIMClusterM20;                   //! M20 of cluster for tree
-    Bool_t                  fDoInvMassShowerShapeTree;          //! flag for producing tree tESDInvMassShowerShape
 
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -432,9 +431,10 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Bool_t                  fDoTHnSparse;                                       // flag for using THnSparses for background estimation
     Bool_t                  fSetPlotHistsExtQA;                                 // flag for extended QA hists
     Double_t                fWeightJetJetMC;                                    // weight for Jet-Jet MC 
-    Bool_t                  fDoConvGammaShowerShapeTree;                         // flag for tree with conv gamma R vs energy vs shower shape
+    Bool_t                  fDoConvGammaShowerShapeTree;                        // flag for tree with conv gamma R vs energy vs shower shape
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
     Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries
+    Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
     
     
   private:
