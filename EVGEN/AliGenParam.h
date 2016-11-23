@@ -13,11 +13,10 @@
 // andreas.morsch@cern.ch
 //
 
-#include "AliGenMC.h"
 
-class AliPythia;
-class TParticle;
-class AliGenLib;
+#include "AliGenMC.h"
+#include "AliGenLib.h"
+
 class TF1;
 
 typedef enum { kAnalog, kNonAnalog} Weighting_t;
