@@ -2677,19 +2677,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
       trackParam = new AliExternalTrackParam(*in);
     } else if(aodev) {
-      if(((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
-        inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
-      } else {
-        for(Int_t ii=0;ii<aodev->GetNumberOfTracks();ii++) {
-          inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(ii));
-          if(inTrack){
-            if(inTrack->GetID() == itr) {
-              break;
-            }
-          }
-        }
-      }
-
+      inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
       if(!inTrack) continue;
       AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
       if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
@@ -4868,7 +4856,7 @@ Bool_t AliCaloPhotonCuts::GetClosestMatchedTrackToCluster(AliVEvent* event, AliV
     Float_t tempDist = TMath::Sqrt((dEta*dEta)+(dPhi*dPhi));
     if(tempDist < smallestDist){
       smallestDist = tempDist;
-      smallestDistTrack = currTrack->GetID();
+      smallestDistTrack = labelsMatched.at(i);
       isSucessful = kTRUE;
     }
   }
@@ -4891,7 +4879,7 @@ Bool_t AliCaloPhotonCuts::GetHighestPtMatchedTrackToCluster(AliVEvent* event, Al
     AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatched.at(i)));
     if(currTrack->Pt() > highestPt){
       highestPt = currTrack->Pt();
-      highestPtTrack = currTrack->GetID();
+      highestPtTrack = labelsMatched.at(i);
       isSucessful = kTRUE;
     }
   }
