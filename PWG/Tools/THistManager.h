@@ -25,7 +25,7 @@ class TProfile;
 
 /**
  * @class THistManager
- * @brief Container class for histograms for the high-\f$ p_{t} \f$ charged particle analysis
+ * @brief Container class for histograms
  * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
  * @ingroup Histmanager
  *
@@ -186,7 +186,7 @@ public:
 	 * @param parent (default "/") Name of the parent group
 	 * @throw HistoContainerContentException
 	 */
-	THashList* CreateHistoGroup(const char *groupname, const char *parent = "/");
+	THashList* CreateHistoGroup(const char *groupname);
 
 	/**
 	 * Create a new TH1 within the container. The histogram name also contains the parent group(s) according to the common
@@ -532,26 +532,18 @@ private:
 	THashList *FindGroup(const char *dirname) const;
 
 	/**
-	 * Tokenizes a string. Results are stored inside the vector listoftokens
-	 * @param[in] name string to be tokenised
-	 * @param[in] delim delimiter string
-	 * @param[in] listoftokens list of tokens (C++ strings)
-	 */
-	void TokenizeFilename(const char *name, const char *delim, std::vector<std::string> &listoftokens) const;
-
-	/**
 	 * Helper function extracting the basename from a given histogram path.
 	 * @param[in] path histogram path
 	 * @return basename extracted
 	 */
-	TString basename(const char *path) const;
+	TString basename(const TString &path) const;
 
 	/**
 	 * Helper function extracting the histogram name from a given histogram path.
 	 * @param[in] path histogram path
 	 * @return basename extracted
 	 */
-	TString histname(const char *path) const;
+	TString histname(const TString &path) const;
 
 	THashList *fHistos;                   ///< List of histograms
 	bool fIsOwner;                        ///< Set the ownership
@@ -575,5 +567,146 @@ THistManager::iterator THistManager::end() const {
 
 THistManager::iterator THistManager::rend() const {
   return iterator(this, -1, iterator::kTHMIbackward);
+}
+
+/**
+ * @namespace TestTHistManager
+ * @brief Collection of simple test for the THistManager
+ * @ingroup Histmanager
+ */
+namespace TestTHistManager {
+
+/**
+ * @class THistManagerTestSuite
+ * @brief Collection of tests for the THistManager
+ * @ingroup Histmanager
+ * @author Markus Fasel <markus.fasel@cern.ch>, Oak Ridge National Laboratory
+ * @since Nov 23, 2016
+ *
+ * Test suite for histogram manager. Currently implemented tests:
+ * - Build simple histograms
+ * - Build histrogram in groups
+ * - Simple fill
+ * - Fill histograms in groups
+ */
+class THistManagerTestSuite {
+public:
+
+  /**
+   * Constructor
+   */
+  THistManagerTestSuite() {}
+
+  /**
+   * Destructor
+   */
+  virtual ~THistManagerTestSuite() {}
+
+  /**
+   * Purpose of the test: Check whether histmanager builds histogram correctly (no grouping)
+   *
+   * Create 1 histogram of each type
+   * - TH1
+   * - TH2
+   * - TH3
+   * - THnSparse
+   * - TProfile
+   * Find the histogram according to its name in the list of histograms
+   *
+   * Test passed: All histograms need to be found in the list of histograms, and type must match
+   * @return 0 if test is passed, 1 if it failed
+   */
+  int TestBuildSimpleHistograms();
+
+  /**
+   * Purpose of the test: Check whether histmanager assings histograms correctly into groups
+   * Relies on: TestBuildSimpleHistograms
+   *
+   * Creating 3 groups with 2 histograms
+   * - Group 1 has only 1D histograms
+   * - Group 2 has only 2D histograms
+   * - Group 3 has only 3D histograms
+   * Names of the histograms are the same for all groups.
+   *
+   * In addition: 1 group with a subgroup and a TProfile.
+   *
+   * Test passed:
+   * - All Groups need to be found, and all histograms within the group with the matching type
+   * - Subgroup need to be found in the subgroup test
+   * @return 0 if test is passed, 1 if it failed
+   */
+  int TestBuildGroupedHistograms();
+
+  /**
+   * Purpose of the test: Check whether histograms are found correctly by the automatic procedure, and
+   * whether fill is correctly propagated
+   * Relies on: TestBuildSimpleHistograms
+   *
+   * Creating histograms of all types
+   * - TH1
+   * - TH2
+   * - TH3
+   * - THnSparse
+   * - TProfile
+   * with 1 bin per dimension and each with 100 times the same value.
+   *
+   * Test passed:
+   * - All histograms need to have in its 1 bin the bin content 100
+   * @return 0 if test is passed, 1 if it failed
+   */
+  int TestFillSimpleHistograms();
+
+  /**
+   * Purpose of the test: Test access of histograms in groups, check whether histograms are filled properly
+   * Relies on: TestBuildSimpleHistograms, TestBuildGroupedHistograms, TestFillSimpleHistograms
+   *
+   * Fill 2 test histograms in 2 groups
+   * - Group1: TH1
+   * - Group2: TH2
+   * each 100 times for bin 1. In addition Fill TProfile in Group3 with Subgroup1 100 times with weight1
+   *
+   * Test passed:
+   * - All Histograms are found in the groups and subgroups
+   * - All Histograms have the expected value (100 for histograms, 1 for profile)
+   * @return 0 if test is passed, 1 if it failed
+   */
+  int TestFillGroupedHistograms();
+};
+
+/**
+ * Runs all tests for THistManager. See @ref THistManagerTestSuite
+ * for details.
+ * @return O if all tests are passed, 1 if tests fail
+ */
+int TestRunAll();
+
+/**
+ * Run the test for building histograms. See @ref THistManagerTestSuite
+ * for details.
+ * @return 0 if test is passed, 1 if failed
+ */
+int TestRunBuildSimple();
+
+/**
+ * Run the test for building histograms in groups. See @ref THistManagerTestSuite
+ * for details.
+ * @return 0 if test is passed, 1 if failed
+ */
+int TestRunBuildGrouped();
+
+/**
+ * Run the test for filling histograms. See @ref THistManagerTestSuite
+ * for details.
+ * @return 0 if test is passed, 1 if failed
+ */
+int TestRunFillSimple();
+
+/**
+ * Run the test for building histograms. See @ref THistManagerTestSuite
+ * for details.
+ * @return 0 if test is passed, 1 if failed
+ */
+int TestRunFillGrouped();
+
 }
 #endif
