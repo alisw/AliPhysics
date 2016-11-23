@@ -31,35 +31,60 @@ using std::fabs;
 #include <dlfcn.h>
 
 #include "vdt/exp.h"    // includes the vdt exp function
-#include "vdt/sin.h"    // includes the vdt exp function
-#include "vdt/cos.h"    // includes the vdt exp function
-#include "vdt/atan2.h"  // includes the vdt exp function
-#include "vdt/log.h"    // includes the vdt exp function
-#include "vdt/sincos.h" // includes the vdt exp function
+#include "vdt/sin.h"    // includes the vdt sin function
+#include "vdt/cos.h"    // includes the vdt cos function
+#include "vdt/atan2.h"  // includes the vdt atan2 function
+#include "vdt/log.h"    // includes the vdt log function
+#include "vdt/sincos.h" // includes the vdt sincos function
+
+//#define TEXTLOGGER 1
+#ifdef TEXTLOGGER 
+#include <iostream>
+#endif
+
+const double kDiff=1E-6;
+#define printLog(name, arg, value1, value2) \
+  if(fabs(value2-value1) > kDiff){ std::cerr << name << " arg " << arg << " libm " << value1 << " vdt " << value2 << " diff " << value1-value2 << "\n"; } 
+#define printLog2Args(name, arg1, arg2, value1, value2)			\
+  if(fabs(value2-value1) > kDiff){ std::cerr << name << " arg " << arg1 << " , " << arg2 << " libm " << value1 << " vdt " << value2 << " diff " << value1-value2 << "\n"; } 
 
 // function pointers, pointing to original libm symbols
-typedef double (*fptr)(double);
 static void *libm = dlopen("libm.so.6", RTLD_NOW);
+
+typedef double (*fptr)(double);
 static fptr sinfunc = (fptr) dlsym(libm, "sin");
 static fptr cosfunc = (fptr) dlsym(libm, "cos");
 static fptr logfunc = (fptr) dlsym(libm, "log");
-static fptr sincosfunc = (fptr) dlsym(libm, "sincos");
-static fptr atan2func = (fptr) dlsym(libm, "atan2");
 static fptr expfunc = (fptr) dlsym(libm, "exp");
+
+typedef void (*sincosfptr)(double, double*, double*);
+static sincosfptr sincosfunc = (sincosfptr) dlsym(libm, "sincos");
+
+typedef void (*sincosffptr)(float, float*, float*);
+static sincosffptr sincosffunc = (sincosffptr) dlsym(libm, "sincosf");
+
+typedef double (*atan2fptr)(double, double);
+static atan2fptr atan2func = (atan2fptr) dlsym(libm, "atan2");
 
 extern "C" double exp(double);
 double exp(double x){
   const double lm((1.*INT_MAX - 0.5)/vdt::details::LOG2E);
   if (fabs(x) < lm){
+#ifdef TEXTLOGGER
+    printLog("#VDTCHECK-EXP", x, expfunc(x), vdt::fast_exp(x));
+#endif
     return vdt::fast_exp(x);
   }
   else {
-    return expfunc(2.*x);
+    return expfunc(x);
   }
 }
 
 extern "C" double log(double);
 double log(double x){
+#ifdef TEXTLOGGER
+    printLog("#VDTCHECK-LOG", x, logfunc(x), vdt::fast_log(x));
+#endif
   return vdt::fast_log(x);
 }
 
@@ -69,6 +94,9 @@ double sin(double x){
   // vdt relies on a range of inputs that can be cast to int
   const double lm(INT_MAX*CosRangeConstant);
   if(fabs(x) < lm){
+#ifdef TEXTLOGGER
+    printLog("#VDTCHECK-SIN", x, sinfunc(x), vdt::fast_sin(x));
+#endif
     return vdt::fast_sin(x);
   }
   else {
@@ -80,6 +108,9 @@ extern "C" double cos(double);
 double cos(double x){
   const double lm(INT_MAX*CosRangeConstant);
   if(fabs(x) < lm){
+#ifdef TEXTLOGGER
+    printLog("#VDTCHECK-COS", x, cosfunc(x), vdt::fast_cos(x));
+#endif
     return vdt::fast_cos(x);
   }
   else {
@@ -90,15 +121,31 @@ double cos(double x){
 extern "C" void sincos(double, double *, double *);
 void sincos(double x, double *s, double *c){
   vdt::fast_sincos(x, *s, *c);
+#ifdef TEXTLOGGER
+  double libms, libmc;
+  sincosfunc(x, &libms, &libmc);
+  printLog("#VDTCHECK-SINCOS-SINPART", x, libms, *s);
+  printLog("#VDTCHECK-SINCOS-COSPART", x, libmc, *c);
+#endif
+
 }
 
 extern "C" void sincosf(float x, float *s, float *c);
 void sincosf(float x, float *s, float *c) {
   vdt::fast_sincosf(x, *s, *c);
+#ifdef TEXTLOGGER
+  float libms, libmc;
+  sincosffunc(x, &libms, &libmc);
+  printLog("#VDTCHECK-SINCOSF-SINPART", x, libms, *s);
+  printLog("#VDTCHECK-SINCOSF-COSPART", x, libmc, *c);
+#endif
 }
 
 extern "C" double atan2(double, double);
 double atan2(double x, double y) {
+#ifdef TEXTLOGGER
+  printLog2Args("#VDTCHECK-ATAN2", x, y, atan2func(x,y), vdt::fast_atan2(x,y));
+#endif
   return vdt::fast_atan2(x,y);
 }
 
