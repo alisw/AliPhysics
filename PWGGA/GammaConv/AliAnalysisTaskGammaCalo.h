@@ -332,7 +332,6 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fInvMassTreeMixPool;
 
     // tree for E/p studies
-    Bool_t                fProduceTreeEOverP;                                   //! flag for producing tree for E/p studies
     TTree**               tClusterEOverP;                                       //! array of trees with tree for E/p studies
     Float_t               fClusterE;                                            //! cluster energy
     Float_t               fClusterM02;                                          //! cluster M02
@@ -366,6 +365,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Double_t              fMaxTimingCluster;                                    // corresponding ranges, max
     Bool_t                fEnableSortForClusMC;                                 // switch on sorting for MC labels in cluster
     Bool_t                fProduceCellIDPlots;                                  // switch to produce CellID plots for fDoClusterQA==2
+    Bool_t                fProduceTreeEOverP;                                   // flag for producing tree for E/p studies
 
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
