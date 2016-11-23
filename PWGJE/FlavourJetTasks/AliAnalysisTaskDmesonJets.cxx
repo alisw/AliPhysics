@@ -2050,7 +2050,7 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
   for (auto &param : fAnalysisEngines) {
     ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for analysis engine '%s' (%lu jet definitions)", param.GetName(), param.fJetDefinitions.size());
 
-    fHistManager.CreateHistoGroup(param.GetName());
+    //fHistManager.CreateHistoGroup(param.GetName());
 
     param.fHistManager = &fHistManager;
 
@@ -2115,7 +2115,7 @@ void AliAnalysisTaskDmesonJets::UserCreateOutputObjects()
       AliHFJetDefinition* jetDef = &(*itdef);
       ::Info("AliAnalysisTaskDmesonJets::UserCreateOutputObjects", "Allocating histograms for jet definition '%s'", jetDef->GetName());
 
-      fHistManager.CreateHistoGroup(jetDef->GetName(), param.GetName());
+      //fHistManager.CreateHistoGroup(jetDef->GetName(), param.GetName());
 
       hname = TString::Format("%s/%s/fHistMCParticleRejectionReason", param.GetName(), jetDef->GetName());
       htitle = hname + ";Track rejection reason;#it{p}_{T,track} (GeV/#it{c});counts";

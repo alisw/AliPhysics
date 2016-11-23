@@ -129,7 +129,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   TIter nextPartColl(&fParticleCollArray);
   while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) {
-    fHistManager.CreateHistoGroup(cont->GetArrayName());
+    //fHistManager.CreateHistoGroup(cont->GetArrayName());
     if (!fParticleLevel && fIsMC) {
       for (Int_t i = 0; i < fNcentBins; i++) {
         histname = TString::Format("%s/fHistTrNegativeLabels_%d", cont->GetArrayName().Data(), i);
@@ -201,9 +201,9 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   TIter nextClusColl(&fClusterCollArray);
   while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
-    fHistManager.CreateHistoGroup(cont->GetArrayName());
+    //fHistManager.CreateHistoGroup(cont->GetArrayName());
     for (Int_t i = 0; i < fNcentBins; i++) {
-      fHistManager.CreateHistoGroup("BySM", cont->GetArrayName());
+      //fHistManager.CreateHistoGroup("BySM", cont->GetArrayName());
 
       const Int_t nSM = 20;
 
@@ -275,7 +275,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   }
 
   if (!fCaloCellsName.IsNull()) {
-    fHistManager.CreateHistoGroup(fCaloCellsName);
+    //fHistManager.CreateHistoGroup(fCaloCellsName);
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = TString::Format("%s/fHistCellsAbsIdEnergy_%d", fCaloCellsName.Data(), i);
       title = histname + ";cell abs. Id;#it{E}_{cell} (GeV);counts";

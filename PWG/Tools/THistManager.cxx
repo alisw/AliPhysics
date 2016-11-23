@@ -12,7 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <cfloat>
 #include <cstring>
+#include <iostream>   // for unit tests
 #include <sstream>
 #include <string>
 #include <exception>
@@ -24,6 +26,7 @@
 #include <TH3.h>
 #include <THnSparse.h>
 #include <THashList.h>
+#include <TMath.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TProfile.h>
@@ -57,30 +60,26 @@ THistManager::~THistManager(){
 	if(fHistos && fIsOwner) delete fHistos;
 }
 
-THashList* THistManager::CreateHistoGroup(const char *groupname, const char *parent) {
-	THashList *parentgroup = FindGroup(parent);
-	if(!parentgroup){
-		Fatal("THistManager::CreateHistoGroup", "Parent group %s does not exist", parent);
-		return 0;
-	}
+THashList* THistManager::CreateHistoGroup(const char *groupname) {
+  TString parentname = basename(groupname);
+	THashList *parentgroup = FindGroup(parentname);
+	if(!parentgroup) parentgroup = CreateHistoGroup(parentname);
 	THashList *childgroup = new THashList();
-	childgroup->SetName(groupname);
+	childgroup->SetName(histname(groupname));
+	childgroup->SetOwner();
 	parentgroup->Add(childgroup);
 	return childgroup;
 }
 
 TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, double xmin, double xmax, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTH1", "Parent %s does not exist", dirname.Data());
-		return 0 ;
-	}
-	if(parent->FindObject(hname.Data())){
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	TH1* h = new TH1D(hname.Data(), title, nbins, xmin, xmax);
+	TH1* h = new TH1D(hname, title, nbins, xmin, xmax);
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -92,15 +91,12 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, dou
 TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, const double *xbins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
-	if(!parent){
-		Fatal("THistManager::CreateTH1", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	TH1* h = new TH1D(hname.Data(), title, nbins, xbins);
+	TH1* h = new TH1D(hname, title, nbins, xbins);
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -112,15 +108,12 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, int nbins, con
 TH1* THistManager::CreateTH1(const char *name, const char *title, const TArrayD &xbins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
 	THashList *parent(FindGroup(dirname));
-	if(!parent){
-		Fatal("THistManager::CreateTH1", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH1", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	TH1* h = new TH1D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray());
+	TH1* h = new TH1D(hname, title, xbins.GetSize()-1, xbins.GetArray());
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -141,16 +134,13 @@ TH1* THistManager::CreateTH1(const char *name, const char *title, const TBinning
 
 TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTH2", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	TH2* h = new TH2D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
+	TH2* h = new TH2D(hname, title, nbinsx, xmin, xmax, nbinsy, ymin, ymax);
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -161,16 +151,13 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, do
 
 TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, const double *xbins, int nbinsy, const double *ybins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTH2", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	TH2* h = new TH2D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins);
+	TH2* h = new TH2D(hname, title, nbinsx, xbins, nbinsy, ybins);
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -181,16 +168,13 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, int nbinsx, co
 
 TH2* THistManager::CreateTH2(const char *name, const char *title, const TArrayD &xbins, const TArrayD &ybins, Option_t *opt){
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTH2", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH2", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	TH2* h = new TH2D(hname.Data(), title, xbins.GetSize() - 1, xbins.GetArray(), ybins.GetSize() - 1, ybins.GetArray());
+	TH2* h = new TH2D(hname, title, xbins.GetSize() - 1, xbins.GetArray(), ybins.GetSize() - 1, ybins.GetArray());
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -217,16 +201,13 @@ TH2* THistManager::CreateTH2(const char *name, const char *title, const TBinning
 
 TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, double xmin, double xmax, int nbinsy, double ymin, double ymax, int nbinsz, double zmin, double zmax, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTH3", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	TH3* h = new TH3D(hname.Data(), title, nbinsx, xmin, xmax, nbinsy, ymin, ymax, nbinsz, zmin, zmax);
+	TH3* h = new TH3D(hname, title, nbinsx, xmin, xmax, nbinsy, ymin, ymax, nbinsz, zmin, zmax);
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -237,16 +218,13 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, do
 
 TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, const double* xbins, int nbinsy, const double* ybins, int nbinsz, const double* zbins, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTH3", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
   }
-	TH3* h = new TH3D(hname.Data(), title, nbinsx, xbins, nbinsy, ybins, nbinsz, zbins);
+	TH3* h = new TH3D(hname, title, nbinsx, xbins, nbinsy, ybins, nbinsz, zbins);
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -257,16 +235,13 @@ TH3* THistManager::CreateTH3(const char* name, const char* title, int nbinsx, co
 
 TH3* THistManager::CreateTH3(const char* name, const char* title, const TArrayD& xbins, const TArrayD& ybins, const TArrayD& zbins, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTH3", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTH3", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	TH3* h = new TH3D(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray(), ybins.GetSize()-1, ybins.GetArray(), zbins.GetSize()-1, zbins.GetArray());
+	TH3* h = new TH3D(hname, title, xbins.GetSize()-1, xbins.GetArray(), ybins.GetSize()-1, ybins.GetArray(), zbins.GetSize()-1, zbins.GetArray());
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -298,16 +273,13 @@ TH3* THistManager::CreateTH3(const char *name, const char *title, const TBinning
 
 THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const int *nbins, const double *min, const double *max, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTHnSparse", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
-	if(parent->FindObject(hname.Data())){
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
+	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
 	}
-	THnSparse* h = new THnSparseD(hname.Data(), title, ndim, nbins, min, max);
+	THnSparse* h = new THnSparseD(hname, title, ndim, nbins, min, max);
   TString optionstring(opt);
   optionstring.ToLower();
   if(optionstring.Contains("s"))
@@ -318,11 +290,8 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 
 THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, int ndim, const TAxis **axes, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
-	if(!parent){
-		Fatal("THistManager::CreateTHnSparse", "Parent %s does not exist", dirname.Data());
-		return 0;
-	}
+	THashList *parent(FindGroup(dirname));
+	if(!parent) parent = CreateHistoGroup(dirname);
 	if(parent->FindObject(hname)){
 		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
 		return 0;
@@ -335,7 +304,7 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 		xmin[idim] = myaxis.GetXmin();
 		xmax[idim] = myaxis.GetXmax();
 	}
-	THnSparseD *hsparse = new THnSparseD(hname.Data(), title, ndim, nbins.GetArray(), xmin.GetArray(), xmax.GetArray());
+	THnSparseD *hsparse = new THnSparseD(hname, title, ndim, nbins.GetArray(), xmin.GetArray(), xmax.GetArray());
 	for(int id = 0; id < ndim; ++id)
 		*(hsparse->GetAxis(id)) = *(axes[id]);
   TString optionstring(opt);
@@ -349,31 +318,28 @@ THnSparse* THistManager::CreateTHnSparse(const char *name, const char *title, in
 void THistManager::CreateTProfile(const char* name, const char* title, int nbinsX, double xmin, double xmax, Option_t *opt) {
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname));
-  if(!parent)
-		Fatal("THistManager::CreateTProfile", "Parent %s does not exist", dirname.Data());
-  if(parent->FindObject(hname.Data()))
+  if(!parent) parent = CreateHistoGroup(dirname);
+  if(parent->FindObject(hname))
 		Fatal("THistManager::CreateTProfile", "Object %s already exists in group %s", hname.Data(), dirname.Data());
-  TProfile *hist = new TProfile(hname.Data(), title, nbinsX, xmin, xmax, opt);
+  TProfile *hist = new TProfile(hname, title, nbinsX, xmin, xmax, opt);
   parent->Add(hist);
 }
 
 void THistManager::CreateTProfile(const char* name, const char* title, int nbinsX, const double* xbins, Option_t *opt) {
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname));
-  if(!parent)
-		Fatal("THistManager::CreateTHnSparse", "Parent %s does not exist", dirname.Data());
-  if(parent->FindObject(hname.Data()))
+  if(!parent) parent = CreateHistoGroup(dirname);
+  if(parent->FindObject(hname))
 		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
-  TProfile *hist = new TProfile(hname.Data(), title, nbinsX, xbins, opt);
+  TProfile *hist = new TProfile(hname, title, nbinsX, xbins, opt);
   parent->Add(hist);
 }
 
 void THistManager::CreateTProfile(const char* name, const char* title, const TArrayD& xbins, Option_t *opt){
   TString dirname(basename(name)), hname(histname(name));
   THashList *parent(FindGroup(dirname));
-  if(!parent)
-		Fatal("THistManager::CreateTHnSparse", "Parent %s does not exist", dirname.Data());
-  if(parent->FindObject(hname.Data()))
+  if(!parent) parent = CreateHistoGroup(dirname);
+  if(parent->FindObject(hname))
 		Fatal("THistManager::CreateTHnSparse", "Object %s already exists in group %s", hname.Data(), dirname.Data());
   TProfile *hist = new TProfile(hname.Data(), title, xbins.GetSize()-1, xbins.GetArray(), opt);
   parent->Add(hist);
@@ -391,10 +357,7 @@ void THistManager::CreateTProfile(const char *name, const char *title, const TBi
 
 void THistManager::SetObject(TObject * const o, const char *group) {
 	THashList *parent(FindGroup(group));
-	if(!parent){
-		Fatal("THistManager::SetObject", "Parent %s does not exist", strcmp(group, "/") ? group : "");
-		return;
-	}
+	if(!parent) CreateHistoGroup(group);
 	if(parent->FindObject(o->GetName())){
 		Fatal("THistManager::SetObject", "Parent %s does not exist", strcmp(group, "/") ? group : "");
 		return;
@@ -408,12 +371,12 @@ void THistManager::SetObject(TObject * const o, const char *group) {
 
 void THistManager::FillTH1(const char *name, double x, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
+	THashList *parent(FindGroup(dirname));
 	if(!parent){
 		Fatal("THistManager::FillTH1", "Parnt group %s does not exist", dirname.Data());
 		return;
 	}
-	TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname.Data()));
+	TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname));
 	if(!hist){
 		Fatal("THistManager::FillTH1", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
@@ -431,12 +394,12 @@ void THistManager::FillTH1(const char *name, double x, double weight, Option_t *
 
 void THistManager::FillTH1(const char *name, const char *label, double weight, Option_t *opt) {
   TString dirname(basename(name)), hname(histname(name));
-  THashList *parent(FindGroup(dirname.Data()));
+  THashList *parent(FindGroup(dirname));
   if(!parent){
     Fatal("THistManager::FillTH1", "Parnt group %s does not exist", dirname.Data());
     return;
   }
-  TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname.Data()));
+  TH1 *hist = dynamic_cast<TH1 *>(parent->FindObject(hname));
   if(!hist){
     Fatal("THistManager::FillTH1", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
     return;
@@ -455,12 +418,12 @@ void THistManager::FillTH1(const char *name, const char *label, double weight, O
 
 void THistManager::FillTH2(const char *name, double x, double y, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
+	THashList *parent(FindGroup(dirname));
 	if(!parent){
 		Fatal("THistManager::FillTH2", "Parent group %s does not exist", dirname.Data());
 		return;
 	}
-	TH2 *hist = dynamic_cast<TH2 *>(parent->FindObject(hname.Data()));
+	TH2 *hist = dynamic_cast<TH2 *>(parent->FindObject(hname));
 	if(!hist){
 		Fatal("THistManager::FillTH2", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
@@ -480,12 +443,12 @@ void THistManager::FillTH2(const char *name, double x, double y, double weight, 
 
 void THistManager::FillTH2(const char *name, double *point, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
+	THashList *parent(FindGroup(dirname));
 	if(!parent){
 		Fatal("THistManager::FillTH2", "Parent group %s does not exist", dirname.Data());
 		return;
 	}
-	TH2 *hist = dynamic_cast<TH2 *>(parent->FindObject(hname.Data()));
+	TH2 *hist = dynamic_cast<TH2 *>(parent->FindObject(hname));
 	if(!hist){
 		Fatal("THistManager::FillTH2", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
@@ -505,12 +468,12 @@ void THistManager::FillTH2(const char *name, double *point, double weight, Optio
 
 void THistManager::FillTH3(const char* name, double x, double y, double z, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
+	THashList *parent(FindGroup(dirname));
 	if(!parent){
 		Fatal("THistManager::FillTH3", "Parent group %s does not exist", dirname.Data());
 		return;
 	}
-	TH3 *hist = dynamic_cast<TH3 *>(parent->FindObject(hname.Data()));
+	TH3 *hist = dynamic_cast<TH3 *>(parent->FindObject(hname));
 	if(!hist){
 		Fatal("THistManager::FillTH3", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
@@ -534,12 +497,12 @@ void THistManager::FillTH3(const char* name, double x, double y, double z, doubl
 
 void THistManager::FillTH3(const char* name, const double* point, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
+	THashList *parent(FindGroup(dirname));
 	if(!parent){
 		Fatal("THistManager::FillTH3", "Parent group %s does not exist", dirname.Data());
 		return;
 	}
-	TH3 *hist = dynamic_cast<TH3 *>(parent->FindObject(hname.Data()));
+	TH3 *hist = dynamic_cast<TH3 *>(parent->FindObject(hname));
 	if(!hist){
 		Fatal("THistManager::FillTH3", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
@@ -563,12 +526,12 @@ void THistManager::FillTH3(const char* name, const double* point, double weight,
 
 void THistManager::FillTHnSparse(const char *name, const double *x, double weight, Option_t *opt) {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
+	THashList *parent(FindGroup(dirname));
 	if(!parent){
 		Fatal("THistManager::FillTHnSparse", "Parent group %s does not exist", dirname.Data());
 		return;
 	}
-	THnSparseD *hist = dynamic_cast<THnSparseD *>(parent->FindObject(hname.Data()));
+	THnSparseD *hist = dynamic_cast<THnSparseD *>(parent->FindObject(hname));
 	if(!hist){
 		Fatal("THistManager::FillTHnSparse", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
 		return;
@@ -589,10 +552,10 @@ void THistManager::FillTHnSparse(const char *name, const double *x, double weigh
 
 void THistManager::FillProfile(const char* name, double x, double y, double weight){
   TString dirname(basename(name)), hname(histname(name));
-  THashList *parent(FindGroup(dirname.Data()));
+  THashList *parent(FindGroup(dirname));
   if(!parent)
 		Fatal("THistManager::FillTProfile", "Parent group %s does not exist", dirname.Data());
-  TProfile *hist = dynamic_cast<TProfile *>(parent->FindObject(hname.Data()));
+  TProfile *hist = dynamic_cast<TProfile *>(parent->FindObject(hname));
   if(!hist)
 		Fatal("THistManager::FillTProfile", "Histogram %s not found in parent group %s", hname.Data(), dirname.Data());
   hist->Fill(x, y, weight);
@@ -600,53 +563,36 @@ void THistManager::FillProfile(const char* name, double x, double y, double weig
 
 TObject *THistManager::FindObject(const char *name) const {
 	TString dirname(basename(name)), hname(histname(name));
-	THashList *parent(FindGroup(dirname.Data()));
+	THashList *parent(FindGroup(dirname));
 	if(!parent) return NULL;
 	return parent->FindObject(hname);
 }
 
 TObject* THistManager::FindObject(const TObject* obj) const {
 	TString dirname(basename(obj->GetName())), hname(histname(obj->GetName()));
-	THashList *parent(FindGroup(dirname.Data()));
+	THashList *parent(FindGroup(dirname));
 	if(!parent) return NULL;
 	return parent->FindObject(hname);
 }
 
 THashList *THistManager::FindGroup(const char *dirname) const {
 	if(!strlen(dirname) || !strcmp(dirname, "/")) return fHistos;
-	std::vector<std::string> tokens;
-	TokenizeFilename(dirname, "/", tokens);
-	THashList *currentdir(fHistos);
-	for(std::vector<std::string>::iterator it = tokens.begin(); it != tokens.end(); ++it){
-		currentdir = dynamic_cast<THashList *>(currentdir->FindObject(it->c_str()));
-		if(!currentdir) break;
-	}
-	return currentdir;
+	// recursive find - avoids tokenizing filename
+	THashList *parentlist = FindGroup(basename(dirname));
+	if(parentlist) return static_cast<THashList *>(parentlist->FindObject(histname(dirname)));
+	return nullptr;
 }
 
-void THistManager::TokenizeFilename(const char *name, const char *delim, std::vector<std::string> &listoftokens) const {
-	TString s(name);
-	TObjArray *arr = s.Tokenize(delim);
-	TObjString *ostr(NULL);
-	TIter toks(arr);
-	while((ostr = dynamic_cast<TObjString *>(toks()))){
-		listoftokens.push_back(std::string(ostr->String().Data()));
-	}
-	delete arr;
-}
-
-TString THistManager::basename(const char *path) const {
-	TString s(path);
-	int index = s.Last('/');
+TString THistManager::basename(const TString &path) const {
+	int index = path.Last('/');
 	if(index < 0) return "";  // no directory structure
-	return TString(s(0, index)).Data();
+	return TString(path(0, index));
 }
 
-TString THistManager::histname(const char *path) const {
-	TString s(path);
-	int index = s.Last('/');
+TString THistManager::histname(const TString &path) const {
+	int index = path.Last('/');
 	if(index < 0) return path;    // no directory structure
-	return TString(s(index+1, s.Length() - (index+1))).Data();
+	return TString(path(index+1, path.Length() - (index+1)));
 }
 
 //////////////////////////////////////////////////////////
@@ -715,4 +661,351 @@ TObject *THistManager::iterator::operator*() const{
   if(fCurrentPos >=0 && fCurrentPos < fkArray->GetListOfHistograms()->GetEntries())
     return fkArray->GetListOfHistograms()->At(fCurrentPos);
   return NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+///
+///  Unit tests
+///
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace TestTHistManager {
+
+  int THistManagerTestSuite::TestBuildSimpleHistograms(){
+    THistManager testmgr("testmgr");
+
+    // Create histogram of each type
+    testmgr.CreateTH1("Test1D", "Test Histogram 1D", 1, 0., 1.);
+    testmgr.CreateTH2("Test2D", "Test Histogram 2D", 2, 0., 2., 10., 0., 10);
+    testmgr.CreateTH3("Test3D", "Test Histogram 3D", 3, 2, 6., 10., 0., 10., 50., 0., 50.);
+    int nbins[3] = {3, 3, 3}; double min[3] = {0., 0., 0}, max[3] = {6, 9, 12};   // dimensions for THnSparseTest
+    testmgr.CreateTHnSparse("TestNSparse", "Test Histogram NSparse", 3, nbins, min, max);
+    testmgr.CreateTProfile("TestProfile", "Test TProfile", 1, 0., 1);
+
+    // Find histograms in the list (evaluate test)
+    // Tell user why test has failed
+    Bool_t found(true);
+    if(!dynamic_cast<TH1 *>(testmgr.GetListOfHistograms()->FindObject("Test1D"))){
+      std::cout << "Not found: Test1D" << std::endl;
+      found = false;
+    }
+    if(!dynamic_cast<TH2 *>(testmgr.GetListOfHistograms()->FindObject("Test2D"))){
+      std::cout << "Not found: Test2D" << std::endl;
+      found = false;
+    }
+    if(!dynamic_cast<TH3 *>(testmgr.GetListOfHistograms()->FindObject("Test3D"))){
+      std::cout << "Not found: Test3D" << std::endl;
+      found = false;
+    }
+    if(!dynamic_cast<THnSparse *>(testmgr.GetListOfHistograms()->FindObject("TestNSparse"))){
+      std::cout << "Not found: TestNSparse" << std::endl;
+      found = false;
+    }
+    if(!dynamic_cast<TProfile *>(testmgr.GetListOfHistograms()->FindObject("TestProfile"))){
+      std::cout << "Not found: TestProfile" << std::endl;
+      found = false;
+    }
+
+    return found ? 0 : 1;
+  }
+
+  int THistManagerTestSuite::TestBuildGroupedHistograms(){
+    THistManager testmgr("testmgr");
+
+    // Creating 3 groups
+    testmgr.CreateTH1("Group1/Test1", "Test Histogram 1 in group 1", 1, 0., 1.);
+    testmgr.CreateTH1("Group1/Test2", "Test Histogram 2 in group 1", 1, 0., 1.);
+    testmgr.CreateTH2("Group2/Test1", "Test Histogram 1 in group 2", 1, 0., 1., 1, 0., 1.);
+    testmgr.CreateTH2("Group2/Test2", "Test Histogram 2 in group 2", 1, 0., 1., 1, 0., 1.);
+    testmgr.CreateTH3("Group3/Test1", "Test Histogram 1 in group 3", 1, 0., 1., 1, 0., 1., 1, 0., 1.);
+    testmgr.CreateTH3("Group3/Test2", "Test Histogram 2 in group 3", 1, 0., 1., 1, 0., 1., 1, 0., 1.);
+    // Creating histogram in a subgroup
+    testmgr.CreateTProfile("Group4/Subgroup1/Test1", "Test histogram for subgroup handling", 1, 0., 1);
+
+    // Evalutate test
+    // Tell user why test has failed
+    Bool_t found(true);
+    THashList *currentdir(nullptr);
+    if(!(currentdir = dynamic_cast<THashList *>(testmgr.GetListOfHistograms()->FindObject("Group1")))){
+      std::cout << "Not found: Group1" << std::endl;
+      found = false;
+    } else {
+      if(!dynamic_cast<TH1 *>(currentdir->FindObject("Test1"))){
+        std::cout << "Not found in Group1: Test1" << std::endl;
+        found = false;
+      }
+      if(!dynamic_cast<TH1 *>(currentdir->FindObject("Test2"))){
+        std::cout << "Not found in Group1: Test2" << std::endl;
+        found = false;
+      }
+    }
+    if(!(currentdir = dynamic_cast<THashList *>(testmgr.GetListOfHistograms()->FindObject("Group2")))){
+      std::cout << "Not found: Group2" << std::endl;
+      found = false;
+    } else {
+      if(!dynamic_cast<TH2 *>(currentdir->FindObject("Test1"))){
+        std::cout << "Not found in Group2: Test1" << std::endl;
+        found = false;
+      }
+      if(!dynamic_cast<TH2 *>(currentdir->FindObject("Test2"))){
+        std::cout << "Not found in Group2: Test2" << std::endl;
+        found = false;
+      }
+    }
+    if(!(currentdir = dynamic_cast<THashList *>(testmgr.GetListOfHistograms()->FindObject("Group3")))){
+      std::cout << "Not found: Group3" << std::endl;
+      found = false;
+    } else {
+      if(!static_cast<TH3 *>(currentdir->FindObject("Test1"))){
+        std::cout << "Not found in Group3: Test1" << std::endl;
+        found = false;
+      }
+      if(!static_cast<TH3 *>(currentdir->FindObject("Test2"))){
+        std::cout << "Not found in Group3: Test2" << std::endl;
+        found = false;
+      }
+    }
+    if(!(currentdir = dynamic_cast<THashList *>(testmgr.GetListOfHistograms()->FindObject("Group4")))){
+      std::cout << "Not found: Group4" << std::endl;
+      found = false;
+    } else {
+      if(!(currentdir = dynamic_cast<THashList *>(currentdir->FindObject("Subgroup1")))){
+        std::cout << "Not found in Group4: Subgroup1" << std::endl;
+        found = false;
+      } else {
+        if(!dynamic_cast<TH1 *>(currentdir->FindObject("Test1"))){
+          std::cout << "Not found in Subgroup1: Test1" << std::endl;
+          found = false;
+        }
+      }
+    }
+    return found ? 0 : 1;
+  }
+
+  int THistManagerTestSuite::TestFillSimpleHistograms(){
+    THistManager testmgr("testmgr");
+
+    testmgr.CreateTH1("Test1", "Test fill 1D histogram", 1, 0., 1.);
+    testmgr.CreateTH2("Test2", "Test fill 2D histogram", 1, 0., 1., 1, 0., 1.);
+    testmgr.CreateTH3("Test3", "Test fill 3D histogram", 1, 0., 1., 1, 0., 1., 1, 0., 1.);
+    int nbins[4] = {1,1,1,1}; double min[4] = {0.,0.,0.,0.}, max[4] = {1.,1.,1.,1.};
+    testmgr.CreateTHnSparse("TestN", "Test Fill THnSparse", 4, nbins, min, max);
+    testmgr.CreateTProfile("TestProfile", "Test fill Profile histogram", 1, 0., 1.);
+
+    double point[4] = {0.5, 0.5, 0.5, 0.5};
+    for(int i = 0; i < 100; i++){
+      testmgr.FillTH1("Test1", 0.5);
+      testmgr.FillTH2("Test2", 0.5, 0.5);
+      testmgr.FillTH3("Test3", 0.5, 0.5, 0.5);
+      testmgr.FillProfile("TestProfile", 0.5, 1.);
+      testmgr.FillTHnSparse("TestN", point);
+    }
+
+    // Evalutate test
+    // tell user why test has failed
+    bool success(true);
+
+    TH1 *test1 = dynamic_cast<TH1 *>(testmgr.GetListOfHistograms()->FindObject("Test1"));
+    if(test1){
+      if(TMath::Abs(test1->GetBinContent(1) - 100) > DBL_EPSILON){
+        std::cout << "Test1: Mismatch in values, expected 100, found " <<  test1->GetBinContent(1) << std::endl;
+        success = false;
+      }
+    } else {
+      std::cout << "Not found: Test1" << std::endl;
+      success = false;
+    }
+
+    TH2 *test2 = dynamic_cast<TH2 *>(testmgr.GetListOfHistograms()->FindObject("Test2"));
+    if(test2){
+      if(TMath::Abs(test2->GetBinContent(1, 1) - 100) > DBL_EPSILON){
+        std::cout << "Test2: Mismatch in values, expected 100, found " <<  test2->GetBinContent(1,1) << std::endl;
+        success = false;
+      }
+    } else {
+      std::cout << "Not found: Test2" << std::endl;
+      success = false;
+    }
+
+    TH3 *test3 = dynamic_cast<TH3 *>(testmgr.GetListOfHistograms()->FindObject("Test3"));
+    if(test3){
+      if(TMath::Abs(test3->GetBinContent(1, 1, 1) - 100) > DBL_EPSILON){
+        std::cout << "Test3: Mismatch in values, expected 100, found " <<  test3->GetBinContent(1,1,1) << std::endl;
+        success = false;
+      }
+    } else {
+      std::cout << "Not found: Test3" << std::endl;
+      success = false;
+    }
+
+    THnSparse *testN = dynamic_cast<THnSparse *>(testmgr.GetListOfHistograms()->FindObject("TestN"));
+    if(testN){
+      int index[4] = {1,1,1,1};
+      if(TMath::Abs(testN->GetBinContent(index) - 100) > DBL_EPSILON){
+        std::cout << "TestN: Mismatch in values, expected 100, found " <<  testN->GetBinContent(index) << std::endl;
+        success = false;
+      }
+    } else {
+      std::cout << "Not found: TestN" << std::endl;
+      success = false;
+    }
+
+    TProfile *testProfile = dynamic_cast<TProfile *>(testmgr.GetListOfHistograms()->FindObject("TestProfile"));
+    if(testProfile){
+      if(TMath::Abs(testProfile->GetBinContent(1) - 1) > DBL_EPSILON){
+        std::cout << "TestProfile: Mismatch in values, expected 1, found " <<  testProfile->GetBinContent(1) << std::endl;
+        success = false;
+      }
+    } else {
+      std::cout << "Not found: TestProfile" << std::endl;
+      success = false;
+    }
+
+    return success ? 0 : 1;
+  }
+
+
+  int THistManagerTestSuite::TestFillGroupedHistograms(){
+    THistManager testmgr("testmgr");
+
+    // Creating 3 groups, 1 with 1D and 1 with 2D histograms, and a third with a subgroup and a TProfile
+    testmgr.CreateTH1("Group1/Test1", "Test 1 Group 1D", 1, 0., 1.);
+    testmgr.CreateTH1("Group1/Test2", "Test 2 Group 1D", 1, 0., 1.);
+    testmgr.CreateTH2("Group2/Test1", "Test 1 Group 2D", 1, 0., 1., 1, 0., 1.);
+    testmgr.CreateTH2("Group2/Test2", "Test 2 Group 2D", 1, 0., 1., 1, 0., 1.);
+    testmgr.CreateTProfile("Group3/Subgroup1/Test1", "Test 1 with subgroup", 1, 0., 1.);
+
+    for(int i = 0; i < 100; i++){
+      testmgr.FillTH1("Group1/Test1", 0.5);
+      testmgr.FillTH1("Group1/Test2", 0.5);
+      testmgr.FillTH2("Group2/Test1", 0.5, 0.5);
+      testmgr.FillTH2("Group2/Test2", 0.5, 0.5);
+      testmgr.FillProfile("Group3/Subgroup1/Test1", 0.5, 1);
+    }
+
+    // Evaluate test
+    bool success(true);
+
+    THashList *currentdir = dynamic_cast<THashList *>(testmgr.GetListOfHistograms()->FindObject("Group1"));
+    if(currentdir){
+      TH1 *test1 = dynamic_cast<TH1 *>(currentdir->FindObject("Test1"));
+      if(test1){
+        if(TMath::Abs(test1->GetBinContent(1) - 100) > DBL_EPSILON){
+          std::cout << "Group1/Test1: Value mismatch: expected 100, found " << test1->GetBinContent(1) << std::endl;
+          success = false;
+        }
+      } else {
+        std::cout << "Not found in Group1: Test1" << std::endl;
+        success = false;
+      }
+      test1 = dynamic_cast<TH1 *>(currentdir->FindObject("Test2"));
+      if(test1){
+        if(TMath::Abs(test1->GetBinContent(1) - 100) > DBL_EPSILON){
+          std::cout << "Group1/Test2: Value mismatch: expected 100, found " << test1->GetBinContent(1) << std::endl;
+          success = false;
+        }
+      } else {
+        std::cout << "Not found in Group1: Test2" << std::endl;
+        success = false;
+      }
+    } else {
+      std::cout << "Not found: Group1" << std::endl;
+      success = false;
+    }
+
+    currentdir = dynamic_cast<THashList *>(testmgr.GetListOfHistograms()->FindObject("Group2"));
+    if(currentdir){
+      TH2 *test2 = dynamic_cast<TH2 *>(currentdir->FindObject("Test1"));
+      if(test2){
+        if(TMath::Abs(test2->GetBinContent(1,1) - 100) > DBL_EPSILON){
+          std::cout << "Group2/Test1: Value mismatch: expected 100, found " << test2->GetBinContent(1,1) << std::endl;
+          success = false;
+        }
+      } else {
+        std::cout << "Not found in Group2: Test1" << std::endl;
+        success = false;
+      }
+      test2 = dynamic_cast<TH2 *>(currentdir->FindObject("Test2"));
+      if(test2){
+        if(TMath::Abs(test2->GetBinContent(1,1) - 100) > DBL_EPSILON){
+          std::cout << "Group2/Test2: Value mismatch: expected 100, found " << test2->GetBinContent(1,1) << std::endl;
+          success = false;
+        }
+      } else {
+        std::cout << "Not found in Group2: Test2" << std::endl;
+        success = false;
+      }
+    } else {
+      std::cout << "Not found: Group2" << std::endl;
+      success = false;
+    }
+
+    currentdir = dynamic_cast<THashList *>(testmgr.GetListOfHistograms()->FindObject("Group3"));
+    if(currentdir){
+      currentdir = dynamic_cast<THashList *>(currentdir->FindObject("Subgroup1"));
+      if(currentdir){
+        TProfile *testprofile = dynamic_cast<TProfile *>(currentdir->FindObject("Test1"));
+        if(testprofile){
+          if(TMath::Abs(testprofile->GetBinContent(1) - 1) > DBL_EPSILON){
+            std::cout << "Group3/Subgroup1/Test1: Value mismatch: expected 1, found " << testprofile->GetBinContent(1) << std::endl;
+            success = false;
+          }
+        } else {
+          std::cout << "Not found in Group3/Subgroup1: Test1" << std::endl;
+          success = false;
+        }
+      } else {
+        std::cout << "Not found in Group3: Subgroup1" << std::endl;
+        success = false;
+      }
+    } else {
+      std::cout << "Not found: Group3" << std::endl;
+      success = false;
+    }
+    return success ? 0 : 1;
+  }
+
+  int TestRunAll(){
+    int testresult(0);
+    THistManagerTestSuite testsuite;
+
+    std::cout << "Running test: Build simple" << std::endl;
+    testresult += testsuite.TestBuildSimpleHistograms();
+    std::cout << "Result after test: " << testresult << std::endl;
+
+    std::cout << "Running test: Build grouped" << std::endl;
+    testresult += testsuite.TestBuildGroupedHistograms();
+    std::cout << "Result after test: " << testresult << std::endl;
+
+    std::cout << "Running test: Fill Simple" << std::endl;
+    testresult += testsuite.TestFillSimpleHistograms();
+    std::cout << "Result after test: " << testresult << std::endl;
+
+    std::cout << "Running test: Fill Grouped" << std::endl;
+    testresult += testsuite.TestFillGroupedHistograms();
+    std::cout << "Result after test: " << testresult << std::endl;
+
+    return testresult;
+  }
+
+  int TestRunBuildSimple(){
+    THistManagerTestSuite testsuite;
+    return testsuite.TestBuildSimpleHistograms();
+  }
+
+  int TestRunBuildGrouped(){
+    THistManagerTestSuite testsuite;
+    return testsuite.TestBuildGroupedHistograms();
+  }
+
+  int TestRunFillSimple(){
+    THistManagerTestSuite testsuite;
+    return testsuite.TestFillSimpleHistograms();
+  }
+
+  int TestRunFillGrouped(){
+    THistManagerTestSuite testsuite;
+    return testsuite.TestFillGroupedHistograms();
+  }
 }
