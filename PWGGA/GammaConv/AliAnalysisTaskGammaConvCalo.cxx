@@ -78,6 +78,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fMotherList(NULL),
   fPhotonDCAList(NULL),
   fGammaERM02(NULL),
+  fInvMassShowerShape(NULL),
   fTrueList(NULL),
   fMCList(NULL),
   fClusterOutputList(NULL),
@@ -113,6 +114,13 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   tESDClusterNCells(0),
   tESDClusterMaxECell(0),
   tESDClusterNLM(0),
+  tESDInvMassShowerShape(0),
+  tESDIMMesonInvMass(0),
+  tESDIMMesonPt(0),
+  tESDIMClusE(0),
+  tESDIMClusterM02(0),
+  tESDIMClusterM20(0),
+  fDoInvMassShowerShapeTree(kFALSE),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
@@ -324,7 +332,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
-  doConvGammaShowerShapeTree(kFALSE),
+  fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
   fDoPrimaryTrackMatching(kFALSE)
 {
@@ -349,6 +357,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fMotherList(NULL),
   fPhotonDCAList(NULL),
   fGammaERM02(NULL),
+  fInvMassShowerShape(NULL),
   fTrueList(NULL),
   fMCList(NULL),
   fClusterOutputList(NULL),
@@ -384,6 +393,13 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   tESDClusterNCells(0),
   tESDClusterMaxECell(0),
   tESDClusterNLM(0),
+  tESDInvMassShowerShape(0),
+  tESDIMMesonInvMass(0),
+  tESDIMMesonPt(0),
+  tESDIMClusE(0),
+  tESDIMClusterM02(0),
+  tESDIMClusterM20(0),
+  fDoInvMassShowerShapeTree(kFALSE),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
@@ -595,7 +611,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
   fWeightJetJetMC(1),
-  doConvGammaShowerShapeTree(kFALSE),
+  fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
   fDoPrimaryTrackMatching(kFALSE)
 {
@@ -813,9 +829,14 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   fHistoClusGammaE                    = new TH1F*[fnCuts];
   fHistoClusOverlapHeadersGammaPt     = new TH1F*[fnCuts];
 
-  if(doConvGammaShowerShapeTree){
+  if(fDoConvGammaShowerShapeTree){
     fGammaERM02               = new TList*[fnCuts];
     tESDGammaERM02            = new TTree*[fnCuts];
+  }
+
+  if(fDoInvMassShowerShapeTree){
+    fInvMassShowerShape       = new TList*[fnCuts];
+    tESDInvMassShowerShape    = new TTree*[fnCuts];
   }
 
   // set common binning in pT for mesons and photons
@@ -1024,7 +1045,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fHistoClusOverlapHeadersGammaPt[iCut]->SetXTitle("p_{T,clus}(GeV/c), selected header w/ overlap");
     fClusterOutputList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
 
-    if(doConvGammaShowerShapeTree){
+    if(fDoConvGammaShowerShapeTree){
       fGammaERM02[iCut]           = new TList();
       fGammaERM02[iCut]->SetName(Form("%s_%s_%s_%s ConvGamma-Cluster Matched",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
       fGammaERM02[iCut]->SetOwner(kTRUE);
@@ -1041,6 +1062,20 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       tESDGammaERM02[iCut]->Branch("MaxECell",&tESDClusterMaxECell,"tESDClusterMaxECell/F");
       tESDGammaERM02[iCut]->Branch("NLM",&tESDClusterNLM,"tESDClusterNLM/F");
       fGammaERM02[iCut]->Add(tESDGammaERM02[iCut]);
+    }
+
+    if(fDoInvMassShowerShapeTree){
+      fInvMassShowerShape[iCut]           = new TList();
+      fInvMassShowerShape[iCut]->SetName(Form("%s_%s_%s_%s InvMass_ShowerShape",cutstringEvent.Data(),cutstringPhoton.Data(),cutstringCalo.Data(),cutstringMeson.Data()));
+      fInvMassShowerShape[iCut]->SetOwner(kTRUE);
+      fCutFolder[iCut]->Add(fInvMassShowerShape[iCut]);
+      tESDInvMassShowerShape[iCut] = new TTree("ESD_Meson_InvMass_Pt_ClusE_ClusM02_ClusM20","ESD_Meson_InvMass_Pt_ClusE_ClusM02_ClusM20");
+      tESDInvMassShowerShape[iCut]->Branch("MesonInvMass",&tESDIMMesonInvMass,"tESDIMMesonInvMass/F");
+      tESDInvMassShowerShape[iCut]->Branch("MesonPt",&tESDIMMesonPt,"tESDIMMesonPt/F");
+      tESDInvMassShowerShape[iCut]->Branch("ClusE",&tESDIMClusE,"tESDIMClusE/F");
+      tESDInvMassShowerShape[iCut]->Branch("ClusM02",&tESDIMClusterM02,"tESDIMClusterM02/F");
+      tESDInvMassShowerShape[iCut]->Branch("ClusM20",&tESDIMClusterM20,"tESDIMClusterM20/F");
+      fInvMassShowerShape[iCut]->Add(tESDInvMassShowerShape[iCut]);
     }
 
     if (fIsMC > 1){
@@ -3523,7 +3558,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
         if (gamma1->GetIsCaloPhoton()){
           AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
           matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent, fWeightJetJetMC);
-          if(doConvGammaShowerShapeTree && matched){
+          if(fDoConvGammaShowerShapeTree && matched){
             Float_t clusPos[3]={0,0,0};
             cluster->GetPosition(clusPos);
             TVector3 clusterVector(clusPos[0],clusPos[1],clusPos[2]);
@@ -3549,6 +3584,21 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           }else {
             fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(),fWeightJetJetMC);
           }
+
+          // fill invMass cluster shape tree if requested
+          if(fDoInvMassShowerShapeTree){
+            Double_t tempIM = pi0cand->M();
+            if( (tempIM > 0.05 && tempIM < 0.2) || (tempIM > 0.4 && tempIM < 0.6) ){
+              AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+              tESDIMMesonInvMass = pi0cand->M();
+              tESDIMMesonPt = pi0cand->Pt();
+              tESDIMClusE = cluster->E();
+              tESDIMClusterM02 = cluster->GetM02();
+              tESDIMClusterM20 = cluster->GetM20();
+              tESDInvMassShowerShape[fiCut]->Fill();
+            }
+          }
+
           // fill new histograms
           if (!matched){
             if(!fDoLightOutput){

@@ -72,14 +72,32 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
                               Bool_t    runLightOutput                  = kFALSE,               // switch to run light output (only essential histograms for afterburner)
                               Bool_t    doFlattening                    = kFALSE,               // switch on centrality flattening for LHC11h
                               TString   fileNameInputForCentFlattening  = "",                   // file name for centrality flattening
-                              Bool_t    doTreeEOverP                    = kFALSE,               // switch to produce EOverP tree
                               TString   additionalTrainConfig           = "0"                   // additional counter for trainconfig
                 ) {
 
+  Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCalo_PbPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      if(tempStr.CompareTo("EPCLUSTree") == 0){
+        cout << "INFO: AddTask_GammaCalo_PbPb activating 'EPCLUSTree'" << endl;
+        doTreeEOverP = kTRUE;
+      }
+    }
+  }
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaCalo_PbPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
+
   Int_t isHeavyIon = 1;
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
-  }  
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
