@@ -158,10 +158,12 @@ class AliEmcalJet : public AliVParticle
   TLorentzVector    SubtractRhoVect(Double_t rho, Bool_t save = kFALSE);
 
   // Jet constituents
+  AliVCluster      *Cluster(Int_t idx)                                             const;
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)                         const;
   Int_t             ContainsCluster(AliVCluster* cluster, TClonesArray* clusters)  const;
   Int_t             ContainsCluster(Int_t ic)                                      const;
   AliVCluster      *GetLeadingCluster(TClonesArray *clusters)                      const;
+  AliVParticle     *Track(Int_t idx)                                               const;
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)                           const;
   Int_t             ContainsTrack(AliVParticle* track, TClonesArray* tracks)       const;
   Int_t             ContainsTrack(Int_t it)                                        const;

@@ -16,6 +16,9 @@ class AliEmcalJetUtility;
 #include "FJ_includes.h"
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include "AliEmcalContainerUtils.h"
+#endif
 
 namespace fastjet {
   class PseudoJet;
@@ -180,6 +183,12 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliFJWrapper           fFastJetWrapper;         //!fastjet wrapper
 
   static const Int_t     fgkConstIndexShift;      //!contituent index shift
+
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  // Handle mapping between index and containers
+  AliEmcalContainerUtils <AliClusterContainer, AliVCluster> fClusterContainerUtils;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerUtils <AliParticleContainer, AliVParticle> fParticleContainerUtils; //!<! Mapping between index and particle containers
+#endif
 
  private:
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented

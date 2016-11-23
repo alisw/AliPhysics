@@ -77,6 +77,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
+  fClusterContainerUtils(),
+  fParticleContainerUtils(),
   fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask")
 {
 }
@@ -110,6 +112,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
+  fClusterContainerUtils(),
+  fParticleContainerUtils(),
   fFastJetWrapper(name,name)
 {
 }
@@ -401,6 +405,11 @@ void AliEmcalJetTask::ExecOnce()
 
 
   AliAnalysisTaskEmcal::ExecOnce();
+
+  // Setup container utils. Must be called after AliAnalysisTaskEmcal::ExecOnce() so that the
+  // containers' arrays are setup.
+  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusterCollArray);
+  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fParticleCollArray);
 }
 
 /**
@@ -512,7 +521,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
 
       if (flag == 0 || particles_sub == 0) {
-        jet->AddTrackAt(tid, nt);
+        jet->AddTrackAt(fParticleContainerUtils.GlobalIndexFromLocalIndex(partCont, tid), nt);
       }
       else {
         Int_t part_sub_id = particles_sub->GetEntriesFast();
@@ -557,7 +566,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
 
       if (flag == 0 || particles_sub == 0) {
-        jet->AddClusterAt(cid, nc);
+        jet->AddClusterAt(fClusterContainerUtils.GlobalIndexFromLocalIndex(clusCont, cid), nc);
       }
       else {
         Int_t part_sub_id = particles_sub->GetEntriesFast();
