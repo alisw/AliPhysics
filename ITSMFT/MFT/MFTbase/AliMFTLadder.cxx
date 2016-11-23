@@ -85,7 +85,7 @@ TGeoVolume * AliMFTLadder::CreateVolume() {
   Double_t kFlexLength = nChips*(AliMFTGeometry::kSensorLength+AliMFTGeometry::kSensorInterspace)+AliMFTGeometry::kLadderOffsetToEnd + AliMFTGeometry::kSensorSideOffset;
   Double_t kShiftY = 2*AliMFTGeometry::kSensorTopOffset+AliMFTGeometry::kSensorHeight-AliMFTGeometry::kFlexHeight/2; // strange
   TGeoVolumeAssembly * flexVol = fMFTFlex->MakeFlex(fSegmentation->GetNSensors(), kFlexLength);                               
-  fLadderVolume->AddNode(flexVol, 1, new TGeoTranslation(kFlexLength/2+AliMFTGeometry::kSensorSideOffset/2, kShiftY, AliMFTGeometry::kFlexThickness/2));     
+  fLadderVolume->AddNode(flexVol, 1, new TGeoTranslation(kFlexLength/2+AliMFTGeometry::kSensorSideOffset/2, kShiftY, AliMFTGeometry::kFlexThickness/2-AliMFTGeometry::kRohacell));     
 
   // Create the CMOS Sensors
   CreateSensors();
@@ -165,8 +165,8 @@ void AliMFTLadder::CreateSensors() {
     TGeoCombiTrans * chipPos = chipSeg->GetTransformation();
     TGeoCombiTrans * chipPosGlue = chipSeg->GetTransformation();
     // Position of the center on the chip in the chip coordinate system
-    Double_t pos[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kSensorThickness/2. - AliMFTGeometry::kGlueThickness};
-    Double_t posglue[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kGlueThickness/2};
+    Double_t pos[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kSensorThickness/2. - AliMFTGeometry::kGlueThickness - AliMFTGeometry::kRohacell};
+    Double_t posglue[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kGlueThickness/2 - AliMFTGeometry::kRohacell};
     Double_t master[3];
     Double_t masterglue[3];
     chipPos->LocalToMaster(pos, master);
