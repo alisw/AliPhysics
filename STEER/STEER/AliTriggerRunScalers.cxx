@@ -159,7 +159,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
 
   ifstream *file = new ifstream ( filename.Data() );
   if (!*file) {
-    AliErrorClass(Form("Error opening file (%s) !\n",filename.Data()));
+    AliErrorClass(Form("Error opening file (%s) !",filename.Data()));
     file->close();
     delete file;
     return NULL;
@@ -180,7 +180,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
     // 1st line, version, it is one number, 
     if (!verflag) {
       if (ntokens != 1) { 
-        AliErrorClass( Form( "Error reading version number from (%s), line :%s\n", 
+        AliErrorClass( Form( "Error reading version number from (%s), line :%s", 
                               filename.Data() , strLine.Data() ) );  
 	delete tokens;
         return NULL;
@@ -198,7 +198,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
 
     if (!classflag) {
       if ( !((TObjString*)tokens->At(1))->String().IsDigit() ) {
-        AliErrorClass( Form( "Error reading Run number from (%s)\n", filename.Data() )); 
+        AliErrorClass( Form( "Error reading Run number from (%s)", filename.Data() )); 
       }
   //    cout << "Run Number " << ((TObjString*)tokens->At(0))->String().Atoi() << endl;
       rScaler->SetRunNumber( ((TObjString*)tokens->At(0))->String().Atoi() );
@@ -206,7 +206,7 @@ AliTriggerRunScalers* AliTriggerRunScalers::ReadScalers( TString & filename )
   //    cout << "Number of classes " << nclass << endl;
       rScaler->SetNumClasses( nclass );
       if ( nclass != ntokens - 2 ) {
-        AliErrorClass( Form( "Error reading number of classes from (%s)\n", filename.Data() ));
+        AliErrorClass( Form( "Error reading number of classes from (%s)", filename.Data() ));
 	return NULL;
       }
       for (UChar_t i=0; i<nclass; ++i) {
@@ -474,14 +474,14 @@ Int_t AliTriggerRunScalers::CorrectScalersOverflow()
     StdoutToAliError(fScalersRecord.At(i)->Print(); fScalersRecord.At(i-1)->Print(););
     fScalersRecordESD.SetOwner();
     fScalersRecordESD.Delete(); 
-    AliErrorClass("Inconsistent scalers, they will not be provided.\n");
+    AliErrorClass("Inconsistent scalers, they will not be provided.");
     for(Int_t i=0; i<8; i++)delete overflow[i];
     return 1;
   }
  }
  for(Int_t i=0; i<8; i++)delete[] overflow[i];
  if(fScalersRecordESD.GetEntriesFast() != fScalersRecord.GetEntriesFast()){
-    AliErrorClass("Internal error: #scalers ESD != #scalers \n");
+    AliErrorClass("Internal error: #scalers ESD != #scalers ");
     return 1;
  }
  return 0;
@@ -503,7 +503,7 @@ AliTriggerScalersESD* AliTriggerRunScalers::GetScalersForEventClass(const AliTim
  TObjArray* scalers2 = (TObjArray*)scalrec2->GetTriggerScalers();
 
  if(scalers1->GetEntriesFast() != fnClasses){
-  AliErrorClass("Internal error: #classes in RecordESD != fnClasses\n");
+  AliErrorClass("Internal error: #classes in RecordESD != fnClasses");
   return 0; 
  }
 
@@ -534,7 +534,7 @@ AliTriggerScalersESD* AliTriggerRunScalers::GetScalersForEventClass(const AliTim
         return result;
       }
  }
- AliErrorClass(Form("Classindex %i not found.\n",classIndex));
+ AliErrorClass(Form("Classindex %i not found.",classIndex));
  return 0;
 }
 
@@ -557,7 +557,7 @@ const AliTriggerScalersRecordESD* AliTriggerRunScalers::GetScalersDeltaForEvent(
  TObjArray* scalers2 = (TObjArray*)scalrec2->GetTriggerScalers();
 
  if(scalers1->GetEntriesFast() != fnClasses){
-  AliErrorClass("Internal error: #classes in RecordESD != fnClasses\n");
+  AliErrorClass("Internal error: #classes in RecordESD != fnClasses");
   return 0; 
  }
  AliTriggerScalersRecordESD *scalrec = new AliTriggerScalersRecordESD();
@@ -606,7 +606,7 @@ const AliTriggerScalersRecordESD* AliTriggerRunScalers::GetScalersDeltaForRun() 
  TObjArray* scalers2 = (TObjArray*)scalrec2->GetTriggerScalers();
 
  if(scalers1->GetEntriesFast() != fnClasses){
-  AliErrorClass("Internal error: #classes in RecordESD != fnClasses\n");
+  AliErrorClass("Internal error: #classes in RecordESD != fnClasses");
   return 0; 
  }
  AliTriggerScalersESD *s1,*s2;

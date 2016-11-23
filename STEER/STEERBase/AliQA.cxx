@@ -627,12 +627,12 @@ void AliQA::SetQARefStorage(const char * name)
 		fgQARefFileName =  fgkQAName ; 
 
   else {
-	  AliErrorClass(Form("%s is an invalid storage definition\n", name)) ; 
+	  AliErrorClass(Form("%s is an invalid storage definition", name)) ; 
 	  fgQARefDirName  = "" ; 
 	  fgQARefFileName = "" ; 
   }	
 	TString tmp(fgQARefDirName) ; // + fgQARefFileName) ;
-	AliInfoClass(Form("AliQA::SetQARefDir: QA references are in  %s\n", tmp.Data()) ) ;
+	AliInfoClass(Form("AliQA::SetQARefDir: QA references are in  %s", tmp.Data()) ) ;
 }
 
 //_____________________________________________________________________________

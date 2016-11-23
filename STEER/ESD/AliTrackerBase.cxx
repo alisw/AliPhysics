@@ -217,7 +217,7 @@ Double_t AliTrackerBase::MeanMaterialBudget(const Double_t *start, const Double_
       // This means navigation has problems on one boundary
       // Try to cross by making a small step
       static int show_error = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
-      if (show_error) AliErrorClass("Cannot cross boundary\n");
+      if (show_error) AliErrorClass("Cannot cross boundary");
       mparam[0] = bparam[0]/step;
       mparam[1] = bparam[1];
       mparam[2] = bparam[2]/step;
