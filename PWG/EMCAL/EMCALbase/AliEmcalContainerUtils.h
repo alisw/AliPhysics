@@ -49,7 +49,7 @@ class AliEmcalContainerUtils {
 
   // Copy the mapping from the source "map"; the mapping is between the global index found in "map" for each object in "containers" and the objects in "containers"
   template<class U2>
-  void CopyMappingFrom(const AliEmcalContainerUtils<U2, V>& map, TCollection* containers);
+  void CopyMappingFrom(const AliEmcalContainerUtils<U2, V>& map, TCollection & containers);
 
   // Index operations
   // Returns the offset of an input object 
@@ -277,9 +277,9 @@ V * AliEmcalContainerUtils<U, V>::GetObjectFromGlobalIndex(const int globalIndex
  */
 template<class U, class V>
 template<class U2>
-void AliEmcalContainerUtils<U, V>::CopyMappingFrom(const AliEmcalContainerUtils<U2, V>& map, TCollection* containers)
+void AliEmcalContainerUtils<U, V>::CopyMappingFrom(const AliEmcalContainerUtils<U2, V>& map, TCollection & containers)
 {
-  TIter next(containers);
+  TIter next(&containers);
   TObject* obj = 0;
   while((obj = next())) {
     U* cont = dynamic_cast<U*>(obj);

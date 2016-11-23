@@ -17,6 +17,9 @@
 #include "AliLog.h"
 #include "Riostream.h"
 
+#include "AliParticleContainer.h"
+#include "AliClusterContainer.h"
+
 /// \cond CLASSIMP
 ClassImp(AliEmcalJet);
 /// \endcond
@@ -670,6 +673,19 @@ void AliEmcalJet::Clear(Option_t */*option*/)
 }
 
 /**
+ * Retrieve the track constituent corresponding to the index found at a certain position.
+ * Automatically retrieves the particle from the proper TClonesArray. This function is preferred to
+ * TrackAt(Int_t, TClonesArray), which is only kept for backwards compatibility.
+ *
+ * @param idx Position of the track constituent
+ * @return Pointer to the track constituent requested (if found)
+ */
+AliVParticle* AliEmcalJet::Track(Int_t idx) const
+{
+  return AliParticleContainer::GetEmcalContainerUtils().GetObjectFromGlobalIndex(TrackAt(idx));
+}
+
+/**
  * Finds the track constituent corresponding to the index found at a certain position.
  * @param idx Position of the track constituent
  * @param ta Array with pointers to the tracks from which jet constituents are drawn
@@ -678,7 +694,11 @@ void AliEmcalJet::Clear(Option_t */*option*/)
 AliVParticle* AliEmcalJet::TrackAt(Int_t idx, TClonesArray *ta) const
 {
   if (!ta) return 0;
-  return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx)));
+  auto res =  AliParticleContainer::GetEmcalContainerUtils().LocalIndexFromGlobalIndex(TrackAt(idx));
+  if (res.second != ta) {
+    AliWarning(Form("TClonesArray %s that was passed does not correspond to the index! The index belongs to TClonesArray %s", ta->GetName(), res.second->GetName()));
+  }
+  return dynamic_cast<AliVParticle*>(res.second->At(res.first));
 }
 
 /**
@@ -694,6 +714,19 @@ Int_t AliEmcalJet::ContainsTrack(AliVParticle* track, TClonesArray* tracks) cons
 }
 
 /**
+ * Retrieve the cluster constituent corresponding to the index found at a certain position.
+ * Automatically retrieves the particle from the proper TClonesArray. This function is preferred to
+ * ClusterAt(Int_t, TClonesArray), which is only kept for backwards compatibility.
+ *
+ * @param idx Position of the cluster constituent
+ * @return Pointer to the cluster constituent requested (if found)
+ */
+AliVCluster* AliEmcalJet::Cluster(Int_t idx) const
+{
+  return AliClusterContainer::GetEmcalContainerUtils().GetObjectFromGlobalIndex(ClusterAt(idx));
+}
+
+/**
  * Finds the cluster constituent corresponding to the index found at a certain position.
  * @param idx Position of the cluster constituent
  * @param ta Array with pointers to the clusters from which jet constituents are drawn
@@ -702,7 +735,12 @@ Int_t AliEmcalJet::ContainsTrack(AliVParticle* track, TClonesArray* tracks) cons
 AliVCluster* AliEmcalJet::ClusterAt(Int_t idx, TClonesArray *ca) const
 {
   if (!ca) return 0;
-  return dynamic_cast<AliVCluster*>(ca->At(ClusterAt(idx)));
+
+  auto res =  AliClusterContainer::GetEmcalContainerUtils().LocalIndexFromGlobalIndex(ClusterAt(idx));
+  if (res.second != ca) {
+    AliWarning(Form("TClonesArray %s that was passed does not correspond to the index! The index belongs to TClonesArray %s", ca->GetName(), res.second->GetName()));
+  }
+  return dynamic_cast<AliVCluster*>(res.second->At(res.first));
 }
 
 /**
