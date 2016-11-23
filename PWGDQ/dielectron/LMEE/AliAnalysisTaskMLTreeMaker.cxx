@@ -387,7 +387,8 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
 //  cout<<"cent: "<<cent<<endl; 
   
   
-  
+ runn = event->GetRunNumber();
+
   
   n= acceptedTracks;
   if(acceptedTracks){
@@ -532,7 +533,6 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       
       if(!fESDTrackCuts->AcceptTrack(esdTrack))   continue;
       
-      runn.push_back(event->GetRunNumber());
       
 //      Alberto Cut on TPC signal N (number of TPC clusters used for dE/dx)
       if(cutonTPCsignalN && esdTrack->GetTPCsignalN()<50) continue; 
@@ -597,6 +597,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
       } //End if hasMC 
       
+
       //Fill Tree with non MC data
       EsigTPC.push_back(tempEsigTPC);
       EsigITS.push_back(tempEsigITS);

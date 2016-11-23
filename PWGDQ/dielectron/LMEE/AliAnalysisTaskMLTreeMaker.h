@@ -131,8 +131,8 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Bool_t loCuts;        //loose cuts?
   
 //  std::vector<Int_t> IsBG;
-  std::vector<Int_t> runn;
   
+  Int_t runn;
   Int_t n;
   Double_t cent;
   
