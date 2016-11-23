@@ -413,13 +413,21 @@ public:
   //----------------------------------------------------
   // MC labels in cells
   //----------------------------------------------------
-  void     SetNumberOfMCGeneratorsToAccept(Int_t nGen)    { fNMCGenerToAccept = nGen ; 
+  
+  Int_t    GetNumberOfMCGeneratorsToAccept()    const { return fNMCGenerToAccept ; } 
+  void     SetNumberOfMCGeneratorsToAccept(Int_t nGen){ fNMCGenerToAccept = nGen ; 
     if      ( nGen > 5 ) fNMCGenerToAccept = 5 ; 
     else if ( nGen < 0 ) fNMCGenerToAccept = 0 ; }
+  
+  TString  GetNameOfMCGeneratorsToAccept(Int_t ig, TString name) const 
+  { if (ig < fNMCGenerToAccept && ig > 0 && ig < 5 ) return fMCGenerToAccept[ig] ; 
+    else return "" ; }
   void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }
+  
   
   void     SwitchOffMCGeneratorToAcceptForTrackMatching() { fMCGenerToAcceptForTrack = kFALSE ; }
   void     SwitchOnMCGeneratorToAcceptForTrackMatching () { fMCGenerToAcceptForTrack = kTRUE  ; }
+  Bool_t   AcceptMCGeneratorForTrackMatching()      const { return fMCGenerToAcceptForTrack   ; }
   
   void     RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, AliVCluster* clus, AliMCEvent* mc,
                                                       Float_t & amp, TArrayI & labeArr, TArrayF & eDepArr ) const;
