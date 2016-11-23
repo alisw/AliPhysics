@@ -46,7 +46,7 @@ AliMFTHeatExchanger::AliMFTHeatExchanger() : TNamed() {
   fRWater = 0.1/2.;
   fDRPipe = 0.005;
   //fHeatExchangerThickness = 1.618; // to get a 13.4 mm thickness for the rohacell... don't implement this value yet! overlapping issue!
-  fHeatExchangerThickness = 1.4; // initial value
+  fHeatExchangerThickness = 1.4 + 2*AliMFTGeometry::kRohacell; // the water pipe are inside the rohacell plate, the rohacell density is increased according
   fCarbonThickness = (0.0290)/2.;  // total thickness of the carbon plate
   InitParameters();
 }

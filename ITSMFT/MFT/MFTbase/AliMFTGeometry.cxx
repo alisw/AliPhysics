@@ -81,6 +81,7 @@ const Double_t AliMFTGeometry::kConnectorThickness=0.01;
 const Double_t AliMFTGeometry::kShiftDDGNDline=0.4; // positionning of the line to separate AVDD/DVDD et AGND/DGND on the FPC
 const Double_t AliMFTGeometry::kShiftline=0.025; // positionning of the line along the FPC side
 const Double_t AliMFTGeometry::kEpsilon=0.0001; // to see the removed volumes produced by TGeoSubtraction
+const Double_t AliMFTGeometry::kRohacell=0.0; // to increase the thickness of the rohacell 
 
 const Double_t AliMFTGeometry::kGlueThickness=50.e-4; // 50 microns
 const Double_t AliMFTGeometry::kGlueEdge=300.e-4; // in case the glue is not spreaded on the whole surface of the sensor
