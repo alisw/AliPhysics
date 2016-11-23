@@ -86,13 +86,30 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 Bool_t    doPrimaryTrackMatching        = kTRUE,                  // enable basic track matching for all primary tracks to cluster
                                 TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
               ) {
-  
-  Int_t isHeavyIon = 0;
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+
+  Bool_t doTreeClusterShowerShape = kFALSE; // enable tree for meson cand EMCal shower shape studies
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvCalo_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      if(tempStr.CompareTo("INVMASSCLUSTree") == 0){
+        cout << "INFO: AddTask_GammaConvCalo_pp activating 'INVMASSCLUSTree'" << endl;
+        doTreeClusterShowerShape = kTRUE;
+      }
+    }
+  }
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaConvCalo_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
 
-  
+  Int_t isHeavyIon = 0;
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1456,6 +1473,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparse(isUsingTHnSparse);
+  task->SetDoTreeInvMassShowerShape(doTreeClusterShowerShape);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(doTreeConvGammaShape) task->SetDoTreeConvGammaShowerShape(kTRUE);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
