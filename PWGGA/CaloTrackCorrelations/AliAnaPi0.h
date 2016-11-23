@@ -171,6 +171,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
                                              Double_t mass,    Double_t pt,     Double_t asym,
                                              Double_t deta,    Double_t dphi,   Double_t angle);
   
+  void         SetPi0MassSelectionWindow(Float_t min, Float_t max) { fPi0MassWindow[0] = min ; fPi0MassWindow[1] = max ; }
+  void         SetEtaMassSelectionWindow(Float_t min, Float_t max) { fEtaMassWindow[0] = min ; fEtaMassWindow[1] = max ; }
+  
   void         FillArmenterosThetaStar(Int_t pdg);
 
   private:
@@ -184,6 +187,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fUseAngleEDepCut ;          ///<  Select pairs depending on their opening angle
   Float_t  fAngleCut ;                 ///<  Select pairs with opening angle larger than a threshold
   Float_t  fAngleMaxCut ;              ///<  Select pairs with opening angle smaller than a threshold
+  
+  Float_t  fPi0MassWindow[2];          ///<  Pi0 mass selection window
+  Float_t  fEtaMassWindow[2];          ///<  Eta mass selection window
   
   // Multiple cuts analysis
   Bool_t   fMultiCutAna;               ///<  Do analysis with several or fixed cut
@@ -463,6 +469,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// Real pi0 pairs, reconstructed pt vs generated pt of pair.
   TH2F **  fhMCPi0PtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts]
   
+  /// Real pi0 pairs, reconstructed pt vs generated pt of pair, apply cut on pi0 mass
+  TH2F **  fhMCPi0PtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+  
   /// Real eta pairs, reconstructed mass vs reconstructed pt of original pair.
   TH2F **  fhMCEtaMassPtRec;           //![fNPtCuts*fNAsymCuts*fNCellNCuts]
   
@@ -472,6 +481,25 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// Real eta pairs, reconstructed pt vs generated pt of pair.
   TH2F **  fhMCEtaPtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
+  /// Real eta pairs, reconstructed pt vs generated pt of pair, apply cut on eta mass
+  TH2F **  fhMCEtaPtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+
+  TH2F *   fhMCPi0PtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
+  TH2F *   fhMCPi0PtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
+  TH2F *   fhMCPi0PtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
+  
+  TH2F *   fhMCEtaPtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
+  TH2F *   fhMCEtaPtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
+  TH2F *   fhMCEtaPtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
+
+  TH2F *   fhMCPi0PtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
+  TH2F *   fhMCPi0PtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
+  TH2F *   fhMCPi0PtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  
+  TH2F *   fhMCEtaPtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
+  TH2F *   fhMCEtaPtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
+  TH2F *   fhMCEtaPtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  
   TH2F *   fhMCPi0PtOrigin ;           //!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCEtaPtOrigin ;           //!<! Mass of reconstructed eta pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCNotResonancePi0PtOrigin;//!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID, pi0 status 1.
@@ -543,7 +571,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,34) ;
+  ClassDef(AliAnaPi0,35) ;
   /// \endcond
   
 } ;
