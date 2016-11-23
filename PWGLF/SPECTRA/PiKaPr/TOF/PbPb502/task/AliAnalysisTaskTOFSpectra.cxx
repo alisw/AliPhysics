@@ -214,7 +214,7 @@ fChannelLast(157248)
   //
   // standard constructur which should be used
   //
-  infomsg("**** CONSTRUCTOR CALLED ****");
+  AliInfo("**** CONSTRUCTOR CALLED ****");
   
   //Perform some tests
   //   TestDCAXYBinning();
@@ -229,12 +229,12 @@ fChannelLast(157248)
   DefineAllTheOutput();
   
   PrintStatus();
-  debugmsg("**** END OF CONSTRUCTOR ****");
+  AliDebug(2, "**** END OF CONSTRUCTOR ****");
 }
 
 //________________________________________________________________________
 AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra(){//Destructor
-  infomsg("**** DESTRUCTOR CALLED ****");
+  AliInfo("**** DESTRUCTOR CALLED ****");
   
   if (fESDtrackCuts) {
     delete fESDtrackCuts;
@@ -273,13 +273,13 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra(){//Destructor
     fListHist = 0;
   }
   
-  debugmsg("**** END OF DESTRUCTOR ****");
+  AliDebug(2, "**** END OF DESTRUCTOR ****");
   
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
-  infomsg("Init()");
+  AliInfo("Init()");
   
   for(Int_t i = 0; i < ntests; i++){
     tr[i] = 0;
@@ -291,7 +291,7 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   //
   //Defining ranges and bins
   //
-  infomsg("Defining Multiplicity bins");
+  AliInfo("Defining Multiplicity bins");
   for(Int_t i = 0; i <=  kEvtMultBins; i++){//Multiplicity
     // Multiplicity [0%, 100%] - not uniform
     //5% step from 0% to 10% -> 2 bins
@@ -303,14 +303,14 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     else if(fMultiplicityBin.At(i-1)  < 10.) fMultiplicityBin.AddAt(fMultiplicityBin.At(i-1) + 5., i);
     else if(fMultiplicityBin.At(i-1)  < 100.) fMultiplicityBin.AddAt(fMultiplicityBin.At(i-1) + 10., i);
     else fMultiplicityBin.AddAt(fMultiplicityBin.At(i-1) + 107., i);
-    if(i > 0) infomsg(Form("Multiplicity Bin %i/%i [%.1f, %.1f]", i, kEvtMultBins, fMultiplicityBin.At(i-1), fMultiplicityBin.At(i)));
+    if(i > 0) AliInfo(Form("Multiplicity Bin %i/%i [%.1f, %.1f]", i, kEvtMultBins, fMultiplicityBin.At(i-1), fMultiplicityBin.At(i)));
     
   }
   
   //
   //Shift to the TPC signal
   //
-  infomsg("Defining shifts to TPC signals");
+  AliInfo("Defining shifts to TPC signals");
   //Pass 1
   // const Double_t PionShift[kPtBins] = {0.000000, 0.000000, 0.000000, 0.000000, 0.000000, -2.495301, -2.849033, -3.038054, -3.106598, -3.105506, -3.075790, -2.991061, -2.913724, -2.852930, -2.803524, -2.757924, -2.696637, -2.632819, -2.568329, -2.496323, -2.390133, -2.274463, -2.166133, -2.063583, -1.965722, -1.870548, -1.775581, -1.687634, -1.606076, -1.533710, -1.469498, -1.421488, -1.389162, -1.367918, -1.350301, -1.337053, -1.326001, -1.310669, -1.291229, -1.269140, -1.226947, -1.172763, -1.103424, -1.039604, -0.978991, -0.925905, -0.879515, -0.837937, -0.803185, -0.765683};
   // const Double_t KaonShift[kPtBins] = {0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 4.440578, 4.016308, 5.250707, 11.406953, 12.859423, 11.364870, 9.495074, 8.067584, 6.774985, 5.729376, 4.907116, 4.271800, 3.750499, 3.306340, 2.933824, 2.505940, 2.039071, 1.683853, 1.415126, 1.213763, 1.070441, 0.979520, 0.930015, 0.924567, 0.955567, 1.019278, 1.100308, 1.188906, 1.289394, 1.391640, 1.483409, 1.575449, 1.650027, 1.715081, 1.768910, 1.828771, 1.867502, 1.879254, 1.864644, 1.825089, 1.792100, 1.760907, 1.742615, 1.731851, 1.736609};
@@ -336,7 +336,7 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
         default:
         break;
       }
-      infomsg(Form("TPC signal shift for species %i ptbin %i is %f", species, ptbin, fTPCShift[species][ptbin]));
+      AliInfo(Form("TPC signal shift for species %i ptbin %i is %f", species, ptbin, fTPCShift[species][ptbin]));
       
     }
   }
@@ -502,13 +502,13 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     }
   }
   
-  debugmsg("Init()\t END");
+  AliDebug(2, "Init()\t END");
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
   
-  infomsg("UserCreateOutputObjects");
+  AliInfo("UserCreateOutputObjects");
   
   PrintStatus();
   SetTrackCuts();//Standard cuts
@@ -582,17 +582,17 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       
     }
     
-    if(binstart > hNEvt->GetNbinsX() + 1) fatalmsg(Form("binstart out of bounds!!"));
+    if(binstart > hNEvt->GetNbinsX() + 1) AliFatal(Form("binstart out of bounds!!"));
     fListHist->AddLast(hNEvt);
     
     hEvtMult = new TH1D("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
-    if(hEvtMult->GetXaxis()->GetBinWidth(100) != 1.) warningmsg(Form("Bins have size %f which is different from one!", hEvtMult->GetXaxis()->GetBinWidth(100)));
-    if(hEvtMult->GetXaxis()->GetBinCenter(1) != -0.5) warningmsg(Form("First bin has center in %f which is different from -0.5!", hEvtMult->GetXaxis()->GetBinCenter(1)));
+    if(hEvtMult->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMult->GetXaxis()->GetBinWidth(100)));
+    if(hEvtMult->GetXaxis()->GetBinCenter(1) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMult->GetXaxis()->GetBinCenter(1)));
     fListHist->AddLast(hEvtMult);
     
     hEvtMultAftEvSel = new TH1D("hEvtMultAftEvSel", "Event Multiplicity After Event Selection;Multiplicity;Counts", 6002, fHImode ? -1. : -301, fHImode ? 6001. : 5701);
-    if(hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100) != 1.) warningmsg(Form("Bins have size %f which is different from one!", hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100)));
-    if(hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1) != -0.5) warningmsg(Form("First bin has center in %f which is different from -0.5!", hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1)));
+    if(hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100) != 1.) AliWarning(Form("Bins have size %f which is different from one!", hEvtMultAftEvSel->GetXaxis()->GetBinWidth(100)));
+    if(hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1) != -0.5) AliWarning(Form("First bin has center in %f which is different from -0.5!", hEvtMultAftEvSel->GetXaxis()->GetBinCenter(1)));
     fListHist->AddLast(hEvtMultAftEvSel);
     
     hEvtVtxXY = new TH1F("hEvtVtxXY", "XY primary vertex distance;(x^2+y^2)^(1/2) (cm);Counts", 100, -5., 5.);
@@ -623,7 +623,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hNTrk->GetXaxis()->SetBinLabel(binstart++, Form("Has fTOFTime<%.0f", fTOFmax));
     hNTrk->GetXaxis()->SetBinLabel(binstart++, "Is selected");
     
-    if(binstart > hNTrk->GetNbinsX() + 1) fatalmsg(Form("binstart out of bounds!!"));
+    if(binstart > hNTrk->GetNbinsX() + 1) AliFatal(Form("binstart out of bounds!!"));
     fListHist->AddLast(hNTrk);
     
     
@@ -675,7 +675,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
       hTrkDCAz[i] = new TH1F(Form("hTrkDCAz%s", passname[i].Data()) , Form("DCAz %s (%f);DCAz (cm);Counts", passtitle[i].Data(), fESDtrackCuts->GetMaxDCAToVertexZ()), varbins[index], varmin[index], varmax[index]);
       fListHist->AddLast(hTrkDCAz[i]);
       
-      if(index != nvar - 1) fatalmsg("Index is different than designed");
+      if(index != nvar - 1) AliFatal("Index is different than designed");
       
       #ifdef CHECKTRACKCUTS
       for(Int_t j = 0; j < 3; j++){
@@ -702,7 +702,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
           limits[1] = TMath::TwoPi();
           break;
           default:
-          fatalmsg("index out of bound!");
+          AliFatal("index out of bound!");
           break;
         }
         
@@ -744,7 +744,7 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
         hTrkDCAzCorr[i][j] = new TH2I(Form("hTrkDCAzCorr%s%s", hname.Data(), passname[i].Data()) , Form("%s;%s;%s", hTrkDCAz[i]->GetName(), hTrkDCAz[i]->GetXaxis()->GetTitle(), hname.Data()), varbins[index], varmin[index], varmax[index], bins, limits[0], limits[1]);
         fListHist->AddLast(hTrkDCAzCorr[i][j]);
         
-        if(index != nvar - 1) fatalmsg("Index is different than designed");
+        if(index != nvar - 1) AliFatal("Index is different than designed");
         
       }
       
@@ -1259,13 +1259,13 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
   
   // Post output data.
   PostAllTheData();
-  infomsg("UserCreateOutputObjects\t END");
+  AliInfo("UserCreateOutputObjects\t END");
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
-  infomsg("UserExec");
-  debugmsg(Form("Event: %.0f", hNEvt->GetBinContent(1)+1));
+  AliInfo("UserExec");
+  AliDebug(2, Form("Event: %.0f", hNEvt->GetBinContent(1)+1));
   
   
   StartTimePerformance(0);
@@ -1279,7 +1279,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   
   fESD = dynamic_cast<AliESDEvent*>( InputEvent() );
   if (!fESD) {
-    errormsg("fESD not available");
+    AliError("fESD not available");
     // Post output data.
     PostAllTheData();
     return;
@@ -1287,7 +1287,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   
   if(fChannelmode){
     RunTOFChannel();
-    infomsg("TOF Channel run terminated");
+    AliInfo("TOF Channel run terminated");
     // Post output data.
     PostAllTheData();
     return;
@@ -1297,7 +1297,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   hNEvt->Fill(EvtStart++);//Number of events opened -->Read from ESD
   
   if (!fESDtrackCuts) {
-    errormsg("fESDtrackCuts not available");
+    AliError("fESDtrackCuts not available");
     // Post output data.
     PostAllTheData();
     return;
@@ -1322,7 +1322,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   // check if event is selected by physics selection class
   //
   //   TString firedTriggerClass = fInputEvent->GetFiredTriggerClasses();
-  //   infomsg(Form("Fired Trigger Classes for Event %.0f\n%s", hNEvt->GetBinContent(1), firedTriggerClass.Data()));
+  //   AliInfo(Form("Fired Trigger Classes for Event %.0f\n%s", hNEvt->GetBinContent(1), firedTriggerClass.Data()));
   
   UInt_t PhysSelmask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   fEvtPhysSelected = (PhysSelmask & fSelectBit);//--> Physics Selection
@@ -1331,13 +1331,13 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   //Physics Selection Cut
   //
   if (!fEvtPhysSelected) {
-    debugmsg(Form("Event %.0f did not pass the physics selection", hNEvt->GetBinContent(1)));
+    AliDebug(2, Form("Event %.0f did not pass the physics selection", hNEvt->GetBinContent(1)));
     // Post output data.
     PostAllTheData();
     return;
   }
   
-  //   infomsg(Form("Event %.0f Passed the Phys. Sel. + Trig", hNEvt->GetBinContent(1)));
+  //   AliInfo(Form("Event %.0f Passed the Phys. Sel. + Trig", hNEvt->GetBinContent(1)));
   hNEvt->Fill(EvtStart++); //-->Pass Phys. Sel. + Trig
   
   //
@@ -1354,13 +1354,13 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       AliWarning("AliMultSelection object not found!");
     }
     else{
-      debugmsg("Estimating centrality");
+      AliDebug(2, "Estimating centrality");
       fEvtMult = fMultSel->GetMultiplicityPercentile("V0M", kTRUE);//Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
     }
     
   }
   else{
-    debugmsg("Estimating Multiplicity at midrapidity");
+    AliDebug(2, "Estimating Multiplicity at midrapidity");
     fEvtMult = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD, kTRUE);//fESDtrackCuts->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
     
   }
@@ -1385,7 +1385,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   //Event Selection Cut
   //
   if(!fEvtSelected){//Event selection based on the Multiplicity selector
-    debugmsg("Did not pass the event selection");
+    AliDebug(2, "Did not pass the event selection");
     // Post the output data.
     PostAllTheData();
     return;
@@ -1400,12 +1400,12 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   const AliESDVertex* vertex = ObtainVertex();
   if (!vertex) {
     // Post output data.
-    fatalmsg(Form("Event selected for the analysis has vertex status %i (should be 3) and will be rejected!!!", fVertStatus));
+    AliFatal(Form("Event selected for the analysis has vertex status %i (should be 3) and will be rejected!!!", fVertStatus));
     PostAllTheData();
     return;
   }
   
-  debugmsg(Form("Event %.0f Has a good vertex", hNEvt->GetBinContent(1)));
+  AliDebug(2, Form("Event %.0f Has a good vertex", hNEvt->GetBinContent(1)));
   
   //Filling XY and Z distribution for vertex
   hEvtVtxXY->Fill(TMath::Sqrt(fPrimVertex[0]*fPrimVertex[0] + fPrimVertex[1]*fPrimVertex[1]));
@@ -1422,8 +1422,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   StartTimePerformance(4);
   const Int_t nTrack = fESD->GetNumberOfTracks();
   for (Int_t iTrack = 0; iTrack < nTrack; iTrack++) {
-    if(iTrack == 0) debugmsg("Starting loop on the tracks");
-    if(iTrack == nTrack -1) debugmsg("Ending loop on the tracks");
+    if(iTrack == 0) AliDebug(2, "Starting loop on the tracks");
+    if(iTrack == nTrack -1) AliDebug(2, "Ending loop on the tracks");
     
     if(iTrack == 0) SetEvtMaskBit(kIsNewEvent, 1);
     else if(iTrack == 1) SetEvtMaskBit(kIsNewEvent, 0);
@@ -1452,10 +1452,10 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     //
     //Track Cuts
     if (!fESDtrackCuts->AcceptTrack(track)) {//WARNING It is important that here the accepted tracks are not selected with the DCA cut, this will be done after filling the DCA histograms
-      debugmsg(Form("Event %.0f Has track %i/%i  -> Not Accepted", hNEvt->GetBinContent(1), iTrack, nTrack));
+      AliDebug(2, Form("Event %.0f Has track %i/%i  -> Not Accepted", hNEvt->GetBinContent(1), iTrack, nTrack));
       continue;
     }
-    else debugmsg(Form("Event %.0f Has track %i/%i  -> Accepted", hNEvt->GetBinContent(1), iTrack, nTrack));
+    else AliDebug(2, Form("Event %.0f Has track %i/%i  -> Accepted", hNEvt->GetBinContent(1), iTrack, nTrack));
     hNTrk->Fill(1);// --> Tracks passes Track Selection
     
     if(TMath::Abs(fEta) > fEtaRange) continue;//Pseudorapidity cut
@@ -1476,7 +1476,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     //Monte Carlo information of the track
     if(fMCmode && !GatherTrackMCInfo(track)){
       // Post output data.
-      errormsg("Track had a problem accessing the MC info");
+      AliError("Track had a problem accessing the MC info");
       PostAllTheData();
       return;
     }
@@ -1679,10 +1679,10 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     //DCAxy cut
     //
     if(!fPassDCAxy){
-      debugmsg(Form("Event %.0f Has track %i/%i  -> Not Accepted as primary", hNEvt->GetBinContent(1), iTrack, nTrack));
+      AliDebug(2, Form("Event %.0f Has track %i/%i  -> Not Accepted as primary", hNEvt->GetBinContent(1), iTrack, nTrack));
       continue;
     }
-    debugmsg(Form("Event %.0f Has track %i/%i  -> Accepted as primary", hNEvt->GetBinContent(1), iTrack, nTrack));
+    AliDebug(2, Form("Event %.0f Has track %i/%i  -> Accepted as primary", hNEvt->GetBinContent(1), iTrack, nTrack));
     
     //
     //TOF clusters for particles which passed the DCA cut
@@ -1762,7 +1762,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         }
         
       }
-      //       debugmsg("Gathered the track MC Info");
+      //       AliDebug(2, "Gathered the track MC Info");
     }
     
     //Setting the track information in the Track mask
@@ -1923,12 +1923,12 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   
   // Post output data.
   PostAllTheData();
-  debugmsg("UserExec\t END");
+  AliDebug(2, "UserExec\t END");
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::InitializeTrackVar(){
-  //   infomsg("InitializeTrackVar");
+  //   AliInfo("InitializeTrackVar");
   
   fTOFcls = 0x0;
   fDCAXY = -999;
@@ -1992,13 +1992,13 @@ void AliAnalysisTaskTOFSpectra::InitializeTrackVar(){
   ResetTPCPIDMaskBit();//Set all bit to 0
   
   if(fMCmode) InitializeMCTrackVar();
-  //   debugmsg("InitializeTrackVar\t END");
+  //   AliDebug(2, "InitializeTrackVar\t END");
   
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::InitializeMCTrackVar(){
-  //   infomsg("InitializeMCTrackVar");
+  //   AliInfo("InitializeMCTrackVar");
   
   fPMC = -999;
   fPtMC = -999;
@@ -2013,13 +2013,13 @@ void AliAnalysisTaskTOFSpectra::InitializeMCTrackVar(){
   
   ResetMCTrkMaskBit();//Set all bit to 0
   
-  //   debugmsg("InitializeMCTrackVar\t END");
+  //   AliDebug(2, "InitializeMCTrackVar\t END");
   
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::InitializeEventVar(){
-  //   infomsg("InitializeEventVar");
+  //   AliInfo("InitializeEventVar");
   
   //Objects
   StartTimePerformance(7);
@@ -2047,13 +2047,13 @@ void AliAnalysisTaskTOFSpectra::InitializeEventVar(){
   InitializeTrackVar();
   StopTimePerformance(9);
   
-  //   debugmsg("InitializeEventVar\t END");
+  //   AliDebug(2, "InitializeEventVar\t END");
   
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
-  infomsg("Terminate");
+  AliInfo("Terminate");
   // Draw result to the screen if you want
   // Called once at the end of the query
   fListHist = dynamic_cast<TList*>(GetOutputData(1));
@@ -2064,7 +2064,7 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
   }
   if(hNEvt){
     hNEvt = dynamic_cast<TH1D*>(fListHist->FindObject("hNEvt"));
-    infomsg("Printing Event Stats");
+    AliInfo("Printing Event Stats");
     for(Int_t bin = 1; bin  <=  hNEvt->GetNbinsX(); bin++) if(!((TString) hNEvt->GetXaxis()->GetBinLabel(bin)).EqualTo("")) printf("%s = %.0f\n", hNEvt->GetXaxis()->GetBinLabel(bin), hNEvt->GetBinContent(bin));
     
     //     printf("Number of Analyzed Events = %f\n", hNEvt->GetBinContent(1));
@@ -2075,13 +2075,13 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
   
   if(hNTrk){
     hNTrk = dynamic_cast<TH1D*>(fListHist->FindObject("hNTrk"));
-    infomsg("Printing Track Stats");
+    AliInfo("Printing Track Stats");
     for(Int_t bin = 1; bin  <=  hNTrk->GetNbinsX(); bin++) if(!((TString) hNTrk->GetXaxis()->GetBinLabel(bin)).EqualTo("")) printf("%s = %.0f\n", hNTrk->GetXaxis()->GetBinLabel(bin), hNTrk->GetBinContent(bin));
   }else{
     printf("hNTrk not available\n");
   }
   
-  debugmsg("Terminate\t END");
+  AliDebug(2, "Terminate\t END");
   return;
   
 }
@@ -2093,14 +2093,14 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t *){
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin(){
   if(fEvtMultBin != -1){
-    fatalmsg(Form("Multiplicity bin already assigned to value %i!", fEvtMultBin));
+    AliFatal(Form("Multiplicity bin already assigned to value %i!", fEvtMultBin));
     return;
   }
   
   if(fHImode){
     for(Int_t multbin = 0; multbin < kEvtMultBins; multbin++){        ///<  Computes the Multiplicity bin
       if(fEvtMult < fMultiplicityBin.At(multbin) || fEvtMult >= fMultiplicityBin.At(multbin+1) ) continue;
-      debugmsg(Form("Found bin %i/%i : %f < fEvtMultBin %f < %f", multbin, kEvtMultBins, fMultiplicityBin.At(multbin), fEvtMult, fMultiplicityBin.At(multbin+1)));
+      AliDebug(2, Form("Found bin %i/%i : %f < fEvtMultBin %f < %f", multbin, kEvtMultBins, fMultiplicityBin.At(multbin), fEvtMult, fMultiplicityBin.At(multbin+1)));
       fEvtMultBin = multbin;
       break;
     }
@@ -2117,24 +2117,24 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin(){
     
   }
   
-  if(fEvtMultBin < 0 || fEvtMultBin >= kEvtMultBins) fatalmsg(Form("Multiplicity bin wrongly assigned, for Multiplicity %f fEvtMultBin value: %hd!", fEvtMult, fEvtMultBin));
+  if(fEvtMultBin < 0 || fEvtMultBin >= kEvtMultBins) AliFatal(Form("Multiplicity bin wrongly assigned, for Multiplicity %f fEvtMultBin value: %hd!", fEvtMult, fEvtMultBin));
   
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
-  //   infomsg("AnalyseMCParticles");
+  //   AliInfo("AnalyseMCParticles");
   
   AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) {
-    errormsg("Could not retrieve MC event handler");
+    AliError("Could not retrieve MC event handler");
     return;
   }
   
   
   if (eventHandler) fMCEvt = eventHandler->MCEvent();
   if (!fMCEvt) {
-    errormsg("Could not retrieve MC event");
+    AliError("Could not retrieve MC event");
     return;
   }
   fPIDResponse->SetCurrentMCEvent(fMCEvt);
@@ -2145,7 +2145,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
   fNMCTracks = fMCEvt->GetNumberOfTracks();
   fMCPrimaries = fMCEvt->GetNumberOfPrimaries();
   
-  if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) fatalmsg("The Multiplicity bin is not defined!!!");
+  if(fEvtMultBin < 0 || fEvtMultBin > kEvtMultBins -1) AliFatal("The Multiplicity bin is not defined!!!");
   
   Bool_t passeta = kTRUE;
   Bool_t passy = kTRUE;
@@ -2196,13 +2196,13 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles(){
   
   InitializeMCTrackVar();
   
-  //   debugmsg("AnalyseMCParticles\t END");
+  //   AliDebug(2, "AnalyseMCParticles\t END");
   
 }
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::AnalyseMCTracks(){//Returns kTRUE if it reaches the end
-  //   infomsg("AnalyseMCTracks");
+  //   AliInfo("AnalyseMCTracks");
   
   if(TMath::Abs(fRapidityMC) >= fRapidityCut){return kFALSE;}//Rapidity cut
   
@@ -2228,14 +2228,14 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseMCTracks(){//Returns kTRUE if it reache
   */
   
   
-  //   debugmsg("AnalyseMCTracks\t END");
+  //   AliDebug(2, "AnalyseMCTracks\t END");
   return kTRUE;
   
 }
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(AliESDtrack * trk){
-  //       debugmsg("Gathering the track MC Info");
+  //       AliDebug(2, "Gathering the track MC Info");
   const Int_t TrkLabel = trk->GetLabel(); /*The Get*Label() getters return the label of the associated MC particle. The absolute value of this label is the index of the particle within the MC fMCStack. If the label is negative, this track was assigned a certain number of clusters that did not in fact belong to this track. */
   const Int_t AbsTrkLabel = TMath::Abs(TrkLabel);
   Int_t TOFTrkLabel[3] = {-1};//This can contain three particles wich occupy the same cluster
@@ -2249,7 +2249,7 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(AliESDtrack * trk){
   
   TParticle *part = (TParticle*) fMCStack->Particle(AbsTrkLabel);//Particle in the stack
   if(!part){
-    errormsg("Cannot find the TParticle!");
+    AliError("Cannot find the TParticle!");
     return kFALSE;
   }
   
@@ -2258,7 +2258,7 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(AliESDtrack * trk){
   fPhiMC = part->Phi(); //angolo tra 0 e 2pi
   fEtaMC = part->Eta();
   fPdgcode = part->GetPdgCode();
-  if(fSignMC != kFALSE) errormsg("fSignMC already defined!!");
+  if(fSignMC != kFALSE) AliError("fSignMC already defined!!");
   if(fPdgcode < 0) fSignMC = kTRUE;//Negative
   
   if((TMath::Abs(fPdgcode) == 211)) fPdgIndex = 0;//Track is a Pion
@@ -2285,7 +2285,7 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(AliESDtrack * trk){
     else fProdInfo = 2;//Track is from material
   }
   
-  //       debugmsg(Form("Track is a %i %i", fSignMC, fPdgIndex));
+  //       AliDebug(2, Form("Track is a %i %i", fSignMC, fPdgIndex));
   
   return kTRUE;
   
@@ -2398,10 +2398,10 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t &binstart){
     //Check if event is selected
     //------------------------------------------------
     if(!AliPPVsMultUtils::IsEventSelected(fESD)){
-      if(passall) fatalmsg("The event selection for pp is inchoerent");
+      if(passall) AliFatal("The event selection for pp is inchoerent");
       return kFALSE;
     }
-    else if(!passall) fatalmsg("The event selection for pp is inchoerent");
+    else if(!passall) AliFatal("The event selection for pp is inchoerent");
     
     
   }
@@ -2424,8 +2424,8 @@ void AliAnalysisTaskTOFSpectra::RunTOFChannel(){
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskTOFSpectra::AnalyseCutVariation(AliESDtrack *track){
-  infomsg("Checking cut variation for track");
-  if(fMCmode || !fTreemode) fatalmsg("The cut variation should be called only for Tree analysis in data!");
+  AliInfo("Checking cut variation for track");
+  if(fMCmode || !fTreemode) AliFatal("The cut variation should be called only for Tree analysis in data!");
   //Check on all the demanded cuts and fill the mask accordingly
   //At this step all tracks have already passed the loose set of cuts and therefore it is not useful to check this again!
   
@@ -2436,14 +2436,14 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseCutVariation(AliESDtrack *track){
     for(UInt_t i = 1; i < CutIndex[cut]; i++){//Loose cuts are already passed -> Skipping!
       if(fCutVar[index]->AcceptTrack(track)){
         hCutVariation->Fill(index);
-        debugmsg(Form("Track passed the cut %s (%s) at %f this will switch the bit %i !", fCutVar[index]->GetName(), fCutVar[index]->GetTitle(), CutValues[cut][i], index));
+        AliDebug(2, Form("Track passed the cut %s (%s) at %f this will switch the bit %i !", fCutVar[index]->GetName(), fCutVar[index]->GetTitle(), CutValues[cut][i], index));
         SetTrkCutMaskBit((fTrkCutMaskIndex) index, 1);
       }
       index++;
     }
   }
   
-  if(index != nCutVars) fatalmsg(Form("Wrong final index (%i should be %i)", index, nCutVars));
+  if(index != nCutVars) AliFatal(Form("Wrong final index (%i should be %i)", index, nCutVars));
   
   return kTRUE;
   
@@ -2451,18 +2451,18 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseCutVariation(AliESDtrack *track){
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::SetCutVar(){
-  infomsg("SetCutVar");
+  AliInfo("SetCutVar");
   //Cut variations Looser cuts have to be in first position!
   if(fCutmode){
-    if(fMCmode || !fTreemode) fatalmsg("The cut variation should be called only for Tree analysis in data!");
-    if(fSimpleCutmode >= 0) fatalmsg("The cut variation should be called in alternative to the simple mode!");
+    if(fMCmode || !fTreemode) AliFatal("The cut variation should be called only for Tree analysis in data!");
+    if(fSimpleCutmode >= 0) AliFatal("The cut variation should be called in alternative to the simple mode!");
     
     Int_t index = 0;
     for(UInt_t cut = 0; cut < nCuts; cut++){
       for(UInt_t i = 0; i < CutIndex[cut]; i++){//Starts from zero because the first loop is to set to loos cuts the default AliESDtrackCuts
-        if(index < 0 || index >= nCutVars) fatalmsg("Index exceding limits");
+        if(index < 0 || index >= nCutVars) AliFatal("Index exceding limits");
         if(i > 0 && !fCutVar[index]) fCutVar[index] = new AliESDtrackCuts(Form("fCutVar%i", index), Form("Cut variation for %s set %i", Cuts[cut].Data(), index));
-        else if(i > 0) fatalmsg("AliESDtrackCuts for cut variation already exists!");
+        else if(i > 0) AliFatal("AliESDtrackCuts for cut variation already exists!");
         
         AliESDtrackCuts *cuts = 0x0;
         if(i == 0){
@@ -2505,15 +2505,15 @@ void AliAnalysisTaskTOFSpectra::SetCutVar(){
             break;
           }
           default:
-          fatalmsg("Requested set for track cuts not implemented!!");
+          AliFatal("Requested set for track cuts not implemented!!");
           break;
         }
         
         if(i > 0){//New cut variable
-          infomsg(Form("Creating new Cut set %s (%s) #%i for %s value #%i %s%s", cuts->GetName(), cuts->GetTitle(), index, Cuts[cut].Data(), i, c.Data(), i == CutStdIndex[cut] ? " this is the standard one!": ""));
+          AliInfo(Form("Creating new Cut set %s (%s) #%i for %s value #%i %s%s", cuts->GetName(), cuts->GetTitle(), index, Cuts[cut].Data(), i, c.Data(), i == CutStdIndex[cut] ? " this is the standard one!": ""));
           index++;
         }
-        else infomsg(Form("Setting Cut %s (%s) to accept loose cuts for %s value: #%i %s", cuts->GetName(), cuts->GetTitle(), Cuts[cut].Data(), i, c.Data()));
+        else AliInfo(Form("Setting Cut %s (%s) to accept loose cuts for %s value: #%i %s", cuts->GetName(), cuts->GetTitle(), Cuts[cut].Data(), i, c.Data()));
         
         
       }
@@ -2525,7 +2525,7 @@ void AliAnalysisTaskTOFSpectra::SetCutVar(){
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::SetTrackCuts(){
-  infomsg("SetTrackCuts");
+  AliInfo("SetTrackCuts");
   
   //
   // create track cuts
@@ -2553,7 +2553,7 @@ void AliAnalysisTaskTOFSpectra::SetTrackCuts(){
     
     fESDtrackCuts->SetName("MainCuts");
   }
-  else warningmsg("fESDtrackCuts already exists!");
+  else AliWarning("fESDtrackCuts already exists!");
   
   //THIS WILL BE USED TO CUT ON THE PRIMARIES
   //Taken directly from the GetStandardITSTPCTrackCuts2011
@@ -2564,25 +2564,25 @@ void AliAnalysisTaskTOFSpectra::SetTrackCuts(){
     fESDtrackCutsPrm->SetMaxChi2TPCConstrainedGlobal(primchi2);
     fESDtrackCutsPrm->SetName("PrimaryCuts");
   }
-  else warningmsg("fESDtrackCutsPrm already exists!");
+  else AliWarning("fESDtrackCutsPrm already exists!");
   
   //Check on track cuts
   
   const TString primstring = fESDtrackCuts->GetMaxDCAToVertexXYPtDep();
-  if(!primstring.IsNull()) fatalmsg(Form("The track cuts inserted contains a DCAxy cut (%s)! Please set it via SetESDtrackCutsPrm!!!", primstring.Data()));
+  if(!primstring.IsNull()) AliFatal(Form("The track cuts inserted contains a DCAxy cut (%s)! Please set it via SetESDtrackCutsPrm!!!", primstring.Data()));
   
 }
 
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::SetSimpleCutVar(){
-  infomsg("SetSimpleCutVar");
+  AliInfo("SetSimpleCutVar");
   //Cut variation with simple parameters
   if(fSimpleCutmode >= 0){
-    if(fTreemode) fatalmsg("The cut variation should be called only for the analysis without Tree!");
-    if(fCutmode) fatalmsg("The cut variation should be called in alternative to the tree mode!");
+    if(fTreemode) AliFatal("The cut variation should be called only for the analysis without Tree!");
+    if(fCutmode) AliFatal("The cut variation should be called in alternative to the tree mode!");
     
-    infomsg(Form("Selecting cut option %i", fSimpleCutmode));
+    AliInfo(Form("Selecting cut option %i", fSimpleCutmode));
     
     Int_t index = 0;
     Bool_t set = kFALSE;
@@ -2594,37 +2594,37 @@ void AliAnalysisTaskTOFSpectra::SetSimpleCutVar(){
             case kTPCrows:
             {
               fESDtrackCuts->SetName(Form("MainCutsVersion%i", fSimpleCutmode));
-              if(CutValues[cut][i] == fESDtrackCuts->GetMinNCrossedRowsTPC()) fatalmsg("Value is already in the cut!!");
+              if(CutValues[cut][i] == fESDtrackCuts->GetMinNCrossedRowsTPC()) AliFatal("Value is already in the cut!!");
               fESDtrackCuts->SetMinNCrossedRowsTPC(CutValues[cut][i]);
-              infomsg(Form("Setting SetMinNCrossedRowsTPC(%f) : %f", CutValues[cut][i], fESDtrackCuts->GetMinNCrossedRowsTPC()));
+              AliInfo(Form("Setting SetMinNCrossedRowsTPC(%f) : %f", CutValues[cut][i], fESDtrackCuts->GetMinNCrossedRowsTPC()));
               set = kTRUE;
               break;
             }
             case kTrkChi2:
             {
               fESDtrackCuts->SetName(Form("MainCutsVersion%i", fSimpleCutmode));
-              if(CutValues[cut][i] == fESDtrackCuts->GetMaxChi2PerClusterTPC()) fatalmsg("Value is already in the cut!!");
+              if(CutValues[cut][i] == fESDtrackCuts->GetMaxChi2PerClusterTPC()) AliFatal("Value is already in the cut!!");
               fESDtrackCuts->SetMaxChi2PerClusterTPC(CutValues[cut][i]);
-              infomsg(Form("Setting SetMaxChi2PerClusterTPC(%f) : %f", CutValues[cut][i], fESDtrackCuts->GetMaxChi2PerClusterTPC()));
+              AliInfo(Form("Setting SetMaxChi2PerClusterTPC(%f) : %f", CutValues[cut][i], fESDtrackCuts->GetMaxChi2PerClusterTPC()));
               set = kTRUE;
               break;
             }
             case kDCAz:
             {
               fESDtrackCuts->SetName(Form("MainCutsVersion%i", fSimpleCutmode));
-              if(CutValues[cut][i] == fESDtrackCuts->GetMaxDCAToVertexZ()) fatalmsg("Value is already in the cut!!");
+              if(CutValues[cut][i] == fESDtrackCuts->GetMaxDCAToVertexZ()) AliFatal("Value is already in the cut!!");
               fESDtrackCuts->SetMaxDCAToVertexZ(CutValues[cut][i]);
-              infomsg(Form("Setting SetMaxDCAToVertexZ(%f) : %f", CutValues[cut][i], fESDtrackCuts->GetMaxDCAToVertexZ()));
+              AliInfo(Form("Setting SetMaxDCAToVertexZ(%f) : %f", CutValues[cut][i], fESDtrackCuts->GetMaxDCAToVertexZ()));
               set = kTRUE;
               break;
             }
             case kDCAxy:
             {
               fESDtrackCutsPrm->SetName(Form("PrimaryCutsVersion%i", fSimpleCutmode));
-              // 	      if(CutValues[cut][i] == fESDtrackCuts->GetMaxDCAToVertexZ()) fatalmsg("Value is already in the cut!!");
+              // 	      if(CutValues[cut][i] == fESDtrackCuts->GetMaxDCAToVertexZ()) AliFatal("Value is already in the cut!!");
               
               fESDtrackCutsPrm->SetMaxDCAToVertexXYPtDep(Form("%f*(%s)", CutValues[cut][i], primfunct.Data()));
-              infomsg(Form("Setting SetMaxDCAToVertexXYPtDep(%f) : %s", CutValues[cut][i], fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
+              AliInfo(Form("Setting SetMaxDCAToVertexXYPtDep(%f) : %s", CutValues[cut][i], fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
               set = kTRUE;
               break;
             }
@@ -2632,12 +2632,12 @@ void AliAnalysisTaskTOFSpectra::SetSimpleCutVar(){
             {
               fESDtrackCuts->SetName(Form("MainCutsVersion%i", fSimpleCutmode));
               fESDtrackCuts->SetCutGeoNcrNcl(CutValues[cut][5*i +0], CutValues[cut][5*i +1], CutValues[cut][5*i +2], CutValues[cut][5*i +3], CutValues[cut][5*i +4]);
-              infomsg(Form("Setting SetCutGeoNcrNcl(%f, %f, %f, %f, %f)", CutValues[cut][5*i +0], CutValues[cut][5*i +1], CutValues[cut][5*i +2], CutValues[cut][5*i +3], CutValues[cut][5*i +4]));
+              AliInfo(Form("Setting SetCutGeoNcrNcl(%f, %f, %f, %f, %f)", CutValues[cut][5*i +0], CutValues[cut][5*i +1], CutValues[cut][5*i +2], CutValues[cut][5*i +3], CutValues[cut][5*i +4]));
               set = kTRUE;
               break;
             }
             default:
-            fatalmsg(Form("Cutmode %i not yet implemented!!!", fSimpleCutmode));
+            AliFatal(Form("Cutmode %i not yet implemented!!!", fSimpleCutmode));
             break;
           }
           break;
@@ -2648,7 +2648,7 @@ void AliAnalysisTaskTOFSpectra::SetSimpleCutVar(){
       if(set) break;
       
     }
-    if(!set) fatalmsg(Form("No variation has been applied when instead variation %i has been asked!!!", fSimpleCutmode));
+    if(!set) AliFatal(Form("No variation has been applied when instead variation %i has been asked!!!", fSimpleCutmode));
   }
   
 }
@@ -2659,7 +2659,7 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
   const AliESDVertex* vertex = fESD->GetPrimaryVertex/*GetPrimaryVertexTracks*/(); //! Primary vertex estimated using ESD tracks
   fVertStatus = 0;
   if (!vertex){
-    errormsg("Cannot find any vertex");
+    AliError("Cannot find any vertex");
     return 0x0;
   }
   
@@ -2668,13 +2668,13 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
   fNContrPrimVertex = vertex->GetNContributors();
   fVertStatus++;
   if(fNContrPrimVertex < 1) { // # of tracklets/tracks used for the estimate
-    errormsg(Form("Vertex has %i Contributors %f bin %i", vertex->GetNContributors(), fEvtMult, fEvtMultBin));
+    AliError(Form("Vertex has %i Contributors %f bin %i", vertex->GetNContributors(), fEvtMult, fEvtMultBin));
     // SPD vertex
     vertex = fESD->GetPrimaryVertexSPD(); //! Primary vertex estimated by the SPD
     fNContrPrimVertex = vertex->GetNContributors();
     if(fNContrPrimVertex < 1)
     {
-      errormsg(Form("SPD Vertex has %i Contributors %f bin %i", vertex->GetNContributors(), fEvtMult, fEvtMultBin));
+      AliError(Form("SPD Vertex has %i Contributors %f bin %i", vertex->GetNContributors(), fEvtMult, fEvtMultBin));
       return 0x0;
     }
     
@@ -2688,7 +2688,7 @@ const AliESDVertex * AliAnalysisTaskTOFSpectra::ObtainVertex(){
   //Check the position of the vertex
   fVertStatus++;
   if(TMath::Abs(fPrimVertex[2]) > 10.){
-    errormsg(Form("Vertex is outside the confidence window along Z : %f", fPrimVertex[2]));
+    AliError(Form("Vertex is outside the confidence window along Z : %f", fPrimVertex[2]));
     return 0x0;
   }
   
