@@ -1,4 +1,4 @@
-AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra_new(Int_t    pidMethod, // 0:kNSigCut, 1:kMeanCut, 2:kLanGaus
+AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSigCut, 1:kMeanCut, 2:kLanGaus
                                                   Bool_t   isMC       = kFALSE, //
                                                   Bool_t   optNtuple  = kFALSE,
                                                   Bool_t   doMultSel  = kFALSE,
