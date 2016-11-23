@@ -75,6 +75,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
                             TString   periodNameAnchor              = "",                           // name of anchor period for weighting
                             Bool_t    enableSortingMCLabels         = kTRUE,                        // enable sorting for MC cluster labels
                             Bool_t    runLightOutput                = kFALSE,                       // switch to run light output (only essential histograms for afterburner)
+                            Bool_t    doTreeEOverP                  = kFALSE,                       // switch to produce EOverP tree
                             TString   additionalTrainConfig         = "0"                           // additional counter for trainconfig
 ) {
   
@@ -1075,6 +1076,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145 || trainConfig == 206){

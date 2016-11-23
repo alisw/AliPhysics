@@ -106,6 +106,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fNMaxPHOSModules(5),
   fDoLightOutput(kFALSE),
   fIsMC(0),
+  fIsCurrentClusterAcceptedBeforeTM(kFALSE),
   fV0ReaderName("V0ReaderV1"),
   fCaloTrackMatcherName("CaloTrackMatcher_1"),
   fPeriodName(""),
@@ -269,6 +270,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fNMaxPHOSModules(ref.fNMaxPHOSModules),
   fDoLightOutput(ref.fDoLightOutput),
   fIsMC(ref.fIsMC),
+  fIsCurrentClusterAcceptedBeforeTM(kFALSE),
   fV0ReaderName(ref.fV0ReaderName),
   fCaloTrackMatcherName(ref.fCaloTrackMatcherName),
   fPeriodName(ref.fPeriodName),
@@ -1273,7 +1275,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   // Initialize EMCAL rec utils if not initialized
   if(!fEMCALInitialized && fClusterType == 1) InitializeEMCAL(event);
 
-  
+  fIsCurrentClusterAcceptedBeforeTM = kFALSE;
   Int_t cutIndex = 0;
   if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex,cluster->E());
   cutIndex++;
@@ -1447,7 +1449,8 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       return kFALSE;
     }
   }
-  
+
+  fIsCurrentClusterAcceptedBeforeTM = kTRUE;
   
   // classification of clusters for TM efficiency
   // 0: Neutral cluster
@@ -4831,3 +4834,68 @@ Int_t AliCaloPhotonCuts::ClassifyClusterForTMEffi(AliVCluster* cluster, AliVEven
   }  
   return classification;
 }  
+
+//_______________________________________________________________________________
+std::vector<Int_t> AliCaloPhotonCuts::GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster){
+  vector<Int_t> labelsMatched(0);
+  if(!fUseDistTrackToCluster) return labelsMatched;
+
+  if (!fUsePtDepTrackToCluster)
+    labelsMatched = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
+                                                                    fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+  else
+    labelsMatched = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
+
+  return labelsMatched;
+}
+
+//_______________________________________________________________________________
+Bool_t AliCaloPhotonCuts::GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel){
+  if(!fUseDistTrackToCluster) return kFALSE;
+  vector<Int_t> labelsMatched = GetVectorMatchedTracksToCluster(event,cluster);
+
+  if((Int_t) labelsMatched.size()<1) return kFALSE;
+
+  Float_t dEta = -100;
+  Float_t dPhi = -100;
+  Int_t smallestDistTrack = -1;
+  Float_t smallestDist = 100;
+  Bool_t isSucessful = kFALSE;
+  for (Int_t i = 0; i < (Int_t)labelsMatched.size(); i++){
+    AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatched.at(i)));
+    if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(currTrack->GetID(), cluster->GetID(), dEta, dPhi)) continue;
+
+    Float_t tempDist = TMath::Sqrt((dEta*dEta)+(dPhi*dPhi));
+    if(tempDist < smallestDist){
+      smallestDist = tempDist;
+      smallestDistTrack = currTrack->GetID();
+      isSucessful = kTRUE;
+    }
+  }
+  if(!isSucessful) return kFALSE;
+  trackLabel = smallestDistTrack;
+  return kTRUE;
+}
+
+//_______________________________________________________________________________
+Bool_t AliCaloPhotonCuts::GetHighestPtMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel){
+  if(!fUseDistTrackToCluster) return kFALSE;
+  vector<Int_t> labelsMatched = GetVectorMatchedTracksToCluster(event,cluster);
+
+  if((Int_t) labelsMatched.size()<1) return kFALSE;
+
+  Int_t highestPtTrack = -1;
+  Float_t highestPt = 0;
+  Bool_t isSucessful = kFALSE;
+  for (Int_t i = 0; i < (Int_t)labelsMatched.size(); i++){
+    AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatched.at(i)));
+    if(currTrack->Pt() > highestPt){
+      highestPt = currTrack->Pt();
+      highestPtTrack = currTrack->GetID();
+      isSucessful = kTRUE;
+    }
+  }
+  if(!isSucessful) return kFALSE;
+  trackLabel = highestPtTrack;
+  return kTRUE;
+}
