@@ -67,8 +67,6 @@ fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),       
 fProdVertex(),
 
 // Histograms
-fhAverTotECluster(0),        fhAverTotECell(0),            fhAverTotECellvsCluster(0),
-fhEDensityCluster(0),        fhEDensityCell(0),            fhEDensityCellvsCluster(0),
 fhReMod(0x0),                fhReSameSideEMCALMod(0x0),    fhReSameSectorEMCALMod(0x0),  fhReDiffPHOSMod(0x0),
 fhReSameSectorDCALPHOSMod(0),fhReDiffSectorDCALPHOSMod(0),
 fhMiMod(0x0),                fhMiSameSideEMCALMod(0x0),    fhMiSameSectorEMCALMod(0x0),  fhMiDiffPHOSMod(0x0),
@@ -78,15 +76,13 @@ fhRe1(0x0),                  fhMi1(0x0),                   fhRe2(0x0),          
 fhRe3(0x0),                  fhMi3(0x0),                   fhReInvPt1(0x0),              fhMiInvPt1(0x0),
 fhReInvPt2(0x0),             fhMiInvPt2(0x0),              fhReInvPt3(0x0),              fhMiInvPt3(0x0),
 fhRePtNCellAsymCuts(0x0),    fhMiPtNCellAsymCuts(0x0),     fhRePtNCellAsymCutsSM(),
-fhRePtNCellAsymCutsOpAngle(0x0),    fhMiPtNCellAsymCutsOpAngle(0x0),     fhRePtNCellAsymCutsSMOpAngle(),
-/*fhRePIDBits(0x0),          fhRePtMult(0x0),*/            fhReSS(),
+fhRePtNCellAsymCutsOpAngle(0x0),    fhMiPtNCellAsymCutsOpAngle(0x0),                     
 fhRePtAsym(0x0),             fhRePtAsymPi0(0x0),           fhRePtAsymEta(0x0),
 fhMiPtAsym(0x0),             fhMiPtAsymPi0(0x0),           fhMiPtAsymEta(0x0),
 fhEventBin(0),               fhEventMixBin(0),
 fhCentrality(0x0),           fhCentralityNoPair(0x0),
 fhEventPlaneResolution(0x0),
 fhRealOpeningAngle(0x0),     fhRealCosOpeningAngle(0x0),   fhMixedOpeningAngle(0x0),     fhMixedCosOpeningAngle(0x0),
-fhRealOpeningAnglePerSM(),fhMixedOpeningAnglePerSM(),    
 // MC histograms
 fhPrimPi0E(0x0),             fhPrimPi0Pt(0x0),
 fhPrimPi0AccE(0x0),          fhPrimPi0AccPt(0x0),          fhPrimPi0AccPtPhotonCuts(0x0),
@@ -176,6 +172,7 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     fhPtBinClusterEtaPhi                 [icut] = 0; 
     fhPtBinClusterColRow                 [icut] = 0; 
   }
+  fhReSS[0] = 0;  fhReSS[1] = 0; fhReSS[2] = 0; 
 }
 
 //_____________________
@@ -1058,18 +1055,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   }
   
   if(fMultiCutAna)
-  {
-//    fhRePIDBits         = new TH2F*[fNPIDBits];
-//    for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
-//    {
-//      snprintf(key,   buffersize,"hRe_pidbit%d",ipid) ;
-//      snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for PIDBit=%d",fPIDBits[ipid]) ;
-//      fhRePIDBits[ipid] = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-//      fhRePIDBits[ipid]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-//      fhRePIDBits[ipid]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-//      outputContainer->Add(fhRePIDBits[ipid]) ;
-//    }// pid bit loop
-    
+  {    
     fhRePtNCellAsymCuts    = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
     fhMiPtNCellAsymCuts    = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
 
@@ -1177,19 +1163,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       }
     }
     
-//    if(ntrmbins!=0)
-//    {
-//      fhRePtMult = new TH3F*[fNAsymCuts] ;
-//      for(Int_t iasym = 0; iasym<fNAsymCuts; iasym++)
-//      {
-//        fhRePtMult[iasym] = new TH3F(Form("hRePtMult_asym%d",iasym),Form("(#it{p}_{T},C,M)_{#gamma#gamma}, A<%1.2f",fAsymCuts[iasym]),
-//                                     nptbins,ptmin,ptmax,ntrmbins,ntrmmin,ntrmmax,nmassbins,massmin,massmax);
-//        fhRePtMult[iasym]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-//        fhRePtMult[iasym]->SetYTitle("Track multiplicity");
-//        fhRePtMult[iasym]->SetZTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-//        outputContainer->Add(fhRePtMult[iasym]) ;
-//      }
-//    }
   } // multi cuts analysis
   
   if(fFillSSCombinations)
@@ -3552,16 +3525,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       // Multi cuts analysis
       //-----------------------
       if(fMultiCutAna)
-      {
-//        // Histograms for different PID bits selection
-//        for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
-//        {
-//          if(p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)    &&
-//             p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))   fhRePIDBits[ipid]->Fill(pt, m, GetEventWeight()) ;
-//          
-//          //printf("RE ipid%d, name %s\n",ipid, fhRePIDBits[ipid]->GetName());
-//        } // pid bit cut loop
-        
+      {        
         // Several pt,ncell and asymmetry cuts
         for(Int_t ipt = 0; ipt < fNPtCuts; ipt++)
         {
@@ -3587,14 +3551,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             }// pid bit cut loop
           }// icell loop
         }// pt cut loop
-//       
-//        if(GetHistogramRanges()->GetHistoTrackMultiplicityBins())
-//        {
-//          for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++)
-//          {
-//            if(a < fAsymCuts[iasym]) fhRePtMult[iasym]->Fill(pt, GetTrackMultiplicity(), m, GetEventWeight()) ;
-//          }
-//        }
       }// multiple cuts analysis
       
     }// second same event particle
