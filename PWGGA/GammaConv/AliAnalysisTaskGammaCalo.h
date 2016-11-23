@@ -99,6 +99,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
     
+    // set method to enable EOverP tree
+    void SetProduceTreeEOverP(Bool_t b){fProduceTreeEOverP = b;}
+
     // Function to enable MC label sorting
     void SetEnableSortingOfMCClusLabels(Bool_t enableSort)  { fEnableSortForClusMC   = enableSort; }
 
@@ -117,6 +120,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList**               fTrueList;                                            // Array of lists with histograms with MC validated reconstructed properties
     TList**               fMCList;                                              // Array of lists with histograms with pure MC information
     TList**               fTreeList;                                            // Array of lists with tree for validated MC
+    TList**               fClusterTreeList;                                     // Array of lists with tree for EoverP
     TList*                fOutputContainer;                                     // Output container
     TList*                fClusterCandidates;                                   //! current list of cluster candidates
     TList*                fEventCutArray;                                       // List with Event Cuts
@@ -293,6 +297,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     map<Int_t,Int_t>      fMapMultipleCountTrueClusterGammas;                   //! map containing cluster photon labels that are counted at least twice
     TH2F**                fHistoTruePi0InvMassPtAlpha;                          //! array of histogram with pure pi0 signal inv Mass, energy of cluster
     TH2F**                fHistoTruePi0PureGammaInvMassPtAlpha;                 //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
+    TH2F**                fHistCellIDvsClusterEnergy;                           //! array of histogram with leading cell ID vs cluster Energy
+    TH2F**                fHistCellIDvsClusterEnergyMax;                        //! array of histogram with leading cell ID vs maximum cluster energy in event
 
     // event histograms
     TH1F**                fHistoNEvents;                                        //! array of histos with event information
@@ -325,6 +331,15 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fInvMassTreeTheta;
     Int_t                 fInvMassTreeMixPool;
 
+    // tree for E/p studies
+    Bool_t                fProduceTreeEOverP;                                   //! flag for producing tree for E/p studies
+    TTree**               tClusterEOverP;                                       //! array of trees with tree for E/p studies
+    Float_t               fClusterE;                                            //! cluster energy
+    Float_t               fClusterM02;                                          //! cluster M02
+    Float_t               fClusterM20;                                          //! cluster M20
+    Float_t               fClusterEP;                                           //! cluster-track E/p
+    Float_t               fTrackPt;                                             //! track Pt
+
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
 //    TH2F**                fHistoTrueEtaNonLinearity;                            //! E_truth/E_rec vs E_rec for TrueEtas
@@ -349,12 +364,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Double_t              fMinTimingCluster;                                    // corresponding ranges, min
     Double_t              fMaxTimingCluster;                                    // corresponding ranges, max
     Bool_t                fEnableSortForClusMC;                                 // switch on sorting for MC labels in cluster
+    Bool_t                fProduceCellIDPlots;                                  // switch to produce CellID plots for fDoClusterQA==2
 
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 28);
+    ClassDef(AliAnalysisTaskGammaCalo, 29);
 };
 
 #endif

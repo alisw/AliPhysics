@@ -73,7 +73,8 @@ void AddTask_GammaCalo_pPb(
                             TString    periodNameV0Reader         = "",               // period Name for V0Reader
                             Bool_t     enableSortingMCLabels      = kTRUE,            // enable sorting for MC cluster labels
                             Bool_t     runLightOutput             = kFALSE,           // switch to run light output (only essential histograms for afterburner)
-                            TString   additionalTrainConfig       = "0"               // additional counter for trainconfig
+                            Bool_t     doTreeEOverP               = kFALSE,           // switch to produce EOverP tree
+                            TString    additionalTrainConfig      = "0"               // additional counter for trainconfig
                            ) {
 
   Int_t isHeavyIon = 2;
@@ -485,6 +486,7 @@ void AddTask_GammaCalo_pPb(
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetDoTHnSparse(isUsingTHnSparse);
+  task->SetProduceTreeEOverP(doTreeEOverP);
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
 
