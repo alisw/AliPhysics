@@ -86,7 +86,7 @@ ClassImp(AliAnalysisTaskdNdEtapp13)
 
 
 //                                                     0     1     2     3     4     5    6      7      8        9      10          11        12       13    14
-const char* AliAnalysisTaskdNdEtapp13::fgCentSelName[] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","SPDClusters1","V0MvsFMD","ZNA","TKLvsV0M","ZEMvsZDC","V0A123","V0A0","V0S", "MB", "RefMult08", "V0av"};
+const char* AliAnalysisTaskdNdEtapp13::fgCentSelName[] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","SPDClusters1","V0MvsFMD","ZNA","TKLvsV0M","ZEMvsZDC","V0A123","V0A0","V0S", "MB", "RefMult08","SPDTracklets08","SPDTracklets08to15", "V0av"};
 
 const char*  AliAnalysisTaskdNdEtapp13::fgkPDGNames[] = {
   "#pi^{+}",
@@ -1425,7 +1425,7 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
 //       if (!(phi > (4*TMath::Pi()/3) && phi < (2*TMath::Pi()))) continue;
 
 
-     //if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
+     if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
     if (fCutOnDThetaX && TMath::Abs(dThetaX)>fDThetaWindow) continue;
     //
     //    double phi    = mlt->GetPhi(itr);
