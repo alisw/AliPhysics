@@ -189,10 +189,10 @@ void AliMFTFlex::Make_ElectricComponents(TGeoVolumeAssembly*  flex, Int_t nbsens
   for(Int_t id=0; id < 37; id++){
     flex->AddNode(connectord,id+total,new TGeoTranslation(length/2+interspace/2+AliMFTGeometry::kConnectorLength/2-AliMFTGeometry::kConnectorOffset, 
 							  id*step-AliMFTGeometry::kFlexHeight/2 + 0.1, zvarnish - AliMFTGeometry::kVarnishThickness/2 
-							  - AliMFTGeometry::kConnectorHeight));
+							  - AliMFTGeometry::kConnectorHeight/2));
     TGeoCombiTrans *transformationpi = new TGeoCombiTrans(length/2-interspace/2-AliMFTGeometry::kConnectorLength/2-AliMFTGeometry::kConnectorOffset, 
 							  id*step-AliMFTGeometry::kFlexHeight/2 + 0.1, zvarnish - AliMFTGeometry::kVarnishThickness/2 - 
-							  AliMFTGeometry::kConnectorHeight, rotationpi);
+							  AliMFTGeometry::kConnectorHeight/2, rotationpi);
   flex->AddNode(connectord,id+total+37, transformationpi);
   }
   
@@ -206,7 +206,7 @@ void AliMFTFlex::Make_ElectricComponents(TGeoVolumeAssembly*  flex, Int_t nbsens
   TGeoCompositeShape *boxconnector = new TGeoCompositeShape("boxconnector", boxconnecto);
   TGeoVolume *boxconnectord = new TGeoVolume("boxconnectord", boxconnector, kMedPeek);
   flex->AddNode(boxconnectord,1,new TGeoTranslation(length/2-AliMFTGeometry::kConnectorOffset, -step/2, zvarnish-AliMFTGeometry::kVarnishThickness/2
-						    -AliMFTGeometry::kConnectorHeight-AliMFTGeometry::kConnectorThickness));
+						    -AliMFTGeometry::kConnectorHeight/2-AliMFTGeometry::kConnectorThickness));
   
 
   //---------------------------------------------------------------
