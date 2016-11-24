@@ -237,7 +237,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
  * \date Apr 21, 2016
  */
 // 
-class AliBasicJetConstituent : public TObject
+class AliBasicJetConstituent
 {
   public:
     AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0), fPID(0) {}
@@ -247,7 +247,6 @@ class AliBasicJetConstituent : public TObject
     }
     ~AliBasicJetConstituent();
 
-    Bool_t   IsEqual(const TObject* obj) { return (obj->GetUniqueID() == GetUniqueID()); }
     Double_t Pt()       { return fpT; }
     Double_t Phi()      { return fPhi; }
     Double_t Eta()      { return fEta; }
@@ -260,9 +259,6 @@ class AliBasicJetConstituent : public TObject
     Float_t fpT;       ///< pT
     Short_t fCharge;   ///< charge
     Short_t fPID;      ///< most probably PID code/PDG code
-  /// \cond CLASSIMP
-  ClassDef( AliBasicJetConstituent, 2); // very basic jet constituent object
-  /// \endcond
 };
 
 //###############################################################################################################################################3
@@ -270,24 +266,23 @@ class AliBasicJetConstituent : public TObject
  * \class AliBasicJet
  * \brief Simple class containing basic information for a jet
  *
- * This class is used to save jets including constituents with minimize memory consumption.
+ * This class is used to save jets including constituents with minimal memory consumption.
  * Saved information focus on correlation analyses
  *
  * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
  * \date Apr 21, 2016
  */
 // 
-class AliBasicJet : public TObject
+class AliBasicJet
 {
   public:
-    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fRadius(0), fArea(0), fPDGCode(0), fBackgroundDensity(0), fEventID(0), fCentrality(0), fConstituents() {}
-    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t partid, Float_t bgrd, Long64_t id, Short_t cent)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fPDGCode(partid), fBackgroundDensity(bgrd), fEventID(id), fCentrality(cent), fConstituents()
+    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fRadius(0), fArea(0), fPDGCode(0), fBackgroundDensity(0), fMagneticField(0), fVertexX(0), fVertexY(0), fVertexZ(0), fEventID(0), fCentrality(0), fConstituents() {}
+    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t partid, Float_t bgrd, Float_t magfield, Float_t vtxX, Float_t vtxY, Float_t vtxZ, Long64_t id, Short_t cent)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fPDGCode(partid), fBackgroundDensity(bgrd), fMagneticField(magfield), fVertexX(vtxX), fVertexY(vtxY), fVertexZ(vtxZ), fEventID(id), fCentrality(cent), fConstituents()
     {}
     ~AliBasicJet();
 
     // Basic jet properties
-    Bool_t                    IsEqual(const TObject* obj) { return (obj->GetUniqueID() == GetUniqueID()); }
     Double_t                  Pt()       { return fpT; }
     Double_t                  TruePt()  { return fTruepT; }
     Double_t                  Phi()      { return fPhi; }
@@ -297,6 +292,10 @@ class AliBasicJet : public TObject
     Double_t                  Area() { return fArea; }
     Int_t                     PDGCode() { return fPDGCode; }
     Double_t                  BackgroundDensity() { return fBackgroundDensity; }
+    Double_t                  MagneticField() { return fMagneticField; }
+    Double_t                  VertexX() { return fVertexX; }
+    Double_t                  VertexY() { return fVertexY; }
+    Double_t                  VertexZ() { return fVertexZ; }
     Long64_t                  EventID() { return fEventID; }
     Short_t                   Centrality() { return fCentrality; }
     Int_t                     GetNumbersOfConstituents() { return fConstituents.size(); }
@@ -322,14 +321,15 @@ class AliBasicJet : public TObject
     Float_t   fArea;     ///< jet area
     Int_t     fPDGCode;  ///< PDG code of source particle
     Float_t   fBackgroundDensity; ///< background
+    Float_t   fMagneticField; ///< event magnetic field
+    Float_t   fVertexX; ///< event vertex X
+    Float_t   fVertexY; ///< event vertex Y
+    Float_t   fVertexZ; ///< event vertex Z
     Long64_t  fEventID;  ///< Unique event id
     Short_t   fCentrality; ///< centrality
 
     std::vector<AliBasicJetConstituent> fConstituents; ///< vector of constituents
 
-  /// \cond CLASSIMP
-  ClassDef( AliBasicJet, 4); // very basic jet object
-  /// \endcond
 };
 
 

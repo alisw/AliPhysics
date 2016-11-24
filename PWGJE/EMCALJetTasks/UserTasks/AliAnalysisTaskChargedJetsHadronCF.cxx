@@ -48,18 +48,12 @@ AliChargedJetsHadronCFCuts::~AliChargedJetsHadronCFCuts()
 // dummy destructor
 }
 
-/// \cond CLASSIMP
-ClassImp(AliBasicJet)
-/// \endcond
 //________________________________________________________________________
 AliBasicJet::~AliBasicJet() 
 {
 // dummy destructor
 }
 
-/// \cond CLASSIMP
-ClassImp(AliBasicJetConstituent)
-/// \endcond
 //________________________________________________________________________
 AliBasicJetConstituent::~AliBasicJetConstituent() 
 {
@@ -693,7 +687,8 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
       return;
   }
 
-  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), partid, fJetsCont->GetRhoVal(), eventID, fCent);
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), partid, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), InputEvent()->GetPrimaryVertex()->GetX(), InputEvent()->GetPrimaryVertex()->GetY(), InputEvent()->GetPrimaryVertex()->GetZ(), eventID, fCent);
+
   // Add constituents
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
   {
