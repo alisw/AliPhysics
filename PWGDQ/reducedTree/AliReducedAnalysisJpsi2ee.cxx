@@ -273,17 +273,21 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(TString trackClass /*= "Trac
    //
    // Fill all track histograms
    //
+   for(Int_t i=0;i<36; ++i) fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+i] = 0.;
    AliReducedTrackInfo* track=0;
    TIter nextPosTrack(&fPosTracks);
    for(Int_t i=0;i<fPosTracks.GetEntries();++i) {
       track = (AliReducedTrackInfo*)nextPosTrack();
+      //Int_t tpcSector = TMath::FloorNint(18.*track->Phi()/TMath::TwoPi());
+      fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, trackClass);
-      //cout << "Pos track " << i << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
    }
    TIter nextNegTrack(&fNegTracks);
    for(Int_t i=0;i<fNegTracks.GetEntries();++i) {
       track = (AliReducedTrackInfo*)nextNegTrack();
+      //Int_t tpcSector = TMath::FloorNint(18.*track->Phi()/TMath::TwoPi());
+      fValues[AliReducedVarManager::kNtracksAnalyzedInPhiBins+(track->Eta()<0.0 ? 0 : 18) + TMath::FloorNint(18.*track->Phi()/TMath::TwoPi())] += 1;
       AliReducedVarManager::FillTrackInfo(track, fValues);
       FillTrackHistograms(track, trackClass);
       //cout << "Neg track " << i << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
@@ -297,19 +301,21 @@ void AliReducedAnalysisJpsi2ee::FillTrackHistograms(AliReducedTrackInfo* track, 
    // fill track level histograms
    //
    for(Int_t icut=0; icut<fTrackCuts.GetEntries(); ++icut) {
-      if(track->TestFlag(icut)) fHistosManager->FillHistClass(Form("%s_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
-      for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
-         AliReducedVarManager::FillTrackingFlag(track, iflag, fValues);
-         fHistosManager->FillHistClass(Form("%sStatusFlags_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
-      }
-      for(Int_t iLayer=0; iLayer<6; ++iLayer) {
-         AliReducedVarManager::FillITSlayerFlag(track, iLayer, fValues);
-         fHistosManager->FillHistClass(Form("%sITSclusterMap_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
-      }
-      for(Int_t iLayer=0; iLayer<8; ++iLayer) {
-         AliReducedVarManager::FillTPCclusterBitFlag(track, iLayer, fValues);
-         fHistosManager->FillHistClass(Form("%sTPCclusterMap_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
-      }
+      if(track->TestFlag(icut)) {
+         fHistosManager->FillHistClass(Form("%s_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+         for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+            AliReducedVarManager::FillTrackingFlag(track, iflag, fValues);
+            fHistosManager->FillHistClass(Form("%sStatusFlags_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+         }
+         for(Int_t iLayer=0; iLayer<6; ++iLayer) {
+            AliReducedVarManager::FillITSlayerFlag(track, iLayer, fValues);
+            fHistosManager->FillHistClass(Form("%sITSclusterMap_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+         }
+         for(Int_t iLayer=0; iLayer<8; ++iLayer) {
+            AliReducedVarManager::FillTPCclusterBitFlag(track, iLayer, fValues);
+            fHistosManager->FillHistClass(Form("%sTPCclusterMap_%s", trackClass.Data(), fTrackCuts.At(icut)->GetName()), fValues);
+         }
+      } // end if(track->TestFlag(icut))
    }  // end loop over cuts
 }
 
@@ -341,9 +347,11 @@ void AliReducedAnalysisJpsi2ee::RunTrackSelection() {
    Float_t nsigma = 0.;
    for(Int_t it=0; it<fEvent->NTracks(); ++it) {
       track = (AliReducedTrackInfo*)nextTrack();
+      //cout << "track " << it << ": "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
       AliReducedVarManager::FillTrackInfo(track, fValues);
       fHistosManager->FillHistClass("Track_BeforeCuts", fValues);
-      for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingFlags; ++iflag) {
+      for(UInt_t iflag=0; iflag<AliReducedVarManager::kNTrackingStatus; ++iflag) {
+         //cout << "track / tracking flags :: " << track << " / "; AliReducedVarManager::PrintBits(track->Status()); cout << endl;
          AliReducedVarManager::FillTrackingFlag(track, iflag, fValues);
          fHistosManager->FillHistClass("TrackStatusFlags_BeforeCuts", fValues);
       }

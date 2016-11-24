@@ -42,7 +42,7 @@ AliAnalysisTask *AddTask_iarsene_dstPbPb(Int_t reducedEventType=-1, Bool_t write
   //  task->SetRejectPileup();
     
   //task->UsePhysicsSelection(kTRUE);
-  task->SetUseAnalysisUtils(kFALSE);
+  task->SetUseAnalysisUtils(kTRUE);
   
   task->SetFillV0Info(kTRUE);
   task->SetFillGammaConversions(kTRUE);
