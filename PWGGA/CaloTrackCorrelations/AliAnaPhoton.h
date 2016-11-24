@@ -90,6 +90,12 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
  
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
+  void         SwitchOnStudyClusterLocalActivity()        { fStudyActivityNearCluster = kTRUE  ; }
+  void         SwitchOffStudyClusterLocalActivity()       { fStudyActivityNearCluster = kFALSE ; }  
+  
+  void         SwitchOnStudyClusterOverlapsPerGenerator() { fStudyClusterOverlapsPerGenerator = kTRUE  ; }
+  void         SwitchOffStudyClusterOverlapsPerGenerator(){ fStudyClusterOverlapsPerGenerator = kFALSE ; }  
+  
   // Analysis parameters setters getters
     
   // ** Cluster selection methods **
@@ -182,6 +188,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNPrimaryHistograms;                     ///<  Fill only NPrimaryHistograms of the 7 defined types
   
   TLorentzVector fMomentum;                         //!<! Cluster momentum, temporary container
+  TLorentzVector fMomentum2;                        //!<! Cluster momentum, temporary container
   TLorentzVector fPrimaryMom;                       //!<! Primary MC momentum, temporary container
   TVector3       fProdVertex;                       //!<! Primary MC production vertex, temporary container
   
@@ -191,7 +198,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fEBinCuts[15] ;                          ///<  Energy bins cut 
   Int_t    fNEBinCuts;                              ///<  Number of energy bin cuts
 
-  
+  Bool_t   fStudyActivityNearCluster;               ///<  Activate analysis of multiplicity and energy deposit near the cluster
+  Bool_t   fStudyClusterOverlapsPerGenerator;       ///<  In case of coctail generators, check the content of the cluster
   //
   // Histograms
   //
@@ -458,6 +466,21 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhEBinClusterEtaPhiPID[14] ;              //!<! Eta-Phi location of cluster in different energy bins, after PID cut
   TH2F *  fhEBinClusterColRowPID[14] ;              //!<! Column and row location of cluster max E cell in different energy bins, after PID cut
 
+  TH2F *  fhLocalRegionClusterEnergySum ;           //!<! Sum of energy near the cluster, R<0.2, vs cluster E
+  TH2F *  fhLocalRegionClusterMultiplicity;         //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E
+  TH2F *  fhLocalRegionClusterEnergySumPerCentrality ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentrality;//!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile
+
+  TH2F *  fhLocalRegionClusterEnergySumHijing ;               //!<! Sum of energy near the cluster, R<0.2, vs cluster E, hijing tagged mc clusters
+  TH2F *  fhLocalRegionClusterMultiplicityHijing;             //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E, hijing tagged mc clusters
+  TH2F *  fhLocalRegionClusterEnergySumPerCentralityHijing ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters
+  TH2F *  fhLocalRegionClusterMultiplicityPerCentralityHijing;//!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters
+
+  
+  TH1F *  fhMergeGeneratorCluster;                  //!<! Cluster energy, at least 2 generators contributions
+  TH1F *  fhMergeGeneratorClusterNotHijing;         //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingAndOther;    //!<! Cluster energy, at least 2 generators contributions, main is HIJING
+  TH1F *  fhCleanGeneratorCluster;                  //!<! Cluster energy, only one generator is the contributor
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
@@ -466,7 +489,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,43) ;
+  ClassDef(AliAnaPhoton,44) ;
   /// \endcond
 
 } ;
