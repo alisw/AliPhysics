@@ -611,8 +611,10 @@ void AliReducedVarManager::FillTrackingFlag(TRACK* track, UInt_t flag, Float_t* 
   //
   // fill the tracking flag
   //
+   //cout << "AliReducedVarManager::FillTrackingFlag track/flag/status :: " << track << "/" << flag << "/" << track->CheckTrackStatus(flag) << endl;
   values[kTrackingFlag] = -1;
   if(track->CheckTrackStatus(flag)) values[kTrackingFlag] = flag;
+  //cout << "AliReducedVarManager::FillTrackingFlag values[kTrackingFlag] :: " << values[kTrackingFlag] << endl;
 }
 
 //_________________________________________________________________
@@ -753,6 +755,8 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   
   values[kPtTPC]       = pinfo->PtTPC();
   values[kTrackLength] = pinfo->TrackLength();
+  values[kChi2TPCConstrainedVsGlobal] = pinfo->Chi2TPCConstrainedVsGlobal();
+  values[kMassUsedForTracking] = pinfo->MassForTracking();
   values[kPhiTPC]      = pinfo->PhiTPC();
   values[kEtaTPC]      = pinfo->EtaTPC();
   values[kPin]         = pinfo->Pin();
@@ -1325,6 +1329,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNK0sAnalyzed]                = "No.selected K0s candidates";      fgVariableUnits[kNK0sAnalyzed]           = "";  
   fgVariableNames[kNPhiAnalyzed]                = "No.selected phi candidates";      fgVariableUnits[kNPhiAnalyzed]           = "";  
   fgVariableNames[kNtracksAnalyzed]             = "No.selected tracks";              fgVariableUnits[kNtracksAnalyzed]        = "";  
+  for(Int_t i=0; i<18; ++i) fgVariableNames[kNtracksAnalyzedInPhiBins+i] = Form("# selected tracks in #varphi sector %d and #eta<0.", i);
+  for(Int_t i=0; i<18; ++i) fgVariableNames[kNtracksAnalyzedInPhiBins+18+i] = Form("# selected tracks in #varphi sector %d and #eta>0.",i);
   fgVariableNames[kNtracksSubEvLeft]            = "No.tracks sub-event left";        fgVariableUnits[kNtracksSubEvLeft]       = "";  
   fgVariableNames[kNtracksSubEvRight]           = "No.tracks sub-event right";       fgVariableUnits[kNtracksSubEvRight]      = "";  
   fgVariableNames[kNtracksEventPlane]           = "No.tracks";                       fgVariableUnits[kNtracksEventPlane]      = "";  
@@ -1530,6 +1536,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kDcaXY]             = "DCA_{xy}";                     fgVariableUnits[kDcaXY] = "cm.";  
   fgVariableNames[kDcaZ]              = "DCA_{z}";                      fgVariableUnits[kDcaZ] = "cm.";  
   fgVariableNames[kTrackLength]       = "Track length";                 fgVariableUnits[kTrackLength] = "cm.";
+  fgVariableNames[kChi2TPCConstrainedVsGlobal] = "#chi^{2} TPC constrained vs global"; fgVariableUnits[kChi2TPCConstrainedVsGlobal] = "";
+  fgVariableNames[kMassUsedForTracking] = "Mass used for tracking"; fgVariableUnits[kMassUsedForTracking] = "GeV/c^{2}";
   fgVariableNames[kITSncls]           = "No.ITS clusters";              fgVariableUnits[kITSncls] = "";
   fgVariableNames[kITSchi2]           = "ITS #chi^{2}";                 fgVariableUnits[kITSchi2] = "";
   fgVariableNames[kITSlayerHit]       = "ITS layer";                    fgVariableUnits[kITSlayerHit] = "";

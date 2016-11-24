@@ -431,7 +431,7 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
       man->AddHistClass(classStr.Data());
       cout << classStr.Data() << endl;
       man->AddHistogram(classStr.Data(), "TrackingFlags", "Tracking flags;;", kFALSE,
-	                AliReducedVarManager::kNTrackingStatus, -0.5, AliReducedVarManager::kNTrackingFlags-0.5, AliReducedVarManager::kTrackingFlag, 
+	                AliReducedVarManager::kNTrackingStatus, -0.5, AliReducedVarManager::kNTrackingStatus-0.5, AliReducedVarManager::kTrackingFlag, 
 			0, 0.0, 0.0, AliReducedVarManager::kNothing, 0, 0.0, 0.0, AliReducedVarManager::kNothing, trkStatusNames.Data());
       continue;
     }
