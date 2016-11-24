@@ -206,6 +206,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Float_t                 tESDIMClusE;                        //! energy of clus gamma for tree
     Float_t                 tESDIMClusterM02;                   //! M02 of cluster for tree
     Float_t                 tESDIMClusterM20;                   //! M20 of cluster for tree
+    Int_t                   tESDIMClusterLeadCellID;            //! leading cellID of cluster
 
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -441,7 +442,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 35);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 36);
 };
 
 #endif
