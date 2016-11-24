@@ -191,8 +191,9 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
     ConnectMultiHandler();
     AliInfo(Form("fInputHandler: %p",fInputHandler));
     if (fInputHandler && fInputHandler->GetTree()) {
-	if (fInputHandler->GetTree()->GetBranch("ESDfriend."))
+	if (fInputHandler->GetTree()->GetBranch("ESDfriend.")) {
 	    fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
+  }
 
 	fInputEvent = fInputHandler->GetEvent();
     } else if( fMCEvent ) {
