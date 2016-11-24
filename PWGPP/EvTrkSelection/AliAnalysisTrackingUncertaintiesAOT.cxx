@@ -306,6 +306,8 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     Float_t partType=-1;
     Float_t label = 1;
     Float_t specie = -10;
+
+    fESD->InitMagneticField();
     
     for (Int_t i=0;i<fESD->GetNumberOfTracks();++i) {
         
@@ -316,6 +318,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
         
         AliESDtrack *track =fESD->GetTrack(i);
         if (!track) continue;
+	track->SetESDEvent(fESD);
         if(!track->RelateToVertex(fVertex,fESD->GetMagneticField(),100)) continue;
         track->GetImpactParameters(dca, cov);
         
