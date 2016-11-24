@@ -260,7 +260,6 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     AliCaloTrackMatcher* fCaloTrackMatcher;             // pointer to CaloTrackMatcher
     AliEMCALGeometry*   fGeomEMCAL;                     // pointer to EMCAL geometry
     AliEMCALRecoUtils*  fEMCALRecUtils;                 // pointer to EMCAL recUtils
-    AliCalorimeterUtils* fEMCALCaloUtils;               // pointer to CalorimeterUtils for EMCal
     Bool_t     fEMCALInitialized;                       // flag for EMCal initialization
     AliPHOSGeometry*    fGeomPHOS;                      // pointer to PHOS geometry
     Bool_t     fPHOSInitialized;                        // flag for PHOS initialization
@@ -434,7 +433,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,34)
+    ClassDef(AliCaloPhotonCuts,35)
 };
 
 #endif
