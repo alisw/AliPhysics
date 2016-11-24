@@ -94,3 +94,21 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWG/Tools)
+
+# Tests
+install (DIRECTORY test DESTINATION PWG/Tools)
+
+# Histmanager test
+set(HISTMGRTESTS 
+    build_simple
+    build_grouped
+    fill_simple
+    fill_grouped
+    )
+foreach(TEST_HMGR ${HISTMGRTESTS})
+    add_test (histmgr_${TEST_HMGR}
+        env 
+        LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+        DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+        root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/tools/test/histmgr/runtest.C(\"${TEST_HMGR}\")")
+endforeach()
