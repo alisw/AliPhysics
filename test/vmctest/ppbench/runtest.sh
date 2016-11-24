@@ -2,6 +2,12 @@
 # The settings come from ~/.bash_profile
 
 # Before running this script, you should run rungen.sh first.
+# check if this is the case
+if [ ! -f gen/galice.root ]; then
+  echo "calling rungen.sh"
+  ./rungen.sh
+fi
+
 
 NEVENTS=3
 G3CONFIG="$ALICE_ROOT/test/vmctest/ppbench/g3Config.C" 
