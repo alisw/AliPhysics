@@ -3588,7 +3588,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       Bool_t overlapGener          = kFALSE;
       Bool_t overlapGenerNotHIJING = kFALSE;
       Bool_t overlapHIJINGAndOther = kFALSE;
-      for(Int_t ilabel = 1; ilabel < calo->GetNLabels(); ilabel++)
+      
+      const UInt_t nlabels = calo->GetNLabels();
+      for(UInt_t ilabel = 1; ilabel < nlabels; ilabel++)
       {
         Int_t label2 = calo->GetLabels()[ilabel];
         TString genName2;
