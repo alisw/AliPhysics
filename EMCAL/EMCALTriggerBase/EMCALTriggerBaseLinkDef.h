@@ -29,4 +29,10 @@
 #pragma link C++ class AliEMCALTriggerOnlineQAPP+;
 #pragma link C++ class AliEMCALTriggerFastOR+;
 
+#pragma link C++ namespace EMCALTrigger;
+#pragma link C++ defined_in namespace EMCALTrigger;
+#pragma link C++ enum EMCALTrigger::EMCalTriggerType_t;
+#pragma link C++ global EMCALTrigger::kEMCL1ADCtoGeV;
+#pragma link C++ global EMCALTrigger::kEMCalTriggerNames;
+
 #endif
