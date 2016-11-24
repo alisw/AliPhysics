@@ -120,6 +120,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   tESDIMClusE(0),
   tESDIMClusterM02(0),
   tESDIMClusterM20(0),
+  tESDIMClusterLeadCellID(0),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
@@ -399,6 +400,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   tESDIMClusE(0),
   tESDIMClusterM02(0),
   tESDIMClusterM20(0),
+  tESDIMClusterLeadCellID(0),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
@@ -1075,6 +1077,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       tESDInvMassShowerShape[iCut]->Branch("ClusE",&tESDIMClusE,"tESDIMClusE/F");
       tESDInvMassShowerShape[iCut]->Branch("ClusM02",&tESDIMClusterM02,"tESDIMClusterM02/F");
       tESDInvMassShowerShape[iCut]->Branch("ClusM20",&tESDIMClusterM20,"tESDIMClusterM20/F");
+      tESDInvMassShowerShape[iCut]->Branch("ClusLeadCellID",&tESDIMClusterLeadCellID,"tESDIMClusterLeadCellID/I");
       fInvMassShowerShape[iCut]->Add(tESDInvMassShowerShape[iCut]);
     }
 
@@ -3595,6 +3598,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
               tESDIMClusE = cluster->E();
               tESDIMClusterM02 = cluster->GetM02();
               tESDIMClusterM20 = cluster->GetM20();
+              tESDIMClusterLeadCellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(cluster,fInputEvent);
               tESDInvMassShowerShape[fiCut]->Fill();
             }
           }
