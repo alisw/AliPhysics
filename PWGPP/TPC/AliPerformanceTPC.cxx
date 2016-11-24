@@ -78,45 +78,9 @@ ClassImp(AliPerformanceTPC)
 Bool_t AliPerformanceTPC::fgMergeTHnSparse = kFALSE;
 Bool_t AliPerformanceTPC::fgUseMergeTHnSparse = kFALSE;
 
-//Cluster Histograms
-TH3D *h_tpc_clust_0_1_2 = 0;
-
-//Event Histograms - Xv:Yv:Zv:mult:multP:multN:vertStatus
-TH1D *h_tpc_event_recvertex_0 = 0;
-TH1D *h_tpc_event_recvertex_1 = 0;
-TH1D *h_tpc_event_recvertex_2 = 0;
-TH1D *h_tpc_event_recvertex_3 = 0;
-TH1D *h_tpc_event_recvertex_4 = 0;
-TH1D *h_tpc_event_recvertex_5 = 0;
-TH1D *h_tpc_event_6 = 0;
-
-//Track Histograms - nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
-
-TH3D* h_tpc_track_pos_recvertex_2_5_6 = 0;
-TH3D* h_tpc_track_neg_recvertex_2_5_6 = 0;
-
-TH2D *h_tpc_track_all_recvertex_5_8 = 0;
-TH3D *h_tpc_track_all_recvertex_0_5_7 = 0;
-TH3D *h_tpc_track_pos_recvertex_0_5_7 = 0;
-TH3D *h_tpc_track_neg_recvertex_0_5_7 = 0;
-
-TH3D *h_tpc_track_all_recvertex_1_5_7 = 0;
-TH3D *h_tpc_track_all_recvertex_2_5_7 = 0;
-TH3D *h_tpc_track_all_recvertex_3_5_7 = 0;
-TH3D *h_tpc_track_pos_recvertex_3_5_7 = 0;
-TH3D *h_tpc_track_neg_recvertex_3_5_7 = 0;
-
-TH3D *h_tpc_track_all_recvertex_4_5_7 = 0;
-TH3D *h_tpc_track_pos_recvertex_4_5_7 = 0;
-TH3D *h_tpc_track_neg_recvertex_4_5_7 = 0;
-TH3D *h_tpc_track_pos_recvertex_3_5_6 = 0;
-TH3D *h_tpc_track_pos_recvertex_4_5_6 = 0;
-TH3D *h_tpc_track_neg_recvertex_3_5_6 = 0;
-TH3D *h_tpc_track_neg_recvertex_4_5_6 = 0;
-
 //_____________________________________________________________________________
 AliPerformanceTPC::AliPerformanceTPC(TRootIoCtor*):
-  AliPerformanceObject("AliPerformanceTPC"),
+  AliPerformanceObject(),
   fTPCClustHisto(0),
   fTPCEventHisto(0),
   fTPCTrackHisto(0),
@@ -124,7 +88,33 @@ AliPerformanceTPC::AliPerformanceTPC(TRootIoCtor*):
 
   // histogram folder
   fAnalysisFolder(0),
-  fUseHLT(kFALSE)
+  fUseHLT(kFALSE),
+  h_tpc_clust_0_1_2(NULL),
+  h_tpc_event_recvertex_0(NULL),
+  h_tpc_event_recvertex_1(NULL),
+  h_tpc_event_recvertex_2(NULL),
+  h_tpc_event_recvertex_3(NULL),
+  h_tpc_event_recvertex_4(NULL),
+  h_tpc_event_recvertex_5(NULL),
+  h_tpc_event_6(NULL),
+  h_tpc_track_pos_recvertex_2_5_6(NULL),
+  h_tpc_track_neg_recvertex_2_5_6(NULL),
+  h_tpc_track_all_recvertex_5_8(NULL),
+  h_tpc_track_all_recvertex_0_5_7(NULL),
+  h_tpc_track_pos_recvertex_0_5_7(NULL),
+  h_tpc_track_neg_recvertex_0_5_7(NULL),
+  h_tpc_track_all_recvertex_1_5_7(NULL),
+  h_tpc_track_all_recvertex_2_5_7(NULL),
+  h_tpc_track_all_recvertex_3_5_7(NULL),
+  h_tpc_track_pos_recvertex_3_5_7(NULL),
+  h_tpc_track_neg_recvertex_3_5_7(NULL),
+  h_tpc_track_all_recvertex_4_5_7(NULL),
+  h_tpc_track_pos_recvertex_4_5_7(NULL),
+  h_tpc_track_neg_recvertex_4_5_7(NULL),
+  h_tpc_track_pos_recvertex_3_5_6(NULL),
+  h_tpc_track_pos_recvertex_4_5_6(NULL),
+  h_tpc_track_neg_recvertex_3_5_6(NULL),
+  h_tpc_track_neg_recvertex_4_5_6(NULL)
 {
   // io ctor
 }
@@ -139,7 +129,33 @@ AliPerformanceTPC::AliPerformanceTPC(const Char_t* name, const Char_t* title,Int
 
   // histogram folder 
   fAnalysisFolder(0),
-  fUseHLT(kFALSE)
+  fUseHLT(kFALSE),
+  h_tpc_clust_0_1_2(NULL),
+  h_tpc_event_recvertex_0(NULL),
+  h_tpc_event_recvertex_1(NULL),
+  h_tpc_event_recvertex_2(NULL),
+  h_tpc_event_recvertex_3(NULL),
+  h_tpc_event_recvertex_4(NULL),
+  h_tpc_event_recvertex_5(NULL),
+  h_tpc_event_6(NULL),
+  h_tpc_track_pos_recvertex_2_5_6(NULL),
+  h_tpc_track_neg_recvertex_2_5_6(NULL),
+  h_tpc_track_all_recvertex_5_8(NULL),
+  h_tpc_track_all_recvertex_0_5_7(NULL),
+  h_tpc_track_pos_recvertex_0_5_7(NULL),
+  h_tpc_track_neg_recvertex_0_5_7(NULL),
+  h_tpc_track_all_recvertex_1_5_7(NULL),
+  h_tpc_track_all_recvertex_2_5_7(NULL),
+  h_tpc_track_all_recvertex_3_5_7(NULL),
+  h_tpc_track_pos_recvertex_3_5_7(NULL),
+  h_tpc_track_neg_recvertex_3_5_7(NULL),
+  h_tpc_track_all_recvertex_4_5_7(NULL),
+  h_tpc_track_pos_recvertex_4_5_7(NULL),
+  h_tpc_track_neg_recvertex_4_5_7(NULL),
+  h_tpc_track_pos_recvertex_3_5_6(NULL),
+  h_tpc_track_pos_recvertex_4_5_6(NULL),
+  h_tpc_track_neg_recvertex_3_5_6(NULL),
+  h_tpc_track_neg_recvertex_4_5_6(NULL)
 {
 
 // named constructor
@@ -158,7 +174,33 @@ AliPerformanceTPC::AliPerformanceTPC(const AliPerformanceTPC& that):
   fTPCTrackHisto(that.fTPCTrackHisto),
   fFolderObj(NULL),
   fAnalysisFolder(NULL),
-  fUseHLT(that.fUseHLT)
+  fUseHLT(that.fUseHLT),
+  h_tpc_clust_0_1_2(NULL),
+  h_tpc_event_recvertex_0(NULL),
+  h_tpc_event_recvertex_1(NULL),
+  h_tpc_event_recvertex_2(NULL),
+  h_tpc_event_recvertex_3(NULL),
+  h_tpc_event_recvertex_4(NULL),
+  h_tpc_event_recvertex_5(NULL),
+  h_tpc_event_6(NULL),
+  h_tpc_track_pos_recvertex_2_5_6(NULL),
+  h_tpc_track_neg_recvertex_2_5_6(NULL),
+  h_tpc_track_all_recvertex_5_8(NULL),
+  h_tpc_track_all_recvertex_0_5_7(NULL),
+  h_tpc_track_pos_recvertex_0_5_7(NULL),
+  h_tpc_track_neg_recvertex_0_5_7(NULL),
+  h_tpc_track_all_recvertex_1_5_7(NULL),
+  h_tpc_track_all_recvertex_2_5_7(NULL),
+  h_tpc_track_all_recvertex_3_5_7(NULL),
+  h_tpc_track_pos_recvertex_3_5_7(NULL),
+  h_tpc_track_neg_recvertex_3_5_7(NULL),
+  h_tpc_track_all_recvertex_4_5_7(NULL),
+  h_tpc_track_pos_recvertex_4_5_7(NULL),
+  h_tpc_track_neg_recvertex_4_5_7(NULL),
+  h_tpc_track_pos_recvertex_3_5_6(NULL),
+  h_tpc_track_pos_recvertex_4_5_6(NULL),
+  h_tpc_track_neg_recvertex_3_5_6(NULL),
+  h_tpc_track_neg_recvertex_4_5_6(NULL)
 {
 }
 
@@ -172,6 +214,32 @@ AliPerformanceTPC& AliPerformanceTPC::operator=(const AliPerformanceTPC& that)
   fFolderObj = NULL;
   fAnalysisFolder = NULL;
   fUseHLT = that.fUseHLT;
+  h_tpc_clust_0_1_2=NULL;
+  h_tpc_event_recvertex_0=NULL;
+  h_tpc_event_recvertex_1=NULL;
+  h_tpc_event_recvertex_2=NULL;
+  h_tpc_event_recvertex_3=NULL;
+  h_tpc_event_recvertex_4=NULL;
+  h_tpc_event_recvertex_5=NULL;
+  h_tpc_event_6=NULL;
+  h_tpc_track_pos_recvertex_2_5_6=NULL;
+  h_tpc_track_neg_recvertex_2_5_6=NULL;
+  h_tpc_track_all_recvertex_5_8=NULL;
+  h_tpc_track_all_recvertex_0_5_7=NULL;
+  h_tpc_track_pos_recvertex_0_5_7=NULL;
+  h_tpc_track_neg_recvertex_0_5_7=NULL;
+  h_tpc_track_all_recvertex_1_5_7=NULL;
+  h_tpc_track_all_recvertex_2_5_7=NULL;
+  h_tpc_track_all_recvertex_3_5_7=NULL;
+  h_tpc_track_pos_recvertex_3_5_7=NULL;
+  h_tpc_track_neg_recvertex_3_5_7=NULL;
+  h_tpc_track_all_recvertex_4_5_7=NULL;
+  h_tpc_track_pos_recvertex_4_5_7=NULL;
+  h_tpc_track_neg_recvertex_4_5_7=NULL;
+  h_tpc_track_pos_recvertex_3_5_6=NULL;
+  h_tpc_track_pos_recvertex_4_5_6=NULL;
+  h_tpc_track_neg_recvertex_3_5_6=NULL;
+  h_tpc_track_neg_recvertex_4_5_6=NULL;
   return *this;
 }
 
@@ -188,32 +256,32 @@ AliPerformanceTPC::~AliPerformanceTPC()
     delete fAnalysisFolder;
 
     //globals, need to set to null
-    if(h_tpc_clust_0_1_2) delete h_tpc_clust_0_1_2; h_tpc_clust_0_1_2=0;
-    if(h_tpc_event_recvertex_0) delete h_tpc_event_recvertex_0; h_tpc_event_recvertex_0=0;
-    if(h_tpc_event_recvertex_1) delete h_tpc_event_recvertex_1; h_tpc_event_recvertex_1=0;
-    if(h_tpc_event_recvertex_2) delete h_tpc_event_recvertex_2; h_tpc_event_recvertex_2=0;
-    if(h_tpc_event_recvertex_3) delete h_tpc_event_recvertex_3; h_tpc_event_recvertex_3=0;
-    if(h_tpc_event_recvertex_4) delete h_tpc_event_recvertex_4; h_tpc_event_recvertex_4=0;
-    if(h_tpc_event_recvertex_5) delete h_tpc_event_recvertex_5; h_tpc_event_recvertex_5=0;
-    if(h_tpc_event_6) delete h_tpc_event_6; h_tpc_event_6=0;
-    if(h_tpc_track_all_recvertex_5_8) delete h_tpc_track_all_recvertex_5_8; h_tpc_track_all_recvertex_5_8=0;
-    if(h_tpc_track_all_recvertex_0_5_7) delete h_tpc_track_all_recvertex_0_5_7; h_tpc_track_all_recvertex_0_5_7=0;
-    if(h_tpc_track_pos_recvertex_0_5_7) delete h_tpc_track_pos_recvertex_0_5_7; h_tpc_track_pos_recvertex_0_5_7=0;
-    if(h_tpc_track_neg_recvertex_0_5_7) delete h_tpc_track_neg_recvertex_0_5_7; h_tpc_track_neg_recvertex_0_5_7=0;
-    if(h_tpc_track_all_recvertex_1_5_7) delete h_tpc_track_all_recvertex_1_5_7; h_tpc_track_all_recvertex_1_5_7=0;
-    if(h_tpc_track_all_recvertex_2_5_7) delete h_tpc_track_all_recvertex_2_5_7; h_tpc_track_all_recvertex_2_5_7=0;
-    if(h_tpc_track_all_recvertex_3_5_7) delete h_tpc_track_all_recvertex_3_5_7; h_tpc_track_all_recvertex_3_5_7=0;
-    if(h_tpc_track_pos_recvertex_3_5_7) delete h_tpc_track_pos_recvertex_3_5_7; h_tpc_track_pos_recvertex_3_5_7=0;
-    if(h_tpc_track_neg_recvertex_3_5_7) delete h_tpc_track_neg_recvertex_3_5_7; h_tpc_track_neg_recvertex_3_5_7=0;
-    if(h_tpc_track_all_recvertex_4_5_7) delete h_tpc_track_all_recvertex_4_5_7; h_tpc_track_all_recvertex_4_5_7=0;
-    if(h_tpc_track_pos_recvertex_4_5_7) delete h_tpc_track_pos_recvertex_4_5_7; h_tpc_track_pos_recvertex_4_5_7=0;
-    if(h_tpc_track_neg_recvertex_4_5_7) delete h_tpc_track_neg_recvertex_4_5_7; h_tpc_track_neg_recvertex_4_5_7=0;
-    if(h_tpc_track_pos_recvertex_3_5_6) delete h_tpc_track_pos_recvertex_3_5_6; h_tpc_track_pos_recvertex_3_5_6=0;
-    if(h_tpc_track_pos_recvertex_4_5_6) delete h_tpc_track_pos_recvertex_4_5_6; h_tpc_track_pos_recvertex_4_5_6=0;
-    if(h_tpc_track_neg_recvertex_3_5_6) delete h_tpc_track_neg_recvertex_3_5_6; h_tpc_track_neg_recvertex_3_5_6=0;
-    if(h_tpc_track_neg_recvertex_4_5_6) delete h_tpc_track_neg_recvertex_4_5_6; h_tpc_track_neg_recvertex_4_5_6=0;
-    if(h_tpc_track_pos_recvertex_2_5_6) delete h_tpc_track_pos_recvertex_2_5_6; h_tpc_track_pos_recvertex_2_5_6 = 0;
-    if(h_tpc_track_neg_recvertex_2_5_6) delete h_tpc_track_neg_recvertex_2_5_6; h_tpc_track_neg_recvertex_2_5_6 = 0;
+    delete h_tpc_clust_0_1_2;
+    delete h_tpc_event_recvertex_0;
+    delete h_tpc_event_recvertex_1;
+    delete h_tpc_event_recvertex_2;
+    delete h_tpc_event_recvertex_3;
+    delete h_tpc_event_recvertex_4;
+    delete h_tpc_event_recvertex_5;
+    delete h_tpc_event_6;
+    delete h_tpc_track_all_recvertex_5_8;
+    delete h_tpc_track_all_recvertex_0_5_7;
+    delete h_tpc_track_pos_recvertex_0_5_7;
+    delete h_tpc_track_neg_recvertex_0_5_7;
+    delete h_tpc_track_all_recvertex_1_5_7;
+    delete h_tpc_track_all_recvertex_2_5_7;
+    delete h_tpc_track_all_recvertex_3_5_7;
+    delete h_tpc_track_pos_recvertex_3_5_7;
+    delete h_tpc_track_neg_recvertex_3_5_7;
+    delete h_tpc_track_all_recvertex_4_5_7;
+    delete h_tpc_track_pos_recvertex_4_5_7;
+    delete h_tpc_track_neg_recvertex_4_5_7;
+    delete h_tpc_track_pos_recvertex_3_5_6;
+    delete h_tpc_track_pos_recvertex_4_5_6;
+    delete h_tpc_track_neg_recvertex_3_5_6;
+    delete h_tpc_track_neg_recvertex_4_5_6;
+    delete h_tpc_track_pos_recvertex_2_5_6;
+    delete h_tpc_track_neg_recvertex_2_5_6;
 }
 
 
@@ -1101,7 +1169,7 @@ void AliPerformanceTPC::ResetOutputData(){
     }
     else{
         //Cluster histograms
-        h_tpc_clust_0_1_2->Reset("ICE");
+        if (h_tpc_clust_0_1_2) h_tpc_clust_0_1_2->Reset("ICE");
         
         //Event-wise histograms
         if(h_tpc_event_6) h_tpc_event_6->Reset("ICE");

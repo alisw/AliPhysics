@@ -8,7 +8,7 @@
 class TList;
 class TArrayI;
 class AliVParticle;
-class AliInputEventHandler;
+class AliVEventHandler;
 
 
 class AliMuonTrackCuts : public AliAnalysisCuts
@@ -45,12 +45,12 @@ class AliMuonTrackCuts : public AliAnalysisCuts
   /// Allow default parameters
   void SetAllowDefaultParams ( Bool_t allowDefaultParams = kTRUE ) { fAllowDefaultParams = allowDefaultParams; }
   void SetCustomParamFromRun ( Int_t runNumber = -1, TString passName = "" );
-  void SetCustomParam ( const AliInputEventHandler* eventHandler );
+  void SetCustomParam ( const AliVEventHandler* eventHandler );
   
   /// Get pass name
   TString GetPassName () const { return fPassName; }
 
-  Bool_t SetRun ( const AliInputEventHandler* eventHandler );
+  Bool_t SetRun ( const AliVEventHandler* eventHandler );
   
   void Print ( Option_t* option = "" ) const;
   
@@ -71,7 +71,7 @@ class AliMuonTrackCuts : public AliAnalysisCuts
 
  private:
   
-  TString GuessPass ( const AliInputEventHandler* eventHandler );
+  TString GuessPass ( const AliVEventHandler* eventHandler );
   Bool_t ReadParamFromOADB ( Int_t runNumber, TString passName );
 
   Bool_t fIsMC;               ///< Monte Carlo analysis

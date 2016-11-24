@@ -6,7 +6,7 @@
 #include "AliESDEvent.h"
 #include "AliCentrality.h"
 #include "AliEventplane.h"
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 
 #include "AliPicoHeaderCJ.h"
 
@@ -102,7 +102,7 @@ AliPicoHeaderCJ::~AliPicoHeaderCJ()
 }
 
 //_____________________________________________________________________________
-void AliPicoHeaderCJ::SetEventInfo(AliInputEventHandler* const pEH)
+void AliPicoHeaderCJ::SetEventInfo(AliVEventHandler* const pEH)
 {
 //
 // AliPicoHeaderCJ::SetEventInfo

@@ -23,7 +23,7 @@
 #include "TArrayI.h"
 
 #include "AliLog.h"
-#include "AliInputEventHandler.h"
+#include "AliVEventHandler.h"
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -188,9 +188,9 @@ UInt_t AliMuonEventCuts::GetSelectionMask( const TObject* obj )
   
   UInt_t checkMask = fCheckMask | GetFilterMask();
   
-  const AliInputEventHandler* inputHandler = static_cast<const AliInputEventHandler*> ( obj );
+  const AliVEventHandler* inputHandler = static_cast<const AliVEventHandler*> ( obj );
   
-  UInt_t physicsSelection = const_cast<AliInputEventHandler*>(inputHandler)->IsEventSelected();
+  UInt_t physicsSelection = const_cast<AliVEventHandler*>(inputHandler)->IsEventSelected();
 
   if ( checkMask & kPhysicsSelected ) {
     if ( physicsSelection & fPhysicsSelectionMask ) selectionMask |= kPhysicsSelected;
@@ -477,11 +477,11 @@ const TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent ( const AliVEve
 }
 
 //________________________________________________________________________
-const TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent ( const AliInputEventHandler* eventHandler )
+const TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent ( const AliVEventHandler* eventHandler )
 {
   /// Return the selected trigger classes in the current event
   const AliVEvent* event = eventHandler->GetEvent();
-  UpdateEvent(event,const_cast<AliInputEventHandler*>(eventHandler)->IsEventSelected());
+  UpdateEvent(event,const_cast<AliVEventHandler*>(eventHandler)->IsEventSelected());
   return fSelectedTrigClassesInEvent;
 }
 

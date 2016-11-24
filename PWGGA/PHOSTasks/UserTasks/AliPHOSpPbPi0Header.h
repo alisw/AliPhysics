@@ -18,7 +18,7 @@ class TList;
 class TParticle;
 class TClonesArray;
 
-class AliInputEventHandler;
+class AliVEventHandler;
 class AliStack;
 class AliVEvent;
 class AliVCaloCells;
@@ -46,7 +46,7 @@ class AliPHOSpPbPi0Header : public TNamed {
 
   Bool_t   IsSelected();
 
-  void SetEventInfo(AliInputEventHandler* const handler);
+  void SetEventInfo(AliVEventHandler* const handler);
 
   void CreateHistograms(TList *listQA, TList *listRD, TList *listMC);
   void FillHistosEvent(TList *listQA);

@@ -705,7 +705,7 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   // Get PID response
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(man){
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+    AliVEventHandler* inputHandler = man->GetInputEventHandler();
     if(inputHandler) fPIDResponse=inputHandler->GetPIDResponse();
   }
 

@@ -569,7 +569,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
        ,nBarrelFriend(0), nBarrelITSFriend(0), nSAFriend(0)
        ,nBarrelMC(0), nSAMC(0), nKinkMC(0);
   AliESDtrack *esdTrack = NULL;
-  AliESDfriendTrack *esdFriendTrack = NULL;
   TObject *calObject = NULL;
   AliTRDtrackV1 *track = NULL;
   AliTRDseedV1 *tracklet = NULL;
@@ -728,7 +727,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
 
     // read track REC info
-    if((esdFriendTrack = (fESDfriend->GetNumberOfTracks() > itrk) ? fESDfriend->GetTrack(itrk): NULL)) {
+    if (fESDfriend->GetNumberOfTracks() > itrk) {
+      const AliESDfriendTrack* esdFriendTrack = dynamic_cast<const AliESDfriendTrack*>(fESDfriend->GetTrack(itrk));
       fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
       fTrackInfo->SetITSoutParam(esdFriendTrack->GetITSOut());
       const AliTrackPointArray *tps(NULL);

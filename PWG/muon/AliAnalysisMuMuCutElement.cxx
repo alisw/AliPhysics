@@ -477,7 +477,7 @@ Bool_t AliAnalysisMuMuCutElement::Pass(const AliVEvent& event) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisMuMuCutElement::Pass(const AliInputEventHandler& eventHandler) const
+Bool_t AliAnalysisMuMuCutElement::Pass(const AliVEventHandler& eventHandler) const
 {
   /// Whether the eventHandler pass this cut
   return CallCutMethod(reinterpret_cast<Long_t>(&eventHandler));
