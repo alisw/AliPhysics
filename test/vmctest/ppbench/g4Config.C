@@ -84,14 +84,12 @@ void Config()
     //geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
     //geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
     // for Geant4 >= 9.5
-    geant4->ProcessGeantCommand("/optics_engine/selectOpProcess Scintillation");
-    geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
-    geant4->ProcessGeantCommand("/optics_engine/selectOpProcess OpWLS");
-    geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
-    geant4->ProcessGeantCommand("/optics_engine/selectOpProcess OpMieHG");
-    geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
-    geant4->ProcessGeantCommand("/optics_engine/selectOpProcess Cerenkov");
-    geant4->ProcessGeantCommand("/optics_engine/setTrackSecondariesFirst false");   
+    geant4->ProcessGeantCommand("/process/optical/verbose 0");
+    geant4->ProcessGeantCommand("/process/optical/processActivation Scintillation false");
+    geant4->ProcessGeantCommand("/process/optical/processActivation OpWLS false");
+    geant4->ProcessGeantCommand("/process/optical/processActivation OpMieHG false");
+    geant4->ProcessGeantCommand("/process/optical/setTrackSecondariesFirst Cerenkov false");
+    geant4->ProcessGeantCommand("/mcMagField/stepperType NystromRK4");
 
     // Activate saving random engine status
     // (the file per event will be re-written with each new event)
