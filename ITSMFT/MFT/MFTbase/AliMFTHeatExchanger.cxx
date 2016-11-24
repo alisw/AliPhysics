@@ -45,9 +45,9 @@ ClassImp(AliMFTHeatExchanger);
 AliMFTHeatExchanger::AliMFTHeatExchanger() : TNamed() {
   fRWater = 0.1/2.;
   fDRPipe = 0.005;
-  //fHeatExchangerThickness = 1.618; // to get a 13.4 mm thickness for the rohacell... don't implement this value yet! overlapping issue!
-  fHeatExchangerThickness = 1.4 + 2*AliMFTGeometry::kRohacell; // the water pipe are inside the rohacell plate, the rohacell density is increased according
-  fCarbonThickness = (0.0290)/2.;  // total thickness of the carbon plate
+  //fHeatExchangerThickness = 1.398; // to get a 13.4 mm thickness for the rohacell... but the water pipes are not inside the rohacell, then the rohacell density must be increased
+  fHeatExchangerThickness = 1.4 + 2*AliMFTGeometry::kRohacell; // kRohacell is used to link the rohacell thickness and the ladder positionning
+  fCarbonThickness = (0.0290)/2.;  // half thickness of the carbon plate
   InitParameters();
 }
 
@@ -1869,15 +1869,15 @@ void AliMFTHeatExchanger::InitParameters() {
     fSupportYDimensions[i]= new double[fnPart[i]];
   }
   
-  fSupportXDimensions[0][0]=21.;  fSupportXDimensions[0][1]=14.8;   fSupportXDimensions[0][2]=4.4;
-  fSupportXDimensions[1][0]=21.;  fSupportXDimensions[1][1]=14.8;   fSupportXDimensions[1][2]=4.4;
-  fSupportXDimensions[2][0]=22.6; fSupportXDimensions[2][1]=16.1;   fSupportXDimensions[2][2]=9.3;
-  fSupportXDimensions[3][0]=28.4; fSupportXDimensions[3][1]=22.9;   fSupportXDimensions[3][2]=18.5 ;fSupportXDimensions[3][3]=8.3; fSupportXDimensions[3][4]=4.9;
-  fSupportXDimensions[4][0]=28.4; fSupportXDimensions[4][1]=25.204; fSupportXDimensions[4][2]=21.9 ;fSupportXDimensions[4][3]=15.1;
+  fSupportXDimensions[0][0]=23.;  fSupportXDimensions[0][1]=14.;   fSupportXDimensions[0][2]=5.1;
+  fSupportXDimensions[1][0]=23.;  fSupportXDimensions[1][1]=14.;   fSupportXDimensions[1][2]=5.1;
+  fSupportXDimensions[2][0]=23.;  fSupportXDimensions[2][1]=14.;   fSupportXDimensions[2][2]=5.1;
+  fSupportXDimensions[3][0]=28.4; fSupportXDimensions[3][1]=21.9;   fSupportXDimensions[3][2]=18.5 ;fSupportXDimensions[3][3]=8.3; fSupportXDimensions[3][4]=4.9;
+  fSupportXDimensions[4][0]=28.4; fSupportXDimensions[4][1]=24.204; fSupportXDimensions[4][2]=21.9 ;fSupportXDimensions[4][3]=15.1;
   
-  fSupportYDimensions[0][0]=6.2;  fSupportYDimensions[0][1]=3.5;   fSupportYDimensions[0][2]=1.4;
-  fSupportYDimensions[1][0]=6.2;  fSupportYDimensions[1][1]=3.5;   fSupportYDimensions[1][2]=1.4;
-  fSupportYDimensions[2][0]=6.61; fSupportYDimensions[2][1]=3.01;  fSupportYDimensions[2][2]=1.83;
+  fSupportYDimensions[0][0]=6.7;  fSupportYDimensions[0][1]=2.6;   fSupportYDimensions[0][2]=2.0;
+  fSupportYDimensions[1][0]=6.7;  fSupportYDimensions[1][1]=2.6;   fSupportYDimensions[1][2]=2.0;
+  fSupportYDimensions[2][0]=6.7;  fSupportYDimensions[2][1]=2.6;   fSupportYDimensions[2][2]=2.0;
   fSupportYDimensions[3][0]=6.61; fSupportYDimensions[3][1]=3.01;  fSupportYDimensions[3][2]=3.01 ;fSupportYDimensions[3][3]=1.8; fSupportYDimensions[3][4]=1.15;
   fSupportYDimensions[4][0]=6.61; fSupportYDimensions[4][1]=3.01;  fSupportYDimensions[4][2]=3.01 ;fSupportYDimensions[4][3]=2.42;
   
@@ -1887,7 +1887,7 @@ void AliMFTHeatExchanger::InitParameters() {
   
   fXPosition0[0] = 1.7;
   fXPosition0[1] = 4.61;
-  fXPosition0[2] = 7.72;
+  fXPosition0[2] = 6.41;
   
   fangle0 = 44.6;
   fradius0 = 2.5;
@@ -1902,7 +1902,7 @@ void AliMFTHeatExchanger::InitParameters() {
   fXPosition3[0] = 1.7;
   fXPosition3[1] = 4.61;
   fXPosition3[2] = 5.5;
-  fXPosition3[3] = 6.81;
+  fXPosition3[3] = 5.81;
   
   fangle3[0] = 41.3;
   fangle3[1] = 41.3;
@@ -1936,7 +1936,7 @@ void AliMFTHeatExchanger::InitParameters() {
   fXposition4[1] = 3.492;
   fXposition4[2] = 4.61;
   fXposition4[3] = 5.5;
-  fXposition4[4] = 6.5;
+  fXposition4[4] = 5.8;
   
   fangle4[0] = 35.5;
   fangle4[1] = 30.;
