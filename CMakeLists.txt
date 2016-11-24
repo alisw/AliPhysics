@@ -5,6 +5,7 @@
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
 project(AliPhysics CXX C)
+enable_testing()
 
 foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
           CMP0025  # Compiler id for Apple Clang is now AppleClang (v3.0)
@@ -248,7 +249,6 @@ endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
 # Select only "load_library" tests (which are quick) like this (in parallel too):
 #   ctest --output-on-failure -R load_library -j 8
 install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_PREFIX})
-enable_testing()
 foreach(TEST_LIB ${ALILIBSTESTED})
   add_test(load_library_${TEST_LIB}
     env
