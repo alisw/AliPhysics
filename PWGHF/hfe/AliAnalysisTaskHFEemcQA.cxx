@@ -116,6 +116,7 @@ ClassImp(AliAnalysisTaskHFEemcQA)
   fHistoNClsE2(0),
   fHistoNClsE3(0),
   fHistoNCells(0),
+  fHistoEperCell(0),
   fHistoCalCell(0),
   fHistoTimeEMC(0),
   fHistoTimeEMCcorr(0),
@@ -236,6 +237,7 @@ AliAnalysisTaskHFEemcQA::AliAnalysisTaskHFEemcQA()
   fHistoNClsE2(0),
   fHistoNClsE3(0),
   fHistoNCells(0),
+  fHistoEperCell(0),
   fHistoCalCell(0),
   fHistoTimeEMC(0),
   fHistoTimeEMCcorr(0),
@@ -426,6 +428,9 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   fHistoNCells = new TH2F("fHistoNCells","No of EMCAL cells in a cluster;Cluster E;N^{EMC}_{cells}",300,0,30,30,0,30);
   fOutputList->Add(fHistoNCells);
 
+  fHistoEperCell = new TH2F("fHistoEperCell","E/cell;Cluster E;E/cell",400,0,40,300,0,30);
+  fOutputList->Add(fHistoEperCell);
+
   fHistoCalCell = new TH2F("fHistoCalCell","EMCAL cells in a cluster;cell ID;E (GeV)",15000,-0.5,14999.5,150,0,30);
   fOutputList->Add(fHistoCalCell);
 
@@ -435,11 +440,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
   //fHistoTimeEMCcorr = new TH2F("fHistoTimeEMCcorr","EMCAL Time (tender);E (GeV); t(ns)",480,2,50,20000,-200,200);
   //fOutputList->Add(fHistoTimeEMCcorr);
 
-  Int_t bincal[3]=      {15,  490, 20000}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
-  Double_t xmincal[3]={-0.5,    1,  -200};
-  Double_t xmaxcal[3]={14.5,   50 ,  200};
-  fHistoTimeEMCcorr = new THnSparseD("fHistoTimeEMCcorr","EMCAL Time (tender);SM;E (GeV); t(ns)",3,bincal,xmincal,xmaxcal);
+  Int_t bincal[6]=      {15,  480,  8000, 40,  140, 160}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
+  Double_t xmincal[6]={-0.5,    2,  -160,  0, -0.7,   0};
+  Double_t xmaxcal[6]={14.5,   50 ,  160, 40,  0.7, 6.4};
+  fHistoTimeEMCcorr = new THnSparseD("fHistoTimeEMCcorr","EMCAL Time (tender);SM;E (GeV); t(ns); Ncell; phi; eta",6,bincal,xmincal,xmaxcal);
   fOutputList->Add(fHistoTimeEMCcorr);
+
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0);
   fOutputList->Add(fNegTrkIDPt);
@@ -669,7 +675,6 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
 
   fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 
-  cout << "==========================" << endl;
   if(fMCarray)CheckMCgen(fMCheader);
 
   ///////////////////
@@ -887,6 +892,9 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);
       fHistoNCells->Fill(clustE,clust->GetNCells());
+      Double_t EperCell = -999.9;
+      if(clust->GetNCells()>0)EperCell = clustE/clust->GetNCells();
+      fHistoEperCell->Fill(clustE,EperCell);
 
       //-----Plots for EMC trigger
       Bool_t hasfiredEG1=0;
@@ -1172,10 +1180,13 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
       }
 
       Float_t tof = clustMatch->GetTOF()*1e+9; // ns
-      Double_t caloinfo[3];
+      Double_t caloinfo[6];
       caloinfo[0] = iSM; 
       caloinfo[1] = clustMatchE; 
       caloinfo[2] = tof; 
+      caloinfo[3] = clustMatch->GetNCells();
+      caloinfo[4] = emceta; 
+      caloinfo[5] = emcphi; 
       if(clustMatchE>2.0)fHistoTimeEMC->Fill(clustMatchE,tof);
       if(clustMatchE>2.0 && fUseTender)fHistoTimeEMCcorr->Fill(caloinfo);
 

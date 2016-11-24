@@ -122,6 +122,7 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH1F        *fHistoNClsE3;//! No of clusters per event
     //TH1F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoNCells;//! No of cells per cluster
+    TH2F        *fHistoEperCell; 
     TH2F        *fHistoCalCell;//! No of cells per cluster
     TH2F        *fHistoTimeEMC;//! No of cells per cluster
     THnSparse   *fHistoTimeEMCcorr;//! No of cells per cluster
