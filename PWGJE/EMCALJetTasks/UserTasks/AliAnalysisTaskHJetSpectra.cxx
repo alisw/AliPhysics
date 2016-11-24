@@ -2051,6 +2051,10 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       Int_t nbins = sizeof(bins)/sizeof(Double_t)-1;
  
       Double_t binsDiff [] = {
+       -50, -48., -46., -44, -42.,
+       -40., -38., -36., -34., -32., -30., -28., -26., -25., -24., -23., -22., -21.,
+       -20., -19.5, -19., -18.5, -18., -17.5, -17., -16.5, -16., -15.5,
+       -15., -14.5, -14., -13.5, -13., -12.5, -12., -11.5, -11., -10.5,
        -10.0, -9.8, -9.6, -9.4, -9.2, 
         -9.0, -8.8, -8.6, -8.4, -8.2, 
         -8.0, -7.8, -7.6, -7.4, -7.2, 
@@ -2082,7 +2086,11 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
          6.0, 6.2, 6.4, 6.6, 6.8, 
          7.0, 7.2, 7.4, 7.6, 7.8, 
          8.0, 8.2, 8.4, 8.6, 8.8, 
-         9.0, 9.2, 9.4, 9.6, 9.8, 10.};
+         9.0, 9.2, 9.4, 9.6, 9.8, 
+         10., 10.5, 11., 11.5, 12., 12.5, 13., 13.5, 14., 14.5,
+         15., 15.5, 16., 16.5, 17., 17.5, 18., 18.5, 19., 19.5,
+         20., 21., 22., 23., 24, 25, 26., 28., 30., 32.,34., 36., 38., 
+         40., 42., 44., 46., 48., 50.};
       Int_t nbinsDiff = sizeof(binsDiff)/sizeof(Double_t)-1;
       
       for(Int_t ic =0; ic<icmax; ic++){
@@ -2114,7 +2122,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       fOutput->Add((TH2D*) fhPtJetPrimVsPtJetRec);
 
       name = Form("fhDiffPtVsPtTrackTrueMB"); 
-      fhDiffPtVsPtTrackTrue  = new TH2D(name.Data(), name.Data(),50,0,50, nbinsDiff,binsDiff);
+      fhDiffPtVsPtTrackTrue  = new TH2D(name.Data(), name.Data(),100,0,100, nbinsDiff,binsDiff);
       fOutput->Add((TH2D*) fhDiffPtVsPtTrackTrue);
    }
 
