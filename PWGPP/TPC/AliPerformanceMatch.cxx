@@ -69,15 +69,6 @@ ClassImp(AliPerformanceMatch)
 Bool_t AliPerformanceMatch::fgMergeTHnSparse = kFALSE;
 Bool_t AliPerformanceMatch::fgUseMergeTHnSparse = kFALSE;
 
-TH2D *h_tpc_match_trackingeff_all_2_3 = 0;
-TH2D *h_tpc_match_trackingeff_tpc_2_3 = 0;
-TH2D *h_tpc_match_pull_2_7 = 0;
-TH2D *h_tpc_match_pull_4_7 = 0;
-TH2D *h_tpc_match_pull_0_7 = 0;
-TH2D *h_tpc_match_pull_1_7 = 0;
-TH2D *h_tpc_match_pull_3_7 = 0;
-TH3D *h_tpc_constrain_tpc_0_2_3 = 0;
-
 //_____________________________________________________________________________
 AliPerformanceMatch::AliPerformanceMatch(TRootIoCtor*):
   AliPerformanceObject(),
@@ -87,7 +78,16 @@ AliPerformanceMatch::AliPerformanceMatch(TRootIoCtor*):
   fTPCConstrain(0),
   fFolderObj(0),
   fAnalysisFolder(0),
-  fUseHLT(0)
+  fUseHLT(0),
+  h_tpc_match_trackingeff_all_2_3(NULL),
+  h_tpc_match_trackingeff_tpc_2_3(NULL),
+  h_tpc_match_pull_2_7(NULL),
+  h_tpc_match_pull_4_7(NULL),
+  h_tpc_match_pull_0_7(NULL),
+  h_tpc_match_pull_1_7(NULL),
+  h_tpc_match_pull_3_7(NULL),
+  h_tpc_constrain_tpc_0_2_3(NULL)
+
 {
   // io constructor
 }
@@ -103,7 +103,15 @@ AliPerformanceMatch::AliPerformanceMatch(const Char_t* name, const Char_t* title
 
   // histogram folder 
   fAnalysisFolder(0),
-  fUseHLT(0)
+  fUseHLT(0),
+  h_tpc_match_trackingeff_all_2_3(NULL),
+  h_tpc_match_trackingeff_tpc_2_3(NULL),
+  h_tpc_match_pull_2_7(NULL),
+  h_tpc_match_pull_4_7(NULL),
+  h_tpc_match_pull_0_7(NULL),
+  h_tpc_match_pull_1_7(NULL),
+  h_tpc_match_pull_3_7(NULL),
+  h_tpc_constrain_tpc_0_2_3(NULL)
 {
   // named constructor	
   // 
@@ -117,12 +125,12 @@ AliPerformanceMatch::AliPerformanceMatch(const Char_t* name, const Char_t* title
 AliPerformanceMatch::~AliPerformanceMatch()
 {
   // destructor
-   
+
   if(fResolHisto) delete fResolHisto; fResolHisto=0;     
   if(fPullHisto)  delete fPullHisto;  fPullHisto=0;
   if(fTrackingEffHisto) delete fTrackingEffHisto; fTrackingEffHisto = 0x0;
   if(fTPCConstrain) delete fTPCConstrain; fTPCConstrain = 0x0;
-  
+
   if(h_tpc_match_trackingeff_all_2_3) delete h_tpc_match_trackingeff_all_2_3; h_tpc_match_trackingeff_all_2_3 = 0;
   if(h_tpc_match_trackingeff_tpc_2_3) delete h_tpc_match_trackingeff_tpc_2_3; h_tpc_match_trackingeff_tpc_2_3 = 0;
   if(h_tpc_match_pull_2_7) delete h_tpc_match_pull_2_7; h_tpc_match_pull_2_7 = 0;

@@ -6,7 +6,7 @@
 
 class TString;
 
-class AliInputEventHandler;
+class AliVEventHandler;
 
 class AliPicoHeaderCJ : public TNamed {
 
@@ -51,7 +51,7 @@ class AliPicoHeaderCJ : public TNamed {
   virtual ~AliPicoHeaderCJ();
 //=============================================================================
 
-  void SetEventInfo(AliInputEventHandler* const pEH);
+  void SetEventInfo(AliVEventHandler* const pEH);
 
   void BackgroundRhoRD02(Double_t d) { fBackgroundRhoRD02 = d; }
   void BackgroundRhoRD03(Double_t d) { fBackgroundRhoRD03 = d; }

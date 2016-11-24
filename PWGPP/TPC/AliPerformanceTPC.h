@@ -93,15 +93,46 @@ private:
   static Bool_t fgUseMergeTHnSparse;  
 
   // TPC histogram
-  THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCside
-  THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
-  THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+  THnSparseF *fTPCClustHisto; // padRow:phi:TPCside
+  THnSparseF *fTPCEventHisto;  // Xv:Yv:Zv:mult:multP:multN:vertStatus
+  THnSparseF *fTPCTrackHisto;  // nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
   TObjArray* fFolderObj; // array of analysed histograms
 
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   Bool_t fUseHLT; // use HLT ESD
+
+  //Cluster Histograms
+  TH3D *h_tpc_clust_0_1_2;//!
+  //Event Histograms - Xv:Yv:Zv:mult:multP:multN:vertStatus
+  TH1D *h_tpc_event_recvertex_0;//!
+  TH1D *h_tpc_event_recvertex_1;//!
+  TH1D *h_tpc_event_recvertex_2;//!
+  TH1D *h_tpc_event_recvertex_3;//!
+  TH1D *h_tpc_event_recvertex_4;//!
+  TH1D *h_tpc_event_recvertex_5;//!
+  TH1D *h_tpc_event_6;//!
+  //Track Histograms - nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+  TH3D* h_tpc_track_pos_recvertex_2_5_6;//!
+  TH3D* h_tpc_track_neg_recvertex_2_5_6;//!
+  TH2D *h_tpc_track_all_recvertex_5_8;//!
+  TH3D *h_tpc_track_all_recvertex_0_5_7;//!
+  TH3D *h_tpc_track_pos_recvertex_0_5_7;//!
+  TH3D *h_tpc_track_neg_recvertex_0_5_7;//!
+  TH3D *h_tpc_track_all_recvertex_1_5_7;//!
+  TH3D *h_tpc_track_all_recvertex_2_5_7;//!
+  TH3D *h_tpc_track_all_recvertex_3_5_7;//!
+  TH3D *h_tpc_track_pos_recvertex_3_5_7;//!
+  TH3D *h_tpc_track_neg_recvertex_3_5_7;//!
+  TH3D *h_tpc_track_all_recvertex_4_5_7;//!
+  TH3D *h_tpc_track_pos_recvertex_4_5_7;//!
+  TH3D *h_tpc_track_neg_recvertex_4_5_7;//!
+  TH3D *h_tpc_track_pos_recvertex_3_5_6;//!
+  TH3D *h_tpc_track_pos_recvertex_4_5_6;//!
+  TH3D *h_tpc_track_neg_recvertex_3_5_6;//!
+  TH3D *h_tpc_track_neg_recvertex_4_5_6;//!
+
   ClassDef(AliPerformanceTPC,14);
 };
 
