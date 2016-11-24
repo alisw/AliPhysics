@@ -65,11 +65,11 @@ public :
   virtual TCollection* GetListOfDrawableObjects(){ return 0; }
 
   // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts) {
+  void SetAliRecInfoCuts(const AliRecInfoCuts* cuts) {
     if (!cuts) return;
     fCutsRC = *cuts;
   }
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts) {
+  void SetAliMCInfoCuts(const AliMCInfoCuts* cuts) {
     fCutsMC = *cuts;
   }
 
