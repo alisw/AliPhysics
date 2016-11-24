@@ -1202,17 +1202,13 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,spherocity);
     }
     
-    // printf("Here are total number of candiates passing all selection = %d",nSelectedPID);
-    // printf("Here are total number of candiates passing all selection + reflections = %d",TMath::Nint(nSelCand));
-    // printf("Here are total number of candiates passing all selection and mass hypothesis = %d",nSelectedInMassPeak);
-
     fCounterCandidates->StoreCandidates(aod,nSelectedNoPID,kTRUE);
     fCounterCandidates->StoreCandidates(aod,nSelectedPID,kFALSE);
     fHistNtrCorrEvSel->Fill(countCorr,nchWeight);
     if(nSelectedPID>0)  fHistNtrCorrEvWithCand->Fill(countCorr,nchWeight);
     if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countCorr,nchWeight);
     
-    if(fFillTrackHisto) FillTrackControlHisto(aod, countCorr, nSelectedPID);
+    if(fFillTrackHisto) FillTrackControlHisto(aod, countCorr, nSelectedInMassPeak);
     
     PostData(1,fOutput);
     PostData(2,fListCuts);
