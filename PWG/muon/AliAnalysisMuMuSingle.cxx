@@ -24,6 +24,7 @@
 #include "AliAnalysisMuMuCutRegistry.h"
 #include "AliMergeableCollection.h"
 #include "AliVEvent.h"
+#include "AliVEventHandler.h"
 
 ClassImp(AliAnalysisMuMuSingle)
 
@@ -110,7 +111,7 @@ Bool_t AliAnalysisMuMuSingle::IsEtaInRange(const AliVParticle& part) const
 }
 
 //_____________________________________________________________________________
-void AliAnalysisMuMuSingle::SetRun(const AliInputEventHandler* eventHandler)
+void AliAnalysisMuMuSingle::SetRun(const AliVEventHandler* eventHandler)
 {
   MuonTrackCuts()->SetRun(eventHandler);
 }

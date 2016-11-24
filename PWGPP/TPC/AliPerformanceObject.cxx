@@ -43,7 +43,7 @@ ClassImp(AliPerformanceObject)
 //_____________________________________________________________________________
 AliPerformanceObject::AliPerformanceObject(TRootIoCtor*):
   AliMergeable(),
-  TNamed("AliPerformanceObject","AliPerformanceObject"),
+  TNamed(),
   fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(-1),
@@ -54,7 +54,9 @@ AliPerformanceObject::AliPerformanceObject(TRootIoCtor*):
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0),
   fUseTOFBunchCrossing(kFALSE),
-  fUseSparse(1)
+  fUseSparse(1),
+  fCutsRC(),
+  fCutsMC()
 {
   // io constructor
 }
@@ -73,7 +75,9 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, 
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0),
   fUseTOFBunchCrossing(kFALSE),
-  fUseSparse(1)
+  fUseSparse(1),
+  fCutsRC(),
+  fCutsMC()
 {
 
     // constructor
