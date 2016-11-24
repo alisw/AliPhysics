@@ -337,6 +337,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterM02;                                          //! cluster M02
     Float_t               fClusterM20;                                          //! cluster M20
     Float_t               fClusterEP;                                           //! cluster-track E/p
+    Int_t                 fClusterLeadCellID;                                   //! cellID of leading cell in cluster
     Float_t               fTrackPt;                                             //! track Pt
     Int_t                 fTrackPID;                                            //! track PID '0101' e,Pi,K,P
 
@@ -371,7 +372,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 29);
+    ClassDef(AliAnalysisTaskGammaCalo, 30);
 };
 
 #endif

@@ -277,6 +277,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fClusterM02(0),
   fClusterM20(0),
   fClusterEP(0),
+  fClusterLeadCellID(0),
   fTrackPt(0),
   fTrackPID(0),
 //  fHistoTruePi0NonLinearity(NULL),
@@ -523,6 +524,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fClusterM02(0),
   fClusterM20(0),
   fClusterEP(0),
+  fClusterLeadCellID(0),
   fTrackPt(0),
   fTrackPID(0),
 //  fHistoTruePi0NonLinearity(NULL),
@@ -984,6 +986,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tClusterEOverP[iCut]->Branch("ClusM02",&fClusterM02,"fClusterM02/F");
         tClusterEOverP[iCut]->Branch("ClusM20",&fClusterM20,"fClusterM20/F");
         tClusterEOverP[iCut]->Branch("ClusEP",&fClusterEP,"fClusterEP/F");
+        tClusterEOverP[iCut]->Branch("ClusLeadCellID",&fClusterLeadCellID,"fClusterLeadCellID/I");
         tClusterEOverP[iCut]->Branch("TrackPt",&fTrackPt,"fTrackPt/F");
         tClusterEOverP[iCut]->Branch("TrackPID",&fTrackPID,"fTrackPID/I");
         fClusterTreeList[iCut]->Add(tClusterEOverP[iCut]);
@@ -2132,6 +2135,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       fClusterE = clus->E();
       fClusterM02 = clus->GetM02();
       fClusterM20 = clus->GetM20();
+      fClusterLeadCellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent);
 
       Int_t labelTrackMatch = -1;
       if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetHighestPtMatchedTrackToCluster(fInputEvent,clus,labelTrackMatch)){
@@ -2179,11 +2183,28 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         delete clus;
         continue;
       }
-      if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kElectron))<1.) e_PID = 1;
-      if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kPion))<1.) Pi_PID = 1;
-      if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kKaon))<1.) K_PID = 1;
-      if(TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kProton))<1.) P_PID = 1;
-      fTrackPID = e_PID*1000 + Pi_PID*100 + K_PID*10 + P_PID;
+
+      Float_t temp = TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kElectron));
+      if(temp<10.){
+        e_PID = temp*10;
+      }else e_PID = 99;
+
+      temp = TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kPion));
+      if(temp<10.){
+        Pi_PID = temp*10;
+      }else Pi_PID = 99;
+
+      temp = TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kKaon));
+      if(temp<10.){
+        K_PID = temp*10;
+      }else K_PID = 99;
+
+      temp = TMath::Abs(pidResponse->NumberOfSigmasTPC(currTrack,AliPID::kProton));
+      if(temp<10.){
+        P_PID = temp*10;
+      }else P_PID = 99;
+
+      fTrackPID = e_PID*1000000 + Pi_PID*10000 + K_PID*100 + P_PID;
       tClusterEOverP[fiCut]->Fill();
       delete clus;
     }
