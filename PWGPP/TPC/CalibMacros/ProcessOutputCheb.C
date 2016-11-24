@@ -12,8 +12,15 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   // AliAnalysisAlien::MergeOutput for simplicity
 
   enum {kStatusFail=1, kStatusOK=0, kStatusLowStatUpdate=-1};
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
+  if (!gSystem->AccessPathName("CreateCorrMapObj.C")) {
+    gROOT->LoadMacro("CreateCorrMapObj.C");
+    ::Info("ProcessOutputCheb","using local version of ProcessOutputCheb.C");
+  }
+  else {
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
+    ::Info("ProcessOutputCheb","using %s","$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
+  }
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
   //gROOT->LoadMacro("CreateCorrMapObj.C");
     
   Bool_t isGrid = kTRUE;
