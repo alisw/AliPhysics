@@ -24,7 +24,7 @@ enum eventMixConfig { kDisabled = -1,
                     };
 
 
-AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
+AliRsnMiniAnalysisTask * AddTaskKStarPP8TeV_PID
 (
  Bool_t      isMC = kFALSE,
  Bool_t      isPP = kTRUE,
@@ -51,7 +51,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
-  UInt_t      triggerMask = AliVEvent::kMB;
+  UInt_t      triggerMask = AliVEvent::kINT7;//A Khuntia
   Bool_t      rejectPileUp = kTRUE; //
   Double_t    vtxZcut = 10.0; //cm, default cut on vtx z
   
@@ -126,15 +126,15 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
    if (isPP && (!isMC)) { 
      cutVertex->SetCheckPileUp(rejectPileUp);   // set the check for pileup  
      ::Info("AddAnalysisTaskTOFKStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
-     cutVertex->SetCheckZResolutionSPD();//A Khuntia
-     cutVertex->SetCheckDispersionSPD();//A Khuntia
-     cutVertex->SetCheckZDifferenceSPDTrack();//A Khuntia
+     //cutVertex->SetCheckZResolutionSPD();//A Khuntia
+     //cutVertex->SetCheckDispersionSPD();//A Khuntia
+     //cutVertex->SetCheckZDifferenceSPDTrack();//A Khuntia
   }
    ///////----------AKhuntia----------//////
-   AliRsnCutEventUtils* cutEventUtils=0;
+   /*AliRsnCutEventUtils* cutEventUtils=0;
    cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
    cutEventUtils->SetCheckIncompleteDAQ();
-   cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+   cutEventUtils->SetCheckSPDClusterVsTrackletBG();*/
    //------------------------------------
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
@@ -179,7 +179,7 @@ AliRsnMiniAnalysisTask * AddTaskKStarPP7TeV
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //   
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPP8TeV_PID.C");
-   if (!ConfigKStarPP7TeV(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
+   if (!ConfigKStarPP8TeV_PID(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPiCandidate, cutKaCandidate, nsigmaPi, nsigmaKa, enableMonitor, isMC&IsMcTrueOnly,  monitorOpt.Data(), useMixLS, isMC&checkReflex, yaxisvar)) return 0x0;
    
    
    //
