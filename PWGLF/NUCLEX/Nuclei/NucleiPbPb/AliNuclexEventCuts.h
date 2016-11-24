@@ -17,7 +17,20 @@ class AliNuclexEventCuts : public TList {
   public:
     AliNuclexEventCuts(bool savePlots = false);
  
+    enum CutsBin {
+      kNoCuts = 0,
+      kDAQincomplete,
+      kBfield,
+      kTrigger,
+      kVertexPosition,
+      kVertexQuality,
+      kPileUp,
+      kMultiplicity,
+      kAllCuts
+    };
+
     bool   AcceptEvent (AliVEvent *ev);
+    bool   PassedCut (AliNuclexEventCuts::CutsBin cut) { return fFlag & cut; }
     void   AddQAplotsToList(TList *qaList = 0x0);
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupLHC15o();
@@ -59,23 +72,15 @@ class AliNuclexEventCuts : public TList {
     unsigned int  fCentralityFramework;           ///< 0: skip centrality checks, 1: multiplicity framework, 2: legacy centrality framework
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised
-    float         fMaxDeltaEstimators;            ///< Maximum difference between two centrality estimators
+    bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
+    double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
+    double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
+    double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
 
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     AliVEvent::EOfflineTriggerTypes fTriggerMask; ///< Trigger mask 
 
     const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
-
-    enum CutsBin {
-      kNoCuts = 0,
-      kDAQincomplete,
-      kBfield,
-      kTrigger,
-      kVertex,
-      kPileUp,
-      kMultiplicity,
-      kAllCuts
-    };
 
   private:
     void          AutomaticSetup ();
@@ -83,11 +88,13 @@ class AliNuclexEventCuts : public TList {
     bool          fManualMode;                    ///< if true the cuts are not loaded automatically looking at the run number
     bool          fSavePlots;                     ///< if true the plots are automatically added to this object
     int           fCurrentRun;                    ///<
+    unsigned long fFlag;                          ///< Flag of the passed cuts
 
     string        fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
     float         fCentPercentiles[2];            ///< Centrality percentiles 
     AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
 
+    /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1I* fCutStats;               //!<! Cuts statistics
     TH1D* fVtz[2];                 //!<! Vertex z distribution
     TH1D* fDeltaTrackSPDvtz[2];    //!<! Difference between the vertex computed using SPD and the track vertex
@@ -95,7 +102,7 @@ class AliNuclexEventCuts : public TList {
     TH2D* fEstimCorrelation[2];    //!<! Correlation between centrality estimators
     TH2D* fMultCentCorrelation[2]; //!<! Correlation between main centrality estimator and multiplicity
     
-    ClassDef(AliNuclexEventCuts,2)
+    ClassDef(AliNuclexEventCuts,1)
 };
 
 #endif
