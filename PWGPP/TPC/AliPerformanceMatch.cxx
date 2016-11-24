@@ -472,10 +472,15 @@ void AliPerformanceMatch::FillHistograms(AliVTrack *const refParamVTrack, AliVTr
 
   
   if(!refParamVTrack || !paramVTrack || !isRec) return;
-  AliExternalTrackParam *refParam = NULL;
-  AliExternalTrackParam *param = NULL;
-  refParam->CopyFromVTrack(refParamVTrack);
-  param->CopyFromVTrack(paramVTrack);
+
+  //this should be done with a copy ctor?
+  AliExternalTrackParam refParam_;
+  AliExternalTrackParam param_;
+  refParam_.CopyFromVTrack(refParamVTrack);
+  param_.CopyFromVTrack(paramVTrack);
+
+  AliExternalTrackParam *refParam = &refParam_;
+  AliExternalTrackParam *param = &param_;
   
   if(!refParam) return;
   if(!param) return;
