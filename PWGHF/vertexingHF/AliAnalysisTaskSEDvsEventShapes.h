@@ -132,6 +132,7 @@ public:
     void SetEtaAccCut(Double_t etacut){fEtaAccCut=etacut;}
     void SetPtAccCut(Double_t ptcut){fPtAccCut=ptcut;}
     Bool_t CheckGenAcc(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau);
+    void SetKeepTrackControlHisto(Bool_t flag){fFillTrackHisto=flag;}
     
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -148,6 +149,7 @@ private:
     TProfile* GetEstimatorHistogram(const AliVEvent *event);
     void CreateImpactParameterHistos();
     void CreateMeasuredNchHisto();
+    Bool_t FillTrackControlHisto(AliAODEvent* aod, Int_t nSelTrkCorr, Int_t nSelectedEvwithCand);
     void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t sphericity, Double_t recSpherocity, Double_t nchWeight);
     void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight);
     
@@ -161,6 +163,7 @@ private:
     
     TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
     TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
+    TH2F* fHistNtrVsnTrackEvWithCand; //!<!  control hist of ntracklets vs nTracks passing track selection for spherocity calculation for event with atleast one D meson
     TH2F* fHistNtrVsSo; //!  hist of ntracklets vs So
     TH2F* fHistNtrCorrVsSo; //!  hist of ntracklets vs So
     TH2F* fHistNtrVsSpheri; //!  hist of ntracklets vs Spheri
@@ -179,6 +182,9 @@ private:
     TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
     TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
     TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
+    
+    TH3F *fHistnTrackvsEtavsPhi;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi
+    TH3F *fHistnTrackvsEtavsPhiEvWithCand;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi for event with atleast one D meson
     
     THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
     THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
@@ -241,6 +247,7 @@ private:
     Int_t fFillSoSparseChecks; // Flag to fill THnSparse with MultUncorr and NoPid cases ( 0 = only Mult, 1 = Mult and multUncorr, 2 = NoPid and 3 is All)
     
     Bool_t fUseQuarkTag; /// flag for quark/hadron level identification of prompt and feeddown
+    Bool_t fFillTrackHisto; /// flag for filling track control histograms
     Double_t fEtaAccCut; /// eta limits for acceptance step
     Double_t fPtAccCut; /// pt limits for acceptance step
     
@@ -253,7 +260,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,9); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,10); // D vs. mult task
 };
 
 #endif
