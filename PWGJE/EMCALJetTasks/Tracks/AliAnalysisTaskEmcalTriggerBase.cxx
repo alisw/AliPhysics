@@ -156,13 +156,16 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     triggerstring = fInputEvent->GetFiredTriggerClasses();
   }
 
-  if(fRequireBunchCrossing && ! triggerstring.Contains("-B-")) return;
 
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
       emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
   for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcalTriggers[itrg] = true;
   if(!isMC){
+    // In case of data select events as bunch-bunch (-B-) events.
+    // Cut not applied in simulations
+    if(fRequireBunchCrossing && ! triggerstring.Contains("-B-")) return;
+
     // In case of data use information from the physics selection and event record
     // Further cleanup of trigger events can be performed depending on the presence
     // of recalc patches (after masking hot fastors in the trigger maker) above
