@@ -40,6 +40,7 @@ if(POLICY ${p})
 endforeach()
 
 project(AliRoot CXX C)
+enable_testing()
 
 message(STATUS "CMake platform: ${CMAKE_SYSTEM}")
 message(STATUS "Build folder: ${AliRoot_BINARY_DIR}")
@@ -437,7 +438,6 @@ else()
     cmake/GetGitRevisionDescription.cmake.in
     DESTINATION cmake)
 
-  enable_testing()
   foreach(TEST_LIB ${ALILIBSTESTED})
     add_test(load_library_${TEST_LIB}
       env
