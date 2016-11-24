@@ -1898,75 +1898,76 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 fEtaCutElectronBKWithLabelULS->Fill(track->Pt(),fNonHFE->GetNULS());
             if (fNonHFE->IsLS())
                 fEtaCutElectronBKWithLabelLS->Fill(track->Pt(),fNonHFE->GetNLS());
+        }
+        
+        if(fIsAOD)
+        {
+            fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
             
-            if(fIsAOD)
+            Int_t ElectronPDG = TMath::Abs(fMCparticle->GetPdgCode());
+            
+            if (ElectronPDG == 11)
             {
-                fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+                fEtaCutElectronInclusiveRecoPtEtaZvtx->Fill(track->Pt());
                 
-                Int_t ElectronPDG = TMath::Abs(fMCparticle->GetPdgCode());
-                
-                if (ElectronPDG == 11)
+                if(fMCparticle->GetMother()>=0)
                 {
-                    fEtaCutElectronInclusiveRecoPtEtaZvtx->Fill(track->Pt());
-                        
-                    if(fMCparticle->GetMother()>=0)
+                    lHasMother = kTRUE;
+                    fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                    
+                    Int_t MotherPDGAfterReco = TMath::Abs(fMCparticleMother->GetPdgCode());
+                    Int_t MotherPDGHeavy  = Int_t (MotherPDGAfterReco / TMath::Power(10, Int_t(TMath::Log10(MotherPDGAfterReco))));
+                    
+                    //NHFE
+                    if( MotherPDGAfterReco==22 || MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
                     {
-                        lHasMother = kTRUE;
-                        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                        lIsNHFe = kTRUE;
+                        fEtaCutElectronBKNoTag->Fill(track->Pt());
                         
-                        Int_t MotherPDGAfterReco = TMath::Abs(fMCparticleMother->GetPdgCode());
-                        Int_t MotherPDGHeavy  = Int_t (MotherPDGAfterReco / TMath::Power(10, Int_t(TMath::Log10(MotherPDGAfterReco))));
+                        if (fNonHFE->IsULS())
+                            fEtaCutElectronBKULSMainSources->Fill(track->Pt(),fNonHFE->GetNULS());
+                        if (fNonHFE->IsLS())
+                            fEtaCutElectronBKLSMainSources->Fill(track->Pt(),fNonHFE->GetNLS());
                         
-                        //NHFE
-                        if( MotherPDGAfterReco==22 || MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
-                        {
-                            lIsNHFe = kTRUE;
-                            fEtaCutElectronBKNoTag->Fill(track->Pt());
-                            
-                            if (fNonHFE->IsULS())
-                                fEtaCutElectronBKULSMainSources->Fill(track->Pt(),fNonHFE->GetNULS());
-                            if (fNonHFE->IsLS())
-                                fEtaCutElectronBKLSMainSources->Fill(track->Pt(),fNonHFE->GetNLS());
-                            
-                            
-                        }
-                        else if(MotherPDGHeavy<4) //NHFE
-                        {
-                            fEtaCutElectronRecoOtherMC->Fill(track->Pt());
-                            lIsOther = kTRUE;
-                            
-                            if (fNonHFE->IsULS())
-                                fEtaCutElectronBKULSOtherSources->Fill(track->Pt(),fNonHFE->GetNULS());
-                            if (fNonHFE->IsLS())
-                                fEtaCutElectronBKLSOtherSources->Fill(track->Pt(),fNonHFE->GetNLS());
-
-                            
-                        }
-                        else
-                        {
-                            fEtaCutElectronRecoHFEMC->Fill(track->Pt());
-                            lIsHFe = kTRUE;
-                            if (fNonHFE->IsULS())
-                                fEtaCutElectronHFEULS->Fill(track->Pt(),fNonHFE->GetNULS());
-                            if (fNonHFE->IsLS())
-                                fEtaCutElectronHFELS->Fill(track->Pt(),fNonHFE->GetNLS());
-                            
-                        }
                         
                     }
-                }
-                else
-                {
-                    fMissIDElectronsReco->Fill(track->Pt());
-                    if (fNonHFE->IsULS())
-                        fEtaCutElectronMissIDULS->Fill(track->Pt(),fNonHFE->GetNULS());
-                    if (fNonHFE->IsLS())
-                        fEtaCutElectronMissIDLS->Fill(track->Pt(),fNonHFE->GetNLS());
+                    else if(MotherPDGHeavy<4) //NHFE
+                    {
+                        fEtaCutElectronRecoOtherMC->Fill(track->Pt());
+                        lIsOther = kTRUE;
+                        
+                        if (fNonHFE->IsULS())
+                            fEtaCutElectronBKULSOtherSources->Fill(track->Pt(),fNonHFE->GetNULS());
+                        if (fNonHFE->IsLS())
+                            fEtaCutElectronBKLSOtherSources->Fill(track->Pt(),fNonHFE->GetNLS());
+                        
+                        
+                    }
+                    else
+                    {
+                        fEtaCutElectronRecoHFEMC->Fill(track->Pt());
+                        lIsHFe = kTRUE;
+                        if (fNonHFE->IsULS())
+                            fEtaCutElectronHFEULS->Fill(track->Pt(),fNonHFE->GetNULS());
+                        if (fNonHFE->IsLS())
+                            fEtaCutElectronHFELS->Fill(track->Pt(),fNonHFE->GetNLS());
+                        
+                    }
                     
                 }
+            }
+            else
+            {
+                fMissIDElectronsReco->Fill(track->Pt());
+                if (fNonHFE->IsULS())
+                    fEtaCutElectronMissIDULS->Fill(track->Pt(),fNonHFE->GetNULS());
+                if (fNonHFE->IsLS())
+                    fEtaCutElectronMissIDLS->Fill(track->Pt(),fNonHFE->GetNLS());
                 
             }
+            
         }
+        
     }
 
     
