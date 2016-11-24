@@ -44,7 +44,7 @@ AliAnalysisTask *AddTask_iarsene_dst(Int_t reducedEventType=-1, Bool_t writeTree
   //task->UsePhysicsSelection(kTRUE);
   task->SetUseAnalysisUtils(kFALSE);
   
-  task->SetFillV0Info(kFALSE);
+  task->SetFillV0Info(kTRUE);
   //task->SetFillGammaConversions(kFALSE);
   //task->SetFillK0s(kFALSE);
   //task->SetFillLambda(kFALSE);

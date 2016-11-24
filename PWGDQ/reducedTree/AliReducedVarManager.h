@@ -244,7 +244,8 @@ class AliReducedVarManager : public TObject {
     kNK0sAnalyzed,              // number of K0s candidates selected
     kNPhiAnalyzed,              // number of phi candidates selected
     kNtracksAnalyzed,   // number of positive+negative tracks passing analysis cuts
-    kNtracksSubEvLeft,  // number of tracks in the left sub-event (negative pseudo-rapidity)            
+    kNtracksAnalyzedInPhiBins,   // number of positive+negative tracks passing analysis cuts in 36 phi bins (18 for each side of the TPC)
+    kNtracksSubEvLeft=kNtracksAnalyzedInPhiBins+36,  // number of tracks in the left sub-event (negative pseudo-rapidity)            
     kNtracksSubEvRight, // number of tracks in the left sub-event (positive pseudo-rapidity)            
     kNtracksEventPlane, // number of tracks used for event plane                
     kNCaloClusters,     // number of calorimeter clusters
@@ -365,6 +366,8 @@ class AliReducedVarManager : public TObject {
     kDcaXY,     
     kDcaZ,              
     kTrackLength,       // track length
+    kChi2TPCConstrainedVsGlobal,
+    kMassUsedForTracking,
     kITSncls,           
     kITSchi2,           
     kITSlayerHit,       
@@ -424,17 +427,7 @@ class AliReducedVarManager : public TObject {
   static TString fgVariableUnits[kNVars];         // variable units  
   static const Char_t* fgkTrackingStatusNames[kNTrackingStatus];  // tracking flags name
   
-  
   static const Char_t* fgkOfflineTriggerNames[64];
-  
-  enum ITSLayerMap {
-    kITSfirst  =  1,
-    kITSsecond =  2,
-    kITSthird  =  4,
-    kITSfourth =  8,
-    kITSfifth  = 16,
-    kITSsixth  = 32
-  };
   
   static const Double_t fgkVZEROChannelRadii[64]; // radii of VZERO channels centers (in cm)
   static const Double_t fgkVZEROAz;      // z-position for VZERO-A
