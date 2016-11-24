@@ -16,7 +16,7 @@ AliAnalysisTask* AddTask_iarsene_jpsi2ee(Bool_t isAliRoot=kTRUE, Int_t runMode=1
   AliReducedAnalysisJpsi2ee* jpsi2eeAnalysis = new AliReducedAnalysisJpsi2ee("Jpsi2eeAnalysis","Jpsi->ee analysis");
   jpsi2eeAnalysis->Init();
   Setup(jpsi2eeAnalysis, prod);
-  jpsi2eeAnalysis->SetRunEventMixing(kFALSE);
+  jpsi2eeAnalysis->SetRunEventMixing(kTRUE);
   // initialize an AliAnalysisTask which will wrapp the AliReducedAnalysisJpsi2ee such that it can be run in an aliroot analysis train (e.g. LEGO, local analysis etc)
   AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager", runMode);
   task->AddTask(jpsi2eeAnalysis);
@@ -79,14 +79,18 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   
   // Set event cuts
   AliReducedEventCut* evCut1 = new AliReducedEventCut("Centrality","Centrality selection");
-  evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 90.);
+  evCut1->AddCut(AliReducedVarManager::kCentVZERO, 0., 10.);
   evCut1->AddCut(AliReducedVarManager::kVtxZ, -10.0, 10.0);
   evCut1->AddCut(AliReducedVarManager::kIsPhysicsSelection, 0.1, 2.);   // request physics selection
   evCut1->EnableVertexDistanceCut();
+  //evCut1->AddCut(AliReducedVarManager::kTZEROpileup, -0.1, 0.1);
+  TF1* cutCorrTPCoutVZEROmult = new TF1("cutCorrTPCoutVZEROmult", "[0]+[1]*x", 0., 1.e+5);
+  cutCorrTPCoutVZEROmult->SetParameters(-4900., 2.9);
+  evCut1->AddCut(AliReducedVarManager::kVZEROTotalMult, cutCorrTPCoutVZEROmult, 99999., kFALSE, AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kTPCout, 0., 99998.);
   processor->AddEventCut(evCut1);
   
   // Set track cuts
-  AliReducedTrackCut* trackCut1 = new AliReducedTrackCut("P10","p>1.0GeV/c");
+  AliReducedTrackCut* trackCut1 = new AliReducedTrackCut("P10_SPDfirst","p>1.0GeV/c");
   trackCut1->AddCut(AliReducedVarManager::kP, 1.0,6.0);
   trackCut1->AddCut(AliReducedVarManager::kDcaXY, -1.0,1.0);
   trackCut1->AddCut(AliReducedVarManager::kDcaZ, -3.0,3.0);
@@ -95,16 +99,16 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   trackCut1->AddCut(AliReducedVarManager::kTPCnSig+AliReducedVarManager::kPion, 3.5, 1.0e+30);
   trackCut1->AddCut(AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron, -3.0, 4.0);
   trackCut1->SetRejectKinks();
-  //trackCut1->SetRequestITSrefit();
+  trackCut1->SetRequestITSrefit();
   trackCut1->SetRequestTPCrefit();
-  //trackCut1->SetRequestSPDfirst();
+  trackCut1->SetRequestSPDfirst();
   trackCut1->AddCut(AliReducedVarManager::kTPCchi2, 0., 4.);
-  //trackCut1->AddCut(AliReducedVarManager::kITSchi2, 0., 36.);
+  trackCut1->AddCut(AliReducedVarManager::kITSchi2, 0., 36.);
   trackCut1->AddCut(AliReducedVarManager::kTPCNclusBitsFired, 6., 9.);
   trackCut1->AddCut(AliReducedVarManager::kTPCnclsShared, -1., 50.);
   processor->AddTrackCut(trackCut1); 
   
-  AliReducedTrackCut* trackCut2 = new AliReducedTrackCut("P10_withITS","p>1.0GeV/c");
+  AliReducedTrackCut* trackCut2 = new AliReducedTrackCut("P10_SPDany","p>1.0GeV/c");
   trackCut2->AddCut(AliReducedVarManager::kP, 1.0,6.0);
   trackCut2->AddCut(AliReducedVarManager::kDcaXY, -1.0,1.0);
   trackCut2->AddCut(AliReducedVarManager::kDcaZ, -3.0,3.0);
@@ -115,46 +119,14 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   trackCut2->SetRejectKinks();
   trackCut2->SetRequestITSrefit();
   trackCut2->SetRequestTPCrefit();
-  //trackCut2->SetRequestSPDfirst();
+  trackCut2->SetRequestSPDany();
   trackCut2->AddCut(AliReducedVarManager::kTPCchi2, 0., 4.);
   trackCut2->AddCut(AliReducedVarManager::kITSchi2, 0., 36.);
   trackCut2->AddCut(AliReducedVarManager::kTPCNclusBitsFired, 6., 9.);
   trackCut2->AddCut(AliReducedVarManager::kTPCnclsShared, -1., 50.);
-  processor->AddTrackCut(trackCut2); 
-  
-  AliReducedTrackCut* trackCut3 = new AliReducedTrackCut("P10_withSPDfirst","p>1.0GeV/c");
-  trackCut3->AddCut(AliReducedVarManager::kP, 1.0,6.0);
-  trackCut3->AddCut(AliReducedVarManager::kDcaXY, -1.0,1.0);
-  trackCut3->AddCut(AliReducedVarManager::kDcaZ, -3.0,3.0);
-  //trackCut3->AddCut(AliReducedVarManager::kTPCncls, 70.,160.0);
-  trackCut3->AddCut(AliReducedVarManager::kTPCnSig+AliReducedVarManager::kProton, 3.5, 1.0e+30);
-  trackCut3->AddCut(AliReducedVarManager::kTPCnSig+AliReducedVarManager::kPion, 3.5, 1.0e+30);
-  trackCut3->AddCut(AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron, -3.0, 4.0);
-  trackCut3->SetRejectKinks();
-  trackCut3->SetRequestITSrefit();
-  trackCut3->SetRequestTPCrefit();
-  trackCut3->SetRequestSPDfirst();
-  trackCut3->AddCut(AliReducedVarManager::kTPCchi2, 0., 4.);
-  trackCut3->AddCut(AliReducedVarManager::kITSchi2, 0., 36.);
-  trackCut3->AddCut(AliReducedVarManager::kTPCNclusBitsFired, 6., 9.);
-  trackCut3->AddCut(AliReducedVarManager::kTPCnclsShared, -1., 50.);
-  processor->AddTrackCut(trackCut3); 
+  //processor->AddTrackCut(trackCut2); 
     
   
-  
-  AliReducedTrackCut* trackCut2 = new AliReducedTrackCut("P10","P>1.0 GeV/c, standard cuts");
-  trackCut2->AddCut(AliReducedVarManager::kP, 1.0,100.0);
-  trackCut2->AddCut(AliReducedVarManager::kDcaXY, -1.0,1.0);
-  trackCut2->AddCut(AliReducedVarManager::kDcaZ, -1.0,1.0);
-  trackCut2->AddCut(AliReducedVarManager::kTPCncls, 70.,160.0);
-  trackCut2->AddCut(AliReducedVarManager::kTPCnSig+AliReducedVarManager::kProton, 3.5, 1.0e+30);
-  trackCut2->AddCut(AliReducedVarManager::kTPCnSig+AliReducedVarManager::kPion, 3.5, 1.0e+30);
-  trackCut2->AddCut(AliReducedVarManager::kTPCnSigCorrected+AliReducedVarManager::kElectron, -3.0, 4.0);
-  trackCut2->SetRejectKinks();
-  trackCut2->SetRequestITSrefit();
-  trackCut2->SetRequestTPCrefit();
-  //trackCut2->SetRequestSPDany();
-  //processor->AddTrackCut(trackCut2);  
   AliReducedTrackCut* trackCut3 = new AliReducedTrackCut("P10_weakHadrRej","P>1.0 GeV/c, weak hadr rejection");
   trackCut3->AddCut(AliReducedVarManager::kP, 1.0,100.0);
   trackCut3->AddCut(AliReducedVarManager::kDcaXY, -1.0,1.0);
@@ -210,7 +182,7 @@ void Setup(AliReducedAnalysisJpsi2ee* processor, TString prod /*="LHC10h"*/) {
   AliReducedTrackCut* pairCut1 = new AliReducedTrackCut("Ptpair","Pt pair selection");
   pairCut1->AddCut(AliReducedVarManager::kPt, 0.0,100.0);
   //pairCut1->AddCut(AliReducedVarManager::kEta, -1.5,1.5);
-  processor->AddPairCut(pairCut1);
+  //processor->AddPairCut(pairCut1);
   
   //SetupHistogramManager(processor->GetHistogramManager(), prod);
   SetupHistogramManager(processor, prod);
@@ -229,14 +201,18 @@ void SetupMixingHandler(AliReducedAnalysisJpsi2ee* task) {
    handler->SetDownscaleEvents(1);
    handler->SetDownscaleTracks(1);
    handler->SetEventVariables(AliReducedVarManager::kCentVZERO,AliReducedVarManager::kTimeRelativeSOR,AliReducedVarManager::kVZERORP+6+1);
-   Float_t centLims[10] = {0.0, 1.0, 2.0, 3.0, 10.0, 20.0, 30.0, 50., 70.,90.};
+   Float_t centLims[3] = {
+      0.0,   5.0,  10.0};
+    /*10.0, 12.0, 14.0, 16.0, 18.0, 
+    20.0, 25.0, 30.0, 35.0, 40.0, 
+    45.0, 50.0, 60.0, 70.0, 90.0};*/
    //Float_t zLims[11] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
    Float_t zLims[2] = {-10.,10.};
-   Float_t timeLims[46];
-   for(Int_t i=0;i<46;++i) timeLims[i] = 0.0+i*10;
+   Float_t timeLims[225];
+   for(Int_t i=0;i<225;++i) timeLims[i] = 0.0+i*2;
    Float_t epLims[2] = {-10000.,10000.};
-   handler->SetCentralityLimits(10,centLims);
-   handler->SetEventVertexLimits(46,timeLims);
+   handler->SetCentralityLimits(3,centLims);
+   handler->SetEventVertexLimits(225,timeLims);
    handler->SetEventPlaneLimits(2,epLims);
 }
 
@@ -375,6 +351,7 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
       man->AddHistClass(classStr.Data());
       cout << classStr.Data() << endl;
       man->AddHistogram(classStr.Data(),"RunNo","Run numbers",kFALSE, runNBins, runHistRange[0], runHistRange[1], AliReducedVarManager::kRunNo);
+      man->AddHistogram(classStr.Data(),"TimeFromSOR","Events vs time",kFALSE, 450, 0., 450., AliReducedVarManager::kTimeRelativeSOR);
       man->AddHistogram(classStr.Data(),"VtxX","Vtx X",kFALSE,300,-0.4,0.4,AliReducedVarManager::kVtxX);
       man->AddHistogram(classStr.Data(),"VtxX_TimeFromSOR_prof","<Vtx X> vs time from SOR",kTRUE, 90, 0., 450., AliReducedVarManager::kTimeRelativeSOR, 300,-0.4,0.4,AliReducedVarManager::kVtxX);
       man->AddHistogram(classStr.Data(),"VtxY","Vtx Y",kFALSE,300,-0.4,0.4,AliReducedVarManager::kVtxY);
@@ -395,9 +372,9 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
       man->AddHistogram(classStr.Data(),"CentQuality","Centrality quality",kFALSE, 500, 0., 500., AliReducedVarManager::kCentQuality);
       man->AddHistogram(classStr.Data(),"IRIntClosestInt1Map","Closest out of bunch interactions Int1",kFALSE,7000,-3500.,3500.,AliReducedVarManager::kIRIntClosestIntMap);
       man->AddHistogram(classStr.Data(),"IRIntClosestInt2Map","Closest out of bunch interactions Int2",kFALSE,7000,-3500.,3500.,AliReducedVarManager::kIRIntClosestIntMap+1);
-      man->AddHistogram(classStr.Data(),"NTracksTotal","Number of total tracks per event",kFALSE,500,0.,20000.,AliReducedVarManager::kNtracksTotal);
+      man->AddHistogram(classStr.Data(),"NTracksTotal","Number of total tracks per event",kFALSE,500,0.,30000.,AliReducedVarManager::kNtracksTotal);
       man->AddHistogram(classStr.Data(),"NTracksTotal_BeamIntensity0_prof","Number of total tracks per event",kTRUE,100, 3.0e+12, 9.0e+12, AliReducedVarManager::kBeamIntensity0, 500,0.,20000.,AliReducedVarManager::kNtracksTotal);
-      man->AddHistogram(classStr.Data(),"NTracksSelected","Number of selected tracks per event",kFALSE,100,0.,100.,AliReducedVarManager::kNtracksSelected);
+      man->AddHistogram(classStr.Data(),"NTracksSelected","Number of selected tracks per event",kFALSE,300,0.,300.,AliReducedVarManager::kNtracksSelected);
       man->AddHistogram(classStr.Data(),"NTracksSelected_TimeFromSOR","Averaged number of selected tracks per event vs time from SOR",kTRUE, 90, 0., 450., AliReducedVarManager::kTimeRelativeSOR, 100,0.,100.,AliReducedVarManager::kNtracksSelected);
       man->AddHistogram(classStr.Data(),"NTracksSelected_CentVZERO_TimeFromSOR","Averaged number of selected tracks per event per centrality vs time from SOR",kTRUE, 20, 0.0, 100.0, AliReducedVarManager::kCentVZERO, 90, 0., 450., AliReducedVarManager::kTimeRelativeSOR, 100,0.,100.,AliReducedVarManager::kNtracksSelected);
       man->AddHistogram(classStr.Data(),"DeltaVtxZ","Z_{global}-Z_{TPC}",kFALSE,300,-1.,1.,AliReducedVarManager::kDeltaVtxZ);
@@ -424,11 +401,11 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
                         kTRUE, 90, 0., 450., AliReducedVarManager::kTimeRelativeSOR, 200, 0., 10000., AliReducedVarManager::kSPDnSingleClusters);	
       man->AddHistogram(classStr.Data(), "SPDnSingleClusters_BeamInt0_prof", "SPD single <#clusters> vs beam intensity", 
                         kTRUE, 100, 3.0e+12, 9.0e+12., AliReducedVarManager::kBeamIntensity0, 200, 0., 10000., AliReducedVarManager::kSPDnSingleClusters);	
-      man->AddHistogram(classStr.Data(),"VZEROmult", "", kFALSE, 300, 0.0, 30000., AliReducedVarManager::kVZEROTotalMult);
+      man->AddHistogram(classStr.Data(),"VZEROmult", "", kFALSE, 500, 0.0, 50000., AliReducedVarManager::kVZEROTotalMult);
       man->AddHistogram(classStr.Data(),"VZEROmult_VtxContributors", "", kFALSE, 
-		   200, 0.0, 10000., AliReducedVarManager::kVZEROTotalMult, 200, 0.0, 1000., AliReducedVarManager::kNVtxContributors);
+		   200, 0.0, 40000., AliReducedVarManager::kVZEROTotalMult, 200, 0.0, 10000., AliReducedVarManager::kNVtxContributors);
       man->AddHistogram(classStr.Data(),"VZEROmult_SPDntracklets", "", kFALSE, 
-                        200, 0.0, 10000., AliReducedVarManager::kVZEROTotalMult, 200, 0.0, 5000., AliReducedVarManager::kSPDntracklets);
+                        200, 0.0, 5000., AliReducedVarManager::kSPDntracklets, 200, 0.0, 40000., AliReducedVarManager::kVZEROTotalMult);
       man->AddHistogram(classStr.Data(),"IsPhysicsSelection","Physics selection flag",kFALSE,
                         2,-0.5,1.5,AliReducedVarManager::kIsPhysicsSelection, 0,0.0,0.0,AliReducedVarManager::kNothing, 0,0.0,0.0,AliReducedVarManager::kNothing, "off;on");
       man->AddHistogram(classStr.Data(),"IsPhysicsSelection_TimeFromSOR_prof","Fraction of physics selection selected",kTRUE, 90, 0., 450., AliReducedVarManager::kTimeRelativeSOR, 2,-0.5,1.5,AliReducedVarManager::kIsPhysicsSelection);
@@ -471,6 +448,21 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
       man->AddHistogram(classStr.Data(),"NTracksTRDoutVsSPDtracklets_TimeFromSOR_prof","",kTRUE, 90, 0., 450., AliReducedVarManager::kTimeRelativeSOR, 100,0.,15.,AliReducedVarManager::kNTracksTRDoutVsSPDtracklets);
       man->AddHistogram(classStr.Data(),"NTracksTOFoutVsSPDtracklets","",kFALSE,100,0.,10.,AliReducedVarManager::kNTracksTOFoutVsSPDtracklets);
       man->AddHistogram(classStr.Data(),"NTracksTOFoutVsSPDtracklets_TimeFromSOR_prof","",kTRUE, 90, 0., 450., AliReducedVarManager::kTimeRelativeSOR, 100,0.,15.,AliReducedVarManager::kNTracksTOFoutVsSPDtracklets);
+      man->AddHistogram(classStr.Data(),"NTracksITSin","",kFALSE,300,0.,15000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kITSin);
+      man->AddHistogram(classStr.Data(),"NTracksITSout","",kFALSE,300,0.,15000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kITSout);
+      man->AddHistogram(classStr.Data(),"NTracksTPCin","",kFALSE,300,0.,30000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kTPCin);
+      man->AddHistogram(classStr.Data(),"NTracksTPCout","",kFALSE,300,0.,30000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kTPCout);
+      man->AddHistogram(classStr.Data(),"NTracksTRDout","",kFALSE,300,0.,15000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kTRDout);
+      man->AddHistogram(classStr.Data(),"NTracksTRDin","",kFALSE,300,0.,15000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kTRDin);
+      man->AddHistogram(classStr.Data(),"NTracksTPCout_VZEROmult","",kFALSE,300,0.,30000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kTPCout, 300, 0., 40000., AliReducedVarManager::kVZEROTotalMult);
+      man->AddHistogram(classStr.Data(),"NTracksTRDout_VZEROmult","",kFALSE,300,0.,15000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kTRDout, 300, 0., 40000., AliReducedVarManager::kVZEROTotalMult);
+      man->AddHistogram(classStr.Data(),"NTracksITSout_VZEROmult","",kFALSE,300,0.,30000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kITSout, 300, 0., 40000., AliReducedVarManager::kVZEROTotalMult);
+      man->AddHistogram(classStr.Data(),"NTracksTOFout_VZEROmult","",kFALSE,300,0.,3000.,AliReducedVarManager::kNTracksPerTrackingStatus+AliReducedVarManager::kTOFout, 300, 0., 40000., AliReducedVarManager::kVZEROTotalMult);
+      man->AddHistogram(classStr.Data(),"NTracksTotal_VZEROmult","",kFALSE,300,0.,30000.,AliReducedVarManager::kNtracksTotal, 300, 0., 40000., AliReducedVarManager::kVZEROTotalMult);
+      man->AddHistogram(classStr.Data(),"NTracksSelected_VZEROmult","",kFALSE,300,0.,300.,AliReducedVarManager::kNtracksSelected, 300, 0., 40000., AliReducedVarManager::kVZEROTotalMult);
+      man->AddHistogram(classStr.Data(),"NTracksAnalyzed_VZEROmult","",kFALSE,100,0.,100.,AliReducedVarManager::kNtracksAnalyzed, 300, 0., 40000., AliReducedVarManager::kVZEROTotalMult);
+      
+      
       continue;
     }  // end if className contains "Event"    
     
@@ -641,15 +633,19 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
     //ptBins[51] = 1.5; ptBins[52] = 4.5; ptBins[53] = 10.0; ptBins[54] = 20.0;
     
     
-    const Int_t kNCentBins = 10;
+    const Int_t kNCentBins = 3;
     //Double_t centBins[kNCentBins] = {0.,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,15.,20.,25.,30.,35.,40.,50.,60.,70.,90.};
-    Double_t centBins[kNCentBins] = {0.0, 1.0, 2.0, 3.0, 10.0, 20.0, 30.0, 50., 70.,90.};
+    Double_t centBins[kNCentBins] = {
+       0.0,   5.0,   10.0}; 
+       /*10.0, 12.0, 14.0, 16.0, 18.0, 
+       20.0, 25.0, 30.0, 35.0, 40.0, 
+       45.0, 50.0, 60.0, 70.0, 90.0};*/
     
     //const Int_t kNVtxBins = 2;
     //Double_t vtxBins[kNVtxBins] = {-10.,10.};
-    const Int_t kNTimeBins = 46;
+    const Int_t kNTimeBins = 225;
     Double_t timeBins[kNTimeBins];
-    for(Int_t i=0; i<kNTimeBins; ++i) timeBins[i] = 0.0 + i*10.0;
+    for(Int_t i=0; i<kNTimeBins; ++i) timeBins[i] = 0.0 + i*2.0;
     
     const Int_t kNEPbins = 2;
     Double_t epBins[kNEPbins] = {-0.5*TMath::Pi()*10000.,0.5*TMath::Pi()*10000.};

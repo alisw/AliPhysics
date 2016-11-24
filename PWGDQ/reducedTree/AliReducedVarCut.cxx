@@ -39,6 +39,8 @@ AliReducedVarCut::AliReducedVarCut() :
      fDependentVariableCutLow[i] = 0.;
      fDependentVariableCutHigh[i] = 0.;
      fDependentVariableExclude[i] = kFALSE;
+     fFuncCutLow[i] = 0x0;
+     fFuncCutHigh[i] = 0x0;
   }
 }
 
@@ -60,6 +62,8 @@ AliReducedVarCut::AliReducedVarCut(const Char_t* name, const Char_t* title) :
       fDependentVariableCutLow[i] = 0.;
       fDependentVariableCutHigh[i] = 0.;
       fDependentVariableExclude[i] = kFALSE;
+      fFuncCutLow[i] = 0x0;
+      fFuncCutHigh[i] = 0x0;
    }
 }
 
@@ -85,26 +89,111 @@ void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, Float_t cutLo
       fDependentVariable[fNCuts] = dependentVar; 
       fDependentVariableCutLow[fNCuts] = depCutLow; fDependentVariableCutHigh[fNCuts] = depCutHigh; 
       fDependentVariableExclude[fNCuts] = depCutExclude;
-      AliReducedVarManager::SetUseVariable(var);
+      AliReducedVarManager::SetUseVariable(dependentVar);
    }
    fNCuts++;
 }
 
 
 //____________________________________________________________________________
-Bool_t AliReducedVarCut::IsSelected(TObject* obj) {
+void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, Float_t cutLow, TF1* funcCutHigh, Bool_t exclude /*= kFALSE*/,
+                                                   AliReducedVarManager::Variables dependentVar /*=AliReducedVarManager::kNothing*/, 
+                                                   Float_t depCutLow /*=0.*/, Float_t depCutHigh /*=0.*/, Bool_t depCutExclude /*=kFALSE*/) {
+   //
+   // Add a cut with a function as a high cut
+   //
+   if(dependentVar == AliReducedVarManager::kNothing) {
+      cout << "AliReducedVarCut::AddCut() When adding a cut with a function as high limit, the dependentVar must be set otherwise this does not make sense!" << endl;
+      cout << "                  Cut not added !!" << endl;
+      return;
+   }
+   fCutVariables[fNCuts] = var; fCutLow[fNCuts] = cutLow; fFuncCutHigh[fNCuts] = funcCutHigh; fCutExclude[fNCuts] = exclude;
+   AliReducedVarManager::SetUseVariable(var);
+      
+   fCutHasDependentVariable[fNCuts] = kTRUE;
+   fDependentVariable[fNCuts] = dependentVar; 
+   fDependentVariableCutLow[fNCuts] = depCutLow; fDependentVariableCutHigh[fNCuts] = depCutHigh; 
+   fDependentVariableExclude[fNCuts] = depCutExclude;
+   AliReducedVarManager::SetUseVariable(dependentVar);
+      
+   fNCuts++;
+}
+
+
+//____________________________________________________________________________
+void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, TF1* funcCutLow, Float_t cutHigh, Bool_t exclude /*= kFALSE*/,
+                              AliReducedVarManager::Variables dependentVar /*=AliReducedVarManager::kNothing*/, 
+                              Float_t depCutLow /*=0.*/, Float_t depCutHigh /*=0.*/, Bool_t depCutExclude /*=kFALSE*/) {
+   //
+   // Add a cut with a function as a low cut
+   //
+   if(dependentVar == AliReducedVarManager::kNothing) {
+      cout << "AliReducedVarCut::AddCut() When adding a cut with a function as low limit, the dependentVar must be set otherwise this does not make sense!" << endl;
+      cout << "                  Cut not added !!" << endl;
+      return;
+   }
+   fCutVariables[fNCuts] = var; fFuncCutLow[fNCuts] = funcCutLow; fCutHigh[fNCuts] = cutHigh; fCutExclude[fNCuts] = exclude;
+   AliReducedVarManager::SetUseVariable(var);
+   
+   fCutHasDependentVariable[fNCuts] = kTRUE;
+   fDependentVariable[fNCuts] = dependentVar; 
+   fDependentVariableCutLow[fNCuts] = depCutLow; fDependentVariableCutHigh[fNCuts] = depCutHigh; 
+   fDependentVariableExclude[fNCuts] = depCutExclude;
+   AliReducedVarManager::SetUseVariable(dependentVar);
+   
+   fNCuts++;
+}
+
+
+//____________________________________________________________________________
+void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, TF1* funcCutLow, TF1* funcCutHigh, Bool_t exclude /*= kFALSE*/,
+                              AliReducedVarManager::Variables dependentVar /*=AliReducedVarManager::kNothing*/, 
+                              Float_t depCutLow /*=0.*/, Float_t depCutHigh /*=0.*/, Bool_t depCutExclude /*=kFALSE*/) {
+   //
+   // Add a cut with functions as low and high cuts
+   //
+   if(dependentVar == AliReducedVarManager::kNothing) {
+      cout << "AliReducedVarCut::AddCut() When adding a cut with functions as low and high limits, the dependentVar must be set otherwise this does not make sense!" << endl;
+      cout << "                  Cut not added !!" << endl;
+      return;
+   }
+   fCutVariables[fNCuts] = var; fFuncCutLow[fNCuts] = funcCutLow; fFuncCutHigh[fNCuts] = funcCutHigh; fCutExclude[fNCuts] = exclude;
+   AliReducedVarManager::SetUseVariable(var);
+   
+   fCutHasDependentVariable[fNCuts] = kTRUE;
+   fDependentVariable[fNCuts] = dependentVar; 
+   fDependentVariableCutLow[fNCuts] = depCutLow; fDependentVariableCutHigh[fNCuts] = depCutHigh; 
+   fDependentVariableExclude[fNCuts] = depCutExclude;
+   AliReducedVarManager::SetUseVariable(dependentVar);
+   
+   fNCuts++;
+}
+
+
+//____________________________________________________________________________
+Bool_t AliReducedVarCut::IsSelected(TObject* obj, Float_t* values) {
   //
   // apply cuts
   //
-  if(!obj->InheritsFrom(AliReducedBaseTrack::Class())) return kFALSE;
-  
-  //Fill values
-  Float_t values[AliReducedVarManager::kNVars];
-  if(obj->InheritsFrom(AliReducedBaseEvent::Class())) AliReducedVarManager::FillEventInfo((AliReducedBaseEvent*)obj, values);
-  if(obj->InheritsFrom(AliReducedBaseTrack::Class())) AliReducedVarManager::FillTrackInfo((AliReducedBaseTrack*)obj, values);
-  if(obj->InheritsFrom(AliReducedPairInfo::Class())) AliReducedVarManager::FillPairInfo((AliReducedPairInfo*)obj, values);
-  
-  return IsSelected(values);
+  if(values) return IsSelected(values);
+  if(!values) return IsSelected(obj);
+}
+
+
+//____________________________________________________________________________
+Bool_t AliReducedVarCut::IsSelected(TObject* obj) {
+   //
+   // apply cuts
+   //
+   if(!obj->InheritsFrom(AliReducedBaseTrack::Class())) return kFALSE;
+   
+   //Fill values
+   Float_t values[AliReducedVarManager::kNVars];
+   if(obj->InheritsFrom(AliReducedBaseEvent::Class())) AliReducedVarManager::FillEventInfo((AliReducedBaseEvent*)obj, values);
+   if(obj->InheritsFrom(AliReducedBaseTrack::Class())) AliReducedVarManager::FillTrackInfo((AliReducedBaseTrack*)obj, values);
+   if(obj->InheritsFrom(AliReducedPairInfo::Class())) AliReducedVarManager::FillPairInfo((AliReducedPairInfo*)obj, values);
+   
+   return IsSelected(values);
 }
 
 
@@ -126,6 +215,11 @@ Bool_t AliReducedVarCut::IsSelected(Float_t* values) {
          if(!inRangeDep && !fDependentVariableExclude[i]) continue;
          if(inRangeDep && fDependentVariableExclude[i]) continue;
       }
+      if(fFuncCutLow[i]) {
+         fCutLow[i] = fFuncCutLow[i]->Eval(values[fDependentVariable[i]]);
+         //cout << "Func low cut depVar/cutVal :: " << values[fDependentVariable[i]] << " / " << fCutLow[i] << endl;
+      }
+      if(fFuncCutHigh[i]) fCutHigh[i] = fFuncCutHigh[i]->Eval(values[fDependentVariable[i]]);      
       Bool_t inRange = (values[fCutVariables[i]]>=fCutLow[i] && values[fCutVariables[i]]<=fCutHigh[i]);
       //cout << "AliReducedVarCut::IsSelected() inRange/fCutVariables/val/cutLow/cutHigh: " << inRange << "/" << fCutVariables[i]
       //        << "/" << values[fCutVariables[i]] << "/" << fCutLow[i] << "/" << fCutHigh[i] << "/" << fCutExclude[i] << endl;
