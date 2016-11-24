@@ -105,12 +105,6 @@ public:
   virtual Bool_t    Run();
 
   /**
-   * Switch on basic QA of the trigger maker
-   * @param[in] doQA If true QA is switched on.
-   */
-  void SetRunQA(Bool_t doQA = kTRUE) { fDoQA = doQA; }
-
-  /**
    * Set range for L0 time
    * @param[in] min Minimum L0 time (default is 7)
    * @param[in] max Maximum L0 time (default is 10)
