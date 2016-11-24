@@ -938,6 +938,8 @@ public:
   void SetFlowQCIntCorNUAPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorNUAPro[eg][k] = TP;};
   TH1D* GetFlowQCIntCorHist(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorHist[eg][h];};
   void SetFlowQCIntCorHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorHist[eg][k] = TP;};
+  TH1D* GetFlowQCIntCumHist(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCumHist[eg][h];};
+  void SetFlowQCIntCumHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCumHist[eg][k] = TP;};
   TH1D* GetFlowQCIntCorNUAHist(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorNUAHist[eg][h];};
   void SetFlowQCIntCorNUAHist(TH1D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorNUAHist[eg][k] = TP;};
   TProfile* GetFlowQCIntCorProEG(Int_t const eg) const {return this->fFlowQCIntCorProEG[eg];};
@@ -1695,7 +1697,7 @@ private:
   TH1D *fFlowQCCorNUAHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNNUA]; //! final NUA terms
   TProfile *fFlowQCCorCovPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! profile for product of correlations (for covariances)
   TH1D *fFlowQCCorCovHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //! histo for covariances
-  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //!
+  TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //!
   
   TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
   TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
@@ -1706,6 +1708,8 @@ private:
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
   TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
   TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
+  
+  TH1D *fFlowQCIntCumHist[fFlowNHarm][3]; //!
   
   const static Int_t fFlowQCNRef = 14;
   TProfile *fFlowQCRefCorPro[fFlowNHarm][fFlowQCNRef]; //!
@@ -1816,7 +1820,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 32);
+  ClassDef(AliFlowAnalysisCRC, 33);
   
 };
 
