@@ -32,6 +32,7 @@
 #include "AliMixedEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
+#include "AliMCEvent.h"
 
 // --- Detectors ---
 #include "AliPHOSGeoUtils.h"
@@ -56,8 +57,10 @@ fFillSSHistograms(0),         fFillEMCALRegionSSHistograms(0),
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
 fFillSSNLocMaxHisto(0),
 fNOriginHistograms(9),        fNPrimaryHistograms(5),
-fMomentum(),                  fPrimaryMom(),               fProdVertex(),
+fMomentum(),                  fMomentum2(),
+fPrimaryMom(),                fProdVertex(),
 fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
+fStudyActivityNearCluster(0), fStudyClusterOverlapsPerGenerator(0),
 
 // Histograms
 
@@ -111,7 +114,16 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
 
 fhEClusterSM(0),                      fhEPhotonSM(0),
 fhPtClusterSM(0),                     fhPtPhotonSM(0),
-fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)                         
+fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
+fhLocalRegionClusterEnergySum(0),     fhLocalRegionClusterMultiplicity(0),
+fhLocalRegionClusterEnergySumPerCentrality(0),
+fhLocalRegionClusterMultiplicityPerCentrality(0),
+fhLocalRegionClusterEnergySumHijing(0),fhLocalRegionClusterMultiplicityHijing(0),
+fhLocalRegionClusterEnergySumPerCentralityHijing(0),
+fhLocalRegionClusterMultiplicityPerCentralityHijing(0),
+fhMergeGeneratorCluster(0),           fhMergeGeneratorClusterNotHijing(0),  
+fhMergeGeneratorClusterHijingAndOther(0), fhCleanGeneratorCluster(0)
+
 {
   for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
@@ -3108,6 +3120,105 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }
   }
 
+  if(fStudyActivityNearCluster)
+  {
+    fhLocalRegionClusterEnergySum = new TH2F ("hLocalRegionClusterEnergySum",
+                                              "Sum of cluster energy around trigger cluster #it{E} with R=0.2", 
+                                              nptbins,ptmin,ptmax, 200,0,100);
+    fhLocalRegionClusterEnergySum->SetXTitle("#it{E} (GeV)");
+    fhLocalRegionClusterEnergySum->SetYTitle("#Sigma #it{E} (GeV)");
+    outputContainer->Add(fhLocalRegionClusterEnergySum);    
+    
+    fhLocalRegionClusterMultiplicity = new TH2F ("hLocalRegionClusterMultiplicity",
+                                                 "Cluster multiplicity around trigger cluster #it{E} with R=0.2", 
+                                                 nptbins,ptmin,ptmax, 200,0,200);
+    fhLocalRegionClusterMultiplicity->SetXTitle("#it{E} (GeV)");
+    fhLocalRegionClusterMultiplicity->SetYTitle("Multiplicity");
+    outputContainer->Add(fhLocalRegionClusterMultiplicity);    
+    
+    if(IsHighMultiplicityAnalysisOn())
+    {
+      fhLocalRegionClusterEnergySumPerCentrality = new TH2F ("hLocalRegionClusterEnergySumPerCentrality",
+                                                             "Sum of cluster energy around trigger cluster vs centrality with R=0.2", 
+                                                             100,0,100, 200,0,100);
+      fhLocalRegionClusterEnergySumPerCentrality->SetXTitle("Centrality");
+      fhLocalRegionClusterEnergySumPerCentrality->SetYTitle("#Sigma #it{E} (GeV)");
+      outputContainer->Add(fhLocalRegionClusterEnergySumPerCentrality);    
+
+      fhLocalRegionClusterMultiplicityPerCentrality = new TH2F ("hLocalRegionClusterMultiplicityPerCentrality",
+                                                                      "Cluster multiplicity around trigger cluster vs centrality with R=0.2", 
+                                                                      100,0,100, 200,0,200);
+      fhLocalRegionClusterMultiplicityPerCentrality->SetXTitle("Centrality");
+      fhLocalRegionClusterMultiplicityPerCentrality->SetYTitle("Multiplicity");
+      outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentrality);        
+    }
+
+    if(fStudyClusterOverlapsPerGenerator && IsDataMC())
+    {
+      fhLocalRegionClusterEnergySumHijing = new TH2F ("hLocalRegionClusterEnergySumHijing",
+                                                      "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
+                                                      nptbins,ptmin,ptmax, 200,0,100);
+      fhLocalRegionClusterEnergySumHijing->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterEnergySumHijing->SetYTitle("#Sigma #it{E} (GeV)");
+      outputContainer->Add(fhLocalRegionClusterEnergySumHijing);    
+      
+      fhLocalRegionClusterMultiplicityHijing = new TH2F ("hLocalRegionClusterMultiplicityHijing",
+                                                         "Cluster multiplicity (HIJING) around trigger cluster #it{E} with R=0.2", 
+                                                         nptbins,ptmin,ptmax, 200,0,200);
+      fhLocalRegionClusterMultiplicityHijing->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterMultiplicityHijing->SetYTitle("Multiplicity");
+      outputContainer->Add(fhLocalRegionClusterMultiplicityHijing);    
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhLocalRegionClusterEnergySumPerCentralityHijing = new TH2F ("hLocalRegionClusterEnergySumPerCentralityHijing",
+                                                                     "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
+                                                                     100,0,100, 200,0,100);
+        fhLocalRegionClusterEnergySumPerCentralityHijing->SetXTitle("Centrality");
+        fhLocalRegionClusterEnergySumPerCentralityHijing->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijing);    
+        
+        fhLocalRegionClusterMultiplicityPerCentralityHijing = new TH2F ("hLocalRegionClusterMultiplicityPerCentralityHijing",
+                                                                        "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
+                                                                        100,0,100, 200,0,200);
+        fhLocalRegionClusterMultiplicityPerCentralityHijing->SetXTitle("Centrality");
+        fhLocalRegionClusterMultiplicityPerCentralityHijing->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijing);        
+      }
+    }
+  }
+
+  if(fStudyClusterOverlapsPerGenerator && IsDataMC())
+  {
+    fhCleanGeneratorCluster = new TH1F("hCleanGeneratorCluster",
+                                       "Number of selected clusters with contribution of just 1 generator",
+                                       nptbins,ptmin,ptmax);
+    fhCleanGeneratorCluster->SetYTitle("#it{counts}");
+    fhCleanGeneratorCluster->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhCleanGeneratorCluster) ;
+    
+    fhMergeGeneratorCluster = new TH1F("hMergeGeneratorCluster",
+                                       "Number of selected clusters with contribution of 2 generators",
+                                       nptbins,ptmin,ptmax);
+    fhMergeGeneratorCluster->SetYTitle("#it{counts}");
+    fhMergeGeneratorCluster->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorCluster) ;
+    
+    fhMergeGeneratorClusterNotHijing = new TH1F("hMergeGeneratorClusterNotHijing",
+                                                "Number of selected clusters with contribution of 2 generators, none is HIJING",
+                                                nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterNotHijing->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterNotHijing->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterNotHijing) ;
+    
+    
+    fhMergeGeneratorClusterHijingAndOther = new TH1F("hMergeGeneratorClusterHijingAndOther",
+                                       "Number of selected clusters with contribution of 2 generators, main one is HIJING",
+                                       nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterHijingAndOther->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterHijingAndOther->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterHijingAndOther) ;
+  }
   
   return outputContainer ;
 }
@@ -3396,6 +3507,114 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     fhClusterCutsE [9]->Fill(en, GetEventWeight());
     fhClusterCutsPt[9]->Fill(pt, GetEventWeight());
+    
+    //
+    // Check local cluster activity around the current cluster
+    //
+    if(fStudyActivityNearCluster)
+    {
+      Float_t radius = 0.2;
+      // Accept cluster on EMCal limits - radius
+      if(phi < 3.15 - radius && phi > 1.4 + radius && TMath::Abs(eta) < 0.7-radius)
+      {
+        Float_t sumE   = 0;
+        Int_t   sumM   = 0;
+        Float_t sumEHi = 0;
+        Int_t   sumMHi = 0;
+        for(Int_t icalo2 = 0; icalo2 < nCaloClusters; icalo2++)
+        {
+          if ( icalo2 == icalo ) continue;
+          
+          AliVCluster * calo2 =  (AliVCluster*) (pl->At(icalo2));
+          
+          // Select clusters in a radius of R=0.2
+          calo2->GetMomentum(fMomentum2,GetVertex(evtIndex)) ;
+          
+          Float_t dEta = eta-fMomentum2.Eta();
+          Float_t dPhi = phi-GetPhi(fMomentum2.Phi());
+          
+          if(TMath::Abs(dPhi) >= TMath::Pi())
+            dPhi = TMath::TwoPi()-TMath::Abs(dPhi);
+          
+          if (TMath::Sqrt( dEta*dEta + dPhi*dPhi ) > 0.2) continue;
+          
+          sumM++;
+          sumE += calo2->E();
+          
+          if( IsDataMC() && fStudyClusterOverlapsPerGenerator && calo2->GetNLabels() > 0)
+          {
+            TString genName;
+            (GetReader()->GetMC())->GetCocktailGenerator(calo2->GetLabel(),genName);
+            
+            if(genName.Contains("ijing"))
+            {
+              sumMHi++;
+              sumEHi += calo2->E();
+            }
+          }
+        }
+        
+        fhLocalRegionClusterEnergySum   ->Fill(en,sumE);
+        fhLocalRegionClusterMultiplicity->Fill(en,sumM);
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentrality   ->Fill(GetEventCentrality(),sumE);
+          fhLocalRegionClusterMultiplicityPerCentrality->Fill(GetEventCentrality(),sumM);
+        }
+        
+        if( IsDataMC() && fStudyClusterOverlapsPerGenerator)
+        {
+          fhLocalRegionClusterEnergySumHijing   ->Fill(en,sumEHi);
+          fhLocalRegionClusterMultiplicityHijing->Fill(en,sumMHi);
+          
+          if(IsHighMultiplicityAnalysisOn())
+          {
+            fhLocalRegionClusterEnergySumPerCentralityHijing   ->Fill(GetEventCentrality(),sumEHi);
+            fhLocalRegionClusterMultiplicityPerCentralityHijing->Fill(GetEventCentrality(),sumMHi);
+          }
+        }
+      }
+    }
+
+    //
+    // Check if other generators contributed to the cluster
+    //
+    if( IsDataMC() && fStudyClusterOverlapsPerGenerator && calo->GetNLabels() > 0 )
+    {
+      TString genName;
+      (GetReader()->GetMC())->GetCocktailGenerator(calo->GetLabel(),genName);
+      
+      Bool_t overlapGener          = kFALSE;
+      Bool_t overlapGenerNotHIJING = kFALSE;
+      Bool_t overlapHIJINGAndOther = kFALSE;
+      for(Int_t ilabel = 1; ilabel < calo->GetNLabels(); ilabel++)
+      {
+        Int_t label2 = calo->GetLabels()[ilabel];
+        TString genName2;
+        (GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
+        if(genName2 != genName) 
+        {
+          overlapGener = kTRUE; 
+          if(!genName.Contains("ijing") && !genName2.Contains("ijing")) 
+            overlapGenerNotHIJING = kTRUE;
+          if (genName.Contains("ijing")) 
+            overlapHIJINGAndOther = kTRUE;
+        }
+      }
+      
+      if(overlapGener) 
+      {
+        fhMergeGeneratorCluster->Fill(en);
+        if(overlapGenerNotHIJING) 
+          fhMergeGeneratorClusterNotHijing->Fill(en);
+        if(overlapHIJINGAndOther)
+          fhMergeGeneratorClusterHijingAndOther->Fill(en);
+      }
+      else         
+        fhCleanGeneratorCluster->Fill(en);
+    }
+
     
     if(fFillEBinAcceptanceHisto)
     {  
