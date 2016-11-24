@@ -15,7 +15,7 @@ if [ -z "${value}" ]; then
 fi
 
 # Pythia errors
-value=`grep "Error type*PYEXEC" g3/sim.log`
+value=`grep "Error type*PYEXEC" sim.log`
 if [ -z "${value}" ]; then
   echo "Pythia Warning"
 # let error=error+1

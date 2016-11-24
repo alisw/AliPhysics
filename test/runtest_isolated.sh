@@ -55,7 +55,7 @@ if [ -d "${ALICE_ROOT}" ]; then
     mkdir -p ${TARGETDIR}
   fi
 
-  rsync -Rr ${TESTDIR}/* ${TARGETDIR}
+  rsync --copy-links -Rr ${TESTDIR}/* ${TARGETDIR}
 
   FINALDIR="${TARGETDIR}/${TESTDIR}"
 
