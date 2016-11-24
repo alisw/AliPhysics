@@ -93,7 +93,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fYshift(0.465),
         fEtaSign(1),
         fEtaLabCut(-0.5, 0.5),
-        fEtaCmsCut(-0.13, 0.13),
+        fEtaCmsCut(-2., 2.),
         fPhiCut(0., TMath::TwoPi()),
         fFracPtHard(-1),
         fEnableSumw2(kFALSE),
