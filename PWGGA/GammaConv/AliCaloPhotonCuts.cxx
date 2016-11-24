@@ -94,7 +94,6 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fCaloTrackMatcher(NULL),
   fGeomEMCAL(NULL),
   fEMCALRecUtils(NULL),
-  fEMCALCaloUtils(NULL),
   fEMCALInitialized(kFALSE),
   fGeomPHOS(NULL),
   fPHOSInitialized(kFALSE),
@@ -258,7 +257,6 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fCaloTrackMatcher(NULL),
   fGeomEMCAL(NULL),
   fEMCALRecUtils(NULL),
-  fEMCALCaloUtils(NULL),
   fEMCALInitialized(kFALSE),
   fGeomPHOS(NULL),
   fPHOSInitialized(kFALSE),
@@ -1077,36 +1075,9 @@ void AliCaloPhotonCuts::InitializeEMCAL(AliVEvent *event){
       while ((supply=(AliTenderSupply*)next())) if(supply->IsA()==AliEMCALTenderSupply::Class()) break;
       fEMCALRecUtils        = ((AliEMCALTenderSupply*)supply)->GetRecoUtils();
       fEMCALBadChannelsMap  = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
-      fEMCALCaloUtils       = new AliCalorimeterUtils();
-      fEMCALCaloUtils->SetNumberOfCellsFromEMCALBorder(1);
-      fEMCALCaloUtils->SetNumberOfSuperModulesUsed(10);
-      fEMCALCaloUtils->SetLocalMaximaCutE(0.1);
-      fEMCALCaloUtils->SetLocalMaximaCutEDiff(0.03);
-      fEMCALCaloUtils->SwitchOffRecalibration(); 
-      fEMCALCaloUtils->SwitchOffRecalibration(); 
-      fEMCALCaloUtils->SwitchOffRunDepCorrection();
-
-      // Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
-      fEMCALCaloUtils->AccessGeometry(event);
-      // Set the AODB calibration, bad channels etc. parameters at least once
-      fEMCALCaloUtils->AccessOADB(event);
-      fEMCALCaloUtils->InitEMCALGeometry();
-      
     } else if(emcaltender){
       fEMCALRecUtils        = ((AliEMCALTenderSupply*)emcaltender->GetEMCALTenderSupply())->GetRecoUtils();
       fEMCALBadChannelsMap  = fEMCALRecUtils->GetEMCALBadChannelStatusMapArray();
-      fEMCALCaloUtils       = new AliCalorimeterUtils();
-      fEMCALCaloUtils->SetNumberOfCellsFromEMCALBorder(1);
-      fEMCALCaloUtils->SetNumberOfSuperModulesUsed(10);
-      fEMCALCaloUtils->SetLocalMaximaCutE(0.1);
-      fEMCALCaloUtils->SetLocalMaximaCutEDiff(0.03);
-      fEMCALCaloUtils->SwitchOffRecalibration(); 
-      fEMCALCaloUtils->SwitchOffRunDepCorrection();
-      // Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
-      fEMCALCaloUtils->AccessGeometry(event);
-      // Set the AODB calibration, bad channels etc. parameters at least once
-      fEMCALCaloUtils->AccessOADB(event);
-      fEMCALCaloUtils->InitEMCALGeometry();
     }
     if (fEMCALRecUtils) fEMCALInitialized = kTRUE;
 
