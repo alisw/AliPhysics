@@ -30,7 +30,7 @@ class AliNuclexEventCuts : public TList {
     };
 
     bool   AcceptEvent (AliVEvent *ev);
-    bool   PassedCut (AliNuclexEventCuts::CutsBin cut) { return fFlag & cut; }
+    bool   PassedCut (AliNuclexEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
     void   AddQAplotsToList(TList *qaList = 0x0);
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupLHC15o();
