@@ -1499,7 +1499,7 @@ private:
   TProfile *fCRCQnImCorr[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
   TH1D *fCRCVZEPA[fCRCMaxnRun][fCRCMaxnCen]; //! VZA-EP
   TH1D *fCRCVZEPC[fCRCMaxnRun][fCRCMaxnCen]; //! VZC-EP
-  TH3F* fCRCQVecPhiHist[fCRCMaxnRun]; //! phi ditribution POIs
+  TH3D* fCRCQVecPhiHist[fCRCMaxnRun]; //! phi ditribution POIs
   TProfile *fCRCVZCosnA[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnA[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
   TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
