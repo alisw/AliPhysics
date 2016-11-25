@@ -54,6 +54,7 @@
 #include "AliRhoParameter.h"
 #include "TVector3.h"
 #include "AliVVertex.h"
+#include "AliExternalTrackParam.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,6 +92,7 @@ fHistEvtSelection(0x0),fhKTAreaPt(0x0),
  fhDphiTriggerJetAccept(0x0), fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhPtJetPrimVsPtJetRec(0x0), fhDiffPtVsPtTrackTrue(0x0),
+fhTrackPhiCG(0x0), fhTrackPhiTPCG(0x0),
 fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
@@ -197,6 +199,14 @@ fpyVtx(3)
    fTTlow[kSig] = 12.0;
    fTThigh[kSig]= 50.0;
 
+
+   for(Int_t i=0; i<2; i++){
+      fhInvPtQVsPhi[i] = NULL;
+      fhInvPtQVsEta[i] = NULL;
+      fhInvPtQVsPhiASide[i] = NULL;
+      fhInvPtQVsPhiCSide[i] = NULL;
+      fhSigmaPtOverPtVsPt[i] = NULL;
+   }
 }
 
 //________________________________________________________________________
@@ -216,6 +226,7 @@ fhDphiTriggerJetAccept(0x0),fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/
 fhPtJetPrimVsPtJetRec(0x0), fhDiffPtVsPtTrackTrue(0x0),
+fhTrackPhiCG(0x0), fhTrackPhiTPCG(0x0),
 fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
@@ -321,8 +332,14 @@ fpyVtx(3)
    fTThigh[kRef]= 7.0;
    fTTlow[kSig] = 12.0;
    fTThigh[kSig]= 50.0;
-
-
+  
+   for(Int_t i=0; i<2; i++){
+      fhInvPtQVsPhi[i] = NULL;
+      fhInvPtQVsEta[i] = NULL;
+      fhInvPtQVsPhiASide[i] = NULL;
+      fhInvPtQVsPhiCSide[i] = NULL;
+      fhSigmaPtOverPtVsPt[i] = NULL;
+   }
    DefineOutput(1, TList::Class());
 }
 //________________________________________________________________________
@@ -1371,16 +1388,54 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
       }
    }//trigger loop 
    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   // Track Multiplicity
-   
+   // Track Multiplicity,  Track momentum smearing  
+   Double_t xyz[50];
+   Double_t pxpypz[50];
+   Double_t cv[21];
+   Int_t itrkq; 
+   AliAODTrack *atrk=NULL;
+ 
    if(trkContRec){
       
       Int_t mult   = 0;
       trkContRec->ResetCurrentID();
-      while((constTrackRec = (AliVParticle*) (trkContRec->GetNextAcceptParticle()))){
-         if(!constTrackRec) continue;
-         if(!IsTrackInAcceptance(constTrackRec, kFALSE)) continue; //reconstructed level tracks
+      while((atrk = (AliAODTrack*) (trkContRec->GetNextAcceptParticle()))){
+         if(!atrk) continue;
+         if(!IsTrackInAcceptance((AliVParticle*) atrk, kFALSE)) continue; //reconstructed level tracks
          mult++;
+
+         dphi = atrk->Phi();
+         if(dphi < 0)             dphi+= 2*TMath::Pi();
+         if(dphi > 2*TMath::Pi()) dphi-= 2*TMath::Pi();
+
+         if(atrk->IsGlobalConstrained()){
+            fhTrackPhiCG->Fill(atrk->Pt(), atrk->Phi()); //global constrained
+         }else{
+            fhTrackPhiTPCG->Fill(atrk->Pt(), atrk->Phi()); //complementary
+         }
+
+         itrkq = (atrk->Charge()<0) ? 0 : 1;
+
+         fhInvPtQVsPhi[itrkq]->Fill(atrk->Phi(), 1.0/atrk->Pt());  
+         fhInvPtQVsEta[itrkq]->Fill(atrk->Eta(), 1.0/atrk->Pt());
+
+         if(atrk->Eta()>0){
+            fhInvPtQVsPhiASide[itrkq]->Fill(atrk->Phi(), 1.0/atrk->Pt());
+         }else{
+            fhInvPtQVsPhiCSide[itrkq]->Fill(atrk->Phi(), 1.0/atrk->Pt());
+         }
+
+         //get sigma pT / pT  
+         //Taken from AliEMCalTriggerExtraCuts::CalculateTPCTrackLength
+         memset(cv, 0, sizeof(Double_t) * 21); //cleanup arrays
+         memset(pxpypz, 0, sizeof(Double_t) * 50);
+         memset(xyz, 0, sizeof(Double_t) * 50);
+         atrk->GetXYZ(xyz);
+         atrk->GetPxPyPz(pxpypz);
+         atrk->GetCovarianceXYZPxPyPz(cv);
+
+         AliExternalTrackParam  par(xyz, pxpypz, cv, atrk->Charge());
+         fhSigmaPtOverPtVsPt[itrkq]->Fill(atrk->Pt(), TMath::Abs(sqrt(par.GetSigma1Pt2())/par.GetSigned1Pt()));
       }
 
       for(Int_t ic=0; ic<2; ic++){
@@ -1849,6 +1904,35 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fhJetEtaIncl = new TH2F("fhJetEtaIncl","Eta dist inclusive jets vs pTjet", 50,0, 100, 40,-0.9,0.9);
    if(bHistRec) fOutput->Add((TH2F*) fhJetEtaIncl);
 
+   fhTrackPhiCG = new TH2F("fhTrackPhiCG","azim dist trig had vs pT,trk Glob Const", 50, 0, 50, 50,0,2*TMath::Pi());
+   if(bNotKine) fOutput->Add((TH2F*) fhTrackPhiCG);
+
+   fhTrackPhiTPCG = new TH2F("fhTrackPhiTPCG","azim dist trig had vs pT,trk TPC Const", 50, 0, 50, 50,0,2*TMath::Pi());
+   if(bNotKine) fOutput->Add((TH2F*) fhTrackPhiTPCG);
+
+
+   for(Int_t i=0; i<2; i++){
+      name = (i==0) ? "Neg" : "Pos";  
+      fhInvPtQVsPhi[i] = new TH2D(Form("fhInvPtVsPhiQ%s", name.Data()),
+                                  Form("%s track 1/pt versus track phi", name.Data()), 36, 0, 2*TMath::Pi(), 40, 0, 0.4);  
+      if(bNotKine) fOutput->Add((TH2D*) fhInvPtQVsPhi[i]);
+      
+      fhInvPtQVsEta[i] = new TH2D(Form("fhInvPtVsEtaQ%s", name.Data()),
+                                  Form("%s track 1/pt versus track eta", name.Data()), 20, -0.9, 0.9, 40, 0, 0.4);
+      if(bNotKine) fOutput->Add((TH2D*) fhInvPtQVsEta[i]);
+      
+      fhInvPtQVsPhiASide[i] = new TH2D(Form("fhInvPtVsPhiASideQ%s", name.Data()),
+                                       Form("%s track 1/pt versus track phi", name.Data()), 36, 0, 2*TMath::Pi(), 40, 0, 0.4); 
+      if(bNotKine) fOutput->Add((TH2D*) fhInvPtQVsPhiASide[i]);
+      
+      fhInvPtQVsPhiCSide[i] = new TH2D(Form("fhInvPtVsPhiCSideQ%s", name.Data()),
+                                       Form("%s track 1/pt versus track phi", name.Data()), 36, 0, 2*TMath::Pi(), 40, 0, 0.4); 
+      if(bNotKine) fOutput->Add((TH2D*) fhInvPtQVsPhiCSide[i]);
+
+      fhSigmaPtOverPtVsPt[i] = new TH2D(Form("fhSigmaPtOverPtVsPtQ%s", name.Data()),
+                                       Form("%s track sigma(1/pt)/ 1/pt vs pt", name.Data()), 100, 0, 100, 250, 0, 1); 
+      if(bNotKine) fOutput->Add((TH2D*) fhSigmaPtOverPtVsPt[i]);
+   }
    //-------------------------
    for(Int_t ic =0; ic<icmax; ic++){
       name = (ic==0) ? Form("fhCentralityMB") : 
@@ -2042,7 +2126,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
                                TMath::Nint(fCentralityBins[ic]),bgtype[ir].Data()); 
  
             fhJetPtResolutionVsPtGen[ic][ir] = new TH2D(name.Data(), 
-                                                    "Resolution", 20,0,100, 140,-1.,0.4);
+                                                    "Resolution", 20,0,100, 200,-1.,1.);
             fOutput->Add((TH2D*) fhJetPtResolutionVsPtGen[ic][ir]);
          }
       }
