@@ -2,10 +2,10 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           TString trigClass = "CINT1B",
                                           AliVEvent::EOfflineTriggerTypes trigMask = AliVEvent::kMB,
                                           AliAnalysisTrackingUncertaintiesAOT::ESpecies_t specie=(AliAnalysisTrackingUncertaintiesAOT::kSpecPion|AliAnalysisTrackingUncertaintiesAOT::kSpecKaon),
-                                          Double_t MaxDCAxy=2.4,
-                                          Double_t MaxDCAz=3.2,
-                                          Double_t MaxEta=0.8,
-                                          Double_t CrossRowsOverFndCltTPC=0.8) {
+                                          Double_t MaxDCAxy = 2.4,
+                                          Double_t MaxDCAz  = 3.2,
+                                          Double_t MaxEta   = 0.8,
+                                          Double_t CrossRowsOverFndCltTPC = 0.8) {
     
     //
     // add task of tracking uncertainty
@@ -60,15 +60,11 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
     //below the trunk version
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
     
-    //dummy output container
-    AliAnalysisDataContainer *coutput0 = mgr->CreateContainer(Form("dummyTreeUncert"),TTree::Class(),AliAnalysisManager::kExchangeContainer,"defaultTreeUncert");
-    
     //define output containers
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("trackingUncert%s",suffix.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     
     //connect containers
     mgr->ConnectInput  (task, 0, cinput );
-    mgr->ConnectOutput (task, 0, coutput0);
     mgr->ConnectOutput (task, 1, coutput1);
     //
     //
