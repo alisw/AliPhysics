@@ -59,6 +59,7 @@ void AddTask_GammaConvFlow_PbPb2(
                                   Double_t MinFilter            = 0.0,
                                   Double_t MaxFilter            = 0.2,
                                   Bool_t isMC                   = kFALSE,
+                                  Bool_t ApplydPhidRCut         = kFALSE,
                                   TString additionalTrainConfig = "0"                             // additional counter for trainconfig, always has to be last parameter
                                ) {
   
@@ -369,7 +370,7 @@ void AddTask_GammaConvFlow_PbPb2(
   if(UseMassSel==kTRUE)  task->SetMassWindow(MinMass,MaxMass);
   if(UseKappaSel==kTRUE) task->SetKappaWindow(MinKappa,MaxKappa);
 
-  
+  task->SetApplydPhidRCut(ApplydPhidRCut);
   
   AliAnalysisDataContainer *flowEvent[numberOfCuts];
   //======================================================================
