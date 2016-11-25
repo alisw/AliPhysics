@@ -1993,7 +1993,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
   Double_t maxClusterEnergy = -1;
-  Double_t maxClusterID     = -1;
+  Int_t maxClusterID        = -1;
   map<Long_t,Int_t> mapIsClusterAccepted;
   map<Long_t,Int_t> mapIsClusterAcceptedWithoutTrackMatch;
   // Loop over EMCal clusters
@@ -2023,7 +2023,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     //determine maximum cluster energy in event
     if(fProduceCellIDPlots && (clus->E() > maxClusterEnergy)){
       maxClusterEnergy  = clus->E();
-      maxClusterID      = i;
+      maxClusterID      = (Int_t) i;
     }  
     if(fProduceTreeEOverP || fProduceCellIDPlots) mapIsClusterAccepted[i] = 1;
 
