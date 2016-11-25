@@ -17,7 +17,7 @@ class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
-const Int_t nVar = 26;
+const Int_t nVar = 28;
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -172,6 +172,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhEventCounter_2;
   TH1F                                *fhPhiTriggerHadronJet;
   TH1F                                *fhPhiTriggerHadronEventPlane;
+  TH1F                                *fhPhiTriggerHadronEventPlaneTPC;
   TH2F                                *fh2PtTriggerHadronJet;
   TH2F                                *fh2PtRatio; 
   TH2D                                *fhSubJettiness1CheckRatio_FJ_AKT;
