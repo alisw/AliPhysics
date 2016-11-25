@@ -198,6 +198,8 @@ private:
     TH2F                  *fEoverPsignalTPC[3];    //! E/p for electrons (TPC cut)
     TH2F                  *fEoverPsignalTPCM02[3];    //! E/p for electrons (TPCcut + M02 cuts)
     TH2F                  *fEoverPbackg[3];    //! E/p for background
+    TH2F                  *fcpV2_3040;          //! charged particle v2 in 30-40%
+    TH2F                  *fcpV2_4050;//! charged particle v2 in 30-40%
     
     TString fExpectedCorrectionPass;
     TString fAlternativeCorrectionPass;
