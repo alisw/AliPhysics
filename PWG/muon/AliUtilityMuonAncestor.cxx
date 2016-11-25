@@ -92,7 +92,7 @@ AliUtilityMuonAncestor& AliUtilityMuonAncestor::operator=(const AliUtilityMuonAn
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::BuildAncestor ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::BuildAncestor ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Build ancestor
   
@@ -105,7 +105,7 @@ Bool_t AliUtilityMuonAncestor::BuildAncestor ( AliVParticle* track, const AliMCE
   fAncestor = -999;
   if ( ! mcEvent ) return kFALSE;
   
-  AliVParticle* mcParticle = 0x0;
+  const AliVParticle* mcParticle = 0x0;
   
   if ( AliAnalysisMuonUtility::IsMCTrack(track) ) mcParticle = track;
   else {
@@ -125,7 +125,7 @@ Bool_t AliUtilityMuonAncestor::BuildAncestor ( AliVParticle* track, const AliMCE
   Int_t imother = mcParticle->GetMother();
 
   while ( imother >= 0 ) {
-    AliVParticle* part = mcEvent->GetTrack(imother);
+    const AliVParticle* part = mcEvent->GetTrack(imother);
     
     Int_t absPdg = TMath::Abs(part->PdgCode());
     
@@ -136,18 +136,21 @@ Bool_t AliUtilityMuonAncestor::BuildAncestor ( AliVParticle* track, const AliMCE
     Bool_t isPrimary = AliAnalysisMuonUtility::IsPrimary(part, mcEvent);
     
     if ( isPrimary ) {
-      Int_t mpdg = absPdg%100000;
-      if ( mpdg >= 100 && mpdg < 10000 ) {
-        Int_t flv  = Int_t ( mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg) )));
-        if ( flv < 4 ) SETBIT(fMask,kHasLightParent);
-        else if ( flv >= 6 ) continue;
-        else {
-          TParticlePDG* partPdg = TDatabasePDG::Instance()->GetParticle(part->PdgCode());
-          if ( partPdg && ! partPdg->AntiParticle() ) SETBIT(fMask,kHasQuarkoniumParent);
-          else if ( flv == 4 ) SETBIT(fMask,kHasCharmParent);
-          else SETBIT(fMask,kHasBeautyParent);
-        }
-      } // absPdg within 100 and 10000
+      if ( absPdg == 15 ) SETBIT(fMask,kHasTauParent);
+      else {
+        Int_t mpdg = absPdg%100000;
+        if ( mpdg >= 100 && mpdg < 10000 ) {
+          Int_t flv  = Int_t ( mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg) )));
+          if ( flv < 4 ) SETBIT(fMask,kHasLightParent);
+          else if ( flv >= 6 ) continue;
+          else {
+            TParticlePDG* partPdg = TDatabasePDG::Instance()->GetParticle(part->PdgCode());
+            if ( partPdg && ! partPdg->AntiParticle() ) SETBIT(fMask,kHasQuarkoniumParent);
+            else if ( flv == 4 ) SETBIT(fMask,kHasCharmParent);
+            else SETBIT(fMask,kHasBeautyParent);
+          }
+        } // absPdg within 100 and 10000
+      }
     } // is primary
     else {
       UInt_t mcProcess = AliAnalysisMuonUtility::GetMCProcess(part);
@@ -167,7 +170,7 @@ Bool_t AliUtilityMuonAncestor::BuildAncestor ( AliVParticle* track, const AliMCE
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::CheckAncestor ( AliVParticle* track, const AliMCEvent* mcEvent, Int_t ancestorPdg, Bool_t matchAbsPdg )
+Bool_t AliUtilityMuonAncestor::CheckAncestor ( const AliVParticle* track, const AliMCEvent* mcEvent, Int_t ancestorPdg, Bool_t matchAbsPdg )
 {
   /// Check ancestor
   Int_t pdgCode = GetAncestorPdg(track, mcEvent);
@@ -179,7 +182,7 @@ Bool_t AliUtilityMuonAncestor::CheckAncestor ( AliVParticle* track, const AliMCE
 }
 
 //_________________________________________________________
-Int_t AliUtilityMuonAncestor::GetAncestor ( AliVParticle* track, const AliMCEvent* mcEvent )
+Int_t AliUtilityMuonAncestor::GetAncestor ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Return ancestor (compute it if necessary)
   BuildAncestor(track,mcEvent);
@@ -187,7 +190,7 @@ Int_t AliUtilityMuonAncestor::GetAncestor ( AliVParticle* track, const AliMCEven
 }
 
 //_________________________________________________________
-Int_t AliUtilityMuonAncestor::GetAncestorPdg ( AliVParticle* track, const AliMCEvent* mcEvent )
+Int_t AliUtilityMuonAncestor::GetAncestorPdg ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Return ancestor Pdg
   if ( BuildAncestor(track,mcEvent) ) {
@@ -197,7 +200,7 @@ Int_t AliUtilityMuonAncestor::GetAncestorPdg ( AliVParticle* track, const AliMCE
 }
 
 //_________________________________________________________
-Long64_t AliUtilityMuonAncestor::GetMask ( AliVParticle* track, const AliMCEvent* mcEvent )
+Long64_t AliUtilityMuonAncestor::GetMask ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Return mask
   BuildAncestor(track,mcEvent);
@@ -206,7 +209,7 @@ Long64_t AliUtilityMuonAncestor::GetMask ( AliVParticle* track, const AliMCEvent
 
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsBeautyMu ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsBeautyMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Muon from beauty decays
   Long64_t mask = GetMask(track,mcEvent);
@@ -214,7 +217,15 @@ Bool_t AliUtilityMuonAncestor::IsBeautyMu ( AliVParticle* track, const AliMCEven
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsBJpsiMu ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsBeautyChainMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
+{
+  /// Muon from beauty decays
+  Long64_t mask = GetMask(track,mcEvent);
+  return ( TESTBIT(mask,kIsID) && TESTBIT(mask,kIsMuon) && TESTBIT(mask,kHasBeautyParent) );
+}
+
+//_________________________________________________________
+Bool_t AliUtilityMuonAncestor::IsBJpsiMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Muon B->J/psi decays
   if ( IsBeautyMu(track,mcEvent) ) {
@@ -225,7 +236,7 @@ Bool_t AliUtilityMuonAncestor::IsBJpsiMu ( AliVParticle* track, const AliMCEvent
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsCharmMu ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsCharmMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Muon from charm decays
   Long64_t mask = GetMask(track,mcEvent);
@@ -233,7 +244,15 @@ Bool_t AliUtilityMuonAncestor::IsCharmMu ( AliVParticle* track, const AliMCEvent
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsDecayMu ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsCharmChainMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
+{
+  /// Muon from charm decays
+  Long64_t mask = GetMask(track,mcEvent);
+  return ( TESTBIT(mask,kIsID) && TESTBIT(mask,kIsMuon) && TESTBIT(mask,kHasCharmParent) && ! TESTBIT(mask,kHasBeautyParent) );
+}
+
+//_________________________________________________________
+Bool_t AliUtilityMuonAncestor::IsDecayMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Muon from light hadron decays
   Long64_t mask = GetMask(track,mcEvent);
@@ -241,7 +260,7 @@ Bool_t AliUtilityMuonAncestor::IsDecayMu ( AliVParticle* track, const AliMCEvent
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsHadron ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsHadron ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Reconstructed hadron
   Long64_t mask = GetMask(track,mcEvent);
@@ -249,7 +268,7 @@ Bool_t AliUtilityMuonAncestor::IsHadron ( AliVParticle* track, const AliMCEvent*
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsMuon ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsMuon ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Track is muon
   Long64_t mask = GetMask(track,mcEvent);
@@ -257,7 +276,7 @@ Bool_t AliUtilityMuonAncestor::IsMuon ( AliVParticle* track, const AliMCEvent* m
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsQuarkoniumMu ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsQuarkoniumMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Mu from quarkonium decay
   Long64_t mask = GetMask(track,mcEvent);
@@ -265,7 +284,7 @@ Bool_t AliUtilityMuonAncestor::IsQuarkoniumMu ( AliVParticle* track, const AliMC
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsSecondaryMu ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsSecondaryMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Muon from secondary decays in absorber
   Long64_t mask = GetMask(track,mcEvent);
@@ -273,7 +292,7 @@ Bool_t AliUtilityMuonAncestor::IsSecondaryMu ( AliVParticle* track, const AliMCE
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsUnidentified ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsUnidentified ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Unidentified muon
   Long64_t mask = GetMask(track,mcEvent);
@@ -281,15 +300,17 @@ Bool_t AliUtilityMuonAncestor::IsUnidentified ( AliVParticle* track, const AliMC
 }
 
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsWBosonMu ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsWBosonMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Muon from W boson decays
-  return ( IsMuon(track,mcEvent) && CheckAncestor(track,mcEvent,24) );
+  Long64_t mask = GetMask(track,mcEvent);
+  return ( IsMuon(track,mcEvent) && ! TESTBIT(mask,kHasTauParent) && CheckAncestor(track,mcEvent,24) );
 }
           
 //_________________________________________________________
-Bool_t AliUtilityMuonAncestor::IsZBosonMu ( AliVParticle* track, const AliMCEvent* mcEvent )
+Bool_t AliUtilityMuonAncestor::IsZBosonMu ( const AliVParticle* track, const AliMCEvent* mcEvent )
 {
   /// Muon from Z boson decays
-  return ( IsMuon(track,mcEvent) && CheckAncestor(track,mcEvent,kZ0) );
+  Long64_t mask = GetMask(track,mcEvent);
+  return ( IsMuon(track,mcEvent) && ! TESTBIT(mask,kHasTauParent) && CheckAncestor(track,mcEvent,kZ0) );
 }
