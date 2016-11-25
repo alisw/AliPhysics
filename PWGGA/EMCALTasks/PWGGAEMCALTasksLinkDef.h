@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskPi0V2+;
 #pragma link C++ class AliAnalysisTaskSATR+;
 #pragma link C++ class AliAnalysisTaskTrgContam+;
+#pragma link C++ class AliAnalysisTaskShoShaTests+;
 #pragma link C++ class AliPhotonCellObj+;
 #pragma link C++ class AliPhotonClusterObj+;
 #pragma link C++ class AliPhotonConvObj+;
