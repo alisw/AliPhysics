@@ -317,7 +317,7 @@ void AliAnalysisTaskPhiFlow::UserCreateOutputObjects()
         fHistCentralityWeights = temp;
         fOutputList->Add(temp);
     }
-    fVertexZ = new TH1F("fVertexZ", "vertex Z position:vertex Z position", 90, -15, 15);
+    fVertexZ = new TH1F("fVertexZ", "vertex Z position:vertex Z position", 60, -.3, .3);
     fOutputList->Add(fVertexZ);
 }
 //_____________________________________________________________________________
