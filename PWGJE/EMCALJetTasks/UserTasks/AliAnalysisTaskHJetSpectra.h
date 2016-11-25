@@ -280,14 +280,22 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1D*         fhImpactParameter[kCAll]; //! impact parameter distribution hijing
    TH1D*         fhImpactParameterTT[kCAll][kTT]; //! impact parameter distribution hijing versus TT
 
-   TH1D*  fhJetPtGen[kCAll][kRho];
-   TH2D*  fhJetPtGenVsJetPtRec[kCAll][kRho];
-   TH2D*  fhJetPtResolutionVsPtGen[kCAll][kRho];
-   TH2D*  fhPtTrkTruePrimRec[kCAll]; // pt spectrum of true reconstructed primary tracks    
-   TH2D*  fhPtTrkTruePrimGen[kCAll]; // pt spectrum of true generated primary track    
-   TH2D*  fhPtTrkSecOrFakeRec[kCAll]; // pt spectrum of reconstructed fake or secondary tracks    
-   TH2D*  fhPtJetPrimVsPtJetRec; // pt spectrum of reconstructed jets without  fake track pT vs reconstructed jet pT  
-   TH2D*  fhDiffPtVsPtTrackTrue; // track Y= rec pt - true pt   X= true track pT  
+   TH1D*  fhJetPtGen[kCAll][kRho]; //! pt distribution of generator level jets
+   TH2D*  fhJetPtGenVsJetPtRec[kCAll][kRho]; //! pt jet gen level vs pT jet rec level
+   TH2D*  fhJetPtResolutionVsPtGen[kCAll][kRho]; //! pt jet resolution
+   TH2D*  fhPtTrkTruePrimRec[kCAll]; //! pt spectrum of true reconstructed primary tracks    
+   TH2D*  fhPtTrkTruePrimGen[kCAll]; //! pt spectrum of true generated primary track    
+   TH2D*  fhPtTrkSecOrFakeRec[kCAll]; //! pt spectrum of reconstructed fake or secondary tracks    
+   TH2D*  fhPtJetPrimVsPtJetRec; //! pt spectrum of reconstructed jets without  fake track pT vs reconstructed jet pT  
+   TH2D*  fhDiffPtVsPtTrackTrue; //! track Y= rec pt - true pt   X= true track pT  
+
+   TH2D*  fhInvPtQVsPhi[2];   //! q*1/pT  versus phi
+   TH2D*  fhInvPtQVsEta[2];   //! q*1/pT  versus eta
+   TH2D*  fhInvPtQVsPhiASide[2];   //! q*1/pT  versus eta
+   TH2D*  fhInvPtQVsPhiCSide[2];   //! q*1/pT  versus eta
+   TH2D*  fhSigmaPtOverPtVsPt[2]; //!
+   TH2F  *fhTrackPhiCG; //! hybrid constrained global track phi vs track pT
+   TH2F  *fhTrackPhiTPCG; //! hybrid TPC constrained track phi vs track pT
  
    TArrayD  fRhoRec[kTT];   // labels of particles on reconstructed track level
    TArrayD  fRhoMC[kTT];   // labels of particles on reconstructed track level
@@ -311,7 +319,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 19); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 20); // Charged jet analysis for pA
 
 };
 #endif
