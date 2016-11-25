@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from logging import debug,info
 
 DEFAULT_PRE=""
-DEFAULT_POST="mv syswatch.log %(lower_name)swatch.log"
+DEFAULT_POST="mv syswatch.log %(lower_name)swatch.log || true"
 DEFAULT_SETUP="cd %(cwd)s && rm -rf %(artifacts)s"
 
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
   parser.add_argument("--cfg", "-c", dest="cfg", default="test/test.cfg")
   parser.add_argument("testNames", nargs="*", default=[])
   args = parser.parse_args()
-  
+
   if args.variants:
     args.variants = args.variants.split(",")
 
@@ -60,18 +60,20 @@ if __name__ == "__main__":
       step.setdefault("cwd", test["cwd"])
       step.setdefault("prefix", "")
       step.setdefault("variants", {"default": {}})
-      step.setdefault("driver", "aliroot -b -q %(cfg)s 2>&1 | tee %(out)s")
+      step.setdefault("driver", "[ -e %(cfg)s ]; aliroot -b -q %(cfg)s 2>&1 | tee %(out)s")
       for (name, variant) in step["variants"].items():
         suffix = name == "default" and ".log" or "_%s.log" % name
         variant.setdefault("out", step["lower_name"] + suffix)
-        
+
       variants = [(k, v) for k in step for v in step["variants"].values()]
       for(key, variant) in variants:
         variant.setdefault(key, step[key])
-        
+
   currentCwd = ""
   for (n, test) in runnable:
-    script = "# Running Test %s\n" % n
+    script = "set -e\nset -o pipefail\n"
+    if args.debug: script += "set -x\n"
+    script += "# Running Test %s\n" % n
     script += format(test.get("setup", DEFAULT_SETUP), **test) + "\n"
     currentCwd = test["cwd"]
     for step in test["steps"]:
