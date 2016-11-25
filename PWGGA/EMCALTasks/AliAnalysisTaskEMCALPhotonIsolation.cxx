@@ -895,14 +895,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fPtTracksVSpTNC_MC->Sumw2();
     fOutput->Add(fPtTracksVSpTNC_MC);
     
-    fpi0VSclusterVSIsolation = new TH3F ("hpi0VSclusterVSisolation","Energy pi0 vs cluster Energy vs Isolation",95,5.,100.,95,5.,100.,100,0.,100.);
+    fpi0VSclusterVSIsolation = new TH3F ("hpi0VSclusterVSisolation","Energy pi0 vs cluster Energy vs Isolation",95,5.,100.,95,5.,100.,400,0.,100.);
     fpi0VSclusterVSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
     fpi0VSclusterVSIsolation->SetYTitle("cluster E");
     fpi0VSclusterVSIsolation->SetZTitle("Isolation");
     fpi0VSclusterVSIsolation->Sumw2();
     fOutput->Add(fpi0VSclusterVSIsolation);
     
-    fpi0VSM02VSIsolation = new TH3F ("fpi0VSM02VSIsolation","Energy pi0 vs cluster M02 vs Isolation",95,5.,100.,500,0.,5.,100,0.,100.);
+    fpi0VSM02VSIsolation = new TH3F ("fpi0VSM02VSIsolation","Energy pi0 vs cluster M02 vs Isolation",95,5.,100.,500,0.,5.,400,0.,100.);
     fpi0VSM02VSIsolation->SetXTitle("particle (#pi^{0} or #eta) E");
     fpi0VSM02VSIsolation->SetYTitle("cluster M02");
     fpi0VSM02VSIsolation->SetZTitle("Isolation");
