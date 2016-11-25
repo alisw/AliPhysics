@@ -85,6 +85,7 @@ public:
     void                                 SetMassWindow(Float_t MinMass, Float_t MaxMass) { fMinMass = MinMass; fMaxMass = MaxMass; }
     void                                 SetKappaWindow(Float_t MinKappa, Float_t MaxKappa) { fMinKappa = MinKappa; fMaxKappa = MaxKappa; }
     void                                 SetFilterVariable(Int_t FilterVariable, Double_t MinFilter, Double_t MaxFilter) { fFilterVariable = FilterVariable; fMinFilter = MinFilter; fMaxFilter = MaxFilter;}
+    void                                 SetApplydPhidRCut(Bool_t dPhiDRCut){ fApplydPhidRCut = dPhiDRCut; }
     
     
 protected:
@@ -210,6 +211,7 @@ protected:
   Double_t               fMinFilter;                      //
   Double_t               fMaxFilter;                      //
   Bool_t                fIsMC;                            //
+  Bool_t                fApplydPhidRCut;                  //
   AliMCEvent*                 fMCEvent;                   //
   AliStack*                   fMCStack;                   //
 
@@ -225,10 +227,11 @@ private:
   Bool_t MCConversionPhotonCheck( TParticle *MCPhoton );
   Int_t GetTemplateID( AliAODConversionPhoton *MCPhoton );
   void GetdPhidRtoCandidate();
+  Bool_t GetdPhidRtoCandidate( AliAODConversionPhoton* gamma );
 
 	AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
 	AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvFlow, 9);
+    ClassDef(AliAnalysisTaskGammaConvFlow, 10);
 };
 
 #endif
