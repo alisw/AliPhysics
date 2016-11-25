@@ -31,9 +31,8 @@
 
 TTree * InitTrees(const char * detector,   const char * referenceDet);    // load QA trees and Sttering tree <det>   QA.<Det>, Logbook, Lo
 void    InitSummaryTrending(TTree * tree);                     // can be generic ?      
-void    SetDrawStyle();                                        // setting Defaul draw style
+void    SetDrawStyle();                                        // setting Default draw style
 TObjArray * GetTexDescription(TLatex *latex);                  // should go to base code
-void    logbookConfig(TTree * tree);                              // should go to base code
 
 //
 // Macro global variables:
@@ -44,7 +43,7 @@ std::map<std::string,TTree*> qaMap;
 TCanvas *canvasQA=0;          // central canvas for QA plots
 TObjArray * descriptionQA=0;  // descriptionQA of process  (time/aliroot/root/pariod/pass/user)
 TObjArray*   oaMultGr=0;      // status bar multigraph
-TString      statusDescription[3];   // status bra description
+TString      statusDescription[3];   // status bar description
 
 
 //
@@ -228,27 +227,6 @@ TObjArray * GetTexDescription(TLatex *latex){
   description->AddLast(latex->DrawLatexNDC(latex->GetX(), latex->GetY()-5.5*latex->GetTextSize(),sAliphysicsVer.Data()));
   return description;
 }
-
-void logbookConfig(TTree * tree){
-  //
-  //
-  //
-  TStatToolkit::AddMetadata(tree,"totalEvents.Title","N_{events}");
-  TStatToolkit::AddMetadata(tree,"totalEvents.AxisTitle","N_{events}");
-  TStatToolkit::AddMetadata(tree,"totalEvents.Legend","logbook - N_{events}");
-  TStatToolkit::AddMetadata(tree,"totalEventsPhysics.Title","N_{phys.ev.}");
-  TStatToolkit::AddMetadata(tree,"totalEventsPhysics.AxisTitle","N_{phys.ev.}");
-  TStatToolkit::AddMetadata(tree,"totalEventsPhysics.Legend","logbook - N_{phys.ev.}");
-  //
-  TStatToolkit::AddMetadata(tree,"LogbookDet.eventCountPhysics.Title","T0 - N_{events}");
-  TStatToolkit::AddMetadata(tree,"LogbookT0.eventCountPhysics.AxisTitle","T0 - N_{events}");
-  TStatToolkit::AddMetadata(tree,"LogbookT0.eventCountPhysics.Legend","T0 - N_{events}");
-  TStatToolkit::AddMetadata(tree,"LogbookTPC.eventCountPhysics.Title","TPC - N_{events}");
-  TStatToolkit::AddMetadata(tree,"LogbookTPC.eventCountPhysics.AxisTitle","TPC - N_{events}");
-  TStatToolkit::AddMetadata(tree,"LogbookTPC.eventCountPhysics.Legend","TPC - N_{events}");
-}
-
-
 
 
 void InitSummaryTrending(TTree * tree){
