@@ -1993,6 +1993,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
   
   Double_t maxClusterEnergy = -1;
+  Double_t maxClusterID     = -1;
   map<Long_t,Int_t> mapIsClusterAccepted;
   map<Long_t,Int_t> mapIsClusterAcceptedWithoutTrackMatch;
   // Loop over EMCal clusters
@@ -2020,7 +2021,10 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
     
     //determine maximum cluster energy in event
-    if(fProduceCellIDPlots && (clus->E() > maxClusterEnergy)) maxClusterEnergy = clus->E();
+    if(fProduceCellIDPlots && (clus->E() > maxClusterEnergy)){
+      maxClusterEnergy  = clus->E();
+      maxClusterID      = i;
+    }  
     if(fProduceTreeEOverP || fProduceCellIDPlots) mapIsClusterAccepted[i] = 1;
 
     // Flag Photon as CaloPhoton
@@ -2087,7 +2091,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
       Int_t cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent);
       fHistCellIDvsClusterEnergy[fiCut]->Fill(clus->E(),cellID);
-      fHistCellIDvsClusterEnergyMax[fiCut]->Fill(maxClusterEnergy,cellID);
+      if (maxClusterID == i && maxClusterID > -1 ) fHistCellIDvsClusterEnergyMax[fiCut]->Fill(maxClusterEnergy,cellID);
       delete clus;
     }
     mapIsClusterAccepted.clear();
