@@ -46,6 +46,7 @@ set(SRCS
     AliAnalysisTaskPi0V2.cxx
     AliAnalysisTaskSATR.cxx
     AliAnalysisTaskSDMGammaMC.cxx
+    AliAnalysisTaskShoShaTests.cxx
     AliAnalysisTaskTrgContam.cxx
     AliEMCalpi0ClusterEvaluationTask.cxx
     AliEMCalpi0Task.cxx
