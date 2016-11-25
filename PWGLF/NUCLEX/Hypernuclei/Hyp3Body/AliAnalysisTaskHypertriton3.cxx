@@ -98,6 +98,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fTriggerConfig(1),
   fRequestITSrefit(kFALSE),
   fRequestITSrefitPion(kFALSE),
+  fRequestITSin(kFALSE),
   fRequestTPCSigmas(3),
   fRequestTOFPid(kFALSE),
   fRequestTOFSigmas(3),
@@ -1600,7 +1601,10 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     if((status&AliVTrack::kITSout) && !(status&AliVTrack::kITSrefit)) fHistTrackFlagReco->Fill(5);
     if((status&AliVTrack::kITSin) && !(status&AliVTrack::kITSrefit)){
       fHistTrackFlagReco->Fill(4);
-      //continue;
+      if(fRequestITSin) {
+        printf("Skipping this track: has kITSin but no kITSrefit\n");
+        continue;
+      }
     }
     track->GetImpactParameters(dcaprim,dcaprimc);
     dca_prim = TMath::Sqrt((dcaprim[0]*dcaprim[0])+(dcaprim[1]*dcaprim[1]));

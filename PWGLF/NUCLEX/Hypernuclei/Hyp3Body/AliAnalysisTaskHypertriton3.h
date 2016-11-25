@@ -64,7 +64,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
   void SetEvtSpecie(UInt_t evspc = 4){fEvtSpecie = evspc;}
   void SetEmbedEvtSelection(Bool_t evtSel = kFALSE){fEvtEmbedSelection = evtSel;}
-  void SetRequestRefit(bool itsR = kFALSE, bool itsRpion = kFALSE) {fRequestITSrefit = itsR; fRequestITSrefitPion = itsRpion;}
+  void SetRequestRefit(bool itsR = kFALSE, bool itsRpion = kFALSE, bool itsRin = kFALSE) {fRequestITSrefit = itsR; fRequestITSrefitPion = itsRpion; fRequestITSin = itsRin;}
   void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
@@ -139,6 +139,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   UShort_t           fTriggerConfig;               ///< select different trigger configuration
   Bool_t             fRequestITSrefit;             ///< flag for switch the ITSrefit request in the track cuts
   Bool_t             fRequestITSrefitPion;         ///< flag for switch the ITSrefit request only for candidate pion track cuts
+  Bool_t             fRequestITSin;                ///< flag for switch the ITSin request: tracks with ITSin and FAILED ITSrefit are rejected
   Float_t            fRequestTPCSigmas;            ///< number of sigmas for TPC pid
   Bool_t             fRequestTOFPid;               ///< switch on/off TOF pid
   Float_t            fRequestTOFSigmas;            ///< number of sigmas for TOF pid
