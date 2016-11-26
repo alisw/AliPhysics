@@ -241,7 +241,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEvsTrackEGammaSubCharged(NULL),
   fHistClusterEvsTrackEConv(NULL),
   fHistClusterENMatchesNeutral(NULL),
-  fHistClusterENMatchesCharged(NULL)
+  fHistClusterENMatchesCharged(NULL),
+  fHistClusterEvsTrackEPrimaryButNoElec(NULL),
+  fHistClusterEvsTrackSumEPrimaryButNoElec(NULL)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -404,7 +406,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEvsTrackEGammaSubCharged(NULL),
   fHistClusterEvsTrackEConv(NULL),
   fHistClusterENMatchesNeutral(NULL),
-  fHistClusterENMatchesCharged(NULL)
+  fHistClusterENMatchesCharged(NULL),
+  fHistClusterEvsTrackEPrimaryButNoElec(NULL),
+  fHistClusterEvsTrackSumEPrimaryButNoElec(NULL)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -962,6 +966,21 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterENMatchesCharged->GetYaxis()->SetTitle("#it{N}_{matches}");
         fHistograms->Add(fHistClusterENMatchesCharged);        
 
+        fHistClusterEvsTrackEPrimaryButNoElec        = new TH2F(Form("ClusterE_TrackE_ChargedClusterNoElec %s",GetCutNumber().Data()),"ClusterE TrackE ChargedClusterNoElec",
+                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+        SetLogBinningXTH2(fHistClusterEvsTrackEPrimaryButNoElec);
+        SetLogBinningYTH2(fHistClusterEvsTrackEPrimaryButNoElec);
+        fHistClusterEvsTrackEPrimaryButNoElec->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+        fHistClusterEvsTrackEPrimaryButNoElec->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+        fHistograms->Add(fHistClusterEvsTrackEPrimaryButNoElec);
+        fHistClusterEvsTrackSumEPrimaryButNoElec        = new TH2F(Form("ClusterE_TrackSumE_ChargedClusterNoElec %s",GetCutNumber().Data()),"ClusterE TrackSumE ChargedClusterNoElec",
+                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+        SetLogBinningXTH2(fHistClusterEvsTrackSumEPrimaryButNoElec);
+        SetLogBinningYTH2(fHistClusterEvsTrackSumEPrimaryButNoElec);
+        fHistClusterEvsTrackSumEPrimaryButNoElec->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+        fHistClusterEvsTrackSumEPrimaryButNoElec->GetYaxis()->SetTitle("#sum#it{E}_{tr} (GeV)");
+        fHistograms->Add(fHistClusterEvsTrackSumEPrimaryButNoElec);
+
         if(fIsMC > 1){
           fHistClusterTMEffiInput->Sumw2();
           fHistClusterEvsTrackECharged->Sumw2();
@@ -973,6 +992,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
           fHistClusterEvsTrackEConv->Sumw2();
           fHistClusterENMatchesNeutral->Sumw2();
           fHistClusterENMatchesCharged->Sumw2();
+          fHistClusterEvsTrackEPrimaryButNoElec->Sumw2();
+          fHistClusterEvsTrackSumEPrimaryButNoElec->Sumw2();
         }
       }
 
@@ -1507,11 +1528,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         Int_t idHighestPt = -1;
         Double_t ptMax    = -1;
         Double_t eMax     = -1;
+        Double_t eSum     = 0;
         Bool_t foundLead  = kFALSE;
         Double_t eLead    = -1;
         Int_t idLead      = -1;
         for (Int_t i = 0; i < (Int_t)labelsMatchedTracks.size(); i++){
           AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatchedTracks.at(i)));
+          eSum += currTrack->E();
           if (ptMax < currTrack->Pt()){
             ptMax               = currTrack->Pt();
             eMax                = currTrack->E();
@@ -1532,6 +1555,11 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         }
         if (classification == 5 || classification == 7 || classification == 6){
           fHistClusterEvsTrackECharged->Fill(cluster->E(), eMax, weight);
+          if (classification == 5){
+            fHistClusterEvsTrackEPrimaryButNoElec->Fill(cluster->E(), eMax, weight);
+            fHistClusterEvsTrackSumEPrimaryButNoElec->Fill(cluster->E(), eSum, weight);
+          }
+
           if (foundLead ){
             if (classification == 5)
               fHistClusterTMEffiInput->Fill(cluster->E(), 11., weight); //Ch cl match w lead
