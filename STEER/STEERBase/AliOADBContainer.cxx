@@ -327,23 +327,23 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
   // August 2015, Hans: We expand the filename such that
   // /cvms/blabla matches the variable $ALICE_ROOT
   // We have to delete the returned char*
-  AliInfo(Form("File: %s and key %s\n",fname,key));
+  AliDebug(5,Form("File: %s and key %s\n",fname,key));
   fname = gSystem->ExpandPathName(fname);
   if(!fname){AliError("Can not expand path name");return 1;}
-  AliInfo(Form("File name expanded to %s",fname));
+  AliDebug(5,Form("File name expanded to %s",fname));
   //
   // Hans: See whether the file is already open
   //
-  // For now print info
-  AliInfo("-----------------------------------------------");
-  AliInfo("List of already open files:\n");
+  // Print debug information
+  AliDebug(5,"-----------------------------------------------");
+  AliDebug(5,"List of already open files:\n");
   TIter nextFile(gROOT->GetListOfFiles());
   while (1) {
     TObject *obj = nextFile();
     if(!obj)break;
-    AliInfo(Form("%s",obj->GetName()));
+    AliDebug(5,Form("%s",obj->GetName()));
   }
-  AliInfo("-----------------------------------------------");
+  AliDebug(5,"-----------------------------------------------");
 
   // Declare the file
   TFile* file(0);
@@ -353,16 +353,16 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
     file =dynamic_cast<TFile*> (listOfFiles->FindObject(fname));
   }
   if(file){
-    AliInfo("Success! File was already open!\n");
+    AliDebug(5,"Success! File was already open!\n");
   }
   else{
-    AliInfo("Couldn't find file, opening it\n");
+    AliDebug(5,"Couldn't find file, opening it\n");
     if(TString(fname).Contains("alien://") && ! gGrid)
       TGrid::Connect("alien://");
     file = TFile::Open(fname);
   }
   // Delete pointer from ExpandPathName()
-  delete fname;
+  delete[] fname;
   fname=0;
   
     // Initialize object from file
