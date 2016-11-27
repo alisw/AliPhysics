@@ -2,6 +2,8 @@
 #define AliMultSelectionBase_H
 #include <TNamed.h>
 
+class AliVEvent;
+
 class AliMultSelectionBase : public TNamed {
     
 public:
@@ -11,7 +13,10 @@ public:
     
     void Clear(Option_t* = "") {}; //dummy
     
-    //So that AliRoot knows the function calls
+    //General getter for percentile (with fallback to AliCentrality)
+    static Float_t GetMultiplicityPercentileWithFallback(AliVEvent* lEvent, TString lName );
+
+    //So that AliRoot knows the AliMultSelection function calls
     //Late binding will ensure the correct functionality at run-time
     virtual Float_t GetMultiplicityPercentile(TString lName, Bool_t lEmbedEvSel = kFALSE){ return -123.456; }
     virtual Int_t GetEvSelCode() const { return -123456; }
