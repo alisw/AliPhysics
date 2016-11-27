@@ -54,7 +54,7 @@ public:
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
-    void FindMother(AliAODMCParticle* part, int &label, int &pid);
+    void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
     void CheckMCgen(AliAODMCHeader* fMCheader);
     Bool_t IsDdecay(int mpid);
     Bool_t IsBdecay(int mpid);
@@ -104,6 +104,9 @@ private:
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
     Int_t NembMCeta; // # of process in MC (no GEANT process)
    
+    TF1 *fPi3040;
+    TF1 *fEta3040;
+
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fCent;//! centrality
