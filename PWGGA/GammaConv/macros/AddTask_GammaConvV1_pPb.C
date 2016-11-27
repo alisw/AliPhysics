@@ -107,11 +107,8 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
   }
   
-  
   Int_t isHeavyIon = 2;
-  //if (additionalTrainConfig.Atoi() > 0){
-  //  trainConfig = trainConfig + additionalTrainConfig.Atoi();
-  //}  
+  
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
