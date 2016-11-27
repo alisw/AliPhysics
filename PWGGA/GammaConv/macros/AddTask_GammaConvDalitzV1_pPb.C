@@ -39,7 +39,8 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 					TString cutnumberAODBranch = "0000000060084001001500000",
 					Bool_t enableV0findingEffi = kFALSE,
 					Int_t   enableMatBudWeightsPi0          = 0,              // 1 = three radial bins, 2 = 10 radial bins
-					TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
+					TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
+					TString   additionalTrainConfig       = "0"
 				 
                                   ) {
 	cout<<"*********Parameters*******"<<endl;
@@ -53,6 +54,52 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 	cout<<"cutnumberAODBranch: "<<cutnumberAODBranch.Data()<<endl;
 	cout<<"enableMatBudWeightsPi0: "<<enableMatBudWeightsPi0<<endl;
 	cout<<"filenameMatBudWeights: "<<filenameMatBudWeights.Data()<<endl;
+	
+	
+	//parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvDalitzV1_pPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout<< tempStr.Data()<<endl;
+      
+      if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
+        TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
+	if(fileNameMatBudWeightsArr->GetEntries()<1 ){cout<<"ERROR: AddTask_GammaConvDalitzV1_pPb when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl; return;}  
+	 TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
+	 TString  oldfileName  = oldMatObjStr->GetString();
+	 TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
+	 cout<<newFileName.Data()<<endl;
+	 if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
+	 filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
+	 cout << "INFO: AddTask_GammaConvDalitzV1_pPb the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+	 }
+      }
+    }
+  }
+  
+  
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaConvDalitzV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
+  
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	Int_t isHeavyIon = 2;
 
@@ -421,7 +468,12 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202222710", "0263103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	Prim DCAxy > 1 cm
 		cuts.AddCut("80000113", "00200009360300007200004000", "20405400133202223710", "0263103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	Prim ITS cluster kFirst     
 		cuts.AddCut("80000113", "00200009360300007200004000", "20405400833202223710", "0263103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	Prim ITS cluster kBoth
-       }
+       }  else if ( trainConfig == 48 ){
+		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202223710", "0263103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	New standard
+		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202223710", "0163103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection   Background gammas
+		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202223710", "0263605500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	Y < 0.75
+		cuts.AddCut("80000113", "04200009360300007200004000", "20405400235202223710", "0263107500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	n < 0.75
+	} 
        
 	if(!cuts.AreValid()){
 	cout << "\n\n****************************************************" << endl;
@@ -460,7 +512,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		analysisEventCuts[i] = new AliConvEventCuts();
 		if(  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 || ( trainConfig >= 24 && trainConfig <=36 )  || trainConfig == 38 
 		     || trainConfig == 39 || trainConfig == 40 || trainConfig == 41  || trainConfig == 42 || trainConfig == 43 || trainConfig == 44 || trainConfig == 45    || trainConfig == 46
-		     || trainConfig == 47 ){
+		     || trainConfig == 47 || trainConfig == 48){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
