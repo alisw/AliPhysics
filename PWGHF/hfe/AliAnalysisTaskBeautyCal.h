@@ -101,6 +101,8 @@ private:
     Int_t fcentMax; // max. centrality
     
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
+    Int_t NembMCpi0; // # of process in MC (no GEANT process)
+    Int_t NembMCeta; // # of process in MC (no GEANT process)
    
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
@@ -148,7 +150,13 @@ private:
     TH1D        *fHistPhoReco0;//!ele cand SPD or
     TH1D        *fHistPhoReco1;//!ele cand SPD or
     TH1D        *fHistPhoReco2;//!ele cand SPD or
-    
+    TH1D        *fHistPhoPi0;
+    TH1D        *fHistPhoPi1;
+    TH1D        *fHistPhoEta0;
+    TH1D        *fHistPhoEta1;
+
+    TH2D        *fHistMCorgPi0;
+    TH2D        *fHistMCorgEta;
     TH1D        *fHistMCorgD;
     TH1D        *fHistMCorgB;
     TH2D        *fHistDCAinc;//!ele cand SPD or
@@ -160,6 +168,8 @@ private:
     TH2D        *fHistDCAde;//!ele cand SPD or
     TH2D        *fHistDCAbe;//!ele cand SPD or
     TH2D        *fHistDCApe;//!ele cand SPD or
+    TH2D        *fHistDCAdeInc;//!ele cand SPD or
+    TH2D        *fHistDCAbeInc;//!ele cand SPD or
     TH2D        *fHistDCAdeSemi;//!ele cand SPD or
     TH2D        *fHistDCAbeSemi;//!ele cand SPD or
     TH2D        *fHistDCApeSemi;//!ele cand SPD or
