@@ -97,6 +97,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
+  fPi3040(0),
+  fEta3040(0),
   fOutputList(0),
   fNevents(0),
   fCent(0),
@@ -209,6 +211,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
+  fPi3040(0),
+  fEta3040(0),
   fOutputList(0),
   fNevents(0),
   fCent(0), 
@@ -351,6 +355,15 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   
   fhfeCuts->Initialize(fCFM);
 
+  ////////////////////////
+  //  Define weight for pho reco
+  ////////////////////////
+
+  fPi3040 = new TF1("fPi3040","[0]*x/pow([1]+x/[2],[3])");
+  fPi3040->SetParameters(2.75644e+01,5.61489e-01,3.19968e+00,7.12779e+00);
+
+  fEta3040 = new TF1("fEta3040","[0]*x/pow([1]+x/[2],[3])");
+  fEta3040->SetParameters(1.95445e+01,6.30919e-01,2.99844e+00,6.97443e+00);
 
   ////////////////
   //Output list//
@@ -497,15 +510,19 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fOutputList->Add(fHistPhoReco2);
 
   fHistPhoPi0 = new TH1D("fHistPhoPi0", "total pi0 in sample; p_{T}(GeV/c)", 40,0,40);
+  fHistPhoPi0->Sumw2(); 
   fOutputList->Add(fHistPhoPi0);
 
   fHistPhoPi1 = new TH1D("fHistPhoPi1", "reco pi0 in sample; p_{T}(GeV/c)", 40,0,40);
+  fHistPhoPi1->Sumw2(); 
   fOutputList->Add(fHistPhoPi1);
 
   fHistPhoEta0 = new TH1D("fHistPhoEta0", "total Eta in sample; p_{T}(GeV/c)", 40,0,40);
+  fHistPhoEta0->Sumw2(); 
   fOutputList->Add(fHistPhoEta0);
 
   fHistPhoEta1 = new TH1D("fHistPhoEta1", "reco Eta in sample; p_{T}(GeV/c)", 40,0,40);
+  fHistPhoEta1->Sumw2(); 
   fOutputList->Add(fHistPhoEta1);
 
   fHistMCorgPi0 = new TH2D("fHistMCorgPi0","MC org Pi0",2,-0.5,1.5,100,0,50);
@@ -922,7 +939,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
       pdg = fMCparticle->GetPdgCode();
       if(TMath::Abs(pdg)==11)pid_ele = 1.0;
-      if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM);
+      if(pid_ele==1.0)FindMother(fMCparticle, ilabelM, pidM, pTmom);
 
       pid_eleD = IsDdecay(pidM);
       pid_eleB = IsBdecay(pidM);
@@ -940,7 +957,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(pidM==22) // from pi0 & eta
         {
           AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
-          FindMother(fMCparticleM, ilabelM, pidM);
+          FindMother(fMCparticleM, ilabelM, pidM, pTmom);
 
           if(pidM==111)
             {
@@ -987,6 +1004,10 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           if(pid_eleB)pid_eleB = kFALSE;
          }
       }
+
+    Double_t WeightPho = -1.0;
+    if(iEmbPi0)WeightPho = fPi3040->Eval(pTmom);
+    if(iEmbEta)WeightPho = fEta3040->Eval(pTmom);
 
     ////////////////////
     //Track properties//
@@ -1120,14 +1141,14 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         if(pid_eleP)
           {
            fHistPhoReco0->Fill(track->Pt()); // reco pho
-           if(iEmbPi0)fHistPhoPi0->Fill(track->Pt()); // reco pho
-           if(iEmbEta)fHistPhoEta0->Fill(track->Pt()); // reco pho
+           if(iEmbPi0)fHistPhoPi0->Fill(track->Pt(),WeightPho); // reco pho
+           if(iEmbEta)fHistPhoEta0->Fill(track->Pt(),WeightPho); // reco pho
 
            if(fFlagNonHFE)
              {
               fHistPhoReco1->Fill(track->Pt()); // reco pho
-              if(iEmbPi0)fHistPhoPi1->Fill(track->Pt()); // reco pho
-              if(iEmbEta)fHistPhoEta1->Fill(track->Pt()); // reco pho
+              if(iEmbPi0)fHistPhoPi1->Fill(track->Pt(),WeightPho); // reco pho
+              if(iEmbEta)fHistPhoEta1->Fill(track->Pt(),WeightPho); // reco pho
              }
            else
              {
@@ -1434,7 +1455,7 @@ void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
           int ilabelMass = 0;
           int pidMass = 0;
           double pTMass = -1.0;
-          FindMother(fMCparticleAss, ilabelMass, pidMass);
+          FindMother(fMCparticleAss, ilabelMass, pidMass, pTMass);
           Bool_t pid_eleDass = IsDdecay(pidMass);
           Bool_t pid_eleBass = IsBdecay(pidMass);
 
@@ -1446,7 +1467,7 @@ void AliAnalysisTaskBeautyCal::ElectronAway(Int_t itrack, AliVTrack *track)
 }
 
 
-void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, int &pid)
+void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom)
 {
 
  if(part->GetMother()>-1)
@@ -1454,6 +1475,7 @@ void AliAnalysisTaskBeautyCal::FindMother(AliAODMCParticle* part, int &label, in
     label = part->GetMother();
     AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
     pid = TMath::Abs(partM->GetPdgCode());
+    ptmom = partM->Pt();
    }
  else
    {
@@ -1562,7 +1584,7 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
       Int_t pdgMom = -99;
       Int_t labelMom = -1;
       Double_t pTmom = -1.0;
-      FindMother(fMCparticle,labelMom,pdgMom);
+      FindMother(fMCparticle,labelMom,pdgMom,pTmom);
       if(pdgMom==-99 && iEnhance)iHijing = 0;  // particles from enhance
       if(pdgMom>0 && iEnhance)iHijing = -1;  // particles from enhance but feeddown
       //if(pdgGen==111)cout << "pdg = " << pdgGen << " ; enhance = " << iEnhance << " ; HIJIJG = " << iHijing << " ; mother = " << pdgMom  << endl;
