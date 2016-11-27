@@ -129,7 +129,6 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   TIter nextPartColl(&fParticleCollArray);
   while ((cont = static_cast<AliEmcalContainer*>(nextPartColl()))) {
-    //fHistManager.CreateHistoGroup(cont->GetArrayName());
     if (!fParticleLevel && fIsMC) {
       for (Int_t i = 0; i < fNcentBins; i++) {
         histname = TString::Format("%s/fHistTrNegativeLabels_%d", cont->GetArrayName().Data(), i);
@@ -201,10 +200,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
   TIter nextClusColl(&fClusterCollArray);
   while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
-    //fHistManager.CreateHistoGroup(cont->GetArrayName());
     for (Int_t i = 0; i < fNcentBins; i++) {
-      //fHistManager.CreateHistoGroup("BySM", cont->GetArrayName());
-
       const Int_t nSM = 20;
 
       for (Int_t sm = 0; sm < nSM; sm++) {
@@ -248,7 +244,7 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
 
       histname = TString::Format("%s/fHistClusTimeEnergy_%d", cont->GetArrayName().Data(), i);
       title = histname + ";#it{E}_{cluster} (GeV);time (s);counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, -1e-6, 1e-6);
+      fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, -5e-6, 5e-6);
 
       Int_t nbins = fMaxCellsInCluster;
       while (nbins > nPtBins) nbins /= 2;
@@ -275,11 +271,14 @@ void AliAnalysisTaskEmcalJetQA::UserCreateOutputObjects()
   }
 
   if (!fCaloCellsName.IsNull()) {
-    //fHistManager.CreateHistoGroup(fCaloCellsName);
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = TString::Format("%s/fHistCellsAbsIdEnergy_%d", fCaloCellsName.Data(), i);
       title = histname + ";cell abs. Id;#it{E}_{cell} (GeV);counts";
       fHistManager.CreateTH2(histname.Data(), title.Data(), 20000,0,20000,(Int_t)(nPtBins / 2), 0, fMaxPt / 2);
+
+      histname = TString::Format("%s/fHistCellsAbsIdTime_%d", fCaloCellsName.Data(), i);
+      title = histname + ";cell abs. Id;#it{time}_{cell} (s);counts";
+      fHistManager.CreateTH2(histname.Data(), title.Data(), 20000,0,20000,(Int_t)(nPtBins / 2), -5e-6, 5e-6);
     }
   }
 
@@ -636,18 +635,21 @@ Int_t AliAnalysisTaskEmcalJetQA::DoCellLoop()
 
   if (!fCaloCells) return 0;
 
-  TString histname = TString::Format("%s/fHistCellsAbsIdEnergy_%d", fCaloCellsName.Data(), fCentBin);
+  TString histname_en = TString::Format("%s/fHistCellsAbsIdEnergy_%d", fCaloCellsName.Data(), fCentBin);
+  TString histname_tm = TString::Format("%s/fHistCellsAbsIdTime_%d", fCaloCellsName.Data(), fCentBin);
 
   const Int_t ncells = fCaloCells->GetNumberOfCells();
   Int_t nAccCells = 0;
 
   for (Int_t pos = 0; pos < ncells; pos++) {
     Float_t amp   = fCaloCells->GetAmplitude(pos);
+    Float_t time   = fCaloCells->GetTime(pos);
     Int_t   absId = fCaloCells->GetCellNumber(pos);
 
     if (amp < fCellEnergyCut) continue;
 
-    fHistManager.FillTH2(histname, absId,amp);
+    fHistManager.FillTH2(histname_en, absId, amp);
+    fHistManager.FillTH2(histname_tm, absId, time);
     nAccCells++;
   } 
 
