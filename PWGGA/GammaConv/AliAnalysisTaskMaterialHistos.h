@@ -92,7 +92,8 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hNGoodESDTracks09_14;        //!
 		TH2F**            hESDConversionMappingRPhi;      //!
 		TH2F**            hESDConversionMappingRZ;        //!
-		TH1F**            hESDConversionR;                //!  
+		TH1F**            hESDConversionR;                //! 
+		TH2F**            hESDConversionPtvsR;                //!   
 		TH2F**            hESDConversionAsymP;            //!  
 		TH1F**            hESDConversionMidPtR;           //!
 		TH1F**            hESDConversionHighPtR;           //!
@@ -172,7 +173,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 8);
+        ClassDef(AliAnalysisTaskMaterialHistos, 9);
 };
 
 #endif
