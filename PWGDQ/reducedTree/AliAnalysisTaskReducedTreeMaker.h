@@ -51,6 +51,7 @@ public:
   void ConfigAnalysisUtils(Int_t minVtxContrib=1, Double_t maxVtxZ=10.0, Bool_t cutOnSPDVtxZ=kTRUE) {
     fMinVtxContributors = minVtxContrib; fMaxVtxZ=maxVtxZ; fCutOnSPDVtxZ=cutOnSPDVtxZ;
   }
+  void SetRejectPileup(Bool_t flag=kTRUE) {fRejectPileup = flag;}
   
   // Cuts for selection of event to be written to tree
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
