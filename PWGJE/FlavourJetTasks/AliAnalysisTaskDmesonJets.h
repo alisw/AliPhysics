@@ -136,7 +136,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information that can be easily passed to a function.
   class AliDmesonJetInfo {
   public:
-    AliDmesonJetInfo() : fDmesonParticle(0), fD(), fSoftPionPt(0), fInvMass2Prong(0), fJets(), fMCLabel(-1), fReconstructed(kFALSE) {}
+    AliDmesonJetInfo() : fDmesonParticle(0), fD(), fSoftPionPt(0), fInvMass2Prong(0), fJets(), fMCLabel(-1), fReconstructed(kFALSE), fParton(0), fOrigin(kUnknownQuark) {}
     AliDmesonJetInfo(const AliDmesonJetInfo &source);
     AliDmesonJetInfo& operator=(const AliDmesonJetInfo& source);
     virtual ~AliDmesonJetInfo() {;}
@@ -149,6 +149,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
                        fJets                    ; //!<! list of jets
     Int_t              fMCLabel                 ; //!<! MC label, i.e. index of the generator level D meson (only for detector level D meson candidates)
     Bool_t             fReconstructed           ; //!<! Whether this D meson was reconstructed (only for particle level D mesons)
+    AliAODMCParticle  *fParton                  ; //!<! pointer to the original hard scattered parton (only for particle level D mesons)
+    EMesonOrigin_t     fOrigin                  ; //!<! origin of the D meson (only for particle level D mesons)
 
     const AliJetInfo* GetJet(std::string n) const;
     AliJetInfo* GetJet(std::string n);
@@ -212,13 +214,41 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     /// Transverse momentum of the D meson in GeV/c
     Double32_t   fPt     ; //[0,204.8,12]
-    /// Eta of the jet
+    /// Eta of the D meson
     Double32_t   fEta    ; //[-2.048,2.048,10]
-    /// Phi of the jet
+    /// Phi of the D meson
     Double32_t   fPhi    ; //[0,2*pi,10]
 
     /// \cond CLASSIMP
     ClassDef(AliDmesonInfoSummary, 2);
+    /// \endcond
+  };
+
+  /// \class AliDmesonInfoSummary
+  /// \brief Lightweight class that encapsulates D meson jets
+  ///
+  /// This class encapsulates D meson
+  /// information in a very compact data structure (72 bits)
+  class AliDmesonMCInfoSummary : public AliDmesonInfoSummary {
+  public:
+    AliDmesonMCInfoSummary() : AliDmesonInfoSummary(), fOrigin(0), fPartonPt(0), fPartonEta(0), fPartonPhi(0) {;}
+    AliDmesonMCInfoSummary(const AliDmesonJetInfo& source);
+    virtual ~AliDmesonMCInfoSummary() {}
+
+    virtual void Reset();
+    virtual void Set(const AliDmesonJetInfo& source);
+
+    /// Parton type (using one of the enum constants of EMesonOrigin_t)
+    Double32_t   fOrigin       ; //[0, 8, 4]
+    /// Transverse momentum of the originating parton
+    Double32_t   fPartonPt     ; //[0,819.2,14]
+    /// Eta of the parton
+    Double32_t   fPartonEta    ; //[-32.768,32.768,14]
+    /// Phi of the parton
+    Double32_t   fPartonPhi    ; //[0,2*pi,10]
+
+    /// \cond CLASSIMP
+    ClassDef(AliDmesonMCInfoSummary, 1);
     /// \endcond
   };
 
@@ -331,7 +361,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   public:
     typedef std::pair<AliJetInfo*, Double_t> jet_distance_pair;
 
-    static EMesonOrigin_t CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray);
+    static std::pair<AliAnalysisTaskDmesonJets::EMesonOrigin_t, AliAODMCParticle*> CheckOrigin(const AliAODMCParticle* part, TClonesArray* mcArray, Bool_t firstParton=kFALSE);
     static EMesonDecayChannel_t CheckDecayChannel(const AliAODMCParticle* part, TClonesArray* mcArray);
 
     AnalysisEngine();
