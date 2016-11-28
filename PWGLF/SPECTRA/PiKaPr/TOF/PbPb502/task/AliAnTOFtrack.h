@@ -178,6 +178,64 @@ public:
     if(id > kExpSpecies) ::Fatal("GetDeltaSigma", "Index required is out of bound");
     return GetDeltaT(hypo)/fTOFExpSigma[id];
   }
+
+  //T0 Methods
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF
+  Bool_t IsT0TOF(){
+    if(GetMaskBit(fTrkMask, kT0_0)) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 T0A
+  Bool_t IsT0A(){
+    if(GetMaskBit(fTrkMask, kT0_1)) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 T0C
+  Bool_t IsT0C(){
+    if(GetMaskBit(fTrkMask, kT0_2)) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 Fill
+  Bool_t IsT0Fill(){
+    if(!GetMaskBit(fTrkMask, kT0_0) && !GetMaskBit(fTrkMask, kT0_1) && !GetMaskBit(fTrkMask, kT0_2)) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF and T0 T0A
+  Bool_t IsT0TOF_T0A(){
+    if(IsT0TOF() && IsT0A()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF and T0 T0C
+  Bool_t IsT0TOF_T0C(){
+    if(IsT0TOF() && IsT0C()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 T0A and T0 T0C
+  Bool_t IsT0A_T0C(){
+    if(IsT0A() && IsT0C()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF, T0 T0A and T0 T0C
+  Bool_t IsT0TOF_T0A_T0C(){
+    if(IsT0TOF() && IsT0A() && IsT0C()) return kTRUE;
+    return kFALSE;
+  }
   
   //Check che cut variation
   Bool_t PassStdCut();
