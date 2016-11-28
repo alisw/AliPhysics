@@ -241,7 +241,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEvsTrackEGammaSubCharged(NULL),
   fHistClusterEvsTrackEConv(NULL),
   fHistClusterENMatchesNeutral(NULL),
-  fHistClusterENMatchesCharged(NULL)
+  fHistClusterENMatchesCharged(NULL),
+  fHistClusterEvsTrackEPrimaryButNoElec(NULL),
+  fHistClusterEvsTrackSumEPrimaryButNoElec(NULL)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -404,7 +406,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEvsTrackEGammaSubCharged(NULL),
   fHistClusterEvsTrackEConv(NULL),
   fHistClusterENMatchesNeutral(NULL),
-  fHistClusterENMatchesCharged(NULL)
+  fHistClusterENMatchesCharged(NULL),
+  fHistClusterEvsTrackEPrimaryButNoElec(NULL),
+  fHistClusterEvsTrackSumEPrimaryButNoElec(NULL)
 {
   // Copy Constructor
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=ref.fCuts[jj];}
@@ -795,7 +799,6 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     }
     //----------------
     if(fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 ){
-      
         
       // QA histograms for track matching
       fHistClusterRBeforeQA                           = new TH1F(Form("R_Cluster_beforeClusterQA %s",GetCutNumber().Data()),"R of cluster",200,400,500);
@@ -858,7 +861,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistograms->Add(fHistClusterdPhidPtAfterQA);
       
       if(fIsMC > 0){
-        fHistClusterdEtadPtTrueMatched                = new TH2F(Form("dEtaVsPt_TrueMatched %s",GetCutNumber().Data()),"dEtaVsPt_TrueMatched",nEtaBins,EtaRange[0],EtaRange[1], 
+        fHistClusterdEtadPtTrueMatched                = new TH2F(Form("dEtaVsPt_TrueMatched %s",GetCutNumber().Data()),"dEtaVsPt_TrueMatched",nEtaBins,EtaRange[0],EtaRange[1],
                                                                   nBinsModuleECoarse,  minClusterELog, maxClusterELog);
         SetLogBinningYTH2(fHistClusterdEtadPtTrueMatched);
         fHistograms->Add(fHistClusterdEtadPtTrueMatched);
@@ -870,110 +873,6 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
                                                                   nBinsModuleECoarse,  minClusterELog, maxClusterELog);
         SetLogBinningYTH2(fHistClusterdPhidPtNegTracksTrueMatched);
         fHistograms->Add(fHistClusterdPhidPtNegTracksTrueMatched);
-
-        // TM efficiency histograms
-        fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterEFine, minClusterELog, maxClusterELog, 22, -0.5, 21.5);
-        SetLogBinningXTH2(fHistClusterTMEffiInput);
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(1,"All cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(2,"Ch cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(3,"Ne cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(4,"Ne cl sub ch");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(5,"Ga cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(6,"Ga cl sub ch");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(7,"conv cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(8,"Ch cl prim");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(9,"El cl");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(10,"All cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(11,"Ch cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(12,"Ch cl match w lead");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(13,"Ne cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(14,"Ne cl sub ch match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(15,"Ga cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(16,"Ga cl sub ch match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(17,"conv cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(18,"conv cl match w lead");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(19,"Ch cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(20,"Ch cl match w lead");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(21,"El cl match");
-        fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"El cl match w lead");
-        fHistClusterTMEffiInput->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistograms->Add(fHistClusterTMEffiInput);
-        
-        fHistClusterEvsTrackECharged                  = new TH2F(Form("ClusterE_TrackE_ChargedCluster %s",GetCutNumber().Data()),"ClusterE TrackE ChargedCluster", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
-        SetLogBinningXTH2(fHistClusterEvsTrackECharged);
-        SetLogBinningYTH2(fHistClusterEvsTrackECharged);
-        fHistClusterEvsTrackECharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterEvsTrackECharged->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
-        fHistograms->Add(fHistClusterEvsTrackECharged);
-        fHistClusterEvsTrackEChargedLead              = new TH2F(Form("ClusterE_TrackE_ChargedCluster_LeadMatched %s",GetCutNumber().Data()),"ClusterE TrackE ChargedCluster LeadMatched", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
-        SetLogBinningXTH2(fHistClusterEvsTrackEChargedLead);
-        SetLogBinningYTH2(fHistClusterEvsTrackEChargedLead);
-        fHistClusterEvsTrackEChargedLead->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterEvsTrackEChargedLead->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
-        fHistograms->Add(fHistClusterEvsTrackEChargedLead);
-        fHistClusterEvsTrackENeutral                  = new TH2F(Form("ClusterE_TrackE_NeutralCluster %s",GetCutNumber().Data()),"ClusterE TrackE NeutralCluster", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
-        SetLogBinningXTH2(fHistClusterEvsTrackENeutral);
-        SetLogBinningYTH2(fHistClusterEvsTrackENeutral);
-        fHistClusterEvsTrackENeutral->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterEvsTrackENeutral->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
-        fHistograms->Add(fHistClusterEvsTrackENeutral);
-        fHistClusterEvsTrackENeutralSubCharged        = new TH2F(Form("ClusterE_TrackE_NeutralClusterSubCharged %s",GetCutNumber().Data()),"ClusterE TrackE NeutralCluster SubCharged", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
-        SetLogBinningXTH2(fHistClusterEvsTrackENeutralSubCharged);
-        SetLogBinningYTH2(fHistClusterEvsTrackENeutralSubCharged);
-        fHistClusterEvsTrackENeutralSubCharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterEvsTrackENeutralSubCharged->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
-        fHistograms->Add(fHistClusterEvsTrackENeutralSubCharged);
-        fHistClusterEvsTrackEGamma                    = new TH2F(Form("ClusterE_TrackE_GammaCluster %s",GetCutNumber().Data()),"ClusterE TrackE GammaCluster", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
-        SetLogBinningXTH2(fHistClusterEvsTrackEGamma);
-        SetLogBinningYTH2(fHistClusterEvsTrackEGamma);
-        fHistClusterEvsTrackEGamma->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterEvsTrackEGamma->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
-        fHistograms->Add(fHistClusterEvsTrackEGamma);
-        fHistClusterEvsTrackEGammaSubCharged          = new TH2F(Form("ClusterE_TrackE_GammaClusterSubCharged %s",GetCutNumber().Data()),"ClusterE TrackE GammaCluster SubCharged", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
-        SetLogBinningXTH2(fHistClusterEvsTrackEGammaSubCharged);
-        SetLogBinningYTH2(fHistClusterEvsTrackEGammaSubCharged);
-        fHistClusterEvsTrackEGammaSubCharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterEvsTrackEGammaSubCharged->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
-        fHistograms->Add(fHistClusterEvsTrackEGammaSubCharged);
-        fHistClusterEvsTrackEConv                    = new TH2F(Form("ClusterE_TrackE_ConvCluster %s",GetCutNumber().Data()),"ClusterE TrackE ConvCluster", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
-        SetLogBinningXTH2(fHistClusterEvsTrackEConv);
-        SetLogBinningYTH2(fHistClusterEvsTrackEConv);
-        fHistClusterEvsTrackEConv->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterEvsTrackEConv->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
-        fHistograms->Add(fHistClusterEvsTrackEConv);
-        
-        fHistClusterENMatchesNeutral                  = new TH2F(Form("ClusterE_NMatches_NeutralCluster %s",GetCutNumber().Data()),"ClusterE NMatches NeutralCluster", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, 20, -0.5, 19.5);
-        SetLogBinningXTH2(fHistClusterENMatchesNeutral);
-        fHistClusterENMatchesNeutral->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterENMatchesNeutral->GetYaxis()->SetTitle("#it{N}_{matches}");
-        fHistograms->Add(fHistClusterENMatchesNeutral);
-        fHistClusterENMatchesCharged                  = new TH2F(Form("ClusterE_NMatches_ChargedCluster %s",GetCutNumber().Data()),"ClusterE NMatches ChargedCluster", 
-                                                                 nBinsClusterEFine, minClusterELog, maxClusterELog, 20, -0.5, 19.5);
-        SetLogBinningXTH2(fHistClusterENMatchesCharged);
-        fHistClusterENMatchesCharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
-        fHistClusterENMatchesCharged->GetYaxis()->SetTitle("#it{N}_{matches}");
-        fHistograms->Add(fHistClusterENMatchesCharged);        
-
-        if(fIsMC > 1){
-          fHistClusterTMEffiInput->Sumw2();
-          fHistClusterEvsTrackECharged->Sumw2();
-          fHistClusterEvsTrackEChargedLead->Sumw2();
-          fHistClusterEvsTrackENeutral->Sumw2();
-          fHistClusterEvsTrackENeutralSubCharged->Sumw2();
-          fHistClusterEvsTrackEGamma->Sumw2();
-          fHistClusterEvsTrackEGammaSubCharged->Sumw2();
-          fHistClusterEvsTrackEConv->Sumw2();
-          fHistClusterENMatchesNeutral->Sumw2();
-          fHistClusterENMatchesCharged->Sumw2();
-        }
       }
 
       // QA histos for shower shape correlations
@@ -1010,6 +909,128 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterM20M02AfterQA->Sumw2();
       }
       //----------------
+    }
+  }
+  if( fUseDistTrackToCluster && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
+    // TM efficiency histograms
+    fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterEFine, minClusterELog, maxClusterELog, 22, -0.5, 21.5);
+    SetLogBinningXTH2(fHistClusterTMEffiInput);
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(1,"All cl");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(2,"Ch cl");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(3,"Ne cl");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(4,"Ne cl sub ch");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(5,"Ga cl");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(6,"Ga cl sub ch");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(7,"conv cl");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(8,"Ch cl prim");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(9,"El cl");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(10,"All cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(11,"Ch cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(12,"Ch cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(13,"Ne cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(14,"Ne cl sub ch match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(15,"Ga cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(16,"Ga cl sub ch match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(17,"conv cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(18,"conv cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(19,"Ch cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(20,"Ch cl match w lead");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(21,"El cl match");
+    fHistClusterTMEffiInput->GetYaxis()->SetBinLabel(22,"El cl match w lead");
+    fHistClusterTMEffiInput->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistograms->Add(fHistClusterTMEffiInput);
+
+    fHistClusterEvsTrackECharged                  = new TH2F(Form("ClusterE_TrackE_ChargedCluster %s",GetCutNumber().Data()),"ClusterE TrackE ChargedCluster",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackECharged);
+    SetLogBinningYTH2(fHistClusterEvsTrackECharged);
+    fHistClusterEvsTrackECharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackECharged->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackECharged);
+    fHistClusterEvsTrackEChargedLead              = new TH2F(Form("ClusterE_TrackE_ChargedCluster_LeadMatched %s",GetCutNumber().Data()),"ClusterE TrackE ChargedCluster LeadMatched",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackEChargedLead);
+    SetLogBinningYTH2(fHistClusterEvsTrackEChargedLead);
+    fHistClusterEvsTrackEChargedLead->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackEChargedLead->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackEChargedLead);
+    fHistClusterEvsTrackENeutral                  = new TH2F(Form("ClusterE_TrackE_NeutralCluster %s",GetCutNumber().Data()),"ClusterE TrackE NeutralCluster",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackENeutral);
+    SetLogBinningYTH2(fHistClusterEvsTrackENeutral);
+    fHistClusterEvsTrackENeutral->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackENeutral->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackENeutral);
+    fHistClusterEvsTrackENeutralSubCharged        = new TH2F(Form("ClusterE_TrackE_NeutralClusterSubCharged %s",GetCutNumber().Data()),"ClusterE TrackE NeutralCluster SubCharged",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackENeutralSubCharged);
+    SetLogBinningYTH2(fHistClusterEvsTrackENeutralSubCharged);
+    fHistClusterEvsTrackENeutralSubCharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackENeutralSubCharged->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackENeutralSubCharged);
+    fHistClusterEvsTrackEGamma                    = new TH2F(Form("ClusterE_TrackE_GammaCluster %s",GetCutNumber().Data()),"ClusterE TrackE GammaCluster",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackEGamma);
+    SetLogBinningYTH2(fHistClusterEvsTrackEGamma);
+    fHistClusterEvsTrackEGamma->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackEGamma->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackEGamma);
+    fHistClusterEvsTrackEGammaSubCharged          = new TH2F(Form("ClusterE_TrackE_GammaClusterSubCharged %s",GetCutNumber().Data()),"ClusterE TrackE GammaCluster SubCharged",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackEGammaSubCharged);
+    SetLogBinningYTH2(fHistClusterEvsTrackEGammaSubCharged);
+    fHistClusterEvsTrackEGammaSubCharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackEGammaSubCharged->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackEGammaSubCharged);
+    fHistClusterEvsTrackEConv                    = new TH2F(Form("ClusterE_TrackE_ConvCluster %s",GetCutNumber().Data()),"ClusterE TrackE ConvCluster",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackEConv);
+    SetLogBinningYTH2(fHistClusterEvsTrackEConv);
+    fHistClusterEvsTrackEConv->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackEConv->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackEConv);
+
+    fHistClusterENMatchesNeutral                  = new TH2F(Form("ClusterE_NMatches_NeutralCluster %s",GetCutNumber().Data()),"ClusterE NMatches NeutralCluster",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, 20, -0.5, 19.5);
+    SetLogBinningXTH2(fHistClusterENMatchesNeutral);
+    fHistClusterENMatchesNeutral->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterENMatchesNeutral->GetYaxis()->SetTitle("#it{N}_{matches}");
+    fHistograms->Add(fHistClusterENMatchesNeutral);
+    fHistClusterENMatchesCharged                  = new TH2F(Form("ClusterE_NMatches_ChargedCluster %s",GetCutNumber().Data()),"ClusterE NMatches ChargedCluster",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, 20, -0.5, 19.5);
+    SetLogBinningXTH2(fHistClusterENMatchesCharged);
+    fHistClusterENMatchesCharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterENMatchesCharged->GetYaxis()->SetTitle("#it{N}_{matches}");
+    fHistograms->Add(fHistClusterENMatchesCharged);
+
+    fHistClusterEvsTrackEPrimaryButNoElec        = new TH2F(Form("ClusterE_TrackE_ChargedClusterNoElec %s",GetCutNumber().Data()),"ClusterE TrackE ChargedClusterNoElec",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackEPrimaryButNoElec);
+    SetLogBinningYTH2(fHistClusterEvsTrackEPrimaryButNoElec);
+    fHistClusterEvsTrackEPrimaryButNoElec->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackEPrimaryButNoElec->GetYaxis()->SetTitle("#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackEPrimaryButNoElec);
+    fHistClusterEvsTrackSumEPrimaryButNoElec        = new TH2F(Form("ClusterE_TrackSumE_ChargedClusterNoElec %s",GetCutNumber().Data()),"ClusterE TrackSumE ChargedClusterNoElec",
+                                                             nBinsClusterEFine, minClusterELog, maxClusterELog, nBinsClusterEFine, minClusterELog, maxClusterELog);
+    SetLogBinningXTH2(fHistClusterEvsTrackSumEPrimaryButNoElec);
+    SetLogBinningYTH2(fHistClusterEvsTrackSumEPrimaryButNoElec);
+    fHistClusterEvsTrackSumEPrimaryButNoElec->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterEvsTrackSumEPrimaryButNoElec->GetYaxis()->SetTitle("#sum#it{E}_{tr} (GeV)");
+    fHistograms->Add(fHistClusterEvsTrackSumEPrimaryButNoElec);
+
+    if(fIsMC > 1){
+      fHistClusterTMEffiInput->Sumw2();
+      fHistClusterEvsTrackECharged->Sumw2();
+      fHistClusterEvsTrackEChargedLead->Sumw2();
+      fHistClusterEvsTrackENeutral->Sumw2();
+      fHistClusterEvsTrackENeutralSubCharged->Sumw2();
+      fHistClusterEvsTrackEGamma->Sumw2();
+      fHistClusterEvsTrackEGammaSubCharged->Sumw2();
+      fHistClusterEvsTrackEConv->Sumw2();
+      fHistClusterENMatchesNeutral->Sumw2();
+      fHistClusterENMatchesCharged->Sumw2();
+      fHistClusterEvsTrackEPrimaryButNoElec->Sumw2();
+      fHistClusterEvsTrackSumEPrimaryButNoElec->Sumw2();
     }
   }
 
@@ -1440,7 +1461,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     leadMCLabel         = ((AliAODCaloCluster*)cluster)->GetLabel();
   
   // TM efficiency histograms before TM
-  if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && fUseDistTrackToCluster && !fDoLightOutput){
+  if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && fUseDistTrackToCluster){
     classification    = ClassifyClusterForTMEffi(cluster, event, mcEvent, isESD); 
     fHistClusterTMEffiInput->Fill(cluster->E(), 0., weight); //All cl 
     if (classification == 5 )
@@ -1477,7 +1498,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E());//2
       // TM efficiency histos after TM
-      if (fIsMC && isMC && !fDoLightOutput && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
+      if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)){
 
         fHistClusterTMEffiInput->Fill(cluster->E(), 9., weight);
         if (classification == 5 )
@@ -1507,11 +1528,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         Int_t idHighestPt = -1;
         Double_t ptMax    = -1;
         Double_t eMax     = -1;
+        Double_t eSum     = 0;
         Bool_t foundLead  = kFALSE;
         Double_t eLead    = -1;
         Int_t idLead      = -1;
         for (Int_t i = 0; i < (Int_t)labelsMatchedTracks.size(); i++){
           AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatchedTracks.at(i)));
+          eSum += currTrack->E();
           if (ptMax < currTrack->Pt()){
             ptMax               = currTrack->Pt();
             eMax                = currTrack->E();
@@ -1532,6 +1555,11 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         }
         if (classification == 5 || classification == 7 || classification == 6){
           fHistClusterEvsTrackECharged->Fill(cluster->E(), eMax, weight);
+          if (classification == 5 || classification == 7){
+            fHistClusterEvsTrackEPrimaryButNoElec->Fill(cluster->E(), eMax, weight);
+            fHistClusterEvsTrackSumEPrimaryButNoElec->Fill(cluster->E(), eSum, weight);
+          }
+
           if (foundLead ){
             if (classification == 5)
               fHistClusterTMEffiInput->Fill(cluster->E(), 11., weight); //Ch cl match w lead

@@ -1015,6 +1015,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     
     if(fTracking == 0){
       if(!(trk->TestFilterBit(1<<0))) continue;
+      if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
@@ -1209,13 +1210,19 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
 {
 
-  for(Int_t i=0; i<ntrg; i++) fTriggerInputsMC[i] = kFALSE;
-  fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  fTriggerInputsMC[0] = fL0inputs & (1 << 0);   //0VBA VZERO A
-  fTriggerInputsMC[1] = fL0inputs & (1 << 1);   //0VBC VZERO C
-  fTriggerInputsMC[2] = fL0inputs & (1 << 11);  //0OMU TOF two hits with topology
-  fTriggerInputsMC[3] = fL0inputs & (1 << 23);	//0OM2 TOF two hits
-						
+  for(Int_t i=0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
+  
+  UShort_t fTriggerAD = aod->GetADData()->GetTriggerBits();
+  UShort_t fTriggerVZERO = aod->GetVZEROData()->GetTriggerBits();
+  UInt_t fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
+  
+  fTriggerInputsMC[0] = fTriggerVZERO & (1 << 12); //0VBA VZERO A
+  fTriggerInputsMC[1] = fTriggerVZERO & (1 << 13); //0VBC VZERO C
+  fTriggerInputsMC[2] = fTriggerAD & (1 << 12);   //0UBA ADA
+  fTriggerInputsMC[3] = fTriggerAD & (1 << 13);   //0UBC ADC
+  fTriggerInputsMC[4] = fL0inputs & (1 << 22);  //0OMU TOF two hits with topology
+  fTriggerInputsMC[5] = fL0inputs & (1 << 19);	//0OM2 TOF two hits
+  					
   //SPD inputs
   const AliAODTracklets *mult = aod->GetMultiplicity();
   Int_t vPhiInner[20]; for (Int_t i=0; i<20; ++i) vPhiInner[i]=0;
@@ -1233,7 +1240,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
     }
   }
  
-  Int_t fired(0);
+  Int_t fired = 0;
   for (Int_t i(0); i<10; ++i) {
     for (Int_t j(0); j<2; ++j) {
       const Int_t k(2*i+j);
@@ -1246,13 +1253,13 @@ void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
     }
   }
   //0SMB - At least one hit in SPD
-  if (nOuter > 0 || nInner > 0) fTriggerInputsMC[4] = kTRUE;
+  if (nOuter > 0 || nInner > 0) fTriggerInputsMC[6] = kTRUE;
   //0SM2 - Two hits on outer layer
-  if (nOuter > 1) fTriggerInputsMC[5] = kTRUE;
+  if (nOuter > 1) fTriggerInputsMC[7] = kTRUE;
   //0STP - Topological SPD trigger (two pairs)
-  if (fired != 0) fTriggerInputsMC[6] = kTRUE;
+  if (fired != 0) fTriggerInputsMC[8] = kTRUE;
   //0SH1 - More then 6 hits on outer layer
-  if (nOuter >= 7) fTriggerInputsMC[7] = kTRUE;
+  if (nOuter >= 7) fTriggerInputsMC[9] = kTRUE;
   
 
   fGenPart->Clear("C");

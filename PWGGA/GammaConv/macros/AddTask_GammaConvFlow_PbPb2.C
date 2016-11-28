@@ -333,6 +333,13 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("54800013", "00200009007000008270400000"); //psipaircut = 0.07
     cuts.AddCut("54800013", "00200009007000008250600000"); //cos p angle cut = 0.9
     cuts.AddCut("54800013", "00200009007000008250300000"); //cos p angle cut = 0.75
+
+  } else if (trainConfig == 69) { //for dir. photon purity studies
+    cuts.AddCut("50100013", "00200009007000008250400000"); //chi2cut = 10
+  } else if (trainConfig == 70) { //for dir. photon purity studies
+    cuts.AddCut("50100013", "00200009007000008750400000"); //chi2cut = 10
+  } else if (trainConfig == 71) { //for dir. photon purity studies
+    cuts.AddCut("52400013", "00200009007000008750400000"); //chi2cut = 10
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
