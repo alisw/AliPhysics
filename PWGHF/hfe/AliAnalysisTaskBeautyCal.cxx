@@ -359,11 +359,11 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   //  Define weight for pho reco
   ////////////////////////
 
-  fPi3040 = new TF1("fPi3040","[0]*x/pow([1]+x/[2],[3])");
-  fPi3040->SetParameters(2.75644e+01,5.61489e-01,3.19968e+00,7.12779e+00);
+  fPi3040 = new TF1("fPi3040","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fPi3040->SetParameters(7.42299e+01,5.54794e-01,1.50584e+00,1.90916e+01,4.32718e+00);
 
-  fEta3040 = new TF1("fEta3040","[0]*x/pow([1]+x/[2],[3])");
-  fEta3040->SetParameters(1.95445e+01,6.30919e-01,2.99844e+00,6.97443e+00);
+  fEta3040 = new TF1("fEta3040","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fEta3040->SetParameters(3.35675e+01,3.23948e-01,2.31469e+00,1.46099e+01,3.87158e+00);
 
   ////////////////
   //Output list//
