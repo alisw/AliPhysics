@@ -24,6 +24,7 @@ def execute(command, printer=debug):
 if __name__ == "__main__":
   parser = ArgumentParser()
   parser.add_argument("--debug", "-d", dest="debug", action="store_true", default=False)
+  parser.add_argument("--exit-on-error", "-e", dest="exitOnError", action="store_true", default=False)
   parser.add_argument("--variants", default=[])
   parser.add_argument("--dry-run", "-n", dest="dryRun", action="store_true", default=False)
   parser.add_argument("--cfg", "-c", dest="cfg", default="test/test.cfg")
@@ -60,7 +61,7 @@ if __name__ == "__main__":
       step.setdefault("cwd", test["cwd"])
       step.setdefault("prefix", "")
       step.setdefault("variants", {"default": {}})
-      step.setdefault("driver", "[ -e %(cfg)s ]; aliroot -b -q %(cfg)s 2>&1 | tee %(out)s")
+      step.setdefault("driver", "[ -e %(cfg)s ]; %(variant_prefix)saliroot -b -q %(cfg)s 2>&1 | tee %(out)s")
       for (name, variant) in step["variants"].items():
         suffix = name == "default" and ".log" or "_%s.log" % name
         variant.setdefault("out", step["lower_name"] + suffix)
@@ -71,7 +72,8 @@ if __name__ == "__main__":
 
   currentCwd = ""
   for (n, test) in runnable:
-    script = "set -e\nset -o pipefail\n"
+    script = ""
+    if args.exitOnError: script += "set -e\nset -o pipefail\n"
     if args.debug: script += "set -x\n"
     script += "# Running Test %s\n" % n
     script += format(test.get("setup", DEFAULT_SETUP), **test) + "\n"
@@ -87,8 +89,10 @@ if __name__ == "__main__":
           continue
         script += "# Variant %s\n" % variantName
         script += variant.get("pre", DEFAULT_PRE) % variant + "\n"
-        script += format(variant["prefix"], **variant)
-        script += format(variant["driver"],  **variant) + "\n"
+        if "%(variant_prefix)s" not in variant["driver"]:
+          variant["driver"] = "%(variant_prefix)s" + variant["driver"]
+        pref = format(variant["prefix"], **variant)
+        script += format(variant["driver"], variant_prefix=pref, **variant) + "\n"
         script += variant.get("post", DEFAULT_POST) % variant +"\n"
     test["script"] = script
 
