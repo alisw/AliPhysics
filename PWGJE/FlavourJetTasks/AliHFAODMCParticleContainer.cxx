@@ -163,16 +163,16 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part, T
 
   if (!part->IsPrimary()) return kFALSE;
 
-  AliAnalysisTaskDmesonJets::EMesonOrigin_t origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
+  auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
 
   if (histOrigin) {
-    UInt_t rs = origin;
+    UInt_t rs = origin.first;
     UShort_t p = 0;
     while (rs >>= 1) { p++; }
     histOrigin->Fill(p);
   }
 
-  if ((origin & fRejectedOrigin) != 0) return kFALSE;
+  if ((origin.first & fRejectedOrigin) != 0) return kFALSE;
 
   AliAnalysisTaskDmesonJets::EMesonDecayChannel_t decayChannel = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(part, fClArray);
 
