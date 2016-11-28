@@ -24,8 +24,8 @@ AliAnalysisTask *AddTask_oton_TTree_MB16l(Int_t reducedEventType=-1, Bool_t writ
 
   // Pile up, Physics Selection, Analysis Utils
   //-------------------------------------------
-  task->SetRejectPileup();
-  //task->UsePhysicsSelection(kFALSE); // No phys sel // is this necessary???
+  //task->SetRejectPileup();
+  task->UsePhysicsSelection(kTRUE); 
   task->SetUseAnalysisUtils(kFALSE); // moved to false 16/10/2016 // ???
   
   // Toggle on/off information branches
@@ -78,7 +78,7 @@ AliAnalysisTask *AddTask_oton_TTree_MB16l(Int_t reducedEventType=-1, Bool_t writ
   // Alternatively, you can define the inactive branches of the tree, all other branches will be set to active
   task->SetTreeInactiveBranch("fUniqueID");
   task->SetTreeInactiveBranch("fBits");
-  task->SetTreeInactiveBranch("fEventTag");
+  //task->SetTreeInactiveBranch("fEventTag");
   task->SetTreeInactiveBranch("fNVtxContributors");
   task->SetTreeInactiveBranch("fCentQuality");
   task->SetTreeInactiveBranch("fNV0candidates*");
