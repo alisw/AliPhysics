@@ -43,7 +43,7 @@ set(SRCS
     AliHLTTRDPreprocessorComponent.cxx
     AliHLTTRDTracklet.cxx
     AliTRDonlineTrackingDataContainer.cxx
-    tracking/AliHLTTRDtrack.cxx
+    tracking/AliHLTTRDTrack.cxx
     tracking/AliHLTTRDTracker.cxx
     tracking/AliHLTTRDTrackerComponent.cxx
     tracking/AliHLTTRDTrackletReaderComponent.cxx

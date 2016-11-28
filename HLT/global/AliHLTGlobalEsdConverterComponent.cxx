@@ -69,7 +69,7 @@
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
 #include "AliHLTTRDDefinitions.h"
-#include "AliHLTTRDtrack.h"
+#include "AliHLTTRDTrack.h"
 #include "AliHLTTRDTrackData.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -1055,7 +1055,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       for (unsigned itr=0; itr<trackData->fCount; itr++) {
 
 	const AliHLTTRDTrackDataRecord &track=trackData->fTracks[itr];
-	AliHLTTRDtrack trdTrack;
+	AliHLTTRDTrack trdTrack;
 	trdTrack.ConvertFrom( track );
 	
 	Double_t TRDpid[AliPID::kSPECIES], eProb(0.2), restProb((1-eProb)/(AliPID::kSPECIES-1)); //eprob(element->GetTRDpid...);

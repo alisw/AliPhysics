@@ -10,7 +10,7 @@
 #pragma link C++ class AliHLTTRDDefinitions+;
 #pragma link C++ class AliHLTTRDCluster+;
 #pragma link C++ class AliHLTTRDTracklet+;
-#pragma link C++ class AliHLTTRDtrack+;
+#pragma link C++ class AliHLTTRDTrack+;
 #pragma link C++ class AliHLTTRDTracker+;
 #pragma link C++ class AliHLTTRDAgent+;
 #pragma link C++ class AliHLTTRDTrackerComponent+;
