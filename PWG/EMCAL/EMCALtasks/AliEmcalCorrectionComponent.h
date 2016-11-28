@@ -146,7 +146,7 @@ class AliEmcalCorrectionComponent : public TNamed {
   AliEmcalCorrectionComponent &operator=(const AliEmcalCorrectionComponent &);    // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionComponent, 1); // EMCal correction component
+  ClassDef(AliEmcalCorrectionComponent, 2); // EMCal correction component
   /// \endcond
 };
 

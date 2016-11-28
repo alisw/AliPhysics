@@ -59,6 +59,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS
   "${HDRS}"
   AliEmcalIterableContainer.h
+  AliEmcalContainerIndexMap.h
   )
 
 # Generate the dictionary

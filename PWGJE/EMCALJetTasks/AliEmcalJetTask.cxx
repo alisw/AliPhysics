@@ -77,8 +77,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
-  fClusterContainerUtils(),
-  fParticleContainerUtils(),
+  fClusterContainerIndexMap(),
+  fParticleContainerIndexMap(),
   fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask")
 {
 }
@@ -112,8 +112,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
-  fClusterContainerUtils(),
-  fParticleContainerUtils(),
+  fClusterContainerIndexMap(),
+  fParticleContainerIndexMap(),
   fFastJetWrapper(name,name)
 {
 }
@@ -262,7 +262,7 @@ Int_t AliEmcalJetTask::FindJets()
   TIter nextClusColl(&fClusterCollArray);
   AliClusterContainer* clusters = 0;
   while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
-    AliDebug(2,Form("Clusters from collection %d: '%s'.", iColl-1, clusters->GetName()));
+    AliDebug(2,Form("Clusters from collection %d: '%s'. Embedded: %i, nClusters: %i", iColl-1, clusters->GetName(), clusters->GetIsEmbedding(), clusters->GetNClusters()));
     AliClusterIterableMomentumContainer itcont = clusters->accepted_momentum();
     for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
       AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", it.current_index(), it->second->GetLabel(), it->first.E()));
@@ -408,8 +408,8 @@ void AliEmcalJetTask::ExecOnce()
 
   // Setup container utils. Must be called after AliAnalysisTaskEmcal::ExecOnce() so that the
   // containers' arrays are setup.
-  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusterCollArray);
-  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fParticleCollArray);
+  fClusterContainerIndexMap.CopyMappingFrom(AliClusterContainer::GetEmcalContainerIndexMap(), fClusterCollArray);
+  fParticleContainerIndexMap.CopyMappingFrom(AliParticleContainer::GetEmcalContainerIndexMap(), fParticleCollArray);
 }
 
 /**
@@ -521,7 +521,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
 
       if (flag == 0 || particles_sub == 0) {
-        jet->AddTrackAt(fParticleContainerUtils.GlobalIndexFromLocalIndex(partCont, tid), nt);
+        jet->AddTrackAt(fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid), nt);
       }
       else {
         Int_t part_sub_id = particles_sub->GetEntriesFast();
@@ -536,6 +536,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Int_t iColl = -uid / fgkConstIndexShift;
       Int_t cid = -uid - iColl * fgkConstIndexShift;
       iColl--;
+      AliDebug(3,Form("Constituent %d is a cluster from collection %d and with ID %d", uid, iColl, cid));
       AliClusterContainer* clusCont = GetClusterContainer(iColl);
       AliVCluster *c = clusCont->GetCluster(cid);
 
@@ -566,7 +567,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
 
       if (flag == 0 || particles_sub == 0) {
-        jet->AddClusterAt(fClusterContainerUtils.GlobalIndexFromLocalIndex(clusCont, cid), nc);
+        jet->AddClusterAt(fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid), nc);
       }
       else {
         Int_t part_sub_id = particles_sub->GetEntriesFast();

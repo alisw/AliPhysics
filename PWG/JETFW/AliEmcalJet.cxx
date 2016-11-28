@@ -682,7 +682,7 @@ void AliEmcalJet::Clear(Option_t */*option*/)
  */
 AliVParticle* AliEmcalJet::Track(Int_t idx) const
 {
-  return AliParticleContainer::GetEmcalContainerUtils().GetObjectFromGlobalIndex(TrackAt(idx));
+  return AliParticleContainer::GetEmcalContainerIndexMap().GetObjectFromGlobalIndex(TrackAt(idx));
 }
 
 /**
@@ -694,9 +694,9 @@ AliVParticle* AliEmcalJet::Track(Int_t idx) const
 AliVParticle* AliEmcalJet::TrackAt(Int_t idx, TClonesArray *ta) const
 {
   if (!ta) return 0;
-  auto res =  AliParticleContainer::GetEmcalContainerUtils().LocalIndexFromGlobalIndex(TrackAt(idx));
+  auto res =  AliParticleContainer::GetEmcalContainerIndexMap().LocalIndexFromGlobalIndex(TrackAt(idx));
   if (res.second != ta) {
-    AliWarning(Form("TClonesArray %s that was passed does not correspond to the index! The index belongs to TClonesArray %s", ta->GetName(), res.second->GetName()));
+    AliWarning(Form("TClonesArray %s that was passed does not correspond to the passed index! The index belongs to a different TClonesArray named %s! Returning the object corresponding to the index (not the passed TClonesArray)! Consider fixing by updating to jet->Track(index).", ta->GetName(), res.second->GetName()));
   }
   return dynamic_cast<AliVParticle*>(res.second->At(res.first));
 }
@@ -723,7 +723,7 @@ Int_t AliEmcalJet::ContainsTrack(AliVParticle* track, TClonesArray* tracks) cons
  */
 AliVCluster* AliEmcalJet::Cluster(Int_t idx) const
 {
-  return AliClusterContainer::GetEmcalContainerUtils().GetObjectFromGlobalIndex(ClusterAt(idx));
+  return AliClusterContainer::GetEmcalContainerIndexMap().GetObjectFromGlobalIndex(ClusterAt(idx));
 }
 
 /**
@@ -736,9 +736,9 @@ AliVCluster* AliEmcalJet::ClusterAt(Int_t idx, TClonesArray *ca) const
 {
   if (!ca) return 0;
 
-  auto res =  AliClusterContainer::GetEmcalContainerUtils().LocalIndexFromGlobalIndex(ClusterAt(idx));
+  auto res =  AliClusterContainer::GetEmcalContainerIndexMap().LocalIndexFromGlobalIndex(ClusterAt(idx));
   if (res.second != ca) {
-    AliWarning(Form("TClonesArray %s that was passed does not correspond to the index! The index belongs to TClonesArray %s", ca->GetName(), res.second->GetName()));
+    AliWarning(Form("TClonesArray %s that was passed does not correspond to the passed index! The index belongs to a different TClonesArray named %s! Returning the object corresponding to the index (not the passed TClonesArray)! Consider fixing by updating to jet->Cluster(index).", ca->GetName(), res.second->GetName()));
   }
   return dynamic_cast<AliVCluster*>(res.second->At(res.first));
 }

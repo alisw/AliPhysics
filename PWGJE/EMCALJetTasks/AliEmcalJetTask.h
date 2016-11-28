@@ -17,7 +17,7 @@ class AliEmcalJetUtility;
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-#include "AliEmcalContainerUtils.h"
+#include "AliEmcalContainerIndexMap.h"
 #endif
 
 namespace fastjet {
@@ -186,8 +186,8 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
-  AliEmcalContainerUtils <AliClusterContainer, AliVCluster> fClusterContainerUtils;    //!<! Mapping between index and cluster containers
-  AliEmcalContainerUtils <AliParticleContainer, AliVParticle> fParticleContainerUtils; //!<! Mapping between index and particle containers
+  AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
 #endif
 
  private:
@@ -195,7 +195,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTask, 23);
+  ClassDef(AliEmcalJetTask, 24);
   /// \endcond
 };
 #endif

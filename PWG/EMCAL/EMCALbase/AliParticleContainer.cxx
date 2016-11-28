@@ -28,7 +28,7 @@ ClassImp(AliParticleContainer);
 /// \endcond
 
 // Properly instantiate the object
-AliEmcalContainerUtils <TClonesArray, AliVParticle> AliParticleContainer::fgEmcalContainerUtils;
+AliEmcalContainerIndexMap <TClonesArray, AliVParticle> AliParticleContainer::fgEmcalContainerIndexMap;
 
 /**
  * Default constructor.
@@ -459,7 +459,7 @@ void AliParticleContainer::SetArray(const AliVEvent * event)
   AliEmcalContainer::SetArray(event);
 
   // Register TClonesArray in index map
-  fgEmcalContainerUtils.RegisterArray(GetArray());
+  fgEmcalContainerIndexMap.RegisterArray(GetArray());
 }
 
 /**

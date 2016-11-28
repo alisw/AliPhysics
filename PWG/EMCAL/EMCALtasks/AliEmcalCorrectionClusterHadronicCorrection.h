@@ -4,7 +4,7 @@
 #include "AliEmcalCorrectionComponent.h"
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-#include "AliEmcalContainerUtils.h"
+#include "AliEmcalContainerIndexMap.h"
 #endif
 
 class TH1;
@@ -62,8 +62,8 @@ protected:
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
-  AliEmcalContainerUtils <AliClusterContainer, AliVCluster> fClusterContainerUtils;    //!<! Mapping between index and cluster containers
-  AliEmcalContainerUtils <AliParticleContainer, AliVParticle> fParticleContainerUtils; //!<! Mapping between index and particle containers
+  AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
 #endif
   
   // QA plots
@@ -94,11 +94,11 @@ protected:
   AliEmcalCorrectionClusterHadronicCorrection(const AliEmcalCorrectionClusterHadronicCorrection &);               // Not implemented
   AliEmcalCorrectionClusterHadronicCorrection &operator=(const AliEmcalCorrectionClusterHadronicCorrection &);    // Not implemented
 
-  // Allows the registration of the class so that it is availble to be used by the correction task.
+  // Allows the registration of the class so that it is available to be used by the correction task.
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterHadronicCorrection> reg;
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 2); // EMCal cluster hadronic correction component
+  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 3); // EMCal cluster hadronic correction component
   /// \endcond
 };
 

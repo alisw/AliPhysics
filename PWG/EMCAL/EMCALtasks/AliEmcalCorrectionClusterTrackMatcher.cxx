@@ -37,8 +37,8 @@ AliEmcalCorrectionClusterTrackMatcher::AliEmcalCorrectionClusterTrackMatcher() :
   fUseDCA(kTRUE),
   fUpdateTracks(kTRUE),
   fUpdateClusters(kTRUE),
-  fClusterContainerUtils(),
-  fParticleContainerUtils(),
+  fClusterContainerIndexMap(),
+  fParticleContainerIndexMap(),
   fEmcalTracks(0),
   fEmcalClusters(0),
   fNEmcalTracks(0),
@@ -180,8 +180,8 @@ void AliEmcalCorrectionClusterTrackMatcher::UserCreateOutputObjects()
  */
 void AliEmcalCorrectionClusterTrackMatcher::ExecOnce()
 {
-  fClusterContainerUtils.CopyMappingFrom(AliClusterContainer::GetEmcalContainerUtils(), fClusterCollArray);
-  fParticleContainerUtils.CopyMappingFrom(AliParticleContainer::GetEmcalContainerUtils(), fParticleCollArray);
+  fClusterContainerIndexMap.CopyMappingFrom(AliClusterContainer::GetEmcalContainerIndexMap(), fClusterCollArray);
+  fParticleContainerIndexMap.CopyMappingFrom(AliParticleContainer::GetEmcalContainerIndexMap(), fParticleCollArray);
 }
 
 /**
@@ -274,7 +274,7 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
 
       // Create AliEmcalParticle objects to handle the matching
       AliEmcalParticle* emcalCluster = new ((*fEmcalClusters)[fNEmcalClusters])
-      AliEmcalParticle(cluster, fClusterContainerUtils.GlobalIndexFromLocalIndex(clusCont, clusIterator.current_index()), fVertex[0], fVertex[1], fVertex[2], AliVCluster::kNonLinCorr);
+      AliEmcalParticle(cluster, fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, clusIterator.current_index()), fVertex[0], fVertex[1], fVertex[2], AliVCluster::kNonLinCorr);
       emcalCluster->SetMatchedPtr(fEmcalTracks);
 
       fNEmcalClusters++;
@@ -337,7 +337,7 @@ void AliEmcalCorrectionClusterTrackMatcher::GenerateEmcalParticles()
       }
       
       // Create AliEmcalParticle objects to handle the matching
-      AliEmcalParticle* emcalTrack = new ((*fEmcalTracks)[fNEmcalTracks]) AliEmcalParticle(track, fParticleContainerUtils.GlobalIndexFromLocalIndex(partCont, partIterator.current_index()));
+      AliEmcalParticle* emcalTrack = new ((*fEmcalTracks)[fNEmcalTracks]) AliEmcalParticle(track, fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, partIterator.current_index()));
       emcalTrack->SetMatchedPtr(fEmcalClusters);
       
       AliDebug(2, Form("Now adding track (pT = %.3f, eta = %.3f, phi = %.3f)"
