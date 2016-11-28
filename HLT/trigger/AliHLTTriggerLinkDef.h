@@ -25,7 +25,6 @@
 #pragma link C++ class AliHLTEmcalElectronMonitor+;
 #pragma link C++ class AliHLTEmcalElectronMonitorComponent+;
 #pragma link C++ class AliHLTTriggerPhosMip+;
-#pragma link C++ class AliHLTTriggerTrdClusterMultiplicity+;
 #pragma link C++ class AliHLTTriggerDetectorGeom+;
 #pragma link C++ class AliHLTTriggerDetectorGeomRectangle+;
 #pragma link C++ class AliHLTTriggerDecisionParameters+;

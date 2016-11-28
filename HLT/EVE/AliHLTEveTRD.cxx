@@ -29,7 +29,6 @@
 #include "TColor.h"
 #include "TMath.h"
 #include "TH1F.h"
-#include "AliHLTTRDUtils.h"
 #include "AliTRDcluster.h"
 
 ClassImp(AliHLTEveTRD)
@@ -192,7 +191,7 @@ Int_t AliHLTEveTRD::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSetA
   UInt_t ptrSize = block->GetSize();
   Int_t unused;
 
-  AliHLTTRDUtils::ReadClusters(fClusterArray, ptrData, ptrSize, &unused);
+  /*AliHLTTRDUtils::ReadClusters(fClusterArray, ptrData, ptrSize, &unused);
 
   for(int num=fClusterArray->GetEntriesFast(); num--;){
     AliTRDcluster* trdCluster = (AliTRDcluster*)fClusterArray->At(num);
@@ -200,7 +199,7 @@ Int_t AliHLTEveTRD::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSetA
 		  sin*trdCluster->GetX() + cos*trdCluster->GetY(), 
 		  trdCluster->GetZ(),
 		  trdCluster->GetQ() );  
-  }
+  }*/
   
   return iResult;
 }

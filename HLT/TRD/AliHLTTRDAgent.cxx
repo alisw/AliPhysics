@@ -24,6 +24,7 @@
 #include "AliHLTTRDAgent.h"
 #include "AliHLTTRDDefinitions.h"
 #include "AliDAQ.h"
+#include <TMath.h>
 
 // #include "AliHLTOUT.h"
 // #include "AliHLTOUTHandlerChain.h"
@@ -33,18 +34,7 @@
 AliHLTTRDAgent gAliHLTTRDAgent;
 
 // component headers
-#include "AliHLTTRDClusterizerComponent.h"
-#include "AliHLTTRDTrackerV1Component.h"
-#include "AliHLTTRDCalibrationComponent.h"
-#include "AliHLTTRDCalibFitComponent.h"
-#include "AliHLTTRDCalibHistoComponent.h"
-#include "AliHLTTRDEsdWriterComponent.h"
-#include "AliHLTTRDClusterHistoComponent.h"
-#include "AliHLTTRDTrackHistoComponent.h"
-#include "AliHLTTRDHistoMergerComponent.h"
-#include "AliHLTTRDOfflineClusterizerComponent.h"
 #include "tracking/AliHLTTRDTrackerComponent.h"
-#include "AliHLTTRDOfflineTrackerV1Component.h"
 #include "AliHLTTRDPreprocessorComponent.h"
 #include "AliHLTTRDMonitorComponent.h"
 #include "tracking/AliHLTTRDTrackletReaderComponent.h"
@@ -114,18 +104,7 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 {
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
-  pHandler->AddComponent(new AliHLTTRDClusterizerComponent);
-  pHandler->AddComponent(new AliHLTTRDTrackerV1Component);
-  pHandler->AddComponent(new AliHLTTRDCalibrationComponent);
-  pHandler->AddComponent(new AliHLTTRDCalibFitComponent);
-  pHandler->AddComponent(new AliHLTTRDCalibHistoComponent);
-  pHandler->AddComponent(new AliHLTTRDEsdWriterComponent);
-  pHandler->AddComponent(new AliHLTTRDClusterHistoComponent);
-  pHandler->AddComponent(new AliHLTTRDTrackHistoComponent);
-  pHandler->AddComponent(new AliHLTTRDHistoMergerComponent);
-  pHandler->AddComponent(new AliHLTTRDOfflineClusterizerComponent);
   pHandler->AddComponent(new AliHLTTRDTrackerComponent);
-  pHandler->AddComponent(new AliHLTTRDOfflineTrackerV1Component);
   pHandler->AddComponent(new AliHLTTRDPreprocessorComponent);
   pHandler->AddComponent(new AliHLTTRDMonitorComponent);
   pHandler->AddComponent(new AliHLTTRDTrackletReaderComponent);

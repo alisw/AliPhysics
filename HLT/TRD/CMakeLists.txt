@@ -36,25 +36,12 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/BASE
 # Sources in alphabetical order
 set(SRCS
     AliHLTTRDAgent.cxx
-    AliHLTTRDCalibFitComponent.cxx
-    AliHLTTRDCalibHistoComponent.cxx
-    AliHLTTRDCalibrationComponent.cxx
     AliHLTTRDCluster.cxx
-    AliHLTTRDClusterHistoComponent.cxx
-    AliHLTTRDClusterizerComponent.cxx
     AliHLTTRDClusterizer.cxx
     AliHLTTRDDefinitions.cxx
-    AliHLTTRDEsdWriterComponent.cxx
-    AliHLTTRDHistoMergerComponent.cxx
     AliHLTTRDMonitorComponent.cxx
-    AliHLTTRDOfflineClusterizerComponent.cxx
-    AliHLTTRDOfflineTrackerV1Component.cxx
     AliHLTTRDPreprocessorComponent.cxx
-    AliHLTTRDTrackerV1Component.cxx
-    AliHLTTRDTrack.cxx
-    AliHLTTRDTrackHistoComponent.cxx
     AliHLTTRDTracklet.cxx
-    AliHLTTRDUtils.cxx
     AliTRDonlineTrackingDataContainer.cxx
     tracking/AliHLTTRDtrack.cxx
     tracking/AliHLTTRDTracker.cxx
