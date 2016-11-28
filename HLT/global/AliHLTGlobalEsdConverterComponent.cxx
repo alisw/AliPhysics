@@ -71,6 +71,7 @@
 #include "AliHLTTRDDefinitions.h"
 #include "AliHLTTRDTrack.h"
 #include "AliHLTTRDTrackData.h"
+#include "AliHLTTRDSpacePoint.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -1042,6 +1043,14 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   // 4. convert the HLT TRD tracks to ESD tracks                        
   if (storeTracks){
+
+    const AliHLTTRDSpacePointData * spacePoints = 0;
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTRDSpacePointDataType);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {          
+      spacePoints = reinterpret_cast<const AliHLTTRDSpacePointData*>(pBlock->fPtr);    
+      break;
+    }
+
     for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTRDTrackDataType);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {      
       fBenchmark.AddInput(pBlock->fSize);
@@ -1081,6 +1090,29 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	tESD->UpdateTrackParams(&trdTrack,AliESDtrack::kTRDout);
 	tESD->SetStatus(AliESDtrack::kTRDin);
 	tESD->SetTRDpid(TRDpid);
+
+	if( pESDfriend ) { 
+	  AliESDfriendTrack *friendTrack = pESDfriend->GetTrack(esdID);
+	  if( friendTrack ){ // fill TRD track and space points	    
+	    friendTrack->SetTRDtrack( &trdTrack );
+	    if( spacePoints ){
+	      int nPoints = track.GetNTracklets();
+	      AliTrackPointArray *spArray = new AliTrackPointArray(nPoints);
+	      spArray->SetBit(AliTrackPointArray::kTOFBugFixed);
+	      friendTrack->SetTrackPointArray(spArray);
+	      int iPoint=0;
+	      for( int iLayer=0; iLayer<6; iLayer++){
+		int ind = track.fAttachedTracklets[iLayer];
+		if( ind<0 || ind>=spacePoints->fCount ) continue;
+		const AliHLTTRDSpacePoint &sp = spacePoints->fPoints[ind];
+		UShort_t volId = 0; // TODO: Add volId to the data record and set it in TRD reconstruction 
+		AliTrackPoint p(sp.fX[0], sp.fX[1], sp.fX[2], NULL, volId);
+		spArray->AddPoint(iPoint,&p);
+		iPoint++;
+	      }
+	    }	    
+	  }
+	}
       }
       if( iResult>=0 ){    
 	HLTInfo("converted %d track(s) to AliESDtrack and added to ESD", trackData->fCount);
