@@ -73,6 +73,8 @@ fEtIsoMethod(0),
 fEtIsoThreshold(2),
 fdetacut(0.025),
 fdphicut(0.03),
+fdetacutIso(0.025),
+fdphicutIso(0.03),
 fM02mincut(0.1),
 fM02maxcut(0.3),
 fExtraIsoCuts(kFALSE),
@@ -237,6 +239,8 @@ fEtIsoMethod(0),
 fEtIsoThreshold(2),
 fdetacut(0.025),
 fdphicut(0.03),
+fdetacutIso(0.025),
+fdphicutIso(0.03),
 fM02mincut(0.1),
 fM02maxcut(0.3),
 fExtraIsoCuts(kFALSE),
@@ -737,7 +741,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     //Common histograms QA initialization
   if(fQA){
       //Include QA plots to the OutputList //DEFINE BETTER THE BINNING AND THE AXES LIMITS
-    fTrackMult = new TH1D ("hTrackMult","Tracks multiplicity Distribution",250,0.,1000.);
+    fTrackMult = new TH1D ("hTrackMult","Tracks multiplicity Distribution",100,0.,100.);
     fTrackMult->Sumw2();
     fOutput->Add(fTrackMult);
     
@@ -1105,7 +1109,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       return kFALSE;
     
     
-    if(ClustTrackMatching(coi))
+    if(ClustTrackMatching(coi,kTRUE))
       return kFALSE;
     
     if(!CheckBoundaries(vecCOI))
@@ -1169,7 +1173,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       fPtaftNLM->Fill(vecCOI.Pt());
       if(fTMClusterRejected)
       {
-        if(ClustTrackMatching(coi)){
+        if(ClustTrackMatching(coi,kTRUE)){
           continue;
         }
       }
@@ -1332,7 +1336,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::MCSimTrigger(AliVEvent *eventIn, Int
 
 
   //__________________________________________________________________________
-Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clust) {
+Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clust, Bool_t candidate) {
     // Check if the cluster match to a track
   
   AliTrackContainer* tracks = GetTrackContainer(0);
@@ -1364,7 +1368,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     
       //    printf("Cluster ID %d matched with track ID %d with pT %.3f",clust->GetID(),mt->GetID(),mt->Pt());
     
-    
+    Double_t deltaEta,deltaPhi;
     Double_t deta = 999;
     Double_t dphi = 999;
     
@@ -1379,7 +1383,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     deta=veta-ceta;
     dphi=TVector2::Phi_mpi_pi(vphi-cphi);
       //    printf("distant deta %.3f and dphi %.3f from the cluster",deta, dphi);
-    if(fQA){
+    if(fQA && candidate){
       fDeltaETAClusTrack->Fill(deta);
       fDeltaPHIClusTrack->Fill(dphi);
     }
@@ -1387,9 +1391,17 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     fCTdistVSpTNC->Fill(vecClust.Pt(),distCT);
     
       //      Printf("dphimin %g dphi %g   i %d  matchidx %d",dphimin,dphi,i, matchidxphi);
-    
-    if(TMath::Abs(dphi)<fdphicut && TMath::Abs(deta)<fdetacut){
-      if(fQA){
+    if(candidate){
+      deltaEta=fdetacut;
+      deltaPhi=fdphicut;
+    }
+    else{
+      deltaEta=fdetacutIso;
+      deltaPhi=fdphicutIso;
+    }
+   
+    if(TMath::Abs(dphi)<deltaPhi && TMath::Abs(deta)<deltaEta){
+      if(fQA && candidate){
         fDeltaETAClusTrackMatch->Fill(deta);
         fDeltaPHIClusTrackMatch->Fill(dphi);
       }
@@ -1867,7 +1879,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       if(clustTOF<-30. || clustTOF>30.) continue;
     
     if(fTMClusterInConeRejected)
-      if(ClustTrackMatching(coi)) continue;
+      if(ClustTrackMatching(coi,kFALSE)) continue;
     
     if(nClust.E()<0.3) continue;
       //redefine phi/c.Eta() from the cluster we passed to the function
@@ -2011,7 +2023,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       if(clustTOF<-30. || clustTOF>30.) continue;
     
     if(fTMClusterInConeRejected)
-      if(ClustTrackMatching(coi)) continue;
+      if(ClustTrackMatching(coi,kFALSE)) continue;
     
     if(nClust.E()<0.3) continue;
       //redefine phi/c.Eta() from the cluster we passed to the function
