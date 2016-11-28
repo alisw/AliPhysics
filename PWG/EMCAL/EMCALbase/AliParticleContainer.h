@@ -11,7 +11,7 @@ class AliTLorentzVector;
 
 #include "AliEmcalContainer.h"
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-#include "AliEmcalContainerUtils.h"
+#include "AliEmcalContainerIndexMap.h"
 #endif
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -81,7 +81,7 @@ class AliParticleContainer : public AliEmcalContainer {
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   /// Get the EMCal container utils associated with particle containers
-  static const AliEmcalContainerUtils <TClonesArray, AliVParticle>& GetEmcalContainerUtils() { return fgEmcalContainerUtils; }
+  static const AliEmcalContainerIndexMap <TClonesArray, AliVParticle>& GetEmcalContainerIndexMap() { return fgEmcalContainerIndexMap; }
 
   const AliParticleIterableContainer      all() const;
   const AliParticleIterableContainer      accepted() const;
@@ -93,7 +93,7 @@ class AliParticleContainer : public AliEmcalContainer {
  protected:
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-  static AliEmcalContainerUtils <TClonesArray, AliVParticle> fgEmcalContainerUtils; //!<! Mapping from containers to indices
+  static AliEmcalContainerIndexMap <TClonesArray, AliVParticle> fgEmcalContainerIndexMap; //!<! Mapping from containers to indices
 #endif
 
   Double_t                    fMinDistanceTPCSectorEdge;      ///< require minimum distance to edge of TPC sector edge
@@ -105,7 +105,7 @@ class AliParticleContainer : public AliEmcalContainer {
   AliParticleContainer& operator=(const AliParticleContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliParticleContainer,10);
+  ClassDef(AliParticleContainer,11);
   /// \endcond
 
 };

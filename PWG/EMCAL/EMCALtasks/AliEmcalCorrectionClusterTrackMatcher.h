@@ -4,7 +4,7 @@
 #include "AliEmcalCorrectionComponent.h"
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-#include "AliEmcalContainerUtils.h"
+#include "AliEmcalContainerIndexMap.h"
 #endif
 
 class TH1;
@@ -83,8 +83,8 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
-  AliEmcalContainerUtils <AliClusterContainer, AliVCluster> fClusterContainerUtils;    //!<! Mapping between index and cluster containers
-  AliEmcalContainerUtils <AliParticleContainer, AliVParticle> fParticleContainerUtils; //!<! Mapping between index and particle containers
+  AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
 #endif
 
   TClonesArray *fEmcalTracks;           //!<!emcal tracks
@@ -104,7 +104,7 @@ class AliEmcalCorrectionClusterTrackMatcher : public AliEmcalCorrectionComponent
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterTrackMatcher> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 1); // EMCal cluster track matcher correction component
+  ClassDef(AliEmcalCorrectionClusterTrackMatcher, 2); // EMCal cluster track matcher correction component
   /// \endcond
 };
 

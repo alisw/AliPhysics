@@ -21,5 +21,5 @@
 #pragma link C++ class AliMCParticleContainer+;
 #pragma link C++ class AliTrackContainer+;
 #pragma link C++ class AliEmcalList+;
-#pragma link C++ class  AliAnalysisTaskEmcalEmbeddingHelper+;
+#pragma link C++ class AliAnalysisTaskEmcalEmbeddingHelper+;
 #endif

@@ -12,7 +12,7 @@ class AliVEvent;
 
 #include "AliEmcalContainer.h"
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-#include "AliEmcalContainerUtils.h"
+#include "AliEmcalContainerIndexMap.h"
 #endif
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
@@ -82,7 +82,7 @@ class AliClusterContainer : public AliEmcalContainer {
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   /// Get the EMCal container utils associated with particle containers
-  static const AliEmcalContainerUtils <TClonesArray, AliVCluster>& GetEmcalContainerUtils() { return fgEmcalContainerUtils; }
+  static const AliEmcalContainerIndexMap <TClonesArray, AliVCluster>& GetEmcalContainerIndexMap() { return fgEmcalContainerIndexMap; }
 
   const AliClusterIterableContainer      all() const;
   const AliClusterIterableContainer      accepted() const;
@@ -94,7 +94,7 @@ class AliClusterContainer : public AliEmcalContainer {
  protected:
   
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-  static AliEmcalContainerUtils <TClonesArray, AliVCluster> fgEmcalContainerUtils; //!<! Mapping from containers to indices
+  static AliEmcalContainerIndexMap <TClonesArray, AliVCluster> fgEmcalContainerIndexMap; //!<! Mapping from containers to indices
 #endif
 
   Double_t         fClusTimeCutLow;             ///< low time cut for clusters
@@ -109,7 +109,7 @@ class AliClusterContainer : public AliEmcalContainer {
   AliClusterContainer& operator=(const AliClusterContainer& other); // assignment
 
   /// \cond CLASSIMP
-  ClassDef(AliClusterContainer,6);
+  ClassDef(AliClusterContainer,7);
   /// \endcond
 };
 

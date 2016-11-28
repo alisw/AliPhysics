@@ -36,7 +36,6 @@ set(SRCS
   AliClusterContainer.cxx
   AliEmcalContainer.cxx
   AliEmcalDownscaleFactorsOCDB.cxx
-  AliEmcalContainerUtils.cxx
   AliEmcalESDTrackCutsGenerator.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
@@ -57,6 +56,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS
   "${HDRS}"
   AliEmcalIterableContainer.h
+  AliEmcalContainerIndexMap.h
   )
 
 # Generate the dictionary

@@ -1,6 +1,6 @@
 #if !(defined(__CINT__) || defined(__MAKECINT__))
-#ifndef ALIEMCALCONTAINERUTILS_H
-#define ALIEMCALCONTAINERUTILS_H
+#ifndef ALIEMCALCONTAINERINDEXMAP_H
+#define ALIEMCALCONTAINERINDEXMAP_H
 
 #include <map>
 #include <typeinfo>
@@ -14,11 +14,11 @@
 #include "AliEmcalContainer.h"
 
 /**
- * @class AliEmcalContainerUtils
+ * @class AliEmcalContainerIndexMap
  * @ingroup EMCALCOREFW
  * @brief Helper class for AliEmcalContainer derived classes
  *
- * AliEmcalContainerUtils contains utility functions for AliEmcalContainer. These include a mapping from
+ * AliEmcalContainerIndexMap contains index mapping for AliEmcalContainer derived classes. The mapping is from
  * a single global linear array to an index in a collection of a container. For example, if there are two
  * containers, then container a would be at offset 0 and container b at offset 1000. Then, the third particle
  * in container b would be indexed as 1002, while the third particle in container a would be indexed as 2.
@@ -29,27 +29,64 @@
  *
  * Generally, U corresponds to the input object and V corresponds to the object of interest.
  *
+ * Actually using the index mapping requires a few steps. The mapping between the TClonesArrays used by cluster
+ * or particle containers and indices is stored in each container class. Thus, the first step is to copy that
+ * mapping, adapting it to map between the containers in your task and the indices. To do so, create an 
+ * instance of AliEmcalContainerIndexMap for your class and then copy the mapping with ``CopyMappingFrom()``.
+ * For example:
+ *
+ * ~~~{cxx}
+ * // This example will focus on particle containers.
+ * // The particle containers are assumed to be stored in fParticleCollArray, which is
+ * // a TObjArray defined in AliAnalysisTaskEmcal (assuming your task inherits from it).
+ * 
+ * // Define the object to container the container to index mapping.
+ * AliEmcalContainerIndexMap<AliParticleContainer, AliVParticle> particleMap;
+ * // It is recommended to call CopyMappingFrom() in ExecOnce().
+ * // At the very least, it must be after the arrays are set in the containers!
+ * particleMap.CopyMappingFrom(AliParticleContainer::GetEmcalContainerIndexMap(), particleCollArray);
+ * ~~~
+ *
+ * Now, we can access the objects as desired. Some example might include:
+ *
+ * ~~~{cxx}
+ * // We must already have the global index from somewhere, such as the id of a
+ * // track matched to a cluster.
+ *
+ * // Get the particle
+ * AliVParticle * particleOne = particleMap.GetObjectFromGlobalIndex(globalIndex);
+ * // Or get the index and the associated container
+ * auto result = particleMap.LocalIndexFromGlobalIndex(globalIndex);
+ * Int_t localIndex = result.first;
+ * AliParticleContainer * partCont = result.second;
+ * // Can use the result to check whether a particle is accepted.
+ * AliVParticle * particleTwo = partCont.GetAcceptParticle(localIndex);
+ * ~~~
+ *
+ * For some additional information, see the framework details in the
+ * [embedding documentation](\ref READMEemcEmbedding).
+ *
  * @author Raymond Ehlers <raymond.ehlers@cern.ch>, Yale University
  * @date Nov 21, 2016
  */
 
 template <class U, class V>
-class AliEmcalContainerUtils {
+class AliEmcalContainerIndexMap {
  public:
-  AliEmcalContainerUtils();
+  AliEmcalContainerIndexMap();
 
-  virtual ~AliEmcalContainerUtils() { delete fClass; }
+  virtual ~AliEmcalContainerIndexMap() { delete fClass; }
 
   // Setup index map for AliEmcalContainer or TClonesArray
   int RegisterArray(U * inputObject);
 
   // Copy the mapping from the source "map"; the mapping is between the global index found in "map" for object "cont" and the object "cont" itself
   template<class U2>
-  void CopyMappingFrom(const AliEmcalContainerUtils<U2, V>& map, U* cont);
+  void CopyMappingFrom(const AliEmcalContainerIndexMap<U2, V>& map, U* cont);
 
   // Copy the mapping from the source "map"; the mapping is between the global index found in "map" for each object in "containers" and the objects in "containers"
   template<class U2>
-  void CopyMappingFrom(const AliEmcalContainerUtils<U2, V>& map, TCollection & containers);
+  void CopyMappingFrom(const AliEmcalContainerIndexMap<U2, V>& map, TCollection & containers);
 
   // Index operations
   // Returns the offset of an input object 
@@ -75,7 +112,7 @@ class AliEmcalContainerUtils {
 };
 
 template<class U, class V>
-AliEmcalContainerUtils<U, V>::AliEmcalContainerUtils():
+AliEmcalContainerIndexMap<U, V>::AliEmcalContainerIndexMap():
   fOffset(100000),
   fGlobalIndexMap(),
   fClass(TClass::GetClass(typeid(V)))
@@ -94,7 +131,7 @@ AliEmcalContainerUtils<U, V>::AliEmcalContainerUtils():
  */
 template<class U, class V>
 //template<class Z = U, typename std::enable_if< std::is_same<Z, AliEmcalContainer>::value,int>::type = 0>
-inline const TClonesArray * AliEmcalContainerUtils<U, V>::GetObject(const AliEmcalContainer * inputObject) const
+inline const TClonesArray * AliEmcalContainerIndexMap<U, V>::GetObject(const AliEmcalContainer * inputObject) const
 {
   return inputObject->GetArray();
 }
@@ -109,7 +146,7 @@ inline const TClonesArray * AliEmcalContainerUtils<U, V>::GetObject(const AliEmc
  */
 template<class U, class V>
 //template<class Z = U, typename std::enable_if< std::is_same<Z, AliEmcalContainer>::value,int>::type = 0>
-inline const TClonesArray * AliEmcalContainerUtils<U, V>::GetObject(const TClonesArray * inputObject) const
+inline const TClonesArray * AliEmcalContainerIndexMap<U, V>::GetObject(const TClonesArray * inputObject) const
 {
   return inputObject;
 }
@@ -126,10 +163,10 @@ inline const TClonesArray * AliEmcalContainerUtils<U, V>::GetObject(const TClone
  * @return True if the underlying type is **compatible**.
  */
 template<class U, class V>
-inline bool AliEmcalContainerUtils<U, V>::IsUnderlyingInputObjectTypeCompatible(const U * inputObject) const
+inline bool AliEmcalContainerIndexMap<U, V>::IsUnderlyingInputObjectTypeCompatible(const U * inputObject) const
 {
   if (!(inputObject->GetClass()->InheritsFrom(fClass))) {
-    AliErrorGeneral("AliEmcalContainerUtils", Form("Cannot register array %s. This map can only accept arrays of type %s.", inputObject->GetName(), fClass->GetName()));
+    AliErrorGeneral("AliEmcalContainerIndexMap", Form("Cannot register array %s. This map can only accept arrays of type %s.", inputObject->GetName(), fClass->GetName()));
     return false;
   }
 
@@ -147,7 +184,7 @@ inline bool AliEmcalContainerUtils<U, V>::IsUnderlyingInputObjectTypeCompatible(
  * @return Index where the input object is registered.
  */
 template<class U, class V>
-int AliEmcalContainerUtils<U, V>::RegisterArray(U * inputObject)
+int AliEmcalContainerIndexMap<U, V>::RegisterArray(U * inputObject)
 {
   if (IsUnderlyingInputObjectTypeCompatible(inputObject) == false) {
     return -1;
@@ -190,7 +227,7 @@ int AliEmcalContainerUtils<U, V>::RegisterArray(U * inputObject)
  * @return globalIndex The global index of the object of interest.
  */
 template<class U, class V>
-int AliEmcalContainerUtils<U, V>::GlobalIndexFromLocalIndex(const U * inputObject, const int localIndex) const
+int AliEmcalContainerIndexMap<U, V>::GlobalIndexFromLocalIndex(const U * inputObject, const int localIndex) const
 {
   int globalIndex = GetOffset(inputObject);
 
@@ -199,7 +236,7 @@ int AliEmcalContainerUtils<U, V>::GlobalIndexFromLocalIndex(const U * inputObjec
     globalIndex += localIndex;
   }
   else {
-    AliWarningGeneral("AliEmcalContainerUtils", TString::Format("Unable to retrieve global index for input object %s. Was the input object registered?", inputObject->GetName()));
+    AliWarningGeneral("AliEmcalContainerIndexMap", TString::Format("Unable to retrieve global index for input object %s. Was the input object registered?", inputObject->GetName()));
   }
 
   return globalIndex;
@@ -214,7 +251,7 @@ int AliEmcalContainerUtils<U, V>::GlobalIndexFromLocalIndex(const U * inputObjec
  */
 template<class U, class V>
 template<class U2>
-int AliEmcalContainerUtils<U, V>::GetOffset(const U2 * inputObject) const
+int AliEmcalContainerIndexMap<U, V>::GetOffset(const U2 * inputObject) const
 {
   int globalIndex = -1;
   for (auto val : fGlobalIndexMap)
@@ -237,7 +274,7 @@ int AliEmcalContainerUtils<U, V>::GetOffset(const U2 * inputObject) const
  * @return std::pair of the local index and the associated input object (could be TClonesArray * or AliEmcalContainer *). The input object can be used to retrieve the object of interest.
  */
 template<class U, class V>
-std::pair<int, U *> AliEmcalContainerUtils<U, V>::LocalIndexFromGlobalIndex(const int globalIndex) const
+std::pair<int, U *> AliEmcalContainerIndexMap<U, V>::LocalIndexFromGlobalIndex(const int globalIndex) const
 {
   // Round to nearest offset
   int index = (globalIndex + fOffset/2)/fOffset * fOffset;
@@ -257,7 +294,7 @@ std::pair<int, U *> AliEmcalContainerUtils<U, V>::LocalIndexFromGlobalIndex(cons
  * @return The object of interest, cast to the proper type.
  */
 template<class U, class V>
-V * AliEmcalContainerUtils<U, V>::GetObjectFromGlobalIndex(const int globalIndex) const
+V * AliEmcalContainerIndexMap<U, V>::GetObjectFromGlobalIndex(const int globalIndex) const
 {
   auto res = LocalIndexFromGlobalIndex(globalIndex);
 
@@ -266,18 +303,18 @@ V * AliEmcalContainerUtils<U, V>::GetObjectFromGlobalIndex(const int globalIndex
 }
 
 /**
- * Copy a given index mapping from one AliEmcalContainerUtils object to the current one. The map values which
+ * Copy a given index mapping from one AliEmcalContainerIndexMap object to the current one. The map values which
  * are copied are those corresponding to the input objects collection passed to this function. For a single
  * input object, see the other signature for this function.
  *
- * @param map AliEmcalContainerUtils object containing the index map that should be copied.
+ * @param map AliEmcalContainerIndexMap object containing the index map that should be copied.
  * @param containers The collection of input objects whose index values should be copied from the index map.
  *
  * @return
  */
 template<class U, class V>
 template<class U2>
-void AliEmcalContainerUtils<U, V>::CopyMappingFrom(const AliEmcalContainerUtils<U2, V>& map, TCollection & containers)
+void AliEmcalContainerIndexMap<U, V>::CopyMappingFrom(const AliEmcalContainerIndexMap<U2, V>& map, TCollection & containers)
 {
   TIter next(&containers);
   TObject* obj = 0;
@@ -294,18 +331,18 @@ void AliEmcalContainerUtils<U, V>::CopyMappingFrom(const AliEmcalContainerUtils<
 }
 
 /**
- * Copy a given index mapping from one AliEmcalContainerUtils object to the current one. The map values which
+ * Copy a given index mapping from one AliEmcalContainerIndexMap object to the current one. The map values which
  * are copied are those corresponding to the input object passed to this function. For a collection of input
  * objects, see the other signature for this function.
  *
- * @param map AliEmcalContainerUtils object containing the index map that should be copied.
+ * @param map AliEmcalContainerIndexMap object containing the index map that should be copied.
  * @param cont The input object whose index value should be copied from the index map.
  *
  * @return
  */
 template<class U, class V>
 template<class U2>
-void AliEmcalContainerUtils<U, V>::CopyMappingFrom(const AliEmcalContainerUtils<U2, V>& map, U* cont)
+void AliEmcalContainerIndexMap<U, V>::CopyMappingFrom(const AliEmcalContainerIndexMap<U2, V>& map, U* cont)
 {
   if (IsUnderlyingInputObjectTypeCompatible(cont) == false) {
     return;
@@ -315,5 +352,5 @@ void AliEmcalContainerUtils<U, V>::CopyMappingFrom(const AliEmcalContainerUtils<
   if (gindex >= 0) fGlobalIndexMap[gindex] = cont;
 }
 
-#endif /* AliEmcalContainerUtils.h */
+#endif /* AliEmcalContainerIndexMap.h */
 #endif /* Hiding from CINT */
