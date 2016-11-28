@@ -69,15 +69,46 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
                                 Float_t   maxFacPtHard                = 3.,                             // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader          = "",
                                 Bool_t    runLightOutput              = kFALSE,                         // switch to run light output (only essential histograms for afterburner)
-                                Int_t   enableMatBudWeightsPi0        = 0,                              // 1 = three radial bins, 2 = 10 radial bins
-                                TString filenameMatBudWeights         = "MCInputFileMaterialBudgetWeights.root",
+                                Int_t     enableMatBudWeightsPi0        = 0,                              // 1 = three radial bins, 2 = 10 radial bins
+                                TString   filenameMatBudWeights         = "MCInputFileMaterialBudgetWeights.root",
                                 TString   additionalTrainConfig       = "0"                             // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout<< tempStr.Data()<<endl;
+      
+      if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
+        TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
+	if(fileNameMatBudWeightsArr->GetEntries()<1 ){cout<<"ERROR: AddTask_GammaConvV1_pPb when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl; return;}  
+	 TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
+	 TString  oldfileName  = oldMatObjStr->GetString();
+	 TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
+	 cout<<newFileName.Data()<<endl;
+	 if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
+	 filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
+	 cout << "INFO: AddTask_GammaConvV1_pPb the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+	 }
+      }
+    }
+  }
+  
+  
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
+  
   Int_t isHeavyIon = 2;
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
-  }  
+  
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

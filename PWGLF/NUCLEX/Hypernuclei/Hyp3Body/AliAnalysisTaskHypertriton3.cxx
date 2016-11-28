@@ -1489,7 +1489,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
   fHistCount->Fill(1); // number of events passing the Trigger Selection
 
   //==========Centrality==========
-  printf("====================\n");
+  //printf("====================\n");
   if (!PassCentralitySelection()) {
     PostData(1,fOutput);
     return; //0 bis 80 %
@@ -1602,7 +1602,7 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
     if((status&AliVTrack::kITSin) && !(status&AliVTrack::kITSrefit)){
       fHistTrackFlagReco->Fill(4);
       if(fRequestITSin) {
-        printf("Skipping this track: has kITSin but no kITSrefit\n");
+        //printf("Skipping this track: has kITSin but no kITSrefit\n");
         continue;
       }
     }

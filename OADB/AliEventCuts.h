@@ -1,5 +1,5 @@
-#ifndef _AliNuclexEventCuts_h_
-#define _AliNuclexEventCuts_h_
+#ifndef _AliEventCuts_h_
+#define _AliEventCuts_h_
 
 #include <TList.h>
 #include <string>
@@ -13,9 +13,9 @@ class TH1D;
 class TH1I;
 class TH2D;
 
-class AliNuclexEventCuts : public TList {
+class AliEventCuts : public TList {
   public:
-    AliNuclexEventCuts(bool savePlots = false);
+    AliEventCuts(bool savePlots = false);
  
     enum CutsBin {
       kNoCuts = 0,
@@ -30,7 +30,7 @@ class AliNuclexEventCuts : public TList {
     };
 
     bool   AcceptEvent (AliVEvent *ev);
-    bool   PassedCut (AliNuclexEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
+    bool   PassedCut (AliEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
     void   AddQAplotsToList(TList *qaList = 0x0);
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupLHC15o();
@@ -102,7 +102,7 @@ class AliNuclexEventCuts : public TList {
     TH2D* fEstimCorrelation[2];    //!<! Correlation between centrality estimators
     TH2D* fMultCentCorrelation[2]; //!<! Correlation between main centrality estimator and multiplicity
     
-    ClassDef(AliNuclexEventCuts,1)
+    ClassDef(AliEventCuts,1)
 };
 
 #endif

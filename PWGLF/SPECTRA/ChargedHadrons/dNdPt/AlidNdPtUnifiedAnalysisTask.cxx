@@ -34,120 +34,101 @@ ClassImp(AlidNdPtUnifiedAnalysisTask);
 
 //________________________________________________________________________
 AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : AliAnalysisTaskSE(name),
-
-//General member variables
-    fOutputList(0),
-    fEvent(0),
-    fMCEvent(0),
-    fMCStack(0),
-    fFunTrkEff(0),
-    fEventCuts(0),
-    fESDtrackCuts(0),
-    fUtils(0),
-    
-//Toggles
-    fIsESD(kTRUE),
-    fUseMultiplicity(kTRUE),
-    fIsMC(kFALSE),
-    fEventTriggerRequired(kTRUE),
-    fIs2013pA(kFALSE),
-    fIs2015data(kFALSE),
-    fUseTOFBunchCrossing(kFALSE),
-    fTPCRefit(kFALSE),
-    fITSRefit(kFALSE),
-    fAcceptKinks(kTRUE),
-    fRequiresClusterITS(kTRUE),
-    fDCAToVertex2D(kFALSE),
-    fSigmaToVertex(kFALSE),
-    fUseGeomCut(kFALSE),
-    fUseCountedMult(kFALSE),
-    
-//Event-Histograms
-    fHistEvent(0),
-    fHistMultEvent(0),
-
-    fHistMCGenEvent(0),
-    fHistMCRecEvent(0),
-    fHistMultMCGenEvent(0),		//rename fHistMCGenMultEvent
-    fHistMultMCRecEvent(0),		//rename fHistMCRecMultEvent
-    fHistMCGenINEL0Event(0),
-    fHistMCRecINEL0Event(0),
-
-    fHistMultCorrelation(0),		//rename fHistMCMultCorrelationEvent
-    fHistMCResponseMat(0),
-    fHistMCTrigEvent(0),
-    fHistMCTrigINEL0Event(0),
-
-//Track-Histograms
-    fHistTrack(0),
-    fHistTrackCharge(0),		//rename fHistChargeTrack?
-    
-    fHistMCRecTrack(0),			
-    fHistMCRecTrackParticle(0),		//rename fHistMCRecPIDTrack
-
-    fHistMCGenPrimTrack(0),
-    fHistMCRecPrimTrack(0),
-    fHistMCGenPrimTrackParticle(0),	//rename fHistMCGenPrimPIDTrack
-    fHistMCRecPrimTrackParticle(0),	//rename fHistMCRecPrimPIDTrack
-
-    fHistMCRecSecTrack(0),
-    fHistMCRecSecTrackParticle(0),	//rename fHistMCRecSecPIDTrack
+  //General member variables
+  fOutputList(0),
+  fEvent(0),
+  fMCEvent(0),
+  fMCStack(0),
+  fFunTrkEff(0),
+  fEventCuts(0),
+  fESDtrackCuts(0),
+  fUtils(0),
+  //Toggles
+  fIsESD(kTRUE),
+  fUseMultiplicity(kTRUE),
+  fIsMC(kFALSE),
+  fEventTriggerRequired(kTRUE),
+  fIs2013pA(kFALSE),
+  fIs2015data(kFALSE),
+  fUseTOFBunchCrossing(kFALSE),
+  fTPCRefit(kFALSE),
+  fITSRefit(kFALSE),
+  fAcceptKinks(kTRUE),
+  fRequiresClusterITS(kTRUE),
+  fDCAToVertex2D(kFALSE),
+  fSigmaToVertex(kFALSE),
+  fUseGeomCut(kFALSE),
+  fUseCountedMult(kFALSE),
+  //Event-Histograms
+  fHistEvent(0),
+  fHistMultEvent(0),
+  fHistMCGenEvent(0),
+  fHistMCRecEvent(0),
+  fHistMultMCGenEvent(0),		//rename fHistMCGenMultEvent
+  fHistMultMCRecEvent(0),		//rename fHistMCRecMultEvent
+  fHistMCGenINEL0Event(0),
+  fHistMCRecINEL0Event(0),
+  fHistMultCorrelation(0),		//rename fHistMCMultCorrelationEvent
+  fHistMCResponseMat(0),
+  fHistMCTrigEvent(0),
+  fHistMCTrigINEL0Event(0),
+  //Track-Histograms
+  fHistTrack(0),
+  fHistTrackCharge(0),		//rename fHistChargeTrack?
+  fHistMCRecTrack(0),
+  fHistMCRecTrackParticle(0),		//rename fHistMCRecPIDTrack
+  fHistMCGenPrimTrack(0),
+  fHistMCRecPrimTrack(0),
+  fHistMCGenPrimTrackParticle(0),	//rename fHistMCGenPrimPIDTrack
+  fHistMCRecPrimTrackParticle(0),	//rename fHistMCRecPrimPIDTrack
+  fHistMCRecSecTrack(0),
+  fHistMCRecSecTrackParticle(0),	//rename fHistMCRecSecPIDTrack
   //fHistMCGenTrackINEL0(0),
-
-// Cut Parameters
-    fTriggerMask(AliVEvent::kMB),
-    fSelectedParticleLabel(kPrimary),
-
-    fMinEta(-10),
-    fMaxEta(10),
-    fMinPt(0),
-    fMaxPt(999),
-    fSigmaMeanXYZv(),
-    fMeanXYZv(),
-    fZvtx(10),
-    
-    fMinNCrossedRowsTPC(0),
-    fMinRatioCrossedRowsOverFindableClustersTPC(0),
-    fMaxFractionSharedClustersTPC(0),
-    fMaxChi2PerTPCCluster(0),
-    fMaxChi2PerITSCluster(0),
-    fMaxDCAzITSTPC(0),
-    fDCAToVertexXYPtDep("0"),
-    fDCAToVertexXY(0),
-    fMaxChi2TPCConstrained(0),
-    fMinActiveLength(0),
-    fDeadZoneWidth(2),
-    fCutGeoNcrNclLenght(130),
-    fCutGeoNcrNclGeom1Pt(1.5),
-    fCutGeoNcrNclFractionNcr(0.85),
-    fCutGeoNcrNclFractionNcl(0.7),
-    
-//Arrays for Binning
-    fBinsMultCent(0),
-    fBinsPt(0),
-    fBinsEta(0),
-    fBinsZv(0)
-    
+  // Cut Parameters
+  fTriggerMask(AliVEvent::kMB),
+  fMinEta(-10),
+  fMaxEta(10),
+  fMinPt(0),
+  fMaxPt(999),
+  fSigmaMeanXYZv(),
+  fMeanXYZv(),
+  fZvtx(10),
+  fMinNCrossedRowsTPC(0),
+  fMinRatioCrossedRowsOverFindableClustersTPC(0),
+  fMaxFractionSharedClustersTPC(0),
+  fMaxChi2PerTPCCluster(0),
+  fMaxChi2PerITSCluster(0),
+  fMaxDCAzITSTPC(0),
+  fDCAToVertexXYPtDep("0"),
+  fDCAToVertexXY(0),
+  fMaxChi2TPCConstrained(0),
+  fMinActiveLength(0),
+  fDeadZoneWidth(2),
+  fCutGeoNcrNclLenght(130),
+  fCutGeoNcrNclGeom1Pt(1.5),
+  fCutGeoNcrNclFractionNcr(0.85),
+  fCutGeoNcrNclFractionNcl(0.7),
+  //Arrays for Binning
+  fBinsMultCent(0),
+  fBinsPt(0),
+  fBinsEta(0),
+  fBinsZv(0)
 {
   // Set default binning
   Double_t binsMultCentDefault[2] = {0,10000};
   Double_t binsPtDefault[69] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
   Double_t binsEtaDefault[31] = {-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5};
   Double_t binsZvDefault[13] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
-
   SetBinsPt(68,binsPtDefault);
   SetBinsEta(30,binsEtaDefault);
   SetBinsMultCent(1,binsMultCentDefault);
   SetBinsZv(12,binsZvDefault);
-
   SetMeanXYZv(0.0,0.0,0.0);
   SetSigmaMeanXYZv(1.0,1.0,10.0);
   SetZvtx(10.);
   SetEventTriggerRequired(kTRUE);
-
   TF1 *constant = new TF1("constant","1",0,100);
   SetTrkEffParametrisation(constant);
-
   // Output slot #0 id reserved by the base class for AOD
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
@@ -156,7 +137,6 @@ AlidNdPtUnifiedAnalysisTask::AlidNdPtUnifiedAnalysisTask(const char *name) : Ali
 //________________________________________________________________________
 void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   // Create histograms here (function is called once)
-
   OpenFile(1,"recreate");
   fOutputList = new TList();
   fOutputList -> SetOwner();
@@ -171,12 +151,12 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
   Double_t minTrackCharge[4]={fBinsPt->GetAt(0),fBinsEta->GetAt(0),fBinsMultCent->GetAt(0),-2.0};
   Double_t maxTrackCharge[4]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsEta->GetAt(fBinsEta->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),2.0};
 
-  /// Control histogram charged patricles pt:eta:multcent:charge
-  Int_t nBinsTrackParticle[4]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsMultCent->GetSize()-1,6};
+  /// Control histogram charged patricles pt:eta:multcent:charge]
+  const Int_t iNumberOfParticles = 11;
+  Int_t nBinsTrackParticle[4]={fBinsPt->GetSize()-1,fBinsEta->GetSize()-1,fBinsMultCent->GetSize()-1,iNumberOfParticles};
   Double_t minTrackParticle[4]={fBinsPt->GetAt(0),fBinsEta->GetAt(0),fBinsMultCent->GetAt(0),0};
-  Double_t maxTrackParticle[4]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsEta->GetAt(fBinsEta->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),6};
-  TString binNameTrackParticle[6]={"Pion","Kaon","Proton","Sigma","Omega","Rest"};
-
+  Double_t maxTrackParticle[4]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsEta->GetAt(fBinsEta->GetSize()-1),fBinsMultCent->GetAt(fBinsMultCent->GetSize()-1),iNumberOfParticles};
+  TString binNameTrackParticle[iNumberOfParticles]={"Pion","Kaon","Proton","SigmaPlus", "SigmaMinus", "OmegaMinus", "XiMinus", "Electron", "Muon", "Rest", "Lambda"};
 
   /// Standard event histogram zV:multcent
   Int_t nBinsEvent[2]={fBinsZv->GetSize()-1,fBinsMultCent->GetSize()-1};
@@ -392,7 +372,7 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecINEL0Event->GetAxis(1)->SetTitle("true multiplicity (MC)");
     fHistMCRecINEL0Event->Sumw2();
 
-    
+
     fHistMCResponseMat = new THnF("fHistMCResponseMat","Histogram for MC Response Matrix N_{ch} vs. N_{acc}",2,nBinsMultEventCorrelation,minMultEventCorrelation,maxMultEventCorrelation);
     fHistMCResponseMat->SetBinEdges(0,fBinsMultCent->GetArray());
     fHistMCResponseMat->SetBinEdges(1,fBinsMultCent->GetArray());
@@ -400,18 +380,18 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fHistMCResponseMat->GetAxis(1)->SetTitle("generated particle multiplicity N_{ch}");
     fHistMCResponseMat->Sumw2();
 
-/*
-     fHistMCGenTrackINEL0 = new THnF("fHistMCGenTrackINEL0","Histogram for generated tracks for INEL>0 MC Events",4,nBinsTrack,minTrack,maxTrack);
-     fHistMCGenTrackINEL0->SetBinEdges(0,fBinsPt->GetArray());
-     fHistMCGenTrackINEL0->SetBinEdges(1,fBinsEta->GetArray());
-     fHistMCGenTrackINEL0->SetBinEdges(2,fBinsZv->GetArray());
-     fHistMCGenTrackINEL0->SetBinEdges(3,fBinsMultCent->GetArray());
-     fHistMCGenTrackINEL0->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
-     fHistMCGenTrackINEL0->GetAxis(1)->SetTitle("#eta");
-     fHistMCGenTrackINEL0->GetAxis(2)->SetTitle("Zv (cm)");
-     fHistMCGenTrackINEL0->GetAxis(3)->SetTitle("true multiplicity (MC)");
-     fHistMCGenTrackINEL0 -> Sumw2();
-*/
+    /*
+       fHistMCGenTrackINEL0 = new THnF("fHistMCGenTrackINEL0","Histogram for generated tracks for INEL>0 MC Events",4,nBinsTrack,minTrack,maxTrack);
+       fHistMCGenTrackINEL0->SetBinEdges(0,fBinsPt->GetArray());
+       fHistMCGenTrackINEL0->SetBinEdges(1,fBinsEta->GetArray());
+       fHistMCGenTrackINEL0->SetBinEdges(2,fBinsZv->GetArray());
+       fHistMCGenTrackINEL0->SetBinEdges(3,fBinsMultCent->GetArray());
+       fHistMCGenTrackINEL0->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
+       fHistMCGenTrackINEL0->GetAxis(1)->SetTitle("#eta");
+       fHistMCGenTrackINEL0->GetAxis(2)->SetTitle("Zv (cm)");
+       fHistMCGenTrackINEL0->GetAxis(3)->SetTitle("true multiplicity (MC)");
+       fHistMCGenTrackINEL0 -> Sumw2();
+       */
   }
 
   fOutputList->Add(fHistTrack);
@@ -440,19 +420,16 @@ void AlidNdPtUnifiedAnalysisTask::UserCreateOutputObjects(){
     fOutputList->Add(fHistMCTrigINEL0Event);
     fOutputList->Add(fHistMCRecINEL0Event);
     fOutputList->Add(fHistMCResponseMat);
-    
-//     fOutputList->Add(fHistMCGenTrackINEL0);
+
+    //     fOutputList->Add(fHistMCGenTrackINEL0);
   }
   PostData(1, fOutputList);
 
-
- /// Create and initialize Analysis Objects here instead of in UserExec() to save resources
+  /// Create and initialize Analysis Objects here instead of in UserExec() to save resources
   //InitdNdPtEventCuts(); (does nothing atm so I just leave it out for the moment)
   if(fIsESD) InitESDTrackCuts();
   if((fIs2013pA || fIs2015data) && !fUtils){fUtils = new AliAnalysisUtils();}
-
 }
-
 
 /// Destructor
 AlidNdPtUnifiedAnalysisTask::~AlidNdPtUnifiedAnalysisTask(){
@@ -462,14 +439,14 @@ AlidNdPtUnifiedAnalysisTask::~AlidNdPtUnifiedAnalysisTask(){
 }
 
 ///TODO: solve Multiplicity problem
-//________________________________________________________________________
+///________________________________________________________________________
 void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for each event)
 
-/// ====================== Initialize variables ===============================
+  /// ====================== Initialize variables ===============================
 
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if (!inputHandler){ Printf("ERROR: Could not receive inputHandler"); return; }
-  
+
   AliPhysicsSelection *physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
   if(!physicsSelection) {Printf("ERROR: Could not receive physicsSelection"); return;}
   //AliTriggerAnalysis* triggerAnalysis = NULL;
@@ -479,16 +456,16 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
   Bool_t isEventINEL0 = kFALSE;
   if(fIsMC){
-      fMCEvent = dynamic_cast<AliMCEvent*>(MCEvent());
-      if (!fMCEvent) {printf("ERROR: fMCEvent not available\n"); return;}
-      
-      fMCStack = fMCEvent->Stack();
-      if (!fMCStack) {printf("ERROR: fMCStack not available\n"); return;}
-      
-      // Check if MC event is in inel0 class (1 charged particle in abs(eta)<1.0, pt>0)
-      isEventINEL0 = IsMCEventINEL0(fMCEvent,0,1.0);
-   }
-  
+    fMCEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+    if (!fMCEvent) {printf("ERROR: fMCEvent not available\n"); return;}
+
+    fMCStack = fMCEvent->Stack();
+    if (!fMCStack) {printf("ERROR: fMCStack not available\n"); return;}
+
+    // Check if MC event is in inel0 class (1 charged particle in abs(eta)<1.0, pt>0)
+    isEventINEL0 = IsMCEventINEL0(fMCEvent,0,1.0);
+  }
+
   Bool_t isEventTriggered = inputHandler->IsEventSelected() & GetTriggerMask();
   Double_t multEvent = GetEventMultCent(fEvent);
   Double_t zVertEvent = fEvent->GetPrimaryVertex()->GetZ();
@@ -499,62 +476,62 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   Double_t multAccCorrTracks = 0;	/// N_acc (of tracks!!) corrected with trk efficiency
 
   Double_t multGenPart = 0;  		/// N_ch
-  Double_t multRecPart = 0;		/// N_acc (of tracks that can be assigned to a real particle) 
+  Double_t multRecPart = 0;		/// N_acc (of tracks that can be assigned to a real particle)
   Double_t multRecCorrPart = 0;		/// N_acc corrected with trk efficiency
 
-/// ==================== Fill Histogramms ====================================== 
-  
-/// -------------------- Generated Events --------------------------------------
+  /// ==================== Fill Histogramms ======================================
+
+  /// -------------------- Generated Events --------------------------------------
 
   if(fIsMC){
     fHistMCGenEvent->Fill(eventValues);
-    if(isEventINEL0) fHistMCGenINEL0Event->Fill(eventValues); 
+    if(isEventINEL0) fHistMCGenINEL0Event->Fill(eventValues);
   }
 
   /// \li Event Trigger Cut
   if(!isEventTriggered) return;
-  
-/// -------------------- Triggered Events ---------------------------------------
+
+  /// -------------------- Triggered Events ---------------------------------------
 
   if(fIsMC){
     fHistMCTrigEvent->Fill(eventValues);
     if(isEventINEL0) fHistMCTrigINEL0Event->Fill(eventValues);
   }
-  
+
   /// \li Event Acceptance Cuts
   if(!IsEventAcceptedGeometrics(fEvent)) return;
   if(!IsEventAcceptedQuality(fEvent)) return;
   if (fIs2013pA){	if(!IsEventAccepted2013pA(fEvent)) return;	}
   if (fIs2015data){	if(!IsEventAccepted2015data(fEvent)) return;	}
 
-/// ------------------ Reconstructed Events --------------------------------------
+  /// ------------------ Reconstructed Events --------------------------------------
 
-//  commented this out because of mulitplicity ambiguitiy (is filled later on)
-//  fHistEvent->Fill(eventValues);
-  
+  //  commented this out because of mulitplicity ambiguitiy (is filled later on)
+  //  fHistEvent->Fill(eventValues);
+
   if(fIsMC){
     fHistMCRecEvent->Fill(eventValues);
     if(isEventINEL0) fHistMCRecINEL0Event->Fill(eventValues);
   }
-  
-///--------------- Loop over measured Tracks ---------------------------------  
 
-/// Multiplicity counting loop
+  ///--------------- Loop over measured Tracks ---------------------------------
+
+  /// Multiplicity counting loop
   AliVTrack *track = NULL;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
     if (!track){ printf("ERROR: Could not receive track %d\n", iTrack); continue; }
-    
+
     /// \li Track Acceptance Cuts
     if(!IsTrackAcceptedKinematics(track)) continue;
     if(!IsTrackAcceptedQuality(track)) continue;
-    
+
     if(fUseTOFBunchCrossing && fIs2015data){
       if(TMath::Abs(track->GetTOFsignalDz())>10) continue;
       if((track->GetTOFsignal())<12000) continue;
       if((track->GetTOFsignal())>25000) continue;
     }
-    
+
 
     /// \li Count Track Multiplicity
     multAccTracks++;
@@ -566,12 +543,12 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
   }
 
-/// Fill event Histograms (temporary solution...)
+  /// Fill event Histograms (temporary solution...)
   if (fUseCountedMult){
     Double_t eventValuesTrueMult[2] = {zVertEvent, multAccTracks};
     fHistEvent->Fill(eventValuesTrueMult);
   }else{
-    fHistEvent->Fill(eventValues);  
+    fHistEvent->Fill(eventValues);
   }
 
 
@@ -579,23 +556,23 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++){
     track = fEvent->GetVTrack(iTrack);
     if (!track){ printf("ERROR: Could not receive track %d\n", iTrack); continue; }
-    
+
     /// \li Track Acceptance Cuts
     if(!IsTrackAcceptedKinematics(track)) continue;
     if(!IsTrackAcceptedQuality(track)) continue;
-    
+
     if(fUseTOFBunchCrossing && fIs2015data){
       if(TMath::Abs(track->GetTOFsignalDz())>10) continue;
       if((track->GetTOFsignal())<12000) continue;
       if((track->GetTOFsignal())>25000) continue;
     }
-    
+
 
     /// \li Fill Track Histograms
 
     Double_t trackValues[4] = {track->Pt(), track->Eta(), zVertEvent, multEvent};
     if (fUseCountedMult) trackValues[3] = multAccTracks;
-    
+
     fHistTrack->Fill(trackValues);
 
     Double_t trackChargeValues[4] = {track->Pt(), track->Eta(), multEvent, ((Double_t) track->Charge())/3.};
@@ -607,58 +584,52 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       Int_t mcLabel = TMath::Abs(track->GetLabel());	///TODO doesn't work without abs for some reason?? source of errors!!!
       TParticle *mcParticle = fMCStack->Particle(mcLabel);
       if(!mcParticle) {printf("ERROR: mcParticle not available\n"); continue;}
-      
+
       //is original particle also fulfilling the required conditions (not only its reconstructed track)?
       if(!IsTrackAcceptedKinematics(mcParticle)) continue;
-      
+
       Double_t mcRecTrackValue[4] = {mcParticle->Pt(), mcParticle->Eta(), zVertEvent, multEvent};
       fHistMCRecTrack->Fill(mcRecTrackValue);
 
       Double_t mcRecTrackParticleValue[4] = {mcParticle->Pt(), mcParticle->Eta(), multEvent,((Double_t) IdentifyMCParticle(mcLabel)) - 0.5};
       fHistMCRecTrackParticle->Fill(mcRecTrackParticleValue);
-    
-      if(IsChargedPrimary(mcLabel)){
 
-	Double_t mcPrimTrackValue[4] = {mcParticle->Pt(), mcParticle->Eta(), zVertEvent, multEvent};
+      if(IsChargedPrimary(mcLabel))
+      {
+        Double_t mcPrimTrackValue[4] = {mcParticle->Pt(), mcParticle->Eta(), zVertEvent, multEvent};
         fHistMCRecPrimTrack->Fill(mcPrimTrackValue);
-	Double_t mcRecPrimTrackParticleValue[4] = {mcParticle->Pt(), mcParticle->Eta(), multEvent, ((Double_t) IdentifyMCParticle(mcLabel)) - 0.5};
-	fHistMCRecPrimTrackParticle->Fill(mcRecPrimTrackParticleValue);
-	
-	multRecPart++;
+        multRecPart++;
 
-	Double_t dTrackingEff = fFunTrkEff->Eval(mcParticle->Pt());
-	if (dTrackingEff != 0) multRecCorrPart = multRecCorrPart + 1/dTrackingEff;
-	else multRecCorrPart = multRecCorrPart + 1;
-
-	// put part that fills histogram for specific particle here (pion proton etc via IsSelectedParticle())
-	
+        Double_t dTrackingEff = fFunTrkEff->Eval(mcParticle->Pt());
+        if (dTrackingEff != 0) multRecCorrPart = multRecCorrPart + 1/dTrackingEff;
+        else multRecCorrPart = multRecCorrPart + 1;
       }else{//works because tracks are always charged
-	
-	Double_t mcSecTrackValue[4] = {mcParticle->Pt(), mcParticle->Eta(), zVertEvent, multEvent};
+        Double_t mcSecTrackValue[4] = {mcParticle->Pt(), mcParticle->Eta(), zVertEvent, multEvent};
         fHistMCRecSecTrack->Fill(mcSecTrackValue);
 
-	Double_t mcRecSecTrackParticleValue[4] = {mcParticle->Pt(), mcParticle->Eta(), multEvent,((Double_t) IdentifyMCParticle(mcLabel)) - 0.5};
-	fHistMCRecSecTrackParticle->Fill(mcRecSecTrackParticleValue);
-	
+        Double_t mcRecSecTrackParticleValue[4] = {mcParticle->Pt(), mcParticle->Eta(), multEvent,((Double_t) IdentifyMCParticle(mcLabel)) - 0.5};
+        fHistMCRecSecTrackParticle->Fill(mcRecSecTrackParticleValue);
       }
-      
+      if(IsChargedPrimaryOrLambda(mcLabel))
+      {
+        Double_t mcRecPrimTrackParticleValue[4] = {mcParticle->Pt(), mcParticle->Eta(), multEvent, ((Double_t) IdentifyMCParticle(mcLabel)) - 0.5};
+        fHistMCRecPrimTrackParticle->Fill(mcRecPrimTrackParticleValue);
+      }
     }
   }// end of Track-loop
-  
+
   //Fill histogram with overall,accepted and corrected multiplicity
   Double_t eventMultValues[3] = {multEvent, multAccTracks, multAccCorrTracks};
   fHistMultEvent->Fill(eventMultValues);
-  
+
   if (fIsMC){
     Double_t eventRecMultValues[3] = {multEvent, multRecPart, multRecCorrPart};
     fHistMultMCRecEvent->Fill(eventRecMultValues);
   }
 
-
-
-///------------------- Loop over Generated Tracks (True MC)------------------------------  
+  ///------------------- Loop over Generated Tracks (True MC)------------------------------
   if (fIsMC){
-//  Double_t multGenEvent = GetEventMultCent(fMCEvent);  /// TODO can't obtain mult for some events... why?
+    //  Double_t multGenEvent = GetEventMultCent(fMCEvent);  /// TODO can't obtain mult for some events... why?
     Double_t multGenEvent = multEvent;
 
     for (Int_t iParticle = 0; iParticle < fMCStack->GetNtrack(); iParticle++){
@@ -670,17 +641,16 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
       // for meanPt: do we leave out lower pt cut like in paper?
 
       if(IsChargedPrimary(iParticle)){
-	
+
         Double_t mcGenPrimTrackValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), zVertEvent, multGenEvent};
         fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
 
-	Double_t mcGenPrimTrackParticleValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), multGenEvent,((Double_t) IdentifyMCParticle(iParticle)) - 0.5};
-	fHistMCGenPrimTrackParticle->Fill(mcGenPrimTrackParticleValue);
-	
-	multGenPart++;
-	
-	// put part that fills histogram for specific particle here (pion proton etc via IsSelectedParticle())
-	
+        multGenPart++;
+      }
+      if(IsChargedPrimaryOrLambda(iParticle))
+      {
+        Double_t mcGenPrimTrackParticleValue[4] = {mcGenParticle->Pt(), mcGenParticle->Eta(), multGenEvent,((Double_t) IdentifyMCParticle(iParticle)) - 0.5};
+        fHistMCGenPrimTrackParticle->Fill(mcGenPrimTrackParticleValue);
       }
     }
 
@@ -689,10 +659,10 @@ void AlidNdPtUnifiedAnalysisTask::UserExec(Option_t *){ // Main loop (called for
 
     Double_t eventMultCorrelValues[2] = {multGenPart, multRecCorrPart};
     fHistMultCorrelation->Fill(eventMultCorrelValues);
-    
+
     Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
     fHistMCResponseMat->Fill(responseMatrixTuple);
-    
+
   }
   PostData(1, fOutputList);
 }
@@ -703,12 +673,15 @@ void AlidNdPtUnifiedAnalysisTask::Terminate(Option_t *)
 
 }
 
-
 Bool_t AlidNdPtUnifiedAnalysisTask::IsChargedPrimary(Int_t stackIndex){
   if (fMCStack->IsPhysicalPrimary(stackIndex) && (TMath::Abs(fMCStack->Particle(stackIndex)->GetPDG()->Charge()) > 0.01)) return kTRUE;
   return kFALSE;
 }
 
+Bool_t AlidNdPtUnifiedAnalysisTask::IsChargedPrimaryOrLambda(Int_t stackIndex){
+  if (fMCStack->IsPhysicalPrimary(stackIndex) && (TMath::Abs(fMCStack->Particle(stackIndex)->GetPDG()->Charge()) > 0.01 || TMath::Abs(fMCStack->Particle(stackIndex)->GetPdgCode())==3122)) return kTRUE;
+  return kFALSE;
+}
 
 /// Track Acceptance cuts, for tracks.
 ///
@@ -730,7 +703,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedKinematics(AliVTrack *track)
   return kTRUE;
 }
 
-
 /// Track Acceptance cuts, for MC particles.
 ///
 /// \param TParticle Input particle
@@ -750,7 +722,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedKinematics(TParticle *mcTrack
   return kTRUE;
 }
 
-
 /// Track Quality cuts.
 ///
 /// \param AliVTrack Input track
@@ -764,7 +735,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedQuality(AliVTrack *track){
   return kTRUE;
 }
 
-
 /// selection and pileup rejection for 2013 p-A
 Bool_t AlidNdPtUnifiedAnalysisTask::IsEventAccepted2013pA(AliVEvent *event)
 {
@@ -773,7 +743,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsEventAccepted2013pA(AliVEvent *event)
   if (fUtils->IsPileUpEvent(event)) { return kFALSE;  }
   return kTRUE;
 }
-
 
 /// Event cuts and pileup rejection for 2015 data: pp and Pb-Pb
 Bool_t AlidNdPtUnifiedAnalysisTask::IsEventAccepted2015data(AliVEvent *event)
@@ -786,7 +755,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsEventAccepted2015data(AliVEvent *event)
   if (ESDevent->IsPileupFromSPD(5,0.8)) {return kFALSE; }
   return kTRUE;
 }
-
 
 /// Event Acceptance cuts.
 ///
@@ -801,7 +769,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsEventAcceptedGeometrics(AliVEvent *event)
   return kTRUE;
 }
 
-
 /// Event Quality cuts.
 ///
 /// \param AliVEvent Input event
@@ -809,42 +776,11 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsEventAcceptedGeometrics(AliVEvent *event)
 /// \return Is event accepted: kTRUE, else kFALSE
 Bool_t AlidNdPtUnifiedAnalysisTask::IsEventAcceptedQuality(AliVEvent *event)
 {
-//   AliVVertex *vertex = event->GetPrimaryVertexTracks();
+  //   AliVVertex *vertex = event->GetPrimaryVertexTracks();
   if(!event) return kFALSE;
   if(!IsVertexOK(event)) return kFALSE;
   return kTRUE;
 }
-
-
-/// Select primary charged particles
-///
-/// \param Int_t MC lable of particle
-///
-/// \return Is particle accepted: kTRUE, else kFALSE
-Bool_t AlidNdPtUnifiedAnalysisTask::IsSelectedParticle(Int_t mcLabel)
-{
-  Int_t ipdg = TMath::Abs(fMCStack->Particle(mcLabel)->GetPdgCode());
-  switch(fSelectedParticleLabel)
-  {
-    case AlidNdPtUnifiedAnalysisTask::kPrimary: /// Accept all primary particles
-     break;
-    case AlidNdPtUnifiedAnalysisTask::kPion: 				/// accept pions
-     if(ipdg!=211) return kFALSE; break;				/// Reject other particles then pions
-    case AlidNdPtUnifiedAnalysisTask::kKaon: 				/// accept kaons
-      if(ipdg!=321) return kFALSE; break;				/// Reject other particles then kaons
-    case AlidNdPtUnifiedAnalysisTask::kProtons: 			/// accept protons
-      if(ipdg!=2212) return kFALSE; break;				/// Reject other particles then protons
-    case AlidNdPtUnifiedAnalysisTask::kSigma:
-        if(ipdg!=3222) return kFALSE; break;
-    case AlidNdPtUnifiedAnalysisTask::kOmega:
-        if(ipdg!=3334) return kFALSE; break;
-    case AlidNdPtUnifiedAnalysisTask::kRest:
-    if(ipdg==211 || ipdg==321 || ipdg==2212 || ipdg==3222 || ipdg==3334) return kFALSE;  break;			/// Select all other particles
-  }
-//   printf("PDG Code: %d\n", ipdg);
-  return kTRUE;
-}
-
 
 /// Function to either fill Multiplicity or centrality
 ///
@@ -854,27 +790,25 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsSelectedParticle(Int_t mcLabel)
 Double_t AlidNdPtUnifiedAnalysisTask::GetEventMultCent(AliVEvent *event)
 {
   if(fUseMultiplicity)
-    {
-      AliVMultiplicity* multiplicity = event->GetMultiplicity();
-      if(!multiplicity) {printf("ERROR: multiplicity not available\n"); return 999;}
-      Int_t mult = multiplicity->GetNumberOfTracklets();
-      return mult;
-    }
+  {
+    AliVMultiplicity* multiplicity = event->GetMultiplicity();
+    if(!multiplicity) {printf("ERROR: multiplicity not available\n"); return 999;}
+    Int_t mult = multiplicity->GetNumberOfTracklets();
+    return mult;
+  }
   else
-    {
-      Float_t centralityF = -1;
-      AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
-      if ( MultSelection ){
-	centralityF = MultSelection->GetMultiplicityPercentile("V0M"/*, lEmbedEventSelection = kFALSE*/);
-	if(centralityF>100) return 999;
-	return centralityF;
-      }else{
-	AliInfo("Didn't find MultSelection!");
-      }
+  {
+    Float_t centralityF = -1;
+    AliMultSelection *MultSelection = (AliMultSelection*) fEvent->FindListObject("MultSelection");
+    if ( MultSelection ){
+      centralityF = MultSelection->GetMultiplicityPercentile("V0M"/*, lEmbedEventSelection = kFALSE*/);
+      if(centralityF>100) return 999;
+      return centralityF;
+    }else{
+      AliInfo("Didn't find MultSelection!");
     }
+  }
 }
-
-
 
 /// Function to initialize the ESD track cuts
 void AlidNdPtUnifiedAnalysisTask::InitESDTrackCuts(){
@@ -903,7 +837,6 @@ void AlidNdPtUnifiedAnalysisTask::InitESDTrackCuts(){
 
 }
 
-
 /// Function to initialize the dNdPtEventCuts (CURRENTLY not used...)
 void AlidNdPtUnifiedAnalysisTask::InitdNdPtEventCuts(){
 
@@ -913,22 +846,20 @@ void AlidNdPtUnifiedAnalysisTask::InitdNdPtEventCuts(){
   fEventCuts->SetMeanXYZv(fMeanXYZv[0],fMeanXYZv[1],fMeanXYZv[2]);
   fEventCuts->SetSigmaMeanXYZv(fSigmaMeanXYZv[0],fSigmaMeanXYZv[1],fSigmaMeanXYZv[2]);
   fEventCuts->SetTriggerRequired(fEventTriggerRequired);
-
 }
 
 ///Function to check vertex quality
 Bool_t AlidNdPtUnifiedAnalysisTask::IsVertexOK(AliVEvent *event){
-
   if(fIsESD){
     Float_t requiredZResolution = 1000;
     AliESDEvent* ESDevent = dynamic_cast<AliESDEvent*>(event);
     const AliESDVertex *esdVertex = ESDevent->GetPrimaryVertexTracks();
     if(!esdVertex){printf("ERROR: vertex not available\n"); return kFALSE;}
     if(esdVertex->GetNContributors()<1) {
-    // SPD vertex
+      // SPD vertex
       esdVertex = ESDevent->GetPrimaryVertexSPD();
     }
-//     AliESDVertex *esdVertex = dynamic_cast<AliESDVertex*> (vertex);
+    //     AliESDVertex *esdVertex = dynamic_cast<AliESDVertex*> (vertex);
     if(!esdVertex->GetStatus()){return kFALSE;}
     Double_t zRes = esdVertex->GetZRes();
     if (zRes > requiredZResolution) return kFALSE;
@@ -938,7 +869,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsVertexOK(AliVEvent *event){
     if(!vertexSPD) return kFALSE;
     if(!vertexSPD->GetStatus()) return kFALSE;
     if (vertexSPD->IsFromVertexerZ() && vertexSPD->GetDispersion() > 0.04) return kFALSE; /// vertexSPD->GetDispersion() > 0.02 to 0.04
-
   }else{
     //AOD code goes here
   }
@@ -950,7 +880,6 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsVertexOK(AliVEvent *event){
 /// one prompt (MC primary) particle in acceptance
 /// pT>0, |eta|<1.0 for normalization
 Bool_t AlidNdPtUnifiedAnalysisTask::IsMCEventINEL0(AliMCEvent* mcEvent, Double_t ptmin, Double_t etarange){
-
   if(!mcEvent) return kFALSE;
   // AliMCEvent* fmcEvent = static_cast<AliMCEvent*>(mcEvent);
   AliStack* stack = mcEvent->Stack();
@@ -979,13 +908,11 @@ Bool_t AlidNdPtUnifiedAnalysisTask::IsMCEventINEL0(AliMCEvent* mcEvent, Double_t
 
   if(count > 0) return kTRUE;
   else return kFALSE;
-
 }
 
-///Not implemented jet
+///TODO Not implemented yet
 Bool_t AlidNdPtUnifiedAnalysisTask::IsTrackAcceptedGeometricalCut(AliVTrack *tr, Double_t bMagZ){
   return kTRUE;
-
 }
 
 /// Function to return Particle ID for Histograms
@@ -995,8 +922,12 @@ Int_t AlidNdPtUnifiedAnalysisTask::IdentifyMCParticle(Int_t mcLabel){
   if(ipdg==211)  return AlidNdPtUnifiedAnalysisTask::kPion;
   if(ipdg==321)  return AlidNdPtUnifiedAnalysisTask::kKaon;
   if(ipdg==2212) return AlidNdPtUnifiedAnalysisTask::kProtons;
-  if(ipdg==3222) return AlidNdPtUnifiedAnalysisTask::kSigma;
-  if(ipdg==3334) return AlidNdPtUnifiedAnalysisTask::kOmega;
+  if(ipdg==3222) return AlidNdPtUnifiedAnalysisTask::kSigmaPlus;
+  if(ipdg==3112) return AlidNdPtUnifiedAnalysisTask::kSigmaMinus;
+  if(ipdg==3334) return AlidNdPtUnifiedAnalysisTask::kOmegaMinus;
+  if(ipdg==3312) return AlidNdPtUnifiedAnalysisTask::kXiMinus;
+  if(ipdg==11) return AlidNdPtUnifiedAnalysisTask::kElectron;
+  if(ipdg==13) return AlidNdPtUnifiedAnalysisTask::kMuon;
+  if(ipdg==3122) return AlidNdPtUnifiedAnalysisTask::kLambda;
   return AlidNdPtUnifiedAnalysisTask::kRest;
-
 }

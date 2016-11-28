@@ -23,13 +23,14 @@
 #include <TLatex.h>
 #include <TGraphAsymmErrors.h>
 
-#include <AliHFMassFitter.h>
+#include "AliHFMassFitter.h"
 #include "AliRDHFCutsD0toKpi.h"
+#include "AliRDHFCutsDstoKKpi.h"
 #include "AliVertexingHFUtils.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliEventPlaneResolutionHandler.h"
-#include <AliVertexingHFUtils.h>
+#include "AliVertexingHFUtils.h"
 
 #endif
 
@@ -40,51 +41,65 @@
 //         Giacomo Ortona  ortona@to.infn.it
 //         Francesco Prino prino@to.infn.it
 
-//global variables to be set
-TString filename="AnalysisResults_train63.root";
-TString suffix="v2Dplus3050Cut4upcutPIDTPC";
-TString partname="Dplus";
-Int_t minCent=30;
-Int_t maxCent=50;
-//evPlane flag from AliEventPlaneResolutionHandler: 
+//_________________________________________________________________
+//GLOBAL VARIABLES TO BE SET
+//input file
+const TString filename="AnalysisResults.root";
+//const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/HR_bunch1-3/AnalysisResultsv2_EP_pass0_diffdet_topod0cut_3050.root";
+const TString suffix="_Topod0Cut_pass0_QoverM_VZERO_EP";
+const TString partname="Dplus";
+const Int_t minCent=30;
+const Int_t maxCent=50;
+
+const TString outputdir = ".";
+
+//EP resolution
 //kTPCFullEta, kTPCPosEta,kVZERO,kVZEROA,kVZEROC
-Int_t evPlane=AliEventPlaneResolutionHandler::kTPCPosEta;
+const Int_t evPlane=AliEventPlaneResolutionHandler::kVZERO;
 //resolution flag fromAliEventPlaneResolutionHandler:
 //kTwoRandSub,kTwoChargeSub,kTwoEtaSub,kThreeSub,kThreeSubTPCGap
-Int_t evPlaneRes=AliEventPlaneResolutionHandler::kTwoEtaSub;
-Bool_t useNcollWeight=kFALSE;
-// pt and phi binning
-const Int_t nptbinsnew=4;
-Float_t ptbinsnew[nptbinsnew+1]={3.,4.,6.,8.,12.};
-const Int_t nphibins=4;
-Float_t phibinslim[nphibins+1]={0,TMath::Pi()/4,TMath::Pi()/2,3*TMath::Pi()/4,TMath::Pi()};
-// mass fit configuration
-Int_t rebin[nptbinsnew]={4,4,4,4};
-Int_t typeb=0;  // Background: 0=expo, 1=linear, 2=pol2
-Bool_t fixAlsoMass=kFALSE;
-Double_t minMassForFit=1.6;
-Double_t maxMassForFit=2.2;
-Float_t massRangeForCounting=0.1; // GeV
+const Bool_t useAliHandlerForRes=kFALSE;
+Int_t evPlaneRes=AliEventPlaneResolutionHandler::kThreeSub;
+const Bool_t useNcollWeight=kFALSE;
 
-Bool_t gnopng=kFALSE; //don't save in png format (only root and eps)
-Int_t minPtBin[nptbinsnew]={-1,-1,-1,-1};
-Int_t maxPtBin[nptbinsnew]={-1,-1,-1,-1};
-Double_t effInOverEffOut=1.03;
+// pt and phi binning
+const Int_t nptbinsnew=10;
+const Double_t ptbinsnew[nptbinsnew+1]={2,3,4,5,6.,7.,8,10,12,16,24};
+
+const Int_t nphibins=4;
+const Double_t phibinslim[nphibins+1]={0,TMath::Pi()/4,TMath::Pi()/2,3*TMath::Pi()/4,TMath::Pi()};
+
+// mass fit configuration
+const Int_t rebin[]={2,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4};
+const Int_t typeb=AliHFMassFitter::kExpo;  // Background: 0=expo, 1=linear, 2=pol2
+const Bool_t fixAlsoMass=kFALSE;
+const Double_t minMassForFit=1.69;
+const Double_t maxMassForFit=2.02;
+const Double_t nSigmaForCounting=3.5;
+
+//not to be set
+Int_t minPtBin[nptbinsnew]={-1};
+Int_t maxPtBin[nptbinsnew]={-1};
+const Double_t effInOverEffOut=1.03;
 Double_t massD;
 
-//methods
+const Int_t colors[] = {kRed+1,kBlack,kBlue+1,kGreen+2,kOrange+7,kBlue-7};
+const Int_t markers[] = {kFullSquare,kFullCircle,kFullTriangleUp,kFullDiamond,kOpenSquare,kOpenCircle,kOpenTriangleUp,kOpenDiamond};
+
+//_________________________________________________________________
+//METHODS PROTOTYPES
+void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE);
 TList *LoadMassHistos(TList *inputlist,Bool_t inoutanis);
 TList* LoadResolutionHistos(TList *inputlist);
-Int_t FindPtBin(Int_t nbins, Float_t* array,Float_t value);
-void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2, Bool_t inoutanis);
-void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE);
+Int_t FindPtBin(Int_t nbins, Double_t* array,Double_t value);
+void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Int_t minfit, Int_t maxfit, const Int_t *rebin);
+TGraphAsymmErrors* Computev2(TGraphAsymmErrors **gSignal, Double_t resol, Float_t *averagePt, Bool_t inoutanis, TGraphAsymmErrors *gRelSystEff);
 void DrawEventPlane();
 Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3);
+void SetStyle(Int_t optfit=0);
 
-
-
-//method implementation
 //_________________________________________________________________
+//METHODS IMPLEMENTATION
 Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3){
   Double_t resolFull=1.;
   if(evPlaneRes==AliEventPlaneResolutionHandler::kTwoRandSub ||
@@ -106,24 +121,33 @@ Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, 
     hevplresos[0]=hsubev1;
     hevplresos[1]=hsubev2;
     hevplresos[2]=hsubev3;
+    TString namereso1 = hevplresos[0]->GetName();
     for(Int_t ires=0;ires<3;ires++){
       resolSub[ires]=hevplresos[ires]->GetMean();
       errors[ires]=hevplresos[ires]->GetMeanError();
     }
-    Double_t lowlim[3];for(Int_t ie=0;ie<3;ie++)lowlim[ie]=TMath::Abs(resolSub[ie]-errors[ie]);
-    if(evPlane==AliEventPlaneResolutionHandler::kVZEROC ||
-       evPlane==AliEventPlaneResolutionHandler::kVZERO){
+    Double_t lowlim[3];
+    for(Int_t ie=0;ie<3;ie++) {lowlim[ie]=TMath::Abs(resolSub[ie]-errors[ie]);}
+    
+    if(!namereso1.Contains("hEvPlaneReso1")) {
+      if(evPlane==AliEventPlaneResolutionHandler::kVZEROC ||
+         evPlane==AliEventPlaneResolutionHandler::kVZERO){
+        resolFull=TMath::Sqrt(resolSub[1]*resolSub[2]/resolSub[0]);
+        error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[1]/lowlim[0]);
+      }
+      else if(evPlane==AliEventPlaneResolutionHandler::kVZEROA){
+        resolFull=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
+        error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[0]/lowlim[1]);
+      }
+      else if(evPlane==AliEventPlaneResolutionHandler::kTPCFullEta ||
+              evPlane==AliEventPlaneResolutionHandler::kTPCPosEta){
+        resolFull=TMath::Sqrt(resolSub[0]*resolSub[1]/resolSub[2]);
+        error=resolFull-TMath::Sqrt(lowlim[0]*lowlim[1]/lowlim[2]);
+      }
+    }
+    else {
       resolFull=TMath::Sqrt(resolSub[1]*resolSub[2]/resolSub[0]);
       error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[1]/lowlim[0]);
-    }
-    else if(evPlane==AliEventPlaneResolutionHandler::kVZEROA){
-      resolFull=TMath::Sqrt(resolSub[0]*resolSub[2]/resolSub[1]);
-      error=resolFull-TMath::Sqrt(lowlim[2]*lowlim[0]/lowlim[1]);
-    }
-    else if(evPlane==AliEventPlaneResolutionHandler::kTPCFullEta ||
-	    evPlane==AliEventPlaneResolutionHandler::kTPCPosEta){
-      resolFull=TMath::Sqrt(resolSub[0]*resolSub[1]/resolSub[2]);
-      error=resolFull-TMath::Sqrt(lowlim[0]*lowlim[1]/lowlim[2]);
     }
   }
   return resolFull;
@@ -136,10 +160,10 @@ TList* LoadResolutionHistos(TList *inputlist){
   outlist->SetName("eventplanehistlist");
 
   const Int_t nBins=20;
-  Double_t ncoll[nBins]={1790.77,1578.44,1394.82,1236.17,1095.08,
-			 969.86,859.571,759.959,669.648,589.588,
-			 516.039,451.409,392.853,340.493,294.426,
-			 252.385,215.484,183.284,155.101,130.963};
+  Double_t ncoll[nBins]={1790.77,1578.44,1394.82,1236.17
+    ,1095.08,969.86,859.571,759.959,669.648,589.588,516.039
+    ,451.409,392.853,340.493,294.426,252.385,215.484,183.284
+    ,155.101,130.963};
 
   Int_t minCentTimesTen=minCent*10;
   Int_t maxCentTimesTen=maxCent*10;
@@ -150,10 +174,16 @@ TList* LoadResolutionHistos(TList *inputlist){
      evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
   TString namereso[3]={"Reso","Reso2","Reso3"};
   TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
+  TH1F* htestversion=(TH1F*)inputlist->FindObject(Form("hEvPlaneResocentr%d_%d",minCentTimesTen,minCentTimesTen+25));
+  if(htestversion){
+    printf("Old version of the task\n");
+  }else{
+    printf("New version of the task\n");
+    namereso[0]="Reso1";
+  }
   TH2F* hevpls=(TH2F*)inputlist->FindObject(Form("hEvPlanecentr%d_%d",minCentTimesTen,minCentTimesTen+25));
   hevpls->SetName(Form("hEvPlane%s",suffixcentr.Data()));
   hevpls->SetTitle(Form("Event Plane angle %s",suffixcentr.Data()));
-    //    TH1F* hevplresos=(TH1F*)list->FindObject(Form("hEvPlaneResocentr%d_%d",mincentr,mincentr+5));QUI!!!
   TH1F* hevplresos[3];
   Int_t ncBin=minCentTimesTen/25;
   
@@ -278,7 +308,7 @@ TList *LoadMassHistos(TList *inputlist,Bool_t inoutanis){
 //______________________________________________________________
 Bool_t DefinePtBins(AliRDHFCuts *cutobj){
   Int_t nPtBinsCuts=cutobj->GetNPtBins();
-  Float_t *ptlimsCuts=cutobj->GetPtBinLimits();
+  Float_t *ptlimsCuts=(Float_t*)cutobj->GetPtBinLimits();
   //  for(Int_t iPt=0; iPt<nPtBinsCuts; iPt++) printf(" %d %f-%f\n",iPt,ptlimsCuts[iPt],ptlimsCuts[iPt+1]);
   for(Int_t iPtCuts=0; iPtCuts<nPtBinsCuts; iPtCuts++){
     for(Int_t iFinalPtBin=0; iFinalPtBin<nptbinsnew; iFinalPtBin++){  
@@ -302,61 +332,77 @@ Int_t GetPadNumber(Int_t ix,Int_t iy){
   return (iy)*nptbinsnew+ix+1;
 }
 //______________________________________________________________
-void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2, Bool_t inoutanis){
-
+void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Int_t minfit, Int_t maxfit, const Int_t *rebin) {
+  
   Int_t nphi=nphibins;
   if(inoutanis)nphi=2;
   
   //Canvases for drawing histograms
-  TCanvas *cDeltaPhi = new TCanvas("cinvmassdeltaphi","Invariant mass distributions",1200,700);
-  TCanvas *cDeltaPhifs = new TCanvas("cinvmassdeltaphifs","Invariant mass distributions - fit with fixed sigma",1200,700);
-  TCanvas *cPhiInteg = new TCanvas("cinvmass","Invariant mass distributions - #phi integrated",1200,350);
+  TCanvas *cDeltaPhi = new TCanvas("cinvmassdeltaphi","Invariant mass distributions",1920,1080);
+  TCanvas *cDeltaPhifs = new TCanvas("cinvmassdeltaphifs","Invariant mass distributions - fit with fixed sigma",1920,1080);
+  TCanvas *cPhiInteg = new TCanvas("cinvmass","Invariant mass distributions - #phi integrated",1920,1080);
   cDeltaPhi->Divide(nptbinsnew,nphi);
   cDeltaPhifs->Divide(nptbinsnew,nphi);
-  cPhiInteg->Divide(nptbinsnew,1);
+  if(nptbinsnew%2==0) {cPhiInteg->Divide(nptbinsnew/2,2);}
+  else {cPhiInteg->Divide(nptbinsnew/2+1,2);}
   Int_t nMassBins;
-  Double_t hmin,hmax;
-  for(Int_t ipt=0;ipt<nptbinsnew;ipt++){    
+  for(Int_t ipt=0;ipt<nptbinsnew;ipt++){
     TH1F *histtofitfullsigma=(TH1F*)histlist->FindObject(Form("hMass_pt%d_phi0",ipt))->Clone();
     for(Int_t iphi=0;iphi<nphi;iphi++){
       Int_t ipad=GetPadNumber(ipt,iphi);
       Double_t signal=0,esignal=0;
+      Double_t sigma=0, esigma=0;
+      Double_t mean=0, emean=0;
+      Double_t chisquare=0;
       TH1F *histtofit=(TH1F*)histlist->FindObject(Form("hMass_pt%d_phi%d",ipt,iphi))->Clone();
       if(iphi>0)histtofitfullsigma->Add((TH1F*)histtofit->Clone());
       if(!histtofit){
-	gSignal[ipt]->SetPoint(iphi,iphi,signal);
-	gSignal[ipt]->SetPointError(iphi,0,0,esignal,esignal);
-	return;
+        gSignal[ipt]->SetPoint(iphi,iphi,signal);
+        gSignal[ipt]->SetPointError(iphi,0,0,esignal,esignal);
+        return;
       }
-      histtofit->SetTitle(Form("%.1f<p_{t}<%.1f, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
+      histtofit->SetTitle(Form("%.0f < #it{p}_{T} < %.0f, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
       nMassBins=histtofit->GetNbinsX();
-      hmin=TMath::Max(minMassForFit,histtofit->GetBinLowEdge(2));
-      hmax=TMath::Min(maxMassForFit,histtofit->GetBinLowEdge(nMassBins-2));
       histtofit->Rebin(rebin[ipt]);
-      AliHFMassFitter fitter(histtofit,hmin,hmax,1,typeb);
+      AliHFMassFitter fitter(histtofit,minfit,maxfit,1,bkgfunc);
       fitter.SetInitialGaussianMean(massD);
-      //      fitter.SetInitialGaussianSigma(0.012);
+      fitter.SetInitialGaussianSigma(0.012);
       Bool_t ok=fitter.MassFitter(kFALSE);
+      Double_t sigmaforcounting=0;
+      Double_t meanforcounting=0;
       if(ok){
-	fitter.DrawHere(cDeltaPhi->cd(ipad),3,1);
-	fitter.Signal(3,signal,esignal);
+        fitter.DrawHere(cDeltaPhi->cd(ipad),3,1);
+        signal=fitter.GetRawYield();
+        esignal=fitter.GetRawYieldError();
+        sigma=fitter.GetSigma();
+        esigma=fitter.GetSigmaUncertainty();
+        sigmaforcounting=sigma;
+        mean=fitter.GetMean();
+        emean=fitter.GetMeanUncertainty();
+        meanforcounting=mean;
+        chisquare=fitter.GetReducedChiSquare();
       }
       gSignal[ipt]->SetPoint(iphi,iphi,signal);
       gSignal[ipt]->SetPointError(iphi,0,0,esignal,esignal);
+      hSigmaFree[iphi]->SetBinContent(ipt+1,sigma);
+      hSigmaFree[iphi]->SetBinError(ipt+1,esigma);
+      hMean[iphi]->SetBinContent(ipt+1,mean);
+      hMean[iphi]->SetBinError(ipt+1,emean);
+      hChiSquare[iphi]->SetBinContent(ipt+1,chisquare);
+      hChiSquare[iphi]->SetBinError(ipt+1,1.e-15);
       TF1* fB1=fitter.GetBackgroundFullRangeFunc();
       TF1* fB2=fitter.GetBackgroundRecalcFunc();
-      Float_t minBinSum=histtofit->FindBin(massD-massRangeForCounting);
-      Float_t maxBinSum=histtofit->FindBin(massD+massRangeForCounting);
-      Float_t cntSig1=0.;
-      Float_t cntSig2=0.;
-      Float_t cntErr=0.;
+      Double_t minBinSum=histtofit->FindBin(meanforcounting-nSigmaForCounting*sigmaforcounting);
+      Double_t maxBinSum=histtofit->FindBin(meanforcounting+nSigmaForCounting*sigmaforcounting);
+      Double_t cntSig1=0.;
+      Double_t cntSig2=0.;
+      Double_t cntErr=0.;
       for(Int_t iMB=minBinSum; iMB<=maxBinSum; iMB++){
-	Float_t bkg1=fB1 ? fB1->Eval(histtofit->GetBinCenter(iMB)) : 0;
-	Float_t bkg2=fB2 ? fB2->Eval(histtofit->GetBinCenter(iMB)) : 0;
-	//	printf("PtBin %d MassBin%d BC %f %f %f\n",ipt,iMB,histtofit->GetBinContent(iMB),bkg1,bkg2);
-	cntSig1+=(histtofit->GetBinContent(iMB)-bkg1);
-	cntSig2+=(histtofit->GetBinContent(iMB)-bkg2);
-	cntErr+=(histtofit->GetBinContent(iMB));
+        Double_t bkg1=fB1 ? fB1->Eval(histtofit->GetBinCenter(iMB)) : 0;
+        Double_t bkg2=fB2 ? fB2->Eval(histtofit->GetBinCenter(iMB)) : 0;
+        cntSig1+=(histtofit->GetBinContent(iMB)-bkg1);
+        cntSig2+=(histtofit->GetBinContent(iMB)-bkg2);
+        cntErr+=(histtofit->GetBinContent(iMB));
       }
       cntErr=TMath::Sqrt(cntErr);
       gSignalBC1[ipt]->SetPoint(iphi,iphi,cntSig1);
@@ -365,61 +411,115 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       gSignalBC2[ipt]->SetPointError(iphi,0,0,cntErr,cntErr);
     }
     //fit for fixed sigma
-    histtofitfullsigma->SetTitle(Form("%.1f<p_{t}<%.1f",ptbinsnew[ipt],ptbinsnew[ipt+1]));
+    histtofitfullsigma->SetTitle(Form("%.0f < #it{p}_{T} < %.0f GeV/c",ptbinsnew[ipt],ptbinsnew[ipt+1]));
+    histtofitfullsigma->GetXaxis()->SetTitle("M_{K#pi#pi} (GeV/c^{2})");
+    histtofitfullsigma->GetXaxis()->SetTitleSize(0.05);
     nMassBins=histtofitfullsigma->GetNbinsX();
-    hmin=TMath::Max(minMassForFit,histtofitfullsigma->GetBinLowEdge(2));
-    hmax=TMath::Min(maxMassForFit,histtofitfullsigma->GetBinLowEdge(nMassBins-2));
     histtofitfullsigma->Rebin(rebin[ipt]);
-    AliHFMassFitter fitter(histtofitfullsigma,hmin,hmax,1,typeb);
+    AliHFMassFitter fitter(histtofitfullsigma,minfit,maxfit,1,bkgfunc);
     fitter.SetInitialGaussianMean(massD);
-    //      fitter.SetInitialGaussianSigma(0.012);
-    //fitter.SetFixGaussianSigma(0.012);
     Bool_t ok=fitter.MassFitter(kFALSE);
+    Double_t sigmatot=0;
+    Double_t massFromFit=0;
     if(ok){
       fitter.DrawHere(cPhiInteg->cd(ipt+1),3,1);
+      sigmatot=fitter.GetSigma();
+      massFromFit=fitter.GetMean();
     }
-    Double_t sigma=fitter.GetSigma();
-    Double_t massFromFit=fitter.GetMean();
     for(Int_t iphi=0;iphi<nphi;iphi++){
       Int_t ipad=GetPadNumber(ipt,iphi);
       TH1F *histtofit=(TH1F*)histlist->FindObject(Form("hMass_pt%d_phi%d",ipt,iphi))->Clone();
-      histtofit->SetTitle(Form("%.1f<p_{t}<%.1f, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
+      histtofit->SetTitle(Form("%.1f<#it{p}_{T}<%.1f, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
       nMassBins=histtofit->GetNbinsX();
-      hmin=TMath::Max(minMassForFit,histtofit->GetBinLowEdge(2));
-      hmax=TMath::Min(maxMassForFit,histtofit->GetBinLowEdge(nMassBins-2));
       histtofit->Rebin(rebin[ipt]);
-      AliHFMassFitter fitter2(histtofit,hmin,hmax,1,typeb);
+      AliHFMassFitter fitter2(histtofit,minfit,maxfit,1,bkgfunc);
       fitter2.SetInitialGaussianMean(massD);
-      fitter2.SetFixGaussianSigma(sigma);
+      fitter2.SetFixGaussianSigma(sigmatot);
       if(fixAlsoMass) fitter2.SetFixGaussianMean(massFromFit);
       Bool_t ok2=fitter2.MassFitter(kFALSE);
       Double_t signal=0,esignal=0;
+      Double_t sigma=0, esigma=0;
+      Double_t mean=0, emean=0;
+      Double_t chisquare=0;
       if(ok2){
-	fitter2.DrawHere(cDeltaPhifs->cd(ipad),3,1);
-	fitter2.Signal(3,signal,esignal);
+        fitter2.DrawHere(cDeltaPhifs->cd(ipad),3,1);
+        signal=fitter2.GetRawYield();
+        esignal=fitter2.GetRawYieldError();
+        sigma=fitter.GetSigma();
+        esigma=fitter.GetSigmaUncertainty();
+        mean=fitter2.GetMean();
+        emean=fitter2.GetMeanUncertainty();
+        chisquare=fitter2.GetReducedChiSquare();
       }
       gSignalfs[ipt]->SetPoint(iphi,iphi,signal);
       gSignalfs[ipt]->SetPointError(iphi,0,0,esignal,esignal);
+      hSigmaFixed[iphi]->SetBinContent(ipt+1,sigma);
+      hSigmaFixed[iphi]->SetBinError(ipt+1,esigma);
+      hMeanfs[iphi]->SetBinContent(ipt+1,mean);
+      hMeanfs[iphi]->SetBinError(ipt+1,emean);
+      hChiSquarefs[iphi]->SetBinContent(ipt+1,chisquare);
+      hChiSquarefs[iphi]->SetBinError(ipt+1,1.e-15);
     }
   }//end loop on pt bin
-
-
-  cDeltaPhi->SaveAs(Form("InvMassDeltaPhi_%s.eps",suffix.Data()));
-  cDeltaPhifs->SaveAs(Form("InvMassDeltaPhi_fs_%s.eps",suffix.Data()));
-  cDeltaPhifs->SaveAs(Form("InvMassDeltaPhi_fs_%s.root",suffix.Data()));
-  cPhiInteg->SaveAs(Form("InvMassfullphi_%s.eps",suffix.Data()));
-
-  if(!gnopng){
-    cDeltaPhi->SaveAs(Form("InvMassDeltaPhi_%s.png",suffix.Data()));
-    cDeltaPhifs->SaveAs(Form("InvMassDeltaPhi_fs_%s.png",suffix.Data()));
-    cPhiInteg->SaveAs(Form("InvMassfullphi_%s.png",suffix.Data()));
-  }
-  //cDeltaPhifs->DrawClone();
-  //cDeltaPhifs->Close();
- 
+  
+  cDeltaPhi->SaveAs(Form("%s/InvMassDeltaPhi%s.pdf",outputdir.Data(),suffix.Data()));
+  cDeltaPhi->SaveAs(Form("%s/InvMassDeltaPhi%s.root",outputdir.Data(),suffix.Data()));
+  cDeltaPhifs->SaveAs(Form("%s/InvMassDeltaPhi_fs%s.pdf",outputdir.Data(),suffix.Data()));
+  cDeltaPhifs->SaveAs(Form("%s/InvMassDeltaPhi_fs%s.root",outputdir.Data(),suffix.Data()));
+  cPhiInteg->SaveAs(Form("%s/InvMassfullphi%s.pdf",outputdir.Data(),suffix.Data()));
 }
+
+//______________________________________________________________
+TGraphAsymmErrors* Computev2(TGraphAsymmErrors **gSignal, Double_t resol, Float_t *averagePt, Bool_t inoutanis, TGraphAsymmErrors *gRelSystEff) {
+  
+  TGraphAsymmErrors* gv2 = new TGraphAsymmErrors(nptbinsnew);
+  
+  if(inoutanis) {
+    for(Int_t iPt=0; iPt<nptbinsnew; iPt++) {
+      Double_t *y=gSignal[iPt]->GetY();
+      Double_t nIn=y[0];
+      Double_t nOut=y[1];
+      Double_t enIn=gSignal[iPt]->GetErrorY(0);
+      Double_t enOut=gSignal[iPt]->GetErrorY(1);
+      Double_t anis=(nIn-nOut)/(nIn+nOut);
+      Double_t eAnis=2./((nIn+nOut)*(nIn+nOut))*TMath::Sqrt(nIn*nIn*enOut*enOut+nOut*nOut*enIn*enIn);
+      Double_t v2=anis*TMath::Pi()/4./resol;
+      Double_t ev2=eAnis*TMath::Pi()/4./resol;
+      gv2->SetPoint(iPt,averagePt[iPt],v2);
+      gv2->SetPointError(iPt,averagePt[iPt]-ptbinsnew[iPt],ptbinsnew[iPt+1]-averagePt[iPt],ev2,ev2);
+      if(gRelSystEff) {
+        //systematic uncertainty for in-out efficiency
+        Double_t anis1=(nIn-nOut*effInOverEffOut)/(nIn+nOut*effInOverEffOut);
+        Double_t anis2=(nIn*effInOverEffOut-nOut)/(nIn*effInOverEffOut+nOut);
+        Double_t systEffUp=0.,systEffDown=0.;
+        if(anis1>anis && anis1>anis2) systEffUp=anis1/anis;
+        if(anis2>anis && anis2>anis1) systEffUp=anis2/anis;
+        if(anis1<anis && anis1<anis2) systEffDown=anis1/anis;
+        if(anis2<anis && anis2<anis1) systEffDown=anis2/anis;
+        cout << Form(" Bin %d <pt>=%.3f  v2=%f+-%f systEff=%f %f\n",iPt,averagePt[iPt],v2,ev2,systEffUp*v2,systEffDown*v2)<<endl;
+        gRelSystEff->SetPoint(iPt,averagePt[iPt],v2);
+        gRelSystEff->SetPointError(iPt,0.4,0.4,v2*(1-systEffDown),v2*(systEffUp-1));
+      }
+    }
+    return gv2;
+  }
+  else {
+    TF1 *flowFunc = new TF1("flow","[0]*(1.+2.*[1]*TMath::Cos(2.*x))");
+    for(Int_t iPt=0; iPt<nptbinsnew; iPt++) {
+      //v2 from fit to Deltaphi distribution
+      gSignal[iPt]->Fit(flowFunc);
+      Double_t v2 = flowFunc->GetParameter(1)/resol;
+      Double_t ev2=flowFunc->GetParError(1)/resol;
+      gv2->SetPoint(iPt,averagePt[iPt],v2);
+      gv2->SetPointError(iPt,averagePt[iPt]-ptbinsnew[iPt],ptbinsnew[iPt+1]-averagePt[iPt],ev2,ev2);
+    }
+    return gv2;
+  }
+}
+
 //______________________________________________________________
 void DmesonsFlowAnalysis(Bool_t inoutanis){
+  
   TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
   TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
 
@@ -467,11 +567,12 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   TList *histlist=LoadMassHistos(list,inoutanis);
   TString aniss="";
   if(inoutanis)aniss+="anis";
-  histlist->SaveAs(Form("v2Histograms_%d_%d_%s_%s.root",minCent,maxCent,aniss.Data(),suffix.Data()),"RECREATE");
+  TString fine="";
+  if(nptbinsnew>=15) fine="_fineptbin";
+  histlist->SaveAs(Form("%s/v2Histograms_%d_%d_%s%s%s.root",outputdir.Data(),minCent,maxCent,aniss.Data(),suffix.Data(),fine.Data()),"RECREATE");
 
   Int_t nphi=nphibins;
   if(inoutanis)nphi=2;
-
 
   printf("average pt for pt bin \n");
   //average pt for pt bin
@@ -496,10 +597,11 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     Double_t hmax=histtofit->GetBinLowEdge(nMassBins-2); // need wide range for <pt>
     AliHFMassFitter fitter(histtofit,hmin,hmax,1);
     fitter.MassFitter(kFALSE);
-    Float_t massFromFit=fitter.GetMean();
-    Float_t sigmaFromFit=fitter.GetSigma();
+    Double_t massFromFit=fitter.GetMean();
+    Double_t sigmaFromFit=fitter.GetSigma();
     TF1* funcB2=fitter.GetBackgroundRecalcFunc();
     utils->AveragePt(averagePt[ipt],errorPt[ipt],ptbinsnew[ipt],ptbinsnew[ipt+1],hmasspt,massFromFit,sigmaFromFit,funcB2,2.5,4.5,0.,3.,1);
+    if(averagePt[ipt]==0) {averagePt[ipt]=(ptbinsnew[ipt]+ptbinsnew[ipt+1])/2;}
   }
   printf("Average pt\n");
   for(Int_t ipt=0;ipt<nptbinsnew;ipt++) printf("%f +- %f\n",averagePt[ipt],errorPt[ipt]);
@@ -510,68 +612,156 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   TGraphAsymmErrors *gSignalfs[nptbinsnew];
   TGraphAsymmErrors *gSignalBC1[nptbinsnew];
   TGraphAsymmErrors *gSignalBC2[nptbinsnew];
+  TH1F *hSigmaFree[nphi];
+  TH1F *hSigmaFixed[nphi];
+  TH1F *hMean[nphi];
+  TH1F *hMeanfs[nphi];
+  TH1F *hChiSquare[nphi];
+  TH1F *hChiSquarefs[nphi];
   for(Int_t i=0;i<nptbinsnew;i++){
     gSignal[i]=new TGraphAsymmErrors(nphi);
     gSignal[i]->SetName(Form("gasigpt%d",i));
-    gSignal[i]->SetTitle(Form("Signal %.1f<p_{t}<%.1f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
+    gSignal[i]->SetTitle(Form("Signal %.0f < #it{p}_{T} < %.0f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
     gSignal[i]->SetMarkerStyle(25);
     gSignalfs[i]=new TGraphAsymmErrors(nphi);
     gSignalfs[i]->SetName(Form("gasigfspt%d",i));
-    gSignalfs[i]->SetTitle(Form("Signal (fixed sigma) %.1f<p_{t}<%.1f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
+    gSignalfs[i]->SetTitle(Form("Signal (fixed sigma) %.0f < #it{p}_{T} < %.0f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
     gSignalfs[i]->SetMarkerStyle(21);
     gSignalBC1[i]=new TGraphAsymmErrors(nphi);
     gSignalBC1[i]->SetName(Form("gasigBC1pt%d",i));
-    gSignalBC1[i]->SetTitle(Form("Signal (BC1) %.1f<p_{t}<%.1f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
+    gSignalBC1[i]->SetTitle(Form("Signal (BC1) %.0f < #it{p}_{T} < %.0f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
     gSignalBC2[i]=new TGraphAsymmErrors(nphi);
     gSignalBC2[i]->SetName(Form("gasigBC2pt%d",i));
-    gSignalBC2[i]->SetTitle(Form("Signal (BC2) %.1f<p_{t}<%.1f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
+    gSignalBC2[i]->SetTitle(Form("Signal (BC2) %.0f < #it{p}_{T} < %.0f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
   }
-  FillSignalGraph(histlist,gSignal,gSignalfs,gSignalBC1,gSignalBC2,inoutanis);
+  for(Int_t iphi=0; iphi<nphi; iphi++) {
+    hSigmaFree[iphi] = new TH1F(Form("hSigmaFree_phi%d",iphi),Form("Sigma free - phi%d",iphi),nptbinsnew,ptbinsnew);
+    hSigmaFree[iphi]->SetMarkerStyle(markers[0]);
+    hSigmaFree[iphi]->SetMarkerColor(colors[0]);
+    hSigmaFree[iphi]->SetLineColor(colors[0]);
+    hSigmaFixed[iphi] = new TH1F(Form("hSigmaFixed_phi%d",iphi),Form("Sigma fixed - phi%d",iphi),nptbinsnew,ptbinsnew);
+    hSigmaFixed[iphi]->SetMarkerStyle(markers[1]);
+    hSigmaFixed[iphi]->SetMarkerColor(colors[1]);
+    hSigmaFixed[iphi]->SetLineColor(colors[1]);
+
+    hMean[iphi] = new TH1F(Form("hMean_phi%d",iphi),Form("Mean (sigma free) - phi%d",iphi),nptbinsnew,ptbinsnew);
+    hMean[iphi]->SetMarkerStyle(markers[0]);
+    hMean[iphi]->SetMarkerColor(colors[0]);
+    hMean[iphi]->SetLineColor(colors[0]);
+    hMeanfs[iphi] = new TH1F(Form("hMeanfs_phi%d",iphi),Form("Mean (sigma fixed) - phi%d",iphi),nptbinsnew,ptbinsnew);
+    hMeanfs[iphi]->SetMarkerStyle(markers[1]);
+    hMeanfs[iphi]->SetMarkerColor(colors[1]);
+    hMeanfs[iphi]->SetLineColor(colors[1]);
+
+    hChiSquare[iphi] = new TH1F(Form("hChiSquare_phi%d",iphi),Form("#chi^{2} (sigma free) - phi%d",iphi),nptbinsnew,ptbinsnew);
+    hChiSquare[iphi]->SetMarkerStyle(markers[0]);
+    hChiSquare[iphi]->SetMarkerColor(colors[0]);
+    hChiSquare[iphi]->SetLineColor(colors[0]);
+    hChiSquarefs[iphi] = new TH1F(Form("hChiSquarefs_phi%d",iphi),Form("#chi^{2} (sigma fixed) - phi%d",iphi),nptbinsnew,ptbinsnew);
+    hChiSquarefs[iphi]->SetMarkerStyle(markers[1]);
+    hChiSquarefs[iphi]->SetMarkerColor(colors[1]);
+    hChiSquarefs[iphi]->SetLineColor(colors[1]);
+  }
+  
+  FillSignalGraph(histlist,gSignal,gSignalfs,gSignalBC1,gSignalBC2,hSigmaFree,hSigmaFixed,hMean,hMeanfs,hChiSquare,hChiSquarefs,inoutanis,typeb,minMassForFit,maxMassForFit,rebin);
 
   //EP resolution
-  // TList* resolhist=LoadResolutionHistos(list);
-  // TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
-  // TH1F* hevplresos[3];
-  // TString namereso[3]={"Reso","Reso2","Reso3"};
-  // Int_t nSubRes=1;
-  // if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
-  //    evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
-  // for(Int_t ires=0;ires<nSubRes;ires++){
-  //   hevplresos[ires]=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
-  // }
-  // Double_t errorres;
-  // Double_t resol=GetEventPlaneResolution(errorres,hevplresos[0],hevplresos[1],hevplresos[2]);
-  AliEventPlaneResolutionHandler* epres=new AliEventPlaneResolutionHandler();
-  epres->SetEventPlane(evPlane);
-  epres->SetResolutionOption(evPlaneRes);
-  epres->SetUseNcollWeights(useNcollWeight);
-  Double_t resol=epres->GetEventPlaneResolution(minCent,maxCent);
-  delete epres;
-  printf("Event plane resolution %f\n",resol);
+  Double_t resol=-1.;
+  Double_t errorres=-1.;
 
+  if(useAliHandlerForRes) {
+    AliEventPlaneResolutionHandler* epres=new AliEventPlaneResolutionHandler();
+    epres->SetEventPlane(evPlane);
+    epres->SetResolutionOption(evPlaneRes);
+    if(useNcollWeight)
+      epres->SetUseNcollWeights();
+    resol=epres->GetEventPlaneResolution(minCent,maxCent);
+    delete epres;
+  }
+  else {
+    TList* resolhist=LoadResolutionHistos(list);
+    TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
+    TH1F* hevplresos[3];
+    TString namereso[3]={"Reso","Reso2","Reso3"};
+    TH1F* htestversion=(TH1F*)resolhist->FindObject(Form("hEvPlaneReso%s",suffixcentr.Data()));
+    cout<<htestversion<<endl;
+    if(htestversion){
+      printf("Old version of the task\n");
+    }else{
+      printf("New version of the task\n");
+      namereso[0]="Reso1";
+    }
+    Int_t nSubRes=1;
+    if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
+       evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
+    for(Int_t ires=0;ires<nSubRes;ires++){
+      hevplresos[ires]=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
+      }
+    resol=GetEventPlaneResolution(errorres,hevplresos[0],hevplresos[1],hevplresos[2]);
+  }
+
+  printf("Event plane resolution %f\n",resol);
   printf("Compute v2 \n");
   //compute v2
-  TCanvas *cv2fs =new TCanvas("v2_fs","v2 Fit with fixed sigma");
-  TCanvas *cv2 =new TCanvas("v2","v2 - systematic on yield extraction");
-  TGraphAsymmErrors *gv2=new TGraphAsymmErrors(nptbinsnew);
-  TGraphAsymmErrors *gv2fs=new TGraphAsymmErrors(nptbinsnew);
-  TGraphAsymmErrors *gv2BC1=new TGraphAsymmErrors(nptbinsnew);
-  TGraphAsymmErrors *gv2BC2=new TGraphAsymmErrors(nptbinsnew);
+  SetStyle();
+  
+  TCanvas *cv2fs =new TCanvas("v2_fs","v2 Fit with fixed sigma",1920,1080);
+  TCanvas *cv2 =new TCanvas("v2","v2 - systematic on yield extraction",1920,1080);
+  
   TGraphAsymmErrors *grelSystEff=new TGraphAsymmErrors(nptbinsnew);
-
+  TGraphAsymmErrors *gv2=Computev2(gSignal,resol,averagePt,inoutanis,0x0);
+  TGraphAsymmErrors *gv2fs=Computev2(gSignalfs,resol,averagePt,inoutanis,grelSystEff);
+  TGraphAsymmErrors *gv2BC1=Computev2(gSignalBC1,resol,averagePt,inoutanis,0x0);
+  TGraphAsymmErrors *gv2BC2=Computev2(gSignalBC2,resol,averagePt,inoutanis,0x0);
+ 
   gv2->SetName("gav2");
-  gv2->SetTitle("v_{2}(p_{t})");
+  gv2->GetYaxis()->SetTitle("v_{2} {EP}");
+  gv2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  gv2->SetTitle("");
+  gv2->SetLineColor(colors[0]);
+  gv2->SetMarkerColor(colors[0]);
+  gv2->SetLineWidth(2);
+  gv2->SetMarkerStyle(markers[0]);
+  gv2->SetMarkerSize(1.5);
   gv2fs->SetName("gav2fs");
-  gv2fs->SetTitle("v_{2}(p_{t}) (fit with fixed sigma)");
+  gv2fs->GetYaxis()->SetTitle("v_{2} {EP}");
+  gv2fs->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  gv2fs->SetTitle("");
+  gv2fs->SetLineColor(colors[1]);
+  gv2fs->SetMarkerColor(colors[1]);
+  gv2fs->SetLineWidth(2);
+  gv2fs->SetMarkerStyle(markers[1]);
+  gv2fs->SetMarkerSize(1.5);
   gv2BC1->SetName("gav2BC1");
-  gv2BC1->SetTitle("v_{2}(p_{t}) (bin counting 1)");
+  gv2BC1->GetYaxis()->SetTitle("v_{2} {EP}");
+  gv2BC1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  gv2BC1->SetTitle("");
+  gv2BC1->SetLineColor(colors[2]);
+  gv2BC1->SetMarkerColor(colors[2]);
+  gv2BC1->SetLineWidth(2);
+  gv2BC1->SetMarkerStyle(markers[2]);
+  gv2BC1->SetMarkerSize(1.5);
   gv2BC2->SetName("gav2BC2");
-  gv2BC2->SetTitle("v_{2}(p_{t}) (bin counting 2)");
+  gv2BC2->GetYaxis()->SetTitle("v_{2} {EP}");
+  gv2BC2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  gv2BC2->SetTitle("");
+  gv2BC2->SetLineColor(colors[3]);
+  gv2BC2->SetMarkerColor(colors[3]);
+  gv2BC2->SetLineWidth(2);
+  gv2BC2->SetMarkerStyle(markers[3]);
+  gv2BC2->SetMarkerSize(1.5);
   grelSystEff->SetName("grelSystEff");
-  grelSystEff->SetTitle("SystErrEff");
-
+  grelSystEff->SetTitle("");
+  grelSystEff->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+  grelSystEff->GetYaxis()->SetTitle("Efficiency Syst.");
+  grelSystEff->SetLineColor(colors[0]);
+  grelSystEff->SetMarkerColor(colors[0]);
+  grelSystEff->SetLineWidth(2);
+  grelSystEff->SetMarkerStyle(markers[0]);
+  grelSystEff->SetMarkerSize(1.5);
+  
   //Prepare output file
-  TFile *fout=new TFile(Form("v2Output_%d_%d_%s_%s.root",minCent,maxCent,aniss.Data(),suffix.Data()),"RECREATE");
+  TFile *fout=new TFile(Form("%s/v2Output_%d_%d_%s%s%s.root",outputdir.Data(),minCent,maxCent,aniss.Data(),suffix.Data(),fine.Data()),"RECREATE");
 
   for(Int_t ipt=0;ipt<nptbinsnew;ipt++){
     fout->cd();
@@ -579,137 +769,35 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     gSignalfs[ipt]->Write();
     gSignalBC1[ipt]->Write();
     gSignalBC2[ipt]->Write();
-
-    if(inoutanis){
-      //v2 from in-out anisotropy
-      Double_t *y,*yfs,*ybc1,*ybc2;
-      y=gSignal[ipt]->GetY();
-      yfs=gSignalfs[ipt]->GetY();
-      ybc1=gSignalBC1[ipt]->GetY();
-      ybc2=gSignalBC2[ipt]->GetY();
-
-      Double_t nIn=y[0];
-      Double_t nOut=y[1];
-      Double_t enIn=gSignal[ipt]->GetErrorY(0);
-      Double_t enOut=gSignal[ipt]->GetErrorY(1);
-      Double_t anis=(nIn-nOut)/(nIn+nOut);
-      //      Double_t eAnis=TMath::Sqrt(enIn*enIn+enOut*enOut)/(nIn+nOut);
-      Double_t eAnis=2./((nIn+nOut)*(nIn+nOut))*TMath::Sqrt(nIn*nIn*enOut*enOut+nOut*nOut*enIn*enIn);
-      Double_t v2=anis*TMath::Pi()/4./resol;
-      Double_t ev2=eAnis*TMath::Pi()/4./resol;
-      gv2->SetPoint(ipt,averagePt[ipt],v2);
-      gv2->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
-
-      nIn=yfs[0];
-      nOut=yfs[1];
-      enIn=gSignalfs[ipt]->GetErrorY(0);
-      enOut=gSignalfs[ipt]->GetErrorY(1);
-      anis=(nIn-nOut)/(nIn+nOut);
-      //     eAnis=TMath::Sqrt(enIn*enIn+enOut*enOut)/(nIn+nOut);
-      eAnis=2./((nIn+nOut)*(nIn+nOut))*TMath::Sqrt(nIn*nIn*enOut*enOut+nOut*nOut*enIn*enIn);
-      v2=anis*TMath::Pi()/4./resol;
-      ev2=eAnis*TMath::Pi()/4./resol;
-      gv2fs->SetPoint(ipt,averagePt[ipt],v2);
-      gv2fs->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
-      Double_t anis1=(nIn-nOut*effInOverEffOut)/(nIn+nOut*effInOverEffOut);
-      Double_t anis2=(nIn*effInOverEffOut-nOut)/(nIn*effInOverEffOut+nOut);
-      Double_t systEffUp=0.,systEffDown=0.;
-      if(anis1>anis && anis1>anis2) systEffUp=anis1/anis;
-      if(anis2>anis && anis2>anis1) systEffUp=anis2/anis;
-      if(anis1<anis && anis1<anis2) systEffDown=anis1/anis;
-      if(anis2<anis && anis2<anis1) systEffDown=anis2/anis;
-      printf(" Bin %d <pt>=%.3f  v2=%f+-%f systEff=%f %f\n",ipt,averagePt[ipt],v2,ev2,systEffUp*v2,systEffDown*v2);
-      grelSystEff->SetPoint(ipt,averagePt[ipt],v2);
-      grelSystEff->SetPointError(ipt,0.4,0.4,v2*(1-systEffDown),v2*(systEffUp-1));
-
-      nIn=ybc1[0];
-      nOut=ybc1[1];
-      enIn=gSignalBC1[ipt]->GetErrorY(0);
-      enOut=gSignalBC1[ipt]->GetErrorY(1);
-      anis=(nIn-nOut)/(nIn+nOut);
-      //     eAnis=TMath::Sqrt(enIn*enIn+enOut*enOut)/(nIn+nOut);
-      eAnis=2./((nIn+nOut)*(nIn+nOut))*TMath::Sqrt(nIn*nIn*enOut*enOut+nOut*nOut*enIn*enIn);
-      v2=anis*TMath::Pi()/4./resol;
-      ev2=eAnis*TMath::Pi()/4./resol;
-      gv2BC1->SetPoint(ipt,averagePt[ipt],v2);
-      gv2BC1->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
-
-      nIn=ybc2[0];
-      nOut=ybc2[1];
-      enIn=gSignalBC2[ipt]->GetErrorY(0);
-      enOut=gSignalBC2[ipt]->GetErrorY(1);
-      anis=(nIn-nOut)/(nIn+nOut);
-      //     eAnis=TMath::Sqrt(enIn*enIn+enOut*enOut)/(nIn+nOut);
-      eAnis=2./((nIn+nOut)*(nIn+nOut))*TMath::Sqrt(nIn*nIn*enOut*enOut+nOut*nOut*enIn*enIn);
-      v2=anis*TMath::Pi()/4./resol;
-      ev2=eAnis*TMath::Pi()/4./resol;
-      gv2BC2->SetPoint(ipt,averagePt[ipt],v2);
-      gv2BC2->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
-
-   }else{
-      TF1 *flowFunc = new TF1("flow","[0]*(1.+2.*[1]*TMath::Cos(2.*x))");
-      //v2 from fit to Deltaphi distribution
-      gSignal[ipt]->Fit(flowFunc);
-      Double_t v2 = flowFunc->GetParameter(1)/resol;
-      Double_t ev2=flowFunc->GetParError(1)/resol;
-      gv2->SetPoint(ipt,averagePt[ipt],v2);
-      gv2->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
-
-      gSignalfs[ipt]->Fit(flowFunc);
-      v2 = flowFunc->GetParameter(1)/resol;
-      ev2=flowFunc->GetParError(1)/resol;
-      gv2fs->SetPoint(ipt,averagePt[ipt],v2);
-      gv2fs->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
-
-      gSignalBC1[ipt]->Fit(flowFunc);
-      v2 = flowFunc->GetParameter(1)/resol;
-      ev2=flowFunc->GetParError(1)/resol;
-      gv2BC1->SetPoint(ipt,averagePt[ipt],v2);
-      gv2BC1->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
-
-      gSignalBC2[ipt]->Fit(flowFunc);
-      v2 = flowFunc->GetParameter(1)/resol;
-      ev2=flowFunc->GetParError(1)/resol;
-      gv2BC2->SetPoint(ipt,averagePt[ipt],v2);
-      gv2BC2->SetPointError(ipt,averagePt[ipt]-ptbinsnew[ipt],ptbinsnew[ipt+1]-averagePt[ipt],ev2,ev2);
-    }
   }
-
-  gv2->SetMarkerStyle(22);
-  gv2->SetMarkerColor(2);
-  gv2->SetLineColor(2);
-  gv2fs->SetMarkerStyle(20);
-  gv2fs->SetMarkerColor(1);
-  gv2fs->SetLineColor(1);
-  gv2BC1->SetMarkerStyle(23);
-  gv2BC1->SetMarkerColor(kGreen+1);
-  gv2BC1->SetLineColor(kGreen+1);
-  gv2BC2->SetMarkerStyle(26);
-  gv2BC2->SetMarkerColor(kGreen+1);
-  gv2BC2->SetLineColor(kGreen+1);
+  for(Int_t iphi=0; iphi<nphi; iphi++) {
+    hSigmaFree[iphi]->Write();
+    hSigmaFixed[iphi]->Write();
+    hMean[iphi]->Write();
+    hMeanfs[iphi]->Write();
+    hChiSquare[iphi]->Write();
+    hChiSquarefs[iphi]->Write();
+  }
   
   cv2->cd();
   gv2fs->Draw("AP");
   gv2fs->SetMinimum(-0.2);
   gv2fs->SetMaximum(0.6);
-  gv2fs->GetYaxis()->SetTitle("v_{2}");
-  gv2fs->GetXaxis()->SetTitle("p_{t} [GeV/c]");
   gv2->Draw("PSAME");
   gv2BC1->Draw("PSAME");
   gv2BC2->Draw("PSAME");
-  TLegend* leg=new TLegend(0.65,0.7,0.89,0.89);
+  TLegend* leg=new TLegend(0.55,0.7,0.89,0.89);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   leg->SetTextFont(42);
-  leg->AddEntry(gv2fs,"Fixed sigma","P")->SetTextColor(gv2fs->GetMarkerColor());
-  leg->AddEntry(gv2,"Free sigma","P")->SetTextColor(gv2->GetMarkerColor());
-  leg->AddEntry(gv2BC1,"Bin counting 1","P")->SetTextColor(gv2BC1->GetMarkerColor());
-  leg->AddEntry(gv2BC2,"Bin counting 2","P")->SetTextColor(gv2BC2->GetMarkerColor());
+  leg->SetTextSize(0.05);
+  leg->AddEntry(gv2fs,"Fixed sigma","lpe");
+  leg->AddEntry(gv2,"Free sigma","lpe");
+  leg->AddEntry(gv2BC1,"Bin counting 1","lpe");
+  leg->AddEntry(gv2BC2,"Bin counting 2","lpe");
   leg->Draw();
   cv2fs->cd();
   gv2fs->Draw("AP");
-  gv2fs->GetYaxis()->SetTitle("v_{2}");
-  gv2fs->GetXaxis()->SetTitle("p_{t} [GeV/c]");
 
   fout->cd();
   gv2->Write();
@@ -717,9 +805,11 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   gv2BC1->Write();
   gv2BC2->Write();
   grelSystEff->Write();
+
+  cv2->SaveAs(Form("%s/v2Output_%d_%d_%s%s%s.pdf",outputdir.Data(),minCent,maxCent,aniss.Data(),suffix.Data(),fine.Data()),"RECREATE");
 }
 //___________________________________________________________
-Int_t FindPtBin(Int_t nbins, Float_t* array,Float_t value){
+Int_t FindPtBin(Int_t nbins, Double_t* array,Double_t value){
   for (Int_t i=0;i<nbins;i++){
     if(value>=array[i] && value<array[i+1]){
       return i;
@@ -764,6 +854,14 @@ void DrawEventPlane(){
   TH2F* hevpls=(TH2F*)resolhist->FindObject(Form("hEvPlane%s",suffixcentr.Data()));
   TH1F* hevplresos[3];
   TString namereso[3]={"Reso","Reso2","Reso3"};
+  TH1F* htestversion=(TH1F*)resolhist->FindObject(Form("hEvPlaneReso%s",suffixcentr.Data()));
+  if(htestversion){
+    printf("Old version of the task\n");
+  }else{
+    printf("New version of the task\n");
+    namereso[0]="Reso1";
+  }
+
   Int_t nSubRes=1;
   if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
      evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
@@ -771,21 +869,8 @@ void DrawEventPlane(){
     hevplresos[ires]=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
   }
 
-  gStyle->SetCanvasColor(0);
-  gStyle->SetTitleFillColor(0);
-  gStyle->SetStatColor(0);
-  gStyle->SetOptStat(0);
-  //gStyle->SetPalette(1);
-  gStyle->SetOptFit(1);
-  gStyle->SetLabelFont(42,"XYZ");
-  gStyle->SetTextFont(42);
-  gStyle->SetStatFont(42);
-  //  gStyle->SetTitleFont(42);
-  gStyle->SetStatY(0.89);
-  gStyle->SetStatX(0.89);
-  //  gStyle->SetTitleAlign(22);
-  gStyle->SetTitleFont(42,"xyzg");
-
+  SetStyle();
+  
   TH1F* htpc = (TH1F*)hevpls->ProjectionX();
   TH1F* hv0 = (TH1F*)hevpls->ProjectionY();
   TH1F* hUsedPlane;
@@ -794,7 +879,7 @@ void DrawEventPlane(){
      evPlane==AliEventPlaneResolutionHandler::kVZEROC) hUsedPlane=(TH1F*)hv0->Clone("hUsedPlane");
   else hUsedPlane=(TH1F*)htpc->Clone("hUsedPlane");
 
-  TCanvas* cvtotevpl=new TCanvas(Form("cvtotevpl%s",suffixcentr.Data()),Form("Ev plane %s",suffixcentr.Data()),1200,400);
+  TCanvas* cvtotevpl=new TCanvas(Form("cvtotevpl%s",suffixcentr.Data()),Form("Ev plane %s",suffixcentr.Data()),1920,1080);
   cvtotevpl->Divide(3,1);
   cvtotevpl->cd(1);
   hevpls->SetTitleFont(42);
@@ -805,6 +890,11 @@ void DrawEventPlane(){
   cvtotevpl->cd(3);
   hv0->Draw();
   hv0->Fit("pol0");
+
+  TCanvas* cevpl=new TCanvas(Form("cevpl%s",suffixcentr.Data()),"",1920,1080);
+  htpc->Draw();
+  htpc->Fit("pol0");
+  cevpl->SaveAs(Form("%s/EvPlaneDistTPC.pdf",outputdir.Data()));
   
   TCanvas* cvfitevpl=new TCanvas(Form("cvditevpl%s",suffixcentr.Data()),Form("Fit to Ev plane %s",suffixcentr.Data()));
   cvfitevpl->cd();
@@ -827,7 +917,7 @@ void DrawEventPlane(){
   tcos->SetTextColor(1);
   tcos->Draw();
   
-  // Compute the second Fourier component for since and cosine
+  // Compute the second Fourier component for sine and cosine
   Double_t aveCos2Phi=0.;
   Double_t aveSin2Phi=0.;
   Double_t counts=0.;
@@ -880,8 +970,8 @@ void DrawEventPlane(){
   gResolVsCent->GetXaxis()->SetTitle("Centrality");
   gResolVsCent->GetYaxis()->SetTitle("EP Resolution");
  
-  Int_t colorave=kBlue-7;
-  if(useNcollWeight) colorave=kOrange+1;
+  Int_t colorave=colors[5];
+  if(useNcollWeight) colorave=colors[4];
 
   TCanvas* cresvscent=new TCanvas("cresvscent","ResolVsCent");
   cresvscent->cd();
@@ -896,12 +986,31 @@ void DrawEventPlane(){
   printf("\n\n---- Syst from centrality dependence of resolution ----\n");
   printf("MinRes=%f  MaxRes=%f AveRes=%f ---> Syst: -%f%% +%f%%\n",lowestRes,highestRes,resolFull,(resolFull-lowestRes)/resolFull,(highestRes-resolFull)/resolFull);
 
-  TFile* fout=new TFile(Form("EvPlanecentr%d-%d.root",minCent,maxCent),"recreate");
+  TFile* fout=new TFile(Form("%s/EvPlanecentr%d-%d.root",outputdir.Data(),minCent,maxCent),"recreate");
   fout->cd();
   hevpls->Write();
   for(Int_t ires=0;ires<nSubRes;ires++)hevplresos[ires]->Write();
   gResolVsCent->Write();
 
-
+  cresvscent->SaveAs(Form("%s/EvPlaneResolutionVsCentrality.pdf",outputdir.Data()));
 }
 
+void SetStyle(Int_t optfit) {
+  gStyle->SetCanvasColor(0);
+  gStyle->SetPadBottomMargin(0.14);
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetTitleFillColor(0);
+  gStyle->SetStatColor(0);
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(optfit);
+  gStyle->SetLabelFont(42,"XYZ");
+  gStyle->SetTextFont(42);
+  gStyle->SetTitleSize(0.05,"xyz");
+  gStyle->SetLabelSize(0.05,"xyz");
+  gStyle->SetStatFont(42);
+  gStyle->SetStatY(0.89);
+  gStyle->SetStatX(0.89);
+  gStyle->SetTitleFont(42,"xyzg");
+  gStyle->SetHistLineWidth(2);
+  gStyle->SetLegendBorderSize(0);
+}

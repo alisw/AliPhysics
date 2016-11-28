@@ -430,10 +430,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEvsTrackEConv;                //
     TH2F*     fHistClusterENMatchesNeutral;             //
     TH2F*     fHistClusterENMatchesCharged;             //
+    TH2F*     fHistClusterEvsTrackEPrimaryButNoElec;    //
+    TH2F*     fHistClusterEvsTrackSumEPrimaryButNoElec; //
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,35)
+    ClassDef(AliCaloPhotonCuts,36)
 };
 
 #endif

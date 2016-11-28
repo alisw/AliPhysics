@@ -16,5 +16,6 @@
 #pragma link C++ class AliAODUPCReplicator+;
 #pragma link C++ class AliAnalysisTaskFilterUPCNanoAOD+;
 #pragma link C++ class AliAnalysisTaskUpcTriggerCounter+;
+#pragma link C++ class AliAnalysisTaskUpcNano_MB+;
 
 #endif

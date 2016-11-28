@@ -1,4 +1,4 @@
-#include "AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 
 #include <vector>
 using std::vector;
@@ -14,11 +14,11 @@ using std::vector;
 #include <AliVEventHandler.h>
 #include <AliVMultiplicity.h>
 
-ClassImp(AliNuclexEventCuts);
+ClassImp(AliEventCuts);
 
 /// Standard constructor with null selection
 ///
-AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
+AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fRequireTrackVertex{false},
   fMinVtz{-1000.f},
   fMaxVtz{1000.f},
@@ -58,15 +58,15 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fEstimCorrelation{nullptr},   
   fMultCentCorrelation{nullptr}
 {
-  SetName("AliNuclexEventCuts");
+  SetName("AliEventCuts");
   SetOwner(true);
 }
 
-bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
+bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// If not specified the cuts are set according to the run period 
   const int current_run = ev->GetRunNumber();
   if (!fManualMode && current_run != fCurrentRun) {
-    ::Info("AliNuclexEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
+    ::Info("AliEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
     fCurrentRun = current_run;
     AutomaticSetup();
   }
@@ -166,12 +166,12 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
   return true;
 }
 
-void AliNuclexEventCuts::AddQAplotsToList(TList *qaList) {
+void AliEventCuts::AddQAplotsToList(TList *qaList) {
   if (!qaList) {
     if (fSavePlots)
       qaList = static_cast<TList*>(this);
     else
-      ::Fatal("AliNuclexEventCuts::AddQAplotsToList","Invalid TList pointer provided");
+      ::Fatal("AliEventCuts::AddQAplotsToList","Invalid TList pointer provided");
   }
   static_cast<TList*>(this)->Delete();
 
@@ -197,7 +197,7 @@ void AliNuclexEventCuts::AddQAplotsToList(TList *qaList) {
 
 }
 
-void AliNuclexEventCuts::AutomaticSetup() {
+void AliEventCuts::AutomaticSetup() {
   if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) ||
       (fCurrentRun >= 256146 && fCurrentRun <= 260187)) {
     SetupRun2pp();
@@ -210,29 +210,29 @@ void AliNuclexEventCuts::AutomaticSetup() {
     return;
   }
 
-  ::Fatal("AliNuclexEventCuts::AutomaticSetup","Automatic period detection failed, please use the manual mode.");
+  ::Fatal("AliEventCuts::AutomaticSetup","Automatic period detection failed, please use the manual mode.");
 }
 
-float AliNuclexEventCuts::GetCentrality (unsigned int estimator) const { 
+float AliEventCuts::GetCentrality (unsigned int estimator) const { 
   if (estimator > 1) {
     /// Escalate to Fatal
-    ::Fatal("AliNuclexEventCuts::GetCentrality","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
+    ::Fatal("AliEventCuts::GetCentrality","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
     return -1.f;
   } else 
     return fCentPercentiles[estimator];
 }
 
-string AliNuclexEventCuts::GetCentralityEstimator (unsigned int estimator) const { 
+string AliEventCuts::GetCentralityEstimator (unsigned int estimator) const { 
   if (estimator > 1) {
     /// Escalate to Fatal
-    ::Fatal("AliNuclexEventCuts::GetCentralityEstimator","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
+    ::Fatal("AliEventCuts::GetCentralityEstimator","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
     return "";
   } else 
     return fCentEstimators[estimator];
 }
 
-void AliNuclexEventCuts::SetupRun2pp() {
-  ::Info("AliNuclexEventCuts::SetupRun2pp","Setup event cuts for the Run2 pp periods.");
+void AliEventCuts::SetupRun2pp() {
+  ::Info("AliEventCuts::SetupRun2pp","Setup event cuts for the Run2 pp periods.");
   SetName("StandardRun2ppEventCuts");
 
   fRequireTrackVertex = true;
@@ -255,7 +255,7 @@ void AliNuclexEventCuts::SetupRun2pp() {
   fTrackletBGcut = true;
 
   if (fCentralityFramework > 1)
-    ::Fatal("AliNuclexEventCutsSetupRun2pp","You cannot use the legacy centrality framework in pp. Please set the fCentralityFramework to 0 to disable the multiplicity selection or to 1 to use AliMultSelection.");
+    ::Fatal("AliEventCutsSetupRun2pp","You cannot use the legacy centrality framework in pp. Please set the fCentralityFramework to 0 to disable the multiplicity selection or to 1 to use AliMultSelection.");
   fCentEstimators[0] = "V0M";
   fCentEstimators[1] = "CL0";
   fMinCentrality = 0.f;
@@ -265,8 +265,8 @@ void AliNuclexEventCuts::SetupRun2pp() {
 
 }
 
-void AliNuclexEventCuts::SetupLHC15o() {
-  ::Info("AliNuclexEventCuts::SetupLHC15o","Setup event cuts for the LHC15o period.");
+void AliEventCuts::SetupLHC15o() {
+  ::Info("AliEventCuts::SetupLHC15o","Setup event cuts for the LHC15o period.");
   SetName("StandardLHC15oEventCuts");
 
   fRequireTrackVertex = true;
