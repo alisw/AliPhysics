@@ -10,6 +10,7 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TVector3.h>
+#include <TFile.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -18,6 +19,7 @@
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliTLorentzVector.h"
+#include "AliLog.h"
 
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
@@ -854,5 +856,214 @@ void AliAnalysisTaskEmcalJetHMEC::accessSetOfYBinValues(TH2F * hist, Int_t xBin,
       hist->SetBinContent(hist->GetBin(xBin,index), yBinsContent.at(index-1)/scaleFactor);
     }
   }
+}
+
+/**
+ * AddTask for the jet-hadron task. We benefit for actually having compiled code, as opposed to
+ * struggle with CINT.
+ *
+ */
+AliAnalysisTaskEmcalJetHMEC * AliAnalysisTaskEmcalJetHMEC::AddTaskEmcalJetHMEC(
+   const char *nTracks,
+   const char *nCaloClusters,
+   // Jet options
+   const Double_t trackBias,
+   const Double_t clusterBias,
+   const Double_t minJetArea,
+   // Mixed event options
+   const Int_t nTracksMixedEvent,  // Additionally acts as a switch for enabling mixed events
+   const Int_t minNTracksMixedEvent,
+   const Int_t minNEventsMixedEvent,
+   const UInt_t nCentBinsMixedEvent,
+   // Triggers
+   UInt_t trigEvent,
+   UInt_t mixEvent,
+   // Options
+   const char *CentEst,
+   const Int_t nCentBins,
+   const Double_t trackEta,
+   const Bool_t lessSparseAxes,
+   const Bool_t widerTrackBin,
+   // Corrections
+   const Int_t doEffCorrSW,
+   const Bool_t embeddingCorrection,
+   const char * embeddingCorrectionFilename,
+   const char * embeddingCorrectionHistName,
+   const char *suffix
+   )
+{
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    AliErrorClass("No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
+  {
+    AliErrorClass("This task requires an input event handler");
+    return NULL;
+  }
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  // Determine data type
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  // Determine cluster and track names
+  TString trackName(nTracks);
+  TString clusName(nCaloClusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  TString name("AliAnalysisTaskJetH");
+  if (!trackName.IsNull()) {
+    name += TString::Format("_%s", trackName.Data());
+  }
+  if (!clusName.IsNull()) {
+    name += TString::Format("_%s", clusName.Data());
+  }
+  if (strcmp(suffix, "") != 0) {
+    name += TString::Format("_%s", suffix);
+  }
+
+  AliAnalysisTaskEmcalJetHMEC *correlationTask = new AliAnalysisTaskEmcalJetHMEC(name);
+  // Set jet bias
+  correlationTask->SetTrackBias(trackBias);
+  correlationTask->SetClusterBias(clusterBias);
+  // Mixed events
+  correlationTask->SetEventMixing(static_cast<Bool_t>(nTracksMixedEvent));
+  correlationTask->SetNumberOfMixingTracks(nTracksMixedEvent);
+  correlationTask->SetMinNTracksForMixedEvents(minNTracksMixedEvent);
+  correlationTask->SetMinNEventsForMixedEvents(minNEventsMixedEvent);
+  correlationTask->SetNCentBinsMixedEvent(nCentBinsMixedEvent);
+  // Triggers
+  correlationTask->SetTriggerType(trigEvent);
+  correlationTask->SetMixedEventTriggerType(mixEvent);
+  // Options
+  correlationTask->SetCentralityEstimator(CentEst);
+  correlationTask->SetNCentBins(nCentBins);
+  correlationTask->SetVzRange(-10,10);
+  correlationTask->SetDoLessSparseAxes(lessSparseAxes);
+  correlationTask->SetDoWiderTrackBin(widerTrackBin);
+  // Corrections
+  correlationTask->SetDoEffCorr(doEffCorrSW);
+  if (embeddingCorrection == kTRUE)
+  {
+    // Open file containing the correction
+    TFile * embeddingCorrectionFile = TFile::Open(embeddingCorrectionFilename);
+    if (!embeddingCorrectionFile || embeddingCorrectionFile->IsZombie()) {
+      AliErrorClass(TString::Format("Could not open embedding correction file %s", embeddingCorrectionFilename));
+      return NULL;
+    }
+
+    // Retrieve the histogram containing the correction and save add it to the task.
+    TH2F * embeddingCorrectionHist = dynamic_cast<TH2F*>(embeddingCorrectionFile->Get(embeddingCorrectionHistName));
+    if (embeddingCorrectionHist) {
+      AliInfoClass(TString::Format("Embedding correction %s loaded from file %s.", embeddingCorrectionHistName, embeddingCorrectionFilename));
+    }
+    else {
+      AliErrorClass(TString::Format("Embedding correction %s not found in file %s.", embeddingCorrectionHistName, embeddingCorrectionFilename));
+      return NULL;
+    }
+
+    correlationTask->SetEmbeddingCorrectionHist(embeddingCorrectionHist);
+  }
+
+  // Jet parameters determined by how we ran the jet finder
+  Double_t jetRadius = 0.2;
+  Double_t minClusterPt = 3;
+  Double_t minTrackPt = 3;
+
+  // Add Containers
+  // Clusters
+  AliClusterContainer * clusterContainer = correlationTask->AddClusterContainer(clusName);
+  clusterContainer->SetMinE(minClusterPt);
+
+  // Tracks
+  // For jet finding
+  AliTrackContainer * tracksForJets = new AliTrackContainer(trackName);
+  tracksForJets->SetName("tracksForJets");
+  tracksForJets->SetMinPt(minTrackPt);
+  tracksForJets->SetEtaLimits(-1.0*trackEta, trackEta);
+  // Adopt the container
+  correlationTask->AdoptParticleContainer(tracksForJets);
+  // For correlations
+  AliTrackContainer * tracksForCorrelations = new AliTrackContainer(trackName);
+  tracksForCorrelations->SetName("tracksForCorrelations");
+  tracksForCorrelations->SetMinPt(0.15);
+  tracksForCorrelations->SetEtaLimits(-1.0*trackEta, trackEta);
+  // Adopt the container
+  correlationTask->AdoptParticleContainer(tracksForCorrelations);
+
+  // Jets
+  AliJetContainer * jetContainer = correlationTask->AddJetContainer(AliJetContainer::kFullJet,
+                                   AliJetContainer::antikt_algorithm,
+                                   AliJetContainer::pt_scheme,
+                                   jetRadius,
+                                   AliEmcalJet::kEMCALfid,
+                                   tracksForJets,
+                                   clusterContainer);
+  jetContainer->SetJetAreaCut(minJetArea);
+  jetContainer->SetMaxTrackPt(100);
+  jetContainer->SetJetPtCut(0.1);
+
+  //-------------------------------------------------------
+  // Final settings, pass to manager and set the containers
+  //-------------------------------------------------------
+
+  mgr->AddTask(correlationTask);
+
+  // Create containers for input/output
+  mgr->ConnectInput (correlationTask, 0, mgr->GetCommonInputContainer() );
+  AliAnalysisDataContainer * cojeth = mgr->CreateContainer(name,
+                TList::Class(),
+                AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectOutput(correlationTask, 1, cojeth);
+
+  return correlationTask;
 }
 
