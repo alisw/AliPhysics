@@ -75,6 +75,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 	hESDConversionMappingRPhi(NULL),
 	hESDConversionMappingRZ(NULL),
 	hESDConversionR(NULL),
+	hESDConversionPtvsR(NULL),
 	hESDConversionAsymP(NULL),
 	hESDConversionMidPtR(NULL),
 	hESDConversionHighPtR(NULL),
@@ -193,6 +194,7 @@ fConversionCutArray(NULL),
 	hESDConversionMappingRPhi(NULL),
 	hESDConversionMappingRZ(NULL),
 	hESDConversionR(NULL),
+	hESDConversionPtvsR(NULL),
 	hESDConversionAsymP(NULL),
 	hESDConversionMidPtR(NULL),
 	hESDConversionHighPtR(NULL),
@@ -310,6 +312,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	hESDConversionMappingRPhi      = new TH2F*[fnCuts];
 	hESDConversionMappingRZ        = new TH2F*[fnCuts];
 	hESDConversionR                = new TH1F*[fnCuts];
+	hESDConversionPtvsR             = new TH2F*[fnCuts];
         hESDConversionRInBins          = new TH3F*[fnCuts];
         hESDConversionPhiInBins        = new TH3F*[fnCuts];
 	hESDConversionAsymP            = new TH2F*[fnCuts];
@@ -456,6 +459,9 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 	  hESDConversionR[iCut]               = new TH1F("ESD_ConversionMapping_R","ESD_ConversionMapping_R",nBinsR,0.,200.);
 	  fESDList[iCut]->Add(hESDConversionR[iCut]);
 	  
+	  hESDConversionPtvsR[iCut]               = new TH2F("ESD_ConversionMapping_Pt_R","ESD_ConversionMapping_Pt_R",nBinsPt,0.,20.,nBinsR,0.,200.);
+	  fESDList[iCut]->Add(hESDConversionPtvsR[iCut]);
+
 	  hESDConversionRInBins[iCut]  = new TH3F("ESD_ConversionMapping_RInBins","ESD_ConversionMapping_RInBins",100,0.,20.,8,0.,4000,nBinsR,0.,200.);
 	  fESDList[iCut]->Add(hESDConversionRInBins[iCut]);
 	  hESDConversionPhiInBins[iCut]  = new TH3F("ESD_ConversionMapping_PhiInBins","ESD_ConversionMapping_PhiInBins",100,0.,200.,8,0.,4000,nBinsPhi,0.,2*TMath::Pi());
@@ -1068,6 +1074,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
       hESDConversionPt5cm[fiCut]->Fill(gamma->GetPhotonPt());    
     }
     hESDConversionR[fiCut]->Fill(gamma->GetConversionRadius());
+    hESDConversionPtvsR[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
     hESDConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),asym);
     
     if(fInputEvent->IsA()==AliESDEvent::Class()){
