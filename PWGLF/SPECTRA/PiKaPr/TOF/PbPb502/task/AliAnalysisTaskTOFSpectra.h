@@ -580,6 +580,7 @@ private:
   Double_t fP;                     ///<  Momentum of the track
   Double_t fPTPC;                  ///<  Momentum of the track in the TPC
   Double_t fPt;                    ///<  Transverse momentum of the track
+  const Float_t fDCAXYshift;       ///<  Shift to the DCAxy of the track to compensate for the bias, to be used only in MC, to be defined in the constructor
   Float_t fDCAXY;                  ///<  DCAxy of the track
   Float_t fDCAZ;                   ///<  DCAz of the track
   
@@ -771,7 +772,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 2);
+  ClassDef(AliAnalysisTaskTOFSpectra, 3);
 };
 
 #endif
