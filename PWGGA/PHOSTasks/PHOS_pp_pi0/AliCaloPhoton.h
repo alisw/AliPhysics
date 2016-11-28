@@ -62,6 +62,8 @@ class AliCaloPhoton :public TLorentzVector{
    Double_t GetNsigmaFullDisp() {return fNsigmaFullDisp;}
    Double_t GetNsigmaCoreDisp() {return fNsigmaCoreDisp;}
 
+   Double_t GetTOFCutEfficiency() {return fTOFCutEfficiency;}
+
    //ConvertedPair bit is set for events when photon's FirstMother is not e+/e- but pi0, but after pi0 decayed
 //there is conversion of one or both of the photons and results of their conversion are registered by PHOS.
 //This process is marked as tagged photons but actually the energy of photons is changed and pi0 can't be
@@ -113,6 +115,7 @@ class AliCaloPhoton :public TLorentzVector{
    void SetNsigmaFullDisp(Double_t nsigma) {fNsigmaFullDisp = nsigma;}
    void SetNsigmaCoreDisp(Double_t nsigma) {fNsigmaCoreDisp = nsigma;}
 
+   void SetTOFCutEfficiency(Double_t eff) {fTOFCutEfficiency = eff;}
 
    AliVCluster* GetCluster() { return fCluster; }
 
@@ -157,10 +160,11 @@ private:
   Double_t  fNsigmaCPV ;      //distance to a matched track in unit of sigma
   Double_t  fNsigmaFullDisp ; //shower dispersion of a full cluster in unit of sigma
   Double_t  fNsigmaCoreDisp ; //shower dispersion at a core of a cluster in unit of sigma
+  Double_t  fTOFCutEfficiency; //TOF cut effciency at a cluster level
 
   AliVCluster* fCluster; //! Originating Cluster the Photon Candidate is based on
 
-  ClassDef(AliCaloPhoton,8);
+  ClassDef(AliCaloPhoton,9);
 
 };
 

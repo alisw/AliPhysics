@@ -141,8 +141,7 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     fCentrality[0]->Fill(fCentPercentiles[0]);
     fEstimCorrelation[0]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
     if ((!fUseEstimatorsCorrelationCut || 
-          (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma
-            && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
+          (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
         && fCentPercentiles[0] >= fMinCentrality 
         && fCentPercentiles[0] <= fMaxCentrality) fFlag |= BIT(kMultiplicity);
   } else fFlag |= BIT(kMultiplicity);
@@ -295,6 +294,7 @@ void AliNuclexEventCuts::SetupLHC15o() {
   fMinCentrality = 0.f;
   fMaxCentrality = 90.f;
 
+  fUseEstimatorsCorrelationCut = true;
   fEstimatorsCorrelationCoef[0] = 0.0157497;
   fEstimatorsCorrelationCoef[1] = 0.973488;
   fEstimatorsSigmaPars[0] = 0.673612;

@@ -522,26 +522,33 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetM20(m20) ;               //second moment M2z
       
       //correct distance to track
-      Double_t dx=clu->GetTrackDx() ;
-      Double_t dz=clu->GetTrackDz() ;
+      Double_t pttrack=0.;
+      Int_t charge=0;
+      Double_t dx=999.,dz=999. ;
       TVector3 locPos;
       fPHOSGeo->Global2Local(locPos,global,mod) ;
-      if(dx!=-999.){ //there is matched track
-        dx+=locPos.X()-locPosOld.X() ;
-        dz+=locPos.Z()-locPosOld.Z() ;      
-        clu->SetTrackDistance(dx,dz);
-      }
+      Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
+      clu->SetTrackDistance(dx,dz); 
       Double_t r = 999. ; //Big distance
       int nTracksMatched = clu->GetNTracksMatched();
-      if(nTracksMatched > 0) {
-        AliVTrack* track = dynamic_cast<AliVTrack*> (clu->GetTrackMatched(0));
-        if ( track ) {
-          Double_t pttrack = track->Pt();
-          Short_t charge = track->Charge();
-          r=TestCPV(dx, dz, pttrack,charge) ;
-	}
+      if(itr > 0) {
+         r=TestCPV(dx, dz, pttrack,charge) ;    
       }
       clu->SetEmcCpvDistance(r); //Distance in sigmas
+      if(itr>=0){ //there is a track
+        //Remove existing
+        AliAODTrack * tr = (AliAODTrack*)aod->GetTrack(itr) ;
+        Int_t ntrM = clu->GetNTracksMatched();
+        if(ntrM>0){
+          AliAODTrack * trStored = (AliAODTrack*)clu->GetTrackMatched(0);
+          if(trStored != tr){
+            clu->RemoveTrackMatched(trStored);
+            clu->AddTrackMatched(tr) ;  
+          }
+        }else{
+          clu->AddTrackMatched(tr) ;  
+        }
+      }  
 
 
       Double_t tof=EvalTOF(&cluPHOS,cells); 
@@ -565,17 +572,24 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 					    Double_t &pt,Int_t &charge){
   //Find track with closest extrapolation to cluster
   AliESDEvent *esd = 0x0 ;
-  if(fTender)
-    esd= fTender->GetEvent();
-  else{ 
-    esd= dynamic_cast<AliESDEvent*>(fTask->InputEvent());
+  AliAODEvent *aod = 0x0 ;
+  if(fTender){
+    esd= dynamic_cast<AliESDEvent*>(fTender->GetEvent());
+    aod= dynamic_cast<AliAODEvent*>(fTender->GetEvent());
+  }else{ 
+    esd=dynamic_cast<AliESDEvent*>(fTask->InputEvent());
+    aod=dynamic_cast<AliAODEvent*>(fTask->InputEvent());
   }
   
-  if(!esd){
-    AliError("ESD is not found") ;
+  if(!esd && !aod){
+    AliError("Neither AOD nor ESD was found") ;
     return -1;
   }
-  Double_t  magF = esd->GetMagneticField();
+  Double_t  magF =0.;
+   if(esd)
+     magF = esd->GetMagneticField();
+   if(aod)
+     magF = aod->GetMagneticField();
  
   Double_t magSign = 1.0;
   if(magF<0)magSign = -1.0;
@@ -587,7 +601,12 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   }
 
   // *** Start the matching
-  Int_t nt = esd->GetNumberOfTracks();
+  Int_t nt = 0;
+  if(esd)
+    nt = esd->GetNumberOfTracks();
+  else
+    nt = aod->GetNumberOfTracks();
+      
   //Calculate actual distance to PHOS module
   TVector3 globaPos ;
   fPHOSGeo->Local2Global(mod, 0.,0., globaPos) ;
@@ -606,38 +625,58 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 
   Double_t b[3]; 
   Int_t itr=-1 ;
-    for (Int_t i=0; i<nt; i++) {
-      AliESDtrack *esdTrack=esd->GetTrack(i);
+  AliESDtrack *esdTrack=0x0 ;
+  AliAODTrack *aodTrack=0x0 ;
+  Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+  for (Int_t i=0; i<nt; i++) {
+      if(esd)
+        esdTrack=esd->GetTrack(i);
+      else
+        aodTrack=(AliAODTrack*)aod->GetTrack(i);
 
       // Skip the tracks having "wrong" status (has to be checked/tuned)
-      ULong_t status = esdTrack->GetStatus();
-      if((status & AliESDtrack::kTPCout) == 0) continue;
-
+      if(esd){
+        ULong_t status = esdTrack->GetStatus();
+        if((status & AliESDtrack::kTPCout) == 0) continue;
+      }
+      else{
+          
+          
+      }
+      
+      
       //Continue extrapolation from TPC outer surface
-      const AliExternalTrackParam *outerParam=esdTrack->GetOuterParam();
-      if (!outerParam) continue;
+      AliExternalTrackParam outerParam;
+      if(esdTrack){
+          outerParam = *(esdTrack->GetOuterParam());
+      }
+      if(aodTrack){            
+        aodTrack->GetPxPyPz(pxpypz);
+        aodTrack->GetXYZ(xyz);
+        aodTrack->GetCovarianceXYZPxPyPz(cv);
+        outerParam.Set(xyz,pxpypz,cv,aodTrack->Charge());
+      }
       
       Double_t z; 
-      if(!outerParam->GetZAt(rPHOS,bz,z))
+      if(!outerParam.GetZAt(rPHOS,bz,z))
         continue ;
 
       if (TMath::Abs(z) > kZmax) 
         continue; // Some tracks miss the PHOS in Z
 
-      AliExternalTrackParam t(*outerParam);
      
       //Direction to the current PHOS module
       Double_t phiMod=kAlpha0-kAlpha*mod ;
-      if(!t.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
+      if(!outerParam.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
     
       Double_t y;                       // Some tracks do not reach the PHOS
-      if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
+      if (!outerParam.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
       
       if(TMath::Abs(y) < kYmax){
-        t.GetBxByBz(b) ;
-        t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
-        //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
-        t.GetXYZ(gposTrack) ;
+        outerParam.GetBxByBz(b) ;
+        outerParam.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
+        //outerParam.CorrectForMaterial(...); // Correct for the TOF material, if needed
+        outerParam.GetXYZ(gposTrack) ;
         TVector3 globalPositionTr(gposTrack) ;
         TVector3 localPositionTr ;
         fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod) ;
@@ -648,9 +687,15 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 	  dx = ddx ;
   	  dz = ddz ;
 	  minDistance=d2 ;
-	  pt=esdTrack->Pt() ;
-	  charge=esdTrack->Charge() ;
 	  itr=i ;
+          if(esdTrack){
+            pt=esdTrack->Pt() ;
+	    charge=esdTrack->Charge() ;
+          }
+          else{            
+           pt=aodTrack->Pt() ;
+           charge=aodTrack->Charge() ;
+          }
         }
       }
     }//Scanned all tracks
