@@ -57,6 +57,12 @@ static fptr cosfunc = (fptr) dlsym(libm, "cos");
 static fptr logfunc = (fptr) dlsym(libm, "log");
 static fptr expfunc = (fptr) dlsym(libm, "exp");
 
+typedef float (*fptrf)(float);
+static fptrf sinfuncf = (fptrf) dlsym(libm, "sinf");
+static fptrf cosfuncf = (fptrf) dlsym(libm, "cosf");
+static fptrf logfuncf = (fptrf) dlsym(libm, "logf");
+static fptrf expfuncf = (fptrf) dlsym(libm, "expf");
+
 typedef void (*sincosfptr)(double, double*, double*);
 static sincosfptr sincosfunc = (sincosfptr) dlsym(libm, "sincos");
 
@@ -104,6 +110,22 @@ double sin(double x){
   }
 }
 
+extern "C" float sinf(float);
+float sinf(float x){
+  // vdt relies on a range of inputs that can be cast to int
+  const double lm(INT_MAX*CosRangeConstant);
+  if(fabs(x) < static_cast<float>(lm)){
+#ifdef TEXTLOGGER
+    printLog("#VDTCHECK-SINF", x, sinfuncf(x), vdt::fast_sinf(x));
+#endif
+    return vdt::fast_sinf(x);
+  }
+  else {
+    return sinfuncf(x);
+  }
+}
+
+
 extern "C" double cos(double);
 double cos(double x){
   const double lm(INT_MAX*CosRangeConstant);
@@ -115,6 +137,20 @@ double cos(double x){
   }
   else {
     return cosfunc(x);
+  }
+}
+
+extern "C" float cosf(float);
+float cosf(float x){
+  const double lm(INT_MAX*CosRangeConstant);
+  if(fabs(x) < static_cast<float>(lm)){
+#ifdef TEXTLOGGER
+    printLog("#VDTCHECK-COSF", x, cosfuncf(x), vdt::fast_cosf(x));
+#endif
+    return vdt::fast_cosf(x);
+  }
+  else {
+    return cosfuncf(x);
   }
 }
 
