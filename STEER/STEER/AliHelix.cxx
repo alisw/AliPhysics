@@ -179,7 +179,7 @@ AliHelix::AliHelix(Double_t x[3], Double_t p[3], Double_t charge, Double_t conve
 
 }
 
-void  AliHelix::GetMomentum(Double_t phase, Double_t p[4],Double_t conversion, Double_t *xr)
+void  AliHelix::GetMomentum(Double_t phase, Double_t p[4],Double_t conversion, Double_t *xr) const
 {
   // return  momentum at given phase
   Double_t x[3],g[3],gg[3];
@@ -196,7 +196,7 @@ void  AliHelix::GetMomentum(Double_t phase, Double_t p[4],Double_t conversion, D
   }
 }
 
-void   AliHelix::GetAngle(Double_t t1, AliHelix &h, Double_t t2, Double_t angle[3])
+void   AliHelix::GetAngle(Double_t t1, const AliHelix &h, Double_t t2, Double_t angle[3]) const
 {
   //
   //
@@ -241,7 +241,7 @@ void   AliHelix::GetAngle(Double_t t1, AliHelix &h, Double_t t2, Double_t angle[
 void AliHelix::Evaluate(Double_t t,
                      Double_t r[3],  //radius vector
                      Double_t g[3],  //first defivatives
-                     Double_t gg[3]) //second derivatives
+                     Double_t gg[3]) const //second derivatives
 {
   //--------------------------------------------------------------------
   // Calculate position of a point on a track and some derivatives at given phase
@@ -259,7 +259,7 @@ void AliHelix::Evaluate(Double_t t,
   gg[0]=-fHelix[4]*sn; gg[1]=fHelix[4]*cs; gg[2]=0.;
 }
 
-Int_t     AliHelix::GetClosestPhases(AliHelix &h, Double_t phase[2][2])
+Int_t     AliHelix::GetClosestPhases(const AliHelix &h, Double_t phase[2][2]) const
 {
   //
   // get phases to minimize distances
@@ -296,7 +296,7 @@ Int_t     AliHelix::GetClosestPhases(AliHelix &h, Double_t phase[2][2])
   return 1;
 }
 
-Double_t  AliHelix::GetPointAngle(AliHelix &h, Double_t phase[2], const Float_t * vertex)
+Double_t  AliHelix::GetPointAngle(const AliHelix &h, Double_t phase[2], const Float_t * vertex) const
 {
   //
   // get point angle bettwen two helixes
@@ -316,7 +316,7 @@ Double_t  AliHelix::GetPointAngle(AliHelix &h, Double_t phase[2], const Float_t 
   return pointAngle;
 }
 
-Double_t  AliHelix::GetPhase(Double_t x, Double_t y )
+Double_t  AliHelix::GetPhase(Double_t x, Double_t y ) const
 			
 {
   //
@@ -338,7 +338,7 @@ Double_t  AliHelix::GetPhase(Double_t x, Double_t y )
   return t;
 }
 
-Int_t AliHelix::GetPhase(Double_t /*r0*/, Double_t * /*t[2]*/) 
+Int_t AliHelix::GetPhase(Double_t /*r0*/, Double_t * /*t[2]*/) const
 {
   //
   //calculate helix param at given r  point - return nearest point ()
@@ -350,7 +350,7 @@ Int_t AliHelix::GetPhase(Double_t /*r0*/, Double_t * /*t[2]*/)
 }
 
 
-Double_t  AliHelix::GetPhaseZ(Double_t z0)
+Double_t  AliHelix::GetPhaseZ(Double_t z0) const
 {
   //
   //
@@ -358,7 +358,7 @@ Double_t  AliHelix::GetPhaseZ(Double_t z0)
 }
 
 
-Int_t    AliHelix::GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Double_t ri[2], Double_t cut)
+Int_t    AliHelix::GetRPHIintersections(const AliHelix &h, Double_t phase[2][2], Double_t ri[2], Double_t cut) const
 {
   //--------------------------------------------------------------------
   // This function returns  phase vectors with intesection between helix (0, 1 or 2)
@@ -441,8 +441,8 @@ Int_t    AliHelix::GetRPHIintersections(AliHelix &h, Double_t phase[2][2], Doubl
 
 
 
-Int_t   AliHelix::LinearDCA(AliHelix &h, Double_t &t1, Double_t &t2, 
-		      Double_t &R, Double_t &dist)
+Int_t   AliHelix::LinearDCA(const AliHelix &h, Double_t &t1, Double_t &t2,
+		      Double_t &R, Double_t &dist) const
 {
   //
   //
@@ -482,9 +482,9 @@ Int_t   AliHelix::LinearDCA(AliHelix &h, Double_t &t1, Double_t &t2,
 }
 
 
-Int_t  AliHelix::ParabolicDCA(AliHelix&h,  //helixes
+Int_t  AliHelix::ParabolicDCA(const AliHelix&h,  //helixes
 			       Double_t &t1, Double_t &t2, 
-			       Double_t &R, Double_t &dist, Int_t iter)
+			       Double_t &R, Double_t &dist, Int_t iter) const
 {
   //
   //
@@ -567,9 +567,9 @@ Int_t  AliHelix::ParabolicDCA(AliHelix&h,  //helixes
 }
 
 
-Int_t  AliHelix::ParabolicDCA2(AliHelix&h,  //helixes
+Int_t  AliHelix::ParabolicDCA2(const AliHelix&h,  //helixes
 			       Double_t &t1, Double_t &t2, 
-			       Double_t &R, Double_t &dist,  Double_t err[3], Int_t iter)
+			       Double_t &R, Double_t &dist,  Double_t err[3], Int_t iter) const
 {
   //
   //
