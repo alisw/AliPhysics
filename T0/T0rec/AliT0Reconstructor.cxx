@@ -207,14 +207,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   fDigits->GetTimeLED(*timeLED);
   fDigits->GetQT0(*chargeQT0);
   fDigits->GetQT1(*chargeQT1);
-  Int_t genid =  fDigits->RefPoint();
-  if (genid==100)  {
-    shiftA =  shiftA + 20;
-    shiftC =  shiftC + 40;
-    shiftAC =  shiftAC + 35;
-  }
-  printf("!!!! generator %i shiftA %f shiftC %f shiftAC %f\n", genid, shiftA, shiftC, shiftAC) ;
- 
+  
   Int_t onlineMean =  fDigits->MeanTime();
   Int_t corridor = GetRecoParam() -> GetCorridor();  
  
