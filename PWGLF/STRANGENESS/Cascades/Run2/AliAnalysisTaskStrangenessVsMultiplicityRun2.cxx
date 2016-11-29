@@ -1077,7 +1077,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
                 
                 //Check 4: Minimum momentum of baryon daughter
-                ( lV0Result->GetMassHypothesis() != AliV0Result::kK0Short || lBaryonMomentum > lV0Result->GetCutMinBaryonMomentum() ) &&
+                ( lV0Result->GetMassHypothesis() == AliV0Result::kK0Short || lBaryonMomentum > lV0Result->GetCutMinBaryonMomentum() ) &&
                 
                 //Check 5: TPC dEdx selections
                 TMath::Abs(lNegdEdx)<lV0Result->GetCutTPCdEdx() &&
