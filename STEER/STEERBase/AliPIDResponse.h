@@ -146,7 +146,7 @@ public:
   void SetCustomTPCetaMaps(const char* tpcEtaMaps) { fCustomTPCetaMaps = tpcEtaMaps; }
   const char* GetCustomTPCetaMaps() const { return fCustomTPCetaMaps.Data(); }
 
-  void InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run=-1);
+  void InitialiseEvent(AliVEvent *event, Int_t pass, TString recoPassName="", Int_t run=-1);
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
 
   void SetCurrentAliRootRev(Int_t alirootRev) { fCurrentAliRootRev = alirootRev; }
@@ -163,8 +163,9 @@ public:
   void SetCurrentMCEvent(AliMCEvent* mcEvent) {fCurrentMCEvent=mcEvent;}
 
   // User settings for the MC period and reco pass
-  void SetMCperiod(const char *mcPeriod) {fMCperiodUser=mcPeriod;}
-  void SetRecoPass(Int_t recoPass)       {fRecoPassUser=recoPass;}
+  void SetMCperiod(const char *mcPeriod)    {fMCperiodUser=mcPeriod;}
+  void SetRecoPass(Int_t recoPass)          {fRecoPassUser=recoPass;}
+  void SetRecoPassName(Int_t recoPassName)  {fRecoPassNameUser=recoPassName;}
 
   // event info
   Float_t GetCurrentCentrality() const {return fCurrCentrality;};
@@ -196,7 +197,7 @@ public:
   virtual Float_t GetTOFsignalTunedOnData(const AliVTrack *t) const;
 
   Bool_t IsTunedOnData() const {return fTuneMConData;};
-  void SetTunedOnData(Bool_t flag=kTRUE,Int_t recoPass=0){fTuneMConData = flag; if(recoPass>0) fRecoPassUser = recoPass;};
+  void SetTunedOnData(Bool_t flag=kTRUE,Int_t recoPass=0, TString recoPassName=""){fTuneMConData = flag; if(recoPass>0) fRecoPassUser = recoPass; fRecoPassNameUser = recoPassName;}
   Int_t GetTunedOnDataMask() const {return fTuneMConDataMask;};
   void SetTunedOnDataMask(Int_t detMask) {fTuneMConDataMask = detMask;}
 
@@ -251,6 +252,8 @@ private:
   TString fMCperiodTPC;                //! corresponding MC period to use for the TPC splines
   TString fMCperiodUser;               //  MC prodution requested by the user
   TString fCurrentFile;                //! name of currently processed file
+  TString fRecoPassName;               //  Full reconstruction pass name
+  TString fRecoPassNameUser;           //  Full reconstruction pass name set by the user
   Int_t   fCurrentAliRootRev;          //! Aliroot rev. used to reconstruct the data
   Int_t   fRecoPass;                   //! reconstruction pass
   Int_t   fRecoPassUser;               //  reconstruction pass explicitly set by the user

@@ -38,6 +38,8 @@ public:
   TString GetRootVersion() const {return fRootVersion;}
   Int_t GetRootSvnVersion() const {return fRootSvnVersion;}
   Int_t GetRecoPass() const {return fRecoPass;}
+  const TString& GetRecoPassName() const { return fRecoPassName; }
+
   Bool_t IsMC() const {return fMcFlag;}
   //
   Bool_t HasLPMPass() const { return !fTags[kPass].IsNull() && fTags[kPass].IsDigit(); }
@@ -62,6 +64,7 @@ private:
   TString fProductionTag;         // production tag
   TString fAlirootVersion;        // aliroot version used producing data
   TString fRootVersion;           // root version used producing data
+  TString fRecoPassName;          // Full name of the reconstruction pass, deduced from the output file structure
 
   //
   ClassDef(AliProdInfo, 3);     // Combined PID using priors

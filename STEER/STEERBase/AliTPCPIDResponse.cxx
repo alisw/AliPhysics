@@ -1636,34 +1636,53 @@ Bool_t   AliTPCPIDResponse::RegisterSpline(const char * name, Int_t index){
 }
 
 //_____________________________________________________________________________
-Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const char* pass, const char* oadbFile/*="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root"*/, Bool_t initMultiplicityCorrection/*=kTRUE*/)
+Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const Int_t pass, TString passName,
+                                       const char* oadbFile/*="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root"*/,
+                                       Bool_t initMultiplicityCorrection/*=kTRUE*/)
 {
   //
   //
   //
 
-  AliInfo(                "----------------------| Initialisation TPC PID Response from OADB |----------------------");
-  AliInfo(TString::Format("----------------------| Run: %d, pass: %-19s |----------------------", run, pass));
+  AliInfo( "----------------------| Initialisation TPC PID Response from OADB |----------------------");
+  AliInfoF("----------------------| Run: %d, pass: %d - %-16s |----------------------", run, pass, passName.Data());
   if (!fOADBContainer) {
     fOADBContainer = new AliOADBContainer("TPCSplines");
     fOADBContainer->InitFromFile(oadbFile,"TPCSplines");
   }
 
-  const TString spass(pass);
-  const Int_t passOrig=spass.Atoi();
+  const TString spass=TString::Format("%d", pass);
+  const Int_t passOrig=pass;
   Int_t passIter=passOrig;
 
-  const TObjArray *arr=dynamic_cast<TObjArray*>(fOADBContainer->GetObject(run,"",spass.Data()));
+  const TObjArray *arr=0x0;
+  // first try to find an object using the full pass name
+  if (!passName.IsNull()) {
+    AliInfoF("Trying to load splines for specific pass name %s.", passName.Data());
+    arr = dynamic_cast<TObjArray *>(fOADBContainer->GetObject(run, "", passName.Data()));
+    if (arr) {
+      AliInfoF("Dedicated splines for '%s' found.", passName.Data());
+    }
+    else {
+      AliInfoF("No dedicated splines found for '%s', check numerical pass %s.", passName.Data(), spass.Data());
+    }
+  }
+  // ... then fall back to numerical pass number
+  if (!arr) {
+    AliInfoF("Trying to load splines for specific reconstruction pass %s.", spass.Data());
+    arr = dynamic_cast<TObjArray *>(fOADBContainer->GetObject(run, "", spass.Data()));
+  }
+  // ... then try with previous passes and issue a warning
   while (!arr && --passIter > 0) {
     TString passCurrent=TString::Format("%d", passIter);
     arr=dynamic_cast<TObjArray*>(fOADBContainer->GetObject(run,"",passCurrent.Data()));
   }
 
   if (!arr) {
-    AliError("***** Risk for unreliable TPC PID detected:                      ********");
-    AliError(Form("      could not find a valid OADB object for run %d pass %s", run, pass));
-    AliError(     "      Most probably this is because the PID response for this pass is not available, yet");
-    AliError(     "      Please also check https://twiki.cern.ch/twiki/bin/view/ALICE/TPCSplines");
+    AliError ("***** Risk for unreliable TPC PID detected:                      ********");
+    AliErrorF("      could not find a valid OADB object for run %d pass %d (%s)", run, pass, passName.Data());
+    AliError ("      Most probably this is because the PID response for this pass is not available, yet");
+    AliError ("      Please also check https://twiki.cern.ch/twiki/bin/view/ALICE/TPCSplines");
     return kFALSE;
   }
 
