@@ -106,15 +106,20 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   if(AnalysisTask->GetTrackContainer(trackName))
   {
 	  AnalysisTask->GetTrackContainer(trackName)->SetParticlePtCut(trackptcut);
+	  AnalysisTask->GetTrackContainer(trackName)->SetParticleEtaLimits(-0.8,0.8); //..Eta limits (-0.8,0.8 as in Pi0-h publication)
   }
   if(AnalysisTask->GetClusterContainer(clusName))
   {
-	  AnalysisTask->GetClusterContainer(clusName)->SetClusECut(0);     //by default set to 0
-	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(0.3);  //by default set to 0.15
-	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,clusptcut);
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusECut(0);           //by default set to 0
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(clusptcut);          //by default set to 0.15
+	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,0);
 	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-	  //AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr,clusptcut);
+ 	  //AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr,clusptcut);
 	  //AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
+	  cout<"cut0"<<AnalysisTask->GetClusterContainer(clusName)GetClusUserDefEnergyCut(0)<<endl;
+	  cout<"cut1"<<AnalysisTask->GetClusterContainer(clusName)GetClusUserDefEnergyCut(1)<<endl;
+	  cout<"cut2"<<AnalysisTask->GetClusterContainer(clusName)GetClusUserDefEnergyCut(2)<<endl;
+	  cout<"cut3"<<AnalysisTask->GetClusterContainer(clusName)GetClusUserDefEnergyCut(3)<<endl;
   }
 
   /*
