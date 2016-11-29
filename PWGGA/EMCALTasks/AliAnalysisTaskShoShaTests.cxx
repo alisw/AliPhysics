@@ -32,6 +32,8 @@
 #include "AliVCluster.h"
 #include "AliAnalysisTaskShoShaTests.h"
 #include "TFile.h"
+#include "AliOADBContainer.h"
+
 
 ClassImp(AliAnalysisTaskShoShaTests)
 
@@ -41,13 +43,19 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests() :
   fEMCalCells(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
+  fOADBContainer(0),
   fPeriod("LHC11c"),
   fIsTrain(0),
   fTrigThresh(4.8),
   fExoticCut(0.97),
+  fEClusCut(0.5),
+  fLowPi0MCut(0.12),
+  fHighPi0MCut(0.16),
   fESD(0),
   fOutputList(0),
+  fPvPos(0x0),
   fEvtSel(0),
+  fPVZ(0),
   fClusEt(0),
   fClusEtTM(0),
   fClusEtLead(0),
@@ -58,12 +66,15 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests() :
   fClusEtExoticTM(0),
   fClusEtSingleExotic(0),
   fCellEnergy(0),
+  fInvMassEMCNN(0),
   fM02Et(0),
+  fM02EtPi0MassClCl(0),
   fM02EtTM(0),
   fM02EtExot(0),
   fM02EtExotTM(0)
 {
   // Default constructor.
+  for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
 }
 
 //________________________________________________________________________
@@ -73,13 +84,19 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests(const char *name) :
   fEMCalCells(0),
   fGeom(0x0),
   fGeoName("EMCAL_COMPLETEV1"),
+  fOADBContainer(0),
   fPeriod("LHC11c"),
   fIsTrain(0),
   fTrigThresh(4.8),
   fExoticCut(0.97),
+  fEClusCut(0.5),
+  fLowPi0MCut(0.12),
+  fHighPi0MCut(0.16),
   fESD(0),
   fOutputList(0),
+  fPvPos(0x0),
   fEvtSel(0),
+  fPVZ(0),
   fClusEt(0),
   fClusEtTM(0),
   fClusEtLead(0),
@@ -90,7 +107,9 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests(const char *name) :
   fClusEtExoticTM(0), 
   fClusEtSingleExotic(0),
   fCellEnergy(0),
+  fInvMassEMCNN(0),
   fM02Et(0),
+  fM02EtPi0MassClCl(0),
   fM02EtTM(0),
   fM02EtExot(0),
   fM02EtExotTM(0)
@@ -116,9 +135,14 @@ void AliAnalysisTaskShoShaTests::UserCreateOutputObjects()
   fOutputList->SetOwner();// Container cleans up all histos (avoids leaks in merging) 
   
   fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
+  fOADBContainer = new AliOADBContainer("AliEMCALgeo");
+  fOADBContainer->InitFromFile(Form("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
   
   fEvtSel = new TH1F("hEvtSel","Event selection counter (0=all trg, 1=pvz cut) ;evt cut ;dN/dcut}",2,0,2);
   fOutputList->Add(fEvtSel);
+
+  fPVZ = new TH1F("hPVZ","distribution of pv-z;z (cm);counts",200,-20,20);
+  fOutputList->Add(fPVZ);
   
   fClusEt = new TH1F("hClusEt","Clusters E_{T} ;E_{T} ;dN/dE_{T}",400,0,200);
   fOutputList->Add(fClusEt);
@@ -149,10 +173,16 @@ void AliAnalysisTaskShoShaTests::UserCreateOutputObjects()
 
   fCellEnergy = new TH1F("hCellE","cell energy spectrum;E_{cell} (GeV);entries",200,0,20);
   fOutputList->Add(fCellEnergy);
+
+  fInvMassEMCNN = new TH1F("hInvMassEMCNN","inv mass of neutral EMC clusters pairs;m_{cc};n-entries",200,0,1);
+  fOutputList->Add(fInvMassEMCNN);
   
   fM02Et = new TH2F("hM02Et","#lambda_{0}^{2} vs. E_{T} for trigger clusters ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
   fOutputList->Add(fM02Et);
   
+  fM02EtPi0MassClCl = new TH2F("fM02EtPi0MassClCl","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPi0MassClCl);
+
   fM02EtTM = new TH2F("hM02EtTM","#lambda_{0}^{2} vs. E_{T} for trigger clusters(TM) ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
   fOutputList->Add(fM02EtTM);
   
@@ -171,35 +201,36 @@ void AliAnalysisTaskShoShaTests::UserExec(Option_t *)
   // User exec. Called once per event.
 
   Bool_t isSelected = 0;
-  if(fPeriod.Contains("11a"))
+  /*if(fPeriod.Contains("11a"))
     isSelected =  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMC1);
   else
     isSelected =  ((((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral) ||
 		   (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral));
   if(!isSelected )
-    return; 
+    return; */
+  Int_t   runnumber = InputEvent()->GetRunNumber() ;
 
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     printf("ERROR: fESD not available\n");
     return;
   }
-
   fEvtSel->Fill(0);
-  if (0) {
-    AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
-    if(!pv) 
-      return;
-    if(TMath::Abs(pv->GetZ())>15)
-      return;
-  }
+  AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
+  if(!pv) 
+    return;
+  fPVZ->Fill(pv->GetZ());
+  Double_t pvxyz[3] = {pv->GetX(), pv->GetY(), pv->GetZ()};
+  fPvPos = (Double_t*)pvxyz;
+  if(TMath::Abs(pv->GetZ())>15)
+    return;
   fEvtSel->Fill(1);
-  if (!fIsTrain) {
-    for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-      if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
-        break;
-      fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
-    }
+  TObjArray *matEMCAL=(TObjArray*)fOADBContainer->GetObject(runnumber,"EmcalMatrices");
+  for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+    if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
+      break;
+    fGeomMatrix[mod] = (TGeoHMatrix*) matEMCAL->At(mod);
+    fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
   }
   fESD->GetEMCALClusters(fCaloClusters);
   fEMCalCells = fESD->GetEMCALCells();
@@ -223,64 +254,54 @@ void AliAnalysisTaskShoShaTests::FillClusHists()
   const Int_t nclus = fCaloClusters->GetEntries();
   if(nclus==0)
     return;
-  Double_t EtArray[nclus];
-  Bool_t isTM[nclus];
-  Bool_t isEx[nclus];
-  Int_t index[nclus];
-  Int_t nthresholds = 0;
-  for(Int_t ic=0;ic<nclus;ic++){
-    EtArray[ic]=0;
-    isTM[ic] = 0;
-    isEx[ic] = 0;
-    index[ic]=0;
-    AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(fCaloClusters->At(ic));
-    if(!c)
+  Double_t EtArray;
+  Bool_t isTM;
+  Bool_t isEx;
+  Int_t index;
+  //printf("+++++++++\nstarting cluster loop!\n++++++++++++\n");
+  for(int ic = 0; ic<nclus; ic++){
+    AliESDCaloCluster *c1 = static_cast<AliESDCaloCluster*>(fCaloClusters->At(ic));
+    if(!c1)
       continue;
-    if(!c->IsEMCAL())
+    if(!c1->IsEMCAL())
       continue;
-    if(c->E()<fTrigThresh)
+    if(c1->E()<fEClusCut)
       continue;
-    nthresholds++;
     Short_t id;
-    Double_t Emax = GetMaxCellEnergy( c, id);
-    Double_t Ecross = GetCrossEnergy( c, id);
-    if((1-Ecross/Emax)>fExoticCut)
-      isEx[ic] = 1;
+    Double_t Emax = GetMaxCellEnergy( c1, id);
+    Double_t Ecross = GetCrossEnergy( c1, id);
+    //printf("Ecross/Emax:%1.3f =================\n",Ecross/Emax);
+    if((1.0-Ecross/Emax)>fExoticCut)
+      isEx = 1;
     Float_t clsPos[3] = {0,0,0};
-    c->GetPosition(clsPos);
-    TVector3 clsVec(clsPos);
-    Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
-    EtArray[ic] = Et;
-    fClusEt->Fill(Et);
-    fM02Et->Fill(Et, c->GetM02());
-    if(isEx[ic]){
-      fClusEtExotic->Fill(Et);
-      fM02EtExot->Fill(Et,c->GetM02()); 
-     }
-    Double_t dR = TMath::Sqrt(pow(c->GetTrackDx(),2)+pow(c->GetTrackDz(),2));
+    c1->GetPosition(clsPos);
+    TVector3 clsVecToZero(clsPos);
+    TVector3 pvVec(fPvPos[0],fPvPos[1], fPvPos[2]);
+    TVector3 clsVecToPv = clsVecToZero - pvVec;
+    Double_t Et1 = c1->E()*TMath::Sin(clsVecToPv.Theta());
+    fClusEt->Fill(Et1);
+    fM02Et->Fill(Et1, c1->GetM02());
+    if(isEx){
+      fClusEtExotic->Fill(Et1);
+      fM02EtExot->Fill(Et1,c1->GetM02()); 
+    }
+    Double_t dR = TMath::Sqrt(pow(c1->GetTrackDx(),2)+pow(c1->GetTrackDz(),2));
     if(dR<0.025){
-      isTM[ic]=1;
-      fClusEtTM->Fill(Et);
-      fM02EtTM->Fill(Et, c->GetM02());
-      if(isEx[ic]){
-	fClusEtExoticTM->Fill(Et);
-	fM02EtExotTM->Fill(Et,c->GetM02());
+      isTM=kTRUE;
+      fClusEtTM->Fill(Et1);
+      fM02EtTM->Fill(Et1, c1->GetM02());
+      if(isEx){
+	fClusEtExoticTM->Fill(Et1);
+	fM02EtExotTM->Fill(Et1,c1->GetM02());
       }
     }
+    Double_t clclmass=0;
+    //cluster pairs both neutral and !exotic
+    //if( (ic<(nclus-1)) && !isTM )// && !isEx ) 
+      clclmass = NeutClusPairInvMass(c1, ic);
   }
-  TMath::Sort(nclus,EtArray,index, kTRUE);
-  if(EtArray[index[0]]>0){
-    fClusEtLead->Fill(EtArray[index[0]]);
-    if(nthresholds==1 && isEx[index[0]])
-       fClusEtSingleExotic->Fill(EtArray[index[0]]);
-  }
-  if(nclus>1)if(EtArray[index[1]]>0)
-    fClusEtSubLead->Fill(EtArray[index[1]]);
-  if(isTM[index[0]] && EtArray[index[0]]>0)
-    fClusEtLeadTM->Fill(EtArray[index[0]]);
-  if(nclus>1)if(isTM[index[1]] && EtArray[index[1]]>0)
-    fClusEtSubLeadTM->Fill(EtArray[index[1]]);
-} 
+}
+ 
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskShoShaTests::GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax)
@@ -352,7 +373,61 @@ Double_t AliAnalysisTaskShoShaTests ::GetMaxCellEnergy(const AliVCluster *cluste
   }
   return maxe;
 }
-
+//________________________________________________________________________
+Double_t AliAnalysisTaskShoShaTests::NeutClusPairInvMass(const AliVCluster *cl1, Int_t ic)
+{
+  //printf("\nA neutral good cluster, looking for a pair.... \n\n");
+  Double_t mass = -1;
+  if(!cl1)
+    return mass;
+  if(!fCaloClusters)
+    return mass;
+  const Int_t nclus = fCaloClusters->GetEntries();
+  if(ic==(nclus-1))
+    return mass;
+  if(nclus==0)
+    return mass;
+  for(int jc = ic+1; jc<nclus; jc++){
+    AliESDCaloCluster *cl2 = static_cast<AliESDCaloCluster*>(fCaloClusters->At(jc));
+    if(!cl2)
+      continue;
+    if(!cl2->IsEMCAL())
+      continue;
+    if(cl2->E()<fEClusCut)
+      continue;
+    Short_t id;
+    Double_t Emax = GetMaxCellEnergy( cl2, id);
+    Double_t Ecross = GetCrossEnergy( cl2, id);
+    if((1-Ecross/Emax)>fExoticCut)
+      continue;
+    Double_t dR = TMath::Sqrt(pow(cl2->GetTrackDx(),2)+pow(cl2->GetTrackDz(),2));
+    if(dR<0.03)
+      continue;
+    Float_t clsPos1[3] = {0,0,0};
+    Float_t clsPos2[3] = {0,0,0};
+    TVector3 pvVec(fPvPos[0],fPvPos[1], fPvPos[2]);
+    cl1->GetPosition(clsPos1);
+    TVector3 clsVec1(clsPos1);
+    TVector3 clsVec1ToPv = clsVec1 - pvVec;
+    Double_t Et1 = cl1->E()*TMath::Sin(clsVec1ToPv.Theta());
+    cl2->GetPosition(clsPos2);
+    TVector3 clsVec2(clsPos2);
+    TVector3 clsVec2ToPv = clsVec2 - pvVec;
+    Double_t Et2 = cl2->E()*TMath::Sin(clsVec2ToPv.Theta());
+    TLorentzVector lv1, lv2, lvm;
+    lv1.SetPtEtaPhiM(Et1,clsVec1ToPv.Eta(),clsVec1ToPv.Phi(),0.0);
+    lv2.SetPtEtaPhiM(Et2,clsVec2ToPv.Eta(),clsVec2ToPv.Phi(),0.0);
+    lvm = lv1 + lv2;
+    mass = lvm.M();
+    //printf("the pair mass is %1.2f ++++++++++++++++\n",mass);
+    fInvMassEMCNN->Fill(lvm.M());
+    if(mass>fLowPi0MCut && mass<fHighPi0MCut){
+      fM02EtPi0MassClCl->Fill(Et1,cl1->GetM02());
+      fM02EtPi0MassClCl->Fill(Et2,cl2->GetM02());  
+    }
+  }
+  return mass;
+}
 //________________________________________________________________________
 void AliAnalysisTaskShoShaTests::Terminate(Option_t *) 
 {
