@@ -58,7 +58,7 @@ fHistEffGamma(0x0),fHistEffHadron(0x0),
 fOutputList1(),fOutputList2(),fOutputList3(),fOutputListGamma(),fOutputListXi(),fOutputListZeta(),fEventPoolOutputList(),
 
 fHistNoClusPt(0),fHistNoClusPtH(0),fHistPi0(0),
-fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
+fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),fHistCellsCluster(0),fHistClusterShape(0),
 
 fHPoolReady(0x0)
 {
@@ -80,7 +80,7 @@ fHistEffGamma(0x0),fHistEffHadron(0x0),
 fOutputList1(),fOutputList2(),fOutputList3(),fOutputListGamma(),fOutputListXi(),fOutputListZeta(),fEventPoolOutputList(),
 
 fHistNoClusPt(0),fHistNoClusPtH(0),fHistPi0(0),
-fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
+fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),fHistCellsCluster(0),fHistClusterShape(0),
 
 fHPoolReady(0x0)
 {
@@ -217,18 +217,18 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	max[1] = 30;
 	//settings for delta phi (g-h) distribution
 	nbins[2] = 50;
-	min[2] = -100;
-	max[2] = 300;
+	min[2] = -90;
+	max[2] = 270;
 	//settings for delta eta (g-h) distribution
 	nbins[3] = 80;
 	min[3] = -2;
 	max[3] = 2;
 	//settings for phi distribution for QA
-	nbins[4] = 50;
+	nbins[4] = 76;
 	min[4] = -10;
 	max[4] = 370;
 	//settings for eta distribution for QA
-	nbins[5] = 40;
+	nbins[5] = 80;
 	min[5] = -1;
 	max[5] = 1;
 	//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -264,6 +264,8 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fHistNoClusPtH        = new TH1*[kNIdentifier];
 	fHistDEtaDPhiGammaQA  = new TH2*[kNIdentifier+2];
 	fHistDEtaDPhiTrackQA  = new TH2*[kNIdentifier+2];
+	fHistCellsCluster     = new TH2*[kNIdentifier+2];
+	fHistClusterShape     = new TH2*[kNIdentifier+2];
 
 	for(Int_t i=0; i<kNIdentifier; i++)
 	{
@@ -387,6 +389,23 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fHistDEtaDPhiTrackQA[identifier]->GetXaxis()->SetTitle("#phi^{hadron}");
 		fHistDEtaDPhiTrackQA[identifier]->GetYaxis()->SetTitle("#eta^{hadron}");
 		fOutputListQA->Add(fHistDEtaDPhiTrackQA[identifier]);
+
+	    //..Cluster Info
+		fHistCellsCluster[identifier] = new TH2F(Form("fHistCellsCluster%d_Id%d",0,identifier),Form("fHistCellsCluster%d_Id%d",0,identifier),60,0,30,50,0,50);
+		fHistCellsCluster[identifier]->GetXaxis()->SetTitle("E^{cluster}");
+		fHistCellsCluster[identifier]->GetYaxis()->SetTitle("N_{cells}");
+		fOutputListQA->Add(fHistCellsCluster[identifier]);
+
+		fHistClusterShape[identifier] = new TH2F(Form("fHistClusterShape%d_Id%d",0,identifier),Form("fHistClusterShape%d_Id%d",0,identifier),60,0,30,80,0,4);
+		fHistClusterShape[identifier]->GetXaxis()->SetTitle("E^{cluster}");
+		fHistClusterShape[identifier]->GetYaxis()->SetTitle("N_{cells}");
+		fOutputListQA->Add(fHistClusterShape[identifier]);
+
+		//..Time information
+
+
+		//..
+
 	}
 	//time information??
 
@@ -695,10 +714,10 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 		{
 			cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
-			if(!cluster || !AccClusterForAna(cluster))continue;
+			if(!cluster || !AccClusterForAna(clusters,cluster))continue;
 			TLorentzVector CaloClusterVec;
 			clusters->GetMomentum(CaloClusterVec,cluster);
-			FillQAHisograms(0,CaloClusterVec,trackNULL,0,0);
+			FillQAHisograms(0,clusters,cluster,trackNULL,0,0);
 
 			nAccClusters++;
 		}
@@ -725,7 +744,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 	for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 	{
 		cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
-		if(!cluster || !AccClusterForAna(cluster))continue; //check if the cluster is a good cluster
+		if(!cluster || !AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
 		//clusters->GetLeadingCluster("e");
 
 		TLorentzVector CaloClusterVec;
@@ -753,10 +772,10 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 
 				//EffWeight_Hadron=GetEff(<TLorentzVector>track);
 				FillGhHisograms(1,CaloClusterVec,track,2,0,-360,Weight);
-				if(GammaCounter==1)FillQAHisograms(1,CaloClusterVec,track,2,0); // fill only once
-				/*fill only for first hadron*/FillQAHisograms(2,CaloClusterVec,track,2,0); //fill for each gamma?? makes sense?
-				if(CaloClusterVec.Eta()>0)FillQAHisograms(3,CaloClusterVec,track,2,0); //fill for each gamma?? makes sense?
-				if(CaloClusterVec.Eta()<0)FillQAHisograms(4,CaloClusterVec,track,2,0); //fill for each gamma?? makes sense?
+				if(GammaCounter==1)FillQAHisograms(1,clusters,cluster,track,2,0); // fill only once
+				/*fill only for first hadron*/FillQAHisograms(2,clusters,cluster,track,2,0); //fill for each gamma?? makes sense?
+				if(CaloClusterVec.Eta()>0)FillQAHisograms(3,clusters,cluster,track,2,0); //fill for each gamma?? makes sense?
+				if(CaloClusterVec.Eta()<0)FillQAHisograms(4,clusters,cluster,track,2,0); //fill for each gamma?? makes sense?
 			}
 		}
 		//...........................................
@@ -780,7 +799,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 			if(NoCluster1!=NoCluster2)
 			{
 				cluster2=(AliVCluster*) clusters->GetAcceptCluster(NoCluster2);
-				if(!cluster2 || !AccClusterForAna(cluster2))continue; //check if the cluster is a good cluster
+				if(!cluster2 || !AccClusterForAna(clusters,cluster2))continue; //check if the cluster is a good cluster
 
 				TLorentzVector CaloClusterVec2;
 				TLorentzVector CaloClusterVecpi0;
@@ -830,7 +849,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 		{
 			cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
-			if(!cluster || !AccClusterForAna(cluster))continue; //check if the cluster is a good cluster
+			if(!cluster || !AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
 			//clusters->GetLeadingCluster("e");
 
 			TLorentzVector CaloClusterVec;
@@ -844,7 +863,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				if(NoCluster1!=NoCluster2)
 				{
 					cluster2=(AliVCluster*) clusters->GetAcceptCluster(NoCluster2);
-					if(!cluster2 || !AccClusterForAna(cluster2))continue; //check if the cluster is a good cluster
+					if(!cluster2 || !AccClusterForAna(clusters,cluster2))continue; //check if the cluster is a good cluster
 
 					TLorentzVector CaloClusterVec2;
 					TLorentzVector CaloClusterVecpi0;
@@ -883,9 +902,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	//run the real loop for filling the histograms
 	for( Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 	{
-
 		cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
-		if(!cluster || !AccClusterForAna(cluster))continue; //check if the cluster is a good cluster
+		if(!cluster || !AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
 		//clusters->GetLeadingCluster("e");
 
 		TLorentzVector CaloClusterVec;
@@ -897,7 +915,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			if(NoCluster1!=NoCluster2)
 			{
 				cluster2=(AliVCluster*) clusters->GetAcceptCluster(NoCluster2);
-				if(!cluster2 || !AccClusterForAna(cluster2))continue; //check if the cluster is a good cluster
+				if(!cluster2 || !AccClusterForAna(clusters,cluster2))continue; //check if the cluster is a good cluster
 
 				TLorentzVector CaloClusterVec2;
 				TLorentzVector CaloClusterVecpi0;
@@ -1020,27 +1038,62 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,TLorentzVector
 	}
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut)
+void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut)
 {
-	/*should do similar test here*/fHistDEtaDPhiGammaQA[identifier] ->Fill(ClusterVec.Phi()*fRtoD,ClusterVec.Eta());
-	if(TrackVec)                   fHistDEtaDPhiTrackQA[identifier] ->Fill(TrackVec->Phi()*fRtoD,TrackVec->Eta());
+	TLorentzVector caloClusterVec;
+	clusters->GetMomentum(caloClusterVec,caloCluster);
+
+	/*do similar test here?*/fHistDEtaDPhiGammaQA[identifier] ->Fill(caloClusterVec.Phi()*fRtoD,caloClusterVec.Eta());
+	if(TrackVec)             fHistDEtaDPhiTrackQA[identifier] ->Fill(TrackVec->Phi()*fRtoD,TrackVec->Eta());
+
+
+	fHistCellsCluster[identifier] ->Fill(caloCluster->GetHadCorrEnergy(),caloCluster->GetNCells());
+	fHistClusterShape[identifier] ->Fill(caloCluster->GetHadCorrEnergy(),caloCluster->GetM02());
+
 }
 //________________________________________________________________________
-Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliVCluster* cluster)
+Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster)
 {
-	//--Accepts clusters if certain conditions are fulfilled
-	Bool_t Accepted=0; //By default rejceted
+	TLorentzVector caloClusterVec;
+	clusters->GetMomentum(caloClusterVec,caloCluster);
+    Double_t deltaPhi=2;   //..phi away from detector edges.
+    Double_t deltaEta=0.0; //..eta away from detector edges.
 
-	//double check these cuts carefully with the experts
-	if(cluster->GetNCells()>1)
+	//..Accepts clusters if certain conditions are fulfilled
+	Bool_t Accepted=1; //..By default accepted
+
+	//!!double check these cuts carefully with the experts!!
+	if(caloCluster->GetNCells()<2)
 	{
-		//--Now accept the cluster as a good candidate for your analysis
-		Accepted=1;
+		//..Reject the cluster as a good candidate for your analysis
+		Accepted=0;
 	}
-
+	//..If not in EMCal Phi acceptance - reject
+	if(caloClusterVec.Phi()*fRtoD<(80+deltaPhi) || caloClusterVec.Phi()*fRtoD>(187-deltaPhi))
+	{
+		if(caloClusterVec.Phi()*fRtoD>(260+deltaPhi) && caloClusterVec.Phi()*fRtoD<(327-deltaPhi))
+		{
+			  //..if instead in DCal -> OK
+		}
+		else  //..if not reject
+		{
+			Accepted=0;
+		}
+	}
+	//..If not in EMCal Eta acceptance - reject
+	if(caloClusterVec.Eta()<(-0.7+deltaEta) || caloClusterVec.Eta()>(0.7-deltaEta))
+	{
+		if(caloClusterVec.Eta()>(0.22+deltaEta) && caloClusterVec.Eta()<(0.7-deltaEta))
+		{
+			  //..if instead in DCal -> OK
+		}
+		else  //..if not reject
+		{
+			Accepted=0;
+		}
+	}
 	return Accepted;
 }
-
 //________________________________________________________________________
 Double_t AliAnalysisTaskGammaHadron::DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)
 {
