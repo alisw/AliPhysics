@@ -26,6 +26,7 @@
 #include <TLorentzVector.h>
 
 #include "AliEmcalPythiaInfo.h"
+#include "AliMCEvent.h"
 
 #include "AliVTrack.h"
 #include "AliVHeader.h"
@@ -658,7 +659,21 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
       return;
   }
 
-  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), partid, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), InputEvent()->GetPrimaryVertex()->GetX(), InputEvent()->GetPrimaryVertex()->GetY(), InputEvent()->GetPrimaryVertex()->GetZ(), eventID, fCent);
+  // Load vertex if possible
+  Double_t vtxX = 0;
+  Double_t vtxY = 0;
+  Double_t vtxZ = 0;
+  const AliVVertex* myVertex = InputEvent()->GetPrimaryVertex();
+  if(!myVertex && MCEvent())
+    myVertex = MCEvent()->GetPrimaryVertex();
+  if(myVertex)
+  {
+    vtxX = myVertex->GetX();
+    vtxY = myVertex->GetY();
+    vtxZ = myVertex->GetZ();
+  }
+
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), partid, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent);
 
   // Add constituents
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
