@@ -498,7 +498,7 @@ TString AliAnalysisMuonUtility::GetTrackHistory ( const AliVParticle* track, con
     if ( ! trackHistory.IsNull() ) trackHistory.Append(" <- ");
     if ( imother != fakeMother ) trackHistory.Append(Form("%i ", imother));
     trackHistory.Append(Form("(%s)", pname.Data()));
-    if ( verbose ) trackHistory.Append(Form(" [vz %g  mc %i]", part->Zv(), GetMCProcess(part)));
+    if ( verbose ) trackHistory.Append(Form(" [vz %g  mc %i  status %i]", part->Zv(), GetMCProcess(part), GetStatusCode(part)));
     imother = part->GetMother();
   }
   return trackHistory;
