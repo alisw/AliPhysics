@@ -911,7 +911,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       //----------------
     }
   }
-  if( fUseDistTrackToCluster && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
+  if( fUseDistTrackToCluster && fIsMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
     // TM efficiency histograms
     fHistClusterTMEffiInput                       = new TH2F(Form("TMEffiInputHisto %s",GetCutNumber().Data()),"TMEffiInputHisto",nBinsClusterEFine, minClusterELog, maxClusterELog, 22, -0.5, 21.5);
     SetLogBinningXTH2(fHistClusterTMEffiInput);

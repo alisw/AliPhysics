@@ -245,6 +245,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
  } else if (trainConfig == 8) {
     cuts.AddCut("00000103", "00000009266300008804004000");
     cuts.AddCut("00000103", "00000009266300008800404000");
+    cuts.AddCut("00000103", "00000009266370008804004000");
  } else if (trainConfig == 9) {
     cuts.AddCut("00010103", "00000009266300008804004000");
     cuts.AddCut("00010103", "00000009266300008800404000");
@@ -282,6 +283,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
  } else if (trainConfig == 108) {
     cuts.AddCut("00000103", "10000009266300008804004000");
     cuts.AddCut("00000103", "10000009266300008800404000");
+    cuts.AddCut("00000103", "10000009266370008804004000");
  } else if (trainConfig == 109) {
     cuts.AddCut("00010103", "10000009266300008804004000");
     cuts.AddCut("00010103", "10000009266300008800404000");

@@ -14,7 +14,7 @@ namespace AliUtilTOFParams {
   enum {kExpSpecies = 6, ke = 0, kmu, kpi, kK, kp, kd};
   //Indexes to store event
   //Track info
-  enum fTrkMaskIndex {kNegTrk, kIsMismatch, kT0_0, kT0_1, kT0_2, kIsTOFout, kIsTOFTime, kIsTRDout, kLimitfTrkMask};//Track information bitmask fTrkMask
+  enum fTrkMaskIndex {kNegTrk, kIsMismatch, kT0_0, kT0_1, kT0_2, kIsTOFout, kIsTOFTime, kIsTRDout, kLimitfTrkMask};//Track information bitmask fTrkMask - kT0_0 (T0 TOF) kT0_1 (T0 T0A) kT0_2 (T0C)
   //Track cuts
   enum fTrkCutMaskIndex {kTPCSetL, kTPCSetT, kTPCChi2SetL, kTPCChi2SetT, kDCAzSetL, kDCAzSetT, kPrimSetL, kPrimSetT, kGeoCutSet1, kGeoCutSet2, kLimitfTrkCutMask};//Track cut information bitmask fTrkCutMask
   //Track PID
@@ -26,6 +26,8 @@ namespace AliUtilTOFParams {
   //DCA range for binning but also histograms
   const Double_t fDCAXYRange = 3.;
   const Double_t fDCAZRange = 3.;
+  //DCA binning in histograms 
+  const Int_t fDCAXYbins = 2000;
   
   //Dimensions of the screen
   const Double_t screendim[2] = {1366, 768};
@@ -91,7 +93,7 @@ namespace AliUtilTOFParams {
   // const Int_t multcolor[nMultBin] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1};//Blue Central
   const Int_t multcolor[nMultBin] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1};//Red Central
   const Int_t multdraw[nMultBin] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-  const Bool_t multrun[nMultBin] = {kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE};//MB only
+ // const Bool_t multrun[nMultBin] = {kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE};//MB only
   
   //Cuts applied used for cut variation
   const Int_t nCuts = 5;
@@ -119,7 +121,7 @@ namespace AliUtilTOFParams {
   //SetCutGeoNcrNcl(0., 0., 0.0, 0.0, 0.0)
   const Double_t GeoSetLoose[5] = {0.0, 0.0, 0.0, 0.0, 0.0};//Loose
   //SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0)
-  const Double_t GeoSetStd[5] = {2., 130., 0.0, 0.0, 0.0};//Standard
+  const Double_t GeoSetStd[5] = {2., 130., 1.5, 0.0, 0.0};//Standard
   //SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
   const Double_t GeoSetTight[5] = {3., 130., 1.5, 0.85, 0.7};//Tigth
   const Double_t CutValueGeo[5*nCutGeo] = {
