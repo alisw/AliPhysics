@@ -22,6 +22,9 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
+#define LOG_NO_INFO
+#define LOG_NO_DEBUG
+#include "AliLog.h"
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -56,7 +59,6 @@
 #include "TROOT.h"
 #include "TSystem.h"
 #include "AliMultiplicity.h"
-#include "AliLog.h"
 #include "AliAnalysisTaskTOFSpectra.h"
 #include "AliESDUtils.h"
 #include "AliCentrality.h"
@@ -67,6 +69,7 @@
 #include "TClonesArray.h"
 #include "AliAnTOFtrack.h"
 #endif
+
 
 ClassImp(AliAnalysisTaskTOFSpectra)
 

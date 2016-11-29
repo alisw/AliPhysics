@@ -7,9 +7,6 @@
 using namespace AliUtilTOFParams;
 
 
-#define LOG_NO_INFO
-// #include "AliLog.h"
-
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -168,14 +165,14 @@ public:
   ///
   /// Method to get the diffenece between the track time and the expected one
   Float_t GetDeltaT(const UInt_t id){
-    if(id > kExpSpecies) ::Fatal("GetDeltaT", "Index required is out of bound");
+    if(id > kExpSpecies) AliFatal("Index required is out of bound");
     return fTOFTime - fTOFExpTime[id] - fT0TrkTime;
   }
   
   ///
   /// Method to get the diffenece between the track time and the expected one in Number of sigmas
   Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo){
-    if(id > kExpSpecies) ::Fatal("GetDeltaSigma", "Index required is out of bound");
+    if(id > kExpSpecies) AliFatal("Index required is out of bound");
     return GetDeltaT(hypo)/fTOFExpSigma[id];
   }
 
