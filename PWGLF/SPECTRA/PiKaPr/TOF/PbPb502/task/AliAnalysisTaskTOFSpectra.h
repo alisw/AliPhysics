@@ -48,8 +48,6 @@ class TClonesArray;
 
 using namespace AliUtilTOFParams;
 
-#define LOG_NO_INFO
-#define LOG_NO_DEBUG
 // #define TESTFLAG//Flag intendended for testing
 #define USETREECLASS//Flag temporary to use a class to be stored in the tree
 //#define CHECKPERFORMANCE//Flag to check the time usage

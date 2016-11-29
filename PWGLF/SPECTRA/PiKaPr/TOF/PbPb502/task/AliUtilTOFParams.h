@@ -93,7 +93,6 @@ namespace AliUtilTOFParams {
   // const Int_t multcolor[nMultBin] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1};//Blue Central
   const Int_t multcolor[nMultBin] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1};//Red Central
   const Int_t multdraw[nMultBin] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
- // const Bool_t multrun[nMultBin] = {kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE, kTRUE};//MB only
   
   //Cuts applied used for cut variation
   const Int_t nCuts = 5;
@@ -139,7 +138,6 @@ namespace AliUtilTOFParams {
   const Int_t CutVarIndex[nCutVars] = {-1, kTPCSetT, -1, kTPCChi2SetT, -1, kDCAzSetT, -1, kPrimSetT, -1, kGeoCutSet2};//Index to check in the mask for the cut, if -1 skip!
   const TString CutVarsName[nCutVars + 1] = {"TPCRows_60", "TPCRows_80", "TrkChi2_5", "TrkChi2_3", "DCAz_3", "DCAz_1", "DCAxy_10", "DCAxy_0", "GeoCut_0", "GeoCut_130", ""};
   const TString CutVarsTitle[nCutVars + 1] = {"TPCRows 60", "TPCRows 80", "Chi2 5", "Chi2 3", "DCAz 3", "DCAz 1", "DCAxy x10", "DCAxy x0.1", "GeoCut 0", "GeoCut 1", "Std"};
-  const Bool_t CutVarsRun[nCutVars] = {kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE};
   const TString primfunct = "0.0105+0.0350/pt^1.1";//Standard pt dependence of the DCAxy cut
   
   //Corrections

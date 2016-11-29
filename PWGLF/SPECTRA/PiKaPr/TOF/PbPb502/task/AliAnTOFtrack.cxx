@@ -22,6 +22,9 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
+#define LOG_NO_INFO
+#define LOG_NO_DEBUG
+#include "AliLog.h"
 #include "TObject.h"
 #include "AliAnTOFtrack.h"
 #include "Riostream.h"
@@ -54,21 +57,21 @@ fTPCSignal(-999)
   //
   // standard constructur which should be used
   //
-  ::Info("AliAnTOFtrack", "**** CONSTRUCTOR CALLED ****");
+  AliInfo("**** CONSTRUCTOR CALLED ****");
   for(Int_t i = 0; i < kExpSpecies; i++){
     fTOFExpTime[i] = -999;
     fTOFExpSigma[i] = -999;
   }
   
-  ::Info("AliAnTOFtrack", "**** END OF CONSTRUCTOR ****");
+  AliInfo("**** END OF CONSTRUCTOR ****");
 }
 
 //________________________________________________________________________
 AliAnTOFtrack::~AliAnTOFtrack(){//Destructor
-  ::Info("AliAnTOFtrack", "**** DESTRUCTOR CALLED ****");
+  AliInfo("**** DESTRUCTOR CALLED ****");
   
   
-  ::Info("AliAnTOFtrack", "**** END OF DESTRUCTOR ****");
+  AliInfo("**** END OF DESTRUCTOR ****");
   
 }
 
@@ -80,7 +83,7 @@ Bool_t AliAnTOFtrack::PassStdCut(){
 
 //________________________________________________________________________
 Bool_t AliAnTOFtrack::PassCut(const Int_t cut){
-  if(cut < -1 || cut >= nCutVars) ::Fatal("PassCut", "requested cut is out of bound");
+  if(cut < -1 || cut >= nCutVars) AliFatal("requested cut is out of bound");
   //Always apply standard cuts except if requiring one different cut
   if(cut == -1) return PassStdCut();;
 
