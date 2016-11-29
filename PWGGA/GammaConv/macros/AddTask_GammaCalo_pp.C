@@ -299,7 +299,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00051013","1111121057032220000","0163103100000050"); // MB
     cuts.AddCut("00051013","1111121058032220000","0163103100000050"); //
     cuts.AddCut("00051013","1111121059032220000","0163103100000050"); //
-    
+
   // ************************************* Calibration configuration EMC ********************************
   } else if (trainConfig == 40){ // EMCAL clusters 2.76 TeV LHC11a, with SDD (0), kEMC1 (1) with TM
     cuts.AddCut("00003113","1111100053032220000","0163103100000050"); // MB
@@ -944,6 +944,17 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1661121067032220000","0163703100000050"); // EMC7
     cuts.AddCut("00083013","1661121067032220000","0163703100000050"); // EMCEG1,
     cuts.AddCut("00085013","1661121067032220000","0163703100000050"); // EMCEG2,
+    
+  } else if (trainConfig == 507){ // pt dependent TM
+    cuts.AddCut("00003113","1111121057032220000","0163103100000050"); // 700 MeV cluster min energy
+    cuts.AddCut("00051013","1111121057032220000","0163103100000050"); // 700 MeV cluster min energy
+    cuts.AddCut("00003013","1111121057032220000","0163103100000050"); // 700 MeV cluster min energy
+  } else if (trainConfig == 508){ // pt dependent TM
+    cuts.AddCut("00010113","1111121067032220000","0163103100000050"); 
+    cuts.AddCut("00052013","1111121067032220000","0163103100000050"); // EMC7
+    cuts.AddCut("00083013","1111121067032220000","0163103100000050"); // EMCEG1,
+    cuts.AddCut("00085013","1111121067032220000","0163103100000050"); // EMCEG2,
+
     
     
     
