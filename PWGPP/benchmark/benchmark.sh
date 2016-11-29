@@ -97,7 +97,8 @@ main()
     "CreateQAplots") goCreateQAplots "$@";;
     "WaitForOutput") goWaitForOutput "$@";;
     "Merge") goMerge "$@";;
-    *) 
+    "ppbench") goppbench "$@";;
+    *)
       ${runMode} "$@"
     ;;
   esac
@@ -125,6 +126,35 @@ generateMC()
     fi
   fi
 }
+
+goppbench() (
+  alilog_info "[BEGIN] goppbench() with the following extra parameters $*"
+  configFile=$1
+  shift
+  parseConfig "configFile=$configFile" "$@" || return 1
+  rm -rf AliRoot/ ppbench.done
+  # Check if we have run it already. Prevent useless retries.
+  maxCopyTries=2 xCopy -f -c -d . $commonOutputPath/ppbench/full_output.log
+  [[ -e full_output.log ]] && { alilog_info "[END] goppbench() already ran, skipping"; return 0; }
+  git clone http://git.cern.ch/pub/AliRoot --depth=1 || return 1
+  pushd AliRoot
+    export OCDB_TEST_ROOT=$PWD/OCDB
+    test/runTests ppbench --debug --exit-on-error --variants default 2>&1 | tee -a full_output.log
+    RV=${PIPESTATUS[0]}  # if this is nonzero we have a problem (caught later)
+    pushd test/ppbench
+      summarizeLogs * > summary_ppbench.log
+      mv -v ../../full_output.log .
+      xCopy -d $commonOutputPath/ppbench .
+    popd
+  popd
+  [[ $RV != 0 ]] || cp -v AliRoot/test/ppbench/summary_ppbench.log ppbench.done
+  rm -rf AliRoot/
+  # Final output: <commonOutputPath>/ppbench.done                -- only upon success
+  #               <commonOutputPath>/ppbench/full_output.log     -- raw full output
+  #               <commonOutputPath>/ppbench/summary_ppbench.log -- same as ppbench.done on success
+  # Validation will not continue (due to the lack of ppbench.done) in case of error
+  alilog_info "[END] goppbench() finished"
+)
 
 goCPass0() (
   # Wrapper function that calls goCPass with the CPass0 option.
@@ -1174,11 +1204,17 @@ goGenerateMakeflow()
       echo "OUTPATH=\"${commonOutputPath}/${year}/${period}\""
       echo ; echo
 
+      #ppbench
+      echo "### ppbench ###"
+      echo "ppbench.done: benchmark.sh ${sourceUtilities[*]} ${configFile}"
+      echo -e "\t${alirootEnv} ./benchmark.sh ppbench ${configFile} ${extraOpts[@]}"" "
+      echo ; echo
+
       #CPass0
       #arr_cpass0_outputs[${jobindex}]="${commonOutputPath}/meta/cpass0.job${jobindex}.run${runNumber}.done"
       arr_cpass0_outputs[${jobindex}]="cpass0.job${jobindex}.run${runNumber}.done"
       echo "### CPass0 ###"
-      echo "${arr_cpass0_outputs[${jobindex}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${copyFiles[@]}"
+      echo "${arr_cpass0_outputs[${jobindex}]}: benchmark.sh ppbench.done ${sourceUtilities[*]} ${configFile} ${copyFiles[@]}"
       echo -e "\t${alirootEnv} ./benchmark.sh CPass0 \$OUTPATH/000${runNumber}/cpass0 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
 
@@ -1189,7 +1225,7 @@ goGenerateMakeflow()
       echo "${arr_cpass1_outputs[${jobindex}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} merge.cpass0.run${runNumber}.done ${copyFiles[@]}"
       echo -e "\t${alirootEnv} ./benchmark.sh CPass1 \$OUTPATH/000${runNumber}/cpass1 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
-      
+
       #CPass2
       #arr_cpass2_outputs[${jobindex}]="${commonOutputPath}/meta/cpass2.job${jobindex}.run${runNumber}.done"
       arr_cpass2_outputs[${jobindex}]="cpass2.job${jobindex}.run${runNumber}.done"
@@ -1200,7 +1236,7 @@ goGenerateMakeflow()
       ((jobindex++))
 
     done< <(grep "/000${runNumber}/" ${inputFileList})
-    
+
     #######################CPass0############################
 
     #CPass0 list of Calib files to merge
