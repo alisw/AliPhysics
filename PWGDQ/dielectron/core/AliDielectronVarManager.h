@@ -179,6 +179,8 @@ public:
     kImpactParXY,            // Impact parameter in XY plane
     kImpactParZ,             // Impact parameter in Z
     kTrackLength,            // Track length
+    kDistPrimToSecVtxXYMC,      // Distance of secondary vertex to primary vertex  in the XY plane
+    kDistPrimToSecVtxZMC,       // Distance of secondary vertex to primary vertex in Z
 
 
     kPdgCode,                // PDG code
@@ -935,6 +937,12 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
       values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
       AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
       if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
+      AliMCParticle *MCpart = mc->GetMCTrack(particle);
+        // Fill distance of primary vertex to secondary vertex -> IP is not defined since no propagation
+        // Pure MC variable no reconstucted value filled
+      values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrim],2)
+                                                  + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrim],2));
+      values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(MCpart->Zv() - values[AliDielectronVarManager::kZvPrim]);
     }
     values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
   } //if(mc->HasMC())
@@ -1444,6 +1452,8 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kTPCsignalNfrac]    = 0;
   values[AliDielectronVarManager::kImpactParXY]   = 0;
   values[AliDielectronVarManager::kImpactParZ]    = 0;
+  values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = 0;
+  values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = 0;
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
@@ -1465,6 +1475,22 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
 
   // Fill common AliVParticle interface information
   FillVarVParticle(particle, values);
+  // Fill distance of primary vertex to secondary vertex -> IP is not defined since no propagation
+  values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(TMath::Power(particle->Xv() - values[AliDielectronVarManager::kXvPrim],2)
+                                                  + TMath::Power(particle->Yv() - values[AliDielectronVarManager::kYvPrim],2));
+  values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(particle->Zv() - values[AliDielectronVarManager::kZvPrim]);
+  //Approximation of the Impact Parameter
+  //Get TVectors for primary and secondary vertex as well as particle momentum
+  // distance of space point to a straight line
+  // d = |b x (p-a)|/|b|
+  TVector3 priVtx(values[AliDielectronVarManager::kXvPrim],values[AliDielectronVarManager::kYvPrim],values[AliDielectronVarManager::kZvPrim]);
+  TVector3 secVtx(values[AliDielectronVarManager::kXv],values[AliDielectronVarManager::kYv],values[AliDielectronVarManager::kZv]);
+  TVector3 momPart(values[AliDielectronVarManager::kPx],values[AliDielectronVarManager::kPy],values[AliDielectronVarManager::kPz]);
+  priVtx -= secVtx;
+  TVector3 denom = momPart.Cross(priVtx);
+  values[AliDielectronVarManager::kImpactParXY]   = TMath::Sqrt(denom.X()*denom.X() + denom.Y()*denom.Y()) / TMath::Sqrt(momPart.X()*momPart.X() + momPart.Y()*momPart.Y() + momPart.Z()*momPart.Z());
+  values[AliDielectronVarManager::kImpactParZ]   = TMath::Abs(denom.Z()) / TMath::Sqrt(momPart.X()*momPart.X() + momPart.Y()*momPart.Y() + momPart.Z()*momPart.Z());
+
 
   // Fill AliMCParticle interface specific information
   AliDielectronMC *mc=AliDielectronMC::Instance();
@@ -3504,7 +3530,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     values[AliDielectronVarManager::kQnFMDCyH2]  = qVecQnFrameworkFMDC->Qy(2);
   }
   delete qVectorFMDC;
-  
+
   // TPC Diff
   if(bTPCqVector){
     if(bV0AqVector){
