@@ -151,8 +151,7 @@ Bool_t ConfigSigmaStar
       // selection settings
       out->SetCutID(0, cutID1[i]);
       out->SetCutID(1, cutID2[i]);
-      out->SetDaughter(0,
-                       ::kLambda);
+      out->SetDaughter(0, AliRsnDaughter::kLambda);
       out->SetDaughter(1, AliRsnDaughter::kPion);
       out->SetCharge(0, charge1[i]);
       out->SetCharge(1, charge2[i]);
