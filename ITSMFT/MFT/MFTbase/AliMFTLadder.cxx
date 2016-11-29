@@ -165,8 +165,9 @@ void AliMFTLadder::CreateSensors() {
     TGeoCombiTrans * chipPos = chipSeg->GetTransformation();
     TGeoCombiTrans * chipPosGlue = chipSeg->GetTransformation();
     // Position of the center on the chip in the chip coordinate system
+    Float_t kShift = 0.0050; // additional shift, to check
     Double_t pos[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kSensorThickness/2. - AliMFTGeometry::kGlueThickness - AliMFTGeometry::kRohacell};
-    Double_t posglue[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kGlueThickness/2 - AliMFTGeometry::kRohacell};
+    Double_t posglue[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., -AliMFTGeometry::kGlueThickness/2 + kShift - AliMFTGeometry::kRohacell};
     Double_t master[3];
     Double_t masterglue[3];
     chipPos->LocalToMaster(pos, master);
