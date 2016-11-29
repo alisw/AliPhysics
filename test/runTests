@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import subprocess, yaml, logging, re
 from argparse import ArgumentParser
-from logging import debug,info
+from logging import debug,info,error
+from sys import exit
 
 DEFAULT_PRE=""
 DEFAULT_POST="mv syswatch.log %(lower_name)swatch.log || true"
@@ -105,6 +106,9 @@ if __name__ == "__main__":
       info(format("%(status)s, returned %(exitCode)d",
                   status=(r == 0 and "SUCCESS" or "FAIL"),
                   exitCode=r))
+      if args.exitOnError and r:
+        error("aborting upon user request")
+        exit(r)
 
   if args.dryRun:
     print "# --dry-run specified. Not actually running."
