@@ -1563,17 +1563,18 @@ TString AliMTRChEffAnalysis::GetShortConditionTitle ( const char* conditionName 
   TObjArray* condition = static_cast<TObjArray*>(fConditions->FindObject(conditionName));
   TString title = "";
   if ( ! condition || sCond == sRef ) {
-    return sCond;
+    title = sCond;
   }
-
-  for ( Int_t ic=0; ic<condition->GetEntriesFast(); ic++ ) {
-    TString currCond = static_cast<TObjString*>(condition->UncheckedAt(ic))->String();
-    TString refCond = static_cast<TObjString*>(refCondition->UncheckedAt(ic))->String();
-    if ( currCond == refCond ) continue;
-    title += ";" + currCond;
+  else {
+    for ( Int_t ic=0; ic<condition->GetEntriesFast(); ic++ ) {
+      TString currCond = static_cast<TObjString*>(condition->UncheckedAt(ic))->String();
+      TString refCond = static_cast<TObjString*>(refCondition->UncheckedAt(ic))->String();
+      if ( currCond == refCond ) continue;
+      title += ";" + currCond;
+    }
+    title.Remove(TString::kLeading,';');
   }
-  title.Remove(TString::kLeading,';');
-  title.ReplaceAll(",","|");
+  title.ReplaceAll(",","+");
 
   return title;
 }
