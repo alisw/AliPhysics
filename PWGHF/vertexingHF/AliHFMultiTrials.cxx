@@ -43,6 +43,7 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fUpLimFitSteps(0x0),
   fNumOfnSigmaBinCSteps(11),
   fnSigmaBinCSteps(0x0),
+  fnSigmaForBkgEval(3),
   fSigmaGausMC(0.010),
   fSigmaMCVariation(0.15),
   fMassD(1.86484),
@@ -62,6 +63,7 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fUseFixedMeanFreeS(kTRUE),
   fUseFixSigFreeMean(kTRUE),
   fUseFixSigFixMean(kTRUE),
+  fSaveBkgVal(kFALSE),
   fDrawIndividualFits(kFALSE),
   fHistoRawYieldDistAll(0x0),
   fHistoRawYieldTrialAll(0x0),
@@ -69,6 +71,8 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fHistoMeanTrialAll(0x0),
   fHistoChi2TrialAll(0x0),
   fHistoSignifTrialAll(0x0),
+  fHistoBkgTrialAll(0x0),
+  fHistoBkgInBinEdgesTrialAll(0x0),
   fHistoRawYieldDistBinCAll(0x0),
   fHistoRawYieldTrialBinCAll(0x0),
   fHistoRawYieldDist(0x0),
@@ -77,6 +81,8 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fHistoMeanTrial(0x0),
   fHistoChi2Trial(0x0),
   fHistoSignifTrial(0x0),
+  fHistoBkgTrial(0x0),
+  fHistoBkgInBinEdgesTrial(0x0),
   fHistoRawYieldDistBinC(0x0),
   fHistoRawYieldTrialBinC(0x0),
   fhTemplRefl(0x0),
@@ -122,6 +128,11 @@ Bool_t AliHFMultiTrials::CreateHistos(){
   fHistoMeanTrialAll = new TH1F(Form("hMeanTrialAll%s",fSuffix.Data())," ; Trial # ; Mean (GeV/c^{2})",nCases*totTrials,-0.5,nCases*totTrials-0.5);
   fHistoChi2TrialAll = new TH1F(Form("hChi2TrialAll%s",fSuffix.Data()),"  ; Trial # ; #chi^{2}",nCases*totTrials,-0.5,nCases*totTrials-0.5);
   fHistoSignifTrialAll = new TH1F(Form("hSignifTrialAll%s",fSuffix.Data()),"  ; Trial # ; Significance",nCases*totTrials,-0.5,nCases*totTrials-0.5);
+  if(fSaveBkgVal) {
+    fHistoBkgTrialAll = new TH1F(Form("hBkgTrialAll%s",fSuffix.Data()),"  ; Background",nCases*totTrials,-0.5,nCases*totTrials-0.5);
+    fHistoBkgInBinEdgesTrialAll = new TH1F(Form("hBkgInBinEdgesTrialAll%s",fSuffix.Data()),"  ; Background in bin edges",nCases*totTrials,-0.5,nCases*totTrials-0.5);
+  }
+
 
   fHistoRawYieldDistBinCAll = new TH1F(Form("hRawYieldDistBinCAll%s",fSuffix.Data()),"  ; Raw Yield (bin count)",5000,0.,50000.);
   fHistoRawYieldTrialBinCAll = new TH2F(Form("hRawYieldTrialBinCAll%s",fSuffix.Data())," ; Trial # ; Range for count ; Raw Yield (bin count)",totTrials,-0.5,totTrials-0.5,fNumOfnSigmaBinCSteps,-0.5,fNumOfnSigmaBinCSteps-0.5);
@@ -132,6 +143,10 @@ Bool_t AliHFMultiTrials::CreateHistos(){
   fHistoMeanTrial = new TH1F*[nCases];
   fHistoChi2Trial = new TH1F*[nCases];
   fHistoSignifTrial = new TH1F*[nCases];
+  if(fSaveBkgVal) {
+    fHistoBkgTrial = new TH1F*[nCases];
+    fHistoBkgInBinEdgesTrial = new TH1F*[nCases];
+  }
 
   fHistoRawYieldDistBinC = new TH1F*[nCases];
   fHistoRawYieldTrialBinC = new TH2F*[nCases];
@@ -147,11 +162,19 @@ Bool_t AliHFMultiTrials::CreateHistos(){
       fHistoMeanTrial[theCase]=new TH1F(Form("hMeanTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; Mean (GeV/c^{2})",totTrials,-0.5,totTrials-0.5);
       fHistoChi2Trial[theCase]=new TH1F(Form("hChi2Trial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; #chi^{2}",totTrials,-0.5,totTrials-0.5);
       fHistoSignifTrial[theCase]=new TH1F(Form("hSignifTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data())," ; Trial # ; Significance",totTrials,-0.5,totTrials-0.5);
-      
+      if(fSaveBkgVal) {
+        fHistoBkgTrial[theCase] = new TH1F(Form("hBkgTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data()),"  ; Background",totTrials,-0.5,totTrials-0.5);
+        fHistoBkgInBinEdgesTrial[theCase] = new TH1F(Form("hBkgInBinEdgesTrial%s%s%s",funcBkg[ib].Data(),gausSig[igs].Data(),fSuffix.Data()),"  ; Background in bin edges",totTrials,-0.5,totTrials-0.5);
+      }      
+
       fHistoChi2Trial[theCase]->SetMarkerStyle(7);
       fHistoSignifTrial[theCase]->SetMarkerStyle(7);
       fHistoSigmaTrial[theCase]->SetMarkerStyle(7);
       fHistoMeanTrial[theCase]->SetMarkerStyle(7);
+      if(fSaveBkgVal) {
+        fHistoBkgTrial[theCase]->SetMarkerStyle(7);
+        fHistoBkgInBinEdgesTrial[theCase]->SetMarkerStyle(7);
+      }
       
     }
   }
@@ -269,6 +292,10 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 	      Double_t ery=.0;
 	      Double_t significance=0.;
 	      Double_t erSignif=0.;
+	      Double_t bkg=0.;
+	      Double_t erbkg=0.;
+	      Double_t bkgBEdge=0;
+	      Double_t erbkgBEdge=0;
 	      TF1* fB1=0x0;
 	      if(typeb<kNBkgFuncCases){
 		printf("****** START FIT OF HISTO %s WITH REBIN %d FIRST BIN %d MASS RANGE %f-%f BACKGROUND FIT FUNCTION=%d CONFIG SIGMA/MEAN=%d\n",hInvMassHisto->GetName(),rebin,iFirstBin,minMassForFit,maxMassForFit,typeb,igs);
@@ -284,6 +311,10 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 		ry=fitter->GetRawYield(); 
 		ery=fitter->GetRawYieldError(); 
 		fB1=fitter->GetBackgroundFullRangeFunc();
+	        fitter->Background(fnSigmaForBkgEval,bkg,erbkg);
+		Double_t minval = hInvMassHisto->GetXaxis()->GetBinLowEdge(hInvMassHisto->FindBin(pos-fnSigmaForBkgEval*sigma));
+		Double_t maxval = hInvMassHisto->GetXaxis()->GetBinUpEdge(hInvMassHisto->FindBin(pos+fnSigmaForBkgEval*sigma));
+	  	fitter->Background(minval,maxval,bkgBEdge,erbkgBEdge);
 		if(out && fDrawIndividualFits && thePad){
 		  thePad->Clear();
 		  fitter->DrawHere(thePad);
@@ -333,6 +364,13 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 		fHistoChi2TrialAll->SetBinError(globBin,0.00001);
 		fHistoSignifTrialAll->SetBinContent(globBin,significance);
 		fHistoSignifTrialAll->SetBinError(globBin,erSignif);
+	        if(fSaveBkgVal) {
+	  	  fHistoBkgTrialAll->SetBinContent(globBin,bkg);
+		  fHistoBkgTrialAll->SetBinError(globBin,erbkg);
+		  fHistoBkgInBinEdgesTrialAll->SetBinContent(globBin,bkgBEdge);
+		  fHistoBkgInBinEdgesTrialAll->SetBinError(globBin,erbkgBEdge);
+		}
+
 		if(ry<fMinYieldGlob) fMinYieldGlob=ry;
 		if(ry>fMaxYieldGlob) fMaxYieldGlob=ry;
 		fHistoRawYieldDist[theCase]->Fill(ry);
@@ -346,6 +384,13 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 		fHistoChi2Trial[theCase]->SetBinError(itrial,0.00001);
 		fHistoSignifTrial[theCase]->SetBinContent(itrial,significance);
 		fHistoSignifTrial[theCase]->SetBinError(itrial,erSignif);
+	        if(fSaveBkgVal) {
+	  	  fHistoBkgTrial[theCase]->SetBinContent(itrial,bkg);
+		  fHistoBkgTrial[theCase]->SetBinError(itrial,erbkg);
+		  fHistoBkgInBinEdgesTrial[theCase]->SetBinContent(itrial,bkgBEdge);
+		  fHistoBkgInBinEdgesTrial[theCase]->SetBinError(itrial,erbkgBEdge);
+		}
+
 		for(Int_t iStepBC=0; iStepBC<fNumOfnSigmaBinCSteps; iStepBC++){
 		  Double_t minMassBC=fMassD-fnSigmaBinCSteps[iStepBC]*sigma;
 		  Double_t maxMassBC=fMassD+fnSigmaBinCSteps[iStepBC]*sigma;
@@ -388,6 +433,10 @@ void AliHFMultiTrials::SaveToRoot(TString fileName, TString option) const{
   fHistoMeanTrialAll->Write();
   fHistoChi2TrialAll->Write();
   fHistoSignifTrialAll->Write();
+  if(fSaveBkgVal) {  
+    fHistoBkgTrialAll->Write(); 
+    fHistoBkgInBinEdgesTrialAll->Write(); 
+  }
   fHistoRawYieldDistBinCAll->Write(); 
   fHistoRawYieldTrialBinCAll->Write(); 
   for(Int_t ic=0; ic<nCases; ic++){
@@ -396,6 +445,10 @@ void AliHFMultiTrials::SaveToRoot(TString fileName, TString option) const{
     fHistoMeanTrial[ic]->Write();    
     fHistoChi2Trial[ic]->Write();    
     fHistoSignifTrial[ic]->Write();    
+    if(fSaveBkgVal) {  
+      fHistoBkgTrial[ic]->Write(); 
+      fHistoBkgInBinEdgesTrial[ic]->Write(); 
+    }
     fHistoRawYieldTrialBinC[ic]->Write();
     fHistoRawYieldDistBinC[ic]->Write();
   }

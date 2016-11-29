@@ -77,6 +77,8 @@ class AliHFMultiTrials : public TNamed {
   void SetUseFixSigFreeMean(Bool_t opt=kTRUE) {fUseFixSigFreeMean=opt;}
   void SetUseFixSigFixMean(Bool_t opt=kTRUE) {fUseFixSigFixMean=opt;}
 
+  void SetSaveBkgValue(Bool_t opt=kTRUE, Double_t nsigma=3) {fSaveBkgVal=opt; fnSigmaForBkgEval=nsigma;}
+
   void SetDrawIndividualFits(Bool_t opt=kTRUE){fDrawIndividualFits=opt;}
 
   Bool_t DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad=0x0);
@@ -110,6 +112,7 @@ class AliHFMultiTrials : public TNamed {
   Double_t* fUpLimFitSteps; //[fNumOfUpLimFitSteps] values of up limits for fit
   Int_t fNumOfnSigmaBinCSteps; /// number of steps on the bin counting
   Double_t* fnSigmaBinCSteps; //[fNumOfnSigmaBinCSteps] values of nsigma for bin count
+  Double_t fnSigmaForBkgEval; //value of sigma in which to extract bkg value
 
   Double_t fSigmaGausMC; /// sigma of D meson peak from MC
   Double_t fSigmaMCVariation; /// relative variation of the sigma
@@ -131,6 +134,8 @@ class AliHFMultiTrials : public TNamed {
   Bool_t fUseFixSigFreeMean;     ///  switch for FixSigFreeMean
   Bool_t fUseFixSigFixMean;      ///  switch for FixSigFixMean
 
+  Bool_t fSaveBkgVal;		/// switch for saving bkg values in nsigma
+
   Bool_t fDrawIndividualFits; /// flag for drawing fits
  
   TH1F* fHistoRawYieldDistAll;  /// histo with yield from all trials
@@ -139,6 +144,8 @@ class AliHFMultiTrials : public TNamed {
   TH1F* fHistoMeanTrialAll;     /// histo with gauss mean from all trials
   TH1F* fHistoChi2TrialAll;     /// histo with chi2 from all trials
   TH1F* fHistoSignifTrialAll;     /// histo with chi2 from all trials
+  TH1F* fHistoBkgTrialAll;     /// histo with bkg from all trials
+  TH1F* fHistoBkgInBinEdgesTrialAll;    /// histo with bkg in mass bin edges from all trials
 
   TH1F* fHistoRawYieldDistBinCAll; /// histo with bin counts from all trials
   TH2F* fHistoRawYieldTrialBinCAll; /// histo with bin counts from all trials
@@ -149,6 +156,8 @@ class AliHFMultiTrials : public TNamed {
   TH1F** fHistoMeanTrial;     /// histo with gauss mean from subsamples of trials
   TH1F** fHistoChi2Trial;     /// histo with chi2 from subsamples of trials
   TH1F** fHistoSignifTrial;     /// histo with chi2 from subsamples of trials
+  TH1F** fHistoBkgTrial;     /// histo with bkg from subsamples of trials
+  TH1F** fHistoBkgInBinEdgesTrial;    /// histo with bkg in mass bin edges from subsamples of trials
 
   TH1F** fHistoRawYieldDistBinC;  /// histo with bin counts from subsamples of trials
   TH2F** fHistoRawYieldTrialBinC; /// histo with bin counts from subsamples of trials
@@ -160,7 +169,7 @@ class AliHFMultiTrials : public TNamed {
   Double_t fMaxYieldGlob;   /// maximum yield
 
   /// \cond CLASSIMP    
-  ClassDef(AliHFMultiTrials,4); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFMultiTrials,5); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 
