@@ -92,9 +92,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetEmbeddingCuts(),
   fJetVetoArray(),
   fJetVetoArrayName(""),
-  fJetVetoMinPt(0),
-  fJetVetoMaxPt(0),
-  fJetVetoJetByJet(0),
+  fJetVetoJetByJet(1),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -141,9 +139,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetEmbeddingCuts(),
   fJetVetoArray(),
   fJetVetoArrayName(""),
-  fJetVetoMinPt(0),
-  fJetVetoMaxPt(0),
-  fJetVetoJetByJet(0),
+  fJetVetoJetByJet(1),
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
@@ -265,9 +261,6 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   // Embedding plots
   if(fJetOutputMode == 4  || fJetOutputMode == 5)
   {
-    if(fJetVetoJetByJet)
-        AddHistogram1D<TH1D>("hJetVeto", "Number of vetoed/accepted jets", "e1p", 2, 0., 2., "Accepted/Vetoed", "dN^{Events}/dN^{veto}");
-
     for(Int_t i = -1; i<static_cast<Int_t>(fJetEmbeddingCuts.size()); i++)
     {
       const char* appendix = "";
@@ -612,33 +605,11 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsTracks(AliVTrack* track)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskChargedJetsHadronCF::AddJetToOutputArray(AliEmcalJet* jet)
+void AliAnalysisTaskChargedJetsHadronCF::AddJetToOutputArray(AliEmcalJet* jet, Int_t arrayIndex, Int_t& jetsAlreadyInArray)
 {
   Double_t tmpPt = jet->Pt() - fJetsCont->GetRhoVal()*jet->Area();
-  new ((*fJetsOutput.at(0))[fAcceptedJets]) AliPicoTrack(tmpPt, jet->Eta(), jet->Phi(), jet->Charge(), 0, 0);
-  fAcceptedJets++;
-
-  // ############## Fill also output streams for certain cuts
-
-  // Reset the accepted jet count (we need this number for the array)
-  for(Int_t i = 0; i<fJetEmbeddingCuts.size(); i++)
-    fJetEmbeddingCuts.at(i).fAcceptedJets = 0;
-
-  // Check if the cuts are passed
-  for(Int_t i = 0; i<fJetEmbeddingCuts.size(); i++)
-  {
-    AliChargedJetsHadronCFCuts currentCut = fJetEmbeddingCuts.at(i);
-    AliEmcalJet* refJet = GetReferenceJet(jet);
-    Double_t trackRatio = 0.;
-    Double_t ptRatio = 0.;
-    GetTrackMCRatios(jet, refJet, trackRatio, ptRatio);
-
-    if(!currentCut.IsCutFulfilled(jet->Pt(), refJet->Pt(), fCent, ptRatio))
-      continue;
-
-    new ((*fJetsOutput.at(currentCut.fArrayIndex))[currentCut.fAcceptedJets]) AliPicoTrack(tmpPt, jet->Eta(), jet->Phi(), jet->Charge(), 0, 0);
-  }
-
+  new ((*fJetsOutput.at(arrayIndex))[jetsAlreadyInArray]) AliPicoTrack(tmpPt, jet->Eta(), jet->Phi(), jet->Charge(), 0, 0);
+  jetsAlreadyInArray++;
 }
 
 //________________________________________________________________________
@@ -750,21 +721,30 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 {
   CalculateEventProperties();
 
+  // Jet veto:
+  // 1. jet-by-jet mode: veto is active if jets overlaps with a suitable jet
+  // 2. other mode: veto is active if suitable jet is in sample
+  AliEmcalJet* vetoJet = 0;
+  if(!fJetVetoJetByJet)
+    vetoJet = GetLeadingVetoJet();
+
   // ####### Jet loop
   fAcceptedJets = 0;
+  for(Int_t i = 0; i<fJetEmbeddingCuts.size(); i++)
+    fJetEmbeddingCuts.at(i).fAcceptedJets = 0;
   fJetsCont->ResetCurrentID();
   while(AliEmcalJet *jet = fJetsCont->GetNextAcceptJet())
   {
     if(!IsJetSelected(jet))
       continue;
 
-    // ################ Jet plots
-    // Those plots will only be filled for jets that fulfill the condition
-    // e.g. embedded jets passing the cuts etc.
-
+    // Plots + output jets regardless of embedding cut
     FillHistogramsJets(jet, 0);
+    AddJetToOutputArray(jet, 0, fAcceptedJets);
 
-    // Plots for each embedding cut
+    // Plots + output jets for each embedding cut
+    if(fJetVetoJetByJet)
+      vetoJet = GetVetoJet(jet);
     for(Int_t i = 0; i<fJetEmbeddingCuts.size(); i++)
     {
       AliChargedJetsHadronCFCuts currentCut = fJetEmbeddingCuts.at(i);
@@ -773,16 +753,20 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       Double_t ptRatio = 0.;
       GetTrackMCRatios(jet, refJet, trackRatio, ptRatio);
 
-      if(!currentCut.IsCutFulfilled(jet->Pt(), refJet->Pt(), fCent, ptRatio))
+      Double_t vetoJetPt = 0.;
+      if(vetoJet)
+        vetoJetPt = vetoJet->Pt();
+
+      if(!currentCut.IsCutFulfilled(jet->Pt(), refJet->Pt(), fCent, ptRatio, vetoJetPt))
         continue;
 
       FillHistogramsJets(jet, currentCut.fCutName.Data());
+      AddJetToOutputArray(jet, currentCut.fArrayIndex, currentCut.fAcceptedJets);
     }
 
     // Add jet to output array
     if(fExtractionPercentage)
       AddJetToTree(jet);
-    AddJetToOutputArray(jet);
   }
 
   // ####### Particle loop
@@ -887,24 +871,6 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
   fMatchedJets.clear();
   fMatchedJetsReference.clear();
 
-  // Check for a jet veto here
-  if(!fJetVetoJetByJet && fJetVetoArray)
-  {
-    for(Int_t i=0; i<fJetVetoArray->GetEntries(); i++)
-    {
-      AliEmcalJet* vetoJet = static_cast<AliEmcalJet*>(fJetVetoArray->At(i));
-      UInt_t   dummy = 0;
-      if(!fJetsCont->AcceptJet(vetoJet , dummy))
-        continue;
-      // if veto jet found -> return
-      if((vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() >= fJetVetoMinPt) && (vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() < fJetVetoMaxPt))
-      {
-        fHistEventRejection->Fill("JetVeto", 1);
-        return;
-      }
-    }
-  }
-
   AliEmcalJet* jetLeading = 0;
   AliEmcalJet* jetSubLeading = 0;
   GetLeadingJetsInArray(fJetEmbeddingArray, "rho", jetLeading, jetSubLeading);
@@ -934,10 +900,6 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
 
       // Cut jets too far away
       if (deltaR > fJetEmbeddingMaxDistance)
-        continue;
-
-      // Do not allow jets that are vetoed (optional)
-      if(fJetVetoJetByJet && fJetVetoArray && IsJetVetoed(embeddedJet))
         continue;
 
       // Search for the best match
@@ -1031,35 +993,64 @@ void AliAnalysisTaskChargedJetsHadronCF::GetTrackMCRatios(AliEmcalJet* jet, AliE
 }
 
 //________________________________________________________________________
-inline Bool_t AliAnalysisTaskChargedJetsHadronCF::IsJetVetoed(AliEmcalJet* jet)
+AliEmcalJet* AliAnalysisTaskChargedJetsHadronCF::GetVetoJet(AliEmcalJet* jet)
 {
-  // Check if this jet can be matched with a veto jet
+  Double_t     leadingVetoJetPt   = -999.;
+  AliEmcalJet* leadingVetoJet     = 0;
+  // Search for the 'leading' overlapping jet in the veto sample
   if(fJetVetoArray && jet)
   {
     for(Int_t j=0; j<fJetVetoArray->GetEntries(); j++)
     {
       UInt_t dummy = 0;
       AliEmcalJet* vetoJet = static_cast<AliEmcalJet*>(fJetVetoArray->At(j));
-      // Check if veto jet is accepted and high enough in pT
+      // Check if veto jet is accepted
       if(!fJetsCont->AcceptJet(vetoJet , dummy))
-        continue;
-      if(!((vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() >= fJetVetoMinPt) && (vetoJet->Pt() - fJetsCont->GetRhoVal()*vetoJet->Area() < fJetVetoMaxPt)))
         continue;
 
       // Check matching distance
+      Double_t vetoPt  = vetoJet->Pt() - vetoJet->Area()*fJetsCont->GetRhoVal();
       Double_t deltaEta = (jet->Eta()-vetoJet->Eta());
       Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi()-vetoJet->Phi()),TMath::TwoPi() - TMath::Abs(jet->Phi()-vetoJet->Phi()));
       Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
 
-      if (deltaR <= fJetEmbeddingMaxDistance)
+      if ((vetoPt > leadingVetoJetPt) && (deltaR <= fJetEmbeddingMaxDistance))
       {
-        FillHistogram("hJetVeto", 1.5); // jet vetoed
-        return kTRUE;
+        leadingVetoJetPt = vetoPt;
+        leadingVetoJet = vetoJet;
       }
     }
   }
-  FillHistogram("hJetVeto", 0.5); // jet accepted
-  return kFALSE;
+
+  return leadingVetoJet;
+}
+
+//________________________________________________________________________
+AliEmcalJet* AliAnalysisTaskChargedJetsHadronCF::GetLeadingVetoJet()
+{
+  Double_t     leadingVetoJetPt   = -999.;
+  AliEmcalJet* leadingVetoJet     = 0;
+  // Search for the 'leading' jet in the veto sample
+  if(fJetVetoArray)
+  {
+    for(Int_t j=0; j<fJetVetoArray->GetEntries(); j++)
+    {
+      UInt_t dummy = 0;
+      AliEmcalJet* vetoJet = static_cast<AliEmcalJet*>(fJetVetoArray->At(j));
+      // Check if veto jet is accepted
+      if(!fJetsCont->AcceptJet(vetoJet , dummy))
+        continue;
+
+      // Check matching distance
+      Double_t vetoPt  = vetoJet->Pt() - vetoJet->Area()*fJetsCont->GetRhoVal();
+      if (vetoPt > leadingVetoJetPt)
+      {
+        leadingVetoJetPt = vetoPt;
+        leadingVetoJet = vetoJet;
+      }
+    }
+  }
+  return leadingVetoJet;
 }
 
 //________________________________________________________________________

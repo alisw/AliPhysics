@@ -478,9 +478,31 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   
   TH1F *  fhMergeGeneratorCluster;                  //!<! Cluster energy, at least 2 generators contributions
-  TH1F *  fhMergeGeneratorClusterNotHijing;         //!<! Cluster energy, at least 2 generators contributions, none is HIJING
-  TH1F *  fhMergeGeneratorClusterHijingAndOther;    //!<! Cluster energy, at least 2 generators contributions, main is HIJING
+  TH2F *  fhMergeGeneratorClusterNOverlaps;         //!<! Cluster energy, at least 2 generators contributions
+  
+  TH1F *  fhMergeGeneratorClusterNotHijingBkg;           //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgNOverlaps;  //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgWithPi0;    //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgWithPi0EMC; //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgWithEta;    //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgWithEtaEMC; //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  
+  TH1F *  fhMergeGeneratorClusterHijingAndOther;          //!<! Cluster energy, at least 2 generators contributions, main is HIJING
+  TH2F *  fhMergeGeneratorClusterHijingAndOtherNOverlaps; //!<! Cluster energy, at least 2 generators contributions, main is HIJING
+  
+  TH1F *  fhMergeGeneratorClusterHijingBkg;               //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH2F *  fhMergeGeneratorClusterHijingBkgNOverlaps;      //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH2F *  fhMergeGeneratorClusterHijingBkgWithPi0;        //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH2F *  fhMergeGeneratorClusterHijingBkgWithPi0EMC;     //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH2F *  fhMergeGeneratorClusterHijingBkgWithEta;        //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH2F *  fhMergeGeneratorClusterHijingBkgWithEtaEMC;     //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+
   TH1F *  fhCleanGeneratorCluster;                  //!<! Cluster energy, only one generator is the contributor
+  TH1F *  fhCleanGeneratorClusterHijing;            //!<! Cluster energy, only one generator is the contributor
+  TH1F *  fhCleanGeneratorClusterPi0;               //!<! Cluster energy, only one generator is the contributor
+  TH1F *  fhCleanGeneratorClusterPi0EMC;            //!<! Cluster energy, only one generator is the contributor
+  TH1F *  fhCleanGeneratorClusterEta;               //!<! Cluster energy, only one generator is the contributor
+  TH1F *  fhCleanGeneratorClusterEtaEMC;            //!<! Cluster energy, only one generator is the contributor
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;

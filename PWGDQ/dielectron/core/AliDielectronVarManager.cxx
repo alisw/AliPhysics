@@ -112,6 +112,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
   {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},
   {"TrackLength",            "#it{l}_{track}",                                     "(cm)"},
+  {"DistPrimToSecVtxXYMC",   "distance prim vtx to sec vtx in XY",                 "(cm)"},
+  {"DistPrimToSecVtxZMC",    "distance prim vtx to sec vtx inZ",                   "(cm)"},
 
   {"PdgCode",                "PDG code",                                           ""},
   {"PdgCodeMother",          "mothers PDG code",                                   ""},
