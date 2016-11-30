@@ -46,12 +46,15 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests() :
   fOADBContainer(0),
   fPeriod("LHC11c"),
   fIsTrain(0),
+  fIsMC(0),
   fTrigThresh(4.8),
   fExoticCut(0.97),
   fEClusCut(0.5),
   fLowPi0MCut(0.12),
   fHighPi0MCut(0.16),
   fESD(0),
+  fMCEvent(0),
+  fStack(0),
   fOutputList(0),
   fPvPos(0x0),
   fEvtSel(0),
@@ -69,6 +72,13 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests() :
   fInvMassEMCNN(0),
   fM02Et(0),
   fM02EtPi0MassClCl(0),
+  fM02EtPi0MassClClTruPi0(0),
+  fM02EtPi0MassClClTruPiC(0),
+  fM02EtPi0MassClClTruEta(0),
+  fM02EtPi0MassClClTruK_0(0),
+  fM02EtPi0MassClClTruK_C(0),
+  fM02EtPi0MassClClTruPro(0),
+  fM02EtPi0MassClClTruNeu(0),
   fM02EtTM(0),
   fM02EtExot(0),
   fM02EtExotTM(0)
@@ -87,12 +97,15 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests(const char *name) :
   fOADBContainer(0),
   fPeriod("LHC11c"),
   fIsTrain(0),
+  fIsMC(0),
   fTrigThresh(4.8),
   fExoticCut(0.97),
   fEClusCut(0.5),
   fLowPi0MCut(0.12),
   fHighPi0MCut(0.16),
   fESD(0),
+  fMCEvent(0),
+  fStack(0),
   fOutputList(0),
   fPvPos(0x0),
   fEvtSel(0),
@@ -110,6 +123,13 @@ AliAnalysisTaskShoShaTests::AliAnalysisTaskShoShaTests(const char *name) :
   fInvMassEMCNN(0),
   fM02Et(0),
   fM02EtPi0MassClCl(0),
+  fM02EtPi0MassClClTruPi0(0),
+  fM02EtPi0MassClClTruPiC(0),
+  fM02EtPi0MassClClTruEta(0),
+  fM02EtPi0MassClClTruK_0(0),
+  fM02EtPi0MassClClTruK_C(0),
+  fM02EtPi0MassClClTruPro(0),
+  fM02EtPi0MassClClTruNeu(0),
   fM02EtTM(0),
   fM02EtExot(0),
   fM02EtExotTM(0)
@@ -183,6 +203,27 @@ void AliAnalysisTaskShoShaTests::UserCreateOutputObjects()
   fM02EtPi0MassClCl = new TH2F("fM02EtPi0MassClCl","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
   fOutputList->Add(fM02EtPi0MassClCl);
 
+  fM02EtPi0MassClClTruPi0  = new TH2F("fM02EtPi0MassClClTruPi0","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters (pi0 mc truth);E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPi0MassClClTruPi0);
+
+  fM02EtPi0MassClClTruPiC  = new TH2F("fM02EtPi0MassClClTruPiC","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters (pi+- mc truth);E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPi0MassClClTruPiC);
+
+  fM02EtPi0MassClClTruEta  = new TH2F("fM02EtPi0MassClClTruEta","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters (eta mc truth);E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPi0MassClClTruEta);
+
+  fM02EtPi0MassClClTruK_0  = new TH2F("fM02EtPi0MassClClTruK_0","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters (k0 mc truth);E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPi0MassClClTruK_0);
+
+  fM02EtPi0MassClClTruK_C  = new TH2F("fM02EtPi0MassClClTruK_C","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters (k+- mc truth);E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPi0MassClClTruK_C);
+
+  fM02EtPi0MassClClTruPro  = new TH2F("fM02EtPi0MassClClTruPro","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters (proton mc truth);E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPi0MassClClTruPro);
+
+  fM02EtPi0MassClClTruNeu  = new TH2F("fM02EtPi0MassClClTruNeu","#lambda_{0}^{2} vs. E_{T} for #pi^0 tagged clusters (neutron mc truth);E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
+  fOutputList->Add(fM02EtPi0MassClClTruNeu);
+
   fM02EtTM = new TH2F("hM02EtTM","#lambda_{0}^{2} vs. E_{T} for trigger clusters(TM) ;E_{T} ;#lambda_{0}^{2}",400,0,200, 400,0,4);
   fOutputList->Add(fM02EtTM);
   
@@ -208,13 +249,13 @@ void AliAnalysisTaskShoShaTests::UserExec(Option_t *)
 		   (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral));
   if(!isSelected )
     return; */
-  Int_t   runnumber = InputEvent()->GetRunNumber() ;
 
   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     printf("ERROR: fESD not available\n");
     return;
   }
+  Int_t   runnumber = InputEvent()->GetRunNumber() ;
   fEvtSel->Fill(0);
   AliESDVertex *pv = (AliESDVertex*)fESD->GetPrimaryVertex();
   if(!pv) 
@@ -237,6 +278,11 @@ void AliAnalysisTaskShoShaTests::UserExec(Option_t *)
   for(int i=0;i<fEMCalCells->GetNumberOfCells();i++){
     Double_t e = fEMCalCells->GetCellAmplitude(TMath::Abs(fEMCalCells->GetAmplitude(i)));
     fCellEnergy->Fill(e);
+  }
+  fMCEvent = MCEvent(); 
+  if(fMCEvent){
+    fStack = (AliStack*)fMCEvent->Stack(); 
+    fIsMC = kTRUE;
   }
   FillClusHists(); 
   
@@ -424,9 +470,56 @@ Double_t AliAnalysisTaskShoShaTests::NeutClusPairInvMass(const AliVCluster *cl1,
     if(mass>fLowPi0MCut && mass<fHighPi0MCut){
       fM02EtPi0MassClCl->Fill(Et1,cl1->GetM02());
       fM02EtPi0MassClCl->Fill(Et2,cl2->GetM02());  
+      if(fIsMC){
+	Int_t ancesPdg = GetAncestorPdg(cl1->GetLabel());
+	if(ancesPdg == 111)fM02EtPi0MassClClTruPi0->Fill(Et1,cl1->GetM02());
+	if(ancesPdg == 211)fM02EtPi0MassClClTruPiC->Fill(Et1,cl1->GetM02());
+	if(ancesPdg == 221)fM02EtPi0MassClClTruEta->Fill(Et1,cl1->GetM02());
+	if(ancesPdg == 311)fM02EtPi0MassClClTruK_0->Fill(Et1,cl1->GetM02());
+	if(ancesPdg == 321)fM02EtPi0MassClClTruK_C->Fill(Et1,cl1->GetM02());
+	if(ancesPdg == 2212)fM02EtPi0MassClClTruPro->Fill(Et1,cl1->GetM02());
+	if(ancesPdg == 2112)fM02EtPi0MassClClTruNeu->Fill(Et1,cl1->GetM02());
+	ancesPdg = GetAncestorPdg(cl2->GetLabel()); 
+	if(ancesPdg == 111)fM02EtPi0MassClClTruPi0->Fill(Et1,cl2->GetM02());
+	if(ancesPdg == 211)fM02EtPi0MassClClTruPiC->Fill(Et1,cl2->GetM02());
+	if(ancesPdg == 221)fM02EtPi0MassClClTruEta->Fill(Et1,cl2->GetM02());
+	if(ancesPdg == 311)fM02EtPi0MassClClTruK_0->Fill(Et1,cl2->GetM02());
+	if(ancesPdg == 321)fM02EtPi0MassClClTruK_C->Fill(Et1,cl2->GetM02());
+	if(ancesPdg == 2212)fM02EtPi0MassClClTruPro->Fill(Et1,cl2->GetM02());
+	if(ancesPdg == 2112)fM02EtPi0MassClClTruNeu->Fill(Et1,cl2->GetM02());
+      }
     }
   }
   return mass;
+}
+//________________________________________________________________________
+Int_t AliAnalysisTaskShoShaTests::GetAncestorPdg(const Int_t label)
+{
+  Int_t abspdg = 0, fpdg = 0, imom=label;
+  //possible codes: pi0, pi+-, eta, k0, K+-, proton, neutron
+  TString codes = " 111 211 221 311 321 2212 2112";
+  TString thecode ;
+  if(!fStack)
+    return fpdg;
+  Int_t nTracks = fStack->GetNtrack();
+  if(label<0 || label > nTracks)
+    return fpdg;
+  TParticle *mcp = 0x0;
+  Int_t nbacksteps = 0;
+  while(nbacksteps<3){
+    mcp = static_cast<TParticle*>(fStack->Particle(imom));
+    if(!mcp){
+      nbacksteps++;
+      continue;
+    }
+    abspdg = TMath::Abs(mcp->GetPdgCode());
+    thecode = Form(" %d",abspdg);
+    if(codes.Contains(thecode))
+      return abspdg;
+    imom = mcp->GetMother(0);
+    nbacksteps++;
+  }
+  return fpdg;
 }
 //________________________________________________________________________
 void AliAnalysisTaskShoShaTests::Terminate(Option_t *) 
