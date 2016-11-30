@@ -50,6 +50,8 @@
 
 #include "AliAnalysisTaskGenTuner.h"
 
+using std::ifstream;
+
 
 ClassImp(AliAnalysisTaskGenTuner)
 
