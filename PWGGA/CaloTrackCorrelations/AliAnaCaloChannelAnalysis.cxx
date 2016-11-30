@@ -597,7 +597,7 @@ void AliAnaCaloChannelAnalysis::PeriodAnalysis(Int_t criterion, Double_t nsigma,
 	if(emin>1.99)range=0.0002;
 
 
-	if(criterion==1) FlagAsBad(criterion, histogram, nsigma, 200,-1);
+	if(criterion==1) FlagAsBad(criterion, histogram, nsigma, 400,-1);
 	if(criterion==2) FlagAsBad(criterion, histogram, nsigma, 600,range);
 	if(criterion==3) FlagAsBad(criterion, histogram, nsigma, 600,30);
 
@@ -621,8 +621,8 @@ TH1F* AliAnaCaloChannelAnalysis::BuildHitAndEnergyMean(Int_t crit, Double_t emin
 {
 	cout<<"    o Calculate average cell hit per event and average cell energy per hit "<<endl;
 	TH1F *histogram;
-	if(crit==1)histogram = new TH1F(Form("hCellEtoNtotal_E%.2f-%.2f",emin,emax),Form("Energy per hit, %.2f < E < %.2f GeV",emin,emax), fNoOfCells,0,fNoOfCells);
-	if(crit==2)histogram = new TH1F(Form("hCellNtotal_E%.2f-%.2f",emin,emax),Form("Number of hits per event, %.2f < E < %.2f GeV",emin,emax), fNoOfCells,0,fNoOfCells);
+	if(crit==1)histogram = new TH1F(Form("hCellEtoN_E%.2f-%.2f",emin,emax),Form("Energy per hit, %.2f < E < %.2f GeV",emin,emax), fNoOfCells,0,fNoOfCells);
+	if(crit==2)histogram = new TH1F(Form("hCellNtoEvt_E%.2f-%.2f",emin,emax),Form("Number of hits per event, %.2f < E < %.2f GeV",emin,emax), fNoOfCells,0,fNoOfCells);
 	histogram->SetXTitle("Abs. Cell Id");
 	if(crit==1)histogram->SetYTitle("Energy per hit");
 	if(crit==2)histogram->SetYTitle("Number of hits per event");
@@ -667,9 +667,9 @@ TH1F* AliAnaCaloChannelAnalysis::BuildTimeMean(Int_t crit, Double_t tmin, Double
 	histogram->SetXTitle("Abs. Cell Id");
 	histogram->SetYTitle("time max");
 	histogram->GetXaxis()->SetNdivisions(510);
-	Double_t totalevents = fProcessedEvents->Integral(1, fProcessedEvents->GetNbinsX());
+	//Double_t totalevents = fProcessedEvents->Integral(1, fProcessedEvents->GetNbinsX());
 
-	//..here the average hit per event and the average energy per hit is caluclated for each cell.
+	//..Time information
 	for (Int_t cell = 0; cell < fNoOfCells; cell++)
 	{
 		Double_t timeMax = -100;
