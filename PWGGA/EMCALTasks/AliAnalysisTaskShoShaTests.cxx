@@ -510,7 +510,6 @@ Int_t AliAnalysisTaskShoShaTests::GetAncestorPdg(const Int_t label)
     mcp = static_cast<TParticle*>(fStack->Particle(imom));
     if(!mcp){
       nbacksteps++;
-      printf("\t no mcp,");
       continue;
     }
     abspdg = TMath::Abs(mcp->GetPdgCode());
@@ -521,7 +520,6 @@ Int_t AliAnalysisTaskShoShaTests::GetAncestorPdg(const Int_t label)
     imom = mcp->GetMother(0);
     nbacksteps++;
   }
-  printf("\n");
   return fpdg;
 }
 //________________________________________________________________________
