@@ -476,26 +476,30 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhLocalRegionClusterEnergySumPerCentralityHijing ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters
   TH2F *  fhLocalRegionClusterMultiplicityPerCentralityHijing;//!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters
 
-  
-  TH1F *  fhMergeGeneratorCluster;                  //!<! Cluster energy, at least 2 generators contributions
-  TH2F *  fhMergeGeneratorClusterNOverlaps;         //!<! Cluster energy, at least 2 generators contributions
-  
+  TH1F *  fhMergeGeneratorCluster;                  //!<! Cluster energy, at least 2 generators contributions  
+  TH1F *  fhMergeGeneratorClusterWithHijing;        //!<! Cluster energy, at least 2 generators contributions, main is HIJING  
+  TH1F *  fhMergeGeneratorClusterWithPi0;           //!<! Cluster energy, at least 2 generators contributions, main is Pi0
+  TH1F *  fhMergeGeneratorClusterWithPi0EMC;        //!<! Cluster energy, at least 2 generators contributions, main is Pi0EMC
+  TH1F *  fhMergeGeneratorClusterWithEta;           //!<! Cluster energy, at least 2 generators contributions, main is Eta
+  TH1F *  fhMergeGeneratorClusterWithEtaEMC;        //!<! Cluster energy, at least 2 generators contributions, main is EtaEMC
+
   TH1F *  fhMergeGeneratorClusterNotHijingBkg;           //!<! Cluster energy, at least 2 generators contributions, none is HIJING
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgNOverlaps;  //!<! Cluster energy, at least 2 generators contributions, none is HIJING
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgWithPi0;    //!<! Cluster energy, at least 2 generators contributions, none is HIJING
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgWithPi0EMC; //!<! Cluster energy, at least 2 generators contributions, none is HIJING
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgWithEta;    //!<! Cluster energy, at least 2 generators contributions, none is HIJING
-  TH2F *  fhMergeGeneratorClusterNotHijingBkgWithEtaEMC; //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH1F *  fhMergeGeneratorClusterNotHijingBkgWithPi0;    //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH1F *  fhMergeGeneratorClusterNotHijingBkgWithPi0EMC; //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH1F *  fhMergeGeneratorClusterNotHijingBkgWithEta;    //!<! Cluster energy, at least 2 generators contributions, none is HIJING
+  TH1F *  fhMergeGeneratorClusterNotHijingBkgWithEtaEMC; //!<! Cluster energy, at least 2 generators contributions, none is HIJING
   
-  TH1F *  fhMergeGeneratorClusterHijingAndOther;          //!<! Cluster energy, at least 2 generators contributions, main is HIJING
-  TH2F *  fhMergeGeneratorClusterHijingAndOtherNOverlaps; //!<! Cluster energy, at least 2 generators contributions, main is HIJING
-  
-  TH1F *  fhMergeGeneratorClusterHijingBkg;               //!<! Cluster energy, at least 2 generators contributions, one is HIJING
-  TH2F *  fhMergeGeneratorClusterHijingBkgNOverlaps;      //!<! Cluster energy, at least 2 generators contributions, one is HIJING
-  TH2F *  fhMergeGeneratorClusterHijingBkgWithPi0;        //!<! Cluster energy, at least 2 generators contributions, one is HIJING
-  TH2F *  fhMergeGeneratorClusterHijingBkgWithPi0EMC;     //!<! Cluster energy, at least 2 generators contributions, one is HIJING
-  TH2F *  fhMergeGeneratorClusterHijingBkgWithEta;        //!<! Cluster energy, at least 2 generators contributions, one is HIJING
-  TH2F *  fhMergeGeneratorClusterHijingBkgWithEtaEMC;     //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingAndOtherBkg;           //!<! Cluster energy, at least 3 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingAndOtherBkgWithPi0;    //!<! Cluster energy, at least 3 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC; //!<! Cluster energy, at least 3 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingAndOtherBkgWithEta;    //!<! Cluster energy, at least 3 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC; //!<! Cluster energy, at least 3 generators contributions, one is HIJING
+
+  TH1F *  fhMergeGeneratorClusterHijingBkg;           //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingBkgWithPi0;    //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingBkgWithPi0EMC; //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingBkgWithEta;    //!<! Cluster energy, at least 2 generators contributions, one is HIJING
+  TH1F *  fhMergeGeneratorClusterHijingBkgWithEtaEMC; //!<! Cluster energy, at least 2 generators contributions, one is HIJING
 
   TH1F *  fhCleanGeneratorCluster;                  //!<! Cluster energy, only one generator is the contributor
   TH1F *  fhCleanGeneratorClusterHijing;            //!<! Cluster energy, only one generator is the contributor
