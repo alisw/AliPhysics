@@ -1564,7 +1564,7 @@ void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEven
     while (esdTrigger.Next()) {
       esdTrigger.GetPosition(tmod,tabsId);
       esdTrigger.GetAmplitude(a);
-      aodTrigger.Add(tmod,tabsId,a,0.,(Int_t*)NULL,0,0,0);
+      aodTrigger.Add(tmod,tabsId,a,0.,(Int_t*)NULL,0,esdTrigger.GetL1TimeSum(),0);
     }
     return;
   }
