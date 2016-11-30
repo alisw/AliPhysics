@@ -829,8 +829,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  else fShapesVar[0]=Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
 	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,3,0,1,0);
-	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
+	  // fShapesVar[6]=fjNSubJettiness(Jet1,0,3,0,1,0);
+	  fShapesVar[6]=Angularity(Jet1,0);
+	  // fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
+	  fShapesVar[8]=PTD(Jet1,0);
 	  fShapesVar[10]=Jet1->GetNumberOfTracks();
 	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
 	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,4,fBeta_SD,fZCut);
@@ -847,8 +849,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    fShapesVar[1]=Jet4->Pt();
 	    fShapesVar[3]=fjNSubJettiness(Jet4,3,1,0,1,0);
 	    fShapesVar[5]=fjNSubJettiness(Jet4,3,2,0,1,0);
-	    fShapesVar[7]=fjNSubJettiness(Jet4,3,3,0,1,0);
-	    fShapesVar[9]=fjNSubJettiness(Jet4,3,2,0,1,1);
+	    // fShapesVar[7]=fjNSubJettiness(Jet4,3,3,0,1,0);
+	    fShapesVar[7]=Angularity(Jet4,3);
+	    // fShapesVar[9]=fjNSubJettiness(Jet4,3,2,0,1,1);
+	    fShapesVar[9]=PTD(Jet4,3);
 	    fShapesVar[11]=Jet4->GetNumberOfTracks();
 	    fShapesVar[13]=fjNSubJettiness(Jet4,3,2,0,1,3,fBeta_SD,fZCut);
 	    fShapesVar[15]=fjNSubJettiness(Jet4,3,2,0,1,4,fBeta_SD,fZCut);
