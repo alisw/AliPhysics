@@ -74,22 +74,22 @@ class AliAnalysisTaskShoShaTests : public AliAnalysisTaskSE {
   TH1F                 *fClusEtSingleExotic;      //!exotic trigger only clusters Et 
   TH1F                 *fCellEnergy;              //!cell energy spectrum (all)
   TH1F                 *fInvMassEMCNN;            //!inv mass of EMC neutral cluster pairs
-  TH2F                 *fM02Et;                   //!M02xEt for trigger clusters
-  TH2F                 *fM02EtPi0MassClCl;        //!M02xEt for trigger clusters
-  TH2F                 *fM02EtPi0MassClClTruPi0;  //!M02xEt for trigger clusters from pi0 MC truth
-  TH2F                 *fM02EtPi0MassClClTruPiC;  //!M02xEt for trigger clusters from pi+- MC truth
-  TH2F                 *fM02EtPi0MassClClTruEta;  //!M02xEt for trigger clusters from eta MC truth
-  TH2F                 *fM02EtPi0MassClClTruK_0;  //!M02xEt for trigger clusters from k0 MC truth
-  TH2F                 *fM02EtPi0MassClClTruK_C;  //!M02xEt for trigger clusters from k+- MC truth
-  TH2F                 *fM02EtPi0MassClClTruPro;  //!M02xEt for trigger clusters from proton MC truth
-  TH2F                 *fM02EtPi0MassClClTruNeu;  //!M02xEt for trigger clusters from neutron MC truth
-  TH2F                 *fM02EtTM;                 //!M02xEt for trigger clusters with track matched
-  TH2F                 *fM02EtExot;               //!M02xEt for trigger clusters of exotic
-  TH2F                 *fM02EtExotTM;             //!M02xEt for trigger TM clusters of exotic
+  TH2F                 *fM02Et;                   //!M02xEt for  clusters
+  TH2F                 *fM02EtPi0MassClCl;        //!M02xEt for  clusters
+  TH2F                 *fM02EtPi0MassClClTruPi0;  //!M02xEt for  clusters from pi0 MC truth
+  TH2F                 *fM02EtPi0MassClClTruPiC;  //!M02xEt for  clusters from pi+- MC truth
+  TH2F                 *fM02EtPi0MassClClTruEta;  //!M02xEt for  clusters from eta MC truth
+  TH2F                 *fM02EtPi0MassClClTruK_0;  //!M02xEt for  clusters from k0 MC truth
+  TH2F                 *fM02EtPi0MassClClTruK_C;  //!M02xEt for  clusters from k+- MC truth
+  TH2F                 *fM02EtPi0MassClClTruPro;  //!M02xEt for  clusters from proton MC truth
+  TH2F                 *fM02EtPi0MassClClTruNeu;  //!M02xEt for  clusters from neutron MC truth
+  TH2F                 *fM02EtTM;                 //!M02xEt for  clusters with track matched
+  TH2F                 *fM02EtExot;               //!M02xEt for  clusters of exotic
+  TH2F                 *fM02EtExotTM;             //!M02xEt for  TM clusters of exotic
    
   AliAnalysisTaskShoShaTests(const AliAnalysisTaskShoShaTests&); // not implemented
   AliAnalysisTaskShoShaTests& operator=(const AliAnalysisTaskShoShaTests&); // not implemented
   
-  ClassDef(AliAnalysisTaskShoShaTests, 1); // Trigger contamination class
+  ClassDef(AliAnalysisTaskShoShaTests, 1); // shower shape tests class
 };
 #endif
