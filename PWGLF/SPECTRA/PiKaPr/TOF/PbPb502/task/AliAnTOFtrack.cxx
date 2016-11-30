@@ -107,3 +107,13 @@ Bool_t AliAnTOFtrack::PassCut(const Int_t cut){
   return kTRUE;
   
 }
+
+Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id){
+  if(id > kExpSpecies) AliFatal("Index required is out of bound");
+  return fTOFTime - fTOFExpTime[id] - fT0TrkTime;
+}
+
+Float_t AliAnTOFtrack::GetDeltaSigma(const UInt_t id, const UInt_t hypo) {
+  if(id > kExpSpecies) AliFatal("Index required is out of bound");
+  return GetDeltaT(hypo)/fTOFExpSigma[id];
+}
