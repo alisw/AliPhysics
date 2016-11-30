@@ -428,6 +428,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     friend bool        operator==(const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator!=(const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return !(lhs == rhs); }
 
+    std::map<AliAODMCParticle*, Short_t> fFirstPartons ; //!<! set of the first partons in the shower that produced each D meson
+    std::map<AliAODMCParticle*, Short_t> fLastPartons  ; //!<! set of the last partons in the shower that produced each D meson
+
   protected:
     void RunAnalysis();
     void FindJets(AliHFJetDefinition& jetDef);

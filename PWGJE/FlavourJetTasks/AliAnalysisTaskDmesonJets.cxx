@@ -652,6 +652,8 @@ ClassImp(AliAnalysisTaskDmesonJets::AnalysisEngine);
 /// This is the default constructor, used for ROOT I/O purposes.
 AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   TObject(),
+  fFirstPartons(),
+  fLastPartons(),
   fCandidateType(kD0toKpi),
   fCandidateName(),
   fCandidatePDG(0),
@@ -692,6 +694,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
 /// \param range     Range of the mass axis (will be centered around the PDG mass)
 AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type, EMCMode_t MCmode, AliRDHFCuts* cuts, Int_t nMassBins, Double_t range) :
   TObject(),
+  fFirstPartons(),
+  fLastPartons(),
   fCandidateType(type),
   fCandidateName(),
   fCandidatePDG(0),
@@ -729,6 +733,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
 /// \param source Reference to a valid AnalysisEngine to copy from.
 AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskDmesonJets::AnalysisEngine &source) :
   TObject(source),
+  fFirstPartons(source.fFirstPartons),
+  fLastPartons(source.fLastPartons),
   fCandidateType(source.fCandidateType),
   fCandidateName(source.fCandidateName),
   fCandidatePDG(source.fCandidatePDG),
@@ -1838,8 +1844,8 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::BuildHnSparse(UInt_t enabledAxis
 Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
 {
   TString hname;
-  std::map<AliAODMCParticle*, Short_t> firstPartons;
-  std::map<AliAODMCParticle*, Short_t> lastPartons;
+  fFirstPartons.clear();
+  fLastPartons.clear();
   for (auto& dmeson_pair : fDmesonJets) {
     fCurrentDmesonJetInfo->Set(dmeson_pair.second);
     Int_t accJets = 0;
@@ -1860,8 +1866,8 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
       accJets++;
     }
     if (accJets > 0) {
-      firstPartons[dmeson_pair.second.fFirstParton] = dmeson_pair.second.fFirstPartonType;
-      lastPartons[dmeson_pair.second.fLastParton] = dmeson_pair.second.fLastPartonType;
+      fFirstPartons[dmeson_pair.second.fFirstParton] = dmeson_pair.second.fFirstPartonType;
+      fLastPartons[dmeson_pair.second.fLastParton] = dmeson_pair.second.fLastPartonType;
 
       fTree->Fill();
     }
@@ -1897,7 +1903,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
   hname = TString::Format("%s/fHistFirstPartonType", GetName());
   TH1* histFirstPartonType = static_cast<TH1*>(fHistManager->FindObject(hname));
 
-  for (auto parton : firstPartons) {
+  for (auto parton : fFirstPartons) {
     if (!parton.first) continue;
     histFirstPartonPt->Fill(parton.first->Pt());
     histFirstPartonEta->Fill(parton.first->Eta());
@@ -1914,7 +1920,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
   hname = TString::Format("%s/fHistLastPartonType", GetName());
   TH1* histLastPartonType = static_cast<TH1*>(fHistManager->FindObject(hname));
 
-  for (auto parton : lastPartons) {
+  for (auto parton : fLastPartons) {
     if (!parton.first) continue;
     histLastPartonPt->Fill(parton.first->Pt());
     histLastPartonEta->Fill(parton.first->Eta());
@@ -1932,7 +1938,8 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillTree(Bool_t applyKinCuts)
 Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillQA(Bool_t applyKinCuts)
 {
   TString hname;
-
+  fFirstPartons.clear();
+  fLastPartons.clear();
   for (auto& dmeson_pair : fDmesonJets) {
     Int_t accJets = 0;
     for (UInt_t ij = 0; ij < fJetDefinitions.size(); ij++) {
@@ -1949,7 +1956,11 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillQA(Bool_t applyKinCuts)
       }
       accJets++;
     }
-    if (accJets == 0) {
+    if (accJets > 0) {
+      fFirstPartons[dmeson_pair.second.fFirstParton] = dmeson_pair.second.fFirstPartonType;
+      fLastPartons[dmeson_pair.second.fLastParton] = dmeson_pair.second.fLastPartonType;
+    }
+    else {
       hname = TString::Format("%s/fHistRejectedDMesonPt", GetName());
       fHistManager->FillTH1(hname, dmeson_pair.second.fD.Pt());
       hname = TString::Format("%s/fHistRejectedDMesonPhi", GetName());
@@ -1971,6 +1982,41 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FillQA(Bool_t applyKinCuts)
       }
     }
   }
+
+  hname = TString::Format("%s/fHistFirstPartonPt", GetName());
+  TH1* histFirstPartonPt = static_cast<TH1*>(fHistManager->FindObject(hname));
+  hname = TString::Format("%s/fHistFirstPartonEta", GetName());
+  TH1* histFirstPartonEta = static_cast<TH1*>(fHistManager->FindObject(hname));
+  hname = TString::Format("%s/fHistFirstPartonPhi", GetName());
+  TH1* histFirstPartonPhi = static_cast<TH1*>(fHistManager->FindObject(hname));
+  hname = TString::Format("%s/fHistFirstPartonType", GetName());
+  TH1* histFirstPartonType = static_cast<TH1*>(fHistManager->FindObject(hname));
+
+  for (auto parton : fFirstPartons) {
+    if (!parton.first) continue;
+    histFirstPartonPt->Fill(parton.first->Pt());
+    histFirstPartonEta->Fill(parton.first->Eta());
+    histFirstPartonPhi->Fill(TVector2::Phi_0_2pi(parton.first->Phi()));
+    histFirstPartonType->Fill(parton.second);
+  }
+
+  hname = TString::Format("%s/fHistLastPartonPt", GetName());
+  TH1* histLastPartonPt = static_cast<TH1*>(fHistManager->FindObject(hname));
+  hname = TString::Format("%s/fHistLastPartonEta", GetName());
+  TH1* histLastPartonEta = static_cast<TH1*>(fHistManager->FindObject(hname));
+  hname = TString::Format("%s/fHistLastPartonPhi", GetName());
+  TH1* histLastPartonPhi = static_cast<TH1*>(fHistManager->FindObject(hname));
+  hname = TString::Format("%s/fHistLastPartonType", GetName());
+  TH1* histLastPartonType = static_cast<TH1*>(fHistManager->FindObject(hname));
+
+  for (auto parton : fLastPartons) {
+    if (!parton.first) continue;
+    histLastPartonPt->Fill(parton.first->Pt());
+    histLastPartonEta->Fill(parton.first->Eta());
+    histLastPartonPhi->Fill(TVector2::Phi_0_2pi(parton.first->Phi()));
+    histLastPartonType->Fill(parton.second);
+  }
+
   return kTRUE;
 }
 
