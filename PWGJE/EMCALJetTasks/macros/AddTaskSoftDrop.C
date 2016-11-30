@@ -35,6 +35,9 @@ AliAnalysisTaskSoftDrop* AddTaskSoftDrop(
   // Init the task and do settings
   //-------------------------------------------------------
 
+  TString trackName(ntracks);
+  TString clusName(nclusters);
+
   TString name(taskname);
   if (strcmp(njets,"")) {
     name += "_";
@@ -55,15 +58,24 @@ AliAnalysisTaskSoftDrop* AddTaskSoftDrop(
   //jetTask->SetCentRange(0.,100.);
   //jetTask->SetNCentBins(nCentBins);
 
-  AliTrackContainer *trackCont  = jetTask->AddTrackContainer(ntracks);
-  if(trackCont) trackCont->SetClassName("AliVTrack");
+  AliParticleContainer* partCont = 0;
+  if (trackName == "mcparticles") {
+    partCont = jetTask->AddMCParticleContainer(ntracks);
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    partCont = jetTask->AddTrackContainer(ntracks);
+  }
+  else if (!trackName.IsNull()) {
+    partCont = new AliParticleContainer(trackName);
+  }
+
   AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
 
   TString strType(type);
   AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
   if(jetCont) {
     jetCont->SetRhoName(nrho);
-    jetCont->ConnectParticleContainer(trackCont);
+    jetCont->ConnectParticleContainer(partCont);
     jetCont->ConnectClusterContainer(clusterCont);
     //jetCont->SetZLeadingCut(0.98,0.98);
     jetCont->SetPercAreaCut(jetareacut);
