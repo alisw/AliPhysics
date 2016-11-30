@@ -78,7 +78,7 @@ AliAnalysisTask *AddTask_oton_TTree_HM16l(Int_t reducedEventType=-1, Bool_t writ
   // Alternatively, you can define the inactive branches of the tree, all other branches will be set to active
   task->SetTreeInactiveBranch("fUniqueID");
   task->SetTreeInactiveBranch("fBits");
-  //task->SetTreeInactiveBranch("fEventTag");
+  task->SetTreeInactiveBranch("fEventTag");
   task->SetTreeInactiveBranch("fNVtxContributors");
   task->SetTreeInactiveBranch("fCentQuality");
   task->SetTreeInactiveBranch("fNV0candidates*");
@@ -270,7 +270,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
 
     //TOF
     //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.,3., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
-      pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
+    //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
 
     cuts->AddCut(pid);
 
