@@ -1189,6 +1189,12 @@ goGenerateMakeflow()
     echo "### Automatically generated on $(LANG=C date) ###"
     echo ; echo
 
+    #ppbench
+    echo "### ppbench ###"
+    echo "ppbench.done: benchmark.sh ${sourceUtilities[*]} ${configFile}"
+    echo -e "\t${alirootEnv} ./benchmark.sh ppbench ${configFile} ${extraOpts[@]}"" "
+    echo ; echo
+
     jobindex=0
     inputFile=""
     while read inputFile; do
@@ -1202,12 +1208,6 @@ goGenerateMakeflow()
       #Set variables
       echo "### Variables ###"
       echo "OUTPATH=\"${commonOutputPath}/${year}/${period}\""
-      echo ; echo
-
-      #ppbench
-      echo "### ppbench ###"
-      echo "ppbench.done: benchmark.sh ${sourceUtilities[*]} ${configFile}"
-      echo -e "\t${alirootEnv} ./benchmark.sh ppbench ${configFile} ${extraOpts[@]}"" "
       echo ; echo
 
       #CPass0
