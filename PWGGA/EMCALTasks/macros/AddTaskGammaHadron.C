@@ -116,10 +116,10 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
  	  //AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kNonLinCorr,clusptcut);
 	  //AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
-	  cout<"cut0"<<AnalysisTask->GetClusterContainer(clusName)GetClusUserDefEnergyCut(0)<<endl;
-	  cout<"cut1"<<AnalysisTask->GetClusterContainer(clusName)GetClusUserDefEnergyCut(1)<<endl;
-	  cout<"cut2"<<AnalysisTask->GetClusterContainer(clusName)GetClusUserDefEnergyCut(2)<<endl;
-	  cout<"cut3"<<AnalysisTask->GetClusterContainer(clusName)GetClusUserDefEnergyCut(3)<<endl;
+	  cout<<"cut0: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(0)<<endl;
+	  cout<<"cut1: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(1)<<endl;
+	  cout<<"cut2: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(2)<<endl;
+	  cout<<"cut3: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(3)<<endl;
   }
 
   /*
