@@ -71,11 +71,11 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
     virtual AliDmesonInfoSummary* GetReconstructed() { return &fReconstructed; }
     virtual AliDmesonInfoSummary* GetGenerated()     { return &fGenerated    ; }
 
-    AliD0InfoSummary     fReconstructed ; ///<  Reconstructed D meson
-    AliDmesonInfoSummary fGenerated     ; ///<  Generated D meson
+    AliD0InfoSummary       fReconstructed ; ///<  Reconstructed D meson
+    AliDmesonMCInfoSummary fGenerated     ; ///<  Generated D meson
 
     /// \cond CLASSIMP
-    ClassDef(AliD0MatchInfoSummary, 1);
+    ClassDef(AliD0MatchInfoSummary, 2);
     /// \endcond
   };
 
@@ -172,6 +172,8 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
   virtual void         ExecOnce();
   virtual Bool_t       Run();
   virtual Bool_t       FillHistograms();
+
+  static AliAnalysisTaskDmesonJetsDetectorResponse* AddTaskDmesonJetsDetectorResponse(TString trackName, TString clusName, TString mcPartName, Int_t nMaxTrees, TString suffix);
 
  protected:
 
