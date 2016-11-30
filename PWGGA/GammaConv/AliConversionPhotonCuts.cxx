@@ -530,7 +530,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoTPCdEdxafter=new TH2F(Form("Gamma_dEdx_after %s",GetCutNumber().Data()),"dEdx Gamma after" ,150,0.03,20,800,0,200);
     fHistograms->Add(fHistoTPCdEdxafter);
 
-    fHistoKappaafter=new TH2F(Form("Gamma_Kappa_after %s",GetCutNumber().Data()),"Kappa Gamma after" ,150,-20,20,100,0,10);
+    fHistoKappaafter=new TH2F(Form("Gamma_Kappa_after %s",GetCutNumber().Data()),"Kappa Gamma after" ,150,0.03,20,200,-20,20);
     fHistograms->Add(fHistoKappaafter);
 
     fHistoTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
@@ -2559,6 +2559,14 @@ Bool_t AliConversionPhotonCuts::SetKappaTPCCut(Int_t kappaCut){   // Set Cut
   case 5: // -5-10 full signal peak(including background)
     fKappaMaxCut=10;
     fKappaMinCut=-5;
+    break;
+  case 6: //
+    fKappaMaxCut=10;
+    fKappaMinCut=-3;
+    break;
+  case 7: //
+    fKappaMaxCut=10;
+    fKappaMinCut=-0;
     break;
   default:
     AliError("KappaTPCCut not defined");
