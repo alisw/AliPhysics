@@ -50,7 +50,7 @@ class AliLHCData : public TObject
   enum Side_t   {kLeft,kRight};
   enum Collim_t {kTCTVB4L2, kTCTVB4R2, kTCLIA4R2, kNCollimators};
   enum ColJaw_t {kGapDn,kGapUp,kLeftDn,kLeftUp,kRightDn,kRightUp,kNJaws};
-  enum          {kMaxBSlots = 3564, kOffsBeam1=346, kOffsBeam2 = 3019};
+  enum          {kMaxBSlots = 3564, kOffsBeam1=346, kOffsBeam2 = 3019, kY2015 = 1420070400};
   enum          {kMarginSOR = 60*60*24*30, // use margin of 30 days for SOR, when looking for the 1st record
 		 kMarginEOR = 60*15};      // use margin of 15 min for EOR, when looking for the last record
   //
@@ -88,6 +88,7 @@ class AliLHCData : public TObject
   void                  SetFillNumber(Int_t fill)                          {fFillNumber = fill;}
   void                  SetTMin(Double_t t)                                {fTMin = t<0?0:(t>1e10?1e10:t);}
   void                  SetTMax(Double_t t)                                {fTMax = t<0?0:(t>1e10?1e10:t);}
+  Bool_t                IsRun2()                                     const {return fTMin>kY2015;}
   //
   virtual void          Print(const Option_t *opt="")                const;
   TGraph*               ExportGraph(Int_t *coord, Int_t elID=0)      const;
@@ -214,7 +215,7 @@ class AliLHCData : public TObject
   //
   // analysis methods
   Int_t GetMeanIntensity(int beamID, Double_t &colliding, Double_t &noncolliding, const TObjArray* bcmasks=0) const;
-  static Int_t GetBCId(int bucket, int beamID)                  {return (TMath::Abs(bucket)/10 + (beamID==0 ? kOffsBeam1:kOffsBeam2))%kMaxBSlots;}
+  Int_t GetBCId(int bucket, int beamID) const;
   //
   // for retrofitting, these methods has to be public
   //  void                  FillLumiAliceOFL(Int_t nrec, Int_t* time, Double_t* val);
@@ -454,5 +455,14 @@ inline Int_t AliLHCData::FindEntryValidFor(int start,int nrec, double tstamp) co
   }
   return (idx<nrec) ? idx : nrec-1;
 }
+
+
+inline Int_t AliLHCData::GetBCId(int bucket, int beamID) const
+{
+  Int_t offs = beamID==0 ? kOffsBeam1:kOffsBeam2;
+  if (IsRun2()) offs -= 2; // constants were changed (Martino)
+  return (TMath::Abs(bucket)/10 + offs)%kMaxBSlots;
+}
+
 
 #endif
