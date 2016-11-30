@@ -396,9 +396,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fHistCellsCluster[identifier]->GetYaxis()->SetTitle("N_{cells}");
 		fOutputListQA->Add(fHistCellsCluster[identifier]);
 
-		fHistClusterShape[identifier] = new TH2F(Form("fHistClusterShape%d_Id%d",0,identifier),Form("fHistClusterShape%d_Id%d",0,identifier),60,0,30,80,0,4);
+		fHistClusterShape[identifier] = new TH2F(Form("fHistClusterShape%d_Id%d",0,identifier),Form("fHistClusterShape%d_Id%d",0,identifier),60,0,30,240,0,4);
 		fHistClusterShape[identifier]->GetXaxis()->SetTitle("E^{cluster}");
-		fHistClusterShape[identifier]->GetYaxis()->SetTitle("N_{cells}");
+		fHistClusterShape[identifier]->GetYaxis()->SetTitle("#lambda_{0}");
 		fOutputListQA->Add(fHistClusterShape[identifier]);
 
 		//..Time information
