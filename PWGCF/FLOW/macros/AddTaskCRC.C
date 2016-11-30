@@ -518,7 +518,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
  
   if(bUseCRCRecenter) {
-    TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_Q1etacalib_test.root";
+    TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+    if(AODfilterBit==768) QVecWeightsFileName += "15oHI_QnVarCalib_FB768.root";
+    if(AODfilterBit==32) QVecWeightsFileName += "15oHI_QnVarCalib_FB32.root";
     TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
     if(!QVecWeightsFile) {
       cout << "ERROR: QVecWeightsFile not found!" << endl;
