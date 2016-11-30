@@ -472,7 +472,7 @@ Double_t AliAnalysisTaskShoShaTests::NeutClusPairInvMass(const AliVCluster *cl1,
       fM02EtPi0MassClCl->Fill(Et2,cl2->GetM02());  
       if(fIsMC){
 	Int_t ancesPdg = GetAncestorPdg(cl1->GetLabel());
-	if(ancesPdg == 111)fM02EtPi0MassClClTruPi0->Fill(Et1,cl1->GetM02());
+	if(ancesPdg == 111 || ancesPdg == 11 || ancesPdg == 22)fM02EtPi0MassClClTruPi0->Fill(Et1,cl1->GetM02());
 	if(ancesPdg == 211)fM02EtPi0MassClClTruPiC->Fill(Et1,cl1->GetM02());
 	if(ancesPdg == 221)fM02EtPi0MassClClTruEta->Fill(Et1,cl1->GetM02());
 	if(ancesPdg == 311)fM02EtPi0MassClClTruK_0->Fill(Et1,cl1->GetM02());
@@ -480,7 +480,7 @@ Double_t AliAnalysisTaskShoShaTests::NeutClusPairInvMass(const AliVCluster *cl1,
 	if(ancesPdg == 2212)fM02EtPi0MassClClTruPro->Fill(Et1,cl1->GetM02());
 	if(ancesPdg == 2112)fM02EtPi0MassClClTruNeu->Fill(Et1,cl1->GetM02());
 	ancesPdg = GetAncestorPdg(cl2->GetLabel()); 
-	if(ancesPdg == 111)fM02EtPi0MassClClTruPi0->Fill(Et1,cl2->GetM02());
+	if(ancesPdg == 111 || ancesPdg == 11 || ancesPdg == 2)fM02EtPi0MassClClTruPi0->Fill(Et1,cl2->GetM02());
 	if(ancesPdg == 211)fM02EtPi0MassClClTruPiC->Fill(Et1,cl2->GetM02());
 	if(ancesPdg == 221)fM02EtPi0MassClClTruEta->Fill(Et1,cl2->GetM02());
 	if(ancesPdg == 311)fM02EtPi0MassClClTruK_0->Fill(Et1,cl2->GetM02());
@@ -497,7 +497,7 @@ Int_t AliAnalysisTaskShoShaTests::GetAncestorPdg(const Int_t label)
 {
   Int_t abspdg = 0, fpdg = 0, imom=label;
   //possible codes: pi0, pi+-, eta, k0, K+-, proton, neutron
-  TString codes = " 111 211 221 311 321 2212 2112";
+  TString codes = "11 22 111 211 221 311 321 2212 2112";
   TString thecode ;
   if(!fStack)
     return fpdg;
@@ -510,15 +510,18 @@ Int_t AliAnalysisTaskShoShaTests::GetAncestorPdg(const Int_t label)
     mcp = static_cast<TParticle*>(fStack->Particle(imom));
     if(!mcp){
       nbacksteps++;
+      printf("\t no mcp,");
       continue;
     }
     abspdg = TMath::Abs(mcp->GetPdgCode());
     thecode = Form(" %d",abspdg);
-    if(codes.Contains(thecode))
+    if(codes.Contains(thecode)){
       return abspdg;
+    }
     imom = mcp->GetMother(0);
     nbacksteps++;
   }
+  printf("\n");
   return fpdg;
 }
 //________________________________________________________________________
