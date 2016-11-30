@@ -121,12 +121,16 @@ fhLocalRegionClusterMultiplicityPerCentrality(0),
 fhLocalRegionClusterEnergySumHijing(0),fhLocalRegionClusterMultiplicityHijing(0),
 fhLocalRegionClusterEnergySumPerCentralityHijing(0),
 fhLocalRegionClusterMultiplicityPerCentralityHijing(0),
-fhMergeGeneratorCluster(0),                    fhMergeGeneratorClusterNOverlaps(0),
-fhMergeGeneratorClusterNotHijingBkg(0),        fhMergeGeneratorClusterNotHijingBkgNOverlaps(0),
+fhMergeGeneratorCluster(0),           fhMergeGeneratorClusterWithHijing(0),    
+fhMergeGeneratorClusterWithPi0(0),    fhMergeGeneratorClusterWithPi0EMC(0),
+fhMergeGeneratorClusterWithEta(0),    fhMergeGeneratorClusterWithEtaEMC(0),
+fhMergeGeneratorClusterNotHijingBkg(0),        
 fhMergeGeneratorClusterNotHijingBkgWithPi0(0), fhMergeGeneratorClusterNotHijingBkgWithPi0EMC(0),
 fhMergeGeneratorClusterNotHijingBkgWithEta(0), fhMergeGeneratorClusterNotHijingBkgWithEtaEMC(0),
-fhMergeGeneratorClusterHijingAndOther(0),      fhMergeGeneratorClusterHijingAndOtherNOverlaps(0), 
-fhMergeGeneratorClusterHijingBkg(0),           fhMergeGeneratorClusterHijingBkgNOverlaps(0),
+fhMergeGeneratorClusterHijingAndOtherBkg(0),      
+fhMergeGeneratorClusterHijingAndOtherBkgWithPi0(0), fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC(0),
+fhMergeGeneratorClusterHijingAndOtherBkgWithEta(0), fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC(0),
+fhMergeGeneratorClusterHijingBkg(0),           
 fhMergeGeneratorClusterHijingBkgWithPi0(0),    fhMergeGeneratorClusterHijingBkgWithPi0EMC(0),
 fhMergeGeneratorClusterHijingBkgWithEta(0),    fhMergeGeneratorClusterHijingBkgWithEtaEMC(0),
 fhCleanGeneratorCluster(0),                    fhCleanGeneratorClusterHijing(0),
@@ -3247,110 +3251,148 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhMergeGeneratorCluster->SetYTitle("#it{counts}");
     fhMergeGeneratorCluster->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorCluster) ;
+
+    fhMergeGeneratorClusterWithHijing = new TH1F("hMergeGeneratorClusterWithHijing",
+                                       "Number of selected clusters with contribution of >=2 generators, main is hijing",
+                                       nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterWithHijing->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterWithHijing->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterWithHijing) ;
+
     
-    fhMergeGeneratorClusterNOverlaps = new TH2F("hMergeGeneratorClusterNOverlaps",
-                                                "Number of selected clusters with contribution of >= 2 generators",
-                                                nptbins,ptmin,ptmax,20,0,20);
-    fhMergeGeneratorClusterNOverlaps->SetYTitle("#it{n_{overlaps}}");
-    fhMergeGeneratorClusterNOverlaps->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhMergeGeneratorClusterNOverlaps) ;
+    fhMergeGeneratorClusterWithPi0 = new TH1F("hMergeGeneratorClusterWithPi0",
+                                       "Number of selected clusters with contribution of >=2 generators, main is pi0",
+                                       nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterWithPi0->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterWithPi0->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterWithPi0) ;
+
+    fhMergeGeneratorClusterWithPi0EMC = new TH1F("hMergeGeneratorClusterWithPi0EMC",
+                                              "Number of selected clusters with contribution of >=2 generators, main is pi0EMC",
+                                              nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterWithPi0EMC->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterWithPi0EMC->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterWithPi0EMC) ;  
+
+    fhMergeGeneratorClusterWithEta = new TH1F("hMergeGeneratorClusterWithEta",
+                                              "Number of selected clusters with contribution of >=2 generators, main is pi0",
+                                              nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterWithEta->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterWithEta->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterWithEta) ;
+    
+    fhMergeGeneratorClusterWithEtaEMC = new TH1F("hMergeGeneratorClusterWithEtaEMC",
+                                                 "Number of selected clusters with contribution of >=2 generators, main is pi0EMC",
+                                                 nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterWithEtaEMC->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterWithEtaEMC->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterWithEtaEMC) ;  
+
     
     fhMergeGeneratorClusterNotHijingBkg = new TH1F("hMergeGeneratorClusterNotHijingBkg",
-                                                "Number of selected clusters with contribution of >=2 generators, none is HIJING",
-                                                nptbins,ptmin,ptmax);
+                                                   "Number of selected clusters with contribution of >=2 generators, none is HIJING",
+                                                   nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterNotHijingBkg->SetYTitle("#it{counts}");
     fhMergeGeneratorClusterNotHijingBkg->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterNotHijingBkg) ;
     
-    fhMergeGeneratorClusterNotHijingBkgNOverlaps = new TH2F("hMergeGeneratorClusterNotHijingBkgNOverlaps",
-                                                         "Number of selected clusters with contribution of >= 2 generators, none is HIJING",
-                                                         nptbins,ptmin,ptmax,20,0,20);
-    fhMergeGeneratorClusterNotHijingBkgNOverlaps->SetYTitle("#it{n_{overlaps}}");
-    fhMergeGeneratorClusterNotHijingBkgNOverlaps->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhMergeGeneratorClusterNotHijingBkgNOverlaps) ;
-    
-    fhMergeGeneratorClusterNotHijingBkgWithPi0 = new TH2F("hMergeGeneratorClusterNotHijingBkgWithPi0",
+    fhMergeGeneratorClusterNotHijingBkgWithPi0 = new TH1F("hMergeGeneratorClusterNotHijingBkgWithPi0",
                                                        "Number of selected clusters with contribution of >= 2 generators, none is HIJING, main is Pi0",
-                                                       nptbins,ptmin,ptmax,20,0,20);
+                                                       nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterNotHijingBkgWithPi0->SetYTitle("#it{n_{overlaps}}");
     fhMergeGeneratorClusterNotHijingBkgWithPi0->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterNotHijingBkgWithPi0) ;
     
-    fhMergeGeneratorClusterNotHijingBkgWithPi0EMC = new TH2F("hMergeGeneratorClusterNotHijingBkgWithPi0EMC",
+    fhMergeGeneratorClusterNotHijingBkgWithPi0EMC = new TH1F("hMergeGeneratorClusterNotHijingBkgWithPi0EMC",
                                                           "Number of selected clusters with contribution of >= 2 generators, none is HIJING, main is Pi0EMC",
-                                                          nptbins,ptmin,ptmax,20,0,20);
+                                                          nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterNotHijingBkgWithPi0EMC->SetYTitle("#it{n_{overlaps}}");
     fhMergeGeneratorClusterNotHijingBkgWithPi0EMC->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterNotHijingBkgWithPi0EMC) ;
     
-    fhMergeGeneratorClusterNotHijingBkgWithEta = new TH2F("hMergeGeneratorClusterNotHijingBkgWithEta",
+    fhMergeGeneratorClusterNotHijingBkgWithEta = new TH1F("hMergeGeneratorClusterNotHijingBkgWithEta",
                                                        "Number of selected clusters with contribution of >= 2 generators, none is HIJING, main is Eta",
-                                                       nptbins,ptmin,ptmax,20,0,20);
+                                                       nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterNotHijingBkgWithEta->SetYTitle("#it{n_{overlaps}}");
     fhMergeGeneratorClusterNotHijingBkgWithEta->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterNotHijingBkgWithEta) ;
     
-    fhMergeGeneratorClusterNotHijingBkgWithEtaEMC = new TH2F("hMergeGeneratorClusterNotHijingBkgWithEtaEMC",
+    fhMergeGeneratorClusterNotHijingBkgWithEtaEMC = new TH1F("hMergeGeneratorClusterNotHijingBkgWithEtaEMC",
                                                           "Number of selected clusters with contribution of >= 2 generators, none is HIJING, main is EtaEMC",
-                                                          nptbins,ptmin,ptmax,20,0,20);
+                                                          nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterNotHijingBkgWithEtaEMC->SetYTitle("#it{n_{overlaps}}");
     fhMergeGeneratorClusterNotHijingBkgWithEtaEMC->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterNotHijingBkgWithEtaEMC) ;
     
-    fhMergeGeneratorClusterHijingAndOther = new TH1F("hMergeGeneratorClusterHijingAndOther",
-                                                     "Number of selected clusters with contribution of 2>= generators, main one is HIJING",
+    fhMergeGeneratorClusterHijingAndOtherBkg = new TH1F("hMergeGeneratorClusterHijingAndOtherBkg",
+                                                     "Number of selected clusters with contribution of at least 3 generators",
                                                      nptbins,ptmin,ptmax);
-    fhMergeGeneratorClusterHijingAndOther->SetYTitle("#it{counts}");
-    fhMergeGeneratorClusterHijingAndOther->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhMergeGeneratorClusterHijingAndOther) ;
+    fhMergeGeneratorClusterHijingAndOtherBkg->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterHijingAndOtherBkg->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkg) ;
+
+    fhMergeGeneratorClusterHijingAndOtherBkgWithPi0 = new TH1F("hMergeGeneratorClusterHijingAndOtherBkgWithPi0",
+                                                        "Number of selected clusters with contribution of at least 3 generators, main is Pi0",
+                                                        nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterHijingAndOtherBkgWithPi0->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterHijingAndOtherBkgWithPi0->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkgWithPi0) ;
+
+    fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC = new TH1F("hMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC",
+                                                               "Number of selected clusters with contribution of at least 3 generators, main is Pi0EMC",
+                                                               nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC) ;
+ 
     
-    fhMergeGeneratorClusterHijingAndOtherNOverlaps = new TH2F("hMergeGeneratorClusterHijingAndOtherNOverlaps",
-                                                              "Number of selected clusters with contribution of >= 2 generators, main one is HIJING",
-                                                              nptbins,ptmin,ptmax,20,0,20);
-    fhMergeGeneratorClusterHijingAndOtherNOverlaps->SetYTitle("#it{n_{overlaps}}");
-    fhMergeGeneratorClusterHijingAndOtherNOverlaps->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherNOverlaps) ;
+    fhMergeGeneratorClusterHijingAndOtherBkgWithEta = new TH1F("hMergeGeneratorClusterHijingAndOtherBkgWithEta",
+                                                               "Number of selected clusters with contribution of at least 3 generators, main is Eta",
+                                                               nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterHijingAndOtherBkgWithEta->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterHijingAndOtherBkgWithEta->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkgWithEta) ;
     
+    fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC = new TH1F("hMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC",
+                                                                  "Number of selected clusters with contribution of at least 3 generators, main is EtaEMC",
+                                                                  nptbins,ptmin,ptmax);
+    fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC->SetYTitle("#it{counts}");
+    fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC->SetXTitle("#it{E} (GeV)");
+    outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC) ;
+
     
     fhMergeGeneratorClusterHijingBkg = new TH1F("hMergeGeneratorClusterHijingBkg",
-                                                     "Number of selected clusters with contribution of 2>= generators, one is HIJING",
+                                                     "Number of selected clusters with contribution of 2 generators, one is HIJING",
                                                      nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterHijingBkg->SetYTitle("#it{counts}");
     fhMergeGeneratorClusterHijingBkg->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterHijingBkg) ;
     
-    fhMergeGeneratorClusterHijingBkgNOverlaps = new TH2F("hMergeGeneratorClusterHijingBkgNOverlaps",
-                                                              "Number of selected clusters with contribution of >= 2 generators,  one is HIJING",
-                                                              nptbins,ptmin,ptmax,20,0,20);
-    fhMergeGeneratorClusterHijingBkgNOverlaps->SetYTitle("#it{n_{overlaps}}");
-    fhMergeGeneratorClusterHijingBkgNOverlaps->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhMergeGeneratorClusterHijingBkgNOverlaps) ;
-
     
-    fhMergeGeneratorClusterHijingBkgWithPi0 = new TH2F("hMergeGeneratorClusterHijingBkgWithPi0",
-                                                    "Number of selected clusters with contribution of >= 2 generators, HIJING in, main is Pi0",
-                                                    nptbins,ptmin,ptmax,20,0,20);
+    fhMergeGeneratorClusterHijingBkgWithPi0 = new TH1F("hMergeGeneratorClusterHijingBkgWithPi0",
+                                                    "Number of selected clusters with contribution of 2 generators, HIJING in, main is Pi0",
+                                                    nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterHijingBkgWithPi0->SetYTitle("#it{n_{overlaps}}");
     fhMergeGeneratorClusterHijingBkgWithPi0->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterHijingBkgWithPi0) ;
     
-    fhMergeGeneratorClusterHijingBkgWithPi0EMC = new TH2F("hMergeGeneratorClusterHijingBkgWithPi0EMC",
-                                                       "Number of selected clusters with contribution of >= 2 generators, HIJING in, main is Pi0EMC",
-                                                       nptbins,ptmin,ptmax,20,0,20);
+    fhMergeGeneratorClusterHijingBkgWithPi0EMC = new TH1F("hMergeGeneratorClusterHijingBkgWithPi0EMC",
+                                                       "Number of selected clusters with contribution of 2 generators, HIJING in, main is Pi0EMC",
+                                                       nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterHijingBkgWithPi0EMC->SetYTitle("#it{n_{overlaps}}");
     fhMergeGeneratorClusterHijingBkgWithPi0EMC->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterHijingBkgWithPi0EMC) ;
     
-    fhMergeGeneratorClusterHijingBkgWithEta = new TH2F("hMergeGeneratorClusterHijingBkgWithEta",
-                                                    "Number of selected clusters with contribution of >= 2 generators, HIJING in, main is Eta",
-                                                    nptbins,ptmin,ptmax,20,0,20);
+    fhMergeGeneratorClusterHijingBkgWithEta = new TH1F("hMergeGeneratorClusterHijingBkgWithEta",
+                                                    "Number of selected clusters with contribution of 2 generators, HIJING in, main is Eta",
+                                                    nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterHijingBkgWithEta->SetYTitle("#it{n_{overlaps}}");
     fhMergeGeneratorClusterHijingBkgWithEta->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterHijingBkgWithEta) ;
     
-    fhMergeGeneratorClusterHijingBkgWithEtaEMC = new TH2F("hMergeGeneratorClusterHijingBkgWithEtaEMC",
-                                                       "Number of selected clusters with contribution of >= 2 generators, HIJING in, main is EtaEMC",
-                                                       nptbins,ptmin,ptmax,20,0,20);
+    fhMergeGeneratorClusterHijingBkgWithEtaEMC = new TH1F("hMergeGeneratorClusterHijingBkgWithEtaEMC",
+                                                       "Number of selected clusters with contribution of 2 generators, HIJING in, main is EtaEMC",
+                                                       nptbins,ptmin,ptmax);
     fhMergeGeneratorClusterHijingBkgWithEtaEMC->SetYTitle("#it{n_{overlaps}}");
     fhMergeGeneratorClusterHijingBkgWithEtaEMC->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhMergeGeneratorClusterHijingBkgWithEtaEMC) ;
@@ -3725,69 +3767,82 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
       
       //printf("Generator?: %s\n",genName.Data());
       
-      Bool_t overlapGener          = kFALSE;
-      Bool_t overlapGenerNotHIJING = kFALSE;
-      Bool_t overlapHIJINGAndOther = kFALSE;
+      Bool_t overlapGener       = kFALSE;
+      Bool_t overlapGenerHIJING = kFALSE;
+      Bool_t overlapGenerOther  = kFALSE;
       
       const UInt_t nlabels = calo->GetNLabels();
-      Int_t noverlapsGen = 0;
-      TString genName2Prev = genName;
+      //Int_t noverlapsGen = 0;
+      //TString genName2Prev = genName;
       for(UInt_t ilabel = 1; ilabel < nlabels; ilabel++)
       {
         Int_t label2 = calo->GetLabels()[ilabel];
         TString genName2;
         (GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
         
-        if(genName2 != genName2Prev) noverlapsGen++;
+        //if(genName2 != genName2Prev) noverlapsGen++;
         
         if(genName2 != genName) 
         {
-          genName2Prev = genName2;
+          //genName2Prev = genName2;
           
           overlapGener = kTRUE; 
-          if(!genName.Contains("ijing") && !genName2.Contains("ijing")) 
-            overlapGenerNotHIJING = kTRUE;
-          if (genName.Contains("ijing")) 
-            overlapHIJINGAndOther = kTRUE;
+          
+          if( genName2.Contains("ijing") && !genName.Contains("ijing")) 
+            overlapGenerHIJING = kTRUE;
+          
+          if(!genName2.Contains("ijing"))
+            overlapGenerOther  = kTRUE;
         }
       }
       
       if(overlapGener) 
       {
         fhMergeGeneratorCluster->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterNOverlaps->Fill(en,noverlapsGen,GetEventWeight());
-        if(overlapGenerNotHIJING) 
+        
+        if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterWithPi0EMC->Fill(en,GetEventWeight());
+        else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterWithPi0   ->Fill(en,GetEventWeight());
+        else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterWithEtaEMC->Fill(en,GetEventWeight());
+        else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterWithEta   ->Fill(en,GetEventWeight());
+        else if ( genName.Contains("ijing")) fhMergeGeneratorClusterWithHijing->Fill(en,GetEventWeight());
+        //else printf("Generator?: %s\n",genName.Data());
+
+        if(overlapGenerOther && !overlapGenerHIJING) 
         {
           fhMergeGeneratorClusterNotHijingBkg->Fill(en,GetEventWeight());
-          fhMergeGeneratorClusterNotHijingBkgNOverlaps->Fill(en,noverlapsGen,GetEventWeight());
           
-          if      ( genName.Contains("pi0EMC")) fhMergeGeneratorClusterNotHijingBkgWithPi0EMC->Fill(en,noverlapsGen,GetEventWeight());
-          else if ( genName.Contains("pi0")   ) fhMergeGeneratorClusterNotHijingBkgWithPi0   ->Fill(en,noverlapsGen,GetEventWeight());
-          else if ( genName.Contains("etaEMC")) fhMergeGeneratorClusterNotHijingBkgWithEtaEMC->Fill(en,noverlapsGen,GetEventWeight());
-          else if ( genName.Contains("eta")   ) fhMergeGeneratorClusterNotHijingBkgWithEta   ->Fill(en,noverlapsGen,GetEventWeight());
-          //else printf("Generator?: %s\n",genName.Data());
-        }
-        else if(!overlapHIJINGAndOther)
-        {
-          fhMergeGeneratorClusterHijingBkg->Fill(en,GetEventWeight());
-          fhMergeGeneratorClusterHijingBkgNOverlaps->Fill(en,noverlapsGen,GetEventWeight());
-          
-          if      ( genName.Contains("pi0EMC")) fhMergeGeneratorClusterHijingBkgWithPi0EMC->Fill(en,noverlapsGen,GetEventWeight());
-          else if ( genName.Contains("pi0")   ) fhMergeGeneratorClusterHijingBkgWithPi0   ->Fill(en,noverlapsGen,GetEventWeight());
-          else if ( genName.Contains("etaEMC")) fhMergeGeneratorClusterHijingBkgWithEtaEMC->Fill(en,noverlapsGen,GetEventWeight());
-          else if ( genName.Contains("eta")   ) fhMergeGeneratorClusterHijingBkgWithEta   ->Fill(en,noverlapsGen,GetEventWeight());
+          if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterNotHijingBkgWithPi0EMC->Fill(en,GetEventWeight());
+          else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterNotHijingBkgWithPi0   ->Fill(en,GetEventWeight());
+          else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterNotHijingBkgWithEtaEMC->Fill(en,GetEventWeight());
+          else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterNotHijingBkgWithEta   ->Fill(en,GetEventWeight());
           //else printf("Generator?: %s\n",genName.Data());
         }
         
-        if(overlapHIJINGAndOther)
+        if(overlapGenerHIJING && !overlapGenerOther)
         {
-          fhMergeGeneratorClusterHijingAndOther->Fill(en,GetEventWeight());
-          fhMergeGeneratorClusterHijingAndOtherNOverlaps->Fill(en,noverlapsGen,GetEventWeight());
+          fhMergeGeneratorClusterHijingBkg->Fill(en,GetEventWeight());
+          
+          if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterHijingBkgWithPi0EMC->Fill(en,GetEventWeight());
+          else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterHijingBkgWithPi0   ->Fill(en,GetEventWeight());
+          else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterHijingBkgWithEtaEMC->Fill(en,GetEventWeight());
+          else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterHijingBkgWithEta   ->Fill(en,GetEventWeight());
+          //else printf("Generator?: %s\n",genName.Data());
+        }
+        
+        if(overlapGenerHIJING && overlapGenerOther)
+        {
+          fhMergeGeneratorClusterHijingAndOtherBkg->Fill(en,GetEventWeight());
+          
+          if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC->Fill(en,GetEventWeight());
+          else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterHijingAndOtherBkgWithPi0   ->Fill(en,GetEventWeight());
+          else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC->Fill(en,GetEventWeight());
+          else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterHijingAndOtherBkgWithEta   ->Fill(en,GetEventWeight());
         }
       }
       else    
       {
         fhCleanGeneratorCluster->Fill(en,GetEventWeight());
+        
         if      ( genName.Contains("ijing") ) fhCleanGeneratorClusterHijing->Fill(en,GetEventWeight());
         else if ( genName.Contains("pi0EMC")) fhCleanGeneratorClusterPi0EMC->Fill(en,GetEventWeight());
         else if ( genName.Contains("pi0")   ) fhCleanGeneratorClusterPi0   ->Fill(en,GetEventWeight());
