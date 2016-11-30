@@ -202,6 +202,7 @@ hT0Resolution(0x0),
 hTimeOfFlightRes(0x0),
 hTimeOfFlightTOFRes(0x0),
 hTimeOfFlightGoodRes (0x0),
+hTimeOfFlightResNoMismatch (0x0),
 fMultiplicityBin(kEvtMultBins+1),
 fEtaRange(0.8),
 fTOFmin(10000),
@@ -822,6 +823,9 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hTimeOfFlightGoodRes = new TH1D("hTimeOfFlightGoodRes", "TOF Resolution Good in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 100, -500, 500);
     hTimeOfFlightGoodRes->Sumw2();
     fListHist->AddLast(hTimeOfFlightGoodRes);
+    
+    hTimeOfFlightResNoMismatch = new TH1D("hTimeOfFlightResNoMismatch", "TOF Resolution Wo Mismatch in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 800, -4000, 4000);
+    fListHist->AddLast(hTimeOfFlightResNoMismatch);
     
     hTOFClusters = new TH1F("hTOFClusters", "Number of clusters per track;TOF Clusters;Number of tracks", 50, -.5, 49.5);
     fListHist->AddLast(hTOFClusters);
@@ -1924,7 +1928,13 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       if((fP>0.9) && (fP<1.1)){//P range selected for TOF resolution measurements
         Float_t deltat = fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion];
         hTimeOfFlightRes->Fill(deltat);
-        if(fT0TrkTime != 0){
+        for(Int_t i = 0; i < 3; i++){//Loop on pi/k/p
+          if(TMath::Abs(fTPCSigma[kpi+i]) < 5 && TMath::Abs(fTOFSigma[kpi+i]) < 5){
+            hTimeOfFlightResNoMismatch->Fill(fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion]);
+            break;
+          } 
+        }
+        if(fT0TrkTime != 0){//No T0 Fill
           hTimeOfFlightTOFRes->Fill(deltat);
           
         }
@@ -1935,7 +1945,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       
     }
     
-    if(fMCmode) AnalyseMCTracks();
+    
     
     
   } // end of track loop

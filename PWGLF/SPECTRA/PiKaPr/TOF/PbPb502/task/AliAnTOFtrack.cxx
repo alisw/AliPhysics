@@ -114,6 +114,6 @@ Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id){
 }
 
 Float_t AliAnTOFtrack::GetDeltaSigma(const UInt_t id, const UInt_t hypo) {
-  if(id > kExpSpecies) AliFatal("Index required is out of bound");
+  if(id > kExpSpecies || hypo > kExpSpecies) AliFatal("Index required is out of bound");
   return GetDeltaT(hypo)/fTOFExpSigma[id];
 }

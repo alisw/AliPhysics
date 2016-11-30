@@ -120,7 +120,7 @@ namespace AliUtilTOFParams {
   //SetCutGeoNcrNcl(0., 0., 0.0, 0.0, 0.0)
   const Double_t GeoSetLoose[5] = {0.0, 0.0, 0.0, 0.0, 0.0};//Loose
   //SetCutGeoNcrNcl(2., 130., 1.5, 0.0, 0.0)
-  const Double_t GeoSetStd[5] = {2., 130., 1.5, 0.0, 0.0};//Standard
+  const Double_t GeoSetStd[5] = {2., 130., 0.0, 0.0, 0.0};//Standard
   //SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
   const Double_t GeoSetTight[5] = {3., 130., 1.5, 0.85, 0.7};//Tigth
   const Double_t CutValueGeo[5*nCutGeo] = {
