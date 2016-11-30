@@ -164,17 +164,11 @@ public:
   
   ///
   /// Method to get the diffenece between the track time and the expected one
-  Float_t GetDeltaT(const UInt_t id){
-    if(id > kExpSpecies) AliFatal("Index required is out of bound");
-    return fTOFTime - fTOFExpTime[id] - fT0TrkTime;
-  }
+  Float_t GetDeltaT(const UInt_t id);
   
   ///
   /// Method to get the diffenece between the track time and the expected one in Number of sigmas
-  Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo){
-    if(id > kExpSpecies) AliFatal("Index required is out of bound");
-    return GetDeltaT(hypo)/fTOFExpSigma[id];
-  }
+  Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo);
 
   //T0 Methods
   
