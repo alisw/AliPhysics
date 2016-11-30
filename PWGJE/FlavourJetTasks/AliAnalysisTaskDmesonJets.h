@@ -153,6 +153,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Short_t            fFirstPartonType         ; //!<! type of the first parton in the shower tree (only for particle level D mesons)
     AliAODMCParticle  *fLastParton              ; //!<! pointer to the last parton in the shower tree of the D meson (only for particle level D mesons)
     Short_t            fLastPartonType          ; //!<! type of the last parton in the shower tree (only for particle level D mesons)
+    Byte_t             fSelectionType           ; //!<! for D0: 0=not selected, 1=D0, 2=D0bar, 3=both
 
     const AliJetInfo* GetJet(std::string n) const;
     AliJetInfo* GetJet(std::string n);
@@ -241,16 +242,16 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     virtual void Set(const AliDmesonJetInfo& source);
 
     /// First parton type
-    Double32_t   fFirstPartonType  ; //[0, 8, 4]
+    Double32_t   fFirstPartonType  ; //[0, 16, 4]
     /// Transverse momentum of the first parton
     Double32_t   fFirstPartonPt    ; //[0,819.2,14]
     /// Last parton type
-    Double32_t   fLastPartonType   ; //[0, 8, 4]
+    Double32_t   fLastPartonType   ; //[0, 16, 4]
     /// Transverse momentum of the last parton
     Double32_t   fLastPartonPt     ; //[0,819.2,14]
 
     /// \cond CLASSIMP
-    ClassDef(AliDmesonMCInfoSummary, 1);
+    ClassDef(AliDmesonMCInfoSummary, 2);
     /// \endcond
   };
 
@@ -258,10 +259,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Lightweight class that encapsulates D0
   ///
   /// This class encapsulates D0 jet
-  /// information in a very compact data structure (48 bits)
+  /// information in a very compact data structure (50 bits)
   class AliD0InfoSummary : public AliDmesonInfoSummary {
   public:
-    AliD0InfoSummary() : AliDmesonInfoSummary(), fInvMass(0) {}
+    AliD0InfoSummary() : AliDmesonInfoSummary(), fInvMass(0), fSelectionType(0) {}
     AliD0InfoSummary(const AliDmesonJetInfo& source);
     virtual ~AliD0InfoSummary() {}
 
@@ -269,10 +270,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     virtual void Set(const AliDmesonJetInfo& source);
 
     /// Invariant mass of the D0 meson candidate in GeV/c2
-    Double32_t   fInvMass   ; //[0,6.5536,16]
+    Double32_t          fInvMass        ; //[0,6.5536,16]
+    Double32_t          fSelectionType  ; //[0,4,2]
 
     /// \cond CLASSIMP
-    ClassDef(AliD0InfoSummary, 2);
+    ClassDef(AliD0InfoSummary, 3);
     /// \endcond
   };
 

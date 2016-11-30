@@ -80,7 +80,7 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp,
   // Return true if vp is accepted.
 
   if (IsSpecialPDGDaughter(vp)) {
-    rejectionReason = kHFCut;
+    rejectionReason |= kHFCut;
     return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
   }
 
