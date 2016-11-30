@@ -26,8 +26,6 @@ AlidNdPtUnifiedAnalysisTask* AddTask_mkrueger_Unified()
   task->SetUseCountedMult();
   task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetTriggerMask(AliVEvent::kINT7 );
-  if(hasMC) task->SetMCParticleType(AlidNdPtUnifiedAnalysisTask::ParticleType::kPrimary); //only if MC, particle dependent MC analysis
-
 
   const Int_t multNbins =100;
   Double_t binsMult[multNbins+1];
