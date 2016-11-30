@@ -418,19 +418,6 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::FillHistograms()
     PostDataFromResponseEngine(resp.second);
   }
 
-  for (auto &param : fAnalysisEngines) {
-    if (param.IsInhibit()) continue;
-    if (param.GetMCMode() == kSignalOnly || param.GetMCMode() == kMCTruth) continue;
-
-    if (fOutputType == kTreeOutput) {
-      param.FillTree(fApplyKinematicCuts);
-      PostDataFromAnalysisEngine(param);
-    }
-    else if (fOutputType == kTHnOutput) {
-      param.FillHnSparse(fApplyKinematicCuts);
-    }
-  }
-
   if (fMCContainer) FillPartonLevelHistograms();
   return kTRUE;
 
