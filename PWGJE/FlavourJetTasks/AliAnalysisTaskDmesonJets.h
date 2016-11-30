@@ -136,7 +136,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// information that can be easily passed to a function.
   class AliDmesonJetInfo {
   public:
-    AliDmesonJetInfo() : fDmesonParticle(0), fD(), fSoftPionPt(0), fInvMass2Prong(0), fJets(), fMCLabel(-1), fReconstructed(kFALSE), fParton(0), fOrigin(kUnknownQuark) {}
+    AliDmesonJetInfo();
     AliDmesonJetInfo(const AliDmesonJetInfo &source);
     AliDmesonJetInfo& operator=(const AliDmesonJetInfo& source);
     virtual ~AliDmesonJetInfo() {;}
@@ -149,8 +149,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
                        fJets                    ; //!<! list of jets
     Int_t              fMCLabel                 ; //!<! MC label, i.e. index of the generator level D meson (only for detector level D meson candidates)
     Bool_t             fReconstructed           ; //!<! Whether this D meson was reconstructed (only for particle level D mesons)
-    AliAODMCParticle  *fParton                  ; //!<! pointer to the original hard scattered parton (only for particle level D mesons)
-    EMesonOrigin_t     fOrigin                  ; //!<! origin of the D meson (only for particle level D mesons)
+    AliAODMCParticle  *fFirstParton             ; //!<! pointer to the first parton in the shower tree of the D meson (only for particle level D mesons)
+    Short_t            fFirstPartonType         ; //!<! type of the first parton in the shower tree (only for particle level D mesons)
+    AliAODMCParticle  *fLastParton              ; //!<! pointer to the last parton in the shower tree of the D meson (only for particle level D mesons)
+    Short_t            fLastPartonType          ; //!<! type of the last parton in the shower tree (only for particle level D mesons)
 
     const AliJetInfo* GetJet(std::string n) const;
     AliJetInfo* GetJet(std::string n);
@@ -228,24 +230,24 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Lightweight class that encapsulates D meson jets
   ///
   /// This class encapsulates D meson
-  /// information in a very compact data structure (72 bits)
+  /// information in a very compact data structure (68 bits)
   class AliDmesonMCInfoSummary : public AliDmesonInfoSummary {
   public:
-    AliDmesonMCInfoSummary() : AliDmesonInfoSummary(), fOrigin(0), fPartonPt(0), fPartonEta(0), fPartonPhi(0) {;}
+    AliDmesonMCInfoSummary() : AliDmesonInfoSummary(), fFirstPartonType(0), fFirstPartonPt(0), fLastPartonType(0), fLastPartonPt(0) {;}
     AliDmesonMCInfoSummary(const AliDmesonJetInfo& source);
     virtual ~AliDmesonMCInfoSummary() {}
 
     virtual void Reset();
     virtual void Set(const AliDmesonJetInfo& source);
 
-    /// Parton type (using one of the enum constants of EMesonOrigin_t)
-    Double32_t   fOrigin       ; //[0, 8, 4]
-    /// Transverse momentum of the originating parton
-    Double32_t   fPartonPt     ; //[0,819.2,14]
-    /// Eta of the parton
-    Double32_t   fPartonEta    ; //[-32.768,32.768,14]
-    /// Phi of the parton
-    Double32_t   fPartonPhi    ; //[0,2*pi,10]
+    /// First parton type
+    Double32_t   fFirstPartonType  ; //[0, 8, 4]
+    /// Transverse momentum of the first parton
+    Double32_t   fFirstPartonPt    ; //[0,819.2,14]
+    /// Last parton type
+    Double32_t   fLastPartonType   ; //[0, 8, 4]
+    /// Transverse momentum of the last parton
+    Double32_t   fLastPartonPt     ; //[0,819.2,14]
 
     /// \cond CLASSIMP
     ClassDef(AliDmesonMCInfoSummary, 1);
@@ -517,6 +519,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   Int_t                PostDataFromAnalysisEngine(const AnalysisEngine& eng);
 
+  void                 FillPartonLevelHistograms();
+
   std::list<AnalysisEngine>
                        fAnalysisEngines           ; ///<  Array of analysis parameters
   UInt_t               fEnabledAxis               ; ///<  Use bit defined in EAxis_t to enable axis in the THnSparse
@@ -526,6 +530,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   Int_t                fNOutputTrees              ; ///<  Maximum number of output trees
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
+  AliHFAODMCParticleContainer
+                      *fMCContainer               ; //!<! MC particle container
 
  private:
    
