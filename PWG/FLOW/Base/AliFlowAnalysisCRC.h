@@ -1721,6 +1721,9 @@ private:
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCMetricCent; //!
   
+  TProfile* fTProTempInt[fFlowNHarm][6]; //!
+  TProfile* fTProTempDif[fCRCMaxnCen][fFlowNHarm][6]; //!
+  
   // flow QC high order
   TList *fFlowQCHOList;    //! QC high order List
   const static Int_t fFlowNHarmHighOrd = 2;
@@ -1820,7 +1823,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 33);
+  ClassDef(AliFlowAnalysisCRC, 34);
   
 };
 
