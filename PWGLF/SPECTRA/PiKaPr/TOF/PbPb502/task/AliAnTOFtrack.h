@@ -52,7 +52,7 @@ public:
   //DCA binning
   ///
   /// Method to tests the DCA binning
-  void TestDCAXYBinning(){                                              
+  void TestDCAXYBinning(){
     Int_t dim = static_cast<Int_t>(TMath::Power(2., 8.*sizeof(fDCAXYIndex)));
     Double_t range = (2.*fDCAXYRange);
     std::cout<<"fDCAXYIndex has "<<dim<<" possibilities"<<std::endl;
@@ -83,7 +83,7 @@ public:
   
   ///
   /// Method to put the DCAxy or DCAz of the class into bins
-  void ComputeDCABin(const Double_t dca, const Bool_t xy){   
+  void ComputeDCABin(const Double_t dca, const Bool_t xy){
     if(xy){
       if(dca > fDCAXYRange){//Overflow
         fDCAXYIndex = kDCAXYBins+2;
@@ -111,7 +111,7 @@ public:
   
   ///
   /// Method to put the DCAxy and DCAz of the class into bins
-  void ComputeDCABin(const Double_t dcaxy, const Double_t dcaz){         
+  void ComputeDCABin(const Double_t dcaxy, const Double_t dcaz){
     
     ComputeDCABin(dcaxy, (Bool_t) kTRUE);
     ComputeDCABin(dcaz, (Bool_t) kFALSE);
@@ -119,7 +119,7 @@ public:
   
   ///
   /// Method to convert compute the bin limits of the DCA binning
-  void GetBinnedDCA(Double_t &down, Double_t &up, const Bool_t xy){      
+  void GetBinnedDCA(Double_t &down, Double_t &up, const Bool_t xy){
     if(xy){
       if(fDCAXYIndex == kDCAXYBins+2){//Overflow
         down = fDCAXYRange;
@@ -169,7 +169,7 @@ public:
   ///
   /// Method to get the diffenece between the track time and the expected one in Number of sigmas
   Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo);
-
+  
   //T0 Methods
   
   ///
@@ -232,23 +232,34 @@ public:
   Bool_t PassStdCut();
   Bool_t PassCut(const Int_t cut = -1);
   //TPC PID
-  Bool_t IsTPCElectron(){ 
+  Bool_t IsTPCElectron(){
     if(GetMaskBit(fTPCPIDMask, kIsTPCElectron)) return kTRUE; //1.5 sigma cut for Electrons in TPC
-    return kFALSE;  
+    return kFALSE;
   }
-  Bool_t IsTPCPiKP(){ 
-    for(Int_t i = 0; i < 3; i++) if(!GetMaskBit(fTPCPIDMask, kIsTPCPion + i)) return kFALSE; //5 sigma cut for Pi/K/P in TPC
-    return kTRUE;
+  Bool_t IsTPCPiKP(){
+    for(Int_t i = 0; i < 3; i++) if(GetMaskBit(fTPCPIDMask, kIsTPCPion + i)) return kTRUE; //5 sigma cut for Pi/K/P in TPC
+    return kFALSE;
   }
   
-  //Particle charge
+  ///
+  /// Method to check consistency between TOF and TPC for Pi K P to remove mismatch
+  Bool_t ConsistentTPCTOF(){
+    if(!IsTPCPiKP()) return kFALSE;
+    for (Int_t i = 0; i < 3; i++) {
+      if(GetMaskBit(fTPCPIDMask, kIsTPCPion + i) && TMath::Abs(GetDeltaSigma(kpi + i, kpi + i)) < 5) return kTRUE;
+    }
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get the particle charge
   Bool_t IsNegative(){
     if(GetMaskBit(fTrkMask, kNegTrk)) return kTRUE;
     return kFALSE;
   }
   
   
-  ClassDef(AliAnTOFtrack, 1);
+  ClassDef(AliAnTOFtrack, 2);
 };
 
 #endif

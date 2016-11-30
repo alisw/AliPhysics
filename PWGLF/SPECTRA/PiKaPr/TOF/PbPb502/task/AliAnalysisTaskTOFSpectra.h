@@ -680,9 +680,10 @@ private:
   TH1D* hTOFResidualZ;                          ///<  Histogram with the Impact Residual Z
   TH1D* hTOFChannel;                            ///<  Histogram with the Channel in the TOF
   TH1D* hT0Resolution;                          ///<  Histogram with the resolution on the T0
-  TH1D* hTimeOfFlightRes;                       ///<  Histogram with the Time Of Flight resolution
-  TH1D* hTimeOfFlightTOFRes;                    ///<  Histogram with the Time Of Flight resolution
-  TH1D* hTimeOfFlightGoodRes;                   ///<  Histogram with the Time Of Flight resolution for tracks with good matching
+  TH1D* hTimeOfFlightRes;                       ///<  Histogram with the Time Of Flight
+  TH1D* hTimeOfFlightTOFRes;                    ///<  Histogram with the Time Of Flight for events without the T0 Fill
+  TH1D* hTimeOfFlightGoodRes;                   ///<  Histogram with the Time Of Flight for tracks with good matching
+  TH1D* hTimeOfFlightResNoMismatch;             ///<  Histogram with the Time Of Flight for PID consistent with TPC for Pi K P
   TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
   TH2F* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
   TH2F* hBetaNoMismatch;                        ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
