@@ -231,35 +231,28 @@ public:
   //Check che cut variation
   Bool_t PassStdCut();
   Bool_t PassCut(const Int_t cut = -1);
-  //TPC PID
-  Bool_t IsTPCElectron(){
-    if(GetMaskBit(fTPCPIDMask, kIsTPCElectron)) return kTRUE; //1.5 sigma cut for Electrons in TPC
-    return kFALSE;
-  }
-  Bool_t IsTPCPiKP(){
-    for(Int_t i = 0; i < 3; i++) if(GetMaskBit(fTPCPIDMask, kIsTPCPion + i)) return kTRUE; //5 sigma cut for Pi/K/P in TPC
-    return kFALSE;
-  }
+  
+  /// 
+  /// TPC PID for electrons
+  Bool_t IsTPCElectron();
+  
+  ///
+  /// Method to check if it is TPC Pi K P
+  Bool_t IsTPCPiKP(const UInt_t i);
+  
+  ///
+  /// Method to check that in TPC the PID is for Pi K P
+  Bool_t IsTPCPiKP();
   
   ///
   /// Method to check consistency between TOF and TPC for Pi K P to remove mismatch
-  Bool_t ConsistentTPCTOF(){
-    if(!IsTPCPiKP()) return kFALSE;
-    for (Int_t i = 0; i < 3; i++) {
-      if(GetMaskBit(fTPCPIDMask, kIsTPCPion + i) && TMath::Abs(GetDeltaSigma(kpi + i, kpi + i)) < 5) return kTRUE;
-    }
-    return kFALSE;
-  }
+  Bool_t ConsistentTPCTOF();
   
   ///
   /// Method to get the particle charge
-  Bool_t IsNegative(){
-    if(GetMaskBit(fTrkMask, kNegTrk)) return kTRUE;
-    return kFALSE;
-  }
+  Bool_t IsNegative();
   
-  
-  ClassDef(AliAnTOFtrack, 2);
+  ClassDef(AliAnTOFtrack, 3);
 };
 
 #endif
