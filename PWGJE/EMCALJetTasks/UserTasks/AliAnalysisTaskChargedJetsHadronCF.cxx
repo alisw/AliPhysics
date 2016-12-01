@@ -90,6 +90,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetEmbeddingNumMatchedJets(2),
   fJetEmbeddingUsePerTrackMCPercentage(kTRUE),
   fJetEmbeddingUseBgrdForMCPercentage(kFALSE),
+  fJetEmbeddingCreatePtPlotPerCut(kFALSE),
   fJetEmbeddingCuts(),
   fJetVetoArray(),
   fJetVetoArrayName(""),
@@ -137,6 +138,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetEmbeddingNumMatchedJets(2),
   fJetEmbeddingUsePerTrackMCPercentage(kTRUE),
   fJetEmbeddingUseBgrdForMCPercentage(kFALSE),
+  fJetEmbeddingCreatePtPlotPerCut(kFALSE),
   fJetEmbeddingCuts(),
   fJetVetoArray(),
   fJetVetoArrayName(""),
@@ -262,6 +264,10 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
   // Embedding plots
   if(fJetOutputMode == 4  || fJetOutputMode == 5)
   {
+    Double_t maxRatio = 1.;
+    if(fJetEmbeddingUseBgrdForMCPercentage)
+      maxRatio = 2.;
+
     for(Int_t i = -1; i<static_cast<Int_t>(fJetEmbeddingCuts.size()); i++)
     {
       const char* appendix = "";
@@ -279,16 +285,24 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
       AddHistogram2D<TH2D>(Form("hEmbeddingDeltaPhi%s", appendix), "Matched jet #Delta #phi distribution", "", 200, -50., 150., 100, -1.0, 1.0, "p_{T, jet} (GeV/c)", "#Delta #phi", "dN^{Matched}/dp_{T}d#phi");
       AddHistogram1D<TH1D>(Form("hEmbeddingJetPt%s", appendix), "Embedded jets p_{T} distribution", "", 200, -50., 150., "p_{T, jet} (GeV/c)", "dN/dp_{T}");
       AddHistogram2D<TH2D>(Form("hEmbeddingJetPhiEta%s", appendix), "Embedded jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
+
+      if(fJetEmbeddingCreatePtPlotPerCut)
+      {
+        AddHistogram3D<TH3D>(Form("hEmbeddingPtCorr010%s", appendix), "Matched jet p_{T} distributions (0-10% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+        AddHistogram3D<TH3D>(Form("hEmbeddingPtCorr1030%s", appendix), "Matched jet p_{T} distributions (10-30% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+        AddHistogram3D<TH3D>(Form("hEmbeddingPtCorr3050%s", appendix), "Matched jet p_{T} distributions (30-50% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+        AddHistogram3D<TH3D>(Form("hEmbeddingPtCorr5090%s", appendix), "Matched jet p_{T} distributions (50-90% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+       }
+
     }
 
-    Double_t maxRatio = 1.;
-    if(fJetEmbeddingUseBgrdForMCPercentage)
-      maxRatio = 2.;
-    AddHistogram3D<TH3D>("hEmbeddingPtCorr010", "Matched jet p_{T} distributions (0-10% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
-    AddHistogram3D<TH3D>("hEmbeddingPtCorr1030", "Matched jet p_{T} distributions (10-30% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
-    AddHistogram3D<TH3D>("hEmbeddingPtCorr3050", "Matched jet p_{T} distributions (30-50% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
-    AddHistogram3D<TH3D>("hEmbeddingPtCorr5090", "Matched jet p_{T} distributions (50-90% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
-
+    if(!fJetEmbeddingCreatePtPlotPerCut)
+    {
+      AddHistogram3D<TH3D>("hEmbeddingPtCorr010", "Matched jet p_{T} distributions (0-10% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+      AddHistogram3D<TH3D>("hEmbeddingPtCorr1030", "Matched jet p_{T} distributions (10-30% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+      AddHistogram3D<TH3D>("hEmbeddingPtCorr3050", "Matched jet p_{T} distributions (30-50% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+      AddHistogram3D<TH3D>("hEmbeddingPtCorr5090", "Matched jet p_{T} distributions (50-90% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+    }
   }
 
   // Random cone plots, background, ...
@@ -567,8 +581,8 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet, co
     FillHistogram(Form("hEmbeddingJetPt%s", appendix.Data()), refJet->Pt());
     FillHistogram(Form("hEmbeddingJetPhiEta%s", appendix.Data()), refJet->Phi(), refJet->Eta()); 
 
-    // Don't create 3D plots for each cut
-    if(appendix=="")
+    // Only create 3D plots for each cut on demand
+    if((appendix == "") || fJetEmbeddingCreatePtPlotPerCut)
     {
       Double_t trackRatio = 0.;
       Double_t ptRatio = 0.;
@@ -576,19 +590,19 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet, co
 
       if(fCent >= 0 && fCent < 10)
       {
-        FillHistogram3D("hEmbeddingPtCorr010", refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
+        FillHistogram3D(Form("hEmbeddingPtCorr010%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
       }
       else if (fCent >= 10 && fCent < 30)
       {
-        FillHistogram3D("hEmbeddingPtCorr1030", refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
+        FillHistogram3D(Form("hEmbeddingPtCorr1030%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
       }
       else if (fCent >= 30 && fCent < 50)
       {
-        FillHistogram3D("hEmbeddingPtCorr3050", refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
+        FillHistogram3D(Form("hEmbeddingPtCorr3050%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
       }
       else if (fCent >= 50 && fCent < 90)
       {
-        FillHistogram3D("hEmbeddingPtCorr5090", refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
+        FillHistogram3D(Form("hEmbeddingPtCorr5090%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
       }
     }
   }

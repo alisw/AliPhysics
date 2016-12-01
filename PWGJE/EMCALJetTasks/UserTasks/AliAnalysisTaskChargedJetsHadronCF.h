@@ -122,6 +122,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetJetVetoJetByJet(Bool_t val)          { fJetVetoJetByJet = val; }
   void                        SetUsePerTrackMCPercentage(Bool_t val)   { fJetEmbeddingUsePerTrackMCPercentage = val; }
   void                        SetUseBgrdForMCPercentage(Bool_t val)   { fJetEmbeddingUseBgrdForMCPercentage = val; }
+  void                        SetCreateEmbeddingPtPlotPerCut(Bool_t val)   { fJetEmbeddingCreatePtPlotPerCut = val; }
   void                        SetConstPtFilterBit(Int_t val)   { fConstPtFilterBit = val; }
   void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
   void                        SetJetParticleArrayName(const char* name)   { fJetParticleArrayName = name; }
@@ -171,6 +172,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Int_t                       fJetEmbeddingNumMatchedJets;              ///< Number of matched leading jets that will be used
   Bool_t                      fJetEmbeddingUsePerTrackMCPercentage;     ///< When cutting on MC percentage, calculate it per track and not for all MC tracks
   Bool_t                      fJetEmbeddingUseBgrdForMCPercentage;      ///< When cutting on MC percentage, use bgrd. corr to calculate MC percentage
+  Bool_t                      fJetEmbeddingCreatePtPlotPerCut;          ///< create TH3 per cut or only once
   std::vector<AliChargedJetsHadronCFCuts> fJetEmbeddingCuts;            ///< Cuts used in jet embedding
 
   TClonesArray               *fJetVetoArray;                            //!<! Array of jets imported into task used for veto a matching/embedding
