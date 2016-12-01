@@ -95,7 +95,6 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
         return 0x0;
     }
-    if(task->SetVZEROSubEvents(EP3sub)) cout << " --> Setting up VZERO subevents method ... " << endl;
     if(event_mixing) {
         if(debug) cout << " --> Enabeling event mixing for reconstruction - try at your own risk !!! <-- " << endl;
         // set vertex and mixing bins - arrays MUST have length 20!
