@@ -56,6 +56,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fDBCAxis(0),
   fFlavourZAxis(0),
   fFlavourPtAxis(0),
+  fJetRelativeEPAngle(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistRejectionReason1(0),
@@ -143,6 +144,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fDBCAxis(0),
   fFlavourZAxis(0),
   fFlavourPtAxis(0),
+  fJetRelativeEPAngle(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistRejectionReason1(0),
@@ -683,6 +685,14 @@ void AliJetResponseMaker::AllocateTHnSparse()
     dim++;
   }
 
+  if (fJetRelativeEPAngle) {
+    title[dim] = "#theta_{jet}^{EP}";
+    nbins[dim] = 3;
+    min[dim] = 0;
+    max[dim] = TMath::Pi()/2;
+    dim++;
+  }
+
   title[dim] = "p_{T,particle}^{leading} (GeV/c)";
   nbins[dim] = 120;
   min[dim] = 0;
@@ -954,6 +964,20 @@ void AliJetResponseMaker::AllocateTHnSparse()
     dim++;
   }
 
+  if (fJetRelativeEPAngle) {
+    title[dim] = "#theta_{jet,1}^{EP}";
+    nbins[dim] = 3;
+    min[dim] = 0;
+    max[dim] = TMath::Pi()/2;
+    dim++;
+
+    title[dim] = "#theta_{jet,2}^{EP}";
+    nbins[dim] = 3;
+    min[dim] = 0;
+    max[dim] = TMath::Pi()/2;
+    dim++;
+  }
+
   fHistMatching = new THnSparseD("fHistMatching","fHistMatching",dim,nbins,min,max);
 
   for (Int_t i = 0; i < dim; i++)
@@ -1021,6 +1045,7 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
 
     if (zflavour == 1 || (zflavour > 1 && zflavour - 1 < 1e-3)) zflavour = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
+  Double_t jetRelativeEPAngle = GetRelativeEPAngle(jet->Phi(), fEPV0);
 
   if (fHistoType==1) {
     THnSparse *histo = 0;
@@ -1059,6 +1084,8 @@ void AliJetResponseMaker::FillJetHisto(AliEmcalJet* jet, Int_t Set)
         contents[i] = zflavour;
       else if (title=="p_{T}^{D}")
         contents[i] = ptflavour;
+      else if (title=="#theta_{jet}^{EP}")
+        contents[i] = jetRelativeEPAngle;
       else 
         AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -1121,6 +1148,7 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
 
     if (zflavour1 == 1 || (zflavour1 > 1 && zflavour1 - 1 < 1e-3)) zflavour1 = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
+  Double_t jetRelativeEPAngle1 = GetRelativeEPAngle(jet1->Phi(), fEPV0);
 
 
   AliTLorentzVector leadPart2;
@@ -1138,6 +1166,7 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
 
     if (zflavour2 == 1 || (zflavour2 > 1 && zflavour2 - 1 < 1e-3)) zflavour2 = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
   }
+  Double_t jetRelativeEPAngle2 = GetRelativeEPAngle(jet2->Phi(), fEPV0);
 
   if (fHistoType==1) {
     Double_t contents[20]={0};
@@ -1212,6 +1241,10 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
         contents[i] = ( jet1->GetShapeProperties()->GetSoftDropDropCount() );
       else if (title=="DBC_{2}")
         contents[i] = ( jet2->GetShapeProperties()->GetSoftDropDropCount() );
+      else if (title=="#theta_{jet,1}^{EP}")
+        contents[i] = jetRelativeEPAngle1;
+      else if (title=="#theta_{jet,2}^{EP}")
+        contents[i] = jetRelativeEPAngle2;
       else 
         AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -1922,4 +1955,39 @@ Bool_t AliJetResponseMaker::FillHistograms()
     FillJetHisto(jet1, 1);
   }
   return kTRUE;
+}
+
+/**
+ * Function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2).
+ * Adapted from AliAnalysisTaskEmcalJetHadEPpid.
+ *
+ * @param jetAngle Phi angle of the jet (could be any particle)
+ * @param epAngle Event plane angle
+ *
+ * @return Angle between jet and EP in the 1st quadrant (0,Pi/2)
+ */
+Double_t AliJetResponseMaker::GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const
+{
+  Double_t dphi = (epAngle - jetAngle);
+
+  // ran into trouble with a few dEP<-Pi so trying this...
+  if( dphi<-1*TMath::Pi()  ){
+    dphi = dphi + 1*TMath::Pi();
+  } // this assumes we are doing full jets currently
+
+  if( (dphi>0) && (dphi<1*TMath::Pi()/2)  ){
+    // Do nothing! we are in quadrant 1
+  }else if( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi())  ){
+    dphi = 1*TMath::Pi() - dphi;
+  }else if( (dphi<0) && (dphi>-1*TMath::Pi()/2)  ){
+    dphi = fabs(dphi);
+  }else if( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi())  ){
+    dphi = dphi + 1*TMath::Pi();
+  }
+
+  // test
+  if( dphi < 0 || dphi > TMath::Pi()/2  )
+    AliWarning(Form("%s: dPHI not in range [0, 0.5*Pi]!", GetName()));
+
+  return dphi;   // dphi in [0, Pi/2]
 }
