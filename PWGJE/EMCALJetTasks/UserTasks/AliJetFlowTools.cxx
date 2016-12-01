@@ -4376,13 +4376,13 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         axh[i] = binWidth/2.;
         // now get the coordinate for the poin
         tempV2->GetPoint(i, ax[i], ay[i]);
-        if(rho<=0) {
+      /*  if(rho<=0) {
             cout << "[print]  pt " << ax[i] << " errorLow" << gReductionFactor*ayl[i] << " errorUp " << gReductionFactor*ayh[i] << endl;
             cout << "[print]   %" << ax[i] << " low " << (gReductionFactor*ayl[i])/ay[i] << " up " << (gReductionFactor*ayh[i])/ay[i] << endl;
         } else {
             cout << "[print]  pt " << ax[i] << " errorLow" << ayl[i]*gReductionFactorCorr << " errorUp " << ayh[i]*gReductionFactorCorr << endl;
             cout << "[print]   %" << ax[i] << " low " << (gReductionFactorCorr*ayl[i])/ay[i] << " up " << (gReductionFactorCorr*ayh[i])/ay[i] << endl;
-        }
+        }*/
     }
     // save the nominal ratio
     TGraphAsymmErrors* nominalError(new TGraphAsymmErrors(fBinsTrue->GetSize()-1, ax, ay, axl, axh, ayl, ayh));
