@@ -84,9 +84,11 @@ AliGenerator* genPPbenchConfig()
 
   AliGenerator* gener = GeneratorFactory(srun);
   gener->SetOrigin(0, 0, 0);    // vertex position
-  gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
-  gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
-  gener->SetVertexSmear(kPerEvent); 
+
+  // These settings are commented because they are commented in genExtFileConfig.C
+  //  gener->SetSigma(0, 0, 5.3);   // Sigma in (X,Y,Z) (cm) on IP position
+  //  gener->SetCutVertexZ(1.);     // Truncate at 1 sigma
+  //  gener->SetVertexSmear(kPerEvent);
   gener->SetTrackingFlag(1);
   gener->Init();
   

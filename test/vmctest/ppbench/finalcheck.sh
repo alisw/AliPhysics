@@ -53,10 +53,6 @@ if [ -z "${value}" ]; then
   let error=error+1
 fi
 
-exit ${error}
-
-# does not work yet: to be enabled later
-
 # check efficiency
 line=`grep "I-CheckESD: eff" g3/check.log`
 if [ -z "${value}" ]; then
@@ -84,3 +80,4 @@ else
   fi
 fi
 
+exit ${error}
