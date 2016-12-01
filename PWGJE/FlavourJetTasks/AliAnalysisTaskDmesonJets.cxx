@@ -831,7 +831,6 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     fPDGdaughters[0] = 211;  // pi
     fPDGdaughters[1] = 321;  // K
     fBranchName = "LikeSign2Prong";
-    fAcceptedDecay = kAnyDecay;
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsD0toKpi();
       fRDHFCuts->SetStandardCutsPP2010();

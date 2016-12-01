@@ -446,8 +446,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t                           fMinMass               ; ///<  Min mass in histogram axis
     Double_t                           fMaxMass               ; ///<  Max mass in histogram axis
     AliRDHFCuts                       *fRDHFCuts              ; ///<  D meson candidates cuts
-    UInt_t                             fRejectedOrigin        ; ///<  Bit mask with D meson origins that are rejected
-    UInt_t                             fAcceptedDecay         ; ///<  Bit mask with D meson decays that are accepted
+    UInt_t                             fRejectedOrigin        ; ///<  Bit mask with D meson origins that are rejected (used for MC analysis, i.e. signal-only, background-only and particle-level)
+    UInt_t                             fAcceptedDecay         ; ///<  Bit mask with D meson decays that are accepted (only used for particle-level analysis)
     Bool_t                             fInhibit               ; ///<  Inhibit the task
     std::vector<AliHFJetDefinition>    fJetDefinitions        ; ///<  Jet definitions
     Float_t                            fPtBinWidth            ; ///<  Histogram pt bin width
