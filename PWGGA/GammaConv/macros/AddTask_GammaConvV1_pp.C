@@ -859,6 +859,12 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
      cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
   } else if (trainConfig == 140) {
      cuts.AddCut("00003123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+   //---------	 pp7TeV purity studies (kappa cut)    -------------------------//
+  } else if (trainConfig == 150) {
+    cuts.AddCut("00000113", "00200009300000008250404000", "0152103500000000"); // -3 < kappa <  5
+    cuts.AddCut("00000113", "00200009500000008250404000", "0152103500000000"); // -5 < kappa < 10
+    cuts.AddCut("00000113", "00200009600000008250404000", "0152103500000000"); // -3 < kappa < 10
+    cuts.AddCut("00000113", "00200009700000008250404000", "0152103500000000"); //  0 < kappa < 10
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -1000,7 +1006,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     }  
     
     analysisCuts[i]               = new AliConversionPhotonCuts();
-    if (trainConfig == 76 ){
+    if (trainConfig == 76 || trainConfig == 150){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
     if (enableMatBudWeightsPi0 > 0){
