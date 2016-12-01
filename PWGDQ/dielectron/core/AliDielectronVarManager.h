@@ -366,6 +366,9 @@ public:
     kXvPrim=kPairMax,        // prim vertex
     kYvPrim,                 // prim vertex
     kZvPrim,                 // prim vertex
+    kXvPrimMCtruth,
+    kYvPrimMCtruth,
+    kZvPrimMCtruth,
     kXRes,                   // primary vertex x-resolution
     kYRes,                   // primary vertex y-resolution
     kZRes,                   // primary vertex z-resolution
@@ -940,9 +943,9 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
       AliMCParticle *MCpart = mc->GetMCTrack(particle);
         // Fill distance of primary vertex to secondary vertex -> IP is not defined since no propagation
         // Pure MC variable no reconstucted value filled
-      values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrim],2)
-                                                  + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrim],2));
-      values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(MCpart->Zv() - values[AliDielectronVarManager::kZvPrim]);
+      values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2)
+                                                  + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
+      values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(MCpart->Zv() - values[AliDielectronVarManager::kZvPrimMCtruth]);
     }
     values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
   } //if(mc->HasMC())
@@ -2723,6 +2726,10 @@ inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Dou
   values[AliDielectronVarManager::kXvPrim]       = (vtx ? vtx->GetX() : 0.0);
   values[AliDielectronVarManager::kYvPrim]       = (vtx ? vtx->GetY() : 0.0);
   values[AliDielectronVarManager::kZvPrim]       = (vtx ? vtx->GetZ() : 0.0);
+  //dame information but wont be overwritten by reconstrcuted values
+  values[AliDielectronVarManager::kXvPrimMCtruth]       = (vtx ? vtx->GetX() : 0.0);
+  values[AliDielectronVarManager::kYvPrimMCtruth]       = (vtx ? vtx->GetY() : 0.0);
+  values[AliDielectronVarManager::kZvPrimMCtruth]       = (vtx ? vtx->GetZ() : 0.0);
   // Fill AliMCEvent interface specific information
   values[AliDielectronVarManager::kNch]   = AliDielectronHelper::GetNch(event, 1.6);
   values[AliDielectronVarManager::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
