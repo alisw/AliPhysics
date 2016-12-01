@@ -30,6 +30,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGPP/ITS
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/base
                    )
 
 # Sources in alphabetical order
@@ -59,6 +61,7 @@ set(SRCS
     CEPdevel/AliPBUtils.cxx
     CEPdevel/AliAnalysisTaskPB.cxx
     Resonance/AliAnalysisTaskf0f2.cxx
+    Resonance/AliAnalysisPseudoRapidityDensity.cxx
    )
 
 # Headers from sources
