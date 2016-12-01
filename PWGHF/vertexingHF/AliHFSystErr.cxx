@@ -1142,7 +1142,8 @@ void AliHFSystErr::InitDplustoKpipi2010ppPass4(){
   
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
-  for(Int_t i=1;i<=36;i++) fCutsEff->SetBinContent(i,0.05); 
+  for(Int_t i=1;i<=3;i++) fCutsEff->SetBinContent(i,0.1); 
+  for(Int_t i=4;i<=36;i++) fCutsEff->SetBinContent(i,0.05); 
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
