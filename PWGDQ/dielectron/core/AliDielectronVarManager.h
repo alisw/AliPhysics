@@ -3,7 +3,7 @@
 * @Date:   2016-11-03, 15:14:35
 * @Email:  pdillens@cern.ch
 * @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-23, 13:30:18
+* @Last modified time: 2016-11-23, 15:53:54
 */
 
 
@@ -2655,8 +2655,8 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     TVector2 qvec;
     // TPC
 
-    ///TODO adapt to new enum members
-    if(TList *qnlist = (TList*) event->FindListObject("qnVectorList"))     AliDielectronVarManager::FillQnEventplanes(qnlist, values);
+    TList *qnlist = (TList*) event->FindListObject("qnVectorList");
+    if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
 
     qvec.Set(header->GetEventplaneQx(), header->GetEventplaneQy());
     values[AliDielectronVarManager::kTPCxH2uc]   = qvec.X();
@@ -2670,7 +2670,7 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliVZEROEPSelectionTask *eptask = dynamic_cast<AliVZEROEPSelectionTask *>(man->GetTask("AliVZEROEPSelectionTask"));
     if(eptask) eptask->SetEventplaneParams(&ep2,centralityF);
-    else if(!(event->FindListObject("qnVectorList"))) printf("no VZERO event plane selection task added! \n");
+    else if(!qnlist) printf("no VZERO event plane selection task added! \n");
 
 
     Double_t qx = 0, qy = 0;
