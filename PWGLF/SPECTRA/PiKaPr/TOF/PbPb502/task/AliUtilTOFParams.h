@@ -16,7 +16,7 @@ namespace AliUtilTOFParams {
   //Track info
   enum fTrkMaskIndex {kNegTrk, kIsMismatch, kT0_0, kT0_1, kT0_2, kIsTOFout, kIsTOFTime, kIsTRDout, kLimitfTrkMask};//Track information bitmask fTrkMask - kT0_0 (T0 TOF) kT0_1 (T0 T0A) kT0_2 (T0C)
   //Track cuts
-  enum fTrkCutMaskIndex {kTPCSetL, kTPCSetT, kTPCChi2SetL, kTPCChi2SetT, kDCAzSetL, kDCAzSetT, kPrimSetL, kPrimSetT, kGeoCutSet1, kGeoCutSet2, kLimitfTrkCutMask};//Track cut information bitmask fTrkCutMask
+  enum fTrkCutMaskIndex {kTPCSetL, kTPCSetT, kTPCChi2SetL, kTPCChi2SetT, kDCAzSetL, kDCAzSetT, kPrimSetL, kPrimSetL01, kPrimSetT01, kPrimSetT, kGeoCutSet1, kGeoCutSet2, kLimitfTrkCutMask};//Track cut information bitmask fTrkCutMask
   //Track PID
   enum fTPCPIDMaskIndex {kIsTPCElectron, kIsTPCMuon, kIsTPCPion, kIsTPCKaon, kIsTPCProton, kIsTPCDeuteron, kLimitfTPCPIDMask};//TPC PID information bitmask fTPCPIDMask
   
@@ -27,7 +27,7 @@ namespace AliUtilTOFParams {
   const Double_t fDCAXYRange = 3.;
   const Double_t fDCAZRange = 3.;
   //DCA binning in histograms 
-  const Int_t fDCAXYbins = 2000;
+  const Int_t fDCAXYbins = 1700;
   
   //Dimensions of the screen
   const Double_t screendim[2] = {1366, 768};
@@ -57,11 +57,11 @@ namespace AliUtilTOFParams {
   const TString speciesRoot_all[kExpSpecies*2] = {"e^{+}", "e^{-}", "#mu^{+}", "#bar{#mu}", "#pi^{+}", "#pi^{-}", "K^{+}", "K^{-}", "p", "#bar{p}", "D", "#bar{D}"};
   const TString speciesRootNoSign_all[kExpSpecies] = {"e", "#mu", "#pi", "K", "p", "d"};
   
-  const TString gevoverc = "(GeV/#it{c})";
+  const TString gevoverc = "GeV/#it{c}";
   const TString ptstringOnly = "#it{p}_{T}";
-  const TString ptstring = ptstringOnly + " " + gevoverc;
+  const TString ptstring = ptstringOnly + " (" + gevoverc + ")";
   const TString pstringOnly = "#it{p}";
-  const TString pstring = pstringOnly + " " + gevoverc;
+  const TString pstring = pstringOnly + " (" + gevoverc + ")";
   const TString etastring = "#eta";
   const TString phistring = "#phi";
   const TString spectrastring = "1/N_{ev} d^{2}N/dp_{T}dy (Gev/c)^{-1}";
@@ -112,8 +112,8 @@ namespace AliUtilTOFParams {
   const Double_t CutValueMaxDCAz[nCutDCAz] = {3, 2, 1};
   //==> Track DCAxy
   const UInt_t kDCAxy = 3;
-  const UInt_t nCutDCAxy = 3;
-  const Double_t CutValueMaxDCAxy[nCutDCAxy] = {10, 1., 0.1};
+  const UInt_t nCutDCAxy = 5;
+  const Double_t CutValueMaxDCAxy[nCutDCAxy] = {10, 1., 0.9, 1.1, 0.1};
   //==> Geo cut
   const UInt_t kGeo = 4;
   const UInt_t nCutGeo = 3;
@@ -134,10 +134,9 @@ namespace AliUtilTOFParams {
   const UInt_t CutIndex[nCuts] = {nCutTPCRows, nCutMaxChi2, nCutDCAz, nCutDCAxy, nCutGeo};//Number of cuts values for each cut type
   extern const Double_t *CutValues[nCuts];// = {CutValueTPCRows, CutValueMaxChi2, CutValueMaxDCAz, CutValueMaxDCAxy, CutValueGeo};//Values of the cuts for each cut type
   
-  const Int_t nCutVars = 10;//Number of cut present in the tree mask
-  const Int_t CutVarIndex[nCutVars] = {-1, kTPCSetT, -1, kTPCChi2SetT, -1, kDCAzSetT, -1, kPrimSetT, -1, kGeoCutSet2};//Index to check in the mask for the cut, if -1 skip!
-  const TString CutVarsName[nCutVars + 1] = {"TPCRows_60", "TPCRows_80", "TrkChi2_5", "TrkChi2_3", "DCAz_3", "DCAz_1", "DCAxy_10", "DCAxy_0", "GeoCut_0", "GeoCut_130", ""};
-  const TString CutVarsTitle[nCutVars + 1] = {"TPCRows 60", "TPCRows 80", "Chi2 5", "Chi2 3", "DCAz 3", "DCAz 1", "DCAxy x10", "DCAxy x0.1", "GeoCut 0", "GeoCut 1", "Std"};
+  const Int_t nCutVars = nCutTPCRows + nCutMaxChi2 + nCutDCAz + nCutDCAxy + nCutGeo - 5;//Number of cut present in the tree mask
+  const TString CutVarsName[nCutVars + 1] = {"TPCRows_60", "TPCRows_80", "TrkChi2_5", "TrkChi2_3", "DCAz_3", "DCAz_1", "DCAxy_10", "DCAxy_11", "DCAxy_09", "DCAxy_0", "GeoCut_0", "GeoCut_1", ""};
+  const TString CutVarsTitle[nCutVars + 1] = {"TPCRows 60", "TPCRows 80", "Chi2 5", "Chi2 3", "DCAz 3", "DCAz 1", "DCAxy x10", "DCAxy x0.9", "DCAxy x1.1", "DCAxy x0.1", "GeoCut 0", "GeoCut 1", "Std"};
   const TString primfunct = "0.0105+0.0350/pt^1.1";//Standard pt dependence of the DCAxy cut
   
   //Corrections
