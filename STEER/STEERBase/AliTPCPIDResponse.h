@@ -249,6 +249,8 @@ public:
   Bool_t SetdEdxTypeFromString              (const TString& dEdxTypeSet);
   Bool_t SetdEdxResolutionFromString        (const TString& dEdxTypeSet);
 
+  const TString& GetRecoPassNameUsed() { return  fRecoPassNameUsed; }
+
   //===| Helpers |==============================================================
   static TString GetChecksum(const TObject* obj);
   static TObjArray* GetMultiplicityCorrectionArrayFromString(const TString& corrections);
@@ -318,6 +320,8 @@ private:
   Double_t         fOROCmedWeight;    // OROC medium pad size weight to use for dEdx calculation from AliTPCdEdxInfo
   Double_t         fOROClongWeight;   // OROC long pad size weight to use for dEdx calculation from AliTPCdEdxInfo
 
+  // Information on reconstruction data used
+  TString fRecoPassNameUsed;          //! Name or number of the actually used reconstruction pass
   //
   //
   static AliTPCPIDResponse*   fgInstance;     //! Instance of this class (singleton implementation)

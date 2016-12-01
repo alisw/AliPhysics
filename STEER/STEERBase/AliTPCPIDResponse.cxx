@@ -93,6 +93,7 @@ AliTPCPIDResponse::AliTPCPIDResponse():
   fIROCweight(1.),
   fOROCmedWeight(1.),
   fOROClongWeight(1.),
+  fRecoPassNameUsed(),
   fSplineArray()
 {
   //
@@ -207,6 +208,7 @@ AliTPCPIDResponse::AliTPCPIDResponse(const AliTPCPIDResponse& that):
   fIROCweight(that.fIROCweight),
   fOROCmedWeight(that.fOROCmedWeight),
   fOROClongWeight(that.fOROClongWeight),
+  fRecoPassNameUsed(that.fRecoPassNameUsed),
   fSplineArray()
 {
   //copy ctor
@@ -302,6 +304,7 @@ AliTPCPIDResponse& AliTPCPIDResponse::operator=(const AliTPCPIDResponse& that)
   fIROCweight    =that.fIROCweight;
   fOROCmedWeight =that.fOROCmedWeight;
   fOROClongWeight=that.fOROClongWeight;
+  fRecoPassNameUsed=that.fRecoPassNameUsed;
 
   return *this;
 }
@@ -1655,6 +1658,8 @@ Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const Int_t pass, TStrin
   const Int_t passOrig=pass;
   Int_t passIter=passOrig;
 
+  fRecoPassNameUsed="";
+
   const TObjArray *arr=0x0;
   // first try to find an object using the full pass name
   if (!passName.IsNull()) {
@@ -1662,6 +1667,7 @@ Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const Int_t pass, TStrin
     arr = dynamic_cast<TObjArray *>(fOADBContainer->GetObject(run, "", passName.Data()));
     if (arr) {
       AliInfoF("Dedicated splines for '%s' found.", passName.Data());
+      fRecoPassNameUsed=passName;
     }
     else {
       AliInfoF("No dedicated splines found for '%s', check numerical pass %s.", passName.Data(), spass.Data());
@@ -1671,6 +1677,7 @@ Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const Int_t pass, TStrin
   if (!arr) {
     AliInfoF("Trying to load splines for specific reconstruction pass %s.", spass.Data());
     arr = dynamic_cast<TObjArray *>(fOADBContainer->GetObject(run, "", spass.Data()));
+    fRecoPassNameUsed=spass;
   }
   // ... then try with previous passes and issue a warning
   while (!arr && --passIter > 0) {
@@ -1683,6 +1690,7 @@ Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const Int_t pass, TStrin
     AliErrorF("      could not find a valid OADB object for run %d pass %d (%s)", run, pass, passName.Data());
     AliError ("      Most probably this is because the PID response for this pass is not available, yet");
     AliError ("      Please also check https://twiki.cern.ch/twiki/bin/view/ALICE/TPCSplines");
+    fRecoPassNameUsed="";
     return kFALSE;
   }
 
@@ -1691,6 +1699,7 @@ Bool_t AliTPCPIDResponse::InitFromOADB(const Int_t run, const Int_t pass, TStrin
     AliWarning(Form("      Using splines from a previous pass: %d<%d", passIter, passOrig));
     AliWarning(     "      Most probably this is because the PID response for this pass has not been extracted, yet");
     AliWarning(     "      Please also check https://twiki.cern.ch/twiki/bin/view/ALICE/TPCSplines");
+    fRecoPassNameUsed=TString::Format("%d", passIter);
   }
 
   //===| Set up of splines |====================================================

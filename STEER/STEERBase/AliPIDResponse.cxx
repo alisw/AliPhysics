@@ -1109,6 +1109,15 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     recoPassName = fRecoPassNameUser;
   }
 
+  if (fTPCResponse.GetRecoPassNameUsed().IsDigit()){
+    Int_t recoPassUsedForSplines=fTPCResponse.GetRecoPassNameUsed().Atoi();
+    if (recoPassUsedForSplines<recopass) {
+      AliInfoF("Reco pass used for splines (%d) differs from the requested reco pass (%d), the splines one will be used to match the eta maps",
+               recoPassUsedForSplines, recopass);
+      recopass=recoPassUsedForSplines;
+    }
+  }
+
   TString defaultObj = Form("Default_%s_pass%d", dataType.Data(), recopass);
 
   AliInfo(Form("Current period and reco pass: %s.pass%d (%s)", period.Data(), recopass, recoPassName.Data()));

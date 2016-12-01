@@ -1,5 +1,5 @@
 AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
-                                    Bool_t tuneOnData=kTRUE, Int_t recoPass=2,
+                                    Bool_t tuneOnData=kTRUE, TString recoPass="2",
                                     Bool_t cachePID=kFALSE, TString detResponse="",
                                     Bool_t useTPCEtaCorrection = kTRUE,/*Please use default value! Otherwise splines can be off*/
                                     Bool_t useTPCMultiplicityCorrection = kTRUE,/*Please use default value! Otherwise splines can be off*/
@@ -39,10 +39,32 @@ AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE,
   pidTask->SetIsMC(isMC);
   if(isMC){
     if (tuneOnData) {
+      // get numerical reco pass number
+      Int_t recoPassNumber=0;
+      TString recoPassName=recoPass;
+      if (recoPass.IsDigit()) {
+        recoPassNumber=recoPass.Atoi();
+        recoPassName="";
+      }
+      else {
+        if (recoPass.Contains("pass1") ) {
+          recoPassNumber=1;
+        } else if (recoPass.Contains("pass2") ) {
+          recoPassNumber=2;
+        } else if (recoPass.Contains("pass3") ) {
+          recoPassNumber=3;
+        } else if (recoPass.Contains("pass4") ) {
+          recoPassNumber=4;
+        } else if (recoPass.Contains("pass5") ) {
+          recoPassNumber=5;
+        }
+
+      }
+
       printf("             Using MC with tune on data.\n");
       printf("             !!! ATTENTION ATTENTION ATTENTION !!!\n");
-      printf("             You MUST make sure the reco pass set (%d) corresponds to the one this MC was produced for!\n",recoPass);
-      pidTask->SetTuneOnData(kTRUE,recoPass);
+      printf("             You MUST make sure the reco pass set (%s: %d) corresponds to the one this MC was produced for!\n",recoPass.Data(), recoPassNumber);
+      pidTask->SetTuneOnData(kTRUE,recoPassNumber, recoPassName);
       // tuning on MC is by default active on TPC and TOF, to enable it only on one of them use:
       // pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTPC);
       // pidTask->SetTuneOnDataMask(AliPIDResponse::kDetTOF);
