@@ -314,7 +314,7 @@ Int_t AliAnalysisTaskResolution::CountTracks09(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -327,9 +327,9 @@ Int_t AliAnalysisTaskResolution::CountTracks09(){
 		for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
 			AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
 			if(!curTrack->IsPrimaryCandidate()) continue;
-            if(fabs(curTrack->Eta())>0.9) continue;
+            if(TMath::Abs(curTrack->Eta())>0.9) continue;
 			if(curTrack->Pt()<0.15) continue;
-            if(fabs(curTrack->ZAtDCA())>2) continue;
+            if(TMath::Abs(curTrack->ZAtDCA())>2) continue;
 			fNumberOfESDTracks++;
 		}
 	}
@@ -360,7 +360,7 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -374,7 +374,7 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -386,9 +386,9 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 	} else if(fInputEvent->IsA()==AliAODEvent::Class()){
 		for(Int_t iTracks = 0; iTracks<fInputEvent->GetNumberOfTracks(); iTracks++){
 			AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
-            if(fabs(curTrack->Eta())<0.9 || fabs(curTrack->Eta())>1.4 ) continue;
+            if(TMath::Abs(curTrack->Eta())<0.9 || TMath::Abs(curTrack->Eta())>1.4 ) continue;
 			if(curTrack->Pt()<0.15) continue;
-            if(fabs(curTrack->ZAtDCA())>5) continue;
+            if(TMath::Abs(curTrack->ZAtDCA())>5) continue;
 			fNumberOfESDTracks++;
 		}
 	}

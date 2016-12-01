@@ -1229,7 +1229,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks09(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fInputEvent);
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fInputEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -1265,7 +1265,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0914(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fInputEvent);
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fInputEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -1279,7 +1279,7 @@ Int_t AliAnalysisTaskMaterialHistos::CountTracks0914(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fInputEvent);
+                        Int_t isFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fInputEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	

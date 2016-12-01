@@ -934,7 +934,7 @@ Double_t AliV0ReaderV1::GetPsiPair(const AliESDv0* v0, const AliExternalTrackPar
   // wc[2] = (u[0]*z[1]) - (u[1]*z[0]);
 
   // Double_t PhiV = TMath::ACos((w[0]*wc[0]) + (w[1]*wc[1]) + (w[2]*wc[2]));
-  //return fabs(PhiV);
+  //return TMath::Abs(PhiV);
 
 
   // TVector3 pPlus(pt.Px(),pt.Py(),pt.Pz());
@@ -1208,14 +1208,14 @@ void AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCan
     AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
     if(!AODLabelPos){
       if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
-        PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+        PhotonCandidate->SetMCLabelPositive(TMath::Abs(tempDaughter->GetLabel()));
         PhotonCandidate->SetLabelPositive(i);
         AODLabelPos = kTRUE;
       }
     }
     if(!AODLabelNeg){
       if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
-        PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+        PhotonCandidate->SetMCLabelNegative(TMath::Abs(tempDaughter->GetLabel()));
         PhotonCandidate->SetLabelNegative(i);
         AODLabelNeg = kTRUE;
       }
@@ -1279,7 +1279,7 @@ void AliV0ReaderV1::CountTracks(){
       AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
       if(!curTrack) continue;
       if(!EsdTrackCuts->AcceptTrack(curTrack)) continue;
-      //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()),fMCEvent->Stack(),fInputEvent))) continue;
+      //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()),fMCEvent->Stack(),fInputEvent))) continue;
       fNumberOfPrimaryTracks++;
     }
     delete EsdTrackCuts;
@@ -1291,10 +1291,10 @@ void AliV0ReaderV1::CountTracks(){
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
       if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
-      if(fabs(curTrack->Eta())>0.8) continue;
+      if(TMath::Abs(curTrack->Eta())>0.8) continue;
       if(curTrack->Pt()<0.15) continue;
-      //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()),NULL,fInputEvent))) continue;
-      //if(fabs(curTrack->ZAtDCA())>2) continue; // Only Set For TPCOnly tracks
+      //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()),NULL,fInputEvent))) continue;
+      //if(TMath::Abs(curTrack->ZAtDCA())>2) continue; // Only Set For TPCOnly tracks
       fNumberOfPrimaryTracks++;
     }
   }
@@ -1309,7 +1309,7 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
 
   if (particle->GetPdgCode() == 22){
     // check whether particle is within eta range
-    if( fabs(particle->Eta()) > etaMax ) return kFALSE;
+    if( TMath::Abs(particle->Eta()) > etaMax ) return kFALSE;
     // check if particle doesn't have a photon as mother
     if(particle->GetMother(0) >-1 && MCStack->Particle(particle->GetMother(0))->GetPdgCode() == 22){
       return kFALSE; // no photon as mothers!
@@ -1334,28 +1334,28 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliStack *MCStack, TParticle *pa
       return kFALSE;
     }
     // check if electrons are in correct eta window
-    if( fabs(ePos->Eta()) > etaMax ||
-      fabs(eNeg->Eta()) > etaMax )
+    if( TMath::Abs(ePos->Eta()) > etaMax ||
+      TMath::Abs(eNeg->Eta()) > etaMax )
       return kFALSE;
 
     // check if photons have converted in reconstructable range
     if(ePos->R() > rMax){
       return kFALSE; // cuts on distance from collision point
     }
-    if(fabs(ePos->Vz()) > zMax){
+    if(TMath::Abs(ePos->Vz()) > zMax){
       return kFALSE;  // outside material
     }
-    if(fabs(eNeg->Vz()) > zMax){
+    if(TMath::Abs(eNeg->Vz()) > zMax){
       return kFALSE;  // outside material
     }
 
 
     Double_t lineCutZRSlope = tan(2*atan(exp(-etaMax)));
     Double_t lineCutZValue = 7.;
-    if( ePos->R() <= ((fabs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( ePos->R() <= ((TMath::Abs(ePos->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
     }
-    if( eNeg->R() <= ((fabs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
+    if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
     }
     if (ePos->Pt() < 0.05 || eNeg->Pt() < 0.05){

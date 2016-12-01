@@ -378,7 +378,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *
     }
 
     // Rapidity Cut
-    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> 2y decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -417,7 +417,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
     }
 
     // Rapidity Cut
-    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> 2y decay channel
     if(MCMother->GetNDaughters()!=2)return kFALSE;
@@ -458,7 +458,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
   }
 
   // Rapidity Cut
-  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -514,7 +514,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCM
   }
 
   // Rapidity Cut
-  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -570,7 +570,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
   }
 
   // Rapidity Cut
-  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -625,7 +625,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   }
 
   // Rapidity Cut
-  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> pi+ pi- pi0
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -677,7 +677,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother
   }
 
   // Rapidity Cut
-  if(fabs(rapidity) > fRapidityCutMeson)return kFALSE;
+  if(TMath::Abs(rapidity) > fRapidityCutMeson)return kFALSE;
 
   if(fMCMother->GetNDaughters()!=2) return kFALSE;
 
@@ -738,7 +738,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
     }
 
     // Rapidity Cut
-    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> ChiC radiative (JPsi+gamma) decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -817,7 +817,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   else{
     // PseudoRapidity Cut --> But we cut on Rapidity !!!
     cutIndex++;
-    if(fabs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
+    if(TMath::Abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
       if(hist)hist->Fill(cutIndex, pi0->Pt());
       return kFALSE;
     }
@@ -867,14 +867,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   if (fIsMergedClusterCut == 1 && fAlphaPtDepCut) fAlphaCutMeson = fFAlphaCut->Eval(pi0->E());
   else if (fAlphaPtDepCut == kTRUE) fAlphaCutMeson = fFAlphaCut->Eval(pi0->Pt());
   
-  if(fabs(pi0->GetAlpha())>fAlphaCutMeson){
+  if(TMath::Abs(pi0->GetAlpha())>fAlphaCutMeson){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
   cutIndex++;
 
   // Alpha Min Cut
-  if(fabs(pi0->GetAlpha())<fAlphaMinCutMeson){
+  if(TMath::Abs(pi0->GetAlpha())<fAlphaMinCutMeson){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
@@ -905,7 +905,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     if (fHistoDCAZMesonPrimVtxBefore)fHistoDCAZMesonPrimVtxBefore->Fill(pi0->GetDCAZMotherPrimVtx());
 
     if (fDCAZMesonPrimVtxCutOn){
-      if (fabs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
+      if (TMath::Abs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
         if(hist)hist->Fill(cutIndex, pi0->Pt());
         return kFALSE;
       }
