@@ -452,13 +452,13 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
     TParticle* daughter0 = NULL;
     TParticle* daughter1 = NULL;
 
-    if (!(fabs(particle->Energy()-particle->Pz())>0.)) continue;
+    if (!(TMath::Abs(particle->Energy()-particle->Pz())>0.)) continue;
     Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
 //     cout << i << "\t"<< particle->GetPdgCode() << "\t"<< particle->Pz() << "\t" << particle->Energy()<< "\t" << particle->Energy()-particle->Pz() << "\t"<< yPre << endl;
     if (yPre == 0.) continue;
     
     Double_t y = 0.5*TMath::Log(yPre); 
-    if (fabs(y) > fMaxY) continue;
+    if (TMath::Abs(y) > fMaxY) continue;
     
     if(particle->GetPdgCode()==22 && hasMother==kTRUE){
       if(motherIsPrimary && fHasMother[GetParticlePosLocal(motherParticle->GetPdgCode())]){

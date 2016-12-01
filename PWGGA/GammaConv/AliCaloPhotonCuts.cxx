@@ -2681,7 +2681,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
       AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
       if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
         if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
-        if(fabs(aodt->Eta())>0.8) continue;
+        if(TMath::Abs(aodt->Eta())>0.8) continue;
         if(aodt->Pt()<0.15) continue;
       }
     }
