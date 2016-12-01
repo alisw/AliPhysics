@@ -132,6 +132,8 @@ goppbench() (
   configFile=$1
   shift
   parseConfig "configFile=$configFile" "$@" || return 1
+  [[ "$SKIP_PPBENCH" == 1 ]] && { alilog_info "[END] goppbench() skipping ppbench"; \
+                                  touch ppbench.done; return 0; }
   rm -rf AliRoot/ ppbench.done
   # Check if we have run it already. Prevent useless retries.
   maxCopyTries=2 xCopy -f -c -d . $commonOutputPath/ppbench/full_output.log
