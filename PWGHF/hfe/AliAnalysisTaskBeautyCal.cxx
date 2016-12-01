@@ -804,6 +804,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
+      // remove some bad runs
+      if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
+      if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
+      if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
+
       Double_t clustE = clust->E();
       fHistClustE->Fill(clustE);
       if(tof>-30 && tof<30)fHistClustEtime->Fill(clustE);
@@ -1065,6 +1070,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
+      // remove some bad runs
+      if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
+      if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
+      if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
 
       Double_t clustMatchE = clustMatch->E();
       //fClsEAftMatch->Fill(clustMatchE);
