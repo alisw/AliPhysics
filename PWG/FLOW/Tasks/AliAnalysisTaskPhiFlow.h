@@ -59,7 +59,6 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         Int_t                                SetDebugLevelPhiTask(Int_t debug) {fDebug = debug; return fDebug; }
         Bool_t                               SetIsMC(Bool_t ismc) {fIsMC = ismc; return fIsMC; }
         Bool_t                               UseEventMixing(Bool_t mix, Bool_t type) {fEventMixing = mix; fTypeMixing = type; return mix; }
-        Bool_t                               SetVZEROSubEvents(Bool_t v0) { fV0 = v0; return v0; }
         TH1F*                                BookHistogram(const char * name);
         TH2F*                                BookPIDHistogram(const char * name, Bool_t TPC);
         TH1F*                                InitPtSpectraHistograms(Float_t nmin, Float_t nmax);
@@ -80,6 +79,7 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
             fkCentralityMethodB = b;
             fCentralityCut2010 = c; 
             fCentralityCut2011 = d;}
+        void                                 SetCentralityEstimator(TString name) {fCentralityEstimator = name;}
         void                                 SetCurrentCentralityBin(Double_t c) {fCentrality = c; }
         Double_t                             GetCenMin() const {return fCentralityMin; }
         Double_t                             GetCenMax() const {return fCentralityMax; }
@@ -104,7 +104,6 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         template <typename T> Bool_t         PhiTrack(T* track) const;
         template <typename T> void           SetNullCuts(T* esd);
         void                                 PrepareFlowEvent(Int_t iMulti);
-        void                                 VZEROSubEventAnalysis();
         virtual void                         UserExec(Option_t *option);
         virtual void                         Exec(Option_t *);
         void                                 ReconstructionWithEventMixing(TObjArray* MixingCandidates) const;
@@ -211,6 +210,7 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         const char           *fkCentralityMethodB; // method used to determine centrality, fallback
         Bool_t               fCentralityCut2010; // cut away the multiplicity outliers 2010
         Bool_t               fCentralityCut2011; // cut away the multiplicity outliers 2011
+        TString              fCentralityEstimator; // centrality estimator for mult selection framework
         AliFlowTrackCuts     *fPOICuts; // cuts for particles of interest (flow package)
         Float_t              fVertexRange; // absolute value of maximum distance of vertex along the z-axis
         TH1F                 *fPhi; //! QA plot of azimuthal distribution of tracks used for event plane estimation
