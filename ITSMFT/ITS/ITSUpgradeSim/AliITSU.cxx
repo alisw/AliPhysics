@@ -24,7 +24,7 @@
 //      An overview of the basic philosophy of the ITS code development      //
 // and analysis is show in the figure below.                                 //
 //Begin_Html                                                                 //
-/*                                               
+/*
 <img src="picts/ITS/ITS_Analysis_schema.gif">
 </pre>
 <br clear=left>
@@ -96,13 +96,14 @@ the AliITS class.
 #include "AliITSMFTParamList.h"
 #include "AliCDBManager.h" // tmp! Later the simuparam should be loaded centrally
 #include "AliCDBEntry.h"
+#include "AliITSMFTAlpideSimulationPix.h"
 
 using namespace TMath;
 
 ClassImp(AliITSU)
 
 //______________________________________________________________________
-AliITSU::AliITSU() : 
+AliITSU::AliITSU() :
 AliDetector()
   ,fEuclidOut(0)
   ,fNLayers(0)
@@ -124,8 +125,9 @@ AliDetector()
   ,fCalibration(0)
   ,fRunNumber(0)
   ,fSimInitDone(kFALSE)
+  ,fUseALPIDESim(kFALSE)
 {
-  // Default initializer for ITS  
+  // Default initializer for ITS
 }
 
 //______________________________________________________________________
@@ -151,12 +153,13 @@ AliITSU::AliITSU(const Char_t *title, Int_t nlay) :
   ,fCalibration(0)
   ,fRunNumber(0)
   ,fSimInitDone(kFALSE)
+  ,fUseALPIDESim(kFALSE)
 {
-  //     The standard Constructor for the ITS class. 
+  //     The standard Constructor for the ITS class.
   AliMC* mc = gAlice->GetMCApp();
   if( mc && mc->GetHitLists() ) {
     fHits = new TClonesArray("AliITSUHit",100); // from AliDetector
-    mc->AddHitList(fHits);  
+    mc->AddHitList(fHits);
   }
 }
 
@@ -165,7 +168,7 @@ AliITSU::AliITSU(const Char_t *title, Int_t nlay) :
 AliITSU::~AliITSU()
 {
   // Default destructor for ITS.
-  //  
+  //
   delete fHits;
   //  delete fSimuParam; // provided by the CDBManager
   delete fSensMap;
@@ -177,7 +180,7 @@ AliITSU::~AliITSU()
     delete[] fSimModelLr;
   }
   if (fSegModelLr) {
-    for (int i=fNLayers;i--;) { // different layers may use the same simulation model     
+    for (int i=fNLayers;i--;) { // different layers may use the same simulation model
       for (int j=i;j--;) if (fSegModelLr[j]==fSegModelLr[i]) fSegModelLr[j] = 0;
       delete fSegModelLr[i];
     }
@@ -222,7 +225,7 @@ AliDigitizer* AliITSU::CreateDigitizer(AliDigitizationInput* manager) const
 }
 
 //______________________________________________________________________
-void AliITSU::Init() 
+void AliITSU::Init()
 {
   // Initializer ITS after it has been built
   //     This routine initializes the AliITS class. It is intended to be
@@ -252,28 +255,28 @@ void AliITSU::MakeBranch(Option_t* option)
   //      none.
   // Return:
   //      none.
-  
+
   Bool_t cH = (strstr(option,"H")!=0);
   Bool_t cS = (strstr(option,"S")!=0);
   Bool_t cD = (strstr(option,"D")!=0);
-  
+
   if(cH && (fHits == 0x0)) fHits = new TClonesArray("AliITSUHit", 1560);
   AliDetector::MakeBranch(option);
-  
+
   if(cS) MakeBranchS(0);
   if(cD) MakeBranchD(0);
-  // 
+  //
 }
 
 //___________________________________________________________________
-void AliITSU::MakeBranchS(const char* fl) 
+void AliITSU::MakeBranchS(const char* fl)
 {
   // Creates Tree Branch for the ITS summable digits.
   // Inputs:
   //      cont char *fl  File name where SDigits branch is to be written
   //                     to. If blank it write the SDigits to the same
   //                     file in which the Hits were found.
-  //  
+  //
   Int_t buffersize = 4000;
   char branchname[31];
   //
@@ -314,7 +317,7 @@ void AliITSU::InitArrays()
   // initialize arrays
   //
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
-  //  
+  //
   fDetDigits = new TObjArray(kNChipTypes);
   for (Int_t i=0;i<kNChipTypes;i++) fDetDigits->AddAt(new TClonesArray(GetDigitClassName(i),100),i);
   //
@@ -372,7 +375,7 @@ void AliITSU::AddHit(Int_t track, Int_t *vol, Float_t *hits)
 }
 
 //______________________________________________________________________
-void AliITSU::FillChips(Int_t bgrev, Option_t *option, const char *filename) 
+void AliITSU::FillChips(Int_t bgrev, Option_t *option, const char *filename)
 {
   // fill the chips with the sorted by chip hits; add hits from
   // background if option=Add.
@@ -384,7 +387,7 @@ void AliITSU::FillChips(Int_t bgrev, Option_t *option, const char *filename)
   //
   if (addBgr ) {
     if(first) {
-      file = new TFile(filename);    
+      file = new TFile(filename);
       first=kFALSE;
     }
     file->cd();
@@ -398,7 +401,7 @@ void AliITSU::FillChips(Int_t bgrev, Option_t *option, const char *filename)
     if (!trH1) Error("FillChips","cannot find Hits Tree for event:%d",bgrev);
     // Set branch addresses
   } // end if addBgr
-  
+
   FillChips(fLoader->TreeH(),0); // fill from this file's tree.
   //
   if (addBgr ) {
@@ -410,20 +413,20 @@ void AliITSU::FillChips(Int_t bgrev, Option_t *option, const char *filename)
       fileAli->cd();
     }
   } // end if add
-  //  
+  //
 }
 
 //______________________________________________________________________
 void AliITSU::FillChips(TTree *treeH, Int_t /*mask*/)
 {
-  // fill the chips with the sorted by chip hits; 
+  // fill the chips with the sorted by chip hits;
   // can be called many times to do a merging
   // Inputs:
   //      TTree *treeH  The tree containing the hits to be copied into
   //                    the chips.
   //      Int_t mask    The track number mask to indecate which file
   //                    this hits came from.
-  //  
+  //
   if (treeH == 0x0) { AliError("Tree H  is NULL"); return; }
   //
   Int_t lay,sta,ssta,mod,chip,index;
@@ -450,7 +453,7 @@ void AliITSU::FillChips(TTree *treeH, Int_t /*mask*/)
       GetChip(index)->AddHit(itsHit);
       // do we need to add a mask?
       // itsHit->SetTrack(itsHit->GetTrack()+mask);
-    } // end loop over hits 
+    } // end loop over hits
   } // end loop over tracks
 }
 
@@ -470,7 +473,7 @@ void AliITSU::Hits2SDigits()
   if (!IsSimInitDone()) InitSimulation();
   fLoader->LoadHits("read");
   fLoader->LoadSDigits("recreate");
-  AliRunLoader* rl = fLoader->GetRunLoader(); 
+  AliRunLoader* rl = fLoader->GetRunLoader();
   //
   for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
     rl->GetEvent(iEvent);
@@ -482,13 +485,13 @@ void AliITSU::Hits2SDigits()
     //
   fLoader->UnloadHits();
   fLoader->UnloadSDigits();
-  // 
+  //
 }
 
 //______________________________________________________________________
 void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const char *filename)
 {
-  // Keep galice.root for signal and name differently the file for 
+  // Keep galice.root for signal and name differently the file for
   // background when add! otherwise the track info for signal will be lost !
   // Inputs:
   //      Int_t evnt       Event to be processed.
@@ -524,7 +527,7 @@ void AliITSU::Hits2SDigits(Int_t evNumber,Int_t bgrev,Option_t *option,const cha
     fLoader->TreeS()->Fill();      // fills all branches - wasted disk space
     ResetSDigits();
     prevLr = lr;
-  } 
+  }
   //
   ClearChips();
   //
@@ -541,7 +544,7 @@ void AliITSU::Hits2Digits()
   if (!IsSimInitDone()) InitSimulation();
   fLoader->LoadHits("read");
   fLoader->LoadDigits("recreate");
-  AliRunLoader* rl = fLoader->GetRunLoader(); 
+  AliRunLoader* rl = fLoader->GetRunLoader();
   //
   for (Int_t iEvent = 0; iEvent < rl->GetNumberOfEvents(); iEvent++) {
     rl->GetEvent(iEvent);
@@ -553,13 +556,13 @@ void AliITSU::Hits2Digits()
     //
   fLoader->UnloadHits();
   fLoader->UnloadSDigits();
-  // 
+  //
 }
 
 //______________________________________________________________________
 void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char *filename)
 {
-  //   Keep galice.root for signal and name differently the file for 
+  //   Keep galice.root for signal and name differently the file for
   // background when add! otherwise the track info for signal will be lost !
   // Inputs:
   //      Int_t evnt       Event to be processed.
@@ -569,10 +572,10 @@ void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char
   //                       background hits are considered.
   //      Test_t *filename File name containing the background hits..
   // Outputs:
-  //  
+  //
   if (!IsSimInitDone()) InitSimulation();
   FillChips(bgrev,option,filename);
-  // 
+  //
   Int_t nchips = fGeomTGeo->GetNChips();
   int prevLr = -1;
   float roPhase=0; // synchronysation type between layers/chips
@@ -592,7 +595,7 @@ void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char
     else                  sim->SetReadOutCycleOffset(roPhase);
     sim->DigitiseChip(fDetDigits);
     // fills all branches - wasted disk space
-    fLoader->TreeD()->Fill(); 
+    fLoader->TreeD()->Fill();
     ResetDigits();
     prevLr = lr;
   } // end for chip
@@ -602,14 +605,14 @@ void AliITSU::Hits2Digits(Int_t evNumber,Int_t bgrev,Option_t *option,const char
   //    WriteFOSignals(); // Add Fast-OR signals to event (only one object per event)
   fLoader->TreeD()->GetEntries();
   fLoader->TreeD()->AutoSave();
-  fLoader->TreeD()->Reset(); 
+  fLoader->TreeD()->Reset();
   //
 }
 
 //_____________________________________________________________________
 void AliITSU::Hits2FastRecPoints(Int_t bgrev,Option_t *opt,const char *flnm)
 {
-  // keep galice.root for signal and name differently the file for 
+  // keep galice.root for signal and name differently the file for
   // background when add! otherwise the track info for signal will be lost !
   // Inputs:
   //      Int_t evnt       Event to be processed.
@@ -665,7 +668,7 @@ Int_t AliITSU::Hits2Clusters(TTree */*hTree*/, TTree */*cTree*/)
   AliITSsimulationFastPoints sim;
   Int_t ncl=0;
   for (Int_t m=0; m<mmax; m++) {
-    sim.CreateFastRecPoints(GetChip(m),m,gRandom,points);      
+    sim.CreateFastRecPoints(GetChip(m),m,gRandom,points);
     ncl+=points->GetEntriesFast();
     cTree->Fill();
     points->Clear();
@@ -696,9 +699,9 @@ void AliITSU::CheckLabels(Int_t lab[3]) const //RSDONE
 	Int_t m=part->GetFirstMother();
 	if (m<0) continue;
 	if (part->GetStatusCode()>0) continue;
-	lab[i]=m;       
+	lab[i]=m;
       }
-    }    
+    }
   }
   //
 }
@@ -724,7 +727,7 @@ void AliITSU::AddSumDigit(AliITSMFTSDigit &sdig)
 {
   // Adds the chip summable digits to the summable digits tree.
   new( (*fSDigits)[fSDigits->GetEntriesFast()]) AliITSMFTSDigit(sdig);
-  //  
+  //
 }
 
 //______________________________________________________________________
@@ -733,7 +736,7 @@ void AliITSU::AddSimDigit(Int_t branch, AliITSMFTDigitPix *d)
   //    Add a simulated digit.
   // Inputs:
   //      Int_t id        Detector type number.
-  //      AliITSdigit *d  Digit to be added to the Digits Tree. See 
+  //      AliITSdigit *d  Digit to be added to the Digits Tree. See
   //                      AliITSdigit.h
   TClonesArray &ldigits = *((TClonesArray*)fDetDigits->At(branch));
   int nd = ldigits.GetEntriesFast();
@@ -754,9 +757,9 @@ void AliITSU::AddSimDigit(Int_t branch,Float_t /*phys*/,Int_t *digits,Int_t *tra
   // Inputs:
   //      Int_t id        Detector type number.
   //      Float_t phys    Physics indicator. See AliITSdigits.h
-  //      Int_t *digits   Integer array containing the digits info. See 
+  //      Int_t *digits   Integer array containing the digits info. See
   //                      AliITSdigit.h
-  //      Int_t *tracks   Integer array [AliITSdigitS?D::GetNTracks()] 
+  //      Int_t *tracks   Integer array [AliITSdigitS?D::GetNTracks()]
   //                      containing the track numbers that contributed to
   //                      this digit.
   //      Int_t *hits     Integer array [AliITSdigitS?D::GetNTracks()]
@@ -772,7 +775,7 @@ void AliITSU::AddSimDigit(Int_t branch,Float_t /*phys*/,Int_t *digits,Int_t *tra
     break;
   default:
     AliFatal(Form("Unknown digits branch %d",branch));
-  }  
+  }
   //
 }
 
@@ -784,10 +787,10 @@ void AliITSU::Digits2Raw()
 
 //______________________________________________________________________
 AliLoader* AliITSU::MakeLoader(const char* topfoldername)
-{ 
+{
   //builds ITSgetter (AliLoader type)
   //if detector wants to use castomized getter, it must overload this method
-  
+
   AliDebug(1,Form("Creating AliITSULoader. Top folder is %s.",topfoldername));
   fLoader = new AliITSULoader(GetName(),topfoldername);
   return fLoader;
@@ -802,7 +805,7 @@ Bool_t AliITSU::Raw2SDigits(AliRawReader* /*rawReader*/)
 
 //______________________________________________________________________
 /*
-AliTriggerDetector* AliITSU::CreateTriggerDetector() const 
+AliTriggerDetector* AliITSU::CreateTriggerDetector() const
 {
   // create an AliITSTrigger object (and set trigger conditions as input)
   return new AliITSTrigger(fChipTypeSim->GetTriggerConditions());
@@ -854,7 +857,7 @@ void AliITSU::SDigits2Digits()
     ResetDigits();
     prevLr = lr;
   }
-  //  WriteFOSignals(); 
+  //  WriteFOSignals();
   fLoader->TreeD()->GetEntries();
   fLoader->TreeD()->AutoSave();
   fLoader->TreeD()->Reset();
@@ -871,6 +874,7 @@ void AliITSU::InitSimulation()
   AliCDBEntry* cdbEnt = AliCDBManager::Instance()->Get("ITS/Calib/SimuParam"); // tmp: load it centrally
   if (!cdbEnt) {AliFatal("Failed to find ITS/Calib/SimuParam on CDB"); exit(1);}
   fSimuParam    = (AliITSMFTSimuParam*)cdbEnt->GetObject();
+  fUseALPIDESim = fSimuParam->GetUseALPIDESim();
   //
   fSensMap      = new AliITSMFTSensMap("AliITSMFTSDigit",0,0);
   fSimModelLr   = new AliITSMFTSimulation*[fNLayers];
@@ -897,11 +901,15 @@ void AliITSU::InitSimulation()
     }
     //
     if (!simUpg) { // need to create simulation for detector class sType
-      switch (sType) 
+      switch (sType)
 	{
 	case AliITSMFTAux::kChipTypePix :
-	  simUpg = new AliITSMFTSimulationPix(fSimuParam,fSensMap);
-	  break;
+    if (fUseALPIDESim) {
+      simUpg = new AliITSMFTAlpideSimulationPix(fSimuParam, fSensMap);
+    } else {
+      simUpg = new AliITSMFTSimulationPix(fSimuParam, fSensMap);
+    }
+    break;
 	default: AliFatal(Form("No %d detector type is defined",sType));
 	}
     }

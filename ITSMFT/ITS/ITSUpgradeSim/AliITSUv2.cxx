@@ -1002,6 +1002,14 @@ void AliITSUv2::StepManager()
   hit.SetPosition(position);
   hit.SetTime(fMC->TrackTime());
   hit.SetMomentum(momentum);
+
+  //
+  // ALPIDE chip simulation
+  //
+  hit.SetPID(TVirtualMC::GetMC()->TrackPid());
+  hit.SetTotalEnergy(TVirtualMC::GetMC()->Etot());
+  //////////////////////////////
+
   hit.SetStatus(status);
   hit.SetEdep(fMC->Edep());
   hit.SetShunt(GetIshunt());
