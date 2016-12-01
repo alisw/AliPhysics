@@ -346,8 +346,13 @@ void AliHLTITSClusterFinderSSD::RawdataToClusters( std::vector<AliITSRecPoint> &
     if( n >0 ){
       Int_t oldStrip = strips[adc][side][n-1][0];
       if( strip==oldStrip ){
-	AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: duplicated signal: ddl %d ad %d adc %d, side %d, strip %d", 
+        static bool show_info = !(getenv("HLT_ONLINE_MODE") && strcmp(getenv("HLT_ONLINE_MODE"), "on") == 0);
+        static int nErrors = 0;
+        if (show_info || nErrors++ < 30)
+        {
+		AliWarning(Form("HLT ClustersFinderSSD: Corrupted data: duplicated signal: ddl %d ad %d adc %d, side %d, strip %d", 
 			ddl, ad, adc, side, strip ));
+	}
 	continue;
       }
     }
