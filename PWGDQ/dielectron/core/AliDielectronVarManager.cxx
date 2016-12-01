@@ -288,7 +288,10 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   //
   {"Xprim",                  "x_{prim.vtx}",                                       "(cm)"},
   {"Yprim",                  "y_{prim.vtx}",                                       "(cm)"},
-  {"Z",                      "z_{prim.vtx}",                                       "(cm)"},
+  {"Zprim",                  "z_{prim.vtx}",                                       "(cm)"},
+  {"XprimMCtruth",           "x_{MCtruth.prim.vtx}",                               "(cm)"},
+  {"YprimMCtruth",           "y_{MCtruth.prim.vtx}",                               "(cm)"},
+  {"ZprimMCtruth",           "z_{MCtruth.prim.vtx}",                               "(cm)"},
   {"XRes",                   "#Delta x_{prim.vtx}",                                "(cm)"},
   {"YRes",                   "#Delta y_{prim.vtx}",                                "(cm)"},
   {"ZRes",                   "#Delta z_{prim.vtx}",                                "(cm)"},
