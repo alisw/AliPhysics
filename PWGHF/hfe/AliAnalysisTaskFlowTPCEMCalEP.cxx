@@ -747,7 +747,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         
         if(TMath::Abs(track->Eta())>0.7) continue;
         if(track->GetTPCNcls() < 100) continue;
-        if(track->GetITSNcls() < 5) continue;
+        if(track->GetITSNcls() < 3) continue;
         if(!track->IsOn(AliAODTrack::kITSrefit)) continue;
         if(!track->IsOn(AliAODTrack::kTPCrefit)) continue;
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;
