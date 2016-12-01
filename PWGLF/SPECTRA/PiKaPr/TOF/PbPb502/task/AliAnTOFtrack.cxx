@@ -1,17 +1,17 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in the supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
@@ -86,7 +86,7 @@ Bool_t AliAnTOFtrack::PassCut(const Int_t cut){
   if(cut < -1 || cut >= nCutVars) AliFatal("requested cut is out of bound");
   //Always apply standard cuts except if requiring one different cut
   if(cut == -1) return PassStdCut();;
-
+  
   Int_t cutindex = -1;  
   Int_t sum = 0;
   for(Int_t i = 0; i < nCuts; i++){//Identify if the cut Type is of the Loose kind
@@ -103,7 +103,7 @@ Bool_t AliAnTOFtrack::PassCut(const Int_t cut){
     else if(!GetMaskBit(fTrkCutMask, CutStdIndexInMask[i])) return kFALSE;
   }
   if(cutindex == -1) if(!GetMaskBit(fTrkCutMask, cut)) return kFALSE; //Cut type must be of the Tight kind
-    
+  
   return kTRUE;
   
 }
@@ -116,4 +116,33 @@ Float_t AliAnTOFtrack::GetDeltaT(const UInt_t id){
 Float_t AliAnTOFtrack::GetDeltaSigma(const UInt_t id, const UInt_t hypo) {
   if(id > kExpSpecies || hypo > kExpSpecies) AliFatal("Index required is out of bound");
   return GetDeltaT(hypo)/fTOFExpSigma[id];
+}
+
+Bool_t AliAnTOFtrack::IsTPCElectron(){
+  if(GetMaskBit(fTPCPIDMask, kIsTPCElectron)) return kTRUE; //1.5 sigma cut for Electrons in TPC
+  return kFALSE;
+}
+
+Bool_t AliAnTOFtrack::IsTPCPiKP(const UInt_t i){
+  if(i > 3) AliFatal("Wrong index required");
+  if(GetMaskBit(fTPCPIDMask, kIsTPCPion + i)) return kTRUE; //5 sigma cut for Pi/K/P in TPC
+  return kFALSE;
+}
+
+Bool_t AliAnTOFtrack::IsTPCPiKP(){
+  for(Int_t i = 0; i < 3; i++) if(IsTPCPiKP(i)) return kTRUE; //5 sigma cut for Pi/K/P in TPC
+  return kFALSE;
+}
+
+Bool_t AliAnTOFtrack::ConsistentTPCTOF(){
+  if(!IsTPCPiKP()) return kFALSE;
+  for (Int_t i = 0; i < 3; i++) {
+    if(GetMaskBit(fTPCPIDMask, kIsTPCPion + i) && TMath::Abs(GetDeltaSigma(kpi + i, kpi + i)) < 5) return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliAnTOFtrack::IsNegative(){
+  if(GetMaskBit(fTrkMask, kNegTrk)) return kTRUE;
+  return kFALSE;
 }
