@@ -23,6 +23,7 @@ class TList;
 class TNtuple;
 class TRandom3;
 
+class AliEventCuts;
 class AliESDEvent;
 class AliESDVertex;
 class AliITSPidParams;
@@ -30,6 +31,7 @@ class AliITSPIDResponse;
 class AliStack;
 class AliVTrack;
 
+#include "AliEventCuts.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
@@ -86,11 +88,13 @@ public:
   //Setters for event selection settings
   void SetITSPidParams(AliITSPidParams* pidParams)     { fITSPidParams = pidParams; }
   void SetTriggerSel   (UInt_t   tg = AliVEvent::kMB)  { fTriggerSel   = tg;   }
+  void SetVtxQACheck   (Bool_t chkSPDres = kTRUE, Bool_t chkZsep = kTRUE, Bool_t reqBoth = kFALSE)
+  {fChkVtxSPDRes = chkSPDres; fChkVtxZSep = chkZsep; fReqBothVtx = reqBoth;}
   void SetMaxVtxZCut               (Double_t vz = 10)  { fMaxVtxZCut   = vz;   }
   void SetDoCheckSDDIn          (Bool_t flag = kTRUE)  { fChkIsSDDIn   = flag; }
   void SetDoRejIncDAQ           (Bool_t flag = kTRUE)  { fRejIncDAQ    = flag; }
   void SetDoSPDclsVsTrackletsCut(Bool_t flag = kTRUE)  { fDoSPDCvsTCut = flag; }
-  void SetEventSelManually      (Bool_t flag = kTRUE)  { fDoManually   = flag; }
+  void SetUseExtEventCuts       (Bool_t flag = kTRUE)  { fExtEventCuts = flag; }
 
   //Setters for track cut settings
   void SetMinSPDPoints   (Int_t     np =   1) { fMinSPDPts       =  np; }
@@ -177,6 +181,9 @@ private:
   AliITSPidParams*   fITSPidParams;
   AliITSPIDResponse* fITSPIDResponse; //! class with BB parameterizations
 
+  //Standard event cut
+  AliEventCuts fEventCuts;      //!<! basic cut variables for events
+
   /////////////////////////////////////////////////////
   // List
   /////////////////////////////////////////////////////
@@ -196,7 +203,8 @@ private:
   /////////////////////////////////////////////////////
   TH1I* fHistNEvents;    //! histo with number of events
   TH1I* fHistMCEvents;
-  TH1F* fHistMult;       //! histo with multiplicity of the events
+  TH1F* fHistMultBefEvtSel;  //! histo with multiplicity of the events before event selection
+  TH1F* fHistMultAftEvtSel;  //! histo with multiplicity of the events after all event selection
   TH1F* fHistVtxZ;       //! histo with the distribution of the primary vertex Z coordinate
 
   TH2F* fHistNTracks[kNchg];      //! histo with number of tracks vs Pt 
@@ -280,7 +288,7 @@ private:
   Bool_t   fChkVtxSPDRes;  // enable check on spd vtx resolution
   Bool_t   fChkVtxZSep;    // enable check on proximity of the z coordinate between both vertexer
   Bool_t   fReqBothVtx;    // ask for both trk and SPD vertex
-  Bool_t   fDoManually;
+  Bool_t   fExtEventCuts;  // enable use of AliEventCuts for event selection
 
   //trk sel.
   Int_t    fMinSPDPts;       // minimum number of SPD Points
@@ -329,7 +337,7 @@ private:
   Double_t  fSmearP;    // extra relative smearing on simulated momentum
   Double_t  fSmeardEdx; // extra relative smearing on simulated dE/dx
 
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 9);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 10);
 };
 
 #endif
