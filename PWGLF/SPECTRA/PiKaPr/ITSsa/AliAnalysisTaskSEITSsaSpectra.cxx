@@ -66,6 +66,7 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fESD(NULL),
   fITSPidParams(NULL),
   fITSPIDResponse(NULL),
+  fEventCuts(0),
   fOutput(NULL),
   fListCuts(NULL),
   fListTree(NULL),
@@ -76,7 +77,8 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fNtupleMC(NULL),
   fHistNEvents(NULL),
   fHistMCEvents(NULL),
-  fHistMult(NULL),
+  fHistMultBefEvtSel(NULL),
+  fHistMultAftEvtSel(NULL),
   fHistVtxZ(NULL),
   fHistDEDX(NULL),
   fHistDEDXdouble(NULL),
@@ -88,7 +90,7 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fChkVtxSPDRes(kTRUE),
   fChkVtxZSep(kFALSE),
   fReqBothVtx(kFALSE),
-  fDoManually(kFALSE),
+  fExtEventCuts(kFALSE),
   fMinSPDPts(1),
   fMinNdEdxSamples(3),
   fAbsEtaCut(.8),
@@ -125,18 +127,18 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
   fSmeardEdx(0.)
 {
   //Constructor
+  fRandGener = new TRandom3(0);
+
   Double_t xbins[kNbins + 1] = {0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25,
                                 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65,
                                 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.0
                                };
-
   for (Int_t iBin = 0; iBin < (kNbins + 1); ++iBin)
     fPtBinLimits[iBin] = xbins[iBin];
+
   for (int iChg=0; iChg<kNchg; ++iChg)
     fHistNTracks[iChg] = NULL;
-  
-  fRandGener = new TRandom3(0);
-  
+
   for (Int_t iSpc = 0; iSpc < kNspc; ++iSpc) {
     for (Int_t iChg = 0; iChg < kNchg; ++iChg) {
       int index = iSpc * kNchg + iChg;
@@ -239,14 +241,6 @@ AliAnalysisTaskSEITSsaSpectra::~AliAnalysisTaskSEITSsaSpectra()
       delete fRandGener;
       fRandGener = NULL;
     }
-    if (fDCAzCutFunc) {
-      delete fDCAzCutFunc;
-      fDCAzCutFunc = NULL;
-    }
-    if (fDCAxyCutFunc) {
-      delete fDCAxyCutFunc;
-      fDCAxyCutFunc = NULL;
-    }
     if (fITSPIDResponse) {
       delete fITSPIDResponse;
       fITSPIDResponse = NULL;
@@ -263,8 +257,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 {
   // Create a TList with histograms and a TNtuple
   // Called once
-  CreateDCAcutFunctions();
-  if (fFillNtuple ) {
+  if (fFillNtuple) {
     fListTree = new TList();
     fListTree->SetOwner();
 
@@ -287,13 +280,19 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("Spiderman");
 
+  if (fExtEventCuts) { //configure AliEventCuts
+    //fEventCuts.SetManualMode();
+    //Histograms for event Selection
+    fEventCuts.AddQAplotsToList(fOutput);
+  }
+
   TString plpName[3] = {"Sel", "SPD", "MV"};
   fHistNEvents = new TH1I("fHistNEvents", "Number of processed events;Ev. Sel. Step;Counts", kNEvtCuts, .5, (kNEvtCuts + .5));
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
   fHistNEvents->GetXaxis()->SetBinLabel(kIsReadable, "Readable");
   fHistNEvents->GetXaxis()->SetBinLabel(kIsSDDIn, "HasSDDIn");
-  fHistNEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");  
+  fHistNEvents->GetXaxis()->SetBinLabel(kPassTrig, "PassPhysSelTrig");
   fHistNEvents->GetXaxis()->SetBinLabel(kPassMultSel, "PassMultSel");
   fHistNEvents->GetXaxis()->SetBinLabel(kIsNotIncDAQ, "PassIncDAQ");
   fHistNEvents->GetXaxis()->SetBinLabel(kPassSPDclsVsTCut, "PassClsVsTrackletBG");
@@ -316,10 +315,20 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
   fHistMCEvents->GetXaxis()->SetBinLabel(kHasGoodVtxZ, "HasGoodVertex");
   fOutput->Add(fHistMCEvents);
 
-  fHistMult = new TH1F("fHistMult", "Event Multiplicity", 101, -.5, 100.5);
-  fHistMult->Sumw2();
-  fHistMult->SetMinimum(0);
-  fOutput->Add(fHistMult);
+  Int_t kNMultBin = 115;
+  Float_t lMultBinLimit[kNMultBin];
+  for (Int_t ibin=0; ibin < kNMultBin; ++ibin)
+    lMultBinLimit[ibin] = (ibin<100) ? (0.+(1.)*ibin) : (100.+100*(ibin-100));
+
+  fHistMultBefEvtSel = new TH1F("fHistMultBefEvtSel", "Event Multiplicity before event selection", kNMultBin-1, lMultBinLimit);
+  fHistMultBefEvtSel->Sumw2();
+  fHistMultBefEvtSel->SetMinimum(0);
+  fOutput->Add(fHistMultBefEvtSel);
+
+  fHistMultAftEvtSel = new TH1F("fHistMultAftEvtSel", "Event Multiplicity after event selection", kNMultBin-1, lMultBinLimit);
+  fHistMultAftEvtSel->Sumw2();
+  fHistMultAftEvtSel->SetMinimum(0);
+  fOutput->Add(fHistMultAftEvtSel);
 
   fHistVtxZ = new TH1F("fHistVtxZ", "Vtx Z distribution", 400, -20, 20);
   fHistVtxZ->Sumw2();
@@ -396,19 +405,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
       fHistReco[index] = new TH1F(histName, histName, kNbins, fPtBinLimits);
       fOutput->Add(fHistReco[index]);
 
-      Int_t kNEvtSelBin = kNEvtCuts - 1;
       if (fIsMC) {
         //
         //Histograms MC part Gen bef and afte all selection Good Vertex Gen.
         histName = Form("fHistPrimMCGenVtxZall%s%s", spcName[ispc], chgName[ichg]);
-        fHistPrimMCGenVtxZall[index] = new TH2F(histName, histName, kNEvtSelBin, -.5, kNEvtSelBin - .5, kNbins, fPtBinLimits);
+        fHistPrimMCGenVtxZall[index] = new TH2F(histName, histName, kNEvtCuts, .5, (kNEvtCuts + .5), kNbins, fPtBinLimits);
 
         histName = Form("fHistPrimMCGenVtxZcut%s%s", spcName[ispc], chgName[ichg]);
-        fHistPrimMCGenVtxZcut[index] = new TH2F(histName, histName, kNEvtSelBin, -.5, kNEvtSelBin - .5, kNbins, fPtBinLimits);
+        fHistPrimMCGenVtxZcut[index] = new TH2F(histName, histName, kNEvtCuts, .5, (kNEvtCuts + .5), kNbins, fPtBinLimits);
 
         fOutput->Add(fHistPrimMCGenVtxZall[index]);
         fOutput->Add(fHistPrimMCGenVtxZcut[index]);
-
 
         histName = Form("fHistMCReco%s%s", spcName[ispc], chgName[ichg]);
         fHistMCReco[index] = new TH2F(histName, histName, kNbins, fPtBinLimits, 4, -1.5, 2.5);
@@ -416,7 +423,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 
         histName = Form("fHistMCPrimReco%s%s", spcName[ispc], chgName[ichg]);
         fHistMCPrimReco[index] = new TH2F(histName, histName, kNbins, fPtBinLimits, 4, -1.5, 2.5);
-        fOutput->Add(fHistMCReco[index]);
+        fOutput->Add(fHistMCPrimReco[index]);
 
         //
         //Histograms MC part Rec.
@@ -547,9 +554,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     }//end FillIntDistHist
   }
 
-  // Post output data.
-  PostAllData();
-
+  // Post output data container
+  PostData(1, fOutput);
+  if (fFillNtuple) PostData(3, fListTree);
   AliInfo("End of CreateOutputObjects");
 }
 
@@ -558,6 +565,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
 //___________________________________________________________________________
 void AliAnalysisTaskSEITSsaSpectra::CreateDCAcutFunctions()
 {
+  fListCuts = new TList();
+  fListCuts->SetOwner();
   Double_t xyP[3];
   Double_t zP[3];
   if (fYear == 2009) {
@@ -593,24 +602,16 @@ void AliAnalysisTaskSEITSsaSpectra::CreateDCAcutFunctions()
       zP[2] = 1.2;
     }
   }
-
   fDCAxyCutFunc = new TF1("fDCAxyCutFunc", "[3]*([0]+[1]/TMath::Power(TMath::Abs(x),[2]))", .05, 10.);
-  for (Int_t ipar = 0; ipar < 3; ipar++)
-    fDCAxyCutFunc->SetParameter(ipar, xyP[ipar]);
-
+  for (Int_t ipar = 0; ipar < 3; ipar++) fDCAxyCutFunc->SetParameter(ipar, xyP[ipar]);
   fDCAxyCutFunc->SetParameter(3, fNSigmaDCAxy);
   fDCAxyCutFunc->SetParName(3, "Sigmas");
 
   fDCAzCutFunc = new TF1("fDCAzCutFunc", "[3]*([0]+[1]/TMath::Power(TMath::Abs(x),[2]))", .05, 10.);
-  for (Int_t ipar = 0; ipar < 3; ipar++)
-    fDCAzCutFunc->SetParameter(ipar, zP[ipar]);
-
+  for (Int_t ipar = 0; ipar < 3; ipar++) fDCAzCutFunc->SetParameter(ipar, zP[ipar]);
   fDCAzCutFunc->SetParameter(3, fNSigmaDCAz);
   fDCAzCutFunc->SetParName(3, "Sigmas");
 
-  fListCuts = new TList();
-  fListCuts->SetOwner();
-  fListCuts->SetName("DCAcuts");
   fListCuts->Add(fDCAxyCutFunc);
   fListCuts->Add(fDCAzCutFunc);
 }
@@ -628,6 +629,9 @@ void AliAnalysisTaskSEITSsaSpectra::Init()
   if (fDoMultSel)
     AliInfoF("Cent. %.f %.f %s", fLowMult, fUpMult, fCentEstimator.Data());
 
+  CreateDCAcutFunctions(); //Creating kParamContainer data
+  // Post parameter data container
+  PostData(2,fListCuts);
   return;
 }
 
@@ -701,6 +705,9 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
     PostAllData();
     return;
   }
+
+  if (fDoMultSel) //Fill fHistMultAftEvtSel after the event Selection
+    fHistMultAftEvtSel->Fill(fEvtMult);
 
   if (!fITSPIDResponse)
     fITSPIDResponse = new AliITSPIDResponse(fIsMC);
@@ -784,6 +791,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
     if (dEdx < 0) continue;
     trkSel = kPassdEdx;
     fHistNTracks[iChg]->Fill(trkSel, trkPt);
+
+    //fill propaganda plot with dedx before pt cut
+    fHistDEDX->Fill(track->GetP(), dEdx);
+    fHistDEDXdouble->Fill(track->GetP()*track->GetSign(), dEdx);
 
     //"ptCut"
     Int_t trkPtBin = lAxis->FindFixBin(trkPt);
@@ -953,10 +964,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
           }
         }
       }//end lIsGooTrack
-
-      //fill propaganda plot with dedx
-      fHistDEDX->Fill(track->GetP(), dEdx);
-      fHistDEDXdouble->Fill(track->GetP()*track->GetSign(), dEdx);
     }//end else fill Ntuple
   }//end track loop
   delete lAxis;
@@ -1030,15 +1037,47 @@ Bool_t AliAnalysisTaskSEITSsaSpectra::IsEventAccepted(EEvtCut_Type& evtSel)
       PostAllData();
       return kFALSE;
     }
-    fHistMult->Fill(fEvtMult);
+    fHistMultBefEvtSel->Fill(fEvtMult);
   }
   evtSel = kPassMultSel;
 
-  if (!fDoManually) {
-    AliError(""); //FIXME
-    PostAllData();
-    return kFALSE;
+  if (fExtEventCuts) {
+    if (fEventCuts.AcceptEvent(fESD)) {
+      evtSel = kHasGoodVtxZ;
+      return kTRUE;
+    }
+    AliDebug(3, "Event dont accepted by AliEventCuts");
+
+    if (!fEventCuts.PassedCut(AliEventCuts::kDAQincomplete)) {
+      AliDebug(3, "Event with incomplete DAQ");
+      PostAllData();
+      return kFALSE;
+    }
+    evtSel = kIsNotIncDAQ;
+
+    if (!fEventCuts.PassedCut(AliEventCuts::kPileUp)) {
+      AliDebug(3, "Event with PileUp");
+      PostAllData();
+      return kFALSE;
+    }
+    evtSel = kIsNotPileup;
+
+    if (!fEventCuts.PassedCut(AliEventCuts::kVertexQuality)) {
+      AliDebug(3, "Event doesn't pass vtx quality sel");
+      PostAllData();
+      return kFALSE;
+    }
+    evtSel = kHasRecVtx;
+
+    if (!fEventCuts.PassedCut(AliEventCuts::kVertexPosition)) {
+      AliDebugF(3, "Vertex with Z>%f cm", fMaxVtxZCut);
+      PostAllData();
+      return kFALSE;
+    }
+    evtSel = kHasGoodVtxZ;
+
   } else {
+
     if (fRejIncDAQ && fESD->IsIncompleteDAQ()) {
       AliDebug(3, "Event with incomplete DAQ");
       PostAllData();
@@ -1088,7 +1127,7 @@ void AliAnalysisTaskSEITSsaSpectra::SetupStandardEventCutsForRun1()
 {
   fChkIsSDDIn   = kTRUE;
   fDoMultSel    = kFALSE;
-  fDoManually   = kTRUE;
+  fExtEventCuts = kFALSE;
   fRejIncDAQ    = kFALSE;
   fDoSPDCvsTCut = kFALSE;
   fPlpType      = kNoPileup;
@@ -1106,7 +1145,7 @@ void AliAnalysisTaskSEITSsaSpectra::SetupEventCutsForRun1pPb()
 {
   fChkIsSDDIn   = kTRUE;
   fDoMultSel    = kTRUE;
-  fDoManually   = kTRUE;
+  fExtEventCuts = kFALSE;
   fRejIncDAQ    = kFALSE;
   fDoSPDCvsTCut = kFALSE;
   fPlpType      = kNoPileup;
@@ -1124,7 +1163,7 @@ void AliAnalysisTaskSEITSsaSpectra::SetupStandardEventCutsForRun2()
 {
   fChkIsSDDIn   = kTRUE;
   fDoMultSel    = kFALSE;
-  fDoManually   = kTRUE;
+  fExtEventCuts = kFALSE;
   fRejIncDAQ    = kTRUE;
   fDoSPDCvsTCut = kTRUE;
   fPlpType      = kPileupSPD;
