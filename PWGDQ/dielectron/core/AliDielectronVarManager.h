@@ -3,7 +3,7 @@
 * @Date:   2016-11-03, 15:14:35
 * @Email:  pdillens@cern.ch
 * @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-23, 15:53:54
+* @Last modified time: 2016-12-01, 17:15:16
 */
 
 
@@ -3562,7 +3562,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
       values[kQnCorrTPCy_FMDAy] = values[kQnTPCyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
-      values[AliDielectronVarManager::kQnDiffTPC_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
+      values[AliDielectronVarManager::kQnDiffTPC_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
       values[kQnCorrTPCx_FMDCx] = values[kQnTPCxH2] * values[kQnFMDCxH2];
       values[kQnCorrTPCx_FMDCy] = values[kQnTPCxH2] * values[kQnFMDCyH2];
       values[kQnCorrTPCy_FMDCx] = values[kQnTPCyH2] * values[kQnFMDCxH2];
