@@ -175,7 +175,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
           TParticle* dummy  = MCStack->Particle(fCaloPhotonMCLabels[i]);
           energyPerPart[i]  = dummy->Energy();
           // suppress energy of hadrons !!! DIRTY hack !!!
-          if (!(abs(dummy->GetPdgCode())== 11 || abs(dummy->GetPdgCode())== 22)){
+          if (!(TMath::Abs(dummy->GetPdgCode())== 11 || TMath::Abs(dummy->GetPdgCode())== 22)){
   //           cout << "suppressed hadron energy for:" << dummy->GetPdgCode() << endl;
             energyPerPart[i]= 0.25; // put energy to mip
           }  
@@ -220,11 +220,11 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
   //determine mother/grandmother of leading particle and if it is pion/eta/eta_prime: fill array fCaloPhotonMotherMCLabels at position 0
   //determine mother/grandmother of leading particle and if it is pion/eta/eta_prime: fill array fCaloPhotonMotherMCLabels at position 0
   if (particleMotherLabel > -1){
-    if( abs(particleMotherPDG) == 111 || abs(particleMotherPDG) == 221 || abs(particleMotherPDG) == 331 ){
+    if( TMath::Abs(particleMotherPDG) == 111 || TMath::Abs(particleMotherPDG) == 221 || TMath::Abs(particleMotherPDG) == 331 ){
       fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
       fNCaloPhotonMotherMCLabels++;
-    } else if (abs(particleMotherPDG) == 22 && particleGrandMotherLabel > -1){
-      if ( abs(particleMotherPDG) == 22 && (abs(particleGrandMotherPDG) == 111 || abs(particleGrandMotherPDG) == 221 || abs(particleGrandMotherPDG) == 331) ){
+    } else if (TMath::Abs(particleMotherPDG) == 22 && particleGrandMotherLabel > -1){
+      if ( TMath::Abs(particleMotherPDG) == 22 && (TMath::Abs(particleGrandMotherPDG) == 111 || TMath::Abs(particleGrandMotherPDG) == 221 || TMath::Abs(particleGrandMotherPDG) == 331) ){
         fCaloPhotonMotherMCLabels[0]  = particleGrandMotherLabel;
         fNCaloPhotonMotherMCLabels++;
       } 
@@ -235,33 +235,33 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
   }
 
   // Check whether the first contribution was photon
-  if(abs(MCStack->Particle(GetCaloPhotonMCLabel(0))->GetPdgCode()) == 22){
+  if(TMath::Abs(MCStack->Particle(GetCaloPhotonMCLabel(0))->GetPdgCode()) == 22){
     isPhoton                          = kTRUE;
     // did it decay via the dalitz channel
     if (particleMotherLabel > -1 && particleMotherNDaugthers == 3) 
       isDalitz                        = kTRUE;
     // Test whether particle stems from a shower or radiation
-    if (abs(particleMotherPDG) == 11){                    // check whether photon stems from electron
+    if (TMath::Abs(particleMotherPDG) == 11){                    // check whether photon stems from electron
       isPhotonWithElecMother          = kTRUE;
       if (particleGrandMotherLabel > -1){                 // test whether first particle has a grandmother
-        if (abs(particleGrandMotherPDG) == 22 ) 
+        if (TMath::Abs(particleGrandMotherPDG) == 22 )
           isShower                    = kTRUE;            // check whether grandmother is a photon (meaning this is most likely a shower)
       }	
     }			
   }
   // Check whether the first contribution was electron
-  if( abs(MCStack->Particle(GetCaloPhotonMCLabel(0))->GetPdgCode()) == 11 ){
+  if( TMath::Abs(MCStack->Particle(GetCaloPhotonMCLabel(0))->GetPdgCode()) == 11 ){
     isElectron                        = kTRUE;
     if (particleMotherLabel > -1) {
       // was it a conversion
-      if (abs(particleMotherPDG) == 22) 
+      if (TMath::Abs(particleMotherPDG) == 22)
         isConversion                  = kTRUE;
       // did it decay via the dalitz channel
       if (particleGrandMotherLabel > -1 && particleGrandMotherNDaugthers == 3 ) 
         isDalitz                      = kTRUE;
     }
     if (particleGrandMotherLabel > -1){                     // check whether electron has a grandmother
-      if (abs(particleGrandMotherPDG) == 11 ||  abs(particleGrandMotherPDG) == 22){ // test whether electron has photon or electron as grandmother (meaning will most likely be a shower)
+      if (TMath::Abs(particleGrandMotherPDG) == 11 ||  TMath::Abs(particleGrandMotherPDG) == 22){ // test whether electron has photon or electron as grandmother (meaning will most likely be a shower)
         isShower                      = kTRUE; 
       }
     }
@@ -301,10 +301,10 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
             isMerged                  = kTRUE;                        // test whether current and first particle have the same mother => i.e. other gamma from decay or dalitz electron
           if (dummyPartGrandMotherLabel > -1){                        // test whether first particle has a grandmother
             // check whether particle is an electron from a conversion of a photon from the original mother
-            if (abs(dummyPart->GetPdgCode()) == 11 && dummyPartGrandMotherLabel == particleMotherLabel ) 
+            if (TMath::Abs(dummyPart->GetPdgCode()) == 11 && dummyPartGrandMotherLabel == particleMotherLabel )
               isMergedPartConv        = kTRUE;
             // check whether particle is an electron from a dalitz decay from the original mother
-            if (abs(dummyPart->GetPdgCode()) == 11 && dummyPartMotherLabel == particleMotherLabel ) 
+            if (TMath::Abs(dummyPart->GetPdgCode()) == 11 && dummyPartMotherLabel == particleMotherLabel )
               isDalitzMerged          = kTRUE;
           }
         }
@@ -314,26 +314,26 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
       if (isElectron && !isShower){
         if (enablePrintOuts) cout << "lead electron" << endl;
         if (dummyPartMotherLabel > -1 && particleMotherLabel > -1){     // test whether first particle has a mother
-          if ( abs(dummyPart->GetPdgCode()) == 11 && isConversion && dummyPartMotherLabel == particleMotherLabel  ) {
+          if ( TMath::Abs(dummyPart->GetPdgCode()) == 11 && isConversion && dummyPartMotherLabel == particleMotherLabel  ) {
             isConversionFullyContained  = kTRUE;                        // test whether conversion is fully contained in cluster
             if (enablePrintOuts) cout << "found full conversion" << endl;
-          } else if (abs(dummyPart->GetPdgCode()) == 11) { // current particle is an electron
+          } else if (TMath::Abs(dummyPart->GetPdgCode()) == 11) { // current particle is an electron
             if (enablePrintOuts) cout << "current is electron" << endl;
             // check whether current particle is a shower
             Bool_t isShowerCurrent    = kFALSE;
-            if (abs(dummyPartGrandMotherPDG) == 11)
+            if (TMath::Abs(dummyPartGrandMotherPDG) == 11)
               isShowerCurrent         = kTRUE;
-            if (abs(dummyPartGrandMotherPDG) == 22)
+            if (TMath::Abs(dummyPartGrandMotherPDG) == 22)
               isShowerCurrent         = kTRUE;
 
             // check whether current particle is a conversion
             Bool_t isConvCurrent      = kFALSE; 
-            if (abs(dummyPartMotherPDG) == 22 && !isShowerCurrent)
+            if (TMath::Abs(dummyPartMotherPDG) == 22 && !isShowerCurrent)
               isConvCurrent           = kTRUE;
              
             if (enablePrintOuts) cout << "conv current: " << isConvCurrent << "\t shower current: " << isShowerCurrent << endl;
             // check whether orginal electron and this electron stem from the same particle and electron originated in dalitz decay
-            if( dummyPartMotherLabel == particleMotherLabel && abs(particleMotherPDG) != 22 &&  !isShowerCurrent   ) {
+            if( dummyPartMotherLabel == particleMotherLabel && TMath::Abs(particleMotherPDG) != 22 &&  !isShowerCurrent   ) {
               isDalitzMerged          = kTRUE;
               isMerged                = kTRUE;            
             // both particles are from conversions    
@@ -345,23 +345,23 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
               }  
             // check whether current electron is from conversion & orginal e are from same mother   
             } else if (dummyPartGrandMotherLabel > -1 && isConvCurrent){
-              if (dummyPartGrandMotherLabel == particleMotherLabel && (abs(particleMotherPDG) == 111 || abs(particleMotherPDG) == 221 || abs(particleMotherPDG) == 331) ){
+              if (dummyPartGrandMotherLabel == particleMotherLabel && (TMath::Abs(particleMotherPDG) == 111 || TMath::Abs(particleMotherPDG) == 221 || TMath::Abs(particleMotherPDG) == 331) ){
                 isDalitzMerged          = kTRUE;
                 isMerged                = kTRUE;                  
               }
             // check whether current electron & orginal e is from conversion are from same mother   
             } else if (isConversion && particleGrandMotherLabel > -1){
-              if (dummyPartMotherLabel == particleGrandMotherLabel && (abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) ){
+              if (dummyPartMotherLabel == particleGrandMotherLabel && (TMath::Abs(dummyPartMotherPDG) == 111 || TMath::Abs(dummyPartMotherPDG) == 221 || TMath::Abs(dummyPartMotherPDG) == 331) ){
                 isDalitzMerged          = kTRUE;
                 isMerged                = kTRUE;                  
               }
             }
-          } else if (abs(dummyPart->GetPdgCode()) == 22){                 // test whether this particle is a photon 
+          } else if (TMath::Abs(dummyPart->GetPdgCode()) == 22){                 // test whether this particle is a photon
             // check whether current particle is a shower
             Bool_t isShowerCurrent    = kFALSE;
-            if (abs(dummyPartMotherPDG) == 11)
+            if (TMath::Abs(dummyPartMotherPDG) == 11)
               isShowerCurrent         = kTRUE;
-            if (abs(dummyPartMotherPDG) == 22)
+            if (TMath::Abs(dummyPartMotherPDG) == 22)
               isShowerCurrent         = kTRUE;
             
             // check whether orginal electron and this photon stem from the same particle and electron originated in dalitz
@@ -379,7 +379,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
 
 
       if (dummyPartMotherLabel > -1){ // test whether particle has a mother
-        if (abs(dummyPart->GetPdgCode()) == 22){ // test whether particle is a photon
+        if (TMath::Abs(dummyPart->GetPdgCode()) == 22){ // test whether particle is a photon
           //check if photon directly comes from a pion/eta/eta_prime decay
           Bool_t helpN                    = true;
           for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
@@ -391,11 +391,11 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
             fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]    = dummyPartMotherLabel;
             fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
           }  
-          if ((abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron) 
+          if ((TMath::Abs(dummyPartMotherPDG) == 111 || TMath::Abs(dummyPartMotherPDG) == 221 || TMath::Abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron)
             isSubLeadingEM                = kTRUE;
-        } else if (abs(dummyPart->GetPdgCode()) == 11){ //test whether particle is an electron
+        } else if (TMath::Abs(dummyPart->GetPdgCode()) == 11){ //test whether particle is an electron
           //check if electron comes from a pion decay
-          if ( abs(dummyPartMotherPDG) != 22 ){
+          if ( TMath::Abs(dummyPartMotherPDG) != 22 ){
             Bool_t helpN                    = true;
             for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
               if (fCaloPhotonMotherMCLabels[j] == dummyPartMotherLabel){ //check if mother is already contained in fCaloPhotonMotherMCLabels
@@ -406,11 +406,11 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliStack *MCStack, Bool_t enab
               fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]    = dummyPartMotherLabel;
               fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
             }  
-            if ((abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron) 
+            if ((TMath::Abs(dummyPartMotherPDG) == 111 || TMath::Abs(dummyPartMotherPDG) == 221 || TMath::Abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron)
               isSubLeadingEM                = kTRUE;
           } else if (dummyPartGrandMotherLabel > -1){ //if it is not a dalitz decay, test whether particle has a grandmother
             //check if it is a conversion electron that has pion/eta/eta_prime as grandmother
-            if ( (abs(dummyPartGrandMotherPDG) == 111 || abs(dummyPartGrandMotherPDG) == 221 || abs(dummyPartGrandMotherPDG) == 331)){
+            if ( (TMath::Abs(dummyPartGrandMotherPDG) == 111 || TMath::Abs(dummyPartGrandMotherPDG) == 221 || TMath::Abs(dummyPartGrandMotherPDG) == 331)){
               
               Bool_t helpN                  = true;
               for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
@@ -470,7 +470,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
           AliAODMCParticle* dummy  = (AliAODMCParticle*) AODMCTrackArray->At(GetCaloPhotonMCLabel(i));
           energyPerPart[i]  = dummy->E();
           // suppress energy of hadrons !!! DIRTY hack !!!
-          if (!(abs(dummy->GetPdgCode())== 11 || abs(dummy->GetPdgCode())== 22)){
+          if (!(TMath::Abs(dummy->GetPdgCode())== 11 || TMath::Abs(dummy->GetPdgCode())== 22)){
   //           cout << "suppressed hadron energy" << endl;
             energyPerPart[i]= 0.25; // put energy to mip
           }  
@@ -514,11 +514,11 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
 
   //determine mother/grandmother of leading particle and if it is pion/eta/eta_prime: fill array fCaloPhotonMotherMCLabels at position 0
   if (particleMotherLabel > -1){
-    if( abs(particleMotherPDG) == 111 || abs(particleMotherPDG) == 221 || abs(particleMotherPDG) == 331 ){
+    if( TMath::Abs(particleMotherPDG) == 111 || TMath::Abs(particleMotherPDG) == 221 || TMath::Abs(particleMotherPDG) == 331 ){
       fCaloPhotonMotherMCLabels[0]    = particleMotherLabel;
       fNCaloPhotonMotherMCLabels++;
-    } else if (abs(particleMotherPDG) == 22 && particleGrandMotherLabel > -1){
-      if ( abs(particleMotherPDG) == 22 && (abs(particleGrandMotherPDG) == 111 || abs(particleGrandMotherPDG) == 221 || abs(particleGrandMotherPDG) == 331) ){
+    } else if (TMath::Abs(particleMotherPDG) == 22 && particleGrandMotherLabel > -1){
+      if ( TMath::Abs(particleMotherPDG) == 22 && (TMath::Abs(particleGrandMotherPDG) == 111 || TMath::Abs(particleGrandMotherPDG) == 221 || TMath::Abs(particleGrandMotherPDG) == 331) ){
         fCaloPhotonMotherMCLabels[0]  = particleGrandMotherLabel;
         fNCaloPhotonMotherMCLabels++;
       } 
@@ -529,33 +529,33 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
   }
     
   // Check whether the first contribution was photon
-  if(abs(Photon->GetPdgCode()) == 22){
+  if(TMath::Abs(Photon->GetPdgCode()) == 22){
     isPhoton                          = kTRUE;
     // did it decay via the dalitz channel
     if (particleMotherLabel > -1 && particleMotherNDaugthers == 3) 
       isDalitz                        = kTRUE;
     // Test whether particle stems from a shower or radiation
-    if (abs(particleMotherPDG) == 11){            // check whether photon stems from electron
+    if (TMath::Abs(particleMotherPDG) == 11){            // check whether photon stems from electron
       isPhotonWithElecMother          = kTRUE;
       if (particleGrandMotherLabel > -1){         // test whether first particle has a grandmother
-        if (abs(particleGrandMotherPDG) == 22 ) 
+        if (TMath::Abs(particleGrandMotherPDG) == 22 )
           isShower                    = kTRUE;    // check whether grandmother is a photon (meaning this is most likely a shower)
       }	
     }			
   }
   // Check whether the first contribution was electron
-  if(abs(Photon->GetPdgCode()) == 11 ){
+  if(TMath::Abs(Photon->GetPdgCode()) == 11 ){
     isElectron                        = kTRUE;	
     if (particleMotherLabel > -1) {
       // was it a conversion
-      if (abs(particleMotherPDG) == 22) 
+      if (TMath::Abs(particleMotherPDG) == 22)
         isConversion                  = kTRUE;
       // did it decay via the dalitz channel
       if (particleGrandMotherLabel > -1 && particleGrandMotherNDaugthers == 3 ) 
         isDalitz                      = kTRUE;
     }
     if (particleGrandMotherLabel > -1){           // check whether electron has a grandmother
-      if (abs(particleGrandMotherPDG) == 11 ||  abs(particleGrandMotherPDG) == 22){	// test whether electron has photon or electron as grandmother (meaning will most likely be a shower)
+      if (TMath::Abs(particleGrandMotherPDG) == 11 ||  TMath::Abs(particleGrandMotherPDG) == 22){	// test whether electron has photon or electron as grandmother (meaning will most likely be a shower)
         isShower                      = kTRUE; 
       }
     }
@@ -595,10 +595,10 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
             isMerged                  = kTRUE;                        // test whether current and first particle have the same mother => i.e. other gamma from decay or dalitz electron
           if (dummyPartGrandMotherLabel > -1){                        // test whether first particle has a grandmother
             // check whether particle is an electron from a conversion of a photon from the original mother
-            if (abs(dummyPart->GetPdgCode()) == 11 && dummyPartGrandMotherLabel == particleMotherLabel ) 
+            if (TMath::Abs(dummyPart->GetPdgCode()) == 11 && dummyPartGrandMotherLabel == particleMotherLabel )
               isMergedPartConv        = kTRUE;
             // check whether particle is an electron from a dalitz decay from the original mother
-            if (abs(dummyPart->GetPdgCode()) == 11 && dummyPartMotherLabel == particleMotherLabel ) 
+            if (TMath::Abs(dummyPart->GetPdgCode()) == 11 && dummyPartMotherLabel == particleMotherLabel )
               isDalitzMerged          = kTRUE;
           }
         }
@@ -607,24 +607,24 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
       // largest contribution was from electron & not a from a shower
       if (isElectron && !isShower){
         if (dummyPartMotherLabel > -1 && particleMotherLabel > -1){     // test whether first particle has a mother
-          if ( abs(dummyPart->GetPdgCode()) == 11 && isConversion && dummyPartMotherLabel == particleMotherLabel  ) {
+          if ( TMath::Abs(dummyPart->GetPdgCode()) == 11 && isConversion && dummyPartMotherLabel == particleMotherLabel  ) {
             isConversionFullyContained  = kTRUE;                        // test whether conversion is fully contained in cluster
-          } else if (abs(dummyPart->GetPdgCode()) == 11) { // current particle is an electron
+          } else if (TMath::Abs(dummyPart->GetPdgCode()) == 11) { // current particle is an electron
             
             // check whether current particle is a shower
             Bool_t isShowerCurrent    = kFALSE;
-            if (abs(dummyPartGrandMotherPDG) == 11)
+            if (TMath::Abs(dummyPartGrandMotherPDG) == 11)
               isShowerCurrent         = kTRUE;
-            if (abs(dummyPartGrandMotherPDG) == 22)
+            if (TMath::Abs(dummyPartGrandMotherPDG) == 22)
               isShowerCurrent         = kTRUE;
 
             // check whether current particle is a conversion
             Bool_t isConvCurrent      = kFALSE; 
-            if (abs(dummyPartMotherPDG) == 22 && !isShowerCurrent)
+            if (TMath::Abs(dummyPartMotherPDG) == 22 && !isShowerCurrent)
               isConvCurrent           = kTRUE;
              
             // check whether orginal electron and this electron stem from the same particle and electron originated in dalitz decay
-            if( dummyPartMotherLabel == particleMotherLabel && abs(particleMotherPDG) != 22 &&  !isShowerCurrent   ) {
+            if( dummyPartMotherLabel == particleMotherLabel && TMath::Abs(particleMotherPDG) != 22 &&  !isShowerCurrent   ) {
               isDalitzMerged          = kTRUE;
               isMerged                = kTRUE;            
             // both particles are from conversions    
@@ -636,23 +636,23 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
               }  
             // check whether current electron is from conversion & orginal e are from same mother   
             } else if (dummyPartGrandMotherLabel > -1 && isConvCurrent){
-              if (dummyPartGrandMotherLabel == particleMotherLabel && (abs(particleMotherPDG) == 111 || abs(particleMotherPDG) == 221 || abs(particleMotherPDG) == 331) ){
+              if (dummyPartGrandMotherLabel == particleMotherLabel && (TMath::Abs(particleMotherPDG) == 111 || TMath::Abs(particleMotherPDG) == 221 || TMath::Abs(particleMotherPDG) == 331) ){
                 isDalitzMerged          = kTRUE;
                 isMerged                = kTRUE;                  
               }
             // check whether current electron & orginal e is from conversion are from same mother   
             } else if (isConversion && particleGrandMotherLabel > -1){
-              if (dummyPartMotherLabel == particleGrandMotherLabel && (abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) ){
+              if (dummyPartMotherLabel == particleGrandMotherLabel && (TMath::Abs(dummyPartMotherPDG) == 111 || TMath::Abs(dummyPartMotherPDG) == 221 || TMath::Abs(dummyPartMotherPDG) == 331) ){
                 isDalitzMerged          = kTRUE;
                 isMerged                = kTRUE;                  
               }
             }
-          } else if (abs(dummyPart->GetPdgCode()) == 22){                 // test whether this particle is a photon 
+          } else if (TMath::Abs(dummyPart->GetPdgCode()) == 22){                 // test whether this particle is a photon
             // check whether current particle is a shower
             Bool_t isShowerCurrent    = kFALSE;
-            if (abs(dummyPartMotherPDG) == 11)
+            if (TMath::Abs(dummyPartMotherPDG) == 11)
               isShowerCurrent         = kTRUE;
-            if (abs(dummyPartMotherPDG) == 22)
+            if (TMath::Abs(dummyPartMotherPDG) == 22)
               isShowerCurrent         = kTRUE;
             
             // check whether orginal electron and this photon stem from the same particle and electron originated in dalitz
@@ -669,7 +669,7 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
       }
 
       if (dummyPartMotherLabel > -1){ // test whether particle has a mother
-        if (abs(dummyPart->GetPdgCode()) == 22){ // test whether particle is a photon
+        if (TMath::Abs(dummyPart->GetPdgCode()) == 22){ // test whether particle is a photon
           //check if photon directly comes from a pion/eta/eta_prime decay
           Bool_t helpN                    = true;
           for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
@@ -681,11 +681,11 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
             fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]    = dummyPartMotherLabel;
             fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
           }  
-          if ((abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron) 
+          if ((TMath::Abs(dummyPartMotherPDG) == 111 || TMath::Abs(dummyPartMotherPDG) == 221 || TMath::Abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron)
             isSubLeadingEM                = kTRUE;
-        } else if (abs(dummyPart->GetPdgCode()) == 11){ //test whether particle is an electron
+        } else if (TMath::Abs(dummyPart->GetPdgCode()) == 11){ //test whether particle is an electron
           //check if electron comes from a pion decay
-          if ( abs(dummyPartMotherPDG) != 22 ){
+          if ( TMath::Abs(dummyPartMotherPDG) != 22 ){
             Bool_t helpN                    = true;
             for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){
               if (fCaloPhotonMotherMCLabels[j] == dummyPartMotherLabel){ //check if mother is already contained in fCaloPhotonMotherMCLabels
@@ -696,11 +696,11 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlagsAOD(AliVEvent* event, Bool_t en
               fCaloPhotonMotherMCLabels[fNCaloPhotonMotherMCLabels]    = dummyPartMotherLabel;
               fNCaloPhotonMotherMCLabels++; //only if particle label is not yet contained in array, count up fNCaloPhotonMotherMCLabels
             }  
-            if ((abs(dummyPartMotherPDG) == 111 || abs(dummyPartMotherPDG) == 221 || abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron) 
+            if ((TMath::Abs(dummyPartMotherPDG) == 111 || TMath::Abs(dummyPartMotherPDG) == 221 || TMath::Abs(dummyPartMotherPDG) == 331) && !isPhoton && !isElectron)
               isSubLeadingEM                = kTRUE;
           } else if (dummyPartGrandMotherLabel > -1){ //if it is not a dalitz decay, test whether particle has a grandmother
             //check if it is a conversion electron that has pion/eta/eta_prime as grandmother
-            if ( (abs(dummyPartGrandMotherPDG) == 111 || abs(dummyPartGrandMotherPDG) == 221 || abs(dummyPartGrandMotherPDG) == 331)){
+            if ( (TMath::Abs(dummyPartGrandMotherPDG) == 111 || TMath::Abs(dummyPartGrandMotherPDG) == 221 || TMath::Abs(dummyPartGrandMotherPDG) == 331)){
               
               Bool_t helpN                  = true;
               for(Int_t j=0; j<fNCaloPhotonMotherMCLabels; j++){

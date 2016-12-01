@@ -437,11 +437,11 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     else 
       hasMother                 = kFALSE;
 
-    if (!(abs(particle->GetPdgCode()) == 111 || abs(particle->GetPdgCode()) == 221 || abs(particle->GetPdgCode()) == 331 ||
-      abs(particle->GetPdgCode()) == 223 || abs(particle->GetPdgCode()) == 211 )  )
+    if (!(TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221 || TMath::Abs(particle->GetPdgCode()) == 331 ||
+      TMath::Abs(particle->GetPdgCode()) == 223 || TMath::Abs(particle->GetPdgCode()) == 211 )  )
       continue;
     
-    if (!(fabs(particle->Energy()-particle->Pz())>0.)) continue;
+    if (!(TMath::Abs(particle->Energy()-particle->Pz())>0.)) continue;
     Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
 //     cout << i << "\t"<< particle->GetPdgCode() << "\t"<< particle->Pz() << "\t" << particle->Energy()<< "\t" << particle->Energy()-particle->Pz() << "\t"<< yPre << endl;
     if (yPre == 0.) continue;
