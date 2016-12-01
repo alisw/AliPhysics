@@ -54,7 +54,7 @@ void AddTask_GammaConvFlow_pp(
                                 TString additionalTrainConfig = "0"                           // additional counter for trainconfig, always has to be last parameter
                               ) {
   
-  Int_t isHeavyIon = 0
+  Int_t isHeavyIon = 0;
   
   // make use of train subwagon feature
   if (additionalTrainConfig.Atoi() > 0){
