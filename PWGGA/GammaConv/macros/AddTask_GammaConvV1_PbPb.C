@@ -1630,6 +1630,10 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("56800013", "00200009500002003220000000", "0152306500900000"); // 60-80%
     cuts.AddCut("54800013", "00200009500002003220000000", "0152306500900000"); // 40-80%
     cuts.AddCut("54900013", "00200009500002003220000000", "0152306500900000"); // 40-90%
+  } else  if (trainConfig == 312){ // LHC10h standard direct photon flow cuts
+    cuts.AddCut("50200013", "00200009307000008250400000", "0152304500900000");
+    cuts.AddCut("52400013", "00200009307000008250400000", "0152304500900000");
+    cuts.AddCut("54800013", "00200009307000008250400000", "0152304500900000");
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -1908,7 +1912,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
 
     analysisCuts[i] = new AliConversionPhotonCuts();
     if (trainConfig == 300 || trainConfig == 301 || trainConfig == 302  || trainConfig == 303  || trainConfig == 304  || trainConfig == 305 || 
-        trainConfig == 306 || trainConfig == 307 || trainConfig == 308  || trainConfig == 309  || trainConfig == 310  || trainConfig == 311 ||
+        trainConfig == 306 || trainConfig == 307 || trainConfig == 308  || trainConfig == 309  || trainConfig == 310  || trainConfig == 311 || trainConfig == 312 ||
         trainConfig == 158 || trainConfig == 159 || trainConfig == 160  || trainConfig == 161  || trainConfig == 162  || trainConfig == 163 ||
         trainConfig == 164 || trainConfig == 165 || trainConfig == 204 || trainConfig == 205 || trainConfig == 206  || trainConfig == 207  || trainConfig == 208  || trainConfig == 209)
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
