@@ -270,7 +270,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
 
     //TOF
     //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.,3., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
-    //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
 
     cuts->AddCut(pid);
 

@@ -23,7 +23,10 @@ AliAnalysisTask *AddTask_ivorobye_minbiaspp(Bool_t getFromAlien=kFALSE,
     
     std::cout << "Configpath: " << configFilePath << std::endl;
     
-    gROOT->LoadMacro(configFilePath.Data());
+    TString configFunction(cFileName(0,cFileName.Length() - 2));
+
+    if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFunction.Data()))
+        gROOT->LoadMacro(configFilePath.Data());
     
     //Do we have an MC handler?
     hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
