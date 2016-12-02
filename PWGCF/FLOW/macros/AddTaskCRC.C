@@ -520,6 +520,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if(bUseCRCRecenter) {
     TString QVecWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
     if(AODfilterBit==768) QVecWeightsFileName += "15oHI_QnVarCalib_FB768.root";
+    if(AODfilterBit==96) QVecWeightsFileName += "15oHI_QnVarCalib_FB96.root";
     if(AODfilterBit==32) QVecWeightsFileName += "15oHI_QnVarCalib_FB32.root";
     TFile* QVecWeightsFile = TFile::Open(QVecWeightsFileName,"READ");
     if(!QVecWeightsFile) {
