@@ -90,6 +90,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
  
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
+  void         ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta, Float_t phi, TObjArray *clusterList) ;
+
   void         SwitchOnStudyClusterLocalActivity()        { fStudyActivityNearCluster = kTRUE  ; }
   void         SwitchOffStudyClusterLocalActivity()       { fStudyActivityNearCluster = kFALSE ; }  
   
@@ -466,6 +468,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhEBinClusterEtaPhiPID[14] ;              //!<! Eta-Phi location of cluster in different energy bins, after PID cut
   TH2F *  fhEBinClusterColRowPID[14] ;              //!<! Column and row location of cluster max E cell in different energy bins, after PID cut
 
+  TH2F *  fhLocalRegionClusterEtaPhi  ;             //!<! Pseudorapidity vs Phi of clusters with cone R within the EMCal 
   TH2F *  fhLocalRegionClusterEnergySum ;           //!<! Sum of energy near the cluster, R<0.2, vs cluster E
   TH2F *  fhLocalRegionClusterMultiplicity;         //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E
   TH2F *  fhLocalRegionClusterEnergySumPerCentrality ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile
