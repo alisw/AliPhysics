@@ -133,6 +133,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
     if(n > fgkNmcPrimTypes) fNPrimaryHistograms = fgkNmcPrimTypes ; }
 
+  
+  void         SetNCocktailGenNamesToCheck(Int_t nb)          { fNCocktailGenNames = nb ; }
+  void         SetCocktailGenNameToCheck(Int_t i, TString va) { if(i < 10) fCocktailGenNames[i] = va ; }
+
   /// For MC histograms in arrays, index in the array corresponds to a MC originating particle type
   enum mcTypes    { kmcPhoton     =  0,    kmcPi0Decay = 1,       kmcEtaDecay      = 2,  kmcOtherDecay = 3,
                     kmcPi0        =  4,    kmcEta      = 5,       kmcElectron      = 6,
@@ -153,10 +157,18 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
   enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,
-                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
+                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5  };  
   
   /// Total number of MC histograms for shower shape studies.
   static const Int_t fgkNssTypes = 6 ;
+
+  /// For MC histograms with cocktail generator checks in arrays, index in the array corresponds to a MC originating particle type
+  enum mcGenTypes { kmcGenPi0Merged = 0,  kmcGenPi0Decay = 1,   kmcGenEtaDecay = 2,
+                    kmcGenPhoton    = 3,  kmcGenElectron = 4,   kmcGenOther    = 5 };  
+  
+  /// Total number of MC histograms for cocktail generator checks.
+  static const Int_t fgkNGenTypes = 6 ;
+
   
   private:
  
@@ -202,6 +214,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   Bool_t   fStudyActivityNearCluster;               ///<  Activate analysis of multiplicity and energy deposit near the cluster
   Bool_t   fStudyClusterOverlapsPerGenerator;       ///<  In case of coctail generators, check the content of the cluster
+  Int_t    fNCocktailGenNames;                      ///<  Number of generators to study
+  TString  fCocktailGenNames[10];                   ///<  Array with name of generators to study
+  
   //
   // Histograms
   //
@@ -510,6 +525,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH1F *  fhCleanGeneratorClusterPi0EMC;            //!<! Cluster energy, only one generator is the contributor
   TH1F *  fhCleanGeneratorClusterEta;               //!<! Cluster energy, only one generator is the contributor
   TH1F *  fhCleanGeneratorClusterEtaEMC;            //!<! Cluster energy, only one generator is the contributor
+  
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
