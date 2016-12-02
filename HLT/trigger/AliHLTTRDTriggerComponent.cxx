@@ -153,8 +153,6 @@ int AliHLTTRDTriggerComponent::DoInit(int argc, const char** argv)
     }
 #endif
 
-    AliGeomManager::LoadGeometry();
-
     fTRDGeometry = new AliTRDgeometry();
     if (!fTRDGeometry) {
       iResult = -ENOMEM;
