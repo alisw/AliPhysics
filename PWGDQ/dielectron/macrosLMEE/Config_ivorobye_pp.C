@@ -127,7 +127,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     
     // TOF
     pid->AddCut(AliDielectronPID::kTOF, AliPID::kElectron,     -3. ,  3.,   0.4, 1e30,    kFALSE,  AliDielectronPID::kRequire, AliDielectronVarManager::kP);
-    
+
     cuts->AddCut(pid);
     
 }
@@ -207,6 +207,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
     histos->UserHistogram("Event","NaccTracks","AliDielectronHelper::GetNacc;Ntracks;#events", 300, -0.5, 299.5,AliDielectronVarManager::kNacc);
     histos->UserHistogram("Event","NaccItsPureEsd05","ITS SA tracks(AliESDtrackCuts::GetReferenceMultiplicity) in eta 0.5;NItsTracks;#events", 300, -0.5, 299.5,AliDielectronVarManager::kNaccItsPureEsd05);
     histos->UserHistogram("Event","NaccItsPureEsd10","ITS SA tracks(AliESDtrackCuts::GetReferenceMultiplicity) in eta 1.0;NItsTracks;#events", 300, -0.5, 299.5,AliDielectronVarManager::kNaccItsPureEsd10);
+    histos->UserHistogram("Event","NaccItsTpcEsd05","ITS-TPC tracks(AliESDtrackCuts::GetReferenceMultiplicity) in eta 0.5;NItsTpcTracks;#events", 300, -0.5, 299.5,AliDielectronVarManager::kNaccItsTpcEsd05);
+    histos->UserHistogram("Event","NaccItsTpcEsd10","ITS-TPC tracks(AliESDtrackCuts::GetReferenceMultiplicity) in eta 1.0;NItsTpcTracks;#events", 300, -0.5, 299.5,AliDielectronVarManager::kNaccItsTpcEsd10);
     
     //=== add histograms to Track classes =============================
     //    name and title (2nd and 3rd parameter) may be omitted
