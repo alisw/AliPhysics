@@ -1094,7 +1094,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	if( pESDfriend ) { 
 	  AliESDfriendTrack *friendTrack = pESDfriend->GetTrack(esdID);
 	  if( friendTrack ){ // fill TRD track and space points	    
-	    friendTrack->SetTRDtrack( &trdTrack );
+	    friendTrack->SetTRDIn( trdTrack );
 	    if( spacePoints ){
 	      int nPoints = track.GetNTracklets();
 	      AliTrackPointArray *spArray = new AliTrackPointArray(nPoints);
@@ -1105,9 +1105,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 		int ind = track.fAttachedTracklets[iLayer];
 		if( ind<0 || ind>=spacePoints->fCount ) continue;
 		const AliHLTTRDSpacePoint &sp = spacePoints->fPoints[ind];
-		UShort_t volId = 0; // TODO: Add volId to the data record and set it in TRD reconstruction 
-		AliTrackPoint p(sp.fX[0], sp.fX[1], sp.fX[2], NULL, volId);
-		spArray->AddPoint(iPoint,&p);
+		AliTrackPoint p( sp.fX[0], sp.fX[1], sp.fX[2], NULL, sp.fVolumeId );
+		spArray->AddPoint( iPoint, &p );
 		iPoint++;
 	      }
 	    }	    
