@@ -61,7 +61,7 @@ fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fProdVertex(),
 fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
 fStudyActivityNearCluster(0), fStudyClusterOverlapsPerGenerator(0),
-
+fNCocktailGenNames(0),
 // Histograms
 
 // Control histograms
@@ -332,6 +332,9 @@ fhCleanGeneratorClusterEta(0),                 fhCleanGeneratorClusterEtaEMC(0)
     fhEBinClusterColRowPID[i] = 0 ;
   }
   
+  for(Int_t i = 0; i < 10; i++)
+    fCocktailGenNames[i] = "";
+  
   // Initialize parameters
   InitParameters();
 }
@@ -462,16 +465,35 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
     }
   }
   
-  //
-  // Temporary to avoid comp warning
-  AliDebug(10,Form("Particle tag %d",mctag));
-  //
+  // Get primary particle info of main particle contributing to the cluster
+  Float_t eprim   = 0;
+  Float_t ptprim  = 0;
+  Bool_t ok = kFALSE;
+  Int_t pdg = 0, status = 0, momLabel = -1;
+  
+  //fPrimaryMom = GetMCAnalysisUtils()->GetMother(label,GetReader(),ok);
+  fPrimaryMom = GetMCAnalysisUtils()->GetMother(calo->GetLabel(),GetReader(), pdg, status, ok, momLabel);     
+  
+  if(ok)
+  {
+    eprim   = fPrimaryMom.Energy();
+    ptprim  = fPrimaryMom.Pt();
+  }
+  
+  Int_t partType = -1;
+  if     ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0)      ) partType = kmcGenPi0Merged;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0Decay) ) partType = kmcGenPi0Decay;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCEtaDecay) ) partType = kmcGenEtaDecay;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPhoton)   ) partType = kmcGenPhoton;
+  else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCElectron) ) partType = kmcGenElectron;
+  else                                                                                partType = kmcGenOther;
+
   
   Float_t en = calo->E();
   if(overlapGener) 
   {
     fhMergeGeneratorCluster->Fill(en,GetEventWeight());
-    
+
     if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterWithPi0EMC->Fill(en,GetEventWeight());
     else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterWithPi0   ->Fill(en,GetEventWeight());
     else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterWithEtaEMC->Fill(en,GetEventWeight());
@@ -3637,6 +3659,13 @@ void AliAnaPhoton::InitParameters()
   fEBinCuts[9] = 9.;  fEBinCuts[10]= 12.;  fEBinCuts[11]= 15.;
   fEBinCuts[12]= 20.; fEBinCuts[13]= 50.;  fEBinCuts[14]= 100.;
   for(Int_t i = fNEBinCuts; i < 15; i++) fEBinCuts[i] = 1000.;
+  
+  fNCocktailGenNames = 5;
+  fCocktailGenNames[0] = "i0EMC";
+  fCocktailGenNames[1] = "i0";
+  fCocktailGenNames[2] = "taEMC";
+  fCocktailGenNames[3] = "ta";
+  fCocktailGenNames[4] = "ijing";
 }
 
 //_______________________________________
