@@ -954,7 +954,7 @@ void AliMuonAccEffSubmitter::SetDefaultVariables()
   SetVar("VAR_PYTHIA8_CMS_ENERGY","8000");
   SetVar("VAR_PYTHIA6_CMS_ENERGY","8000");
   
-  SetVar("VAR_PURELY_LOCAL",0);
+  SetVar("VAR_PURELY_LOCAL","0");
 
   SetVar("VAR_USE_RAW_ALIGN","1");
 
@@ -983,7 +983,7 @@ void AliMuonAccEffSubmitter::SetLocalOnly()
 {
     // ocdbPath = "local://$ALICE_ROOT/OCDB";
   SetVar("VAR_OCDB_PATH","local://$ALICE_ROOT/OCDB");
-  SetVar("VAR_PURELY_LOCAL",0);
+  SetVar("VAR_PURELY_LOCAL","0");
   MakeNofEventsFixed(10);
 }
 
