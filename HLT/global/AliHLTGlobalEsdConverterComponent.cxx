@@ -1057,7 +1057,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       
       const AliHLTTRDTrackData* trackData = reinterpret_cast<const AliHLTTRDTrackData*>(pBlock->fPtr);    
 
-      if( sizeof(AliHLTTRDTrackData) < pBlock->fSize || trackData->GetSize() < pBlock->fSize ){
+      if( pBlock->fSize < sizeof(AliHLTTRDTrackData) || pBlock->fSize < trackData->GetSize()  ){
 	iResult=-EINVAL; break;
       }
 
