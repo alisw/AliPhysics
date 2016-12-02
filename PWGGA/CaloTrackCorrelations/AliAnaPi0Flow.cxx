@@ -342,8 +342,7 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
 
     Double_t E = c->E();
     Double_t eta = c->Eta();
-    Double_t Et = E / TMath::CosH(eta);
-//  Double_t pt = c->Pt();
+    Double_t Et = c->Pt();
     Double_t phi = c->Phi();
     Double_t M02 = c->GetM02();
     Double_t N = c->GetNCells();
