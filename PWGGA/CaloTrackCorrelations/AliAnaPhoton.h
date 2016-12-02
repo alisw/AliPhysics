@@ -91,10 +91,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
   void         ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta, Float_t phi, TObjArray *clusterList) ;
-
   void         SwitchOnStudyClusterLocalActivity()        { fStudyActivityNearCluster = kTRUE  ; }
   void         SwitchOffStudyClusterLocalActivity()       { fStudyActivityNearCluster = kFALSE ; }  
   
+  void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
   void         SwitchOnStudyClusterOverlapsPerGenerator() { fStudyClusterOverlapsPerGenerator = kTRUE  ; }
   void         SwitchOffStudyClusterOverlapsPerGenerator(){ fStudyClusterOverlapsPerGenerator = kFALSE ; }  
   

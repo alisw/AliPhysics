@@ -337,7 +337,7 @@ fhCleanGeneratorClusterEta(0),                 fhCleanGeneratorClusterEtaEMC(0)
 }
 
 //_____________________________________________________________________
-/// Check the cluster activity, total energy and multiplicit around 
+/// Check the cluster activity, total energy and multiplicity around 
 /// a selected cluster on EMCal acceptance within a cone of R=0.2
 ///
 /// \param icalo: cluster index in array
@@ -414,6 +414,113 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
         fhLocalRegionClusterMultiplicityPerCentralityHijing->Fill(GetEventCentrality(),sumMHi,GetEventWeight());
       }
     }
+  }
+}
+
+//_____________________________________________________________________
+/// Check the particle overlaps into a cluster when originated by 
+/// different generators
+///
+/// \param calo: cluster pointer
+/// \param mctag  : mc tag label, of the originating particle
+//__________________________________________________________________________
+void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag)
+{
+  if(calo->GetNLabels() == 0 || calo->GetLabel() < 0 ) return;
+    
+  TString genName;
+  (GetReader()->GetMC())->GetCocktailGenerator(calo->GetLabel(),genName);
+  
+  //printf("Generator?: %s\n",genName.Data());
+  
+  Bool_t overlapGener       = kFALSE;
+  Bool_t overlapGenerHIJING = kFALSE;
+  Bool_t overlapGenerOther  = kFALSE;
+  
+  const UInt_t nlabels = calo->GetNLabels();
+  //Int_t noverlapsGen = 0;
+  //TString genName2Prev = genName;
+  for(UInt_t ilabel = 1; ilabel < nlabels; ilabel++)
+  {
+    Int_t label2 = calo->GetLabels()[ilabel];
+    TString genName2;
+    (GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
+    
+    //if(genName2 != genName2Prev) noverlapsGen++;
+    
+    if(genName2 != genName) 
+    {
+      //genName2Prev = genName2;
+      
+      overlapGener = kTRUE; 
+      
+      if( genName2.Contains("ijing") && !genName.Contains("ijing")) 
+        overlapGenerHIJING = kTRUE;
+        
+        if(!genName2.Contains("ijing"))
+          overlapGenerOther  = kTRUE;
+    }
+  }
+  
+  //
+  // Temporary to avoid comp warning
+  AliDebug(10,Form("Particle tag %d",mctag));
+  //
+  
+  Float_t en = calo->E();
+  if(overlapGener) 
+  {
+    fhMergeGeneratorCluster->Fill(en,GetEventWeight());
+    
+    if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterWithPi0EMC->Fill(en,GetEventWeight());
+    else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterWithPi0   ->Fill(en,GetEventWeight());
+    else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterWithEtaEMC->Fill(en,GetEventWeight());
+    else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterWithEta   ->Fill(en,GetEventWeight());
+    else if ( genName.Contains("ijing")) fhMergeGeneratorClusterWithHijing->Fill(en,GetEventWeight());
+    //else printf("Generator?: %s\n",genName.Data());
+    
+    if(overlapGenerOther && !overlapGenerHIJING) 
+    {
+      fhMergeGeneratorClusterNotHijingBkg->Fill(en,GetEventWeight());
+                
+      if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterNotHijingBkgWithPi0EMC->Fill(en,GetEventWeight());
+      else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterNotHijingBkgWithPi0   ->Fill(en,GetEventWeight());
+      else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterNotHijingBkgWithEtaEMC->Fill(en,GetEventWeight());
+      else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterNotHijingBkgWithEta   ->Fill(en,GetEventWeight());
+      //else printf("Generator?: %s\n",genName.Data());
+    }
+    
+    if(overlapGenerHIJING && !overlapGenerOther)
+    {
+      fhMergeGeneratorClusterHijingBkg->Fill(en,GetEventWeight());
+      
+      if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterHijingBkgWithPi0EMC->Fill(en,GetEventWeight());
+      else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterHijingBkgWithPi0   ->Fill(en,GetEventWeight());
+      else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterHijingBkgWithEtaEMC->Fill(en,GetEventWeight());
+      else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterHijingBkgWithEta   ->Fill(en,GetEventWeight());
+      //else printf("Generator?: %s\n",genName.Data());
+    }
+    
+    if(overlapGenerHIJING && overlapGenerOther)
+    {
+      fhMergeGeneratorClusterHijingAndOtherBkg->Fill(en,GetEventWeight());
+      
+      if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC->Fill(en,GetEventWeight());
+      else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterHijingAndOtherBkgWithPi0   ->Fill(en,GetEventWeight());
+      else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC->Fill(en,GetEventWeight());
+      else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterHijingAndOtherBkgWithEta   ->Fill(en,GetEventWeight());
+    }
+  }
+  else    
+  {
+    fhCleanGeneratorCluster->Fill(en,GetEventWeight());
+    
+    if      ( genName.Contains("ijing") ) fhCleanGeneratorClusterHijing->Fill(en,GetEventWeight());
+    else if ( genName.Contains("pi0EMC")) fhCleanGeneratorClusterPi0EMC->Fill(en,GetEventWeight());
+    else if ( genName.Contains("pi0")   ) fhCleanGeneratorClusterPi0   ->Fill(en,GetEventWeight());
+    else if ( genName.Contains("etaEMC")) fhCleanGeneratorClusterEtaEMC->Fill(en,GetEventWeight());
+    else if ( genName.Contains("eta")   ) fhCleanGeneratorClusterEta   ->Fill(en,GetEventWeight());
+    //else printf("Generator?: %s\n",genName.Data());
   }
 }
 
@@ -3786,97 +3893,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //
     // Check if other generators contributed to the cluster
     //
-    if( IsDataMC() && fStudyClusterOverlapsPerGenerator && calo->GetNLabels() > 0 )
-    {
-      TString genName;
-      (GetReader()->GetMC())->GetCocktailGenerator(calo->GetLabel(),genName);
-      
-      //printf("Generator?: %s\n",genName.Data());
-      
-      Bool_t overlapGener       = kFALSE;
-      Bool_t overlapGenerHIJING = kFALSE;
-      Bool_t overlapGenerOther  = kFALSE;
-      
-      const UInt_t nlabels = calo->GetNLabels();
-      //Int_t noverlapsGen = 0;
-      //TString genName2Prev = genName;
-      for(UInt_t ilabel = 1; ilabel < nlabels; ilabel++)
-      {
-        Int_t label2 = calo->GetLabels()[ilabel];
-        TString genName2;
-        (GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
-        
-        //if(genName2 != genName2Prev) noverlapsGen++;
-        
-        if(genName2 != genName) 
-        {
-          //genName2Prev = genName2;
-          
-          overlapGener = kTRUE; 
-          
-          if( genName2.Contains("ijing") && !genName.Contains("ijing")) 
-            overlapGenerHIJING = kTRUE;
-          
-          if(!genName2.Contains("ijing"))
-            overlapGenerOther  = kTRUE;
-        }
-      }
-      
-      if(overlapGener) 
-      {
-        fhMergeGeneratorCluster->Fill(en,GetEventWeight());
-        
-        if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterWithPi0EMC->Fill(en,GetEventWeight());
-        else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterWithPi0   ->Fill(en,GetEventWeight());
-        else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterWithEtaEMC->Fill(en,GetEventWeight());
-        else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterWithEta   ->Fill(en,GetEventWeight());
-        else if ( genName.Contains("ijing")) fhMergeGeneratorClusterWithHijing->Fill(en,GetEventWeight());
-        //else printf("Generator?: %s\n",genName.Data());
-
-        if(overlapGenerOther && !overlapGenerHIJING) 
-        {
-          fhMergeGeneratorClusterNotHijingBkg->Fill(en,GetEventWeight());
-          
-          if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterNotHijingBkgWithPi0EMC->Fill(en,GetEventWeight());
-          else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterNotHijingBkgWithPi0   ->Fill(en,GetEventWeight());
-          else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterNotHijingBkgWithEtaEMC->Fill(en,GetEventWeight());
-          else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterNotHijingBkgWithEta   ->Fill(en,GetEventWeight());
-          //else printf("Generator?: %s\n",genName.Data());
-        }
-        
-        if(overlapGenerHIJING && !overlapGenerOther)
-        {
-          fhMergeGeneratorClusterHijingBkg->Fill(en,GetEventWeight());
-          
-          if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterHijingBkgWithPi0EMC->Fill(en,GetEventWeight());
-          else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterHijingBkgWithPi0   ->Fill(en,GetEventWeight());
-          else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterHijingBkgWithEtaEMC->Fill(en,GetEventWeight());
-          else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterHijingBkgWithEta   ->Fill(en,GetEventWeight());
-          //else printf("Generator?: %s\n",genName.Data());
-        }
-        
-        if(overlapGenerHIJING && overlapGenerOther)
-        {
-          fhMergeGeneratorClusterHijingAndOtherBkg->Fill(en,GetEventWeight());
-          
-          if      ( genName.Contains("i0EMC")) fhMergeGeneratorClusterHijingAndOtherBkgWithPi0EMC->Fill(en,GetEventWeight());
-          else if ( genName.Contains("i0")   ) fhMergeGeneratorClusterHijingAndOtherBkgWithPi0   ->Fill(en,GetEventWeight());
-          else if ( genName.Contains("taEMC")) fhMergeGeneratorClusterHijingAndOtherBkgWithEtaEMC->Fill(en,GetEventWeight());
-          else if ( genName.Contains("ta")   ) fhMergeGeneratorClusterHijingAndOtherBkgWithEta   ->Fill(en,GetEventWeight());
-        }
-      }
-      else    
-      {
-        fhCleanGeneratorCluster->Fill(en,GetEventWeight());
-        
-        if      ( genName.Contains("ijing") ) fhCleanGeneratorClusterHijing->Fill(en,GetEventWeight());
-        else if ( genName.Contains("pi0EMC")) fhCleanGeneratorClusterPi0EMC->Fill(en,GetEventWeight());
-        else if ( genName.Contains("pi0")   ) fhCleanGeneratorClusterPi0   ->Fill(en,GetEventWeight());
-        else if ( genName.Contains("etaEMC")) fhCleanGeneratorClusterEtaEMC->Fill(en,GetEventWeight());
-        else if ( genName.Contains("eta")   ) fhCleanGeneratorClusterEta   ->Fill(en,GetEventWeight());
-        //else printf("Generator?: %s\n",genName.Data());
-      }
-    }
+    if( IsDataMC() && fStudyClusterOverlapsPerGenerator )
+      CocktailGeneratorsClusterOverlaps(calo,tag);
 
     
     if(fFillEBinAcceptanceHisto)
