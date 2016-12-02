@@ -51,6 +51,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
                                                              const Int_t    nlmMax        = 2,
                                                              const Bool_t   simpleM02Cut  = kFALSE,
                                                              const Bool_t   simpleMassCut = kFALSE,
+                                                             const Double_t massPi0Min    = 0.11,
+                                                             const Double_t massPi0Max    = 0.18,
                                                              const Bool_t   recaltm       = kFALSE,
                                                              const Bool_t   tm            = kTRUE,
                                                              const Int_t    minCen        = -1,
@@ -136,7 +138,9 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
   
   // Split cluster analysis
   if (kCalorimeter == "EMCAL") {
-    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo, kTRUE, kTRUE, nlmMin, nlmMax, simpleM02Cut, simpleMassCut), n++); // Pi0 event by event selection, cluster splitting
+    // Pi0 event by event selection, cluster splitting
+    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo, kTRUE, kTRUE, nlmMin, nlmMax, 
+                                               simpleM02Cut, simpleMassCut, massPi0Min, massPi0Max), n++);
   }
   maker->AddAnalysis(ConfigurePi0Flow(), n++);
   
@@ -497,7 +501,8 @@ AliCalorimeterUtils* ConfigureCaloUtils()
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
                                       Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE,
                                       Int_t nlmMin = 1, Int_t nlmMax = 2, 
-                                      Bool_t simpleSplitM02Cut = kFALSE, Bool_t simpleSplitMassCut = kFALSE)
+                                      Bool_t simpleSplitM02Cut = kFALSE, Bool_t simpleSplitMassCut = kFALSE,
+                                      Double_t massPi0Min, Double_t massPi0Max)
 {
   AliAnaPi0EbE *ana = new AliAnaPi0EbE();
   ana->SetDebug(kDebug);//10 for lots of messages
@@ -584,7 +589,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   }
 
   //For Pi0 only if  SwitchOnSimpleSplitMassCut()
-  caloPID->SetPi0MassRange(0.11, 0.18);
+  caloPID->SetPi0MassRange(massPi0Min, massPi0Max);
   caloPID->SetEtaMassRange(0.40, 0.60);
   caloPID->SetPhotonMassRange(0.00, 0.08);
   caloPID->SetClusterSplittingMinNCells(6);
