@@ -115,6 +115,7 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
 fhEClusterSM(0),                      fhEPhotonSM(0),
 fhPtClusterSM(0),                     fhPtPhotonSM(0),
 fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
+fhLocalRegionClusterEtaPhi(0),
 fhLocalRegionClusterEnergySum(0),     fhLocalRegionClusterMultiplicity(0),
 fhLocalRegionClusterEnergySumPerCentrality(0),
 fhLocalRegionClusterMultiplicityPerCentrality(0),
@@ -334,6 +335,88 @@ fhCleanGeneratorClusterEta(0),                 fhCleanGeneratorClusterEtaEMC(0)
   // Initialize parameters
   InitParameters();
 }
+
+//_____________________________________________________________________
+/// Check the cluster activity, total energy and multiplicit around 
+/// a selected cluster on EMCal acceptance within a cone of R=0.2
+///
+/// \param icalo: cluster index in array
+/// \param en  : selected cluster energy
+/// \param eta : cluster pseudo-rapidity
+/// \param phi : cluster azimuthal angle (0-360 deg)
+/// \param clusterList: clusters array
+//__________________________________________________________________________
+void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta, 
+                                       Float_t phi, TObjArray *clusterList)
+{
+  Float_t radius = 0.2; // Hardcoded unless real use.
+  
+  // Accept cluster on EMCal limits - radius
+  // CAREFUL if used for Run2 with DCal.
+  if(phi < 3.15 - radius && phi > 1.4 + radius && TMath::Abs(eta) < 0.7-radius)
+  {
+    fhLocalRegionClusterEtaPhi ->Fill(eta,phi, GetEventWeight());
+    
+    Float_t sumE   = 0;
+    Int_t   sumM   = 0;
+    Float_t sumEHi = 0;
+    Int_t   sumMHi = 0;
+    for(Int_t icalo2 = 0; icalo2 < clusterList->GetEntriesFast(); icalo2++)
+    {
+      if ( icalo2 == icalo ) continue;
+      
+      AliVCluster * calo2 =  (AliVCluster*) (clusterList->At(icalo2));
+      
+      // Select clusters in a radius of R=0.2
+      calo2->GetMomentum(fMomentum2,GetVertex(0)) ;
+      
+      Float_t dEta = eta-fMomentum2.Eta();
+      Float_t dPhi = phi-GetPhi(fMomentum2.Phi());
+      
+      if(TMath::Abs(dPhi) >= TMath::Pi())
+        dPhi = TMath::TwoPi()-TMath::Abs(dPhi);
+      
+      if (TMath::Sqrt( dEta*dEta + dPhi*dPhi ) > 0.2) continue;
+      
+      sumM++;
+      sumE += calo2->E();
+      
+      if( IsDataMC() && fStudyClusterOverlapsPerGenerator && calo2->GetNLabels() > 0)
+      {
+        TString genName;
+        (GetReader()->GetMC())->GetCocktailGenerator(calo2->GetLabel(),genName);
+        
+        if(genName.Contains("ijing"))
+        {
+          sumMHi++;
+          sumEHi += calo2->E();
+        }
+      }
+    }
+    
+    fhLocalRegionClusterEnergySum   ->Fill(en,sumE,GetEventWeight());
+    fhLocalRegionClusterMultiplicity->Fill(en,sumM,GetEventWeight());
+    
+    if(IsHighMultiplicityAnalysisOn())
+    {
+      fhLocalRegionClusterEnergySumPerCentrality   ->Fill(GetEventCentrality(),sumE,GetEventWeight());
+      fhLocalRegionClusterMultiplicityPerCentrality->Fill(GetEventCentrality(),sumM,GetEventWeight());
+    }
+    
+    if( IsDataMC() && fStudyClusterOverlapsPerGenerator)
+    {
+      fhLocalRegionClusterEnergySumHijing   ->Fill(en,sumEHi,GetEventWeight());
+      fhLocalRegionClusterMultiplicityHijing->Fill(en,sumMHi,GetEventWeight());
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhLocalRegionClusterEnergySumPerCentralityHijing   ->Fill(GetEventCentrality(),sumEHi,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityHijing->Fill(GetEventCentrality(),sumMHi,GetEventWeight());
+      }
+    }
+  }
+}
+
 
 //_____________________________________________________________________
 /// Select calorimeter clusters if they pass different cuts:
@@ -3135,6 +3218,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
   if(fStudyActivityNearCluster)
   {
+    fhLocalRegionClusterEtaPhi  = new TH2F
+    ("hLocalRegionClusterEtaPhi","cluster,#it{E} > 0.5 GeV, #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax);
+    fhLocalRegionClusterEtaPhi->SetYTitle("#phi (rad)");
+    fhLocalRegionClusterEtaPhi->SetXTitle("#eta");
+    outputContainer->Add(fhLocalRegionClusterEtaPhi) ;
+    
     fhLocalRegionClusterEnergySum = new TH2F ("hLocalRegionClusterEnergySum",
                                               "Sum of cluster energy around trigger cluster #it{E} with R=0.2", 
                                               nptbins,ptmin,ptmax, 200,0,100);
@@ -3691,71 +3780,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //
     // Check local cluster activity around the current cluster
     //
-    if(fStudyActivityNearCluster)
-    {
-      Float_t radius = 0.2;
-      // Accept cluster on EMCal limits - radius
-      if(phi < 3.15 - radius && phi > 1.4 + radius && TMath::Abs(eta) < 0.7-radius)
-      {
-        Float_t sumE   = 0;
-        Int_t   sumM   = 0;
-        Float_t sumEHi = 0;
-        Int_t   sumMHi = 0;
-        for(Int_t icalo2 = 0; icalo2 < nCaloClusters; icalo2++)
-        {
-          if ( icalo2 == icalo ) continue;
-          
-          AliVCluster * calo2 =  (AliVCluster*) (pl->At(icalo2));
-          
-          // Select clusters in a radius of R=0.2
-          calo2->GetMomentum(fMomentum2,GetVertex(evtIndex)) ;
-          
-          Float_t dEta = eta-fMomentum2.Eta();
-          Float_t dPhi = phi-GetPhi(fMomentum2.Phi());
-          
-          if(TMath::Abs(dPhi) >= TMath::Pi())
-            dPhi = TMath::TwoPi()-TMath::Abs(dPhi);
-          
-          if (TMath::Sqrt( dEta*dEta + dPhi*dPhi ) > 0.2) continue;
-          
-          sumM++;
-          sumE += calo2->E();
-          
-          if( IsDataMC() && fStudyClusterOverlapsPerGenerator && calo2->GetNLabels() > 0)
-          {
-            TString genName;
-            (GetReader()->GetMC())->GetCocktailGenerator(calo2->GetLabel(),genName);
-            
-            if(genName.Contains("ijing"))
-            {
-              sumMHi++;
-              sumEHi += calo2->E();
-            }
-          }
-        }
-        
-        fhLocalRegionClusterEnergySum   ->Fill(en,sumE,GetEventWeight());
-        fhLocalRegionClusterMultiplicity->Fill(en,sumM,GetEventWeight());
-        
-        if(IsHighMultiplicityAnalysisOn())
-        {
-          fhLocalRegionClusterEnergySumPerCentrality   ->Fill(GetEventCentrality(),sumE,GetEventWeight());
-          fhLocalRegionClusterMultiplicityPerCentrality->Fill(GetEventCentrality(),sumM,GetEventWeight());
-        }
-        
-        if( IsDataMC() && fStudyClusterOverlapsPerGenerator)
-        {
-          fhLocalRegionClusterEnergySumHijing   ->Fill(en,sumEHi,GetEventWeight());
-          fhLocalRegionClusterMultiplicityHijing->Fill(en,sumMHi,GetEventWeight());
-          
-          if(IsHighMultiplicityAnalysisOn())
-          {
-            fhLocalRegionClusterEnergySumPerCentralityHijing   ->Fill(GetEventCentrality(),sumEHi,GetEventWeight());
-            fhLocalRegionClusterMultiplicityPerCentralityHijing->Fill(GetEventCentrality(),sumMHi,GetEventWeight());
-          }
-        }
-      }
-    }
+    if(fStudyActivityNearCluster && en > 1.5) // 1.5 GeV cut used on Pb-Pb analysis
+      ActivityNearCluster(icalo,en,eta,phi,pl);
 
     //
     // Check if other generators contributed to the cluster
