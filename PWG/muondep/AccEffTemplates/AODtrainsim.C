@@ -19,7 +19,7 @@ Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tra
 Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iMUONRefit         = 0;      // Refit ESD muon tracks before producing AODs          (> 1 = use parfile)
 Int_t       iMUONRefitVtx      = 0;      // Refit ESD muon tracks at vtx before producing AODs   (> 1 = use parfile)
-Int_t       iMUONQA            = 0;      // run muon QA task on ESDs                             (> 1 = use parfile)
+Int_t       iMUONQA            = 1;      // run muon QA task on ESDs                             (> 1 = use parfile)
 Int_t       iMUONPerformance   = 1;      // Task to study the muon performances in MC simulation (> 1 = use parfile)
 Int_t       iMUONEfficiency    = 1;      // Task to measure the muon efficiency                  (> 1 = use parfile)
 
@@ -198,7 +198,7 @@ void AddAnalysisTasks(Int_t merge){
   if (iMUONQA) {
     if (iMUONQA > 1) gROOT->LoadMacro("AddTaskMuonQA.C");
     else gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/PilotTrain/AddTaskMuonQA.C");
-    AliAnalysisTaskMuonQA* muonQA = AddTaskMuonQA(kFALSE, kFALSE, kFALSE, 0);
+    AliAnalysisTaskMuonQA* muonQA = AddTaskMuonQA(kFALSE);
     if (usePhysicsSelection) muonQA->SelectCollisionCandidates(offlineTriggerMask);
     muonQA->SetTrackCuts(trackCuts);
   }
