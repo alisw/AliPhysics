@@ -39,6 +39,7 @@ set(SRCS
     AliAnalysisTaskEmcalJetSample.cxx
     AliAnalysisTaskEmcalJetQA.cxx
     AliAnalysisTaskEmcalJetSpectraQA.cxx
+    AliAnalysisTaskPWGJEQA.cxx
     AliAnalysisTaskLocalRho.cxx
     AliAnalysisTaskRhoAverage.cxx
     AliAnalysisTaskRhoBase.cxx
