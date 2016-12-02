@@ -1250,6 +1250,20 @@ void AliAnalysisTaskSEHFv2::SetEventPlaneMethod(Int_t method){
       fSubEvDetB=kFullTPC;
       break;
     }
+  case kPosTPCVZERO:
+    {
+      fEvPlaneDet=kPosTPC;
+      fSubEvDetA=kV0A;
+      fSubEvDetB=kV0C;
+      break;
+    }
+  case kNegTPCVZERO:
+    {
+      fEvPlaneDet=kNegTPC;
+      fSubEvDetA=kV0A;
+      fSubEvDetB=kV0C;
+      break;
+    }
   default:
     {
       AliWarning("Case not defined -> use full V0");
