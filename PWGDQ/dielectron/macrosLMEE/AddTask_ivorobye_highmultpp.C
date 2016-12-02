@@ -22,9 +22,11 @@ AliAnalysisTask *AddTask_ivorobye_highmultpp(Bool_t getFromAlien=kFALSE,
     TString configFilePath(configBasePath+cFileName);
     
     std::cout << "Configpath: " << configFilePath << std::endl;
+
+    TString configFunction(cFileName(0,cFileName.Length() - 2));
     
-    
-    gROOT->LoadMacro(configFilePath.Data());
+    if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFunction.Data()))
+        gROOT->LoadMacro(configFilePath.Data());
     
     //Do we have an MC handler?
     hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
