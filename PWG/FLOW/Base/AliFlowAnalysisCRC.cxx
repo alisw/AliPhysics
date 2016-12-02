@@ -20237,8 +20237,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     }
     
     if(fUseCRCRecenter) {
-      QRe -= fTProTempInt[hr][0]->GetBinContent(fTProTempInt[hr][0]->FindBin(fCentralityEBE));
-      QIm -= fTProTempInt[hr][1]->GetBinContent(fTProTempInt[hr][1]->FindBin(fCentralityEBE));
+      QRe -= fTProTempInt[hr][0]->GetBinContent(fTProTempInt[hr][0]->FindBin(fCentralityEBE))*QM;
+      QIm -= fTProTempInt[hr][1]->GetBinContent(fTProTempInt[hr][1]->FindBin(fCentralityEBE))*QM;
     }
     
     IQM2 = QM*QM-QM2;
@@ -20317,10 +20317,10 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     }
     
     if(fUseCRCRecenter) {
-      QARe -= fTProTempInt[hr][2]->GetBinContent(fTProTempInt[hr][2]->FindBin(fCentralityEBE));
-      QAIm -= fTProTempInt[hr][3]->GetBinContent(fTProTempInt[hr][3]->FindBin(fCentralityEBE));
-      QBRe -= fTProTempInt[hr][4]->GetBinContent(fTProTempInt[hr][4]->FindBin(fCentralityEBE));
-      QBIm -= fTProTempInt[hr][5]->GetBinContent(fTProTempInt[hr][5]->FindBin(fCentralityEBE));
+      QARe -= fTProTempInt[hr][2]->GetBinContent(fTProTempInt[hr][2]->FindBin(fCentralityEBE))*QAM;
+      QAIm -= fTProTempInt[hr][3]->GetBinContent(fTProTempInt[hr][3]->FindBin(fCentralityEBE))*QAM;
+      QBRe -= fTProTempInt[hr][4]->GetBinContent(fTProTempInt[hr][4]->FindBin(fCentralityEBE))*QBM;
+      QBIm -= fTProTempInt[hr][5]->GetBinContent(fTProTempInt[hr][5]->FindBin(fCentralityEBE))*QBM;
     }
     
     IQM2EG = QAM*QBM;
@@ -20381,8 +20381,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       if(hr==0) fFlowQCSpectra->Fill(fCentralityEBE,FillPtBin,qpM*fCenWeightEbE);
       
       if(fUseCRCRecenter) {
-        qpRe0 -= fTProTempDif[fCenBin][hr][0]->GetBinContent(fTProTempDif[fCenBin][hr][0]->FindBin(FillPtBin));
-        qpIm0 -= fTProTempDif[fCenBin][hr][1]->GetBinContent(fTProTempDif[fCenBin][hr][1]->FindBin(FillPtBin));
+        qpRe0 -= fTProTempDif[fCenBin][hr][0]->GetBinContent(fTProTempDif[fCenBin][hr][0]->FindBin(FillPtBin))*qpM0;
+        qpIm0 -= fTProTempDif[fCenBin][hr][1]->GetBinContent(fTProTempDif[fCenBin][hr][1]->FindBin(FillPtBin))*qpM0;
       }
       
       dQM2 = qpM0*QM-qpM;
@@ -20466,8 +20466,8 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       qpAM0 = fPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
       
       if(fUseCRCRecenter) {
-        qpARe -= fTProTempDif[fCenBin][hr][2]->GetBinContent(fTProTempDif[fCenBin][hr][2]->FindBin(FillPtBin));
-        qpAIm -= fTProTempDif[fCenBin][hr][3]->GetBinContent(fTProTempDif[fCenBin][hr][3]->FindBin(FillPtBin));
+        qpARe -= fTProTempDif[fCenBin][hr][2]->GetBinContent(fTProTempDif[fCenBin][hr][2]->FindBin(FillPtBin))*qpAM;
+        qpAIm -= fTProTempDif[fCenBin][hr][3]->GetBinContent(fTProTempDif[fCenBin][hr][3]->FindBin(FillPtBin))*qpAM;
       }
       
       dQM2EG = qpAM*QBM;
