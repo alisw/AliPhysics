@@ -1,7 +1,7 @@
 //void AddFMDTask(); //is this actually necessary???
 
 //__________________________________________________________________________________________
-AliAnalysisTask *AddTask_oton_TTree_HM16l(Int_t reducedEventType=-1, Bool_t writeTree=kTRUE){
+AliAnalysisTask *AddTask_oton_TTree_16l(Int_t reducedEventType=-1, Bool_t writeTree=kTRUE){
 
   // Get the current analysis manager
   //---------------------------------
@@ -76,8 +76,8 @@ AliAnalysisTask *AddTask_oton_TTree_HM16l(Int_t reducedEventType=-1, Bool_t writ
   //task->SetTreeActiveBranch("Event");
   //task->SetTreeActiveBranch("fRunNo");
   // Alternatively, you can define the inactive branches of the tree, all other branches will be set to active
-  //task->SetTreeInactiveBranch("fUniqueID");
-  //task->SetTreeInactiveBranch("fBits");
+  task->SetTreeInactiveBranch("fUniqueID");
+  task->SetTreeInactiveBranch("fBits");
   //task->SetTreeInactiveBranch("fEventTag");
   task->SetTreeInactiveBranch("fNVtxContributors");
   task->SetTreeInactiveBranch("fCentQuality");
@@ -140,9 +140,9 @@ AliAnalysisTask *AddTask_oton_TTree_HM16l(Int_t reducedEventType=-1, Bool_t writ
   task->SetTreeInactiveBranch("fSPDntracklets");
   task->SetTreeInactiveBranch("fITSClusters*");
   task->SetTreeInactiveBranch("fSPDnSingle");
-  //task->SetTreeInactiveBranch("fL0TriggerInputs");
-  //task->SetTreeInactiveBranch("fL1TriggerInputs");
-  //task->SetTreeInactiveBranch("fL2TriggerInputs");
+  task->SetTreeInactiveBranch("fL0TriggerInputs");
+  task->SetTreeInactiveBranch("fL1TriggerInputs");
+  task->SetTreeInactiveBranch("fL2TriggerInputs");
   task->SetTreeInactiveBranch("fBC");
   task->SetTreeInactiveBranch("fTimeStamp");
   //task->SetTreeInactiveBranch("fEventType");
