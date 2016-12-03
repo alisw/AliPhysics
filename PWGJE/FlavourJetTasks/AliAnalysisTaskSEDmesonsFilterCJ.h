@@ -90,6 +90,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
 
   static Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
+  static Double_t AddMCDaughters(AliAODMCParticle* mcDmeson, TObjArray& mcdaughters,  TClonesArray* mcArray);
 
   static Int_t CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray); // AOD
   static Int_t CheckOrigin(AliAODMCParticle* part, TClonesArray* mcArray); // AOD
@@ -107,6 +108,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   void FillDStarMCTruthKinHistos(AliAODRecoCascadeHF* dstar, Int_t /*isSelected*/, Int_t isDstar);
   void FillDstarSideBands(AliAODRecoCascadeHF* dstar);
   void AddEventTracks(TClonesArray* coll, AliParticleContainer* tracks);
+  void AddMCEventTracks(TClonesArray* coll, AliParticleContainer* mctracks);
 
   Bool_t          fUseMCInfo;              //  Use MC info
   Bool_t          fUseReco;                //  use reconstructed tracks when running on MC
@@ -134,6 +136,7 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskEmcal
   TClonesArray   *fSideBandArray;          //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
   TClonesArray   *fCombinedDmesons;        //! contains candidates selected by AliRDHFCuts and the rest of the event tracks
   TClonesArray   *fCombinedDmesonsBkg;     //! contains bkg candidates selected by AliRDHFCuts and the rest of the event tracks
+  TClonesArray   *fMCCombinedDmesons;      //! contains MC D0 and MC event particles
   Int_t           fNCand;                  //! number of selected D candidates already added to fCandidateArray
   Int_t           fNSBCand;                //! number of selected side-band D candidates already added to fSideBandArray
   TH1            *fHistStat;               //!
