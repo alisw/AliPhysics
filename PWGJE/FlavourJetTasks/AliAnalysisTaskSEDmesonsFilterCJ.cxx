@@ -81,6 +81,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ() :
   fSideBandArray(0),
   fCombinedDmesons(0),
   fCombinedDmesonsBkg(0),
+  fMCCombinedDmesons(0),
   fNCand(0),
   fNSBCand(0),
   fHistStat(0),
@@ -150,6 +151,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   fSideBandArray(0),
   fCombinedDmesons(0),
   fCombinedDmesonsBkg(0),
+  fMCCombinedDmesons(0),
   fNCand(0),
   fNSBCand(0),
   fHistStat(0),
@@ -238,6 +240,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::AliAnalysisTaskSEDmesonsFilterCJ(const char *n
   DefineOutput(4, TClonesArray::Class()); //array of SB candidates
   DefineOutput(5, TClonesArray::Class()); //array of candidates and event tracks
   DefineOutput(6, TClonesArray::Class()); //array of SB candidates and event tracks
+  DefineOutput(7, TClonesArray::Class()); //array of MC D and event MC particles
 }
 
 //_______________________________________________________________________________
@@ -267,6 +270,8 @@ AliAnalysisTaskSEDmesonsFilterCJ::~AliAnalysisTaskSEDmesonsFilterCJ()
   if (fCombinedDmesons) {
     delete fCombinedDmesons;
     fCombinedDmesons = 0;
+    delete fMCCombinedDmesons;
+    fMCCombinedDmesons = 0;
   }
 
   if (fCombinedDmesonsBkg) {
@@ -339,10 +344,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
   if (fCombineDmesons) {
     fCombinedDmesons = new TClonesArray("AliEmcalParticle",50);
     fCombinedDmesonsBkg = new TClonesArray("AliEmcalParticle",50);
+    fMCCombinedDmesons = new TClonesArray("AliAODMCParticle",50);
   }
   else {
     fCombinedDmesons = new TClonesArray("TObject",0); // not used
     fCombinedDmesonsBkg = new TClonesArray("TObject",0); // not used
+    fMCCombinedDmesons = new TClonesArray("TObject",0); // not used
   }
 
   fCandidateArray->SetOwner();
@@ -358,11 +365,15 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
   fCombinedDmesonsBkg->SetOwner();
   fCombinedDmesonsBkg->SetName(GetOutputSlot(6)->GetContainer()->GetName());
 
+  fMCCombinedDmesons->SetOwner();
+  fMCCombinedDmesons->SetName(GetOutputSlot(7)->GetContainer()->GetName());
+
   PostData(1, fOutput);
   PostData(3, fCandidateArray);
   PostData(4, fSideBandArray);
   PostData(5, fCombinedDmesons);
   PostData(6, fCombinedDmesonsBkg);
+  PostData(7, fMCCombinedDmesons);
 
   Info("UserCreateOutputObjects","Data posted for task %s", GetName());
 }
@@ -436,6 +447,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ExecOnce()
   if (fCombineDmesons) {
     AddObjectToEvent(fCombinedDmesons);
     AddObjectToEvent(fCombinedDmesonsBkg);
+    if(fUseMCInfo) AddObjectToEvent(fMCCombinedDmesons);
   }
 
   AliAnalysisTaskEmcal::ExecOnce();
@@ -540,6 +552,10 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
       AddEventTracks(fCombinedDmesons, GetParticleContainer(0));
     }
 
+    if (fMCCombinedDmesons->GetEntriesFast() > 0) {
+        AddMCEventTracks(fMCCombinedDmesons, GetParticleContainer(1));
+    }
+
     if (fCombinedDmesonsBkg->GetEntriesFast() > 0) {
       AddEventTracks(fCombinedDmesonsBkg, GetParticleContainer(0));
     }
@@ -557,6 +573,7 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::Run()
   PostData(4, fSideBandArray);
   PostData(5, fCombinedDmesons);
   PostData(6, fCombinedDmesonsBkg);
+  PostData(7, fMCCombinedDmesons);
 
   AliDebug(2, "Exiting method");
 
@@ -630,7 +647,11 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessD0(AliAODRecoDecayHF2Prong* charmC
 
       if (fCombineDmesons) {
         if(!fMultCand) new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(charmCand);
-        else if(fNCand==fAnalyseCand) new ((*fCombinedDmesons)[0]) AliEmcalParticle(charmCand);
+        else if(fNCand==fAnalyseCand)
+        {
+            new ((*fCombinedDmesons)[0]) AliEmcalParticle(charmCand);
+            if(charmPart) new ((*fMCCombinedDmesons)[0]) AliAODMCParticle(*charmPart);
+        }
       }
 
       fHistImpParS->Fill(charmCand->Getd0Prong(0), charmCand->PtProng(0));
@@ -749,7 +770,11 @@ void AliAnalysisTaskSEDmesonsFilterCJ::ProcessDstar(AliAODRecoCascadeHF* dstar, 
 
       if (fCombineDmesons) {
         if(!fMultCand) new ((*fCombinedDmesons)[fNCand]) AliEmcalParticle(dstar);
-        else if(fNCand==fAnalyseCand) new ((*fCombinedDmesons)[0]) AliEmcalParticle(dstar);
+        else if(fNCand==fAnalyseCand)
+        {
+            new ((*fCombinedDmesons)[0]) AliEmcalParticle(dstar);
+            if(charmPart) new ((*fMCCombinedDmesons)[0]) AliAODMCParticle(*charmPart);
+        }
       }
     }
     // For MC signal with requirement particle level fill with AliAODMCParticle
@@ -1256,7 +1281,67 @@ Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddDaughters(AliAODRecoDecay* cand, T
 
   return pt;
 }
+//_______________________________________________________________________________
+void AliAnalysisTaskSEDmesonsFilterCJ::AddMCEventTracks(TClonesArray* coll, AliParticleContainer* mctracks)
+{
+    //
+    // Add event tracks to a collection that already contains the D candidates, excluding the daughters of the D candidates
+    //
 
+    if (!mctracks) return;
+
+    TObjArray allMCDaughters(10);
+    allMCDaughters.SetOwner(kFALSE);
+
+    AliAODMCParticle* mcD = (AliAODMCParticle*)coll->At(0);
+
+    AddMCDaughters(mcD,allMCDaughters,fMCarray);
+
+    mctracks->ResetCurrentID();
+    AliAODMCParticle* mcpart = 0;
+    Int_t n = coll->GetEntriesFast();
+    while ((mcpart = static_cast<AliAODMCParticle*>(mctracks->GetNextAcceptParticle()))) {
+        if(TMath::Abs(mcpart->Charge())==0) continue;
+        if (allMCDaughters.Remove(mcpart) == 0) {
+            new ((*coll)[n]) AliAODMCParticle(*mcpart);
+            n++;
+            AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", mctracks->GetCurrentID(), mcpart->Pt(), mcpart->Eta(), mcpart->Phi()));
+        }
+        else {
+            AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", mctracks->GetCurrentID(), mcpart->Pt(), mcpart->Eta(), mcpart->Phi()));
+        }
+    }
+}
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskSEDmesonsFilterCJ::AddMCDaughters(AliAODMCParticle* mcDmeson, TObjArray& mcdaughters, TClonesArray* mcArray)
+{
+    // Add all the dauthers of cand in an array. Follows all the decay cascades.
+
+    Int_t n = mcDmeson->GetNDaughters();
+
+    //Printf("AddDaughters: the number of dauhters is %d", n);
+    Double_t pt = 0;
+
+    for (Int_t i = 0; i < n; i++) {
+        AliAODMCParticle* DDaughter = static_cast<AliAODMCParticle*>(mcArray->At(mcDmeson->GetDaughter(i)));
+        if (!DDaughter) continue;
+
+        if (DDaughter->GetNDaughters()>0) {
+            //Printf("Daughter pT = %.3f --> ", track->Pt());
+            pt += AddMCDaughters(DDaughter, mcdaughters, mcArray);
+        }
+        else {
+            //Printf("Daughter pT = %.3f", track->Pt());
+            mcdaughters.AddLast(DDaughter);
+            pt += DDaughter->Pt();
+        }
+    }
+
+    //Printf("Total pt of the daughters = %.3f", pt);
+
+    return pt;
+}
 //_________________________________________________________________________________________________
 Int_t AliAnalysisTaskSEDmesonsFilterCJ::CheckOrigin(AliAODRecoDecay* cand, TClonesArray* mcArray)
 {
