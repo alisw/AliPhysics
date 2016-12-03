@@ -52,7 +52,7 @@ ClassImp(AliPHOSTenderSupply)
 AliPHOSTenderSupply::AliPHOSTenderSupply() :
   AliTenderSupply()
   ,fOCDBpass("local://OCDB")
-  ,fNonlinearityVersion("Default")
+  ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
   ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
@@ -80,7 +80,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
 AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tender) :
   AliTenderSupply(name,tender)
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
-  ,fNonlinearityVersion("Default")
+  ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
   ,fRunNumber(-1) //to be defined
   ,fRecoPass(-1)  //to be defined
@@ -101,6 +101,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
    for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
+   for(Int_t mod=0; mod<5; mod++)fRunByRunCorr[mod]=0.136 ; //Correction contains measured pi0 mass
 }
 
 //_____________________________________________________
@@ -240,6 +241,9 @@ void AliPHOSTenderSupply::InitTender()
     }    
   } 
 
+  
+  
+  
   if(!fUsePrivateCalib){
     if(fIsMC){ //re/de-calibration for MC productions
       //Init recalibration
@@ -281,8 +285,13 @@ void AliPHOSTenderSupply::InitTender()
           AliFatal(Form("Can not find calibration for run %d, pass %d \n",fRunNumber, fRecoPass)) ;
         }
       }
-      //L1phase for Run2
+    }
+  }
+   
+  if(!fIsMC){
+      //L1phase and run-by-run correction for Run2
       if(fRunNumber>209122){ //Run2
+        //L1phase for Run2  
         AliOADBContainer L1Container("phosL1Calibration");
         L1Container.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSL1Calibrations.root","phosL1Calibration");
         TNamed* a= (TNamed*)L1Container.GetObject(fRunNumber);
@@ -294,9 +303,36 @@ void AliPHOSTenderSupply::InitTender()
           const char*c=a->GetName();
           for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=c[ii]-'0';
 	}
+      
+
+	//Run-by-run correction
+        AliOADBContainer runByRunContainer("phosRunByRunCalibration");
+        runByRunContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSRunByRunCalibrations.root","phosRunByRunCalibration");
+        TNamed* rbr= (TNamed*)runByRunContainer.GetObject(fRunNumber);
+	if(rbr){
+          sscanf(rbr->GetName(),"%f,%f,%f,%f",&fRunByRunCorr[1],&fRunByRunCorr[2],&fRunByRunCorr[3],&fRunByRunCorr[4]) ;  
+	}
+	//In any case correction should not be zero
+	//If it is zero, set default and write warning
+        for(Int_t mod=1; mod<5; mod++){
+          if(fRunByRunCorr[mod]==0.){
+              fRunByRunCorr[mod]=0.136 ; 
+             AliWarning(Form("Run-by-Run correction for mod. %d is zero in run %d",mod,fRunNumber)) ;  
+          }
+        }        
       }
+  }
+
+  //Non-linearity correction
+  if(fNonlinearityVersion==""){ //non-linearity not set by user yet
+    if(fRunNumber>209122){ //Run2
+      fNonlinearityVersion="Run2" ;
+    }else{
+      fNonlinearityVersion="Default" ;   
     }
   }
+
+  
 }
 
 //_____________________________________________________
@@ -386,7 +422,6 @@ void AliPHOSTenderSupply::ProcessEvent()
       AliPHOSEsdCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
       cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
-      cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
       Float_t  position[3];
       cluPHOS.GetPosition(position);
@@ -401,9 +436,10 @@ void AliPHOSTenderSupply::ProcessEvent()
         clu->SetE(0.) ;
         continue ;
       }  
+      cluPHOS.SetE(0.136/fRunByRunCorr[mod]*CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
             
       Double_t ecore=CoreEnergy(&cluPHOS) ; 
-      ecore=CorrectNonlinearity(ecore) ;
+      ecore=0.136/fRunByRunCorr[mod]*CorrectNonlinearity(ecore) ;
       
       clu->SetE(cluPHOS.E());                      //total particle energy
       clu->SetCoreEnergy(ecore);                            //core particle energy
@@ -488,7 +524,6 @@ void AliPHOSTenderSupply::ProcessEvent()
       AliPHOSAodCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
       cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
-      cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
       Float_t  position[3];
       cluPHOS.GetPosition(position);
@@ -503,11 +538,12 @@ void AliPHOSTenderSupply::ProcessEvent()
         clu->SetE(0.) ;
         continue ;
       }  
+      cluPHOS.SetE(0.136/fRunByRunCorr[mod]*CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
       TVector3 locPosOld; //Use it to re-calculate distance to track
       fPHOSGeo->Global2Local(locPosOld,globalOld,mod) ;
       
       Double_t ecore=CoreEnergy(&cluPHOS) ; 
-      ecore=CorrectNonlinearity(ecore) ;
+      ecore=0.136/fRunByRunCorr[mod]*CorrectNonlinearity(ecore) ;
      
       clu->SetE(cluPHOS.E());                           //total particle energy
       clu->SetCoreEnergy(ecore);                  //core particle energy
@@ -723,7 +759,7 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
     return en*(fNonlinearityParams[0]+fNonlinearityParams[1]*TMath::Exp(-en*fNonlinearityParams[2]))*(1.+fNonlinearityParams[3]*TMath::Exp(-en*fNonlinearityParams[4]))*(1.+fNonlinearityParams[6]/(en*en+fNonlinearityParams[5])) ;
   }
   if(fNonlinearityVersion=="Run2"){
-    return (1.-0.15/(1.+en*en/0.055))*(0.055+0.04*TMath::Sqrt(en)+en+2.37e-04*en*en) ;
+     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; ; 
   }
 
   return en ;
