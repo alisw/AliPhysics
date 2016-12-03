@@ -2658,7 +2658,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     TString lConfName[]     = {"Loose",   "Central", "Tight"     };
     TString lCutName[]      = {"DCANegToPV","DCAPosToPV","DCAV0Daughters","V0CosPA","V0Radius","DCAV0ToPV",
         "V0Mass","DCABachToPV","DCACascDaughters","CascRadius","CascCosPA","ProperLifetime",
-        "LeastNumberOfClusters","TPCdEdx","Competing","DCaBachBaryon"};
+        "LeastNumberOfClusters","TPCdEdx","Competing","DCABachBaryon"};
     
     // STEP 2: Decide on a set of selections
     
@@ -2714,7 +2714,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[1][0][12] =   -1;    lcuts[1][1][12] =    70; lcuts[1][2][12] =    80; //LeastNumberOfClusters
     lcuts[1][0][13] =    5;    lcuts[1][1][13] =     4; lcuts[1][2][13] =     3; //TPCdEdx
     lcuts[1][0][14] =  0.0;    lcuts[1][1][14] = 0.008; lcuts[1][2][14] = 0.010; //Competing
-    lcuts[1][0][15] = 0.00;    lcuts[0][1][15] =  0.05; lcuts[1][2][15] =  0.10; //DCABachtoBaryonDau
+    lcuts[1][0][15] = 0.00;    lcuts[1][1][15] =  0.05; lcuts[1][2][15] =  0.10; //DCABachtoBaryonDau
     //================================================================================
     
     //================================================================================
@@ -2736,7 +2736,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
     lcuts[2][0][12] =   -1;    lcuts[2][1][12] =    70; lcuts[2][2][12] =    80; //LeastNumberOfClusters
     lcuts[2][0][13] =    5;    lcuts[2][1][13] =     4; lcuts[2][2][13] =     3; //TPCdEdx
     lcuts[2][0][14] =  0.0;    lcuts[2][1][14] = 0.008; lcuts[2][2][14] = 0.010; //Competing
-    lcuts[2][0][15] = 0.00;    lcuts[0][1][15] =  0.05; lcuts[2][2][15] =  0.10; //DCABachtoBaryonDau
+    lcuts[2][0][15] = 0.00;    lcuts[2][1][15] =  0.05; lcuts[2][2][15] =  0.10; //DCABachtoBaryonDau
     //================================================================================
     
     //================================================================================
