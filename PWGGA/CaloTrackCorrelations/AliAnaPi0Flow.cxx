@@ -258,28 +258,28 @@ TList * AliAnaPi0Flow::GetCreateOutputObjects()
   fHistClusterEtM02->GetYaxis()->SetTitle("M02"); fHistClusterEtM02->GetXaxis()->SetTitle("E_{T} [GeV]");
   outputList->Add(fHistClusterEtM02);
 
-  //                   M    Et    M02   Cent     DeltaPhi      Cos[2*DeltaPhi]
+  //                   E    Et    M02   Cent     DeltaPhi      Cos[2*DeltaPhi]
   Int_t    bins[6] = {500,  500,  500,  100,          100,     100};
   Double_t min[6]  = {0,    0.0,  0.0,    0,          0.0,    -1.0};
-  Double_t max[6]  = {0.5,  50.0, 10.0, 100,  TMath::Pi(),     1.0};
+  Double_t max[6]  = {50.0, 50.0, 10.0, 100,  TMath::Pi(),     1.0};
    
   fDataV0 = new THnSparseF("fDataV0","",6,bins,min,max);
-  fDataV0->GetAxis(0)->SetTitle("Mass"); fDataV0->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0->GetAxis(2)->SetTitle("M02");
+  fDataV0->GetAxis(0)->SetTitle("E"); fDataV0->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0->GetAxis(2)->SetTitle("M02");
   fDataV0->GetAxis(3)->SetTitle("Centrality"); fDataV0->GetAxis(4)->SetTitle("#Delta(#phi) [rad]"); fDataV0->GetAxis(5)->SetTitle("Cos[2*#Delta(#phi)]");  
   outputList->Add(fDataV0);
    
   fDataV0A = new THnSparseF("fDataV0A","",6,bins,min,max);
-  fDataV0A->GetAxis(0)->SetTitle("Mass"); fDataV0A->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0A->GetAxis(2)->SetTitle("M02"); 
+  fDataV0A->GetAxis(0)->SetTitle("E"); fDataV0A->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0A->GetAxis(2)->SetTitle("M02"); 
   fDataV0A->GetAxis(3)->SetTitle("Centrality"); fDataV0A->GetAxis(4)->SetTitle("#Delta(#phi) [rad]"); fDataV0A->GetAxis(5)->SetTitle("Cos[2*#Delta(#phi)]");  
   outputList->Add(fDataV0A);
    
   fDataV0C = new THnSparseF("fDataV0C","",6,bins,min,max);
-  fDataV0C->GetAxis(0)->SetTitle("Mass"); fDataV0C->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0C->GetAxis(2)->SetTitle("M02");
+  fDataV0C->GetAxis(0)->SetTitle("E"); fDataV0C->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0C->GetAxis(2)->SetTitle("M02");
   fDataV0C->GetAxis(3)->SetTitle("Centrality"); fDataV0C->GetAxis(4)->SetTitle("#Delta(#phi) [rad]"); fDataV0C->GetAxis(5)->SetTitle("Cos[2*#Delta(#phi)]");  
   outputList->Add(fDataV0C);
    
   fDataTPC = new THnSparseF("fDataTPC","",6,bins,min,max);
-  fDataTPC->GetAxis(0)->SetTitle("Mass"); fDataTPC->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataTPC->GetAxis(2)->SetTitle("M02");
+  fDataTPC->GetAxis(0)->SetTitle("E"); fDataTPC->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataTPC->GetAxis(2)->SetTitle("M02");
   fDataTPC->GetAxis(3)->SetTitle("Centrality"); fDataTPC->GetAxis(4)->SetTitle("#Delta(#phi) [rad]"); fDataTPC->GetAxis(5)->SetTitle("Cos[2*#Delta(#phi)]");  
   outputList->Add(fDataTPC);
 
@@ -357,7 +357,7 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
     // Fill flow data
     //
     Double_t dataV0[6];
-    dataV0[0] = M;
+    dataV0[0] = E;
     dataV0[1] = Et;
     dataV0[2] = M02;
     dataV0[3] = fCentrality;
@@ -366,7 +366,7 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
     fDataV0->Fill(dataV0);
 
     Double_t dataV0A[6];
-    dataV0A[0] = M;
+    dataV0A[0] = E;
     dataV0A[1] = Et;
     dataV0A[2] = M02;
     dataV0A[3] = fCentrality;
@@ -375,7 +375,7 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
     fDataV0A->Fill(dataV0A);
 
     Double_t dataV0C[6];
-    dataV0C[0] = M;
+    dataV0C[0] = E;
     dataV0C[1] = Et;
     dataV0C[2] = M02;
     dataV0C[3] = fCentrality;
@@ -384,7 +384,7 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
     fDataV0C->Fill(dataV0C);
 
     Double_t dataTPC[6];
-    dataTPC[0] = M;
+    dataTPC[0] = E;
     dataTPC[1] = Et;
     dataTPC[2] = M02;
     dataTPC[3] = fCentrality;
