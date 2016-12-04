@@ -63,8 +63,8 @@ fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),
 fFillArmenterosThetaStar(0), fFillOnlyMCAcceptanceHisto(0),
 fFillSecondaryCellTiming(0), fFillOpAngleCutHisto(0),      fCheckAccInSector(0),
 fPairWithOtherDetector(0),   fOtherDetectorInputName(""),
-fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),                fPi0Mom(),
-fProdVertex(),
+fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),                fMCPrimMesonMom(),
+fMCProdVertex(),
 
 // Histograms
 fhReMod(0x0),                fhReSameSideEMCALMod(0x0),    fhReSameSectorEMCALMod(0x0),  fhReDiffPHOSMod(0x0),
@@ -2166,7 +2166,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       //       prim->GetName(), prim->GetPdgCode());
       
       //Photon kinematics
-      primStack->Momentum(fPi0Mom);
+      primStack->Momentum(fMCPrimMesonMom);
       
       mesonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
     }
@@ -2193,7 +2193,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
           (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
       
       // Photon kinematics
-      fPi0Mom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+      fMCPrimMesonMom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
       mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
@@ -2201,10 +2201,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
     // Select only pi0 or eta
     if( pdg != 111 && pdg != 221) continue ;
     
-    mesonPt  = fPi0Mom.Pt () ;
-    mesonE   = fPi0Mom.E  () ;
-    mesonYeta= fPi0Mom.Eta() ;
-    mesonPhi = fPi0Mom.Phi() ;
+    mesonPt  = fMCPrimMesonMom.Pt () ;
+    mesonE   = fMCPrimMesonMom.E  () ;
+    mesonYeta= fMCPrimMesonMom.Eta() ;
+    mesonPhi = fMCPrimMesonMom.Phi() ;
     if( mesonPhi < 0 ) mesonPhi+=TMath::TwoPi();
     mesonPhi *= TMath::RadToDeg();
     
@@ -2553,14 +2553,14 @@ void AliAnaPi0::FillAcceptanceHistograms()
 void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg)
 {
   // Get pTArm and AlphaArm
-  Float_t momentumSquaredMother = fPi0Mom.P()*fPi0Mom.P();
+  Float_t momentumSquaredMother = fMCPrimMesonMom.P()*fMCPrimMesonMom.P();
   Float_t momentumDaughter1AlongMother = 0.;
   Float_t momentumDaughter2AlongMother = 0.;
   
   if (momentumSquaredMother > 0.)
   {
-    momentumDaughter1AlongMother = (fPhotonMom1.Px()*fPi0Mom.Px() + fPhotonMom1.Py()*fPi0Mom.Py()+ fPhotonMom1.Pz()*fPi0Mom.Pz()) / sqrt(momentumSquaredMother);
-    momentumDaughter2AlongMother = (fPhotonMom2.Px()*fPi0Mom.Px() + fPhotonMom2.Py()*fPi0Mom.Py()+ fPhotonMom2.Pz()*fPi0Mom.Pz()) / sqrt(momentumSquaredMother);
+    momentumDaughter1AlongMother = (fPhotonMom1.Px()*fMCPrimMesonMom.Px() + fPhotonMom1.Py()*fMCPrimMesonMom.Py()+ fPhotonMom1.Pz()*fMCPrimMesonMom.Pz()) / sqrt(momentumSquaredMother);
+    momentumDaughter2AlongMother = (fPhotonMom2.Px()*fMCPrimMesonMom.Px() + fPhotonMom2.Py()*fMCPrimMesonMom.Py()+ fPhotonMom2.Pz()*fMCPrimMesonMom.Pz()) / sqrt(momentumSquaredMother);
   }
   
   Float_t momentumSquaredDaughter1 = fPhotonMom1.P()*fPhotonMom1.P();
@@ -2575,10 +2575,10 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg)
     alphaArm = (momentumDaughter1AlongMother -momentumDaughter2AlongMother) / (momentumDaughter1AlongMother + momentumDaughter2AlongMother);
   
   fPhotonMom1Boost = fPhotonMom1;
-  fPhotonMom1Boost.Boost(-fPi0Mom.BoostVector());
-  Float_t  cosThStar=TMath::Cos(fPhotonMom1Boost.Vect().Angle(fPi0Mom.Vect()));
+  fPhotonMom1Boost.Boost(-fMCPrimMesonMom.BoostVector());
+  Float_t  cosThStar=TMath::Cos(fPhotonMom1Boost.Vect().Angle(fMCPrimMesonMom.Vect()));
   
-  Float_t en   = fPi0Mom.Energy();
+  Float_t en   = fMCPrimMesonMom.Energy();
   Int_t   ebin = -1;
   if(en > 8  && en <= 12) ebin = 0;
   if(en > 12 && en <= 16) ebin = 1;
@@ -2622,7 +2622,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   Int_t ancPDG    = 0;
   Int_t ancStatus = 0;
   Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(index1, index2,
-                                                              GetReader(), ancPDG, ancStatus,fPi0Mom, fProdVertex);
+                                                              GetReader(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
   
   Int_t momindex  = -1;
   Int_t mompdg    = -1;
@@ -2630,7 +2630,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   Int_t status    = -1;
   Float_t prodR = -1;
   Int_t mcIndex = -1;
-  Float_t ptPrim = fPi0Mom.Pt();
+  Float_t ptPrim = fMCPrimMesonMom.Pt();
   
   if(ancLabel > -1)
   {
