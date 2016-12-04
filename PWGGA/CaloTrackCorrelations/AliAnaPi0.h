@@ -231,8 +231,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fPhotonMom1;          //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom1Boost;     //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom2;          //!<! Photon cluster momentum, temporary array
-  TLorentzVector fPi0Mom;              //!<! Pi0 cluster momentum, temporary array
-  TVector3       fProdVertex;          //!<! Production vertex, temporary array
+  TLorentzVector fMCPrimMesonMom;      //!<! Pi0/Eta MC primary momentum, temporary array
+  TVector3       fMCProdVertex;        //!<! Pi0/Eta MC Production vertex, temporary array
     
   // ----------
   // Histograms
