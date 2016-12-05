@@ -52,10 +52,11 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fTreeName(),
   fAnchorRun(169838),
   fPtHardBin(-1),
-  fRandomAccess(kFALSE),
+  fRandomEventNumberAccess(kFALSE),
+  fRandomFileAccess(kFALSE),
   fFilePattern(""),
   fFileListFilename(""),
-  fFilenameIndex(0),
+  fFilenameIndex(-1),
   fFilenames(),
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
@@ -94,10 +95,11 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fTreeName("aodTree"),
   fAnchorRun(169838),
   fPtHardBin(-1),
-  fRandomAccess(kFALSE),
+  fRandomEventNumberAccess(kFALSE),
+  fRandomFileAccess(kFALSE),
   fFilePattern(""),
   fFileListFilename(""),
-  fFilenameIndex(0),
+  fFilenameIndex(-1),
   fFilenames(),
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
@@ -221,10 +223,22 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 
   // Determine the next filename index
   // This determines which file is added first to the TChain, thus determining the order of processing
+  // Random file access. Only do this if the user has no set the filename index and request random file access
+  if (fFilenameIndex == -1 && fRandomFileAccess) {
+    // - 1 ensures that we it doesn't overflow
+    fFilenameIndex = TMath::Nint(gRandom->Rndm()*fFilenames.size()) - 1;
+    AliInfo(TString::Format("Starting with random file number %i!", fFilenameIndex));
+  }
+  // If not random file access, then start from the beginning
   if (fFilenameIndex >= fFilenames.size() || fFilenameIndex < 0) {
-    AliWarning(Form("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
+    // Skip notifying on -1 since it will likely be set there due to constructor.
+    if (fFilenameIndex != -1) {
+      AliWarning(Form("File index %i out of range from 0 to %lu! Resetting to 0!", fFilenameIndex, fFilenames.size()));
+    }
     fFilenameIndex = 0;
   }
+
+  AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
 }
 
 /**
@@ -247,6 +261,13 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
       // Continue with GetEntry as normal
     }
     else {
+      // NOTE: On transition from one file to the next, this calls the next entry that would be expected.
+      //       However, if it is for the last file, it tries to GetEntry() of one entry past the end of the last file.
+      //       Normally, this would be a problem, however GetEntry() just doesn't fill the fields of an invalid index
+      //       instead of throwing an error. So "invalid values" are filled for a file that doesn't exist, but then 
+      //       they are immediately replaced by the lines below that reset the access values and re-init the tree.
+      //       The benefit of this approach is it simplies file counting (we don't need to carefully increment here
+      //       and in InitTree()) and preserves the desired behavior when we are not at the last file.
       InitTree();
     }
 
@@ -256,9 +277,24 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
       fChain->GetEntry(fCurrentEntry);
     }
     else {
-      AliFatal("No more files available to embed from the TChain!");
+      AliError("====================================================================================================");
+      AliError("== No more files available to embed from the TChain! Restarting from the beginning of the TChain! ==");
+      AliError("== Be careful to check that this is the desired action!                                           ==");
+      AliError("====================================================================================================");
+
+      // Reset the relevant access values
+      // fCurrentEntry and fLowerEntry are automatically reset in InitTree()
+      fFileNumber = 0;
+      fUpperEntry = 0;
+
+      // Re-init back to the start
+      InitTree();
+
+      // Access the relevant entry
+      // We are certain that fFileNumber is less than fMaxNumberOfFiles, so we are resetting to start
+      fChain->GetEntry(fCurrentEntry);
     }
-    AliDebug(3, TString::Format("Loading entry %i between %i-%i, starting with offset %i from the lower bound of %i", fCurrentEntry, fLowerEntry, fUpperEntry, fOffset, fLowerEntry));
+    AliDebug(4, TString::Format("Loading entry %i between %i-%i, starting with offset %i from the lower bound of %i", fCurrentEntry, fLowerEntry, fUpperEntry, fOffset, fLowerEntry));
 
     // Increment current entry
     fCurrentEntry++;
@@ -410,7 +446,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
     }
 
     if ((res & fTriggerMask) == 0) {
-      AliDebug(2,Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.",
+      AliDebug(3, Form("Event rejected due to physics selection. Event trigger mask: %d, trigger mask selection: %d.",
                       res, fTriggerMask));
       return kFALSE;
     }
@@ -426,13 +462,13 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
     inputVert->GetXYZ(inputVertex);
 
     if (TMath::Abs(externalVertex[2]) > fZVertexCut) {
-      AliDebug(2,Form("Event rejected due to Z vertex selection. Event Z vertex: %f, Z vertex cut: %f",
+      AliDebug(3, Form("Event rejected due to Z vertex selection. Event Z vertex: %f, Z vertex cut: %f",
        externalVertex[2], fZVertexCut));
       return kFALSE;
     }
     Double_t dist = TMath::Sqrt((externalVertex[0]-inputVertex[0])*(externalVertex[0]-inputVertex[0])+(externalVertex[1]-inputVertex[1])*(externalVertex[1]-inputVertex[1])+(externalVertex[2]-inputVertex[2])*(externalVertex[2]-inputVertex[2]));
     if (dist > fMaxVertexDist) {
-      AliDebug(2,Form("Event rejected because the distance between the current and embedded verteces is > %f. "
+      AliDebug(3, Form("Event rejected because the distance between the current and embedded verteces is > %f. "
        "Current event vertex (%f, %f, %f), embedded event vertex (%f, %f, %f). Distance = %f",
        fMaxVertexDist, inputVertex[0], inputVertex[1], inputVertex[2], externalVertex[0], externalVertex[1], externalVertex[2], dist));
       return kFALSE;
@@ -543,6 +579,10 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
   // Keep track of the total number of files in the TChain to ensure that we don't start repeating within the chain
   fMaxNumberOfFiles = fChain->GetListOfFiles()->GetEntries();
 
+  if (fFilenames.size() > fMaxNumberOfFiles) {
+    AliWarning(TString::Format("Number of input files (%lu) is larger than the number of available files (%i). Some filenames were likely invalid!", fFilenames.size(), fMaxNumberOfFiles));
+  }
+
   // Setup input event
   Bool_t res = InitEvent();
   if (!res) return kFALSE;
@@ -563,6 +603,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetupEmbedding()
   // Setup TChain
   Bool_t res = SetupInputFiles();
   if (!res) { return; }
+
+  // Note if getting random event access
+  if (fRandomEventNumberAccess) {
+    AliInfo("Random event number access enabled!");
+  }
   
   fInitializedEmbedding = kTRUE;
 }
@@ -593,7 +638,7 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 
   // Jump ahead at random if desired
   // Determines the offset into the tree
-  if (fRandomAccess) {
+  if (fRandomEventNumberAccess) {
     fOffset = TMath::Nint(gRandom->Rndm()*(fUpperEntry-fLowerEntry))-1;
   }
   else {
@@ -603,13 +648,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
   // Sets which entry to start if the try
   fCurrentEntry = fLowerEntry + fOffset;
 
-  AliDebug(2,Form("Will start embedding from entry %d", fCurrentEntry));
-
   // Keep track of the number of files that we have gone through
   // To start from 0, we only increment if fLowerEntry > 0
   if (fLowerEntry > 0) {
     fFileNumber++;
   }
+
+  AliDebug(2, TString::Format("Will start embedding file %i beginning from entry %i (entry %i within the file). NOTE: This file number is not equal to the absolute file number in the file list!", fFileNumber, fCurrentEntry, fCurrentEntry - fLowerEntry));
+  // NOTE: Cannot use this print message, as it is possible that fMaxNumberOfFiles != fFilenames.size() because
+  //       invalid filenames may be included in the fFilenames count!
+  //AliDebug(2, TString::Format("Will start embedding file %i as the %ith file beginning from entry %i.", (fFilenameIndex + fFileNumber) % fMaxNumberOfFiles, fFileNumber, fCurrentEntry));
 
   // (re)set whether we have wrapped the tree
   fWrappedAroundTree = false;
