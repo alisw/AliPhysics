@@ -369,6 +369,7 @@ public:
   void                               SetCocktailGenNameToCheck(Int_t i, TString v){ if(i < 10) fCocktailGenNames[i] = v   ; }
   TString                            GetCocktailGenNameToCheck(Int_t i)     const { if(i < 10) return fCocktailGenNames[i]; 
                                                                                     else       return ""                  ; }
+  Int_t                              GetCocktailGeneratorBackgroundTag(AliVCluster * clus, TString & genName, TString & genNameBkg);
   
 private:    
   
