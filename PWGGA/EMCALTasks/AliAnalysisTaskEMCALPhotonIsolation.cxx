@@ -3510,6 +3510,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
         if(mcpp->GetStatus()>10) {continue;}
         
         int mumidx=mcpp->GetMother();
+        if (mumidx<0 || mumidx>nTracks) continue;
+        
         mum = static_cast<AliAODMCParticle*>(fAODMCParticles->At(mumidx));
         if(mumidx == photonlabel || mum->GetPdgCode()==22) continue;
         
