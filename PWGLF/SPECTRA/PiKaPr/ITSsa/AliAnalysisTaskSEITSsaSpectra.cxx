@@ -850,17 +850,17 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
 
       Int_t  lMCtrk = -999;
       Int_t  lMCpdg = -999;
-      Int_t  lMCspc = -999;
+      Int_t  lMCspc = AliPID::kElectron;
       if (fIsMC) {
         lMCtrk = TMath::Abs(track->GetLabel());
         TParticle* trkMC = (TParticle*)lMCstack->Particle(lMCtrk);
         lMCpdg = trkMC->GetPdgCode();
 
-        //        if (TMath::Abs(lMCpdg) ==   11 && fPid == AliPID::kPion) lMCspc = 0;
-        //        if (TMath::Abs(lMCpdg) ==   13 && fPid == AliPID::kPion) lMCspc = 0;
-        if (TMath::Abs(lMCpdg) ==  211) lMCspc = 0; // select Pi+/Pi- only
-        if (TMath::Abs(lMCpdg) ==  321) lMCspc = 1; // select K+/K- only
-        if (TMath::Abs(lMCpdg) == 2212) lMCspc = 2; // select p+/p- only
+        //        if (TMath::Abs(lMCpdg) ==   11 && fPid == AliPID::kPion) lMCspc = AliPID::kPion;
+        //        if (TMath::Abs(lMCpdg) ==   13 && fPid == AliPID::kPion) lMCspc = AliPID::kPion;
+        if (TMath::Abs(lMCpdg) ==  211) lMCspc = AliPID::kPion; // select Pi+/Pi- only
+        if (TMath::Abs(lMCpdg) ==  321) lMCspc = AliPID::kKaon; // select K+/K- only
+        if (TMath::Abs(lMCpdg) == 2212) lMCspc = AliPID::kProton; // select p+/p- only
       }
 
       if (lIsGoodTrack) {
@@ -883,13 +883,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
       if (lIsGoodTrack) fHistReco[lPidIndex]->Fill(trkPt);
       //Filling Histos for Reco Efficiency
       //information from the MC kinematics
-      if (fIsMC && (lMCspc > 0) && IsRapIn(y[lMCspc + 2])) {
-        Int_t index = lMCspc * kNchg + iChg;
-        if (lMCstack->IsPhysicalPrimary(lMCtrk))         fHistPrimMCReco[index]->Fill(trkPt);
-        if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk))  fHistSstrMCReco[index]->Fill(trkPt);
-        if (lMCstack->IsSecondaryFromMaterial(lMCtrk))   fHistSmatMCReco[index]->Fill(trkPt);
+      if (fIsMC) {
+        if ((lMCspc > AliPID::kMuon) && IsRapIn(y[lMCspc])) {
+          Int_t index = (lMCspc - 2) * kNchg + iChg;
+          if (lMCstack->IsPhysicalPrimary(lMCtrk))         fHistPrimMCReco[index]->Fill(trkPt);
+          if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk))  fHistSstrMCReco[index]->Fill(trkPt);
+          if (lMCstack->IsSecondaryFromMaterial(lMCtrk))   fHistSmatMCReco[index]->Fill(trkPt);
+        }
 
-        Int_t binPart = (lMCspc < 0) ? -1 : lMCspc;
+        Int_t binPart = (lMCspc > AliPID::kMuon) ? (lMCspc-2) : -1;
         if (lIsGoodTrack) {
           fHistMCReco[lPidIndex]->Fill(trkPt, binPart);
           if (lMCstack->IsPhysicalPrimary(lMCtrk))
