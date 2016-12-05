@@ -90,14 +90,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
  
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
+  // Cocktail generator studies
+  void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
+  
   void         ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta, Float_t phi, TObjArray *clusterList) ;
   void         SwitchOnStudyClusterLocalActivity()        { fStudyActivityNearCluster = kTRUE  ; }
   void         SwitchOffStudyClusterLocalActivity()       { fStudyActivityNearCluster = kFALSE ; }  
-  
-  void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
-  void         SwitchOnStudyClusterOverlapsPerGenerator() { fStudyClusterOverlapsPerGenerator = kTRUE  ; }
-  void         SwitchOffStudyClusterOverlapsPerGenerator(){ fStudyClusterOverlapsPerGenerator = kFALSE ; }  
-  
+    
   // Analysis parameters setters getters
     
   // ** Cluster selection methods **
@@ -132,10 +131,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
     if(n > fgkNmcTypes    ) fNOriginHistograms  = fgkNmcTypes     ; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
     if(n > fgkNmcPrimTypes) fNPrimaryHistograms = fgkNmcPrimTypes ; }
-
-  
-  void         SetNCocktailGenNamesToCheck(Int_t nb)          { fNCocktailGenNames = nb ; }
-  void         SetCocktailGenNameToCheck(Int_t i, TString va) { if(i < 10) fCocktailGenNames[i] = va ; }
 
   /// For MC histograms in arrays, index in the array corresponds to a MC originating particle type
   enum mcTypes    { kmcPhoton     =  0,    kmcPi0Decay = 1,       kmcEtaDecay      = 2,  kmcOtherDecay = 3,
@@ -213,9 +208,6 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNEBinCuts;                              ///<  Number of energy bin cuts
 
   Bool_t   fStudyActivityNearCluster;               ///<  Activate analysis of multiplicity and energy deposit near the cluster
-  Bool_t   fStudyClusterOverlapsPerGenerator;       ///<  In case of coctail generators, check the content of the cluster
-  Int_t    fNCocktailGenNames;                      ///<  Number of generators to study
-  TString  fCocktailGenNames[10];                   ///<  Array with name of generators to study, first must be always empty
   
   //
   // Histograms

@@ -59,7 +59,9 @@ fAODObjArrayName(""),         fAddToHistogramsName(""),
 fCaloPID(0x0),                fCaloUtils(0x0),
 fFidCut(0x0),                 fHisto(0x0),
 fIC(0x0),                     fMCUtils(0x0),                
-fNMS(0x0),                    fReader(0x0)
+fNMS(0x0),                    fReader(0x0),
+fStudyClusterOverlapsPerGenerator(0),
+fNCocktailGenNames(0)
 {
   InitParameters();
 }
@@ -603,6 +605,19 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fInputAODName        = "CaloTrackCorr";
   fAddToHistogramsName = "";
   fAODObjArrayName     = "Ref";
+  
+  fNCocktailGenNames = 7;
+  // Order matters, here cocktail of MC LHC14a1a
+  fCocktailGenNames[0] = ""; // First must be always empty
+  fCocktailGenNames[1] = "pi0EMC";
+  fCocktailGenNames[2] = "pi0";
+  fCocktailGenNames[3] = "etaEMC";
+  fCocktailGenNames[4] = "eta";
+  fCocktailGenNames[5] = "hijing";
+  fCocktailGenNames[6] = "other";  
+  
+  for(Int_t igen = 7; igen < 10; igen++)
+    fCocktailGenNames[igen] = "";
 }
 
 //__________________________________________________________________
