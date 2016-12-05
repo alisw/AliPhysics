@@ -697,7 +697,7 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
 
     AliAODTrack*  aodtrack = static_cast<AliAODTrack*>(jet->TrackAt(i, fTracksCont->GetArray()));
     Int_t constid = 9; // 9 mean unknown
-    if(fJetOutputMode==6)
+    if(fJetOutputMode==6) // MC
     {
       // Use same convention as PID in AODs
       if(TMath::Abs(particle->PdgCode()) == 2212) // proton
@@ -711,10 +711,10 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
       else if (TMath::Abs(particle->PdgCode()) == 13) // muon
         constid = 1;
     }
-    else if (aodtrack)
+    else if (aodtrack) // data
       constid = aodtrack->GetMostProbablePID();
 
-    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid);
+    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid, particle->Xv(), particle->Yv(), particle->Zv());
   }
   if(std::find(fMatchedJets.begin(), fMatchedJets.end(), jet) != fMatchedJets.end()) // set the true pT from the matched jets (only possible in modes 4 & 7)
     basicJet.SetTruePt(fMatchedJetsReference[std::find(fMatchedJets.begin(), fMatchedJets.end(), jet)-fMatchedJets.begin()]->Pt());
