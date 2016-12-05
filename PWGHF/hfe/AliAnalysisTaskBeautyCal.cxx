@@ -107,6 +107,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistClustEtime(0),
   fHistClustEcent(0),
   fEMCClsEtaPhi(0),
+  fEMCClsEtaPhi2(0),
   fHistClustEEG1(0),
   fHistClustEEG1cent(0),
   fHistClustEEG2(0),
@@ -171,6 +172,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistHFEcorr(0),
   fHistResD(0),
   fHistResB(0),
+  fHistHFEpos(0),
+  fHistHFEneg(0),
   fHistHFmcCheck(0), 
   fhfeCuts(0) 
 {
@@ -221,6 +224,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistClustEtime(0),
   fHistClustEcent(0),
   fEMCClsEtaPhi(0),
+  fEMCClsEtaPhi2(0),
   fHistClustEEG1(0),
   fHistClustEEG1cent(0),
   fHistClustEEG2(0),
@@ -285,6 +289,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistHFEcorr(0),
   fHistResD(0),
   fHistResB(0),
+  fHistHFEpos(0),
+  fHistHFEneg(0),
   fHistHFmcCheck(0),
   fhfeCuts(0) 
 {
@@ -393,8 +399,11 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fHistClustEcent = new TH2F("fHistClustEcent", "EMCAL cluster energy distribution vs. centrality; Cluster E;counts", 100,0,100,500, 0.0, 50.0);
   fOutputList->Add(fHistClustEcent);
 
-  fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
+  fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",1800,-0.9,0.9,630,0,6.3);
   fOutputList->Add(fEMCClsEtaPhi);
+
+  fEMCClsEtaPhi2 = new TH2F("fEMCClsEtaPhi2","EMCAL cluster #eta and #phi distribution;#eta;#phi",1800,-0.9,0.9,630,0,6.3);
+  fOutputList->Add(fEMCClsEtaPhi2);
  
   /*
   fHistClustEEG1 = new TH1F("fHistClustEEG1", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
@@ -596,6 +605,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fHistResB = new TH2D("fHistResB", "B->e pT corr", 400,0.0,40.0,400,0.0,40.0);
   fOutputList->Add(fHistResB);
+
+  fHistHFEpos = new TH1D("fHistHFEpos", "HFE postive", 40,0,40);
+  fOutputList->Add(fHistHFEpos);
+  
+  fHistHFEneg = new TH1D("fHistHFEneg", "HFE negative", 40,0,40);
+  fOutputList->Add(fHistHFEneg);
 
   fHistHFmcCheck = new TH1D("fHistHFmcCheck", "HFE mc ilabel", 4,-1.5,2.5);
   fOutputList->Add(fHistHFmcCheck);
@@ -804,6 +819,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
+      fEMCClsEtaPhi->Fill(emceta,emcphi);
       // remove some bad runs
       if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
       if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
@@ -813,7 +829,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fHistClustE->Fill(clustE);
       if(tof>-30 && tof<30)fHistClustEtime->Fill(clustE);
       if(centrality>-1)fHistClustEcent->Fill(centrality,clustE);
-      fEMCClsEtaPhi->Fill(emceta,emcphi);
+      fEMCClsEtaPhi2->Fill(emceta,emcphi);
 
       /*
       //-----Plots for EMC trigger
@@ -1179,6 +1195,16 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          {
           fHistDCAhfe->Fill(track->Pt(),DCAxy);
           fHisthfeTof->Fill(track->Pt(),tof);
+
+          if(track->Charge()>0)
+            {
+             fHistHFEpos->Fill(track->Pt());
+            }
+          else
+            {
+             fHistHFEneg->Fill(track->Pt());
+            }
+
           //----- MC
           //if(pid_eleD || pid_eleB)ElectronAway(iTracks,track); //e+e-
           if(pid_eleD)fHistDCAdeSemi->Fill(track->Pt(),DCAxy);
