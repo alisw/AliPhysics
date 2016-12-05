@@ -62,7 +62,7 @@ AliAnalysisTaskCheckESDTracks *AddTaskCheckESDTracks(TString suffix="",
 							    AliAnalysisManager::kOutputContainer,
 							    outputFileName.Data() );
   
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("ctreeESDTracks",
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("ctreeESDTracks%s",suffix.Data()),
 							    TTree::Class(),
 							    AliAnalysisManager::kOutputContainer,
 							    treeFileName.Data() );
