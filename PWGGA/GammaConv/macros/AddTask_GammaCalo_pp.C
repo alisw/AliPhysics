@@ -522,6 +522,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     // Then some cuts on the clusters, e.g. 06003222: this is               "DistanceToBadChannel", "Timing", "TrackMatching", "ExoticCell", "MinEnergy", "MinNCells", "MinM02", "MaxM02"
     // finally some for now unused cuts, usually 0000: this is              "MinM20", "MaxM20", "MaximumDispersion", "NLM"
 
+    //std, but no opening angle cut
+  } else if (trainConfig == 99){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000000"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000000"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000000"); // std
     //standard cuts
   } else if (trainConfig == 100){ // EMCAL clusters pp 8 TeV
     cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
