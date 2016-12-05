@@ -8,7 +8,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>
-#include <time.h>
 #include <cstdlib>
 #include <cassert>
 #include <string>
@@ -37,7 +36,9 @@
 
 #include "TFileMerger.h"
 
-static const char *USAGE = 
+#include "alisync.h"
+
+static const char *USAGE =
       "usage: alisync [-h] [options] [@]<input file> [<input file>]\n"
       "Synchronizes remote ROOT files locally, atomically and in parallel\n"
       "If <input file> is prepended with @ it will be considered"
@@ -94,7 +95,7 @@ static void recursiveLocalMkdir(const char *dir) {
   char tmp[PATH_MAX];
   char *p = NULL;
   size_t len;
-  
+
   snprintf(tmp, sizeof(tmp),"%s",dir);
   len = strlen(tmp);
   if(tmp[len - 1] == '/')
@@ -108,88 +109,30 @@ static void recursiveLocalMkdir(const char *dir) {
   mkdir(tmp, S_IRWXU);
 }
 
-// Helpers to trim whitespace from strings. trim from start.
-static inline std::string &ltrim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-  return s;
-}
-
-// trim from end
-static inline std::string &rtrim(std::string &s) {
-  s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-  return s;
-}
-
-// trim from both ends
-static inline std::string &trim(std::string &s) {
-  return ltrim(rtrim(s));
-}
-
-
-
-struct JobInfo {
-  std::string filename;
-  time_t startTime;
-  pid_t pid;
-  int exitCode;
-  int retries;
-  bool running;
-};
-
-struct SamePidAs {
-  SamePidAs(pid_t pid) : pid(pid) {}
-  pid_t pid;
-  bool operator()(const JobInfo &info) { return info.pid == this->pid;}
-};
-
-struct MatchPathSeparator
-{
-  bool operator()( char ch ) const
-  {
-    return ch == '/';
-  }
-};
-
-struct NotMatchPathSeparator
-{
-  bool operator()( char ch ) const
-  {
-    return ch != '/';
-  }
-};
 
 static std::vector<JobInfo> gJobs;
 
-void normalizePath(std::string &str) {
-  size_t index = 0;
-  while (true) {
-    index = str.find("/./", index);
-    if (index == std::string::npos) break;
-
-    /* Make the replacement. */
-    str.erase(index, 2);
-  }
-}
-
 // Returns a string which contains the md5sum of the file.
-std::string calculateMD5(const std::string &filename) {
+std::string calculateMD5(const std::string &f) {
+  std::string normalizedFilename = normalizePath(f);
   std::string command;
   std::string md5sum = "";
   std::string prefix("alien://");
   std::string out;
 
-  if (filename.compare(0, prefix.size(), prefix) == 0) {
+  if (normalizedFilename.compare(0, prefix.size(), prefix) == 0) {
     command = "gbbox md5sum ";
-    command += filename.substr(prefix.size());
+    command += normalizedFilename.substr(prefix.size());
   }else {
     command = "md5sum ";
-    command += filename;
+    command += normalizedFilename;
   }
 
   command += " 2>/dev/null";
-  std::cout << command << std::endl;
   out.resize(PATH_MAX*2+1);
   FILE *of = popen(command.c_str(), "r");
+  if (!of)
+    return "";
   size_t t = fread((void *)out.c_str(), PATH_MAX*2, 1, of);
 
   int ret = pclose(of);
@@ -231,7 +174,7 @@ void downloadFile(const JobInfo &info,
   } else {
     assert(gGrid);
     assert(strncmp("alien://", tmpoutdir, prefix.size()) == 0);
-    dieIf(gGrid->Mkdir(tmpoutdir+prefix.size(), "-p") == 0, 
+    dieIf(gGrid->Mkdir(tmpoutdir+prefix.size(), "-p") == 0,
           1, "Unable to create %s\n", tmpoutdir);
     tmpdest = dest;
   }
@@ -240,9 +183,8 @@ void downloadFile(const JobInfo &info,
   free(tmpFilename);
 
   // Make sure /./ is not part of the destination filename.
-  std::string tmpsrc = info.filename;
-  normalizePath(tmpdest);
-  normalizePath(tmpsrc);
+  std::string tmpsrc = normalizePath(info.filename);
+  tmpdest = normalizePath(tmpdest);
   // If no regexps specified, simply use TFile::Cp. If the checksum between
   // source and dest exists and is the same we skip the copy.
   // If the source file was not modified after the last modification
@@ -280,7 +222,7 @@ void downloadFile(const JobInfo &info,
         exit(0);
       }
     }
-    if (!TFile::Cp(tmpsrc.c_str(), tmpdest.c_str()))
+    if (!TFile::Cp(strdup(tmpsrc.c_str()), strdup(tmpdest.c_str())))
       exit(1);
   }
   else
@@ -293,7 +235,7 @@ void downloadFile(const JobInfo &info,
     while ((key = dynamic_cast<TKey *>(next()))) {
       assert(key);
       const char *keyName = key->GetName();
-      TString keyNameS(keyName); 
+      TString keyNameS(keyName);
       for (size_t rei = 0; rei < regexps.size(); ++rei)
       {
         int len;
@@ -305,7 +247,7 @@ void downloadFile(const JobInfo &info,
         }
       }
     }
-    for (std::vector<std::string>::iterator ki = mergeableKeys.begin(); 
+    for (std::vector<std::string>::iterator ki = mergeableKeys.begin();
          ki != mergeableKeys.end() ; ++ki)
     {
       TKey *oldKey = src->GetKey(ki->c_str());
@@ -327,7 +269,7 @@ void downloadFile(const JobInfo &info,
     dest->Close();
   }
   // In case the file is local, we need to move it in place.
-  if (!isAlienDest) 
+  if (!isAlienDest)
     if (rename(tmpdest.c_str(), dest.c_str()))
     {
       unlink(tmpdest.c_str());
@@ -474,11 +416,10 @@ int main( int argc, char **argv )
         gRetries = intCand;
         break;
       case 'o':
-        gOutputDirectory = optarg;
-        gOutputDirectory.erase(std::find_if(gOutputDirectory.rbegin(),
-                                            gOutputDirectory.rend(),
-                                            NotMatchPathSeparator()).base());
+      {
+        gOutputDirectory = normalizePath(trimTrailingSlashes(optarg));
         break;
+      }
       case 'j':
         intCand = atoi(optarg);
         dieIf(intCand <= 0, 1, "Invalid -j argument \"%s\".", optarg);
