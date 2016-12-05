@@ -1935,6 +1935,7 @@ Bool_t AliAnalysisVertexingHF::FillRecoCasc(AliVEvent *event,AliAODRecoCascadeHF
   rCasc->SetDCA(dca);
   rCasc->Setd0Prongs(2,d0);
   rCasc->Setd0errProngs(2,d0err);
+  rCasc->SetOwnPrimaryVtx(primVertexAOD);
   rCasc->SetCharge(esdB->Charge());
   // get PID info from ESD
   Double_t esdpid0[5]={0.,0.,0.,0.,0.};
