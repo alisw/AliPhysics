@@ -406,12 +406,6 @@ private:
   TString                    fAODObjArrayName ;    ///<  Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track. references.
   TString                    fAddToHistogramsName; ///<  Add this string to histograms name.
   
-  // Cocktail generator studies
-  Bool_t                     fStudyClusterOverlapsPerGenerator; ///<  In case of coctail generators, check the content of the cluster
-  Int_t                      fNCocktailGenNames;                ///<  Number of generators to study
-  TString                    fCocktailGenNames[10];             ///<  Array with name of generators to study, first must be always empty
-
-  
   // Analysis helper classes access pointers
   AliCaloPID               * fCaloPID;             ///< PID calculation utils.
   AliCalorimeterUtils      * fCaloUtils ;          ///< Pointer to Calorimeter Utils.
@@ -422,6 +416,11 @@ private:
   AliNeutralMesonSelection * fNMS;                 ///< Neutral Meson Selection utities.
   AliCaloTrackReader       * fReader;              ///< Access to ESD/AOD/MC data and other utilities.
 
+  // Cocktail generator studies
+  Bool_t                     fStudyClusterOverlapsPerGenerator; ///<  In case of coctail generators, check the content of the cluster
+  Int_t                      fNCocktailGenNames;                ///<  Number of generators to study
+  TString                    fCocktailGenNames[10];             ///<  Array with name of generators to study, first must be always empty
+  
   /// Copy constructor not implemented.
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; 
   
