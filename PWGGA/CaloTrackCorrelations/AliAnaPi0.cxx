@@ -178,7 +178,22 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     fhPtBinClusterEtaPhi                 [icut] = 0; 
     fhPtBinClusterColRow                 [icut] = 0; 
   }
+  
   fhReSS[0] = 0;  fhReSS[1] = 0; fhReSS[2] = 0; 
+
+  for(Int_t igen = 0; igen < 10; igen++)
+  {
+    for(Int_t itag = 0; itag < 5; itag++)
+    {    
+      fhPairGeneratorsBkgMass               [igen][itag] = 0;
+      fhPairGeneratorsBkgMassMCPi0          [igen][itag] = 0;
+      fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [igen][itag] = 0; 
+      fhPairGeneratorsBkgMassMCEta          [igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoDiffMCEta [igen][itag] = 0;
+    }
+  }
 }
 
 //_____________________
@@ -2039,6 +2054,87 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     } // angle bin
   }  
 
+  if(IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn())
+  {
+    TString mcGenNames[] = {"","_MC_Pi0Merged","_MC_Pi0Decay","_MC_EtaDecay","_MC_PhotonOther","_MC_Electron","_MC_Other"};
+    TString mcGenTitle[] = {"",",MC Pi0-Merged",",MC Pi0-Decay",", MC Eta-Decay",", MC Photon other sources",", MC Electron",", MC other sources"};
+
+    TString tagBkgNames[] = {"Clean","HijingBkg","NotHijingBkg","HijingAndOtherBkg","Other"};
+    TString tagBkgTitle[] = {"No overlap","pair Hijing Bkg","pair Not Hijing bkg","pair Hijing and other bkg","pair with different bkg"};
+
+    for(Int_t igen = 0; igen < GetNCocktailGenNamesToCheck(); igen++)
+    {
+      TString add = "_MainGener_";
+      if(igen==0) add = "";
+      for(Int_t itag = 0; itag < 5; itag++)
+      {
+        fhPairGeneratorsBkgMass[igen][itag] = new TH2F(Form("h%sGeneratorPairMass%s%s",
+                                                            tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+                                                       Form("Pair Mass with generator%s, %s ",
+                                                            GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+                                                       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMass[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
+        fhPairGeneratorsBkgMass[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgMass[igen][itag]) ;
+        
+        
+        fhPairGeneratorsBkgMassMCPi0[igen][itag] = new TH2F(Form("h%sGeneratorPairMass%s%s_MCPi0",
+                                                                 tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+                                                            Form("Pair Mass with contribution of true #pi^{0} generator%s, %s ",
+                                                                 GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+                                                            nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMassMCPi0[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
+        fhPairGeneratorsBkgMassMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgMassMCPi0[igen][itag]) ;
+        
+        fhPairGeneratorsBkgMassMCEta[igen][itag] = new TH2F(Form("h%sGeneratorPairMass%s%s_MCEta",
+                                                                 tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+                                                            Form("Pair Mass with contribution of true #eta generator%s, %s ",
+                                                                 GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+                                                            nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMassMCEta[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
+        fhPairGeneratorsBkgMassMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgMassMCEta[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag] = new TH2F(Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCPi0",
+                                                                           tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+                                                                      Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
+                                                                           GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+                                                                      nptbins,ptmin,ptmax,300,0,3);
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]) ;
+        
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag] = new TH2F(Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCEta",
+                                                                           tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+                                                                      Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
+                                                                           GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+                                                                      nptbins,ptmin,ptmax,300,0,3);
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag] = new TH2F(Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCPi0",
+                                                                          tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+                                                                     Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
+                                                                          GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+                                                                     nptbins,ptmin,ptmax,400,-20,20);
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag] = new TH2F(Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCEta",
+                                                                          tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+                                                                     Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
+                                                                          GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+                                                                     nptbins,ptmin,ptmax,400,-20,20);
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]) ;
+      }
+    }
+  }
   
 //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
 //
@@ -2614,6 +2710,7 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg)
 /// 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 12-unrelated
 //_______________________________________________________________________________________
 void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
+                                              Int_t iclus1,  Int_t iclus2,
                                               Float_t pt1,   Float_t pt2,
                                               Int_t ncell1,  Int_t ncell2,
                                               Double_t mass, Double_t pt,   Double_t asym,
@@ -2966,7 +3063,78 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     fhMCOrgDeltaEta[mcIndex]->Fill(pt, deta, GetEventWeight());
     fhMCOrgDeltaPhi[mcIndex]->Fill(pt, dphi, GetEventWeight());
   }
+  
+  if( IsStudyClusterOverlapsPerGeneratorOn() )
+  {      
+    // Get the original clusters
+    //
+    Int_t first = 0;
+    AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),iclus1,first);
+    AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),iclus2,iclus1);
+    if(!cluster2 || !cluster1) 
+    { 
+      AliWarning(Form("Cluster1 %p or Cluster 2 %p not found!",cluster1,cluster2));
+      return;
+    }
+    
+    // Get the generators names of each cluster and background generator tag
+    //
+    TString genName1 = "", genName2 = "", genNameBkg1 = "", genNameBkg2 = "";
+    Int_t genBkgTag1 = GetCocktailGeneratorBackgroundTag(cluster1, genName1, genNameBkg1);
+    if     (genBkgTag1 == -1) return;
+    else if(genBkgTag1  >  3) printf("Bkg1 generator tag larger than 3; Main %s Bkg %s\n",genName1.Data(),genNameBkg1.Data());
 
+    Int_t genBkgTag2 = GetCocktailGeneratorBackgroundTag(cluster1, genName2, genNameBkg2);
+    if     (genBkgTag2 == -1) return;
+    else if(genBkgTag2  >  3) printf("Bkg2 generator tag larger than 3; Main %s Bkg %s\n",genName2.Data(),genNameBkg2.Data());
+    
+    // if the clusters do not come from the same generator exclude
+    if(genName1!=genName2) return;
+    
+    Int_t genType = GetNCocktailGenNamesToCheck()-1;
+    for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
+    {
+      if ( genName1.Contains(GetCocktailGenNameToCheck(igen)) )
+        genType = igen;
+    }
+    
+    // Fill histograms
+    //
+    Int_t tag = 4;
+    if(genBkgTag1 == genBkgTag2) tag = genBkgTag1;
+    
+    fhPairGeneratorsBkgMass[genType][tag]->Fill(pt, mass, GetEventWeight());
+    fhPairGeneratorsBkgMass      [0][tag]->Fill(pt, mass, GetEventWeight());
+    
+    //
+    if ( ptPrim < 0.1 || pt < 0.5 ) return;
+    
+    Float_t ratio = pt / ptPrim;
+    Float_t diff  = pt - ptPrim;
+
+    if     ( mcIndex==2 ) // Pi0
+    {
+      fhPairGeneratorsBkgMassMCPi0          [0][tag]->Fill(pt,  mass, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoRatioMCPi0[0][tag]->Fill(pt, ratio, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [0][tag]->Fill(pt,  diff, GetEventWeight());
+
+      fhPairGeneratorsBkgMassMCPi0          [genType][tag]->Fill(pt,  mass, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoRatioMCPi0[genType][tag]->Fill(pt, ratio, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [genType][tag]->Fill(pt,  diff, GetEventWeight());
+    }
+    else if( mcIndex==3 ) // Eta
+    {
+      fhPairGeneratorsBkgMassMCEta          [0][tag]->Fill(pt,  mass, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoRatioMCEta[0][tag]->Fill(pt, ratio, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoDiffMCEta [0][tag]->Fill(pt,  diff, GetEventWeight());    
+      
+      fhPairGeneratorsBkgMassMCEta          [genType][tag]->Fill(pt,  mass, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoRatioMCEta[genType][tag]->Fill(pt, ratio, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoDiffMCEta [genType][tag]->Fill(pt,  diff, GetEventWeight());
+    }
+  } // do cluster overlaps from cocktails
+  
+  // carefull adding something else here, "returns" can affect
 }
 
 //__________________________________________
@@ -3548,7 +3716,9 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
         
         if(fFillOriginHisto)
-          FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),
+          FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),
+                                        p1->GetCaloLabel(0), p2->GetCaloLabel(0),
+                                        p1->Pt(), p2->Pt(),
                                         ncell1, ncell2, m, pt, a,deta, dphi, angle);
       }
       
