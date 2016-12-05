@@ -65,25 +65,28 @@ UInt_t AliHLTTRDAgent::GetDetectorMask() const
 }
 
 int AliHLTTRDAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
-					 AliRawReader* /*rawReader*/,
-					 AliRunLoader* /*runloader*/) const
+					 AliRawReader* rawReader,
+					 AliRunLoader* runloader) const
 {
   // see header file for class documentation
 
   TString rawInput="";
 
-  for (int module = 0;module < 18;module++)
+  if (rawReader || !runloader)
   {
-    TString arg, publisher;
-    // raw data publisher components
-    publisher.Form("TRD-RP_%02d", module);
-    arg.Form("-minid %d -datatype 'DDL_RAW ' 'TRD ' -dataspec %i", 1024 + module, (int) TMath::Power(2, module));
-    handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
-    if( module>0 ) rawInput+=" ";
-    rawInput+=publisher;
+    for (int module = 0;module < 18;module++)
+    {
+      TString arg, publisher;
+      // raw data publisher components
+      publisher.Form("TRD-RP_%02d", module);
+      arg.Form("-minid %d -datatype 'DDL_RAW ' 'TRD ' -dataspec %i", 1024 + module, (int) TMath::Power(2, module));
+      handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+      if( module>0 ) rawInput+=" ";
+      rawInput+=publisher;
+    }
+    handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", rawInput.Data(),"");
+    handler->CreateConfiguration("TRD-tracker", "TRDTracker", "TRD-tracklet-reader TPC-globalmerger","");
   }
-  handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", rawInput.Data(),"");
-  handler->CreateConfiguration("TRD-tracker", "TRDTracker", "TRD-tracklet-reader TPC-globalmerger","");
   return 0;
 }
 
