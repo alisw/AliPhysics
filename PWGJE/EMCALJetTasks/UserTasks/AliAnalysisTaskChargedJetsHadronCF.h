@@ -245,18 +245,22 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 class AliBasicJetConstituent
 {
   public:
-    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0), fPID(0) {}
-    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t pid)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fPID(pid)
+    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0), fPID(0), fVx(0), fVy(0), fVz(0) {}
+    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t pid, Float_t vx, Float_t vy, Float_t vz)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fPID(pid), fVx(vx), fVy(vy), fVz(vz)
     {
     }
     ~AliBasicJetConstituent();
 
-    Double_t Pt()       { return fpT; }
-    Double_t Phi()      { return fPhi; }
-    Double_t Eta()      { return fEta; }
-    Short_t  Charge()   { return fCharge; }
-    Short_t  PID()      { return fPID; }
+    Float_t Pt()        { return fpT; }
+    Float_t Phi()       { return fPhi; }
+    Float_t Eta()       { return fEta; }
+    Short_t Charge()    { return fCharge; }
+    Short_t PID()       { return fPID; }
+
+    Float_t Vx()        { return fVx; }
+    Float_t Vy()        { return fVy; }
+    Float_t Vz()        { return fVz; }
 
   private:
     Float_t fEta;      ///< eta
@@ -264,6 +268,10 @@ class AliBasicJetConstituent
     Float_t fpT;       ///< pT
     Short_t fCharge;   ///< charge
     Short_t fPID;      ///< most probably PID code/PDG code
+
+    Float_t fVx;       ///< production vertex X
+    Float_t fVy;       ///< production vertex Y
+    Float_t fVz;       ///< production vertex Z
 };
 
 //###############################################################################################################################################3
@@ -307,9 +315,9 @@ class AliBasicJet
 
     // Basic constituent functions
     AliBasicJetConstituent*   GetJetConstituent(Int_t index) { return &fConstituents[index]; }
-    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t pid=0)
+    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t pid=0, Float_t vx=0, Float_t vy=0, Float_t vz=0)
     {
-      AliBasicJetConstituent c (eta, phi, pt, charge, pid);
+      AliBasicJetConstituent c (eta, phi, pt, charge, pid, vx, vy, vz);
       AddJetConstituent(&c);
     }
     void                      AddJetConstituent(AliBasicJetConstituent* constituent) {fConstituents.push_back(*constituent); }
