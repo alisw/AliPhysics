@@ -15,6 +15,7 @@
 #include <TGraphAsymmErrors.h>
 #include <TLegend.h>
 #include <TRandom3.h>
+#include <TSystem.h>
 
 #include "AliHFMassFitter.h"
 #include "AliRDHFCutsD0toKpi.h"
@@ -40,16 +41,19 @@
 //GLOBAL VARIABLES
 //to be set
 //input file name
-const TString infilename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/highIR_pass1/AnalysisResultsv2_EP_pass0_diffdet_topod0cut_3050.root";
-const TString suffix="_Topod0Cut_pass0_QoverM_VZERO";//"_3050_CentralCuts_TPC";
+const TString infilename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_PosTCPVZERO_EvShape.root";
+const TString suffix="_Topod0Cut_QoverM_TPC_EvShape";//"_3050_CentralCuts_TPC";
 const TString partname="Dplus";
 const Int_t minCent=30;
 const Int_t maxCent=50;
 
+const TString outputdir=".";
+
 //ptbins of the analysis
-const Int_t nPtBins=7;
+const Int_t nPtBins=5;
 const Int_t nPtLims=nPtBins+1;
-const Double_t PtLims[nPtLims] = {2.,3.,4.,5.,6.,8.,12.,16.};
+//const Double_t PtLims[nPtLims] = {2.,3.,4.,5.,6.,7.,8.,10.,12.,16.,24.};
+const Double_t PtLims[nPtLims] = {3.,4.,6.,8.,12.,16.};
 
 //phi bins
 const Int_t nPhiBins=4;
@@ -61,19 +65,19 @@ const Double_t q2smalllimit=2.;
 const Double_t q2largelimit=2.;
 
 //percentage of events with smaller/larger q2
-const Double_t q2percevents=0.4;
+const Double_t q2percevents=0.5;
 
 //EP resolution
-const Int_t evPlane=AliEventPlaneResolutionHandler::kVZERO;
-Int_t evPlaneRes=AliEventPlaneResolutionHandler::kThreeSub;
+const Int_t evPlane=AliEventPlaneResolutionHandler::kTPCPosEta;
+Int_t evPlaneRes=AliEventPlaneResolutionHandler::kTwoEtaSub;
 const Bool_t useNcollWeight=kFALSE;
 const Bool_t useAliHandlerForRes=kFALSE;
 
 // mass fit configuration
-const Int_t rebin[]={5,5,5,5,5,5,5,5};
+const Int_t rebin[]={3,4,4,4,4,4,4,4,4,4};
 const Int_t typeb=AliHFMassFitter::kExpo;  // Background: 0=expo, 1=linear, 2=pol2
 const Bool_t fixAlsoMass=kFALSE;
-const Double_t minMassForFit=1.69;
+const Double_t minMassForFit=1.70;
 const Double_t maxMassForFit=2.02;
 const Double_t nSigmaForCounting=3.5;
 
@@ -110,6 +114,10 @@ void SetStyle();
 //_____________________________________________________________________________________________
 //ANALYSIS FUNCTION
 Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
+  
+  TString workdir=gSystem->pwd();
+  if(!gSystem->cd(outputdir.Data())) {gSystem->mkdir(outputdir.Data());}
+  else {gSystem->cd(workdir.Data());}
   
   TList* datalist=(TList*)LoadTList();
   if(!datalist){return 1;}
@@ -150,13 +158,13 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
   
   TLegend** legsyst = new TLegend*[2];
   
-  TFile outfile(Form("v2Output_%d_%d_%s%s.root",minCent,maxCent,analysismethname.Data(),suffix.Data()),"RECREATE"); //outputfile
+  TFile outfile(Form("%s/v2Output_%d_%d_%s%s.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data()),"RECREATE"); //outputfile
   
   for(Int_t iq2=0; iq2<2; iq2++) {
     if(analysismeth!=kScalarProd) {
       //load resolution and mass lists
       TList* masslist=(TList*)LoadMassHistos(hMassPtPhiq2Centr,cutvalues,q2region[iq2],analysismeth);
-      masslist->SaveAs(Form("v2Histograms_%d_%d_%s%s_%s.root",minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[iq2].Data()),"RECREATE");
+      masslist->SaveAs(Form("%s/v2Histograms_%d_%d_%s%s_%s.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[iq2].Data()),"RECREATE");
 
       cout <<"Average pt for pt bin \n"<<endl;
       //average pt for pt bin
@@ -239,6 +247,13 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
         TH1F* hevplresos[3];
         TString namereso[3]={"ResoVsq2","Reso2Vsq2","Reso3Vsq2"};
         Int_t nSubRes=1;
+        TH2F* htestversion=(TH2F*)resolist->FindObject(Form("hEvPlane%s%s",namereso[0].Data(),suffixcentr.Data()));
+        if(htestversion){
+          printf("Old version of the task\n");
+        }else{
+          printf("New version of the task\n");
+          namereso[0]="Reso1Vsq2";
+        }
         if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
            evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
         for(Int_t iRes=0;iRes<nSubRes;iRes++){
@@ -349,7 +364,7 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
    
       gv2[iq2]->GetYaxis()->SetRangeUser(ymin[iq2],ymax[iq2]);
       
-      cv2[iq2]->SaveAs(Form("v2Output_%d_%d_%s%s_%s.pdf",minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[iq2].Data()));
+      cv2[iq2]->SaveAs(Form("%s/v2Output_%d_%d_%s%s_%s.pdf",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2regionname[iq2].Data()));
 
       cv2fs->cd();
       TString drawopt="AP";
@@ -379,7 +394,7 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
   if(max<ymax[1]) max=ymax[1];
   gv2fs[0]->GetYaxis()->SetRangeUser(min,max);
   
-  cv2fs->SaveAs(Form("v2fsOutput_%d_%d_%s%s.pdf",minCent,maxCent,analysismethname.Data(),suffix.Data()));
+  cv2fs->SaveAs(Form("%s/v2fsOutput_%d_%d_%s%s.pdf",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data()));
   
   return 0;
 }
@@ -388,6 +403,10 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
 //DRAW q_2 VS CENTRALITY
 void Drawq2VsCent() {
 
+  TString workdir=gSystem->pwd();
+  if(!gSystem->cd(outputdir.Data())) {gSystem->mkdir(outputdir.Data());}
+  else {gSystem->cd(workdir.Data());}
+  
   SetStyle();
   
   TList* datalist=(TList*)LoadTList();
@@ -427,8 +446,8 @@ void Drawq2VsCent() {
   }
   leg->Draw("same");
   
-  cq2VsCent->SaveAs(Form("q2_vs_Centrality%s.pdf",suffix.Data()));
-  cq2->SaveAs(Form("Nev_vs_q2%s.pdf",suffix.Data()));
+  cq2VsCent->SaveAs(Form("%s/q2_vs_Centrality%s.pdf",outputdir.Data(),suffix.Data()));
+  cq2->SaveAs(Form("%s/Nev_vs_q2%s.pdf",outputdir.Data(),suffix.Data()));
   
 }
 
@@ -436,6 +455,10 @@ void Drawq2VsCent() {
 //DRAW RESOLUTION
 void DrawResolution(Int_t cutmeth) {
 
+  TString workdir=gSystem->pwd();
+  if(!gSystem->cd(outputdir.Data())) {gSystem->mkdir(outputdir.Data());}
+  else {gSystem->cd(workdir.Data());}
+  
   SetStyle();
   
   TList* datalist=(TList*)LoadTList();
@@ -457,7 +480,7 @@ void DrawResolution(Int_t cutmeth) {
   TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
 
   for(Int_t iq2=0; iq2<3; iq2++) {
-    resolist=(TList*)LoadResolutionHistos(datalist,cutvalues,q2region[iq2]);
+    if(iq2!=3) {resolist=(TList*)LoadResolutionHistos(datalist,cutvalues,q2region[iq2]);}
     if(iq2==3) {
       Double_t q2cuts[2] = {11.,-1.};
       resolist=(TList*)LoadResolutionHistos(datalist,q2cuts,kSmall); //resolution integrated in q2
@@ -465,7 +488,7 @@ void DrawResolution(Int_t cutmeth) {
     gRes[iq2]=(TGraphErrors*)resolist->FindObject("gResolVsCent");
     if(iq2<3) {gRes[iq2]->SetName(Form("gResolVsCent%d",q2region[iq2]));}
     else {gRes[iq2]->SetName("gResolVsCent");}
-    gRes[iq2]->GetYaxis()->SetTitle("R_{2}");
+    gRes[iq2]->GetYaxis()->SetTitle("Event Plane resolution R_{2}");
     gRes[iq2]->GetXaxis()->SetTitle("Centrality (%)");
     gRes[iq2]->SetTitle("");
     gRes[iq2]->SetMarkerSize(1.5);
@@ -476,6 +499,13 @@ void DrawResolution(Int_t cutmeth) {
     TH1F* hevplresos[3];
     TString namereso[3]={"ResoVsq2","Reso2Vsq2","Reso3Vsq2"};
     Int_t nSubRes=1;
+    TH2F* htestversion=(TH2F*)resolist->FindObject(Form("hEvPlane%s%s",namereso[0].Data(),suffixcentr.Data()));
+    if(htestversion){
+      printf("Old version of the task\n");
+    }else{
+      printf("New version of the task\n");
+      namereso[0]="Reso1Vsq2";
+    }
     if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
        evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
     for(Int_t iRes=0;iRes<nSubRes;iRes++){
@@ -484,7 +514,7 @@ void DrawResolution(Int_t cutmeth) {
     resoFull[iq2]=GetEventPlaneResolution(error[iq2],hevplresos[0],hevplresos[1],hevplresos[2]);
   }
   
-  TLegend* leg = new TLegend(0.35,0.2,0.8,0.5);
+  TLegend* leg = new TLegend(0.2,0.2,0.8,0.5);
   leg->SetFillStyle(0);
   if(cutmeth==kAbsCut) {
     leg->AddEntry(gRes[0],Form("%s < %0.1f, <R_{2}> = %0.4f",hq2->GetXaxis()->GetTitle(),cutvalues[0],resoFull[0]),"lpe");
@@ -497,18 +527,16 @@ void DrawResolution(Int_t cutmeth) {
   }
   leg->AddEntry(gRes[2],Form("%s-integrated, <R_{2}> = %0.4f",hq2->GetXaxis()->GetTitle(),resoFull[2]),"lpe");
   
-  TCanvas* cRes = new TCanvas("cRes","",1920,1080);
+  TCanvas* cRes = new TCanvas("cRes","",800,800);
   Int_t npoints = gRes[0]->GetN();
-  Double_t min = TMath::MinElement(npoints,gRes[0]->GetY())*0.5;
-  if(min>TMath::MinElement(npoints,gRes[1]->GetY())) {min = TMath::MinElement(npoints,gRes[0]->GetY())*0.9;}
-  gRes[0]->GetYaxis()->SetRangeUser(min,1);
+  gRes[0]->GetYaxis()->SetRangeUser(0.,1.);
   gRes[0]->Draw("AP");
   gRes[1]->Draw("P");
   gRes[2]->Draw("P");
   leg->Draw("same");
   
-  cRes->SaveAs(Form("EP_resolution%s.pdf",suffix.Data()));
-  TFile outfile(Form("EP_resolution%s.root",suffix.Data()),"RECREATE");
+  cRes->SaveAs(Form("%s/EP_resolution%s.pdf",outputdir.Data(),suffix.Data()));
+  TFile outfile(Form("%s/EP_resolution%s.root",outputdir.Data(),suffix.Data()),"RECREATE");
   cRes->Write();
   gRes[0]->Write();
   gRes[1]->Write();
@@ -525,8 +553,8 @@ TList* LoadTList() {
   TDirectoryFile* dir=0x0;
   TList* list=0x0;
   
-  TString dirname=Form("PWGHF_D2H_HFv2_%s%s_EvShape",partname.Data(),suffix.Data());
-  TString listname=Form("coutputv2%s%s_EvShape",partname.Data(),suffix.Data());
+  TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
+  TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
 
   if(infile) {dir=(TDirectoryFile*)infile->Get(dirname.Data()); cout << "File opened!" << endl;}
   else {cerr << "Error: File " << infilename << " not found. Exit." << endl; return 0x0;}
@@ -570,7 +598,7 @@ TH2F* GetHistoq2VsCentr(TList* inputlist) {
     Double_t mincentpermil=(minCent+iCent*step)*10;
     Double_t maxcentpermil=(minCent+(iCent+1)*step)*10;
     
-    TH2F* hResVsq2=(TH2F*)inputlist->FindObject(Form("hEvPlaneResoVsq2centr%0.f_%0.f",mincentpermil,maxcentpermil));
+    TH2F* hResVsq2=(TH2F*)inputlist->FindObject(Form("hEvPlaneReso1Vsq2centr%0.f_%0.f",mincentpermil,maxcentpermil));
     if(!hResVsq2) return 0x0;
     TH1F* hq2 = (TH1F*)hResVsq2->ProjectionY();
     for(Int_t iBin=0; iBin<hq2->GetNbinsX()+1; iBin++) {
@@ -590,8 +618,6 @@ TList* LoadMassHistos(THnSparseF* sparse, Double_t cutvalues[2], Int_t smallorla
   TList *outlist = new TList();
   outlist->SetName("azimuthalhistoslist");
   
-  Applyq2Cut(sparse,cutvalues,smallorlarge);
-  
   TH1F* hMassTmp=0x0;
   TH1F* hMassTmp1=0x0;
   TH1F* hMassTmp2=0x0;
@@ -602,16 +628,19 @@ TList* LoadMassHistos(THnSparseF* sparse, Double_t cutvalues[2], Int_t smallorla
     outlist->Add(hMassTmp->Clone());
     if(analysismeth==kEventPlane) {
       for(Int_t iPhi=0; iPhi<nPhiBins; iPhi++) {
+        Applyq2Cut(sparse,cutvalues,smallorlarge); //apply q2 cut
         ApplyCut(sparse,PhiLims[iPhi],PhiLims[iPhi+1],2); //apply deltaphi cut
         hMassTmp=(TH1F*)sparse->Projection(0);
         hMassTmp->SetName(Form("hMass_pt%d_phi%d",iPt,iPhi));
         outlist->Add(hMassTmp->Clone());
         ResetAxes(sparse,2); //release deltaphi cut
+        ResetAxes(sparse,1); //release q2 cut
         delete hMassTmp;
         hMassTmp=0x0;
       }
     }
     else if(analysismeth==kEventPlaneInOut){
+      Applyq2Cut(sparse,cutvalues,smallorlarge); //apply q2 cut
       ApplyCut(sparse,0.,TMath::Pi()/4,2); //apply deltaphi cut
       hMassTmp=(TH1F*)sparse->Projection(0);
       ResetAxes(sparse,2); //release deltaphi cut
@@ -624,6 +653,7 @@ TList* LoadMassHistos(THnSparseF* sparse, Double_t cutvalues[2], Int_t smallorla
       ApplyCut(sparse,TMath::Pi()/4,3./4*TMath::Pi(),2); //apply deltaphi cut
       hMassTmp2=(TH1F*)sparse->Projection(0);
       ResetAxes(sparse,2); //release deltaphi cut
+      ResetAxes(sparse,3); //release q2 cut
       hMassTmp2->SetName(Form("hMass_pt%d_phi1",iPt));
       outlist->Add(hMassTmp2->Clone());
       delete hMassTmp;
@@ -663,6 +693,13 @@ TList* LoadResolutionHistos(TList *inputlist, Double_t cutvalues[2], Int_t small
      evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
   TString namereso[3]={"ResoVsq2","Reso2Vsq2","Reso3Vsq2"};
   TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
+  TH2F* htestversion=(TH2F*)inputlist->FindObject(Form("hEvPlaneResocentr%d_%d",minCentTimesTen,minCentTimesTen+25));
+  if(htestversion){
+    printf("Old version of the task\n");
+  }else{
+    printf("New version of the task\n");
+    namereso[0]="Reso1Vsq2";
+  }
   TH2F* hevplresosvsq2[3];
   TH1F* hevplresos[3];
   Int_t ncBin=minCentTimesTen/25;
@@ -674,18 +711,18 @@ TList* LoadResolutionHistos(TList *inputlist, Double_t cutvalues[2], Int_t small
     //define q2 cut bins
     if(smallorlarge==kSmall) {
       binmin=1;
-      binmax=hevplresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[0]*0.9999);
-      cout << "\nCut values for the small q2 region (resolution histograms):\nbin min: " << binmin << "\nbin max: " << binmax <<"\n"<<endl;
+      binmax=hevplresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[0]-0.0001);
+      cout << "\nCut values for the small q2 region (resolution histograms):\nmin: 0 (bin 1)\nmax: " << cutvalues[0] <<" (bin "<< binmax <<")\n"<<endl;
     }
     else if(smallorlarge==kLarge) {
-      binmin=hevplresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[1]*1.0001);
+      binmin=hevplresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[1]+0.0001);
       binmax=hevplresosvsq2[iRes]->GetYaxis()->FindBin(hevplresosvsq2[iRes]->GetYaxis()->GetNbins()+1); //takes also overflow entries
-      Int_t binmaxsmallregion=hevplresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[0]*0.9999);
+      Int_t binmaxsmallregion=hevplresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[0]-0.0001);
       if(binmaxsmallregion==binmin) {
         binmin += 1;
         cout << "Warning: maximum bin for the small q2 range equal to the minimum bin for the large q2 range: shift the minimum bin for the large q2 range in order to avoid overlap" << endl;
       }
-      cout << "\nCut values for the large q2 region (resolution histograms):\nbin min: " << binmin << "\nbin max: " << binmax <<"\n"<<endl;
+      cout << "\nCut values for the large q2 region (resolution histograms):\nmin: " << cutvalues[1] << " (bin "<<binmin<<")\nmax: "<< hevplresosvsq2[iRes]->GetYaxis()->GetNbins()+1 <<" (bin "<<binmax<<")\n"<<endl;
     }
     hevplresos[iRes]=(TH1F*)hevplresosvsq2[iRes]->ProjectionX(Form("hEvPlane%s%s",namereso[iRes].Data(),suffixcentr.Data()),binmin,binmax);
     if(hevplresos[iRes]){
@@ -721,12 +758,12 @@ TList* LoadResolutionHistos(TList *inputlist, Double_t cutvalues[2], Int_t small
       //define q2 cut bins
       if(smallorlarge==kSmall) {
         binmin=1;
-        binmax=htmpresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[0]*0.9999);
+        binmax=htmpresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[0]-0.0001);
       }
       else if(smallorlarge==kLarge) {
-        binmin=htmpresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[1]*1.0001);
+        binmin=htmpresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[1]+0.0001);
         binmax=htmpresosvsq2[iRes]->GetYaxis()->FindBin(htmpresosvsq2[iRes]->GetYaxis()->GetNbins()+1); //takes also overflow entries
-        Int_t binmaxsmallregion=htmpresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[0]*0.9999);
+        Int_t binmaxsmallregion=htmpresosvsq2[iRes]->GetYaxis()->FindBin(cutvalues[0]-0.0001);
         if(binmaxsmallregion==binmin) {
           binmin += 1;
         }
@@ -822,7 +859,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
   TList* list=0x0;
   Double_t massD=-1;
   
-  TString dirname=Form("PWGHF_D2H_HFv2_%s%s_EvShape",partname.Data(),suffix.Data());
+  TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
   
   if(infile) {dir=(TDirectoryFile*)infile->Get(dirname.Data());}
   if(dir) {
@@ -847,7 +884,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
   //Canvases for drawing histograms
   TCanvas *cDeltaPhi = new TCanvas(Form("cinvmassdeltaphi_%s",q2regionname.Data()),Form("Invariant mass distributions - %s",q2regionname.Data()),1920,1080);
   TCanvas *cDeltaPhifs = new TCanvas(Form("cinvmassdeltaphifs_%s",q2regionname.Data()),Form("Invariant mass distributions - fit with fixed sigma - %s",q2regionname.Data()),1920,1080);
-  TCanvas *cPhiInteg = new TCanvas(Form("cinvmass_%s",q2regionname.Data()),Form("Invariant mass distributions - #phi integrated - %s",q2regionname.Data()),1920,1080);
+  TCanvas *cPhiInteg = new TCanvas(Form("cinvmass_%s",q2regionname.Data()),Form("Invariant mass distributions - #phi and q_{2} integrated"),1920,1080);
   cDeltaPhi->Divide(nPtBins,nPhi);
   cDeltaPhifs->Divide(nPtBins,nPhi);
   Int_t nptpads = nPtBins/2;
@@ -947,10 +984,10 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     }
   }//end loop on pt bin
   
-  cDeltaPhi->SaveAs(Form("InvMassDeltaPhi%s_%s.pdf",suffix.Data(),q2regionname.Data()));
-  cDeltaPhifs->SaveAs(Form("InvMassDeltaPhi_fs%s_%s.pdf",suffix.Data(),q2regionname.Data()));
-  cDeltaPhifs->SaveAs(Form("InvMassDeltaPhi_fs%s_%s.root",suffix.Data(),q2regionname.Data()));
-  cPhiInteg->SaveAs(Form("InvMassfullphi%s_%s.pdf",suffix.Data(),q2regionname.Data()));
+  cDeltaPhi->SaveAs(Form("%s/InvMassDeltaPhi%s_%s.pdf",outputdir.Data(),suffix.Data(),q2regionname.Data()));
+  cDeltaPhifs->SaveAs(Form("%s/InvMassDeltaPhi_fs%s_%s.pdf",outputdir.Data(),suffix.Data(),q2regionname.Data()));
+  cDeltaPhifs->SaveAs(Form("%s/InvMassDeltaPhi_fs%s_%s.root",outputdir.Data(),suffix.Data(),q2regionname.Data()));
+  cPhiInteg->SaveAs(Form("%s/InvMassfullphi%s_%s.pdf",outputdir.Data(),suffix.Data(),q2regionname.Data()));
   
 }
 
@@ -1010,17 +1047,17 @@ void Applyq2Cut(THnSparseF* sparse, Double_t cutvalues[2], Int_t smallorlarge) {
   if(smallorlarge==kSmall) {
     binmin=q2axis->FindBin(0.0001);
     binmax=q2axis->FindBin(cutvalues[0]-0.0001);
-    cout << "\nCut values for the small q2 region:\nbin min: " << binmin << "\nbin max: " << binmax <<"\n"<<endl;
+    cout << "\nCut values for the small q2 region (resolution histograms):\nmin: 0 (bin 1)\nmax: " << cutvalues[0] <<" (bin "<< binmax <<")\n"<<endl;
   }
   else if(smallorlarge==kLarge) {
-    binmin=q2axis->FindBin(cutvalues[1]+1.0001);
+    binmin=q2axis->FindBin(cutvalues[1]+0.0001);
     binmax=q2axis->FindBin(q2axis->GetNbins()+1); //takes also overflow entries
     Int_t binmaxsmallregion=q2axis->FindBin(cutvalues[0]-0.0001);
     if(binmaxsmallregion==binmin) {
       binmin += 1;
       cout << "Warning: maximum bin for the small q2 range equal to the minimum bin for the large q2 range: shift the minimum bin for the large q2 range in order to avoid overlap" << endl;
     }
-    cout << "\nCut values for the large q2 region:\nbin min: " << binmin << "\nbin max: " << binmax <<"\n"<<endl;
+    cout << "\nCut values for the large q2 region (resolution histograms):\nmin: " << cutvalues[1] << " (bin "<<binmin<<")\nmax: "<< q2axis->GetNbins()+1 <<" (bin "<<binmax<<")\n"<<endl;
   }
   q2axis->SetRange(binmin,binmax);
 }
