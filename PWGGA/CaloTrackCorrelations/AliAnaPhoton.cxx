@@ -433,42 +433,14 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
 //__________________________________________________________________________
 void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag)
 {
-  if(calo->GetNLabels() == 0 || calo->GetLabel() < 0 ) return;
-    
-  TString genName;
-  (GetReader()->GetMC())->GetCocktailGenerator(calo->GetLabel(),genName);
+  //
+  // Check the generators inside the cluster
+  TString genName = "", genNameBkg = "";
+  Int_t genBkgTag = GetCocktailGeneratorBackgroundTag(calo, genName, genNameBkg);
+  if     (genBkgTag == -1) return;
+  else if(genBkgTag  >  3) printf("Bkg generator tag larger than 3\n");
   
-  //printf("Generator?: %s\n",genName.Data());
-  
-  Bool_t overlapGener       = kFALSE;
-  Bool_t overlapGenerHIJING = kFALSE;
-  Bool_t overlapGenerOther  = kFALSE;
-  
-  const UInt_t nlabels = calo->GetNLabels();
-  //Int_t noverlapsGen = 0;
-  //TString genName2Prev = genName;
-  for(UInt_t ilabel = 1; ilabel < nlabels; ilabel++)
-  {
-    Int_t label2 = calo->GetLabels()[ilabel];
-    TString genName2;
-    (GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
-    
-    //if(genName2 != genName2Prev) noverlapsGen++;
-    
-    if(genName2 != genName) 
-    {
-      //genName2Prev = genName2;
-      
-      overlapGener = kTRUE; 
-      
-      if( genName2.Contains("ijing") && !genName.Contains("ijing")) 
-        overlapGenerHIJING = kTRUE;
-      
-      if(!genName2.Contains("ijing"))
-        overlapGenerOther  = kTRUE;
-    }
-  }
-  
+  //
   // Get primary particle info of main particle contributing to the cluster
   Float_t eprim   = 0;
   //Float_t ptprim  = 0;
@@ -484,10 +456,12 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
     //ptprim  = fPrimaryMom.Pt();
   }
   
+  //
   Float_t en = calo->E();
 
-  if ( eprim < 0.1 || en < 0.5) return;
+  if ( eprim < 0.1 || en < 0.5 ) return;
   
+  //
   Int_t partType = -1;
   if     ( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0)      ) partType = kmcGenPi0Merged;
   else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0Decay) ) partType = kmcGenPi0Decay;
@@ -499,7 +473,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   Int_t genType = GetNCocktailGenNamesToCheck()-1;
   for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
   {
-    if( genName.Contains(GetCocktailGenNameToCheck(igen)))
+    if ( genName.Contains(GetCocktailGenNameToCheck(igen)) )
     {
       genType = igen;
       break;
@@ -509,7 +483,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   Float_t ratio = en / eprim;
   Float_t diff  = en - eprim;
   
-  if(overlapGener) 
+  if ( genBkgTag > 0 ) 
   {
     fhMergeGeneratorCluster[0]      [0]        ->Fill(en,GetEventWeight());
     fhMergeGeneratorCluster[0]      [partType] ->Fill(en,GetEventWeight());
@@ -528,7 +502,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
     
     if(!genName.Contains("ijing"))
     {
-      if(overlapGenerOther && !overlapGenerHIJING) 
+      if(genBkgTag == 2) 
       {
         fhMergeGeneratorClusterNotHijingBkg[0]      [0]        ->Fill(en,GetEventWeight());
         fhMergeGeneratorClusterNotHijingBkg[0]      [partType] ->Fill(en,GetEventWeight());
@@ -546,7 +520,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
         fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
       }
       
-      if(overlapGenerHIJING && !overlapGenerOther)
+      if(genBkgTag == 1)
       {
         fhMergeGeneratorClusterHijingBkg[0]      [0]        ->Fill(en,GetEventWeight());
         fhMergeGeneratorClusterHijingBkg[0]      [partType] ->Fill(en,GetEventWeight());
@@ -564,7 +538,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
         fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
       }
       
-      if(overlapGenerHIJING && overlapGenerOther)
+      if ( genBkgTag == 3 )
       {      
         fhMergeGeneratorClusterHijingAndOtherBkg[0]      [0]        ->Fill(en,GetEventWeight());
         fhMergeGeneratorClusterHijingAndOtherBkg[0]      [partType] ->Fill(en,GetEventWeight());
@@ -599,7 +573,6 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
     fhCleanGeneratorClusterEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
     fhCleanGeneratorClusterEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
     fhCleanGeneratorClusterEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
-
   }
 }
 
