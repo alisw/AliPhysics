@@ -60,8 +60,7 @@ fNOriginHistograms(9),        fNPrimaryHistograms(5),
 fMomentum(),                  fMomentum2(),
 fPrimaryMom(),                fProdVertex(),
 fConstantTimeShift(0),        fFillEBinAcceptanceHisto(0), fNEBinCuts(0),
-fStudyActivityNearCluster(0), fStudyClusterOverlapsPerGenerator(0),
-fNCocktailGenNames(0),
+fStudyActivityNearCluster(0), 
 // Histograms
 
 // Control histograms
@@ -317,9 +316,7 @@ fhLocalRegionClusterMultiplicityPerCentralityHijing(0)
   }
   
   for(Int_t igen = 0; igen < 10; igen++)
-  {
-    fCocktailGenNames[igen] = "";
- 
+  { 
     for(Int_t ip = 0; ip < fgkNGenTypes; ip++)
     {
       fhMergeGeneratorCluster                 [igen][ip] = 0; 
@@ -391,7 +388,7 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
       sumM++;
       sumE += calo2->E();
       
-      if( IsDataMC() && fStudyClusterOverlapsPerGenerator && calo2->GetNLabels() > 0)
+      if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() && calo2->GetNLabels() > 0)
       {
         TString genName;
         (GetReader()->GetMC())->GetCocktailGenerator(calo2->GetLabel(),genName);
@@ -413,7 +410,7 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
       fhLocalRegionClusterMultiplicityPerCentrality->Fill(GetEventCentrality(),sumM,GetEventWeight());
     }
     
-    if( IsDataMC() && fStudyClusterOverlapsPerGenerator)
+    if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn())
     {
       fhLocalRegionClusterEnergySumHijing   ->Fill(en,sumEHi,GetEventWeight());
       fhLocalRegionClusterMultiplicityHijing->Fill(en,sumMHi,GetEventWeight());
@@ -466,9 +463,9 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
       
       if( genName2.Contains("ijing") && !genName.Contains("ijing")) 
         overlapGenerHIJING = kTRUE;
-        
-        if(!genName2.Contains("ijing"))
-          overlapGenerOther  = kTRUE;
+      
+      if(!genName2.Contains("ijing"))
+        overlapGenerOther  = kTRUE;
     }
   }
   
@@ -499,10 +496,10 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   else if( GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCElectron) ) partType = kmcGenElectron;
   else                                                                                partType = kmcGenOther;
 
-  Int_t genType = fNCocktailGenNames-1;
-  for(Int_t igen = 1; igen < fNCocktailGenNames; igen++)
+  Int_t genType = GetNCocktailGenNamesToCheck()-1;
+  for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
   {
-    if( genName.Contains(fCocktailGenNames[igen]))
+    if( genName.Contains(GetCocktailGenNameToCheck(igen)))
     {
       genType = igen;
       break;
@@ -3444,7 +3441,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentrality);        
     }
 
-    if(fStudyClusterOverlapsPerGenerator && IsDataMC())
+    if(IsStudyClusterOverlapsPerGeneratorOn() && IsDataMC())
     {
       fhLocalRegionClusterEnergySumHijing = new TH2F ("hLocalRegionClusterEnergySumHijing",
                                                       "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
@@ -3479,36 +3476,36 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }
   }
 
-  if(fStudyClusterOverlapsPerGenerator && IsDataMC())
+  if(IsStudyClusterOverlapsPerGeneratorOn() && IsDataMC())
   {
      
     TString mcGenNames[] = {"","_MC_Pi0Merged","_MC_Pi0Decay","_MC_EtaDecay","_MC_PhotonOther","_MC_Electron","_MC_Other"};
     TString mcGenTitle[] = {"",",MC Pi0-Merged",",MC Pi0-Decay",", MC Eta-Decay",", MC Photon other sources",", MC Electron",", MC other sources"};
-    for(Int_t igen = 0; igen < fNCocktailGenNames; igen++)
+    for(Int_t igen = 0; igen < GetNCocktailGenNamesToCheck(); igen++)
     {
       TString add = "_MainGener_";
       if(igen==0) add = "";
       for(Int_t imc = 0; imc < fgkNGenTypes; imc++)
       {
-        fhCleanGeneratorCluster[igen][imc] = new TH1F(Form("hCleanGeneratorCluster%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhCleanGeneratorCluster[igen][imc] = new TH1F(Form("hCleanGeneratorCluster%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                       Form("Number of selected clusters with contribution of %s generator%s, no overlap",
-                                                           fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                           GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                       nptbins,ptmin,ptmax);
         fhCleanGeneratorCluster[igen][imc]->SetYTitle("#it{counts}");
         fhCleanGeneratorCluster[igen][imc]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhCleanGeneratorCluster[igen][imc]) ;
         
-        fhCleanGeneratorClusterEPrimRecoRatio[igen][imc] = new TH2F(Form("hCleanGeneratorClusterEPrimRecoRatio%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhCleanGeneratorClusterEPrimRecoRatio[igen][imc] = new TH2F(Form("hCleanGeneratorClusterEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                     Form("#it{E}_{reco}/#it{E}_{gen} clusters with contribution of %s generator%s, no overlap",
-                                                                         fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                         GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                     nptbins,ptmin,ptmax,300,0,3);
         fhCleanGeneratorClusterEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhCleanGeneratorClusterEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhCleanGeneratorClusterEPrimRecoRatio[igen][imc]) ;
         
-        fhCleanGeneratorClusterEPrimRecoDiff[igen][imc] = new TH2F(Form("hCleanGeneratorClusterEPrimRecoDiff%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhCleanGeneratorClusterEPrimRecoDiff[igen][imc] = new TH2F(Form("hCleanGeneratorClusterEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                    Form("#it{E}_{reco}-#it{E}_{gen} clusters with contribution of %s generator%s, no overlap",
-                                                                        fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                        GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                    nptbins,ptmin,ptmax,400,-20,20);
         fhCleanGeneratorClusterEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhCleanGeneratorClusterEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
@@ -3516,53 +3513,53 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
      
         //
         
-        fhMergeGeneratorCluster[igen][imc] = new TH1F(Form("hMergeGeneratorCluster%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorCluster[igen][imc] = new TH1F(Form("hMergeGeneratorCluster%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                       Form("Number of selected clusters with contribution of >=2 generators, main %s%s",
-                                                           fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                           GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                       nptbins,ptmin,ptmax);
         fhMergeGeneratorCluster[igen][imc]->SetYTitle("#it{counts}");
         fhMergeGeneratorCluster[igen][imc]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMergeGeneratorCluster[igen][imc]) ;
         
-        fhMergeGeneratorClusterEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterEPrimRecoRatio%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                     Form("#it{E}_{reco}/#it{E}_{gen}clusters with contribution of >=2 generators, main %s%s",
-                                                                         fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                         GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                     nptbins,ptmin,ptmax,300,0,3);
         fhMergeGeneratorClusterEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhMergeGeneratorClusterEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterEPrimRecoRatio[igen][imc]) ;
         
-        fhMergeGeneratorClusterEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterEPrimRecoDiff%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                    Form("#it{E}_{reco}-#it{E}_{gen}clusters with contribution of >=2 generators, main %s%s",
-                                                                        fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                        GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                    nptbins,ptmin,ptmax,400,-20,20);
         fhMergeGeneratorClusterEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhMergeGeneratorClusterEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterEPrimRecoDiff[igen][imc]) ;
         
-        if(fCocktailGenNames[igen].Contains("ijing")) continue;
+        if(GetCocktailGenNameToCheck(igen).Contains("ijing")) continue;
         
         //
         
-        fhMergeGeneratorClusterNotHijingBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterNotHijingBkg%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterNotHijingBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterNotHijingBkg%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                   Form("Number of selected clusters with contribution of >=2 generators, , none is HIJING, main %s%s",
-                                                                       fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                       GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                   nptbins,ptmin,ptmax);
         fhMergeGeneratorClusterNotHijingBkg[igen][imc]->SetYTitle("#it{counts}");
         fhMergeGeneratorClusterNotHijingBkg[igen][imc]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterNotHijingBkg[igen][imc]) ;
         
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterNotHijingBkgEPrimRecoRatio%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterNotHijingBkgEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                                 Form("#it{E}_{reco}/#it{E}_{gen} clusters with contribution of >=2 generators, , none is HIJING, main %s%s",
-                                                                                     fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                                     GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                                 nptbins,ptmin,ptmax,300,0,3);
         fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[igen][imc]) ;
         
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterNotHijingBkgEPrimRecoDiff%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterNotHijingBkgEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                                Form("#it{E}_{reco}-#it{E}_{gen} clusters with contribution of >=2 generators, , none is HIJING, main %s%s",
-                                                                                    fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                                    GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                                nptbins,ptmin,ptmax,400,-20,20);
         fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
@@ -3570,27 +3567,27 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
         //
         
-        fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterHijingAndOtherBkg%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterHijingAndOtherBkg%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                        Form("Number of selected clusters with contribution of >=3 generators, none is HIJING, main %s%s",
-                                                                            fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                            GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                        nptbins,ptmin,ptmax);
         fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc]->SetYTitle("#it{counts}");
         fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkg[igen][imc]) ;
         
         
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                                      Form("#it{E}_{reco}/#it{E}_{gen} clusters with contribution of >=3 generators, none is HIJING, main %s%s",
-                                                                                          fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                                          GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                                      nptbins,ptmin,ptmax,300,0,3);
         fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[igen][imc]) ;
         
         
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                                     Form("#it{E}_{reco}-#it{E}_{gen} clusters with contribution of >=3 generators, none is HIJING, main %s%s",
-                                                                                         fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                                         GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                                     nptbins,ptmin,ptmax,400,-20,20);
         fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
@@ -3598,25 +3595,25 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
         //
         
-        fhMergeGeneratorClusterHijingBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterHijingBkg%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterHijingBkg[igen][imc] = new TH1F(Form("hMergeGeneratorClusterHijingBkg%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                Form("Number of selected clusters with contribution of >=3 generators, none is HIJING, main %s%s",
-                                                                    fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                    GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                nptbins,ptmin,ptmax);
         fhMergeGeneratorClusterHijingBkg[igen][imc]->SetYTitle("#it{counts}");
         fhMergeGeneratorClusterHijingBkg[igen][imc]->SetXTitle("#it{E} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterHijingBkg[igen][imc]) ;
         
-        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingBkgEPrimRecoRatio%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingBkgEPrimRecoRatio%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                              Form("#it{E}_{reco}/#it{E}_{gen} clusters with contribution of >=3 generators, none is HIJING, main %s%s",
-                                                                                  fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                                  GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                              nptbins,ptmin,ptmax,300,0,3);
         fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[igen][imc]) ;
        
-        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingBkgEPrimRecoDiff%s%s%s",add.Data(),fCocktailGenNames[igen].Data(), mcGenNames[imc].Data()),
+        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[igen][imc] = new TH2F(Form("hMergeGeneratorClusterHijingBkgEPrimRecoDiff%s%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data(), mcGenNames[imc].Data()),
                                                                              Form("#it{E}_{reco}-#it{E}_{gen} clusters with contribution of >=3 generators, none is HIJING, main %s%s",
-                                                                                  fCocktailGenNames[igen].Data(), mcGenTitle[imc].Data()),
+                                                                                  GetCocktailGenNameToCheck(igen).Data(), mcGenTitle[imc].Data()),
                                                                              nptbins,ptmin,ptmax,400,-20,20);
         fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[igen][imc]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
@@ -3665,17 +3662,7 @@ void AliAnaPhoton::InitParameters()
   fEBinCuts[6] = 4.;  fEBinCuts[7] = 5. ;  fEBinCuts[8] = 7. ;
   fEBinCuts[9] = 9.;  fEBinCuts[10]= 12.;  fEBinCuts[11]= 15.;
   fEBinCuts[12]= 20.; fEBinCuts[13]= 50.;  fEBinCuts[14]= 100.;
-  for(Int_t i = fNEBinCuts; i < 15; i++) fEBinCuts[i] = 1000.;
-  
-  fNCocktailGenNames = 7;
-  // Order matters
-  fCocktailGenNames[0] = ""; // First must be always empty
-  fCocktailGenNames[1] = "pi0EMC";
-  fCocktailGenNames[2] = "pi0";
-  fCocktailGenNames[3] = "etaEMC";
-  fCocktailGenNames[4] = "eta";
-  fCocktailGenNames[5] = "hijing";
-  fCocktailGenNames[6] = "other";
+  for(Int_t i = fNEBinCuts; i < 15; i++) fEBinCuts[i] = 1000.;  
 }
 
 //_______________________________________
@@ -3932,7 +3919,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //
     // Check if other generators contributed to the cluster
     //
-    if( IsDataMC() && fStudyClusterOverlapsPerGenerator )
+    if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
       CocktailGeneratorsClusterOverlaps(calo,tag);
 
     
