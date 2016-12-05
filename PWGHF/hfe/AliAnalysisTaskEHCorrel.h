@@ -45,14 +45,15 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t *);
 
     Bool_t  PassEventSelect(AliVEvent *fVevent);
-    void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
-    void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
+    void    SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
+    void    SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
     void    CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass);
     Bool_t  PassTrackCuts(AliAODTrack *atrack);
     void    GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
     Bool_t  PassEIDCuts(AliVTrack *track, AliVCluster *clust, Bool_t &Hadtrack);
     Bool_t  PassHadronCuts(AliAODTrack *HadTrack);
     void    HadronInfo(Int_t itrack);
+    //void    ElectronHadCorrel(Int_t itrack, AliVTrack *track, THnSparse *SparseEHCorrl, TH2F *HisDphi);
     void    ElectronHadCorrel(Int_t itrack, AliVTrack *track, THnSparse *SparseEHCorrl);
     void    EMCalClusterInfo();
     void    SelectNonHFElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
@@ -67,6 +68,9 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetHadronCutCase(Int_t hadCutCase) {fHadCutCase = hadCutCase;};
     void    SetTriggerElePtCut(Bool_t trigElePtcut) {fTrigElePtCut = trigElePtcut;};
     void    GetVtxZCentralityBin();
+
+    void    SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+    void    SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
 
 
   private:
@@ -113,8 +117,12 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH1F                *fCentralityPass;//!
     TH1F                *fMultiplicityNoPass;//!
     TH1F                *fMultiplicityPass;//!
+    TH2F                *fCentMultiplicityNoPass;//!
+    TH2F                *fCentMultiplicityPass;//!
     TH1F                *fHistClustE;//!
     TH2F                *fEMCClsEtaPhi;//!
+    TH2F                *fHistoNCells;//!
+    TH2F                *fHistoTimeEMC;//!
 
     TH1F                *fNegTrkIDPt;//!
     TH1F                *fTrkPt;//!
@@ -157,12 +165,14 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH1F                *fNoMixedEvents;//!
     TH2F                *fMixStatCent;//!
     TH2F                *fMixStatVtxZ;//!
-    
+    TH2F                *fMixStatCentVtxz;//!
+
     TH2F                *fHisHadDphi;//!
     TH2F                *fHisIncEDphi;//!
     TH2F                *fHisLSDphi;//!
     TH2F                *fHisULSDphi;//!
 
+    THnSparse           *fSprsMixAllHadHCorrl;//!
     THnSparse           *fSprsHadHCorrl;//!
     THnSparse           *fSprsInclusiveEHCorrl;//!
     THnSparse           *fSprsLSEHCorrl;//!
