@@ -1,13 +1,3 @@
-/**
-* @Author: Pascal Dillenseger <pascaldillenseger>
-* @Date:   2016-11-03, 15:14:35
-* @Email:  pdillens@cern.ch
-* @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-12-01, 17:15:16
-*/
-
-
-
 #ifndef ALIDIELECTRONVARMANAGER_H
 #define ALIDIELECTRONVARMANAGER_H
 
@@ -2659,6 +2649,11 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     // TPC
 
     TList *qnlist = (TList*) event->FindListObject("qnVectorList");
+    if(Req(kQnTPCrpH2) && qnlist ==NULL){
+      for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
+        values[i] = -999.;
+      }
+    }
     if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
 
     qvec.Set(header->GetEventplaneQx(), header->GetEventplaneQy());
