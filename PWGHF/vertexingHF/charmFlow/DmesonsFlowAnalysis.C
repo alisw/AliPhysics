@@ -22,6 +22,8 @@
 #include <TParameter.h>
 #include <TLatex.h>
 #include <TGraphAsymmErrors.h>
+#include <TSystem.h>
+#include <TGaxis.h>
 
 #include "AliHFMassFitter.h"
 #include "AliRDHFCutsD0toKpi.h"
@@ -44,9 +46,10 @@
 //_________________________________________________________________
 //GLOBAL VARIABLES TO BE SET
 //input file
-const TString filename="AnalysisResults.root";
-//const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/HR_bunch1-3/AnalysisResultsv2_EP_pass0_diffdet_topod0cut_3050.root";
-const TString suffix="_Topod0Cut_pass0_QoverM_VZERO_EP";
+const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_PosTCPVZERO_EvShape.root";
+//const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_VZERO.root";
+//const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_AllDetConf_new.root";
+const TString suffix="_Topod0Cut_POSTPCVZERO_EP";
 const TString partname="Dplus";
 const Int_t minCent=30;
 const Int_t maxCent=50;
@@ -55,14 +58,16 @@ const TString outputdir = ".";
 
 //EP resolution
 //kTPCFullEta, kTPCPosEta,kVZERO,kVZEROA,kVZEROC
-const Int_t evPlane=AliEventPlaneResolutionHandler::kVZERO;
+const Int_t evPlane=AliEventPlaneResolutionHandler::kTPCPosEta;
 //resolution flag fromAliEventPlaneResolutionHandler:
 //kTwoRandSub,kTwoChargeSub,kTwoEtaSub,kThreeSub,kThreeSubTPCGap
 const Bool_t useAliHandlerForRes=kFALSE;
-Int_t evPlaneRes=AliEventPlaneResolutionHandler::kThreeSub;
+Int_t evPlaneRes=AliEventPlaneResolutionHandler::kTwoEtaSub;
 const Bool_t useNcollWeight=kFALSE;
 
 // pt and phi binning
+//const Int_t nptbinsnew=16;
+//const Double_t ptbinsnew[nptbinsnew+1]={2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,6.5,7.,7.5,8.,10.,12.,16.,24.};
 const Int_t nptbinsnew=10;
 const Double_t ptbinsnew[nptbinsnew+1]={2,3,4,5,6.,7.,8,10,12,16,24};
 
@@ -70,7 +75,8 @@ const Int_t nphibins=4;
 const Double_t phibinslim[nphibins+1]={0,TMath::Pi()/4,TMath::Pi()/2,3*TMath::Pi()/4,TMath::Pi()};
 
 // mass fit configuration
-const Int_t rebin[]={2,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4};
+//const Int_t rebin[]={3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4};
+const Int_t rebin[]={3,3,4,4,4,4,4,4,4,4};
 const Int_t typeb=AliHFMassFitter::kExpo;  // Background: 0=expo, 1=linear, 2=pol2
 const Bool_t fixAlsoMass=kFALSE;
 const Double_t minMassForFit=1.69;
@@ -95,6 +101,7 @@ Int_t FindPtBin(Int_t nbins, Double_t* array,Double_t value);
 void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Int_t minfit, Int_t maxfit, const Int_t *rebin);
 TGraphAsymmErrors* Computev2(TGraphAsymmErrors **gSignal, Double_t resol, Float_t *averagePt, Bool_t inoutanis, TGraphAsymmErrors *gRelSystEff);
 void DrawEventPlane();
+void CheckEPFlatness();
 Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3);
 void SetStyle(Int_t optfit=0);
 
@@ -155,16 +162,16 @@ Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, 
 
 //____________________________________________________________________
 TList* LoadResolutionHistos(TList *inputlist){
-
+  
   TList *outlist = new TList();
   outlist->SetName("eventplanehistlist");
-
+  
   const Int_t nBins=20;
   Double_t ncoll[nBins]={1790.77,1578.44,1394.82,1236.17
     ,1095.08,969.86,859.571,759.959,669.648,589.588,516.039
     ,451.409,392.853,340.493,294.426,252.385,215.484,183.284
     ,155.101,130.963};
-
+  
   Int_t minCentTimesTen=minCent*10;
   Int_t maxCentTimesTen=maxCent*10;
   TGraphErrors* gResolVsCent=new TGraphErrors(0);
@@ -193,8 +200,8 @@ TList* LoadResolutionHistos(TList *inputlist){
       hevplresos[ires]->SetName(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
       hevplresos[ires]->SetTitle(Form("Event Plane Resolution %s%s",namereso[ires].Data(),suffixcentr.Data()));
       if(useNcollWeight){
-	printf("Centr %d Bin %d  Ncoll %f\n",minCentTimesTen,ncBin,ncoll[ncBin]);
-	hevplresos[ires]->Scale(ncoll[ncBin]);
+        printf("Centr %d Bin %d  Ncoll %f\n",minCentTimesTen,ncBin,ncoll[ncBin]);
+        hevplresos[ires]->Scale(ncoll[ncBin]);
       }
     }
   }
@@ -204,7 +211,7 @@ TList* LoadResolutionHistos(TList *inputlist){
   Double_t resolBin=GetEventPlaneResolution(error,hevplresos[0],hevplresos[1],hevplresos[2]);
   if(resolBin<lowestRes) lowestRes=resolBin;
   if(resolBin>highestRes) highestRes=resolBin;
-
+  
   Double_t binHalfWid=25./20.;
   Double_t binCentr=(Double_t)minCentTimesTen/10.+binHalfWid;
   gResolVsCent->SetPoint(iPt,binCentr,resolBin);
@@ -230,11 +237,11 @@ TList* LoadResolutionHistos(TList *inputlist){
     ncBin=icentr/25;
     for(Int_t ires=0;ires<nSubRes;ires++){
       if(htmpresos[ires]){
-	if(useNcollWeight){
-	  printf("Centr %d Bin %d  Ncoll %f\n",icentr,ncBin,ncoll[ncBin]);
-	  htmpresos[ires]->Scale(ncoll[ncBin]);
-	}
-	hevplresos[ires]->Add(htmpresos[ires]);
+        if(useNcollWeight){
+          printf("Centr %d Bin %d  Ncoll %f\n",icentr,ncBin,ncoll[ncBin]);
+          htmpresos[ires]->Scale(ncoll[ncBin]);
+        }
+        hevplresos[ires]->Add(htmpresos[ires]);
       }
     }
   }
@@ -361,7 +368,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
         gSignal[ipt]->SetPointError(iphi,0,0,esignal,esignal);
         return;
       }
-      histtofit->SetTitle(Form("%.0f < #it{p}_{T} < %.0f, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
+      histtofit->SetTitle(Form("%.1f < #it{p}_{T} < %.1f, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
       nMassBins=histtofit->GetNbinsX();
       histtofit->Rebin(rebin[ipt]);
       AliHFMassFitter fitter(histtofit,minfit,maxfit,1,bkgfunc);
@@ -411,7 +418,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       gSignalBC2[ipt]->SetPointError(iphi,0,0,cntErr,cntErr);
     }
     //fit for fixed sigma
-    histtofitfullsigma->SetTitle(Form("%.0f < #it{p}_{T} < %.0f GeV/c",ptbinsnew[ipt],ptbinsnew[ipt+1]));
+    histtofitfullsigma->SetTitle(Form("%.1f < #it{p}_{T} < %.1f GeV/c",ptbinsnew[ipt],ptbinsnew[ipt+1]));
     histtofitfullsigma->GetXaxis()->SetTitle("M_{K#pi#pi} (GeV/c^{2})");
     histtofitfullsigma->GetXaxis()->SetTitleSize(0.05);
     nMassBins=histtofitfullsigma->GetNbinsX();
@@ -429,7 +436,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     for(Int_t iphi=0;iphi<nphi;iphi++){
       Int_t ipad=GetPadNumber(ipt,iphi);
       TH1F *histtofit=(TH1F*)histlist->FindObject(Form("hMass_pt%d_phi%d",ipt,iphi))->Clone();
-      histtofit->SetTitle(Form("%.1f<#it{p}_{T}<%.1f, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
+      histtofit->SetTitle(Form("%.1f < #it{p}_{T} < %.1f GeV/c, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
       nMassBins=histtofit->GetNbinsX();
       histtofit->Rebin(rebin[ipt]);
       AliHFMassFitter fitter2(histtofit,minfit,maxfit,1,bkgfunc);
@@ -461,12 +468,15 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       hChiSquarefs[iphi]->SetBinError(ipt+1,1.e-15);
     }
   }//end loop on pt bin
-  
-  cDeltaPhi->SaveAs(Form("%s/InvMassDeltaPhi%s.pdf",outputdir.Data(),suffix.Data()));
-  cDeltaPhi->SaveAs(Form("%s/InvMassDeltaPhi%s.root",outputdir.Data(),suffix.Data()));
-  cDeltaPhifs->SaveAs(Form("%s/InvMassDeltaPhi_fs%s.pdf",outputdir.Data(),suffix.Data()));
-  cDeltaPhifs->SaveAs(Form("%s/InvMassDeltaPhi_fs%s.root",outputdir.Data(),suffix.Data()));
-  cPhiInteg->SaveAs(Form("%s/InvMassfullphi%s.pdf",outputdir.Data(),suffix.Data()));
+
+  TString fine="";
+  if(nptbinsnew>=15) fine="_fineptbin";
+
+  cDeltaPhi->SaveAs(Form("%s/InvMassDeltaPhi%s%s.pdf",outputdir.Data(),suffix.Data(),fine.Data()));
+  cDeltaPhi->SaveAs(Form("%s/InvMassDeltaPhi%s%s.root",outputdir.Data(),suffix.Data(),fine.Data()));
+  cDeltaPhifs->SaveAs(Form("%s/InvMassDeltaPhi_fs%s%s.pdf",outputdir.Data(),suffix.Data(),fine.Data()));
+  cDeltaPhifs->SaveAs(Form("%s/InvMassDeltaPhi_fs%s%s.root",outputdir.Data(),suffix.Data(),fine.Data()));
+  cPhiInteg->SaveAs(Form("%s/InvMassfullphi%s%s.pdf",outputdir.Data(),suffix.Data(),fine.Data()));
 }
 
 //______________________________________________________________
@@ -520,6 +530,10 @@ TGraphAsymmErrors* Computev2(TGraphAsymmErrors **gSignal, Double_t resol, Float_
 //______________________________________________________________
 void DmesonsFlowAnalysis(Bool_t inoutanis){
   
+  TString workdir=gSystem->pwd();
+  if(!gSystem->cd(outputdir.Data())) {gSystem->mkdir(outputdir.Data());}
+  else {gSystem->cd(workdir.Data());}
+    
   TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
   TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
 
@@ -633,7 +647,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     gSignalBC2[i]=new TGraphAsymmErrors(nphi);
     gSignalBC2[i]->SetName(Form("gasigBC2pt%d",i));
     gSignalBC2[i]->SetTitle(Form("Signal (BC2) %.0f < #it{p}_{T} < %.0f GeV/c;#Delta#phi bin;Counts",ptbinsnew[i],ptbinsnew[i+1]));
-  }
+   }
   for(Int_t iphi=0; iphi<nphi; iphi++) {
     hSigmaFree[iphi] = new TH1F(Form("hSigmaFree_phi%d",iphi),Form("Sigma free - phi%d",iphi),nptbinsnew,ptbinsnew);
     hSigmaFree[iphi]->SetMarkerStyle(markers[0]);
@@ -683,8 +697,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
     TH1F* hevplresos[3];
     TString namereso[3]={"Reso","Reso2","Reso3"};
-    TH1F* htestversion=(TH1F*)resolhist->FindObject(Form("hEvPlaneReso%s",suffixcentr.Data()));
-    cout<<htestversion<<endl;
+    TH1F* htestversion=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[0].Data(),suffixcentr.Data()));
     if(htestversion){
       printf("Old version of the task\n");
     }else{
@@ -694,8 +707,8 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     Int_t nSubRes=1;
     if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
        evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
-    for(Int_t ires=0;ires<nSubRes;ires++){
-      hevplresos[ires]=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
+      for(Int_t ires=0;ires<nSubRes;ires++){
+        hevplresos[ires]=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[ires].Data(),suffixcentr.Data()));
       }
     resol=GetEventPlaneResolution(errorres,hevplresos[0],hevplresos[1],hevplresos[2]);
   }
@@ -703,6 +716,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   printf("Event plane resolution %f\n",resol);
   printf("Compute v2 \n");
   //compute v2
+  
   SetStyle();
   
   TCanvas *cv2fs =new TCanvas("v2_fs","v2 Fit with fixed sigma",1920,1080);
@@ -820,7 +834,99 @@ Int_t FindPtBin(Int_t nbins, Double_t* array,Double_t value){
 }
 
 //__________________________________________________________
+void CheckEPFlatness() {
+  
+  TGaxis::SetMaxDigits(3);
+  
+  TString workdir=gSystem->pwd();
+  if(!gSystem->cd(outputdir.Data())) {gSystem->mkdir(outputdir.Data());}
+  else {gSystem->cd(workdir.Data());}
+  
+  TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
+  TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
+  TFile *f = TFile::Open(filename.Data());
+  if(!f){
+    printf("file %s not found, please check file name\n",filename.Data());return;
+  }
+  TDirectoryFile* dir=(TDirectoryFile*)f->Get(dirname.Data());
+  if(!dir){
+    printf("Directory %s not found, please check dir name\n",dirname.Data());return;
+  }
+  TList *list =(TList*)dir->Get(listname.Data());
+  if(!list){
+    printf("list %s not found in file, please check list name\n",listname.Data());return;
+  }
+
+  TH1F* hTest=0x0;
+  TH1F** hEvPlaneDet = new TH1F*[6];
+  TString DetNames[6] = {"TPC","TPCNegEta","TPCPosEta","VZERO","VZEROA","VZEROC"};
+  TString NormMethod[3] = {"QoverQlength","QoverM","QoverSqrtM"};
+  
+  Int_t UsedNorm=-1;
+  for(Int_t iNorm=0; iNorm<3; iNorm++) {
+    hTest=(TH1F*)list->FindObject(Form("hEvPlaneQncorrTPC%s",NormMethod[iNorm].Data()));
+    if(hTest) {
+      UsedNorm=iNorm;
+      break;
+    }
+  }
+
+  if(UsedNorm==-1.) {cout << "No event plane histogram found!" << endl; return;}
+
+  SetStyle();
+
+  TF1** four2 = new TF1*[6];
+  TF1** four2s = new TF1*[6];
+  TLatex* latexc = new TLatex();
+  latexc->SetTextColor(kRed+1);
+  TLatex* latexs = new TLatex();
+  latexs->SetTextColor(kGreen+2);
+  
+  TCanvas* cFlatness = new TCanvas("cFlatness","",1920,1080);
+  cFlatness->Divide(3,2);
+  for(Int_t iDet=0; iDet<6; iDet++) {
+    hEvPlaneDet[iDet]=(TH1F*)list->FindObject(Form("hEvPlaneQncorr%s%s",DetNames[iDet].Data(),NormMethod[UsedNorm].Data()));
+    hEvPlaneDet[iDet]->Sumw2();
+    hEvPlaneDet[iDet]->Scale(1./hEvPlaneDet[iDet]->Integral());
+    four2[iDet] = new TF1(Form("four2%s",DetNames[iDet].Data()),"[0]*(1+2*[1]*cos(2*x))",hEvPlaneDet[iDet]->GetXaxis()->GetXmin(),hEvPlaneDet[iDet]->GetXaxis()->GetXmax());
+    four2s[iDet] = new TF1(Form("four2s%s",DetNames[iDet].Data()),"[0]*(1+2*[1]*sin(2*x))",hEvPlaneDet[iDet]->GetXaxis()->GetXmin(),hEvPlaneDet[iDet]->GetXaxis()->GetXmax());
+    cFlatness->cd(iDet+1)->SetLeftMargin(0.14);
+    hEvPlaneDet[iDet]->GetYaxis()->SetRangeUser(hEvPlaneDet[iDet]->GetMinimum()*0.98,hEvPlaneDet[iDet]->GetMaximum()*01.02);
+    hEvPlaneDet[iDet]->GetYaxis()->SetTitleSize(0.05);
+    hEvPlaneDet[iDet]->GetYaxis()->SetTitleOffset(1.5);
+    hEvPlaneDet[iDet]->GetXaxis()->SetTitleSize(0.05);
+    hEvPlaneDet[iDet]->GetYaxis()->SetLabelSize(0.045);
+    hEvPlaneDet[iDet]->GetXaxis()->SetLabelSize(0.045);
+    hEvPlaneDet[iDet]->GetXaxis()->SetTitle("#psi_{EP}");
+    hEvPlaneDet[iDet]->GetYaxis()->SetTitle("Normalised entries");
+    four2[iDet]->SetLineColor(kRed+1);
+    four2s[iDet]->SetLineColor(kGreen+2);
+    hEvPlaneDet[iDet]->SetLineColor(kBlue+1);
+    hEvPlaneDet[iDet]->Draw();
+    hEvPlaneDet[iDet]->Fit(four2[iDet]);
+    hEvPlaneDet[iDet]->Fit(four2s[iDet]);
+    four2[iDet]->Draw("same");
+    four2s[iDet]->Draw("same");
+   
+    Double_t yc = hEvPlaneDet[iDet]->GetMaximum()*0.995;
+    if(iDet>=3) yc = hEvPlaneDet[iDet]->GetMaximum()*0.992;
+    Double_t ys = hEvPlaneDet[iDet]->GetMaximum()*0.988;
+    if(iDet>=3) ys = hEvPlaneDet[iDet]->GetMaximum()*0.984;
+    
+    latexc->DrawLatex(1.,yc,Form("1+2*(%0.5f)*cos(2*#psi_{EP})",four2[iDet]->GetParameter(1)));
+    latexs->DrawLatex(1.,ys,Form("1+2*(%0.5f)*sin(2*#psi_{EP})",four2s[iDet]->GetParameter(1)));
+ }
+  
+  cFlatness->SaveAs(Form("%s/EPFlatness%s.pdf",outputdir.Data(),NormMethod[UsedNorm].Data()));
+}
+
+//__________________________________________________________
 void DrawEventPlane(){
+  
+  TString workdir=gSystem->pwd();
+  if(!gSystem->cd(outputdir.Data())) {gSystem->mkdir(outputdir.Data());}
+  else {gSystem->cd(workdir.Data());}
+  
   TString dirname=Form("PWGHF_D2H_HFv2_%s%s",partname.Data(),suffix.Data());
   TString listname=Form("coutputv2%s%s",partname.Data(),suffix.Data());
   TFile *f = TFile::Open(filename.Data());
@@ -835,11 +941,7 @@ void DrawEventPlane(){
   if(!list){
     printf("list %s not found in file, please check list name\n",listname.Data());return;
   } 
-  if(evPlane==AliEventPlaneResolutionHandler::kTPCPosEta &&
-     evPlaneRes==AliEventPlaneResolutionHandler::kTwoEtaSub){
-    printf("Wrong setting of event plane resolution forced it to kTwoSub\n");
-    evPlaneRes=AliEventPlaneResolutionHandler::kTwoRandSub;
-  }
+
   TList* resolhist=LoadResolutionHistos(list);
   TGraphErrors* gResolVsCent=(TGraphErrors*)resolhist->FindObject("gResolVsCent");
   Double_t lowestRes=1;
@@ -854,14 +956,13 @@ void DrawEventPlane(){
   TH2F* hevpls=(TH2F*)resolhist->FindObject(Form("hEvPlane%s",suffixcentr.Data()));
   TH1F* hevplresos[3];
   TString namereso[3]={"Reso","Reso2","Reso3"};
-  TH1F* htestversion=(TH1F*)resolhist->FindObject(Form("hEvPlaneReso%s",suffixcentr.Data()));
+  TH1F* htestversion=(TH1F*)resolhist->FindObject(Form("hEvPlane%s%s",namereso[0].Data(),suffixcentr.Data()));
   if(htestversion){
     printf("Old version of the task\n");
   }else{
     printf("New version of the task\n");
     namereso[0]="Reso1";
   }
-
   Int_t nSubRes=1;
   if(evPlaneRes==AliEventPlaneResolutionHandler::kThreeSub||
      evPlaneRes==AliEventPlaneResolutionHandler::kThreeSubTPCGap)nSubRes=3;
@@ -871,87 +972,20 @@ void DrawEventPlane(){
 
   SetStyle();
   
-  TH1F* htpc = (TH1F*)hevpls->ProjectionX();
-  TH1F* hv0 = (TH1F*)hevpls->ProjectionY();
-  TH1F* hUsedPlane;
-  if(evPlane==AliEventPlaneResolutionHandler::kVZERO ||
-     evPlane==AliEventPlaneResolutionHandler::kVZEROA ||
-     evPlane==AliEventPlaneResolutionHandler::kVZEROC) hUsedPlane=(TH1F*)hv0->Clone("hUsedPlane");
-  else hUsedPlane=(TH1F*)htpc->Clone("hUsedPlane");
-
-  TCanvas* cvtotevpl=new TCanvas(Form("cvtotevpl%s",suffixcentr.Data()),Form("Ev plane %s",suffixcentr.Data()),1920,1080);
-  cvtotevpl->Divide(3,1);
-  cvtotevpl->cd(1);
-  hevpls->SetTitleFont(42);
-  hevpls->Draw("COLZ");
-  cvtotevpl->cd(2);
-  htpc->Draw();
-  htpc->Fit("pol0");
-  cvtotevpl->cd(3);
-  hv0->Draw();
-  hv0->Fit("pol0");
-
-  TCanvas* cevpl=new TCanvas(Form("cevpl%s",suffixcentr.Data()),"",1920,1080);
-  htpc->Draw();
-  htpc->Fit("pol0");
-  cevpl->SaveAs(Form("%s/EvPlaneDistTPC.pdf",outputdir.Data()));
-  
-  TCanvas* cvfitevpl=new TCanvas(Form("cvditevpl%s",suffixcentr.Data()),Form("Fit to Ev plane %s",suffixcentr.Data()));
-  cvfitevpl->cd();
-  hUsedPlane->Draw();
-  TF1* four2=new TF1("four2","[0]*(1+2*[1]*cos(2*x))",hUsedPlane->GetXaxis()->GetXmin(),hUsedPlane->GetXaxis()->GetXmax());
-  TF1* four2s=new TF1("four2s","[0]*(1+2*[1]*sin(2*x))",hUsedPlane->GetXaxis()->GetXmin(),hUsedPlane->GetXaxis()->GetXmax());
-  hUsedPlane->Fit(four2s);
-  hUsedPlane->Fit(four2);
-  four2->SetLineColor(1);
-  four2s->SetLineColor(4);
-  four2->Draw("same");
-  four2s->Draw("same");
-  hUsedPlane->SetMaximum(hUsedPlane->GetMaximum()*1.07);
-  TLatex* tsin=new TLatex(0.15,0.84,Form("1+2*(%.4f)*sin(2*#Phi_{EP})",four2s->GetParameter(1)));
-  tsin->SetNDC();
-  tsin->SetTextColor(4);
-  tsin->Draw();
-  TLatex* tcos=new TLatex(0.15,0.77,Form("1+2*(%.4f)*cos(2*#Phi_{EP})",four2->GetParameter(1)));
-  tcos->SetNDC();
-  tcos->SetTextColor(1);
-  tcos->Draw();
-  
-  // Compute the second Fourier component for sine and cosine
-  Double_t aveCos2Phi=0.;
-  Double_t aveSin2Phi=0.;
-  Double_t counts=0.;
-  for(Int_t i=1; i<=hUsedPlane->GetNbinsX(); i++){
-    Double_t co=hUsedPlane->GetBinContent(i);
-    Double_t phi=hUsedPlane->GetBinCenter(i);
-    aveCos2Phi+=co*TMath::Cos(2*phi);
-    aveSin2Phi+=co*TMath::Sin(2*phi);
-    counts+=co;
-  }
-  if(counts>0){ 
-    aveCos2Phi/=counts;
-    aveSin2Phi/=counts;
-  }
-  printf("\n------ Fourier 2nd components of EP distribution ------\n");
-  printf("<cos(2*Psi_EP)>=%f\n",aveCos2Phi);
-  printf("<sin(2*Psi_EP)>=%f\n",aveSin2Phi);
-  printf("\n");
-
-
   TCanvas* cvtotevplreso=new TCanvas(Form("cvtotevplreso%s",suffixcentr.Data()),Form("Ev plane Resolution %s",suffixcentr.Data()));
   cvtotevplreso->cd();
-  hevplresos[0]->SetTitle("TPC cos2(#Psi_{A}-#Psi_{B})");
-  hevplresos[0]->Draw();
   gStyle->SetOptStat(0);
   if(nSubRes>1){
-    hevplresos[1]->SetLineColor(2);
-    hevplresos[2]->SetLineColor(3);
-    hevplresos[0]->SetTitle("cos2(#Psi_{TPC}-#Psi_{V0A})");
-    hevplresos[1]->SetTitle("cos2(#Psi_{TPC}-#Psi_{V0C})");
-    hevplresos[2]->SetTitle("cos2(#Psi_{V0A}-#Psi_{V0C})");
+    hevplresos[0]->SetLineColor(colors[0]);
+    hevplresos[1]->SetLineColor(colors[1]);
+    hevplresos[2]->SetLineColor(colors[2]);
+    hevplresos[0]->SetTitle("cos2(#Psi_{A}-#Psi_{B})");
+    hevplresos[1]->SetTitle("cos2(#Psi_{A}-#Psi_{C})");
+    hevplresos[2]->SetTitle("cos2(#Psi_{B}-#Psi_{C})");
     hevplresos[1]->Draw("SAME");
     hevplresos[2]->Draw("SAME");
   }
+  hevplresos[0]->Draw();
   TLegend *leg = cvtotevplreso->BuildLegend();
   leg->SetLineColor(0);
   leg->SetFillColor(0);
@@ -967,8 +1001,8 @@ void DrawEventPlane(){
   pvreso->Draw();
 
   gResolVsCent->SetMarkerStyle(20);
-  gResolVsCent->GetXaxis()->SetTitle("Centrality");
-  gResolVsCent->GetYaxis()->SetTitle("EP Resolution");
+  gResolVsCent->GetXaxis()->SetTitle("Centrality (%)");
+  gResolVsCent->GetYaxis()->SetTitle("Event Plane Resolution R_{2}");
  
   Int_t colorave=colors[5];
   if(useNcollWeight) colorave=colors[4];
@@ -986,13 +1020,17 @@ void DrawEventPlane(){
   printf("\n\n---- Syst from centrality dependence of resolution ----\n");
   printf("MinRes=%f  MaxRes=%f AveRes=%f ---> Syst: -%f%% +%f%%\n",lowestRes,highestRes,resolFull,(resolFull-lowestRes)/resolFull,(highestRes-resolFull)/resolFull);
 
-  TFile* fout=new TFile(Form("%s/EvPlanecentr%d-%d.root",outputdir.Data(),minCent,maxCent),"recreate");
+  TFile* fout=new TFile(Form("%s/EvPlanecentr%d-%d%s.root",outputdir.Data(),minCent,maxCent,suffix.Data()),"RECREATE");
   fout->cd();
   hevpls->Write();
   for(Int_t ires=0;ires<nSubRes;ires++)hevplresos[ires]->Write();
   gResolVsCent->Write();
+  TF1* flin = new TF1("flin","pol0",0.,TMath::Pi());
+  flin->SetParameter(0,resolFull);
+  flin->Write();
+  fout->Close();
 
-  cresvscent->SaveAs(Form("%s/EvPlaneResolutionVsCentrality.pdf",outputdir.Data()));
+  cresvscent->SaveAs(Form("%s/EvPlaneResolutionVsCentrality%s.pdf",outputdir.Data(),suffix.Data()));
 }
 
 void SetStyle(Int_t optfit) {
