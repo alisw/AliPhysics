@@ -115,6 +115,7 @@ private:
     TH1F        *fHistClustEtime;//!cluster energy
     TH2F        *fHistClustEcent;//!cluster energy
     TH2F        *fEMCClsEtaPhi;//! EMC cluster eta and phi
+    TH2F        *fEMCClsEtaPhi2;//! EMC cluster eta and phi
     TH1F        *fHistClustEEG1;//! Cluster Energy, Trigger patch > ThresholdEG1
     TH2F        *fHistClustEEG1cent;//! Cluster Energy, Trigger patch > ThresholdEG1
     TH1F        *fHistClustEEG2;//! Cluster Energy, Trigger patch > ThresholdEG1
@@ -187,6 +188,8 @@ private:
 
     TH2D        *fHistResD;
     TH2D        *fHistResB;
+    TH1D        *fHistHFEpos;
+    TH1D        *fHistHFEneg;
     TH1D        *fHistHFmcCheck;
 
     AliHFEcuts  *fhfeCuts;
