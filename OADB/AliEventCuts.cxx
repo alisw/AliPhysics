@@ -138,8 +138,6 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     const auto& x = fCentPercentiles[1];
     const double center = x * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
     const double sigma = fEstimatorsSigmaPars[0] + fEstimatorsSigmaPars[1] * x + fEstimatorsSigmaPars[2] * x * x + fEstimatorsSigmaPars[3] * x * x * x;
-    fCentrality[0]->Fill(fCentPercentiles[0]);
-    fEstimCorrelation[0]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
     if ((!fUseEstimatorsCorrelationCut || 
           (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
         && fCentPercentiles[0] >= fMinCentrality 
