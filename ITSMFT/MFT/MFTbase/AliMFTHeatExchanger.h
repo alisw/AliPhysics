@@ -36,6 +36,7 @@ class AliMFTHeatExchanger : public TNamed {
   void CreateHalfDisk2(Int_t half);
   void CreateHalfDisk3(Int_t half);
   void CreateHalfDisk4(Int_t half);
+  void CreateManyfold(Int_t disk);
 
   Double_t GetWaterRadius() { return fRWater; }
   void SetWaterRadius(Double_t &Rwater) { fRWater = Rwater; }
