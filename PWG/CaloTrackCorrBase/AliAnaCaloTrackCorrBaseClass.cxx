@@ -30,6 +30,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODPWG4Particle.h"
+#include "AliMCEvent.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrBaseClass) ;
@@ -363,6 +364,65 @@ TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()
   parList+=onePar ;	
 	
   return parList; 
+}
+
+//_____________________________________________________________________
+/// Check the content of the cluster other than the generator that 
+/// deposited more energy. Assign a tag.
+///
+/// \param cluster: pointer to AliVCluster
+/// \param genName: name of generator main contributor to the cluster
+/// \param genNameBkg: name of generators overlapped to the cluster
+/// \return tag : 0-no other generator, 1 hijing, 2 other generator, 3 both hijing and other
+//_____________________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluster * cluster, 
+                                                                      TString & genName, TString & genNameBkg)
+{
+  if(cluster->GetNLabels() == 0 || cluster->GetLabel() < 0 ) return -1;
+
+  (GetReader()->GetMC())->GetCocktailGenerator(cluster->GetLabel(), genName);
+  
+  //printf("Generator?: %s\n",genName.Data());
+  
+  Bool_t overlapGener       = kFALSE;
+  Bool_t overlapGenerHIJING = kFALSE;
+  Bool_t overlapGenerOther  = kFALSE;
+  
+  genNameBkg = "";
+  
+  const UInt_t nlabels = cluster->GetNLabels();
+  //Int_t noverlapsGen = 0;
+  //TString genName2Prev = genName;
+  for(UInt_t ilabel = 1; ilabel < nlabels; ilabel++)
+  {
+    Int_t label2 = cluster->GetLabels()[ilabel];
+    TString genName2;
+    (GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
+    
+    //if(genName2 != genName2Prev) noverlapsGen++;
+    
+    if(genName2 != genName) 
+    {
+      //genName2Prev = genName2;
+      
+      if(!genNameBkg.Contains(genName2))
+        genNameBkg = Form("%s_%s",genNameBkg.Data(), genName2.Data());
+      
+      overlapGener = kTRUE; 
+      
+      if( genName2.Contains("ijing") && !genName.Contains("ijing")) 
+        overlapGenerHIJING = kTRUE;
+      
+      if(!genName2.Contains("ijing"))
+        overlapGenerOther  = kTRUE;
+    }
+  }
+
+  if      ( !overlapGener ) return 0;
+  else if (  overlapGenerHIJING && !overlapGenerOther) return 1;
+  else if ( !overlapGenerHIJING &&  overlapGenerOther) return 2;
+  else if (  overlapGenerHIJING &&  overlapGenerOther) return 3;
+  else                                                 return 4; 
 }
 
 //_____________________________________________________________________
