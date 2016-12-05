@@ -1,3 +1,4 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TH1.h"
 #include "TH2.h"
 #include "TCanvas.h"
@@ -18,6 +19,7 @@
 #include "TColor.h"
 
 #include "AliPID.h"
+#endif
 
 void SetupStyle();
 TH2* Get2DHistogramfromList(TList *pidqalist, const char* listname, const char* histoname);
