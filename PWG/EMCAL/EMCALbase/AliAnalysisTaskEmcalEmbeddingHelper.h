@@ -59,10 +59,17 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   std::string GetInputCellBranchName()                      const { return fInputCellBranchName; }
   std::string GetCombinedCellBranchName()                   const { return fCreatedCellBranchName; }
 
+  TString GetTreeName()                                     const { return fTreeName; }
+  Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
+  Bool_t GetRandomFileAccess()                              const { return fRandomFileAccess; }
+  TString GetFilePattern()                                  const { return fFilePattern; }
+  Int_t GetStartingFileIndex()                              const { return fFilenameIndex; }
+  TString GetFileListFilename()                             const { return fFileListFilename; }
+
   void SetESD(const char * treeName = "esdTree")                  { fTreeName     = treeName; }
   void SetAOD(const char * treeName = "aodTree")                  { fTreeName     = treeName; }
-  void SetRandomAccess(Bool_t b)                                  { fRandomAccess = b       ; }
-
+  void SetRandomEventNumberAccess(Bool_t b)                       { fRandomEventNumberAccess = b; }
+  void SetRandomFileAccess(Bool_t b)                              { fRandomFileAccess = b; }
   void SetFilePattern(const char * pattern)                       { fFilePattern = pattern; }
   void SetStartingFileIndex(Int_t n)                              { fFilenameIndex = n; }
   void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
@@ -105,7 +112,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   TString                                       fTreeName         ; ///<  Name of the ESD/AOD tree where the events are to be found
   Int_t                                         fAnchorRun        ; ///<  Anchor run for the given pythia production
   Int_t                                         fPtHardBin        ; ///<  ptHard bin for the given pythia production
-  Bool_t                                        fRandomAccess     ; ///<  If true, it will start embedding from a random entry in the file rather than from the first
+  Bool_t                                        fRandomEventNumberAccess; ///<  If true, it will start embedding from a random entry in the file rather than from the first
+  Bool_t                                        fRandomFileAccess ; ///< If true, it will start embedding from a random file in the input files list
 
   TString                                       fFilePattern      ; ///<  File pattern to select AliEn files
   TString                                       fFileListFilename ; ///<  Name of the file list containing paths to files to embed
