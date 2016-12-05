@@ -527,8 +527,8 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
   DCAXYbin[0] = -fDCAXYRange;
   for(Int_t i = 0; i < fDCAXYbins; i++){
     if(DCAXYbin[i] > -.1 && DCAXYbin[i] < .1) DCAXYbin[i+1] = DCAXYbin[i] + 0.0008;
-    else DCAXYbin[i+1] = DCAXYbin[i] + 0.0040;
-    // cout<<i<<"  ["<<DCAXYbin[i]<<","<<DCAXYbin[i+1]<<"]"<<endl;
+    else DCAXYbin[i+1] = DCAXYbin[i] + 0.007733333333333333333333;
+    // cout<<i<<"  ["<<DCAXYbin[i]<<","<<DCAXYbin[i+1]<<"] width = "<< DCAXYbin[i]-DCAXYbin[i+1]<<endl;
   }
   
   
@@ -1941,7 +1941,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       
     }
     
-    
+    if(fMCmode) AnalyseMCTracks();
     
     
   } // end of track loop
