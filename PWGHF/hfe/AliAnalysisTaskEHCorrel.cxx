@@ -119,7 +119,7 @@ ClassImp(AliehDPhiBasicParticle)
   fInvmassCut(0.1),
   fTPCnSigmaHadMin(-10),
   fTPCnSigmaHadMax(-3.5),
-  fHadCutCase(1),
+  fHadCutCase(2),
   fPoolMgr(0x0),
   fTrigElePtCut(kFALSE),
   fNEle(0),
@@ -134,8 +134,12 @@ ClassImp(AliehDPhiBasicParticle)
   fCentralityPass(0),
   fMultiplicityNoPass(0),
   fMultiplicityPass(0),
+  fCentMultiplicityNoPass(0),
+  fCentMultiplicityPass(0),
   fHistClustE(0),
   fEMCClsEtaPhi(0),
+  fHistoNCells(0),
+  fHistoTimeEMC(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -174,10 +178,12 @@ ClassImp(AliehDPhiBasicParticle)
   fNoMixedEvents(0),
   fMixStatCent(0),
   fMixStatVtxZ(0),
+  fMixStatCentVtxz(0),
   fHisHadDphi(0),
   fHisIncEDphi(0),
   fHisLSDphi(0),
   fHisULSDphi(0),
+  fSprsMixAllHadHCorrl(0),
   fSprsHadHCorrl(0),
   fSprsInclusiveEHCorrl(0),
   fSprsLSEHCorrl(0),
@@ -243,8 +249,12 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fCentralityPass(0),
   fMultiplicityNoPass(0),
   fMultiplicityPass(0),
+  fCentMultiplicityNoPass(0),
+  fCentMultiplicityPass(0),
   fHistClustE(0),
   fEMCClsEtaPhi(0),
+  fHistoNCells(0),
+  fHistoTimeEMC(0),
   fNegTrkIDPt(0),
   fTrkPt(0),
   fTrketa(0),
@@ -283,10 +293,12 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fNoMixedEvents(0),
   fMixStatCent(0),
   fMixStatVtxZ(0),
+  fMixStatCentVtxz(0),
   fHisHadDphi(0),
   fHisIncEDphi(0),
   fHisLSDphi(0),
   fHisULSDphi(0),
+  fSprsMixAllHadHCorrl(0),
   fSprsHadHCorrl(0),
   fSprsInclusiveEHCorrl(0),
   fSprsLSEHCorrl(0),
@@ -321,6 +333,7 @@ AliAnalysisTaskEHCorrel::~AliAnalysisTaskEHCorrel()
   delete fSprsMixLSEHCorrl;
   delete fSprsMixULSEHCorrl;
   delete fSprsMixHadHCorrl;
+  delete fSprsMixAllHadHCorrl;
 }
 //_________________________________________
 void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
@@ -334,28 +347,28 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
-  Int_t trackDepth = 75000;
+  Int_t trackDepth = 100000;
   Int_t poolsize   = 1000;
 
   Int_t nZvtxBins  = 6;
-  Double_t vertexBins[7] = {-10,-5,-2,0,2,5,10};
+  Double_t vertexBins[7] = {-10,-6,-2.5,0,2.5,5.5,10};
   Int_t nCentralityBins  = 6;
   Double_t CentralityBins[7];
   if(fCentralityMax == 20)
   {
     CentralityBins[0] = 0;
-    CentralityBins[1] =2;
-    CentralityBins[2] = 4;
-    CentralityBins[3] =6;
-    CentralityBins[4] =10;
-    CentralityBins[5] =15;
-    CentralityBins[6] =20;
+    CentralityBins[1] = 1.5;
+    CentralityBins[2] = 3.5;
+    CentralityBins[3] = 6;
+    CentralityBins[4] = 9;
+    CentralityBins[5] = 14;
+    CentralityBins[6] = 20;
   }
   if(fCentralityMax == 50)
   {
     CentralityBins[0] = 20;
-    CentralityBins[1] = 25;
-    CentralityBins[2] = 30;
+    CentralityBins[1] = 24;
+    CentralityBins[2] = 29;
     CentralityBins[3] = 35;
     CentralityBins[4] = 40;
     CentralityBins[5] = 45;
@@ -401,17 +414,31 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fCentralityNoPass = new TH1F("fCentralityNoPass", "Centrality No Pass;centrality;counts", 101, -1, 100);
   fOutputList->Add(fCentralityNoPass);
 
-  fMultiplicityPass = new TH1F("fMultiplicityPass", "Multiplicity Pass;multiplicity;counts", 20000, 0, 20000);
+  fMultiplicityPass = new TH1F("fMultiplicityPass", "Multiplicity Pass;multiplicity;counts", 25000, 0, 25000);
   fOutputList->Add(fMultiplicityPass);
 
-  fMultiplicityNoPass = new TH1F("fMultiplicityNoPass", "Multiplicity No Pass;multiplicity;counts", 20000, 0, 20000);
+  fMultiplicityNoPass = new TH1F("fMultiplicityNoPass", "Multiplicity No Pass;multiplicity;counts", 25000, 0, 25000);
   fOutputList->Add(fMultiplicityNoPass);
+
+  fCentMultiplicityNoPass = new TH2F("fCentMultiplicityNoPass", "Multiplicity vs Centrality, No Pass;multiplicity;centrality", 25000, 0, 25000, 101, -1, 100);
+  fOutputList->Add(fCentMultiplicityNoPass);
+
+  fCentMultiplicityPass = new TH2F("fCentMultiplicityPass", "Multiplicity vs Centrality, Pass;multiplicity;centrality", 25000, 0, 25000, 101, -1, 100);
+  fOutputList->Add(fCentMultiplicityPass);
 
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutputList->Add(fHistClustE);
 
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",100,-0.9,0.9,200,0,6.3);
   fOutputList->Add(fEMCClsEtaPhi);
+
+
+  fHistoNCells = new TH2F("fHistoNCells","No of EMCAL cells in a cluster;Cluster E;N^{EMC}_{cells}",300,0,30,50,0,50);
+  fOutputList->Add(fHistoNCells);
+
+
+  fHistoTimeEMC = new TH2F("fHistoTimeEMC","EMCAL Time;E (GeV); t(ns)",500,0,50,1800,-900,900);
+  fOutputList->Add(fHistoTimeEMC);
 
   fNegTrkIDPt = new TH1F("fNegTrkIDPt", "p_{T} distribution of tracks with negative track id;p_{T} (GeV/c);counts", 500, 0.0, 50.0);
   fOutputList->Add(fNegTrkIDPt);
@@ -533,6 +560,9 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
   fOutputList->Add(fMixStatVtxZ);
 
+  fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Centrality;Vtx_{z}",nZvtxBins,vertexBins,nCentralityBins,CentralityBins);
+  fOutputList->Add(fMixStatCentVtxz);
+
   fHisHadDphi = new TH2F("fHisHadDphi","Hadron Dphi;p_{T}^{e};#Delta#varphi",50,0,50,64,-TMath::Pi()/2,(3*TMath::Pi())/2);
   fOutputList->Add(fHisHadDphi);
 
@@ -547,32 +577,39 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
 
   //------THnsparse------
-  Int_t bin[6] = {30,20,32,50,nZvtxBins,nCentralityBins}; //ptElec, ptHad,Dphi, Deta
-  Double_t xmin[6] = {0,0,-TMath::Pi()/2,-1.8,0,0};
-  Double_t xmax[6] = {30,20,(3*TMath::Pi())/2,1.8,6,6};
+  // Int_t bin[6] = {30,20,32,50,nZvtxBins,nCentralityBins}; //ptElec, ptHad,Dphi, Deta
+  // Double_t xmin[6] = {0,0,-TMath::Pi()/2,-1.8,0,0};
+  // Double_t xmax[6] = {30,20,(3*TMath::Pi())/2,1.8,6,6};
+  Int_t bin[4] = {30,20,32,50}; //ptElec, ptHad,Dphi, Deta
+  Double_t xmin[4] = {0,0,-TMath::Pi()/2,-1.8};
+  Double_t xmax[4] = {30,20,(3*TMath::Pi())/2,1.8};
 
-  fSprsHadHCorrl = new THnSparseD("fSprsHadHCorrl","Sparse for Dphi and Deta hadrons;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  fSprsMixAllHadHCorrl= new THnSparseD("fSprsMixAllHadHCorrl","Sparse for Dphi and Deta for all hadrons;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+  fOutputList->Add(fSprsMixAllHadHCorrl);
+
+  fSprsHadHCorrl = new THnSparseD("fSprsHadHCorrl","Sparse for Dphi and Deta hadrons;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsHadHCorrl);
 
-  fSprsInclusiveEHCorrl = new THnSparseD("fSprsInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  fSprsInclusiveEHCorrl = new THnSparseD("fSprsInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsInclusiveEHCorrl);
 
-  fSprsLSEHCorrl = new THnSparseD("fSprsLSEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  fSprsLSEHCorrl = new THnSparseD("fSprsLSEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsLSEHCorrl);
 
-  fSprsULSEHCorrl = new THnSparseD("fSprsULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  fSprsULSEHCorrl = new THnSparseD("fSprsULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsULSEHCorrl);
 
-  fSprsMixHadHCorrl = new THnSparseD("fSprsMixHadHCorrl","Sparse for Dphi and Deta hadrons for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  fSprsMixHadHCorrl = new THnSparseD("fSprsMixHadHCorrl","Sparse for Dphi and Deta hadrons for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsMixHadHCorrl);
 
-  fSprsMixInclusiveEHCorrl = new THnSparseD("fSprsMixInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron for mixed event;p_{T}^{e};p_{T}^{mixTrk};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  fSprsMixInclusiveEHCorrl = new THnSparseD("fSprsMixInclusiveEHCorrl","Sparse for Dphi and Deta with Inclusive electron for mixed event;p_{T}^{e};p_{T}^{mixTrk};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsMixInclusiveEHCorrl);
 
-  fSprsMixLSEHCorrl = new THnSparseD("fSprsMixLSEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  fSprsMixLSEHCorrl = new THnSparseD("fSprsMixLSEHCorrl","Sparse for Dphi and Deta with LS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsMixLSEHCorrl);
 
-  fSprsMixULSEHCorrl = new THnSparseD("fSprsMixULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  //fSprsMixULSEHCorrl = new THnSparseD("fSprsMixULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;VtxZBin,CentBin;",6,bin,xmin,xmax);
+  fSprsMixULSEHCorrl = new THnSparseD("fSprsMixULSEHCorrl","Sparse for Dphi and Deta with ULS Non-HFE electron for mixed events;p_{T}^{e};p_{T}^{h};#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
   fOutputList->Add(fSprsMixULSEHCorrl);
 
   PostData(1,fOutputList);
@@ -660,6 +697,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     TrkEta = track->Eta();
     TrkP = track->P();
 
+    if(TrkPt > 2) MixedEvent(track, fSprsMixAllHadHCorrl);
+
     ///////////////////////////
     //Track matching to EMCAL//
     //////////////////////////
@@ -725,6 +764,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       if(fHadTrack)
       {
         fHadPt_AftEID->Fill(TrkPt);
+        //ElectronHadCorrel(iTracks, track, fSprsHadHCorrl, fHisHadDphi);
         ElectronHadCorrel(iTracks, track, fSprsHadHCorrl);
         MixedEvent(track, fSprsMixHadHCorrl);
       }
@@ -739,6 +779,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       HadronInfo(iTracks);
 
       //Inclusive E-H correl
+      //ElectronHadCorrel(iTracks, track, fSprsInclusiveEHCorrl, fHisIncEDphi);
       ElectronHadCorrel(iTracks, track, fSprsInclusiveEHCorrl);
       MixedEvent(track, fSprsMixInclusiveEHCorrl);
 
@@ -769,6 +810,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   PostData(1, fOutputList);
 }
 //_________________________________________
+//void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, THnSparse *SparseEHCorrl, TH2F *HisDphi)
 void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, THnSparse *SparseEHCorrl)
 {
   //Construct Deta Phi between electrons and hadrons
@@ -819,6 +861,8 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
     fvalueDphi[4] = fVtxZBin;
     fvalueDphi[5] = fCentBin;
     SparseEHCorrl->Fill(fvalueDphi);
+
+    //if(ptHad > ptEle) HisDphi->Fill(ptEle,Dphi);
   }
 }
 //___________________________________________
@@ -1062,11 +1106,15 @@ void AliAnalysisTaskEHCorrel::CheckCentrality(AliAODEvent* fAOD, Bool_t &central
   {
     fCentralityNoPass->Fill(fCentrality);
     fMultiplicityNoPass->Fill(fMultiplicity);
+    fCentMultiplicityNoPass->Fill(fMultiplicity,fCentrality);
+    //  cout << "--------------Fill no pass-------------------------"<<endl;
     centralitypass = kFALSE;
   }else
   {
     fCentralityPass->Fill(fCentrality);
     fMultiplicityPass->Fill(fMultiplicity);
+    fCentMultiplicityPass->Fill(fMultiplicity,fCentrality);
+    //  cout << "--------------Fill pass-------------------------"<<endl;
     centralitypass = kTRUE;
   }
 }
@@ -1079,6 +1127,7 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
   TVector3 clustpos;
   Float_t  emcx[3]; // cluster pos
   Double_t clustE=-999, emcphi = -999, emceta=-999;
+  Float_t tof=-999;
   Nclust = fVevent->GetNumberOfCaloClusters();
   for(Int_t icl=0; icl<Nclust; icl++)
   {
@@ -1086,17 +1135,32 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
     clust = fVevent->GetCaloCluster(icl);
     if(!clust)  printf("ERROR: Could not receive cluster matched calibrated from track %d\n", icl);
 
+    Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;  
     if(clust && clust->IsEMCAL())
     {
       clustE = clust->E();
+      tof = clust->GetTOF()*1e+9; // ns
       clust->GetPosition(emcx);
       clustpos.SetXYZ(emcx[0],emcx[1],emcx[2]);
       emcphi = clustpos.Phi();
       emceta = clustpos.Eta();
       if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
 
+      if(emcphi > 1.39 && emcphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
+      if(emcphi > 4.53 && emcphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
+
+      //----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
+      if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+        if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
+
+      if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+        if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
       fHistClustE->Fill(clustE);
       fEMCClsEtaPhi->Fill(emceta,emcphi);
+
+      fHistoNCells->Fill(clustE,clust->GetNCells());
+      fHistoTimeEMC->Fill(clustE,tof);
     }
   }
 }
@@ -1186,11 +1250,13 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
     if(fFlagULS) fInvmassULSPt->Fill(track->Pt(),mass);
 
     if(fFlagLS && mass<fInvmassCut) {
+      //ElectronHadCorrel(itrack, track, fSprsLSEHCorrl, fHisLSDphi);
       ElectronHadCorrel(itrack, track, fSprsLSEHCorrl);
       MixedEvent(track, fSprsMixLSEHCorrl);
       fLSElecPt->Fill(track->Pt());
     }
     if(fFlagULS && mass<fInvmassCut){
+      //ElectronHadCorrel(itrack, track, fSprsULSEHCorrl, fHisULSDphi);
       ElectronHadCorrel(itrack, track, fSprsULSEHCorrl);
       MixedEvent(track, fSprsMixULSEHCorrl);
       fULSElecPt->Fill(track->Pt());
@@ -1228,11 +1294,14 @@ void  AliAnalysisTaskEHCorrel::MixedEvent(AliVTrack *track, THnSparse *SparseMix
     Int_t nMix = fPool->GetCurrentNEvents();
     fNoMixedEvents->Fill(0);
 
+    fMixStatCentVtxz->Fill(zVtx,fCentrality);
+
     Double_t ptMixTrk= -999;
     Double_t ptEle = -999;
     Double_t phiEle = -999, phiMixTrk = -999, Dphi = -999;
     Double_t etaEle = -999, etaMixTrk = -999, Deta = -999;
 
+    // cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
     for (Int_t jMix=0; jMix<nMix; jMix++)  // mix with each event in the buffer
     {
       TObjArray* bgTracks = fPool->GetEvent(jMix);
