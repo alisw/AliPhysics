@@ -31,9 +31,6 @@
 #include <AliVEvent.h>
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
-#include <AliVCaloCells.h>
-#include <AliAODCaloCells.h>
-#include <AliESDCaloCells.h>
 #include <AliInputEventHandler.h>
 
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
@@ -61,9 +58,6 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper() :
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
   fMaxVertexDist(999),
-  fInputCellBranchName("emcalCells"),
-  fCreatedCellBranchName("emcalCellsCombined"),
-  fInitializedCombinedCells(false),
   fExternalFile(0),
   fCurrentEntry(0),
   fLowerEntry(0),
@@ -104,9 +98,6 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
   fTriggerMask(AliVEvent::kAny),
   fZVertexCut(10),
   fMaxVertexDist(999),
-  fInputCellBranchName("emcalCells"),
-  fCreatedCellBranchName("emcalCellsCombined"),
-  fInitializedCombinedCells(false),
   fExternalFile(0),
   fCurrentEntry(0),
   fLowerEntry(0),
@@ -308,106 +299,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
 
   if (!fChain) return kFALSE;
 
-  // Setup the combined cells if necessary and then create them from the internal and external event
-  CreateCombinedCells();
-
   return kTRUE;
-}
-
-/**
- * Setup the combined cells object
- */
-void AliAnalysisTaskEmcalEmbeddingHelper::SetupCombinedCells()
-{
-  if (fTreeName == "esdTree") {
-    fCombinedCells = new AliESDCaloCells(fCreatedCellBranchName.c_str(), fCreatedCellBranchName.c_str(), AliVCaloCells::kEMCALCell);
-  }
-  else {
-    fCombinedCells = new AliAODCaloCells(fCreatedCellBranchName.c_str(), fCreatedCellBranchName.c_str(), AliVCaloCells::kEMCALCell);
-  }
-
-  // Add it to the external event
-  // While the CorrectionTask can handle cells in the external event, it is not well handled by
-  // other classes, so it should stay in the input event to ensure it is easily available.
-  AddObjectToEvent(fCombinedCells, InputEvent());
-
-  AliDebugStream(2) << "Added combined calo cells \"" << fCombinedCells->GetName() << "\" to the external event" << std::endl;
-
-  fInitializedCombinedCells = true;
-}
-
-/**
- * Create cells combined from the input event and the external (embedded) event.
- * This is only necessary for cells because they basic object is a cell "container" rather than the actual
- * objects, which can then be accessed through EMCal containers (like clusters or tracks).
- */
-void AliAnalysisTaskEmcalEmbeddingHelper::CreateCombinedCells()
-{
-  // Create cells.
-  // In general, the memory allocation process for cells is not very efficient...
-  // Proxy for whether it is ESD
-  if (fInitializedCombinedCells == false) {
-    SetupCombinedCells();
-  }
-
-  // Get the cells to copy
-  AliVCaloCells * inputCells = dynamic_cast<AliVCaloCells *>(InputEvent()->FindListObject(fInputCellBranchName.c_str()));
-  if (!inputCells) {
-    AliFatal(TString::Format("Could not retrieve cells \"%s\" from input event!", fInputCellBranchName.c_str()));
-  }
-  AliVCaloCells * externalCells = dynamic_cast<AliVCaloCells *>(fExternalEvent->FindListObject(fInputCellBranchName.c_str()));
-  if (!externalCells) {
-    AliFatal(TString::Format("Could not retrieve cells \"%s\" from input event!", fInputCellBranchName.c_str()));
-  }
-
-  // Delete any previous container
-  fCombinedCells->DeleteContainer();
-  // Create a new container
-  fCombinedCells->CreateContainer(inputCells->GetNumberOfCells() + externalCells->GetNumberOfCells());
-  // Add internal and external cells to the combined cells
-  AddCellsToCellObject(inputCells);
-  AddCellsToCellObject(externalCells);
-}
-
-void AliAnalysisTaskEmcalEmbeddingHelper::AddCellsToCellObject(AliVCaloCells * inputCells)
-{
-  // Cell properties
-  Short_t cellNumber;
-  Double_t ampltidue, time, eFrac;
-  Int_t mcLabel;
-  Bool_t cellHighGain;
-  Bool_t getCellResult = kFALSE;
-
-  // Loop over the input cells and add them to the combined cells
-  for (unsigned int i = 0; i < inputCells->GetNumberOfCells(); i++)
-  {
-    getCellResult = inputCells->GetCell(i, cellNumber, ampltidue, time, mcLabel, eFrac);
-    if (!getCellResult) {
-      AliWarning(TString::Format("Could not get cell %i from cell collection %s", i, inputCells->GetName()));
-    }
-    // Get high gain attribute in addition to cell
-    inputCells->GetCellHighGain(i);
-
-    // Set the properties in the combined cell
-    fCombinedCells->SetCell(i, cellNumber, ampltidue, time, mcLabel, eFrac, cellHighGain);
-  }
-}
-
-/**
- * Add object to event. Adapted from AliAnalysisTaskEmcal.
- * @param[in] obj Object to be added
- * @param[in] attempt If true don't handle error
- */
-void AliAnalysisTaskEmcalEmbeddingHelper::AddObjectToEvent(TObject *obj, AliVEvent * event, Bool_t attempt)
-{
-  if (!(event->FindListObject(obj->GetName()))) {
-    event->AddObject(obj);
-  }
-  else {
-    if (!attempt) {
-      AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), obj->GetName()));
-    }
-  }
 }
 
 /**

@@ -20,7 +20,6 @@
 #include <AliAnalysisTaskSE.h>
 
 class AliVEvent;
-class AliVCaloCells;
 class TChain;
 class TFile;
 
@@ -56,8 +55,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   static const AliAnalysisTaskEmcalEmbeddingHelper* GetInstance() { return fgInstance       ; }
 
   AliVEvent* GetExternalEvent()                             const { return fExternalEvent   ; }
-  std::string GetInputCellBranchName()                      const { return fInputCellBranchName; }
-  std::string GetCombinedCellBranchName()                   const { return fCreatedCellBranchName; }
 
   TString GetTreeName()                                     const { return fTreeName; }
   Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
@@ -73,9 +70,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetFilePattern(const char * pattern)                       { fFilePattern = pattern; }
   void SetStartingFileIndex(Int_t n)                              { fFilenameIndex = n; }
   void SetFileListFilename(const char * filename)                 { fFileListFilename = filename; }
-
-  void SetInputCellBranchName(const char * inputName)             { fInputCellBranchName = inputName; }
-  void SetCombinedCellBranchName(const char * inputName)          { fCreatedCellBranchName = inputName; }
 
   UInt_t GetTriggerMask()                                   const { return fTriggerMask; }
   Double_t GetZVertexCut()                                  const { return fZVertexCut; }
@@ -95,11 +89,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Bool_t          IsEventSelected()     ;
   Bool_t          InitEvent()           ;
   void            InitTree()            ;
-
-  void            SetupCombinedCells()  ;
-  void            CreateCombinedCells() ;
-  void            AddCellsToCellObject(AliVCaloCells * inputCells) ;
-  void            AddObjectToEvent(TObject *obj, AliVEvent * event, Bool_t attempt = kFALSE);
 
   UInt_t                                        fTriggerMask;       ///<  Trigger selection mask
   Double_t                                      fZVertexCut;        ///<  Z vertex cut on embedded event
@@ -128,11 +117,6 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   Int_t                                         fMaxNumberOfFiles ; //!<! Max number of files that are in the TChain
   Int_t                                         fFileNumber       ; //!<! File number corresponding to the current tree
   AliVEvent                                    *fExternalEvent    ; //!<! Current external event available for embedding
-
-  bool                                          fInitializedCombinedCells; //!<! True if the combined cells object has been initialized
-  std::string                                   fInputCellBranchName; ///< Name of the cell branch which will be copied from the internal and external events for the combined cells.
-  std::string                                   fCreatedCellBranchName; ///< Name of the cell branch which will be created for the combined cells.
-  AliVCaloCells                                *fCombinedCells    ; //!<! Cells combined from the input and external events.
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
 
