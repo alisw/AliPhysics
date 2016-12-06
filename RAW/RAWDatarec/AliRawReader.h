@@ -183,6 +183,7 @@ class AliRawReader: public TObject {
       return (AliRawDataErrorLog *)fErrorLogs.UncheckedAt(i);
     }
 
+    const TString&   GetParsedTriggerExpression() const {return fSelectTriggerExpr;}
     // Method which can be used in order to force the auto-save on
     // ESD tree inside AliReconstruction. For the moment it will be
     // activated only for AliRawReaderDateOnline.
@@ -197,7 +198,7 @@ class AliRawReader: public TObject {
     virtual AliRawReader* CloneSingleEvent() const { return NULL; }
 
   protected :
-    virtual void     SelectEvents(Int_t type,ULong64_t triggerMask=0,const char *triggerExpr=NULL,ULong64_t triggerMask50=0);
+    virtual void     SelectEvents(Int_t type,ULong64_t triggerMask=0,const char *triggerExpr=NULL,ULong64_t triggerMask50=0,const char *contExpr=NULL, const char *exclExpr=NULL);
     Bool_t           IsSelected() const;
     Bool_t           IsEventSelected() const;
 
@@ -218,6 +219,9 @@ class AliRawReader: public TObject {
     ULong64_t        fSelectTriggerMask;    // trigger mask for selecting events (0 = no selection)
     ULong64_t        fSelectTriggerMask50;  // trigger maskNext50 for selecting events (0 = no selection)
     TString          fSelectTriggerExpr;    // trigger expression for selecting events (empty = no selection)
+    TString          fContainTriggerExpr;   // string required in trigger name for selecting events (empty = no selection)
+    TString          fExcludeTriggerExpr;   // string required in trigger name for exluding events (empty = no selection)
+    Bool_t           fVeto[100];            // veto for the 50+50 trigger masks
 
     Int_t            fErrorCode;            // code of last error
 

@@ -43,6 +43,7 @@
 #include <TSystem.h>
 #include <TPRegexp.h>
 #include <THashList.h>
+#include <TString.h>
 
 #include <Riostream.h>
 #include "AliRawReader.h"
@@ -72,6 +73,8 @@ AliRawReader::AliRawReader() :
   fSelectTriggerMask(0),
   fSelectTriggerMask50(0),
   fSelectTriggerExpr(),
+  fContainTriggerExpr(),
+  fExcludeTriggerExpr(),
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
@@ -136,6 +139,8 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fSelectTriggerMask(rawReader.fSelectTriggerMask),
   fSelectTriggerMask50(rawReader.fSelectTriggerMask50),
   fSelectTriggerExpr(rawReader.fSelectTriggerExpr),
+  fContainTriggerExpr(rawReader.fContainTriggerExpr),
+  fExcludeTriggerExpr(rawReader.fExcludeTriggerExpr),
   fErrorCode(0),
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
@@ -171,7 +176,8 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fSelectTriggerMask = rawReader.fSelectTriggerMask;
   fSelectTriggerMask50 = rawReader.fSelectTriggerMask50;
   fSelectTriggerExpr = rawReader.fSelectTriggerExpr;
-
+  fContainTriggerExpr = rawReader.fContainTriggerExpr;
+  fExcludeTriggerExpr = rawReader.fExcludeTriggerExpr;
   fErrorCode = rawReader.fErrorCode;
 
   fEventNumber = rawReader.fEventNumber;
@@ -285,6 +291,8 @@ AliRawReader* AliRawReader::Create(const char *uri)
     Int_t eventType = -1;
     ULong64_t triggerMask=0,triggerMask50=0;
     TString triggerExpr;
+    TString contExpr="";
+    TString exclExpr="";
     for(Int_t i = 1; i < fields->GetEntries(); i++) {
       if (!fields->At(i)) continue;
       TString &option = ((TObjString*)fields->At(i))->String();
@@ -313,11 +321,28 @@ AliRawReader* AliRawReader::Create(const char *uri)
 	}
 	continue;
       }
+      else if((option.BeginsWith("Contain=",TString::kIgnoreCase))){
+	if(contExpr.IsNull()){
+	  option.ReplaceAll("Contain=","");
+	  contExpr=option.Data();
+	}else{
+	  AliWarningClass(Form("Ingnoring multiple Contain requests: %s",option.Data()));
+	}
+      }
+      else if((option.BeginsWith("Exclude=",TString::kIgnoreCase))){
+	if(exclExpr.IsNull()){
+	  option.ReplaceAll("Exclude=","");
+	  exclExpr=option.Data();
+	}else{
+	  AliWarningClass(Form("Ingnoring multiple Exclude requests: %s",option.Data()));
+	}
+      }
+
       AliWarningClass(Form("Ignoring invalid event selection option: %s",option.Data()));
     }
-    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx mask50=%llx  trigger expression=%s",
-		      eventType,triggerMask,triggerMask50,triggerExpr.Data()));
-    rawReader->SelectEvents(eventType,triggerMask,triggerExpr.Data(),triggerMask50);
+    AliInfoClass(Form("Event selection criteria specified:   eventype=%d   trigger mask=%llx mask50=%llx  trigger expression=%s must contain=%s should not contain=%s",
+		      eventType,triggerMask,triggerMask50,triggerExpr.Data(),contExpr.Data(),exclExpr.Data()));
+    rawReader->SelectEvents(eventType,triggerMask,triggerExpr.Data(),triggerMask50,contExpr.Data(),exclExpr.Data());
   }
 
   delete fields;
@@ -422,7 +447,8 @@ void AliRawReader::SelectEquipment(Int_t equipmentType,
 }
 
 void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask,
-				const char *triggerExpr,ULong64_t triggerMask50)
+				const char *triggerExpr,ULong64_t triggerMask50,
+				const char *contExpr, const char *exclExpr)
 {
 // read only events with the given type and optionally
 // trigger mask.
@@ -436,6 +462,9 @@ void AliRawReader::SelectEvents(Int_t type, ULong64_t triggerMask,
   fSelectTriggerMask = triggerMask;
   fSelectTriggerMask50 = triggerMask50;
   if (triggerExpr) fSelectTriggerExpr = triggerExpr;
+  if (contExpr) fContainTriggerExpr = contExpr;
+  if (exclExpr) fExcludeTriggerExpr = exclExpr;
+  for(Int_t j=0; j<100; j++) fVeto[j]=kFALSE;
 }
 
 void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
@@ -445,14 +474,22 @@ void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
   // case when the trigger selection is given by
   // fSelectedTriggerExpr
 
-  if (fSelectTriggerExpr.IsNull()) return;
-
+  if (fSelectTriggerExpr.IsNull() && fContainTriggerExpr.IsNull() && fExcludeTriggerExpr.IsNull()) return;
+  const char* kMyWordBond="(?:(?<![\\w-])(?=[\\w-])|(?<=[\\w-])(?![\\w-]))";
+  
   fIsTriggerClassLoaded = kTRUE;
-  TString names = Form(" %s ",name);
-  if (index >= 0)
-    fSelectTriggerExpr.ReplaceAll(names,Form(" [%d] ",index));
-  else
-    fSelectTriggerExpr.ReplaceAll(names," 0 ");
+  TString incrInd = index>=0 ? Form(" [%d] ",index) : " 0 ";
+  TString names(name);
+  // RS: some trigger names are substrings of others
+  if (TPRegexp(Form("%s%s%s",kMyWordBond,name,kMyWordBond)).Substitute(fSelectTriggerExpr,incrInd.Data(),"g")) {}
+  else if(!fContainTriggerExpr.IsNull()) {
+    if (names.Contains(fContainTriggerExpr.Data())) fSelectTriggerExpr += incrInd;
+  }
+  if(!fExcludeTriggerExpr.IsNull()){
+    if(index>=0 && names.Contains(fExcludeTriggerExpr.Data())){
+      fVeto[index]=kTRUE;
+    }
+  }
 }
 
 void AliRawReader::LoadTriggerAlias(const THashList *lst)
@@ -504,7 +541,7 @@ void AliRawReader::LoadTriggerAlias(const THashList *lst)
   while((nmd = dynamic_cast<TNamed*>(iter1.Next()))){
     fSelectTriggerExpr.ReplaceAll(nmd->GetName(),nmd->GetTitle());
   }
-  printf("fSelectTriggerExpr: %s\n",fSelectTriggerExpr.Data()); //RS
+  AliInfoF("fSelectTriggerExpr: %s",fSelectTriggerExpr.Data()); //RS
 }
 
 Bool_t AliRawReader::IsSelected() const
@@ -537,6 +574,7 @@ Bool_t AliRawReader::IsEventSelected() const
   // apply the event selection (if any)
 
   // First check the event type
+  //printf("IsEventSelected\n");
   if (fSelectEventType >= 0) {
     if (GetType() != (UInt_t) fSelectEventType) return kFALSE;
   }
@@ -547,29 +585,43 @@ Bool_t AliRawReader::IsEventSelected() const
     if ( !(GetClassMask()&fSelectTriggerMask) && !(GetClassMaskNext50() & fSelectTriggerMask50)) return kFALSE;
   }
 
-  if (  fIsTriggerClassLoaded && !fSelectTriggerExpr.IsNull()) {
+  if (  fIsTriggerClassLoaded && (!fSelectTriggerExpr.IsNull() || !fExcludeTriggerExpr.IsNull())) {
     TString expr(fSelectTriggerExpr);
     ULong64_t mask   = GetClassMask();
     ULong64_t maskNext50 = GetClassMaskNext50();
     //    if (mask) {
-      for(Int_t itrigger = 0; itrigger < 50; itrigger++) 
-	if (mask & (1ull << itrigger)) expr.ReplaceAll(Form("[%d]",itrigger),"1");
-	else       	               expr.ReplaceAll(Form("[%d]",itrigger),"0");
-      //    }
+    for(Int_t itrigger = 0; itrigger < 50; itrigger++){
+      if (mask & (1ull << itrigger)){
+	if(fVeto[itrigger]) return kFALSE;
+	expr.ReplaceAll(Form("[%d]",itrigger),"1");
+      }else{
+	expr.ReplaceAll(Form("[%d]",itrigger),"0");
+      }
+    }
       //    if (maskNext50) {
-      for(Int_t itrigger = 0; itrigger < 50; itrigger++) 
-	if (maskNext50 & (1ull << itrigger)) expr.ReplaceAll(Form("[%d]",itrigger+50),"1");
-	else       	                     expr.ReplaceAll(Form("[%d]",itrigger+50),"0");
-      //    }
+    for(Int_t itrigger = 0; itrigger < 50; itrigger++){
+      if (maskNext50 & (1ull << itrigger)){
+	if(fVeto[itrigger+50]) return kFALSE;
+	expr.ReplaceAll(Form("[%d]",itrigger+50),"1");
+      }else{
+	expr.ReplaceAll(Form("[%d]",itrigger+50),"0");
+      }
+    }
     // 
     // Possibility to introduce downscaling
-    TPRegexp("(%\\s*\\d+)").Substitute(expr,Form("&& !(%d$1)",GetEventIndex()),"g");
-    Int_t error;
-    Bool_t result = gROOT->ProcessLineFast(expr.Data(),&error);
-    if ( error == TInterpreter::kNoError)
-      return result;
-    else
-      return kFALSE;
+    if(!fSelectTriggerExpr.IsNull()){
+      // the gROOT->ProcessLineFast just evaluates C line, effectively a number here. If it gets > 32 0 in the end
+      // or spaces, the evaluation will be wrong!
+      expr.ReplaceAll(" ","");
+      TPRegexp("0+").Substitute(expr,"0","g");
+      TPRegexp("(%\\s*\\d+)").Substitute(expr,Form("&& !(%d$1)",GetEventIndex()),"g"); // RS: what is this line ? 
+      Int_t error;
+      Bool_t result = gROOT->ProcessLineFast(expr.Data(),&error);
+      if ( error == TInterpreter::kNoError)
+	return result;
+      else
+	return kFALSE;
+    }
   }
 
   return kTRUE;
