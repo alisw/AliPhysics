@@ -4987,6 +4987,11 @@ void AliReconstruction::ProcessTriggerAliases()
       }
       delete tokens;
     }
+    //
+    // make sure no unparsed triggers names left in the requested triggers
+    if (TPRegexp("[A-Za-z]").MatchB(fRawReader->GetParsedTriggerExpression())) {
+      AliFatalF("Unknown triggers found in requested list: %s",fRawReader->GetParsedTriggerExpression().Data());
+    }
   }
   //
 }
