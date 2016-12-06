@@ -8,6 +8,7 @@
 #pragma link C++ class AliAnalysisTaskEmcal+;
 #pragma link C++ class AliClusterContainer+;
 #pragma link C++ class AliEmcalContainer+;
+#pragma link C++ namespace AliEmcalContainerUtils;
 #pragma link C++ class AliEmcalDownscaleFactorsOCDB+;
 #pragma link C++ class AliEmcalESDTrackCutsGenerator+;
 #pragma link C++ class AliEmcalParticle+;

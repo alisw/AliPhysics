@@ -3,8 +3,9 @@
 
 class AliVEvent;
 
-#include "AliAnalysisTaskSE.h"
-#include "AliEmcalCorrectionTask.h"
+#include <AliAnalysisTaskSE.h>
+
+#include "AliEmcalContainerUtils.h"
 
 /**
  * \class AliEmcalCopyCollection
@@ -27,7 +28,7 @@ class AliVEvent;
 class AliEmcalCopyCollection : public AliAnalysisTaskSE {
  public:
   AliEmcalCopyCollection();
-  AliEmcalCopyCollection(std::string name, AliEmcalCorrectionTask::InputObject_t inputObjectType, std::string collectionToCopyName, std::string newCollectionName, bool isEmbedding);
+  AliEmcalCopyCollection(std::string name, AliEmcalContainerUtils::InputObject_t inputObjectType, std::string collectionToCopyName, std::string newCollectionName, bool isEmbedding);
   virtual ~AliEmcalCopyCollection() {};
 
   // Methods from AliAnalysisTaskSE
@@ -35,19 +36,19 @@ class AliEmcalCopyCollection : public AliAnalysisTaskSE {
   void UserExec(Option_t * option);
 
   // Get methods
-  AliEmcalCorrectionTask::InputObject_t GetInputObjectType() const { return fInputObjectType; }
+  AliEmcalContainerUtils::InputObject_t GetInputObjectType() const { return fInputObjectType; }
   std::string GetCollectionToCopyName() const { return fCollectionToCopyName; }
   std::string GetNewCollectionName() const { return fNewCollectionName; }
   bool GetIsEmbedding() const { return fIsEmbedding; }
 
   // Set methods
-  void SetInputObjectType(const AliEmcalCorrectionTask::InputObject_t inputObjectType) { fInputObjectType = inputObjectType; }
+  void SetInputObjectType(const AliEmcalContainerUtils::InputObject_t inputObjectType) { fInputObjectType = inputObjectType; }
   void SetCollectionToCopyName(const std::string collectionToCopyName) { fCollectionToCopyName = collectionToCopyName; }
   void SetNewCollectionName(const std::string newCollectionName) { fNewCollectionName = newCollectionName; }
   void SetIsEmbedding(bool isEmbedding) { fIsEmbedding = isEmbedding; }
 
   // Add Task
-  static AliEmcalCopyCollection* AddTaskEmcalCopyCollection(AliEmcalCorrectionTask::InputObject_t inputObjectType = AliEmcalCorrectionTask::kNoDefinedInputObject,
+  static AliEmcalCopyCollection* AddTaskEmcalCopyCollection(AliEmcalContainerUtils::InputObject_t inputObjectType = AliEmcalContainerUtils::kNoDefinedInputObject,
                           const char * collectionToCopyName = "",
                           const char * newCollectionName = "",
                           bool isEmbedding = false);
@@ -58,7 +59,7 @@ class AliEmcalCopyCollection : public AliAnalysisTaskSE {
   void                        CopyBranchToNewObject();
   void                        CopyClusters(TClonesArray *orig, TClonesArray *dest);
 
-  AliEmcalCorrectionTask::InputObject_t fInputObjectType;  ///< Type of collection to copy
+  AliEmcalContainerUtils::InputObject_t fInputObjectType;  ///< Type of collection to copy
   std::string fCollectionToCopyName;                       ///< Name of the collection branch to copy
   std::string fNewCollectionName;                          ///< Name of the collection bracnh where it will be copied
   bool fIsEmbedding;                                       ///< Denotes whether the collection is embedded (and therefore should be copied and stored in the external event)

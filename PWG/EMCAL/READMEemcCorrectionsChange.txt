@@ -34,9 +34,9 @@ To enable side-by-side testing, we will need to setup the copy of branches befor
 
 ~~~{.cxx}
 // Cells
-AliEmcalCorrectionTask::InputObject_t inputObject = AliEmcalCorrectionTask::kCaloCells;
+AliEmcalContainerUtils::InputObject_t inputObject = AliEmcalContainerUtils::kCaloCells;
 bool IsEsd = (iDataType == kEsd);
-TString inputObjectBranchName = AliEmcalCorrectionTask::DetermineUseDefaultName(inputObject, IsEsd);
+TString inputObjectBranchName = AliEmcalContainerUtils::DetermineUseDefaultName(inputObject, IsEsd);
 TString newBranchName = inputObjectBranchName;
 newBranchName += "New";
 AliEmcalCopyCollection * copyTaskCells = AddTaskEmcalCopyCollection(inputObject, inputObjectBranchName.Data(), newBranchName.Data());
@@ -44,8 +44,8 @@ AliEmcalCopyCollection * copyTaskCells = AddTaskEmcalCopyCollection(inputObject,
 // Clusters
 // We don't need to copy clusters since we are reclusterizing
 // Tracks
-inputObject = AliEmcalCorrectionTask::kTrack;
-inputObjectBranchName = AliEmcalCorrectionTask::DetermineUseDefaultName(inputObject, IsEsd);
+inputObject = AliEmcalContainerUtils::kTrack;
+inputObjectBranchName = AliEmcalContainerUtils::DetermineUseDefaultName(inputObject, IsEsd);
 newBranchName = inputObjectBranchName;
 newBranchName += "New";
 AliEmcalCopyCollection * copyTaskTracks = AddTaskEmcalCopyCollection(inputObject, inputObjectBranchName.Data(), newBranchName.Data());
