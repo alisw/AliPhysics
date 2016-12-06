@@ -176,7 +176,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     //AliVCluster *clust = static_cast<AliVCluster *>(*clustIter);
     if(!clust->IsEMCAL()) continue;
     if(clust->GetIsExotic()) continue;
-    if(fClusterTimeRange.IsInRange(clust->GetTOF())) continue;
+    if(!fClusterTimeRange.IsInRange(clust->GetTOF())) continue;
 
     // Distinguish energy definition
     switch(fEnergyDefinition){
