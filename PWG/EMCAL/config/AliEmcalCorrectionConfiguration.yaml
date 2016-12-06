@@ -60,6 +60,15 @@ CellTimeCalib:                                      # Cell Time Calibration comp
     createHistos: false                             # Whether the task should create output histograms
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
+CellCombineCollections:                             # Utility task to combine two cells collections into a single collection.
+                                                    # It is useful for embedding, but little else.
+                                                    # The combined needs to be done here to enable different cell corrections for the different cell collections (for example, MC may need different corrections than data.)
+    enabled: false                                  # Whether to enable the task
+    createHistos: false                             # Whether the task should create output histograms
+    externalCellsBranchName: "usedefault"           # Name of the cells branch in the embedded (external) event.
+    combinedCellsBranchName: "emcalCellsCombined"   # Name of the cells branch to be created for the combined cells in the input event.
+    cellsNames:                                     # Names of the cells input objects which should be attached to the correction
+        - defaultCells                              # This object is defined above in the cells section of the input objects
 Clusterizer:                                        # Clusterizer component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
@@ -141,6 +150,7 @@ executionOrder:
     - CellEnergy
     - CellBadChannel
     - CellTimeCalib
+    - CellCombineCollections
     - Clusterizer
     - ClusterExotics
     - ClusterNonLinearity

@@ -298,12 +298,16 @@ void AliEmcalCorrectionTask::Initialize()
     fSuffix = tempName.substr(foundSuffix + 1).c_str();
   }
 
+  if (fSuffix != "") {
+    AliInfoStream() << "Initializing correction task with suffix \"" << fSuffix << "\"" << std::endl;
+  }
+
   // Initialize YAML configuration
   InitializeConfiguration();
   // Check that the configuration is initialized
   if (fConfigurationInitialized != true)
   {
-    AliFatal("YAML configuration must be initialized before running (ie. the AddTask, run macro or wagon)!");
+    AliFatal("YAML configuration must be initialized before running (ie. in the run macro or wagon)!");
   }
 
   // Determine component execution order
@@ -698,9 +702,26 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
       }
 
       // If we've made it here, this must be at least one entry
-      AliDebugStream(2) << "Adding calo cells " << GetCellContainer(str)->GetName() << " of branch name " << GetCellContainer(str)->GetBranchName() << " to component " << component->GetName() << std::endl;
-      component->SetCaloCells(GetCellContainer(str)->GetCells());
-      AliDebugStream(3) << "component GetNumberOfCells: " << component->GetCaloCells()->GetNumberOfCells() << std::endl;
+      AliEmcalCorrectionCellContainer * cellCont = GetCellContainer(str);
+      AliDebugStream(2) << "Adding calo cells \"" << cellCont->GetName() << "\" of branch name \"" << cellCont->GetBranchName() << "\" to component " << component->GetName() << std::endl;
+
+      if (!(cellCont->GetCells())) {
+        // Attempt to re-initialize the cells.
+        // NOTE: This may not succeed. Adding the container may need to be repeated after the
+        // object is created
+        SetCellsObjectInCellContainerBasedOnProperties(cellCont);
+      }
+
+      // Set the calo cells (may be null)
+      component->SetCaloCells(cellCont->GetCells());
+
+      // It is possible that the cells pointer is null because it may not be created yet. For example,
+      // when combining cells. Thus, we must first check whether the pointer is available before checking
+      // for the number of cells. This could potentially decrease the amount of debug information, but this
+      // should rarely be an issue.
+      if (component->GetCaloCells()) {
+        AliDebugStream(3) << "Component GetNumberOfCells: " << component->GetCaloCells()->GetNumberOfCells() << std::endl;
+      }
     }
   }
 }
@@ -1172,16 +1193,26 @@ void AliEmcalCorrectionTask::ExecOnceComponents()
   // Run the initialization for all derived classes.
   for (auto component : fCorrectionComponents)
   {
-    // Setup geomertry
+    // Setup geometry
     component->SetEMCALGeometry(fGeom);
 
+    // Set the input events. This is redundant to where it is set during Run(), but the events need to be
+    // available to components, and they are only called one extra time.
+    component->SetEvent(InputEvent());
+    component->SetMCEvent(MCEvent());
+
     // Add the requested cells to the component
-    //AliDebugStream(3) << "Adding CaloCells" << std::endl;
     AddContainersToComponent(component, AliEmcalContainerUtils::kCaloCells);
-    //AliDebugStream(3) << "Added CaloCells" << std::endl;
 
     // Component ExecOnce()
     component->ExecOnce();
+
+    // If the cells were created during ExecOnce(), then we need to re-initialize the pointer to ensure
+    // that it is not null!
+    if (!component->GetCaloCells()) {
+      AliDebugStream(2) << "Re-initializing cells for component " << component->GetName() << std::endl;
+      AddContainersToComponent(component, AliEmcalContainerUtils::kCaloCells);
+    }
   }
 }
 
