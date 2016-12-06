@@ -64,6 +64,17 @@ public:
   };
 
   /**
+   * @enum EmcalEnergyDefinition_t
+   * @brief Definition of EMCAL patch energy measurements
+   */
+  enum EmcalEnergyDefinition_t {
+     kFEEEnergy,                ///< FEE energy
+     kFEETransverseEnergy,      ///< FEE transverse energy
+     kFEEADC,                   ///< FEE energy converted to L1 ADC
+     kFEETransverseADC          ///< FEE transverse converted to L1 transverse ADC
+  };
+
+  /**
    * Default constructor
    */
   AliEmcalTriggerOfflineSelection();
@@ -80,6 +91,13 @@ public:
    * @param[in] threshold Threshold value for the trigger class
    */
   void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
+
+  /**
+   * Define according to which energy measurement a patch is selected as trigger patch See @ref EmcalEnergyDefinition_t
+   * for possible settings.
+   * @param[in] endef Type of the energy measurement.
+   */
+  void SetEnergyDefinition(EmcalEnergyDefinition_t endef) { fEnergyDefinition = endef; }
 
   /**
    * Set acceptance map for a given trigger class. The acceptance map is expected to be normalized
@@ -138,6 +156,7 @@ protected:
   static const TString        fgkTriggerNames[kTrgn];                     ///< Names of the various trigger classes
   Double_t                    fOfflineEnergyThreshold[kTrgn];             ///< Thresholds applied on offline energy
   const TH2                   *fAcceptanceMaps[kTrgn];                    //!<! Online acceptance distribution
+  EmcalEnergyDefinition_t     fEnergyDefinition;                          ///< Define type of energy to be use for the patch selection
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerOfflineSelection, 1);
