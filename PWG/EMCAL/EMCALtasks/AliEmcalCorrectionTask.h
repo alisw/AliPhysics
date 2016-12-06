@@ -171,6 +171,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   bool CheckPossibleNamesForComponentName(std::string & name, std::set <std::string> & possibleComponents);
   // General utilities
   BeamType GetBeamType();
+  void PrintRequestedContainersInformation(InputObject_t inputObjectType);
 
   // Retrieve objects in event
   Bool_t RetrieveEventObjects();
