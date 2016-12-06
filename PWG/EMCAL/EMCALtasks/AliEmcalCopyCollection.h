@@ -46,6 +46,12 @@ class AliEmcalCopyCollection : public AliAnalysisTaskSE {
   void SetNewCollectionName(const std::string newCollectionName) { fNewCollectionName = newCollectionName; }
   void SetIsEmbedding(bool isEmbedding) { fIsEmbedding = isEmbedding; }
 
+  // Add Task
+  static AliEmcalCopyCollection* AddTaskEmcalCopyCollection(AliEmcalCorrectionTask::InputObject_t inputObjectType = AliEmcalCorrectionTask::kNoDefinedInputObject,
+                          const char * collectionToCopyName = "",
+                          const char * newCollectionName = "",
+                          bool isEmbedding = false);
+
  protected:
   void                        CreateNewObjectBranch();
   void                        NewBranch();

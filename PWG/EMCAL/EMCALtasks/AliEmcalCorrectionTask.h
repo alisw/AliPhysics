@@ -154,6 +154,9 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   virtual void ExecOnce();
   virtual Bool_t Run();
 
+  // Add Task
+  static AliEmcalCorrectionTask* AddTaskEmcalCorrectionTask(TString suffix = "");
+
  private:
   AliEmcalCorrectionTask(const AliEmcalCorrectionTask &);             // Not implemented
   AliEmcalCorrectionTask &operator=(const AliEmcalCorrectionTask &);  // Not implemented
