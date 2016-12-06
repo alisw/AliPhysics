@@ -23,7 +23,7 @@ ClassImp(AliEmcalCopyCollection);
 
 AliEmcalCopyCollection::AliEmcalCopyCollection():
   AliAnalysisTaskSE("AliEmcalCopyCollection"),
-  fInputObjectType(AliEmcalCorrectionTask::kNoDefinedInputObject),
+  fInputObjectType(AliEmcalContainerUtils::kNoDefinedInputObject),
   fCollectionToCopyName(""),
   fNewCollectionName(""),
   fIsEmbedding(false),
@@ -33,7 +33,7 @@ AliEmcalCopyCollection::AliEmcalCopyCollection():
 {
 }
 
-AliEmcalCopyCollection::AliEmcalCopyCollection(std::string name, AliEmcalCorrectionTask::InputObject_t inputObjectType, std::string collectionToCopyName, std::string newCollectionName, bool isEmbedding):
+AliEmcalCopyCollection::AliEmcalCopyCollection(std::string name, AliEmcalContainerUtils::InputObject_t inputObjectType, std::string collectionToCopyName, std::string newCollectionName, bool isEmbedding):
   AliAnalysisTaskSE(name.c_str()),
   fInputObjectType(inputObjectType),
   fCollectionToCopyName(collectionToCopyName),
@@ -95,7 +95,7 @@ void AliEmcalCopyCollection::UserExec(Option_t * option)
  */
 void AliEmcalCopyCollection::CreateNewObjectBranch()
 {
-  fEvent = AliEmcalCorrectionTask::GetEvent(InputEvent(), fIsEmbedding);
+  fEvent = AliEmcalContainerUtils::GetEvent(InputEvent(), fIsEmbedding);
   if (!fEvent) {
     AliError("Could not retrieve event! Returning!");
     return;
@@ -112,16 +112,16 @@ void AliEmcalCopyCollection::CreateNewObjectBranch()
 
   // Determine use default name if applicable
   if (fCollectionToCopyName == "usedefault") {
-    fCollectionToCopyName = AliEmcalCorrectionTask::DetermineUseDefaultName(fInputObjectType, fIsEsd);
+    fCollectionToCopyName = AliEmcalContainerUtils::DetermineUseDefaultName(fInputObjectType, fIsEsd);
   }
   if (fNewCollectionName == "usedefault") {
     // This name is almost certainly going to conflict, but checked to be certain
-    fNewCollectionName = AliEmcalCorrectionTask::DetermineUseDefaultName(fInputObjectType, fIsEsd);
+    fNewCollectionName = AliEmcalContainerUtils::DetermineUseDefaultName(fInputObjectType, fIsEsd);
   }
 
-  if (fInputObjectType != AliEmcalCorrectionTask::kCaloCells &&
-    fInputObjectType != AliEmcalCorrectionTask::kCluster &&
-    fInputObjectType != AliEmcalCorrectionTask::kTrack) {
+  if (fInputObjectType != AliEmcalContainerUtils::kCaloCells &&
+    fInputObjectType != AliEmcalContainerUtils::kCluster &&
+    fInputObjectType != AliEmcalContainerUtils::kTrack) {
     AliFatal(TString::Format("Unrecognized input object type %d", fInputObjectType));
   }
 
@@ -147,7 +147,7 @@ void AliEmcalCopyCollection::NewBranch()
   }
   TClonesArray * existingArray = dynamic_cast<TClonesArray *>(existingObject);
 
-  if (fInputObjectType == AliEmcalCorrectionTask::kCaloCells)
+  if (fInputObjectType == AliEmcalContainerUtils::kCaloCells)
   {
     // Cells
     // Create new cells branch and add it to the event
@@ -162,12 +162,12 @@ void AliEmcalCopyCollection::NewBranch()
     // Add to event
     fEvent->AddObject(newCells);
   }
-  else if (fInputObjectType == AliEmcalCorrectionTask::kCluster || fInputObjectType == AliEmcalCorrectionTask::kTrack) {
+  else if (fInputObjectType == AliEmcalContainerUtils::kCluster || fInputObjectType == AliEmcalContainerUtils::kTrack) {
     // Clusters and tracks
 
     // Determine relevant values to able to properly create the branch
     // Branch object type name (the type which is going to be created in the TClonesArray)
-    std::string newObjectTypeName = AliEmcalCorrectionTask::DetermineUseDefaultName(fInputObjectType, fIsEsd, true);
+    std::string newObjectTypeName = AliEmcalContainerUtils::DetermineUseDefaultName(fInputObjectType, fIsEsd, true);
 
     // Create new branch and add it to the event
     TClonesArray * newArray = new TClonesArray(newObjectTypeName.c_str());
@@ -189,7 +189,7 @@ void AliEmcalCopyCollection::NewBranch()
 void AliEmcalCopyCollection::CopyBranchToNewObject()
 {
   // Cells
-  if (fInputObjectType == AliEmcalCorrectionTask::kCaloCells)
+  if (fInputObjectType == AliEmcalContainerUtils::kCaloCells)
   {
     AliVCaloCells * cellsToCopy = dynamic_cast<AliVCaloCells *>(fEvent->FindListObject(fCollectionToCopyName.c_str()));
     AliVCaloCells * newCells = dynamic_cast<AliVCaloCells *>(fEvent->FindListObject(fNewCollectionName.c_str()));
@@ -207,7 +207,7 @@ void AliEmcalCopyCollection::CopyBranchToNewObject()
   }
 
   // Clusters
-  if (fInputObjectType == AliEmcalCorrectionTask::kCluster)
+  if (fInputObjectType == AliEmcalContainerUtils::kCluster)
   {
     TClonesArray * newClusters = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fNewCollectionName.c_str()));
     TClonesArray * currentClusters = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCollectionToCopyName.c_str()));
@@ -217,7 +217,7 @@ void AliEmcalCopyCollection::CopyBranchToNewObject()
   }
 
   // Tracks
-  if (fInputObjectType == AliEmcalCorrectionTask::kTrack)
+  if (fInputObjectType == AliEmcalContainerUtils::kTrack)
   {
     TClonesArray * newTracks = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fNewCollectionName.c_str()));
     TClonesArray * currentTracks = dynamic_cast<TClonesArray *>(InputEvent()->FindListObject(fCollectionToCopyName.c_str()));
@@ -316,7 +316,7 @@ void AliEmcalCopyCollection::CopyClusters(TClonesArray *orig, TClonesArray *dest
   }
 }
 
-AliEmcalCopyCollection * AliEmcalCopyCollection::AddTaskEmcalCopyCollection(AliEmcalCorrectionTask::InputObject_t inputObjectType,
+AliEmcalCopyCollection * AliEmcalCopyCollection::AddTaskEmcalCopyCollection(AliEmcalContainerUtils::InputObject_t inputObjectType,
                           const char * collectionToCopyName,
                           const char * newCollectionName,
                           bool isEmbedding)

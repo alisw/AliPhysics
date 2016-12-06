@@ -16,7 +16,7 @@
 /**
  * @class AliEmcalContainerIndexMap
  * @ingroup EMCALCOREFW
- * @brief Helper class for AliEmcalContainer derived classes
+ * @brief Container or array to index mapping for AliEmcalContainer derived classes
  *
  * AliEmcalContainerIndexMap contains index mapping for AliEmcalContainer derived classes. The mapping is from
  * a single global linear array to an index in a collection of a container. For example, if there are two
