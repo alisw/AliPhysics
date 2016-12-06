@@ -202,22 +202,13 @@ void AliEmcalCorrectionTask::Initialize()
   // Setup Cells
   // Cannot do this entirely yet because we need input objects
   CreateInputObjects(kCaloCells);
-  // TEMP PRINT
-  AliDebugStream(2) << "Cell info: " << std::endl;
-  for (auto cellInfo : fCellCollArray) {
-    AliDebugStream(2) << "\tName: " << cellInfo->GetName() << "\tBranch: " << cellInfo->GetBranchName() << "\tIsEmbedding:" << cellInfo->GetIsEmbedding() << std::endl;
-  }
-  // END TEMP PRINT
+  PrintRequestedContainersInformation(kCaloCells);
   // Create cluster input objects
   CreateInputObjects(kCluster);
-  // TEMP PRINT
-  fClusterCollArray.Print();
-  // END TEMP PRINT
+  PrintRequestedContainersInformation(kCluster);
   // Create track input objects
   CreateInputObjects(kTrack);
-  // TEMP PRINT
-  fParticleCollArray.Print();
-  // END TEMP PRINT
+  PrintRequestedContainersInformation(kTrack);
 
   // Initialize components
   InitializeComponents();
@@ -567,9 +558,9 @@ void AliEmcalCorrectionTask::CreateInputObjects(InputObject_t inputObjectType)
     }
   }
 
-  AliInfoStream() << inputObjectName << " Containers requested by components: " << std::endl;
+  AliDebugStream(2) << inputObjectName << " Containers requested by components: " << std::endl;
   for (auto & str : requestedContainers) {
-    AliInfoStream() << "\t" << str << std::endl;;
+    AliDebugStream(2) << "\t" << str << std::endl;;
   }
 
   // Create all requested containers
@@ -594,7 +585,7 @@ void AliEmcalCorrectionTask::AddContainersToComponent(AliEmcalCorrectionComponen
   // Not required, because not all components need Clusters or Tracks
   AliEmcalCorrectionComponent::GetProperty(inputObjectName.c_str(), inputObjects, fUserConfiguration, fDefaultConfiguration, false, component->GetName());
 
-  //std::cout << "inputObjects.size(): " << inputObjects.size() << std::endl;
+  //AliDebugStream(4) << "inputObjects.size(): " << inputObjects.size() << std::endl;
 
   // If it is not found, then there will be nothing to iterate over, so we don't need to explicitly check the return value
   for (auto const & str : inputObjects)
@@ -1557,6 +1548,32 @@ AliEmcalCorrectionTask::BeamType AliEmcalCorrectionTask::GetBeamType()
     } else {
       return kpp;
     }
+  }
+}
+
+/**
+ *
+ */
+void AliEmcalCorrectionTask::PrintRequestedContainersInformation(InputObject_t inputObjectType)
+{
+  if (inputObjectType == kCaloCells) {
+    AliInfoStream() << "Cells info: " << std::endl;
+    for (auto cellInfo : fCellCollArray) {
+      AliInfoStream() << "\tName: " << cellInfo->GetName() << "\tBranch: " << cellInfo->GetBranchName() << "\tIsEmbedding: " << std::boolalpha << cellInfo->GetIsEmbedding() << std::endl;
+    }
+  }
+  else if (inputObjectType == kCluster || inputObjectType == kTrack) {
+    AliInfoStream() << (inputObjectType == kCluster ? "Cluster" : "Track") << " container info: " << std::endl;
+    AliEmcalContainer * cont = 0;
+    for (auto containerInfo : (inputObjectType == kCluster ? fClusterCollArray : fParticleCollArray) ) {
+      cont = static_cast<AliEmcalContainer *>(containerInfo);
+      AliInfoStream() << "\tName: " << cont->GetName() << "\tBranch: " << cont->GetArrayName() << "\tTitle: " << cont->GetTitle() << std::endl;
+      // TODO: Enable in embedding branch
+      //AliInfoStream() << "\tName: " << cont->GetName() << "\tBranch: " << cont->GetArrayName() << "\tTitle: " << cont->GetTitle() << "\tIsEmbedding:" << std::boolalpha << cont->GetIsEmbedding() << std::endl;
+    }
+  }
+  else {
+    AliErrorStream() << "Unrecognized input object type " << inputObjectType << std::endl;
   }
 }
 
