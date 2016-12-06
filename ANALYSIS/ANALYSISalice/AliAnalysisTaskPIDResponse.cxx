@@ -19,14 +19,13 @@
 
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>
-#include <AliVEventHandler.h>
 #include <AliVEvent.h>
-#include <AliVParticle.h>
 #include <AliVTrack.h>
 #include <AliLog.h>
 #include <AliPIDResponse.h>
 #include <AliESDpid.h>
 #include <AliProdInfo.h>
+#include <TPRegexp.h>
 
 #include "AliAnalysisTaskPIDResponse.h"
 
@@ -39,6 +38,8 @@ fIsMC(kFALSE),
 fCachePID(kTRUE),
 fOADBPath(),
 fSpecialDetResponse(),
+fRecoPassName(),
+fRecoPassNameTuned(),
 fPIDResponse(0x0),
 fRun(-1),
 fOldRun(-1),
@@ -65,6 +66,8 @@ fIsMC(kFALSE),
 fCachePID(kTRUE),
 fOADBPath(),
 fSpecialDetResponse(),
+fRecoPassName(),
+fRecoPassNameTuned(),
 fPIDResponse(0x0),
 fRun(-1),
 fOldRun(-1),
@@ -141,6 +144,10 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
         resp.ReplaceAll("TPC-dEdxType:","");
         fPIDResponse->GetTPCResponse().SetdEdxTypeFromString(resp);
       }
+      else if (resp.BeginsWith("RecoPassName:")){
+        resp.ReplaceAll("RecoPassName:","");
+        fRecoPassName=resp;
+      }
     }
     delete arr;
   }
@@ -169,7 +176,7 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
     fPIDResponse->SetUseTRDCentralityCorrection(fUseTRDCentralityCorrection);
   }
 
-  fPIDResponse->InitialiseEvent(event,fRecoPass);
+  fPIDResponse->InitialiseEvent(event,fRecoPass, fRecoPassName);
   fPIDResponse->SetCurrentMCEvent(MCEvent());
   AliESDpid *pidresp = dynamic_cast<AliESDpid*>(fPIDResponse);
   if(pidresp && AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
@@ -200,8 +207,8 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
   AliProdInfo prodInfo(uiList);
   prodInfo.List();
 
-  TTree *tree= (TTree*)inputHandler->GetTree();
-  TFile *file= (TFile*)tree->GetCurrentFile();
+  TTree *tree = inputHandler->GetTree();
+  TFile *file = tree->GetCurrentFile();
   if (!file) {
     AliError("Current file not found, cannot set reconstruction information");
     return;
@@ -220,6 +227,11 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
       fRecoPass = fUserDataRecoPass;
     } else {
       fRecoPass = prodInfo.GetRecoPass();
+
+      // fRecoPassName might have been set as a user requirement in fSpecialDetResponse
+      if (fRecoPassName.IsNull()) {
+        fRecoPassName = prodInfo.GetRecoPassName();
+      }
       if (fRecoPass < 0) {   // as last resort we find pass from file name (UGLY, but not stored in ESDs/AODs before LHC12d )
         TString fileName(file->GetName());
         if (fileName.Contains("pass1") ) {
@@ -232,6 +244,14 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
           fRecoPass=4;
         } else if (fileName.Contains("pass5") ) {
           fRecoPass=5;
+        }
+
+        if (fRecoPassName.IsNull()) {
+          // try to get the pass name from the file name
+          TPRegexp reg(".*/(LHC.*)/000([0-9]+)/([a-zA-Z0-9_-]+)/.*");
+          TObjArray *arrPassName=reg.MatchS(file->GetName());
+          if (arrPassName->At(3)) fRecoPassName=arrPassName->At(3)->GetName();
+          delete arrPassName;
         }
       }
     }

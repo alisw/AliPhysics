@@ -24,7 +24,6 @@ include_directories(${ROOT_INCLUDE_DIR})
 # Add a library to the project using the object
 add_executable(alihadd alihadd.cxx)
 add_executable(alisync alisync.cxx)
-add_executable(test_helpers test_helpers.cxx)
 
 target_link_libraries(alihadd RIO Hist Core)
 target_link_libraries(alisync RIO Hist Core Net Tree)
@@ -33,5 +32,10 @@ target_link_libraries(alisync RIO Hist Core Net Tree)
 install(TARGETS alihadd RUNTIME DESTINATION bin)
 install(TARGETS alisync RUNTIME DESTINATION bin)
 
+# Tests
+add_executable(test_helpers test_helpers.cxx)
+add_executable(test_alisync01 test_alisync01.cxx)
+
 enable_testing()
 add_test(test_helpers ./test_helpers)
+add_test(test_alisync01 ./test_alisync01)

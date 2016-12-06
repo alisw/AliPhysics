@@ -240,12 +240,16 @@ public:
   Double_t GetTrackdEdx(const AliVTrack* track) const;
 
   //===| Initialisation |=======================================================
-  Bool_t InitFromOADB(const Int_t run, const char* pass, const char* oadbFile="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root", Bool_t initMultiplicityCorrection=kTRUE);
+  Bool_t InitFromOADB(const Int_t run, Int_t pass, TString passName,
+                      const char* oadbFile="$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponseOADB.root",
+                      Bool_t initMultiplicityCorrection=kTRUE);
 
   Bool_t SetSplinesFromArray                (const TObjArray* arrSplines);
   Bool_t SetMultiplicityCorrectionFromString(const TString& multiplicityData);
   Bool_t SetdEdxTypeFromString              (const TString& dEdxTypeSet);
   Bool_t SetdEdxResolutionFromString        (const TString& dEdxTypeSet);
+
+  const TString& GetRecoPassNameUsed() { return  fRecoPassNameUsed; }
 
   //===| Helpers |==============================================================
   static TString GetChecksum(const TObject* obj);
@@ -316,6 +320,8 @@ private:
   Double_t         fOROCmedWeight;    // OROC medium pad size weight to use for dEdx calculation from AliTPCdEdxInfo
   Double_t         fOROClongWeight;   // OROC long pad size weight to use for dEdx calculation from AliTPCdEdxInfo
 
+  // Information on reconstruction data used
+  TString fRecoPassNameUsed;          //! Name or number of the actually used reconstruction pass
   //
   //
   static AliTPCPIDResponse*   fgInstance;     //! Instance of this class (singleton implementation)

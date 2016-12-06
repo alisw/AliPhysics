@@ -144,6 +144,7 @@ class AliITSU : public AliDetector {
   TObjArray            *fCalibration;    //! calibration objects
   Int_t                 fRunNumber;      //! run number
   Bool_t                fSimInitDone;    //! flag initialized simulation
+  Bool_t                fUseALPIDESim;   //! use the ALPIDE chip simulation
 
  private:
   AliITSU(const AliITSU &source); // copy constructor. Not to be used!

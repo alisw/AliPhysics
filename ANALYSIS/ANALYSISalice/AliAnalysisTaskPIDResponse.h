@@ -42,7 +42,7 @@ public:
 
   void SetOADBPath(const char* path) {fOADBPath=path;}
   const char* GetOADBPath() const { return fOADBPath.Data(); }
-  void SetTuneOnData(Bool_t flag,Int_t recopass){fIsTunedOnData=flag;fRecoPassTuned=recopass;};
+  void SetTuneOnData(Bool_t flag, Int_t recopass, TString recoPassName){fIsTunedOnData=flag; fRecoPassTuned=recopass; fRecoPassNameTuned=recoPassName;}
   Bool_t GetTunedOnData() const { return fIsTunedOnData; };
   void SetTuneOnDataMask(Int_t mask){fTunedOnDataMask=mask;};
   
@@ -70,6 +70,8 @@ private:
   Bool_t fCachePID;                    // Cache PID values in transient object
   TString fOADBPath;                   // OADB path to use
   TString fSpecialDetResponse;         // Special detector response files for debugging
+  TString fRecoPassName;               //! Full name of the reco pass
+  TString fRecoPassNameTuned;          // Full name of the reco pass used for tuning to MC
   
   AliPIDResponse *fPIDResponse;        //! PID response Handler
   Int_t   fRun;                        //! current run number

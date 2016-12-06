@@ -31,7 +31,7 @@ public:
     virtual ~AliITSMFTSimulationPix();
     AliITSMFTSimulationPix(const AliITSMFTSimulationPix &source);
     AliITSMFTSimulationPix& operator=(const AliITSMFTSimulationPix &s);
-    
+
     //
     enum {kCellX1,kCellX2,kCellZ1,kCellZ2,kCellYDepth,kNDtSpread}; // data used for ch. spread integral calc.
     //
@@ -51,7 +51,7 @@ public:
     // elements of the SpreadFunDoubleGauss2D parameterization (offsetted by kParamStart)
     enum {kG2MeanX0=AliITSMFTSimuParam::kParamStart,kG2SigX0,kG2MeanZ0,kG2SigZ0,kG2MeanX1,kG2SigX1,kG2MeanZ1,kG2SigZ1,kG2ScaleG2,kNG2Par};
 
-    
+
     void Init();
     //
     void FinishSDigitiseChip(TObjArray *);
@@ -81,7 +81,6 @@ public:
     Int_t GetReadOutCycleRollingShutter(Int_t row, Int_t col, Double_t hitTime);
     //
     void CalcDiodeShiftInPixel(Int_t xrow, Int_t zcol, Float_t &x, Float_t &z);
-    void ClusterGenerator();
     //
 private:
     void WriteSDigits(TClonesArray *);
@@ -90,17 +89,11 @@ private:
     void SpreadCharge2D(Double_t x0,Double_t z0, Double_t dy, Int_t ix0,Int_t iz0,
                         Double_t el, Double_t tof, Int_t tID, Int_t hID);
     void PlaceDigitalPixels(Double_t x0,Double_t z0, Double_t el, Double_t tof, Int_t tID, Int_t hID);
-    
+
     //
     void SetCoupling(AliITSMFTSDigit* old);     // "New" coupling routine  Tiziano Virgili
     void SetCouplingOld(AliITSMFTSDigit* old);  // "Old" coupling routine  Rocco Caliandro
 
-    Double_t ACSFromBetaGamma(Double_t x, Double_t theta) const; // Returns the average cluster size from the betagamma value
-    Int_t CSSampleFromLandau(Double_t mpv, Double_t w) const; // Sample the actual cluster size from a Landau distribution
-    Double_t ComputeIncidenceAngle(TLorentzVector dir) const; // Compute the angle between the particle and the normal to the chip
-    Int_t GetPixelPositionResponse(Int_t idPadX, Int_t idPadZ, Float_t locx, Float_t locz, Double_t acs) const;
-    void CreateDigi(UInt_t col, UInt_t row, Int_t trk, Int_t ht);
-    
 protected:
     Double_t      fTanLorAng;               //! Tangent of the Lorentz Angle (weighted average for hole and electrons)
     Double_t      fGlobalChargeScale;       // Charge scaling to match Geant and Test beam
@@ -108,7 +101,7 @@ protected:
     TH2*          fSpread2DHisto;           //! optional 2D histo for charge spread parameterization
     Double_t (AliITSMFTSimulationPix::*fSpreadFun)(const Double_t *dtIn); //! pointer on current spread function
     Int_t    (AliITSMFTSimulationPix::*fROTimeFun)(Int_t row,Int_t col, Double_t hitTime); //! pointer on current R/O time check function
-    
+
     ClassDef(AliITSMFTSimulationPix,1)  // Simulation of pixel clusters
 };
-#endif 
+#endif

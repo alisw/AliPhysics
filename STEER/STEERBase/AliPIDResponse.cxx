@@ -80,6 +80,8 @@ fLHCperiod(),
 fMCperiodTPC(),
 fMCperiodUser(),
 fCurrentFile(),
+fRecoPassName(),
+fRecoPassNameUser(),
 fCurrentAliRootRev(-1),
 fRecoPass(0),
 fRecoPassUser(-1),
@@ -156,6 +158,8 @@ fLHCperiod(),
 fMCperiodTPC(),
 fMCperiodUser(other.fMCperiodUser),
 fCurrentFile(),
+fRecoPassName(),
+fRecoPassNameUser(),
 fCurrentAliRootRev(other.fCurrentAliRootRev),
 fRecoPass(0),
 fRecoPassUser(other.fRecoPassUser),
@@ -222,6 +226,8 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fMCperiodTPC="";
     fMCperiodUser=other.fMCperiodUser;
     fCurrentFile="";
+    fRecoPassName=other.fRecoPassName;
+    fRecoPassNameUser=other.fRecoPassNameUser;
     fCurrentAliRootRev=other.fCurrentAliRootRev;
     fRecoPass=0;
     fRecoPassUser=other.fRecoPassUser;
@@ -577,12 +583,13 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::CheckPIDStatus(EDetector detector,
 }
 
 //______________________________________________________________________________
-void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, Int_t run)
+void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, TString recoPassName/*=""*/, Int_t run/*=-1*/)
 {
   //
   // Apply settings for the current event
   //
   fRecoPass=pass;
+  fRecoPassName=recoPassName;
 
 
   fCurrentEvent=NULL;
@@ -1095,13 +1102,25 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     }
   }
 
-  Int_t recopass = fRecoPass;
-  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) )
-    recopass = fRecoPassUser;
+  Int_t recopass       = fRecoPass;
+  TString recoPassName = fRecoPassName;
+  if (fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) {
+    recopass     = fRecoPassUser;
+    recoPassName = fRecoPassNameUser;
+  }
+
+  if (fTPCResponse.GetRecoPassNameUsed().IsDigit()){
+    Int_t recoPassUsedForSplines=fTPCResponse.GetRecoPassNameUsed().Atoi();
+    if (recoPassUsedForSplines<recopass) {
+      AliInfoF("Reco pass used for splines (%d) differs from the requested reco pass (%d), the splines one will be used to match the eta maps",
+               recoPassUsedForSplines, recopass);
+      recopass=recoPassUsedForSplines;
+    }
+  }
 
   TString defaultObj = Form("Default_%s_pass%d", dataType.Data(), recopass);
 
-  AliInfo(Form("Current period and reco pass: %s.pass%d", period.Data(), recopass));
+  AliInfo(Form("Current period and reco pass: %s.pass%d (%s)", period.Data(), recopass, recoPassName.Data()));
 
   // Invalidate old maps
   fTPCResponse.SetEtaCorrMap(0x0);
@@ -1111,16 +1130,34 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
   TString fileNameMaps(Form("%s/COMMON/PID/data/TPCetaMaps.root", fOADBPath.Data()));
   if (!fCustomTPCetaMaps.IsNull()) fileNameMaps=fCustomTPCetaMaps;
 
-  // Load the eta correction maps
+  // ===| Load the eta correction maps |=======================================
+  //
+  TString contNameNumeric=TString::Format("TPCetaMaps_%s_pass%d", dataType.Data(), recopass);
+  TString contNameString =TString::Format("TPCetaMaps_%s_%s", dataType.Data(), recoPassName.Data());
+  TString contName;
   AliOADBContainer etaMapsCont(Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
 
-  Int_t statusCont = etaMapsCont.InitFromFile(fileNameMaps.Data(), Form("TPCetaMaps_%s_pass%d", dataType.Data(), recopass));
+  // ---| try loading for specific pass name |----------------------------------
+  AliInfoF("Trying to load map container for specific pass name %s.", recoPassName.Data());
+  Int_t statusCont = etaMapsCont.InitFromFile(fileNameMaps.Data(), contNameString);
+
+  if (statusCont) {
+    // ---| fall back to numerical pass |---------------------------------------
+    AliInfoF("No dedicated map container found for '%s', check numerical pass %d.", recoPassName.Data(), recopass);
+    statusCont = etaMapsCont.InitFromFile(fileNameMaps.Data(), contNameNumeric);
+    contName=contNameNumeric;
+  }
+  else{
+    AliInfoF("Dedicated map container for '%s' found.", recoPassName.Data());
+    contName=contNameString;
+  }
+
   if (statusCont) {
     AliError("Failed initializing TPC eta correction maps from OADB -> Disabled eta correction");
     fUseTPCEtaCorrection = kFALSE;
   }
   else {
-    AliInfo(Form("Loading TPC eta correction map from %s", fileNameMaps.Data()));
+    AliInfo(Form("Loading TPC eta correction map from %s (%s)", fileNameMaps.Data(), contName.Data()));
 
     TH2D* etaMap = 0x0;
 
@@ -1171,15 +1208,33 @@ void AliPIDResponse::SetTPCEtaMaps(Double_t refineFactorMapX, Double_t refineFac
     return;
   }
 
-  // Load the sigma parametrisation (1/dEdx vs tanTheta_local (~eta))
+  // ===| Load the sigma parametrisation (1/dEdx vs tanTheta_local (~eta)) |===
+  //
+  contNameNumeric=TString::Format("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass);
+  contNameString =TString::Format("TPCetaSigmaMaps_%s_%s", dataType.Data(), recoPassName.Data());
+  contName="";
   AliOADBContainer etaSigmaMapsCont(Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
 
-  statusCont = etaSigmaMapsCont.InitFromFile(fileNameMaps.Data(), Form("TPCetaSigmaMaps_%s_pass%d", dataType.Data(), recopass));
+  // ---| try loading for specific pass name |----------------------------------
+  AliInfoF("Trying to load sigma map container for specific pass name %s.", recoPassName.Data());
+  statusCont = etaSigmaMapsCont.InitFromFile(fileNameMaps.Data(), contNameString);
+
+  if (statusCont) {
+    // ---| fall back to numerical pass |---------------------------------------
+    AliInfoF("No dedicated sigma map container found for '%s', check numerical pass %d.", recoPassName.Data(), recopass);
+    statusCont = etaSigmaMapsCont.InitFromFile(fileNameMaps.Data(), contNameNumeric);
+    contName=contNameNumeric;
+  }
+  else{
+    AliInfoF("Dedicated sigma map container for '%s' found.", recoPassName.Data());
+    contName=contNameString;
+  }
+
   if (statusCont) {
     AliError("Failed initializing TPC eta sigma maps from OADB -> Using old sigma parametrisation");
   }
   else {
-    AliInfo(Form("Loading TPC eta sigma map from %s", fileNameMaps.Data()));
+    AliInfo(Form("Loading TPC eta sigma map from %s (%s)", fileNameMaps.Data(), contName.Data()));
 
     TObjArray* etaSigmaPars = 0x0;
 
@@ -1279,10 +1334,14 @@ Bool_t AliPIDResponse::InitializeTPCResponse()
   }
 
   // ---| set reco pass |-------------------------------------------------------
-  Int_t recopass = fRecoPass;
-  if(fIsMC && fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC)) recopass = fRecoPassUser;
+  Int_t   recopass     = fRecoPass;
+  TString recoPassName = fRecoPassName;
+  if (fIsMC && fTuneMConData && ((fTuneMConDataMask & kDetTPC) == kDetTPC) ) {
+    recopass     = fRecoPassUser;
+    recoPassName = fRecoPassNameUser;
+  }
 
-  const Bool_t returnValue = fTPCResponse.InitFromOADB(fRun, TString::Format("%d", recopass), fileNamePIDresponse, fUseTPCMultiplicityCorrection);
+  const Bool_t returnValue = fTPCResponse.InitFromOADB(fRun, recopass, recoPassName, fileNamePIDresponse, fUseTPCMultiplicityCorrection);
   AliInfo("------------------------------------------------------------------------------------------");
 
   return returnValue;

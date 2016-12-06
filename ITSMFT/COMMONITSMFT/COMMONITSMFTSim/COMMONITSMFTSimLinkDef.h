@@ -8,7 +8,9 @@
 #pragma link off all classes;
 #pragma link off all functions;
 //
+#pragma link C++ class  AliITSMFTAlpideSimulationPix+;
 #pragma link C++ class  AliITSMFTChip+;
+#pragma link C++ class  AliITSMFTClusterShape+;
 #pragma link C++ class  AliITSMFTHit+;
 #pragma link C++ class  AliITSMFTSimuClusterShaper+;
 #pragma link C++ class  AliITSMFTSimuParam+;
@@ -16,6 +18,3 @@
 #pragma link C++ class  AliITSMFTSimulationPix+;
 
 #endif
-
-
-

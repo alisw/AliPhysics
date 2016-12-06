@@ -9,38 +9,36 @@
 // Class to generate the cluster shape in the ITSU simulation    //
 // Author: Davide Pagano                                         //
 ///////////////////////////////////////////////////////////////////
-#include <TRandom.h>
 #include <TObject.h>
 #include <sstream>
+#include "AliITSMFTClusterShape.h"
 
 class AliITSMFTSimuClusterShaper : public TObject {
 
  public:
   AliITSMFTSimuClusterShaper();
-  AliITSMFTSimuClusterShaper(const Int_t &cs);
+  AliITSMFTSimuClusterShaper(const UInt_t &cs);
   virtual ~AliITSMFTSimuClusterShaper();
-  void FillClusterRandomly(Int_t *clusterConf);
-
+  void FillClusterRandomly();
   void AddNoisePixel();
 
-  Int_t GetNRows() const {return fNrows;}
-  Int_t GetNCols() const {return fNcols;}
-  
-  // just for debug...to be removed    
-  inline std::string ShapeSting(Int_t cs, Int_t *cshape) const {
+  inline UInt_t  GetNRows() {return fCShape->GetNRows();}
+  inline UInt_t  GetNCols() {return fCShape->GetNCols();}
+  inline UInt_t* GetShape() {return fCShape->GetShape();}
+
+  inline std::string ShapeSting(UInt_t cs, UInt_t *cshape) const {
     std::stringstream out;
     for (Int_t i = 0; i < cs; ++i) {
       out << cshape[i];
       if (i < cs-1) out << " ";
     }
     return out.str();
-  }    
-    
+  }
+
  private:
-  Int_t fNrows;
-  Int_t fNcols;
-  Int_t fNpixOn;
-  
+  UInt_t fNpixOn;
+  AliITSMFTClusterShape *fCShape;
+
   ClassDef(AliITSMFTSimuClusterShaper,1)
 };
 #endif

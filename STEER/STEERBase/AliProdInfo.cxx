@@ -25,6 +25,7 @@
 //-----------------------------------------------------------------
 
 #include <AliLog.h>
+#include <TPRegexp.h>
 #include "AliProdInfo.h"
 
 ClassImp(AliProdInfo);
@@ -38,6 +39,7 @@ AliProdInfo::AliProdInfo()
   ,fProductionTag("")
   ,fAlirootVersion("")
   ,fRootVersion("")
+  ,fRecoPassName()
 {	
   //
   // default constructor
@@ -56,6 +58,7 @@ AliProdInfo::AliProdInfo(const TString& name,const TString& title)
   ,fProductionTag("")
   ,fAlirootVersion("")
   ,fRootVersion("")
+  ,fRecoPassName()
 {	
   //
   // default constructor
@@ -73,6 +76,7 @@ AliProdInfo::AliProdInfo(TList *userInfoList)
   ,fProductionTag("")
   ,fAlirootVersion("")
   ,fRootVersion("")
+  ,fRecoPassName()
 {	
   //
   // default constructor & init
@@ -210,6 +214,12 @@ void AliProdInfo::ParseProdInfo(TNamed *prodInfoData)
       AliWarningF("Failed to extract pass number, set to %d",fRecoPass);
   }
   //
+  // extract full pass name
+  TPRegexp reg(".*/(LHC.*)/000([0-9]+)/([a-zA-Z0-9_-]+)/.*");
+  TObjArray *arrPassName=reg.MatchS(fTags[kOutDir]);
+  if (arrPassName->At(3)) fRecoPassName=arrPassName->At(3)->GetName();
+  delete arrPassName;
+  //
   // extract production type (RAW/MC)
   if (!fTags[kProdType].IsNull()) fMcFlag = (fTags[kProdType]=="MC") ? kTRUE:kFALSE;
   else {
@@ -243,12 +253,13 @@ void AliProdInfo::List() const {
 
   if (IsParsed()) {
     AliInfo("ALICE Production Info found in UserInfo: ");
-    AliInfo(Form("  ALIROOT Version: %s [SVN #: %d]",fAlirootVersion.Data(),fAlirootSvnVersion));
-    AliInfo(Form("  ROOT Version: %s [SVN #: %d]",fRootVersion.Data(),fRootSvnVersion));
-    AliInfo(Form("  Reconstruction Pass: %d",fRecoPass));
-    AliInfo(Form("  LHC Period: %s",fPeriod.Data()));
-    AliInfo(Form("  ProductionTag: %s",fProductionTag.Data()));
-    AliInfo(Form("  MC Flag: %d",fMcFlag));
+    AliInfoF("  ALIROOT Version: %s [SVN #: %d]",fAlirootVersion.Data(),fAlirootSvnVersion);
+    AliInfoF("  ROOT Version: %s [SVN #: %d]",fRootVersion.Data(),fRootSvnVersion);
+    AliInfoF("  Reconstruction Pass: %d",fRecoPass);
+    AliInfoF("  Reconstruction Pass Name: %s",fRecoPassName.Data());
+    AliInfoF("  LHC Period: %s",fPeriod.Data());
+    AliInfoF("  ProductionTag: %s",fProductionTag.Data());
+    AliInfoF("  MC Flag: %d",fMcFlag);
     AliInfo("  - Buffered production tags:");
     for (Int_t itag=0; itag<Int_t(kNTags); ++itag) {
       AliInfo(Form("    %s",fTags[itag].Data()));
