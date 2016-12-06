@@ -867,14 +867,6 @@ public:
   void SetCRC2CovHist(TH1D* const TP, Int_t const r, Int_t const h, Int_t const c) {this->fCRC2CovHist[r][h][c] = TP;};
   TH1D* GetCRC2CovHist(Int_t const r, Int_t const h, Int_t const c) const {return this->fCRC2CovHist[r][h][c];};
   
-  //  13.) CRC Pt differential
-  void SetCRCPtTPCTNt(TNtuple* const TH) {this->fCRCPtTPCTNt = TH;};
-  TNtuple* GetCRCPtTPCTNt() const {return this->fCRCPtTPCTNt;};
-  void SetCRCPtVZTNt(TNtuple* const TH) {this->fCRCPtVZTNt = TH;};
-  TNtuple* GetCRCPtVZTNt() const {return this->fCRCPtVZTNt;};
-  void SetCRCPtZDCTNt(TNtuple* const TH) {this->fCRCPtZDCTNt = TH;};
-  TNtuple* GetCRCPtZDCTNt() const {return this->fCRCPtZDCTNt;};
-  
   void SetCenWeightsHist(TH1D* const n) {this->fCenWeightsHist = n;};
   TH1D* GetCenWeightsHist() const {return this->fCenWeightsHist;};
   void SetPtWeightsHist(TH1D* const n, Int_t c) {this->fPtWeightsHist[c] = n;};
@@ -953,6 +945,8 @@ public:
   
   void SetFlowQCSpectra(TH2D* const TH) {this->fFlowQCSpectra = TH;};
   TH2D* GetFlowQCSpectra() const {return this->fFlowQCSpectra;};
+  void SetFlowQCIntCorProTest(TProfile2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorProTest[eg][k] = TP;};
+  TProfile2D* GetFlowQCIntCorNUAProTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProTest[eg][h];};
   
   TProfile* GetFlowQCRefCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorPro[eg][h];};
   void SetFlowQCRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorPro[eg][k] = TP;};
@@ -1593,11 +1587,6 @@ private:
   Double_t fCRCPtCenMax;
   Double_t fCRCPtwCenBin;
   
-  TNtuple *fCRCPtTPCTNt; //! TNtuple test
-  TNtuple *fCRCPtVZTNt; //! TNtuple test
-  TNtuple *fCRCPtZDCTNt; //! TNtuple test
-  THnSparse *fCRCPtEbEQVec; //!
-  
   // CME
   const static Int_t fCMETPCnCR = 20;
   const static Int_t fCMEnEtaBin = 2;
@@ -1650,15 +1639,21 @@ private:
   const static Int_t fQVecPower = 5;
   Int_t fPtDiffNBins; //
   Int_t fEtaDiffNBins; //
-  TH1D *fPtDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
-  TH1D *fPtDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
-  TH1D *fPtDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH1D *fRPPtDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+  TH1D *fRPPtDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+  TH1D *fRPPtDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
   TH1D *fEtaDiffQRe[2][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][eta]
   TH1D *fEtaDiffQIm[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][eta]
   TH1D *fEtaDiffMul[2][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][eta]
-  TH1D *fPtDiffQReEG[2][fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
-  TH1D *fPtDiffQImEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
-  TH1D *fPtDiffMulEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH1D *fRPPtDiffQReEG[2][fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+  TH1D *fRPPtDiffQImEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+  TH1D *fRPPtDiffMulEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH1D *fPOIPtDiffQRe[fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+  TH1D *fPOIPtDiffQIm[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+  TH1D *fPOIPtDiffMul[fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  TH1D *fPOIPtDiffQReEG[2][fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
+  TH1D *fPOIPtDiffQImEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
+  TH1D *fPOIPtDiffMulEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
   
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
@@ -1703,6 +1698,8 @@ private:
   TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
+  
+  TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][3]; //! correlation profile, precision test
   
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
@@ -1823,7 +1820,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 35);
+  ClassDef(AliFlowAnalysisCRC, 36);
   
 };
 
