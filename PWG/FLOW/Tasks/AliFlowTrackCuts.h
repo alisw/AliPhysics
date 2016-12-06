@@ -505,7 +505,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t  fMaxITSChi2;                // fMaxITSChi2
   Int_t         fRun;                   // run number
   
-  ClassDef(AliFlowTrackCuts,19)
+  ClassDef(AliFlowTrackCuts,20)
 };
 
 #endif
