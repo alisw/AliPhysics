@@ -120,6 +120,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                                  { InitESDcuts(); fAliESDtrackCuts->SetClusterRequirementITS(det,req); } 
   void SetMaxChi2PerClusterTPC( Float_t a ) {fMaxChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
   void SetMinChi2PerClusterTPC( Float_t a ) {fMinChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
+  void SetMaxFracSharedTPCCluster( Float_t a ) {fMaxFracSharedTPCCluster=a;fCutFracSharedTPCCluster=kTRUE;}
   void SetMaxChi2PerClusterITS( Float_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxChi2PerClusterITS(a);}
   void SetRequireTPCRefit( Bool_t a ) {InitESDcuts(); fAliESDtrackCuts->SetRequireTPCRefit(a);}
   void SetRequireTPCStandAlone( Bool_t a) {InitESDcuts(); fAliESDtrackCuts->SetRequireTPCStandAlone(a);}
@@ -395,6 +396,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutChi2PerClusterTPC; //cut on tpc chi2
   Float_t fMaxChi2PerClusterTPC; //max chi2 tpc/cluster
   Float_t fMinChi2PerClusterTPC; //min chi2 tpc/cluster
+  Bool_t fCutFracSharedTPCCluster; //cut on fraction of shared TPC clusters?
+  Float_t fMaxFracSharedTPCCluster; //max fraction of shared TPC clusters
   Bool_t fCutNClustersTPC;       //cut on clusters?
   Int_t fNClustersTPCMax;        //max tpc ncls
   Int_t fNClustersTPCMin;        //min tpc clusters  
