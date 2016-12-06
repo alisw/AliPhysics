@@ -63,7 +63,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fEventCentrality(-1),
     fCentralityEstimator("V0M"),
     fEnergyDefinition(kDefaultEnergy),
-    fEnableSumw2(false)
+    fEnableSumw2(false),
+    fClusterTimeRange(-50e-6, 50e-6)
 {
 }
 
@@ -75,7 +76,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fEventCentrality(-1),
     fCentralityEstimator("V0M"),
     fEnergyDefinition(kDefaultEnergy),
-    fEnableSumw2(false)
+    fEnableSumw2(false),
+    fClusterTimeRange(-50e-6, 50e-6)
 {
 }
 
@@ -174,6 +176,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     //AliVCluster *clust = static_cast<AliVCluster *>(*clustIter);
     if(!clust->IsEMCAL()) continue;
     if(clust->GetIsExotic()) continue;
+    if(fClusterTimeRange.IsInRange(clust->GetTOF())) continue;
 
     // Distinguish energy definition
     switch(fEnergyDefinition){
