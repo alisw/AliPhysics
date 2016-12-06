@@ -73,6 +73,13 @@ public:
   void SetEnergyDefinition(EnergyDefinition_t edef) { fEnergyDefinition = edef; }
 
   /**
+   * Define cut on the time of the leading cell in the cluster
+   * @param[in] mintime Minimum selected time for cluster
+   * @param[in] maxtime Maximum selected time for cluster
+   */
+  void SetClusterTimeRange(double mintime, double maxtime) { fClusterTimeRange.SetLimits(mintime, maxtime); }
+
+  /**
    * Define name of the cluster container used to read EMCAL cluster information
    * from
    * @param[in] clustercontname Name of the cluster container
@@ -181,6 +188,7 @@ protected:
 
   EnergyDefinition_t                  fEnergyDefinition;          ///< Energy definition used for a given cluster
   Bool_t                              fEnableSumw2;               ///< Enable sumw2 when creating histograms
+  AliCutValueRange<double>            fClusterTimeRange;          ///< Selected range on cluster time
 
 private:
 
