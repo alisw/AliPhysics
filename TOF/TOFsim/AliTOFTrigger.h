@@ -84,7 +84,7 @@ class AliTOFTrigger : public AliTriggerDetector
 
   static AliTOFTriggerMask *GetTOFTriggerMap() {return fTOFTrigMap;}
   static void PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC=13600);
-  static void PrepareTOFMapFromDigit(TTree *treeD);
+  static void PrepareTOFMapFromDigit(TTree *treeD, Float_t startTimeHit=0, Float_t timeWidthTrigger=25);
  private:
 
   enum{
@@ -97,6 +97,8 @@ class AliTOFTrigger : public AliTriggerDetector
 
   static AliTOFTriggerMask *fTOFTrigMap; // class with the TOF trigger map
   static AliTOFTriggerMask *fTOFTrigMask; // class with the TOF trigger mask
+
+  static Int_t fgFromTriggertoDCS[72]; // dcs to trigger mapping
 
   AliTOFTrigger& operator=(const AliTOFTrigger &/*source*/); // ass. op.
   AliTOFTrigger(const AliTOFTrigger & tr);

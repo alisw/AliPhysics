@@ -57,6 +57,12 @@ extern AliRun* gAlice;
 
 AliTOFTriggerMask* AliTOFTrigger:: fTOFTrigMap=NULL;
 AliTOFTriggerMask* AliTOFTrigger:: fTOFTrigMask=NULL;
+
+Int_t AliTOFTrigger::fgFromTriggertoDCS[72] = {
+  0,1,4,5, 8, 9,12,13,16,17,20,21,24,25,28,29,32,33,36,37,40,41,44,45,48,49,52,53,56,57,60,61,64,65,68,69,
+  3,2,7,6,11,10,15,14,19,18,23,22,27,26,31,30,35,34,39,38,43,42,47,46,51,50,55,54,59,58,63,62,67,66,71,70
+}; // dcs to trigger mapping
+
 //-------------------------------------------------------------------------
 ClassImp(AliTOFTrigger)
 
@@ -398,7 +404,7 @@ void AliTOFTrigger::Trigger() {
   // DeSlots = (k+1)_Array Element - k_Array Element
   // AntiDeSlots = kNCTTM - DeSlots
   
-  if((!fSel1))// && nchonFront < 4 && nchonBack < 4)
+  if(nchonTot >= 2 && nchonTot <= 6)// && nchonFront >=2 && nchonBack <=6)
   {  
       // printf("nHitMaxipad CLASSE: %i \n",fNMaxipadOn);
       // printf("Total Number per event of Switched-On sectors : %i \n", nSectOn);
@@ -437,14 +443,12 @@ void AliTOFTrigger::Trigger() {
 			  //printf("trigger On with AntiDeSlot \n");
 		      }	
 		      
-		      if(nchonTot >= 2 && nchonTot <= 6){
-			if(DeSlots >= 15 && DeSlots <= 18){
-			  SetInput("0OMU");
-			}
-			else if(AntiDeSlots >= 15 && AntiDeSlots <= 18){
-			  SetInput("0OMU");
-			}	
-		      }		      
+		      if(DeSlots >= 15 && DeSlots <= 18){
+			SetInput("0OMU");
+		      }
+		      else if(AntiDeSlots >= 15 && AntiDeSlots <= 18){
+			SetInput("0OMU");
+		      }	
 		  }
 	      }    
 	  }
@@ -654,7 +658,7 @@ void AliTOFTrigger::PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC)
   LoadActiveMask();
 
   if(fRawReader){
-    AliTOFRawStream * tofRawStream = new AliTOFRawStream();
+   AliTOFRawStream * tofRawStream = new AliTOFRawStream();
 
     tofRawStream->SetRawReader(fRawReader);
         
@@ -704,7 +708,10 @@ void AliTOFTrigger::PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC)
 	  iChannelIndex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
 	  Int_t index[2]={iLTMindex,iChannelIndex};
 	  
-	  if(fTOFTrigMask->IsON(index[0],index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 400) fTOFTrigMap->SetON(index[0],index[1]);
+	  UInt_t indexDDL    = fgFromTriggertoDCS[index[0]];
+
+
+	  if(fTOFTrigMask->IsON(indexDDL,index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 400) fTOFTrigMap->SetON(index[0],index[1]);
 	}
 	
         tofRawDatum = 0;
@@ -722,7 +729,7 @@ void AliTOFTrigger::PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC)
 
 }
 //-----------------------------------------------------------------------------
-void AliTOFTrigger::PrepareTOFMapFromDigit(TTree *treeD) {
+void AliTOFTrigger::PrepareTOFMapFromDigit(TTree *treeD, Float_t startTimeHit, Float_t timeWidthTrigger) {
   if(!fTOFTrigMap) fTOFTrigMap = new AliTOFTriggerMask();
   LoadActiveMask();
 
@@ -753,8 +760,22 @@ void AliTOFTrigger::PrepareTOFMapFromDigit(TTree *treeD) {
     detind[3] = digit->GetPadz();
     detind[4] = digit->GetPadx();
 
+    Float_t pos[3];
+    AliTOFGeometry::GetPosPar(detind, pos);
+    Float_t timedigit = digit->GetTdcND()*AliTOFGeometry::TdcBinWidth()*1E-3; // time digit in ns
+    timedigit -= TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2])*0.0333564095198152043; // correct for minimum time-of-flight
+    if (!(timedigit>startTimeHit-0.5 && timedigit<startTimeHit+timeWidthTrigger-0.5)) continue;
+    
     Int_t indexLTM[2] = {-1,-1};
     GetLTMIndex(detind,indexLTM);
+
+    UInt_t channelCTTM = indexLTM[1]/2;
+    UInt_t indexDDL    = fgFromTriggertoDCS[indexLTM[0]];
+
+    // skip digits for channels not included in the trigger active mask
+    if (!fTOFTrigMask->IsON(indexDDL,channelCTTM)) continue;
+    if (!fTOFTrigMap->IsON(indexLTM[0],channelCTTM)) continue;
+    fTOFTrigMap->SetON(indexLTM[0],channelCTTM);
 
     if(fTOFTrigMask->IsON(indexLTM[0],indexLTM[1])) fTOFTrigMap->SetON(indexLTM[0],indexLTM[1]);
   }
@@ -1106,16 +1127,12 @@ void AliTOFTrigger::CreateCTTMMatrix() {
 
   LoadActiveMask();
 
-    Int_t fromTriggertoDCS[72] = {0,1,4,5,8,9,12,13,16,17,20,21,24,25,28,29,32,33,36,37,40,41,44,45,48,49,52,53,56,57,60,61,64,65,68,69,3,
-				  2,7,6,11,10,15,14,19,18,23,22,27,26,31,30,35,34,39,38,43,42,47,46,51,50,55,54,59,58,63,62,67,66,71,70};
+  fNMaxipadOnAll=0;
+  fNMaxipadOn=0;
 
-
-    fNMaxipadOnAll=0;
-    fNMaxipadOn=0;
-
-    for(Int_t i = 0; i<kNLTM;i++){
+  for(Int_t i = 0; i<kNLTM;i++){
 	UInt_t currentMask = fPowerMask[kNCTTMchannels]-1;
-	if(fTOFTrigMask) currentMask=fTOFTrigMask->GetTriggerMask(fromTriggertoDCS[i]);
+	if(fTOFTrigMask) currentMask=fTOFTrigMask->GetTriggerMask(fgFromTriggertoDCS[i]);
 	if(i<kNCTTM){
 	    for(Int_t j = 0; j<kNCTTMchannels;j++){
 		fCTTMmatrixFront[i][j]=fLTMmatrix[i][2*j]||fLTMmatrix[i][2*j+1];
