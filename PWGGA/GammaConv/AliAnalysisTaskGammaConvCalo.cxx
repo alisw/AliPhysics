@@ -3593,13 +3593,15 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
             Double_t tempIM = pi0cand->M();
             if( (tempIM > 0.05 && tempIM < 0.2) || (tempIM > 0.4 && tempIM < 0.6) ){
               AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
-              tESDIMMesonInvMass = pi0cand->M();
-              tESDIMMesonPt = pi0cand->Pt();
-              tESDIMClusE = cluster->E();
-              tESDIMClusterM02 = cluster->GetM02();
-              tESDIMClusterM20 = cluster->GetM20();
-              tESDIMClusterLeadCellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(cluster,fInputEvent);
-              tESDInvMassShowerShape[fiCut]->Fill();
+              if(cluster->E()>1.){
+                tESDIMMesonInvMass = pi0cand->M();
+                tESDIMMesonPt = pi0cand->Pt();
+                tESDIMClusE = cluster->E();
+                tESDIMClusterM02 = cluster->GetM02();
+                tESDIMClusterM20 = cluster->GetM20();
+                tESDIMClusterLeadCellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(cluster,fInputEvent);
+                tESDInvMassShowerShape[fiCut]->Fill();
+              }
             }
           }
 

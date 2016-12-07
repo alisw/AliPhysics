@@ -339,7 +339,10 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterEP;                                           //! cluster-track E/p
     Int_t                 fClusterLeadCellID;                                   //! cellID of leading cell in cluster
     Float_t               fTrackPt;                                             //! track Pt
-    Int_t                 fTrackPID;                                            //! track PID '0101' e,Pi,K,P
+    Int_t                 fTrackPID_e;                                          //! track PID e
+    Int_t                 fTrackPID_Pi;                                         //! track PID Pi
+    Int_t                 fTrackPID_K;                                          //! track PID K
+    Int_t                 fTrackPID_P;                                          //! track PID P
 
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
@@ -372,7 +375,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 30);
+    ClassDef(AliAnalysisTaskGammaCalo, 31);
 };
 
 #endif
