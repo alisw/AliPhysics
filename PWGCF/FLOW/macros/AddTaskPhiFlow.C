@@ -267,7 +267,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
     if(poi_filter < 9999 ) {
         if(debug) cout << "  > set POI filterbit " << poi_filter << endl;     
         cutsPOI->SetAODfilterBit(poi_filter);
-        if((poi_filter == 32) cuts->SetMinNClustersTPC(70);
+        if(poi_filter == 32) cutsPOI->SetMinNClustersTPC(70);
     }
 
     if(debug) cout << "    --> cutsPOI " << cutsPOI << endl;
