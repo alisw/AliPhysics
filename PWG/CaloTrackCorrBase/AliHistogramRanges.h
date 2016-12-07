@@ -198,6 +198,15 @@ public:
   void    SetHistoRatioRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
     fHistoRatioBins      = n ; fHistoRatioMax      = max ; fHistoRatioMin      = min ; }
 
+  // Energy difference
+  
+  Int_t   GetHistoEDiffBins()            const { return fHistoEDiffBins      ; }
+  Float_t GetHistoEDiffMin()             const { return fHistoEDiffMin       ; }
+  Float_t GetHistoEDiffMax()             const { return fHistoEDiffMax       ; }	
+  
+  void    SetHistoEDiffRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
+    fHistoEDiffBins      = n ; fHistoEDiffMax      = max ; fHistoEDiffMin      = min ; }
+  
   // Hump-Backed Plateau
   
   Int_t   GetHistoHBPBins()              const { return fHistoHBPBins      ; }
@@ -382,6 +391,9 @@ private:
   Int_t    fHistoRatioBins;                   ///< Ratio histogram number of bins.
   Float_t  fHistoRatioMax;                    ///< Ratio maximum value.
   Float_t  fHistoRatioMin;                    ///< Ratio minimum value.
+  Int_t    fHistoEDiffBins;                   ///< Energy difference histogram number of bins.
+  Float_t  fHistoEDiffMax;                    ///< Energy difference maximum value.
+  Float_t  fHistoEDiffMin;                    ///< Energy difference minimum value.
   Int_t    fHistoHBPBins;                     ///< Hump-backed plateau histogram number of bins.
   Float_t  fHistoHBPMax;                      ///< Hump-backed plateau maximum value.
   Float_t  fHistoHBPMin;                      ///< Hump-backed plateau minimum value.
@@ -429,7 +441,7 @@ private:
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliHistogramRanges,6) ;
+  ClassDef(AliHistogramRanges,7) ;
   /// \endcond
 
 } ;
