@@ -60,6 +60,7 @@ void AddTask_GammaConvFlow_PbPb2(
                                   Double_t MaxFilter            = 0.2,
                                   Bool_t isMC                   = kFALSE,
                                   Bool_t ApplydPhidRCut         = kFALSE,
+                                  Bool_t PerformExtraStudies    = kFALSE,                         // with kTRUE it performs the LTM study and dRdPhi study
                                   TString additionalTrainConfig = "0"                             // additional counter for trainconfig, always has to be last parameter
                                ) {
   
@@ -377,6 +378,7 @@ void AddTask_GammaConvFlow_PbPb2(
   if(UseMassSel==kTRUE)  task->SetMassWindow(MinMass,MaxMass);
   if(UseKappaSel==kTRUE) task->SetKappaWindow(MinKappa,MaxKappa);
 
+  task->SetPerformExtraStudies(PerformExtraStudies);
   task->SetApplydPhidRCut(ApplydPhidRCut);
   
   AliAnalysisDataContainer *flowEvent[numberOfCuts];
