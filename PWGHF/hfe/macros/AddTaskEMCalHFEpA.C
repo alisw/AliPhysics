@@ -12,7 +12,8 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
 						Bool_t isTender = kFALSE,
 						Int_t   centralityEstimator = 0,
 						Bool_t isCentralitySys 		= kFALSE,
-						Bool_t isTOFdet 		= kFALSE
+						Bool_t isTOFdet 		= kFALSE,
+						TString finname = ""
                 )
 {
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -30,7 +31,16 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //_______________________
         //Config Task
         //gROOT->LoadMacro("ConfigEMCalHFEpA.C");
-        gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C");
+        TString configFile="";
+        if( finname.EqualTo("") )
+			configFile="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C";
+        else  if(!gSystem->Exec(Form("alien_cp %s  .",finname.Data())))
+			configFile=Form("%s/ConfigEMCalHFEpA.C",gSystem->pwd()); 
+        else {
+			printf("ERROR: couldn't copy file %s/ from grid \n", finname.Data() );
+			configFile="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C";
+		} 
+        gROOT->LoadMacro(Form("%s",configFile.Data()));
         AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould, isTender, period, centralityEstimator, isCentralitySys, isTOFdet);
         
         //_______________________
