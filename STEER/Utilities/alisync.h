@@ -41,6 +41,9 @@ struct NotMatchPathSeparator
 };
 
 static std::string trimTrailingSlashes(const std::string &s) {
+  if (s == "/")
+    return s;
+
   std::string o = s;
   // Find the last slash on the right boundary of the string
   // - if found trim all the trailing slashes
@@ -48,7 +51,7 @@ static std::string trimTrailingSlashes(const std::string &s) {
   std::string::reverse_iterator lsi = std::find_if(o.rbegin(),
                                                    o.rend(),
                                                    NotMatchPathSeparator());
-  if (lsi != o.rend())
+  if (lsi != o.rbegin())
     o.erase(lsi.base());
   return o;
 }
