@@ -82,6 +82,8 @@ const Double_t AliMFTGeometry::kShiftDDGNDline=0.4; // positionning of the line 
 const Double_t AliMFTGeometry::kShiftline=0.025; // positionning of the line along the FPC side
 const Double_t AliMFTGeometry::kEpsilon=0.0001; // to see the removed volumes produced by TGeoSubtraction
 const Double_t AliMFTGeometry::kRohacell=-0.001; // to modify the thickness of the rohacell 
+const Double_t AliMFTGeometry::kShift=-0.0013; // to be checked
+
 
 const Double_t AliMFTGeometry::kGlueThickness=100.e-4; // 100 microns of SE4445 to be confirmed
 const Double_t AliMFTGeometry::kGlueEdge=300.e-4; // in case the glue is not spreaded on the whole surface of the sensor

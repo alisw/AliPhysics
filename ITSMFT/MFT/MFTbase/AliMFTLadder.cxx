@@ -84,9 +84,8 @@ TGeoVolume * AliMFTLadder::CreateVolume() {
   fMFTFlex = new AliMFTFlex(fSegmentation);         
   Double_t kFlexLength = nChips*(AliMFTGeometry::kSensorLength+AliMFTGeometry::kSensorInterspace)+AliMFTGeometry::kLadderOffsetToEnd + AliMFTGeometry::kSensorSideOffset;
   Double_t kShiftY = 2*AliMFTGeometry::kSensorTopOffset+AliMFTGeometry::kSensorHeight-AliMFTGeometry::kFlexHeight/2; // strange
-  TGeoVolumeAssembly * flexVol = fMFTFlex->MakeFlex(fSegmentation->GetNSensors(), kFlexLength);                               
-  fLadderVolume->AddNode(flexVol, 1, new TGeoTranslation(kFlexLength/2+AliMFTGeometry::kSensorSideOffset/2, kShiftY, AliMFTGeometry::kFlexThickness/2-AliMFTGeometry::kRohacell));     
-
+  TGeoVolumeAssembly * flexVol = fMFTFlex->MakeFlex(fSegmentation->GetNSensors(), kFlexLength);                                 
+  fLadderVolume->AddNode(flexVol, 1, new TGeoTranslation(kFlexLength/2+AliMFTGeometry::kSensorSideOffset/2, kShiftY, AliMFTGeometry::kFlexThickness/2-AliMFTGeometry::kGlueThickness/2));     
   // Create the CMOS Sensors
   CreateSensors();
 
@@ -165,9 +164,8 @@ void AliMFTLadder::CreateSensors() {
     TGeoCombiTrans * chipPos = chipSeg->GetTransformation();
     TGeoCombiTrans * chipPosGlue = chipSeg->GetTransformation();
     // Position of the center on the chip in the chip coordinate system
-    Float_t kShift = 0.0050; // additional shift, to check
-    Double_t pos[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., AliMFTGeometry::kSensorThickness/2. - AliMFTGeometry::kGlueThickness - AliMFTGeometry::kRohacell};
-    Double_t posglue[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., -AliMFTGeometry::kGlueThickness/2 + kShift - AliMFTGeometry::kRohacell};
+    Double_t pos[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., -AliMFTGeometry::kSensorThickness/2. - AliMFTGeometry::kGlueThickness + AliMFTGeometry::kShift - AliMFTGeometry::kRohacell};
+    Double_t posglue[3] ={AliMFTGeometry::kSensorLength/2., AliMFTGeometry::kSensorHeight/2., -AliMFTGeometry::kGlueThickness/2 + AliMFTGeometry::kShift - AliMFTGeometry::kRohacell};
     Double_t master[3];
     Double_t masterglue[3];
     chipPos->LocalToMaster(pos, master);
@@ -177,11 +175,11 @@ void AliMFTLadder::CreateSensors() {
     master[0] -= shape->GetDX();
     master[1] -= shape->GetDY();
     master[2] -= shape->GetDZ();
-
+    
     masterglue[0] -= shape->GetDX();
     masterglue[1] -= shape->GetDY();
     masterglue[2] -= shape->GetDZ();
-
+    
     AliDebug(1,Form("Adding Chip %s_%d ",namePrefix.Data(),ichip));
     fLadderVolume->AddNode(chipVol, ichip, new TGeoTranslation(master[0],master[1],master[2]));
     fLadderVolume->AddNode(glue, ichip, new TGeoTranslation(masterglue[0],masterglue[1],masterglue[2]));
