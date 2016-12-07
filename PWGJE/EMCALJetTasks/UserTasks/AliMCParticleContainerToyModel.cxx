@@ -14,7 +14,8 @@
 **************************************************************************/
 
 #include "AliMCParticleContainerToyModel.h"
-
+#include <TMath.h>
+#include <TRandom3.h>
 /// \cond CLASSIMP
 ClassImp(AliMCParticleContainerToyModel);
 /// \endcond
@@ -24,7 +25,9 @@ ClassImp(AliMCParticleContainerToyModel);
  */
 AliMCParticleContainerToyModel::AliMCParticleContainerToyModel() :
   AliMCParticleContainer(),
-  fTrackScalePt(1)
+  fTrackScalePt(1),
+  fTrackEtaWindow(0.9),
+  fRandomizeEtaPhi(0)
 
 {
 }
@@ -35,7 +38,9 @@ AliMCParticleContainerToyModel::AliMCParticleContainerToyModel() :
  */
 AliMCParticleContainerToyModel::AliMCParticleContainerToyModel(const char *name) :
   AliMCParticleContainer(name),
-  fTrackScalePt(1)
+  fTrackScalePt(1),
+  fTrackEtaWindow(0.9),
+  fRandomizeEtaPhi(0)
  
 {
 }
@@ -54,6 +59,7 @@ Bool_t AliMCParticleContainerToyModel::GetMomentumFromParticle(TLorentzVector &m
 {
   Bool_t r = AliMCParticleContainer::GetMomentumFromParticle(mom, track, mass);
   ScalePtOfLorentzVector(mom);
+  SetRandomEtaPhiOfLorentzVector(mom);
   return r;
 }
 
@@ -71,6 +77,7 @@ Bool_t AliMCParticleContainerToyModel::GetMomentum(TLorentzVector &mom, Int_t i)
 {
   Bool_t r = AliMCParticleContainer::GetMomentum(mom, i);
   ScalePtOfLorentzVector(mom);
+  SetRandomEtaPhiOfLorentzVector(mom);
   return r;
 }
 
@@ -89,6 +96,7 @@ Bool_t AliMCParticleContainerToyModel::GetAcceptMomentum(TLorentzVector &mom, In
 {
   Bool_t r = AliMCParticleContainer::GetAcceptMomentum(mom, i);
   ScalePtOfLorentzVector(mom);
+  SetRandomEtaPhiOfLorentzVector(mom);
   return r;
 }
 
@@ -106,6 +114,7 @@ Bool_t AliMCParticleContainerToyModel::GetNextMomentum(TLorentzVector &mom)
 {
   Bool_t r = AliMCParticleContainer::GetNextMomentum(mom);
   ScalePtOfLorentzVector(mom);
+  SetRandomEtaPhiOfLorentzVector(mom);
   return r;
 }
 
@@ -123,6 +132,7 @@ Bool_t AliMCParticleContainerToyModel::GetNextAcceptMomentum(TLorentzVector &mom
 {
   Bool_t r = AliMCParticleContainer::GetNextAcceptMomentum(mom);
   ScalePtOfLorentzVector(mom);
+  SetRandomEtaPhiOfLorentzVector(mom);
   return r;
 }
 
@@ -144,3 +154,29 @@ void AliMCParticleContainerToyModel::ScalePtOfLorentzVector(TLorentzVector &mom)
     mom.SetPxPyPzE(pXscale, pYscale, pZscale, pscale);
   }
 }
+/**
+ * Assigns random phi,eta to thetracks,keeping their momentum
+ * @param mom TLorentzVector object reference to be scaled.
+ */
+void AliMCParticleContainerToyModel::SetRandomEtaPhiOfLorentzVector(TLorentzVector &mom) const
+{
+  if(fRandomizeEtaPhi==1){
+    gRandom = new TRandom3(0);
+    
+    Double_t pTscale = mom.Pt();
+    Double_t etascale = 2.*fTrackEtaWindow * gRandom->Rndm() - fTrackEtaWindow;
+    Double_t phiscale = 2.* TMath::Pi() * gRandom->Rndm();
+   
+    
+    Double_t thetascale = 2.*TMath::ATan(TMath::Exp(-1.*(etascale)));
+    Double_t pXscale    = pTscale * TMath::Cos(phiscale);
+    Double_t pYscale    = pTscale * TMath::Sin(phiscale);
+    Double_t pZscale    = pTscale/TMath::Tan(thetascale);
+    Double_t pscale=TMath::Sqrt(pTscale*pTscale+pZscale*pZscale);
+    mom.SetPxPyPzE(pXscale, pYscale, pZscale, pscale);
+  }
+}
+
+
+
+
