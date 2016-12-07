@@ -27,6 +27,7 @@
 
 #include "AliEmcalPythiaInfo.h"
 #include "AliMCEvent.h"
+#include "AliPythia.h"
 
 #include "AliVTrack.h"
 #include "AliVHeader.h"
@@ -99,6 +100,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fRandom(0),
   fJetOutputMode(0),
   fPythiaExtractionMode(0),
+  fUsePYTHIABugWorkaround(0),
   fLeadingJet(0),
   fSubleadingJet(0),
   fInitialPartonMatchedJet1(0),
@@ -147,6 +149,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fRandom(0),
   fJetOutputMode(0),
   fPythiaExtractionMode(0),
+  fUsePYTHIABugWorkaround(0),
   fLeadingJet(0),
   fSubleadingJet(0),
   fInitialPartonMatchedJet1(0),
@@ -292,8 +295,14 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
         AddHistogram3D<TH3D>(Form("hEmbeddingPtCorr1030%s", appendix), "Matched jet p_{T} distributions (10-30% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
         AddHistogram3D<TH3D>(Form("hEmbeddingPtCorr3050%s", appendix), "Matched jet p_{T} distributions (30-50% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
         AddHistogram3D<TH3D>(Form("hEmbeddingPtCorr5090%s", appendix), "Matched jet p_{T} distributions (50-90% centrality)", "", 150, 0., 150., 150, 0., 150., 100, 0., maxRatio, "p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
-       }
-
+      }
+      else
+      {
+        AddHistogram2D<TH2D>(Form("hEmbeddingPtCorr010_Above20%s", appendix), "Matched jet p_{T} distributions, MC ratio > 20% (0-10% centrality)", "", 150, 0., 150., 150, 0., 150.,"p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+        AddHistogram2D<TH2D>(Form("hEmbeddingPtCorr1030_Above20%s", appendix),"Matched jet p_{T} distributions, MC ratio > 20% (10-30% centrality)","", 150, 0., 150., 150, 0., 150.,"p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+        AddHistogram2D<TH2D>(Form("hEmbeddingPtCorr3050_Above20%s", appendix),"Matched jet p_{T} distributions, MC ratio > 20% (30-50% centrality)","", 150, 0., 150., 150, 0., 150.,"p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+        AddHistogram2D<TH2D>(Form("hEmbeddingPtCorr5090_Above20%s", appendix),"Matched jet p_{T} distributions, MC ratio > 20% (50-90% centrality)","", 150, 0., 150., 150, 0., 150.,"p_{T, MC jet} (GeV/c)", "p_{T, emb} (GeV/c)", "% MC");
+      }
     }
 
     if(!fJetEmbeddingCreatePtPlotPerCut)
@@ -342,6 +351,10 @@ void AliAnalysisTaskChargedJetsHadronCF::UserCreateOutputObjects()
 void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
 
   AliAnalysisTaskEmcalJet::ExecOnce();
+
+  // Allow infinite error messages from PYTHIA (workaround)
+  if(fUsePYTHIABugWorkaround)
+    (AliPythia::Instance())->SetMSTU(22, 1000000000);
 
   // ### Add the jets as basic correlation particles to the event
   // This output object carries all accepted jets
@@ -582,28 +595,37 @@ void AliAnalysisTaskChargedJetsHadronCF::FillHistogramsJets(AliEmcalJet* jet, co
     FillHistogram(Form("hEmbeddingJetPhiEta%s", appendix.Data()), refJet->Phi(), refJet->Eta()); 
 
     // Only create 3D plots for each cut on demand
-    if((appendix == "") || fJetEmbeddingCreatePtPlotPerCut)
-    {
-      Double_t trackRatio = 0.;
-      Double_t ptRatio = 0.;
-      GetTrackMCRatios(jet, refJet, trackRatio, ptRatio);
+    Double_t trackRatio = 0.;
+    Double_t ptRatio = 0.;
+    GetTrackMCRatios(jet, refJet, trackRatio, ptRatio);
 
-      if(fCent >= 0 && fCent < 10)
-      {
+    if(fCent >= 0 && fCent < 10)
+    {
+      if((appendix == "") || fJetEmbeddingCreatePtPlotPerCut)
         FillHistogram3D(Form("hEmbeddingPtCorr010%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
-      }
-      else if (fCent >= 10 && fCent < 30)
-      {
+      if(ptRatio >= 0.2)
+        FillHistogram(Form("hEmbeddingPtCorr010_Above20%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area());
+    }
+    else if (fCent >= 10 && fCent < 30)
+    {
+      if((appendix == "") || fJetEmbeddingCreatePtPlotPerCut)
         FillHistogram3D(Form("hEmbeddingPtCorr1030%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
-      }
-      else if (fCent >= 30 && fCent < 50)
-      {
+      if(ptRatio >= 0.2)
+        FillHistogram(Form("hEmbeddingPtCorr1030_Above20%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area());
+    }
+    else if (fCent >= 30 && fCent < 50)
+    {
+      if((appendix == "") || fJetEmbeddingCreatePtPlotPerCut)
         FillHistogram3D(Form("hEmbeddingPtCorr3050%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
-      }
-      else if (fCent >= 50 && fCent < 90)
-      {
+      if(ptRatio >= 0.2)
+        FillHistogram(Form("hEmbeddingPtCorr3050_Above20%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area());
+    }
+    else if (fCent >= 50 && fCent < 90)
+    {
+      if((appendix == "") || fJetEmbeddingCreatePtPlotPerCut)
         FillHistogram3D(Form("hEmbeddingPtCorr5090%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), ptRatio);
-      }
+      if(ptRatio >= 0.2)
+        FillHistogram(Form("hEmbeddingPtCorr5090_Above20%s", appendix.Data()), refJet->Pt(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area());
     }
   }
 }
@@ -644,10 +666,6 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
   if( ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt) || ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) >= fExtractionMaxPt) )
     return;
 
-  // Discard jets statistically
-  if(fRandom->Rndm() >= fExtractionPercentage)
-    return;
-
   AliVHeader* eventIDHeader = InputEvent()->GetHeader();
   Long64_t eventID = 0;
   if(eventIDHeader)
@@ -686,6 +704,10 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
     vtxY = myVertex->GetY();
     vtxZ = myVertex->GetZ();
   }
+
+  // Discard jets statistically
+  if(fRandom->Rndm() >= fExtractionPercentage)
+    return;
 
   AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), partid, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent);
 

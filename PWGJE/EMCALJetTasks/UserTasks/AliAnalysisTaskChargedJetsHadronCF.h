@@ -133,6 +133,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   void                        ActivateJetExtraction(Double_t percentage, Double_t minPt, Double_t maxPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt; fExtractionMaxPt = maxPt;}
   void                        ActivateEventExtraction(Double_t percentage, Double_t minJetPt, Double_t maxJetPt) {fEventExtractionPercentage = percentage; fEventExtractionMinJetPt = minJetPt; fEventExtractionMaxJetPt = maxJetPt;}
+  void                        SetUsePYTHIABugWorkaround(Bool_t val) { fUsePYTHIABugWorkaround = val; }
 
  protected:
   void                        ExecOnce();
@@ -187,6 +188,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
   Int_t                       fPythiaExtractionMode;                    ///< Mode which PYTHIA-jets to extract for fJetOutputMode==6: 0: all, 1: quark-jets, 2: gluon jets
 
+  Bool_t                      fUsePYTHIABugWorkaround;                  ///< Workaround for PYTHIA bug
   // Event properties
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
   AliEmcalJet*                fSubleadingJet;                           //!<!  subleading jet (calculated event-by-event)
