@@ -47,12 +47,8 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   void SetESDtrackCutsObj(AliESDtrackCuts *esdTrackCuts) {fESDtrackCuts = esdTrackCuts;};
   
   void SetPPVsMultUtilsObj(AliPPVsMultUtils *fAliPPVsMultUtils) {fPPVsMultUtils = fAliPPVsMultUtils;};
-  
-  void SetMultiplicityRange(Float_t multiplicityMin=0, Float_t multiplicityMax=100) {
-    multMin=multiplicityMin;
-    multMax=multiplicityMax;
-  };
-  
+
+  void SetDCAxyMax(Float_t max=0.5) {DCAxyMax = max;};
   void SetDCAzMax(Float_t max=1.) {DCAzMax = max;};
 
  private:
@@ -74,12 +70,8 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
 
   TList *fList;                                   //! output container
 
-  Int_t stdPdg[18];                               //! Pdg code of e,mu,pi,K,p,d,t,He3,He4
-  
-  Float_t multMin;                                //  min. multiplicity accepted
-  Float_t multMax;                                //  max. multiplicity accepted
-  
-  Float_t DCAzMax;                                //  DCAz max 
+  Float_t DCAxyMax;                               // DCAxy max 
+  Float_t DCAzMax;                                // DCAz max 
 
   TH1F *htriggerMask[2];                          //! trigger mask
   TH1F *hzvertex;                                 //! z-vertex distribution
@@ -111,7 +103,8 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   TH3F *fNsigmaTPC[18];                           //! NsigmaTPC vs. pT
 
   TH3F *fDca[2][18];                              //! DCAxy, DCAz
-
+  TH3F *fDcawTOF[7][18];                          //!
+  
   TH2F *fNsigmaTOF[18];                           //! NsigmaTOF vs. pT
   TH2F *fBetaTOFvspt[2];                          //! beta (TOF) vs pT
   TProfile *hBetaExp[9];                          //! TOF expected beta
@@ -134,8 +127,10 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
 
   void EventSelectionMonitor();
 
-  Bool_t IsInsideMultiplicityBin(Float_t multiplicity);
-  
+  Bool_t IsInsideFullMultRange(Float_t multiplicity);
+
+  Int_t GetMultiplicityBin(Float_t multiplicity);
+
   Double_t GetRapidity(AliVTrack *track);
 
   Bool_t AcceptTrack(AliVTrack *track, Double_t &DCAxy, Double_t &DCAz);
@@ -160,7 +155,7 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   Bool_t IsTOFgoodmatching(AliVTrack *track, Int_t label, Double_t nsigmaTOF[9], Int_t kSpec, Double_t t_pt, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
   //---
   
-  ClassDef(AliAnalysisNuclMult, 7);
+  ClassDef(AliAnalysisNuclMult, 8);
 };
 
 #endif
