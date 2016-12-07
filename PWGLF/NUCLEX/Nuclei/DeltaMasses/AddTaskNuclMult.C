@@ -24,9 +24,10 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t isMC=kFALSE){
     
   AliPPVsMultUtils *fAliPPVsMultUtils = new AliPPVsMultUtils();
 
-  const Int_t Ntask = 2;
+  const Int_t Ntask = 3;
   
-  Float_t DCAzMax[Ntask] = {1.,10.};
+  Float_t DCAxyMax[Ntask] = {0.5, 0.1, 0.2};
+  Float_t DCAzMax[Ntask] = {1., 1., 1.};
 
   AliAnalysisNuclMult *task[Ntask];
   for(Int_t i=0;i<Ntask;i++) {
@@ -38,7 +39,7 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t isMC=kFALSE){
     task[i]->SetIsMC(isMC);
     task[i]->SetESDtrackCutsObj(esdTrackCuts);
     task[i]->SetPPVsMultUtilsObj(fAliPPVsMultUtils);
-    task[i]->SetMultiplicityRange(0,100);
+    task[i]->SetDCAxyMax(DCAxyMax[i]);
     task[i]->SetDCAzMax(DCAzMax[i]);
   }
   
@@ -47,12 +48,12 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t isMC=kFALSE){
   for(Int_t i=0;i<Ntask;i++) {
     //input
     Char_t name[1000];
-    snprintf(name,1000,"cchain1_out_DCAzMax=%.1f",DCAzMax[i]);
+    snprintf(name,1000,"cchain1_out_DCAxyMax=%.1f_DCAzMax=%.1f",DCAxyMax[i],DCAzMax[i]);
     cinput[i] = mgr->CreateContainer(name,TChain::Class(),AliAnalysisManager::kInputContainer);
     mgr->ConnectInput(task[i],0,mgr->GetCommonInputContainer());
     
     //output  
-    snprintf(name,1000,"out_DCAzMax=%.1f",DCAzMax[i]);
+    snprintf(name,1000,"out_DCAxyMax=%.1f_DCAzMax=%.1f",DCAxyMax[i],DCAzMax[i]);
     cOutputL[i] = mgr->CreateContainer(name,TList::Class(), AliAnalysisManager::kOutputContainer, AliAnalysisManager::GetCommonFileName());
     mgr->ConnectOutput(task[i],1,cOutputL[i]);
   }
