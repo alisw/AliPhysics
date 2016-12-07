@@ -390,7 +390,11 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     startMass                                 = 0.;
     endMass                                   = 0.8;    
   }
-    
+
+  Int_t ptBinsDefClus                         = 500;
+  Float_t startPtDefClus                      = 0;
+  Float_t endPtDefClus                        = 50;
+  
   Int_t ptBins                                = 400;
   Float_t startPt                             = 10;
   Float_t endPt                               = 50;
@@ -412,6 +416,9 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
     ptBinsLog                                 = 450;
     startPtLog                                = 10;
     endPtLog                                  = 100;
+    ptBinsDefClus                             = 1000;
+    startPtDefClus                            = 0;
+    endPtDefClus                              = 100;
   }  
   
   Int_t showerShapeBins                       = 500;
@@ -601,9 +608,9 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
       fProfileEtaShift[iCut]->Sumw2();
     }
 
-    fHistoClusGammaPt[iCut]                       = new TH1F("ClusGamma_Pt","ClusGamma_Pt",ptBins, startPt, endPt);
+    fHistoClusGammaPt[iCut]                       = new TH1F("ClusGamma_Pt","ClusGamma_Pt",ptBinsDefClus, startPtDefClus, endPtDefClus);
     fESDList[iCut]->Add(fHistoClusGammaPt[iCut]);
-    fHistoClusGammaE[iCut]                        = new TH1F("ClusGamma_E","ClusGamma_E",ptBins, startPt, endPt);
+    fHistoClusGammaE[iCut]                        = new TH1F("ClusGamma_E","ClusGamma_E",ptBinsDefClus, startPtDefClus, endPtDefClus);
     fESDList[iCut]->Add(fHistoClusGammaE[iCut]);
     fHistoClusOverlapHeadersGammaPt[iCut]         = new TH1F("ClusGammaOverlapHeaders_Pt","ClusGammaOverlapHeaders_Pt",ptBins, startPt, endPt);
     fESDList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
