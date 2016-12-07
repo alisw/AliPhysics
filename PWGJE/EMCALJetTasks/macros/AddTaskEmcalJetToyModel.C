@@ -22,6 +22,7 @@ AliEmcalJetTask* AddTaskEmcalJetToyModel(
   const Bool_t lockTask                      = kTRUE,
   const Bool_t bFillGhosts                   = kFALSE,
   const Double_t ptScale                     = 1.,
+  const Int_t doRandomize                      = 0,
   const Bool_t kOnTheFly                     =kTRUE
 )
 {  
@@ -92,11 +93,13 @@ AliEmcalJetTask* AddTaskEmcalJetToyModel(
     if(kOnTheFly==kFALSE){
    AliTrackContainerToyModel* trackCont = new AliTrackContainerToyModel(trackName);
   trackCont->SetTrackScalePt(ptScale);
+  trackCont->SetRandomizeEtaPhi(doRandomize);
   trackCont->SetParticlePtCut(minTrPt);}
 
  if(kOnTheFly==kTRUE){
   AliMCParticleContainerToyModel* trackCont = new AliMCParticleContainerToyModel(trackName);
   trackCont->SetTrackScalePt(ptScale);
+  trackCont->SetRandomizeEtaPhi(doRandomize);
   trackCont->SetParticlePtCut(minTrPt);
   }
 
@@ -111,7 +114,7 @@ AliEmcalJetTask* AddTaskEmcalJetToyModel(
     clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
 
-  TString tagStr = TString::Format("%sPtScale%04d", tag, TMath::FloorNint(ptScale*1000));
+  TString tagStr = TString::Format("%sPtScale%04dRandomize%i", tag, TMath::FloorNint(ptScale*1000), doRandomize);
 
   TString name = AliJetContainer::GenerateJetName(jetType, jetAlgo, reco, radius, trackCont, clusCont, tagStr);
 
