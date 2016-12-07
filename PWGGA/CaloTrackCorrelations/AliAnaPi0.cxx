@@ -3122,23 +3122,31 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
 
     if     ( mcIndex==2 ) // Pi0
     {
-      fhPairGeneratorsBkgMassMCPi0          [0][tag]->Fill(pt,  mass, GetEventWeight());
-      fhPairGeneratorsBkgEPrimRecoRatioMCPi0[0][tag]->Fill(pt, ratio, GetEventWeight());
-      fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [0][tag]->Fill(pt,  diff, GetEventWeight());
+      fhPairGeneratorsBkgMassMCPi0      [0][tag]->Fill(pt,  mass, GetEventWeight());
+      fhPairGeneratorsBkgMassMCPi0[genType][tag]->Fill(pt,  mass, GetEventWeight());
 
-      fhPairGeneratorsBkgMassMCPi0          [genType][tag]->Fill(pt,  mass, GetEventWeight());
-      fhPairGeneratorsBkgEPrimRecoRatioMCPi0[genType][tag]->Fill(pt, ratio, GetEventWeight());
-      fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
+      {
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[0][tag]->Fill(pt, ratio, GetEventWeight());
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [0][tag]->Fill(pt,  diff, GetEventWeight());
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[genType][tag]->Fill(pt, ratio, GetEventWeight());
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      }
     }
     else if( mcIndex==3 ) // Eta
     {
-      fhPairGeneratorsBkgMassMCEta          [0][tag]->Fill(pt,  mass, GetEventWeight());
-      fhPairGeneratorsBkgEPrimRecoRatioMCEta[0][tag]->Fill(pt, ratio, GetEventWeight());
-      fhPairGeneratorsBkgEPrimRecoDiffMCEta [0][tag]->Fill(pt,  diff, GetEventWeight());    
-      
-      fhPairGeneratorsBkgMassMCEta          [genType][tag]->Fill(pt,  mass, GetEventWeight());
-      fhPairGeneratorsBkgEPrimRecoRatioMCEta[genType][tag]->Fill(pt, ratio, GetEventWeight());
-      fhPairGeneratorsBkgEPrimRecoDiffMCEta [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      fhPairGeneratorsBkgMassMCEta      [0][tag]->Fill(pt,  mass, GetEventWeight());
+      fhPairGeneratorsBkgMassMCEta[genType][tag]->Fill(pt,  mass, GetEventWeight());
+
+      if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
+      {
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[0][tag]->Fill(pt, ratio, GetEventWeight());
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta [0][tag]->Fill(pt,  diff, GetEventWeight());    
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[genType][tag]->Fill(pt, ratio, GetEventWeight());
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      }
     }
   } // do cluster overlaps from cocktails
   
