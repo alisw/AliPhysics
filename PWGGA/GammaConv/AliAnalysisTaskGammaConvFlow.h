@@ -86,6 +86,7 @@ public:
     void                                 SetKappaWindow(Float_t MinKappa, Float_t MaxKappa) { fMinKappa = MinKappa; fMaxKappa = MaxKappa; }
     void                                 SetFilterVariable(Int_t FilterVariable, Double_t MinFilter, Double_t MaxFilter) { fFilterVariable = FilterVariable; fMinFilter = MinFilter; fMaxFilter = MaxFilter;}
     void                                 SetApplydPhidRCut(Bool_t dPhiDRCut){ fApplydPhidRCut = dPhiDRCut; }
+    void                                 SetPerformExtraStudies(Bool_t ExtraStudies){ fPerformExtraStudies = ExtraStudies; }
     
     
 protected:
@@ -212,6 +213,7 @@ protected:
   Double_t               fMaxFilter;                      //
   Bool_t                fIsMC;                            //
   Bool_t                fApplydPhidRCut;                  //
+  Bool_t                fPerformExtraStudies;             //
   AliMCEvent*                 fMCEvent;                   //
   AliStack*                   fMCStack;                   //
 
@@ -231,7 +233,7 @@ private:
 
 	AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
 	AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvFlow, 10);
+    ClassDef(AliAnalysisTaskGammaConvFlow, 11);
 };
 
 #endif
