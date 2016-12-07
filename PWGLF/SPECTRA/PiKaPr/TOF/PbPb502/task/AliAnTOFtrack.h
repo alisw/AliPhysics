@@ -170,6 +170,12 @@ public:
   /// Method to get the diffenece between the track time and the expected one in Number of sigmas
   Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo);
   
+  ///
+  /// Method to get the resolution on T0 based on the expected sigma of electrons
+  Double_t GetT0Resolution(const Double_t TOFsigma = 80) const {
+    return TMath::Sqrt(TMath::Power(fTOFExpSigma[0], 2) - TMath::Power(TOFsigma, 2) - TMath::Power(15./GetMomentum(), 2));
+  }
+  
   //T0 Methods
   
   ///
@@ -228,11 +234,19 @@ public:
     return kFALSE;
   }
   
-  //Check che cut variation
+  // Cut flags 
+  
+  ///
+  /// Method to check the standard cuts
   Bool_t PassStdCut();
+  
+  ///
+  /// Method to check all the cut variations
   Bool_t PassCut(const Int_t cut = -1);
   
-  /// 
+  // TPC PID
+  
+  ///
   /// TPC PID for electrons
   Bool_t IsTPCElectron();
   
@@ -252,7 +266,15 @@ public:
   /// Method to get the particle charge
   Bool_t IsNegative();
   
-  ClassDef(AliAnTOFtrack, 3);
+  ///
+  /// Method to get the particle theta
+  Double_t GetTheta() const { return 2.*TMath::ATan(TMath::Exp(-fEta)); }
+  
+  ///
+  /// Method to get the particle momentum
+  Double_t GetMomentum() const { return fPt/TMath::Sin(GetTheta()); }
+  
+  ClassDef(AliAnTOFtrack, 4);
 };
 
 #endif
