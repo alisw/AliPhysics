@@ -44,4 +44,6 @@ set(DATFILES
     conn_oroc.dat
    )
 
-install(FILES ${ROOTFILES} ${DATFILES} DESTINATION TPC)
+if (EXISTS TPC/AliTPCprf2dGEM.root)
+    install(FILES ${ROOTFILES} ${DATFILES} DESTINATION TPC)
+endif()

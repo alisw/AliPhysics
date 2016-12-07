@@ -24,7 +24,9 @@ add_subdirectory(COMMONITSMFTBase)
 add_subdirectory(COMMONITSMFTSim)
 add_subdirectory(COMMONITSMFTRec)
 
-install(DIRECTORY misc DESTINATION ITSMFT/COMMONITSMFT)
+if(EXISTS ITSMFT/COMMONITSMFT/misc)
+    install(DIRECTORY misc DESTINATION ITSMFT/COMMONITSMFT)
+endif()
 
 message(STATUS "COMMONITSMFT from ITSMFT enabled")
 

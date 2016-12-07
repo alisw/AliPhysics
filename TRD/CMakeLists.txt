@@ -25,9 +25,14 @@ if(DA)
 endif(DA)
 
 # Install macros
-install(DIRECTORY macros data DESTINATION TRD)
+install(DIRECTORY macros DESTINATION TRD)
+if (EXISTS TRD/data)
+    install(DIRECTORY data DESTINATION TRD)
+endif()
 
 # Install doc
-install(DIRECTORY doc DESTINATION TRD)
+if (EXISTS TRD/doc)
+    install(DIRECTORY doc DESTINATION TRD)
+endif()
 
 message(STATUS "TRD enabled")

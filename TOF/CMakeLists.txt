@@ -22,7 +22,11 @@ if(DA)
 endif(DA)
 
 # Install the data folder
-install (DIRECTORY macros data DESTINATION TOF)
+install (DIRECTORY macros DESTINATION TOF)
+if(EXISTS TOF/data)
+    install (DIRECTORY data DESTINATION TOF)
+endif()
+
 
 
 message(STATUS "TOF enabled")

@@ -41,6 +41,8 @@ set(DATFILES
     Parameters.dat
    )
 
-install(FILES ${ROOTFILES} ${DATFILES} DESTINATION PHOS)
+if(EXISTS PHOS/PCA8pa15_0.5-100.root)
+    install(FILES ${ROOTFILES} ${DATFILES} DESTINATION PHOS)
+endif()
 
 message(STATUS "PHOS enabled")

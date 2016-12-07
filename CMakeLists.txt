@@ -105,6 +105,8 @@ include(cmake/GenParFile.cmake)
 set(ALILIBSTESTED "" CACHE INTERNAL "ALILIBSTESTED" FORCE)
 include(AddLibraryTested)
 
+include(cmake/modules/MacroOptionalAddSubdirectory.cmake)
+
 # Shared library suffix
 if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
@@ -375,7 +377,7 @@ else()
   foreach(mod ${ALIROOT_MODULES})
     list(FIND EXCLUDE_MODULES "${mod}" excl)
     if (excl EQUAL -1)
-      add_subdirectory(${mod})
+      macro_optional_add_subdirectory(${mod})
     else()
       list(REMOVE_ITEM ALIROOT_MODULES ${mod})
       message(WARNING "Excluding module ${mod} as per explicit configuration")

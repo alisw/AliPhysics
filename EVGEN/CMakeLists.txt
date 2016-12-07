@@ -135,6 +135,8 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
-install(DIRECTORY dataCorrHF DESTINATION EVGEN)
+if(EXISTS EVGEN/dataCorrHF)
+    install(DIRECTORY dataCorrHF DESTINATION EVGEN)
+endif()
 
 message(STATUS "${MODULE} enabled")

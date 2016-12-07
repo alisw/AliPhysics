@@ -20,6 +20,8 @@ add_subdirectory(lhapdf5.5.1)
 # liblhapdf-5.9.1
 add_subdirectory(lhapdf-5.9.1)
 
-install(DIRECTORY PDFsets DESTINATION LHAPDF)
+if(EXISTS "LHAPDF/PDFsets")
+    install(DIRECTORY PDFsets DESTINATION LHAPDF)
+endif()
 
 message(STATUS "LHAPDF enabled. Default liblhapdf.so -> 5.5.1. liblhapdf-5.9.1.so available.")
