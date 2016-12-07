@@ -364,7 +364,15 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   Int_t   nopanbins = GetHistogramRanges()->GetHistoNOpeningAngleBins();
   Float_t opanmin   = GetHistogramRanges()->GetHistoOpeningAngleMin()  ;
   Float_t opanmax   = GetHistogramRanges()->GetHistoOpeningAngleMax()  ;
-    
+
+  Int_t   nratbins = GetHistogramRanges()->GetHistoRatioBins();
+  Float_t ratmin   = GetHistogramRanges()->GetHistoRatioMin() ;
+  Float_t ratmax   = GetHistogramRanges()->GetHistoRatioMax() ;
+
+  Int_t   ndifbins = GetHistogramRanges()->GetHistoEDiffBins();
+  Float_t difmin   = GetHistogramRanges()->GetHistoEDiffMin() ;
+  Float_t difmax   = GetHistogramRanges()->GetHistoEDiffMax() ;
+  
   // Start with pure MC kinematics histograms
   // In case other tasks just need this info like AliAnaPi0EbE
   if(IsDataMC())
@@ -1563,7 +1571,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       }
       
       fhMCPi0PtTruePtRecRat = new TH2F("hMCPi0PtTruePtRecRat","Reconstructed / generated #it{p}_{T} of true #pi^{0} cluster pairs",
-                                       nptbins,ptmin,ptmax,200,0,2) ;
+                                       nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
       fhMCPi0PtTruePtRecRat->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCPi0PtTruePtRecRat->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
       outputContainer->Add(fhMCPi0PtTruePtRecRat) ;
@@ -1571,13 +1579,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtTruePtRecRatMassCut = new TH2F("hMCPi0PtTruePtRecRatCutMassCut",
                                               Form("Reconstructed / generated #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
                                                    fPi0MassWindow[0],fPi0MassWindow[1]),
-                                              nptbins,ptmin,ptmax,200,0,2) ;
+                                              nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
       fhMCPi0PtTruePtRecRatMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCPi0PtTruePtRecRatMassCut->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
       outputContainer->Add(fhMCPi0PtTruePtRecRatMassCut) ;
       
       fhMCEtaPtTruePtRecRat = new TH2F("hMCEtaPtTruePtRecRat","Reconstructed / generated #it{p}_{T} of true #eta cluster pairs",
-                                       nptbins,ptmin,ptmax,200,0,2) ;
+                                       nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
       fhMCEtaPtTruePtRecRat->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCEtaPtTruePtRecRat->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
       outputContainer->Add(fhMCEtaPtTruePtRecRat) ;
@@ -1585,13 +1593,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaPtTruePtRecRatMassCut = new TH2F("hMCEtaPtTruePtRecRatCutMassCut",
                                               Form("Reconstructed / generated #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
                                                    fEtaMassWindow[0],fEtaMassWindow[1]),
-                                              nptbins,ptmin,ptmax,200,0,2) ;
+                                              nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
       fhMCEtaPtTruePtRecRatMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCEtaPtTruePtRecRatMassCut->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
       outputContainer->Add(fhMCEtaPtTruePtRecRatMassCut) ;
       
       fhMCPi0PtTruePtRecDif = new TH2F("hMCPi0PtTruePtRecDif","Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
-                                       nptbins,ptmin,ptmax,200,-5,5) ;
+                                       nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
       fhMCPi0PtTruePtRecDif->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCPi0PtTruePtRecDif->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
       outputContainer->Add(fhMCPi0PtTruePtRecDif) ;
@@ -1599,13 +1607,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCPi0PtTruePtRecDifMassCut = new TH2F("hMCPi0PtTruePtRecDifCutMassCut",
                                               Form("Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
                                                    fPi0MassWindow[0],fPi0MassWindow[1]),
-                                              nptbins,ptmin,ptmax,200,-5,5) ;
+                                              nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
       fhMCPi0PtTruePtRecDifMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCPi0PtTruePtRecDifMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
       outputContainer->Add(fhMCPi0PtTruePtRecDifMassCut) ;
       
       fhMCEtaPtTruePtRecDif = new TH2F("hMCEtaPtTruePtRecDif","Generated - reconstructed #it{p}_{T} of true #eta cluster pairs",
-                                       nptbins,ptmin,ptmax,200,-10,10) ;
+                                       nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
       fhMCEtaPtTruePtRecDif->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCEtaPtTruePtRecDif->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
       outputContainer->Add(fhMCEtaPtTruePtRecDif) ;
@@ -1613,7 +1621,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaPtTruePtRecDifMassCut = new TH2F("hMCEtaPtTruePtRecDifCutMassCut",
                                               Form("Generated - reconstructed #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
                                                    fEtaMassWindow[0],fEtaMassWindow[1]),
-                                              nptbins,ptmin,ptmax,200,-5,5) ;
+                                              nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
       fhMCEtaPtTruePtRecDifMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCEtaPtTruePtRecDifMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
       outputContainer->Add(fhMCEtaPtTruePtRecDifMassCut) ;
@@ -2100,7 +2108,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
                                                                            tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
                                                                       Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
                                                                            GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                                      nptbins,ptmin,ptmax,300,0,3);
+                                                                      nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]) ;
@@ -2110,7 +2118,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
                                                                            tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
                                                                       Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
                                                                            GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                                      nptbins,ptmin,ptmax,300,0,3);
+                                                                      nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
         fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]) ;
@@ -2119,7 +2127,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
                                                                           tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
                                                                      Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
                                                                           GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                                     nptbins,ptmin,ptmax,400,-20,20);
+                                                                     nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
         fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]) ;
@@ -2128,7 +2136,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
                                                                           tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
                                                                      Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
                                                                           GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                                     nptbins,ptmin,ptmax,400,-20,20);
+                                                                     nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
         fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]) ;
