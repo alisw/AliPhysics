@@ -61,6 +61,12 @@ THistManager::~THistManager(){
 }
 
 THashList* THistManager::CreateHistoGroup(const char *groupname) {
+  // At first step check whether the group already exists.
+  THashList *foundgroup = FindGroup(groupname);
+  if(foundgroup){
+    // already existing, don't create it again
+    return foundgroup;
+  }
   TString parentname = basename(groupname);
 	THashList *parentgroup = FindGroup(parentname);
 	if(!parentgroup) parentgroup = CreateHistoGroup(parentname);
