@@ -737,7 +737,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
   // if(vert) fhEventCounter->Fill(7);
 
   //cout << ((AliVAODHeader*)(InputEvent()->GetHeader()))->GetEventplane()<< "    "<<fEPV0<<endl;
-  cout << InputEvent()->GetEventplane()->GetEventplane("Q")<< "    "<<fEPV0<<endl;   
+  // cout << InputEvent()->GetEventplane()->GetEventplane("Q")<< "    "<<fEPV0<<endl;   
   if (fCentSelectOn){
     if ((fCent>fCentMax) || (fCent<fCentMin)) return 0;
   }
