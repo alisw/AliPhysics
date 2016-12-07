@@ -915,7 +915,8 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
             if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20) return; // bad vertexing 
 
             if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) > fVertexRange) return;
-            fVertexZ->Fill(fAOD->GetPrimaryVertex()->GetZ());
+            fVertex = fAOD->GetPrimaryVertex()->GetZ();
+            fVertexZ->Fill(fVertex);
 
             fMultvsCentr->Fill(multTPCn, v0Centr);
 
