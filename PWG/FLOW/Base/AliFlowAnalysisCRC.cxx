@@ -20262,18 +20262,18 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     QRe=0.; QIm=0.; Q2Re2=0.; Q2Im2=0.; QRe3=0.; QIm3=0.; QM0=0.; QM=0.; QM2=0.; QM3=0.; QM4=0.;
     
     for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
-      QRe += fRPPtDiffQRe[1][hr+1]->GetBinContent(pt+1);
-      QIm += fRPPtDiffQIm[1][hr+1]->GetBinContent(pt+1);
-      Q2Re2 += fRPPtDiffQRe[2][2*hr+3]->GetBinContent(pt+1);
-      Q2Im2 += fRPPtDiffQIm[2][2*hr+3]->GetBinContent(pt+1);
-      QRe3 += fRPPtDiffQRe[3][hr+1]->GetBinContent(pt+1);
-      QIm3 += fRPPtDiffQIm[3][hr+1]->GetBinContent(pt+1);
+      QRe += fPOIPtDiffQRe[1][hr+1]->GetBinContent(pt+1);
+      QIm += fPOIPtDiffQIm[1][hr+1]->GetBinContent(pt+1);
+      Q2Re2 += fPOIPtDiffQRe[2][2*hr+3]->GetBinContent(pt+1);
+      Q2Im2 += fPOIPtDiffQIm[2][2*hr+3]->GetBinContent(pt+1);
+      QRe3 += fPOIPtDiffQRe[3][hr+1]->GetBinContent(pt+1);
+      QIm3 += fPOIPtDiffQIm[3][hr+1]->GetBinContent(pt+1);
       
-      QM0 += fRPPtDiffMul[0][0]->GetBinContent(pt+1);
-      QM  += fRPPtDiffMul[1][0]->GetBinContent(pt+1);
-      QM2  += fRPPtDiffMul[2][0]->GetBinContent(pt+1);
-      QM3  += fRPPtDiffMul[3][0]->GetBinContent(pt+1);
-      QM4  += fRPPtDiffMul[4][0]->GetBinContent(pt+1);
+      QM0 += fPOIPtDiffMul[0][0]->GetBinContent(pt+1);
+      QM  += fPOIPtDiffMul[1][0]->GetBinContent(pt+1);
+      QM2  += fPOIPtDiffMul[2][0]->GetBinContent(pt+1);
+      QM3  += fPOIPtDiffMul[3][0]->GetBinContent(pt+1);
+      QM4  += fPOIPtDiffMul[4][0]->GetBinContent(pt+1);
     }
     
     if(fUseCRCRecenter) {
@@ -20348,14 +20348,14 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
     QARe=0.; QAIm=0.; QBRe=0.; QBIm=0.; QAM0=0.; QAM=0.; QBM0=0.; QBM=0.;
     
     for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
-      QARe += fRPPtDiffQReEG[0][1][hr+1]->GetBinContent(pt+1);
-      QAIm += fRPPtDiffQImEG[0][1][hr+1]->GetBinContent(pt+1);
-      QBRe += fRPPtDiffQReEG[1][1][hr+1]->GetBinContent(pt+1);
-      QBIm += fRPPtDiffQImEG[1][1][hr+1]->GetBinContent(pt+1);
-      QAM0 += fRPPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
-      QAM  += fRPPtDiffMulEG[0][1][0]->GetBinContent(pt+1);
-      QBM0 += fRPPtDiffMulEG[1][0][0]->GetBinContent(pt+1);
-      QBM  += fRPPtDiffMulEG[1][1][0]->GetBinContent(pt+1);
+      QARe += fPOIPtDiffQReEG[0][1][hr+1]->GetBinContent(pt+1);
+      QAIm += fPOIPtDiffQImEG[0][1][hr+1]->GetBinContent(pt+1);
+      QBRe += fPOIPtDiffQReEG[1][1][hr+1]->GetBinContent(pt+1);
+      QBIm += fPOIPtDiffQImEG[1][1][hr+1]->GetBinContent(pt+1);
+      QAM0 += fPOIPtDiffMulEG[0][0][0]->GetBinContent(pt+1);
+      QAM  += fPOIPtDiffMulEG[0][1][0]->GetBinContent(pt+1);
+      QBM0 += fPOIPtDiffMulEG[1][0][0]->GetBinContent(pt+1);
+      QBM  += fPOIPtDiffMulEG[1][1][0]->GetBinContent(pt+1);
     }
     
     if(fUseCRCRecenter) {
@@ -20551,15 +20551,15 @@ void AliFlowAnalysisCRC::CalculateFlowQCHighOrders()
     Double_t dImQ1n=0., dImQ2n=0., dImQ3n=0., dImQ4n=0., dImQ5n=0., dImQ6n=0.;
     
     for(Int_t pt=0; pt<fPtDiffNBins; pt++) {
-      dReQ1n += fRPPtDiffQRe[0][hr+1]->GetBinContent(pt+1);
-      dImQ1n += fRPPtDiffQIm[0][hr+1]->GetBinContent(pt+1);
-      dReQ2n += fRPPtDiffQRe[0][2*hr+3]->GetBinContent(pt+1);
-      dImQ2n += fRPPtDiffQIm[0][2*hr+3]->GetBinContent(pt+1);
-      dReQ3n += fRPPtDiffQRe[0][3*hr+5]->GetBinContent(pt+1);
-      dImQ3n += fRPPtDiffQIm[0][3*hr+5]->GetBinContent(pt+1);
-      dReQ4n += fRPPtDiffQRe[0][4*hr+7]->GetBinContent(pt+1);
-      dImQ4n += fRPPtDiffQIm[0][4*hr+7]->GetBinContent(pt+1);
-      dMult  += fRPPtDiffMul[0][0]->GetBinContent(pt+1);
+      dReQ1n += fPOIPtDiffQRe[0][hr+1]->GetBinContent(pt+1);
+      dImQ1n += fPOIPtDiffQIm[0][hr+1]->GetBinContent(pt+1);
+      dReQ2n += fPOIPtDiffQRe[0][2*hr+3]->GetBinContent(pt+1);
+      dImQ2n += fPOIPtDiffQIm[0][2*hr+3]->GetBinContent(pt+1);
+      dReQ3n += fPOIPtDiffQRe[0][3*hr+5]->GetBinContent(pt+1);
+      dImQ3n += fPOIPtDiffQIm[0][3*hr+5]->GetBinContent(pt+1);
+      dReQ4n += fPOIPtDiffQRe[0][4*hr+7]->GetBinContent(pt+1);
+      dImQ4n += fPOIPtDiffQIm[0][4*hr+7]->GetBinContent(pt+1);
+      dMult  += fPOIPtDiffMul[0][0]->GetBinContent(pt+1);
     }
     
     // Real parts of expressions involving various combinations of Q-vectors which appears
