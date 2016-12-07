@@ -368,8 +368,10 @@ class AliReducedVarManager : public TObject {
     kTrackLength,       // track length
     kChi2TPCConstrainedVsGlobal,
     kMassUsedForTracking,
-    kITSncls,           
-    kITSchi2,           
+    kITSncls,
+    kNclsSFracITS,
+    kITSchi2,
+    kITSnclsShared,
     kITSlayerHit,       
     kITSsignal,         
     kITSnSig,
@@ -382,7 +384,8 @@ class AliReducedVarManager : public TObject {
     kTPCnclsF,  
     kTPCnclsShared,
     kTPCnclsRatio,       // TPCncls / TPCnclsF          
-    kTPCnclsRatio2,      // TPCncls / TPCCrossedRows    
+    kTPCnclsRatio2,      // TPCncls / TPCCrossedRows
+    kTPCnclsRatio3,      // TPCCrossedRows/TPCnclsF
     kTPCsignal,         
     kTPCsignalN,
     kTPCnSig,  
