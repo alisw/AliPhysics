@@ -1499,6 +1499,10 @@ private:
   TProfile *fCRCVZCosnC[fCRCMaxnRun][fCRCnHar]; //! VZA_cosn
   TProfile *fCRCVZSinnC[fCRCMaxnRun][fCRCnHar]; //! VZA_sinn
   AliFlowVector fTPCQnRecenter[fCRCnHar];
+  const static Int_t fkNRbRFlowHar = 2;
+  const static Int_t fkNRbRIntFlow = 2;
+  TProfile *fCRCFlowQCRbRIntFlow[fCRCMaxnRun][fkNRbRFlowHar][fkNRbRIntFlow]; //! VZA_cosn
+  TProfile *fCRCFlowQCRbRMulFlow[fCRCMaxnRun][fkNRbRFlowHar][fkNRbRIntFlow]; //! VZA_cosn
   
   // temp
   TProfile *fTPCQHist[fCRCnHar][2];  //! Run-by-run TPCQvecHist
@@ -1820,7 +1824,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 36);
+  ClassDef(AliFlowAnalysisCRC, 37);
   
 };
 
