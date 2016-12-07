@@ -87,7 +87,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   KsigTOF(0),
   KsigITS(0),
   fESigITSMin(-100.),
-  fESigITSMax(1.),
+  fESigITSMax(3.),
   fESigTPCMin(-3.),
   fESigTPCMax(3.),
   fESigTOFMin(-3),
@@ -131,7 +131,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   HasSPDfirstHit(0), 
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
-  loCuts(kTRUE)      
+  loCuts(kTRUE),
+  enh(0)      
 {
 
 }
@@ -162,7 +163,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   KsigTOF(0),
   KsigITS(0),
   fESigITSMin(-100.),
-  fESigITSMax(1.),
+  fESigITSMax(3.),
   fESigTPCMin(-3.),
   fESigTPCMax(3.),
   fESigTOFMin(-3),
@@ -206,7 +207,8 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   HasSPDfirstHit(0), 
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
-  loCuts(kTRUE)          
+  loCuts(kTRUE),
+  enh(0)          
 {
 
   if(loCuts){
@@ -321,7 +323,8 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
     fTree->Branch("Pdg", &pdg);
     fTree->Branch("Pdg_Mother", &pdgmother);
     fTree->Branch("Mother_label", &motherlabel);
-    fTree->Branch("Has_Mother", &hasmother); 
+    fTree->Branch("Has_Mother", &hasmother);
+    fTree->Branch("IsEnh", &enh);
   
     fTree->Branch("MCpt", &MCpt);
     fTree->Branch("MCeta", &MCeta);
@@ -474,6 +477,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   hasmother.clear();
   motherlabel.clear();
   charge.clear();
+  enh.clear();
   
   // Loop over tracks in event
   AliGenCocktailEventHeader* coHeader;
@@ -523,8 +527,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           }
 
           if (Rej){
-
-            continue;
+//            continue;
           }
         }
 
@@ -566,7 +569,10 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         AliMCParticle* mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(esdTrack->GetLabel())));
 
         pdg.push_back( mcTrack->PdgCode());
-
+        if(Rej) enh.push_back(1);
+        else enh.push_back(0);
+        
+        
         MCpt.push_back(mcTrack->Pt());
         MCeta.push_back(mcTrack->Eta());
         MCphi.push_back(mcTrack->Phi());
