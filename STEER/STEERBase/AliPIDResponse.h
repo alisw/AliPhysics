@@ -379,7 +379,7 @@ private:
   EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
   EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
 
-  ClassDef(AliPIDResponse, 18);  //PID response handling
+  ClassDef(AliPIDResponse, 19);  //PID response handling
 };
 
 #endif

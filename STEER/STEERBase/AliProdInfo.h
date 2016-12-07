@@ -67,7 +67,7 @@ private:
   TString fRecoPassName;          // Full name of the reconstruction pass, deduced from the output file structure
 
   //
-  ClassDef(AliProdInfo, 3);     // Combined PID using priors
+  ClassDef(AliProdInfo, 4);     // Combined PID using priors
 };
 
 #endif
