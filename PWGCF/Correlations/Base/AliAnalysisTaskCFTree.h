@@ -13,6 +13,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAODITSsaTrackCuts.h"
 #include "AliCFTreeMapping.h"
+#include "AliEventCuts.h"
 class TList;
 class TH1I;
 class TH1F;
@@ -143,6 +144,8 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   Int_t fNchV0Cmc;            //  tree var: Nch in the V0C acceptance - generated MC
   Int_t fNchCL1mc;            //  tree var: Nch in the CL1 acceptance - generated MC
   // Event cuts
+  AliEventCuts fEventCuts;    // Event cuts
+  Bool_t fEventCutsPassed;    // Event cuts passed
   UInt_t fClassBit;           // class selection mask (see cxx for datails)
   UInt_t fSelectBit;          // event selection bit
   Float_t fZVertexCut;        // Z-vertex cut
@@ -173,7 +176,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   TClonesArray* fDecayArray;
   TPythia6Decayer* fDecayer;
 
-  ClassDef(AliAnalysisTaskCFTree,8);
+  ClassDef(AliAnalysisTaskCFTree,9);
 };
 #endif
 
