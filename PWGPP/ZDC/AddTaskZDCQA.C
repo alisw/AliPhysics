@@ -36,20 +36,20 @@ AliAnalysisTaskSE* AddTaskZDCQA()
 
    // Configure analysis
    //===========================================================================
-   AliAnalysisTaskSE *taskZDC;
+   AliAnalysisTaskSE *task;
    if(((beamType.CompareTo("pp"))==0) || ((beamType.CompareTo("p-p"))==0)
     ||((beamType.CompareTo("PP"))==0) || ((beamType.CompareTo("P-P"))==0)){
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQApp.C");
-      taskZDC = AddTaskZDCQApp();
+      task = AddTaskZDCQApp();
    }
    else if(((beamType.CompareTo("p-A"))==0) || ((beamType.CompareTo("A-p"))==0)
      ||((beamType.CompareTo("P-A"))==0) || ((beamType.CompareTo("A-P"))==0)){
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQApPb.C");
-      taskZDC = AddTaskZDCQAPbPb();
+      task = AddTaskZDCQAPbPb();
    }
    else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQAPbPb.C");
-      taskZDC = AddTaskZDCQApPb();
+      task = AddTaskZDCQApPb();
    }
    mgr->AddTask(task);
 
