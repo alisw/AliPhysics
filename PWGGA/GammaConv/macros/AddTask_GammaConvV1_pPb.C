@@ -1200,7 +1200,24 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     cuts.AddCut("80052113", "00200009217000008260404000", "0162101500000000");  //  kEMC7
     cuts.AddCut("80083113", "00200009217000008260404000", "0162101500000000");  //  kEMCEG1 based on INT7
     cuts.AddCut("80085113", "00200009217000008260404000", "0162101500000000");  //  kEMCEG2 based on INT7
-  } else {
+  } else if (trainConfig == 199) {   //Stephan weights
+    cuts.AddCut("80000113", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 200) {
+    cuts.AddCut("80000123", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 201) {
+    cuts.AddCut("80000113", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 202) {
+    cuts.AddCut("80000123", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 203) {
+    cuts.AddCut("80000113", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 204) {
+    cuts.AddCut("80000123", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } 
+    
+   
+  
+  
+  else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
@@ -1255,7 +1272,8 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17||
         trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 ||
         trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ||
-        trainConfig == 181 || trainConfig == 183 || trainConfig == 185 || trainConfig == 187 || trainConfig == 189 || trainConfig == 191 || trainConfig == 193 || trainConfig == 195 || trainConfig == 197 || trainConfig == 198){
+        trainConfig == 181 || trainConfig == 183 || trainConfig == 185 || trainConfig == 187 || trainConfig == 189 || trainConfig == 191 || trainConfig == 193 || trainConfig == 195 || trainConfig == 197 || trainConfig == 198 ||
+	trainConfig == 199 || trainConfig == 201 || trainConfig == 203 ){
       if (doWeighting){
         if (generatorName.CompareTo("DPMJET")==0){
           analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -1269,7 +1287,8 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18||
         trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || 
         trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152 || trainConfig == 174 || trainConfig == 176 || trainConfig == 178 || trainConfig == 180 ||
-        trainConfig == 182 || trainConfig == 184 || trainConfig == 186 || trainConfig == 188 || trainConfig == 190 || trainConfig == 192 || trainConfig == 194 || trainConfig == 196){
+        trainConfig == 182 || trainConfig == 184 || trainConfig == 186 || trainConfig == 188 || trainConfig == 190 || trainConfig == 192 || trainConfig == 194 || trainConfig == 196 ||
+        trainConfig == 200 || trainConfig == 202 || trainConfig == 204){
       if (doWeighting){
         analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
                                       "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
