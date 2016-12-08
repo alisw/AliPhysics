@@ -357,10 +357,7 @@ else()
       endmacro()
     else()
       # finally we fallback to the deprecated internal Vc
-      message(WARNING "**********************************************************")
-      message(WARNING "You are using the internal Vc installation;")
-      message(WARNING "SUPPORT FOR THIS IS DEPRECATED AND IT WILL BE REMOVED SOON")
-      message(WARNING "**********************************************************")
+      message(WARNING "You are using the internal Vc installation: support for this is deprecated and it will be removed soon")
       # Include Vc own cmake
       include(Vc/Vc.cmake)
       if(NOT ROOT_HASVC)
