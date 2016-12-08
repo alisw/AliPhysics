@@ -574,7 +574,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
         return kFALSE;
       }  
     }
-  }else if(fRemovePileUp){
+  } else if(fRemovePileUp){
     if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
       fEventQuality = 6;
@@ -3175,14 +3175,14 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   
-  if( isHeavyIon == 0 && GetIsFromPileup()){
-    if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){      
+  if( isHeavyIon != 2 && GetIsFromPileup()){
+    if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }
     if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
-  }  
+  }
   if(isHeavyIon == 2 && GetIsFromPileup()){
     if(fUtils->IsPileUpEvent(InputEvent) ){
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
@@ -3263,7 +3263,7 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *InputEvent
       if (!isfinite(GetValueForWeight)) weightCentrality = 1.;
       if (!isfinite(weightCentrality)) weightCentrality = 1.;
   }
-  
+
   return weightCentrality;
 }
 
