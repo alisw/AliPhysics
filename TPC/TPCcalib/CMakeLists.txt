@@ -99,8 +99,10 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 # Calib maps
-if(EXISTS TPC/TPCcalib/maps)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/maps)
     install(DIRECTORY maps DESTINATION TPC/${MODULE})
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "maps is missing")
 endif()
 
 install(FILES ${HDRS} DESTINATION include)

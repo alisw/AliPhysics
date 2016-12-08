@@ -41,8 +41,10 @@ set(DATFILES
     Parameters.dat
    )
 
-if(EXISTS PHOS/PCA8pa15_0.5-100.root)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/PCA8pa15_0.5-100.root)
     install(FILES ${ROOTFILES} ${DATFILES} DESTINATION PHOS)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "PCA8pa15_0.5-100.root is missing")
 endif()
 
 message(STATUS "PHOS enabled")

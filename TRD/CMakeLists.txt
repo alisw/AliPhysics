@@ -26,13 +26,15 @@ endif(DA)
 
 # Install macros
 install(DIRECTORY macros DESTINATION TRD)
-if (EXISTS TRD/data)
+if(EXISTS data)
     install(DIRECTORY data DESTINATION TRD)
 endif()
 
 # Install doc
-if (EXISTS TRD/doc)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc)
     install(DIRECTORY doc DESTINATION TRD)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "doc is missing")
 endif()
 
 message(STATUS "TRD enabled")

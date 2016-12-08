@@ -22,8 +22,8 @@ if(DA)
 endif(DA)
 
 install(DIRECTORY macros DESTINATION ZDC)
-if (EXISTS ZDC/GlauberMCDist.root)
-    install(FILES 
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/GlauberMCDist.root)
+    install(FILES
       GlauberMCDist.root
       GlauberMCHistos.root
       PMTGainsdata.txt
@@ -41,6 +41,8 @@ if (EXISTS ZDC/GlauberMCDist.root)
       light22620552209s
       light22620552210s
       DESTINATION ZDC)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "GlauberMCDist.root is missing")
 endif()
 
 message(STATUS "ZDC enabled")

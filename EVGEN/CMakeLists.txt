@@ -135,8 +135,10 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
-if(EXISTS EVGEN/dataCorrHF)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dataCorrHF)
     install(DIRECTORY dataCorrHF DESTINATION EVGEN)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "dataCorrHF is missing")
 endif()
 
 message(STATUS "${MODULE} enabled")
