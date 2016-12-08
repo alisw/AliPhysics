@@ -207,6 +207,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Float_t                 tESDIMClusterM02;                   //! M02 of cluster for tree
     Float_t                 tESDIMClusterM20;                   //! M20 of cluster for tree
     Int_t                   tESDIMClusterLeadCellID;            //! leading cellID of cluster
+    Int_t                   tESDIMClusterClassification;        //! classification of cluster in MC
+    Float_t                 tESDIMClusMatchedTrackPt;           //! pT of closest matched track
+    Float_t                 tESDIMClusTrackDeltaEta;            //! matching residual closest track <-> cluster
+    Float_t                 tESDIMClusTrackDeltaPhi;            //! matching residual closest track <-> cluster
+    Float_t                 tESDIMClusterIsoSumClusterEt;       //! sum of Et of clusters within R<0.2
+    Float_t                 tESDIMClusterIsoSumTrackEt;         //! sum of Et of tracks within R<0.2
+    map<Long_t,Int_t>       tESDmapIsClusterAcceptedWithoutTrackMatch; //! needed for filling of tree -> compute cluster isolation
 
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -442,7 +449,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 36);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 37);
 };
 
 #endif

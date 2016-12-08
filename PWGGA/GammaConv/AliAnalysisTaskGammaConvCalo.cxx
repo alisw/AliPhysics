@@ -121,6 +121,13 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   tESDIMClusterM02(0),
   tESDIMClusterM20(0),
   tESDIMClusterLeadCellID(0),
+  tESDIMClusterClassification(0),
+  tESDIMClusMatchedTrackPt(0),
+  tESDIMClusTrackDeltaEta(0),
+  tESDIMClusTrackDeltaPhi(0),
+  tESDIMClusterIsoSumClusterEt(0),
+  tESDIMClusterIsoSumTrackEt(0),
+  tESDmapIsClusterAcceptedWithoutTrackMatch(),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
@@ -401,6 +408,13 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   tESDIMClusterM02(0),
   tESDIMClusterM20(0),
   tESDIMClusterLeadCellID(0),
+  tESDIMClusterClassification(0),
+  tESDIMClusMatchedTrackPt(0),
+  tESDIMClusTrackDeltaEta(0),
+  tESDIMClusTrackDeltaPhi(0),
+  tESDIMClusterIsoSumClusterEt(0),
+  tESDIMClusterIsoSumTrackEt(0),
+  tESDmapIsClusterAcceptedWithoutTrackMatch(),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fSparseMotherInvMassPtZM(NULL),
@@ -1078,6 +1092,12 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       tESDInvMassShowerShape[iCut]->Branch("ClusM02",&tESDIMClusterM02,"tESDIMClusterM02/F");
       tESDInvMassShowerShape[iCut]->Branch("ClusM20",&tESDIMClusterM20,"tESDIMClusterM20/F");
       tESDInvMassShowerShape[iCut]->Branch("ClusLeadCellID",&tESDIMClusterLeadCellID,"tESDIMClusterLeadCellID/I");
+      if(fIsMC>0) tESDInvMassShowerShape[iCut]->Branch("ClusClassification",&tESDIMClusterClassification,"tESDIMClusterClassification/I");
+      tESDInvMassShowerShape[iCut]->Branch("ClusMatchedTrackPt",&tESDIMClusMatchedTrackPt,"tESDIMClusMatchedTrackPt/F");
+      tESDInvMassShowerShape[iCut]->Branch("ClusTrackDeltaEta",&tESDIMClusTrackDeltaEta,"tESDIMClusTrackDeltaEta/F");
+      tESDInvMassShowerShape[iCut]->Branch("ClusTrackDeltaPhi",&tESDIMClusTrackDeltaPhi,"tESDIMClusTrackDeltaPhi/F");
+      tESDInvMassShowerShape[iCut]->Branch("ClusIsoSumClusterEt",&tESDIMClusterIsoSumClusterEt,"tESDIMClusterIsoSumClusterEt/F");
+      tESDInvMassShowerShape[iCut]->Branch("ClusIsoSumTrackEt",&tESDIMClusterIsoSumTrackEt,"tESDIMClusterIsoSumTrackEt/F");
       fInvMassShowerShape[iCut]->Add(tESDInvMassShowerShape[iCut]);
     }
 
@@ -2364,6 +2384,8 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
       if(!fDoLightOutput) FillMultipleCountHistoAndClear(fMapMultipleCountTrueClusterGammas,fHistoMultipleCountTrueClusterGamma[iCut]);
     }
 
+    if(fDoInvMassShowerShapeTree) tESDmapIsClusterAcceptedWithoutTrackMatch.clear();
+
     fGammaCandidates->Clear(); // delete this cuts good gammas
     fClusterCandidates->Clear(); // delete cluster candidates
   }
@@ -2403,7 +2425,11 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
 
     if (!clus) continue;
-    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){ delete clus; continue;}
+    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
+      if(fDoInvMassShowerShapeTree && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch() ) tESDmapIsClusterAcceptedWithoutTrackMatch[i] = 1;
+      delete clus;
+      continue;
+    }
 
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
@@ -2415,6 +2441,8 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     // convert to AODConversionPhoton
     AliAODConversionPhoton *PhotonCandidate = new AliAODConversionPhoton(tmpvec);
     if(!PhotonCandidate){ delete clus; delete tmpvec; continue;}
+
+    if(fDoInvMassShowerShapeTree ) tESDmapIsClusterAcceptedWithoutTrackMatch[i] = 1;
     
     // Flag Photon as CaloPhoton
     PhotonCandidate->SetIsCaloPhoton();
@@ -3600,6 +3628,73 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                 tESDIMClusterM02 = cluster->GetM02();
                 tESDIMClusterM20 = cluster->GetM20();
                 tESDIMClusterLeadCellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(cluster,fInputEvent);
+
+                Double_t vertex[3] = {0};
+                InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
+                //determine isolation in cluster Et
+                Float_t clsPos[3] = {0.,0.,0.};
+                Float_t secondClsPos[3] = {0.,0.,0.};
+                TLorentzVector clusterVector;
+                cluster->GetPosition(clsPos);
+                TVector3 clsPosVec(clsPos);
+
+                Float_t sum_Et = 0;
+                Int_t nclus = fInputEvent->GetNumberOfCaloClusters();
+                for(Int_t j=0; j<nclus; j++){
+                  if( tESDmapIsClusterAcceptedWithoutTrackMatch[j] != 1 ) continue;
+
+                  AliVCluster* secondClus = NULL;
+                  if(fInputEvent->IsA()==AliESDEvent::Class()) secondClus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(j));
+                  else if(fInputEvent->IsA()==AliAODEvent::Class()) secondClus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));
+                  if(!secondClus) continue;
+                  if(secondClus->GetID() == cluster->GetID()) continue;
+                  secondClus->GetPosition(secondClsPos);
+                  TVector3 secondClsPosVec(secondClsPos);
+
+                  Float_t dPhi = clsPosVec.DeltaPhi(secondClsPosVec);
+                  Float_t dEta = clsPosVec.Eta()-secondClsPosVec.Eta();
+                  if(TMath::Sqrt(dEta*dEta + dPhi*dPhi) < 0.2){
+                    secondClus->GetMomentum(clusterVector,vertex);
+                    sum_Et += clusterVector.Et();
+                  }
+                  delete secondClus;
+                }
+                tESDIMClusterIsoSumClusterEt = sum_Et;
+
+                //get cluster classification
+                Bool_t isESD = kTRUE;
+                if(fInputEvent->IsA()==AliAODEvent::Class()) isESD = kFALSE;
+                if(fIsMC > 0) tESDIMClusterClassification = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClassifyClusterForTMEffi(cluster,fInputEvent,fMCEvent,isESD);
+
+                //determine dEta/dPhi of cluster to closest track
+                Int_t labelTrackMatch = -1;
+                AliVTrack* currTrack = 0x0;
+                if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClosestMatchedTrackToCluster(fInputEvent,cluster,labelTrackMatch)){
+                  currTrack  = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(labelTrackMatch));
+                  if(currTrack){
+                    Float_t tempEta = -99999;
+                    Float_t tempPhi = -99999;
+                    ((AliCaloTrackMatcher*)((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloTrackMatcherInstance())->GetTrackClusterMatchingResidual(currTrack->GetID(),cluster->GetID(),tempEta,tempPhi);
+                    tESDIMClusMatchedTrackPt = currTrack->Pt();
+                    tESDIMClusTrackDeltaEta = tempEta;
+                    tESDIMClusTrackDeltaPhi = tempPhi;
+                  }
+                }else{
+                  tESDIMClusMatchedTrackPt = 0.;
+                  tESDIMClusTrackDeltaEta = -9999.;
+                  tESDIMClusTrackDeltaPhi = -9999.;
+                }
+
+                //determine isolation in track Et
+                tESDIMClusterIsoSumTrackEt = ((AliCaloTrackMatcher*)((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloTrackMatcherInstance())->SumTrackEtAroundCluster(fInputEvent,cluster->GetID(),0.2);
+                //remove Et from matched track
+                if(currTrack){
+                  TLorentzVector vecTrack;
+                  vecTrack.SetPxPyPzE(currTrack->Px(),currTrack->Py(),currTrack->Pz(),currTrack->E());
+                  tESDIMClusterIsoSumTrackEt -= vecTrack.Et();
+                }
+
                 tESDInvMassShowerShape[fiCut]->Fill();
               }
             }

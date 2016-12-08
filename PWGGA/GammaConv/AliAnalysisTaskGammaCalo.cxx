@@ -2049,7 +2049,10 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       maxClusterEnergy  = clus->E();
       maxClusterID      = (Int_t) i;
     }  
-    if(fProduceTreeEOverP || fProduceCellIDPlots) mapIsClusterAccepted[i] = 1;
+    if(fProduceTreeEOverP || fProduceCellIDPlots){
+      mapIsClusterAccepted[i] = 1;
+      mapIsClusterAcceptedWithoutTrackMatch[i] = 1;
+    }
 
     // Flag Photon as CaloPhoton
     PhotonCandidate->SetIsCaloPhoton();
@@ -2269,7 +2272,6 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
       //determine isolation in track Et
       fClusterIsoSumTrackEt = ((AliCaloTrackMatcher*)((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloTrackMatcherInstance())->SumTrackEtAroundCluster(fInputEvent,clus->GetID(),0.2);
-
       //remove Et from matched track
       TLorentzVector vecTrack;
       vecTrack.SetPxPyPzE(currTrack->Px(),currTrack->Py(),currTrack->Pz(),currTrack->E());
