@@ -32,7 +32,10 @@ public:
     
     Bool_t GetElecIDsparse() {return fFlagSparse;};
     void SetElecIDsparse(Bool_t flagelecIDsparse){fFlagSparse = flagelecIDsparse;};
-    
+ 
+    Bool_t GetElecSys() {return fSys;};
+    void SetElecSys(Bool_t esys){fSys = esys;};
+   
     Bool_t GetTenderSwitch() {return fUseTender;};
     void SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
     
@@ -47,8 +50,12 @@ public:
     void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
 
+    void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
+    void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
+
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
-    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
+    //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
+    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight);
     void CalInvmassHF(Int_t itrack, AliVTrack *track, Double_t DCAhf);
     void ElectronAway(Int_t itrack, AliVTrack *track);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
@@ -75,6 +82,7 @@ private:
     AliCFManager 	   	*fCFM;                  //!Correction Framework Manager
     
     Bool_t      fFlagSparse;// switch to THnspare
+    Bool_t      fSys;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
     
     Bool_t	 fEMCEG1;//EMcal Threshold EG1
@@ -99,7 +107,9 @@ private:
     
     Int_t fcentMim; // mim. centrality
     Int_t fcentMax; // max. centrality
-    
+    Double_t fInvmassCut;  
+    Double_t fptAssocut;  
+   
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
     Int_t NembMCeta; // # of process in MC (no GEANT process)
@@ -143,7 +153,11 @@ private:
     TH2F        *fM20EovP;//!M20 vs E/p
     TH2F        *fM02EovP;//!M20 vs E/p
     TH2F        *fInvmassULS;//!Invmass of ULS
+    TH2F        *fInvmassULSpi0;//!Invmass of ULS
+    TH2F        *fInvmassULSeta;//!Invmass of ULS
     TH2F        *fInvmassLS;//!Invmass of LS
+    TH2F        *fInvmassLSpi0;//!Invmass of LS
+    TH2F        *fInvmassLSeta;//!Invmass of LS
     TH2F        *fInvmassHfULS;//!Invmass of ULS
     TH2F        *fInvmassHfLS;//!Invmass of LS
     TH1F        *fMCcheckMother;
