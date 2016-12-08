@@ -76,7 +76,7 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     void                   FillPionFromV2(const TLorentzVector& p1, const TLorentzVector& p2);
     Bool_t                 PassPi0SSCut(const AliVCluster *c);
     void                   FillPionFromV1(const TLorentzVector& p1, AliVCluster* c);
-    void                   FillPionFromV1(const TLorentzVector& p1, AliVCluster* c, double mass);
+    void                   FillPionFromSplitV1(const TLorentzVector& p1);
     Bool_t                 IsInPi0SplitAsymmetryRange(Float_t energy, Float_t asy,  Int_t nlm) const;
     void                   GetMom(TLorentzVector& p, const AliVCluster* c, Double_t* vertex);      
 
@@ -104,10 +104,12 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Int_t                  fRunNum;
     Int_t                  fInterRunNum;
     Double_t               fVzCut;
+    Int_t                  fVzBin;
     Double_t               fCentMin;
     Double_t               fCentMax;
     TString                fCentDetector;
     Double_t               fCentrality;
+    Int_t                  fCentBin;
     Bool_t                 fFlattenSemiCent;
 
     Double_t               fNCellCut;
@@ -121,6 +123,8 @@ class AliAnalysisTaskPi0V2 : public AliAnalysisTaskSE {
     Int_t                  fNLMCutMax;
     Bool_t                 fApplySSCut;
     Bool_t                 fSplitV1Cluster;
+    Int_t                  fBufferIndex[10][2];
+    TLorentzVector         fBufferSplitV1[10][2][10];
 
     Double_t               fEPTPC;
     Double_t               fEPTPCReso;

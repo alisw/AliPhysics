@@ -346,7 +346,6 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
     Double_t phi = c->Phi();
     Double_t M02 = c->GetM02();
     Double_t N = c->GetNCells();
-    Double_t M = c->M();
 
     Double_t dphiV0  = TVector2::Phi_0_2pi(phi-fEPV0R); if(dphiV0 >TMath::Pi()) {dphiV0 -=TMath::Pi();}
     Double_t dphiV0A = TVector2::Phi_0_2pi(phi-fEPV0A); if(dphiV0A>TMath::Pi()) {dphiV0A-=TMath::Pi();}
