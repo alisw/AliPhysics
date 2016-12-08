@@ -23,6 +23,8 @@
 
 #include "AliAnalysisTaskEmcalTriggerBase.h"
 #include "AliAnalysisUtils.h"
+#include "AliAODEvent.h"
+#include "AliEmcalAnalysisFactory.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerMapping.h"
@@ -46,6 +48,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
+  fNameClusterContainer(""),
   fRequireAnalysisUtils(kTRUE),
   fVertexCut(-10., 10.),
   fNameDownscaleOADB(""),
@@ -73,6 +76,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fHistos(nullptr),
   fTriggerStringFromPatches(kFALSE),
   fSelectedTriggers(),
+  fNameClusterContainer(""),
   fRequireAnalysisUtils(kTRUE),
   fVertexCut(-10., 10.),
   fNameDownscaleOADB(""),
@@ -212,7 +216,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   // offline selection is applied in addition to the online selection.
   if(fTriggerPatchInfo && fTriggerSelection){
     for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++)
-      emcalTriggers[itrg] &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg), fTriggerPatchInfo);
+      emcalTriggers[itrg] &= fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg), fInputEvent);
   }
   if(isMinBias) fSelectedTriggers.push_back("MB");
   if(emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]){
@@ -267,6 +271,10 @@ void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
 
   if(!fLocalInitialized){
     return;
+  }
+
+  if(!fTriggerSelection->GetNameClusterContainer().Length()){
+    fTriggerSelection->SetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   }
 
   // Handle OADB container with downscaling factors

@@ -18,12 +18,14 @@
 
 #include <TClonesArray.h>
 #include <TH2.h>
+#include <TLorentzVector.h>
 #include <TRandom.h>
 
 #include "AliEMCALTriggerConstants.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliLog.h"
+#include "AliVEvent.h"
 
 /// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliEmcalTriggerOfflineSelection)
@@ -37,7 +39,8 @@ const TString AliEmcalTriggerOfflineSelection::fgkTriggerNames[AliEmcalTriggerOf
 
 AliEmcalTriggerOfflineSelection::AliEmcalTriggerOfflineSelection():
     TObject(),
-    fEnergyDefinition(kFEEEnergy)
+    fEnergyDefinition(kFEEEnergy),
+    fNameClusterContainer()
 {
   for(int itrg = 0; itrg < kTrgn; itrg++) fOfflineEnergyThreshold[itrg] = 100000.;  // unimplemented triggers get very high threshold assinged, so that the result is automatically false
   memset(fAcceptanceMaps, 0, sizeof(TH2 *) * kTrgn);
@@ -49,9 +52,16 @@ AliEmcalTriggerOfflineSelection::~AliEmcalTriggerOfflineSelection(){
   }
 }
 
-Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
+Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgcls, const AliVEvent * const data) const {
   if(fOfflineEnergyThreshold[trgcls] < 0) return true;
   AliDebugStream(1) << "Applying offline threshold " << fOfflineEnergyThreshold[trgcls] << " for trigger class " << GetTriggerName(trgcls) << std::endl;
+  if(UseClusters()){
+    return ApplyClusterTrigger(trgcls, data);
+  }
+  return ApplyPatchTrigger(trgcls, static_cast<TClonesArray *>(data->FindListObject("EmcalTriggers")));
+}
+
+bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
   bool isSingleShower = IsSingleShower(trgcls), isDCAL = IsDCAL(trgcls);
   int nfound = 0;
   AliEMCALTriggerPatchInfo *patch = NULL;
@@ -65,13 +75,12 @@ Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgc
     } else {
       if(!patch->IsJetLowSimple()) continue;
     }
-    double energy;
-    switch(fEnergyDefinition){
-    case kFEEEnergy: energy = patch->GetPatchE(); break;
-    case kFEETransverseEnergy: energy = patch->GetPatchET(); break;
-    case kFEEADC: energy = patch->GetADCOfflineAmp(); break;
-    case kFEETransverseADC: energy = patch->GetPatchET() / EMCALTrigger::kEMCL1ADCtoGeV ; break;
-    };
+    double energy(0);
+    // No switch as only cases for patches are handled in this class
+    if(fEnergyDefinition == kFEEEnergy) energy = patch->GetPatchE();
+    else if(fEnergyDefinition == kFEETransverseEnergy) energy = patch->GetPatchET();
+    else if(fEnergyDefinition == kFEEADC) energy = patch->GetADCOfflineAmp();
+    else if(fEnergyDefinition == kFEETransverseADC) energy = patch->GetPatchET() / EMCALTrigger::kEMCL1ADCtoGeV;
     if(energy > fOfflineEnergyThreshold[trgcls]){
       AliDebugStream(2) << GetTriggerName(trgcls) << " patch above threshold (" << patch->GetPatchE() << " | " << fOfflineEnergyThreshold[trgcls] << ")" <<  std::endl;
       if(fAcceptanceMaps[trgcls]){
@@ -101,6 +110,25 @@ Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgc
   return false;
 }
 
+bool AliEmcalTriggerOfflineSelection::ApplyClusterTrigger(EmcalTriggerClass trgcls, const AliVEvent * const ev) const {
+  int ntrigger = 0;
+  TClonesArray *clusters = static_cast<TClonesArray *>(ev->FindListObject(fNameClusterContainer));
+  double vertex[3]; ev->GetPrimaryVertex()->GetXYZ(vertex);
+  for(auto o : *clusters){
+    AliVCluster *c = dynamic_cast<AliVCluster *>(o);
+    if(!c->IsEMCAL()) continue;
+    if(c->GetTOF() < -50e-9 || c->GetTOF() > 50e-9) continue;
+    double energy = c->GetNonLinCorrEnergy();
+    if(fEnergyDefinition == kClusterTransverseEnergy) {
+      TLorentzVector vec;
+      c->GetMomentum(vec, vertex);
+      energy = vec.Et();
+    }
+    if(energy > fOfflineEnergyThreshold[trgcls]) ntrigger++;
+  }
+  return ntrigger > 0;
+}
+
 Bool_t AliEmcalTriggerOfflineSelection::IsSingleShower(EmcalTriggerClass cls){
  return ((cls == kTrgEG1) || (cls == kTrgEG2) || (cls == kTrgEL0) || (cls == kTrgDG1) || (cls == kTrgDG2) || (cls == kTrgDL0));
 
@@ -108,6 +136,14 @@ Bool_t AliEmcalTriggerOfflineSelection::IsSingleShower(EmcalTriggerClass cls){
 
 Bool_t AliEmcalTriggerOfflineSelection::IsDCAL(EmcalTriggerClass cls){
   return ((cls == kTrgDL0) || (cls == kTrgDG1) || (cls == kTrgDG2) || (cls == kTrgDJ1) || (cls == kTrgDJ2));
+}
+
+Bool_t AliEmcalTriggerOfflineSelection::UseClusters() const {
+  return fEnergyDefinition == kClusterEnergy || fEnergyDefinition == kClusterTransverseEnergy;
+}
+
+Bool_t AliEmcalTriggerOfflineSelection::UsePatches() const {
+  return fEnergyDefinition == kFEEEnergy || fEnergyDefinition == kFEETransverseEnergy || fEnergyDefinition == kFEEADC || fEnergyDefinition == kFEETransverseADC;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

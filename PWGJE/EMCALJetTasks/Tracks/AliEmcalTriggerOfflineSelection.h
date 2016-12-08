@@ -8,6 +8,7 @@
 
 class TClonesArray;
 class TH2;
+class AliVEvent;
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -71,7 +72,9 @@ public:
      kFEEEnergy,                ///< FEE energy
      kFEETransverseEnergy,      ///< FEE transverse energy
      kFEEADC,                   ///< FEE energy converted to L1 ADC
-     kFEETransverseADC          ///< FEE transverse converted to L1 transverse ADC
+     kFEETransverseADC,         ///< FEE transverse converted to L1 transverse ADC
+     kClusterEnergy,            ///< Cluster energy
+     kClusterTransverseEnergy   ///< Cluster transverse energy
   };
 
   /**
@@ -108,6 +111,12 @@ public:
   void SetAcceptanceMap(EmcalTriggerClass trgcls, const TH2 *accmap) { fAcceptanceMaps[trgcls] = accmap; }
 
   /**
+   * Define name of the cluster container (for cluster trigger)
+   * @param[in] clustercont Name of the cluster container
+   */
+  void SetClusterContainer(const TString &clustercont) { fNameClusterContainer = clustercont; }
+
+  /**
    * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
    * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
    * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker.
@@ -122,7 +131,7 @@ public:
    * @param[in] triggerpatches Array of trigger patches
    * @return True if at least on patch above threshold is found or no cut is applied
    */
-  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
+  Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const AliVEvent * const data) const;
 
   /**
    * Get the offline trigger threshold (on energy) for a given trigger class.
@@ -130,6 +139,12 @@ public:
    * @return Threshold for the given trigger class (0 if not set)
    */
   Double_t GetThresholdForTrigger(EmcalTriggerClass trgcls) const {return fOfflineEnergyThreshold[trgcls]; }
+
+  /**
+   * Get the name of the cluster container
+   * @return Name of the cluster container
+   */
+  const TString &GetNameClusterContainer() const  { return fNameClusterContainer; }
 
   /**
    * Checks if the trigger class is a single shower patch trigger class
@@ -152,11 +167,22 @@ public:
    */
   static const TString &GetTriggerName(EmcalTriggerClass cls) { return fgkTriggerNames[cls]; }
 
+
 protected:
+
+  bool ApplyPatchTrigger(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
+
+  bool ApplyClusterTrigger(EmcalTriggerClass trgcls, const AliVEvent * const triggerpatches) const;
+
+  bool UseClusters() const;
+
+  bool UsePatches() const;
+
   static const TString        fgkTriggerNames[kTrgn];                     ///< Names of the various trigger classes
   Double_t                    fOfflineEnergyThreshold[kTrgn];             ///< Thresholds applied on offline energy
   const TH2                   *fAcceptanceMaps[kTrgn];                    //!<! Online acceptance distribution
   EmcalEnergyDefinition_t     fEnergyDefinition;                          ///< Define type of energy to be use for the patch selection
+  TString                     fNameClusterContainer;                      ///< Name of the cluster container
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerOfflineSelection, 1);
