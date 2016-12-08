@@ -60,6 +60,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
+  ,fApplyZS(kFALSE)
+  ,fZScut(0.)  
   ,fUseLGForTime(kTRUE)
   ,fAverageDigitsTime(kFALSE)
   ,fPHOSCalibData(0x0)
@@ -88,6 +90,8 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
+  ,fApplyZS(kFALSE)
+  ,fZScut(0.)  
   ,fUseLGForTime(kTRUE)
   ,fAverageDigitsTime(kFALSE)
   ,fPHOSCalibData(0x0)
@@ -393,14 +397,19 @@ void AliPHOSTenderSupply::ProcessEvent()
     AliESDCaloCells * cells = esd->GetPHOSCells() ;
     
     //Make copy of phos Energy and add noise
-    if(fIsMC && fAddNoiseMC){
+    if(fApplyZS || (fIsMC && fAddNoiseMC)){
       Short_t ncell= cells->GetNumberOfCells() ;
       Short_t cellNumber;
       Double_t amplitude=0., time=0., efrac=0.;
       Int_t mclabel;
       for(Short_t pos=0; pos<ncell; pos++){
 	 cells->GetCell(pos, cellNumber, amplitude, time, mclabel, efrac) ;
-	 amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+         if(fIsMC && fAddNoiseMC){
+            amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+         }
+         //Apply ZeroSuppression if necessary
+         if(fApplyZS && amplitude<fZScut)
+             amplitude=1.e-6;
 	 Bool_t isHG=cells->GetHighGain(pos) ;
          cells->SetCell(pos, cellNumber, amplitude, time,  mclabel,  efrac, isHG);
       }      
@@ -495,25 +504,52 @@ void AliPHOSTenderSupply::ProcessEvent()
     
   }
   else{//AOD
-    Int_t multClust=aod->GetNumberOfCaloClusters();
+    TClonesArray * clusters = aod->GetCaloClusters() ;
     AliAODCaloCells * cells = aod->GetPHOSCells() ;
+    ProcessAODEvent(clusters,cells, vertex) ;
+    //If there is an embedding
+    TClonesArray * clustersEmb = (TClonesArray*)aod->FindListObject("EmbeddedCaloClusters") ;
+    AliAODCaloCells * cellsEmb = (AliAODCaloCells *)aod->FindListObject("EmbeddedPHOScells") ;
+    if(clustersEmb && cellsEmb){
+      ProcessAODEvent(clustersEmb,cellsEmb,vertex) ;
+    }
+  }
+
+}
+
+//___________________________________________________________________________________________________
+void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCells * cells, TVector3 &vertex){
+    
+    const Int_t phosCluSelection =  AliVCluster::kPHOSNeutral ;  
+    //For re-calibration
+    const Double_t logWeight=4.5 ;  
+    
+    //For tracks
+    AliAODEvent * aod = static_cast<AliAODEvent*>(fTask->InputEvent()) ;
+
+    
+    Int_t multClust=clusters->GetEntriesFast();
     //Add noise
-    if(fIsMC && fAddNoiseMC){
+    if(fApplyZS || (fIsMC && fAddNoiseMC)){
       Short_t ncell= cells->GetNumberOfCells() ;
       Short_t cellNumber;
       Double_t amplitude=0., time=0., efrac=0.;
       Int_t mclabel;
       for(Short_t pos=0; pos<ncell; pos++){
 	 cells->GetCell(pos, cellNumber, amplitude, time, mclabel, efrac) ;
-	 amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+         if(fIsMC && fAddNoiseMC){
+            amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+         }
+         //Apply ZeroSuppression if necessary
+         if(fApplyZS && amplitude<fZScut)
+             amplitude=1.e-6;
 	 Bool_t isHG=cells->GetHighGain(pos) ;
          cells->SetCell(pos, cellNumber, amplitude, time,  mclabel,  efrac, isHG);
       }      
     }
   
     for (Int_t i=0; i<multClust; i++) {
-      AliAODCaloCluster *clu = aod->GetCaloCluster(i);    
-//      if ( !clu->IsPHOS()) continue;
+      AliAODCaloCluster *clu = static_cast<AliAODCaloCluster*>(clusters->At(i));    
       if (clu->GetType()!=phosCluSelection) continue;
       
       Float_t  positionOld[3];
@@ -599,8 +635,6 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetMCEnergyFraction(ecross) ;      
     }
     
-  }
-
 }
 //___________________________________________________________________________________________________
 Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
