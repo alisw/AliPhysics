@@ -278,11 +278,16 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fClusterM20(0),
   fClusterEP(0),
   fClusterLeadCellID(0),
+  fClusterClassification(0),
+  fDeltaEta(0),
+  fDeltaPhi(0),
   fTrackPt(0),
   fTrackPID_e(0),
   fTrackPID_Pi(0),
   fTrackPID_K(0),
   fTrackPID_P(0),
+  fClusterIsoSumClusterEt(0),
+  fClusterIsoSumTrackEt(0),
 //  fHistoTruePi0NonLinearity(NULL),
 //  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
@@ -528,11 +533,16 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fClusterM20(0),
   fClusterEP(0),
   fClusterLeadCellID(0),
+  fClusterClassification(0),
+  fDeltaEta(0),
+  fDeltaPhi(0),
   fTrackPt(0),
   fTrackPID_e(0),
   fTrackPID_Pi(0),
   fTrackPID_K(0),
   fTrackPID_P(0),
+  fClusterIsoSumClusterEt(0),
+  fClusterIsoSumTrackEt(0),
 //  fHistoTruePi0NonLinearity(NULL),
 //  fHistoTrueEtaNonLinearity(NULL),
   fEventPlaneAngle(-100),
@@ -993,11 +1003,16 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tClusterEOverP[iCut]->Branch("ClusM20",&fClusterM20,"fClusterM20/F");
         tClusterEOverP[iCut]->Branch("ClusEP",&fClusterEP,"fClusterEP/F");
         tClusterEOverP[iCut]->Branch("ClusLeadCellID",&fClusterLeadCellID,"fClusterLeadCellID/I");
+        if(fIsMC > 0) tClusterEOverP[iCut]->Branch("ClusClassification",&fClusterClassification,"fClusterClassification/I");
+        tClusterEOverP[iCut]->Branch("ClusTrackDeltaEta",&fDeltaEta,"fDeltaEta/F");
+        tClusterEOverP[iCut]->Branch("ClusTrackDeltaPhi",&fDeltaPhi,"fDeltaPhi/F");
         tClusterEOverP[iCut]->Branch("TrackPt",&fTrackPt,"fTrackPt/F");
         tClusterEOverP[iCut]->Branch("TrackPID_e",&fTrackPID_e,"fTrackPID_e/I");
         tClusterEOverP[iCut]->Branch("TrackPID_Pi",&fTrackPID_Pi,"fTrackPID_Pi/I");
         tClusterEOverP[iCut]->Branch("TrackPID_K",&fTrackPID_K,"fTrackPID_K/I");
         tClusterEOverP[iCut]->Branch("TrackPID_P",&fTrackPID_P,"fTrackPID_P/I");
+        tClusterEOverP[iCut]->Branch("ClusIsoSumClusEt",&fClusterIsoSumClusterEt,"fClusterIsoSumClusterEt/F");
+        tClusterEOverP[iCut]->Branch("ClusIsoSumTrackEt",&fClusterIsoSumTrackEt,"fClusterIsoSumTrackEt/F");
         fClusterTreeList[iCut]->Add(tClusterEOverP[iCut]);
       }
     }
@@ -2091,19 +2106,18 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   
   if(fProduceCellIDPlots){
     for(Long_t i = 0; i < nclus; i++){
+      if( mapIsClusterAccepted[i] != 1 ) continue;
+
       AliVCluster* clus = NULL;
       if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
       else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
-
       if(!clus) continue;
-      if( mapIsClusterAccepted[i] != 1 ) { delete clus; continue;}
 
       Int_t cellID = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent);
       fHistCellIDvsClusterEnergy[fiCut]->Fill(clus->E(),cellID);
       if (maxClusterID == i && maxClusterID > -1 ) fHistCellIDvsClusterEnergyMax[fiCut]->Fill(maxClusterEnergy,cellID);
       delete clus;
     }
-    mapIsClusterAccepted.clear();
   }
 
   if(fProduceTreeEOverP){
@@ -2138,12 +2152,12 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     }
 
     for(Long_t i = 0; i < nclus; i++){
+      if( mapIsClusterAcceptedWithoutTrackMatch[i] != 1 ) continue;
+
       AliVCluster* clus = NULL;
       if(fInputEvent->IsA()==AliESDEvent::Class()) clus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i));
       else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
-
       if(!clus) continue;
-      if( mapIsClusterAcceptedWithoutTrackMatch[i] != 1 ){ delete clus; continue;}
 
       fClusterE = clus->E();
       fClusterM02 = clus->GetM02();
@@ -2217,11 +2231,60 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         fTrackPID_P = temp*10;
       }else fTrackPID_P = 99;
 
+      Float_t tempEta = -99999;
+      Float_t tempPhi = -99999;
+      ((AliCaloTrackMatcher*)((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloTrackMatcherInstance())->GetTrackClusterMatchingResidual(currTrack->GetID(),clus->GetID(),tempEta,tempPhi);
+      fDeltaEta = tempEta;
+      fDeltaPhi = tempPhi;
+
+      //determine isolation in cluster Et
+      Float_t clsPos[3] = {0.,0.,0.};
+      Float_t secondClsPos[3] = {0.,0.,0.};
+      TLorentzVector clusterVector;
+
+      clus->GetPosition(clsPos);
+      TVector3 clsPosVec(clsPos);
+
+      Float_t sum_Et = 0;
+      for(Int_t j=0; j<nclus; j++){
+        if( i == j ) continue;
+        if( mapIsClusterAcceptedWithoutTrackMatch[j] != 1 ) continue;
+
+        AliVCluster* secondClus = NULL;
+        if(fInputEvent->IsA()==AliESDEvent::Class()) secondClus = new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(j));
+        else if(fInputEvent->IsA()==AliAODEvent::Class()) secondClus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(j));
+        if(!secondClus) continue;
+        secondClus->GetPosition(secondClsPos);
+        TVector3 secondClsPosVec(secondClsPos);
+
+        Float_t dPhi = clsPosVec.DeltaPhi(secondClsPosVec);
+        Float_t dEta = clsPosVec.Eta()-secondClsPosVec.Eta();
+        if(TMath::Sqrt(dEta*dEta + dPhi*dPhi) < 0.2){
+          secondClus->GetMomentum(clusterVector,vertex);
+          sum_Et += clusterVector.Et();
+        }
+        delete secondClus;
+      }
+      fClusterIsoSumClusterEt = sum_Et;
+
+      //determine isolation in track Et
+      fClusterIsoSumTrackEt = ((AliCaloTrackMatcher*)((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloTrackMatcherInstance())->SumTrackEtAroundCluster(fInputEvent,clus->GetID(),0.2);
+
+      //remove Et from matched track
+      TLorentzVector vecTrack;
+      vecTrack.SetPxPyPzE(currTrack->Px(),currTrack->Py(),currTrack->Pz(),currTrack->E());
+      fClusterIsoSumTrackEt -= vecTrack.Et();
+
+      //get cluster classification
+      if(fIsMC > 0) fClusterClassification = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClassifyClusterForTMEffi(clus,fInputEvent,fMCEvent,isESD);
+
       tClusterEOverP[fiCut]->Fill();
       delete clus;
     }
     mapIsClusterAcceptedWithoutTrackMatch.clear();
   }
+
+  if(fProduceCellIDPlots || fProduceTreeEOverP) mapIsClusterAccepted.clear();
   return;
 }
 
