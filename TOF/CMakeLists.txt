@@ -22,9 +22,11 @@ if(DA)
 endif(DA)
 
 # Install the data folder
-install (DIRECTORY macros DESTINATION TOF)
-if(EXISTS TOF/data)
+install(DIRECTORY macros DESTINATION TOF)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
     install (DIRECTORY data DESTINATION TOF)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "data is missing")
 endif()
 
 

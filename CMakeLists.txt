@@ -332,11 +332,39 @@ else()
   add_subdirectory(RAW)
   add_subdirectory(ANALYSIS)
 
-  # Include Vc own cmake
-  include(Vc/Vc.cmake)
-  if(NOT ROOT_HASVC)
-    add_subdirectory(Vc)
-  endif()
+  # Include Vc ...
+  # try to find an external Vc
+  find_package(Vc 1.0)
+  if(Vc_FOUND)
+    message(STATUS "External Vc => 1.0 FOUND")
+    # define a convenience macro
+    macro(ALICE_UseVc)
+      include_directories(SYSTEM "${Vc_INCLUDE_DIR}")
+      add_definitions(${Vc_DEFINITIONS})
+      string(REPLACE ";" " " TMP_CMAKE_CXX_VC_FLAGS "${Vc_COMPILE_FLAGS} ${Vc_ARCHITECTURE_FLAGS}")
+      set(CMAKE_CXX_FLAGS "${TMPCMAKE_CXX_VC_FLAGS} ${CMAKE_CXX_FLAGS}")
+    endmacro()
+  else()
+    message(STATUS "External Vc => 1.0 NOT FOUND; looking for Vc 0.7 ...")
+    # we could try to see if find_packagge(Vc 0.7 IS OK)
+    find_package(Vc 0.7)
+    if (Vc_FOUND)
+      message(STATUS "External Vc => 0.7 FOUND")
+      # put here the macros suitable for Vc version 0.7
+      macro(ALICE_UseVc)
+       include_directories(SYSTEM "${Vc_INCLUDE_DIR}")
+       add_definitions(${Vc_DEFINITIONS})
+      endmacro()
+    else()
+      # finally we fallback to the deprecated internal Vc
+      message(WARNING "You are using the internal Vc installation: support for this is deprecated and it will be removed soon")
+      # Include Vc own cmake
+      include(Vc/Vc.cmake)
+      if(NOT ROOT_HASVC)
+        add_subdirectory(Vc)
+      endif()
+    endif(Vc_FOUND)
+  endif(Vc_FOUND)
 
   # AliRoot common macros
   add_subdirectory(macros)

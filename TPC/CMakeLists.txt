@@ -32,7 +32,7 @@ install(DIRECTORY mapping DESTINATION TPC)
 install(DIRECTORY macros DESTINATION TPC)
 
 # Install root & dat files
-set(ROOTFILES 
+set(ROOTFILES
     AliTPCprf2dGEM.root
     AliTPCprf2d.root
     CovMatrixDB_PbPb6000_B0.4T.root
@@ -44,6 +44,8 @@ set(DATFILES
     conn_oroc.dat
    )
 
-if (EXISTS TPC/AliTPCprf2dGEM.root)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/AliTPCprf2dGEM.root)
     install(FILES ${ROOTFILES} ${DATFILES} DESTINATION TPC)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "AliTPCprf2dGEM.root is missing")
 endif()

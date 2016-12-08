@@ -28,8 +28,10 @@ endif(DA)
 # Install the macros, docs
 install(DIRECTORY macros DESTINATION EMCAL)
 install(DIRECTORY mapping DESTINATION EMCAL)
-if(EXISTS EMCAL/doc)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc)
     install(DIRECTORY doc DESTINATION EMCAL)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "doc is missing")
 endif()
 
 message(STATUS "EMCAL enabled")

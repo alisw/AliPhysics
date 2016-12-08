@@ -20,9 +20,10 @@ add_subdirectory(ITSUpgradeSim)
 
 # Macros
 install(DIRECTORY macros FT1 FT2 itsuTestBench DESTINATION ITSMFT/ITS)
-
-if(EXISTS ITSMFT/ITS/misc)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/misc)
     install(DIRECTORY misc DESTINATION ITSMFT/ITS)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "misc is missing")
 endif()
 
 message(STATUS "ITS UPGRADE from ITSMFT enabled")

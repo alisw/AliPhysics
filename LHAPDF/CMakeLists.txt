@@ -20,8 +20,10 @@ add_subdirectory(lhapdf5.5.1)
 # liblhapdf-5.9.1
 add_subdirectory(lhapdf-5.9.1)
 
-if(EXISTS "LHAPDF/PDFsets")
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/PDFsets)
     install(DIRECTORY PDFsets DESTINATION LHAPDF)
+elseif(FATAL_IF_MISSING)
+    message(FATAL_ERROR "PDFsets is missing")
 endif()
 
 message(STATUS "LHAPDF enabled. Default liblhapdf.so -> 5.5.1. liblhapdf-5.9.1.so available.")
