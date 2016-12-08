@@ -606,6 +606,8 @@ public:
     kNaccItsPureEsd16Corr,   //
     kRefMult,                // reference multiplicity (only in AODs) should be Ntrk w/o double counts
     kRefMultTPConly,         // TPC only Reference Multiplicty (AliESDtrackCuts::GetReferenceMultiplicity(&esd, kTRUE))
+    kRefTPCovNaccTrcklts10,   // relative difference between TPC ref multiplicity and SPD multiplicity (NaccTrcklts10) used for LHC15o event cuts
+    kRefTPCdiffNaccTrcklts10, // Absolute difference
 
     kNch,                    // MC true number of charged particles in |eta|<1.6
     kNch05,                  // MC true number of charged particles in |eta|<0.5
@@ -2632,7 +2634,8 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
 
   values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
-
+  values[AliDielectronVarManager::kRefTPCdiffNaccTrcklts10] = values[AliDielectronVarManager::kRefMultTPConly] - values[AliDielectronVarManager::kNaccTrcklts10];
+  values[AliDielectronVarManager::kRefTPCovNaccTrcklts10] = (values[AliDielectronVarManager::kNaccTrcklts10] > 0. ? (values[AliDielectronVarManager::kRefMultTPConly] - values[AliDielectronVarManager::kNaccTrcklts10]) / values[AliDielectronVarManager::kNaccTrcklts10] : 0.);
   ///////////////////////////////////////////
   //////////// NANO AODs ////////////////////
   ///////////////////////////////////////////
