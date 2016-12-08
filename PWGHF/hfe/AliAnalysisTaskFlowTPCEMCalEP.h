@@ -70,6 +70,9 @@ public:
     void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};
     void SetITSnCut (Int_t ITSncut) {fITSncut = ITSncut;};
     void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
+    void SetSigmaITScut(Double_t SigmaITScut) {fSigmaITScut = SigmaITScut;};
+    void SetSigmaTOFcut(Double_t SigmaTOFcut) {fSigmaTOFcut = SigmaTOFcut;};
+    void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0, Bool_t IsPassedSScuts);
@@ -106,6 +109,9 @@ private:
     Bool_t                fAssITSrefitCut;	// ITS refit for associated electron
     Bool_t                fUseNewEP;          // Use new EP framework
     Bool_t                fUseTender;          // Use tender
+    Double_t              fSigmaITScut;
+    Double_t              fSigmaTOFcut;
+    Double_t              fSigmaTPCcut;
     
     // AliESDEvent        	*fESD;	            	 //! ESD object
     AliAODEvent           *fAOD;                  //! AOD object
