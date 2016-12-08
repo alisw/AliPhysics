@@ -291,6 +291,13 @@ protected:
   bool SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass trigger) const;
 
   /**
+   * Define name of the cluster container used to read EMCAL cluster information
+   * from
+   * @param[in] clustercontname Name of the cluster container
+   */
+  void SetClusterContainer(TString clustercontname) { fNameClusterContainer = clustercontname; }
+
+  /**
    * Checks whether online trigger thresholds are initialized. All trigger
    * classes are required to be set for this.
    * @return True if thresholds are initialized
@@ -328,6 +335,7 @@ protected:
   AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
   Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   std::vector<TString>            fSelectedTriggers;          //!<! Triggers selected for given event
+  TString                         fNameClusterContainer;      ///< Name of the cluster container in the event
 
   Bool_t                          fRequireAnalysisUtils;      ///< Switch whether to require event selection in AliAnalysisUtils
   AliCutValueRange<double>        fVertexCut;                 ///< Cut on the z-position of the primary vertex

@@ -170,15 +170,15 @@ bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
   if((isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fEventTriggers.push_back("MB");
   // In simulations triggered events are a subset of min. bias events
   if(fTriggerPatchInfo && fTriggerSelection){
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatchInfo))
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fInputEvent))
       fEventTriggers.push_back("EMC7"); // triggerstring.Contains("EMC7"),
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatchInfo))
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fInputEvent))
       fEventTriggers.push_back("EJ1"); // triggerstring.Contains("EJ1"),
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatchInfo))
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fInputEvent))
       fEventTriggers.push_back("EJ2"); // triggerstring.Contains("EJ2"),
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatchInfo))
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fInputEvent))
       fEventTriggers.push_back("EG1"); // triggerstring.Contains("EG1"),
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatchInfo))
+    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fInputEvent))
       fEventTriggers.push_back("EG2"); // triggerstring.Contains("EG2");
   }
   if(!fEventTriggers.size()){
@@ -213,6 +213,10 @@ void AliAnalysisTaskChargedParticlesRefMC::ExecOnce(){
   if(!fLocalInitialized) {
     AliErrorStream() << GetName() << ": Failed initializing AliAnalysisTaskEmcal" << std::endl;
     return;
+  }
+
+  if(!fTriggerSelection->GetNameClusterContainer().Length()){
+    fTriggerSelection->SetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   }
 
   // Load acceptance OADB
