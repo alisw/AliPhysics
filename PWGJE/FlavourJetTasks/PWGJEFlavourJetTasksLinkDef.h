@@ -26,6 +26,7 @@
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfo+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonJetInfo+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonInfoSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliD0InfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDStarInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;

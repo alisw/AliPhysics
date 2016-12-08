@@ -222,7 +222,7 @@ void AliAnalysisTaskUpcFilter::UserCreateOutputObjects()
   fCounter = new TH1I("fCounter", "fCounter", 100, 1, 101);
   fHistList->Add(fCounter);
 
-  fTriggerCounter = new TH2I("fTriggerCounter", "fTriggerCounter", 106000, 154000, 260000, fgkNtrg+1, 0, fgkNtrg+1);
+  fTriggerCounter = new TH2I("fTriggerCounter", "fTriggerCounter", 126000, 154000, 280000, fgkNtrg+1, 0, fgkNtrg+1);
   fHistList->Add(fTriggerCounter);
 
   fMuonCounter = new TH1I("fMuonCounter", "fMuonCounter", 4, 1, 5);
@@ -288,7 +288,7 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
 
   trgClasses[ 8]= trigger.Contains("CMUP1-B"); // PbPb FW  !0VBA & 0VBC & 0MSL
 
-  trgClasses[ 9]= trigger.Contains("CTRUE-B-NOPF-ALLNOTRD"); // p-Pb control trigger
+  trgClasses[ 9]= trigger.Contains("CTRUE-B"); // p-Pb control trigger
 
   trgClasses[10] = trigger.Contains("CCUP2-B");      // !0VBA & !0VBC & 0SH1 & 0OM2
   trgClasses[11] = trigger.Contains("CCUP4-B");      // !0VBA & !0VBC & 0SH1 & 0OMU
@@ -310,7 +310,22 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   trgClasses[24] = trigger.Contains("CTEST60-B");   // !0VBA & !0VBC & !0UBA & !0UBC & 0OM2
   trgClasses[25] = trigger.Contains("CTEST61-B");   // !0VBA & !0VBC & !0UBA & !0UBC & 0OMU
   
-  trgClasses[26] = trigger.Contains("CMUP14-B");   //Michal, 0MSL & !0VBA & !0UBA
+  trgClasses[26] = trigger.Contains("CMUP14-B");   // 0MSL & !0VBA & !0UBA
+  trgClasses[27] = trigger.Contains("CMUP15-B");   // *0VBA *0UBA *0VC5 0SMB *0SH2 0MSL
+  trgClasses[28] = trigger.Contains("CMUP16-B");   // 0MSL *0VBA *0UBA *0UGC *0VGA
+  trgClasses[29] = trigger.Contains("CMUP17-B");   // *0VBA *0UBA *0VC5 0SMB *0SH2 0MSL *0UGC *0VGA
+  trgClasses[30] = trigger.Contains("CMUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
+  trgClasses[31] = trigger.Contains("CMUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MSL 0SMB
+  trgClasses[32] = trigger.Contains("CMUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MUL
+  
+  trgClasses[33] = trigger.Contains("CCUP14-B");   // *0VBA *0UBA *0VC5 0OMU 0STG
+  trgClasses[34] = trigger.Contains("CCUP15-B");   // *0VBA *0UBA *0VC5 0SH1
+  trgClasses[35] = trigger.Contains("CCUP16-B");   // *0VBA *0UBA *0VC5 0OMU 0STG *0UGC *0VGA
+  trgClasses[36] = trigger.Contains("CCUP17-B");   // *0VBA *0UBA *0VC5 0SH1 *0UGC *0VGA
+  trgClasses[37] = trigger.Contains("CCUP20-B");   // *0VBA *0UBA *0VBC 0OMU 0STG *0SH2 *0UGC *0VG
+  trgClasses[38] = trigger.Contains("CCUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
+  trgClasses[39] = trigger.Contains("CCUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VBC 0STG 0OMU
+  trgClasses[40] = trigger.Contains("CCUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VBC 0SH1
 
   //end of list of trigger classes
 
@@ -366,6 +381,8 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   for (UInt_t iv=0; iv<32; iv++) {
     if( dataVZERO->BBTriggerV0C((Int_t)iv) ) fUPCEvent->SetBBtriggerV0Cmask(iv);
     if( dataVZERO->GetBBFlag((Int_t)iv) ) fUPCEvent->SetBBFlagV0Cmask(iv);
+    if( dataVZERO->BBTriggerV0A((Int_t)iv) ) fUPCEvent->SetBBtriggerV0Amask(iv);
+    if( dataVZERO->GetBBFlag((Int_t)iv+32) ) fUPCEvent->SetBBFlagV0Amask(iv);
   }
 
   //AD
@@ -373,6 +390,12 @@ void AliAnalysisTaskUpcFilter::UserExec(Option_t *)
   if(dataAD) {
     fUPCEvent->SetADADecision( dataAD->GetADADecision() );
     fUPCEvent->SetADCDecision( dataAD->GetADCDecision() );
+    for (UInt_t iv=0; iv<8; iv++) {
+      if( dataAD->BBTriggerADC((Int_t)iv) ) fUPCEvent->SetBBtriggerADCmask(iv);
+      if( dataAD->GetBBFlag((Int_t)iv) ) fUPCEvent->SetBBFlagADCmask(iv);
+      if( dataAD->BBTriggerADA((Int_t)iv) ) fUPCEvent->SetBBtriggerADAmask(iv);
+      if( dataAD->GetBBFlag((Int_t)iv+8) ) fUPCEvent->SetBBFlagADAmask(iv);
+  }
   } else {
     fUPCEvent->SetADADecision( -999 );
     fUPCEvent->SetADCDecision( -999 );

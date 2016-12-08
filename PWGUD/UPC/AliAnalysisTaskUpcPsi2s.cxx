@@ -1616,8 +1616,8 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   Double_t CovMatx[6];
   fESDVertex->GetCovarianceMatrix(CovMatx); 
   fVtxErr[0] = CovMatx[0];
-  fVtxErr[1] = CovMatx[1];
-  fVtxErr[2] = CovMatx[2];
+  fVtxErr[1] = CovMatx[2];
+  fVtxErr[2] = CovMatx[5];
   fVtxChi2 = fESDVertex->GetChi2();
   fVtxNDF = fESDVertex->GetNDF();
     

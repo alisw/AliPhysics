@@ -1836,11 +1836,11 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
     fVertexZSPD = fAODEvent->GetPrimaryVertexSPD()->GetZ();
   }
   
-  if(fabs(fVertexZ)>fMaxVertexZ)return kFALSE;
+  if(TMath::Abs(fVertexZ)>fMaxVertexZ)return kFALSE;
 
   
   if (fPeriodEnum == kLHC11h){
-    if (fabs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
+    if (TMath::Abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
   }
   if (fIsHeavyIon == 2){
     if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
@@ -3086,7 +3086,7 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
         if( aodMCParticle->GetMother() < 0) return 0;// material particle, return 0
         return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
       }
-      index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
+      index = TMath::Abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
       for(Int_t i = 0;i<fnHeaders;i++){
         if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
           accepted = 1;
@@ -3490,8 +3490,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
 //     cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
-//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<fabs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
-//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<fabs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
+//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
+//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
     if (patch->IsGammaHigh()){
 //       cout << "fired L1GA high" << endl;
       nG1++;
@@ -3514,8 +3514,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
     }
 //     cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()  
 //          << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0() 
-//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << fabs(patch->GetPhiMin()-patch->GetPhiMax())
-//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << fabs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
+//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())
+//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
   }
 
   if (nPatch > 0){
@@ -3593,11 +3593,11 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Long_t stack
   if (stackpos < 0) return kFALSE;
   TParticle* particle = (TParticle *)MCStack->Particle(stackpos);
   if (!particle) return kFALSE; 
-  if (abs(particle->GetPdgCode()) == 11 ){
+  if (TMath::Abs(particle->GetPdgCode()) == 11 ){
     if (particle->GetMother(0) != -1){
       TParticle* particleMother = (TParticle *)MCStack->Particle(particle->GetMother(0));
       if (particleMother){
-        if (abs(particleMother->GetPdgCode()) == 22)
+        if (TMath::Abs(particleMother->GetPdgCode()) == 22)
           particle = particleMother;
       }
     }
@@ -3618,7 +3618,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Long_t stack
     Int_t pdgCodeFirstMother     = firstmother->GetPdgCode();
     Bool_t intDecay = kFALSE;
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
-    if ( intDecay && abs(particle->GetPdgCode()) == 11 ){
+    if ( intDecay && TMath::Abs(particle->GetPdgCode()) == 11 ){
       dalitzCand = kTRUE;
 //       cout << "dalitz candidate found" << endl;
     }
@@ -3641,11 +3641,11 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Long_t stack
         Int_t pdgCodeMother     = mother->GetPdgCode();
 //         if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
-        if (abs(pdgCodeMother) == 11 && abs(pdgCodeMotherPrev) == 22 && abs(pdgCodeMotherPPrevMother) == 11 ){
+        if (TMath::Abs(pdgCodeMother) == 11 && TMath::Abs(pdgCodeMotherPrev) == 22 && TMath::Abs(pdgCodeMotherPPrevMother) == 11 ){
           foundShower = kTRUE;
           depth =20;
         }
-        if (abs(pdgCodeMother) == 22 && abs(pdgCodeMotherPrev) == 11 && abs(pdgCodeMotherPPrevMother) == 22 ){
+        if (TMath::Abs(pdgCodeMother) == 22 && TMath::Abs(pdgCodeMotherPrev) == 11 && TMath::Abs(pdgCodeMotherPPrevMother) == 22 ){
           foundShower = kTRUE;
           depth =20;
         }
@@ -3658,9 +3658,9 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Long_t stack
         // Sigma0  - 3212
         // Sigma+/-  - 3222, 3112
         // Cascades  - 3322, 3312  
-        if (abs(pdgCodeMother) == 310   || abs(pdgCodeMother) == 130   || abs(pdgCodeMother) == 321  ||
-          abs(pdgCodeMother) == 3122   || abs(pdgCodeMother) == 3212   || abs(pdgCodeMother) == 3222 ||
-          abs(pdgCodeMother) == 3112   || abs(pdgCodeMother) == 3322   || abs(pdgCodeMother) == 3312 
+        if (TMath::Abs(pdgCodeMother) == 310   || TMath::Abs(pdgCodeMother) == 130   || TMath::Abs(pdgCodeMother) == 321  ||
+          TMath::Abs(pdgCodeMother) == 3122   || TMath::Abs(pdgCodeMother) == 3212   || TMath::Abs(pdgCodeMother) == 3222 ||
+          TMath::Abs(pdgCodeMother) == 3112   || TMath::Abs(pdgCodeMother) == 3322   || TMath::Abs(pdgCodeMother) == 3312
         ) {
           foundExcludedPart = kTRUE;
         }
@@ -3697,11 +3697,11 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (AODMCTrackArray == NULL) return kFALSE;
   AliAODMCParticle* currentParticle = AODMCParticle;
-  if (abs(currentParticle->GetPdgCode()) == 11 ){
+  if (TMath::Abs(currentParticle->GetPdgCode()) == 11 ){
     if (currentParticle->GetMother() != -1){
       AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(currentParticle->GetMother()));
       if (particleMother){
-        if (abs(particleMother->GetPdgCode()) == 22)
+        if (TMath::Abs(particleMother->GetPdgCode()) == 22)
           currentParticle = particleMother;
       }
     }
@@ -3721,7 +3721,7 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
     Int_t pdgCodeFirstMother = firstmother->GetPdgCode();
     Bool_t intDecay = kFALSE;
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
-    if ( intDecay && abs(currentParticle->GetPdgCode()) == 11 ){
+    if ( intDecay && TMath::Abs(currentParticle->GetPdgCode()) == 11 ){
       dalitzCand = kTRUE;
 //       cout << "dalitz candidate found" << endl;
     }
@@ -3744,11 +3744,11 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
         Int_t pdgCodeMother     = mother->GetPdgCode();
 //         if (currentParticle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
-        if (abs(pdgCodeMother) == 11 && abs(pdgCodeMotherPrev) == 22 && abs(pdgCodeMotherPPrevMother) == 11 ){
+        if (TMath::Abs(pdgCodeMother) == 11 && TMath::Abs(pdgCodeMotherPrev) == 22 && TMath::Abs(pdgCodeMotherPPrevMother) == 11 ){
           foundShower = kTRUE;
           depth =20;
         }
-        if (abs(pdgCodeMother) == 22 && abs(pdgCodeMotherPrev) == 11 && abs(pdgCodeMotherPPrevMother) == 22 ){
+        if (TMath::Abs(pdgCodeMother) == 22 && TMath::Abs(pdgCodeMotherPrev) == 11 && TMath::Abs(pdgCodeMotherPPrevMother) == 22 ){
           foundShower = kTRUE;
           depth =20;
         }
@@ -3761,9 +3761,9 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
         // Sigma0   - 3212
         // Sigma+/- - 3222, 3112
         // Cascades - 3322, 3312
-        if (abs(pdgCodeMother) == 310   || abs(pdgCodeMother) == 130   || abs(pdgCodeMother) == 321  ||
-          abs(pdgCodeMother) == 3122   || abs(pdgCodeMother) == 3212   || abs(pdgCodeMother) == 3222 ||
-          abs(pdgCodeMother) == 3112   || abs(pdgCodeMother) == 3322   || abs(pdgCodeMother) == 3312)
+        if (TMath::Abs(pdgCodeMother) == 310   || TMath::Abs(pdgCodeMother) == 130   || TMath::Abs(pdgCodeMother) == 321  ||
+          TMath::Abs(pdgCodeMother) == 3122   || TMath::Abs(pdgCodeMother) == 3212   || TMath::Abs(pdgCodeMother) == 3222 ||
+          TMath::Abs(pdgCodeMother) == 3112   || TMath::Abs(pdgCodeMother) == 3322   || TMath::Abs(pdgCodeMother) == 3312)
         {
           foundExcludedPart = kTRUE;
         }

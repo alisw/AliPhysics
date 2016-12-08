@@ -384,7 +384,7 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   for(Int_t i=0;i<2;++i) values[kSPDFiredChips+i] = event->SPDFiredChips(i+1);
   for(Int_t i=0;i<6;++i) values[kITSnClusters+i] = event->ITSClusters(i+1);
   values[kSPDnSingleClusters] = event->SPDnSingleClusters();
-  
+
   //VZERO detector information
   values[kVZEROATotalMult] = event->MultVZEROA();
   values[kVZEROCTotalMult] = event->MultVZEROC();
@@ -774,12 +774,17 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   if(fgUsedVars[kITSncls]) values[kITSncls] = pinfo->ITSncls();
   values[kITSsignal] = pinfo->ITSsignal();
   values[kITSchi2] = pinfo->ITSchi2();
-  
+
+  if(fgUsedVars[kITSnclsShared]) values[kITSnclsShared] = pinfo->ITSnSharedCls();
   values[kTPCncls] = pinfo->TPCncls();
+
+  if(fgUsedVars[kNclsSFracITS])
+  values[kNclsSFracITS] = (pinfo-> ITSncls()>0 ? Float_t (pinfo->ITSnSharedCls())/Float_t(pinfo->ITSncls()) :0.0) ;
   if(fgUsedVars[kTPCnclsRatio]) 
     values[kTPCnclsRatio] = (pinfo->TPCFindableNcls()>0 ? Float_t(pinfo->TPCncls())/Float_t(pinfo->TPCFindableNcls()) : 0.0);
   if(fgUsedVars[kTPCnclsRatio2]) 
     values[kTPCnclsRatio2] = (pinfo->TPCCrossedRows()>0 ? Float_t(pinfo->TPCncls())/Float_t(pinfo->TPCCrossedRows()) : 0.0);
+
   if(fgUsedVars[kTPCcrossedRowsOverFindableClusters]) { 
      if(pinfo->TPCFindableNcls()>0)
        values[kTPCcrossedRowsOverFindableClusters] = Float_t(pinfo->TPCCrossedRows()) / Float_t(pinfo->TPCFindableNcls());
@@ -792,6 +797,10 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      else
         values[kTPCnclsSharedRatio] = 0.0;
   }
+
+  if(fgUsedVars[kTPCnclsRatio3])
+    values[kTPCnclsRatio3] = (pinfo->TPCFindableNcls()>0 ? Float_t(pinfo->TPCCrossedRows())/Float_t(pinfo->TPCFindableNcls()) : 0.0);
+
   values[kTPCnclsF]       = pinfo->TPCFindableNcls();
   values[kTPCnclsShared]  = pinfo->TPCnclsShared();
   values[kTPCcrossedRows] = pinfo->TPCCrossedRows();
@@ -1558,6 +1567,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kMassUsedForTracking] = "Mass used for tracking"; fgVariableUnits[kMassUsedForTracking] = "GeV/c^{2}";
   fgVariableNames[kITSncls]           = "No.ITS clusters";              fgVariableUnits[kITSncls] = "";
   fgVariableNames[kITSchi2]           = "ITS #chi^{2}";                 fgVariableUnits[kITSchi2] = "";
+  fgVariableNames[kITSnclsShared]     = "No.of shared ITS clusters";              fgVariableUnits[kITSnclsShared] = "";
+  fgVariableNames[kNclsSFracITS]      = "Fraction of shared ITS clusters/ITS clusters";fgVariableUnits[kNclsSFracITS] = "";
   fgVariableNames[kITSlayerHit]       = "ITS layer";                    fgVariableUnits[kITSlayerHit] = "";
   fgVariableNames[kITSsignal]         = "ITS dE/dx";                    fgVariableUnits[kITSsignal] = "";    
   fgVariableNames[kITSnSig]           = "ITS n_{#sigma}^{e}";           fgVariableUnits[kITSnSig] = "#sigma";
@@ -1575,7 +1586,11 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTPCnclsSharedRatio] = "# TPC shared clusters / all TPC clusters"; fgVariableUnits[kTPCnclsSharedRatio] = "fraction";
   fgVariableNames[kTPCnclsRatio]      = "No.TPC clusters/findable";     fgVariableUnits[kTPCnclsRatio] = "";
   fgVariableNames[kTPCnclsRatio2]     = "No.TPC clusters/crossed rows"; fgVariableUnits[kTPCnclsRatio2] = "";
+<<<<<<< HEAD
   fgVariableNames[kTPCcrossedRowsOverFindableClusters] = "Crossed rows / findable clusters"; fgVariableUnits[kTPCcrossedRowsOverFindableClusters] = "fraction";
+=======
+  fgVariableNames[kTPCnclsRatio3]     = "No.TPC crossed rows/findable clusters"; fgVariableUnits[kTPCnclsRatio3] = "";
+>>>>>>> 16f0c63ad2ae8e06ef0ce098a0544c16e0cc79b9
   fgVariableNames[kTPCsignal]         = "TPC dE/dx";                    fgVariableUnits[kTPCsignal] = "";  
   fgVariableNames[kTPCsignalN]        = "No. TPC clusters PID";         fgVariableUnits[kTPCsignalN] = "";  
   fgVariableNames[kTPCnSig]           = "TPC n_{#sigma}^{e}";           fgVariableUnits[kTPCnSig] = "#sigma";  

@@ -40,7 +40,9 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           isQA                      = kFALSE,
                                                                  TString                configBasePath            = "",
                                                                  const Int_t            bWhichToSmear             = 0,
-                                                                 const Int_t            minNLM                    = 1
+                                                                 const Int_t            minNLM                    = 1,
+                                                                 const Double_t         TMdetaIso                 = 0.02,
+                                                                 const Double_t         TMdphiIso                 = 0.03
                                                                  )
 {
   
@@ -115,6 +117,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetEtIsoThreshold(EtIso); // after should be replace by EtIso
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
   task->SetCTMdeltaPhi(TMdphi); // after should be replaced by TMdphi
+  task->SetCTMdeltaEtaIso(TMdetaIso); // after should be replaced by TMdeta
+  task->SetCTMdeltaPhiIso(TMdphiIso);
   task->SetQA(isQA);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);

@@ -369,8 +369,10 @@ class AliReducedVarManager : public TObject {
     kTrackLength,       // track length
     kChi2TPCConstrainedVsGlobal,
     kMassUsedForTracking,
-    kITSncls,           
-    kITSchi2,           
+    kITSncls,
+    kNclsSFracITS,
+    kITSchi2,
+    kITSnclsShared,
     kITSlayerHit,       
     kITSsignal,         
     kITSnSig,
@@ -384,8 +386,11 @@ class AliReducedVarManager : public TObject {
     kTPCnclsShared,
     kTPCnclsSharedRatio,
     kTPCnclsRatio,       // TPCncls / TPCnclsF          
-    kTPCnclsRatio2,      // TPCncls / TPCCrossedRows    
+    kTPCnclsRatio2,      // TPCncls / TPCCrossedRows
+    //TODO: TPC number of crossed rows over findable clusters has at the moment 2 variables assigned: kTPCcrossedRowsOverFindableClusters and kTPCnclsRatio3
     kTPCcrossedRowsOverFindableClusters,
+    kTPCnclsRatio2,      // TPCncls / TPCCrossedRows
+    kTPCnclsRatio3,      // TPCCrossedRows/TPCnclsF
     kTPCsignal,         
     kTPCsignalN,
     kTPCnSig,  

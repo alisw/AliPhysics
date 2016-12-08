@@ -33,8 +33,8 @@ AliUPCEvent::AliUPCEvent()
   fVtxChi2perNDF(0), fVtxNContributors(0), fVtxTitle(0x0),
   fVtxSPDchi2perNDF(0), fVtxSPDnContributors(0), fVtxSPDtitle(0x0),
   fNTracklets(0), fNSPDfiredInner(0), fNSPDfiredOuter(0), fFOmap(0x0),
-  fV0ADecision(0), fV0CDecision(0), fBBtriggerV0C(0), fBBFlagV0C(0),
-  fADADecision(0), fADCDecision(0),
+  fV0ADecision(0), fV0CDecision(0), fBBtriggerV0C(0), fBBFlagV0C(0), fBBtriggerV0A(0), fBBFlagV0A(0),
+  fADADecision(0), fADCDecision(0), fBBtriggerADC(0), fBBFlagADC(0), fBBtriggerADA(0), fBBFlagADA(0),
   fZNCEnergy(0), fZPCEnergy(0), fZNAEnergy(0), fZPAEnergy(0),
   fZNCtdc(0), fZPCtdc(0), fZNAtdc(0), fZPAtdc(0),
   fZNCtdcData(0), fZPCtdcData(0), fZNAtdcData(0), fZPAtdcData(0), fZNCTime(0), fZNATime(0),
@@ -102,6 +102,12 @@ void AliUPCEvent::ClearEvent()
 
   fBBtriggerV0C = 0;
   fBBFlagV0C = 0;
+  fBBtriggerV0A = 0;
+  fBBFlagV0A = 0;
+  fBBtriggerADC = 0;
+  fBBFlagADC = 0;
+  fBBtriggerADA = 0;
+  fBBFlagADA = 0;
   for(Int_t itrg=0; itrg<fgkNtrg; itrg++) fTrgClasses[itrg] = kFALSE;
 
   if(fUPCTracks) {fUPCTracks->Clear("C"); fNtracks = 0;}
@@ -221,6 +227,58 @@ void AliUPCEvent::SetBBFlagV0Cmask(UInt_t ibit)
   // AliUPCEvent::ClearEvent should be called to initialize the mask
 
   fBBFlagV0C |= (1 << ibit);
+}
+//_____________________________________________________________________________
+void AliUPCEvent::SetBBtriggerV0Amask(UInt_t ibit)
+{
+  // fill offline fired cells in V0C setting the corresponding bits in the bit mask
+  // AliUPCEvent::ClearEvent should be called to initialize the mask
+
+  fBBtriggerV0A |= (1 << ibit);
+}
+
+//_____________________________________________________________________________
+void AliUPCEvent::SetBBFlagV0Amask(UInt_t ibit)
+{
+  // fill online fired cells in V0C setting the corresponding bits in the bit mask
+  // AliUPCEvent::ClearEvent should be called to initialize the mask
+
+  fBBFlagV0A |= (1 << ibit);
+}
+
+//_____________________________________________________________________________
+void AliUPCEvent::SetBBtriggerADCmask(UInt_t ibit)
+{
+  // fill offline fired cells in ADC setting the corresponding bits in the bit mask
+  // AliUPCEvent::ClearEvent should be called to initialize the mask
+
+  fBBtriggerADC |= (1 << ibit);
+}
+
+//_____________________________________________________________________________
+void AliUPCEvent::SetBBFlagADCmask(UInt_t ibit)
+{
+  // fill online fired cells in ADC setting the corresponding bits in the bit mask
+  // AliUPCEvent::ClearEvent should be called to initialize the mask
+
+  fBBFlagADC |= (1 << ibit);
+}
+//_____________________________________________________________________________
+void AliUPCEvent::SetBBtriggerADAmask(UInt_t ibit)
+{
+  // fill offline fired cells in ADC setting the corresponding bits in the bit mask
+  // AliUPCEvent::ClearEvent should be called to initialize the mask
+
+  fBBtriggerADA |= (1 << ibit);
+}
+
+//_____________________________________________________________________________
+void AliUPCEvent::SetBBFlagADAmask(UInt_t ibit)
+{
+  // fill online fired cells in ADC setting the corresponding bits in the bit mask
+  // AliUPCEvent::ClearEvent should be called to initialize the mask
+
+  fBBFlagADA |= (1 << ibit);
 }
 
 //_____________________________________________________________________________
@@ -403,6 +461,70 @@ Int_t AliUPCEvent::GetNV0ChitsOnline(void) const
 
   Int_t nHits = 0;
   for (UInt_t iv=0; iv<32; iv++) {if( fBBFlagV0C & (1 << iv) ) nHits++;}
+
+  return nHits;
+}
+//_____________________________________________________________________________
+Int_t AliUPCEvent::GetNV0AhitsOffline(void) const
+{
+  // get number of fired cells of V0C, offline
+
+  Int_t nHits = 0;
+  for (UInt_t iv=0; iv<32; iv++) {if( fBBtriggerV0A & (1 << iv) ) nHits++;}
+
+  return nHits;
+}
+
+//_____________________________________________________________________________
+Int_t AliUPCEvent::GetNV0AhitsOnline(void) const
+{
+  // get number of fired cells of V0C, online
+
+  Int_t nHits = 0;
+  for (UInt_t iv=0; iv<32; iv++) {if( fBBFlagV0A & (1 << iv) ) nHits++;}
+
+  return nHits;
+}
+
+//_____________________________________________________________________________
+Int_t AliUPCEvent::GetNADChitsOffline(void) const
+{
+  // get number of fired cells of ADC, offline
+
+  Int_t nHits = 0;
+  for (UInt_t iv=0; iv<8; iv++) {if( fBBtriggerADC & (1 << iv) ) nHits++;}
+
+  return nHits;
+}
+
+//_____________________________________________________________________________
+Int_t AliUPCEvent::GetNADChitsOnline(void) const
+{
+  // get number of fired cells of ADC, online
+
+  Int_t nHits = 0;
+  for (UInt_t iv=0; iv<8; iv++) {if( fBBFlagADC & (1 << iv) ) nHits++;}
+
+  return nHits;
+}
+//_____________________________________________________________________________
+Int_t AliUPCEvent::GetNADAhitsOffline(void) const
+{
+  // get number of fired cells of ADC, offline
+
+  Int_t nHits = 0;
+  for (UInt_t iv=0; iv<8; iv++) {if( fBBtriggerADA & (1 << iv) ) nHits++;}
+
+  return nHits;
+}
+
+//_____________________________________________________________________________
+Int_t AliUPCEvent::GetNADAhitsOnline(void) const
+{
+  // get number of fired cells of ADC, online
+
+  Int_t nHits = 0;
+  for (UInt_t iv=0; iv<8; iv++) {if( fBBFlagADA & (1 << iv) ) nHits++;}
 
   return nHits;
 }

@@ -54,7 +54,16 @@ AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE,
   
   if ( (trackCutSetTOFqa<0) || (trackCutSetTOFqa>=AliAnalysisTaskTOFqaID::kNCutSetTOFqa) ) trackCutSetTOFqa = 0;
 
-  if ( trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kRun1Cuts ) {
+  Bool_t selPrimaries=kTRUE;
+  Int_t clusterCut = 1; //set to 1 to use crossed rows and to 0 to use clusters
+  Bool_t cutAcceptanceEdges = kTRUE;
+  Bool_t removeDistortedRegions = kFALSE;
+
+
+
+
+  Printf(":::: Setting cut scheme #%i", trackCutSetTOFqa);
+  if (trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kRun1Cuts) {
     //use track cuts used for QA during run1 (before July 2014)
     esdTrackCuts->SetMinNClustersTPC(70); 
     esdTrackCuts->SetMaxChi2PerClusterTPC(4);
@@ -67,13 +76,32 @@ AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE,
     esdTrackCuts->SetMaxDCAToVertexZ(2);
     esdTrackCuts->SetDCAToVertex2D(kFALSE);
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  } else {
-    if ( trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2010 ) esdTrackCuts->GetStandardITSTPCTrackCuts2010(kTRUE,0);
-    if ( trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2010crossedRows ) esdTrackCuts->GetStandardITSTPCTrackCuts2010(kTRUE,1);
-    if ( trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2011) esdTrackCuts->GetStandardITSTPCTrackCuts2011(kTRUE,0); 
-    if ( trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2011crossedRows ) esdTrackCuts->GetStandardITSTPCTrackCuts2011(kTRUE,1);
   }
-
+  if (trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2010)
+    esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selPrimaries, 0);
+  else if (trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2010crossedRows)
+    esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selPrimaries, 1);
+  else if (trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2011 )
+    esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selPrimaries, 0);
+  else if (trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2011crossedRows )
+    esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selPrimaries, 1);
+  else if (trackCutSetTOFqa == AliAnalysisTaskTOFqaID::kStd2015crossedRows )
+    esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(selPrimaries, clusterCut, cutAcceptanceEdges, removeDistortedRegions);
+  else {
+    //use track cuts used for QA during run1 (before July 2014)
+    esdTrackCuts->SetMinNClustersTPC(70); 
+    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE); 
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					   AliESDtrackCuts::kAny);
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//selects primaries
+    esdTrackCuts->SetMaxDCAToVertexZ(2);
+    esdTrackCuts->SetDCAToVertex2D(kFALSE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  }
+  esdTrackCuts->Dump();
   trackFilter->AddCuts(esdTrackCuts);
   task->SetTrackFilter(trackFilter); 
   

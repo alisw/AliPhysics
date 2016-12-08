@@ -59,7 +59,8 @@ set(SRCS
   AliAnalysisTaskDimuonCFContainerBuilder.cxx 
   AliAnalysisTaskESDMuonFilter.cxx 
   AliAnalysisTaskFlowSingleMu.cxx 
-  AliAnalysisTaskFromStandardToMuonAOD.cxx 
+  AliAnalysisTaskFromStandardToMuonAOD.cxx
+  AliAnalysisTaskGenTuner.cxx
   AliAnalysisTaskLinkToMC.cxx 
   AliAnalysisTaskLUT.cxx
   AliAnalysisTaskMTRResponse.cxx

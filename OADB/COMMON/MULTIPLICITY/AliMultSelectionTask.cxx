@@ -1630,39 +1630,40 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning( Form(" Assumed to be DATA ANALYSIS on period %s",lPeriodName.Data() ));
         AliWarning("==================================================");
     }
+    if ( lPeriodName.EqualTo("Empty") && fAlternateOADBFullManualBypass.EqualTo("")==kTRUE ){
+        //This is uncalibrated data, skip all
+        AliWarning("This is uncalibrated data, will generate empty OADB!");
+        AliWarning("This means kNoCalib (=199) will be returned everywhere.");
+        CreateEmptyOADB();
+        return -1;
+    }
+    
     if ( fAlternateOADBForEstimators.EqualTo("")==kTRUE && lPeriodName.EqualTo(lProductionName.Data()) == kFALSE ) {
-        AliWarning(" Auto-detected that this is MC, but you didn't provide a production name!");
-        AliWarning(Form(" Auto-detection production name is %s, checking if there...",lProductionName.Data()));
-	Bool_t lItsThere = CheckOADB( lProductionName ); 
-	if( !lItsThere ){ 
-		//Override options: go to default OADBs depending on generator
-		AliWarning(" OADB for this MC does not exist! Checking generator type..."); 
-		Bool_t lItsHijing = IsHijing(); 
-		Bool_t lItsDPMJet = IsDPMJet(); 
-		if ( lItsHijing ){ 
-			lProductionName = Form("%s-DefaultMC-HIJING",lPeriodName.Data());
-			AliWarning(Form(" This is HIJING! Will use OADB named %s",lProductionName.Data()));
-		}
-		if ( lItsDPMJet ){ 
-			lProductionName = Form("%s-DefaultMC-DPMJet",lPeriodName.Data());
-			AliWarning(Form(" This is DPMJet! Will use OADB named %s",lProductionName.Data())); 
-		}
-		if ( (!lItsHijing) && (!lItsDPMJet) ){ 
-			AliWarning(" Unable to detect generator type from header. Sorry."); 
-		}	
-	}else{ 
-		AliWarning(" OADB for this period exists. Proceeding as usual."); 
-	}	
+        if ( fAlternateOADBFullManualBypass.EqualTo("")==kTRUE )
+            AliWarning(" Auto-detected that this is MC, but you didn't provide a production name!");
+        AliWarning(Form(" Auto-detected production name is %s, checking if there...",lProductionName.Data()));
+        Bool_t lItsThere = CheckOADB( lProductionName );
+        if( !lItsThere ){
+            //Override options: go to default OADBs depending on generator
+            AliWarning(" OADB for this production does not exist! Checking generator type...");
+            Bool_t lItsHijing = IsHijing();
+            Bool_t lItsDPMJet = IsDPMJet();
+            if ( lItsHijing ){
+                lProductionName = Form("%s-DefaultMC-HIJING",lPeriodName.Data());
+                AliWarning(Form(" This is HIJING! Will use OADB named %s",lProductionName.Data()));
+            }
+            if ( lItsDPMJet ){
+                lProductionName = Form("%s-DefaultMC-DPMJet",lPeriodName.Data());
+                AliWarning(Form(" This is DPMJet! Will use OADB named %s",lProductionName.Data()));
+            }
+            if ( (!lItsHijing) && (!lItsDPMJet) ){
+                AliWarning(" Unable to detect generator type from header. Sorry.");
+            }
+        }else{
+            AliWarning(" OADB for this period exists. Proceeding as usual.");
+        }	
         fAlternateOADBForEstimators = lProductionName;
         AliInfo("==================================================");
-    }
-
-    if ( lPeriodName.EqualTo("Empty") ){ 
-	//This is uncalibrated data, skip all
-	AliWarning("This is uncalibrated data, will generate empty OADB!");
-	AliWarning("This means kNoCalib (=199) will be returned everywhere.");  
-	CreateEmptyOADB(); 
-	return -1;  
     }
 
     //Determine location of file to open: default OADB
@@ -2199,6 +2200,8 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     //Registered Productions : Run 2 p-Pb
     if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lProductionName = "LHC16q";
     if ( fCurrentRun >= 265589 && fCurrentRun <= 265841 ) lProductionName = "LHC16r";
+    if ( fCurrentRun >= 266405 && fCurrentRun <= 267131 ) lProductionName = "LHC16s";
+    if ( fCurrentRun >= 267161 && fCurrentRun <= 267166 ) lProductionName = "LHC16t";
     
     return lProductionName;
 }

@@ -220,6 +220,7 @@ __Tracks__ (Includes all options for EMCal Containers):
 | --------------------- | --------------------------------- |
 | trackFilterType       | Enumerated value determining the track filtering to apply to the container.  The enumerations are defined in AliEmcalTrackSelection and include: kNoTrackFilter, kCustomTrackFilter, kHybridTracks, kTPCOnlyTracks |
 | aodFilterBits         | Sets values based on the evaluated bits (ie to set bit 3, pass 2^3 = 8). To set it properly, see below. To use aodFilterBits, Be sure to set the trackFilterType to kCustomTrackFilter! |
+| trackCutsPeriod       | Sets the track cuts period for the track container. A default can also be set for all track containers using static methods of AliTrackContainer independent of the correction task. See AliTrackContainer for more information |
 
 The aodFilterBits are set as an array. This is possible to express in two ways in YAML:
 

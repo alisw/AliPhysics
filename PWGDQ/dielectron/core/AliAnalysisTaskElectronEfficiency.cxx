@@ -628,8 +628,8 @@ void AliAnalysisTaskElectronEfficiency::UserCreateOutputObjects()
       //lRecBinning->Print();
       pairEffList->Add(lRecBinning);
     }
-  }
   pairEffList->Print();
+  }
   
   TList *resolutionList(0x0);
   if(fCalcResolution){

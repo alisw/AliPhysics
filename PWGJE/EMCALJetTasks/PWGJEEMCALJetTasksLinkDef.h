@@ -29,6 +29,7 @@
 #pragma link C++ class AliJetTriggerSelectionTask+;
 #pragma link C++ class AliAnalysisTaskEmcalJetQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA+;
+#pragma link C++ class AliAnalysisTaskPWGJEQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb+;
@@ -47,6 +48,7 @@
 #pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
 #pragma link C++ class AliChargedJetsHadronCFCuts+;
 #pragma link C++ class AliBasicJetConstituent+;
+#pragma link C++ class std::vector<AliBasicJetConstituent>+;
 #pragma link C++ class AliBasicJet+;
 #pragma link C++ class AliAnalysisTaskChargedJetsHadronToy+;
 #pragma link C++ class AliAnalysisTaskDcalDijetPerf+;

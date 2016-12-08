@@ -40,7 +40,7 @@ public:
   AliMCParticleContainerToyModel(const char *name);
 
   void SetTrackScalePt(Double_t t) { fTrackScalePt  = t; }
-
+  void SetRandomizeEtaPhi(Double_t t) { fRandomizeEtaPhi  = t; }
   virtual Bool_t GetMomentumFromParticle(TLorentzVector &mom, const AliAODMCParticle* track, Double_t mass) const;
   virtual Bool_t GetMomentum(TLorentzVector &mom, Int_t i) const;
   virtual Bool_t GetAcceptMomentum(TLorentzVector &mom, Int_t i) const;
@@ -48,11 +48,12 @@ public:
   virtual Bool_t GetNextAcceptMomentum(TLorentzVector &mom);
 
   void ScalePtOfLorentzVector(TLorentzVector &mom) const;
-
+   void SetRandomEtaPhiOfLorentzVector(TLorentzVector &mom) const;
 protected:
 
   Double_t               fTrackScalePt;           //scaling of the track pT by given fraction (0....1)
-
+  Double_t               fTrackEtaWindow;         //eta acceptance 
+  Double_t               fRandomizeEtaPhi;        //break correlations by setting random eta phi to the tracks
 private:
   /// \cond CLASSIMP
   ClassDef(AliMCParticleContainerToyModel, 1);

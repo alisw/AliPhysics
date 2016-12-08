@@ -481,7 +481,7 @@ Int_t AliAnalysisTaskMaterial::CountTracks09(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -517,7 +517,7 @@ Int_t AliAnalysisTaskMaterial::CountTracks0914(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
@@ -531,7 +531,7 @@ Int_t AliAnalysisTaskMaterial::CountTracks0914(){
 			if(EsdTrackCuts->AcceptTrack(curTrack) ){
 				if (fMCEvent){
 					if(fMCStack && fEventCuts->GetSignalRejection() != 0){
-						Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(abs(curTrack->GetLabel()), fMCStack, fESDEvent);
+                        Int_t isFromMBHeader = fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()), fMCStack, fESDEvent);
 						if( (isFromMBHeader < 1) ) continue;
 					}					
 				}	
