@@ -113,14 +113,7 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
 
 fhEClusterSM(0),                      fhEPhotonSM(0),
 fhPtClusterSM(0),                     fhPtPhotonSM(0),
-fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
-fhLocalRegionClusterEtaPhi(0),
-fhLocalRegionClusterEnergySum(0),     fhLocalRegionClusterMultiplicity(0),
-fhLocalRegionClusterEnergySumPerCentrality(0),
-fhLocalRegionClusterMultiplicityPerCentrality(0),
-fhLocalRegionClusterEnergySumHijing(0),fhLocalRegionClusterMultiplicityHijing(0),
-fhLocalRegionClusterEnergySumPerCentralityHijing(0),
-fhLocalRegionClusterMultiplicityPerCentralityHijing(0) 
+fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
 {
   for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
@@ -339,6 +332,23 @@ fhLocalRegionClusterMultiplicityPerCentralityHijing(0)
     }
   }
   
+  for(Int_t icase = 0; icase < 6; icase++)
+  { 
+    fhLocalRegionClusterEtaPhi                         [icase] = 0; 
+    fhLocalRegionClusterEnergySum                      [icase] = 0;     
+    fhLocalRegionClusterMultiplicity                   [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentrality         [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentrality      [icase] = 0;
+    fhLocalRegionClusterEnergySumHijing                [icase] = 0;
+    fhLocalRegionClusterMultiplicityHijing             [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityHijing   [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityHijing[icase] = 0; 
+    fhLocalRegionClusterEnergySumAdded                 [icase] = 0;     
+    fhLocalRegionClusterMultiplicityAdded              [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityAdded    [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityAdded [icase] = 0;
+  }
+  
   // Initialize parameters
   InitParameters();
 }
@@ -362,7 +372,15 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
   // CAREFUL if used for Run2 with DCal.
   if(phi < 3.15 - radius && phi > 1.4 + radius && TMath::Abs(eta) < 0.7-radius)
   {
-    fhLocalRegionClusterEtaPhi ->Fill(eta,phi, GetEventWeight());
+    TString genName, genNameBkg;
+    Int_t genBkgTag = -1;
+    if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
+    {
+      AliVCluster * calo = (AliVCluster*) (clusterList->At(icalo));
+      genBkgTag = GetCocktailGeneratorBackgroundTag(calo, genName, genNameBkg);
+    }
+    
+    fhLocalRegionClusterEtaPhi[0] ->Fill(eta,phi, GetEventWeight());
     
     Float_t sumE   = 0;
     Int_t   sumM   = 0;
@@ -390,10 +408,10 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
       
       if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() && calo2->GetNLabels() > 0)
       {
-        TString genName;
-        (GetReader()->GetMC())->GetCocktailGenerator(calo2->GetLabel(),genName);
+        TString genName2;
+        (GetReader()->GetMC())->GetCocktailGenerator(calo2->GetLabel(),genName2);
         
-        if(genName.Contains("ijing"))
+        if(genName2.Contains("ijing"))
         {
           sumMHi++;
           sumEHi += calo2->E();
@@ -401,27 +419,90 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
       }
     }
     
-    fhLocalRegionClusterEnergySum   ->Fill(en,sumE,GetEventWeight());
-    fhLocalRegionClusterMultiplicity->Fill(en,sumM,GetEventWeight());
+    Float_t sumMAdd = sumM-sumMHi;
+    Float_t sumEAdd = sumE-sumEHi;
+    
+    fhLocalRegionClusterEnergySum   [0]->Fill(en,sumE,GetEventWeight());
+    fhLocalRegionClusterMultiplicity[0]->Fill(en,sumM,GetEventWeight());
     
     if(IsHighMultiplicityAnalysisOn())
     {
-      fhLocalRegionClusterEnergySumPerCentrality   ->Fill(GetEventCentrality(),sumE,GetEventWeight());
-      fhLocalRegionClusterMultiplicityPerCentrality->Fill(GetEventCentrality(),sumM,GetEventWeight());
+      fhLocalRegionClusterEnergySumPerCentrality   [0]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+      fhLocalRegionClusterMultiplicityPerCentrality[0]->Fill(GetEventCentrality(),sumM,GetEventWeight());
     }
     
     if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn())
     {
-      fhLocalRegionClusterEnergySumHijing   ->Fill(en,sumEHi,GetEventWeight());
-      fhLocalRegionClusterMultiplicityHijing->Fill(en,sumMHi,GetEventWeight());
+      fhLocalRegionClusterEnergySumHijing   [0]->Fill(en,sumEHi ,GetEventWeight());
+      fhLocalRegionClusterMultiplicityHijing[0]->Fill(en,sumMHi ,GetEventWeight());
+      
+      fhLocalRegionClusterEnergySumAdded    [0]->Fill(en,sumEAdd,GetEventWeight());
+      fhLocalRegionClusterMultiplicityAdded [0]->Fill(en,sumMAdd,GetEventWeight());
       
       if(IsHighMultiplicityAnalysisOn())
       {
-        fhLocalRegionClusterEnergySumPerCentralityHijing   ->Fill(GetEventCentrality(),sumEHi,GetEventWeight());
-        fhLocalRegionClusterMultiplicityPerCentralityHijing->Fill(GetEventCentrality(),sumMHi,GetEventWeight());
+        fhLocalRegionClusterEnergySumPerCentralityHijing   [0]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityHijing[0]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+        
+        fhLocalRegionClusterEnergySumPerCentralityAdded    [0]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityAdded [0]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
       }
-    }
-  }
+      
+      if(genBkgTag < 0) return;
+      
+      fhLocalRegionClusterEtaPhi            [genBkgTag+1] ->Fill(eta,phi, GetEventWeight());
+      
+      fhLocalRegionClusterEnergySum         [genBkgTag+1]->Fill(en,sumE,GetEventWeight());
+      fhLocalRegionClusterMultiplicity      [genBkgTag+1]->Fill(en,sumM,GetEventWeight());
+      
+      fhLocalRegionClusterEnergySumHijing   [genBkgTag+1]->Fill(en,sumEHi ,GetEventWeight());
+      fhLocalRegionClusterMultiplicityHijing[genBkgTag+1]->Fill(en,sumMHi ,GetEventWeight());
+      
+      fhLocalRegionClusterEnergySumAdded    [genBkgTag+1]->Fill(en,sumEAdd,GetEventWeight());
+      fhLocalRegionClusterMultiplicityAdded [genBkgTag+1]->Fill(en,sumMAdd,GetEventWeight());
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhLocalRegionClusterEnergySumPerCentrality         [genBkgTag+1]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentrality      [genBkgTag+1]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumPerCentralityHijing   [genBkgTag+1]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityHijing[genBkgTag+1]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+        
+        fhLocalRegionClusterEnergySumPerCentralityAdded    [genBkgTag+1]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityAdded [genBkgTag+1]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+      }
+      
+      if(genBkgTag > 0) // Not clean, all merged
+      {
+        fhLocalRegionClusterEtaPhi            [5] ->Fill(eta,phi, GetEventWeight());
+        
+        fhLocalRegionClusterEnergySum         [5]->Fill(en,sumE,GetEventWeight());
+        fhLocalRegionClusterMultiplicity      [5]->Fill(en,sumM,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumHijing   [5]->Fill(en,sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityHijing[5]->Fill(en,sumMHi ,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumAdded    [5]->Fill(en,sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityAdded [5]->Fill(en,sumMAdd,GetEventWeight());
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentrality         [5]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentrality      [5]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+          
+          fhLocalRegionClusterEnergySumPerCentralityHijing   [5]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityHijing[5]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+          
+          fhLocalRegionClusterEnergySumPerCentralityAdded    [5]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityAdded [5]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+        }
+        
+      } // not clean, all merged
+      
+    } // check generator overlaps
+    
+  } // EMCal acceptance
 }
 
 //_____________________________________________________________________
@@ -3385,74 +3466,122 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
 
   if(fStudyActivityNearCluster)
   {
-    fhLocalRegionClusterEtaPhi  = new TH2F
-    ("hLocalRegionClusterEtaPhi","cluster,#it{E} > 0.5 GeV, #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax);
-    fhLocalRegionClusterEtaPhi->SetYTitle("#phi (rad)");
-    fhLocalRegionClusterEtaPhi->SetXTitle("#eta");
-    outputContainer->Add(fhLocalRegionClusterEtaPhi) ;
-    
-    fhLocalRegionClusterEnergySum = new TH2F ("hLocalRegionClusterEnergySum",
-                                              "Sum of cluster energy around trigger cluster #it{E} with R=0.2", 
-                                              nptbins,ptmin,ptmax, 200,0,100);
-    fhLocalRegionClusterEnergySum->SetXTitle("#it{E} (GeV)");
-    fhLocalRegionClusterEnergySum->SetYTitle("#Sigma #it{E} (GeV)");
-    outputContainer->Add(fhLocalRegionClusterEnergySum);    
-    
-    fhLocalRegionClusterMultiplicity = new TH2F ("hLocalRegionClusterMultiplicity",
-                                                 "Cluster multiplicity around trigger cluster #it{E} with R=0.2", 
-                                                 nptbins,ptmin,ptmax, 200,0,200);
-    fhLocalRegionClusterMultiplicity->SetXTitle("#it{E} (GeV)");
-    fhLocalRegionClusterMultiplicity->SetYTitle("Multiplicity");
-    outputContainer->Add(fhLocalRegionClusterMultiplicity);    
-    
-    if(IsHighMultiplicityAnalysisOn())
+    TString caseTitle[] = {"","CleanCluster","MergedClusterHijingBkg","MergedClusterNotHijingBkg","MergedClusterHijingAndOtherBkg","MergedCluster"};
+  
+    for(Int_t icase = 0; icase < 6; icase++)
     {
-      fhLocalRegionClusterEnergySumPerCentrality = new TH2F ("hLocalRegionClusterEnergySumPerCentrality",
-                                                             "Sum of cluster energy around trigger cluster vs centrality with R=0.2", 
-                                                             100,0,100, 200,0,100);
-      fhLocalRegionClusterEnergySumPerCentrality->SetXTitle("Centrality");
-      fhLocalRegionClusterEnergySumPerCentrality->SetYTitle("#Sigma #it{E} (GeV)");
-      outputContainer->Add(fhLocalRegionClusterEnergySumPerCentrality);    
-
-      fhLocalRegionClusterMultiplicityPerCentrality = new TH2F ("hLocalRegionClusterMultiplicityPerCentrality",
-                                                                      "Cluster multiplicity around trigger cluster vs centrality with R=0.2", 
-                                                                      100,0,100, 200,0,200);
-      fhLocalRegionClusterMultiplicityPerCentrality->SetXTitle("Centrality");
-      fhLocalRegionClusterMultiplicityPerCentrality->SetYTitle("Multiplicity");
-      outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentrality);        
-    }
-
-    if(IsStudyClusterOverlapsPerGeneratorOn() && IsDataMC())
-    {
-      fhLocalRegionClusterEnergySumHijing = new TH2F ("hLocalRegionClusterEnergySumHijing",
-                                                      "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
-                                                      nptbins,ptmin,ptmax, 200,0,100);
-      fhLocalRegionClusterEnergySumHijing->SetXTitle("#it{E} (GeV)");
-      fhLocalRegionClusterEnergySumHijing->SetYTitle("#Sigma #it{E} (GeV)");
-      outputContainer->Add(fhLocalRegionClusterEnergySumHijing);    
+      fhLocalRegionClusterEtaPhi[icase]  = new TH2F
+      (Form("hLocalRegionClusterEtaPhi%s",caseTitle[icase].Data()),
+       "cluster,#it{E} > 0.5 GeV, #eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhLocalRegionClusterEtaPhi[icase]->SetYTitle("#phi (rad)");
+      fhLocalRegionClusterEtaPhi[icase]->SetXTitle("#eta");
+      outputContainer->Add(fhLocalRegionClusterEtaPhi[icase]) ;
       
-      fhLocalRegionClusterMultiplicityHijing = new TH2F ("hLocalRegionClusterMultiplicityHijing",
-                                                         "Cluster multiplicity (HIJING) around trigger cluster #it{E} with R=0.2", 
-                                                         nptbins,ptmin,ptmax, 200,0,200);
-      fhLocalRegionClusterMultiplicityHijing->SetXTitle("#it{E} (GeV)");
-      fhLocalRegionClusterMultiplicityHijing->SetYTitle("Multiplicity");
-      outputContainer->Add(fhLocalRegionClusterMultiplicityHijing);    
+      fhLocalRegionClusterEnergySum[icase] = new TH2F 
+      (Form("hLocalRegionClusterEnergySum%s",caseTitle[icase].Data()),
+       "Sum of cluster energy around trigger cluster #it{E} with R=0.2", 
+       nptbins,ptmin,ptmax, 200,0,100);
+      fhLocalRegionClusterEnergySum[icase]->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterEnergySum[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+      outputContainer->Add(fhLocalRegionClusterEnergySum[icase]);    
+      
+      fhLocalRegionClusterMultiplicity[icase] = new TH2F 
+      (Form("hLocalRegionClusterMultiplicity%s",caseTitle[icase].Data()),
+       "Cluster multiplicity around trigger cluster #it{E} with R=0.2", 
+       nptbins,ptmin,ptmax, 200,0,200);
+      fhLocalRegionClusterMultiplicity[icase]->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterMultiplicity[icase]->SetYTitle("Multiplicity");
+      outputContainer->Add(fhLocalRegionClusterMultiplicity[icase]);    
       
       if(IsHighMultiplicityAnalysisOn())
       {
-        fhLocalRegionClusterEnergySumPerCentralityHijing = new TH2F ("hLocalRegionClusterEnergySumPerCentralityHijing",
-                                                                     "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
-                                                                     100,0,100, 200,0,100);
-        fhLocalRegionClusterEnergySumPerCentralityHijing->SetXTitle("Centrality");
-        fhLocalRegionClusterEnergySumPerCentralityHijing->SetYTitle("#Sigma #it{E} (GeV)");
-        outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijing);    
+        fhLocalRegionClusterEnergySumPerCentrality[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumPerCentrality%s",caseTitle[icase].Data()),
+         "Sum of cluster energy around trigger cluster vs centrality with R=0.2", 
+         100,0,100, 200,0,100);
+        fhLocalRegionClusterEnergySumPerCentrality[icase]->SetXTitle("Centrality");
+        fhLocalRegionClusterEnergySumPerCentrality[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumPerCentrality[icase]);    
         
-        fhLocalRegionClusterMultiplicityPerCentralityHijing = new TH2F ("hLocalRegionClusterMultiplicityPerCentralityHijing",
-                                                                        "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
-                                                                        100,0,100, 200,0,200);
-        fhLocalRegionClusterMultiplicityPerCentralityHijing->SetXTitle("Centrality");
-        fhLocalRegionClusterMultiplicityPerCentralityHijing->SetYTitle("Multiplicity");
-        outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijing);        
+        fhLocalRegionClusterMultiplicityPerCentrality[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityPerCentrality%s",caseTitle[icase].Data()),
+         "Cluster multiplicity around trigger cluster vs centrality with R=0.2", 
+         100,0,100, 200,0,200);
+        fhLocalRegionClusterMultiplicityPerCentrality[icase]->SetXTitle("Centrality");
+        fhLocalRegionClusterMultiplicityPerCentrality[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentrality[icase]);        
+      }
+      
+      if(IsStudyClusterOverlapsPerGeneratorOn() && IsDataMC())
+      {
+        fhLocalRegionClusterEnergySumHijing[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumHijing%s",caseTitle[icase].Data()),
+         "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumHijing[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumHijing[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumHijing[icase]);    
+        
+        fhLocalRegionClusterMultiplicityHijing[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityHijing%s",caseTitle[icase].Data()),
+         "Cluster multiplicity (HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityHijing[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityHijing[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityHijing[icase]);    
+        
+        fhLocalRegionClusterEnergySumAdded[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumAdded%s",caseTitle[icase].Data()),
+         "Sum of cluster energy (not HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumAdded[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumAdded[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumAdded[icase]);    
+        
+        fhLocalRegionClusterMultiplicityAdded[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityAdded%s",caseTitle[icase].Data()),
+         "Cluster multiplicity (not HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityAdded[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityAdded[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityAdded[icase]);    
+        
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityHijing[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentralityHijing%s",caseTitle[icase].Data()),
+           "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityHijing[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityHijing[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijing[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityHijing[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentralityHijing%s",caseTitle[icase].Data()),
+           "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijing[icase]);        
+          
+          
+          fhLocalRegionClusterEnergySumPerCentralityAdded[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentralityAdded%s",caseTitle[icase].Data()),
+           "Sum of cluster energy (not HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityAdded[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityAdded[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityAdded[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityAdded[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentralityAdded%s",caseTitle[icase].Data()),
+           "Cluster multiplicity (not HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]);        
+        }
       }
     }
   }
