@@ -3092,7 +3092,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     if     (genBkgTag1 == -1) return;
     else if(genBkgTag1  >  3) printf("Bkg1 generator tag larger than 3; Main %s Bkg %s\n",genName1.Data(),genNameBkg1.Data());
 
-    Int_t genBkgTag2 = GetCocktailGeneratorBackgroundTag(cluster1, genName2, genNameBkg2);
+    Int_t genBkgTag2 = GetCocktailGeneratorBackgroundTag(cluster2, genName2, genNameBkg2);
     if     (genBkgTag2 == -1) return;
     else if(genBkgTag2  >  3) printf("Bkg2 generator tag larger than 3; Main %s Bkg %s\n",genName2.Data(),genNameBkg2.Data());
     
