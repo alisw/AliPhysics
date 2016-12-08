@@ -63,7 +63,7 @@ You can map the current corrections to the new ones with the following table. No
 | ----------------------- | ------------------------- |
 | Tender                  | CellBadChannel            |
 |                         | CellEnergy                |
-|                         | CellBadChannel            |
+|                         | CellTimeCalib             |
 | Clusterizer             | Clusterizer               |
 | ClusterMaker            | ClusterExotics            |
 |                         | ClusterNonLinearity       |

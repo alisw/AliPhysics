@@ -100,8 +100,8 @@ class AliEmcalCorrectionComponent : public TNamed {
   template<typename T> static typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_same<T, std::string>::value && !std::is_same<T, bool>::value>::type PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage);
   template<typename T> static typename std::enable_if<std::is_arithmetic<T>::value || std::is_same<T, std::string>::value || std::is_same<T, bool>::value>::type PrintRetrievedPropertyValue(T & property, std::stringstream & tempMessage);
 
-  YAML::Node              fUserConfiguration;             /// User YAML configuration
-  YAML::Node              fDefaultConfiguration;          /// Default YAML configuration
+  YAML::Node              fUserConfiguration;             //!<! User YAML configuration
+  YAML::Node              fDefaultConfiguration;          //!<! Default YAML configuration
 #endif
 
   Bool_t                  fCreateHisto;                   ///< Flag to make some basic histograms
