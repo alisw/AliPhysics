@@ -508,8 +508,18 @@ void AliPHOSTenderSupply::ProcessEvent()
     AliAODCaloCells * cells = aod->GetPHOSCells() ;
     ProcessAODEvent(clusters,cells, vertex) ;
     //If there is an embedding
-    TClonesArray * clustersEmb = (TClonesArray*)aod->FindListObject("EmbeddedCaloClusters") ;
-    AliAODCaloCells * cellsEmb = (AliAODCaloCells *)aod->FindListObject("EmbeddedPHOScells") ;
+    TClonesArray * clustersEmb = (TClonesArray*)aod->FindListObject("EmbeddedPi0CaloClusters") ;
+    AliAODCaloCells * cellsEmb = (AliAODCaloCells *)aod->FindListObject("EmbeddedPi0PHOScells") ;
+    if(clustersEmb && cellsEmb){
+      ProcessAODEvent(clustersEmb,cellsEmb,vertex) ;
+    }
+    clustersEmb = (TClonesArray*)aod->FindListObject("EmbeddedEtaCaloClusters") ;
+    cellsEmb = (AliAODCaloCells *)aod->FindListObject("EmbeddedEtaPHOScells") ;
+    if(clustersEmb && cellsEmb){
+      ProcessAODEvent(clustersEmb,cellsEmb,vertex) ;
+    }
+    clustersEmb = (TClonesArray*)aod->FindListObject("EmbeddedGammaCaloClusters") ;
+    cellsEmb = (AliAODCaloCells *)aod->FindListObject("EmbeddedGammaPHOScells") ;
     if(clustersEmb && cellsEmb){
       ProcessAODEvent(clustersEmb,cellsEmb,vertex) ;
     }
