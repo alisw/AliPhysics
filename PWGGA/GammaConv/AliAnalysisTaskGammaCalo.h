@@ -338,11 +338,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterM20;                                          //! cluster M20
     Float_t               fClusterEP;                                           //! cluster-track E/p
     Int_t                 fClusterLeadCellID;                                   //! cellID of leading cell in cluster
+    Int_t                 fClusterClassification;                               //! classification of cluster in MC
+    Float_t               fDeltaEta;                                            //! matching residual track <-> cluster
+    Float_t               fDeltaPhi;                                            //! matching residual track <-> cluster
     Float_t               fTrackPt;                                             //! track Pt
     Int_t                 fTrackPID_e;                                          //! track PID e
     Int_t                 fTrackPID_Pi;                                         //! track PID Pi
     Int_t                 fTrackPID_K;                                          //! track PID K
     Int_t                 fTrackPID_P;                                          //! track PID P
+    Float_t               fClusterIsoSumClusterEt;                              //! sum of Et of clusters within R<0.2
+    Float_t               fClusterIsoSumTrackEt;                                //! sum of Et of tracks within R<0.2
 
     // hists for nonlineartiy calibration
 //    TH2F**                fHistoTruePi0NonLinearity;                            //! E_truth/E_rec vs E_rec for TruePi0s
