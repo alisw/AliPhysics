@@ -21,6 +21,7 @@ class TH2I ;
 class AliVCluster ;
 class AliVCaloCells ;
 class AliAnalysisTaskSE ;
+class AliAODCaloCells ;
 
 class AliPHOSTenderSupply: public AliTenderSupply {
   
@@ -49,6 +50,7 @@ public:
   void ForceUsingBadMap(const char * filename="alien:///alice/cern.ch/user/p/prsnko/BadMaps/BadMap_LHC10b.root") ;
   void ForceUsingCalibration(const char * filename="alien:///alice/cern.ch/user/p/prsnko/Recalibrations/LHC10b_pass1.root") ;
   void SetAddCellNoise(Double_t rms=0.008){fAddNoiseMC=kTRUE; fNoiseMC=rms;} //Add some noise to MC data 
+  void ApplyZeroSuppression(Double_t zsCut=0.020){fApplyZS=kTRUE; fZScut=zsCut;} //Apply Zero Suppression cut (in GeV)
   
   void UseLGForTime(Bool_t toUse=kFALSE){fUseLGForTime=toUse;} //Switch off LowGain digits from time calculation
   void AverageDigitsTime(Bool_t toAverage=kTRUE){fAverageDigitsTime=toAverage;} //turn on averaging of clusters digits time
@@ -58,6 +60,7 @@ public:
 protected:
   AliPHOSTenderSupply(const AliPHOSTenderSupply&c);
   AliPHOSTenderSupply& operator= (const AliPHOSTenderSupply&c);
+  void ProcessAODEvent(TClonesArray * clusters, AliAODCaloCells * cells, TVector3 &vertex) ;
   Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
   Double_t CorrectNonlinearity(Double_t en) ;
   Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
@@ -88,6 +91,8 @@ private:
   Bool_t fUsePrivateCalib ;
   Bool_t fAddNoiseMC ;                       //Should we add cell-by-cell noise in MC simulations
   Double_t fNoiseMC  ;                       //RMS of cell-by-cell noise (in GeV)
+  Bool_t   fApplyZS ;                        // Should Zero Suppression threshold be applied (MC mostly)
+  Double_t fZScut ;                          // Zero Suppression threshold
   Bool_t fUseLGForTime ;                     //Switch to use LG digits in time calculation  or not
   Bool_t fAverageDigitsTime;                 //Make averaging of time of digits of a cluster or use time at maximum
 
@@ -97,7 +102,7 @@ private:
   Bool_t fIsMC;                              //True if work with MC data
   TString fMCProduction ;                    //Name of MC production
  
-  ClassDef(AliPHOSTenderSupply, 6); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 7); // PHOS tender task
 };
 
 
