@@ -45,20 +45,20 @@ AliAnalysisTaskSE* AddTaskZDCQA()
    else if(((beamType.CompareTo("p-A"))==0) || ((beamType.CompareTo("A-p"))==0)
      ||((beamType.CompareTo("P-A"))==0) || ((beamType.CompareTo("A-P"))==0)){
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQApPb.C");
-      task = AddTaskZDCQAPbPb();
+      task = AddTaskZDCQApPb();
    }
    else if((beamType.CompareTo("A-A")) == 0 || (beamType.CompareTo("AA")) == 0){
       gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/ZDC/AddTaskZDCQAPbPb.C");
-      task = AddTaskZDCQApPb();
+      task = AddTaskZDCQAPbPb();
    }
+   /*
    mgr->AddTask(task);
-
    AliAnalysisDataContainer *cout  = mgr->CreateContainer("QAZDCHists",TList::Class(),
 							  AliAnalysisManager::kOutputContainer, Form("%s:ZDC_Performance",
 												     mgr->GetCommonFileName()));
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task, 1, cout);
-
+   */
    return task;
 }
