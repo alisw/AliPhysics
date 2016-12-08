@@ -34,6 +34,7 @@
 #include "TAxis.h"
 #include "TChain.h"
 #include "TH1F.h"
+#include "TF1.h"
 
 #include <vector>
 #include <map>
@@ -562,6 +563,23 @@ Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t
 }
 
 //________________________________________________________________________
+Int_t AliCaloTrackMatcher::GetNMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dR){
+  Int_t matched = 0;
+  multimap<Int_t,Int_t>::iterator it;
+  for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it){
+    if(it->first == clusterID){
+      Float_t tempDEta, tempDPhi;
+      AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(it->second));
+      if(!tempTrack) continue;
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->first,tempDEta,tempDPhi)){
+        if (TMath::Sqrt(tempDEta*tempDEta + tempDPhi*tempDPhi) < dR ) matched++;
+      }
+    }
+  }
+  return matched;
+}
+
+//________________________________________________________________________
 Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
 
   Int_t TrackPos = -1;
@@ -635,6 +653,34 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t
   return matched;
 }
 
+//________________________________________________________________________
+Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dR){
+  Int_t TrackPos = -1;
+  if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
+    for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
+      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+      if(currTrack->GetID() == trackID){
+        TrackPos = iTrack;
+        break;
+      }
+    }
+    if(TrackPos == -1) AliFatal(Form("AliCaloTrackMatcher: GetNMatchedClusterIDsForTrack - track (ID: '%i') cannot be retrieved from event, should be impossible as it has been used in maim task before!",trackID));
+  }else TrackPos = trackID; // for ESD just take trackID
+
+  Int_t matched = 0;
+  multimap<Int_t,Int_t>::iterator it;
+  AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(TrackPos));
+  if(!tempTrack) return matched;
+  for (it=fMapTrackToCluster.begin(); it!=fMapTrackToCluster.end(); ++it){
+    if(it->first == TrackPos){
+      Float_t tempDEta, tempDPhi;
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->second,tempDEta,tempDPhi)){
+        if (TMath::Sqrt(tempDEta*tempDEta + tempDPhi*tempDPhi) < dR ) matched++;
+      }
+    }
+  }
+  return matched;
+}
 
 //________________________________________________________________________
 vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
@@ -679,6 +725,23 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event
         
         if (match_dPhi && match_dEta )tempMatchedTracks.push_back(it->second);
 
+      }
+    }
+  }
+  return tempMatchedTracks;
+}
+
+//________________________________________________________________________
+vector<Int_t> AliCaloTrackMatcher::GetMatchedTrackIDsForCluster(AliVEvent *event, Int_t clusterID,  Float_t dR){
+  vector<Int_t> tempMatchedTracks;
+  multimap<Int_t,Int_t>::iterator it;
+  for (it=fMapClusterToTrack.begin(); it!=fMapClusterToTrack.end(); ++it){
+    if(it->first == clusterID){
+      Float_t tempDEta, tempDPhi;
+      AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(it->second));
+      if(!tempTrack) continue;
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->first,tempDEta,tempDPhi)){
+        if (TMath::Sqrt(tempDEta*tempDEta + tempDPhi*tempDPhi) < dR ) tempMatchedTracks.push_back(it->second);
       }
     }
   }
@@ -759,6 +822,35 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event
 }
 
 //________________________________________________________________________
+vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dR){
+  Int_t TrackPos = -1;
+  if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
+    for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
+      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+      if(currTrack->GetID() == trackID){
+        TrackPos = iTrack;
+        break;
+      }
+    }
+    if(TrackPos == -1) AliFatal(Form("AliCaloTrackMatcher: GetNMatchedClusterIDsForTrack - track (ID: '%i') cannot be retrieved from event, should be impossible as it has been used in maim task before!",trackID));
+  }else TrackPos = trackID; // for ESD just take trackID
+
+  vector<Int_t> tempMatchedClusters;
+  multimap<Int_t,Int_t>::iterator it;
+  AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(TrackPos));
+  if(!tempTrack) return tempMatchedClusters;
+  for (it=fMapTrackToCluster.begin(); it!=fMapTrackToCluster.end(); ++it){
+    if(it->first == TrackPos){
+      Float_t tempDEta, tempDPhi;
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->second,tempDEta,tempDPhi)){
+        if (TMath::Sqrt(tempDEta*tempDEta + tempDPhi*tempDPhi) < dR ) tempMatchedClusters.push_back(it->second);
+      }
+    }
+  }
+  return tempMatchedClusters;
+}
+
+//________________________________________________________________________
 //________________________________________________________________________
 //________________________________________________________________________
 //________________________________________________________________________
@@ -821,6 +913,24 @@ Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, In
         else match_dPhi = kFALSE;
         
         if (match_dPhi && match_dEta )matched++;
+      }
+    }
+  }
+
+  return matched;
+}
+
+//________________________________________________________________________
+Int_t AliCaloTrackMatcher::GetNMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dR){
+  Int_t matched = 0;
+  multimap<Int_t,Int_t>::iterator it;
+  for (it=fSecMapClusterToTrack.begin(); it!=fSecMapClusterToTrack.end(); ++it){
+    if(it->first == clusterID){
+      Float_t tempDEta, tempDPhi;
+      AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(it->second));
+      if(!tempTrack) continue;
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->first,tempDEta,tempDPhi)){
+        if (TMath::Sqrt(tempDEta*tempDEta + tempDPhi*tempDPhi) < dR ) matched++;
       }
     }
   }
@@ -904,6 +1014,36 @@ Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, In
 }
 
 //________________________________________________________________________
+Int_t AliCaloTrackMatcher::GetNMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dR){
+  Int_t TrackPos = -1;
+  if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
+    for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
+      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+      if(currTrack->GetID() == trackID){
+        TrackPos = iTrack;
+        break;
+      }
+    }
+    if(TrackPos == -1) AliFatal(Form("AliCaloTrackMatcher: GetNMatchedClusterIDsForTrack - track (ID: '%i') cannot be retrieved from event, should be impossible as it has been used in maim task before!",trackID));
+  }else TrackPos = trackID; // for ESD just take trackID
+
+  Int_t matched = 0;
+  multimap<Int_t,Int_t>::iterator it;
+  AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(TrackPos));
+  if(!tempTrack) return matched;
+  for (it=fSecMapTrackToCluster.begin(); it!=fSecMapTrackToCluster.end(); ++it){
+    if(it->first == TrackPos){
+      Float_t tempDEta, tempDPhi;
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->second,tempDEta,tempDPhi)){
+        if (TMath::Sqrt(tempDEta*tempDEta + tempDPhi*tempDPhi) < dR ) matched++;
+      }
+    }
+  }
+
+  return matched;
+}
+
+//________________________________________________________________________
 vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin){
   vector<Int_t> tempMatchedTracks;
   multimap<Int_t,Int_t>::iterator it;
@@ -946,6 +1086,24 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *ev
         else match_dPhi = kFALSE;
         
         if (match_dPhi && match_dEta )tempMatchedTracks.push_back(it->second);
+      }
+    }
+  }
+
+  return tempMatchedTracks;
+}
+
+//________________________________________________________________________
+vector<Int_t> AliCaloTrackMatcher::GetMatchedSecTrackIDsForCluster(AliVEvent *event, Int_t clusterID, Float_t dR){
+  vector<Int_t> tempMatchedTracks;
+  multimap<Int_t,Int_t>::iterator it;
+  for (it=fSecMapClusterToTrack.begin(); it!=fSecMapClusterToTrack.end(); ++it){
+    if(it->first == clusterID){
+      Float_t tempDEta, tempDPhi;
+      AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(it->second));
+      if(!tempTrack) continue;
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->first,tempDEta,tempDPhi)){
+        if (TMath::Sqrt(tempDEta*tempDEta + tempDPhi*tempDPhi) < dR ) tempMatchedTracks.push_back(it->second);
       }
     }
   }
@@ -1027,6 +1185,52 @@ vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *ev
   return tempMatchedClusters;
 }
 
+//________________________________________________________________________
+vector<Int_t> AliCaloTrackMatcher::GetMatchedClusterIDsForSecTrack(AliVEvent *event, Int_t trackID, Float_t dR){
+  Int_t TrackPos = -1;
+  if(event->IsA()==AliAODEvent::Class()){ // for AOD, we have to look for position of track in the event
+    for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++){
+      AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(iTrack));
+      if(currTrack->GetID() == trackID){
+        TrackPos = iTrack;
+        break;
+      }
+    }
+    if(TrackPos == -1) AliFatal(Form("AliCaloTrackMatcher: GetNMatchedClusterIDsForTrack - track (ID: '%i') cannot be retrieved from event, should be impossible as it has been used in maim task before!",trackID));
+  }else TrackPos = trackID; // for ESD just take trackID
+
+  vector<Int_t> tempMatchedClusters;
+  multimap<Int_t,Int_t>::iterator it;
+  AliVTrack* tempTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(TrackPos));
+  if(!tempTrack) return tempMatchedClusters;
+  for (it=fSecMapTrackToCluster.begin(); it!=fSecMapTrackToCluster.end(); ++it){
+    if(it->first == TrackPos){
+      Float_t tempDEta, tempDPhi;
+      if(GetTrackClusterMatchingResidual(tempTrack->GetID(),it->second,tempDEta,tempDPhi)){
+        if (TMath::Sqrt(tempDEta*tempDEta + tempDPhi*tempDPhi) < dR ) tempMatchedClusters.push_back(it->second);
+      }
+    }
+  }
+
+  return tempMatchedClusters;
+}
+
+//________________________________________________________________________
+Float_t AliCaloTrackMatcher::SumTrackEtAroundCluster(AliVEvent* event, Int_t clusterID, Float_t dR){
+  Float_t sumTrackEt = 0.;
+  vector<Int_t> labelsMatched = GetMatchedTrackIDsForCluster(event, clusterID, dR);
+  if((Int_t) labelsMatched.size()<1) return sumTrackEt;
+
+  TLorentzVector vecTrack;
+  for (Int_t i = 0; i < (Int_t)labelsMatched.size(); i++){
+    AliVTrack* currTrack  = dynamic_cast<AliVTrack*>(event->GetTrack(labelsMatched.at(i)));
+    if(!currTrack) continue;
+    vecTrack.SetPxPyPzE(currTrack->Px(),currTrack->Py(),currTrack->Pz(),currTrack->E());
+    sumTrackEt += vecTrack.Et();
+  }
+
+  return sumTrackEt;
+}
 
 //________________________________________________________________________
 void AliCaloTrackMatcher::SetLogBinningYTH2(TH2* histoRebin){
