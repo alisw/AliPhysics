@@ -190,11 +190,12 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
   if(fgCTPtriggerLatency < 0){ // read from OCDB
     AliCDBManager *man = AliCDBManager::Instance();
     Int_t run = man->GetRun();
-    if(run > 244335){
-      fgCTPtriggerLatency = 12800; // run-2 value
-    }
-    else if(run > 256144){
+
+    if(run > 256144){
       fgCTPtriggerLatency = 11600; // run-2 value 2016
+    }
+     else if(run > 244335){
+      fgCTPtriggerLatency = 12800; // run-2 value
     }
     else
       fgCTPtriggerLatency = 13600; // run-1 value
