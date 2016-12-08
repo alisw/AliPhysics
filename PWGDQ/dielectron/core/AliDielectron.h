@@ -1,13 +1,3 @@
-/**
-* @Author: Pascal Dillenseger <pascaldillenseger>
-* @Date:   2016-10-21, 11:52:17
-* @Email:  pdillens@cern.ch
-* @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-16, 16:42:45
-*/
-
-
-
 #ifndef ALIDIELECTRON_H
 #define ALIDIELECTRON_H
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *

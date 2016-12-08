@@ -1,13 +1,3 @@
-/**
-* @Author: Pascal Dillenseger <pascaldillenseger>
-* @Date:   2016-10-21, 11:52:17
-* @Email:  pdillens@cern.ch
-* @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-17, 14:07:20
-*/
-
-
-
 /*************************************************************************
 * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -2002,7 +1992,7 @@ TObject* AliDielectron::InitEffMap(TString filename, TString generatedname, TStr
   // NOTE: the spline must have the 'variable name' stored in its fHistogram
   TSpline3 *hEff = (TSpline3*) file->Get("hEfficiency");
   //if(hEff) printf("we use a TSpline!!!!!!!!!!! \n");
-  if(hEff){ 
+  if(hEff){
     printf("[II] AliDielectron::InitEffMap TSpline3 loaded! \n");
     return (hEff->Clone("effMap"));
   }
