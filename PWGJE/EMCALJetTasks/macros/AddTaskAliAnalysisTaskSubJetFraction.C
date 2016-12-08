@@ -195,16 +195,16 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
       JetContHybridS->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
       if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub) JetContHybridS->SetAreaEmcCut(-2); //??????????                                                             
     }
-    if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub){ //??????????????????????????                                                                                  
-      JetContHybridUs=task->AddJetContainer(njetsHybridUs,strType,R);     //Unsubtracted Hybrid                                                                              
-      if(JetContHybridUs) {
-        JetContHybridUs->SetRhoName(nrhoBase);
-        JetContHybridUs->ConnectParticleContainer(trackContHybridUs);
-        JetContHybridUs->SetPercAreaCut(0.6);
-	JetContHybridUs->SetJetRadius(R);
-	JetContHybridUs->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
-      }
+    //  if(jetShapeSub==AliAnalysisTaskSubJetFraction::kConstSub){ // In the case of Non Const Subtracted fill the Unsubtracted and Subtracted jet branches with the same hybrid branch. But you need to fill Both! For simplicity of coding                                                                              
+    JetContHybridUs=task->AddJetContainer(njetsHybridUs,strType,R);     //Unsubtracted Hybrid                                                                              
+    if(JetContHybridUs) {
+      JetContHybridUs->SetRhoName(nrhoBase);
+      JetContHybridUs->ConnectParticleContainer(trackContHybridUs);
+      JetContHybridUs->SetPercAreaCut(0.6);
+      JetContHybridUs->SetJetRadius(R);
+      JetContHybridUs->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
+    //    }
     JetContDet = task->AddJetContainer(njetsDet,strType,R); //Pythia Detector Level                                                                                        
     if(JetContDet) {
       JetContDet->SetRhoName(nrhoBase);

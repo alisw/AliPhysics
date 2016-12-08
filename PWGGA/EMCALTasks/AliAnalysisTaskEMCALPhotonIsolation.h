@@ -74,6 +74,8 @@ public:
   void                     SetEtIsoThreshold(Float_t r)                                     {fEtIsoThreshold = r ;}
   void                     SetCTMdeltaEta (Float_t r)                                      { fdetacut = r ;}
   void                     SetCTMdeltaPhi (Float_t r)                                      { fdphicut = r ;}
+  void                     SetCTMdeltaEtaIso (Float_t r)                                      { fdetacutIso = r ;}
+  void                     SetCTMdeltaPhiIso (Float_t r)                                      { fdphicutIso = r ;}
   void                     SetIsoMethod (Int_t r )                                         { fIsoMethod = r ;}
   void                     SetEtIsoMethod (Int_t r )                                       { fEtIsoMethod = r ;}
   void                     SetUEMethod (Int_t UE)                                          { fUEMethod = UE;}
@@ -120,7 +122,7 @@ protected:
   void                     PtIsoTrackOrthCones(TLorentzVector c, Double_t &ptIso, Double_t &cones);   //PIsoCone via Tracks UE via Orthogonal Cones in Phi
   void                     PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);      //PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
   
-  Bool_t                   ClustTrackMatching(AliVCluster *emccluster);
+  Bool_t                   ClustTrackMatching(AliVCluster *emccluster,Bool_t candidate);
 
   Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
   Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
@@ -171,6 +173,8 @@ protected:
   Double_t    fEtIsoThreshold;                 // Et isolation threshold, supposed to be % if method one is choosed
   Double_t    fdetacut;                        // cut on deta between track and cluster
   Double_t    fdphicut;                        // cut on dphi between track and cluster
+  Double_t    fdetacutIso;                        // cut on deta between track and cluster for iso
+  Double_t    fdphicutIso;                        // cut on dphi between track and cluster for iso
   Double_t    fM02mincut;                      // lambda0^2 minimum cut
   Double_t    fM02maxcut;                      // lambda0^2 maximum cut
   Bool_t      fExtraIsoCuts;                   // Cuts on Ncell and DTBC for Clusters in Eiso calculation
@@ -327,7 +331,7 @@ private:
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 11);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 12);    //EMCAL Neutrals base analysis task
                                                        /// \endcond
 };
 #endif

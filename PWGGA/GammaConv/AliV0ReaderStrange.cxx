@@ -216,8 +216,8 @@ AliV0ParticleStrange *AliV0ReaderStrange::ReconstructV0(AliESDEvent *fESDEvent, 
     
 //         if(pos->Pt() < .16) return 0x0;
 //     if(neg->Pt() < .16) return 0x0;
-//     if(fabs(pos->Eta()) > 0.8) return 0x0;
-//     if(fabs(neg->Eta()) > 0.8) return 0x0;
+//     if(TMath::Abs(pos->Eta()) > 0.8) return 0x0;
+//     if(TMath::Abs(neg->Eta()) > 0.8) return 0x0;
     
 //     if( neg->GetKinkIndex(0) > 0 || pos->GetKinkIndex(0) > 0) return 0x0 ;        
 //     if( !(pos->GetStatus() & AliESDtrack::kTPCrefit) || !(neg->GetStatus() & AliESDtrack::kTPCrefit) ) return 0x0;
@@ -350,8 +350,8 @@ AliV0ParticleStrange *AliV0ReaderStrange::ReconstructV0(AliAODEvent *fAODEvent, 
     
 //         if(pos->Pt() < .16) return 0x0;
 //     if(neg->Pt() < .16) return 0x0;
-//     if(fabs(pos->Eta()) > 0.8) return 0x0;
-//     if(fabs(neg->Eta()) > 0.8) return 0x0;
+//     if(TMath::Abs(pos->Eta()) > 0.8) return 0x0;
+//     if(TMath::Abs(neg->Eta()) > 0.8) return 0x0;
     
 //     if( neg->GetKinkIndex(0) > 0 || pos->GetKinkIndex(0) > 0) return 0x0 ;        
 //     if( !(pos->GetStatus() & AliESDtrack::kTPCrefit) || !(neg->GetStatus() & AliESDtrack::kTPCrefit) ) return 0x0;

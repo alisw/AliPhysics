@@ -433,12 +433,12 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
       else motherMotherIsPrimary                                      = kTRUE;
     }
 
-    if (!(fabs(particle->Energy()-particle->Pz())>0.)) continue;
+    if (!(TMath::Abs(particle->Energy()-particle->Pz())>0.)) continue;
     Double_t yPre = (particle->Energy()+particle->Pz())/(particle->Energy()-particle->Pz());
     if (yPre == 0.) continue;
     
     Double_t y = 0.5*TMath::Log(yPre);
-    if (fabs(y) > fMaxY) continue;
+    if (TMath::Abs(y) > fMaxY) continue;
     
     Int_t PdgAnalyzedParticle = 0;
     if (fAnalyzePi0)  PdgAnalyzedParticle = 111;

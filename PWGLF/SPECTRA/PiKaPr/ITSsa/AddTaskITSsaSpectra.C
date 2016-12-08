@@ -41,8 +41,8 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
 
   if (doMultSel) {
     taskits->SetDoMultSel(doMultSel);
-    taskits->SetCentEst(centEst);
-    taskits->SetMultiplicityCut(lowcut, upcut);
+    taskits->SetCentEst(multEst);
+    taskits->SetMultiplicityCut(lowMultCut, upMultCut);
     kContSuffix.Append(Form("_%s-%.1fto%.1f",
                             multEst,
                             (lowMultCut < 0) ?   0 : lowMultCut,

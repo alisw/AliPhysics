@@ -1208,72 +1208,89 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   fFilteredJets = fClustSeqSA->inclusive_jets(fMinJetPt-0.1); //becasue this is < not <=
   Double_t Result=-1;
   Double_t Result_SoftDrop=-1;
-  std::vector<fastjet::PseudoJet> SubJet_Axes;
+  std::vector<fastjet::PseudoJet> SubJet_Axes; //this is actually not subjet axis...but just axis
   fj::PseudoJet SubJet1_Axis;
   fj::PseudoJet SubJet2_Axis;
+  std::vector<fastjet::PseudoJet> SubJets;
+  fj::PseudoJet SubJet1;
+  fj::PseudoJet SubJet2;
   if (Algorithm==0){
     if (Measure==0){
       fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR*2));
       Result= nSub.result(fFilteredJets[0]);
       SubJet_Axes=nSub.currentAxes();
+      SubJets=nSub.currentSubjets();
     }
     else if (Measure==1){
       fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::UnnormalizedMeasure(Beta));
       Result= nSub.result(fFilteredJets[0]);
       SubJet_Axes=nSub.currentAxes();
+      SubJets=nSub.currentSubjets();
     }
   }
   else if (Algorithm==1) {
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==2){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::AntiKT_Axes(Radius), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==3) {
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::WTA_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==4) {
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::WTA_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==5){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==6){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==7){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_AntiKT_Axes(Radius), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==8){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_WTA_KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==9){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::OnePass_WTA_CA_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
   else if (Algorithm==10){
     fj::contrib::Nsubjettiness nSub(N, fj::contrib::MultiPass_Axes(100), fj::contrib::NormalizedMeasure(Beta,fR));
     Result= nSub.result(fFilteredJets[0]);
     SubJet_Axes=nSub.currentAxes();
+    SubJets=nSub.currentSubjets();
   }
 
+
+  
   SubJet1_Axis=SubJet_Axes[0];	
   Double_t SubJet1_Eta=SubJet1_Axis.pseudorapidity();
   Double_t SubJet2_Eta;
@@ -1293,6 +1310,26 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     else if (DeltaPhi > TMath::Pi()) DeltaPhi -= (2*TMath::Pi());
   }
 
+
+  SubJet1=SubJets[0];
+  Double_t SubJet1Eta=SubJet1.pseudorapidity();
+  Double_t SubJet2Eta;
+  Double_t SubJet1Phi=SubJet1.phi();
+  if(SubJet1Phi < -1*TMath::Pi()) SubJet1Phi += (2*TMath::Pi());
+  else if (SubJet1Phi > TMath::Pi()) SubJet1Phi -= (2*TMath::Pi());
+  Double_t SubJet2Phi;
+  Double_t DeltaPhiSubJets=-5;
+  if (SubJet_Axes.size()>1){
+    SubJet2=SubJets[1];
+    SubJet2Eta=SubJet2.pseudorapidity();
+    SubJet2Phi=SubJet2.phi();
+    if(SubJet2Phi < -1*TMath::Pi()) SubJet2Phi += (2*TMath::Pi());
+    else if (SubJet2Phi > TMath::Pi()) SubJet2Phi -= (2*TMath::Pi());
+    DeltaPhiSubJets=SubJet1Phi-SubJet2Phi;
+    if(DeltaPhiSubJets < -1*TMath::Pi()) DeltaPhiSubJets += (2*TMath::Pi());
+    else if (DeltaPhiSubJets > TMath::Pi()) DeltaPhiSubJets -= (2*TMath::Pi());
+  }
+
   //Added for quality control of the DeltaR-Nsubjettiness variable (comparing Nsubjettiness and soft drop results)
   fj::contrib::SoftDrop Soft_Drop(Beta_SD,ZCut);
   Soft_Drop.set_tagging_mode(); //if the first two subjets fail the soft drop criteria a jet = 0 is returned
@@ -1307,6 +1344,9 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   else if (Option==1 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
   else if (Option==2 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
   else if ((Option==3 || Option==4) && N==2) return Result_SoftDrop;
+  else if (Option==5 && SubJets.size()>1 && N==2) return SubJet1.perp();
+  else if (Option==6 && SubJets.size()>1 && N==2) return SubJet2.perp();
+  else if (Option==7 && SubJets.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1Eta-SubJet2Eta,2)+TMath::Power(DeltaPhiSubJets,2));
   else return -2;
 }
 

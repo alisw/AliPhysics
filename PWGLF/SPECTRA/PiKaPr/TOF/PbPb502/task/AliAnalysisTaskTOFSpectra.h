@@ -48,8 +48,6 @@ class TClonesArray;
 
 using namespace AliUtilTOFParams;
 
-#define LOG_NO_INFO
-#define LOG_NO_DEBUG
 // #define TESTFLAG//Flag intendended for testing
 #define USETREECLASS//Flag temporary to use a class to be stored in the tree
 //#define CHECKPERFORMANCE//Flag to check the time usage
@@ -459,8 +457,8 @@ public:
   
   //Standard track cuts
   AliNuclexEventCuts fEventCut;      //!<! basic cut variables for events
-  AliESDtrackCuts* fESDtrackCuts;    //!<! basic cut variables
-  AliESDtrackCuts* fESDtrackCutsPrm; //!<! basic cut variables for primaries
+  AliESDtrackCuts* fESDtrackCuts;    /// basic cut variables
+  AliESDtrackCuts* fESDtrackCutsPrm; /// basic cut variables for primaries
   
   
 private:
@@ -580,6 +578,7 @@ private:
   Double_t fP;                     ///<  Momentum of the track
   Double_t fPTPC;                  ///<  Momentum of the track in the TPC
   Double_t fPt;                    ///<  Transverse momentum of the track
+  const Float_t fDCAXYshift;       ///<  Shift to the DCAxy of the track to compensate for the bias, to be used only in MC, to be defined in the constructor
   Float_t fDCAXY;                  ///<  DCAxy of the track
   Float_t fDCAZ;                   ///<  DCAz of the track
   
@@ -681,9 +680,10 @@ private:
   TH1D* hTOFResidualZ;                          ///<  Histogram with the Impact Residual Z
   TH1D* hTOFChannel;                            ///<  Histogram with the Channel in the TOF
   TH1D* hT0Resolution;                          ///<  Histogram with the resolution on the T0
-  TH1D* hTimeOfFlightRes;                       ///<  Histogram with the Time Of Flight resolution
-  TH1D* hTimeOfFlightTOFRes;                    ///<  Histogram with the Time Of Flight resolution
-  TH1D* hTimeOfFlightGoodRes;                   ///<  Histogram with the Time Of Flight resolution for tracks with good matching
+  TH1D* hTimeOfFlightRes;                       ///<  Histogram with the Time Of Flight
+  TH1D* hTimeOfFlightTOFRes;                    ///<  Histogram with the Time Of Flight for events without the T0 Fill
+  TH1D* hTimeOfFlightGoodRes;                   ///<  Histogram with the Time Of Flight for tracks with good matching
+  TH1D* hTimeOfFlightResNoMismatch;             ///<  Histogram with the Time Of Flight for PID consistent with TPC for Pi K P
   TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
   TH2F* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
   TH2F* hBetaNoMismatch;                        ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
@@ -761,7 +761,7 @@ private:
   
   //DCA Histograms
   //-> Data and MC
-  TH1F* hDCAxy[2][3][kPtBins][kEvtMultBins];  ///< DCAxy Distribution in Pt bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
+  TH1F* hDCAxy[2][3][kPtBins];                ///< DCAxy Distribution in Pt bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
   //-> MC only
   TH1F* hDCAxyPrimMC[2][3][kPtBins];          ///< DCAxy Distribution in Pt bins for Primary reconstructed tracks identified with MC Truth
   TH1F* hDCAxySecStMC[2][3][kPtBins];         ///< DCAxy Distribution in Pt bins for Secondary from Strangeness reconstructed tracks identified with MC Truth
@@ -771,7 +771,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 2);
+  ClassDef(AliAnalysisTaskTOFSpectra, 4);
 };
 
 #endif

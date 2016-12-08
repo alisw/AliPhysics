@@ -7,9 +7,6 @@
 using namespace AliUtilTOFParams;
 
 
-#define LOG_NO_INFO
-// #include "AliLog.h"
-
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -55,7 +52,7 @@ public:
   //DCA binning
   ///
   /// Method to tests the DCA binning
-  void TestDCAXYBinning(){                                              
+  void TestDCAXYBinning(){
     Int_t dim = static_cast<Int_t>(TMath::Power(2., 8.*sizeof(fDCAXYIndex)));
     Double_t range = (2.*fDCAXYRange);
     std::cout<<"fDCAXYIndex has "<<dim<<" possibilities"<<std::endl;
@@ -86,7 +83,7 @@ public:
   
   ///
   /// Method to put the DCAxy or DCAz of the class into bins
-  void ComputeDCABin(const Double_t dca, const Bool_t xy){   
+  void ComputeDCABin(const Double_t dca, const Bool_t xy){
     if(xy){
       if(dca > fDCAXYRange){//Overflow
         fDCAXYIndex = kDCAXYBins+2;
@@ -114,7 +111,7 @@ public:
   
   ///
   /// Method to put the DCAxy and DCAz of the class into bins
-  void ComputeDCABin(const Double_t dcaxy, const Double_t dcaz){         
+  void ComputeDCABin(const Double_t dcaxy, const Double_t dcaz){
     
     ComputeDCABin(dcaxy, (Bool_t) kTRUE);
     ComputeDCABin(dcaz, (Bool_t) kFALSE);
@@ -122,7 +119,7 @@ public:
   
   ///
   /// Method to convert compute the bin limits of the DCA binning
-  void GetBinnedDCA(Double_t &down, Double_t &up, const Bool_t xy){      
+  void GetBinnedDCA(Double_t &down, Double_t &up, const Bool_t xy){
     if(xy){
       if(fDCAXYIndex == kDCAXYBins+2){//Overflow
         down = fDCAXYRange;
@@ -167,39 +164,117 @@ public:
   
   ///
   /// Method to get the diffenece between the track time and the expected one
-  Float_t GetDeltaT(const UInt_t id){
-    if(id > kExpSpecies) ::Fatal("GetDeltaT", "Index required is out of bound");
-    return fTOFTime - fTOFExpTime[id] - fT0TrkTime;
-  }
+  Float_t GetDeltaT(const UInt_t id);
   
   ///
   /// Method to get the diffenece between the track time and the expected one in Number of sigmas
-  Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo){
-    if(id > kExpSpecies) ::Fatal("GetDeltaSigma", "Index required is out of bound");
-    return GetDeltaT(hypo)/fTOFExpSigma[id];
+  Float_t GetDeltaSigma(const UInt_t id, const UInt_t hypo);
+  
+  ///
+  /// Method to get the resolution on T0 based on the expected sigma of electrons
+  Double_t GetT0Resolution(const Double_t TOFsigma = 80) const {
+    return TMath::Sqrt(TMath::Power(fTOFExpSigma[0], 2) - TMath::Power(TOFsigma, 2) - TMath::Power(15./GetMomentum(), 2));
   }
   
-  //Check che cut variation
-  Bool_t PassStdCut();
-  Bool_t PassCut(const Int_t cut = -1);
-  //TPC PID
-  Bool_t IsTPCElectron(){ 
-    if(GetMaskBit(fTPCPIDMask, kIsTPCElectron)) return kTRUE; //1.5 sigma cut for Electrons in TPC
-    return kFALSE;  
-  }
-  Bool_t IsTPCPiKP(){ 
-    for(Int_t i = 0; i < 3; i++) if(!GetMaskBit(fTPCPIDMask, kIsTPCPion + i)) return kFALSE; //5 sigma cut for Pi/K/P in TPC
-    return kTRUE;
-  }
+  //T0 Methods
   
-  //Particle charge
-  Bool_t IsNegative(){
-    if(GetMaskBit(fTrkMask, kNegTrk)) return kTRUE;
+  ///
+  /// Method to get if the T0 time is T0 TOF
+  Bool_t IsT0TOF(){
+    if(GetMaskBit(fTrkMask, kT0_0)) return kTRUE;
     return kFALSE;
   }
   
+  ///
+  /// Method to get if the T0 time is T0 T0A
+  Bool_t IsT0A(){
+    if(GetMaskBit(fTrkMask, kT0_1)) return kTRUE;
+    return kFALSE;
+  }
   
-  ClassDef(AliAnTOFtrack, 1);
+  ///
+  /// Method to get if the T0 time is T0 T0C
+  Bool_t IsT0C(){
+    if(GetMaskBit(fTrkMask, kT0_2)) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 Fill
+  Bool_t IsT0Fill(){
+    if(!GetMaskBit(fTrkMask, kT0_0) && !GetMaskBit(fTrkMask, kT0_1) && !GetMaskBit(fTrkMask, kT0_2)) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF and T0 T0A
+  Bool_t IsT0TOF_T0A(){
+    if(IsT0TOF() && IsT0A()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF and T0 T0C
+  Bool_t IsT0TOF_T0C(){
+    if(IsT0TOF() && IsT0C()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 T0A and T0 T0C
+  Bool_t IsT0A_T0C(){
+    if(IsT0A() && IsT0C()) return kTRUE;
+    return kFALSE;
+  }
+  
+  ///
+  /// Method to get if the T0 time is T0 TOF, T0 T0A and T0 T0C
+  Bool_t IsT0TOF_T0A_T0C(){
+    if(IsT0TOF() && IsT0A() && IsT0C()) return kTRUE;
+    return kFALSE;
+  }
+  
+  // Cut flags 
+  
+  ///
+  /// Method to check the standard cuts
+  Bool_t PassStdCut();
+  
+  ///
+  /// Method to check all the cut variations
+  Bool_t PassCut(const Int_t cut = -1);
+  
+  // TPC PID
+  
+  ///
+  /// TPC PID for electrons
+  Bool_t IsTPCElectron();
+  
+  ///
+  /// Method to check if it is TPC Pi K P
+  Bool_t IsTPCPiKP(const UInt_t i);
+  
+  ///
+  /// Method to check that in TPC the PID is for Pi K P
+  Bool_t IsTPCPiKP();
+  
+  ///
+  /// Method to check consistency between TOF and TPC for Pi K P to remove mismatch
+  Bool_t ConsistentTPCTOF();
+  
+  ///
+  /// Method to get the particle charge
+  Bool_t IsNegative();
+  
+  ///
+  /// Method to get the particle theta
+  Double_t GetTheta() const { return 2.*TMath::ATan(TMath::Exp(-fEta)); }
+  
+  ///
+  /// Method to get the particle momentum
+  Double_t GetMomentum() const { return fPt/TMath::Sin(GetTheta()); }
+  
+  ClassDef(AliAnTOFtrack, 4);
 };
 
 #endif

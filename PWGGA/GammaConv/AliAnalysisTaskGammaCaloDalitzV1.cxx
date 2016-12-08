@@ -2249,7 +2249,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessAODMCParticles()
 		if(!((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->InPlaneOutOfPlaneCut(particle->Phi(),fEventPlaneAngle,kFALSE)) continue;
 		if(((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->PhotonIsSelectedAODMC(particle,AODMCTrackArray,kFALSE)){
 			fHistoMCAllGammaPt[fiCut]->Fill(particle->Pt()); // All MC Gamma
-            if (fabs(particle->Eta()) < 0.66 ){
+            if (TMath::Abs(particle->Eta()) < 0.66 ){
 				if (particle->Phi() > 1.39626 && particle->Phi() < 3.125) fHistoMCAllGammaEMCALAccPt[fiCut]->Fill(particle->Pt());
 			}
 			if(particle->GetMother() >-1){ // Meson Decay Gamma
@@ -2283,7 +2283,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessAODMCParticles()
 			for(Int_t daughterIndex=particle->GetDaughter(0);daughterIndex<=particle->GetDaughter(1);daughterIndex++){
 				AliAODMCParticle *tmpDaughter = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(daughterIndex));
 				if(!tmpDaughter) continue;
-				if(abs(tmpDaughter->GetPdgCode()) == 11){
+                if(TMath::Abs(tmpDaughter->GetPdgCode()) == 11){
 					rConv = sqrt( (tmpDaughter->Xv()*tmpDaughter->Xv()) + (tmpDaughter->Yv()*tmpDaughter->Yv()) );
 				}
 			}
@@ -2479,7 +2479,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessMCParticles()
 		  
 			
 			
-            if ( fabs(particle->Eta()) < 0.66 ){
+            if ( TMath::Abs(particle->Eta()) < 0.66 ){
 				if (particle->Phi() > 1.39626 && particle->Phi() < 3.125) fHistoMCAllGammaEMCALAccPt[fiCut]->Fill(particle->Pt());
 			}	
 			
@@ -2738,7 +2738,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::CalculatePi0DalitzCandidates(){
 						
 						fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 						
-                            if(fabs(pi0cand->GetAlpha())<0.1)
+                            if(TMath::Abs(pi0cand->GetAlpha())<0.1)
 							fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
 							
 							
@@ -2770,7 +2770,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::CalculatePi0DalitzCandidates(){
 						
 						    fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
 						
-                            if(fabs( pi0cand->GetAlpha()) < 0.1 )
+                            if(TMath::Abs( pi0cand->GetAlpha()) < 0.1 )
 						    fHistoMotherInvMassEalpha[fiCut]->Fill(pi0cand->M(),pi0cand->E());
 					      
 						    if ( fDoTHnSparse ) {
@@ -3217,14 +3217,14 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTrueMesonCandidatesAOD(AliAODConve
 				if (isTruePi0){
 					if ( Pi0Candidate->M() > 0.05 && Pi0Candidate->M() < 0.17){
 						fHistoTruePi0PtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
-                        fHistoTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),fabs(Pi0Candidate->GetAlpha()));
+                        fHistoTruePi0PtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),TMath::Abs(Pi0Candidate->GetAlpha()));
 						fHistoTruePi0PtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
 						fHistoTrueMotherPi0ConvPhotonEtaPhi[fiCut]->Fill(TrueGammaCandidate0->GetPhotonPhi(), TrueGammaCandidate0->GetPhotonEta());
 					}
 				} else if (isTrueEta){
 					if ( Pi0Candidate->M() > 0.45 && Pi0Candidate->M() < 0.65){
 						fHistoTrueEtaPtY[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->Rapidity()-((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift());
-                        fHistoTrueEtaPtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),fabs(Pi0Candidate->GetAlpha()));
+                        fHistoTrueEtaPtAlpha[fiCut]->Fill(Pi0Candidate->Pt(),TMath::Abs(Pi0Candidate->GetAlpha()));
 						fHistoTrueEtaPtOpenAngle[fiCut]->Fill(Pi0Candidate->Pt(),Pi0Candidate->GetOpeningAngle());
 						fHistoTrueMotherEtaConvPhotonEtaPhi[fiCut]->Fill(TrueGammaCandidate0->GetPhotonPhi(), TrueGammaCandidate0->GetPhotonEta());
 					}
@@ -3457,7 +3457,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTruePhotonCandidatesAOD(AliAODConv
 	fCharPhotonMCInfo = 0;
 	
 	if(posDaughter == NULL || negDaughter == NULL) return; // One particle does not exist
-	Int_t pdgCode[2] = {abs(posDaughter->GetPdgCode()),abs(negDaughter->GetPdgCode())};
+    Int_t pdgCode[2] = {TMath::Abs(posDaughter->GetPdgCode()),TMath::Abs(negDaughter->GetPdgCode())};
 	
 	if(posDaughter->GetMother() != negDaughter->GetMother()){
 		
@@ -3560,7 +3560,7 @@ void AliAnalysisTaskGammaCaloDalitzV1::ProcessTruePhotonCandidates(AliAODConvers
 	fCharPhotonMCInfo = 0;
 	
 	if(posDaughter == NULL || negDaughter == NULL) return; // One particle does not exist
-	Int_t pdgCode[2] = {abs(posDaughter->GetPdgCode()),abs(negDaughter->GetPdgCode())};
+    Int_t pdgCode[2] = {TMath::Abs(posDaughter->GetPdgCode()),TMath::Abs(negDaughter->GetPdgCode())};
 	fCharPhotonMCInfo = 1;
 	if(posDaughter->GetMother(0) != negDaughter->GetMother(0)){
 		
@@ -3817,14 +3817,14 @@ void AliAnalysisTaskGammaCaloDalitzV1::RelabelAODPhotonCandidates(Bool_t mode){
 		AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
 		if(!AODLabelPos){
 			if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
-			PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+            PhotonCandidate->SetMCLabelPositive(TMath::Abs(tempDaughter->GetLabel()));
 			PhotonCandidate->SetLabelPositive(i);
 			AODLabelPos = kTRUE;
 			}
 		}
 		if(!AODLabelNeg){
 			if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
-			PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+            PhotonCandidate->SetMCLabelNegative(TMath::Abs(tempDaughter->GetLabel()));
 			PhotonCandidate->SetLabelNegative(i);
 			AODLabelNeg = kTRUE;
 			}
@@ -3871,17 +3871,17 @@ void AliAnalysisTaskGammaCaloDalitzV1::Terminate(const Option_t *)
 Int_t AliAnalysisTaskGammaCaloDalitzV1::GetSourceClassification(Int_t daughter, Int_t pdgCode){
   
 	if (daughter == 111) {
-		if (abs(pdgCode) == 310) return 1; // k0s
-		else if (abs(pdgCode) == 3122) return 2; // Lambda
-		else if (abs(pdgCode) == 130) return 3; // K0L
-		else if (abs(pdgCode) == 2212) return 4; // proton
-		else if (abs(pdgCode) == 2112) return 5; // neutron
-		else if (abs(pdgCode) == 211) return 6; // pion
-		else if (abs(pdgCode) == 321) return 7; // kaon
-		else if (abs(pdgCode) == 113 || abs(pdgCode) == 213 ) return 8; // rho 0,+,-
-		else if (abs(pdgCode) == 3222 || abs(pdgCode) == 3212 || abs(pdgCode) == 3112  ) return 9; // Sigma
-		else if (abs(pdgCode) == 2224 || abs(pdgCode) == 2214 || abs(pdgCode) == 2114 || abs(pdgCode) == 1114  ) return 10; // Delta
-		else if (abs(pdgCode) == 313 || abs(pdgCode) == 323   ) return 11; // K*
+        if (TMath::Abs(pdgCode) == 310) return 1; // k0s
+        else if (TMath::Abs(pdgCode) == 3122) return 2; // Lambda
+        else if (TMath::Abs(pdgCode) == 130) return 3; // K0L
+        else if (TMath::Abs(pdgCode) == 2212) return 4; // proton
+        else if (TMath::Abs(pdgCode) == 2112) return 5; // neutron
+        else if (TMath::Abs(pdgCode) == 211) return 6; // pion
+        else if (TMath::Abs(pdgCode) == 321) return 7; // kaon
+        else if (TMath::Abs(pdgCode) == 113 || TMath::Abs(pdgCode) == 213 ) return 8; // rho 0,+,-
+        else if (TMath::Abs(pdgCode) == 3222 || TMath::Abs(pdgCode) == 3212 || TMath::Abs(pdgCode) == 3112  ) return 9; // Sigma
+        else if (TMath::Abs(pdgCode) == 2224 || TMath::Abs(pdgCode) == 2214 || TMath::Abs(pdgCode) == 2114 || TMath::Abs(pdgCode) == 1114  ) return 10; // Delta
+        else if (TMath::Abs(pdgCode) == 313 || TMath::Abs(pdgCode) == 323   ) return 11; // K*
 		else return 15;
 	}
 	return 15;

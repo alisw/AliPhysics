@@ -172,6 +172,7 @@ fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
 fApplydPhidRCut(0),
+fPerformExtraStudies(0),
 fDebug(0),
 fCutsRP(0),
 fNullCuts(0), 
@@ -292,6 +293,7 @@ fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
 fApplydPhidRCut(0),
+fPerformExtraStudies(0),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
@@ -420,6 +422,7 @@ fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
 fApplydPhidRCut(0),
+fPerformExtraStudies(0),
 fDebug(0),
 fCutsRP(0), 
 fNullCuts(0), 
@@ -891,9 +894,10 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
 		ProcessPhotonCandidates(); // Process this cuts gammas
 		ProcessPhotonCandidatesforV2(); // Process this cuts gammas and do v2
     
-    ProcessPhotonCandidatesforLTM(); // calculate the Local Track Multiplicity in a jet cone around the candidates
-    
-    GetdPhidRtoCandidate(); // calculate the distances to other conversions in the event for each selected candidate
+    if(fPerformExtraStudies){
+      ProcessPhotonCandidatesforLTM(); // calculate the Local Track Multiplicity in a jet cone around the candidates
+      GetdPhidRtoCandidate(); // calculate the distances to other conversions in the event for each selected candidate
+    }
 
 		hNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries());
 		hNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries());
@@ -1372,7 +1376,7 @@ void AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate(){
         // gamma1 = signal, gamma2 = signal  => sigsig
         if( MCGammaSignal(gamma1) && MCGammaSignal(gamma2) ) hdPhidRcandidates_MCsigsig[fiCut]->Fill(dPhi,dRconvVtx);
         // gamma1 = bkg, gamma2 = signal     => bkgsig
-        if( MCElectronElectron(gamma1) && MCGammaSignal(gamma2) ) hdPhidRcandidates_MCbkgsig[fiCut]->Fill(dPhi,dRconvVtx);
+        if( (MCElectronElectron(gamma1) && MCGammaSignal(gamma2)) || (MCElectronElectron(gamma2) && MCGammaSignal(gamma1)) ) hdPhidRcandidates_MCbkgsig[fiCut]->Fill(dPhi,dRconvVtx);
         // gamma1 = bkg, gamma2 = bkg        => bkgbkg
         if( MCElectronElectron(gamma1) && MCElectronElectron(gamma2) ) hdPhidRcandidates_MCbkgbkg[fiCut]->Fill(dPhi,dRconvVtx);
       }
@@ -1394,8 +1398,8 @@ Bool_t AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate( AliAODConversionPhoto
   gamma1_Eta = gamma->GetPhotonEta(); gamma1_Phi = gamma->GetPhotonPhi(); gamma1_Pt = gamma->GetPhotonPt();
   if(gamma1_Eta==0 || gamma1_Phi==0 || gamma1_Pt==0) return 0;
   gamma1_Vtx_x = gamma->GetConversionX(); gamma1_Vtx_y = gamma->GetConversionY(); gamma1_Vtx_z = gamma->GetConversionZ();
-  for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
-    AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
+  for(Int_t i = 0; i < fReaderGammas->GetEntries(); i++){
+    AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fReaderGammas->At(i));
     if(!gamma2) continue;
     gamma2_Eta = gamma2->GetPhotonEta(); gamma2_Phi = gamma2->GetPhotonPhi(); gamma2_Pt = gamma2->GetPhotonPt();
     if(gamma2_Eta==0 || gamma2_Phi==0 || gamma2_Pt==0)continue;
@@ -1407,9 +1411,3 @@ Bool_t AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate( AliAODConversionPhoto
   }
   return 1;
 }
-
-
-
-
-
-

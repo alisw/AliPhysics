@@ -47,11 +47,11 @@ public:
     Float_t fEP;
 
     Int_t fNTracks;
-    Int_t fNClusters[2];
+    Int_t fNClusters[3];
     Int_t fNCells;
 
     AliTLorentzVector fMaxTrack;
-    AliTLorentzVector fMaxCluster[2];
+    AliTLorentzVector fMaxCluster[3];
   };
 
   AliAnalysisTaskEmcalJetQA();
@@ -103,8 +103,8 @@ protected:
   AliVVZERO                  *fVZERO;                    //!<!Event V0 object
   Double_t                    fV0ATotMult;               //!<!Event V0A total multiplicity
   Double_t                    fV0CTotMult;               //!<!Event V0C total multiplicity
-  Int_t                       fNTotClusters[2];          //!<!Total number of accepted clusters in current event (DCal/EMCal)
-  AliTLorentzVector           fLeadingCluster[2];        //!<!Leading cluster in current event (EMCal/DCal)
+  Int_t                       fNTotClusters[3];          //!<!Total number of accepted clusters in current event (DCal/EMCal)
+  AliTLorentzVector           fLeadingCluster[3];        //!<!Leading cluster in current event (EMCal/DCal)
   Int_t                       fNTotTracks;               //!<!Total number of accepted tracks in current event
   AliTLorentzVector           fLeadingTrack;             //!<!Leading track in current event
 

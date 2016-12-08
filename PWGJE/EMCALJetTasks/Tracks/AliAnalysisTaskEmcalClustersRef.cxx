@@ -63,7 +63,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fEventCentrality(-1),
     fCentralityEstimator("V0M"),
     fEnergyDefinition(kDefaultEnergy),
-    fEnableSumw2(false)
+    fEnableSumw2(false),
+    fClusterTimeRange(-50e-6, 50e-6)
 {
 }
 
@@ -75,7 +76,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fEventCentrality(-1),
     fCentralityEstimator("V0M"),
     fEnergyDefinition(kDefaultEnergy),
-    fEnableSumw2(false)
+    fEnableSumw2(false),
+    fClusterTimeRange(-50e-6, 50e-6)
 {
 }
 
@@ -86,7 +88,7 @@ AliAnalysisTaskEmcalClustersRef::~AliAnalysisTaskEmcalClustersRef() {
 void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
 
   EnergyBinning energybinning;
-  TLinearBinning smbinning(21, -0.5, 20.5), etabinning(100, -0.7, 0.7);
+  TLinearBinning smbinning(21, -0.5, 20.5), etabinning(100, -0.7, 0.7), timebinning(100, -500e-9, 500e-9);
   TString optionstring = fEnableSumw2 ? "s" : "";
 
   /*
@@ -111,6 +113,7 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
     fHistos->CreateTH2(Form("hClusterETFiredSM%s", trg.Data()), Form("Cluster transverse energy versus supermodule for trigger class %s, firing the trigger", trg.Data()), smbinning, energybinning, optionstring);
     fHistos->CreateTH2(Form("hEtaEnergy%s", trg.Data()), Form("Cluster energy vs. eta for trigger class %s", trg.Data()), etabinning, energybinning, optionstring);
     fHistos->CreateTH2(Form("hEtaET%s", trg.Data()), Form("Cluster transverse energy vs. eta for trigger class %s", trg.Data()), etabinning, energybinning, optionstring);
+    fHistos->CreateTH2(Form("hTimeEnergy%s", trg.Data()), Form("Cluster time vs. energy for trigger class %s", trg.Data()), timebinning, energybinning, optionstring);
     fHistos->CreateTH2(Form("hEtaEnergyFired%s", trg.Data()), Form("Cluster energy vs. eta for trigger class %s, firing the trigger", trg.Data()), etabinning, energybinning, optionstring);
     fHistos->CreateTH2(Form("hEtaETFired%s", trg.Data()), Form("Cluster transverse energy vs. eta for trigger class %s, firing the trigger", trg.Data()), etabinning, energybinning, optionstring);
     for(int ism = 0; ism < 20; ism++){
@@ -174,6 +177,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     //AliVCluster *clust = static_cast<AliVCluster *>(*clustIter);
     if(!clust->IsEMCAL()) continue;
     if(clust->GetIsExotic()) continue;
+    if(!fClusterTimeRange.IsInRange(clust->GetTOF())) continue;
 
     // Distinguish energy definition
     switch(fEnergyDefinition){
@@ -214,13 +218,13 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
       if(trg.Contains("DG2")) selpatches = &dg2patches;
       if(trg.Contains("EG1")) selpatches = &eg1patches;
       if(trg.Contains("DG1")) selpatches = &dg1patches;
-      FillClusterHistograms(trg.Data(), energy, et, eta, phi, nullptr);
+      FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), nullptr);
     }
   }
   return true;
 }
 
-void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, TList *fTriggerPatches){
+void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, double clustertime, TList *fTriggerPatches){
   Bool_t hasTriggerPatch = fTriggerPatches  ? CorrelateToTrigger(eta, phi, fTriggerPatches) : kFALSE;
   Int_t supermoduleID = -1, sector = -1;
   Double_t weight = GetTriggerWeight(triggerclass);
@@ -231,6 +235,7 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
   fHistos->FillTH1(Form("hClusterET%s", triggerclass.Data()), transverseenergy, weight);
   fHistos->FillTH2(Form("hEtaEnergy%s", triggerclass.Data()), eta, energy, weight);
   fHistos->FillTH2(Form("hEtaET%s", triggerclass.Data()), eta, transverseenergy, weight);
+  fHistos->FillTH2(Form("hTimeEnergy%s", triggerclass.Data()), clustertime, energy, weight);
   if(supermoduleID >= 0){
     fHistos->FillTH2(Form("hClusterEnergySM%s", triggerclass.Data()), supermoduleID, energy, weight);
     fHistos->FillTH2(Form("hClusterETSM%s", triggerclass.Data()), supermoduleID, transverseenergy, weight);

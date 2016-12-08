@@ -331,6 +331,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   UInt_t nPion = 0, nElectron = 0, nMuon = 0, nLepton = 0, nProton = 0, nKaon = 0, nHighPt = 0;
   UInt_t nGoodTracksTPC=0;
   UInt_t nGoodTracksITS=0;
+  UInt_t nGoodTracksSPD=0;
   Int_t TrackIndexTPC[5] = {-1,-1,-1,-1,-1};
   Int_t TrackIndexITS[5] = {-1,-1,-1,-1,-1};
   Int_t TrackIndexALL[7] = {-1,-1,-1,-1,-1,-1,-1};
@@ -349,7 +350,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     
     if(!(trk->TestFilterBit(1<<0))) goodTPCTrack = kFALSE;
     else{
-    	if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1))goodTPCTrack = kFALSE;
+    	if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
     	}
     
     if(!(trk->TestFilterBit(1<<1))) goodITSTrack = kFALSE;
@@ -400,12 +401,13 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Int_t fADCdecision = fADdata->GetADCDecision();
   if( fADAdecision != 0 || fADCdecision != 0) return;
   
-  if(nGoodTracksTPC+nGoodTracksITS == 4 && nGoodTracksTPC > 1 && (isMC || trigger.Contains("CCUP8-B"))){
+  if(nGoodTracksTPC+nGoodTracksITS == 4 && nGoodTracksTPC > 1 && nGoodTracksSPD > 1 && (isMC || trigger.Contains("CCUP8-B"))){
     	MeanPt = GetMedian(TrackPtALL);
   	for(Int_t iTrack=0; iTrack<4; iTrack++) {
 	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndexALL[iTrack]));
 	if(trk->Pt() > 1.0) nHighPt++;
-      		if(trk->Pt() > MeanPt){    
+      		if(trk->Pt() > MeanPt){
+			if(!trk->HasPointOnITSLayer(0) || !trk->HasPointOnITSLayer(1))continue;    
       			qLepton[nLepton] = trk->Charge();
 			Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
     			Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
@@ -462,13 +464,13 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 			FillTree(fTreeJPsi,vJPsiCandidate);
 			}
 		
-		FillTree(fTreePsi2s,vPsi2sCandidate);
+		if(nHighPt > 0 )FillTree(fTreePsi2s,vPsi2sCandidate);
 		}
   	}
 	
   //Two track loop
   nHighPt = 0;
-  if(nGoodTracksTPC == 2 && nGoodTracksITS == 0 && (isMC || trigger.Contains("CCUP8-B"))){
+  if(nGoodTracksTPC == 2 && nGoodTracksSPD == 2 && nGoodTracksITS == 0 && (isMC || trigger.Contains("CCUP8-B"))){
   Float_t fTOFphi[2];
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
     	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndexTPC[iTrack]));
@@ -509,8 +511,9 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   Bool_t fTOFgoodOM2 = kFALSE;
   Bool_t fTOFgoodOMU = kFALSE;
   
-  //UInt_t fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
-  //Bool_t fTOFonlineOMU =  fL0inputs & (1 << 11);
+  UInt_t fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
+  Bool_t fTOFonlineOMU =  fL0inputs & (1 << 11);
+  Bool_t fTOFonlineOM2 =  fL0inputs & (1 << 21);
   
   if(fTOFphi[0] != -666 && fTOFphi[1] != -666) fTOFgoodOM2 = kTRUE;
   if(fTOFphi[0] != -666 && fTOFphi[1] != -666 && fTOFdeltaphi<180 && fTOFdeltaphi>150) fTOFgoodOMU = kTRUE;
@@ -533,19 +536,19 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  fPIDsigma = nSigmaDistProton;
   	  vJPsiCandidate = vProton[0]+vProton[1];
   	  fChannel = 2;
-  	  if(nHighPt > 0 && fTOFgoodOMU) FillTree(fTreeJPsi,vJPsiCandidate);
+  	  if(nHighPt > 0) FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
   if(nSigmaDistMuon < nSigmaDistElectron){
   	  fPIDsigma = nSigmaDistMuon; 
   	  vJPsiCandidate = vMuon[0]+vMuon[1];
   	  fChannel = 1;
-  	  if(nHighPt > 0 && fTOFgoodOMU) FillTree(fTreeJPsi,vJPsiCandidate);
+  	  if(nHighPt > 0) FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
   if(nSigmaDistMuon > nSigmaDistElectron){ 
   	  fPIDsigma = nSigmaDistElectron;
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
-  	  if(nHighPt > 0 && fTOFgoodOMU) FillTree(fTreeJPsi,vJPsiCandidate);
+  	  if(nHighPt > 0) FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
 
   FillTree(fTreeRho,vRhoCandidate);

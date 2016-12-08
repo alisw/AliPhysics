@@ -138,8 +138,6 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     const auto& x = fCentPercentiles[1];
     const double center = x * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
     const double sigma = fEstimatorsSigmaPars[0] + fEstimatorsSigmaPars[1] * x + fEstimatorsSigmaPars[2] * x * x + fEstimatorsSigmaPars[3] * x * x * x;
-    fCentrality[0]->Fill(fCentPercentiles[0]);
-    fEstimCorrelation[0]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
     if ((!fUseEstimatorsCorrelationCut || 
           (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
         && fCentPercentiles[0] >= fMinCentrality 
@@ -155,11 +153,11 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// Filling the monitoring histograms (first iteration always filled, second iteration only for selected events.
   for (int befaft = 0; befaft < 2; ++befaft) {
-    if (fCentrality[befaft] != nullptr) fCentrality[befaft]->Fill(fCentPercentiles[0]);
-    if (fEstimCorrelation[befaft] != nullptr) fEstimCorrelation[befaft]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
-    if (fMultCentCorrelation[befaft] != nullptr) fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
-    if (fVtz[befaft] != nullptr) fVtz[befaft]->Fill(vtx->GetZ());
-    if (fDeltaTrackSPDvtz[befaft] != nullptr) fDeltaTrackSPDvtz[befaft]->Fill(dz);
+    fCentrality[befaft]->Fill(fCentPercentiles[0]);
+    fEstimCorrelation[befaft]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
+    fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
+    fVtz[befaft]->Fill(vtx->GetZ());
+    fDeltaTrackSPDvtz[befaft]->Fill(dz);
     if (!allcuts) return false; /// Do not fill the "after" histograms if the event does not pass the cuts.
   }
 

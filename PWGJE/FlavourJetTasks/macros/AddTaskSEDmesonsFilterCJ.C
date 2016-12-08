@@ -88,6 +88,7 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmes
   TString nameContainer3 = "DSBcandidates";
   TString nameContainer4 = "DcandidatesAndTracks";
   TString nameContainer5 = "DSBcandidatesAndTracks";
+  TString nameContainer6 = "MCDcandidatesAndTracks";
 
   nameContainer0 += candname;
   nameContainer1 += candname;
@@ -95,6 +96,7 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmes
   nameContainer3 += candname;
   nameContainer4 += candname;
   nameContainer5 += candname;
+  nameContainer6 += candname;
   
   nameContainer0 += suffix;
   nameContainer1 += suffix;
@@ -102,6 +104,7 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmes
   nameContainer3 += suffix;
   nameContainer4 += suffix;
   nameContainer5 += suffix;
+  nameContainer6 += suffix;
 
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
@@ -114,6 +117,7 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmes
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(nameContainer3, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
   AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(nameContainer4, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
   AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(nameContainer5, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
+  AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(nameContainer6, TClonesArray::Class(), AliAnalysisManager::kExchangeContainer, outputfile.Data()); // exchange
   
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
@@ -122,6 +126,7 @@ AliAnalysisTaskSEDmesonsFilterCJ *AddTaskSEDmesonsFilterCJ(AliAnalysisTaskSEDmes
   mgr->ConnectOutput(task,4,coutput4);
   mgr->ConnectOutput(task,5,coutput5);
   mgr->ConnectOutput(task,6,coutput6);
+  mgr->ConnectOutput(task,7,coutput7);
 
   ::Info("AddTaskSEDmesonsFilterCJ", "Input and Output connected to the manager");
   return task;

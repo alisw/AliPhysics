@@ -136,6 +136,8 @@ fNchTPCmc(-1),
 fNchV0Amc(-1),
 fNchV0Cmc(-1),
 fNchCL1mc(-1),
+fEventCuts(),
+fEventCutsPassed(kFALSE),
 fClassBit(0xffffffff),
 fSelectBit(AliVEvent::kAny),
 fZVertexCut(10.),
@@ -256,6 +258,7 @@ void AliAnalysisTaskCFTree::UserCreateOutputObjects(){
   fTree->Branch("nchV0Amc",&fNchV0Amc);
   fTree->Branch("nchV0Cmc",&fNchV0Cmc);
   fTree->Branch("nchCL1mc",&fNchCL1mc);
+  fTree->Branch("evcutspassed",&fEventCutsPassed);
 
   if (fTracks)      fTree->Branch("tracks",&fTracks);
   if (fTracklets)   fTree->Branch("tracklets",&fTracklets);
@@ -499,6 +502,8 @@ void AliAnalysisTaskCFTree::UserExec(Option_t *){
     fVtxContributors = vertex->GetNContributors();
     if (TMath::Abs(fVtxZ) >= fZVertexCut)  return;
     fEventStatistics->Fill("after vertex cut",1);
+
+    fEventCutsPassed = fEventCuts.AcceptEvent(InputEvent());
 
     if(fMCEvent){//get process type
       fIsDiffractive=0;

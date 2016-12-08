@@ -45,6 +45,7 @@ fHistoNClusCellBins(100),     fHistoNClusCellMax(100),     fHistoNClusCellMin(0)
 fHistoNCellsBins(100),        fHistoNCellsMax(100),        fHistoNCellsMin(0),
 fHistoNClustersBins(100),     fHistoNClustersMax(100),     fHistoNClustersMin(0),
 fHistoRatioBins(100),         fHistoRatioMax(100.),        fHistoRatioMin(0.),
+fHistoEDiffBins(100),         fHistoEDiffMax(100.),        fHistoEDiffMin(-100.),
 fHistoHBPBins(100),           fHistoHBPMax(100.),          fHistoHBPMin(0.),
 fHistoVertexDistBins(100),    fHistoVertexDistMax(100.),   fHistoVertexDistMin(0.),
 fHistoRBins(100),             fHistoRMax(1000),            fHistoRMin(-1000),
@@ -85,6 +86,7 @@ void AliHistogramRanges::InitParameters()
   fHistoNCellsBins       = 300 ;  fHistoNCellsMax       = 300   ; fHistoNCellsMin       = 0   ;
   fHistoNClustersBins    = 50  ;  fHistoNClustersMax    = 50    ; fHistoNClustersMin    = 0   ;
   fHistoRatioBins        = 200 ;  fHistoRatioMax        = 2     ; fHistoRatioMin        = 0.  ;
+  fHistoEDiffBins        = 200 ;  fHistoEDiffMax        = 10    ; fHistoEDiffMin        =-10. ;
   fHistoHBPBins          = 200 ;  fHistoHBPMax          = 10    ; fHistoHBPMin          = 0.  ;
   fHistoVertexDistBins   = 100 ;  fHistoVertexDistMax   = 500.  ; fHistoVertexDistMin   = 0.  ;
   fHistoRBins            = 100 ;  fHistoRMax            = 500   ; fHistoRMin            = -500;//cm
@@ -128,6 +130,7 @@ void AliHistogramRanges::Print(const Option_t * /*opt*/) const
   printf("Histograms: %d < N cells   < %d, Nbin = %d\n"              , fHistoNCellsMin,      fHistoNCellsMax,      fHistoNCellsBins);
   printf("Histograms: %d < N clusters   < %d, Nbin = %d\n"           , fHistoNClustersMin,   fHistoNClustersMax,   fHistoNClustersBins);
   printf("Histograms: %3.1f < Ratio< %3.1f, Nbin = %d\n"             , fHistoRatioMin,       fHistoRatioMax,       fHistoRatioBins);
+  printf("Histograms: %3.1f < En diff< %3.1f, Nbin = %d\n"           , fHistoEDiffMin,       fHistoEDiffMax,       fHistoEDiffBins);
   printf("Histograms: %3.1f < HBP< %3.1f, Nbin = %d\n"               , fHistoHBPMin,         fHistoHBPMax,         fHistoHBPBins);
   printf("Histograms: %3.1f < Vertex Distance < %3.1f,   Nbin = %d\n", fHistoVertexDistMin,  fHistoVertexDistMax,  fHistoVertexDistBins);
   printf("Histograms: %3.1f < pT sum < %3.1f,  Nbin = %d\n"          , fHistoPtSumMin,       fHistoPtSumMax,       fHistoNPtSumBins   );
