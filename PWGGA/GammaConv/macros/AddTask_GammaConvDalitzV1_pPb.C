@@ -473,7 +473,14 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202223710", "0163103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection   Background gammas
 		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202223710", "0263605500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	Y < 0.75
 		cuts.AddCut("80000113", "04200009360300007200004000", "20405400235202223710", "0263107500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	n < 0.75
-	} 
+	} else if ( trainConfig == 49 ) { //for Stephan weights
+		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202223710", "0263103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	New standard
+	} else if ( trainConfig == 50 ) {
+		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202223710", "0263103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	New standard
+	} else if ( trainConfig == 51 ) {
+		cuts.AddCut("80000113", "00200009360300007200004000", "20405400233202223710", "0263103500900000"); //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny   + new psiPair Cut + double counting rejection	New standard
+	}
+	
        
 	if(!cuts.AreValid()){
 	cout << "\n\n****************************************************" << endl;
@@ -512,7 +519,7 @@ void AddTask_GammaConvDalitzV1_pPb(    	Int_t trainConfig = 1,
 		analysisEventCuts[i] = new AliConvEventCuts();
 		if(  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 || ( trainConfig >= 24 && trainConfig <=36 )  || trainConfig == 38 
 		     || trainConfig == 39 || trainConfig == 40 || trainConfig == 41  || trainConfig == 42 || trainConfig == 43 || trainConfig == 44 || trainConfig == 45    || trainConfig == 46
-		     || trainConfig == 47 || trainConfig == 48){
+		     || trainConfig == 47 || trainConfig == 48 || trainConfig == 49 || trainConfig == 50 || trainConfig == 51){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
