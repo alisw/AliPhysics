@@ -103,6 +103,9 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 ,fAssITSrefitCut(kTRUE)
 ,fUseNewEP(kTRUE)
 ,fUseTender(kTRUE)
+,fSigmaITScut(2.)
+,fSigmaTOFcut(2.)
+,fSigmaTPCcut(0.)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -213,6 +216,9 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 ,fAssITSrefitCut(kTRUE)
 ,fUseNewEP(kTRUE)
 ,fUseTender(kTRUE)
+,fSigmaITScut(2.)
+,fSigmaTOFcut(2.)
+,fSigmaTPCcut(0.)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -870,12 +876,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         Bool_t MChijing;
         
         if (pt<3){
-            if (fITSnSigma<-2 || fITSnSigma>2) continue;
-            if (fTOFnSigma<-2 || fTOFnSigma>2) continue;
-            if (fTPCnSigma<0  || fTPCnSigma>3) continue;
+            if ((fITSnSigma < (-1.*fSigmaITScut) ) || (fITSnSigma > fSigmaITScut)) continue;
+            if ((fTOFnSigma < (-1.*fSigmaTOFcut) ) || (fTOFnSigma > fSigmaTOFcut)) continue;
+            if ((fTPCnSigma<fSigmaTPCcut)  || (fTPCnSigma>3)) continue;
         }
-        
-        
+
         for(Int_t i=0;i<3;i++) {
             if (dphi>=deltaPhiRange[i] && dphi<deltaPhiRange[i+1]){
                 iDeltaphi=i;
@@ -1218,22 +1223,22 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetPi0weight(Double_t mcPi0pT, Int_t iCe
             double parLowPt[4] = {1.77623,0.204811,3.3,5.45959};
             double parHighPt[4] = {1.84871,0.509792,5.07536,7.53539};
             
-            if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
-            if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
+            if(mcPi0pT>0.0 && mcPi0pT<4.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
+            if(mcPi0pT>=4.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==1){
             double parLowPt[4] = {1.29732,0.208539,3.41144,5.58408};
             double parHighPt[4] = {1.36774,0.455898,4.75742,7.18348};
             
-            if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
-            if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
+            if(mcPi0pT>0.0 && mcPi0pT<4.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
+            if(mcPi0pT>=4.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==2){
             double parLowPt[4] = {1.8991,0.15029,2.60735,5.07192};
             double parHighPt[4] = {2.15436,0.600959,4.80365,7.87579};
             
-            if(mcPi0pT>0.0 && mcPi0pT<5.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
-            if(mcPi0pT>=5.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
+            if(mcPi0pT>0.0 && mcPi0pT<4.0) weight = (parLowPt[0]*mcPi0pT)/TMath::Power(parLowPt[1]+mcPi0pT/parLowPt[2],parLowPt[3]);
+            if(mcPi0pT>=4.0) weight = (parHighPt[0]*mcPi0pT)/TMath::Power(parHighPt[1]+mcPi0pT/parHighPt[2],parHighPt[3]);
         }
     }
     
@@ -1275,22 +1280,22 @@ Double_t AliAnalysisTaskFlowTPCEMCalEP::GetEtaweight(Double_t mcEtapT, Int_t iCe
             double parLowPt[4] = {5.39949,0.294842,2.68408,5.51972};
             double parHighPt[4] = {7.042,0.639658,4.18394,7.48064};
             
-            if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
-            if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
+            if(mcEtapT>0.0 && mcEtapT<4.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
+            if(mcEtapT>=4.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==1){
             double parLowPt[4] = {4.95436,0.335366,2.7807,5.79148};
             double parHighPt[4] = {5.33649,0.609717,4.08239,7.35917};
             
-            if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
-            if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
+            if(mcEtapT>0.0 && mcEtapT<4.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
+            if(mcEtapT>=4.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
         }
         if (iCent==2){
             double parLowPt[4] = {3.76961,0.324609,2.60977,5.70101};
             double parHighPt[4] = {5.45548,0.668754,3.9863,7.63197};
             
-            if(mcEtapT>0.0 && mcEtapT<5.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
-            if(mcEtapT>=5.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
+            if(mcEtapT>0.0 && mcEtapT<4.0) weight = (parLowPt[0]*mcEtapT)/TMath::Power(parLowPt[1]+mcEtapT/parLowPt[2],parLowPt[3]);
+            if(mcEtapT>=4.0) weight = (parHighPt[0]*mcEtapT)/TMath::Power(parHighPt[1]+mcEtapT/parHighPt[2],parHighPt[3]);
         }
     }
     
@@ -1695,7 +1700,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
         charge = track->Charge();
         
         if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-        if (trackAsso->Pt()<0.5) continue;
         
         // track cuts
         
