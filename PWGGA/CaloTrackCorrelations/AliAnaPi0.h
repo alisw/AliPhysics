@@ -549,18 +549,18 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhPtBinClusterEtaPhi                 [10] ; //!<! Eta-Phi location of cluster in different energy bins.
   TH2F *  fhPtBinClusterColRow                 [10] ; //!<! Column and row location of cluster in different energy bins.
 
-  TH2F *  fhPairGeneratorsBkgMass               [10][5]; //!<! Mass for a pair of clusters depending bkg type
-  TH2F *  fhPairGeneratorsBkgMassMCPi0          [10][5]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
-  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0[10][5]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
-  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [10][5]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs  
-  TH2F *  fhPairGeneratorsBkgMassMCEta          [10][5]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
-  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEta[10][5]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
-  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEta [10][5]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgMass               [10][10]; //!<! Mass for a pair of clusters depending bkg type
+  TH2F *  fhPairGeneratorsBkgMassMCPi0          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs  
+  TH2F *  fhPairGeneratorsBkgMassMCEta          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEta[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEta [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs
   
-  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[10][5]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
-  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [10][5]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
-  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[10][5]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, eta true pairs, eta mass window
-  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [10][5]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, eta true pairs, eta mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, eta true pairs, eta mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, eta true pairs, eta mass window
   
   /// Copy constructor not implemented.
   AliAnaPi0(              const AliAnaPi0 & api0) ;

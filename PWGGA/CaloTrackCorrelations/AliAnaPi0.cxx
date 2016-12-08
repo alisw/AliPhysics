@@ -183,7 +183,7 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
 
   for(Int_t igen = 0; igen < 10; igen++)
   {
-    for(Int_t itag = 0; itag < 5; itag++)
+    for(Int_t itag = 0; itag < 10; itag++)
     {    
       fhPairGeneratorsBkgMass               [igen][itag] = 0;
       fhPairGeneratorsBkgMassMCPi0          [igen][itag] = 0;
@@ -2072,76 +2072,89 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     TString mcGenNames[] = {"","_MC_Pi0Merged","_MC_Pi0Decay","_MC_EtaDecay","_MC_PhotonOther","_MC_Electron","_MC_Other"};
     TString mcGenTitle[] = {"",",MC Pi0-Merged",",MC Pi0-Decay",", MC Eta-Decay",", MC Photon other sources",", MC Electron",", MC other sources"};
 
-    TString tagBkgNames[] = {"Clean","HijingBkg","NotHijingBkg","HijingAndOtherBkg","Other"};
-    TString tagBkgTitle[] = {"No overlap","pair Hijing Bkg","pair Not Hijing bkg","pair Hijing and other bkg","pair with different bkg"};
+    TString tagBkgNames[] = { 
+      "Clean", "HijingBkg", "NotHijingBkg", "HijingAndOtherBkg",
+      "Clean_HijingBkg", "Clean_NotHijingBkg", "Clean_HijingAndOtherBkg",
+      "HijingBkg_NotHijingBkg", "HijingBkg_HijingAndOtherBkg", "NotHijingBkg_HijingAndOtherBkg" } ;
+    TString tagBkgTitle[] = {
+      "no overlap", "pair Hijing Bkg", "pair not Hijing bkg", "pair Hijing and other bkg",
+      "no overlap and hijing overlap", "no overlap and generator overlap", "no overlap and multiple overlap",
+      "hijing overlap and gener overlap", "hijing overlap and multiple overlap", "gener overlap and multiple overlap" } ;
 
     for(Int_t igen = 0; igen < GetNCocktailGenNamesToCheck(); igen++)
     {
       TString add = "_MainGener_";
       if(igen==0) add = "";
-      for(Int_t itag = 0; itag < 5; itag++)
+      for(Int_t itag = 0; itag < 10; itag++)
       {
-        fhPairGeneratorsBkgMass[igen][itag] = new TH2F(Form("h%sGeneratorPairMass%s%s",
-                                                            tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-                                                       Form("Pair Mass with generator%s, %s ",
-                                                            GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMass[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairMass%s%s",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Pair Mass with generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
         fhPairGeneratorsBkgMass[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
         fhPairGeneratorsBkgMass[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgMass[igen][itag]) ;
         
         
-        fhPairGeneratorsBkgMassMCPi0[igen][itag] = new TH2F(Form("h%sGeneratorPairMass%s%s_MCPi0",
-                                                                 tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-                                                            Form("Pair Mass with contribution of true #pi^{0} generator%s, %s ",
-                                                                 GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                            nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMassMCPi0[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairMass%s%s_MCPi0",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Pair Mass with contribution of true #pi^{0} generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
         fhPairGeneratorsBkgMassMCPi0[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
         fhPairGeneratorsBkgMassMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgMassMCPi0[igen][itag]) ;
         
-        fhPairGeneratorsBkgMassMCEta[igen][itag] = new TH2F(Form("h%sGeneratorPairMass%s%s_MCEta",
-                                                                 tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-                                                            Form("Pair Mass with contribution of true #eta generator%s, %s ",
-                                                                 GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                            nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMassMCEta[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairMass%s%s_MCEta",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Pair Mass with contribution of true #eta generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
         fhPairGeneratorsBkgMassMCEta[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
         fhPairGeneratorsBkgMassMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgMassMCEta[igen][itag]) ;
         
-        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag] = new TH2F(Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCPi0",
-                                                                           tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-                                                                      Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
-                                                                           GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                                      nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCPi0",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]) ;
         
         
-        fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag] = new TH2F(Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCEta",
-                                                                           tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-                                                                      Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
-                                                                           GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                                      nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCEta",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
         fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]) ;
         
-        fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag] = new TH2F(Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCPi0",
-                                                                          tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-                                                                     Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
-                                                                          GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                                     nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCPi0",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
         fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]) ;
         
-        fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag] = new TH2F(Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCEta",
-                                                                          tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
-                                                                     Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
-                                                                          GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
-                                                                     nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCEta",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
         fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
         fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]) ;
@@ -2155,7 +2168,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag]) ;
-        
         
         fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[igen][itag] = new TH2F
         (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCEtaMassCut",
@@ -3154,8 +3166,47 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     
     // Fill histograms
     //
-    Int_t tag = 4;
-    if(genBkgTag1 == genBkgTag2) tag = genBkgTag1;
+    // assign histogram index number depending on pair combination
+    Int_t tag = -1;
+    if ( genBkgTag1 == genBkgTag2 )
+    {
+      tag = genBkgTag1; // 0,1,2,3
+    }
+    else
+    {
+      Int_t genBkgMin = -1; 
+      Int_t genBkgMax = -1;
+      
+      if(genBkgTag1 > genBkgTag2)
+      {
+        genBkgMax = genBkgTag1;
+        genBkgMin = genBkgTag2;
+      }
+      else
+      {
+        genBkgMax = genBkgTag2;
+        genBkgMin = genBkgTag1;
+      }
+    
+      if      ( genBkgMin == 0 )
+      {
+        if     (genBkgMax == 1 )   tag = 4; // clean+hijing
+        else if(genBkgMax == 2 )   tag = 5; // clean+not hijing
+        else if(genBkgMax == 3 )   tag = 6; // clean+multiple
+      }
+      else if ( genBkgMin == 1 ) 
+      {
+        if      ( genBkgMax == 2 ) tag = 7; // hijing + not hijing
+        else if ( genBkgMax == 3 ) tag = 8; // hijing + multiple
+      }
+      else if ( genBkgMin == 2 )   tag = 9; // not hijing + multiple
+    }
+    
+    if(tag == -1)
+    {
+      printf("Combination not found, bkg1 tag %d, bkg2 tag %d\n",genBkgTag1,genBkgTag2);
+      return;
+    }
     
     fhPairGeneratorsBkgMass[genType][tag]->Fill(pt, mass, GetEventWeight());
     fhPairGeneratorsBkgMass      [0][tag]->Fill(pt, mass, GetEventWeight());
