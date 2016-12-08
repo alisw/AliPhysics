@@ -389,7 +389,6 @@ class AliReducedVarManager : public TObject {
     kTPCnclsRatio2,      // TPCncls / TPCCrossedRows
     //TODO: TPC number of crossed rows over findable clusters has at the moment 2 variables assigned: kTPCcrossedRowsOverFindableClusters and kTPCnclsRatio3
     kTPCcrossedRowsOverFindableClusters,
-    kTPCnclsRatio2,      // TPCncls / TPCCrossedRows
     kTPCnclsRatio3,      // TPCCrossedRows/TPCnclsF
     kTPCsignal,         
     kTPCsignalN,
