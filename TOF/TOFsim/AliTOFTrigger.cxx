@@ -711,7 +711,15 @@ void AliTOFTrigger::PrepareTOFMapFromRaw(AliRawReader *fRawReader,Int_t deltaBC)
 	  UInt_t indexDDL    = fgFromTriggertoDCS[index[0]];
 
 
-	  if(fTOFTrigMask->IsON(indexDDL,index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 400) fTOFTrigMap->SetON(index[0],index[1]);
+	  if(fTOFTrigMask->IsON(indexDDL,index[1]) && TMath::Abs(tofRawDatum->GetTOF()-deltaBC) < 500) fTOFTrigMap->SetON(index[0],index[1]);
+
+
+//	  if(!fTOFTrigMask->IsON(indexDDL,index[1])){
+//	    printf("TOF problem (%i,%i) - (%i,%i) \n",indexDDL,index[1],index[0],index[1]);
+//	  }
+//	  else
+//	    printf("TOF time = %i\n",tofRawDatum->GetTOF());
+
 	}
 	
         tofRawDatum = 0;

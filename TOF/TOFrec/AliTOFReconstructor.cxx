@@ -193,6 +193,9 @@ void AliTOFReconstructor::Reconstruct(AliRawReader *rawReader,
     if(run > 244335){
       fgCTPtriggerLatency = 12800; // run-2 value
     }
+    else if(run > 256144){
+      fgCTPtriggerLatency = 11600; // run-2 value 2016
+    }
     else
       fgCTPtriggerLatency = 13600; // run-1 value
 
