@@ -57,7 +57,6 @@ namespace EMCalTriggerPtAnalysis {
 
 AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     AliAnalysisTaskEmcalTriggerBase(),
-    fNameClusterContainer(""),
     fCentralityRange(-999., 999.),
     fRequestCentrality(false),
     fEventCentrality(-1),
@@ -70,7 +69,6 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
 
 AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *name) :
     AliAnalysisTaskEmcalTriggerBase(name),
-    fNameClusterContainer(""),
     fCentralityRange(-999., 999.),
     fRequestCentrality(false),
     fEventCentrality(-1),

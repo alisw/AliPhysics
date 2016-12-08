@@ -80,13 +80,6 @@ public:
   void SetClusterTimeRange(double mintime, double maxtime) { fClusterTimeRange.SetLimits(mintime, maxtime); }
 
   /**
-   * Define name of the cluster container used to read EMCAL cluster information
-   * from
-   * @param[in] clustercontname Name of the cluster container
-   */
-  void SetClusterContainer(TString clustercontname) { fNameClusterContainer = clustercontname; }
-
-  /**
    * Define centrality range used to select
    * @param[in] min Min. allowed centrality
    * @param[in] max Max. allowed centrality
@@ -179,7 +172,6 @@ protected:
    */
   Bool_t CorrelateToTrigger(Double_t etaclust, Double_t phiclust, TList *triggerpatches) const;
 
-  TString                             fNameClusterContainer;      ///< Name of the cluster container in the event
 
   AliCutValueRange<double>            fCentralityRange;           ///< Selected centrality range
   Bool_t                              fRequestCentrality;         ///< Switch on request for centrality range

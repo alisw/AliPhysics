@@ -178,19 +178,19 @@ void AliAnalysisTaskEventSelectionRef::UserExec(Option_t *){
     FillEventCounterHists("MB", vtx->GetZ(), isSelected, true);
   }
   if(isEMC7){
-    FillEventCounterHists("EMC7", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fTriggerPatchContainer));
+    FillEventCounterHists("EMC7", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fInputEvent));
   }
   if(isEJ2){
-    FillEventCounterHists("EJ2", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fTriggerPatchContainer));
+    FillEventCounterHists("EJ2", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fInputEvent));
   }
   if(isEJ1){
-    FillEventCounterHists("EJ1", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fTriggerPatchContainer));
+    FillEventCounterHists("EJ1", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fInputEvent));
   }
   if(isEG2){
-    FillEventCounterHists("EG2", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fTriggerPatchContainer));
+    FillEventCounterHists("EG2", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fInputEvent));
   }
   if(isEG1){
-    FillEventCounterHists("EG1", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fTriggerPatchContainer));
+    FillEventCounterHists("EG1", vtx->GetZ(), isSelected, fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fInputEvent));
   }
 
   PostData(1, fHistos->GetListOfHistograms());
