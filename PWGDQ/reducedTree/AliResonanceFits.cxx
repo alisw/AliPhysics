@@ -292,15 +292,21 @@ void AliResonanceFits::Process() {
     }
   }
   
+  
   // Create the signal and bkg histograms
   if(fHistSEOS) delete fHistSEOS;
   if(fHistSELSbkg) delete fHistSELSbkg;
   if(fHistMEbkg) delete fHistMEbkg;
   
-  fSEOS->GetAxis(fVarIndex[kMass])->SetRangeUser(fMassRange[0]+0.00001, fMassRange[1]-0.00001);
+  cout << "Process() 1" << endl;
+  cout << "mass range: " << fMassRange[0] << "; " << fMassRange[1] << endl;
+  /*
+  fSEOS->GetAxis(fVarIndex[kMass])->SetRangeUser(fMassRange[0], fMassRange[1]);
   if(fUse2DMatching && fPtSelection)
-     fSEOS->GetAxis(fVarIndex[kPt])->SetRangeUser(fPtRange[0]+0.001, fPtRange[1]-0.001);
+     fSEOS->GetAxis(fVarIndex[kPt])->SetRangeUser(fPtRange[0]+1.0e-6, fPtRange[1]-1.0e-6);
+  cout << "Process() 2" << endl;
   if(fUse2DMatching) {
+     cout << "Process() 3.1" << endl;
     TH2D* proj = fSEOS->Projection(fVarIndex[kPt], fVarIndex[kMass]);
     proj->SetName("tempProj");
     fHistSEOS = (TH2D*)proj->Clone("fHistSEOS");
@@ -308,15 +314,25 @@ void AliResonanceFits::Process() {
     fHistSEOS->Reset();
     fHistSELSbkg = (TH2D*)fHistSEOS->Clone("fHistSELSbkg");
     fHistMEbkg = (TH2D*)fHistSEOS->Clone("fHistMEbkg");
+    cout << "Process() 3.1.1" << endl;
   }
   else {
+     cout << "Process() 3.2" << endl;
+     
      TH1D* proj = fSEOS->Projection(fVarIndex[kMass]);
+     cout << "Process() 3.2.0" << endl;
      fHistSEOS = (TH1D*)proj->Clone("fHistSEOS");
+     cout << "Process() 3.2.0.1" << endl;
      delete proj;
      fHistSEOS->Reset();
+     cout << "Process() 3.2.0.2" << endl;
      fHistSELSbkg = (TH1D*)fHistSEOS->Clone("fHistSELSbkg");
+     cout << "Process() 3.2.0.3" << endl;
      fHistMEbkg = (TH1D*)fHistSEOS->Clone("fHistMEbkg");
-  }
+     cout << "Process() 3.2.1" << endl;
+  }*/
+  
+  
   
   /*
   TAxis* mAxis = (TAxis*)fSEOS->GetAxis(fVarIndex[kMass])->Clone(Form("mAxis%.6f",gRandom->Rndm()));
@@ -387,12 +403,17 @@ void AliResonanceFits::Process() {
   }
   */
   
-  //MakeSEOS(); fHistSEOS->Draw();
-  //MakeLSbkg(); fHistSELSbkg->Draw();
-  //MakeMEbkg(); fHistMEbkg->Draw();
-  MakeSEOS();
-  if(fBkgMethod==1) {MakeMEbkg(); ExtractSignal(fHistSEOS, fHistMEbkg);}
-  if(fBkgMethod==2) {MakeLSbkg(); ExtractSignal(fHistSEOS, fHistSELSbkg);}
+  MakeSEOS(); //return;
+  if(fBkgMethod==1) {
+     MakeMEbkg(); 
+     //return;
+     ExtractSignal(fHistSEOS, fHistMEbkg);
+   } 
+  if(fBkgMethod==2) {
+     MakeLSbkg(); 
+     //return;
+     ExtractSignal(fHistSEOS, fHistSELSbkg);
+}
   fIsProcessed = kTRUE;
 }
 
@@ -589,6 +610,8 @@ void AliResonanceFits::ExtractSignal(TH1* signal, TH1* bkg, Bool_t fixScale /*=k
   //
   // Scale the bkg by a constant and then subtract it to obtain the signal
   //
+   cout << "AliResonanceFits::ExtractSignal(): signal / bkg " << signal << " / " << bkg << endl; 
+   
   fFixScale = fixScale;
   
   if(fHistBkgSubtracted) {
@@ -597,13 +620,11 @@ void AliResonanceFits::ExtractSignal(TH1* signal, TH1* bkg, Bool_t fixScale /*=k
   }
   if(fUse2DMatching) 
     fHistBkgSubtracted = new TH2D(Form("fHistBkgSubtracted_%s", signal->GetName()),"",
-                                  signal->GetXaxis()->GetNbins(), 
-				  signal->GetXaxis()->GetXmin(), signal->GetXaxis()->GetXmax(),
+                                  signal->GetXaxis()->GetNbins(), signal->GetXaxis()->GetXbins()->GetArray(),
 				  signal->GetYaxis()->GetNbins(), signal->GetYaxis()->GetXbins()->GetArray());
   else  
     fHistBkgSubtracted = new TH1D(Form("fHistBkgSubtracted_%s", signal->GetName()),"",
-                                  signal->GetXaxis()->GetNbins(), 
-	  	 		  signal->GetXaxis()->GetXmin(), signal->GetXaxis()->GetXmax());
+                                  signal->GetXaxis()->GetNbins(), signal->GetXaxis()->GetXbins()->GetArray());
   fHistBkgSubtracted->Sumw2();
   
   if(!fFixScale) {
@@ -664,8 +685,11 @@ void AliResonanceFits::ExtractSignal(TH1* signal, TH1* bkg, Bool_t fixScale /*=k
   Double_t s = fFitValues[kSig]; Double_t b = fFitValues[kBkg];
   fFitValues[kSoverB] = (b>0.0 ? s/b : 0.0);
   fFitValues[kSoverBerr] = (b>0.0 ? TMath::Sqrt((sErr*sErr+fFitValues[kSoverB]*fFitValues[kSoverB]*bErr*bErr)/b/b) : 0.0);
-  fFitValues[kSignif] = ((s+b>0.001) ? (s/(TMath::Sqrt(s+b))) : 0.0);
-  fFitValues[kSignifErr] = ((s+b>0.001 && s>0.001) ? (fFitValues[kSignif]*TMath::Sqrt(bErr*bErr+TMath::Power(sErr*(s+2.0*b)/s,2))/2.0/(s+b)) : 0.0);
+  // significance when using mixed event background
+  if(fBkgMethod==1) fFitValues[kSignif] = ((s+b>0.001) ? (s/(TMath::Sqrt(s+b))) : 0.0);
+  // significance when using like sign background
+  if(fBkgMethod==2) fFitValues[kSignif] = ((s+2*b>0.001) ? (s/(TMath::Sqrt(s+2*b))) : 0.0);
+  //fFitValues[kSignifErr] = ((s+b>0.001 && s>0.001) ? (fFitValues[kSignif]*TMath::Sqrt(bErr*bErr+TMath::Power(sErr*(s+2.0*b)/s,2))/2.0/(s+b)) : 0.0);
   
   bkg->Scale(fFitValues[kBkgScale]);
 }
@@ -676,13 +700,14 @@ void AliResonanceFits::MakeSEOS() {
   //
   // Build the invariant mass spectrum for signal (SEOS)
   //
+   cout << "MakeSEOS IN" << endl;
    Int_t zIdx = fVarIndex[kVertexZ];
   Double_t minZ = fVertexZRange[0]; Double_t maxZ = fVertexZRange[1];
   if(fUsedVars[kVertexZ] && fVertexSelection) {
     //zIdx = fVarIndex[kVertexZ];
     minZ = fSEOS->GetAxis(zIdx)->GetXmin(); maxZ = fSEOS->GetAxis(zIdx)->GetXmax();
-    if(fVertexZRange[0]>minZ) minZ = fVertexZRange[0]+0.001;
-    if(fVertexZRange[1]<maxZ) maxZ = fVertexZRange[1]-0.001;
+    if(fVertexZRange[0]>minZ) minZ = fVertexZRange[0]+1.0e-6;
+    if(fVertexZRange[1]<maxZ) maxZ = fVertexZRange[1]-1.0e-6;
     fSEOS->GetAxis(zIdx)->SetRangeUser(minZ, maxZ);
   }
   Int_t epIdx = fVarIndex[kEP2];
@@ -690,8 +715,8 @@ void AliResonanceFits::MakeSEOS() {
   if(fUsedVars[kEP2] && fEPSelection) {
     //epIdx = fVarIndex[kEP2];
     minEP = fSEOS->GetAxis(epIdx)->GetXmin(); maxEP = fSEOS->GetAxis(epIdx)->GetXmax();
-    if(fEP2Range[0]>minEP) minEP = fEP2Range[0]+0.001;
-    if(fEP2Range[1]<maxEP) maxEP = fEP2Range[1]-0.001;
+    if(fEP2Range[0]>minEP) minEP = fEP2Range[0]+1.0e-6;
+    if(fEP2Range[1]<maxEP) maxEP = fEP2Range[1]-1.0e-6;
     fSEOS->GetAxis(epIdx)->SetRangeUser(minEP, maxEP);
   }
   Int_t ptIdx = fVarIndex[kPt];
@@ -699,8 +724,8 @@ void AliResonanceFits::MakeSEOS() {
   if(fUsedVars[kPt] && fPtSelection) {
     //ptIdx = fVarIndex[kPt];
     minPt = fSEOS->GetAxis(ptIdx)->GetXmin(); maxPt = fSEOS->GetAxis(ptIdx)->GetXmax();
-    if(fPtRange[0]>minPt) minPt = fPtRange[0]+0.001;
-    if(fPtRange[1]<maxPt) maxPt = fPtRange[1]-0.001;
+    if(fPtRange[0]>minPt) minPt = fPtRange[0]+1.0e-6;
+    if(fPtRange[1]<maxPt) maxPt = fPtRange[1]-1.0e-6;
     fSEOS->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt);
   }
   Int_t centIdx = fVarIndex[kCentrality];
@@ -708,17 +733,21 @@ void AliResonanceFits::MakeSEOS() {
   if(fUsedVars[kCentrality] && fCentralitySelection) {
     //centIdx = fVarIndex[kCentrality];
     minCent = fSEOS->GetAxis(centIdx)->GetXmin(); maxCent = fSEOS->GetAxis(centIdx)->GetXmax();
-    if(fCentralityRange[0]>minCent) minCent = fCentralityRange[0]+0.001;
-    if(fCentralityRange[1]<maxCent) maxCent = fCentralityRange[1]-0.001;
+    if(fCentralityRange[0]>minCent) minCent = fCentralityRange[0]+1.0e-6;
+    if(fCentralityRange[1]<maxCent) maxCent = fCentralityRange[1]-1.0e-6;
     fSEOS->GetAxis(centIdx)->SetRangeUser(minCent, maxCent);
   }
   Int_t mIdx = fVarIndex[kMass];
   Double_t minMass = fSEOS->GetAxis(mIdx)->GetXmin(); Double_t maxMass = fSEOS->GetAxis(mIdx)->GetXmax();
-  if(fMassRange[0]>minMass) minMass = fMassRange[0]+0.00001;
-  if(fMassRange[1]<maxMass) maxMass = fMassRange[1]-0.00001;
+  if(fMassRange[0]>minMass) minMass = fMassRange[0]+1.0e-6;
+  if(fMassRange[1]<maxMass) maxMass = fMassRange[1]-1.0e-6;
   fSEOS->GetAxis(mIdx)->SetRangeUser(minMass, maxMass);
-        
+  
+  cout << "MakeSEOS 1" << endl;
+  if(fHistSEOS) fHistSEOS->Reset();
+  
   if(fUsedVars[kCentrality] && (fEffVsPtCent || fWeightVsCent)) {
+     cout << "MakeSEOS 2.1" << endl;
     for(Int_t icent=1;icent<=fSEOS->GetAxis(fVarIndex[kCentrality])->GetNbins(); ++icent) {
       if(fSEOS->GetAxis(fVarIndex[kCentrality])->GetBinCenter(icent)<minCent) continue;
       if(fSEOS->GetAxis(fVarIndex[kCentrality])->GetBinCenter(icent)>maxCent) continue;
@@ -730,7 +759,7 @@ void AliResonanceFits::MakeSEOS() {
       TH1* tempProj = 0x0;
       if(fUse2DMatching) tempProj = (TH2D*)fSEOS->Projection(fVarIndex[kPt],fVarIndex[kMass]);
       else tempProj = (TH1D*)fSEOS->Projection(fVarIndex[kMass]);
-            
+      
       // Apply corrections or weights if applicable		  
       for(Int_t ipt=1; ipt<=(fUse2DMatching ? tempProj->GetYaxis()->GetNbins() : 1); ++ipt) {
 	Float_t pt = (fUse2DMatching ? tempProj->GetYaxis()->GetBinCenter(ipt) : 0.0);
@@ -758,27 +787,26 @@ void AliResonanceFits::MakeSEOS() {
             
       //cout << "GetJpsiSignal::centrality / eff / evWeight = " << fSEOS->GetAxis(kCentVZERO)->GetBinCenter(icent)
       //     << " / " << eff << " / " << evWeight << endl;
-            /*
       if(!fHistSEOS) {
-	if(fUse2DMatching)
-	  fHistSEOS = (TH2D*)tempProj->Clone(Form("fHistSEOS_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
-	            minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
-	else
-	  fHistSEOS = (TH1D*)tempProj->Clone(Form("fHistSEOS_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
-		    minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
+         if(fUse2DMatching) fHistSEOS = (TH2D*)tempProj->Clone(Form("fHistSEOS_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
+                                      minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
+         else fHistSEOS = (TH1D*)tempProj->Clone(Form("fHistSEOS_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
+            minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
       }
-      else*/ 
-      fHistSEOS->Add(tempProj);
+      else {
+         fHistSEOS->Add(tempProj);
+      }
       delete tempProj;
     }  // end loop over centrality bins
   } // end if(fUsedVars[kCentrality] && (fEffVsPtCent || fWeightVsCent))
   else {
+     cout << "MakeSEOS 2.2" << endl;
     if(fUse2DMatching) fHistSEOS = fSEOS->Projection(fVarIndex[kPt],fVarIndex[kMass]);
     else fHistSEOS = fSEOS->Projection(fVarIndex[kMass]);
     fHistSEOS->SetName(Form("fHistSEOS_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
 			     minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
   }
-  cout << "MakeSEOS  fHistSEOS(100)" << fHistSEOS->GetBinContent(100) << endl;
+  cout << "MakeSEOS  fHistSEOS(10)" << fHistSEOS->GetBinContent(10) << endl;
   //fHistSEOS->Draw();
 }
 
@@ -873,8 +901,8 @@ void AliResonanceFits::MakeLSbkg() {
   if(fUsedVars[kVertexZ] && fVertexSelection) {
     //zIdx = fVarIndex[kVertexZ];
     minZ = fSEOS->GetAxis(zIdx)->GetXmin(); maxZ = fSEOS->GetAxis(zIdx)->GetXmax();
-    if(fVertexZRange[0]>minZ) minZ = fVertexZRange[0]+0.001;
-    if(fVertexZRange[1]<maxZ) maxZ = fVertexZRange[1]-0.001;
+    if(fVertexZRange[0]>minZ) minZ = fVertexZRange[0]+1.0e-6;
+    if(fVertexZRange[1]<maxZ) maxZ = fVertexZRange[1]-1.0e-6;
     fSELSleg1->GetAxis(zIdx)->SetRangeUser(minZ, maxZ);
     fSELSleg2->GetAxis(zIdx)->SetRangeUser(minZ, maxZ);
     fMEOS->GetAxis(zIdx)->SetRangeUser(minZ, maxZ);
@@ -886,8 +914,8 @@ void AliResonanceFits::MakeLSbkg() {
   if(fUsedVars[kEP2] && fEPSelection) {
     //epIdx = fVarIndex[kEP2];
     minEP = fSEOS->GetAxis(epIdx)->GetXmin(); maxEP = fSEOS->GetAxis(epIdx)->GetXmax();
-    if(fEP2Range[0]>minEP) minEP = fEP2Range[0]+0.001;
-    if(fEP2Range[1]<maxEP) maxEP = fEP2Range[1]-0.001;
+    if(fEP2Range[0]>minEP) minEP = fEP2Range[0]+1.0e-6;
+    if(fEP2Range[1]<maxEP) maxEP = fEP2Range[1]-1.0e-6;
     fSELSleg1->GetAxis(epIdx)->SetRangeUser(minEP, maxEP);
     fSELSleg2->GetAxis(epIdx)->SetRangeUser(minEP, maxEP);
     fMEOS->GetAxis(epIdx)->SetRangeUser(minEP, maxEP);
@@ -899,8 +927,8 @@ void AliResonanceFits::MakeLSbkg() {
   if(fUsedVars[kPt] && fPtSelection) {
     //ptIdx = fVarIndex[kPt];
     minPt = fSEOS->GetAxis(ptIdx)->GetXmin(); maxPt = fSEOS->GetAxis(ptIdx)->GetXmax();
-    if(fPtRange[0]>minPt) minPt = fPtRange[0]+0.001;
-    if(fPtRange[1]<maxPt) maxPt = fPtRange[1]-0.001;
+    if(fPtRange[0]>minPt) minPt = fPtRange[0]+1.0e-6;
+    if(fPtRange[1]<maxPt) maxPt = fPtRange[1]-1.0e-6;
     fSELSleg1->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt);
     fSELSleg2->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt);
     fMEOS->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt);
@@ -912,8 +940,8 @@ void AliResonanceFits::MakeLSbkg() {
   if(fUsedVars[kCentrality] && fCentralitySelection) {
     //centIdx = fVarIndex[kCentrality];
     minCent = fSEOS->GetAxis(centIdx)->GetXmin(); maxCent = fSEOS->GetAxis(centIdx)->GetXmax();
-    if(fCentralityRange[0]>minCent) minCent = fCentralityRange[0]+0.001;
-    if(fCentralityRange[1]<maxCent) maxCent = fCentralityRange[1]-0.001;
+    if(fCentralityRange[0]>minCent) minCent = fCentralityRange[0]+1.0e-6;
+    if(fCentralityRange[1]<maxCent) maxCent = fCentralityRange[1]-1.0e-6;
     fSELSleg1->GetAxis(centIdx)->SetRangeUser(minCent, maxCent);
     fSELSleg2->GetAxis(centIdx)->SetRangeUser(minCent, maxCent);
     fMEOS->GetAxis(centIdx)->SetRangeUser(minCent, maxCent);
@@ -922,8 +950,8 @@ void AliResonanceFits::MakeLSbkg() {
   }
   Int_t mIdx = fVarIndex[kMass];
   Double_t minMass = fSEOS->GetAxis(mIdx)->GetXmin(); Double_t maxMass = fSEOS->GetAxis(mIdx)->GetXmax();
-  if(fMassRange[0]>minMass) minMass = fMassRange[0]+0.00001;
-  if(fMassRange[1]<maxMass) maxMass = fMassRange[1]-0.00001;
+  if(fMassRange[0]>minMass) minMass = fMassRange[0]+1.0e-6;
+  if(fMassRange[1]<maxMass) maxMass = fMassRange[1]-1.0e-6;
   fSELSleg1->GetAxis(mIdx)->SetRangeUser(minMass, maxMass);
   fSELSleg2->GetAxis(mIdx)->SetRangeUser(minMass, maxMass);
   fMEOS->GetAxis(mIdx)->SetRangeUser(minMass, maxMass);
@@ -954,8 +982,8 @@ void AliResonanceFits::MakeLSbkg() {
     fMEOS->GetAxis(centIdx)->SetRangeUser(centrality, centrality);
     fMELSleg1->GetAxis(centIdx)->SetRangeUser(centrality, centrality);
     fMELSleg2->GetAxis(centIdx)->SetRangeUser(centrality, centrality);
-    fSELSleg1->GetAxis(centIdx)->SetRangeUser(centLowEdge+0.001, centUpEdge-0.001);
-    fSELSleg2->GetAxis(centIdx)->SetRangeUser(centLowEdge+0.001, centUpEdge-0.001);
+    fSELSleg1->GetAxis(centIdx)->SetRangeUser(centLowEdge+1.0e-6, centUpEdge-1.0e-6);
+    fSELSleg2->GetAxis(centIdx)->SetRangeUser(centLowEdge+1.0e-6, centUpEdge-1.0e-6);
     
     for(Int_t ipt=1; ipt<=(fUse2DMatching ? fMEOS->GetAxis(ptIdx)->GetNbins() : 1); ++ipt) {
       Float_t pt = (fUse2DMatching ? fMEOS->GetAxis(ptIdx)->GetBinCenter(ipt) : 0.0);
@@ -973,7 +1001,7 @@ void AliResonanceFits::MakeLSbkg() {
       
       for(Int_t iz=1; iz<=fMEOS->GetAxis(zIdx)->GetNbins(); ++iz) {
         Double_t vtxz = fMEOS->GetAxis(zIdx)->GetBinCenter(iz);
-        cout << "vtxz " << vtxz << endl;
+        //cout << "vtxz " << vtxz << endl;
         fMEOS->GetAxis(zIdx)->SetRangeUser(vtxz, vtxz);
         fMELSleg1->GetAxis(zIdx)->SetRangeUser(vtxz, vtxz);
         fMELSleg2->GetAxis(zIdx)->SetRangeUser(vtxz, vtxz);
@@ -982,7 +1010,7 @@ void AliResonanceFits::MakeLSbkg() {
       
         for(Int_t iep=1; iep<=fMEOS->GetAxis(epIdx)->GetNbins(); ++iep) {
           Double_t ep = fMEOS->GetAxis(epIdx)->GetBinCenter(iep);
-          cout << "EP " << ep << endl;
+          //cout << "EP " << ep << endl;
           fMEOS->GetAxis(epIdx)->SetRangeUser(ep, ep);
           fMELSleg1->GetAxis(epIdx)->SetRangeUser(ep, ep);
           fMELSleg2->GetAxis(epIdx)->SetRangeUser(ep, ep);
@@ -1003,36 +1031,28 @@ void AliResonanceFits::MakeLSbkg() {
 	    melsLeg2_proj = fMELSleg2->Projection(mIdx); melsLeg2_proj->SetName(Form("melsLeg2_proj%.6f", gRandom->Rndm()));
 	    meos_proj = fMEOS->Projection(mIdx); meos_proj->SetName(Form("meos_proj%.6f", gRandom->Rndm()));
 	  }
-	  cout << "sels1/sels2/mels1/mels2/meos : " << selsLeg1_proj->GetEntries() << "/"
-                  << selsLeg2_proj->GetEntries() << "/" << melsLeg1_proj->GetEntries() << "/" << melsLeg2_proj->GetEntries() << "/"
-                  << meos_proj->GetEntries() << endl;
+	  //cout << "sels1/sels2/mels1/mels2/meos : " << selsLeg1_proj->GetEntries() << "/"
+          //        << selsLeg2_proj->GetEntries() << "/" << melsLeg1_proj->GetEntries() << "/" << melsLeg2_proj->GetEntries() << "/"
+          //        << meos_proj->GetEntries() << endl;
 	  	
 	  TH1* seLScorr = GetLScorrected(selsLeg1_proj, selsLeg2_proj, meos_proj, melsLeg1_proj, melsLeg2_proj);
-	  cout << "seLScorr/n/low/high/evWeight/eff : " << seLScorr->GetBinContent(2) << "/" << seLScorr->GetXaxis()->GetNbins() 
-                  << "/" << seLScorr->GetXaxis()->GetXmin() << "/" << seLScorr->GetXaxis()->GetXmax() << "/" << evWeight << "/" << eff << endl;
+	  //cout << "seLScorr/n/low/high/evWeight/eff : " << seLScorr->GetBinContent(2) << "/" << seLScorr->GetXaxis()->GetNbins() 
+          //        << "/" << seLScorr->GetXaxis()->GetXmin() << "/" << seLScorr->GetXaxis()->GetXmax() << "/" << evWeight << "/" << eff << endl;
           
           
-	  /*if(!fHistSELSbkg) {
+	  if(!fHistSELSbkg) {
 	    if(fUse2DMatching) {
-              fHistSELSbkg = fMEOS->Projection(ptIdx,mIdx);
-              fHistSELSbkg->SetName(Form("fHistSELSbkg_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
-                                                                minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
-               //fHistSELSbkg = (TH2D*)selsLeg1_proj->Clone(Form("fHistSELSbkg_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
-               //                                           minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
+               fHistSELSbkg = (TH2D*)seLScorr->Clone(Form("fHistSELSbkg_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
+                                                          minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
             }
 	    else {
-               fHistSELSbkg = fMEOS->Projection(mIdx);
-               fHistSELSbkg->SetName(Form("fHistSELSbkg_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
-                                          minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
-               //fHistSELSbkg = (TH1D*)selsLeg1_proj->Clone(Form("fHistSELSbkg_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
-                //                                          minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
+               fHistSELSbkg = (TH1D*)seLScorr->Clone(Form("fHistSELSbkg_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
+                                                          minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
             }
-	    //fHistSELSbkg->Scale(evWeight/eff);
-            //fHistSELSbkg->Reset();
-            //fHistSELSbkg->Add(seLScorr, evWeight/eff);
-	  } */
-	  fHistSELSbkg->Add(seLScorr, evWeight/eff);
-          //fHistSELSbkg->Draw(); return;
+	    fHistSELSbkg->Scale(evWeight/eff);
+	  } 
+	  else
+            fHistSELSbkg->Add(seLScorr, evWeight/eff);
 	
 	  delete selsLeg1_proj; delete selsLeg2_proj; delete melsLeg1_proj; 
 	  delete melsLeg2_proj; delete meos_proj; delete seLScorr;
@@ -1056,8 +1076,8 @@ void AliResonanceFits::MakeMEbkg() {
   if(fUsedVars[kVertexZ] && fVertexSelection) {
     //zIdx = fVarIndex[kVertexZ];
     minZ = fSEOS->GetAxis(zIdx)->GetXmin(); maxZ = fSEOS->GetAxis(zIdx)->GetXmax();
-    if(fVertexZRange[0]>minZ) minZ = fVertexZRange[0]+0.001;
-    if(fVertexZRange[1]<maxZ) maxZ = fVertexZRange[1]-0.001;
+    if(fVertexZRange[0]>minZ) minZ = fVertexZRange[0]+1.0e-6;
+    if(fVertexZRange[1]<maxZ) maxZ = fVertexZRange[1]-1.0e-6;
     fMEOS->GetAxis(zIdx)->SetRangeUser(minZ, maxZ);
     if(fMEMatchOption==1) fSEOS->GetAxis(zIdx)->SetRangeUser(minZ, maxZ);
     else {
@@ -1072,8 +1092,8 @@ void AliResonanceFits::MakeMEbkg() {
   if(fUsedVars[kEP2] && fEPSelection) {
     //epIdx = fVarIndex[kEP2];
     minEP = fSEOS->GetAxis(epIdx)->GetXmin(); maxEP = fSEOS->GetAxis(epIdx)->GetXmax();
-    if(fEP2Range[0]>minEP) minEP = fEP2Range[0]+0.001;
-    if(fEP2Range[1]<maxEP) maxEP = fEP2Range[1]-0.001;
+    if(fEP2Range[0]>minEP) minEP = fEP2Range[0]+1.0e-6;
+    if(fEP2Range[1]<maxEP) maxEP = fEP2Range[1]-1.0e-6;
     fMEOS->GetAxis(epIdx)->SetRangeUser(minEP, maxEP);
     if(fMEMatchOption==1) fSEOS->GetAxis(epIdx)->SetRangeUser(minEP, maxEP);
     else {
@@ -1088,8 +1108,8 @@ void AliResonanceFits::MakeMEbkg() {
   if(fUsedVars[kPt] && fPtSelection) {
     ptIdx = fVarIndex[kPt];
     minPt = fSEOS->GetAxis(ptIdx)->GetXmin(); maxPt = fSEOS->GetAxis(ptIdx)->GetXmax();
-    if(fPtRange[0]>minPt) minPt = fPtRange[0]+0.001;
-    if(fPtRange[1]<maxPt) maxPt = fPtRange[1]-0.001;
+    if(fPtRange[0]>minPt) minPt = fPtRange[0]+1.0e-6;
+    if(fPtRange[1]<maxPt) maxPt = fPtRange[1]-1.0e-6;
     fMEOS->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt);
     if(fMEMatchOption==1) fSEOS->GetAxis(ptIdx)->SetRangeUser(minPt, maxPt);
     else {
@@ -1104,8 +1124,8 @@ void AliResonanceFits::MakeMEbkg() {
   if(fUsedVars[kCentrality] && fCentralitySelection) {
     centIdx = fVarIndex[kCentrality];
     minCent = fSEOS->GetAxis(centIdx)->GetXmin(); maxCent = fSEOS->GetAxis(centIdx)->GetXmax();
-    if(fCentralityRange[0]>minCent) minCent = fCentralityRange[0]+0.001;
-    if(fCentralityRange[1]<maxCent) maxCent = fCentralityRange[1]-0.001;
+    if(fCentralityRange[0]>minCent) minCent = fCentralityRange[0]+1.0e-6;
+    if(fCentralityRange[1]<maxCent) maxCent = fCentralityRange[1]-1.0e-6;
     fMEOS->GetAxis(centIdx)->SetRangeUser(minCent, maxCent);
     if(fMEMatchOption==1) fSEOS->GetAxis(centIdx)->SetRangeUser(minCent, maxCent);
     else {
@@ -1117,8 +1137,8 @@ void AliResonanceFits::MakeMEbkg() {
   }
   Int_t mIdx = fVarIndex[kMass];
   Double_t minMass = fSEOS->GetAxis(mIdx)->GetXmin(); Double_t maxMass = fSEOS->GetAxis(mIdx)->GetXmax();
-  if(fMassRange[0]>minMass) minMass = fMassRange[0]+0.00001;
-  if(fMassRange[1]<maxMass) maxMass = fMassRange[1]-0.00001;
+  if(fMassRange[0]>minMass) minMass = fMassRange[0]+1.0e-6;
+  if(fMassRange[1]<maxMass) maxMass = fMassRange[1]-1.0e-6;
   fMEOS->GetAxis(mIdx)->SetRangeUser(minMass, maxMass);
   if(fMEMatchOption==1) fSEOS->GetAxis(mIdx)->SetRangeUser(minMass, maxMass);
   else {
@@ -1146,12 +1166,12 @@ void AliResonanceFits::MakeMEbkg() {
     }
         
     fMEOS->GetAxis(centIdx)->SetRangeUser(centrality, centrality);
-    if(fMEMatchOption==1) fSEOS->GetAxis(centIdx)->SetRangeUser(centLowEdge+0.001, centUpEdge-0.001);
+    if(fMEMatchOption==1) fSEOS->GetAxis(centIdx)->SetRangeUser(centLowEdge+1.0e-6, centUpEdge-1.0e-6);
     else {
       fMELSleg1->GetAxis(centIdx)->SetRangeUser(centrality, centrality);
       fMELSleg2->GetAxis(centIdx)->SetRangeUser(centrality, centrality);
-      fSELSleg1->GetAxis(centIdx)->SetRangeUser(centLowEdge+0.001, centUpEdge-0.001);
-      fSELSleg2->GetAxis(centIdx)->SetRangeUser(centLowEdge+0.001, centUpEdge-0.001);
+      fSELSleg1->GetAxis(centIdx)->SetRangeUser(centLowEdge+1.0e-6, centUpEdge-1.0e-6);
+      fSELSleg2->GetAxis(centIdx)->SetRangeUser(centLowEdge+1.0e-6, centUpEdge-1.0e-6);
     }
     
     for(Int_t ipt=1; ipt<=(fUse2DMatching ? fMEOS->GetAxis(ptIdx)->GetNbins() : 1); ++ipt) {
@@ -1173,7 +1193,7 @@ void AliResonanceFits::MakeMEbkg() {
     
       for(Int_t iz=1; iz<=fMEOS->GetAxis(zIdx)->GetNbins(); ++iz) {
         Double_t vtxz = fMEOS->GetAxis(zIdx)->GetBinCenter(iz);
-        cout << "vtxz " << vtxz << endl;
+        //cout << "vtxz " << vtxz << endl;
         fMEOS->GetAxis(zIdx)->SetRangeUser(vtxz, vtxz);
         if(fMEMatchOption==1) fSEOS->GetAxis(zIdx)->SetRangeUser(vtxz, vtxz);
         else {
@@ -1185,7 +1205,7 @@ void AliResonanceFits::MakeMEbkg() {
       
         for(Int_t iep=1; iep<=fMEOS->GetAxis(epIdx)->GetNbins(); ++iep) {
           Double_t ep = fMEOS->GetAxis(epIdx)->GetBinCenter(iep);
-          cout << "EP " << ep << endl;
+          //cout << "EP " << ep << endl;
           fMEOS->GetAxis(epIdx)->SetRangeUser(ep, ep);
           if(fMEMatchOption==1) fSEOS->GetAxis(epIdx)->SetRangeUser(ep, ep);
 	  else {
@@ -1195,10 +1215,10 @@ void AliResonanceFits::MakeMEbkg() {
 	    fSELSleg2->GetAxis(epIdx)->SetRangeUser(ep, ep);
 	  }
 	  
-	  cout << "1" << endl;
+	  //cout << "1" << endl;
 	  if(fUse2DMatching) meos_proj = fMEOS->Projection(ptIdx,mIdx);
 	  else meos_proj = fMEOS->Projection(mIdx);
-	  cout << "2" << endl;
+	  //cout << "2" << endl;
 	  meos_proj->SetName(Form("meos_proj%.6f", gRandom->Rndm()));
 	  	
 	  if(fMEMatchOption==1) {
@@ -1246,8 +1266,8 @@ void AliResonanceFits::MakeMEbkg() {
 	    delete seLScorr;
 	  }
 	
-	  /*if(!fHistMEbkg) {
-	    if(fUse2DMatching) 
+	  if(!fHistMEbkg) {
+	    if(fUse2DMatching)
 	      fHistMEbkg = (TH2D*)meos_proj->Clone(Form("fHistMEbkg%.2f_%.2f_cent%.1f_%.1f", 
 		  				        minPt, maxPt, minCent, maxCent));
 	    else
@@ -1255,14 +1275,15 @@ void AliResonanceFits::MakeMEbkg() {
 		  				        minPt, maxPt, minCent, maxCent));
 	    fHistMEbkg->Scale(evWeight/eff);
 	  }
-	  else*/
-          fHistMEbkg->Add(meos_proj, evWeight/eff);
+	  else
+            fHistMEbkg->Add(meos_proj, evWeight/eff);
 	
 	  delete meos_proj;
         } // end loop over EP bins
       }  // end loop over z-vertex bins
     }  // end loop over pt
   }  // end loop over centrality bins
+  //fHistMEbkg->Draw();
 }
 
 //_____________________________________________________________________________________________
@@ -1300,18 +1321,58 @@ void AliResonanceFits::DrawSignalExtraction(Bool_t save /*=kFALSE*/, const Char_
       TH1D* projSEOS = ((TH2D*)fHistSEOS)->ProjectionY(Form("%s_ptProj",fHistSEOS->GetName()),
 						       fHistSEOS->GetXaxis()->FindBin(fSignalRange[0]+0.001),
 						       fHistSEOS->GetXaxis()->FindBin(fSignalRange[1]-0.001));
+      projSEOS->GetYaxis()->SetTitle("counts");
+      projSEOS->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      TH1D* projSEOS_ptNorm = (TH1D*)projSEOS->Clone(Form("%s_ptNorm", projSEOS->GetName()));
+      for(Int_t i=1;i<=projSEOS_ptNorm->GetXaxis()->GetNbins(); ++i) {
+         projSEOS_ptNorm->SetBinContent(i, projSEOS->GetBinContent(i) / projSEOS->GetBinWidth(i));
+         projSEOS_ptNorm->SetBinError(i, projSEOS->GetBinError(i) / projSEOS->GetBinWidth(i));
+      }
+      projSEOS_ptNorm->GetYaxis()->SetTitle("counts per GeV/c");
+      projSEOS_ptNorm->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      
       TH1* bkg = fHistMEbkg; 
       if(fBkgMethod!=1) bkg = fHistSELSbkg;
       TH1D* projBkg = ((TH2D*)bkg)->ProjectionY(Form("%s_ptProj",bkg->GetName()),
 						fHistSEOS->GetXaxis()->FindBin(fSignalRange[0]+0.001),
 						fHistSEOS->GetXaxis()->FindBin(fSignalRange[1]-0.001));
+      projBkg->GetYaxis()->SetTitle("counts");
+      projBkg->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      TH1D* projBkg_ptNorm = (TH1D*)projBkg->Clone(Form("%s_ptNorm", projBkg->GetName()));
+      for(Int_t i=1;i<=projBkg_ptNorm->GetXaxis()->GetNbins(); ++i) {
+         projBkg_ptNorm->SetBinContent(i, projBkg->GetBinContent(i) / projBkg->GetBinWidth(i));
+         projBkg_ptNorm->SetBinError(i, projBkg->GetBinError(i) / projBkg->GetBinWidth(i));
+      }
+      projBkg_ptNorm->GetYaxis()->SetTitle("counts per GeV/c");
+      projBkg_ptNorm->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      
       TH1D* projSignal = ((TH2D*)fHistBkgSubtracted)->ProjectionY(Form("%s_ptProj",fHistBkgSubtracted->GetName()),
 								  fHistSEOS->GetXaxis()->FindBin(fSignalRange[0]+0.001),
 								  fHistSEOS->GetXaxis()->FindBin(fSignalRange[1]-0.001));
+      projSignal->GetYaxis()->SetTitle("counts");
+      projSignal->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      TH1D* projSignal_ptNorm = (TH1D*)projSignal->Clone(Form("%s_ptNorm", projSignal->GetName()));
+      for(Int_t i=1;i<=projSignal->GetXaxis()->GetNbins(); ++i) {
+         projSignal_ptNorm->SetBinContent(i, projSignal->GetBinContent(i) / projSignal->GetBinWidth(i));
+         projSignal_ptNorm->SetBinError(i, projSignal->GetBinError(i) / projSignal->GetBinWidth(i));
+      }
+      projSignal_ptNorm->GetYaxis()->SetTitle("counts per GeV/c");
+      projSignal_ptNorm->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+      
       TCanvas *c1=new TCanvas();
+      projSEOS->SetLineColor(2); projSEOS->SetLineWidth(2);
+      projBkg->SetLineColor(4); projBkg->SetLineWidth(2);
       projSEOS->DrawClone(); projBkg->DrawClone("same");
+      TCanvas *c1_2=new TCanvas();
+      projSEOS_ptNorm->SetLineColor(2); projSEOS_ptNorm->SetLineWidth(2);
+      projBkg_ptNorm->SetLineColor(4); projBkg_ptNorm->SetLineWidth(2);
+      projSEOS_ptNorm->DrawClone(); projBkg_ptNorm->DrawClone("same");
       TCanvas *c2=new TCanvas();
+      projSignal->SetLineColor(6); projSignal->SetLineWidth(2);
       projSignal->DrawClone();
+      TCanvas *c2_2=new TCanvas();
+      projSignal_ptNorm->SetLineColor(6); projSignal_ptNorm->SetLineWidth(2);
+      projSignal_ptNorm->DrawClone();
       //DrawMassProjection(projSEOS, projBkg, projSignal, save, name, outputDir, makeNicePlot, externalPad, noYlabels, noLegends);
     }
   }   // end if(fUse2DMatching)

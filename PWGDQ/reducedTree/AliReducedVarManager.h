@@ -211,6 +211,7 @@ class AliReducedVarManager : public TObject {
     kNTracksTPCoutVsSPDtracklets,                        //  TPCout/SPDtracklets
     kNTracksTRDoutVsSPDtracklets,                        //  TRDout/SPDtracklets
     kNTracksTOFoutVsSPDtracklets,                        //  TOFout/SPDtracklets
+    kNTracksTPCoutFromPileup,                       // number of tracks from (kNTracksPerTrackingStatus+kTPCout) minus the no-pileup expectation
     kCentVZERO,         // centrality from VZERO
     kCentSPD,           // centrality from SPD
     kCentSPDcorr,       // corrected centrality from SPD
@@ -381,8 +382,10 @@ class AliReducedVarManager : public TObject {
     kTPCcrossedRows,    
     kTPCnclsF,  
     kTPCnclsShared,
+    kTPCnclsSharedRatio,
     kTPCnclsRatio,       // TPCncls / TPCnclsF          
     kTPCnclsRatio2,      // TPCncls / TPCCrossedRows    
+    kTPCcrossedRowsOverFindableClusters,
     kTPCsignal,         
     kTPCsignalN,
     kTPCnSig,  
