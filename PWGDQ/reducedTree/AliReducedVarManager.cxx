@@ -409,6 +409,11 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     }
   }
   
+  fgUsedVars[kNTracksTPCoutFromPileup] = kTRUE;
+  if(values[kVZEROTotalMult]>0.0)
+     values[kNTracksTPCoutFromPileup] = values[kNTracksPerTrackingStatus+kTPCout] - (-2.55+TMath::Sqrt(2.55*2.55+4.0e-5*values[kVZEROTotalMult]))/2.0e-5;
+  else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
+  
   if(eventF) {
     for(Int_t ih=0; ih<6; ++ih) {
       // VZERO event plane variables
@@ -775,6 +780,18 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
     values[kTPCnclsRatio] = (pinfo->TPCFindableNcls()>0 ? Float_t(pinfo->TPCncls())/Float_t(pinfo->TPCFindableNcls()) : 0.0);
   if(fgUsedVars[kTPCnclsRatio2]) 
     values[kTPCnclsRatio2] = (pinfo->TPCCrossedRows()>0 ? Float_t(pinfo->TPCncls())/Float_t(pinfo->TPCCrossedRows()) : 0.0);
+  if(fgUsedVars[kTPCcrossedRowsOverFindableClusters]) { 
+     if(pinfo->TPCFindableNcls()>0)
+       values[kTPCcrossedRowsOverFindableClusters] = Float_t(pinfo->TPCCrossedRows()) / Float_t(pinfo->TPCFindableNcls());
+     else 
+        values[kTPCcrossedRowsOverFindableClusters] = 0.0;
+  }
+  if(fgUsedVars[kTPCnclsSharedRatio]) {
+     if(pinfo->TPCncls()>0) 
+        values[kTPCnclsSharedRatio] = Float_t(pinfo->TPCnclsShared()) / Float_t(pinfo->TPCncls());
+     else
+        values[kTPCnclsSharedRatio] = 0.0;
+  }
   values[kTPCnclsF]       = pinfo->TPCFindableNcls();
   values[kTPCnclsShared]  = pinfo->TPCnclsShared();
   values[kTPCcrossedRows] = pinfo->TPCCrossedRows();
@@ -1296,6 +1313,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNTracksTPCoutVsSPDtracklets] = "TPCout/SPDtracklets";             fgVariableUnits[kNTracksTPCoutVsSPDtracklets] = "";
   fgVariableNames[kNTracksTRDoutVsSPDtracklets] = "TRDout/SPDtracklets";             fgVariableUnits[kNTracksTRDoutVsSPDtracklets] = "";
   fgVariableNames[kNTracksTOFoutVsSPDtracklets] = "TOFout/SPDtracklets";             fgVariableUnits[kNTracksTOFoutVsSPDtracklets] = "";
+  fgVariableNames[kNTracksTPCoutFromPileup] = "# kTPCout tracks - expectation";
   fgVariableNames[kCentVZERO]                   = "VZERO centrality";                fgVariableUnits[kCentVZERO]      = "%";
   fgVariableNames[kCentSPD]                     = "CL1 centrality";                  fgVariableUnits[kCentSPD]        = "%";
   fgVariableNames[kCentSPDcorr]                 = "SPD trklts centrality";           fgVariableUnits[kCentSPDcorr]    = "%";
@@ -1554,8 +1572,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTPCcrossedRows]    = "No.TPC crossed rows";          fgVariableUnits[kTPCcrossedRows] = "";
   fgVariableNames[kTPCnclsF]          = "No.TPC findable clusters";     fgVariableUnits[kTPCnclsF] = "";
   fgVariableNames[kTPCnclsShared]     = "No.TPC shared clusters";       fgVariableUnits[kTPCnclsShared] = "";
+  fgVariableNames[kTPCnclsSharedRatio] = "# TPC shared clusters / all TPC clusters"; fgVariableUnits[kTPCnclsSharedRatio] = "fraction";
   fgVariableNames[kTPCnclsRatio]      = "No.TPC clusters/findable";     fgVariableUnits[kTPCnclsRatio] = "";
   fgVariableNames[kTPCnclsRatio2]     = "No.TPC clusters/crossed rows"; fgVariableUnits[kTPCnclsRatio2] = "";
+  fgVariableNames[kTPCcrossedRowsOverFindableClusters] = "Crossed rows / findable clusters"; fgVariableUnits[kTPCcrossedRowsOverFindableClusters] = "fraction";
   fgVariableNames[kTPCsignal]         = "TPC dE/dx";                    fgVariableUnits[kTPCsignal] = "";  
   fgVariableNames[kTPCsignalN]        = "No. TPC clusters PID";         fgVariableUnits[kTPCsignalN] = "";  
   fgVariableNames[kTPCnSig]           = "TPC n_{#sigma}^{e}";           fgVariableUnits[kTPCnSig] = "#sigma";  
