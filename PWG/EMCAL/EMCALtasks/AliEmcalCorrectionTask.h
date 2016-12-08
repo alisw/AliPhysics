@@ -212,8 +212,8 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Hidden from CINT since it cannot handle YAML objects well
-  YAML::Node                  fUserConfiguration;          /// User YAML Configuration
-  YAML::Node                  fDefaultConfiguration;       /// Default YAML Configuration
+  YAML::Node                  fUserConfiguration;          //!<! User YAML Configuration
+  YAML::Node                  fDefaultConfiguration;       //!<! Default YAML Configuration
 #endif
 
   std::string                 fSuffix;                     ///< Suffix of the Correction Task (used to select components)
