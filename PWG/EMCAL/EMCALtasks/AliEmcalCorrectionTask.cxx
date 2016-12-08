@@ -1455,7 +1455,7 @@ void AliEmcalCorrectionTask::CheckForContainerArray(AliEmcalContainer * cont, In
 
   TClonesArray *  array = dynamic_cast<TClonesArray *>(event->FindListObject(cont->GetArrayName()));
   if (!array) {
-    AliWarning(TString::Format("Container %s requested branch %s, but it does not exist! Creating it for you! Please check that this the proper action!", cont->GetName(), cont->GetArrayName().Data()));
+    AliWarning(TString::Format("Container %s requested branch %s, but it does not exist! Creating it for you! Please check that this is the proper action!", cont->GetName(), cont->GetArrayName().Data()));
     array = new TClonesArray(DetermineUseDefaultName(objectType, fIsEsd, true).c_str());
     array->SetName(cont->GetArrayName());
     event->AddObject(array);
