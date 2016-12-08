@@ -89,13 +89,47 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
                               TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
                               TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
-                              
                             ) {
 
-  Int_t isHeavyIon = 0;
-  if (additionalTrainConfig.Atoi() > 0){
-    trainConfig = trainConfig + additionalTrainConfig.Atoi();
-  }  
+  Int_t isHeavyIon = 0; 
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0){ rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    } else {
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout<< tempStr.Data()<<endl;
+      
+      if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
+         if(tempStr.Contains("MaterialBudgetWeightsNONE")){
+            enableMatBudWeightsPi0 = 0;
+            cout << "INFO:  AddTask_GammaConvV1_pp materialBudgetWeights switched off signaled by additionalTrainConfigFlag" << endl;
+         } else {
+            TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
+            if(fileNameMatBudWeightsArr->GetEntries()<1 ){
+                cout<<"ERROR: AddTask_GammaConvV1_pp when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl; 
+                return;
+            }  
+            TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
+            TString  oldfileName  = oldMatObjStr->GetString();
+            TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
+            cout<<newFileName.Data()<<endl;
+            if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
+              filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
+              cout << "INFO: AddTask_GammaConvV1_pp the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+          }
+        }
+      }
+    }
+  }
+  
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+  }
   
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -584,10 +618,10 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000113", "00200009227302008250400000", "0152102500000000"); // 0.80, 1.2
     cuts.AddCut("00000113", "00200009227302008250400000", "0152109500000000"); // 0.65, 1.2
   } else if (trainConfig == 78) { //pp 8TeV cuts with EMC triggers
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // standard cut 8tev
-    cuts.AddCut("00010113", "00200009227302008250404000", "0152103500000000","1111111063032230000"); // standard cut 8tev + double counting
-    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // trigger kEMC7
-    cuts.AddCut("00081113", "00200009227302008250400000", "0152103500000000","1111111063032230000"); // trigger kEGA7
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000","1111111067032230000"); // standard cut 8tev
+    cuts.AddCut("00010113", "00200009227302008250404000", "0152103500000000","1111111067032230000"); // standard cut 8tev + double counting
+    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000","1111111067032230000"); // trigger kEMC7
+    cuts.AddCut("00081113", "00200009227302008250400000", "0152103500000000","1111111067032230000"); // trigger kEGA7
   } else if (trainConfig == 79) { //pp 7 and 8TeV direct photon test cut (with asymmetry cut)
     cuts.AddCut("00010113", "00200009227302008254404000", "0152101500000000"); //8TeV with asymmetry and pT dep alpha cut
     cuts.AddCut("00010113", "00200009227302008254404000", "0152103500000000"); //8TeV with asymmetry
@@ -734,45 +768,45 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00075013", "00200009227302008250400000", "0152109500000000"); //variation alpha
     cuts.AddCut("00075013", "00200009227302008250400000", "0152101500000002"); //variation alpha opan max
   } else if (trainConfig == 107) { //LHC11a
-    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers INT1
-    cuts.AddCut("00051113", "00200009227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1
-    cuts.AddCut("00051113", "00202209227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1 restricted wide EMC range
-    cuts.AddCut("00051113", "00204409227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1 restricted tight EMC range
+    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000","1111121057032220000"); //WSDD test with triggers INT1
+    cuts.AddCut("00051113", "00200009227302008250400000", "0152103500000000","1111121057032220000"); //WSDD test with triggers EMC1
+    cuts.AddCut("00051113", "00202209227302008250400000", "0152103500000000","1111121057032220000"); //WSDD test with triggers EMC1 restricted wide EMC range
+    cuts.AddCut("00051113", "00204409227302008250400000", "0152103500000000","1111121057032220000"); //WSDD test with triggers EMC1 restricted tight EMC range
   } else if (trainConfig == 108) { //LHC13g full acceptance
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //INT7
-    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
-    cuts.AddCut("00085113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EG2
-    cuts.AddCut("00083113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EG1
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000","1111121067032220000"); //INT7
+    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000","1111121067032220000"); //EMC7
+    cuts.AddCut("00085113", "00200009227302008250400000", "0152103500000000","1111121067032220000"); //EG2
+    cuts.AddCut("00083113", "00200009227302008250400000", "0152103500000000","1111121067032220000"); //EG1
   } else if (trainConfig == 109) { //LHC13g loose EMC acceptance for PCM photons
-    cuts.AddCut("00010113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //INT7
-    cuts.AddCut("00052113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
-    cuts.AddCut("00085113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EG2
-    cuts.AddCut("00083113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EG1
+    cuts.AddCut("00010113", "00202209227302008250400000", "0152103500000000","1111121067032220000"); //INT7
+    cuts.AddCut("00052113", "00202209227302008250400000", "0152103500000000","1111121067032220000"); //EMC7
+    cuts.AddCut("00085113", "00202209227302008250400000", "0152103500000000","1111121067032220000"); //EG2
+    cuts.AddCut("00083113", "00202209227302008250400000", "0152103500000000","1111121067032220000"); //EG1
   } else if (trainConfig == 110) { //LHC13g tight EMC acceptance for PCM photons
-    cuts.AddCut("00010113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //INT7
-    cuts.AddCut("00052113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
-    cuts.AddCut("00085113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG2
-    cuts.AddCut("00083113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG1
+    cuts.AddCut("00010113", "00204409227302008250400000", "0152103500000000","1111121067032220000"); //INT7
+    cuts.AddCut("00052113", "00204409227302008250400000", "0152103500000000","1111121067032220000"); //EMC7
+    cuts.AddCut("00085113", "00204409227302008250400000", "0152103500000000","1111121067032220000"); //EG2
+    cuts.AddCut("00083113", "00204409227302008250400000", "0152103500000000","1111121067032220000"); //EG1
   } else if (trainConfig == 111) { //LHC11a
-    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers INT1
-    cuts.AddCut("00051013", "00200009227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1
-    cuts.AddCut("00051013", "00202209227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1 restricted wide EMC range
-    cuts.AddCut("00051013", "00204409227302008250400000", "0152103500000000","1111121050032220000"); //WSDD test with triggers EMC1 restricted tight EMC range
+    cuts.AddCut("00003113", "00200009227302008250400000", "0152103500000000","1111121057032220000"); //WSDD test with triggers INT1
+    cuts.AddCut("00051013", "00200009227302008250400000", "0152103500000000","1111121057032220000"); //WSDD test with triggers EMC1
+    cuts.AddCut("00051013", "00202209227302008250400000", "0152103500000000","1111121057032220000"); //WSDD test with triggers EMC1 restricted wide EMC range
+    cuts.AddCut("00051013", "00204409227302008250400000", "0152103500000000","1111121057032220000"); //WSDD test with triggers EMC1 restricted tight EMC range
   } else if (trainConfig == 112) { //LHC13g full acceptance
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //INT7
-    cuts.AddCut("00052013", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
-    cuts.AddCut("00085013", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EG2
-    cuts.AddCut("00083013", "00200009227302008250400000", "0152103500000000","1111121060032220000"); //EG1
+    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000","1111121067032220000"); //INT7
+    cuts.AddCut("00052013", "00200009227302008250400000", "0152103500000000","1111121067032220000"); //EMC7
+    cuts.AddCut("00085013", "00200009227302008250400000", "0152103500000000","1111121067032220000"); //EG2
+    cuts.AddCut("00083013", "00200009227302008250400000", "0152103500000000","1111121067032220000"); //EG1
   } else if (trainConfig == 113) { //LHC13g loose EMC acceptance for PCM photons
-    cuts.AddCut("00010113", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //INT7
-    cuts.AddCut("00052013", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
-    cuts.AddCut("00085013", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EG2
-    cuts.AddCut("00083013", "00202209227302008250400000", "0152103500000000","1111121060032220000"); //EG1
+    cuts.AddCut("00010113", "00202209227302008250400000", "0152103500000000","1111121067032220000"); //INT7
+    cuts.AddCut("00052013", "00202209227302008250400000", "0152103500000000","1111121067032220000"); //EMC7
+    cuts.AddCut("00085013", "00202209227302008250400000", "0152103500000000","1111121067032220000"); //EG2
+    cuts.AddCut("00083013", "00202209227302008250400000", "0152103500000000","1111121067032220000"); //EG1
   } else if (trainConfig == 114) { //LHC13g tight EMC acceptance for PCM photons
-    cuts.AddCut("00010113", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //INT7
-    cuts.AddCut("00052013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EMC7
-    cuts.AddCut("00085013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG2
-    cuts.AddCut("00083013", "00204409227302008250400000", "0152103500000000","1111121060032220000"); //EG1
+    cuts.AddCut("00010113", "00204409227302008250400000", "0152103500000000","1111121067032220000"); //INT7
+    cuts.AddCut("00052013", "00204409227302008250400000", "0152103500000000","1111121067032220000"); //EMC7
+    cuts.AddCut("00085013", "00204409227302008250400000", "0152103500000000","1111121067032220000"); //EG2
+    cuts.AddCut("00083013", "00204409227302008250400000", "0152103500000000","1111121067032220000"); //EG1
   } else if (trainConfig == 115) { //kINT7
     cuts.AddCut("00010113", "00200009227302008250400000", "0152101500000000"); 
     cuts.AddCut("00010113", "00200009227302008250404000", "0152101500000000"); // double counting cut
@@ -859,6 +893,55 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
      cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
   } else if (trainConfig == 140) {
      cuts.AddCut("00003123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+   //---------	 pp7TeV purity studies (kappa cut)    -------------------------//
+  } else if (trainConfig == 150) {
+    cuts.AddCut("00000113", "00200009300000008250404000", "0152103500000000"); // -3 < kappa <  5
+    cuts.AddCut("00000113", "00200009500000008250404000", "0152103500000000"); // -5 < kappa < 10
+    cuts.AddCut("00000113", "00200009600000008250404000", "0152103500000000"); // -3 < kappa < 10
+    cuts.AddCut("00000113", "00200009700000008250404000", "0152103500000000"); //  0 < kappa < 10
+    
+    //  160-169 copies of 120, created in order to be able to run the same config with several sets of MatBudWeights 
+  } else if (trainConfig == 160) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 161) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 162) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 163) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 164) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 165) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 166) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 167) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 168) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+  } else if (trainConfig == 169) { // like last last two in 70 and dalitz standard 7TeV
+    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
+    cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz
+    
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -1000,7 +1083,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     }  
     
     analysisCuts[i]               = new AliConversionPhotonCuts();
-    if (trainConfig == 76 ){
+    if (trainConfig == 76 || trainConfig == 150){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
     if (enableMatBudWeightsPi0 > 0){

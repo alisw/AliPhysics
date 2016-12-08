@@ -25,7 +25,7 @@ AliAnalysisTask *AddTask_oton_TTree_HM16l(Int_t reducedEventType=-1, Bool_t writ
   // Pile up, Physics Selection, Analysis Utils
   //-------------------------------------------
   //if(trainConfig=="pp") task->SetRejectPileup();
-  //task->UsePhysicsSelection(kFALSE); // No phys sel // is this necessary???
+  task->UsePhysicsSelection(kTRUE); 
   task->SetUseAnalysisUtils(kFALSE); // moved to false 16/10/2016 // ???
   
   // Toggle on/off information branches
@@ -270,7 +270,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
 
     //TOF
     //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.,3., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
-      pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
 
     cuts->AddCut(pid);
 

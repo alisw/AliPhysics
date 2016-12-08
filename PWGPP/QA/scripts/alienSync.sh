@@ -40,6 +40,7 @@ copyTimeoutHard=1200
 destinationModifyCommand=""
 executeEnd=""
 MAILTO=""
+njobs=4
 
 main()
 {
@@ -51,6 +52,7 @@ main()
     echo "by default files are downloaded to current dir, or \${alienSync_localPathPrefix}, if set."
     echo "At least specify alienFindCommand, either on command line or in the configFile."
     echo "the logs go by default to localPathPrefix/alienSyncLogs"
+    echo "files are downloaded in parallel with default njobs=4"
     return
   fi
   
@@ -71,6 +73,7 @@ main()
   # do some accounting
   [[ ! -d $logOutputPath ]] && echo "logOutputPath not available, creating..." && mkdir -p $logOutputPath && chgrp ${alienSyncFilesGroupOwnership} ${logOutputPath}
   [[ ! -d $logOutputPath ]] && echo "could not create log dir, exiting..." && exit 1
+  echo "logOutputPath: $logOutputPath"
   dateString=$(date +%Y-%m-%d-%H-%M)
   logFile=$logOutputPath/alienSync-$dateString.log
   echo "$0 $@"|tee -a $logFile
@@ -98,7 +101,7 @@ main()
   updatedFilesList="${logOutputPath}/updatedFiles.list"
   failedDownloadList="${logOutputPath}/failedDownload.list"
   touch ${failedDownloadList}
-
+  deletedFilesList="${logOutputPath}/deletedFiles.list"
 
   # check the config
   [[ -z $alienFindCommand ]] && echo "alienFindCommand not defined, exiting..." && exitScript 1
@@ -106,33 +109,40 @@ main()
   [[ -z $logOutputPath ]] && echo "logOutputPath not defined, exiting..." && exitScript 1
   [[ -z $secondsToSuicide ]] && echo "setting default secondsToSuicide of 10 hrs..." && secondsToSuicide=$(( 10*3600 ))
 
-  # init alien 
-  [[ -z $ALIEN_ROOT && -n $ALIEN_DIR ]] && ALIEN_ROOT=$ALIEN_DIR
-  #if ! haveAlienToken; then
-  #  alien-token-destroy
+  if [[ $pretend != "1" ]]; then
+    # init alien 
+    [[ -z $ALIEN_ROOT && -n $ALIEN_DIR ]] && ALIEN_ROOT=$ALIEN_DIR
+    #if ! haveAlienToken; then
+    #  alien-token-destroy
     alien-token-init $alienUserName
-  #fi
-  #if ! haveAlienToken; then
-  #  if [[ $allOutputToLog -eq 1 ]]; then
-  #    exec 1>&6 6>&-
-  #  fi
-  #  echo "problems getting token! exiting..." | tee -a $logFile
-  #  exitScript 1
-  #fi
-  #ls -ltr /tmp/gclient_env_$UID
-  #cat /tmp/gclient_env_$UID
-  source /tmp/gclient_env_$UID
-
-  #set a default timeout for grid access
-  export GCLIENT_COMMAND_MAXWAIT=$copyTimeout
+    #fi
+    #if ! haveAlienToken; then
+    #  if [[ $allOutputToLog -eq 1 ]]; then
+    #    exec 1>&6 6>&-
+    #  fi
+    #  echo "problems getting token! exiting..." | tee -a $logFile
+    #  exitScript 1
+    #fi
+    #ls -ltr /tmp/gclient_env_$UID
+    #cat /tmp/gclient_env_$UID
+    source /tmp/gclient_env_$UID
+  fi
 
   localAlienDatabase=$logOutputPath/localAlienDatabase.list
   localFileList=$logOutputPath/localFile.list
+  alisyncFileList=$logOutputPath/alisync.list
+  rm -f $alisyncFileList
+  touch $alisyncFileList
   
+  destinationMap=$logOutputPath/destinationMap
+  rm -f $destinationMap
+  touch $destinationMap
+
   alienFileListCurrent=$logOutputPath/alienFileDatabase.list
   [[ ! -f $localFileList ]] && touch $localFileList
   candidateLocalFileDatabase=$logOutputPath/candidateLocalFileDatabase.list
 
+  ##############################################################
   #here we produce the current alien file list
   if [[ -n ${useExistingAlienFileDatabase} && -f ${localAlienDatabase} ]]; then
     #we use the old one
@@ -146,13 +156,19 @@ main()
   fi
 
   echo "number of files in the collection: $(wc -l $alienFileListCurrent)"
+  
+  localPathPrefixTMP=""
+
   #create a list of candidate destination locations
   #this is in case there are more files on alien trying to get to the same local destination
   #in which case we take the one with the youngest ctime (later in code)
   if [[ -n ${destinationModifyCommand} ]]; then
     echo eval "cat $alienFileListCurrent | ${destinationModifyCommand} | sed \"s,^,${localPathPrefix},\"  > ${candidateLocalFileDatabase}"
     eval "cat $alienFileListCurrent | ${destinationModifyCommand} | sed \"s,^,${localPathPrefix},\"  > ${candidateLocalFileDatabase}"
+    mkdir -p ${localPathPrefix}
+    localPathPrefixTMP=$(mktemp -d ${localPathPrefix}/alienSyncTMP_XXXXXXXX)
   fi
+  echo "localPathPrefix=$localPathPrefix"
 
   #logic is: if file list is missing we force the md5 recalculation
   [[ ! -f $localAlienDatabase ]] && forceLocalMD5recalculation=1 && echo "forcing local MD5 sum recalculation" && cp -f $alienFileListCurrent $localAlienDatabase
@@ -168,7 +184,6 @@ main()
     tmp=$logOutputPath
   fi
 
-  echo "starting downloading:"
   lineNumber=0
   alienFileCounter=0
   localFileCounter=0
@@ -176,26 +191,15 @@ main()
   while read -r alienFile md5alien timestamp size
   do
     ((lineNumber++))
-    
     #sometimes the md5 turns out empty and is then stored as a "." to avoid problems parsing
     [[ "$md5alien" =~ "." ]] && md5alien=""
     
-    [[ -n $timeStampInLog ]] && date
     [[ $SECONDS -ge $secondsToSuicide ]] && echo "$SECONDS seconds passed, exiting by suicide..." && break
     [[ "$alienFile" != "/"*"/"?* ]] && echo "WARNING: read line not path-like: $alienFile" && continue
     ((alienFileCounter++))
     destination=${localPathPrefix}/${alienFile}
     destination=${destination//\/\///} #remove double slashes
     [[ -n ${destinationModifyCommand} ]] && destination=$( eval "echo ${destination} | ${destinationModifyCommand}" )
-    destinationdir=${destination%/*}
-    [[ -n $softLinkName ]] && softlinktodestination=${destinationdir}/${softLinkName}
-    tmpdestination="${destination}.aliensyncTMP"
-    
-    #if we allow concurrent running (DANGEROUS) check if somebody is already trying to process this file
-    if [[ -f ${tmpdestination} && ${allowConcurrent} -eq 1 ]]; then 
-      echo "$tmpdestination exists - concurrent donwload? skipping..."
-      continue
-    fi
 
     if [[ -n ${destinationModifyCommand} ]]; then
       #find the candidate in the database, in case there are more files trying to go to the same
@@ -209,16 +213,12 @@ main()
       originalEntryIndex=${candidateDBrecord[0]}
       [[ $lineNumber -ne $originalEntryIndex ]] && continue
     fi
-    
-    redownloading=""
+
+    filestatus="new"
     if [[ -f ${destination} ]]; then
-      #soft link the downloaded file (maybe to provide a consistent link to the latest version)
-      if [[ -n $softlinktodestination ]]; then
-        echo ln -sf ${destination} ${softlinktodestination}
-        ln -sf ${destination} ${softlinktodestination}
-      fi
+      filestatus="existing"
       ((localFileCounter++))
-      
+     
       localDBrecord=($(grep $alienFile $tmp/${localAlienDatabase##*/}))
       md5local=${localDBrecord[1]}
 
@@ -246,41 +246,41 @@ main()
       fi
       echo "WARNING: md5 mismatch ${destination}"
       echo "  $md5local $md5alien"
-      redownloading=1
     fi
-    
-    [[ -f $tmpdestination ]] && echo "WARNING: stale $tmpdestination, removing" && rm $tmpdestination
-    
+
+    echo "adding alien://$alienFile $destination"
+    echo "alien://$alienFile" >> $alisyncFileList
+    echo "$alienFile $destination $md5alien $filestatus" >> $destinationMap
+    continue;
+  done < ${alienFileListCurrent}
+
+  #################################################
+  downloadPrefix="$localPathPrefix"
+  [[ -n $localPathPrefixTMP ]] && downloadPrefix="$localPathPrefixTMP"
+  [[ ! "$downloadPrefix" =~ /$ ]] && downloadPrefix+="/"
+  echo alisync -t $copyTimeout -v 99 -j "${njobs}" -o "${downloadPrefix}" "@${alisyncFileList}"
+  if [[ $pretend != 1 ]]; then
+    alisync -t $copyTimeout -v 99 -j "${njobs}" -o "${downloadPrefix}" "@${alisyncFileList}"
+  fi
+  #################################################
+
+  while read -r alienFile destination md5alien filestatus
+  do
+    localsource="${downloadPrefix}/${alienFile}"
+    [[ -n $timeStampInLog ]] && date
+    destinationdir=${destination%/*}
     mkdir -p ${destinationdir} && chgrp ${alienSyncFilesGroupOwnership} ${destinationdir}
     [[ ! -d $destinationdir ]] && echo cannot access $destinationdir && continue
-
-    #check token
-    #if ! haveAlienToken; then
-    #  alien-token-init $alienUserName
-    #  #source /tmp/gclient_env_$UID
-    #fi
-    
-    export copyMethod
-    export copyTimeout
-    export copyTimeoutHard
-    echo copyFromAlien "$alienFile" "$tmpdestination"
-    [[ $pretend -eq 1 ]] && continue
-    copyFromAlien $alienFile $tmpdestination
-    chgrp ${alienSyncFilesGroupOwnership} $tmpdestination
-
-    # if we didn't download remove the destination in case we tried to redownload 
-    # a corrupted file
-    [[ ! -f $tmpdestination ]] && echo "file ${alienFile} not downloaded"
 
     downloadOK=0
     #verify the downloaded md5 if available, validate otherwise...
     if [[ -n $md5alien ]]; then
-      md5recalculated=$(checkMD5sum ${tmpdestination})
+      md5recalculated=$(checkMD5sum ${localsource} </dev/null)
       if [[ ${md5alien} == ${md5recalculated} ]]; then
         echo "OK md5 after download"
         downloadOK=1
       else
-        echo "failed verifying md5 $md5alien of $tmpdestination"
+        echo "failed verifying md5 $md5alien of $localsource"
       fi
     else
       downloadOK=1
@@ -288,8 +288,8 @@ main()
 
     #handle zip files - check the checksums
     if [[ $alienFile =~ '.zip' && $downloadOK -eq 1 ]]; then
-      echo "checking integrity of zip archive $tmpdestination"
-      if unzip -t $tmpdestination; then
+      echo "checking integrity of zip archive $localsource"
+      if unzip -t $localsource </dev/null; then
         downloadOK=1
       else
         downloadOK=0
@@ -297,42 +297,55 @@ main()
     fi
 
     if [[ $downloadOK -eq 1 ]]; then
-      echo mv $tmpdestination ${destination}
-      mv $tmpdestination ${destination}
+      #only move when downloaded to a temp prefix
+      if [[ -n ${localPathPrefixTMP} ]]; then
+        echo mv -f $localsource ${destination}
+        mv -f $localsource ${destination}
+      fi
+
       chgrp ${alienSyncFilesGroupOwnership} ${destination}
       ((downloadedFileCounter++))
+
       if [[ -n $softlinktodestination ]]; then
         echo ln -s ${destination} $softlinktodestination
         ln -s ${destination} $softlinktodestination
       fi
-      [[ -z $redownloading ]] && echo ${destination} >> $newFilesList
-      [[ -n $redownloading ]] && echo ${destination} >> $redoneFilesList
-      if ! grep -q ${destination} $tmp/${localFileList##*/}; then
+
+      [[ $filestatus == "new" ]] && echo ${destination} >> $newFilesList
+      [[ $filestatus == "existing" ]] && echo ${destination} >> $redoneFilesList
+
+      if ! grep -q ${destination} $tmp/${localFileList##*/} < /dev/null; then
         echo ${destination} >> $localFileList
       fi
-      [[ -n ${postCommand} ]] && ( cd ${destinationdir}; eval "${postCommand}" )
-      if grep -q ${alienFile} ${failedDownloadList}; then
+
+      [[ -n ${postCommand} ]] && ( cd ${destinationdir}; eval "${postCommand}" </dev/null)
+
+      if grep -q ${alienFile} ${failedDownloadList} < /dev/null; then
         echo "removing ${alienFile} from ${failedDownloadList}"
-        grep -v ${alienFile} ${failedDownloadList} >tmpUpdatedFailed
-        mv tmpUpdatedFailed ${failedDownloadList}
+        local tmpUpdatedFailed=$(mktemp XXXXXX)
+        grep -v ${alienFile} ${failedDownloadList} > "$tmpUpdatedFailed"
+        mv -f "$tmpUpdatedFailed" ${failedDownloadList}
       fi
     else
       echo "download not validated, NOT moving to ${destination}..."
-      echo "removing $tmpdestination"
-      rm -f $tmpdestination
+      echo "removing $localsource"
+      rm -f $localsource
       echo ${alienFile} >> ${failedDownloadList}
       continue
     fi
-
-    [[ -f $tmpdestination ]] && echo "WARNING: tmpdestination should not still be here! removing..." && rm -r ${tmpdestination}
 
     if [[ $unzipFiles -eq 1 ]]; then
       echo unzip -o ${destination} -d ${destinationdir}
       unzip -o ${destination} -d ${destinationdir}
     fi
 
-    echo
-  done < ${alienFileListCurrent}
+    continue
+  done < ${destinationMap}
+
+  #check if any files we have on record disappeared from alien
+  if [[ "$(wc -l < $alienFileListCurrent)" -gt 0 && "$(wc -l < $localAlienDatabase)" -gt 0 ]]; then
+    cat $alienFileListCurrent $localAlienDatabase | sort | uniq -u >> $deletedFilesList
+  fi
 
   [[ $alienFileCounter -gt 0 ]] && mv -f $alienFileListCurrent $localAlienDatabase
 
@@ -359,6 +372,9 @@ main()
   echo
   cat $redoneFilesList
   echo
+  echo "disappeared from alien with respect to last search:"
+  echo
+  cat $deletedFilesList
   echo
   
   #output the list of failed files to stdout, so the cronjob can mail it
@@ -367,6 +383,7 @@ main()
   echo
   local tmpfailed=$(mktemp /tmp/XXXXXX)
   [[ "$(cat ${failedDownloadList} | wc -l)" -gt 0 ]] && sort ${failedDownloadList} | uniq -c | awk 'BEGIN{print "#tries\t file" }{print $1 "\t " $2}' | tee ${tmpfailed}
+  echo
   
   [[ -n ${MAILTO} ]] && echo $logFile | mail -s "alienSync ${alienFindCommand} done" ${MAILTO}
 
@@ -388,6 +405,10 @@ exitScript()
   rm -f $lockFile
   echo removing $tmp
   rm -rf $tmp
+  if [[ -d $localPathPrefixTMP ]]; then
+    echo removing $localPathPrefixTMP
+    rm -rf $localPathPrefixTMP
+  fi
   exit $1
 }
 

@@ -289,6 +289,13 @@ class AliAnalysisTaskPSHFE : public AliAnalysisTaskSE {
     //Number of tagged electrons per event
     TH1F            *fHistNElecPerEvent;//!
     
+    //Test histograms for peak at zero in dphi
+    TH1F            *fHistTestDCA;
+    TH1F            *fHistTestEMCEnergy;
+    TH2F            *fHistTestTPCdEdx;
+    TH1F            *fHistTestEOP;
+    TH1F            *fHistTestOGDPhi;
+    
     AliAnalysisTaskPSHFE(const AliAnalysisTaskPSHFE&); // not implemented
     AliAnalysisTaskPSHFE& operator=(const AliAnalysisTaskPSHFE&); // not implemented
     

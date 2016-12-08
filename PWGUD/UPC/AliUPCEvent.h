@@ -51,6 +51,12 @@ public:
   void SetV0CDecision(Int_t decision) {fV0CDecision=decision;}
   void SetBBtriggerV0Cmask(UInt_t ibit);
   void SetBBFlagV0Cmask(UInt_t ibit);
+  void SetBBtriggerV0Amask(UInt_t ibit);
+  void SetBBFlagV0Amask(UInt_t ibit);
+  void SetBBtriggerADCmask(UInt_t ibit);
+  void SetBBFlagADCmask(UInt_t ibit);
+  void SetBBtriggerADAmask(UInt_t ibit);
+  void SetBBFlagADAmask(UInt_t ibit);
 
   void SetADADecision(Int_t decision) {fADADecision=decision;}
   void SetADCDecision(Int_t decision) {fADCDecision=decision;}
@@ -111,8 +117,21 @@ public:
   Int_t GetV0CDecision(void) const { return fV0CDecision; }
   UInt_t GetBBtriggerV0C(void) const { return fBBtriggerV0C; }
   UInt_t GetBBFlagV0C(void) const { return fBBFlagV0C; }
+  UInt_t GetBBtriggerV0A(void) const { return fBBtriggerV0A; }
+  UInt_t GetBBFlagV0A(void) const { return fBBFlagV0A; }
+  UInt_t GetBBtriggerADC(void) const { return fBBtriggerADC; }
+  UInt_t GetBBFlagADC(void) const { return fBBFlagADC; }
+  UInt_t GetBBtriggerADA(void) const { return fBBtriggerADA; }
+  UInt_t GetBBFlagADA(void) const { return fBBFlagADA; }
+  
   Int_t GetNV0ChitsOffline(void) const;
   Int_t GetNV0ChitsOnline(void) const;
+  Int_t GetNADChitsOffline(void) const;
+  Int_t GetNADChitsOnline(void) const;
+  Int_t GetNV0AhitsOffline(void) const;
+  Int_t GetNV0AhitsOnline(void) const;
+  Int_t GetNADAhitsOffline(void) const;
+  Int_t GetNADAhitsOnline(void) const;
 
   Int_t GetADADecision(void) const { return fADADecision; }
   Int_t GetADCDecision(void) const { return fADCDecision; }
@@ -176,6 +195,12 @@ protected:
   Int_t fV0CDecision; // V0C decision
   UInt_t fBBtriggerV0C; // offline beam-beam flags in V0C one bit per cell
   UInt_t fBBFlagV0C; // online beam-beam flags in V0C one bit per cell
+  UInt_t fBBtriggerV0A; // offline beam-beam flags in V0C one bit per cell
+  UInt_t fBBFlagV0A; // online beam-beam flags in V0C one bit per cell
+  UInt_t fBBtriggerADC; // offline beam-beam flags in V0C one bit per cell
+  UInt_t fBBFlagADC; // online beam-beam flags in V0C one bit per cell
+  UInt_t fBBtriggerADA; // offline beam-beam flags in V0C one bit per cell
+  UInt_t fBBFlagADA; // online beam-beam flags in V0C one bit per cell
   Int_t fADADecision; // ADA decision, set by enumeration: kADInvalid = -1, kADEmpty = 0, kADBB, kADBG, kADFake
   Int_t fADCDecision; // ADC decision
   Double_t fZNCEnergy; // reconstructed energy in the neutron ZDC, C-side
@@ -205,7 +230,7 @@ protected:
   static TClonesArray *fgUPCMuonTracks; // array of muon upc tracks
   static TClonesArray *fgMCParticles; // array of MC particles
 
-  ClassDef(AliUPCEvent,1);
+  ClassDef(AliUPCEvent,2);
 };
 
 #endif

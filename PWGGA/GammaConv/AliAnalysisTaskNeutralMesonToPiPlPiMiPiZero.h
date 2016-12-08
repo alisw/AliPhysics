@@ -169,6 +169,12 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH2F 							**fHistoMotherSameDiff1SameBackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
 //		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			// array of THnSparseF of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, Z, M
 
+        TH2F							**fHistoInvMassSubPi0;							// invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
+        TH2F 							**fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameSameDiff2BackInvMassSubPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1SameBackInvMassSubPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+
         // angle distributions
         TH2F 							**fHistoAngleOmegaPiPlPiMi;                 // angle between combined Pi+ and Pi- and omega
         TH2F 							**fHistoAngleOmegaPiZero;                   // angle between Pi0 and omega
@@ -179,6 +185,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
         TH2F 							**fHistoAnglePiPlPiZero;                    // angle between Pi+ and Pi0
         TH2F 							**fHistoAngleSum;                           // angle between omega and Pi0 + angle between Pi+ and Pi- + angle between Pi0 and Pi-
         TH2F                            **fHistoTrueAngleSum;
+
         // pure MC properties
 		TH1F 							**fHistoMCAllGammaPt;						// array of histos of all produced gammas in the specified y range
 		TH1F 							**fHistoMCConvGammaPt;						// array of histos of all converted gammas in the specified y range 
@@ -241,7 +248,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 10);
+        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 11);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

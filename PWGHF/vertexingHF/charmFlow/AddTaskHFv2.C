@@ -95,6 +95,10 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="alien:///alice/cern.ch/user
     suffix+="VZEROA";
   } else if(flagep==AliAnalysisTaskSEHFv2::kVZEROC) {
     suffix+="VZEROC";
+  } else if(flagep==AliAnalysisTaskSEHFv2::kPosTPCVZERO) {
+    suffix+="POSTPCVZERO";
+  } else if(flagep==AliAnalysisTaskSEHFv2::kNegTPCVZERO) {
+    suffix+="NEGTPCVZERO";
   }
   v2Task->SetFlowMethod(meth);
   if(meth==AliAnalysisTaskSEHFv2::kEP) {

@@ -90,12 +90,13 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
  
   void         SetConstantTimeShift(Float_t shift)        { fConstantTimeShift     = shift  ; }
   
+  // Cocktail generator studies
+  void         CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mctag);
+  
+  void         ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta, Float_t phi, TObjArray *clusterList) ;
   void         SwitchOnStudyClusterLocalActivity()        { fStudyActivityNearCluster = kTRUE  ; }
   void         SwitchOffStudyClusterLocalActivity()       { fStudyActivityNearCluster = kFALSE ; }  
-  
-  void         SwitchOnStudyClusterOverlapsPerGenerator() { fStudyClusterOverlapsPerGenerator = kTRUE  ; }
-  void         SwitchOffStudyClusterOverlapsPerGenerator(){ fStudyClusterOverlapsPerGenerator = kFALSE ; }  
-  
+    
   // Analysis parameters setters getters
     
   // ** Cluster selection methods **
@@ -151,10 +152,18 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   /// For MC histograms with shower shape in arrays, index in the array corresponds to a MC originating particle type
   enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,
-                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
+                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5  };  
   
   /// Total number of MC histograms for shower shape studies.
   static const Int_t fgkNssTypes = 6 ;
+
+  /// For MC histograms with cocktail generator checks in arrays, index in the array corresponds to a MC originating particle type
+  enum mcGenTypes { kmcGenPi0Merged = 1,  kmcGenPi0Decay = 2,   kmcGenEtaDecay = 3,
+                    kmcGenPhoton    = 4,  kmcGenElectron = 5,   kmcGenOther    = 6 };  
+  
+  /// Total number of MC histograms for cocktail generator checks.
+  static const Int_t fgkNGenTypes = 7 ;
+
   
   private:
  
@@ -199,7 +208,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNEBinCuts;                              ///<  Number of energy bin cuts
 
   Bool_t   fStudyActivityNearCluster;               ///<  Activate analysis of multiplicity and energy deposit near the cluster
-  Bool_t   fStudyClusterOverlapsPerGenerator;       ///<  In case of coctail generators, check the content of the cluster
+  
   //
   // Histograms
   //
@@ -466,6 +475,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhEBinClusterEtaPhiPID[14] ;              //!<! Eta-Phi location of cluster in different energy bins, after PID cut
   TH2F *  fhEBinClusterColRowPID[14] ;              //!<! Column and row location of cluster max E cell in different energy bins, after PID cut
 
+  TH2F *  fhLocalRegionClusterEtaPhi  ;             //!<! Pseudorapidity vs Phi of clusters with cone R within the EMCal 
   TH2F *  fhLocalRegionClusterEnergySum ;           //!<! Sum of energy near the cluster, R<0.2, vs cluster E
   TH2F *  fhLocalRegionClusterMultiplicity;         //!<! Cluster multiplicity near cluster, R<0.2, vs cluster E
   TH2F *  fhLocalRegionClusterEnergySumPerCentrality ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile
@@ -476,11 +486,24 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhLocalRegionClusterEnergySumPerCentralityHijing ;  //!<! Sum of energy near the cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters
   TH2F *  fhLocalRegionClusterMultiplicityPerCentralityHijing;//!<! Cluster multiplicity near cluster, R<0.2, vs centrality percentile, hijing tagged mc clusters
 
+  TH1F *  fhMergeGeneratorCluster                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generator origins and different particles.  
+  TH1F *  fhMergeGeneratorClusterNotHijingBkg     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
+  TH1F *  fhMergeGeneratorClusterHijingAndOtherBkg[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH1F *  fhMergeGeneratorClusterHijingBkg        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH1F *  fhCleanGeneratorCluster                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
+
   
-  TH1F *  fhMergeGeneratorCluster;                  //!<! Cluster energy, at least 2 generators contributions
-  TH1F *  fhMergeGeneratorClusterNotHijing;         //!<! Cluster energy, at least 2 generators contributions, none is HIJING
-  TH1F *  fhMergeGeneratorClusterHijingAndOther;    //!<! Cluster energy, at least 2 generators contributions, main is HIJING
-  TH1F *  fhCleanGeneratorCluster;                  //!<! Cluster energy, only one generator is the contributor
+  TH2F *  fhMergeGeneratorClusterEPrimRecoRatio                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generator origins and different particles.  
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoRatio        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhCleanGeneratorClusterEPrimRecoRatio                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
+  
+  TH2F *  fhMergeGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, for different generatororigins and different particles.  
+  TH2F *  fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff     [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, none is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoDiff        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
+  TH2F *  fhCleanGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
@@ -489,7 +512,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,44) ;
+  ClassDef(AliAnaPhoton,45) ;
   /// \endcond
 
 } ;

@@ -112,6 +112,10 @@ public:
   /// Gets the number of elements that were used for Q vector building
   /// \return number of elements
   Int_t GetN() const { return fN; }
+  /// Gets the sum of weights of the elements that were used for Q vector building
+  /// \return sum of weights
+  Float_t GetSumOfWeights() const { return fSumW; }
+
   Double_t EventPlane(Int_t harmonic) const;
 
   virtual void Print(Option_t *) const;
@@ -136,10 +140,11 @@ protected:
   UInt_t  fHarmonicMask;                       ///< the mask for the supported harmonics
   Bool_t  fGoodQuality;                        ///< Qn vector good quality flag
   Int_t fN;                                    ///< number of elements used for Qn vector building
+  Float_t fSumW;                               ///< the sum of weights
   Int_t fHarmonicMultiplier;                   ///< the multiplier of the different harmonics
 
 /// \cond CLASSIMP
-  ClassDef(AliQnCorrectionsQnVector, 3);
+  ClassDef(AliQnCorrectionsQnVector, 4);
 /// \endcond
 };
 

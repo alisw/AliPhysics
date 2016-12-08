@@ -36,6 +36,13 @@
 
 ClassImp(AliAnalysisNuclMult)
 
+//Pdg code of e,mu,pi,K,p,d,t,He3,He4:
+const Int_t PdgStd[18]={ 11, 13, 211, 321, 2212, 10020, 10030, 20030, 20040,
+			-11,-13,-211,-321,-2212,-10020,-10030,-20030,-20040};
+
+const Float_t multMin[7]={  0, 0,  5, 10, 20, 40,  70};
+const Float_t multMax[7]={100, 5, 10, 20, 40, 70, 100};
+
 //_____________________________________________________________________________
 AliAnalysisNuclMult::AliAnalysisNuclMult():
   AliAnalysisTaskSE(),
@@ -49,8 +56,7 @@ AliAnalysisNuclMult::AliAnalysisNuclMult():
   fPPVsMultUtils(NULL),
   fPIDResponse(NULL),
   fList(new TList()),
-  multMin(0.),
-  multMax(100.),
+  DCAxyMax(0.5),
   DCAzMax(1.),
   hzvertex(NULL),
   hNevent(NULL),
@@ -59,7 +65,6 @@ AliAnalysisNuclMult::AliAnalysisNuclMult():
   hTrackletsVsV0mult(NULL),
   hCheckTrackSel(NULL)
 {
-  for(Int_t i=0;i<18;i++) stdPdg[i] = 0;
   fList->SetName("results");
   //fList->SetOwner();
 }
@@ -76,8 +81,7 @@ AliAnalysisNuclMult::AliAnalysisNuclMult(const char *name):
   fPPVsMultUtils(NULL),
   fPIDResponse(NULL),
   fList(new TList()),
-  multMin(0.),
-  multMax(100.),
+  DCAxyMax(0.5),
   DCAzMax(1.),
   hzvertex(NULL),
   hNevent(NULL),
@@ -86,7 +90,6 @@ AliAnalysisNuclMult::AliAnalysisNuclMult(const char *name):
   hTrackletsVsV0mult(NULL),
   hCheckTrackSel(NULL)
 {
-  for(Int_t i=0;i<18;i++) stdPdg[i] = 0;
   DefineOutput(1, TList::Class());
   fList->SetName("results");
 }
@@ -99,10 +102,9 @@ AliAnalysisNuclMult::~AliAnalysisNuclMult()
 void AliAnalysisNuclMult::UserCreateOutputObjects()
 {
 
-  Char_t nameSpec[18][30];
-  snprintf(nameSpec[0],20,"e^{+}"); snprintf(nameSpec[1],20,"#mu^{+}"); snprintf(nameSpec[2],20,"#pi^{+}"); snprintf(nameSpec[3],20,"K^{+}"); snprintf(nameSpec[4],20,"p"); snprintf(nameSpec[5],20,"d"); snprintf(nameSpec[6],20,"t"); snprintf(nameSpec[7],20,"^{3}He"); snprintf(nameSpec[8],20,"^{4}He");
-  snprintf(nameSpec[9],20,"e^{-}"); snprintf(nameSpec[10],20,"#mu^{-}"); snprintf(nameSpec[11],20,"#pi^{-}"); snprintf(nameSpec[12],20,"K^{-}"); snprintf(nameSpec[13],20,"#bar{p}"); snprintf(nameSpec[14],20,"#bar{d}"); snprintf(nameSpec[15],20,"#bar{t}"); snprintf(nameSpec[16],20,"^{3}#bar{He}"); snprintf(nameSpec[17],20,"^{4}#bar{He}");
-  
+  const Char_t nameSpec[18][30]={"e^{+}","#mu^{+}","#pi^{+}","K^{+}",     "p",      "d",      "t",      "^{3}He",      "^{4}He",
+				 "e^{-}","#mu^{-}","#pi^{-}","K^{-}","#bar{p}","#bar{d}","#bar{t}","^{3}#bar{He}","^{4}#bar{He}"};
+    
   const Int_t Nmultbin=20;
   
   htriggerMask[0] = new TH1F("htriggerMask","Trigger mask (before the event selection)",32,0,32);
@@ -136,13 +138,13 @@ for(Int_t i=0;i<7;i++) {
     hrapidity[0]->SetTitle("Rapidity before |y|<0.5 cut");
     hrapidity[1]->SetTitle("Rapidity after |y|<0.5 cut");
   }
-  
+    
   hCheckTrackSel = new TH1F("hCheckTrackSel","Number of tracks per event after the track selection",12,0,12);
-  const Char_t *xaxisTitle3[12]={"|y|<0.5","nTPCclusters>=70","chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca","|DCAxy|<0.5","|DCAz|<1","|#eta|<0.8"};
+  const Char_t *xaxisTitle3[12]={"|y|<0.5","nTPCclusters>=70","chi2perTPCcluster<=4","isTPCrefit","isITSrefit","nSPD>0","NoKinkDaughters","chi2perITScluster<=36","isPropagatedToDca",Form("|DCAxy|<%.1f",DCAxyMax),Form("|DCAz|<%.1f",DCAzMax),"|#eta|<0.8"};
   for(Int_t i=0;i<12;i++) {
     hCheckTrackSel->Fill(xaxisTitle3[i],0);
   }
-
+  
   hnTPCclusters[0] = new TH1F("hnTPCclusters_0","Number of TPC clusters (before track cuts)",200,0,200);
   hchi2TPC[0] = new TH1F("hchi2TPC_0","#chi^{2} per TPC cluster (before track cuts)",1000,0,100);
   hisTPCrefit[0] = new TH1F("hisTPCrefit_0","kTPCrefit (before track cuts)",2,0,2);
@@ -205,12 +207,21 @@ for(Int_t i=0;i<7;i++) {
     snprintf(name_fDca[iS],200,"fDca_z_%s",nameSpec[iS]);
     snprintf(title_fDca[iS],200,"%s;DCA_{z} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
     if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
-      if(DCAzMax>9.99 && DCAzMax<10.01) fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1000,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
-      else fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],100,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
+      fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],100,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
     }
     else fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-DCAzMax,DCAzMax,1,0,100,1,0,5);
   }
-    
+  
+  for(Int_t iM=0;iM<7;iM++) {
+    for(Int_t iS=0;iS<18;iS++) {
+      snprintf(name_fDca[iS],200,"fDca_xy_wTOF_multMin=%.0f_multMax=%.0f_%s",multMin[iM],multMax[iM],nameSpec[iS]);
+      snprintf(title_fDca[iS],200,"%s (wTOF) V0M %.0f-%.0f%%;DCA_{xy} (cm);m^{2}_{TOF} (GeV^{2}/c^{4});p_{T} (GeV/c)",
+	       nameSpec[iS],multMin[iM],multMax[iM]);
+      if(iS==5 || iS==5+9) fDcawTOF[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],100,-0.5,0.5,100,0,10,100,0,5);
+      else fDcawTOF[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,0,10,1,0,5);
+    }
+  }
+  
   Char_t name_fNsigmaTOF[18][200];
   Char_t title_fNsigmaTOF[18][200];    
   for(Int_t iS=0;iS<18;iS++) {
@@ -255,10 +266,6 @@ for(Int_t i=0;i<7;i++) {
   //Only for MC:
   if(isMC) {
     
-    //e,mu,pi,K,p,d,t,He3,He4
-  stdPdg[0] = 11; stdPdg[1] = 13; stdPdg[2] = 211; stdPdg[3] = 321; stdPdg[4] = 2212; stdPdg[5] = 10020; stdPdg[6] = 10030; stdPdg[7] = 20030; stdPdg[8] = 20040;
-  stdPdg[0+9] = -11; stdPdg[1+9] = -13; stdPdg[2+9] = -211; stdPdg[3+9] = -321; stdPdg[4+9] = -2212; stdPdg[5+9] = -10020; stdPdg[6+9] = -10030; stdPdg[7+9] = -20030; stdPdg[8+9] = -20040;
-
     hpdg[0] = new TH2F("hpdg","Pdg label of generated particles (after the event selection);Pdg label;isPrimary           isSecMat           isSecWeak   ",50082,-25041,25041,3,0,3);
     hpdg[0]->GetYaxis()->SetNdivisions(105);
 
@@ -444,13 +451,11 @@ for(Int_t i=0;i<7;i++) {
     
   }//Only for MC (end)
 
-  if(multMin<1e-18 && multMax>99) {//plots added only for integrated multiplicity
-    fList->Add(htriggerMask[0]);
-    fList->Add(htriggerMask[1]);
-    fList->Add(hzvertex);
-    fList->Add(hNevent);
-  }
-
+  fList->Add(htriggerMask[0]);
+  fList->Add(htriggerMask[1]);
+  fList->Add(hzvertex);
+  fList->Add(hNevent);
+  
   fList->Add(hV0mult);
   fList->Add(hTracklets);
   fList->Add(hTrackletsVsV0mult);
@@ -488,6 +493,11 @@ for(Int_t i=0;i<7;i++) {
   for(Int_t i=0;i<2;i++) fList->Add(fDca[1][4+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fDca[1][5+9*i]);
   
+  for(Int_t i=0;i<7;i++) {
+    fList->Add(fDcawTOF[i][5]);
+    fList->Add(fDcawTOF[i][5+9]);
+  }
+
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[2+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[3+9*i]);
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[4+9*i]);
@@ -617,13 +627,16 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
   
   Float_t mult = fPPVsMultUtils->GetMultiplicityPercentile(fEvent, "V0M", kFALSE);//kFALSE because I made the event selection before
   
-  if(!this->IsInsideMultiplicityBin(mult)) return;
+  if(!this->IsInsideFullMultRange(mult)) return;
   hV0mult->Fill(mult);
   //------------------------- Event selection (end)
 
   Int_t Ntracklets = fPPVsMultUtils->GetStandardReferenceMultiplicity(fEvent, kFALSE);//kFALSE because I made the event selection before
   hTracklets->Fill(Ntracklets);
   hTrackletsVsV0mult->Fill(mult,Ntracklets);
+  
+  //Used only to fill fDCAwTOF
+  Int_t iMultBin=this->GetMultiplicityBin(mult);
   
   //------------------------------- Loop on MC particles
   if(isMC) {
@@ -637,7 +650,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
       else if (Pdg<-1e+9) Pdg += 1e+9;
       Int_t kSpec=-1;
       for(Int_t iS=0;iS<18;iS++) {
-	if(Pdg!=stdPdg[iS]) continue;
+	if(Pdg!=PdgStd[iS]) continue;
 	kSpec=iS;
       }
       
@@ -695,7 +708,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
       else if (Pdg<-1e+9) Pdg += 1e+9;
       kSpec=-1;
       for(Int_t iS=0;iS<18;iS++) {
-	if(Pdg!=stdPdg[iS]) continue;
+	if(Pdg!=PdgStd[iS]) continue;
 	kSpec=iS;
       }
       
@@ -722,6 +735,7 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
 
     Double_t DCAxy, DCAz;
     if(!this->AcceptTrack(track, DCAxy, DCAz)) continue;
+    
     
     //------------------------- Track cuts (end)
     
@@ -800,8 +814,18 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     
     for(Int_t iS=0;iS<9;iS++){
       if(TMath::Abs(nsigmaTPC[iS])<3) {
-	if(charge>0) fM2vspt[iS]->Fill(pt,mult,m2);
-	else if(charge<0) fM2vspt[iS+9]->Fill(pt,mult,m2);
+	if(charge>0) {
+	  fM2vspt[iS]->Fill(pt,mult,m2);
+	 
+	  fDcawTOF[0][iS]->Fill(DCAxy,m2,pt);
+	  fDcawTOF[iMultBin][iS]->Fill(DCAxy,m2,pt);
+	}
+	else if(charge<0) {
+	  fM2vspt[iS+9]->Fill(pt,mult,m2);
+
+	  fDcawTOF[0][iS+9]->Fill(DCAxy,m2,pt);
+	  fDcawTOF[iMultBin][iS+9]->Fill(DCAxy,m2,pt);
+	}
       }
     }
     
@@ -868,7 +892,7 @@ void AliAnalysisNuclMult::EventSelectionMonitor() {
 	    hNevent->Fill(4);
 	  }
 	  
-	  if(this->IsInsideMultiplicityBin(fPPVsMultUtils->GetMultiplicityPercentile(fEvent,"V0M"))) {
+	  if(this->IsInsideFullMultRange(fPPVsMultUtils->GetMultiplicityPercentile(fEvent,"V0M"))) {
 	    hNevent->Fill(6);
 	  }
 	  
@@ -880,11 +904,22 @@ void AliAnalysisNuclMult::EventSelectionMonitor() {
   return;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisNuclMult::IsInsideMultiplicityBin(Float_t multiplicity) {
+Bool_t AliAnalysisNuclMult::IsInsideFullMultRange(Float_t multiplicity) {
 
-  if(multiplicity < multMin || multiplicity > multMax+1e-18) return kFALSE;
+  if(multiplicity < 0 || multiplicity > 100) return kFALSE;
 
   return kTRUE;
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisNuclMult::GetMultiplicityBin(Float_t multiplicity) {
+
+  Int_t iMultBinT=0;
+  for(Int_t iM=1;iM<7;iM++) {
+    if(multiplicity > multMin[iM] && multiplicity < multMax[iM]) iMultBinT=iM;
+  }
+  Int_t iMultBin=iMultBinT;
+  
+  return iMultBin;
 }
 //_____________________________________________________________________________
 Double_t AliAnalysisNuclMult::GetRapidity(AliVTrack *track) {
@@ -944,7 +979,7 @@ Bool_t AliAnalysisNuclMult::AcceptTrack(AliVTrack *track, Double_t &DCAxy, Doubl
   
   if(!isPropagatedToDca) return kFALSE;
 
-  if(TMath::Abs(DCAxy)>0.5) return kFALSE;
+  if(TMath::Abs(DCAxy)>DCAxyMax) return kFALSE;
 
   if(TMath::Abs(DCAz)>DCAzMax) return kFALSE;
 
@@ -1134,7 +1169,7 @@ void AliAnalysisNuclMult::ForPtCorr(Double_t pt, Double_t t_pt, Int_t kSpec) {
   fptRecoVsTrue[0][kSpec]->Fill(pt,pt-t_pt);
   
   //To check the pt correction:
-  fptRecoVsTrue[1][kSpec]->Fill(pt-fptCorr[0]->Eval(pt),pt-t_pt);
+  fptRecoVsTrue[1][kSpec]->Fill(pt,(pt-fptCorr[0]->Eval(pt))-t_pt);
 
   return;
 }

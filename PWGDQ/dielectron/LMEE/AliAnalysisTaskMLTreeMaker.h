@@ -119,7 +119,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Double_t> phi;
   std::vector<Double_t> pt;
   std::vector<Int_t> charge;
-  
+  std::vector<Int_t> enh;  
 
 //  std::vector<Int_t> NClustersITS;
   std::vector<Float_t> NCrossedRowsTPC;

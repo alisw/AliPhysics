@@ -124,11 +124,13 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
   AliRsnCutPrimaryVertex* cutVertex=0;
-  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && !MultBins){
+  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && (!MultBins || fabs(vtxZcut-10.)>1.e-10)){
     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
-    cutVertex->SetCheckZResolutionSPD();
-    cutVertex->SetCheckDispersionSPD();
-    cutVertex->SetCheckZDifferenceSPDTrack();
+    if(!MultBins){
+      cutVertex->SetCheckZResolutionSPD();
+      cutVertex->SetCheckDispersionSPD();
+      cutVertex->SetCheckZDifferenceSPDTrack();
+    }
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;

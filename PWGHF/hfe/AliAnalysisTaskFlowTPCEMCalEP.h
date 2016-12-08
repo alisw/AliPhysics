@@ -68,10 +68,11 @@ public:
     void SetTender(Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
     void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};
+    void SetITSnCut (Int_t ITSncut) {fITSncut = ITSncut;};
     void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-    void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0);
+    void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0, Bool_t IsPassedSScuts);
     void GetWeightAndDecay(AliAODMCParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
     Bool_t InclElecTrackCuts(AliAODTrack *ietrack);
     Bool_t AssElecTrackCuts(AliAODTrack *aetrack);
@@ -100,6 +101,7 @@ private:
     
     Int_t                 fWhichPeriod;       // period
     Double_t              fAssPtCut;          // pt cut for associated electron
+    Int_t                 fITSncut;             // ITC number of clusters for tagged electrons
     Int_t                 fAssTPCnCut;		// TPC number of clusters for associated electron
     Bool_t                fAssITSrefitCut;	// ITS refit for associated electron
     Bool_t                fUseNewEP;          // Use new EP framework

@@ -1,13 +1,3 @@
-/**
-* @Author: Pascal Dillenseger <pascaldillenseger>
-* @Date:   2016-11-03, 15:14:35
-* @Email:  pdillens@cern.ch
-* @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-23, 13:30:18
-*/
-
-
-
 #ifndef ALIDIELECTRONVARMANAGER_H
 #define ALIDIELECTRONVARMANAGER_H
 
@@ -179,6 +169,8 @@ public:
     kImpactParXY,            // Impact parameter in XY plane
     kImpactParZ,             // Impact parameter in Z
     kTrackLength,            // Track length
+    kDistPrimToSecVtxXYMC,      // Distance of secondary vertex to primary vertex  in the XY plane
+    kDistPrimToSecVtxZMC,       // Distance of secondary vertex to primary vertex in Z
 
 
     kPdgCode,                // PDG code
@@ -364,6 +356,9 @@ public:
     kXvPrim=kPairMax,        // prim vertex
     kYvPrim,                 // prim vertex
     kZvPrim,                 // prim vertex
+    kXvPrimMCtruth,
+    kYvPrimMCtruth,
+    kZvPrimMCtruth,
     kXRes,                   // primary vertex x-resolution
     kYRes,                   // primary vertex y-resolution
     kZRes,                   // primary vertex z-resolution
@@ -935,6 +930,12 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
       values[AliDielectronVarManager::kPdgCodeMother]     =mc->GetMotherPDG(particle);
       AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
       if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
+      AliMCParticle *MCpart = mc->GetMCTrack(particle);
+        // Fill distance of primary vertex to secondary vertex -> IP is not defined since no propagation
+        // Pure MC variable no reconstucted value filled
+      values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2)
+                                                  + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
+      values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(MCpart->Zv() - values[AliDielectronVarManager::kZvPrimMCtruth]);
     }
     values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
   } //if(mc->HasMC())
@@ -1102,7 +1103,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
 
   // Reset AliESDtrack interface specific information
   if(Req(kNclsITS))      values[AliDielectronVarManager::kNclsITS]       = particle->GetITSNcls();
-  if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = particle->GetITSchi2();
+  if(Req(kITSchi2Cl))    values[AliDielectronVarManager::kITSchi2Cl]     = particle->GetITSchi2() / particle->GetITSNcls();
   if(Req(kNclsTPC))      values[AliDielectronVarManager::kNclsTPC]       = tpcNcls;
   if(Req(kNclsSTPC))     values[AliDielectronVarManager::kNclsSTPC]      = tpcNclsS;
   if(Req(kNclsSFracTPC)) values[AliDielectronVarManager::kNclsSFracTPC]  = tpcNcls>0?tpcNclsS/tpcNcls:0;
@@ -1444,6 +1445,8 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kTPCsignalNfrac]    = 0;
   values[AliDielectronVarManager::kImpactParXY]   = 0;
   values[AliDielectronVarManager::kImpactParZ]    = 0;
+  values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = 0;
+  values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = 0;
   values[AliDielectronVarManager::kPIn]           = 0;
   values[AliDielectronVarManager::kYsignedIn]     = 0;
   values[AliDielectronVarManager::kTPCsignal]     = 0;
@@ -1465,6 +1468,22 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
 
   // Fill common AliVParticle interface information
   FillVarVParticle(particle, values);
+  // Fill distance of primary vertex to secondary vertex -> IP is not defined since no propagation
+  values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(TMath::Power(particle->Xv() - values[AliDielectronVarManager::kXvPrim],2)
+                                                  + TMath::Power(particle->Yv() - values[AliDielectronVarManager::kYvPrim],2));
+  values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(particle->Zv() - values[AliDielectronVarManager::kZvPrim]);
+  //Approximation of the Impact Parameter
+  //Get TVectors for primary and secondary vertex as well as particle momentum
+  // distance of space point to a straight line
+  // d = |b x (p-a)|/|b|
+  TVector3 priVtx(values[AliDielectronVarManager::kXvPrim],values[AliDielectronVarManager::kYvPrim],values[AliDielectronVarManager::kZvPrim]);
+  TVector3 secVtx(values[AliDielectronVarManager::kXv],values[AliDielectronVarManager::kYv],values[AliDielectronVarManager::kZv]);
+  TVector3 momPart(values[AliDielectronVarManager::kPx],values[AliDielectronVarManager::kPy],values[AliDielectronVarManager::kPz]);
+  priVtx -= secVtx;
+  TVector3 denom = momPart.Cross(priVtx);
+  values[AliDielectronVarManager::kImpactParXY]   = TMath::Sqrt(denom.X()*denom.X() + denom.Y()*denom.Y()) / TMath::Sqrt(momPart.X()*momPart.X() + momPart.Y()*momPart.Y() + momPart.Z()*momPart.Z());
+  values[AliDielectronVarManager::kImpactParZ]   = TMath::Abs(denom.Z()) / TMath::Sqrt(momPart.X()*momPart.X() + momPart.Y()*momPart.Y() + momPart.Z()*momPart.Z());
+
 
   // Fill AliMCParticle interface specific information
   AliDielectronMC *mc=AliDielectronMC::Instance();
@@ -2629,8 +2648,13 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     TVector2 qvec;
     // TPC
 
-    ///TODO adapt to new enum members
-    if(TList *qnlist = (TList*) event->FindListObject("qnVectorList"))     AliDielectronVarManager::FillQnEventplanes(qnlist, values);
+    TList *qnlist = (TList*) event->FindListObject("qnVectorList");
+    if(Req(kQnTPCrpH2) && qnlist ==NULL){
+      for (Int_t i = AliDielectronVarManager::kQnTPCrpH2; i <= AliDielectronVarManager::kQnCorrFMDAy_FMDCy; i++) {
+        values[i] = -999.;
+      }
+    }
+    if(qnlist != NULL)  AliDielectronVarManager::FillQnEventplanes(qnlist, values);
 
     qvec.Set(header->GetEventplaneQx(), header->GetEventplaneQy());
     values[AliDielectronVarManager::kTPCxH2uc]   = qvec.X();
@@ -2644,7 +2668,7 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliVZEROEPSelectionTask *eptask = dynamic_cast<AliVZEROEPSelectionTask *>(man->GetTask("AliVZEROEPSelectionTask"));
     if(eptask) eptask->SetEventplaneParams(&ep2,centralityF);
-    else if(!(event->FindListObject("qnVectorList"))) printf("no VZERO event plane selection task added! \n");
+    else if(!qnlist) printf("no VZERO event plane selection task added! \n");
 
 
     Double_t qx = 0, qy = 0;
@@ -2697,6 +2721,10 @@ inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Dou
   values[AliDielectronVarManager::kXvPrim]       = (vtx ? vtx->GetX() : 0.0);
   values[AliDielectronVarManager::kYvPrim]       = (vtx ? vtx->GetY() : 0.0);
   values[AliDielectronVarManager::kZvPrim]       = (vtx ? vtx->GetZ() : 0.0);
+  //dame information but wont be overwritten by reconstrcuted values
+  values[AliDielectronVarManager::kXvPrimMCtruth]       = (vtx ? vtx->GetX() : 0.0);
+  values[AliDielectronVarManager::kYvPrimMCtruth]       = (vtx ? vtx->GetY() : 0.0);
+  values[AliDielectronVarManager::kZvPrimMCtruth]       = (vtx ? vtx->GetZ() : 0.0);
   // Fill AliMCEvent interface specific information
   values[AliDielectronVarManager::kNch]   = AliDielectronHelper::GetNch(event, 1.6);
   values[AliDielectronVarManager::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
@@ -3504,7 +3532,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
     values[AliDielectronVarManager::kQnFMDCyH2]  = qVecQnFrameworkFMDC->Qy(2);
   }
   delete qVectorFMDC;
-  
+
   // TPC Diff
   if(bTPCqVector){
     if(bV0AqVector){
@@ -3536,7 +3564,7 @@ inline void AliDielectronVarManager::FillQnEventplanes(TList *qnlist, Double_t *
       values[kQnCorrTPCy_FMDAy] = values[kQnTPCyH2] * values[kQnFMDAyH2];
     }
     if(bFMDCqVector){
-      values[AliDielectronVarManager::kQnDiffTPC_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDArpH2]);
+      values[AliDielectronVarManager::kQnDiffTPC_FMDC] = AliDielectronVarManager::CalculateEPDiff(values[AliDielectronVarManager::kQnTPCrpH2],values[AliDielectronVarManager::kQnFMDCrpH2]);
       values[kQnCorrTPCx_FMDCx] = values[kQnTPCxH2] * values[kQnFMDCxH2];
       values[kQnCorrTPCx_FMDCy] = values[kQnTPCxH2] * values[kQnFMDCyH2];
       values[kQnCorrTPCy_FMDCx] = values[kQnTPCyH2] * values[kQnFMDCxH2];

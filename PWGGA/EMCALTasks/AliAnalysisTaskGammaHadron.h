@@ -51,8 +51,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   void                        FillGhHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight);
-  void                        FillQAHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut);
-  Bool_t                      AccClusterForAna(AliVCluster* cluster)                        ;
+  void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut);
+  Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
   //Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
   Double_t                    GetEff(TLorentzVector ParticleVec)                            ;
@@ -111,6 +111,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH2					   **fHistDEtaDPhiXI[3];       //! No of g-h pairs in the deta eta delta phi plane for certain Xi values
   TH2                      **fHistDEtaDPhiGammaQA;     //! Distribution of gammas in delta phi delta eta
   TH2                      **fHistDEtaDPhiTrackQA;     //! Distribution of tracks in delta phi delta eta
+  TH2                      **fHistCellsCluster;        //! Number of cells in cluster as function of energy
+  TH2                      **fHistClusterShape;        //! Cluster shape vs energy
 
   TH1					   **fHistptAssHadron[3];      //! pt distributions of the associated hadron in a certain p_t bin of the gamma
   TH1					   **fHistDpGh[3];             //! delta phi g-h distribution fro a given p_t gamma bin

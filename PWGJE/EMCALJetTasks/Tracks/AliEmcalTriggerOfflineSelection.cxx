@@ -20,6 +20,7 @@
 #include <TH2.h>
 #include <TRandom.h>
 
+#include "AliEMCALTriggerConstants.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliLog.h"
@@ -34,7 +35,10 @@ const TString AliEmcalTriggerOfflineSelection::fgkTriggerNames[AliEmcalTriggerOf
     "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"
 };
 
-AliEmcalTriggerOfflineSelection::AliEmcalTriggerOfflineSelection() {
+AliEmcalTriggerOfflineSelection::AliEmcalTriggerOfflineSelection():
+    TObject(),
+    fEnergyDefinition(kFEEEnergy)
+{
   for(int itrg = 0; itrg < kTrgn; itrg++) fOfflineEnergyThreshold[itrg] = 100000.;  // unimplemented triggers get very high threshold assinged, so that the result is automatically false
   memset(fAcceptanceMaps, 0, sizeof(TH2 *) * kTrgn);
 }
@@ -61,7 +65,14 @@ Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgc
     } else {
       if(!patch->IsJetLowSimple()) continue;
     }
-    if(patch->GetPatchE() > fOfflineEnergyThreshold[trgcls]){
+    double energy;
+    switch(fEnergyDefinition){
+    case kFEEEnergy: energy = patch->GetPatchE(); break;
+    case kFEETransverseEnergy: energy = patch->GetPatchET(); break;
+    case kFEEADC: energy = patch->GetADCOfflineAmp(); break;
+    case kFEETransverseADC: energy = patch->GetPatchET() / EMCALTrigger::kEMCL1ADCtoGeV ; break;
+    };
+    if(energy > fOfflineEnergyThreshold[trgcls]){
       AliDebugStream(2) << GetTriggerName(trgcls) << " patch above threshold (" << patch->GetPatchE() << " | " << fOfflineEnergyThreshold[trgcls] << ")" <<  std::endl;
       if(fAcceptanceMaps[trgcls]){
         // Handle azimuthal inefficiencies of the trigger observed online:

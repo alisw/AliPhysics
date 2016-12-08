@@ -71,6 +71,7 @@ fMaxMass(),
 fCandidateArray(0),
 fSideBandArray(0),
 fAnalyseDBkg(kFALSE),
+fBuildRM(kFALSE),
 fNAxesBigSparse(9),
 fUseCandArray(kFALSE),
 fUseSBArray(kFALSE),
@@ -112,6 +113,7 @@ fMaxMass(),
 fCandidateArray(0),
 fSideBandArray(0),
 fAnalyseDBkg(kFALSE),
+fBuildRM(kFALSE),
 fNAxesBigSparse(9),
 fUseCandArray(kFALSE),
 fUseSBArray(kFALSE),
@@ -399,10 +401,6 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
         if(fCandidateArray->GetEntriesFast()>0) AngularCorrelationMethod(kFALSE,aodEvent);
         if(fAnalyseDBkg==kTRUE && fSideBandArray->GetEntriesFast()>0) AngularCorrelationMethod(kTRUE,aodEvent);
     }
-    else if(fCorrelationMethod==kResponseMatrix)
-    {
-        CreateResponseMatrix();
-    }
 
    PostData(1,fOutput);
    return kTRUE;
@@ -471,31 +469,27 @@ void AliAnalysisTaskFlavourJetCorrelations::AngularCorrelationMethod(Bool_t IsBk
 
 }
 
-void AliAnalysisTaskFlavourJetCorrelations::CreateResponseMatrix()
+void AliAnalysisTaskFlavourJetCorrelations::CreateResponseMatrix(AliEmcalJet* jet)
 {
     AliJetContainer* JetContRec = GetJetContainer(0);
-    //AliJetContainer* JetContGen = GetJetContainer(1);
 
     Double_t rho = JetContRec->GetRhoVal();
 
-    AliEmcalJet *jetRec = 0;
-    AliEmcalJet *jetGen = 0;
+    AliEmcalJet* MCjet = 0;
 
-    GetHFJet(jetRec,kFALSE);
-    GetHFJet(jetGen,kTRUE);
-    //GetHFJetParticleLevel(jetGen,kTRUE);
+    FindMCJet(MCjet);
 
-    if(!jetRec) AliDebug(2, "No Reconstructed Level Jet Found!");
-    else if(!jetGen) AliDebug(2, "No Generated Level Jet Found!");
+    if(!jet) AliDebug(2, "No Reconstructed Level Jet Found!");
+    else if(!MCjet) AliDebug(2, "No Generated Level Jet Found!");
     else
     {
-        if(fLocalRho) rho = fLocalRho->GetLocalVal(jetRec->Phi(),JetContRec->GetJetRadius(),JetContRec->GetRhoVal());
-        AliVParticle *Drec = jetRec->GetFlavourTrack();
-        AliVParticle *Dgen = jetGen->GetFlavourTrack();
-        Double_t zRec = Z(Drec,jetRec,rho);
-        Double_t zGen = Z(Dgen,jetGen,0);
-        Double_t JetPtRec = jetRec->Pt() - rho*jetRec->Area();
-        Double_t fillRM[6] = {zRec,JetPtRec,Drec->Pt(),zGen,jetGen->Pt(),Dgen->Pt()};
+        if(fLocalRho) rho = fLocalRho->GetLocalVal(jet->Phi(),JetContRec->GetJetRadius(),JetContRec->GetRhoVal());
+        AliVParticle *Drec = jet->GetFlavourTrack();
+        AliVParticle *Dgen = MCjet->GetFlavourTrack();
+        Double_t zRec = Z(Drec,jet,rho);
+        Double_t zGen = Z(Dgen,MCjet,0);
+        Double_t JetPtRec = jet->Pt() - rho*jet->Area();
+        Double_t fillRM[6] = {zRec,JetPtRec,Drec->Pt(),zGen,MCjet->Pt(),Dgen->Pt()};
         fResponseMatrix->Fill(fillRM,1.);
     }
 }
@@ -510,6 +504,8 @@ void AliAnalysisTaskFlavourJetCorrelations::FillDJetHistograms(AliEmcalJet* jet,
     Double_t z = 0;
     if(rho>0) z = Z(Dmeson,jet,rho);
     else z = Z(Dmeson,jet);
+
+    if(IsBkg==kFALSE && fBuildRM==kTRUE) CreateResponseMatrix(jet);
 
     Bool_t bDInEMCalAcc=InEMCalAcceptance(Dmeson);
     Bool_t bJetInEMCalAcc=InEMCalAcceptance(jet);
@@ -574,6 +570,44 @@ void AliAnalysisTaskFlavourJetCorrelations::GetHFJet(AliEmcalJet*& jet, Bool_t I
 
     if(!JetIsHF) jet = 0;
 
+}
+//_______________________________________________________________________________
+
+void AliAnalysisTaskFlavourJetCorrelations::FindMCJet(AliEmcalJet*& mcjet)
+{
+    Bool_t HFMCjet = kFALSE;
+
+    AliJetContainer* mcjets = 0;
+
+    if(!fAnalyseDBkg) mcjets = GetJetContainer(1);
+    else mcjets = GetJetContainer(2);
+
+    AliParticleContainer *ParticlesCont = mcjets->GetParticleContainer();
+    mcjets->ResetCurrentID();
+
+    Int_t njet=0;
+
+    while ((mcjet = mcjets->GetNextAcceptJet()))
+    {
+        njet++;
+        //loop on jet particles
+        Int_t ntrjet=  mcjet->GetNumberOfTracks();
+
+        for(Int_t itrk=0;itrk<ntrjet;itrk++)
+        {
+            AliAODMCParticle* jetTrk=(AliAODMCParticle*)mcjet->TrackAt(itrk,ParticlesCont->GetArray());
+
+            if(TMath::Abs(jetTrk->GetPdgCode())==fPDGmother)
+            {
+                HFMCjet=kTRUE;
+                mcjet->AddFlavourTrack(jetTrk);
+                break;
+            }
+        } //end loop on jet tracks
+        if(HFMCjet==kTRUE) break;
+    }
+
+    if(!HFMCjet) mcjet=0;
 }
 
 //_______________________________________________________________________________
@@ -835,7 +869,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
 
     fOutput->Add(fhsDphiz);
 
-    if(fCorrelationMethod==kResponseMatrix)
+    if(fBuildRM==kTRUE)
     {
         const Int_t RMnbins[6] = {nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsz,nbinsSpsptjet,nbinsSpsptD};
         const Double_t RMmin[6]={zlims[0],ptjetlims[0],ptDlims[0],zlims[0],ptjetlims[0],ptDlims[0]};

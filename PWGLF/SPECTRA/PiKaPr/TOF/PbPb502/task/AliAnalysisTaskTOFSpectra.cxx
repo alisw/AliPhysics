@@ -22,6 +22,9 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
+#define LOG_NO_INFO
+#define LOG_NO_DEBUG
+#include "AliLog.h"
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -56,7 +59,6 @@
 #include "TROOT.h"
 #include "TSystem.h"
 #include "AliMultiplicity.h"
-#include "AliLog.h"
 #include "AliAnalysisTaskTOFSpectra.h"
 #include "AliESDUtils.h"
 #include "AliCentrality.h"
@@ -67,6 +69,7 @@
 #include "TClonesArray.h"
 #include "AliAnTOFtrack.h"
 #endif
+
 
 ClassImp(AliAnalysisTaskTOFSpectra)
 
@@ -84,6 +87,7 @@ fTrkMask(0),
 fTPCPIDMask(0),
 fTrkCutMask(0),
 fMCTrkMask(0),
+fDCAXYshift(0),
 fDCAXY(-999),
 fDCAZ(-999),
 fEvtPhysSelected(kFALSE),
@@ -198,6 +202,7 @@ hT0Resolution(0x0),
 hTimeOfFlightRes(0x0),
 hTimeOfFlightTOFRes(0x0),
 hTimeOfFlightGoodRes (0x0),
+hTimeOfFlightResNoMismatch (0x0),
 fMultiplicityBin(kEvtMultBins+1),
 fEtaRange(0.8),
 fTOFmin(10000),
@@ -492,9 +497,7 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
   for(Int_t charge = 0; charge < 2; charge++){//Charge loop Positive/Negative
     for(Int_t species = 0; species < 3; species++){//Species loop
       for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
-        for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
-          hDCAxy[charge][species][ptbin][mult] = 0x0;
-        }
+        hDCAxy[charge][species][ptbin] = 0x0;
         hDCAxyPrimMC[charge][species][ptbin] = 0x0;
         hDCAxySecStMC[charge][species][ptbin] = 0x0;
         hDCAxySecMatMC[charge][species][ptbin] = 0x0;
@@ -518,6 +521,16 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
   }
   SetSimpleCutVar();//Simple cut variation
   PrintCutVariables();
+  
+  //Define the DCA histogram binning
+  Double_t DCAXYbin[fDCAXYbins+1];
+  DCAXYbin[0] = -fDCAXYRange;
+  for(Int_t i = 0; i < fDCAXYbins; i++){
+    if(DCAXYbin[i] > -.1 && DCAXYbin[i] < .1) DCAXYbin[i+1] = DCAXYbin[i] + 0.0008;
+    else DCAXYbin[i+1] = DCAXYbin[i] + 0.007733333333333333333333;
+    // cout<<i<<"  ["<<DCAXYbin[i]<<","<<DCAXYbin[i+1]<<"] width = "<< DCAXYbin[i]-DCAXYbin[i+1]<<endl;
+  }
+  
   
   // Create histograms
   // Called once
@@ -809,6 +822,9 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     hTimeOfFlightGoodRes->Sumw2();
     fListHist->AddLast(hTimeOfFlightGoodRes);
     
+    hTimeOfFlightResNoMismatch = new TH1D("hTimeOfFlightResNoMismatch", "TOF Resolution Wo Mismatch in pt [0.9, 1.1];t_{TOF}-t_{0}-t_{exp #pi} (ps)", 800, -4000, 4000);
+    fListHist->AddLast(hTimeOfFlightResNoMismatch);
+    
     hTOFClusters = new TH1F("hTOFClusters", "Number of clusters per track;TOF Clusters;Number of tracks", 50, -.5, 49.5);
     fListHist->AddLast(hTOFClusters);
     
@@ -980,12 +996,10 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
         //*****
         //Info from the DCAxy
         //*****
-        for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
-          for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
-            hDCAxy[charge][species][ptbin][mult] = new TH1F(Form("hDCAxy%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy Distribution of %s %s in pt [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), fBinPt[ptbin], fBinPt[ptbin+1], mult), 2000, -fDCAXYRange, fDCAXYRange);
-            hDCAxy[charge][species][ptbin][mult]->Sumw2();
-            fListHist->AddLast(hDCAxy[charge][species][ptbin][mult]);
-          }
+        for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
+          hDCAxy[charge][species][ptbin] = new TH1F(Form("hDCAxy%s%s_pt%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, DCAXYbin);
+          hDCAxy[charge][species][ptbin]->Sumw2();
+          fListHist->AddLast(hDCAxy[charge][species][ptbin]);
         }
       }
       
@@ -1028,15 +1042,15 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
           //*****
           
           for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
-            hDCAxyPrimMC[charge][species][ptbin] = new TH1F(Form("hDCAxyPrimMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), fBinPt[ptbin], fBinPt[ptbin+1]), 2000, -fDCAXYRange, fDCAXYRange);
+            hDCAxyPrimMC[charge][species][ptbin] = new TH1F(Form("hDCAxyPrimMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, DCAXYbin);
             hDCAxyPrimMC[charge][species][ptbin]->Sumw2();
             fListHist->AddLast(hDCAxyPrimMC[charge][species][ptbin]);
             
-            hDCAxySecStMC[charge][species][ptbin] = new TH1F(Form("hDCAxySecStMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), fBinPt[ptbin], fBinPt[ptbin+1]), 2000, -fDCAXYRange, fDCAXYRange);
+            hDCAxySecStMC[charge][species][ptbin] = new TH1F(Form("hDCAxySecStMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, DCAXYbin);
             hDCAxySecStMC[charge][species][ptbin]->Sumw2();
             fListHist->AddLast(hDCAxySecStMC[charge][species][ptbin]);
             
-            hDCAxySecMatMC[charge][species][ptbin] = new TH1F(Form("hDCAxySecMatMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), fBinPt[ptbin], fBinPt[ptbin+1]), 2000, -fDCAXYRange, fDCAXYRange);
+            hDCAxySecMatMC[charge][species][ptbin] = new TH1F(Form("hDCAxySecMatMC%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1]), fDCAXYbins, DCAXYbin);
             hDCAxySecMatMC[charge][species][ptbin]->Sumw2();
             fListHist->AddLast(hDCAxySecMatMC[charge][species][ptbin]);
           }
@@ -1634,7 +1648,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         if(TMath::Abs(fRapidity[species]) >= fRapidityCut) continue;//Rapidity cut
         
         //Pure sample selected via TOF and TPC 2 sigma cut
-        hDCAxy[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
+        hDCAxy[fSign][species][fBinPtIndex]->Fill(fDCAXY);
       }
       
       if(fPdgIndex != -999 && TMath::Abs(fRapidity[fPdgIndex]) < fRapidityCut){//MC info If the track is a Pion or a Kaon or a Proton
@@ -1768,9 +1782,31 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     //Setting the track information in the Track mask
     SetTrkMaskBit(kNegTrk, fSign);//Set the sign of the track
     SetTrkMaskBit(kIsMismatch, fMismatch);//Set the mismatch
-    if(fT0UsedMask & 1<<0) SetTrkMaskBit(kT0_0, 1);//Set the used T0
-    if(fT0UsedMask & 1<<1) SetTrkMaskBit(kT0_1, 1);
-    if(fT0UsedMask & 1<<2) SetTrkMaskBit(kT0_2, 1);
+    
+    // "FILL"        -> 0
+    // "TOF"         -> 1
+    // "T0A"         -> 2
+    // "TOF.and.T0A" -> 3
+    // "T0C"         -> 4
+    // "TOF.and.T0C" -> 5
+    // "T0AC;        -> 6
+    // "TOF.and.T0AC"-> 7
+
+    // cout<< "T0 used: ["<<fT0UsedMask<<"]"<<endl;
+    if(fT0UsedMask == 1 || fT0UsedMask == 3 || fT0UsedMask == 5 || fT0UsedMask == 7){
+      SetTrkMaskBit(kT0_0, 1);//Set the used T0
+      // cout<<"Is one"<<endl;
+    } 
+    if(fT0UsedMask == 2 || fT0UsedMask == 3 || fT0UsedMask == 6 || fT0UsedMask == 7){
+      SetTrkMaskBit(kT0_1, 1);
+      // cout<<"Is two"<<endl;
+    } 
+    if(fT0UsedMask == 4 || fT0UsedMask == 5 || fT0UsedMask == 6 || fT0UsedMask == 7){
+      SetTrkMaskBit(kT0_2, 1);
+      // cout<<"Is three"<<endl;
+    }
+    
+    
     SetTrkMaskBit(kIsTOFout, fTOFout);//Set the TOFout
     SetTrkMaskBit(kIsTOFTime, fTime);//Set the Time
     SetTrkMaskBit(kIsTRDout, fTRDout);//Set the TRDout
@@ -1888,7 +1924,13 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       if((fP>0.9) && (fP<1.1)){//P range selected for TOF resolution measurements
         Float_t deltat = fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion];
         hTimeOfFlightRes->Fill(deltat);
-        if(fT0TrkTime != 0){
+        for(Int_t i = 0; i < 3; i++){//Loop on pi/k/p
+          if(TMath::Abs(fTPCSigma[kpi+i]) < 5 && TMath::Abs(fTOFSigma[kpi+i]) < 5){
+            hTimeOfFlightResNoMismatch->Fill(fTOFTime-fT0TrkTime-fTOFExpTime[AliPID::kPion]);
+            break;
+          } 
+        }
+        if(fT0TrkTime != 0){//No T0 Fill
           hTimeOfFlightTOFRes->Fill(deltat);
           
         }
@@ -2752,6 +2794,7 @@ void AliAnalysisTaskTOFSpectra::SetTrackValues(AliESDtrack *track){
   //
   //Track impact parameters
   track->GetImpactParameters(fDCAXY, fDCAZ);//Impact parameters of the track to the vertex
+  fDCAXY += fDCAXYshift;//If required shift the position of the DCAxy as to correct for the wrong values of the MC
   
   //
   //Clusters in TPC
