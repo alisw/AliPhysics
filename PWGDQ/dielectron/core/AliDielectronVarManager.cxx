@@ -1,13 +1,3 @@
-/**
-* @Author: Pascal Dillenseger <pascaldillenseger>
-* @Date:   2016-11-03, 15:14:35
-* @Email:  pdillens@cern.ch
-* @Last modified by:   pascaldillenseger
-* @Last modified time: 2016-11-11, 17:21:19
-*/
-
-
-
 /*************************************************************************
 * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
