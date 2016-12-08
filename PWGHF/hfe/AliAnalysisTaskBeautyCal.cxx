@@ -80,6 +80,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fpidResponse(0),
   fCFM(0),
   fFlagSparse(kFALSE),
+  fSys(kFALSE),
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
@@ -135,7 +136,11 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fM20EovP(0),
   fM02EovP(0),
   fInvmassULS(0),
+  fInvmassULSpi0(0),
+  fInvmassULSeta(0),
   fInvmassLS(0),
+  fInvmassLSpi0(0),
+  fInvmassLSeta(0),
   fInvmassHfULS(0),
   fInvmassHfLS(0),
   fMCcheckMother(0),
@@ -179,7 +184,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
 {
   // Constructor
 
-  fvalueElectron = new Double_t[9];
+  //fvalueElectron = new Double_t[9];
+  fvalueElectron = new Double_t[8];
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -197,6 +203,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fpidResponse(0),
   fCFM(0),
   fFlagSparse(kFALSE),
+  fSys(kFALSE),
   fUseTender(kTRUE),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
@@ -252,7 +259,11 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fM20EovP(0),
   fM02EovP(0),
   fInvmassULS(0),
+  fInvmassULSpi0(0),
+  fInvmassULSeta(0),
   fInvmassLS(0),
+  fInvmassLSpi0(0),
+  fInvmassLSeta(0),
   fInvmassHfULS(0),
   fInvmassHfLS(0),
   fMCcheckMother(0), 
@@ -296,7 +307,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
 {
   //Default constructor
 
-  fvalueElectron = new Double_t[10];
+  //fvalueElectron = new Double_t[10];
+  fvalueElectron = new Double_t[8];
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -483,11 +495,27 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fM02EovP = new TH2F ("fM02EovP","M02 vs E/p distribution",100,0,2,200,0,2);
   fOutputList->Add(fM02EovP);
 
-  fInvmassLS = new TH2F("fInvmassLS", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 30,0,30,150,0,0.3);
+  fInvmassLS = new TH2F("fInvmassLS", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
   fOutputList->Add(fInvmassLS);
 
-  fInvmassULS = new TH2F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 30,0,30,150,0,0.3);
+  fInvmassLSpi0 = new TH2F("fInvmassLSpi0", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
+  fInvmassLSpi0->Sumw2();
+  fOutputList->Add(fInvmassLSpi0);
+
+  fInvmassLSeta = new TH2F("fInvmassLSeta", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
+  fInvmassLSeta->Sumw2();
+  fOutputList->Add(fInvmassLSeta);
+
+  fInvmassULS = new TH2F("fInvmassULS", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
   fOutputList->Add(fInvmassULS);
+
+  fInvmassULSpi0 = new TH2F("fInvmassULSpi0", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
+  fInvmassULSpi0->Sumw2();
+  fOutputList->Add(fInvmassULSpi0);
+
+  fInvmassULSeta = new TH2F("fInvmassULSeta", "Invmass of LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 40,0,40,150,0,0.3);
+  fInvmassULSeta->Sumw2();
+  fOutputList->Add(fInvmassULSeta);
 
   /*
   fInvmassHfLS = new TH2F("fInvmassHfLS", "Invmass HF of LS for pt^{e}>3; mass(GeV/c^2); counts;", 4000,-0.2,0.2, 3000,0,6);
@@ -499,13 +527,22 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   fMCcheckMother = new TH1F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5);
   fOutputList->Add(fMCcheckMother);
-
+/*
   if(fFlagSparse)
     {
      Int_t bins[10]=      {8, 280, 160, 200, 200, 200,  200,    3, 100,  10}; //trigger, pt, TPCnsig, E/p, M20, M02, sqrt(M20),sqrt(M02)
      Double_t xmin[10]={-0.5,   2,  -8,   0,   0,   0,    0, -0.5,  -5,   0};
      Double_t xmax[10]={ 7.5,  30,   8,   2,   2,   2,    2,  2.5,  15 , 100};
      fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent;",10,bins,xmin,xmax);
+     fOutputList->Add(fSparseElectron);
+    }
+*/
+  if(fFlagSparse)
+    {
+     Int_t bins[8]=   { 47,  80, 130,  100, 110,   8,   24, 100}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
+     Double_t xmin[8]={  3,  -4, 0.2,  0.0,  70,   0, -0.6, -50};
+     Double_t xmax[8]={ 50,   4, 1.5,  1.0, 180,   8,  0.6,  50};
+     fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;nTPC;nITS;eta;timing",8,bins,xmin,xmax);
      fOutputList->Add(fSparseElectron);
     }
 
@@ -925,8 +962,20 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
     if(fAOD){
       //cout << "AOD track cuts" << endl;
-      if(atrack->GetTPCNcls() < 80) continue;
-      if(atrack->GetITSNcls() < 3) continue;
+
+      Double_t nTPCstand = 80;
+      Double_t nITSstand = 3;
+
+      if(fSys)
+         {
+          Double_t nTPCstand = 70;
+          Double_t nITSstand = 1;
+         }
+
+      //if(atrack->GetTPCNcls() < 80) continue;
+      //if(atrack->GetITSNcls() < 3) continue;
+      if(atrack->GetTPCNcls() < nTPCstand) continue;
+      if(atrack->GetITSNcls() < nITSstand) continue;
       if(TMath::Abs(atrack->Eta()) > 0.6) continue;
       if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
@@ -1124,18 +1173,31 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fM20->Fill(track->Pt(),clustMatch->GetM20());
       fM02->Fill(track->Pt(),clustMatch->GetM02());
 
-      if(fFlagSparse && track->Pt()>2.0){
+      //if(fMCarray && fFlagSparse)
+      if(fMCarray && fSys)
+        { 
+         fFlagSparse = kFALSE;
+         if(pid_eleD || pid_eleB)fFlagSparse = kTRUE;
+        }
+
+   
+      //if(fFlagSparse && track->Pt()>3.0){
+      if(fSys && track->Pt()>3.0){
          //EID THnsparse
-         fvalueElectron[0] = trigger;
-         fvalueElectron[1] = track->Pt();
-         fvalueElectron[2] = fTPCnSigma;
-         fvalueElectron[3] = eop;
-         fvalueElectron[4] = clustMatch->GetM20();
-         fvalueElectron[5] = clustMatch->GetM02();
-         fvalueElectron[6] = sqm02m20;
-         fvalueElectron[7] = pid_ele;
-         fvalueElectron[8] = fTPCnSigma_Pi;
-         fvalueElectron[9] = centrality;
+         //fvalueElectron[0] = trigger;
+         fvalueElectron[0] = track->Pt();
+         fvalueElectron[1] = fTPCnSigma;
+         fvalueElectron[2] = eop;
+         fvalueElectron[3] = m20;
+         fvalueElectron[4] = atrack->GetTPCNcls();
+         fvalueElectron[5] = atrack->GetITSNcls();
+         fvalueElectron[6] = track->Eta();
+         fvalueElectron[7] = tof;
+         //fvalueElectron[5] = clustMatch->GetM02();
+         //fvalueElectron[6] = sqm02m20;
+         //fvalueElectron[7] = pid_ele;
+         //fvalueElectron[8] = fTPCnSigma_Pi;
+         //fvalueElectron[9] = centrality;
 
          fSparseElectron->Fill(fvalueElectron);
       }
@@ -1151,8 +1213,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          maxSig =  10.0;
         }
 
-      //cout << "mimSig = " << mimSig << endl;
-      //cout << "maxSig = " << maxSig << endl;
  
       if(fTPCnSigma > mimSig && fTPCnSigma < maxSig && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
         {
@@ -1162,7 +1222,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
      
       //if(fTPCnSigma > -0.5 && fTPCnSigma < 3 && eop>0.9 && eop<1.3){ //rough cuts
         //-----Identify Non-HFE
-        SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE);
+        SelectPhotonicElectron(iTracks,track,fFlagNonHFE,fFlagNonLsHFE,iEmbPi0,iEmbEta,WeightPho);
         //cout << "ULS = " << fFlagNonHFE <<  " ; LS = " << fFlagNonLsHFE << endl;
         if(pid_eleP)
           {
@@ -1245,7 +1305,7 @@ Bool_t AliAnalysisTaskBeautyCal::ProcessCutStep(Int_t cutStep, AliVParticle *tra
 
 
 //________________________________________________________________________
-void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec)
+void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight)
 {
   ///////////////////////////////////////////
   //////Non-HFE - Invariant mass method//////
@@ -1310,7 +1370,8 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
     }
 
     //-------loose cut on partner electron
-    if(ptAsso <0.2) continue;
+    //if(ptAsso <0.2) continue;
+    if(ptAsso < fptAssocut) continue;
     if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
     if(nsigma < -3 || nsigma > 3) continue;
 
@@ -1329,13 +1390,23 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
     MassCorrect = recg.GetMass(mass,width);
 
     if(fFlagLS)
-      if(track->Pt()>1) fInvmassLS->Fill(track->Pt(),mass);
+      {
+       if(track->Pt()>1) fInvmassLS->Fill(track->Pt(),mass);
+       if(track->Pt()>1 && EmbPi0) fInvmassLSpi0->Fill(track->Pt(),mass,weight);
+       if(track->Pt()>1 && EmbEta) fInvmassLSeta->Fill(track->Pt(),mass,weight);
+      }
     if(fFlagULS)
-      if(track->Pt()>1) fInvmassULS->Fill(track->Pt(),mass);
+      {
+       if(track->Pt()>1) fInvmassULS->Fill(track->Pt(),mass);
+       if(track->Pt()>1 && EmbPi0) fInvmassULSpi0->Fill(track->Pt(),mass,weight);
+       if(track->Pt()>1 && EmbEta) fInvmassULSeta->Fill(track->Pt(),mass,weight);
+     }
 
-    if(mass<0.1 && fFlagULS && !flagULSElec)
+    //if(mass<0.1 && fFlagULS && !flagULSElec)
+    if(mass<fInvmassCut && fFlagULS && !flagULSElec)
       flagULSElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
-    if(mass<0.1 && fFlagLS && !flagLSElec)
+    //if(mass<0.1 && fFlagLS && !flagLSElec)
+    if(mass<fInvmassCut && fFlagLS && !flagLSElec)
       flagLSElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
   
   }
