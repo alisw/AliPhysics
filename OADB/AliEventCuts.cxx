@@ -146,9 +146,11 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   bool allcuts = (fFlag == (BIT(kAllCuts) - 1));
   if (allcuts) fFlag |= BIT(kAllCuts);
-  for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
-    if (TESTBIT(fFlag,iCut)) 
-      fCutStats->Fill(iCut);
+  if (fCutStats) {
+    for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
+      if (TESTBIT(fFlag,iCut)) 
+        fCutStats->Fill(iCut);
+    }
   }
 
   /// Filling the monitoring histograms (first iteration always filled, second iteration only for selected events.
