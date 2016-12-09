@@ -147,6 +147,7 @@ fTrigType(AliVEvent::kMB),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
+fMVPileupFlag(kFALSE),
 
 //---> Variables for fTreeV0
 fTreeVariableChi2V0(0),
@@ -186,6 +187,7 @@ fTreeVariableLeastNbrCrossedRows(0),
 fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
 fTreeVariableCentrality(0),
+fTreeVariableMVPileupFlag(kFALSE),
 //MC Variables
 fTreeVariablePtMother(0),
 fTreeVariableRapMother(0),
@@ -277,6 +279,7 @@ fTreeCascVarBachLabelGrandMother(0),
 fTreeCascVarEventNumber(0),
 
 fTreeCascVarCentrality(0),
+fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarPID(0),
 fTreeCascVarPIDNegative(0),
 fTreeCascVarPIDPositive(0),
@@ -339,6 +342,7 @@ fTrigType(AliVEvent::kMB),
 
 //---> Variables for fTreeEvent
 fCentrality(0),
+fMVPileupFlag(kFALSE),
 
 //---> Variables for fTreeV0
 fTreeVariableChi2V0(0),
@@ -378,6 +382,7 @@ fTreeVariableLeastNbrCrossedRows(0),
 fTreeVariableLeastRatioCrossedRowsOverFindable(0),
 
 fTreeVariableCentrality(0),
+fTreeVariableMVPileupFlag(kFALSE),
 
 //MC Variables
 fTreeVariablePtMother(0),
@@ -469,6 +474,7 @@ fTreeCascVarBachLabelGrandMother(0),
 fTreeCascVarEventNumber(0),
 
 fTreeCascVarCentrality(0),
+fTreeCascVarMVPileupFlag(kFALSE),
 fTreeCascVarPID(0),
 fTreeCascVarPIDNegative(0),
 fTreeCascVarPIDPositive(0),
@@ -588,6 +594,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeEvent = new TTree("fTreeEvent","Event");
         //Branch Definitions
         fTreeEvent->Branch("fCentrality",&fCentrality,"fCentrality/F");
+        fTreeEvent->Branch("fMVPileupFlag",&fMVPileupFlag,"fMVPileupFlag/O");
     }
     
     //------------------------------------------------
@@ -625,6 +632,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
+        fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
         //------------------------------------------------
         if ( fkDebugWrongPIDForTracking ){
             fTreeV0->Branch("fTreeVariablePosPIDForTracking",&fTreeVariablePosPIDForTracking,"fTreeVariablePosPIDForTracking/I");
@@ -681,6 +689,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
+        fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
         //-----------DECAY-LENGTH-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
         //------------------------------------------------
@@ -806,7 +815,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     
     if(! fHistCentrality ) {
         //Histogram Output: Event-by-Event
-        fHistCentrality = new TH1D( "fHistCentrality", ";Centrality;Event Count",100,0,100);
+        fHistCentrality = new TH1D( "fHistCentrality", "WARNING: no pileup rejection applied!;Centrality;Event Count",100,0,100);
         fListHist->Add(fHistCentrality);
     }
     
@@ -958,6 +967,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Event Selection Code
         lEvSelCode = MultSelection->GetEvSelCode();
     }
+    
+    //just ask AliMultSelection. It will know.
+    fMVPileupFlag = kFALSE;
+    fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     
     fCentrality = lPercentile;
     
@@ -1182,6 +1195,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         lInvMassAntiLambda = v0->GetEffMass();
         lAlphaV0 = v0->AlphaV0();
         lPtArmV0 = v0->PtArmV0();
+        
+        fTreeVariableMVPileupFlag = fMVPileupFlag;
 
         fTreeVariablePt = v0->Pt();
         fTreeVariableChi2V0 = lChi2V0;
@@ -2158,6 +2173,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             fTreeCascVarMassAsXi    = lInvMassXiPlus;
             fTreeCascVarMassAsOmega = lInvMassOmegaPlus;
         }
+        
+        fTreeCascVarMVPileupFlag = fMVPileupFlag;
         fTreeCascVarPID = lPDGCodeCascade; 
         fTreeCascVarSwappedPID = lPDGCodeCascadeSwapped;
         fTreeCascVarPt = lXiTransvMom;
