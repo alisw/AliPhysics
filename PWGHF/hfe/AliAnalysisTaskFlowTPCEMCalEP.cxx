@@ -106,6 +106,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 ,fSigmaITScut(2.)
 ,fSigmaTOFcut(2.)
 ,fSigmaTPCcut(0.)
+,fTimeCut(kFALSE)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -154,9 +155,8 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 ,fElecMC(0)
 ,fcpV2_3040(0)
 ,fcpV2_4050(0)
-,fExpectedCorrectionPass("latest")
-,fAlternativeCorrectionPass("latest")
-
+,fpassV0("align")
+,fpassTPC("twist")
 
 {
     //Named constructor
@@ -219,6 +219,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 ,fSigmaITScut(2.)
 ,fSigmaTOFcut(2.)
 ,fSigmaTPCcut(0.)
+,fTimeCut(kFALSE)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -267,8 +268,8 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 ,fElecMC(0)
 ,fcpV2_3040(0)
 ,fcpV2_4050(0)
-,fExpectedCorrectionPass("latest")
-,fAlternativeCorrectionPass("latest")
+,fpassV0("align")
+,fpassTPC("twist")
 
 {
     
@@ -531,9 +532,9 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         const AliQnCorrectionsQnVector *qnTPCneg;
         const AliQnCorrectionsQnVector *qnV0;
         
-        qnV0      = GetQnVectorFromList(qnlist, "VZEROQoverM", "latest", "raw");
-        qnTPCpos  = GetQnVectorFromList(qnlist, "TPCPosEtaQoverM", "latest", "plain");
-        qnTPCneg  = GetQnVectorFromList(qnlist, "TPCNegEtaQoverM", "latest", "plain");
+        qnV0      = GetQnVectorFromList(qnlist, "VZEROQoverM", fpassV0, fpassV0);
+        qnTPCpos  = GetQnVectorFromList(qnlist, "TPCPosEtaQoverM", fpassTPC, fpassTPC);
+        qnTPCneg  = GetQnVectorFromList(qnlist, "TPCNegEtaQoverM", fpassTPC, fpassTPC);
         
         // new way to get the EP, test it later
         //         qnV0 = fFlowQnVectorMgr->GetDetectorQnVector("VZERO", "latest", "raw");
@@ -784,7 +785,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         
         fTrackPtAftTrkCuts->Fill(track->Pt());
         
-        Double_t clsE=-9.,p=-99.,EovP=-99.,pt=-99.,dEdx=-99.,fTPCnSigma=9.,phi=-9.,m02=-9.,m20=-9.,fEMCalnSigma=9.,dphi=9.,cosdphi=9.,fITSnSigma=9,fTOFnSigma=9;
+        Double_t clsE=-9.,p=-99.,EovP=-99.,pt=-99.,dEdx=-99.,fTPCnSigma=9.,phi=-9.,m02=-9.,m20=-9.,fEMCalnSigma=9.,dphi=9.,cosdphi=9.,fITSnSigma=9,fTOFnSigma=9, clsTime = -9;
         
         pt = track->Pt();
         fTrkpt->Fill(pt);
@@ -816,8 +817,11 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
                 clsE = cluster->E();
                 m20 = cluster->GetM20();
                 m02 = cluster->GetM02();
+                clsTime = cluster->GetTOF()*1e+9; // ns
             }
         }
+        
+        if(fUseTender && !fMCarray && fTimeCut && pt>=3 && (TMath::Abs(clsTime)>50)) continue;
         
         EovP = clsE/p;
         

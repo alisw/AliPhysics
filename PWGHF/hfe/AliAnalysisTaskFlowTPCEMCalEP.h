@@ -61,9 +61,9 @@ public:
     
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
     AliHFEpid *GetPID() const { return fPID; }
-    void SetExpectedCorrectionPass(const char *pass1) { fExpectedCorrectionPass = pass1; }
-    void SetAlternativeCorrectionPass(const char *pass2) { fAlternativeCorrectionPass = pass2; }
     
+    void SetCorrectionPassV0(const char *passV0) {fpassV0 = passV0;};
+    void SetCorrectionPassTPC(const char *passTPC){fpassTPC = passTPC;};
     void SetEP(Bool_t UseNewEP) {fUseNewEP = UseNewEP;};
     void SetTender(Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
@@ -73,6 +73,7 @@ public:
     void SetSigmaITScut(Double_t SigmaITScut) {fSigmaITScut = SigmaITScut;};
     void SetSigmaTOFcut(Double_t SigmaTOFcut) {fSigmaTOFcut = SigmaTOFcut;};
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
+    void SetTimeCut(Bool_t TimeCut) {fTimeCut = TimeCut;};
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0, Bool_t IsPassedSScuts);
@@ -112,6 +113,7 @@ private:
     Double_t              fSigmaITScut;
     Double_t              fSigmaTOFcut;
     Double_t              fSigmaTPCcut;
+    Bool_t                fTimeCut;
     
     // AliESDEvent        	*fESD;	            	 //! ESD object
     AliAODEvent           *fAOD;                  //! AOD object
@@ -209,8 +211,8 @@ private:
     TH2F                  *fcpV2_3040;          //! charged particle v2 in 30-40%
     TH2F                  *fcpV2_4050;//! charged particle v2 in 30-40%
     
-    TString fExpectedCorrectionPass;
-    TString fAlternativeCorrectionPass;
+    TString fpassV0;
+    TString fpassTPC;
     
     AliAnalysisTaskFlowTPCEMCalEP(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented
     AliAnalysisTaskFlowTPCEMCalEP& operator=(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented
