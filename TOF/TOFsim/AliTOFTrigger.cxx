@@ -782,10 +782,7 @@ void AliTOFTrigger::PrepareTOFMapFromDigit(TTree *treeD, Float_t startTimeHit, F
 
     // skip digits for channels not included in the trigger active mask
     if (!fTOFTrigMask->IsON(indexDDL,channelCTTM)) continue;
-    if (!fTOFTrigMap->IsON(indexLTM[0],channelCTTM)) continue;
     fTOFTrigMap->SetON(indexLTM[0],channelCTTM);
-
-    if(fTOFTrigMask->IsON(indexLTM[0],indexLTM[1])) fTOFTrigMap->SetON(indexLTM[0],indexLTM[1]);
   }
 
 }

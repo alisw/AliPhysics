@@ -257,9 +257,9 @@ void AliTOFReconstructor::Reconstruct(TTree *digitsTree,
     */
 
     fClusterFinder->Digits2RecPoints(digitsTree, clustersTree);
-    AliTOFTrigger::PrepareTOFMapFromDigit(digitsTree);
 
   }
+  AliTOFTrigger::PrepareTOFMapFromDigit(digitsTree);
 
 }
 //_____________________________________________________________________________
