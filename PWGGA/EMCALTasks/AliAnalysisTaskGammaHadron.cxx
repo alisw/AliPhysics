@@ -100,7 +100,7 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	fDoMixing          =0; //= 0 (do only same event analyis with correct triggers), =1 (do event mixing)
 
 	fDebug             =0; //set only 1 for debugging
-	fUsePerTrigWeight  =1; //plot histograms per gamma yield (1). Plot absolute values (0)
+	fUsePerTrigWeight  =0; //plot histograms per gamma yield (1). Plot absolute values (0)
 	fSavePool          =0; //= 0 do not save the pool by default. Use the set function to do this.
 
 	//..These two items are set in AliAnalysisTaskEmcal::RetrieveEventObjects()
@@ -280,7 +280,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//..p_T^{Cluster} distribution under different conditions
 
 	//..all clusters
-	fHistNoClusPt = new TH1F(Form("fHistNoClusPt_%0d",1),Form("fHistNoClusPt_%0d",1), nbins[0], min[0], max[0]);
+	fHistNoClusPt = new TH1F(Form("fHistNoClusPt_Id%0d",1),Form("fHistNoClusPt_Id%0d",1), nbins[0], min[0], max[0]);
 	fHistNoClusPt->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
 	fHistNoClusPt->GetYaxis()->SetTitle(Form("No. of Clusters [counts/%0.1f GeV/c]",fHistNoClusPt->GetBinWidth(0)));
 	fOutputList1->Add(fHistNoClusPt);
@@ -391,12 +391,12 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fOutputListQA->Add(fHistDEtaDPhiTrackQA[identifier]);
 
 	    //..Cluster Info
-		fHistCellsCluster[identifier] = new TH2F(Form("fHistCellsCluster%d_Id%d",0,identifier),Form("fHistCellsCluster%d_Id%d",0,identifier),60,0,30,50,0,50);
+		fHistCellsCluster[identifier] = new TH2F(Form("fHistCellsCluster%d_Id%d",0,identifier),Form("fHistCellsCluster%d_Id%d",0,identifier),120,0,30,50,0,50);
 		fHistCellsCluster[identifier]->GetXaxis()->SetTitle("E^{cluster}");
 		fHistCellsCluster[identifier]->GetYaxis()->SetTitle("N_{cells}");
 		fOutputListQA->Add(fHistCellsCluster[identifier]);
 
-		fHistClusterShape[identifier] = new TH2F(Form("fHistClusterShape%d_Id%d",0,identifier),Form("fHistClusterShape%d_Id%d",0,identifier),60,0,30,240,0,4);
+		fHistClusterShape[identifier] = new TH2F(Form("fHistClusterShape%d_Id%d",0,identifier),Form("fHistClusterShape%d_Id%d",0,identifier),120,0,30,240,0,4);
 		fHistClusterShape[identifier]->GetXaxis()->SetTitle("E^{cluster}");
 		fHistClusterShape[identifier]->GetYaxis()->SetTitle("#lambda_{0}");
 		fOutputListQA->Add(fHistClusterShape[identifier]);
@@ -471,7 +471,6 @@ void AliAnalysisTaskGammaHadron::InitEventMixer()
 	{
 		AliFatal("Binning of given pool manager not compatible with binning of correlation task!");
 	}
-
 	//if you want to save the pool:
 	// If some bins of the pool should be saved, fEventPoolOutputList must be given
 	// using AddEventPoolToOutput() (to increase size of fEventPoolOutputList)
@@ -595,7 +594,6 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	AliParticleContainer* tracks =0x0;
 	tracks   = GetParticleContainer(0);
 
-
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//    Mixed event section
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -628,8 +626,8 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 					cout<<"could not retrieve TObjArray from EventPool!"<<endl;
 				}
 				//..Loop over clusters and fill histograms
-				if(fGammaOrPi0==0) CorrelateClusterAndTrack(0,bgTracks,1,1.0/nMix);//correlate with mixed event
-				else               CorrelatePi0AndTrack(0,bgTracks,1,1.0/nMix);    //correlate with mixed event
+				if(fGammaOrPi0==0) CorrelateClusterAndTrack(0,bgTracks,0,1.0/nMix);//correlate with mixed event
+				else               CorrelatePi0AndTrack(0,bgTracks,0,1.0/nMix);    //correlate with mixed event
 			}
 		}
 		// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -655,8 +653,8 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
 	//..Do this only for events that are of fTriggerType
 	if(fCurrentEventTrigger & fTriggerType)
 	{
-		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,0,1);//correlate with same event
-		else               CorrelatePi0AndTrack(tracks,0,0,1);    //correlate with same event
+		if(fGammaOrPi0==0) CorrelateClusterAndTrack(tracks,0,1,1);//correlate with same event
+		else               CorrelatePi0AndTrack(tracks,0,1,1);    //correlate with same event
 	}
 
 	return kTRUE;
@@ -709,7 +707,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 	//...........................................
 	//..do a small loop to count the triggers in this event
 	//..for same events normalize per triggers (gammas/pi0)
-	if(SameMix==0)
+	if(SameMix==1)
 	{
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 		{
@@ -734,9 +732,10 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 
 	}
 	//..for mixed events normalize per events in pool
-	if(SameMix==1)
+	if(SameMix==0)
 	{
 		Weight=InputWeight;
+		//cout<<"weight: "<<Weight<<endl;
 	}
 	//...........................................
 	//..run the real loop for filling the histograms
@@ -757,9 +756,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 		//...........................................
 		//..combine gammas with same event tracks
 		GammaCounter++;
-		if(SameMix==0)
+		if(SameMix==1)
 		{
-			//cout<<"SameMix==0"<<endl;
+			//cout<<"SameMix==1"<<endl;
 			if(!tracks)  return 0;
 			Int_t NoOfTracksInEvent =tracks->GetNParticles();
 			AliVParticle* track=0;
@@ -780,7 +779,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 		}
 		//...........................................
 		//..combine gammas with mixed event tracks
-		if(SameMix==1)
+		if(SameMix==0)
 		{
 			Int_t Nbgtrks = bgTracksArray->GetEntries();
 			for(Int_t ibg=0; ibg<Nbgtrks; ibg++)
@@ -844,7 +843,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	//do a small loop to count the triggers in this event
 	// **Tyler you have to see whether you need to count here pi0 inside of your mass window
 	// **but I also havent implemented it for gammas yet :-D
-	if(SameMix==0)
+	if(SameMix==1)
 	{
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 		{
@@ -858,7 +857,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			//acc if pi0 candidate
 			nAccClusters++;
 
-			for( Int_t NoCluster2 = 0; NoCluster2 < NoOfClustersInEvent; NoCluster2++ )
+			for(Int_t NoCluster2 = 0; NoCluster2 < NoOfClustersInEvent; NoCluster2++ )
 			{
 				if(NoCluster1!=NoCluster2)
 				{
@@ -893,7 +892,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 		}
 	}
 	//..for mixed events normalize per events in pool
-	if(SameMix==1)
+	if(SameMix==0)
 	{
 		Weight=InputWeight;
 	}
@@ -934,9 +933,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 					//...........................................
 					//..combine gammas with same event tracks
-					if(SameMix==0)
+					if(SameMix==1)
 					{
-						//cout<<"SameMix==0"<<endl;
+						//cout<<"SameMix==1"<<endl;
 						if(!tracks)  return 0;
 						Int_t NoOfTracksInEvent =tracks->GetNParticles();
 						AliVParticle* track=0;
@@ -953,7 +952,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 					}
 					//...........................................
 					//..combine gammas with mixed event tracks
-					if(SameMix==1)
+					if(SameMix==0)
 					{
 						Int_t Nbgtrks = bgTracksArray->GetEntries();
 						for(Int_t ibg=0; ibg<Nbgtrks; ibg++)
