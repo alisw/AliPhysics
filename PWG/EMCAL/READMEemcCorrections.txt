@@ -197,12 +197,14 @@ __Cells__:
 | Property              | Value                             |
 | --------------------- | --------------------------------- |
 | branchName            | String selecting the branch name  |
+| embedding             | True if the cells branch should be taken from an embedded (external) event |
 
 __EMCal Containers__:
 | Property              | Value                             |
 | --------------------- | --------------------------------- |
 | Container name        | This is set by the object name in the YAML config |
 | branchName            | String selecting the branch name  |
+| embedding             | True if the branch should be taken from an embedded (external) event |
 | minPt                 | Double setting the minimum pT of the container |
 | minE                  | Double setting the minimum energy of the container |
 | (minEta, maxEta)      | A pair of doubles to set the min and max eta of the container. Note that they must be set as a pair! |
