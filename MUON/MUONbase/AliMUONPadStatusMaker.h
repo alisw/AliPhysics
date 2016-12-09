@@ -129,6 +129,9 @@ private:
   void SetHVStatus(Int_t detElemId, Int_t index, Int_t status) const;
   Int_t CheckConfigConsistencyWithPedestalInformation(Int_t detElemId,Int_t manuId) const;
 
+  AliMUONVStore* Pedestals() const;
+  AliMUONVStore* Config() const;
+
 private:
   /// General status
   enum EGeneralStatus
@@ -200,8 +203,8 @@ private:
   mutable TExMap* fLV; //!<! cache of lv statuses
   mutable TExMap* fHV; //!<! cache of hv statuses
 
-  AliMUONVStore* fPedestals; //!<! pedestal values
-  AliMUONVStore* fConfig; //!<! readout configuration
+  mutable AliMUONVStore* fPedestals; //!<! pedestal values
+  mutable AliMUONVStore* fConfig; //!<! readout configuration
 
   mutable AliMUONVTrackerData* fTrackerData; //!<! to get occupancies...
 

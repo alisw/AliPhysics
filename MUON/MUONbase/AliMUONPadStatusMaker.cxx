@@ -82,9 +82,9 @@ fDEOccupancyLimits(0,1.0),
 fStatus(new AliMUON2DMap(true)),
 fHV(0x0),
 fLV(0x0),
-fPedestals(calibData.Pedestals()),
+fPedestals(0x0),
 fTrackerData(0x0),
-fConfig(calibData.Config())
+fConfig(0x0)
 {
   /// ctor
   SetHVLimit(-1,0.0);
@@ -186,9 +186,9 @@ Int_t AliMUONPadStatusMaker::CheckConfigConsistencyWithPedestalInformation(Int_t
   /// Check the consistency between the information from the MUON/Calib/Config and
   /// MUON/Calib/Pedestals objects.
 
-  AliMUONVCalibParam* pedestals = static_cast<AliMUONVCalibParam*>(fPedestals->FindObject(detElemId,manuId));
+  AliMUONVCalibParam* pedestals = static_cast<AliMUONVCalibParam*>(Pedestals()->FindObject(detElemId,manuId));
 
-  AliMUONVCalibParam* config = static_cast<AliMUONVCalibParam*>(fConfig->FindObject(detElemId,manuId));
+  AliMUONVCalibParam* config = static_cast<AliMUONVCalibParam*>(Config()->FindObject(detElemId,manuId));
 
   if ( pedestals == 0 && config == 0 )
   {
@@ -628,7 +628,7 @@ AliMUONPadStatusMaker::ComputeStatus(Int_t detElemId, Int_t manuId) const
   AliMUONVCalibParam* param = new AliMUONCalibParamNI(1,AliMpConstants::ManuNofChannels(),detElemId,manuId,-1);
   fStatus->Add(param);
 
-  AliMUONVCalibParam* pedestals = static_cast<AliMUONVCalibParam*>(fPedestals->FindObject(detElemId,manuId));
+  AliMUONVCalibParam* pedestals = static_cast<AliMUONVCalibParam*>(Pedestals()->FindObject(detElemId,manuId));
 
   Int_t hvStatus = HVStatus(detElemId,manuId);
   Int_t lvStatus = LVStatus(detElemId,manuId);
@@ -920,4 +920,24 @@ TExMap* AliMUONPadStatusMaker::InternalLV() const
         fLV = new TExMap;
     }
     return fLV;
+}
+
+//_____________________________________________________________________________
+AliMUONVStore* AliMUONPadStatusMaker::Pedestals() const
+{
+    if (!fPedestals)
+    {
+        fPedestals = fkCalibrationData.Pedestals();
+    }
+    return fPedestals;
+}
+
+//_____________________________________________________________________________
+AliMUONVStore* AliMUONPadStatusMaker::Config() const
+{
+    if (!fConfig)
+    {
+        fConfig = fkCalibrationData.Pedestals();
+    }
+    return fConfig;
 }
