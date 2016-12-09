@@ -152,6 +152,8 @@ public:
     void AddStandardV0Configuration();
     void AddStandardCascadeConfiguration();
 //---------------------------------------------------------------------------------------
+    Float_t GetDCAz(AliESDtrack *lTrack);
+//---------------------------------------------------------------------------------------
     
 
 private:
@@ -243,6 +245,8 @@ private:
     //Decay Length issue debugging: ULong_t with track status
     ULong64_t fTreeVariableNegTrackStatus; //!
     ULong64_t fTreeVariablePosTrackStatus; //!
+    Float_t fTreeVariableNegDCAz; //!
+    Float_t fTreeVariablePosDCAz; //!
     
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
@@ -300,6 +304,10 @@ private:
     ULong64_t fTreeCascVarNegTrackStatus; //!
     ULong64_t fTreeCascVarPosTrackStatus; //!
     ULong64_t fTreeCascVarBachTrackStatus; //!
+    
+    Float_t fTreeCascVarNegDCAz; //!
+    Float_t fTreeCascVarPosDCAz; //!
+    Float_t fTreeCascVarBachDCAz; //!
     
     //Variables for debugging the invariant mass bump
     //Full momentum information
