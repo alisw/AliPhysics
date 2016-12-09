@@ -336,7 +336,6 @@ DESTINATION PWGPP/TRD/TRDPID/macros)
 install(DIRECTORY TRD/data DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.root")
 install(FILES ZDC/AddTaskZDCQA.C
               ZDC/AddTaskZDCQApp.C
-              ZDC/AddTaskZDCQApA.C
               ZDC/AddTaskZDCQAPbPb.C
               ZDC/AddTaskZDCQApA.C
               DESTINATION PWGPP/ZDC)
