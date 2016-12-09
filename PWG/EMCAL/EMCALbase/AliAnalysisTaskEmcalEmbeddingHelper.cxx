@@ -121,6 +121,8 @@ AliAnalysisTaskEmcalEmbeddingHelper::AliAnalysisTaskEmcalEmbeddingHelper(const c
 
 /**
  * Destructor
+ *
+ * Deletes the singleton instance and ensures that any open file is closed.
  */
 AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
 {
@@ -133,8 +135,27 @@ AliAnalysisTaskEmcalEmbeddingHelper::~AliAnalysisTaskEmcalEmbeddingHelper()
 }
 
 /**
- * Get the names of the files to embed.
- * The filenames will be used to initialize a TChain
+ * Get the names of the files to embed and determine which file to start from. The filenames will be
+ * used to initialize a TChain. Filenames can either be specified in a local file with one filename per
+ * line or found on AliEn by specifying any pattern that would work in alien_find.
+ *
+ * Notes on this function:
+ * - In the case that the passed files contain ".zip", the root file name will be appended. Be certain to
+ *   set the proper file type (AOD or ESD)!
+ * - In the case of AliEn, the result will be copied into a local file.
+ * - The file to start from can be randomized if requested.
+ *
+ * The file pattern can be specified by a number of different options:
+ * - The simplest is pass a fully formed path to a file either locally or on AliEn.
+ * - You could specify a pT hard bin, which will be added into the passed file pattern. For example,
+ *   "/period/runNumber/%d/aod_archive.root", where the %d will the be the pT hard bin.
+ * - You could specify a pT hard bin and anchor run, which will both be added into the passed file pattern.
+ *   "/period/%d/%d/aod_archive.root", where the first %d will the be the anchor run number, and the second
+ *   %d will be the pT hard bin.
+ *
+ * NOTE: The file pattern only makes sense in terms of AliEn. Passing a local pattern will not work!
+ * NOTE: Exercise care if you set both the file pattern and the filename! Doing so will probably cause your
+ * file to be overwritten!
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 {
@@ -233,8 +254,11 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
 }
 
 /**
- * Get the next event (entry) in the TChain to make it available for embedding.
- * If needed it calls InitTree() to setup the next tree within the TChain.
+ * Get the next event (entry) in the TChain to make it available for embedding. The event will be selected
+ * according to the conditions determined in IsEventSelected(). If needed it calls InitTree() to setup the
+ * next tree within the TChain. In the case of running of out files to embed, an error is thrown and embedding
+ * begins again from the start of the file list.
+ *
  * @return kTRUE if successful
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
@@ -303,7 +327,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::GetNextEntry()
 }
 
 /**
- * Performs an event selection on the current external event
+ * Performs an event selection on the current external event.
+ *
+ * @return kTRUE if the event successfully passes all criteria.
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
 {
@@ -360,7 +386,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
     }
     Double_t dist = TMath::Sqrt((externalVertex[0]-inputVertex[0])*(externalVertex[0]-inputVertex[0])+(externalVertex[1]-inputVertex[1])*(externalVertex[1]-inputVertex[1])+(externalVertex[2]-inputVertex[2])*(externalVertex[2]-inputVertex[2]));
     if (dist > fMaxVertexDist) {
-      AliDebug(3, Form("Event rejected because the distance between the current and embedded verteces is > %f. "
+      AliDebug(3, Form("Event rejected because the distance between the current and embedded vertices is > %f. "
        "Current event vertex (%f, %f, %f), embedded event vertex (%f, %f, %f). Distance = %f",
        fMaxVertexDist, inputVertex[0], inputVertex[1], inputVertex[2], externalVertex[0], externalVertex[1], externalVertex[2], dist));
       return kFALSE;
@@ -368,15 +394,16 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::IsEventSelected()
   }
 
   // TODO: Can we do selection based on the contents of the external event input objects?
-  //       The previous embedding task could do so by directly accessing the elemnts.
-  //       Certainly can't do jets (say minPt of leading jet) :because this has to be embedded before them.
+  //       The previous embedding task could do so by directly accessing the elements.
+  //       Certainly can't do jets (say minPt of leading jet) because this has to be embedded before them.
   //       See AliJetEmbeddingFromAODTask::IsAODEventSelected()
 
   return kTRUE;
 }
 
 /**
- * Initialize the external event reading it from the TChain.
+ * Initialize the external event by creating an event and then reading the event info from the TChain.
+ *
  * @return kTRUE if successful
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
@@ -402,8 +429,9 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::InitEvent()
 }
 
 /**
- * Performing run-independent initialization.
- * Here the histograms should be instantiated.
+ * Performing run-independent initialization to setup embedding.
+ *
+ * If the setup is not successful here, it will be repeated in UserExec().
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 {
@@ -411,8 +439,10 @@ void AliAnalysisTaskEmcalEmbeddingHelper::UserCreateOutputObjects()
 }
 
 /**
- * Setup TChain
- * @return kTRUE if successful in setting up the input files.
+ * Use the input files to setup the TChain. This involves accessing the files on AliEn and ensuring that
+ * each file actually exists. If the TChain is successfully set up, then embedding is ready to proceed.
+ *
+ * @return kTRUE if successful in setting up the TChain.
  */
 Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 {
@@ -483,7 +513,7 @@ Bool_t AliAnalysisTaskEmcalEmbeddingHelper::SetupInputFiles()
 }
 
 /**
- * Sets up the TChain needed to embed external files.
+ * Setup embedding by retrieving the file list and then setting up the TChain based on that file list.
  *
  * Sets fInitializedEmbedding to kTRUE when the initialization is completed.
  */
@@ -505,12 +535,12 @@ void AliAnalysisTaskEmcalEmbeddingHelper::SetupEmbedding()
 }
 
 /**
- * Determines the limits of the current TTree within the TChain. By carefully keeping track of
- * the first and lest entry of the current tree in the opened file, we allow a random entry
- * point into the entries in the tree without jumping between files, which would not perform
- * well on the grid.
+ * Initializes a new TTree within the TChain by determining the limits of the current TTree
+ * within the TChain. By carefully keeping track of the first and lest entry of the current
+ * tree in the opened file, we allow a random entry point into the event in the tree without
+ * jumping between files, which would not perform well on the grid.
  *
- * This function sets up random entry point into the file if requested.
+ * This function sets up a random entry point into the file if requested.
  *
  * Sets fInitializedNewFile to kTRUE when the new entries in the tree have been initialized.
  */
@@ -559,7 +589,9 @@ void AliAnalysisTaskEmcalEmbeddingHelper::InitTree()
 }
 
 /**
- * Run analysis code here
+ * Run the main analysis code here. If for some reason the embedding was not successfully set up
+ * in UserCreateOutputObjects(), it is set up against before continuing. It also ensures that the
+ * current tree is available before attempting to get the next entry.
  */
 void AliAnalysisTaskEmcalEmbeddingHelper::UserExec(Option_t*)
 {
@@ -587,6 +619,13 @@ void AliAnalysisTaskEmcalEmbeddingHelper::Terminate(Option_t*)
 {
 }
 
+/**
+ * Add task function. This contains the normal AddTask functionality, except in compiled code, making errors
+ * easier to spot than in CINT. The AddTask macro still exists for use on the LEGO train, but simply wraps this
+ * function.
+ *
+ * @return An properly instance of AliAnalysisTaskEmcalEmbeddingHelper, added to the current analysis manager.
+ */
 AliAnalysisTaskEmcalEmbeddingHelper * AliAnalysisTaskEmcalEmbeddingHelper::AddTaskEmcalEmbeddingHelper()
 {
   // Get the pointer to the existing analysis manager via the static access method.

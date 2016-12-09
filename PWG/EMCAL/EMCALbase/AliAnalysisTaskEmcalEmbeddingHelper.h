@@ -16,28 +16,45 @@
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TString.h>
-#include <AliAnalysisTaskSE.h>
-
-class AliVEvent;
+class TString;
 class TChain;
 class TFile;
+class AliVEvent;
+
+#include <AliAnalysisTaskSE.h>
 
 /**
  * \class AliAnalysisTaskEmcalEmbeddingHelper
  * \brief Implementation of task to embed external events.
  *
- * This class derives from AliAnalysisTaskSE and allows to open an external
+ * This class derives from AliAnalysisTaskSE and allows the user to open an external
  * ESD or AOD file, providing access to the events.
- * 1) Open an ESD/AOD file according to certain customizable options, such as
- *    production tag, pt hard bin, run number, file pattern, etc.
- * 2) Select an event according to customizable criteria, such as vertex, centrality,
- *    high pt track, pt hard bin, etc.
- * 3) Load the event in memory: this is the "external" event, as opposed to
- *    the "internal" event provided by the analysis manager
- * 4) Provide a public static method GetExternalEvent() that allows
- *    to retrieve a pointer to the external event
- * 5) Only one instance of this class is allowed in each train (singleton class).
+ *
+ * The capabilities of the task are as follows:
+ * - Open an ESD/AOD file according to certain customizable options, such as
+ *   production tag, pt hard bin, run number, file pattern, etc.
+ * - It selects an event according to customizable criteria, such as vertex, centrality,
+ *   high pt track, pt hard bin, etc.
+ * - Load the event in memory: this is the "external" event, as opposed to
+ *   the "internal" event provided by the analysis manager
+ * - Provide a public static method GetExternalEvent() that allows
+ *   to retrieve a pointer to the external event.
+ *
+ * Note that only one instance of this class is allowed in each train (singleton class).
+ *
+ * For the user, most of these details are handled by AliEmcalContainer derived tasks.
+ * To access the embedded input objects, the user simply needs to set
+ * AliEmcalContainer::SetIsEmbedding(Bool_t). This design ensures that usage is nearly
+ * seamless. For instance, it will "just work" in an analysis task, and it very nearly
+ * "just works" in the (new) EMCal correction framework (it only requires one small change
+ * in the normal correction procedure beyond noting that the input objects are embedded).
+ *
+ * For further information on usage (including with the EMCal corrections), see the
+ * [EMCal Embedding Documentation](\ref READMEemcEmbedding).
+ *
+ * \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
+ * \author Raymond Ehlers <raymond.ehlers@cern.ch>, Yale University
+ * \date Apr 28, 2016
  */
 class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
  public:
@@ -57,7 +74,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliVEvent* GetExternalEvent()                             const { return fExternalEvent   ; }
 
   TString GetTreeName()                                     const { return fTreeName; }
+  /// Randomly start from an entry in the file. Will then loop around so that all entries are made available.
   Bool_t GetRandomEventNumberAccess()                       const { return fRandomEventNumberAccess; }
+  /// Randomly select the first file. Continues sequentially afterwards
   Bool_t GetRandomFileAccess()                              const { return fRandomFileAccess; }
   TString GetFilePattern()                                  const { return fFilePattern; }
   Int_t GetStartingFileIndex()                              const { return fFilenameIndex; }

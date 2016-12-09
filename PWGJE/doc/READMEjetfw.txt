@@ -6,7 +6,7 @@ For users more familiar with the framework, see the [Jet Framework Topics](\ref 
 
 For those who are less familiar, please see the introduction [below](\ref jetFrameworkIntroduction).
 
-An example can be found at <your-path-to-AliPhysics>/PWGJE/EMCalJetTasks/macros/runEMCalJetSampleTask.C
+An example can be found at ``<your-path-to-AliPhysics>/PWGJE/EMCalJetTasks/macros/runEMCalJetSampleTask.C``
 
 # Introduction to the Jet Framework              {#jetFrameworkIntroduction}
 
@@ -178,9 +178,9 @@ For information on utilities such as ``fastjet`` contrib, see \subpage READMEjet
 ## Embedding
 Embedding here means to combine two events at the level of reconstructed tracks and EMCal cells or random tracks or clusters.
 
-Currently the embedding framework uses an older version of the framework that requires manual filtering of the tracks as explained in **find doc and add here link**.
+For more information, see the (new) [Embedding Framework](\ref READMEemcEmbedding).
 
-See \subpage READMEembedding for more information on the embedding classes.
+There is also an old embedding framework which uses an older version of the framework that requires manual filtering of the tracks. See \subpage READMEembedding for more information on the old embedding classes.
 
 ## Jet tagger
 The task AliAnalysisTaskEmcalJetTagger allows to tag a jets as "close" and/or sharing a minimun fraction of constituent p<sub>T</sub>. This is useful for:

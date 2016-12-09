@@ -64,6 +64,10 @@ Information about the corrections framework is available at \subpage READMEemcCo
 
 Information about the cell and cluster corrections is available at \subpage READMEclustcorr.
 
+# EMCal Embedding Framework
+
+Information about embedding in the EMCal framework is available at \subpage READMEemcEmbedding.
+
 # How to transition from old to new framework
 
 Here you find detailed information which compares old and new framework and tells you the things you have to keep in mind when using the new EMCal framework. Please read \subpage READMEchangefw.  
