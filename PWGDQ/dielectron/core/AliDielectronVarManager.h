@@ -1,3 +1,13 @@
+/**
+* @Author: Pascal Dillenseger <pascaldillenseger>
+* @Date:   2016-11-03, 15:14:35
+* @Email:  pdillens@cern.ch
+* @Last modified by:   pascaldillenseger
+* @Last modified time: 2016-12-01, 17:15:16
+*/
+
+
+
 #ifndef ALIDIELECTRONVARMANAGER_H
 #define ALIDIELECTRONVARMANAGER_H
 
@@ -2235,6 +2245,16 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kXvPrim]       = 0;
   values[AliDielectronVarManager::kYvPrim]       = 0;
   values[AliDielectronVarManager::kZvPrim]       = 0;
+  // The true vertex is needed for the pair DCA analysis (needs DCA of reco track w.r.t. true vertex).
+  AliDielectronMC *mc=AliDielectronMC::Instance();
+  if (mc->HasMC()){
+    AliMCEvent* mcevent = mc->GetMCEvent();
+    const AliVVertex* mcvtx = mcevent->GetPrimaryVertex();
+    values[AliDielectronVarManager::kXvPrimMCtruth]       = (mcvtx ? mcvtx->GetX() : 0.0);
+    values[AliDielectronVarManager::kYvPrimMCtruth]       = (mcvtx ? mcvtx->GetY() : 0.0);
+    values[AliDielectronVarManager::kZvPrimMCtruth]       = (mcvtx ? mcvtx->GetZ() : 0.0);
+  }
+  
   values[AliDielectronVarManager::kNVtxContrib]  = 0;
 //   values[AliDielectronVarManager::kChi2NDF]      = 0; //This is the pair value!!!
 
@@ -2724,10 +2744,10 @@ inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Dou
   values[AliDielectronVarManager::kXvPrim]       = (vtx ? vtx->GetX() : 0.0);
   values[AliDielectronVarManager::kYvPrim]       = (vtx ? vtx->GetY() : 0.0);
   values[AliDielectronVarManager::kZvPrim]       = (vtx ? vtx->GetZ() : 0.0);
-  //dame information but wont be overwritten by reconstrcuted values
-  values[AliDielectronVarManager::kXvPrimMCtruth]       = (vtx ? vtx->GetX() : 0.0);
-  values[AliDielectronVarManager::kYvPrimMCtruth]       = (vtx ? vtx->GetY() : 0.0);
-  values[AliDielectronVarManager::kZvPrimMCtruth]       = (vtx ? vtx->GetZ() : 0.0);
+  // For MC this is identical (see comment in FillVarVEvent()).
+  values[AliDielectronVarManager::kXvPrimMCtruth]       = values[AliDielectronVarManager::kXvPrim];
+  values[AliDielectronVarManager::kYvPrimMCtruth]       = values[AliDielectronVarManager::kYvPrim];
+  values[AliDielectronVarManager::kZvPrimMCtruth]       = values[AliDielectronVarManager::kZvPrim];
   // Fill AliMCEvent interface specific information
   values[AliDielectronVarManager::kNch]   = AliDielectronHelper::GetNch(event, 1.6);
   values[AliDielectronVarManager::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
