@@ -244,6 +244,9 @@ private:
     Float_t fTreeVariableNegdEdx; //!
     Float_t fTreeVariablePosInnerP; //!
     Float_t fTreeVariableNegInnerP; //!
+    //Decay Length issue debugging: ULong_t with track status
+    ULong64_t fTreeVariableNegTrackStatus; //!
+    ULong64_t fTreeVariablePosTrackStatus; //!
     
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
@@ -308,6 +311,11 @@ private:
     Float_t fTreeCascVarNegdEdx; //!
     Float_t fTreeCascVarPosdEdx; //!
     Float_t fTreeCascVarBachdEdx; //!
+    
+    //Decay Length issue debugging: ULong_t with track status
+    ULong64_t fTreeCascVarNegTrackStatus; //!
+    ULong64_t fTreeCascVarPosTrackStatus; //!
+    ULong64_t fTreeCascVarBachTrackStatus; //!
 
     //Variables for debugging the invariant mass bump
     //Full momentum information

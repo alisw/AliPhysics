@@ -181,6 +181,8 @@ fTreeVariablePosdEdx(-1),
 fTreeVariableNegdEdx(-1),
 fTreeVariablePosInnerP(-1),
 fTreeVariableNegInnerP(-1),
+fTreeVariableNegTrackStatus(0),
+fTreeVariablePosTrackStatus(0),
 
 fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
@@ -229,6 +231,9 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
+fTreeCascVarNegTrackStatus(0), //!
+fTreeCascVarPosTrackStatus(0), //!
+fTreeCascVarBachTrackStatus(0), //!
 //fTreeCascVarPosTotMom(-1),
 //fTreeCascVarNegTotMom(-1),
 //fTreeCascVarBachTotMom(-1),
@@ -326,6 +331,8 @@ fTreeVariablePosdEdx(-1),
 fTreeVariableNegdEdx(-1),
 fTreeVariablePosInnerP(-1),
 fTreeVariableNegInnerP(-1),
+fTreeVariableNegTrackStatus(0),
+fTreeVariablePosTrackStatus(0),
 
 fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
@@ -373,6 +380,9 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
+fTreeCascVarNegTrackStatus(0), //!
+fTreeCascVarPosTrackStatus(0), //!
+fTreeCascVarBachTrackStatus(0), //!
 //fTreeCascVarPosTotMom(-1),
 //fTreeCascVarNegTotMom(-1),
 //fTreeCascVarBachTotMom(-1),
@@ -543,6 +553,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariableNegdEdx",&fTreeVariableNegdEdx,"fTreeVariableNegdEdx/F");
             fTreeV0->Branch("fTreeVariablePosInnerP",&fTreeVariablePosInnerP,"fTreeVariablePosInnerP/F");
             fTreeV0->Branch("fTreeVariableNegInnerP",&fTreeVariableNegInnerP,"fTreeVariableNegInnerP/F");
+            fTreeV0->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
+            fTreeV0->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
         }
         //------------------------------------------------
     }
@@ -601,6 +613,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarPosInnerP",&fTreeCascVarPosInnerP,"fTreeCascVarPosInnerP/F");
             fTreeCascade->Branch("fTreeCascVarNegInnerP",&fTreeCascVarNegInnerP,"fTreeCascVarNegInnerP/F");
             fTreeCascade->Branch("fTreeCascVarBachInnerP",&fTreeCascVarBachInnerP,"fTreeCascVarBachInnerP/F");
+            fTreeCascade->Branch("fTreeCascVarNegTrackStatus",&fTreeCascVarNegTrackStatus,"fTreeCascVarNegTrackStatus/l");
+            fTreeCascade->Branch("fTreeCascVarPosTrackStatus",&fTreeCascVarPosTrackStatus,"fTreeCascVarPosTrackStatus/l");
+            fTreeCascade->Branch("fTreeCascVarBachTrackStatus",&fTreeCascVarBachTrackStatus,"fTreeCascVarBachTrackStatus/l");
         }
         //------------------------------------------------
         if ( fkDebugBump ){
@@ -896,7 +911,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
         if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
-
+        
+        //Get status flags
+        fTreeVariablePosTrackStatus = pTrack->GetStatus();
+        fTreeVariableNegTrackStatus = nTrack->GetStatus();
 
         if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
 
@@ -1368,7 +1386,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             AliDebug(1, "Pb / Bach.   track has no TPCrefit ... continue!");
             continue;
         }
-
+        
+        //Get status flags
+        fTreeCascVarPosTrackStatus = pTrackXi->GetStatus();
+        fTreeCascVarNegTrackStatus = nTrackXi->GetStatus();
+        fTreeCascVarBachTrackStatus = bachTrackXi->GetStatus();
+        
         // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
         if(lPosTPCClusters  < 70) {
             AliDebug(1, "Pb / V0 Pos. track has less than 70 TPC clusters ... continue!");
