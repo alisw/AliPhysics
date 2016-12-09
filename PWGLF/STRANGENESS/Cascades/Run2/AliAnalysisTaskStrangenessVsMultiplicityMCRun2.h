@@ -202,6 +202,7 @@ private:
 //   Variables for Event Tree
 //===========================================================================================
     Float_t fCentrality; //!
+    Bool_t fMVPileupFlag; //!
 
 //===========================================================================================
 //   Variables for V0 Tree
@@ -246,6 +247,7 @@ private:
     
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
+    Bool_t fTreeVariableMVPileupFlag;         //!
     
     //MC exclusive Characteristics: 7, also required for feeddown tests
     Float_t fTreeVariablePtMother; //!
@@ -346,6 +348,7 @@ private:
     
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
+    Bool_t fTreeCascVarMVPileupFlag;         //!
 
     //MC-only Variabless
     Int_t   fTreeCascVarIsPhysicalPrimary; //!
