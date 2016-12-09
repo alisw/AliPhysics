@@ -46,10 +46,10 @@
 //_________________________________________________________________
 //GLOBAL VARIABLES TO BE SET
 //input file
-const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_PosTCPVZERO_EvShape.root";
-//const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_VZERO.root";
+//const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_PosTCPVZERO_EvShape.root";
+const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_VZERO.root";
 //const TString filename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EP_AllDetConf_new.root";
-const TString suffix="_Topod0Cut_POSTPCVZERO_EP";
+const TString suffix="_Topod0Cut_VZERO_EP";
 const TString partname="Dplus";
 const Int_t minCent=30;
 const Int_t maxCent=50;
@@ -58,11 +58,11 @@ const TString outputdir = ".";
 
 //EP resolution
 //kTPCFullEta, kTPCPosEta,kVZERO,kVZEROA,kVZEROC
-const Int_t evPlane=AliEventPlaneResolutionHandler::kTPCPosEta;
+const Int_t evPlane=AliEventPlaneResolutionHandler::kVZERO;
 //resolution flag fromAliEventPlaneResolutionHandler:
 //kTwoRandSub,kTwoChargeSub,kTwoEtaSub,kThreeSub,kThreeSubTPCGap
 const Bool_t useAliHandlerForRes=kFALSE;
-Int_t evPlaneRes=AliEventPlaneResolutionHandler::kTwoEtaSub;
+Int_t evPlaneRes=AliEventPlaneResolutionHandler::kThreeSub;
 const Bool_t useNcollWeight=kFALSE;
 
 // pt and phi binning
@@ -96,9 +96,9 @@ const Int_t markers[] = {kFullSquare,kFullCircle,kFullTriangleUp,kFullDiamond,kO
 //METHODS PROTOTYPES
 void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE);
 TList *LoadMassHistos(TList *inputlist,Bool_t inoutanis);
-TList* LoadResolutionHistos(TList *inputlist);
+TList *LoadResolutionHistos(TList *inputlist);
 Int_t FindPtBin(Int_t nbins, Double_t* array,Double_t value);
-void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Int_t minfit, Int_t maxfit, const Int_t *rebin);
+void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Double_t minfit, Double_t maxfit, const Int_t *rebin);
 TGraphAsymmErrors* Computev2(TGraphAsymmErrors **gSignal, Double_t resol, Float_t *averagePt, Bool_t inoutanis, TGraphAsymmErrors *gRelSystEff);
 void DrawEventPlane();
 void CheckEPFlatness();
@@ -300,7 +300,7 @@ TList *LoadMassHistos(TList *inputlist,Bool_t inoutanis){
 	  }
 	  if(hMass==0)hMass=(TH1F*)h1tmp->Clone();
 	  else hMass->Add((TH1F*)h1tmp->Clone());
-	}
+  }
       }
       hMass->SetTitle(Form("hMass_pt%d_phi%d",iFinalPtBin,iphi));
       hMass->SetName(Form("hMass_pt%d_phi%d",iFinalPtBin,iphi));
@@ -312,6 +312,7 @@ TList *LoadMassHistos(TList *inputlist,Bool_t inoutanis){
   }
   return outlist;
 }
+
 //______________________________________________________________
 Bool_t DefinePtBins(AliRDHFCuts *cutobj){
   Int_t nPtBinsCuts=cutobj->GetNPtBins();
@@ -339,7 +340,7 @@ Int_t GetPadNumber(Int_t ix,Int_t iy){
   return (iy)*nptbinsnew+ix+1;
 }
 //______________________________________________________________
-void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Int_t minfit, Int_t maxfit, const Int_t *rebin) {
+void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Double_t minfit, Double_t maxfit, const Int_t *rebin) {
   
   Int_t nphi=nphibins;
   if(inoutanis)nphi=2;
@@ -374,6 +375,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       AliHFMassFitter fitter(histtofit,minfit,maxfit,1,bkgfunc);
       fitter.SetInitialGaussianMean(massD);
       fitter.SetInitialGaussianSigma(0.012);
+      fitter.SetUseLikelihoodFit();
       Bool_t ok=fitter.MassFitter(kFALSE);
       Double_t sigmaforcounting=0;
       Double_t meanforcounting=0;
@@ -425,6 +427,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     histtofitfullsigma->Rebin(rebin[ipt]);
     AliHFMassFitter fitter(histtofitfullsigma,minfit,maxfit,1,bkgfunc);
     fitter.SetInitialGaussianMean(massD);
+    fitter.SetUseLikelihoodFit();
     Bool_t ok=fitter.MassFitter(kFALSE);
     Double_t sigmatot=0;
     Double_t massFromFit=0;
@@ -442,6 +445,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       AliHFMassFitter fitter2(histtofit,minfit,maxfit,1,bkgfunc);
       fitter2.SetInitialGaussianMean(massD);
       fitter2.SetFixGaussianSigma(sigmatot);
+      fitter2.SetUseLikelihoodFit();
       if(fixAlsoMass) fitter2.SetFixGaussianMean(massFromFit);
       Bool_t ok2=fitter2.MassFitter(kFALSE);
       Double_t signal=0,esignal=0;
