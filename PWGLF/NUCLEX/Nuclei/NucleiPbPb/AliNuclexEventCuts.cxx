@@ -146,18 +146,21 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
 
   bool allcuts = (fFlag == (BIT(kAllCuts) - 1));
   if (allcuts) fFlag |= BIT(kAllCuts);
-  for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
-    if (TESTBIT(fFlag,iCut)) 
-      fCutStats->Fill(iCut);
+  if (fCutStats != nullptr) {
+    for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
+      if (TESTBIT(fFlag,iCut))
+        fCutStats->Fill(iCut);
+    }
   }
+
 
   /// Filling the monitoring histograms (first iteration always filled, second iteration only for selected events.
   for (int befaft = 0; befaft < 2; ++befaft) {
-    fCentrality[befaft]->Fill(fCentPercentiles[0]);
-    fEstimCorrelation[befaft]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
-    fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
-    fVtz[befaft]->Fill(vtx->GetZ());
-    fDeltaTrackSPDvtz[befaft]->Fill(dz);
+    if (fCentrality[befaft] != nullptr) fCentrality[befaft]->Fill(fCentPercentiles[0]);
+    if (fEstimCorrelation[befaft] != nullptr) fEstimCorrelation[befaft]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
+    if (fMultCentCorrelation[befaft] != nullptr) fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
+    if (fVtz[befaft] != nullptr) fVtz[befaft]->Fill(vtx->GetZ());
+    if (fDeltaTrackSPDvtz[befaft] != nullptr) fDeltaTrackSPDvtz[befaft]->Fill(dz);
     if (!allcuts) return false; /// Do not fill the "after" histograms if the event does not pass the cuts.
   }
 
