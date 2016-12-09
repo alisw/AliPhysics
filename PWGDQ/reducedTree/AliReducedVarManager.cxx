@@ -832,7 +832,7 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(binX==0) binX = 1;
      if(binX==fgTPCelectronCentroidMap->GetXaxis()->GetNbins()+1) binX -= 1;
      Int_t binY = fgTPCelectronCentroidMap->GetYaxis()->FindBin(values[fgVarDependencyY]);
-     if(binY==0) binY==1;
+     if(binY==0) binY=1;
      if(binY==fgTPCelectronCentroidMap->GetYaxis()->GetNbins()+1) binY -= 1;
      Float_t centroid = fgTPCelectronCentroidMap->GetBinContent(binX, binY);
      Float_t width = fgTPCelectronWidthMap->GetBinContent(binX, binY);
