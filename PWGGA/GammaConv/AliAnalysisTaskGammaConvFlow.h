@@ -85,7 +85,7 @@ public:
     void                                 SetMassWindow(Float_t MinMass, Float_t MaxMass) { fMinMass = MinMass; fMaxMass = MaxMass; }
     void                                 SetKappaWindow(Float_t MinKappa, Float_t MaxKappa) { fMinKappa = MinKappa; fMaxKappa = MaxKappa; }
     void                                 SetFilterVariable(Int_t FilterVariable, Double_t MinFilter, Double_t MaxFilter) { fFilterVariable = FilterVariable; fMinFilter = MinFilter; fMaxFilter = MaxFilter;}
-    void                                 SetApplydPhidRCut(Bool_t dPhiDRCut){ fApplydPhidRCut = dPhiDRCut; }
+    void                                 SetApplydPhidRCut(Int_t dPhiDRCut){ fApplydPhidRCut = dPhiDRCut; }
     void                                 SetPerformExtraStudies(Bool_t ExtraStudies){ fPerformExtraStudies = ExtraStudies; }
     
     
@@ -119,6 +119,7 @@ protected:
 	TH2F 								**hInvMassPair;									//
 	TH2F                **hLTMPt;                 //
 	TH2F                **hLTMPt_MC;                 //
+	TH2F                **hPt_TruePt;                 //
 	TH2F                **hdPhidRcandidates;         //
 	TH2F                **hdPhidRcandidates_MCsigsig;         //
 	TH2F                **hdPhidRcandidates_MCbkgsig;         //
@@ -212,7 +213,7 @@ protected:
   Double_t               fMinFilter;                      //
   Double_t               fMaxFilter;                      //
   Bool_t                fIsMC;                            //
-  Bool_t                fApplydPhidRCut;                  //
+  Int_t                fApplydPhidRCut;                  //
   Bool_t                fPerformExtraStudies;             //
   AliMCEvent*                 fMCEvent;                   //
   AliStack*                   fMCStack;                   //
@@ -229,11 +230,11 @@ private:
   Bool_t MCConversionPhotonCheck( TParticle *MCPhoton );
   Int_t GetTemplateID( AliAODConversionPhoton *MCPhoton );
   void GetdPhidRtoCandidate();
-  Bool_t GetdPhidRtoCandidate( AliAODConversionPhoton* gamma );
+  Int_t GetdPhidRtoCandidate( AliAODConversionPhoton* gamma, Int_t PhotonID );
 
 	AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
 	AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvFlow, 11);
+    ClassDef(AliAnalysisTaskGammaConvFlow, 12);
 };
 
 #endif
