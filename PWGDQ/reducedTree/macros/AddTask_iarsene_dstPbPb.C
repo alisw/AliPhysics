@@ -44,11 +44,11 @@ AliAnalysisTask *AddTask_iarsene_dstPbPb(Int_t reducedEventType=-1, Bool_t write
   //task->UsePhysicsSelection(kTRUE);
   task->SetUseAnalysisUtils(kTRUE);
   
-  task->SetFillV0Info(kTRUE);
-  task->SetFillGammaConversions(kTRUE);
+  task->SetFillV0Info(kFALSE);
+  /*task->SetFillGammaConversions(kTRUE);
   task->SetFillK0s(kTRUE);
   task->SetFillLambda(kTRUE);
-  task->SetFillALambda(kTRUE);
+  task->SetFillALambda(kTRUE);*/
   //task->SetFillCaloClusterInfo(kFALSE);
   //task->SetFillDielectronInfo(kFALSE);
   //task->SetFillFriendInfo(kFALSE);
@@ -56,15 +56,15 @@ AliAnalysisTask *AddTask_iarsene_dstPbPb(Int_t reducedEventType=-1, Bool_t write
   task->SetEventFilter(CreateEventFilter(isAOD));
   task->SetTrackFilter(CreateGlobalTrackFilter(isAOD));
   //  task->SetFlowTrackFilter(CreateFlowTrackFilter(isAOD));
-  task->SetK0sPionCuts(CreateK0sPionCuts(isAOD));
-  task->SetLambdaProtonCuts(CreateLambdaProtonCuts(isAOD));
-  task->SetLambdaPionCuts(CreateLambdaPionCuts(isAOD));
-  task->SetGammaElectronCuts(CreateGammaConvElectronCuts(isAOD));
+  //task->SetK0sPionCuts(CreateK0sPionCuts(isAOD));
+  //task->SetLambdaProtonCuts(CreateLambdaProtonCuts(isAOD));
+  //task->SetLambdaPionCuts(CreateLambdaPionCuts(isAOD));
+  //task->SetGammaElectronCuts(CreateGammaConvElectronCuts(isAOD));
   //task->SetK0sMassRange(0.44,0.55);
   //task->SetLambdaMassRange(1.090,1.14);
-  task->SetGammaConvMassRange(0.0,0.1);
-  task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
-  task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
+  //task->SetGammaConvMassRange(0.0,0.1);
+  //task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
+  //task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
   //task->SetFillFMDInfo(); AddFMDTask();
   //task->SetFillMCInfo(kTRUE);
   //task->SetFillEventPlaneInfo(kTRUE);
@@ -124,7 +124,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    task->SetTreeInactiveBranch("fL0TriggerInputs");
    task->SetTreeInactiveBranch("fL1TriggerInputs");
    task->SetTreeInactiveBranch("fL2TriggerInputs");
-   task->SetTreeInactiveBranch("fBC");
+   //task->SetTreeInactiveBranch("fBC");
    //task->SetTreeInactiveBranch("fTimeStamp");
    task->SetTreeInactiveBranch("fEventType");
    //task->SetTreeInactiveBranch("fTriggerMask");
