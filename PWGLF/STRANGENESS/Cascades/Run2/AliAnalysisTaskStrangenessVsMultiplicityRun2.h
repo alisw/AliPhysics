@@ -199,6 +199,7 @@ private:
 //   Variables for Event Tree
 //===========================================================================================
     Float_t fCentrality; //!
+    Bool_t fMVPileupFlag; //!
 
 //===========================================================================================
 //   Variables for V0 Tree
@@ -242,6 +243,7 @@ private:
     
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
+    Bool_t fTreeVariableMVPileupFlag;         //!
 
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -311,6 +313,7 @@ private:
     
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
+    Bool_t fTreeCascVarMVPileupFlag;         //!
 
 //===========================================================================================
 //   Histograms
