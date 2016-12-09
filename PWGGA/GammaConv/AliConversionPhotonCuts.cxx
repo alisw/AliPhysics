@@ -2373,8 +2373,8 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut){   /
     fPIDnSigmaAbovePionLineHighPt=1.;
     break;
   case 9:
-    fPIDnSigmaAbovePionLine=3.0; // We need a bit less tight cut on dE/dx
-    fPIDnSigmaAbovePionLineHighPt=-10;
+    fPIDnSigmaAbovePionLine=1; // We need a bit less tight cut on dE/dx
+    fPIDnSigmaAbovePionLineHighPt=0.5;
     break;
   default:
     AliError(Form("Warning: pidedxSigmaCut not defined %d",pidedxSigmaCut));
