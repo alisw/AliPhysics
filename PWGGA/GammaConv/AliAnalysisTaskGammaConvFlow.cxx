@@ -93,6 +93,7 @@ hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
 hLTMPt(NULL),
 hLTMPt_MC(NULL),
+hPt_TruePt(NULL),
 hdPhidRcandidates(NULL),
 hdPhidRcandidates_MCsigsig(NULL),
 hdPhidRcandidates_MCbkgsig(NULL),
@@ -215,6 +216,7 @@ hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
 hLTMPt(NULL),
 hLTMPt_MC(NULL),
+hPt_TruePt(NULL),
 hdPhidRcandidates(NULL),
 hdPhidRcandidates_MCsigsig(NULL),
 hdPhidRcandidates_MCbkgsig(NULL),
@@ -344,6 +346,7 @@ hESDConvGammaPt(NULL),
 hInvMassPair(NULL),
 hLTMPt(NULL),
 hLTMPt_MC(NULL),
+hPt_TruePt(NULL),
 hdPhidRcandidates(NULL),
 hdPhidRcandidates_MCsigsig(NULL),
 hdPhidRcandidates_MCbkgsig(NULL),
@@ -521,6 +524,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
 	hInvMassPair = new TH2F*[fnCuts];
   hLTMPt = new TH2F*[fnCuts];
   hLTMPt_MC = new TH2F*[fnCuts];
+  hPt_TruePt = new TH2F*[fnCuts];
   hdPhidRcandidates = new TH2F*[fnCuts];
   hdPhidRcandidates_MCsigsig = new TH2F*[fnCuts];
   hdPhidRcandidates_MCbkgsig = new TH2F*[fnCuts];
@@ -633,6 +637,8 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
     hLTMPt_MC[iCut]= new TH2F("LTM_Pt_MCgen","LTM vs Pt (MC)",200,0,200,250,0,25); 
     fESDList[iCut]->Add(hLTMPt_MC[iCut]);
     
+    hPt_TruePt[iCut]= new TH2F("hPt_TruePt","Pt vs TruePt (MC)",250,0,25,250,0,25);
+    fESDList[iCut]->Add(hPt_TruePt[iCut]);
     hdPhidRcandidates[iCut]= new TH2F("hdPhidRcandidates","dPhi vs dRconvVtx",400,0,4,300,0,300); 
     fESDList[iCut]->Add(hdPhidRcandidates[iCut]);
     hdPhidRcandidates_MCsigsig[iCut]= new TH2F("hdPhidRcandidates_MCsigsig","dPhi vs dRconvVtx",400,0,4,300,0,300); 
@@ -890,7 +896,7 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
 		hNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks());
 		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)	hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
 		else hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
-		
+
 		ProcessPhotonCandidates(); // Process this cuts gammas
 		ProcessPhotonCandidatesforV2(); // Process this cuts gammas and do v2
     
@@ -927,7 +933,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
         hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
         if (PhotonCandidate->GetInvMassPair() < fMinMass || PhotonCandidate->GetInvMassPair() > fMaxMass) continue;
         if (((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent) < fMinKappa || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent) > fMaxKappa) continue;
-        if(fApplydPhidRCut && !GetdPhidRtoCandidate(PhotonCandidate)) continue;
+        if(fApplydPhidRCut==1){ if(GetdPhidRtoCandidate(PhotonCandidate,i)==1) continue; }
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
@@ -949,6 +955,9 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
               if(PhotonTemplateID != 0 && PhotonTemplateID != 1 && PhotonTemplateID != 2 &&
                  PhotonTemplateID != 3 && PhotonTemplateID != 4 && PhotonTemplateID != 5 &&
                  PhotonTemplateID != 6 && PhotonTemplateID != 7 && PhotonTemplateID != 8) hKappaTPC_Temp10[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
+
+              TParticle *TRUEPhoton = PhotonCandidate->GetMCParticle(fMCStack);
+              if(TRUEPhoton) hPt_TruePt[fiCut]->Fill(PhotonCandidate->Pt(),TRUEPhoton->Pt());
             }
             
             if(fIsFromMBHeader){
@@ -1384,7 +1393,7 @@ void AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate(){
   }
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate( AliAODConversionPhoton* gamma ){
+Int_t AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate( AliAODConversionPhoton* gamma, Int_t PhotonID ){
   
   Float_t gamma1_Eta = 0; Float_t gamma1_Phi = 0; Float_t gamma1_Pt = 0;
   Float_t gamma2_Eta = 0; Float_t gamma2_Phi = 0; Float_t gamma2_Pt = 0;
@@ -1394,11 +1403,12 @@ Bool_t AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate( AliAODConversionPhoto
   Float_t gamma1_Vtx_x = 0; Float_t gamma1_Vtx_y = 0; Float_t gamma1_Vtx_z = 0;
   Float_t gamma2_Vtx_x = 0; Float_t gamma2_Vtx_y = 0; Float_t gamma2_Vtx_z = 0;
   
-  if(!gamma) return 0;
+  if(!gamma) return -1;
   gamma1_Eta = gamma->GetPhotonEta(); gamma1_Phi = gamma->GetPhotonPhi(); gamma1_Pt = gamma->GetPhotonPt();
-  if(gamma1_Eta==0 || gamma1_Phi==0 || gamma1_Pt==0) return 0;
+  if(gamma1_Eta==0 || gamma1_Phi==0 || gamma1_Pt==0) return -1;
   gamma1_Vtx_x = gamma->GetConversionX(); gamma1_Vtx_y = gamma->GetConversionY(); gamma1_Vtx_z = gamma->GetConversionZ();
   for(Int_t i = 0; i < fReaderGammas->GetEntries(); i++){
+    if(i==PhotonID) continue;
     AliAODConversionPhoton *gamma2=dynamic_cast<AliAODConversionPhoton*>(fReaderGammas->At(i));
     if(!gamma2) continue;
     gamma2_Eta = gamma2->GetPhotonEta(); gamma2_Phi = gamma2->GetPhotonPhi(); gamma2_Pt = gamma2->GetPhotonPt();
@@ -1407,7 +1417,7 @@ Bool_t AliAnalysisTaskGammaConvFlow::GetdPhidRtoCandidate( AliAODConversionPhoto
     dPhi = TMath::Abs(gamma2_Phi-gamma1_Phi);
     if(dPhi > TMath::Pi()) dPhi = TMath::Abs(dPhi-2.0*TMath::Pi());
     dRconvVtx = TMath::Sqrt(pow(gamma2_Vtx_x-gamma1_Vtx_x,2)+pow(gamma2_Vtx_y-gamma1_Vtx_y,2)+pow(gamma2_Vtx_z-gamma1_Vtx_z,2));
-    if(dPhi < 0.04 && dRconvVtx < 7.5) return 0;
+    if(dPhi < 0.04 && dRconvVtx < 7.5) return 1;
   }
-  return 1;
+  return 0;
 }
