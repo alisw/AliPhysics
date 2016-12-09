@@ -1149,7 +1149,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Float_t tof = clustMatch->GetTOF()*1e+9; // ns
       if(!fMCarray)
          {
-          if(tof<-30 && tof>30)continue; // timing cut on data
+          if(tof<-30 || tof>30)continue; // timing cut on data
          }
 
       //EMCAL EID info
