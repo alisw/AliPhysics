@@ -181,6 +181,8 @@ fTreeVariablePosdEdx(-1),
 fTreeVariableNegdEdx(-1),
 fTreeVariablePosInnerP(-1),
 fTreeVariableNegInnerP(-1),
+fTreeVariableNegTrackStatus(0),
+fTreeVariablePosTrackStatus(0),
 
 fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
@@ -240,6 +242,9 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
+fTreeCascVarNegTrackStatus(0), //!
+fTreeCascVarPosTrackStatus(0), //!
+fTreeCascVarBachTrackStatus(0), //!
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -376,6 +381,8 @@ fTreeVariablePosdEdx(-1),
 fTreeVariableNegdEdx(-1),
 fTreeVariablePosInnerP(-1),
 fTreeVariableNegInnerP(-1),
+fTreeVariableNegTrackStatus(0),
+fTreeVariablePosTrackStatus(0),
 
 fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
@@ -436,6 +443,9 @@ fTreeCascVarBachdEdx(-1),
 fTreeCascVarPosInnerP(-1),
 fTreeCascVarNegInnerP(-1),
 fTreeCascVarBachInnerP(-1),
+fTreeCascVarNegTrackStatus(0), //!
+fTreeCascVarPosTrackStatus(0), //!
+fTreeCascVarBachTrackStatus(0), //!
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -641,6 +651,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariableNegdEdx",&fTreeVariableNegdEdx,"fTreeVariableNegdEdx/F");
             fTreeV0->Branch("fTreeVariablePosInnerP",&fTreeVariablePosInnerP,"fTreeVariablePosInnerP/F");
             fTreeV0->Branch("fTreeVariableNegInnerP",&fTreeVariableNegInnerP,"fTreeVariableNegInnerP/F");
+            fTreeV0->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
+            fTreeV0->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
         }
         //-----------MC Exclusive info--------------------
         fTreeV0->Branch("fTreeVariablePtMother",&fTreeVariablePtMother,"fTreeVariablePtMother/F");
@@ -710,6 +722,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarPosInnerP",&fTreeCascVarPosInnerP,"fTreeCascVarPosInnerP/F");
             fTreeCascade->Branch("fTreeCascVarNegInnerP",&fTreeCascVarNegInnerP,"fTreeCascVarNegInnerP/F");
             fTreeCascade->Branch("fTreeCascVarBachInnerP",&fTreeCascVarBachInnerP,"fTreeCascVarBachInnerP/F");
+            fTreeCascade->Branch("fTreeCascVarNegTrackStatus",&fTreeCascVarNegTrackStatus,"fTreeCascVarNegTrackStatus/l");
+            fTreeCascade->Branch("fTreeCascVarPosTrackStatus",&fTreeCascVarPosTrackStatus,"fTreeCascVarPosTrackStatus/l");
+            fTreeCascade->Branch("fTreeCascVarBachTrackStatus",&fTreeCascVarBachTrackStatus,"fTreeCascVarBachTrackStatus/l");
         }
         //------------------------------------------------
         if ( fkDebugBump ){
@@ -1147,6 +1162,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
         if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
 
+        //Get status flags
+        fTreeVariablePosTrackStatus = pTrack->GetStatus();
+        fTreeVariableNegTrackStatus = nTrack->GetStatus();
 
         if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
 
@@ -1754,6 +1772,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             AliDebug(1, "Pb / Bach.   track has no TPCrefit ... continue!");
             continue;
         }
+        
+        //Get status flags
+        fTreeCascVarPosTrackStatus = pTrackXi->GetStatus();
+        fTreeCascVarNegTrackStatus = nTrackXi->GetStatus();
+        fTreeCascVarBachTrackStatus = bachTrackXi->GetStatus();
 
         // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
         if(lPosTPCClusters  < 70) {
