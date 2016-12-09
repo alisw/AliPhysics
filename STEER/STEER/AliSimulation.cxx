@@ -1175,6 +1175,13 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
       else { // generate according to real lumi
 	TGraph* lumi = AliLumiTools::GetLumiFromCTP();
 	if (!lumi) AliFatal("Failed to get lumi graph");
+	// redefine time stamps according to real luminosity start - end
+	int nbl = lumi->GetN();
+	if (nbl) {
+	  fTimeStart = lumi->GetX()[0];
+	  fTimeEnd   = lumi->GetX()[nbl-1];
+	  deltaT = fTimeEnd - fTimeStart;
+	}
 	int nb = 1+deltaT/60.;
 	TH1F hlumi("hlumi","",nb,fTimeStart,fTimeEnd);
 	for (int ib=1;ib<=nb;ib++) hlumi.SetBinContent(ib,TMath::Max(0.,lumi->Eval(hlumi.GetBinCenter(ib))));
