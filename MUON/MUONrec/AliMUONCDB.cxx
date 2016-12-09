@@ -226,7 +226,10 @@ void AliMUONCDB::CheckHV(Int_t runNumber, Int_t verbose)
 
   AliCDBManager::Instance()->SetRun(runNumber);
 
-  LoadMapping();
+ if (!CheckMapping())
+ {
+     LoadMapping();
+ }
 
   AliMUONCalibrationData::CreateHV(runNumber,0,patched,&messages);
 
