@@ -183,6 +183,8 @@ fTreeVariablePosInnerP(-1),
 fTreeVariableNegInnerP(-1),
 fTreeVariableNegTrackStatus(0),
 fTreeVariablePosTrackStatus(0),
+fTreeVariableNegDCAz(-1),
+fTreeVariablePosDCAz(-1),
 
 fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
@@ -245,6 +247,9 @@ fTreeCascVarBachInnerP(-1),
 fTreeCascVarNegTrackStatus(0), //!
 fTreeCascVarPosTrackStatus(0), //!
 fTreeCascVarBachTrackStatus(0), //!
+fTreeCascVarNegDCAz(-1),
+fTreeCascVarPosDCAz(-1),
+fTreeCascVarBachDCAz(-1),
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -383,6 +388,8 @@ fTreeVariablePosInnerP(-1),
 fTreeVariableNegInnerP(-1),
 fTreeVariableNegTrackStatus(0),
 fTreeVariablePosTrackStatus(0),
+fTreeVariableNegDCAz(-1),
+fTreeVariablePosDCAz(-1),
 
 fTreeVariableDistOverTotMom(0),
 fTreeVariableLeastNbrCrossedRows(0),
@@ -446,6 +453,9 @@ fTreeCascVarBachInnerP(-1),
 fTreeCascVarNegTrackStatus(0), //!
 fTreeCascVarPosTrackStatus(0), //!
 fTreeCascVarBachTrackStatus(0), //!
+fTreeCascVarNegDCAz(-1),
+fTreeCascVarPosDCAz(-1),
+fTreeCascVarBachDCAz(-1),
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -653,6 +663,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariableNegInnerP",&fTreeVariableNegInnerP,"fTreeVariableNegInnerP/F");
             fTreeV0->Branch("fTreeVariableNegTrackStatus",&fTreeVariableNegTrackStatus,"fTreeVariableNegTrackStatus/l");
             fTreeV0->Branch("fTreeVariablePosTrackStatus",&fTreeVariablePosTrackStatus,"fTreeVariablePosTrackStatus/l");
+            fTreeV0->Branch("fTreeVariableNegDCAz",&fTreeVariableNegDCAz,"fTreeVariableNegDCAz/F");
+            fTreeV0->Branch("fTreeVariablePosDCAz",&fTreeVariablePosDCAz,"fTreeVariablePosDCAz/F");
         }
         //-----------MC Exclusive info--------------------
         fTreeV0->Branch("fTreeVariablePtMother",&fTreeVariablePtMother,"fTreeVariablePtMother/F");
@@ -725,6 +737,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNegTrackStatus",&fTreeCascVarNegTrackStatus,"fTreeCascVarNegTrackStatus/l");
             fTreeCascade->Branch("fTreeCascVarPosTrackStatus",&fTreeCascVarPosTrackStatus,"fTreeCascVarPosTrackStatus/l");
             fTreeCascade->Branch("fTreeCascVarBachTrackStatus",&fTreeCascVarBachTrackStatus,"fTreeCascVarBachTrackStatus/l");
+            fTreeCascade->Branch("fTreeCascVarNegDCAz",&fTreeCascVarNegDCAz,"fTreeCascVarNegDCAz/F");
+            fTreeCascade->Branch("fTreeCascVarPosDCAz",&fTreeCascVarPosDCAz,"fTreeCascVarPosDCAz/F");
+            fTreeCascade->Branch("fTreeCascVarBachDCAz",&fTreeCascVarBachDCAz,"fTreeCascVarBachDCAz/F");
         }
         //------------------------------------------------
         if ( fkDebugBump ){
@@ -1165,6 +1180,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Get status flags
         fTreeVariablePosTrackStatus = pTrack->GetStatus();
         fTreeVariableNegTrackStatus = nTrack->GetStatus();
+        
+        fTreeVariablePosDCAz = GetDCAz(pTrack);
+        fTreeVariableNegDCAz = GetDCAz(nTrack);
 
         if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
 
@@ -1777,6 +1795,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarPosTrackStatus = pTrackXi->GetStatus();
         fTreeCascVarNegTrackStatus = nTrackXi->GetStatus();
         fTreeCascVarBachTrackStatus = bachTrackXi->GetStatus();
+        
+        fTreeCascVarPosDCAz = GetDCAz(pTrackXi);
+        fTreeCascVarNegDCAz = GetDCAz(nTrackXi);
+        fTreeCascVarBachDCAz = GetDCAz(bachTrackXi);
 
         // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
         if(lPosTPCClusters  < 70) {
@@ -2940,4 +2962,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         AddConfiguration(lCascadeResult[iconf]);
     
     cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
+}
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::GetDCAz(AliESDtrack *lTrack)
+//Encapsulation of DCAz calculation
+{
+    Float_t b[2];
+    Float_t bCov[3];
+    lTrack->GetImpactParameters(b,bCov);
+    if (bCov[0]<=0 || bCov[2]<=0) {
+        AliDebug(1, "Estimated b resolution lower or equal to zero!");
+        bCov[0]=0; bCov[2]=0;
+    }
+    Float_t dcaToVertexXY = b[0];
+    Float_t dcaToVertexZ = b[1];
+    
+    return dcaToVertexZ;
 }
