@@ -78,6 +78,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
 		void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 
+		void FixPzToMatchPDGInvMassPi0(AliAODConversionMother* particle);
+
 		// routines for neutral pion candidates from pure conversion
 		void ProcessNeutralPionCandidatesPureConversions();	
 		void ProcessTrueNeutralPionCandidatesPureConversions(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
@@ -169,11 +171,18 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH2F 							**fHistoMotherSameDiff1SameBackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
 //		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			// array of THnSparseF of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, Z, M
 
-        TH2F							**fHistoInvMassSubPi0;							// invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
-        TH2F 							**fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
-		TH2F 							**fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
-		TH2F 							**fHistoMotherSameSameDiff2BackInvMassSubPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
-		TH2F 							**fHistoMotherSameDiff1SameBackInvMassSubPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
+        TH2F							**fHistoMotherInvMassSubPi0;							// invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
+        TH2F 							**fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameSameDiff2BackInvMassSubPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1SameBackInvMassSubPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+
+		TH2F							**fHistoMotherInvMassFixedPzPi0;								// invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
+		TH2F 							**fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value
+		TH2F 							**fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value
+		TH2F 							**fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value
+		TH2F 							**fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value
+
 
         // angle distributions
         TH2F 							**fHistoAngleOmegaPiPlPiMi;                 // angle between combined Pi+ and Pi- and omega
@@ -248,7 +257,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 11);
+        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 12);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H
