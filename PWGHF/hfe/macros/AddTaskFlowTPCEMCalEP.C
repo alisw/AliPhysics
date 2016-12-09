@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Double_t AssPtCut, Int_t AssTPCnCut, Int_t ITSncut, Bool_t AssITSrefitCut, Int_t TPCnCut, Int_t period, Bool_t UseNewEP, Bool_t UseTender, TString ID="ContName", TString pass1, TString pass2)
+AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, Double_t AssPtCut, Int_t AssTPCnCut, Int_t ITSncut, Bool_t AssITSrefitCut, Int_t TPCnCut, Int_t period, Bool_t UseNewEP, Bool_t UseTender, TString ID="ContName", TString passV0, TString passTPC, Bool_t TimeCut)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -53,7 +53,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t SigmaITScut, Double_t SigmaTOFcu
     if(Is2015){
         
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
-        AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,UseTender,period,pass1,pass2);
+        AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,UseTender,period,passV0,passTPC,TimeCut);
         
         mgr->AddTask(taskMB);
         
@@ -76,9 +76,9 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t SigmaITScut, Double_t SigmaTOFcu
     if(!Is2015){
         gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/ConfigHFE_FLOW_TPCEMCal_EP.C");
         
-        AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,period);
-        AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,period);
-        AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,period);
+        AliAnalysisTaskFlowTPCEMCalEP *taskMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,UseTender,period,passV0,passTPC,TimeCut);
+        AliAnalysisTaskFlowTPCEMCalEP *taskcorrMB = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,UseTender,period,passV0,passTPC,TimeCut);
+        AliAnalysisTaskFlowTPCEMCalEP *taskTR = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,UseTender,period,passV0,passTPC,TimeCut);
         
         mgr->AddTask(taskcorrMB);
         mgr->AddTask(taskMB);
@@ -134,7 +134,7 @@ AliAnalysisTask *AddTaskFlowTPCEMCalEP(Double_t SigmaITScut, Double_t SigmaTOFcu
     
     if(MCthere){
         
-        AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,period);
+        AliAnalysisTaskFlowTPCEMCalEP *taskMC = ConfigHFE_FLOW_TPCEMCal_EP(MCthere,SigmaITScut,SigmaTOFcut,SigmaTPCcut,AssPtCut,AssTPCnCut,ITSncut,AssITSrefitCut,TPCnCut,UseNewEP,UseTender,period,passV0,passTPC,TimeCut);
         mgr->AddTask(taskMC);
         
         taskMC->SelectCollisionCandidates(AliVEvent::kMB);
