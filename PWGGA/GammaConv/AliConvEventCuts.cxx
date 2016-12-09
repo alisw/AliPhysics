@@ -1906,7 +1906,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
   weight                               = -1;
   fMaxPtJetMC                          = 0;
   
-  if (  fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
+  if (  fPeriodEnum != kLHC16h3 && fPeriodEnum != kLHC16h3b &&                                        // LHC15n Jet Jet MC's
+	fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
@@ -2239,7 +2240,8 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSecti
   AliAODMCHeader *cHeaderAOD       = 0x0;
   Bool_t headerFound           = kFALSE;
 
-  if (  fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
+  if (  fPeriodEnum != kLHC16h3 && fPeriodEnum != kLHC16h3b &&                                       // LHC15n Jet Jet MC's
+	fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
@@ -2310,7 +2312,8 @@ Float_t AliConvEventCuts::GetPtHard(AliVEvent *MCEvent){
   AliStack *fMCStack           = 0x0;
   TClonesArray *fMCStackAOD       = 0x0;
   
-  if (fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
+  if (fPeriodEnum != kLHC16h3 && fPeriodEnum != kLHC16h3b &&                                      // LHC15n Jet Jet MC's
+      fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
@@ -4186,6 +4189,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = k5TeV;
   } else if (periodName.CompareTo("LHC15l1b2") == 0){
     fPeriodEnum = kLHC15l1b2;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16h3") == 0){
+    fPeriodEnum = kLHC16h3;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16h3b") == 0){
+    fPeriodEnum = kLHC16h3b;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16h8a") == 0){
+    fPeriodEnum = kLHC16h8a;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16h8b") == 0){
+    fPeriodEnum = kLHC16h8b;
     fEnergyEnum = k5TeV;
   } else if (periodName.Contains("LHC15k1a1")){
     fPeriodEnum = kLHC15k1a1;
