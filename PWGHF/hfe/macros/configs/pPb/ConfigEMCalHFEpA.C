@@ -1,5 +1,5 @@
 
-AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
+AliAnalysisTaskEMCalHFEpA2* ConfigEMCalHFEpA(
 											
 
 Bool_t isMC=kFALSE, 
@@ -98,7 +98,7 @@ Bool_t isTOFdet 		= kFALSE
 
 ///_________________________________________________________________________________________________________________________
 ///Task config
-	AliAnalysisTaskEMCalHFEpA *task = new AliAnalysisTaskEMCalHFEpA(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
+	AliAnalysisTaskEMCalHFEpA2 *task = new AliAnalysisTaskEMCalHFEpA2(Form("HFECuts%d_%d_%d",triggerIndex,configIndex,centralityIndex));
 	printf("task ------------------------ %p\n ", task);
 	task->SetHFECuts(hfecuts);
 	task->SetCorrelationAnalysis(kFALSE);
@@ -269,7 +269,7 @@ Bool_t isTOFdet 		= kFALSE
 	if(centralityIndex==2) task->SetCentrality(40,60);
 	if(centralityIndex==3) task->SetCentrality(60,80);
 	if(centralityIndex==4) task->SetCentrality(80,100);
-		//if(centralityIndex==5) task->SetCentrality(0,100);
+	if(centralityIndex==5) task->SetCentrality(0,100);
 	
 	if(centralityIndex==6) task->SetCentrality(0,10);
 	if(centralityIndex==7) task->SetCentrality(10,20);
@@ -376,7 +376,7 @@ Bool_t isTOFdet 		= kFALSE
 			
 		}
 		
-		if(!isEMCal)params[0] = 0;
+		if(!isEMCal)params[0] = 0.09;
 	
 	}
 
@@ -409,6 +409,9 @@ Bool_t isTOFdet 		= kFALSE
 	}
 	else{
 		Double_t max=3.0;
+		if(!isEMCal){
+			Double_t max=3.18;
+		}
 		if(period =="e"||period =="f"){
 			
 			if(configIndex==200){
