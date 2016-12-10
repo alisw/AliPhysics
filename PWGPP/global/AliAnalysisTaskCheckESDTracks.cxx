@@ -544,6 +544,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   }
   fHistNEvents->Fill(1);
 
+  esd->InitMagneticField();
+
+
   Int_t ntracks = esd->GetNumberOfTracks();
   Int_t ntracklets = 0;
   Int_t ncl1 = 0;
@@ -557,6 +560,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   for (Int_t iTrack=0; iTrack < ntracks; iTrack++) {
     AliESDtrack * track = (AliESDtrack*)esd->GetTrack(iTrack);
     if (!track) continue;
+    track->SetESDEvent(esd);
     if(fTrCutsTPC->AcceptTrack(track)){
       ntracksTPCsel++;
       Int_t statusTrack=track->GetStatus();
@@ -597,7 +601,6 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
   fHistNtracksTPCselVsV0aftEvSel->Fill(vZEROampl,ntracksTPCsel);
   fHistNtracksSPDanyVsV0aftEvSel->Fill(vZEROampl,ntracksSPDany);
 
-  esd->InitMagneticField();
 
   const Int_t ntSize=33;
   Float_t xnt[ntSize];
