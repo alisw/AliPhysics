@@ -532,6 +532,29 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kTZEROstartTime] = event->EventTZEROStartTime();
   values[kTZEROpileup] = event->IsPileupTZERO();
   values[kTZEROsatellite] = event->IsSatteliteCollisionTZERO();  
+
+  values[kMultEstimatorOnlineV0M]    = event->MultEstimatorOnlineV0M();
+  values[kMultEstimatorOnlineV0A]    = event->MultEstimatorOnlineV0A();
+  values[kMultEstimatorOnlineV0C]    = event->MultEstimatorOnlineV0C();
+  values[kMultEstimatorADM]          = event->MultEstimatorADM();
+  values[kMultEstimatorADA]          = event->MultEstimatorADA();
+  values[kMultEstimatorADC]          = event->MultEstimatorADC();
+  values[kMultEstimatorSPDClusters]  = event->MultEstimatorSPDClusters();
+  values[kMultEstimatorSPDTracklets] = event->MultEstimatorSPDTracklets();
+  values[kMultEstimatorRefMult05]    = event->MultEstimatorRefMult05();
+  values[kMultEstimatorRefMult08]    = event->MultEstimatorRefMult08();
+
+  values[kMultEstimatorPercentileOnlineV0M]    = event->MultEstimatorPercentileOnlineV0M();
+  values[kMultEstimatorPercentileOnlineV0A]    = event->MultEstimatorPercentileOnlineV0A();
+  values[kMultEstimatorPercentileOnlineV0C]    = event->MultEstimatorPercentileOnlineV0C();
+  values[kMultEstimatorPercentileADM]          = event->MultEstimatorPercentileADM();
+  values[kMultEstimatorPercentileADA]          = event->MultEstimatorPercentileADA();
+  values[kMultEstimatorPercentileADC]          = event->MultEstimatorPercentileADC();
+  values[kMultEstimatorPercentileSPDClusters]  = event->MultEstimatorPercentileSPDClusters();
+  values[kMultEstimatorPercentileSPDTracklets] = event->MultEstimatorPercentileSPDTracklets();
+  values[kMultEstimatorPercentileRefMult05]    = event->MultEstimatorPercentileRefMult05();
+  values[kMultEstimatorPercentileRefMult08]    = event->MultEstimatorPercentileRefMult08();
+
 }
 
 //_________________________________________________________________
@@ -1412,7 +1435,54 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kTZEROstartTime] = "TZERO start time";             fgVariableUnits[kTZEROstartTime] = "ps";
   fgVariableNames[kTZEROpileup]    = "TZERO pileup ON";              fgVariableUnits[kTZEROpileup]    = "";
   fgVariableNames[kTZEROsatellite] = "TZERO satellite collision BC"; fgVariableUnits[kTZEROsatellite] = "";
-      
+
+  fgVariableNames[kMultEstimatorOnlineV0M]    = "Muliplicity estimator V0M";
+  fgVariableNames[kMultEstimatorOnlineV0A]    = "Muliplicity estimator V0A";
+  fgVariableNames[kMultEstimatorOnlineV0C]    = "Muliplicity estimator V0C";
+  fgVariableNames[kMultEstimatorADM]          = "Muliplicity estimator ADM ";
+  fgVariableNames[kMultEstimatorADA]          = "Muliplicity estimator ADA";
+  fgVariableNames[kMultEstimatorADC]          = "Muliplicity estimator ADC";
+  fgVariableNames[kMultEstimatorSPDClusters]  = "Muliplicity estimator SPDclusters";
+  fgVariableNames[kMultEstimatorSPDTracklets] = "Muliplicity estimator SPDtracklets";
+  fgVariableNames[kMultEstimatorRefMult05]    = "Muliplicity estimator RefMult05";
+  fgVariableNames[kMultEstimatorRefMult08]    = "Muliplicity estimator RefMult08";
+
+  fgVariableUnits[kMultEstimatorOnlineV0M]    = "";
+  fgVariableUnits[kMultEstimatorOnlineV0A]    = "";
+  fgVariableUnits[kMultEstimatorOnlineV0C]    = "";
+  fgVariableUnits[kMultEstimatorADM]          = "";
+  fgVariableUnits[kMultEstimatorADA]          = "";
+  fgVariableUnits[kMultEstimatorADC]          = "";
+  fgVariableUnits[kMultEstimatorSPDClusters]  = "";
+  fgVariableUnits[kMultEstimatorSPDTracklets] = "";
+  fgVariableUnits[kMultEstimatorRefMult05]    = "";
+  fgVariableUnits[kMultEstimatorRefMult08]    = "";
+
+
+  fgVariableNames[kMultEstimatorPercentileOnlineV0M]    = "Muliplicity estimator percentile V0M";
+  fgVariableNames[kMultEstimatorPercentileOnlineV0A]    = "Muliplicity estimator percentile V0A";
+  fgVariableNames[kMultEstimatorPercentileOnlineV0C]    = "Muliplicity estimator percentile V0C";
+  fgVariableNames[kMultEstimatorPercentileADM]          = "Muliplicity estimator percentile ADM ";
+  fgVariableNames[kMultEstimatorPercentileADA]          = "Muliplicity estimator percentile ADA";
+  fgVariableNames[kMultEstimatorPercentileADC]          = "Muliplicity estimator percentile ADC";
+  fgVariableNames[kMultEstimatorPercentileSPDClusters]  = "Muliplicity estimator percentile SPDclusters";
+  fgVariableNames[kMultEstimatorPercentileSPDTracklets] = "Muliplicity estimator percentile SPDtracklets";
+  fgVariableNames[kMultEstimatorPercentileRefMult05]    = "Muliplicity estimator percentile RefMult05";
+  fgVariableNames[kMultEstimatorPercentileRefMult08]    = "Muliplicity estimator percentile RefMult08";
+
+  fgVariableUnits[kMultEstimatorPercentileOnlineV0M]    = "\%";
+  fgVariableUnits[kMultEstimatorPercentileOnlineV0A]    = "\%";
+  fgVariableUnits[kMultEstimatorPercentileOnlineV0C]    = "\%";
+  fgVariableUnits[kMultEstimatorPercentileADM]          = "\%";
+  fgVariableUnits[kMultEstimatorPercentileADA]          = "\%";
+  fgVariableUnits[kMultEstimatorPercentileADC]          = "\%";
+  fgVariableUnits[kMultEstimatorPercentileSPDClusters]  = "\%";
+  fgVariableUnits[kMultEstimatorPercentileSPDTracklets] = "\%";
+  fgVariableUnits[kMultEstimatorPercentileRefMult05]    = "\%";
+  fgVariableUnits[kMultEstimatorPercentileRefMult08]    = "\%";
+
+
+
   TString vzeroSideNames[3] = {"A","C","AC"};
   for(Int_t iHarmonic=0;iHarmonic<6;++iHarmonic) {
     for(Int_t iSide=0;iSide<3;++iSide) {

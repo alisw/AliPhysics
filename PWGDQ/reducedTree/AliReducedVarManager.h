@@ -318,6 +318,27 @@ class AliReducedVarManager : public TObject {
     kTZEROstartTime,                           // TZERO event start time
     kTZEROpileup,                              // TZERO pileup flag
     kTZEROsatellite,                           // TZERO satellite flag
+    // Multiplicity estimators
+    kMultEstimatorOnlineV0M,
+    kMultEstimatorOnlineV0A,
+    kMultEstimatorOnlineV0C,
+    kMultEstimatorADM,
+    kMultEstimatorADA,
+    kMultEstimatorADC,
+    kMultEstimatorSPDClusters,
+    kMultEstimatorSPDTracklets,
+    kMultEstimatorRefMult05,
+    kMultEstimatorRefMult08,
+    kMultEstimatorPercentileOnlineV0M,
+    kMultEstimatorPercentileOnlineV0A,
+    kMultEstimatorPercentileOnlineV0C,
+    kMultEstimatorPercentileADM,
+    kMultEstimatorPercentileADA,
+    kMultEstimatorPercentileADC,
+    kMultEstimatorPercentileSPDClusters,
+    kMultEstimatorPercentileSPDTracklets,
+    kMultEstimatorPercentileRefMult05,
+    kMultEstimatorPercentileRefMult08,
     kNEventVars,                               // number of event variables  
     // Particle variables --------------------------------------
     // Common pair/track variables
