@@ -252,6 +252,8 @@ class AliReducedVarManager : public TObject {
     kNtracksEventPlane, // number of tracks used for event plane                
     kNCaloClusters,     // number of calorimeter clusters
     kSPDntracklets,     // SPD number of tracklets in |eta|<1.0                 
+    kSPDntracklets08,     // SPD number of tracklets in |eta|<0.8
+    kSPDntracklets16,     // SPD number of tracklets in |eta|<1.6
     kSPDntrackletsCorr, // SPD number of tracklets in |eta|<1.0                 
     kSPDntrackletsEta,  // SPD number of tracklets in -1.6+0.1*i < eta < -1.6+0.1*(i+1)
     kSPDFiredChips=kSPDntrackletsEta+32,   // SPD fired chips in first and second layer
