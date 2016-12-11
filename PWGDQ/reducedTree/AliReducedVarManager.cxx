@@ -261,6 +261,17 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kSPDntrackletsCorr]){
     fgUsedVars[kSPDntracklets] = kTRUE;
   }
+  if(fgUsedVars[kMassDcaPtCorr] ) {
+    fgUsedVars[kMass]          = kTRUE;
+    fgUsedVars[kPt]            = kTRUE;
+    fgUsedVars[kPairDcaXYSqrt] = kTRUE;
+  }
+  if(fgUsedVars[kOpAngDcaPtCorr] ) {
+    fgUsedVars[kPairOpeningAngle] = kTRUE;
+    fgUsedVars[kOneOverSqrtPt]    = kTRUE;
+    fgUsedVars[kPt]               = kTRUE;
+    fgUsedVars[kPairDcaXYSqrt]    = kTRUE;
+  }
 }
 
 //__________________________________________________________________
@@ -732,6 +743,9 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   // Fill base track information
   if(fgUsedVars[kPt])        values[kPt]        = p->Pt();
   if(fgUsedVars[kPtSquared]) values[kPtSquared] = values[kPt]*values[kPt];
+  if(fgUsedVars[kOneOverSqrtPt]) {
+    values[kOneOverSqrtPt] = values[kPt] > 0. ? 1./TMath::Sqrt(values[kPt]) : 999.;
+  }
   if(fgUsedVars[kP])         values[kP]         = p->P();
   if(fgUsedVars[kPx])        values[kPx]        = p->Px();
   if(fgUsedVars[kPy])        values[kPy]        = p->Py();
@@ -1207,6 +1221,40 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
     Double_t cosPhiV = wx*ax + wy*ay;
     Double_t phiv = TMath::ACos(cosPhiV);
     values[kPairPhiV] = phiv;
+  }
+
+  if( fgUsedVars[kPairOpeningAngle] ){
+    TVector3 v1(t1->Px(), t1->Py(), t1->Pz());
+    TVector3 v2(t2->Px(), t2->Py(), t2->Pz());
+    values[kPairOpeningAngle] = v1.Angle(v2);
+  }
+
+  if(  t1->IsA()==TRACK::Class() && t2->IsA()==TRACK::Class()     ) {
+    TRACK* ti1=(TRACK*)t1;
+    TRACK* ti2=(TRACK*)t2;
+
+    if( fgUsedVars[kPairDca]   ) values[kPairDca]   = TMath::Sqrt(ti1->DCAxy() * ti1->DCAxy() + ti2->DCAxy() * ti2->DCAxy() + ti1->DCAz() * ti1->DCAz() + ti2->DCAz() * ti2->DCAz());
+    if( fgUsedVars[kPairDcaXY] ) values[kPairDcaXY] = TMath::Sqrt( ti1->DCAxy() * ti1->DCAxy() + ti2->DCAxy() * ti2->DCAxy() );
+    if( fgUsedVars[kPairDcaZ]  ) values[kPairDcaZ]  = TMath::Sqrt(ti1->DCAz() * ti1->DCAz() + ti2->DCAz() * ti2->DCAz() );
+
+    if( fgUsedVars[kPairDcaSqrt]   ) values[kPairDcaSqrt]   = TMath::Power(ti1->DCAxy() * ti1->DCAxy() + ti2->DCAxy() * ti2->DCAxy() + ti1->DCAz() * ti1->DCAz() + ti2->DCAz() * ti2->DCAz(), 0.25);
+    if( fgUsedVars[kPairDcaXYSqrt] ) values[kPairDcaXYSqrt] = TMath::Power( ti1->DCAxy() * ti1->DCAxy() + ti2->DCAxy() * ti2->DCAxy(), 0.25);
+    if( fgUsedVars[kPairDcaZSqrt]  ) values[kPairDcaZSqrt]  = TMath::Power(ti1->DCAz() * ti1->DCAz() + ti2->DCAz() * ti2->DCAz(), 0.25);
+
+    if( fgUsedVars[kOpAngDcaPtCorr] ) {
+      Float_t a = -1.56316e-03;
+      Float_t b =  1.22515e-02;
+      Float_t c =  3.39455e-03;
+      Float_t d =  1.00681e-01;
+      values[kOpAngDcaPtCorr] = values[kPairOpeningAngle] - a - b * values[kPairDcaXYSqrt] - c * values[kOneOverSqrtPt] -  d * values[kPairDcaXYSqrt]  * values[kOneOverSqrtPt];
+    }
+    if( fgUsedVars[kMassDcaPtCorr] ) {
+      Float_t a =  1.87774e-03;
+      Float_t b =  4.53156e-02;
+      Float_t c = -9.72947e-05;
+      Float_t d =  1.83003e-02;
+      values[kMassDcaPtCorr] = values[kMass] - a - b * values[kPairDcaXYSqrt] - c * values[kPt] -  d * values[kPairDcaXYSqrt]  * values[kPt];
+    }
   }
 
 }
@@ -1762,7 +1810,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableNames[kCosNPhi+iHarmonic] = Form("cos(%d#varphi)",iHarmonic+1); fgVariableUnits[kCosNPhi+iHarmonic] = "";
     fgVariableNames[kSinNPhi+iHarmonic] = Form("sin(%d#varphi)",iHarmonic+1); fgVariableUnits[kSinNPhi+iHarmonic] = "";
   }
-  fgVariableNames[kPtSquared] = "p_{T}^{2}"; fgVariableUnits[kPtSquared]   = "GeV^{2}/c^{2}";
+  fgVariableNames[kPtSquared]     = "p_{T}^{2}";     fgVariableUnits[kPtSquared]     = "GeV^{2}/c^{2}";
+  fgVariableNames[kOneOverSqrtPt] = "1/sqrt(p_{T})"; fgVariableUnits[kOneOverSqrtPt] = "GeV^{-1/2}";
   fgVariableNames[kMass]      = "m";         fgVariableUnits[kMass]        = "GeV/c^{2}";
   fgVariableNames[kRap]       = "y";         fgVariableUnits[kRap]         = "";  
   
@@ -1788,6 +1837,14 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPin]               = "p_{IN}";                       fgVariableUnits[kPin] = "GeV/c";
   fgVariableNames[kDcaXY]             = "DCA_{xy}";                     fgVariableUnits[kDcaXY] = "cm.";  
   fgVariableNames[kDcaZ]              = "DCA_{z}";                      fgVariableUnits[kDcaZ] = "cm.";  
+  fgVariableNames[kPairDca]           = "DCA_{pair}";                   fgVariableUnits[kPairDca] = "cm";
+  fgVariableNames[kPairDcaXY]         = "DCA_{xy,pair}";                fgVariableUnits[kPairDcaXY] = "cm";
+  fgVariableNames[kPairDcaZ]          = "DCA_{z,pair}";                 fgVariableUnits[kPairDcaZ] = "cm";
+  fgVariableNames[kPairDcaSqrt]       = "DCA^{1/2}_{pair}";             fgVariableUnits[kPairDcaSqrt]   = "cm^{1/2}";
+  fgVariableNames[kPairDcaXYSqrt]     = "DCA^{1/2}_{xy,pair}";          fgVariableUnits[kPairDcaXYSqrt] = "cm^{1/2}";
+  fgVariableNames[kPairDcaZSqrt]      = "DCA^{1/2}_{z,pair}";           fgVariableUnits[kPairDcaZSqrt]   = "cm^{1/2}";
+  fgVariableNames[kMassDcaPtCorr]     = "DCA-, p_{T}-corrected mass";           fgVariableUnits[kMassDcaPtCorr]  = "GeV/c^{2}";
+  fgVariableNames[kOpAngDcaPtCorr]    = "DCA-, p_{T}-corrected opening angle";  fgVariableUnits[kOpAngDcaPtCorr] = "rad.";
   fgVariableNames[kTrackLength]       = "Track length";                 fgVariableUnits[kTrackLength] = "cm.";
   fgVariableNames[kChi2TPCConstrainedVsGlobal] = "#chi^{2} TPC constrained vs global"; fgVariableUnits[kChi2TPCConstrainedVsGlobal] = "";
   fgVariableNames[kMassUsedForTracking] = "Mass used for tracking"; fgVariableUnits[kMassUsedForTracking] = "GeV/c^{2}";
