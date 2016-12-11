@@ -1040,7 +1040,9 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
       values[kMass] = TMath::Sqrt(values[kMass]);
     p.SetMass(values[kMass]);
   }
-  
+
+  if(fgUsedVars[kRap]) values[kRap] = p.Rapidity();
+
   values[kMassV0]   = -999.0;
   values[kMassV0+1] = -999.0;
   values[kMassV0+2] = -999.0;
@@ -1059,6 +1061,117 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
      TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
      values[kDMA]=TMath::Sqrt((ti1->HelixX()-ti2->HelixX())*(ti1->HelixX()-ti2->HelixX())+(ti1->HelixY()-ti2->HelixY())*(ti1->HelixY()-ti2->HelixY()))-ti1->HelixR()-ti2->HelixR();   
   }
+   if( fgUsedVars[kPairPhiV] ){
+    // implementation taken from AliDielectronPair.cxx
+    Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+    Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+
+    if (t1->Charge()*t2->Charge() > 0.) { // Like Sign
+      if(values[kL3Polarity]<0){ // inverted behaviour
+        if(t1->Charge()>0){
+          px1 = t1->Px();   py1 = t1->Py();   pz1 = t1->Pz();
+          px2 = t2->Px();   py2 = t2->Py();   pz2 = t2->Pz();
+        }else{
+          px1 = t2->Px();   py1 = t2->Py();   pz1 = t2->Pz();
+          px2 = t1->Px();   py2 = t1->Py();   pz2 = t1->Pz();
+        }
+      }else{
+        if(t1->Charge()>0){
+          px1 = t2->Px();   py1 = t2->Py();   pz1 = t2->Pz();
+          px2 = t1->Px();   py2 = t1->Py();   pz2 = t1->Pz();
+        }else{
+          px1 = t1->Px();   py1 = t1->Py();   pz1 = t1->Pz();
+          px2 = t2->Px();   py2 = t2->Py();   pz2 = t2->Pz();
+        }
+      }
+    }
+    else { // Unlike Sign
+      if(values[kL3Polarity]>0){ // regular behaviour
+        if(t1->Charge()>0){
+          px1 = t1->Px();
+          py1 = t1->Py();
+          pz1 = t1->Pz();
+
+          px2 = t2->Px();
+          py2 = t2->Py();
+          pz2 = t2->Pz();
+        }else{
+          px1 = t2->Px();
+          py1 = t2->Py();
+          pz1 = t2->Pz();
+
+          px2 = t1->Px();
+          py2 = t1->Py();
+          pz2 = t1->Pz();
+        }
+      }else{
+        if(t1->Charge()>0){
+          px1 = t2->Px();
+          py1 = t2->Py();
+          pz1 = t2->Pz();
+
+          px2 = t1->Px();
+          py2 = t1->Py();
+          pz2 = t1->Pz();
+        }else{
+          px1 = t1->Px();
+          py1 = t1->Py();
+          pz1 = t1->Pz();
+
+          px2 = t2->Px();
+          py2 = t2->Py();
+          pz2 = t2->Pz();
+        }
+      }
+    }
+
+    Double_t px = px1+px2;
+    Double_t py = py1+py2;
+    Double_t pz = pz1+pz2;
+    Double_t dppair = TMath::Sqrt(px*px+py*py+pz*pz);
+
+    //unit vector of (pep+pem)
+    Double_t pl = dppair;
+    Double_t ux = px/pl;
+    Double_t uy = py/pl;
+    Double_t uz = pz/pl;
+    Double_t ax = uy/TMath::Sqrt(ux*ux+uy*uy);
+    Double_t ay = -ux/TMath::Sqrt(ux*ux+uy*uy);
+
+    //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by definition.
+    //Double_t ptep = iep->Px()*ax + iep->Py()*ay;
+    //Double_t ptem = iem->Px()*ax + iem->Py()*ay;
+
+    Double_t pxep = px1;
+    Double_t pyep = py1;
+    Double_t pzep = pz1;
+    Double_t pxem = px2;
+    Double_t pyem = py2;
+    Double_t pzem = pz2;
+
+    //vector product of pep X pem
+    Double_t vpx = pyep*pzem - pzep*pyem;
+    Double_t vpy = pzep*pxem - pxep*pzem;
+    Double_t vpz = pxep*pyem - pyep*pxem;
+    Double_t vp = sqrt(vpx*vpx+vpy*vpy+vpz*vpz);
+
+    //unit vector of pep X pem
+    Double_t vx = vpx/vp;
+    Double_t vy = vpy/vp;
+    Double_t vz = vpz/vp;
+
+    //The third axis defined by vector product (ux,uy,uz)X(vx,vy,vz)
+    Double_t wx = uy*vz - uz*vy;
+    Double_t wy = uz*vx - ux*vz;
+    // by construction, (wx,wy,wz) must be a unit vector.
+    // measure angle between (wx,wy,wz) and (ax,ay,0). The angle between them
+    // should be small if the pair is conversion
+    // this function then returns values close to pi!
+    Double_t cosPhiV = wx*ax + wy*ay;
+    Double_t phiv = TMath::ACos(cosPhiV);
+    values[kPairPhiV] = phiv;
+  }
+
 }
 
 
@@ -1625,7 +1738,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairPhiCS]         = "#varphi^{*}_{CS}";      fgVariableUnits[kPairPhiCS]         = "rad.";  
   fgVariableNames[kPairThetaHE]       = "cos(#theta^{*}_{HE})";  fgVariableUnits[kPairThetaHE]       = "";  
   fgVariableNames[kPairPhiHE]         = "#varphi^{*}_{HE}";      fgVariableUnits[kPairPhiHE]         = "rad.";
-  
+  fgVariableNames[kPairPhiV]         = "#varphi^{*}_{v}";        fgVariableUnits[kPairPhiV]         = "rad.";
+
   fgVariableNames[kPtTPC]             = "p_{T}^{TPC}";                  fgVariableUnits[kPtTPC] = "GeV/c";
   fgVariableNames[kPhiTPC]            = "#varphi^{TPC}";                fgVariableUnits[kPhiTPC] = "rad.";
   fgVariableNames[kEtaTPC]            = "#eta^{TPC}";                   fgVariableUnits[kEtaTPC] = "";
