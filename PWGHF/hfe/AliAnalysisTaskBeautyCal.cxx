@@ -1158,6 +1158,19 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Double_t eop = -1.0;
       Double_t m02 = -99999,m20 = -99999,sqm02m20=-99999.0;
       if(track->P()>0)eop = clustMatchE/track->P();
+      //cout << "eop org = " << eop << endl;
+      if(fMCarray)  // E/p MC mean shift correction
+        {
+         if(fUseTender)
+           { 
+            eop += 0.036; 
+           }
+         else
+           {
+            eop += 0.03; 
+           } 
+        }
+      //cout << "eop corr = " << eop << endl;
       m02 =clustMatch->GetM02();
       m20 =clustMatch->GetM20();
       sqm02m20 = sqrt(pow(m02,2)+pow(m20,2));
