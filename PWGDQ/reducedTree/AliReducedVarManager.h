@@ -358,6 +358,7 @@ class AliReducedVarManager : public TObject {
     kCosNPhi,   
     kSinNPhi = kCosNPhi+6,
     kPtSquared = kSinNPhi+6,
+    kOneOverSqrtPt,                   // one over square root of pT
     kMass,
     kRap,
     kCharge,
@@ -384,6 +385,14 @@ class AliReducedVarManager : public TObject {
     kPairQualityFlag,
     kDMA,                        // Distance of minimal approach
     kPairPhiV,                   // angle between pair plane and magnetic field
+    kPairDca,                    // pair DCA: sqare root of quadratic sum of daughter DCAs
+    kPairDcaXY,
+    kPairDcaZ,
+    kPairDcaSqrt,                // square root of pair DCA
+    kPairDcaXYSqrt,
+    kPairDcaZSqrt,
+    kMassDcaPtCorr,             // invariant mass, corrected for DCA and pT effects
+    kOpAngDcaPtCorr,            // opening angle, corrected for DCA and pT effects
     // Track-only variables -------------------------------------
     kPtTPC,     
     kPhiTPC,    
