@@ -522,6 +522,7 @@ class AliReducedVarManager : public TObject {
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   static void SetRunNumbers( TString runNumbers );
+  static void SetTrackletsProfile( TProfile * profileTracklets );
   
  private:
   static Int_t     fgCurrentRunNumber;               // current run number
@@ -555,7 +556,9 @@ class AliReducedVarManager : public TObject {
   static TH1I* fgRunTimeEnd;                  // run stop time, GRP/GRP/Data::GetTimeEnd()
   static std::vector<Int_t> fgRunNumbers;     // vector with run numbers (for histograms vs. run number)
   static Int_t fgRunID;                       // run ID
-  
+  static TProfile* fgAvgSpdTrackletsVertex; // average number of SPD tracklets vs. z-vertex
+  static Double_t fgRefMult;                  // reference multiplicity for z-vertex correction
+
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
