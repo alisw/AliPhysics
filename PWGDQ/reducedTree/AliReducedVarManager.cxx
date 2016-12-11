@@ -249,6 +249,9 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kNTracksITSoutVsSPDtracklets] || fgUsedVars[kNTracksTPCoutVsSPDtracklets] ||
      fgUsedVars[kNTracksTOFoutVsSPDtracklets] || fgUsedVars[kNTracksTRDoutVsSPDtracklets])
      fgUsedVars[kSPDntracklets] = kTRUE;
+  if(fgUsedVars[kPairPhiV]){
+    fgUsedVars[kL3Polarity] = kTRUE;
+  }
 }
 
 //__________________________________________________________________
