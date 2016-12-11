@@ -342,6 +342,8 @@ class AliReducedVarManager : public TObject {
     kMultEstimatorPercentileSPDTracklets,
     kMultEstimatorPercentileRefMult05,
     kMultEstimatorPercentileRefMult08,
+    kINT7Triggered,
+    kHighMultV0Triggered,
     kNEventVars,                               // number of event variables  
     // Particle variables --------------------------------------
     // Common pair/track variables

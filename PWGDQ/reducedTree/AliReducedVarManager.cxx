@@ -329,6 +329,8 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     values[kTimeRelativeSORfraction] = (event->TimeStamp() - values[kRunTimeStart]) / (values[kRunTimeEnd] - values[kRunTimeStart]);
   values[kEventType]            = event->EventType();
   values[kTriggerMask]          = event->TriggerMask();
+  values[kINT7Triggered]        = event->TriggerMask() & kINT7 ?1:0;
+  values[kHighMultV0Triggered]  = event->TriggerMask() & kHighMultV0 ?1:0;
   values[kIsPhysicsSelection]   = (event->IsPhysicsSelection() ? 1.0 : 0.0);
   values[kIsSPDPileup]          = event->IsSPDPileup();
   values[kIsSPDPileupMultBins]  = event->IsSPDPileupMultBins();
@@ -1633,6 +1635,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableUnits[kMultEstimatorPercentileRefMult08]    = "\%";
 
 
+  fgVariableNames[kINT7Triggered]       = "event was triggered with INT7";       fgVariableUnits[kINT7Triggered]       = "";
+  fgVariableNames[kHighMultV0Triggered] = "event was triggered with HighMultV0"; fgVariableUnits[kHighMultV0Triggered] = "";
 
   TString vzeroSideNames[3] = {"A","C","AC"};
   for(Int_t iHarmonic=0;iHarmonic<6;++iHarmonic) {
