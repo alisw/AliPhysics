@@ -378,6 +378,7 @@ class AliReducedVarManager : public TObject {
     kPairPhiHE,
     kPairQualityFlag,
     kDMA,                        // Distance of minimal approach
+    kPairPhiV,                   // angle between pair plane and magnetic field
     // Track-only variables -------------------------------------
     kPtTPC,     
     kPhiTPC,    
