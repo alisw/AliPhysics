@@ -169,6 +169,7 @@ class AliReducedVarManager : public TObject {
     kL1TriggerInput,    // L1 trigger input
     kL2TriggerInput,    // L2 trigger input
     kRunNo,             // run number         
+    kRunID,             // variable for easy filling of histograms vs. run number, without empty bins
     kBeamEnergy,        // LHC beam energy
     kDetectorMask,      // detector mask
     kNumberOfDetectors, // number of active detectors
@@ -520,6 +521,7 @@ class AliReducedVarManager : public TObject {
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
+  static void SetRunNumbers( TString runNumbers );
   
  private:
   static Int_t     fgCurrentRunNumber;               // current run number
@@ -551,11 +553,13 @@ class AliReducedVarManager : public TObject {
   static TH1I* fgRunL3Polarity;                // L3 magnet polarity, GRP/GRP/Data::GetL3Polarity()
   static TH1I* fgRunTimeStart;                // run start time, GRP/GRP/Data::GetTimeStart()
   static TH1I* fgRunTimeEnd;                  // run stop time, GRP/GRP/Data::GetTimeEnd()
+  static std::vector<Int_t> fgRunNumbers;     // vector with run numbers (for histograms vs. run number)
+  static Int_t fgRunID;                       // run ID
   
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager,1);
+  ClassDef(AliReducedVarManager,2);
 };
 
 #endif

@@ -118,6 +118,8 @@ TH1I* AliReducedVarManager::fgRunDipolePolarity = 0x0;
 TH1I* AliReducedVarManager::fgRunL3Polarity = 0x0;
 TH1I* AliReducedVarManager::fgRunTimeStart = 0x0;
 TH1I* AliReducedVarManager::fgRunTimeEnd = 0x0;
+std::vector<Int_t>  AliReducedVarManager::fgRunNumbers;
+Int_t AliReducedVarManager::fgRunID = -1;
 
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
@@ -269,6 +271,12 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   //
   // Basic event information
   values[kRunNo]                   = baseEvent->RunNo();
+  if(fgUsedVars[kRunID]){
+    if( fgRunID < 0 ){
+      for( fgRunID = 0; fgRunNumbers[ fgRunID ] != values[kRunNo] && fgRunID< fgRunNumbers.size() ; ++fgRunID );
+    }
+    values[kRunID] = fgRunID;
+  }
   values[kVtxX]                      = baseEvent->Vertex(0);
   values[kVtxY]                       = baseEvent->Vertex(1);
   values[kVtxZ]                      = baseEvent->Vertex(2);
@@ -1408,6 +1416,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kL1TriggerInput]       = "L1 trigger inputs";               fgVariableUnits[kL1TriggerInput]       = "";
   fgVariableNames[kL2TriggerInput]       = "L2 trigger inputs";               fgVariableUnits[kL2TriggerInput]       = "";
   fgVariableNames[kRunNo]                = "Run number";                      fgVariableUnits[kRunNo]                = "";
+  fgVariableNames[kRunID]                = "Run number";                      fgVariableUnits[kRunID]                = "";
   fgVariableNames[kLHCFillNumber]        = "LHC fill number";                 fgVariableUnits[kLHCFillNumber]        = ""; 
   fgVariableNames[kBeamEnergy]           = "Beam energy";                     fgVariableUnits[kBeamEnergy]           = "GeV";
   fgVariableNames[kDetectorMask]         = "Detector mask";                   fgVariableUnits[kDetectorMask]         = "";
@@ -1944,4 +1953,14 @@ void AliReducedVarManager::SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity
       fgRunTimeEnd = (TH1I*)timeStop->Clone("AliReducedVarManager_TimeEnd");
       fgRunTimeEnd->SetDirectory(0x0);
    }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetRunNumbers( TString runNumbers ){
+  TObjArray* runNumbersArr = runNumbers.Tokenize(";");
+  runNumbersArr->SetOwner();
+  for( Int_t iRun=0; iRun < runNumbersArr->GetEntries(); ++iRun){
+    TString runNumberString = runNumbersArr->At(iRun)->GetName();
+    fgRunNumbers.push_back( runNumberString.Atoi() );
+  }
 }
