@@ -80,7 +80,7 @@ void CalculateMathcingEfficiency(TString inFileNameData,
     Float_t Pt[nptbins]    = {0.1,1.2,1.95,2.9,4.,5,6.2,7.,8.,8.6,9.6,10.6,11.8,13.09,14.55,16.2};
     Float_t array[nptbins] = {0.5,1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.};
     
-    int species[4] = {-1,2,1,0};
+    int species[4] = {-1,99,1,0};//data, mcall(prim+sec), prim, sec
     int colors[4]  = {1,2,4,3};
     
     double err[nptbins][4];
@@ -129,7 +129,7 @@ void CalculateMathcingEfficiency(TString inFileNameData,
                 delete fitFunc[is];
             }
             fitFunc[is] = new TF1(Form("fitFunc%d",is), "pol0",array[pt], array[pt+1]);
-            hITSTPCtracks[is]->Fit(fitFunc[is], "R W");
+            hITSTPCtracks[is]->Fit(fitFunc[is], "0 R W");
             coeff[pt][is]  = TMath::Abs(fitFunc[is]->GetParameter(0));
         }
         
@@ -161,8 +161,8 @@ void CalculateMathcingEfficiency(TString inFileNameData,
         f3.close();
         f4.close();
         
-        ofstream f5(Form("MatchEff_MCsec%s.txt",period.Data()));
-        ofstream f6(Form("MatchEff_MCsec_err%s.txt",period.Data()));
+        ofstream f5(Form("MatchEff_MCprim%s.txt",period.Data()));
+        ofstream f6(Form("MatchEff_MCprim_err%s.txt",period.Data()));
         if (f5.is_open())
             for(Int_t i=0;i<nptbins;i++){
                 f5 << Form("%f\n",coeff[i][2]);
@@ -171,12 +171,12 @@ void CalculateMathcingEfficiency(TString inFileNameData,
         f5.close();
         f6.close();
         
-        ofstream f7(Form("MatchEff_MCprim%s.txt",period.Data()));
-        ofstream f8(Form("MatchEff_MCprim_err%s.txt",period.Data()));
+        ofstream f7(Form("MatchEff_MCsec%s.txt",period.Data()));
+        ofstream f8(Form("MatchEff_MCsec_err%s.txt",period.Data()));
         if (f7.is_open())
             for(Int_t i=0;i<nptbins;i++){
-                f7 << Form("%f\n",coeff[i][1]);
-                f8 << Form("%f\n",err[i][1]);
+                f7 << Form("%f\n",coeff[i][3]);
+                f8 << Form("%f\n",err[i][3]);
             }
         f7.close();
         f8.close();
@@ -223,8 +223,8 @@ TH1D *GetITSTPCMatchingHisto(TString inFileNameData,
     else {Printf("particleType not yet impelemented! Please provide it first!"); return 0x0;}
     
     histITSTPC->GetAxis(4)->SetRangeUser(xmin,xmax);
-    if(particleType!=2)histITSTPC->GetAxis(5)->SetRangeUser(species-0.5,species+0.5);
-    else histITSTPC->GetAxis(5)->SetRangeUser(-0.5,1.5);
+    histITSTPC->GetAxis(5)->SetRangeUser(species-0.5,species+0.5);
+ 
     
     //ptbins
     histITSTPC->GetAxis(1)->SetRangeUser(pt,pt1);
