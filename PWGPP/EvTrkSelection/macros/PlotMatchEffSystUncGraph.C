@@ -24,13 +24,15 @@ void PlotMatchEffSystUncGraph(){
     Double_t TPCOnly[14];
     
     Double_t erD[14];
-    //    Double_t erP[14];
-    //    Double_t erS[14];
+    Double_t erP[14];
+    Double_t erS[14];
     Double_t erfP[14];
     Double_t erTPC[14];
     
     ifstream primaries("MatchEff_MCprim_lowIR.txt",ios::in);
+    ifstream primErr("MatchEff_MCprim_err_lowIR.txt",ios::in);
     ifstream secondaries("MatchEff_MCsec_lowIR.txt",ios::in);
+    ifstream secErr("MatchEff_MCsec_err_lowIR.txt",ios::in);
     ifstream inclusive("MatchEff_MCall_lowIR.txt",ios::in);
     ifstream data("MatchEff_data_lowIR.txt",ios::in);
     ifstream dataErr("MatchEff_data_err_lowIR.txt",ios::in);
@@ -44,7 +46,9 @@ void PlotMatchEffSystUncGraph(){
         for(Int_t i=0;i<14;i++){
             
             primaries >> Eff_mc_prim[i];
+            primErr >> erP[i];
             secondaries >> Eff_mc_sec[i];
+            secErr >> erS[i];
             inclusive >> Eff_mc_tot[i];
             data >> Eff_dati[i];
             dataErr >> erD[i];
@@ -58,7 +62,9 @@ void PlotMatchEffSystUncGraph(){
             //    secondariesErr >> erS[i];
         }
     primaries.close();
+    primErr.close();
     secondaries.close();
+    secErr.close();
     inclusive.close();
     data.close();
     dataErr.close();
@@ -69,38 +75,6 @@ void PlotMatchEffSystUncGraph(){
     //primariesErr.close();
     //secondariesErr.close();
     
-    Double_t erP[14]={
-        5.24567e-05
-        ,  8.38554e-05
-        ,  0.000140998
-        ,  0.000244518
-        ,  0.00039371
-        ,  0.00058457
-        ,  0.000882436
-        ,  0.00108969
-        ,  0.00134481
-        ,  0.0016604
-        ,  0.00207457
-        ,  0.00261131
-        ,  0.00323648
-        ,  0.0040927
-    };
-    Double_t erS[14]={
-        0.000225652
-        ,  0.000409726
-        ,  0.000655544
-        ,  0.00115563
-        ,  0.00183701
-        ,  0.00264892
-        ,  0.00373786
-        ,  0.00462839
-        ,  0.00580796
-        ,  0.00651069
-        ,  0.00880469
-        ,  0.0108218
-        ,  0.0126755
-        ,  0.0159941
-    };
     
     Double_t erTmc[14];
     Double_t erSys[14];
