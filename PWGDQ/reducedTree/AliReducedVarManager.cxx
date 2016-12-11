@@ -22,6 +22,8 @@ using std::ifstream;
 #include <TLorentzVector.h>
 #include <TChain.h>
 #include <TH2F.h>
+#include <TProfile.h>
+#include <TRandom.h>
 //#include <TObject.h>
 
 #include "AliReducedBaseEvent.h"
@@ -120,6 +122,8 @@ TH1I* AliReducedVarManager::fgRunTimeStart = 0x0;
 TH1I* AliReducedVarManager::fgRunTimeEnd = 0x0;
 std::vector<Int_t>  AliReducedVarManager::fgRunNumbers;
 Int_t AliReducedVarManager::fgRunID = -1;
+TProfile* AliReducedVarManager::fgAvgSpdTrackletsVertex = 0x0;
+Double_t AliReducedVarManager::fgRefMult = 0.;
 
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
@@ -254,6 +258,9 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kPairPhiV]){
     fgUsedVars[kL3Polarity] = kTRUE;
   }
+  if(fgUsedVars[kSPDntrackletsCorr]){
+    fgUsedVars[kSPDntracklets] = kTRUE;
+  }
 }
 
 //__________________________________________________________________
@@ -373,6 +380,17 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
      fgUsedVars[kNTracksTOFoutVsTRDout] = kFALSE;
   
   values[kSPDntracklets]   = event->SPDntracklets();
+  if( fgUsedVars[kSPDntrackletsCorr] ){
+    if( fgAvgSpdTrackletsVertex && TMath::Abs(baseEvent->Vertex(2)) < 10. ){
+      if( !fgRefMult ) fgRefMult = fgAvgSpdTrackletsVertex->GetMaximum();
+      Double_t localAvg = fgAvgSpdTrackletsVertex->GetBinContent( fgAvgSpdTrackletsVertex->FindBin(baseEvent->Vertex(2)) );
+      Double_t deltaM = values[kSPDntracklets] * (fgRefMult/localAvg - 1);
+      values[kSPDntrackletsCorr] = values[kSPDntracklets] + (deltaM>0 ? 1 : -1) * gRandom->Poisson(TMath::Abs(deltaM));
+    }
+    else{
+      values[kSPDntrackletsCorr] = values[kSPDntracklets];
+    }
+  }
   fgUsedVars[kNTracksITSoutVsSPDtracklets] = kTRUE;  
   fgUsedVars[kNTracksTPCoutVsSPDtracklets] = kTRUE;
   fgUsedVars[kNTracksTRDoutVsSPDtracklets] = kTRUE;
@@ -1963,4 +1981,15 @@ void AliReducedVarManager::SetRunNumbers( TString runNumbers ){
     TString runNumberString = runNumbersArr->At(iRun)->GetName();
     fgRunNumbers.push_back( runNumberString.Atoi() );
   }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetTrackletsProfile(TProfile* profileTracklets) {
+   //
+   // initialize the profile for the z-vertex equalization of the multiplicity estimator
+   //
+   if(profileTracklets) {
+     fgAvgSpdTrackletsVertex = (TProfile*)profileTracklets->Clone(Form("AliReducedVarManager_AverageSPDtrackletsVsVertex"));
+     fgAvgSpdTrackletsVertex->SetDirectory(0x0);
+   }
 }
