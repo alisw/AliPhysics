@@ -409,7 +409,13 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   }
   
   values[kNCaloClusters]   = event->GetNCaloClusters();
-  for(Int_t ieta=0;ieta<32;++ieta) values[kSPDntrackletsEta+ieta] = event->SPDntracklets(ieta);  
+  values[kSPDntracklets08] = 0.;
+  values[kSPDntracklets16] = 0.;
+  for(Int_t ieta=0;ieta<32;++ieta) {
+    values[kSPDntrackletsEta+ieta] = event->SPDntracklets(ieta);
+    values[kSPDntracklets16] += event->SPDntracklets(ieta);
+    if(ieta >7 && ieta <25 ) values[kSPDntracklets08] += event->SPDntracklets(ieta);
+  }
   for(Int_t i=0;i<2;++i) values[kSPDFiredChips+i] = event->SPDFiredChips(i+1);
   for(Int_t i=0;i<6;++i) values[kITSnClusters+i] = event->ITSClusters(i+1);
   values[kSPDnSingleClusters] = event->SPDnSingleClusters();
@@ -1528,8 +1534,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNtracksSubEvRight]           = "No.tracks sub-event right";       fgVariableUnits[kNtracksSubEvRight]      = "";  
   fgVariableNames[kNtracksEventPlane]           = "No.tracks";                       fgVariableUnits[kNtracksEventPlane]      = "";  
   fgVariableNames[kNCaloClusters]               = "No.calorimeter clusters";         fgVariableUnits[kNCaloClusters]          = "";
-  fgVariableNames[kSPDntracklets]               = "No.SPD tracklets";                fgVariableUnits[kSPDntracklets]          = "";  
-  fgVariableNames[kSPDntrackletsCorr]           = "No.corrected SPD tracklets";      fgVariableUnits[kSPDntrackletsCorr]      = "";
+  fgVariableNames[kSPDntracklets]               = "No.SPD tracklets in |#eta| < 1.0";                fgVariableUnits[kSPDntracklets]          = "";
+  fgVariableNames[kSPDntracklets08]             = "No.SPD tracklets in |#eta| < 0.8";                fgVariableUnits[kSPDntracklets08]        = "";
+  fgVariableNames[kSPDntracklets16]             = "No.SPD tracklets in |#eta| < 1.6";                fgVariableUnits[kSPDntracklets16]        = "";
+  fgVariableNames[kSPDntrackletsCorr]           = "Corrected no. SPD tracklets in |#eta| < 1.0";     fgVariableUnits[kSPDntrackletsCorr]      = "";
   for(Int_t ieta=0;ieta<32;++ieta) {
     fgVariableNames[kSPDntrackletsEta+ieta] = Form("No.SPD tracklets in %.1f<#eta<%.1f", -1.6+0.1*ieta, -1.6+0.1*(ieta+1));
     fgVariableUnits[kSPDntrackletsEta+ieta] = "";
