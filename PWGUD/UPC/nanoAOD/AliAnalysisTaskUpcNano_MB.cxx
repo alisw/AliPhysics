@@ -52,7 +52,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB() 
-  : AliAnalysisTaskSE(),fOutputList(0),isMC(kFALSE),fPIDResponse(0),
+  : AliAnalysisTaskSE(),fOutputList(0),isMC(kFALSE),cutEta(kFALSE),fPIDResponse(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -83,7 +83,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name) 
-  : AliAnalysisTaskSE(name),fOutputList(0),isMC(kFALSE),fPIDResponse(0),
+  : AliAnalysisTaskSE(name),fOutputList(0),isMC(kFALSE),cutEta(kFALSE),fPIDResponse(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -150,7 +150,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   for (Int_t i = 0; i<12; i++) fHistMCTriggers->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
   fOutputList->Add(fHistMCTriggers);
   
-  fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
+fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
   fTreeJPsi ->Branch("fPt", &fPt, "fPt/D");
   fTreeJPsi ->Branch("fY", &fY, "fY/D");
   fTreeJPsi ->Branch("fM", &fM, "fM/D");
@@ -162,6 +162,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeJPsi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
   fTreeJPsi ->Branch("fTOFmask", &fTOFmask);
+  fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC)fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeJPsi);
   
@@ -176,6 +177,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreePhi ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
   fTreePhi ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreePhi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fTreePhi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC) fTreePhi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreePhi);
   
@@ -190,6 +192,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreeRho ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
   fTreeRho ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
@@ -206,9 +209,10 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   fTreePsi2s ->Branch("fZNAtime", &fZNAtime,"fZNAtime/D");
   fTreePsi2s ->Branch("fZNCtime", &fZNCtime,"fZNCtime/D");
   fTreePsi2s ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/D");
+  fTreePsi2s ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   if(isMC) fTreePsi2s ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreePsi2s);
-  
+    
   fTreeGen = new TTree("fTreeGen", "fTreeGen");
   fTreeGen ->Branch("fPt", &fPt, "fPt/D");
   fTreeGen ->Branch("fY", &fY, "fY/D");
@@ -291,6 +295,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(!aod) return;
   
+  fRunNumber = aod->GetRunNumber();
+  
   if(isMC) RunMC(aod);
   
   for(Int_t i = 0; i<10; i++)if(fTriggerInputsMC[i])fHistMCTriggers->Fill(i+1);
@@ -347,6 +353,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     if( !trk ) continue;
     Bool_t goodTPCTrack = kTRUE;
     Bool_t goodITSTrack = kTRUE;
+    
+    if(cutEta && TMath::Abs(trk->Eta())>0.9)continue;
     
     if(!(trk->TestFilterBit(1<<0))) goodTPCTrack = kFALSE;
     else{
@@ -626,8 +634,6 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
 {
-
-  fRunNumber = aod->GetRunNumber();
   
   for(Int_t i=0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
   
@@ -696,6 +702,8 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
     if(!mcPart) continue;
 
     if(mcPart->GetMother() >= 0) continue;
+    
+    if(cutEta && TMath::Abs(mcPart->Eta())>0.9)return;
     
     TParticlePDG *partGen = pdgdat->GetParticle(mcPart->GetPdgCode());
     vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());
