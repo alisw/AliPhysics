@@ -1,18 +1,15 @@
 /// \class AliOfflineTrigger
 /// \brief This class provides fucntionality for OFFLINE Trigger raw data selection
-///        and  conistency checks
+///        and  consistency checks
 ///
 /// Related task: https://alice.its.cern.ch/jira/browse/PWGPP-6 and PWGPP-134
 /// \author Marian Ivanov   - marian.ivanov@cern.ch
-/// \author Mesut Arslandok, Mikolaj  - older versions (rawmerege.C)
+/// \author Mesut Arslandok, Mikolaj  - older versions ($ALICE_PHYSICS/../src/PWGPP/rawmerge/rawmerge.C)
 
 
 /*
   Example usage:
-  //
   // 0.) Init offline trigger class
-  //
-  .L $ALICE_PHYSICS/../src/PWGPP/AliOfflineTrigger.cxx+
   AliOfflineTrigger trigger("default", 30,100000000);
   //
   // 1.) Dump event header info. Used to make consitency checks (diff, meld, TTree diff)
@@ -24,14 +21,14 @@
   trigger.DumpGIDESD("alien:///alice/data/2013/LHC13b/000195483/ESDs/pass3/13000195483000.10/AliESDs.root","1","gidesdpass3.list"); 
   trigger.DumpGIDESD("alien:///alice/data/2013/LHC13b/000195483/pass4/13000195483000.10/AliESDs.root","1","gidesdpass4.list"); 
   //
-  //  2.) Make custom esd filer. Example  set sum pt and multiplicity trigger
+  //  2.) Make custom esd filter. Example  set sum pt and multiplicity trigger
   //     Define ESD trigger aliases - used later in the AliOfflineTrigger::DumpGIDESD
   //
   trigger.AddESDAlias("sumPt","Sum$(Tracks[].Pt()*(Tracks[].fTPCncls>120&&Tracks[].fITSncls>4))");  
   trigger.AddESDAlias("mult","Sum$(Tracks[].fITSncls>4&&Tracks[].fTPCncls>120&&Tracks[].fTRDncls>50)");
   trigger.AddESDAlias("triggerPt","sumPt>20");  
   trigger.AddESDAlias("triggerMult","mult>50");
-  trigger.DumpGIDESD("alien:///alice/data/2013/LHC13b/000195483/pass4/13000195483000.10/AliESDs.root","(sumPt>30&&mult>50)||sumPt>50"); 
+  trigger.DumpGIDESD("alien:///alice/data/2013/LHC13b/000195483/pass4/13000195483000.10/AliESDs.root","(sumPt>30&&mult>50)||sumPt>50","gidesdTrigger.list"); 
   //     eventually trigger can be set in tree for cut tuning
   TFile *finput = TFile::Open("alien:///alice/data/2013/LHC13b/000195483/pass4/13000195483000.10/AliESDs.root"); 
   TTree* esdTree = (TTree*)finput->Get("esdTree");
@@ -43,7 +40,14 @@
   tree = AliOfflineTrigger::MakeDiffTree("gidesdpass4.list","gidrawReader.list;gidrawTree.list;gidesdpass3.list")
   tree->Scan("eventID:T0.eventID:T1.eventID:T2.eventID","eventID>0"); 
   tree->Scan("timeStamp:T0.timeStamp:T1.timeStamp:T2.timeStamp","eventID>0","colsize=20"); 
-  
+  //
+  // 5.) Trigger raw data file  example: 
+  //
+  AliOfflineTrigger trigger("default", 30,100000000);
+  trigger.LoadTriggerList("gidesdTrigger.list");
+
+  trigger.ExtractSelected("raw.list", "gidesdTrigger.list", "rawSelected[].root",1000000, 1  );
+  //
 */
 
 
@@ -66,6 +70,9 @@
 #include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliOfflineTrigger.h"
+#include "AliSysInfo.h"
+#include "TTimeStamp.h"
+
 using std::cout;
 using std::endl;
 
@@ -74,6 +81,19 @@ ClassImp(AliOfflineTrigger)
 
 AliOfflineTrigger::AliOfflineTrigger(const char *triggerName, Int_t timeOut, Int_t cacheSize):
   TNamed(triggerName,triggerName),
+  fTrgGIDChunkName(),                         /// GID -> ChunkName  
+  fTrgGIDEventNr(),                           /// GID -> EventNumber
+  fTrgGIDTimeStamp(),                         /// triger map GID -> TimeStamp map
+  fCounterFileInput(0),                       ///  input file counter
+  fCounterEventInput(0),                      ///  input event counter
+  fCounterFileOutput(0),                      ///  output file counter
+  fCounterEventOutput(0),                     ///  output event counter
+  fRawName(""),                               ///  name of the output file 
+  fRawTriggerFile(0),                         ///! pointer to ouput  raw trigger files
+  fRawTriggerTree(0),                         ///! pointer to output raw trigger tree
+  fRAWGIDChunkName(),
+  fRAWGIDEventNr(),
+  fRAWGIDTimeStamp(),
   fDefaultTimeOut(timeOut),
   fDefaultTreeCache(cacheSize),
   fESDTriggerList(NULL)
@@ -89,7 +109,7 @@ AliOfflineTrigger::AliOfflineTrigger(const char *triggerName, Int_t timeOut, Int
 
 void  AliOfflineTrigger::AddESDAlias(const char *aliasName, const char *aliasValue ){
   //
-  //
+  // esd aliases to define ESD triggers
   if (fESDTriggerList==NULL) fESDTriggerList = new TObjArray(100);
   fESDTriggerList->AddLast(new TNamed(aliasName,aliasValue));
 }
@@ -109,12 +129,11 @@ void AliOfflineTrigger::DumpGIDRAWReader(const char *rawFile){
   // DUMP event ids using AliRawReaderRoot
   // Input:
   //    rawFile    - ID of raw file
-  //    timeOut    - to limit access time (in case fraction of raw file not staged on alien or temporary not available)
-  //    cacheSize  - ttree cache size to speedup reading
+  // Output: csv ascii file with following columns
+  //    fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i
   /*
     Example usage:
     AliOfflineTrigger::DumpRAWGIDReader("alien:///alice/data/2013/LHC13b/000195483/raw/13000195483000.10.root"); 
-
   */  
   if (rawFile==NULL) return;
   if (TPRegexp("^alien").Match(rawFile) && gGrid==0)  TGrid::Connect("alien");
@@ -126,7 +145,7 @@ void AliOfflineTrigger::DumpGIDRAWReader(const char *rawFile){
 
   std::ofstream file_out("gidrawReader.list");
   //  file_out<<"gid/D:eventCounter/D:period/D:orbit/D:bcid/D:fname/C:eventID/D\n";  // print header
-  file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
+  file_out<<"fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i"<<endl;  // print header
   Int_t counter=0;
   AliRawReaderRoot *preader = new AliRawReaderRoot(rawFile);
   if (preader==NULL){
@@ -152,16 +171,21 @@ void AliOfflineTrigger::DumpGIDRAWReader(const char *rawFile){
 }
 
 void  AliOfflineTrigger::DumpGIDRAWTree(const char *rawFile){
-  //   In the raw dat triggering  we are accessing  raw data only using TTree functionality
+  // 
+  // DUMP event ids using AliRawReaderRoot.  
+  // Input:
+  //    rawFile    - ID of raw file
+  // Output: csv ascii file with following columns
+  //    fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i
+  
+  //   In the raw data triggering  raw data are acessed using TTree functionality
   //   TTree::GetEntry() and ttree->Fill() for paricular entry numbers
-  //   In some ciscumstancies entry number in tree and entry number if ESD can be different
+  //   In some circumstancies entry number in tree and entry number if ESD can be different
   //    
   //   Dumping GID and other IDs using the tree->GetEntry()
-  //   Not this code is a hack to get map: entry number <--> gid
   /* Example usage:
      dumpRAWGIDTree("alien:///alice/data/2013/LHC13b/000195483/raw/13000195483000.10.root",20,100000000); 
   */
-  //   The same varaibles and content can be crosschecked with routine using AliRawReaderRoot
 
   if (rawFile==NULL) return;
   if (TPRegexp("^alien").Match(rawFile) && gGrid==0)  TGrid::Connect("alien");
@@ -196,8 +220,9 @@ void  AliOfflineTrigger::DumpGIDRAWTree(const char *rawFile){
 
   std::ofstream file_out("gidrawTree.list");
   //  file_out<<"gid/D:eventCounter/D:period/D:orbit/D:bcid/D:fname/C:eventID/D\n";  // print headaer
-  file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
-  
+  //file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
+  file_out<<"fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i"<<endl;  // print header
+
   for (Int_t ievent=0; ievent<nevents; ievent++){
     fBranch->GetEntry(ievent);
     Int_t run = fEvent->GetHeader()->Get("RunNb");
@@ -227,9 +252,15 @@ void  AliOfflineTrigger::DumpGIDRAWTree(const char *rawFile){
 
 void  AliOfflineTrigger::DumpGIDESD(const char * chinput, const char *trigger,const char *choutput){
   //
-  //  Dump Event ID for selected ESD events
-  //    
+  // DUMP event ids for selected events. Can be used for the fast OFFLINE triggering using ESD files only
+  // 
+  // Input:
+  //    chinput    - esdFile
+  //    trigger    - trigger filter (TCut)
+  //    chouput    - name of output file
   //
+  // Output: csv ascii file with following columns
+  //    fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i
   /*  Example usage:
       dumpGIDESD("alien:///alice/data/2013/LHC13b/000195483/pass4/13000195483000.10/AliESDs.root");
   */
@@ -264,7 +295,8 @@ void  AliOfflineTrigger::DumpGIDESD(const char * chinput, const char *trigger,co
   entries=esdTree->Draw("gid:Entry$:fPeriodNumber:fOrbitNumber:fBunchCrossNumber:fEventNumberInFile:fTimeStamp",trigger,"goffpara");
   //
   std::ofstream file_out(choutput);
-  file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
+  //  file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
+  file_out<<"fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i"<<endl;  // print header
 
   if (entries>0) for (Int_t i=0;i<entries; i++){    
     file_out<<
@@ -285,6 +317,8 @@ void  AliOfflineTrigger::DumpGIDESD(const char * chinput, const char *trigger,co
 
 
 void AliOfflineTrigger::TestDiffGIDList(){
+  //
+  // Routine to test internal consitency of the IDs files
   //
   // Check if the ESD gidlist and rawesd.list are identical
   // This is expected to be the case for the standard ppass reconstruction 
@@ -324,8 +358,13 @@ void AliOfflineTrigger::TestDiffGIDList(){
 
 TTree*    AliOfflineTrigger::MakeDiffTree(const char *refTree, const char *friendTrees){
   //
-  // 
-  //
+  // Build trees out of the csv files. 
+  // For expert usage and debugging
+  // Input: 
+  //    refTree      - csv file name for main tree 
+  //    friendTrees  - semicolomn separated list of the csv files defining freind trees
+  // Output:
+  //    tree with friend trees properly indesed attached 
   if (!friendTrees) return NULL;
   TObjArray * array=TString(friendTrees).Tokenize(";");
   Int_t ntrees=array->GetEntries();
@@ -339,4 +378,230 @@ TTree*    AliOfflineTrigger::MakeDiffTree(const char *refTree, const char *frien
     tree->AddFriend(ftree,TString::Format("T%d",jf));
   }
   return tree;
+}
+
+void AliOfflineTrigger::LoadTriggerList(const char * triggerList){
+  //
+  // Load triger maps from the ascii trigger list csv file into internal maps
+  //
+  //  Assuming fname,gid, eventID  and timeStamp branch has to be present
+  //           trigger branch is a recomendation  
+  //
+  //  Format of branches: 
+  //  fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i
+  /*
+    const char * triggerList = "gidesd.list"
+  */
+  TTree * tree= new TTree();
+  tree->ReadFile(triggerList);
+  Int_t entries=tree->GetEntries();
+  if (entries<=0) {
+    ::Error("AliOfflineTrigger::LoadTriggerList","Invalid input trigger list\t%s", triggerList);
+    return;
+  }
+  TBranch *chBranch=tree->GetBranch("fname");
+  TBranch *gidBranch=tree->GetBranch("gid");
+  TBranch *eventBranch=tree->GetBranch("eventID");
+  TBranch *timeBranch=tree->GetBranch("timeStamp");
+  TBranch *triggerBranch=tree->GetBranch("trigger");
+  Bool_t isOK=(chBranch!=NULL && gidBranch!=NULL &&eventBranch && timeBranch!=NULL);
+  if (isOK==kFALSE){
+    ::Error("AliOfflineTrigger::LoadTriggerList","Missing information - in trigger list\t%s", triggerList);
+    return;
+  }
+  ULong64_t gid;
+  UInt_t eventNr,timeStamp;
+  char * chbuffer= new char[10000];
+  char * chtrigger= new char[10000];
+  chBranch->SetAddress(chbuffer);
+  gidBranch->SetAddress(&gid);
+  timeBranch->SetAddress(&timeStamp);
+  eventBranch->SetAddress(&eventNr);
+  if (triggerBranch) triggerBranch->SetAddress(chtrigger);
+  for (Int_t i=0; i<entries; i++){
+    tree->GetEntry(i);
+    if (triggerBranch)  fTrgGIDTrigger[gid]=chtrigger;
+    fTrgGIDChunkName[gid]=chbuffer;                     
+    fTrgGIDEventNr[gid]=i;                               
+    fTrgGIDTimeStamp[gid]=timeStamp;                   // for consitency check
+  }
+}
+
+
+
+Int_t AliOfflineTrigger::LoadMapFromRawData(const char *rawFile, Int_t verbose){
+  //
+  //  1.) Load RAW headers and fill  event ID in std::maps
+  //  2.) Calculate number of selected events
+  //  3.) To be added: 
+  //         hardware trigger mask 
+  //         calibration event without unique gid (e.g calibration event)
+  if (rawFile==NULL) return 0;
+  if (TPRegexp("^alien").Match(rawFile) && gGrid==0)  TGrid::Connect("alien");  
+  TFile * finput =TFile::Open(rawFile);
+  if (finput==NULL){
+    ::Error("dumpRAWGIDTree","rawFile %s not accessible",rawFile);
+    return 0;
+  }
+  TTree * tree = (TTree*)finput->Get("RAW");
+  if (tree==NULL){
+    ::Error("dumpRAWGIDTree","rawFile %s  does not contained requested tree",rawFile);
+    return 0;
+  }
+  TString chunkName=rawFile;
+  TPRegexp reg0(".*/");
+  reg0.Substitute(chunkName,"");
+  TPRegexp reg1(".root$");
+  reg1.Substitute(chunkName,"");
+  //
+  AliRawVEvent*    fEvent=0;              // (super) event
+  tree->SetBranchStatus("TPC*",kFALSE);
+  tree->SetBranchStatus("TRD*",kFALSE);
+  tree->SetBranchStatus("rawevent",kTRUE);
+  TBranch *fBranch = tree->GetBranch("rawevent");  // as in AliRawReaderRoot::AliRawReaderRoot  
+  fBranch->SetAddress(&fEvent);  
+  if (fDefaultTreeCache>0) {
+    tree->SetCacheSize(fDefaultTreeCache);
+    //tree->AddBranchToCache("*",kFALSE); 
+  }
+  Int_t nevents=tree->GetEntries();
+  Int_t nTriggered=0;
+  ULong64_t gidOld=0;
+  for (Int_t ievent=0; ievent<nevents; ievent++){
+    fBranch->GetEntry(ievent);
+    Int_t run = fEvent->GetHeader()->Get("RunNb");
+    const UInt_t *id  = fEvent->GetHeader()->GetP("Id");                             // copy of AliRawReaderRoot::GetEventId()
+    ULong64_t  period = id ? (((id)[0]>>4)&0x0fffffff): 0;                           // AliRawReader::Get<>
+    ULong64_t  orbit  = id ? ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)) : 0; // AliRawReader::Get<>
+    ULong64_t  bcID   =  id ? ((id)[1]&0x00000fff) : 0;                              // AliRawReader::Get<>
+    ULong64_t  gid    = (((ULong64_t)period << 36) | ((ULong64_t)orbit << 12) |(ULong64_t)bcID); // AliRawReader::GetEventIdAsLong() 
+    UInt_t     timeStamp=fEvent->GetHeader()->Get("Timestamp");  
+    if (gid==gidOld && verbose>0){
+      ::Error("AliOfflineTrigger::LoadMapFromRawData)","Event %d not unique GID. GID %llu can not be used as unique ID. Time %d", ievent, gid, timeStamp);
+      continue;
+    }
+    fRAWGIDChunkName[gid]=rawFile;
+    fRAWGIDTimeStamp[gid]=timeStamp;
+    fRAWGIDEventNr[gid]=ievent;    
+    fRAWEventNrGID[ievent]=gid;
+    if (verbose==1&&ievent%100==0)  ::Info("AliOfflineTrigger::LoadMapFromRawData", "Event # \t%d\t%llu",ievent,gid);
+    if ((verbose&2)>0)  ::Info("AliOfflineTrigger::LoadMapFromRawData", "Event # \t%d\t%llu",ievent,gid);
+    // check if event triggered
+    UInt_t trgTimeStamp=fTrgGIDTimeStamp[gid];
+    if (trgTimeStamp>0){
+      nTriggered++;
+      ::Info("AliOfflineTrigger::LoadMapFromRawData()","Trig.event=%d. GID=%llu\tTime=%d", ievent, gid, timeStamp);
+      if (trgTimeStamp!=timeStamp){
+	::Error("AliOfflineTrigger::LoadMapFromRawData()","Inconsistent timestamp");
+      }else{
+	fTrgGIDEventNr[gid]=ievent;
+      }
+    }
+    gidOld=gid;
+  }
+  delete tree; 
+  return nTriggered;
+}
+
+
+
+void  AliOfflineTrigger::ExtractSelected(const char *rawFile, Int_t verbose){
+  //
+  // Extract selected events from raw data file
+  //    Trigger list has to be loaded before filtering
+  //
+  if (fRawTriggerFile==NULL){
+    ::Error("AliOfflineTrigger::ExtractSelected","Output file not intitialized");
+    return;
+  }
+  Int_t nTriggered=0;
+  if (fTrgGIDTimeStamp.size()<=0){
+    ::Info("AliOfflineTrigger::LoadMapFromRawData", "Trigger list is empty. Nothing to filter for file %s", rawFile);
+    return;
+  }
+  nTriggered=LoadMapFromRawData(rawFile, verbose);
+  ::Info(" AliOfflineTrigger::ExtractSelected", "%s:\t N_{trig}=%d", rawFile,nTriggered);
+  if ( nTriggered==0){
+    return;
+  }
+  TFile * finput = TFile::Open(rawFile);
+  if (finput==NULL){
+    ::Info(" AliOfflineTrigger::ExtractSelected", "File %s not exist or not accessible within TimeOut %d", rawFile, fDefaultTimeOut);
+  }
+  TTree *itree=dynamic_cast<TTree*>(finput->Get("RAW"));
+  if (finput==NULL){
+    ::Info(" AliOfflineTrigger::ExtractSelected", "Tree in file %s not exist or not accessible within TimeOut %d", rawFile, fDefaultTimeOut);
+  }
+  if (fRawTriggerTree==NULL){
+    fRawTriggerFile->cd();
+    fRawTriggerTree=itree->CloneTree(0);
+  }
+  Int_t nEvents=itree->GetEntries();
+  for (Int_t iEvent=0; iEvent<nEvents; iEvent++){
+    ULong64_t gid=fRAWEventNrGID[iEvent];
+    Bool_t isSelected = kFALSE;
+    isSelected=(fTrgGIDEventNr[gid]==iEvent);   // gid in the list of triggered events
+    fCounterFileInput++;
+    if (!isSelected) continue;
+    if (verbose&1>0) {
+      ::Info(" AliOfflineTrigger::ExtractSelected", "%s\t%d\t%llu\t%d\t%s",rawFile,iEvent,gid,fTrgGIDTimeStamp[fRAWEventNrGID[iEvent]], TTimeStamp(fTrgGIDTimeStamp[fRAWEventNrGID[iEvent]]).AsString("short"));
+    }
+    AliSysInfo::AddStamp(TString::Format("%s_BR",rawFile).Data(), 10, fCounterFileInput,fCounterFileInput);    
+    Int_t size= itree->GetEntry(iEvent);
+    AliSysInfo::AddStamp(TString::Format("%s_ER",rawFile).Data(), 11, fCounterFileInput,fCounterFileInput);    
+    Int_t readEntry=itree->GetReadEntry();   
+    fRawTriggerTree->CopyAddresses(itree);
+    AliSysInfo::AddStamp(TString::Format("%s_BF",rawFile).Data(), 100, fCounterFileInput,fCounterFileInput);
+    fRawTriggerTree->Fill();
+    AliSysInfo::AddStamp(TString::Format("%s_EF",rawFile).Data(), 101, fCounterFileInput,fCounterFileInput);
+    fCounterFileOutput++;
+  }
+  fCounterFileInput++;
+}
+
+
+ 
+void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * triggerList, const char * outputName, Int_t maxSize,  Int_t verbose){
+  //
+  /*
+   const char *rawList="raw.list";
+   const char *triggerList="gidesdTrigger.list";
+   const char *outputName="filteredraw_[].root"
+   Int_t maxSize=100000000;  // max size of raw trees before moving to next file
+   verbose=2
+  */
+  TObjArray* rawArray = gSystem->GetFromPipe(TString::Format("cat %s", rawList)).Tokenize("\n");  
+  Int_t nFiles=rawArray->GetEntries();
+  if (nFiles<=0){
+    ::Error("AliOfflineTrigger::ExtractSelected","Empty input list");
+  }
+  LoadTriggerList(triggerList);
+  for (Int_t iFile=0; iFile<nFiles; iFile++){
+    if (fRawTriggerTree!=NULL){
+      if (fRawTriggerTree->GetZipBytes()>maxSize){ // close file if content bigger than max Size
+	fRawTriggerTree->Write();
+	fRawTriggerFile->Close();
+	delete fRawTriggerTree;
+	delete fRawTriggerFile;
+	fRawTriggerFile=NULL;
+	fRawTriggerTree=NULL;
+	fCounterFileOutput++;
+      }
+    }
+    if (fRawTriggerFile==NULL){
+      TString fName=outputName;
+      fName.ReplaceAll("[]",TString::Format("%d",fCounterFileOutput));
+      fRawTriggerFile= TFile::Open(fName.Data(),"recreate");      
+    }
+    ExtractSelected(rawArray->At(iFile)->GetName(),verbose);
+  }
+  if (fRawTriggerTree!=NULL){
+    fRawTriggerTree->Write();
+    fRawTriggerFile->Close();
+    //  delete fRawTriggerTree;
+    delete fRawTriggerFile;
+    fRawTriggerFile=NULL;
+    fRawTriggerTree=NULL;
+    fCounterFileOutput++;
+  }
 }
