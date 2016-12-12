@@ -1417,6 +1417,9 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
                */
         }
     }
+
+  if (!TGeoGlobalMagField::Instance()->GetField()) esdEvent->InitMagneticField();
+
     /// Pile up events are investigated since 13TeV analysis. \c IsPileupFromSPD() checks for pile up events using the SPD vertex. \c IsPileupFromSPD(5,0.8) requires at least 5 contibutors to the vertex to reject the pile up event.
     fPileUpCount->Fill(-0.5);
     if(IsUsePileUpRejection()){
