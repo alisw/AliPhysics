@@ -33,7 +33,7 @@ class AliCFEventGenCuts: public AliCFCutBase
 {
  public :
   AliCFEventGenCuts() ;
-  AliCFEventGenCuts(Char_t* name, Char_t* title) ;
+  AliCFEventGenCuts(const Char_t* name, const Char_t* title) ;
   AliCFEventGenCuts(const AliCFEventGenCuts& c) ;
   AliCFEventGenCuts& operator=(const AliCFEventGenCuts& c) ;
   ~AliCFEventGenCuts();

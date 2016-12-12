@@ -57,7 +57,7 @@ class AliCFTrackKineCuts : public AliCFCutBase
 {
  public :
   AliCFTrackKineCuts() ;
-  AliCFTrackKineCuts(Char_t* name, Char_t* title) ;
+  AliCFTrackKineCuts(const Char_t* name, const Char_t* title) ;
   AliCFTrackKineCuts(const AliCFTrackKineCuts& c) ;
   AliCFTrackKineCuts& operator=(const AliCFTrackKineCuts& c) ;
   ~AliCFTrackKineCuts();

@@ -86,7 +86,7 @@ AliAnalysisTaskEmcalClustersRef::~AliAnalysisTaskEmcalClustersRef() {
 void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
 
   EnergyBinning energybinning;
-  TLinearBinning smbinning(21, -0.5, 20.5), etabinning(100, -0.7, 0.7), timebinning(100, -500e-9, 500e-9);
+  TLinearBinning smbinning(21, -0.5, 20.5), etabinning(100, -0.7, 0.7), timebinning(1000, -500e-9, 500e-9);
   TString optionstring = fEnableSumw2 ? "s" : "";
 
   /*

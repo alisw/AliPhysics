@@ -273,7 +273,7 @@ void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
     return;
   }
 
-  if(!fTriggerSelection->GetNameClusterContainer().Length()){
+  if(fTriggerSelection && !fTriggerSelection->GetNameClusterContainer().Length()){
     fTriggerSelection->SetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   }
 

@@ -1,7 +1,7 @@
 int ReweightEfficiency(TH1D* M,TF1* F,TH1D* G,TH1D* R,TFile* file,int test=0,int save=2,double tolerance=0.001){
   /* Author: Anders G. Knospe, The University of Texas at Austin
      Created: 26 January 2014
-     Last Modified: 22 September 2015
+     Last Modified: 11 December 2016
 
      This macro implements an iterative procedure to re-weight efficiencies.
      See the following analysis note for more information:
@@ -199,14 +199,16 @@ void isCompatibleBinning(TH1D* h0,TH1D* h1){
     A=h0->GetXaxis()->GetBinLowEdge(j);
     b1=h1->GetXaxis()->FindBin(A);
     B=h0->GetXaxis()->GetBinLowEdge(j+1);
-    b2=h1->GetXaxis()->FindBin(A);
+    b2=h1->GetXaxis()->FindBin(B);
 
     if(b1==b2) continue;
-    else if(b1==b2-1){
-      x=h1->GetXaxis()->GetBinLowEdge(b2);
-      if(fabs(x-A)<1.e-6 || fabs(x-B)<1.e-6) continue;
-    }else{
-      cerr<<"Error in ReweightEfficiency(): mismatched bins detected for histograms "<<h0->GetName()<<" and "<<h0->GetName()<<endl;
+    else{
+      if(b1==b2-1){
+	x=h1->GetXaxis()->GetBinLowEdge(b2);
+	if(fabs(x-A)<1.e-6 || fabs(x-B)<1.e-6) continue;
+      }
+
+      cerr<<"Error in ReweightEfficiency(): mismatched bins detected for histograms "<<h0->GetName()<<" and "<<h1->GetName()<<endl;
       break;
     }
   }
@@ -228,7 +230,7 @@ void isSameBinning(TH1D* h0,TH1D* h1){
 
     if(fabs(A0-A1)<1.e-6 && fabs(B0-B1)<1.e-6) continue;
     else{
-      cerr<<"Error in ReweightEfficiency(): mismatched bins detected for histograms "<<h0->GetName()<<" and "<<h0->GetName()<<endl;
+      cerr<<"Error in ReweightEfficiency(): mismatched bins detected for histograms "<<h0->GetName()<<" and "<<h1->GetName()<<endl;
       break;
     }
   }

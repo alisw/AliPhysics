@@ -176,12 +176,12 @@ Bool_t AliReducedAnalysisJpsi2ee::IsPairPreFilterSelected(Float_t* values) {
    // apply event cuts
    //
    if(fPreFilterPairCuts.GetEntries()==0) return kTRUE;
-   // loop over all the cuts and make a logical and between all cuts in the list
+   // loop over all the cuts and make a logical OR between all cuts in the list
    for(Int_t i=0; i<fPreFilterPairCuts.GetEntries(); ++i) {
       AliReducedInfoCut* cut = (AliReducedInfoCut*)fPreFilterPairCuts.At(i);
-      if(!cut->IsSelected(values)) return kFALSE;
+      if(cut->IsSelected(values)) return kTRUE;
    }
-   return kTRUE;
+   return kFALSE;
 }
 
 //___________________________________________________________________________
@@ -481,13 +481,7 @@ void AliReducedAnalysisJpsi2ee::RunPrefilter() {
             track->ResetFlags(); 
             break;
          }
-         else {
-         }
       }  // end loop over positive prefilter tracks
-      if(!track->GetFlags()) {
-         fPosTracks.Remove(track); 
-         continue;
-      }
       
       nextNegPrefilterTrack.Reset();
       for(Int_t ipn = 0; ipn<fPrefilterNegTracks.GetEntries(); ++ipn) {
@@ -498,13 +492,7 @@ void AliReducedAnalysisJpsi2ee::RunPrefilter() {
             track->ResetFlags(); 
             break;
          }
-         else {
-         }
       }  // end loop over negative prefilter tracks
-      
-      if(!track->GetFlags()) {
-         fPosTracks.Remove(track);
-      }
    }  // end loop over the positive tracks
 
    for(Int_t in = 0; in<fNegTracks.GetEntries(); ++in) {
@@ -520,10 +508,6 @@ void AliReducedAnalysisJpsi2ee::RunPrefilter() {
             break;
          }
       }  // end loop over positive prefilter tracks
-      if(!track->GetFlags()) {
-         fNegTracks.Remove(track); 
-         continue;
-      }
       
       nextNegPrefilterTrack.Reset();
       for(Int_t ipn = 0; ipn<fPrefilterNegTracks.GetEntries(); ++ipn) {
@@ -536,10 +520,20 @@ void AliReducedAnalysisJpsi2ee::RunPrefilter() {
             break;
          }
       }  // end loop over negative prefilter tracks
-      if(!track->GetFlags()) {
-         fNegTracks.Remove(track);
-      }
    }  // end loop over the negative tracks
+
+   // remove tracks
+   nextPosTrack.Reset();
+   for(Int_t ip = fPosTracks.GetEntries()-1 ; ip >= 0; --ip) {
+     track = (AliReducedTrackInfo*)nextPosTrack();
+     if(!track->GetFlags()) fPosTracks.Remove(track);
+   }
+  nextNegTrack.Reset();
+  for(Int_t ip = fNegTracks.GetEntries()-1 ; ip >= 0; --ip) {
+    track = (AliReducedTrackInfo*)nextNegTrack();
+    if(!track->GetFlags()) fNegTracks.Remove(track);
+  }
+
 }
 
 //___________________________________________________________________________
