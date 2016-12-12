@@ -76,6 +76,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
                 ) {
 
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
+  TH1S* histoAcc = 0x0;         // histo for modified acceptance
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCalo_PbPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -88,6 +89,22 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
       if(tempStr.CompareTo("EPCLUSTree") == 0){
         cout << "INFO: AddTask_GammaCalo_PbPb activating 'EPCLUSTree'" << endl;
         doTreeEOverP = kTRUE;
+      }else if(tempStr.BeginsWith("MODIFYACC")){
+        cout << "INFO: AddTask_GammaCalo_pp activating 'MODIFYACC'" << endl;
+        TObjArray *tempObjArray = tempStr.Tokenize("-");
+        if(tempObjArray->GetEntries()!=3){cout << "ERROR: AddTask_GammaCalo_pp during parsing of String '" << tempStr.Data() << "'" << endl; return;}
+        TObjString* tempObjType = (TObjString*)tempObjArray->At(1);
+        TString tempType = tempObjType->GetString();
+        TObjString* tempObjPath = (TObjString*)tempObjArray->At(2);
+        TString tempPath = tempObjPath->GetString();
+        cout << "INFO: connecting to alien..." << endl;
+        TGrid::Connect("alien://");
+        cout << "done!" << endl;
+        TFile *w = TFile::Open(tempPath.Data());
+        if(!w){cout << "ERROR: Could not open file: " << tempPath.Data() << endl;return;}
+        histoAcc = (TH1S*) w->Get(tempType.Data());
+        if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
+        cout << "found: " << histoAcc << endl;
       }
     }
   }
@@ -474,6 +491,7 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
       
     analysisClusterCuts[i]  = new AliCaloPhotonCuts(isMC);
+    analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
