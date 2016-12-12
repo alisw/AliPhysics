@@ -249,6 +249,8 @@ void AliReducedVarManager::SetVariableDependencies() {
   if(fgUsedVars[kNTracksITSoutVsSPDtracklets] || fgUsedVars[kNTracksTPCoutVsSPDtracklets] ||
      fgUsedVars[kNTracksTOFoutVsSPDtracklets] || fgUsedVars[kNTracksTRDoutVsSPDtracklets])
      fgUsedVars[kSPDntracklets] = kTRUE;
+  
+  if(fgUsedVars[kRapMC]) fgUsedVars[kMassMC] = kTRUE;
 }
 
 //__________________________________________________________________
@@ -664,6 +666,33 @@ void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* 
 }
 
 //_________________________________________________________________
+void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values) {
+   //
+   //  Fill pure MC truth information
+   //
+   if(fgUsedVars[kPtMC]) values[kPtMC] = p->PtMC();
+   if(fgUsedVars[kPMC]) values[kPMC] = p->PMC();
+   values[kPxMC] = p->MCmom(0);
+   values[kPyMC] = p->MCmom(1);
+   values[kPzMC] = p->MCmom(2);
+   if(fgUsedVars[kThetaMC]) values[kThetaMC] = p->ThetaMC();
+   if(fgUsedVars[kEtaMC]) values[kEtaMC] = p->EtaMC();
+   if(fgUsedVars[kPhiMC]) values[kPhiMC] = p->PhiMC();
+   if(fgUsedVars[kMassMC]) {
+      if(TMath::Abs(p->MCPdg(0))==443)
+      values[kMassMC] = 3.1;   // TODO: use correct PDG mass
+   }
+   if(fgUsedVars[kRapMC]) {
+      if(TMath::Abs(p->MCPdg(0))==443)
+         values[kRapMC] = p->RapidityMC(3.1);   // TODO: use correct PDG mass
+   }
+   values[kPdgMC] = p->MCPdg(0);
+   values[kPdgMC+1] = p->MCPdg(1);
+   values[kPdgMC+2] = p->MCPdg(2);
+   values[kPdgMC+3] = p->MCPdg(3);
+}
+
+//_________________________________________________________________
 void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
   //
   // fill track information
@@ -859,6 +888,18 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
 
   FillTrackingStatus(pinfo,values);
   FillTrackingFlags(pinfo,values);
+  
+  if(pinfo->HasMCTruthInfo()) {
+     if(fgUsedVars[kPtMC]) values[kPtMC] = pinfo->PtMC();
+     if(fgUsedVars[kPMC]) values[kPMC] = pinfo->PMC();
+     values[kPxMC] = pinfo->MCmom(0);
+     values[kPyMC] = pinfo->MCmom(1);
+     values[kPzMC] = pinfo->MCmom(2);
+     if(fgUsedVars[kThetaMC]) values[kThetaMC] = pinfo->ThetaMC();
+     if(fgUsedVars[kEtaMC]) values[kEtaMC] = pinfo->EtaMC();
+     if(fgUsedVars[kPhiMC]) values[kPhiMC] = pinfo->PhiMC();
+     //TODO: add also the massMC and RapMC   
+  }
 }
 
 
@@ -1035,6 +1076,46 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
   if(fgUsedVars[kDMA] && (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
      TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
      values[kDMA]=TMath::Sqrt((ti1->HelixX()-ti2->HelixX())*(ti1->HelixX()-ti2->HelixX())+(ti1->HelixY()-ti2->HelixY())*(ti1->HelixY()-ti2->HelixY()))-ti1->HelixR()-ti2->HelixR();   
+  }
+  
+  if(p.PairType()==1 && t1->HasMCTruthInfo() && t2->HasMCTruthInfo()) {
+     TRACK* pinfo1 = 0x0;
+     if(t1->IsA()==TRACK::Class()) pinfo1 = (TRACK*)t1;
+     TRACK* pinfo2 = 0x0;
+     if(t2->IsA()==TRACK::Class()) pinfo2 = (TRACK*)t2;
+     
+     PAIR pMC;
+     pMC.PxPyPz(pinfo1->MCmom(0)+pinfo2->MCmom(0), pinfo1->MCmom(1)+pinfo2->MCmom(1), pinfo1->MCmom(2)+pinfo2->MCmom(2));
+     pMC.CandidateId(type);
+     if(fgUsedVars[kPtMC]) values[kPtMC] = pMC.Pt();
+     if(fgUsedVars[kPMC]) values[kPMC] = pMC.P();
+     values[kPxMC] = pMC.Px();
+     values[kPyMC] = pMC.Py();
+     values[kPzMC] = pMC.Pz();
+     if(fgUsedVars[kThetaMC]) values[kThetaMC] = pMC.Theta();
+     if(fgUsedVars[kEtaMC]) values[kEtaMC] = pMC.Eta();
+     if(fgUsedVars[kPhiMC]) values[kPhiMC] = pMC.Phi();
+     if(fgUsedVars[kMassMC]) {
+        values[kMassMC] = m1*m1+m2*m2 + 
+            2.0*(TMath::Sqrt(m1*m1+pinfo1->PMC()*pinfo1->PMC())*TMath::Sqrt(m2*m2+pinfo2->PMC()*pinfo2->PMC()) - 
+            pinfo1->MCmom(0)*pinfo2->MCmom(0) - pinfo1->MCmom(1)*pinfo2->MCmom(1) - pinfo1->MCmom(2)*pinfo2->MCmom(2));
+         if(values[kMassMC]<0.0) {
+            cout << "FillPairInfo(track, track, type, values): Warning: Very small squared mass found. "
+            << "   Could be negative due to resolution of Float_t so it will be set to a small positive value." << endl; 
+            cout << "   massMC2: " << values[kMassMC] << endl;
+            cout << "p1(p,x,y,z): " << pinfo1->PMC() << ", " << pinfo1->MCmom(0) << ", " << pinfo1->MCmom(1) << ", " << pinfo1->MCmom(2) << endl;
+            cout << "p2(p,x,y,z): " << pinfo2->PMC() << ", " << pinfo2->MCmom(0) << ", " << pinfo2->MCmom(1) << ", " << pinfo2->MCmom(2) << endl;
+            values[kMassMC] = 0.0;
+         }
+         else
+         values[kMassMC] = TMath::Sqrt(values[kMassMC]);
+     }
+     
+     // TODO: think about whether to use the PDG mass or the calculated mass from the legs for rapidity
+     if(fgUsedVars[kRapMC]) {
+       pMC.SetMass(values[kMassMC]);
+       values[kRapMC] = pMC.Rapidity();   
+     }
   }
 }
 
@@ -1526,20 +1607,34 @@ void AliReducedVarManager::SetDefaultVarNames() {
   }  // end loop over harmonics 
   
   fgVariableNames[kPt]    = "p_{T}";   fgVariableUnits[kPt]    = "GeV/c";
+  fgVariableNames[kPtMC]    = "p^{MC}_{T}";   fgVariableUnits[kPtMC]    = "GeV/c";
   fgVariableNames[kP]     = "p";       fgVariableUnits[kP]     = "GeV/c";
+  fgVariableNames[kPMC]     = "p^{MC}";       fgVariableUnits[kPMC]     = "GeV/c";
   fgVariableNames[kPx]    = "p_{x}";   fgVariableUnits[kPx]    = "GeV/c";
+  fgVariableNames[kPxMC]    = "p^{MC}_{x}";   fgVariableUnits[kPxMC]    = "GeV/c";
   fgVariableNames[kPy]    = "p_{y}";   fgVariableUnits[kPy]    = "GeV/c";
+  fgVariableNames[kPyMC]    = "p^{MC}_{y}";   fgVariableUnits[kPyMC]    = "GeV/c";
   fgVariableNames[kPz]    = "p_{z}";   fgVariableUnits[kPz]    = "GeV/c";
+  fgVariableNames[kPzMC]    = "p^{MC}_{z}";   fgVariableUnits[kPzMC]    = "GeV/c";
   fgVariableNames[kTheta] = "#theta";  fgVariableUnits[kTheta] = "rad.";
+  fgVariableNames[kThetaMC] = "#theta^{MC}";  fgVariableUnits[kThetaMC] = "rad.";
   fgVariableNames[kEta]   = "#eta";    fgVariableUnits[kEta]   = "";
+  fgVariableNames[kEtaMC]   = "#eta^{MC}";    fgVariableUnits[kEtaMC]   = "";
   fgVariableNames[kPhi]   = "#varphi"; fgVariableUnits[kPhi]   = "rad.";
+  fgVariableNames[kPhiMC]   = "#varphi^{MC}"; fgVariableUnits[kPhiMC]   = "rad.";
   for(Int_t iHarmonic=0;iHarmonic<6;++iHarmonic) {
     fgVariableNames[kCosNPhi+iHarmonic] = Form("cos(%d#varphi)",iHarmonic+1); fgVariableUnits[kCosNPhi+iHarmonic] = "";
     fgVariableNames[kSinNPhi+iHarmonic] = Form("sin(%d#varphi)",iHarmonic+1); fgVariableUnits[kSinNPhi+iHarmonic] = "";
   }
   fgVariableNames[kPtSquared] = "p_{T}^{2}"; fgVariableUnits[kPtSquared]   = "GeV^{2}/c^{2}";
   fgVariableNames[kMass]      = "m";         fgVariableUnits[kMass]        = "GeV/c^{2}";
+  fgVariableNames[kMassMC]      = "m^{MC}";         fgVariableUnits[kMassMC]        = "GeV/c^{2}";
   fgVariableNames[kRap]       = "y";         fgVariableUnits[kRap]         = "";  
+  fgVariableNames[kRapMC]       = "y^{MC}";         fgVariableUnits[kRapMC]         = "";  
+  fgVariableNames[kPdgMC]       = "PDG code";          fgVariableUnits[kPdgMC]         = "";
+  fgVariableNames[kPdgMC+1]  = "mother's PDG code";     fgVariableUnits[kPdgMC+1]         = "";
+  fgVariableNames[kPdgMC+2]  = "grand-mother's PDG code";     fgVariableUnits[kPdgMC+2]         = "";
+  fgVariableNames[kPdgMC+3]  = "grand-grand-mother's PDG code";     fgVariableUnits[kPdgMC+3]         = "";
   
   fgVariableNames[kCandidateId]       = "pair id.";              fgVariableUnits[kCandidateId]       = "";
   fgVariableNames[kPairType]          = "pair type";             fgVariableUnits[kPairType]          = "";
