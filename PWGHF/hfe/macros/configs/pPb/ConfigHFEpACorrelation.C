@@ -18,32 +18,31 @@
  
  */
 
-AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
-                                                          TString taskName = "HFe_h",
-                                                          Bool_t Correlation = kTRUE,
-                                                          Bool_t ispp = kFALSE,
-                                                          Bool_t isMC = kTRUE,
-                                                          Double_t ElectronDCAxy = 0.25,
-                                                          Double_t ElectronDCAz = 1.0,
-                                                          Double_t HadronDCAxy = 0.25,
-                                                          Double_t HadronDCAz = 1.0,
-                                                          Double_t TPCPIDLow = -0.5,
-                                                          Double_t TPCPIDUp = 3.0,
-                                                          Double_t InvariantMassCut = 0.14,
-                                                          Double_t pTCutPartner = 0.0,
-                                                          Double_t MultiplicityLow = 0.,
-                                                          Double_t MultiplicityUp = 100.,
-                                                          Double_t HadronPtCutLow = 0.3,
-                                                          Double_t HadronPtCutUp = 2.0,
-                                                          Double_t EtaCutLow = -0.8,
-                                                          Double_t EtaCutUp = 0.8,
-                                                          Double_t NonHFEangleCut = 999,
-                                                          Int_t NHitsITS = 4,
-                                                          Int_t SPDLayers = 0,
-                                                          Int_t TPCNCluster = 100,
-                                                          Int_t TPCNClusterPartner = 60,
-                                                          Int_t TPCNClusterPID = 80
-                                                          )
+AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(TString taskName = "HFe_h",
+                                                        Bool_t Correlation = kTRUE,
+                                                        Bool_t ispp = kFALSE,
+                                                        Bool_t isMC = kTRUE,
+                                                        Double_t ElectronDCAxy = 0.25,
+                                                        Double_t ElectronDCAz = 1.0,
+                                                        Double_t HadronDCAxy = 0.25,
+                                                        Double_t HadronDCAz = 1.0,
+                                                        Double_t TPCPIDLow = -0.5,
+                                                        Double_t TPCPIDUp = 3.0,
+                                                        Double_t InvariantMassCut = 0.14,
+                                                        Double_t pTCutPartner = 0.0,
+                                                        Double_t MultiplicityLow = 0.,
+                                                        Double_t MultiplicityUp = 100.,
+                                                        Double_t HadronPtCutLow = 0.3,
+                                                        Double_t HadronPtCutUp = 2.0,
+                                                        Double_t EtaCutLow = -0.8,
+                                                        Double_t EtaCutUp = 0.8,
+                                                        Double_t NonHFEangleCut = 999,
+                                                        Int_t NHitsITS = 4,
+                                                        Int_t SPDLayers = 0,
+                                                        Int_t TPCNCluster = 100,
+                                                        Int_t TPCNClusterPartner = 60,
+                                                        Int_t TPCNClusterPID = 80,
+                                                        Bool_t UseGlobalTracksForHadrons = kTRUE)
 {
     
     
@@ -119,21 +118,13 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     task->SetAODanalysis(kTRUE);
     if(ispp)
         task->SetPPanalysis(kTRUE);
-    /*
-     if (isMC)
-     {
-     //On data it is defined on the HFEcuts
-     if (ElectronDCAcut == 0)
-     task->SetdcaCut(0.25,1);
-     else if( ElectronDCAcut == 1)
-     task->SetdcaCut(2.4,3.2);
-     else if (ElectronDCAcut == 2)
-     task->SetdcaCut(1,2);
-     }
-     */
     
+    //On data it is defined on the HFEcuts, but we should use the same cuts for the NHF partner
+    task->SetdcaCut(ElectronDCAxy,ElectronDCAz);
+    if (UseGlobalTracksForHadrons)
+        task->UseGlobalTracksHadron();
     task->SetAssHadronPtRange(HadronPtCutLow,HadronPtCutUp);
-    printf("HadronPtCutLow = %1.2f HadronPtCutUp = %1.2f\n", HadronPtCutLow,HadronPtCutUp);
+    printf("HadronPtCutLow = %1.2f HadronPtCutUp = %1.2f, Using GlobalTracks = %d\n", HadronPtCutLow,HadronPtCutUp,UseGlobalTracksForHadrons);
     
     
     task->SetAdditionalCuts(pTCutPartner,TPCNClusterPartner);
@@ -147,16 +138,16 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     
     task->SetNonHFEangleCut(NonHFEangleCut);
     printf("NonHFEangleCut = %1.2f\n",NonHFEangleCut);
-
+    
     
     task->SetUseDCACutHadron();
     task->SetDCACutHadron(HadronDCAxy, HadronDCAz);
     printf("Hadron DCA cut to xy = %1.2fcm z = %1.2f \n", HadronDCAxy, HadronDCAz);
-
+    
     
     task->SetCentrality(MultiplicityLow,MultiplicityUp);
     printf("MinMultiplicity = %1.2f MaxMultiplicy = %1.2f\n", MultiplicityLow,MultiplicityUp);
-
+    
     
     ///_______________________________________________________________________________________________________________
     
