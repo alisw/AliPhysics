@@ -126,6 +126,7 @@ void ComputeAcceptance(){
     funcPt->SetParameters(0.518046,3.01138,3.38914,1.75899); // Prompt
     outFileName.Append("FONLL8ptshape.root");
   }else if(fPtShape==kFONLL8TeVfeeddown){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
     funcPt->SetParameters(0.398252, 3.9603, 3.915, 1.51853); // FeedDown
     outFileName.Append("FONLL8ptshapeFeedDown.root");
   }else if(fPtShape==kFONLL7TeV){
