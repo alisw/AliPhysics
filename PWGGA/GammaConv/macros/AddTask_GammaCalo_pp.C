@@ -555,8 +555,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111111067032200000","0163103100000050"); //no max M02 cut
     cuts.AddCut("00010113","1111111067032250000","0163103100000050"); //M02 < 0.3
     cuts.AddCut("00010113","1111111067032260000","0163103100000050"); //M02 < 0.27
-    cuts.AddCut("00010113","1113111067032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00010113","1111211067032220000","0163103100000050"); //no modules with TRD infront
+    cuts.AddCut("00010113","1112111067032220000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("00010113","1111311067032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 105){  // trackMatching variations
     cuts.AddCut("00010113","1111111066032220000","0163103100000050"); //
     cuts.AddCut("00010113","1111111067032220000","0163103100000050"); //
@@ -659,8 +659,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052113","1111111067032200000","0163103100000050"); //no max M02 cut
     cuts.AddCut("00052113","1111111067032250000","0163103100000050"); //M02 < 0.27
     cuts.AddCut("00052113","1111111067032260000","0163103100000050"); //M02 < 0.3
-    cuts.AddCut("00052113","1113111067032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00052113","1111211067032220000","0163103100000050"); //no modules with TRD infront
+    cuts.AddCut("00052113","1112111067032220000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("00052113","1111311067032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 124){  // trackMatching variations
     cuts.AddCut("00052113","1111111066032220000","0163103100000050"); //
     cuts.AddCut("00052113","1111111067032220000","0163103100000050"); //
@@ -730,8 +730,8 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00081113","1111111067032200000","0163103100000050"); //no max M02 cut
     cuts.AddCut("00081113","1111111067032250000","0163103100000050"); //M02 < 0.3
     cuts.AddCut("00081113","1111111067032260000","0163103100000050"); //M02 < 0.27
-    cuts.AddCut("00081113","1113111067032220000","0163103100000050"); //only modules with TRD infront
-    cuts.AddCut("00081113","1111211067032220000","0163103100000050"); //no modules with TRD infront
+    cuts.AddCut("00081113","1112111067032220000","0163103100000050"); //only modules with TRD infront
+    cuts.AddCut("00081113","1111311067032220000","0163103100000050"); //no modules with TRD infront
   } else if (trainConfig == 144){  // trackMatching variations
     cuts.AddCut("00081113","1111111066032220000","0163103100000050"); //
     cuts.AddCut("00081113","1111111067032220000","0163103100000050"); //
