@@ -311,6 +311,16 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fEtaCutElectronHFELS(0)
 ,fEtaCutElectronMissIDULS(0)
 ,fEtaCutElectronMissIDLS(0)
+//Test NHFE weight
+,fEtaCutElectronBKULSMainSources_NW(0)
+,fEtaCutElectronBKLSMainSources_NW(0)
+//Test Background weight (as Cris)
+,fEtaCutElectronBKNoTag_WithMotherW(0)
+,fEtaCutElectronBKULSMainSources_WithMotherW(0)
+,fEtaCutElectronBKULSMainSources_WithMotherW_NW(0)
+,fEtaCutElectronBKLSMainSources_WithMotherW(0)
+,fEtaCutElectronBKLSMainSources_WithMotherW_NW(0)
+,fUseGlobalTracksHadron(kTRUE)
 {
     //Named constructor
     // Define input and output slots here
@@ -528,6 +538,16 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fEtaCutElectronHFELS(0)
 ,fEtaCutElectronMissIDULS(0)
 ,fEtaCutElectronMissIDLS(0)
+//Test NHFE weight
+,fEtaCutElectronBKULSMainSources_NW(0)
+,fEtaCutElectronBKLSMainSources_NW(0)
+//Test Background weight (as Cris)
+,fEtaCutElectronBKNoTag_WithMotherW(0)
+,fEtaCutElectronBKULSMainSources_WithMotherW(0)
+,fEtaCutElectronBKULSMainSources_WithMotherW_NW(0)
+,fEtaCutElectronBKLSMainSources_WithMotherW(0)
+,fEtaCutElectronBKLSMainSources_WithMotherW_NW(0)
+,fUseGlobalTracksHadron(kTRUE)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -809,6 +829,27 @@ void AliAnalysisTaskHFEpACorrelation::UserCreateOutputObjects()
         fEtaCutElectronHFELS = new TH1F("fEtaCutElectronHFELS", "", 110,0.5,6);
         fEtaCutElectronMissIDULS = new TH1F("fEtaCutElectronMissIDULS", "", 110,0.5,6);
         fEtaCutElectronMissIDLS = new TH1F("fEtaCutElectronMissIDLS", "", 110,0.5,6);
+        
+        //Test NHFE weight
+        fEtaCutElectronBKULSMainSources_NW = new TH1F("fEtaCutElectronBKULSMainSources_NW", "", 110,0.5,6);
+        fEtaCutElectronBKLSMainSources_NW = new TH1F("fEtaCutElectronBKLSMainSources_NW", "", 110,0.5,6);
+        
+        //Test Background weight (as Cris)
+        fEtaCutElectronBKNoTag_WithMotherW = new TH1F("fEtaCutElectronBKNoTag_WithMotherW", "", 110,0.5,6);
+        fEtaCutElectronBKULSMainSources_WithMotherW = new TH1F("fEtaCutElectronBKULSMainSources_WithMotherW", "", 110,0.5,6);
+        fEtaCutElectronBKULSMainSources_WithMotherW_NW = new TH1F("fEtaCutElectronBKULSMainSources_WithMotherW_NW", "", 110,0.5,6);
+        fEtaCutElectronBKLSMainSources_WithMotherW = new TH1F("fEtaCutElectronBKLSMainSources_WithMotherW", "", 110,0.5,6);
+        fEtaCutElectronBKLSMainSources_WithMotherW_NW = new TH1F("fEtaCutElectronBKLSMainSources_WithMotherW_NW", "", 110,0.5,6);
+        
+        
+        fOutputList->Add(fEtaCutElectronBKULSMainSources_NW);
+        fOutputList->Add(fEtaCutElectronBKLSMainSources_NW);
+        
+        fOutputList->Add(fEtaCutElectronBKNoTag_WithMotherW);
+        fOutputList->Add(fEtaCutElectronBKULSMainSources_WithMotherW);
+        fOutputList->Add(fEtaCutElectronBKULSMainSources_WithMotherW_NW);
+        fOutputList->Add(fEtaCutElectronBKLSMainSources_WithMotherW);
+        fOutputList->Add(fEtaCutElectronBKLSMainSources_WithMotherW_NW);
         
         
         fOutputList->Add(fEtaCutElectronInclusiveRecoPtEtaZvtx);
@@ -1495,11 +1536,23 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         
         if (fIsMC)
         {
+            Bool_t PassAODFilterBitSelection = kFALSE;
             Bool_t IsOnHadronDCAcut = kTRUE;
-            if(EtaTrig>=fEtaCutMin && EtaTrig<=fEtaCutMax && atrack->TestFilterMask(AliAODTrack::kTrkTPCOnly) && atrack->GetStatus()&AliESDtrack::kITSrefit && atrack->GetStatus()&AliESDtrack::kTPCrefit && atrack->GetTPCNcls() >= 80)
+            
+            if (fUseGlobalTracksHadron)
+            {
+                if (atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA))
+                    PassAODFilterBitSelection = kTRUE;
+            }
+            else
+            {
+                if (atrack->TestFilterMask(AliAODTrack::kTrkTPCOnly))
+                    PassAODFilterBitSelection = kTRUE;
+            }
+            if(EtaTrig>=fEtaCutMin && EtaTrig<=fEtaCutMax && PassAODFilterBitSelection && atrack->GetStatus()&AliESDtrack::kITSrefit && atrack->GetStatus()&AliESDtrack::kTPCrefit && atrack->GetTPCNcls() >= 80)
             {
                 
-                if(fIsAOD && fUseDCACutforHadrons)
+                if(fUseDCACutforHadrons)
                 {
                     Double_t d0z0[2], cov[3];
                     AliAODVertex *prim_vtx = fAOD->GetPrimaryVertex();
@@ -1844,6 +1897,13 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     if(fDCAcutFlag) fNonHFE->SetDCACut(fDCAcut);
     fNonHFE->SetAlgorithm("DCA"); //KF
     
+    fNonHFE->SetUseGlobalTracks();
+    fNonHFE->SetNClustITS(2);
+    fNonHFE->SetDCAPartnerCuts(fDCAcutr, fDCAcutz);
+    fNonHFE->SetEtaCutForPart(fEtaCutMin, fEtaCutMax);
+    fNonHFE->SetTPCNclsForPID(60);
+
+    
     fNonHFE->SetPIDresponse(fPidResponse);
     fNonHFE->SetTrackCuts(-3.0,3.0,fPartnerCuts);
     fNonHFE->SetAdditionalCuts(fPtMinAsso,fTpcNclsAsso);
@@ -1898,76 +1958,139 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
                 fEtaCutElectronBKWithLabelULS->Fill(track->Pt(),fNonHFE->GetNULS());
             if (fNonHFE->IsLS())
                 fEtaCutElectronBKWithLabelLS->Fill(track->Pt(),fNonHFE->GetNLS());
-        }
-        
-        if(fIsAOD)
-        {
-            fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
             
-            Int_t ElectronPDG = TMath::Abs(fMCparticle->GetPdgCode());
-            
-            if (ElectronPDG == 11)
+            if(fIsAOD)
             {
-                fEtaCutElectronInclusiveRecoPtEtaZvtx->Fill(track->Pt());
+                fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
                 
-                if(fMCparticle->GetMother()>=0)
+                Int_t ElectronPDG = TMath::Abs(fMCparticle->GetPdgCode());
+                
+                if (ElectronPDG == 11)
                 {
-                    lHasMother = kTRUE;
-                    fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-                    
-                    Int_t MotherPDGAfterReco = TMath::Abs(fMCparticleMother->GetPdgCode());
-                    Int_t MotherPDGHeavy  = Int_t (MotherPDGAfterReco / TMath::Power(10, Int_t(TMath::Log10(MotherPDGAfterReco))));
-                    
-                    //NHFE
-                    if( MotherPDGAfterReco==22 || MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
+                    fEtaCutElectronInclusiveRecoPtEtaZvtx->Fill(track->Pt());
+                        
+                    if(fMCparticle->GetMother()>=0)
                     {
-                        lIsNHFe = kTRUE;
-                        fEtaCutElectronBKNoTag->Fill(track->Pt());
+                        lHasMother = kTRUE;
+                        fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
                         
-                        if (fNonHFE->IsULS())
-                            fEtaCutElectronBKULSMainSources->Fill(track->Pt(),fNonHFE->GetNULS());
-                        if (fNonHFE->IsLS())
-                            fEtaCutElectronBKLSMainSources->Fill(track->Pt(),fNonHFE->GetNLS());
+                        Int_t MotherPDGAfterReco = TMath::Abs(fMCparticleMother->GetPdgCode());
+                        Int_t MotherPDGHeavy  = Int_t (MotherPDGAfterReco / TMath::Power(10, Int_t(TMath::Log10(MotherPDGAfterReco))));
                         
+                        //NHFE
+                        if( MotherPDGAfterReco==22 || MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221)
+                        {
+                            lIsNHFe = kTRUE;
+                            fEtaCutElectronBKNoTag->Fill(track->Pt());
+                            
+                            if (fNonHFE->IsULS())
+                            {
+                                fEtaCutElectronBKULSMainSources->Fill(track->Pt(),fNonHFE->GetNULS());
+                                fEtaCutElectronBKULSMainSources_NW->Fill(track->Pt());
+                            }
+                            if (fNonHFE->IsLS())
+                            {
+                                fEtaCutElectronBKLSMainSources->Fill(track->Pt(),fNonHFE->GetNLS());
+                                fEtaCutElectronBKLSMainSources_NW->Fill(track->Pt());
+
+                            }
+                            
+                            //UseWeights for background
+                            
+                            if ( MotherPDGAfterReco ==111 || MotherPDGAfterReco ==221 )
+                            {
+                                Double_t mPt=fMCparticleMother->Pt();
+                                Double_t mweight=1;
+                                //________________________________________________________________
+                                //correction for d3 based on data
+                                 mweight=CalculateWeight(MotherPDGAfterReco, mPt);
+                                
+                                fEtaCutElectronBKNoTag_WithMotherW->Fill(track->Pt(), 1./mweight );
+                                
+                                 if (fNonHFE->IsULS())
+                                 {
+                                     fEtaCutElectronBKULSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNULS() * 1./mweight );
+                                     fEtaCutElectronBKULSMainSources_WithMotherW_NW->Fill(track->Pt(), 1./mweight );
+                                 }
+                                
+                                if (fNonHFE->IsLS())
+                                {
+                                    fEtaCutElectronBKLSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNULS() * 1./mweight );
+                                    fEtaCutElectronBKLSMainSources_WithMotherW_NW->Fill(track->Pt(), 1./mweight);
+                                }
+                            }
+                            else if (fMCparticleMother->GetMother() >=0)
+                            {
+                                //correcting also gamma from pi0 and eta
+                                fMCparticleGMother = (AliAODMCParticle*) fMCarray->At(fMCparticleMother->GetMother());
+                                Int_t GMotherPDG = TMath::Abs(fMCparticleGMother->GetPdgCode());
+                                
+                                if (GMotherPDG == 111 || GMotherPDG == 221)
+                                {
+                                    Double_t GMotherPt = fMCparticleGMother->Pt();
+                                    Double_t Gweight = 1;
+                                    
+                                    Gweight = CalculateWeight(GMotherPDG, GMotherPt);
+                                    
+                                    fEtaCutElectronBKNoTag_WithMotherW->Fill(track->Pt(), 1./Gweight );
+                                    
+                                    if (fNonHFE->IsULS())
+                                    {
+                                        fEtaCutElectronBKULSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNULS() * 1./Gweight );
+                                        fEtaCutElectronBKULSMainSources_WithMotherW_NW->Fill(track->Pt(), 1./Gweight );
+                                    }
+                                    
+                                    if (fNonHFE->IsLS())
+                                    {
+                                        fEtaCutElectronBKLSMainSources_WithMotherW->Fill(track->Pt(),fNonHFE->GetNULS() * 1./Gweight );
+                                        fEtaCutElectronBKLSMainSources_WithMotherW_NW->Fill(track->Pt(), 1./Gweight);
+                                    }
+
+                                    
+                                    
+                                    
+                                }
+                            }
+                            
+                            
+                        }
+                        else if(MotherPDGHeavy<4) //NHFE
+                        {
+                            fEtaCutElectronRecoOtherMC->Fill(track->Pt());
+                            lIsOther = kTRUE;
+                            
+                            if (fNonHFE->IsULS())
+                                fEtaCutElectronBKULSOtherSources->Fill(track->Pt(),fNonHFE->GetNULS());
+                            if (fNonHFE->IsLS())
+                                fEtaCutElectronBKLSOtherSources->Fill(track->Pt(),fNonHFE->GetNLS());
+
+                            
+                        }
+                        else
+                        {
+                            fEtaCutElectronRecoHFEMC->Fill(track->Pt());
+                            lIsHFe = kTRUE;
+                            if (fNonHFE->IsULS())
+                                fEtaCutElectronHFEULS->Fill(track->Pt(),fNonHFE->GetNULS());
+                            if (fNonHFE->IsLS())
+                                fEtaCutElectronHFELS->Fill(track->Pt(),fNonHFE->GetNLS());
+                            
+                        }
                         
                     }
-                    else if(MotherPDGHeavy<4) //NHFE
-                    {
-                        fEtaCutElectronRecoOtherMC->Fill(track->Pt());
-                        lIsOther = kTRUE;
-                        
-                        if (fNonHFE->IsULS())
-                            fEtaCutElectronBKULSOtherSources->Fill(track->Pt(),fNonHFE->GetNULS());
-                        if (fNonHFE->IsLS())
-                            fEtaCutElectronBKLSOtherSources->Fill(track->Pt(),fNonHFE->GetNLS());
-                        
-                        
-                    }
-                    else
-                    {
-                        fEtaCutElectronRecoHFEMC->Fill(track->Pt());
-                        lIsHFe = kTRUE;
-                        if (fNonHFE->IsULS())
-                            fEtaCutElectronHFEULS->Fill(track->Pt(),fNonHFE->GetNULS());
-                        if (fNonHFE->IsLS())
-                            fEtaCutElectronHFELS->Fill(track->Pt(),fNonHFE->GetNLS());
-                        
-                    }
+                }
+                else
+                {
+                    fMissIDElectronsReco->Fill(track->Pt());
+                    if (fNonHFE->IsULS())
+                        fEtaCutElectronMissIDULS->Fill(track->Pt(),fNonHFE->GetNULS());
+                    if (fNonHFE->IsLS())
+                        fEtaCutElectronMissIDLS->Fill(track->Pt(),fNonHFE->GetNLS());
                     
                 }
-            }
-            else
-            {
-                fMissIDElectronsReco->Fill(track->Pt());
-                if (fNonHFE->IsULS())
-                    fEtaCutElectronMissIDULS->Fill(track->Pt(),fNonHFE->GetNULS());
-                if (fNonHFE->IsLS())
-                    fEtaCutElectronMissIDLS->Fill(track->Pt(),fNonHFE->GetNLS());
                 
             }
-            
         }
-        
     }
 
     
@@ -2076,7 +2199,17 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         if(fIsAOD)
         {
             AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
-            if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+            
+            if (fUseGlobalTracksHadron)
+            {
+                if (!atrack2->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA))
+                {
+                    continue;
+                }
+            }
+            else
+                if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+    
             if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             if(atrack2->GetTPCNcls() < 80) continue;
             if(fAssocWithSPD && ((!(atrack2->HasPointOnITSLayer(0))) && (!(atrack2->HasPointOnITSLayer(1))))) continue;
@@ -2203,7 +2336,17 @@ TObjArray* AliAnalysisTaskHFEpACorrelation::SelectedHadrons()
         if(fIsAOD)
         {
             AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
-            if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+            
+            if (fUseGlobalTracksHadron)
+            {
+                if (!atrack2->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA))
+                {
+                    continue;
+                }
+            }
+            else
+                if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+            
             if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             if(atrack2->GetTPCNcls() < 80) continue;
             if(fAssocWithSPD && ((!(atrack2->HasPointOnITSLayer(0))) && (!(atrack2->HasPointOnITSLayer(1))))) continue;
@@ -2290,7 +2433,17 @@ void AliAnalysisTaskHFEpACorrelation::DiHadronCorrelation(AliVTrack *track, Int_
         if(fIsAOD)
         {
             AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(Vtrack2);
-            if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+            
+            if (fUseGlobalTracksHadron)
+            {
+                if (!atrack2->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA))
+                {
+                    continue;
+                }
+            }
+            else
+                if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+            
             if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             if(atrack2->GetTPCNcls() < 80) continue;
             if(fAssocWithSPD && ((!(atrack2->HasPointOnITSLayer(0))) && (!(atrack2->HasPointOnITSLayer(1))))) continue;
@@ -2349,6 +2502,114 @@ Double_t AliAnalysisTaskHFEpACorrelation::GetHadronEfficiency(Double_t pT, Doubl
     return fEffHadron->GetBinContent(bin);
     
 }
+
+Double_t AliAnalysisTaskHFEpACorrelation::CalculateWeight(Int_t pdg_particle, Double_t x)
+{
+    //weight for d3 based on MinJung parametrization //sent by Jan
+    Double_t weight=1.;
+    //MB
+    
+    if(pdg_particle==111){
+        if(x>= 0.100000 &&  x < 0.112797 ) weight=1.262120;
+        if(x>= 0.112797 &&  x < 0.127231 ) weight=1.277765;
+        if(x>= 0.127231 &&  x < 0.143512 ) weight=1.295605;
+        if(x>= 0.143512 &&  x < 0.161877 ) weight=1.318155;
+        if(x>= 0.161877 &&  x < 0.182592 ) weight=1.348693;
+        if(x>= 0.182592 &&  x < 0.205957 ) weight=1.388636;
+        if(x>= 0.205957 &&  x < 0.232313 ) weight=1.439122;
+        if(x>= 0.232313 &&  x < 0.262041 ) weight=1.497452;
+        if(x>= 0.262041 &&  x < 0.295573 ) weight=1.559409;
+        if(x>= 0.295573 &&  x < 0.333397 ) weight=1.615169;
+        if(x>= 0.333397 &&  x < 0.376060 ) weight=1.654954;
+        if(x>= 0.376060 &&  x < 0.424183 ) weight=1.668753;
+        if(x>= 0.424183 &&  x < 0.478465 ) weight=1.652225;
+        if(x>= 0.478465 &&  x < 0.539692 ) weight=1.603119;
+        if(x>= 0.539692 &&  x < 0.608754 ) weight=1.526049;
+        if(x>= 0.608754 &&  x < 0.686654 ) weight=1.426724;
+        if(x>= 0.686654 &&  x < 0.774523 ) weight=1.312684;
+        if(x>= 0.774523 &&  x < 0.873636 ) weight=1.195395;
+        if(x>= 0.873636 &&  x < 0.985432 ) weight=1.086264;
+        if(x>= 0.985432 &&  x < 1.111534 ) weight=0.993666;
+        if(x>= 1.111534 &&  x < 1.253773 ) weight=0.922587;
+        if(x>= 1.253773 &&  x < 1.414214 ) weight=0.875739;
+        if(x>= 1.414214 &&  x < 1.595185 ) weight=0.852181;
+        if(x>= 1.595185 &&  x < 1.799315 ) weight=0.847828;
+        if(x>= 1.799315 &&  x < 2.029567 ) weight=0.863875;
+        if(x>= 2.029567 &&  x < 2.289283 ) weight=0.899112;
+        if(x>= 2.289283 &&  x < 2.582235 ) weight=0.955194;
+        if(x>= 2.582235 &&  x < 2.912674 ) weight=1.033824;
+        if(x>= 2.912674 &&  x < 3.285398 ) weight=1.133714;
+        if(x>= 3.285398 &&  x < 3.705818 ) weight=1.259471;
+        if(x>= 3.705818 &&  x < 4.180038 ) weight=1.406883;
+        if(x>= 4.180038 &&  x < 4.714942 ) weight=1.578923;
+        if(x>= 4.714942 &&  x < 5.318296 ) weight=1.778513;
+        if(x>= 5.318296 &&  x < 5.998859 ) weight=2.001171;
+        if(x>= 5.998859 &&  x < 6.766511 ) weight=2.223161;
+        if(x>= 6.766511 &&  x < 7.632396 ) weight=2.449445;
+        if(x>= 7.632396 &&  x < 8.609086 ) weight=2.661734;
+        if(x>= 8.609086 &&  x < 9.710759 ) weight=2.851935;
+        if(x>= 9.710759 &&  x < 10.953409 ) weight=2.974319;
+        if(x>= 10.953409 &&  x < 12.355077 ) weight=3.106314;
+        if(x>= 12.355077 &&  x < 13.936111 ) weight=3.126815;
+        if(x>= 13.936111 &&  x < 15.719464 ) weight=3.150053;
+        if(x>= 15.719464 &&  x < 17.731026 ) weight=3.218509;
+        if(x>= 17.731026 &&  x < 20.000000 ) weight=3.252141;
+        
+    }
+    else if(pdg_particle==221){
+        if(x>= 0.100000 &&  x < 0.112797 ) weight=2.159358;
+        if(x>= 0.112797 &&  x < 0.127231 ) weight=2.145546;
+        if(x>= 0.127231 &&  x < 0.143512 ) weight=2.132390;
+        if(x>= 0.143512 &&  x < 0.161877 ) weight=2.109918;
+        if(x>= 0.161877 &&  x < 0.182592 ) weight=2.084920;
+        if(x>= 0.182592 &&  x < 0.205957 ) weight=2.054302;
+        if(x>= 0.205957 &&  x < 0.232313 ) weight=2.015202;
+        if(x>= 0.232313 &&  x < 0.262041 ) weight=1.966068;
+        if(x>= 0.262041 &&  x < 0.295573 ) weight=1.912255;
+        if(x>= 0.295573 &&  x < 0.333397 ) weight=1.844087;
+        if(x>= 0.333397 &&  x < 0.376060 ) weight=1.767913;
+        if(x>= 0.376060 &&  x < 0.424183 ) weight=1.680366;
+        if(x>= 0.424183 &&  x < 0.478465 ) weight=1.583468;
+        if(x>= 0.478465 &&  x < 0.539692 ) weight=1.475131;
+        if(x>= 0.539692 &&  x < 0.608754 ) weight=1.361436;
+        if(x>= 0.608754 &&  x < 0.686654 ) weight=1.244388;
+        if(x>= 0.686654 &&  x < 0.774523 ) weight=1.125973;
+        if(x>= 0.774523 &&  x < 0.873636 ) weight=1.015769;
+        if(x>= 0.873636 &&  x < 0.985432 ) weight=0.914579;
+        if(x>= 0.985432 &&  x < 1.111534 ) weight=0.830529;
+        if(x>= 1.111534 &&  x < 1.253773 ) weight=0.766397;
+        if(x>= 1.253773 &&  x < 1.414214 ) weight=0.723663;
+        if(x>= 1.414214 &&  x < 1.595185 ) weight=0.701236;
+        if(x>= 1.595185 &&  x < 1.799315 ) weight=0.695605;
+        if(x>= 1.799315 &&  x < 2.029567 ) weight=0.707578;
+        if(x>= 2.029567 &&  x < 2.289283 ) weight=0.735194;
+        if(x>= 2.289283 &&  x < 2.582235 ) weight=0.781052;
+        if(x>= 2.582235 &&  x < 2.912674 ) weight=0.842350;
+        if(x>= 2.912674 &&  x < 3.285398 ) weight=0.923676;
+        if(x>= 3.285398 &&  x < 3.705818 ) weight=1.028317;
+        if(x>= 3.705818 &&  x < 4.180038 ) weight=1.154029;
+        if(x>= 4.180038 &&  x < 4.714942 ) weight=1.296915;
+        if(x>= 4.714942 &&  x < 5.318296 ) weight=1.463674;
+        if(x>= 5.318296 &&  x < 5.998859 ) weight=1.651985;
+        if(x>= 5.998859 &&  x < 6.766511 ) weight=1.847912;
+        if(x>= 6.766511 &&  x < 7.632396 ) weight=2.066284;
+        if(x>= 7.632396 &&  x < 8.609086 ) weight=2.202231;
+        if(x>= 8.609086 &&  x < 9.710759 ) weight=2.399942;
+        if(x>= 9.710759 &&  x < 10.953409 ) weight=2.555106;
+        if(x>= 10.953409 &&  x < 12.355077 ) weight=2.632377;
+        if(x>= 12.355077 &&  x < 13.936111 ) weight=2.609660;
+        if(x>= 13.936111 &&  x < 15.719464 ) weight=2.656343;
+        if(x>= 15.719464 &&  x < 17.731026 ) weight=2.615438;
+        if(x>= 17.731026 &&  x < 20.000000 ) weight=2.576269;
+        
+    }
+    else weight=1.;
+    
+    
+    return weight/40000.;
+    
+}
+
 
 
 

@@ -110,6 +110,8 @@ public:
     void SetDCACutHadron(Double_t DCAcutr, Double_t DCAcutz) { fDCAcutrHadron = DCAcutr; fDCAcutzHadron = DCAcutz;};
     void SetUseDCACutHadron() {fUseDCACutforHadrons = kTRUE;};
     
+    void UseGlobalTracksHadron() { fUseGlobalTracksHadron = kTRUE;};
+    
     void SetUseAlternativeBinning() {fUseAlternativeBinnig = kTRUE;};
     
     void SetCentralityEstimator(Int_t Estimator) { fEstimator=Estimator; }; //0 = V0A, 1 = Other
@@ -139,6 +141,8 @@ private:
     //DiHadron Correlation Background
     void DiHadronCorrelation(AliVTrack *track, Int_t trackIndex);
     Double_t GetHadronEfficiency(Double_t pT, Double_t eta, Double_t zvtx);
+    
+    Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
     //Flags for specifics analysis
     Bool_t 				fCorrelationFlag; //
     Bool_t              fUseKF;
@@ -382,6 +386,17 @@ private:
     TH1F                *fEtaCutElectronMissIDULS; //!
     TH1F                *fEtaCutElectronMissIDLS; //!
     
+    //Test NHFE weight
+    TH1F                *fEtaCutElectronBKULSMainSources_NW; //!
+    TH1F                *fEtaCutElectronBKLSMainSources_NW; //!
+    
+    //Test Background weight (as Cris)
+    TH1F                *fEtaCutElectronBKNoTag_WithMotherW; //!
+    TH1F                *fEtaCutElectronBKULSMainSources_WithMotherW; //!
+    TH1F                *fEtaCutElectronBKULSMainSources_WithMotherW_NW; //!
+    TH1F                *fEtaCutElectronBKLSMainSources_WithMotherW; //!
+    TH1F                *fEtaCutElectronBKLSMainSources_WithMotherW_NW; //!
+    
     //DPhi MC
     TH2F                **fCEtaPhiNoEtaCutInclusive;  //!
     TH2F                **fCEtaPhiNoEtaCutBKG; //!
@@ -401,7 +416,9 @@ private:
     TH2F                **fCEtaPhi_Other_MC_Tag; //!
     TH2F                **fCEtaPhi_HFe_MC_Tag; //!
     TH2F                **fCEtaPhi_MC_NoMother_Tag; //!
-
+    
+    
+    Bool_t fUseGlobalTracksHadron;
     
     
     //______________________________________________________________________
