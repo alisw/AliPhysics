@@ -24,12 +24,13 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   
   void SetIsMC(Bool_t MC){isMC = MC;}
+  void SetCutEta(Bool_t toCut){cutEta = toCut;}
   Double_t GetMedian(Double_t *daArray);
   void FillTree(TTree *t, TLorentzVector v);
  private:
  
   AliPIDResponse *fPIDResponse;
-  Bool_t isMC;
+  Bool_t isMC, cutEta;
 
   TList *fOutputList;		//<
   TH1D *fHistEvents;		//!
@@ -62,7 +63,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 1); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 2); 
 };
 
 #endif

@@ -1,4 +1,4 @@
-AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(){
+AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(Bool_t cutEta = kFALSE){
 
   
   //--- get the current analysis manager ---//
@@ -22,6 +22,7 @@ AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(){
   // Create tasks
   AliAnalysisTaskUpcNano_MB *task = new AliAnalysisTaskUpcNano_MB(inputDataType.Data());
   task->SetIsMC(isMC);
+  task->SetCutEta(cutEta);
   mgr->AddTask(task);
 
 
