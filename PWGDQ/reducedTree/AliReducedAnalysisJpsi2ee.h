@@ -38,6 +38,8 @@ public:
   void AddPairCut(AliReducedInfoCut* cut) {fPairCuts.Add(cut);}
   void AddPrefilterPairCut(AliReducedInfoCut* cut) {fPreFilterPairCuts.Add(cut);}
   void SetRunEventMixing(Bool_t option) {fOptionRunMixing = option;};
+  void SetRunPairing(Bool_t option) {fOptionRunPairing = option;};
+  void SetRunOverMC(Bool_t option) {fOptionRunOverMC = option;};
   
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
@@ -49,7 +51,9 @@ protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
    AliMixingHandler*         fMixingHandler;    // mixing handler
    
-   Bool_t fOptionRunMixing;   // true: run event mixing, false: no event mixing
+   Bool_t fOptionRunMixing;    // true: run event mixing, false: no event mixing
+   Bool_t fOptionRunPairing;    // true: run pairing, false: only apply the track cuts
+   Bool_t fOptionRunOverMC;  // true: trees contain MC info -> fill histos to compute efficiencies, false: run normally as on data
    
    TList fEventCuts;               // array of event cuts
    TList fTrackCuts;               // array of track cuts
@@ -69,14 +73,18 @@ protected:
   Bool_t IsTrackPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
   Bool_t IsPairSelected(Float_t* values);
   Bool_t IsPairPreFilterSelected(Float_t* values);
+  Bool_t IsMCTruth(AliReducedTrackInfo* ptrack, AliReducedTrackInfo* ntrack);
+  Bool_t IsMCTruth(AliReducedTrackInfo* track);
+  Bool_t IsMCTruthSelected(AliReducedTrackInfo* track);
   void RunPrefilter();
   void RunSameEventPairing(TString pairClass = "PairSE");
   void RunTrackSelection();
   void FillTrackHistograms(TString trackClass = "Track");
   void FillTrackHistograms(AliReducedTrackInfo* track, TString trackClass = "Track");
-  void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE");
+  void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", Bool_t isMCTruth = kFALSE);
+  void FillMCTruthHistograms();
   
-  ClassDef(AliReducedAnalysisJpsi2ee,1);
+  ClassDef(AliReducedAnalysisJpsi2ee,2);
 };
 
 #endif

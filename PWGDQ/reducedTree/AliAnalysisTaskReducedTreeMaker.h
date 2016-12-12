@@ -162,6 +162,7 @@ public:
 
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information
+  void FillMCTruthInfo();                // fill MC truth particles
   void FillV0PairInfo();                    // fill V0 reduced pair information
   AliReducedPairInfo* FillV0PairInfo(AliESDv0* v0, Int_t id, AliESDtrack* legPos, AliESDtrack* legNeg, AliKFVertex* vtxKF, Bool_t chargesAreCorrect);
   UChar_t EncodeTPCClusterMap(AliVParticle* track, Bool_t isAOD);
