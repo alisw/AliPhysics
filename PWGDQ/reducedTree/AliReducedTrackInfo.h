@@ -82,7 +82,13 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t    CaloClusterId() const {return fCaloClusterId;}
   
   Float_t MCmom(Int_t dim) {return (dim>=0 && dim<3 ? fMCMom[dim] : 0.0);}
-  Float_t MCPt() {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]);}
+  Float_t PtMC() {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]);}
+  Float_t PMC()   const {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]);}
+  Float_t PhiMC() const;
+  Float_t EtaMC() const;
+  Float_t RapidityMC(Float_t massAssumption) const;
+  Float_t ThetaMC() const;
+  Float_t EnergyMC(Float_t massAssumption) const {return TMath::Sqrt(massAssumption*massAssumption+PMC()*PMC());}
   Float_t MCFreezeout(Int_t dim) {return (dim>=0 && dim<3 ? fMCFreezeout[dim] : 0.0);}
   Int_t MCLabel(Int_t history=0) {return (history>=0 && history<4 ? fMCLabels[history] : -9999);}
   Int_t MCPdg(Int_t history=0) {return (history>=0 && history<4 ? fMCPdg[history] : -9999);}
@@ -154,6 +160,56 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   ClassDef(AliReducedTrackInfo, 4);
 };
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::PhiMC() const {
+   //
+   // Return the azimuthal angle of this particle
+   //
+   Float_t phi=TMath::ATan2(fMCMom[1],fMCMom[0]); 
+   if(phi>=0.0) 
+      return phi;
+   else 
+      return (TMath::TwoPi()+phi);
+}
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::ThetaMC() const {
+   //
+   // Return the polar angle for this particle
+   //
+   Float_t p=PMC(); 
+   if(p>=1.0e-6) 
+      return TMath::ACos(fMCMom[2]/p);
+   else 
+      return 0.0;
+}
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::EtaMC() const {
+   //
+   // Return the pseudorapidity of this particle
+   //
+   Float_t eta = TMath::Tan(0.5*ThetaMC());
+   if(eta>1.0e-6) 
+      return -1.0*TMath::Log(eta);
+   else 
+      return 0.0;
+}
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::RapidityMC(Float_t massAssumption) const {
+   //
+   // Return the rapidity of this particle using a massAssumption
+   //
+   Float_t e = EnergyMC(massAssumption);
+   Float_t factor = e-fMCMom[2];
+   if(TMath::Abs(factor)<1.0e-6) return 0.0;
+   factor = (e+fMCMom[2])/factor;
+   if(factor<1.0e-6) return 0.0;
+   return 0.5*TMath::Log(factor);
+}
+
 
 //_______________________________________________________________________________
 inline UShort_t AliReducedTrackInfo::ITSncls() const

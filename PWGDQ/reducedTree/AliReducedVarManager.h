@@ -321,20 +321,31 @@ class AliReducedVarManager : public TObject {
     kNEventVars,                               // number of event variables  
     // Particle variables --------------------------------------
     // Common pair/track variables
-    kPt=kNEventVars,               
-    kP,         
-    kPx,        
-    kPy,        
-    kPz,        
-    kTheta,     
+    kPt=kNEventVars,
+    kPtMC,
+    kP,      
+    kPMC,
+    kPx,   
+    kPxMC,
+    kPy,     
+    kPyMC,
+    kPz,     
+    kPzMC,
+    kTheta,
+    kThetaMC,
     kEta,
-    kPhi,       
+    kEtaMC,
+    kPhi,     
+    kPhiMC,
     kCosNPhi,   
     kSinNPhi = kCosNPhi+6,
     kPtSquared = kSinNPhi+6,
     kMass,
+    kMassMC,
     kRap,
-    kCharge,
+    kRapMC,
+    kPdgMC,
+    kCharge = kPdgMC+4,
     kVZEROFlowVn,                     // v_n using VZERO RP
     kTPCFlowVn=kVZEROFlowVn+6*3,      // v_n using TPC RP
     kVZEROFlowSine=kTPCFlowVn+6,      // sin(n*(phi-Psi)) using VZERO RP
@@ -482,7 +493,8 @@ class AliReducedVarManager : public TObject {
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
   static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
-
+  static void FillMCTruthInfo(AliReducedTrackInfo* p, Float_t* values);
+  
   static void PrintTrackFlags(AliReducedTrackInfo* track);
   static void PrintBits(ULong_t mask, Int_t maxBit=64);
   static void PrintBits(UInt_t mask, Int_t maxBit=32);

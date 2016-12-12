@@ -36,6 +36,8 @@ class AliReducedBaseTrack : public TObject {
     ULong_t GetQualityFlags()             const {return fQualityFlags;}
     Bool_t UsedForQvector()               const {return fQualityFlags&(UShort_t(1)<<0);}
     Bool_t TestQualityFlag(UShort_t iflag)  const {return (iflag<8*sizeof(ULong_t) ? fQualityFlags&(ULong_t(1)<<iflag) : kFALSE);}
+    Bool_t IsMCTruth()                        const {return fQualityFlags&(ULong_t(1)<<63);}
+    Bool_t HasMCTruthInfo()               const {return fQualityFlags&(ULong_t(1)<<22);}
     Bool_t IsGammaLeg()                   const {return fQualityFlags&(ULong_t(1)<<1);}
     Bool_t IsPureGammaLeg()            const {return fQualityFlags&(ULong_t(1)<<8);}
     Bool_t IsK0sLeg()                           const {return fQualityFlags&(ULong_t(1)<<2);}
@@ -93,6 +95,8 @@ class AliReducedBaseTrack : public TObject {
                                                    // BIT19 toggled if bayes probability > 0.7
                                                    // BIT20 toggled if bayes probability > 0.8
                                                    // BIT21 toggled if bayes probability > 0.9
+                                                   // BIT22 toggled if the track contains MC information
+                                                   // BIT63 toggled if this is a pure MC track
                                                    // For AliReducedPairInfo objects
                                                    // BIT1 toggled for pure V0 K0s candidates
                                                    // BIT2 toggled for pure V0 Lambda candidates
