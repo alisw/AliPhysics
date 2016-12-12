@@ -157,12 +157,11 @@ void AliTrackContainerToyModel::ScalePtOfLorentzVector(TLorentzVector &mom) cons
 void AliTrackContainerToyModel::SetRandomEtaPhiOfLorentzVector(TLorentzVector &mom) const
 {
   if(fRandomizeEtaPhi==1){
-    gRandom = new TRandom3(0);
+  
     
     Double_t pTscale = mom.Pt();
     Double_t etascale = 2.*fTrackEtaWindow * gRandom->Rndm() - fTrackEtaWindow;
     Double_t phiscale = 2.* TMath::Pi() * gRandom->Rndm();
-    
     Double_t thetascale = 2.*TMath::ATan(TMath::Exp(-1.*(etascale)));
     Double_t pXscale    = pTscale * TMath::Cos(phiscale);
     Double_t pYscale    = pTscale * TMath::Sin(phiscale);
@@ -171,6 +170,11 @@ void AliTrackContainerToyModel::SetRandomEtaPhiOfLorentzVector(TLorentzVector &m
     mom.SetPxPyPzE(pXscale, pYscale, pZscale, pscale);
   }
 }
+void AliTrackContainerToyModel::ExecOnce()
+{
+      if (gRandom) delete gRandom;
+     gRandom = new TRandom3(0);
+  }
 
 
 
