@@ -28,6 +28,8 @@ AliMCParticleContainerToyModel::AliMCParticleContainerToyModel() :
   fTrackScalePt(1),
   fTrackEtaWindow(0.9),
   fRandomizeEtaPhi(0)
+ 
+ 
 
 {
 }
@@ -40,8 +42,7 @@ AliMCParticleContainerToyModel::AliMCParticleContainerToyModel(const char *name)
   AliMCParticleContainer(name),
   fTrackScalePt(1),
   fTrackEtaWindow(0.9),
-  fRandomizeEtaPhi(0)
- 
+  fRandomizeEtaPhi(0) 
 {
 }
 
@@ -161,12 +162,14 @@ void AliMCParticleContainerToyModel::ScalePtOfLorentzVector(TLorentzVector &mom)
 void AliMCParticleContainerToyModel::SetRandomEtaPhiOfLorentzVector(TLorentzVector &mom) const
 {
   if(fRandomizeEtaPhi==1){
-    gRandom = new TRandom3(0);
-    
+   
+   
+      
     Double_t pTscale = mom.Pt();
+ 
     Double_t etascale = 2.*fTrackEtaWindow * gRandom->Rndm() - fTrackEtaWindow;
     Double_t phiscale = 2.* TMath::Pi() * gRandom->Rndm();
-   
+
     
     Double_t thetascale = 2.*TMath::ATan(TMath::Exp(-1.*(etascale)));
     Double_t pXscale    = pTscale * TMath::Cos(phiscale);
@@ -174,9 +177,13 @@ void AliMCParticleContainerToyModel::SetRandomEtaPhiOfLorentzVector(TLorentzVect
     Double_t pZscale    = pTscale/TMath::Tan(thetascale);
     Double_t pscale=TMath::Sqrt(pTscale*pTscale+pZscale*pZscale);
     mom.SetPxPyPzE(pXscale, pYscale, pZscale, pscale);
+    
   }
 }
 
-
-
-
+void AliMCParticleContainerToyModel::ExecOnce()
+{
+  
+    if (gRandom) delete gRandom;
+     gRandom = new TRandom3(0);
+  }
