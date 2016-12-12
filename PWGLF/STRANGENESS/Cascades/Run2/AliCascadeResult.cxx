@@ -36,7 +36,13 @@ fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
-fCutMCUseMCProperties(kTRUE)
+fCutMCUseMCProperties(kTRUE),
+fCutUseVariableCascCosPA(kFALSE),
+fCutVarCascCosPA_Exp0Const(0),
+fCutVarCascCosPA_Exp0Slope(0),
+fCutVarCascCosPA_Exp1Const(0),
+fCutVarCascCosPA_Exp1Slope(0),
+fCutVarCascCosPA_Const(1)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, pt, mass
@@ -68,7 +74,13 @@ fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
-fCutMCUseMCProperties(kTRUE)
+fCutMCUseMCProperties(kTRUE),
+fCutUseVariableCascCosPA(kFALSE),
+fCutVarCascCosPA_Exp0Const(0),
+fCutVarCascCosPA_Exp0Slope(0),
+fCutVarCascCosPA_Exp1Const(0),
+fCutVarCascCosPA_Exp1Slope(0),
+fCutVarCascCosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -106,7 +118,13 @@ fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
-fCutMCUseMCProperties(kTRUE)
+fCutMCUseMCProperties(kTRUE),
+fCutUseVariableCascCosPA(kFALSE),
+fCutVarCascCosPA_Exp0Const(0),
+fCutVarCascCosPA_Exp0Slope(0),
+fCutVarCascCosPA_Exp1Const(0),
+fCutVarCascCosPA_Exp1Slope(0),
+fCutVarCascCosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -154,7 +172,14 @@ fCutXiRejection(lCopyMe.fCutXiRejection),
 //MC specific
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
-fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
+fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties),
+fCutUseVariableCascCosPA(lCopyMe.fCutUseVariableCascCosPA),
+fCutVarCascCosPA_Exp0Const(lCopyMe.fCutVarCascCosPA_Exp0Const),
+fCutVarCascCosPA_Exp0Slope(lCopyMe.fCutVarCascCosPA_Exp0Slope),
+fCutVarCascCosPA_Exp1Const(lCopyMe.fCutVarCascCosPA_Exp1Const),
+fCutVarCascCosPA_Exp1Slope(lCopyMe.fCutVarCascCosPA_Exp1Slope),
+fCutVarCascCosPA_Const(lCopyMe.fCutVarCascCosPA_Const)
+
 {
     SetName( lNewName.Data() );
     
@@ -200,6 +225,14 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutMCPhysicalPrimary    = lCopyMe -> GetCutMCPhysicalPrimary();
     fCutMCPDGCodeAssociation = lCopyMe -> GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
+    
+    //Variable CascCosPA
+    fCutUseVariableCascCosPA = lCopyMe -> GetCutUseVarCascCosPA();
+    fCutVarCascCosPA_Exp0Const = lCopyMe -> GetCutVarCascCosPAExp0Const();
+    fCutVarCascCosPA_Exp0Slope = lCopyMe -> GetCutVarCascCosPAExp0Slope();
+    fCutVarCascCosPA_Exp1Const = lCopyMe -> GetCutVarCascCosPAExp1Const();
+    fCutVarCascCosPA_Exp1Slope = lCopyMe -> GetCutVarCascCosPAExp1Slope();
+    fCutVarCascCosPA_Const = lCopyMe -> GetCutVarCascCosPAConst();
     
     // Constructor
     Double_t lThisMass = 0;
@@ -253,6 +286,14 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
+    
+    //Variable CascCosPA
+    fCutUseVariableCascCosPA = lCopyMe.GetCutUseVarCascCosPA();
+    fCutVarCascCosPA_Exp0Const = lCopyMe.GetCutVarCascCosPAExp0Const();
+    fCutVarCascCosPA_Exp0Slope = lCopyMe.GetCutVarCascCosPAExp0Slope();
+    fCutVarCascCosPA_Exp1Const = lCopyMe.GetCutVarCascCosPAExp1Const();
+    fCutVarCascCosPA_Exp1Slope = lCopyMe.GetCutVarCascCosPAExp1Slope();
+    fCutVarCascCosPA_Const = lCopyMe.GetCutVarCascCosPAConst();
     
     if (fHisto) {
         delete fHisto;
@@ -325,6 +366,14 @@ Bool_t AliCascadeResult::HasSameCuts(AliCascadeResult *lCompare)
     if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutXiRejection - lCompare->GetCutXiRejection() ) > 1e-6 ) lReturnValue = kFALSE;
     
+    //Variable CascCosPA
+    if ( TMath::Abs(fCutUseVariableCascCosPA - lCompare->GetCutUseVarCascCosPA()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Exp0Const - lCompare->GetCutVarCascCosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Exp0Slope - lCompare->GetCutVarCascCosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Exp1Const - lCompare->GetCutVarCascCosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Exp1Slope - lCompare->GetCutVarCascCosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Const  - lCompare->GetCutVarCascCosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -354,6 +403,14 @@ void AliCascadeResult::Print()
     cout<<" DCA Bach to PV.....: "<<fCutDCABachToPV<<endl;
     cout<<" DCA Casc Daughters.: "<<fCutDCACascDaughters<<endl;
     cout<<" Casc Cos PA........: "<<fCutCascCosPA<<endl;
+    cout<<" Use Var CascCosPA..: "<<fCutUseVariableCascCosPA<<endl;
+    if( fCutUseVariableCascCosPA ){
+        cout<<" ^--Exp. 0 Const....: "<<fCutVarCascCosPA_Exp0Const<<endl;
+        cout<<" ^--Exp. 0 Slope....: "<<fCutVarCascCosPA_Exp0Slope<<endl;
+        cout<<" ^--Exp. 1 Const....: "<<fCutVarCascCosPA_Exp1Const<<endl;
+        cout<<" ^--Exp. 1 Slope....: "<<fCutVarCascCosPA_Exp1Slope<<endl;
+        cout<<" ^--Constant........: "<<fCutVarCascCosPA_Const<<endl;
+    }
     cout<<" Casc 2D Radius.....: "<<fCutCascRadius<<endl;
     cout<<" DCA Bach to Baryon.: "<<fCutDCABachToBaryon<<endl;
     

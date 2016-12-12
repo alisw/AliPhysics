@@ -968,9 +968,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       if(fSys)
          {
-          Double_t nTPCstand = 70;
-          Double_t nITSstand = 1;
+          nTPCstand = 70;
+          nITSstand = 1;
          }
+
+      //cout << "nTPCstand = " << nTPCstand << " ; nITSstand = " << nITSstand << endl;
 
       //if(atrack->GetTPCNcls() < 80) continue;
       //if(atrack->GetITSNcls() < 3) continue;
@@ -1156,6 +1158,19 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Double_t eop = -1.0;
       Double_t m02 = -99999,m20 = -99999,sqm02m20=-99999.0;
       if(track->P()>0)eop = clustMatchE/track->P();
+      //cout << "eop org = " << eop << endl;
+      if(fMCarray)  // E/p MC mean shift correction
+        {
+         if(fUseTender)
+           { 
+            eop += 0.036; 
+           }
+         else
+           {
+            eop += 0.03; 
+           } 
+        }
+      //cout << "eop corr = " << eop << endl;
       m02 =clustMatch->GetM02();
       m20 =clustMatch->GetM20();
       sqm02m20 = sqrt(pow(m02,2)+pow(m20,2));
@@ -1182,9 +1197,10 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
    
       //if(fFlagSparse && track->Pt()>3.0){
-      if(fSys && track->Pt()>3.0){
+      if(fSys && fFlagSparse && track->Pt()>3.0){
          //EID THnsparse
          //fvalueElectron[0] = trigger;
+         //cout << "pid_eleD = " << pid_eleD << " ; pie_eleB = " << pid_eleB << endl; 
          fvalueElectron[0] = track->Pt();
          fvalueElectron[1] = fTPCnSigma;
          fvalueElectron[2] = eop;

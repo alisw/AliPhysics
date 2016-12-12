@@ -589,6 +589,7 @@ public:
     kNacc,                   // Number of accepted tracks
     kMatchEffITSTPC,         // ruff estimate on the ITS-TPC matching efficiceny
     kNaccTrcklts,            // number of accepted SPD tracklets in |eta|<1.6
+    kNaccTrcklts09,          // number of accepted SPD tracklets in |eta|<0.9
     kNaccTrcklts10,          // number of accepted SPD tracklets in |eta|<1.
     kNaccTrcklts0916,        // number of accepted SPD tracklets in 0.9<|eta|<1.6
     kNaccTrckltsCorr,        // number of accepted SPD tracklets in |eta|<1.6 (corrected)
@@ -616,8 +617,7 @@ public:
     kNaccItsPureEsd16Corr,   //
     kRefMult,                // reference multiplicity (only in AODs) should be Ntrk w/o double counts
     kRefMultTPConly,         // TPC only Reference Multiplicty (AliESDtrackCuts::GetReferenceMultiplicity(&esd, kTRUE))
-    kRefTPCovNaccTrcklts10,   // relative difference between TPC ref multiplicity and SPD multiplicity (NaccTrcklts10) used for LHC15o event cuts
-    kRefTPCdiffNaccTrcklts10, // Absolute difference
+    kRefMultOvRefMultTPConly,   // ref mult / tpc only ref mult should give a hint on out of bunch pile-up if much higher than factor ~4 (LHC15o)
 
     kNch,                    // MC true number of charged particles in |eta|<1.6
     kNch05,                  // MC true number of charged particles in |eta|<0.5
@@ -2263,6 +2263,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kNacc]            = 0;
   values[AliDielectronVarManager::kMatchEffITSTPC]  = 0;
   values[AliDielectronVarManager::kNaccTrcklts]     = 0;
+  values[AliDielectronVarManager::kNaccTrcklts09]   = 0;
   values[AliDielectronVarManager::kNaccTrcklts10]   = 0;
   values[AliDielectronVarManager::kNaccTrcklts0916] = 0;
   values[AliDielectronVarManager::kNevents]         = 0; //always fill bin 0;
@@ -2319,6 +2320,8 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   if(Req(kMatchEffITSTPC))  values[AliDielectronVarManager::kMatchEffITSTPC]  = AliDielectronHelper::GetITSTPCMatchEff(event);
   if(Req(kNaccTrcklts) || Req(kNaccTrckltsCorr))
     values[AliDielectronVarManager::kNaccTrcklts]     = AliDielectronHelper::GetNaccTrcklts(event,1.6);
+  if(Req(kNaccTrcklts09))
+      values[AliDielectronVarManager::kNaccTrcklts09]     = AliDielectronHelper::GetNaccTrcklts(event,0.9);
   if(Req(kNaccTrcklts10) || Req(kNaccTrcklts10Corr))
     values[AliDielectronVarManager::kNaccTrcklts10]   = AliDielectronHelper::GetNaccTrcklts(event,1.0);
   if(Req(kNaccTrcklts0916))
@@ -2654,8 +2657,8 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
 
   values[AliDielectronVarManager::kRefMult]        = header->GetRefMultiplicity();        // similar to Ntrk
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
-  values[AliDielectronVarManager::kRefTPCdiffNaccTrcklts10] = values[AliDielectronVarManager::kRefMultTPConly] - values[AliDielectronVarManager::kNaccTrcklts10];
-  values[AliDielectronVarManager::kRefTPCovNaccTrcklts10] = (values[AliDielectronVarManager::kNaccTrcklts10] > 0. ? (values[AliDielectronVarManager::kRefMultTPConly] - values[AliDielectronVarManager::kNaccTrcklts10]) / values[AliDielectronVarManager::kNaccTrcklts10] : 0.);
+  values[AliDielectronVarManager::kRefMultOvRefMultTPConly] = (values[AliDielectronVarManager::kRefMultTPConly] > 0. ? (values[AliDielectronVarManager::kRefMult]/values[AliDielectronVarManager::kRefMultTPConly]) : 0.);
+
   ///////////////////////////////////////////
   //////////// NANO AODs ////////////////////
   ///////////////////////////////////////////

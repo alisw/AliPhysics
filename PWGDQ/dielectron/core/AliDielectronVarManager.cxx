@@ -556,6 +556,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"Nacc",                   "N_{acc} #cbar_{#||{#eta}<0.9}",                      ""},
   {"MatchEffITSTPC",         "N_{trk}^{TPC}/N_{trk}^{ITS} #cbar_{#||{#eta}<0.9}",  ""},
   {"NaccTrcklts",            "N_{acc. trkl} #cbar_{#||{#eta}<1.6}",                ""},
+  {"NaccTrcklts09",          "N_{acc. trkl} #cbar_{#||{#eta}<0.9}",                ""},
   {"NaccTrcklts10",          "N_{acc. trkl} #cbar_{#||{#eta}<1.0}",                ""},
   {"NaccTrcklts0916",        "N_{acc. trkl} #cbar_{-1.6<#eta<-0.9}^{0.9<#eta<1.6}",""},
   {"NaccTrckltsCorr",        "N_{acc. trkl}^{corr.} #cbar_{#||{#eta}<1.6}",        ""},
@@ -583,8 +584,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   {"RefMult",                "N_{trk}^{ref}",                                      ""},
   {"RefMultTPConly",         "N_{trk}^{TPConly}",                                  ""},
-  {"RefTPCovNaccTrcklts10",  "#frac{N_{trk}^{TPConly}-N_{acc. trkl} #cbar_{#||{#eta}<1.0}}{N_{acc. trkl} #cbar_{#||{#eta}<1.0}}",                                     ""},
-  {"RefTPCdiffNaccTrcklts10",  "N_{trk}^{TPConly}-N_{acc. trkl} #cbar_{#||{#eta}<1.0}",                                      ""},
+  {"RefMultOvRefMultTPConly",  "N_{trk}/{N_{trk}^{TPConly}",                       ""},
+  
   {"Nch",                    "N_{ch} #cbar_{#||{#eta}<1.6}",                       ""},
   {"Nch05",                  "N_{ch} #cbar_{#||{#eta}<0.5}",                       ""},
   {"Nch10",                  "N_{ch} #cbar_{#||{#eta}<1.0}",                       ""},

@@ -314,7 +314,6 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000123", "00200009397300008850400000", "0163103100900000"); // chi2 20 with psi pair 0.1
     cuts.AddCut("00000123", "00200009397300008280400000", "0163103100900000"); // chi2 30 with psi pair 0.2
     cuts.AddCut("00000123", "00200009397300008260400000", "0163103100900000"); // chi2 30 with psi pair 0.05
-    
   } else if (trainConfig == 17) { // chi2 - Psi pair variations
     cuts.AddCut("00000113", "00200009397300008180400000", "0163103100900000"); // chi2 50 with psi pair 0.2
     cuts.AddCut("00000113", "00200009397300008860400000", "0163103100900000"); // chi2 20 with psi pair 0.05
@@ -323,7 +322,6 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000123", "00200009397300008180400000", "0163103100900000"); // chi2 50 with psi pair 0.2
     cuts.AddCut("00000123", "00200009397300008860400000", "0163103100900000"); // chi2 20 with psi pair 0.05
     cuts.AddCut("00000123", "00200009397300008000400000", "0163103100900000"); // chi2 100, no psi pair
-
   } else if (trainConfig == 19) { // photon quality
     cuts.AddCut("00000113", "00200009397300008250420000", "0163103100900000"); // photon quality 1
     cuts.AddCut("00000113", "00200009397300008250430000", "0163103100900000"); // photon quality 2
@@ -334,7 +332,6 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000123", "00200009397300008250430000", "0163103100900000"); // photon quality 2
     cuts.AddCut("00000123", "00200009397300008250440000", "0163103100900000"); // photon quality 3
     cuts.AddCut("00000123", "00200009397300008250400000", "0163106100900000"); // tighter alpha meson 0.85
-
   } else if (trainConfig == 21) { // much stricter min R cut
     cuts.AddCut("00000113", "00700009397300008250400000", "0163103100900000"); // min R = 35 cm
     cuts.AddCut("00000113", "00700009397300008250420000", "0163103100900000"); // photon quality 1, min R = 35 cm
@@ -345,7 +342,6 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000123", "00700009397300008250420000", "0163103100900000"); // photon quality 1, min R = 35 cm
     cuts.AddCut("00000123", "00700009397300008250430000", "0163103100900000"); // photon quality 2, min R = 35 cm
     cuts.AddCut("00000123", "00700009397300008250440000", "0163103100900000"); // photon quality 3, min R = 35 cm
-
   } else if (trainConfig == 23) { // meson cut variations
     cuts.AddCut("00000123", "00200009397300008250400000", "0163203100900000"); // y meson < 0.7
     cuts.AddCut("00000123", "00200009397300008250400000", "0163503100900000"); // y meson < 0.85
@@ -546,7 +542,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000113", "00200009700000008250404000", "0152103500000000"); //  0 < kappa < 10
 
   // --------- testing validity of old 7 TeV result -------------------------//
-  } else if (trainConfig == 90) { // like last last two in 70 and dalitz standard 7TeV
+  } else if (trainConfig == 90) {
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
     cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
     cuts.AddCut("00000113", "00200009360300007800004000", "0263103100900000"); //dalitz: New Standard Only MB, standard pp7Tev cut dalitz

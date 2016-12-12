@@ -37,7 +37,7 @@ AliCFPairIsPrimaryCuts::AliCFPairIsPrimaryCuts() :
   //
 }
 //__________________________________________________________________________________
-AliCFPairIsPrimaryCuts::AliCFPairIsPrimaryCuts(Char_t* name, Char_t* title) :
+AliCFPairIsPrimaryCuts::AliCFPairIsPrimaryCuts(const Char_t* name, const Char_t* title) :
   AliCFCutBase(name,title),
   fCutNeg(new AliCFTrackIsPrimaryCuts(name,title)),
   fCutPos(new AliCFTrackIsPrimaryCuts(name,title))
