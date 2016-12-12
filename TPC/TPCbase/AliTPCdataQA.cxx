@@ -494,7 +494,7 @@ void AliTPCdataQA::UpdateEventHistograms()
 
   Float_t averageOccupancy =
     Float_t(fSignalCounter)/fEventsPerBin/(fLastTimeBin - fFirstTimeBin +1.0)
-    / 570132.0; // 570,132 is number of pads
+    / 557568.0; // 557,568 is number of pads
   fHistOccupancyVsEvent->SetBinContent(bin, averageOccupancy);
   fSignalCounter = 0;
 
@@ -1261,4 +1261,72 @@ TObjArray *AliTPCdataQA::ConfigArrRocs(TObjArray *arr, const Text_t* name)
     if (fActiveChambers[i]) arr->AddAt(new AliTPCCalROC(i),i);
   }
   return arr;
+}
+
+//_____________________________________________________________________
+void AliTPCdataQA::Merge(AliTPCdataQA * const dataQA)
+{
+  ///  Merge dataQA to the current AliTPCdataQA
+
+  // Only merge objects with the same time range
+  if (fFirstTimeBin != dataQA->fFirstTimeBin || fLastTimeBin != dataQA->fLastTimeBin) {
+    AliErrorF("Cannot merge AliTPCdataQA with different time bin range (%i, %i) <> (%i, %i)",
+              fFirstTimeBin, fLastTimeBin, dataQA->fFirstTimeBin, dataQA->fLastTimeBin);
+    return;
+  }
+
+  if (fAdcMin != dataQA->fAdcMin || fAdcMax !=  dataQA->fAdcMax || fMinQMax != dataQA->fMinQMax) {
+    AliWarning("Merging objects with different Adc or QMax settings.");
+  }
+
+  //initialize and denormalize if necessary
+  Init();
+  dataQA->Init();
+
+  // Only CalPads and profiles are merged
+  fNoThreshold    ->Add(dataQA->fNoThreshold);
+  fNLocalMaxima   ->Add(dataQA->fNLocalMaxima);
+  fMeanCharge     ->Add(dataQA->fMeanCharge);
+  fMaxCharge      ->Add(dataQA->fMaxCharge);
+  fNTimeBins      ->Add(dataQA->fNTimeBins);
+  fNPads          ->Add(dataQA->fNPads);
+  fTimePosition   ->Add(dataQA->fTimePosition);
+
+  fHistQVsTimeSideA   ->Add(dataQA->fHistQVsTimeSideA);
+  fHistQVsTimeSideC   ->Add(dataQA->fHistQVsTimeSideC);
+  fHistQMaxVsTimeSideA->Add(dataQA->fHistQMaxVsTimeSideA);
+  fHistQMaxVsTimeSideC->Add(dataQA->fHistQMaxVsTimeSideC);
+
+  fEventCounter+=dataQA->fEventCounter;
+}
+
+//_____________________________________________________________________
+Long64_t AliTPCdataQA::Merge(TCollection * const list)
+{
+  /// Merge all objects of this type in list
+
+  Long64_t nmerged=1;
+
+  // if analysis had been called for any of the objects,
+  //   analyse the merged object
+  Bool_t isAnalysed=fIsAnalysed;
+
+  TIter next(list);
+  AliTPCdataQA *dataQA=0;
+  TObject *o=0;
+
+  while ( (o=next()) ){
+    dataQA=dynamic_cast<AliTPCdataQA*>(o);
+    if (dataQA){
+      isAnalysed |= dataQA->fIsAnalysed;
+      Merge(dataQA);
+      ++nmerged;
+    }
+  }
+
+  if (isAnalysed) {
+    Analyse();
+  }
+
+  return nmerged;
 }

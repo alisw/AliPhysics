@@ -115,6 +115,12 @@ public:
 
   void SetChamberStatus(UInt_t roc, Bool_t status) { fActiveChambers.SetBitNumber(roc,status); }
   Bool_t GetChamberStatus(UInt_t roc) {return fActiveChambers.TestBitNumber(roc);}
+
+  // Merge functionality
+  void Merge(AliTPCdataQA * const ce);
+  virtual Long64_t Merge(TCollection * const list);
+
+
 private:
   Int_t Update(const Int_t iSector, const Int_t iRow, const Int_t iPad,
 	       const Int_t iTimeBin, Float_t signal,
