@@ -172,12 +172,12 @@ Bool_t AliReducedAnalysisJpsi2ee::IsPairPreFilterSelected(Float_t* values) {
    // apply event cuts
    //
    if(fPreFilterPairCuts.GetEntries()==0) return kTRUE;
-   // loop over all the cuts and make a logical and between all cuts in the list
+   // loop over all the cuts and make a logical OR between all cuts in the list
    for(Int_t i=0; i<fPreFilterPairCuts.GetEntries(); ++i) {
       AliReducedInfoCut* cut = (AliReducedInfoCut*)fPreFilterPairCuts.At(i);
-      if(!cut->IsSelected(values)) return kFALSE;
+      if(cut->IsSelected(values)) return kTRUE;
    }
-   return kTRUE;
+   return kFALSE;
 }
 
 //___________________________________________________________________________
