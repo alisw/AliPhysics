@@ -41,7 +41,7 @@ AliCFManager::AliCFManager() :
   //
 }
 //_____________________________________________________________________________
-AliCFManager::AliCFManager(Char_t* name, Char_t* title) : 
+AliCFManager::AliCFManager(const Char_t* name, const Char_t* title) : 
   TNamed(name,title),
   fNStepEvt(0),
   fNStepPart(0),

@@ -119,7 +119,7 @@ AliCFTrackQualityCuts::AliCFTrackQualityCuts() :
   Initialise();
 }
 //__________________________________________________________________________________
-AliCFTrackQualityCuts::AliCFTrackQualityCuts(Char_t* name, Char_t* title) :
+AliCFTrackQualityCuts::AliCFTrackQualityCuts(const Char_t* name, const Char_t* title) :
   AliCFCutBase(name,title),
   fMinNClusterTPC(0),
   fMinNClusterITS(0),
