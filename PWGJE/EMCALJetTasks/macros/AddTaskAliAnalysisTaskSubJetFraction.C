@@ -80,7 +80,7 @@ AliAnalysisTaskSubJetFraction* AddTaskAliAnalysisTaskSubJetFraction(const char *
   AliParticleContainer *trackContDet=0x0;
   AliParticleContainer *trackContTrue=0x0;
 
-  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub){
+  if (jetShapeSub == AliAnalysisTaskSubJetFraction::kConstSub || jetShapeType==AliAnalysisTaskSubJetFraction::kDetEmbPart){
     trackContData = task->AddParticleContainer(ntracksData);
     trackContDet = task->AddParticleContainer(ntracksDet);
   }
