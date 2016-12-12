@@ -216,6 +216,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
 
+    // modify acceptance via histogram with cellID
+    void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
+
     // Set basic merging cuts
     void        SetSeedEnergy(Double_t seed)                    {fSeedEnergy      = seed; return;}
     void        SetLocMaxCutEDiff(Double_t diffCut)             {fLocMaxCutEDiff  = diffCut; return;}
@@ -275,6 +278,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TProfile*  fBadChannels;                            // TProfile with bad channels
     Int_t      fNMaxEMCalModules;                       // max number of EMCal Modules
     Int_t      fNMaxPHOSModules;                        // max number of PHOS Modules
+    TH1S*      fHistoModifyAcc;                         // hisogram for modified acceptance, if leadCellID->1 accept cluster, if leadCellID->0 reject cluster
 
     Bool_t    fDoLightOutput;                           // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     Int_t     fIsMC;                                    // Flag for usage of JetJet MC
@@ -441,7 +445,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     
   private:
 
-    ClassDef(AliCaloPhotonCuts,36)
+    ClassDef(AliCaloPhotonCuts,37)
 };
 
 #endif
