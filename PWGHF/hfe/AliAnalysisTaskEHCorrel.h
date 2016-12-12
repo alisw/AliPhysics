@@ -45,8 +45,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t *);
 
     Bool_t  PassEventSelect(AliVEvent *fVevent);
-    void    SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
-    void    SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
+    void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
+    void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
     void    CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass);
     Bool_t  PassTrackCuts(AliAODTrack *atrack);
     void    GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
@@ -55,8 +55,9 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    HadronInfo(Int_t itrack);
     //void    ElectronHadCorrel(Int_t itrack, AliVTrack *track, THnSparse *SparseEHCorrl, TH2F *HisDphi);
     void    ElectronHadCorrel(Int_t itrack, AliVTrack *track, THnSparse *SparseEHCorrl);
+    void    ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtrack, AliVTrack *track, THnSparse *SparseEHCorrlNoPartner);
     void    EMCalClusterInfo();
-    void    SelectNonHFElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+    void    SelectNonHFElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS);
     TObjArray* CloneAndReduceTrackList();
     void    MixedEvent(AliVTrack *track, THnSparse *SparseMixEHCorrl);
 
@@ -69,8 +70,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetTriggerElePtCut(Bool_t trigElePtcut) {fTrigElePtCut = trigElePtcut;};
     void    GetVtxZCentralityBin();
 
-    void    SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
-    void    SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
+    void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+    void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
 
 
   private:
@@ -151,6 +152,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH1F                *fHadPt_AftEID;//!
     TH1F                *fULSElecPt;//!
     TH1F                *fLSElecPt;//!
+    TH1F                *fTagULSElecPt;//!
+    TH1F                *fTagLSElecPt;//!
 
     TH2F                *fHadronPhiPt;//!
     TH1F                *fHadronPhi;//!
@@ -167,21 +170,27 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH2F                *fMixStatVtxZ;//!
     TH2F                *fMixStatCentVtxz;//!
 
-    TH2F                *fHisHadDphi;//!
-    TH2F                *fHisIncEDphi;//!
-    TH2F                *fHisLSDphi;//!
-    TH2F                *fHisULSDphi;//!
+    //TH2F                *fHisHadDphi;//!
+    //TH2F                *fHisIncEDphi;//!
+    //TH2F                *fHisLSDphi;//!
+    //TH2F                *fHisULSDphi;//!
 
+    THnSparse           *fSprsAllHadHCorrl;//!
     THnSparse           *fSprsMixAllHadHCorrl;//!
     THnSparse           *fSprsHadHCorrl;//!
     THnSparse           *fSprsInclusiveEHCorrl;//!
     THnSparse           *fSprsLSEHCorrl;//!
     THnSparse           *fSprsULSEHCorrl;//!
+    THnSparse           *fSprsLSNoPartnerEHCorrl;//!
+    THnSparse           *fSprsULSNoPartnerEHCorrl;//!
+    THnSparse           *fSprsTagULSEHCorrl;//!
+    THnSparse           *fSprsTagLSEHCorrl;//!
     THnSparse           *fSprsMixHadHCorrl;//!
     THnSparse           *fSprsMixInclusiveEHCorrl;//!
     THnSparse           *fSprsMixLSEHCorrl;//!
     THnSparse           *fSprsMixULSEHCorrl;//!
-
+    THnSparse           *fSprsMixTagULSEHCorrl;//!
+    THnSparse           *fSprsMixTagLSEHCorrl;//!
 
     AliAnalysisTaskEHCorrel(const AliAnalysisTaskEHCorrel&); // not implemented
     AliAnalysisTaskEHCorrel& operator=(const AliAnalysisTaskEHCorrel&); // not implemented
