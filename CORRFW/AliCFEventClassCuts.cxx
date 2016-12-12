@@ -57,7 +57,7 @@ AliCFEventClassCuts::AliCFEventClassCuts() :
 }
 
 //____________________________________________________________________
-AliCFEventClassCuts::AliCFEventClassCuts(Char_t* name, Char_t* title) : 
+AliCFEventClassCuts::AliCFEventClassCuts(const Char_t* name, const Char_t* title) : 
   AliCFCutBase(name,title),
   fTriggerType(0),
   fTriggerAND(kFALSE),

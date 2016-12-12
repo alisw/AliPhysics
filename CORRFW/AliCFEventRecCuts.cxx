@@ -59,7 +59,7 @@ AliCFEventRecCuts::AliCFEventRecCuts() :
 }
 
 //____________________________________________________________________
-AliCFEventRecCuts::AliCFEventRecCuts(Char_t* name, Char_t* title) : 
+AliCFEventRecCuts::AliCFEventRecCuts(const Char_t* name, const Char_t* title) : 
   AliCFCutBase(name,title),
   fNTracksMin(-1),
   fNTracksMax(1000000),

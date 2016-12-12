@@ -59,7 +59,7 @@ class AliCFTrackQualityCuts : public AliCFCutBase
 {
  public :
   AliCFTrackQualityCuts() ;
-  AliCFTrackQualityCuts(Char_t* name, Char_t* title) ;
+  AliCFTrackQualityCuts(const Char_t* name, const Char_t* title) ;
   AliCFTrackQualityCuts(const AliCFTrackQualityCuts& c) ;
   AliCFTrackQualityCuts& operator=(const AliCFTrackQualityCuts& c) ;
   ~AliCFTrackQualityCuts();

@@ -33,7 +33,7 @@ class AliCFManager : public TNamed
 {
  public :
   AliCFManager() ;
-  AliCFManager(Char_t* name, Char_t* title) ;
+  AliCFManager(const Char_t* name, const Char_t* title) ;
   AliCFManager(const AliCFManager& c) ;
   AliCFManager& operator=(const AliCFManager& c) ;
   virtual ~AliCFManager();
