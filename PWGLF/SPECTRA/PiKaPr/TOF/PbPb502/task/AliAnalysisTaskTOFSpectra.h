@@ -43,7 +43,7 @@ class TClonesArray;
 #include "AliESDTOFCluster.h"
 #include "AliESDtrackCuts.h"
 #include "AliUtilTOFParams.h"
-#include "AliNuclexEventCuts.h"
+#include "AliEventCuts.h"
 #include "TBenchmark.h"
 
 using namespace AliUtilTOFParams;
@@ -456,7 +456,7 @@ public:
   enum {kEtaBins = 36, kPhiBins = 18, kEvtMultBins = 12, kChannelBins = 3276, kTimeBins = 10000};
   
   //Standard track cuts
-  AliNuclexEventCuts fEventCut;      //!<! basic cut variables for events
+  AliEventCuts fEventCut;            //!<! basic cut variables for events
   AliESDtrackCuts* fESDtrackCuts;    /// basic cut variables
   AliESDtrackCuts* fESDtrackCutsPrm; /// basic cut variables for primaries
   

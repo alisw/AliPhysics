@@ -1715,7 +1715,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
     for(Int_t i = 0; i < 3; i++){//Loop on pi/k/p
       Bool_t pass = kTRUE;
       for(Int_t j = 0; j < 3; j++){
-        if(i == j) if(TMath::Abs(fTPCSigma[kpi + j]) > 3) pass = kFALSE;
+        if(i == j){
+          if(TMath::Abs(fTPCSigma[kpi + j]) > 3) pass = kFALSE;
+        }
         else if(TMath::Abs(fTPCSigma[kpi + j]) < 3) pass = kFALSE;
       }
       if(pass) hDenMatchTPC[fSign][i]->Fill(fPt);
@@ -1851,7 +1853,9 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       for(Int_t i = 0; i < 3; i++){//Loop on pi/k/p
         Bool_t pass = kTRUE;
         for(Int_t j = 0; j < 3; j++){
-          if(i == j) if(TMath::Abs(fTPCSigma[kpi + j]) > 3) pass = kFALSE;
+          if(i == j){
+            if(TMath::Abs(fTPCSigma[kpi + j]) > 3) pass = kFALSE;
+          } 
           else if(TMath::Abs(fTPCSigma[kpi + j]) < 3) pass = kFALSE;
         }
         if(pass) hNumMatchTPC[fSign][i]->Fill(fPt);
