@@ -116,7 +116,9 @@ AliAnalysisTaskSE(),
   fNormMethod("QoverQlength"),
   fHistMassPtPhiq2Centr(0x0),
   fq2Meth(kq2TPC),
-  fSeparateD0D0bar(kFALSE)
+  fSeparateD0D0bar(kFALSE),
+  fOnTheFlyTPCEP(kFALSE),
+  fUsePtWeights(kFALSE)
 {
   // Default constructor
   for(int i = 0; i < 3; i++) {
@@ -156,7 +158,9 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fNormMethod("QoverQlength"),
   fHistMassPtPhiq2Centr(0x0),
   fq2Meth(kq2TPC),
-  fSeparateD0D0bar(kFALSE)
+  fSeparateD0D0bar(kFALSE),
+  fOnTheFlyTPCEP(kFALSE),
+  fUsePtWeights(kFALSE)
 {
   // standard constructor
   for(int i = 0; i < 3; i++) {
@@ -403,6 +407,8 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
       // Event Plane
       TH2F* hEvPlane=new TH2F(Form("hEvPlane%s",centrname.Data()),Form("VZERO/TPC Event plane angle %s;#phi Ev Plane (TPC);#phi Ev Plane (VZERO);Entries",centrname.Data()),200,0.,TMath::Pi(),200,0.,TMath::Pi());
       fOutput->Add(hEvPlane);
+      TH2F* hEvPlaneRecomp=new TH2F(Form("hEvPlaneRecomp%s",centrname.Data()),Form("TPC Event plane angle before after recomputation %s;#phi Ev Plane (TPC);#phi Ev Plane (TPC recomp);Entries",centrname.Data()),200,0.,TMath::Pi(),200,0.,TMath::Pi());
+      fOutput->Add(hEvPlaneRecomp);
       TH1F* hEvPlaneA=new TH1F(Form("hEvPlaneA%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
       fOutput->Add(hEvPlaneA);
       TH1F* hEvPlaneB=new TH1F(Form("hEvPlaneB%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
@@ -1319,6 +1325,11 @@ Float_t AliAnalysisTaskSEHFv2::GetEventPlane(AliAODEvent* aod, AliEventplane *pl
     rpangleTPCpos = qsub1->Phi()/2.;
     rpangleTPCneg = qsub2->Phi()/2.;
   }
+  if(fOnTheFlyTPCEP){
+    Double_t rpangleTPCold=rpangleTPC;
+    ComputeTPCEventPlane(aod,rpangleTPC,rpangleTPCpos,rpangleTPCneg);
+    ((TH2F*)fOutput->FindObject(Form("hEvPlaneRecomp%s",fCentrBinName.Data())))->Fill(rpangleTPCold,rpangleTPC);
+  }
   if(rpangleTPC<0){
     fhEventsInfo->Fill(11);
     return -9999.;
@@ -1480,6 +1491,42 @@ Float_t AliAnalysisTaskSEHFv2::GetEventPlane(AliAODEvent* aod, AliEventplane *pl
     }
   }
   return eventplane;
+}
+//________________________________________________________________________
+void AliAnalysisTaskSEHFv2::ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const {
+  Int_t nTracks=aod->GetNumberOfTracks();
+  Double_t qVec[2]={0.,0.};
+  Double_t qVecPosEta[2]={0.,0.};
+  Double_t qVecNegEta[2]={0.,0.};
+  for(Int_t it=0; it<nTracks; it++){
+    AliAODTrack* track=(AliAODTrack*)aod->GetTrack(it);
+    if(!track) continue;
+    if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
+      Double_t eta=track->Eta();
+      Double_t phi=track->Phi();
+      Double_t wi=1.;
+      if(fUsePtWeights){
+	Double_t pt=track->Pt();
+	wi=pt;
+	if(pt>2) wi=2.;
+      }
+      Double_t qx=wi*TMath::Cos(2.*phi);
+      Double_t qy=wi*TMath::Sin(2.*phi);
+      qVec[0]+=qx;
+      qVec[1]+=qy;
+      if(eta>0){
+	qVecPosEta[0]+=qx;
+	qVecPosEta[1]+=qy;
+      }else{
+	qVecNegEta[0]+=qx;
+	qVecNegEta[1]+=qy;
+      }
+    }
+  }
+  rpangleTPC = (TMath::Pi()+TMath::ATan2(-qVec[1],-qVec[0]))/2;
+  rpangleTPCpos = (TMath::Pi()+TMath::ATan2(-qVecPosEta[1],-qVecPosEta[0]))/2;
+  rpangleTPCneg = (TMath::Pi()+TMath::ATan2(-qVecNegEta[1],-qVecNegEta[0]))/2;
+  return;
 }
 //________________________________________________________________________
 Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, AliEventplane *pl){
