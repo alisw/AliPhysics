@@ -191,7 +191,7 @@ inline void AliDielectronSignalBase::SetSignificanceAndSOB()
   Float_t s = (fValues(0)>0?fValues(0):0); Float_t b = fValues(1);
   Float_t se = fErrors(0); Float_t be = fErrors(1);
   // fErrors(2) = ((s+b)>0 ? TMath::Sqrt((s*(s+2*b)*(s+2*b)+b*s*s)/(4*TMath::Power(s+b,3))) : 0); // old implementation
-  fErrors(2) = ((s+b)>0 ? fValues(2)*TMath::Sqrt(be*be + TMath::Power(se*(s+2*b)/s, 2)) / 2 / (s+b) : 0);
+  fErrors(2) = ((s+b)>0 && s>0? fValues(2)*TMath::Sqrt(be*be + TMath::Power(se*(s+2*b)/s, 2)) / 2 / (s+b) : 0);
 }
 
 inline void AliDielectronSignalBase::SetFWHM()
