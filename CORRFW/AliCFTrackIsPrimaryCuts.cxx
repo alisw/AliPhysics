@@ -109,7 +109,7 @@ AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts() :
   Initialise();
 }
 //__________________________________________________________________________________
-AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) :
+AliCFTrackIsPrimaryCuts::AliCFTrackIsPrimaryCuts(const Char_t* name, const Char_t* title) :
   AliCFCutBase(name,title),
   fEvt(0x0),
   fUseSPDvertex(0),

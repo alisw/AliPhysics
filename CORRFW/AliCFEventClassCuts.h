@@ -32,7 +32,7 @@ class AliCFEventClassCuts: public AliCFCutBase
 {
  public :
   AliCFEventClassCuts() ;
-  AliCFEventClassCuts(Char_t* name, Char_t* title) ;
+  AliCFEventClassCuts(const Char_t* name, const Char_t* title) ;
   AliCFEventClassCuts(const AliCFEventClassCuts& c) ;
   AliCFEventClassCuts& operator=(const AliCFEventClassCuts& c) ;
   ~AliCFEventClassCuts();
