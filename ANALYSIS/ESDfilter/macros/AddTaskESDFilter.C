@@ -210,22 +210,22 @@ Bool_t AddTrackCutsLHC10h(AliAnalysisTaskESDfilter* esdfilter){
   jetCuts1006->SetRequireSigmaToVertex(kFALSE);
 
   jetCuts1006->SetEtaRange(-0.9,0.9);
-  jetCuts1006->SetPtRange(0.15, 1E+15.);
+  jetCuts1006->SetPtRange(0.15, 1E+15);
 
-  AliESDtrackCuts* esdTrackCutsHG0 = jetCuts1006->Clone("JetCuts10001006");
+  AliESDtrackCuts* esdTrackCutsHG0 = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10001006");
   esdTrackCutsHG0->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 
   // the complement to the one with SPD requirement: tracks with ITS refit but no SPD hit
   //  AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWGJE(10011006);
-  AliESDtrackCuts* esdTrackCutsHG1 = jetCuts1006->Clone("JetCuts10011006");
+  AliESDtrackCuts* esdTrackCutsHG1 = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10011006");
   esdTrackCutsHG1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
 
-  AliESDtrackCuts* esdTrackCutsHG2 = jetCuts1006->Clone("JetCuts10021006");
+  AliESDtrackCuts* esdTrackCutsHG2 = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10021006");
   esdTrackCutsHG2->SetMaxChi2PerClusterITS(1E10);
 
   // all complementary hybrid tracks: no SPD requirement, no ITS refit requirement
   //  AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWGJE(10041006);
-  AliESDtrackCuts* esdTrackCutsGCOnly = jetCuts1006->Clone("JetCuts10041006");
+  AliESDtrackCuts* esdTrackCutsGCOnly = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10041006");
   esdTrackCutsGCOnly->SetRequireITSRefit(kFALSE);
 
   // standard cuts also used in R_AA analysis
@@ -459,16 +459,16 @@ Bool_t AddTrackCutsLHC10bcde(AliAnalysisTaskESDfilter* esdfilter){
    jetCuts1006->SetRequireSigmaToVertex(kFALSE);
    
    jetCuts1006->SetEtaRange(-0.9,0.9);
-   jetCuts1006->SetPtRange(0.15, 1E+15.);
+   jetCuts1006->SetPtRange(0.15, 1E+15);
    
-   AliESDtrackCuts* esdTrackCutsHTG = jetCuts1006->Clone("JetCuts10001006");
+   AliESDtrackCuts* esdTrackCutsHTG = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10001006");
    esdTrackCutsHTG->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 
    // Than the complementary tracks which will be stored as global
    // constraint, complement is done in the ESDFilter task
    // HGC from 10h
 
-   AliESDtrackCuts* esdTrackCutsHTGC = jetCuts1006->Clone("JetCuts10041006");
+   AliESDtrackCuts* esdTrackCutsHTGC = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10041006");
    esdTrackCutsHTGC->SetRequireITSRefit(kFALSE);
 
    // standard cuts with tight DCA cut, using cluster cut instead of crossed rows (a la 2010 default)
