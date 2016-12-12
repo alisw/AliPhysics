@@ -508,10 +508,15 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
   }
   else if ( period.BeginsWith("LHC16"))
   {
-    if ( period == "LHC16q" )
+    if ( period == "LHC16q" || period == "LHC16t" )
     {
         lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
         lumiTriggerCrossSection = 1590;
+    }
+    else if ( period == "LHC16r" || period == "LHC16s" )
+    {
+        lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+        lumiTriggerCrossSection = 1715; 
     }
     else
     {
