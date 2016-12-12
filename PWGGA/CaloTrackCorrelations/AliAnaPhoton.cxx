@@ -347,6 +347,19 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
     fhLocalRegionClusterMultiplicityAdded              [icase] = 0;
     fhLocalRegionClusterEnergySumPerCentralityAdded    [icase] = 0;
     fhLocalRegionClusterMultiplicityPerCentralityAdded [icase] = 0;
+    
+    fhLocalRegionClusterEnergySumMCPi0Decay                      [icase] = 0;     
+    fhLocalRegionClusterMultiplicityMCPi0Decay                   [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay         [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay      [icase] = 0;
+    fhLocalRegionClusterEnergySumHijingMCPi0Decay                [icase] = 0;
+    fhLocalRegionClusterMultiplicityHijingMCPi0Decay             [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay   [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase] = 0; 
+    fhLocalRegionClusterEnergySumAddedMCPi0Decay                 [icase] = 0;     
+    fhLocalRegionClusterMultiplicityAddedMCPi0Decay              [icase] = 0;
+    fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay    [icase] = 0;
+    fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay [icase] = 0;
   }
   
   // Initialize parameters
@@ -363,8 +376,9 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
 /// \param phi : cluster azimuthal angle (0-360 deg)
 /// \param clusterList: clusters array
 //__________________________________________________________________________
-void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta, 
-                                       Float_t phi, TObjArray *clusterList)
+void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, 
+                                       Float_t eta, Float_t phi, 
+                                       Int_t mctag, TObjArray *clusterList)
 {
   Float_t radius = 0.2; // Hardcoded unless real use.
   
@@ -379,6 +393,12 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
       AliVCluster * calo = (AliVCluster*) (clusterList->At(icalo));
       genBkgTag = GetCocktailGeneratorBackgroundTag(calo, genName, genNameBkg);
     }
+    
+    Bool_t mcDecay = kFALSE;
+    if( IsDataMC() && !genName.Contains("ijing") &&
+       GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0Decay) && 
+       !GetMCAnalysisUtils()->CheckTagBit(mctag,AliMCAnalysisUtils::kMCPi0)        )  
+      mcDecay = kTRUE;
     
     fhLocalRegionClusterEtaPhi[0] ->Fill(eta,phi, GetEventWeight());
     
@@ -421,14 +441,26 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
     
     Float_t sumMAdd = sumM-sumMHi;
     Float_t sumEAdd = sumE-sumEHi;
-    
+        
     fhLocalRegionClusterEnergySum   [0]->Fill(en,sumE,GetEventWeight());
     fhLocalRegionClusterMultiplicity[0]->Fill(en,sumM,GetEventWeight());
+    
+    if(mcDecay)
+    {
+      fhLocalRegionClusterEnergySumMCPi0Decay   [0]->Fill(en,sumE,GetEventWeight());
+      fhLocalRegionClusterMultiplicityMCPi0Decay[0]->Fill(en,sumM,GetEventWeight());
+    }
     
     if(IsHighMultiplicityAnalysisOn())
     {
       fhLocalRegionClusterEnergySumPerCentrality   [0]->Fill(GetEventCentrality(),sumE,GetEventWeight());
       fhLocalRegionClusterMultiplicityPerCentrality[0]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+      
+      if(mcDecay)
+      {
+        fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay   [0]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[0]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+      }
     }
     
     if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn())
@@ -446,6 +478,24 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
         
         fhLocalRegionClusterEnergySumPerCentralityAdded    [0]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
         fhLocalRegionClusterMultiplicityPerCentralityAdded [0]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+      }
+      
+      if(mcDecay)
+      {
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay   [0]->Fill(en,sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[0]->Fill(en,sumMHi ,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay    [0]->Fill(en,sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay [0]->Fill(en,sumMAdd,GetEventWeight());
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay   [0]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[0]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+          
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay    [0]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay [0]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+        }
       }
       
       if(genBkgTag < 0) return;
@@ -473,6 +523,30 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
         fhLocalRegionClusterMultiplicityPerCentralityAdded [genBkgTag+1]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
       }
       
+      if(mcDecay)
+      {        
+        fhLocalRegionClusterEnergySumMCPi0Decay         [genBkgTag+1]->Fill(en,sumE,GetEventWeight());
+        fhLocalRegionClusterMultiplicityMCPi0Decay      [genBkgTag+1]->Fill(en,sumM,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay   [genBkgTag+1]->Fill(en,sumEHi ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[genBkgTag+1]->Fill(en,sumMHi ,GetEventWeight());
+        
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay    [genBkgTag+1]->Fill(en,sumEAdd,GetEventWeight());
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay [genBkgTag+1]->Fill(en,sumMAdd,GetEventWeight());
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay         [genBkgTag+1]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay      [genBkgTag+1]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+          
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay   [genBkgTag+1]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[genBkgTag+1]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+          
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay    [genBkgTag+1]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay [genBkgTag+1]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+        }
+      }
+      
       if(genBkgTag > 0) // Not clean, all merged
       {
         fhLocalRegionClusterEtaPhi            [5] ->Fill(eta,phi, GetEventWeight());
@@ -496,6 +570,30 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en, Float_t eta,
           
           fhLocalRegionClusterEnergySumPerCentralityAdded    [5]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
           fhLocalRegionClusterMultiplicityPerCentralityAdded [5]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+        }
+
+        if(mcDecay)
+        {          
+          fhLocalRegionClusterEnergySumMCPi0Decay         [5]->Fill(en,sumE,GetEventWeight());
+          fhLocalRegionClusterMultiplicityMCPi0Decay      [5]->Fill(en,sumM,GetEventWeight());
+          
+          fhLocalRegionClusterEnergySumHijingMCPi0Decay   [5]->Fill(en,sumEHi ,GetEventWeight());
+          fhLocalRegionClusterMultiplicityHijingMCPi0Decay[5]->Fill(en,sumMHi ,GetEventWeight());
+          
+          fhLocalRegionClusterEnergySumAddedMCPi0Decay    [5]->Fill(en,sumEAdd,GetEventWeight());
+          fhLocalRegionClusterMultiplicityAddedMCPi0Decay [5]->Fill(en,sumMAdd,GetEventWeight());
+          
+          if(IsHighMultiplicityAnalysisOn())
+          {
+            fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay         [5]->Fill(GetEventCentrality(),sumE,GetEventWeight());
+            fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay      [5]->Fill(GetEventCentrality(),sumM,GetEventWeight());
+            
+            fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay   [5]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
+            fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[5]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+            
+            fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay    [5]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
+            fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay [5]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
+          }
         }
         
       } // not clean, all merged
@@ -3467,8 +3565,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   if(fStudyActivityNearCluster)
   {
     TString caseTitle[] = {"","CleanCluster","MergedClusterHijingBkg","MergedClusterNotHijingBkg","MergedClusterHijingAndOtherBkg","MergedCluster"};
-  
-    for(Int_t icase = 0; icase < 6; icase++)
+    Int_t ncases = 1;
+    if ( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() ) ncases = 6;
+    
+    for(Int_t icase = 0; icase < ncases; icase++)
     {
       fhLocalRegionClusterEtaPhi[icase]  = new TH2F
       (Form("hLocalRegionClusterEtaPhi%s",caseTitle[icase].Data()),
@@ -3510,6 +3610,47 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhLocalRegionClusterMultiplicityPerCentrality[icase]->SetXTitle("Centrality");
         fhLocalRegionClusterMultiplicityPerCentrality[icase]->SetYTitle("Multiplicity");
         outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentrality[icase]);        
+      }
+      
+      //
+      // Select only single pi0 decay clusters from non hijing generator
+      //
+      if(IsDataMC())
+      {
+        fhLocalRegionClusterEnergySumMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySum%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Sum of cluster energy around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumMCPi0Decay[icase]);    
+        
+        fhLocalRegionClusterMultiplicityMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicity%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Cluster multiplicity around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityMCPi0Decay[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityMCPi0Decay[icase]);    
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentrality%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Sum of cluster energy around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityMCPi0Decay[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentrality%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Cluster multiplicity around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityMCPi0Decay[icase]);        
+        }
       }
       
       if(IsStudyClusterOverlapsPerGeneratorOn() && IsDataMC())
@@ -3582,6 +3723,80 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
           fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]->SetYTitle("Multiplicity");
           outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityAdded[icase]);        
         }
+        
+        //
+        // Select only single pi0 decay clusters from non hijing generator
+        //
+        
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumHijing%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumHijingMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumHijingMCPi0Decay[icase]);    
+        
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityHijing%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Cluster multiplicity (HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityHijingMCPi0Decay[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityHijingMCPi0Decay[icase]);    
+        
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterEnergySumAdded%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Sum of cluster energy (not HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,100);
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterEnergySumAddedMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumAddedMCPi0Decay[icase]);    
+        
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay[icase] = new TH2F 
+        (Form("hLocalRegionClusterMultiplicityAdded%s_MCPi0Decay",caseTitle[icase].Data()),
+         "Cluster multiplicity (not HIJING) around trigger cluster #it{E} with R=0.2", 
+         nptbins,ptmin,ptmax, 200,0,200);
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay[icase]->SetXTitle("#it{E} (GeV)");
+        fhLocalRegionClusterMultiplicityAddedMCPi0Decay[icase]->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityAddedMCPi0Decay[icase]);    
+        
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentralityHijing%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijingMCPi0Decay[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentralityHijing%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijingMCPi0Decay[icase]);        
+          
+          
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterEnergySumPerCentralityAdded%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Sum of cluster energy (not HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,100);
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]->SetYTitle("#Sigma #it{E} (GeV)");
+          outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityAddedMCPi0Decay[icase]);    
+          
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase] = new TH2F 
+          (Form("hLocalRegionClusterMultiplicityPerCentralityAdded%s_MCPi0Decay",caseTitle[icase].Data()),
+           "Cluster multiplicity (not HIJING) around trigger cluster vs centrality with R=0.2", 
+           100,0,100, 200,0,200);
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]->SetXTitle("Centrality");
+          fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]->SetYTitle("Multiplicity");
+          outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityAddedMCPi0Decay[icase]);        
+        }
+        
       }
     }
   }
@@ -4024,7 +4239,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Check local cluster activity around the current cluster
     //
     if(fStudyActivityNearCluster && en > 1.5) // 1.5 GeV cut used on Pb-Pb analysis
-      ActivityNearCluster(icalo,en,eta,phi,pl);
+      ActivityNearCluster(icalo,en,eta,phi,tag,pl);
 
     //
     // Check if other generators contributed to the cluster
