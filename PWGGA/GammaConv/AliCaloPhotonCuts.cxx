@@ -103,6 +103,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fBadChannels(NULL),
   fNMaxEMCalModules(12),
   fNMaxPHOSModules(5),
+  fHistoModifyAcc(NULL),
   fDoLightOutput(kFALSE),
   fIsMC(0),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
@@ -268,6 +269,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fBadChannels(NULL),
   fNMaxEMCalModules(ref.fNMaxEMCalModules),
   fNMaxPHOSModules(ref.fNMaxPHOSModules),
+  fHistoModifyAcc(NULL),
   fDoLightOutput(ref.fDoLightOutput),
   fIsMC(ref.fIsMC),
   fIsCurrentClusterAcceptedBeforeTM(kFALSE),
@@ -1231,7 +1233,6 @@ Bool_t AliCaloPhotonCuts::ClusterIsSelectedElecAODMC(AliAODMCParticle *particle,
 
     if ( particle->Eta() < fMinEtaCut || particle->Eta() > fMaxEtaCut ) return kFALSE;
     if ( particle->Phi() < fMinPhiCut || particle->Phi() > fMaxPhiCut ) return kFALSE;
-
     if(particle->GetMother() >-1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 11){
       return kFALSE;// no photon as mothers!
     }
@@ -2472,6 +2473,13 @@ Bool_t AliCaloPhotonCuts::AcceptanceCuts(AliVCluster *cluster, AliVEvent* event,
       if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
       return kFALSE;
     }  
+  }
+  //alternatively check histogram fHistoModifyAcc if cluster should be rejected
+  if(fHistoModifyAcc){
+    if(fHistoModifyAcc->GetBinContent(FindLargestCellInCluster(cluster,event)) < 1){
+      if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
+      return kFALSE;
+    }
   }
   cutIndex++;
   if(fHistAcceptanceCuts)fHistAcceptanceCuts->Fill(cutIndex);
