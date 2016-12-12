@@ -169,6 +169,7 @@ class AliReducedVarManager : public TObject {
     kL1TriggerInput,    // L1 trigger input
     kL2TriggerInput,    // L2 trigger input
     kRunNo,             // run number         
+    kRunID,             // variable for easy filling of histograms vs. run number, without empty bins
     kBeamEnergy,        // LHC beam energy
     kDetectorMask,      // detector mask
     kNumberOfDetectors, // number of active detectors
@@ -251,6 +252,8 @@ class AliReducedVarManager : public TObject {
     kNtracksEventPlane, // number of tracks used for event plane                
     kNCaloClusters,     // number of calorimeter clusters
     kSPDntracklets,     // SPD number of tracklets in |eta|<1.0                 
+    kSPDntracklets08,     // SPD number of tracklets in |eta|<0.8
+    kSPDntracklets16,     // SPD number of tracklets in |eta|<1.6
     kSPDntrackletsCorr, // SPD number of tracklets in |eta|<1.0                 
     kSPDntrackletsEta,  // SPD number of tracklets in -1.6+0.1*i < eta < -1.6+0.1*(i+1)
     kSPDFiredChips=kSPDntrackletsEta+32,   // SPD fired chips in first and second layer
@@ -318,6 +321,29 @@ class AliReducedVarManager : public TObject {
     kTZEROstartTime,                           // TZERO event start time
     kTZEROpileup,                              // TZERO pileup flag
     kTZEROsatellite,                           // TZERO satellite flag
+    // Multiplicity estimators
+    kMultEstimatorOnlineV0M,
+    kMultEstimatorOnlineV0A,
+    kMultEstimatorOnlineV0C,
+    kMultEstimatorADM,
+    kMultEstimatorADA,
+    kMultEstimatorADC,
+    kMultEstimatorSPDClusters,
+    kMultEstimatorSPDTracklets,
+    kMultEstimatorRefMult05,
+    kMultEstimatorRefMult08,
+    kMultEstimatorPercentileOnlineV0M,
+    kMultEstimatorPercentileOnlineV0A,
+    kMultEstimatorPercentileOnlineV0C,
+    kMultEstimatorPercentileADM,
+    kMultEstimatorPercentileADA,
+    kMultEstimatorPercentileADC,
+    kMultEstimatorPercentileSPDClusters,
+    kMultEstimatorPercentileSPDTracklets,
+    kMultEstimatorPercentileRefMult05,
+    kMultEstimatorPercentileRefMult08,
+    kINT7Triggered,
+    kHighMultV0Triggered,
     kNEventVars,                               // number of event variables  
     // Particle variables --------------------------------------
     // Common pair/track variables
@@ -340,6 +366,7 @@ class AliReducedVarManager : public TObject {
     kCosNPhi,   
     kSinNPhi = kCosNPhi+6,
     kPtSquared = kSinNPhi+6,
+    kOneOverSqrtPt,                   // one over square root of pT
     kMass,
     kMassMC,
     kRap,
@@ -368,6 +395,15 @@ class AliReducedVarManager : public TObject {
     kPairPhiHE,
     kPairQualityFlag,
     kDMA,                        // Distance of minimal approach
+    kPairPhiV,                   // angle between pair plane and magnetic field
+    kPairDca,                    // pair DCA: sqare root of quadratic sum of daughter DCAs
+    kPairDcaXY,
+    kPairDcaZ,
+    kPairDcaSqrt,                // square root of pair DCA
+    kPairDcaXYSqrt,
+    kPairDcaZSqrt,
+    kMassDcaPtCorr,             // invariant mass, corrected for DCA and pT effects
+    kOpAngDcaPtCorr,            // opening angle, corrected for DCA and pT effects
     // Track-only variables -------------------------------------
     kPtTPC,     
     kPhiTPC,    
@@ -510,6 +546,8 @@ class AliReducedVarManager : public TObject {
   static void SetTPCelectronCorrectionMaps(TH2F* centroidMap, TH2F* widthMap, Variables xVarDep, Variables yVarDep);
   static void SetLHCDataInfo(TH1F* totalLumi, TH1F* totalInt0, TH1F* totalInt1, TH1I* fillNumber);
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
+  static void SetRunNumbers( TString runNumbers );
+  static void SetTrackletsProfile( TProfile * profileTracklets );
   
  private:
   static Int_t     fgCurrentRunNumber;               // current run number
@@ -541,11 +579,15 @@ class AliReducedVarManager : public TObject {
   static TH1I* fgRunL3Polarity;                // L3 magnet polarity, GRP/GRP/Data::GetL3Polarity()
   static TH1I* fgRunTimeStart;                // run start time, GRP/GRP/Data::GetTimeStart()
   static TH1I* fgRunTimeEnd;                  // run stop time, GRP/GRP/Data::GetTimeEnd()
-  
+  static std::vector<Int_t> fgRunNumbers;     // vector with run numbers (for histograms vs. run number)
+  static Int_t fgRunID;                       // run ID
+  static TProfile* fgAvgSpdTrackletsVertex; // average number of SPD tracklets vs. z-vertex
+  static Double_t fgRefMult;                  // reference multiplicity for z-vertex correction
+
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   
-  ClassDef(AliReducedVarManager,1);
+  ClassDef(AliReducedVarManager,2);
 };
 
 #endif

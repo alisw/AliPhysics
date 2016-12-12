@@ -1218,7 +1218,7 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     Beta = 1.0;
     fR=0.4;
     if (Measure==0){
-      fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR*2));
+      fj::contrib::Nsubjettiness nSub(N, fj::contrib::KT_Axes(), fj::contrib::NormalizedMeasure(Beta,fR));
       Result= nSub.result(fFilteredJets[0]);
       SubJet_Axes=nSub.currentAxes();
       SubJets=nSub.currentSubjets();
@@ -1333,6 +1333,8 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   }
 
   //Added for quality control of the DeltaR-Nsubjettiness variable (comparing Nsubjettiness and soft drop results)
+  Beta_SD=0.0;
+  ZCut=0.1;
   fj::contrib::SoftDrop Soft_Drop(Beta_SD,ZCut);
   Soft_Drop.set_tagging_mode(); //if the first two subjets fail the soft drop criteria a jet = 0 is returned
   fj::PseudoJet Soft_Dropped_Jet=Soft_Drop(fFilteredJets[0]);

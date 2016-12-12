@@ -104,7 +104,7 @@ AliCFTrackKineCuts::AliCFTrackKineCuts() :
   Initialise();
 }
 //__________________________________________________________________________________
-AliCFTrackKineCuts::AliCFTrackKineCuts(Char_t* name, Char_t* title) :
+AliCFTrackKineCuts::AliCFTrackKineCuts(const Char_t* name, const Char_t* title) :
   AliCFCutBase(name,title),
   fMomentumMin(0),
   fMomentumMax(0),

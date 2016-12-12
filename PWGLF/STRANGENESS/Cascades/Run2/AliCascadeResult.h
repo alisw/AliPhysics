@@ -66,6 +66,22 @@ public:
     void SetCutMCPDGCodeAssociation ( Bool_t lCut ) { fCutMCPDGCodeAssociation = lCut; }
     void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
     
+    //Variable CascCosPA
+    void SetCutUseVarCascCosPA      ( Bool_t lCut )   { fCutUseVariableCascCosPA     = lCut; }
+    void SetCutVarCascCosPAExp0Const( Double_t lCut ) { fCutVarCascCosPA_Exp0Const = lCut; }
+    void SetCutVarCascCosPAExp0Slope( Double_t lCut ) { fCutVarCascCosPA_Exp0Slope = lCut; }
+    void SetCutVarCascCosPAExp1Const( Double_t lCut ) { fCutVarCascCosPA_Exp1Const = lCut; }
+    void SetCutVarCascCosPAExp1Slope( Double_t lCut ) { fCutVarCascCosPA_Exp1Slope = lCut; }
+    void SetCutVarCascCosPAConst    ( Double_t lCut ) { fCutVarCascCosPA_Const     = lCut; }
+    void SetCutVarCascCosPA ( Double_t l1, Double_t l2, Double_t l3, Double_t l4, Double_t l5 ){
+        fCutUseVariableCascCosPA = kTRUE; //Automatically switch on!
+        fCutVarCascCosPA_Exp0Const = l1;
+        fCutVarCascCosPA_Exp0Slope = l2;
+        fCutVarCascCosPA_Exp1Const = l3;
+        fCutVarCascCosPA_Exp1Slope = l4;
+        fCutVarCascCosPA_Const     = l5;
+    }
+    
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     
     //Getters for V0 Cuts
@@ -93,6 +109,14 @@ public:
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
     Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
+    
+    //Variable CascCosPA
+    Bool_t GetCutUseVarCascCosPA        () const { return fCutUseVariableCascCosPA;   }
+    Double_t GetCutVarCascCosPAExp0Const() const { return fCutVarCascCosPA_Exp0Const; }
+    Double_t GetCutVarCascCosPAExp0Slope() const { return fCutVarCascCosPA_Exp0Slope; }
+    Double_t GetCutVarCascCosPAExp1Const() const { return fCutVarCascCosPA_Exp1Const; }
+    Double_t GetCutVarCascCosPAExp1Slope() const { return fCutVarCascCosPA_Exp1Slope; }
+    Double_t GetCutVarCascCosPAConst    () const { return fCutVarCascCosPA_Const;     }
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
@@ -130,9 +154,18 @@ private:
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
     Bool_t fCutMCUseMCProperties; //Use true MC pT, y
     
+    //Experimental: pt-variable cascade cosPA
+    //Warning: if this cut is tighter than fCutCascCosPA, this gets used instead!
+    Bool_t fCutUseVariableCascCosPA;
+    Double_t fCutVarCascCosPA_Exp0Const;
+    Double_t fCutVarCascCosPA_Exp0Slope;
+    Double_t fCutVarCascCosPA_Exp1Const;
+    Double_t fCutVarCascCosPA_Exp1Slope;
+    Double_t fCutVarCascCosPA_Const;
+    
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 9)
+    ClassDef(AliCascadeResult, 10)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -142,5 +175,6 @@ private:
     // 7 - Adjustments, tuning, constructor improvements
     // 8 - Experimental lambda cut added
     // 9 - Cleanup + experimental bach-pos DCA cut added
+    // 10 - Variable CosPA parametrization added (exp0 + exp1 + pol0)
 };
 #endif

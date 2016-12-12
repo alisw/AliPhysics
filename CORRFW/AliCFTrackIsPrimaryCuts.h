@@ -64,7 +64,7 @@ class AliCFTrackIsPrimaryCuts : public AliCFCutBase
 {
  public :
   AliCFTrackIsPrimaryCuts() ;
-  AliCFTrackIsPrimaryCuts(Char_t* name, Char_t* title) ;
+  AliCFTrackIsPrimaryCuts(const Char_t* name, const Char_t* title) ;
   AliCFTrackIsPrimaryCuts(const AliCFTrackIsPrimaryCuts& c) ;
   AliCFTrackIsPrimaryCuts& operator=(const AliCFTrackIsPrimaryCuts& c) ;
   ~AliCFTrackIsPrimaryCuts();
