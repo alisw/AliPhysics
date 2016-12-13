@@ -686,6 +686,8 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
       return;
     else if( (fPythiaExtractionMode==2) && not (partid==21)) // gluon-jet extraction
       return;
+    else if( (fPythiaExtractionMode==3) && not (partid==0)) // extract only those w/o hadron matching
+      return;
     else if( (fPythiaExtractionMode<0) && (fPythiaExtractionMode!=-partid) ) // custom type jet extraction by given a negative number
       return;
   }
