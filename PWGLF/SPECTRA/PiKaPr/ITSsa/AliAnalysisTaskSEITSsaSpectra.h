@@ -46,8 +46,8 @@ public:
   enum EPileup_Type    {kNoPileup, kPileupSPD, kPileupMV};
   enum EEvtCut_Type {
     kIsReadable = 1,
-    kIsSDDIn,
     kPassTrig,
+    kIsSDDIn,
     kPassMultSel,
     kIsNotIncDAQ,
     kPassSPDclsVsTCut,
@@ -207,7 +207,7 @@ private:
   TH1F* fHistMultAftEvtSel;  //! histo with multiplicity of the events after all event selection
   TH1F* fHistVtxZ;       //! histo with the distribution of the primary vertex Z coordinate
 
-  TH2F* fHistNTracks[kNchg];      //! histo with number of tracks vs Pt 
+  TH2F* fHistNTracks[kNchg];      //! histo with number of tracks vs Pt
   TH2F* fHistDEDX;                //! histo with dedx versus momentum
   TH2F* fHistDEDXdouble;          //! histo with dedx versus signed momentum
   TH2F* fHistNSigmaSep[kNchg * kNspc]; //! histo nsigma separation vs momentum
