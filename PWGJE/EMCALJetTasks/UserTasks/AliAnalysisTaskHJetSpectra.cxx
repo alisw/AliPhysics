@@ -59,6 +59,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "AliGenDPMjetEventHeader.h"
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskEmcal.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -91,8 +92,14 @@ fHistEvtSelection(0x0),fhKTAreaPt(0x0),
  fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
  fhDphiTriggerJetAccept(0x0), fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
-fhPtJetPrimVsPtJetRec(0x0), fhDiffPtVsPtTrackTrue(0x0),
+fhDiffPtVsPtTrackTrue(0x0),
 fhTrackPhiCG(0x0), fhTrackPhiTPCG(0x0),
+fhDCAinXVsPt(0x0),
+fhDCAinYVsPt(0x0),
+fhDCAinXVsPtStrange(0x0),
+fhDCAinYVsPtStrange(0x0),
+fhDCAinXVsPtNonStrange(0x0),
+fhDCAinYVsPtNonStrange(0x0),
 fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
@@ -104,6 +111,10 @@ fpyVtx(3)
       fRhoMC[it].Set(kRho);
  
       fhCentralityTT[it] = NULL;
+   }
+
+   for(Int_t iw=0; iw<21; iw++){
+      fhPtJetPrimVsPtJetRec[iw] = NULL;  
    }
 
    for(Int_t ic =0; ic<kCAll; ic++){
@@ -225,8 +236,14 @@ fHistEvtSelection(0x0), fhKTAreaPt(0x0),
 fhDphiTriggerJetAccept(0x0),fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/
-fhPtJetPrimVsPtJetRec(0x0), fhDiffPtVsPtTrackTrue(0x0),
+fhDiffPtVsPtTrackTrue(0x0),
 fhTrackPhiCG(0x0), fhTrackPhiTPCG(0x0),
+fhDCAinXVsPt(0x0),
+fhDCAinYVsPt(0x0),
+fhDCAinXVsPtStrange(0x0),
+fhDCAinYVsPtStrange(0x0),
+fhDCAinXVsPtNonStrange(0x0),
+fhDCAinYVsPtNonStrange(0x0),
 fCentralityBins(kCAll),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
@@ -238,6 +255,10 @@ fpyVtx(3)
       fRhoMC[it].Set(kRho); 
 
       fhCentralityTT[it] = NULL;
+   }
+
+   for(Int_t iw=0; iw<21; iw++){
+      fhPtJetPrimVsPtJetRec[iw] = NULL;  
    }
 
    for(Int_t ic =0; ic<kCAll; ic++){
@@ -423,9 +444,7 @@ Double_t AliAnalysisTaskHJetSpectra::GetSimPrimaryVertex(){
                   }
                }
             }
-         }
-         
-         if(fTypeOfData == kHijing){ 
+         }else if(fTypeOfData == kHijing){ 
             mcHeader = dynamic_cast<AliGenHijingEventHeader*>(MCEvent()->GenEventHeader());
             if(!mcHeader){
                // Check if AOD
@@ -434,6 +453,19 @@ Double_t AliAnalysisTaskHJetSpectra::GetSimPrimaryVertex(){
                 if(aodMCH){
                    for(UInt_t i = 0; i<aodMCH->GetNCocktailHeaders(); i++){
                      mcHeader = dynamic_cast<AliGenHijingEventHeader*>(aodMCH->GetCocktailHeader(i));
+                     if(mcHeader) break;
+                  }
+               }
+            }
+         }else if(fTypeOfData == kDmpjet){ 
+            mcHeader = dynamic_cast<AliGenDPMjetEventHeader*>(MCEvent()->GenEventHeader());
+            if(!mcHeader){
+               // Check if AOD
+                aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+         
+                if(aodMCH){
+                   for(UInt_t i = 0; i<aodMCH->GetNCocktailHeaders(); i++){
+                     mcHeader = dynamic_cast<AliGenDPMjetEventHeader*>(aodMCH->GetCocktailHeader(i));
                      if(mcHeader) break;
                   }
                }
@@ -724,7 +756,7 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
          return kFALSE;
       }
      
-      if(!(fTypeOfData == kPythia || fTypeOfAnal == kKine)){ 
+      if(!(fTypeOfData == kPythia || fTypeOfData == kDmpjet || fTypeOfAnal == kKine)){ 
          for(Int_t ic=0; ic<fCentralityBins.GetSize()-1;ic++){ 
             if(fCentralityBins[ic] <= centralityPercentile &&
                centralityPercentile < fCentralityBins[ic+1]){
@@ -760,6 +792,25 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    fHistEvtSelection->Fill(0); //Count Accepted input event
 
    // END EVENT SELECTION
+   //_________________________________________________________________
+   TClonesArray* arrayMC = 0; // array particles in the MC event
+   AliAODEvent* aodIn = 0;
+   Int_t iNTracksMC = 0; //number of particles in arrayMC
+   if(fTypeOfAnal == kEff){
+      aodIn = dynamic_cast<AliAODEvent*>(InputEvent()); // input AOD
+      if(!aodIn){
+         AliError("No input AOD found!");
+         return kFALSE;
+      }
+      arrayMC = (TClonesArray*) aodIn->FindListObject(AliAODMCParticle::StdBranchName());
+      if(!arrayMC){
+         AliError("No MC array found!");
+         return kFALSE;
+      }
+
+      iNTracksMC = arrayMC->GetEntriesFast(); 
+   }
+
 
    //_________________________________________________________________
    // JET+TRACK CONTAINERS
@@ -815,6 +866,18 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    Int_t indexSingleRndTrigGen[kTT] = {-1,-1}; //index of single random trigger
    AliVParticle* trackTTGen[kTT]   = {NULL,NULL}; //pointer to the trigger hadron
    Int_t ntriggersGen[kTT] = {0,0};
+
+   Double_t sumFakeTrackPtInJetNotStrange  = 0.;//sum of track pT from non strange secondaries
+   Double_t sumFakeTrackPtInJetStrange     = 0.;//sum of track pT from strange secondaries
+   Double_t sumStrangeTrackPtInJet = 0.;//sum of track pT from strange secondaries
+   AliAODMCParticle* particleMC = NULL; //
+   AliAODMCParticle* particleMCMother = NULL;//
+   Int_t iIndexMother = 0; //
+   Int_t iPdgCode = 0;//
+   Int_t iPdgCodeMother = 0;//
+   Bool_t bStrange = 0;
+   Int_t  lab = 0;
+   Double_t newJetPt=0., newSumFakePt=0., enhw =0.; //
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
 
@@ -1044,7 +1107,16 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
 
             //Get momentum shift due to fake tracks
-            Double_t sumFakeTrackPtInJet = 0.; 
+            sumFakeTrackPtInJetNotStrange  = 0.; 
+            sumFakeTrackPtInJetStrange     = 0.; 
+            sumStrangeTrackPtInJet = 0.;
+            particleMC = NULL; 
+            particleMCMother = NULL;
+            iIndexMother = 0; 
+            iPdgCode = 0;
+            iPdgCodeMother = 0;
+
+
             for(Int_t iq=0; iq < jetRec->GetNumberOfTracks(); iq++) {
                constTrackRec = static_cast<AliVParticle*> (jetRec->TrackAt(iq,trkContRec->GetArray())); 
                if(!constTrackRec) continue;
@@ -1060,10 +1132,61 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                   } 
                }
                if(!bRecPrim){ //this is a fake track
-                  sumFakeTrackPtInJet +=  constTrackRec->Pt();
+
+                  lab = TMath::Abs(constTrackRec->GetLabel());
+                  bStrange = 0;
+
+                  if(lab < iNTracksMC){
+                     particleMC = (AliAODMCParticle*) arrayMC->At(lab);
+                     if(particleMC){
+                        iPdgCode     = TMath::Abs(particleMC->GetPdgCode());
+                        iIndexMother = TMath::Abs(particleMC->GetMother());
+                        if(IsStrange(iPdgCode)){
+                            sumFakeTrackPtInJetStrange += constTrackRec->Pt();
+                            sumStrangeTrackPtInJet     += constTrackRec->Pt();
+                            bStrange = 1;
+                        }
+
+                        if(iIndexMother < iNTracksMC && 0 <= iIndexMother && !bStrange){
+                           //check strangeness of mother of the secondary tracks
+                           particleMCMother = (AliAODMCParticle*) arrayMC->At(iIndexMother);
+                           if(particleMCMother){
+                              iPdgCodeMother   = TMath::Abs(particleMCMother->GetPdgCode());
+
+                              if(IsStrange(iPdgCodeMother)){
+                                 sumFakeTrackPtInJetStrange += constTrackRec->Pt();
+                                 sumStrangeTrackPtInJet     += constTrackRec->Pt();
+                                 bStrange = 1;
+                              }
+                           }
+                        }
+                     }
+                  }
+                  if(!bStrange){
+                     sumFakeTrackPtInJetNotStrange += constTrackRec->Pt();
+                  }
+               }else{
+                 //check strangeness of primary tracks
+                  lab = TMath::Abs(constTrackRec->GetLabel()); 
+                  if(lab < iNTracksMC){
+                     particleMC = (AliAODMCParticle*) arrayMC->At(lab);
+                     if(particleMC){
+                        iPdgCode = TMath::Abs(particleMC->GetPdgCode());
+                        if(IsStrange(iPdgCode)){
+                           sumStrangeTrackPtInJet += constTrackRec->Pt();
+                        }
+                     }
+                  }
                } 
             }
-            fhPtJetPrimVsPtJetRec->Fill(jetRec->Pt(), sumFakeTrackPtInJet/jetRec->Pt());
+
+            for(Int_t iw=0; iw<21; iw++){
+               enhw =  iw*0.05; //enhances weight of strangeness particles from 0 to 100% in steps of 5%
+               newJetPt      =  jetRec->Pt() + enhw*sumStrangeTrackPtInJet; //jet contain 100 strg add only enhanc
+               newSumFakePt  =  sumFakeTrackPtInJetNotStrange + (1.0+ enhw)*sumFakeTrackPtInJetStrange;
+               fhPtJetPrimVsPtJetRec[iw]->Fill(newJetPt, newSumFakePt/newJetPt);
+            }
+
             //if(fDebug>20) Printf("REC JET phi=%f  eta=%f  pt=%f",jetRec->Phi(), jetRec->Eta(), jetRec->Pt());
 
             //Find closest gen level+rec level  jets
@@ -1436,6 +1559,27 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
 
          AliExternalTrackParam  par(xyz, pxpypz, cv, atrk->Charge());
          fhSigmaPtOverPtVsPt[itrkq]->Fill(atrk->Pt(), TMath::Abs(sqrt(par.GetSigma1Pt2())/par.GetSigned1Pt()));
+
+         //XXX DCA distributions
+         fhDCAinXVsPt->Fill(atrk->Pt(), atrk->XAtDCA());
+         fhDCAinYVsPt->Fill(atrk->Pt(), atrk->YAtDCA());
+
+         if(fTypeOfAnal == kEff){
+            lab = TMath::Abs(atrk->GetLabel());
+
+            if(lab < iNTracksMC){
+               particleMC = (AliAODMCParticle*) arrayMC->At(lab);
+               if(particleMC){
+                  if(particleMC->IsPhysicalPrimary()){
+                     fhDCAinXVsPtNonStrange->Fill(atrk->Pt(), atrk->XAtDCA());
+                     fhDCAinYVsPtNonStrange->Fill(atrk->Pt(), atrk->YAtDCA());
+                  }else{
+                     fhDCAinXVsPtStrange->Fill(atrk->Pt(), atrk->XAtDCA());
+                     fhDCAinYVsPtStrange->Fill(atrk->Pt(), atrk->YAtDCA());
+                  }
+               }
+            }
+         }
       }
 
       for(Int_t ic=0; ic<2; ic++){
@@ -1631,7 +1775,7 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    Bool_t bHistRec =  (fTypeOfAnal != kEmb  && fTypeOfAnal != kEmbSingl && fTypeOfAnal != kKine);
    Bool_t bNotKine =  (fTypeOfAnal != kKine);
 
-   Int_t icmax = (fTypeOfData == kPythia ||fTypeOfAnal == kKine) ? 1 : kCAll;
+   Int_t icmax = (fTypeOfData == kPythia || fTypeOfData == kDmpjet  ||fTypeOfAnal == kKine) ? 1 : kCAll;
    //__________________________________________________________
    // Event statistics
    fHistEvtSelection = new TH1I("fHistEvtSelection", "event selection", 7, -0.5, 6.5);
@@ -2100,6 +2244,9 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
       }
    }
 
+   Double_t bins [] = {0, 0.2,0.4,0.6, 0.8, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 8., 10., 20., 50.};
+   Int_t nbins = sizeof(bins)/sizeof(Double_t)-1;
+
    if(fTypeOfAnal== kEff ){
       for(Int_t ic =0; ic<icmax; ic++){
          for(Int_t ir=0; ir < kRho; ir++){
@@ -2131,8 +2278,6 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
          }
       }
       
-      Double_t bins [] = {0, 0.2,0.4,0.6, 0.8, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 8., 10., 20., 50.};
-      Int_t nbins = sizeof(bins)/sizeof(Double_t)-1;
  
       Double_t binsDiff [] = {
        -50, -48., -46., -44, -42.,
@@ -2201,14 +2346,32 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
          fOutput->Add((TH2D*) fhPtTrkSecOrFakeRec[ic]);
       }
 
-      name = Form("fhPtJetPrimVsPtJetRecMB"); 
-      fhPtJetPrimVsPtJetRec = new TH2D(name.Data(), name.Data(),50,0,50,200,0,1);
-      fOutput->Add((TH2D*) fhPtJetPrimVsPtJetRec);
-
+      for(Int_t iw=0; iw<21; iw++){
+         name = Form("fhPtJetPrimVsPtJetRecMB%03d",TMath::Nint(100*iw*0.05)); 
+         fhPtJetPrimVsPtJetRec[iw] = new TH2D(name.Data(), name.Data(),50,0,50,210,0,1.05);
+         fOutput->Add((TH2D*) fhPtJetPrimVsPtJetRec[iw]);
+      }
       name = Form("fhDiffPtVsPtTrackTrueMB"); 
       fhDiffPtVsPtTrackTrue  = new TH2D(name.Data(), name.Data(),100,0,100, nbinsDiff,binsDiff);
       fOutput->Add((TH2D*) fhDiffPtVsPtTrackTrue);
    }
+
+   //DCA DISTRIBUTIONS 
+   fhDCAinXVsPt = new TH2D("fhDCAinXVsPt","fhDCAinXVsPt",nbins, bins, 200, -10.,10);
+   if(bNotKine) fOutput->Add((TH2D*) fhDCAinXVsPt);
+   fhDCAinYVsPt = (TH2D*) fhDCAinXVsPt->Clone("fhDCAinYVsPt");
+   if(bNotKine) fOutput->Add((TH2D*) fhDCAinYVsPt);
+
+   fhDCAinXVsPtStrange = (TH2D*) fhDCAinXVsPt->Clone("fhDCAinXVsPtStrange");
+   if(fTypeOfAnal == kEff) fOutput->Add((TH2D*) fhDCAinXVsPtStrange);
+   fhDCAinYVsPtStrange = (TH2D*) fhDCAinXVsPt->Clone("fhDCAinYVsPtStrange");
+   if(fTypeOfAnal == kEff) fOutput->Add((TH2D*) fhDCAinYVsPtStrange);
+   fhDCAinXVsPtNonStrange = (TH2D*) fhDCAinXVsPt->Clone("fhDCAinXVsPtNonStrange");
+   if(fTypeOfAnal == kEff) fOutput->Add((TH2D*) fhDCAinXVsPtNonStrange);
+   fhDCAinYVsPtNonStrange = (TH2D*) fhDCAinXVsPt->Clone("fhDCAinYVsPtNonStrange");
+   if(fTypeOfAnal == kEff)  fOutput->Add((TH2D*) fhDCAinYVsPtNonStrange);
+
+
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
       for(Int_t ic =0; ic<icmax; ic++){
@@ -2594,4 +2757,21 @@ Double_t AliAnalysisTaskHJetSpectra::GetFractionSharedPt(AliEmcalJet *jRec, AliJ
 
    return fraction;
 
-} 
+}
+
+//________________________________________________________________________
+Bool_t  AliAnalysisTaskHJetSpectra::IsStrange(Int_t ip){ 
+   //Check whtether the particle is strange
+  if(ip==321) return kTRUE;  //K+
+  if(ip==130) return kTRUE;  //KOL
+  if(ip==310) return kTRUE;  //K0s
+  if(ip==3112) return kTRUE; //Sigma -
+  if(ip==3122) return kTRUE; //Lambda 0
+  if(ip==3222) return kTRUE; //Sigma+
+  if(ip==3312) return kTRUE; //Xi-
+  if(ip==3322) return kTRUE; //Xi0
+  if(ip==3334) return kTRUE; //Omega-
+
+  return kFALSE;
+}
+ 
