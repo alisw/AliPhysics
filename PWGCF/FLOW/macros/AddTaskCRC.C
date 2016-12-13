@@ -569,8 +569,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    if(sDataSet=="2015" && sIntRuns=="high") {
      if(sSelecCharge != "") {
        if(bUsePtWeights && AODfilterBit==768) {
-         if(sSelecCharge.EqualTo("pos")) PhiEtaWeightsFileName += "15oHI_FB768_pch_CenPhiEtaWeights.root";
-         if(sSelecCharge.EqualTo("neg")) PhiEtaWeightsFileName += "15oHI_FB768_nch_CenPhiEtaWeights.root";
+         if(sSelecCharge.EqualTo("pos")) PhiEtaWeightsFileName += "15oHI_FB768_pteff_pch_CenPhiEtaWeights.root";
+         if(sSelecCharge.EqualTo("neg")) PhiEtaWeightsFileName += "15oHI_FB768_pteff_nch_CenPhiEtaWeights.root";
        }
      } else {
        if(!bUsePtWeights) {
