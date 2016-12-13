@@ -494,7 +494,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   fHistAcceptanceCuts->GetXaxis()->SetBinLabel(1,"in");
   fHistAcceptanceCuts->GetXaxis()->SetBinLabel(2,"eta");
   fHistAcceptanceCuts->GetXaxis()->SetBinLabel(3,"phi");
-  fHistAcceptanceCuts->GetXaxis()->SetBinLabel(4,"distance to bad channel");
+  fHistAcceptanceCuts->GetXaxis()->SetBinLabel(4,"dist bad channel/acc map");
   fHistAcceptanceCuts->GetXaxis()->SetBinLabel(5,"out");
   fHistograms->Add(fHistAcceptanceCuts);
 
