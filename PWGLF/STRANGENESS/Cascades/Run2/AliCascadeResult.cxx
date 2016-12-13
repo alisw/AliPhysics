@@ -42,7 +42,13 @@ fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
 fCutVarCascCosPA_Exp1Const(0),
 fCutVarCascCosPA_Exp1Slope(0),
-fCutVarCascCosPA_Const(1)
+fCutVarCascCosPA_Const(1),
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Dummy Constructor - not to be used!
     //Main output histogram: Centrality, pt, mass
@@ -80,7 +86,13 @@ fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
 fCutVarCascCosPA_Exp1Const(0),
 fCutVarCascCosPA_Exp1Slope(0),
-fCutVarCascCosPA_Const(1)
+fCutVarCascCosPA_Const(1),
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -124,7 +136,13 @@ fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
 fCutVarCascCosPA_Exp1Const(0),
 fCutVarCascCosPA_Exp1Slope(0),
-fCutVarCascCosPA_Const(1)
+fCutVarCascCosPA_Const(1),
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = 0;
@@ -178,7 +196,13 @@ fCutVarCascCosPA_Exp0Const(lCopyMe.fCutVarCascCosPA_Exp0Const),
 fCutVarCascCosPA_Exp0Slope(lCopyMe.fCutVarCascCosPA_Exp0Slope),
 fCutVarCascCosPA_Exp1Const(lCopyMe.fCutVarCascCosPA_Exp1Const),
 fCutVarCascCosPA_Exp1Slope(lCopyMe.fCutVarCascCosPA_Exp1Slope),
-fCutVarCascCosPA_Const(lCopyMe.fCutVarCascCosPA_Const)
+fCutVarCascCosPA_Const(lCopyMe.fCutVarCascCosPA_Const),
+fCutUseVariableV0CosPA(lCopyMe.fCutUseVariableV0CosPA),
+fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
+fCutVarV0CosPA_Exp0Slope(lCopyMe.fCutVarV0CosPA_Exp0Slope),
+fCutVarV0CosPA_Exp1Const(lCopyMe.fCutVarV0CosPA_Exp1Const),
+fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
+fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const)
 
 {
     SetName( lNewName.Data() );
@@ -233,6 +257,14 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutVarCascCosPA_Exp1Const = lCopyMe -> GetCutVarCascCosPAExp1Const();
     fCutVarCascCosPA_Exp1Slope = lCopyMe -> GetCutVarCascCosPAExp1Slope();
     fCutVarCascCosPA_Const = lCopyMe -> GetCutVarCascCosPAConst();
+
+    //Variable V0CosPA
+    fCutUseVariableV0CosPA = lCopyMe -> GetCutUseVarV0CosPA();
+    fCutVarV0CosPA_Exp0Const = lCopyMe -> GetCutVarV0CosPAExp0Const();
+    fCutVarV0CosPA_Exp0Slope = lCopyMe -> GetCutVarV0CosPAExp0Slope();
+    fCutVarV0CosPA_Exp1Const = lCopyMe -> GetCutVarV0CosPAExp1Const();
+    fCutVarV0CosPA_Exp1Slope = lCopyMe -> GetCutVarV0CosPAExp1Slope();
+    fCutVarV0CosPA_Const = lCopyMe -> GetCutVarV0CosPAConst();
     
     // Constructor
     Double_t lThisMass = 0;
@@ -294,6 +326,14 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutVarCascCosPA_Exp1Const = lCopyMe.GetCutVarCascCosPAExp1Const();
     fCutVarCascCosPA_Exp1Slope = lCopyMe.GetCutVarCascCosPAExp1Slope();
     fCutVarCascCosPA_Const = lCopyMe.GetCutVarCascCosPAConst();
+
+    //Variable V0CosPA
+    fCutUseVariableV0CosPA = lCopyMe.GetCutUseVarV0CosPA();
+    fCutVarV0CosPA_Exp0Const = lCopyMe.GetCutVarV0CosPAExp0Const();
+    fCutVarV0CosPA_Exp0Slope = lCopyMe.GetCutVarV0CosPAExp0Slope();
+    fCutVarV0CosPA_Exp1Const = lCopyMe.GetCutVarV0CosPAExp1Const();
+    fCutVarV0CosPA_Exp1Slope = lCopyMe.GetCutVarV0CosPAExp1Slope();
+    fCutVarV0CosPA_Const = lCopyMe.GetCutVarV0CosPAConst();
     
     if (fHisto) {
         delete fHisto;
@@ -374,6 +414,14 @@ Bool_t AliCascadeResult::HasSameCuts(AliCascadeResult *lCompare)
     if ( TMath::Abs(fCutVarCascCosPA_Exp1Slope - lCompare->GetCutVarCascCosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutVarCascCosPA_Const  - lCompare->GetCutVarCascCosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
     
+    //Variable V0CosPA
+    if ( TMath::Abs(fCutUseVariableV0CosPA - lCompare->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp0Const - lCompare->GetCutVarV0CosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp0Slope - lCompare->GetCutVarV0CosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp1Const - lCompare->GetCutVarV0CosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp1Slope - lCompare->GetCutVarV0CosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Const  - lCompare->GetCutVarV0CosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -396,12 +444,20 @@ void AliCascadeResult::Print()
     cout<<" DCA Pos to PV......: "<<fCutDCAPosToPV<<endl;
     cout<<" DCA V0 Daughters...: "<<fCutDCAV0Daughters<<endl;
     cout<<" V0 Cos PA..........: "<<fCutV0CosPA<<endl;
+    cout<<" Use Var V0CosPA..: "<<fCutUseVariableV0CosPA<<endl;
+    if( fCutUseVariableV0CosPA ){
+        cout<<" ^--Exp. 0 Const....: "<<fCutVarV0CosPA_Exp0Const<<endl;
+        cout<<" ^--Exp. 0 Slope....: "<<fCutVarV0CosPA_Exp0Slope<<endl;
+        cout<<" ^--Exp. 1 Const....: "<<fCutVarV0CosPA_Exp1Const<<endl;
+        cout<<" ^--Exp. 1 Slope....: "<<fCutVarV0CosPA_Exp1Slope<<endl;
+        cout<<" ^--Constant........: "<<fCutVarV0CosPA_Const<<endl;
+    }
     cout<<" V0 2D Radius.......: "<<fCutV0Radius<<endl;
     
     cout<<" DCA V0 to PV.......: "<<fCutDCAV0ToPV<<endl;
     cout<<" V0 Mass............: "<<fCutV0Mass<<endl;
     cout<<" DCA Bach to PV.....: "<<fCutDCABachToPV<<endl;
-    cout<<" DCA Casc Daughters.: "<<fCutDCACascDaughters<<endl;
+    cout<<" DCA V0 Daughters.: "<<fCutDCACascDaughters<<endl;
     cout<<" Casc Cos PA........: "<<fCutCascCosPA<<endl;
     cout<<" Use Var CascCosPA..: "<<fCutUseVariableCascCosPA<<endl;
     if( fCutUseVariableCascCosPA ){
