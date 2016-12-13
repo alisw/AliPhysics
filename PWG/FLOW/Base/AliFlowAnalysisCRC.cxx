@@ -113,6 +113,7 @@ fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
 fUseTrackWeights(kFALSE),
 fUsePhiEtaWeights(kFALSE),
+fUsePhiEtaWeightsChDep(kFALSE),
 fUseZDCESEMulWeights(kFALSE),
 fUseZDCESESpecWeights(kFALSE),
 fUseParticleWeights(NULL),
@@ -596,6 +597,18 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
       AliWarning(Form("WARNING: cenphieta weights not found for run %d! \n",fRunNum));
     }
   }
+  if(fUsePhiEtaWeightsChDep && fRunNum!=fCachedRunNum) {
+    if(fWeightsListChDep->FindObject(Form("fCenPhiEtaWeightsPos[%d]",fRunNum))) {
+      fPhiEtaWeightsPos = (TH3F*)(fWeightsListChDep->FindObject(Form("fCenPhiEtaWeightsPos[%d]",fRunNum)));
+    } else {
+      AliWarning(Form("WARNING: pch cenphieta weights not found for run %d! \n",fRunNum));
+    }
+    if(fWeightsListChDep->FindObject(Form("fCenPhiEtaWeightsNeg[%d]",fRunNum))) {
+      fPhiEtaWeightsNeg = (TH3F*)(fWeightsListChDep->FindObject(Form("fCenPhiEtaWeightsNeg[%d]",fRunNum)));
+    } else {
+      AliWarning(Form("WARNING: nch cenphieta weights not found for run %d! \n",fRunNum));
+    }
+  }
   if(fUsePhiEtaCuts && fRunNum!=fCachedRunNum) {
     if(fPhiEtaCutsList->FindObject(Form("fCenPhiEtaCut[%d]",fRunNum))) {
       fPhiEtaCuts = (TH3F*)(fPhiEtaCutsList->FindObject(Form("fCenPhiEtaCut[%d]",fRunNum)));
@@ -657,6 +670,12 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if(fUsePhiEtaWeights && fPhiEtaWeights) // determine phieta weight for POI:
         {
           wt = fPhiEtaWeights->GetBinContent(fPhiEtaWeights->FindBin(fCentralityEBE,dPhi,dEta));
+          if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+        }
+        if(fUsePhiEtaWeightsChDep && fPhiEtaWeightsPos && fPhiEtaWeightsNeg) // determine phieta weight for POI, ch dep:
+        {
+          if(dCharge > 0.) wt = fPhiEtaWeightsPos->GetBinContent(fPhiEtaWeightsPos->FindBin(fCentralityEBE,dPhi,dEta));
+          else wt = fPhiEtaWeightsNeg->GetBinContent(fPhiEtaWeightsNeg->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
@@ -817,6 +836,12 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if(fUsePhiEtaWeights && fPhiEtaWeights) // determine phieta weight for POI:
         {
           wt = fPhiEtaWeights->GetBinContent(fPhiEtaWeights->FindBin(fCentralityEBE,dPhi,dEta));
+          if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+        }
+        if(fUsePhiEtaWeightsChDep && fPhiEtaWeightsPos && fPhiEtaWeightsNeg) // determine phieta weight for POI, ch dep:
+        {
+          if(dCharge > 0.) wt = fPhiEtaWeightsPos->GetBinContent(fPhiEtaWeightsPos->FindBin(fCentralityEBE,dPhi,dEta));
+          else wt = fPhiEtaWeightsNeg->GetBinContent(fPhiEtaWeightsNeg->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
@@ -1176,6 +1201,7 @@ void AliFlowAnalysisCRC::Finish()
   fUseEtaWeights = (Bool_t)fUseParticleWeights->GetBinContent(3);
   fUseTrackWeights = (Bool_t)fUseParticleWeights->GetBinContent(4);
   fUsePhiEtaWeights = (Bool_t)fUseParticleWeights->GetBinContent(5);
+  fUsePhiEtaWeightsChDep = (Bool_t)fUseParticleWeights->GetBinContent(6);
   fApplyCorrectionForNUA = (Bool_t)fIntFlowFlags->GetBinContent(3);
   fPrintFinalResults[0] = (Bool_t)fIntFlowFlags->GetBinContent(4);
   fPrintFinalResults[1] = (Bool_t)fIntFlowFlags->GetBinContent(5);
@@ -2064,18 +2090,21 @@ void AliFlowAnalysisCRC::BookAndFillWeightsHistograms()
   
   TString fUseParticleWeightsName = "fUseParticleWeightsQC";
   fUseParticleWeightsName += fAnalysisLabel->Data();
-  fUseParticleWeights = new TProfile(fUseParticleWeightsName.Data(),"0 = particle weight not used, 1 = particle weight used ",5,0,5);
+  fUseParticleWeights = new TProfile(fUseParticleWeightsName.Data(),"0 = particle weight not used, 1 = particle weight used ",6,0,6);
   fUseParticleWeights->SetLabelSize(0.06);
   fUseParticleWeights->SetStats(kFALSE);
   (fUseParticleWeights->GetXaxis())->SetBinLabel(1,"w_{#phi}");
   (fUseParticleWeights->GetXaxis())->SetBinLabel(2,"w_{p_{T}}");
   (fUseParticleWeights->GetXaxis())->SetBinLabel(3,"w_{#eta}");
   (fUseParticleWeights->GetXaxis())->SetBinLabel(4,"w_{track}");
+  (fUseParticleWeights->GetXaxis())->SetBinLabel(5,"w_{#phi,#eta}");
+  (fUseParticleWeights->GetXaxis())->SetBinLabel(6,"w_{#phi,#eta} chdep");
   fUseParticleWeights->Fill(0.5,(Int_t)fUsePhiWeights);
   fUseParticleWeights->Fill(1.5,(Int_t)fUsePtWeights);
   fUseParticleWeights->Fill(2.5,(Int_t)fUseEtaWeights);
   fUseParticleWeights->Fill(3.5,(Int_t)fUseTrackWeights);
   fUseParticleWeights->Fill(4.5,(Int_t)fUsePhiEtaWeights);
+  fUseParticleWeights->Fill(5.5,(Int_t)fUsePhiEtaWeightsChDep);
   fWeightsList->Add(fUseParticleWeights);
   
   // // POIs
@@ -17089,7 +17118,10 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
 void AliFlowAnalysisCRC::InitializeArraysForParticleWeights()
 {
   fWeightsList = new TList();
+  fWeightsListChDep = new TList();
   fPhiEtaWeights = NULL;
+  fPhiEtaWeightsPos = NULL;
+  fPhiEtaWeightsNeg = NULL;
   
   // fPhiDistrRefRPs = NULL;
   // fPtDistrRefRPs = NULL;
@@ -17317,6 +17349,10 @@ void AliFlowAnalysisCRC::BookAndNestAllLists()
   fWeightsList->SetName("Weights");
   fWeightsList->SetOwner(kTRUE);
   fHistList->Add(fWeightsList);
+  
+  fWeightsListChDep->SetName("Charge Dependent Weights");
+  fWeightsListChDep->SetOwner(kTRUE);
+  fHistList->Add(fWeightsListChDep);
   
   // d) Book and nest list for distributions:
   fDistributionsList = new TList();
@@ -25253,6 +25289,7 @@ void AliFlowAnalysisCRC::GetPointersForParticleWeightsHistograms()
     fUseEtaWeights = (Int_t)fUseParticleWeights->GetBinContent(3);
     fUseTrackWeights = (Int_t)fUseParticleWeights->GetBinContent(4);
     fUsePhiEtaWeights = (Int_t)fUseParticleWeights->GetBinContent(5);
+    fUsePhiEtaWeightsChDep = (Int_t)fUseParticleWeights->GetBinContent(6);
   }
 } // end of void AliFlowAnalysisCRC::GetPointersForParticleWeightsHistograms();
 
@@ -28478,6 +28515,12 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   if(fUsePhiEtaWeights) {
     fPhiEtaWeights = new TH3F();
     fTempList->Add(fPhiEtaWeights);
+  }
+  if(fUsePhiEtaWeightsChDep) {
+    fPhiEtaWeightsPos = new TH3F();
+    fTempList->Add(fPhiEtaWeightsPos);
+    fPhiEtaWeightsNeg = new TH3F();
+    fTempList->Add(fPhiEtaWeightsNeg);
   }
   if(fUsePhiEtaCuts) {
     fPhiEtaCuts = new TH3F();

@@ -91,6 +91,8 @@ public:
   Bool_t GetUseQvectorTerms() const {return this->fUseQvectorTerms;};
   void SetWeightsList(TList* const kList) {this->fWeightsList = (TList*)kList->Clone();};
   TList* GetWeightsList() const {return this->fWeightsList;};
+  void SetWeightsListChDep(TList* const kList) {this->fWeightsListChDep = (TList*)kList->Clone();};
+  TList* GetWeightsListChDep() const {return this->fWeightsListChDep;};
   
   // Multiparticle correlations vs multiplicity:
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
@@ -111,6 +113,8 @@ public:
   Bool_t GetUseTrackWeights() const {return this->fUseTrackWeights;};
   void SetUsePhiEtaWeights(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeights = uPhiEtaW;};
   Bool_t GetUsePhiEtaWeights() const {return this->fUsePhiEtaWeights;};
+  void SetUsePhiEtaWeightsChDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsChDep = uPhiEtaW;};
+  Bool_t GetUsePhiEtaWeightsChDep() const {return this->fUsePhiEtaWeightsChDep;};
   void SetPhiEtaCutsList(TList* const wlist) {this->fPhiEtaCutsList = wlist;}
   TList* GetPhiEtaCutsList() const {return this->fPhiEtaCutsList;}
   void SetUsePhiEtaCuts(Bool_t const uPhiEtaW) {this->fUsePhiEtaCuts = uPhiEtaW;};
@@ -276,9 +280,11 @@ private:
   Bool_t fUseEtaWeights;              // use eta weights
   Bool_t fUseTrackWeights;            // use track weights (e.g. VZERO sector weights)
   Bool_t fUsePhiEtaWeights;           // use phi,eta weights
-  Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
+  Bool_t fUsePhiEtaWeightsChDep;      // use phi,eta weights ch dep
+  Bool_t fUseZDCESEMulWeights;        // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE mult. weights
   TList *fWeightsList;                // list with weights
+  TList *fWeightsListChDep;           // list with weights ch dep
   TList *fPhiEtaCutsList;             //
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
