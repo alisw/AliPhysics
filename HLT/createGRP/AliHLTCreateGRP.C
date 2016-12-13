@@ -27,5 +27,5 @@ Int_t AliHLTCreateGRP(Int_t runNumber, TString detectorList, TString beamType, T
 	int retVal = GrpBuilder->CreateGRP(runNumber, detectorList, beamType, runType, startShift, endShift, defaults);
 	
 	delete GrpBuilder;
-	return(retVal == 0 ? 2 : -retVal);
+	return(retVal == 0 ? 2 : 100 + retVal);
 }
