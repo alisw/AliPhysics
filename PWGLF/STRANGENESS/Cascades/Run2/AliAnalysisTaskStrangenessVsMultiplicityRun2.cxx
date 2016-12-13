@@ -1685,6 +1685,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             }
             //========================================================================
             
+            //========================================================================
+            //Setting up: Variable V0 CosPA
+            Float_t lV0CosPACut = lCascadeResult -> GetCutV0CosPA();
+            Float_t lVarV0CosPApar[5];
+            lVarV0CosPApar[0] = lCascadeResult->GetCutVarV0CosPAExp0Const();
+            lVarV0CosPApar[1] = lCascadeResult->GetCutVarV0CosPAExp0Slope();
+            lVarV0CosPApar[2] = lCascadeResult->GetCutVarV0CosPAExp1Const();
+            lVarV0CosPApar[3] = lCascadeResult->GetCutVarV0CosPAExp1Slope();
+            lVarV0CosPApar[4] = lCascadeResult->GetCutVarV0CosPAConst();
+            Float_t lVarV0CosPA = TMath::Cos(
+                                               lVarV0CosPApar[0]*TMath::Exp(lVarV0CosPApar[1]*fTreeCascVarPt) +
+                                               lVarV0CosPApar[2]*TMath::Exp(lVarV0CosPApar[3]*fTreeCascVarPt) +
+                                               lVarV0CosPApar[4]);
+            if( lCascadeResult->GetCutUseVarV0CosPA() ){
+                //Only use if tighter than the non-variable cut
+                if( lVarV0CosPA > lV0CosPACut ) lV0CosPACut = lVarV0CosPA;
+            }
+            //========================================================================
+            
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiMinus     ){
                 lCharge  = -1;
                 lMass    = fTreeCascVarMassAsXi;
@@ -1749,7 +1768,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeCascVarDCANegToPrimVtx > lCascadeResult->GetCutDCANegToPV() &&
                 fTreeCascVarDCAPosToPrimVtx > lCascadeResult->GetCutDCAPosToPV() &&
                 fTreeCascVarDCAV0Daughters < lCascadeResult->GetCutDCAV0Daughters() &&
-                fTreeCascVarV0CosPointingAngle > lCascadeResult->GetCutV0CosPA() &&
+                fTreeCascVarV0CosPointingAngle > lV0CosPACut &&
                 fTreeCascVarV0Radius > lCascadeResult->GetCutV0Radius() &&
                 // - Cascade Selections
                 fTreeCascVarDCAV0ToPrimVtx > lCascadeResult->GetCutDCAV0ToPV() &&
