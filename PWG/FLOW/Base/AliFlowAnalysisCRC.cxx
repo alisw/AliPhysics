@@ -28700,13 +28700,7 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
   fFlowQCMetricCent->Sumw2();
   fFlowQCList->Add(fFlowQCMetricCent);
   
-  Double_t binr[] = {1.E-6,2.E-6,3.E-6,4.E-6,5.E-6,6.E-6,7.E-6,8.E-6,9.E-6,1.E-5,2.E-5,3.E-5,4.E-5,5.E-5,6.E-5,7.E-5,8.E-5,9.E-5,1.E-4,2.E-4,3.E-4,4.E-4,5.E-4,6.E-4,7.E-4,8.E-4,9.E-4,1.E-3,2.E-3,3.E-3,4.E-3,5.E-3,6.E-3,7.E-3,8.E-3,9.E-3,1.E-2,2.E-2,3.E-2,4.E-2,5.E-2,6.E-2,7.E-2,8.E-2,9.E-2,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.};
-  Double_t binrd[110] = {0.};
-  for (Int_t i=0; i<110; i++) {
-    if(i<55) {binrd[i] = -binr[54-i];}
-    else {binrd[i] = binr[i-55];}
-  }
-  Double_t cen[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100};
+  Double_t xmint=0., xmaxt=0.;
   
   // integrated flow
   for(Int_t i=0; i<fFlowNHarm; i++) {
@@ -28720,7 +28714,11 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
       fFlowQCIntCumHist[i][j] = new TH1D(Form("fFlowQCIntCumHist[%d][%d]",i,j),Form("fFlowQCIntCumHist[%d][%d]",i,j),fFlowQCCenBin,0.,100.);
       fFlowQCIntCumHist[i][j]->Sumw2();
       fFlowQCList->Add(fFlowQCIntCumHist[i][j]);
-      fFlowQCIntCorProTest[i][j] = new TH2D(Form("fFlowQCIntCorProTest[%d][%d]",i,j),Form("fFlowQCIntCorProTest[%d][%d]",i,j),100,cen,109,binrd);
+      
+      if(j==0 || j==2) {xmint=-0.05; xmaxt =0.05;}
+      if(j==1) {xmint=-0.002; xmaxt =0.002;}
+      
+      fFlowQCIntCorProTest[i][j] = new TH2D(Form("fFlowQCIntCorProTest[%d][%d]",i,j),Form("fFlowQCIntCorProTest[%d][%d]",i,j),fFlowQCCenBin,0.,100.,1E4,xmint,xmaxt);
       fFlowQCIntCorProTest[i][j]->Sumw2();
       fFlowQCList->Add(fFlowQCIntCorProTest[i][j]);
     }
