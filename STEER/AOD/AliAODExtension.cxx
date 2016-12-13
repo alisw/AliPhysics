@@ -84,7 +84,7 @@ void AliAODExtension::AddBranch(const char* cname, void* addobj)
   
   if (!fAODEvent) {
     char type[20];
-    gROOT->ProcessLine(Form("TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)%p, \"%%s\", s_tmp.Data());", type));
+    gROOT->ProcessLine(Form("{TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)%p, \"%%s\", s_tmp.Data());}", type));
     Init(type);
   }
   TDirectory *owd = gDirectory;

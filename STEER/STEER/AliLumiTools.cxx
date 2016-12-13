@@ -195,11 +195,11 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
     UInt_t counts1 = useLM ? scaler1->GetLMCB() : scaler1->GetLOCB();
     UInt_t counts2 = useLM ? scaler2->GetLMCB() : scaler2->GetLOCB();
     UInt_t refCounts = (counts2>counts1) ?counts2-counts1 :  counts2+(0xffffffff-counts1)+1;
-    UInt_t t1 = record1->GetTimeStamp()->GetSeconds()+1e-6*record1->GetTimeStamp()->GetMicroSecs();
-    UInt_t t2 = record2->GetTimeStamp()->GetSeconds()+1e-6*record2->GetTimeStamp()->GetMicroSecs();
-    Double_t duration = double(t2)-double(t1);
+    double t1 = record1->GetTimeStamp()->GetSeconds()+1e-6*record1->GetTimeStamp()->GetMicroSecs();
+    double t2 = record2->GetTimeStamp()->GetSeconds()+1e-6*record2->GetTimeStamp()->GetMicroSecs();
+    Double_t duration = t2 - t1;
     if (duration<1e-6) {
-      AliWarningClassF("Time duration between scalers %d %d is %.f, skip",t1,t2,duration);
+      AliWarningClassF("Time duration between scalers %f %f is %.f, skip",t1,t2,duration);
       continue;
     }
     Double_t totalBCs = duration*orbitRate*nBCs;
@@ -207,11 +207,12 @@ TGraph* AliLumiTools::GetLumiFromCTP(Int_t run, const char * ocdbPathDef, TStrin
     Double_t refRate = refMu*orbitRate*nBCs;
     Double_t refLumi = refRate/refSigma;
     //printf("%f %f\n",t2,refLumi);
-    if (nAcc==0) vtime[nAcc]=Double_t(t1);
+    if (nAcc==0) vtime[nAcc] = t1;
     vlumi[nAcc]=refLumi*fgScaleFactor;
     vlumiErr[nAcc]=refCounts > 0 ? refLumi/TMath::Sqrt(refCounts) : 0.0;   
     vtime[++nAcc]=Double_t(t2);
     fgMuEst += refMu;
+    //    printf("#%4d T:%.3f-%.3f -> %.3f | Cnt: %u %u -> %u --> %f\n",r,t1,t2,duration, counts1,counts2,refCounts,refLumi);
   }
   fgMuEst = nAcc>0&&refEff>0 ? fgMuEst/nAcc/refEff : -1;
   if (refEff>0) fgXSecEst /= refEff;

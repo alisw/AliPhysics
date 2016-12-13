@@ -498,7 +498,8 @@ int AliHLTComponent::ConfigureFromArgumentString(int argc, const char** argv)
     // a sequence of blanks. All characters until the first occurence
     // of a blank are removed. If the remainder contains only whitespaces
     // the argument is a single argument, just having whitespaces at the end.
-    argument.Remove(0, argument.First(' '));
+    Ssiz_t firstSpacePos = argument.First(' ');
+    if (firstSpacePos>=0) argument.Remove(0,firstSpacePos);
     if (argument.IsWhitespace()) {
       stringarray.push_back(argv[i]);
       continue;

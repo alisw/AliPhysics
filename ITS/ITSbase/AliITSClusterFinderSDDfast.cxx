@@ -383,9 +383,8 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::v
 	    kplab2[ilab]=-2;
       }
       else{
+        for(Int_t ilab=10;ilab--;) kplab2[ilab]=-2;
         if(fRawID2ClusID) kplab2[0]=fNClusters+1; // RS: store clID+1 as a reference to the cluster
-        for(Int_t ilab=1;ilab<10;++ilab)
-	  kplab2[ilab]=-2;
       }
       if(digits) CheckLabels2(kplab2);
       kplab2[3]=fNdet[fModule];
