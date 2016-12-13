@@ -28,6 +28,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              Bool_t bUsePhiEtaWeights=kFALSE,
+                             Bool_t bUsePhiEtaWeightsChDep=kFALSE,
                              Bool_t bCalibEZDC=kFALSE,
                              Bool_t bSetQAZDC=kFALSE,
                              Int_t MinMulZN=1,
@@ -353,7 +354,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  TString taskCRCname = "AnalysisTask";
  taskCRCname += CRCsuffix;
  taskCRCname += suffix;
- AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, bUsePhiEtaWeights);
+ AliAnalysisTaskCRC *taskQC = new AliAnalysisTaskCRC(taskCRCname, kTRUE);
  // set number of centrality bins
  taskQC->SetnCenBin(nCenBin);
  taskQC->SetCenBinWidth(CenBinWidth);
@@ -611,6 +612,33 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
    delete PhiEtaWeightsFile;
  } // end of if(bUsePhiEtaWeights)
+  
+  taskQC->SetUsePhiEtaWeightsChDep(bUsePhiEtaWeightsChDep);
+  if(bUsePhiEtaWeightsChDep) {
+    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+    if(sDataSet=="2015" && sIntRuns=="high") {
+      if(bUsePtWeights && AODfilterBit==768) {
+        PhiEtaWeightsFileName += "15oHI_FB768_pteff_ChDep_CenPhiEtaWeights.root";
+      }
+    }
+    TFile* PhiEtaWeightsFileChDep = TFile::Open(PhiEtaWeightsFileName,"READ");
+    if(!PhiEtaWeightsFileChDep) {
+      cout << "ERROR: PhiEtaWeightsFileChDep not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* PhiEtaWeightsListChDep = (TList*)(PhiEtaWeightsFileChDep->FindObjectAny("CenPhiEta Weights"));
+    if(PhiEtaWeightsListChDep) {
+      taskQC->SetWeightsListChDep(PhiEtaWeightsListChDep);
+      cout << "ChDep CenPhiEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: ChDep CenPhiEtaWeightsList not found!" << endl;
+      exit(1);
+    }
+    delete PhiEtaWeightsFileChDep;
+  } // end of if(bUsePhiEtaWeightsChDep)
+  
   taskQC->SetUsePhiEtaCuts(bUsePhiEtaCuts);
   if(bUsePhiEtaCuts) {
     TString PhiEtaCutsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";

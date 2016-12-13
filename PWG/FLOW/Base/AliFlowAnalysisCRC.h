@@ -371,6 +371,8 @@ public:
   Bool_t GetUseTrackWeights() const {return this->fUseTrackWeights;};
   void SetUsePhiEtaWeights(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeights = uPhiEtaW;};
   Bool_t GetUsePhiEtaWeights() const {return this->fUsePhiEtaWeights;};
+  void SetUsePhiEtaWeightsChDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsChDep = uPhiEtaW;};
+  Bool_t GetUsePhiEtaWeightsChDep() const {return this->fUsePhiEtaWeightsChDep;};
   void SetPhiEtaCutsList(TList* const wlist) {this->fPhiEtaCutsList = wlist;}
   TList* GetPhiEtaCutsList() const {return this->fPhiEtaCutsList;}
   void SetUsePhiEtaCuts(Bool_t const uPhiEtaW) {this->fUsePhiEtaCuts = uPhiEtaW;};
@@ -383,6 +385,8 @@ public:
   TProfile* GetUseParticleWeights() const {return this->fUseParticleWeights;};
   void SetPhiWeights(TH1F* const histPhiWeights) {this->fPhiWeightsRPs = histPhiWeights;};
   TH1F* GetPhiWeights() const {return this->fPhiWeightsRPs;};
+  void SetWeightsListChDep(TList* const wlist) {this->fWeightsListChDep = wlist;}
+  TList* GetWeightsListChDep() const {return this->fWeightsListChDep;}
   
   // 2b.) event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
@@ -1134,12 +1138,14 @@ private:
   
   // 2a.) particle weights:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
+  TList *fWeightsListChDep; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
   TList *fPhiEtaCutsList; // list for phi,eta cuts (for NUA)
   Bool_t fUsePhiWeights; // use phi weights
   Bool_t fUsePtWeights; // use pt weights
   Bool_t fUseEtaWeights; // use eta weights
   Bool_t fUseTrackWeights; // use track weights (e.g. VZERO sector weights)
   Bool_t fUsePhiEtaWeights; // use phi,eta weights
+  Bool_t fUsePhiEtaWeightsChDep; // use phi,eta weights
   Bool_t fUsePhiEtaCuts; // use phi,eta cuts (for NUA)
   Bool_t fUseZDCESEMulWeights;       // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE spec. weights
@@ -1458,6 +1464,8 @@ private:
   const static Int_t fCRCMaxnRun = 211;
   
   TH3F *fPhiEtaWeights; //!
+  TH3F *fPhiEtaWeightsPos; //!
+  TH3F *fPhiEtaWeightsNeg; //!
   TH3F *fPhiEtaCuts; //!
   
   TList *fCRCIntRbRList; //! CRC list of histograms RbR

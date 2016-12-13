@@ -81,10 +81,12 @@ fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
 fUseTrackWeights(kFALSE),
 fUsePhiEtaWeights(kFALSE),
+fUsePhiEtaWeightsChDep(kFALSE),
 fUsePhiEtaCuts(kFALSE),
 fUseZDCESEMulWeights(kFALSE),
 fUseZDCESESpecWeights(kFALSE),
 fWeightsList(NULL),
+fWeightsListChDep(NULL),
 fPhiEtaCutsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
@@ -227,10 +229,12 @@ fUsePtWeights(kFALSE),
 fUseEtaWeights(kFALSE),
 fUseTrackWeights(kFALSE),
 fUsePhiEtaWeights(kFALSE),
+fUsePhiEtaWeightsChDep(kFALSE),
 fUsePhiEtaCuts(kFALSE),
 fUseZDCESEMulWeights(kFALSE),
 fUseZDCESESpecWeights(kFALSE),
 fWeightsList(NULL),
+fWeightsListChDep(NULL),
 fPhiEtaCutsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
@@ -407,8 +411,10 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fUseEtaWeights){fQC->SetUseEtaWeights(fUseEtaWeights);}
     if(fUseTrackWeights){fQC->SetUseTrackWeights(fUseTrackWeights);}
     if(fUsePhiEtaWeights){fQC->SetUsePhiEtaWeights(fUsePhiEtaWeights);}
+    if(fUsePhiEtaWeightsChDep){fQC->SetUsePhiEtaWeightsChDep(fUsePhiEtaWeightsChDep);}
     // Pass the list with weights to class:
     if(fWeightsList) fQC->SetWeightsList(fWeightsList);
+    if(fWeightsListChDep) fQC->SetWeightsListChDep(fWeightsListChDep);
   }
   if(fUsePhiEtaCuts) fQC->SetUsePhiEtaCuts(fUsePhiEtaCuts);
   if(fPhiEtaCutsList) fQC->SetPhiEtaCutsList(fPhiEtaCutsList);
