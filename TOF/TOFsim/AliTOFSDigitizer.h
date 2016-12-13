@@ -122,6 +122,7 @@ public:
   
   Float_t  GetTimeResolution()  const {return fTimeResolution;}
 
+  void SetExternalRunLoader(AliRunLoader* runloader) {fRunLoader=runloader;}
 
 protected:
 

@@ -936,6 +936,7 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 
 
   case 2:
+    Float_t dFromBorder;
     if(z0 < 0) timeWalkZ = (AliTOFGeometry::ZPad()*0.5 + dZ)*fTimeWalkSlope;
     else timeWalkZ = (AliTOFGeometry::ZPad()*0.5 - dZ)*fTimeWalkSlope;
 
@@ -972,6 +973,14 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 
     timeWalk[nActivatedPads-1] = 0.001 *  (TMath::Sqrt(timeWalkZ*timeWalkZ + timeWalkX*timeWalkX) - AliTOFGeometry::ZPad()*0.5*fTimeWalkSlope); // time walk refered to pad centre
 
+    if (fTimeDelayFlag) { // ciao
+      dFromBorder = TMath::Min(TMath::Abs(x),TMath::Abs(z));
+      dFromBorder = TMath::Max(1 - dFromBorder,Float_t(0));
+      qInduced[nActivatedPads-1] = gRandom->Gaus(1.,0.05);//TMath::Exp(-fPulseHeightSlope * z);
+      if(qInduced[nActivatedPads-1] < 0) qInduced[nActivatedPads-1] = 0;
+      //      logOfqInd = gRandom->Gaus(-fPulseHeightSlope * z, fLogChargeSmearing);
+      timeDelay[nActivatedPads-1] = -0.027 + 0.07*dFromBorder*dFromBorder*dFromBorder;//gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);   
+    }
 
     ////// Pad B:
     if(z < k2) {
@@ -991,9 +1000,10 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	else timeWalk[nActivatedPads-1] = 0.001 * (1.5*AliTOFGeometry::ZPad() + dZ )*fTimeWalkSlope; // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
-	  qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * z);
-	  logOfqInd = gRandom->Gaus(-fPulseHeightSlope * z, fLogChargeSmearing);
-	  timeDelay[nActivatedPads-1] = gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
+	  qInduced[nActivatedPads-1] = gRandom->Gaus(1.-TMath::Abs(z),0.05);//TMath::Exp(-fPulseHeightSlope * z);
+	  if(qInduced[nActivatedPads-1] < 0) qInduced[nActivatedPads-1] = 0;
+	  //logOfqInd = gRandom->Gaus(-fPulseHeightSlope * z, fLogChargeSmearing);
+	  timeDelay[nActivatedPads-1] = -0.027 + 0.07;//gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
 	} else {
 	  timeDelay[nActivatedPads-1] = 0.;
 	}
@@ -1020,9 +1030,10 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	timeWalk[nActivatedPads-1] = 0.001 * (AliTOFGeometry::XPad()*0.5*fTimeWalkSlope-timeWalkX + TMath::Sqrt(timeWalkZ*timeWalkZ + fTimeWalkSlope*fTimeWalkSlope*0.25*AliTOFGeometry::XPad()*AliTOFGeometry::XPad()) - AliTOFGeometry::ZPad()*0.5*fTimeWalkSlope); // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
-	  qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * x);
-	  logOfqInd = gRandom->Gaus(-fPulseHeightSlope * x, fLogChargeSmearing);
-	  timeDelay[nActivatedPads-1] = gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
+	  qInduced[nActivatedPads-1] = gRandom->Gaus(1.-TMath::Abs(x),0.05);//TMath::Exp(-fPulseHeightSlope * x);
+	  if(qInduced[nActivatedPads-1] < 0) qInduced[nActivatedPads-1] = 0;
+	  //logOfqInd = gRandom->Gaus(-fPulseHeightSlope * x, fLogChargeSmearing);
+	  timeDelay[nActivatedPads-1] = -0.027 + 0.07;//gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
 	} else {
 	  timeDelay[nActivatedPads-1] = 0.;
 	}
@@ -1039,14 +1050,17 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	    
 	    nTail[nActivatedPads-1] = 2;
 	    if (fTimeDelayFlag) {
-	      if (TMath::Abs(x) < TMath::Abs(z)) {
-		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * z);
-		logOfqInd = gRandom->Gaus(-fPulseHeightSlope * z, fLogChargeSmearing);
-	      } else {
-		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * x);
-		logOfqInd = gRandom->Gaus(-fPulseHeightSlope * x, fLogChargeSmearing);
-	      }
-	      timeDelay[nActivatedPads-1] = gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
+	      dFromBorder = TMath::Max(TMath::Abs(x),TMath::Abs(z));
+// 	      if (TMath::Abs(x) < TMath::Abs(z)) {
+// 		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * z);
+// 		logOfqInd = gRandom->Gaus(-fPulseHeightSlope * z, fLogChargeSmearing);
+// 	      } else {
+// 		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * x);
+// 		logOfqInd = gRandom->Gaus(-fPulseHeightSlope * x, fLogChargeSmearing);
+// 	      }
+	      qInduced[nActivatedPads-1] = gRandom->Gaus(1.-dFromBorder,0.05);
+	      if(qInduced[nActivatedPads-1] < 0) qInduced[nActivatedPads-1] = 0;
+	      timeDelay[nActivatedPads-1] = -0.027 + 0.07;//gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
 	    } else {
 	      timeDelay[nActivatedPads-1] = 0.;
 	    }
@@ -1064,9 +1078,10 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	timeWalk[nActivatedPads-1] = 0.001 * (AliTOFGeometry::XPad()*0.5*fTimeWalkSlope-timeWalkX + TMath::Sqrt(timeWalkZ*timeWalkZ + fTimeWalkSlope*fTimeWalkSlope*0.25*AliTOFGeometry::XPad()*AliTOFGeometry::XPad()) - AliTOFGeometry::ZPad()*0.5*fTimeWalkSlope); // ns
 	nTail[nActivatedPads-1] = 2;
 	if (fTimeDelayFlag) {
-	  qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * x);
-	  logOfqInd = gRandom->Gaus(-fPulseHeightSlope * x, fLogChargeSmearing);
-	  timeDelay[nActivatedPads-1] = gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
+	  qInduced[nActivatedPads-1] =  gRandom->Gaus(1.-TMath::Abs(x),0.05);//TMath::Exp(-fPulseHeightSlope * x);
+	  if(qInduced[nActivatedPads-1] < 0) qInduced[nActivatedPads-1] = 0;
+// 	  logOfqInd = gRandom->Gaus(-fPulseHeightSlope * x, fLogChargeSmearing);
+	  timeDelay[nActivatedPads-1] = -0.027 + 0.07;//gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
 	} else {
 	  timeDelay[nActivatedPads-1] = 0.;
 	}
@@ -1084,14 +1099,17 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
 	    nTail[nActivatedPads-1] = 2;
 
 	    if (fTimeDelayFlag) {
-	      if (TMath::Abs(x) < TMath::Abs(z)) {
-		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * z);
-		logOfqInd = gRandom->Gaus(-fPulseHeightSlope * z, fLogChargeSmearing);
-	      } else {
-		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * x);
-		logOfqInd = gRandom->Gaus(-fPulseHeightSlope * x, fLogChargeSmearing);
-	      }
-	      timeDelay[nActivatedPads-1] = gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
+	      dFromBorder = TMath::Max(TMath::Abs(x),TMath::Abs(z));
+// 	      if (TMath::Abs(x) < TMath::Abs(z)) {
+// 		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * z);
+// 		logOfqInd = gRandom->Gaus(-fPulseHeightSlope * z, fLogChargeSmearing);
+// 	      } else {
+// 		qInduced[nActivatedPads-1] = TMath::Exp(-fPulseHeightSlope * x);
+// 		logOfqInd = gRandom->Gaus(-fPulseHeightSlope * x, fLogChargeSmearing);
+// 	      }
+	      qInduced[nActivatedPads-1] = gRandom->Gaus(1.-dFromBorder,0.05);//TMath::Exp(-fPulseHeightSlope * z);
+	      if(qInduced[nActivatedPads-1] < 0) qInduced[nActivatedPads-1] = 0;
+	      timeDelay[nActivatedPads-1] = -0.027 + 0.07;//gRandom->Gaus(-fTimeDelaySlope * logOfqInd, fTimeSmearing);
 	    } else {
 	      timeDelay[nActivatedPads-1] = 0.;
 	    }
@@ -1102,22 +1120,32 @@ void AliTOFSDigitizer::SimulateDetectorResponse(Float_t z0, Float_t x0, Float_t 
     } // end if(x < k)
 
 
+    Float_t resAvalanche = 0;
+    Float_t timeAvalanche =  0;
+    if(fEdgeEffect == 2){ // smearing shared by the digits (60 ps)
+      resAvalanche = 0.06;
+      timeAvalanche =  gRandom->Gaus(0,resAvalanche);
+    }
+
     for (Int_t iPad = 0; iPad < nActivatedPads; iPad++) {
+      if(res[iPad] > resAvalanche) res[iPad] = TMath::Sqrt(res[iPad]*res[iPad] - resAvalanche*resAvalanche);
+      else res[iPad] = 0;
+
       //if (res[iPad] < fTimeResolution*0.001) res[iPad] = fTimeResolution*0.001;
       if(gRandom->Rndm() < eff[iPad]) {
 	isFired[iPad] = kTRUE;
 	nFiredPads++;
 	if(fEdgeTails) {
 	  if(nTail[iPad] == 0) {
-	    tofTime[iPad] = gRandom->Gaus(geantTime + timeWalk[iPad] + timeDelay[iPad], res[iPad]);
+	    tofTime[iPad] = gRandom->Gaus(geantTime + timeWalk[iPad] + timeDelay[iPad] + timeAvalanche, res[iPad]);
 	  } else {
 	    ftail->SetParameters(res[iPad], 2. * res[iPad], kSigmaForTail[nTail[iPad]-1]);
 	    Double_t timeAB = ftail->GetRandom();
-	    tofTime[iPad] = geantTime + timeWalk[iPad] + timeDelay[iPad] + timeAB;
+	    tofTime[iPad] = geantTime + timeWalk[iPad] + timeDelay[iPad] + timeAB + timeAvalanche;
 	  }
 	} else {
 	  AliDebug(1,Form(" ----------------- TOF time resolution = %f",res[iPad]));
-	  tofTime[iPad] = gRandom->Gaus(geantTime + timeWalk[iPad] + timeDelay[iPad], res[iPad]);
+	  tofTime[iPad] = gRandom->Gaus(geantTime + timeWalk[iPad] + timeDelay[iPad] + timeAvalanche, res[iPad]);
 	}
 	if (fAverageTimeFlag) {
 	  averageTime += tofTime[iPad] * qInduced[iPad];
