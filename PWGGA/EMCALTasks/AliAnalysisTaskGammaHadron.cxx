@@ -100,7 +100,6 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	fDoMixing          =0; //= 0 (do only same event analyis with correct triggers), =1 (do event mixing)
 
 	fDebug             =0; //set only 1 for debugging
-	fUsePerTrigWeight  =0; //plot histograms per gamma yield (1). Plot absolute values (0)
 	fSavePool          =0; //= 0 do not save the pool by default. Use the set function to do this.
 
 	//..These two items are set in AliAnalysisTaskEmcal::RetrieveEventObjects()
@@ -695,50 +694,27 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 	AliClusterContainer* clusters  = GetClusterContainer(0);  //how do I know which cells are selected
 	if (!clusters) return 0;
 	Int_t NoOfClustersInEvent =clusters->GetNClusters();
-	Int_t nAccClusters = 0;
 	Double_t EffWeight_Gamma;
 	Double_t EffWeight_Hadron;
-	Double_t Weight;    //weight to normalize mixed and same event distributions individually
+	Double_t Weight=1;    //weight to normalize mixed and same event distributions individually
 
 	AliVCluster* cluster = 0;
 	AliVCluster* cluster2= 0;
 	AliVParticle* trackNULL=0;
 
 	//...........................................
-	//..do a small loop to count the triggers in this event
-	//..for same events normalize per triggers (gammas/pi0)
-	if(SameMix==1)
-	{
-		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
-		{
-			cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
-			if(!cluster || !AccClusterForAna(clusters,cluster))continue;
-			TLorentzVector CaloClusterVec;
-			clusters->GetMomentum(CaloClusterVec,cluster);
-			FillQAHisograms(0,clusters,cluster,trackNULL,0,0);
-
-			nAccClusters++;
-		}
-		if(fUsePerTrigWeight==1)
-		{
-			if(nAccClusters>0)	Weight=1.0/(1.0*nAccClusters);
-			else             	Weight=0;
-		}
-		else
-		{
-			//..don't use per gamma yields but absolute numbers
-			Weight=1;
-		}
-
-	}
 	//..for mixed events normalize per events in pool
 	if(SameMix==0)
 	{
 		Weight=InputWeight;
-		//cout<<"weight: "<<Weight<<endl;
+	}
+	//..for same events normalize later by counting the entries in spec. norm histograms
+	if(SameMix==1)
+	{
+		Weight=1;
 	}
 	//...........................................
-	//..run the real loop for filling the histograms
+	//..run the loop for filling the histograms
 	Int_t GammaCounter=0;
 	for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 	{
@@ -747,10 +723,10 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 		//clusters->GetLeadingCluster("e");
 
 		TLorentzVector CaloClusterVec;
-		//old framework	cluster->GetMomentum(CaloClusterVec, fVertex);
 		clusters->GetMomentum(CaloClusterVec, cluster);
 		EffWeight_Gamma=GetEff(CaloClusterVec);
 
+		FillQAHisograms(0,clusters,cluster,trackNULL,0,0);
 		fHistNoClusPt->Fill(CaloClusterVec.Pt()); //the .pt only works for gammas (E=M) for other particle this is wrong
 		//cout<<"Cluster number: "<<NoCluster1<<", pT = "<<CaloClusterVec.Pt()<<endl;
 		//...........................................
@@ -812,7 +788,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 			}
 		}
 	}
-	return nAccClusters;
+	return GammaCounter;
 }
 //________________________________________________________________________
 Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracksArray,Bool_t SameMix, Double_t InputWeight)
@@ -841,8 +817,9 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 	//...........................................
 	//do a small loop to count the triggers in this event
-	// **Tyler you have to see whether you need to count here pi0 inside of your mass window
-	// **but I also havent implemented it for gammas yet :-D
+    //** we don't need this loop here any longer because we will
+	//**normalize later in the analysis not now so we don't need the
+	//** total pi0 count beforehand!!!!!
 	if(SameMix==1)
 	{
 		for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
@@ -880,25 +857,21 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				}
 			}
 		}
-		if(fUsePerTrigWeight==1)
-		{
-			if(nAccPi0Clusters>0)Weight=2.0/(1.0*nAccPi0Clusters); //2 to avoid double counting.
-			else             	 Weight=0;
-		}
-		else
-		{
-			//..don't use per gamma yields but absolute numbers
-			Weight=1;
-		}
 	}
+
+	//...........................................
 	//..for mixed events normalize per events in pool
 	if(SameMix==0)
 	{
 		Weight=InputWeight;
 	}
-	//if(nAccClusters>0) cout<<"Pi0: "<<nAccPi0Clusters<<" all accepted clusters: "<<nAccClusters<<endl;
+	//..for same events normalize later by counting the entries in spec. norm histograms
+	if(SameMix==1)
+	{
+		Weight=1;
+	}
 	//...........................................
-	//run the real loop for filling the histograms
+	//run the loop for filling the histograms
 	for( Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 	{
 		cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);

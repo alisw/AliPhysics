@@ -59,7 +59,6 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      fGammaOrPi0;               // This tells me whether the correltation and the filling of histograms is done for gamma or pi0
   Bool_t                      fDoMixing;                 // This option enables mixed events being used in the analysi
   Bool_t                      fDebug;			        // Can be set for debugging
-  Bool_t                      fUsePerTrigWeight;		    // Sets whether you want to look at absolute yields or per trigger yields
   Bool_t                      fSavePool;                 // Defines whether to save output pools in a root file
 
   // Input histograms
