@@ -23,6 +23,8 @@
 #include <TMath.h>
 #include <TString.h>
 #include <Riostream.h>
+#include <TChain.h>
+#include <TFile.h>
 
 #include <AliVEventHandler.h>
 #include <AliAnalysisManager.h>
@@ -42,6 +44,11 @@
 #include "AliMCParticleContainer.h"
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
+#include "AliMCEvent.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliAODMCHeader.h"
+#include "AliPHOSGeometry.h"
+#include "AliOADBContainer.h"
 
 #include "AliAnalysisTaskPWGJEQA.h"
 
@@ -86,7 +93,10 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fDoTrackQA(kTRUE),
   fDoEmcalQA(kTRUE),
   fDoJetQA(kTRUE),
-  fDoEventQA(kTRUE)
+  fDoEventQA(kTRUE),
+  fRejectOutlierEvents(kFALSE),
+  fIsPtHard(kFALSE),
+  fPHOSGeo(nullptr)
 {
   // Default constructor.
   memset(fNTotClusters, 0, sizeof(Int_t)*3);
@@ -133,7 +143,10 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fDoTrackQA(kTRUE),
   fDoEmcalQA(kTRUE),
   fDoJetQA(kTRUE),
-  fDoEventQA(kTRUE)
+  fDoEventQA(kTRUE),
+  fRejectOutlierEvents(kFALSE),
+  fIsPtHard(kFALSE),
+  fPHOSGeo(nullptr)
 {
   // Standard
   memset(fNTotClusters, 0, sizeof(Int_t)*3);
@@ -167,9 +180,6 @@ void AliAnalysisTaskPWGJEQA::UserCreateOutputObjects()
   TIter next(fHistManager.GetListOfHistograms());
   TObject* obj = 0;
   while ((obj = next())) {
-    if (!strcmp(obj->GetName(),"fHistCellsAbsIdEnergy") || !strcmp(obj->GetName(),"fHistCellsAbsIdTime")) {
-      continue;
-    }
     fOutput->Add(obj);
   }
   
@@ -189,44 +199,28 @@ void AliAnalysisTaskPWGJEQA::AllocateTrackHistograms() {
 //________________________________________________________________________
 void AliAnalysisTaskPWGJEQA::AllocateCellHistograms() {
   
-  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
   TString histname;
   TString title;
   
   if (!fCaloCellsName.IsNull()) {
-  
-    // TH2s used to create the cell histograms (we do not write these to the output)
-    histname = "fHistCellsAbsIdEnergy";
-    title = histname + ";cell abs. Id;#it{E}_{cell} (GeV);counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), 20000,0,20000,(Int_t)(nPtBins / 2), 0, fMaxPt / 2);
-    
-    histname = "fHistCellsAbsIdTime";
-    title = histname + ";cell abs. Id;#it{t}_{cell} (s);counts";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), 20000,0,20000,(Int_t)(nPtBins / 2), -5e-6, 5e-6);
-    
-    // TH1s that we write to the output
 
     histname = TString::Format("%s/fHistCellEnergy", fCaloCellsName.Data());
     title = histname + ";#it{E}_{cell} (GeV);counts";
     fHistManager.CreateTH1(histname.Data(), title.Data(), 500,0, 100);
     
-    /*
     histname = TString::Format("%s/fProfCellAbsIdEnergy", fCaloCellsName.Data());
-    title = histname;
-    fHistManager.CreateTH1(histname.Data(), title.Data(), 20000,0,20000);
-    */
+    title = histname + ";cell absId;<#it{E}_{cell}> (GeV)";
+    fHistManager.CreateTProfile(histname.Data(), title.Data(), 18000,0,18000);
      
     histname = TString::Format("%s/fHistCellTime", fCaloCellsName.Data());
     title = histname + ";#it{t}_{cell} (s);counts";
     fHistManager.CreateTH1(histname.Data(), title.Data(), 500,-5e-6, 5e-6);
     
-    /*
     histname = TString::Format("%s/fProfCellAbsIdTime", fCaloCellsName.Data());
-    title = histname + ";#it{t}_{cell} (s);counts";
-    fHistManager.CreateTH1(histname.Data(), title.Data(), 20000,0,20000);
-    */
+    title = histname + ";cell absId;<#it{t}_{cell}> (s)";
+    fHistManager.CreateTProfile(histname.Data(), title.Data(), 18000,0,18000);
+    
   }
-  
 }
 
 //________________________________________________________________________
@@ -245,9 +239,15 @@ void AliAnalysisTaskPWGJEQA::AllocateClusterHistograms() {
     TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 50, 0, 250);
     SetRejectionReasonLabels(hist->GetXaxis());
     
-    const Int_t nSM = 20;
-    for (Int_t sm = 0; sm < nSM; sm++) {
-      histname = TString::Format("%s/BySM/fHistClusEnergy_SM%d", cont->GetArrayName().Data(), sm);
+    const Int_t nEmcalSM = 20;
+    for (Int_t sm = 0; sm < nEmcalSM; sm++) {
+      histname = TString::Format("%s/BySM/hEmcalClusEnergy_SM%d", cont->GetArrayName().Data(), sm);
+      title = histname + ";#it{E}_{cluster} (GeV);counts";
+      fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
+    }
+    
+    for (Int_t sm = 0; sm < 6; sm++) {
+      histname = TString::Format("%s/BySM/hPhosClusEnergy_SM%d", cont->GetArrayName().Data(), sm);
       title = histname + ";#it{E}_{cluster} (GeV);counts";
       fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
     }
@@ -268,9 +268,9 @@ void AliAnalysisTaskPWGJEQA::AllocateClusterHistograms() {
     }
     
     title[dim] = "#it{E}_{clus} (GeV)";
-    nbins[dim] = fNPtHistBins;
+    nbins[dim] = nPtBins/2;
     min[dim] = 0;
-    max[dim] = 250;
+    max[dim] = fMaxPt;
     dim++;
     
     title[dim] = "#eta";
@@ -489,6 +489,20 @@ void AliAnalysisTaskPWGJEQA::AllocateEventQAHistograms() {
   for (Int_t i = 0; i < dim; i++)
     hn->GetAxis(i)->SetTitle(axistitle[i]);
   
+  if (fIsPtHard) {
+    TString histname = "hPtHard";
+    TString title = histname + ";#it{p}_{T,hard} (GeV/c);counts";
+    fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
+    
+    TH1* hTrials = fHistManager.CreateTH1("hNtrials", "hNtrials", 1, 0, 1);
+    hTrials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+    
+    TH1* hxsection = fHistManager.CreateTH1("hXsec", "hXsec", 1, 0, 1);
+    hxsection->GetXaxis()->SetBinLabel(1,"<#sigma>");
+  }
+  
+  fHistEventRejection->GetXaxis()->SetBinLabel(15,"PtHardBinJetOutlier");
+
 }
 
 //________________________________________________________________________
@@ -628,6 +642,11 @@ void AliAnalysisTaskPWGJEQA::AllocateGeneratorLevelTHnSparse()
   binEdges[dim] = fPhiHistBins;
   dim++;
   
+  title[dim] = "Findable";
+  nbins[dim] = 2;
+  binEdges[dim] = fIntegerHistBins;
+  dim++;
+  
   fParticlesPhysPrim = new THnSparseF("tracks_PhysPrim","tracks_PhysPrim",dim,nbins);
   for (Int_t i = 0; i < dim; i++) {
     fParticlesPhysPrim->GetAxis(i)->SetTitle(title[i]);
@@ -712,6 +731,25 @@ void AliAnalysisTaskPWGJEQA::ExecOnce()
   }
   
   AliAnalysisTaskEmcalJet::ExecOnce();
+  
+  // Load the PHOS geometry
+  Int_t runNum = InputEvent()->GetRunNumber();
+  if(runNum<209122) //Run1
+    fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP");
+  else
+    fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2");
+  
+  if (fPHOSGeo) {
+    AliOADBContainer geomContainer("phosGeo");
+    geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
+    TObjArray* matrixes = (TObjArray*)geomContainer.GetObject(runNum,"PHOSRotationMatrixes");
+    for(Int_t mod=0; mod<6; mod++) {
+      if(!matrixes->At(mod)) continue;
+      fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod);
+      printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo);
+      ((TGeoHMatrix*)matrixes->At(mod))->Print();
+    }
+  }
 }
 
 //________________________________________________________________________
@@ -719,6 +757,83 @@ Bool_t AliAnalysisTaskPWGJEQA::RetrieveEventObjects()
 {
   if (!AliAnalysisTaskEmcalJet::RetrieveEventObjects()) return kFALSE;
   
+  // If Pt-hard production, get the Pt-hard of the event, and have possibility to reject the event for jet outliers
+  if (fIsPtHard) {
+    AliGenPythiaEventHeader* pygen;
+    if (MCEvent()) {
+      pygen = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+      if (!pygen) {
+        // Check if AOD
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+        if (aodMCH) {
+          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            pygen = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+            if (pygen) break;
+          }
+        }
+      }
+    }
+    if (pygen) {
+      fPtHard = pygen->GetPtHard();
+      //fNTrials = pygen->Trials();
+      //fXsection = pygen->GetXsection();
+      
+      // reject outlier events, where the jet Pt is much larger than Pt-hard
+      if (fRejectOutlierEvents) {
+        AliTLorentzVector jet;
+        Int_t nTriggerJets =  pygen->NTriggerJets();
+        Float_t tmpjet[]={0,0,0,0};
+        for (Int_t ijet = 0; ijet< nTriggerJets; ijet++) {
+          pygen->TriggerJet(ijet, tmpjet);
+          jet.SetPxPyPzE(tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3]);
+
+          if (jet.Pt() > 4. * fPtHard) {
+            //AliInfo(Form("Reject jet event with: pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", fPtHard, jet.Pt(), 4.));
+            if (fGeneralHistograms) fHistEventRejection->Fill("PtHardBinJetOutlier",1);
+            return kFALSE;
+          }
+        }
+      }
+    }
+  }
+
+  return kTRUE;
+}
+
+/**
+ * Notifying the user that the input data file has
+ * changed. Fill pt-hard histograms if applicable.
+ *
+ * @return False if the data tree or the data file
+ * doesn't exist, true otherwise
+ */
+Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
+{
+  if (fIsPtHard) {
+    TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+    if (!tree) {
+      AliError(Form("%s - UserNotify: No current tree!",GetName()));
+      return kFALSE;
+    }
+    
+    Float_t xsection    = 0;
+    Float_t trials      = 0;
+    Int_t   pthardbin   = 0;
+    
+    TFile *curfile = tree->GetCurrentFile();
+    if (!curfile) {
+      AliError(Form("%s - UserNotify: No current file!",GetName()));
+      return kFALSE;
+    }
+    
+    TChain *chain = dynamic_cast<TChain*>(tree);
+    if (chain) tree = chain->GetTree();
+    
+    PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
+    
+    fHistManager.FillTH1("hNtrials", "#sum{ntrials}", trials);
+    fHistManager.FillTH1("hXsec", "<#sigma>", xsection);
+  }
   return kTRUE;
 }
 
@@ -740,7 +855,6 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
   fNTotTracks = 0;
   fLeadingTrack.SetPxPyPzE(0,0,0,0);
   
-  fDetectorLevel->ResetCurrentID();
   AliVTrack* track;
   for (auto trackIterator : fDetectorLevel->accepted_momentum() ) {
 
@@ -804,7 +918,6 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
   }
   
   if (fGeneratorLevel) {
-    fGeneratorLevel->ResetCurrentID();
     AliAODMCParticle* part;
     for (auto partIterator : fGeneratorLevel->accepted_momentum() ) {
       part = partIterator.second;
@@ -818,7 +931,7 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
       // select charged pions, protons, kaons, electrons, muons
       if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) findable = 1;
       
-      FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt());
+      FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), findable);
     }
   }
 }
@@ -828,10 +941,10 @@ void AliAnalysisTaskPWGJEQA::FillCellHistograms() {
   
   if (!fCaloCells) return;
   
-  TString histname_en2D = "fHistCellsAbsIdEnergy";
-  TString histname_tm2D = "fHistCellsAbsIdTime";
   TString histname_energy = TString::Format("%s/fHistCellEnergy", fCaloCellsName.Data());
   TString histname_time = TString::Format("%s/fHistCellTime", fCaloCellsName.Data());
+  TString histname_energyProf = TString::Format("%s/fProfCellAbsIdEnergy", fCaloCellsName.Data());
+  TString histname_timeProf = TString::Format("%s/fProfCellAbsIdTime", fCaloCellsName.Data());
   
   const Int_t ncells = fCaloCells->GetNumberOfCells();
   for (Int_t pos = 0; pos < ncells; pos++) {
@@ -841,11 +954,11 @@ void AliAnalysisTaskPWGJEQA::FillCellHistograms() {
     
     if (amp < fCellEnergyCut) continue;
     
-    fHistManager.FillTH2(histname_en2D, absId, amp);
-    fHistManager.FillTH2(histname_tm2D, absId, time);
-    
     fHistManager.FillTH1(histname_energy, amp);
     fHistManager.FillTH1(histname_time, time);
+    
+    fHistManager.FillProfile(histname_energyProf, absId, amp);
+    fHistManager.FillProfile(histname_timeProf, absId, time);
   }
 }
 
@@ -886,17 +999,31 @@ void AliAnalysisTaskPWGJEQA::FillClusterHistograms() {
         
         Int_t sm = fGeom->GetSuperModuleNumber(it->second->GetCellAbsId(0));
         if (sm >=0 && sm < 20) {
-          histname = TString::Format("%s/BySM/fHistClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
+          histname = TString::Format("%s/BySM/hEmcalClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
           fHistManager.FillTH1(histname, it->second->E());
         }
         else {
           AliError(Form("Supermodule %d does not exist!", sm));
         }
         
-      } else if (it->second->IsPHOS()){
+      } else if (it->second->GetType() == AliVCluster::kPHOSNeutral){
         clusType = kPHOS;
         fNTotClusters[2]++;
         if (fLeadingCluster[2].E() < it->first.E()) fLeadingCluster[2] = it->first;
+        
+        // Fill Phos spectra by module
+        Int_t relid[4];
+        if (fPHOSGeo) {
+          fPHOSGeo->AbsToRelNumbering(it->second->GetCellAbsId(0), relid);
+          Int_t sm = relid[0];
+          if (sm >=0 && sm < 6) {
+            histname = TString::Format("%s/BySM/hPhosClusEnergy_SM%d", clusters->GetArrayName().Data(), sm);
+            fHistManager.FillTH1(histname, it->second->E());
+          }
+          else {
+            AliError(Form("Supermodule %d does not exist!", sm));
+          }
+        }
       }
       
       Double_t contents[30]={0};
@@ -1031,6 +1158,11 @@ void AliAnalysisTaskPWGJEQA::FillEventQAHistograms() {
   }
   
   histEventQA->Fill(contents);
+  
+  // Fill pythia pt hard histograms, if applicable
+  if (fPtHard > 1e-6) {
+    fHistManager.FillTH1("hPtHard", fPtHard);
+  }
 }
 
 //________________________________________________________________________
@@ -1063,7 +1195,7 @@ void AliAnalysisTaskPWGJEQA::FillDetectorLevelTHnSparse(Double_t cent, Double_t 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskPWGJEQA::FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt)
+void AliAnalysisTaskPWGJEQA::FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Byte_t findable)
 {
   Double_t contents[20]={0};
   
@@ -1077,6 +1209,8 @@ void AliAnalysisTaskPWGJEQA::FillGeneratorLevelTHnSparse(Double_t cent, Double_t
       contents[i] = partEta;
     else if (title=="#phi")
       contents[i] = partPhi;
+    else if (title=="Findable")
+      contents[i] = findable;
     else
       AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fParticlesPhysPrim->GetName()));
   }
