@@ -2,6 +2,7 @@
 #define _AliNuclexEventCuts_h_
 
 #include <TList.h>
+#include <TNamed.h>
 #include <string>
 using std::string;
 
@@ -13,10 +14,26 @@ class TH1D;
 class TH1I;
 class TH2D;
 
+class AliNuclexEventCutsContainer : public TNamed {
+  public:
+    AliNuclexEventCutsContainer() : TNamed("AliNuclexEventCutsContainer","AliNuclexEventCutsContainer"),
+    fMultESD(-1),
+    fMultTrkFB32(-1),
+    fMultTrkFB32Acc(-1),
+    fMultTrkTPC(-1) {}
+
+    int fMultESD;
+    int fMultTrkFB32;
+    int fMultTrkFB32Acc;
+    int fMultTrkFB32TOF;
+    int fMultTrkTPC;
+  ClassDef(AliNuclexEventCutsContainer,1)
+};
+
 class AliNuclexEventCuts : public TList {
   public:
     AliNuclexEventCuts(bool savePlots = false);
- 
+
     enum CutsBin {
       kNoCuts = 0,
       kDAQincomplete,
@@ -29,10 +46,12 @@ class AliNuclexEventCuts : public TList {
       kAllCuts
     };
 
+
     bool   AcceptEvent (AliVEvent *ev);
     bool   PassedCut (AliNuclexEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
     void   AddQAplotsToList(TList *qaList = 0x0);
     void   SetManualMode (bool man = true) { fManualMode = man; }
+    void   SetupLHC11h();
     void   SetupLHC15o();
     void   SetupRun2pp();
 
@@ -53,45 +72,49 @@ class AliNuclexEventCuts : public TList {
     bool          fRequireTrackVertex;            ///< if true all the events with only the SPD vertex are rejected
     float         fMinVtz;                        ///< Min z position for the primary vertex
     float         fMaxVtz;                        ///< Max z position for the primary vertex
-    float         fMaxDeltaSpdTrackAbsolute;      ///< 
+    float         fMaxDeltaSpdTrackAbsolute;      ///<
     float         fMaxDeltaSpdTrackNsigmaSPD;     ///<
     float         fMaxDeltaSpdTrackNsigmaTrack;   ///<
     float         fMaxResolutionSPDvertex;        ///<
 
     bool          fRejectDAQincomplete;           ///< Reject events that have incomplete information
-    
+
     int           fRequiredSolenoidPolarity;      ///< 0: does not require any particular polarity. Positive numbers -> positive B field, negative numbers -> negative B field
 
     int           fSPDpileupMinContributors;      ///< Reject all the events with SPD pile-up vertices with more than fRejectPileupSPD contributors
     double        fSPDpileupMinZdist;             ///<
-		double        fSPDpileupNsigmaZdist;          ///<
-		double        fSPDpileupNsigmaDiamXY;         ///<
-		double        fSPDpileupNsigmaDiamZ;          ///<
+    double        fSPDpileupNsigmaZdist;          ///<
+    double        fSPDpileupNsigmaDiamXY;         ///<
+    double        fSPDpileupNsigmaDiamZ;          ///<
     bool          fTrackletBGcut;                 ///<
 
     unsigned int  fCentralityFramework;           ///< 0: skip centrality checks, 1: multiplicity framework, 2: legacy centrality framework
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised
+
+    bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
     double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
     double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
     double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
 
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
-    AliVEvent::EOfflineTriggerTypes fTriggerMask; ///< Trigger mask 
+    unsigned long fTriggerMask;                   ///< Trigger mask
 
+    AliNuclexEventCutsContainer fContainer;       //!<! Local copy of the event cuts container (safe against user changes)
     const string  fkLabels[2];                    ///< Histograms labels (raw/selected)
 
   private:
     void          AutomaticSetup ();
-  
+    void          ComputeTrackMultiplicity(AliVEvent *ev);
+
     bool          fManualMode;                    ///< if true the cuts are not loaded automatically looking at the run number
     bool          fSavePlots;                     ///< if true the plots are automatically added to this object
     int           fCurrentRun;                    ///<
     unsigned long fFlag;                          ///< Flag of the passed cuts
 
     string        fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
-    float         fCentPercentiles[2];            ///< Centrality percentiles 
+    float         fCentPercentiles[2];            ///< Centrality percentiles
     AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
@@ -101,7 +124,7 @@ class AliNuclexEventCuts : public TList {
     TH1D* fCentrality[2];          //!<! Centrality percentile distribution
     TH2D* fEstimCorrelation[2];    //!<! Correlation between centrality estimators
     TH2D* fMultCentCorrelation[2]; //!<! Correlation between main centrality estimator and multiplicity
-    
+
     ClassDef(AliNuclexEventCuts,1)
 };
 

@@ -28,6 +28,7 @@
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
 /// * EventCuts
 #pragma link C++ class AliNuclexEventCuts+;
+#pragma link C++ class AliNuclexEventCutsContainer+;
 /// * EventCutsValidation
 #pragma link C++ class AliAnalysisTaskEventCutsValidation+;
 /// * Nucleipp

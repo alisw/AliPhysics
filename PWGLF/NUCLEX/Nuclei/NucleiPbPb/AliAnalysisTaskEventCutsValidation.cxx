@@ -74,7 +74,7 @@ void AliAnalysisTaskEventCutsValidation::UserCreateOutputObjects() {
   for (int iS = 0; iS < 2; ++iS) {
     fTOFvsFB32[iS] = new TH2F(Form("fTOFvsFB32%s",label[iS].data()),Form("%s;Multiplicity FB32;Multiplicity FB32+TOF",label[iS].data()),500,0.,3000.,500,0.,2000.);
     fTPCvsAll[iS] = new TH2F(Form("fTPCvsAll%s",label[iS].data()),Form("%s;Multiplicity TPC;Multiplicity ESD - a_{0} #times Multiplicity TPC",label[iS].data()),300,0.,3000.,3000,-200.,28800.);
-    fMultvsV0M[iS] = new TH2F(Form("fMultvsV0M%s",label[iS].data()),Form("%s;Centrality (V0M);FB32",label[iS].data()),100,0.,100.,500,0.,3000.); 
+    fMultvsV0M[iS] = new TH2F(Form("fMultvsV0M%s",label[iS].data()),Form("%s;Centrality (V0M);FB32",label[iS].data()),100,0.,100.,500,0.,3000.);
     fList->Add(fTOFvsFB32[iS]);
     fList->Add(fTPCvsAll[iS]);
     fList->Add(fMultvsV0M[iS]);
@@ -92,72 +92,19 @@ void AliAnalysisTaskEventCutsValidation::UserCreateOutputObjects() {
 void AliAnalysisTaskEventCutsValidation::UserExec(Option_t *) {
 
   AliVEvent* ev = InputEvent();
-  bool isAOD = false;
-  if (dynamic_cast<AliAODEvent*>(ev))
-    isAOD = true;
-  else if (!dynamic_cast<AliESDEvent*>(ev))
-    AliFatal("I don't find the AOD event nor the ESD one, aborting.");
   if (fEventCut.AcceptEvent(ev)) {
+    float multESDTPCDif = float(fEventCut.fContainer.fMultESD) - 3.38f * fEventCut.fContainer.fMultTrkTPC;
+    fTOFvsFB32[0]->Fill(fEventCut.fContainer.fMultTrkFB32,fEventCut.fContainer.fMultTrkFB32TOF);
+    fTPCvsAll[0]->Fill(fEventCut.fContainer.fMultTrkTPC,multESDTPCDif);
+    fMultvsV0M[0]->Fill(fEventCut.GetCentrality(),fEventCut.fContainer.fMultTrkFB32Acc);
 
-    const int nTracks = ev->GetNumberOfTracks();
-    int multEsd = (isAOD) ? ((AliAODHeader*)ev->GetHeader())->GetNumberOfESDTracks() : dynamic_cast<AliESDEvent*>(ev)->GetNumberOfTracks();
-    int multTrk = 0;
-    int multTrkBefC = 0;
-    int multTrkTOF = 0;
-    int multTPC = 0;
-    for (int it = 0; it < nTracks; it++) {
-      if (isAOD) {
-        AliAODTrack* trk = (AliAODTrack*)ev->GetTrack(it);
-        if (!trk) continue;
-        if (trk->TestFilterBit(32)) {
-          multTrkBefC++; 
-          if ( TMath::Abs(trk->GetTOFsignalDz()) <= 10. && trk->GetTOFsignal() >= 12000. && trk->GetTOFsignal() <= 25000.)
-            multTrkTOF++;
-          if ((fabs(trk->Eta()) < 0.8) && (trk->GetTPCNcls() >= 70) && (trk->Pt() >= 0.2) && (trk->Pt() < 50))
-            multTrk++;
-        }
-        if (trk->TestFilterBit(128))
-          multTPC++;
-      } else {
-        AliESDtrack* esdTrack = (AliESDtrack*)ev->GetTrack(it);
-        if (!esdTrack) continue;
-
-        if (fFB32cuts.AcceptTrack(esdTrack)) {
-          multTrkBefC++;
-          if ( TMath::Abs(esdTrack->GetTOFsignalDz()) <= 10 && esdTrack->GetTOFsignal() >= 12000 && esdTrack->GetTOFsignal() <= 25000)
-            multTrkTOF++;
-
-          if ((TMath::Abs(esdTrack->Eta()) < 0.8) && (esdTrack->GetTPCNcls() > 70) && (esdTrack->Pt() > 0.2) && (esdTrack->Pt() < 50))        
-            multTrk++;
-        }
-
-        /// TPC only tracks, with the same cuts of the filter bit 128
-        AliESDtrack tpcParam;
-        if (!esdTrack->FillTPCOnlyTrack(tpcParam)) continue;
-        if (!fTPConlyCuts.AcceptTrack(&tpcParam)) continue;
-        if (tpcParam.Pt() > 0.) {
-          // only constrain tracks above threshold
-          AliExternalTrackParam exParam;
-          // take the B-field from the ESD, no 3D fieldMap available at this point
-          bool relate = false;
-          relate = tpcParam.RelateToVertexTPC((AliESDVertex*)ev->GetPrimaryVertexSPD(),ev->GetMagneticField(),kVeryBig, &exParam);
-          if(!relate) continue; 
-        }
-        multTPC++;
-      }
-    }
-
-    float multESDTPCDif = multEsd - 3.38f * multTPC;
-    fTOFvsFB32[0]->Fill(multTrkBefC,multTrkTOF);
-    fTPCvsAll[0]->Fill(multTPC,multESDTPCDif);
-    fMultvsV0M[0]->Fill(fEventCut.GetCentrality(),multTrk);
-
-    if (float(multTrkTOF) > fMultTOFLowCut->Eval(float(multTrkBefC)) && float(multTrkTOF) < fMultTOFHighCut->Eval(float(multTrkBefC)) &&
+    if (float(fEventCut.fContainer.fMultTrkFB32TOF) > fMultTOFLowCut->Eval(float(fEventCut.fContainer.fMultTrkFB32)) &&
+        float(fEventCut.fContainer.fMultTrkFB32TOF) < fMultTOFHighCut->Eval(float(fEventCut.fContainer.fMultTrkFB32)) &&
         multESDTPCDif < 15000.f &&
-        float(multTrk) > fMultCentLowCut->Eval(fEventCut.GetCentrality())) {
-      fTOFvsFB32[1]->Fill(multTrkBefC,multTrkTOF);
-      fTPCvsAll[1]->Fill(multTPC,multESDTPCDif);
-      fMultvsV0M[1]->Fill(fEventCut.GetCentrality(),multTrk);
+        float(fEventCut.fContainer.fMultTrkFB32Acc) > fMultCentLowCut->Eval(fEventCut.GetCentrality())) {
+      fTOFvsFB32[1]->Fill(fEventCut.fContainer.fMultTrkFB32,fEventCut.fContainer.fMultTrkFB32TOF);
+      fTPCvsAll[1]->Fill(fEventCut.fContainer.fMultTrkTPC,multESDTPCDif);
+      fMultvsV0M[1]->Fill(fEventCut.GetCentrality(),fEventCut.fContainer.fMultTrkFB32Acc);
     }
   }
 
