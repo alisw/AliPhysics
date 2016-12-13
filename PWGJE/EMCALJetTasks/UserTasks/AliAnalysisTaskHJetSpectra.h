@@ -42,7 +42,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   enum MyDataType {
     kReal   = 0,  // reconstructed real data 
     kPythia = 1,  // pythia simulation 
-    kHijing = 2   // hijing simulation
+    kHijing = 2,   // hijing simulation
+    kDmpjet = 3   // dmpjet simulation
   };
 
   enum MyAnalType {
@@ -153,7 +154,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
   Bool_t      IsEventInAcceptance(AliVEvent* event);     
   Bool_t      IsMCEventInAcceptance(AliVEvent* event);   
   Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet, Bool_t suppressGhost=1); 
-  
+  Bool_t      IsStrange(Int_t ip); //Check particle strangeness
 
    Double_t RelativePhi(Double_t mphi,Double_t vphi); 
    Double_t EstimateBgCone(AliJetContainer *jetCont, AliParticleContainer *trkArray, AliVParticle* triggerHadron, Bool_t isGen=kFALSE);   
@@ -286,7 +287,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D*  fhPtTrkTruePrimRec[kCAll]; //! pt spectrum of true reconstructed primary tracks    
    TH2D*  fhPtTrkTruePrimGen[kCAll]; //! pt spectrum of true generated primary track    
    TH2D*  fhPtTrkSecOrFakeRec[kCAll]; //! pt spectrum of reconstructed fake or secondary tracks    
-   TH2D*  fhPtJetPrimVsPtJetRec; //! pt spectrum of reconstructed jets without  fake track pT vs reconstructed jet pT  
+   TH2D*  fhPtJetPrimVsPtJetRec[21]; //! pt spectrum of reconstructed jets without  fake track pT vs reconstructed jet pT  
    TH2D*  fhDiffPtVsPtTrackTrue; //! track Y= rec pt - true pt   X= true track pT  
 
    TH2D*  fhInvPtQVsPhi[2];   //! q*1/pT  versus phi
@@ -296,7 +297,15 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2D*  fhSigmaPtOverPtVsPt[2]; //!
    TH2F  *fhTrackPhiCG; //! hybrid constrained global track phi vs track pT
    TH2F  *fhTrackPhiTPCG; //! hybrid TPC constrained track phi vs track pT
+   
+   TH2D*  fhDCAinXVsPt;   //! X DCA versus pT 
+   TH2D*  fhDCAinYVsPt;   //! Y DCA versus pT 
+   TH2D*  fhDCAinXVsPtStrange;   //! X DCA versus pT of strange tracks
+   TH2D*  fhDCAinYVsPtStrange;   //! Y DCA versus pT of strange tracks
+   TH2D*  fhDCAinXVsPtNonStrange;   //! X DCA versus pT of non strange tracks
+   TH2D*  fhDCAinYVsPtNonStrange;   //! Y DCA versus pT of non strange tracks 
  
+
    TArrayD  fRhoRec[kTT];   // labels of particles on reconstructed track level
    TArrayD  fRhoMC[kTT];   // labels of particles on reconstructed track level
    TArrayD  fCentralityBins; //bin boaders
@@ -319,7 +328,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 20); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 21); // Charged jet analysis for pA
 
 };
 #endif
