@@ -567,13 +567,20 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  if(bUsePhiEtaWeights) {
    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
    if(sDataSet=="2015" && sIntRuns=="high") {
-     if(!bUsePtWeights) {
-       if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
-       if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
+     if(sSelecCharge != "") {
+       if(bUsePtWeights && AODfilterBit==768) {
+         if(sSelecCharge.EqualTo("pos")) PhiEtaWeightsFileName += "15oHI_FB768_pch_CenPhiEtaWeights.root";
+         if(sSelecCharge.EqualTo("neg")) PhiEtaWeightsFileName += "15oHI_FB768_nch_CenPhiEtaWeights.root";
+       }
      } else {
-       if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_pteff_CenPhiEtaWeights.root";
-       if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_pteff_CenPhiEtaWeights.root";
-       if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff_CenPhiEtaWeights.root";
+       if(!bUsePtWeights) {
+         if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
+         if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
+       } else {
+         if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_pteff_CenPhiEtaWeights.root";
+         if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_pteff_CenPhiEtaWeights.root";
+         if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff_CenPhiEtaWeights.root";
+       }
      }
    }
    if(sDataSet=="2015" && sIntRuns=="low") {
