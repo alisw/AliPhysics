@@ -28,6 +28,7 @@
 #include "AliEmcalPythiaInfo.h"
 #include "AliMCEvent.h"
 #include "AliPythia.h"
+#include "AliStack.h"
 
 #include "AliVTrack.h"
 #include "AliVHeader.h"
@@ -78,6 +79,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fEventExtractionPercentage(0),
   fEventExtractionMinJetPt(0),
   fEventExtractionMaxJetPt(0),
+  fHadronMatchingRadius(0.5),
   fConstPtFilterBit(1024),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
@@ -100,7 +102,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fRandom(0),
   fJetOutputMode(0),
   fPythiaExtractionMode(0),
-  fUsePYTHIABugWorkaround(0),
+  fPythiaExtractionUseHadronMatching(kFALSE),
   fLeadingJet(0),
   fSubleadingJet(0),
   fInitialPartonMatchedJet1(0),
@@ -127,6 +129,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fEventExtractionPercentage(0),
   fEventExtractionMinJetPt(0),
   fEventExtractionMaxJetPt(0),
+  fHadronMatchingRadius(0.5),
   fConstPtFilterBit(1024),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
@@ -149,7 +152,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fRandom(0),
   fJetOutputMode(0),
   fPythiaExtractionMode(0),
-  fUsePYTHIABugWorkaround(0),
+  fPythiaExtractionUseHadronMatching(kFALSE),
   fLeadingJet(0),
   fSubleadingJet(0),
   fInitialPartonMatchedJet1(0),
@@ -352,9 +355,6 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
 
   AliAnalysisTaskEmcalJet::ExecOnce();
 
-  // Allow infinite error messages from PYTHIA (workaround)
-  if(fUsePYTHIABugWorkaround)
-    (AliPythia::Instance())->SetMSTU(22, 1000000000);
 
   // ### Add the jets as basic correlation particles to the event
   // This output object carries all accepted jets
@@ -671,17 +671,16 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
   if(eventIDHeader)
     eventID = eventIDHeader->GetEventIdAsLong();
 
-  // if only the two initial collision partons will be added, get PYTHIA info on them
-  Int_t partid = 0;
+  // if only the two initial collision partons will be added, get info on them
+  Int_t matchedIC = 0;
+  Int_t matchedHadron = 0;
   if(fJetOutputMode==6)
   {
-    if(!fPythiaInfo)
-      AliError("fPythiaInfo object not available. Is it activated with SetGeneratePythiaInfoObject()?");
-    else if(jet==fInitialPartonMatchedJet1)
-      partid = fPythiaInfo->GetPartonFlag6();
-    else if (jet==fInitialPartonMatchedJet2)
-      partid = fPythiaInfo->GetPartonFlag7();
-
+    // Get type of jet
+    CalculateJetType(jet, matchedIC, matchedHadron);
+    Int_t partid = matchedIC;
+    if (fPythiaExtractionUseHadronMatching)
+      partid = matchedHadron;
     // If fPythiaExtractionMode is set, only extract certain jets
     if( (fPythiaExtractionMode==1) && not (partid>=1 && partid<=6)) // all quark-jet extraction
       return;
@@ -709,7 +708,7 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
   if(fRandom->Rndm() >= fExtractionPercentage)
     return;
 
-  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), partid, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent);
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), matchedIC, matchedHadron, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent);
 
   // Add constituents
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
@@ -969,6 +968,52 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
     }
   }
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM)
+{
+  typeIC = 0;
+  if(!fPythiaInfo)
+    AliError("fPythiaInfo object not available. Is it activated with SetGeneratePythiaInfoObject()?");
+  else if(jet==fInitialPartonMatchedJet1)
+    typeIC = fPythiaInfo->GetPartonFlag6();
+  else if (jet==fInitialPartonMatchedJet2)
+    typeIC = fPythiaInfo->GetPartonFlag7();
+
+
+  typeHM = 0;
+  AliStack* stack = MCEvent()->Stack();
+  // Go through the whole particle stack
+  for(Int_t i=0; i<stack->GetNtrack(); i++)
+  {
+    TParticle *part = stack->Particle(i);
+    if(!part) continue;
+
+    // Check if particle is in a radius around the jet
+    Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
+    if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
+    {
+      continue;
+    }
+
+    // Check if the particle has beauty, charm or strangeness
+    // If it has beauty, we are done (exclusive definition)
+    Int_t absPDG = TMath::Abs(part->GetPdgCode());
+    // Particle has beauty
+    if ((absPDG > 500 && absPDG < 600) || (absPDG > 5000 && absPDG < 6000))
+    {
+      typeHM = 5; // beauty
+      break;
+    }
+    // Particle has charm
+    else if ((absPDG > 400 && absPDG < 500) || (absPDG > 4000 && absPDG < 5000))
+      typeHM = 4; // charm
+    // Particle has strangeness: Only search for strangeness, if charm was not already found
+    else if (typeHM != 4 && (absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
+      typeHM = 3; // strange
+  }
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronCF::GetTrackMCRatios(AliEmcalJet* jet, AliEmcalJet* mcJet, Double_t& trackRatio, Double_t& ptRatio)
