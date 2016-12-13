@@ -127,13 +127,14 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
   void                        SetJetParticleArrayName(const char* name)   { fJetParticleArrayName = name; }
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
+  void                        SetHadronMatchingRadius(Double_t val)   { fHadronMatchingRadius = val; }
 
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
   void                        SetPythiaExtractionMode(Int_t mode) {fPythiaExtractionMode = mode;}
+  void                        SetPythiaExtractionUseHadronMatching(Bool_t val) { fPythiaExtractionUseHadronMatching = val; }
 
   void                        ActivateJetExtraction(Double_t percentage, Double_t minPt, Double_t maxPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt; fExtractionMaxPt = maxPt;}
   void                        ActivateEventExtraction(Double_t percentage, Double_t minJetPt, Double_t maxJetPt) {fEventExtractionPercentage = percentage; fEventExtractionMinJetPt = minJetPt; fEventExtractionMaxJetPt = maxJetPt;}
-  void                        SetUsePYTHIABugWorkaround(Bool_t val) { fUsePYTHIABugWorkaround = val; }
 
  protected:
   void                        ExecOnce();
@@ -160,6 +161,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   Double_t                    fEventExtractionMinJetPt;                 ///< minimum jet pt of recorded events
   Double_t                    fEventExtractionMaxJetPt;                 ///< maximum jet pt of recorded events
   
+  Double_t                    fHadronMatchingRadius;                    ///< Radius used in the hadron matching (MC jet extraction)
   Int_t                       fConstPtFilterBit;                        ///< For const pt plot, filter bit
   Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
   std::vector<TClonesArray*>  fJetsOutput;                              //!<! vector of arrays of basic correlation particles attached to the event (jets)
@@ -187,8 +189,8 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   // Criteria for the selection of jets that are passed to the correlation task
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
   Int_t                       fPythiaExtractionMode;                    ///< Mode which PYTHIA-jets to extract for fJetOutputMode==6: 0: all, 1: quark-jets, 2: gluon jets
+  Bool_t                      fPythiaExtractionUseHadronMatching;       ///< Use hadron matching to select/label jets (works for b,c,s and others)
 
-  Bool_t                      fUsePYTHIABugWorkaround;                  ///< Workaround for PYTHIA bug
   // Event properties
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
   AliEmcalJet*                fSubleadingJet;                           //!<!  subleading jet (calculated event-by-event)
@@ -208,6 +210,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   template <class T> T*       AddHistogram3D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0, Int_t zBins = 100, Double_t zMin = 0.0, Double_t zMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
 
   // ######### HELPER FUNCTIONS
+  void                        CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
   void                        GetTrackMCRatios(AliEmcalJet* jet, AliEmcalJet* mcJet, Double_t& trackRatio, Double_t& ptRatio);
   AliEmcalJet*                GetVetoJet(AliEmcalJet* jet);
   AliEmcalJet*                GetLeadingVetoJet();
@@ -227,7 +230,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 9) // Charged jet+h analysis support task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 10) // Charged jet+h analysis support task
   /// \endcond
 };
 
@@ -291,9 +294,9 @@ class AliBasicJetConstituent
 class AliBasicJet
 {
   public:
-    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fRadius(0), fArea(0), fPDGCode(0), fBackgroundDensity(0), fMagneticField(0), fVertexX(0), fVertexY(0), fVertexZ(0), fEventID(0), fCentrality(0), fConstituents() {}
-    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Float_t partid, Float_t bgrd, Float_t magfield, Float_t vtxX, Float_t vtxY, Float_t vtxZ, Long64_t id, Short_t cent)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fPDGCode(partid), fBackgroundDensity(bgrd), fMagneticField(magfield), fVertexX(vtxX), fVertexY(vtxY), fVertexZ(vtxZ), fEventID(id), fCentrality(cent), fConstituents()
+    AliBasicJet() : fEta(0), fPhi(0), fpT(0), fTruepT(0), fCharge(0), fRadius(0), fArea(0), fMotherInitialCollision(0), fMotherHadronMatching(0), fBackgroundDensity(0), fMagneticField(0), fVertexX(0), fVertexY(0), fVertexZ(0), fEventID(0), fCentrality(0), fConstituents() {}
+    AliBasicJet(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t radius, Float_t area, Int_t partidIC, Int_t partidHM, Float_t bgrd, Float_t magfield, Float_t vtxX, Float_t vtxY, Float_t vtxZ, Long64_t id, Short_t cent)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fRadius(radius), fArea(area), fMotherInitialCollision(partidIC), fMotherHadronMatching(partidHM), fBackgroundDensity(bgrd), fMagneticField(magfield), fVertexX(vtxX), fVertexY(vtxY), fVertexZ(vtxZ), fEventID(id), fCentrality(cent), fConstituents()
     {}
     ~AliBasicJet();
 
@@ -305,7 +308,8 @@ class AliBasicJet
     Short_t                   Charge()   { return fCharge; }
     Double_t                  Radius() { return fRadius; }
     Double_t                  Area() { return fArea; }
-    Int_t                     PDGCode() { return fPDGCode; }
+    Int_t                     MotherInitialCollision() { return fMotherInitialCollision; }
+    Int_t                     MotherHadronMatching() { return fMotherHadronMatching; }
     Double_t                  BackgroundDensity() { return fBackgroundDensity; }
     Double_t                  MagneticField() { return fMagneticField; }
     Double_t                  VertexX() { return fVertexX; }
@@ -334,7 +338,8 @@ class AliBasicJet
     Short_t   fCharge;   ///< charge
     Float_t   fRadius;   ///< jet radius
     Float_t   fArea;     ///< jet area
-    Int_t     fPDGCode;  ///< PDG code of source particle
+    Int_t     fMotherInitialCollision;  ///< PDG code of source particle (= initial collision quark/hadron)
+    Int_t     fMotherHadronMatching;    ///< PDG code of source particle (according to matched hadrons around the jet)
     Float_t   fBackgroundDensity; ///< background
     Float_t   fMagneticField; ///< event magnetic field
     Float_t   fVertexX; ///< event vertex X
