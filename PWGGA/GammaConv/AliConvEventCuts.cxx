@@ -2424,7 +2424,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
     if (binRun==34) return kFALSE;
     Double_t threshold = thresholdEMCalL0[binRun];
     
-    if (spreadEMCalL0[binRun] != 0.){
+    if (isMC && spreadEMCalL0[binRun] != 0.){
       TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
       triggerSmearing->SetParameter(0, 1/(spreadEMCalL0[binRun]*TMath::Sqrt(TMath::Pi()*2)));
       triggerSmearing->SetParameter(1, thresholdEMCalL0[binRun]);
@@ -2447,6 +2447,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
       clus = fInputEvent->GetCaloCluster(i);
       if (!clus) continue;
       if (!clus->IsEMCAL()) continue;
+      if (clus->GetM02()<0.1) continue;
+      if (clus->GetNCells()<2) continue;
       if (clus->E() > threshold ){
 //         cout << "found L0" << endl;
         eventIsAccepted = kTRUE;
@@ -2468,7 +2470,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
       if (binRun==3) return kFALSE;
       Double_t threshold = thresholdEMCalL1[binRun];
 
-      if (spreadEMCalL1[binRun] != 0.){
+      if (isMC && spreadEMCalL1[binRun] != 0.){
         TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
         triggerSmearing->SetParameter(0, 1/(spreadEMCalL1[binRun]*TMath::Sqrt(TMath::Pi()*2)));
         triggerSmearing->SetParameter(1, thresholdEMCalL1[binRun]);
@@ -2491,6 +2493,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
         clus = fInputEvent->GetCaloCluster(i);
         if (!clus) continue;
         if (!clus->IsEMCAL()) continue;
+        if (clus->GetM02()<0.1) continue;
+        if (clus->GetNCells()<2) continue;
         if (clus->E() > threshold ){
 //           cout << "found L1G1" << endl;
           eventIsAccepted = kTRUE;
@@ -2506,7 +2510,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
       }
       if (binRun==2) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
-      if (spreadEMCalL1G2[binRun] != 0.){
+      if (isMC && spreadEMCalL1G2[binRun] != 0.){
         TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
         triggerSmearing->SetParameter(0, 1/(spreadEMCalL1G2[binRun]*TMath::Sqrt(TMath::Pi()*2)));
         triggerSmearing->SetParameter(1, thresholdEMCalL1G2[binRun]);
@@ -2528,6 +2532,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
         clus = fInputEvent->GetCaloCluster(i);
         if (!clus) continue;
         if (!clus->IsEMCAL()) continue;
+        if (clus->GetM02()<0.1) continue;
+        if (clus->GetNCells()<2) continue;
         if (clus->E() > threshold ){
 //           cout << "found L1G2" << endl;
           eventIsAccepted = kTRUE;
@@ -2723,7 +2729,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
   Bool_t mimickedTrigger = kTRUE;
-  if (fMimicTrigger && isMC > 0) mimickedTrigger = MimicTrigger(fInputEvent, isMC);
+  if (fMimicTrigger) mimickedTrigger = MimicTrigger(fInputEvent, isMC);
 //   cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
   
   // Fill Histogram
