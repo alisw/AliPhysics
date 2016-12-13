@@ -815,6 +815,56 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052113","1111111067032220000","0163103100000040"); // std
     cuts.AddCut("00081113","1111111067032220000","0163103100000040"); // std
 
+  //multiple std cuts for different studies
+  } else if (trainConfig == 181){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 182){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 183){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 184){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 185){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 186){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 187){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 188){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 189){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 190){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 191){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+  } else if (trainConfig == 192){ // EMCAL clusters pp 8 TeV
+    cuts.AddCut("00010113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00052113","1111111067032220000","0163103100000050"); // std
+    cuts.AddCut("00081113","1111111067032220000","0163103100000050"); // std
+
   // pp multiplicity studies
   } else if (trainConfig == 198){ // MB - with multiplicity bins
     cuts.AddCut("00103113","1111121053032220000","0163103100000050"); // 0 -2
