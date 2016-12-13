@@ -1,5 +1,6 @@
 #include "AliNuclexEventCuts.h"
 
+#include <memory>
 #include <vector>
 using std::vector;
 
