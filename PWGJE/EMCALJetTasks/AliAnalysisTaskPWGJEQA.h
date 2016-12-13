@@ -18,6 +18,7 @@ class TH1;
 class TH2;
 class TH3;
 class THnSparse;
+class AliPHOSGeometry;
 
 #include "THistManager.h"
 #include "AliTLorentzVector.h"
@@ -66,12 +67,15 @@ public:
   void                        SetDoEmcalQA(Bool_t b) { fDoEmcalQA = b; }
   void                        SetDoJetQA(Bool_t b)   { fDoJetQA   = b; }
   void                        SetDoEventQA(Bool_t b) { fDoEventQA = b; }
+  void                        SetRejectOutlierEvents(Bool_t b) {fRejectOutlierEvents = b; }
+  void                        SetIsPtHard(Bool_t b)            {fIsPtHard = b; }
   
 protected:
   
   void                        ExecOnce()                                                    ;
   Bool_t                      FillHistograms()                                              ;
   Bool_t                      RetrieveEventObjects()                                        ;
+  Bool_t                      UserNotify()                                                  ;
   
   void                        AllocateTrackHistograms()                                     ;
   void                        AllocateCellHistograms()                                      ;
@@ -91,7 +95,7 @@ protected:
   void                        AllocateMatchedParticlesTHnSparse()                           ;
   void                        FillDetectorLevelTHnSparse(Double_t cent, Double_t trackEta, Double_t trackPhi, Double_t trackPt,
                                                          Double_t sigma1OverPt, Byte_t trackType);
-  void                        FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt);
+  void                        FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Byte_t findable);
   void                        FillMatchedParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt,
                                                             Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
   
@@ -107,8 +111,10 @@ protected:
   Bool_t                      fDoEmcalQA;                ///< Set whether to enable cell/cluster QA
   Bool_t                      fDoJetQA;                  ///< Set whether to enable jet QA
   Bool_t                      fDoEventQA;                ///< Set whether to enable event QA
-  TString               fGeneratorLevelName;             ///< generator level container name
-  TString               fDetectorLevelName;              ///< detector level container name
+  TString                     fGeneratorLevelName;       ///< generator level container name
+  TString                     fDetectorLevelName;        ///< detector level container name
+  Bool_t                      fRejectOutlierEvents;      ///< flag to reject pythia pt-hard jet outlier events
+  Bool_t                      fIsPtHard;                 ///< flag to enable pt-hard histos and make available outlier cut
   
   // Service fields (non-streamed)
   AliMCParticleContainer* fGeneratorLevel      ; //! generator level container
@@ -129,6 +135,7 @@ protected:
   Int_t                 fN1OverPtResHistBins   ; //! number of 1/pt res bins
   Int_t                 fNIntegerHistBins      ; //! number of integer bins
   Double_t*             fIntegerHistBins       ; //! integer bins
+  AliPHOSGeometry*      fPHOSGeo;              ; //!<! phos geometry
   
   // Histograms
   THnSparse*            fTracks                ; //! all tracks
@@ -142,7 +149,7 @@ private:
   AliAnalysisTaskPWGJEQA &operator=(const AliAnalysisTaskPWGJEQA&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPWGJEQA, 1);
+  ClassDef(AliAnalysisTaskPWGJEQA, 2);
   /// \endcond
 };
 #endif
