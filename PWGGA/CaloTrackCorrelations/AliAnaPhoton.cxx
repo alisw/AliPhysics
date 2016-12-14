@@ -391,8 +391,10 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
     if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
     {
       AliVCluster * calo = (AliVCluster*) (clusterList->At(icalo));
-      genBkgTag = GetCocktailGeneratorBackgroundTag(calo, genName, genNameBkg);
-    }
+      
+      genBkgTag = GetCocktailGeneratorBackgroundTag(calo, mctag, genName, genNameBkg);
+      
+     }
     
     Bool_t mcDecay = kFALSE;
     if( IsDataMC() && !genName.Contains("ijing") &&
@@ -615,7 +617,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   //
   // Check the generators inside the cluster
   TString genName = "", genNameBkg = "";
-  Int_t genBkgTag = GetCocktailGeneratorBackgroundTag(calo, genName, genNameBkg);
+  Int_t genBkgTag = GetCocktailGeneratorBackgroundTag(calo, mctag, genName, genNameBkg);
   if     (genBkgTag == -1) return;
   else if(genBkgTag  >  3) printf("Bkg generator tag larger than 3\n");
   
@@ -661,6 +663,26 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   
   Float_t ratio = en / eprim;
   Float_t diff  = en - eprim;
+  
+  // check overlap with same generator, but not hijing
+  const UInt_t nlabels = calo->GetNLabels();
+  Int_t overpdg[nlabels];
+  Int_t overlab[nlabels];
+  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,mctag,-1,GetReader(),overpdg,overlab);
+  Bool_t sameGenOverlap = kFALSE;
+  for(Int_t iover = 0; iover < noverlaps; iover++)
+  {
+    TString genName2;
+    (GetReader()->GetMC())->GetCocktailGenerator(overlab[iover],genName2);
+    if(genName2==genName && !genName.Contains("ijing")) sameGenOverlap = kTRUE;
+  }
+  
+  printf("bkg tag %d, noverlaps %d; same gen overlap %d\n",genBkgTag,noverlaps,sameGenOverlap);
+  if(sameGenOverlap)
+  {
+    if(genBkgTag == 0) genBkgTag = 2; // Gen+Gen
+    if(genBkgTag == 1) genBkgTag = 3; // Gen+Gen+Hij
+  }
   
   if ( genBkgTag > 0 ) 
   {

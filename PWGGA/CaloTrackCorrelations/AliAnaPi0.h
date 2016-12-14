@@ -167,6 +167,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   void         FillMCVersusRecDataHistograms(Int_t    index1,  Int_t    index2,
                                              Int_t    iclus1,  Int_t    iclus2,
+                                             Int_t    mctag1,  Int_t    mctag2,
                                              Float_t  pt1,     Float_t  pt2,
                                              Int_t    ncells1, Int_t    ncells2,
                                              Double_t mass,    Double_t pt,     Double_t asym,
