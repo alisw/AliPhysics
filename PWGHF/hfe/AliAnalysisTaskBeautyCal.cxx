@@ -936,7 +936,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     //Apply track cuts//
     ////////////////////
     if(fAOD)
-      if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
+      {
+      //if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
+      if(!atrack->IsHybridGlobalConstrainedGlobal()) continue; 
+      if(atrack->IsGlobalConstrained()) continue; 
+      } // select track have MaxChi2TPCconstrained cut
 
     if(fESD)
       if(!esdTrackCutsH->AcceptTrack(etrack))continue;
@@ -978,9 +982,16 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       //if(atrack->GetITSNcls() < 3) continue;
       if(atrack->GetTPCNcls() < nTPCstand) continue;
       if(atrack->GetITSNcls() < nITSstand) continue;
+      if(atrack->GetTPCNCrossedRows() < 120) continue; // add
+      if(atrack->GetTPCchi2() > 4) continue; // add
+      if(atrack->GetITSchi2() > 36) continue; // add
       if(TMath::Abs(atrack->Eta()) > 0.6) continue;
       if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
+
+      //Double_t TPCfound = atrack->GetTPCNclsF();
+      //cout << "TPCfound = " << TPCfound << " ; r = " << atrack->GetTPCNCrossedRows()/TPCfound  <<  endl;
+      //Double_t Chi2TPCcontGlobal = atrack->GetChi2TPCConstrainedVsGlobal(pVtx);
 
       if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
