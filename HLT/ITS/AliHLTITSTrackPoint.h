@@ -6,7 +6,7 @@
 // struct to hold the information on the space points
 struct AliHLTITSTrackPoint {
   float fX[3];
-  short fVolumeId; 
+  unsigned short fVolumeId; 
 };
 
 struct AliHLTITSTrackPointData {

@@ -55,6 +55,7 @@
 #include "AliFlatESDVertex.h"
 #include "AliHLTReadoutList.h"
 #include "AliHLTCTPData.h"
+#include "AliHLTITSTrackPoint.h"
 #include <map>
 
 using namespace std;
@@ -146,6 +147,7 @@ int AliHLTITSSAPTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList
   tgtList.clear();
   tgtList.push_back(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
   tgtList.push_back(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS ); // RS??: is this correct?
+  tgtList.push_back(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
   return tgtList.size();
 }
 
@@ -153,7 +155,7 @@ void AliHLTITSSAPTrackerComponent::GetOutputDataSize( unsigned long& constBase, 
 {
   // define guess for the output data size
   constBase = 200;       // minimum size
-  inputMultiplier = 2.; // size relative to input
+  inputMultiplier = 3.; // size relative to input
 }
 
 AliHLTComponent* AliHLTITSSAPTrackerComponent::Spawn()
@@ -541,6 +543,7 @@ int AliHLTITSSAPTrackerComponent::DoEvent
   
   // Fill output tracks
   int nAddedTracks = 0;
+  int nTrackClusters = 0;
   {  
     int nFoundTracks = fTracker->GetNTracks();
     AliHLTUInt32_t blockSize = sizeof(AliHLTITSSAPTrackerDataContainer) + nFoundTracks*sizeof(AliHLTITSSAPTrackerData);
@@ -571,6 +574,7 @@ int AliHLTITSSAPTrackerComponent::DoEvent
 	data->fCount++;
 	blockSize += sizeof(AliHLTITSSAPTrackerData);
 	nAddedTracks++;
+	nTrackClusters+=trcHLT.ncl;
       }
       
       AliHLTComponentBlockData resultData;
@@ -601,6 +605,38 @@ int AliHLTITSSAPTrackerComponent::DoEvent
       vtxOK = kTRUE;
     }
   }
+
+  do{ // Fill output track points
+    AliHLTITSTrackPointData* outTrackPoints = reinterpret_cast<AliHLTITSTrackPointData*>( outputPtr + size );
+    AliHLTUInt32_t blockSize = sizeof(AliHLTITSTrackPointData) + nTrackClusters*sizeof(AliHLTITSTrackPoint);
+    if( size + blockSize > maxBufferSize ){    	
+      HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d track points are not stored", 
+		  maxBufferSize, size + blockSize, nTrackClusters);
+      iResult = -ENOSPC;
+      break;
+    }    
+    outTrackPoints->fCount = 0; 
+    blockSize = sizeof(AliHLTITSTrackPointData);
+
+    AliHLTITSTrackPoint empty;
+    empty.fX[0] = 0;
+    empty.fX[1] = 0;
+    empty.fX[2] = 0;      
+    empty.fVolumeId = 0;
+
+    // TODO: fill trackpoints here..
+    //
+
+    AliHLTComponentBlockData resultData;
+    FillBlockData( resultData );
+    resultData.fOffset = size;
+    resultData.fSize = blockSize;
+    resultData.fDataType = kAliHLTDataTypeITSTrackPoint |kAliHLTDataOriginITS;
+    fBenchmark.AddOutput(resultData.fSize);
+    outputBlocks.push_back( resultData );
+    size += resultData.fSize;   
+  } while(0);
+
   //
   fTracker->Clear();
   fClusters->Clear();
