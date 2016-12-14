@@ -1,4 +1,3 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
 #include "TFile.h"
 #include "TDirectoryFile.h"
 #include "TList.h"
@@ -17,11 +16,10 @@
 #include "TLegend.h"
 #include "TFractionFitter.h"
 #include "TObjArray.h"
+
 #include <Riostream.h>
 #include <fstream>
 #include <string>
-#endif
-
 using std::cout;
 using std::endl;
 
@@ -52,6 +50,7 @@ using std::endl;
 /////////////////////////////////////////////////////////////////////////////////////
 
 TString suffix="_PiK"; //suffix to match with that of thnsparse you want to project
+Bool_t fUseTOFbc = kFALSE;
 
 const int nPhi = 18; // nbins for vs phi analysis
 const int nEta = 16; // nbins for vs eta analysis
@@ -61,6 +60,8 @@ double etaRange = 0.8;  //set eta range
 double minPhi   = 0.;   //set min phi
 double maxPhi   = 6.28; //set max phi
 
+
+double fitRange[npt] = {1,1,1,0.7,0.6,0.2,0.2};
 double ptlims[npt+1]   = {0.7,1.,2.,3.,4.,6.,8.,15.};
 double xlowsec[nPhi]   = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 double xhighprim[nPhi] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
@@ -69,21 +70,21 @@ double xhighprim[nPhi] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.
 //parameters of the TFractionFitter, namely primary fraction lower limit and
 //secondary fraction upper limit.
 //***** if vs pt analysis
-double xlowprimVsPt[npt]  = {0.9,0.9,0.9,0.9,0.9,0.9,0.9};
-double xhighsecVsPt[npt]  = {0.2,0.1,0.1,0.1,0.2,0.2,0.2};
+double xlowprimVsPt[npt]  = {0.95,0.95,0.95,0.95,0.95,0.95,0.95};
+double xhighsecVsPt[npt]  = {0.2,0.1,0.1,0.2,0.15,0.15,0.1};
 
 //***** if vs phi
-double xlowprimVsPhi[nPhi]  = {0.8,0.5,0.5,0.5,0.5,0.5,0.5,0.7,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.5,0.7};
-double xhighsecVsPhi[nPhi]  = {0.2,0.5,0.5,0.5,0.5,0.5,0.5,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.5,0.3};
+double xlowprimVsPhi[nPhi]  = {0.6,0.9,0.9,0.9,0.9,0.9,0.5,0.7,0.9,0.8,0.8,0.9,0.9,0.9,0.9,0.9,0.5,0.7};
+double xhighsecVsPhi[nPhi]  = {0.3,0.1,0.5,0.5,0.5,0.5,0.5,0.3,0.3,0.3,0.3,0.2,0.3,0.3,0.3,0.3,0.5,0.1};
 
 //***** if vs eta
-double xlowprimVsEta[nEta]  = {0.8,0.85,0.85,0.9,0.9,0.85,0.85,0.9,0.9,0.85,0.9,0.8,0.85,0.8,0.9,0.9};
-double xhighsecVsEta[nEta]  = {0.3,0.3,0.3,0.2,0.3,0.3,0.2,0.3,0.3,0.2,0.3,0.2,0.3,0.2,0.3,0.3};
+double xlowprimVsEta[nEta]  = {0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95,0.95};
+double xhighsecVsEta[nEta]  = {0.3,0.2,0.3,0.2,0.3,0.3,0.2,0.3,0.3,0.3,0.2,0.2,0.3,0.2,0.3,0.3};
 
 /////////////Don't touch the 3 lines below (no of axis of thnsparses)/////////////
-const Int_t nVarData   = 5;  //nVars for data
-const Int_t nVarMC     = 9;  //nVars for MC
-const Int_t nVarMCTPC  = 9;  //nVars for MC, TPC only
+const Int_t nVarData   = 6;  //nVars for data
+const Int_t nVarMC     = 10;  //nVars for MC
+const Int_t nVarMCTPC  = 10;  //nVars for MC, TPC only
 //////////////////////////////////////////////////////////////////////////////////
 
 Bool_t fUseMCPt;    //true = particle MC pt used, false = track global pt used
@@ -91,15 +92,16 @@ Int_t  fWhichVar;   //1 == vs pt,2 == vs phi,3 == vs eta
 
 TH1D* projectMC(THnSparse *hSparse, Double_t partType, Int_t ipt);
 TH1D* projectData(THnSparse *hSparse, Int_t);
-void calcFractions(Int_t , Int_t, TString);
+void calcFractions(Int_t , Int_t, TString, TString);
 
 //___________________________________________________________________________________
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
-void projectSparse(TString filenameData = "15o/AnalysisResults_Data_lowIR.root",
-                   TString filenameMC   = "15o/AnalysisResults_MC_lowIR.root",
-                   TString period = "",
-                   Int_t vsWhichVar = 1,
+void projectSparse(TString filenameData = "15o/AnalysisResults_Data_megarun.root",
+                   TString filenameMC   = "15o/AnalysisResults_MC_megarun.root",
+                   TString period = "_highIR",
+                   TString dir = "15o",
+                   Int_t vsWhichVar = 3,
                    Int_t fPt = 1) {
     
     vector<double> vectorPrim;
@@ -207,7 +209,7 @@ void projectSparse(TString filenameData = "15o/AnalysisResults_Data_lowIR.root",
         return;
     }
     
-    TFile *fout = new TFile(Form("Proj%s_%s_%s_%s.root",suffix.Data(),whichPt.Data(),period.Data(),whichVar.Data()),"recreate");
+    TFile *fout = new TFile(Form("%s/Proj%s_%s_%s_%s.root",dir.Data(),suffix.Data(),whichPt.Data(),period.Data(),whichVar.Data()),"recreate");
     TCanvas *c1 = new TCanvas("c1","",1300,700);
     c1->Divide(npx,npy);
     
@@ -269,7 +271,7 @@ void projectSparse(TString filenameData = "15o/AnalysisResults_Data_lowIR.root",
     
     
     
-    c1->SaveAs(Form("DCA_%s_ESDTrOnly_%s_Vs%s.eps",suffix.Data(),period.Data(),whichVar.Data()));
+    c1->SaveAs(Form("%s/DCA_%s_ESDTrOnly_%s_Vs%s.eps",dir.Data(),suffix.Data(),period.Data(),whichVar.Data()));
     
     
     hPrimMC->Sumw2();
@@ -322,7 +324,7 @@ void projectSparse(TString filenameData = "15o/AnalysisResults_Data_lowIR.root",
     t->AddEntry(hSecMatMCTPConly,"sec. mat. TPC only");
     t->Draw("same");
     
-    c->SaveAs(Form("MCfractions_ESDTrOnly_Vs%s%s.eps",whichVar.Data(),suffix.Data()));
+    c->SaveAs(Form("%s/MCfractions_ESDTrOnly_Vs%s%s.eps",dir.Data(),whichVar.Data(),suffix.Data()));
     
     TCanvas *cl = new TCanvas("cl","",700,600);
     
@@ -334,14 +336,14 @@ void projectSparse(TString filenameData = "15o/AnalysisResults_Data_lowIR.root",
     for(int i = 1; i <= hPrimMCTPConly->GetNbinsX(); i++) printf("%f\n",hPrimMCTPConly->GetBinContent(i));
     
     
-    ofstream myfile (Form("corrTPC_Vs%s%s.txt",whichVar.Data(),period.Data()));
+    ofstream myfile (Form("%s/corrTPC_Vs%s%s.txt",dir.Data(),whichVar.Data(),period.Data()));
     if (myfile.is_open())
     {
         for(int i = 1; i <= hPrimMCTPConly->GetNbinsX(); i++) myfile << Form("%f\n",hPrimMCTPConly->GetBinContent(i));
         myfile.close();
     }
     
-    ofstream myfile2 (Form("corrTPCErr_Vs%s%s.txt",whichVar.Data(),period.Data()));
+    ofstream myfile2 (Form("%s/corrTPCErr_Vs%s%s.txt",dir.Data(),whichVar.Data(),period.Data()));
     if (myfile2.is_open())
     {
         for(int i = 1; i <= hPrimMCTPConly->GetNbinsX(); i++) myfile2 << Form("%f\n",hPrimMCTPConly->GetBinError(i));
@@ -352,7 +354,7 @@ void projectSparse(TString filenameData = "15o/AnalysisResults_Data_lowIR.root",
     
 }
 //__________________________________________________________________
-void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
+void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period, TString dir) {
     vector<double> vectorPrim;
     vector<double> vectorPrimErr;
     vector<double> vectorSec;
@@ -414,7 +416,7 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
         npy = 4;
         printf("**** Analysis versus Phi ****\n");
     }
-    else{
+    else if(vsWhichVar == 3) {
         hPrimFit = new TH1F("hPrimFit","",nEta,-0.8,0.8);
         hPrimMC  = new TH1F("hPrimMC","",nEta,-0.8,0.8);
         hSecFit  = new TH1F("hSecFit","",nEta,-0.8,0.8);
@@ -439,7 +441,7 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
     c6->Divide(npx,npy);
     
     
-    TFile *_file0 = TFile::Open(Form("Proj%s_%s_%s_%s.root",suffix.Data(),whichPt.Data(),period.Data(),whichVar.Data()));
+    TFile *_file0 = TFile::Open(Form("%s/Proj%s_%s_%s_%s.root",dir.Data(),suffix.Data(),whichPt.Data(),period.Data(),whichVar.Data()));
     
     TH1F *hData;
     TH1F *hMC[3];
@@ -469,13 +471,10 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
             hmc->Add(hMC[1]);
             hmc->Add(hMC[2]);
             
-            //        hdata->Rebin(10);
-            //        hmc->Rebin(10);
             
             hdata->Sumw2();
             hmc->Sumw2();
             
-            //            hdata->Scale(1/);
             hmc->Scale(hdata->Integral()/hmc->Integral());
             hmcprim->Scale(hdata->Integral()/hmc->Integral());
             hmcsec->Scale(hdata->Integral()/hmc->Integral());
@@ -494,7 +493,7 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
             hdata->GetYaxis()->SetLabelSize(0.07);
             hdata->DrawCopy();
             TLegend *leg2 = new TLegend(0.1,0.1,0.45,0.2);
-            leg2->AddEntry(hdata,Form("10%s/14j4%s",period.Data(),period.Data()));//c,b enriched");
+            leg2->AddEntry(hdata,"data/MC");
             leg2->Draw("same");
             ///////////////////////////
             cc->cd(ibin+1);
@@ -516,7 +515,7 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
             hmcsec->DrawCopy("same");
             hmcmat->DrawCopy("same");
             TLegend *leg = new TLegend(0.1,0.65,0.45,0.88);
-            leg->AddEntry(hData,Form("LHC10%s",period.Data()));
+            leg->AddEntry(hData,Form("%s",period.Data()));
             leg->AddEntry(hmc,"MC, all");
             leg->AddEntry(hmcprim,"MC, prim.");
             leg->AddEntry(hmcsec,"MC, sec.");
@@ -540,6 +539,7 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
                 fit->Constrain(2,xlowsec[ibin],xhighsecVsEta[ibin]);               // constrain fraction 1 to be between 0 and 1
                 fit->Constrain(3,xlowsec[ibin],xhighsecVsEta[ibin]);               // constrain fraction 1 to be between 0 and 1
             }
+//            fit->SetRangeX(hData->FindBin(-fitRange[ibin]),hData->FindBin(fitRange[ibin]));
             fit->SetRangeX(hData->FindBin(-1),hData->FindBin(1));
             Int_t status = fit->Fit();                                  // perform the fit
             std::cout << "fit status: " << status << std::endl;
@@ -575,8 +575,6 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
                 hChi2->SetBinContent(ibin+1,fit->GetChisquare());
                 hNDF->SetBinContent(ibin+1,fit->GetNDF());
                 vectorPrim.push_back(prim/(prim+secAll));
-                //                vectorPrimErr.push_back();//((secAll*secAll*errPrim*errPrim + prim*prim*errSecAll*errSecAll)/TMath::Power((prim+secAll),4));
-                printf("COMPARISON of unc. on primary fraction: %f, %f\n",vectorPrimErr[ibin],(secAll*secAll*errPrim*errPrim + prim*prim*errSecAll*errSecAll)/TMath::Power((prim+secAll),4));
                 vectorSec.push_back(secAll/(prim+secAll));
                 
                 hPrimFit->SetBinContent(ibin+1,prim/(prim+secAll));
@@ -650,17 +648,12 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
     else if(vsWhichVar==3) hPrimFit->GetXaxis()->SetTitle("eta");
     hPrimFit->GetYaxis()->SetRangeUser(-0.1,1.6);
     hPrimFit->SetStats(0);
-    //    hPrimFit->DrawCopy("EP");
-    //    hPrimMC->DrawCopy("EPsame");
-    //    hSecFit->DrawCopy("EPsame");
-    //    hSecMC->DrawCopy("EPsame");
     
     TLegend *l = new TLegend(0.15,0.7,0.45,0.88);
     l->AddEntry(hPrimFit,"TFracFitt primaries");
     l->AddEntry(hPrimMC,"MC primaries");
     l->AddEntry(hSecFit,"TFracFitt sec.");
     l->AddEntry(hSecMC,"MC sec.");
-    //    l->Draw("same");
     
     TCanvas *c1 = new TCanvas("c1","",1200,800);
     c1->Divide(2,2);
@@ -689,25 +682,24 @@ void calcFractions(Int_t vsWhichVar, Int_t fPt, TString period) {
     hNDF->SetTitle("ndf");
     hNDF->DrawCopy("EP");
     
-    c1->SaveAs(Form("fractions_%s_ESDTrOnly_%s_Vs%s.eps",suffix.Data(),period.Data(),whichVar.Data()));
+    c1->SaveAs(Form("%s/fractions_%s_ESDTrOnly_%s_Vs%s.eps",dir.Data(),suffix.Data(),period.Data(),whichVar.Data()));
     
-    //  printf("*************** N bins hDCA = %d\n",hDCA->GetNbinsX());
     
     for(int i=0; i<(int)vectorPrim.size();i++) {
         printf("%f +- %f,\n",vectorPrim[i],vectorPrimErr[i]);
         
     }
-    ofstream myfile (Form("fractions_%s_%s_Vs%s.txt",suffix.Data(),period.Data(),whichVar.Data()));
+    ofstream myfile (Form("%s/fractions_%s_%s_Vs%s.txt",dir.Data(),suffix.Data(),period.Data(),whichVar.Data()));
     if (myfile.is_open())
     {
         for(int i = 0; i <(int)vectorPrim.size(); i++) myfile << Form("%f\n",vectorPrim[i]);
         myfile.close();
     }
     
-    ofstream myfile2 (Form("fractionErrs_%s_%s_Vs%s.txt",suffix.Data(),period.Data(),whichVar.Data()));
+    ofstream myfile2 (Form("%s/fractionErrs_%s_%s_Vs%s.txt",dir.Data(),suffix.Data(),period.Data(),whichVar.Data()));
     if (myfile2.is_open())
     {
-        for(int i = 0; i <(int)vectorPrimErr.size(); i++) myfile2 << Form("%f\n",vectorPrimErr[i]);
+       for(int i = 0; i <(int)vectorPrimErr.size(); i++) myfile2 << Form("%f\n",vectorPrimErr[i]);
         myfile2.close();
     }
     
@@ -785,10 +777,19 @@ TH1D* projectMC(THnSparse *hSparse, Double_t partType, Int_t ibin) {
     iax = 6;
     first = ax[iax]->FindBin(partType);
     last  = ax[iax]->FindBin(partType);
-    nbins = ax[iax]->GetNbins();
     ax[iax]->SetRange(first,last);
     Printf("Part.type : %g, %g",ax[iax]->GetBinLowEdge(first),ax[iax]->GetBinUpEdge(last));
     
+
+    //TOF bc
+    iax = 7;
+    binWidth = ax[iax]->GetBinWidth(1);
+    first = -0.5 + binWidth/2.;
+    last  = 0.5  - binWidth/2.;
+    if(fUseTOFbc)ax[iax]->SetRange(first,last);
+    Printf("Part.type : %g, %g",ax[iax]->GetBinLowEdge(first),ax[iax]->GetBinUpEdge(last));
+    
+
     TH1D* hproj = (TH1D*)hSparse->Projection(0);
     return hproj;
 }
