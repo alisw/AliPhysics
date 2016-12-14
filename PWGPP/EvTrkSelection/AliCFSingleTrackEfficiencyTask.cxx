@@ -45,6 +45,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask() :
   fTriggerMask(AliVEvent::kAny),
   fSetFilterBit(kFALSE),
   fbit(0),
+  fRemoveNegativeLabelTracks(kTRUE),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
   fConfiguration(kFast), // default  use the minimal configuration
@@ -66,6 +67,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fTriggerMask(AliVEvent::kAny),
   fSetFilterBit(kFALSE),
   fbit(0),
+  fRemoveNegativeLabelTracks(kTRUE),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
   fConfiguration(kFast), // default  use the minimal configuration
@@ -107,6 +109,7 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
 
     fSetFilterBit  = c.fSetFilterBit;
     fbit = c.fbit;
+    fRemoveNegativeLabelTracks = c.fRemoveNegativeLabelTracks;
 
     fEvalCentrality = c.fEvalCentrality;
     fCentralityEstimator = c.fCentralityEstimator;
@@ -129,6 +132,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fTriggerMask(c.fTriggerMask),
   fSetFilterBit(c.fSetFilterBit),
   fbit(c.fbit),
+  fRemoveNegativeLabelTracks(c.fRemoveNegativeLabelTracks),
   fEvalCentrality(c.fEvalCentrality),
   fCentralityEstimator(c.fCentralityEstimator),
   fConfiguration(c.fConfiguration),
@@ -592,9 +596,11 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
 
     // is track associated to particle ? if yes + implimenting the physical primary..
     Int_t label = TMath::Abs(track->GetLabel());
-    if (label<=0) {
-      AliDebug(3,"Particle not matching MC label \n");
-      continue;
+    if(fRemoveNegativeLabelTracks) {
+        if (label<=0) {
+            AliDebug(3,"Particle not matching MC label \n");
+            continue;
+        }
     }
 
     //

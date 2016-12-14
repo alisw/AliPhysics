@@ -60,6 +60,9 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   // select track filter bit:1 or not:0 and set the bit
   void SetFilterBit (Bool_t flag=kTRUE) { fSetFilterBit=flag; }
   void SetFilterType (Int_t fbittype) { fbit=fbittype; }
+  // setter for removal of fake tracks from the calculaltion (negative label at reconstructed level)
+  void SetRemoveNegativeLabelTracks(Bool_t flag) { fRemoveNegativeLabelTracks=flag; }
+    
   // select trigger event mask
   void SetTriggerMask(ULong64_t mask=0) { fTriggerMask=mask; }
   // set whether to evaluate centrality
@@ -80,6 +83,9 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
   AliESDtrackCuts *GetTrackCuts(){ return (AliESDtrackCuts*)fTrackCuts; } 
   // particle and event cuts 
   AliSingleTrackEffCuts *GetSingleTrackEffCuts() { return (AliSingleTrackEffCuts*)fMCCuts; }
+  // fake tracks removal flag
+  Bool_t GetRemoveNegativeLabelTracks() { return fRemoveNegativeLabelTracks; }
+
 
 
  protected:
@@ -107,6 +113,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
 
   Bool_t fSetFilterBit; // flag to decide if applying filter-bit selection to tracks
   Int_t  fbit;          // filter-bit selection to tracks
+  Bool_t fRemoveNegativeLabelTracks; // flag to remove fake tracks (reconstructed tracks with negative label)
 
   Bool_t fEvalCentrality;        // flag to enable centrality determination
   TString fCentralityEstimator;  // centrality estimator
@@ -115,7 +122,7 @@ class AliCFSingleTrackEfficiencyTask : public AliAnalysisTaskSE {
 
   TH1I  *fHistEventsProcessed;   //! histo for monitoring the number of events processed slot 1
 
-  ClassDef(AliCFSingleTrackEfficiencyTask,3)
+  ClassDef(AliCFSingleTrackEfficiencyTask,4)
 };
 
 #endif
