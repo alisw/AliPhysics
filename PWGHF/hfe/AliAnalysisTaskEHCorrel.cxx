@@ -378,7 +378,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   Int_t nZvtxBins  = 6;
   //Double_t vertexBins[7] = {-10,-5.5,-2.5,0,2.5,5.5,10};
-  Double_t vertexBins[7] = {-9.5, -5, -2, 0.5, 3, 6, 10.5};  //mean of VtxZ is at 0.5
+  Double_t vertexBins[7] = {-10, -5, -2, 0.5, 3, 6, 10};  //mean of VtxZ is at 0.5
   Int_t nCentralityBins  = 6;
   Double_t CentralityBins[7];
   if(fCentralityMax == 20)
