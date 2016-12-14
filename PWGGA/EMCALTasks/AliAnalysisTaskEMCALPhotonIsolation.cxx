@@ -3210,7 +3210,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
     IsolationAndUEinTPC(coi,isolation,ue,eTThreshold,index);
   
   if(fIsMC)
-    LookforParticle(coi->GetLabel(),vecCOI.Et(),vecCOI.Phi(),vecCOI.Eta(),coi->GetTOF()*1e9, coi->GetM02(),isolation);
+    LookforParticle(coi->GetLabel(),vecCOI.Et(),vecCOI.Phi(),vecCOI.Eta(),coi->GetTOF()*1e9, coiM02,isolation);
   
   /*  Here we should call something to know the number of tracks...
    Soon I'll put in this version the "old way"; please let me know if
