@@ -203,7 +203,7 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
   
   //----------------------------- configuration for  8 TeV standard  --------------------------------------------------------
   } else if (trainConfig == 20) {
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut pp 8 TeV
   } else if (trainConfig == 21) {
     cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV EMC7 
   } else if (trainConfig == 22) {
