@@ -92,7 +92,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
       if(tempStr.CompareTo("EPCLUSTree") == 0){
         cout << "INFO: AddTask_GammaCalo_pp activating 'EPCLUSTree'" << endl;
         doTreeEOverP = kTRUE;
-      }else if(tempStr.BeginsWith("MODIFYacc")){
+      }else if(tempStr.BeginsWith("MODIFYACC")){
         cout << "INFO: AddTask_GammaCalo_pp activating 'MODIFYacc'" << endl;
         TString tempType = tempStr;
         tempType.Replace(0,9,"");
