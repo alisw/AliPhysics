@@ -224,6 +224,7 @@ void AliPerformanceTask::UserExec(Option_t *)
             AliInfo("ERROR: Could not get offline event");
             return;
       }
+      fVfriendEvent = fVEvent->FindFriend();
     }
     else
     {
@@ -236,7 +237,7 @@ void AliPerformanceTask::UserExec(Option_t *)
   } // end if fUseVfriend
   
   if(fUseMCInfo) {
-      //fMC = MCEvent();
+      fMC = MCEvent();
   }  
 
   if (fUseMCInfo && !fMC) {
