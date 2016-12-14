@@ -3145,44 +3145,35 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   
   if(fSSsmearing){
     if(coi->GetM02()>0.1){
-      
-      if(fWhich==0){
-          //      Printf("Smearing for all clusters");
+        //      Printf("Smearing for only clusters with nlm = %d" ,fWhich);
+      if(nlm==1){
         if((fSSsmearwidth != 0.)){
           TRandom3 *ran=new TRandom3(0);
-          Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-          
-          if(fSSsmear_mean==0 || (fSSsmear_mean!=0 && coi->GetID()%3==0))
-          m02COI = coi->GetM02() + smear;
+          if(fWhich==0){//Landau Smearing
+            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean==0 || (fSSsmear_mean!=0 && coi->GetID()%3==0))
+              m02COI = coi->GetM02() + smear;
+          }
+          else{//Gaussian Smearing
+            Float_t smear = ran->Gaus(fSSsmear_mean,fSSsmearwidth);
+            if(fSSsmear_mean==0 || (fSSsmear_mean!=0 && coi->GetID()%3==0))
+              m02COI = coi->GetM02() + smear;
+          }
         }
         else {
           AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
           m02COI = coi->GetM02();
         }
       }
-      else{
-          //      Printf("Smearing for only clusters with nlm = %d" ,fWhich);
-        if(nlm==fWhich){
-          if((fSSsmearwidth != 0.)){
-            TRandom3 *ran=new TRandom3(0);
-            Float_t smear = ran->Landau(fSSsmear_mean,fSSsmearwidth);
-            if(fSSsmear_mean==0 || (fSSsmear_mean!=0 && coi->GetID()%3==0))
-            m02COI = coi->GetM02() + smear;
-          }
-          else {
-            AliWarning("The Smearing is set but the width of the distribution is null!\nNOT DOING ANYTHING for the Shower Shape!");
-            m02COI = coi->GetM02();
-          }
-        }
-        else
-          m02COI = coi->GetM02();
-      }
+      else
+        m02COI = coi->GetM02();
     }
   }
   else{
     AliWarning("Smearing not SET!");
     m02COI = coi->GetM02();
   }
+
   
     //  Printf("M02 AFTER possible smearing: %.4lf",m02COI);
   
