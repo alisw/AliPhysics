@@ -71,7 +71,7 @@
 #include "AliHLTTRDDefinitions.h"
 #include "AliHLTTRDTrack.h"
 #include "AliHLTTRDTrackData.h"
-#include "AliHLTTRDSpacePoint.h"
+#include "AliHLTTRDTrackPoint.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -136,7 +136,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackDataType);
-  list.push_back(AliHLTTRDDefinitions::fgkTRDSpacePointDataType);
+  list.push_back(AliHLTTRDDefinitions::fgkTRDTrackPointDataType);
 }
 
 AliHLTComponentDataType AliHLTGlobalEsdConverterComponent::GetOutputDataType()
@@ -1044,10 +1044,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // 4. convert the HLT TRD tracks to ESD tracks                        
   if (storeTracks){
 
-    const AliHLTTRDSpacePointData * spacePoints = 0;
-    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTRDSpacePointDataType);
+    const AliHLTTRDTrackPointData * spacePoints = 0;
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(AliHLTTRDDefinitions::fgkTRDTrackPointDataType);
 	 pBlock!=NULL; pBlock=GetNextInputBlock()) {          
-      spacePoints = reinterpret_cast<const AliHLTTRDSpacePointData*>(pBlock->fPtr);    
+      spacePoints = reinterpret_cast<const AliHLTTRDTrackPointData*>(pBlock->fPtr);    
       break;
     }
 
@@ -1104,7 +1104,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	      for( int iLayer=0; iLayer<6; iLayer++){
 		int ind = track.fAttachedTracklets[iLayer];
 		if( ind<0 || ind>=spacePoints->fCount ) continue;
-		const AliHLTTRDSpacePoint &sp = spacePoints->fPoints[ind];
+		const AliHLTTRDTrackPoint &sp = spacePoints->fPoints[ind];
 		AliTrackPoint p( sp.fX[0], sp.fX[1], sp.fX[2], NULL, sp.fVolumeId );
 		spArray->AddPoint( iPoint, &p );
 		iPoint++;

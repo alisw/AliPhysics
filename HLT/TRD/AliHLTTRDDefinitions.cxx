@@ -51,7 +51,7 @@ const AliHLTComponentDataType AliHLTTRDDefinitions::fgkSimpleIntegerDataType = {
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDTrackletDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','L','E','T'},{'T','R','D',' '}};;
 
-const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDSpacePointDataType = { sizeof(AliHLTComponentDataType), {'S','P','A','C','E','P','N','T'},{'T','R','D',' '}};;
+const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDTrackPointDataType = { sizeof(AliHLTComponentDataType), {'T','R','A','C','K','P','N','T'},{'T','R','D',' '}};;
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkTRDTrackDataType = { sizeof(AliHLTComponentDataType), {'T','R','D','T','R','A','C','K'},{'T','R','D',' '}};;
 

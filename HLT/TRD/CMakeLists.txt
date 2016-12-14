@@ -54,7 +54,7 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS}
     AliHLTTRDTrackletWordArray.h
-    tracking/AliHLTTRDSpacePoint.h
+    tracking/AliHLTTRDTrackPoint.h
 )
 
 # Generate the dictionary
