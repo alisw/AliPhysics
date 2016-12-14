@@ -61,7 +61,7 @@ void AddTask_GammaCalo_pPb(
                             Int_t      isMC                       = 0,                // run MC
                             Int_t      enableQAMesonTask          = 0,                // enable QA in AliAnalysisTaskGammaConvV1
                             Int_t      enableQAClusterTask        = 0,                // enable additional QA task
-                            TString    fileNameInputForWeighting  = "MCSpectraInput.root",       // path to file for weigting input
+                            TString    fileNameInputForWeighting  = "MCSpectraInput.root",       // path to file for weigting input / modified acceptance
                             Int_t      doWeightingPart            = 0,                // enable Weighting
                             TString    generatorName              = "DPMJET",         // generator name for weighting
                             TString    cutnumberAODBranch         = "800000006008400000001500000",   // cutnumber for AOD branch
@@ -91,18 +91,14 @@ void AddTask_GammaCalo_pPb(
         cout << "INFO: AddTask_GammaCalo_pPb activating 'EPCLUSTree'" << endl;
         doTreeEOverP = kTRUE;
       }else if(tempStr.BeginsWith("MODIFYACC")){
-        cout << "INFO: AddTask_GammaCalo_pp activating 'MODIFYACC'" << endl;
-        TObjArray *tempObjArray = tempStr.Tokenize("-");
-        if(tempObjArray->GetEntries()!=3){cout << "ERROR: AddTask_GammaCalo_pp during parsing of String '" << tempStr.Data() << "'" << endl; return;}
-        TObjString* tempObjType = (TObjString*)tempObjArray->At(1);
-        TString tempType = tempObjType->GetString();
-        TObjString* tempObjPath = (TObjString*)tempObjArray->At(2);
-        TString tempPath = tempObjPath->GetString();
+        cout << "INFO: AddTask_GammaCalo_pPb activating 'MODIFYACC'" << endl;
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
         cout << "INFO: connecting to alien..." << endl;
         TGrid::Connect("alien://");
         cout << "done!" << endl;
-        TFile *w = TFile::Open(tempPath.Data());
-        if(!w){cout << "ERROR: Could not open file: " << tempPath.Data() << endl;return;}
+        TFile *w = TFile::Open(fileNameInputForWeighting.Data());
+        if(!w){cout << "ERROR: Could not open file: " << fileNameInputForWeighting.Data() << endl;return;}
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;

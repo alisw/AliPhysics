@@ -62,7 +62,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
                                 Int_t     isMC                          = 0,                      // run MC
                                 Int_t     enableQAMesonTask             = 1,                      // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t     enableQAPhotonTask            = 1,                      // enable additional QA task
-                                TString   fileNameInputForPartWeighting = "MCSpectraInput.root",  // path to file for weigting input
+                                TString   fileNameInputForPartWeighting = "MCSpectraInput.root",  // path to file for weigting input / modified acceptance
                                 TString   cutnumberAODBranch            = "000000006008400001001500000",
                                 Int_t     enableExtMatchAndQA           = 0,                      // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                 TString   periodname                    = "LHC12f1x",             // period name
@@ -102,18 +102,14 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
         cout << "INFO: AddTask_GammaConvCalo_pp activating 'INVMASSCLUSTree'" << endl;
         doTreeClusterShowerShape = kTRUE;
       }else if(tempStr.BeginsWith("MODIFYACC")){
-        cout << "INFO: AddTask_GammaCalo_pp activating 'MODIFYACC'" << endl;
-        TObjArray *tempObjArray = tempStr.Tokenize("-");
-        if(tempObjArray->GetEntries()!=3){cout << "ERROR: AddTask_GammaCalo_pp during parsing of String '" << tempStr.Data() << "'" << endl; return;}
-        TObjString* tempObjType = (TObjString*)tempObjArray->At(1);
-        TString tempType = tempObjType->GetString();
-        TObjString* tempObjPath = (TObjString*)tempObjArray->At(2);
-        TString tempPath = tempObjPath->GetString();
+        cout << "INFO: AddTask_GammaConvCalo_pp activating 'MODIFYACC'" << endl;
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
         cout << "INFO: connecting to alien..." << endl;
         TGrid::Connect("alien://");
         cout << "done!" << endl;
-        TFile *w = TFile::Open(tempPath.Data());
-        if(!w){cout << "ERROR: Could not open file: " << tempPath.Data() << endl;return;}
+        TFile *w = TFile::Open(fileNameInputForPartWeighting.Data());
+        if(!w){cout << "ERROR: Could not open file: " << fileNameInputForPartWeighting.Data() << endl;return;}
         histoAcc = (TH1S*) w->Get(tempType.Data());
         if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
         cout << "found: " << histoAcc << endl;
