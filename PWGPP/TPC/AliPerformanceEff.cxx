@@ -1237,7 +1237,7 @@ TFolder *folder = 0;
   return folder;
 }
 
-TH1D* WeightedProjection(THnSparseF* src, Int_t axis, Int_t nWeights, Int_t* weightCoords)
+TH1D* AliPerformanceEff::WeightedProjection(THnSparseF* src, Int_t axis, Int_t nWeights, Int_t* weightCoords)
 {
     THnSparseF* tmp = (THnSparseF*) src->Clone();
     Int_t i;
