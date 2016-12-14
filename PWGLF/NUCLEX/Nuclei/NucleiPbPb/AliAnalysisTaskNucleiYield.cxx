@@ -339,7 +339,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       const int pdg = std::abs(part->GetPdgCode());
       const int iC = part->Charge() > 0 ? 1 : 0;
       const float mult = part->Charge() > 0 ? 1.f : -1.f;
-      if (pdg != fPDG) continue; 
+      if (pdg != fPDG) continue;
       fProduction->Fill(mult * part->P());
       if (part->Y() > fRequireYmax || part->Y() < fRequireYmin) continue;
       if (part->IsPhysicalPrimary()) fTotal[iC]->Fill(centrality,part->Pt());
@@ -379,12 +379,16 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
 
       if (!PassesPIDSelection(track)) continue;
       float tpc_n_sigma = GetTPCsigmas(track);
-      fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
+      float tof_n_sigma = iTof ? fPID->NumberOfSigmas(AliPIDResponse::kTOF, track, fParticle) : -999.f;
 
       for (int iR = iTof; iR >= 0; iR--) {
-        fDCAxy[iR][iC]->Fill(centrality, pT, dca[0]);
-        fDCAz[iR][iC]->Fill(centrality, pT, dca[1]);
+        if (fabs(tpc_n_sigma) < 4 && (fabs(tof_n_sigma) < 4. || !iTof)) {
+          fDCAxy[iR][iC]->Fill(centrality, pT, dca[0]);
+          fDCAz[iR][iC]->Fill(centrality, pT, dca[1]);
+        }
       }
+      if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) continue;
+      fTPCcounts[iC]->Fill(centrality, pT, tpc_n_sigma);
 
       if (iTof == 0) continue;
       /// \f$ m = \frac{p}{\beta\gamma} \f$
@@ -458,8 +462,8 @@ Bool_t AliAnalysisTaskNucleiYield::AcceptTrack(AliAODTrack *track, Double_t dca[
     if (fRequireVetoSPD && nSPD > 0) return kFALSE;
     Double_t cov[3];
     if (!track->PropagateToDCA(fEventCut.GetPrimaryVertex(), fMagField, 100, dca, cov)) return kFALSE;
-    if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return kFALSE;
+    //if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return kFALSE;
   }
 
   return kTRUE;
