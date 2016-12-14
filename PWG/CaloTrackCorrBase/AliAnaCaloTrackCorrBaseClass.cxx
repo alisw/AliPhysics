@@ -375,7 +375,7 @@ TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()
 /// \param genNameBkg: name of generators overlapped to the cluster
 /// \return tag : 0-no other generator, 1 hijing, 2 other generator, 3 both hijing and other
 //_____________________________________________________________________
-Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluster * cluster, 
+Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluster * cluster, Int_t mctag,
                                                                       TString & genName, TString & genNameBkg)
 {
   if(cluster->GetNLabels() == 0 || cluster->GetLabel() < 0 ) return -1;
@@ -418,11 +418,36 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
     }
   }
 
-  if      ( !overlapGener ) return 0;
-  else if (  overlapGenerHIJING && !overlapGenerOther) return 1;
-  else if ( !overlapGenerHIJING &&  overlapGenerOther) return 2;
-  else if (  overlapGenerHIJING &&  overlapGenerOther) return 3;
-  else                                                 return 4; 
+  Int_t genBkgTag = -1;
+  
+  if      ( !overlapGener )                            genBkgTag = 0;
+  else if (  overlapGenerHIJING && !overlapGenerOther) genBkgTag = 1;
+  else if ( !overlapGenerHIJING &&  overlapGenerOther) genBkgTag = 2;
+  else if (  overlapGenerHIJING &&  overlapGenerOther) genBkgTag = 3;
+  else                                                 genBkgTag = 4; 
+  
+  // check overlap with same generator, but not hijing
+  Int_t overpdg[nlabels];
+  Int_t overlab[nlabels];
+  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetReader(),overpdg,overlab);
+  Bool_t sameGenOverlap = kFALSE;
+  for(Int_t iover = 0; iover < noverlaps; iover++)
+  {
+    TString genName2;
+    (GetReader()->GetMC())->GetCocktailGenerator(overlab[iover],genName2);
+    if(genName2==genName && !genName.Contains("ijing")) sameGenOverlap = kTRUE;
+  }
+  
+  //printf("bkg tag %d, noverlaps %d; same gen overlap %d\n",genBkgTag,noverlaps,sameGenOverlap);
+  if(sameGenOverlap)
+  {
+    if(genBkgTag == 0) genBkgTag = 2; // Gen+Gen
+    if(genBkgTag == 1) genBkgTag = 3; // Gen+Gen+Hij
+  }
+
+  return genBkgTag;
+  
+
 }
 
 //_____________________________________________________________________

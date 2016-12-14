@@ -2777,6 +2777,7 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg)
 //_______________________________________________________________________________________
 void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
                                               Int_t iclus1,  Int_t iclus2,
+                                              Int_t mctag1,  Int_t mctag2,
                                               Float_t pt1,   Float_t pt2,
                                               Int_t ncell1,  Int_t ncell2,
                                               Double_t mass, Double_t pt,   Double_t asym,
@@ -3146,11 +3147,11 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     // Get the generators names of each cluster and background generator tag
     //
     TString genName1 = "", genName2 = "", genNameBkg1 = "", genNameBkg2 = "";
-    Int_t genBkgTag1 = GetCocktailGeneratorBackgroundTag(cluster1, genName1, genNameBkg1);
+    Int_t genBkgTag1 = GetCocktailGeneratorBackgroundTag(cluster1, mctag1, genName1, genNameBkg1);
     if     (genBkgTag1 == -1) return;
     else if(genBkgTag1  >  3) printf("Bkg1 generator tag larger than 3; Main %s Bkg %s\n",genName1.Data(),genNameBkg1.Data());
 
-    Int_t genBkgTag2 = GetCocktailGeneratorBackgroundTag(cluster2, genName2, genNameBkg2);
+    Int_t genBkgTag2 = GetCocktailGeneratorBackgroundTag(cluster2, mctag2, genName2, genNameBkg2);
     if     (genBkgTag2 == -1) return;
     else if(genBkgTag2  >  3) printf("Bkg2 generator tag larger than 3; Main %s Bkg %s\n",genName2.Data(),genNameBkg2.Data());
     
@@ -3843,6 +3844,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(fFillOriginHisto)
           FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),
                                         p1->GetCaloLabel(0), p2->GetCaloLabel(0),
+                                        p1->GetTag(),p2->GetTag(),
                                         p1->Pt(), p2->Pt(),
                                         ncell1, ncell2, m, pt, a,deta, dphi, angle);
       }
