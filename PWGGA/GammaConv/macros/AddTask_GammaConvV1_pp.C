@@ -443,38 +443,46 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     
     //---------configs for V0AND 8TeV --------------------------//
   } else if (trainConfig == 60) {
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000"); //New standard cut for eta analysis
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152107500000000"); //variation alpha 0.85
-    cuts.AddCut("00010113", "00200049227302008250400000", "0152103500000000"); //variation single pt 0.075
-    cuts.AddCut("00010113", "00200019227302008250400000", "0152103500000000"); //variation single pt 0.1
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND with double counting cut, TOF removed
+    cuts.AddCut("00010013", "00200009227300008250404000", "0152103500000000"); // no SPD pileup cut
+    cuts.AddCut("00010113", "00100009227300008250404000", "0152103500000000"); // R cut 2.8 -180 cm
+    cuts.AddCut("00010113", "00500009227300008250404000", "0152103500000000"); // R cut 10. -180 cm
   } else if (trainConfig == 61) {
-    cuts.AddCut("00010113", "00200006227302008250400000", "0152103500000000"); //variation 70% TPC Cluster
-    cuts.AddCut("00010113", "00200008227302008250400000", "0152103500000000"); //variation 35% TPC Cluster
-    cuts.AddCut("00010113", "00200009327302008250400000", "0152103500000000"); //variation dE/dx e -4<sigma<5
-    cuts.AddCut("00010113", "00200009627302008250400000", "0152103500000000"); //variation dE/dx e -2.5<sigma<4
+    cuts.AddCut("00010113", "00200069227300008250404000", "0152103500000000"); // min pT 40 MeV
+    cuts.AddCut("00010113", "00200049227300008250404000", "0152103500000000"); // min pT 75 MeV
+    cuts.AddCut("00010113", "00200019227300008250404000", "0152103500000000"); // min pT 100MeV
   } else if (trainConfig == 62) {
-    cuts.AddCut("00010113", "00200009225302008250400000", "0152103500000000"); //variation min p 0.3GeV pion line
-    cuts.AddCut("00010113", "00200009220302008250400000", "0152103500000000"); //variation min p 0.5GeV pion line
-    cuts.AddCut("00010113", "00200009227102008250400000", "0152103500000000"); //variation max p 5GeV pion line
-    cuts.AddCut("00010113", "00200009217302008250400000", "0152103500000000"); //variation nsigma>0 pion line
+    cuts.AddCut("00010113", "00200008227300008250404000", "0152103500000000"); // TPC cluster 35%
+    cuts.AddCut("00010113", "00200006227300008250404000", "0152103500000000"); // TPC cluster 70%
+    cuts.AddCut("00010113", "00200009227300008250604000", "0152103500000000"); // cosPA 0.9
+    cuts.AddCut("00010113", "00200009227300008250304000", "0152103500000000"); // cosPA 0.75
   } else if (trainConfig == 63) {
-    cuts.AddCut("00010113", "00200009257302008250400000", "0152103500000000"); //variation nsigma>2 pion line
-    cuts.AddCut("00010113", "00200009227302002250400000", "0152103500000000"); //variation max qt 0.07 1D
-    cuts.AddCut("00010113", "00200009227302009250400000", "0152103500000000"); //variation max qt 0.03 2D
-    cuts.AddCut("00010113", "00200009227302003250400000", "0152103500000000"); //variation max qt 0.05 1D
+    cuts.AddCut("00010113", "00200009327300008250404000", "0152103500000000"); // nsig electron   -4,5
+    cuts.AddCut("00010113", "00200009627300008250404000", "0152103500000000"); // nsig electron -2.5,4
+    cuts.AddCut("00010113", "00200009257300008250404000", "0152103500000000"); // nsig pion 2,-10
+    cuts.AddCut("00010113", "00200009217300008250404000", "0152103500000000"); // nsig pion 0,-10
   } else if (trainConfig == 64) {
-    cuts.AddCut("00010113", "00200009227302008180400000", "0152103500000000"); //variation chi2 50 psi pair 0.2 2D
-    cuts.AddCut("00010113", "00200009227302008210400000", "0152103500000000"); //variation chi2 30 psi pair 0.1 1D
-    cuts.AddCut("00010113", "00200009227302008860400000", "0152103500000000"); //variation chi2 20 psi pair 0.05 2D
-    cuts.AddCut("00010113", "00200009227302008250400000", "0252103500000000"); //variation BG scheme track mult
+    cuts.AddCut("00010113", "00200009220300008250404000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
+    cuts.AddCut("00010113", "00200009226300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCut("00010113", "00200009227600008250404000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
+    cuts.AddCut("00010113", "00200009227100008250404000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
   } else if (trainConfig == 65) {
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND
-    cuts.AddCut("00010113", "00200009227302008250404000", "0152103500000000"); //8TeV V0AND with Double count rejection
-    cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR
-    cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //Old standard cut for 7TeV analysis V0OR
-  } else if (trainConfig == 66) { // standard without pileUp cut for 8 TeV
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND
-    cuts.AddCut("00010013", "00200009227302008250400000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND - no pileup cut
+    cuts.AddCut("00010113", "00200009227300003250404000", "0152103500000000"); // qT max 0.05 1D
+    cuts.AddCut("00010113", "00200009227300002250404000", "0152103500000000"); // qT max 0.06 2D
+    cuts.AddCut("00010113", "00200009227300009250404000", "0152103500000000"); // qT max 0.03 2D
+  } else if (trainConfig == 66) {
+    cuts.AddCut("00010113", "00200009227300008150404000", "0152103500000000"); // chi2 50
+    cuts.AddCut("00010113", "00200009227300008850404000", "0152103500000000"); // chi2 20
+    cuts.AddCut("00010113", "00200009227300008250400000", "0152103500000000"); // no double counting
+    cuts.AddCut("00010113", "00200009227300008250406000", "0152103500000000"); // double count with open angle 0.04
+  } else if (trainConfig == 67) {
+    cuts.AddCut("00010113", "00200009227300008210404000", "0152103500000000"); // Psi pair 0.1  1D
+    cuts.AddCut("00010113", "00200009227300008260404000", "0152103500000000"); // Psi pair 0.05 2D
+    cuts.AddCut("00010113", "00200009227300008280404000", "0152103500000000"); // Psi pair 0.2  2D
+  } else if (trainConfig == 68) {
+    cuts.AddCut("00010113", "00200009227300008250404000", "0252103500000000"); // variation BG scheme track mult
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152107500000000"); // alpha meson 0.85
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152105500000000"); // alpha meson 0.75
     
   //---------configs for 8TeV triggers --------------------------//  
   } else if (trainConfig == 70) { //pp 8TeV cuts with EMC triggers
