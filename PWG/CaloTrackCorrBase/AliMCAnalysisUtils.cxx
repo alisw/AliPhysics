@@ -2028,7 +2028,9 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
       overlap = kTRUE;
       //printf("\t \t \t No Label = %d\n",ancLabel);
     }
-    else if( ( ancPDG==111 || ancPDG==221 ) && ( CheckTagBit(mctag,kMCPi0) ||  CheckTagBit(mctag,kMCEta)) && mesonLabel != ancLabel)
+    else if ( ( ancPDG==111 || ancPDG==221 ) && 
+              ( CheckTagBit(mctag,kMCPi0) ||  CheckTagBit(mctag,kMCEta) ) && 
+              ( (mesonLabel != ancLabel) && mesonLabel >=0 ) ) // in case the label is not provided check it is larger than 0
     {
       //printf("\t \t  meson Label %d, ancestor Label %d\n",mesonLabel,ancLabel);
       overlap = kTRUE;
