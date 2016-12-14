@@ -12,6 +12,9 @@
 
 
 void PlotMatchEffSystUncGraph(){
+    
+    //good to plot vs pt
+    //to be updated to plot vs phi, eta
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(111111);
     
@@ -28,20 +31,22 @@ void PlotMatchEffSystUncGraph(){
     Double_t erS[14];
     Double_t erfP[14];
     Double_t erTPC[14];
+
     
-    ifstream primaries("MatchEff_MCprim_lowIR.txt",ios::in);
-    ifstream primErr("MatchEff_MCprim_err_lowIR.txt",ios::in);
-    ifstream secondaries("MatchEff_MCsec_lowIR.txt",ios::in);
-    ifstream secErr("MatchEff_MCsec_err_lowIR.txt",ios::in);
-    ifstream inclusive("MatchEff_MCall_lowIR.txt",ios::in);
-    ifstream data("MatchEff_data_lowIR.txt",ios::in);
-    ifstream dataErr("MatchEff_data_err_lowIR.txt",ios::in);
+    //pidfix, golden
+    ifstream primaries("MatchEff_MCprim_15o_pidfix_Golden.txt",ios::in);
+    ifstream primErr("MatchEff_MCprim_err_15o_pidfix_Golden.txt",ios::in);
+    ifstream secondaries("MatchEff_MCsec_15o_pidfix_Golden.txt",ios::in);
+    ifstream secErr("MatchEff_MCsec_err_15o_pidfix_Golden.txt",ios::in);
+    ifstream inclusive("MatchEff_MCall_15o_pidfix_Golden.txt",ios::in);
+    ifstream data("MatchEff_data_15o_pidfix_Golden.txt",ios::in);
+    ifstream dataErr("MatchEff_data_err_15o_pidfix_Golden.txt",ios::in);
     
-    ifstream frazP("fractions__PiK__VsPt.txt",ios::in);
-    ifstream TPCOnlyCorr("corrTPC_VsPt.txt",ios::in);
-    ifstream frazPerr("fractionErrs__PiK__VsPt.txt",ios::in);
-    ifstream TPCOnlyCorrErr("corrTPCErr_VsPt.txt",ios::in);
-    
+    ifstream frazP("fractions__PiK__15o_pidfix_Golden_VsPt.txt",ios::in);
+    ifstream TPCOnlyCorr("corrTPC_VsPt_15o_pidfix_Golden.txt",ios::in);
+    ifstream frazPerr("fractionErrs__PiK__15o_pidfix_Golden_VsPt.txt",ios::in);
+    ifstream TPCOnlyCorrErr("corrTPCErr_VsPt_15o_pidfix_Golden.txt",ios::in);
+
     if (primaries.is_open())
         for(Int_t i=0;i<14;i++){
             
@@ -117,17 +122,16 @@ void PlotMatchEffSystUncGraph(){
     Double_t systMC[14];
     for(Int_t i=0;i<14;i++){
         effMCcorr[i]=TPCOnly[i]*frazPrim[i]*Eff_mc_prim[i]+(1-TPCOnly[i]*frazPrim[i])*Eff_mc_sec[i];
-        //formula errore mc corretto
         erTmc[i] = TMath::Sqrt((TPCOnly[i]*Eff_mc_prim[i]-TPCOnly[i]*Eff_mc_sec[i])*(TPCOnly[i]*Eff_mc_prim[i]-TPCOnly[i]*Eff_mc_sec[i])*erfP[i]*erfP[i] +
                                ((frazPrim[i]*Eff_mc_prim[i]-frazPrim[i]*Eff_mc_sec[i])*(frazPrim[i]*Eff_mc_prim[i]-frazPrim[i]*Eff_mc_sec[i]))*erTPC[i]*erTPC[i] +
                                (frazPrim[i]*TPCOnly[i]*frazPrim[i]*TPCOnly[i])*erP[i]*erP[i] +
                                (1 - TPCOnly[i]*frazPrim[i])*(1 - TPCOnly[i]*frazPrim[i])*erS[i]*erS[i]);
         
         systMCcorr[i]=effMCcorr[i]/Eff_dati[i];
+        
+        
         systMC[i] = Eff_mc_tot[i]/Eff_dati[i];
         erSys[i]=TMath::Sqrt(1/(Eff_dati[i]*Eff_dati[i])*erTmc[i]*erTmc[i]+(effMCcorr[i]/(Eff_dati[i]*Eff_dati[i]))*(effMCcorr[i]/(Eff_dati[i]*Eff_dati[i]))*erD[i]*erD[i]);
-        //cout<< " syst MC corretto " << effMCcorr[i]/Eff_dati[i] << endl;
-        //cout<< " syst MC tot " << Eff_mc_tot[i]/Eff_dati[i] << endl;
     }
     
     TLine *l = new TLine(0.5,1.02,14,1.02);
