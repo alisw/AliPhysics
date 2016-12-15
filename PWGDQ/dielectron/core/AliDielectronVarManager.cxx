@@ -584,8 +584,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   {"RefMult",                "N_{trk}^{ref}",                                      ""},
   {"RefMultTPConly",         "N_{trk}^{TPConly}",                                  ""},
-  {"RefMultOvRefMultTPConly",  "N_{trk}/{N_{trk}^{TPConly}",                       ""},
-  
+  {"RefMultOvRefMultTPConly",  "N_{trk}/N_{trk}^{TPConly}",                        ""},
+
   {"Nch",                    "N_{ch} #cbar_{#||{#eta}<1.6}",                       ""},
   {"Nch05",                  "N_{ch} #cbar_{#||{#eta}<0.5}",                       ""},
   {"Nch10",                  "N_{ch} #cbar_{#||{#eta}<1.0}",                       ""},
