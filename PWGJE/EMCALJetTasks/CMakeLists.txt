@@ -126,6 +126,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
+    UserTasks/AliAnalysisTaskJetExtractor.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronToy.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
