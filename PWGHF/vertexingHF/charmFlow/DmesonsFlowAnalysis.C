@@ -26,6 +26,7 @@
 #include <TGaxis.h>
 
 #include "AliHFMassFitter.h"
+#include "AliHFMassFitterVAR.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliVertexingHFUtils.h"
@@ -78,9 +79,14 @@ const Double_t phibinslim[nphibins+1]={0,TMath::Pi()/4,TMath::Pi()/2,3*TMath::Pi
 //const Int_t rebin[]={3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4};
 const Int_t rebin[]={3,3,4,4,4,4,4,4,4,4};
 const Int_t typeb=AliHFMassFitter::kExpo;  // Background: 0=expo, 1=linear, 2=pol2
+enum {kGaus=0, kDoubleGaus, kReflTempl};
+const Int_t types=kGaus;
 const Bool_t fixAlsoMass=kFALSE;
-const Double_t minMassForFit=1.69;
-const Double_t maxMassForFit=2.02;
+Bool_t useTemplD0Refl=kTRUE;
+TString rflFitType="DoubleGaus";
+TString fileNameMCD0refl="../reflections/reflections_fitted_DoubleGaus.root";
+const Double_t minMassForFit[]={1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72};
+const Double_t maxMassForFit[]={2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05};
 const Double_t nSigmaForCounting=3.5;
 
 //not to be set
@@ -98,12 +104,13 @@ void DmesonsFlowAnalysis(Bool_t inoutanis=kTRUE);
 TList *LoadMassHistos(TList *inputlist,Bool_t inoutanis);
 TList *LoadResolutionHistos(TList *inputlist);
 Int_t FindPtBin(Int_t nbins, Double_t* array,Double_t value);
-void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Double_t minfit, Double_t maxfit, const Int_t *rebin);
+void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, TH1F* histoSignal, Bool_t inoutanis, Int_t bkgfunc, Int_t sgnfunc, const Double_t minfit[], const Double_t maxfit[], const Int_t *rebin);
 TGraphAsymmErrors* Computev2(TGraphAsymmErrors **gSignal, Double_t resol, Float_t *averagePt, Bool_t inoutanis, TGraphAsymmErrors *gRelSystEff);
 void DrawEventPlane();
 void CheckEPFlatness();
 Double_t GetEventPlaneResolution(Double_t& error, TH1F* hsubev1, TH1F* hsubev2, TH1F* hsubev3);
 void SetStyle(Int_t optfit=0);
+Bool_t LoadD0toKpiMCHistos(TList *outlist);
 
 //_________________________________________________________________
 //METHODS IMPLEMENTATION
@@ -310,6 +317,13 @@ TList *LoadMassHistos(TList *inputlist,Bool_t inoutanis){
       hMass=0x0;
     }
   }
+
+  if(useTemplD0Refl){
+    Bool_t retCode=LoadD0toKpiMCHistos(outlist);
+    if(!retCode)Printf("ERROR: MC histograms loading failed");
+    else Printf("******************************************\n MC HISTOGRAMS LOADED\n\n**********************************");
+  }
+
   return outlist;
 }
 
@@ -340,11 +354,15 @@ Int_t GetPadNumber(Int_t ix,Int_t iy){
   return (iy)*nptbinsnew+ix+1;
 }
 //______________________________________________________________
-void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, Bool_t inoutanis, Int_t bkgfunc, Double_t minfit, Double_t maxfit, const Int_t *rebin) {
+void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErrors **gSignalfs, TGraphAsymmErrors **gSignalBC1, TGraphAsymmErrors **gSignalBC2,TH1F **hSigmaFree,TH1F **hSigmaFixed, TH1F **hMean,TH1F **hMeanfs, TH1F **hChiSquare, TH1F **hChiSquarefs, TH1F* histoSignal, Bool_t inoutanis, Int_t bkgfunc, Int_t sgnfunc, const Double_t minfit[], const Double_t maxfit[], const Int_t *rebin) {
   
   Int_t nphi=nphibins;
   if(inoutanis)nphi=2;
   
+  TH1F *hrflTempl=0x0;
+  TH1F *hsigMC=0x0;
+  Float_t sOverRef=0.;
+
   //Canvases for drawing histograms
   TCanvas *cDeltaPhi = new TCanvas("cinvmassdeltaphi","Invariant mass distributions",1920,1080);
   TCanvas *cDeltaPhifs = new TCanvas("cinvmassdeltaphifs","Invariant mass distributions - fit with fixed sigma",1920,1080);
@@ -356,6 +374,10 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
   Int_t nMassBins;
   for(Int_t ipt=0;ipt<nptbinsnew;ipt++){
     TH1F *histtofitfullsigma=(TH1F*)histlist->FindObject(Form("hMass_pt%d_phi0",ipt))->Clone();
+    if(useTemplD0Refl){
+      hrflTempl=(TH1F*)histlist->FindObject(Form("histRfl_%d",ipt));
+      hsigMC=(TH1F*)histlist->FindObject(Form("histSgn_%d",ipt));
+    }
     for(Int_t iphi=0;iphi<nphi;iphi++){
       Int_t ipad=GetPadNumber(ipt,iphi);
       Double_t signal=0,esignal=0;
@@ -372,24 +394,29 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       histtofit->SetTitle(Form("%.1f < #it{p}_{T} < %.1f, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
       nMassBins=histtofit->GetNbinsX();
       histtofit->Rebin(rebin[ipt]);
-      AliHFMassFitter fitter(histtofit,minfit,maxfit,1,bkgfunc);
-      fitter.SetInitialGaussianMean(massD);
-      fitter.SetInitialGaussianSigma(0.012);
-      fitter.SetUseLikelihoodFit();
-      Bool_t ok=fitter.MassFitter(kFALSE);
+      AliHFMassFitterVAR* fitter=new AliHFMassFitterVAR(histtofit,minfit[ipt],maxfit[ipt],1,bkgfunc,sgnfunc);
+      if(useTemplD0Refl){
+	fitter->SetTemplateReflections(hrflTempl);
+	sOverRef=(hrflTempl->Integral(hrflTempl->FindBin(minfit[ipt]*1.0001),hrflTempl->FindBin(maxfit[ipt]*0.999)))/(hsigMC->Integral(hsigMC->FindBin(minfit[ipt]*1.0001),hsigMC->FindBin(maxfit[ipt]*0.999)));
+	fitter->SetFixReflOverS(sOverRef,kTRUE);
+      }
+      fitter->SetInitialGaussianMean(massD);
+      fitter->SetInitialGaussianSigma(0.012);
+      fitter->SetUseLikelihoodFit();
+      Bool_t ok=fitter->MassFitter(kFALSE);
       Double_t sigmaforcounting=0;
       Double_t meanforcounting=0;
       if(ok){
-        fitter.DrawHere(cDeltaPhi->cd(ipad),3,1);
-        signal=fitter.GetRawYield();
-        esignal=fitter.GetRawYieldError();
-        sigma=fitter.GetSigma();
-        esigma=fitter.GetSigmaUncertainty();
+        fitter->DrawHere(cDeltaPhi->cd(ipad),3,1);
+        signal=fitter->GetRawYield();
+        esignal=fitter->GetRawYieldError();
+        sigma=fitter->GetSigma();
+        esigma=fitter->GetSigmaUncertainty();
         sigmaforcounting=sigma;
-        mean=fitter.GetMean();
-        emean=fitter.GetMeanUncertainty();
+        mean=fitter->GetMean();
+        emean=fitter->GetMeanUncertainty();
         meanforcounting=mean;
-        chisquare=fitter.GetReducedChiSquare();
+        chisquare=fitter->GetReducedChiSquare();
       }
       gSignal[ipt]->SetPoint(iphi,iphi,signal);
       gSignal[ipt]->SetPointError(iphi,0,0,esignal,esignal);
@@ -399,8 +426,8 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       hMean[iphi]->SetBinError(ipt+1,emean);
       hChiSquare[iphi]->SetBinContent(ipt+1,chisquare);
       hChiSquare[iphi]->SetBinError(ipt+1,1.e-15);
-      TF1* fB1=fitter.GetBackgroundFullRangeFunc();
-      TF1* fB2=fitter.GetBackgroundRecalcFunc();
+      TF1* fB1=fitter->GetBackgroundFullRangeFunc();
+      TF1* fB2=fitter->GetBackgroundRecalcFunc();
       Double_t minBinSum=histtofit->FindBin(meanforcounting-nSigmaForCounting*sigmaforcounting);
       Double_t maxBinSum=histtofit->FindBin(meanforcounting+nSigmaForCounting*sigmaforcounting);
       Double_t cntSig1=0.;
@@ -425,16 +452,23 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     histtofitfullsigma->GetXaxis()->SetTitleSize(0.05);
     nMassBins=histtofitfullsigma->GetNbinsX();
     histtofitfullsigma->Rebin(rebin[ipt]);
-    AliHFMassFitter fitter(histtofitfullsigma,minfit,maxfit,1,bkgfunc);
-    fitter.SetInitialGaussianMean(massD);
-    fitter.SetUseLikelihoodFit();
-    Bool_t ok=fitter.MassFitter(kFALSE);
+    AliHFMassFitterVAR* fitter=new AliHFMassFitterVAR(histtofitfullsigma,minfit[ipt],maxfit[ipt],1,bkgfunc,sgnfunc);
+    if(useTemplD0Refl){
+      fitter->SetTemplateReflections(hrflTempl);
+      sOverRef=hrflTempl->Integral(hrflTempl->FindBin(minfit[ipt]*1.0001),hrflTempl->FindBin(maxfit[ipt]*0.999))/hsigMC->Integral(hsigMC->FindBin(minfit[ipt]*1.0001),hsigMC->FindBin(maxfit[ipt]*0.999));
+      fitter->SetFixReflOverS(sOverRef,kTRUE);
+    }
+    fitter->SetInitialGaussianMean(massD);
+    fitter->SetUseLikelihoodFit();
+    Bool_t ok=fitter->MassFitter(kFALSE);
     Double_t sigmatot=0;
     Double_t massFromFit=0;
     if(ok){
-      fitter.DrawHere(cPhiInteg->cd(ipt+1),3,1);
-      sigmatot=fitter.GetSigma();
-      massFromFit=fitter.GetMean();
+      fitter->DrawHere(cPhiInteg->cd(ipt+1),3,1);
+      sigmatot=fitter->GetSigma();
+      massFromFit=fitter->GetMean();
+      histoSignal->SetBinContent(ipt+1,fitter->GetRawYield());
+      histoSignal->SetBinError(ipt+1,fitter->GetRawYieldError());
     }
     for(Int_t iphi=0;iphi<nphi;iphi++){
       Int_t ipad=GetPadNumber(ipt,iphi);
@@ -442,25 +476,30 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       histtofit->SetTitle(Form("%.1f < #it{p}_{T} < %.1f GeV/c, #phi%d",ptbinsnew[ipt],ptbinsnew[ipt+1],iphi));
       nMassBins=histtofit->GetNbinsX();
       histtofit->Rebin(rebin[ipt]);
-      AliHFMassFitter fitter2(histtofit,minfit,maxfit,1,bkgfunc);
-      fitter2.SetInitialGaussianMean(massD);
-      fitter2.SetFixGaussianSigma(sigmatot);
-      fitter2.SetUseLikelihoodFit();
-      if(fixAlsoMass) fitter2.SetFixGaussianMean(massFromFit);
-      Bool_t ok2=fitter2.MassFitter(kFALSE);
+      AliHFMassFitterVAR* fitter2=new AliHFMassFitterVAR(histtofit,minfit[ipt],maxfit[ipt],1,bkgfunc,sgnfunc);
+      if(useTemplD0Refl){
+	fitter2->SetTemplateReflections(hrflTempl);
+	sOverRef=hrflTempl->Integral(hrflTempl->FindBin(minfit[ipt]*1.0001),hrflTempl->FindBin(maxfit[ipt]*0.999))/hsigMC->Integral(hsigMC->FindBin(minfit[ipt]*1.0001),hsigMC->FindBin(maxfit[ipt]*0.999));
+	fitter2->SetFixReflOverS(sOverRef,kTRUE);
+      }
+      fitter2->SetInitialGaussianMean(massD);
+      fitter2->SetFixGaussianSigma(sigmatot);
+      fitter2->SetUseLikelihoodFit();
+      if(fixAlsoMass) fitter2->SetFixGaussianMean(massFromFit);
+      Bool_t ok2=fitter2->MassFitter(kFALSE);
       Double_t signal=0,esignal=0;
       Double_t sigma=0, esigma=0;
       Double_t mean=0, emean=0;
       Double_t chisquare=0;
       if(ok2){
-        fitter2.DrawHere(cDeltaPhifs->cd(ipad),3,1);
-        signal=fitter2.GetRawYield();
-        esignal=fitter2.GetRawYieldError();
-        sigma=fitter.GetSigma();
-        esigma=fitter.GetSigmaUncertainty();
-        mean=fitter2.GetMean();
-        emean=fitter2.GetMeanUncertainty();
-        chisquare=fitter2.GetReducedChiSquare();
+        fitter2->DrawHere(cDeltaPhifs->cd(ipad),3,1);
+        signal=fitter2->GetRawYield();
+        esignal=fitter2->GetRawYieldError();
+        sigma=fitter->GetSigma();
+        esigma=fitter->GetSigmaUncertainty();
+        mean=fitter2->GetMean();
+        emean=fitter2->GetMeanUncertainty();
+        chisquare=fitter2->GetReducedChiSquare();
       }
       gSignalfs[ipt]->SetPoint(iphi,iphi,signal);
       gSignalfs[ipt]->SetPointError(iphi,0,0,esignal,esignal);
@@ -613,11 +652,22 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     Int_t nMassBins=histtofit->GetNbinsX();
     Double_t hmin=histtofit->GetBinLowEdge(2); // need wide range for <pt>
     Double_t hmax=histtofit->GetBinLowEdge(nMassBins-2); // need wide range for <pt>
-    AliHFMassFitter fitter(histtofit,hmin,hmax,1);
-    fitter.MassFitter(kFALSE);
-    Double_t massFromFit=fitter.GetMean();
-    Double_t sigmaFromFit=fitter.GetSigma();
-    TF1* funcB2=fitter.GetBackgroundRecalcFunc();
+    AliHFMassFitterVAR* fitter=new AliHFMassFitterVAR(histtofit,hmin,hmax,1,typeb,types);
+    if(useTemplD0Refl){
+      Printf("USE TEMPLATE FOR AVERAGE Pt");
+      TH1F *hrflTempl=(TH1F*)(histlist->FindObject(Form("histRfl_%d",ipt)))->Clone(Form("histrfl_%d",ipt));
+      if(!hrflTempl) {Printf("histRfl_%d not found",ipt); return;}
+      TH1F *hsigMC=(TH1F*)(histlist->FindObject(Form("histSgn_%d",ipt)))->Clone(Form("histsgn_%d",ipt));
+      if(!hsigMC) {Printf("histSgn_%d not found",ipt); return;}
+      fitter->SetTemplateReflections(hrflTempl);
+      Float_t sOverRef=(hrflTempl->Integral(hrflTempl->FindBin(hmin*1.0001),hrflTempl->FindBin(hmax*0.999)))/(hsigMC->Integral(hsigMC->FindBin(hmin*1.0001),hsigMC->FindBin(hmax*0.999)));
+      Printf("R OVER S = %f",sOverRef);
+      fitter->SetFixReflOverS(sOverRef,kTRUE);
+    }
+    fitter->MassFitter(kFALSE);
+    Double_t massFromFit=fitter->GetMean();
+    Double_t sigmaFromFit=fitter->GetSigma();
+    TF1* funcB2=fitter->GetBackgroundRecalcFunc();
     utils->AveragePt(averagePt[ipt],errorPt[ipt],ptbinsnew[ipt],ptbinsnew[ipt+1],hmasspt,massFromFit,sigmaFromFit,funcB2,2.5,4.5,0.,3.,1);
     if(averagePt[ipt]==0) {averagePt[ipt]=(ptbinsnew[ipt]+ptbinsnew[ipt+1])/2;}
   }
@@ -636,6 +686,10 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
   TH1F *hMeanfs[nphi];
   TH1F *hChiSquare[nphi];
   TH1F *hChiSquarefs[nphi];
+  TH1F *histoSignal=new TH1F("hSignal_fullPhi","hSignal_fullPhi",nptbinsnew,ptbinsnew);
+  histoSignal->SetMarkerStyle(markers[0]);
+  histoSignal->SetMarkerColor(colors[0]);
+  histoSignal->SetLineColor(colors[0]);
   for(Int_t i=0;i<nptbinsnew;i++){
     gSignal[i]=new TGraphAsymmErrors(nphi);
     gSignal[i]->SetName(Form("gasigpt%d",i));
@@ -681,7 +735,8 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     hChiSquarefs[iphi]->SetLineColor(colors[1]);
   }
   
-  FillSignalGraph(histlist,gSignal,gSignalfs,gSignalBC1,gSignalBC2,hSigmaFree,hSigmaFixed,hMean,hMeanfs,hChiSquare,hChiSquarefs,inoutanis,typeb,minMassForFit,maxMassForFit,rebin);
+  FillSignalGraph(histlist,gSignal,gSignalfs,gSignalBC1,gSignalBC2,hSigmaFree,hSigmaFixed,hMean,hMeanfs,hChiSquare,hChiSquarefs,histoSignal,inoutanis,typeb,types,minMassForFit,maxMassForFit,rebin);
+
 
   //EP resolution
   Double_t resol=-1.;
@@ -796,7 +851,8 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     hChiSquare[iphi]->Write();
     hChiSquarefs[iphi]->Write();
   }
-  
+  histoSignal->Write();
+
   cv2->cd();
   gv2fs->Draw("AP");
   gv2fs->SetMinimum(-0.2);
@@ -1057,4 +1113,33 @@ void SetStyle(Int_t optfit) {
   gStyle->SetTitleFont(42,"xyzg");
   gStyle->SetHistLineWidth(2);
   gStyle->SetLegendBorderSize(0);
+}
+//__________________________________________________________
+Bool_t LoadD0toKpiMCHistos(TList *outlist){
+  
+  TFile *f=new TFile(fileNameMCD0refl.Data(),"READ");
+  if(!f){
+    printf("ERROR: file %s does not exist\n",fileNameMCD0refl.Data());
+    return kFALSE;
+  }
+  f->ls();
+  TH1F** hsig=new TH1F*[nptbinsnew];
+  TH1F** hrfl=new TH1F*[nptbinsnew];
+  for(Int_t j=0;j<nptbinsnew;j++){
+    hsig[j]=(TH1F*)f->Get(Form("histSgn_%d",j));
+    if(!hsig[j]) {Printf("histSgn_%d NOT FOUND",j); return kFALSE;}
+    hrfl[j]=(TH1F*)f->Get(Form("histRflFitted%s_ptBin%d",rflFitType.Data(),j));
+    if(!hrfl[j]) {Printf("histRflFitted%s_ptBin%d",rflFitType.Data(),j); return kFALSE;}
+  }
+  for(Int_t k=0;k<nptbinsnew;k++){
+    outlist->Add(hsig[k]->Clone(Form("histSgn_%d",k)));
+    outlist->Add(hrfl[k]->Clone(Form("histRfl_%d",k)));
+  }
+  outlist->ls();
+  //for(Int_t p=0;p<nptbinsnew;p++){
+  //delete hsig[p];
+  //delete hrfl[p];
+  //}
+  //f->Close();
+  return kTRUE;
 }
