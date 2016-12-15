@@ -53,6 +53,7 @@ set(SRCS
     AliMFTSupport.cxx
     AliMFTVSegmentation.cxx
     AliMFTGeomTGeo.cxx
+    AliMFTHalfCone.cxx
    )
 
 # Headers from sources

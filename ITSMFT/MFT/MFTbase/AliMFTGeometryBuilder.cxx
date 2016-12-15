@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -33,6 +34,7 @@
 #include "AliMFTSegmentation.h"
 #include "AliMFTHalfSegmentation.h"
 #include "AliMFTHalf.h"
+#include "AliMFTHalfCone.h"
 
 
 /// \cond CLASSIMP
@@ -74,6 +76,12 @@ void AliMFTGeometryBuilder::BuildGeometry(){
   
   
   /// \todo Add the service, Barrel, etc Those objects will probably be defined into the COMMON ITSMFT area.
+  
+  AliMFTHalfCone * halfCone = new AliMFTHalfCone();
+  TGeoVolumeAssembly * fHalfCone1 = halfCone->CreateHalfCone(0);
+  TGeoVolumeAssembly * fHalfCone2 = halfCone->CreateHalfCone(1);
+  volMFT->AddNode(fHalfCone1,1);
+  volMFT->AddNode(fHalfCone2,1);
   
   gGeoManager->GetVolume("ALIC")->AddNode(volMFT,0);
     
