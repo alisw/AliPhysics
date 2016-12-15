@@ -988,8 +988,10 @@ void DrawEventPlane(){
     hevplresos[2]->SetTitle("cos2(#Psi_{B}-#Psi_{C})");
   }
   hevplresos[0]->Draw();
-  hevplresos[1]->Draw("SAME");
-  hevplresos[2]->Draw("SAME");
+  if(nSubRes==3){
+    hevplresos[1]->Draw("SAME");
+    hevplresos[2]->Draw("SAME");
+  }
   TLegend *leg = cvtotevplreso->BuildLegend();
   leg->SetLineColor(0);
   leg->SetFillColor(0);
