@@ -45,6 +45,7 @@ private:
 
   Bool_t IsGoodGlobalTrack(const AliAODTrack *trk); 
   Bool_t IsGoodITSsaTrack(const AliAODTrack *trk); 
+  Bool_t IsGoodMuonTrack(const AliAODTrack *trk);
 
   mutable TClonesArray* fTracks; //! internal array of muon tracks
   mutable TClonesArray* fVertices; //! internal array of vertices

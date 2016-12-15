@@ -356,7 +356,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     
     if(cutEta && TMath::Abs(trk->Eta())>0.9)continue;
     
-    if(!(trk->TestFilterBit(1<<0))) goodTPCTrack = kFALSE;
+    if(!(trk->TestFilterBit(1<<8))) goodTPCTrack = kFALSE;
     else{
     	if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
     	}

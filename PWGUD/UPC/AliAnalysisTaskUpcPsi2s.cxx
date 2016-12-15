@@ -899,22 +899,34 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
-  
-  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
-  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
-  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
-  fTrigger[3]  = trigger.Contains("CINT1-B"); // MB trigger
-  fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
-  fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
-  fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
-  fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
-  fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
-  fTrigger[10]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
-  fTrigger[11]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
-  fTrigger[12]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
-  fTrigger[13]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
-  
+  if(fTracking == 0){ 
+  	fTrigger[0]  = trigger.Contains("CCUP4-B"); // *0VBA *0VBC 0SM2 0OMU
+  	fTrigger[1]  = trigger.Contains("CCUP2-B"); // *0VBA *0VBC 0SM2 0OM2
+  	fTrigger[2]  = trigger.Contains("CCUP7-B"); // *0VBA *0VBC 0STP 0OMU
+  	fTrigger[3]  = trigger.Contains("CINT1-B"); //  0VBA || 0VBC || 0SMB
+  	fTrigger[4]  = trigger.Contains("CTEST58-B"); // *0VBA *0VBC *0UBA *0UBC 0SH1
+  	fTrigger[5]  = trigger.Contains("CTEST59-B"); // *0VBA *0VBC *0UBA *0UBC 0STP
+  	fTrigger[6]  = trigger.Contains("CTEST60-B"); // *0VBA *0VBC *0UBA *0UBC 0OM2
+  	fTrigger[7]  = trigger.Contains("CTEST61-B"); // *0VBA *0VBC *0UBA *0UBC 0OMU
+  	fTrigger[8]  = trigger.Contains("CCUP8-B"); //*0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  	fTrigger[9]  = trigger.Contains("CCUP9-B"); //*0VBA *0VBC *0UBA *0UBC 0STP
+  	fTrigger[10]  = trigger.Contains("CCUP10-B"); //*0VBA *0VBC *0UBA *0UBC 0SH1
+  	fTrigger[11]  = trigger.Contains("CCUP11-B"); //*0UBA *0UBC 0STP 0OMU
+  	fTrigger[12]  = trigger.Contains("CCUP12-B"); //*0UBA *0UBC 0STP
+  	fTrigger[13]  = trigger.Contains("CTRUE-B"); //Unbiased trigger
+	}
+   if(fTracking == 8){ 
+  	fTrigger[0]  = trigger.Contains("CMUP10-B");	// *0VBA *0UBA *0UBC 0MSL			
+  	fTrigger[1]  = trigger.Contains("CMUP11-B");	// !0VBA & !0UBA & !0UBC & 0MUL 		
+  	fTrigger[2]  = trigger.Contains("CMUP12-B");	// !0VBA & !0UBA & !0UBC & 0MSL & 0SMB
+  	fTrigger[3]  = trigger.Contains("CMUP14-B");   // 0MSL & !0VBA & !0UBA
+  	fTrigger[4]  = trigger.Contains("CMUP15-B");   // *0VBA *0UBA *0VC5 0SMB *0SH2 0MSL
+  	fTrigger[5]  = trigger.Contains("CMUP16-B");   // 0MSL *0VBA *0UBA *0UGC *0VGA
+  	fTrigger[6]  = trigger.Contains("CMUP17-B");   // *0VBA *0UBA *0VC5 0SMB *0SH2 0MSL *0UGC *0VGA
+  	fTrigger[7]  = trigger.Contains("CMUP21-B");   // *0VBA *0UBA *0VBC 0SH1 *0SH2 *0UGC *0VGA
+  	fTrigger[8]  = trigger.Contains("CMUP22-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MSL 0SMB
+  	fTrigger[9]  = trigger.Contains("CMUP23-B");   // *0UBC *0UGC *0VBA *0VGA *0SH2 *0VC5 0MUL
+	}
   Bool_t isTriggered = kFALSE;
   for(Int_t i=0; i<ntrg; i++) {
     if( fTrigger[i] ) isTriggered = kTRUE;
@@ -1026,6 +1038,13 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
       }
+    if(fTracking == 8){  
+      if(!trk->IsMuonTrack())continue;
+      if( trk->GetRAtAbsorberEnd() < 17.5 || trk->GetRAtAbsorberEnd() > 89.5 ) continue;
+      if( trk->Eta() < -4.0 || trk->Eta() > -2.5 ) continue;
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+      }
 				  
       if(nGoodTracks > 2) break;  
   }//Track loop
@@ -1116,6 +1135,13 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     if(fTracking == 1){
       if(!(trk->TestFilterBit(1<<1))) continue;
        
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+      }
+    if(fTracking == 8){  
+      if(!trk->IsMuonTrack())continue;
+      if( trk->GetRAtAbsorberEnd() < 17.5 || trk->GetRAtAbsorberEnd() > 89.5 ) continue;
+      if( trk->Eta() < -4.0 || trk->Eta() > -2.5 ) continue;
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
       }
