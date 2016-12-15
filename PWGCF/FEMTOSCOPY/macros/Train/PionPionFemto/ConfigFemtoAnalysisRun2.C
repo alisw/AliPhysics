@@ -36,6 +36,7 @@ struct MacroParams {
   bool do_q3d_cf;
   bool do_deltaeta_deltaphi_cf;
   bool do_avg_sep_cf;
+  bool do_trueq_cf;
   bool do_kt_q3d;
   bool do_kt_qinv;
   bool do_ylm_cf; // not implemented yet
@@ -69,6 +70,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_avg_sep_cf = false;
   macro_config.do_kt_q3d = macro_config.do_kt_qinv = DEFAULT_DO_KT;
   macro_config.do_ylm_cf = false;
+  macro_config.do_trueq_cf = true;
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
 
@@ -101,6 +103,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
     macro_config.pair_codes.push_back(0);
   }
 
+  AliFemtoModelManager *model_manager = NULL;
 
   AFAPP::PionType PI_PLUS = AliFemtoAnalysisPionPion::kPiPlus,
                  PI_MINUS = AliFemtoAnalysisPionPion::kPiMinus,
@@ -181,6 +184,19 @@ ConfigFemtoAnalysis(const TString& param_str="")
         int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
         AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
         analysis->AddCorrFctn(cf);
+      }
+
+      if (analysis_config.is_mc_analysis) {
+          model_manager = new AliFemtoModelManager();
+          model_manager->AcceptWeightGenerator(new AliFemtoModelWeightGeneratorBasic());
+      }
+
+      if (macro_config.do_trueq_cf) {
+        AliFemtoModelCorrFctn *model_cf = new AliFemtoModelCorrFctnTrueQ("_MC_CF", QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        model_cf->ConnectToManager(model_manager);
+        analysis->AddCorrFctn(
+          model_cf
+        );
       }
 
       if (macro_config.do_q3d_cf) {
