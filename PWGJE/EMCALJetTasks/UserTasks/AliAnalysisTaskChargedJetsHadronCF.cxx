@@ -42,23 +42,12 @@
 #include "AliVParticle.h"
 #include "TRandom3.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskJetExtractor.h"
 
 #include "AliAnalysisTaskChargedJetsHadronCF.h"
 
 //________________________________________________________________________
 AliChargedJetsHadronCFCuts::~AliChargedJetsHadronCFCuts() 
-{
-// dummy destructor
-}
-
-//________________________________________________________________________
-AliBasicJet::~AliBasicJet() 
-{
-// dummy destructor
-}
-
-//________________________________________________________________________
-AliBasicJetConstituent::~AliBasicJetConstituent() 
 {
 // dummy destructor
 }
@@ -737,7 +726,7 @@ void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
     else if (aodtrack) // data
       constid = aodtrack->GetMostProbablePID();
 
-    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid, particle->Xv(), particle->Yv(), particle->Zv());
+    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid, particle->Xv(), particle->Yv(), particle->Zv(), 0);
   }
   if(std::find(fMatchedJets.begin(), fMatchedJets.end(), jet) != fMatchedJets.end()) // set the true pT from the matched jets (only possible in modes 4 & 7)
     basicJet.SetTruePt(fMatchedJetsReference[std::find(fMatchedJets.begin(), fMatchedJets.end(), jet)-fMatchedJets.begin()]->Pt());

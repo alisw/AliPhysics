@@ -45,11 +45,12 @@
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
-#pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
-#pragma link C++ class AliChargedJetsHadronCFCuts+;
+#pragma link C++ class AliAnalysisTaskJetExtractor+;
 #pragma link C++ class AliBasicJetConstituent+;
 #pragma link C++ class std::vector<AliBasicJetConstituent>+;
 #pragma link C++ class AliBasicJet+;
+#pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
+#pragma link C++ class AliChargedJetsHadronCFCuts+;
 #pragma link C++ class AliAnalysisTaskChargedJetsHadronToy+;
 #pragma link C++ class AliAnalysisTaskDcalDijetPerf+;
 #pragma link C++ class AliAnalysisTaskDeltaPtJEmb+;
