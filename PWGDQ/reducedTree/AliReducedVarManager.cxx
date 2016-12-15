@@ -423,8 +423,9 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
      fgUsedVars[kNTracksTRDoutVsSPDtracklets] = kFALSE;
      fgUsedVars[kNTracksTOFoutVsSPDtracklets] = kFALSE;
   }
-  
+    
   values[kNCaloClusters]   = event->GetNCaloClusters();
+  values[kNTPCclusters]    = event->NTPCClusters();
   values[kSPDntracklets08] = 0.;
   values[kSPDntracklets16] = 0.;
   for(Int_t ieta=0;ieta<32;++ieta) {
@@ -440,6 +441,12 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   values[kVZEROATotalMult] = event->MultVZEROA();
   values[kVZEROCTotalMult] = event->MultVZEROC();
   values[kVZEROTotalMult]  = event->MultVZERO();
+  fgUsedVars[kNTracksTPCoutVsVZEROTotalMult] = kTRUE;
+  if(values[kVZEROTotalMult]>1.0e-5) 
+     values[kNTracksTPCoutVsVZEROTotalMult] = values[kNTracksPerTrackingStatus+kTPCout] / values[kVZEROTotalMult];
+  else
+     fgUsedVars[kNTracksTPCoutVsVZEROTotalMult] = kFALSE;
+  
   values[kVZEROAemptyChannels] = 0;
   values[kVZEROCemptyChannels] = 0;
   for(Int_t ich=0;ich<64;++ich) fgUsedVars[kVZEROChannelMult+ich] = kTRUE; 
@@ -1626,7 +1633,8 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNTracksTPCoutVsSPDtracklets] = "TPCout/SPDtracklets";             fgVariableUnits[kNTracksTPCoutVsSPDtracklets] = "";
   fgVariableNames[kNTracksTRDoutVsSPDtracklets] = "TRDout/SPDtracklets";             fgVariableUnits[kNTracksTRDoutVsSPDtracklets] = "";
   fgVariableNames[kNTracksTOFoutVsSPDtracklets] = "TOFout/SPDtracklets";             fgVariableUnits[kNTracksTOFoutVsSPDtracklets] = "";
-  fgVariableNames[kNTracksTPCoutFromPileup] = "# kTPCout tracks - expectation";
+  fgVariableNames[kNTracksTPCoutFromPileup] = "# kTPCout tracks - expectation";   fgVariableUnits[kNTracksTPCoutFromPileup] = "";
+  fgVariableNames[kNTracksTPCoutVsVZEROTotalMult] = "TPCout / VZERO multiplicity"; fgVariableUnits[kNTracksTPCoutVsVZEROTotalMult] = "";
   fgVariableNames[kCentVZERO]                   = "VZERO centrality";                fgVariableUnits[kCentVZERO]      = "%";
   fgVariableNames[kCentSPD]                     = "CL1 centrality";                  fgVariableUnits[kCentSPD]        = "%";
   fgVariableNames[kCentSPDcorr]                 = "SPD trklts centrality";           fgVariableUnits[kCentSPDcorr]    = "%";
@@ -1666,6 +1674,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNtracksSubEvRight]           = "No.tracks sub-event right";       fgVariableUnits[kNtracksSubEvRight]      = "";  
   fgVariableNames[kNtracksEventPlane]           = "No.tracks";                       fgVariableUnits[kNtracksEventPlane]      = "";  
   fgVariableNames[kNCaloClusters]               = "No.calorimeter clusters";         fgVariableUnits[kNCaloClusters]          = "";
+  fgVariableNames[kNTPCclusters]                = "No. TPC clusters";                  fgVariableUnits[kNTPCclusters]  = "";
   fgVariableNames[kSPDntracklets]               = "No.SPD tracklets in |#eta| < 1.0";                fgVariableUnits[kSPDntracklets]          = "";
   fgVariableNames[kSPDntracklets08]             = "No.SPD tracklets in |#eta| < 0.8";                fgVariableUnits[kSPDntracklets08]        = "";
   fgVariableNames[kSPDntracklets16]             = "No.SPD tracklets in |#eta| < 1.6";                fgVariableUnits[kSPDntracklets16]        = "";

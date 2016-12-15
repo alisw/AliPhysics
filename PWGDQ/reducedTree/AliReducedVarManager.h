@@ -213,6 +213,7 @@ class AliReducedVarManager : public TObject {
     kNTracksTRDoutVsSPDtracklets,                        //  TRDout/SPDtracklets
     kNTracksTOFoutVsSPDtracklets,                        //  TOFout/SPDtracklets
     kNTracksTPCoutFromPileup,                       // number of tracks from (kNTracksPerTrackingStatus+kTPCout) minus the no-pileup expectation
+    kNTracksTPCoutVsVZEROTotalMult,      // number of kTPCout tracks / VZERO multiplicity
     kCentVZERO,         // centrality from VZERO
     kCentSPD,           // centrality from SPD
     kCentSPDcorr,       // corrected centrality from SPD
@@ -251,6 +252,7 @@ class AliReducedVarManager : public TObject {
     kNtracksSubEvRight, // number of tracks in the left sub-event (positive pseudo-rapidity)            
     kNtracksEventPlane, // number of tracks used for event plane                
     kNCaloClusters,     // number of calorimeter clusters
+    kNTPCclusters,    // number of TPC clusters
     kSPDntracklets,     // SPD number of tracklets in |eta|<1.0                 
     kSPDntracklets08,     // SPD number of tracklets in |eta|<0.8
     kSPDntracklets16,     // SPD number of tracklets in |eta|<1.6

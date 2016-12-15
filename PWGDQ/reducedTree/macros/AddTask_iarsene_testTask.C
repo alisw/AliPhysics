@@ -223,6 +223,7 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
       man->AddHistogram(classStr.Data(),"NTRDtracklets","No. TRD tracklets",kFALSE,500,0.,50000.,AliReducedVarManager::kNTRDtracklets);
       man->AddHistogram(classStr.Data(),"NV0sTotal","Number of V0 candidates per event",kFALSE,200,0.,30000.,AliReducedVarManager::kNV0total);
       man->AddHistogram(classStr.Data(),"NV0sSelected","Number of selected V0 candidates per event",kFALSE,200,0.,2000.,AliReducedVarManager::kNV0selected);
+      man->AddHistogram(classStr.Data(),"NTPCclusters","Number of TPC clusters per event",kFALSE,200,0.,100000.,AliReducedVarManager::kNTPCclusters);
       man->AddHistogram(classStr.Data(),"SPDntracklets", "SPD #tracklets in |#eta|<1.0", kFALSE, 200, 0., 5000., AliReducedVarManager::kSPDntracklets);
       for(Int_t i=0; i<32; ++i)
 	man->AddHistogram(classStr.Data(),Form("SPDntracklets_%d",i), "", kFALSE, 100, 0., 300., AliReducedVarManager::kSPDntrackletsEta+i);
@@ -490,13 +491,15 @@ void DefineHistograms(AliHistogramManager* man, TString prod /*="LHC10h"*/) {
 	man->AddHistogram(classStr.Data(),"Eta_Phi_TPCsignalN_prof","TPC <nclusters pid> vs (#eta,#phi)",kTRUE,
                      192, -1.2, 1.2, AliReducedVarManager::kEta, 126, 0.0, 6.3, AliReducedVarManager::kPhi, 160, -0.5, 159.5, AliReducedVarManager::kTPCsignalN);    
         man->AddHistogram(classStr.Data(),"TPCnsigElectron_Pin","TPC N_{#sigma} electron vs. inner param P",kFALSE,
-                     200,0.0,20.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kElectron);
+                     200,0.0,10.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kElectron);
+        man->AddHistogram(classStr.Data(),"TPCnsigElectron_Eta","TPC N_{#sigma} electron vs. #eta",kFALSE,
+                          100,-1.0,1.0,AliReducedVarManager::kEta,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kElectron);
 	man->AddHistogram(classStr.Data(),"TPCnsigPion_Pin","TPC N_{#sigma} pion vs. inner param P",kFALSE,
-                     200,0.0,20.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kPion);
+                     200,0.0,10.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kPion);
         man->AddHistogram(classStr.Data(),"TPCnsigKaon_Pin","TPC N_{#sigma} kaon vs. inner param P",kFALSE,
-                     200,0.0,20.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kKaon);
+                     200,0.0,10.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kKaon);
         man->AddHistogram(classStr.Data(),"TPCnsigProton_Pin","TPC N_{#sigma} proton vs. inner param P",kFALSE,
-                     200,0.0,20.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kProton);
+                     200,0.0,10.0,AliReducedVarManager::kPin,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kProton);
 	man->AddHistogram(classStr.Data(),"TPCnsigElectron_Run","TPC N_{#sigma} electron vs. run",kTRUE,
                      runNBins, runHistRange[0], runHistRange[1], AliReducedVarManager::kRunNo,100,-5.0,5.0,AliReducedVarManager::kTPCnSig+AliReducedVarManager::kElectron);
 	man->AddHistogram(classStr.Data(),"TPCnsigPion_Run","TPC N_{#sigma} pion vs. run",kTRUE,

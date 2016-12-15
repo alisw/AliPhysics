@@ -341,7 +341,7 @@ void AliReducedAnalysisJpsi2ee::FillPairHistograms(ULong_t mask, Int_t pairType,
    for(Int_t icut=0; icut<fTrackCuts.GetEntries(); ++icut) {
       if(mask & (ULong_t(1)<<icut)) {
          fHistosManager->FillHistClass(Form("%s%s_%s", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName()), fValues);
-         if(isMCTruth) fHistosManager->FillHistClass(Form("%s%s_%s_MCTruth", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName()), fValues);
+         if(isMCTruth && pairType==1) fHistosManager->FillHistClass(Form("%s%s_%s_MCTruth", pairClass.Data(), typeStr[pairType].Data(), fTrackCuts.At(icut)->GetName()), fValues);
       }
          
    }  // end loop over cuts

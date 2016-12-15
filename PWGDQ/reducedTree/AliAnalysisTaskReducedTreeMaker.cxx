@@ -535,6 +535,7 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
     eventInfo->fNPMDtracks    = esdEvent->GetNumberOfPmdTracks();
     eventInfo->fNTRDtracks    = esdEvent->GetNumberOfTrdTracks();
     eventInfo->fNTRDtracklets = esdEvent->GetNumberOfTrdTracklets();
+    eventInfo->fNTPCclusters  = esdEvent->GetNumberOfTPCClusters();
     
     for(Int_t ilayer=0; ilayer<2; ++ilayer)
       eventInfo->fSPDFiredChips[ilayer] = esdEvent->GetMultiplicity()->GetNumberOfFiredChips(ilayer);
@@ -795,10 +796,19 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    
    Int_t nPrimary = mcHandler->GetNPrimaryFromStack();
    
+   //cout << "Event+++++++++++++++++++++++++" << endl;
+   
    for(Int_t i=0; i<nPrimary; ++i) {
       AliVParticle* particle = mcHandler->GetMCTrackFromMCEvent(i);
       
-      if(!particle || particle->PdgCode()!=443) continue;
+      // write J/psi's and electrons from J/psi decays
+      // TODO: Create a dynamical way to define which particles from the MC stack will be written
+      if(!particle) continue;
+      Bool_t acceptParticle = kFALSE;
+      if(particle->PdgCode()==443) acceptParticle = kTRUE;
+      AliVParticle* mother = mcHandler->GetMCTrackFromMCEvent(particle->GetMother());
+      if(mother && mother->PdgCode()==443) acceptParticle = kTRUE;
+      if(!acceptParticle) continue;
       
       TClonesArray& tracks = *(fReducedEvent->fTracks);
       AliReducedBaseTrack* reducedParticle=NULL;
@@ -808,9 +818,9 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
          reducedParticle=new(tracks[fReducedEvent->fNtracks[1]]) AliReducedTrackInfo();
       
       reducedParticle->PxPyPz(particle->Px(), particle->Py(), particle->Pz());
-      reducedParticle->fQualityFlags |= (ULong_t(1)<<63);
+      reducedParticle->fQualityFlags |= (ULong_t(1)<<63);               // this means that this is a pure MC track
       
-      Int_t nDaughters = particle->GetLastDaughter() - particle->GetFirstDaughter() + 1;
+      Int_t nDaughters = (particle->PdgCode()==443 ? particle->GetLastDaughter() - particle->GetFirstDaughter() + 1 : 0);
       if(nDaughters==2) reducedParticle->fQualityFlags |= (ULong_t(1)<<62);    // J/psi -> e+e-
       if(nDaughters>2) reducedParticle->fQualityFlags |= (ULong_t(1)<<61);       // J/psi -> e+e- + X 
       
@@ -823,17 +833,29 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       trackInfo->fMCMom[1] = particle->Py();
       trackInfo->fMCMom[2] = particle->Pz();
       
-      AliVParticle* mother = mcHandler->GetMCTrackFromMCEvent(particle->GetMother());
       if(mother) {
         trackInfo->fMCLabels[1] = mother->GetLabel();
         trackInfo->fMCPdg[1] = mother->PdgCode();
-        reducedParticle->fQualityFlags |= (ULong_t(1)<<60);    // secondary J/psi
+        if(particle->PdgCode()==443)
+          reducedParticle->fQualityFlags |= (ULong_t(1)<<60);    // secondary J/psi
+        
+        AliVParticle* grandmother = mcHandler->GetMCTrackFromMCEvent(mother->GetMother());
+        if(grandmother) {
+           trackInfo->fMCLabels[2] = grandmother->GetLabel();
+           trackInfo->fMCPdg[2] = grandmother->PdgCode();
+           
+           AliVParticle* grandgrandmother = mcHandler->GetMCTrackFromMCEvent(grandmother->GetMother());
+           if(grandgrandmother) {
+              trackInfo->fMCLabels[3] = grandgrandmother->GetLabel();
+              trackInfo->fMCPdg[3] = grandgrandmother->PdgCode();
+           }
+        }
       }
       
-      cout << "particle label/pdg/mlabel/mpdg/px/py/pz/ndaughters/first/last :: " << trackInfo->fMCLabels[0] << "/" << trackInfo->fMCPdg[0] << "/"
+      /*cout << "particle label/pdg/mlabel/mpdg/px/py/pz/ndaughters/first/last :: " << trackInfo->fMCLabels[0] << "/" << trackInfo->fMCPdg[0] << "/"
         << trackInfo->fMCLabels[1] << "/" << trackInfo->fMCPdg[1] << "/" << reducedParticle->Px() << "/"
         << reducedParticle->Py() << "/" << reducedParticle->Pz() << "/" << nDaughters << "/" << particle->GetFirstDaughter() << "/"
-        << particle->GetLastDaughter() << endl;
+        << particle->GetLastDaughter() << endl; */
         
       fReducedEvent->fNtracks[1] += 1;  
    }
@@ -1133,7 +1155,7 @@ void AliAnalysisTaskReducedTreeMaker::FillTrackInfo()
            trackInfo->fMCLabels[0] = esdTrack->GetLabel();
            trackInfo->fMCPdg[0] = truthParticle->PdgCode();
            trackInfo->fMCGeneratorIndex = truthParticle->GetGeneratorIndex();
-           if(truthParticle->PdgCode()!=-9999 && esdTrack->GetLabel()!=-9999) trackInfo->fQualityFlags |= (ULong_t(1)<<22);
+           if(truthParticle->PdgCode()!=-9999 && esdTrack->GetLabel()!=-9999) trackInfo->fQualityFlags |= (ULong_t(1)<<22);   // means the track has MC truth info
            
            AliMCParticle* motherTruth = AliDielectronMC::Instance()->GetMCTrackMother(truthParticle);
            if(motherTruth) {
