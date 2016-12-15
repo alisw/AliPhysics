@@ -82,9 +82,28 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
                                 Bool_t    doSmear                       = kFALSE,                 // switches to run user defined smearing
                                 Double_t  bremSmear                     = 1.,
                                 Double_t  smearPar                      = 0.,                     // conv photon smearing params
-                                Double_t  smearParConst                 = 0.                      // conv photon smearing params
+                                Double_t  smearParConst                 = 0.,                     // conv photon smearing params
+                                TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
               ) {
   
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout << "INFO: nothing to do, no definition available!" << endl;
+    }
+  }
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_OmegaToPiZeroGamma_pp running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
+
   Int_t isHeavyIon = 0;
 
   // fReconMethod = first digit of trainconfig
