@@ -42,6 +42,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     VertexTPCContributors()           const {return fNVtxTPCContributors;}
   Float_t   VertexSPD(Int_t axis)             const {return (axis>=0 && axis<=2 ? fVtxSPD[axis] : 0);}
   Int_t     VertexSPDContributors()           const {return fNVtxSPDContributors;}
+  Int_t     NTPCClusters()                      const {return fNTPCclusters;}
   Float_t   VertexTZERO()                     const {return fT0zVertex;}
   Int_t     NpileupSPD()                      const {return fNpileupSPD;}
   Int_t     NpileupTracks()                   const {return fNpileupTracks;}
@@ -159,6 +160,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   Int_t     fNVtxSPDContributors;  // SPD only event vertex contributors
   Int_t     fNpileupSPD;            // number of pileup vertices from SPD     
   Int_t     fNpileupTracks;         // number of pileup vertices from tracks  
+  Int_t     fNTPCclusters;          // number of TPC clusters
   Int_t     fNPMDtracks;            // number of PMD tracks                   
   Int_t     fNTRDtracks;            // number of TRD tracks                   
   Int_t     fNTRDtracklets;         // number of TRD tracklets                

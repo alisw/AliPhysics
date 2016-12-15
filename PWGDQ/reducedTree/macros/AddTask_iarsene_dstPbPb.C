@@ -49,7 +49,7 @@ AliAnalysisTask *AddTask_iarsene_dstPbPb(Int_t reducedEventType=-1, Bool_t write
   task->SetFillK0s(kTRUE);
   task->SetFillLambda(kTRUE);
   task->SetFillALambda(kTRUE);*/
-  //task->SetFillCaloClusterInfo(kFALSE);
+  task->SetFillCaloClusterInfo(kFALSE);
   //task->SetFillDielectronInfo(kFALSE);
   //task->SetFillFriendInfo(kFALSE);
   
@@ -66,7 +66,7 @@ AliAnalysisTask *AddTask_iarsene_dstPbPb(Int_t reducedEventType=-1, Bool_t write
   //task->SetV0OpenCuts(CreateV0OpenCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
   //task->SetV0StrongCuts(CreateV0StrongCuts(AliESDv0KineCuts::kEffGamma, AliESDv0KineCuts::kPbPb));
   //task->SetFillFMDInfo(); AddFMDTask();
-  //task->SetFillMCInfo(kTRUE);
+  if(hasMC) task->SetFillMCInfo(kTRUE);
   //task->SetFillEventPlaneInfo(kTRUE);
 
   //task->SetTreeWritingOption(AliAnalysisTaskReducedTreeMaker::kFullEventsWithFullTracks);
@@ -133,13 +133,14 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fIsPhysicsSelection");
    //task->SetTreeInactiveBranch("fIsSPDPileup");
    //task->SetTreeInactiveBranch("fIsSPDPileupMultBins");
-   task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
+   //task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
    //task->SetTreeInactiveBranch("fVtxTPC*");
    //task->SetTreeInactiveBranch("fNVtxTPCContributors");
-   task->SetTreeInactiveBranch("fVtxSPD*");
-   task->SetTreeInactiveBranch("fNVtxSPDContributors");
+   //task->SetTreeInactiveBranch("fVtxSPD*");
+   //task->SetTreeInactiveBranch("fNVtxSPDContributors");
    //task->SetTreeInactiveBranch("fNpileupSPD");
    //task->SetTreeInactiveBranch("fNpileupTracks");
+   task->SetTreeInactiveBranch("fNTPCclusters");
    task->SetTreeInactiveBranch("fNPMDtracks");
    task->SetTreeInactiveBranch("fNTRDtracks");
    task->SetTreeInactiveBranch("fNTRDtracklets");
@@ -179,7 +180,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    //task->SetTreeInactiveBranch("fTracks.fTPCEta");
    //task->SetTreeInactiveBranch("fTracks.fMomentumInner");
    //task->SetTreeInactiveBranch("fTracks.fDCA*");
-   task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
+   //task->SetTreeInactiveBranch("fTracks.fTPCDCA*");
    task->SetTreeInactiveBranch("fTracks.fTrackLength");
    //task->SetTreeInactiveBranch("fTracks.fMassForTracking");
    //task->SetTreeInactiveBranch("fTracks.fChi2TPCConstrainedVsGlobal");
@@ -214,7 +215,7 @@ void SetInactiveBranches(AliAnalysisTaskReducedTreeMaker* task) {
    task->SetTreeInactiveBranch("fTracks.fTRDpidLQ2D*");
    task->SetTreeInactiveBranch("fTracks.fCaloClusterId");
    //task->SetTreeInactiveBranch("fTracks.fMCMom*");
-   //task->SetTreeInactiveBranch("fTracks.fMCFreezeout*");
+   task->SetTreeInactiveBranch("fTracks.fMCFreezeout*");
    //task->SetTreeInactiveBranch("fTracks.fMCLabels*");
    //task->SetTreeInactiveBranch("fTracks.fMCPdg*");
    //task->SetTreeInactiveBranch("fTracks.fMCGeneratorIndex");
@@ -261,7 +262,7 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   trackCuts->AddCut(AliDielectronVarManager::kImpactParXY,-3.0,3.0);
   trackCuts->AddCut(AliDielectronVarManager::kImpactParZ,-10.0,10.0);
   trackCuts->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
-  trackCuts->AddCut(AliDielectronVarManager::kP,0.9,1.0e+30);
+  trackCuts->AddCut(AliDielectronVarManager::kP,0.3,1.0e+30);
   trackCuts->AddCut(AliDielectronVarManager::kNclsTPC,30.0,161.0);
   //  trackCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.1,4.0);
   
@@ -293,8 +294,11 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   
   AliDielectronPID *electronPid = new AliDielectronPID("PID","PID cut");
   electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0, 4.0, 0.0, 0.0, kFALSE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for electron    
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-2.0, 2.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for proton
-  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,-3.0, 3.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC 3-sigma inclusion for kaon
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-2.0, 4.0, 0.2, 0.5, kFALSE, AliDielectronPID::kRequire, AliDielectronVarManager::kPIn); // TPC 3-sigma inclusion for electron    
+  //electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0, 4.0, 0.7, 1.0, kFALSE, AliDielectronPID::kRequire, AliDielectronVarManager::kEta); // TPC 3-sigma inclusion for electron    
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-2.0, 2.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC exclusion for proton
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,-2.0, 2.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC exclusion for kaon
+  electronPid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3.0, 3.0, 0.0, 0.0, kTRUE, AliDielectronPID::kRequire); // TPC exclusion for pion
   //electronPid->AddCut(AliDielectronPID::kTOF,AliPID::kProton,  -3.0, 3.0, -2.0, 2.0, kTRUE, AliDielectronPID::kIfAvailable, AliDielectronVarManager::kTPCnSigmaPro); // TPC exclusion for proton   
   cuts->AddCut(electronPid);
   

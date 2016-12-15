@@ -1,12 +1,12 @@
 
 //_____________________________________________________________________________________________________
-AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="LHC10h", Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString tasks="dst", TString alienPathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros") {
+AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="LHC10h", Int_t reducedEventType=-1, Bool_t writeTree=kTRUE, TString tasks="dst", TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros") {
    //
    //  AddTask macro for the TreeMaker analysis task and eventual other dependent tasks
    //
    
-   TString alienPath = alienPathForMacros;
-   TString alirootPath("$ALICE_PHYSICS/PWGDQ/reducedTree/macros");
+   //TString alienPath = alienPathForMacros;
+   //TString alirootPath("$ALICE_PHYSICS/PWGDQ/reducedTree/macros");
    
    TObjArray* tasksArray = tasks.Tokenize(";");
    if(tasksArray->GetEntries()==0) {
@@ -29,15 +29,18 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
    if(makeTrees) {
       TString addTaskFullPath = "";
       if(isGrid) {
-         Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", alienPath.Data(), tasksArray->At(0)->GetName()));
+         //Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", alienPath.Data(), tasksArray->At(0)->GetName()));
+         Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", pathForMacros.Data(), tasksArray->At(0)->GetName()));
          if(errCode) {
-            printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", alienPath.Data(), tasksArray->At(0)->GetName(), alienPath.Data());
+            //printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", alienPath.Data(), tasksArray->At(0)->GetName(), alienPath.Data());
+            printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", pathForMacros.Data(), tasksArray->At(0)->GetName(), pathForMacros.Data());
             return 0x0;
          }
          else addTaskFullPath = gSystem->pwd();
       }
       else {
-         addTaskFullPath = alirootPath.Data();
+         //addTaskFullPath = alirootPath.Data();
+         addTaskFullPath = pathForMacros.Data();
       }
       addTaskFullPath += "/AddTask_";
       addTaskFullPath += tasksArray->At(0)->GetName();
@@ -63,15 +66,18 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
       TString task = tasksArray->At(i)->GetName();
       TString addTaskFullPath = "";
       if(isGrid) {
-         Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", alienPath.Data(), task.Data()));
+         //Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", alienPath.Data(), task.Data()));
+         Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", pathForMacros.Data(), task.Data()));
          if(errCode) {
-            printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", alienPath.Data(), task.Data(), alienPath.Data());
+            //printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", alienPath.Data(), task.Data(), alienPath.Data());
+            printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", pathForMacros.Data(), task.Data(), pathForMacros.Data());
             return 0x0;
          }
          else addTaskFullPath = gSystem->pwd();
       }
       else {
-         addTaskFullPath = alirootPath.Data();
+         //addTaskFullPath = alirootPath.Data();
+         addTaskFullPath = pathForMacros.Data();
       }
       addTaskFullPath = Form("%s/AddTask_%s.C", addTaskFullPath.Data(), task.Data());
       if (!gROOT->GetListOfGlobalFunctions()->FindObject(Form("AddTask_%s", task.Data()))){
