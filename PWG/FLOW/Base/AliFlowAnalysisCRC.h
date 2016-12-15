@@ -909,6 +909,7 @@ public:
   
   // Flow QC
   void SetFlowQCList(TList* const TL) {this->fFlowQCList = TL;};
+  void SetFlowQCVtxList(TList* const TL, Int_t r) {this->fFlowQCVtxList[r] = TL;};
   void SetFlowQCCenBin(Int_t const TL) {this->fFlowQCCenBin = TL;};
   Int_t GetFlowQCCenBin() const {return this->fFlowQCCenBin;};
   void SetFlowQCDeltaEta(Double_t const TL) {this->fFlowQCDeltaEta = TL;};
@@ -929,6 +930,8 @@ public:
   TH1D* GetFlowQCFinalPtDifHist(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCFinalPtDifHist[c][eg][h];};
   void SetFlowQCCorProPhi(TProfile* const TP, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCCorProPhi[c][eg][h] = TP;};
   TProfile* GetFlowQCCorProPhi(Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCCorProPhi[c][eg][h];};
+  void SetFlowQCIntCorProVtx(TProfile* const TP, Int_t const r, Int_t const c, Int_t const eg, Int_t const h) {this->fFlowQCIntCorProVtx[r][c][eg][h] = TP;};
+  TProfile* GetFlowQCIntCorProVtx(Int_t const r, Int_t const c, Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProVtx[r][c][eg][h];};
   
   TProfile* GetFlowQCIntCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorPro[eg][h];};
   void SetFlowQCIntCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorPro[eg][k] = TP;};
@@ -1711,6 +1714,11 @@ private:
   TH1D *fFlowQCFinalPtDifHist[fCRCMaxnCen][fFlowNHarm][fFlowQCNCov]; //!
   TProfile *fFlowQCCorProPhi[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
   
+  TList *fFlowQCVtxList[fCRCMaxnRun];    //! QC List
+  const static Int_t fkFlowQCnVtx = 6;
+  const static Int_t fkFlowQCnHarVtx = 3;
+  TProfile *fFlowQCIntCorProVtx[fCRCMaxnRun][fCRCMaxnCen][fkFlowQCnHarVtx][fkFlowQCnVtx]; //!
+  
   TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
   TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
@@ -1837,7 +1845,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 38);
+  ClassDef(AliFlowAnalysisCRC, 39);
   
 };
 
