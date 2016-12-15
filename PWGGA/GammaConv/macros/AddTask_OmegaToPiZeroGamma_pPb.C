@@ -79,8 +79,27 @@ void AddTask_OmegaToPiZeroGamma_pPb( Int_t     trainConfig                 = 1, 
                                 Float_t   maxFacPtHard                = 3,                    // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader          = "",                   // period Name for V0Reader
                                 Bool_t    enableSortingMCLabels       = kTRUE,                // enable sorting for MC cluster labels
-                                Bool_t    runLightOutput              = kFALSE                // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    runLightOutput              = kFALSE,               // switch to run light output (only essential histograms for afterburner)
+                                TString   additionalTrainConfig       = "0"                   // additional counter for trainconfig, this has to be always the last parameter
 ) {
+
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout << "INFO: nothing to do, no definition available!" << endl;
+    }
+  }
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_OmegaToPiZeroGamma_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
 
   Int_t isHeavyIon = 2;
 
