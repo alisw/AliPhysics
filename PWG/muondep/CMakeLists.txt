@@ -27,25 +27,26 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisMuMu.cxx
+  AliAnalysisMuMuConfig.cxx
+  AliAnalysisMuMuFnorm.cxx
+  AliAnalysisMuMuGraphUtil.cxx
+  AliAnalysisMuMuJpsiResult.cxx
+  AliAnalysisMuMuResult.cxx
+  AliAnalysisMuMuSpectra.cxx
+  AliAnalysisMuMuSpectraCapsule.cxx
+  AliAnalysisMuMuSpectraCapsulePP.cxx
+  AliAnalysisMuMuSpectraCapsulePbP.cxx
+  AliAnalysisMuMuSpectraCapsulePbPb.cxx
+  AliAnalysisRunList.cxx
   AliAnalysisTaskESDMCLabelAddition.cxx 
-  AliAnalysisTaskPileup.cxx
   AliAnalysisTaskMuonCDBConnect.cxx
   AliAnalysisTaskMuonRefit.cxx
   AliAnalysisTaskMuonRefitVtx.cxx
+  AliAnalysisTaskPileup.cxx
   AliAnalysisTriggerScalers.cxx
-  AliAnalysisMuMu.cxx
-  AliAnalysisMuMuConfig.cxx
-  AliAnalysisMuMuJpsiResult.cxx
-  AliAnalysisMuMuResult.cxx
-  AliAnalysisMuMuSpectraCapsule.cxx
-  AliAnalysisMuMuSpectraCapsulePbPb.cxx
-  AliAnalysisMuMuSpectraCapsulePbP.cxx
-  AliAnalysisMuMuSpectraCapsulePP.cxx
-  AliAnalysisMuMuFnorm.cxx
-  AliAnalysisMuMuGraphUtil.cxx
-  AliAnalysisMuMuSpectra.cxx
-  AliMuonGridSubmitter.cxx
   AliMuonAccEffSubmitter.cxx
+  AliMuonGridSubmitter.cxx
   AliMuonQAMergeSubmitter.cxx
   )
 
