@@ -19,7 +19,6 @@
 #pragma link C++ function AAF::FILTER_AODMUONONLY_PBPB2015_WITHMULTSEL;
 #pragma link C++ function AAF::FILTER_ESD2AODMUON;
 
-#pragma link C++ function AAF::StageAndFilter;
 
 #endif
 
