@@ -86,7 +86,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
     rdr->SetReadV0(0);
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
     rdr->SetDCAglobalTrack(kTRUE);
-  // rdr->SetReadMC(analysis_config.is_mc_analysis);
+    rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
 
   if (macro_config.centrality_ranges.empty()) {
