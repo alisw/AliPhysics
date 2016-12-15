@@ -513,7 +513,7 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
 
       //selection for at least one point in SPD
       //if( !(maskMan & (1 << 0)) && !(maskMan & (1 << 1)) ) continue;
-
+	/*/
       trk->GetPxPyPz(pxpypz);
       AliAODPid *apid = trk->GetDetPid();
 
@@ -555,13 +555,14 @@ Bool_t AliAnalysisTaskUpcFilter::RunAOD()
       for(Int_t i=0; i<2; i++) {b[i] = (Float_t) xyzDca[i]; covF[i] = (Float_t) cov[i];}
       upcTrack->SetImpactParametersIP(b, covF);
       delete track1;
+      /*/
 
       ncen++;
     }
   }// AOD tracks loop
 
-  //selection for at least one muon or central track
-  if( nmun + ncen < 1 ) return kFALSE;
+  //selection for at least one muon track
+  if( nmun < 1 ) return kFALSE;
 
   //selection for at least one muon and at least one central track
   //if( nmun < 1 || ncen < 1 ) return kFALSE;
