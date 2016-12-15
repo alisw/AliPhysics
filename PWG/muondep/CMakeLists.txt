@@ -17,6 +17,9 @@
 set(MODULE PWGmuondep)
 add_definitions(-D_MODULE_="${MODULE}")
 
+add_subdirectory(aaf)
+message(STATUS "PWG muondep aaf enabled")
+
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWG/muondep)
 
@@ -46,6 +49,14 @@ set(SRCS
   AliAnalysisTaskPileup.cxx
   AliAnalysisTriggerScalers.cxx
   AliMuonAccEffSubmitter.cxx
+  AliMuonCompactCluster.cxx
+  AliMuonCompactEvent.cxx
+  AliMuonCompactManuStatus.cxx
+  AliMuonCompactMapping.cxx
+  AliMuonCompactQuickAccEff.cxx
+  AliMuonCompactQuickAccEffChecker.cxx
+  AliMuonCompactTrack.cxx
+  AliMuonCompactTreeMaker.cxx
   AliMuonGridSubmitter.cxx
   AliMuonQAMergeSubmitter.cxx
   )
