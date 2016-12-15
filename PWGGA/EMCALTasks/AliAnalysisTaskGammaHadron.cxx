@@ -57,8 +57,8 @@ fHistEffGamma(0x0),fHistEffHadron(0x0),
 
 fOutputList1(),fOutputList2(),fOutputList3(),fOutputListGamma(),fOutputListXi(),fOutputListZeta(),fEventPoolOutputList(),
 
-fHistNoClusPt(0),fHistNoClusPtH(0),fHistPi0(0),
-fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),fHistCellsCluster(0),fHistClusterShape(0),
+fHistNoClusPt(0),fHistPi0(0),fHistBinCheckPt(0), fHistBinCheckZt(0), fHistBinCheckXi(0),
+fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),fHistCellsCluster(0),fHistClusterShape(0),fHistClusterTime(0),
 
 fHPoolReady(0x0)
 {
@@ -79,8 +79,8 @@ fHistEffGamma(0x0),fHistEffHadron(0x0),
 
 fOutputList1(),fOutputList2(),fOutputList3(),fOutputListGamma(),fOutputListXi(),fOutputListZeta(),fEventPoolOutputList(),
 
-fHistNoClusPt(0),fHistNoClusPtH(0),fHistPi0(0),
-fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),fHistCellsCluster(0),fHistClusterShape(0),
+fHistNoClusPt(0),fHistPi0(0), fHistBinCheckPt(0), fHistBinCheckZt(0), fHistBinCheckXi(0),
+fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),fHistCellsCluster(0),fHistClusterShape(0),fHistClusterTime(0),
 
 fHPoolReady(0x0)
 {
@@ -111,10 +111,8 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 		fHistDEtaDPhiG[i]  = 0;
 		fHistDEtaDPhiZT[i] = 0;
 		fHistDEtaDPhiXI[i] = 0;
+		fHistDpGh[i]       = 0;
 	}
-	fHistDpGh[0]= 0;
-	fHistDpGh[1]= 0;
-	fHistDpGh[2]= 0;
 
 	fRtoD=180.0/TMath::Pi();
 
@@ -246,6 +244,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	Int_t Array_G_Bins[10]   ={0,5,7,9,11,14,17,22,30,100};
 	Double_t Array_ZT_Bins[8]={0,fZtStep,2*fZtStep,3*fZtStep,4*fZtStep,5*fZtStep,6*fZtStep,100};
 	Double_t Array_XI_Bins[9]={-100,0,fXiStep,2*fXiStep,3*fXiStep,4*fXiStep,5*fXiStep,6*fXiStep,100};
+
 	for(Int_t i=0;i<10;i++)
 	{
 		fVector_G_Bins.push_back(Array_G_Bins[i]);
@@ -258,22 +257,27 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	{
 		fVector_XI_Bins.push_back(Array_XI_Bins[i]);
 	}
+	fNoGammaBins=fVector_G_Bins.size()-1;
+	fNoZtBins   =fVector_ZT_Bins.size()-1;
+	fNoXiBins   =fVector_XI_Bins.size()-1;
 
 	//..Initialize
-	fHistNoClusPtH        = new TH1*[kNIdentifier];
-	fHistDEtaDPhiGammaQA  = new TH2*[kNIdentifier+2];
+	fHistBinCheckPt       = new TH1*[kNIdentifier];
+	fHistBinCheckZt       = new TH1*[kNIdentifier];
+	fHistBinCheckXi       = new TH1*[kNIdentifier];
+	fHistDEtaDPhiGammaQA  = new TH2*[kNIdentifier+2]; //Why +2??
 	fHistDEtaDPhiTrackQA  = new TH2*[kNIdentifier+2];
 	fHistCellsCluster     = new TH2*[kNIdentifier+2];
 	fHistClusterShape     = new TH2*[kNIdentifier+2];
+	fHistClusterTime      = new TH2*[kNIdentifier+2];
 
 	for(Int_t i=0; i<kNIdentifier; i++)
 	{
-		fHistptAssHadron[i]  = new TH1*[kNDPhistos]; // make a p_t histogram of the associated hadron for each p_T bin of the gamma
-		fHistDpGh[i]         = new TH1*[kNDPhistos]; // make a p_t histogram of the associated hadron for each p_T bin of the gamma
-
-		fHistDEtaDPhiG[i]    = new TH2*[fVector_G_Bins.size()-1];
-		fHistDEtaDPhiZT[i]   = new TH2*[fVector_ZT_Bins.size()-1];
-		fHistDEtaDPhiXI[i]   = new TH2*[fVector_XI_Bins.size()-1];
+		fHistptAssHadron[i]  = new TH1*[fNoGammaBins+1]; // make a p_t histogram of the associated hadron for each p_T bin of the gamma
+		fHistDpGh[i]         = new TH1*[fNoGammaBins+1]; // make a p_t histogram of the associated hadron for each p_T bin of the gamma
+		fHistDEtaDPhiG[i]    = new TH2*[fNoGammaBins];
+		fHistDEtaDPhiZT[i]   = new TH2*[fNoZtBins];
+		fHistDEtaDPhiXI[i]   = new TH2*[fNoXiBins];
 	}
 	//.................................
 	//..p_T^{Cluster} distribution under different conditions
@@ -290,17 +294,27 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fHistPi0->GetYaxis()->SetTitle("Entries");
 	fOutput->Add(fHistPi0);
 
+
 	//..by the identifier different histograms can be filled under different cut conditions
 	//..Can eg. later be modified to contain certain delta phi or centrality bins
 	for(Int_t identifier=0;identifier<kNIdentifier;identifier++)
 	{
-		//..clusters p_T if there was a hadron present
-		fHistNoClusPtH[identifier] = new TH1F(Form("fHistNoClusPtH_%0d",identifier),Form("fHistNoClusPtH_%0d",identifier), nbins[0], min[0], max[0]);
-		fHistNoClusPtH[identifier]->GetXaxis()->SetTitle("p_{T}^{Calo Cluster}");
-		fHistNoClusPtH[identifier]->GetYaxis()->SetTitle(Form("No. of Clus. with h [counts/%0.1f GeV/c]",fHistNoClusPtH[identifier]->GetBinWidth(0)));
-		fOutput->Add(fHistNoClusPtH[identifier]);
+		fHistBinCheckPt[identifier] = new TH1F(Form("fHistBinCheckPt_%0d",identifier),Form("fHistBinCheckPt_%0d",identifier), 500, 0, 100);
+		fHistBinCheckPt[identifier]->GetXaxis()->SetTitle("p_T^{#gamma}");
+		fHistBinCheckPt[identifier]->GetYaxis()->SetTitle("Entries");
+		fOutput->Add(fHistBinCheckPt[identifier]);
 
-		for(Int_t i=0; i<fVector_G_Bins.size()-1; i++)
+		fHistBinCheckZt[identifier] = new TH1F(Form("fHistBinCheckZt_%0d",identifier),Form("fHistBinCheckZt_%0d",identifier), 500, 0, 100);
+		fHistBinCheckZt[identifier]->GetXaxis()->SetTitle("z_T^{#gamma-h}");
+		fHistBinCheckZt[identifier]->GetYaxis()->SetTitle("Entries");
+		fOutput->Add(fHistBinCheckZt[identifier]);
+
+		fHistBinCheckXi[identifier] = new TH1F(Form("fHistBinCheckXi_%0d",identifier),Form("fHistBinCheckXi_%0d",identifier), 500, -100, 100);
+		fHistBinCheckXi[identifier]->GetXaxis()->SetTitle("#xi^{#gamma-h}");
+		fHistBinCheckXi[identifier]->GetYaxis()->SetTitle("Entries");
+		fOutput->Add(fHistBinCheckXi[identifier]);
+
+		for(Int_t i=0; i<fNoGammaBins; i++)
 		{
 			fHistDEtaDPhiG[identifier][i] = new TH2F(Form("fHistDEtaDPhiG%d_Id%d",i,identifier),Form("fHistDEtaDPhiG%d_Id%d",i,identifier),nbins[2],min[2],max[2],nbins[3],min[3],max[3]);
 			fHistDEtaDPhiG[identifier][i]->GetXaxis()->SetTitle(Form("#Delta #phi^{#gamma-h} %0d<p_{T}^{#gamma}<%0d",fVector_G_Bins.at(i),fVector_G_Bins.at(i+1)));
@@ -322,7 +336,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 			fOutputListXi->Add(fHistDEtaDPhiXI[identifier][i]);
 		}
 
-		for(Int_t i=0; i<kNDPhistos+1; i++)
+		for(Int_t i=0; i<fNoGammaBins+1; i++)
 		{
 			//..check whether the max is the
 			//..same as the histogram size
@@ -331,15 +345,14 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 			if(i==0)
 			{
 				//..these are histograms over the full p_T gamma range (no binnings)
-				BinWidth    = fHistNoClusPtH[0]->GetBinWidth(1);
-				BinValStart = fHistNoClusPtH[0]->GetXaxis()->GetBinCenter(1)-BinWidth/2.0;
+				BinValStart  = Array_G_Bins[0];
 				BinWidth    =100; //to get the full length of the histogram
 			}
 			else
 			{
 				//..these are histograms for a certain p_T of the gamma
-				BinWidth    = fHistNoClusPtH[0]->GetBinWidth(i);
-				BinValStart = fHistNoClusPtH[0]->GetXaxis()->GetBinCenter(i)-BinWidth/2.0;
+				BinValStart  = Array_G_Bins[i-1];
+				BinWidth     = Array_G_Bins[i]-Array_G_Bins[i-1];
 				//cout<<"BinStart: "<<fHistNoClusPtH->GetBinCenter(i)<<", width "<<BinWidth<<endl;
 			}
 
@@ -348,17 +361,15 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 			fHistptAssHadron[identifier][i] = new TH1F(Form("fHistAssHadron_pt_%0d_%0d",identifier,i),Form("fHistAssHadron_pt_%0d_%0d",identifier,i), nbins[1], min[1], max[1]);
 			fHistptAssHadron[identifier][i]->GetXaxis()->SetTitle(Form("p_{T}^{assoc. h} %0.1f<p_{T}^{#gamma}<%0.1f",BinValStart,BinValStart+BinWidth));
 			fHistptAssHadron[identifier][i]->GetYaxis()->SetTitle(Form("dN^{assoc. h}/dp_{T}^{h} [counts/%0.1f GeV/c]",fHistptAssHadron[identifier][i]->GetBinWidth(1)));
-			if(i!=0)fOutputList2->Add(fHistptAssHadron[identifier][i]);
+			fOutputList2->Add(fHistptAssHadron[identifier][i]);
 
 			//.................................
 			//..Initiate the delta phi and p_t associated hadron histograms for each p_t bin of the gamma!
 			fHistDpGh[identifier][i] = new TH1F(Form("fHistDpGh_%0d_%0d",identifier,i),Form("fHistDpGh_%0d_%0d",identifier,i), nbins[2], min[2], max[2]);
 			fHistDpGh[identifier][i]->GetXaxis()->SetTitle(Form("#Delta #phi^{#gamma-h} %0.1f<p_{T}^{#gamma}<%0.1f",BinValStart,BinValStart+BinWidth));
 			fHistDpGh[identifier][i]->GetYaxis()->SetTitle(Form("dN^{#gamma-h}/#Delta #phi^{#gamma-h} [counts/%0.1f^{#circ}]",fHistDpGh[identifier][i]->GetBinWidth(1)));
-			if(i!=0)fOutputList3->Add(fHistDpGh[identifier][i]);
+			fOutputList3->Add(fHistDpGh[identifier][i]);
 		}
-		fOutput->Add(fHistptAssHadron[identifier][0]);
-		fOutput->Add(fHistDpGh[identifier][0]);
 	}
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -390,23 +401,24 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fOutputListQA->Add(fHistDEtaDPhiTrackQA[identifier]);
 
 	    //..Cluster Info
-		fHistCellsCluster[identifier] = new TH2F(Form("fHistCellsCluster%d_Id%d",0,identifier),Form("fHistCellsCluster%d_Id%d",0,identifier),120,0,30,50,0,50);
+		fHistCellsCluster[identifier] = new TH2F(Form("fHistCellsCluster%d_Id%d",0,identifier),Form("fHistCellsCluster%d_Id%d",0,identifier),240,0,30,50,0,50);
 		fHistCellsCluster[identifier]->GetXaxis()->SetTitle("E^{cluster}");
 		fHistCellsCluster[identifier]->GetYaxis()->SetTitle("N_{cells}");
 		fOutputListQA->Add(fHistCellsCluster[identifier]);
 
-		fHistClusterShape[identifier] = new TH2F(Form("fHistClusterShape%d_Id%d",0,identifier),Form("fHistClusterShape%d_Id%d",0,identifier),120,0,30,240,0,4);
+		fHistClusterShape[identifier] = new TH2F(Form("fHistClusterShape%d_Id%d",0,identifier),Form("fHistClusterShape%d_Id%d",0,identifier),240,0,30,240,0,4);
 		fHistClusterShape[identifier]->GetXaxis()->SetTitle("E^{cluster}");
 		fHistClusterShape[identifier]->GetYaxis()->SetTitle("#lambda_{0}");
 		fOutputListQA->Add(fHistClusterShape[identifier]);
 
 		//..Time information
-
+		fHistClusterTime[identifier] = new TH2F(Form("fHistClusterTime%d_Id%d",0,identifier),Form("fHistClusterTime%d_Id%d",0,identifier),20000,-100,100,80,0,40);
+		fHistClusterTime[identifier]->GetXaxis()->SetTitle("time [ns]");
+		fHistClusterTime[identifier]->GetYaxis()->SetTitle("pT");
+		fOutputListQA->Add(fHistClusterTime[identifier]);
 
 		//..
-
 	}
-	//time information??
 
 
 
@@ -716,6 +728,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 	//...........................................
 	//..run the loop for filling the histograms
 	Int_t GammaCounter=0;
+	Int_t trackCounter=0;
 	for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 	{
 		cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
@@ -743,12 +756,14 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 			{
 				track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
 				if(!track)continue; //check if the track is a good track
+				trackCounter++;
 				//cout<<"..Track number: "<<NoTrack<<", pT = "<<track->Pt()<<endl;
 
 				//EffWeight_Hadron=GetEff(<TLorentzVector>track);
-				FillGhHisograms(1,CaloClusterVec,track,2,0,-360,Weight);
-				if(GammaCounter==1)FillQAHisograms(1,clusters,cluster,track,2,0); // fill only once
-				/*fill only for first hadron*/FillQAHisograms(2,clusters,cluster,track,2,0); //fill for each gamma?? makes sense?
+				FillGhHisograms(1,CaloClusterVec,track,2,0,Weight);
+
+				if(GammaCounter==1)FillQAHisograms(1,clusters,cluster,track,2,0); //fill only once per track (first gamma) - good for each track
+				if(trackCounter==1)FillQAHisograms(2,clusters,cluster,track,2,0); //fill only once per gamma (first track) - good for gamma distr.
 				if(CaloClusterVec.Eta()>0)FillQAHisograms(3,clusters,cluster,track,2,0); //fill for each gamma?? makes sense?
 				if(CaloClusterVec.Eta()<0)FillQAHisograms(4,clusters,cluster,track,2,0); //fill for each gamma?? makes sense?
 			}
@@ -764,7 +779,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 				if(!track) continue;
 
 				//EffWeight_Hadron=GetEff(<TLorentzVector>track);
-				FillGhHisograms(0,CaloClusterVec,track,2,0,-360,Weight);
+				FillGhHisograms(0,CaloClusterVec,track,2,0,Weight);
 			}
 		}
 		//...........................................
@@ -920,7 +935,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 							//..fill here eventually a pi0 four-vector instead of CaloClusterVec
 							//EffWeight_Hadron=GetEff(TLorentzVector)track);
-							FillGhHisograms(1,CaloClusterVecpi0,track,2,0,-360,Weight);
+							FillGhHisograms(1,CaloClusterVecpi0,track,2,0,Weight);
 						}
 					}
 					//...........................................
@@ -935,7 +950,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 							//**fill here eventually a pi0 four-vector instead of CaloClusterVec
 							//EffWeight_Hadron=GetEff((TLorentzVector)track);
-							FillGhHisograms(0,CaloClusterVecpi0,track,2,0,-360,Weight);
+							FillGhHisograms(0,CaloClusterVecpi0,track,2,0,Weight);
 						}
 					}
 				}
@@ -945,23 +960,23 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	return nAccPi0Clusters/2;
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight)
+void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight)
 {
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::FillGhHisograms()"<<endl;
 
-	//--This function fills several histograms under different cut conditions.
-	//--it is run within a cluster{ track{}} loop to get all combinations.
+	//..This function fills several histograms under different cut conditions.
+	//..it is run within a cluster{ track{}} loop to get all combinations.
 
-	//--A word to the weight - for mixed events it devides by the number of events in the current pool 1/nEvents
-	//--                     - for same events you devide by the number of triggers
-	//--                     - for both you have to take into account the efficiency of your correlated pair
+	//..A word to the weight - for mixed events it devides by the number of events in the current pool 1/nEvents
+	//..                     - for same events you devide by the number of triggers
+	//..                     - for both you have to take into account the efficiency of your correlated pair
 	Double_t deltaEta   = ClusterVec.Eta()-TrackVec->Eta();
 	Double_t deltaPhi   = DeltaPhi(ClusterVec,TrackVec);
 	Double_t G_PT_Value = ClusterVec.Pt();
 	//Double_t ZT_Value   = TMath::Cos(deltaPhi*1/fRtoD)*TrackVec->P()/ClusterVec.P(); //   TrackVec->Pt()/G_PT_Value;
 	Double_t ZT_Value   = TrackVec->Pt()/G_PT_Value; //   TrackVec->Pt()/G_PT_Value;
-	//--Careful here: usually this is done for an opening angle (hadron-jet axis) of less than 90¡. Due to
-	//--resolution momentum smearing (our guess - check that!) there are particles appearing at angles greater than 90¡
+	//..Careful here: usually this is done for an opening angle (hadron-jet axis) of less than 90¡. Due to
+	//..resolution momentum smearing (our guess - check that!) there are particles appearing at angles greater than 90¡
 	Double_t XI_Value;
 	if(ZT_Value>0)
 	{
@@ -973,13 +988,17 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,TLorentzVector
     }*/
 
 
-	if(G_PT_Value>=ClusterEcut && TrackVec->Pt()>=TrackPcut && deltaPhi>=Anglecut)
+	if(G_PT_Value>=ClusterEcut && TrackVec->Pt()>=TrackPcut)
 	{
-		fHistNoClusPtH[identifier]     ->Fill(G_PT_Value,Weight);    //the .pt only works for gammas (E=M) for other particle this is wrong
 		fHistptAssHadron[identifier][0]->Fill(TrackVec->Pt(),Weight);
 		fHistDpGh[identifier][0]       ->Fill(deltaPhi,Weight);
 
-		//--Fill 2D Histograms for certain event conditions
+		//..Histograms to test the binning
+		fHistBinCheckPt[identifier] ->Fill(G_PT_Value,Weight);
+		fHistBinCheckZt[identifier] ->Fill(ZT_Value,Weight);
+		fHistBinCheckXi[identifier] ->Fill(XI_Value,Weight);
+
+		//..Fill 2D Histograms for certain event conditions
 		for(Int_t i=0;i<10;i++)
 		{
 			if(i<fVector_G_Bins.size()-1  && G_PT_Value>=fVector_G_Bins.at(i) && G_PT_Value<fVector_G_Bins.at(i+1)) fHistDEtaDPhiG[identifier][i] ->Fill(deltaPhi,deltaEta,Weight);
@@ -991,13 +1010,12 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,TLorentzVector
 		//       ||
 		//       ||
 		//       \/
-		//--fill histograms for different ranges of p_t^{g}
-		for(Int_t i=1;i<fHistNoClusPtH[identifier]->GetNbinsX()+1;i++)  // be careful hard coded from max[0] value -- need better variable // fHistNoClusPtH->GetLast bin etc??
+		for(Int_t i=1;i<fNoGammaBins+1;i++)
 		{
-			//--look in each p_T bin of the gamma (fHistNoClusPtH histogram) how the pt
-			//--distribution of the associated hadron looks like.
-			Double_t BinWidth    = fHistNoClusPtH[identifier]->GetBinWidth(i);
-			Double_t BinValStart = fHistNoClusPtH[identifier]->GetXaxis()->GetBinCenter(i)-BinWidth/2.0;
+			//..look in each p_T bin of the gamma (2D fHistDEtaDPhiG) how the pt
+			//..distribution of the associated hadron looks like.
+			Double_t BinValStart  = fVector_G_Bins.at(i-1);
+			Double_t BinWidth     = fVector_G_Bins.at(i)-fVector_G_Bins.at(i-1);
 
 			//--right now the ranges are defined via different histogram bins of the gmma p_t histogram
 			//--that might be changed later.
@@ -1018,9 +1036,9 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 	/*do similar test here?*/fHistDEtaDPhiGammaQA[identifier] ->Fill(caloClusterVec.Phi()*fRtoD,caloClusterVec.Eta());
 	if(TrackVec)             fHistDEtaDPhiTrackQA[identifier] ->Fill(TrackVec->Phi()*fRtoD,TrackVec->Eta());
 
-
 	fHistCellsCluster[identifier] ->Fill(caloCluster->GetHadCorrEnergy(),caloCluster->GetNCells());
 	fHistClusterShape[identifier] ->Fill(caloCluster->GetHadCorrEnergy(),caloCluster->GetM02());
+	fHistClusterTime[identifier]  ->Fill(caloCluster->GetTOF()*1000000000,caloCluster->GetHadCorrEnergy());
 
 }
 //________________________________________________________________________
