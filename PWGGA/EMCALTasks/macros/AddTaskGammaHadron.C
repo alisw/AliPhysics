@@ -110,6 +110,11 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 
   //..Add some selection criteria
   AnalysisTask->SetVzRange(-10,10);
+  //..for Run1
+  AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
+  //..new task for run2 (neue cut klasse, ask Markus)
+
+
   if(AnalysisTask->GetTrackContainer(trackName))
   {
 	  AnalysisTask->GetTrackContainer(trackName)->SetParticlePtCut(trackptcut);
@@ -122,6 +127,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(clusptcut);        //by default set to 0.15
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,0);
 	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+	  //AnalysisTask->GetClusterContainer(clusName)->SetClusTimeCut(,);
 	  AnalysisTask->GetClusterContainer(clusName)->SetEtaLimits(-clusterEta,clusterEta);
 	  AnalysisTask->GetClusterContainer(clusName)->SetPhiLimits(68*phiToR,174*phiToR);
 	 // cout<<"cut0: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(0)<<endl;

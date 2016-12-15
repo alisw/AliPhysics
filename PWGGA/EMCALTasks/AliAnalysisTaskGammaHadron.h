@@ -50,7 +50,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillGhHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Anglecut, Double_t Weight);
+  void                        FillGhHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight);
   void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
   //Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
@@ -68,13 +68,14 @@ virtual ~AliAnalysisTaskGammaHadron();
   // Constants
   Double_t                    fRtoD;                     // conversion of rad to degree
   static const Int_t          kNIdentifier=3;            // number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
-  static const Int_t          kNDPhistos=31;             // =  nbins[0];
   vector<Int_t>               fVector_G_Bins;            // vector that contains the bins of the G historgram
   vector<Double_t>            fVector_ZT_Bins;           // vector that contains the bins of the Zt historgram
   vector<Double_t>            fVector_XI_Bins;           // vector that contains the bins of the Xi historgram
   Double_t                    fZtStep;                   // Bin width for the zT histograms
   Double_t                    fXiStep;                   // Bin width for the Xi histograms
-
+  Int_t                       fNoGammaBins;
+  Int_t                       fNoZtBins;
+  Int_t                       fNoXiBins;
   // Event pool variables
   TAxis                      *fMixBCent;                 //! Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 //! Number of vertex bins for the mixed event
@@ -102,9 +103,13 @@ virtual ~AliAnalysisTaskGammaHadron();
   TList                      *fOutputListQA;           //! Output list
 
   // Histograms -
-  TH1  					    *fHistNoClusPt;            //! No of calorimeter Clusters as a function of p_T
-  TH1					   **fHistNoClusPtH;           //! No of calorimeter Clusters as a function of p_T with a hadron in the second hemisphere
+  TH1  					    *fHistNoClusPt;            //! ?No of calorimeter Clusters as a function of p_T
+  TH1					   **fHistptAssHadron[3];      //! ?pt distributions of the associated hadron in a certain p_t bin of the gamma
+  TH1					   **fHistDpGh[3];             //! ?delta phi g-h distribution fro a given p_t gamma bin
   TH1 					    *fHistPi0;                 //!
+  TH1 					   **fHistBinCheckPt;       //! plot Pt distribution for ideal binning
+  TH1 					   **fHistBinCheckZt;       //! plot Zt distribution for ideal binning
+  TH1 					   **fHistBinCheckXi;       //! plot Xi distribution for ideal binning
   TH2					   **fHistDEtaDPhiG[3];        //! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
   TH2					   **fHistDEtaDPhiZT[3];       //! No of g-h pairs in the deta eta delta phi plane for certain zT values
   TH2					   **fHistDEtaDPhiXI[3];       //! No of g-h pairs in the deta eta delta phi plane for certain Xi values
@@ -112,9 +117,8 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH2                      **fHistDEtaDPhiTrackQA;     //! Distribution of tracks in delta phi delta eta
   TH2                      **fHistCellsCluster;        //! Number of cells in cluster as function of energy
   TH2                      **fHistClusterShape;        //! Cluster shape vs energy
+  TH2                      **fHistClusterTime;          //! Cluster time vs energy
 
-  TH1					   **fHistptAssHadron[3];      //! pt distributions of the associated hadron in a certain p_t bin of the gamma
-  TH1					   **fHistDpGh[3];             //! delta phi g-h distribution fro a given p_t gamma bin
   TH2                	    *fHPoolReady;              //! Check how many Jobs start mixing
   //
   //
