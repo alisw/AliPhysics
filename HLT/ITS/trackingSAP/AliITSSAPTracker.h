@@ -20,6 +20,7 @@
 class AliITSRecPoint;
 class AliESDVertex;
 class AliITSSAPLayer;
+class AliHLTITSTrackPoint;
 
 class AliITSSAPTracker : public TObject
 {
@@ -127,6 +128,11 @@ class AliITSSAPTracker : public TObject
   Float_t   GetStopScaleChange()           const  {return fStopScaleChange;}
   // methods for vertex reconstruction ------<<<
   //
+
+  // track point calculation
+
+  Int_t GetTrackPoint( Int_t iLayer, Int_t clusterIndex, AliHLTITSTrackPoint& p ) const ;
+
  protected:
   //
   AliITSSAPLayer* fLayers[kNLrActive];
