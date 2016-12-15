@@ -125,13 +125,6 @@ public:
 
   TString GetOCDBPath() { return fOCDBPath; }
   
-  /// static methods -----
-  
-  static void ReadIntegers(const char* filename, std::vector<int>& integers, Bool_t resetVector=kTRUE);
-  
-  static void PrintIntegers(const std::vector<int>& integers, char sep = '\n',
-                            std::ostream& out = std::cout);
-  
   void GetTriggerClassesForRun(Int_t runNumber, TString& classes) const;
   
   void PurgeRunList(std::vector<int>& purgedList, const char* triggerClassName, Bool_t verbose=kTRUE);
