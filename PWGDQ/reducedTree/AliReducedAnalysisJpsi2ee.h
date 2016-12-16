@@ -46,6 +46,7 @@ public:
   virtual AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
   const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");} 
+  Bool_t GetRunOverMC() {return fOptionRunOverMC;};
   
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
@@ -76,6 +77,7 @@ protected:
   Bool_t IsMCTruth(AliReducedTrackInfo* ptrack, AliReducedTrackInfo* ntrack);
   Bool_t IsMCTruth(AliReducedTrackInfo* track);
   Bool_t IsMCTruthSelected(AliReducedTrackInfo* track);
+  
   void RunPrefilter();
   void RunSameEventPairing(TString pairClass = "PairSE");
   void RunTrackSelection();

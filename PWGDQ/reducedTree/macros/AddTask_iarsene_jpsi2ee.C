@@ -15,10 +15,10 @@ AliAnalysisTask* AddTask_iarsene_jpsi2ee(Bool_t isAliRoot=kTRUE, Int_t runMode=1
 
   AliReducedAnalysisJpsi2ee* jpsi2eeAnalysis = new AliReducedAnalysisJpsi2ee("Jpsi2eeAnalysis","Jpsi->ee analysis");
   jpsi2eeAnalysis->Init();
-  Setup(jpsi2eeAnalysis, prod);
   jpsi2eeAnalysis->SetRunEventMixing(kTRUE);
   jpsi2eeAnalysis->SetRunPairing(kTRUE);
   jpsi2eeAnalysis->SetRunOverMC(kTRUE);
+  Setup(jpsi2eeAnalysis, prod);
   // initialize an AliAnalysisTask which will wrapp the AliReducedAnalysisJpsi2ee such that it can be run in an aliroot analysis train (e.g. LEGO, local analysis etc)
   AliAnalysisTaskReducedEventProcessor* task = new AliAnalysisTaskReducedEventProcessor("ReducedEventAnalysisManager", runMode);
   task->AddTask(jpsi2eeAnalysis);
@@ -303,21 +303,26 @@ void DefineHistograms(AliReducedAnalysisJpsi2ee* task, TString prod /*="LHC10h"*
   histClasses += "TrackStatusFlags_BeforeCuts;";
   histClasses += "TrackITSclusterMap_BeforeCuts;";
   histClasses += "TrackTPCclusterMap_BeforeCuts;";
-  histClasses += "MCTruth_BeforeSelection;";
-  histClasses += "MCTruth_AfterSelection;";
+  if(task->GetRunOverMC()) {
+    histClasses += "MCTruth_BeforeSelection;";
+    histClasses += "MCTruth_AfterSelection;";
+  }
   for(Int_t i=0; i<task->GetNTrackCuts(); ++i) {
     TString cutName = task->GetTrackCutName(i);
     histClasses += Form("Track_%s;", cutName.Data());
     histClasses += Form("TrackStatusFlags_%s;", cutName.Data());
     histClasses += Form("TrackITSclusterMap_%s;", cutName.Data());
     histClasses += Form("TrackTPCclusterMap_%s;", cutName.Data());
-    histClasses += Form("Track_%s_MCTruth;", cutName.Data());
-    histClasses += Form("TrackStatusFlags_%s_MCTruth;", cutName.Data());
-    histClasses += Form("TrackITSclusterMap_%s_MCTruth;", cutName.Data());
-    histClasses += Form("TrackTPCclusterMap_%s_MCTruth;", cutName.Data());
+    if(task->GetRunOverMC()) {
+      histClasses += Form("Track_%s_MCTruth;", cutName.Data());
+      histClasses += Form("TrackStatusFlags_%s_MCTruth;", cutName.Data());
+      histClasses += Form("TrackITSclusterMap_%s_MCTruth;", cutName.Data());
+      histClasses += Form("TrackTPCclusterMap_%s_MCTruth;", cutName.Data());
+    }
     histClasses += Form("PairSEPP_%s;PairSEPM_%s;PairSEMM_%s;", cutName.Data(), cutName.Data(), cutName.Data());
     histClasses += Form("PairMEPP_%s;PairMEPM_%s;PairMEMM_%s;", cutName.Data(), cutName.Data(), cutName.Data());
-    histClasses += Form("PairSEPM_%s_MCTruth;", cutName.Data());
+    if(task->GetRunOverMC())
+      histClasses += Form("PairSEPM_%s_MCTruth;", cutName.Data());
   }
   
   Int_t runNBins = 0;
