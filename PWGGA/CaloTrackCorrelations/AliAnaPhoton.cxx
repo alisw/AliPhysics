@@ -113,7 +113,10 @@ fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
 
 fhEClusterSM(0),                      fhEPhotonSM(0),
 fhPtClusterSM(0),                     fhPtPhotonSM(0),
-fhMCConversionVertex(0),              fhMCConversionVertexTRD(0)
+fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
+fhDistanceAddedPhotonAddedPrimarySignal  (0), fhDistanceHijingPhotonAddedPrimarySignal  (0),
+fhDistanceAddedPhotonAddedSecondarySignal(0), fhDistanceHijingPhotonAddedSecondarySignal(0),
+fhDistanceAddedPhotonHijingSecondary(0)
 {
   for(Int_t i = 0; i < fgkNmcTypes; i++)
   {
@@ -423,7 +426,7 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
       if(TMath::Abs(dPhi) >= TMath::Pi())
         dPhi = TMath::TwoPi()-TMath::Abs(dPhi);
       
-      if (TMath::Sqrt( dEta*dEta + dPhi*dPhi ) > 0.2) continue;
+      if (TMath::Sqrt( dEta*dEta + dPhi*dPhi ) > radius) continue;
       
       sumM++;
       sumE += calo2->E();
@@ -663,27 +666,7 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   
   Float_t ratio = en / eprim;
   Float_t diff  = en - eprim;
-  
-  // check overlap with same generator, but not hijing
-  const UInt_t nlabels = calo->GetNLabels();
-  Int_t overpdg[nlabels];
-  Int_t overlab[nlabels];
-  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(calo->GetLabels(), nlabels,mctag,-1,GetReader(),overpdg,overlab);
-  Bool_t sameGenOverlap = kFALSE;
-  for(Int_t iover = 0; iover < noverlaps; iover++)
-  {
-    TString genName2;
-    (GetReader()->GetMC())->GetCocktailGenerator(overlab[iover],genName2);
-    if(genName2==genName && !genName.Contains("ijing")) sameGenOverlap = kTRUE;
-  }
-  
-  printf("bkg tag %d, noverlaps %d; same gen overlap %d\n",genBkgTag,noverlaps,sameGenOverlap);
-  if(sameGenOverlap)
-  {
-    if(genBkgTag == 0) genBkgTag = 2; // Gen+Gen
-    if(genBkgTag == 1) genBkgTag = 3; // Gen+Gen+Hij
-  }
-  
+    
   if ( genBkgTag > 0 ) 
   {
     fhMergeGeneratorCluster[0]      [0]        ->Fill(en,GetEventWeight());
@@ -701,61 +684,58 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
     fhMergeGeneratorClusterEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
     fhMergeGeneratorClusterEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
     
-    if(!genName.Contains("ijing"))
+    if(genBkgTag == 2) 
     {
-      if(genBkgTag == 2) 
-      {
-        fhMergeGeneratorClusterNotHijingBkg[0]      [0]        ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkg[0]      [partType] ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkg[genType][0]        ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkg[genType][partType] ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkg[0]      [0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkg[0]      [partType] ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkg[genType][0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkg[genType][partType] ->Fill(en,GetEventWeight());
+      
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
+      
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
+    }
     
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
-        
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterNotHijingBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
-      }
+    if(genBkgTag == 1)
+    {
+      fhMergeGeneratorClusterHijingBkg[0]      [0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkg[0]      [partType] ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkg[genType][0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkg[genType][partType] ->Fill(en,GetEventWeight());
       
-      if(genBkgTag == 1)
-      {
-        fhMergeGeneratorClusterHijingBkg[0]      [0]        ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkg[0]      [partType] ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkg[genType][0]        ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkg[genType][partType] ->Fill(en,GetEventWeight());
-        
-        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
-        
-        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
-      }
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
       
-      if ( genBkgTag == 3 )
-      {      
-        fhMergeGeneratorClusterHijingAndOtherBkg[0]      [0]        ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkg[0]      [partType] ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkg[genType][0]        ->Fill(en,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkg[genType][partType] ->Fill(en,GetEventWeight());
-        
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
-        
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
-        fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
-      }
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
+    }
+    
+    if ( genBkgTag == 3 )
+    {      
+      fhMergeGeneratorClusterHijingAndOtherBkg[0]      [0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkg[0]      [partType] ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkg[genType][0]        ->Fill(en,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkg[genType][partType] ->Fill(en,GetEventWeight());
+      
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[0]      [0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[0]      [partType] ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[genType][0]        ->Fill(en,ratio,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoRatio[genType][partType] ->Fill(en,ratio,GetEventWeight());
+      
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[0]      [0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[0]      [partType] ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[genType][0]        ->Fill(en,diff,GetEventWeight());
+      fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[genType][partType] ->Fill(en,diff,GetEventWeight());
     }
   }
   else    
@@ -1042,7 +1022,7 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       if(GetReader()->ReadAODMCParticles() &&
          !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primAOD  )) inacceptance = kFALSE ;
     }
-    
+  
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
     tag = GetMCAnalysisUtils()->CheckOrigin(i,GetReader(),GetCalorimeter());
@@ -1055,6 +1035,10 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       
       continue;
     }
+  
+    if(fStudyActivityNearCluster  && photonE > 5) // cut at 5 GeV to avoid too many iterations
+      DistanceToAddedSignal(i,nprim, stack, mcparticles,
+                            photonE,photonEta,photonPhi);
     
     // Consider only final state particles, but this depends on generator,
     // status 1 is the usual one, in case of not being ok, leave the possibility
@@ -1142,6 +1126,179 @@ void AliAnaPhoton::FillAcceptanceHistograms()
       } // Accepted
     }
   } // loop on primaries
+}
+
+//________________________________________________________________________________
+/// Calculate distance between a generated photon and a particle from an added
+/// cocktail generator. Fill histograms.
+///
+///
+//________________________________________________________________________________
+void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim, 
+                                         AliStack * stack, TClonesArray*  mcparticles,
+                                         Float_t photonE, Float_t photonEta, Float_t photonPhi)
+{
+  Double_t addedY   = -100 ;
+  Double_t addedE   = -1 ;
+  Double_t addedPt  = -1 ;
+  Double_t addedPhi =  100 ;
+  Double_t addedEta = -1 ;
+  
+  Int_t    pdg       =  0 ;
+  Int_t    tag       =  0 ;
+  Int_t    status    =  0 ;
+  Int_t    mcIndex   =  0 ;
+  Bool_t   inacceptance = kFALSE ;
+    
+
+  Int_t pdgMomOrg = 0, statusMomOrg = -1, momLabelOrg = -1;
+  Bool_t okMomOrg = kFALSE;
+  GetMCAnalysisUtils()->GetMother(label,GetReader(), pdgMomOrg, statusMomOrg, okMomOrg, momLabelOrg);     
+  
+  TParticle        * primStack = 0;
+  AliAODMCParticle * primAOD   = 0;
+
+  TParticle        * primStackMom = 0;
+  AliAODMCParticle * primAODMom   = 0;
+
+  TString genName;
+  (GetReader()->GetMC())->GetCocktailGenerator(label,genName);
+  
+  for(Int_t i=0 ; i < nprim; i++)
+  {
+    if( i == label ) continue ;
+    
+    if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
+    
+    //printf("particle %d\n",i);
+    
+    Int_t pdgMom = 0, statusMom = -1, momLabel = -1;
+    Bool_t okMom = kFALSE;
+    GetMCAnalysisUtils()->GetMother(i,GetReader(), pdgMom, statusMom, okMom, momLabel);    
+    //printf("\t mom label %d\n",momLabel);
+
+    if(momLabel < 0) continue;
+    
+    Int_t grandMomLabel = -1;
+    if(GetReader()->ReadStack())
+    {
+      primStack = stack->Particle(i) ;
+      if(!primStack)
+      {
+        AliWarning("ESD primaries pointer not available!!");
+        continue;
+      }
+      
+      pdg    = primStack->GetPdgCode();
+      status = primStack->GetStatusCode();
+      
+      // Protection against floating point exception
+      if ( primStack->Energy() == TMath::Abs(primStack->Pz()) || 
+          (primStack->Energy() - primStack->Pz()) < 1e-3      ||
+          (primStack->Energy() + primStack->Pz()) < 0           )  continue ; 
+      
+      //printf("i %d, %s %d  %s %d \n",i, stack->Particle(i)->GetName(), stack->Particle(i)->GetPdgCode(),
+      //       prim->GetName(), prim->GetPdgCode());
+      
+      // Photon kinematics
+      primStack->Momentum(fMomentum);
+      
+      addedY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
+      
+      if(momLabel >= 0)
+      {
+        primStackMom = stack->Particle(momLabel) ;
+        grandMomLabel = primStackMom->GetFirstMother();      
+      }
+    }
+    else
+    {
+      primAOD = (AliAODMCParticle *) mcparticles->At(i);
+      if(!primAOD)
+      {
+        AliWarning("AOD primaries pointer not available!!");
+        continue;
+      }
+      pdg    = primAOD->GetPdgCode();
+      status = primAOD->GetStatus();
+      
+      //printf("\t pdg %d, status %d, E %f, pz %f\n",pdg,status,primAOD->E(),primAOD->Pz());
+
+      // Protection against floating point exception
+      if ( primAOD->E() == TMath::Abs(primAOD->Pz()) || 
+          (primAOD->E() - primAOD->Pz()) < 1e-3      || 
+          (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
+      
+      // Photon kinematics
+      fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+
+      addedY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
+      
+      if(momLabel >= 0)
+      {
+        primAODMom = (AliAODMCParticle *) mcparticles->At(momLabel);
+        grandMomLabel = primAODMom->GetMother();
+      }
+    }
+    //printf("\t grandmom %d\n",grandMomLabel);
+   
+    // Select only photons in the final state
+    //if(pdg != 22 ) continue ;
+    
+    // If too small or too large pt, skip, same cut as for data analysis
+    addedPt  = fMomentum.Pt () ;
+    
+    if(addedPt < GetMinPt() || addedPt > GetMaxPt() ) continue ;
+    
+    addedE   = fMomentum.E  () ;
+    addedEta = fMomentum.Eta() ;
+    addedPhi = fMomentum.Phi() ;
+    
+    if(addedPhi < 0) addedPhi+=TMath::TwoPi();
+    
+    // Check if photons hit desired acceptance
+    inacceptance = kTRUE;
+    
+    // Check same fidutial borders as in data analysis on top of real acceptance if real was requested.
+    if( IsFiducialCutOn() && !GetFiducialCut()->IsInFiducialCut(fMomentum.Eta(),fMomentum.Phi(),GetCalorimeter())) inacceptance = kFALSE ;
+    
+    // Check if photons hit the Calorimeter acceptance
+    if(IsRealCaloAcceptanceOn()) // defined on base class
+    {
+      if(GetReader()->ReadStack()          &&
+         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primStack)) inacceptance = kFALSE ;
+      if(GetReader()->ReadAODMCParticles() &&
+         !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance(GetCalorimeter(), primAOD  )) inacceptance = kFALSE ;
+    }
+    //printf("\t in acceptance %d", inacceptance);
+    if(!inacceptance) continue;
+    
+    TString genName2;
+    (GetReader()->GetMC())->GetCocktailGenerator(i,genName2);
+    
+    Float_t dEta = photonEta-addedEta;
+    Float_t dPhi = photonPhi-addedPhi;
+    Float_t distance = TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+    
+    if (( momLabel != momLabelOrg && momLabelOrg >= 0) || momLabelOrg < 0)
+    {
+      if(!genName2.Contains("ijing"))
+      {
+        if(grandMomLabel < 0)
+        {
+          if ( !genName.Contains("ijing") ) fhDistanceAddedPhotonAddedPrimarySignal  ->Fill(photonE,distance,GetEventWeight());
+          if (  genName.Contains("ijing") ) fhDistanceHijingPhotonAddedPrimarySignal ->Fill(photonE,distance,GetEventWeight());
+        }
+        else
+        {
+          if ( !genName.Contains("ijing") ) fhDistanceAddedPhotonAddedSecondarySignal ->Fill(photonE,distance,GetEventWeight());
+          if (  genName.Contains("ijing") ) fhDistanceHijingPhotonAddedSecondarySignal->Fill(photonE,distance,GetEventWeight());
+        }
+      }
+    }
+    
+    if(!genName.Contains("ijing") &&  genName2.Contains("ijing") && status == 0) fhDistanceAddedPhotonHijingSecondary->Fill(photonE,distance,GetEventWeight());
+  }
 }
 
 //________________________________________________________________________________
@@ -3821,6 +3978,42 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         
       }
     }
+    
+    
+    fhDistanceAddedPhotonAddedPrimarySignal = new TH2F
+    ("hDistanceAddedPhotonAddedPrimarySignal", "Distance added #gamma to primary particle from added generator"
+    ,nptbins,ptmin,ptmax,100,0,0.4);
+    fhDistanceAddedPhotonAddedPrimarySignal->SetYTitle("#it{R}");
+    fhDistanceAddedPhotonAddedPrimarySignal->SetXTitle("#it{p}_{T}");
+    outputContainer->Add(fhDistanceAddedPhotonAddedPrimarySignal) ;
+    
+    fhDistanceHijingPhotonAddedPrimarySignal = new TH2F
+    ("hDistanceHijingPhotonAddedPrimarySignal", "Distance Hijing #gamma to primary particle from added generator"
+     ,nptbins,ptmin,ptmax,100,0,0.4);
+    fhDistanceHijingPhotonAddedPrimarySignal->SetYTitle("#it{R}");
+    fhDistanceHijingPhotonAddedPrimarySignal->SetXTitle("#it{p}_{T}");
+    outputContainer->Add(fhDistanceHijingPhotonAddedPrimarySignal) ;
+
+    fhDistanceAddedPhotonAddedSecondarySignal = new TH2F
+    ("hDistanceAddedPhotonAddedSecondarySignal", "Distance added #gamma to secondary particle from added generator"
+     ,nptbins,ptmin,ptmax,100,0,0.4);
+    fhDistanceAddedPhotonAddedSecondarySignal->SetYTitle("#it{R}");
+    fhDistanceAddedPhotonAddedSecondarySignal->SetXTitle("#it{p}_{T}");
+    outputContainer->Add(fhDistanceAddedPhotonAddedSecondarySignal) ;
+    
+    fhDistanceHijingPhotonAddedSecondarySignal = new TH2F
+    ("hDistanceHijingPhotonAddedSecondarySignal", "Distance Hijing #gamma to secondary particle from added generator"
+     ,nptbins,ptmin,ptmax,100,0,0.4);
+    fhDistanceHijingPhotonAddedSecondarySignal->SetYTitle("#it{R}");
+    fhDistanceHijingPhotonAddedSecondarySignal->SetXTitle("#it{p}_{T}");
+    outputContainer->Add(fhDistanceHijingPhotonAddedSecondarySignal) ;
+
+    fhDistanceAddedPhotonHijingSecondary = new TH2F
+    ("hDistanceAddedPhotonHijingSecondary", "Distance added #gamma to secondary particle from hijing"
+     ,nptbins,ptmin,ptmax,100,0,0.4);
+    fhDistanceAddedPhotonHijingSecondary->SetYTitle("#it{R}");
+    fhDistanceAddedPhotonHijingSecondary->SetXTitle("#it{p}_{T}");
+    outputContainer->Add(fhDistanceAddedPhotonHijingSecondary) ;
   }
 
   if(IsStudyClusterOverlapsPerGeneratorOn() && IsDataMC())
@@ -3884,7 +4077,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMergeGeneratorClusterEPrimRecoDiff[igen][imc]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhMergeGeneratorClusterEPrimRecoDiff[igen][imc]) ;
         
-        if(GetCocktailGenNameToCheck(igen).Contains("ijing")) continue;
+        //if(GetCocktailGenNameToCheck(igen).Contains("ijing")) continue;
         
         //
         
