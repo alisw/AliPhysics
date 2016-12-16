@@ -55,7 +55,7 @@ public:
     kTPCNsigmaTOFVetoPtDep,
     kTPCTOFpidLstar,         //cuts for L* in pPb
     kTPCTOFpidLstar13ppTeV, // cuts for L* pp 13 tev
-
+    kTPCTOFpidLstar13ppTeVERejection, // cuts for L* pp 13 tev with e rejection
     kTPCTOFpidLstarPbPb2011, //cuts for L* in PbPb
     kTPCTOFpidLstarPbPb2011elRej,//cuts for L* in AA with electron rejection
     kTPCTOFpidphipp2015,//TPC+TOF cuts for phi in pp 13 TeV (LHC15f)
