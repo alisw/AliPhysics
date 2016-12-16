@@ -483,6 +483,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227300008250404000", "0252103500000000"); // variation BG scheme track mult
     cuts.AddCut("00010113", "00200009227300008250404000", "0152107500000000"); // alpha meson 0.85
     cuts.AddCut("00010113", "00200009227300008250404000", "0152105500000000"); // alpha meson 0.75
+  } else if (trainConfig == 69) {
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //New standard cut for 8TeV analysis V0AND with double counting cut, TOF removed
     
   //---------configs for 8TeV triggers --------------------------//  
   } else if (trainConfig == 70) { //pp 8TeV cuts with EMC triggers
