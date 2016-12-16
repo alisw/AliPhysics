@@ -1407,7 +1407,7 @@ extern "C" {
   /** Container of ITS trackpoint data
    * @ingroup alihlt_component_datatypes
    */	
-  extern const AliHLTComponentDataType kAliHLTDataTypeITSTrackPoint;
+  extern const AliHLTComponentDataType kAliHLTDataTypeITSSAPTrackPoint;
 
   /** Container of calorimeter clusters
    * @ingroup alihlt_component_datatypes

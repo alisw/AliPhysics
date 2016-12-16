@@ -2,6 +2,7 @@
 #define ALIHLTITSTRACKPOINT_H
 
 #include "AliHLTDataTypes.h"
+#include "AliTrackPointArray.h"
 
 // struct to hold the information on the space points
 struct AliHLTITSTrackPoint 
@@ -14,6 +15,7 @@ struct AliHLTITSTrackPoint
   float	fDriftTime;	// Drift time in SDD (in ns)  
   unsigned short	fVolumeID;	// Volume ID
   void Reset();
+  AliTrackPoint GetAliTrackPoint() const;
 };
  
 inline void AliHLTITSTrackPoint::Reset()
@@ -25,6 +27,11 @@ inline void AliHLTITSTrackPoint::Reset()
   fChargeRatio = 0;
   fClusterType = 0;
   fVolumeID = 0;
+}
+
+inline AliTrackPoint AliHLTITSTrackPoint::GetAliTrackPoint() const
+{
+  return AliTrackPoint( fXYZ, fCov, fVolumeID, fCharge, fDriftTime, fChargeRatio, fClusterType);
 }
 
 struct AliHLTITSTrackPointData {

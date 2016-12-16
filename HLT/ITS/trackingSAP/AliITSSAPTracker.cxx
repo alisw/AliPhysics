@@ -15,6 +15,7 @@
 #include "AliLog.h"
 
 #include "AliHLTITSTrackPoint.h"
+#include "Riostream.h"
 
 ClassImp(AliITSSAPTracker)
 
@@ -1575,8 +1576,13 @@ Int_t AliITSSAPTracker::GetTrackPoint( Int_t iLayer, Int_t clusterIndex, AliHLTI
 
   Int_t idet = cl->GetDetectorIndex();
 
-  cl->GetGlobalXYZ(p.fXYZ);
-  cl->GetGlobalCov(p.fCov);
+  bool ok = cl->GetGlobalXYZ(p.fXYZ) && cl->GetGlobalCov(p.fCov);
+  if( !ok ){
+    AliError( "AliITSSAPTracker: can not get global coordinates of a cluster" );
+    p.Reset();
+    return -1;
+  }
+
   p.fCharge = cl->GetQ();
   p.fChargeRatio = cl->GetChargeRatio();
   p.fClusterType = cl->GetClusterType();

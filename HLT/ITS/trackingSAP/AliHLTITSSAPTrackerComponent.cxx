@@ -147,7 +147,7 @@ int AliHLTITSSAPTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList
   tgtList.clear();
   tgtList.push_back(kAliHLTDataTypeITSSAPData|kAliHLTDataOriginITS);
   tgtList.push_back(kAliHLTDataTypeFlatESDVertex|kAliHLTDataOriginITS ); // RS??: is this correct?
-  tgtList.push_back(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
+  tgtList.push_back(kAliHLTDataTypeITSSAPTrackPoint|kAliHLTDataOriginITS);
   return tgtList.size();
 }
 
@@ -620,7 +620,6 @@ int AliHLTITSSAPTrackerComponent::DoEvent
       break;
     }    
     outTrackPoints->fCount = 0; 
-    blockSize = sizeof(AliHLTITSTrackPointData);
 
     for( int itr=0; itr<outTrackData->fCount; itr++){      
       AliHLTITSSAPTrackerData &trcHLT = outTrackData->fTracks[itr];
@@ -638,16 +637,17 @@ int AliHLTITSSAPTrackerComponent::DoEvent
 	outTrackPoints->fCount++;
       }
       if( nCl != trcHLT.ncl ){
-	HLTError( "ITS SAP Tracker: wrong n clusters in output track: %d instead of %d", trcHLT.ncl, nCl );
+	HLTError( "wrong n clusters in output track: %d instead of %d", trcHLT.ncl, nCl );
       }
       trcHLT.ncl = nCl;
     }
+    blockSize = sizeof(AliHLTITSTrackPointData) + outTrackPoints->fCount*sizeof(AliHLTITSTrackPoint);
 
     AliHLTComponentBlockData resultData;
     FillBlockData( resultData );
     resultData.fOffset = size;
     resultData.fSize = blockSize;
-    resultData.fDataType = kAliHLTDataTypeITSTrackPoint |kAliHLTDataOriginITS;
+    resultData.fDataType = kAliHLTDataTypeITSSAPTrackPoint |kAliHLTDataOriginITS;
     fBenchmark.AddOutput(resultData.fSize);
     outputBlocks.push_back( resultData );
     size += resultData.fSize;   
