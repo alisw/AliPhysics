@@ -1724,6 +1724,13 @@ private:
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
   
+  TProfile *fFlowQCIntCorProOld[3]; //!
+  
+  TList* fFlowQCOrdMagList;
+  const static Int_t fkNOrdMag = 20;
+  const static Int_t fkNHistOrdMag = 4;
+  TH1D *fFlowQCIntCorHistOrdMag[fFlowNHarm][fkNOrdMag][fkNHistOrdMag]; //!
+  
   TH2D *fFlowQCIntCorProTest[fFlowNHarm][3]; //! correlation profile, precision test
   
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!

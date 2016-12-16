@@ -1,4 +1,5 @@
-AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
+AliAnalysisTask * AddTaskCRC(Int_t nHarmonic=3,
+                             Double_t ptMin=0.2,
                              Double_t ptMax=50.,
                              TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
@@ -73,7 +74,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Double_t centrMin=0.;
  Double_t centrMax=100.;
  Double_t CenBinWidth=10.;
- Int_t nHarmonic=1;
  Int_t CRC2nEtaBins=6;
  Bool_t bCalculateCRC2=kFALSE;
  Float_t MaxDevZN=10.;
