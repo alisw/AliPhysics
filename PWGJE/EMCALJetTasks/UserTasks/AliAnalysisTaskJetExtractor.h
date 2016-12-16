@@ -41,6 +41,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   void                        SetHadronMatchingRadius(Double_t val) { fHadronMatchingRadius = val; }
   void                        SetInitialCollisionMatchingRadius(Double_t val)     { fInitialCollisionMatchingRadius = val; }
+  void                        SetTruthParticleArrayName(const char* val)     { fTruthParticleArrayName = val; }
+
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
     fExtractionListPIDsHM.clear();
@@ -52,6 +54,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
       fExtractionListPIDsHM.push_back(val);
     }
     fExtractionCutUseHM = kTRUE;
+    fExtractionCutUseIC = kFALSE;
   }
 
   void                        SetExtractionCutListPIDIC(const char* val)
@@ -65,6 +68,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
       fExtractionListPIDsIC.push_back(val);
     }
     fExtractionCutUseIC = kTRUE;
+    fExtractionCutUseHM = kFALSE;
   }
   // ##################
 
@@ -120,6 +124,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
   Double_t                    fInitialCollisionMatchingRadius;          ///< Matching radius to find a jet of the IC
+  TString                     fTruthParticleArrayName;                  ///< Array name of MC particles in event (mcparticles)
 
 
   // ######### HISTOGRAM FUNCTIONS
