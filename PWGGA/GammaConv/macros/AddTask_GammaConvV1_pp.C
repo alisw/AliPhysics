@@ -343,15 +343,15 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000123", "00700009397300008250430000", "0163103100900000"); // photon quality 2, min R = 35 cm
     cuts.AddCut("00000123", "00700009397300008250440000", "0163103100900000"); // photon quality 3, min R = 35 cm
   } else if (trainConfig == 23) { // meson cut variations
-    cuts.AddCut("00000123", "00200009397300008250400000", "0163203100900000"); // y meson < 0.7
-    cuts.AddCut("00000123", "00200009397300008250400000", "0163503100900000"); // y meson < 0.85
-    cuts.AddCut("00000123", "00200009397300008250400000", "0263203100900000"); // mixed event with track mult
-    cuts.AddCut("00000123", "00200009397300008250400000", "0063503100900000"); // BG with rotation
-  } else if (trainConfig == 24) { // meson cut variations added signals
     cuts.AddCut("00000113", "00200009397300008250400000", "0163203100900000"); // y meson < 0.7
     cuts.AddCut("00000113", "00200009397300008250400000", "0163503100900000"); // y meson < 0.85
     cuts.AddCut("00000113", "00200009397300008250400000", "0263203100900000"); // mixed event with track mult
     cuts.AddCut("00000113", "00200009397300008250400000", "0063503100900000"); // BG with rotation
+  } else if (trainConfig == 24) { // meson cut variations added signals
+    cuts.AddCut("00000123", "00200009397300008250400000", "0163203100900000"); // y meson < 0.7
+    cuts.AddCut("00000123", "00200009397300008250400000", "0163503100900000"); // y meson < 0.85
+    cuts.AddCut("00000123", "00200009397300008250400000", "0263203100900000"); // mixed event with track mult
+    cuts.AddCut("00000123", "00200009397300008250400000", "0063503100900000"); // BG with rotation
 
   //--------- testing triggers for EMC in 2.76TeV ----------------------------------------------
   } else if (trainConfig == 25) { //LHC11a

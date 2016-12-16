@@ -875,7 +875,17 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     nBinsClusterPt            = 800;
     minClusterPt              = 0;
     maxClusterPt              = 80;  
-  }  
+  } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ){
+    nBinsPt                   = 400;
+    minPt                     = 0;
+    maxPt                     = 40;
+    nBinsQAPt                 = 300;
+    minQAPt                   = 0.4;
+    maxQAPt                   = 40;
+    nBinsClusterPt            = 800;
+    minClusterPt              = 0;
+    maxClusterPt              = 80;
+  }
   
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
     TString cutstringEvent    = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
