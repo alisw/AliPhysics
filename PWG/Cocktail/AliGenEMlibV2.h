@@ -38,7 +38,7 @@ public:
   enum CollisionSystem_t {kpp900GeV=0x000, kpp2760GeV=0x64, kpp7TeV=0xC8, kpPb=0x12C, kPbPb=0x190};
   
   enum Centrality_t{ kpp = 0x0, k0005=0x1, k0510=0x2, k1020=0x3, k2030=0x4, k3040=0x5, k4050=0x6, k5060=0x7,
-    k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
+    k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, k2050=0x10, kCentralities=0x11};
   
   enum v2Sys_t{kLoV2Sys=-1, kNoV2Sys=0, kUpV2Sys=+1};
 
@@ -217,7 +217,7 @@ private:
   static TF1*     fPtParametrizationProton;   // pt paramtrization
   static TH1D*    fMtFactorHisto;             // mt scaling factors
 
-  ClassDef(AliGenEMlibV2,3);
+  ClassDef(AliGenEMlibV2,4);
   
 };
 
