@@ -582,23 +582,35 @@ void AliReducedAnalysisJpsi2ee::FillMCTruthHistograms() {
      track = (AliReducedTrackInfo*)nextTrack();
      if(!track->IsMCTruth()) continue;
      
-     AliReducedVarManager::FillMCTruthInfo(track, fValues);
-     fHistosManager->FillHistClass("MCTruth_BeforeSelection", fValues);
-     if(IsMCTruthSelected(track))
-        fHistosManager->FillHistClass("MCTruth_AfterSelection", fValues);
+     if(track->MCPdg(0)==443 && TMath::Abs(track->Rapidity(3.1))<0.9) {       // TODO: use the correct PDG mass
+       AliReducedVarManager::FillMCTruthInfo(track, fValues);
+       fHistosManager->FillHistClass("MCTruth_BeforeSelection", fValues);
+       if(IsMCTruthSelected(track))
+          fHistosManager->FillHistClass("MCTruth_AfterSelection", fValues);
+     }
   }
 }
 
 //___________________________________________________________________________
-Bool_t AliReducedAnalysisJpsi2ee::IsMCTruthSelected(AliReducedTrackInfo* track) {
+Bool_t AliReducedAnalysisJpsi2ee::IsMCTruthSelected(AliReducedTrackInfo* mother) {
    //
-   // check whether this signal is selected
+   // find the jpsi legs in the list of pure MC truth particles
    //
-   // TODO: create a dynamical way to define the MC truth selection
-   if(TMath::Abs(track->MCPdg(0)) != 443) return kFALSE;     // inclusive J/psi
-   Float_t rapidity = track->Rapidity(3.1);     // TODO: use the exact J/psi PDG mass
-   if(TMath::Abs(rapidity)>0.9) return kFALSE;
-   return kTRUE;
+   Int_t mLabel = mother->MCLabel(0);
+   AliReducedTrackInfo* track=0x0;
+   TClonesArray* trackList = fEvent->GetTracks();
+   TIter nextTrack(trackList);
+   Int_t legsFound = 0;
+   for(Int_t it=0; it<fEvent->NTracks(); ++it) {
+      if(legsFound==2) return kTRUE;
+      track = (AliReducedTrackInfo*)nextTrack();
+      if(!track->IsMCTruth()) continue;
+      if(track->MCLabel(1)==mLabel && TMath::Abs(track->MCPdg(0))==11) {
+         legsFound += 1;
+         if(TMath::Abs(track->EtaMC())>0.9) return kFALSE;
+         if(track->PtMC()<1.0) return kFALSE;
+      }
+   }
+   return kFALSE;
 }
-
 
