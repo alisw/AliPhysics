@@ -18,7 +18,7 @@
 ****************************************************************************/
 
 enum eventCutSet { kDefaultVtx = 0,
-		   kDefaultVtx9,//=1
+		   kDefaultVtx12,//=1
 		   kDefaultVtx8 //=2
                  };
 
@@ -46,7 +46,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    Bool_t      useMixLS = 0,
    Int_t       nmix = 5,
    Float_t     maxDiffVzMix = 1.0,
-   Float_t     maxDiffMultMix = 10.0,
+   Float_t     maxDiffMultMix = 5.0,
    TString     outNameSuffix = "Default"
 )
 
@@ -59,7 +59,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
   Double_t  vtxZcut = 10.0;//default cut on vtx z
   
   //  if(evtCutSetID==eventCutSet::kDefaultVtx) vtxZcut=10.0; //cm
-  if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=9.0; //cm
+  if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=12.0; //cm
   if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
   
   //vtxZcut = 10.0;//default cut on vtx z
@@ -201,6 +201,11 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    cutsPair->AddCut(cutY);
    cutsPair->SetCutScheme(cutY->GetName());
    
+
+   AliRsnValuePair * openangle = new AliRsnValuePair("openangle", AliRsnValuePair::kDipAngle);
+   openangle->DipAngle(1);
+
+
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
@@ -208,8 +213,8 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    //for systematic checks
      {
        //gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
-       //   gROOT->LoadMacro("ConfigureLstar13TeVpp.C");
-       gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp.C");
+       //gROOT->LoadMacro("ConfigureLstar13TeVpp.C");
+         gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp.C");
        if (!ConfigureLstar13TeVpp(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly, signedPdg, monitorOpt, useCrossedRows, yaxisVar ,useMixLS)) 
 return 0x0;  
      }
