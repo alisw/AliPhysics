@@ -24,6 +24,7 @@
 #include "AliAnalysisTaskEmcalTriggerBase.h"
 #include "AliAnalysisUtils.h"
 #include "AliAODEvent.h"
+#include "AliAODInputHandler.h"
 #include "AliEmcalAnalysisFactory.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALTriggerPatchInfo.h"
@@ -105,6 +106,11 @@ AliAnalysisTaskEmcalTriggerBase::~AliAnalysisTaskEmcalTriggerBase() {
 void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
   if(fRequireAnalysisUtils && !fAliAnalysisUtils) fAliAnalysisUtils = new AliAnalysisUtils;
+
+  if(!fNameClusterContainer.Length()) fNameClusterContainer = AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputHandler->IsA() == AliAODInputHandler::Class());
+  if(fTriggerSelection && !fTriggerSelection->GetNameClusterContainer().Length()){
+    fTriggerSelection->SetClusterContainer(fNameClusterContainer);
+  }
 
   fHistos = new THistManager(Form("Histos_%s", GetName()));
 
@@ -271,10 +277,6 @@ void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
 
   if(!fLocalInitialized){
     return;
-  }
-
-  if(fTriggerSelection && !fTriggerSelection->GetNameClusterContainer().Length()){
-    fTriggerSelection->SetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   }
 
   // Handle OADB container with downscaling factors

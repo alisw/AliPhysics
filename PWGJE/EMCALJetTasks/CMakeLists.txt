@@ -109,6 +109,7 @@ set(SRCS
     Tracks/AliAnalysisTaskChargedParticlesMCTriggerMimic.cxx
     Tracks/AliAnalysisTaskEmcalTriggerMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
+    Tracks/AliAnalysisTaskEmcalClusterMatched.cxx
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
