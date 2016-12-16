@@ -63,6 +63,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
   
+  void         DistanceToAddedSignal(Int_t label, Int_t nprim, 
+                                     AliStack * stack, TClonesArray*  mcparticles,
+                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
+  
   void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t nlm,
                                          Float_t maxCellEFraction, Int_t & largeTimeInside) ;
   
@@ -526,6 +530,14 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F *  fhMergeGeneratorClusterHijingAndOtherBkgEPrimRecoDiff[10][fgkNGenTypes]; //!<! Cluster energy, at least 3 generators contributions, one is HIJING, for different generator origins and different particles.
   TH2F *  fhMergeGeneratorClusterHijingBkgEPrimRecoDiff        [10][fgkNGenTypes]; //!<! Cluster energy, at least 2 generators contributions, one is HIJING, for different generator origins and different particles.
   TH2F *  fhCleanGeneratorClusterEPrimRecoDiff                 [10][fgkNGenTypes]; //!<! Cluster energy, only one generator is the contributor, for different generator origins and different particles.
+  
+  
+  TH2F *  fhDistanceAddedPhotonAddedPrimarySignal   ; //!<! Generated added cocktail photon vs distance to other generator primary particle.
+  TH2F *  fhDistanceHijingPhotonAddedPrimarySignal  ; //!<! Generated hijing photon vs distance to other generator primary particle.
+  TH2F *  fhDistanceAddedPhotonAddedSecondarySignal ; //!<! Generated added cocktail photon vs distance to other generator secondary particle.
+  TH2F *  fhDistanceHijingPhotonAddedSecondarySignal; //!<! Generated hijing photon vs distance to other generator secondary particle.
+  TH2F *  fhDistanceAddedPhotonHijingSecondary      ; //!<! Generated added cocktail photon vs distance to hijing secondary particle.
+
   
   /// Copy constructor not implemented.
   AliAnaPhoton(              const AliAnaPhoton & g) ;
