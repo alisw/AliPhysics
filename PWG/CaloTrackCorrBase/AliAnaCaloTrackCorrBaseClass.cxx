@@ -430,12 +430,17 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
   Int_t overpdg[nlabels];
   Int_t overlab[nlabels];
   Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetReader(),overpdg,overlab);
-  Bool_t sameGenOverlap = kFALSE;
+  Bool_t sameGenOverlap   = kFALSE;
+  Bool_t sameGenOverlapHI = kFALSE;
   for(Int_t iover = 0; iover < noverlaps; iover++)
   {
     TString genName2;
     (GetReader()->GetMC())->GetCocktailGenerator(overlab[iover],genName2);
-    if(genName2==genName && !genName.Contains("ijing")) sameGenOverlap = kTRUE;
+    if ( genName2==genName )
+    {
+      if ( !genName.Contains("ijing") ) sameGenOverlap   = kTRUE;
+      else                              sameGenOverlapHI = kTRUE;  
+    }
   }
   
   //printf("bkg tag %d, noverlaps %d; same gen overlap %d\n",genBkgTag,noverlaps,sameGenOverlap);
@@ -445,9 +450,13 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
     if(genBkgTag == 1) genBkgTag = 3; // Gen+Gen+Hij
   }
 
+  if(sameGenOverlapHI)
+  {
+    if(genBkgTag == 0) genBkgTag = 2; // Gen+Gen
+    if(genBkgTag == 2) genBkgTag = 3; // Gen+Gen+Hij   
+  }
+    
   return genBkgTag;
-  
-
 }
 
 //_____________________________________________________________________
