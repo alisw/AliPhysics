@@ -76,6 +76,9 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fCurrentSubleadingJet(0),
   fCurrentInitialParton1(0),
   fCurrentInitialParton2(0),
+  fCurrentInitialParton1Type(0),
+  fCurrentInitialParton2Type(0),
+  fFoundIC(kFALSE),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
   fExtractionCutUseIC(kFALSE),
@@ -108,6 +111,9 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fCurrentSubleadingJet(0),
   fCurrentInitialParton1(0),
   fCurrentInitialParton2(0),
+  fCurrentInitialParton1Type(0),
+  fCurrentInitialParton2Type(0),
+  fFoundIC(kFALSE),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
   fExtractionCutUseIC(kFALSE),
@@ -356,8 +362,7 @@ void AliAnalysisTaskJetExtractor::CalculateEventProperties()
 {
   fCurrentNJetsInEvents = 0;
   GetLeadingJets("rho", fCurrentLeadingJet, fCurrentSubleadingJet);
-  if(fPythiaInfo)
-    CalculatePYTHIAInitialCollisionJets();
+  CalculateInitialCollisionJets();
 }
 
 //________________________________________________________________________
@@ -366,14 +371,14 @@ void AliAnalysisTaskJetExtractor::CalculateJetType(AliEmcalJet* jet, Int_t& type
   typeIC = -1;
   typeHM = -1;
 
-  // Only do this in case we have PYTHIA information available
-  if(fPythiaInfo)
+  // Set type if initial parton information is available
+  if(fFoundIC)
   {
     typeIC = 0;
     if(jet==fCurrentInitialParton1)
-      typeIC = fPythiaInfo->GetPartonFlag6();
+      typeIC = fCurrentInitialParton1Type;
     else if (jet==fCurrentInitialParton2)
-      typeIC = fPythiaInfo->GetPartonFlag7();
+      typeIC = fCurrentInitialParton2Type;
   }
 
   // Do hadron matching jet type tagging using mcparticles
@@ -523,19 +528,88 @@ void AliAnalysisTaskJetExtractor::GetLeadingJets(const char* opt, AliEmcalJet*& 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::CalculatePYTHIAInitialCollisionJets()
+void AliAnalysisTaskJetExtractor::CalculateInitialCollisionJets()
 {
+  // Get the initial parton infromation
+  Double_t initialParton1_eta = -999.;
+  Double_t initialParton1_phi = -999.;
+  Int_t    initialParton1_pdg = 0;
+
+  Double_t initialParton2_eta = -999.;
+  Double_t initialParton2_phi = -999.;
+  Int_t    initialParton2_pdg = 0;
+
+  // If available, use stack as input
+  if(MCEvent() && (MCEvent()->Stack()))
+  {
+    AliStack* stack = MCEvent()->Stack();
+    TParticle* parton1 = stack->Particle(6);
+    TParticle* parton2 = stack->Particle(7);
+    if(parton1)
+    {
+      initialParton1_eta = parton1->Eta();
+      initialParton1_phi = parton1->Phi();
+      initialParton1_pdg = TMath::Abs(parton1->GetPdgCode());
+    }
+    if(parton2)
+    {
+      initialParton2_eta = parton2->Eta();
+      initialParton2_phi = parton2->Phi();
+      initialParton2_pdg = TMath::Abs(parton2->GetPdgCode());
+    }
+  }
+  // Otherwise, PYTHIA object information
+  else if (fPythiaInfo)
+  {
+    initialParton1_eta = fPythiaInfo->GetPartonEta6();
+    initialParton1_phi = fPythiaInfo->GetPartonPhi6();
+    initialParton1_pdg = fPythiaInfo->GetPartonFlag6();
+    initialParton2_eta = fPythiaInfo->GetPartonEta7();
+    initialParton2_phi = fPythiaInfo->GetPartonPhi7();
+    initialParton2_pdg = fPythiaInfo->GetPartonFlag7();
+  }
+  // or direct particle level information from mcparticles branch
+  else if (TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data())))
+  {
+    AliAODMCParticle* parton1 = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(6));
+    AliAODMCParticle* parton2 = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(7));
+    if(parton1)
+    {
+      initialParton1_eta = parton1->Eta();
+      initialParton1_phi = parton1->Phi();
+      initialParton1_pdg = TMath::Abs(parton1->GetPdgCode());
+    }
+    if(parton2)
+    {
+      initialParton2_eta = parton2->Eta();
+      initialParton2_phi = parton2->Phi();
+      initialParton2_pdg = TMath::Abs(parton2->GetPdgCode());
+    }
+  }
+  // No initial collision partons found, return
+  else
+  {
+    fFoundIC = kFALSE;
+    fCurrentInitialParton1 = 0;
+    fCurrentInitialParton2 = 0;
+    fCurrentInitialParton1Type = 0;
+    fCurrentInitialParton2Type = 0;
+    return;
+  }
+
+  fFoundIC = kTRUE;
+
   Double_t bestMatchDeltaR1 = 999.;
   Double_t bestMatchDeltaR2 = 999.;
 
+  // #### Find via geometrical matching the jet connected to the initial collision
   fJetsCont->ResetCurrentID();
   while(AliEmcalJet *jet = fJetsCont->GetNextAcceptJet())
   {
-    // Check via geometrical matching if jet is connected to the initial collision
-    Double_t deltaEta1 = TMath::Abs(jet->Eta()-fPythiaInfo->GetPartonEta6());
-    Double_t deltaEta2 = TMath::Abs(jet->Eta()-fPythiaInfo->GetPartonEta7());
-    Double_t deltaPhi1 = TMath::Min(TMath::Abs(jet->Phi()-fPythiaInfo->GetPartonPhi6()),TMath::TwoPi() - TMath::Abs(jet->Phi()-fPythiaInfo->GetPartonPhi6()));
-    Double_t deltaPhi2 = TMath::Min(TMath::Abs(jet->Phi()-fPythiaInfo->GetPartonPhi7()),TMath::TwoPi() - TMath::Abs(jet->Phi()-fPythiaInfo->GetPartonPhi7()));
+    Double_t deltaEta1 = TMath::Abs(jet->Eta()-initialParton1_eta);
+    Double_t deltaEta2 = TMath::Abs(jet->Eta()-initialParton2_eta);
+    Double_t deltaPhi1 = TMath::Min(TMath::Abs(jet->Phi()-initialParton1_phi),TMath::TwoPi() - TMath::Abs(jet->Phi()-initialParton1_phi));
+    Double_t deltaPhi2 = TMath::Min(TMath::Abs(jet->Phi()-initialParton2_phi),TMath::TwoPi() - TMath::Abs(jet->Phi()-initialParton2_phi));
 
     Double_t deltaR1 = TMath::Sqrt(deltaEta1*deltaEta1 + deltaPhi1*deltaPhi1);
     Double_t deltaR2 = TMath::Sqrt(deltaEta2*deltaEta2 + deltaPhi2*deltaPhi2);
@@ -544,14 +618,17 @@ void AliAnalysisTaskJetExtractor::CalculatePYTHIAInitialCollisionJets()
     {
       bestMatchDeltaR1 = deltaR1;
       fCurrentInitialParton1 = jet;
+      fCurrentInitialParton1Type = initialParton1_pdg;
     }
     if(deltaR2 < bestMatchDeltaR2)
     {
       bestMatchDeltaR2 = deltaR2;
       fCurrentInitialParton2 = jet;
+      fCurrentInitialParton2Type = initialParton2_pdg;
     }
   }
 
+  // Discard matched jet that are to far away
   if(bestMatchDeltaR1 > fInitialCollisionMatchingRadius)
     fCurrentInitialParton1 = 0;
   if(bestMatchDeltaR2 > fInitialCollisionMatchingRadius)
