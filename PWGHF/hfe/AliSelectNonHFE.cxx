@@ -236,16 +236,21 @@ void AliSelectNonHFE::FindNonHFE(Int_t iTrack1, AliVParticle *Vtrack1, AliVEvent
         {
             //AOD Filter Bit
             if (fUseGlobalTracks)
+            {
                 if(!atrack2->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //Same as trigger
+            }
             else
+            {
              if(!atrack2->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue; //Old one
+            }
             
             //ITS and TPC refit
             if((!(atrack2->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack2->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             
             //Eta cut
             if (fUseEtaCutForPart)
-                if(atrack2->Eta()>=fEtaCutMin && atrack2->Eta()<=fEtaCutMax) continue;
+                if(atrack2->Eta() < fEtaCutMin || atrack2->Eta() > fEtaCutMax)
+                    continue;
             
             //NClusters on TPC
             if(atrack2->GetTPCNcls() < fTpcNcls) continue;
