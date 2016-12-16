@@ -2097,7 +2097,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhPairGeneratorsBkgMass[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgMass[igen][itag]) ;
         
-        
         fhPairGeneratorsBkgMassMCPi0[igen][itag] = new TH2F
         (Form("h%sGeneratorPairMass%s%s_MCPi0",
               tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
@@ -2127,7 +2126,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]) ;
-        
         
         fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag] = new TH2F
         (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCEta",
