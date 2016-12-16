@@ -98,6 +98,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
+  fFillSparses(0),
   fhStudyImpParSingleTrackSign(0), 
   fhStudyImpParSingleTrackCand(0), 
   fhStudyImpParSingleTrackFd(0), 
@@ -144,6 +145,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
+  fFillSparses(0),
   fhStudyImpParSingleTrackSign(0),
   fhStudyImpParSingleTrackCand(0),
   fhStudyImpParSingleTrackFd(0),
@@ -824,28 +826,33 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   }
   //create THnSparse for impact parameter analysis in DATA sample.
   //pt, normImpParTrk1, normImpParTrk2,    decLXY, normDecLXY, massd0, cut, pid, D0D0bar
-  Int_t nbinsImpParStudy[9]=      {50, 40, 40, 20, 15, 600,  3,4,2};
-  Double_t limitLowImpParStudy[9]={0,  -5, -5,  0,  0,1.6248,1,0,0};
-  Double_t limitUpImpParStudy[9]= {50., 5,  5, 0.2,15,2.2248,4,4,2};
-  TString axTit[9]={"#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","MassD0_{k#pi} (GeV/#it{c}^{2})", "cutSel","PIDinfo","D0D0bar"};
-  fhStudyImpParSingleTrackCand=new THnSparseF("fhStudyImpParSingleTrackCand","fhStudyImpParSingleTrackCand",9,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-  for(Int_t iax=0; iax<9; iax++) fhStudyImpParSingleTrackCand->GetAxis(iax)->SetTitle(axTit[iax].Data());
-  fOutputMass->Add(fhStudyImpParSingleTrackCand);
+  if(fFillSparses){
+    Int_t nbinsImpParStudy[9]=      {50, 40, 40, 20, 15, 600,  3,4,2};
+    Double_t limitLowImpParStudy[9]={0,  -5, -5,  0,  0,1.6248,1,0,0};
+    Double_t limitUpImpParStudy[9]= {50., 5,  5, 0.2,15,2.2248,4,4,2};
+    TString axTit[9]={"#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","MassD0_{k#pi} (GeV/#it{c}^{2})", "cutSel","PIDinfo","D0D0bar"};
+    fhStudyImpParSingleTrackCand=new THnSparseF("fhStudyImpParSingleTrackCand","fhStudyImpParSingleTrackCand",9,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+    for(Int_t iax=0; iax<9; iax++) fhStudyImpParSingleTrackCand->GetAxis(iax)->SetTitle(axTit[iax].Data());
+    fOutputMass->Add(fhStudyImpParSingleTrackCand);
+  }
   if(fReadMC){
-    //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
-    Int_t nbinsImpParStudy[8]=      {50,50,40, 40, 20,  15,  3, 4};
-    Double_t limitLowImpParStudy[8]={0, 0, -5,-5., 0.,  0.,  1.,0.};
-    Double_t limitUpImpParStudy[8]= {50.,50., 5, 5,  0.2, 15,  3.,4.};
 
-    fhStudyImpParSingleTrackSign=new THnSparseF("fhStudyImpParSingleTrackSign","fhStudyImpParSingleTrackSign",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-    TString axTitMC[8]={"#it{p}_{T} (GeV/c)","#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","cutSel","PIDinfo"};
-    for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackSign->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
-    fOutputMass->Add(fhStudyImpParSingleTrackSign);
-
-
-    fhStudyImpParSingleTrackFd=new THnSparseF("fhStudyImpParSingleTrackFd","fhStudyImpParSingleTrackFd",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-    for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackFd->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
-    fOutputMass->Add(fhStudyImpParSingleTrackFd);
+    if(fFillSparses){
+      //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
+      Int_t nbinsImpParStudy[8]=      {50,50,40, 40, 20,  15,  3, 4};
+      Double_t limitLowImpParStudy[8]={0, 0, -5,-5., 0.,  0.,  1.,0.};
+      Double_t limitUpImpParStudy[8]= {50.,50., 5, 5,  0.2, 15,  3.,4.};
+      
+      fhStudyImpParSingleTrackSign=new THnSparseF("fhStudyImpParSingleTrackSign","fhStudyImpParSingleTrackSign",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+      TString axTitMC[8]={"#it{p}_{T} (GeV/c)","#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","cutSel","PIDinfo"};
+      for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackSign->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
+      fOutputMass->Add(fhStudyImpParSingleTrackSign);
+      
+      
+      fhStudyImpParSingleTrackFd=new THnSparseF("fhStudyImpParSingleTrackFd","fhStudyImpParSingleTrackFd",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+      for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackFd->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
+      fOutputMass->Add(fhStudyImpParSingleTrackFd);
+    }
   
     if(fStepMCAcc) CreateMCAcceptanceHistos();
   }
@@ -1223,7 +1230,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	DrawDetSignal(d, fDetSignal);
       }
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
-      NormIPvar(aod, d,mcArray);
+      if(fFillSparses) NormIPvar(aod, d,mcArray);
       if (fPIDCheck) {
 	Int_t isSelectedPIDfill = 3;
 	if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both
