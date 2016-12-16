@@ -304,8 +304,6 @@ public:
 
     void ExecuteCanvasEvent(Int_t event, Int_t px, Int_t py, TObject *sel);
 
-    std::vector<Double_t> GetMCCB2Tails(const AliAnalysisMuMuBinning::Range& bin) const;
-
     AliAnalysisMuMu* SIM() const { return fAssociatedSimulation; }
 
     AliAnalysisMuMu* SIM2() const { return fAssociatedSimulation2; }
@@ -323,8 +321,6 @@ public:
     AliAnalysisMuMuConfig* Config() const { return fConfig; }
 
     void SetConfig(const AliAnalysisMuMuConfig& config);
-
-    void SetCentralitySelectionList(const char* centralitySelectionList);
 
 private:
     AliAnalysisMuMu(const AliAnalysisMuMu& rhs); // not implemented on purpose
