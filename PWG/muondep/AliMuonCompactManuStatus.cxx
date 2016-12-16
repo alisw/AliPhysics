@@ -82,25 +82,30 @@ std::vector<UInt_t> AliMuonCompactManuStatus::BuildFromOCDB(Int_t runNumber, con
     AliMpManuIterator it;
     Int_t detElemId, manuId;
 
-    Int_t pedCheck = (
-            AliMUONPadStatusMaker::kPedMeanZero |
-            AliMUONPadStatusMaker::kPedMeanTooLow |
-            AliMUONPadStatusMaker::kPedMeanTooHigh |
-            AliMUONPadStatusMaker::kPedSigmaTooLow |
-            AliMUONPadStatusMaker::kPedSigmaTooHigh );
+    // Int_t pedCheck = (
+    //         AliMUONPadStatusMaker::kPedMeanZero |
+    //         AliMUONPadStatusMaker::kPedMeanTooLow |
+    //         AliMUONPadStatusMaker::kPedMeanTooHigh |
+    //         AliMUONPadStatusMaker::kPedSigmaTooLow |
+    //         AliMUONPadStatusMaker::kPedSigmaTooHigh );
+    //
+    // Int_t hvCheck = (
+    //         AliMUONPadStatusMaker::kHVError |
+    //         AliMUONPadStatusMaker::kHVTooLow |
+    //         AliMUONPadStatusMaker::kHVTooHigh |
+    //         AliMUONPadStatusMaker::kHVChannelOFF |
+    //         AliMUONPadStatusMaker::kHVSwitchOFF );
+    //
+    // Int_t occCheck = (
+    //         AliMUONPadStatusMaker::kManuOccupancyTooHigh
+    //         );
+    //
+    // Int_t lvCheck = ( AliMUONPadStatusMaker::kLVTooLow );
 
-    Int_t hvCheck = (
-            AliMUONPadStatusMaker::kHVError |
-            AliMUONPadStatusMaker::kHVTooLow |
-            AliMUONPadStatusMaker::kHVTooHigh |
-            AliMUONPadStatusMaker::kHVChannelOFF |
-            AliMUONPadStatusMaker::kHVSwitchOFF );
-
-    Int_t occCheck = (
-            AliMUONPadStatusMaker::kManuOccupancyTooHigh
-            );
-
-    Int_t lvCheck = ( AliMUONPadStatusMaker::kLVTooLow );
+    Int_t pedCheck = 62; // should really use the enum above, but can't do that until there is an AliRoot tag with that mod, otherwise I break AliPhysics...
+    Int_t hvCheck = 31;
+    Int_t occCheck = 4;
+    Int_t lvCheck = 8;
 
     Int_t ntotal(0);
     Int_t nbad(0);
@@ -156,7 +161,7 @@ std::vector<UInt_t> AliMuonCompactManuStatus::BuildFromOCDB(Int_t runNumber, con
                     ++manubadocc;
                 }
 
-                if ( status & AliMUONPadStatusMaker::BuildStatus(AliMUONPadStatusMaker::kMissing,0,0,0) )
+                if ( status & AliMUONPadStatusMaker::BuildStatus(128 /*AliMUONPadStatusMaker::kMissing*/,0,0,0) )
                 {
                     ++manumissing;
                 }
