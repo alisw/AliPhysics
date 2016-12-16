@@ -1920,6 +1920,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
       tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus); //PH probably redundant
       tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
       tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
+      tree->SetBranchAddress("fNTPCClusters",&fNTPCClusters);
       GetStdContent(); 
       fOldMuonStructure = fESDObjects->TestBit(BIT(23));
       fConnected = true;
@@ -1986,7 +1987,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
     tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
-
+    tree->SetBranchAddress("fNTPCClusters",&fNTPCClusters);
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
@@ -2025,7 +2026,7 @@ void AliESDEvent::ReadFromTree(TTree *tree, Option_t* opt){
     tree->SetBranchAddress("fDetectorStatus",&fDetectorStatus);
     tree->SetBranchAddress("fDAQDetectorPattern",&fDAQDetectorPattern);
     tree->SetBranchAddress("fDAQAttributes",&fDAQAttributes);
-
+    tree->SetBranchAddress("fNTPCClusters",&fNTPCClusters);
     GetStdContent();
     // when reading back we are not owner of the list 
     // must not delete it
