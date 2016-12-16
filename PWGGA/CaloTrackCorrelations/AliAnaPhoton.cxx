@@ -1138,19 +1138,16 @@ void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim,
                                          AliStack * stack, TClonesArray*  mcparticles,
                                          Float_t photonE, Float_t photonEta, Float_t photonPhi)
 {
-  Double_t addedY   = -100 ;
-  Double_t addedE   = -1 ;
+  //Double_t addedY   = -100 ;
+  //Double_t addedE   = -1 ;
   Double_t addedPt  = -1 ;
   Double_t addedPhi =  100 ;
   Double_t addedEta = -1 ;
   
-  Int_t    pdg       =  0 ;
-  Int_t    tag       =  0 ;
+  //Int_t    pdg       =  0 ;
   Int_t    status    =  0 ;
-  Int_t    mcIndex   =  0 ;
   Bool_t   inacceptance = kFALSE ;
     
-
   Int_t pdgMomOrg = 0, statusMomOrg = -1, momLabelOrg = -1;
   Bool_t okMomOrg = kFALSE;
   GetMCAnalysisUtils()->GetMother(label,GetReader(), pdgMomOrg, statusMomOrg, okMomOrg, momLabelOrg);     
@@ -1189,7 +1186,7 @@ void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim,
         continue;
       }
       
-      pdg    = primStack->GetPdgCode();
+      //pdg    = primStack->GetPdgCode();
       status = primStack->GetStatusCode();
       
       // Protection against floating point exception
@@ -1203,7 +1200,7 @@ void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim,
       // Photon kinematics
       primStack->Momentum(fMomentum);
       
-      addedY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
+      //addedY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
       
       if(momLabel >= 0)
       {
@@ -1219,7 +1216,7 @@ void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim,
         AliWarning("AOD primaries pointer not available!!");
         continue;
       }
-      pdg    = primAOD->GetPdgCode();
+      //pdg    = primAOD->GetPdgCode();
       status = primAOD->GetStatus();
       
       //printf("\t pdg %d, status %d, E %f, pz %f\n",pdg,status,primAOD->E(),primAOD->Pz());
@@ -1232,7 +1229,7 @@ void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim,
       // Photon kinematics
       fMomentum.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
 
-      addedY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
+      //addedY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
       
       if(momLabel >= 0)
       {
@@ -1250,7 +1247,7 @@ void AliAnaPhoton::DistanceToAddedSignal(Int_t label, Int_t nprim,
     
     if(addedPt < GetMinPt() || addedPt > GetMaxPt() ) continue ;
     
-    addedE   = fMomentum.E  () ;
+    //addedE   = fMomentum.E  () ;
     addedEta = fMomentum.Eta() ;
     addedPhi = fMomentum.Phi() ;
     
