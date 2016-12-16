@@ -8,6 +8,7 @@
 #include "AliMpDDLStore.h"
 #include "AliMpDetElement.h"
 #include <cassert>
+#include <algorithm>
 
 namespace {
     Int_t DECODELOW(UInt_t e)
