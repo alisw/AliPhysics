@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Double_t centMin=0, Double_t centMax=20, Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE, Int_t PhysSel = AliVEvent::kINT7, Int_t hadCutCase=2, Bool_t trigElePtcut=kFALSE)
+AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Double_t centMin=0, Double_t centMax=20, Int_t MinTPCNClsE=90, Double_t nsigMin=-1, Double_t nsigMax=3, Double_t m02Min=0.01,  Double_t m02Max=0.35, Double_t eovpMin=0.9, Double_t eovpMax=1.2, Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE, Int_t PhysSel = AliVEvent::kINT7, Int_t hadCutCase=2, Bool_t trigElePtcut=kFALSE)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -22,49 +22,53 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Double_t centMin=0, D
   if(!mcH){
     MCthere=kFALSE;
   }
+    
+    if(ClsTypeEMC && !ClsTypeDCAL)ContNameExt+="_EMC";
+    if(!ClsTypeEMC && ClsTypeDCAL)ContNameExt+="_DCAL";
+    
+    if(PhysSel == AliVEvent::kINT7){
+  AliAnalysisTaskEHCorrel *taskHFEeh = new AliAnalysisTaskEHCorrel("eh");
+  taskHFEeh->SelectCollisionCandidates(AliVEvent::kINT7);
+  taskHFEeh->SetCentralitySelection(centMin,centMax);
+  taskHFEeh->SetMinTPCNClsElec(MinTPCNClsE);
+  taskHFEeh->SetTPCnsigCut(nsigMin,nsigMax);
+  taskHFEeh->SetM02Cut(m02Min,m02Max);
+  taskHFEeh->SetEovPCut(eovpMin,eovpMax);
+  taskHFEeh->SetHadronCutCase(hadCutCase);
+  taskHFEeh->SetTriggerElePtCut(trigElePtcut);
+  taskHFEeh->SetClusterTypeEMC(ClsTypeEMC);
+  taskHFEeh->SetClusterTypeDCAL(ClsTypeDCAL);
+    
+  TString containerName = mgr->GetCommonFileName();
+  TString SubcontainerName = ContNameExt;
+  SubcontainerName += "_EHPbPb_INT7";
+  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(SubcontainerName,TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
 
-  if(ClsTypeEMC && !ClsTypeDCAL)ContNameExt+="_EMC";
-  if(!ClsTypeEMC && ClsTypeDCAL)ContNameExt+="_DCAL";
+  mgr->ConnectInput(taskHFEeh,0,mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(taskHFEeh,1,coutput3);
+  //mgr->AddTask(taskHFEeh);
+    }
 
-  if(PhysSel == AliVEvent::kINT7){
-    AliAnalysisTaskEHCorrel *taskHFEeh = new AliAnalysisTaskEHCorrel("eh");
-    taskHFEeh->SelectCollisionCandidates(AliVEvent::kINT7);
-    taskHFEeh->SetCentralitySelection(centMin,centMax);
-    taskHFEeh->SetHadronCutCase(hadCutCase);
-    taskHFEeh->SetTriggerElePtCut(trigElePtcut);
-    taskHFEeh->SetClusterTypeEMC(ClsTypeEMC);
-    taskHFEeh->SetClusterTypeDCAL(ClsTypeDCAL);
+    if(PhysSel == AliVEvent::kEMCEGA){
+  // EMCal EGA EG1
+  AliAnalysisTaskEHCorrel *taskHFEehGA01 = new AliAnalysisTaskEHCorrel("ehGA");
+  taskHFEehGA01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+  taskHFEehGA01->SetEMCalTriggerEG1(kTRUE);
+  taskHFEehGA01->SetCentralitySelection(centMin,centMax);
+  taskHFEehGA01->SetHadronCutCase(hadCutCase);
+  taskHFEehGA01->SetTriggerElePtCut(trigElePtcut);
+  taskHFEehGA01->SetClusterTypeEMC(ClsTypeEMC);
+  taskHFEehGA01->SetClusterTypeDCAL(ClsTypeDCAL);
 
-    TString containerName = mgr->GetCommonFileName();
-    TString SubcontainerName = ContNameExt;
-    SubcontainerName += "_EHPbPb_INT7";
-    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(SubcontainerName,TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
+  TString containerName01 = mgr->GetCommonFileName();
+  TString SubcontainerName01 = ContNameExt;
+  SubcontainerName01 += "_EH_PbPb_GA1";
+  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
 
-    mgr->ConnectInput(taskHFEeh,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskHFEeh,1,coutput3);
-    //mgr->AddTask(taskHFEeh);
-  }
-
-  if(PhysSel == AliVEvent::kEMCEGA){
-    // EMCal EGA EG1
-    AliAnalysisTaskEHCorrel *taskHFEehGA01 = new AliAnalysisTaskEHCorrel("ehGA");
-    taskHFEehGA01->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-    taskHFEehGA01->SetEMCalTriggerEG1(kTRUE);
-    taskHFEehGA01->SetCentralitySelection(centMin,centMax);
-    taskHFEehGA01->SetHadronCutCase(hadCutCase);
-    taskHFEehGA01->SetTriggerElePtCut(trigElePtcut);
-    taskHFEehGA01->SetClusterTypeEMC(ClsTypeEMC);
-    taskHFEehGA01->SetClusterTypeDCAL(ClsTypeDCAL);
-
-    TString containerName01 = mgr->GetCommonFileName();
-    TString SubcontainerName01 = ContNameExt;
-    SubcontainerName01 += "_EH_PbPb_GA1";
-    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName01, TList::Class(),AliAnalysisManager::kOutputContainer, containerName01.Data());
-
-    mgr->ConnectInput(taskHFEehGA01, 0, cinput);
-    mgr->ConnectOutput(taskHFEehGA01, 1, coutput1);
-    //mgr->AddTask(taskHFEehGA01);
-  }
+  mgr->ConnectInput(taskHFEehGA01, 0, cinput);
+  mgr->ConnectOutput(taskHFEehGA01, 1, coutput1);
+  //mgr->AddTask(taskHFEehGA01);
+    }
   return taskHFEeh;
 }
