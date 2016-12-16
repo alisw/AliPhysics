@@ -84,8 +84,9 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fExtractionCutMaxPt(200.),
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
+  fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
-  fHadronMatchingRadius(0.5)
+  fTruthParticleArrayName("mcparticles")
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -115,8 +116,9 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fExtractionCutMaxPt(200.),
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
+  fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
-  fHadronMatchingRadius(0.5)
+  fTruthParticleArrayName("mcparticles")
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -195,32 +197,30 @@ Bool_t AliAnalysisTaskJetExtractor::IsJetSelected(AliEmcalJet* jet)
     return kFALSE;
   FillHistogram("hJetAcceptance", 2.5);
 
+  Bool_t passedCutPID = kTRUE;
   // ### PID (from initial collision)
-  Bool_t passedCutPIDIC = kTRUE;
   if(fExtractionCutUseIC)
   {
-    passedCutPIDIC = kFALSE;
+    passedCutPID = kFALSE;
     for(Int_t i=0; i<fExtractionListPIDsIC.size(); i++)
     {
       if (fExtractionListPIDsIC.at(i) == fCurrentJetTypeIC)
-        passedCutPIDIC = kTRUE;
+        passedCutPID = kTRUE;
     }
   }
-
   // ### PID (from hadron matching)
-  Bool_t passedCutPIDHM = kTRUE;
-  if(fExtractionCutUseHM)
+  else if(fExtractionCutUseHM)
   {
-    passedCutPIDHM = kFALSE;
+    passedCutPID = kFALSE;
     for(Int_t i=0; i<fExtractionListPIDsHM.size(); i++)
     {
       if (fExtractionListPIDsHM.at(i) == fCurrentJetTypeHM)
-        passedCutPIDHM = kTRUE;
+        passedCutPID = kTRUE;
     }
   }
 
   // Note: When either of the cuts is passed, accepted it
-  if(!passedCutPIDIC && !passedCutPIDHM)
+  if(!passedCutPID)
     return kFALSE;
   FillHistogram("hJetAcceptance", 3.5);
 
@@ -376,8 +376,44 @@ void AliAnalysisTaskJetExtractor::CalculateJetType(AliEmcalJet* jet, Int_t& type
       typeIC = fPythiaInfo->GetPartonFlag7();
   }
 
-  // Only do this in case we have the MC stack available
-  if(MCEvent() && (MCEvent()->Stack()))
+  // Do hadron matching jet type tagging using mcparticles
+  // ... if not explicitly deactivated
+  if (fTruthParticleArrayName != "")
+  {
+    TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
+    if(!fTruthParticleArray)
+      return;
+
+    typeHM = 0;
+    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
+    {
+      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(i));
+      if(!part) continue;
+
+      // Check if particle is in a radius around the jet
+      Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
+      if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
+        continue;
+
+      // Check if the particle has beauty, charm or strangeness
+      // If it has beauty, we are done (exclusive definition)
+      Int_t absPDG = TMath::Abs(part->PdgCode());
+      // Particle has beauty
+      if ((absPDG > 500 && absPDG < 600) || (absPDG > 5000 && absPDG < 6000))
+      {
+        typeHM = 5; // beauty
+        break;
+      }
+      // Particle has charm
+      else if ((absPDG > 400 && absPDG < 500) || (absPDG > 4000 && absPDG < 5000))
+        typeHM = 4; // charm
+      // Particle has strangeness: Only search for strangeness, if charm was not already found
+      else if (typeHM != 4 && (absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
+        typeHM = 3; // strange
+    }
+  }
+  // As fallback, the MC stack will be tried
+  else if(MCEvent() && (MCEvent()->Stack()))
   {
     typeHM = 0;
     AliStack* stack = MCEvent()->Stack();
@@ -390,9 +426,7 @@ void AliAnalysisTaskJetExtractor::CalculateJetType(AliEmcalJet* jet, Int_t& type
       // Check if particle is in a radius around the jet
       Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
       if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
-      {
         continue;
-      }
 
       // Check if the particle has beauty, charm or strangeness
       // If it has beauty, we are done (exclusive definition)
