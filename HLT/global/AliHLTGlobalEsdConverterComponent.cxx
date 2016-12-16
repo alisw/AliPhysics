@@ -1128,8 +1128,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	  AliESDfriendTrack *friendTrack = pESDfriend->GetTrack(esdID);
 	  if( friendTrack ){ // fill TRD track and space points	    
 	    friendTrack->SetTRDIn( trdTrack );
-	    if( trackPoints ){
-	      int nPoints = track.GetNTracklets();
+	    int nPoints = track.GetNTracklets();
+	    if( trackPoints && nPoints>0 ){	      
 	      AliTrackPointArray *spArray = new AliTrackPointArray(nPoints);
 	      spArray->SetBit(AliTrackPointArray::kTOFBugFixed);
 	      friendTrack->SetTrackPointArray(spArray);
@@ -1143,8 +1143,6 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 		p.Print("");
 		iPoint++;
 	      }
-	      cout<<"SG: TRD track points: "<<nPoints<<" : "<<endl;
-	      spArray->Print("");
 	    }	    
 	  }
 	}
