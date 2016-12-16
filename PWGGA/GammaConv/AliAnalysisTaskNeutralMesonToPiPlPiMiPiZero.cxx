@@ -1082,12 +1082,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserExec(Option_t *){
 		fVectorDoubleCountTrueOmegas.clear();
 		fVectorDoubleCountTrueConvGammas.clear();
 		
-		if (fGoodConvGammas->GetEntries()>0) fGoodConvGammas->Clear(); 
-		if (fClusterCandidates->GetEntries()>0) fClusterCandidates->Clear();
-		if (fNeutralPionCandidates->GetEntries()>0) fNeutralPionCandidates->Clear();
-		if (fPosPionCandidates->GetEntries()>0) fPosPionCandidates->Clear();
-		if (fNegPionCandidates->GetEntries()>0) fNegPionCandidates->Clear();
-
+        fGoodConvGammas->Clear();
+        fClusterCandidates->Clear();
+        fNeutralPionCandidates->Clear();
+        fPosPionCandidates->Clear();
+        fNegPionCandidates->Clear();
 		fGoodVirtualParticles->Clear(); // delete this cuts good gammas
 	}
 
@@ -2301,12 +2300,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
 					}
 
                     AliESDtrack *negPionCandidatetmp = (AliESDtrack*) fESDEvent->GetTrack(vParticle->GetTrackLabel(1));
-                    if(negPionCandidatetmp==NULL){ continue;}
+                    if(negPionCandidatetmp==NULL){ delete mesoncand; continue;}
                     AliAODConversionMother *NegPiontmp = new AliAODConversionMother();
                     NegPiontmp->SetPxPyPzE(negPionCandidatetmp->Px(), negPionCandidatetmp->Py(), negPionCandidatetmp->Pz(), negPionCandidatetmp->E());
 
                     AliESDtrack *posPionCandidatetmp = (AliESDtrack*) fESDEvent->GetTrack(vParticle->GetTrackLabel(0));
-                    if(posPionCandidatetmp==NULL){ delete NegPiontmp; continue;}
+                    if(posPionCandidatetmp==NULL){ delete NegPiontmp; delete mesoncand; continue;}
                     AliAODConversionMother *PosPiontmp = new AliAODConversionMother();
                     PosPiontmp->SetPxPyPzE(posPionCandidatetmp->Px(), posPionCandidatetmp->Py(), posPionCandidatetmp->Pz(), posPionCandidatetmp->E());
 
