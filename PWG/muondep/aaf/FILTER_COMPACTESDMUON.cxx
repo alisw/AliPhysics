@@ -18,8 +18,7 @@ int FILTER_COMPACTESDMUON(const char* from, const char* to)
 
    mgr.SetMCtruthEventHandler(new AliMCEventHandler);
 
-    //AliMuonCompactTreeMaker task("raw://");
-    AliMuonCompactTreeMaker task("local:///alice/data/2015/OCDB");
+    AliMuonCompactTreeMaker task("raw://");
 
     AliAnalysisDataContainer* output = mgr.CreateContainer("compactevents",TTree::Class(),AliAnalysisManager::kOutputContainer,to);
 
