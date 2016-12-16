@@ -2984,15 +2984,13 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   if(fgLegEffMap->InheritsFrom(THnBase::Class())) {
     THnBase *eff = static_cast<THnBase*>(fgLegEffMap);
     Int_t dim=eff->GetNdimensions();
-    Int_t *idx=new Int_t[dim];
+    Int_t idx[dim];
     for(Int_t idim=0; idim<dim; idim++) {
       UInt_t var = GetValueType(eff->GetAxis(idim)->GetName());
       idx[idim] = eff->GetAxis(idim)->FindBin(values[var]);
       if(idx[idim] < 0 || idx[idim]>eff->GetAxis(idim)->GetNbins()) return 0.0;
     }
-    //  printf(" bin content %f+-%f \n",eff->GetBinContent(idx), eff->GetBinError(idx));
     const Double_t ret=(eff->GetBinContent(idx));
-    delete [] idx;
     return ret;
   }
   return -1.;
@@ -3007,22 +3005,19 @@ inline Double_t AliDielectronVarManager::GetPairEff(Double_t * const values) {
   if(fgPairEffMap->IsA()== THnBase::Class()) {
     THnBase *eff = static_cast<THnBase*>(fgPairEffMap);
     Int_t dim=eff->GetNdimensions();
-    Int_t *idx=new Int_t[dim];
+    Int_t idx[dim];
     for(Int_t idim=0; idim<dim; idim++) {
       UInt_t var = GetValueType(eff->GetAxis(idim)->GetName());
-    idx[idim] = eff->GetAxis(idim)->FindBin(values[var]);
-    if(idx[idim] < 0 || idx[idim]>eff->GetAxis(idim)->GetNbins()) return 0.0;
+      idx[idim] = eff->GetAxis(idim)->FindBin(values[var]);
+      if(idx[idim] < 0 || idx[idim]>eff->GetAxis(idim)->GetNbins()) return 0.0;
     }
-    //  printf(" bin content %f+-%f \n",eff->GetBinContent(idx), eff->GetBinError(idx));
     const Double_t ret=(eff->GetBinContent(idx));
-    delete [] idx;
     return ret;
   }
   if(fgPairEffMap->IsA()== TSpline3::Class()) {
     TSpline3 *eff = static_cast<TSpline3*>(fgPairEffMap);
     if(!eff->GetHistogram()) { printf("no histogram added to the spline\n"); return -1.;}
     UInt_t var = GetValueType(eff->GetHistogram()->GetXaxis()->GetName());
-    //printf(" bin content %f \n",eff->Eval(values[var]) );
     return (eff->Eval(values[var]));
   }
 
