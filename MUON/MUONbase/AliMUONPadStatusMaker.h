@@ -132,7 +132,7 @@ private:
   AliMUONVStore* Pedestals() const;
   AliMUONVStore* Config() const;
 
-private:
+public:
   /// General status
   enum EGeneralStatus
   {
@@ -186,6 +186,8 @@ private:
     kBusPatchRemovedByPAR = (1<<7),
 
   };
+
+private:
 
   const AliMUONCalibrationData& fkCalibrationData; //!<! helper class to get data access (not owner)
 
