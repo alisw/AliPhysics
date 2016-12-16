@@ -3162,7 +3162,10 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
     {
       if ( genName1.Contains(GetCocktailGenNameToCheck(igen)) )
+      {
         genType = igen;
+        break;
+      }
     }
     
     // Fill histograms
