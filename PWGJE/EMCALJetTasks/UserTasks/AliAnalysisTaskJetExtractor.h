@@ -84,7 +84,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        FillJetControlHistograms(AliEmcalJet* jet);
   // ##################
   void                        CalculateEventProperties();
-  void                        CalculatePYTHIAInitialCollisionJets();
+  void                        CalculateInitialCollisionJets();
   void                        GetLeadingJets(const char* opt, AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading);
 
   void                        CalculateJetProperties(AliEmcalJet* jet);
@@ -109,6 +109,9 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliEmcalJet*                fCurrentSubleadingJet;                    //!<! subleading jet (calculated event-by-event)
   AliEmcalJet*                fCurrentInitialParton1;                   //!<! jet that matches the initial parton 1 (PYTHIA)
   AliEmcalJet*                fCurrentInitialParton2;                   //!<! jet that matches the initial parton 2 (PYTHIA)
+  Int_t                       fCurrentInitialParton1Type;               ///< type of initial parton 1
+  Int_t                       fCurrentInitialParton2Type;               ///< type of initial parton 2
+  Bool_t                      fFoundIC;                                 ///< status var showing that IC has been found
 
   // ################## CUTS
   Int_t                       fExtractionCutMinCent;                    ///< Extraction cut: minimum centrality
