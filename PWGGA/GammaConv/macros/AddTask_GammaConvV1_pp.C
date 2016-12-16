@@ -564,6 +564,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00000113", "00200009227302008250404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut
     cuts.AddCut("00000113", "00200009227302008250404000", "0152503500000000"); //y < 0.85
     cuts.AddCut("00000113", "00200009227302008250404000", "0152303500000000"); //y < 0.60
+  } else if (trainConfig == 93) {
+    cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //New standard cut for 7TeV analysis V0OR with double counting cut, TOF removed
     
 
   // ------------------------- run 2 High mult triggers --------------------------------------
