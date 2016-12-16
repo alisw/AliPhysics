@@ -106,6 +106,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fEMCEG2(kFALSE),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fTPCNClsElec(90),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -230,6 +231,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fEMCEG2(kFALSE),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fTPCNClsElec(90),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -887,7 +889,7 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
 {
   //Construct Deta Phi between electrons and hadrons
 
-  Double_t fvalueDphi[6] = {-999,999,-999,-999,-999,-999}; //ptElec, ptHad,Dphi, Deta
+  Double_t fvalueDphi[4] = {-999,999,-999,-999}; //ptElec, ptHad,Dphi, Deta
   Double_t pi = TMath::Pi();
 
   Double_t ptHad= -999;
@@ -930,8 +932,8 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
     fvalueDphi[1] = ptHad;
     fvalueDphi[2] = Dphi;
     fvalueDphi[3] = Deta;
-    fvalueDphi[4] = fVtxZBin;
-    fvalueDphi[5] = fCentBin;
+//    fvalueDphi[4] = fVtxZBin;
+//    fvalueDphi[5] = fCentBin;
     SparseEHCorrl->Fill(fvalueDphi);
 
     //if(ptHad > ptEle) HisDphi->Fill(ptEle,Dphi);
@@ -942,7 +944,7 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
 {
   //Construct Deta Phi between electrons and hadrons for electrons from invariant mass calculation excluding partner etrack
 
-  Double_t fvalueDphi[6] = {-999,999,-999,-999,-999,-999}; //ptElec, ptHad,Dphi, Deta
+  Double_t fvalueDphi[4] = {-999,999,-999,-999}; //ptElec, ptHad,Dphi, Deta
   Double_t pi = TMath::Pi();
 
   Double_t ptHad= -999;
@@ -984,8 +986,8 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
     fvalueDphi[1] = ptHad;
     fvalueDphi[2] = Dphi;
     fvalueDphi[3] = Deta;
-    fvalueDphi[4] = fVtxZBin;
-    fvalueDphi[5] = fCentBin;
+//    fvalueDphi[4] = fVtxZBin;
+//    fvalueDphi[5] = fCentBin;
     SparseEHCorrlNoPartner->Fill(fvalueDphi);
 
     //if(ptHad > ptEle) HisDphi->Fill(ptEle,Dphi);
@@ -1143,7 +1145,7 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   if(!kinkmotherpass) return kFALSE;
 
   //other cuts
-  if(atrack->GetTPCNcls() < 80) return kFALSE;
+  if(atrack->GetTPCNcls() < fTPCNClsElec) return kFALSE;
   if(atrack->GetITSNcls() < 3) return kFALSE;
   if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) return kFALSE;
   if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
@@ -1315,6 +1317,11 @@ void AliAnalysisTaskEHCorrel::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, 
 void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagElecLS)
 {
   //Photonic electron selection
+    
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
+    Double_t d0z0[2]={-999,-999}, cov[3];
+    Double_t DCAxyCut = 0.25, DCAzCut = 1;
 
   Bool_t flagPhotonicElec = kFALSE, flagLSElec = kFALSE;
   Double_t ptAsso=-999., nsigmaAsso=-999.0;
@@ -1335,7 +1342,7 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
     AliAODTrack *atrackAsso = dynamic_cast<AliAODTrack*>(VtrackAsso);
     if(!atrackAsso) continue;
     if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-    if(atrackAsso->GetTPCNcls() < 70) continue;
+    if(atrackAsso->GetTPCNcls() < fTPCNClsHad) continue;
     if(!(atrackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
     if(!(atrackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
 
@@ -1344,9 +1351,12 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
     Int_t chargeAsso = trackAsso->Charge();
     Int_t charge = track->Charge();
 
-    if(ptAsso <0.2) continue;
+    if(ptAsso <0.3) continue;
     if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
     if(nsigmaAsso < -3 || nsigmaAsso > 3) continue;
+      
+    if(trackAsso->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
+    if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
 
     Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
     if(charge>0) fPDGe1 = -11;

@@ -62,6 +62,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    MixedEvent(AliVTrack *track, THnSparse *SparseMixEHCorrl);
 
     void    SetCentralitySelection(Double_t centMin, Double_t centMax) {fCentralityMin = centMin; fCentralityMax = centMax;};
+    void    SetMinTPCNClsElec(Int_t MinNClsE) {fTPCNClsElec = MinNClsE;};
     void    SetTPCnsigCut(Double_t nsigMin, Double_t nsigMax) {fTPCnSigmaMin = nsigMin; fTPCnSigmaMax= nsigMax;};
     void    SetM02Cut(Double_t m02Min, Double_t m02Max) {fM02Min = m02Min; fM02Max = m02Max;};
     void    SetM20Cut(Double_t m20Min, Double_t m20Max) {fM20Min = m20Min; fM20Max = m20Max;};
@@ -69,7 +70,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetHadronCutCase(Int_t hadCutCase) {fHadCutCase = hadCutCase;};
     void    SetTriggerElePtCut(Bool_t trigElePtcut) {fTrigElePtCut = trigElePtcut;};
     void    GetVtxZCentralityBin();
-
+    
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
 
@@ -89,6 +90,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t              fEMCEG2;//
     Bool_t              fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;//switch to select DCAL clusters
+    Int_t               fTPCNClsElec;// Had track TPC NClusters
     Double_t            fTPCnSigma;//!
     Double_t            fTPCnSigmaMin;//
     Double_t            fTPCnSigmaMax;//
@@ -169,7 +171,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH2F                *fMixStatCent;//!
     TH2F                *fMixStatVtxZ;//!
     TH2F                *fMixStatCentVtxz;//!
-
+    
     //TH2F                *fHisHadDphi;//!
     //TH2F                *fHisIncEDphi;//!
     //TH2F                *fHisLSDphi;//!
