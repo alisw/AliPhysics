@@ -130,8 +130,6 @@ public:
 
   TObjArray* GetListElements(const char* type, Bool_t simulation) const;
 
-  void DefineDefaultsFromFile(const char* configfile);
-
 private:
 
   enum EDataType { kSim = 1<<0, kReal = 1<<1 };

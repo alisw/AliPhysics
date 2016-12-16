@@ -61,8 +61,6 @@ public:
 
   Bool_t AddFit(const char* fitType);
 
-  AliAnalysisMuMuJpsiResult* CountJpsi(TH1& h);
-
   /** All the fit functions should have a prototype starting like :
 
    AliAnalysisMuMuJpsiResult* FitXXX();
@@ -113,14 +111,6 @@ public:
   void FitMPTPSIPSIPRIMENA60NEWVWG_BKGMPTPOL2EXP();
   void FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2();
   void FitMPTPSIPSIPRIMENA60NEWPOL2EXP_BKGMPTPOL2EXP();
-  void FitMPTPSIPSIPRIMENA60NEWPOL4EXP_BKGMPTPOL2();
-
-  void FitPSIPSIPRIMECOMB_CB2VWG_MPTCB2VWG_BKGMPTPOL2();
-
-//  void FitMPT2NA60NEWVWG_BKGMPTPOL4();
-//  void FitMPT2NA60NEWPOL2EXP_BKGMPTPOL4();
-//  void FitMPT2NA60NEWPOL4EXP_BKGMPTPOL4();
-
 
   Int_t NofRuns() const;
 
