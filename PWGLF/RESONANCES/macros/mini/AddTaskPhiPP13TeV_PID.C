@@ -17,7 +17,8 @@ enum eventCutSet { kEvtDefault=0,
 		   kMCEvtDefault, //=5                   
 		   kSpecial1, //=6                   
 		   kSpecial2, //=7
-		   kNoEvtSel //=8
+		   kNoEvtSel, //=8
+		   kSpecial3 //=9
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -126,11 +127,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   AliRsnCutPrimaryVertex* cutVertex=0;
   if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && (!MultBins || fabs(vtxZcut-10.)>1.e-10)){
     cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
-    if(!MultBins){
+    if(!MultBins && evtCutSetID!=eventCutSet::kSpecial3){
       cutVertex->SetCheckZResolutionSPD();
       cutVertex->SetCheckDispersionSPD();
       cutVertex->SetCheckZDifferenceSPDTrack();
     }
+    if(evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;
