@@ -420,10 +420,10 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
 
   Int_t genBkgTag = -1;
   
-  if      ( !overlapGener )                            genBkgTag = 0;
-  else if (  overlapGenerHIJING && !overlapGenerOther) genBkgTag = 1;
-  else if ( !overlapGenerHIJING &&  overlapGenerOther) genBkgTag = 2;
-  else if (  overlapGenerHIJING &&  overlapGenerOther) genBkgTag = 3;
+  if      ( !overlapGener )                            genBkgTag = 0; // Pure
+  else if (  overlapGenerHIJING && !overlapGenerOther) genBkgTag = 1; // Gen+Hij
+  else if ( !overlapGenerHIJING &&  overlapGenerOther) genBkgTag = 2; // GenX+GenY
+  else if (  overlapGenerHIJING &&  overlapGenerOther) genBkgTag = 3; // GenX+GenY+Hij
   else                                                 genBkgTag = 4; 
   
   // check overlap with same generator, but not hijing
@@ -446,16 +446,26 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
   //printf("bkg tag %d, noverlaps %d; same gen overlap %d\n",genBkgTag,noverlaps,sameGenOverlap);
   if(sameGenOverlap)
   {
-    if(genBkgTag == 0) genBkgTag = 2; // Gen+Gen
-    if(genBkgTag == 1) genBkgTag = 3; // Gen+Gen+Hij
+    if(genBkgTag == 0) genBkgTag = 2; // GenX+GenX
+    if(genBkgTag == 1) genBkgTag = 3; // GenX+GenX+Hij
   }
 
-  if(sameGenOverlapHI)
+  // Logic a bit different for hijing main particles
+  if(genName.Contains("ijing"))
   {
-    if(genBkgTag == 0) genBkgTag = 2; // Gen+Gen
-    if(genBkgTag == 2) genBkgTag = 3; // Gen+Gen+Hij   
-  }
     
+    if(sameGenOverlapHI)
+    {
+      if(!overlapGener) genBkgTag = 1; // Hij+Hij
+      else              genBkgTag = 3; // Hij+Gen+Hij   
+    }
+    else
+    {
+      if(!overlapGener) genBkgTag = 0; // Pure
+      else              genBkgTag = 2; // Hij+Gen  
+    }
+  }
+  
   return genBkgTag;
 }
 
