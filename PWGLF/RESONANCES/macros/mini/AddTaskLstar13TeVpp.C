@@ -202,8 +202,8 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    cutsPair->SetCutScheme(cutY->GetName());
    
 
-   AliRsnValuePair * openangle = new AliRsnValuePair("openangle", AliRsnValuePair::kDipAngle);
-   openangle->DipAngle(1);
+   //   AliRsnValuePair * openangle = new AliRsnValuePair("openangle", AliRsnValuePair::kDipAngle);
+   //   openangle->DipAngle(1);
 
 
    //
@@ -212,9 +212,9 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    
    //for systematic checks
      {
-       //gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
-       //gROOT->LoadMacro("ConfigureLstar13TeVpp.C");
-         gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp.C");
+       gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
+       //      gROOT->LoadMacro("ConfigureLstar13TeVpp.C");
+       //       gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp.C");
        if (!ConfigureLstar13TeVpp(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly, signedPdg, monitorOpt, useCrossedRows, yaxisVar ,useMixLS)) 
 return 0x0;  
      }
