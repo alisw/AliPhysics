@@ -44,6 +44,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetHadronMatchingRadius(Double_t val) { fHadronMatchingRadius = val; }
   void                        SetInitialCollisionMatchingRadius(Double_t val)     { fInitialCollisionMatchingRadius = val; }
   void                        SetTruthParticleArrayName(const char* val)     { fTruthParticleArrayName = val; }
+  void                        SetSecondaryVertexUseThreeProng(Bool_t val)    { fSecondaryVertexUseThreeProng = val; }
+  void                        SetSecondaryVertexMaxChi2(Int_t val)     { fSecondaryVertexMaxChi2 = val; }
 
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
@@ -131,7 +133,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
   Double_t                    fInitialCollisionMatchingRadius;          ///< Matching radius to find a jet of the IC
   TString                     fTruthParticleArrayName;                  ///< Array name of MC particles in event (mcparticles)
-
+  Bool_t                      fSecondaryVertexUseThreeProng;            ///< Reconstruct sec. vtx with 3 tracks (default: 2)
+  Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
 
   // ######### HISTOGRAM FUNCTIONS
   void                        FillHistogram(const char * key, Double_t x);
