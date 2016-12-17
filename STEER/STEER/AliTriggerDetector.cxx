@@ -108,15 +108,21 @@ void AliTriggerDetector::AssignInputs(const TObjArray &inputs)
    for( Int_t j=0; j<ninputs; j++ ) {
      AliTriggerInput *inp = (AliTriggerInput*)inputs.At(j);
      if ( name.CompareTo(inp->GetModule().Data()) ) continue;
-
-     TObject *tempObj = availInputs->FindObject(inp->GetInputName().Data());
+     AliTriggerInput *tempObj = (AliTriggerInput*)availInputs->FindObject(inp->GetInputName().Data());
      if ( tempObj ) {
        Int_t tempIndex = availInputs->IndexOf(tempObj);
-       delete availInputs->Remove(tempObj);
-       fInputs.AddAt( inp, tempIndex );
-       inp->Enable();
-       AliDebug(1,Form("Trigger input (%s) is found in the CTP configuration. Therefore it is enabled for trigger detector (%s)",
-		    inp->GetInputName().Data(),name.Data()));
+       if (tempObj->GetSignature()!=-1) {
+	 AliErrorF("Ignore attempt to overwrite input%d %s [Sign:%d, Mask:%llu] by [Sign:%d, Mask:%llu]",
+		   tempIndex,tempObj->GetInputName().Data(),
+		   tempObj->GetSignature(),tempObj->GetMask(),inp->GetSignature(),inp->GetMask());
+       }
+       else {
+	 delete availInputs->Remove(tempObj);
+	 fInputs.AddAt( inp, tempIndex );
+	 inp->Enable();
+	 AliDebug(1,Form("Trigger input (%s) is found in the CTP configuration. Therefore it is enabled for trigger detector (%s)",
+			 inp->GetInputName().Data(),name.Data()));
+       }
      }
      else {
        AliWarning(Form("Trigger Input (%s) is not implemented for the trigger detector (%s) ! It will be disabled !",
