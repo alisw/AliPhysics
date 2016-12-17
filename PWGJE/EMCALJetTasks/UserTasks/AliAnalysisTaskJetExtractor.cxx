@@ -31,6 +31,12 @@
 #include "AliPythia.h"
 #include "AliStack.h"
 
+#include "TObjArray.h"
+#include "AliESDVertex.h"
+#include "AliAODVertex.h"
+#include "AliKFParticle.h"
+#include "AliKFVertex.h"
+
 #include "AliVTrack.h"
 #include "AliVHeader.h"
 #include "AliEmcalJet.h"
@@ -54,6 +60,12 @@ AliBasicJet::~AliBasicJet()
 
 //________________________________________________________________________
 AliBasicJetConstituent::~AliBasicJetConstituent() 
+{
+// dummy destructor
+}
+
+//________________________________________________________________________
+AliBasicJetSecondaryVertex::~AliBasicJetSecondaryVertex() 
 {
 // dummy destructor
 }
@@ -278,6 +290,9 @@ void AliAnalysisTaskJetExtractor::AddJetToTree(AliEmcalJet* jet)
     basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid, particle->Xv(), particle->Yv(), particle->Zv(), z);
   }
 
+  // Calculate and add secondary vertices to jet
+  AddSecondaryVertices(myVertex, jet, basicJet);
+
   // Field currently not used
   basicJet.SetTruePt(0);
 
@@ -328,12 +343,74 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 }
 
 //________________________________________________________________________
-std::vector<std::vector<Float_t>> AliAnalysisTaskJetExtractor::GetSecondaryVertices(const AliVVertex* vtx, AliEmcalJet* jet)
+void AliAnalysisTaskJetExtractor::AddSecondaryVertices(const AliVVertex* vtx, AliEmcalJet* jet, AliBasicJet& basicJet)
 {
-  std::vector<std::vector<Float_t>> dummy;
-  return dummy;
+  if(!vtx)
+    return;
+
+  // Create ESD vertex from the existing AliVVertex
+  Double_t vtxPos[3]   = {vtx->GetX(), vtx->GetY(), vtx->GetZ()};
+  Double_t covMatrix[6] = {0};
+  vtx->GetCovarianceMatrix(&covMatrix[0]);
+  AliESDVertex *esdVtx = new AliESDVertex(&vtxPos[0], &covMatrix[0], vtx->GetChi2(), vtx->GetNContributors());
+
+  // Loop over all 2-particle pairs in jet:
+  for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
+  {
+    AliAODTrack* particleOne = static_cast<AliAODTrack*>(jet->TrackAt(i, fTracksCont->GetArray()));
+    if(!particleOne) continue;
+
+    for(Int_t j = 0; j < jet->GetNumberOfTracks(); j++)
+    {
+      if (i==j) continue;
+      AliAODTrack* particleTwo = static_cast<AliAODTrack*>(jet->TrackAt(j, fTracksCont->GetArray()));
+      if(!particleTwo) continue;
+
+      TObjArray* trackArray = new TObjArray(2);
+      trackArray->Add(particleOne);
+      trackArray->Add(particleTwo);
+
+      AliAODVertex* secVtx = GetSecondaryVertex(esdVtx, trackArray);
+      // Add the secondary vertex to the basic jet
+      if(secVtx)
+      {
+        basicJet.AddSecondaryVertex(secVtx->GetX(), secVtx->GetY(), secVtx->GetZ(), secVtx->GetChi2perNDF());
+        delete secVtx;
+      }
+    }
+  }
 }
 
+//________________________________________________________________________
+AliAODVertex* AliAnalysisTaskJetExtractor::GetSecondaryVertex(AliESDVertex* esdVtx, TObjArray* trkArray)
+{
+  // ### Code adapted from code in AliHFJetsTaggingVertex
+  // Kalman Filter vertexer (AliKFParticle)
+
+  const Int_t  nProngTrks       = 2;
+  AliKFParticle::SetField(InputEvent()->GetMagneticField());
+  AliKFVertex vertexKF;
+
+  for (Int_t i = 0; i < nProngTrks; ++i) {
+    AliAODTrack* aodTrack = (AliAODTrack*)trkArray->At(i);
+    AliKFParticle daughterKF(*aodTrack, 211);
+    vertexKF.AddDaughter(daughterKF);
+  }
+
+  AliESDVertex* vertexESD = new AliESDVertex(vertexKF.Parameters(),
+                               vertexKF.CovarianceMatrix(),
+                               vertexKF.GetChi2(),
+                               vertexKF.GetNContributors());
+
+  // convert to AliAODVertex
+  Double_t pos[3], cov[6], chi2xNDF;
+  vertexESD->GetXYZ(pos); // position
+  vertexESD->GetCovMatrix(cov); //covariance matrix
+  chi2xNDF = vertexESD->GetChi2toNDF();
+  delete vertexESD; vertexESD = NULL;
+
+  return (new AliAODVertex(pos, cov, chi2xNDF, NULL, -1, AliAODVertex::kUndef, nProngTrks));
+}
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskJetExtractor::GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track)

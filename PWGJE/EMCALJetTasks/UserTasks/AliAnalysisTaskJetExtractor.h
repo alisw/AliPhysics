@@ -5,6 +5,8 @@
  * See cxx source for full Copyright notice                               */
 
 class THn;
+class AliAODVertex;
+class AliBasicJet;
 
 //###############################################################################################################################################3
 
@@ -91,7 +93,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
   Int_t                       GetTrackPID(AliVParticle* part);
   Double_t                    GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track);
-  std::vector<std::vector<Float_t>> GetSecondaryVertices(const AliVVertex* vtx, AliEmcalJet* jet);
+  void                        AddSecondaryVertices(const AliVVertex* vtx, AliEmcalJet* jet, AliBasicJet& basicJet);
+  AliAODVertex*               GetSecondaryVertex(AliESDVertex* esdVtx, TObjArray* trkArray);
 
 
   // ################## BASIC EVENT VARIABLES
@@ -199,6 +202,41 @@ class AliBasicJetConstituent
 };
 
 //###############################################################################################################################################3
+
+/**
+ * \class AliBasicJetSecondaryVertex
+ * \brief Simple class containing basic information for a secondary
+ * vertex
+ * This class is used to save secondary vertices of a jet with less overhead
+ *
+ * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
+ * \date Dec 17, 2016
+ */
+// 
+class AliBasicJetSecondaryVertex
+{
+  public:
+    AliBasicJetSecondaryVertex() : fVx(0), fVy(0), fVz(0), fChi2(0) {}
+    AliBasicJetSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2)
+    : fVx(vx), fVy(vy), fVz(vz), fChi2(chi2)
+    {
+    }
+    ~AliBasicJetSecondaryVertex();
+
+    Float_t Vx()        { return fVx; }
+    Float_t Vy()        { return fVy; }
+    Float_t Vz()        { return fVz; }
+
+    Float_t Chi2()      { return fChi2; }
+  private:
+
+    Float_t fVx;         ///< vertex X
+    Float_t fVy;         ///< vertex Y
+    Float_t fVz;         ///< vertex Z
+    Float_t fChi2;       ///< Chi2/ndf for vertex
+};
+
+//###############################################################################################################################################3
 /**
  * \class AliBasicJet
  * \brief Simple class containing basic information for a jet
@@ -249,13 +287,13 @@ class AliBasicJet
     void                      AddJetConstituent(AliBasicJetConstituent* constituent) {fConstituents.push_back(*constituent); }
 
     // Basic secondary vertex functions
-    std::vector<Float_t>      GetSecondaryVertex(Int_t index) { return fSecondaryVertices[index]; }
-    void                      AddSecondaryVertex(Float_t vx=0, Float_t vy=0, Float_t vz=0)
+    AliBasicJetSecondaryVertex* GetSecondaryVertex(Int_t index) { return &fSecondaryVertices[index]; }
+    void                      AddSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2=0)
     {
-      std::vector<Float_t> vtx = {vx, vy, vz};
-      AddSecondaryVertex(vtx);
+      AliBasicJetSecondaryVertex vtx (vx, vy, vz, chi2);
+      AddSecondaryVertex(&vtx);
     }
-    void                      AddSecondaryVertex(std::vector<Float_t> vtx) {fSecondaryVertices.push_back(vtx);}
+    void                      AddSecondaryVertex(AliBasicJetSecondaryVertex* vtx) {fSecondaryVertices.push_back(*vtx);}
 
   private:
     Float_t   fEta;      ///< eta
@@ -275,7 +313,7 @@ class AliBasicJet
     Long64_t  fEventID;  ///< Unique event id
     Short_t   fCentrality; ///< centrality
 
-    std::vector<std::vector<Float_t>> fSecondaryVertices; ///< vector of sec. vertices
+    std::vector<AliBasicJetSecondaryVertex> fSecondaryVertices; ///< vector of sec. vertices
     std::vector<AliBasicJetConstituent> fConstituents; ///< vector of constituents
 
 };
