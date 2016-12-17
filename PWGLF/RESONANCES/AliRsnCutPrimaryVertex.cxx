@@ -21,6 +21,8 @@ AliRsnCutPrimaryVertex::AliRsnCutPrimaryVertex
    fAcceptTPC(acceptTPC),
    fAcceptSPD(acceptSPD),
    fCheckPileUp(kFALSE),
+   fCheckGeneratedVertexZ(0),
+   fCutGeneratedVertexZ(10.0),
    fCheckZResolutionSPD(kFALSE),
    fMaxZResolutionSPD(0.25),
    fCheckDispersionSPD(kFALSE),
@@ -58,6 +60,12 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
    AliESDEvent *esd = dynamic_cast<AliESDEvent *>(fEvent->GetRef());
    AliAODEvent *aod = dynamic_cast<AliAODEvent *>(fEvent->GetRef());
    AliVEvent *vevt = dynamic_cast<AliVEvent *>(fEvent->GetRef());
+
+   if(fCheckGeneratedVertexZ){
+     if(fCheckGeneratedVertexZ==1 && !GoodGeneratedVertexZ()) return kFALSE;
+     if(fCheckGeneratedVertexZ==2) return GoodGeneratedVertexZ();
+   }
+   
    // pile-up check
    if (fCheckPileUp) {
      AliAnalysisUtils * utils = new AliAnalysisUtils();
@@ -190,6 +198,29 @@ Bool_t AliRsnCutPrimaryVertex::CheckVertex(AliVVertex *vertex)
    if (!vertex) return kFALSE;
    if (vertex->GetNContributors() < 1) return kFALSE;
    return kTRUE;
+}
+
+//__________________________________________________________________________________________________
+Bool_t AliRsnCutPrimaryVertex::GoodGeneratedVertexZ()
+{
+  Double_t vz;
+  if(fEvent->IsESD()){
+    AliMCEvent* esd=(AliMCEvent*) fEvent->GetRefMCESD();
+    if(!esd) return kTRUE;
+    AliVVertex* esdv=(AliVVertex*) esd->GetPrimaryVertex();
+    vz=esdv->GetZ();
+    if(fabs(vz)<=fCutGeneratedVertexZ) return kTRUE;
+    else return kFALSE;
+  }else if(fEvent->IsAOD()){
+    AliAODEvent* aod=(AliAODEvent*) fEvent->GetRefMCAOD();
+    if(!aod) return kTRUE;
+    AliAODVertex *aodv=(AliAODVertex*) aod->GetPrimaryVertex();
+    vz=aodv->GetZ();
+    if(fabs(vz)<=fCutGeneratedVertexZ) return kTRUE;
+    else return kFALSE;
+  }
+
+  return kTRUE;
 }
 
 //__________________________________________________________________________________________________
