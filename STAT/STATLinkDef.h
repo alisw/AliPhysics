@@ -22,6 +22,7 @@
 #pragma link C++ class AliExternalInfo+;
 #pragma link C++ class AliTreePlayer+;
 #pragma link C++ class AliTreeTrending+;
+#pragma link C++ class AliNDFormulaBrowser+;
 #pragma link C++ namespace AliFFTsmoother+;
 
 #pragma link C++ namespace TStatToolkit;
@@ -40,6 +41,11 @@
 #pragma link C++ class std::map<TString, TString>+;
 #pragma link C++ operators std::map<TString, TString>::iterator;
 #pragma link C++ class std::map<std::string,TObject*>+;
+#pragma link C++ class std::map<ULong64_t,TString>+;
+#pragma link C++ class std::map<ULong64_t,Int_t>+;
+#pragma link C++ class std::map<ULong64_t,UInt_t>+;
+#pragma link C++ class std::map<UInt_t,ULong64_t>+;
+#pragma link C++ class std::map<std::string,TFormula*>+;
 /*
 // RS At the moment is not recognized by the CINT...
 

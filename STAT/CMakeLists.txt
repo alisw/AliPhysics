@@ -38,6 +38,7 @@ set(SRCS
     AliFFTsmoother.cxx   
     AliTreePlayer.cxx
     AliTreeTrending.cxx
+    AliNDFormulaBrowser.cxx
   )
 
 # Headers from sources
