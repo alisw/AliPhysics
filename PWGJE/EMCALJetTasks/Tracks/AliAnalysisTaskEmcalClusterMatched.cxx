@@ -25,11 +25,14 @@
 #include "AliEmcalTrackSelectionESD.h"
 #include "AliEMCALGeometry.h"
 #include "AliESDtrackCuts.h"
+#include "AliLog.h"
 #include "AliTrackContainer.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliVEventHandler.h"
 #include "AliVTrack.h"
+
+#include <iostream>
 
 /// \cond CLASSIMP
 ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterMatched)
@@ -39,7 +42,6 @@ namespace EMCalTriggerPtAnalysis {
 
 AliAnalysisTaskEmcalClusterMatched::AliAnalysisTaskEmcalClusterMatched():
     AliAnalysisTaskEmcalTriggerBase(),
-    fNameTrackContainer(),
     fTrackSelectionGlobal(nullptr),
     fTrackSelectionTPConly(nullptr),
     fTimeCut(-50e6, 50e6),
@@ -50,7 +52,6 @@ AliAnalysisTaskEmcalClusterMatched::AliAnalysisTaskEmcalClusterMatched():
 
 AliAnalysisTaskEmcalClusterMatched::AliAnalysisTaskEmcalClusterMatched(const char *name):
     AliAnalysisTaskEmcalTriggerBase(name),
-    fNameTrackContainer(),
     fTrackSelectionGlobal(nullptr),
     fTrackSelectionTPConly(nullptr),
     fTimeCut(-50e6, 50e6),
@@ -67,8 +68,6 @@ AliAnalysisTaskEmcalClusterMatched::~AliAnalysisTaskEmcalClusterMatched() {
 void AliAnalysisTaskEmcalClusterMatched::CreateUserObjects(){
   Bool_t isAOD = fInputHandler->IsA() == AliAODInputHandler::Class();
   if(!(fTrackSelectionGlobal || fTrackSelectionTPConly)) InitializeTrackSelections(isAOD);
-  if(!fNameTrackContainer.Length()) fNameTrackContainer = isAOD ? "tracks" : "Tracks";
-  AddTrackContainer(fNameTrackContainer);
   AddClusterContainer(fNameClusterContainer);
 }
 
@@ -97,7 +96,6 @@ void AliAnalysisTaskEmcalClusterMatched::UserFillHistosAfterEventSelection() {
 }
 
 bool AliAnalysisTaskEmcalClusterMatched::Run(){
-  AliTrackContainer &trackcont = *GetTrackContainer(fNameTrackContainer);
   for(auto clust : GetClusterContainer(fNameClusterContainer)->all()){
     if(!clust->IsEMCAL()) continue;
     if(clust->GetIsExotic()) continue;
@@ -114,8 +112,15 @@ bool AliAnalysisTaskEmcalClusterMatched::Run(){
     // attention: tpc tracks always subset of global tracks, exclusive TPC tracks
     // handled separately
     int nglobal(0), ntpc(0);
+    if(clust->GetNTracksMatched()){
+      AliDebugStream(1) << "Cluster matched to " << clust->GetNTracksMatched() << " Tracks" << std::endl;
+    }
     for(int itrk = 0; itrk < clust->GetNTracksMatched(); itrk++){
-      AliVTrack *matched = static_cast<AliVTrack *>(trackcont[itrk]);
+      AliVTrack *matched = static_cast<AliVTrack *>(clust->GetTrackMatched(itrk));
+      if(!matched) {
+        AliDebugStream(2) << "Track is null" << std::endl;
+        continue;
+      }
       if(fTrackSelectionGlobal->IsTrackAccepted(matched)) nglobal++;
       if(fTrackSelectionTPConly->IsTrackAccepted(matched)) ntpc++;
     }
@@ -158,9 +163,9 @@ AliAnalysisTaskEmcalClusterMatched *AliAnalysisTaskEmcalClusterMatched::AddTaskE
   mgr->AddTask(clustertask);
 
   TString outputfile = mgr->GetCommonFileName();
-  outputfile += ("#MatchedClusterResults" + suffixstring);
+  outputfile += (":MatchedClusterResults" + suffixstring);
   mgr->ConnectInput(clustertask, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(clustertask, 0, mgr->CreateContainer("MatchedClusterResultHistos" + suffixstring, THashList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
+  mgr->ConnectOutput(clustertask, 1, mgr->CreateContainer("MatchedClusterResultHistos" + suffixstring, AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outputfile));
   return clustertask;
 }
 
