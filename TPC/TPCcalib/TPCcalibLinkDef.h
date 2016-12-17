@@ -59,6 +59,8 @@
 #pragma link C++ class AliTPCDcalibRes::dcTst_t+;
 #pragma link C++ class AliTPCDcalibRes::bres_t+;
 #pragma link C++ class AliTPCDcalibRes::delta_t+;
+#pragma link C++ class std::map<std::string,AliTPCChebCorr *>+;
+#pragma link C++ class std::map<std::string,const AliTPCChebCorr *>+;
 
 
 #endif
