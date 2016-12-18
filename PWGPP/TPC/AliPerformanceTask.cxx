@@ -151,7 +151,7 @@ return kTRUE;
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTask::CreateOutputObjects()
+void AliPerformanceTask::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
@@ -181,7 +181,7 @@ void AliPerformanceTask::CreateOutputObjects()
 }
 
 //_____________________________________________________________________________
-void AliPerformanceTask::Exec(Option_t *) 
+void AliPerformanceTask::UserExec(Option_t *) 
 {
   // Main loop
   // Called for each event
@@ -237,7 +237,7 @@ void AliPerformanceTask::Exec(Option_t *)
   } // end if fUseVfriend
   
   if(fUseMCInfo) {
-      //fMC = MCEvent();
+      fMC = MCEvent();
   }  
 
   if (fUseMCInfo && !fMC) {

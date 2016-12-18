@@ -22,7 +22,6 @@ class AliVTrack;
 class AliStack;
 class TRootIoCtor;
 
-
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 

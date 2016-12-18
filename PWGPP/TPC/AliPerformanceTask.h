@@ -23,14 +23,14 @@ class TNtuple;
 #include "AliAnalysisTaskSE.h"
 #endif
 
-class AliPerformanceTask : public AliAnalysisTask {
+class AliPerformanceTask : public AliAnalysisTaskSE {
  public:
     AliPerformanceTask();
     AliPerformanceTask(const char *name, const char* title="");
     virtual ~AliPerformanceTask();
   
-  virtual void   CreateOutputObjects();
-  virtual void   Exec(Option_t *option);
+  virtual void   UserCreateOutputObjects();
+  virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   virtual void   FinishTaskOutput();
   virtual Bool_t Notify();
