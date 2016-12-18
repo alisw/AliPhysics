@@ -17,13 +17,15 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
                                       Double_t cutchi2 = -1,
                                       Bool_t dotrmsmpl = 0,
                                       Bool_t doManualRecal = 0,
-                                     Int_t dataPeriod = 0,
+                                      Int_t dataPeriod = 0,
                                       Double_t centMin = 0,
                                       Double_t centMax = 100,
                                       const char cent[] = "V0M",
                                       Bool_t doCalibRun = 0,
                                       Bool_t doManualBadmap = 0,
-                                      TString badMapName = "defaultTender")
+                                      TString badMapName = "defaultTender",
+                                      Bool_t doSimStudies = 0,
+                                      TString badMapAlienUser = "b/bsahlmul/")
 {
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -67,7 +69,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   TString pathToBadMap;
   
   if (badMapName !="defaultTender") {
-    gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/b/bsahlmul/%s.root .",badMapName.Data()));
+    gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/%s%s.root .",badMapAlienUser.Data(),badMapName.Data()));
     pathToBadMap = Form("%s/",gSystem->pwd());
     pathToBadMap += badMapName;
     pathToBadMap += ".root";
@@ -97,6 +99,7 @@ AliAnalysisTask *AddTaskEMCALPi0Gamma(const UInt_t triggermask = AliVEvent::kMB,
   task->SetCentrality(cent);
   task->SetCentralityRange(centMin,centMax);
   task->SetManualBadMap(doManualBadmap);
+  task->SetSimulationStudies(doSimStudies);
   
   if(doManualBadmap) {
     if (badMapName == "defaultTender")

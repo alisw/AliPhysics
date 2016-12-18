@@ -12,16 +12,24 @@
 
 #include "THnSparseDefinitions.h"
 
-#include "../../UserTasks/AliAnalysisTaskPID.h"
+//#include "/hera/alice/bhess/trunk/bhess_PID/AliAnalysisTaskPID.h"
+#include "FFs/bhess_PID/AliAnalysisTaskPID.h"
 #include "SystematicErrorUtils.h"
 
-enum axisDataProj { kPidPtProj = 0, kPidJetPtProj = 1, kPidZProj = 2, kPidXiProj = 3, kNDimsProj = 4 };
+//enum axisDataProj { kPidPtProj = 0, kPidJetPtProj = 1, kPidZProj = 2, kPidXiProj = 3, kNDimsProj = 4 };
+enum axisDataProj { kPidPtProj = 0, kPidZProj = 1, kPidXiProj = 2, kNDimsProj = 3 };
 
+const TString yieldAxisTitlePt = "1/N_{Jets} dN/dp_{T} (GeV/c)^{-1}";
+const TString yieldAxisTitleZ  = "1/N_{Jets} dN/dz";
+const TString yieldAxisTitleXi = "1/N_{Jets} dN/d#xi";
 
 
 //___________________________________________________________________
-void setupHist(TH1* h, TString histName, TString histTitle, TString xAxisTitle, TString yAxisTitle, Int_t color)
+void setupHist(TH1* h, TString histName, TString histTitle, TString xAxisTitle, TString yAxisTitle, Int_t color, Bool_t isMC)
 {
+  if (!h)
+    return;
+  
   if (histName != "")
     h->SetName(histName.Data());
   h->SetTitle(histTitle.Data());
@@ -31,7 +39,7 @@ void setupHist(TH1* h, TString histName, TString histTitle, TString xAxisTitle, 
   if (yAxisTitle != "")
     h->GetYaxis()->SetTitle(yAxisTitle.Data());
   
-  h->SetMarkerStyle(24);
+  h->SetMarkerStyle(isMC ? 24 : 20);
   h->SetLineColor(color);
   h->SetMarkerColor(color);
   
@@ -74,6 +82,9 @@ void normaliseYieldHist(TH1* h, Double_t numJets)
 {
   // Normalise to 1/numJets and bin width
   
+  if (!h)
+    return;
+  
   if (numJets <= 0) // Do not normalise
     numJets = 1.;
   
@@ -87,11 +98,392 @@ void normaliseYieldHist(TH1* h, Double_t numJets)
 
 
 //___________________________________________________________________
+void normaliseWeightingFactor(TH2* hWeightingFactor, TH1* hTotalWeight)
+{
+  // Normalise the weighting factors in hWeightingFactor such that every row sums up to 1.
+  // In this case, hTotalWeight is assumed to contain just the projection on the y-axis of
+  // hWeightingFactor (especially this implies the same bins in y).
+  
+  if (!hWeightingFactor || !hTotalWeight) {
+    printf("Error normaliseWeightingFactor: Missing histos!\n");
+    return;
+  }
+  
+  for (Int_t binY = 1; binY <= hWeightingFactor->GetNbinsY(); binY++) {
+    const Double_t totalWeight = hTotalWeight->GetBinContent(binY);
+    if (totalWeight > 0.) {
+      const Double_t normFactor = 1. / totalWeight;
+      
+      for (Int_t binPt = 1; binPt <= hWeightingFactor->GetNbinsX(); binPt++) {
+        hWeightingFactor->SetBinContent(binPt, binY, hWeightingFactor->GetBinContent(binPt, binY) * normFactor);
+        hWeightingFactor->SetBinError(binPt, binY, hWeightingFactor->GetBinError(binPt, binY) * normFactor);
+      }
+    }
+  }
+}
+
+
+//___________________________________________________________________
+void normaliseErrorWeightingFactor(TH2* hErrorWeightingFactor, TH1* hTotalErrorWeight)
+{
+  // Normalise the weighting factors in hErrorWeightingFactor such that every column sums up to 1.
+  // In this case, hTotalErrorWeight is assumed to contain just the projection on the x-axis of
+  // hErrorWeightingFactor (especially this implies the same bins in pT).
+  
+  if (!hErrorWeightingFactor || !hTotalErrorWeight) {
+    printf("Error normaliseErrorWeightingFactor: Missing histos!\n");
+    return;
+  }
+  
+  for (Int_t binPt = 1; binPt <= hErrorWeightingFactor->GetNbinsX(); binPt++) {
+    const Double_t totalWeight = hTotalErrorWeight->GetBinContent(binPt);
+    if (totalWeight > 0.) {
+      const Double_t normFactor = 1. / totalWeight;
+      
+      for (Int_t binY = 1; binY <= hErrorWeightingFactor->GetNbinsY(); binY++) {
+        hErrorWeightingFactor->SetBinContent(binPt, binY, hErrorWeightingFactor->GetBinContent(binPt, binY) * normFactor);
+        hErrorWeightingFactor->SetBinError(binPt, binY, hErrorWeightingFactor->GetBinError(binPt, binY) * normFactor);
+      }
+    }
+  }
+}
+
+/*TODO Try with iterative approach (seems to fail or convergence is questionable!)
+//___________________________________________________________________
+void calculateWeightedMean(TH1D** hFractionIDFFvar, TH1D** hFractionIDFFtrackPt, TH2* hWeightingVarvsPt, TH2* hErrorWeightingVarvsPt,
+                           Bool_t zerothIter, Double_t alpha)
+{
+  // Loop over all var (=z, xi) bins and calculate for the mean fraction: Fraction(var) = Sum_Pt (fraction(Pt) * weight(Pt, var)).
+  // For the error, calculate:
+  // FractionError(var)^2 = Sum_Pt ((fractionError(Pt) * sqrt(1/errorWeight(Pt, var)))^2 * weight(Pt, var)^2)
+  //                      = Sum_Pt ((fractionError(Pt) * weight(Pt, var))^2 / errorWeight(Pt, var));
+  // here, the fraction error in pT is weighted with a weight along the pT column (note that for FRACTIONS the error scales with
+  // 1/sqrt(N) for not too small N).
+  // NOTE: The denominator (sum (weights) in case of the mean and (sum (weights))^2 in case of the error) is one
+  // by construction (normalised weights).
+  //
+  // NOTE: The same code can also be used for the to-pi-ratios (replace "fraction" by "ratio" in the following),
+  // but NOT for yields (because then the scaling of sigma is sqrt(N) and not 1/sqrt(N) and also one does not want
+  // to average the yields of different bins, but to add them).
+  // In case of the yields, one rather takes the fractions (with errors defined as above) and scales (i.e. no error on the
+  // multiplicative factor) with the yield in the var bin.
+  
+  if (!hFractionIDFFvar || !hFractionIDFFtrackPt || !hWeightingVarvsPt || !hErrorWeightingVarvsPt) {
+    printf("Error calculateWeightedMean: Missing histos!\n");
+    return;
+  }
+  
+  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+    if (!hFractionIDFFvar[species])
+      continue; // Will happen for to-pi-ratio in case of species = AliPID::kPion
+    
+    
+    //TODO adapt errors?!
+    //TODO adapt comment?!
+    // Calculate estimate of probability density matrix
+    const Int_t nBinsPt = hFractionIDFFtrackPt[species]->GetNbinsX();
+    const Int_t nBinsVar = hFractionIDFFvar[species]->GetNbinsX();
+    
+    
+    // Add 1 in each dimension to take into account that axes start at index 1
+    Double_t probDensity[nBinsPt + 1][nBinsVar + 1];
+    
+    if (zerothIter) {
+      // For zeroth iteration, guess of frac(var) extremely bad - do ordinary weighted mean first without any freaky weighting procedure
+      for (Int_t binPt = 1; binPt <= nBinsPt; binPt++) {
+        for (Int_t binVar = 1; binVar <= nBinsVar; binVar++) {
+          probDensity[binPt][binVar] = hFractionIDFFtrackPt[species]->GetBinContent(binPt);
+        }
+      }
+    }
+    else {
+      // weightVarInv factors
+      Double_t weightVarInv[nBinsPt + 1];
+      for (Int_t binVar = 1; binVar <= nBinsVar; binVar++) {
+        weightVarInv[binVar] = 0;
+        Double_t sumVarWeightMatrix = 0;
+        for (Int_t binPt = 1; binPt <= nBinsPt; binPt++) {
+          weightVarInv[binVar] += hWeightingVarvsPt->GetBinContent(binPt, binVar) * hFractionIDFFtrackPt[species]->GetBinContent(binPt); 
+          sumVarWeightMatrix += hWeightingVarvsPt->GetBinContent(binPt, binVar);
+        }
+        if (weightVarInv[binVar] <= 0) {
+          // This case should only happen for e.g. a xi bin beyond the range. But this means that sumVarWeightMatrix is already zero.
+          // If not, something is wrong
+          if (sumVarWeightMatrix > 0) {
+            printf("Error (species %s): weightVarInv[binVar] = %f <= 0 and sumVarWeightMatrix = %f > 0!\n", 
+                  AliPID::ParticleShortName(species), weightVarInv[binVar], sumVarWeightMatrix);
+            return;
+          }
+        }
+      }
+      
+      // weightPtInv factors
+      Double_t weightPtInv[nBinsPt + 1];
+      weightPtInv[0] = 0;
+      for (Int_t binPt = 1; binPt <= nBinsPt; binPt++) {
+        weightPtInv[binPt] = 0;
+        Double_t sumPtWeightMatrix = 0;
+        for (Int_t binVar = 1; binVar <= nBinsVar; binVar++) {
+          weightPtInv[binPt] += hErrorWeightingVarvsPt->GetBinContent(binPt, binVar) * hFractionIDFFvar[species]->GetBinContent(binVar); 
+          sumPtWeightMatrix += hErrorWeightingVarvsPt->GetBinContent(binPt, binVar);
+        }
+        if (weightPtInv[binPt] <= 0) {
+          // This case should only happen for e.g. a xi bin beyond the range. But this means that sumPtWeightMatrix is already zero.
+          // If not, something is wrong
+          if (sumPtWeightMatrix > 0) {
+            printf("Error (species %s): weightPtInv[binPt] = %f <= 0 and sumPtWeightMatrix = %f > 0!\n", 
+                  AliPID::ParticleShortName(species), weightPtInv[binPt], sumPtWeightMatrix);
+            return;
+          }
+        }
+      }
+      
+      for (Int_t binPt = 1; binPt <= nBinsPt; binPt++) {
+        for (Int_t binVar = 1; binVar <= nBinsVar; binVar++) {
+          if (hWeightingVarvsPt->GetBinContent(binPt, binVar) > 0) {
+            // weightPtInv[binPt] == 0 doesn't matter, if sumPtWeightMatrix is zero because matrix * weight is then still zero
+            Double_t weightTotal = 0.;
+            weightTotal = TMath::Sqrt(1./weightPtInv[binPt]*1./weightPtInv[binPt] + 1./weightVarInv[binVar]*1./weightVarInv[binVar]);
+            //if ((weightPtInv[binPt] + weightVarInv[binVar]) > 0)  {
+            //  weightTotal = 1. / (weightPtInv[binPt] + weightVarInv[binVar]);
+            //}
+            //else {
+            //  printf("Error: Total weight is <= 0 for binPt/binVar = %d/%d\n", binPt, binVar);
+            //}
+            probDensity[binPt][binVar] = hFractionIDFFvar[species]->GetBinContent(binVar)
+                                        * hFractionIDFFtrackPt[species]->GetBinContent(binPt)
+                                        * weightTotal;
+          }
+          else
+            probDensity[binPt][binVar] = 0.;
+        }
+      }
+      
+      // Normalise probDensity such that the overall (all pT, var) species fraction equals the one measured in all pT bins
+      
+      Double_t overallFractionSpecies = 0;
+      for (Int_t binPt = 1; binPt <= nBinsPt; binPt++) {
+        for (Int_t binVar = 1; binVar <= nBinsVar; binVar++) {
+          overallFractionSpecies += hErrorWeightingVarvsPt->GetBinContent(binPt, binVar)
+                                    * hFractionIDFFtrackPt[species]->GetBinContent(binPt);
+        }
+      }
+      
+      Double_t overallFractionSpeciesRec = 0;
+      for (Int_t binPt = 1; binPt <= nBinsPt; binPt++) {
+        for (Int_t binVar = 1; binVar <= nBinsVar; binVar++) {
+          overallFractionSpeciesRec += probDensity[binPt][binVar] * hErrorWeightingVarvsPt->GetBinContent(binPt, binVar);
+        }
+      }
+
+      if (overallFractionSpeciesRec <= 0) {
+        printf("Yield for species %s is zero!\n", AliPID::ParticleShortName(species));
+        return;
+      }
+
+      const Double_t normFactor = overallFractionSpecies / overallFractionSpeciesRec; 
+
+      for (Int_t binPt = 1; binPt <= nBinsPt; binPt++) {
+        for (Int_t binVar = 1; binVar <= nBinsVar; binVar++) {
+          probDensity[binPt][binVar] = probDensity[binPt][binVar] * normFactor;
+        }
+      }
+    }
+  
+    for (Int_t binVar = 1; binVar <= nBinsVar; binVar++) {
+      Double_t fraction = 0.;
+      Double_t fractionError2 = 0.;
+      
+      // Binning of pT was adjusted such that all histos have the same
+      for (Int_t binPt = 1; binPt <= nBinsPt; binPt++) {
+        const Double_t weight = hWeightingVarvsPt->GetBinContent(binPt, binVar);
+        fraction += probDensity[binPt][binVar] * weight;
+        
+        const Double_t errorWeight = hErrorWeightingVarvsPt->GetBinContent(binPt, binVar);
+        if (errorWeight > 0) {
+          fractionError2 += TMath::Power(hFractionIDFFtrackPt[species]->GetBinError(binPt) * weight, 2)
+                            / errorWeight;
+        }
+        else {
+          if (weight > 0) {
+            printf("ERROR: errorWeight is %f. This should not happen if a finite yield (for any species) was found in this bin, i.e. there is a finite weight: %f!\n",
+                   errorWeight, weight);
+          }
+        }
+      }
+      
+      const Double_t fractionError = TMath::Sqrt(fractionError2);
+      
+      
+      //// Smoothly change fraction w.r.t. to RELATIVE value: old + alpha * (new/old - 1) * old
+      //const Double_t oldFraction = hFractionIDFFvar[species]->GetBinContent(binVar);
+      //hFractionIDFFvar[species]->SetBinContent(binVar, oldFraction + alpha * (fraction - oldFraction));
+      //hFractionIDFFvar[species]->SetBinError(binVar, fractionError);
+      
+      // Smoothly change fraction, i.e. only alpha * difference (new - old) to old
+      const Double_t oldFraction = hFractionIDFFvar[species]->GetBinContent(binVar);
+      hFractionIDFFvar[species]->SetBinContent(binVar, (1. - alpha) * oldFraction + alpha * fraction);
+      hFractionIDFFvar[species]->SetBinError(binVar, fractionError);
+    }
+  }
+}
+
+
+//___________________________________________________________________
+void calculateWeightedMeanIteratively(TH1D** hFractionIDFFvar, TH1D** hFractionIDFFtrackPt, TH2* hWeightingVarvsPt,
+                                      TH2* hErrorWeightingVarvsPt, TFile* saveFile)
+{
+  // Calculate weighted mean iteratively: Firstly, flat priors vs. var are used to calculate the weighted mean.
+  // In the next iterations, the probability matrix using result(var) * result(pT) * some weighting is calculated
+  // and used to find the result(var) of the next iteration, which is then again the input of the following iteration.
+  
+  if (!hFractionIDFFvar || !hFractionIDFFtrackPt || !hWeightingVarvsPt || !hErrorWeightingVarvsPt) {
+    printf("Error calculateWeightedMeanIteratively: Missing histos!\n");
+    return;
+  }
+  
+  // Initialise flat priors - actual value does not matter as long as it is constant vs. var
+  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+    if (!hFractionIDFFvar[species])
+      continue; // Will happen for to-pi-ratio in case of species = AliPID::kPion
+    
+    Double_t initialGuess = 1. / AliPID::kSPECIES;
+    for (Int_t binVar = 1; binVar <= hFractionIDFFvar[species]->GetNbinsX(); binVar++) {
+      hFractionIDFFvar[species]->SetBinContent(binVar, initialGuess);
+      hFractionIDFFvar[species]->SetBinError(binVar, 1); // no information - large error
+    }
+  }
+  
+  const Int_t numIter = 3;
+  const Double_t alpha = 0.5;
+  for (Int_t iter = 0; iter <= numIter; iter++) {
+    // Always take as input the results (vs. var) from the last iteration/initial guess
+    
+    // Set alpha to 1 for iter 0 because initial guess is much worse than that after iter 0
+    calculateWeightedMean(hFractionIDFFvar, hFractionIDFFtrackPt, hWeightingVarvsPt, hErrorWeightingVarvsPt,
+                          (iter == 0), (iter == 0) ? 1. : alpha);
+    
+    for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+      // Save result of some iterations to file
+      if (((Int_t)(iter * alpha * 100)) % 10 != 0)
+        continue;
+      
+      if (hFractionIDFFvar[species]) {
+        if (saveFile) {
+          const TString subDir = "iterations";
+          if (!saveFile->FindObject(subDir.Data()))
+            saveFile->mkdir(subDir.Data());
+          saveFile->cd(subDir.Data());
+          
+          TH1D* hFractionIDFFvarIter = new TH1D(*hFractionIDFFvar[species]);
+          hFractionIDFFvarIter->SetName(Form("%s_iter%d", hFractionIDFFvar[species]->GetName(), iter));
+          hFractionIDFFvarIter->Write();
+          
+          saveFile->cd();
+        }
+      }
+    }
+  }
+  //TODO store var histos for each iteration (outside) => Check, whether procedure converges for all jetPt bins,
+  // if so, develop convergence criterium
+  //TODO Fix number of iterations at first => Adapt comment
+}
+*/
+
+//___________________________________________________________________
+void calculateWeightedMean(TH1D** hFractionIDFFvar, TH1D** hFractionIDFFtrackPt, TH2* hWeightingVarvsPt, TH2* hErrorWeightingVarvsPt)
+{
+  // Loop over all var (=z, xi) bins and calculate for the mean fraction: Fraction(var) = Sum_Pt (fraction(Pt) * weight(Pt, var)).
+  // For the error, calculate:
+  // FractionError(var)^2 = Sum_Pt ((fractionError(Pt) * sqrt(1/errorWeight(Pt, var)))^2 * weight(Pt, var)^2)
+  //                      = Sum_Pt ((fractionError(Pt) * weight(Pt, var))^2 / errorWeight(Pt, var));
+  // here, the fraction error in pT is weighted with a weight along the pT column (note that for FRACTIONS the error scales with
+  // 1/sqrt(N) for not too small N).
+  // NOTE: The denominator (sum (weights) in case of the mean and (sum (weights))^2 in case of the error) is one
+  // by construction (normalised weights).
+  //
+  // NOTE: The same code can also be used for the to-pi-ratios (replace "fraction" by "ratio" in the following),
+  // but NOT for yields (because then the scaling of sigma is sqrt(N) and not 1/sqrt(N) and also one does not want
+  // to average the yields of different bins, but to add them).
+  // In case of the yields, one rather takes the fractions (with errors defined as above) and scales (i.e. no error on the
+  // multiplicative factor) with the yield in the var bin.
+  
+  if (!hFractionIDFFvar || !hFractionIDFFtrackPt || !hWeightingVarvsPt || !hErrorWeightingVarvsPt) {
+    printf("Error calculateWeightedMean: Missing histos!\n");
+    return;
+  }
+  
+  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+    if (!hFractionIDFFvar[species])
+      continue; // Will happen for to-pi-ratio in case of species = AliPID::kPion
+    
+    
+    for (Int_t binVar = 1; binVar <= hFractionIDFFvar[species]->GetNbinsX(); binVar++) {
+      Double_t fraction = 0.;
+      Double_t fractionError2 = 0.;
+      
+      // Binning of pT was adjusted such that all histos have the same
+      for (Int_t binPt = 1; binPt <= hFractionIDFFtrackPt[species]->GetNbinsX(); binPt++) {
+        const Double_t weight = hWeightingVarvsPt->GetBinContent(binPt, binVar);
+        fraction += hFractionIDFFtrackPt[species]->GetBinContent(binPt) * weight;
+        
+        const Double_t errorWeight = hErrorWeightingVarvsPt->GetBinContent(binPt, binVar);
+        if (errorWeight > 0) {
+          fractionError2 += TMath::Power(hFractionIDFFtrackPt[species]->GetBinError(binPt) * weight, 2)
+                            / errorWeight;
+        }
+        else {
+          if (weight > 0) {
+            printf("ERROR: errorWeight is %f. This should not happen if a finite yield (for any species) was found in this bin, i.e. there is a finite weight: %f!\n",
+                   errorWeight, weight);
+          }
+        }
+      }
+      
+      const Double_t fractionError = TMath::Sqrt(fractionError2);
+      hFractionIDFFvar[species]->SetBinContent(binVar, fraction);
+      hFractionIDFFvar[species]->SetBinError(binVar, fractionError);
+    }
+  }
+}
+
+
+//___________________________________________________________________
+void translateFractionToYield(TH1D** hIDFFvar, TH1D** hFractionIDFFvar, TH1D* hTotalWeight)
+{
+  // Take the fractions for var and just scale (i.e. no error for scale parameter) the
+  // content of each bin with the total yield in this var bin.
+  // The error of the fractions is already constructed such that it includes the error of the yield
+  // (via log-likelihood fit vs. pT and then proper propagation from pT to var).
+  //
+  // NOTE: The binning must be the same for all histograms!
+  
+  if (!hIDFFvar || !hFractionIDFFvar || !hTotalWeight) {
+    printf("Error translateFractionToYield: Missing histos!\n");
+    return;
+  }
+  
+  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+    for (Int_t binVar = 1; binVar <= hIDFFvar[species]->GetNbinsX(); binVar++) {
+      const Double_t totalWeight = hTotalWeight->GetBinContent(binVar);
+      const Double_t fraction = hFractionIDFFvar[species]->GetBinContent(binVar);
+      const Double_t fractionError = hFractionIDFFvar[species]->GetBinError(binVar);
+      
+      hIDFFvar[species]->SetBinContent(binVar, fraction * totalWeight);
+      hIDFFvar[species]->SetBinError(binVar, fractionError * totalWeight);
+    }
+  }
+}
+
+
+  /*
+//___________________________________________________________________
 void GenerateParticleYields(THnSparse* hDataProj, AliAnalysisTaskPID* pidTask, const Double_t centrality,
                             TH2D** hIDFFtrackPt, TH2D** hIDFFz, TH2D** hIDFFxi,
                             const Bool_t setMean, const Bool_t addErrorsQuadratically, const Bool_t smearByError,
                             const Bool_t uniformSystematicError, const Bool_t takeIntoAccountSysError, Int_t nGenerations)
 {
+  
   if (!hDataProj || !pidTask || !hIDFFtrackPt || !hIDFFz || !hIDFFxi) {
     printf("Cannot generate particle fractions - missing input!\n");
     return;
@@ -289,7 +681,7 @@ void GenerateParticleYields(THnSparse* hDataProj, AliAnalysisTaskPID* pidTask, c
     
     const Int_t nHistos = nGenerations;
     
-    
+    */
     /*OLD error for each species by variation of ALL species (will bias towards smaller errors!)
     // TODO Still does not store all the values in histogram to avoid different fractions for same map bin in same iteration.
     // => If this is build in, one needs a histogram for EACH species!!!
@@ -380,7 +772,7 @@ void GenerateParticleYields(THnSparse* hDataProj, AliAnalysisTaskPID* pidTask, c
     
     const Int_t nHistos = AliPID::kSPECIES * nGenerations;
     */
-    
+    /*
     // Compare results to obtain error
     const Bool_t ignoreSigmaErrors = kTRUE;
     
@@ -409,12 +801,15 @@ void GenerateParticleYields(THnSparse* hDataProj, AliAnalysisTaskPID* pidTask, c
     }
   }
 }
+*/
   
   
 //___________________________________________________________________
-Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, TString listName /*= ""*/,
-                 Bool_t uniformSystematicError, Int_t chargeMode /*kNegCharge = -1, kAllCharged = 0, kPosCharge = 1*/,
-                 Double_t lowerCentrality = -2, Double_t upperCentrality = -2, Int_t rebinPt = 1, Int_t rebinZ = 1, Int_t rebinXi = 1)
+Int_t extractFFs(TString pathNameData, TString listName /*= ""*/, TString pathNameFractionsAndYields,
+                 Int_t chargeMode /*kNegCharge = -1, kAllCharged = 0, kPosCharge = 1*/,
+                 Double_t lowerCentrality = -2, Double_t upperCentrality = -2, Double_t lowerJetPt = -1, Double_t upperJetPt = -1,
+                 Int_t rebinZ = 1, Int_t rebinXi = 1, Bool_t onlyUseRelevantMCIDforMatrix = kFALSE)
+                 // NOTE: rebinPt makes no sense, since one takes the pT histos from the file (histos already fixed w.r.t. binning)
 {
   TObjArray* histList = 0x0;
   
@@ -424,6 +819,121 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
     listName.ReplaceAll(".root", "");
   }
   
+  // Load pT fractions, yields and to-pi-ratios (data and MC)
+  TFile* fFractionsAndYields = TFile::Open(pathNameFractionsAndYields.Data());
+  if (!fFractionsAndYields)  {
+    std::cout << std::endl;
+    std::cout << "Failed to open file \"" << pathNameFractionsAndYields.Data() << "\"!" << std::endl;
+    return -1;
+  }
+  
+  
+  TH1D* hFractionIDFFtrackPt[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hFractionIDFFtrackPtMC[AliPID::kSPECIES] = { 0x0, };
+  
+  TH1D* hIDFFtrackPt[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hIDFFtrackPtMC[AliPID::kSPECIES] = { 0x0, };
+  
+  TH1D* hRatioToPiIDFFtrackPt[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hRatioToPiIDFFtrackPtMC[AliPID::kSPECIES] = { 0x0, };
+
+  Int_t numMCHistsFound = 0;
+  
+  // In case of MC also retrieve the MC (raw) yields and fractions
+  // NOTE: The MC histograms are also there for data, but then use the "most probable PID".
+  // In case of data, just ignore the MC histos.
+  Bool_t hasMC = kFALSE;
+  TH1D* hTestMC = (TH1D*)fFractionsAndYields->Get("hFractionComparisonPions");
+  if (hTestMC) {
+    TString yTitle = hTestMC->GetYaxis()->GetTitle();
+    if (yTitle.Contains("Most Probable PID", TString::kIgnoreCase) == kFALSE)
+      hasMC = kTRUE;
+  }
+  
+  //printf("TODO: MC manually set to be present!\n");
+  //hasMC = kTRUE; //TODO
+  
+  if (hasMC) 
+    printf("Fraction file seems to contain MC histos -> Trying do extract them...\n\n");
+  else
+    printf("Fraction file does not seem to contain MC histos -> Ignoring them...\n\n");
+    
+  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+    TString speciesName = AliPID::ParticleName(species);
+    TString firstLetter = speciesName(0);
+    firstLetter.ToUpper();
+    speciesName.Replace(0, 1, firstLetter.Data());
+    TString histName = Form("hYield%ss", speciesName.Data());
+    hIDFFtrackPt[species] = (TH1D*)fFractionsAndYields->Get(histName.Data());
+    if (!hIDFFtrackPt[species]) {
+      printf("Failed to load hist \"%s\"\n", histName.Data());
+      return -1;
+    }
+    hIDFFtrackPt[species]->SetFillStyle(0);
+    hIDFFtrackPt[species]->SetName(Form("hIDFFtrackPt_%s", AliPID::ParticleShortName(species)));
+    
+    TString histNameFraction = histName;
+    histNameFraction.ReplaceAll("Yield", "Fraction");
+    hFractionIDFFtrackPt[species] = (TH1D*)fFractionsAndYields->Get(histNameFraction.Data());
+    if (!hFractionIDFFtrackPt[species]) {
+      printf("Failed to load hist \"%s\"\n", histNameFraction.Data());
+      return -1;
+    }
+    hFractionIDFFtrackPt[species]->SetFillStyle(0);
+    hFractionIDFFtrackPt[species]->SetName(Form("hFractionIDFFtrackPt_%s", AliPID::ParticleShortName(species)));
+    
+    
+    TString histNameRatioToPi = Form("hRatioToPi%ss", speciesName.Data());
+    if (species != AliPID::kPion) {
+      hRatioToPiIDFFtrackPt[species] = (TH1D*)fFractionsAndYields->Get(histNameRatioToPi.Data());
+      if (!hRatioToPiIDFFtrackPt[species]) {
+        printf("Failed to load hist \"%s\"\n", histNameRatioToPi.Data());
+        //return -1; // For old data, these histos are not there, just go on without them
+      }
+      else {
+        hRatioToPiIDFFtrackPt[species]->SetFillStyle(0);
+        hRatioToPiIDFFtrackPt[species]->SetName(Form("hRatioToPiIDFFtrackPt_%s", AliPID::ParticleShortName(species)));
+      }
+    }
+    
+    if (hasMC) {
+      TString histNameMC = Form("%sMC", histName.Data());
+      hIDFFtrackPtMC[species] = (TH1D*)fFractionsAndYields->Get(histNameMC.Data());
+      
+      TString histNameFractionMC = Form("%sMC", histNameFraction.Data());
+      hFractionIDFFtrackPtMC[species] = (TH1D*)fFractionsAndYields->Get(histNameFractionMC.Data());
+      
+      if (species != AliPID::kPion) {
+        TString histNameRatioToPiMC = Form("%sMC", histNameRatioToPi.Data());
+        hRatioToPiIDFFtrackPtMC[species] = (TH1D*)fFractionsAndYields->Get(histNameRatioToPiMC.Data());
+      }
+      
+      if (hFractionIDFFtrackPtMC[species] && hIDFFtrackPtMC[species] &&
+          (hRatioToPiIDFFtrackPtMC[species] || !hRatioToPiIDFFtrackPt[species] || species == AliPID::kPion)) {
+        numMCHistsFound++;
+        
+        hIDFFtrackPtMC[species]->SetFillStyle(0);
+        hIDFFtrackPtMC[species]->SetName(Form("hIDFFtrackPtMC_%s", AliPID::ParticleShortName(species)));
+        
+        hFractionIDFFtrackPtMC[species]->SetFillStyle(0);
+        hFractionIDFFtrackPtMC[species]->SetName(Form("hFractionIDFFtrackPtMC_%s", AliPID::ParticleShortName(species)));
+      
+        if (species != AliPID::kPion && hRatioToPiIDFFtrackPtMC[species]) {
+          hRatioToPiIDFFtrackPtMC[species]->SetFillStyle(0);
+          hRatioToPiIDFFtrackPtMC[species]->SetName(Form("hRatioToPiIDFFtrackPtMC_%s", AliPID::ParticleShortName(species)));
+        }
+      }
+    }
+  }
+  
+  if (numMCHistsFound > 0 && numMCHistsFound != AliPID::kSPECIES) {
+    printf("Error: Unable to retrieve all MC histos! Got %d.\n", numMCHistsFound);
+    return -1;
+  }
+  
+  
+  
+  // Extract the data histogram
   TFile* f = TFile::Open(pathNameData.Data());
   if (!f)  {
     std::cout << std::endl;
@@ -438,7 +948,6 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
     return -1;
   }
   
-  // Extract the data histogram
   THnSparse* hPIDdata = dynamic_cast<THnSparse*>(histList->FindObject("hPIDdataAll"));
   if (!hPIDdata) {
     std::cout << std::endl;
@@ -498,6 +1007,44 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
     hPIDdata->GetAxis(kPidCentrality)->SetRange(lowerCentralityBinLimit, upperCentralityBinLimit);
   }
   
+  // If desired, restrict jetPt axis
+  Int_t lowerJetPtBinLimit = -1;
+  Int_t upperJetPtBinLimit = -1;
+  Bool_t restrictJetPtAxis = kFALSE;
+  Double_t actualLowerJetPt = -1.;
+  Double_t actualUpperJetPt = -1.;
+  
+  if (lowerJetPt >= 0 && upperJetPt >= 0) {
+    // Add subtract a very small number to avoid problems with values right on the border between to bins
+    lowerJetPtBinLimit = hPIDdata->GetAxis(kPidJetPt)->FindBin(lowerJetPt + 0.001);
+    upperJetPtBinLimit = hPIDdata->GetAxis(kPidJetPt)->FindBin(upperJetPt - 0.001);
+    
+    // Check if the values look reasonable
+    if (lowerJetPtBinLimit <= upperJetPtBinLimit && lowerJetPtBinLimit >= 1 && upperJetPtBinLimit <= hPIDdata->GetAxis(kPidJetPt)->GetNbins()) {
+      actualLowerJetPt = hPIDdata->GetAxis(kPidJetPt)->GetBinLowEdge(lowerJetPtBinLimit);
+      actualUpperJetPt = hPIDdata->GetAxis(kPidJetPt)->GetBinUpEdge(upperJetPtBinLimit);
+
+      restrictJetPtAxis = kTRUE;
+    }
+    else {
+      std::cout << std::endl;
+      std::cout << "Requested jet pT range out of limits or upper and lower limit are switched!" << std::endl;
+      return -1;
+    }
+  }
+  
+  std::cout << "jet pT: ";
+  if (restrictJetPtAxis) {
+    std::cout << actualLowerJetPt << " - " << actualUpperJetPt << std::endl;
+  }
+  else {
+    std::cout << "All" << std::endl;
+  }
+  
+  if (restrictJetPtAxis) {
+    hPIDdata->GetAxis(kPidJetPt)->SetRange(lowerJetPtBinLimit, upperJetPtBinLimit);
+  }
+  
   // If desired, restrict charge axis
   std::cout << "Charge selection: ";
   if (chargeMode == kAllCharged)
@@ -554,24 +1101,26 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
   // Just take one arbitrary selectSpecies to avoid multiple counting
   hPIDdata->GetAxis(kPidSelectSpecies)->SetRange(1, 1);
   
+  // If desired, throw away under- and overflow bins from MC ID
+  if (onlyUseRelevantMCIDforMatrix) {
+    hPIDdata->GetAxis(kPidMCpid)->SetRange(1, hPIDdata->GetAxis(kPidMCpid)->GetNbins());
+  }
+  
   // Get projection on dimensions relevant for FFs
   const Int_t nDimProj = kNDimsProj;
   Int_t dimProj[nDimProj];
   dimProj[kPidPtProj] = kPidPt;
-  dimProj[kPidJetPtProj] = kPidJetPt;
   dimProj[kPidZProj] = kPidZ;
   dimProj[kPidXiProj] =kPidXi;
   
   THnSparse* hDataProj = hPIDdata->Projection(nDimProj, dimProj, "e");
   
   // If desired, rebin axes
-  if (rebinPt != 1 || rebinZ != 1 || rebinXi != 1) {
+  if (rebinZ != 1 || rebinXi != 1) {
     Int_t group[hDataProj->GetNdimensions()];
     
     for (Int_t i = 0; i < hDataProj->GetNdimensions(); i++) {
-      if (i == kPidPtProj)
-        group[i] = rebinPt;
-      else if (i == kPidZProj)
+       if (i == kPidZProj)
         group[i] = rebinZ;
       else if (i == kPidXiProj)
         group[i] = rebinXi;
@@ -586,32 +1135,67 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
     hDataProj = hTemp;
   }
   
-  /* OLD - Now normalisation to nJets
-  Double_t numEvents = -1;
-  TH1* hNumEvents = dynamic_cast<TH1*>(histList->FindObject("fhEventsProcessed"));
-  if (!hNumEvents) {
-    std::cout << std::endl;
-    std::cout << "Histo with number of processed events not found! Yields will NOT be normalised to this number!" << std::endl 
-              << std::endl;
-  }
-  else {
-    numEvents = hNumEvents->Integral(lowerCentralityBinLimit, upperCentralityBinLimit);
-    
-    if (numEvents <= 0) {
-      numEvents = -1;
-      std::cout << std::endl;
-      std::cout << "Number of processed events < 1 in selected range! Yields will NOT be normalised to this number!"
-                << std::endl << std::endl;
-    }
-  }*/
+  // Take pT binning from pion fraction (binning for all species the same) and create a new THnSparse with this new binning
+  TH1D hDummyPt(*hFractionIDFFtrackPt[AliPID::kPion]);
+  hDummyPt.SetName("hDummyPt");
+  TAxis* axisPt = hDummyPt.GetXaxis();
   
+  Int_t binsProj[nDimProj];
+  Double_t xminProj[nDimProj];
+  Double_t xmaxProj[nDimProj];
+  
+  for (Int_t iDim = 0; iDim < nDimProj; iDim++) {
+    if (iDim == kPidPtProj) {
+      binsProj[iDim] = axisPt->GetNbins();
+      xminProj[iDim] = axisPt->GetBinLowEdge(1);
+      xmaxProj[iDim] = axisPt->GetBinUpEdge(axisPt->GetNbins());
+    }
+    else {
+      binsProj[iDim] = hDataProj->GetAxis(iDim)->GetNbins();
+      xminProj[iDim] = hDataProj->GetAxis(iDim)->GetBinLowEdge(1);
+      xmaxProj[iDim] = hDataProj->GetAxis(iDim)->GetBinUpEdge(hDataProj->GetAxis(iDim)->GetNbins());
+    }
+  }
+  
+  THnSparse* hDataProjRebinned = new THnSparseD("hDataProjRebinned","", nDimProj, binsProj, xminProj, xmaxProj);
+  hDataProjRebinned->SetName("hDataProjRebinned");
+  hDataProjRebinned->Sumw2();
+  
+  for (Int_t iDim = 0; iDim < nDimProj; iDim++) {
+    if (iDim == kPidPtProj) {
+      if (axisPt->GetXbins()->fN != 0)
+        hDataProjRebinned->SetBinEdges(iDim, axisPt->GetXbins()->fArray);
+    }
+    else {
+      if (hDataProj->GetAxis(iDim)->GetXbins()->fN != 0)
+        hDataProjRebinned->SetBinEdges(iDim, hDataProj->GetAxis(iDim)->GetXbins()->fArray);
+    }
+    
+    hDataProjRebinned->GetAxis(iDim)->SetTitle(hDataProj->GetAxis(iDim)->GetTitle());
+  }
+  
+  // Now just fill the THnSparse with the original data. RebinnedAdd already takes into account the different binning properly
+  // (was also tested explicitely!).
+  hDataProjRebinned->RebinnedAdd(hDataProj, 1.);
+  
+  // Delete the old THnSparse and set the pointer to the new one
+  delete hDataProj;
+  hDataProj = hDataProjRebinned;
   
   TH2D* hNjetsGen = 0x0;
   TH2D* hNjetsRec = 0x0;
   
-  TH2D* hMCgenPrimYieldPt[AliPID::kSPECIES];
-  TH2D* hMCgenPrimYieldZ[AliPID::kSPECIES];
-  TH2D* hMCgenPrimYieldXi[AliPID::kSPECIES];
+  TH1D* hMCgenPrimYieldPt[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hMCgenPrimYieldZ[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hMCgenPrimYieldXi[AliPID::kSPECIES] = { 0x0, };
+  
+  TH1D* hMCgenPrimYieldTotalPt = 0x0;
+  TH1D* hMCgenPrimYieldTotalZ = 0x0;
+  TH1D* hMCgenPrimYieldTotalXi = 0x0;
+  
+  TH1D* hMCgenPrimFractionPt[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hMCgenPrimFractionZ[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hMCgenPrimFractionXi[AliPID::kSPECIES] = { 0x0, };
   
   hNjetsGen = (TH2D*)histList->FindObject("fh2FFJetPtGen");
   hNjetsRec = (TH2D*)histList->FindObject("fh2FFJetPtRec");
@@ -634,12 +1218,12 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
       printf("***WARNING: For backward compatibility, using file \"finalCuts/pp/7TeV/LHC10e.pass2/corrected/finalisedSplines/finalMapsAndTail/Jets/noCutOn_ncl_or_liav/AnalysisResults.root\" to get number of jets. BUT: Might be wrong period and has no mult info!***\n");
       printf("ALSO: Using Njets for inclusive jets!!!!\n");
       
-      hNjetsRec = new TH2D("fh2FFJetPtRec", "", 1, -1, 1,  hDataProj->GetAxis(kPidJetPtProj)->GetNbins(),
-                          hDataProj->GetAxis(kPidJetPtProj)->GetXbins()->GetArray());
+      hNjetsRec = new TH2D("fh2FFJetPtRec", "", 1, -1, 1,  hPIDdata->GetAxis(kPidJetPt)->GetNbins(),
+                          hPIDdata->GetAxis(kPidJetPt)->GetXbins()->GetArray());
       
       for (Int_t iJet = 1; iJet <= hNjetsRec->GetNbinsY(); iJet++) {
-        Int_t lowerBin = hFFJetPtRec->FindBin(hNjetsRec->GetYaxis()->GetBinLowEdge(iJet) + 1e-3);
-        Int_t upperBin = hFFJetPtRec->FindBin(hNjetsRec->GetYaxis()->GetBinUpEdge(iJet) - 1e-3);
+        Int_t lowerBin = hFFJetPtRec->FindFixBin(hNjetsRec->GetYaxis()->GetBinLowEdge(iJet) + 1e-3);
+        Int_t upperBin = hFFJetPtRec->FindFixBin(hNjetsRec->GetYaxis()->GetBinUpEdge(iJet) - 1e-3);
         hNjetsRec->SetBinContent(1, iJet, hFFJetPtRec->Integral(lowerBin, upperBin));
       }
     }
@@ -672,13 +1256,11 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
     }
     
     // If desired, rebin axes
-    if (rebinPt != 1 || rebinZ != 1 || rebinXi != 1) {
+    if (rebinZ != 1 || rebinXi != 1) {
       Int_t group[hMCgeneratedYieldsPrimaries->GetNdimensions()];
       
       for (Int_t k = 0; k < hMCgeneratedYieldsPrimaries->GetNdimensions(); k++) {
-        if (k == kPidGenYieldPt)
-          group[k] = rebinPt;
-        else if (k == kPidGenYieldZ)
+        if (k == kPidGenYieldZ)
           group[k] = rebinZ;
         else if (k == kPidGenYieldXi)
           group[k] = rebinXi;
@@ -696,6 +1278,9 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
 
     if (restrictCentralityAxis)
       hMCgeneratedYieldsPrimaries->GetAxis(kPidGenYieldCentrality)->SetRange(lowerCentralityBinLimit, upperCentralityBinLimit);
+    
+    if (restrictJetPtAxis) 
+      hMCgeneratedYieldsPrimaries->GetAxis(kPidGenYieldJetPt)->SetRange(lowerJetPtBinLimit, upperJetPtBinLimit);
     
     if (restrictCharge) {
       const Int_t indexChargeAxisGenYield = GetAxisByTitle(hMCgeneratedYieldsPrimaries, "Charge (e_{0})");
@@ -747,72 +1332,306 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
     for (Int_t MCid = 0; MCid < AliPID::kSPECIES; MCid++) {
       hMCgeneratedYieldsPrimaries->GetAxis(kPidGenYieldMCpid)->SetRange(MCid + 1, MCid + 1);
       
-      hMCgenPrimYieldPt[MCid] = hMCgeneratedYieldsPrimaries->Projection(kPidGenYieldJetPt, kPidGenYieldPt, "e");
-      hMCgenPrimYieldPt[MCid]->SetName(Form("hMCgenYieldsPrimPt_%s", AliPID::ParticleShortName(MCid)));
-      hMCgenPrimYieldPt[MCid]->SetTitle(Form("MC truth generated primary yield, %s", AliPID::ParticleName(MCid)));
-      hMCgenPrimYieldPt[MCid]->GetZaxis()->SetTitle("1/N_{Jets} dN/dP_{T} (GeV/c)^{-1}");
-      hMCgenPrimYieldPt[MCid]->SetStats(kFALSE);
+      hMCgenPrimYieldPt[MCid] = hMCgeneratedYieldsPrimaries->Projection(kPidGenYieldPt, "e");
+      setupHist(hMCgenPrimYieldPt[MCid],
+                Form("hMCgenYieldsPrimPt_%s", AliPID::ParticleShortName(MCid)),
+                Form("%s", AliPID::ParticleName(MCid)),
+                     Form("%s", hMCgeneratedYieldsPrimaries->GetAxis(kPidGenYieldPt)->GetTitle()),
+                     yieldAxisTitlePt.Data(), getLineColorAliPID(MCid), kTRUE);
+      hMCgenPrimYieldPt[MCid]->SetMarkerStyle(28);
       
-      hMCgenPrimYieldZ[MCid] = hMCgeneratedYieldsPrimaries->Projection(kPidGenYieldJetPt, kPidGenYieldZ, "e");
-      hMCgenPrimYieldZ[MCid]->SetName(Form("hMCgenYieldsPrimZ_%s", AliPID::ParticleShortName(MCid)));
-      hMCgenPrimYieldZ[MCid]->SetTitle(Form("MC truth generated primary yield, %s", AliPID::ParticleName(MCid)));
-      hMCgenPrimYieldZ[MCid]->GetZaxis()->SetTitle("1/N_{Jets} dN/dz");
-      hMCgenPrimYieldZ[MCid]->SetStats(kFALSE);
+      hMCgenPrimYieldZ[MCid] = hMCgeneratedYieldsPrimaries->Projection(kPidGenYieldZ, "e");
+      setupHist(hMCgenPrimYieldZ[MCid],
+                Form("hMCgenYieldsPrimZ_%s", AliPID::ParticleShortName(MCid)),
+                Form("%s", AliPID::ParticleName(MCid)),
+                     Form("%s", hMCgeneratedYieldsPrimaries->GetAxis(kPidGenYieldZ)->GetTitle()),
+                     yieldAxisTitleZ.Data(), getLineColorAliPID(MCid), kTRUE);
+      hMCgenPrimYieldZ[MCid]->SetMarkerStyle(28);
       
-      hMCgenPrimYieldXi[MCid] = hMCgeneratedYieldsPrimaries->Projection(kPidGenYieldJetPt, kPidGenYieldXi, "e");
-      hMCgenPrimYieldXi[MCid]->SetName(Form("hMCgenYieldsPrimXi_%s", AliPID::ParticleShortName(MCid)));
-      hMCgenPrimYieldXi[MCid]->SetTitle(Form("MC truth generated primary yield, %s", AliPID::ParticleName(MCid)));
-      hMCgenPrimYieldXi[MCid]->GetZaxis()->SetTitle("1/N_{Jets} dN/d#xi");
-      hMCgenPrimYieldXi[MCid]->SetStats(kFALSE);
+      hMCgenPrimYieldXi[MCid] = hMCgeneratedYieldsPrimaries->Projection(kPidGenYieldXi, "e");
+      setupHist(hMCgenPrimYieldXi[MCid],
+                Form("hMCgenYieldsPrimXi_%s", AliPID::ParticleShortName(MCid)),
+                Form("%s", AliPID::ParticleName(MCid)),
+                Form("%s", hMCgeneratedYieldsPrimaries->GetAxis(kPidGenYieldXi)->GetTitle()),
+                yieldAxisTitleXi.Data(), getLineColorAliPID(MCid), kTRUE);
+      hMCgenPrimYieldXi[MCid]->SetMarkerStyle(28);
       
       hMCgeneratedYieldsPrimaries->GetAxis(kPidGenYieldMCpid)->SetRange(0, -1);
     }
+    
+    // Total generated yields as sum of identified yields (i.e. no other species)
+    hMCgenPrimYieldTotalPt = new TH1D(*hMCgenPrimYieldPt[0]);
+    hMCgenPrimYieldTotalPt->SetName("hMCgenYieldsPrimPt_total");
+    hMCgenPrimYieldTotalPt->SetTitle("Total");
+    
+    hMCgenPrimYieldTotalZ = new TH1D(*hMCgenPrimYieldZ[0]);
+    hMCgenPrimYieldTotalZ->SetName("hMCgenYieldsPrimZ_total");
+    hMCgenPrimYieldTotalZ->SetTitle("Total");
+    
+    hMCgenPrimYieldTotalXi = new TH1D(*hMCgenPrimYieldXi[0]);
+    hMCgenPrimYieldTotalXi->SetName("hMCgenYieldsPrimXi_total");
+    hMCgenPrimYieldTotalXi->SetTitle("Total");
+    
+    // Errors are correct since MC yields truly independent
+    for (Int_t MCid = 0; MCid < AliPID::kSPECIES; MCid++) {
+      hMCgenPrimYieldTotalPt->Add(hMCgenPrimYieldPt[MCid]);
+      hMCgenPrimYieldTotalZ->Add(hMCgenPrimYieldZ[MCid]);
+      hMCgenPrimYieldTotalXi->Add(hMCgenPrimYieldXi[MCid]);
+    }
+    
+    // Calculate fractions: Binomial error, since numerator is subset of denominator
+    for (Int_t MCid = 0; MCid < AliPID::kSPECIES; MCid++) {
+      hMCgenPrimFractionPt[MCid] = new TH1D(*hMCgenPrimYieldPt[MCid]);
+      hMCgenPrimFractionPt[MCid]->SetName(Form("hMCgenFractionPrimPt_%s", AliPID::ParticleShortName(MCid)));
+      hMCgenPrimFractionPt[MCid]->GetYaxis()->SetTitle("Particle Fraction");
+      hMCgenPrimFractionPt[MCid]->Divide(hMCgenPrimYieldPt[MCid], hMCgenPrimYieldTotalPt, 1., 1., "B");
+      
+      hMCgenPrimFractionZ[MCid] = new TH1D(*hMCgenPrimYieldZ[MCid]);
+      hMCgenPrimFractionZ[MCid]->SetName(Form("hMCgenFractionPrimZ_%s", AliPID::ParticleShortName(MCid)));
+      hMCgenPrimFractionZ[MCid]->GetYaxis()->SetTitle("Particle Fraction");
+      hMCgenPrimFractionZ[MCid]->Divide(hMCgenPrimYieldZ[MCid], hMCgenPrimYieldTotalZ, 1., 1., "B");
+      
+      hMCgenPrimFractionXi[MCid] = new TH1D(*hMCgenPrimYieldXi[MCid]);
+      hMCgenPrimFractionXi[MCid]->SetName(Form("hMCgenFractionPrimXi_%s", AliPID::ParticleShortName(MCid)));
+      hMCgenPrimFractionXi[MCid]->GetYaxis()->SetTitle("Particle Fraction");
+      hMCgenPrimFractionXi[MCid]->Divide(hMCgenPrimYieldXi[MCid], hMCgenPrimYieldTotalXi, 1., 1., "B");
+    }
   }
   
+  // Create empty histos vs. z and xi
+  TH1D* hFractionIDFFz[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hFractionIDFFxi[AliPID::kSPECIES] = { 0x0, };
   
-  AliAnalysisTaskPID *pidTask = new AliAnalysisTaskPID("spectrumExtractorTask");
+  TH1D* hIDFFz[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hIDFFxi[AliPID::kSPECIES] = { 0x0, };
   
-  if (!pidTask->SetParticleFractionHistosFromFile(particleFractionPackagePathName, kFALSE)) {
-    printf("Failed to load particle fraction package from file \"%s\"!\n", particleFractionPackagePathName.Data());
-    return -1;
-  }
+  TH1D* hRatioToPiIDFFz[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hRatioToPiIDFFxi[AliPID::kSPECIES] = { 0x0, };
   
-  if (!pidTask->SetParticleFractionHistosFromFile(particleFractionPackagePathName, kTRUE)) {
-    printf("Failed to load particle fraction sys error package from file \"%s\"!\n", particleFractionPackagePathName.Data());
-    return -1;
-  }
   
-  printf("Loaded particle fraction package from file \"%s\"!\n", particleFractionPackagePathName.Data());
+  TH1D* hFractionIDFFzMC[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hFractionIDFFxiMC[AliPID::kSPECIES] = { 0x0, };
   
-  TH2D* hIDFFtrackPt[AliPID::kSPECIES];
-  TH2D* hIDFFz[AliPID::kSPECIES];
-  TH2D* hIDFFxi[AliPID::kSPECIES];
+  TH1D* hIDFFzMC[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hIDFFxiMC[AliPID::kSPECIES] = { 0x0, };
+  
+  TH1D* hRatioToPiIDFFzMC[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hRatioToPiIDFFxiMC[AliPID::kSPECIES] = { 0x0, };
+  
+  TH1D* hMCgenPrimRatioToPiPt[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hMCgenPrimRatioToPiZ[AliPID::kSPECIES] = { 0x0, };
+  TH1D* hMCgenPrimRatioToPiXi[AliPID::kSPECIES] = { 0x0, };
   
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-    hIDFFtrackPt[i] = hDataProj->Projection(kPidJetPtProj, kPidPtProj);
-    hIDFFtrackPt[i]->Reset();
-    if (hIDFFtrackPt[i]->GetSumw2N() <= 0)
-      hIDFFtrackPt[i]->Sumw2();
-    setupHist(hIDFFtrackPt[i], Form("hIDFFtrackPt_%s", AliPID::ParticleShortName(i)), Form("%s", AliPID::ParticleShortName(i)),
-              hDataProj->GetAxis(kPidPtProj)->GetTitle(), hDataProj->GetAxis(kPidJetPtProj)->GetTitle(), kBlack);
-    
-    hIDFFz[i] = hDataProj->Projection(kPidJetPtProj, kPidZProj);
+    hIDFFz[i] = hDataProj->Projection(kPidZProj);
     hIDFFz[i]->Reset();
     if (hIDFFz[i]->GetSumw2N() <= 0)
       hIDFFz[i]->Sumw2();
     setupHist(hIDFFz[i], Form("hIDFFz_%s", AliPID::ParticleShortName(i)), Form("%s", AliPID::ParticleShortName(i)),
-              hDataProj->GetAxis(kPidZProj)->GetTitle(), hDataProj->GetAxis(kPidJetPtProj)->GetTitle(), kBlack);
+              hDataProj->GetAxis(kPidZProj)->GetTitle(), yieldAxisTitleZ.Data(), getLineColorAliPID(i), kFALSE);
+    hFractionIDFFz[i] = new TH1D(*hIDFFz[i]);
+    hFractionIDFFz[i]->SetName(Form("hFractionIDFFz_%s", AliPID::ParticleShortName(i)));
+    hFractionIDFFz[i]->GetYaxis()->SetTitle("Particle Fraction");
     
-    hIDFFxi[i] = hDataProj->Projection(kPidJetPtProj, kPidXiProj);
+    hIDFFxi[i] = hDataProj->Projection(kPidXiProj);
     hIDFFxi[i]->Reset();
     if (hIDFFxi[i]->GetSumw2N() <= 0)
       hIDFFxi[i]->Sumw2();    
     setupHist(hIDFFxi[i], Form("hIDFFxi_%s", AliPID::ParticleShortName(i)), Form("%s", AliPID::ParticleShortName(i)),
-              hDataProj->GetAxis(kPidXiProj)->GetTitle(), hDataProj->GetAxis(kPidJetPtProj)->GetTitle(), kBlack);
+              hDataProj->GetAxis(kPidXiProj)->GetTitle(), yieldAxisTitleXi.Data(), getLineColorAliPID(i), kFALSE);
+    hFractionIDFFxi[i] = new TH1D(*hIDFFxi[i]);
+    hFractionIDFFxi[i]->SetName(Form("hFractionIDFFxi_%s", AliPID::ParticleShortName(i)));
+    hFractionIDFFxi[i]->GetYaxis()->SetTitle("Particle Fraction");
+    
+    // If MC histos for pT are available, also create those vs. z,xi
+    if (hFractionIDFFtrackPtMC[i]) {
+      hIDFFzMC[i] = new TH1D(*hIDFFz[i]);
+      setupHist(hIDFFzMC[i], Form("hIDFFzMC_%s", AliPID::ParticleShortName(i)), Form("%s", AliPID::ParticleShortName(i)),
+                "", "", getLineColorAliPID(i), kTRUE);
+      hFractionIDFFzMC[i] = new TH1D(*hIDFFzMC[i]);
+      hFractionIDFFzMC[i]->SetName(Form("hFractionIDFFzMC_%s", AliPID::ParticleShortName(i)));
+      hFractionIDFFzMC[i]->GetYaxis()->SetTitle("Particle Fraction");
+      
+      hIDFFxiMC[i] = new TH1D(*hIDFFxi[i]);
+      setupHist(hIDFFxiMC[i], Form("hIDFFxiMC_%s", AliPID::ParticleShortName(i)), Form("%s", AliPID::ParticleShortName(i)),
+               "", "", getLineColorAliPID(i), kTRUE);
+      hFractionIDFFxiMC[i] = new TH1D(*hIDFFxiMC[i]);
+      hFractionIDFFxiMC[i]->SetName(Form("hFractionIDFFxiMC_%s", AliPID::ParticleShortName(i)));
+      hFractionIDFFxiMC[i]->GetYaxis()->SetTitle("Particle Fraction");
+    }
+    
+    
+    
+    // If to-pi-ratios are available for pT, also create those for z, xi.
+    // Additionally, calculate the generated true to-pi-ratios.
+    if (hRatioToPiIDFFtrackPt[i]) {
+      hRatioToPiIDFFz[i] = new TH1D(*hIDFFz[i]);
+      hRatioToPiIDFFz[i]->SetName(Form("hRatioToPiIDFFz_%s", AliPID::ParticleShortName(i)));
+      hRatioToPiIDFFz[i]->SetTitle(hRatioToPiIDFFtrackPt[i]->GetTitle());
+      TString tempTitle = hRatioToPiIDFFtrackPt[i]->GetYaxis()->GetTitle();
+      tempTitle.ReplaceAll("P_{T}", "z");
+      tempTitle.ReplaceAll("p_{T}", "z");
+      hRatioToPiIDFFz[i]->GetYaxis()->SetTitle(tempTitle.Data());
+      
+      hRatioToPiIDFFxi[i] = new TH1D(*hIDFFxi[i]);
+      hRatioToPiIDFFxi[i]->SetName(Form("hRatioToPiIDFFxi_%s", AliPID::ParticleShortName(i)));
+      hRatioToPiIDFFxi[i]->SetTitle(hRatioToPiIDFFtrackPt[i]->GetTitle());
+      tempTitle = hRatioToPiIDFFtrackPt[i]->GetYaxis()->GetTitle();
+      tempTitle.ReplaceAll("P_{T}", "#xi");
+      tempTitle.ReplaceAll("p_{T}", "#xi");
+      hRatioToPiIDFFxi[i]->GetYaxis()->SetTitle(tempTitle.Data());
+      
+      // Also for MC, if available
+      if (hRatioToPiIDFFtrackPtMC[i]) {
+        hRatioToPiIDFFzMC[i] = new TH1D(*hRatioToPiIDFFz[i]);
+        setupHist(hRatioToPiIDFFzMC[i], Form("hRatioToPiIDFFzMC_%s", AliPID::ParticleShortName(i)), hRatioToPiIDFFz[i]->GetTitle(),
+                  "", "", getLineColorAliPID(i), kTRUE);
+        
+        hRatioToPiIDFFxiMC[i] = new TH1D(*hRatioToPiIDFFxi[i]);
+        setupHist(hRatioToPiIDFFxiMC[i], Form("hRatioToPiIDFFxiMC_%s", AliPID::ParticleShortName(i)), hRatioToPiIDFFxi[i]->GetTitle(),
+                  "", "", getLineColorAliPID(i), kTRUE);
+      }
+      
+      // Generated true to-pi-ratios
+      if (hMCgenPrimYieldPt[i]) {
+        hMCgenPrimRatioToPiPt[i] = new TH1D(*hMCgenPrimYieldPt[i]);
+        setupHist(hMCgenPrimRatioToPiPt[i],
+                  Form("hMCgenPrimRatioToPiPt_%s", AliPID::ParticleShortName(i)), hRatioToPiIDFFtrackPt[i]->GetTitle(),  "",
+                  hRatioToPiIDFFtrackPt[i]->GetYaxis()->GetTitle(), getLineColorAliPID(i), kTRUE);
+        hMCgenPrimRatioToPiPt[i]->SetMarkerStyle(hMCgenPrimYieldPt[i]->GetMarkerStyle());
+        
+        // True yield -> Statistically independent, just divide
+        hMCgenPrimRatioToPiPt[i]->Divide(hMCgenPrimYieldPt[i], hMCgenPrimYieldPt[AliPID::kPion]);
+      }
+      
+      if (hMCgenPrimYieldZ[i]) {
+        hMCgenPrimRatioToPiZ[i] = new TH1D(*hMCgenPrimYieldZ[i]);
+        setupHist(hMCgenPrimRatioToPiZ[i],
+                  Form("hMCgenPrimRatioToPiZ_%s", AliPID::ParticleShortName(i)), hRatioToPiIDFFz[i]->GetTitle(),  "",
+                  hRatioToPiIDFFz[i]->GetYaxis()->GetTitle(), getLineColorAliPID(i), kTRUE);
+        hMCgenPrimRatioToPiZ[i]->SetMarkerStyle(hMCgenPrimYieldZ[i]->GetMarkerStyle());
+        
+        // True yield -> Statistically independent, just divide
+        hMCgenPrimRatioToPiZ[i]->Divide(hMCgenPrimYieldZ[i], hMCgenPrimYieldZ[AliPID::kPion]);
+      }
+      
+      if (hMCgenPrimYieldXi[i]) {
+        hMCgenPrimRatioToPiXi[i] = new TH1D(*hMCgenPrimYieldXi[i]);
+        setupHist(hMCgenPrimRatioToPiXi[i],
+                  Form("hMCgenPrimRatioToPiXi_%s", AliPID::ParticleShortName(i)), hRatioToPiIDFFxi[i]->GetTitle(),  "",
+                  hRatioToPiIDFFxi[i]->GetYaxis()->GetTitle(), getLineColorAliPID(i), kTRUE);
+        hMCgenPrimRatioToPiXi[i]->SetMarkerStyle(hMCgenPrimYieldXi[i]->GetMarkerStyle());
+        
+        // True yield -> Statistically independent, just divide
+        hMCgenPrimRatioToPiXi[i]->Divide(hMCgenPrimYieldXi[i], hMCgenPrimYieldXi[AliPID::kPion]);
+      }
+    }
   }
   
-  const Double_t centrality = (actualLowerCentrality + actualUpperCentrality) / 2.;
+  // Obtain maps for change of variable (pT -> z,xi) which in the end contain the weighting factors
+  TH2D* hWeightingXivsPt = hDataProj->Projection(kPidXiProj, kPidPtProj, "e");
+  hWeightingXivsPt->SetName("hWeightingXivsPt");
+  hWeightingXivsPt->SetTitle("Weighting factors for p_{T} -> #xi");
   
+  TH2D* hErrorWeightingXivsPt = new TH2D(*hWeightingXivsPt);
+  hErrorWeightingXivsPt->SetName("hErrorWeightingXivsPt");
+  hErrorWeightingXivsPt->SetTitle("Error weighting factors for p_{T} -> #xi");
+  
+  TH2D* hWeightingZvsPt = hDataProj->Projection(kPidZProj, kPidPtProj, "e");
+  hWeightingZvsPt->SetName("hWeightingZvsPt");
+  hWeightingZvsPt->SetTitle("Weighting factors for p_{T} -> z");
+  
+  TH2D* hErrorWeightingZvsPt = new TH2D(*hWeightingZvsPt);
+  hErrorWeightingZvsPt->SetName("hErrorWeightingZvsPt");
+  hErrorWeightingZvsPt->SetTitle("Error weighting factors for p_{T} -> z");
+  
+  // Get the total weights in each row (i.e. fixed z or xi).
+  // NOTE: Setting the projection from 1 to nBinsX already EXCLUDES underflow and overflow bins!
+  // Anyway this should make no difference since one anyway demands pT > 0.15 GeV/c (or this is even included in the cuts)
+  // and pT > 50 GeV/c has more or less no statistics (only relevant for jetPt > 50 GeV/c, which means almost zero jets).
+  TH1D* hTotalWeightXi = hWeightingXivsPt->ProjectionY("hTotalWeightXi", 1, hWeightingXivsPt->GetNbinsX(), "e");
+  hTotalWeightXi->SetTitle("Total weight for p_{T} -> #xi");
+  
+  TH1D* hTotalWeightZ  = hWeightingZvsPt->ProjectionY("hTotalWeightZ", 1, hWeightingZvsPt->GetNbinsX(), "e"); 
+  hTotalWeightZ->SetTitle("Total weight for p_{T} -> z");
+  
+  // Normalise the weighting factors such that every row sums up to 1
+  normaliseWeightingFactor(hWeightingXivsPt, hTotalWeightXi);
+  normaliseWeightingFactor(hWeightingZvsPt, hTotalWeightZ);
+  
+  
+  // Prepare save of results to file
+  TString chargeString = "";
+  if (chargeMode == kPosCharge)
+    chargeString = "_posCharge";
+  else if (chargeMode == kNegCharge)
+    chargeString = "_negCharge";
+  
+  TString saveFileName = pathNameFractionsAndYields;
+  saveFileName.Replace(0, pathNameFractionsAndYields.Last('/') + 1, "");
+  
+  TString savePath = pathNameFractionsAndYields;
+  savePath.ReplaceAll(Form("/%s", saveFileName.Data()), "");
+  
+  saveFileName.Prepend("output_extractedFFs_");
+  saveFileName.ReplaceAll(".root", Form("__centrality_%s%s%s.root",
+                                        restrictCentralityAxis ? Form("%.0f_%.0f.root", actualLowerCentrality, actualUpperCentrality)
+                                                               : "all",
+                                        restrictJetPtAxis ? Form("_jetPt%.1f_%.1f", actualLowerJetPt, actualUpperJetPt) : "",
+                                        chargeString.Data()));
+  
+  TString saveFilePathName = Form("%s/%s", savePath.Data(), saveFileName.Data());
+  TFile* saveFile = TFile::Open(saveFilePathName.Data(), "RECREATE");
+  
+  if (!saveFile) {
+    printf("Failed to save results to file \"%s\"!\n", saveFilePathName.Data());
+    return -1;
+  }
+  
+  
+  
+  // Get the total weights in each column (i.e. fixed pT).
+  // NOTE: Just take the projection of z on pT. Is the same as for xi.
+  TH1D* hTotalErrorWeightPt = hErrorWeightingZvsPt->ProjectionX("hTotalErrorWeightPt", 1, hErrorWeightingZvsPt->GetNbinsY(), "e");
+  hTotalErrorWeightPt->SetTitle("Total error weight for p_{T} -> z,#xi");
+  
+  // Normalise the weighting factors such that every column sums up to 1
+  normaliseErrorWeightingFactor(hErrorWeightingXivsPt, hTotalErrorWeightPt);
+  normaliseErrorWeightingFactor(hErrorWeightingZvsPt, hTotalErrorWeightPt);
+  
+  
+  // Calculate the weighted means for the fractions
+  calculateWeightedMean(&hFractionIDFFz[0],  &hFractionIDFFtrackPt[0], hWeightingZvsPt,  hErrorWeightingZvsPt);
+  calculateWeightedMean(&hFractionIDFFxi[0], &hFractionIDFFtrackPt[0], hWeightingXivsPt, hErrorWeightingXivsPt);
+  
+  // Obtain the yields
+  translateFractionToYield(&hIDFFz[0], &hFractionIDFFz[0], hTotalWeightZ);
+  translateFractionToYield(&hIDFFxi[0], &hFractionIDFFxi[0], hTotalWeightXi);
+  
+  // Calculate the weighted means for the to-pi-ratios
+  calculateWeightedMean(&hRatioToPiIDFFz[0],  &hRatioToPiIDFFtrackPt[0], hWeightingZvsPt,  hErrorWeightingZvsPt);
+  calculateWeightedMean(&hRatioToPiIDFFxi[0], &hRatioToPiIDFFtrackPt[0], hWeightingXivsPt, hErrorWeightingXivsPt);
+  
+  
+  // Same for MC, if available. The weights are the same, only the fraction and fraction errors change (MC ID used)
+  if (hFractionIDFFtrackPtMC[AliPID::kPion]) {
+    // Calculate the weighted means for the fractions
+    calculateWeightedMean(&hFractionIDFFzMC[0],  &hFractionIDFFtrackPtMC[0], hWeightingZvsPt,  hErrorWeightingZvsPt);
+    calculateWeightedMean(&hFractionIDFFxiMC[0], &hFractionIDFFtrackPtMC[0], hWeightingXivsPt, hErrorWeightingXivsPt);
+    
+    // Obtain the yields
+    translateFractionToYield(&hIDFFzMC[0], &hFractionIDFFzMC[0], hTotalWeightZ);
+    translateFractionToYield(&hIDFFxiMC[0], &hFractionIDFFxiMC[0], hTotalWeightXi);
+    
+    // Calculate the weighted means for the to-pi-ratios
+    calculateWeightedMean(&hRatioToPiIDFFzMC[0],  &hRatioToPiIDFFtrackPtMC[0], hWeightingZvsPt,  hErrorWeightingZvsPt);
+    calculateWeightedMean(&hRatioToPiIDFFxiMC[0], &hRatioToPiIDFFtrackPtMC[0], hWeightingXivsPt, hErrorWeightingXivsPt);
+  }
+  
+  
+  
+  
+  /*
   // First iteration: Just take the default fractions to obtain the "mean" of the yields
   Bool_t setMean = kTRUE;
   Bool_t addErrorsQuadratically = kFALSE;
@@ -848,9 +1667,9 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
   smearByError = kFALSE;
   takeIntoAccountSysError = kTRUE;
   // Clone histograms with final statistical errors -> Only set systematic errors, but leave mean as it is
-  TH2D* hIDFFtrackPtSysError[AliPID::kSPECIES];
-  TH2D* hIDFFzSysError[AliPID::kSPECIES];
-  TH2D* hIDFFxiSysError[AliPID::kSPECIES];
+  TH2D* hIDFFtrackPtSysError[AliPID::kSPECIES] = { 0x0, };
+  TH2D* hIDFFzSysError[AliPID::kSPECIES] = { 0x0, };
+  TH2D* hIDFFxiSysError[AliPID::kSPECIES] = { 0x0, };
   
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
     hIDFFtrackPtSysError[i] = new TH2D(*hIDFFtrackPt[i]);
@@ -870,54 +1689,67 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
                          addErrorsQuadratically, smearByError, uniformSystematicError, takeIntoAccountSysError, nGenerations);
   
   delete pidTask;
-  
+ */
   
   // Normalise properly
-  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
-    normaliseYieldHist2D(hIDFFtrackPt[species], hNjetsRec, lowerCentralityBinLimit, upperCentralityBinLimit);
-    normaliseYieldHist2D(hIDFFz[species], hNjetsRec, lowerCentralityBinLimit, upperCentralityBinLimit);
-    normaliseYieldHist2D(hIDFFxi[species], hNjetsRec, lowerCentralityBinLimit, upperCentralityBinLimit);
-    
-    normaliseYieldHist2D(hIDFFtrackPtSysError[species], hNjetsRec, lowerCentralityBinLimit, upperCentralityBinLimit);
-    normaliseYieldHist2D(hIDFFzSysError[species], hNjetsRec, lowerCentralityBinLimit, upperCentralityBinLimit);
-    normaliseYieldHist2D(hIDFFxiSysError[species], hNjetsRec, lowerCentralityBinLimit, upperCentralityBinLimit);
-    
-    normaliseYieldHist2D(hMCgenPrimYieldPt[species], hNjetsGen, lowerCentralityBinLimit, upperCentralityBinLimit);
-    normaliseYieldHist2D(hMCgenPrimYieldZ[species], hNjetsGen, lowerCentralityBinLimit, upperCentralityBinLimit);
-    normaliseYieldHist2D(hMCgenPrimYieldXi[species], hNjetsGen, lowerCentralityBinLimit, upperCentralityBinLimit);
-  }
+  const Double_t numJetsRec = hNjetsRec ? hNjetsRec->Integral(lowerCentralityBinLimit, upperCentralityBinLimit,
+                                                              lowerJetPtBinLimit, upperJetPtBinLimit) : 0.;
+  const Double_t numJetsGen = hNjetsGen ? hNjetsGen->Integral(lowerCentralityBinLimit, upperCentralityBinLimit,
+                                                              lowerJetPtBinLimit, upperJetPtBinLimit) : 0.;
+  Bool_t noJets = numJetsRec < 1e-13;
   
-  
-  
-  
-  // Save results to file
-  TString chargeString = "";
-  if (chargeMode == kPosCharge)
-    chargeString = "_posCharge";
-  else if (chargeMode == kNegCharge)
-    chargeString = "_negCharge";
-  
-  TString saveFileName = pathNameData;
-  saveFileName.Replace(0, pathNameData.Last('/') + 1, "");
-  
-  TString savePath = pathNameData;
-  savePath.ReplaceAll(Form("/%s", saveFileName.Data()), "");
-  
-  saveFileName.Prepend("output_extractedFFs_");
-  saveFileName.ReplaceAll(".root", Form("_centrality_%s%s.root",
-                                        restrictCentralityAxis ? Form("%.0f_%.0f.root", actualLowerCentrality, actualUpperCentrality)
-                                                               : "all",
-                                        chargeString.Data()));
-  
-  TString saveFilePathName = Form("%s/%s", savePath.Data(), saveFileName.Data());
-  TFile* saveFile = TFile::Open(saveFilePathName.Data(), "RECREATE");
-  
-  if (!saveFile) {
-    printf("Failed to save results to file \"%s\"!\n", saveFilePathName.Data());
+  if (noJets) {
+    printf("Error: No jets in desired range!\n");
     return -1;
   }
   
+  for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+    // NOTE: Pt is already properly normalised (except for generated true yield!)
+    
+    //normaliseYieldHist(hIDFFtrackPt[species], numJetsRec);
+    normaliseYieldHist(hIDFFz[species], numJetsRec);
+    normaliseYieldHist(hIDFFxi[species], numJetsRec);
+    
+    // This is RECONSTRUCTED, but identified via MC label -> Normalise to number of RECONSTRUCTED jets!
+    //normaliseYieldHist(hIDFFtrackPtMC[species], numJetsRec);
+    normaliseYieldHist(hIDFFzMC[species], numJetsRec);
+    normaliseYieldHist(hIDFFxiMC[species], numJetsRec);
+    
+    // GENERATED yield must be normalised to number of GENERATED jets!
+    normaliseYieldHist(hMCgenPrimYieldPt[species], numJetsGen);
+    normaliseYieldHist(hMCgenPrimYieldZ[species], numJetsGen);
+    normaliseYieldHist(hMCgenPrimYieldXi[species], numJetsGen);
+  }
+  
+  normaliseYieldHist(hMCgenPrimYieldTotalPt, numJetsGen);
+  normaliseYieldHist(hMCgenPrimYieldTotalZ, numJetsGen);
+  normaliseYieldHist(hMCgenPrimYieldTotalXi, numJetsGen);
+  
+  
   saveFile->cd();
+  
+  if (hWeightingXivsPt)
+    hWeightingXivsPt->Write();
+  
+  if (hTotalWeightXi)
+    hTotalWeightXi->Write();
+  
+  if (hErrorWeightingXivsPt)
+    hErrorWeightingXivsPt->Write();
+  
+
+  if (hWeightingZvsPt)
+    hWeightingZvsPt->Write();
+  
+  if (hTotalWeightZ)
+    hTotalWeightZ->Write();
+  
+  if (hErrorWeightingZvsPt)
+    hErrorWeightingZvsPt->Write();
+  
+  
+  if (hTotalErrorWeightPt)
+    hTotalErrorWeightPt->Write();
   
   
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
@@ -931,14 +1763,54 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
       hIDFFxi[i]->Write();
     
     
-    if (hIDFFtrackPtSysError[i])
-      hIDFFtrackPtSysError[i]->Write();
+    if (hFractionIDFFtrackPt[i])
+      hFractionIDFFtrackPt[i]->Write();
     
-    if (hIDFFzSysError[i])
-      hIDFFzSysError[i]->Write();
+    if (hFractionIDFFz[i])
+      hFractionIDFFz[i]->Write();
     
-    if (hIDFFxiSysError[i])
-      hIDFFxiSysError[i]->Write();
+    if (hFractionIDFFxi[i])
+      hFractionIDFFxi[i]->Write();
+    
+    
+    if (hRatioToPiIDFFtrackPt[i])
+      hRatioToPiIDFFtrackPt[i]->Write();
+    
+    if (hRatioToPiIDFFz[i])
+      hRatioToPiIDFFz[i]->Write();
+    
+    if (hRatioToPiIDFFxi[i])
+      hRatioToPiIDFFxi[i]->Write();
+    
+    
+    if (hIDFFtrackPtMC[i])
+      hIDFFtrackPtMC[i]->Write();
+    
+    if (hIDFFzMC[i])
+      hIDFFzMC[i]->Write();
+    
+    if (hIDFFxiMC[i])
+      hIDFFxiMC[i]->Write();
+    
+    
+    if (hFractionIDFFtrackPtMC[i])
+      hFractionIDFFtrackPtMC[i]->Write();
+    
+    if (hFractionIDFFzMC[i])
+      hFractionIDFFzMC[i]->Write();
+    
+    if (hFractionIDFFxiMC[i])
+      hFractionIDFFxiMC[i]->Write();
+    
+    
+    if (hRatioToPiIDFFtrackPtMC[i])
+      hRatioToPiIDFFtrackPtMC[i]->Write();
+    
+    if (hRatioToPiIDFFzMC[i])
+      hRatioToPiIDFFzMC[i]->Write();
+    
+    if (hRatioToPiIDFFxiMC[i])
+      hRatioToPiIDFFxiMC[i]->Write();
     
     
     if (hMCgenPrimYieldPt[i])
@@ -949,7 +1821,38 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
     
     if (hMCgenPrimYieldXi[i])
       hMCgenPrimYieldXi[i]->Write();
+    
+    
+    if (hMCgenPrimFractionPt[i])
+      hMCgenPrimFractionPt[i]->Write();
+    
+    if (hMCgenPrimFractionZ[i])
+      hMCgenPrimFractionZ[i]->Write();
+    
+    if (hMCgenPrimFractionXi[i])
+      hMCgenPrimFractionXi[i]->Write();
+    
+    
+    if (hMCgenPrimRatioToPiPt[i])
+      hMCgenPrimRatioToPiPt[i]->Write();
+    
+    if (hMCgenPrimRatioToPiZ[i])
+      hMCgenPrimRatioToPiZ[i]->Write();
+    
+    if (hMCgenPrimRatioToPiXi[i])
+      hMCgenPrimRatioToPiXi[i]->Write();
   }
+  
+  
+  if (hMCgenPrimYieldTotalPt)
+      hMCgenPrimYieldTotalPt->Write();
+    
+  if (hMCgenPrimYieldTotalZ)
+    hMCgenPrimYieldTotalZ->Write();
+  
+  if (hMCgenPrimYieldTotalXi)
+    hMCgenPrimYieldTotalXi->Write();
+  
   
   if (hNjetsGen)
     hNjetsGen->Write();
@@ -959,9 +1862,9 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
   
 
   TNamed* settings = new TNamed(
-      Form("Settings: Fraction package \"%s\", Data file \"%s\", lowerCentrality %.0f, upperCentrality %.0f, chargeMode %d, uniformSystematicError %d, rebinPt %d, rebinZ %d, rebinXi %d\n",
-           particleFractionPackagePathName.Data(), pathNameData.Data(), lowerCentrality, upperCentrality, chargeMode, 
-           uniformSystematicError, rebinPt, rebinZ, rebinXi), "");
+      Form("Settings: Data file \"%s\", File with fractions and yields \"%s\", lowerCentrality %.0f, upperCentrality %.0f, chargeMode %d, rebinZ %d, rebinXi %d, onlyUseRelevantMCIDforMatrix %d\n",
+           pathNameData.Data(), pathNameFractionsAndYields.Data(), lowerCentrality, upperCentrality, chargeMode, rebinZ, rebinXi, 
+           onlyUseRelevantMCIDforMatrix), "");
   settings->Write();
   
   saveFile->Close();
@@ -1075,6 +1978,9 @@ Int_t extractFFs(TString particleFractionPackagePathName, TString pathNameData, 
     hTemp->SetMarkerStyle(23);
     hTemp->Draw("same");
   }*/
+  
+  f->Close();
+  fFractionsAndYields->Close();
   
   return 0;
 }

@@ -57,6 +57,7 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector() : TNamed() {
   fHarmonicMask = 0x0000;
   fGoodQuality = kFALSE;
   fN = 0;
+  fSumW = 0.0;
   fHarmonicMultiplier = 1;
 }
 
@@ -105,6 +106,7 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(const char *name, Int_t nNoOf
   }
   fGoodQuality = kFALSE;
   fN = 0;
+  fSumW = 0.0;
   fHarmonicMultiplier = 1;
 }
 
@@ -148,6 +150,7 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(const char *name, Int_t nDivi
   }
   fGoodQuality = kFALSE;
   fN = 0;
+  fSumW = 0.0;
   fHarmonicMultiplier = 1;
 }
 
@@ -162,6 +165,7 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(const AliQnCorrectionsQnVecto
   fHarmonicMask = Qn.fHarmonicMask;
   fGoodQuality = Qn.fGoodQuality;
   fN = Qn.fN;
+  fSumW = Qn.fSumW;
   fHarmonicMultiplier = Qn.fHarmonicMultiplier;
 }
 
@@ -195,6 +199,7 @@ AliQnCorrectionsQnVector::AliQnCorrectionsQnVector(Int_t nDivisor, const AliQnCo
 
   fGoodQuality = Q.fGoodQuality;
   fN = Q.fN;
+  fSumW = Q.fSumW;
   fHarmonicMultiplier = Q.fHarmonicMultiplier;
 }
 
@@ -285,6 +290,7 @@ void AliQnCorrectionsQnVector::Set(AliQnCorrectionsQnVector* Qn, Bool_t changena
   memcpy(fQnY, Qn->fQnY, (MAXHARMONICNUMBERSUPPORTED + 1)*sizeof(Float_t));
   fGoodQuality = Qn->fGoodQuality;
   fN = Qn->fN;
+  fSumW = Qn->fSumW;
   if (changename) {
     SetName(Qn->GetName());
     SetTitle(Qn->GetTitle());
@@ -296,8 +302,10 @@ void AliQnCorrectionsQnVector::Set(AliQnCorrectionsQnVector* Qn, Bool_t changena
 void AliQnCorrectionsQnVector::Normalize() {
   for(Int_t h = 1; h < fHighestHarmonic + 1; h++){
     if ((fHarmonicMask & harmonicNumberMask[h]) == harmonicNumberMask[h]) {
-      fQnX[h] = QxNorm(h);
-      fQnY[h] = QyNorm(h);
+      Float_t nQx = QxNorm(h);
+      Float_t nQy = QyNorm(h);
+      fQnX[h] = nQx;
+      fQnY[h] = nQy;
     }
   }
 }
@@ -308,6 +316,7 @@ void AliQnCorrectionsQnVector::Reset() {
   memset(fQnY, 0, (MAXHARMONICNUMBERSUPPORTED + 1)*sizeof(Float_t));
   fGoodQuality = kFALSE;
   fN = 0;
+  fSumW = 0.0;
 }
 
 /// Gets the event plane for the asked harmonic
@@ -326,7 +335,8 @@ Double_t AliQnCorrectionsQnVector::EventPlane(Int_t harmonic) const {
 /// Print the Qn vector in a readable shape
 ///
 void AliQnCorrectionsQnVector::Print(Option_t *) const {
-  cout <<"OBJ: Qn vector step: " << GetName() << "\t" << "quality: " << ((fGoodQuality) ? "good" : "bad") << endl;
+  cout <<"OBJ: Qn vector step: " << GetName() << "\t" << "N: " << fN << "\t" << "Sum w: " << fSumW << "\t"
+      << "quality: " << ((fGoodQuality) ? "good" : "bad") << endl;
   Int_t harmonic = GetFirstHarmonic();
   while (harmonic != -1) {
     cout << "\t" << "\t" << "harmonic " << harmonic * fHarmonicMultiplier << "\t" << "QX: " << Qx(harmonic) << "\t" << "QY: " << Qy(harmonic)

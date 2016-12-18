@@ -110,6 +110,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutChi2PerClusterTPC(kFALSE),
   fMaxChi2PerClusterTPC(FLT_MAX),
   fMinChi2PerClusterTPC(-FLT_MAX),
+  fCutFracSharedTPCCluster(kFALSE),
+  fMaxFracSharedTPCCluster(FLT_MAX),
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
@@ -122,6 +124,11 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
+  fCutTPCSecbound(kFALSE),
+  fCutTPCSecboundMinpt(0.2),
+  fCutTPCSecboundVar(kFALSE),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -206,6 +213,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
      fPurityFunction[i]=NULL;
   }
 
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -237,6 +246,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutChi2PerClusterTPC(kFALSE),
   fMaxChi2PerClusterTPC(FLT_MAX),
   fMinChi2PerClusterTPC(-FLT_MAX),
+  fCutFracSharedTPCCluster(kFALSE),
+  fMaxFracSharedTPCCluster(FLT_MAX),
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
@@ -249,6 +260,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
+  fCutTPCSecbound(kFALSE),
+  fCutTPCSecboundMinpt(0.2),
+  fCutTPCSecboundVar(kFALSE),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(kFALSE),
   fCentralityPercentileMin(0.),
   fCentralityPercentileMax(5.),
@@ -336,6 +352,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
      fPurityFunction[i]=NULL;
   }
 
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -367,6 +385,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutChi2PerClusterTPC(that.fCutChi2PerClusterTPC),
   fMaxChi2PerClusterTPC(that.fMaxChi2PerClusterTPC),
   fMinChi2PerClusterTPC(that.fMinChi2PerClusterTPC),
+  fCutFracSharedTPCCluster(that.fCutFracSharedTPCCluster),
+  fMaxFracSharedTPCCluster(that.fMaxFracSharedTPCCluster),
   fCutNClustersTPC(that.fCutNClustersTPC),
   fNClustersTPCMax(that.fNClustersTPCMax),
   fNClustersTPCMin(that.fNClustersTPCMin),
@@ -379,6 +399,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutDCAToVertexZ(that.fCutDCAToVertexZ),
   fCutMinimalTPCdedx(that.fCutMinimalTPCdedx),
   fMinimalTPCdedx(that.fMinimalTPCdedx),
+  fCutTPCSecbound(that.fCutTPCSecbound),
+  fCutTPCSecboundMinpt(that.fCutTPCSecboundMinpt),
+  fCutTPCSecboundVar(that.fCutTPCSecboundVar),
+  fPhiCutLow(NULL),
+  fPhiCutHigh(NULL),
   fLinearizeVZEROresponse(that.fLinearizeVZEROresponse),
   fCentralityPercentileMin(that.fCentralityPercentileMin),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
@@ -474,7 +499,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   for(Int_t i(0); i < 180; i++) {
      fPurityFunction[i]=that.fPurityFunction[i];
   }
-    
+  
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
 }
 
 //-----------------------------------------------------------------------
@@ -519,6 +546,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutChi2PerClusterTPC=that.fCutChi2PerClusterTPC;
   fMaxChi2PerClusterTPC=that.fMaxChi2PerClusterTPC;
   fMinChi2PerClusterTPC=that.fMinChi2PerClusterTPC;
+  fCutFracSharedTPCCluster=that.fCutFracSharedTPCCluster;
+  fMaxFracSharedTPCCluster=that.fMaxFracSharedTPCCluster;
   fCutNClustersTPC=that.fCutNClustersTPC;
   fNClustersTPCMax=that.fNClustersTPCMax;
   fNClustersTPCMin=that.fNClustersTPCMin;  
@@ -531,6 +560,11 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutDCAToVertexZ=that.fCutDCAToVertexZ;
   fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
   fMinimalTPCdedx=that.fMinimalTPCdedx;
+  fCutTPCSecbound=that.fCutTPCSecbound;
+  fCutTPCSecboundMinpt=that.fCutTPCSecboundMinpt;
+  fCutTPCSecboundVar=that.fCutTPCSecboundVar;
+  fPhiCutLow=NULL;
+  fPhiCutHigh=NULL;
   fPtTOFPIDoff=that.fPtTOFPIDoff;
   fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
@@ -611,7 +645,10 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fNsigmaCut2 = that.fNsigmaCut2;
  
   fRun = that.fRun;
-
+  
+  fPhiCutLow = new TF1("fPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 100);
+  fPhiCutHigh = new TF1("fPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 100);
+  
   return *this;
 }
 
@@ -658,8 +695,8 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
         fPurityFunction[i] = 0;
     }
   }
-
-  
+  if(fPhiCutLow) delete fPhiCutLow;
+  if(fPhiCutHigh) delete fPhiCutHigh;
 }
 
 //-----------------------------------------------------------------------
@@ -676,7 +713,7 @@ void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
   // Get PID response
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   if(man){
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+    AliVEventHandler* inputHandler = man->GetInputEventHandler();
     if(inputHandler) fPIDResponse=inputHandler->GetPIDResponse();
   }
 
@@ -1305,31 +1342,84 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
   }
   
-   if (fCutChi2PerClusterTPC)
+  if (fCutChi2PerClusterTPC)
   {
     Double_t chi2tpc = track->Chi2perNDF();
     if (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC) pass=kFALSE;
+  }
+  
+  if (fCutFracSharedTPCCluster)
+  {
+    Int_t ntpccls = track->GetTPCncls();
+    if(ntpccls>0) {
+      Int_t ntpcclsS = track->GetTPCnclsS();
+      Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
+      if (fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
+    }
   }
   
   if (GetRequireTPCRefit() && !(track->GetStatus() & AliESDtrack::kTPCrefit) ) pass=kFALSE;
   if (GetRequireITSRefit() && !(track->GetStatus() & AliESDtrack::kITSrefit) ) pass=kFALSE;
   
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
-
-  if (fCutDCAToVertexXY && TMath::Abs(track->DCA())>GetMaxDCAToVertexXY()) pass=kFALSE;
-
-  if (fCutDCAToVertexZ && TMath::Abs(track->ZAtDCA())>GetMaxDCAToVertexZ()) pass=kFALSE;
-
+  Double_t DCAxy = track->DCA();
+  Double_t DCAz = track->ZAtDCA();
+  if(fCutDCAToVertexXY || fCutDCAToVertexZ) {
+    if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
+      // re-evaluate the dca as it seems to not be natively present
+      // allowed only for tracks inside the beam pipe
+      Double_t pos[3] = {-99., -99., -99.};
+      track->GetPosition(pos);
+      if(pos[0]*pos[0]+pos[1]*pos[1] <= 3.*3.) {
+        AliAODTrack copy(*track);       // stack copy
+        Double_t b[2] = {-99., -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
+          DCAxy = b[0];
+          DCAz = b[1];
+        }
+      }
+    }
+    if (TMath::Abs(DCAxy)>GetMaxDCAToVertexXY()) pass=kFALSE;
+    if (TMath::Abs(DCAz)>GetMaxDCAToVertexZ()) pass=kFALSE;
+  }
   Double_t dedx = track->GetTPCsignal();
   if(fCutMinimalTPCdedx) {
     if (dedx < fMinimalTPCdedx) pass=kFALSE;
   }
   Double_t time[9];
   track->GetIntegratedTimes(time);
-  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
-    {
-      if (!PassesAODpidCut(track)) pass=kFALSE;
+  
+  if(fCutTPCSecbound && track->Pt()>fCutTPCSecboundMinpt) {
+    Double_t xyz[3]={-9999.,-9999.,-9999.};
+    const double r = 84.; // TPC IROC radius
+    if (!track->GetXYZatR(r, fEvent->GetMagneticField(), xyz, NULL)) pass=kFALSE;
+    Double_t cra = TMath::ATan2(xyz[1],xyz[0]); // crossing angle
+    Double_t dpe = 3.*TMath::TwoPi()/360.;// excluded region (\pm 3 degree)
+    for(Int_t nb=-9; nb<=9; nb++) {
+      Double_t bnp = nb*TMath::Pi()/9.; // TPC boundaries azimuthal angle
+      if(cra<bnp+dpe && cra>bnp-dpe) pass=kFALSE;
     }
+  }
+  if(fCutTPCSecboundVar) {
+    Double_t phimod = track->Phi();
+    if(fEvent->GetMagneticField() < 0)   // for negative polarity field
+      phimod = TMath::TwoPi() - phimod;
+    if(track->Charge() < 0) // for negative charge
+      phimod = TMath::TwoPi() - phimod;
+    if(phimod < 0)
+      cout << "Warning!!!!! phi < 0: " << phimod << endl;
+    
+    phimod += TMath::Pi()/18.0; // to center gap in the middle
+    phimod = fmod(phimod, TMath::Pi()/9.0);
+    if(phimod < fPhiCutHigh->Eval(track->Pt()) && phimod > fPhiCutLow->Eval(track->Pt()))
+      pass=kFALSE; // reject track
+  }
+
+  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
+  {
+    if (!PassesAODpidCut(track)) pass=kFALSE;
+  }
 
   if (fQA) {
     // changed 04062014 used to be filled before possible PID cut
@@ -1337,22 +1427,11 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     QAbefore( 0)->Fill(momTPC,GetBeta(track, kTRUE));
     if(pass) QAafter( 0)->Fill(momTPC, GetBeta(track, kTRUE));
     QAbefore( 1)->Fill(momTPC,dedx);
-    QAbefore( 5)->Fill(track->Pt(),track->DCA());
-    QAbefore( 6)->Fill(track->Pt(),track->ZAtDCA());
+    QAbefore( 5)->Fill(track->Pt(),DCAxy);
+    QAbefore( 6)->Fill(track->Pt(),DCAz);
     if (pass) QAafter( 1)->Fill(momTPC,dedx);
-    if (pass && fUseAODFilterBit && (fAODFilterBit == 1 || fAODFilterBit == 32)) {
-        // re-evaluate the dca as it seems to not be natively present
-        AliAODTrack copy(*track);       // stack copy
-        Double_t b[2] = {-99. -99.};
-        Double_t bCov[3] = {-99., -99., -99.};
-        if(copy.PropagateToDCA(fEvent->GetPrimaryVertex(), fEvent->GetMagneticField(), 100., b, bCov)) {
-        QAafter( 5)->Fill(track->Pt(),b[0]);
-        QAafter( 6)->Fill(track->Pt(),b[1]);
-        }
-    } else {
-      if (pass) QAafter( 5)->Fill(track->Pt(),track->DCA());
-      if (pass) QAafter( 6)->Fill(track->Pt(),track->ZAtDCA());
-    }
+    if (pass) QAafter( 5)->Fill(track->Pt(),DCAxy);
+    if (pass) QAafter( 6)->Fill(track->Pt(),DCAz);
     QAbefore( 8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
     if (pass) QAafter(  8)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kElectron]));
     QAbefore( 9)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kMuon]));
@@ -1363,6 +1442,15 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 11)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kKaon]));
     QAbefore(12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
+    QAbefore(18)->Fill(track->P(),track->Chi2perNDF());
+    if (pass) QAafter( 18)->Fill(track->P(),track->Chi2perNDF());
+    Int_t ntpccls = track->GetTPCncls();
+    if(ntpccls>0) {
+      Int_t ntpcclsS = track->GetTPCnclsS();
+      Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
+      QAbefore(19)->Fill(track->P(),fshtpccls);
+      if (pass) QAafter( 19)->Fill(track->P(),fshtpccls);
+    }
   }
 
 
@@ -2120,6 +2208,8 @@ AliFlowTrack* AliFlowTrackCuts::FillFlowTrack(TObjArray* trackCollection, Int_t 
       return FillFlowTrackGeneric(trackCollection, trackIndex);
     case kKappaVZERO:
       return FillFlowTrackGeneric(trackCollection, trackIndex);
+    case kHotfixHI:
+      return FillFlowTrackGeneric(trackCollection, trackIndex);
     case kKink:
       return FillFlowTrackKink(trackCollection, trackIndex);
     //case kV0:
@@ -2147,6 +2237,8 @@ Bool_t AliFlowTrackCuts::FillFlowTrack(AliFlowTrack* track) const
     case kDeltaVZERO:
       return FillFlowTrackGeneric(track);
     case kKappaVZERO:
+      return FillFlowTrackGeneric(track);
+    case kHotfixHI:
       return FillFlowTrackGeneric(track);
     default:
       return FillFlowTrackVParticle(track);
@@ -2619,6 +2711,12 @@ void AliFlowTrackCuts::DefineHistograms()
 
   before->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
   after->Add(new TH1F("KinkIndex",";Kink index;counts", 2, 0., 2.));//17
+  
+  before->Add(new TH2F("Chi2 per TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
+  after->Add(new TH2F("Chi2 per TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,5.)); //18
+  
+  before->Add(new TH2F("Shared TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
+  after->Add(new TH2F("Shared TPCCl",";p[GeV/c];species",kNbinsP,binsP,50,0.,1.)); //19
 
   TH1::AddDirectory(adddirstatus);
 }
@@ -2654,6 +2752,8 @@ Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
     case kDeltaVZERO:
       return fgkNumberOfVZEROtracks;
     case kKappaVZERO:
+      return fgkNumberOfVZEROtracks;
+    case kHotfixHI:
       return fgkNumberOfVZEROtracks;
     case kMUON:                                      // XZhang 20120604
       if (!fEvent) return 0;                         // XZhang 20120604
@@ -2727,6 +2827,15 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       }
       return esd->GetVZEROData();
    case kKappaVZERO:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) //contributed by G.Ortona
+      {
+        aod = dynamic_cast<AliAODEvent*>(fEvent);
+        if(!aod)return NULL;
+        return aod->GetVZEROData();
+      }
+      return esd->GetVZEROData();
+   case kHotfixHI:
       esd = dynamic_cast<AliESDEvent*>(fEvent);
       if (!esd) //contributed by G.Ortona
       {
@@ -5027,6 +5136,8 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
       return "DeltaVZERO";
     case kKappaVZERO:
       return "KappaVZERO";
+    case kHotfixHI:
+      return "HotfixHI";
     case kMUON:       // XZhang 20120604
       return "MUON";  // XZhang 20120604
     case kKink:

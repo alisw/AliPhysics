@@ -73,7 +73,7 @@ class AliTrackContainer : public AliParticleContainer {
   Int_t                       GetNTracks()                              const   { return GetNParticles()         ; }
   Int_t                       GetNAcceptedTracks()                              { return GetNAcceptedParticles() ; }
   ETrackFilterType_t          GetTrackFilterType()                      const   { return fTrackFilterType; }
-  Char_t                      GetTrackType(Int_t i)                     const   { return i >= 0 && i < fTrackTypes.GetSize() ? fTrackTypes[i] : kUndefined ; }
+  Char_t                      GetTrackType(Int_t i)                     const   { return i >= 0 && i < fTrackTypes.GetSize() ? fTrackTypes[i] : (Char_t)kUndefined ; }
 
   void                        SetArray(const AliVEvent *event);
 

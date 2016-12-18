@@ -1,6 +1,6 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJIaa(TString taskName, TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
-
+AliAnalysisTask *AddTaskJIaa(TString taskName, TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName="")
+{
     // Load Custom Configuration and parameters
     // override values with parameters
 

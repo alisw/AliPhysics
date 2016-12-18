@@ -14,6 +14,7 @@
 #pragma link C++ class AliDielectronHF+;
 #pragma link C++ class AliDielectronHFhelper+;
 #pragma link C++ class AliDielectronMC+;
+#pragma link C++ class AliDielectronQnEPcorrection+;
 #pragma link C++ class AliDielectronVarManager+;
 #pragma link C++ class AliAnalysisTaskDielectronFilter+;
 #pragma link C++ class AliAnalysisTaskMultiDielectron+;
@@ -46,6 +47,12 @@
 #pragma link C++ class AliAnalysisTask_Syst_PtDistributionsMC+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Data+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Efficiency+;
+#pragma link C++ class AliAnalysisTaskMLTreeMaker+;
+#pragma link C++ class AliAnalysisTaskSimpleTreeMaker+;
 #pragma link C++ class AliDielectronReducedTrack+;
-
+#pragma link C++ class AliDielectronTGReducedPair+;
+#pragma link C++ class AliDielectronTGReducedTrack+;
+#pragma link C++ class AliDielectronTGReducedInfo+;
+#pragma link C++ class AliAnalysisTaskTGReducedTree+;
+#pragma link C++ class AliAnalysisTaskLMeeCocktailMC+;
 #endif

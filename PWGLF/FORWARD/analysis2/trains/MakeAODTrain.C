@@ -48,9 +48,42 @@ public:
     fOptions.Add("satelitte", "Use satelitte interactions");
     fOptions.Add("secmap",    "Use secondary maps to correct", false);
     fOptions.Add("mc-tracks", "Enable MC track filter", false);
+    fOptions.Add("hit-threshold", "CUT", "Threshold for hits", 0.9);
     fOptions.Set("type", "ESD");
   }
 protected:
+  /** 
+   * Set a parameter on the forward task 
+   * 
+   * @param task Task to set on
+   * @param call The call 
+   * @param arg  The argument(s) for the call
+   */
+  void SetOnFwd(AliAnalysisTask* task,
+		const TString& call,
+		const TString& arg)
+  {
+    TString cmd;
+    cmd.Form("((AliForwardMultiplicityBase*)%p)->%s(%s)",
+	     tsk, call.Data(), arg.Data())
+    gROOT->ProcessLine(cmd);
+  }
+  /** 
+   * Set a parameter on the forward task 
+   * 
+   * @param task Task to set on
+   * @param call The call 
+   * @param arg  The argument(s) for the call
+   */
+  void SetOnMCFwd(AliAnalysisTask* task,
+		  const TString& call,
+		  const TString& arg)
+  {
+    TString cmd;
+    cmd.Form("((AliForwardMCMultiplicityTask*)%p)->%s(%s)",
+	     tsk, call.Data(), arg.Data())
+    gROOT->ProcessLine(cmd);
+  }
   /** 
    * Create the tasks 
    * 
@@ -88,6 +121,7 @@ protected:
     UShort_t sNN  = fOptions.AsInt("snn", 0);
     UShort_t fld  = fOptions.AsInt("field", 0);
     UShort_t mSt  = fOptions.AsInt("max-strips", 2);
+    Double_t thr  = fOptions.AsDouble("hit-threshold". .9);
     Bool_t   sec  = fOptions.Has("secmap");
     TString  corr = "";
     TString  dead = "";
@@ -104,16 +138,11 @@ protected:
 		       dead.Data()), mask);
     if (!fwd)
       Fatal("CoupleCars", "Failed to add forward task");
-
-    gROOT->ProcessLine(Form("((AliForwardMultiplicityBase*)%p)"
-			    "->GetCorrections().SetUseSecondaryMap(%d)",
-			    fwd, sec));
-    if (mc) { 
-      gROOT->ProcessLine(Form("((AliForwardMCMultiplicityTask*)%p)"
-			      "->GetTrackDensity()"
-			      ".SetMaxConsequtiveStrips(%d)", 
-			      fwd, mSt));
-    }
+    SetOnFwd(fwd, "GetCorrections().SetUseSecondaryMap", Form("%d",sec));
+    SetOnFwd(fwd, "GetDensityCalculator()->SetHitThreshold", Form("%f", thr));
+    if (mc)
+      SetOnMCFwd(fwd, "GetTrackDensity().SetMaxConsequtiveStrips",
+		 Form("%d",mSt));
     fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(), fwdConfig), true);
     if (!corr.IsNull()) 
       fRailway->LoadAux(Form("%s/fmd_corrections.root",corr.Data()), true);
@@ -130,11 +159,12 @@ protected:
 			Form("%d,%ld,%d,%d,%d,\"%s\",\"%s\"", 
 			     mc, run, sys, sNN, fld, 
 			     cenConfig.Data(), corr.Data()), mask);
-      if (cen) {
-	fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(),cenConfig),true);
-	if (!corr.IsNull())
-	  fRailway->LoadAux(Form("%s/spd_corrections.root",corr.Data()), true);
-      }	
+      fRailway->LoadAux(gSystem->Which(gROOT->GetMacroPath(),cenConfig),true);
+      if (!corr.IsNull())
+	fRailway->LoadAux(Form("%s/spd_corrections.root",corr.Data()), true);
+      gROOT->ProcessLine(Form("((AliCentralMultiplicityTask*)%p)"
+			      "->SetUseSecondary(%d)",
+			      cen, sec));
     }
 
     // --- Add MC particle task --------------------------------------
@@ -198,19 +228,20 @@ protected:
     opts.Remove("max-strips");
     opts.Remove("mc-tracks");
     opts.Remove("secmap");
-    opts.Add("centBins", "BINS", "Centrality bins", "");
-    opts.Add("satellite", "Restrict analysis to satellite events", false);
-    opts.Add("trig", "TRIGGER", "Trigger type", "INEL");
-    opts.Add("filter", "FILTER", "Filter type", "OUTLIER|PILEUP-BIN");
-    opts.Add("vzMin", "CENTIMETER", "Lower bound on Ip Z", -10.);
-    opts.Add("vzMax", "CENTIMETER", "Upper bound on Ip Z", +10.);
-    opts.Add("scheme", "FLAGS", "Normalization scheme", "TRIGGER,EVENT");
-    opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", 1.);
-    opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", 1.);
-    opts.Add("mc", "Also analyse MC truth", fRailway->IsMC());
-    opts.Add("truth-config", "FILE", "MC-Truth configuration", "");
-    opts.Add("mean-ipz", "MU", "Mean of IPz dist.", 0);
-    opts.Add("var-ipz", "SIGMA", "Variance of IPz dist.", -1);
+    opts.Remove("dead");
+    opts.Add("abs-min-cent","PERCENT",   "Absolute least centrality",-1.);
+    opts.Add("cent-bins",   "BINS",      "Centrality bins",          "");
+    opts.Add("satellite",   "Restrict analysis to satellite events", false);
+    opts.Add("trig",        "TRIGGER",   "Trigger type",             "INEL");
+    opts.Add("filter",      "FILTER",    "Filter type", "OUTLIER|PILEUP-BIN");
+    opts.Add("ipz-bins",    "BINS",      "Lower bound on Ip Z",      "u10");
+    opts.Add("scheme",      "FLAGS",     "Normalization scheme", "TRIGGER,EVENT");
+    opts.Add("trigEff",     "EFFICIENCY","Trigger efficiency",       1.);
+    opts.Add("trigEff0",    "EFFICIENCY","0-bin trigger efficiency", 1.);
+    opts.Add("mc",          "Also analyse MC truth",           fRailway->IsMC());
+    opts.Add("truth-config","FILE",      "MC-Truth configuration", "");
+    opts.Add("mean-ipz",    "MU",        "Mean of IPz dist.",        0);
+    opts.Add("var-ipz",     "SIGMA",     "Variance of IPz dist.",    -1);
     
     // Rewrite our URL 
     TString outString = fRailway->OutputLocation();
@@ -228,16 +259,16 @@ protected:
       
     const char* defConfig="$ALICE_PHYSICS/PWGLF/FORWARD/analysis2/dNdetaConfig.C";
     opts.Set("url", outUrl.GetUrl());
-    opts.Set("type", "AOD");
+    opts.Set("type",          "AOD");
     opts.Set("forward-config",defConfig);
     opts.Set("central-config",defConfig);
     opts.Set("truth-config",defConfig);
     if (!fDatimeString.IsNull()) opts.Set("date", fDatimeString);
 
     if (sys != 1) {
-      opts.Set("cent", "default");
-      opts.Set("trig", "INEL");
-      opts.Set("scheme", "default");
+      opts.Set("cent",     "default");
+      opts.Set("trig",     "V0AND");
+      opts.Set("scheme",   "default");
       opts.Set("centBins", "default");
       SaveSetupROOT("dNdeta", cls, name, opts, &uopts);
       if (asShellScript) 
@@ -352,8 +383,8 @@ protected:
     std::ofstream out("MakeIndex.C");
     out << "// Made by " << ClassName() << "\n"
 	<< "void MakeIndex() {\n"
-	<< "  gROOT->LoadMacro(\"$ALICE_PHYSICS/PWGLF/FORWARD/trains/CreateIndex.C\"\);\n"
-	<< "  CreateIndex(\".\",\"aodTree\"\);\n"
+	<< "  gROOT->LoadMacro(\"$ALICE_PHYSICS/PWGLF/FORWARD/trains/CreateIndex.C\");\n"
+	<< "  CreateIndex(\".\",\"aodTree\");\n"
 	<< "}\n"
 	<< "// EOD" << std::endl;
     out.close();

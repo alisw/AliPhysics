@@ -44,7 +44,7 @@ enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
-enum particularity{ kTopological, kLowPt, kPass4 };
+enum particularity{ kTopological, kLowPt, kPass4, kBDT };
 
 void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 		    const char *mcfilename="FeedDownCorrectionMC.root",
@@ -484,6 +484,9 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   else if(analysisSpeciality==kPass4){
     systematics->SetIsPass4Analysis(kTRUE);
   }
+	else if(analysisSpeciality==kBDT){
+		systematics->SetIsBDTAnalysis(kTRUE);
+	}
   //
   systematics->Init(decay);
   spectra->SetSystematicUncertainty(systematics);

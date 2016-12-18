@@ -30,6 +30,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODPWG4Particle.h"
+#include "AliMCEvent.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrBaseClass) ;
@@ -59,7 +60,9 @@ fAODObjArrayName(""),         fAddToHistogramsName(""),
 fCaloPID(0x0),                fCaloUtils(0x0),
 fFidCut(0x0),                 fHisto(0x0),
 fIC(0x0),                     fMCUtils(0x0),                
-fNMS(0x0),                    fReader(0x0)
+fNMS(0x0),                    fReader(0x0),
+fStudyClusterOverlapsPerGenerator(0),
+fNCocktailGenNames(0)
 {
   InitParameters();
 }
@@ -364,6 +367,99 @@ TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()
 }
 
 //_____________________________________________________________________
+/// Check the content of the cluster other than the generator that 
+/// deposited more energy. Assign a tag.
+///
+/// \param cluster: pointer to AliVCluster
+/// \param genName: name of generator main contributor to the cluster
+/// \param genNameBkg: name of generators overlapped to the cluster
+/// \return tag : 0-no other generator, 1 hijing, 2 other generator, 3 both hijing and other
+//_____________________________________________________________________
+Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluster * cluster, Int_t mctag,
+                                                                      TString & genName, TString & genNameBkg)
+{
+  if(cluster->GetNLabels() == 0 || cluster->GetLabel() < 0 ) return -1;
+
+  (GetReader()->GetMC())->GetCocktailGenerator(cluster->GetLabel(), genName);
+  
+  //printf("Generator?: %s\n",genName.Data());
+  
+  Bool_t overlapGener       = kFALSE;
+  Bool_t overlapGenerHIJING = kFALSE;
+  Bool_t overlapGenerOther  = kFALSE;
+  
+  genNameBkg = "";
+  
+  const UInt_t nlabels = cluster->GetNLabels();
+  //Int_t noverlapsGen = 0;
+  //TString genName2Prev = genName;
+  for(UInt_t ilabel = 1; ilabel < nlabels; ilabel++)
+  {
+    Int_t label2 = cluster->GetLabels()[ilabel];
+    TString genName2;
+    (GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
+    
+    //if(genName2 != genName2Prev) noverlapsGen++;
+    
+    if(genName2 != genName) 
+    {
+      //genName2Prev = genName2;
+      
+      if(!genNameBkg.Contains(genName2))
+        genNameBkg = Form("%s_%s",genNameBkg.Data(), genName2.Data());
+      
+      overlapGener = kTRUE; 
+      
+      if( genName2.Contains("ijing") && !genName.Contains("ijing")) 
+        overlapGenerHIJING = kTRUE;
+      
+      if(!genName2.Contains("ijing"))
+        overlapGenerOther  = kTRUE;
+    }
+  }
+
+  Int_t genBkgTag = -1;
+  
+  if      ( !overlapGener )                            genBkgTag = 0;
+  else if (  overlapGenerHIJING && !overlapGenerOther) genBkgTag = 1;
+  else if ( !overlapGenerHIJING &&  overlapGenerOther) genBkgTag = 2;
+  else if (  overlapGenerHIJING &&  overlapGenerOther) genBkgTag = 3;
+  else                                                 genBkgTag = 4; 
+  
+  // check overlap with same generator, but not hijing
+  Int_t overpdg[nlabels];
+  Int_t overlab[nlabels];
+  Int_t noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,-1,GetReader(),overpdg,overlab);
+  Bool_t sameGenOverlap   = kFALSE;
+  Bool_t sameGenOverlapHI = kFALSE;
+  for(Int_t iover = 0; iover < noverlaps; iover++)
+  {
+    TString genName2;
+    (GetReader()->GetMC())->GetCocktailGenerator(overlab[iover],genName2);
+    if ( genName2==genName )
+    {
+      if ( !genName.Contains("ijing") ) sameGenOverlap   = kTRUE;
+      else                              sameGenOverlapHI = kTRUE;  
+    }
+  }
+  
+  //printf("bkg tag %d, noverlaps %d; same gen overlap %d\n",genBkgTag,noverlaps,sameGenOverlap);
+  if(sameGenOverlap)
+  {
+    if(genBkgTag == 0) genBkgTag = 2; // Gen+Gen
+    if(genBkgTag == 1) genBkgTag = 3; // Gen+Gen+Hij
+  }
+
+  if(sameGenOverlapHI)
+  {
+    if(genBkgTag == 0) genBkgTag = 2; // Gen+Gen
+    if(genBkgTag == 2) genBkgTag = 3; // Gen+Gen+Hij   
+  }
+    
+  return genBkgTag;
+}
+
+//_____________________________________________________________________
 /// Create AOD branch filled in the analysis.
 //_____________________________________________________________________
 TClonesArray * AliAnaCaloTrackCorrBaseClass::GetCreateOutputAODBranch() 
@@ -603,6 +699,19 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   fInputAODName        = "CaloTrackCorr";
   fAddToHistogramsName = "";
   fAODObjArrayName     = "Ref";
+  
+  fNCocktailGenNames = 7;
+  // Order matters, here cocktail of MC LHC14a1a
+  fCocktailGenNames[0] = ""; // First must be always empty
+  fCocktailGenNames[1] = "pi0EMC";
+  fCocktailGenNames[2] = "pi0";
+  fCocktailGenNames[3] = "etaEMC";
+  fCocktailGenNames[4] = "eta";
+  fCocktailGenNames[5] = "hijing";
+  fCocktailGenNames[6] = "other";  
+  
+  for(Int_t igen = 7; igen < 10; igen++)
+    fCocktailGenNames[igen] = "";
 }
 
 //__________________________________________________________________

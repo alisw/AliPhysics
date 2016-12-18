@@ -145,7 +145,6 @@ struct FastCentHelper
   /** 
    * Get the color associated with a centrality bin. 
    * 
-   * @param low  Low edge 
    * @param high High edge 
    * 
    * @return Color identifier. 
@@ -200,7 +199,7 @@ struct FastCentHelper
    * 
    * @param h    Histogram to modify 
    * @param low  Low edge of our bin
-   * @param up   High edge of our bin 
+   * @param high High edge of our bin 
    */
   void ModHist(TH1* h, Double_t low, Double_t high)
   {
@@ -218,6 +217,7 @@ struct FastCentHelper
    * Create histograms 
    * 
    * @param output 
+   * @param callback Call back to create histograms
    */
   void CreateHistos(TCollection* output, TH1D* (*callback)())
   {
@@ -280,6 +280,7 @@ struct FastCentHelper
    * Create diagnostics histograms 
    * 
    * @param output 
+   * @param centHist Centrality histogram
    */  
   void CreateDiagnostics(TCollection* output, TH1* centHist)
   {
@@ -402,6 +403,7 @@ struct FastCentHelper
   /** 
    * Get an object from the output list, possibly checking the type 
    * 
+   * @param output Container 
    * @param name Name of object 
    * @param cls  Possible class pointer 
    * 

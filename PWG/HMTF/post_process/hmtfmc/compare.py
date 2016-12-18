@@ -3,13 +3,13 @@ import re
 from rootpy import ROOT
 from rootpy.io import root_open
 
-from hmtfmc import roofie
+from hmtfmc import roofie, utils
 
 
 def _reduce_single_canvases(results_dirs, gen_names, get_canvas_func, legend_regex):
     fig_comp = roofie.Figure()
 
-    for i, (result_dir, marker) in enumerate(zip(results_dirs, ['diamond', 'cross'])):
+    for i, (result_dir, marker) in enumerate(zip(results_dirs, ['opendiamond', 'cross'])):
         c = get_canvas_func(result_dir)
         fig_single = roofie.Figure()
         fig_single.import_plottables_from_canvas(c)
@@ -22,7 +22,7 @@ def _reduce_single_canvases(results_dirs, gen_names, get_canvas_func, legend_reg
                 if i == 0:
                     fig_comp.add_plottable(None, markerstyle='circle', legend_title=p['legend_title'], color=color)
     # name the lines
-    fig_comp.add_plottable(None, markerstyle='diamond', legend_title=gen_names[0], color='black')
+    fig_comp.add_plottable(None, markerstyle='opendiamond', legend_title=gen_names[0], color='black')
     fig_comp.add_plottable(None, markerstyle='cross', legend_title=gen_names[1], color='black')
     # configure the plot
     fig_comp.xtitle = fig_single.xtitle
@@ -38,7 +38,16 @@ def compare(args):
     running `prepare_plots`.
     """
     ROOT.gROOT.SetBatch(True)
-    gen_names = [args.generator_name1, args.generator_name2]
+    gen_names = []
+    if args.generator_name1:
+        gen_names.append(args.generator_name1)
+    else:
+        gen_names.append(utils.get_generator_name_from_filename(args.input_file1))
+    if args.generator_name2:
+        gen_names.append(args.generator_name2)
+    else:
+        gen_names.append(utils.get_generator_name_from_filename(args.input_file2))
+
     with root_open(args.input_file1, "read") as f1:
         with root_open(args.input_file2, "read") as f2:
             results_dirs = []

@@ -31,8 +31,18 @@
 #pragma link C++ class AliAnalysisTaskDiffCrossSections+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::EventInfo+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::VtxInfo+;
+#pragma link C++ class AliAnalysisTaskDiffCrossSections::FMDInfo+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::ADV0+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::TreeData+;
 #pragma link C++ class AliAnalysisTaskDiffCrossSections::MCInfo+;
+#pragma link C++ class AliAnalysisTaskPB+;
+#pragma link C++ class AliPBBase+;
+#pragma link C++ class AliPBTracks+;
+#pragma link C++ class AliPBUtils+;
+#pragma link C++ class CEPEventBuffer+;
+#pragma link C++ class CEPTrackBuffer+;
+#pragma link C++ class AliAnalysisTaskf0f2+;
+#pragma link C++ class AliAnalysisPseudoRapidityDensity+;
+#pragma link C++ class AliSPDGeometryUtils+;
 
 #endif

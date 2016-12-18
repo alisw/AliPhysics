@@ -215,7 +215,7 @@ protected:
   void LoadCellMasking();
 
 private:
-  Bool_t                              fInitialized;         ///< Check whether task is initialized (for ExecOnce)
+  Bool_t                              fLocalInitialized;    ///< Check whether task is initialized (for ExecOnce)
   THistManager                        *fHistManager;        //!<! Histogram handler
   AliEMCALGeometry                    *fGeometry;           //!<! EMCAL geometry
 

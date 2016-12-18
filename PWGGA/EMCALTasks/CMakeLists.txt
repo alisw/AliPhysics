@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                    )
 
 # Sources in alphabetical order
@@ -46,6 +47,7 @@ set(SRCS
     AliAnalysisTaskPi0V2.cxx
     AliAnalysisTaskSATR.cxx
     AliAnalysisTaskSDMGammaMC.cxx
+    AliAnalysisTaskShoShaTests.cxx
     AliAnalysisTaskTrgContam.cxx
     AliEMCalpi0ClusterEvaluationTask.cxx
     AliEMCalpi0Task.cxx
@@ -68,7 +70,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Hist MathCore Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD CDB EMCALUtils PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger EMCALbase EMCALrec  ESD ESDfilter PWGGAUtils STEER STEERBase)
+set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD CDB EMCALUtils PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger EMCALbase EMCALrec PWGCaloTrackCorrBase ESD ESDfilter PWGGAUtils STEER STEERBase)
 
 # Generate the ROOT map
 # Dependecies

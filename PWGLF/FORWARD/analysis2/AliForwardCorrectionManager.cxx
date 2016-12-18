@@ -305,6 +305,7 @@ AliForwardCorrectionManager::GetVertexAxis() const
 
 #ifndef DOXY_INPUT
 //______________________________________________________________________________
+// @cond
 void AliForwardCorrectionManager::Streamer(TBuffer &R__b)
 {
   //
@@ -324,6 +325,7 @@ void AliForwardCorrectionManager::Streamer(TBuffer &R__b)
     R__b.WriteClassBuffer(AliForwardCorrectionManager::Class(),this);
   }
 }
+// @endcond
 #endif
 
 //____________________________________________________________________

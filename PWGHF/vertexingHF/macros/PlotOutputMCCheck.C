@@ -2,8 +2,13 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TH3.h>
 #include <TStyle.h>
 #include <TFile.h>
+#include <TPaveStats.h>
+#include <TLegend.h>
+#include <TLegendEntry.h>
+#include <TLatex.h>
 #endif
 
 /* $Id$ */ 
@@ -11,6 +16,9 @@
 // Macro to plot the output of AliAnalysisTaskCheckHFMCProd
 // Author: F. Prino, prino@to.infn.it
 
+TH1F* HistoPYTHIA7();
+TH1F* HistoFONLL7TeV();
+TH1F* HistoFONLL2_76TeV();
 
 void PlotOutputMCCheck(){
 
@@ -79,10 +87,10 @@ void PlotOutputMCCheck(){
   TH3F* hEtaPhiPtGenPi=(TH3F*)l->FindObject("hEtaPhiPtGenPi");
   Int_t minEtaBin=hEtaPhiPtGenPi->GetXaxis()->FindBin(minEta+0.00001);
   Int_t maxEtaBin=hEtaPhiPtGenPi->GetXaxis()->FindBin(maxEta-0.00001);
-  cout<<minEtaBin<<"    "<<maxEtaBin<<endl;
+  printf("minetabin=%d -- maxetabin=%d\n",minEtaBin,maxEtaBin);
   Int_t minPtBin=hEtaPhiPtGenPi->GetZaxis()->FindBin(minPt+0.00001);
   Int_t maxPtBin=hEtaPhiPtGenPi->GetZaxis()->FindBin(maxPt-0.00001);
-  cout<<minPtBin<<"    "<<maxPtBin<<endl;
+  printf("minptbin=%d -- maxptbin=%d\n",minPtBin,maxPtBin);
   TH1D* hEtaGenPi=hEtaPhiPtGenPi->ProjectionX("hEtaGenPi",0,-1,minPtBin,maxPtBin);
   TH1D* hPhiGenPi=hEtaPhiPtGenPi->ProjectionY("hPhiGenPi",minEtaBin,maxEtaBin,minPtBin,maxPtBin);
   TH1D* hPtGenPi=hEtaPhiPtGenPi->ProjectionZ("hPtGenPi",minEtaBin,maxEtaBin);
@@ -315,9 +323,9 @@ void PlotOutputMCCheck(){
   hncharmed->GetYaxis()->SetTitle("N Charm hadrons in golden channels");
   cn->Update();
 
-  TH1F* hnbvsnc=(TH1F*)l->FindObject("hnbvsnc");
+  TH2F* hnbvsnc=(TH2F*)l->FindObject("hnbvsnc");
   TCanvas* cnhf=new TCanvas("cnhf","nb/c");
-  hnbvsnc->Draw("colztext");
+  hnbvsnc->Draw("colz");
   hnbvsnc->GetXaxis()->SetTitle("Nc");
   hnbvsnc->GetYaxis()->SetTitle("Nb");
   cnhf->Update();
@@ -390,14 +398,14 @@ void PlotOutputMCCheck(){
   hD0fonll7->Draw("lsame");
   hD0fonll2->Draw("lsame");
   hptD0pythia->Draw("lsame");
-  TLegend* leg=new TLegend(0.45,0.6,0.89,0.85);
-  leg->SetFillStyle(0);
-  leg->SetBorderSize(0);
-  leg->AddEntry(hptD0all,"MC production","LP");
-  leg->AddEntry(hD0fonll7,"FONLL, #sqrt{s}=7 TeV","L");
-  leg->AddEntry(hD0fonll2,"FONLL, #sqrt{s}=2.76 TeV","L");
-  leg->AddEntry(hptD0pythia,"PYTHIA Perugia0, #sqrt{s}=7 TeV","L");
-  leg->Draw();
+  TLegend* legp=new TLegend(0.45,0.6,0.89,0.85);
+  legp->SetFillStyle(0);
+  legp->SetBorderSize(0);
+  legp->AddEntry(hptD0all,"MC production","LP");
+  legp->AddEntry(hD0fonll7,"FONLL, #sqrt{s}=7 TeV","L");
+  legp->AddEntry(hD0fonll2,"FONLL, #sqrt{s}=2.76 TeV","L");
+  legp->AddEntry(hptD0pythia,"PYTHIA Perugia0, #sqrt{s}=7 TeV","L");
+  legp->Draw();
 
   // Prompt and Feeddown
   TH1F* hOriginPrompt=(TH1F*)l->FindObject("hOriginPrompt");
@@ -525,6 +533,18 @@ void PlotOutputMCCheck(){
   hBeautyHad->Draw();
   
 
+  TH1F* hDSpecies=(TH1F*)l->FindObject("hDSpecies");
+  TH1F* hBSpecies=(TH1F*)l->FindObject("hBSpecies");
+  hDSpecies->SetStats(0);
+  hBSpecies->SetStats(0);
+  TCanvas* chad2=new TCanvas("chad2","Hadrons2",800,900);
+  chad2->Divide(1,2);
+  chad2->cd(1);
+  hDSpecies->Draw();
+  hDSpecies->GetYaxis()->SetTitle("Entries");
+  chad2->cd(2);
+  hBSpecies->Draw();
+  hBSpecies->GetYaxis()->SetTitle("Entries");
 
   TCanvas* cd0=new TCanvas("cd0","D0");
   cd0->Divide(2,2);

@@ -1,5 +1,5 @@
 ///
-/// \file PionPionFemto/ConfigFemtoAnalysis.C
+/// \file PWGCF/FEMTOSCOPY/macros/Train/PionPionFemto/ConfigFemtoAnalysis.C
 ///
 /// \brief The configuration macro which sets up identical pion-pion analyses
 /// \author Andrew Kubera, Ohio State University, andrew.kubera@cern.ch
@@ -39,6 +39,9 @@ struct MacroParams {
   bool do_kt_q3d;
   bool do_kt_qinv;
   bool do_ylm_cf; // not implemented yet
+  int filter_bit;
+  AliFemtoEventReaderAOD::EventMult multiplicity;
+  bool dca_global_track;
 };
 
 void
@@ -71,6 +74,9 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_ylm_cf = false;
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
+  macro_config.filter_bit = 7;
+  macro_config.multiplicity = AliFemtoEventReaderAOD::kCentrality;
+  macro_config.dca_global_track = true;
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -78,15 +84,15 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // Begin to build the manager and analyses
   AliFemtoManager *manager = new AliFemtoManager();
 
-  AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODMultSelection();
-    rdr->SetFilterBit(7);
+  AliFemtoEventReaderAOD *rdr = new AliFemtoEventReaderAODChain();
+    rdr->SetFilterBit(macro_config.filter_bit);
     rdr->SetEPVZERO(kTRUE);
-    rdr->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+    rdr->SetUseMultiplicity(macro_config.multiplicity);
     rdr->SetCentralityFlattening(kFALSE);
     rdr->SetReadV0(0);
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
-    rdr->SetDCAglobalTrack(kTRUE);
-  // rdr->SetReadMC(analysis_config.is_mc_analysis);
+    rdr->SetDCAglobalTrack(macro_config.dca_global_track);
+    rdr->SetReadMC(analysis_config.is_mc_analysis);
   manager->SetEventReader(rdr);
 
   if (macro_config.centrality_ranges.empty()) {
@@ -163,7 +169,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_deltaeta_deltaphi_cf) {
-        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", 1.6,
+        AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", cut_config.pair_phi_star_radius,
               // 100, 0.0, 1.6,
               // 100, 0.0, 2.0
               // 200, 0.0, 0.5,

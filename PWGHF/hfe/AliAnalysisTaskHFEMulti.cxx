@@ -434,13 +434,21 @@ void AliAnalysisTaskHFEMulti::UserCreateOutputObjects(){
     fQACollection = new AliHFEcollection("TaskQA", "QA histos from the Electron Task");
     //fQACollection->CreateTH1F("nElectronTracksEvent", "Number of Electron Candidates", 100, 0, 100);
     //fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
-    fQACollection->CreateTH2F("NtrVsZ","Ntracklets vs Z vertex",400,-10,10,200,0,200);
-    fQACollection->CreateTH2F("NtrCorrVsZ","Ntracklets after correction vs Z vertex",400,-10,10,200,0,200);
-    fQACollection->CreateTH2F("NchCorrVsNtr","Ntracklets after correction vs Ncharged;N_{tr}^{cor};N_{ch}",200,0,200,300,0,300);
-    fQACollection->CreateTH2F("NtrCorrVsNch","Ntracklets after correction vs Ncharged;N_{ch};N_{tr}^{cor}",300,0,300,200,0,200);
-    fQACollection->CreateTH2F("VZEROVsZ","VZERO vs Z vertex",400,-10,10,500,0,1000);
-    fQACollection->CreateTH2F("VZEROCorrVsZ","VZERO after correction vs Z vertex",400,-10,10,500,0,1000);
+    fQACollection->CreateTH2F("NtrVsZ","Ntracklets vs Z vertex",300,-15,15,375,-0.5,374.5);
+    fQACollection->CreateTH2F("NtrCorrVsZ","Ntracklets after correction vs Z vertex",300,-15,15,375,-0.5,374.5);
+    fQACollection->CreateTH2F("NchCorrVsNtr","Ntracklets after correction vs Ncharged;N_{tr}^{cor};N_{ch}",375,-0.5,374.5,375,-0.5,374.5);
+    fQACollection->CreateTH2F("NtrCorrVsNch","Ntracklets after correction vs Ncharged;N_{ch};N_{tr}^{cor}",375,-0.5,374.5,375,-0.5,374.5);
+    fQACollection->CreateTH2F("VZEROVsZ","VZERO vs Z vertex",300,-15,15,400,0,800);
+    fQACollection->CreateTH2F("VZEROCorrVsZ","VZERO after correction vs Z vertex",300,-15,15,400,0,800);
     fQA->Add(fQACollection);
+
+    for(int i=0;i<4;i++){
+        if(fMultEstimatorAvg[i]){
+            TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
+            hprof->SetName(Form("Profile%d",i));
+            fQA->Add(hprof);
+        }
+    }
 
     // Initialize PID
     fPID->SetHasMCData(HasMCData());
@@ -799,7 +807,6 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
     eventContainer[1] = 1.; // No Information available in AOD analysis, assume all events have V0AND
     eventContainer[2] = fCentralityF; 
     eventContainer[3] = fContributors; 
-    //eventContainer[4] = fSPDtracklets; 
     eventContainer[4] = fSPDtrkF; 
 
     //printf("value event container %f, %f, %f, %f\n",eventContainer[0],eventContainer[1],eventContainer[2],eventContainer[3]);
@@ -809,6 +816,7 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
         AliError("AOD Event required for AOD Analysis");
         return;
     }
+    if(!fAOD->GetPrimaryVertex()||TMath::Abs(fAOD->GetMagneticField())<0.001) return;
 
     //printf("Will fill\n");
     //
@@ -829,17 +837,10 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
 
     fContainer->NewEvent();
 
+    Int_t nch = GetNcharged();
+
     fCFM->SetRecEventInfo(fAOD);
     
-    Int_t nch = GetNcharged();
-    if(fContributors == 1.5){
-        fQACollection->Fill("NtrVsZ", eventContainer[0], static_cast<Double_t>(fSPDtracklets));
-        fQACollection->Fill("NtrCorrVsZ", eventContainer[0], fSPDtrackletsCorr);
-        fQACollection->Fill("NchCorrVsNtr",fSPDtrackletsCorr, static_cast<Double_t>(nch));
-        fQACollection->Fill("NtrCorrVsNch",static_cast<Double_t>(nch),fSPDtrackletsCorr);
-        fQACollection->Fill("VZEROVsZ", eventContainer[0], static_cast<Double_t>(fSPDtracklets));
-        fQACollection->Fill("VZEROCorrVsZ", eventContainer[0], fSPDtrackletsCorr);
-    }
 
     if(!fExtraCuts){
         fExtraCuts = new AliHFEextraCuts("hfeExtraCuts","HFE Extra Cuts");
@@ -871,6 +872,16 @@ void AliAnalysisTaskHFEMulti::ProcessAOD(){
     }
     //printf("Number of kink mother in the events %d\n",numberofmotherkink);
 
+
+    if(ncontribVtx > 0){
+        fQACollection->Fill("NtrVsZ", fAOD->GetPrimaryVertex()->GetZ(), static_cast<Double_t>(fSPDtracklets));
+        fQACollection->Fill("NtrCorrVsZ", fAOD->GetPrimaryVertex()->GetZ(), fSPDtrackletsCorr);
+        fQACollection->Fill("NchCorrVsNtr",fSPDtrackletsCorr, static_cast<Double_t>(nch));
+        fQACollection->Fill("NtrCorrVsNch",static_cast<Double_t>(nch),fSPDtrackletsCorr);
+        fQACollection->Fill("VZEROVsZ", fAOD->GetPrimaryVertex()->GetZ(), static_cast<Double_t>(fSPDtracklets));
+        fQACollection->Fill("VZEROCorrVsZ", fAOD->GetPrimaryVertex()->GetZ(), fSPDtrackletsCorr);
+    }
+    
     // Background subtraction-------------------------------------------------------------------
     if(fRefMulti>0){
         if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fSPDtrkF);
@@ -1373,7 +1384,8 @@ Bool_t AliAnalysisTaskHFEMulti::ReadCentrality() {
             memcpy(multiplicityLimits,tmpMulti,sizeof(multiplicityLimits));
             fSPDtracklets = GetVZEROMultiplicity(fInputEvent);
         }
-        fSPDtrackletsCorr = GetCorrectedNtracklets(fMultEstimatorAvg[period], fSPDtracklets, vtx->GetZ(), fRefMulti); 
+        //fSPDtrackletsCorr = GetCorrectedNtracklets(fMultEstimatorAvg[period], fSPDtracklets, vtx->GetZ(), fRefMulti); 
+        fSPDtrackletsCorr =static_cast<Int_t>(GetCorrectedNtracklets(fMultEstimatorAvg[period], fSPDtracklets, vtx->GetZ(), fRefMulti));
         //Weight MC Ntr for difference to data
         if(HasMCData() && fMCNtrWeight){
             //Double_t loc_weight = fMCNtrWeight->GetBinContent(fMCNtrWeight->FindBin(fSPDtrackletsCorr));
@@ -1521,9 +1533,8 @@ Double_t AliAnalysisTaskHFEMulti::GetCorrectedNtracklets(TProfile* estimatorAvg,
     printf("ERROR: Missing TProfile for correction of multiplicity\n");
     return uncorrectedNacc;
   }
-  Int_t pbin = estimatorAvg->FindBin(vtxZ);
 
-  Double_t localAvg = estimatorAvg->GetBinContent(pbin);
+  Double_t localAvg = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxZ));
 
   Double_t deltaM = uncorrectedNacc*(refMult/localAvg - 1);
 

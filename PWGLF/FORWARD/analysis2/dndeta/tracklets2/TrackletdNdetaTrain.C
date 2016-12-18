@@ -91,6 +91,7 @@ struct TrackletdNdetaTrain : public TrainSetup
    * AliMixInputEventHandler if requested.
    * 
    * @param type Type of analysis 
+   * @param needRec if true, also get rec-points 
    * 
    * @return The input handler 
    */

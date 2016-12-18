@@ -11,7 +11,9 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
                         Int_t EMCalThreshould   = 0,
 						Bool_t isTender = kFALSE,
 						Int_t   centralityEstimator = 0,
-						Bool_t isCentralitySys 		= kFALSE
+						Bool_t isCentralitySys 		= kFALSE,
+						Bool_t isTOFdet 		= kFALSE,
+						TString finname = ""
                 )
 {
         AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -29,8 +31,17 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //_______________________
         //Config Task
         //gROOT->LoadMacro("ConfigEMCalHFEpA.C");
-        gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C");
-        AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould, isTender, period, centralityEstimator, isCentralitySys);
+        TString configFile="";
+        if( finname.EqualTo("") )
+			configFile="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C";
+        else  if(!gSystem->Exec(Form("alien_cp %s  .",finname.Data())))
+			configFile=Form("%s/ConfigEMCalHFEpA.C",gSystem->pwd()); 
+        else {
+			printf("ERROR: couldn't copy file %s/ from grid \n", finname.Data() );
+			configFile="$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C";
+		} 
+        gROOT->LoadMacro(Form("%s",configFile.Data()));
+        AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould, isTender, period, centralityEstimator, isCentralitySys, isTOFdet);
         
         //_______________________
         //Trigger
@@ -55,10 +66,8 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //Create containers for input/output
         AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 	
-	if(centralityEstimator == 0){
+	
         AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist_RpPb_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
-	}
-	else AliAnalysisDataContainer *coutput = mgr->CreateContainer(Form("chist_RpPb_%d_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex, EMCalThreshould, centralityEstimator), TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
 	
 		
 		

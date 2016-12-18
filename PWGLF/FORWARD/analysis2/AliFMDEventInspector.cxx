@@ -314,7 +314,7 @@ AliFMDEventInspector::CacheConfiguredTriggerClasses(TList& cache,
   //                  |  word ',' words 
   //
   Printf("Inspecting physics selection: %p", o);
-  o->Print();
+  // o->Print();
   while ((trigClass = static_cast<TObjString*>(nextClass()))) {
     // Tokenize on space to get positive and negative parts 
     TString     side   = o->GetBeamSide(trigClass->String());

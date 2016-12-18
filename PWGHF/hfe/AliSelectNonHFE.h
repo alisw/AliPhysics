@@ -55,6 +55,13 @@ class AliSelectNonHFE : public TNamed {
   void SetInvariantMassCut(Double_t MassCut) {fMassCut = MassCut;};
   void SetOpeningAngleCut(Double_t AngleCut) {fAngleCut = AngleCut;};
   void SetPIDresponse(AliPIDResponse* PIDResponse) {fPIDResponse = PIDResponse;};
+    
+  //New cuts to match GSI: Eta, ITS NClust, TPC NCluster for PID,  Global Tracks, DCA
+  void SetEtaCutForPart(Double_t EtaMin, Double_t EtaMax) {fUseEtaCutForPart = kTRUE; fEtaCutMin = EtaMin; fEtaCutMax = EtaMax; } ;
+    void SetTPCNclsForPID(Int_t NClustPID) {fRequireTPCNclusForPID = kTRUE; fTpcNclsPID = NClustPID; };
+  void SetNClustITS(Int_t nclus) {fNClusITS = nclus; fRequirePointOnITS = kTRUE; };
+  void SetUseGlobalTracks() {fUseGlobalTracks = kTRUE;};
+  void SetDCAPartnerCuts(Double_t xy, Double_t z) {fUseDCAPartnerCut = kTRUE; fDCAcutxyPartner = xy; fDCAcutzPartner = z;};
 	
 	void SetTrackCuts(Double_t TPCnSigmaMin, Double_t TPCnSigmaMax) 
 	{
@@ -88,6 +95,22 @@ class AliSelectNonHFE : public TNamed {
   Int_t			fTpcNcls;				//Minimum Number of clusters in the TPC
   Double_t      fweight1;				//weight to fill the invariant mass plot
   Double_t      fweight2;				//weight to fill the invariant mass plot
+    
+  Bool_t fUseGlobalTracks; //Use Global tracks for partner
+    
+  Bool_t fRequirePointOnITS; // Require a specific number of clusters for partners on ITS
+  Int_t	        fNClusITS; //Number of Clusters required
+ 
+  Bool_t fUseDCAPartnerCut; //flag for cut
+  Double_t fDCAcutxyPartner; //DCA cut partner xy
+  Double_t fDCAcutzPartner; // DCA cut partner z
+  
+  Bool_t fRequireTPCNclusForPID; //require a TPCNClus in PID
+  Int_t fTpcNclsPID; // Number of TPC NClus
+    
+  Bool_t fUseEtaCutForPart; // Use eta cut in partners
+  Double_t fEtaCutMin; // min eta cut
+  Double_t fEtaCutMax; // max eta cut
 
 	
   Int_t			*fLSPartner;	        //! Pointer for the LS partners index

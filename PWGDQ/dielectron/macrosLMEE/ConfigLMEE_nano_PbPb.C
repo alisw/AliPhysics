@@ -12,7 +12,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t  isESD     = kTRUE;
 TString periodLHC = "";
 
-AliDielectron* ConfigLMEE_nano_pp(Int_t cutDefinition, Bool_t hasMC=kFALSE, TString period="", Bool_t useTrackCuts = kFALSE)
+AliDielectron* ConfigLMEE_nano_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE, TString period="", Bool_t useTrackCuts = kFALSE)
 {
   //
   // Setup the instance of AliDielectron

@@ -118,6 +118,8 @@ public:
   Double_t GetKFChi2()            const { return fPair.GetChi2();                               }
   Int_t    GetKFNdf()             const { return fPair.GetNDF();                                }
   Double_t OpeningAngle()         const { return fD1.GetAngle(fD2);                             }
+  Double_t OpeningAngleXY()       const { return fD1.GetAngleXY(fD2);                           }
+  Double_t OpeningAngleRZ()       const { return fD1.GetAngleRZ(fD2);                           }
   Double_t DistanceDaughters()    const { return fD1.GetDistanceFromParticle(fD2);              }
   Double_t DistanceDaughtersXY()  const { return fD1.GetDistanceFromParticleXY(fD2);            }
   Double_t DeviationDaughters()   const { return fD1.GetDeviationFromParticle(fD2);             }
@@ -126,6 +128,7 @@ public:
 //   Double_t DeltaPhi()             const { Double_t dphi=TMath::Abs(fD1.GetPhi()-fD2.GetPhi());
 //                                           return (dphi>TMath::Pi())?dphi-TMath::Pi():dphi;      }
   Double_t DeltaPhi()             const { return fD1.GetAngleXY(fD2);     }
+  Double_t DeltaCotTheta()        const;
 
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;

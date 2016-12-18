@@ -55,6 +55,7 @@ AliAnalysisTaskSE(),
   fIsUsingVariableAvgSepCut(kFALSE),
   fMaxV0Mult(700),
   fNumberVariableAvgSepCuts(3),
+  fTestNoTTC(kFALSE),
   fCutProcessor(NULL),
   fSysStudyType(kNoStudy),
   fNumberOfTopologicalCutValues(1),
@@ -117,7 +118,7 @@ AliAnalysisTaskSE(),
 }
 //________________________________________________________________________
 
-AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents):
+AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents, Bool_t testNoTwoTrackCuts):
   AliAnalysisTaskSE(name), 
   nEventsToMix(nMixingEvents),
   fAOD(0), 
@@ -139,6 +140,7 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_
   fIsUsingVariableAvgSepCut(kFALSE),
   fMaxV0Mult(700),
   fNumberVariableAvgSepCuts(3),
+  fTestNoTTC(testNoTwoTrackCuts),
   fCutProcessor(NULL),
   fSysStudyType(sysStudyType),
   fNumberOfTopologicalCutValues(1),
@@ -1700,13 +1702,20 @@ void AliAnalysisV0Lam::FillCorrelationHists(const PairType pairType, const AliRe
 
 vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliReconstructedV0 &v01, const AliReconstructedV0 &v02)
 {
-  // Calculate avg sep for all pairs of daughters
+  // Calculate avg sep for all pairs of daughters and check if they pass cuts
+
+  vector<Bool_t> cutResults;
+  if (fTestNoTTC) { // In case we are running with cuts turned off
+    cutResults.push_back(kTRUE);
+    return cutResults;
+  }
+
   Double_t avgSepPos = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
   Double_t avgSepNeg = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
   Double_t avgSepNegPos = GetAverageSeparation(v01.daughterNegCorrectedGlobalPositions, v02.daughterPosCorrectedGlobalPositions);
   Double_t avgSepPosNeg = GetAverageSeparation(v01.daughterPosCorrectedGlobalPositions, v02.daughterNegCorrectedGlobalPositions);
 
-  vector<Bool_t> cutResults;
+
   Int_t nVariableCuts = 1;
   if (kTwoTrackStudy == fSysStudyType) {
     nVariableCuts = 3;
@@ -1722,6 +1731,7 @@ vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliRe
     nominalCutValues[kDiffProtProt] = 10.; // Diff sign prot-prot
     nominalCutValues[kDiffPiPi]     = 25.; // Diff sign pi-pi
     nominalCutValues[kDiffProtPi]   = 15.; // Diff sign prot-pi
+
 
     // Vary one of the cut values
     if ((kTwoTrackStudy == fSysStudyType) && (iVar == 0)) {

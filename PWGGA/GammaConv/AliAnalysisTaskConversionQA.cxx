@@ -778,7 +778,7 @@ void AliAnalysisTaskConversionQA::CountTracks(){
       AliAODTrack* curTrack = (AliAODTrack*) fInputEvent->GetTrack(iTracks);
       if(curTrack->GetID()<0) continue; // Avoid double counting of tracks
       if(!curTrack->IsHybridGlobalConstrainedGlobal()) continue;
-      if(fabs(curTrack->Eta())>0.8) continue;
+      if(TMath::Abs(curTrack->Eta())>0.8) continue;
       if(curTrack->Pt()<0.15) continue;
       fNumberOfESDTracks++;
     }
@@ -939,13 +939,13 @@ void AliAnalysisTaskConversionQA::RelabelAODPhotonCandidates(Bool_t mode){
       AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
       if(!AODLabelPos){
         if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive() ){
-        PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+        PhotonCandidate->SetMCLabelPositive(TMath::Abs(tempDaughter->GetLabel()));
         AODLabelPos = kTRUE;
         }
       }
       if(!AODLabelNeg){
         if( tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()){
-        PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+        PhotonCandidate->SetMCLabelNegative(TMath::Abs(tempDaughter->GetLabel()));
         AODLabelNeg = kTRUE;
         }
       }
@@ -958,14 +958,14 @@ void AliAnalysisTaskConversionQA::RelabelAODPhotonCandidates(Bool_t mode){
         AliAODTrack *tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
         if(tempDaughter->GetID()<0){
         if(!AODLabelPos){
-          if( (abs(tempDaughter->GetID())-1) == PhotonCandidate->GetTrackLabelPositive()){
-            PhotonCandidate->SetMCLabelPositive(abs(tempDaughter->GetLabel()));
+          if( (TMath::Abs(tempDaughter->GetID())-1) == PhotonCandidate->GetTrackLabelPositive()){
+            PhotonCandidate->SetMCLabelPositive(TMath::Abs(tempDaughter->GetLabel()));
             AODLabelPos = kTRUE;
           }
         }
         if(!AODLabelNeg){
-          if( (abs(tempDaughter->GetID())-1) == PhotonCandidate->GetTrackLabelNegative()){
-            PhotonCandidate->SetMCLabelNegative(abs(tempDaughter->GetLabel()));
+          if( (TMath::Abs(tempDaughter->GetID())-1) == PhotonCandidate->GetTrackLabelNegative()){
+            PhotonCandidate->SetMCLabelNegative(TMath::Abs(tempDaughter->GetLabel()));
             AODLabelNeg = kTRUE;
           }
         }

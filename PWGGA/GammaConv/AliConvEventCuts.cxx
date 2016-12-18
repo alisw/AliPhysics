@@ -574,7 +574,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
         return kFALSE;
       }  
     }
-  }else if(fRemovePileUp){
+  } else if(fRemovePileUp){
     if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
       fEventQuality = 6;
@@ -1577,10 +1577,14 @@ Bool_t AliConvEventCuts::SetVertexCut(Int_t vertexCut) {
 
 //-------------------------------------------------------------
 Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){ 
-  if (fPeriodEnum == kLHC15o ||  // PbPb 5TeV 
-      fPeriodEnum == kLHC15k1 || fPeriodEnum == kLHC15k1a || fPeriodEnum == kLHC15k1_plus  || fPeriodEnum == kLHC15k1b || // MC PbPb 5TeV
-      fPeriodEnum == kLHC15fm || // pp 13TeV
-      fPeriodEnum == kLHC15g3a3 || fPeriodEnum == kLHC15g3c3 // MC pp 13TeV
+  if (fPeriodEnum == kLHC15o ||                                                                                            // PbPb 5TeV
+      fPeriodEnum == kLHC15k1a1 || fPeriodEnum == kLHC15k1a2 || fPeriodEnum == kLHC15k1a3  || fPeriodEnum == kLHC16j7 ||   // MC PbPb 5TeV LowIR
+      fPeriodEnum == kLHC16h4 ||                                                                                           // MC PbPb 5TeV added signals
+      fPeriodEnum == kLHC16g1 || fPeriodEnum == kLHC16g1a || fPeriodEnum == kLHC16g1b || fPeriodEnum == kLHC16g1c ||       // MC PbPb 5TeV general purpose
+      fPeriodEnum == kLHC16g2 || fPeriodEnum == kLHC16g3 ||
+      fPeriodEnum == kLHC16h2a || fPeriodEnum ==  kLHC16h2b || fPeriodEnum ==  kLHC16h2c ||                                // MC PbPb 5TeV jet-jet
+      fPeriodEnum == kLHC15fm ||                                                                                           // pp 13TeV
+      fPeriodEnum == kLHC15g3a3 || fPeriodEnum == kLHC15g3c3                                                               // MC pp 13TeV
       ){
       return kTRUE;
   } else {
@@ -1612,7 +1616,13 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 
   AliAODEvent *aodEvent=dynamic_cast<AliAODEvent*>(event);
   if(aodEvent){
-    if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    if(GetUseNewMultiplicityFramework()){
+      AliMultSelection *MultSelection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+      if(fDetectorCentrality==0) return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+      else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+    }else{
+      if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
+    }
   }
 
   return -1;
@@ -1826,11 +1836,11 @@ Bool_t AliConvEventCuts::VertexZCut(AliVEvent *event){
     fVertexZSPD = fAODEvent->GetPrimaryVertexSPD()->GetZ();
   }
   
-  if(fabs(fVertexZ)>fMaxVertexZ)return kFALSE;
+  if(TMath::Abs(fVertexZ)>fMaxVertexZ)return kFALSE;
 
   
   if (fPeriodEnum == kLHC11h){
-    if (fabs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
+    if (TMath::Abs(fVertexZ-fVertexZSPD) > 0.1) return kFALSE;
   }
   if (fIsHeavyIon == 2){
     if(!fUtils->IsVertexSelected2013pA(event)) return kFALSE;
@@ -1896,7 +1906,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
   weight                               = -1;
   fMaxPtJetMC                          = 0;
   
-  if (  fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
+  if (  fPeriodEnum != kLHC16h3 && fPeriodEnum != kLHC16h3b &&                                        // LHC15n Jet Jet MC's
+	fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
@@ -1948,7 +1959,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
         }
         if (jet) delete jet;
         if (fMCStack){
-          for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+          for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
             TParticle* particle = (TParticle *)fMCStack->Particle(i);
             if (!particle) continue;
             if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -1959,7 +1970,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
 
           }
         } else if (fMCStackAOD){
-          for(Int_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
+          for(Long_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
             AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(i));
             if (!particle) continue;
             if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -2091,7 +2102,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
         if (jet->Pt() > fMaxPtJetMC) fMaxPtJetMC = jet->Pt(); 
       }
       if (fMCStack){
-        for(UInt_t i = 0; i < fMCStack->GetNtrack(); i++) {
+        for(Long_t i = 0; i < fMCStack->GetNtrack(); i++) {
           TParticle* particle = (TParticle *)fMCStack->Particle(i);
           if (!particle) continue;
           if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -2102,7 +2113,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliVEvent *MCEvent, Double_t& w
           
         }
       } else if (fMCStackAOD){
-        for(Int_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
+        for(Long_t i = 0; i < fMCStackAOD->GetEntriesFast(); i++){
           AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(i));
           if (!particle) continue;
           if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
@@ -2229,7 +2240,8 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliVEvent *MCEvent, Float_t &XSecti
   AliAODMCHeader *cHeaderAOD       = 0x0;
   Bool_t headerFound           = kFALSE;
 
-  if (  fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
+  if (  fPeriodEnum != kLHC16h3 && fPeriodEnum != kLHC16h3b &&                                       // LHC15n Jet Jet MC's
+	fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
@@ -2300,7 +2312,8 @@ Float_t AliConvEventCuts::GetPtHard(AliVEvent *MCEvent){
   AliStack *fMCStack           = 0x0;
   TClonesArray *fMCStackAOD       = 0x0;
   
-  if (fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
+  if (fPeriodEnum != kLHC16h3 && fPeriodEnum != kLHC16h3b &&                                      // LHC15n Jet Jet MC's
+      fPeriodEnum != kLHC15a3a && fPeriodEnum != kLHC15a3a_plus && fPeriodEnum != kLHC15a3b &&    // LHC13g Jet Jet MC's
         fPeriodEnum != kLHC15g1a && fPeriodEnum != kLHC15g1b &&                                     // LHC11a Jet Jet MC's
         fPeriodEnum != kLHC13b4_fix && fPeriodEnum != kLHC13b4_plus &&                              // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC16c3a && fPeriodEnum != kLHC16c3b && fPeriodEnum != kLHC16c3c &&         // LHC13 pPb Jet Jet MC's        
@@ -2411,7 +2424,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
     if (binRun==34) return kFALSE;
     Double_t threshold = thresholdEMCalL0[binRun];
     
-    if (spreadEMCalL0[binRun] != 0.){
+    if (isMC && spreadEMCalL0[binRun] != 0.){
       TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
       triggerSmearing->SetParameter(0, 1/(spreadEMCalL0[binRun]*TMath::Sqrt(TMath::Pi()*2)));
       triggerSmearing->SetParameter(1, thresholdEMCalL0[binRun]);
@@ -2434,6 +2447,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
       clus = fInputEvent->GetCaloCluster(i);
       if (!clus) continue;
       if (!clus->IsEMCAL()) continue;
+      if (clus->GetM02()<0.1) continue;
+      if (clus->GetNCells()<2) continue;
       if (clus->E() > threshold ){
 //         cout << "found L0" << endl;
         eventIsAccepted = kTRUE;
@@ -2455,7 +2470,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
       if (binRun==3) return kFALSE;
       Double_t threshold = thresholdEMCalL1[binRun];
 
-      if (spreadEMCalL1[binRun] != 0.){
+      if (isMC && spreadEMCalL1[binRun] != 0.){
         TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
         triggerSmearing->SetParameter(0, 1/(spreadEMCalL1[binRun]*TMath::Sqrt(TMath::Pi()*2)));
         triggerSmearing->SetParameter(1, thresholdEMCalL1[binRun]);
@@ -2478,6 +2493,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
         clus = fInputEvent->GetCaloCluster(i);
         if (!clus) continue;
         if (!clus->IsEMCAL()) continue;
+        if (clus->GetM02()<0.1) continue;
+        if (clus->GetNCells()<2) continue;
         if (clus->E() > threshold ){
 //           cout << "found L1G1" << endl;
           eventIsAccepted = kTRUE;
@@ -2493,7 +2510,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
       }
       if (binRun==2) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
-      if (spreadEMCalL1G2[binRun] != 0.){
+      if (isMC && spreadEMCalL1G2[binRun] != 0.){
         TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
         triggerSmearing->SetParameter(0, 1/(spreadEMCalL1G2[binRun]*TMath::Sqrt(TMath::Pi()*2)));
         triggerSmearing->SetParameter(1, thresholdEMCalL1G2[binRun]);
@@ -2515,6 +2532,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *fInputEvent, Bool_t isMC ){
         clus = fInputEvent->GetCaloCluster(i);
         if (!clus) continue;
         if (!clus->IsEMCAL()) continue;
+        if (clus->GetM02()<0.1) continue;
+        if (clus->GetNCells()<2) continue;
         if (clus->E() > threshold ){
 //           cout << "found L1G2" << endl;
           eventIsAccepted = kTRUE;
@@ -2710,7 +2729,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *fInputEvent, Bool_t isMC)
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
   Bool_t mimickedTrigger = kTRUE;
-  if (fMimicTrigger && isMC > 0) mimickedTrigger = MimicTrigger(fInputEvent, isMC);
+  if (fMimicTrigger) mimickedTrigger = MimicTrigger(fInputEvent, isMC);
 //   cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
   
   // Fill Histogram
@@ -3076,7 +3095,7 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, Al
         if( aodMCParticle->GetMother() < 0) return 0;// material particle, return 0
         return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
       }
-      index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
+      index = TMath::Abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
       for(Int_t i = 0;i<fnHeaders;i++){
         if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
           accepted = 1;
@@ -3165,14 +3184,14 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   
-  if( isHeavyIon == 0 && GetIsFromPileup()){
-    if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){      
+  if( isHeavyIon != 2 && GetIsFromPileup()){
+    if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }
     if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
-  }  
+  }
   if(isHeavyIon == 2 && GetIsFromPileup()){
     if(fUtils->IsPileUpEvent(InputEvent) ){
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
@@ -3253,7 +3272,7 @@ Float_t AliConvEventCuts::GetWeightForCentralityFlattening(AliVEvent *InputEvent
       if (!isfinite(GetValueForWeight)) weightCentrality = 1.;
       if (!isfinite(weightCentrality)) weightCentrality = 1.;
   }
-  
+
   return weightCentrality;
 }
 
@@ -3293,6 +3312,8 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliStack *MCStack, AliV
           fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3                    // LHC11a MCs
      ) ) return 1.;
   Int_t kCaseGen = 0;
+
+  if(index < 0) return 0; // No Particle
     
   if (IsParticleFromBGEvent(index, MCStack, InputEvent)){
     if (fPeriodEnum == kLHC13d2 || fPeriodEnum == kLHC13d2b || fPeriodEnum == kLHC13e7 || fPeriodEnum == kLHC13b2_efix || fPeriodEnum == kLHC14a1a || fPeriodEnum ==  kLHC14a1b || fPeriodEnum ==  kLHC14a1c       ||
@@ -3478,8 +3499,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
   for (Int_t iPatch = 0; iPatch < nPatch; iPatch++) {
     patch = (AliEMCALTriggerPatchInfo*)fTriggerPatchInfo->At( iPatch );
 //     cout << "Patch energy: "<<patch->GetPatchE() << "\t ADC counts: " << patch->GetADCAmp() << endl;
-//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<fabs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
-//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<fabs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
+//     cout << "Phi: " << patch->GetPhiMin() << " - " << patch->GetPhiMax() << " delta phi: " <<TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())<< endl;
+//     cout << "Eta: " << patch->GetEtaMin() << " - " << patch->GetEtaMax() << " delta eta: " <<TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax())<< endl;
     if (patch->IsGammaHigh()){
 //       cout << "fired L1GA high" << endl;
       nG1++;
@@ -3502,8 +3523,8 @@ ULong_t AliConvEventCuts::GetTriggerList(){
     }
 //     cout << patch->GetPatchE()   << "\t" << patch->GetADCAmp()  << "\t" << patch->IsGammaHigh() << "\t" << patch->IsGammaLow()  
 //          << "\t" << patch->IsJetHigh()  << "\t" << patch->IsJetLow()  << "\t" << patch->IsLevel0() 
-//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << fabs(patch->GetPhiMin()-patch->GetPhiMax())
-//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << fabs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
+//        << "\t" << patch->GetPhiMin()  << "\t" << patch->GetPhiMax()  << "\t" << TMath::Abs(patch->GetPhiMin()-patch->GetPhiMax())
+//        << "\t" << patch->GetEtaMin()  << "\t" << patch->GetEtaMax()  << "\t" << TMath::Abs(patch->GetEtaMin()-patch->GetEtaMax()) << endl;
   }
 
   if (nPatch > 0){
@@ -3576,15 +3597,16 @@ TClonesArray *AliConvEventCuts::GetArrayFromEvent(AliVEvent* fInputEvent, const 
 }
 
 //_________________________________________________________________________
-Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
-  
+Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, Long_t stackpos, Double_t prodVtxX, Double_t prodVtxY, Double_t prodVtxZ){
+
+  if (stackpos < 0) return kFALSE;
   TParticle* particle = (TParticle *)MCStack->Particle(stackpos);
   if (!particle) return kFALSE; 
-  if (abs(particle->GetPdgCode()) == 11 ){
+  if (TMath::Abs(particle->GetPdgCode()) == 11 ){
     if (particle->GetMother(0) != -1){
       TParticle* particleMother = (TParticle *)MCStack->Particle(particle->GetMother(0));
       if (particleMother){
-        if (abs(particleMother->GetPdgCode()) == 22)
+        if (TMath::Abs(particleMother->GetPdgCode()) == 22)
           particle = particleMother;
       }
     }
@@ -3605,12 +3627,12 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stack
     Int_t pdgCodeFirstMother     = firstmother->GetPdgCode();
     Bool_t intDecay = kFALSE;
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
-    if ( intDecay && abs(particle->GetPdgCode()) == 11 ){
+    if ( intDecay && TMath::Abs(particle->GetPdgCode()) == 11 ){
       dalitzCand = kTRUE;
 //       cout << "dalitz candidate found" << endl;
     }
   
-    UInt_t source = particle->GetMother(0);
+    Long_t source = particle->GetMother(0);
     Bool_t foundExcludedPart = kFALSE;
     Bool_t foundShower = kFALSE;
     Int_t pdgCodeMotherPrev = 0;
@@ -3628,11 +3650,11 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stack
         Int_t pdgCodeMother     = mother->GetPdgCode();
 //         if (particle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
-        if (abs(pdgCodeMother) == 11 && abs(pdgCodeMotherPrev) == 22 && abs(pdgCodeMotherPPrevMother) == 11 ){
+        if (TMath::Abs(pdgCodeMother) == 11 && TMath::Abs(pdgCodeMotherPrev) == 22 && TMath::Abs(pdgCodeMotherPPrevMother) == 11 ){
           foundShower = kTRUE;
           depth =20;
         }
-        if (abs(pdgCodeMother) == 22 && abs(pdgCodeMotherPrev) == 11 && abs(pdgCodeMotherPPrevMother) == 22 ){
+        if (TMath::Abs(pdgCodeMother) == 22 && TMath::Abs(pdgCodeMotherPrev) == 11 && TMath::Abs(pdgCodeMotherPPrevMother) == 22 ){
           foundShower = kTRUE;
           depth =20;
         }
@@ -3645,9 +3667,9 @@ Bool_t AliConvEventCuts::IsConversionPrimaryESD( AliStack *MCStack, UInt_t stack
         // Sigma0  - 3212
         // Sigma+/-  - 3222, 3112
         // Cascades  - 3322, 3312  
-        if (abs(pdgCodeMother) == 310   || abs(pdgCodeMother) == 130   || abs(pdgCodeMother) == 321  ||
-          abs(pdgCodeMother) == 3122   || abs(pdgCodeMother) == 3212   || abs(pdgCodeMother) == 3222 ||
-          abs(pdgCodeMother) == 3112   || abs(pdgCodeMother) == 3322   || abs(pdgCodeMother) == 3312 
+        if (TMath::Abs(pdgCodeMother) == 310   || TMath::Abs(pdgCodeMother) == 130   || TMath::Abs(pdgCodeMother) == 321  ||
+          TMath::Abs(pdgCodeMother) == 3122   || TMath::Abs(pdgCodeMother) == 3212   || TMath::Abs(pdgCodeMother) == 3222 ||
+          TMath::Abs(pdgCodeMother) == 3112   || TMath::Abs(pdgCodeMother) == 3322   || TMath::Abs(pdgCodeMother) == 3312
         ) {
           foundExcludedPart = kTRUE;
         }
@@ -3684,11 +3706,11 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   if (AODMCTrackArray == NULL) return kFALSE;
   AliAODMCParticle* currentParticle = AODMCParticle;
-  if (abs(currentParticle->GetPdgCode()) == 11 ){
+  if (TMath::Abs(currentParticle->GetPdgCode()) == 11 ){
     if (currentParticle->GetMother() != -1){
       AliAODMCParticle* particleMother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(currentParticle->GetMother()));
       if (particleMother){
-        if (abs(particleMother->GetPdgCode()) == 22)
+        if (TMath::Abs(particleMother->GetPdgCode()) == 22)
           currentParticle = particleMother;
       }
     }
@@ -3708,12 +3730,12 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
     Int_t pdgCodeFirstMother = firstmother->GetPdgCode();
     Bool_t intDecay = kFALSE;
     if ( pdgCodeFirstMother == 111 || pdgCodeFirstMother == 221 ) intDecay = kTRUE;
-    if ( intDecay && abs(currentParticle->GetPdgCode()) == 11 ){
+    if ( intDecay && TMath::Abs(currentParticle->GetPdgCode()) == 11 ){
       dalitzCand = kTRUE;
 //       cout << "dalitz candidate found" << endl;
     }
 
-    UInt_t source = currentParticle->GetMother();
+    Long_t source = currentParticle->GetMother();
     Bool_t foundExcludedPart = kFALSE;
     Bool_t foundShower = kFALSE;
     Int_t pdgCodeMotherPrev = 0;
@@ -3731,11 +3753,11 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
         Int_t pdgCodeMother     = mother->GetPdgCode();
 //         if (currentParticle->GetPdgCode() == 22)cout << "Previous mothers: " << pdgCodeMother << "\t"<< pdgCodeMotherPrev<< "\t" << pdgCodeMotherPPrevMother << endl;
         if (pdgCodeMother == pdgCodeMotherPrev && pdgCodeMother == pdgCodeMotherPPrevMother) depth = 20;
-        if (abs(pdgCodeMother) == 11 && abs(pdgCodeMotherPrev) == 22 && abs(pdgCodeMotherPPrevMother) == 11 ){
+        if (TMath::Abs(pdgCodeMother) == 11 && TMath::Abs(pdgCodeMotherPrev) == 22 && TMath::Abs(pdgCodeMotherPPrevMother) == 11 ){
           foundShower = kTRUE;
           depth =20;
         }
-        if (abs(pdgCodeMother) == 22 && abs(pdgCodeMotherPrev) == 11 && abs(pdgCodeMotherPPrevMother) == 22 ){
+        if (TMath::Abs(pdgCodeMother) == 22 && TMath::Abs(pdgCodeMotherPrev) == 11 && TMath::Abs(pdgCodeMotherPPrevMother) == 22 ){
           foundShower = kTRUE;
           depth =20;
         }
@@ -3748,9 +3770,9 @@ Bool_t AliConvEventCuts::IsConversionPrimaryAOD(AliVEvent *fInputEvent, AliAODMC
         // Sigma0   - 3212
         // Sigma+/- - 3222, 3112
         // Cascades - 3322, 3312
-        if (abs(pdgCodeMother) == 310   || abs(pdgCodeMother) == 130   || abs(pdgCodeMother) == 321  ||
-          abs(pdgCodeMother) == 3122   || abs(pdgCodeMother) == 3212   || abs(pdgCodeMother) == 3222 ||
-          abs(pdgCodeMother) == 3112   || abs(pdgCodeMother) == 3322   || abs(pdgCodeMother) == 3312)
+        if (TMath::Abs(pdgCodeMother) == 310   || TMath::Abs(pdgCodeMother) == 130   || TMath::Abs(pdgCodeMother) == 321  ||
+          TMath::Abs(pdgCodeMother) == 3122   || TMath::Abs(pdgCodeMother) == 3212   || TMath::Abs(pdgCodeMother) == 3222 ||
+          TMath::Abs(pdgCodeMother) == 3112   || TMath::Abs(pdgCodeMother) == 3322   || TMath::Abs(pdgCodeMother) == 3312)
         {
           foundExcludedPart = kTRUE;
         }
@@ -3830,6 +3852,9 @@ Int_t AliConvEventCuts::SecondaryClassificationPhoton( TParticle *particle, AliS
     // is the secondary photon from a K0s
     else if ( TMath::Abs(pdgSecondary) == 310 )
       return 2;
+    // is the secondary photon from a K0l
+    else if ( TMath::Abs(pdgSecondary) == 130 )
+      return 5;
     // is the secondary photon from a eta
     else if ( TMath::Abs(pdgSecondary) == 221 )
       return 4;
@@ -3890,6 +3915,9 @@ Int_t AliConvEventCuts::SecondaryClassificationPhotonAOD( AliAODMCParticle *part
     // is the secondary photon from a K0s
     else if ( TMath::Abs(pdgSecondary) == 310 )
       return 2;
+    // is the secondary photon from a K0l
+    else if ( TMath::Abs(pdgSecondary) == 130 )
+      return 5;
     // is the secondary photon from a eta
     else if ( TMath::Abs(pdgSecondary) == 221 )
       return 4;
@@ -4168,17 +4196,59 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC15l1b2") == 0){
     fPeriodEnum = kLHC15l1b2;
     fEnergyEnum = k5TeV;
-  } else if (periodName.Contains("LHC15k1a")){
-    fPeriodEnum = kLHC15k1a;
+  } else if (periodName.CompareTo("LHC16h3") == 0){
+    fPeriodEnum = kLHC16h3;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16h3b") == 0){
+    fPeriodEnum = kLHC16h3b;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16h8a") == 0){
+    fPeriodEnum = kLHC16h8a;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16h8b") == 0){
+    fPeriodEnum = kLHC16h8b;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.Contains("LHC15k1a1")){
+    fPeriodEnum = kLHC15k1a1;
     fEnergyEnum = kPbPb5TeV;
-  } else if (periodName.Contains("LHC15k1_plus")){
-    fPeriodEnum = kLHC15k1_plus;
+  } else if (periodName.Contains("LHC15k1a2")){
+    fPeriodEnum = kLHC15k1a2;
     fEnergyEnum = kPbPb5TeV;
-  } else if (periodName.Contains("LHC15k1b")){
-    fPeriodEnum = kLHC15k1b;
+  } else if (periodName.Contains("LHC15k1a3")){
+    fPeriodEnum = kLHC15k1a3;
     fEnergyEnum = kPbPb5TeV;
-  } else if (periodName.Contains("LHC15k1")){
-    fPeriodEnum = kLHC15k1;
+  } else if (periodName.Contains("LHC16j7")){
+    fPeriodEnum = kLHC16j7;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h4")){
+    fPeriodEnum = kLHC16h4;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g1")){
+    fPeriodEnum = kLHC16g1;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g1a")){
+    fPeriodEnum = kLHC16g1a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g1b")){
+    fPeriodEnum = kLHC16g1b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g1c")){
+    fPeriodEnum = kLHC16g1c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g2")){
+    fPeriodEnum = kLHC16g2;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16g3")){
+    fPeriodEnum = kLHC16g3;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h2a")){
+    fPeriodEnum = kLHC16h2a;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h2b")){
+    fPeriodEnum = kLHC16h2b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.Contains("LHC16h2c")){
+    fPeriodEnum = kLHC16h2c;
     fEnergyEnum = kPbPb5TeV;
   // MC upgrade 
   } else if (periodName.Contains("LHC13d19")){

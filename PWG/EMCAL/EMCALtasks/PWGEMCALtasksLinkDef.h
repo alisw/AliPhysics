@@ -19,11 +19,11 @@
 #pragma link C++ class  AliEmcalPatchFromCellMaker+;
 #pragma link C++ class  AliEmcalPhysicsSelectionTask+;
 #pragma link C++ class  AliEmcalPicoTrackMaker+;
-#pragma link C++ class  AliEmcalSetupTask+;
 #pragma link C++ class  AliEmcalTenderTask+;
 #pragma link C++ class  AliEmcalTrackingQATask+;
 #pragma link C++ class  AliEmcalTrackPropagatorTask+;
 #pragma link C++ class  AliEmcalCellMonitorTask+;
+#pragma link C++ class  AliEmcalFastOrMonitorTask+;
 #pragma link C++ class  AliEsdSkimTask+;
 #pragma link C++ class  AliEsdTrackExt+;
 #pragma link C++ class  AliHadCorrTask+;
@@ -32,4 +32,17 @@
 #pragma link C++ class  AliEMCALConfigurationMatcher+;
 #pragma link C++ class  AliAnalysisTaskEmcalTriggerSelection+;
 #pragma link C++ class  AliAnalysisTaskEmcalIteratorTest+;
+#pragma link C++ class  AliEmcalCopyCollection+;
+#pragma link C++ class  AliEmcalCorrectionTask+;
+#pragma link C++ class  AliEmcalCorrectionCellContainer+;
+#pragma link C++ class  std::vector<AliEmcalCorrectionCellContainer *>+;
+#pragma link C++ class  AliEmcalCorrectionComponent+;
+#pragma link C++ class  AliEmcalCorrectionCellBadChannel+;
+#pragma link C++ class  AliEmcalCorrectionCellEnergy+;
+#pragma link C++ class  AliEmcalCorrectionCellTimeCalib+;
+#pragma link C++ class  AliEmcalCorrectionClusterizer+;
+#pragma link C++ class  AliEmcalCorrectionClusterNonLinearity+;
+#pragma link C++ class  AliEmcalCorrectionClusterExotics+;
+#pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
+#pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
 #endif

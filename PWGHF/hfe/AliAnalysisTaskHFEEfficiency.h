@@ -62,17 +62,17 @@ public:
     Double_t GetMCweightEta(Double_t mcEtapT);
     Double_t GetMCweightEtatiltUp(Double_t mcEtapT);
     Double_t GetMCweightEtatiltDw(Double_t mcEtapT);
-
+    
     Double_t GetMCweightPi02040(Double_t mcPi0pT);
     Double_t GetMCweightPi0tiltUp2040(Double_t mcPi0pT);
     Double_t GetMCweightPi0tiltDw2040(Double_t mcPi0pT);
     Double_t GetMCweightEta2040(Double_t mcEtapT);
     Double_t GetMCweightEtatiltUp2040(Double_t mcEtapT);
     Double_t GetMCweightEtatiltDw2040(Double_t mcEtapT);
-
+    
     
     Double_t GiveHFWeight(Double_t HFpt);
-
+    
     
     Bool_t IsFromBGEventAOD(Int_t Index);
     AliHFEpid *GetPID() const { return fPID; }
@@ -211,13 +211,13 @@ private:
     Bool_t                fcentral;//select weights for 010
     Bool_t                fsemicentral;//select weights for 2040
     Bool_t                WeightsForHF;//set the weigh
-
+    
     
     
     AliAnalysisTaskHFEEfficiency(const AliAnalysisTaskHFEEfficiency&); // not implemented
     AliAnalysisTaskHFEEfficiency& operator=(const AliAnalysisTaskHFEEfficiency&); // not implemented
     
-    ClassDef(AliAnalysisTaskHFEEfficiency,2);//!example of analysis
+    ClassDef(AliAnalysisTaskHFEEfficiency,4);//!example of analysis
     
 };
 

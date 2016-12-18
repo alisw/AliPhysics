@@ -36,11 +36,8 @@ AliAnalysisTaskExtractV0AODRun2* AddTaskExtractV0AODRun2( Bool_t lSwitchLowE    
 
    mgr->AddTask(taskv0extract);
 
-   TString outputFileNameHist = AliAnalysisManager::GetCommonFileName();
-        if (mgr->GetMCtruthEventHandler()) outputFileNameHist.ReplaceAll(".root","_MC.root");
-    TString outputFileNameTree(outputFileNameHist);
-    outputFileNameHist.ReplaceAll(".root","_hist.root");
-    outputFileNameTree.ReplaceAll(".root","_tree.root");
+   TString outputFileName = AliAnalysisManager::GetCommonFileName();
+        if (mgr->GetMCtruthEventHandler()) outputFileName.ReplaceAll(".root","_MC.root");
    
 //   outputFileName += ":PWG2CheckLambda";
    //if (lCollidingSystems) outputFileName += "_AA_";
@@ -48,17 +45,17 @@ AliAnalysisTaskExtractV0AODRun2* AddTaskExtractV0AODRun2( Bool_t lSwitchLowE    
 //   if (mgr->GetMCtruthEventHandler()) outputFileName += "_MC";
    //if(lMasterJobSessionFlag.Length()) outputFileName += lMasterJobSessionFlag.Data();
    
-    Printf("Set OutputFileNameHist : \n %s\n", outputFileNameHist.Data() );
-    Printf("Set OutputFileNameTree : \n %s\n", outputFileNameTree.Data() );
+    //Adjustments: two output files not allowed in the LEGO train framework at this moment
+    Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
 
    AliAnalysisDataContainer *coutputList = mgr->CreateContainer("clistV0",
 							     TList::Class(),
 							     AliAnalysisManager::kOutputContainer,
-							     outputFileNameHist );
+							     outputFileName );
    AliAnalysisDataContainer *coutputTree = mgr->CreateContainer("cTree",
 							     TTree::Class(),
 							     AliAnalysisManager::kOutputContainer,
-							     outputFileNameTree );
+							     outputFileName );
    
    //This one you should merge in file-resident ways...
    coutputTree->SetSpecialOutput();

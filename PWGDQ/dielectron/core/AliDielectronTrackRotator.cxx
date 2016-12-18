@@ -43,6 +43,7 @@ AliDielectronTrackRotator::AliDielectronTrackRotator() :
   fRotationType(kRotateBothRandom),
   fStartAnglePhi(TMath::Pi()),
   fConeAnglePhi(TMath::Pi()/6.),
+  fKeepLocalY(kFALSE),
   fkArrTracksP(0x0),
   fkArrTracksN(0x0),
   fCurrentIteration(0),
@@ -54,7 +55,8 @@ AliDielectronTrackRotator::AliDielectronTrackRotator() :
   fVTrackP(0x0),
   fVTrackN(0x0),
   fPdgLeg1(-11),
-  fPdgLeg2(11)
+  fPdgLeg2(11),
+  fSameTracks(kTRUE)
 {
   //
   // Default Constructor
@@ -69,6 +71,7 @@ AliDielectronTrackRotator::AliDielectronTrackRotator(const char* name, const cha
   fRotationType(kRotateBothRandom),
   fStartAnglePhi(TMath::Pi()),
   fConeAnglePhi(TMath::Pi()/6.),
+  fKeepLocalY(kFALSE),
   fkArrTracksP(0x0),
   fkArrTracksN(0x0),
   fCurrentIteration(0),
@@ -80,7 +83,8 @@ AliDielectronTrackRotator::AliDielectronTrackRotator(const char* name, const cha
   fVTrackP(0x0),
   fVTrackN(0x0),
   fPdgLeg1(-11),
-  fPdgLeg2(11)
+  fPdgLeg2(11),
+  fSameTracks(kTRUE)
 {
   //
   // Named Constructor
@@ -160,6 +164,12 @@ Bool_t AliDielectronTrackRotator::RotateTracks()
 
   AliVTrack *trackP=dynamic_cast<AliVTrack*>(fkArrTracksP->UncheckedAt(fCurrentTackP));
   AliVTrack *trackN=dynamic_cast<AliVTrack*>(fkArrTracksN->UncheckedAt(fCurrentTackN));
+  if(trackN == trackP){
+    fSameTracks=kTRUE;
+    return kTRUE;;
+  }
+  fSameTracks = kFALSE;
+
   fTrackP.Initialize();
   fTrackN.Initialize();
   fVTrackP=0x0;
@@ -170,9 +180,12 @@ Bool_t AliDielectronTrackRotator::RotateTracks()
 
   fVTrackP=trackP;
   fVTrackN=trackN;
-  
+
   Double_t angle  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
   Int_t    charge = TMath::Nint(gRandom->Rndm());
+  if( fKeepLocalY){// only rotate by multiples of one TPC chamber size
+    angle = (Int_t) ( angle /  TMath::Pi() * 9 ) ;
+  }
   
   if (fRotationType==kRotatePositive||(fRotationType==kRotateBothRandom&&charge==0)){
     AliDielectronHelper::RotateKFParticle(&fTrackP, angle, fEvent);

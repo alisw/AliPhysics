@@ -26,16 +26,18 @@ class AliStack;
 class AliVEvent;
 class AliVEvent;
 class AliVfriendEvent; 
-class AliMCInfoCuts;
-class AliRecInfoCuts;
+class TRootIoCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceTPC : public AliPerformanceObject {
 public :
-  //AliPerformanceTPC(); 
+  AliPerformanceTPC(TRootIoCtor*);
   AliPerformanceTPC(const Char_t* name="AliPerformanceTPC", const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE, Bool_t useSparse = kTRUE);
+
+  AliPerformanceTPC(const AliPerformanceTPC&);
+  AliPerformanceTPC& operator=(const AliPerformanceTPC&);
 
   virtual ~AliPerformanceTPC();
 
@@ -43,9 +45,9 @@ public :
   virtual void  Init();
 
   // Execute analysis
-  virtual void  Exec(AliMCEvent* const infoMC=0, AliVEvent* const infoRC=0, AliVfriendEvent* const vfriendEvent=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE);
+  virtual void  Exec(AliMCEvent* const infoMC, AliVEvent* const infoRC, AliVfriendEvent* const vfriendEvent, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE);
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list);
+  virtual Long64_t Merge(TCollection* list=0);
 
   // Analyse output histograms
   virtual void Analyse();
@@ -67,13 +69,6 @@ public :
   // Export objects to folder
   TFolder *ExportToFolder(TObjArray * array=0);
 
-  // Selection cuts
-  void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-  void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}  
-   
-  AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}
-  AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
-
   // getters
   //
   THnSparse *GetTPCClustHisto() const  { return fTPCClustHisto; }
@@ -87,7 +82,7 @@ public :
   
   void SetUseHLT(Bool_t useHLT = kTRUE) {fUseHLT = useHLT;}
   Bool_t GetUseHLT() { return fUseHLT; }
-  TObjArray* GetListOfDrawableObjects() {TObjArray* tmp = fFolderObj; fFolderObj = NULL; return tmp;}
+  TCollection* GetListOfDrawableObjects() {TObjArray* tmp = fFolderObj; fFolderObj = NULL; return tmp;}
 
   virtual void ResetOutputData();
 
@@ -98,23 +93,47 @@ private:
   static Bool_t fgUseMergeTHnSparse;  
 
   // TPC histogram
-  THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCside
-  THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
-  THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+  THnSparseF *fTPCClustHisto; // padRow:phi:TPCside
+  THnSparseF *fTPCEventHisto;  // Xv:Yv:Zv:mult:multP:multN:vertStatus
+  THnSparseF *fTPCTrackHisto;  // nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
   TObjArray* fFolderObj; // array of analysed histograms
-
-  // Global cuts objects
-  AliRecInfoCuts* fCutsRC;  // selection cuts for reconstructed tracks
-  AliMCInfoCuts*  fCutsMC;  // selection cuts for MC tracks
 
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
 
   Bool_t fUseHLT; // use HLT ESD
-  AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
-  AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,13);
+  //Cluster Histograms
+  TH3D *h_tpc_clust_0_1_2;//!
+  //Event Histograms - Xv:Yv:Zv:mult:multP:multN:vertStatus
+  TH1D *h_tpc_event_recvertex_0;//!
+  TH1D *h_tpc_event_recvertex_1;//!
+  TH1D *h_tpc_event_recvertex_2;//!
+  TH1D *h_tpc_event_recvertex_3;//!
+  TH1D *h_tpc_event_recvertex_4;//!
+  TH1D *h_tpc_event_recvertex_5;//!
+  TH1D *h_tpc_event_6;//!
+  //Track Histograms - nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
+  TH3D* h_tpc_track_pos_recvertex_2_5_6;//!
+  TH3D* h_tpc_track_neg_recvertex_2_5_6;//!
+  TH2D *h_tpc_track_all_recvertex_5_8;//!
+  TH3D *h_tpc_track_all_recvertex_0_5_7;//!
+  TH3D *h_tpc_track_pos_recvertex_0_5_7;//!
+  TH3D *h_tpc_track_neg_recvertex_0_5_7;//!
+  TH3D *h_tpc_track_all_recvertex_1_5_7;//!
+  TH3D *h_tpc_track_all_recvertex_2_5_7;//!
+  TH3D *h_tpc_track_all_recvertex_3_5_7;//!
+  TH3D *h_tpc_track_pos_recvertex_3_5_7;//!
+  TH3D *h_tpc_track_neg_recvertex_3_5_7;//!
+  TH3D *h_tpc_track_all_recvertex_4_5_7;//!
+  TH3D *h_tpc_track_pos_recvertex_4_5_7;//!
+  TH3D *h_tpc_track_neg_recvertex_4_5_7;//!
+  TH3D *h_tpc_track_pos_recvertex_3_5_6;//!
+  TH3D *h_tpc_track_pos_recvertex_4_5_6;//!
+  TH3D *h_tpc_track_neg_recvertex_3_5_6;//!
+  TH3D *h_tpc_track_neg_recvertex_4_5_6;//!
+
+  ClassDef(AliPerformanceTPC,14);
 };
 
 #endif

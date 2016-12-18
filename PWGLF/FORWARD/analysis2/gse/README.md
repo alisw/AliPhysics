@@ -1,4 +1,4 @@
-# A class to hold results with statistical and systematic errors {#index}
+# A class to hold results with statistical and systematic errors {#gse_index}
 
 ## The class
 

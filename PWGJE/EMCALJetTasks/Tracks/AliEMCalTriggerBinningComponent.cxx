@@ -14,48 +14,38 @@
  **************************************************************************/
 #include <iostream>
 
+#include <TCustomBinning.h>
+#include <TLinearBinning.h>
+#include <TVariableBinning.h>
 #include <TObjArray.h>
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
 
 /// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningDimension)
 ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent)
+ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData)
 /// \endcond
 
 namespace EMCalTriggerPtAnalysis {
 
-/**
- * Main constructor
- */
 AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningComponent() :
   TObject(),
-  fDimensions(NULL)
+  fDimensions(nullptr)
 {
   fDimensions = new TObjArray;
   fDimensions->SetOwner();
 }
 
-/**
- * Copy constructor, creating a deep copy.
- * \param[in] ref Reference for the copy
- */
 AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningComponent(const AliEMCalTriggerBinningComponent& ref) :
   TObject(ref),
-  fDimensions(NULL)
+  fDimensions(nullptr)
 {
   fDimensions = new TObjArray;
   fDimensions->SetOwner();
-  TIter dimIter(ref.fDimensions);
-  AliEMCalTriggerBinningDimension *dim(NULL);
-  while((dim = dynamic_cast<AliEMCalTriggerBinningDimension *>(dimIter())))
-    fDimensions->Add(new AliEMCalTriggerBinningDimension(*dim));
+  for(auto dimIter : *(ref.fDimensions))
+    fDimensions->Add(new AliEMCalTriggerBinningData(*(static_cast<AliEMCalTriggerBinningData *>(dimIter))));
 }
 
-/**
- * Assignment operator, doing a deep copy.
- * \param[in] ref Reference for the assignment
- */
 AliEMCalTriggerBinningComponent& AliEMCalTriggerBinningComponent::operator=(const AliEMCalTriggerBinningComponent& ref) {
   TObject::operator=(ref);
   if(&ref != this){
@@ -63,104 +53,84 @@ AliEMCalTriggerBinningComponent& AliEMCalTriggerBinningComponent::operator=(cons
 
     fDimensions = new TObjArray;
     fDimensions->SetOwner();
-    TIter dimIter(ref.fDimensions);
-    AliEMCalTriggerBinningDimension *dim(NULL);
-    while((dim = dynamic_cast<AliEMCalTriggerBinningDimension *>(dimIter())))
-      fDimensions->Add(new AliEMCalTriggerBinningDimension(*dim));
+    for(auto dimIter : *(ref.fDimensions))
+      fDimensions->Add(new AliEMCalTriggerBinningData(*(static_cast<AliEMCalTriggerBinningData *>(dimIter))));
   }
   return *this;
 }
 
-/**
- * Destructor
- */
 AliEMCalTriggerBinningComponent::~AliEMCalTriggerBinningComponent() {
   delete fDimensions;
 }
 
-/**
- * Get binning information for a given axis. Return nullpointer if axis is not yet defined
- * \param[in] name axis name
- * \return the axis information
- */
-AliEMCalTriggerBinningDimension* AliEMCalTriggerBinningComponent::GetBinning(const char* name) const {
-  return dynamic_cast<AliEMCalTriggerBinningDimension *>(fDimensions->FindObject(name));
+TBinning* AliEMCalTriggerBinningComponent::GetBinning(const char* name) const {
+  AliEMCalTriggerBinningData *data = dynamic_cast<AliEMCalTriggerBinningData *>(fDimensions->FindObject(name));
+  if(data) return data->GetBinning();
+  return nullptr;
 }
 
-/**
- * Set binning for dimension. If not yet existing, create it
- * \param[in] dimname: axis name
- * \param[in] nbins: Number of bins
- * \param[in] binning: array of bin limits (size nbins+1)
- */
 void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, int nbins, const double* binning) {
-  AliEMCalTriggerBinningDimension *dim = GetBinning(dimname);
-  if(dim) dim->Set(nbins, binning);
-  else {
-    dim = new AliEMCalTriggerBinningDimension(dimname, nbins, binning);
-    fDimensions->Add(dim);
-  }
+  SetBinning(dimname, new TVariableBinning(nbins, binning));
 }
 
-/**
- * Set binning for dimension. If not yet existing, create it.
- * \param[in] dimname axis name
- * \param[in] binning array of bin limits (size nbins+1)
- */
 void AliEMCalTriggerBinningComponent::SetBinning(const char* dimname, const TArrayD& binning) {
-  AliEMCalTriggerBinningDimension *dim = GetBinning(dimname);
-  if(dim) dim->Set(binning);
-  else {
-    dim = new AliEMCalTriggerBinningDimension(dimname, binning);
-    fDimensions->Add(dim);
-  }
+  SetBinning(dimname, new TVariableBinning(binning));
 }
 
-/**
- * Set a linear binning for dimension. If not yet existing, create it.
- * \param[in] dimname axis name
- * \param[in] nbins Number of bins
- * \param[in] min Minimum of the range (= lowest bin limit)
- * \param[in] max Maximum of the range (= highest bin limit)
- */
+
 void AliEMCalTriggerBinningComponent::SetLinearBinning(const char *dimname, int nbins, double min, double max){
-  TArrayD binning;
-  AliEMCalTriggerBinningFactory::CreateLinearBinning(binning, nbins, min, max);
-  SetBinning(dimname, binning);
+  SetBinning(dimname, new TLinearBinning(nbins, min, max));
 }
 
-/**
- * Print the bin limits for a given dimension. Used in the operator<< of
- * AliEMCalTriggerBinningDimension.
- * \param[in] stream Stream to print the information on
- */
-void AliEMCalTriggerBinningDimension::PrintStream(std::ostream &stream) const{
-  stream << "Binning for variable " << GetName() << ":\n";
-  stream << "================================================\n";
-  for(int ilim = 0; ilim < fBinning.GetSize(); ilim++){
-    stream << fBinning[ilim];
-    if(ilim < fBinning.GetSize() -1) stream << ", ";
+void AliEMCalTriggerBinningComponent::SetBinning(const char *dimname, TBinning *binning){
+  AliEMCalTriggerBinningData *dim = FindBinning(dimname);
+  if(dim) dim->SetBinning(binning);
+  else fDimensions->Add(new AliEMCalTriggerBinningData(dimname, binning));
+}
+
+AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData *AliEMCalTriggerBinningComponent::FindBinning(const char *dimname) const {
+  return dynamic_cast<AliEMCalTriggerBinningData *>(fDimensions->FindObject(dimname));
+}
+
+AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData::AliEMCalTriggerBinningData():
+  TNamed(),
+  fBinning(nullptr)
+{
+
+}
+
+AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData::AliEMCalTriggerBinningData(const char *name, TBinning *binning):
+  TNamed(name, ""),
+  fBinning(binning)
+{
+
+}
+
+AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData::AliEMCalTriggerBinningData(const AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData &data):
+  TNamed(data),
+  fBinning(nullptr)
+{
+  TBinning *refbinning = data.GetBinning();
+  if(refbinning) fBinning = refbinning->MakeCopy();
+}
+
+AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData &AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData::operator=(
+  const AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData &data ) {
+  TNamed::operator=(data);
+  if(this != &data){
+    if(fBinning) delete fBinning;
+    fBinning = data.fBinning;
   }
+  return *this;
 }
 
-/**
- * Print the bin limits for a given dimension.
- */
-void AliEMCalTriggerBinningDimension::Print(Option_t * /*option*/) const {
-  std::cout << *this << std::endl;
+AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData::~AliEMCalTriggerBinningData(){
+  if(fBinning) delete fBinning;
 }
 
-/**
- * Output stream operator for the binning dimension.
- * \param[in] stream Stream to print the information on
- * \param[in] dim Object to be put on the stream
- * \return Stream after pringing
- */
-std::ostream &operator<<(std::ostream &stream, const AliEMCalTriggerBinningDimension &dim){
-  dim.PrintStream(stream);
-  return stream;
+void AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData::SetBinning(TBinning *binning){
+  if(fBinning) delete fBinning;
+  fBinning = binning;
 }
 
-
-} /* namespace EMCalTriggerPtAnalysis */
-
+}

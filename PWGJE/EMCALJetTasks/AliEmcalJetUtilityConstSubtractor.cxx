@@ -181,6 +181,7 @@ void AliEmcalJetUtilityConstSubtractor::Terminate(AliFJWrapper& fjw)
       AliEmcalJet *jet_sub = new ((*fJetsSub)[ijet])
         AliEmcalJet(jets_sub[ijet].perp(), jets_sub[ijet].eta(), jets_sub[ijet].phi(), jets_sub[ijet].m());
       jet_sub->SetLabel(ijet);
+      jet_sub->SetJetAcceptanceType(fJetTask->FindJetAcceptanceType(jet_sub->Eta(), jet_sub->Phi_0_2pi(), fJetTask->GetRadius()));
 
       fastjet::PseudoJet area(fjw.GetJetAreaVector(ijet));
       jet_sub->SetArea(area.perp());

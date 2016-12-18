@@ -130,6 +130,10 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   
   TH1D *fHistCcup8TriggersPerRun;
   TH1D *fHistCcup9TriggersPerRun;
+  TH1D *fHistCcup10TriggersPerRun;
+  TH1D *fHistCcup11TriggersPerRun;
+  TH1D *fHistCcup12TriggersPerRun;
+  TH1D *fHistCtrueTriggersPerRun;
   
   TList *fListHist;
   TH1D *fHistNeventsJPsi; 
@@ -154,7 +158,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcPsi2s, 4); 
+  ClassDef(AliAnalysisTaskUpcPsi2s, 5); 
 };
 
 #endif

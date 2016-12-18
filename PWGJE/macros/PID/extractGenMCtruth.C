@@ -12,6 +12,61 @@
 
 enum type { kTrackPt = 0, kZ = 1, kXi = 2, kNtypes = 3 };
 
+
+//___________________________________________________________________
+THnSparse* rebinPtOfTHnSparse(THnSparse* h, Int_t iDimPt)
+{
+  // Create a new THnSparse with pT binning as in header file
+  
+  if (!h)
+    return 0x0;
+  
+  TH1D hDummyPt("hDummyPt", "", nPtBins, binsPt);
+  TAxis* axisPt = hDummyPt.GetXaxis();
+  
+  const Int_t nDimRebinned = h->GetNdimensions();
+  
+  Int_t binsRebinned[nDimRebinned];
+  Double_t xminRebinned[nDimRebinned];
+  Double_t xmaxRebinned[nDimRebinned];
+  
+  for (Int_t iDim = 0; iDim < nDimRebinned; iDim++) {
+    if (iDim == iDimPt) {
+      binsRebinned[iDim] = axisPt->GetNbins();
+      xminRebinned[iDim] = axisPt->GetBinLowEdge(1);
+      xmaxRebinned[iDim] = axisPt->GetBinUpEdge(axisPt->GetNbins());
+    }
+    else {
+      binsRebinned[iDim] = h->GetAxis(iDim)->GetNbins();
+      xminRebinned[iDim] = h->GetAxis(iDim)->GetBinLowEdge(1);
+      xmaxRebinned[iDim] = h->GetAxis(iDim)->GetBinUpEdge(h->GetAxis(iDim)->GetNbins());
+    }
+  }
+  
+  THnSparse* hRebinned = new THnSparseD(Form("%s_rebinned", h->GetName()), h->GetTitle(),
+                                        nDimRebinned, binsRebinned, xminRebinned, xmaxRebinned);
+  hRebinned->Sumw2();
+  
+  for (Int_t iDim = 0; iDim < nDimRebinned; iDim++) {
+    if (iDim == iDimPt) {
+      hRebinned->SetBinEdges(iDim, axisPt->GetXbins()->fArray);
+    }
+    else {
+      if (h->GetAxis(iDim)->GetXbins()->fN != 0)
+        hRebinned->SetBinEdges(iDim, h->GetAxis(iDim)->GetXbins()->fArray);
+    }
+    
+    hRebinned->GetAxis(iDim)->SetTitle(h->GetAxis(iDim)->GetTitle());
+  }
+  
+  // Now just fill the THnSparse with the original data. RebinnedAdd already takes into account the different binning properly
+  // (was also tested explicitely!).
+  hRebinned->RebinnedAdd(h, 1.);
+  
+  return hRebinned;
+}
+  
+  
 //___________________________________________________________________
 void normaliseHist(TH1* h, Double_t scale = 1.0)
 {
@@ -83,6 +138,9 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
       hMCgeneratedYieldsPrimaries->SetBinError(bin, TMath::Sqrt(binContentGenYield));
     }
   }
+  
+  // Set the pointer to new THnSparse with rebinned pT (keep the name)
+  hMCgeneratedYieldsPrimaries = rebinPtOfTHnSparse(hMCgeneratedYieldsPrimaries, kPidGenYieldPt);
   
   hNjetsGenData = (TH2D*)histList->FindObject("fh2FFJetPtGen");
   
@@ -243,7 +301,7 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
     hMCgenPrimYieldPt[MCid] = hMCgeneratedYieldsPrimaries->Projection(kPidGenYieldPt, "e");
     hMCgenPrimYieldPt[MCid]->SetName(Form("hMCgenYieldsPrimPt_%s", AliPID::ParticleShortName(MCid)));
     hMCgenPrimYieldPt[MCid]->SetTitle(Form("MC truth generated primary yield, %s", AliPID::ParticleName(MCid)));
-    hMCgenPrimYieldPt[MCid]->GetYaxis()->SetTitle("1/N_{Jets} dN/dP_{T} (GeV/c)^{-1}");
+    hMCgenPrimYieldPt[MCid]->GetYaxis()->SetTitle("1/N_{Jets} dN/dp_{T} (GeV/c)^{-1}");
     hMCgenPrimYieldPt[MCid]->SetStats(kFALSE);
     
     if (hMCgeneratedYieldsPrimaries->GetAxis(kPidGenYieldZ)) { // For backward compatibility
@@ -285,6 +343,9 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
       hPIDdata->SetBinError(bin, TMath::Sqrt(binContent));
     }
   }
+  
+  // Set the pointer to new THnSparse with rebinned pT (keep the name)
+  hPIDdata = rebinPtOfTHnSparse(hPIDdata, kPidPt);
   
   // Bin limits are the same as in gen yield histo
   if (restrictCentralityData) 
@@ -337,9 +398,9 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
     hPIDdata->GetAxis(kPidMCpid)->SetRange(MCbinInHisto, MCbinInHisto);
     
     hMCuncorrYieldPt[MCid] = hPIDdata->Projection(kPidPt, "e");
-    hMCuncorrYieldPt[MCid]->SetName(Form("hMCuncorrYieldsPt%s", AliPID::ParticleShortName(MCid)));
+    hMCuncorrYieldPt[MCid]->SetName(Form("hMCuncorrYieldsPrimPt_%s", AliPID::ParticleShortName(MCid)));
     hMCuncorrYieldPt[MCid]->SetTitle(Form("MC truth uncorrected yield, %s", AliPID::ParticleName(MCid)));
-    hMCuncorrYieldPt[MCid]->GetYaxis()->SetTitle("1/N_{Jets} dN/dP_{T} (GeV/c)^{-1}");
+    hMCuncorrYieldPt[MCid]->GetYaxis()->SetTitle("1/N_{Jets} dN/dp_{T} (GeV/c)^{-1}");
     hMCuncorrYieldPt[MCid]->SetStats(kFALSE);
     
     if (hPIDdata->GetAxis(kPidZ)) { // For backward compatibility
@@ -374,11 +435,11 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
   TString savePath = pathNameData;
   savePath.ReplaceAll(Form("/%s", saveFileName.Data()), "");
   
-  saveFileName.Prepend("output_extractedGenPrimYields_");
-  TString centralityString = restrictCentralityData ? Form("_centrality_%.0f_%.0f.root", actualLowerCentralityData,
+  saveFileName.Prepend("output_extractedMC_");
+  TString centralityString = restrictCentralityData ? Form("_centrality_%.0f_%.0f", actualLowerCentralityData,
                                                            actualUpperCentralityData)
                                                     : "_centrality_all";
-  TString jetPtString = restrictJetPtAxis ? Form("_jetPt_%.0f_%.0f.root", actualLowerJetPt, actualUpperJetPt)
+  TString jetPtString = restrictJetPtAxis ? Form("_jetPt_%.0f_%.0f", actualLowerJetPt, actualUpperJetPt)
                                           : "";  
   saveFileName.ReplaceAll(".root", Form("%s%s%s.root", centralityString.Data(), jetPtString.Data(), chargeString.Data()));
   
@@ -475,8 +536,8 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
       }
       
       TCanvas* cGenYield = new TCanvas(Form("cGenYield_%s", titles[type].Data()), "Generated Yield", 0, 300, 900, 900);
-      cGenYield->SetLogx(1);
-      cGenYield->SetLogy(1);
+      if (type == kTrackPt)
+        cGenYield->SetLogx(1);
       
       hMCgenPrimYieldTotal->Draw("E1");
       
@@ -490,7 +551,8 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
       
 
       TCanvas* cGenFractions = new TCanvas(Form("cGenFractions_%s", titles[type].Data()), "Generated Fractions", 0, 300, 900, 900);
-      cGenFractions->SetLogx(1);
+      if (type == kTrackPt)
+        cGenFractions->SetLogx(1);
       
       hMCgenPrimFraction[0]->Draw("E1");
       
@@ -500,6 +562,47 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
       cGenFractions->BuildLegend()->SetFillColor(kWhite);
       
       ClearTitleFromHistoInCanvas(cGenFractions);
+      
+
+      // Calculate the generated MC to-pi-ratios
+      TH1D* hMCgenPrimRatioToPi[AliPID::kSPECIES];
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+        hMCgenPrimRatioToPi[i] = 0x0;
+      
+      
+      for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+        if (species == AliPID::kPion)
+          continue;
+        
+        hMCgenPrimRatioToPi[species] = new TH1D(*hMCgenPrimYield[species]);
+        TString oldName = hMCgenPrimYield[species]->GetName();
+        TString newName = oldName.ReplaceAll("Yield", "RatioToPi");
+        hMCgenPrimRatioToPi[species]->SetName(newName.Data());
+        hMCgenPrimRatioToPi[species]->SetTitle(Form("%s/#pi", AliPID::ParticleLatexName(species)));
+        hMCgenPrimRatioToPi[species]->GetYaxis()->SetTitle("Ratio");
+
+        // Statistically independent data sets -> Just divide
+        hMCgenPrimRatioToPi[species]->Divide(hMCgenPrimYield[species], hMCgenPrimYield[AliPID::kPion]); 
+        hMCgenPrimRatioToPi[species]->GetYaxis()->SetRangeUser(0., 1.);
+      }
+      
+      TCanvas* cGenRatioToPi = new TCanvas(Form("cGenRatioToPi_%s", titles[type].Data()),
+                                                "Generated To-Pi-Ratio",
+                                                0, 300, 900, 900);
+      if (type == kTrackPt)
+        cGenRatioToPi->SetLogx(1);
+      
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+        if (i == AliPID::kPion)
+          continue;
+        hMCgenPrimRatioToPi[i]->Draw(i == 0 ? "E1" :"E1 same");
+      }
+      
+      legTemp = cGenRatioToPi->BuildLegend();//0.25, 0.16, 0.65, 0.51);
+      legTemp->SetFillColor(kWhite);
+      
+      ClearTitleFromHistoInCanvas(cGenRatioToPi);
+      
       
       // Save results
       saveFile->cd();
@@ -517,18 +620,27 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
           hMCgenPrimFraction[i]->Write();
       }
       
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+        if (hMCgenPrimRatioToPi[i])
+          hMCgenPrimRatioToPi[i]->Write();
+      }
+      
       if (cGenYield)
         cGenYield->Write();
       
       if (cGenFractions)
         cGenFractions->Write();
+      
+      if (cGenRatioToPi)
+        cGenRatioToPi->Write();
     }
     
     
-    // Uncorr gen yields
+    // Uncorr rec MC yields
     if (hMCuncorrYield[0]) {
       for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
-        normaliseHist(hMCuncorrYield[species], (nJetsGenData > 0) ? 1. / nJetsGenData : 0.);
+        // NOTE: These are RECONSTRUCTED yields (just used MC label for PID) -> Must be normalised to number of reconstructed jets!
+        normaliseHist(hMCuncorrYield[species], (nJetsRecData > 0) ? 1. / nJetsRecData : 0.);
         hMCuncorrYield[species]->SetStats(kFALSE);
 
         hMCuncorrYield[species]->SetTitle(Form("%s (MC)", AliPID::ParticleLatexName(species)));
@@ -573,40 +685,79 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
         hMCuncorrFraction[species]->GetYaxis()->SetRangeUser(0., 1.);
       }
       
-      if (hMCuncorrYieldTotal) {
-        hMCuncorrYieldTotal->GetYaxis()->SetTitleOffset(1.4);
-        hMCuncorrYieldTotal->GetXaxis()->SetMoreLogLabels(kTRUE);
-        hMCuncorrYieldTotal->GetXaxis()->SetNoExponent(kTRUE);
-      }
+      hMCuncorrYieldTotal->GetYaxis()->SetTitleOffset(1.4);
+      hMCuncorrYieldTotal->GetXaxis()->SetMoreLogLabels(kTRUE);
+      hMCuncorrYieldTotal->GetXaxis()->SetNoExponent(kTRUE);
       
-      TCanvas* cGenUncorrYield = new TCanvas(Form("cGenUncorrYield_%s", titles[type].Data()), "Generated Uncorrected Yield",
-                                             0, 300, 900, 900);
-      cGenUncorrYield->SetLogx(1);
-      cGenUncorrYield->SetLogy(1);
+      TCanvas* cMCRecUncorrYield = new TCanvas(Form("cMCRecUncorrYield_%s", titles[type].Data()), "MC Reconstructed Uncorrected Yield",
+                                               0, 300, 900, 900);
+      if (type == kTrackPt)
+        cMCRecUncorrYield->SetLogx(1);
       
       hMCuncorrYieldTotal->Draw("E1");
       
       for (Int_t i = 0; i < AliPID::kSPECIES; i++) 
         hMCuncorrYield[i]->Draw("E1 same");
       
-      TLegend* legTemp = cGenUncorrYield->BuildLegend();//0.25, 0.16, 0.65, 0.51);
+      TLegend* legTemp = cMCRecUncorrYield->BuildLegend();//0.25, 0.16, 0.65, 0.51);
       legTemp->SetFillColor(kWhite);
       
-      ClearTitleFromHistoInCanvas(cGenUncorrYield);
+      ClearTitleFromHistoInCanvas(cMCRecUncorrYield);
       
 
-      TCanvas* cGenUncorrFractions = new TCanvas(Form("cGenUncorrFractions_%s", titles[type].Data()), "Generated Uncorrected Fractions",
-                                           0, 300, 900, 900);
-      cGenUncorrFractions->SetLogx(1);
+      TCanvas* cMCRecUncorrFractions = new TCanvas(Form("cMCRecUncorrFractions_%s", titles[type].Data()),
+                                                   "MC Reconstructed Uncorrected Fractions",
+                                                   0, 300, 900, 900);
+      if (type == kTrackPt)
+        cMCRecUncorrFractions->SetLogx(1);
       
       hMCuncorrFraction[0]->Draw("E1");
       
       for (Int_t i = 1; i < AliPID::kSPECIES; i++)
         hMCuncorrFraction[i]->Draw("E1 same");
       
-      cGenUncorrFractions->BuildLegend()->SetFillColor(kWhite);
+      cMCRecUncorrFractions->BuildLegend()->SetFillColor(kWhite);
       
-      ClearTitleFromHistoInCanvas(cGenUncorrFractions);
+      ClearTitleFromHistoInCanvas(cMCRecUncorrFractions);
+      
+      // Calculate the MC to-pi-ratios
+      TH1D* hMCuncorrRatioToPi[AliPID::kSPECIES];
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+        hMCuncorrRatioToPi[i] = 0x0;
+      
+      
+      for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+        if (species == AliPID::kPion)
+          continue;
+        
+        hMCuncorrRatioToPi[species] = new TH1D(*hMCuncorrYield[species]);
+        TString oldName = hMCuncorrYield[species]->GetName();
+        TString newName = oldName.ReplaceAll("Yield", "RatioToPi");
+        hMCuncorrRatioToPi[species]->SetName(newName.Data());
+        hMCuncorrRatioToPi[species]->SetTitle(Form("%s/#pi", AliPID::ParticleLatexName(species)));
+        hMCuncorrRatioToPi[species]->GetYaxis()->SetTitle("Ratio");
+
+        // Statistically independent data sets -> Just divide
+        hMCuncorrRatioToPi[species]->Divide(hMCuncorrYield[species], hMCuncorrYield[AliPID::kPion]); 
+        hMCuncorrRatioToPi[species]->GetYaxis()->SetRangeUser(0., 1.);
+      }
+      
+      TCanvas* cMCRecUncorrRatioToPi = new TCanvas(Form("cMCRecUncorrRatioToPi_%s", titles[type].Data()),
+                                                   "MC Reconstructed Uncorrected To-Pi-Ratio",
+                                                   0, 300, 900, 900);
+      if (type == kTrackPt)
+        cMCRecUncorrRatioToPi->SetLogx(1);
+      
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+        if (i == AliPID::kPion)
+          continue;
+        hMCuncorrRatioToPi[i]->Draw(i == 0 ? "E1" :"E1 same");
+      }
+      
+      legTemp = cMCRecUncorrRatioToPi->BuildLegend();//0.25, 0.16, 0.65, 0.51);
+      legTemp->SetFillColor(kWhite);
+      
+      ClearTitleFromHistoInCanvas(cMCRecUncorrRatioToPi);
       
       // Save results
       saveFile->cd();
@@ -624,11 +775,19 @@ Int_t extractGenMCtruth(TString pathNameData, TString listName,
           hMCuncorrFraction[i]->Write();
       }
       
-      if (cGenUncorrYield)
-        cGenUncorrYield->Write();
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+        if (hMCuncorrRatioToPi[i])
+          hMCuncorrRatioToPi[i]->Write();
+      }
       
-      if (cGenUncorrFractions)
-        cGenUncorrFractions->Write();
+      if (cMCRecUncorrYield)
+        cMCRecUncorrYield->Write();
+      
+      if (cMCRecUncorrFractions)
+        cMCRecUncorrFractions->Write();
+      
+      if (cMCRecUncorrRatioToPi)
+        cMCRecUncorrRatioToPi->Write();
     }
   }
   

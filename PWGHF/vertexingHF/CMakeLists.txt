@@ -24,6 +24,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
 		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY	
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+		    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
@@ -46,7 +48,9 @@ set(SRCS
   AliRDHFCutsD0toKpi.cxx
   AliRDHFCutsJpsitoee.cxx
   AliRDHFCutsDplustoKpipi.cxx
+  AliRDHFCutsDplustoK0spi.cxx
   AliRDHFCutsDstoKKpi.cxx
+  AliRDHFCutsDstoK0sK.cxx
   AliRDHFCutsLctopKpi.cxx
   AliRDHFCutsLctoV0.cxx
   AliRDHFCutsD0toKpipipi.cxx
@@ -134,7 +138,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD)
+set(LIBDEPS ANALYSISalice PWGflowTasks PWGTRD PWGPPevcharQn PWGPPevcharQnInterface)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -171,10 +175,14 @@ install(FILES
             ConfigVertexingHF_Pb_AllCent.C
             ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc.C
 	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP_Central.C
+	    ConfigVertexingHF_Pb_AllCent_NoLS_PIDLc_PtDepSel_LooseIP_SemiCentral.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar_16var.C
             ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar.C
             ConfigVertexingHF_Pb_AllCent_NoLS_16var.C
             ConfigVertexingHF_Pb_AllCent_NoLS.C
+            ConfigVertexingHF_DplustoK0s_DstoK0s.C
+            ConfigVertexingHF_pPbRHF_DplustoK0s_DstoK0s.C
         DESTINATION
             PWGHF/vertexingHF/)
 

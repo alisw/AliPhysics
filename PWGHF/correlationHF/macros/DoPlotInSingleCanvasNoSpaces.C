@@ -529,6 +529,8 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
   TH1D **hpPb=new TH1D*[6];
   TH1D **hDraw=new TH1D*[9];
 
+  TH1D **hpPbSuperimp=new TH1D*[6];
+
   TGraphAsymmErrors **grpp=new TGraphAsymmErrors*[9];
   TGraphAsymmErrors **grpPb=new TGraphAsymmErrors*[6];
   TLatex **tlscalepPb=new TLatex*[6];
@@ -715,6 +717,11 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
     hpPb[3*(binD-1)+binass]=htemp;
     grpPb[3*(binD-1)+binass]=grtemp;    
     tlscalepPb[3*(binD-1)+binass]=tltemp;
+
+    hpPbSuperimp[3*(binD-1)+binass]=hpPb[3*(binD-1)+binass]->Clone();
+    hpPbSuperimp[3*(binD-1)+binass]->SetMarkerStyle(25);
+    hpPbSuperimp[3*(binD-1)+binass]->SetLineWidth(1.4);
+    hpPbSuperimp[3*(binD-1)+binass]->SetMarkerColor(kRed+1);
   }
 
   Int_t nskip=0;  
@@ -748,13 +755,21 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
 	  tlAvD->SetTextSize(22);
 	  tlAvD->Draw();
 	  TLegend *leg=new TLegend(0.255,0.56,0.4,0.8);
-	  leg->AddEntry(hpp[0],"pp, #sqrt{#it{s}} = 7 TeV, |#it{y}^{D}| < 0.5","p");
+	  leg->AddEntry(hpp[0],"pp, #sqrt{#it{s}} = 7 TeV, |#it{y}^{D}_{cms}| < 0.5","p");
 	  leg->AddEntry(hpPb[0],"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV,","p");//"p-Pb, #sqrt{s_{NN}}=5.02 TeV,-0.96<y^{D}_{cms}<0.04","p");
 	  leg->AddEntry((TObject*)0,"-0.96 < #it{y}^{D}_{cms} < 0.04","");
 	  leg->SetFillStyle(0);
 	  leg->SetTextFont(43);
 	  leg->SetTextSize(20);
 	  leg->Draw();
+	  TLegend *legSuperimp=new TLegend(0.255,0.56,0.4,0.8);
+	  legSuperimp->AddEntry(hpp[0],"","p");
+	  legSuperimp->AddEntry(hpPbSuperimp[0],"","p");//"p-Pb, #sqrt{s_{NN}}=5.02 TeV,-0.96<y^{D}_{cms}<0.04","p");
+	  legSuperimp->AddEntry((TObject*)0,"","");
+	  legSuperimp->SetFillStyle(0);
+	  legSuperimp->SetTextFont(43);
+	  legSuperimp->SetTextSize(20);
+	  legSuperimp->Draw("same");
 	  TLatex *tlDEta=new TLatex(0.27,0.51,"|#Delta#eta| < 1");//(0.5*(1-gPad->GetLeftMargin())+gPad->GetLeftMargin(),0.34,"|#Delta#eta|<1");
 	  tlDEta->SetNDC();
 	  tlDEta->SetTextAlign(12);
@@ -802,6 +817,7 @@ void MergePPandPPbInSingleCanvas(TString strFilePP="/Users/administrator/ALICE/C
 	Printf("Adding histo %p",hpPb[jass+(jD-1)*3]);
 	hpPb[jass+(jD-1)*3]->Draw("same");
 	grpPb[jass+(jD-1)*3]->Draw("p2");
+	hpPbSuperimp[jass+(jD-1)*3]->Draw("same");
 	tlscalepPb[jass+(jD-1)*3]->SetTextFont(63);
 	tlscalepPb[jass+(jD-1)*3]->SetTextSize(19);
 	tlscalepPb[jass+(jD-1)*3]->Draw();

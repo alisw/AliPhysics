@@ -37,7 +37,12 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Float_t          iMean_SSsmear             = 0.,
                                                                  const Bool_t           iExtraIsoCuts             = kFALSE,
                                                                  const Bool_t           i_pPb                     = kFALSE,
-                                                                 const Bool_t           isQA                      = kFALSE
+                                                                 const Bool_t           isQA                      = kFALSE,
+                                                                 TString                configBasePath            = "",
+                                                                 const Int_t            bWhichToSmear             = 0,
+                                                                 const Int_t            minNLM                    = 1,
+                                                                 const Double_t         TMdetaIso                 = 0.02,
+                                                                 const Double_t         TMdphiIso                 = 0.03
                                                                  )
 {
   
@@ -58,10 +63,52 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   else
     myContName = Form("Analysis_Neutrals");
   
-  myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_nNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off"));
+  myContName.Append(Form("_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear));
   
     // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
+  
+  TString configFile("config_PhotonIsolation.C"); //Name of config file
+//  if(gSystem->AccessPathName(configFile.Data())){ //Check for exsisting file and delete it
+//    gSystem->Exec(Form("rm %s",configFile.Data()));
+//  }
+
+  if(configBasePath.IsNull()){ //Check if a specific config should be used and copy appropriate file
+	configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
+  	gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
+  }
+  else if(configBasePath.Contains("alien:///")){
+  	gSystem->Exec(Form("alien_cp %s/%s .",configBasePath.Data(),configFile.Data()));
+  }
+  else{
+  	gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
+  }
+
+  configBasePath=Form("%s/",gSystem->pwd());
+  ifstream configIn; //Open config file for hash calculation
+  configIn.open(configFile);
+  TString configStr;
+  configStr.ReadFile(configIn);
+  TString configMD5 = configStr.MD5();
+  configMD5.Resize(5); //Short hash value for usable extension
+  TString configFileMD5 = configFile;
+  TDatime time; //Get timestamp
+  Int_t timeStamp = time.GetTime();
+  configFileMD5.ReplaceAll(".C",Form("\_%s_%i.C",configMD5.Data(),timeStamp));
+
+  if(gSystem->AccessPathName(configFileMD5.Data())){ //Add additional identifier if file exists
+    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
+  }
+  else{
+      while(!gSystem->AccessPathName(configFileMD5.Data())){
+        configFileMD5.ReplaceAll(".C","_1.C");
+      }
+    gSystem->Exec(Form("mv %s %s",configFile.Data(),configFileMD5.Data()));
+  }
+
+  TString configFilePath(configBasePath+"/"+configFileMD5);
+  gROOT->LoadMacro(configFilePath.Data());
+  printf("Path of config file: %s\n",configFilePath.Data());
   
     // #### Task preferences
   task->SetOutputFormat(iOutput);
@@ -70,6 +117,8 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetEtIsoThreshold(EtIso); // after should be replace by EtIso
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
   task->SetCTMdeltaPhi(TMdphi); // after should be replaced by TMdphi
+  task->SetCTMdeltaEtaIso(TMdetaIso); // after should be replaced by TMdeta
+  task->SetCTMdeltaPhiIso(TMdphiIso);
   task->SetQA(isQA);
   task->SetIsoMethod(iIsoMethod);
   task->SetEtIsoMethod(iEtIsoMethod);
@@ -81,7 +130,22 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetMean4Smear(iMean_SSsmear);
   task->SetExtraIsoCuts(iExtraIsoCuts);
   task->SetAnalysispPb(i_pPb);
-  task->SetNLMCut(bNLMCut,NLMCut);
+  task->SetNLMCut(bNLMCut,NLMCut,minNLM);
+  task->SetPtBinning(ptBin);
+  task->SetM02Binning(M02Bin);
+  task->SetEtisoBinning(EtisoBin);
+  task->SetEtueBinning(EtueBin);
+  task->SetEtaBinning(EtaBin);
+  task->SetPhiBinning(PhiBin);
+  task->SetLabelBinning(LabelBin);
+  task->SetPDGBinning(PDGBin);
+  task->SetMomPDGBinning(MomPDGBin);
+  task->SetClustPDGBinning(ClustPDGBin);
+  task->SetDxBinning(DxBin);
+  task->SetDzBinning(DzBin);
+  task->SetDecayBinning(DecayBin);
+  task->SetSmearForClusters(bWhichToSmear);
+  task->SetNeedEmcalGeom(kTRUE);
   
   if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
   

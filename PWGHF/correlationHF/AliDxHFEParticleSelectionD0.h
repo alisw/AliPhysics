@@ -19,6 +19,7 @@
 class AliVEvent;
 class AliRDHFCuts;
 class TList;
+class AliAnalysisCuts;
 
 /**
  * @class AliDxHFEParticleSelectionD0
@@ -51,6 +52,12 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
     kNCutLabels
   };
 
+  enum {
+    kD0Prompt=0,
+    kD0FeedDown=1
+  };
+
+
   /// overloaded from AliDxHFEParticleSelection: init the control objects
   virtual int InitControlObjects();
   virtual THnSparse* DefineTHnSparse();
@@ -62,8 +69,11 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   virtual int InitControlObjectsDaughters(TString name, int daughter);
 
   //Overloaded from AliDxHFEParticleSelection
-  virtual TObjArray* Select(TObjArray* particles, const AliVEvent* pEvent);
+  virtual TObjArray* Select(TObjArray* particles, AliVEvent* pEvent);
   using AliDxHFEParticleSelection::Select;
+
+  // Get the D0 efficiency
+  virtual double GetD0Eff(AliVParticle* tr);
 
   /// overloaded from AliDxHFEParticleSelection: check particle
   virtual int IsSelected(AliVParticle* p, const AliVEvent *pEvent=NULL);
@@ -77,7 +87,8 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   Int_t GetPtBin() const {return fPtBin;}
   Double_t GetInvMass() const {return fD0InvMass;}
   AliRDHFCuts *GetHFCuts() const {return fCuts;}
-
+  Double_t GetEventMult() const {return fMultEv;}
+  AliAnalysisCuts *GetEffCutObject() const{ return fD0Eff;}
 
  protected:
   /// overloaded from AliDxHFEParticleSelection: histogram particle properties
@@ -96,10 +107,15 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   THnSparse* fD0Daughter0;      //  the particle properties of selected particles
   THnSparse* fD0Daughter1;      //  the particle properties of selected particles
   AliRDHFCuts* fCuts;           //! pointer to external cuts object 
+  AliAnalysisCuts *fD0Eff;      //! Object holding D0 eff maps 
   Int_t     fFillOnlyD0D0bar;   //  flag to set what to fill (0 = both, 1 = D0 only, 2 = D0bar only)
   Double_t  fD0InvMass;         // D0InvMass
   Int_t     fPtBin;             // Pt Bin
   TList*    fHistoList;         // list of histograms
+  Bool_t    fUseD0Efficiency;   // Whether or not to correct for D0 efficiency
+  Double_t  fMultEv;            // multiplicity of event
+  Short_t fSystem;              // Which system pp/PbPb
+  Short_t fUseCentrality;       // Using centrality or not
 
   static const char* fgkDgTrackControlBinNames[]; //! bin labels for track control histogram
   static const char* fgkCutBinNames[];            //! bin labels for cut histogram
@@ -108,7 +124,7 @@ class AliDxHFEParticleSelectionD0 : public AliDxHFEParticleSelection {
   // needs to be consolidated
   // TODO: one might need particle properties of all and/or at different cut stages
 
-  ClassDef(AliDxHFEParticleSelectionD0, 3);
+  ClassDef(AliDxHFEParticleSelectionD0, 4);
 };
 
 #endif

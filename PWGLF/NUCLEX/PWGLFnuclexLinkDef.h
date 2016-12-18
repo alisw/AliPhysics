@@ -18,7 +18,6 @@
 /// * DeltaMasses
 #pragma link C++ class AliAnalysisNucleiMass+;
 #pragma link C++ class AliAnalysisNuclMult+;
-#pragma link C++ class AliAnalysisMCNuclMult+;
 /// * DeuteronpA
 #pragma link C++ class AliAnalysisDeuteronpA+;
 #pragma link C++ class AliAnalysisDeuteronTree+;
@@ -26,6 +25,12 @@
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
+#pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
+/// * EventCuts
+#pragma link C++ class AliNuclexEventCuts+;
+#pragma link C++ class AliNuclexEventCutsContainer+;
+/// * EventCutsValidation
+#pragma link C++ class AliAnalysisTaskEventCutsValidation+;
 /// * Nucleipp
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;
@@ -35,8 +40,6 @@
 /// * v2
 #pragma link C++ class AliAnalysisTaskNucleiv2+;
 #pragma link C++ class AliAnalysisTaskNucleiv2SP+;
-/// * TRDabsorption
-#pragma link C++ class AliAnalysisTaskAbsorptionStudies+;
 /// * NucleiKine
 #pragma link C++ class AliAnalysisTaskNucleiKine+;
 
@@ -49,6 +52,7 @@
 #pragma link C++ class AliReducedHypTritV0+;
 #pragma link C++ class AliReducedHypTritTrack+;
 #pragma link C++ class AliReducedHypTritEvent+;
+#pragma link C++ class AliAnalysisTaskHypCrossCheck+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskHypertriton3+;

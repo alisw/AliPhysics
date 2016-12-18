@@ -27,36 +27,37 @@
 //no specification of the variable 'numberOfCuts' needed anymore.
 //***************************************************************************************
 
+
 class CutHandlerConv{
-public:
+  public:
     CutHandlerConv(Int_t nMax=10){
-        nCuts=0; nMaxCuts=nMax; validCuts = true;
-        eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
-        for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
+      nCuts=0; nMaxCuts=nMax; validCuts = true;
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
     }
-    
+
     void AddCut(TString eventCut, TString photonCut, TString mesonCut){
-        if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-        if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-        eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
-        nCuts++;
-        return;
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
+      nCuts++;
+      return;
     }
     void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString clusterCut){
-        if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-        if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-        eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
-        nCuts++;
-        return;
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
+      nCuts++;
+      return;
     }
-    
+
     Bool_t AreValid(){return validCuts;}
     Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
     TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConv: GetEventCut wrong index i" << endl;return "";}}
     TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetPhotonCut wrong index i" << endl;return "";}}
     TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetMesonCut wrong index i" << endl;return "";}}
     TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConv: GetClusterCut wrong index i" << endl;return "";}}
-private:
+  private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
     TString* eventCutArray;
@@ -76,31 +77,14 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
                                Bool_t   enableTriggerOverlapRej     = kFALSE,                         // enable trigger overlap rejection
                                Float_t  maxFacPtHard                = 3.,                             // maximum factor between hardest jet and ptHard generated
                                TString  periodNameV0Reader          = "",
-                               Bool_t   runLightOutput              = kFALSE                          // switch to run light output (only essential histograms for afterburner)
+                               Bool_t   runLightOutput              = kFALSE,                         // switch to run light output (only essential histograms for afterburner)
+                               TString  additionalTrainConfig       = "0"                             // additional counter for trainconfig, this has to be always the last parameter
                            ) {
 
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
-
   Int_t isHeavyIon = 0;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }  
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -195,58 +179,59 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
   
   CutHandlerConv cuts;
 
+  //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
   if (trainConfig == 1){
-    cuts.AddCut("00000123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , only boxes
+    cuts.AddCut("00000113", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV 
   } else if (trainConfig == 2) {
-    cuts.AddCut("00000123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD, V0AND , only boxes
+    cuts.AddCut("00000113", "00200009397300008250400000", "0163103100000000"); // new pi0/eta cut 2.76TeV without MC smearing
   } else if (trainConfig == 3) {
-    cuts.AddCut("00000123", "00200009326000003800000000", "0163103100900000"); //standard cut Gamma pp 2-76TeV , only boxes
+    cuts.AddCut("00000113", "00200009366300003800000000", "0163103100900000"); // standard cut Pi0 pp 2.76TeV PbPb paper 2012
   } else if (trainConfig == 4) {
-    cuts.AddCut("00000113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
+    cuts.AddCut("00000113", "00200009297002008250400000", "0163103100900000"); // standard cut LHC11h pp 2.76TeV 
   } else if (trainConfig == 5) {
-    cuts.AddCut("00010113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD, V0AND
+    cuts.AddCut("00000113", "00200009227302008250404000", "0163101500000000"); // Ana eta analysis prefered 2.76TeV
   } else if (trainConfig == 6) {
-    cuts.AddCut("00000113", "00200009326000003800000000", "0163103100900000"); //standard cut Gamma pp 2.76TeV
+    cuts.AddCut("00000113", "00200009327000008250400000", "0163103100900000"); // go with 1sigma pi rejec to infty 2.76TeV
   } else if (trainConfig == 7) {
-    cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
+    cuts.AddCut("00000113", "00200009317000008250400000", "0163103100900000"); // go with 0sigma pi rejec to infty 2.76TeV
   } else if (trainConfig == 8) {
-    cuts.AddCut("00013113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
+    cuts.AddCut("00000113", "00200009357000008250400000", "0163103100900000"); // go with 2sigma pi reject to infy 2.76TeV
   } else if (trainConfig == 9) {
-    cuts.AddCut("00003123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
+    cuts.AddCut("00003113", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV wSDD
   } else if (trainConfig == 10) {
-    cuts.AddCut("00013123", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
-  } else if (trainConfig == 11) {
-    cuts.AddCut("00000113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities
-  } else if (trainConfig == 12) {
-    cuts.AddCut("00000113", "00700009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities, min R = 35 cm
-  } else if (trainConfig == 13) {
-    cuts.AddCut("00003113", "00200009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities
-  } else if (trainConfig == 14) {
-    cuts.AddCut("00003113", "00700009366300003800000000", "0163103100900000"); //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
-  } else if (trainConfig == 15) {
-    cuts.AddCut("00000113", "00200009297002008250400000", "0152506500000000"); //standard cut LHC11h pp 2.76TeV
-  } else if (trainConfig == 16) {
-    cuts.AddCut("00010113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV
-  } else if (trainConfig == 17){
+    cuts.AddCut("00051013", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV wSDD & EMC1
+  
+  //----------------------------- configuration for  8 TeV standard  --------------------------------------------------------
+  } else if (trainConfig == 20) {
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut pp 8 TeV
+  } else if (trainConfig == 21) {
+    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV EMC7 
+  } else if (trainConfig == 22) {
+    cuts.AddCut("00081113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV EGA
+
+  //----------------------------- configuration for  7 TeV standard cuts -----------------------------------------------------
+  } else if (trainConfig == 30){
+    cuts.AddCut("00000113", "00200009227300008250404000", "0152103500000000"); //New standard cut pp 7 TeV direct photon
+  } else if (trainConfig == 31){
     cuts.AddCut("00000113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 7 TeV
-  } else if (trainConfig == 18){
-    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000000"); //New standard cut for eta analysis 8 TeV
-  } else if (trainConfig == 19){
-    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000002"); //New standard cut for eta analysis 8 TeV
-  } else if (trainConfig == 20){
-    cuts.AddCut("00000113", "00200009227302008250400000", "0152101500000022"); //New standard cut for eta analysis 8 TeV
-  } else if (trainConfig == 21){
-    cuts.AddCut("00000113", "00200009227302008250404000", "0152101500000000"); //New standard cut for eta analysis 8 TeV
-  } else if (trainConfig == 22){
-    cuts.AddCut("00000113", "00200009217302008250404000", "0152101500000000"); //New standard cut for eta analysis 8 TeV
-  } else if (trainConfig == 23){
-    cuts.AddCut("00010113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0AND
-  } else if (trainConfig == 24){
-    cuts.AddCut("00074113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0 HM
-  } else if (trainConfig == 25){
-    cuts.AddCut("00075113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, SPD HM
-  } else if (trainConfig == 26){
+  } else if (trainConfig == 32){
     cuts.AddCut("00000113", "00200008366300000200000000", "0163103100900000"); //old standard cut pp 7 TeV
+
+  //----------------------------- configuration for run 2 analysis 13 TeV ----------------------------------------------------
+  } else if (trainConfig == 40){
+    cuts.AddCut("00010113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0AND
+  } else if (trainConfig == 41){
+    cuts.AddCut("00074113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, V0 HM
+  } else if (trainConfig == 42){
+    cuts.AddCut("00075113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, SPD HM
+  } else if (trainConfig == 43){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //New standard cut Gamma Pi0 Eta pp 13TeV, V0AND
+    
+  //----------------------------- configuration for run 2 analysis 5 TeV ----------------------------------------------------  
+  } else if (trainConfig == 50){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152101500000000"); //New standard cut pp 5 TeV VAND=
+    
+    
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

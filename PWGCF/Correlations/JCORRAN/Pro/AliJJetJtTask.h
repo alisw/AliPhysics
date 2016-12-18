@@ -1,18 +1,17 @@
 #ifndef ALIJJETJTTASK_H
 #define ALIJJETJTTASK_H
 
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice     */
-//______________________________________________________________________________
-// Analysis task for high pt particle correlations 
-// author: R.Diaz, J. Rak,  D.J. Kim
-// ALICE Group University of Jyvaskyla 
-// Finland 
-//
-// Fill the analysis containers for ESD or AOD
-// Note: Adapted for AliAnalysisTaskSE
-//////////////////////////////////////////////////////////////////////////////
-
+/// \class AliJJetJtTask
+/// \brief Wrapper class for AliJJetJtAnalysis
+///
+/// This is a longer description of the class. This longer description is
+/// formatted using the Markdown syntax (see below) and can span on multiple
+/// lines.
+/// 
+/// \author Tomas Snellman, tsnellma@cern.ch
+/// \author Beomkyu Kim
+/// \author Dongjo Kim
+/// \date Nov 11, 2016
 
 #include "AliAnalysisTaskSE.h"
 #include "AliJJetJtAnalysis.h"
@@ -61,21 +60,21 @@ class AliJJetJtTask : public AliAnalysisTaskSE {
  private:
 
     // TODO new Task - AliJJetTask?
-    AliJJetTask           * fJetTask;
-    AliJJetTask           * fMCJetTask;
-    TString                 fJetTaskName;
-    TString                 fMCJetTaskName;
-    AliJJetJtAnalysis     * fJJetJtAnalysis;
-    TClonesArray           *fJMCTracks;
-    TDirectory            * fOutput;
-    AliJCard              * fCard;
-    Bool_t fFirstEvent;
-    int cBin;
-    int zBin;
-    int NRandom;
-    int moveJet;
-    int fDoMC;
-    double zVert;
+    AliJJetTask           * fJetTask; ///< Pointer to jet finder task
+    AliJJetTask           * fMCJetTask; ///< Pointer to MC jet finder task (obsolete)
+    TString                 fJetTaskName; ///< Name of the jet finder task
+    TString                 fMCJetTaskName; ///< Name of the MC jet finder task
+    AliJJetJtAnalysis     * fJJetJtAnalysis; ///< Pointer to the jT analysis class
+    TClonesArray           *fJMCTracks; ///< List of MC tracks
+    TDirectory            * fOutput; 
+    AliJCard              * fCard; ///< Pointer to the configuration card
+    Bool_t fFirstEvent; ///< True if this is the first event analyzed
+    int cBin; ///< Comment needed
+    int zBin; ///< Comment needed
+    int NRandom; ///< Number of times a random background is generated for each track
+    int moveJet; ///< Comment needed
+    int fDoMC; ///< Whether or not MC analysis is performed
+    double zVert; ///< Vertex position
     AliAnalysisUtils *fAnaUtils;
     AliJRunTable *fRunTable;
     TH1D * fEventHist;

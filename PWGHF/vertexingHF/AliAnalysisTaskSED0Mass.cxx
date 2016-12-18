@@ -91,12 +91,14 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
   fUseSelectionBit(kTRUE),
+  fAODProtection(1),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables(),
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
+  fFillSparses(0),
   fhStudyImpParSingleTrackSign(0), 
   fhStudyImpParSingleTrackCand(0), 
   fhStudyImpParSingleTrackFd(0), 
@@ -136,12 +138,14 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fFillYHist(kFALSE),
   fFillImpParHist(kFALSE),
   fUseSelectionBit(kTRUE),
+  fAODProtection(1),
   fWriteVariableTree(kFALSE),
   fVariablesTree(0),
   fCandidateVariables(),
   fPIDCheck(kFALSE),
   fDrawDetSignal(kFALSE),
   fUseQuarkTagInKine(kTRUE),
+  fFillSparses(0),
   fhStudyImpParSingleTrackSign(0),
   fhStudyImpParSingleTrackCand(0),
   fhStudyImpParSingleTrackFd(0),
@@ -822,28 +826,33 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   }
   //create THnSparse for impact parameter analysis in DATA sample.
   //pt, normImpParTrk1, normImpParTrk2,    decLXY, normDecLXY, massd0, cut, pid, D0D0bar
-  Int_t nbinsImpParStudy[9]=      {50, 40, 40, 20, 15, 600,  3,4,2};
-  Double_t limitLowImpParStudy[9]={0,  -5, -5,  0,  0,1.6248,1,0,0};
-  Double_t limitUpImpParStudy[9]= {50., 5,  5, 0.2,15,2.2248,4,4,2};
-  TString axTit[9]={"#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","MassD0_{k#pi} (GeV/#it{c}^{2})", "cutSel","PIDinfo","D0D0bar"};
-  fhStudyImpParSingleTrackCand=new THnSparseF("fhStudyImpParSingleTrackCand","fhStudyImpParSingleTrackCand",9,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-  for(Int_t iax=0; iax<9; iax++) fhStudyImpParSingleTrackCand->GetAxis(iax)->SetTitle(axTit[iax].Data());
-  fOutputMass->Add(fhStudyImpParSingleTrackCand);
+  if(fFillSparses){
+    Int_t nbinsImpParStudy[9]=      {50, 40, 40, 20, 15, 600,  3,4,2};
+    Double_t limitLowImpParStudy[9]={0,  -5, -5,  0,  0,1.6248,1,0,0};
+    Double_t limitUpImpParStudy[9]= {50., 5,  5, 0.2,15,2.2248,4,4,2};
+    TString axTit[9]={"#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","MassD0_{k#pi} (GeV/#it{c}^{2})", "cutSel","PIDinfo","D0D0bar"};
+    fhStudyImpParSingleTrackCand=new THnSparseF("fhStudyImpParSingleTrackCand","fhStudyImpParSingleTrackCand",9,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+    for(Int_t iax=0; iax<9; iax++) fhStudyImpParSingleTrackCand->GetAxis(iax)->SetTitle(axTit[iax].Data());
+    fOutputMass->Add(fhStudyImpParSingleTrackCand);
+  }
   if(fReadMC){
-    //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
-    Int_t nbinsImpParStudy[8]=      {50,50,40, 40, 20,  15,  3, 4};
-    Double_t limitLowImpParStudy[8]={0, 0, -5,-5., 0.,  0.,  1.,0.};
-    Double_t limitUpImpParStudy[8]= {50.,50., 5, 5,  0.2, 15,  3.,4.};
 
-    fhStudyImpParSingleTrackSign=new THnSparseF("fhStudyImpParSingleTrackSign","fhStudyImpParSingleTrackSign",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-    TString axTitMC[8]={"#it{p}_{T} (GeV/c)","#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","cutSel","PIDinfo"};
-    for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackSign->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
-    fOutputMass->Add(fhStudyImpParSingleTrackSign);
-
-
-    fhStudyImpParSingleTrackFd=new THnSparseF("fhStudyImpParSingleTrackFd","fhStudyImpParSingleTrackFd",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
-    for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackFd->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
-    fOutputMass->Add(fhStudyImpParSingleTrackFd);
+    if(fFillSparses){
+      //pt, ptB, normImpParTrk1, normImpParTrk2, decLXY, normDecLXY, iscut, ispid
+      Int_t nbinsImpParStudy[8]=      {50,50,40, 40, 20,  15,  3, 4};
+      Double_t limitLowImpParStudy[8]={0, 0, -5,-5., 0.,  0.,  1.,0.};
+      Double_t limitUpImpParStudy[8]= {50.,50., 5, 5,  0.2, 15,  3.,4.};
+      
+      fhStudyImpParSingleTrackSign=new THnSparseF("fhStudyImpParSingleTrackSign","fhStudyImpParSingleTrackSign",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+      TString axTitMC[8]={"#it{p}_{T} (GeV/c)","#it{p}_{T} (GeV/c)","normalized imp par residual, trk1","normalized imp par residual, trk2","#it{L}_{xy} (cm)","norm #it{L}_{xy}","cutSel","PIDinfo"};
+      for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackSign->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
+      fOutputMass->Add(fhStudyImpParSingleTrackSign);
+      
+      
+      fhStudyImpParSingleTrackFd=new THnSparseF("fhStudyImpParSingleTrackFd","fhStudyImpParSingleTrackFd",8,nbinsImpParStudy,limitLowImpParStudy,limitUpImpParStudy);
+      for(Int_t iax=0; iax<8; iax++) fhStudyImpParSingleTrackFd->GetAxis(iax)->SetTitle(axTitMC[iax].Data());
+      fOutputMass->Add(fhStudyImpParSingleTrackFd);
+    }
   
     if(fStepMCAcc) CreateMCAcceptanceHistos();
   }
@@ -935,7 +944,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 21,-0.5,20.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 23,-0.5,22.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -963,6 +972,8 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(19,"D0 failed to be filled");
   fNentries->GetXaxis()->SetBinLabel(20,"fisFilled is 0");
   fNentries->GetXaxis()->SetBinLabel(21,"fisFilled is 1");
+  fNentries->GetXaxis()->SetBinLabel(22,"AOD/dAOD mismatch");
+  fNentries->GetXaxis()->SetBinLabel(23,"AOD/dAOD #events ok");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
@@ -1044,6 +1055,19 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fNentries->Fill(21);
+      return;
+    }
+    fNentries->Fill(22);
+  }
+
   TString bname;
   if(fArray==0){ //D0 candidates
     // load D0->Kpi candidates
@@ -1103,6 +1127,8 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
+
+
   fCounter->StoreEvent(aod,fCuts,fReadMC); 
   //fCounter->StoreEvent(aod,fReadMC); 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
@@ -1204,7 +1230,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	DrawDetSignal(d, fDetSignal);
       }
       FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
-      NormIPvar(aod, d,mcArray);
+      if(fFillSparses) NormIPvar(aod, d,mcArray);
       if (fPIDCheck) {
 	Int_t isSelectedPIDfill = 3;
 	if (!fReadMC || (fReadMC && fUsePid4Distr)) isSelectedPIDfill = fCuts->IsSelectedPID(d); //0 rejected,1 D0,2 Dobar, 3 both

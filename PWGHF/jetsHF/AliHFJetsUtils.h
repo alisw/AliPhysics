@@ -31,8 +31,11 @@ using std::map;
 using std::pair;
 using std::make_pair;
 
-typedef vector < pair < Double_t, Int_t > >   vctr_pair_dbl_int;
-typedef map    < Int_t, Bool_t >              map_int_bool;
+class AliESDtrack;
+
+typedef vector <pair<Int_t, AliESDtrack*>> vctr_pair_int_esdTrk;
+typedef vector <pair <Double_t, Int_t>>   vctr_pair_dbl_int;
+typedef map    <Int_t, Bool_t>            map_int_bool;
 
 #ifndef ALILOG_H
 #include "AliLog.h"

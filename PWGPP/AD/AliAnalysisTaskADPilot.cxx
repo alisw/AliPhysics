@@ -260,9 +260,9 @@ void AliAnalysisTaskADPilot::UserCreateOutputObjects()
   const Float_t kTdcWidthMin = 2.343750;
   const Float_t kTdcWidthMax = 121.875000;
   
-  const Int_t kNChargeChannelBins = 5500;
+  const Int_t kNChargeChannelBins = 15000;
   const Int_t kChargeChannelMin = 0;
-  const Int_t kChargeChannelMax = 5500;
+  const Int_t kChargeChannelMax = 15000;
   
   const Int_t kNChargeSideBins = 40000;
   const Int_t kChargeSideMin = 0;
@@ -394,7 +394,7 @@ void AliAnalysisTaskADPilot::UserCreateOutputObjects()
   fHistMeanTimeCorrelation = CreateHist2D("fHistMeanTimeCorrelation","Mean Time in ADA-ADC",kNCorrTimeBins, kCorrTimeMin, kCorrTimeMax,kNCorrTimeBins, kCorrTimeMin, kCorrTimeMax,"Time ADA","Time ADC");
   fListHist->Add(fHistMeanTimeCorrelation);
 
-  fHistMeanTimeSumDiff = CreateHist2D("fHistMeanTimeSumDiff","Mean Time in ADA-ADC",307, -150.000000, 149.804688, 410, 0.000000, 400.390625,"AD Mean time t_{A} - t_{C} [ns]","AD Mean time t_{A} + t_{C} [ns]");
+  fHistMeanTimeSumDiff = CreateHist2D("fHistMeanTimeSumDiff","Mean Time in ADA-ADC",1024,-150,150, 4100, 0.000000, 400.390625,"AD Mean time t_{A} - t_{C} [ns]","AD Mean time t_{A} + t_{C} [ns]");
   fListHist->Add(fHistMeanTimeSumDiff);
 
   fHistDecision = CreateHist2D("fHistDecision","Offline decision in ADA-ADC",4,0 ,4,4,0,4,"ADA","ADC");

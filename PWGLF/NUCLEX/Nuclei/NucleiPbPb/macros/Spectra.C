@@ -24,10 +24,19 @@ void Spectra() {
   /// Taking all the histograms from the MC file
   TFile signal_file(kSignalOutput.data());
   TFile data_file(kDataFilename.data());
+  TFile secondaries_file(kSecondariesOutput.data());
   TFile efficiency_file(kEfficiencyOutput.data());
   TFile output_file(kSpectraOutput.data(),"recreate");
 
   TAxis *centAxis,*ptAxis;
+
+  TFile g3g4_file("~/Desktop/Repositories/root-files/deuterons/G3G4.root");
+  TGraphAsymmErrors* g3g4tof[2]{
+    (TGraphAsymmErrors*)g3g4_file.Get("mCorrTof"),
+    (TGraphAsymmErrors*)g3g4_file.Get("aCorrTof")
+  };
+  Requires(g3g4tof[0],"tofA");
+  Requires(g3g4tof[1],"tofM");
 
   TTList* norm_list = (TTList*)data_file.Get(kFilterListNames.data());
   TH1F* number_of_events = (TH1F*)norm_list->Get("fCentralityClasses");
@@ -51,6 +60,8 @@ void Spectra() {
     auto ptbins = *(hReference->GetYaxis()->GetXbins());
     ptAxis = hReference->GetYaxis();
 
+    TF1 *primary_fraction;
+
     for (int iS = 0; iS < 2; ++iS) {
       TDirectory* particle_dir = base_dir->mkdir(kNames[iS].data());
       particle_dir->cd();
@@ -61,17 +72,26 @@ void Spectra() {
         TF1* eff_tpc_func = eff_tpc_graph->GetFunction("effModel");
         TF1* eff_tof_func = eff_tof_graph->GetFunction("effModel");
         /// I am not considering Secondaries here, the analysis is only at high pT
-
+        if (secondaries_file.IsOpen()) {
+          TH1F* hResTFF = (TH1F*)secondaries_file.Get(Form("%s/Results/hResTFF%i",list_key->GetName(),iC+1));
+          Requires(hResTFF,Form("%s/Results/hResTFF%i",list_key->GetName(),iC+1));
+          primary_fraction = hResTFF->GetFunction("fitFrac");
+          Requires(primary_fraction,"Missing primary fraction");
+        }
 
         /// Getting raw signals
-        TH1D* rawTOF = (TH1D*)signal_file.Get(Form("%s/%s/Model0/hRawCounts%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
+        TH1D* rawTOF = (TH1D*)signal_file.Get(Form("%s/%s/Fits/hRawCounts%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
         TH1D* rawTPC = (TH1D*)signal_file.Get(Form("%s/%s/TPConly/hTPConly%c%i",list_key->GetName(),kNames[iS].data(),kLetter[iS],iC));
+        Requires(rawTOF,"Missing TOF raw counts");
+        Requires(rawTPC,"Missing TPC raw counts");
 
         /// Creating spectra histograms
         TH1D* spectraTOF = new TH1D(*rawTOF);
         spectraTOF->SetTitle(";#it{p}_{T} (GeV/#it{c});#frac{1}{N_{ev}}#frac{dN}{dp_{T}d{y}}");
         Normalise(spectraTOF);
         Divide(spectraTOF,eff_tof_graph);
+        Divide(spectraTOF,g3g4tof[iS]);
+        if (primary_fraction&&!iS) spectraTOF->Multiply(primary_fraction);
         TH1D* spectraTPC = new TH1D(*rawTPC);
         spectraTPC->SetTitle(";#it{p}_{T} (GeV/#it{c});#frac{1}{N_{ev}}#frac{dN}{dp_{T}d{y}}");
         Normalise(spectraTPC);

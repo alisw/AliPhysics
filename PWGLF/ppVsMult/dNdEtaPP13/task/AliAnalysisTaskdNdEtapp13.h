@@ -223,6 +223,10 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   //
   Bool_t GetUseSpecialOutput()            const {return fUseSpecialOutput;}
   void   SetUseSpecialOutput(Bool_t v=kTRUE)    {fUseSpecialOutput=v;}
+  void       SetUseBCMod(Bool_t bc = kFALSE)              {fUseBCMod = bc;}
+  void       SetBCMod(Int_t mod=2)        {fBCMod4 = mod;}
+
+
   //
  protected:
   void       InitMultReco();
@@ -304,6 +308,10 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
   Bool_t fIsSelected;                      //! did current event pass phys.sel.?
   Bool_t fVtxOK;                           //! rec.vertex is good
   Bool_t fUseSpecialOutput;                // flag to open special output
+  Bool_t fUseBCMod;                         // flag to use bunch crossing mod 4 events
+  Int_t      fBCMod4;                        // Select BC Mod4
+
+
   //
   static const char*  fgCentSelName[];              //!centrality types
   static const char*  fgkPDGNames[];                //!pdg names

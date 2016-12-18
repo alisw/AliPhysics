@@ -39,6 +39,9 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   virtual int FillParticleProperties(AliVParticle* p, Double_t* date, int dimension) const;
   virtual AliVParticle* CreateParticle(AliVParticle* track);
 
+  // Get the D0 efficiency
+  virtual double GetD0Eff(AliVParticle* tr);
+
   /// check MC criteria
   int CheckMC(AliVParticle* p, const AliVEvent* pEvent);
 
@@ -47,6 +50,12 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
 
   /// clear internal memory
   virtual void Clear(const char* option="");
+
+  enum{
+    kMCFirst=0,
+    kMCLast=1,
+    kMCOnly=2
+  };
 
  protected:
   virtual int HistogramParticleProperties(AliVParticle* p, int selected=1);
@@ -57,14 +66,20 @@ class AliDxHFEParticleSelectionMCD0 : public AliDxHFEParticleSelectionD0 {
   /// assignment operator prohibited
   AliDxHFEParticleSelectionMCD0& operator=(const AliDxHFEParticleSelectionMCD0&);
 
+  int ParseArguments(const char* arguments);
+
   AliDxHFEToolsMC fMCTools;  // MC selction tools
   TH1* fPDGnotMCD0;          // holds PDG of not MC truth D0s
   int fResultMC;             // Result on MC check
   int fOriginMother;         // Holds info on the original mother particle
   bool fUseKine;             // Whether to run over MC particles (true) or Reco (false)
   THnSparse* fD0PropertiesKine; //the particle properties of selected particles
-
-  ClassDef(AliDxHFEParticleSelectionMCD0, 3);
+  Bool_t fStoreOnlyMCD0;     // Store only MC truth D0s, discard the rest
+  Int_t fMCInfo;             // What to check and in which order
+  Bool_t fRequireD0toKpi;    // Only take D0 to Kpi
+  Short_t fSystem;           // Which system pp/PbPb
+  Short_t fUseCentrality;    // Using centrality or not
+  ClassDef(AliDxHFEParticleSelectionMCD0, 4);
 };
 
 #endif

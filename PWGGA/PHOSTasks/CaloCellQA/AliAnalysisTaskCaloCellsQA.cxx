@@ -46,6 +46,7 @@
 #include <AliVVertex.h>
 #include <AliEMCALGeometry.h>
 #include <AliPHOSGeometry.h>
+#include "AliOADBContainer.h"
 #include <AliLog.h>
 
 ClassImp(AliAnalysisTaskCaloCellsQA)
@@ -131,8 +132,31 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
     }
   } else {
     if (!AliPHOSGeometry::GetInstance()) {
+      
       AliInfo("PHOS geometry not initialized, initializing it for you");
-      AliPHOSGeometry::GetInstance("IHEP");
+      AliPHOSGeometry* geo;
+      
+      AliOADBContainer geomContainer("phosGeo");
+      geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+      TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(event->GetRunNumber(),"PHOSRotationMatrixes");
+      
+      if(event->GetRunNumber() < 224994)
+      	geo = AliPHOSGeometry::GetInstance("IHEP"); // Run1 geometry
+      else
+	geo = AliPHOSGeometry::GetInstance("Run2");
+      
+      for(Int_t mod=0; mod<5; mod++) {
+	if(!matrixes->At(mod)) {
+	  if( fDebug )
+	    AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, geo));
+	  continue;
+	}
+	else {
+	  geo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+	  if( fDebug >1 )
+	    AliInfo(Form("Adding PHOS Matrix for mod:%d, geo=%p\n", mod, geo));
+	}	
+      }
     }
   }
 
@@ -175,11 +199,16 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
 
     clusArray.Add(clus);
   }
-
+  
   Double_t vertexXYZ[3];
   vertex->GetXYZ(vertexXYZ);
   fCellsQA->Fill(event->GetRunNumber(), &clusArray, cells, vertexXYZ);
-
+  
+  if (fCellsQA->GetDetector() == AliCaloCellsQA::kPHOS) {
+    UShort_t BC = event->GetBunchCrossNumber();
+    fCellsQA->FillTimeDDL(&clusArray, BC);
+  }    
+  
   if (fOutfile.Length() == 0)
     PostData(1, fCellsQA->GetListOfHistos());
 }

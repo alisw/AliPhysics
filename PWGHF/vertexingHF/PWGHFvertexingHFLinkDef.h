@@ -19,7 +19,9 @@
 #pragma link C++ class AliRDHFCutsD0toKpi+;
 #pragma link C++ class AliRDHFCutsJpsitoee+;
 #pragma link C++ class AliRDHFCutsDplustoKpipi+;
+#pragma link C++ class AliRDHFCutsDplustoK0spi+;
 #pragma link C++ class AliRDHFCutsDstoKKpi+;
+#pragma link C++ class AliRDHFCutsDstoK0sK+;
 #pragma link C++ class AliRDHFCutsLctopKpi+;
 #pragma link C++ class AliRDHFCutsLctoV0+;
 #pragma link C++ class AliRDHFCutsD0toKpipipi+;

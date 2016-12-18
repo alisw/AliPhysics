@@ -50,7 +50,8 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
     void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
 
-    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
+    void CheckMCgen(AliAODMCHeader* mcHeader);
+    void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
@@ -64,7 +65,9 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     AliVEvent   *fVevent;  //!event object
     AliESDEvent *fESD;    //!ESD object
     AliAODEvent *fAOD;    //!AOD object
+    AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
+    AliEMCALGeometry *fEMCALGeo;
 
     Bool_t      fFlagSparse;// switch to THnspare
     Bool_t       fUseTender;// switch to add tender
@@ -95,6 +98,11 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events
     TH1F        *fCent;//! centrality
+    TH2F        *fMult;//! track multiplicity vs centrality
+    TH2F        *fEvPlaneV0;//! V0 event plane
+    TH2F        *fEvPlaneV0A;//! V0A event plane
+    TH2F        *fEvPlaneV0C;//! V0C event plane
+    TH2F        *fEvPlaneTPC;//! TPC event plane
     TH1F        *fVtxZ;//!Vertex z
     TH1F        *fVtxX;//!Vertex x
     TH1F        *fVtxY;//!Vertex y
@@ -114,9 +122,10 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH1F        *fHistoNClsE3;//! No of clusters per event
     //TH1F        *fHistoNCells;//! No of cells per cluster
     TH2F        *fHistoNCells;//! No of cells per cluster
+    TH2F        *fHistoEperCell; 
     TH2F        *fHistoCalCell;//! No of cells per cluster
     TH2F        *fHistoTimeEMC;//! No of cells per cluster
-    TH2F        *fHistoTimeEMCcorr;//! No of cells per cluster
+    THnSparse   *fHistoTimeEMCcorr;//! No of cells per cluster
     TH1F        *fNegTrkIDPt;//!neg track ID
     TH1F        *fTrkPt;//!track pt
     TH1F        *fTrketa;//!track eta
@@ -124,6 +133,8 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fdEdx;//!dedx vs pt
     TH2F        *fTPCNpts;//!TPC Npoints used for dedx
     TH2F        *fTPCnsig;//!TPC Nsigma
+    TH2F        *fTPCnsigMcEle;//!TPC Nsigma
+    TH2F        *fTPCnsigMcHad;//!TPC Nsigma
     TH2F        *fTPCnsig_Pi;//!TPC Nsigma wrt pion
     TH2F        *fTPCnsigEta0;//!TPC Nsigma
     TH2F        *fTPCnsigEta1;//!TPC Nsigma
@@ -142,7 +153,12 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fClsEtaPhiAftMatchEMCout;//!EMC Cluster eta phi distribution after track matching outside EMC phi acceptance
     TH2F        *fHistdEdxEop;//!E/p vs dedx
     TH2F        *fHistNsigEop;//!E/p vs dedx
+    TH2F        *fHistNsigEop_Most;//!pt vs E/p
+    TH2F        *fHistNsigEop_Semi;//!pt vs E/p
+    TH2F        *fHistNsigEop_Peri;//!pt vs E/p
     TH2F        *fHistEop;//!pt vs E/p
+    TH2F        *fHistMcEopEle;//!pt vs E/p
+    TH2F        *fHistMcEopHad;//!pt vs E/p
     TH2F        *fM20;//!M20 vs pt
     TH2F        *fM02;//!M20 vs pt
     TH2F        *fM20EovP;//!M20 vs E/p
@@ -155,9 +171,13 @@ class AliAnalysisTaskHFEemcQA : public AliAnalysisTaskSE {
     TH2F        *fEleCanSPD2;//!ele cand hit SPD layer 2
     TH2F        *fEleCanSPDBoth;//!ele cand SPD both layer
     TH2F        *fEleCanSPDOr;//!ele cand SPD or
+    TH2F        *fITShitPhi;//!ele cand SPD or
     TH1F        *fInvmassULS;//!Invmass of ULS
     TH1F        *fInvmassLS;//!Invmass of LS
-    TH1F        *fMCcheckMother;
+    TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
+    THnSparse        *fInvmassPi0Dalitz;//!Invmass of ULS
+    TH2F        *fMCcheckMother;
+    TH2F        *fMCneutral;
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info

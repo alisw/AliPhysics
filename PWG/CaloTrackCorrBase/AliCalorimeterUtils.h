@@ -24,6 +24,7 @@
 class TArrayF;  
 #include <TH2I.h>
 #include <TGeoMatrix.h>
+class AliMCEvent;
 
 //--- ANALYSIS system ---
 class AliVEvent;
@@ -316,7 +317,9 @@ class AliCalorimeterUtils : public TObject {
   
   // Recalculation
 
-  void          RecalculateClusterTrackMatching(AliVEvent * event, TObjArray* clusterArray = 0x0) ;
+  void          RecalculateClusterTrackMatching(AliVEvent * event, 
+                                                TObjArray* clusterArray = 0x0,
+                                                AliMCEvent* mc = 0x0) ;
     
   void          GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ) {
                   if (fRecalculateMatching) fEMCALRecoUtils->GetMatchedResiduals(index,dR,dZ)   ; }

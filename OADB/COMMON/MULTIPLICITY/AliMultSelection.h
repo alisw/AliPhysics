@@ -68,6 +68,8 @@ public:
     Bool_t GetThisEventIsNotAsymmetricInVZERO () { return fThisEvent_IsNotAsymmetricInVZERO; }
     void         SetThisEventIsNotIncompleteDAQ ( Bool_t lBoo ) { fThisEvent_IsNotIncompleteDAQ = lBoo; } 
     Bool_t GetThisEventIsNotIncompleteDAQ () { return fThisEvent_IsNotIncompleteDAQ; }
+    void         SetThisEventHasGoodVertex2016 ( Bool_t lBoo ) { fThisEvent_HasGoodVertex2016 = lBoo; }
+    Bool_t GetThisEventHasGoodVertex2016 () { return fThisEvent_HasGoodVertex2016; }
     
 private:
     Long_t fNEsts;    //Number of estimators
@@ -84,12 +86,14 @@ private:
     Bool_t fThisEvent_HasNoInconsistentVertices;//!
     Bool_t fThisEvent_PassesTrackletVsCluster;  //!
     Bool_t fThisEvent_IsNotAsymmetricInVZERO;   //!
-    Bool_t fThisEvent_IsNotIncompleteDAQ;   //!
+    Bool_t fThisEvent_IsNotIncompleteDAQ;       //!
+    Bool_t fThisEvent_HasGoodVertex2016;         //!
     
-    ClassDef(AliMultSelection, 4)
+    ClassDef(AliMultSelection, 5)
     // 1 - original implementation
     // 2 - added fEvSelCode for EvSel bypass + getter changed
     // 3 - added booleans to classify which event criteria are satisfied
-    // 4 - added IsEventSelected 
+    // 4 - added IsEventSelected
+    // 5 - added Good vertex, adjustments
 };
 #endif

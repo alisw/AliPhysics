@@ -60,14 +60,18 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
+  void SetRunPeriodSelection(Bool_t run1 = kFALSE, Bool_t run2 = kFALSE) {fRun1PbPb = run1; fRun2PbPb = run2;}
   void SetTriggerConfig(UShort_t trigConf) {fTriggerConfig = trigConf;}
-  void SetRequestRefit(bool itsR = kFALSE, bool itsRpion = kFALSE) {fRequestITSrefit = itsR; fRequestITSrefitPion = itsRpion;}
+  void SetEvtSpecie(UInt_t evspc = 4){fEvtSpecie = evspc;}
+  void SetEmbedEvtSelection(Bool_t evtSel = kFALSE){fEvtEmbedSelection = evtSel;}
+  void SetRequestRefit(bool itsR = kFALSE, bool itsRpion = kFALSE, bool itsRin = kFALSE) {fRequestITSrefit = itsR; fRequestITSrefitPion = itsRpion; fRequestITSin = itsRin;}
   void SetTOFpid(bool reqTOFpid = kFALSE) {fRequestTOFPid = reqTOFpid;}
   void SetRequestTPCSigmas(float tpcSgm) {fRequestTPCSigmas = tpcSgm;}
   void SetRequestTOFSigmas(float tofSgm) {fRequestTOFSigmas = tofSgm;}
   void SetChargeTriplet(bool sign_c = kTRUE, bool ls_c = kTRUE) {fMinvSignal = sign_c; fMinvLikeSign = ls_c;}
   void SetMotherType(bool matter = kTRUE, bool antimatter = kTRUE){fChooseMatter = matter; fChooseAntiMatter = antimatter;}
   void SetSideBand(Bool_t sband = kFALSE) {fSideBand = sband;}
+  void SetDCAtracksTrianSel(Bool_t selDcaT = kFALSE) {fTriangularDCAtracks = selDcaT;}
 
   void SetDCAPionPrimaryVtx(double dcapionpv) {fDCAPiPVmin = dcapionpv;}
   void SetDCAzProtonPrimaryVtx(double dcaprotonpv) {fDCAzPPVmax = dcaprotonpv;}
@@ -105,6 +109,8 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   void SetConvertedAODVertices(AliESDVertex *ESDvtxp, AliESDVertex *ESDvtxs) const; //!<! method to set the value for the converted AOD vertices
 
  private:
+  Bool_t PassTriggerSelection(UInt_t PhysSelMask);
+  Bool_t PassCentralitySelection();
   Bool_t HasTOF(AliESDtrack *trk, float &beta_tof);
   Bool_t PassPIDSelection(AliESDtrack *trk, int specie, Bool_t isTOFin); // specie according to AliPID enum: 2-pion, 4-proton, 5-deuteron
   void CombineThreeTracks(Bool_t isMatter, TArrayI arrD, TArrayI arrP, TArrayI arrPi, Bool_t cent0, Bool_t cent1);
@@ -124,11 +130,16 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   //Variables
   Bool_t             fMC;                          ///< variables for MC selection
   Bool_t             fFillTree;                    ///< variables to fill the Tree
+  Bool_t             fRun1PbPb;                    ///< variables to activate Trigger and Centrality selection for Run1 (2011 Pb-Pb)
+  Bool_t             fRun2PbPb;                    ///< variables to activate Trigger and Centrality selection for Run2 (2015 Pb-Pb)
+  UInt_t             fEvtSpecie;                   ///< ESD event specie: 1-default; 2-lowM; 4-highM; 8-cosmic
+  Bool_t             fEvtEmbedSelection;           ///< kTRUE: embed event selection in centrality estimation; kFALSE(default): event selection done by hand
   Float_t            fCentrality;                  ///< Centrality class
   Float_t            fCentralityPercentile;        ///< Centrality percentile
   UShort_t           fTriggerConfig;               ///< select different trigger configuration
   Bool_t             fRequestITSrefit;             ///< flag for switch the ITSrefit request in the track cuts
   Bool_t             fRequestITSrefitPion;         ///< flag for switch the ITSrefit request only for candidate pion track cuts
+  Bool_t             fRequestITSin;                ///< flag for switch the ITSin request: tracks with ITSin and FAILED ITSrefit are rejected
   Float_t            fRequestTPCSigmas;            ///< number of sigmas for TPC pid
   Bool_t             fRequestTOFPid;               ///< switch on/off TOF pid
   Float_t            fRequestTOFSigmas;            ///< number of sigmas for TOF pid
@@ -137,6 +148,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   Bool_t             fMinvSignal;                  ///< flag for correct charge triplet - signal
   Bool_t             fMinvLikeSign;                ///< flag for like-sign charge triplet
   Bool_t             fSideBand;                    ///< select distributions in the side band region where only background
+  Bool_t             fTriangularDCAtracks;             ///<
 
   //Cut variables
   Double_t           fDCAPiPVmin;                  ///< Cut on Min DCA of \f$\pi\f$ from primary vertex
@@ -248,6 +260,10 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TH1F               *fHistMassAntiHypertriton_Cent;        //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 0-10%
   TH1F               *fHistMassHypertriton_SemiCent;        //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 10-50%
   TH1F               *fHistMassAntiHypertriton_SemiCent;    //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 10-50%
+
+  TH2F               *fHistMassHyp_Lifetime;                //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$ + anti-\f$H^{3}_{\Lambda}\f$ vs lifetime
+  TH2F               *fHistMassHyp_Lifetime_M;              //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$ vs lifetime
+  TH2F               *fHistMassHyp_Lifetime_A;              //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$ vs lifetime
 
   TH1F               *fHistMassHypertriton_LS_Cent;         //!<! Invariant mass distribution of candidate reconstructed \f$H^{3}_{\Lambda}\f$  centrality 0-10%
   TH1F               *fHistMassAntiHypertriton_LS_Cent;     //!<! Invariant mass distribution of candidate reconstructed anti-\f$H^{3}_{\Lambda}\f$  centrality 0-10%

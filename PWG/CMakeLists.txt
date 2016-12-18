@@ -27,5 +27,6 @@ add_subdirectory(TRD)
 add_subdirectory(HMTF)
 add_subdirectory(MCLEGO)
 add_subdirectory(JETFW)
+add_subdirectory(Cocktail)
 
 message(STATUS "PWG enabled")

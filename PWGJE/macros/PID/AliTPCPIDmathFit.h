@@ -26,6 +26,7 @@ public:
   Int_t AddRefHisto(TH1* refHisto);
   void ClearRefHistos();
   
+  Bool_t GetApplyPatching() const { return fApplyPatching; };
   Int_t GetDebugLevel() const { return fDebugLevel; }
   Double_t GetEpsilon() const { return fEpsilon;  }
   Int_t GetNrefHistos() const { return fNrefHistos;  }
@@ -37,9 +38,12 @@ public:
   Int_t GetNumParametersToRegularise() const { return fNumParametersToRegularise; };
   Int_t GetNumSimultaneousFits() const { return fNumSimultaneousFits; };
   Int_t GetNumXbinsRegularisation() const { return fNumXbinsRegularisation; };
+  const Double_t* GetParAdditional() const { return fParAdditional; };
   Int_t GetXbinIndex() const { return fXbinIndex; };
   const Double_t* GetXstatisticalWeight() const { return fXstatisticalWeight; };
   const Double_t* GetXstatisticalWeightError() const { return fXstatisticalWeightError; };
+  const Double_t* GetXstatisticalWeight2() const { return fXstatisticalWeight2; };
+  const Double_t* GetXstatisticalWeightError2() const { return fXstatisticalWeightError2; };
   const Double_t* GetXvaluesForRegularisation() const { return fXvaluesForRegularisation; };
   Int_t GetRegularisation() const { return fRegularisation; };
   Double_t GetRegularisationFactor() const { return fRegularisationFactor; };
@@ -54,13 +58,16 @@ public:
                   Double_t &ChiSquareOrLogLikelihood, Int_t &NDF, const Double_t *stepSize = 0x0, const Double_t *lowLim = 0x0, 
                   const Double_t *hiLim = 0x0);
   
+  void SetApplyPatching(const Int_t applyPatching) { fApplyPatching = applyPatching; };
   void SetDebugLevel(const Int_t level = 1) { fDebugLevel = level; }
   void SetEpsilon(const Double_t eps);
   void SetMaxCalls(const Int_t maxCalls);
   void SetMinimisationStrategy(TString strategy) { fMinimisationString = strategy; };
   Bool_t SetParametersToRegularise(const Int_t numParams, const Int_t numParamsPerXbin, const Int_t* indexParametersToRegularise,
                                    const Int_t* lastNotFixedIndexOfParameters, const Double_t* xValuesForRegularisation,
-                                   const Double_t* xStatisticalWeight, const Double_t* xStatisticalWeightError);
+                                   const Double_t* xStatisticalWeight, const Double_t* xStatisticalWeightError,
+                                   const Double_t* xStatisticalWeight2, const Double_t* xStatisticalWeightError2,
+                                   const Double_t* parAdditional);
   void SetRegularisation(const Int_t reg, const Double_t regFactor) { fRegularisation = reg; fRegularisationFactor = regFactor; };
   void SetScaleFactorError(const Double_t scaleFactorError) { fScaleFactorError = scaleFactorError; };
   void SetUseLogLikelihood(const Bool_t useLogLikelihood = kTRUE) { fUseLogLikelihood = useLogLikelihood; }
@@ -79,6 +86,7 @@ public:
   Double_t GetChiSquare();
   Double_t GetNegLogLikelihood();
   void GetCovarianceMatrix(Double_t* covMatrix) const;
+  inline static Double_t PatchParameter(Double_t par, Double_t statWeightTot1, Double_t statWeightPar2, Double_t statWeightTotSummed);
   Bool_t PolynomialInterpolation(Double_t xa[], Double_t ya[], Int_t n, Double_t x, Double_t* y, Double_t* dy);
 
   //______________________________________________
@@ -134,6 +142,11 @@ public:
   
   Double_t *fXstatisticalWeight;          // Statistical weights of each x bin
   Double_t *fXstatisticalWeightError;     // Errors of statistical weights of each x bin
+  
+  Bool_t    fApplyPatching;               // Turn on/off patching of parameters with following additional weights 
+  Double_t *fParAdditional;               // Additional contribution to fit parameters
+  Double_t *fXstatisticalWeight2;         // Statistical weights of each x bin - additional weight from other source
+  Double_t *fXstatisticalWeightError2;    // Errors of statistical weights of each x bin - additional weight error from other source
   
   Double_t fRegularisationFactor;         // Relative weighting factor for regularisation (1 = weighted with error)
   

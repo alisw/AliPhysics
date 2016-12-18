@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <RVersion.h>
-#include "AliAnalysisTaskEmcal.h"
+#include <memory>
 
 #include <TClonesArray.h>
 #include <AliEmcalList.h>
@@ -25,30 +25,32 @@
 #include <TChain.h>
 #include <TKey.h>
 
-#include "AliStack.h"
+#include "AliAnalysisTaskEmcal.h"
+#include "AliAnalysisUtils.h"
 #include "AliAODEvent.h"
+#include "AliAODMCHeader.h"
+#include "AliAODTrack.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
+#include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalPythiaInfo.h"
+#include "AliEMCALTriggerPatchInfo.h"
 #include "AliESDEvent.h"
-#include "AliEmcalParticle.h"
+#include "AliESDInputHandler.h"
 #include "AliEventplane.h"
+#include "AliGenPythiaEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliMultiInputEventHandler.h"
+#include "AliMultSelection.h"
+#include "AliStack.h"
+#include "AliVCaloTrigger.h"
 #include "AliVCluster.h"
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
-#include "AliAODTrack.h"
-#include "AliVCaloTrigger.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliAODMCHeader.h"
-#include "AliMCEvent.h"
-#include "AliAnalysisUtils.h"
-#include "AliEMCALTriggerPatchInfo.h"
-#include "AliEmcalPythiaInfo.h"
-
-#include "AliMultSelection.h"
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
@@ -64,7 +66,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPythiaInfoName(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
-  fInitialized(kFALSE),
+  fLocalInitialized(kFALSE),
   fCreateHisto(kTRUE),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -81,6 +83,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fTklVsClusSPDCut(kFALSE),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
+  fMinBiasRefTrigger("CINT7-B-NOPF-ALLNOTRD"),
   fTriggerTypeSel(kND),
   fNbins(250),
   fMinBinPt(0),
@@ -105,18 +108,19 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
   fMCRejectFilter(kFALSE),
+  fCountDownscaleCorrectedEvents(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
-  fAliAnalysisUtils(0x0),
+  fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
-  fGeom(0),
-  fTracks(0),
-  fCaloClusters(0),
-  fCaloCells(0),
-  fCaloTriggers(0),
-  fTriggerPatchInfo(0),
+  fGeom(nullptr),
+  fTracks(nullptr),
+  fCaloClusters(nullptr),
+  fCaloCells(nullptr),
+  fCaloTriggers(nullptr),
+  fTriggerPatchInfo(nullptr),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -125,26 +129,27 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fNVertCont(0),
   fNVertSPDCont(0),
   fBeamType(kNA),
-  fPythiaHeader(0),
+  fPythiaHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
-  fPythiaInfo(0),
-  fOutput(0),
-  fHistEventCount(0),
-  fHistTrialsAfterSel(0),
-  fHistEventsAfterSel(0),
-  fHistXsectionAfterSel(0),
-  fHistTrials(0),
-  fHistEvents(0),
-  fHistXsection(0),
-  fHistPtHard(0),
-  fHistCentrality(0),
-  fHistZVertex(0),
-  fHistEventPlane(0),
-  fHistEventRejection(0),
-  fHistTriggerClasses(0)
+  fPythiaInfo(nullptr),
+  fOutput(nullptr),
+  fHistEventCount(nullptr),
+  fHistTrialsAfterSel(nullptr),
+  fHistEventsAfterSel(nullptr),
+  fHistXsectionAfterSel(nullptr),
+  fHistTrials(nullptr),
+  fHistEvents(nullptr),
+  fHistXsection(nullptr),
+  fHistPtHard(nullptr),
+  fHistCentrality(nullptr),
+  fHistZVertex(nullptr),
+  fHistEventPlane(nullptr),
+  fHistEventRejection(nullptr),
+  fHistTriggerClasses(nullptr),
+  fHistTriggerClassesCorr(nullptr)
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -172,7 +177,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPythiaInfoName(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
-  fInitialized(kFALSE),
+  fLocalInitialized(kFALSE),
   fCreateHisto(histo),
   fCaloCellsName(),
   fCaloTriggersName(),
@@ -189,6 +194,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fTklVsClusSPDCut(kFALSE),
   fOffTrigger(AliVEvent::kAny),
   fTrigClass(),
+  fMinBiasRefTrigger("CINT7-B-NOPF-ALLNOTRD"),
   fTriggerTypeSel(kND),
   fNbins(250),
   fMinBinPt(0),
@@ -213,18 +219,19 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
   fMCRejectFilter(kFALSE),
+  fCountDownscaleCorrectedEvents(kFALSE),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
   fRunNumber(-1),
-  fAliAnalysisUtils(0x0),
+  fAliAnalysisUtils(nullptr),
   fIsEsd(kFALSE),
-  fGeom(0),
-  fTracks(0),
-  fCaloClusters(0),
-  fCaloCells(0),
-  fCaloTriggers(0),
-  fTriggerPatchInfo(0),
+  fGeom(nullptr),
+  fTracks(nullptr),
+  fCaloClusters(nullptr),
+  fCaloCells(nullptr),
+  fCaloTriggers(nullptr),
+  fTriggerPatchInfo(nullptr),
   fCent(0),
   fCentBin(-1),
   fEPV0(-1.0),
@@ -233,26 +240,27 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fNVertCont(0),
   fNVertSPDCont(0),
   fBeamType(kNA),
-  fPythiaHeader(0),
+  fPythiaHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
   fXsection(0),
   fPythiaInfo(0),
-  fOutput(0),
-  fHistEventCount(0),
-  fHistTrialsAfterSel(0),
-  fHistEventsAfterSel(0),
-  fHistXsectionAfterSel(0),
-  fHistTrials(0),
-  fHistEvents(0),
-  fHistXsection(0),
-  fHistPtHard(0),
-  fHistCentrality(0),
-  fHistZVertex(0),
-  fHistEventPlane(0),
-  fHistEventRejection(0),
-  fHistTriggerClasses(0)
+  fOutput(nullptr),
+  fHistEventCount(nullptr),
+  fHistTrialsAfterSel(nullptr),
+  fHistEventsAfterSel(nullptr),
+  fHistXsectionAfterSel(nullptr),
+  fHistTrials(nullptr),
+  fHistEvents(nullptr),
+  fHistXsection(nullptr),
+  fHistPtHard(nullptr),
+  fHistCentrality(nullptr),
+  fHistZVertex(nullptr),
+  fHistEventPlane(nullptr),
+  fHistEventRejection(nullptr),
+  fHistTriggerClasses(nullptr),
+  fHistTriggerClassesCorr(nullptr)
 {
   fVertex[0] = 0;
   fVertex[1] = 0;
@@ -496,6 +504,16 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 #endif
   fOutput->Add(fHistTriggerClasses);
 
+  if(fCountDownscaleCorrectedEvents){
+    fHistTriggerClassesCorr = new TH1F("fHistTriggerClassesCorr","fHistTriggerClassesCorr",3,0,3);
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,4,2)
+    fHistTriggerClassesCorr->SetBit(TH1::kCanRebin);
+#else
+    fHistTriggerClassesCorr->SetCanExtend(TH1::kAllAxes);
+#endif
+    fOutput->Add(fHistTriggerClassesCorr);
+  }
+
   fHistEventCount = new TH1F("fHistEventCount","fHistEventCount",2,0,2);
   fHistEventCount->GetXaxis()->SetBinLabel(1,"Accepted");
   fHistEventCount->GetXaxis()->SetBinLabel(2,"Rejected");
@@ -534,14 +552,25 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistEventPlane->Fill(fEPV0);
   }
 
-  TObjArray* triggerClasses = InputEvent()->GetFiredTriggerClasses().Tokenize(" ");
-  TIter next(triggerClasses);
-  TObjString* triggerClass = 0;
-  while ((triggerClass = static_cast<TObjString*>(next()))) {
+  std::unique_ptr<TObjArray> triggerClasses(InputEvent()->GetFiredTriggerClasses().Tokenize(" "));
+  TObjString* triggerClass(nullptr);
+  for(auto trg : *triggerClasses){
+    triggerClass = static_cast<TObjString*>(trg);
     fHistTriggerClasses->Fill(triggerClass->GetString(), 1);
   }
-  delete triggerClasses;
-  triggerClasses = 0;
+
+  if(fCountDownscaleCorrectedEvents){
+    // downscale-corrected number of events are calculated based on the min. bias reference
+    // Formula: N_corr = N_MB * d_Trg/d_{Min_Bias}
+    if(InputEvent()->GetFiredTriggerClasses().Contains(fMinBiasRefTrigger)){
+      AliEmcalDownscaleFactorsOCDB *downscalefactors = AliEmcalDownscaleFactorsOCDB::Instance();
+      Double_t downscaleref = downscalefactors->GetDownscaleFactorForTriggerClass(fMinBiasRefTrigger);
+      for(auto t : downscalefactors->GetTriggerClasses()){
+        Double_t downscaletrg = downscalefactors->GetDownscaleFactorForTriggerClass(t);
+        fHistTriggerClassesCorr->Fill(t, downscaletrg/downscaleref);
+      }
+    }
+  }
 
   return kTRUE;
 }
@@ -567,10 +596,12 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
  */
 void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 {
-  if (!fInitialized)
+  if (!fLocalInitialized){
     ExecOnce();
+    UserExecOnce();
+  }
 
-  if (!fInitialized)
+  if (!fLocalInitialized)
     return;
 
   if (!RetrieveEventObjects())
@@ -578,7 +609,8 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
 
   if(InputEvent()->GetRunNumber() != fRunNumber){
     fRunNumber = InputEvent()->GetRunNumber();
-    RunChanged();
+    RunChanged(fRunNumber);
+    if(fCountDownscaleCorrectedEvents) AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
   }
 
   if (IsEventSelected()) {
@@ -691,42 +723,29 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   strPthard.Remove(strPthard.Last('/'));
   if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
   strPthard.Remove(0,strPthard.Last('/')+1);
-  if (strPthard.IsDec()) 
-    pthard = strPthard.Atoi();
+  if (strPthard.IsDec()) pthard = strPthard.Atoi();
   else 
     AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
 
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")); 
+  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
 
   if (!fxsec) {
     // next trial fetch the histgram file
-    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
-    if (!fxsec) {
-      // not a severe condition but inciate that we have no information
-      return kFALSE;
-    } else {
+    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
+    if (!fxsec) return kFALSE; // not a severe condition but inciate that we have no information
+    else {
       // find the tlist we want to be independtent of the name so use the Tkey
       TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
-      if (!key) {
-        fxsec->Close();
-        return kFALSE;
-      }
+      if (!key) return kFALSE;
       TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) {
-        fxsec->Close();
-        return kFALSE;
-      }
+      if (!list) return kFALSE;
       fXsec = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
       fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
-      fxsec->Close();
     }
   } else { // no tree pyxsec.root
     TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if (!xtree) {
-      fxsec->Close();
-      return kFALSE;
-    }
+    if (!xtree) return kFALSE;
     UInt_t   ntrials  = 0;
     Double_t  xsection  = 0;
     xtree->SetBranchAddress("xsection",&xsection);
@@ -734,7 +753,6 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     xtree->GetEntry(0);
     fTrials = ntrials;
     fXsec = xsection;
-    fxsec->Close();
   }
   return kTRUE;
 }
@@ -824,23 +842,6 @@ void AliAnalysisTaskEmcal::ExecOnce()
 
   LoadPythiaInfo(InputEvent());
 
-  if (fIsPythia) {
-    if (MCEvent()) {
-      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-      if (!fPythiaHeader) {
-        // Check if AOD
-        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
-
-        if (aodMCH) {
-          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
-            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-            if (fPythiaHeader) break;
-          }
-        }
-      }
-    }
-  }
-
   if (fNeedEmcalGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
     if (!fGeom) {
@@ -913,7 +914,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
 
   }
 
-  fInitialized = kTRUE;
+  fLocalInitialized = kTRUE;
 }
 
 /**
@@ -1073,7 +1074,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
 
-    TObjArray *arr = fTrigClass.Tokenize("|");
+    std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
     if (!arr) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
@@ -1114,7 +1115,6 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
         }
       }
     }
-    delete arr;
     if (!match) {
       if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
       return kFALSE;
@@ -1455,6 +1455,23 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   else {
     fCent = 99;
     fCentBin = 0;
+  }
+
+  if (fIsPythia) {
+    if (MCEvent()) {
+      fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+      if (!fPythiaHeader) {
+        // Check if AOD
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+        if (aodMCH) {
+          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+            if (fPythiaHeader) break;
+          }
+        }
+      }
+    }
   }
 
   if (fPythiaHeader) {
@@ -2006,6 +2023,37 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
   if(pythiaGenHeader){ 
     Float_t ptWeight=pythiaGenHeader->EventWeight(); 
     fPythiaInfo->SetPythiaEventWeight(ptWeight);}
-
-  
 }
+
+/**
+ * Add a ESD handler to the analysis manager
+ * @return pointer to the new ESD handler
+ */
+AliESDInputHandler* AliAnalysisTaskEmcal::AddESDHandler()
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddESDHandler", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  AliESDInputHandler *esdHandler = new AliESDInputHandler();
+
+  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+  if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
+    AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
+    multiInputHandler->AddInputEventHandler(esdHandler);
+  }
+  else {
+    if (!inputHandler) {
+      mgr->SetInputEventHandler(esdHandler);
+    }
+    else {
+      ::Error("AddESDHandler", "inputHandler is NOT null. ESD handler was NOT added !!!");
+      return NULL;
+    }
+  }
+
+  return esdHandler;
+}
+

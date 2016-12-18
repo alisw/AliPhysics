@@ -10,5 +10,7 @@
 #pragma link C++ class AliXiStarEventStruct+;
 #pragma link C++ class AliXiStarTrackStruct+;
 #pragma link C++ class AliAnalysisTaskLambdaStar+;
+#pragma link C++ class AliAnalysisTaskSEF01710fromAODtracks+;
+#pragma link C++ class AliRsnf0f2Task+;
 
 #endif

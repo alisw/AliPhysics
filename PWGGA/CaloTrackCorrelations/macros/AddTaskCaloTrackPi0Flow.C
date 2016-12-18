@@ -13,7 +13,6 @@ Bool_t  kExotic        = kTRUE;                                 //< Remove exoti
 Bool_t  kNonLinearity  = kFALSE;                                //< Correct cluster non linearity
 Int_t   kYears         = 2011;                                  //< Declare the year of the data
 TString kCollisions    = "PbPb";                                //< Declare the collision type of the data
-TString kTrig          = "SemiOrCentral";                       //< Set the trigger type to analyze in data
 TString kClusterArray  = "V1_Ecell150_Eseed300_DT0_WT0";        //< Name of branch with clusters, from AliAnalysisTaskEMCALClusterize
 Bool_t  kRecalTM       = kFALSE;                                //< Recalculate track-cluster matching
 Bool_t  kTM            = kTRUE;                                 //< Remove matched clusters to tracks
@@ -27,7 +26,7 @@ Bool_t  kOutputAOD     = kFALSE;                                //< Create outpu
 Bool_t  kPrint         = kFALSE;                                //< Print setted parameters when configuring
 Int_t   kRunNumber     = -1;                                    //< Declare the run number
 Bool_t  kPhosCali      = kTRUE;                                 //< Switch on EP flattening by phos 
-Bool_t  kCentFlat      = kTRUE;                                 //< Switch on Centrality flattening
+Bool_t  kCentFlat      = kFALSE;                                //< Switch on Centrality flattening
 Int_t   kDebug         = 0;                                     //< Do the analysis with this debug level
 
 Bool_t  kUseKinematics = kFALSE;                                //< Use the MC information
@@ -46,8 +45,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
                                                              const Bool_t   nonlin        = kFALSE,
                                                              const Int_t    year          = 2011,
                                                              const TString  col           = "PbPb", 
-                                                             const TString  trigger       = "SemiOrCentral", 
+                                                             AliVEvent::EOfflineTriggerTypes trig = AliVEvent::kCentral + AliVEvent::kSemiCentral + AliVEvent::kMB + AliVEvent::kEMCEGA,
                                                              const TString  clustersArray = "V1_Ecell150_Eseed300_DT0_WT0",
+                                                             const Int_t    nlmMin        = 1,
+                                                             const Int_t    nlmMax        = 2,
+                                                             const Bool_t   simpleM02Cut  = kFALSE,
+                                                             const Bool_t   simpleMassCut = kFALSE,
+                                                             const Double_t massPi0Min    = 0.11,
+                                                             const Double_t massPi0Max    = 0.18,
                                                              const Bool_t   recaltm       = kFALSE,
                                                              const Bool_t   tm            = kTRUE,
                                                              const Int_t    minCen        = -1,
@@ -60,7 +65,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
                                                              const Bool_t   printSettings = kFALSE,
                                                              const Int_t    runNumber     = -1,
                                                              const Bool_t   isPhosCali    = kTRUE, 
-                                                             const Bool_t   isCentFlat    = kTRUE,
+                                                             const Bool_t   isCentFlat    = kFALSE,
                                                              const Int_t    debug         = 0
                                                              )
 {
@@ -73,7 +78,6 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
   kNonLinearity   = nonlin;
   kYears          = year;
   kCollisions     = col;
-  kTrig           = trigger;
   kClusterArray   = clustersArray;
   kRecalTM        = recaltm;
   kTM             = tm;
@@ -115,7 +119,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
   }   
   cout<<"********* ACCESS KINE? "<<kUseKinematics<<endl;
   // Name for containers
-  kName = Form("%s_Trig%s_Cl%s_TM%d",kCalorimeter.Data(), kTrig.Data(),kClusterArray.Data(),kTM);
+  kName = Form("%s_Cl%s_TM%d",kCalorimeter.Data(), kClusterArray.Data(), kTM);
   if (kCollisions=="PbPb" && kMaxCen>=0) kName+=Form("Cen%d_%d",kMinCen,kMaxCen);
   printf("<<<< NAME: %s >>>>>\n",kName.Data());
   
@@ -132,13 +136,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
   //
   Int_t n = 0; // Analysis number, order is important
   
-  // Photon analysis
-  // maker->AddAnalysis(ConfigurePhotonAnalysis(), n++); // Photon cluster selection
-  // maker->AddAnalysis(ConfigurePi0Analysis(), n++); // Invariant mass of photon clusters
-
   // Split cluster analysis
   if (kCalorimeter == "EMCAL") {
-    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo), n++); // Pi0 event by event selection, cluster splitting
+    // Pi0 event by event selection, cluster splitting
+    maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo, kTRUE, kTRUE, nlmMin, nlmMax, 
+                                               simpleM02Cut, simpleMassCut, massPi0Min, massPi0Max), n++);
   }
   maker->AddAnalysis(ConfigurePi0Flow(), n++);
   
@@ -157,8 +159,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
   task->SetConfigFileName(""); // Don't configure the analysis via configuration file.
   task->SetDebugLevel(kDebug);
   // task->SetBranches("ESD:AliESDRun.,AliESDHeader");
-  UInt_t mask = SetTriggerMaskFromName();
-  task->SelectCollisionCandidates(mask);
+  task->SelectCollisionCandidates(trig);
   task->SetAnalysisMaker(maker);
   mgr->AddTask(task);
 
@@ -194,7 +195,7 @@ AliCaloTrackReader * ConfigureReader()
   else 
     printf("AliCaloTrackReader::ConfigureReader() - Data combination not known kData=%s, kInputData=%s\n",kData.Data(),kInputDataType.Data());
   
-  reader->SetDebug(0);//10 for lots of messages
+  reader->SetDebug(kDebug);//10 for lots of messages
   
   //Delta AOD?
   //reader->SetDeltaAODFileName("");
@@ -336,14 +337,14 @@ AliCaloTrackReader * ConfigureReader()
   
   if(!kNonLinearity) reader->SwitchOffClusterELinearityCorrection();
   
-  //if(kCalorimeter == "EMCAL") {
+  if(kCalorimeter == "EMCAL") {
     reader->SwitchOnEMCALCells();  
     reader->SwitchOnEMCAL();
-  //}
-  //if(kCalorimeter == "PHOS") { 
+  }
+  if(kCalorimeter == "PHOS") { 
     reader->SwitchOnPHOSCells();  
     reader->SwitchOnPHOS();
-  //}
+  }
   
   // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
   if(kData.Contains("delta"))
@@ -361,15 +362,8 @@ AliCaloTrackReader * ConfigureReader()
   //reader->RejectFastClusterEvents()  ;
 
   // Event triggered selection settings
-  reader->SwitchOnTriggerPatchMatching();
-  reader->SwitchOnBadTriggerEventsRemoval(); // only if SwitchOnTriggerPatchMatching();
-  reader->SwitchOnUnMatchedTriggerEventsRemoval(); // only if SwitchOnBadTriggerEventsRemoval();
+  reader->SwitchOffTriggerPatchMatching();
   //reader->SwitchOffTriggerClusterTimeRecal() ;
-
-  reader->SetTriggerPatchTimeWindow(8,9); // L0
-  if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
-  else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
-  else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
 
   //redefine for other periods, triggers
 
@@ -394,6 +388,7 @@ AliCaloTrackReader * ConfigureReader()
   if(kCollisions=="PbPb") 
   {
     // Centrality
+    reader->SwitchOnAliCentrality();
     reader->SetCentralityClass("V0M");
     reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
     reader->SetCentralityBin(kMinCen,kMaxCen); // Accept all events, if not select range
@@ -413,7 +408,7 @@ AliCaloTrackReader * ConfigureReader()
 AliCalorimeterUtils* ConfigureCaloUtils()
 {
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
-  cu->SetDebug(0);
+  cu->SetDebug(kDebug);
   
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
@@ -499,107 +494,15 @@ AliCalorimeterUtils* ConfigureCaloUtils()
 }
 
 //
-// Configure the task doing the first photon cluster selections
-// Basically the track matching, minor shower shape cut, NLM selection ...
-//
-AliAnaPhoton* ConfigurePhotonAnalysis()
-{
-  AliAnaPhoton *ana = new AliAnaPhoton();
-  ana->SetDebug(kDebug); //10 for lots of messages
-  
-  // cluster selection cuts
-  
-  ana->SwitchOffFiducialCut();
-
-  ana->SetCalorimeter(kCalorimeter);
-  
-  if(kCalorimeter == "PHOS")
-  {
-    ana->SetNCellCut(2);// At least 3 cells
-    ana->SetMinPt(0.3);
-    ana->SetMinDistanceToBadChannel(2, 4, 5);
-    ana->SetTimeCut(-1e10,1e10); // open cut
-  }
-  else 
-  {//EMCAL
-    ana->SetNCellCut(1);// At least 2 cells
-    ana->SetMinEnergy(0.3); // avoid mip peak at E = 260 MeV
-    ana->SetMaxEnergy(1000); 
-    ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off 
-    // restrict to less than 100 ns when time calibration is on 
-    ana->SetMinDistanceToBadChannel(2, 4, 6); 
-    
-    // NLM cut, used in all, exclude clusters with more than 2 maxima
-    // Not needed if M02 cut is already strong or clusterizer V2
-    ana->SetNLMCut(1, 2) ;
-  }
-  
-  if(kTM)
-  {
-    ana->SwitchOnTrackMatchRejection() ;
-    ana->SwitchOffTMHistoFill() ;
-  }
-  else
-  {
-    ana->SwitchOffTrackMatchRejection() ;
-    ana->SwitchOnTMHistoFill() ;
-  }
-  
-  //PID cuts (shower shape)
-  ana->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
-  AliCaloPID* caloPID = ana->GetCaloPID();
-  //Not used in bayesian
-  
-  //EMCAL
-  caloPID->SetEMCALLambda0CutMax(0.27);
-  caloPID->SetEMCALLambda0CutMin(0.10);
-  
-  caloPID->SetEMCALDEtaCut(0.025);
-  caloPID->SetEMCALDPhiCut(0.030);
-    
-  //PHOS
-  caloPID->SetPHOSDispersionCut(2.5);
-  caloPID->SetPHOSRCut(2.);
-  if(kInputDataType=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
-      
-  ana->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
-  if(!kSimulation)ana->SwitchOnFillPileUpHistograms();
-  //if(!kSimulation) ana->SwitchOnFillEMCALBCHistograms();
-
-  // Input / output delta AOD settings
-  
-  if(!kData.Contains("delta")) 
-  {
-    ana->SetOutputAODName(Form("Photon%s",kName.Data()));
-    ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-    //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
-  }
-  else ana->SetInputAODName(Form("Photon%s",kName.Data()));
-  
-  //Set Histograms name tag, bins and ranges
-  
-  ana->AddToHistogramsName(Form("AnaPhoton_TM%d_",kTM));
-  SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below
-  
-  // Number of particle type MC histograms
-  ana->FillNOriginHistograms(20);
-  ana->FillNPrimaryHistograms(20);
-  
-  ana->SwitchOnRealCaloAcceptance(); // primary particle acceptance histograms
-  // ConfigureMC(ana);
-  
-  if(kPrint) ana->Print("");
-  
-  return ana;
-}
-
-//
 // Configure the task doing the pi0 even by event selection via the split method.
 // Here the pairs, clusters, are added to an AOD branch to be used by other analysis
 // unlike in ConfigurePi0Analysis.
 //
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
-                                      Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE)
+                                      Int_t analysis, Bool_t useSS = kTRUE, Bool_t useAsy = kTRUE,
+                                      Int_t nlmMin = 1, Int_t nlmMax = 2, 
+                                      Bool_t simpleSplitM02Cut = kFALSE, Bool_t simpleSplitMassCut = kFALSE,
+                                      Double_t massPi0Min, Double_t massPi0Max)
 {
   AliAnaPi0EbE *ana = new AliAnaPi0EbE();
   ana->SetDebug(kDebug);//10 for lots of messages
@@ -654,7 +557,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   ana->SetTimeCut(-1e10,1e10); // Open time cut
 
   // NLM cut, used in all, exclude clusters with more than 2 maxima
-  ana->SetNLMCut(1, 2) ;
+  ana->SetNLMCut(nlmMin, nlmMax) ;
     
   AliCaloPID* caloPID = ana->GetCaloPID();
   caloPID->SetSplitWidthSigma(3.); // cut at 3 sigma of the mean pi0 peak.
@@ -668,7 +571,10 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   } else {
     caloPID->SetClusterSplittingM02Cut(0.3,5); // Do the selection in the analysis class and not in the PID method to fill SS histograms
     caloPID->SwitchOnSplitShowerShapeCut() ;
+    if (simpleSplitM02Cut) caloPID->SwitchOnSimpleSplitM02Cut();
   }
+
+  if (simpleSplitMassCut) caloPID->SwitchOnSimpleSplitMassCut();
 
   if (useAsy) caloPID->SwitchOnSplitAsymmetryCut() ;
   else {
@@ -683,7 +589,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   }
 
   //For Pi0 only if  SwitchOnSimpleSplitMassCut()
-  caloPID->SetPi0MassRange(0.10, 0.18);
+  caloPID->SetPi0MassRange(massPi0Min, massPi0Max);
   caloPID->SetEtaMassRange(0.40, 0.60);
   caloPID->SetPhotonMassRange(0.00, 0.08);
   caloPID->SetClusterSplittingMinNCells(6);
@@ -806,82 +712,3 @@ void SetHistoRangeAndNBins (AliHistogramRanges* histoRanges)
   histoRanges->SetHistoPtSumRangeAndNBins   (0, 100, 250);
   
 }
-
-//
-// Set the trigger requested for the analysis,
-// depending on a string given
-//
-UInt_t SetTriggerMaskFromName()
-{
-  if(kTrig=="EMC7")
-  {
-    printf("CaloTrackCorr trigger EMC7\n");
-    return AliVEvent::kEMC7;
-  }
-  else if (kTrig=="INT7")
-  {
-    printf("CaloTrackCorr trigger INT7\n");
-    return AliVEvent::kINT7;
-  }
-  else if(kTrig=="EMC1")
-  {
-    printf("CaloTrackCorr trigger EMC1\n");
-    return AliVEvent::kEMC1;
-  }
-  else if(kTrig=="MB")
-  {
-    printf("CaloTrackCorr trigger MB\n");
-    return AliVEvent::kMB;
-  }  
-  else if(kTrig=="PHOS")
-  {
-    printf("CaloTrackCorr trigger PHOS\n");
-    return AliVEvent::kPHI7;
-  }  
-  else if(kTrig=="PHOSPb")
-  {
-    printf("CaloTrackCorr trigger PHOSPb\n");
-    return AliVEvent::kPHOSPb;
-  }
-  else if(kTrig=="AnyINT")
-  {
-    printf("CaloTrackCorr trigger AnyINT\n");
-    return AliVEvent::kAnyINT;
-  }  
-  else if(kTrig=="INT")
-  {
-    printf("CaloTrackCorr trigger AnyINT\n");
-    return AliVEvent::kAny;
-  }
-  else if(kTrig=="EMCEGA")
-  {
-    printf("CaloTrackCorr trigger EMC Gamma\n");
-    return AliVEvent::kEMCEGA;
-  } 
-  else if(kTrig=="EMCEJE")
-  {
-    printf("CaloTrackCorr trigger EMC Jet\n");
-    return AliVEvent::kEMCEJE;
-  }
-  else if(kTrig=="Central")
-  {
-    printf("CaloTrackCorr trigger Central\n");
-    return (AliVEvent::kCentral  | AliVEvent::kMB);
-  }
-  else if(kTrig=="CentralEGA")
-  {
-    printf("CaloTrackCorr trigger Central+EMCEGA\n");
-    return (AliVEvent::kCentral | AliVEvent::kEMCEGA);
-  }
-  else if(kTrig=="SemiCentral")
-  {
-    printf("CaloTrackCorr trigger SemiCentral\n");
-    return (AliVEvent::kSemiCentral | AliVEvent::kMB);
-  }
-  else if(kTrig=="SemiOrCentral")
-  {
-    printf("CaloTrackCorr trigger SemiCentral Or Central\n");
-    return (AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kMB);
-  }
-}
-

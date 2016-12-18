@@ -44,33 +44,35 @@ public:
    * @name Set parameters 
    */
   /** 
-   * Set the vertex range to use 
+   * Set the @f$ \mathrm{IP}_z@f$ axis 
    * 
-   * @param min Minimum (in centermeter)
-   * @param max Maximum (in centermeter)
-   */  
-  void SetIpZRange(Double_t min, Double_t max) { fMinIpZ=min; fMaxIpZ=max; }
-  void SetIpZMin(Double_t min) { fMinIpZ = min; }
-  void SetIpZMax(Double_t max) { fMaxIpZ = max; }
-  /** 
-   * Set the trigger maskl 
-   * 
-   * @param mask Trigger mask
+   * @param n   Number of bins
+   * @param min Least value 
+   * @param max Largest value 
    */
-  void SetTriggerMask(UInt_t mask);
+  void SetIPzAxis(Int_t n, Double_t min, Double_t max)
+  {
+    SetAxis(fIPzAxis, n, min, max);
+  }
   /** 
-   * Set the trigger mask 
+   * Set the @f$ \mathrm{IP}_z@f$ axis 
    * 
-   * @param mask trigger mask 
+   * @param n   Number of bins
+   * @param max Largest absolute value 
    */
-  void SetTriggerMask(const char* mask);
+  void SetIPzAxis(Int_t n, Double_t max)
+  {
+    SetAxis(fIPzAxis, n, max);
+  }
   /** 
-   * Set mask of events to filter out 
+   * Set the interaction point Z axis 
    * 
-   * @param mask The fitler mask 
+   * @param spec bin specification  
    */
-  void SetFilterMask(UInt_t mask);
-  void SetFilterMask(const char* mask);
+  void SetIPzAxis(const TString& spec)
+  {
+    SetAxis(fIPzAxis, spec);
+  }
   /** 
    * Set the centrality bins to use. 
    * 
@@ -109,6 +111,44 @@ public:
    * @param bins String of bin edges
    */
   void SetCentralityAxis(const char* bins);
+  /** 
+   * Set the very least centrality to consider.  This is for cases
+   * where the centrality calibration of simulated data doesn't really
+   * match the real-data one, but we want to keep the original
+   * centrality bins.  E.g., for LHC15k1b1, the calibration of the
+   * DPMJet centrality does not give the same mean number of tracklets
+   * for the very most central bin.  We therefor need to rule out the
+   * event with a very large number of tracklets from the sample by
+   * setting this parameter to for example 0.1.  If this parameter is
+   * set to a negative value (default) it is not considered.
+   * 
+   * @param x Absolute lowest centrality to consider 
+   */
+  void SetAbsMinCent(Double_t x=-1) { fAbsMinCent = x; }
+  /** 
+   * Set the trigger maskl 
+   * 
+   * @param mask Trigger mask
+   */
+  void SetTriggerMask(UInt_t mask);
+  /** 
+   * Set the trigger mask 
+   * 
+   * @param mask trigger mask 
+   */
+  void SetTriggerMask(const char* mask);
+  /** 
+   * Set mask of events to filter out 
+   * 
+   * @param mask The fitler mask 
+   */
+  void SetFilterMask(UInt_t mask);
+  /** 
+   * Set mask of events to filter out 
+   *
+   * @param mask 
+   */
+  void SetFilterMask(const char* mask);
   /* @} */
   /** 
    * @{ 
@@ -233,6 +273,64 @@ protected:
   virtual void Terminate(Option_t* option);
   /* @} */
   /** 
+   * @{ 
+   * @name Service functions to set axis limits 
+   */
+  /** 
+   * Fix axis attributes
+   * 
+   * @param axis  Axis to fix 
+   * @param title Possible title for axis 
+   */
+  static void FixAxis(TAxis& axis, const char* title=0);
+  /** 
+   * Set an axis based on bin borders 
+   * 
+   * @param axis    Axis to set 
+   * @param n       Number of bins 
+   * @param borders Bin borders (n+1 entries)
+   */
+  static void SetAxis(TAxis& axis, Int_t n, Double_t* borders);
+  /** 
+   * Set an axis based on test string of specs.  The token separator
+   * is given in @a sep.
+   * 
+   * @param axis Axis to set 
+   * @param spec Specification
+   * @param sep  Token separate 
+   */
+  static void SetAxis(TAxis& axis, const TString& spec, const char* sep=":,");
+  /** 
+   * Set axis with least and largest values
+   * 
+   * @param axis Axis to set
+   * @param n    Number of bins 
+   * @param l    Least value 
+   * @param h    Largest value 
+   */
+  static void SetAxis(TAxis& axis, Int_t n, Double_t l, Double_t h);
+  /** 
+   * Set a symmetric axis 
+   * 
+   * @param axis Axis to set
+   * @param n    Number of bins 
+   * @param m    Maximum absolute value 
+   */
+  static void SetAxis(TAxis& axis, Int_t n, Double_t m);
+  /** 
+   * Print axis 
+   * 
+   * @param axis Axis to print 
+   * @param nSig Number of significant digits 
+   * @param alt  Alternative 
+   */
+  static void PrintAxis(const TAxis& axis, Int_t nSig=2, const char* alt=0);
+  /* @} */
+  /** 
+   * @{ 
+   * @name Get event information 
+   */
+  /** 
    * Get the forward object from the AOD 
    * 
    * @param aod AOD event 
@@ -343,6 +441,7 @@ protected:
    * @return true on success, false otherwise 
    */
   virtual Bool_t GetIpXY(AliAODEvent& aod, Double_t& x, Double_t& y);
+  /* @} */
   /** 
    * Get the name of the default configuration script to use.
    * Sub-classes can override this to give another default
@@ -353,24 +452,40 @@ protected:
    */
   virtual const char* DefaultConfig() const { return "dNdetaConfig.C"; }
 
-  UInt_t   fTriggerMask;   // Trigger mask 
-  UInt_t   fFilterMask;    // Events to filter out 
-  Double_t fMinIpZ;        // Least z--coordiante of interaction point
-  Double_t fMaxIpZ;        // Largest z--coordiante of interaction point
-  TAxis    fCentAxis;      // Centrality axis 
-  TH1I*    fTriggers;      // Histogram of triggers
-  TH1I*    fEventStatus;   // Histogram of event selection 
-  TH1D*    fVertex;        // Vertex distribution of all events 
-  TH1D*    fCent;          // Centrality distribution of all events
-  TH1D*    fAccVertex;     // Vertex distribution of accepted events 
-  TH2D*    fAccVertexXY;   // Vertex (x,y) distribution of accepted events 
-  TH1D*    fAccCent;       // Centrality distribution of accepted events
-  Bool_t   fFirstEvent;    // Information stored or not 
-  Bool_t   fCloneList;     // Wether to clone sum list for results
-  TList*   fSums;          // Output list of sums
-  TList*   fResults;       // Output list of results
+  /** Trigger mask */
+  UInt_t   fTriggerMask;   
+  /** Events to filter out */
+  UInt_t   fFilterMask;    
+  /** Centrality axis */
+  TAxis    fCentAxis;      
+  /** The absolute minimum centrality to consider  - for MC with poor match*/
+  Double_t   fAbsMinCent;
+  /** Collision point axis */
+  TAxis    fIPzAxis;       
+  /** Histogram of triggers */
+  TH1I*    fTriggers;      
+  /** Histogram of event selection */
+  TH1I*    fEventStatus;   
+  /** Vertex distribution of all events */
+  TH1D*    fVertex;        
+  /** Centrality distribution of all events */
+  TH1D*    fCent;          
+  /** Vertex distribution of accepted events */
+  TH1D*    fAccVertex;     
+  /** Vertex (x,y) distribution of accepted events */
+  TH2D*    fAccVertexXY;   
+  /** Centrality distribution of accepted events */
+  TH1D*    fAccCent;       
+  /** Information stored or not */
+  Bool_t   fFirstEvent;    
+  /** Wether to clone sum list for results */
+  Bool_t   fCloneList;     
+  /** Output list of sums */
+  TList*   fSums;          
+  /** Output list of results */
+  TList*   fResults;       
 
-  ClassDef(AliBaseAODTask,2)
+  ClassDef(AliBaseAODTask,3)
 };
 #endif
 //

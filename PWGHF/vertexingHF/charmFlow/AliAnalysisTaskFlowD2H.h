@@ -41,6 +41,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t *);
     virtual void Terminate(Option_t *);
     void SetCommonConstants(Int_t massBins, Double_t minMass, Double_t maxMass, Int_t ptWidth);
+    void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
   private:
     AliAnalysisTaskFlowD2H(const AliAnalysisTaskFlowD2H& analysisTask);
@@ -68,7 +69,9 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
     Int_t  fSource; // AliRDHFCuts::ESele
     Bool_t fDebugV2; // fully talkative task
     Bool_t fSwap;   // swap assumption (for neutral)
-
+    Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
+                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+ 
     Int_t fMassBins; // configures mass bins for the analysis
     Double_t fMinMass; // configures mass range for the analysis
     Double_t fMaxMass; // configures mass range for the analysis
@@ -82,7 +85,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
 
     TObjArray *fCandidates; // Array of selected candidates
 
-  ClassDef(AliAnalysisTaskFlowD2H, 5);
+  ClassDef(AliAnalysisTaskFlowD2H, 6);
 };
 
 #endif

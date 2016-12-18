@@ -1,54 +1,35 @@
-//Replace User Task with your Add Task and appropriate parameters
+// Grid running parameters
+TString gGridRunMode = "full";
+TString gRootVersion = "v5-34-30-alice7-1";
+TString gAlirootVersion = "v5-08-18c-1";
+TString gAliphysicsVersion = "vAN-20161208-1";
+TString gGridDataDir = "/alice/data/2015/LHC15o";
+//TString gGridDataDir = "/alice/data/2016/LHC16l";
+//TString gGridDataDir = "/alice/cern.ch/user/i/iarsene/work/outputDst";
+//TString gGridDataPattern = "*/pass1/*/AliESDs.root";
+//TString gGridDataPattern = "*/pass1/PWGDQ/DQ_PbPb/231_20161009-2048/*/dstTree.root";
+TString gGridDataPattern = "*/pass1/*/AliESDs.root";
+TString gGridWorkingDir = "work";
+TString gGridOutputDir = "testTrees_run246037";
+Int_t gGridMaxInputFileNumber = 40;
 
-#include<TSystem.h>
-#include<TROOT.h>
-
+//______________________________________________________________________________________________________________________________________
 void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", const Char_t* inputType="ESD", Bool_t hasMC = kFALSE,
-                                     Int_t reducedEventType = -1, Bool_t writeTree = kFALSE,
-                                     Int_t nEntries=1234567890, Int_t firstEntry=0)
+                                     Int_t reducedEventType = -1, Bool_t writeTree = kFALSE, TString tasks="dst", TString prod = "LHC10h",
+                      Int_t nEntries=1234567890, Int_t firstEntry=0, TString pathForMacros="$ALICE_PHYSICS/PWGDQ/reducedTree/macros")
 {
    //
    // infile: list of input files if mode is local, or list of runs for job submission if mode is grid
    //
    // Load common libraries
-/*   gSystem->Load("libCore.so");  
-   gSystem->Load("libTree.so");
-   gSystem->Load("libGeom.so");
-   gSystem->Load("libVMC.so");
-   gSystem->Load("libPhysics.so");
-   gSystem->Load("libMinuit.so"); 
-   gSystem->Load("libGui.so");
-   gSystem->Load("libXMLParser.so");
-   gSystem->Load("libSTEERBase.so");
-   gSystem->Load("libESD.so");
-   gSystem->Load("libCDB.so");
-   gSystem->Load("libAOD.so");
-   gSystem->Load("libANALYSIS.so");
-   gSystem->Load("libANALYSISalice.so");
-
-   //lib necessary for dielectron
-   gSystem->Load("libCORRFW.so");
-
-   gSystem->Load("libTender"); 
-   gSystem->Load("libTenderSupplies"); 
-   gSystem->Load("libProof.so");
-   gSystem->Load("libRAWDatabase.so");
-   gSystem->Load("libSTEER.so");
-   gSystem->Load("libTOFbase.so");
-
-   gSystem->Load("libTRDbase.so");
-   gSystem->Load("libVZERObase.so");*/
    gSystem->Load("libPWGDQdielectron.so"); 
    gSystem->Load("libPWGDQreducedTree.so"); 
-   //gSystem->Load("/hera/alice/iarsene/trainTrunk/util/dielectron/libPWGDQdielectron.so");
-
-  // Load common libraries
 
    // Use AliRoot includes to compile our task
    gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
    gROOT->ProcessLine(".include $ROOTSYS/include");
-
+   
    // Create the analysis manager
    AliAnalysisManager *mgr = new AliAnalysisManager("ReducedTreeAnalysis");
    
@@ -57,7 +38,16 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    AliAnalysisGrid *alienHandler = NULL;
    if(runmodestr.Contains("grid")) {
      gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/CreateAlienHandler.C");
-     alienHandler = CreateAlienHandlerPbPb(infile);  
+     // Detect which tasks are being run and add the needed grid output files
+     TObjArray* arr = tasks.Tokenize(";");
+     TString outputFiles = "";
+     if(writeTree) outputFiles = "dstTree.root";
+     if((!writeTree && arr->GetEntries()>0) ||
+        (writeTree && arr->GetEntries()>1)) outputFiles += " dstAnalysisHistograms.root";
+        
+     alienHandler = CreateAlienHandlerPbPb(infile, gGridRunMode, gGridDataDir, gGridDataPattern, gGridMaxInputFileNumber, 
+                                           gGridWorkingDir, gGridOutputDir, outputFiles,
+                                           gRootVersion, gAlirootVersion, gAliphysicsVersion);  
      if (!alienHandler) {
         cout << "runAnalysisTrain.C ::      Could not create the alien handler. Check it out!" << endl;
         return;
@@ -72,6 +62,9 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
      inputHandler = new AliESDInputHandler();
      ((AliESDInputHandler*)inputHandler)->SetReadFriends(kFALSE);
    }
+   if(inputTypeStr.Contains("aod")) {                               // AODs
+      inputHandler = new AliAODInputHandler();
+   }
    if(inputTypeStr.Contains("reducedevent")) {              // AliReducedEventInfo
       inputHandler = new AliReducedEventInputHandler();
       ((AliReducedEventInputHandler*)inputHandler)->SetInputEventType(AliReducedEventInputHandler::kReducedEventInfo);
@@ -84,7 +77,7 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    
    // Add the MC handler if needed
    AliMCEventHandler *mc = NULL;
-   if(hasMC) {
+   if(hasMC && (inputTypeStr.Contains("esd") || inputTypeStr.Contains("aod"))) {
       mc = new AliMCEventHandler();
       mgr->SetMCtruthEventHandler(mc);
    }
@@ -93,49 +86,35 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    //   gROOT->LoadMacro("AddTaskTender.C");
    //   AddTaskTender();
 
-   if(inputTypeStr.Contains("esd")) {         // no need if we run over reduced events
+   if(inputTypeStr.Contains("esd") || inputTypeStr.Contains("aod")) {         // no need if we run over reduced events
       //==== Physics Selection ====
       gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+      Bool_t applyPileupCuts = kTRUE;
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(hasMC, applyPileupCuts);
 
       //===== ADD CENTRALITY: ===
-      gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
-      AddTaskCentrality();
-      /* // For Run-2 Pb-Pb there is a new way to get centrality. Below are the lines of code presented by David Chinellato at the PF in 11 december 2015
-       gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
-       AddTaskMultSelection();
-       // we also need to add something like the lines below, in the analysis task:
-       // AliMultSelection* MultSelection = (AliMultSelection*)esdEvent->FindListObject("MultSelection");
-       // Float_t lPerc = 300;  // nonsense
-       // if(MultSelection) {
-       //   lPerc = MultSelection->GetMultiplicityPercentile("V0M");
-       //   // Quality check
-       //   Int_t lEvSelCode = MultSelection->GetEvSelCode();
-       //   if(lEvSelCode>0) lPerc = lEvSelCode; // disregard!
-       // }
-       // else {
-       //   // If this happens, re-check if AliMultSelectionTask ran before your task!
-       //   AliInfo("Didn't find MultSelection!");
-       // }
-       */
+      if(!prod.CompareTo("LHC10h") || !prod.CompareTo("LHC11h")) {         // Run-1 Pb-Pb
+        gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
+        AddTaskCentrality();
+      }
+      if(!prod.CompareTo("LHC15o") || !prod.CompareTo("LHC16l") || !prod.CompareTo("mcPbPb")) {         // Run-2 Pb-Pb
+         gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
+         AliMultSelectionTask* multTask = AddTaskMultSelection();
+         if(!prod.CompareTo("mcPbPb"))
+           multTask->SetAlternateOADBforEstimators("LHC15o-DefaultMC-HIJING");
+      }      
 
       //===== ADD PID RESPONSE: ===
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-      AddTaskPIDResponse();
+      Bool_t tuneOnData = kTRUE;
+      Int_t recoPass = 1;
+      if(hasMC) AddTaskPIDResponse(hasMC, kTRUE, tuneOnData, recoPass);
+      else AddTaskPIDResponse();
    }
    
-   //===== Add the reduced event producer task, if needed
-   if(inputTypeStr.Contains("esd")) {         // if we run over reduced events this not needed anymore
-      gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_dst.C");
-      AddTask_iarsene_dst(reducedEventType, writeTree);
-   }
-   //===== Add consumer tasks for the reduced events
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_iarsene_testTask.C");
-   if(inputTypeStr.Contains("esd"))
-      AddTask_iarsene_testTask(kTRUE, AliAnalysisTaskReducedEventProcessor::kUseOnTheFlyReducedEvents);
-   if(inputTypeStr.Contains("reducedevent") || inputTypeStr.Contains("baseevent"))
-      AddTask_iarsene_testTask(kTRUE, AliAnalysisTaskReducedEventProcessor::kUseEventsFromTree);
-
+   gROOT->LoadMacro("$ALICE_PHYSICS/PWGDQ/reducedTree/macros/AddTask_TrainTreeAnalysis.C");
+   AddTask_TrainTreeAnalysis((!runmodestr.CompareTo("grid") ? kTRUE : kFALSE), prod, reducedEventType, writeTree, tasks, pathForMacros);
+   
    // Enable debug printouts
    //mgr->SetDebugLevel(10);
 
@@ -145,10 +124,18 @@ void runAnalysisTrain(const Char_t* infile, const Char_t* runmode = "local", con
    if(!runmodestr.Contains("grid"))
       chain = makeChain(infile, inputType);
    
+   TProof* proof=0x0;
+   if(runmodestr.Contains("proof")) {
+      proof = TProof::Open("");
+      chain->SetProof();
+   }
+   
    mgr->PrintStatus();
    // Start analysis
    if(runmodestr.Contains("local"))
       mgr->StartAnalysis("local", chain, nEntries, firstEntry);
+   if(runmodestr.Contains("proof"))
+      mgr->StartAnalysis("proof", chain, nEntries, firstEntry);
    if(runmodestr.Contains("grid"))
       mgr->StartAnalysis("grid", nEntries, firstEntry);
 };
@@ -164,6 +151,8 @@ TChain* makeChain(const Char_t* filename, const Char_t* inputType) {
     chain=new TChain("DstTree");
   if(itStr.Contains("esd"))
     chain=new TChain("esdTree");
+  if(itStr.Contains("aod"))
+     chain=new TChain("aodTree");
   
   ifstream in;
   in.open(filename);
@@ -177,5 +166,6 @@ TChain* makeChain(const Char_t* filename, const Char_t* inputType) {
       chain->AddFile(line);
     }
   }
+  cout << "Number of events in chain: " << chain->GetEntries() << endl;
   return chain;
 }

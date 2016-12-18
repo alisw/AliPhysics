@@ -94,6 +94,7 @@ class AliDielectronSignalMC : public TNamed {
     {fCheckMotherGrandmother = CheckMotherIsGrandmother; fMotherIsGrandmother = MotherIsGrandmother;}
   void SetCheckStackForPDG(Bool_t checkStack=kTRUE)                        {fCheckStackForPDG    = checkStack;}
   void SetPDGforStack(Int_t stackPDG)                                      {fStackPDG            = stackPDG;}
+  void SetCheckLikeSign(Bool_t checkLSpp,Bool_t checkLsmm)                 {fCheckLikeSignPP = checkLSpp; fCheckLikeSignMM = checkLsmm;}
 
   Int_t GetLegPDG(Int_t branch)                        const {return (branch==1 ? fLeg1 : fLeg2);}
   Int_t GetMotherPDG(Int_t branch)                     const {return (branch==1 ? fMother1 : fMother2);}
@@ -116,10 +117,16 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t GetMotherIsGrandmother()                      const {return fMotherIsGrandmother;}
   Bool_t GetCheckStackForPDG()                         const {return fCheckStackForPDG;}
   Int_t GetStackPDG()                                  const {return fStackPDG;}
+  Bool_t GetCheckLikeSignPP()                          const {return fCheckLikeSignPP;}
+  Bool_t GetCheckLikeSignMM()                          const {return fCheckLikeSignMM;}
 
   void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
   EJpsiRadiativ GetJpsiRadiative() const   { return fJpsiRadiative; }
  private:
+  // Switch to compare also like sign pairs against signal
+  Bool_t fCheckLikeSignPP; // ++ pairs
+  Bool_t fCheckLikeSignMM; // -- pairs
+  
   // PDG codes for legs, mothers and grand-mothers
   Int_t fLeg1;                        // leg 1 PDG
   Int_t fLeg2;                        // leg 2 PDG

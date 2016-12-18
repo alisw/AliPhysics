@@ -8,11 +8,19 @@
  * @ingroup pwglf_forward_tracklets
  * 
  */
-
+/** 
+ * Try to build the code 
+ * 
+ * @ingroup pwglf_forward_tracklets
+ */
 void
 TryBuild()
 {
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/include -I${ALICE_PHYSICS}/include");
+  gSystem->AddIncludePath("-I${ALICE_ROOT}/include "
+			  "-I${ALICE_PHYSICS}/include "
+			  "-I${ANA_SRC}/dndeta/tracklets3");
+  gROOT->SetMacroPath(Form("${ANA_SRC}/dndeta/tracklets3:%s",
+			   gROOT->GetMacroPath()));
   gROOT->LoadMacro("AliAODSimpleHeader.C+g");
   gROOT->LoadMacro("AliSimpleHeaderTask.C+g");
   gROOT->LoadMacro("AliAODTracklet.C+g");
@@ -22,6 +30,7 @@ TryBuild()
   gROOT->LoadMacro("AliTrackletAODdNdeta.C+g");
   gROOT->LoadMacro("AliTrackletdNdeta.C+g");
   gROOT->LoadMacro("AliTrackletdNdeta2.C+g");
+  gROOT->LoadMacro("MakeDeltaWeights.C+g");
 }
 //
 // EOF

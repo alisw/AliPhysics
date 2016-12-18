@@ -59,6 +59,9 @@ public:
   /// set the minimum pT value of the tracks used to compute the resolution
   void SetMinPt(Double_t val) { fMinPt = val; }
   
+  /// set the sign of the tracks used to compute the resolution
+  void SetMuonSign(Short_t sign) { fSign = sign; }
+  
   // set standard cuts to select events to be considered
   void SetMuonEventCuts(AliMuonEventCuts &eventCuts);
   
@@ -249,6 +252,7 @@ private:
   TF1*     fGaus;                  ///< gaussian function to fit the residuals
   Double_t fMinMomentum;           ///< use only tracks with momentum higher than this value
   Double_t fMinPt;                 ///< use only tracks with pT higher than this value
+  Short_t  fSign;                  ///< use only tracks of this sign
   Int_t    fExtrapMode;            ///< extrapolation mode to get the track parameters and covariances at a given cluster
   Bool_t   fCorrectForSystematics; ///< add or not the systematic shifts of the residuals to the resolution
   Bool_t   fRemoveMonoCathCl;      ///< remove or not the mono-cathod clusters
@@ -275,7 +279,7 @@ private:
   AliMuonEventCuts* fMuonEventCuts; ///< cuts to select events to be considered
   AliMuonTrackCuts* fMuonTrackCuts; ///< cuts to select tracks to be considered
   
-  ClassDef(AliAnalysisTaskMuonResolution, 5); // chamber resolution analysis
+  ClassDef(AliAnalysisTaskMuonResolution, 6); // chamber resolution analysis
 };
 
 //________________________________________________________________________

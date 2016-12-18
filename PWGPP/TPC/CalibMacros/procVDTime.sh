@@ -141,9 +141,10 @@ for arun in `cat $runList`; do
     fi
     cat "$curdir/$residualFileList" | egrep $arun > $residFilesRun ;	
     #
+    logFileVDT="submitTimeDrift_$arun.log"
     mode=0; 
     alilog_info "BEGIN: 0.) Submit in mode $mode to get time/drift info"
-    time aliroot -b -q $inclMacro $loadLibMacro $curdir/${locMacro}+g\("$mode","$run",0,-1,\""$residFilesRun"\"\) >& submitTimeDrift_$arun.log	
+    time aliroot -b -q $inclMacro $loadLibMacro $curdir/${locMacro}+g\("$mode","$run",0,-1,\""$residFilesRun"\"\) >& $logFileVDT
     rm tmpDriftTree.root
     alilog_info "END: 0.) Submit int mode $mode to get time/vdrift info"
     #
@@ -156,10 +157,18 @@ for arun in `cat $runList`; do
     timeBinsFile="timeBins.log"
     alilog_info "BEGIN: 2.) Writing time bins info to $timeBinsFile"
     # for mac: egrep instead of grep, and awk instead of gawk
-    gminTime=`cat submitTimeDrift_$arun.log  | egrep StatInfo.minTime | awk '{print $2}' | tail -n 1`
-    gmaxTime=`cat submitTimeDrift_$arun.log  | egrep StatInfo.maxTime | awk '{print $2}' | tail -n 1`
-    gNTimeBins=`cat submitTimeDrift_$arun.log  | egrep StatInfo.NTBin | awk '{print $2}' | tail -n 1`
-    gTimeDelta=`cat submitTimeDrift_$arun.log  | egrep StatInfo.TBinDuration | awk '{print $2}' | tail -n 1`
+    # expect stat info to be written in separate file
+    statFile="statinfo_$arun.txt"
+    if [ ! -f $statFile ] ; then
+	echo "Did not find $statFile, will use standard log"
+	statFile="$logFileVDT"
+    fi
+    echo "Using $statFile to extract time bins info" 
+    #
+    gminTime=`cat $statFile  | egrep StatInfo.minTime | awk '{print $2}' | tail -n 1`
+    gmaxTime=`cat $statFile  | egrep StatInfo.maxTime | awk '{print $2}' | tail -n 1`
+    gNTimeBins=`cat $statFile  | egrep StatInfo.NTBin | awk '{print $2}' | tail -n 1`
+    gTimeDelta=`cat $statFile  | egrep StatInfo.TBinDuration | awk '{print $2}' | tail -n 1`
     tstart=$gminTime
     tend=$gminTime
     alilog_info "Time bins for run $run: $gNTimeBins of $gTimeDelta seconds"

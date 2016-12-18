@@ -60,7 +60,8 @@ struct TrackletAODTrain : public TrainSetup
     fOptions.Add("dphi-shift",       "X","Bending shift",           0.0045);
     fOptions.Add("phi-overlap-cut",  "X","Phi overlap cut",         0.005);
     fOptions.Add("z-eta-overlap-cut","X","Z-Eta overlap cut",       0.05);
-    fOptions.Add("copy", "LIST",    "',' separated list to copy","cent,v0");
+    fOptions.Add("copy",         "LIST","',' separated list to copy","cent,v0");
+    fOptions.Add("filter-str",   "MODE","Filter strange clusters",  0);    
     fOptions.SetDescription("Create branch in AOD with tracklet info");
     
   }
@@ -133,7 +134,8 @@ struct TrackletAODTrain : public TrainSetup
     FromOption(task, "DPhiShift",	"dphi-shift",	     0.0045);
     FromOption(task, "PhiOverlapCut",	"phi-overlap-cut"  , 0.005);
     FromOption(task, "ZEtaOverlapCut",	"z-eta-overlap-cut", 0.05);
-
+    FromOption(task, "FilterStrange",   "filter-str",        0);
+    
     task->Print("");    
   }
   /** 

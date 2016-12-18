@@ -17,6 +17,9 @@
 set(MODULE PWGmuondep)
 add_definitions(-D_MODULE_="${MODULE}")
 
+add_subdirectory(aaf)
+message(STATUS "PWG muondep aaf enabled")
+
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWG/muondep)
 
@@ -27,21 +30,34 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisMuMu.cxx
+  AliAnalysisMuMuConfig.cxx
+  AliAnalysisMuMuFnorm.cxx
+  AliAnalysisMuMuGraphUtil.cxx
+  AliAnalysisMuMuJpsiResult.cxx
+  AliAnalysisMuMuResult.cxx
+  AliAnalysisMuMuSpectra.cxx
+  AliAnalysisMuMuSpectraCapsule.cxx
+  AliAnalysisMuMuSpectraCapsulePP.cxx
+  AliAnalysisMuMuSpectraCapsulePbP.cxx
+  AliAnalysisMuMuSpectraCapsulePbPb.cxx
+  AliAnalysisRunList.cxx
   AliAnalysisTaskESDMCLabelAddition.cxx 
-  AliAnalysisTaskPileup.cxx
   AliAnalysisTaskMuonCDBConnect.cxx
   AliAnalysisTaskMuonRefit.cxx
   AliAnalysisTaskMuonRefitVtx.cxx
+  AliAnalysisTaskPileup.cxx
   AliAnalysisTriggerScalers.cxx
-  AliAnalysisMuMu.cxx
-  AliAnalysisMuMuConfig.cxx
-  AliAnalysisMuMuResult.cxx
-  AliAnalysisMuMuJpsiResult.cxx
-  AliAnalysisMuMuFnorm.cxx
-  AliAnalysisMuMuGraphUtil.cxx
-  AliAnalysisMuMuSpectra.cxx
-  AliMuonGridSubmitter.cxx
   AliMuonAccEffSubmitter.cxx
+  AliMuonCompactCluster.cxx
+  AliMuonCompactEvent.cxx
+  AliMuonCompactManuStatus.cxx
+  AliMuonCompactMapping.cxx
+  AliMuonCompactQuickAccEff.cxx
+  AliMuonCompactQuickAccEffChecker.cxx
+  AliMuonCompactTrack.cxx
+  AliMuonCompactTreeMaker.cxx
+  AliMuonGridSubmitter.cxx
   AliMuonQAMergeSubmitter.cxx
   )
 

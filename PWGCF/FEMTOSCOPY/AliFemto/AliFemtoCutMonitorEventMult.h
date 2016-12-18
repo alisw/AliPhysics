@@ -24,7 +24,7 @@ class TList;
 class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor {
 public:
   AliFemtoCutMonitorEventMult();
-  AliFemtoCutMonitorEventMult(const char *aName, int nBins=5000);
+  AliFemtoCutMonitorEventMult(const char *aName, int nBins=5000, double multMax=5000.5);
   AliFemtoCutMonitorEventMult(const AliFemtoCutMonitorEventMult &aCut);
   virtual ~AliFemtoCutMonitorEventMult();
 

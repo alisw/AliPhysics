@@ -101,6 +101,12 @@ public:
         if(fHistoMeasNch) delete fHistoMeasNch;
         fHistoMeasNch = new TH1F(*h);
     }
+    
+    // pT weights on MC
+    void UsePtWeight(Bool_t flag) { fUsePtWeight = flag; }
+    Double_t GetPtWeight(Float_t pt);
+    Double_t dNdptFit(Float_t pt, Double_t* par);
+    
     void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
     
     // Flag to use the zvtx correction from ( 0= none, 1= usual d2h, 2=AliESDUtils for VZERO multiplicity)
@@ -126,6 +132,7 @@ public:
     void SetEtaAccCut(Double_t etacut){fEtaAccCut=etacut;}
     void SetPtAccCut(Double_t ptcut){fPtAccCut=ptcut;}
     Bool_t CheckGenAcc(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau);
+    void SetKeepTrackControlHisto(Bool_t flag){fFillTrackHisto=flag;}
     
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -142,8 +149,9 @@ private:
     TProfile* GetEstimatorHistogram(const AliVEvent *event);
     void CreateImpactParameterHistos();
     void CreateMeasuredNchHisto();
-    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t recSpherocity);
-    void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel);
+    Bool_t FillTrackControlHisto(AliAODEvent* aod, Int_t nSelTrkCorr, Int_t nSelectedEvwithCand);
+    void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t sphericity, Double_t recSpherocity, Double_t nchWeight);
+    void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight);
     
     TList  *fOutput; //! list send on output slot 1
     TList  *fListCuts; // list of cuts
@@ -155,27 +163,45 @@ private:
     
     TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
     TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
+    TH2F* fHistNtrVsnTrackEvWithCand; //!<!  control hist of ntracklets vs nTracks passing track selection for spherocity calculation for event with atleast one D meson
     TH2F* fHistNtrVsSo; //!  hist of ntracklets vs So
     TH2F* fHistNtrCorrVsSo; //!  hist of ntracklets vs So
     TH2F* fHistNtrVsSpheri; //!  hist of ntracklets vs Spheri
     TH2F* fHistNtrCorrVsSpheri; //!  hist of ntracklets vs Spheri
     
-    TH1F* fHistGenPrimaryParticlesInelGt0; //! hist. of geenrated multiplcity
+    TH2F* fHistNtrVsNchMC; //!<!  hist of ntracklets vs Nch (Generated)
+    TH2F* fHistNtrCorrVsNchMC; //!<!  hist of ntracklets vs Nch (Generated)
+    TH2F* fHistNtrVsNchMCPrimary; //!<!  hist of ntracklets vs Nch (Primary)
+    TH2F* fHistNtrCorrVsNchMCPrimary; //!<!  hist of ntracklets vs Nch (Primary)
+    TH2F* fHistNtrVsNchMCPhysicalPrimary; //!<!  hist of ntracklets vs Nch (Physical Primary)
+    TH2F* fHistNtrCorrVsNchMCPhysicalPrimary; //!<!  hist of ntracklets vs Nch (Physical Primary)
+    TH1F* fHistGenPrimaryParticlesInelGt0; //!<!hist. of geenrated multiplcity
+    TH3F* fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary; //!<! hist of Nch (generated) vs Nch (Primary) vs Nch (Physical Primary)
+    
     TH1F* fHistNtrCorrPSSel; //! hist. of ntracklets for physics selection only selected events
     TH1F* fHistNtrCorrEvSel; //! hist. of ntracklets for selected events
     TH1F* fHistNtrCorrEvWithCand; //! hist. of ntracklets for evnts with a candidate
     TH1F* fHistNtrCorrEvWithD;//! hist. of ntracklets for evnts with a candidate in D mass peak
     
+    TH3F *fHistnTrackvsEtavsPhi;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi
+    TH3F *fHistnTrackvsEtavsPhiEvWithCand;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi for event with atleast one D meson
+    
     THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
     THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
     THnSparseD *fSparseEvtShapePrompt;//! THnSparse histograms for Prompt D0 vs. Spherocity
     THnSparseD *fSparseEvtShapeFeeddown;//! THnSparse histograms for feeddown D0 vs. Spherocity
-    THnSparseD *fSparseEvtShapePromptFD;//! THnSparse histograms for Both Prompt and feeddown D0 vs. Spherocity
+    THnSparseD *fSparseEvtShapeRecSphero;//! THnSparse histograms for Both Prompt and feeddown D0 vs. Spherocity
     THnSparseD *fMCAccGenPrompt; //! histo for StepMCGenAcc for D meson prompt
     THnSparseD *fMCAccGenFeeddown; //! histo for StepMCGenAcc for D meson feeddown
     THnSparseD *fMCRecoPrompt; //! histo for StepMCReco for D meson feeddown
     THnSparseD *fMCRecoFeeddown; //! histo for StepMCReco for D meson feeddown
     THnSparseD *fMCRecoBothPromptFD; //! histo for StepMCReco for D meson Both Prompt Feeddown
+    THnSparseD *fMCAccGenPromptSpheri; //! histo for StepMCGenAcc for D meson prompt for Sphericity
+    THnSparseD *fMCAccGenFeeddownSpheri; //! histo for StepMCGenAcc for D meson feeddown for Sphericity
+    THnSparseD *fMCRecoPromptSpheri; //! histo for StepMCReco for D meson feeddown for Sphericity
+    THnSparseD *fMCRecoFeeddownSpheri; //! histo for StepMCReco for D meson feeddown for Sphericity
+    THnSparseD *fMCRecoBothPromptFDSpheri; //! histo for StepMCReco for D meson Both Prompt Feeddown for Sphericity
+    
     THnSparseD *fMCAccGenPromptEvSel; //! histo for StepMCGenAcc for D meson prompt with Vertex selection (IsEvSel = kTRUE)
     THnSparseD *fMCAccGenFeeddownEvSel; //! histo for StepMCGenAcc for D meson feeddown with Vertex selection (IsEvSel = kTRUE)
     
@@ -206,6 +232,8 @@ private:
     Int_t fUseNchWeight; // weight on the MC on the generated multiplicity (0->no weights, 1->Nch weights, 2->Ntrk weights)
     TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
     TH1F* fHistoMeasNch;  // weight histogram on the true measured multiplicity
+    Bool_t fUsePtWeight; // weight on the MC on the generated pT
+    Double_t fWeight; // Total weight on the MC: nchWeight*ptWeight
     
     TProfile* fMultEstimatorAvg[4]; //TProfile with mult vs. Z per period
     Double_t fRefMult;   // refrence multiplcity (period b)
@@ -219,6 +247,7 @@ private:
     Int_t fFillSoSparseChecks; // Flag to fill THnSparse with MultUncorr and NoPid cases ( 0 = only Mult, 1 = Mult and multUncorr, 2 = NoPid and 3 is All)
     
     Bool_t fUseQuarkTag; /// flag for quark/hadron level identification of prompt and feeddown
+    Bool_t fFillTrackHisto; /// flag for filling track control histograms
     Double_t fEtaAccCut; /// eta limits for acceptance step
     Double_t fPtAccCut; /// pt limits for acceptance step
     
@@ -231,7 +260,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,6); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,10); // D vs. mult task
 };
 
 #endif

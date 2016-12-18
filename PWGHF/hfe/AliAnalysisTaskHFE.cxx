@@ -113,6 +113,10 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fRemoveFirstEvent(kFALSE)
   , fisNonHFEsystematics(kFALSE)
   , fCalcContamBeauty(kFALSE)
+  , fvtxAna(0)
+  , fVtxMixed(kFALSE)
+  , fVtxTrack(kFALSE)
+  , fVtxSPD(kFALSE)
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
   , fCentralityPercent(-1)
@@ -187,6 +191,10 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fRemoveFirstEvent(kFALSE)
   , fisNonHFEsystematics(kFALSE)
   , fCalcContamBeauty(kFALSE)
+  , fvtxAna(0)
+  , fVtxMixed(kFALSE)
+  , fVtxTrack(kFALSE)
+  , fVtxSPD(kFALSE)
   , fSpecialTrigger(NULL)
   , fCentralityF(-1)
   , fCentralityPercent(-1)
@@ -273,6 +281,10 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fRemoveFirstEvent(ref.fRemoveFirstEvent)
   , fisNonHFEsystematics(ref.fisNonHFEsystematics)
   , fCalcContamBeauty(ref.fCalcContamBeauty)
+  , fvtxAna(0)
+  , fVtxMixed(kFALSE)
+  , fVtxTrack(kFALSE)
+  , fVtxSPD(kFALSE)
   , fSpecialTrigger(ref.fSpecialTrigger)
   , fCentralityF(ref.fCentralityF)
   , fCentralityPercent(ref.fCentralityPercent)
@@ -354,6 +366,10 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fRemoveFirstEvent = fRemoveFirstEvent;
   target.fisNonHFEsystematics = fisNonHFEsystematics;
   target.fCalcContamBeauty = fCalcContamBeauty;
+  target.fvtxAna = fvtxAna;
+  target.fVtxMixed = fVtxMixed;
+  target.fVtxTrack = fVtxTrack;
+  target.fVtxSPD = fVtxSPD;
   target.fSpecialTrigger = fSpecialTrigger;
   target.fCentralityF = fCentralityF;
   target.fCentralityPercent = fCentralityPercent;
@@ -519,6 +535,9 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   // Make clone for V0 tagging step
   fCuts->SetPIDResponse(fPIDResponse);
   fCuts->Initialize(fCFM);
+  fVtxMixed = fCuts->GetUseMixedVertex();
+  fVtxTrack = fCuts->GetUseTrackVertex();
+  fVtxSPD = fCuts->GetUseSPDVertex();
   if(fCuts->IsQAOn()) fQA->Add(fCuts->GetQAhistograms());
   fSignalCuts = new AliHFEsignalCuts("HFEsignalCuts", "HFE MC Signal definition");
   fVarManager->SetSignalCuts(fSignalCuts);
@@ -704,6 +723,10 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     //------------------------------------------------------------------------------------------
   }
 
+    
+    // Get PrimaryVertex for analysis
+    
+    fvtxAna = GetPrimaryVertexAnalysis(fInputEvent);
   //printf("test2\n");
 
   // need the centrality for everything (MC also)
@@ -766,7 +789,7 @@ void AliAnalysisTaskHFE::Terminate(Option_t *){
 }
 
 //_______________________________________________________________
-Bool_t AliAnalysisTaskHFE::IsEventInBinZero() {
+Bool_t AliAnalysisTaskHFE::IsEventInBinZero() { // not used???
   //
   //
   //
@@ -945,8 +968,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
   eventContainer[0] = 0.; 
   if(HasMCData()) eventContainer[0] = fVz;
   else {
-    const AliESDVertex* vtxESD = fESD->GetPrimaryVertex();
-    if(vtxESD) eventContainer[0] = vtxESD->GetZ();
+        if(fvtxAna) eventContainer[0] = fvtxAna->GetZ();
   }
   eventContainer[1] = 0.;
   eventContainer[2] = fCentralityF;
@@ -956,6 +978,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
   //
   fCFM->GetEventContainer()->Fill(eventContainer, AliHFEcuts::kEventStepRecNoCut);
+    
+    // sma July 2016: add rejection of noise (from SPD cluster vs tracklets correlation)
+    // to the same step as SPD pile up -> to STEP 2
+    Bool_t bg = fAnalysisUtils->IsSPDClusterVsTrackletBG(fInputEvent);
+    //printf("########## SPD background %d \n", bg);
+    if (bg) return;
 
   //
   if(fIdentifiedAsPileUp) return; 
@@ -1010,9 +1038,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
   // Get Number of contributors to the primary vertex for multiplicity-dependent correction
   Int_t ncontribVtx = 0;
-  const AliESDVertex *priVtx = fESD->GetPrimaryVertexTracks();
-  if(priVtx){
-    ncontribVtx = priVtx->GetNContributors();
+    if(fvtxAna){
+        ncontribVtx = fvtxAna->GetNContributors();
   }
 
   // minjung for IP QA(temporary ~ 2weeks)
@@ -1564,21 +1591,22 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   AliDebug(3, "Processing AOD Event");
   Double_t eventContainer[4];
   eventContainer[0] = 0.0;
+    
+    AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
+    if(!fAOD){
+        AliError("AOD Event required for AOD Analysis");
+        return;
+    }
+    
   if(HasMCData()) eventContainer[0] = fVz;
   else {
-    if(fInputEvent->GetPrimaryVertex()) eventContainer[0] = fInputEvent->GetPrimaryVertex()->GetZ();
+        if(fvtxAna) eventContainer[0] = fvtxAna->GetZ();
   }
   eventContainer[1] = 1.; // No Information available in AOD analysis, assume all events have V0AND
   eventContainer[2] = fCentralityF; 
   eventContainer[3] = fContributors; 
   
   //printf("value event container %f, %f, %f, %f\n",eventContainer[0],eventContainer[1],eventContainer[2],eventContainer[3]);
-
-  AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
-  if(!fAOD){
-    AliError("AOD Event required for AOD Analysis");
-      return;
-  }
 
   // Set magnetic field if V0 task on
   if(fTaggedTrackAnalysis) {
@@ -1624,9 +1652,8 @@ void AliAnalysisTaskHFE::ProcessAOD(){
 
   // Get Number of contributors to the primary vertex for multiplicity-dependent correction
   Int_t ncontribVtx = 0;
-  AliAODVertex *priVtx = fAOD->GetPrimaryVertex();
-  if(priVtx){
-    ncontribVtx = priVtx->GetNContributors();
+    if(fvtxAna){
+        ncontribVtx = fvtxAna->GetNContributors();
   }
 
   // Look for kink mother
@@ -2401,28 +2428,27 @@ Bool_t AliAnalysisTaskHFE::ReadCentrality() {
 
  
   // contributors, to be outsourced
-  const AliVVertex *vtx;
   if(IsAODanalysis()){
     AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
     if(!fAOD){
       AliError("AOD Event required for AOD Analysis");
       return kFALSE;
     }
-    vtx = fAOD->GetPrimaryVertex();
+        
   } else {
     AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
     if(!fESD){
       AliError("ESD Event required for ESD Analysis");
       return kFALSE;
     }
-    vtx = fESD->GetPrimaryVertex() ;
   }
-  if(!vtx){ 
+    
+    if(!fvtxAna){
     fContributors = 0.5;
     return kFALSE;
   }
   else {
-    Int_t contributorstemp = vtx->GetNContributors();
+        Int_t contributorstemp = fvtxAna->GetNContributors();
     if( contributorstemp <=  0) {
       fContributors =  0.5;
       //printf("Number of contributors %d and vz %f\n",contributorstemp,vtx->GetZ());
@@ -2466,25 +2492,73 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
   //
   // Recover the centrality of the event from ESD or AOD
   //
- if(IsAODanalysis()){
+    //
+    //
+    if(IsAODanalysis()){
 
+        AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
+        if(!fAOD){
+            AliError("AOD Event required for AOD Analysis");
+            return;
+        }
+
+        // PileUp
+        fIdentifiedAsPileUp = kFALSE;
+        if(fRemovePileUp && fAOD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE;
+
+        // Z vertex
+        fIdentifiedAsOutInz = kFALSE;
+        Bool_t findvertex = kTRUE;
+        if((!fvtxAna) || (fvtxAna->GetNContributors() <= 0)) findvertex = kFALSE;
+        if(findvertex) {
+            if(TMath::Abs(fvtxAna->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
+        }
+        // Event Cut
+        fPassTheEventCut = kTRUE;
+        if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fAOD)) fPassTheEventCut = kFALSE;
+
+
+    } else {
+
+        AliDebug(3, "Processing ESD Centrality");
+        AliESDEvent *fESD = dynamic_cast<AliESDEvent *>(fInputEvent);
+        if(!fESD){
+            AliError("ESD Event required for ESD Analysis");
+            return;
+        }
+
+        // PileUp
+        fIdentifiedAsPileUp = kFALSE;
+        if(fRemovePileUp && fESD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE;
+
+
+        // Z vertex
+        fIdentifiedAsOutInz = kFALSE;
+        Bool_t findvertex = kTRUE;
+        if((!fvtxAna) || (fvtxAna->GetNContributors() <= 0)) findvertex = kFALSE;
+        if(findvertex) {
+            if(TMath::Abs(fvtxAna->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
+        }
+
+        //Event Cut
+        fPassTheEventCut = kTRUE;
+        if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) fPassTheEventCut = kFALSE;   
+
+    }
+
+}
+
+
+/*
+    AliAODEvent *fAOD = NULL;
+    AliESDEvent *fESD = NULL;
+
+ if(IsAODanalysis()){
    AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
    if(!fAOD){
      AliError("AOD Event required for AOD Analysis");
        return;
-   }
-   // PileUp
-   fIdentifiedAsPileUp = kFALSE;
-   if(fRemovePileUp && fAOD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE; 
-   // Z vertex
-   fIdentifiedAsOutInz = kFALSE;
-   //printf("Z vertex %f and out %f\n",fAOD->GetPrimaryVertex()->GetZ(),fCuts->GetVertexRange());
-   if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
-   // Event Cut
-   fPassTheEventCut = kTRUE;
-   if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fAOD)) fPassTheEventCut = kFALSE; 
-   
-   
+   }  
  } else {
    
    AliDebug(3, "Processing ESD Centrality");
@@ -2493,28 +2567,29 @@ void AliAnalysisTaskHFE::RejectionPileUpVertexRangeEventCut() {
      AliError("ESD Event required for ESD Analysis");
        return;
    }
+    }
+
    // PileUp
    fIdentifiedAsPileUp = kFALSE;
-   if(fRemovePileUp && fESD->IsPileupFromSPD()) fIdentifiedAsPileUp = kTRUE; 
-   
-
+    if(fRemovePileUp){
+        if(IsAODanalysis()){
+            fIdentifiedAsPileUp = fAOD->IsPileupFromSPD();
+        } else {
+            fIdentifiedAsPileUp = fESD->IsPileupFromSPD();
+        }
+    }
 
    // Z vertex
    fIdentifiedAsOutInz = kFALSE;
-   Bool_t findvertex = kTRUE;
-   const AliESDVertex* vtxESD = fESD->GetPrimaryVertex();
-   if((!vtxESD) || (vtxESD->GetNContributors() <= 0)) findvertex = kFALSE;
-   if(findvertex) {
-     if(TMath::Abs(vtxESD->GetZ()) > fCuts->GetVertexRange()) fIdentifiedAsOutInz = kTRUE;
-   }
+    if((fvtxAna) && (TMath::Abs(fvtxAna->GetZ()) > fCuts->GetVertexRange())) fIdentifiedAsOutInz = kTRUE;
    
    //Event Cut
    fPassTheEventCut = kTRUE;
-   if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) fPassTheEventCut = kFALSE;   
+    if(!fCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fInputEvent)) fPassTheEventCut = kFALSE;   
   
- }
-
+    return;
 }
+*/
 
 //___________________________________________________
 Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
@@ -2882,4 +2957,64 @@ Bool_t AliAnalysisTaskHFE::IsMCFakeTrack(const AliVTrack *const trk) const {
   // Check whether track is MC Fake track using the sign of the track label
   //
   return trk->GetLabel() < 0;
+}
+
+
+//___________________________________________________
+const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexAnalysis(const AliVEvent * const inputEvent){
+    //
+    // Get vertex for analysis from event
+    //
+    const AliVVertex *vtxTracks = GetPrimaryVertexTracks(inputEvent),
+    *vtxSPD = GetPrimaryVertexSPD(inputEvent),
+    *fvtxAna(NULL);
+
+    if(fVtxMixed){
+        // Use mixed vertex: Prefer vertex with tracks, in case not available use SPD vertex
+        if(vtxTracks && vtxTracks->GetNContributors() > 0) fvtxAna = vtxTracks;
+        else if(vtxSPD && vtxSPD->GetNContributors() > 0) fvtxAna = vtxSPD;
+    } else if(fVtxSPD){
+        if(vtxSPD && vtxSPD->GetNContributors () > 0) fvtxAna = vtxSPD;
+    } else if(fVtxTrack) {
+        if(vtxTracks && vtxTracks->GetNContributors() > 0) fvtxAna = vtxTracks;
+    }
+    
+    return fvtxAna;
+}
+
+//_____________________________________________________________________________
+const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexSPD(const AliVEvent * const inputEvent){
+    //
+    // Get SPD vertex from event
+    //
+    const AliVVertex *spdvtx(NULL);
+    const AliESDEvent *esd(NULL);
+    const AliAODEvent *aod(NULL);
+    if((esd = dynamic_cast<const AliESDEvent *>(inputEvent))){
+        spdvtx = esd->GetPrimaryVertexSPD();
+    } else if((aod = dynamic_cast<const AliAODEvent *>(inputEvent))){
+        spdvtx = aod->GetPrimaryVertexSPD();
+    }
+    return spdvtx;
+}
+
+//_____________________________________________________________________________
+const AliVVertex *AliAnalysisTaskHFE::GetPrimaryVertexTracks(const AliVEvent *const inputEvent){
+    //
+    // Get Primary Vertex from tracks
+    //
+    const AliVVertex *trkvtx(NULL);
+    const AliESDEvent *esd(NULL);
+    const AliAODEvent *aod(NULL);
+    if((esd = dynamic_cast<const AliESDEvent *>(inputEvent))){
+        trkvtx = esd->GetPrimaryVertexTracks();
+    } else if((aod = dynamic_cast<const AliAODEvent *>(inputEvent))){
+        const AliVVertex *vtxTmp = aod->GetPrimaryVertex();
+        // check whether the primary vertex is the vertex from tracks
+        TString vtxTtl = vtxTmp->GetTitle();
+        if(vtxTtl.Contains("VertexerTracks")){
+            trkvtx = vtxTmp;
+        }
+    }
+    return trkvtx;
 }

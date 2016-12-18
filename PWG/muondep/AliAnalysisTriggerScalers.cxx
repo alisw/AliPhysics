@@ -65,6 +65,7 @@
 //
 
 #include "AliAnalysisTriggerScalers.h"
+#include "AliAnalysisRunList.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliGRPObject.h"
@@ -349,7 +350,11 @@ Int_t AliAnalysisTriggerScalers::GetFillNumberFromRunNumber(Int_t runNumber)
       // manual hack because GRP info incorrect for this run
       fillNumber = 4690;
     }
-    
+    if ( runNumber == 262717 ) 
+    {
+        // one more manual hack due to incorrect GRP info
+        fillNumber = 5351;
+    }
     return fillNumber;
   }
   return -1;
@@ -490,7 +495,8 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
     
     if ( period.BeginsWith("LHC15n") ) // pp ref 5.02 TeV
     {
-      lumiTriggerCrossSection = 21.0; // FIXME: not from a vdM yet
+      lumiTriggerCrossSection = 20.9; // FIXME: not from a vdM yet
+      lumiTriggerCrossSectionError = 0.04; // FIXME: not from a vdM yet
       lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
     }
     
@@ -503,8 +509,21 @@ AliAnalysisTriggerScalers::GetLuminosityTriggerAndCrossSection(Int_t runNumber,
   }
   else if ( period.BeginsWith("LHC16"))
   {
-    lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
-    lumiTriggerCrossSection = 30.1; 
+    if ( period == "LHC16q" || period == "LHC16t" )
+    {
+        lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+        lumiTriggerCrossSection = 1590;
+    }
+    else if ( period == "LHC16r" || period == "LHC16s" )
+    {
+        lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+        lumiTriggerCrossSection = 1715; 
+    }
+    else
+    {
+        lumiTriggerClassName = "C0TVX-B-NOPF-CENTNOTRD";
+        lumiTriggerCrossSection = 30.1;
+    }
   }
   else
   {
@@ -2202,34 +2221,6 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerRatio(const char* triggerClassName
 }
 
 //______________________________________________________________________________
-void AliAnalysisTriggerScalers::CommonRunList(const std::vector<int>& runlist1,
-                                              const std::vector<int>& runlist2,
-                                              std::vector<int>& runlist)
-{
-  //// Build a runlist with the runs that are both in runlist1 and runlist2
-  runlist.clear();
-  
-  for ( std::vector<int>::size_type i = 0; i < runlist1.size(); ++i )
-  {
-    int run = runlist1[i];
-    if ( std::find(runlist2.begin(),runlist2.end(),run) != runlist2.end() )
-    {
-      runlist.push_back(run);
-    }
-  }
-  
-  for ( std::vector<int>::size_type i = 0; i < runlist2.size(); ++i )
-  {
-    int run = runlist2[i];
-    if ( std::find(runlist1.begin(),runlist1.end(),run) != runlist1.end() &&
-        std::find(runlist.begin(),runlist.end(),run) == runlist.end() )
-    {
-      runlist.push_back(run);
-    }
-  }
-}
-
-//______________________________________________________________________________
 TGraph* AliAnalysisTriggerScalers::PlotTriggerRatioEvolution(const char* triggerClassName1,
                                                              const char* what1,
                                                              const char* triggerClassName2,
@@ -2248,9 +2239,7 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerRatioEvolution(const char* trigger
     PurgeRunList(runlist1,triggerClassName1);
     PurgeRunList(runlist2,triggerClassName2);
     
-    runlist = new std::vector<int>;
-    
-    CommonRunList(runlist1,runlist2,*runlist);
+    runlist = new std::vector<int>(AliAnalysisRunList::GetRunsInCommon(runlist1,runlist2));
     
     AliInfo(Form("Will use %lu runs (with the requested classes) among the %lu requested",runlist->size(),
                  fRunList.size()));
@@ -2370,20 +2359,7 @@ void AliAnalysisTriggerScalers::Print(Option_t* /* opt */) const
   
   std::cout << "OCDB path = " << fOCDBPath.Data() << std::endl;
   
-  AliAnalysisTriggerScalers::PrintIntegers(fRunList,',');
-}
-
-//______________________________________________________________________________
-void AliAnalysisTriggerScalers::PrintIntegers(const std::vector<int>& integers,
-                                              char sep,
-                                              std::ostream& out)
-{
-  /// print a list of integers
-  for ( std::vector<int>::size_type i = 0; i < integers.size(); ++i )
-  {
-    out << integers[i] << sep;
-  }
-  out << std::endl;
+  AliAnalysisRunList::PrintIntegers(fRunList,',');
 }
 
 //______________________________________________________________________________
@@ -2435,69 +2411,6 @@ void AliAnalysisTriggerScalers::PurgeRunList(std::vector<int>& purgedList, const
 }
 
 //______________________________________________________________________________
-void AliAnalysisTriggerScalers::ReadIntegers(const char* filename,
-                                             std::vector<int>& integers,
-                                             Bool_t resetVector)
-{
-  /// Read integers from filename, where integers are either
-  /// separated by "," or by return carriage
-  
-  if ( gSystem->AccessPathName(gSystem->ExpandPathName(filename))==kTRUE )
-  {
-    return;
-  }
-  std::ifstream in(gSystem->ExpandPathName(filename));
-  int i;
-  
-  std::set<int> runset;
-  
-  if (!resetVector)
-  {
-    for ( std::vector<int>::size_type j = 0; j < integers.size(); ++ j )
-    {
-      runset.insert(integers[j]);
-    }
-  }
-  
-  char line[10000];
-  
-  in.getline(line,10000,'\n');
-  
-  TString sline(line);
-  
-  if (sline.Contains(","))
-  {
-    TObjArray* a = sline.Tokenize(",");
-    TIter next(a);
-    TObjString* s;
-    while ( ( s = static_cast<TObjString*>(next()) ) )
-    {
-      runset.insert(s->String().Atoi());
-    }
-    delete a;
-  }
-  else
-  {
-    runset.insert(sline.Atoi());
-    
-    while ( in >> i )
-    {
-      runset.insert(i);
-    }
-  }
-  
-  integers.clear();
-  
-  for ( std::set<int>::const_iterator it = runset.begin(); it != runset.end(); ++it )
-  {
-    integers.push_back((*it));
-  }
-  
-  std::sort(integers.begin(),integers.end());
-}
-
-
-//______________________________________________________________________________
 void AliAnalysisTriggerScalers::SetCrossSectionUnit(const char* unit)
 {
   fCrossSectionUnit=unit;
@@ -2537,7 +2450,7 @@ void AliAnalysisTriggerScalers::SetOCDBPath(const char* path)
       }
     }
   }
-  else if ( fOCDBPath.Contains("cvmfs"))
+  else if ( fOCDBPath.Contains("cvmfs") || fOCDBPath.BeginsWith("local") )
   {
     // assume the user knows what (s)he is doing
     fOCDBPath = path;
@@ -2548,6 +2461,7 @@ void AliAnalysisTriggerScalers::SetOCDBPath(const char* path)
   }
 }
 
+//______________________________________________________________________________
 //______________________________________________________________________________
 void AliAnalysisTriggerScalers::SetRunList(Int_t runNumber)
 {
@@ -2568,10 +2482,7 @@ void AliAnalysisTriggerScalers::SetRunList(const std::set<int>& runs)
 {
   // Make the runlist be a single run
   fRunList.clear();
-  for ( std::set<int>::const_iterator it = runs.begin(); it != runs.end(); ++it )
-  {
-    fRunList.push_back(*it);
-  }
+  fRunList.assign(runs.begin(),runs.end());
 }
 
 //______________________________________________________________________________
@@ -2579,61 +2490,17 @@ void AliAnalysisTriggerScalers::SetRunList(const char* runlist)
 {
   // Read the runlist from an ASCII file or a comma separated list
   // or a space separated list
-  
-  fRunList.clear();
-  
-  if ( TString(runlist).Contains(",") || TString(runlist).Contains(" ") )
-  {
-    TObjArray* runs = 0x0;
-    if ( TString(runlist).Contains(",") )
-    {
-      runs = TString(runlist).Tokenize(",");
-    }
-    else
-    {
-      runs = TString(runlist).Tokenize(" ");
-    }
-    TIter next(runs);
-    TObjString* s;
-    std::set<int> runset;
-    
-    while ( ( s = static_cast<TObjString*>(next()) ) )
-    {
-      runset.insert(s->String().Atoi());
-    }
-    
-    for ( std::set<int>::const_iterator it = runset.begin(); it != runset.end(); ++it )
-    {
-      fRunList.push_back((*it));
-    }
-    
-    std::sort(fRunList.begin(),fRunList.end());
-    
-    delete runs;
-  }
-  else
-  {
-    ReadIntegers(runlist,fRunList);
+
+    AliAnalysisRunList rl(runlist);
+
+    fRunList = rl.AsVector();
+
     if (fRunList.empty())
     {
-      if ( TString(runlist).IsDigit() )
-      {
-        SetRunList(TString(runlist).Atoi());
-      }
-      else
-      {
-        AliError("Could not set run list !");
-      }
+        AliError("Could not set runlist");
     }
-  }
 }
 
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
-//______________________________________________________________________________
 //______________________________________________________________________________
 
 ClassImp(AliAnalysisTriggerScalerItem)

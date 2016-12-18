@@ -119,6 +119,12 @@ public:
    * 
    */
   void UserExec(Option_t* /*option*/);
+  /** 
+   * Print this task x
+   * 
+   * @param option 
+   */
+  void Print(Option_t* option="") const;
   /** the header to fill */
   AliAODSimpleHeader* fHeader; //!
 
@@ -316,7 +322,13 @@ void  AliSimpleHeaderTask::UserExec(Option_t* /*option*/)
   // Mark event for store 
   ah->SetFillAOD(kTRUE);
 }
-  
+
+//____________________________________________________________________
+void  AliSimpleHeaderTask::Print(Option_t* /*option*/) const
+{
+  Printf("%s: %s", ClassName(), GetName());
+  Printf("  Task to copy content of header to a simplified header");
+}
 //====================================================================
 AliSimpleHeaderTask* AliSimpleHeaderTask::Create()
 {

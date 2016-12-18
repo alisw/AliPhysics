@@ -98,7 +98,7 @@ void AliHFCutVarFDsubAnalysisManager::DrawDistributions(TString strOutputFolder)
     if(axis->GetAxisName()=="PID")
       nAxes = nAxes-1;
   }
-  
+
   Int_t nPads = 1;
 
   if(nAxes-1<=3) {
@@ -194,20 +194,20 @@ void AliHFCutVarFDsubAnalysisManager::DrawDistributions(TString strOutputFolder)
 
 
 //_________________________________________________________________________________________________
-void AliHFCutVarFDsubAnalysisManager::GetEfficiencies(TString strOutputFolder/*="."*/, Bool_t ptWeight/*=kFALSE*/, TF1* funcWeightsD/*=0x0*/, TF1* funcWeightsB/*=0x0*/) {
+void AliHFCutVarFDsubAnalysisManager::GetEfficiencies(TString strOutputFolder/*="."*/,TString strOutputFile/*="Efficiency.root"*/, Bool_t ptWeight/*=kFALSE*/, TF1* funcWeightsD/*=0x0*/, TF1* funcWeightsB/*=0x0*/) {
   /// Obtain the efficiencies from the THnSparses
 
   Int_t* nCutSets = new Int_t[fCuts->GetEntries()];
   Int_t nMaxCutSets = 0;
   for (Int_t iBin=0; iBin<fCuts->GetEntries(); ++iBin) nCutSets[iBin] = 0;
-  
+
   if (!fBinsX) GetXaxisInformation();
   TList* set = (TList*)fCuts->At(0);
-  
+
   TH1F*** hEff = new TH1F**[2];
   hEff[0] = new TH1F*[set->GetEntries()];
   hEff[1] = new TH1F*[set->GetEntries()];
-  
+
   for(Int_t iCutSet=0; iCutSet<set->GetEntries(); ++iCutSet) {
     hEff[0][iCutSet] = new TH1F(Form("hEffPrompt_Set%d",iCutSet+1),"",fCuts->GetEntries(),fBinsX);
     hEff[1][iCutSet] = new TH1F(Form("hEffFD_Set%d",iCutSet+1),"",fCuts->GetEntries(),fBinsX);
@@ -237,13 +237,13 @@ void AliHFCutVarFDsubAnalysisManager::GetEfficiencies(TString strOutputFolder/*=
         else {
           efficiency = new AliHFCutVarFDsubEfficiency(fMCgenLevel[iOrigin], fMCafterCuts[iOrigin], cutSet, fAxes, ptWeight, funcWeightsB);
         }
-          
+
         eff[iOrigin][iBin].push_back(efficiency->GetEfficiency());
         effErr[iOrigin][iBin].push_back(efficiency->GetEfficiencyError());
 
         hEff[iOrigin][iCutSet]->SetBinContent(iBin+1,efficiency->GetEfficiency());
         hEff[iOrigin][iCutSet]->SetBinError(iBin+1,efficiency->GetEfficiencyError());
-        
+
         delete efficiency;
         efficiency = 0x0;
       }
@@ -290,7 +290,7 @@ void AliHFCutVarFDsubAnalysisManager::GetEfficiencies(TString strOutputFolder/*=
     }
   }
 
-  TFile outfile(Form("%s/Efficiencies.root",strOutputFolder.Data()),"RECREATE");
+  TFile outfile(Form("%s",strOutputFile.Data()),"RECREATE");
   for(Int_t iCutSet=0; iCutSet<set->GetEntries(); ++iCutSet) {
     for(UInt_t iOrigin=kPrompt; iOrigin<=kFD; ++iOrigin)
       hEff[iOrigin][iCutSet]->Write();
@@ -301,6 +301,15 @@ void AliHFCutVarFDsubAnalysisManager::GetEfficiencies(TString strOutputFolder/*=
       delete hEff[iOrigin][iCutSet];
   }
   delete[] hEff;
+
+  if(funcWeightsD) {
+    delete funcWeightsD;
+    funcWeightsD=0x0;
+  }
+  if(funcWeightsB) {
+    delete funcWeightsB;
+    funcWeightsB=0x0;
+  }
 }
 
 
@@ -351,7 +360,7 @@ void AliHFCutVarFDsubAnalysisManager::DrawEfficiencies(TString strOutputFolder,
 
 
 //_________________________________________________________________________________________________
-void AliHFCutVarFDsubAnalysisManager::GetRawYields(Bool_t drawFit/*=kFALSE*/,TString strOutputFolder/*="."*/) {
+void AliHFCutVarFDsubAnalysisManager::GetRawYields(Bool_t drawFit/*=kFALSE*/,TString strOutputFolder/*="."*/,TString strOutputFile/*="RawYields.root"*/) {
   /// Obtain the raw yields from the THnSparse
 
   Int_t* nCutSets = new Int_t[fCuts->GetEntries()];
@@ -366,7 +375,7 @@ void AliHFCutVarFDsubAnalysisManager::GetRawYields(Bool_t drawFit/*=kFALSE*/,TSt
 
   if (!fBinsX) GetXaxisInformation();
   TList* set = (TList*)fCuts->At(0);
-  
+
   TH1F** hRawYields = new TH1F*[set->GetEntries()];
   TH1F** hRawYieldSigmas = new TH1F*[set->GetEntries()];
   TH1F** hRawYieldMeans = new TH1F*[set->GetEntries()];
@@ -377,7 +386,7 @@ void AliHFCutVarFDsubAnalysisManager::GetRawYields(Bool_t drawFit/*=kFALSE*/,TSt
     hRawYieldMeans[iCutSet] = new TH1F(Form("hRawYieldMeans_Set%d",iCutSet+1),"",fCuts->GetEntries(),fBinsX);
     hRawYieldChisq[iCutSet] = new TH1F(Form("hRawYieldChisq_Set%d",iCutSet+1),"",fCuts->GetEntries(),fBinsX);
   }
-  
+
   TCanvas *cFitter = new TCanvas("cFitter","",1920,1080);
 
   for (Int_t iBin=0; iBin<fCuts->GetEntries(); ++iBin) {
@@ -440,7 +449,7 @@ void AliHFCutVarFDsubAnalysisManager::GetRawYields(Bool_t drawFit/*=kFALSE*/,TSt
     fRawYields->Add((TObject*)h);
   }
 
-  TFile outfile(Form("%s/RawYields.root",strOutputFolder.Data()),"RECREATE");
+  TFile outfile(Form("%s",strOutputFile.Data()),"RECREATE");
   for (Int_t iCutSet=0; iCutSet<set->GetEntries(); ++iCutSet) {
     hRawYields[iCutSet]->Write();
     hRawYieldSigmas[iCutSet]->Write();
@@ -533,14 +542,14 @@ Bool_t AliHFCutVarFDsubAnalysisManager::Minimise(UInt_t method/*=0*/,
     fCorrYieldPrompt->SetBinError(  iBin+1, (minimised) ? min->GetPromptYieldErr() : 0.);
     fCorrYieldFD->SetBinContent(iBin+1, (minimised) ? min->GetFDYield()    : 0.);
     fCorrYieldFD->SetBinError(  iBin+1, (minimised) ? min->GetFDYieldErr() : 0.);
-    
+
     fResiduals->Add( (minimised) ? min->GetResiduals()->Clone()  : (TObject*)0x0);
     fPulls->Add(     (minimised) ? min->GetPulls()->Clone()      : (TObject*)0x0);
-    
+
     if(method==1) {
       fIncDistError->Add( (minimised) ? min->GetIncDistError()->Clone() : (TObject*)0x0);
     }
-    
+
     fFprompt->Add(   (minimised) ? min->GetFprompt()->Clone()    : (TObject*)0x0);
     fFpromptRaw->Add((minimised) ? min->GetFpromptRaw()->Clone() : (TObject*)0x0);
 

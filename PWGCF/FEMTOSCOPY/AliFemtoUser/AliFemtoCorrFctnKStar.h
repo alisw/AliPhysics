@@ -2,75 +2,131 @@
 /// \file AliFemtoCorrFctnKStar.h
 ///
 
-#ifndef ALIFEMTOCORRFCTN_KSTAR_H_
-#define ALIFEMTOCORRFCTN_KSTAR_H_
+#pragma once
 
-class TH1D;
-class TH2F;
+#ifndef ALIFEMTOCORRFCTNKSTAR_H
+#define ALIFEMTOCORRFCTNKSTAR_H
 
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH2F.h"
+#include "TH3F.h"
+#include "TNtuple.h"
+#include "TString.h"
 
 #include "AliFemtoCorrFctn.h"
 
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
+
+
 /// \class AliFemtoCorrFctnKStar
-/// \brief A simple correlation function which plots the kStar between pairs
+/// \brief A simple KStar correlation function
 ///
-/// \author Andrew Kubera, Ohio State University, <andrew.kubera@cern.ch>
+/// Based off AliFemtoQinvCorrFctn and Kubera's AliFemtoCorrFctnKStar
+///
+///  \authors  Andrew Kubera, Ohio State University, <andrew.kubera@cern.ch>
+///            Jesse Buxton, Ohio State University, <jesse.thomas.buxton@cern.ch>
 ///
 class AliFemtoCorrFctnKStar : public AliFemtoCorrFctn {
 public:
 
-  /// Construct default parameters
+  /// Default Constructor
+  ///
+  /// Title is set to "CorrFctnKStar", consult source file for other default values.
+  ///
   AliFemtoCorrFctnKStar();
 
-  /// Construct with histogram parameters
-  AliFemtoCorrFctnKStar(const char *title,
+  /// Constructor
+  ///
+  /// If non-default values are desired for other binning,
+  /// use methods SetKStarVskTBins, SetKStarVsmTBins, etc.
+  AliFemtoCorrFctnKStar(const char* title,
                         const int nbins,
                         const float KStarLo,
                         const float KStarHi);
 
-  /// Create runtime report
+  AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrFctn);
+  virtual ~AliFemtoCorrFctnKStar();
+
+  AliFemtoCorrFctnKStar& operator=(const AliFemtoCorrFctnKStar& aCorrFctn);
+
   virtual AliFemtoString Report();
-
-  /// GetOutputList
   virtual TList* GetOutputList();
-
-  /// Run after analysis is finished
   virtual void Finish();
+  void Write();
 
-  /// Add K* of pairs from an event
   virtual void AddRealPair(AliFemtoPair* aPair);
-
-  /// Add K* of pairs from mied events
   virtual void AddMixedPair(AliFemtoPair* aPair);
 
-  /// calculate $m_{T}$ of pair
-  static float CalcMt(const AliFemtoPair* aPair);
+  void FillDEtaDPhiS(TH2D* aHist, AliFemtoPair* aPair);
+
+  //TODO check these
+  void SetkTMonitorBins(int aNbinskT, double akTMin, double akTMax);
+  void SetKStarVskTBins(int aNbinsKStar, double aKStarMin, double aKStarMax,
+                        int aNbinskT,    double akTMin,    double akTMax);
+  void SetKStarVsmTBins(int aNbinsKStar, double aKStarMin, double aKStarMax,
+                        int aNbinsmT,    double amTMin,    double amTMax);
+
+  void SetDEtaDPhiSBins(int aNbinsDEta,  double aDEtaMin,  double aDEtaMax,
+                        int aNbinsDPhis, double aDPhiSMin, double aDPhiSMax);
+
+  void Set3dBins(int aNbinsKStarOut,  double aKStarOutMin,  double aKStarOutMax,
+                 int aNbinsKStarSide, double aKStarSideMin, double aKStarSideMax,
+                 int aNbinsKStarLong, double aKStarLongMin, double aKStarLongMax);
+
+  float CalcMt(const AliFemtoPair* aPair);
+
+
+  void SetCalculateDetaDphis(Bool_t, Double_t);
+  void SetCalculatePairKinematics(Bool_t);
+
+  void SetBuildkTBinned(Bool_t aBuild);
+  void SetBuildmTBinned(Bool_t aBuild);
+  void SetBuild3d(Bool_t aBuild);
+
+  //inline functions
+  TH1D* Numerator();
+  TH1D* Denominator();
+  TH1D* Ratio();
 
 protected:
+  TString fTitle;
+  int fNbinsKStar;
+  double fKStarLow, fKStarHigh;
+  TH1D* fNumerator;          // numerator - real pairs
+  TH1D* fDenominator;        // denominator - mixed pairs
+  TH1D* fRatio;              // unnormalized ratio num/den
+  TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
 
-  /// K* of pairs in same event
-  TH1D *fNumerator;
+  Bool_t fDetaDphiscal;
+  Bool_t fPairKinematics;
 
-  /// K* of pairs in different event
-  TH1D *fDenominator;
+  Double_t fRaddedps;
+  TH2D* fNumDEtaDPhiS;
+  TH2D* fDenDEtaDPhiS;
 
-  /// K* vs kT
+  TNtuple* fPairKStar; //PairReader for CorrFit
+
+  // kT binned k* Cf
+  Bool_t fBuildkTBinned;
   TH2F *fNumerator_kT;
   TH2F *fDenominator_kT;
 
-  /// K* vs mT
+  // mT binned k* Cf
+  Bool_t fBuildmTBinned;
   TH2F *fNumerator_mT;
   TH2F *fDenominator_mT;
 
-  /// K* vs mT
-  TH2F *fNumerator_qq;
-  TH2F *fDenominator_qq;
-
-#ifdef __ROOT__
-  /// \cond CLASSIMP
-  ClassDef(AliFemtoCorrFctnKStar, 0);
-  /// \endcond
-#endif
+  // 3D k*_out, _side, _long Cf
+  Bool_t fBuild3d;
+  TH3F *fNumerator3d;
+  TH3F *fDenominator3d;
 };
 
-#endif /* ALIFEMTOCORRFCTN_KSTAR_H_ */
+inline TH1D* AliFemtoCorrFctnKStar::Numerator(){return fNumerator;}
+inline TH1D* AliFemtoCorrFctnKStar::Denominator(){return fDenominator;}
+inline TH1D* AliFemtoCorrFctnKStar::Ratio(){return fRatio;}
+
+
+#endif

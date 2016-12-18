@@ -7,77 +7,61 @@ ClassImp(AliReducedHypTritTrack)
 ClassImp(AliReducedHypTritV0)
 ClassImp(AliReducedHypTritEvent)
 
-TClonesArray *AliReducedHypTritEvent::fgV0s = 0;
-
 AliReducedHypTritTrack::AliReducedHypTritTrack() :
   TObject(),
-  fPt(0),
-  fMomentum(),
-  fDCAtoPrim(0),
-  fP(0),
-  fDedx(0),
-  fSign(0),
-  fEta(0),
-  fPhi(0) {
-
+  fP(),
+  fPtrack(-1),
+  fDca(-1),
+  fDedx(-1),
+  fDedxSigma(-9999),
+  fDedxSigmaTriton(-9999),
+  fEta(-999),
+  fPhi(-999),
+  fTpcNClusters(-1),
+  fGeoLength(-1) {
 }
 
 AliReducedHypTritTrack::~AliReducedHypTritTrack() {
-
 }
 
 AliReducedHypTritV0::AliReducedHypTritV0() :
   TObject(),
-  fSecVertexPos(),
-  fDCAtoPrim(0),
-  fMotherP(0),
-  fMotherPt(0),
-  fMotherInvMass(0),
-  fDCAv0(0),
-  fSigmaD0(0),
+  fPosition(),
+  fPiTrack(0x0),
+  fHeTrack(0x0),
+  fP(-1),
+  fPt(-1),
+  fM(-1),
+  fDcaV0(-999),
   fCosPointingAngle(0),
-  fDecayRadius(0),
-  fOnFlyStatus(0),
-  fChi2(0),
-  fMCTruth(0),
-  fRapidity(-1),
-  fAntiParticle(0),
-  fPosTrack(0x0),
-  fNegTrack(0x0) {
-  if (!fPosTrack) fPosTrack = new AliReducedHypTritTrack();
-  if (!fNegTrack) fNegTrack = new AliReducedHypTritTrack();
+  fDecayLength(-1),
+  fMcTruth(0),
+  fRapidity(-999),
+  fParticleSpecies(0),
+  fCharge(-999),
+  fOnFlyStatus() {
+  if (!fPiTrack) fPiTrack = new AliReducedHypTritTrack();
+  if (!fHeTrack) fHeTrack = new AliReducedHypTritTrack();
 }
 
 AliReducedHypTritV0::~AliReducedHypTritV0() {
-
 }
 
 AliReducedHypTritEvent::AliReducedHypTritEvent() :
   TObject(),
-  fPrimVertexPos(),
-  fNV0s(0),
-  fCentrality(0),
-  fRunNumber(0),
+  fVertexPosition(),
   fV0s(0x0),
+  fNumberV0s(0),
+  fCentrality(-1),
+  fRunNumber(0),
   fTrigger() {
-  if (!fgV0s) fgV0s = new TClonesArray("AliReducedHypTritV0", 100000);
-  fV0s = fgV0s;
-  for (Int_t i = 0; i < 3; i++) {
-    fTrigger[i] = kFALSE;
-  }
-
+  if (!fV0s) fV0s = new TClonesArray("AliReducedHypTritV0", 100000);
 }
 
-
 AliReducedHypTritEvent::~AliReducedHypTritEvent() {
-
 }
 
 void AliReducedHypTritEvent::ClearEvent() {
   if (fV0s) fV0s->Clear("C");
-  fNV0s = 0;
-  fCentrality = 0;
-  for (Int_t i = 0; i < 3; i++) {
-    fTrigger[i] = kFALSE;
-  }
+  fNumberV0s = 0;
 }

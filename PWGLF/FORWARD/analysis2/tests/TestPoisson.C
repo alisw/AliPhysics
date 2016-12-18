@@ -24,6 +24,7 @@ MakeIntegerAxis(Int_t& nBins, Double_t& min, Double_t& max)
  * 
  * @param o 
  * @param useWeights 
+ * @param correct
  *
  * @ingroup pwglf_forward_scripts_tests
  */

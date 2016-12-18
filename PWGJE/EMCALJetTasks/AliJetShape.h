@@ -140,6 +140,7 @@ class AliJetShapeOpeningAngle_kt : public fastjet::FunctionOfPseudoJet<Double32_
 
 
 
+
 #endif
 #endif
 

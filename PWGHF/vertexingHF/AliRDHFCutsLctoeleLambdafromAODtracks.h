@@ -67,6 +67,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
   void SetProdAODFilterBit(Int_t a){fProdAODFilterBit=a;}
   void SetProdRejectTrackWithShared(Bool_t a){fProdRejectTrackWithShared=a;}
+  void SetProdITSSharedFractionMax(Float_t a){fProdITSSharedFractionMax=a;}
+  void SetProdITSChi2OverNclsMax(Float_t a){fProdITSChi2OverNclsMax=a;}
   void SetProdV0KinkRejection(Bool_t a){fProdV0KinkRejection=a;}
   void SetProdV0MassTolLambda(Double_t a){fProdV0MassTolLambda=a;}
   void SetProdV0MassTolLambdaRough(Double_t a){fProdV0MassTolLambdaRough=a;}
@@ -81,6 +83,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   void SetProdRfidMinV0(Double_t a){fProdRfidMinV0=a;}
   void SetProdRfidMaxV0(Double_t a){fProdRfidMaxV0=a;}
   void SetProdDcaV0ToPrimVertexMin(Double_t a){fProdDcaV0ToPrimVertexMin=a;}
+  void SetProdDcaV0ToPrimVertexMax(Double_t a){fProdDcaV0ToPrimVertexMax=a;}
   void SetProdDcaV0PrToPrimVertexMin(Double_t a){fProdDcaV0PrToPrimVertexMin=a;}
   void SetProdDcaV0PiToPrimVertexMin(Double_t a){fProdDcaV0PiToPrimVertexMin=a;}
   void SetProdV0ProperDecayLengthMax(Double_t a){fProdV0ProperDecayLengthMax=a;}
@@ -96,6 +99,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
   Int_t   GetProdAODFilterBit(){return fProdAODFilterBit;}
   Bool_t   GetProdRejectTrackWithShared(){return fProdRejectTrackWithShared;}
+  Bool_t   GetProdITSSharedFractionMax(){return fProdITSSharedFractionMax;}
+  Bool_t   GetProdITSChi2OverNclsMax(){return fProdITSChi2OverNclsMax;}
   Bool_t   GetProdV0KinkRejection(){return fProdV0KinkRejection;}
   Double_t GetProdV0MassTolLambda(){return fProdV0MassTolLambda;}
   Double_t GetProdV0MassTolLambdaRough(){return fProdV0MassTolLambdaRough;}
@@ -110,6 +115,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Double_t GetProdRfidMinV0(){return fProdRfidMinV0;}
   Double_t GetProdRfidMaxV0(){return fProdRfidMaxV0;}
   Double_t GetProdDcaV0ToPrimVertexMin(){return fProdDcaV0ToPrimVertexMin;}
+  Double_t GetProdDcaV0ToPrimVertexMax(){return fProdDcaV0ToPrimVertexMax;}
   Double_t GetProdDcaV0PrToPrimVertexMin(){return fProdDcaV0PrToPrimVertexMin;}
   Double_t GetProdDcaV0PiToPrimVertexMin(){return fProdDcaV0PiToPrimVertexMin;}
   Double_t GetProdV0ProperDecayLengthMax(){return fProdV0ProperDecayLengthMax;}
@@ -134,9 +140,11 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   AliAODPidHF* GetPidPion() const {return fPidObjPion;}
 	void GetSigmaElectronTPCRange(Double_t &a,Double_t &b){a=fSigmaElectronTPCMin;b=fSigmaElectronTPCMax;}
 	void GetSigmaElectronTOFRange(Double_t &a,Double_t &b){a=fSigmaElectronTOFMin;b=fSigmaElectronTOFMax;}
+	void GetSigmaElectronITSRange(Double_t &a,Double_t &b){a=fSigmaElectronITSMin;b=fSigmaElectronITSMax;}
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;}
 	void GetSigmaElectronTPCPtDepPars(Double_t &a,Double_t &b,Double_t &c){a=fSigmaElectronTPCPtDepPar0;b=fSigmaElectronTPCPtDepPar1;c=fSigmaElectronTPCPtDepPar2;}
 	Double_t GetConversionMassMax(){return fConversionMassMax;}
+	Double_t GetEleLambdaMassMax(){return fEleLambdaMassMax;}
 
 	void SetExcludePionTPC(Bool_t a){fExcludePionTPC=a;}
 	void SetExcludeProtonTPC(Bool_t a){fExcludeProtonTPC=a;}
@@ -146,9 +154,12 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	void SetExcludenSigmaKaonTPC(Double_t a){fExcludenSigmaKaonTPC=a;}
 	void SetSigmaElectronTPCRange(Double_t a,Double_t b){fSigmaElectronTPCMin=a;fSigmaElectronTPCMax=b;}
 	void SetSigmaElectronTOFRange(Double_t a,Double_t b){fSigmaElectronTOFMin=a;fSigmaElectronTOFMax=b;}
+	void SetSigmaElectronITSRange(Double_t a,Double_t b){fSigmaElectronITSMin=a;fSigmaElectronITSMax=b;}
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;}
 	void SetSigmaElectronTPCPtDepPars(Double_t a,Double_t b,Double_t c){fSigmaElectronTPCPtDepPar0=a;fSigmaElectronTPCPtDepPar1=b;fSigmaElectronTPCPtDepPar2=c;}
 	void SetConversionMassMax(Double_t a){fConversionMassMax=a;}
+	void SetConversionUseStrongerCut(Bool_t a){fConversionUseStrongerCut=a;}
+	void SetEleLambdaMassMax(Double_t a){fEleLambdaMassMax=a;}
 	Bool_t IsPeakRegion(AliAODv0 *c);
 	Bool_t IsPeakRegion(TLorentzVector *c);
 	Bool_t IsSideBand(AliAODv0 *c);
@@ -157,9 +168,10 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   void SetSftPosR(AliAODTrack *track,Double_t bfield,Double_t R, Double_t priVtx[3], Double_t *XSftR);
   Double_t dEtaSR125(Double_t *postrack1,Double_t *postrack2);
   Double_t dPhiSR125(Double_t *postrack1,Double_t *postrack2);
-  Double_t GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,AliAODTrack *trackn, Double_t bfield,Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep,Double_t &dPhiS_en, Double_t &dEtaS_en);
+  void GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,AliAODTrack *trackn, Double_t bfield,Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep,Double_t &dPhiS_en, Double_t &dEtaS_en);
   Double_t CalculatePhotonMass(AliAODTrack *track1, AliAODTrack *track2);
   Double_t DeltaPhi(AliAODv0 *v0, AliAODTrack *trk);
+  Double_t CosOpeningAngle(AliAODv0 *v0, AliAODTrack *trk);
   Double_t DeltaEta(AliAODv0 *v0, AliAODTrack *trk);
 
  protected:
@@ -181,6 +193,8 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Bool_t   fProdUseAODFilterBit;    /// Flag for AOD filter Bit used before object creation
   Int_t    fProdAODFilterBit;    /// AOD filter Bit used before object creation
   Bool_t   fProdRejectTrackWithShared;    /// Flag to Reject tracks with shared clusters
+  Float_t   fProdITSSharedFractionMax;    /// Cut on fraction of shared clusters in ITS
+  Float_t   fProdITSChi2OverNclsMax;    /// Cut on chi2/ncls in ITS
   Bool_t   fProdV0KinkRejection;    /// Flag to Reject v0 kinks
   Double_t fProdV0MassTolLambda;       /// Lambda mass selection  used before object creation
   Double_t fProdV0MassTolLambdaRough;       /// Lambda mass selection  used before object creation
@@ -195,6 +209,7 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
   Double_t fProdRfidMinV0;          /// Minimum Decay vertex of V0
   Double_t fProdRfidMaxV0;          /// Max Decay vertex of V0
   Double_t fProdDcaV0ToPrimVertexMin;  /// Min Dca between v0 and PV
+  Double_t fProdDcaV0ToPrimVertexMax;  /// Max Dca between v0 and PV
   Double_t fProdDcaV0PrToPrimVertexMin;  /// Min Dca between v0-proton and PV
   Double_t fProdDcaV0PiToPrimVertexMin;  /// Min Dca between v0-pion and PV
   Double_t fProdV0ProperDecayLengthMax;        /// mL/p of cascade
@@ -212,18 +227,22 @@ class AliRDHFCutsLctoeleLambdafromAODtracks : public AliRDHFCuts
 	Double_t fExcludenSigmaPionTPC; /// nSigma to exclude for pion band
 	Double_t fExcludenSigmaProtonTPC; /// nSigma to exclude for proton band
 	Double_t fExcludenSigmaKaonTPC; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTPCMin;  /// nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTPCMin;  /// nSigma to select electron band
 	Double_t fSigmaElectronTPCPtDepPar0; /// nSigma electron lower limit (par0)
 	Double_t fSigmaElectronTPCPtDepPar1; /// nSigma electron lower limit (par1)
 	Double_t fSigmaElectronTPCPtDepPar2; /// nSigma electron lower limit (par2)
-	Double_t fSigmaElectronTPCMax; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTOFMin; /// nSigma to exclude for Kaon band
-	Double_t fSigmaElectronTOFMax; /// nSigma to exclude for Kaon band
+	Double_t fSigmaElectronTPCMax; /// nSigma to electron band
+	Double_t fSigmaElectronTOFMin; /// nSigma to electron band
+	Double_t fSigmaElectronTOFMax; /// nSigma to electron band
+	Double_t fSigmaElectronITSMin; /// nSigma to select electron band
+	Double_t fSigmaElectronITSMax; /// nSigma to select electron band
 
 	Double_t fConversionMassMax; /// Conversion mass
+	Bool_t fConversionUseStrongerCut; /// Conversion stronger cut
+	Double_t fEleLambdaMassMax; /// e-L mass max
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,9);
+  ClassDef(AliRDHFCutsLctoeleLambdafromAODtracks,13);
   /// \endcond
 };
 

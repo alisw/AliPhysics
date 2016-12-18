@@ -69,7 +69,7 @@ AliAnalysisTask *AddTaskLMEEFilter_PbPb(TString cfg="ConfigLMEE_nano_PbPb.C",
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(cfg.Data()))
     gROOT->LoadMacro(configFile.Data());
 
-  AliDielectron *lmee=ConfigLMEE_nano_pp(0,hasMC,period,useTrackCuts);
+  AliDielectron *lmee=ConfigLMEE_nano_PbPb(0,hasMC,period,useTrackCuts);
   
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event

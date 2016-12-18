@@ -1,5 +1,5 @@
 Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma){
-    TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));
+    TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
     gROOT->cd();
     int isig = static_cast<int>(sigma * 100.);
     printf("Getting hadron background for the sigma cut: %d\n", isig);
@@ -17,7 +17,7 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
 }
 
 Bool_t SetZVtxProfiles(AliAnalysisTaskHFEMulti *task, TString filename = "estimator_pPb_AOD139.root" ){
-    TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));
+    TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
     gROOT->cd();
     TProfile *lhc13b = dynamic_cast<TProfile *>(in->Get("profile_LHC13b"));
     lhc13b->SetDirectory(gROOT);
@@ -36,7 +36,7 @@ Bool_t SetZVtxProfiles(AliAnalysisTaskHFEMulti *task, TString filename = "estima
 }
 
 Bool_t SetMCNtrWeight(AliAnalysisTaskHFEMulti *task, TString filename = "NtrWeighting.root" ){
-    TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));
+    TFile *in = TFile::Open(Form("ALICE_PHYSICS/PWGHF/hfe/macros/configs/pPb/%s", filename.Data()));
     gROOT->cd();
     TH1F *hweight = dynamic_cast<TH1F *>(in->Get("weight13d3"));
     hweight->SetDirectory(gROOT);

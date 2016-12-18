@@ -24,7 +24,7 @@ class AliJCorrelationInterface;
 class AliJHistogramInterface;
 class TH1D;
 
-#define   MAXNOEVENT 1000    // Maximum no of events in pools (400 used for QM anal.) 
+#define   MAXNOEVENT 2000    // Maximum no of events in pools (400 used for QM anal.) 
 
 class AliJEventPool {
 

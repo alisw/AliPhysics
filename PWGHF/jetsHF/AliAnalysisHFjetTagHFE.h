@@ -36,7 +36,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
 
   void SetCentralityMimHFEjet(Int_t centMim) {fcentMim = centMim;};
   void SetCentralityMaxHFEjet(Int_t centMax) {fcentMax = centMax;};
-  void SetDebugHFEjet(Bool_t dbHFEj) {fdbHFEj = dbHFEj;};
+  void SetDebugHFEjet(Bool_t dbHFEj) {idbHFEj = dbHFEj;};
+  void SetHybridTrack(Bool_t Hybrid){iHybrid = Hybrid;};
 
  protected:
   void                        ExecOnce();
@@ -53,7 +54,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
 
     Float_t fcentMim; // mim. centrality
     Float_t fcentMax; // max. centrality
-    Bool_t fdbHFEj;
+    Bool_t idbHFEj;
+    Bool_t iHybrid;
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
@@ -70,15 +72,20 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustDz; //!
 
   TH1F                        *fHistMultCent; //!
+  TH2F                        *fHistZcorr; //!
+  TH1F                        *fHistCent; //!
   TH2F                        *fHistTPCnSigma;
   TH2F                        *fHistEop;
   TH1F                        *fHistJetOrg;
+  TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
   TH1F                        *fHistJetSub;
   TH1F                       *fHisteJetOrg;
   TH1F                        *fHisteJetBG;
   TH1F                        *fHisteJetSub;
   TH1F                        *fHistIncEle;
+  TH1F                        *fHistIncEleInJet0;
+  TH1F                        *fHistIncEleInJet1;
   TH1F                        *fHistHfEleMC;
   TH1F                        *fHistHfEleMCreco;
   TH1F                        *fHistPhoEleMC;
@@ -128,6 +135,6 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   AliAnalysisHFjetTagHFE(const AliAnalysisHFjetTagHFE&);            // not implemented
   AliAnalysisHFjetTagHFE &operator=(const AliAnalysisHFjetTagHFE&); // not implemented
 
-  ClassDef(AliAnalysisHFjetTagHFE, 5) // jet sample analysis task
+  ClassDef(AliAnalysisHFjetTagHFE, 6) // jet sample analysis task
 };
 #endif

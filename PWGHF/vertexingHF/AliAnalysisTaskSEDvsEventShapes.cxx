@@ -63,25 +63,40 @@ fOutputEffCorr(0),
 fHistNEvents(0),
 fHistNtrVsZvtx(0),
 fHistNtrCorrVsZvtx(0),
+fHistNtrVsnTrackEvWithCand(0),
 fHistNtrVsSo(0),
 fHistNtrCorrVsSo(0),
 fHistNtrVsSpheri(0),
 fHistNtrCorrVsSpheri(0),
+fHistNtrVsNchMC(0),
+fHistNtrCorrVsNchMC(0),
+fHistNtrVsNchMCPrimary(0),
+fHistNtrCorrVsNchMCPrimary(0),
+fHistNtrVsNchMCPhysicalPrimary(0),
+fHistNtrCorrVsNchMCPhysicalPrimary(0),
 fHistGenPrimaryParticlesInelGt0(0),
+fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
 fHistNtrCorrPSSel(0),
 fHistNtrCorrEvSel(0),
 fHistNtrCorrEvWithCand(0),
 fHistNtrCorrEvWithD(0),
+fHistnTrackvsEtavsPhi(0),
+fHistnTrackvsEtavsPhiEvWithCand(0),
 fSparseEvtShape(0),
 fSparseEvtShapewithNoPid(0),
 fSparseEvtShapePrompt(0),
 fSparseEvtShapeFeeddown(0),
-fSparseEvtShapePromptFD(0),
+fSparseEvtShapeRecSphero(0),
 fMCAccGenPrompt(0),
 fMCAccGenFeeddown(0),
 fMCRecoPrompt(0),
 fMCRecoFeeddown(0),
 fMCRecoBothPromptFD(0),
+fMCAccGenPromptSpheri(0),
+fMCAccGenFeeddownSpheri(0),
+fMCRecoPromptSpheri(0),
+fMCRecoFeeddownSpheri(0),
+fMCRecoBothPromptFDSpheri(0),
 fMCAccGenPromptEvSel(0),
 fMCAccGenFeeddownEvSel(0),
 fUpmasslimit(1.965),
@@ -100,29 +115,32 @@ fMCOption(0),
 fisPPbData(kFALSE),
 fUseBit(kTRUE),
 fSubtractTrackletsFromDau(kFALSE),
+fCalculateSphericity(kFALSE),
+fRecomputeSpherocity(kFALSE),
+fRemoveD0fromDstar(kFALSE),
 fUseNchWeight(0),
 fHistoMCNch(0),
 fHistoMeasNch(0),
+fUsePtWeight(kFALSE),
+fWeight(1.),
 fRefMult(9.26),
 fPdgMeson(411),
 fMultiplicityEstimator(kNtrk10),
 fMCPrimariesEstimator(kEta10),
+fDoVZER0ParamVertexCorr(1),
 fFillSoSparseChecks(0),
-fptMin(0.15),
-fptMax(10.),
-fetaMin(-0.8),
-fetaMax(0.8),
-ffiltbit1(256),
-ffiltbit2(512),
-fminMult(3),
-fphiStepSizeDeg(0.1),
+fUseQuarkTag(kTRUE),
+fFillTrackHisto(kFALSE),
 fEtaAccCut(0.9),
 fPtAccCut(0.1),
-fUseQuarkTag(kTRUE),
-fCalculateSphericity(kFALSE),
-fRecomputeSpherocity(kFALSE),
-fRemoveD0fromDstar(kFALSE),
-fDoVZER0ParamVertexCorr(1)
+fetaMin(-0.8),
+fetaMax(0.8),
+fptMin(0.15),
+fptMax(10.),
+fminMult(3),
+ffiltbit1(256),
+ffiltbit2(512),
+fphiStepSizeDeg(0.1)
 {
     // Default constructor
     for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
@@ -140,25 +158,40 @@ fOutputEffCorr(0),
 fHistNEvents(0),
 fHistNtrVsZvtx(0),
 fHistNtrCorrVsZvtx(0),
+fHistNtrVsnTrackEvWithCand(0),
 fHistNtrVsSo(0),
 fHistNtrCorrVsSo(0),
 fHistNtrVsSpheri(0),
 fHistNtrCorrVsSpheri(0),
+fHistNtrVsNchMC(0),
+fHistNtrCorrVsNchMC(0),
+fHistNtrVsNchMCPrimary(0),
+fHistNtrCorrVsNchMCPrimary(0),
+fHistNtrVsNchMCPhysicalPrimary(0),
+fHistNtrCorrVsNchMCPhysicalPrimary(0),
 fHistGenPrimaryParticlesInelGt0(0),
+fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary(0),
 fHistNtrCorrPSSel(0),
 fHistNtrCorrEvSel(0),
 fHistNtrCorrEvWithCand(0),
 fHistNtrCorrEvWithD(0),
+fHistnTrackvsEtavsPhi(0),
+fHistnTrackvsEtavsPhiEvWithCand(0),
 fSparseEvtShape(0),
 fSparseEvtShapewithNoPid(0),
 fSparseEvtShapePrompt(0),
 fSparseEvtShapeFeeddown(0),
-fSparseEvtShapePromptFD(0),
+fSparseEvtShapeRecSphero(0),
 fMCAccGenPrompt(0),
 fMCAccGenFeeddown(0),
 fMCRecoPrompt(0),
 fMCRecoFeeddown(0),
 fMCRecoBothPromptFD(0),
+fMCAccGenPromptSpheri(0),
+fMCAccGenFeeddownSpheri(0),
+fMCRecoPromptSpheri(0),
+fMCRecoFeeddownSpheri(0),
+fMCRecoBothPromptFDSpheri(0),
 fMCAccGenPromptEvSel(0),
 fMCAccGenFeeddownEvSel(0),
 fUpmasslimit(1.965),
@@ -177,29 +210,32 @@ fMCOption(0),
 fisPPbData(switchPPb),
 fUseBit(kTRUE),
 fSubtractTrackletsFromDau(kFALSE),
+fCalculateSphericity(kFALSE),
+fRecomputeSpherocity(kFALSE),
+fRemoveD0fromDstar(kFALSE),
 fUseNchWeight(0),
 fHistoMCNch(0),
 fHistoMeasNch(0),
+fUsePtWeight(kFALSE),
+fWeight(1.),
 fRefMult(9.26),
 fPdgMeson(pdgMeson),
 fMultiplicityEstimator(kNtrk10),
 fMCPrimariesEstimator(kEta10),
+fDoVZER0ParamVertexCorr(1),
 fFillSoSparseChecks(0),
-fptMin(0.15),
-fptMax(10.),
-fetaMin(-0.8),
-fetaMax(0.8),
-ffiltbit1(256),
-ffiltbit2(512),
-fminMult(3),
-fphiStepSizeDeg(0.1),
+fUseQuarkTag(kTRUE),
+fFillTrackHisto(kFALSE),
 fEtaAccCut(0.9),
 fPtAccCut(0.1),
-fUseQuarkTag(kTRUE),
-fCalculateSphericity(kFALSE),
-fRecomputeSpherocity(kFALSE),
-fRemoveD0fromDstar(kFALSE),
-fDoVZER0ParamVertexCorr(1)
+fetaMin(-0.8),
+fetaMax(0.8),
+fptMin(0.15),
+fptMax(10.),
+fminMult(3),
+ffiltbit1(256),
+ffiltbit2(512),
+fphiStepSizeDeg(0.1)
 {
     //
     // Standard constructor
@@ -277,6 +313,8 @@ void AliAnalysisTaskSEDvsEventShapes::Init(){
     printf("AnalysisTaskSEDvsMultiplicity_0::Init() \n");
     
     if(fUseNchWeight && !fReadMC){ AliFatal("Nch weights can only be used in MC mode"); return; }
+    if(fUsePtWeight && !fReadMC){ AliFatal("pT weights can only be used in MC mode"); return; }
+    if(fUsePtWeight && fUseNchWeight) { AliInfo("Beware, using at the same time pT and Nch weights, please check"); }
     if(fUseNchWeight && !fHistoMCNch){ AliFatal("Nch weights can only be used without histogram"); return; }
     if(fUseNchWeight==1 && !fHistoMeasNch) {//Nch weights
         if(fisPPbData){ AliFatal("Nch weights can only be used with MC and data histogram in pPb"); return; }
@@ -369,6 +407,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     
     fHistNtrVsZvtx = new TH2F("hNtrVsZvtx",Form("N%s vs VtxZ; VtxZ;N_{%s};",estimatorName,estimatorName),300,-15,15,nMultBins,firstMultBin,lastMultBin); //
     fHistNtrCorrVsZvtx = new TH2F("hNtrCorrVsZvtx",Form("N%s vs VtxZ; VtxZ;N_{%s};",estimatorName,estimatorName),300,-15,15,nMultBins,firstMultBin,lastMultBin); //
+    fHistNtrVsnTrackEvWithCand = new TH2F("hNtrVsnTrackEvWithCand",Form("N%s vs nTracks; nTracks; N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
     
     TString histoNtrName;
     TString histoNtrCorrName;
@@ -380,6 +419,9 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     
     fHistNtrVsSo = new TH2F(histoNtrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins,firstMultBin,lastMultBin); //
     fHistNtrCorrVsSo = new TH2F(histoNtrCorrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins, firstMultBin,lastMultBin); //
+    
+    fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #phi[rad]; nTracks;", 100, -1.5, 1.5, 100, 0., 6.28,nMultBins,firstMultBin,lastMultBin);
+    fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #phi[rad]; nTracks;", 100, -1.5, 1.5, 100, 0., 6.28,nMultBins,firstMultBin,lastMultBin);
     
     TString histoNtrSphriName;
     TString histoNtrCorrSphriName;
@@ -394,8 +436,18 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
         fHistNtrCorrVsSpheri = new TH2F(histoNtrCorrSphriName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtrSphri.Data(),parNameNtrSphri.Data(),estimatorName), 20, 0., 1., nMultBins, firstMultBin,lastMultBin); //
     }
     
+    fHistNtrVsNchMC = new TH2F("hNtrVsNchMC",Form("N%s vs NchMC; Nch;N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
+    fHistNtrCorrVsNchMC = new TH2F("hNtrCorrVsNchMC",Form("N%s vs Nch; Nch;N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
+    
+    fHistNtrVsNchMCPrimary = new TH2F("hNtrVsNchMCPrimary",Form("N%s vs Nch (Primary); Nch (Primary);N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
+    fHistNtrCorrVsNchMCPrimary = new TH2F("hNtrCorrVsNchMCPrimary",Form("N%s vs Nch (Primary); Nch(Primary) ;N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
+    
+    fHistNtrVsNchMCPhysicalPrimary = new TH2F("hNtrVsNchMCPhysicalPrimary",Form("N%s vs Nch (Physical Primary); Nch (Physical Primary);N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
+    fHistNtrCorrVsNchMCPhysicalPrimary = new TH2F("hNtrCorrVsMCPhysicalPrimary",Form("N%s vs Nch (Physical Primary); Nch (Physical Primary);N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
+    
     fHistGenPrimaryParticlesInelGt0 = new TH1F("hGenPrimaryParticlesInelGt0","Multiplcity of generated charged particles ; Nparticles ; Entries",nMultBins,firstMultBin,lastMultBin);
     
+    fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin);
     
     fOutput->Add(fHistNtrCorrPSSel);
     fOutput->Add(fHistNtrCorrEvSel);
@@ -404,13 +456,24 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     
     fOutput->Add(fHistNtrVsZvtx);
     fOutput->Add(fHistNtrCorrVsZvtx);
+    fOutput->Add(fHistNtrVsnTrackEvWithCand);
+    fOutput->Add(fHistnTrackvsEtavsPhi);
+    fOutput->Add(fHistnTrackvsEtavsPhiEvWithCand);
+    
     fOutput->Add(fHistNtrVsSo);
     fOutput->Add(fHistNtrCorrVsSo);
     if(fCalculateSphericity){
         fOutput->Add(fHistNtrVsSpheri);
         fOutput->Add(fHistNtrCorrVsSpheri);
     }
+    fOutput->Add(fHistNtrVsNchMC);
+    fOutput->Add(fHistNtrCorrVsNchMC);
+    fOutput->Add(fHistNtrVsNchMCPrimary);
+    fOutput->Add(fHistNtrCorrVsNchMCPrimary);
+    fOutput->Add(fHistNtrVsNchMCPhysicalPrimary);
+    fOutput->Add(fHistNtrCorrVsNchMCPhysicalPrimary);
     fOutput->Add(fHistGenPrimaryParticlesInelGt0);
+    fOutput->Add(fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary);
     
     fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
     fHistNEvents->GetXaxis()->SetBinLabel(1,"nEvents total");
@@ -451,7 +514,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     TString parNameSpheri = "Sphericity";
     TString histoNamePrompt = "hSparseEvtShapePrompt";
     TString histoNameFeeddown = "hSparseEvtShapeFeeddown";
-    TString histoNamePromptFD = "hSparseEvtShapePromptFD";
+    TString histoNameRecSphero = "hSparseEvtShapeRecSphero";
     
     if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
         if(fCalculateSphericity) fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; MultipicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
@@ -467,8 +530,11 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
         else  fSparseEvtShapewithNoPid = new THnSparseD(histoNameNoPid.Data(), Form("D candidates with NoPID:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
     }
     
+    if(fRecomputeSpherocity) fSparseEvtShapeRecSphero = new THnSparseD(histoNameRecSphero.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+    
     fOutput->Add(fSparseEvtShape);
     if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3) fOutput->Add(fSparseEvtShapewithNoPid);
+    if(fRecomputeSpherocity) fOutput->Add(fSparseEvtShapeRecSphero);
     
     Int_t nbinsPrompt[4]={48, nMultBins, 20, 100};
     Int_t nbinsFeeddown[4]={48, nMultBins, 20, 100};
@@ -488,17 +554,14 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
         if(fRecomputeSpherocity){
             fSparseEvtShapePrompt = new THnSparseD(histoNamePrompt.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
             fSparseEvtShapeFeeddown = new THnSparseD(histoNameFeeddown.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
-            fSparseEvtShapePromptFD = new THnSparseD(histoNamePromptFD.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
         }
         else{
             fSparseEvtShapePrompt = new THnSparseD(histoNamePrompt.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
             fSparseEvtShapeFeeddown = new THnSparseD(histoNameFeeddown.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
-            //fSparseEvtShapePromptFD = new THnSparseD(histoNamePromptFD.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
         }
         
         fOutput->Add(fSparseEvtShapePrompt);
         fOutput->Add(fSparseEvtShapeFeeddown);
-        if(fRecomputeSpherocity) fOutput->Add(fSparseEvtShapePromptFD);
         
         //Prompt
         if(fRecomputeSpherocity){
@@ -508,6 +571,10 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
         else{
             fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
             fMCRecoPrompt = new THnSparseD("hMCRecoPrompt","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+        }
+        if(fCalculateSphericity){
+            fMCAccGenPromptSpheri = new THnSparseD("hMCAccGenPromptSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+            fMCRecoPromptSpheri = new THnSparseD("hMCRecoPromptSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         }
         fMCAccGenPromptEvSel = new THnSparseD("hMCAccGenPromptEvSel","kStepMCAcceptanceEvSel:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         
@@ -520,16 +587,29 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
             fMCAccGenFeeddown = new THnSparseD("hMCAccGenBFeeddown","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
             fMCRecoFeeddown = new THnSparseD("hMCRecoFeeddown","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
         }
+        if(fCalculateSphericity){
+            fMCAccGenFeeddownSpheri = new THnSparseD("hMCAccGenBFeeddownSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+            fMCRecoFeeddownSpheri = new THnSparseD("hMCRecoFeeddownSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+        }
         fMCAccGenFeeddownEvSel = new THnSparseD("hMCAccGenBFeeddownEvSel","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
         
         //BothPromptFeeddown
         fMCRecoBothPromptFD = new THnSparseD("hMCRecoBothPromptFD","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - BothPromptFD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+        
+        if(fCalculateSphericity) fMCRecoBothPromptFDSpheri = new THnSparseD("hMCRecoBothPromptFDSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - BothPromptFD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         
         fOutputEffCorr->Add(fMCAccGenPrompt);
         fOutputEffCorr->Add(fMCAccGenFeeddown);
         fOutputEffCorr->Add(fMCRecoPrompt);
         fOutputEffCorr->Add(fMCRecoFeeddown);
         fOutputEffCorr->Add(fMCRecoBothPromptFD);
+        if(fCalculateSphericity){
+            fOutputEffCorr->Add(fMCAccGenPromptSpheri);
+            fOutputEffCorr->Add(fMCAccGenFeeddownSpheri);
+            fOutputEffCorr->Add(fMCRecoPromptSpheri);
+            fOutputEffCorr->Add(fMCRecoFeeddownSpheri);
+            fOutputEffCorr->Add(fMCRecoBothPromptFDSpheri);
+        }
         fOutputEffCorr->Add(fMCAccGenPromptEvSel);
         fOutputEffCorr->Add(fMCAccGenFeeddownEvSel);
     }
@@ -666,7 +746,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     else if(fMultiplicityEstimator==kVZEROAEq) { countMult = vzeroMultAEq; }
     
     Double_t spherocity;
-    Double_t sphericity;
+    Double_t sphericity = -0.5;
     if(fCalculateSphericity){ //When kTRUE, it calculates Sphericity and THnSparse filled for sphericity
         sphericity=AliVertexingHFUtils::GetSphericity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult);
     }
@@ -741,7 +821,15 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     TClonesArray *arrayMC=0;
     AliAODMCHeader *mcHeader=0;
     
-    // load MC particles
+    fWeight=1.;
+    Double_t nchWeight=1.0;
+    
+    Int_t nChargedMCEta10=0, nChargedMCEta03=0, nChargedMCEta05=0, nChargedMCEta16=0, nChargedMCEtam37tm17=0, nChargedMCEta28t51=0;
+    Int_t nChargedMCPrimaryEta10=0, nChargedMCPrimaryEta03=0, nChargedMCPrimaryEta05=0, nChargedMCPrimaryEta16=0, nChargedMCPrimaryEtam37tm17=0, nChargedMCPrimaryEta28t51=0;
+    Int_t nChargedMCPhysicalPrimaryEta10=0, nChargedMCPhysicalPrimaryEta03=0, nChargedMCPhysicalPrimaryEta05=0, nChargedMCPhysicalPrimaryEta16=0, nChargedMCPhysicalPrimaryEtam37tm17=0, nChargedMCPhysicalPrimaryEta28t51=0;
+    Int_t nChargedMC=0, nChargedMCPrimary=0, nChargedMCPhysicalPrimary=0;
+    
+    // load MC particles and get weight on Nch
     if(fReadMC){
         
         arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
@@ -756,28 +844,6 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             return;
         }
         
-        FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, isEvSel);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
-    }
-    
-    if(!isEvSel)return;
-    
-    if(vtx1){
-        fHistNtrVsZvtx->Fill(vtx1->GetZ(),countMult);
-        fHistNtrCorrVsZvtx->Fill(vtx1->GetZ(),countCorr);
-        fHistNtrVsSo->Fill(spherocity,countMult);
-        fHistNtrCorrVsSo->Fill(spherocity,countCorr);
-        if(fCalculateSphericity){
-            fHistNtrVsSpheri->Fill(sphericity,countMult);
-            fHistNtrCorrVsSpheri->Fill(sphericity,countCorr);
-        }
-    }
-    
-    Double_t nchWeight=1.0;
-    
-    if(fReadMC){
-        Int_t nChargedMCEta10=0, nChargedMCEta03=0, nChargedMCEta05=0, nChargedMCEta16=0, nChargedMCEtam37tm17=0, nChargedMCEta28t51=0;
-        Int_t nChargedMCPrimaryEta10=0, nChargedMCPrimaryEta03=0, nChargedMCPrimaryEta05=0, nChargedMCPrimaryEta16=0, nChargedMCPrimaryEtam37tm17=0, nChargedMCPrimaryEta28t51=0;
-        Int_t nChargedMCPhysicalPrimaryEta10=0, nChargedMCPhysicalPrimaryEta03=0, nChargedMCPhysicalPrimaryEta05=0, nChargedMCPhysicalPrimaryEta16=0, nChargedMCPhysicalPrimaryEtam37tm17=0, nChargedMCPhysicalPrimaryEta28t51=0;
         for(Int_t i=0; i<arrayMC->GetEntriesFast(); i++){
             AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
             Int_t charge = part->Charge();
@@ -817,9 +883,10 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 }
             }
         }
-        Int_t nChargedMC=nChargedMCEta10;
-        Int_t nChargedMCPrimary=nChargedMCPrimaryEta10;
-        Int_t nChargedMCPhysicalPrimary=nChargedMCPhysicalPrimaryEta10;
+        
+        nChargedMC=nChargedMCEta10;
+        nChargedMCPrimary=nChargedMCPrimaryEta10;
+        nChargedMCPhysicalPrimary=nChargedMCPhysicalPrimaryEta10;
         
         // Compute the Nch weights (reference is Ntracklets within |eta|<1.0)
         if(fUseNchWeight>0){
@@ -839,6 +906,23 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             AliDebug(2,Form("Using Nch weights, Mult=%f Weight=%f\n",tmpXweight,nchWeight));
         }
         
+        FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, sphericity, isEvSel, nchWeight);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
+    }
+    
+    if(!isEvSel)return;
+    
+    if(vtx1){
+        fHistNtrVsZvtx->Fill(vtx1->GetZ(),countMult);
+        fHistNtrCorrVsZvtx->Fill(vtx1->GetZ(),countCorr);
+        fHistNtrVsSo->Fill(spherocity,countMult);
+        fHistNtrCorrVsSo->Fill(spherocity,countCorr);
+        if(fCalculateSphericity){
+            fHistNtrVsSpheri->Fill(sphericity,countMult);
+            fHistNtrCorrVsSpheri->Fill(sphericity,countCorr);
+        }
+    }
+    
+    if(fReadMC){
         // Now recompute the variables in case another MC estimator is considered
         if(fMCPrimariesEstimator==kEta10to16){
             nChargedMC = nChargedMCEta16 - nChargedMCEta10;
@@ -865,6 +949,17 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         if(nChargedMCPhysicalPrimary>0){ // INEL>0 for |eta|<1
             fHistGenPrimaryParticlesInelGt0->Fill(nChargedMCPhysicalPrimary,nchWeight);
         }
+        
+        fHistNtrVsNchMC->Fill(nChargedMC,countMult,nchWeight);
+        fHistNtrCorrVsNchMC->Fill(nChargedMC,countCorr,nchWeight);
+        
+        fHistNtrVsNchMCPrimary->Fill(nChargedMCPrimary,countMult,nchWeight);
+        fHistNtrCorrVsNchMCPrimary->Fill(nChargedMCPrimary,countCorr,nchWeight);
+        
+        fHistNtrVsNchMCPhysicalPrimary->Fill(nChargedMCPhysicalPrimary,countMult,nchWeight);
+        fHistNtrCorrVsNchMCPhysicalPrimary->Fill(nChargedMCPhysicalPrimary,countCorr,nchWeight);
+        
+        fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary->Fill(nChargedMC,nChargedMCPrimary,nChargedMCPhysicalPrimary,nchWeight);
     }
     
     Int_t nCand = arrayCand->GetEntriesFast();
@@ -904,6 +999,11 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             fHistNEvents->Fill(10);
         }
         Double_t multForCand = countCorr;
+        
+        //Weight according to ptcand, using FONLL
+        Double_t ptWeight = 1.;
+        if(fUsePtWeight) ptWeight = GetPtWeight(ptCand);
+        fWeight = nchWeight*ptWeight;
         
         if(fSubtractTrackletsFromDau){
             // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
@@ -945,35 +1045,35 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         
         Int_t labD0=-1;
         Double_t recSpherocity = -0.5;
-        if(fReadMC){
-            // subtract D-meson daughters from spherocity calculation !!
-            if(fRecomputeSpherocity){
-                Int_t totTrkToSkip = d->GetNDaughters();
-                const Int_t nTrkToSkip = totTrkToSkip;
-                Int_t idToSkip[nTrkToSkip];
-                for(Int_t i=0; i<nTrkToSkip; i++) idToSkip[i]=-1;
-                
-                for(Int_t iDau=0; iDau<nTrkToSkip; iDau++){
-                    AliAODTrack *t = NULL;
-                    t = dynamic_cast<AliAODTrack*>(d->GetDaughter(iDau));
-                    if(!t) continue;
-                    idToSkip[iDau] = t->GetID();
-                }
-                recSpherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+        
+        // subtract D-meson daughters from spherocity calculation !!
+        if(fRecomputeSpherocity){
+            Int_t totTrkToSkip = d->GetNDaughters();
+            const Int_t nTrkToSkip = totTrkToSkip;
+            Int_t idToSkip[nTrkToSkip];
+            for(Int_t i=0; i<nTrkToSkip; i++) idToSkip[i]=-1;
+            
+            for(Int_t iDau=0; iDau<nTrkToSkip; iDau++){
+                AliAODTrack *t = NULL;
+                t = dynamic_cast<AliAODTrack*>(d->GetDaughter(iDau));
+                if(!t) continue;
+                idToSkip[iDau] = t->GetID();
             }
-            // remove D0 from Dstar at reconstruction !!
+            recSpherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+        }
+        
+        // remove D0 from Dstar at reconstruction !!
+        if(fReadMC && fRemoveD0fromDstar){
             if(fPdgMeson==421){
                 labD0 = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
                 if(labD0>=0){
-                    if(fRemoveD0fromDstar){
-                        Bool_t keep=kTRUE;
-                        AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD0));
-                        Int_t motherD0 = mcMoth->GetMother();
-                        AliAODMCParticle* mcMothD0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(motherD0));
-                        if(!mcMothD0) continue;
-                        if(TMath::Abs(mcMothD0->GetPdgCode())==413) keep=kFALSE;
-                        if(!keep) continue;
-                    }
+                    Bool_t keep=kTRUE;
+                    AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD0));
+                    Int_t motherD0 = mcMoth->GetMother();
+                    AliAODMCParticle* mcMothD0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(motherD0));
+                    if(!mcMothD0) continue;
+                    if(TMath::Abs(mcMothD0->GetPdgCode())==413) keep=kFALSE;
+                    if(!keep) continue;
                 }
             }
         }
@@ -997,7 +1097,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 if(labD>=0){
                     AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
                     Int_t code=partD->GetPdgCode();
-                    Origin = AliVertexingHFUtils::CheckOrigin(arrayMC,partD, fUseQuarkTag);
+                    Origin = AliVertexingHFUtils::CheckOrigin(arrayMC,partD,fUseQuarkTag);
                     if(Origin==5) isPrimary=kFALSE;
                     if(code<0 && iHyp==0) fillHisto=kFALSE;
                     if(code>0 && iHyp==1) fillHisto=kFALSE;
@@ -1011,14 +1111,14 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                         }
                         Double_t arrayForSparseTrue[5]={invMass,ptCand,trueImpParXY,dlen,multForCand};
                         if(fillHisto && passAllCuts){
-                            fHistMassPtImpPar[2]->Fill(arrayForSparse);
-                            fHistMassPtImpPar[3]->Fill(arrayForSparseTrue);
+                            fHistMassPtImpPar[2]->Fill(arrayForSparse, fWeight);
+                            fHistMassPtImpPar[3]->Fill(arrayForSparseTrue, fWeight);
                         }
                     }else{
-                        if(fillHisto && passAllCuts) fHistMassPtImpPar[1]->Fill(arrayForSparse);
+                        if(fillHisto && passAllCuts) fHistMassPtImpPar[1]->Fill(arrayForSparse, fWeight);
                     }
                 }else{
-                    if(fillHisto && passAllCuts)fHistMassPtImpPar[4]->Fill(arrayForSparse);
+                    if(fillHisto && passAllCuts)fHistMassPtImpPar[4]->Fill(arrayForSparse, fWeight);
                 }
                 if(TMath::Abs(labD)==fPdgMeson && fMCOption==2) continue;
                 if(TMath::Abs(labD)!=fPdgMeson && fMCOption==1) continue;
@@ -1030,10 +1130,10 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3){   //Filling THnSparse for Spherocity without PID
                 if(fCalculateSphericity){
                     Double_t arrayForSparseSoNoPid[5]={ptCand, invMass, spherocity, multForCand, sphericity};
-                    fSparseEvtShapewithNoPid->Fill(arrayForSparseSoNoPid);
+                    fSparseEvtShapewithNoPid->Fill(arrayForSparseSoNoPid, fWeight);
                 }else{
                     Double_t arrayForSparseSoNoPid[4]={ptCand, invMass, spherocity, multForCand};
-                    fSparseEvtShapewithNoPid->Fill(arrayForSparseSoNoPid);
+                    fSparseEvtShapewithNoPid->Fill(arrayForSparseSoNoPid, fWeight);
                 }
             }
             if(fPdgMeson==421){
@@ -1047,34 +1147,38 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
                     if(fCalculateSphericity){
                         Double_t arrayForSparseSowithMultUnncorr[6]={ptCand, invMass, spherocity, multForCand, (Double_t)countTreta1, sphericity};
-                        fSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr);
+                        fSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
                     }else{
                         Double_t arrayForSparseSowithMultUnncorr[5]={ptCand, invMass, spherocity, multForCand, (Double_t)countTreta1};
-                        fSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr);
+                        fSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
                     }
                 }
                 else{
                     if(fCalculateSphericity){
                         Double_t arrayForSparseSo[5]={ptCand, invMass, spherocity, multForCand, sphericity};
-                        fSparseEvtShape->Fill(arrayForSparseSo);
+                        fSparseEvtShape->Fill(arrayForSparseSo, fWeight);
                     }else{
                         Double_t arrayForSparseSo[4]={ptCand, invMass, spherocity, multForCand};
-                        fSparseEvtShape->Fill(arrayForSparseSo);
+                        fSparseEvtShape->Fill(arrayForSparseSo, fWeight);
                     }
                 }
+                
+                if(fRecomputeSpherocity){
+                    Double_t arrayForSparseRecSphero[5]={ptCand, invMass, spherocity, multForCand, recSpherocity};
+                    fSparseEvtShapeRecSphero->Fill(arrayForSparseRecSphero, fWeight);
+                }
+                
                 if(fReadMC){
                     if(fRecomputeSpherocity){
                         Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, recSpherocity};
                         
-                        if(Origin==4) fSparseEvtShapePrompt->Fill(arrayForSparseSoPromptFD);
-                        else if(Origin==5) fSparseEvtShapeFeeddown->Fill(arrayForSparseSoPromptFD);
-                        fSparseEvtShapePromptFD->Fill(arrayForSparseSoPromptFD);
+                        if(Origin==4) fSparseEvtShapePrompt->Fill(arrayForSparseSoPromptFD, fWeight);
+                        else if(Origin==5) fSparseEvtShapeFeeddown->Fill(arrayForSparseSoPromptFD, fWeight);
                     }else{
                         Double_t arrayForSparseSoPromptFD[4]={ptCand, invMass, spherocity, multForCand};
                         
-                        if(Origin==4) fSparseEvtShapePrompt->Fill(arrayForSparseSoPromptFD);
-                        else if(Origin==5) fSparseEvtShapeFeeddown->Fill(arrayForSparseSoPromptFD);
-                        //fSparseEvtShapePromptFD->Fill(arrayForSparseSoPromptFD);
+                        if(Origin==4) fSparseEvtShapePrompt->Fill(arrayForSparseSoPromptFD, fWeight);
+                        else if(Origin==5) fSparseEvtShapeFeeddown->Fill(arrayForSparseSoPromptFD, fWeight);
                     }
                 }
                 if(labD>=0){
@@ -1085,9 +1189,9 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                         if(code<0 && iHyp==0) keepCase=kFALSE;
                         if(code>0 && iHyp==1) keepCase=kFALSE;
                     }
-                    if(keepCase) FillMCMassHistos(arrayMC,labD, multForCand, spherocity, recSpherocity);
+                    if(keepCase) FillMCMassHistos(arrayMC,labD, multForCand, spherocity, sphericity, recSpherocity, nchWeight);
                 }
-                if(fDoImpPar) fHistMassPtImpPar[0]->Fill(arrayForSparse);
+                if(fDoImpPar) fHistMassPtImpPar[0]->Fill(arrayForSparse, fWeight);
             }
         }
     }
@@ -1104,6 +1208,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     if(nSelectedPID>0)  fHistNtrCorrEvWithCand->Fill(countCorr,nchWeight);
     if(nSelectedInMassPeak>0) fHistNtrCorrEvWithD->Fill(countCorr,nchWeight);
     
+    if(fFillTrackHisto) FillTrackControlHisto(aod, countCorr, nSelectedInMassPeak);
+    
     PostData(1,fOutput);
     PostData(2,fListCuts);
     PostData(3,fOutputCounters);
@@ -1113,7 +1219,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::CreateImpactParameterHistos(){
+void AliAnalysisTaskSEDvsEventShapes::CreateImpactParameterHistos()
+{
     // Histos for impact paramter study
     // mass . pt , impact parameter , decay length , multiplicity
     
@@ -1165,7 +1272,8 @@ void AliAnalysisTaskSEDvsEventShapes::Terminate(Option_t */*option*/)
 }
 
 //____________________________________________________________________________
-TProfile* AliAnalysisTaskSEDvsEventShapes::GetEstimatorHistogram(const AliVEvent* event){
+TProfile* AliAnalysisTaskSEDvsEventShapes::GetEstimatorHistogram(const AliVEvent* event)
+{
     // Get Estimator Histogram from period event->GetRunNumber();
     //
     // If you select SPD tracklets in |eta|<1 you should use type == 1
@@ -1183,15 +1291,59 @@ TProfile* AliAnalysisTaskSEDvsEventShapes::GetEstimatorHistogram(const AliVEvent
         if(runNo>114930 && runNo<117223) period = 0;
         if(runNo>119158 && runNo<120830) period = 1;
         if(runNo>122373 && runNo<126438) period = 2;
-        if(runNo>127711 && runNo<130841) period = 3;
+        if(runNo>127711 && runNo<130851) period = 3;
         if(period<0 || period>3) return 0;
     }
     
     return fMultEstimatorAvg[period];
 }
+//__________________________________________________________________________________________________
+
+Double_t AliAnalysisTaskSEDvsEventShapes::GetPtWeight(Float_t pt)
+{
+    //
+    // calculating the weight to fill the container
+    //
+    
+    // FNOLL central:
+    // p0 = 1.63297e-01 --> 0.322643
+    // p1 = 2.96275e+00
+    // p2 = 2.30301e+00
+    // p3 = 2.50000e+00
+    
+    // PYTHIA
+    // p0 = 1.85906e-01 --> 0.36609
+    // p1 = 1.94635e+00
+    // p2 = 1.40463e+00
+    // p3 = 2.50000e+00
+    
+    Double_t func1[4] = {0.322643,2.96275,2.30301,2.5};
+    Double_t func2[4] = {0.36609,1.94635,1.40463,2.5};
+    
+    Double_t dndpt_func1 = dNdptFit(pt,func1);
+    //if(fUseFlatPtWeight) dndpt_func1 = 1./30.;
+    Double_t dndpt_func2 = dNdptFit(pt,func2);
+    AliDebug(2,Form("pt = %f, FONLL = %f, Pythia = %f, ratio = %f",pt,dndpt_func1,dndpt_func2,dndpt_func1/dndpt_func2));
+    return dndpt_func1/dndpt_func2;
+}
 
 //__________________________________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::CreateMeasuredNchHisto(){
+Double_t AliAnalysisTaskSEDvsEventShapes::dNdptFit(Float_t pt, Double_t* par)
+{
+    //
+    // calculating dNdpt
+    //
+    
+    Double_t denom =  TMath::Power((pt/par[1]), par[3] );
+    Double_t dNdpt = par[0]*pt/TMath::Power(1.+denom, par[2]);
+    
+    return dNdpt;
+}
+
+
+//__________________________________________________________________________________________________
+void AliAnalysisTaskSEDvsEventShapes::CreateMeasuredNchHisto()
+{
     // creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345–354)
     //
     // for Nch  > 70 the points were obtainedwith a double NBD distribution
@@ -1225,8 +1377,54 @@ void AliAnalysisTaskSEDvsEventShapes::CreateMeasuredNchHisto(){
     }
 }
 
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSEDvsEventShapes::FillTrackControlHisto(AliAODEvent* aod, Int_t nSelTrkCorr, Int_t nSelectedEvwithCand)
+{
+    /// compute spherocity
+    
+    Int_t nTracks=aod->GetNumberOfTracks();
+    Int_t nSelTracks=0;
+    
+    Double_t* etaArr=new Double_t[nTracks];
+    Double_t* phiArr=new Double_t[nTracks];
+    Double_t sumpt=0.;
+    
+    for(Int_t it=0; it<nTracks; it++) {
+        AliAODTrack *tr=dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+        if(!tr) continue;
+        Float_t eta = tr->Eta();
+        Float_t pt  = tr->Pt();
+        Float_t phi  = tr->Phi();
+        if(eta<fetaMin || eta>fetaMax) continue;
+        if(pt<fptMin || pt>fptMax) continue;
+        Bool_t fb1 = tr->TestFilterBit(ffiltbit1);
+        Bool_t fb2 = tr->TestFilterBit(ffiltbit2);
+        if( !(fb1 || fb2) ) continue;
+        if(ffiltbit1==0 || ffiltbit2==0){
+            Int_t status=tr->GetStatus();
+            if(!(status & AliAODTrack::kTPCrefit)) continue;
+        }
+        etaArr[nSelTracks]=eta;
+        phiArr[nSelTracks]=phi;
+        nSelTracks++;
+        sumpt+=pt;
+    }
+    
+    if(nSelTracks<fminMult) return kFALSE;
+    
+    if(nSelectedEvwithCand>0) fHistNtrVsnTrackEvWithCand->Fill(nSelTracks, nSelTrkCorr);
+    
+    for(Int_t iselt=0; iselt<nSelTracks; iselt++) {
+        fHistnTrackvsEtavsPhi->Fill(etaArr[iselt], phiArr[iselt], nSelTracks);
+        if(nSelectedEvwithCand>0) fHistnTrackvsEtavsPhiEvWithCand->Fill(etaArr[iselt], phiArr[iselt], nSelTracks);
+    }
+    
+    return kTRUE;
+    
+}
+
 //__________________________________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t recSpherocity)
+void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t sphericity, Double_t recSpherocity, Double_t nchWeight)
 {
     // Function to fill the true MC signal
     
@@ -1236,6 +1434,11 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
     Double_t pt = partD->Pt();
     Double_t rapid = partD->Y();
     
+    //Weight according to pt, using FONLL
+    Double_t ptWeight = 1.;
+    if(fUsePtWeight) ptWeight = GetPtWeight(pt);
+    fWeight = nchWeight*ptWeight;
+    
     Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,partD,fUseQuarkTag); // Prompt = 4, FeedDown = 5
     
     //for prompt
@@ -1243,25 +1446,38 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
         //fill histo for prompt
         Double_t arrayMCRecoRecSpheroPrompt[5] = {pt, countMult, spherocity, rapid, recSpherocity};
         Double_t arrayMCRecoPrompt[4] = {pt, countMult, spherocity, rapid};
-        if(fRecomputeSpherocity) fMCRecoPrompt->Fill(arrayMCRecoRecSpheroPrompt);
-        else fMCRecoPrompt->Fill(arrayMCRecoPrompt);
+        if(fRecomputeSpherocity) fMCRecoPrompt->Fill(arrayMCRecoRecSpheroPrompt, fWeight);
+        else fMCRecoPrompt->Fill(arrayMCRecoPrompt, fWeight);
+        if(fCalculateSphericity) {
+            Double_t arrayMCRecoPromptSpheri[4] = {pt, countMult, sphericity, rapid};
+            fMCRecoPromptSpheri->Fill(arrayMCRecoPromptSpheri, fWeight);
+        }
     }
     //for FD
     else if(orig == 5){
         //fill histo for FD
         Double_t arrayMCRecoRecSpheroFeeddown[5] = {pt, countMult, spherocity, rapid, recSpherocity};
         Double_t arrayMCRecoFeeddown[4] = {pt, countMult, spherocity, rapid};
-        if(fRecomputeSpherocity) fMCRecoFeeddown->Fill(arrayMCRecoRecSpheroFeeddown);
-        else fMCRecoFeeddown->Fill(arrayMCRecoFeeddown);
+        if(fRecomputeSpherocity) fMCRecoFeeddown->Fill(arrayMCRecoRecSpheroFeeddown, fWeight);
+        else fMCRecoFeeddown->Fill(arrayMCRecoFeeddown, fWeight);
+        if(fCalculateSphericity){
+            Double_t arrayMCRecoFeeddownSpheri[4] = {pt, countMult, sphericity, rapid};
+            fMCRecoFeeddownSpheri->Fill(arrayMCRecoFeeddownSpheri, fWeight);
+        }
     }
     
     Double_t arrayMCReco[4] = {pt, countMult, spherocity, rapid};
-    fMCRecoBothPromptFD->Fill(arrayMCReco);
+    fMCRecoBothPromptFD->Fill(arrayMCReco, fWeight);
+    if(fCalculateSphericity){
+        Double_t arrayMCRecoSpheri[4] = {pt, countMult, sphericity, rapid};
+        fMCRecoBothPromptFDSpheri->Fill(arrayMCRecoSpheri, fWeight);
+    }
     
 }
 
 //__________________________________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Bool_t isEvSel){
+void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight)
+{
     
     /// Fill MC acceptance histos at generator level
     
@@ -1291,7 +1507,6 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
             Double_t yver = genDup->Yv();
             Double_t rver = TMath::Sqrt(xver*xver + yver*yver);
             if(rver>3) continue;
-            //            if(trkToSkip[lab]!=-1) cout << "Duplicate entry at track "<<it<<" previous ID is "<<trkToSkip[lab]<<endl;
             trkToSkip[lab] = id;
         }
     }
@@ -1324,13 +1539,6 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
                 deca=AliVertexingHFUtils::CheckD0Decay(arrayMC,mcGenPart,labDau);
                 if(mcGenPart->GetNDaughters()!=2) continue;
                 if(deca==1) isGoodDecay=kTRUE;
-                //Removal of D0 from Dstar at Generation !!
-                if(fRemoveD0fromDstar){
-                    Int_t mother = mcGenPart->GetMother();
-                    AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
-                    if(!mcMoth) continue;
-                    if(TMath::Abs(mcMoth->GetPdgCode())==413) continue;
-                }
             }else if(fPdgMeson==411){
                 deca=AliVertexingHFUtils::CheckDplusDecay(arrayMC,mcGenPart,labDau);
                 if(deca>0) isGoodDecay=kTRUE;
@@ -1348,18 +1556,28 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
             
             if(fRecomputeSpherocity && isGoodDecay){
                 for(Int_t iDau=0; iDau<nTrkToSkip; iDau++){
-                    Int_t indexDau = mcGenPart->GetDaughter(iDau);  //index of daughter i.e. label
-                    if(indexDau<0) {
-                        //cout << "HERE negative indexDau at track "<<endl;
-                        indexDau = -1*indexDau;
-                    }
+                    Int_t indexDau = TMath::Abs(mcGenPart->GetDaughter(iDau));  //index of daughter i.e. label
                     idToSkip[iDau] = trkToSkip[indexDau];
                 }
                 recSpherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
             }
+            if(fPdgMeson==421){
+                //Removal of D0 from Dstar at Generation !!
+                if(fRemoveD0fromDstar){
+                    Int_t mother = mcGenPart->GetMother();
+                    AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
+                    if(!mcMoth) continue;
+                    if(TMath::Abs(mcMoth->GetPdgCode())==413) continue;
+                }
+            }
             
             Double_t pt = mcGenPart->Pt();
             Double_t rapid = mcGenPart->Y();
+            
+            //Weight according to pt, using FONLL
+            Double_t ptWeight = 1.;
+            if(fUsePtWeight) ptWeight = GetPtWeight(pt);
+            fWeight = nchWeight*ptWeight;
             
             isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(pt,rapid);
             isInAcc=CheckGenAcc(arrayMC,nProng,labDau);
@@ -1370,18 +1588,26 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
                     //fill histo for prompt
                     Double_t arrayMCGenRecSpheroPrompt[5] = {pt, countMult, spherocity, rapid, recSpherocity};
                     Double_t arrayMCGenPrompt[4] = {pt, countMult, spherocity, rapid};
-                    if(fRecomputeSpherocity) fMCAccGenPrompt->Fill(arrayMCGenRecSpheroPrompt);
-                    else fMCAccGenPrompt->Fill(arrayMCGenPrompt);
-                    if(isEvSel) fMCAccGenPromptEvSel->Fill(arrayMCGenPrompt);
+                    if(fRecomputeSpherocity) fMCAccGenPrompt->Fill(arrayMCGenRecSpheroPrompt, fWeight);
+                    else fMCAccGenPrompt->Fill(arrayMCGenPrompt, fWeight);
+                    if(isEvSel) fMCAccGenPromptEvSel->Fill(arrayMCGenPrompt, fWeight);
+                    if(fCalculateSphericity){
+                        Double_t arrayMCGenPromptSpheri[4] = {pt, countMult, sphericity, rapid};
+                        fMCAccGenPromptSpheri->Fill(arrayMCGenPromptSpheri, fWeight);
+                    }
                 }
                 //for FD
                 else if(orig == 5){
                     //fill histo for FD
                     Double_t arrayMCGenRecSpheroFeeddown[5] = {pt, countMult, spherocity, rapid, recSpherocity};
                     Double_t arrayMCGenFeeddown[4] = {pt, countMult, spherocity, rapid};
-                    if(fRecomputeSpherocity) fMCAccGenFeeddown->Fill(arrayMCGenRecSpheroFeeddown);
-                    else fMCAccGenFeeddown->Fill(arrayMCGenFeeddown);
-                    if(isEvSel) fMCAccGenFeeddownEvSel->Fill(arrayMCGenFeeddown);
+                    if(fRecomputeSpherocity) fMCAccGenFeeddown->Fill(arrayMCGenRecSpheroFeeddown, fWeight);
+                    else fMCAccGenFeeddown->Fill(arrayMCGenFeeddown, fWeight);
+                    if(isEvSel) fMCAccGenFeeddownEvSel->Fill(arrayMCGenFeeddown, fWeight);
+                    if(fCalculateSphericity){
+                        Double_t arrayMCGenFeeddownSpheri[4] = {pt, countMult, sphericity, rapid};
+                        fMCAccGenFeeddownSpheri->Fill(arrayMCGenFeeddownSpheri, fWeight);
+                    }
                 }
                 else
                     continue;
@@ -1391,7 +1617,8 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
 }
 
 //_________________________________________________________________
-Bool_t AliAnalysisTaskSEDvsEventShapes::CheckGenAcc(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau){
+Bool_t AliAnalysisTaskSEDvsEventShapes::CheckGenAcc(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau)
+{
     /// check if the decay products are in the good eta and pt range
     for (Int_t iProng = 0; iProng<nProng; iProng++){
         AliAODMCParticle* mcPartDaughter=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDau[iProng]));

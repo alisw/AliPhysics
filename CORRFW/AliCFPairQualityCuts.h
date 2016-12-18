@@ -33,7 +33,7 @@ class AliCFPairQualityCuts : public AliCFCutBase
 {
  public :
   AliCFPairQualityCuts() ;
-  AliCFPairQualityCuts(Char_t* name, Char_t* title) ;
+  AliCFPairQualityCuts(const Char_t* name, const Char_t* title) ;
   AliCFPairQualityCuts(const AliCFPairQualityCuts& c) ;
   AliCFPairQualityCuts& operator=(const AliCFPairQualityCuts& c) ;
   virtual ~AliCFPairQualityCuts() {delete fCutNeg; delete fCutPos; }

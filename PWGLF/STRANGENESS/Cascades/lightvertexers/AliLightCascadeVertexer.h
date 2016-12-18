@@ -55,7 +55,7 @@ private:
   Double_t fgRmin, fgRmax;// max & min radii of the fiducial volume
     static Double_t fgMaxEta;       // maximum eta value for track pre-selection
     static Double_t fgMinClusters;  // minimum single-track clusters value (>=)
-  static Double_t fgSwitchCharges;  // minimum single-track clusters value (>=)
+  static Bool_t fgSwitchCharges;  // minimum single-track clusters value (>=)
     
   Double_t fChi2max;    // maximal allowed chi2 
   Double_t fDV0min;     // min. allowed V0 impact parameter

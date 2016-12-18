@@ -3,7 +3,7 @@
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 12:14:03 2011
  * 
- * @brief  
+ * @brief  Add energy loss task to train. 
  * 
  * 
  * @ingroup pwglf_forward_scripts_tasks

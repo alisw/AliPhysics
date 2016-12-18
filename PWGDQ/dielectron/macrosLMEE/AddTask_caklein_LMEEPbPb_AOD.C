@@ -1,5 +1,5 @@
 AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput.root",
-                                              Bool_t getFromAlien=kFALSE,
+                                              Bool_t getFromAlien=kTRUE,
                                               Int_t triggerNames=(AliVEvent::kINT7),
                                               Int_t collCands=AliVEvent::kINT7)
 {
@@ -24,6 +24,7 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/Config_caklein_LMEEPbPb_AOD.C ."))
       && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/LMEECutLib_caklein.C ."))
       ) {
+    cout << "Copy config from Alien" << std::endl;
     configBasePath=Form("%s/",gSystem->pwd());
   }
 

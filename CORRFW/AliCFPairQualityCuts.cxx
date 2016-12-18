@@ -36,7 +36,7 @@ AliCFPairQualityCuts::AliCFPairQualityCuts() :
   //
 }
 //__________________________________________________________________________________
-AliCFPairQualityCuts::AliCFPairQualityCuts(Char_t* name, Char_t* title) :
+AliCFPairQualityCuts::AliCFPairQualityCuts(const Char_t* name, const Char_t* title) :
   AliCFCutBase(name,title),
   fCutNeg(new AliCFTrackQualityCuts(name,title)),
   fCutPos(new AliCFTrackQualityCuts(name,title))

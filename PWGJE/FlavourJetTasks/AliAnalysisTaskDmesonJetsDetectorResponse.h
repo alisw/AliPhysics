@@ -71,11 +71,11 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
     virtual AliDmesonInfoSummary* GetReconstructed() { return &fReconstructed; }
     virtual AliDmesonInfoSummary* GetGenerated()     { return &fGenerated    ; }
 
-    AliD0InfoSummary     fReconstructed ; ///<  Reconstructed D meson
-    AliDmesonInfoSummary fGenerated     ; ///<  Generated D meson
+    AliD0InfoSummary       fReconstructed ; ///<  Reconstructed D meson
+    AliDmesonMCInfoSummary fGenerated     ; ///<  Generated D meson
 
     /// \cond CLASSIMP
-    ClassDef(AliD0MatchInfoSummary, 1);
+    ClassDef(AliD0MatchInfoSummary, 2);
     /// \endcond
   };
 
@@ -129,7 +129,7 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
 
     TTree* BuildTree(const char* taskName);
     TTree* GetTree() const { return fTree; }
-    Bool_t FillTree(Bool_t applyKinCuts);
+    Bool_t FillTree(Bool_t applyKinCuts, Bool_t findNoDMesonRecoJets);
 
     void AssignDataSlot(Int_t n) { fDataSlotNumber = n; }
     Int_t GetDataSlotNumber() const { return fDataSlotNumber; }
@@ -166,10 +166,14 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
   AliAnalysisTaskDmesonJetsDetectorResponse(const char* name, Int_t nOutputTrees=2);
   virtual ~AliAnalysisTaskDmesonJetsDetectorResponse() {;}
 
+  void SetFindRecoJetsForLostDMesons(Bool_t b) { fFindRecoJetsForLostDMesons = b; }
+
   virtual void         UserCreateOutputObjects();
   virtual void         ExecOnce();
   virtual Bool_t       Run();
   virtual Bool_t       FillHistograms();
+
+  static AliAnalysisTaskDmesonJetsDetectorResponse* AddTaskDmesonJetsDetectorResponse(TString trackName, TString clusName, TString mcPartName, Int_t nMaxTrees, TString suffix);
 
  protected:
 
@@ -177,7 +181,8 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
 
   Int_t PostDataFromResponseEngine(const ResponseEngine& eng);
 
-  std::map<ECandidateType_t, ResponseEngine>  fResponseEngines  ; //!<! Response engines
+  Bool_t                                      fFindRecoJetsForLostDMesons; ///<  If switched on, looks for reconstructed jets even when the D meson was lost
+  std::map<ECandidateType_t, ResponseEngine>  fResponseEngines           ; //!<! Response engines
 
  private:
 
@@ -185,7 +190,7 @@ class AliAnalysisTaskDmesonJetsDetectorResponse : public AliAnalysisTaskDmesonJe
   AliAnalysisTaskDmesonJetsDetectorResponse& operator=(const AliAnalysisTaskDmesonJetsDetectorResponse& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJetsDetectorResponse, 1);
+  ClassDef(AliAnalysisTaskDmesonJetsDetectorResponse, 2);
   /// \endcond
 };
 

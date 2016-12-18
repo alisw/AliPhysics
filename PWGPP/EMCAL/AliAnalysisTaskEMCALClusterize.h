@@ -171,7 +171,6 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOnUseMCEdepFracLabelForCell()            { fSetCellMCLabelFromEdepFrac = kTRUE  ;  
                                                                    fSetCellMCLabelFromCluster = 0      ; }
   void           SwitchOffUseMCEdepFracLabelForCell()           { fSetCellMCLabelFromEdepFrac = kFALSE ; }
-
   
 private:
     
@@ -270,9 +269,8 @@ private:
     
   Bool_t                 fRemapMCLabelForAODs ;    ///<  Remap AOD cells MC label. Needed in old AOD productions.
 
-  
   Bool_t                 fInputFromFilter ;        ///<  Get the input from AODs from the filter.
-  
+    
   /// Copy constructor not implemented.
   AliAnalysisTaskEMCALClusterize(           const AliAnalysisTaskEMCALClusterize&) ;
     

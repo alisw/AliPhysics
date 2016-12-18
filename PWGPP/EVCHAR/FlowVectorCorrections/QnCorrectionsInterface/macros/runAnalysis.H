@@ -74,6 +74,6 @@ TString szAltCorrectionPass;
 
 TString szLocalFileList;
 
-Bool_t loadRunOptions(Bool_t verb = kFALSE,const char *filename = "runoptions.txt");
+Bool_t loadRunOptions(Bool_t verb = kFALSE, const char *path = ".");
 
 #endif /* RUNANALYSIS_H_ */

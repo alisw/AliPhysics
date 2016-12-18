@@ -475,8 +475,8 @@ struct AliTrackletdNdeta : public AliTrackletAODUtils
    * Calculates the result as 
    *
    * @f[
-   *  R &=& \frac{P}{(1-\beta\prime)M\prime} (1-\beta)M
-   * @f] 
+   R = \frac{P}{(1-\beta\prime)M\prime} (1-\beta)M
+   @f] 
    *
    * where 
    * 
@@ -626,20 +626,22 @@ AliTrackletdNdeta::AliTrackletdNdeta()
     fAlphaMin(0),
     fAlphaMax(2.5)    
 {}
-//====================================================================  
-struct SuppressGuard
-{
-  Int_t save = 0;
-  SuppressGuard(Int_t lvl=2000)
+//====================================================================
+namespace { 
+  struct SuppressGuard
   {
-    save = gErrorIgnoreLevel;
-    gErrorIgnoreLevel = lvl;
-  }
-  ~SuppressGuard()
-  {
-    gErrorIgnoreLevel = save;
-  }
-};
+    Int_t save = 0;
+    SuppressGuard(Int_t lvl=2000)
+    {
+      save = gErrorIgnoreLevel;
+      gErrorIgnoreLevel = lvl;
+    }
+    ~SuppressGuard()
+    {
+      gErrorIgnoreLevel = save;
+    }
+  };
+}
 
 //____________________________________________________________________
 void AliTrackletdNdeta::ClearCanvas()
@@ -2162,6 +2164,12 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
   fViz  = viz;
   TFile* dataFile = 0;
   TFile* simFile  = 0;
+  Printf("***************************************************\n"
+	 "  Data file:       %s\n"
+	 "  Simulation file: %s\n"
+	 "  Output file:     %s\n",
+	 dataName, simName, outName);
+  
   if (!(dataFile = OpenFile(dataName))) return;
   if (!(simFile  = OpenFile(simName)))  return;
 
@@ -2170,6 +2178,18 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
   Container*  realRess = GetC(dataFile, Form("%sResults",   base));
   Container*  simSums  = GetC(simFile,  Form("%sMCSums",    base));
   Container*  simRess  = GetC(simFile,  Form("%sMCResults", base));
+  if (!realSums || !realRess) {
+    realSums = GetC(dataFile, Form("%sMCSums",      base));
+    realRess = GetC(dataFile, Form("%sMCResults",   base));
+    if (realSums && realRess)
+      Warning("Run","\n"
+	      "*********************************************\n"
+	      "* Testing MC vs. MC:                        *\n"
+	      "*  'Data' file:      %23s *\n"
+	      "*  Simulation file:  %23s *\n"
+	      "*********************************************\n",
+	      dataName, simName);
+  }
   if (!realSums || !realRess || !simSums || !simRess) return;
 
   Container* params   = GetC(realSums, "parameters");
@@ -2236,7 +2256,7 @@ void AliTrackletdNdeta::Run(UInt_t      proc,
       res = TFile::Open("result.root","READ");
     }
     if (res) {
-      THStack* other = static_cast<THStack*>(res->Get("result"));
+      THStack* other = GetHS(res, "result");
       if (other)
 	DrawInPad(fBody, 0, other, "nostack same");
       out->cd();

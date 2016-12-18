@@ -162,12 +162,17 @@ class AliAnalysisTaskEmcalJetTreeBase : public AliAnalysisTaskEmcalJetSpectraQA 
   virtual ~AliAnalysisTaskEmcalJetTreeBase() {;}
 
   static AliAnalysisTaskEmcalJetTreeBase* CreateInstance(const char* name, EAnalisysType_t type = kJetPP);
+  static AliAnalysisTaskEmcalJetTreeBase* AddTaskEmcalJetTree(TString ntracks = "usedefault", TString nclusters = "usedefault", Double_t trackPtCut = 0.15, Double_t clusECut = 0.30, EAnalisysType_t type = kJetPP, TString suffix = "");
 
  protected:
   void AllocateTTree(const AliJetContainer* jets) = 0;
   void FillTTree(const AliEmcalJetInfo& jetInfo, const AliJetContainer* jets) = 0;
 
   TTree   *fTree;    //!<! Output tree
+
+private:
+  AliAnalysisTaskEmcalJetTreeBase(const AliAnalysisTaskEmcalJetTreeBase&);            // not implemented
+  AliAnalysisTaskEmcalJetTreeBase &operator=(const AliAnalysisTaskEmcalJetTreeBase&); // not implemented
 
   /// \cond CLASSIMP
   ClassDef(AliAnalysisTaskEmcalJetTreeBase, 1)

@@ -57,8 +57,6 @@
 #include "AliHeader.h" 
 #include "AliGenEventHeader.h" 
 #include "AliStack.h" 
-#include "AliMCInfoCuts.h" 
-#include "AliRecInfoCuts.h" 
 #include "AliTracker.h" 
 #include "AliTRDtrackV1.h" 
 #include "AliTreeDraw.h" 
@@ -81,6 +79,29 @@ TH2D *h_tpc_match_pull_3_7 = 0;
 TH3D *h_tpc_constrain_tpc_0_2_3 = 0;
 
 //_____________________________________________________________________________
+AliPerformanceMatch::AliPerformanceMatch(TRootIoCtor*):
+  AliPerformanceObject(),
+  fResolHisto(0),
+  fPullHisto(0),
+  fTrackingEffHisto(0),
+  fTPCConstrain(0),
+  fFolderObj(0),
+  fAnalysisFolder(0),
+  fUseHLT(0),
+  h_tpc_match_trackingeff_all_2_3(NULL),
+  h_tpc_match_trackingeff_tpc_2_3(NULL),
+  h_tpc_match_pull_2_7(NULL),
+  h_tpc_match_pull_4_7(NULL),
+  h_tpc_match_pull_0_7(NULL),
+  h_tpc_match_pull_1_7(NULL),
+  h_tpc_match_pull_3_7(NULL),
+  h_tpc_constrain_tpc_0_2_3(NULL)
+
+{
+  // io constructor
+}
+
+//_____________________________________________________________________________
 AliPerformanceMatch::AliPerformanceMatch(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator, Bool_t useSparse):
   AliPerformanceObject(name,title),
   fResolHisto(0),
@@ -88,13 +109,18 @@ AliPerformanceMatch::AliPerformanceMatch(const Char_t* name, const Char_t* title
   fTrackingEffHisto(0),
   fTPCConstrain(0),
   fFolderObj(0),
-  // Cuts 
-  fCutsRC(0),  
-  fCutsMC(0),  
 
   // histogram folder 
   fAnalysisFolder(0),
-  fUseHLT(0)
+  fUseHLT(0),
+  h_tpc_match_trackingeff_all_2_3(NULL),
+  h_tpc_match_trackingeff_tpc_2_3(NULL),
+  h_tpc_match_pull_2_7(NULL),
+  h_tpc_match_pull_4_7(NULL),
+  h_tpc_match_pull_0_7(NULL),
+  h_tpc_match_pull_1_7(NULL),
+  h_tpc_match_pull_3_7(NULL),
+  h_tpc_constrain_tpc_0_2_3(NULL)
 {
   // named constructor	
   // 
@@ -108,12 +134,12 @@ AliPerformanceMatch::AliPerformanceMatch(const Char_t* name, const Char_t* title
 AliPerformanceMatch::~AliPerformanceMatch()
 {
   // destructor
-   
+
   if(fResolHisto) delete fResolHisto; fResolHisto=0;     
   if(fPullHisto)  delete fPullHisto;  fPullHisto=0;
   if(fTrackingEffHisto) delete fTrackingEffHisto; fTrackingEffHisto = 0x0;
   if(fTPCConstrain) delete fTPCConstrain; fTPCConstrain = 0x0;
-  
+
   if(h_tpc_match_trackingeff_all_2_3) delete h_tpc_match_trackingeff_all_2_3; h_tpc_match_trackingeff_all_2_3 = 0;
   if(h_tpc_match_trackingeff_tpc_2_3) delete h_tpc_match_trackingeff_tpc_2_3; h_tpc_match_trackingeff_tpc_2_3 = 0;
   if(h_tpc_match_pull_2_7) delete h_tpc_match_pull_2_7; h_tpc_match_pull_2_7 = 0;
@@ -287,12 +313,6 @@ void AliPerformanceMatch::Init(){
     }
   }
 
-  // Init cuts 
-  if(!fCutsMC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  if(!fCutsRC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
-
   // init folder
   fAnalysisFolder = CreateFolder("folderMatch","Analysis Matching Folder");
   
@@ -330,12 +350,12 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliVEvent *const vEvent, A
     if(!(vTrackTPC->GetStatus() & AliVTrack::kTPCrefit)) continue;
     
     // TPC nClust/track after first tracking pass
-    // if(vTrackTPC->GetTPCNclsIter1()<fCutsRC->GetMinNClustersTPC()) continue;
+    // if(vTrackTPC->GetTPCNclsIter1()<fCutsRC.GetMinNClustersTPC()) continue;
     tpcTrack2 = AliESDtrackCuts::GetTPCOnlyTrackFromVEvent(vEvent, jTrack);
     if(!tpcTrack2) continue;
     if(!tpcTrack2->RelateToVVertex(vVertex,vEvent->GetMagneticField(),100.)) { delete tpcTrack2; tpcTrack2=0; continue; } 
     
-    if(!fCutsRC->AcceptVTrack(tpcTrack2)) { delete tpcTrack2; tpcTrack2=0; continue; }
+    if(!fCutsRC.AcceptVTrack(tpcTrack2)) { delete tpcTrack2; tpcTrack2=0; continue; }
     // check matching
     if (TMath::Abs(vTrack->GetY() - tpcTrack2->GetY()) > 3) { delete tpcTrack2; tpcTrack2=0; continue; }
     if (TMath::Abs(vTrack->GetSnp() - tpcTrack2->GetSnp()) > 0.2) { delete tpcTrack2; tpcTrack2=0; continue; }
@@ -367,10 +387,10 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliVEvent *co
   if(!flatTrack){
       if(vTrack->Charge()==0) return;
       if(!vTrack->GetTPCInnerParam()) return;
-      if(!fCutsRC->AcceptVTrack(vTrack)) return;
+      if(!fCutsRC.AcceptVTrack(vTrack)) return;
   }
   else{
-      if(!fCutsRC->AcceptFTrack(vTrack,vEvent)) return;
+      if(!fCutsRC.AcceptFTrack(vTrack,vEvent)) return;
   }
   if(!(vTrack->GetStatus()&AliVTrack::kTPCrefit)) return;
 
@@ -406,10 +426,10 @@ void AliPerformanceMatch::ProcessTPCConstrain(AliStack* /*const stack*/, AliVEve
 
     if(!flatTrack){
         if(vTrack->Charge()==0) return;
-        if(!fCutsRC->AcceptVTrack(vTrack)) return;
+        if(!fCutsRC.AcceptVTrack(vTrack)) return;
     }
     else{
-        if(!fCutsRC->AcceptFTrack(vTrack,vEvent)) return;
+        if(!fCutsRC.AcceptFTrack(vTrack,vEvent)) return;
     }
     if(!(vTrack->GetStatus()&AliVTrack::kITSrefit)) return;
     if(!(vTrack->GetStatus()&AliVTrack::kTPCrefit)) return;
@@ -461,10 +481,15 @@ void AliPerformanceMatch::FillHistograms(AliVTrack *const refParamVTrack, AliVTr
 
   
   if(!refParamVTrack || !paramVTrack || !isRec) return;
-  AliExternalTrackParam *refParam = NULL;
-  AliExternalTrackParam *param = NULL;
-  refParam->CopyFromVTrack(refParamVTrack);
-  param->CopyFromVTrack(paramVTrack);
+
+  //this should be done with a copy ctor?
+  AliExternalTrackParam refParam_;
+  AliExternalTrackParam param_;
+  refParam_.CopyFromVTrack(refParamVTrack);
+  param_.CopyFromVTrack(paramVTrack);
+
+  AliExternalTrackParam *refParam = &refParam_;
+  AliExternalTrackParam *param = &param_;
   
   if(!refParam) return;
   if(!param) return;
@@ -564,7 +589,7 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEven
   } 
 
   // trigger
-  if(!bUseMC && GetTriggerClass()) {
+  if(!bUseMC && !GetTriggerClass().IsNull()) {
     Bool_t isEventTriggered = vEvent->IsTriggerClassFired(GetTriggerClass());
     if(!isEventTriggered) return; 
   }

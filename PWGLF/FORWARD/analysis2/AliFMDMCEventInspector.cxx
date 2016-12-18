@@ -466,26 +466,27 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     egSD = true; // We have SD flag in EG
     // 1 & 4 are ND 
     // 5 & 6 are SD 
-    // 7 is DD 
+    // 7 is DD
+#if 0    
     if (processType == 5 || processType == 6)  sd = kTRUE;
-#if 0
-      // The below - or rather a different implementation with some
-      // errors - was proposed by Cvetan - I don't think it's right
-      // though.  See also
-      //
-      //   https://cern.ch/twiki/pub/ALICE/PAPaperCentrality/normalization.pdf
-      //   https://cern.ch/twiki/bin/view/ALICE/PAMCProductionStudies
-      //
-      Int_t nsd1=0, nsd2=0, ndd=0;
-      Int_t npP = dpm->ProjectileParticipants();
-      Int_t npT = dpm->TargetParticipants();
-      // Get the numbeer of single and double diffractive participants
-      dpm->GetNDiffractive(nsd1,nsd2,ndd);
-      // Check if all partipants are single/double diffractive 
-      if      ((ndd == 0) && ((npP == nsd1) || (npT == nsd2)))	sd = true;
-      else if (ndd == (npP + npT))                       	dd = true;
-      // Printf("Projectile: %3d (%3d) Target: %3d (%3d) DD: %3d Process: %d",
-      // 	     npP, nsd1, npT, nsd2, ndd, type);
+#else 
+    // The below - or rather a different implementation with some
+    // errors - was proposed by Cvetan - I don't think it's right
+    // though.  See also
+    //
+    //   https://cern.ch/twiki/pub/ALICE/PAPaperCentrality/normalization.pdf
+    //   https://cern.ch/twiki/bin/view/ALICE/PAMCProductionStudies
+    //
+    Int_t nsd1=0, nsd2=0, ndd=0;
+    Int_t npP = dpmHeader->ProjectileParticipants();
+    Int_t npT = dpmHeader->TargetParticipants();
+    // Get the numbeer of single and double diffractive participants
+    dpmHeader->GetNDiffractive(nsd1,nsd2,ndd);
+    // Check if all partipants are single/double diffractive 
+    if      ((ndd == 0) && ((npP == nsd1) || (npT == nsd2)))	sd = true;
+    // else if (ndd == (npP + npT))                         	dd = true;
+    // Printf("Projectile: %3d (%3d) Target: %3d (%3d) DD: %3d Process: %d",
+    // 	     npP, nsd1, npT, nsd2, ndd, type);
 #endif 
   }
   if (gevHeader) { 

@@ -208,6 +208,10 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     void ProcessAOD();
     Int_t GetITSMultiplicity(AliVEvent *ev);
     Bool_t IsMCFakeTrack(const AliVTrack * const trk) const;
+    const AliVVertex* GetPrimaryVertexAnalysis(const AliVEvent * const inputEvent);
+    const AliVVertex* GetPrimaryVertexSPD(const AliVEvent * const inputEvent);
+    const AliVVertex* GetPrimaryVertexTracks(const AliVEvent * const inputEvent);
+
     Bool_t PreSelectTrack(AliESDtrack *track) const;
     Bool_t ProcessMCtrack(AliVParticle *track);
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
@@ -230,6 +234,10 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t fRemoveFirstEvent;             // Remove first event from chunk
     Bool_t fisNonHFEsystematics;          // Non-HFE background systematics analysis
     Bool_t fCalcContamBeauty;             // Apply ip cut right before the PIDQA to sotre pidqa histos
+    const AliVVertex *fvtxAna;             // Primary vertex for analysis
+    Bool_t fVtxMixed;                     // Set vertex choice: track or SPD
+    Bool_t fVtxTrack;                     // Set vertex choice: track or SPD
+    Bool_t fVtxSPD;                       // Set vertex choice: SPD
     AliOADBContainer *fSpecialTrigger;    // Special trigger selection
     Int_t   fCentralityF;                 // Centrality bin
     Float_t fCentralityPercent;           // Centrality percentile
@@ -280,7 +288,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliHFEcollection *fQACollection;      //! Tasks own QA collection
     //---------------------------------------
 
-    ClassDef(AliAnalysisTaskHFE, 3)       // The electron Analysis Task
+    ClassDef(AliAnalysisTaskHFE, 4)       // The electron Analysis Task
 };
 #endif
 

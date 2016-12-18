@@ -330,6 +330,7 @@ RatioMG(TMultiGraph* num, TMultiGraph* denom)
  * Fix the frame of a multi-graph
  * 
  * @param o      The frame 
+ * @param hasFwd Whether we have forward data or not 
  * @param fac    Scale factor for y axis
  * @param ytitle Title on y axis 
  */

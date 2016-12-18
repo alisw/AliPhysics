@@ -167,6 +167,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
   //,fh2ALaPtJetPtCone(0)
   ,fh1JetPt(0)
   ,fh2JetEtaPhi(0)
+  ,fh1JetRotPhi(0)
   ,fh1JetN(0)
   ,fh1MCTrackPt(0)
   ,fh2MCTrackEtaPhi(0)
@@ -287,6 +288,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
   //,fh2ALaPtJetPtCone(0)
 ,fh1JetPt(0)
 ,fh2JetEtaPhi(0)
+,fh1JetRotPhi(0)
 ,fh1JetN(0)
 ,fh1MCTrackPt(0)
 ,fh2MCTrackEtaPhi(0)
@@ -408,6 +410,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
   //,fh2ALaPtJetPtCone(copy.fh2ALaPtJetPtCone)
 ,fh1JetPt(copy.fh1JetPt)
 ,fh2JetEtaPhi(copy.fh2JetEtaPhi)
+,fh1JetRotPhi(copy.fh1JetRotPhi)
 ,fh1JetN(copy.fh1JetN)
 ,fh1MCTrackPt(copy.fh1MCTrackPt)
 ,fh2MCTrackEtaPhi(copy.fh2MCTrackEtaPhi)
@@ -533,6 +536,7 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
       //fh2ALaPtJetPtCone  = o.fh2ALaPtJetPtCone;
       fh1JetPt           = o.fh1JetPt;
       fh2JetEtaPhi       = o.fh2JetEtaPhi;
+      fh1JetRotPhi       = o.fh1JetRotPhi;
       fh1JetN            = o.fh1JetN;
       fh1MCTrackPt       = o.fh1MCTrackPt;
       fh2MCTrackEtaPhi   = o.fh2MCTrackEtaPhi;
@@ -749,10 +753,12 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
       
       fh1JetPt        =  new TH1F("fh1JetPt", "pT of extra jets;p_{T};entries", 120, 0., 120.);
       fh2JetEtaPhi    =  new TH2F("fh2JetEtaPhi", "eta-phi distribution of extra jets;#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
+      fh1JetRotPhi    =  new TH1F("fh1JetRotPhi", "Delta phi between rotated jet and event plane (0,pi)", 60 , 0., 2*TMath::Pi());
       fh1JetN         =  new TH1F("fh1JetN", "nb. of extra jets per event;nb. of jets;entries",20,0.,20.);
       
       fHistList->Add(fh1JetPt);
       fHistList->Add(fh2JetEtaPhi);
+      fHistList->Add(fh1JetRotPhi); 
       fHistList->Add(fh1JetN);
    }
 
@@ -1456,27 +1462,57 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		
 		Double_t jetPhi = jet->Phi();
 		
+		Double_t EPphi = (TMath::Pi()*0.5)-event_plane_2;//EP range is -pi/2 to pi/2, jet phi range is 0 to 2pi, adjust here angle range for EP to (0,pi)
+
 		fh1JetPt->Fill(jet->Pt());
 		fh2JetEtaPhi->Fill(jet->Eta(), jetPhi);
 		
+
+		if(fDebug>3)std::cout<<"(pi/2-event_plane_2) phi: "<<EPphi<<std::endl;
+		   
 		
 		if(fEPMode != 0){  //do embedding event-plane-dependent
 		  
-		  Double_t jetPhiDelta = 0;
-		  
+		  Double_t jetPhiDelta = -99.;
+		 
+		  Double_t jetRotPhi = -99.;
+		  Double_t DeltaJetEP = -99.;//x-check angle for rotated jet and EPphi (0,pi)
+
 		  if(fEPMode == 1){//rotate jet axis in-plane
 		    
 		    //new (in-plane-rotated) jet phi fulfills the following condition
-		    jetPhiDelta = jetPhi-event_plane_2;//absolute difference of event plane and PYTHIA jet phi
+		    jetPhiDelta = jetPhi-EPphi;//absolute difference of event plane and PYTHIA jet phi
+		    jetRotPhi = jetPhi - jetPhiDelta;//rotate jet phi into plane, just for x-check
+
+		    if(jetRotPhi > 2*TMath::Pi()){jetRotPhi = jetRotPhi-2*TMath::Pi();//rotate jet phi with -2pi into (0, 2pi) range
+		    } 
 		    
+		    if(jetRotPhi < 0){jetRotPhi = jetRotPhi+2*TMath::Pi();//rotate jet phi with +2pi into (0, 2pi) range
+		    } 
+
+		    DeltaJetEP = TMath::Abs(EPphi-jetRotPhi);//should be always 0 in this case
+
+		    fh1JetRotPhi->Fill(DeltaJetEP);
+
 		    if(fDebug>3)std::cout<<"In-plane jetPhiDelta: "<<jetPhiDelta<<std::endl;
 		    
 		  }
 		  
 		  if(fEPMode == 2){//rotate jet axis out-of-plane
 		    //new (out-of-plane-rotated) jet phi fulfills the following condition
-		    jetPhiDelta = (jetPhi-(event_plane_2))+(TMath::Pi()*0.5);
+		    jetPhiDelta = (jetPhi-(EPphi))+(TMath::Pi()*0.5);
+		    jetRotPhi = jetPhi - jetPhiDelta;//rotate jet phi out-of-plane, just for x-check
+		  
+		    if(jetRotPhi > 2*TMath::Pi()){jetRotPhi = jetRotPhi-2*TMath::Pi();//rotate track phi with -2pi into (0, 2pi) range
+		    } 
 		    
+		    if(jetRotPhi < 0){jetRotPhi = jetRotPhi+2*TMath::Pi();//rotate track phi with +2pi into (0, 2pi) range
+		    } 
+
+		    DeltaJetEP = TMath::Abs(EPphi-jetRotPhi);//should be always Pi/2 in this case
+
+		    fh1JetRotPhi->Fill(DeltaJetEP);
+ 
 		    if(fDebug>3)std::cout<<"Out-of-plane jetPhiDelta: "<<jetPhiDelta<<std::endl;
 		    
 		    
@@ -1493,11 +1529,19 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 		    if(fDebug>3)std::cout<<"jet track phi before rotation: "<<trackphi<<std::endl;
 		    
 		    trackphi=trackphi-jetPhiDelta;//rotate jet constituent in-/out-of-plane
+
+		    //Make sure the tracks are in the proper jet phi acceptance and not negative or larger than 2pi
+		    if(trackphi > 2*TMath::Pi()){trackphi = trackphi-2*TMath::Pi();//rotate jet phi with -2pi into (0, 2pi) range
+		    } 
+
+		    if(trackphi < 0){trackphi = trackphi+2*TMath::Pi();//rotate jet phi with -2pi into (0, 2pi) range
+		    } 
+
 		    tmpTr->SetPhi(trackphi);//save new phi angle of jet track
 		    
 		    if(fDebug>3)std::cout<<"jet track phi after rotation: "<<trackphi<<std::endl;
 		    
-		  }
+		  } 
 
 		}
 	      }

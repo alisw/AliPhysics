@@ -108,10 +108,15 @@ class Beamerdoc(object):
             fig_paths = self._write_figures_to_disc()
             section_body = '\section{{{0}}}'.format(self.title)
             figs_per_frame = 4
+            frame_num = None
             for frame_num in xrange(0, len(fig_paths), figs_per_frame):
                 ig_cmds = ['' for i in range(figs_per_frame)]
                 for fig_num_frame, path in enumerate(fig_paths[frame_num:(frame_num + figs_per_frame)]):
                     ig_cmds[fig_num_frame] = format(r'\includegraphics[width=\textwidth]{{{0}}}'.format(path))
+                section_body += self.frame_template.format(title=self.title, *ig_cmds)
+            # were there no figures in this section?
+            if frame_num is None:
+                ig_cmds = ['' for i in range(figs_per_frame)]
                 section_body += self.frame_template.format(title=self.title, *ig_cmds)
             return section_body
 

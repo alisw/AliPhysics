@@ -80,7 +80,7 @@ Bool_t AliHFAODMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp,
   // Return true if vp is accepted.
 
   if (IsSpecialPDGDaughter(vp)) {
-    rejectionReason = kHFCut;
+    rejectionReason |= kHFCut;
     return kFALSE;  // daughter of a special PDG particle, reject it without any other check.
   }
 
@@ -163,20 +163,20 @@ Bool_t AliHFAODMCParticleContainer::IsSpecialPDG(const AliAODMCParticle* part, T
 
   if (!part->IsPrimary()) return kFALSE;
 
-  AliAnalysisTaskDmesonJets::EMesonOrigin_t origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
+  auto origin = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckOrigin(part, fClArray);
 
   if (histOrigin) {
-    UInt_t rs = origin;
+    UInt_t rs = origin.first;
     UShort_t p = 0;
     while (rs >>= 1) { p++; }
     histOrigin->Fill(p);
   }
 
-  if ((origin & fRejectedOrigin) != 0) return kFALSE;
+  if ((origin.first & fRejectedOrigin) != 0) return kFALSE;
 
   AliAnalysisTaskDmesonJets::EMesonDecayChannel_t decayChannel = AliAnalysisTaskDmesonJets::AnalysisEngine::CheckDecayChannel(part, fClArray);
 
-  if ((decayChannel & fAcceptedDecay) == 0) return kFALSE;
+  if (fAcceptedDecay && (decayChannel & fAcceptedDecay) == 0) return kFALSE;
 
   AliDebug(2, Form("Including particle %d (PDG = %d, pT = %.3f, eta = %.3f, phi = %.3f)",
       part->Label(), partPdgCode, part->Pt(), part->Eta(), part->Phi()));

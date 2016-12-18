@@ -45,7 +45,6 @@
 #include "TMap.h"
 #include "TMath.h"
 #include "TObjString.h"
-#include "TROOT.h"
 #include "TString.h"
 #include "TSystem.h"
 #include <vector>
@@ -122,7 +121,7 @@ void AliMuonGridSubmitter::AddIncludePath(const char* pathList) const
 
 
 //______________________________________________________________________________
-void AliMuonGridSubmitter::AddToTemplateFileList(const char* filename)
+void AliMuonGridSubmitter::AddToTemplateFileList(const char* filename, Bool_t alsoForMerging)
 {
   // add a file to the list of templates
   // and update the local file list if needed
@@ -131,13 +130,15 @@ void AliMuonGridSubmitter::AddToTemplateFileList(const char* filename)
   
   if ( !a->FindObject(filename) )
   {
-    a->Add(new TObjString(filename));
+    TObjString *o = new TObjString(filename);
+    o->SetBit(BIT(23), alsoForMerging);
+    a->Add(o);
     UpdateLocalFileList();
   }
 }
 
 //______________________________________________________________________________
-void AliMuonGridSubmitter::AddToLocalFileList(const char* filename)
+void AliMuonGridSubmitter::AddToLocalFileList(const char* filename, Bool_t alsoForMerging)
 {
   // add a file to the list of local files
   
@@ -145,7 +146,9 @@ void AliMuonGridSubmitter::AddToLocalFileList(const char* filename)
   
   if ( !a->FindObject(filename) )
   {
-    a->Add(new TObjString(filename));
+    TObjString *o = new TObjString(filename);
+    o->SetBit(BIT(23), alsoForMerging);
+    a->Add(o);
   }
 }
 
@@ -164,7 +167,7 @@ Bool_t AliMuonGridSubmitter::CheckCompilation(const char* file) const
   
   ReplaceVars(tmpfile.Data());
 
-  if (gROOT->LoadMacro(Form("%s++",tmpfile.Data())))
+  if (!gSystem->CompileMacro(Form("%s",tmpfile.Data()), "fc"))
   {
     AliError(Form("macro %s can not be compiled. Please check.",file));
     rv = kFALSE;
@@ -627,7 +630,8 @@ void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key,
   {
     TString& v1 = static_cast<TObjString*>(values.At(0))->String();
     
-    if ( v1.IsDigit() && !(TString(key).Contains("SplitMax")) && !(TString(key).Contains("TTL")) )
+    if ( v1.IsDigit() && !(TString(key).Contains("SplitMax")) &&
+        !(TString(key).Contains("TTL")) && !(TString(key).Contains("Arguments")) )
     {
       out << v1.Atoi();
     }
@@ -1047,7 +1051,7 @@ void AliMuonGridSubmitter::UpdateLocalFileList()
   
   while ( ( s = static_cast<TObjString*>(next())) )
   {
-    AddToLocalFileList(s->String().Data());
+    AddToLocalFileList(s->String().Data(), s->TestBit(BIT(23)));
   }
 }
 

@@ -257,6 +257,7 @@ private:
 
    TH1F  *fh1JetPt;           //! jet pt
    TH2F  *fh2JetEtaPhi;       //! jet eta-phi
+   TH1F  *fh1JetRotPhi;       //! delta rotated jet to event plane phi
    TH1F  *fh1JetN;            //! nb. of jets
    TH1F  *fh1MCTrackPt;       //! MC track pt
    TH2F  *fh2MCTrackEtaPhi;   //! MC track eta-phi

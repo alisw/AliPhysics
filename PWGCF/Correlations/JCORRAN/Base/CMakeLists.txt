@@ -73,7 +73,7 @@ set(SRCS
   iaaAnalysis/AliJDiHadronIaaTask.cxx
   iaaAnalysis/AliJIaaAnalysis.cxx
   iaaAnalysis/AliJIaaCorrelations.cxx
-  iaaAnalysis/AliJIaaHistos.cxx
+  iaaAnalysis/AliJIaaHistograms.cxx
   AliJPartLifetime.cxx
   )
 

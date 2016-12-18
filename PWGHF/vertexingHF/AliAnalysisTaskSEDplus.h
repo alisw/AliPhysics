@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //*************************************************************************
 /// \class Class AliAnalysisTaskSEDplus
@@ -45,6 +45,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetSystem(Int_t system=0){fSystem=system;}
   void SetCutsDistr(Bool_t cutsDistr=kTRUE){fCutsDistr=cutsDistr;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
+  void SetDoCutVarsSparses(Bool_t doSparse=kTRUE){fDoSparse=doSparse;}
   void SetDoTrackVarHistos(Bool_t doTrackHist=kTRUE){fDoTrackVarHist=doTrackHist;}
   void SetDoMCAcceptanceHistos(Bool_t doMCAcc=kTRUE){fStepMCAcc=doMCAcc;}
   void SetImpactParameterBinning(Int_t nbins, Float_t dmin, Float_t dmax){
@@ -57,6 +58,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetBinWidth(Float_t w);
   void SetUseBit(Bool_t dols=kTRUE){fUseBit=dols;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
   void SetUseOnlyPositiveEta(){fEtaSelection=1;}
   void SetUseOnlyNegativeEta(){fEtaSelection=-1;}
@@ -68,11 +70,12 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t GetNBinsPt(){return fNPtBins;}
   Float_t GetBinWidth(){return fBinWidth;}
   Int_t GetNBinsHistos();
-  
+
   void LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS);
 
   void CreateLikeSignHistos();
   void CreateImpactParameterHistos();
+  void CreateCutVarsSparses();
   void CreateTrackVarHistos();
   void CreateMCAcceptanceHistos();
 
@@ -85,11 +88,11 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   virtual void LocalInit() {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-    
+
  private:
 
   AliAnalysisTaskSEDplus(const AliAnalysisTaskSEDplus &source);
-  AliAnalysisTaskSEDplus& operator=(const AliAnalysisTaskSEDplus& source); 
+  AliAnalysisTaskSEDplus& operator=(const AliAnalysisTaskSEDplus& source);
   Int_t GetHistoIndex(Int_t iPtBin) const { return iPtBin*3;}
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*3+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
@@ -98,10 +101,11 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t GetStrangenessWeights(const AliAODRecoDecayHF3Prong* d, TClonesArray* arrayMC, Float_t factor[3]) const;
 
   enum {kMaxPtBins=20};
-  enum {kVarForSparse=12,kVarForSparseFD=13,kVarForTrackSparse=7};
+  enum {kVarForSparse=12,kVarForSparseFD=13,kVarForTrackSparse=7,kVarForImpPar=3};
 
   TList   *fOutput; //!<! list send on output slot 0
   TH1F *fHistNEvents; //!<!hist. for No. of events
+  TH1F *fHistNCandidates; //!<!hist. for No. of candidates
   TH1F *fMassHistNoPid[3*kMaxPtBins]; //!<!hist. for inv mass (w/o PID)
   TH1F *fCosPHist[3*kMaxPtBins]; //!<!hist. for PointingAngle (topol+PID)
   TH1F *fDLenHist[3*kMaxPtBins]; //!<!hist. for Dec Length (topol+PID)
@@ -126,12 +130,15 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F *fDCAHistLS[3*kMaxPtBins];//!<!hist. for LS cuts variable 6 (topol+PID)
   TH2F *fCorreld0Kd0pi[3]; //!<!hist. for d0k*d0pi vs. d0k*d0pi (topol+PID)
   TH2F *fHistCentrality[3];//!<!hist. for cent distr (all,sel ev, )
-  THnSparseF *fHistMassPtImpPar[5];//!<! histograms for impact parameter and cut variation study
+  THnSparseF *fHistMassPtImpPar[5];//!<! histograms for impact parameter
+  THnSparseF *fSparseCutVars[3];//!<! histograms for cut variation study
   THnSparseF *fHistTrackVar; //!<! histograms for track cuts study
   THnSparseF *fMCAccPrompt; //!<!histo for StepMCAcc for Dplus prompt (pt,y,ptB)
   THnSparseF *fMCAccBFeed; //!<!histo for StepMCAcc for Dplus FD (pt,y,ptB)
   TH2F *fPtVsMassNoPid;    //!<! hist. of pt vs. mass (w/o PID)
   TH2F *fPtVsMass;  //!<! hist. of pt vs. mass (topol+PID cuts)
+  TH2F *fPtVsMassBadDaus;  //!<! hist. of pt vs. mass (topol+PID cuts)
+  TH2F *fPtVsMassGoodDaus;  //!<! hist. of pt vs. mass (topol+PID cuts)
   TH3F *fYVsPtNoPid;       //!<! hist. of Y vs. Pt vs. Mass(w/o PID)
   TH3F *fYVsPt;     //!<! hist. of Y vs. Pt vs. Mass (topol+PID cuts)
   TH2F *fYVsPtSigNoPid;    //!<! hist. of Y vs. Pt (MC, only sig, w/o PID)
@@ -139,6 +146,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH2F *fPhiEtaCand;      //!<! hist. with eta/phi distribution of candidates
   TH2F *fPhiEtaCandSigReg;//!<! hist. eta/phi of candidates in D+ mass region
   TH1F *fSPDMult;    //!<! hist. of spd mult
+  TH1F* fDaughterClass; //!<! hist
+  TH1F* fDeltaID; //!<! hist
+  TH2F* fIDDauVsIDTra; //!<! hist
   TNtuple *fNtupleDplus; //!<! output ntuple
   Float_t fUpmasslimit;  /// upper inv mass limit for histos
   Float_t fLowmasslimit; /// lower inv mass limit for histos
@@ -149,11 +159,14 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   Double_t fArrayBinLimits[kMaxPtBins+1]; /// limits for the Pt bins
   Int_t fFillNtuple;   /// flag for filling ntuple 0 no NTuple 1 big Ntuple 2 small NTuple
+  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
+                         /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   Bool_t fReadMC;    /// flag for access to MC
   Bool_t fUseStrangeness;/// flag to enhance strangeness in MC to fit to data
   Bool_t fUseBit;      /// flag to use bitmask
   Bool_t fCutsDistr;    /// flag to activate cuts distr histos
   Bool_t fDoImpPar;    /// flag to activate impact paramter histos
+  Bool_t fDoSparse;    /// flag to activate sparses for cut variation study
   Bool_t fDoTrackVarHist; ///flag to activate track variable cut studies
   Bool_t fStepMCAcc;   /// flag to activate histos for StepMCAcc
   Bool_t fUseQuarkTagInKine; /// flag for quark/hadron level identification of prompt and feeddown
@@ -163,9 +176,9 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t  fDoLS;        /// flag to do LS analysis
   Int_t fEtaSelection; /// eta region to accept D+ 0=all, -1 = negative, 1 = positive
   Int_t fSystem;   /// 0=pp,1=PbPb
-  
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDplus,26); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,29); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

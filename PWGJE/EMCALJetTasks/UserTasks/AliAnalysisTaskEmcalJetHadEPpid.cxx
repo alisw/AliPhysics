@@ -119,7 +119,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   douseOLDtrackFramework(kFALSE),
   fBeam(kNA),
   fLocalRhoVal(0),
-  fTracksName(""), fTracksNameME(""), fJetsName(""), fCaloClustersName(""),
+  fTracksName(""), fTracksNameME(""), fJetsName(""), fCaloClustersName(""), fRhoName(""),
   event(0),
   isPItpc(0), isKtpc(0), isPtpc(0), // pid TPC
   isPIits(0), isKits(0), isPits(0), // pid ITS
@@ -244,7 +244,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   douseOLDtrackFramework(kFALSE),
   fBeam(kNA),
   fLocalRhoVal(0),
-  fTracksName(""), fTracksNameME(""), fJetsName(""), fCaloClustersName(""),
+  fTracksName(""), fTracksNameME(""), fJetsName(""), fCaloClustersName(""), fRhoName(""),
   event(0),
   isPItpc(0), isKtpc(0), isPtpc(0), // pid TPC
   isPIits(0), isKits(0), isPits(0), // pid ITS
@@ -957,8 +957,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     return kTRUE;
   }
   if(!fJets){
-    AliError(Form("No fJets object!!\n"));
-    //return kTRUE;
+//    AliError(Form("No fJets object!!\n"));
+    //return kTRUE; // temp
   }
 
   fHistEventQA->Fill(2); // events after object check
@@ -1049,6 +1049,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     return kTRUE;
   }
 
+  if(!fJets){
+    fJets = dynamic_cast<TClonesArray*>(list->FindObject(fJetsName.Data()));
+
+    if(!fJets) AliError(Form("No fJets object!!\n"));
+    //return kTRUE; // temp
+  }
+
   fHistEventQA->Fill(6); // events after list check
 
 //test
@@ -1128,6 +1135,11 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
   // get Jets object
   Int_t Njets = 0;
+
+  // test!!
+  //jets = dynamic_cast<TClonesArray*>(list->FindObject(fJetsName.Data()));
+  //Njets = jets->GetEntries();
+
   if(fJets) {
     jets = dynamic_cast<TClonesArray*>(list->FindObject(fJets));
     if(!jets){
@@ -1340,6 +1352,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      // check on lead jet
      Double_t leadjet=0;
      if (ijet==ijethi) leadjet=1;
+
+     // test - this line adds jet container and keep next line from causing an error, need to see if it 
+     // adds container that is already a collection and doesn't conflict because of the name
+     AddJetContainer(fJetsName.Data());
 
      // check on leading hadron pt
      if (ijet==ijethi) leadhadronPT = GetLeadingHadronPt(jet);
@@ -1874,7 +1890,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         // get number of current events in pool
         Int_t nMix = pool->GetCurrentNEvents();  // how many particles in pool to mix
 
-          // Fill for biased jet triggers only
+        // Fill for biased jet triggers only
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)) {  // && jet->Pt() > fJetPtcut) {
           // Fill mixed-event histos here  
           for (Int_t jMix=0; jMix<nMix; jMix++) {
@@ -3052,7 +3068,16 @@ void AliAnalysisTaskEmcalJetHadEPpid::CalculateEventPlaneTPC(Double_t* tpc)
        if(TMath::Abs(track->Eta())>0.9) continue;
        if(track->Pt()<0.15) continue;
        if(track->Pt() < fSoftTrackMinPt_ep || track->Pt() > fSoftTrackMaxPt_ep) continue; // APPLY soft cut
+
+       // TEST:
+       // fJetRad and fEtamax are constants  fJetRad+fEtamax = 0.7
+       // so this says:   |tracketa| - 0.7 > 0 ->>> |tracketa| > 0.7?? then cut from EP res calculation - is this necessary?
+       // why was this done?
+       //cout<<"Abs(tracketa - jetrad - etamax) = "<<(TMath::Abs(track->Eta()) - fJetRad - fEtamax )<<endl;
+
        if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < fJetRad*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - fJetRad - fEtamax ) > 0 )) continue;
+       // need to double check above line - this should never be met - ERROR????
+
        fNAcceptedTracks++;
 
        // sum up q-vectors

@@ -62,10 +62,10 @@ class AliResonanceFits : public TObject {
   void SetExclusionRange(Float_t min, Float_t max)  {fExclusionRange[0]=min; fExclusionRange[1]=max;}
   void SetMassRange(Float_t min, Float_t max)  {fMassRange[0]=min; fMassRange[1]=max;}
   void SetSignalRange(Float_t min, Float_t max)   {fSignalRange[0]=min; fSignalRange[1]=max;}
-  void SetCentralityRange(Float_t min, Float_t max) {fCentralityRange[0]=min; fCentralityRange[1]=max;}
-  void SetVertexZRange(Float_t min, Float_t max) {fVertexZRange[0]=min; fVertexZRange[1]=max;}
-  void SetEP2Range(Float_t min, Float_t max) {fEP2Range[0]=min; fEP2Range[1]=max;}
-  void SetPtRange(Float_t min, Float_t max) {fPtRange[0]=min; fPtRange[1]=max;}
+  void SetCentralityRange(Float_t min, Float_t max) {fCentralityRange[0]=min; fCentralityRange[1]=max; fCentralitySelection = kTRUE;}
+  void SetVertexZRange(Float_t min, Float_t max) {fVertexZRange[0]=min; fVertexZRange[1]=max; fVertexSelection = kTRUE;}
+  void SetEP2Range(Float_t min, Float_t max) {fEP2Range[0]=min; fEP2Range[1]=max; fEPSelection = kTRUE;}
+  void SetPtRange(Float_t min, Float_t max) {fPtRange[0]=min; fPtRange[1]=max; fPtSelection = kTRUE;}
   
   void SetBkgMethod(Int_t method) {fBkgMethod = method;}
   void SetUse2DMatching(Bool_t flag=kTRUE) {fUse2DMatching = flag;}
@@ -119,9 +119,13 @@ class AliResonanceFits : public TObject {
   Float_t  fMassRange[2];            // mass range used for plotting
   Float_t  fSignalRange[2];          // mass range used to count the signal
   Float_t  fCentralityRange[2];
+  Bool_t   fCentralitySelection;
   Float_t  fVertexZRange[2];
+  Bool_t   fVertexSelection;
   Float_t  fEP2Range[2];
+  Bool_t   fEPSelection;
   static Float_t fPtRange[2];
+  Bool_t   fPtSelection;
   
   Int_t    fPlottingOption;          // (default is 0) 0 - mass projection; 1 - pt projection; 2 - (mass,pt) projection
   Int_t    fBkgMethod;               // (default is 1) 1 - Mixed event; 2 - Like sign

@@ -249,8 +249,9 @@ DoOne(TCollection*   c,
 
   if (dir.BeginsWith("cent"))
     hist->SetName(Form("%s_%s",hist->GetName(),dir.Data()));
-  
-  GraphSysErr* gse = adder->Make(hist, l, eff);
+
+  Info("DoOne","Make graph from %s with eff=%f", hist->GetName(), eff);
+  GraphSysErr* gse = adder->Make(hist, l, eff, true);
   if (!gse) return 0;
 
   gse->SetSumOption(GraphSysErr::kBox);
@@ -363,7 +364,10 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
   TH1*   frame = 0;
   Double_t min = 100000, max = -1000000;
   if (!centA || centA->GetNbins() < 1 || mth.IsNull()) {
-    Info("ExtractGSEs", "Doing pp-like extraction");
+    Info("ExtractGSEs", "Doing pp-like extraction"
+	 " all bin, %s, rebin=%d, eff=%f, %p, %s",
+	 hname.Data(), rebin, eff, adder,
+	 (cutEdges ? "cut edges" : "edges stay"));
     TObject* all = DoOne(results,"all",hname,rebin,eff,adder,cutEdges,l);
     if (!all) {
       Warning("ExtractGSEs", "Nothing returned from DoOne(\"all\"...)");

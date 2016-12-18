@@ -61,6 +61,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetFillPtHistos(Bool_t flag) {fFillPtHist=flag;}
   void SetFillYHistos(Bool_t flag) {fFillYHist=flag;}
   void SetFillImpactParameterHistos(Bool_t flag) {fFillImpParHist=flag;}
+  void SetFillSparses(Bool_t flag) {fFillSparses=flag;}
   void SetSystem(Int_t sys){fSys=sys; if(fSys==1) SetFillVarHists(kFALSE);}
   void SetRejectSDDClusters(Bool_t flag) { fIsRejectSDDClusters=flag; }
   void SetUseSelectionBit(Bool_t flag) { fUseSelectionBit=flag; }
@@ -68,6 +69,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetDrawDetSignal(Bool_t flag) { fDrawDetSignal=flag; }
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
@@ -124,6 +126,8 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t    fFillYHist;          /// flag to fill Y Histograms
   Bool_t    fFillImpParHist;      /// flag to fill Pt and Impact Parameter Histograms
   Bool_t    fUseSelectionBit;     /// flag to check or not the selection bit
+  Int_t     fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
+                                  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 7
@@ -131,13 +135,14 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t	fPIDCheck;			/// flag to decide whether to fill "PID = x" bins in fNentrie
   Bool_t    fDrawDetSignal;		/// flag to decide whether to draw the TPC dE/dx and TOF signal before/after PID
   Bool_t fUseQuarkTagInKine;            // flag for quark/hadron level identification of prompt and feeddown
+  Bool_t fFillSparses;                  // flag to activate THnSparse 
   THnSparseF *fhStudyImpParSingleTrackSign; //!<! sparse with imp par residual cuts for MC
   THnSparseF *fhStudyImpParSingleTrackCand;  //!<! sparse with imp par residual cuts for Data
   THnSparseF *fhStudyImpParSingleTrackFd;   //!<! sparse with imp par residual cuts for MC
   TList	   *fDetSignal;		//!<!Detector signal histograms (on output slot 8)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,20); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,22); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 

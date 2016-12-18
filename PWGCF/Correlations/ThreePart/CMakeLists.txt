@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   AliAnalysisTaskBuildCorrTree.cxx
   AliAnalysisTaskCorrelation3p.cxx
+  AliAnalysisTaskCorrelation3p_lightefficiency.cxx
   AliCFPI0.cxx
   AliCorrelation3p.cxx
   AliCorrelation3p_noQA.cxx

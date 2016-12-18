@@ -31,46 +31,55 @@ using namespace std;
 #include <TArrayD.h>
 #include <TClass.h>
 
+#include "AliReducedVarManager.h"
+
 ClassImp(AliHistogramManager)
 
 
 //_______________________________________________________________________________
 AliHistogramManager::AliHistogramManager() :
-  fMainList(0x0),
+  fMainList(),
   fName("histos"),
   fMainDirectory(0x0),
   fHistFile(0x0),
+  fOutputList(),
   fUseDefaultVariableNames(kFALSE),
-  fUsedVars(0x0),
+  fUsedVars(),
   fBinsAllocated(0),
-  fVariableNames(0x0),
-  fVariableUnits(0x0),
+  fVariableNames(),
+  fVariableUnits(),
   fNVars(0)
 {
   //
   // Constructor
   //
+   fMainList.SetOwner(kTRUE);
+   fMainList.SetName("HistogramList");
+   fOutputList.SetName(fName);
 }
 
 //_______________________________________________________________________________
 AliHistogramManager::AliHistogramManager(const Char_t* name, Int_t nvars) :
-  fMainList(0x0),
+  fMainList(),
   fName(name),
   fMainDirectory(0x0),
   fHistFile(0x0),
+  fOutputList(),
   fUseDefaultVariableNames(kFALSE),
-  fUsedVars(0x0),
+  fUsedVars(),
   fBinsAllocated(0),
-  fVariableNames(0x0),
-  fVariableUnits(0x0),
+  fVariableNames(),
+  fVariableUnits(),
   fNVars(nvars)
 {
   //
   // Constructor
   //
-  fUsedVars = new Bool_t[nvars];
-  fOutputList = new THashList();
-  fOutputList->SetName(fName);
+//  fUsedVars = new Bool_t[nvars];
+  fMainList.SetOwner(kTRUE);
+  fMainList.SetName("HistogramList");
+  //fOutputList = new THashList();
+  fOutputList.SetName(fName);
   //fVariableNames = new TString[nvars];
   //fVariableUnits = new TString[nvars];
 }
@@ -81,25 +90,38 @@ AliHistogramManager::~AliHistogramManager()
   //
   // De-constructor
   //
-  if(fUsedVars) delete fUsedVars;
-  if(fMainList) {delete fMainList; fMainList=0x0;}
+  //if(fUsedVars) delete fUsedVars;
+  //if(fMainList) {delete fMainList; fMainList=0x0;}
   if(fMainDirectory) {delete fMainDirectory; fMainDirectory=0x0;}
   if(fHistFile) {delete fHistFile; fHistFile=0x0;}
-  if(fOutputList) {delete fOutputList; fOutputList=0x0;}
+  //if(fOutputList) {delete fOutputList; fOutputList=0x0;}
 }
+
+//_______________________________________________________________________________
+void AliHistogramManager::SetDefaultVarNames(TString* vars, TString* units) 
+{
+   //
+   // Set default variable names
+   //
+   for(Int_t i=0;i<AliReducedVarManager::kNVars;++i) {
+     fVariableNames[i] = vars[i]; 
+     fVariableUnits[i] = units[i];
+   }
+};
+
 
 //__________________________________________________________________
 void AliHistogramManager::AddHistClass(const Char_t* histClass) {
   //
   // Add a new histogram list
   //
-  if(!fMainList) {
+  /*if(!fMainList) {
     fMainList = new TObjArray();
     fMainList->SetOwner();
     fMainList->SetName(fName.Data());
-  }
+  }*/
   
-  if(fMainList->FindObject(histClass)) {
+  if(fMainList.FindObject(histClass)) {
     cout << "Warning in AliHistogramManager::AddHistClass: Cannot add histogram class " << histClass
          << " because it already exists." << endl;
     return;
@@ -107,7 +129,7 @@ void AliHistogramManager::AddHistClass(const Char_t* histClass) {
   THashList* hList=new THashList;
   hList->SetOwner(kTRUE);
   hList->SetName(histClass);
-  fMainList->Add(hList);
+  fMainList.Add(hList);
 }
 
 //_________________________________________________________________
@@ -121,7 +143,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   //
   // add a histogram
   //
-  THashList* hList = (THashList*)fMainList->FindObject(histClass);
+  THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
     cout << "Warning in AliHistogramManager::AddHistogram(): Histogram list " << histClass << " not found!" << endl;
     cout << "         Histogram not created" << endl;
@@ -134,13 +156,13 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   TString hname = name;
   
   Int_t dimension = 1;
-  if(varY>=0) dimension = 2;
-  if(varZ>=0) dimension = 3;
+  if(varY>AliReducedVarManager::kNothing) dimension = 2;
+  if(varZ>AliReducedVarManager::kNothing) dimension = 3;
   
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
-  if(varT>=0) fUsedVars[varT] = kTRUE;
-  if(varW>=0) fUsedVars[varW] = kTRUE;
+  if(varT>AliReducedVarManager::kNothing) fUsedVars[varT] = kTRUE;
+  if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
   TH1* h=0x0;
   switch(dimension) {
@@ -151,9 +173,9 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       h->SetUniqueID(0);
       if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+				     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
       fUsedVars[varX] = kTRUE;
@@ -165,28 +187,28 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
 	h=new TProfile(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax);
         fBinsAllocated+=nXbins+2;
         h->SetUniqueID(1);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+1);
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
       }
       else {
 	h=new TH2F(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax);
         fBinsAllocated+=(nXbins+2)*(nYbins+2);
         h->Sumw2();
         h->SetUniqueID(0);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0); 
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits[varX] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+				     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varY][0]) 
 	h->GetYaxis()->SetTitle(Form("%s %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
-      if(fVariableNames && isProfile) 
+				     (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+      if(fVariableNames[varY][0] && isProfile) 
 	h->GetYaxis()->SetTitle(Form("<%s> %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));	
+				     (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));	
       if(arr->At(2)) h->GetYaxis()->SetTitle(arr->At(2)->GetName());
       if(yLabels[0]!='\0') MakeAxisLabels(h->GetYaxis(), yLabels);
       fUsedVars[varX] = kTRUE;
@@ -196,17 +218,17 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       break;
     case 3:
       if(isProfile) {
-        if(varT>=0) {
+        if(varT>AliReducedVarManager::kNothing) {
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax,nZbins,zmin,zmax);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
-          if(varW>=0) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
+          if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
         else {
 	  h=new TProfile2D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax);
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
           h->SetUniqueID(1);
-          if(varW>=0) h->SetUniqueID(100*(varW+1)+1); 
+          if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
         }
       }
       else {
@@ -214,27 +236,27 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
         h->Sumw2();
         h->SetUniqueID(0);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0); 
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
       h->GetZaxis()->SetUniqueID(UInt_t(varZ));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+				     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varY][0]) 
 	h->GetYaxis()->SetTitle(Form("%s %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+                                     (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
       if(arr->At(2)) h->GetYaxis()->SetTitle(arr->At(2)->GetName());
       if(yLabels[0]!='\0') MakeAxisLabels(h->GetYaxis(), yLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varZ][0]) 
 	h->GetZaxis()->SetTitle(Form("%s %s", fVariableNames[varZ].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
-      if(fVariableNames && isProfile && varT<0)  // for TProfile2D 
+                                     (fVariableUnits[varZ][0] ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
+      if(fVariableNames[varZ][0] && isProfile && varT<0)  // for TProfile2D 
 	h->GetZaxis()->SetTitle(Form("<%s> %s", fVariableNames[varZ].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));	
+                                     (fVariableUnits[varZ][0] ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));	
       if(arr->At(3)) h->GetZaxis()->SetTitle(arr->At(3)->GetName());
       if(zLabels[0]!='\0') MakeAxisLabels(h->GetZaxis(), zLabels);
       fUsedVars[varX] = kTRUE;
@@ -257,7 +279,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   //
   // add a histogram
   //
-  THashList* hList = (THashList*)fMainList->FindObject(histClass);
+  THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
     cout << "Warning in AliHistogramManager::AddHistogram(): Histogram list " << histClass << " not found!" << endl;
     cout << "         Histogram not created" << endl;
@@ -270,11 +292,11 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   TString hname = name;
   
   Int_t dimension = 1;
-  if(varY>=0) dimension = 2;
-  if(varZ>=0) dimension = 3;
+  if(varY>AliReducedVarManager::kNothing) dimension = 2;
+  if(varZ>AliReducedVarManager::kNothing) dimension = 3;
   
-  if(varT>=0) fUsedVars[varT] = kTRUE;
-  if(varW>=0) fUsedVars[varW] = kTRUE;
+  if(varT>AliReducedVarManager::kNothing) fUsedVars[varT] = kTRUE;
+  if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
@@ -286,11 +308,11 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       fBinsAllocated+=nXbins+2;
       h->Sumw2();
       h->SetUniqueID(0);
-      if(varW>=0) h->SetUniqueID(100*(varW+1)+0); 
+      if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0); 
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+                                     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
       fUsedVars[varX] = kTRUE;
@@ -302,28 +324,29 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
 	h=new TProfile(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins);
         fBinsAllocated+=nXbins+2;
         h->SetUniqueID(1);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+1); 
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
       }
       else {
 	h=new TH2F(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins);
         fBinsAllocated+=(nXbins+2)*(nYbins+2);
         h->Sumw2();
         h->SetUniqueID(0);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+0);
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0);
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
-      if(fVariableNames) 
-	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+      if(fVariableNames[varX][0]) 
+	h->GetXaxis()->SetTitle(Form("%s (%s)", fVariableNames[varX].Data(), 
+                                     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
-      if(fVariableNames) 
-	h->GetYaxis()->SetTitle(Form("%s %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
-      if(fVariableNames && isProfile) 
-	h->GetYaxis()->SetTitle(Form("<%s> %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+      if(fVariableNames[varY][0]) 
+         h->GetYaxis()->SetTitle(Form("%s (%s)", fVariableNames[varY].Data(), 
+                                      (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+      if(fVariableNames[varY][0] && isProfile) 
+         h->GetYaxis()->SetTitle(Form("<%s> (%s)", fVariableNames[varY].Data(), 
+                                      (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+
       if(arr->At(2)) h->GetYaxis()->SetTitle(arr->At(2)->GetName());
       if(yLabels[0]!='\0') MakeAxisLabels(h->GetYaxis(), yLabels);
       fUsedVars[varX] = kTRUE;
@@ -333,17 +356,17 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       break;
     case 3:
       if(isProfile) {
-        if(varT>=0) {
+         if(varT>AliReducedVarManager::kNothing) {
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins,nZbins,zbins);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
-          if(varW>=0) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
+          if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
         else {
 	  h=new TProfile2D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins);
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
           h->SetUniqueID(1);
-          if(varW>=0) h->SetUniqueID(100*(varW+1)+1);
+          if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
         }
       }
       else {
@@ -351,27 +374,27 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
         h->Sumw2();
         h->SetUniqueID(0);
-        if(varW>=0) h->SetUniqueID(100*(varW+1)+0);
+        if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+0);
       }
       h->GetXaxis()->SetUniqueID(UInt_t(varX));
       h->GetYaxis()->SetUniqueID(UInt_t(varY));
       h->GetZaxis()->SetUniqueID(UInt_t(varZ));
-      if(fVariableNames) 
+      if(fVariableNames[varX][0]) 
 	h->GetXaxis()->SetTitle(Form("%s %s", fVariableNames[varX].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
+                                     (fVariableUnits[varX][0] ? Form("(%s)", fVariableUnits[varX].Data()) : "")));
       if(arr->At(1)) h->GetXaxis()->SetTitle(arr->At(1)->GetName());
       if(xLabels[0]!='\0') MakeAxisLabels(h->GetXaxis(), xLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varY][0]) 
 	h->GetYaxis()->SetTitle(Form("%s %s", fVariableNames[varY].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
+                                     (fVariableUnits[varY][0] ? Form("(%s)", fVariableUnits[varY].Data()) : "")));
       if(arr->At(2)) h->GetYaxis()->SetTitle(arr->At(2)->GetName());
       if(yLabels[0]!='\0') MakeAxisLabels(h->GetYaxis(), yLabels);
-      if(fVariableNames) 
+      if(fVariableNames[varZ][0]) 
 	h->GetZaxis()->SetTitle(Form("%s %s", fVariableNames[varZ].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
-      if(fVariableNames && isProfile && varT<0)  // TProfile2D 
+                                     (fVariableUnits[varZ][0] ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
+      if(fVariableNames[varZ][0] && isProfile && varT<0)  // TProfile2D 
 	h->GetZaxis()->SetTitle(Form("<%s> %s", fVariableNames[varZ].Data(), 
-				     (fVariableUnits ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
+                                     (fVariableUnits[varZ][0] ? Form("(%s)", fVariableUnits[varZ].Data()) : "")));
 				     
       if(arr->At(3)) h->GetZaxis()->SetTitle(arr->At(3)->GetName());
       if(zLabels[0]!='\0') MakeAxisLabels(h->GetZaxis(), zLabels);
@@ -394,7 +417,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   //
   // add a multi-dimensional histogram THnF
   //
-  THashList* hList = (THashList*)fMainList->FindObject(histClass);
+  THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
     cout << "Warning in AliHistogramManager::AddHistogram(): Histogram list " << histClass << " not found!" << endl;
     cout << "         Histogram not created" << endl;
@@ -409,20 +432,20 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
   
-  if(varW>=0) fUsedVars[varW] = kTRUE;
+  if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
   THnF* h=new THnF(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nDimensions,nBins,xmin,xmax);
   h->Sumw2();
-  if(varW>=0) h->SetUniqueID(10+nDimensions+100*(varW+1));
+  if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(10+nDimensions+100*(varW+1));
   else h->SetUniqueID(10+nDimensions);
   ULong_t bins = 1;
   for(Int_t idim=0;idim<nDimensions;++idim) {
     bins*=(nBins[idim]+2);
     TAxis* axis = h->GetAxis(idim);
     axis->SetUniqueID(vars[idim]);
-    if(fVariableNames) 
+    if(fVariableNames[vars[idim]][0]) 
       axis->SetTitle(Form("%s %s", fVariableNames[vars[idim]].Data(), 
-	                  (fVariableUnits ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
+                          (fVariableUnits[vars[idim]][0] ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
     if(arr->At(1+idim)) axis->SetTitle(arr->At(1+idim)->GetName());
     if(axLabels && !axLabels[idim].IsNull()) 
       MakeAxisLabels(axis, axLabels[idim].Data());
@@ -443,7 +466,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   //
   // add a multi-dimensional histogram THnF with equal or variable bin widths
   //
-  THashList* hList = (THashList*)fMainList->FindObject(histClass);
+  THashList* hList = (THashList*)fMainList.FindObject(histClass);
   if(!hList) {
     cout << "Warning in AliHistogramManager::AddHistogram(): Histogram list " << histClass << " not found!" << endl;
     cout << "         Histogram not created" << endl;
@@ -458,7 +481,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   TString titleStr(title);
   TObjArray* arr=titleStr.Tokenize(";");
   
-  if(varW>=0) fUsedVars[varW] = kTRUE;
+  if(varW>AliReducedVarManager::kNothing) fUsedVars[varW] = kTRUE;
   
   Double_t* xmin = new Double_t[nDimensions];
   Double_t* xmax = new Double_t[nDimensions];
@@ -476,16 +499,16 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
   }
   
   h->Sumw2();
-  if(varW>=0) h->SetUniqueID(10+nDimensions+100*(varW+1));
+  if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(10+nDimensions+100*(varW+1));
   else h->SetUniqueID(10+nDimensions);
   ULong_t bins = 1;
   for(Int_t idim=0;idim<nDimensions;++idim) {
     bins*=(nBins[idim]+2);
     TAxis* axis = h->GetAxis(idim);
     axis->SetUniqueID(vars[idim]);
-    if(fVariableNames) 
+    if(fVariableNames[vars[idim]][0]) 
       axis->SetTitle(Form("%s %s", fVariableNames[vars[idim]].Data(), 
-	                  (fVariableUnits ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
+                          (fVariableUnits[vars[idim]][0] ? Form("(%s)", fVariableUnits[vars[idim]].Data()) : "")));
     if(arr->At(1+idim)) axis->SetTitle(arr->At(1+idim)->GetName());
     if(axLabels && !axLabels[idim].IsNull()) 
       MakeAxisLabels(axis, axLabels[idim].Data());
@@ -580,7 +603,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
   //
   //  fill a class of histograms
   //
-  THashList* hList = (THashList*)fMainList->FindObject(className);
+  THashList* hList = (THashList*)fMainList.FindObject(className);
   if(!hList) {
     cout << "Warning in AliHistogramManager::FillHistClass(): Histogram list " << className << " not found!" << endl;
     cout << "         Histogram list not filled" << endl;
@@ -616,7 +639,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
     varW = -1;
     if(uid>0) {
       varW = uid%(fNVars+1)-1;
-      if(varW==0) varW=-1;
+      if(varW==0) varW=AliReducedVarManager::kNothing;
       uid = (uid-(uid%(fNVars+1)))/(fNVars+1);
       if(uid>0) varT = uid - 1;
       //cout << "Filling " << h->GetName() << " with varT " << varT << endl;
@@ -630,7 +653,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
             if(isProfile) {
               varY = ((TH1*)h)->GetYaxis()->GetUniqueID();
               if(!fUsedVars[varY]) break;
-              if(varW>=0) { 
+              if(varW>AliReducedVarManager::kNothing) { 
                 if(!fUsedVars[varW]) break;
                 ((TProfile*)h)->Fill(values[varX],values[varY],values[varW]);
               }
@@ -638,7 +661,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
                 ((TProfile*)h)->Fill(values[varX],values[varY]);
             }
             else {
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TH1F*)h)->Fill(values[varX],values[varW]);
               }
@@ -652,7 +675,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
             if(isProfile) {
               varZ = ((TH1*)h)->GetZaxis()->GetUniqueID();
               if(!fUsedVars[varZ]) break;
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TProfile2D*)h)->Fill(values[varX],values[varY],values[varZ],values[varW]);
               }
@@ -660,7 +683,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
                 ((TProfile2D*)h)->Fill(values[varX],values[varY],values[varZ]);        
             }
             else {
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TH2F*)h)->Fill(values[varX],values[varY], values[varW]);
               }
@@ -675,7 +698,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
             if(!fUsedVars[varZ]) break;
             if(isProfile) {
               if(!fUsedVars[varT]) break;
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TProfile3D*)h)->Fill(values[varX],values[varY],values[varZ],values[varT],values[varW]);
               }
@@ -683,7 +706,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
                 ((TProfile3D*)h)->Fill(values[varX],values[varY],values[varZ],values[varT]);
             }
             else {
-              if(varW>=0) {
+              if(varW>AliReducedVarManager::kNothing) {
                 if(!fUsedVars[varW]) break;
                 ((TH3F*)h)->Fill(values[varX],values[varY],values[varZ],values[varW]);
               }
@@ -702,7 +725,7 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
         fillValues[idim] = values[((THnF*)h)->GetAxis(idim)->GetUniqueID()];
       }
       if(allVarsGood) {
-        if(varW>=0) {
+        if(varW>AliReducedVarManager::kNothing) {
           if(fUsedVars[varW])
             ((THnF*)h)->Fill(fillValues,values[varW]);
         }
@@ -719,10 +742,10 @@ void AliHistogramManager::WriteOutput(TFile* save) {
   // Write the histogram lists in the output file
   //
   cout << "Writing the output to " << save->GetName() << " ... " << flush;
-  TDirectory* mainDir = save->mkdir(fMainList->GetName());
+  TDirectory* mainDir = save->mkdir(fMainList.GetName());
   mainDir->cd();
-  for(Int_t i=0; i<fMainList->GetEntries(); ++i) {
-    THashList* list = (THashList*)fMainList->At(i);
+  for(Int_t i=0; i<fMainList.GetEntries(); ++i) {
+    THashList* list = (THashList*)fMainList.At(i);
     TDirectory* dir = mainDir->mkdir(list->GetName());
     dir->cd();
     list->Write();
@@ -738,20 +761,20 @@ THashList* AliHistogramManager::AddHistogramsToOutputList() {
   //
   // Write the histogram lists in a list
   //
-  for(Int_t i=0; i<fMainList->GetEntries(); ++i) {
+  for(Int_t i=0; i<fMainList.GetEntries(); ++i) {
     //THashList* hlist = new THashList();
-    THashList* list = (THashList*)fMainList->At(i);
+    THashList* list = (THashList*)fMainList.At(i);
     //hlist->SetName(list->GetName());
     //hlist->Add(list);
     //hlist->SetOwner(kTRUE);
-    fOutputList->Add(list);
+    fOutputList.Add(list);
   }
-  fOutputList->SetOwner(kTRUE);
-  return fOutputList;
+  fOutputList.SetOwner(kTRUE);
+  return &fOutputList;
 }
 
 //____________________________________________________________________________________
-void AliHistogramManager::InitFile(const Char_t* filename) {
+void AliHistogramManager::InitFile(const Char_t* filename, const Char_t* mainListName /*=""*/) {
   //
   // Open an existing ROOT file containing lists of histograms and initialize the global list pointer
   //
@@ -769,8 +792,10 @@ void AliHistogramManager::InitFile(const Char_t* filename) {
       return;
     }
     TList* list1 = fHistFile->GetListOfKeys();
-    TKey* key1 = (TKey*)list1->At(0);
-    fMainDirectory = (TDirectoryFile*)key1->ReadObj();
+    TKey* key1 = 0x0; 
+    if(mainListName[0]) key1 = (TKey*)list1->FindObject(mainListName);
+    else key1 = (TKey*)list1->At(0);
+    fMainDirectory = (THashList*)key1->ReadObj();
   }
 }
 
@@ -784,23 +809,30 @@ void AliHistogramManager::CloseFile() {
 }
 
 //____________________________________________________________________________________
-TList* AliHistogramManager::GetHistogramList(const Char_t* listname) const {
+THashList* AliHistogramManager::GetHistogramList(const Char_t* listname) const {
   //
   // Retrieve a histogram list
   //
-  if(!fMainDirectory && !fMainList) {
+  //if(!fMainDirectory && !fMainList) {
+   if(!fMainDirectory && fMainList.GetEntries()==0) {
     cout << "AliHistogramManager::GetHistogramList() : " << endl;
     cout << "                   A ROOT file must be opened first with InitFile() or the main " << endl;
     cout << "                     list must be initialized by creating at least one histogram list !!" << endl;
     return 0x0;
   }
-  if(fMainList) {
-    THashList* hList = (THashList*)fMainList->FindObject(listname);
+  //if(fMainList) {
+  if(fMainList.GetEntries()>0) {
+     cout << "fMainList entries :: " << fMainList.GetEntries() << endl;
+    THashList* hList = (THashList*)fMainList.FindObject(listname);
+    cout << "hList" << hList << endl;
     return hList;
   }
-  TKey* listKey = fMainDirectory->FindKey(listname);
-  TDirectoryFile* hdir = (TDirectoryFile*)listKey->ReadObj();
-  return hdir->GetListOfKeys();
+  THashList* listHist = (THashList*)fMainDirectory->FindObject(listname);
+  cout << "fMainDirectory " << fMainDirectory << endl;
+  cout << "listHist " << listHist << endl;
+  //TDirectoryFile* hdir = (TDirectoryFile*)listKey->ReadObj();
+  //return hdir->GetListOfKeys();
+  return listHist;
 }
 
 //____________________________________________________________________________________
@@ -808,24 +840,27 @@ TObject* AliHistogramManager::GetHistogram(const Char_t* listname, const Char_t*
   //
   // Retrieve a histogram from the list hlist
   //
-  if(!fMainDirectory && !fMainList) {
+  //if(!fMainDirectory && !fMainList) {
+   if(!fMainDirectory && fMainList.GetEntries()==0) {
     cout << "AliHistogramManager::GetHistogramList() : " << endl;
     cout << "                   A ROOT file must be opened first with InitFile() or the main " << endl;
     cout << "                     list must be initialized by creating at least one histogram list !!" << endl;
     return 0x0;
   }
-  if(fMainList) {
-    THashList* hList = (THashList*)fMainList->FindObject(listname);
+  //if(fMainList) {
+  /*if(fMainList.GetEntries()==0) {
+    THashList* hList = (THashList*)fMainList.FindObject(listname);
     if(!hList) {
       cout << "Warning in AliHistogramManager::GetHistogram(): Histogram list " << listname << " not found!" << endl;
       return 0x0;
     }
     return hList->FindObject(hname);
-  }
-  TKey* listKey = fMainDirectory->FindKey(listname);
-  TDirectoryFile* hlist = (TDirectoryFile*)listKey->ReadObj();
-  TKey* key = hlist->FindKey(hname);
-  return key->ReadObj();
+  }*/
+  THashList* hList = (THashList*)fMainDirectory->FindObject(listname);
+  //TDirectoryFile* hlist = (TDirectoryFile*)listKey->ReadObj();
+  //TKey* key = hlist->FindKey(hname);
+  //return key->ReadObj();
+  return hList->FindObject(hname);
 }
 
 //____________________________________________________________________________________
@@ -848,8 +883,8 @@ void AliHistogramManager::Print(Option_t*) const {
   //
   cout << "###################################################################" << endl;
   cout << "AliHistogramManager:: " << fName.Data() << endl;
-  for(Int_t i=0; i<fMainList->GetEntries(); ++i) {
-    THashList* list = (THashList*)fMainList->At(i);
+  for(Int_t i=0; i<fMainList.GetEntries(); ++i) {
+    THashList* list = (THashList*)fMainList.At(i);
     cout << "************** List " << list->GetName() << endl;
     for(Int_t j=0; j<list->GetEntries(); ++j) {
       TObject* obj = list->At(j);

@@ -36,26 +36,6 @@ class TAxis;
 class TProfile;
 
 /** 
- * @defgroup pwglf_forward PWGLF Forward analysis
- *
- * Code to do the multiplicity analysis in the forward psuedo-rapidity
- * regions
- *
- */
-/** 
- * @defgroup pwglf_forward_tasks Tasks
- *
- * Code to do the multiplicity analysis in the forward psuedo-rapidity
- * regions
- *
- * @ingroup pwglf_forward 
- */
-/** 
- * @defgroup pwglf_forward_topical Topical
- *
- * The code divided according to topic
- */
-/** 
  * @defgroup pwglf_forward_aod AOD
  * 
  * Code to do with AOD production 

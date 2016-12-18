@@ -220,8 +220,8 @@ AliForwardMultDists::PreData()
   const TH2D&        hist    = forward->GetHistogram();
   Bool_t             useMC   = GetPrimary(*aod) != 0;
 
-  fSums->Add(AliForwardUtil::MakeParameter("minIpZ", fMinIpZ));
-  fSums->Add(AliForwardUtil::MakeParameter("maxIpZ", fMaxIpZ));
+  fSums->Add(AliForwardUtil::MakeParameter("minIpZ", fIPzAxis.GetXmin()));
+  fSums->Add(AliForwardUtil::MakeParameter("maxIpZ", fIPzAxis.GetXmax()));
 
   const TAxis* xaxis = hist.GetXaxis();
   if (!xaxis->GetXbins() || xaxis->GetXbins()->GetSize() <= 0) {
@@ -316,7 +316,7 @@ AliForwardMultDists::Event(AliAODEvent& aod)
 
   Double_t vz    = forward->GetIpZ();
   Bool_t   trg   = forward->IsTriggerBits(fTriggerMask);
-  Bool_t   vtx   = (vz <= fMaxIpZ && vz >= fMinIpZ);
+  Bool_t   vtx   = (vz <= fIPzAxis.GetXmax() && vz >= fIPzAxis.GetXmin());
   Bool_t   ok    = true;  // Should bins process this event?
   Bool_t   mcTrg = false;
   Bool_t   mcVtx = false;
@@ -332,7 +332,7 @@ AliForwardMultDists::Event(AliAODEvent& aod)
       mcTrg = true;
     Double_t mcVz = primary->GetBinContent(0,0);
     fMCVertex->Fill(mcVz);
-    if (mcVz > fMaxIpZ || mcVz < fMinIpZ) 
+    if (mcVz > fIPzAxis.GetXmax() || mcVz < fIPzAxis.GetXmin()) 
       // Bail out if this event was not in the valid range 
       ok = false;
     else 

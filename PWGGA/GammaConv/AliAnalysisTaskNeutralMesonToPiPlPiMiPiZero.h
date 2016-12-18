@@ -78,6 +78,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		void ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionMother *TrueNeutralPionCandidate, AliAODConversionPhoton *TrueVirtualGammaCandidate);
 		void MoveParticleAccordingToVertex(AliAODConversionMother* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
 
+		void FixPzToMatchPDGInvMassPi0(AliAODConversionMother* particle);
+
 		// routines for neutral pion candidates from pure conversion
 		void ProcessNeutralPionCandidatesPureConversions();	
 		void ProcessTrueNeutralPionCandidatesPureConversions(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
@@ -117,8 +119,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliStack 						*fMCStack;									// current MC stack
 		TList 							**fCutFolder;								// list of output folders with main cut name 
 		TList 							**fESDList;									// list with main output histograms for data
-		TList 							**fBackList;								// list with THnSparseF for BG 
-		TList 							**fMotherList;								// list with THnSparseF for FG 
+//		TList 							**fBackList;								// list with THnSparseF for BG
+//		TList 							**fMotherList;								// list with THnSparseF for FG
 		TList 							**fTrueList;								// list with validated reconstructed MC histograms
 		TList 							**fMCList;									// list with pure MC histograms
 		TList 							*fOutputContainer;							// output container
@@ -169,6 +171,19 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		TH2F 							**fHistoMotherSameDiff1SameBackInvMassPt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}
 //		THnSparseF				 		**fTHnSparseMotherBackInvMassPtZM;			// array of THnSparseF of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, Z, M
 
+        TH2F							**fHistoMotherInvMassSubPi0;							// invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
+        TH2F 							**fHistoMotherSameDiff1Diff2BackInvMassSubPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1Diff1BackInvMassSubPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameSameDiff2BackInvMassSubPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+		TH2F 							**fHistoMotherSameDiff1SameBackInvMassSubPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass-invMass(pi0), pT_{pi+pi-pi0}
+
+		TH2F							**fHistoMotherInvMassFixedPzPi0;								// invariant mass of (pi+,pi-,pi0) - invariant mass of pi0
+		TH2F 							**fHistoMotherSameDiff1Diff2BackInvMassFixedPzPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value
+		TH2F 							**fHistoMotherSameDiff1Diff1BackInvMassFixedPzPi0Pt;	// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value
+		TH2F 							**fHistoMotherSameSameDiff2BackInvMassFixedPzPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value
+		TH2F 							**fHistoMotherSameDiff1SameBackInvMassFixedPzPi0Pt;		// array of histos of pi+pi-pi0 mixed event, invMass, pT_{pi+pi-pi0}, the Pz of the pi0 was fixed such that its invMass matches the PDG value
+
+
         // angle distributions
         TH2F 							**fHistoAngleOmegaPiPlPiMi;                 // angle between combined Pi+ and Pi- and omega
         TH2F 							**fHistoAngleOmegaPiZero;                   // angle between Pi0 and omega
@@ -178,6 +193,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
         TH2F 							**fHistoAnglePiZeroPiMi;                    // angle between Pi0 and Pi-
         TH2F 							**fHistoAnglePiPlPiZero;                    // angle between Pi+ and Pi0
         TH2F 							**fHistoAngleSum;                           // angle between omega and Pi0 + angle between Pi+ and Pi- + angle between Pi0 and Pi-
+        TH2F                            **fHistoTrueAngleSum;
+
         // pure MC properties
 		TH1F 							**fHistoMCAllGammaPt;						// array of histos of all produced gammas in the specified y range
 		TH1F 							**fHistoMCConvGammaPt;						// array of histos of all converted gammas in the specified y range 
@@ -240,7 +257,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 		AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero& ); // Not implemented
 
-        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 8);
+        ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero, 12);
 };
 
 #endif // ALIANALYSISTASKNEUTRALMESONTOPIPLPIMIPIZERO_H

@@ -83,8 +83,10 @@ class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
 //Setters for dE/dx selection
   void SetTPCdEdxSelection ( Double_t lParameter ) { fdEdxCut = lParameter; }
-//---------------------------------------------------------------------------------------  
-
+//---------------------------------------------------------------------------------------
+  void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
+//---------------------------------------------------------------------------------------
+    
  private:
 				// Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
 				// your data member object is created on the worker nodes and streaming is not needed.
@@ -136,6 +138,8 @@ class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {
   TH2D *f2dHistdEdxSignalProtonFromLambda; //! 
   TH2D *f2dHistResponsePionFromLambda;     //! 
   TH2D *f2dHistResponseProtonFromLambda;   //!
+    
+    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
 
   AliPIDResponse *fPIDResponse;     // PID response object
 

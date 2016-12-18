@@ -375,7 +375,7 @@ Bool_t AliForwardUtil::CheckForTask(const char* clsOrName, Bool_t cls)
 }
 
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, UShort_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, UShort_t value)
 {
   TParameter<int>* ret = new TParameter<int>(name, value);
   ret->SetMergeMode('f');
@@ -383,7 +383,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, UShort_t value)
   return ret;
 }
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, Int_t value)
 {
   TParameter<int>* ret = new TParameter<int>(name, value);
   ret->SetMergeMode('f');
@@ -391,7 +391,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Int_t value)
   return ret;
 }
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, ULong_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, ULong_t value)
 {
   TParameter<Long_t>* ret = new TParameter<Long_t>(name, value);
   ret->SetMergeMode('f');
@@ -399,7 +399,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, ULong_t value)
   return ret;
 }
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, Double_t value)
 {
   TParameter<double>* ret = new TParameter<double>(name, value);
   // Float_t v = value;
@@ -409,7 +409,7 @@ TObject* AliForwardUtil::MakeParameter(const Char_t* name, Double_t value)
   return ret;
 }
 //_____________________________________________________________________
-TObject* AliForwardUtil::MakeParameter(const Char_t* name, Bool_t value)
+TObject* AliForwardUtil::MakeParameter(const char* name, Bool_t value)
 {
   TParameter<bool>* ret = new TParameter<bool>(name, value);
   ret->SetMergeMode('f');
@@ -862,15 +862,19 @@ Float_t AliForwardUtil::GetCentralityCompat(const AliESDEvent& event,
 		"No centrality object found in ESD");
     return -1;
   }
-  Float_t cent = centObj->GetCentralityPercentile(method);  
+  Float_t cent = centObj->GetCentralityPercentileUnchecked(method);  
   qual         = centObj->GetQuality();
   if (verbose)
     ::Info("AliForwardUtil::GetCentralityCompat<ESD>",
 	   "Got centrality %5.1f%% (%d)", cent, qual);  
-  if (qual & 0x1) qual = AliMultSelectionCuts::kRejVzCut;
-  if (qual & 0x2) qual = AliMultSelectionCuts::kRejTrackletsVsClusters;
-  if (qual & 0x4) qual = AliMultSelectionCuts::kRejConsistencySPDandTrackVertices;
-  if (qual & 0x8) qual = AliMultSelectionCuts::kRejTrackletsVsClusters;
+  if (qual & 0x1)
+    qual = AliMultSelectionCuts::kRejVzCut;
+  if (qual & 0x2)
+    qual = AliMultSelectionCuts::kRejTrackletsVsClusters;
+  if (qual & 0x4)
+    qual = AliMultSelectionCuts::kRejConsistencySPDandTrackVertices;
+  if (qual & 0x8)
+    qual = AliMultSelectionCuts::kRejTrackletsVsClusters;
   return cent;
 }
 //____________________________________________________________________
@@ -1155,8 +1159,17 @@ AliForwardUtil::DebugGuard::Output(int in, TString& msg)
   if      (in > 0) gROOT->IncreaseDirLevel();
   else if (in < 0) gROOT->DecreaseDirLevel();
 }
-
-
+//====================================================================
+AliForwardUtil::SuppressGuard::SuppressGuard(Int_t lvl)
+  : save(gErrorIgnoreLevel)
+{
+  gErrorIgnoreLevel = lvl;
+}
+//____________________________________________________________________
+AliForwardUtil::SuppressGuard::~SuppressGuard()
+{
+  gErrorIgnoreLevel = save;
+}
 
 //
 // EOF

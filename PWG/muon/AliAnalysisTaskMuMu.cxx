@@ -139,7 +139,7 @@ void AliAnalysisTaskMuMu::AdoptSubAnalysis(AliAnalysisMuMuBase* analysis)
 //_____________________________________________________________________________
 AliAnalysisMuMuCutRegistry* AliAnalysisTaskMuMu::CutRegistry() const
 {
-    /// Return (and create if not yet there) our cut registry
+  /// Return (and create if not yet there) our cut registry
   if (!fCutRegistry)
   {
     fCutRegistry = new AliAnalysisMuMuCutRegistry;
@@ -206,6 +206,7 @@ void AliAnalysisTaskMuMu::SetCountInBins( const char* binWhat, const char* binQu
 //_____________________________________________________________________________
 float AliAnalysisTaskMuMu::CentralityFromCentrality(const char* estimator) const
 {
+  /// Estimate Centrality from new centrality framework
   AliCentrality* centrality = Event()->GetCentrality();
   if ( centrality )
   {
@@ -221,6 +222,7 @@ float AliAnalysisTaskMuMu::CentralityFromCentrality(const char* estimator) const
 //_____________________________________________________________________________
 float AliAnalysisTaskMuMu::CentralityFromMultSelection(const char* estimator) const
 {
+  /// Estimate Centrality from old centrality framework
   AliMultSelection* multSelection = static_cast<AliMultSelection*>(Event()->FindListObject("MultSelection"));
   if ( multSelection )
   {
@@ -236,7 +238,7 @@ float AliAnalysisTaskMuMu::CentralityFromMultSelection(const char* estimator) co
 //_____________________________________________________________________________
 void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerClassName)
 {
-  // Fill one set of histograms (only called for events which pass the eventSelection cut)
+  /// Fill one set of histograms (only called for events which pass the eventSelection cut)
   
   TString seventSelection(eventSelection);
   seventSelection.ToLower();
@@ -248,44 +250,29 @@ void AliAnalysisTaskMuMu::Fill(const char* eventSelection, const char* triggerCl
   TIter next(centralities);
   AliAnalysisMuMuBinning::Range* r;
   
-  while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
-  {
+  while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) ){
     
     TString estimator = r->Quantity();
-
     Float_t fcent = -42.0;
     Bool_t isPP(kFALSE);
 
-    if ( estimator.CompareTo("pp",TString::kIgnoreCase) == 0 )
-    {
-      isPP = kTRUE;
-    }
-    else
-    {
-      if  (fLegacyCentrality)
-      {
-        fcent = CentralityFromCentrality(estimator.Data());
-      }
-      else
-      {
-        fcent = CentralityFromMultSelection(estimator.Data());
-      }
+    // select centrality
+    if ( estimator.CompareTo("pp",TString::kIgnoreCase) == 0 )isPP = kTRUE;
+    else{
+      if  (fLegacyCentrality)fcent = CentralityFromCentrality(estimator.Data());
+      else fcent                   = CentralityFromMultSelection(estimator.Data());
     }
     
-    if ( isPP || r->IsInRange(fcent) )
-    {
+    // Fill histo 
+    if ( isPP || r->IsInRange(fcent) ){
       FillHistos(eventSelection,triggerClassName,r->AsString());
       
       // FIXME: this filling of global centrality histo is misplaced somehow...
       TH1* hcent = fHistogramCollection->Histo(Form("/%s/%s/V0M/Centrality",eventSelection,triggerClassName));
-      if (hcent)
-      {
-        hcent->Fill(fcent);
-      }
+      if (hcent) hcent->Fill(fcent);
     }
   }
   delete centralities;
-
 }
 
 //_____________________________________________________________________________
@@ -293,76 +280,73 @@ void AliAnalysisTaskMuMu::FillHistos(const char* eventSelection,
                                      const char* triggerClassName,
                                      const char* centrality)
 {
-  /// Fill histograms for /physics/triggerClassName/centrality
+  /// Fill histograms
   
-  AliCodeTimerAuto(Form("/%s/%s/%s",eventSelection,triggerClassName,centrality),0);
-  
-  TIter nextAnalysis(fSubAnalysisVector);
-  AliAnalysisMuMuBase* analysis;
-  
-  Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(Event());
-  
+  // Fill counter collections
   FillCounters( eventSelection, triggerClassName, centrality, fCurrentRunNumber);
 
+  //timer
+  AliCodeTimerAuto(Form("/%s/%s/%s",eventSelection,triggerClassName,centrality),0);
+  
+  // prepare iterators
+  TIter nextAnalysis(fSubAnalysisVector);
+  AliAnalysisMuMuBase* analysis;
   TIter nextTrackCut(fCutRegistry->GetCutCombinations(AliAnalysisMuMuCutElement::kTrack));
   TIter nextPairCut(fCutRegistry->GetCutCombinations(AliAnalysisMuMuCutElement::kTrackPair));
   
-  // loop on single tracks (whatever the type of tracks
-  if ( !IsHistogrammingDisabled() && !fDisableHistoLoop )
-  {
-    // The main part, loop over subanalysis and fill histo
-    while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
-    {
+  // Get number of tracks
+  Int_t nTracks = AliAnalysisMuonUtility::GetNTracks(Event());
+  
+  // The main part, loop over subanalysis and fill histo
+  if ( !IsHistogrammingDisabled() && !fDisableHistoLoop ){
+    while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) ){
+      
+      // Create proxy for the Histogram collections
       analysis->DefineHistogramCollection(eventSelection,triggerClassName,centrality);
       
-      if ( MCEvent() != 0x0 )
-      {
+      if ( MCEvent() != 0x0 ){
         AliCodeTimerAuto(Form("%s (FillHistosForMCEvent)",analysis->ClassName()),1);
-        analysis->FillHistosForMCEvent(eventSelection,triggerClassName,centrality);
+        analysis->FillHistosForMCEvent(eventSelection,triggerClassName,centrality);// Implemented in AliAnalysisMuMuNch and AliAnalysisMuMuMinv at the moment
       }
+ 
+      AliCodeTimerAuto(Form("%s (FillHistosForEvent)",analysis->ClassName()),1);
+      analysis->FillHistosForEvent(eventSelection,triggerClassName,centrality); // Implemented in AliAnalysisMuMuNch at the moment
       
-      {
-        AliCodeTimerAuto(Form("%s (FillHistosForEvent)",analysis->ClassName()),1);
-        analysis->FillHistosForEvent(eventSelection,triggerClassName,centrality);
-      }
-      
-      for (Int_t i = 0; i < nTracks; ++i)
-      {
+      // Loop on all event tracks 
+      for (Int_t i = 0; i < nTracks; ++i){
+
+        // Get track
         AliVParticle* tracki = AliAnalysisMuonUtility::GetTrack(i,Event());
+       if (!AliAnalysisMuonUtility::IsMuonTrack(tracki) ) continue;
         
         nextTrackCut.Reset();
         AliAnalysisMuMuCutCombination* trackCut;
         
-        while ( ( trackCut = static_cast<AliAnalysisMuMuCutCombination*>(nextTrackCut()) ) )
-        {
-          if ( trackCut->Pass(*tracki) )
-          {
+        // Loop on all track selections and fill histos for track that pass it
+        while ( ( trackCut = static_cast<AliAnalysisMuMuCutCombination*>(nextTrackCut()) ) ){
+          if ( trackCut->Pass(*tracki) ){
             AliCodeTimerAuto(Form("%s (FillHistosForTrack)",analysis->ClassName()),2);
             analysis->FillHistosForTrack(eventSelection,triggerClassName,centrality,trackCut->GetName(),*tracki);
           }
         }
-        
-        if (!AliAnalysisMuonUtility::IsMuonTrack(tracki) ) continue;
-        
+                
         // loop on track pairs (here we only consider muon pairs)
-        
-        for (Int_t j = i+1; j < nTracks; ++j)
-        {
+        for (Int_t j = i+1; j < nTracks; ++j){
+          // Get track
           AliVParticle* trackj = AliAnalysisMuonUtility::GetTrack(j,Event());
-          
           if (!AliAnalysisMuonUtility::IsMuonTrack(trackj) ) continue;
           
           nextPairCut.Reset();
           AliAnalysisMuMuCutCombination* pairCut;
-          
-          while ( ( pairCut = static_cast<AliAnalysisMuMuCutCombination*>(nextPairCut()) ) )
-          {
+
+          // Fill pair histo
+          while ( ( pairCut = static_cast<AliAnalysisMuMuCutCombination*>(nextPairCut()) ) ){
+            // Weither or not the pairs pass the tests
             Bool_t testi = (pairCut->IsTrackCutter()) ? pairCut->Pass(*tracki) : kTRUE;
             Bool_t testj = (pairCut->IsTrackCutter()) ? pairCut->Pass(*trackj) : kTRUE;
             Bool_t testij = pairCut->Pass(*tracki,*trackj);
             
-            if ( ( testi && testj ) && testij ) 
-            {
+            if ( ( testi && testj ) && testij ){
               AliCodeTimerAuto(Form("%s (FillHistosForPair)",analysis->ClassName()),3);
               analysis->FillHistosForPair(eventSelection,triggerClassName,centrality,pairCut->GetName(),*tracki,*trackj);
             }
@@ -381,8 +365,7 @@ void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* t
   
   AliCodeTimerAuto("",0);
   
-  if( fCountInBins )
-  {
+  if( fCountInBins ){
     TParameter<Double_t>* p(0x0);
     TObjArray* bin = fBinning->CreateBinObjArray(fbinWhat.Data(),fbinQuantity.Data(),fbinFlavor.Data());
 
@@ -398,43 +381,34 @@ void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* t
     else AliError(Form("%s bin quantity not found in event",sfbinQuantity.Data())); //FIXME: Not all the possible binnings are implemented here
 
     if ( !bin ) AliError(Form("%s,%s,%s binning does not exist",fbinWhat.Data(),fbinQuantity.Data(),fbinFlavor.Data()));
-    else
-    {
+    else{
+
       TList* list = static_cast<TList*>(Event()->FindListObject("NCH"));
-      if (list)
-      {
+      if (list){
+
         Int_t i(-1);
         Bool_t parFound(kFALSE);
-        while ( i < list->GetEntries() - 1 && !parFound )
-        {
+        while ( i < list->GetEntries() - 1 && !parFound ){
+
           i++;
-          while ( list->At(i)->IsA() != TParameter<Double_t>::Class()  && i < list->GetEntries() - 1 ) // In case there is a diferent object, just to skip it
-          {
-            i++;
-          }
+          while ( list->At(i)->IsA() != TParameter<Double_t>::Class()  && i < list->GetEntries() - 1 ) i++;// In case there is a diferent object, just to skip it
           
           p = static_cast<TParameter<Double_t>*>(list->At(i));
           
-          if ( TString(p->GetName()).Contains(parToFind.Data()) )
-          {
-            parFound = kTRUE;
-          }
+          if ( TString(p->GetName()).Contains(parToFind.Data()) )parFound = kTRUE;
         }
       }
       else AliFatal("No multiplicity info on Event");
 
       TIter next(bin);
       AliAnalysisMuMuBinning::Range* r;
-      while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) )
-      {
+      while ( ( r = static_cast<AliAnalysisMuMuBinning::Range*>(next()) ) ){
         
-        if ( r->IsInRange(p->GetVal()) )
-        {
+        if ( r->IsInRange(p->GetVal()) ){
           fEventCounters->Count(Form("event:%s/trigger:%s/centrality:%s/run:%d/bin:%s", eventSelection, triggerClassName,
                                              centrality, currentRun,r->AsString().Data()));
         }
       }
-      
       delete bin;
     }
   }
@@ -446,11 +420,7 @@ void AliAnalysisTaskMuMu::FillCounters(const char* eventSelection, const char* t
 void AliAnalysisTaskMuMu::FinishTaskOutput()
 {
   /// prune empty histograms BEFORE mergin, in order to save some bytes...
-  
-  if ( fHistogramCollection )
-  {
-    fHistogramCollection->PruneEmptyObjects();
-  }
+  if ( fHistogramCollection ) fHistogramCollection->PruneEmptyObjects();
 }
 
 //_____________________________________________________________________________
@@ -461,45 +431,39 @@ void AliAnalysisTaskMuMu::GetSelectedTrigClassesInEvent(const AliVEvent* event, 
   
   array.Clear();
   
-  if (!event)
-  {
+  if (!event){
     AliError("Will get a hard time selecting trigger classes with an empty event...");
     return;
   }
   
   TString firedTriggerClasses = event->GetFiredTriggerClasses();
-  UInt_t l0 = event->GetHeader()->GetL0TriggerInputs();
-  UInt_t l1 = event->GetHeader()->GetL1TriggerInputs();
-  UInt_t l2 = event->GetHeader()->GetL2TriggerInputs();
+  UInt_t l0                   = event->GetHeader()->GetL0TriggerInputs();
+  UInt_t l1                   = event->GetHeader()->GetL1TriggerInputs();
+  UInt_t l2                   = event->GetHeader()->GetL2TriggerInputs();
 
   std::set<std::string> tmpArray;
   
   TIter nextCutCombination(CutRegistry()->GetCutCombinations(AliAnalysisMuMuCutElement::kTriggerClass));
   AliAnalysisMuMuCutCombination* cutCombination;
   
-  while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextCutCombination()) ) )
-  {
+  while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextCutCombination()) ) ){
+
     TString acceptedTriggerClasses;
     
-    if ( cutCombination->Pass(firedTriggerClasses,acceptedTriggerClasses,l0,l1,l2) )
-    {
+    if ( cutCombination->Pass(firedTriggerClasses,acceptedTriggerClasses,l0,l1,l2) ){
+
       TObjArray* split = acceptedTriggerClasses.Tokenize(" ");
       TIter next(split);
       TObjString* str;
-      while ( ( str = static_cast<TObjString*>(next()) ) )
-      {
-        tmpArray.insert(str->String().Data());
-      }
+      while ( ( str = static_cast<TObjString*>(next()) ) ) tmpArray.insert(str->String().Data());
+
       delete split;
     }
   }
   
   std::set<std::string>::const_iterator it;
   
-  for ( it = tmpArray.begin(); it != tmpArray.end(); ++it )
-  {
-    array.Add(new TObjString(it->c_str()));
-  }
+  for ( it = tmpArray.begin(); it != tmpArray.end(); ++it ) array.Add(new TObjString(it->c_str()));
 }
 
 
@@ -512,12 +476,8 @@ Bool_t AliAnalysisTaskMuMu::IsHistogramDisabled(const char* hname) const
   TIter next(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;
   
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) )
-  {
-    if ( analysis->IsHistogramDisabled(hname) )
-    {
-      return kTRUE;
-    }
+  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) ){
+    if ( analysis->IsHistogramDisabled(hname) ) return kTRUE;
   }
   
   return kFALSE;
@@ -533,10 +493,7 @@ Bool_t AliAnalysisTaskMuMu::IsHistogrammingDisabled() const
   TIter next(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;
 
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) )
-  {
-    disabled = disabled && analysis->IsHistogrammingDisabled();
-  }
+  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) ) disabled = disabled && analysis->IsHistogrammingDisabled();
 
   return disabled;
 }
@@ -558,10 +515,7 @@ void AliAnalysisTaskMuMu::NotifyRun()
   TIter next(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;
   
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) )
-  {
-    analysis->SetRun(fInputHandler);
-  }
+  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) ) analysis->SetRun(fInputHandler);
 }
 
 //_____________________________________________________________________________
@@ -575,15 +529,11 @@ AliAnalysisTaskMuMu::Print(Option_t* opt) const
   TIter next(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;
   
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) )
-  {
-    analysis->Print(opt);
-  }
+  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(next()) ) )analysis->Print(opt);
 
   fCutRegistry->Print("ALL");
   
-  if ( fBinning )
-  {
+  if ( fBinning ){
     cout << "Binning" << endl;
     fBinning->Print();
   }
@@ -603,18 +553,13 @@ AliAnalysisTaskMuMu::Terminate(Option_t *)
   TIter nextAnalysis(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;
   
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
-  {
+  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) ){
     analysis->SetHistogramCollection(fHistogramCollection);
     analysis->Terminate();
   }
 
-  if (!fHistogramCollection)
-  {
-    AliError("Could not find back histogram collection in output...");
-  }
-  else
-  {
+  if (!fHistogramCollection) AliError("Could not find back histogram collection in output...");
+  else{
     // Removes empty objects
     fHistogramCollection->PruneEmptyObjects();
     
@@ -623,15 +568,10 @@ AliAnalysisTaskMuMu::Terminate(Option_t *)
     TIter nextHistogram(fHistogramCollection->CreateIterator());
     TObject* object;
     
-    while ( ( object = nextHistogram() ) )
-    {
-      if ( object->IsA()->InheritsFrom(TH1::Class()) )
-      {
+    while ( ( object = nextHistogram() ) ){
+      if ( object->IsA()->InheritsFrom(TH1::Class()) ){
         TH1* h = static_cast<TH1*>(object);
-        if ( h->GetXaxis()->GetLabels() )
-        {
-          h->LabelsDeflate("X");
-        }
+        if ( h->GetXaxis()->GetLabels() ) h->LabelsDeflate("X");
       }
     }
     
@@ -642,14 +582,8 @@ AliAnalysisTaskMuMu::Terminate(Option_t *)
   
   fEventCounters = dynamic_cast<AliCounterCollection*>(GetOutputData(2));
   
-  if (!fEventCounters)
-  {
-    AliError("Could not find back counters in output...");
-  }
-  else
-  {
-    fEventCounters->Print("trigger/event","centrality:all");
-  }
+  if (!fEventCounters) AliError("Could not find back counters in output...");
+  else fEventCounters->Print("trigger/event","centrality:all");
   
   // post param container(s)
   PostData(3,fBinning);
@@ -683,14 +617,11 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   AliAnalysisMuMuBase* analysis;  
 
   // Loop over each subanalysis
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
-  {
-    if ( MCEvent() ) // Set the MC flag for all analysis (prior to call anything from them
-      // (e.g. any trigger class selection that might behave differently for
-      // MC and real trigger classes)
-    {
-      analysis->SetMC();
-    }
+  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) ) {
+    // Set the MC flag for all analysis (prior to call anything from them
+    // (e.g. any trigger class selection that might behave differently for
+    // MC and real trigger classes)
+    if ( MCEvent() ) analysis->SetMC();
     analysis->SetEvent(Event(),MCEvent()); // Set the new event properties derived in the analysis
   }
 
@@ -702,18 +633,14 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   AliAnalysisMuMuCutCombination* cutCombination;
 
   // loop over cut combination on event level. Fill counters
-  while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextEventCutCombination())))
-  {
-    if ( cutCombination->Pass(*fInputHandler) ) // If event pass the cut
-    {
+  while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextEventCutCombination()))){
+    if ( cutCombination->Pass(*fInputHandler) ) {// If event pass the cut
+    
       // Fill counters
       FillCounters(cutCombination->GetName(), "EVERYTHING",  "ALL", fCurrentRunNumber);
       
       // Default counter
-      if ( firedTriggerClasses == "" )
-      {
-        FillCounters(cutCombination->GetName(),"EMPTY","ALL",fCurrentRunNumber);
-      }
+      if ( firedTriggerClasses == "" ) FillCounters(cutCombination->GetName(),"EMPTY","ALL",fCurrentRunNumber);
     }
   }
 
@@ -726,16 +653,11 @@ void AliAnalysisTaskMuMu::UserExec(Option_t* /*opt*/)
   TIter next(&selectedTriggerClasses);
   TObjString* tname;
 
-  while ( ( tname = static_cast<TObjString*>(next()) ) )
-  {
+  while ( ( tname = static_cast<TObjString*>(next()) ) ){
     nextEventCutCombination.Reset();
 
-    while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextEventCutCombination())) )
-    {
-      if ( cutCombination->Pass(*fInputHandler) )
-      {
-        Fill(cutCombination->GetName(),tname->String().Data());
-      }
+    while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(nextEventCutCombination())) ){
+      if ( cutCombination->Pass(*fInputHandler) ) Fill(cutCombination->GetName(),tname->String().Data());
     }
   }
   
@@ -755,10 +677,7 @@ void AliAnalysisTaskMuMu::UserCreateOutputObjects()
   
   AliDebug(1,Form("fCutRegistry=%p",fCutRegistry));
   
-  if ( fCutRegistry )
-  {
-    StdoutToAliDebug(1,fCutRegistry->Print());
-  }
+  if ( fCutRegistry ) StdoutToAliDebug(1,fCutRegistry->Print());
   
   fHistogramCollection = new AliMergeableCollection("OC");
 
@@ -770,8 +689,7 @@ void AliAnalysisTaskMuMu::UserCreateOutputObjects()
   TIter next(CutRegistry()->GetCutCombinations(AliAnalysisMuMuCutElement::kEvent));
   AliAnalysisMuMuCutCombination* cutCombination;
   
-  while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(next())) )
-  {
+  while ( ( cutCombination = static_cast<AliAnalysisMuMuCutCombination*>(next())) ){
     TString cutName = cutCombination->GetName();
     if ( eventRubric.Length() > 0 ) eventRubric += "/";
     eventRubric += cutName;
@@ -786,10 +704,7 @@ void AliAnalysisTaskMuMu::UserCreateOutputObjects()
   fEventCounters->AddRubric("run", 1000000);
   
   //____New
-  if ( fCountInBins )
-  {
-    fEventCounters->AddRubric("bin", 1000000);
-  }
+  if ( fCountInBins ) fEventCounters->AddRubric("bin", 1000000);
   //_____
   
   // Initialize our subtasks, if any...
@@ -797,10 +712,7 @@ void AliAnalysisTaskMuMu::UserCreateOutputObjects()
   TIter nextAnalysis(fSubAnalysisVector);
   AliAnalysisMuMuBase* analysis;
   
-  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) )
-  {
-    analysis->Init(*fEventCounters,*fHistogramCollection,*fBinning,*fCutRegistry);
-  }
+  while ( ( analysis = static_cast<AliAnalysisMuMuBase*>(nextAnalysis()) ) ) analysis->Init(*fEventCounters,*fHistogramCollection,*fBinning,*fCutRegistry);
 
   // finally end the counters initialization
   fEventCounters->Init();

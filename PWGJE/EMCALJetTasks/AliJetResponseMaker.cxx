@@ -50,6 +50,9 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fDeltaEtaDeltaPhiAxis(0),
   fNEFAxis(0),
   fZAxis(0),
+  fZgAxis(0),
+  fdRAxis(0),
+  fPtgAxis(0),
   fFlavourZAxis(0),
   fFlavourPtAxis(0),
   fIsJet1Rho(kFALSE),
@@ -133,6 +136,9 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fDeltaEtaDeltaPhiAxis(0),
   fNEFAxis(0),
   fZAxis(0),
+  fZgAxis(0),
+  fdRAxis(0),
+  fPtgAxis(0),
   fFlavourZAxis(0),
   fFlavourPtAxis(0),
   fIsJet1Rho(kFALSE),
@@ -894,6 +900,45 @@ void AliJetResponseMaker::AllocateTHnSparse()
     dim++;
   }
 
+  if (fZgAxis) {
+    title[dim] = "Z_{g,1}";
+    nbins[dim] = 20;
+    min[dim] = 0.0;
+    max[dim] = 1.0;
+    dim++;
+    title[dim] = "Z_{g,2}";
+    nbins[dim] = 20;
+    min[dim] = 0.0;
+    max[dim] = 1.0;
+    dim++;
+  }
+
+  if (fdRAxis) {
+    title[dim] = "dR_{1}";
+    nbins[dim] = 40;
+    min[dim] = 0.0;
+    max[dim] = 0.5;
+    dim++;
+    title[dim] = "dR_{2}";
+    nbins[dim] = 40;
+    min[dim] = 0.0;
+    max[dim] = 0.5;
+    dim++;
+  }
+
+  if (fPtgAxis) {
+    title[dim] = "p_{T,g,1}";
+    nbins[dim] = 16;
+    min[dim] = 0.0;
+    max[dim] = 160.0;
+    dim++;
+    title[dim] = "p_{T,g,2}";
+    nbins[dim] = 16;
+    min[dim] = 0.0;
+    max[dim] = 160.0;
+    dim++;
+  }
+
   fHistMatching = new THnSparseD("fHistMatching","fHistMatching",dim,nbins,min,max);
 
   for (Int_t i = 0; i < dim; i++)
@@ -1136,6 +1181,18 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
         contents[i] = ptflavour1;
       else if (title=="p_{T,2}^{D}")
         contents[i] = ptflavour2;
+      else if (title=="Z_{g,1}")
+        contents[i] = jet1->GetShapeProperties()->GetSoftDropZg();
+      else if (title=="Z_{g,2}")
+        contents[i] = jet2->GetShapeProperties()->GetSoftDropZg();
+      else if (title=="dR_{1}")
+        contents[i] = jet1->GetShapeProperties()->GetSoftDropdR();
+      else if (title=="dR_{2}")
+        contents[i] = jet2->GetShapeProperties()->GetSoftDropdR();
+      else if (title=="p_{T,g,1}")
+        contents[i] = ( jet1->GetShapeProperties()->GetSoftDropPtfrac() )*( jet1->Pt() );
+      else if (title=="p_{T,g,2}")
+        contents[i] = ( jet2->GetShapeProperties()->GetSoftDropPtfrac() )*( jet2->Pt() );
       else 
         AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }

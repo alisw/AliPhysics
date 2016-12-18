@@ -309,14 +309,14 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
   static AliTrackPointArray* arrayITS = 0;
   AliTrackPointArray* arrayITSNoVtx = 0;
   //
-  AliESDEvent *esd = (AliESDEvent*) (InputEvent());
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (fITSSumTP) fITSSumTP->Reset();
 
   if(!esd) {
     AliInfo("No ESD");
     return;
   } 
-  AliESDfriend* fr = ESDfriend();
+  AliESDfriend* fr = dynamic_cast<AliESDfriend*>(ESDfriend());
   if(!fr || !fr->GetNumberOfTracks()) {
     AliInfo("No or empty ESDfriend");
     return;

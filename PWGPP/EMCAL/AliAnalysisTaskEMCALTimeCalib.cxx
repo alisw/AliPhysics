@@ -1382,7 +1382,7 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapOADB()
 {
   if(fBadChannelMapSet) return;
   AliOADBContainer *contBC=new AliOADBContainer("");
-  contBC->InitFromFile(Form("%s/EMCALBadChannels.root","alien://$ALICE_PHYSICS/OADB/EMCAL"),"AliEMCALBadChannels"); 
+  contBC->InitFromFile(Form("%s/EMCALBadChannels.root","$ALICE_PHYSICS/OADB/EMCAL"),"AliEMCALBadChannels"); 
   printf("contBC %p, ent  %d\n",contBC,contBC->GetNumberOfEntries());
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRunNumber);
   if(arrayBC) {

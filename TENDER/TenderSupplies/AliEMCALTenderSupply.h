@@ -35,6 +35,7 @@ class AliEMCALAfterBurnerUF;
 class AliEMCALRecParam;
 class AliAnalysisTaskSE;
 class AliVEvent;
+class AliMCEvent;
 
 #include "AliEMCALGeoParams.h"
 
@@ -195,6 +196,7 @@ public:
 private:
 
   AliVEvent* GetEvent();
+  AliMCEvent* GetMCEvent();
   TString    GetBeamType();
   Bool_t     RunChanged() const;
   Int_t      InitBadChannels();

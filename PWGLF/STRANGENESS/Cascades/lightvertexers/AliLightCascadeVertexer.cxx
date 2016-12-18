@@ -50,7 +50,7 @@ Double_t
 
 Double_t AliLightCascadeVertexer::fgMaxEta=0.8;        //max |eta|
 Double_t AliLightCascadeVertexer::fgMinClusters=70;   //min clusters (>=)
-Double_t AliLightCascadeVertexer::fgSwitchCharges=kFALSE;   //min clusters (>=)
+Bool_t AliLightCascadeVertexer::fgSwitchCharges=kFALSE;   //min clusters (>=)
 
 Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
@@ -175,6 +175,9 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          Double_t dca=PropagateToDCA(pv0,pbt,b);
          if (dca > fDCAmax) continue;
 
+          //eta cut - test
+          if (TMath::Abs(pbt->Eta())>fMaxEta) continue;
+          
          AliESDcascade cascade(*pv0,*pbt,bidx); //constucts a cascade candidate
 	 //PH         if (cascade.GetChi2Xi() > fChi2max) continue;
 

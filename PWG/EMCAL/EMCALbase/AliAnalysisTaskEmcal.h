@@ -5,7 +5,6 @@
 
 class TClonesArray;
 class TString;
-class AliEmcalParticle;
 class AliMCParticle;
 class AliVCluster;
 class AliVTrack;
@@ -20,6 +19,7 @@ class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
 class AliAODTrack;
 class AliEmcalPythiaInfo;
+class AliESDInputHandler;
 
 #include "Rtypes.h"
 
@@ -65,6 +65,16 @@ class AliEmcalPythiaInfo;
  */
 class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
  public:
+
+  /**
+   * @enum EDataType_t
+   * @brief Switch for the data type
+   */
+  enum EDataType_t {
+    kUnknownDataType,
+    kESD,
+    kAOD
+  };
 
   /**
    * @enum BeamType
@@ -153,11 +163,13 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
   virtual void                SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }
   void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
+  void                        SetCountDownscaleCorrectedEvents(Bool_t d)            { fCountDownscaleCorrectedEvents =  d                 ; }
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPhiLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPtCut(Double_t cut, Int_t c=0);
-  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; } 
+  void                        SetTrigClass(const char *n)                           { fTrigClass         = n                              ; }
+  void                        SetMinBiasTriggerClassName(const char *n)             { fMinBiasRefTrigger = n                              ; }
   void                        SetTriggerTypeSel(TriggerType t)                      { fTriggerTypeSel    = t                              ; } 
   void                        SetUseAliAnaUtils(Bool_t b, Bool_t bRejPilup = kTRUE) { fUseAliAnaUtils    = b ; fRejectPileup = bRejPilup  ; }
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
@@ -211,12 +223,20 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              FillGeneralHistograms();
   virtual Bool_t              IsEventSelected();
   virtual Bool_t              RetrieveEventObjects();
+
   /**
    * Method exclusively called when the run is changed (new run number differing
    * from old run number). Can be used for run-dependent initializations (i.e.
    * setting parameters from the OADB)
    */
-  virtual void                RunChanged()                      {}
+  virtual void                RunChanged(Int_t /*newrun*/)          {}
+
+  /**
+   * Interface for user code executed when the first event is called.
+   * At this step we know run number and data type and can therefore
+   * do proper initializations.
+   */
+  virtual void                UserExecOnce()                    {}
 
   /**
    * This function optionally fills histograms created by the users. Can
@@ -224,6 +244,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * @return
    */
   virtual Bool_t              FillHistograms()                  { return kTRUE                 ; }
+
   /**
    * Run function. This is the core function of the analysis and
    * contains the user code. Therefore users have to implement this
@@ -242,6 +263,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
+  static AliESDInputHandler*  AddESDHandler();
 
   static Double_t             fgkEMCalDCalPhiDivide;       ///<  phi value used to distinguish between DCal and EMCal
 
@@ -249,7 +271,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TString                     fPythiaInfoName;             ///< name of pythia info object
   BeamType                    fForceBeamType;              ///< forced beam type
   Bool_t                      fGeneralHistograms;          ///< whether or not it should fill some general histograms
-  Bool_t                      fInitialized;                ///< whether or not the task has been already initialized
+  Bool_t                      fLocalInitialized;           ///< whether or not the task has been already initialized
   Bool_t                      fCreateHisto;                ///< whether or not create histograms
   TString                     fCaloCellsName;              ///< name of calo cell collection
   TString                     fCaloTriggersName;           ///< name of calo triggers collection
@@ -266,6 +288,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fTklVsClusSPDCut;            ///< Apply tracklet-vs-cluster SPD cut to reject background events in pp
   UInt_t                      fOffTrigger;                 ///< offline trigger for event selection
   TString                     fTrigClass;                  ///< trigger class name for event selection
+  TString                     fMinBiasRefTrigger;          ///< Name of the minmum bias reference trigger, used in the calculation of downscale-corrected event numbers
   TriggerType                 fTriggerTypeSel;             ///< trigger type to select based on trigger patches
   Int_t                       fNbins;                      ///< no. of pt bins
   Double_t                    fMinBinPt;                   ///< min pt in histograms
@@ -290,6 +313,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fGeneratePythiaInfoObject;   ///< Generate Pythia info object
   Bool_t                      fUsePtHardBinScaling;        ///< Use pt hard bin scaling in merging
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
+  Bool_t                      fCountDownscaleCorrectedEvents; ///< Count event number corrected for downscaling
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
@@ -336,6 +360,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TH1                        *fHistEventPlane;             //!<!event plane distribution
   TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
   TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
+  TH1                        *fHistTriggerClassesCorr;     //!<!corrected number of events in each trigger class
 
  private:
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented

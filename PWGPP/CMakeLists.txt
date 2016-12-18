@@ -55,12 +55,15 @@ set ( SRCS1
   AliTaskCDBconnect.cxx
   AliTrackComparison.cxx
   AliTrackComparisonESD.cxx
+  AliOfflineTrigger.cxx
   )
 #file ( GLOB SRCS2 "global/*.cxx" )
 set ( SRCS2
   global/AliAnalysisTaskGlobalQA.cxx
   global/AliAnalysisTaskVertexESD.cxx
   global/AliAnalysisTaskCheckPileup.cxx
+  global/AliAnalysisTaskCheckESDTracks.cxx
+  global/AliAnalysisTaskCheckAODTracks.cxx
   global/AliGlobalFBFqa.cxx
   )
 #file ( GLOB SRCS3 "cosmic/*.cxx" )
@@ -84,6 +87,7 @@ set ( SRCS6
   ITS/AliAnalysisTaskITSTrackingCheck.cxx
   ITS/AliAnalysisTaskSDDRP.cxx
   ITS/AliAnalysisTaskSEImpParRes.cxx
+  ITS/AliAnalysisTaskSEImpParResSparse.cxx
   ITS/AliAnalysisTaskSPD.cxx
   ITS/AliMeanVertexCalibTask.cxx
   ITS/AliMeanVertexPreprocessorOffline.cxx
@@ -99,6 +103,7 @@ set ( SRCS7
   TRD/AliTRDcheckPID.cxx
   TRD/AliTRDcheckTRK.cxx
   TRD/AliTRDclusterResolution.cxx
+  TRD/AliTRDdigitsFilter.cxx
   TRD/AliTRDefficiency.cxx
   TRD/AliTRDefficiencyMC.cxx
   TRD/AliTRDinfoGen.cxx
@@ -202,6 +207,7 @@ set (SRCS15
 #file ( GLOB SRCS16 "EvTrkSelection/*.cxx" )
 set ( SRCS16
   EvTrkSelection/AliAnalysisTrackingUncertainties.cxx
+  EvTrkSelection/AliAnalysisTrackingUncertaintiesAOT.cxx
   EvTrkSelection/AliCFSingleTrackEfficiencyTask.cxx
   EvTrkSelection/AliSingleTrackEffCuts.cxx
   )
@@ -271,7 +277,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice OADB CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER Tender TOFrec TPCrec TRDrec Postscript ADbase AliHLTGlobal ADrec)
+set(LIBDEPS ANALYSISalice OADB CDB CORRFW EMCALUtils ITSrec HMPIDbase PWGCaloTrackCorrBase STEER STEERBase Tender TOFrec TPCrec TRDrec Postscript ADbase ADrec AliHLTGlobal)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Linking the library
@@ -329,7 +335,11 @@ install(FILES TRD/TRDPID/macros/AddTaskTRDPIDTree.C
               TRD/TRDPID/macros/AddTaskTRDPIDmatching.C
 DESTINATION PWGPP/TRD/TRDPID/macros)
 install(DIRECTORY TRD/data DESTINATION PWGPP/TRD FILES_MATCHING PATTERN "*.root")
-install(FILES ZDC/AddTaskZDCQA.C DESTINATION PWGPP/ZDC)
+install(FILES ZDC/AddTaskZDCQA.C
+              ZDC/AddTaskZDCQApp.C
+              ZDC/AddTaskZDCQAPbPb.C
+              ZDC/AddTaskZDCQApA.C
+              DESTINATION PWGPP/ZDC)
 install(FILES ZDC/macros/DrawPerformanceZDCQAMatch.C
 	      ZDC/macros/DrawPerformanceZDCQAMatchTrends.C
 	      ZDC/macros/MakeTrendZDC.C

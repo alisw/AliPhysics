@@ -66,7 +66,11 @@ Bin::Process(TH1D*              dndetaForward,
   // Process a single eta bin
   //
   // retreive MC particles from event
+  Printf("Bin %s - selected: %s  IPz: %f (%f,%f)", GetName(),
+	 selectedTrigger ? "yes" : " no", ipZ, minIPz, maxIPz);
+  if (pileup) return;
   if (!selectedTrigger) return;
+  if (ipZ < minIPz || ipZ > maxIPz) return;
   
   Double_t mcMult, mcErr, statErr, sysErr;
   Double_t mult = CalcMult(dndetaForward,

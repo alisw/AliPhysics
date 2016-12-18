@@ -1,6 +1,6 @@
 AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
 			       Int_t storeNtuple=0,Bool_t storeNsparse=kFALSE,Bool_t readMC=kFALSE,
-			       TString filename="", TString postname="")
+			       TString filename="", TString postname="", Bool_t doCutVarHistos = kFALSE, Int_t AODProtection = 1)
 {
   //
   // Test macro for the AliAnalysisTaskSE for Ds candidates 
@@ -52,6 +52,9 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   dsTask->SetUseSelectionBit(kTRUE);
   //dsTask->SetMassLimits(0.2);
   dsTask->SetFillNSparse(storeNsparse);
+  dsTask->SetAODMismatchProtection(AODProtection);
+  dsTask->SetDoCutVarHistos(doCutVarHistos);
+  dsTask->SetSystem(system);
   mgr->AddTask(dsTask);
   
   // Create containers for input/output 

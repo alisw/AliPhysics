@@ -19,6 +19,8 @@
 
 class AliVEvent;
 class AliVParticle;
+class AliAODMCHeader;
+class AliAODTrack;
 class TH1;
 
 using std::vector;
@@ -168,14 +170,17 @@ class AliDxHFEToolsMC {
   bool RejectByPDG(int pdg, const vector<int> &list) const;
 
   int GetNrMCParticles() const {return fNrMCParticles;}
-  int CheckMCParticle(AliVParticle* p);
+  bool CheckMCParticle(AliVParticle* p,int* pdgParticleResult=NULL);
 
   /// mapping of pdg code to enum
   int MapPDGLabel(int pdg) const;
   /// mapping of pdg code to enum
   int MapPDGMotherLabel(int pdg) const;
 
- protected:
+  void GetTrackPrimaryGenerator(AliAODTrack *track,TString &nameGen, bool kine=kFALSE);
+  TString GetGenerator(Int_t label, AliAODMCHeader* header);
+
+protected:
 
  private:
   /// copy contructor prohibited
@@ -195,6 +200,7 @@ class AliDxHFEToolsMC {
 
   int fSequence;           //  sequence of checks
   TObjArray* fMCParticles; //! pointer to external array of MC particles
+  AliAODMCHeader* fMCHeader; //! pointer to external MC header
   vector<int> fPDGs;       //  PDGs to be selected
   vector<int> fMotherPDGs; //  mother PDGs to be selected
   TH1* fHistPDG;           //  control histogram pdg of selected particle
@@ -203,7 +209,8 @@ class AliDxHFEToolsMC {
   int fMClabel;            //  MClabel passed from outside (default =-1)
   int fNrMCParticles;      //  number of MC particles 
   bool fUseKine;           //  For looping over stack directly
+  bool fRemoveSecondary;   // whether or not to remove secondary tracks
 
-  ClassDef(AliDxHFEToolsMC, 3);
+  ClassDef(AliDxHFEToolsMC, 4);
 };
 #endif

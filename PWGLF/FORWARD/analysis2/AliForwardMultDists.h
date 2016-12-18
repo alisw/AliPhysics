@@ -7,9 +7,13 @@
  * 
  * @brief  Class to make raw @f$P(N_{ch})@f$ distributions 
  * 
- * @ingroup pwglf_forward_multdist 
+ * @ingroup pwglf_forward_multdist_sketch
  */
-
+/** 
+ * @defgroup pwglf_forward_multdist_sketch Sketch of @f$ P(N_{ch})@f$ analysis 
+ *
+ * @ingroup pwglf_forward_multdist
+ */
 #include "AliBaseAODTask.h"
 #include <TList.h>
 #include <TString.h>
@@ -18,9 +22,11 @@ class TH2;
 class AliAODForwardMult;
 
 /**
- * Class to make raw @f$ P(N_{ch})@f$ distributions 
+ * Class to make raw @f$ P(N_{ch})@f$ distributions. 
  * 
- * @ingroup pwglf_forward_multdist
+ * Christian's rough sketch 
+ * 
+ * @ingroup pwglf_forward_multdist_sketch
  */
 class AliForwardMultDists : public AliBaseAODTask
 {

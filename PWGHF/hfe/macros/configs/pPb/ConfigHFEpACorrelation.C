@@ -1,121 +1,102 @@
-///*******************************************************
-///Config Description
-//configIndex = 0 ---> Default cuts and PID
-//configIndex = 1 ---> TPC Ncls = 100
-//configIndex = 2 ---> TPC Ncls = 60
-//configIndex = 3 ---> SPD kBoth + 3 ITS cls
-//configIndex = 4 ---> SPD kBoth + 4 ITS cls
-//configIndex = 5 ---> SPD kAny + 3 ITS cls
-//configIndex = 6 ---> Mass < 0.05
-//configIndex = 7 ---> Mass < 0.15
-//configIndex = 8 ---> Op Angle < 0.1
-//configIndex = 9 ---> TPC PID: -0.5 to 3.0
-//configIndex = 10 ---> V0A -> other
-//configIndex = 11 ---> Associated hadron with SPD::kAny cut
-//configIndex = 12 ---> SPD kFirst + 2 ITS cls
-//configIndex = 13 ---> SPD kFirst + 4 ITS cls
-//configIndex = 14 ---> SPD kAny + 4 ITS cls
-//Configurations for the Assoated pT Cut
-//configIndex = 20 ---> Default (same as 0)
-//configIndex = 21 ---> pT>0.3
-//configIndex = 22 ---> pT>0.5
-//configIndex = 23 ---> pT>0.7 (Do not use it - removed)
-//Configurations for the hadron cut:
-//0 (no Sum) = Only the cut from AODFilterBit
-//+1000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.25cm
-//+2000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.1cm
-//+3000 ---> Associated hadron DCA cut z = 1 cm, xy = 0.5cm
-//+4000 ---> Associated hadron DCA cut z = 1 cm, xy = 1 cm
+/* Possible Configurations
+ 
+ Electron DCA cut
+ ElectronDCAxy, ElectronDCAz
+ 
+ ITS Number of Hits = NHitsITS (obvius)
+ 
+ SPD
+ 0 = kBoth
+ 1 = kFirst
+ 2 = kAny
+ 
+ Number of Clusters On TPC  = TPCNCluster (obvius)
+ 
+ TPC PID Cluster = TPCNClusterPID (obvius)
+ TPCNSigma = TPCNClusterPID (obvius)
+ 
+ 
+ */
 
-//To change the electron the test electron binning: just sum +100 to the configuration you are working. For example: config 1 with alternative binning-> 101
-
-///*******************************************************
-
-AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
-                                                       Bool_t isMC=kFALSE,
-                                                       Int_t triggerIndex=0,
-                                                       Int_t configIndex=0,
-                                                       Int_t centralityIndex=0,
-                                                       Bool_t isAOD = kFALSE,
-                                                       Bool_t isEMCal = kFALSE,
-                                                       Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
-                                                       Bool_t ispp = kFALSE
-                                                       )
-
+AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(TString taskName = "HFe_h",
+                                                        Bool_t Correlation = kTRUE,
+                                                        Bool_t ispp = kFALSE,
+                                                        Bool_t isMC = kTRUE,
+                                                        Double_t ElectronDCAxy = 0.25,
+                                                        Double_t ElectronDCAz = 1.0,
+                                                        Double_t HadronDCAxy = 0.25,
+                                                        Double_t HadronDCAz = 1.0,
+                                                        Double_t TPCPIDLow = -0.5,
+                                                        Double_t TPCPIDUp = 3.0,
+                                                        Double_t InvariantMassCut = 0.14,
+                                                        Double_t pTCutPartner = 0.0,
+                                                        Double_t MultiplicityLow = 0.,
+                                                        Double_t MultiplicityUp = 100.,
+                                                        Double_t HadronPtCutLow = 0.3,
+                                                        Double_t HadronPtCutUp = 2.0,
+                                                        Double_t EtaCutLow = -0.8,
+                                                        Double_t EtaCutUp = 0.8,
+                                                        Double_t NonHFEangleCut = 999,
+                                                        Int_t NHitsITS = 4,
+                                                        Int_t SPDLayers = 0,
+                                                        Int_t TPCNCluster = 100,
+                                                        Int_t TPCNClusterPartner = 60,
+                                                        Int_t TPCNClusterPID = 80,
+                                                        Bool_t UseGlobalTracksForHadrons = kTRUE)
 {
+    
+    
+    
+    
+    
     ///_______________________________________________________________________________________________________________
     ///Track selection: Cuts used to ensure a minimum quality level of the tracks selected to perform the analysis
+    
     AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsMinBias","HFE Cuts");
     hfecuts->CreateStandardCuts();
     
-    Bool_t SetFinepTBinning;
-    Int_t HadronCutType = 0;
-    //To be able to vary the other configurations alongside with the new Hadrons Cuts
-    printf("Config index: %d\n",configIndex);
-    if(configIndex>999)
-    {
-        HadronCutType = (Int_t) configIndex/1000;
-        configIndex = (Int_t) (configIndex - HadronCutType*1000);
-    }
-    printf("ConfigIndex after hadron determination: %d  HadronCutType: %d", configIndex, HadronCutType);
-    //Test Diferent pT Binning
-    if(configIndex>99)
-    {
-        SetFinepTBinning = kTRUE;
-        configIndex = configIndex - 100;
-    }
-    //TPC Cuts
-
+    printf("============ Configuring AliHFEcuts ============ \n");
     hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
-    if(configIndex==1) 	hfecuts->SetMinNClustersTPC(100);			                //Minimum number of clusters on TPC = 100
-    else if(configIndex==2) hfecuts->SetMinNClustersTPC(60);			        	//Minimum number of clusters on TPC = 60
-    else hfecuts->SetMinNClustersTPC(80);							                //Minimum number of clusters on TPC = 80
-    
-    hfecuts->SetMinNClustersTPCPID(80); 						                    //Minimum number of clusters for dE/dx
-    hfecuts->SetMinRatioTPCclusters(0.6);						                    //Number of clusters (Found/Findable)
+    hfecuts->SetMinNClustersTPC(TPCNCluster);
+    hfecuts->SetMinNClustersTPCPID(TPCNClusterPID); 						                    //Minimum number of clusters for dE/dx
+    printf("TPCNCluster = %d and TPCNClusterPID = %d \n",TPCNCluster,TPCNClusterPID);
+    hfecuts->SetMinRatioTPCclusters(0.6);
     
     //ITS
-    if(configIndex==3)
+    printf("ITS pixel = %d \n", SPDLayers);
+    if (SPDLayers == 0)
     {
-        hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);							//Require 2 cluster on SPD
-        hfecuts->SetMinNClustersITS(3);												//Minimum number of clusters on ITS
+        hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);
+        printf("ITS pixel =  kBoth\n");
     }
-    else if(configIndex==4)
-    {
-        hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);							//Require 2 cluster on SPD
-        hfecuts->SetMinNClustersITS(4);												//Minimum number of clusters on ITS
-    }
-    else if(configIndex==5)
-    {
-        hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);				            	//Require at least one cluster on SPD
-        hfecuts->SetMinNClustersITS(3);												//Minimum number of clusters on ITS
-    }
-    else if (configIndex == 12)
+    else if (SPDLayers == 1)
     {
         hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
-        hfecuts->SetMinNClustersITS(2);
+        printf("ITS pixel =  kFirst\n");
     }
-    else if (configIndex == 13)
-    {
-        hfecuts->SetCutITSpixel(AliHFEextraCuts::kFirst);
-        hfecuts->SetMinNClustersITS(4);
-    }
-    else if (configIndex == 14)
+    else if (SPDLayers == 2)
     {
         hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
-        hfecuts->SetMinNClustersITS(4);
+        printf("ITS pixel =  kAny\n");
     }
     else
     {
-        hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);				            	//Require at least one cluster on SPD
-        hfecuts->SetMinNClustersITS(2);												//Minimum number of clusters on ITS
+        hfecuts->SetCutITSpixel(AliHFEextraCuts::kBoth);
+        printf("ERROR: ITSPIXEL not set. Setting it as ITS pixel =  kBoth\n");
     }
+    
+    hfecuts->SetMinNClustersITS(NHitsITS);
+    printf("Number of Points on the ITS: %d\n", NHitsITS);
     
     hfecuts->SetCheckITSLayerStatus(kFALSE);
     
     //Additional Cuts
-    hfecuts->SetPtRange(0.5, 1e6);								                    //Transversal momentum range in GeV/c
-    //hfecuts->SetMaxImpactParam(1,2); 							                    //DCA to vertex
+    hfecuts->SetPtRange(0.5, 6);//Transversal momentum range in GeV/c
+    
+    hfecuts->SetMaxImpactParam(ElectronDCAxy,ElectronDCAz);
+    //hfecuts->SetUseMixedVertex(kTRUE); //Copy Jan
+    printf("Electron DCA cut to xy = %1.2fcm z = %1.2f \n", ElectronDCAxy,ElectronDCAz);
+    
     
     //Event Selection
     hfecuts->SetVertexRange(10.);													//
@@ -124,75 +105,50 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     
     ///_________________________________________________________________________________________________________________________
     ///Task config
-    AliAnalysisTaskHFEpACorrelation *task = new AliAnalysisTaskHFEpACorrelation(Form("HFECuts%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex,EMCalThreshould));
+    AliAnalysisTaskHFEpACorrelation *task = new AliAnalysisTaskHFEpACorrelation(taskName.Data());
     printf("task ------------------------ %p\n ", task);
     
     task->SetHFECuts(hfecuts);
-    task->SetCorrelationAnalysis();
-    task->SetAODanalysis(isAOD);
-    task->SetEventMixing(kTRUE);
+    if(Correlation)
+    {
+        task->SetCorrelationAnalysis();
+        task->SetEventMixing(kTRUE);
+        printf("Correlation Analysis ON \n");
+    }
+    task->SetAODanalysis(kTRUE);
     if(ispp)
         task->SetPPanalysis(kTRUE);
-    if(SetFinepTBinning)
-        task->SetUseAlternativeBinning();
     
-    task->SetAssHadronPtRange(0.5,2.0);
-    
-    task->SetAdditionalCuts(0.0,80);
-    if(configIndex==20) task->SetAdditionalCuts(0.0,80);
-    if(configIndex==21) task->SetAdditionalCuts(0.3,80);
-    if(configIndex==22) task->SetAdditionalCuts(0.5,80);
-    //if(configIndex==23) task->SetAdditionalCuts(0.7,80);
-    
-    if(configIndex==11) task->SetSPDCutForHadrons();
-    
-    if(configIndex==10) task->SetCentralityEstimator(1);
-    else task->SetCentralityEstimator(0);
-    
-    if(EMCalThreshould==0 && triggerIndex==2) task->SetEMCalTriggerEG1();
-    if(EMCalThreshould==1 && triggerIndex==2) task->SetEMCalTriggerEG2();
-    
-    if(isEMCal) task->SetUseEMCal();
-    
-    if(configIndex==6) task->SetNonHFEmassCut(0.05);
-    else if(configIndex==7) task->SetNonHFEmassCut(0.15);
-    else task->SetNonHFEmassCut(0.1);
-    
-    if(isEMCal) task->SetEtaCut(-0.6,0.6);
-    else task->SetEtaCut(-0.9,0.9);
-    
-    task->SetEoverPCut(0.8,1.2);	//Will work only in case isEMCal = kTRUE
-    
-    if(configIndex==8) task->SetNonHFEangleCut(0.1);
-    
-    if(centralityIndex==0) task->SetCentrality(0,20);
-    if(centralityIndex==1) task->SetCentrality(20,60);
-    if(centralityIndex==2) task->SetCentrality(60,100);
-    if(centralityIndex==3) task->SetCentrality(0,10);
-    if(centralityIndex==4) task->SetCentrality(10,20);
+    //On data it is defined on the HFEcuts, but we should use the same cuts for the NHF partner
+    task->SetdcaCut(ElectronDCAxy,ElectronDCAz);
+    if (UseGlobalTracksForHadrons)
+        task->UseGlobalTracksHadron();
+    task->SetAssHadronPtRange(HadronPtCutLow,HadronPtCutUp);
+    printf("HadronPtCutLow = %1.2f HadronPtCutUp = %1.2f, Using GlobalTracks = %d\n", HadronPtCutLow,HadronPtCutUp,UseGlobalTracksForHadrons);
     
     
-    if(HadronCutType == 1)
-    {
-        task->SetUseDCACutHadron();
-        task->SetDCACutHadron(0.25, 1);
-    }
+    task->SetAdditionalCuts(pTCutPartner,TPCNClusterPartner);
+    printf("pTCutPartner = %1.2f TPCNClusterPartner = %1.2f\n", pTCutPartner,TPCNClusterPartner);
     
-    if(HadronCutType == 2)
-    {
-        task->SetUseDCACutHadron();
-        task->SetDCACutHadron(0.1, 1);
-    }
-    if(HadronCutType == 3)
-    {
-        task->SetUseDCACutHadron();
-        task->SetDCACutHadron(0.5, 1);
-    }
-    if(HadronCutType == 4)
-    {
-        task->SetUseDCACutHadron();
-        task->SetDCACutHadron(1, 1);
-    }
+    task->SetNonHFEmassCut(InvariantMassCut);
+    printf("Invariant mass cut = %1.2f", InvariantMassCut);
+    
+    task->SetEtaCut(EtaCutLow,EtaCutUp);
+    printf("EtaCutLow = %1.2f EtaCutUp = %1.2f\n",EtaCutLow,EtaCutUp);
+    
+    task->SetNonHFEangleCut(NonHFEangleCut);
+    printf("NonHFEangleCut = %1.2f\n",NonHFEangleCut);
+    
+    
+    task->SetUseDCACutHadron();
+    task->SetDCACutHadron(HadronDCAxy, HadronDCAz);
+    printf("Hadron DCA cut to xy = %1.2fcm z = %1.2f \n", HadronDCAxy, HadronDCAz);
+    
+    
+    task->SetCentrality(MultiplicityLow,MultiplicityUp);
+    printf("MinMultiplicity = %1.2f MaxMultiplicy = %1.2f\n", MultiplicityLow,MultiplicityUp);
+    
+    
     ///_______________________________________________________________________________________________________________
     
     ///_______________________________________________________________________________________________________________
@@ -225,15 +181,14 @@ AliAnalysisTaskHFEpACorrelation* ConfigHFEpACorrelation(
     char *cutmodel;
     cutmodel = "pol0";
     
-    if(configIndex==9) params[0] = 0.0;
-    else params[0] = -0.5;
+    params[0] = TPCPIDLow;
     
-    pid->ConfigureTPCdefaultCut(cutmodel,params,3.0); 
+    pid->ConfigureTPCdefaultCut(cutmodel,params,TPCPIDUp);
     //_______________________________________________________
     ///_______________________________________________________________________________________________________________
     
     printf("*************************************\n");
-    printf("Configuring standard Task:\n");
+    printf("Configuring Task:\n");
     pid->PrintStatus();
     printf("*************************************\n");
     

@@ -1,9 +1,9 @@
 /**
  * @file   AddTaskFMDMCHit.C
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Mar 23 12:14:03 2011
  * 
- * @brief  
+ * @brief  Investigate energy loss in simulations 
  * 
  * 
  * @ingroup pwglf_forward_scripts_tasks

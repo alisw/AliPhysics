@@ -86,8 +86,10 @@ main()
     "MergeCPass1") goMergeCPass1 "$@";;
     "MergeCPass2") goMergeCPass2 "$@";;
     "MakeFilteredTrees") goMakeFilteredTrees "$@";;
-    "MakeSummary") goMakeSummary "$@";;
-    "run") goSubmitMakeflow "$@";;
+    "MakeSummary") goMakeSummary "$@"
+                   exit $? ;;
+    "run") goSubmitMakeflow "$@"
+           exit $? ;;
     "submit") goSubmitBatch "$@";;
     "test") goTest "$@";;
     "GenerateMakeflow") goGenerateMakeflow "$@";;
@@ -95,7 +97,8 @@ main()
     "CreateQAplots") goCreateQAplots "$@";;
     "WaitForOutput") goWaitForOutput "$@";;
     "Merge") goMerge "$@";;
-    *) 
+    "ppbench") goppbench "$@";;
+    *)
       ${runMode} "$@"
     ;;
   esac
@@ -123,6 +126,37 @@ generateMC()
     fi
   fi
 }
+
+goppbench() (
+  alilog_info "[BEGIN] goppbench() with the following extra parameters $*"
+  configFile=$1
+  shift
+  parseConfig "configFile=$configFile" "$@" || return 1
+  [[ "$SKIP_PPBENCH" == 1 ]] && { alilog_info "[END] goppbench() skipping ppbench"; \
+                                  touch ppbench.done; return 0; }
+  rm -rf AliRoot/ ppbench.done
+  # Check if we have run it already. Prevent useless retries.
+  maxCopyTries=2 xCopy -f -c -d . $commonOutputPath/ppbench/full_output.log
+  [[ -e full_output.log ]] && { alilog_info "[END] goppbench() already ran, skipping"; return 0; }
+  git clone http://git.cern.ch/pub/AliRoot --depth=1 || return 1
+  pushd AliRoot
+    export OCDB_TEST_ROOT=$PWD/OCDB
+    test/runTests ppbench --debug --exit-on-error --variants default 2>&1 | tee -a full_output.log
+    RV=${PIPESTATUS[0]}  # if this is nonzero we have a problem (caught later)
+    pushd test/ppbench
+      summarizeLogs * > summary_ppbench.log
+      mv -v ../../full_output.log .
+      xCopy -d $commonOutputPath/ppbench .
+    popd
+  popd
+  [[ $RV != 0 ]] || cp -v AliRoot/test/ppbench/summary_ppbench.log ppbench.done
+  rm -rf AliRoot/
+  # Final output: <commonOutputPath>/ppbench.done                -- only upon success
+  #               <commonOutputPath>/ppbench/full_output.log     -- raw full output
+  #               <commonOutputPath>/ppbench/summary_ppbench.log -- same as ppbench.done on success
+  # Validation will not continue (due to the lack of ppbench.done) in case of error
+  alilog_info "[END] goppbench() finished"
+)
 
 goCPass0() (
   # Wrapper function that calls goCPass with the CPass0 option.
@@ -1037,9 +1071,9 @@ goSubmitMakeflow()
   for scr in "${sourceUtilities[@]}"; do
     [[ -e $scr ]] || printExec cp -v $ALICE_PHYSICS/PWGPP/scripts/$scr .
   done
- 
+
   self=$0
-  
+
   # For reference copy the setup to the output dir.
   copyFileToRemote $self $commonOutputPath
   copyFileToRemote $configFile $commonOutputPath
@@ -1053,18 +1087,32 @@ goSubmitMakeflow()
                        commonOutputPath=$commonOutputPath > benchmark.makeflow
     copyFileToRemote benchmark.makeflow $commonOutputPath
     makeflow $makeflowOptions benchmark.makeflow
-  else 
+  else
     echo "no makeflow!"
   fi
-  
-  # Summarize the run based on the makeflow log, append it to summary.log.
-  awk '/STARTED/   {startTime=$3} 
-       /COMPLETED/ {endTime=$3} 
+  xCopy -f -C -d $PWD $commonOutputPath/benchmark.makeflow.makeflowlog  # do not copy if it exists locally
+  awk '/STARTED/   {startTime=$3}
+       /COMPLETED/ {endTime=$3}
        END         {print "makeflow running time: "(endTime-startTime)/1000000/3600" hours"}' \
-      benchmark.makeflow.makeflowlog | tee -a summary.log
-  copyFileToRemote summary.log $commonOutputPath
+      benchmark.makeflow.makeflowlog > running_time
+  cat running_time >> summary.log
+  cat running_time >> summary_full.log
+  xCopy -f -d $commonOutputPath summary.log summary_full.log running_time
 
-  return 0
+  goCheckSummary
+  return $?
+}
+
+goCheckSummary() {
+  # Checks if summary.log (which must be available in the current dir) has any
+  # indication of errors.
+  local BAD
+  [[ ! -f summary.log ]] && return 1
+  BAD=$(awk '/error summary:/,/detailed summary:/' summary.log | grep -v '===' | sed -e '/^$/d' | wc -l)
+  BAD=$((BAD && 1))
+  [[ $BAD == 0 ]] && printf "\n\n==> No BAD files found!\n\n\n" \
+                  || printf "\n\n==> Validation failed: some BAD files were found! Check summary.log for more details.\n\n\n"
+  return $BAD
 }
 
 goGenerateMakeflow()
@@ -1143,6 +1191,12 @@ goGenerateMakeflow()
     echo "### Automatically generated on $(LANG=C date) ###"
     echo ; echo
 
+    #ppbench
+    echo "### ppbench ###"
+    echo "ppbench.done: benchmark.sh ${sourceUtilities[*]} ${configFile}"
+    echo -e "\t${alirootEnv} ./benchmark.sh ppbench ${configFile} ${extraOpts[@]}"" "
+    echo ; echo
+
     jobindex=0
     inputFile=""
     while read inputFile; do
@@ -1162,7 +1216,7 @@ goGenerateMakeflow()
       #arr_cpass0_outputs[${jobindex}]="${commonOutputPath}/meta/cpass0.job${jobindex}.run${runNumber}.done"
       arr_cpass0_outputs[${jobindex}]="cpass0.job${jobindex}.run${runNumber}.done"
       echo "### CPass0 ###"
-      echo "${arr_cpass0_outputs[${jobindex}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} ${copyFiles[@]}"
+      echo "${arr_cpass0_outputs[${jobindex}]}: benchmark.sh ppbench.done ${sourceUtilities[*]} ${configFile} ${copyFiles[@]}"
       echo -e "\t${alirootEnv} ./benchmark.sh CPass0 \$OUTPATH/000${runNumber}/cpass0 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
 
@@ -1173,7 +1227,7 @@ goGenerateMakeflow()
       echo "${arr_cpass1_outputs[${jobindex}]}: benchmark.sh ${sourceUtilities[*]} ${configFile} merge.cpass0.run${runNumber}.done ${copyFiles[@]}"
       echo -e "\t${alirootEnv} ./benchmark.sh CPass1 \$OUTPATH/000${runNumber}/cpass1 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       echo ; echo
-      
+
       #CPass2
       #arr_cpass2_outputs[${jobindex}]="${commonOutputPath}/meta/cpass2.job${jobindex}.run${runNumber}.done"
       arr_cpass2_outputs[${jobindex}]="cpass2.job${jobindex}.run${runNumber}.done"
@@ -1184,7 +1238,7 @@ goGenerateMakeflow()
       ((jobindex++))
 
     done< <(grep "/000${runNumber}/" ${inputFileList})
-    
+
     #######################CPass0############################
 
     #CPass0 list of Calib files to merge
@@ -2253,20 +2307,18 @@ goMakeSummary()
   # will appear in the submission dir.
 
   #some defaults:
-  log=summary.log
-  jsonLog=summary.json
+  log=summary_full.log
   productionID=qa
   alilog_info "[BEGIN] goMakeSummary() with following parameters $*"
   configFile=$1
   shift 1
   extraOpts=("$@")
 
-  parseConfig configFile=$configFile "${extraOpts[@]}" || return 1 
+  parseConfig configFile=$configFile "${extraOpts[@]}" || return 1
   batchWorkingDirectory=$PWD
 
   logTmp="${batchWorkingDirectory}/${log}"
-  jsonLogTmp="${batchWorkingDirectory}/${jsonLog}"
-  
+
   [[ -f "$alirootSource" && -z "$ALICE_ROOT" ]] && source "$alirootSource"
   [[ ! -f "$configFile" ]] && echo "no config file ${configFile}!" && return 1
 
@@ -2292,157 +2344,22 @@ goMakeSummary()
   echo "ALICE_ROOT=${ALICE_ROOT}"
   echo "commonOutputPath=${commonOutputPath}"
 
-  # json header: open array of objects
-  echo '[' > "$jsonLogTmp"
+  # Report simple summary (as opposed to a bloated log) to a separated file.
+  #  * Full log will be on summary_full.log.
+  #  * Simplified log will be on summary.log.
+  rm -f summary.log
+  goSummarizeMetaFiles "$metadir" | tee -a summary.log
 
-  goSummarizeMetaFiles "$metadir"
-
-  echo "total numbers for the production:"
-  echo
-  awk 'BEGIN {nFiles=0;nCore=0;} 
-  /^calibfile/ {nFiles++;} 
-  /core/ {nCore++i;}
-  END {print     "cpass0 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass0.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/rec.log OK/ {nOK++;} 
-  /\/rec.log BAD/ {nBAD++;} 
-  /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
-  END {print     "cpass0 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass0.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/calib.log OK/ {nOK++;} 
-  /\/calib.log BAD/ {nBAD++;} 
-  END {print "cpass0 calib: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass0.job*done 2>/dev/null
-
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /merge.log OK/ {nOK++;} 
-  /merge.log BAD/ {nBAD++;} 
-  END {print "cpass0 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass0*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /ocdb.log OK/ {nOK++;} 
-  /ocdb.log BAD/ {nBAD++;} 
-  END {print   "cpass0 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass0*done 2>/dev/null
-
-  echo
-  awk 'BEGIN {nFiles=0;nCore=0;} 
-  /^calibfile/ {nFiles++;} 
-  /core/ {nCore++;}
-  END {print     "cpass1 produced "nFiles" calib files, "nCore" core files";}' "$metadir"/cpass1.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/rec.log OK/ {nOK++;} 
-  /\/rec.log BAD/ {nBAD++;} 
-  /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
-  END {print     "cpass1 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass1.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/calib.log OK/ {nOK++;} 
-  /\/calib.log BAD/ {nBAD++;} 
-  END {print "cpass1 calib: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass1.job*done 2>/dev/null
-
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /merge.log OK/ {nOK++;} 
-  /merge.log BAD/ {nBAD++;} 
-  END {print "cpass1 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass1*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /ocdb.log OK/ {nOK++;} 
-  /ocdb.log BAD/ {nBAD++;} 
-  END {print   "cpass1 OCDB:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass1*done 2>/dev/null
-
-  echo
-  awk 'BEGIN {nFiles=0;nCore=0;} 
-  /^aod/ {nFiles++;} 
-  /core/ {nCore++;}
-  END {print     "cpass2 produced "nFiles" aod files, "nCore" core files";}' "$metadir"/cpass2.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/rec.log OK/ {nOK++;} 
-  /\/rec.log BAD/ {nBAD++;} 
-  /stderr BAD/ {if ($0 ~ /rec.log/){nBAD++;}}
-  END {print     "cpass2 reco:  OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /\/aod.log OK/ {nOK++;} 
-  /\/aod.log BAD/ {nBAD++;} 
-  END {print "cpass2 aod: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/cpass2.job*done 2>/dev/null
-
-  awk 'BEGIN {nOK=0; nBAD=0; } 
-  /merge.log OK/ {nOK++;} 
-  /merge.log BAD/ {nBAD++;} 
-  END {print "cpass2 merge: OK: "nOK"\tBAD: "nBAD;}' "$metadir"/merge.cpass2*done 2>/dev/null
-
-  echo
-  echo per run stats:
-  /bin/ls -1 "$metadir"/merge.cpass0.run*.done | while read x; do
-
-    dir=$(goPrintValues dir - ${x})
-    runNumber=$(guessRunNumber ${dir})
-    [[ -z ${runNumber} ]] && continue
-
-    if $(/bin/ls "$metadir"/cpass0.job*.run${runNumber}.done &> /dev/null); then
-      statusCPass0=( $(
-      awk 'BEGIN {nOKrec=0;nBADrec=0;nOKcalib=0;nBADcalib=0;nOKstderr=0;nBADstderr=0;}
-      /\/rec.log OK/ {nOKrec++;} 
-      /\/rec.log BAD/ {nBADrec++;}
-      /stderr BAD/ {if ($0 ~ /rec.log/) {nBADrec++;} nBADstderr++;}
-      /stderr OK/ {nOKstderr++;}
-      /\/calib.log OK/ {nOKcalib++;}
-      /\/calib.log BAD/ {nBADcalib++}
-      END {print ""nOKrec" "nBADrec" "nOKstderr" "nBADstderr" "nOKcalib" "nBADcalib;}' "$metadir"/cpass0.job*.run${runNumber}.done 2>/dev/null
-      ) ) 
-    fi
-
-    if $(/bin/ls "$metadir"/cpass1.job*.run${runNumber}.done &>/dev/null); then
-      statusCPass1=( $(
-      awk 'BEGIN {nOKrec=0;nBADrec=0;nOKcalib=0;nBADcalib=0;nOKstderr=0;nBADstderr=0;nQAbarrelOK=0;nQAbarrelBAD=0;nQAouterOK=0;nQAouterBAD=0;}
-      /\/rec.log OK/ {nOKrec++;} 
-      /\/rec.log BAD/ {nBADrec++;}
-      /stderr BAD/ {if ($0 ~ /rec.log/) nBADrec++;nBADstderr++;}
-      /stderr OK/ {nOKstderr++;}
-      /\/calib.log OK/ {nOKcalib++;}
-      /\/calib.log BAD/ {nBADcalib++}
-      /\/qa_barrel.log OK/ {nQAbarrelOK++;}
-      /\/qa_barrel.log BAD/ {nQAbarrelBAD++;}
-      /\/qa_outer.log OK/ {nQAouterOK++;}
-      /\/qa_outer.log BAD/ {nQAouterBAD++;}
-      END {print ""nOKrec" "nBADrec" "nOKstderr" "nBADstderr" "nOKcalib" "nBADcalib" "nQAbarrelOK" "nQAbarrelBAD" "nQAouterOK" "nQAouterBAD;}' "$metadir"/cpass1.job*.run${runNumber}.done 2>/dev/null
-      ) ) 
-    fi
-
-    statusOCDBcpass0=$(awk '/ocdb.log/ {print $2} ' ${x} 2>/dev/null)
-    statusOCDBcpass1=$(awk '/ocdb.log/ {print $2}' ${x/cpass0/cpass1} 2>/dev/null)
-    statusQA=$(awk '/mergeMakeOCDB.log/ {print $2}' ${x/cpass0/cpass1} 2>/dev/null)
-
-    printf "%s\t ocdb.log cpass0: %s\t ocdb.log cpass1: %s\tqa.log:%s\t| cpass0: rec:%s/%s stderr:%s/%s calib:%s/%s cpass1: rec:%s/%s stderr:%s/%s calib:%s/%s QAbarrel:%s/%s QAouter:%s/%s\n" \
-           ${runNumber} ${statusOCDBcpass0} ${statusOCDBcpass1} ${statusQA} \
-           ${statusCPass0[0]} ${statusCPass0[1]} ${statusCPass0[2]} ${statusCPass0[3]} ${statusCPass0[4]} ${statusCPass0[5]} \
-           ${statusCPass1[0]} ${statusCPass1[1]} ${statusCPass1[2]} ${statusCPass1[3]} ${statusCPass1[4]} ${statusCPass1[5]} ${statusCPass1[6]} ${statusCPass1[7]} ${statusCPass1[8]} ${statusCPass1[9]}
-
-    # produce json summary
-    statusOCDBcpass0json=false
-    statusOCDBcpass1json=false
-    statusQAjson=false
-    [[ "$statusOCDBcpass0" == 'OK' ]] && statusOCDBcpass0json=true
-    [[ "$statusOCDBcpass1" == 'OK' ]] && statusOCDBcpass1json=true
-    [[ "$statusQA" == 'OK' ]] && statusQAjson=true
-    cat >> "$jsonLogTmp" <<EOF
-    {
-      run: ${runNumber},
-      status: { ocdb_pass0: ${statusOCDBcpass0json}, ocdb_pass1: ${statusOCDBcpass1json}, qa: ${statusQAjson} },
-      cpass0: {
-        reco: { n_ok: ${statusCPass0[0]}, n_bad: ${statusCPass0[1]} },
-        stderr: { n_ok: ${statusCPass0[2]}, n_bad: ${statusCPass0[3]} },
-        calib: { n_ok: ${statusCPass0[4]}, n_bad: ${statusCPass0[5]} }
-      },
-      cpass1: {
-        reco: { n_ok: ${statusCPass1[0]}, n_bad: ${statusCPass1[1]} },
-        stderr: { n_ok: ${statusCPass1[2]}, n_bad: ${statusCPass1[3]} },
-        calib: { n_ok: ${statusCPass1[4]}, n_bad: ${statusCPass1[5]} },
-        qabarrel: { n_ok: ${statusCPass1[6]}, n_bad: ${statusCPass1[7]} },
-        qarouter: { n_ok: ${statusCPass1[8]}, n_bad: ${statusCPass1[9]} }
-      }
-    },
-EOF
-
-  done
-
-  # json footer: close array of objects
-  echo ']' >> "${jsonLogTmp}"
+  if [[ $simplifiedSummary == 1 ]]; then
+    maxCopyTries=1 remoteCpTimeout=120 xCopy -f -d $PWD $commonOutputPath/running_time
+    { [[ -e running_time ]] && cat running_time || echo "No running time info available."; } | tee -a summary.log
+    alilog_info "[END] goMakeSummary() (stopping after simplified summary) with following parameters $*"
+    exec 1>&3 3>&-
+    exec 2>&1
+    xCopy -f -d $commonOutputPath summary.log summary_full.log
+    goCheckSummary
+    return $?
+  fi
 
   #make file lists - QA, trending, stacktraces, filtering and calibration
   ### wait for the merging of all runs to be over ###
@@ -2464,7 +2381,7 @@ EOF
   goPrintValues qafile remote.cpass2.qa.list "$metadir"/merge.cpass2.run*.done &>/dev/null
 
   listDir "$PWD" "after goPrintValues"
- 
+
   # Copy all the files to a local dir tree.
   for remoteList in remote.cpass1.qa.list \
                     remote.calib.list \
@@ -2507,7 +2424,7 @@ EOF
   listDir "$PWD" "after merging trending"
 
   printExec goMakeSummaryTree "${metadir}" 0
-  printExec goMakeSummaryTree "${metadir}" 1 
+  printExec goMakeSummaryTree "${metadir}" 1
 
   listDir "$PWD" "after making summary tree"
 
@@ -2541,7 +2458,7 @@ EOF
   echo "Copying ${log}. NOTE: this is the last bit you will see in the log!"
   exec 1>&3 3>&-
   exec 2>&1
-  copyFileToRemote $log $outputDir
+  xCopy -f -d $commonOutputPath/ summary.log summary_full.log
 
   alilog_info "[END] goMakeSummary() with following parameters $*"
   return 0
@@ -2580,7 +2497,7 @@ goSummarizeMetaFiles()
           listOfBadLogs[nBadLogs++]=$0
         }
       }
-      
+
       else if (donefile ~ /\.job/) {
         jobLogsFiles[logFile]=1
         jobLogs[runNumber,pass,logFile]++
@@ -2590,7 +2507,7 @@ goSummarizeMetaFiles()
           listOfBadLogs[nBadLogs++]=$0
         }
       }
-      
+
       next
     }
 
@@ -2613,13 +2530,13 @@ goSummarizeMetaFiles()
       print "===== error summary: ================================================================="
       for (run in runs ) {
         for (pass in passes ) {
-          
+
           for (logFile in jobLogsFiles) {
             if (jobLogsBAD[run,pass,logFile]>0) {
               print "ERROR      : run "run" "pass" "logFile" ( "jobLogsBAD[run,pass,logFile]" failures )"
             }
           }
-          
+
           for (logFile in mergeLogsFiles) {
             if (mergeLogsBAD[run,pass,logFile]>0) {
               print "ERROR merge: run "run" "pass" "logFile" ( "mergeLogsBAD[run,pass,logFile]" failures )"
@@ -2663,7 +2580,7 @@ goSummarizeMetaFiles()
               print "    ->ERRORS: "logFile" OK:"jobLogsOK[run,pass,logFile]" BAD:"jobLogsBAD[run,pass,logFile]
             }
           }
-          
+
           for (logFile in mergeLogsFiles) {
             if (mergeLogsBAD[run,pass,logFile]>0) {
               print "    ->ERRORS merge: "logFile" OK:"mergeLogsOK[run,pass,logFile]" BAD:"mergeLogsBAD[run,pass,logFile]
@@ -2673,7 +2590,7 @@ goSummarizeMetaFiles()
           print ""
         }
       }
-     
+
       if (nBadLogs)
       {
         print ""

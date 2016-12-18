@@ -24,6 +24,7 @@ class AliVParticle;
 class AliPIDResponse;
 class AliPID;
 class AliAODv0;
+class AliAODTrack;
 class AliAnalyseLeadingTrackUE;
 
 

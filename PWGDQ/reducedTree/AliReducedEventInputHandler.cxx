@@ -56,7 +56,8 @@ Bool_t AliReducedEventInputHandler::Init(TTree* tree, Option_t* opt)
              fReducedEvent = new AliReducedBaseEvent();   
        }
     }
-    tree->GetBranch("Event")->SetAddress(&fReducedEvent);
+    
+    tree->SetBranchAddress("Event",&fReducedEvent);
     
     return kTRUE;
 }
@@ -83,11 +84,13 @@ Bool_t AliReducedEventInputHandler::BeginEvent(Long64_t entry)
 Bool_t AliReducedEventInputHandler::Notify(const char* path)
 {
   // Notification of directory change
-  fUserInfo=fTree->GetTree()->GetUserInfo();
+  //SwitchOffBranches();
+  //SwitchOnBranches();
+  //fUserInfo=fTree->GetTree()->GetUserInfo();
     
-  TTree *ttree = fTree->GetTree();
-  if (!ttree) ttree = fTree;
-  TString statFname(ttree->GetCurrentFile()->GetName());
+  //TTree *ttree = fTree->GetTree();
+  //if (!ttree) ttree = fTree;
+  //TString statFname(ttree->GetCurrentFile()->GetName());
   return kTRUE;
 }
 

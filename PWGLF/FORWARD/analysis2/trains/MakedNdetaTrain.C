@@ -31,27 +31,26 @@ public:
   MakedNdetaTrain(const char* name)
   : TrainSetup(name)
   {
-    fOptions.Add("trig",     "TYPE", "Trigger type", "INEL");
-    fOptions.Add("filter",   "TYPE", "Filter type", "OUTLIER|PILEUP-BIN");
-    fOptions.Add("vzMin",    "CENTIMETER", "Min Ip Z", "-10");
-    fOptions.Add("vzMax",    "CENTIMETER", "Max Ip Z", "+10");
-    fOptions.Add("scheme",   "SCHEME", "Normalization scheme", "EVENT,TRIGGER");
-    fOptions.Add("trigEff",  "EFFICIENCY", "Trigger efficiency", "1");
-    fOptions.Add("trigEff0", "EFFICIENCY", "0-bin trigger effeciency", "1");
-    fOptions.Add("cent",     "ESTIMATOR", "Use centrality", "none");
-    fOptions.Add("centBins", "EDGES", "Centrality bin edges", "");
-    fOptions.Add("mc",       "Also make dN/deta for MC truth");
-    fOptions.Add("satellite","Restrict analysis to satellite events", false);
-    fOptions.Add("forward-config", "FILE", "Forward configuration", 
+    fOptions.Add("trig",          "TYPE",      "Trigger type",       "INEL");
+    fOptions.Add("filter",        "TYPE",   "Filter type","OUTLIER|PILEUP-BIN");
+    fOptions.Add("cent",          "ESTIMATOR", "Use centrality",     "none");
+    fOptions.Add("cent-bins",     "BINS",      "Centrality bins",    "default");
+    fOptions.Add("ipz-bins",      "BINS",      "IPz bins",           "u15");
+    fOptions.Add("scheme",     "SCHEME","Normalization scheme","EVENT,TRIGGER");
+    fOptions.Add("trigEff",       "EFFICIENCY","Trigger efficiency", 1.);
+    fOptions.Add("trigEff0",      "EFFICIENCY","0-bin trigger effeciency", 1.);
+    fOptions.Add("mc",            "Also make dN/deta for MC truth",  false);
+    fOptions.Add("satellite",    "Restrict analysis to satellite events",false);
+    fOptions.Add("forward-config","FILE", "Forward configuration",
 		 "dNdetaConfig.C");
-    fOptions.Add("central-config", "FILE", "Central configuration", 
+    fOptions.Add("central-config","FILE", "Central configuration", 
 		 "dNdetaConfig.C");
-    fOptions.Add("truth-config", "FILE", "MC-Truth configuration", 
+    fOptions.Add("truth-config",  "FILE", "MC-Truth configuration", 
 		 "dNdetaConfig.C");
-    fOptions.Add("mean-ipz", "MU", "Mean of IPz dist.", 0);
-    fOptions.Add("var-ipz", "SIGMA", "Variance of IPz dist.", -1);
-    fOptions.Add("no-central","Do not at SPD cluster task",false);
-    
+    fOptions.Add("mean-ipz",      "MU", "Mean of IPz dist.",         0);
+    fOptions.Add("var-ipz",       "SIGMA", "Variance of IPz dist.",  -1);
+    fOptions.Add("no-central",    "Do not at SPD cluster task",      false);
+    fOptions.Add("abs-min-cent",  "PERCENT", "Absolute least centrality", -1.);
   }
 protected:
   Bool_t CoupledNdetaCar(const char* which,
@@ -65,16 +64,16 @@ protected:
       Printf("Failed to add task via AddTaskdNdeta.C(%s,%s)", cfg);
       return false;
     }
-    FromOption(tsk, "TriggerMask",         "trig",     "INEL");
-    FromOption(tsk, "FilterMask",          "filter",   "OUTLIER|PILEUP-BIN");
-    FromOption(tsk, "NormalizationScheme", "scheme",   "EVENT,TRIGGER");
-    FromOption(tsk, "IpZMin",              "vzMin",    -10.);
-    FromOption(tsk, "IpZMax",              "vzMax",    +10.);
-    FromOption(tsk, "TriggerEff",          "trigEff",  1.);
-    FromOption(tsk, "TriggerEff0",         "trigEff0", 1.);
-    FromOption(tsk, "CentralityMethod",    "cent",     "");
-    FromOption(tsk, "CentralityAxis",      "centBins", "default");
-    FromOption(tsk, "SatelliteVertices",   "satellite", false);
+    FromOption(tsk, "TriggerMask",         "trig",        "INEL");
+    FromOption(tsk, "FilterMask",          "filter",      "OUTLIER|PILEUP-BIN");
+    FromOption(tsk, "NormalizationScheme", "scheme",      "EVENT,TRIGGER");
+    FromOption(tsk, "CentralityMethod",    "cent",        "default");
+    FromOption(tsk, "CentralityAxis",      "cent-bins",   "default");
+    FromOption(tsk, "IPzAxis",             "ipz-bins",    "u10");
+    FromOption(tsk, "TriggerEff",          "trigEff",     1.);
+    FromOption(tsk, "TriggerEff0",         "trigEff0",    1.);
+    FromOption(tsk, "SatelliteVertices",   "satellite",   false);
+    FromOption(tsk, "AbsMinCent",          "abs-min-cent",-1.);
 
     if (!TString(which).BeginsWith("forward",TString::kIgnoreCase)) return true;
 
@@ -82,8 +81,7 @@ protected:
     Double_t sigmaIpz = fOptions.AsDouble("var-ipz",-1);
     if (sigmaIpz <= 0) return true;
 
-    TF1* f = new TF1("ipZw","TMath::Gaus(x,[0],[1],1)/TMath::Gaus(x,[2],[3],1)",
-		     fOptions.AsDouble("vzMin"),fOptions.AsDouble("vzMax"));
+    TF1* f=new TF1("ipZw","TMath::Gaus(x,[0],[1],1)/TMath::Gaus(x,[2],[3],1)");
     f->SetParNames("#mu_{emp}","#sigma_{emp}","#mu_{this}","#sigma_{this}");
     f->SetParameters(0.592,6.836,muIpz,sigmaIpz);
     // f->SetParErrors(0.023,0.029,eMuIpz,eSigmaIpz);

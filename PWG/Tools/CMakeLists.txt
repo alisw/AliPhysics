@@ -27,9 +27,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisHelperJetTasks.cxx 
-  AliBasicParticle.cxx 
-  AliTHn.cxx 
+  AliAnalysisHelperJetTasks.cxx
+  AliBasicParticle.cxx
+  AliTHn.cxx
   AliPWGHistoTools.cxx
   AliPWGFunc.cxx
   AliLatexTable.cxx
@@ -40,6 +40,7 @@ set(SRCS
   AliNamedString.cxx
   TCustomBinning.cxx
   TLinearBinning.cxx
+  TVariableBinning.cxx
   THistManager.cxx
   AliJSONReader.cxx
   AliJSONData.cxx
@@ -53,7 +54,11 @@ set(HDRS
   "${HDRS}"
   TBinning.h
   )
-  
+
+# Statically build YAML
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Disable additional yaml tests and tools")
+add_subdirectory(yaml-cpp)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
@@ -82,10 +87,28 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWG/Tools)
+
+# Tests
+install (DIRECTORY test DESTINATION PWG/Tools)
+
+# Histmanager test
+set(HISTMGRTESTS 
+    build_simple
+    build_grouped
+    fill_simple
+    fill_grouped
+    )
+foreach(TEST_HMGR ${HISTMGRTESTS})
+    add_test (histmgr_${TEST_HMGR}
+        env 
+        LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+        DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+        root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/tools/test/histmgr/runtest.C(\"${TEST_HMGR}\")")
+endforeach()

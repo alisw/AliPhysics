@@ -13,9 +13,11 @@
 
 class TH1D;
 
+#include <vector>
 
 /// \class AliFemtoV0TrackCutNSigmaFilter
-/// \brief A class designed to help track cuts test particle calculate NSigma values
+/// \brief A class designed to help track cuts test particle calculated NSigma values
+/// \See AliFemtoNSigmaFilter.h for detailed description of how to use filter
 ///
 /// \author Jesse Buxton <jesse.thomas.buxton@cern.ch>
 ///
@@ -25,20 +27,23 @@ public:
   /// Default Constructor - wide ranges and
   AliFemtoV0TrackCutNSigmaFilter();
 
+  AliFemtoV0TrackCutNSigmaFilter(const AliFemtoV0TrackCutNSigmaFilter& aCut);
+  AliFemtoV0TrackCutNSigmaFilter& operator=(const AliFemtoV0TrackCutNSigmaFilter& aCut);
+  virtual AliFemtoV0TrackCutNSigmaFilter* Clone();
   /// Destructor - deletes filters and histograms
   virtual ~AliFemtoV0TrackCutNSigmaFilter();
 
   /// Main method of the filter. Returns true if V0 passes NSigma
   virtual bool Pass(const AliFemtoV0* aV0);
 
-  virtual AliFemtoString Report();
+  virtual AliFemtoString Report();  //TODO
   virtual TList* ListSettings();
   virtual TList* AppendSettings(TList *settings, const TString &prefix = "") const;
 
   //----n sigma----
   bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK);
-  bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi);
-  bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP);
+  bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, double nsigmacutTPC=3.0, double nsigmacutTOF=3.0, bool requireTOF=false);
+  bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, double nsigmacutTPC=3.0, double nsigmacutTOF=3.0, bool requireTOF=true);
 
   enum DaughterParticleType {
     kPion = 0,
@@ -71,6 +76,22 @@ public:
   void SetOverrideImproperKaonNSigmaFilter(bool aOverride);
   void SetOverrideImproperProtonNSigmaFilter(bool aOverride);
 
+  // Methods to help cut out misidentified V0s
+  void CreateCustomV0Rejection(AliFemtoV0Type aV0TypeToReject);
+  void AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0Type aV0Type, int aDaughterCharge, double aMomMin, double aMomMax, double aNSigmaValueTPC, double aNSigmaValueTOF);
+  void AddTPCAndTOFNSigmaCutToV0Rejection(AliFemtoV0Type aV0Type, double aMomMinPos, double aMomMaxPos, double aNSigmaValueTPCPos, double aNSigmaValueTOFPos,
+                                                                  double aMomMinNeg, double aMomMaxNeg, double aNSigmaValueTPCNeg, double aNSigmaValueTOFNeg);
+  void AddTPCNSigmaCutToV0Rejection(AliFemtoV0Type aV0Type, int aDaughterCharge, double aMomMin, double aMomMax, double aNSigmaValueTPC);
+  void AddTPCNSigmaCutToV0Rejection(AliFemtoV0Type aV0Type, double aMomMinPos, double aMomMaxPos, double aNSigmaValueTPCPos,
+                                                            double aMomMinNeg, double aMomMaxNeg, double aNSigmaValueTPCNeg);
+  void AddTOFNSigmaCutToV0Rejection(AliFemtoV0Type aV0Type, int aDaughterCharge, double aMomMin, double aMomMax, double aNSigmaValueTOF);
+  void AddTOFNSigmaCutToV0Rejection(AliFemtoV0Type aV0Type, double aMomMinPos, double aMomMaxPos, double aNSigmaValueTOFPos,
+                                                            double aMomMinNeg, double aMomMaxNeg, double aNSigmaValueTOFNeg);
+
+  bool IsMisIDK0s(const AliFemtoV0* aV0);
+  bool IsMisIDLambda(const AliFemtoV0* aV0);
+  bool IsMisIDAntiLambda(const AliFemtoV0* aV0);
+
 protected:
 
   bool fUseCustomPionNSigmaFilter;
@@ -80,6 +101,15 @@ protected:
   AliFemtoNSigmaFilter *fPionNSigmaFilter;
   AliFemtoNSigmaFilter *fKaonNSigmaFilter;
   AliFemtoNSigmaFilter *fProtonNSigmaFilter;
+
+  // Members to help cut out misidentified V0s
+  bool fUseCustomK0sRejectionFilters;
+  bool fUseCustomLambdaRejectionFilters;
+  bool fUseCustomAntiLambdaRejectionFilters;
+
+  vector<AliFemtoNSigmaFilter> fK0sRejectionFilters;
+  vector<AliFemtoNSigmaFilter> fLambdaRejectionFilters;
+  vector<AliFemtoNSigmaFilter> fAntiLambdaRejectionFilters;
 
 
 #ifdef __ROOT__

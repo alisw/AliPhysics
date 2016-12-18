@@ -10,6 +10,8 @@
 /// it was created from, so we do not copy the information.
 ///
 
+#pragma once
+
 #ifndef ALIFEMTOTRACK_H
 #define ALIFEMTOTRACK_H
 
@@ -17,6 +19,7 @@
 #include "AliFmPhysicalHelixD.h"
 #include "TBits.h"
 #include "AliFemtoHiddenInfo.h"
+
 
 class AliFemtoTrack {
 public:
@@ -83,6 +86,9 @@ public:
   float CorrectionPion() const;
   float CorrectionKaon() const;
   float CorrectionProton() const;
+  float CorrectionPionMinus() const;
+  float CorrectionKaonMinus() const;
+  float CorrectionProtonMinus() const;
   float CorrectionAll() const;
 
   const TBits& TPCclusters() const;
@@ -175,6 +181,9 @@ public:
   void SetCorrectionPion(const double& x);
   void SetCorrectionKaon(const double& x);
   void SetCorrectionProton(const double& x);
+  void SetCorrectionPionMinus(const double& x);
+  void SetCorrectionKaonMinus(const double& x);
+  void SetCorrectionProtonMinus(const double& x);
   void SetCorrectionAll(const double& x);
 
   void SetTrueMomentum(AliFemtoThreeVector *aMom);
@@ -268,10 +277,10 @@ public:
   TBits fClusters;        ///< Cluster per padrow map
   TBits fShared;          ///< Sharing per padrow map
 
-  AliFemtoThreeVector fNominalTpcEntrancePoint; ///< Nominal track entrance point into TPC
-  AliFemtoThreeVector fNominalTpcPoints[9];     ///< Nominal track points in TCP
-  AliFemtoThreeVector fNominalTpcExitPoint;     ///< Nominal track exit point from TPC
-  AliFemtoThreeVector fNominalTpcPointShifted;     ///< Nominal track at given point from TPC
+  AliFemtoThreeVector fNominalTpcEntrancePoint;  ///< Nominal track entrance point into TPC
+  AliFemtoThreeVector fNominalTpcPoints[9];      ///< Nominal track points in TCP
+  AliFemtoThreeVector fNominalTpcExitPoint;      ///< Nominal track exit point from TPC
+  AliFemtoThreeVector fNominalTpcPointShifted;   ///< Nominal track at given point from TPC
 
   int   fKinkIndexes[3];    ///< Kink Index list
   bool  fHasPointOnITS[6];  ///< if track has hit on the ITS layer (6 layers: 2 x 3 (SPD, SSD, SDD))
@@ -294,6 +303,11 @@ public:
   float fCorrPi;     //corrections for pion hypothesis
   float fCorrK;      //corrections for kaon hypothesis
   float fCorrP;      //corrections for proton hypothesis
+
+  float fCorrPiMinus;     //corrections for pion hypothesis
+  float fCorrKMinus;      //corrections for kaon hypothesis
+  float fCorrPMinus;      //corrections for proton hypothesis
+
   float fCorrAll;    //corrections for particles without PID
 
 };
@@ -305,9 +319,5 @@ inline float AliFemtoTrack::PidProbPion() const {return fPidProbPion;}
 inline float AliFemtoTrack::PidProbKaon() const {return fPidProbKaon;}
 inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
-
-
-
-
 
 #endif

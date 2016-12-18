@@ -44,7 +44,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     void SetSelectedMesonID(Int_t anaMeson)               { fSelectedMesonID            = anaMeson                                                        ; }
     
     void ProcessMCParticles();
+    void ProcessAODMCParticles();
+    // determine source according to pdg code of mother
+    Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
+      
     void ProcessTrueClusterCandidates( AliAODConversionPhoton* TruePhotonCandidate, Float_t m02, AliAODConversionPhoton *TrueSubClusterCandidate1,
+                                    AliAODConversionPhoton *TrueSubClusterCandidate2);
+    void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, Float_t m02, AliAODConversionPhoton *TrueSubClusterCandidate1,
                                     AliAODConversionPhoton *TrueSubClusterCandidate2);
 // //     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     
@@ -119,11 +125,12 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoMotherInvMassPt;                              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                  fHistoMotherPtY;                                    //! array of histograms with signal +BG pt, Y
     TH2F**                  fHistoMotherPtAlpha;                                //! array of histograms with signal +BG  pt, alpha
-    TH2F**                  fHistoMotherPtOpenAngle;                            //! array of histograms with signal +BG  pt, openAngle
 
     // histograms for rec photon clusters/pi0 candidate
     TH1F**                  fHistoClusGammaPt;                                  //! array of histos with cluster, pt
+    TH1F**                  fHistoClusGammaE;                                   //! array of histos with cluster, E
     TH1F**                  fHistoClusOverlapHeadersGammaPt;                    //! array of histos with cluster, pt overlapping with other headers
+    TH2F**                  fHistoClusNLMPt;                                    //! array of histos with cluster NLM vs Pt
     TH2F**                  fHistoClusMergedPtvsM02;                            //! array of histos with cluster merged, pt vs M02
     TH2F**                  fHistoClusMergedPtvsM02Accepted;                    //! array of histos with cluster merged accepted mesons, pt vs M02
     TH2F**                  fHistoClusMergedEvsM02Accepted;                     //! array of histos with cluster merged accepted mesons, E vs M02
@@ -156,17 +163,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoMCEtaDalitzInAccPt;                           //! array of histos with weighted eta dalitz in acceptance, pT
     TH1F**                  fHistoMCPi0DalitzWOEvtWeightInAccPt;                //! array of histos without evt weight pi0 in acceptance, pT
     TH1F**                  fHistoMCEtaDalitzWOEvtWeightInAccPt;                //! array of histos without evt weight eta in acceptance, pT
-    TH1F**                  fHistoMCPi0SecPt;                                   //! array of histos with weighted pi0 from sec, pT
-    TH1F**                  fHistoMCPi0SecInAccPt;                              //! array of histos with weighted pi0 from sec in acceptance, pT
-    TH1F**                  fHistoMCPi0SecFromK0sPt;                            //! array of histos with weighted pi0 from sec from K0s, pT
-    TH1F**                  fHistoMCPi0SecFromK0sInAccPt;                       //! array of histos with weighted pi0 from sec from K0s in acceptance, pT
+
+    TH2F**                  fHistoMCSecPi0PtvsSource;                           //! array of histos with weighted pi0 from sec, pT for different sources
+    TH2F**                  fHistoMCSecPi0InAccPtvsSource;                      //! array of histos with weighted pi0 from sec in acceptance, pT for different sources
     TH2F**                  fHistoMCPi0PtJetPt;                                 //! array of histos with weighted pi0, pT, hardest jet pt
     TH2F**                  fHistoMCEtaPtJetPt;                                 //! array of histos with weighted eta, pT, hardest jet pt
-    TH1F**                  fHistoMCNegPiPt;                                    //! array of histos with weighted neg pions
-    TH1F**                  fHistoMCPosPiPt;                                    //! array of histos with weighted pos pions
-    TH1F**                  fHistoMCK0sPt;                                      //! array of histos with weighted K0s
-    TH1F**                  fHistoMCNegKPt;                                     //! array of histos with weighted neg kaons
-    TH1F**                  fHistoMCPosKPt;                                     //! array of histos with weighted pos kaons
+    TH2F**                  fHistoMCPrimaryPtvsSource;                          //! array of histos with weighted primary particles, pT vs source
+    TH2F**                  fHistoMCPrimaryYvsSource;                           //! array of histos with weighted primary particles, Y vs source
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
 
@@ -177,6 +180,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPrimPi0PtvsM02;                       //!
     TH2F**                  fHistoTrueClusSecPi0PtvsM02;                        //!
     TH2F**                  fHistoTrueClusSecPi0FromK0sPtvsM02;                 //!
+    TH2F**                  fHistoTrueClusSecPi0FromK0lPtvsM02;                 //!
     TH2F**                  fHistoTrueClusSecPi0FromLambdaPtvsM02;              //!
     TH2F**                  fHistoTrueClusEtaPtvsM02;                           //!
     TH2F**                  fHistoTrueClusEtaDalitzPtvsM02;                     //!
@@ -188,6 +192,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusGammaFromEtaPtvsM02;                  //!
     TH2F**                  fHistoTrueClusElectronFromPi0PtvsM02;               //!
     TH2F**                  fHistoTrueClusElectronFromEtaPtvsM02;               //!
+    TH2F**                  fHistoTrueSecPi0PtvsDiffReco;                       //!
+    
     TH2F**                  fHistoTrueClusBGPtvsM02;                            //!
     TH2F**                  fHistoTrueClusGammaPtvsM02;                         //!
     TH2F**                  fHistoTrueClusGammaPartConvPtvsM02;                 //!
@@ -196,9 +202,6 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusMergedInvMassvsPt;                    //!
     TH2F**                  fHistoTrueClusPi0InvMassvsPt;                       //!
     TH2F**                  fHistoTrueClusPrimPi0InvMassvsPt;                   //!
-    TH2F**                  fHistoTrueClusSecPi0InvMassvsPt;                    //!
-    TH2F**                  fHistoTrueClusSecPi0FromK0sInvMassvsPt;             //!
-    TH2F**                  fHistoTrueClusSecPi0FromLambdaInvMassvsPt;          //!
     TH2F**                  fHistoTrueClusEtaInvMassvsPt;                       //!
     TH2F**                  fHistoTrueClusBGInvMassvsPt;                        //!
     TH2F**                  fHistoTrueClusGammaInvMassvsPt;                     //!
@@ -213,8 +216,6 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueEtaPtY;                                   //! array of histos with validated eta, pt, Y
     TH2F**                  fHistoTruePi0PtAlpha;                               //! array of histos with validated pi0, pt, alpha
     TH2F**                  fHistoTrueEtaPtAlpha;                               //! array of histos with validated eta, pt, alpha
-    TH2F**                  fHistoTruePi0PtOpenAngle;                           //! array of histos with validated pi0, pt, openAngle
-    TH2F**                  fHistoTrueEtaPtOpenAngle;                           //! array of histos with validated eta, pt, openAngle
     TH2F**                  fHistoTrueClusGammaEM02;                            //! array of histos with validated gamma, E, m02
     TH2F**                  fHistoTrueClusElectronEM02;                         //! array of histos with validated electrons, E, m02
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with validated pi0, E, m02
@@ -225,9 +226,11 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTruePrimaryPi01GammaMCPtResolPt;              //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryPi01ElectronMCPtResolPt;           //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryEtaMCPtResolPt;                    //! array of histos with validated weighted primary eta, MCpt, resol pt
-
+    TH2F**                  fHistoTrueSecondaryPi0MCPtResolPt;                  //! array of histos with validated weighted secondary pi0, MCpt, resol pt
+    
     // MC validated reconstructed quantities photons
     TH2F**                  fHistoDoubleCountTruePi0PtvsM02;                    //! array of histos with double counted pi0s, pT, M02
+    TH1F**                  fHistoDoubleCountTrueSecPi0Pt;                      //! array of histos with double counted secondary pi0s, pT, M02
     TH2F**                  fHistoDoubleCountTrueEtaPtvsM02;                    //! array of histos with double counted etas, pT, M02
     vector<Int_t>           fVectorDoubleCountTruePi0s;                         //! vector containing labels of validated pi0
     vector<Int_t>           fVectorDoubleCountTrueEtas;                         //! vector containing labels of validated eta
@@ -266,7 +269,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 15);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 23);
 };
 
 #endif

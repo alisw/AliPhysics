@@ -63,7 +63,7 @@ public:
   /**
    * Construct with histogram parameters
    */
-  AliFemtoAvgSepCorrFctn(char *title, const int &nbins, const float &Low, const float &High);
+  AliFemtoAvgSepCorrFctn(const char *title, const int &nbins, const float &Low, const float &High);
 
   /// Copy Constructor
   AliFemtoAvgSepCorrFctn(const AliFemtoAvgSepCorrFctn &aCorrFctn);

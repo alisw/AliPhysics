@@ -44,10 +44,10 @@ class EmcHit {
   
   TLorentzVector thishit;
   Short_t hittype; // 100 for bg event/real event, 1 for added pi0, 2 for added eta, -1 for not needed; from primary pi0: 101, from secondary pi0: 102, from K0: 103, from material: 104
-
+  Byte_t smno;
   Int_t imo; // index of original mother in monte carlo stack
   Int_t pid; // particle ID
-  Double_t weight; // weight from mother particle
+  Float_t weight; // weight from mother particle
   Bool_t bclean; // clean if only one contributor
   
 public:
@@ -130,6 +130,7 @@ public:
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
   void         SetRotateMixed(Bool_t b)                       { fRotateMixed   = b;         }
   void         SetAddedSignal(Bool_t b)                       { fAddedSignal   = b;         }
+  void         SetSimulationStudies(Bool_t b)                       { fSimStudies   = b;         }
   void         SetDataPeriod(Int_t b)                         { fDataPeriod   = b;         }
   void         SetDoManualRecal(Bool_t b)                     { fDoManualRecal = b;         }
   void         SetDoCalibRun(Bool_t b)                        { fCalibRun = b;         }
@@ -182,7 +183,7 @@ protected:
   void         FillCellQAHists(AliVCluster *, Bool_t isDcal=0, Bool_t isAfter=0);
   Double_t     PrivateEnergyRecal(Double_t energy, Int_t iCalib);
   // spectral shape
-  Double_t CalcWeight(Double_t pt,Double_t eta, Int_t i);
+  Float_t CalcWeight(Double_t pt,Double_t eta, Int_t i);
 
   // bad map
   TH1D *fBadMap;
@@ -232,6 +233,7 @@ protected:
   Bool_t                 fAddedSignal;            // added signals in MC?
   Int_t                  fDataPeriod;             // which period(s)
   Bool_t                 fApplyBadMapManually;    // manual bad map?
+  Bool_t                 fSimStudies;             // additional simulation studies
   
   // derived members (ie with ! after //)
   ULong64_t              fNEvs;                   //!accepted events
@@ -332,6 +334,16 @@ protected:
   TH2                   *fHPionInvMassesGamAdd1MultSym;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesGamAdd1MultAsym;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesAdd2;     //!histos for invariant mass plots
+
+  // simulation studies
+  TH2                   *fHPionInvMassesConvElZero; //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesConvElOne; //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesConvElBoth; //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesChargedPiZero; //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesChargedPiOne; //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesChargedPiBoth; //!histos for invariant mass plots
+  TH2                   *fHPionInvMassesGammaBoth; //!histos for invariant mass plots
+  
   // mixing
   TH2                   *fHPionInvMassesMix;     //!histos for invariant mass plots
   TH2                   *fHPionInvMassesMix1;     //!histos for invariant mass plots

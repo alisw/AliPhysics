@@ -7,6 +7,8 @@ void SetupPairCuts(AliDielectron *die,  Int_t cutDefinition);
 //QAtask
 void SetupV0cuts(AliDielectron *die, Int_t cutDefinition);
 void SetupV0Add(AliDielectron *die, Int_t cutDefinition);
+//Eta correction
+void SetEtaCorrection(AliDielectron *die);
 TVectorD *GetRunNumbers();
 
 void SetupMCsignals(AliDielectron *die);
@@ -32,13 +34,16 @@ TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
 //______________________________________________________________________________________
+//______________________________________________________________________________________
+//______________________________________________________________________________________
 //
 // Here the configuration part starts
 //
-AliDielectron* ConfigJpsi_zzhou_lowpt(Int_t cutDefinition)
+AliDielectron* ConfigJpsi_zzhou_lowpt(Int_t cutDefinition) 
 {
   //
   // Setup the instance of AliDielectron
+  //
   //
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);     
@@ -46,25 +51,27 @@ AliDielectron* ConfigJpsi_zzhou_lowpt(Int_t cutDefinition)
  	
   // create the actual framework object
   TString name=Form("%02d",cutDefinition);
-  if (cutDefinition<arrNames->GetEntriesFast()){
+  if (cutDefinition<arrNames->GetEntriesFast()) {
     name=arrNames->At(cutDefinition)->GetName();
   }
   AliDielectron *die =new AliDielectron(Form("%s",name.Data()),Form("Track cuts: %s",name.Data()));
-  
-  // #### vvvvvvvvvvvvvvvvvvvvvvvvvvvv CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  SetupEventCuts(die,cutDefinition);  
+ 
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  //### 4 different cuts (1)cutDefinition ==ConfDef::kDefaultAny  (2)ConfDef::kDefaultFirst (3)ConfDef::kITSNcluster3  (4)ConfDef::kITSNcluster4
+  SetupEventCuts(die,cutDefinition);     // ##### Event cuts setup
   if (hasMC)SetupMCsignals(die);
-  SetupTrackCuts(die,cutDefinition);
-  if (cutDefinition ==ConfDef::kDefaultAny || cutDefinition ==ConfDef::kDefaultFirst || cutDefinition ==ConfDef::kITSNcluster3 || cutDefinition ==ConfDef::kITSNcluster4 ) {
-    SetupPairCuts(die,cutDefinition);
-  }  
+  SetupTrackCuts(die,cutDefinition);     // ##### Track cuts setup
+  SetupPairCuts(die,cutDefinition);      // ##### Pair cuts setup
+   //does hfe apply v0 cuts like jpsi? check! 
+  SetupV0Cuts(die,cutDefinition);        // ##### V0 cuts setup
 
-  //does hfe apply v0 cuts like jpsi? check!
-  if (cutDefinition ==ConfDef::kDefaultAny || cutDefinition ==ConfDef::kDefaultFirst || cutDefinition ==ConfDef::kITSNcluster3 || cutDefinition ==ConfDef::kITSNcluster4 ) { 
-  SetupV0Cuts(die,cutDefinition);
-  }	
-  
-  // #### vvvvvvvvvvvvvvvvvvvvvvvvvvvv MISC vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+  //###### post pid correction #####-----------------------------
+  SetEtaCorrection(die);
+  //-------------------------------------------------------------
+
+
+    
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MISC vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // Monte Carlo Signals
   //  if (hasMC) SetupMCsignals(die);
   // prefilter settings
@@ -72,12 +79,12 @@ AliDielectron* ConfigJpsi_zzhou_lowpt(Int_t cutDefinition)
   // cut QA
   // die->SetCutQA();
   
-  // #### vvvvvvvvvvvvvvvvvvvvvvvvvvvv OUTPUT vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	/* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv OUTPUT vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   InitHistograms(die,cutDefinition);
+  
   //CF container for efficiencies
-  if (cutDefinition ==ConfDef::kDefaultAny || cutDefinition ==ConfDef::kDefaultFirst || cutDefinition ==ConfDef::kITSNcluster3 || cutDefinition ==ConfDef::kITSNcluster4 ) {
-    InitCF(die,cutDefinition);
-  }
+  InitCF(die,cutDefinition);
+
 
   //  #### Event Mixing Handler #####
   //   AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
@@ -86,6 +93,7 @@ AliDielectron* ConfigJpsi_zzhou_lowpt(Int_t cutDefinition)
   //   mix->SetDepth(10);
   //  die->SetMixingHandler(mix);
   //
+
   
   return die;
 }
@@ -102,7 +110,7 @@ void SetupEventCuts(AliDielectron *die, Int_t cutDefinition)
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
-  eventCuts->SetCentralityRange(40.,100.);
+  eventCuts->SetCentralityRange(40.,90.);
   //eventCuts->Print();
   die->GetEventFilter().AddCuts(eventCuts);
   
@@ -146,46 +154,46 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   
   if (cutDefinition==ConfDef::kDefaultAny){
     //pt->AddCut(AliDielectronVarManager::kP,1.,1.e30);
-    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
+    pt->AddCut(AliDielectronVarManager::kPt,0.85,8.); // same as Ionut's cuts
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8); // same as Ionut's cuts
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-5.,5.);
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.);
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro,3.,1000.);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-2.,3.);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.); //3.5, 1000.
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro,3.5,1000.); //3.0, 1000.
     pt->AddCut(AliDielectronVarManager::kNclsTPC,70.,160.);  
     pt->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.,4.);
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   }  else if(cutDefinition==ConfDef::kDefaultFirst) {
-    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
+    pt->AddCut(AliDielectronVarManager::kPt,0.85,8.);
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-5.,5.);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-2.,3.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.);
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro,3.,1000.);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro,3.5,1000.);
     pt->AddCut(AliDielectronVarManager::kNclsTPC,70.,160.);
     pt->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.,4.);  
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   } else if (cutDefinition==ConfDef::kITSNcluster3){
-    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
+    pt->AddCut(AliDielectronVarManager::kPt,0.85,8.);
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-5.,5.);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-2.,3.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.);
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro,3.,1000.);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro,3.5,1000.);
     pt->AddCut(AliDielectronVarManager::kNclsTPC,70.,160.);
     pt->AddCut(AliDielectronVarManager::kNclsITS,3.,6.);
     pt->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.,4.);
     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   } else if (cutDefinition==ConfDef::kITSNcluster4){
-    pt->AddCut(AliDielectronVarManager::kP,1.,8.);
-    pt->AddCut(AliDielectronVarManager::kEta,-0.9,0.9);
+    pt->AddCut(AliDielectronVarManager::kPt,0.85,8.);
+    pt->AddCut(AliDielectronVarManager::kEta,-0.8,0.8);
     pt->AddCut(AliDielectronVarManager::kKinkIndex0,0.);	
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-5.,5.);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-2.,3.);
     pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio,3.5,1000.);
-    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro,3.,1000.);
+    pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro,3.5,1000.);
     pt->AddCut(AliDielectronVarManager::kNclsTPC,70.,160.);
     pt->AddCut(AliDielectronVarManager::kNclsITS,4.,6.);
     pt->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.,4.);
@@ -322,7 +330,7 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition){
   histos->UserHistogram("Track","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(20,-1.0,1.0),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kEta);
   histos->UserHistogram("Track","","",GetRunNumbers(),AliDielectronHelper::MakeLinBinning(63,0.,6.32),AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kPhi);
 
-
+  histos->UserHistogram("Track","","",200,0,2000,40,-1.0,1.0, AliDielectronVarManager::kNTrk, AliDielectronVarManager::kEta);
 
   //nsigma
   histos->UserHistogram("Track","","",200,0.2,8.,AliDielectronVarManager::kPt); 
@@ -394,21 +402,13 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition){
 
   //Jpsi leg  nsigma(TPC) vs centrality vs Phi (3D)
   histos->UserHistogram("Track","","",
-			12,40.,100., 144,0.0,6.285, 100,-10,10,AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPhi,  AliDielectronVarManager::kTPCnSigmaEle);
+			12,40.,100., 200,0.2,8., 100,-10,10,AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPhi,  AliDielectronVarManager::kTPCnSigmaEle);
 
   
   //Jpsi leg  de/dx(TPC) vs centrality vs Pin (3D)
   histos->UserHistogram("Track","","",
-			12,40.,100., 200,0.2,8.0, 200,0.,200.,AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPIn, AliDielectronVarManager::kTPCsignal);
+			12,40.,100., 40,-1.0,1.0,200,0.,200.,AliDielectronVarManager::kCentrality, AliDielectronVarManager::kEta, AliDielectronVarManager::kTPCsignal);
   
-  //Jpsi leg  de/dx(TPC) vs centrality vs Eta (3D)
-  histos->UserHistogram("Track","","",
-			12,40.,100., 40,-1.0,1.0, 200,0.,200.,AliDielectronVarManager::kCentrality, AliDielectronVarManager::kEta,  AliDielectronVarManager::kTPCsignal);
-
-  //Jpsi leg  de/dx(TPC) vs centrality vs Phi (3D)
-  histos->UserHistogram("Track","","",
-			12,40.,100., 144,0.0,6.285, 200,0.,200.,AliDielectronVarManager::kCentrality, AliDielectronVarManager::kPhi,  AliDielectronVarManager::kTPCsignal);
-
   
 
   //jpsi nsigma vs eta
@@ -506,13 +506,13 @@ void InitCF(AliDielectron* die, Int_t cutDefinition)
   cf->AddVariable(AliDielectronVarManager::kY,"-1,-0.9,-0.8,-0.3,0,0.3,0.9,1.0");
   cf->AddVariable(AliDielectronVarManager::kM,125,0.,125*.04); //40Mev Steps
   cf->AddVariable(AliDielectronVarManager::kPairType,11,0,11);
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-5.0,-4.5,-4.0,-3.5,-3.0,-2.5,-2.0,-1.5,3.0,5.0");
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-4.0,-3.0,-2.5,-2.25, -2.0,-1.75,-1.5, -1.25, -1.0, 0.0, 1.0, 3.0,5.0");
   
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.5, 4.0, 4.5, 5.0,1000.");
-  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"3.0, 3.5, 4.0, 4.5, 5.0,1000.");
+  // cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"4.5, 5.0, 5.5, 6.0, 1000.");
+  // cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"4.5, 5.0, 5.5, 6.0, 1000.");
   
   //leg variables
-  cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.2, 1.3, 1.4, 1.5, 1.6, 2.0, 5.0",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kP,"0.0, 1.0, 1.2, 1.3, 1.4, 1.5, 1.6, 2.0, 5.0",kTRUE);
   cf->AddVariable(AliDielectronVarManager::kEta,"-1.,-0.9,-0.8,0,0.8,0.9,1.0",kTRUE);
 
   Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
@@ -580,3 +580,34 @@ void SetupMCsignals(AliDielectron *die){
   */
 }
 
+
+//####### use functions to correct pid ###############################
+void SetEtaCorrection(AliDielectron *die) {
+  Bool_t hasMC=die->GetHasMC();
+  Bool_t hasTuneOnData=kFALSE;
+
+  TF2 *fCntrdCorr=0x0;
+  TF2 *fWdthCorr=0x0;
+  /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv DATA vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
+  // either data or MC with tune on data option
+  if( !hasMC  ) {
+    // 2-dimensional eta correction for the centroid of electron sigmas
+    //Fit centroid  pol5 for eta and linear for centrality
+    fCntrdCorr = new TF2("fCntrdCorr", 
+    			 "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*x",
+    			 40.0, 90.0, -0.9, +0.9);
+    fCntrdCorr->SetParameters(0.402308+0.213, +0.0662174 , -1.56518, -0.451915, +3.54694, +0.442897,  +0.00161659); // 0.213 is the offset to the centroid correction
+        
+    // 2-dimensional eta correction for the width of electron sigmas
+    //Fit width  pol6 for eta and linear for centrality
+    fWdthCorr = new TF2("fWdthCorr", "[0] + [1]*y + [2]*y*y + [3]*TMath::Power(y,3) + [4]*TMath::Power(y,4) + [5]*TMath::Power(y,5) + [6]*TMath::Power(y,6)  + [7]*x", 40.0, 90.0, -0.9, +0.9);
+    fWdthCorr->SetParameters(1.03565, -0.0225206, -0.678966, +0.0813398, +1.59697, -0.0679809, -1.13399, -0.00121459); // pol6*linear
+
+    die->SetCentroidCorrFunction(fCntrdCorr,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kEta);
+    die->SetWidthCorrFunction(fWdthCorr,AliDielectronVarManager::kCentrality,AliDielectronVarManager::kEta);
+
+    //printf(" DATA PID correction loaded!!!\n");
+  }
+
+
+}

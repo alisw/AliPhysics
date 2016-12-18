@@ -48,11 +48,18 @@ fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
 fEmin(0.5),               fEmax(15.),      
-fL0min(0.01),             fL0max(0.5),              
+fEBkgmin(0.5),            fEBkgmax(15.),      
+fL0min(0.01),             fL0max(0.5),
+fL0Bkgmin(1.0),           fL0Bkgmax(3.0),
+fOpAnglemin(0.),          fOpAnglemax(3.0),
 fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
 fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
-fLogWeight(4.5),          fSameSM(kFALSE),         
+fLogWeight(4.5),          fSameSM(kFALSE),          
 fNMaskCellColumns(11),    fMaskCellColumns(0x0),
+fSelectOnlyCellSignalOutOfCollision(0),
+fCellEnergyHiso(0),       fClusterTopology(0),
+fSelectOnlyPhotonsInDifferentSM(0), 
+fChangeBkgShape(0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
 // Histograms binning
 fNbins(300),              
@@ -166,12 +173,19 @@ fCaloClustersArr(0x0),    fEMCALCells(0x0),
 fOutputContainer(0x0),
 fVertex(),                fFilteredInput(kFALSE),
 fImportGeometryFromFile(1), fImportGeometryFilePath(""),
-fEmin(0.5),               fEmax(15.),      
-fL0min(0.01),             fL0max(0.5),              
+fEmin(0.5),               fEmax(15.), 
+fEBkgmin(0.5),            fEBkgmax(15.),      
+fL0min(0.01),             fL0max(0.5),
+fL0Bkgmin(1.0),           fL0Bkgmax(3.0),
+fOpAnglemin(0.),          fOpAnglemax(3.0),
 fDTimeCut(100.),          fTimeMax(1000000),        fTimeMin(-1000000),
 fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
-fLogWeight(4.5),          fSameSM(kFALSE),         
+fLogWeight(4.5),          fSameSM(kFALSE),          
 fNMaskCellColumns(11),    fMaskCellColumns(0x0),
+fSelectOnlyCellSignalOutOfCollision(0),
+fCellEnergyHiso(0),       fClusterTopology(0),
+fSelectOnlyPhotonsInDifferentSM(0), 
+fChangeBkgShape(0),
 fInvMassCutMin(110.),     fInvMassCutMax(160.),
 // Histograms binning
 fNbins(300),              
@@ -303,12 +317,16 @@ void  AliAnalysisTaskEMCALPi0CalibSelection::CorrectClusters()
     AliVCluster *c1 = (AliVCluster *) fCaloClustersArr->At(iClu);
       
     Float_t e1i = c1->E();   // cluster energy before correction
-    if      (e1i < fEmin) continue;
+    if(fChangeBkgShape && (((c1->GetM02() > fL0Bkgmin) && (c1->GetM02() < fL0Bkgmax)) && ((e1i < fEBkgmin) || (e1i > fEBkgmax)))) continue;
+    if(fChangeBkgShape && (((c1->GetM02() < fL0Bkgmin) || (c1->GetM02() > fL0Bkgmax)) && (e1i < fEmin))) continue;
+    else if (!fChangeBkgShape && e1i < fEmin) continue;
     else if (e1i > fEmax) continue;
       
     else if (c1->GetNCells() < fMinNCells)                   continue;
+    
+    else if(fChangeBkgShape && (c1->GetM02() < fL0min || (c1->GetM02() > fL0max && c1->GetM02() < fL0Bkgmin) || c1->GetM02() > fL0Bkgmax)) continue;
       
-    else if (c1->GetM02() < fL0min || c1->GetM02() > fL0max) continue;
+    else if (!fChangeBkgShape && (c1->GetM02() < fL0min || c1->GetM02() > fL0max)) continue;
       
     if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c1->GetCellsAbsId(), c1->GetNCells())) continue;
       
@@ -388,14 +406,18 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
     
     Float_t e1i = c1->E();   // cluster energy before correction   
     
-    if      (e1i < fEmin) continue;
+    if(fChangeBkgShape && (((c1->GetM02() > fL0Bkgmin) && (c1->GetM02() < fL0Bkgmax)) && ((e1i < fEBkgmin) || (e1i > fEBkgmax)))) continue;
+    if(fChangeBkgShape && (((c1->GetM02() < fL0Bkgmin) || (c1->GetM02() > fL0Bkgmax)) && (e1i < fEmin))) continue;
+    else if (!fChangeBkgShape && e1i < fEmin) continue;
     else if (e1i > fEmax) continue;
     
     else if (!fRecoUtils->IsGoodCluster(c1,fEMCALGeo,fEMCALCells,bc)) continue;
     
-    else if (c1->GetNCells() < fMinNCells)                        continue; 
+    else if (c1->GetNCells() < fMinNCells)                        continue;
     
-    else if (c1->GetM02() < fL0min || c1->GetM02() > fL0max)      continue;
+    else if(fChangeBkgShape && (c1->GetM02() < fL0min || (c1->GetM02() > fL0max && c1->GetM02() < fL0Bkgmin) || c1->GetM02() > fL0Bkgmax)) continue;
+    
+    else if (!fChangeBkgShape && (c1->GetM02() < fL0min || c1->GetM02() > fL0max))      continue;
     
     if(DebugLevel() > 2)
     { 
@@ -480,14 +502,18 @@ void AliAnalysisTaskEMCALPi0CalibSelection::FillHistograms()
       AliAODCaloCluster *c2 = (AliAODCaloCluster *) fCaloClustersArr->At(jClu);
       
       Float_t e2i = c2->E();
-      if      (e2i < fEmin) continue;
+      if(fChangeBkgShape && (((c2->GetM02() > fL0Bkgmin) && (c2->GetM02() < fL0Bkgmax)) && ((e2i < fEBkgmin) || (e2i > fEBkgmax)) && ((fMomentum1.Angle(fMomentum2.Vect()) < fOpAnglemin) || (fMomentum1.Angle(fMomentum2.Vect()) > fOpAnglemax)))) continue;
+      if(fChangeBkgShape && (((c2->GetM02() < fL0Bkgmin) || (c2->GetM02() > fL0Bkgmax)) && (e2i < fEmin))) continue;
+      else if (!fChangeBkgShape && e2i < fEmin) continue;
       else if (e2i > fEmax) continue;
       
       else if (!fRecoUtils->IsGoodCluster(c2,fEMCALGeo,fEMCALCells,bc))continue;
       
-      else if (c2->GetNCells() < fMinNCells)                       continue; 
+      else if (c2->GetNCells() < fMinNCells)                       continue;
       
-      else if (c2->GetM02() < fL0min || c2->GetM02() > fL0max)     continue;
+      else if(fChangeBkgShape && (c2->GetM02() < fL0min || (c2->GetM02() > fL0max && c2->GetM02() < fL0Bkgmin) || c2->GetM02() > fL0Bkgmax)) continue;
+      
+      else if (!fChangeBkgShape && (c2->GetM02() < fL0min || c2->GetM02() > fL0max))     continue;
       
       fRecoUtils->GetMaxEnergyCell(fEMCALGeo, fEMCALCells,c2,absId2,iSupMod2,ieta2,iphi2,shared);
       

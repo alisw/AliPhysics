@@ -19,11 +19,13 @@
 # include <TParameter.h>
 # include <TError.h>
 # include <TMath.h>
+# include <TFile.h>
 # include <TDirectory.h>
 # include <THashList.h>
 # include <TProfile.h>
 # include <TProfile2D.h>
 # include <TDatabasePDG.h>
+# include <THStack.h>
 #else
 class TList;
 class TH1;
@@ -33,12 +35,17 @@ class TProfile;
 class TProfile2D;
 class TAxis;
 class TDirectory;
+class TFile;
 class TDatabasePDG; // Auto-load
+class THStack;
 #endif
 
 /**
  * @defgroup pwglf_forward_tracklets  Mid-rapidity tracklet code for dN/deta
- * 
+ *
+ * @see pwglf_fwd_mid_doc
+ *
+ * @ingroup pwglf_forward
  */
 /**
  * Class with utlity functions 
@@ -180,6 +187,16 @@ public:
    */
   static TH1* GetH1(Container* parent, const char* name, Bool_t verb=true);
   /** 
+   * Get a 1D histogram from a directory 
+   * 
+   * @param parent Container 
+   * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH1* GetH1(TDirectory* parent, const char* name, Bool_t verb=true);
+  /** 
    * Get a 1D profile from a container 
    * 
    * @param parent Container 
@@ -200,6 +217,16 @@ public:
    */
   static TH2* GetH2(Container* parent, const char* name, Bool_t verb=true);
   /** 
+   * Get a 2D histogram from a directory 
+   * 
+   * @param parent Directory 
+   * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH2* GetH2(TDirectory* parent, const char* name, Bool_t verb=true);
+  /** 
    * Get a 3D histogram from a container 
    * 
    * @param parent Container 
@@ -209,6 +236,16 @@ public:
    * @return Pointer to histogram or null 
    */
   static TH3* GetH3(Container* parent, const char* name, Bool_t verb=true);
+  /** 
+   * Get a 3D histogram from a directory 
+   * 
+   * @param parent Directory 
+   * @param name   Name of histogram 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to histogram or null 
+   */
+  static TH3* GetH3(TDirectory* parent, const char* name, Bool_t verb=true);
   /** 
    * Get a 2D profile from a container 
    * 
@@ -234,6 +271,26 @@ public:
     return GetP1(parent, name, verb);
   }
   /** 
+   * Get a stack from a container 
+   * 
+   * @param parent Container 
+   * @param name   Name of container 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to container or null 
+   */
+  static THStack* GetHS(Container* parent, const char* name,Bool_t verb=true);
+  /** 
+   * Get a stack from a directory 
+   * 
+   * @param parent Container 
+   * @param name   Name of container 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to container or null 
+   */
+  static THStack* GetHS(TDirectory* parent, const char* name,Bool_t verb=true);
+  /** 
    * Get a container from a container 
    * 
    * @param parent Container 
@@ -253,6 +310,16 @@ public:
    * @return Pointer to container or null 
    */
   static Container* GetC(TDirectory* parent, const char* name,Bool_t verb=true);
+  /** 
+   * Get a directory from a directory 
+   * 
+   * @param parent Container 
+   * @param name   Name of container 
+   * @param verb   Whether to be verbose
+   * 
+   * @return Pointer to container or null 
+   */
+  static TDirectory* GetT(TDirectory* parent,const char* name,Bool_t verb=true);
   /** 
    * Get a double-precision value from a container 
    * 
@@ -483,7 +550,7 @@ public:
    */
   static void ScaleAxis(TAxis& ret, Double_t fact=1);
   /** 
-   * Set an axis based on bin borders 
+   * Set an axis based ona bin borders 
    * 
    * @param axis    Axis to set 
    * @param n       Number of bins 
@@ -551,11 +618,11 @@ public:
    * The integral is scaled to number of bins, that is, we calculate
    * the weighted average over @f$\mathrm{IP}_z@f$ 
    * 
-   @f{eqnarray}
+   @f{eqnarray*}{
    N(\eta,\Delta) &=& \sum_{\mathrm{IP}_z} w N(\eta,\Delta,\mathrm{IP}_z)\\
    \delta N(\eta,\Delta) &=& \sqrt{1/\sum_{\mathrm{IP}_z} w}\\
    w &=&  \delta N(\eta,\Delta,\mathrm{IP}_z)
-   @f{eqnarray}
+   @f}
    * 
    * @param h 3D histogram to integrate 
    * 
@@ -671,6 +738,31 @@ public:
   static Double_t RatioE2(Double_t n, Double_t e2n,
 			  Double_t d, Double_t e2d,
 			  Double_t& e2r);
+  /** 
+   * Divide one histogram with another 
+   * 
+   * @param num    Numerator 
+   * @param denom  Denominator 
+   * @param name   (optional) name of new histogram
+   * 
+   * @return Newly allocated histogram with ratio, or null
+   */
+  static TH1* RatioH(const TH1* num, const TH1* denom, const char* name=0);
+  /** 
+   * Fix min/max value of histogram based on content and errors. 
+   * 
+   * @param h           Histogram to fix up
+   * @param ignoreZero  If true, ignore zero bins 
+   */
+  static void FixMinMax(TH1* h, Bool_t ignoreZero=true);
+  /** 
+   * Fix min/max value of a histogram stack based on content and errors. 
+   * 
+   * @param h           Histogram to fix up
+   * @param ignoreZero  If true, ignore zero bins 
+   */
+  static void FixMinMax(THStack* h, Bool_t ignoreZero=true);
+  
   /* @} */
   /** 
    * Get attributes corresponding to a PDG code 
@@ -701,6 +793,43 @@ public:
    */
   static Int_t  PdgBin(Int_t pdg);
   /* @} */
+  /** 
+   * Get name of centrality folder 
+   * 
+   * @param c1 Lower bound 
+   * @param c2 Upper bound 
+   * 
+   * @return String 
+   */
+  static const char* CentName(Double_t c1, Double_t c2);
+  /** 
+   * Return colour correspondig to a centrality bin 
+   * 
+   * @param axis Centrality axis 
+   * @param c1   Least centrality 
+   * @param c2   Largest centrality 
+   * 
+   * @return Colour 
+   */
+  static Color_t CentColor(const TAxis& axis,
+			   Double_t     c1,
+			   Double_t     c2);
+  /** 
+   * Return colour correspondig to a centrality bin 
+   * 
+   * @param bin Centrality bin number 
+   * 
+   * @return Colour 
+   */
+  static Color_t CentColor(Int_t bin);
+  /** 
+   * Open a file 
+   * 
+   * @param filename File name 
+   * 
+   * @return Opened file handle or null 
+   */
+  static TFile* OpenFile(const char* filename);
 protected:
   ClassDef(AliTrackletAODUtils,1); // Utilities
 };
@@ -721,9 +850,11 @@ Bool_t AliTrackletAODUtils::CheckAxisNBins(const char*  which,
 }
 //____________________________________________________________________
 Bool_t AliTrackletAODUtils::CheckAxisLimits(const char*  which,
-					       const TAxis* a1,
-					       const TAxis* a2)
+					    const TAxis* a1,
+					    const TAxis* a2)
 {
+  if (TMath::AreEqualAbs(a1->GetXmin(), a2->GetXmin(), 1.e-3)  &&
+      TMath::AreEqualAbs(a1->GetXmax(), a2->GetXmax(), 1.e-3)) return true;
   if (!TMath::AreEqualRel(a1->GetXmin(), a2->GetXmin(),1.E-12) ||
       !TMath::AreEqualRel(a1->GetXmax(), a2->GetXmax(),1.E-12)) {
     Warning("CheckAxisLimits",
@@ -750,6 +881,8 @@ Bool_t AliTrackletAODUtils::CheckAxisBins(const char*  which,
   }
   else {
     for (int i = 0; i < fN; ++i) {
+      if (TMath::AreEqualAbs(h1Array->GetAt(i),
+			     h2Array->GetAt(i), 1.e-3)) continue;
       if (!TMath::AreEqualRel(h1Array->GetAt(i),h2Array->GetAt(i),1E-10)) {
 	Warning("CheckAxisBins",
 		"%s limit # %3d incompatible: %f vs %f",
@@ -795,10 +928,11 @@ Bool_t AliTrackletAODUtils::CheckAxisLabels(const char*  which,
 }
 //____________________________________________________________________
 Bool_t AliTrackletAODUtils::CheckAxis(const char*  which, 
-					 const TAxis* a1,
-					 const TAxis* a2,
-					 Bool_t       alsoLbls)
+				      const TAxis* a1,
+				      const TAxis* a2,
+				      Bool_t       alsoLbls)
 {
+  if (a1->GetNbins() == 0 && a2->GetNbins() == 0) return true;
   if (!CheckAxisNBins (which, a1, a2)) return false;
   if (!CheckAxisLimits(which, a1, a2)) return false;
   if (!CheckAxisBins  (which, a1, a2)) return false;
@@ -926,7 +1060,7 @@ TObject* AliTrackletAODUtils::GetO(TDirectory* parent,
   if (!o) {
     if (verb) ::Warning("GetO", "Object \"%s\" not found in \"%s\"",
 			name, parent->GetName());
-    parent->ls();
+    // parent->ls();
     return 0;
   }
   if (!cls) return o;
@@ -943,12 +1077,27 @@ TH1* AliTrackletAODUtils::GetH1(Container* parent, const char* name, Bool_t v)
   return static_cast<TH1*>(GetO(parent, name, TH1::Class(), v));
 }
 //____________________________________________________________________
+TH1* AliTrackletAODUtils::GetH1(TDirectory* parent, const char* name, Bool_t v)
+{
+  return static_cast<TH1*>(GetO(parent, name, TH1::Class(), v));
+}
+//____________________________________________________________________
 TH2* AliTrackletAODUtils::GetH2(Container* parent, const char* name, Bool_t v)
 {
   return static_cast<TH2*>(GetO(parent, name, TH2::Class(), v));
 }
 //____________________________________________________________________
+TH2* AliTrackletAODUtils::GetH2(TDirectory* parent, const char* name, Bool_t v)
+{
+  return static_cast<TH2*>(GetO(parent, name, TH2::Class(), v));
+}
+//____________________________________________________________________
 TH3* AliTrackletAODUtils::GetH3(Container* parent, const char* name, Bool_t v)
+{
+  return static_cast<TH3*>(GetO(parent, name, TH3::Class(), v));
+}
+//____________________________________________________________________
+TH3* AliTrackletAODUtils::GetH3(TDirectory* parent, const char* name, Bool_t v)
 {
   return static_cast<TH3*>(GetO(parent, name, TH3::Class(), v));
 }
@@ -965,6 +1114,18 @@ TProfile2D* AliTrackletAODUtils::GetP2(Container* parent, const char* name,
   return static_cast<TProfile2D*>(GetO(parent, name, TProfile2D::Class(), v));
 }
 //____________________________________________________________________
+THStack*
+AliTrackletAODUtils::GetHS(TDirectory* parent, const char* name, Bool_t v)
+{
+  return static_cast<THStack*>(GetO(parent, name, THStack::Class(), v));
+}
+//____________________________________________________________________
+THStack*
+AliTrackletAODUtils::GetHS(Container* parent, const char* name, Bool_t v)
+{
+  return static_cast<THStack*>(GetO(parent, name, THStack::Class(), v));
+}
+//____________________________________________________________________
 AliTrackletAODUtils::Container*
 AliTrackletAODUtils::GetC(Container* parent, const char* name, Bool_t v)
 {
@@ -975,6 +1136,18 @@ AliTrackletAODUtils::Container*
 AliTrackletAODUtils::GetC(TDirectory* parent, const char* name, Bool_t v)
 {
   return static_cast<Container*>(GetO(parent, name, Container::Class(), v));
+}
+//____________________________________________________________________
+TDirectory*
+AliTrackletAODUtils::GetT(TDirectory* parent, const char* name, Bool_t v)
+{
+  TDirectory* d = parent->GetDirectory(name);
+  if (!d) {
+    if (v) ::Warning("GetO", "Directory \"%s\" not found in \"%s\"",
+			name, parent->GetName());
+    return 0;
+  }
+  return d;
 }
 //____________________________________________________________________
 Double_t AliTrackletAODUtils::GetD(Container*  parent,
@@ -1379,8 +1552,8 @@ void AliTrackletAODUtils::SetAxis(TAxis& axis, Int_t n, Double_t* borders)
 }
 //____________________________________________________________________
 void AliTrackletAODUtils::SetAxis(TAxis&         axis,
-				    const TString& spec,
-				    const char*    sep)
+				  const TString& spec,
+				  const char*    sep)
 {
   TString s(spec);
   Bool_t isRange = false, isUnit = false;
@@ -1421,9 +1594,9 @@ void AliTrackletAODUtils::SetAxis(TAxis&         axis,
 }
 //____________________________________________________________________
 void AliTrackletAODUtils::SetAxis(TAxis&   axis,
-				    Int_t    n,
-				    Double_t l,
-				    Double_t h)
+				  Int_t    n,
+				  Double_t l,
+				  Double_t h)
 {
   axis.Set(n, l, h);
   FixAxis(axis);
@@ -1435,8 +1608,8 @@ void AliTrackletAODUtils::SetAxis(TAxis& axis, Int_t n, Double_t m)
 }
 //____________________________________________________________________
 void AliTrackletAODUtils::PrintAxis(const TAxis& axis,
-				      Int_t nSig,
-				      const char* alt)
+				    Int_t nSig,
+				    const char* alt)
 {
   printf(" %17s axis: ", alt ? alt : axis.GetTitle());
   if (axis.GetXbins() && axis.GetXbins()->GetArray()) {
@@ -1551,6 +1724,7 @@ TH3* AliTrackletAODUtils::ScaleDelta(TH3* h, TH2* etaIPzScale)
   return h;
 }
 //____________________________________________________________________
+// @cond
 TH2* AliTrackletAODUtils::ProjectEtaDelta(TH3* h)
 {
   TH2* etaDelta = static_cast<TH2*>(h->Project3D("yx e"));
@@ -1593,9 +1767,14 @@ TH2* AliTrackletAODUtils::ProjectEtaDelta(TH3* h)
 #endif 
   return etaDelta;
 }
+// @endcond
 //____________________________________________________________________
 TH1* AliTrackletAODUtils::ProjectDelta(TH2* h)
 {
+  if (!h) {
+    Warning("ProjectDelta", "No histogram passed");
+    return 0;
+  }
   TH1* delta = h->ProjectionY("delta");
   delta->SetDirectory(0);
   delta->SetTitle(h->GetTitle());
@@ -1606,6 +1785,10 @@ TH1* AliTrackletAODUtils::ProjectDelta(TH2* h)
 //____________________________________________________________________
 TH1* AliTrackletAODUtils::ProjectDeltaFull(TH3* h)
 {
+  if (!h) {
+    Warning("ProjectDelta", "No histogram passed");
+    return 0;
+  }
   TH2* tmp   = ProjectEtaDelta(h);  
   TH1* delta = ProjectDelta(tmp);
   delta->SetDirectory(0);
@@ -1686,7 +1869,8 @@ TH1* AliTrackletAODUtils::AverageOverIPz(TH2*        h,
     }
     if (k == 0 || n == 0) {
       if (verb) 
-	::Warning("Average", "Eta bin # %3d has no data",etaBin);
+	::Warning("Average", "Eta bin # %3d of %10s has no data",
+		  etaBin, h->GetName());
       continue; // This eta bin empty!
     }
     Double_t norm = (mode > 0 ? n : dsum);
@@ -1765,6 +1949,67 @@ Double_t AliTrackletAODUtils::RatioE2(Double_t n, Double_t e2n,
   r   = n/d;
   e2r = (e2n/n/n + e2d/d/d);
   return r;
+}
+//____________________________________________________________________
+TH1* AliTrackletAODUtils::RatioH(const TH1* num,
+				 const TH1* denom,
+				 const char* name)
+{
+  if (!num || !denom) {
+    ::Warning("RatioH", "Numerator (%p) or denominator (%p) missing",
+	      num, denom);
+    return 0;
+  }
+  if (!CheckConsistency(num, denom)) return 0;
+  
+  TH1* ratio = static_cast<TH1*>(num->Clone(name ? name : num->GetName()));
+  ratio->SetDirectory(0);
+  ratio->SetMinimum(-1111);
+  ratio->SetMaximum(-1111);
+  ratio->GetListOfFunctions()->Clear();
+  ratio->Divide(denom);
+  ratio->SetYTitle(Form("%s / %s",
+			num  ->GetYaxis()->GetTitle(), 
+			denom->GetYaxis()->GetTitle()));
+  ratio->SetTitle(Form("%s / %s", num  ->GetTitle(), denom->GetTitle()));
+  FixMinMax(ratio, true);
+  
+  return ratio;
+}
+//____________________________________________________________________
+void AliTrackletAODUtils::FixMinMax(TH1* h, Bool_t ignoreZero)
+{
+  Double_t min = +1e99;
+  Double_t max = -1e99;
+  for (Int_t ix = 1; ix <= h->GetNbinsX(); ix++) {
+    for (Int_t iy = 1; iy <= h->GetNbinsY(); iy++) {
+      for (Int_t iz = 1; iz <= h->GetNbinsZ(); iz++) {
+	Int_t    bin = h->GetBin(ix,iy,iz);
+	Double_t c   = h->GetBinContent(bin);
+	Double_t e   = h->GetBinError  (bin);
+	if (c == 0 && ignoreZero) continue;
+	min          = TMath::Min(min, c-e);
+	max          = TMath::Max(max, c+e);
+      }
+    }
+  }
+  h->SetMinimum(min);
+  h->SetMaximum(max);
+}
+//____________________________________________________________________
+void AliTrackletAODUtils::FixMinMax(THStack* stack, Bool_t ignoreZero)  
+{
+  Double_t min = +1e99;
+  Double_t max = -1e99;
+  TIter    next(stack->GetHists());
+  TH1*     h = 0;
+  while ((h = static_cast<TH1*>(next()))) {
+    FixMinMax(h, ignoreZero);
+    min = TMath::Min(min, h->GetMinimum());
+    max = TMath::Max(max, h->GetMaximum());
+  }
+  stack->SetMinimum(min);
+  stack->SetMaximum(max);
 }
 
 //____________________________________________________________________
@@ -1930,7 +2175,54 @@ const TAxis& AliTrackletAODUtils::PdgAxis()
   FixAxis(*axis);
   return *axis;
 }
-    
+//____________________________________________________________________
+TFile* AliTrackletAODUtils::OpenFile(const char* filename)
+{
+  TFile* file = TFile::Open(filename, "READ");
+  if (!file) {
+    ::Warning("OpenFile", "Failed to open \"%s\"", filename);
+    return 0;
+  }
+  return file;
+}
+//____________________________________________________________________
+const char* AliTrackletAODUtils::CentName(Double_t c1, Double_t c2)
+{
+  static TString tmp;
+  tmp.Form("cent%03dd%02d_%03dd%02d",
+	   Int_t(c1), Int_t(c1*100)%100,
+	   Int_t(c2), Int_t(c2*100)%100);
+  return tmp.Data();
+}
+//____________________________________________________________________
+Color_t AliTrackletAODUtils::CentColor(Int_t bin)
+{
+  const Color_t cc[] = { kMagenta+2, // 0
+			 kBlue+2,    // 1
+			 kAzure-1,   // 2 // 10,
+			 kCyan+2,    // 3
+			 kGreen+1,   // 4 
+			 kSpring+5,  // 5 //+10,
+			 kYellow+1,  // 6
+			 kOrange+5,  // 7 //+10,
+			 kRed+1,     // 8
+			 kPink+5,    // 9 //+10,
+			 kBlack };   // 10
+  Color_t tc = cc[bin % 10];
+  return tc;
+}
+//____________________________________________________________________
+Color_t AliTrackletAODUtils::CentColor(const TAxis& axis,
+				       Double_t     c1,
+				       Double_t     c2)
+{
+  Double_t avgC = (c1+c2)/2;
+  Int_t    binC = const_cast<TAxis&>(axis).FindBin(avgC);
+  return CentColor(binC);
+}
+
+  
+  
 #endif
 // Local Variables:
 //  mode: C++

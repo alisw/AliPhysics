@@ -478,25 +478,33 @@ protected:
     DrawResTitle(c, y, onlyMB);
     PrintCanvas(Form("%s results", base.Data()));
 
-    TH1* emp = GetH1(c, "empirical");
-    TF1* dc  = static_cast<TF1*>(GetObject(c,"deltaCorr"));
-    TF1* vw  = static_cast<TF1*>(GetObject(s,"ipZw"));
+    Int_t     sys = GetObject(c, "sys")->GetUniqueID();
+    TH1*      emp = GetH1(c, "empirical");
+    TF1*      dc  = static_cast<TF1*>(GetObject(c,"deltaCorr"));
+    TF1*      vw  = static_cast<TF1*>(GetObject(s,"ipZw"));
+    TProfile* sc  = static_cast<TProfile*>(GetObject(s,"sumVsC"));
     if (vw) vw->SetRange(-4,6);
-    if (emp || dc || vw) {
-      fBody->Divide(3,1);
-      DrawInPad(fBody, 1, emp, "", 0, "Empirical");
-      DrawInPad(fBody, 2, dc, "", 0, "\\hbox{IP} \\delta_{xy}");
-      DrawInPad(fBody, 3, vw, "", 0, "\\hbox{IP} \\delta_{z}");
+    Int_t     nPad = 0;
+    if (emp)  nPad++;
+    if (dc)   nPad++;
+    if (vw)   nPad++;
+    if (sc)   nPad++;
+    if (nPad > 0) {
+      fBody->Divide(nPad,1);
+      Int_t iPad = 1;
+      if (emp) DrawInPad(fBody, iPad++, emp, "", 0, "Empirical");
+      if (dc)  DrawInPad(fBody, iPad++, dc, "", 0, "\\hbox{IP} \\delta_{xy}");
       if (vw) {
+	DrawInPad(fBody, iPad++, vw, "", 0, "\\hbox{IP} \\delta_{z}");
 	Double_t y = .95;
 	DrawParameter(y, "#mu_{Z}", Form("%5.3f", vw->GetParameter(0)));
 	DrawParameter(y, "#sigma_{Z}", Form("%5.3f", vw->GetParameter(1)));
 	DrawParameter(y, "#mu_{Z,ref}", Form("%5.3f", vw->GetParameter(2)));
 	DrawParameter(y, "#sigma_{Z,ref}", Form("%5.3f", vw->GetParameter(3)));
       }
-      PrintCanvas(Form("%s corrections", base.Data()));
+      if (sc) DrawInPad(fBody, iPad, sc, "", 0, "#LT#Sigma signal#GT");
+      PrintCanvas(Form("%s results - corrections", base.Data()));
     }
-      
     
     TAxis*   centAxis = (onlyMB ? 0 : GetCentAxis(c));
     if (centAxis && centAxis->GetNbins() < 1) centAxis = 0;
@@ -539,9 +547,11 @@ protected:
       
       DrawInPad(p2, 0, l, "");
       DrawInPad(p1, 1, dndeta,  "nostack", 0,
-		"\\hbox{d}N_{\\hbox{ch}}/\\hbox{d}\\eta|_{\\hbox{incl}}");
-      DrawInPad(p1, 2, dndetaEmp, "nostack", kLogy,
-		"\\hbox{d}N_{\\hbox{ch}}/\\hbox{d}\\eta|_{\\hbox{prim}}");
+		"\\mathrm{d}N_{\\mathrm{ch}}/\\mathrm{d}\\eta|"
+		"_{\\mathrm{incl}}");
+      DrawInPad(p1, 2, dndetaEmp, "nostack", (sys == 2 ? kLogy : 0),
+		"\\mathrm{d}N_{\\mathrm{ch}}/\\mathrm{d}\\eta|"
+		"_{\\mathrm{prim}}");
       DrawInPad(p1, 3, leftRight, "nostack", 0, "Left/Right");
       p1->GetPad(1)->SetGridx();
       p1->GetPad(2)->SetGridx();
@@ -761,16 +771,20 @@ protected:
       }
       if (l && !ok) { 
 	j++;
-	Int_t bin = axis ? TMath::Min(j, axis->GetNbins()) : 1;
-	if (axis) 
-	  name.Form("%3d%% - %3d%%", 
-		    Int_t(axis->GetBinLowEdge(bin)), 
-		    Int_t(axis->GetBinUpEdge(bin)));
+	if (axis) {
+	  Int_t bin = j; // axis ? TMath::Min(j, axis->GetNbins()) : 1;
+	  if (j >  axis->GetNbins())
+	    name = "0% - 100%";
+	  else 
+	    name.Form("%3d%% - %3d%%", 
+		      Int_t(axis->GetBinLowEdge(bin)), 
+		      Int_t(axis->GetBinUpEdge(bin)));
+	  ok = axis->GetBinUpEdge(bin) > 100;
+	}
 	else {
 	  name.ReplaceAll("ALICE", "");
 	  name.ReplaceAll("dNdeta", " - work in progress");
 	}
-	ok = axis && axis->GetBinUpEdge(bin) > 100;
 	// Printf("Adding entry %d: %s/%s", j,  nme.Data(), name.Data());
 	TLegendEntry* e = l->AddEntry("dummy", name, "f");
 	e->SetFillStyle(1001);

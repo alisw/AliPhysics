@@ -13,8 +13,10 @@ using std::array;
 #include <TH2F.h>
 #include <TH3F.h>
 #include <TList.h>
+#include <TLegend.h>
 
 
+const string labels[3] = {"0-10%","10-20%","20-40%"};
 void Final() {
   TFile spectra_file(kSpectraOutput.data());
   TFile systematics_file(kSystematicsOutput.data());
@@ -57,7 +59,7 @@ void Final() {
       SetHistStyle(abssyst,5,20,2);
       SetHistStyle(totsyst,6,20,3);
 
-      syst_symmary.DrawFrame(0.9 * kPtRange[0],0.001,1.1 * kPtRange[1],0.51);
+      syst_symmary.DrawFrame(kPtRange[0],0.001,kPtRange[1],0.51);
       totsyst->Draw("same");
       fitsyst->Draw("same");
       cutsyst->Draw("same");
@@ -69,16 +71,27 @@ void Final() {
     s_dir->cd();
     TCanvas spectra("spectra","spectra");
     spectra.DrawFrame(
-        0.9 * kPtRange[0],
+        0.95 * kPtRange[0],
         0.5 * syst[iS][centAxis->GetNbins()-1]->GetBinContent(ptAxis->GetNbins()),
         1.1 * kPtRange[1],
-        1.5 * syst[iS][0]->GetMaximum()
+        1.5 * syst[iS][0]->GetMaximum(),
+        ";#it{p}_{T} (GeV/#it{c});#frac{1}{#it{N}_{ev}} #frac{d^{2}#it{N}}{d#it{p}_{T}d#it{y}}"
         );
+    spectra.SetLogy();
+    TLegend final_leg(0.13,0.14,0.53,0.38);
+    final_leg.SetBorderSize(0);
+    final_leg.SetHeader(Form("%s, Pb-Pb #sqrt{s_{NN}} = 2.76 TeV",kNames[iS].data()));
     for (int iC = 0; iC < centAxis->GetNbins(); ++iC) {
       stat[iS][iC]->Draw("esamex0");
       syst[iS][iC]->Draw("e2same");
+      final_leg.AddEntry(syst[iS][iC],Form("%s",labels[iC].data()),"fp");
     }
+    final_leg.Draw();
     spectra.Write();
+    if (kPrintFigures) {
+      spectra.SaveAs((kFiguresFolder + "spectraTOF" + kLetter[iS] + ".eps").data());
+      spectra.SaveAs((kMacrosFolder + "spectraTOF" + kLetter[iS] + ".C").data());
+    }
   }
 
   TDirectory* r_dir = final_file.mkdir("ratio");

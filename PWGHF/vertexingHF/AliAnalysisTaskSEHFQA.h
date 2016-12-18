@@ -57,6 +57,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   void SetUseSelectionBit(Bool_t selectionbiton=kTRUE){fUseSelectionBit=selectionbiton;}
   void SetSecondCentralityEstimator(AliRDHFCuts::ECentrality est){fEstimator = est;}
   void SetFillDistributionsForTrackEffChecks(Bool_t filldistrtrackeffcheckson=kFALSE){fFillDistrTrackEffChecks = filldistrtrackeffcheckson;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
   /// getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
@@ -92,6 +93,8 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  Bool_t fUseSelectionBit;  /// flag to use or not the selection bit
  Bool_t fOnOff[5];         /// on-off the QA on tracks (0), PID (1), centrality (2), event selection -- default is {kTRUE,kTRUE,kTRUE,kTRUE}
  Bool_t fFillDistrTrackEffChecks;
+ Int_t fAODProtection;     /// flag to activate protection against AOD-dAOD mismatch.
+                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
 
  //___ Declaration of histograms
  TH1F* fHisNentries;                         //!<!  Histo. of output slot #1 (fOutputEntries)
@@ -168,7 +171,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHisNITSclsvsPtDaughters;             //!<!  Histo. of output slot #3 (fOutputTrack)
  TH2F* fHisNITSclsvsPhiDaughters;            //!<!  Histo. of output slot #3 (fOutputTrack)
  TH2F* fHisNITSclsvsEtaDaughters;            //!<!  Histo. of output slot #3 (fOutputTrack)
- TH1I* fHisSPDclsDaughters;                  //!<!  Histo. of output slot #3 (fOutputTrack)
+ TH1F* fHisSPDclsDaughters;                  //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisPtAllTracks;                      //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisPhiAllTracks;                     //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisEtaAllTracks;                     //!<!  Histo. of output slot #3 (fOutputTrack)
@@ -185,7 +188,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHisNITSclsvsPtAllTracks;             //!<!  Histo. of output slot #3 (fOutputTrack)
  TH2F* fHisNITSclsvsPhiAllTracks;            //!<!  Histo. of output slot #3 (fOutputTrack)
  TH2F* fHisNITSclsvsEtaAllTracks;            //!<!  Histo. of output slot #3 (fOutputTrack)
- TH1I* fHisSPDclsAllTracks;                  //!<!  Histo. of output slot #3 (fOutputTrack)
+ TH1F* fHisSPDclsAllTracks;                  //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisdistrFakeTr;                      //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisd0f;                              //!<!  Histo. of output slot #3 (fOutputTrack)
  TH1F* fHisd0f_filt;                         //!<!  Histo. of output slot #3 (fOutputTrack)
@@ -215,6 +218,8 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH1F* fHisStdEstimSignal;                   //!<!  Histo. of output slot #6 (fOutputCheckCentrality)
  TH2F* fHisStdPercentileSecondPercentile;    //!<!  Histo. of output slot #6 (fOutputCheckCentrality)
  TH2F* fHisStdSignalSecondSignal;            //!<!  Histo. of output slot #6 (fOutputCheckCentrality)
+ TH2F* fHisStdPercentileOldFrwPercentile;    //!<!  Histo. of output slot #6 (fOutputCheckCentrality)
+ TH1F* fHisStdPercentileOldFrwPercentileDev; //!<!  Histo. of output slot #6 (fOutputCheckCentrality)
  TH1F* fHisxvtx;                             //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH1F* fHisyvtx;                             //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH1F* fHiszvtx;                             //!<!  Histo. of output slot #7 (fOutputEvSelection)
@@ -228,6 +233,8 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH2F* fHisTrigCentSel;                      //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHisTrigMulSel;                       //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH1F* fHisWhyEvRejected;                    //!<!  Histo. of output slot #7 (fOutputEvSelection)
+ TH2F* fHisnClsITSvsNtrackletsSel;           //!<!  Histo. of output slot #7 (fOutputEvSelection)
+ TH2F* fHiszvtxvsSPDzvtxSel;                 //!<!  Histo. of output slot #7 (fOutputEvSelection)
  TH2F* fHisFEvents;                          //!<!  Histo. of output slot #8 (fOutputFlowObs)
  TH3F* fHisTPCVZE_AngleQ;                    //!<!  Histo. of output slot #8 (fOutputFlowObs)
  TH2F* fHisCentVsMultRPS;                    //!<!  Histo. of output slot #8 (fOutputFlowObs)
@@ -236,7 +243,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TProfile2D *fHisQ[3];                       //!<!  Histo. of output slot #8 (fOutputFlowObs)
 
  /// \cond CLASSIMP
- ClassDef(AliAnalysisTaskSEHFQA,11); ///AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,15); ///AnalysisTaskSE for the quality assurance of HF in hadrons
  /// \endcond
 };
 

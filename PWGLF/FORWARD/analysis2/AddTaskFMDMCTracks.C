@@ -1,15 +1,17 @@
 /**
  * @file   AddTaskFMDMCTracks.C
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Mar 23 12:14:03 2011
  * 
- * @brief  
+ * @brief Add task that tries to deconvolve energy loss from
+ * secondaries and primaries.
  * 
  * 
  * @ingroup pwglf_forward_scripts_tasks
  */
 /**
- * This is the macro to include the FMD energy fitter in a train.  
+ * Add task that tries to deconvolve energy loss from secondaries and
+ * primaries.
  * 
  * @param useTuple  If true, create NTuple of hits
  * @param maxStrips MAximum number strips 

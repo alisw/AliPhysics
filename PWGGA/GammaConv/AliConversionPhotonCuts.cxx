@@ -147,6 +147,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fNSigmaMass(0.),
   fUseEtaMinCut(kFALSE),
   fUseOnFlyV0Finder(kTRUE),
+  fUseOnFlyV0FinderSameSign(0),
   fDoPhotonAsymmetryCut(kTRUE),
   fDoPhotonPDependentAsymCut(kFALSE),
   fFAsymmetryCut(0),
@@ -213,6 +214,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
   fPreSelCut(kFALSE),
+  fProcessAODCheck(kFALSE),
   fProfileContainingMaterialBudgetWeights(NULL),
   fMaterialBudgetWeightsInitialized(kFALSE)
 {
@@ -278,6 +280,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fNSigmaMass(ref.fNSigmaMass),
   fUseEtaMinCut(ref.fUseEtaMinCut),
   fUseOnFlyV0Finder(ref.fUseOnFlyV0Finder),
+  fUseOnFlyV0FinderSameSign(ref.fUseOnFlyV0FinderSameSign),
   fDoPhotonAsymmetryCut(ref.fDoPhotonAsymmetryCut),
   fDoPhotonPDependentAsymCut(ref.fDoPhotonPDependentAsymCut),
   fFAsymmetryCut(ref.fFAsymmetryCut),
@@ -344,6 +347,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoCutIndex(NULL),
   fHistoEventPlanePhi(NULL),
   fPreSelCut(ref.fPreSelCut),
+  fProcessAODCheck(ref.fProcessAODCheck),
   fProfileContainingMaterialBudgetWeights(ref.fProfileContainingMaterialBudgetWeights),
   fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized)
 {
@@ -526,7 +530,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoTPCdEdxafter=new TH2F(Form("Gamma_dEdx_after %s",GetCutNumber().Data()),"dEdx Gamma after" ,150,0.03,20,800,0,200);
     fHistograms->Add(fHistoTPCdEdxafter);
 
-    fHistoKappaafter=new TH2F(Form("Gamma_Kappa_after %s",GetCutNumber().Data()),"Kappa Gamma after" ,150,0.03,20,100,0,10);
+    fHistoKappaafter=new TH2F(Form("Gamma_Kappa_after %s",GetCutNumber().Data()),"Kappa Gamma after" ,150,0.03,20,200,-20,20);
     fHistograms->Add(fHistoKappaafter);
 
     fHistoTOFSigafter=new TH2F(Form("Gamma_TOFSig_after %s",GetCutNumber().Data()),"TOF Sigma Gamma after" ,150,0.03,20,400,-6,10);
@@ -630,6 +634,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliStack 
 
     if(particle->GetNDaughters() >= 2){
       for(Int_t daughterIndex=particle->GetFirstDaughter();daughterIndex<=particle->GetLastDaughter();daughterIndex++){
+        if(daughterIndex<0) continue;
         TParticle *tmpDaughter = fMCStack->Particle(daughterIndex);
         if(tmpDaughter->GetUniqueID() == 5){
         if(tmpDaughter->GetPdgCode() == 11){
@@ -663,22 +668,22 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliStack 
       return kFALSE; // cuts on distance from collision point
     }
 
-    if(fabs(ePos->Vz()) > fMaxZ){
+    if(TMath::Abs(ePos->Vz()) > fMaxZ){
       return kFALSE;  // outside material
     }
-    if(fabs(eNeg->Vz()) > fMaxZ){
+    if(TMath::Abs(eNeg->Vz()) > fMaxZ){
       return kFALSE;  // outside material
     }
 
-    if( ePos->R() <= ((fabs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( ePos->R() <= ((TMath::Abs(ePos->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   ePos->R() >= ((fabs(ePos->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   ePos->R() >= ((TMath::Abs(ePos->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
-    if( eNeg->R() <= ((fabs(eNeg->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   eNeg->R() >= ((fabs(eNeg->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   eNeg->R() >= ((TMath::Abs(eNeg->Vz()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
@@ -754,22 +759,22 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
     if(rPos>fMaxR){
       return kFALSE; // cuts on distance from collision point
     }
-    if(fabs(ePos->Zv()) > fMaxZ){
+    if(TMath::Abs(ePos->Zv()) > fMaxZ){
       return kFALSE;  // outside material
     }
-    if(fabs(eNeg->Zv()) > fMaxZ){
+    if(TMath::Abs(eNeg->Zv()) > fMaxZ){
       return kFALSE;  // outside material
     }
 
-    if( rPos <= ((fabs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( rPos <= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE;  // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   rPos >= ((fabs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   rPos >= ((TMath::Abs(ePos->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
-    if( rNeg <= ((fabs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
+    if( rNeg <= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlope) - fLineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
-    } else if ( fEtaCutMin != -0.1 &&   rNeg >= ((fabs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
+    } else if ( fEtaCutMin != -0.1 &&   rNeg >= ((TMath::Abs(eNeg->Zv()) * fLineCutZRSlopeMin) - fLineCutZValueMin)){
       return kFALSE;
     }
 
@@ -870,7 +875,7 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
     }
 
     cutIndex++; //10
-    if(fabs(photonAOD->GetDCAzToPrimVtx()) > fDCAZPrimVtxCut) { //DCA Z cut of photon to primary vertex
+    if(TMath::Abs(photonAOD->GetDCAzToPrimVtx()) > fDCAZPrimVtxCut) { //DCA Z cut of photon to primary vertex
       if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt()); //10
       return kFALSE;
     }
@@ -965,7 +970,7 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   }
 
   // check if V0 from AliAODGammaConversion.root is actually contained in AOD by checking if V0 exists with same tracks
-  if(event->IsA()==AliAODEvent::Class()) {
+  if(event->IsA()==AliAODEvent::Class() && fPreSelCut && ( fIsHeavyIon != 1 || (fIsHeavyIon == 1 && fProcessAODCheck) )) {
     AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(event);
 
     Bool_t bFound = kFALSE;
@@ -1047,17 +1052,17 @@ Bool_t AliConversionPhotonCuts::AcceptanceCuts(AliConversionPhotonBase *photon) 
   }
   cutIndex++;
 
-  if(photon->GetConversionRadius() <= ((fabs(photon->GetConversionZ())*fLineCutZRSlope)-fLineCutZValue)){
+  if(photon->GetConversionRadius() <= ((TMath::Abs(photon->GetConversionZ())*fLineCutZRSlope)-fLineCutZValue)){
     if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
-  else if (fUseEtaMinCut &&  photon->GetConversionRadius() >= ((fabs(photon->GetConversionZ())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
+  else if (fUseEtaMinCut &&  photon->GetConversionRadius() >= ((TMath::Abs(photon->GetConversionZ())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
     if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
   cutIndex++;
 
-  if(fabs(photon->GetConversionZ()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  if(TMath::Abs(photon->GetConversionZ()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     if(fHistoAcceptanceCuts)fHistoAcceptanceCuts->Fill(cutIndex, photon->GetPhotonPt());
     return kFALSE;
   }
@@ -1158,9 +1163,16 @@ Bool_t AliConversionPhotonCuts::TracksAreSelected(AliVTrack * negTrack, AliVTrac
   cutIndex++;
 
   // avoid like sign
-  if(negTrack->Charge() == posTrack->Charge()) {
-    if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
-    return kFALSE;
+  if(fUseOnFlyV0FinderSameSign==0){
+    if(negTrack->Charge() == posTrack->Charge()) {
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      return kFALSE;
+    }
+  }else if(fUseOnFlyV0FinderSameSign==1){
+    if(negTrack->Charge() != posTrack->Charge()) {
+      if(fHistoTrackCuts)fHistoTrackCuts->Fill(cutIndex);
+      return kFALSE;
+    }
   }
   cutIndex++;
 
@@ -1281,7 +1293,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 
   if(fDoKaonRejectionLowP == kTRUE && !fSwitchToKappa){
     if(fCurrentTrack->P()<fPIDMinPKaonRejectionLowP ){
-      if( fabs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
+      if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
 
         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
@@ -1291,7 +1303,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   cutIndex++;
   if(fDoProtonRejectionLowP == kTRUE && !fSwitchToKappa){
     if( fCurrentTrack->P()<fPIDMinPProtonRejectionLowP ){
-      if( fabs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
+      if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
 
         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
@@ -1302,7 +1314,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 
   if(fDoPionRejectionLowP == kTRUE && !fSwitchToKappa){
     if( fCurrentTrack->P()<fPIDMinPPionRejectionLowP ){
-      if( fabs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
+      if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
 
         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
         return kFALSE;
@@ -1526,14 +1538,14 @@ Bool_t AliConversionPhotonCuts::AcceptanceCut(TParticle *particle, TParticle * e
     return kFALSE;
   }
 
-  if( ePos->R() <= ((fabs(ePos->Vz())*fLineCutZRSlope)-fLineCutZValue)){
+  if( ePos->R() <= ((TMath::Abs(ePos->Vz())*fLineCutZRSlope)-fLineCutZValue)){
     return kFALSE;
   }
-  else if (fUseEtaMinCut &&  ePos->R() >= ((fabs(ePos->Vz())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
+  else if (fUseEtaMinCut &&  ePos->R() >= ((TMath::Abs(ePos->Vz())*fLineCutZRSlopeMin)-fLineCutZValueMin )){
     return kFALSE;
   }
 
-  if(fabs(eNeg->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  if(TMath::Abs(eNeg->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     return kFALSE;
   }
 
@@ -1541,7 +1553,7 @@ Bool_t AliConversionPhotonCuts::AcceptanceCut(TParticle *particle, TParticle * e
     return kFALSE;
   }
 
-  if(fabs(ePos->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
+  if(TMath::Abs(ePos->Vz()) > fMaxZ ){ // cuts out regions where we do not reconstruct
     return kFALSE;
   }
 
@@ -1909,10 +1921,22 @@ Bool_t AliConversionPhotonCuts::SetV0Finder(Int_t v0FinderType){   // Set Cut
   case 0:  // on fly V0 finder
     cout << "have chosen onfly V0" << endl;
     fUseOnFlyV0Finder=kTRUE;
+    fUseOnFlyV0FinderSameSign=0;
     break;
   case 1:  // offline V0 finder
     cout << "have chosen offline V0" << endl;
     fUseOnFlyV0Finder=kFALSE;
+    fUseOnFlyV0FinderSameSign=0;
+    break;
+  case 2:  // on fly V0 finder with same signs
+    cout << "have chosen onfly V0 same sign pairing" << endl;
+    fUseOnFlyV0Finder=kTRUE;
+    fUseOnFlyV0FinderSameSign=1;
+    break;
+  case 3:  // on fly V0 finder with unlike signs and same signs
+    cout << "have chosen onfly V0 unlike sign and same signs pairing" << endl;
+    fUseOnFlyV0Finder=kTRUE;
+    fUseOnFlyV0FinderSameSign=2;
     break;
   default:
     AliError(Form(" v0FinderType not defined %d",v0FinderType));
@@ -2349,8 +2373,8 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutPionLine(Int_t pidedxSigmaCut){   /
     fPIDnSigmaAbovePionLineHighPt=1.;
     break;
   case 9:
-    fPIDnSigmaAbovePionLine=3.0; // We need a bit less tight cut on dE/dx
-    fPIDnSigmaAbovePionLineHighPt=-10;
+    fPIDnSigmaAbovePionLine=1; // We need a bit less tight cut on dE/dx
+    fPIDnSigmaAbovePionLineHighPt=0.5;
     break;
   default:
     AliError(Form("Warning: pidedxSigmaCut not defined %d",pidedxSigmaCut));
@@ -2513,28 +2537,36 @@ Bool_t AliConversionPhotonCuts::SetLowPRejectionCuts(Int_t LowPRejectionSigmaCut
 Bool_t AliConversionPhotonCuts::SetKappaTPCCut(Int_t kappaCut){   // Set Cut
   switch(kappaCut){
   case 0: // completely open
-    fKappaMaxCut=1000;
-    fKappaMinCut=-1;
+    fKappaMaxCut=200;
+    fKappaMinCut=-200;
     break;
-  case 1: // 0-3
-    fKappaMaxCut=3;
-    fKappaMinCut=0;
+  case 1: // mainly pi pi 
+    fKappaMaxCut=-13;
+    fKappaMinCut=-20;
     break;
-  case 2: // 0-2.5
-    fKappaMaxCut=2.5;
-    fKappaMinCut=0;
+  case 2: // mainly pi e
+    fKappaMaxCut=-6;
+    fKappaMinCut=-11;
     break;
-  case 3: // 0-2
-    fKappaMaxCut=2;
-    fKappaMinCut=0;
+  case 3: // signal
+    fKappaMaxCut=5;
+    fKappaMinCut=-3;
     break;
-  case 4: // 0-1.5
-    fKappaMaxCut=1.5;
-    fKappaMinCut=0;
+  case 4: // remaining
+    fKappaMaxCut=20;
+    fKappaMinCut=11;
     break;
-  case 5: // 0-1
-    fKappaMaxCut=1;
-    fKappaMinCut=0;
+  case 5: // -5-10 full signal peak(including background)
+    fKappaMaxCut=10;
+    fKappaMinCut=-5;
+    break;
+  case 6: //
+    fKappaMaxCut=10;
+    fKappaMinCut=-3;
+    break;
+  case 7: //
+    fKappaMaxCut=10;
+    fKappaMinCut=-0;
     break;
   default:
     AliError("KappaTPCCut not defined");
@@ -2860,6 +2892,16 @@ Bool_t AliConversionPhotonCuts::SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut
     fMinPPhotonAsymmetryCut=0.0;
     fMinPhotonAsymmetry=0.;
     break; 
+  case 5:
+    fDoPhotonAsymmetryCut=1;
+    fDoPhotonPDependentAsymCut=1;
+    fFAsymmetryCut = new TF1("fFAsymmetryCut","[0] + [1]*tanh(2*TMath::Power(x,[2]))",0.,100.);
+    fFAsymmetryCut->SetParameter(0,0.14);
+    fFAsymmetryCut->SetParameter(1,0.66);
+    fFAsymmetryCut->SetParameter(2,0.5);
+    fMinPPhotonAsymmetryCut=0.0;
+    fMinPhotonAsymmetry=0.;
+    break;
   default:
     AliError(Form("PhotonAsymmetryCut not defined %d",doPhotonAsymmetryCut));
     return kFALSE;
@@ -3197,14 +3239,14 @@ Bool_t AliConversionPhotonCuts::PsiPairCut(const AliConversionPhotonBase * photo
 
   if (fDo2DPsiPairChi2){
     if(fIncludeRejectedPsiPair){
-      if (fabs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut || (photon->GetPsiPair()) == 4){
+      if (TMath::Abs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut || (photon->GetPsiPair()) == 4){
         return kTRUE;
       } else {
         return kFALSE;
       }
 
     } else {
-      if (fabs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){
+      if (TMath::Abs(photon->GetPsiPair()) < -fPsiPairCut/fChi2CutConversion*photon->GetChi2perNDF() + fPsiPairCut ){
         return kTRUE;
       } else {
         return kFALSE;
@@ -3212,13 +3254,13 @@ Bool_t AliConversionPhotonCuts::PsiPairCut(const AliConversionPhotonBase * photo
     }
   } else {
     if(fIncludeRejectedPsiPair){
-      if(fabs(photon->GetPsiPair()) > fPsiPairCut || (photon->GetPsiPair()) != 4){
+      if(TMath::Abs(photon->GetPsiPair()) > fPsiPairCut || (photon->GetPsiPair()) != 4){
         return kFALSE;
       } else {
         return kTRUE;
       }
     } else {
-      if(fabs(photon->GetPsiPair()) > fPsiPairCut){
+      if(TMath::Abs(photon->GetPsiPair()) > fPsiPairCut){
         return kFALSE;
       } else {
         return kTRUE;
@@ -3291,7 +3333,7 @@ Bool_t AliConversionPhotonCuts::RejectToCloseV0s(AliAODConversionPhoton* photon,
       TVector3 v1(photon->Px(),photon->Py(),photon->Pz());
       TVector3 v2(photonComp->Px(),photonComp->Py(),photonComp->Pz());
       Double_t OpeningAngle=v1.Angle(v2);
-      if( OpeningAngle < fOpenAngle && fabs(photon->GetConversionRadius()-photonComp->GetConversionRadius()) < fDeltaR){
+      if( OpeningAngle < fOpenAngle && TMath::Abs(photon->GetConversionRadius()-photonComp->GetConversionRadius()) < fDeltaR){
         if(photon->GetChi2perNDF() > photonComp->GetChi2perNDF()) return kFALSE;
       }      
     }
@@ -3333,14 +3375,14 @@ Bool_t AliConversionPhotonCuts::InPlaneOutOfPlaneCut(Double_t photonPhi, Double_
     return kTRUE;
   }
   else if(fInPlaneOutOfPlane == 1){
-    if(fabs(gammaToEPAngle)<=0.25*TMath::Pi() || fabs(gammaToEPAngle)>=0.75*TMath::Pi()){
+    if(TMath::Abs(gammaToEPAngle)<=0.25*TMath::Pi() || TMath::Abs(gammaToEPAngle)>=0.75*TMath::Pi()){
       if(fill&&fHistoEventPlanePhi)fHistoEventPlanePhi->Fill(gammaToEPAngle);
       return kTRUE;
     }
     else return kFALSE;
   }
   else if(fInPlaneOutOfPlane == 2){
-    if(fabs(gammaToEPAngle)>0.25*TMath::Pi() && fabs(gammaToEPAngle)<0.75*TMath::Pi()){
+    if(TMath::Abs(gammaToEPAngle)>0.25*TMath::Pi() && TMath::Abs(gammaToEPAngle)<0.75*TMath::Pi()){
       if(fill&&fHistoEventPlanePhi)fHistoEventPlanePhi->Fill(gammaToEPAngle);
       return kTRUE;
     }

@@ -52,7 +52,7 @@ ClassImp(AliPHOSTenderSupply)
 AliPHOSTenderSupply::AliPHOSTenderSupply() :
   AliTenderSupply()
   ,fOCDBpass("local://OCDB")
-  ,fNonlinearityVersion("Default")
+  ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
   ,fRunNumber(-1)
   ,fRecoPass(-1)  //to be defined
@@ -60,6 +60,10 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
+  ,fApplyZS(kFALSE)
+  ,fZScut(0.)  
+  ,fUseLGForTime(kTRUE)
+  ,fAverageDigitsTime(kFALSE)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
@@ -78,7 +82,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
 AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tender) :
   AliTenderSupply(name,tender)
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
-  ,fNonlinearityVersion("Default")
+  ,fNonlinearityVersion("")
   ,fPHOSGeo(0x0)
   ,fRunNumber(-1) //to be defined
   ,fRecoPass(-1)  //to be defined
@@ -86,6 +90,10 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fUsePrivateCalib(0)
   ,fAddNoiseMC(0)
   ,fNoiseMC(0.001)
+  ,fApplyZS(kFALSE)
+  ,fZScut(0.)  
+  ,fUseLGForTime(kTRUE)
+  ,fAverageDigitsTime(kFALSE)
   ,fPHOSCalibData(0x0)
   ,fTask(0x0)
   ,fIsMC(kFALSE)
@@ -97,6 +105,7 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
    for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
+   for(Int_t mod=0; mod<5; mod++)fRunByRunCorr[mod]=0.136 ; //Correction contains measured pi0 mass
 }
 
 //_____________________________________________________
@@ -236,6 +245,9 @@ void AliPHOSTenderSupply::InitTender()
     }    
   } 
 
+  
+  
+  
   if(!fUsePrivateCalib){
     if(fIsMC){ //re/de-calibration for MC productions
       //Init recalibration
@@ -277,8 +289,13 @@ void AliPHOSTenderSupply::InitTender()
           AliFatal(Form("Can not find calibration for run %d, pass %d \n",fRunNumber, fRecoPass)) ;
         }
       }
-      //L1phase for Run2
+    }
+  }
+   
+  if(!fIsMC){
+      //L1phase and run-by-run correction for Run2
       if(fRunNumber>209122){ //Run2
+        //L1phase for Run2  
         AliOADBContainer L1Container("phosL1Calibration");
         L1Container.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSL1Calibrations.root","phosL1Calibration");
         TNamed* a= (TNamed*)L1Container.GetObject(fRunNumber);
@@ -288,11 +305,38 @@ void AliPHOSTenderSupply::InitTender()
 	}
 	else{
           const char*c=a->GetName();
-          for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=c[ii]-1;
+          for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=c[ii]-'0';
 	}
+      
+
+	//Run-by-run correction
+        AliOADBContainer runByRunContainer("phosRunByRunCalibration");
+        runByRunContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSRunByRunCalibrations.root","phosRunByRunCalibration");
+        TNamed* rbr= (TNamed*)runByRunContainer.GetObject(fRunNumber);
+	if(rbr){
+          sscanf(rbr->GetName(),"%f,%f,%f,%f",&fRunByRunCorr[1],&fRunByRunCorr[2],&fRunByRunCorr[3],&fRunByRunCorr[4]) ;  
+	}
+	//In any case correction should not be zero
+	//If it is zero, set default and write warning
+        for(Int_t mod=1; mod<5; mod++){
+          if(fRunByRunCorr[mod]==0.){
+              fRunByRunCorr[mod]=0.136 ; 
+             AliWarning(Form("Run-by-Run correction for mod. %d is zero in run %d",mod,fRunNumber)) ;  
+          }
+        }        
       }
+  }
+
+  //Non-linearity correction
+  if(fNonlinearityVersion==""){ //non-linearity not set by user yet
+    if(fRunNumber>209122){ //Run2
+      fNonlinearityVersion="Run2" ;
+    }else{
+      fNonlinearityVersion="Default" ;   
     }
   }
+
+  
 }
 
 //_____________________________________________________
@@ -353,14 +397,19 @@ void AliPHOSTenderSupply::ProcessEvent()
     AliESDCaloCells * cells = esd->GetPHOSCells() ;
     
     //Make copy of phos Energy and add noise
-    if(fIsMC && fAddNoiseMC){
+    if(fApplyZS || (fIsMC && fAddNoiseMC)){
       Short_t ncell= cells->GetNumberOfCells() ;
       Short_t cellNumber;
       Double_t amplitude=0., time=0., efrac=0.;
       Int_t mclabel;
       for(Short_t pos=0; pos<ncell; pos++){
 	 cells->GetCell(pos, cellNumber, amplitude, time, mclabel, efrac) ;
-	 amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+         if(fIsMC && fAddNoiseMC){
+            amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+         }
+         //Apply ZeroSuppression if necessary
+         if(fApplyZS && amplitude<fZScut)
+             amplitude=1.e-6;
 	 Bool_t isHG=cells->GetHighGain(pos) ;
          cells->SetCell(pos, cellNumber, amplitude, time,  mclabel,  efrac, isHG);
       }      
@@ -382,7 +431,6 @@ void AliPHOSTenderSupply::ProcessEvent()
       AliPHOSEsdCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
       cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
-      cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
       Float_t  position[3];
       cluPHOS.GetPosition(position);
@@ -397,9 +445,10 @@ void AliPHOSTenderSupply::ProcessEvent()
         clu->SetE(0.) ;
         continue ;
       }  
+      cluPHOS.SetE(0.136/fRunByRunCorr[mod]*CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
             
       Double_t ecore=CoreEnergy(&cluPHOS) ; 
-      ecore=CorrectNonlinearity(ecore) ;
+      ecore=0.136/fRunByRunCorr[mod]*CorrectNonlinearity(ecore) ;
       
       clu->SetE(cluPHOS.E());                      //total particle energy
       clu->SetCoreEnergy(ecore);                            //core particle energy
@@ -455,25 +504,62 @@ void AliPHOSTenderSupply::ProcessEvent()
     
   }
   else{//AOD
-    Int_t multClust=aod->GetNumberOfCaloClusters();
+    TClonesArray * clusters = aod->GetCaloClusters() ;
     AliAODCaloCells * cells = aod->GetPHOSCells() ;
+    ProcessAODEvent(clusters,cells, vertex) ;
+    //If there is an embedding
+    TClonesArray * clustersEmb = (TClonesArray*)aod->FindListObject("EmbeddedPi0CaloClusters") ;
+    AliAODCaloCells * cellsEmb = (AliAODCaloCells *)aod->FindListObject("EmbeddedPi0PHOScells") ;
+    if(clustersEmb && cellsEmb){
+      ProcessAODEvent(clustersEmb,cellsEmb,vertex) ;
+    }
+    clustersEmb = (TClonesArray*)aod->FindListObject("EmbeddedEtaCaloClusters") ;
+    cellsEmb = (AliAODCaloCells *)aod->FindListObject("EmbeddedEtaPHOScells") ;
+    if(clustersEmb && cellsEmb){
+      ProcessAODEvent(clustersEmb,cellsEmb,vertex) ;
+    }
+    clustersEmb = (TClonesArray*)aod->FindListObject("EmbeddedGammaCaloClusters") ;
+    cellsEmb = (AliAODCaloCells *)aod->FindListObject("EmbeddedGammaPHOScells") ;
+    if(clustersEmb && cellsEmb){
+      ProcessAODEvent(clustersEmb,cellsEmb,vertex) ;
+    }
+  }
+
+}
+
+//___________________________________________________________________________________________________
+void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCells * cells, TVector3 &vertex){
+    
+    const Int_t phosCluSelection =  AliVCluster::kPHOSNeutral ;  
+    //For re-calibration
+    const Double_t logWeight=4.5 ;  
+    
+    //For tracks
+    AliAODEvent * aod = static_cast<AliAODEvent*>(fTask->InputEvent()) ;
+
+    
+    Int_t multClust=clusters->GetEntriesFast();
     //Add noise
-    if(fIsMC && fAddNoiseMC){
+    if(fApplyZS || (fIsMC && fAddNoiseMC)){
       Short_t ncell= cells->GetNumberOfCells() ;
       Short_t cellNumber;
       Double_t amplitude=0., time=0., efrac=0.;
       Int_t mclabel;
       for(Short_t pos=0; pos<ncell; pos++){
 	 cells->GetCell(pos, cellNumber, amplitude, time, mclabel, efrac) ;
-	 amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+         if(fIsMC && fAddNoiseMC){
+            amplitude=TMath::Max(0.,amplitude+gRandom->Gaus(0,fNoiseMC)) ;
+         }
+         //Apply ZeroSuppression if necessary
+         if(fApplyZS && amplitude<fZScut)
+             amplitude=1.e-6;
 	 Bool_t isHG=cells->GetHighGain(pos) ;
          cells->SetCell(pos, cellNumber, amplitude, time,  mclabel,  efrac, isHG);
       }      
     }
   
     for (Int_t i=0; i<multClust; i++) {
-      AliAODCaloCluster *clu = aod->GetCaloCluster(i);    
-//      if ( !clu->IsPHOS()) continue;
+      AliAODCaloCluster *clu = static_cast<AliAODCaloCluster*>(clusters->At(i));    
       if (clu->GetType()!=phosCluSelection) continue;
       
       Float_t  positionOld[3];
@@ -484,7 +570,6 @@ void AliPHOSTenderSupply::ProcessEvent()
       AliPHOSAodCluster cluPHOS(*clu);
       cluPHOS.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
       cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
-      cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
       Float_t  position[3];
       cluPHOS.GetPosition(position);
@@ -499,11 +584,12 @@ void AliPHOSTenderSupply::ProcessEvent()
         clu->SetE(0.) ;
         continue ;
       }  
+      cluPHOS.SetE(0.136/fRunByRunCorr[mod]*CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
       TVector3 locPosOld; //Use it to re-calculate distance to track
       fPHOSGeo->Global2Local(locPosOld,globalOld,mod) ;
       
       Double_t ecore=CoreEnergy(&cluPHOS) ; 
-      ecore=CorrectNonlinearity(ecore) ;
+      ecore=0.136/fRunByRunCorr[mod]*CorrectNonlinearity(ecore) ;
      
       clu->SetE(cluPHOS.E());                           //total particle energy
       clu->SetCoreEnergy(ecore);                  //core particle energy
@@ -518,26 +604,33 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetM20(m20) ;               //second moment M2z
       
       //correct distance to track
-      Double_t dx=clu->GetTrackDx() ;
-      Double_t dz=clu->GetTrackDz() ;
+      Double_t pttrack=0.;
+      Int_t charge=0;
+      Double_t dx=999.,dz=999. ;
       TVector3 locPos;
       fPHOSGeo->Global2Local(locPos,global,mod) ;
-      if(dx!=-999.){ //there is matched track
-        dx+=locPos.X()-locPosOld.X() ;
-        dz+=locPos.Z()-locPosOld.Z() ;      
-        clu->SetTrackDistance(dx,dz);
-      }
+      Int_t itr=FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
+      clu->SetTrackDistance(dx,dz); 
       Double_t r = 999. ; //Big distance
       int nTracksMatched = clu->GetNTracksMatched();
-      if(nTracksMatched > 0) {
-        AliVTrack* track = dynamic_cast<AliVTrack*> (clu->GetTrackMatched(0));
-        if ( track ) {
-          Double_t pttrack = track->Pt();
-          Short_t charge = track->Charge();
-          r=TestCPV(dx, dz, pttrack,charge) ;
-	}
+      if(itr > 0) {
+         r=TestCPV(dx, dz, pttrack,charge) ;    
       }
       clu->SetEmcCpvDistance(r); //Distance in sigmas
+      if(itr>=0){ //there is a track
+        //Remove existing
+        AliAODTrack * tr = (AliAODTrack*)aod->GetTrack(itr) ;
+        Int_t ntrM = clu->GetNTracksMatched();
+        if(ntrM>0){
+          AliAODTrack * trStored = (AliAODTrack*)clu->GetTrackMatched(0);
+          if(trStored != tr){
+            clu->RemoveTrackMatched(trStored);
+            clu->AddTrackMatched(tr) ;  
+          }
+        }else{
+          clu->AddTrackMatched(tr) ;  
+        }
+      }  
 
 
       Double_t tof=EvalTOF(&cluPHOS,cells); 
@@ -552,8 +645,6 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetMCEnergyFraction(ecross) ;      
     }
     
-  }
-
 }
 //___________________________________________________________________________________________________
 Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
@@ -561,17 +652,24 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 					    Double_t &pt,Int_t &charge){
   //Find track with closest extrapolation to cluster
   AliESDEvent *esd = 0x0 ;
-  if(fTender)
-    esd= fTender->GetEvent();
-  else{ 
-    esd= dynamic_cast<AliESDEvent*>(fTask->InputEvent());
+  AliAODEvent *aod = 0x0 ;
+  if(fTender){
+    esd= dynamic_cast<AliESDEvent*>(fTender->GetEvent());
+    aod= dynamic_cast<AliAODEvent*>(fTender->GetEvent());
+  }else{ 
+    esd=dynamic_cast<AliESDEvent*>(fTask->InputEvent());
+    aod=dynamic_cast<AliAODEvent*>(fTask->InputEvent());
   }
   
-  if(!esd){
-    AliError("ESD is not found") ;
+  if(!esd && !aod){
+    AliError("Neither AOD nor ESD was found") ;
     return -1;
   }
-  Double_t  magF = esd->GetMagneticField();
+  Double_t  magF =0.;
+   if(esd)
+     magF = esd->GetMagneticField();
+   if(aod)
+     magF = aod->GetMagneticField();
  
   Double_t magSign = 1.0;
   if(magF<0)magSign = -1.0;
@@ -583,7 +681,12 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   }
 
   // *** Start the matching
-  Int_t nt = esd->GetNumberOfTracks();
+  Int_t nt = 0;
+  if(esd)
+    nt = esd->GetNumberOfTracks();
+  else
+    nt = aod->GetNumberOfTracks();
+      
   //Calculate actual distance to PHOS module
   TVector3 globaPos ;
   fPHOSGeo->Local2Global(mod, 0.,0., globaPos) ;
@@ -602,38 +705,58 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 
   Double_t b[3]; 
   Int_t itr=-1 ;
-    for (Int_t i=0; i<nt; i++) {
-      AliESDtrack *esdTrack=esd->GetTrack(i);
+  AliESDtrack *esdTrack=0x0 ;
+  AliAODTrack *aodTrack=0x0 ;
+  Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+  for (Int_t i=0; i<nt; i++) {
+      if(esd)
+        esdTrack=esd->GetTrack(i);
+      else
+        aodTrack=(AliAODTrack*)aod->GetTrack(i);
 
       // Skip the tracks having "wrong" status (has to be checked/tuned)
-      ULong_t status = esdTrack->GetStatus();
-      if((status & AliESDtrack::kTPCout) == 0) continue;
-
+      if(esd){
+        ULong_t status = esdTrack->GetStatus();
+        if((status & AliESDtrack::kTPCout) == 0) continue;
+      }
+      else{
+          
+          
+      }
+      
+      
       //Continue extrapolation from TPC outer surface
-      const AliExternalTrackParam *outerParam=esdTrack->GetOuterParam();
-      if (!outerParam) continue;
+      AliExternalTrackParam outerParam;
+      if(esdTrack){
+          outerParam = *(esdTrack->GetOuterParam());
+      }
+      if(aodTrack){            
+        aodTrack->GetPxPyPz(pxpypz);
+        aodTrack->GetXYZ(xyz);
+        aodTrack->GetCovarianceXYZPxPyPz(cv);
+        outerParam.Set(xyz,pxpypz,cv,aodTrack->Charge());
+      }
       
       Double_t z; 
-      if(!outerParam->GetZAt(rPHOS,bz,z))
+      if(!outerParam.GetZAt(rPHOS,bz,z))
         continue ;
 
       if (TMath::Abs(z) > kZmax) 
         continue; // Some tracks miss the PHOS in Z
 
-      AliExternalTrackParam t(*outerParam);
      
       //Direction to the current PHOS module
       Double_t phiMod=kAlpha0-kAlpha*mod ;
-      if(!t.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
+      if(!outerParam.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
     
       Double_t y;                       // Some tracks do not reach the PHOS
-      if (!t.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
+      if (!outerParam.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
       
       if(TMath::Abs(y) < kYmax){
-        t.GetBxByBz(b) ;
-        t.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
-        //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
-        t.GetXYZ(gposTrack) ;
+        outerParam.GetBxByBz(b) ;
+        outerParam.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
+        //outerParam.CorrectForMaterial(...); // Correct for the TOF material, if needed
+        outerParam.GetXYZ(gposTrack) ;
         TVector3 globalPositionTr(gposTrack) ;
         TVector3 localPositionTr ;
         fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod) ;
@@ -644,9 +767,15 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
 	  dx = ddx ;
   	  dz = ddz ;
 	  minDistance=d2 ;
-	  pt=esdTrack->Pt() ;
-	  charge=esdTrack->Charge() ;
 	  itr=i ;
+          if(esdTrack){
+            pt=esdTrack->Pt() ;
+	    charge=esdTrack->Charge() ;
+          }
+          else{            
+           pt=aodTrack->Pt() ;
+           charge=aodTrack->Charge() ;
+          }
         }
       }
     }//Scanned all tracks
@@ -654,7 +783,7 @@ Int_t AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
    return itr ;
 }
 //____________________________________________________________
-Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
+Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
 
   //For backward compatibility, if no RecoParameters found
   if(fNonlinearityVersion=="Default"){
@@ -672,6 +801,9 @@ Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
   }
   if(fNonlinearityVersion=="Henrik2010"){
     return en*(fNonlinearityParams[0]+fNonlinearityParams[1]*TMath::Exp(-en*fNonlinearityParams[2]))*(1.+fNonlinearityParams[3]*TMath::Exp(-en*fNonlinearityParams[4]))*(1.+fNonlinearityParams[6]/(en*en+fNonlinearityParams[5])) ;
+  }
+  if(fNonlinearityVersion=="Run2"){
+     return (1.-0.08/(1.+en*en/0.055))*(0.03+6.65e-02*TMath::Sqrt(en)+en) ; ; 
   }
 
   return en ;
@@ -721,11 +853,6 @@ Double_t AliPHOSTenderSupply::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int
   //Parameterization of LHC10h period
   //_true if neutral_
   
-  Double_t meanX=0;
-  Double_t meanZ=0.;
-  Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
-              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
-  Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
   
   Double_t mf = 0.; //Positive for ++ and negative for --
   if(fTender){
@@ -747,24 +874,56 @@ Double_t AliPHOSTenderSupply::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int
     }
   }
   
-  if(mf<0.){ //field --
-    meanZ = -0.468318 ;
-    if(charge>0)
-      meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01)) ;
-    else
-      meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01)) ;
-  }
-  else{ //Field ++
-    meanZ= -0.468318;
-    if(charge>0)
-      meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01)) ;
-    else
-      meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01)) ;     
-  }
+   Double_t meanX=0;
+   Double_t meanZ=0.;
+   Double_t sx=0.; 
+   Double_t sz=0.; 
+  if(fRunNumber<209122){ //Run1
+    sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
+              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
+    sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
+  
+    if(mf<0.){ //field --
+      meanZ = -0.468318 ;
+      if(charge>0)
+        meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01)) ;
+      else
+        meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01)) ;
+    }
+    else{ //Field ++
+      meanZ= -0.468318;
+      if(charge>0)
+        meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01)) ;
+      else
+        meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01)) ;     
+    }
 
+  }
+  else{//Run2
+  
+    sx = TMath::Min(5.2, 1.111 + 0.56 * TMath::Exp(-0.031 * pt*pt) + 4.8 /TMath::Power(pt+0.61,3));
+    sz = TMath::Min(3.3, 1.12  + 0.35 * TMath::Exp(-0.032 * pt*pt) + 0.75/TMath::Power(pt+0.24,3));
+
+    if(mf<0.){ //field --
+      meanZ = 0.102;
+      if(charge>0)
+        meanX =  TMath::Min(5.8, 0.42 + 0.70 * TMath::Exp(-0.015 * pt*pt) + 35.8/TMath::Power(pt+1.41,3));
+      else
+        meanX = -TMath::Min(5.8, 0.17 + 0.64 * TMath::Exp(-0.019 * pt*pt) + 26.1/TMath::Power(pt+1.21,3));
+    }
+    else{ //Field ++
+      meanZ= 0.102;
+      if(charge>0)
+        meanX = -TMath::Min(5.8, 0.58 + 0.68 * TMath::Exp(-0.027 * pt*pt) + 28.0/TMath::Power(pt+1.28,3));
+      else
+        meanX =  TMath::Min(5.8, 0.11 + 0.67 * TMath::Exp(-0.015 * pt*pt) + 29.9/TMath::Power(pt+1.29,3));
+    }
+
+  }
   Double_t rz=(dz-meanZ)/sz ;
   Double_t rx=(dx-meanX)/sx ;
   return TMath::Sqrt(rx*rx+rz*rz) ;
+  
 }
 
 //________________________________________________________________________
@@ -990,56 +1149,127 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
   Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
   Int_t mulDigit=clu->GetNCells() ;
 
+    //Slewing correction from LHC16eghklmn
+    const Float_t sA =-2.57668e-09; 
+    const Float_t sB = 8.19737e-09;
+    const Float_t sC =-3.16538e-09;
+    const Float_t sD = 1.02124e-09;
+    const Float_t sE =-1.11128e-10;
+    
+    //Slewing correction LHC15xx  2 values does not depend on trigger.
+//     const Double_t sA15 = -3.37e-9;//-3.37 ± 0.02 for pp at 5 TeV LHC15n and 15o
+//     const Double_t sB15 = 6.37e-9;//6.37 ± 0.02 for pp at 5 TeV LHC15n and 15o
+    const Double_t saturate = -4.42; //-4.42  ± 0.02  for pp at 5 TeV LHC15n
+    const Double_t slope1   =  4.82;  // 4.82  ± 0.02  for pp at 5 TeV LHC15n
+    const Double_t slope2   = -0.100;//-0.100 ± 0.006 for pp at 5 TeV LHC15n
+
+
+  
   Float_t tMax= 0.; //Time at the maximum
   Float_t eMax=0. ;
+  Float_t tMaxHG=0.; //HighGain only
+  Float_t eMaxHG=0.; //High Gain only
+  Bool_t isHGMax=kTRUE;
+  Int_t absIdMax=-1,absIdMaxHG=-1 ;
   for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
     Int_t absId=clu->GetCellAbsId(iDigit) ;
     Bool_t isHG=cells->GetCellHighGain(absId) ;
-    if( elist[iDigit]>eMax){
-      tMax=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
-      eMax=elist[iDigit] ;
+    Float_t ei=elist[iDigit] ;
+    if(isHG && (ei>eMaxHG)){ //only HG channels
+      eMaxHG=ei ;
+      absIdMaxHG=absId ;
+    }
+    if(ei>eMax){
+      eMax=ei ;
+      absIdMax=absId ;
+      isHGMax=isHG ;
     }
   }
-  
-   //Try to improve accuracy 
-  //Do not account time of soft cells:
-  //  const Double_t part=0.5 ;
-  Double_t eMin=TMath::Min(0.5,0.2*eMax) ;
-  Float_t wtot = 0.;
-  Double_t t = 0. ;
-  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
-    Int_t absId=clu->GetCellAbsId(iDigit) ;
-    Bool_t isHG=cells->GetCellHighGain(absId) ;
+  if(fUseLGForTime){
+      tMax=CalibrateTOF(cells->GetCellTime(absIdMax),absIdMax,isHGMax) ;
+    //Slewing correction
+    if(eMax>0 && fRunNumber>209122){ //Run2
+       if(fRunNumber<252603) //before LHC16e
+        tMax-=(saturate + slope1/eMax + slope2/(eMax*eMax))*1e-9;    
+//          tMax-= sA15+sB15/clu->E();
+       else           
+         tMax-= sA+sB/eMax+sC/eMax/eMax+sD/eMax/eMax/eMax+sE/eMax/eMax/eMax/eMax ;
+    }
+  }
+  else{
+      if(absIdMaxHG==-1) // this is clusters without HG digits: definitely wrong
+        return 100.e-9 ;  
+      tMax=CalibrateTOF(cells->GetCellTime(absIdMaxHG),absIdMaxHG,kTRUE) ;
+    //Slewing correction
+    if(eMaxHG>0 && fRunNumber>209122 ){ 
+       if(fRunNumber<252603) //before LHC16e
+        tMax-=(saturate + slope1/eMax + slope2/(eMax*eMax))*1e-9;    
+//          tMax-= sA15+sB15/clu->E();
+       else           
+         tMax-= sA+sB/eMaxHG+sC/eMaxHG/eMaxHG+sD/eMaxHG/eMaxHG/eMaxHG+sE/eMaxHG/eMaxHG/eMaxHG/eMaxHG ;
+    }
+  }
+    
+
+  if(!fAverageDigitsTime){
+     return tMax ;
+  }
+  else{
+    //Try to improve accuracy 
       
-    Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
-    if(TMath::Abs(ti-tMax)>50.e-9) //remove soft cells with wrong time
-      continue ;
+    //Parameterization of resolution      
+    const Float_t wA = 1.90098 ;
+    const Float_t wB = 1.25522e+01 ;
+    const Float_t wC = 1.24940e+00 ;
+    const Float_t wD = 8.73154e-01 ;    
     
-    //Remove too soft cells
-    if(elist[iDigit]<eMin)
-      continue ;
+    const Double_t eMin=0.5 ; //do not use time from soft digits
     
-    if(elist[iDigit]>0){ 
+     //Do not account time of soft cells:
+   if(eMin>eMaxHG)//no digits to improve
+      return tMax ;    
+    Float_t wtot = 0.;
+
+    Double_t t = 0. ;
+    for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+      Int_t absId=clu->GetCellAbsId(iDigit) ;
+      Bool_t isHG=cells->GetCellHighGain(absId) ;
+      Float_t ei =elist[iDigit];
+      if(!isHG)
+          continue; 
+      
+     //Remove too soft cells
+      if(ei<eMin)
+        continue ;
+      
+      Double_t ti=CalibrateTOF(cells->GetCellTime(absId),absId,isHG) ;
+      if(TMath::Abs(ti-tMax)>50.e-9) //remove soft cells with wrong time
+        continue ;
+      
+      //Slewing correction
+        ti-= sA+sB/ei+sC/ei/ei+sD/ei/ei/ei+sE/ei/ei/ei/ei ;
+   
+//      if(elist[iDigit]>0){  //already Checked
       //weight = 1./sigma^2
       //Sigma is parameterization of TOF resolution 16.05.2013
-      Double_t wi2=0.;
-      if(isHG)
-	wi2=1./(2.4 + 3.9/elist[iDigit]) ;
-      else
-	wi2=1./(2.4 + 3.9/(0.1*elist[iDigit])) ; //E of LG digit is 1/16 of correcponding HG  
+      Double_t wi2 = wA+wB*TMath::Exp(-ei*wC) + wD/ei/ei  ;
+      if(wi2 <=0.)
+          continue ;
+      wi2=1./wi2/wi2 ;
+
       t+=ti*wi2 ;
       wtot+=wi2 ;
     }
-  }
-  if(wtot>0){
-    t=t/wtot ;
-  }
-  else{
-   t=tMax ; 
-  }    
   
-  return t ;
-     
+    if(wtot>0){
+      t=t/wtot ;
+    }
+    else{
+     t=tMax ; 
+    }    
+  
+    return t ;
+  }   
 } 
 //________________________________________________________________________
 Double_t AliPHOSTenderSupply::CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG){

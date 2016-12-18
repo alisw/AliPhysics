@@ -51,10 +51,6 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
 //  plugin->SetMergeExcludes("Viscosity.root EventStat_temp.root");
   plugin->SetMergeViaJDL(gridMerge);
 
-  plugin->EnablePackage("PWGPPevcharQn.par");
-  plugin->EnablePackage("PWGPPevcharQnInterface.par");
-
-
 // Declare the output file names separated by blanks.
 // (can be like: file.root or file.root@ALICE::Niham::File)
   plugin->SetOverwriteMode(kFALSE);

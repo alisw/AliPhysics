@@ -378,12 +378,13 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMC(TParticle *fMCMother,AliStack *
     }
 
     // Rapidity Cut
-    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> 2y decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
 
     for(Int_t i=0;i<2;i++){
+      if(fMCMother->GetDaughter(i) < 0) return kFALSE;
       TParticle *MDaughter=fMCStack->Particle(fMCMother->GetDaughter(i));
       // Is Daughter a Photon?
       if(MDaughter->GetPdgCode()!=22)return kFALSE;
@@ -416,7 +417,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
     }
 
     // Rapidity Cut
-    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> 2y decay channel
     if(MCMother->GetNDaughters()!=2)return kFALSE;
@@ -457,7 +458,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
   }
 
   // Rapidity Cut
-  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -467,8 +468,65 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
   TParticle    *gamma = 0x0;
 
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-
+    if(index < 0) continue;
     TParticle* temp = (TParticle*)fMCStack->Particle( index );
+
+    switch( temp->GetPdgCode() ) {
+    case ::kPositron:
+      positron      =  temp;
+      labelpositron = index;
+      break;
+    case ::kElectron:
+      electron      =  temp;
+      labelelectron = index;
+      break;
+    case ::kGamma:
+      gamma         =  temp;
+      labelgamma    = index;
+      break;
+    }
+  }
+
+  if( positron && electron && gamma) return kTRUE;
+  return kFALSE;
+}
+
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedAODMCDalitz(AliAODMCParticle *fMCMother,TClonesArray *AODMCArray, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
+
+  // Returns true for all pions within acceptance cuts for decay into 2 photons
+  // If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+  if( !AODMCArray )return kFALSE;
+
+  if(  fMCMother->GetPdgCode() != 111 && fMCMother->GetPdgCode() != 221 ) return kFALSE;
+
+  Double_t rMeson = sqrt( (fMCMother->Xv()*fMCMother->Xv()) + (fMCMother->Yv()*fMCMother->Yv()) ) ;
+  if(rMeson>fMaxR)  return kFALSE; // cuts on distance from collision point
+
+  Double_t rapidity = 10.;
+
+  if( fMCMother->E() - fMCMother->Pz() == 0 || fMCMother->E() + fMCMother->Pz() == 0 ){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->E()+fMCMother->Pz()) / (fMCMother->E()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+  // Select only -> Dalitz decay channel
+  if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+  AliAODMCParticle *positron = 0x0;
+  AliAODMCParticle *electron = 0x0;
+  AliAODMCParticle    *gamma = 0x0;
+
+  for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
+    AliAODMCParticle* temp = static_cast<AliAODMCParticle*>(AODMCArray->At(index));
+    if (!temp) continue;
 
     switch( temp->GetPdgCode() ) {
     case ::kPositron:
@@ -512,7 +570,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
   }
 
   // Rapidity Cut
-  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> Dalitz decay channel
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -522,7 +580,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCM
   TParticle    *gamma = 0x0;
 
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-
+    if(index < 0) continue;
     TParticle* temp = (TParticle*)fMCStack->Particle( index );
 
     switch( temp->GetPdgCode() ) {
@@ -567,7 +625,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   }
 
   // Rapidity Cut
-  if( fabs(rapidity) > fRapidityCutMeson )return kFALSE;
+  if( TMath::Abs(rapidity) > fRapidityCutMeson )return kFALSE;
 
   // Select only -> pi+ pi- pi0
   if( fMCMother->GetNDaughters() != 3 )return kFALSE;
@@ -578,7 +636,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
 
 //   cout << "\n"<< fMCMother->GetPdgCode() << "\n" << endl;
   for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-    
+    if(index < 0) continue;
     TParticle* temp = (TParticle*)fMCStack->Particle( index );
 //     cout << temp->GetPdgCode() << endl;
     switch( temp->GetPdgCode() ) {
@@ -601,6 +659,63 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiPlPiMiPiZero(TParticle *fMCMot
   return kFALSE;
 }
 
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCPiZeroGamma(TParticle *fMCMother, AliStack *fMCStack, Int_t &labelNeutPion, Int_t &labelGamma, Double_t fRapidityShift){
+  // returns true for omegas decaying into pi0 + gamma within the rapidity window
+
+  if(!fMCStack) return kFALSE;
+
+  if(fMCMother->GetPdgCode()!=223) return kFALSE; // we only want omegas
+
+  Double_t rapidity = 10.;
+
+  if(fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0){
+    rapidity=8.-fRapidityShift;
+  }
+  else{
+    rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
+  }
+
+  // Rapidity Cut
+  if(TMath::Abs(rapidity) > fRapidityCutMeson)return kFALSE;
+
+  if(fMCMother->GetNDaughters()!=2) return kFALSE;
+
+  TParticle *gamma = 0x0;
+  TParticle *pi0 = 0x0;
+
+  for(Int_t index = fMCMother->GetFirstDaughter();index <= fMCMother->GetLastDaughter();index++){
+    if(index < 0) continue;
+    TParticle *temp = (TParticle*)fMCStack->Particle(index);
+    switch(temp->GetPdgCode()){
+    case 22:
+      gamma = temp;
+      labelGamma = index;
+      break;
+    case 111:
+      pi0   = temp;
+      labelNeutPion = index;
+      break;
+    }
+  }
+
+  if(gamma && pi0) return kTRUE;
+  return kFALSE;
+
+}
+
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedPiZeroGammaAngle(AliAODConversionMother *omega, AliAODConversionMother *pi0, AliAODConversionPhoton *gamma, Bool_t DoPiZeroAngleCut, TF1 *maxfit, Double_t lowerFactor, Double_t upperFactor){
+
+  if(!DoPiZeroAngleCut) return kTRUE;
+
+  Double_t PiZeroGammaAngle = pi0->Angle(gamma->Vect());
+  Double_t omegaPt = omega->Pt();
+
+  if(PiZeroGammaAngle > lowerFactor * maxfit->Eval(omegaPt) && PiZeroGammaAngle < upperFactor * maxfit->Eval(omegaPt)) return kTRUE;
+  return kFALSE;
+
+}
 
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
@@ -623,7 +738,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
     }
 
     // Rapidity Cut
-    if(fabs(rapidity)>fRapidityCutMeson)return kFALSE;
+    if(TMath::Abs(rapidity)>fRapidityCutMeson)return kFALSE;
 
     // Select only -> ChiC radiative (JPsi+gamma) decay channel
     if(fMCMother->GetNDaughters()!=2)return kFALSE;
@@ -636,7 +751,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
     Int_t labeljpsiChiC = -1;
 
     for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
-
+      if(index < 0) continue;
       TParticle* temp = (TParticle*)fMCStack->Particle( index );
 
       switch( temp->GetPdgCode() ) {
@@ -656,6 +771,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliSta
 
 
     for(Int_t index= jpsi->GetFirstDaughter();index<= jpsi->GetLastDaughter();index++){
+      if(index < 0) continue;
       TParticle* temp = (TParticle*)fMCStack->Particle( index );
       switch( temp->GetPdgCode() ) {
       case -11:
@@ -701,7 +817,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   else{
     // PseudoRapidity Cut --> But we cut on Rapidity !!!
     cutIndex++;
-    if(fabs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
+    if(TMath::Abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
       if(hist)hist->Fill(cutIndex, pi0->Pt());
       return kFALSE;
     }
@@ -751,14 +867,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
   if (fIsMergedClusterCut == 1 && fAlphaPtDepCut) fAlphaCutMeson = fFAlphaCut->Eval(pi0->E());
   else if (fAlphaPtDepCut == kTRUE) fAlphaCutMeson = fFAlphaCut->Eval(pi0->Pt());
   
-  if(fabs(pi0->GetAlpha())>fAlphaCutMeson){
+  if(TMath::Abs(pi0->GetAlpha())>fAlphaCutMeson){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
   cutIndex++;
 
   // Alpha Min Cut
-  if(fabs(pi0->GetAlpha())<fAlphaMinCutMeson){
+  if(TMath::Abs(pi0->GetAlpha())<fAlphaMinCutMeson){
     if(hist)hist->Fill(cutIndex, pi0->Pt());
     return kFALSE;
   }
@@ -789,7 +905,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
     if (fHistoDCAZMesonPrimVtxBefore)fHistoDCAZMesonPrimVtxBefore->Fill(pi0->GetDCAZMotherPrimVtx());
 
     if (fDCAZMesonPrimVtxCutOn){
-      if (fabs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
+      if (TMath::Abs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
         if(hist)hist->Fill(cutIndex, pi0->Pt());
         return kFALSE;
       }
@@ -1150,6 +1266,15 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowMergedCut(Int_t selectionCut){
       fEnableMassCut = kTRUE;
       break;
     case 6:   //NLM 2
+      fEnableMassCut = kTRUE;
+      break;
+    case 7:   //min mass cut around 0
+      fEnableMassCut = kTRUE;
+      break;
+    case 8:   //min mass cut around 0
+      fEnableMassCut = kTRUE;
+      break;
+    case 9:   //min mass cut around 0
       fEnableMassCut = kTRUE;
       break;
     default:
@@ -2226,6 +2351,18 @@ Bool_t AliConversionMesonCuts::SetMinOpanMesonCut(Int_t minOpanMesonCut){
     break;
   case 6:      //
     fMinOpanCutMeson  = 0.0404; // minimum 2 EMCal cell diagonals
+    fMinOpanPtDepCut  = kFALSE;
+    break;
+  case 7:      //
+    fMinOpanCutMeson  = 0.0303; // minimum 1.5 EMCal cell diagonal
+    fMinOpanPtDepCut  = kFALSE;
+    break;
+  case 8:      //
+    fMinOpanCutMeson  = 0.02525; // minimum 1.25 EMCal cell diagonal
+    fMinOpanPtDepCut  = kFALSE;
+    break;
+  case 9:      //
+    fMinOpanCutMeson  = 0.03535; // minimum 1.75 EMCal cell diagonal
     fMinOpanPtDepCut  = kFALSE;
     break;
   default:

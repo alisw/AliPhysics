@@ -1,7 +1,8 @@
 AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Float_t minC=0, Float_t maxC=100,
 				     Int_t storeNtuple=0,
-				     Bool_t doSparse=kFALSE,
+				     Int_t doSparse=0,/*0=cutvar=kFALSE && imppar=kFALSE, 1=cutvar=kTRUE && imppar=kFALSE*/
+				     /*2=cutvar=kFALSE && imppar=kTRUE, 3=cutvar=kTRUE && imppar=kTRUE*/
 				     Bool_t doTrackVarSparse=kFALSE,
 				     Bool_t readMC=kFALSE,
 				     TString finDirname="Loose",
@@ -10,14 +11,14 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 				     Int_t etaRange=0,
 				     Bool_t cutsDistr=kFALSE)
 {
-  //                                                                                                                                    
-  // Test macro for the AliAnalysisTaskSE for D+ candidates 
+  //
+  // Test macro for the AliAnalysisTaskSE for D+ candidates
 
-  //Invariant mass histogram and                                                 
-  // association with MC truth (using MC info in AOD)                                                                                   
-  //  R. Bala, bala@to.infn.it                                                                                                                                  
-  // Get the pointer to the existing analysis manager via the static access method.                                                     
-  //==============================================================================                                                      
+  //Invariant mass histogram and
+  // association with MC truth (using MC info in AOD)
+  //  R. Bala, bala@to.infn.it
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskDplus", "No analysis manager to connect to.");
@@ -26,18 +27,18 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   Bool_t stdcuts=kFALSE;
   TFile* filecuts;
   if( filename.EqualTo("") ) {
-    stdcuts=kTRUE; 
+    stdcuts=kTRUE;
   } else {
       filecuts=TFile::Open(filename.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
 	AliFatal("Input file not found : check your cut object");
       }
   }
-  
-  
+
+
   //Analysis Task
 
-  
+
   AliRDHFCutsDplustoKpipi* analysiscuts=new AliRDHFCutsDplustoKpipi();
   if(stdcuts) {
     if(system==0) analysiscuts->SetStandardCutsPP2010();
@@ -50,8 +51,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
     }
   }
   else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finAnObjname);
-  
-    
+
+
   AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",analysiscuts,storeNtuple);
   dplusTask->SetReadMC(readMC);
   dplusTask->SetDoLikeSign(kFALSE);
@@ -62,9 +63,27 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   dplusTask->SetUseBit(kTRUE);
   dplusTask->SetCutsDistr(cutsDistr);
   dplusTask->SetSystem(system);
-  if (doSparse)
+  if(doSparse==0) {
+    dplusTask->SetDoCutVarsSparses(kFALSE);
+    dplusTask->SetDoImpactParameterHistos(kFALSE);
+  }
+  else if(doSparse==1) {
+    dplusTask->SetDoCutVarsSparses(kTRUE);
+    dplusTask->SetDoImpactParameterHistos(kFALSE);
+  }
+  else if(doSparse==2) {
+    dplusTask->SetDoCutVarsSparses(kFALSE);
     dplusTask->SetDoImpactParameterHistos(kTRUE);
-  if(doSparse && readMC)
+  }
+  else if(doSparse==3){
+    dplusTask->SetDoCutVarsSparses(kTRUE);
+    dplusTask->SetDoImpactParameterHistos(kTRUE);
+  }
+  else {
+    cerr << "The doSparse flag can only be 0,1,2,3!" << endl;
+  }
+  
+  if((doSparse==1 || doSparse==3) && readMC)
     dplusTask->SetDoMCAcceptanceHistos(kTRUE);
   if (doTrackVarSparse)
     dplusTask->SetDoTrackVarHistos(kTRUE);
@@ -72,8 +91,8 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   if(etaRange==-1) dplusTask->SetUseOnlyNegativeEta();
 
   mgr->AddTask(dplusTask);
-  
-  // Create containers for input/output 
+
+  // Create containers for input/output
 
   TString inname = "cinputDplus";
   TString outname = "coutputDplus";
@@ -97,32 +116,32 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
 							       AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG3_D2H_InvMassDplus";
-  
+
   AliAnalysisDataContainer *coutputDplusCuts = mgr->CreateContainer(cutsname,TList::Class(),
 								    AliAnalysisManager::kOutputContainer,
 								    outputfile.Data());
-  
+
   AliAnalysisDataContainer *coutputDplus = mgr->CreateContainer(outname,TList::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
   AliAnalysisDataContainer *coutputDplusNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
-  
+
   if(storeNtuple){
     AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								   AliAnalysisManager::kOutputContainer,
 								   outputfile.Data());
-    
+
     coutputDplus2->SetSpecialOutput();
   }
   mgr->ConnectInput(dplusTask,0,mgr->GetCommonInputContainer());
-  
+
   mgr->ConnectOutput(dplusTask,1,coutputDplus);
-  
+
   mgr->ConnectOutput(dplusTask,2,coutputDplusCuts);
 
-  mgr->ConnectOutput(dplusTask,3,coutputDplusNorm);  
+  mgr->ConnectOutput(dplusTask,3,coutputDplusNorm);
   if(storeNtuple){
     mgr->ConnectOutput(dplusTask,4,coutputDplus2);
   }

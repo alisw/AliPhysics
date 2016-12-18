@@ -63,8 +63,7 @@
 #pragma link C++ class  AliHFEpidBayes+;
 
 #pragma link C++ class  AliHFEpidObject+;
-#pragma link C++ class  AliAnalysisTaskElecHadronCorrel+;
-#pragma link C++ class  AliehDPhiBasicParticle+;
+#pragma link C++ class  AliAnalysisTaskEHCorrel+;
 #pragma link C++ class  AliAnalysisTaskFlowTPCEMCalEP+;
 #pragma link C++ class  AliAnalysisTaskHFECal+;
 #pragma link C++ class  AliAnalysisTaskEMCalHFEpA+;
@@ -99,8 +98,11 @@
 #pragma link C++ class  AliAnalysisTaskBeautyCal+;
 #pragma link C++ class  AliAnalysisTaskFlowITSTPCTOFQCSP+;
 #pragma link C++ class  AliAnalysisTaskHFEMulti+;
+#pragma link C++ class  AliAnalysisTaskHFEtemplate+;
 #pragma link C++ class  AliHFEhadronicbackground+;
 #pragma link C++ class  AliHFEUnfolding+;
 #pragma link C++ class  AliAnalysisTaskHFEEfficiency+;
+
+#pragma link C++ class  AliehDPhiBasicParticle+;
 
 #endif

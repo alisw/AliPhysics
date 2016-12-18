@@ -65,6 +65,8 @@ AliRDHFCuts(name),
   fProdUseAODFilterBit(kTRUE),
   fProdAODFilterBit(4),
   fProdRejectTrackWithShared(kFALSE),
+  fProdITSSharedFractionMax(-9999),
+  fProdITSChi2OverNclsMax(-9999),
   fProdV0KinkRejection(kTRUE),
   fProdV0MassTolLambda(0.01),
   fProdV0MassTolLambdaRough(0.01),
@@ -79,6 +81,7 @@ AliRDHFCuts(name),
   fProdRfidMinV0(0.6),
   fProdRfidMaxV0(100.0),
   fProdDcaV0ToPrimVertexMin(0.),
+  fProdDcaV0ToPrimVertexMax(9999.),
   fProdDcaV0PrToPrimVertexMin(0.),
   fProdDcaV0PiToPrimVertexMin(0.),
   fProdV0ProperDecayLengthMax(99999.),
@@ -102,7 +105,11 @@ AliRDHFCuts(name),
 	fSigmaElectronTPCMax(9999.),
 	fSigmaElectronTOFMin(-9999.),
 	fSigmaElectronTOFMax(9999.),
-	fConversionMassMax(-1.)
+	fSigmaElectronITSMin(-9999.),
+	fSigmaElectronITSMax(9999.),
+	fConversionMassMax(-1.),
+	fConversionUseStrongerCut(kFALSE),
+	fEleLambdaMassMax(2.3)
 {
   //
   // Default Constructor
@@ -154,6 +161,8 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
   fProdAODFilterBit(source.fProdAODFilterBit),
   fProdRejectTrackWithShared(source.fProdRejectTrackWithShared),
+  fProdITSSharedFractionMax(source.fProdITSSharedFractionMax),
+  fProdITSChi2OverNclsMax(source.fProdITSChi2OverNclsMax),
   fProdV0KinkRejection(source.fProdV0KinkRejection),
   fProdV0MassTolLambda(source.fProdV0MassTolLambda),
   fProdV0MassTolLambdaRough(source.fProdV0MassTolLambdaRough),
@@ -168,6 +177,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
   fProdRfidMinV0(source.fProdRfidMinV0),
   fProdRfidMaxV0(source.fProdRfidMaxV0),
   fProdDcaV0ToPrimVertexMin(source.fProdDcaV0ToPrimVertexMin),
+  fProdDcaV0ToPrimVertexMax(source.fProdDcaV0ToPrimVertexMax),
   fProdDcaV0PrToPrimVertexMin(source.fProdDcaV0PrToPrimVertexMin),
   fProdDcaV0PiToPrimVertexMin(source.fProdDcaV0PiToPrimVertexMin),
   fProdV0ProperDecayLengthMax(source.fProdV0ProperDecayLengthMax),
@@ -191,7 +201,11 @@ AliRDHFCutsLctoeleLambdafromAODtracks::AliRDHFCutsLctoeleLambdafromAODtracks(con
 	fSigmaElectronTPCMax(source.fSigmaElectronTPCMax),
 	fSigmaElectronTOFMin(source.fSigmaElectronTOFMin),
 	fSigmaElectronTOFMax(source.fSigmaElectronTOFMax),
-	fConversionMassMax(source.fConversionMassMax)
+	fSigmaElectronITSMin(source.fSigmaElectronITSMin),
+	fSigmaElectronITSMax(source.fSigmaElectronITSMax),
+	fConversionMassMax(source.fConversionMassMax),
+	fConversionUseStrongerCut(source.fConversionUseStrongerCut),
+	fEleLambdaMassMax(source.fEleLambdaMassMax)
 {
   //
   // Copy constructor
@@ -224,6 +238,8 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fProdUseAODFilterBit = source.fProdUseAODFilterBit;
   fProdAODFilterBit = source.fProdAODFilterBit;
   fProdRejectTrackWithShared = source.fProdRejectTrackWithShared;
+  fProdITSSharedFractionMax = source.fProdITSSharedFractionMax;
+  fProdITSChi2OverNclsMax = source.fProdITSChi2OverNclsMax;
   fProdV0KinkRejection = source.fProdV0KinkRejection;
   fProdV0MassTolLambda = source.fProdV0MassTolLambda;
   fProdV0MassTolLambdaRough = source.fProdV0MassTolLambdaRough;
@@ -238,6 +254,7 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
   fProdRfidMinV0=source.fProdRfidMinV0;
   fProdRfidMaxV0=source.fProdRfidMaxV0;
   fProdDcaV0ToPrimVertexMin=source.fProdDcaV0ToPrimVertexMin;
+  fProdDcaV0ToPrimVertexMax=source.fProdDcaV0ToPrimVertexMax;
   fProdDcaV0PrToPrimVertexMin=source.fProdDcaV0PrToPrimVertexMin;
   fProdDcaV0PiToPrimVertexMin=source.fProdDcaV0PiToPrimVertexMin;
   fProdV0ProperDecayLengthMax=source.fProdV0ProperDecayLengthMax;
@@ -261,7 +278,11 @@ AliRDHFCutsLctoeleLambdafromAODtracks &AliRDHFCutsLctoeleLambdafromAODtracks::op
 	fSigmaElectronTPCMax = source.fSigmaElectronTPCMax;
 	fSigmaElectronTOFMin = source.fSigmaElectronTOFMin;
 	fSigmaElectronTOFMax = source.fSigmaElectronTOFMax;
+	fSigmaElectronITSMin = source.fSigmaElectronITSMin;
+	fSigmaElectronITSMax = source.fSigmaElectronITSMax;
 	fConversionMassMax = source.fConversionMassMax;
+	fConversionUseStrongerCut = source.fConversionUseStrongerCut;
+	fEleLambdaMassMax = source.fEleLambdaMassMax;
 
   for(Int_t i=0;i<3;i++){
     fPrimVert[i] = source.fPrimVert[i];
@@ -505,12 +526,38 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleTrkCuts(AliAODTrack *trk, Al
 		if(tpcratio<fProdTrackTPCNclsRatioMin) return kFALSE;
 	}
 
-  if(fProdRejectTrackWithShared){
-    const TBits sharedMap = trk->GetTPCSharedMap();
-    if((sharedMap.CountBits()) >= 1){
-      return kFALSE;
-    }
-  }
+	if(fProdRejectTrackWithShared){
+		const TBits sharedMap = trk->GetTPCSharedMap();
+		if((sharedMap.CountBits()) >= 1){
+			return kFALSE;
+		}
+	}
+
+	if(fProdITSSharedFractionMax>0.){
+		Int_t ncls_its = 0;
+		Int_t ncls_its_shared = 0;
+		for(Int_t i=0;i<6;i++){
+			if(trk->HasPointOnITSLayer(i)) ncls_its++;
+			if(trk->HasPointOnITSLayer(i) && trk->HasSharedPointOnITSLayer(i)) ncls_its_shared++;
+		}
+
+		if(ncls_its>0){
+			Float_t frac_shared = (Float_t)ncls_its_shared/(Float_t)ncls_its;
+			if(frac_shared>fProdITSSharedFractionMax) return kFALSE;
+		}
+	}
+
+	if(fProdITSChi2OverNclsMax>0.){
+		Float_t chi2 = trk->GetITSchi2();
+		Int_t ncls_its = 0;
+		for(Int_t i=0;i<6;i++){
+			if(trk->HasPointOnITSLayer(i)) ncls_its++;
+		}
+		if(ncls_its>0){
+			Float_t chi2_ncls = chi2/(Float_t) ncls_its;
+			if(chi2_ncls>fProdITSChi2OverNclsMax) return kFALSE;
+		}
+	}
 
   if(fUsePID)
   {
@@ -643,11 +690,14 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedeID(AliAODTrac
 
 	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk,AliPID::kElectron);
 	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trk,AliPID::kElectron);
+	Double_t nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trk,AliPID::kElectron);
 
 	if(nSigmaTPCele<fSigmaElectronTPCMin) return kFALSE;
 	if(nSigmaTPCele>fSigmaElectronTPCMax) return kFALSE;
 	if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
 	if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+	if(nSigmaITSele<fSigmaElectronITSMin) return kFALSE;
+	if(nSigmaITSele>fSigmaElectronITSMax) return kFALSE;
 
 	return kTRUE;
 }
@@ -681,11 +731,18 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::IsSelectedCustomizedPtDepeID(AliAO
 
 	Double_t nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trkpid,AliPID::kElectron);
 	Double_t nSigmaTOFele = fPidHF->GetPidResponse()->NumberOfSigmasTOF(trkpid,AliPID::kElectron);
+	Double_t nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trkpid,AliPID::kElectron);
 
   if(fabs(fSigmaElectronTOFMin)<999.|| fabs(fSigmaElectronTOFMax)<999.)
   {
     if(nSigmaTOFele<fSigmaElectronTOFMin) return kFALSE;
     if(nSigmaTOFele>fSigmaElectronTOFMax) return kFALSE;
+  }
+
+  if(fabs(fSigmaElectronITSMin)<999.|| fabs(fSigmaElectronITSMax)<999.)
+  {
+    if(nSigmaITSele<fSigmaElectronITSMin) return kFALSE;
+    if(nSigmaITSele>fSigmaElectronITSMax) return kFALSE;
   }
 
 	Double_t pte = trk->Pt();
@@ -773,6 +830,7 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
 	Double_t lDcaPosToPrimVertex = v0->DcaPosToPrimVertex();
 	Double_t lDcaNegToPrimVertex = v0->DcaNegToPrimVertex();
 	if(lDcaV0ToPrimVertex < fProdDcaV0ToPrimVertexMin) return kFALSE;
+	if(lDcaV0ToPrimVertex > fProdDcaV0ToPrimVertexMax) return kFALSE;
   if(isparticle){
     if(lDcaPosToPrimVertex < fProdDcaV0PrToPrimVertexMin) return kFALSE;
     if(lDcaNegToPrimVertex < fProdDcaV0PiToPrimVertexMin) return kFALSE;
@@ -823,10 +881,10 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
         if(fabs(nSigmaTPCpr)>nsigmatpc_proton) isProton = 0;
         if(fabs(nSigmaTPCpi)>nsigmatpc_pion) isPion = 0;
         if(nsigmatof_proton>0.01 && nsigmatof_proton<999.){
-          if(fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0;
+          if(nSigmaTOFpr>-998 && fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0; // OR approach
         }
         if(nsigmatof_pion>0.01 && nsigmatof_pion<999.){
-          if(fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0;
+          if(nSigmaTOFpi>-998 && fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0; // OR approach
         }
       }else{
         Double_t nSigmaTPCpr = fPidObjProton->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kProton);
@@ -836,10 +894,10 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::SingleV0Cuts(AliAODv0 *v0, AliAODV
         if(fabs(nSigmaTPCpr)>nsigmatpc_proton) isProton = 0;
         if(fabs(nSigmaTPCpi)>nsigmatpc_pion) isPion = 0;
         if(nsigmatof_proton>0.01 && nsigmatof_proton<999.){
-          if(fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0;
+          if(nSigmaTOFpr>-998 && fabs(nSigmaTOFpr)>nsigmatof_proton) isProton = 0; // OR approach
         }
         if(nsigmatof_pion>0.01 && nsigmatof_pion<999.){
-          if(fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0;
+          if(nSigmaTOFpi>-998 && fabs(nSigmaTOFpi)>nsigmatof_pion) isPion = 0; // OR approach
         }
       }
       if(isProton<1) return kFALSE;
@@ -975,16 +1033,32 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::TagConversions(AliAODTrack *etrk, 
     }
 
     Double_t nSigmaTPCele = 9999.;
+    Double_t nSigmaITSele = 9999.;
     if(fProdAODFilterBit==7){
       if(-trkid2-1>=19000) continue;
       if(-trkid2-1<0) continue;
       Int_t index = id2index[-trkid2-1];
       AliAODTrack *partpid = (AliAODTrack*)evt->GetTrack(index);
       nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(partpid,AliPID::kElectron);
+      nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(partpid,AliPID::kElectron);
     }else{
       nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk2,AliPID::kElectron);
+      nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trk2,AliPID::kElectron);
     }
     if(fabs(nSigmaTPCele)>5.) continue;
+
+		if(fConversionUseStrongerCut){
+			Double_t pte = trk2->Pt();
+			Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
+			if(pte>5.) nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*5.+fSigmaElectronTPCPtDepPar2*25.;
+			if(nSigmaTPCele<nsigmamin) continue;
+			if(nSigmaTPCele<-3.) continue;
+			if(nSigmaTPCele>fSigmaElectronTPCMax) continue;
+			//if(nSigmaITSele<fSigmaElectronITSMin) continue;
+			//if(nSigmaITSele>fSigmaElectronITSMax) continue;
+			if(nSigmaITSele<-2.) continue;
+			if(nSigmaITSele>2.) continue;
+		}
 
 		Double_t px2 = trk2->Px();
 		Double_t py2 = trk2->Py();
@@ -1031,16 +1105,32 @@ Bool_t AliRDHFCutsLctoeleLambdafromAODtracks::TagConversionsSameSign(AliAODTrack
     }
 
     Double_t nSigmaTPCele = 9999.;
+    Double_t nSigmaITSele = 9999.;
     if(fProdAODFilterBit==7){
       if(-trkid2-1>=19000) continue;
       if(-trkid2-1<0) continue;
       Int_t index = id2index[-trkid2-1];
       AliAODTrack *partpid = (AliAODTrack*)evt->GetTrack(index);
       nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(partpid,AliPID::kElectron);
+      nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(partpid,AliPID::kElectron);
     }else{
       nSigmaTPCele = fPidHF->GetPidResponse()->NumberOfSigmasTPC(trk2,AliPID::kElectron);
+      nSigmaITSele = fPidHF->GetPidResponse()->NumberOfSigmasITS(trk2,AliPID::kElectron);
     }
     if(fabs(nSigmaTPCele)>5.) continue;
+
+		if(fConversionUseStrongerCut){
+			Double_t pte = trk2->Pt();
+			Double_t nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*pte+fSigmaElectronTPCPtDepPar2*pte*pte;
+			if(pte>5.) nsigmamin = fSigmaElectronTPCPtDepPar0+fSigmaElectronTPCPtDepPar1*5.+fSigmaElectronTPCPtDepPar2*25.;
+			if(nSigmaTPCele<nsigmamin) continue;
+			if(nSigmaTPCele<-3.) continue;
+			if(nSigmaTPCele>fSigmaElectronTPCMax) continue;
+			//if(nSigmaITSele<fSigmaElectronITSMin) continue;
+			//if(nSigmaITSele>fSigmaElectronITSMax) continue;
+			if(nSigmaITSele<-2.) continue;
+			if(nSigmaITSele>2.) continue;
+		}
 
 		Double_t px2 = trk2->Px();
 		Double_t py2 = trk2->Py();
@@ -1234,7 +1324,7 @@ Double_t AliRDHFCutsLctoeleLambdafromAODtracks::dPhiSR125(Double_t *postrack1,Do
 }
 
 //________________________________________________________________________
-Double_t AliRDHFCutsLctoeleLambdafromAODtracks::GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,
+void AliRDHFCutsLctoeleLambdafromAODtracks::GetdPhiSdEtaSR125(AliAODTrack *tracke, AliAODTrack *trackp,
     AliAODTrack *trackn, Double_t bfield, Double_t priVtx[3], Double_t &dPhiS_ep, Double_t &dEtaS_ep, 
     Double_t &dPhiS_en, Double_t &dEtaS_en)
 {
@@ -1469,4 +1559,21 @@ Double_t AliRDHFCutsLctoeleLambdafromAODtracks::DeltaEta(AliAODv0 *v0, AliAODTra
   Double_t etae = trk->Eta();
   Double_t deta = etav - etae;
   return deta;
+}
+
+//________________________________________________________________________
+Double_t AliRDHFCutsLctoeleLambdafromAODtracks::CosOpeningAngle(AliAODv0 *v0, AliAODTrack *trk)
+{
+  //
+  // Calculate Opening angle
+  //
+  Double_t v0px = v0->Px();
+  Double_t v0py = v0->Py();
+  Double_t v0pz = v0->Pz();
+  Double_t epx = trk->Px();
+  Double_t epy = trk->Py();
+  Double_t epz = trk->Pz();
+  Double_t cosoa = (v0px*epx+v0py*epy+v0pz*epz)/sqrt(v0px*v0px+v0py*v0py+v0pz*v0pz)/sqrt(epx*epx+epy*epy+epz*epz);
+
+  return cosoa;
 }

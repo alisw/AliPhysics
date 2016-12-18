@@ -243,23 +243,11 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
   //
   // Main loop function
   //
-  AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  if(!hand) {
-    printf("No AliESDInputHandlerRP \n");  
-    return;
-  }
 
-  AliESDEvent *ESD = (AliESDEvent*)hand->GetEvent();
+  AliESDEvent *ESD = (AliESDEvent*) (InputEvent());
   if(!ESD) {
     printf("No AliESDEvent \n");
     return;
-  }
-
-  Bool_t recP = kTRUE;
-  TTree * treeRP = hand->GetTreeR("ITS");
-  if(!treeRP) {
-    //AliWarning("No ITS RecPoints tree ");
-    recP=kFALSE;
   }
 
   
@@ -316,6 +304,19 @@ void AliAnalysisTaskSPD::UserExec(Option_t *)
     }
   } 
   
+  AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if(!hand) {
+    printf("No AliESDInputHandlerRP \n");  
+    return;
+  }
+
+  Bool_t recP = kTRUE;
+  TTree * treeRP = hand->GetTreeR("ITS");
+  if(!treeRP) {
+    //AliWarning("No ITS RecPoints tree ");
+    recP=kFALSE;
+  }
+
   
   if(recP){
   // RecPoints info

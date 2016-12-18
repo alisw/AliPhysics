@@ -139,6 +139,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
 
     void SetV0ReaderName(TString name){fV0ReaderName = name; return;}
+    void SetProcessAODCheck(Bool_t flag){fProcessAODCheck = flag; return;}
 
     AliVTrack * GetTrack(AliVEvent * event, Int_t label);
     AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
@@ -212,6 +213,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
+
+    Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
       
   protected:
     TList*            fHistograms;                          //
@@ -269,6 +272,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fNSigmaMass;                          // nsigma cut
     Bool_t            fUseEtaMinCut;                        // flag
     Bool_t            fUseOnFlyV0Finder;                    // flag
+    Int_t             fUseOnFlyV0FinderSameSign;            // int to set same sign pairing
     Bool_t            fDoPhotonAsymmetryCut;                // flag to use the PhotonAsymetryCut
     Bool_t            fDoPhotonPDependentAsymCut;           // flag to use the PhotonAsymetryCut with P dependent cut
     TF1 *             fFAsymmetryCut;                       //
@@ -338,11 +342,12 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH1F*             fHistoCutIndex;                       // bookkeeping for cuts
     TH1F*             fHistoEventPlanePhi;                  // EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           // Flag for preselection cut used in V0Reader
+    Bool_t            fProcessAODCheck;                     // Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     TProfile*         fProfileContainingMaterialBudgetWeights;      
 
   private:
   
-    ClassDef(AliConversionPhotonCuts,11)
+    ClassDef(AliConversionPhotonCuts,13)
 };
 
 #endif

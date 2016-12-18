@@ -1,6 +1,5 @@
-##Author : Beomsu Chang
-
 #!/usr/bin/perl
+
 use strict;
 use warnings;
 use File::Basename;
@@ -63,7 +62,7 @@ for ( 0 .. $#list ){
 	$item->{local_dir} = $output.'/'.$item->{dirname};
     next unless ( check_sync($item) ) ;
     $item->{iJob} = $nJob++;
-	$q->enqueue( $_ );
+	$q->enqueue( $_+1 );
 }
 
 print "$nJob\n";
@@ -89,6 +88,7 @@ printf "## Downloaded/Src = $nList / $nSrc = %.1f%%, TODO : %d\n", $nList/$nSrc*
 sub do_it{
 	my $index;
 	while( $index  = $q->dequeue){
+        $index -= 1;
 		my $item = $list[$index];
 		my $check = 1; #check_sync( $item );
 

@@ -286,6 +286,8 @@ struct Combiner
    * 
    * @param guess   Current guess @f$ x'@f$ 
    * @param chi2    Optional old @f$ \chi^2@f$ from best @f$ x@f$ value 
+   * @param begin Iterator 
+   * @param end   Iterator 
    * 
    * @return @f$ \chi^2(x')@f$
    */
@@ -304,6 +306,8 @@ struct Combiner
    * Try to find best error 
    * 
    * @param nIter Number of iterations 
+   * @param begin Iterator 
+   * @param end   Iterator 
    * @param sign  Direction (-1 is low, +1 is high)
    * @param best  Current best @f$ x@f$ value 
    * @param chi2  @f$ \chi^2@f$ of current best @f$ x@f$ value 
@@ -311,13 +315,13 @@ struct Combiner
    * 
    * @return The error in the chosen direction
    */
-  double FindError(unsigned short        nIter,
+  double FindError(unsigned short   nIter,
 		   const_iterator&  begin,
 		   const_iterator&  end,
-		   int                   sign,
-		   double                best,
-		   double                chi2,
-		   double                s)
+		   int              sign,
+		   double           best,
+		   double           chi2,
+		   double           s)
   {
     // Step size 
     double delta = 0.1 * sign * s;
@@ -353,7 +357,8 @@ struct Combiner
    * Find best estimate of @f$ x@f$ 
    * 
    * @param nIter   Number of iterations 
-   * @param data    The data 
+   * @param begin Iterator 
+   * @param end   Iterator 
    * @param lowest  Lower bound 
    * @param highest Upper bound 
    * 
@@ -393,6 +398,8 @@ struct Combiner
   /** 
    * Do the calculation 
    * 
+   * @param begin Iterator 
+   * @param end   Iterator 
    * @param nIter How many iterations to do. 
    * 
    * @return The best estimate of @f$ x@f$ and associated errors 

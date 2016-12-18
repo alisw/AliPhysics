@@ -543,7 +543,7 @@ GENERATE_DEPRECATEDLIST= YES
 # documentation sections, marked by \if section-label ... \endif
 # and \cond section-label ... \endcond blocks.
 
-ENABLED_SECTIONS       =
+ENABLED_SECTIONS       = pwglf_fwd_main
 
 # The MAX_INITIALIZER_LINES tag determines the maximum number of lines
 # the initial value of a variable or macro consists of for it to appear in
@@ -670,7 +670,10 @@ INPUT                  = ../analysis2 \
                          ../analysis2/qa \
                          ../analysis2/trains \
 		         ../analysis2/dndeta/tracklets \
+                         ../analysis2/dndeta/tracklets2 \
                          ../analysis2/dndeta/tracklets3 \
+                         ../analysis2/dndeta/tracklets3/toymodel \
+                         ../analysis2/sim \
                          ../trains \
                          ../analysis2/doc
 
@@ -692,7 +695,8 @@ INPUT_ENCODING         = UTF-8
 
 FILE_PATTERNS          = *.cxx \
                          *.C \
-                         *.h
+                         *.h \
+			 *.md 
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories
 # should be searched for input files as well. Possible values are YES and NO.
@@ -762,9 +766,7 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             = ../analysis2/../doc \
-		         ../analysis2/doc \
-			 ../analysis2/../doc/alice-int-2012-040/
+IMAGE_PATH             = ../analysis2/doc 
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

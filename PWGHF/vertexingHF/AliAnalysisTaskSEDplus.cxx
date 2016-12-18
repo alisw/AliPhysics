@@ -17,7 +17,7 @@
 
 //*************************************************************************
 // Class AliAnalysisTaskSEDplus
-// AliAnalysisTaskSE for the D+ candidates Invariant Mass Histogram and 
+// AliAnalysisTaskSE for the D+ candidates Invariant Mass Histogram and
 // comparison of heavy-flavour decay candidates
 // to MC truth (kinematics stored in the AOD)
 // Authors: Renu Bala, bala@to.infn.it
@@ -31,7 +31,6 @@
 #include <TList.h>
 #include <TString.h>
 #include <TDatabasePDG.h>
-
 #include "AliAnalysisManager.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAODHandler.h"
@@ -51,14 +50,17 @@ ClassImp(AliAnalysisTaskSEDplus);
 
 //________________________________________________________________________
 AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus():
-AliAnalysisTaskSE(),
-  fOutput(0), 
+  AliAnalysisTaskSE(),
+  fOutput(0),
   fHistNEvents(0),
+  fHistNCandidates(0),
   fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
   fPtVsMassNoPid(0),
   fPtVsMass(0),
+  fPtVsMassBadDaus(0),
+  fPtVsMassGoodDaus(0),
   fYVsPtNoPid(0),
   fYVsPt(0),
   fYVsPtSigNoPid(0),
@@ -66,6 +68,9 @@ AliAnalysisTaskSE(),
   fPhiEtaCand(0),
   fPhiEtaCandSigReg(0),
   fSPDMult(0),
+  fDaughterClass(0),
+  fDeltaID(0),
+  fIDDauVsIDTra(0),
   fNtupleDplus(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
@@ -75,11 +80,13 @@ AliAnalysisTaskSE(),
   fRDCutsAnalysis(0),
   fCounter(0),
   fFillNtuple(0),
+  fAODProtection(1),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
   fCutsDistr(kFALSE),
   fDoImpPar(kFALSE),
+  fDoSparse(kFALSE),
   fDoTrackVarHist(kFALSE),
   fStepMCAcc(kFALSE),
   fUseQuarkTagInKine(kTRUE),
@@ -96,10 +103,10 @@ AliAnalysisTaskSE(),
     fHistCentrality[i]=0;
     fCorreld0Kd0pi[i]=0;
   }
-  
+
   for(Int_t i=0; i<5; i++)fHistMassPtImpPar[i]=0;
-    
-  
+  for(Int_t i=0; i<3; i++)fSparseCutVars[i]=0;
+
   for(Int_t i=0;i<3*kMaxPtBins;i++){
     fMassHistNoPid[i]=0;
     fCosPHist[i]=0;
@@ -114,7 +121,7 @@ AliAnalysisTaskSE(),
     fMassHist[i]=0;
     fMassHistPlus[i]=0;
     fMassHistMinus[i]=0;
-    
+
     fDLxy[i]=0;
     fCosxy[i]=0;
     fCosPHistLS[i]=0;
@@ -138,11 +145,14 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   AliAnalysisTaskSE(name),
   fOutput(0),
   fHistNEvents(0),
+  fHistNCandidates(0),
   fHistTrackVar(0),
   fMCAccPrompt(0),
   fMCAccBFeed(0),
   fPtVsMassNoPid(0),
   fPtVsMass(0),
+  fPtVsMassBadDaus(0),
+  fPtVsMassGoodDaus(0),
   fYVsPtNoPid(0),
   fYVsPt(0),
   fYVsPtSigNoPid(0),
@@ -150,6 +160,9 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fPhiEtaCand(0),
   fPhiEtaCandSigReg(0),
   fSPDMult(0),
+  fDaughterClass(0),
+  fDeltaID(0),
+  fIDDauVsIDTra(0),
   fNtupleDplus(0),
   fUpmasslimit(1.965),
   fLowmasslimit(1.765),
@@ -159,11 +172,13 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fRDCutsAnalysis(dpluscutsana),
   fCounter(0),
   fFillNtuple(fillNtuple),
+  fAODProtection(1),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
   fUseBit(kTRUE),
   fCutsDistr(kFALSE),
   fDoImpPar(kFALSE),
+  fDoSparse(kFALSE),
   fDoTrackVarHist(kFALSE),
   fStepMCAcc(kFALSE),
   fUseQuarkTagInKine(kTRUE),
@@ -174,18 +189,19 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   fEtaSelection(0),
   fSystem(0)
 {
-  // 
+  //
   /// Standrd constructor
   //
   fNPtBins=fRDCutsAnalysis->GetNPtBins();
-  
+
   for(Int_t i=0;i<3;i++){
     fHistCentrality[i]=0;
     fCorreld0Kd0pi[i]=0;
   }
-  
+
   for(Int_t i=0; i<5; i++)fHistMassPtImpPar[i]=0;
-    
+  for(Int_t i=0; i<3; i++)fSparseCutVars[i]=0;
+
   for(Int_t i=0;i<3*kMaxPtBins;i++){
     fMassHistNoPid[i]=0;
     fCosPHist[i]=0;
@@ -200,7 +216,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
     fMassHist[i]=0;
     fMassHistPlus[i]=0;
     fMassHistMinus[i]=0;
-    
+
     fDLxy[i]=0;
     fCosxy[i]=0;
     fCosPHistLS[i]=0;
@@ -216,8 +232,8 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   for(Int_t i=0;i<kMaxPtBins+1;i++){
     fArrayBinLimits[i]=0;
   }
-  
-  
+
+
   // Default constructor
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
@@ -226,7 +242,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   DefineOutput(2,TList::Class());
   // Output slot #3 writes cut to private output
   DefineOutput(3,AliNormalizationCounter::Class());
-  
+
   if(fFillNtuple){
     // Output slot #4 writes into a TNtuple container
     DefineOutput(4,TNtuple::Class());  //My private output
@@ -241,7 +257,8 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
   //
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
-    for(Int_t i=0;i<3*fNPtBins;i++){    
+    delete fHistNCandidates;
+    for(Int_t i=0;i<3*fNPtBins;i++){
       delete fMassHistNoPid[i];
       delete fCosPHist[i];
       delete fDLenHist[i];
@@ -274,8 +291,13 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     for(Int_t i=0;i<5;i++){
       delete fHistMassPtImpPar[i];
     }
+    for(Int_t i=0;i<3;i++){
+      delete fSparseCutVars[i];
+    }
     delete fPtVsMassNoPid;
     delete fPtVsMass;
+    delete fPtVsMassBadDaus;
+    delete fPtVsMassGoodDaus;
     delete fYVsPtNoPid;
     delete fYVsPt;
     delete fYVsPtSigNoPid;
@@ -283,18 +305,21 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     delete fPhiEtaCand;
     delete fPhiEtaCandSigReg;
     delete fSPDMult;
+    delete fDaughterClass;
+    delete fDeltaID;
+    delete fIDDauVsIDTra;
     delete fHistTrackVar;
     delete fMCAccPrompt;
     delete fMCAccBFeed;
   }
 
-  delete fOutput;  
+  delete fOutput;
   delete fNtupleDplus;
   delete fListCuts;
   delete fRDCutsAnalysis;
   delete fCounter;
 
-}  
+}
 //_________________________________________________________________
 void  AliAnalysisTaskSEDplus::SetMassLimits(Float_t range){
   /// set invariant mass limits
@@ -340,19 +365,19 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
   /// Fill the Like Sign histograms
   //
   if(fDebug>1)printf("started LS\n");
-  
+
   //histograms for like sign
   Int_t nbins=GetNBinsHistos();;
   TH1F *histLSPlus = new TH1F("LSPlus","LSPlus",nbins,fLowmasslimit,fUpmasslimit);
   TH1F *histLSMinus = new TH1F("LSMinus","LSMinus",nbins,fLowmasslimit,fUpmasslimit);
-  
+
   Int_t nPosTrks=0,nNegTrks=0;
   Int_t nOStriplets = arrayOppositeSign->GetEntriesFast();
   Int_t nDplusLS=0;
   Int_t nDminusLS=0;
   Int_t nLikeSign = arrayLikeSign->GetEntriesFast();
-  Int_t index=0; 
-  
+  Int_t index=0;
+
   // loop over like sign candidates
   for(Int_t iLikeSign = 0; iLikeSign < nLikeSign; iLikeSign++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)arrayLikeSign->UncheckedAt(iLikeSign);
@@ -388,8 +413,8 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
 	Double_t dlen=d->DecayLength();
 	Double_t cosp=d->CosPointingAngle();
 	Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-	Double_t dca=d->GetDCA();   
-	Double_t sigvert=d->GetSigmaVert();   
+	Double_t dca=d->GetDCA();
+	Double_t sigvert=d->GetSigmaVert();
 	Double_t ptmax=0;
 	for(Int_t i=0;i<3;i++){
 	  if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
@@ -431,8 +456,8 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
 
   delete histLSPlus;histLSPlus=0;
   delete histLSMinus;histLSMinus=0;
-  
-  if(fDebug>1) printf("LS analysis terminated\n");  
+
+  if(fDebug>1) printf("LS analysis terminated\n");
 }
 
 //__________________________________________
@@ -441,16 +466,16 @@ void AliAnalysisTaskSEDplus::Init(){
   /// Initialization
   //
   if(fDebug > 1) printf("AnalysisTaskSEDplus::Init() \n");
-  
+
   //PostData(2,fRDCutsloose);//we should then put those cuts in a tlist if we have more than 1
   fListCuts=new TList();
   fListCuts->SetOwner();
   AliRDHFCutsDplustoKpipi *analysis = new AliRDHFCutsDplustoKpipi(*fRDCutsAnalysis);
   analysis->SetName("AnalysisCuts");
-  
+
   fListCuts->Add(analysis);
   PostData(2,fListCuts);
-  
+
   return;
 }
 
@@ -466,25 +491,32 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",13,-0.5,12.5);
-  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents accepted");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"Rejected due to trigger");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"Rejected pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"Rejected due to centrality"); 
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"Rejected due to vtxz");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to Physics Sel");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
-  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
-  fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after topological cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after Topological+SingleTrack cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(12,"D+ after Topological+SingleTrack+PID cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(13,"D+ not on-the-fly reco");
- 
-  fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
-  fHistNEvents->Sumw2();
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",10,-0.5,9.5);
+  fHistNEvents->GetXaxis()->SetBinLabel(1,"nEvents read");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"Rejected due to mismatch in trees");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents with good AOD");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Rejected due to trigger");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Rejected due to vertex reco");
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Rejected due to pileup");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to centrality");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Rejected due to vtxz");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"Rejected due to Physics Sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"nEvents accepted");
+  fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
+
+  fHistNCandidates = new TH1F("hNCandidates","number of candidates",6,-0.5,5.5);
+  fHistNCandidates->GetXaxis()->SetBinLabel(1,"no. of 3prong candidates");
+  fHistNCandidates->GetXaxis()->SetBinLabel(2,"no. of cand with D+ bitmask");
+  fHistNCandidates->GetXaxis()->SetBinLabel(3,"D+ not on-the-fly reco");
+  fHistNCandidates->GetXaxis()->SetBinLabel(4,"D+ after topological cuts");
+  fHistNCandidates->GetXaxis()->SetBinLabel(5,"D+ after Topological+SingleTrack cuts");
+  fHistNCandidates->GetXaxis()->SetBinLabel(6,"D+ after Topological+SingleTrack+PID cuts");
+  fHistNCandidates->GetXaxis()->SetNdivisions(1,kFALSE);
+  fHistNCandidates->SetMinimum(0);
+  fOutput->Add(fHistNCandidates);
+
 
   TString hisname;
   Int_t index=0;
@@ -537,7 +569,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hCosxyPt%d",i);
     fCosxy[index]=new TH1F(hisname.Data(),hisname.Data(),100,-1,1.);
     fCosxy[index]->Sumw2();
-   
+
     hisname.Form("hMassPt%dTC",i);
     fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHist[index]->Sumw2();
@@ -548,9 +580,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     fMassHistMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistMinus[index]->Sumw2();
 
-
-       
-    index=GetSignalHistoIndex(i);    
+    index=GetSignalHistoIndex(i);
     hisname.Form("hSigNoPidPt%d",i);
     fMassHistNoPid[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistNoPid[index]->Sumw2();
@@ -568,8 +598,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     fSigVertHist[index]->Sumw2();
     hisname.Form("hPtMaxSigPt%d",i);
     fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,5.);
-    fPtMaxHist[index]->Sumw2();  
-    hisname.Form("hPtKSigPt%d",i);  
+    fPtMaxHist[index]->Sumw2();
+    hisname.Form("hPtKSigPt%d",i);
     fPtKHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,5.);
     fPtKHist[index]->Sumw2();
     hisname.Form("hPtpi1SigPt%d",i);
@@ -581,7 +611,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
     hisname.Form("hDCASigPt%d",i);
     fDCAHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,0.1);
-    fDCAHist[index]->Sumw2();    
+    fDCAHist[index]->Sumw2();
 
     hisname.Form("hDLxySigPt%d",i);
     fDLxy[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,10.);
@@ -600,7 +630,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     fMassHistMinus[index]->Sumw2();
 
 
-    index=GetBackgroundHistoIndex(i); 
+    index=GetBackgroundHistoIndex(i);
     hisname.Form("hBkgNoPidPt%d",i);
     fMassHistNoPid[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistNoPid[index]->Sumw2();
@@ -619,7 +649,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hPtMaxBkgPt%d",i);
     fPtMaxHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.5,5.);
     fPtMaxHist[index]->Sumw2();
-    hisname.Form("hPtKBkgPt%d",i);  
+    hisname.Form("hPtKBkgPt%d",i);
     fPtKHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,0.,5.);
     fPtKHist[index]->Sumw2();
     hisname.Form("hPtpi1BkgPt%d",i);
@@ -638,7 +668,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     hisname.Form("hCosxyBkgPt%d",i);
     fCosxy[index]=new TH1F(hisname.Data(),hisname.Data(),100,-1,1.);
     fCosxy[index]->Sumw2();
-  
+
 
     hisname.Form("hBkgPt%dTC",i);
     fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
@@ -650,11 +680,11 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     fMassHistMinus[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistMinus[index]->Sumw2();
   }
-    
+
 
   for(Int_t i=0; i<3*fNPtBins; i++){
     fOutput->Add(fMassHistNoPid[i]);
-    if(fCutsDistr){  
+    if(fCutsDistr){
       fOutput->Add(fCosPHist[i]);
       fOutput->Add(fDLenHist[i]);
       fOutput->Add(fSumd02Hist[i]);
@@ -666,26 +696,28 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
       fOutput->Add(fDCAHist[i]);
       fOutput->Add(fDLxy[i]);
       fOutput->Add(fCosxy[i]);
-    }  
+    }
     fOutput->Add(fMassHist[i]);
     fOutput->Add(fMassHistPlus[i]);
     fOutput->Add(fMassHistMinus[i]);
 
   }
-  
+
   fCorreld0Kd0pi[0]=new TH2F("hCorreld0Kd0piAll","",100,-0.02,0.02,100,-0.02,0.02);
   fCorreld0Kd0pi[1]=new TH2F("hCorreld0Kd0piSig","",100,-0.02,0.02,100,-0.02,0.02);
   fCorreld0Kd0pi[2]=new TH2F("hCorreld0Kd0piBkg","",100,-0.02,0.02,100,-0.02,0.02);
-  if(fCutsDistr){  
+  if(fCutsDistr){
     for(Int_t i=0; i<3; i++){
       fCorreld0Kd0pi[i]->Sumw2();
       fOutput->Add(fCorreld0Kd0pi[i]);
     }
   }
-  
+
 
   fPtVsMassNoPid=new TH2F("hPtVsMassNoPid","PtVsMass (no PID)",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
-  fPtVsMass=new TH2F("hPtVsMass","PtVsMass",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);  
+  fPtVsMass=new TH2F("hPtVsMass","PtVsMass",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
+  fPtVsMassGoodDaus=new TH2F("hPtVsMassGoodDaus","PtVsMassGoodDaus",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
+  fPtVsMassBadDaus=new TH2F("hPtVsMassBadDaus","PtVsMassBadDaus",nbins,fLowmasslimit,fUpmasslimit,200,0.,20.);
   fYVsPtNoPid=new TH3F("hYVsPtNoPid","YvsPt (no PID)",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
   fYVsPt=new TH3F("hYVsPt","YvsPt",40,0.,20.,80,-2.,2.,nbins,fLowmasslimit,fUpmasslimit);
   fYVsPtSigNoPid=new TH2F("hYVsPtSigNoPid","YvsPt (MC, only sig., no PID)",40,0.,20.,80,-2.,2.);
@@ -699,6 +731,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fSPDMult = new TH1F("hSPDMult", "Tracklets multiplicity; Tracklets ; Entries",200,0.,maxmult);
   fOutput->Add(fPtVsMassNoPid);
   fOutput->Add(fPtVsMass);
+  fOutput->Add(fPtVsMassGoodDaus);
+  fOutput->Add(fPtVsMassBadDaus);
   fOutput->Add(fYVsPtNoPid);
   fOutput->Add(fYVsPt);
   fOutput->Add(fYVsPtSigNoPid);
@@ -707,6 +741,25 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fOutput->Add(fPhiEtaCandSigReg);
   fOutput->Add(fSPDMult);
 
+  fDaughterClass = new TH1F("hDaughterClass","",10,-0.5,9.5);
+  fDaughterClass->GetXaxis()->SetBinLabel(1,"AliAODTrack - good ID");
+  fDaughterClass->GetXaxis()->SetBinLabel(2,"AliAODTrack - charge0");
+  fDaughterClass->GetXaxis()->SetBinLabel(3,"AliAODTrack - ID=0");
+  fDaughterClass->GetXaxis()->SetBinLabel(4,"AliAODTrack - neg ID");
+  fDaughterClass->GetXaxis()->SetBinLabel(5,"AliAODTrack - different ID");
+  fDaughterClass->GetXaxis()->SetBinLabel(6,"AliAODRecoDecayHF2Prong");
+  fDaughterClass->GetXaxis()->SetBinLabel(7,"AliAODRecoDecayHF3Prong");
+  fDaughterClass->GetXaxis()->SetBinLabel(8,"AliAODRecoCascadeHF");
+  fDaughterClass->GetXaxis()->SetBinLabel(9,"Other");
+  fDeltaID = new TH1F("hDeltaID"," ; GetDaughter->GetID() - GetProngID()",20001,-10000.5,10000.5);
+  if(fSystem==0){
+    fIDDauVsIDTra = new TH2F("hIDDauVsIDTra"," ; GetProngID() ; GetDaughter->GetID()",1001,-500.5,500.5,1001,-500.5,500.5);
+  }else{
+    fIDDauVsIDTra = new TH2F("hIDDauVsIDTra"," ; GetProngID() ; GetDaughter->GetID()",1000,-30000,30000,1000,-30000,30000);
+  }
+  fOutput->Add(fDaughterClass);
+  fOutput->Add(fDeltaID);
+  fOutput->Add(fIDDauVsIDTra);
 
   //Counter for Normalization
   TString normName="NormalizationCounter";
@@ -717,27 +770,28 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
 
   if(fDoLS) CreateLikeSignHistos();
   if(fDoImpPar) CreateImpactParameterHistos();
+  if(fDoSparse) CreateCutVarsSparses();
   if(fReadMC && fStepMCAcc) CreateMCAcceptanceHistos();
   if(fDoTrackVarHist) CreateTrackVarHistos();
-    
+
   PostData(1,fOutput);
 
   if(fFillNtuple==1){
     OpenFile(4); // 4 is the slot number of the ntuple
-        
-        
+
+
     fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:charge:piddau0:piddau1:piddau2:Ptpi:PtK:Ptpi2:mompi:momK:mompi2:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber:BadDau");
-        
+
   }
-    
+
   if(fFillNtuple==2){
     OpenFile(4); // 4 is the slot number of the ntuple
-    
-        
+
+
     fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Pt:InvMass:d0:origin");
-    
+
   }
-  
+
   return;
 }
 
@@ -748,16 +802,29 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   /// heavy flavor candidates association to MC truth
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-  
+
+  fHistNEvents->Fill(0); // count event
+
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      fHistNEvents->Fill(1);
+      return;
+    }
+  }
+
   TClonesArray *array3Prong = 0;
   TClonesArray *arrayLikeSign =0;
   if(!aod && AODEvent() && IsStandardAOD()) {
-    // In case there is an AOD handler writing a standard AOD, use the AOD 
-    // event in memory rather than the input (ESD) event.    
+    // In case there is an AOD handler writing a standard AOD, use the AOD
+    // event in memory rather than the input (ESD) event.
     aod = dynamic_cast<AliAODEvent*> (AODEvent());
     // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
     // have to taken from the AOD event hold by the AliAODExtension
-    AliAODHandler* aodHandler = (AliAODHandler*) 
+    AliAODHandler* aodHandler = (AliAODHandler*)
       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     if(aodHandler->GetExtensions()) {
       AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject("AliAOD.VertexingHF.root");
@@ -779,14 +846,15 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     return;
   }
 
-  // fix for temporary bug in ESDfilter 
+  // fix for temporary bug in ESDfilter
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
 
   //Store the event in AliNormalizationCounter->To disable for Pb-Pb? Add a flag to disable it?
   fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC);
 
-  fHistNEvents->Fill(0); // count event
+  fHistNEvents->Fill(2);
+
   Int_t runNumber=aod->GetRunNumber();
 
   //Event selection
@@ -795,11 +863,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   Float_t evCentr=0;
   if(fRDCutsAnalysis->GetUseCentrality()>0) evCentr=fRDCutsAnalysis->GetCentrality(aod);
   fHistCentrality[0]->Fill(ntracks,evCentr);
-  if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(2);
-  if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(3); 
-  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(4);fHistCentrality[2]->Fill(ntracks,evCentr);}
-  if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(5);
-  if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(6);
+  if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(3);
+  if(!isEvSel && fRDCutsAnalysis->GetWhyRejection()==0) fHistNEvents->Fill(4);
+  if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(5);
+  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(6);fHistCentrality[2]->Fill(ntracks,evCentr);}
+  if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(7);
+  if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(8);
 
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
@@ -810,7 +879,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       printf("AliAnalysisTaskSEDplus::UserExec: MC particles branch not found!\n");
       return;
     }
-    
+
     // load MC header
     mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
@@ -818,7 +887,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       return;
     }
   }
-  if(fReadMC && fStepMCAcc){ 
+  if(fReadMC && fStepMCAcc){
     if(aod->GetTriggerMask()==0 &&
        (runNumber>=195344 && runNumber<=195677)){
       // protection for events with empty trigger mask in p-Pb
@@ -831,7 +900,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   }
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
   //TString trigclass=aod->GetFiredTriggerClasses();
-  // Post the data already here  
+  // Post the data already here
   PostData(1,fOutput);
   if(!isEvSel)return;
   Int_t tracklets=AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.);
@@ -839,25 +908,25 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   fSPDMult->Fill(tracklets);
 
   fHistCentrality[1]->Fill(ntracks,evCentr);
-  fHistNEvents->Fill(1);
+  fHistNEvents->Fill(9);
 
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
   //    vtx1->Print();
   //   TString primTitle = vtx1->GetTitle();
   //if(primTitle.Contains("VertexerTracks") && vtx1->GetNContributors()>0)fHistNEvents->Fill(2);
- 
-  
+
+
   Int_t n3Prong = array3Prong->GetEntriesFast();
   //  printf("Number of D+->Kpipi: %d and of tracks: %d\n",n3Prong,aod->GetNumberOfTracks());
-  
+
   Int_t nOS=0;
   Int_t index;
   Int_t pdgDgDplustoKpipi[3]={321,211,211};
-  
+
   // vHF object is needed to call the method that refills the missing info of the candidates
   // if they have been deleted in dAOD reconstruction phase
-  // in order to reduce the size of the file 
+  // in order to reduce the size of the file
   AliAnalysisVertexingHF *vHF=new AliAnalysisVertexingHF();
   if(fDoLS>1){//Normalizations for LS
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
@@ -872,26 +941,71 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     Int_t nSelectednopid=0,nSelected=0;
     for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
       AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
-      fHistNEvents->Fill(7);
+      fHistNCandidates->Fill(0);
       if(fUseBit && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts)){
-	fHistNEvents->Fill(8);
 	continue;
       }
+      fHistNCandidates->Fill(1);
 
       if(!(vHF->FillRecoCand(aod,d))) { //Fill the data members of the candidate only if they are empty.
-        fHistNEvents->Fill(12); //monitor how often this fails 
+        fHistNCandidates->Fill(2); //monitor how often this fails
         continue;
       }
+
+      Bool_t goodDaus=kTRUE;
+      for(Int_t jdau=0; jdau<3; jdau++){
+	Int_t idStored=d->GetProngID(jdau);
+	TObject* odau=(TObject*)d->GetDaughter(jdau);
+	TString cname=odau->ClassName();
+	if(cname.Contains("AliAODTrack")){
+	  AliAODTrack* tr=(AliAODTrack*)d->GetDaughter(jdau);
+	  if(tr->Charge()==0){
+	    fDaughterClass->Fill(1);
+	    goodDaus=kFALSE;
+	  }
+	  Int_t idRecov=tr->GetID();
+	  Int_t dId=idRecov-idStored;
+	  fIDDauVsIDTra->Fill(idStored,idRecov);
+	  fDeltaID->Fill(dId);
+	  if(dId!=0){
+	    goodDaus=kFALSE;
+	    fDaughterClass->Fill(4);
+	  }else{
+	    if(idStored>0) fDaughterClass->Fill(0);
+	    else if(idStored==0) fDaughterClass->Fill(2);
+	    else{
+	      goodDaus=kFALSE;
+	      fDaughterClass->Fill(3);
+	    }
+	  }
+	}else if(cname.Contains("AliAODRecoDecayHF2")){
+	  fDaughterClass->Fill(5);
+	  goodDaus=kFALSE;
+	}else if(cname.Contains("AliAODRecoDecayHF3")){
+	  fDaughterClass->Fill(6);
+	  goodDaus=kFALSE;
+	}else if(cname.Contains("AliAODRecoCascadeHF")){
+	  fDaughterClass->Fill(7);
+	  goodDaus=kFALSE;
+	}else{
+	  fDaughterClass->Fill(8);
+	  goodDaus=kFALSE;
+	}
+      }
+      Double_t ptCand = d->Pt();
+      Double_t invMass=d->InvMassDplus();
+      if(goodDaus) fPtVsMassGoodDaus->Fill(invMass,ptCand);
+      else fPtVsMassBadDaus->Fill(invMass,ptCand);
 
       Int_t passTopolAndPIDCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
       Bool_t passSingleTrackCuts=kTRUE;
       if(fRDCutsAnalysis->GetIsSelectedCuts() && fRDCutsAnalysis->GetIsSelectedPID() && !passTopolAndPIDCuts) passSingleTrackCuts=kFALSE;
 
       if(!fRDCutsAnalysis->GetIsSelectedCuts()) continue;
-      fHistNEvents->Fill(9);
+      fHistNCandidates->Fill(3);
       if(!passSingleTrackCuts) continue;
-      fHistNEvents->Fill(10);
-      if(passTopolAndPIDCuts) fHistNEvents->Fill(11);
+      fHistNCandidates->Fill(4);
+      if(passTopolAndPIDCuts) fHistNCandidates->Fill(5);
 
       Double_t etaD=d->Eta();
       Double_t phiD=d->Phi();
@@ -906,17 +1020,16 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	unsetvtx=kTRUE;
       }
 
-      Double_t ptCand = d->Pt();
-      Int_t iPtBin = fRDCutsAnalysis->PtBin(ptCand);     
-    
+      Int_t iPtBin = fRDCutsAnalysis->PtBin(ptCand);
+
       Bool_t recVtx=kFALSE;
       AliAODVertex *origownvtx=0x0;
       if(fRDCutsAnalysis->GetIsPrimaryWithoutDaughters()){
-	if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());	
+	if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
 	if(fRDCutsAnalysis->RecalcOwnPrimaryVtx(d,aod))recVtx=kTRUE;
 	else fRDCutsAnalysis->CleanOwnPrimaryVtx(d,aod,origownvtx);
       }
-    
+
       Int_t labDp=-1;
       Bool_t isPrimary=kFALSE;
       Bool_t isFeeddown=kFALSE;
@@ -945,7 +1058,6 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	}
       }
 
-      Double_t invMass=d->InvMassDplus();
       Double_t rapid=d->YDplus();
       fYVsPtNoPid->Fill(ptCand,rapid,invMass);
       if(passTopolAndPIDCuts) {
@@ -962,13 +1074,13 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
  	Double_t  minPtDau=999.,ptmax=0,maxdca=0,sigvert=0,sumD02=0;
 	Double_t dlen=0,cosp=0,dlenxy=0,cospxy=0, ndlenxy=0, dd0max=0;
-	if(fCutsDistr||fFillNtuple||fDoImpPar){
+	if(fCutsDistr||fFillNtuple||fDoImpPar||fDoSparse){
 	  dlen=d->DecayLength();
 	  cosp=d->CosPointingAngle();
 	  sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
 	  maxdca=-9999.;
 	  for(Int_t idau=0;idau<3;idau++) if(d->GetDCA(idau)>maxdca) maxdca=d->GetDCA(idau);
-	  sigvert=d->GetSigmaVert();         
+	  sigvert=d->GetSigmaVert();
 	  ptmax=0;
 	  dlenxy = d->DecayLengthXY();
 	  ndlenxy=d->NormalizedDecayLengthXY();
@@ -987,12 +1099,18 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	Double_t resSel=0;
 	if(fRDCutsAnalysis->GetIsSelectedCuts()) resSel=1;
 	if(passTopolAndPIDCuts) resSel=2;
+	if(fSystem==1) dd0max = TMath::Abs(dd0max);
 
-	//for all THnSParse except for FD
-	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,impparXY,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max};
-	//for THnSparse for FD
-	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,impparXY,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
-	Double_t arrayForSparseTrue[kVarForSparseFD]={invMass,ptCand,trueImpParXY,resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
+	//for all THnSparses except for FD
+	Double_t arrayForSparse[kVarForSparse]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max};
+	//for THnSparses for FD
+	Double_t arrayForSparseFD[kVarForSparseFD]={invMass,ptCand,TMath::Abs(impparXY),resSel,minPtDau,sigvert,cosp,cospxy,dlen,dlenxy,ndlenxy,dd0max,ptB};
+        
+	//for imppar THnSparses
+	Double_t arrayForImpPar[kVarForImpPar]={invMass,ptCand,impparXY};
+	//for imppar THnSparse with true FD imppar
+	Double_t arrayForImpParFDTrue[kVarForImpPar]={invMass,ptCand,trueImpParXY};
+
 	Double_t flagOrigin = 0;
 
 	AliAODTrack *track;
@@ -1020,14 +1138,17 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    }
 	  }
 	}
-	
+
 	//Fill histos
 	index=GetHistoIndex(iPtBin);
 	nSelectednopid++;
 	fPtVsMassNoPid->Fill(invMass,ptCand);
 	fMassHistNoPid[index]->Fill(invMass);
-	if(fDoImpPar){
-	  fHistMassPtImpPar[0]->Fill(arrayForSparse);
+	if(fDoImpPar && passTopolAndPIDCuts){
+	  fHistMassPtImpPar[0]->Fill(arrayForImpPar);
+	}
+	if(fDoSparse){
+	  fSparseCutVars[0]->Fill(arrayForSparse);
 	}
 	if(passTopolAndPIDCuts){
 	  nSelected++;
@@ -1037,7 +1158,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  else if(d->GetCharge()<0) fMassHistMinus[index]->Fill(invMass);
 	  fPhiEtaCand->Fill(etaD,phiD);
 	  if(TMath::Abs(invMass-1.8696)<0.05) fPhiEtaCandSigReg->Fill(etaD,phiD);
-	  if(fCutsDistr){	  
+	  if(fCutsDistr){
 	    fCosPHist[index]->Fill(cosp);
 	    fDLenHist[index]->Fill(dlen);
 	    fSumd02Hist[index]->Fill(sumD02);
@@ -1052,12 +1173,12 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),d->Getd0Prong(2)*d->Getd0Prong(1));
 	  }
 	}
- 	
+
 	// fill ntuple
 	if(fFillNtuple==1){
-          
+
 	  Float_t tmp[31];
-	  
+
 	  tmp[0]=pdgCode;
 	  if(isFeeddown) tmp[0]+=5000.;
 	  tmp[1]=d->Px();
@@ -1065,7 +1186,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  tmp[3]=d->Pz();
 	  tmp[4]=d->Pt();
 	  tmp[5]=d->GetCharge();
-	  //	tmp[5]=fRDCutsAnalysis->GetPIDBitMask(d);	  
+	  //	tmp[5]=fRDCutsAnalysis->GetPIDBitMask(d);
 	  tmp[6]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(0));
 	  tmp[7]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(1));
 	  tmp[8]=fRDCutsAnalysis->GetPIDTrackTPCTOFBitMap((AliAODTrack*)d->GetDaughter(2));
@@ -1094,7 +1215,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	  fNtupleDplus->Fill(tmp);
 	  PostData(4,fNtupleDplus);
 	}
-        
+
 	if(fFillNtuple==2 && passTopolAndPIDCuts){
 	  Float_t tmp[5];
 	  tmp[0]=pdgCode;
@@ -1107,28 +1228,33 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    if(isPrimary&&labDp>=0)flagOrigin=1;
 	    if(isFeeddown&&labDp>=0)flagOrigin=2;
 	    if(!(labDp>=0))flagOrigin=3;
-	    
+
 	  }
-            
+
 	  tmp[4]=flagOrigin;
 	  fNtupleDplus->Fill(tmp);
 	  PostData(4,fNtupleDplus);
 	}
 
-     
 	if(fReadMC){
 	  if(labDp>=0) {
 	    index=GetSignalHistoIndex(iPtBin);
-	    if(fDoImpPar){
-	      if(isPrimary) fHistMassPtImpPar[1]->Fill(arrayForSparse);
+	    if(fDoImpPar && passTopolAndPIDCuts){
+	      if(isPrimary) fHistMassPtImpPar[1]->Fill(arrayForImpPar);
 	      else if(isFeeddown){
-		fHistMassPtImpPar[2]->Fill(arrayForSparseFD);
-		fHistMassPtImpPar[3]->Fill(arrayForSparseTrue);
+		fHistMassPtImpPar[2]->Fill(arrayForImpPar);
+		fHistMassPtImpPar[3]->Fill(arrayForImpParFDTrue);
+	      }
+	    }
+	    if(fDoSparse){
+	      if(isPrimary) fSparseCutVars[1]->Fill(arrayForSparse);
+	      else if(isFeeddown){
+		fSparseCutVars[2]->Fill(arrayForSparseFD);
 	      }
 	    }
 	  }else{
 	    index=GetBackgroundHistoIndex(iPtBin);
-	    if(fDoImpPar)fHistMassPtImpPar[4]->Fill(arrayForSparse);
+	    if(fDoImpPar && passTopolAndPIDCuts)fHistMassPtImpPar[4]->Fill(arrayForImpPar);
 	  }
 	  fMassHistNoPid[index]->Fill(invMass);
 	  if(passTopolAndPIDCuts){
@@ -1150,15 +1276,15 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	      fDCAHist[index]->Fill(maxdca,fact);
 	      fCorreld0Kd0pi[1]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),d->Getd0Prong(2)*d->Getd0Prong(1));
 	    }
-	    fMassHist[index]->Fill(invMass);	      
+	    fMassHist[index]->Fill(invMass);
 	    if(d->GetCharge()>0) fMassHistPlus[index]->Fill(invMass);
 	    else if(d->GetCharge()<0) fMassHistMinus[index]->Fill(invMass);
-	  }	
+	  }
 	}
       }
-    
+
       if(recVtx)fRDCutsAnalysis->CleanOwnPrimaryVtx(d,aod,origownvtx);
-      
+
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
     }
     fCounter->StoreCandidates(aod,nSelectednopid,kTRUE);
@@ -1167,10 +1293,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   delete vHF;
   //start LS analysis
   if(fDoLS && arrayLikeSign) LSAnalysis(array3Prong,arrayLikeSign,aod,vtx1,nOS);
-  
-  PostData(1,fOutput); 
+
+  PostData(1,fOutput);
   PostData(2,fListCuts);
-  PostData(3,fCounter);    
+  PostData(3,fCounter);
   return;
 }
 
@@ -1208,11 +1334,11 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
     fPtMaxHistLS[index]->Sumw2();
     hisname.Form("hDCAAllPt%dLS",i);
     fDCAHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
-    fDCAHistLS[index]->Sumw2();    
+    fDCAHistLS[index]->Sumw2();
 
-    index=GetSignalHistoIndex(i);    
+    index=GetSignalHistoIndex(i);
     indexLS++;
- 
+
     hisname.Form("hLSPt%dnw",i);
     fMassHistLS[indexLS]=new TH1F(hisname.Data(),hisname.Data(),nbins,fLowmasslimit,fUpmasslimit);
     fMassHistLS[indexLS]->Sumw2();
@@ -1236,7 +1362,7 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
     fDCAHistLS[index]=new TH1F(hisname.Data(),hisname.Data(),nbins,0.,0.1);
     fDCAHistLS[index]->Sumw2();
 
-    index=GetBackgroundHistoIndex(i); 
+    index=GetBackgroundHistoIndex(i);
     indexLS++;
 
     hisname.Form("hLSPt%dLCntrip",i);
@@ -1278,8 +1404,8 @@ void AliAnalysisTaskSEDplus::CreateLikeSignHistos(){
     fOutput->Add(fDLenHistLS[i]);
     fOutput->Add(fSumd02HistLS[i]);
     fOutput->Add(fSigVertHistLS[i]);
-    fOutput->Add(fPtMaxHistLS[i]);  
-    fOutput->Add(fDCAHistLS[i]);  
+    fOutput->Add(fPtMaxHistLS[i]);
+    fOutput->Add(fDCAHistLS[i]);
   }
   for(Int_t i=0; i<5*fNPtBins; i++){
     fOutput->Add(fMassHistLS[i]);
@@ -1291,99 +1417,197 @@ void AliAnalysisTaskSEDplus::CreateImpactParameterHistos(){
   /// Histos for impact parameter study
 
   Int_t nmassbins=GetNBinsHistos();
-  Double_t maxmult;
-  if(fSystem==1) maxmult=5000;
-  else maxmult=200;
 
   Int_t nptbins=80;
   Double_t ptmin=0.;
   Double_t ptmax=40.;
 
-  Int_t nptmindaubins=10;
-  Double_t minptmindau=0.2;
-  Double_t maxptmindau=1.2;
+  //dimensions for THnSparse
+  TString axTit[kVarForImpPar]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)"};
 
-  Int_t nsigvertbins=25;
-  Double_t minsigvert=0.010;
-  Double_t maxsigvert=0.035;
+  Int_t nbins[kVarForImpPar]={nmassbins,nptbins,fNImpParBins};
+  Double_t xmin[kVarForImpPar]={fLowmasslimit,ptmin,fLowerImpPar};
+  Double_t xmax[kVarForImpPar]={fUpmasslimit,ptmax,fHigherImpPar};
+
+  //mass, pt, imppar, PIDsel
+  //mass, pt, imppar, PIDsel
+  fHistMassPtImpPar[0]=new THnSparseF("hMassPtImpParAll",
+					"Mass vs. pt vs.imppar - All",
+					kVarForImpPar,nbins,xmin,xmax);
+  fHistMassPtImpPar[1]=new THnSparseF("hMassPtImpParPrompt",
+					"Mass vs. pt vs.imppar - promptD",
+					kVarForImpPar,nbins,xmin,xmax);
+  fHistMassPtImpPar[2]=new THnSparseF("hMassPtImpParBfeed",
+					"Mass vs. pt vs.imppar - DfromB",
+					kVarForImpPar,nbins,xmin,xmax);
+  fHistMassPtImpPar[3]=new THnSparseF("hMassPtImpParTrueBfeed",
+					"Mass vs. pt vs.true imppar -DfromB",
+					kVarForImpPar,nbins,xmin,xmax);
+  fHistMassPtImpPar[4]=new THnSparseF("hMassPtImpParBkg",
+				        "Mass vs. pt vs.imppar - backgr.",
+					kVarForImpPar,nbins,xmin,xmax);
+
+  for(Int_t i=0; i<5; i++){
+    for(Int_t iax=0; iax<kVarForImpPar; iax++) fHistMassPtImpPar[i]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+    fOutput->Add(fHistMassPtImpPar[i]);
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
+  /// Sparses for cut variation study
+
+  Int_t nmassbins=GetNBinsHistos();
+
+  Int_t nptbins=80;
+  Double_t ptmin=0.;
+  Double_t ptmax=40.;
 
   Int_t nselbins=2;
   Double_t minsel=0.5;
   Double_t maxsel=2.5;
 
-  Int_t ncospbins=100;
-  Double_t mincosp=0.90;
-  Double_t maxcosp=1.;
-
-  Int_t ncospxybins=30;
-  Double_t mincospxy=0.97;
-  Double_t maxcospxy=1.;
-
-  Int_t ndeclbins=70;
-  Double_t mindecl=0.;
-  Double_t maxdecl=0.7;
-
-  Int_t ndeclxybins=70;
-  Double_t mindeclxy=0.;
-  Double_t maxdeclxy=0.7;
-
   Int_t nnormdlbins=30;
   Double_t minnormdl=0.;
   Double_t maxnormdl=30.;
+  
+  Double_t maxmult;
+  
+  Int_t nd0bins=15;
+  Double_t d0min=0.;
+  Double_t d0max=300;
+  
+  Int_t nptmindaubins;
+  Double_t minptmindau;
+  Double_t maxptmindau;
 
-  Int_t nd0d0expbins=40;
-  Double_t mind0d0=-10.;
-  Double_t maxd0d0=10.;
-
-
-  //dimensions for THnSparse which are NOT for BFeed
-  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)", 
-				"sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp"};
+  Int_t nsigvertbins;
+  Double_t minsigvert;
+  Double_t maxsigvert;
  
-  Int_t nbins[kVarForSparse]={nmassbins,nptbins,fNImpParBins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclxybins,nnormdlbins,nd0d0expbins};
-  Double_t xmin[kVarForSparse]={fLowmasslimit,ptmin,fLowerImpPar,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0};
-  Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,fHigherImpPar,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0};
+  Int_t ndeclbins;
+  Double_t mindecl;
+  Double_t maxdecl;
+    
+  Int_t ndeclxybins;
+  Double_t mindeclxy;
+  Double_t maxdeclxy;
+    
+  Int_t ncospbins;
+  Double_t mincosp;
+  Double_t maxcosp;
 
-  //dimensions for THnSparse for BFeed 
-  Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,fNImpParBins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,84};
-  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,ptmin,fLowerImpPar,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,-2};
-  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,ptmax,fHigherImpPar,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,40};
+  Int_t ncospxybins;
+  Double_t mincospxy;
+  Double_t maxcospxy;
+
+  Int_t nd0d0expbins;
+  Double_t mind0d0;
+  Double_t maxd0d0;
+
+  if(fSystem==1) {
+    maxmult=5000;
+
+    nptmindaubins=1;
+    minptmindau=0.2;
+    maxptmindau=1.2;
+      
+    nsigvertbins=8;
+    minsigvert=0.016;
+    maxsigvert=0.032;
+      
+    ndeclbins=35;
+    mindecl=0.;
+    maxdecl=0.35;
+      
+    ndeclxybins=35;
+    mindeclxy=0.;
+    maxdeclxy=0.35;
+
+    ncospbins=30;
+    mincosp=0.97;
+    maxcosp=1.;
+
+    ncospxybins=30;
+    mincospxy=0.97;
+    maxcospxy=1.;
+
+    nd0d0expbins=12;
+    mind0d0=0.;
+    maxd0d0=6.;
+  }
+  else {
+    maxmult=200;
+
+    nptmindaubins=10;
+    minptmindau=0.2;
+    maxptmindau=1.2;
+
+    nsigvertbins=25;
+    minsigvert=0.010;
+    maxsigvert=0.035;
+      
+    ndeclbins=70;
+    mindecl=0.;
+    maxdecl=0.70;
+      
+    ndeclxybins=70;
+    mindeclxy=0.;
+    maxdeclxy=0.70;
+      
+    ncospbins=100;
+    mincosp=0.90;
+    maxcosp=1.;
+
+    ncospxybins=30;
+    mincospxy=0.97;
+    maxcospxy=1.;
+
+    nd0d0expbins=40;
+    mind0d0=-10.;
+    maxd0d0=10.;
+  }
+  //dimensions for THnSparse which are NOT for BFeed
+  TString axTit[kVarForSparse]={"M_{K#pi#pi} (GeV/c^{2})","p_{T} (GeV/c)","Imp Par (#mum)","passTopolPID","min. daughter p_{T} (GeV/c)","sigmaVertex","cos(#theta_{P})","cos(#theta_{P}^{xy})","decL (cm)","decL XY (cm)","Norm decL XY","Norm max d0-d0exp"};
+
+  Int_t nbins[kVarForSparse]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclxybins,nnormdlbins,nd0d0expbins};
+  Double_t xmin[kVarForSparse]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0};
+  Double_t xmax[kVarForSparse]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0};
+
+  //dimensions for THnSparse for BFeed
+  Int_t nbinsFD[kVarForSparseFD]={nmassbins,nptbins,nd0bins,nselbins,nptmindaubins,nsigvertbins,ncospbins,ncospxybins,ndeclbins,ndeclbins,nnormdlbins,nd0d0expbins,84};
+  Double_t xminFD[kVarForSparseFD]={fLowmasslimit,ptmin,d0min,minsel,minptmindau,minsigvert,mincosp,mincospxy,mindecl,mindeclxy,minnormdl,mind0d0,-2};
+  Double_t xmaxFD[kVarForSparseFD]={fUpmasslimit,ptmax,d0max,maxsel,maxptmindau,maxsigvert,maxcosp,maxcospxy,maxdecl,maxdeclxy,maxnormdl,maxd0d0,40};
 
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
   //mass, pt, imppar, cosPoinXY, decLXY, norm decLXY (for BFeed also ptB)
-  fHistMassPtImpPar[0]=new THnSparseF("hMassPtImpParAll",
-					"Mass vs. pt vs.imppar - All",
+  fSparseCutVars[0]=new THnSparseF("hMassPtCutVarsAll",
+					"Mass vs. pt vs. cut vars - All",
 					kVarForSparse,nbins,xmin,xmax);
-  fHistMassPtImpPar[1]=new THnSparseF("hMassPtImpParPrompt",
-					"Mass vs. pt vs.imppar - promptD",
+  fSparseCutVars[1]=new THnSparseF("hMassPtCutVarsPrompt",
+					"Mass vs. pt vs. cut vars - promptD",
 					kVarForSparse,nbins,xmin,xmax);
-  fHistMassPtImpPar[2]=new THnSparseF("hMassPtImpParBfeed",
-					"Mass vs. pt vs.imppar - DfromB",
+  fSparseCutVars[2]=new THnSparseF("hMassPtCutVarsBfeed",
+					"Mass vs. pt vs. cut vars - DfromB",
 					kVarForSparseFD,nbinsFD,xminFD,xmaxFD);
-  fHistMassPtImpPar[3]=new THnSparseF("hMassPtImpParTrueBfeed",
-					"Mass vs. pt vs.true imppar -DfromB",
-					kVarForSparseFD,nbinsFD,xminFD,xmaxFD);
-  fHistMassPtImpPar[4]=new THnSparseF("hMassPtImpParBkg",
-				        "Mass vs. pt vs.imppar - backgr.",
-					kVarForSparse,nbins,xmin,xmax);
 
-
-  for(Int_t i=0; i<5; i++){
-    for(Int_t iax=0; iax<kVarForSparse; iax++) fHistMassPtImpPar[i]->GetAxis(iax)->SetTitle(axTit[iax].Data());
-    if(i == 2 || i == 3) fHistMassPtImpPar[i]->GetAxis(kVarForSparseFD-1)->SetTitle("p_{T}^{B} (GeV/c)");
-    fOutput->Add(fHistMassPtImpPar[i]);
+  for(Int_t i=0; i<3; i++){
+    for(Int_t iax=0; iax<kVarForSparse; iax++) fSparseCutVars[i]->GetAxis(iax)->SetTitle(axTit[iax].Data());
+    if(i == 2 || i == 3) fSparseCutVars[i]->GetAxis(kVarForSparseFD-1)->SetTitle("p_{T}^{B} (GeV/c)");
+    fOutput->Add(fSparseCutVars[i]);
   }
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskSEDplus::CreateTrackVarHistos(){
     /// Histos for single track variable cuts studies
-    
+
     Int_t nmassbins = GetNBinsHistos();
 
     Int_t nbins[kVarForTrackSparse]   = {40,nmassbins,50,170,170,100,3};
     Double_t xmin[kVarForTrackSparse] = {0.,fLowmasslimit,0.,0.5,0.5,0.,-0.5};
     Double_t xmax[kVarForTrackSparse] = {40.,fUpmasslimit,5.,170.5,170.5,1.,2.5};
-    
+
     //pt, y
     fHistTrackVar = new THnSparseF("hHistTrackVar","hHistTrackVar",kVarForTrackSparse,nbins,xmin,xmax);
     fHistTrackVar->GetAxis(0)->SetTitle("D^{+} p_{T} (GeV/c)");
@@ -1393,7 +1617,7 @@ void AliAnalysisTaskSEDplus::CreateTrackVarHistos(){
     fHistTrackVar->GetAxis(4)->SetTitle("N TPC cross. rows");
     fHistTrackVar->GetAxis(5)->SetTitle("TPC clust./cross.rows");
     fHistTrackVar->GetAxis(6)->SetTitle("Bkg = 0, Signal = 1");
-    
+
     fOutput->Add(fHistTrackVar);
 }
 
@@ -1404,7 +1628,7 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
 
   const Int_t nVarPrompt = 2;
   const Int_t nVarFD = 3;
-  
+
   Int_t nbinsPrompt[nVarPrompt]={200,100};
   Int_t nbinsFD[nVarFD]={200,100,200};
 
@@ -1415,7 +1639,7 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
   Double_t xmaxFD[nVarFD] = {40.,1.,40.};
 
   //pt, y
-  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt); 
+  fMCAccPrompt = new THnSparseF("hMCAccPrompt","kStepMCAcceptance pt vs. y - promptD",nVarPrompt,nbinsPrompt,xminPrompt,xmaxPrompt);
   fMCAccPrompt->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccPrompt->GetAxis(1)->SetTitle("y");
 
@@ -1424,7 +1648,7 @@ void AliAnalysisTaskSEDplus::CreateMCAcceptanceHistos(){
   fMCAccBFeed->GetAxis(0)->SetTitle("p_{T} (GeV/c)");
   fMCAccBFeed->GetAxis(1)->SetTitle("y");
   fMCAccBFeed->GetAxis(2)->SetTitle("p_{T}^{B} (GeV/c)");
- 
+
   fOutput->Add(fMCAccPrompt);
   fOutput->Add(fMCAccBFeed);
 }
@@ -1434,38 +1658,38 @@ void AliAnalysisTaskSEDplus::FillMCAcceptanceHistos(TClonesArray *arrayMC, AliAO
   /// Fill MC acceptance histos for cuts study
 
   const Int_t nProng = 3;
-    
+
   Double_t zMCVertex = mcHeader->GetVtxZ(); //vertex MC
-            
+
   for(Int_t iPart=0; iPart<arrayMC->GetEntriesFast(); iPart++){
     AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(arrayMC->At(iPart));
     if (TMath::Abs(mcPart->GetPdgCode()) == 411){
-	    
+
       Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,mcPart,fUseQuarkTagInKine);//Prompt = 4, FeedDown = 5
-	    
+
       Int_t deca = 0;
       Bool_t isGoodDecay=kFALSE;
       Int_t labDau[4]={-1,-1,-1,-1};
       Bool_t isInAcc = kFALSE;
       Bool_t isFidAcc = kFALSE;
-      
+
       deca=AliVertexingHFUtils::CheckDplusDecay(arrayMC,mcPart,labDau);
-      if(deca > 0) isGoodDecay=kTRUE; 
-	    
+      if(deca > 0) isGoodDecay=kTRUE;
+
       if(labDau[0]==-1){
 	continue; //protection against unfilled array of labels
       }
-	    
+
       isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(mcPart->Pt(),mcPart->Y());
       isInAcc=CheckAcc(arrayMC,nProng,labDau);
-	    
+
       if(isGoodDecay && TMath::Abs(zMCVertex) < fRDCutsAnalysis->GetMaxVtxZ() && isFidAcc && isInAcc) {
-	//for prompt		
+	//for prompt
 	if(orig == 4){
 	  //fill histo for prompt
 	  Double_t arrayMCprompt[2] = {mcPart->Pt(),mcPart->Y()};
 	  fMCAccPrompt->Fill(arrayMCprompt);
-	}      
+	}
 	//for FD
 	else if(orig == 5){
 	  Double_t ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC,mcPart);
@@ -1488,14 +1712,14 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
   if(fDebug > 1) printf("AnalysisTaskSEDplus: Terminate() \n");
 
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fOutput) {     
+  if (!fOutput) {
     printf("ERROR: fOutput not available\n");
     return;
   }
 
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
   if(fHistNEvents){
-    printf("Number of analyzed events = %d\n",(Int_t)fHistNEvents->GetBinContent(2));
+    printf("Number of analyzed events = %d\n",(Int_t)fHistNEvents->GetBinContent(10));
   }else{
     printf("ERROR: fHistNEvents not available\n");
     return;
@@ -1520,7 +1744,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
   }
 
   Int_t nDau=partDp->GetNDaughters();
-  Int_t labelFirstDau = partDp->GetDaughter(0); 
+  Int_t labelFirstDau = partDp->GetDaughter(0);
   if(nDau==3){
     for(Int_t iDau=0; iDau<3; iDau++){
       Int_t ind = labelFirstDau+iDau;
@@ -1528,7 +1752,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
       if(!part){
 	AliError("Daughter particle not found in MC array");
 	return 99999.;
-      } 
+      }
       pXdauTrue[iDau]=part->Px();
       pYdauTrue[iDau]=part->Py();
       pZdauTrue[iDau]=part->Pz();
@@ -1541,7 +1765,7 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
       if(!part){
 	AliError("Daughter particle not found in MC array");
 	return 99999.;
-      } 
+      }
       Int_t pdgCode=TMath::Abs(part->GetPdgCode());
       if(pdgCode==211 || pdgCode==321){
 	pXdauTrue[theDau]=part->Px();
@@ -1551,15 +1775,15 @@ Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcH
       }else{
 	Int_t nDauRes=part->GetNDaughters();
 	if(nDauRes==2){
-	  Int_t labelFirstDauRes = part->GetDaughter(0); 	
+	  Int_t labelFirstDauRes = part->GetDaughter(0);
 	  for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
 	    Int_t indDR = labelFirstDauRes+iDauRes;
 	    AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDR));
 	    if(!partDR){
 	      AliError("Daughter particle not found in MC array");
 	      return 99999.;
-	    } 
-	    
+	    }
+
 	    Int_t pdgCodeDR=TMath::Abs(partDR->GetPdgCode());
  	    if(pdgCodeDR==211 || pdgCodeDR==321){
 	      pXdauTrue[theDau]=partDR->Px();

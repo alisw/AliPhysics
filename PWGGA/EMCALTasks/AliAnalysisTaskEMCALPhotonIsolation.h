@@ -59,6 +59,8 @@ class AliGenPythiaEventHeader;
   //class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcal.h"
+#include <vector>
+using std::vector;
 
 class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
 public:
@@ -72,6 +74,8 @@ public:
   void                     SetEtIsoThreshold(Float_t r)                                     {fEtIsoThreshold = r ;}
   void                     SetCTMdeltaEta (Float_t r)                                      { fdetacut = r ;}
   void                     SetCTMdeltaPhi (Float_t r)                                      { fdphicut = r ;}
+  void                     SetCTMdeltaEtaIso (Float_t r)                                      { fdetacutIso = r ;}
+  void                     SetCTMdeltaPhiIso (Float_t r)                                      { fdphicutIso = r ;}
   void                     SetIsoMethod (Int_t r )                                         { fIsoMethod = r ;}
   void                     SetEtIsoMethod (Int_t r )                                       { fEtIsoMethod = r ;}
   void                     SetUEMethod (Int_t UE)                                          { fUEMethod = UE;}
@@ -80,8 +84,9 @@ public:
   void                     SetMC (Bool_t MC)                                               { fIsMC = MC;}
   void                     SetUSEofTPC (Bool_t TPC)                                        { fTPC4Iso = TPC;}
   void                     SetLCAnalysis (Bool_t LC)                                       { fisLCAnalysis = LC;}
-  void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut)                       { fIsNLMCut = isNLMCut;
-    fNLMCut = NLMCut;}
+  void                     SetNLMCut (Bool_t isNLMCut, Int_t NLMCut, Int_t NLMmin)                       { fIsNLMCut = isNLMCut;
+    fNLMCut = NLMCut; fNLMmin = NLMmin;}
+  void                     SetSmearForClusters( Int_t whichNLM)                            { fWhich= whichNLM;}
   void                     SetTMClusterRejection (Bool_t tm)                               { fTMClusterRejected = tm;}
   void                     SetTMClusterRejectioninCone (Bool_t tm)                         { fTMClusterInConeRejected = tm;}
   void                     SetRejectEventWithoutTracks(Bool_t revwotr)                     { fRejectionEventWithoutTracks = revwotr;}
@@ -91,6 +96,20 @@ public:
   void                     SetWidth4Smear(Float_t width)                                   { fSSsmearwidth = width;}
   void                     SetMean4Smear(Float_t mean)                                     { fSSsmear_mean = mean;}
   void                     SetExtraIsoCuts(Bool_t bExtraIsoCuts)                           { fExtraIsoCuts = bExtraIsoCuts;}
+  void			   SetPtBinning(vector<Double_t> binedges)			   { fBinsPt = binedges; }
+  void			   SetM02Binning(vector<Double_t> binedges)			   { fBinsM02 = binedges; }
+  void			   SetEtisoBinning(vector<Double_t> binedges)			   { fBinsEtiso = binedges; }
+  void			   SetEtueBinning(vector<Double_t> binedges)			   { fBinsEtue = binedges; }
+  void			   SetEtaBinning(vector<Double_t> binedges)			   { fBinsEta = binedges; }
+  void			   SetPhiBinning(vector<Double_t> binedges)			   { fBinsPhi = binedges; }
+  void			   SetLabelBinning(vector<Double_t> binedges)			   { fBinsLabel = binedges; }
+  void			   SetPDGBinning(vector<Double_t> binedges)			   { fBinsPDG = binedges; }
+  void			   SetMomPDGBinning(vector<Double_t> binedges)			   { fBinsMomPDG = binedges; }
+  void			   SetClustPDGBinning(vector<Double_t> binedges)	 	   { fBinsClustPDG = binedges; }
+  void			   SetDxBinning(vector<Double_t> binedges)			   { fBinsDx = binedges; }
+  void			   SetDzBinning(vector<Double_t> binedges)			   { fBinsDz = binedges; }
+  void			   SetDecayBinning(vector<Double_t> binedges)			   { fBinsDecay = binedges; }
+
 protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI); // Fill some QA histograms
@@ -103,7 +122,7 @@ protected:
   void                     PtIsoTrackOrthCones(TLorentzVector c, Double_t &ptIso, Double_t &cones);   //PIsoCone via Tracks UE via Orthogonal Cones in Phi
   void                     PtIsoTrackFullTPC(TLorentzVector c, Double_t &ptIso, Double_t &full);      //PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
   
-  Bool_t                   ClustTrackMatching(AliVCluster *emccluster);
+  Bool_t                   ClustTrackMatching(AliVCluster *emccluster,Bool_t candidate);
 
   Int_t                    GetNLM(AliVCluster *coi, AliVCaloCells* cells);
   Int_t                    GetNLM(AliVCluster* coi, AliVCaloCells* cells, Int_t *absIdList, Float_t *maxEList);
@@ -126,6 +145,7 @@ protected:
   void                     AddParticleToUEMC(Double_t& sumUE,AliAODMCParticle* mcpp,Double_t eta,Double_t phi);
   void                     CalculateUEDensityMC(Double_t& sumUE);
 
+
   using AliAnalysisTaskEmcal::FillGeneralHistograms;
   Bool_t FillGeneralHistograms(AliVCluster *COI, TLorentzVector VecCOI, Int_t index);
     //Bool_t                   FillGeneralHistograms(AliVCluster *COI, TLorentzVector VecCOI, Int_t index);
@@ -143,6 +163,7 @@ protected:
   Bool_t      fSSsmearing;
   Float_t     fSSsmearwidth;
   Float_t     fSSsmear_mean;
+  Int_t       fWhich;
   
     //    TList       *fOutputList; //!<! Output list
     //    TGeoHMatrix *fGeomMatrix[12];//!<! Geometry misalignment matrices for EMCal
@@ -152,6 +173,8 @@ protected:
   Double_t    fEtIsoThreshold;                 // Et isolation threshold, supposed to be % if method one is choosed
   Double_t    fdetacut;                        // cut on deta between track and cluster
   Double_t    fdphicut;                        // cut on dphi between track and cluster
+  Double_t    fdetacutIso;                        // cut on deta between track and cluster for iso
+  Double_t    fdphicutIso;                        // cut on dphi between track and cluster for iso
   Double_t    fM02mincut;                      // lambda0^2 minimum cut
   Double_t    fM02maxcut;                      // lambda0^2 maximum cut
   Bool_t      fExtraIsoCuts;                   // Cuts on Ncell and DTBC for Clusters in Eiso calculation
@@ -166,6 +189,7 @@ protected:
   Bool_t      fisLCAnalysis;                   // Flag to pass from Leading Clusters Analysis to a NC One
   Bool_t      fIsNLMCut;                       // NLM cut available
   Int_t       fNLMCut;                         // number of NLM cut
+  Int_t       fNLMmin;                         // minimum number of NLM
   Bool_t      fTMClusterRejected;              // able/disable TM cluster rejection
   Bool_t      fTMClusterInConeRejected;        // able/disable TM cluster rejection in isolation cone
   Bool_t      fRejectionEventWithoutTracks;    // able/disable rejction of events without tracks
@@ -196,6 +220,23 @@ protected:
   Double_t    fphiT;                           // Phi for considered clusters
   Double_t    fsumEtisoconeT;                  // sum Et  in cone
   Double_t    fsumEtUE;                        // sum UE
+
+    // Initialization of variables for THnSparse
+
+  std::vector<Double_t>    fBinsPt;
+  std::vector<Double_t>    fBinsM02;
+  std::vector<Double_t>    fBinsEtiso;
+  std::vector<Double_t>    fBinsEtue;
+  std::vector<Double_t>    fBinsEta;
+  std::vector<Double_t>    fBinsPhi;
+  std::vector<Double_t>    fBinsLabel;
+  std::vector<Double_t>    fBinsPDG;
+  std::vector<Double_t>    fBinsMomPDG;
+  std::vector<Double_t>    fBinsClustPDG;
+  std::vector<Double_t>    fBinsDx;
+  std::vector<Double_t>    fBinsDz;
+  std::vector<Double_t>    fBinsDecay;
+
   
 
     //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
@@ -257,6 +298,14 @@ protected:
   TH3D        *fTracksConeEtaM02;
   TH1F        *fHistXsection;
   TH1F        *fHistTrials;
+  TH2F        *fPtTracksVSpTNC;                //!<!
+  TH2F        *fCTdistVSpTNC;                  //!<!
+  TH2F        *fPtTracksVSpTNC_MC;             //!<!
+  TH3F        *fpi0VSclusterVSIsolation;       //!<!
+  TH3F        *fpi0VSclusterVSM02;             //!<!
+  TH3F        *fpi0VSM02VSIsolation;           //!<!
+  TH2F        *fPhiTracksVSclustPt;            //!<!
+  TH2F        *fEtaTracksVSclustPt;            //!<!
   
   THnSparse   *fOutputTHnS;                    //!<! 1st Method 4 Output
   THnSparse   *fOutMCTruth;                    //!<! 1st Method 4 MC truth Output //Isolation on pTMax
@@ -282,7 +331,7 @@ private:
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 5);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 12);    //EMCAL Neutrals base analysis task
                                                        /// \endcond
 };
 #endif

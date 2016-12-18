@@ -37,7 +37,7 @@
 #pragma link C++ class AliJDiHadronIaaTask+;
 #pragma link C++ class AliJIaaAnalysis+;
 #pragma link C++ class AliJIaaCorrelations+;
-#pragma link C++ class AliJIaaHistos+;
+#pragma link C++ class AliJIaaHistograms+;
 
 #pragma link C++ class AliJCard+;
 #pragma link C++ class AliJBaseCard+;

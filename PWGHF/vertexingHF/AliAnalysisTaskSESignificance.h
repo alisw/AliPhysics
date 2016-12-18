@@ -45,6 +45,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   void SetFillWithPartAntiPartBoth(Int_t value){fPartOrAndAntiPart=value;}
   void SetDsChannel(Int_t chan){fDsChannel=chan;}
   void SetUseSelBit(Bool_t selBit=kTRUE){fUseSelBit=selBit;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
   //void SetMultiVector(const AliMultiDimVector *MultiDimVec){fMultiDimVec->CopyStructure(MultiDimVec);}
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
@@ -110,6 +111,8 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Float_t fLowmasslimit; /// lower inv mass limit for histos
   AliRDHFCuts *fRDCuts;/// prong cut values
   Int_t fNPtBins; /// number of pt bins
+  Int_t fAODProtection;  /// flag to activate protection against AOD-dAOD mismatch.
+                         /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   Bool_t fReadMC;    /// flag for access to MC
   Bool_t fUseSelBit;    /// flag to use selection bit (speed up candidates selection)
   FeedDownEnum fBFeedDown; /// flag to search for D from B decays
@@ -128,7 +131,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Int_t fPDGD0ToKpi[2];    /// PDG codes for the particles in the D0 -> K + pi decay
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSESignificance,5); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSESignificance,6); /// AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
   /// \endcond
 };
 

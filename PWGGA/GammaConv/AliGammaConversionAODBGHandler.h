@@ -49,8 +49,8 @@ class AliGammaConversionAODBGHandler : public TObject {
 	typedef vector<AliGammaConversionMotherMultipicityVector> AliGammaConversionMotherBGVector;
 	
 	AliGammaConversionAODBGHandler();																							//constructor
-	AliGammaConversionAODBGHandler(UInt_t binsZ,UInt_t binsMultiplicity,UInt_t nEvents);										// constructor
-	AliGammaConversionAODBGHandler(UInt_t collisionSystem,UInt_t centMin,UInt_t centMax,UInt_t nEvents, Bool_t useTrackMult, UInt_t mode,UInt_t binsZ, UInt_t binsMultiplicity);
+    AliGammaConversionAODBGHandler(Int_t binsZ,Int_t binsMultiplicity,Int_t nEvents);										// constructor
+    AliGammaConversionAODBGHandler(Int_t collisionSystem,Int_t centMin,Int_t centMax,Int_t nEvents, Bool_t useTrackMult, Int_t mode,Int_t binsZ, Int_t binsMultiplicity);
 	AliGammaConversionAODBGHandler(const AliGammaConversionAODBGHandler & g);													//copy constructor
 	AliGammaConversionAODBGHandler & operator = (const AliGammaConversionAODBGHandler & g);										//assignment operator
 	virtual ~AliGammaConversionAODBGHandler();																					//virtual destructor

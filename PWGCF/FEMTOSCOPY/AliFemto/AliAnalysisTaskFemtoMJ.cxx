@@ -349,6 +349,8 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
       fStack = mcEvent->Stack();//!!!
 
       AliGenHijingEventHeader *hdh = 0;
+	  AliGenEventHeader *header = 0;
+
 
 
 
@@ -361,6 +363,8 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
 
 
       AliGenCocktailEventHeader *hd = dynamic_cast<AliGenCocktailEventHeader *>(mctruth->MCEvent()->GenEventHeader());
+	  header = dynamic_cast<AliGenEventHeader *>(mctruth->MCEvent()->Header()->GenEventHeader());
+
 
       if (hd) {
 
@@ -380,6 +384,7 @@ void AliAnalysisTaskFemtoMJ::Exec(Option_t *)
     if (fkinec) {
       // Process the event with Kine information only
       fkinec->SetStackSource(fStack);
+      fkinec->SetGenEventHeader(header);
       fManager->ProcessEvent();
     }
 

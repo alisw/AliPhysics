@@ -19,6 +19,7 @@
 #include <vector>
 #include <TClonesArray.h>
 #include <THistManager.h>
+#include <TLinearBinning.h>
 
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCalTriggerBinningComponent.h"
@@ -80,23 +81,23 @@ AliEMCalTriggerPatchAnalysisComponent::AliEMCalTriggerPatchAnalysisComponent(con
 void AliEMCalTriggerPatchAnalysisComponent::CreateHistos() {
   AliEMCalTriggerTracksAnalysisComponent::CreateHistos();
 
-  AliEMCalTriggerBinningDimension *etabinning = fBinning->GetBinning("eta"),
+  const TBinning *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi");
   const TAxis *patchaxes[6] = {
-    DefineAxis("energy", 100, 0., 100),
-    DefineAxis("energyRough", 100, 0., 100),
-    DefineAxis("amplitude", 2100, 0., 2100.),       // limit for the moment
-    DefineAxis("eta", etabinning),
-    DefineAxis("phi", phibinning),
-    DefineAxis("isMain", 2, -0.5, 1.5)
+    DefineAxis("energy", TLinearBinning(100, 0., 100)),
+    DefineAxis("energyRough", TLinearBinning(100, 0., 100)),
+    DefineAxis("amplitude", TLinearBinning(2100, 0., 2100.)),       // limit for the moment
+    DefineAxis("eta", *etabinning),
+    DefineAxis("phi", *phibinning),
+    DefineAxis("isMain", TLinearBinning(2, -0.5, 1.5))
   };
 
   const TAxis *ampaxes[5] = {
-     DefineAxis("amplitudeOnline", 2000, 0., 2100.),
-     DefineAxis("amplitudeOffline", 2000, 0., 2100.),
-     DefineAxis("eta", etabinning),
-     DefineAxis("phi", phibinning),
-     DefineAxis("isMain", 2, -0.5, 1.5)
+     DefineAxis("amplitudeOnline", TLinearBinning(2000, 0., 2100.)),
+     DefineAxis("amplitudeOffline", TLinearBinning(2000, 0., 2100.)),
+     DefineAxis("eta", *etabinning),
+     DefineAxis("phi", *phibinning),
+     DefineAxis("isMain", TLinearBinning(2, -0.5, 1.5))
   };
 
   // Create trigger definitions
@@ -304,4 +305,3 @@ Bool_t AliEMCalTriggerPatchAnalysisComponent::AliEmcalTriggerPatchHandlerFactory
 }
 
 } /* namespace EMCalTriggerPtAnalysis */
-

@@ -193,7 +193,7 @@ Bool_t AliAnalysisTaskRhoMassScale::RetrieveEventObjects() {
     fRhoMNeutral = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoMNeutralName));
     if (!fRhoMNeutral) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoMNeutralName.Data()));
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       return kFALSE;
     }
   }
@@ -202,7 +202,7 @@ Bool_t AliAnalysisTaskRhoMassScale::RetrieveEventObjects() {
     fRhoMChargedEmcal = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoMChargedEmcalName));
     if (!fRhoMChargedEmcal) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoMChargedEmcalName.Data()));
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       return kFALSE;
     }
   }
@@ -211,7 +211,7 @@ Bool_t AliAnalysisTaskRhoMassScale::RetrieveEventObjects() {
     fRhoMCharged2xEmcal = dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fRhoMCharged2xEmcalName));
     if (!fRhoMCharged2xEmcal) {
       AliError(Form("%s: Could not retrieve rho %s!", GetName(), fRhoMCharged2xEmcalName.Data()));
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       return kFALSE;
     }
   }

@@ -63,7 +63,8 @@ ClassImp(AliAnalysisTaskFlowD2H)
 AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H() :
   AliAnalysisTaskSE(), fTPCEvent(NULL), fVZEEvent(NULL), 
   fCutsTPC(NULL), fCutsVZE(NULL), fNoPOIs(NULL), fCutsPOI(NULL),
-  fSource(0), fDebugV2(kFALSE), fSwap(kFALSE), fMassBins(0), fMinMass(0.),
+  fSource(0), fDebugV2(kFALSE), fSwap(kFALSE),   fAODProtection(1),
+  fMassBins(0), fMinMass(0.),
   fMaxMass(0.), fPtBinWidth(0), fHList(NULL), fEvent(NULL), 
   fCC(NULL), fRFPMTPC(NULL), fRFPPhiTPC(NULL), fCandidates(NULL)
 {
@@ -78,7 +79,8 @@ AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H(const char *name,
 					       Int_t specie) :
   AliAnalysisTaskSE(name), fTPCEvent(NULL), fVZEEvent(NULL), 
   fCutsTPC(cutsTPC), fCutsVZE(cutsVZE), fNoPOIs(NULL), fCutsPOI(cutsPOIs),
-  fSource(specie), fDebugV2(kFALSE), fSwap(kFALSE), fMassBins(0), fMinMass(0.),
+  fSource(specie), fDebugV2(kFALSE), fSwap(kFALSE),   fAODProtection(1),
+  fMassBins(0), fMinMass(0.),
   fMaxMass(0.), fPtBinWidth(0), fHList(NULL), fEvent(NULL),
   fCC(NULL), fRFPMTPC(NULL), fRFPPhiTPC(NULL), fCandidates(NULL)
 {
@@ -162,6 +164,16 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 
   if(!fAOD) return;
+
+  if(fAODProtection>=0){
+    //   Protection against different number of events in the AOD and deltaAOD
+    //   In case of discrepancy the event is rejected.
+    Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+    if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
+      // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+      return;
+    }
+  }
   fEvent->Fill( 0 );
 
   // floweventcuts::isselected() and alirdhfcuts::iseventselected() cut on the same 

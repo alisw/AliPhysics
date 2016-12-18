@@ -28,6 +28,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
             		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+            		    ${AliPhysics_SOURCE_DIR}/PWGLF/NUCLEX/Nuclei/NucleiPbPb
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
 		    ${AliPhysics_SOURCE_DIR}/PWG/TRD
@@ -68,6 +69,9 @@ set(SRCS
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
   PiKaPr/TOF/pp7/TOFSpectrappAnalysis.cxx
   PiKaPr/TOF/pp7/AliAnalysisCombinedHadronSpectra2MC.cxx
+  PiKaPr/TOF/PbPb502/task/AliUtilTOFParams.cxx
+  PiKaPr/TOF/PbPb502/task/AliAnTOFtrack.cxx
+  PiKaPr/TOF/PbPb502/task/AliAnalysisTaskTOFSpectra.cxx
   ParticleEfficiency/AliAnalysisTaskParticleEfficiencyLF.cxx
   PiKaPr/TestAOD/AliSpectraAODTrackCuts.cxx
   PiKaPr/TestAOD/AliSpectraAODEventCuts.cxx
@@ -127,7 +131,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN)
+set(ALIROOT_DEPENDENCIES ANALYSISalice PWGTools PWGUDbase EventMixing PWGCFCorrelationsJCORRAN PWGLFnuclex)
 
 # Generate the ROOT map
 # Dependecies

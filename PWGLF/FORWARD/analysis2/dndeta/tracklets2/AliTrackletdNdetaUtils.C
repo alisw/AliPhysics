@@ -229,6 +229,9 @@ public:
    * @param name  Name of histogram 
    * @param title Title of histogram 
    * @param xAxis X axis to use 
+   * @param c     Container 
+   * @param color Color 
+   * @param style Marker style 
    * 
    * @return Newly created histogram 
    */
@@ -245,6 +248,9 @@ public:
    * @param title  Title of histogram 
    * @param xAxis  X axis definition 
    * @param yAxis  Y axis definition 
+   * @param c     Container 
+   * @param color Color 
+   * @param style Marker style 
    * 
    * @return Newly created histogram 
    */
@@ -297,11 +303,10 @@ public:
    * Scale bins of an axis by constant factor.  The number of bins
    * remains the same.
    * 
-   * @param axis Base axis
-   * @param ret  Axis to modify
+   * @param axis Axis to modify
    * @param fact Factor to scale by
    */
-  static void ScaleAxis(TAxis& ret, Double_t fact=1);
+  static void ScaleAxis(TAxis& axis, Double_t fact=1);
   /** 
    * Set an axis based on bin borders 
    * 
@@ -341,6 +346,7 @@ public:
    * 
    * @param axis Axis to print 
    * @param nSig Number of significant digits 
+   * @param alt  Atlernate name 
    */
   static void PrintAxis(const TAxis& axis, Int_t nSig=2, const char* alt=0);
   /** 
@@ -422,7 +428,7 @@ public:
    * @param e2n  Squared numerator error 
    * @param d    Denominator value 
    * @param e2d  Squared denominator error 
-   * @param er   On return, squared ratio error 
+   * @param e2r  On return, squared ratio error 
    * 
    * @return Ratio 
    */

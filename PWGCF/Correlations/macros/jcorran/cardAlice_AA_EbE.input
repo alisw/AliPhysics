@@ -11,6 +11,7 @@ zVertBins               -10 10
 #zVertBins               -10 -8 -6 -4 -2 0 2 4 6 8 10
 #maxAbsZVert             8  #(used to be 10)
 #maxMixDZ		1.0 #	cm, allowed maximum ZVert distance for mix (5 for QM)/ neg -> no test
+VnMethod		1 #  1 : JFluc others : RunFlowana
 
 #mixing=========
 maxDCent                1 #   check the mix if cent bin too wide
@@ -64,7 +65,12 @@ TriggerFiducialEtaCut 0.4 #
 #======= From Jiri's EMCAL analysis but still in AliJCORRAN.cxx, around line 300 
 eventBC -1 # select only events in BC modulo 4; -1 to disable
 
-DoResonancePythia 0
+
+#======= Jussi's jT analysis =======
+EnableKlongBins 0 # 0 = Do not fill klong bins. 1 = Fill klong bins
+DoResonancePythia 0 # 0 = Regular PYTHIA8 run. 1 = Generate two gluon initial state in PYTHIA8
+NRandomizationTrials 20 # Number of pairs generated from found background pair
+LeadingParticleSystematics 0 # 0 = regular run, 1 = do systematic error estimate for missed leading particles
 
 #======= Level of used quality control histograms =======
 QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = quality control for acceptance correction, 2 = lots of 2D quality control histograms added

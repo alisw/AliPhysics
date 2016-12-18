@@ -22,6 +22,7 @@ class TH2F;
 class TH1D;
 class TH1I;
 class TF1;
+class TProfile;
 class AliAODEvent;
 class AliAODForwardMult;
 class TObjArray;
@@ -940,6 +941,7 @@ protected:
      * @return Color for this centrality bin 
      */
     Int_t GetColor(Int_t fallback=kRed+2) const;
+    void SetColor(Color_t colour) { fColor = colour; }
     /** 
      * Get list of results 
      * 
@@ -1028,7 +1030,8 @@ protected:
     Float_t  fHigh;      // Upper limit (exclusive)
     Bool_t   fDoFinalMCCorrection; //Do final MC correction
     Bool_t   fSatelliteVertices; // Satellite vertex flag
-    Int_t    fDebug;    // Debug level 
+    Int_t    fDebug;     // Debug level
+    Color_t  fColor;     // Colour used 
 
     // ClassDef(CentralityBin,5); // A centrality bin 
   };
@@ -1041,7 +1044,7 @@ protected:
   TString         fFinalMCCorrFile; //Filename for final MC corr
   Bool_t          fSatelliteVertices; // satellite vertex flag
   TH2D*           fEmpiricalCorrection; // Empirical correction 
-  TH2D* 	  fMeanVsC;         //mean signal per event vs cent
+  TProfile* 	  fMeanVsC;         //mean signal per event vs cent
   TH1D*           fSeenCent;      // The seen centrality 
   TH1D*           fTakenCent;     // The taken centrality 
   TString         fCentMethod;    // Centrality estimator 

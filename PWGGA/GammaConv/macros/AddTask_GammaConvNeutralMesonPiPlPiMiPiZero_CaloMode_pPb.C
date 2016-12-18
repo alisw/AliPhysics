@@ -61,14 +61,34 @@ class CutHandlerNeutralCalo{
 //main function
 //***************************************************************************************
 void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb(    
-                    Int_t trainConfig = 1,
-                    Bool_t isMC       = kFALSE, //run MC 
-                    Bool_t enableQAMesonTask = kTRUE, //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
-                    TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                    Bool_t doWeighting = kFALSE,  //enable Weighting
-                    TString generatorName = "HIJING",				
-                    TString cutnumberAODBranch = "000000006008400001001500000"
-                    ) {
+    Int_t trainConfig                 = 1,
+    Bool_t isMC                       = kFALSE,                         //run MC
+    Bool_t enableQAMesonTask          = kTRUE,                          //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
+    TString fileNameInputForWeighting = "MCSpectraInput.root",          // path to file for weigting input
+    Bool_t doWeighting                = kFALSE,  //enable Weighting
+    TString generatorName             = "HIJING",
+    TString cutnumberAODBranch        = "000000006008400001001500000",
+    Double_t tolerance                = -1,
+    TString additionalTrainConfig     = "0"                              // additional counter for trainconfig, this has to be always the last parameter
+  ) {
+
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout << "INFO: nothing to do, no definition available!" << endl;
+    }
+  }
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
 
   Int_t isHeavyIon = 2;
   Int_t neutralPionMode = 2;
@@ -184,12 +204,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb(
   
   
   AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero *task=NULL;
-
   task= new AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero(Form("GammaConvNeutralMesonPiPlPiMiPiZero_%i_%i",neutralPionMode, trainConfig));
-
   task->SetIsHeavyIon(2);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetTolerance(tolerance);
 
   CutHandlerNeutralCalo cuts;
   
@@ -204,36 +223,36 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb(
   // EMCAL modes
   if( trainConfig == 1 ) {
     // everything open
-    cuts.AddCut("80000113","1111100040022030000","000010400","0103503000000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","000010400","0103503000000000","0103503000000000");
   } else if( trainConfig == 2 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("80000113","1111100040022030000","002010700","0103503000000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","002010700","0103503000000000","0103503000000000");
   } else if( trainConfig == 3 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("80000113","1111100040022030000","002013700","0103503000000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","002013700","0103503000000000","0103503000000000");
   } else if( trainConfig == 4 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("80000113","1111100040022030000","002016700","0103503000000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","002016700","0103503000000000","0103503000000000");
   } else if( trainConfig == 5 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","1111100040022030000","002016700","0103503100000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","002016700","0103503100000000","0103503000000000");
   } else if( trainConfig == 6 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.11 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","1111100040022030000","002016700","0103503200000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","002016700","0103503200000000","0103503000000000");
   } else if( trainConfig == 7 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.12 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","1111100040022030000","002016700","0103503300000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","002016700","0103503300000000","0103503000000000");
   } else if( trainConfig == 8 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.12 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","1111100040022030000","002013700","0103503300000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","002013700","0103503300000000","0103503000000000");
   } else if( trainConfig == 9 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.75, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.145
-    cuts.AddCut("80000113","1111100040022030000","002010702","0103503100000000","0103503000000000");
+    cuts.AddCut("80000113","1111111067032230000","002010702","0103503100000000","0103503000000000");
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -311,6 +330,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb(
   AliPrimaryPionCuts **analysisPionCuts     = new AliPrimaryPionCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
+    //create AliCaloTrackMatcher instance, if there is none present
+    TString caloCutPos = cuts.GetClusterCut(i);
+    caloCutPos.Resize(1);
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      mgr->AddTask(fTrackMatcher);
+      mgr->ConnectInput(fTrackMatcher,0,cinput);
+    }
+
     analysisEventCuts[i] = new AliConvEventCuts();   
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -319,6 +349,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb(
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     if( ! analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data()) ) {
         cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<endl;
         return 0;

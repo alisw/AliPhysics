@@ -32,8 +32,11 @@
 //#include "AliCFContainer.h"          // required dependency libCORRFW.so
 #include "TObjArray.h"
 #include "AliHFCorrelator.h"
+#include "AliHFAssociatedTrackCuts.h"
+#include "AliVertexingHFUtils.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
+#include "AliRDHFCutsD0toKpi.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
@@ -60,6 +63,7 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fCorrProperties(NULL)
   , fhEventControlCorr(NULL)
   , fCuts(NULL)
+  , fCutsD0(NULL)
   , fUseMC(kFALSE)
   , fCorrelator(NULL)
   , fUseEventMixing(kFALSE)
@@ -72,6 +76,11 @@ AliDxHFECorrelation::AliDxHFECorrelation(const char* name)
   , fCorrArray(NULL)
   , fEventType(0)
   , fTriggerParticleType(kD)
+  , fUseTrackEfficiency(kFALSE)
+  , fUseD0Efficiency(kFALSE)
+  , fRunMode(kReducedMode)
+  , fUseCentrality(0)
+  , fPoolBin(-1)
 {
   // default constructor
   // 
@@ -98,6 +107,7 @@ AliDxHFECorrelation::~AliDxHFECorrelation()
   // destructor of TList
   if (fControlObjects) delete fControlObjects;
   fControlObjects=NULL;
+  if (fCorrProperties) delete fCorrProperties;
   fCorrProperties=NULL;
   fhEventControlCorr=NULL;
   if(fCorrelator) delete fCorrelator;
@@ -107,6 +117,7 @@ AliDxHFECorrelation::~AliDxHFECorrelation()
 
   // NOTE: the external object is deleted elsewhere
   fCuts=NULL;
+  fCutsD0=NULL;
 }
 
 int AliDxHFECorrelation::Init(const char* arguments)
@@ -120,6 +131,7 @@ int AliDxHFECorrelation::Init(const char* arguments)
   //----------------------------------------------
   // Setting up THnSparse 
   fCorrProperties=DefineTHnSparse();
+  fCorrProperties->Sumw2();
   AddControlObject(fCorrProperties);
 
   //----------------------------------------------
@@ -162,7 +174,15 @@ int AliDxHFECorrelation::Init(const char* arguments)
     return -EINVAL;
   }
   cuts->Print("");
-  fCorrelator = new AliHFCorrelator("Correlator", cuts, fSystem); 
+  // Fetching out the RDHF-cut objects for D0 to store in output stream
+  TObject *obj2=NULL;
+  TIter next2(fCutsD0);
+  obj2 = next2();
+  AliRDHFCutsD0toKpi* copyfCuts=new AliRDHFCutsD0toKpi(dynamic_cast<AliRDHFCutsD0toKpi&>(*obj2));
+  if(!copyfCuts){
+    AliFatal(Form("cut object is of incorrect type %s, expecting AliRDHFCutsD0toKpi", obj2->ClassName()));
+  }
+  fCorrelator = new AliHFCorrelator("Correlator", cuts, fUseCentrality, copyfCuts); 
   fCorrelator->SetDeltaPhiInterval(fMinPhi,fMaxPhi); //Correct Phi Interval
   fCorrelator->SetEventMixing(fUseEventMixing);      // mixing Off/On 
   fCorrelator->SetAssociatedParticleType(AliHFCorrelator::kElectron);
@@ -197,13 +217,13 @@ int AliDxHFECorrelation::Init(const char* arguments)
 
   Int_t nofEventPropBins =0;
 
-  if(fSystem) nofEventPropBins = 100; // PbPb centrality
-  if(!fSystem) nofEventPropBins = NofCentBins; // pp multiplicity
+  if(fUseCentrality) nofEventPropBins = 100; // PbPb centrality
+  if(!fUseCentrality) nofEventPropBins = NofCentBins; // pp multiplicity
 
   Double_t minvalue = CentBins[0];
   Double_t maxvalue = CentBins[NofCentBins];
   Double_t Zminvalue = ZVrtxBins[0];
-  Double_t Zmaxvalue = ZVrtxBins[NofCentBins];
+  Double_t Zmaxvalue = ZVrtxBins[NofZVrtxBins];
 
   const Double_t Nevents[]={0,2*MaxNofEvents/10,4*MaxNofEvents/10,6*MaxNofEvents/10,8*MaxNofEvents/10,MaxNofEvents};
   const Double_t * events = Nevents;
@@ -237,6 +257,10 @@ int AliDxHFECorrelation::Init(const char* arguments)
   EventProps->GetYaxis()->SetTitle("Z vertex [cm]");
   if(fUseEventMixing) AddControlObject(EventProps);
 
+  TH2D * MultvsVtx = new TH2D("MultvsVtx","Mult vs Vtx",501,0,500,200,Zminvalue,Zmaxvalue);
+  MultvsVtx->GetXaxis()->SetTitle("Centrality/multiplicity ");
+  MultvsVtx->GetYaxis()->SetTitle("Z vertex [cm]");
+  AddControlObject(MultvsVtx);
   return 0;
 }
 
@@ -262,15 +286,52 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       fUseMC=true;
       continue;
     }
+    if (argument.BeginsWith("useTrackEff")){
+      fUseTrackEfficiency=true;
+      AliInfo("Applying track efficiency");
+      continue;
+    }
+    if (argument.BeginsWith("reducedMode") || argument.BeginsWith("reducedmode")){
+      fRunMode=kReducedMode;
+      AliInfo("Running in Reduced mode");
+      continue;
+    }
+    if (argument.BeginsWith("FullMode") || argument.BeginsWith("fullmode")){
+      fRunMode=kFullMode;
+      AliInfo("Running in Full mode");
+      continue;
+    }
+    if (argument.BeginsWith("useD0Eff")){
+      fUseD0Efficiency=true;
+      AliInfo("Applying Correction for D0 efficiency");
+      continue;
+    }
     if (argument.BeginsWith("system=")) {
       argument.ReplaceAll("system=", "");
-      if (argument.CompareTo("pp")==0) fSystem=0;
-      else if (argument.CompareTo("Pb-Pb")==0) fSystem=1;
+      if (argument.CompareTo("pp")==0) {fSystem=0; fUseCentrality=0;}
+      else if (argument.CompareTo("Pb-Pb")==0) {fSystem=1; fUseCentrality=1;}
+      else if (argument.CompareTo("p-Pb")==0) {fSystem=2; fUseCentrality=0;}
       else {
 	AliWarning(Form("can not set collision system, unknown parameter '%s'", argument.Data()));
 	// TODO: check what makes sense
 	fSystem=0;
       }
+      continue;
+    }
+    if (argument.BeginsWith("minphi=")) {
+      argument.ReplaceAll("minphi=", "");
+      fMinPhi=argument.Atof();
+      AliInfo(Form("changing fMinPhi: %f ",fMinPhi));
+      continue;
+    }
+    if (argument.BeginsWith("maxphi=")) {
+      argument.ReplaceAll("maxphi=", "");
+      if (argument.BeginsWith("2pi")) {
+	fMaxPhi=2*TMath::Pi();
+      }
+      else
+	fMaxPhi=argument.Atof();
+      AliInfo(Form("changing fMaxPhi: %f ",fMaxPhi));
       continue;
     }
     if (argument.BeginsWith("trigger=")){
@@ -279,7 +340,14 @@ int AliDxHFECorrelation::ParseArguments(const char* arguments)
       if (argument.CompareTo("D0")==0) { fTriggerParticleType=kD; AliInfo("Trigger on D");}
       else if (argument.CompareTo("electron")==0){ fTriggerParticleType=kElectron; AliInfo("trigger on electron");}
       continue;
-    }   
+    }  
+    if(argument.BeginsWith("runmode=")){
+      argument.ReplaceAll("runmode=","");
+      cout << argument.Data() << endl;
+      if (argument.CompareTo("full")==0) {AliInfo("Run in Full mode"); SetRunFullMode(kTRUE);}
+      if (argument.CompareTo("reduced")==0) {AliInfo("Run in Reduced mode"); SetRunFullMode(kFALSE);}
+      continue;
+    }
     AliWarning(Form("unknown argument '%s'", argument.Data()));
       
   }
@@ -291,33 +359,73 @@ THnSparse* AliDxHFECorrelation::DefineTHnSparse()
 {
   //
   //Defines the THnSparse. For now, only calls CreateControlTHnSparse
-  AliDebug(1, "Creating Corr THnSparse");
+  if(RunFullMode())
+    AliDebug(1, "Creating Full Corr THnSparse");
+  else
+    AliDebug(1, "Creating Reduced Corr THnSparse");
   // here is the only place to change the dimension
   static const int sizeEventdphi = 7;  
+  static const int sizeEventdphipPb = 6;
+  static const int sizeEventdphiReduced = 5;  
   InitTHnSparseArray(sizeEventdphi);
   const double pi=TMath::Pi();
-
-  //TODO: add phi for electron??
-  // 			                        0           1       2      3         4     5      6   
-  // 			                      D0invmass   PtD0    PhiD0  PtbinD0    Pte   dphi   deta   
-  int         binsEventdphi[sizeEventdphi] = {   200,      1000,   100,    21,     1000,   100,    100};
-  double      minEventdphi [sizeEventdphi] = { 1.5648,      0,       0,     0,       0,  fMinPhi, -2};
-  double      maxEventdphi [sizeEventdphi] = { 2.1648,     100,   2*pi,    20,      100, fMaxPhi, 2};
-  const char* nameEventdphi[sizeEventdphi] = {
-    "D0InvMass",
-    "PtD0",
-    "PhiD0",
-    "PtBinD0",
-    "PtEl",
-    "#Delta#Phi", 
-    "#Delta#eta"
-  };
+  THnSparse* thn=NULL;
 
   TString name;
   name.Form("%s info", GetName());
 
+  if(fRunMode==kFullMode){
 
-  return CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
+    // 			                        0           1       2      3         4     5      6   
+    // 			                      D0invmass   PtD0    PhiD0  PtbinD0    Pte   dphi   deta   
+    int         binsEventdphi[sizeEventdphi] = {   200,      500,   100,    21,     100,   64,    100};
+    double      minEventdphi [sizeEventdphi] = { 1.5648,      0,      0,     0,       0,  fMinPhi, -2};
+    double      maxEventdphi [sizeEventdphi] = { 2.1648,     50,   2*pi,    20,      10,  fMaxPhi,  2};
+    const char* nameEventdphi[sizeEventdphi] = {
+      "D0InvMass",
+      "PtD0",
+      "PhiD0",
+      "PtBinD0",
+      "PtEl",
+      "#Delta#Phi", 
+      "#Delta#eta"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphi,binsEventdphi,minEventdphi,maxEventdphi,nameEventdphi);
+  }
+  else if(2==fSystem){ //Reduced bins for p-Pb
+    // 			                                   0          1      2       3      4      5    
+    // 			                                D0invmass   PtD0     Pte    dphi   deta  poolbin
+    int         binsEventdphipPb[sizeEventdphipPb] = {   150,      28,   50,   16,          20,     6   };
+    double      minEventdphipPb [sizeEventdphipPb] = { 1.5848,      2,      0,  fMinPhi,    -2,    -0.5  };
+    double      maxEventdphipPb [sizeEventdphipPb] = { 2.1848,      16,    10,  fMaxPhi,     2,    5.5  }; 
+    const char* nameEventdphipPb[sizeEventdphipPb] = {
+      "D0InvMass",
+      "PtD0",
+      "PtEl",
+      "#Delta#Phi", 
+      "#Delta#eta",
+      "Poolbin"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphipPb,binsEventdphipPb,minEventdphipPb,maxEventdphipPb,nameEventdphipPb);
+
+  }
+  else{
+    // 			                                   0          1      2       3      4 
+    // 			                                D0invmass   PtD0     Pte   dphi   deta   
+    int         binsEventdphiRed[sizeEventdphiReduced] = {   200,      500,   100,    64,    100};
+    double      minEventdphiRed [sizeEventdphiReduced] = { 1.5648,      0,      0,  fMinPhi,  -2};
+    double      maxEventdphiRed [sizeEventdphiReduced] = { 2.1648,      50,    10,  fMaxPhi,   2};
+    const char* nameEventdphiRed[sizeEventdphiReduced] = {
+      "D0InvMass",
+      "PtD0",
+      "PtEl",
+      "#Delta#Phi", 
+      "#Delta#eta"
+    };
+    thn=(THnSparse*)CreateControlTHnSparse(name,sizeEventdphiReduced,binsEventdphiRed,minEventdphiRed,maxEventdphiRed,nameEventdphiRed);
+
+  }
+  return thn;
 
 }
 
@@ -392,6 +500,19 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
     AliError("working class instance fCorrelator missing");
     return -ENODEV;
   }
+  AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(fCuts);
+  if (!cuts) {
+    if (fCuts)
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+    else
+      AliError("mandatory cuts object missing");
+    return -EINVAL;
+  }
+  AliAODEvent *AOD= (AliAODEvent*)(pEvent);
+  Double_t multEv = (Double_t)(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AOD,-1.,1.));
+  AliAODVertex *vtx = AOD->GetPrimaryVertex();
+  Double_t zvertex = vtx->GetZ();
+
   fCorrelator->SetAODEvent(dynamic_cast<AliAODEvent*>(const_cast<AliVEvent*>(pEvent))); 
 
   Bool_t correlatorON = fCorrelator->Initialize(); //define the pool for mixing
@@ -411,6 +532,12 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
     ctrigger++;
     AliReducedParticle* ptrigger=dynamic_cast<AliReducedParticle*>(otrigger);
     if (!ptrigger)  continue;
+
+    if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+      if(! TestParticle(ptrigger,kD)) continue;
+    }
+    else if(AliDxHFECorrelation::GetTriggerParticleType()==kElectron)
+      if(! TestParticle(ptrigger,kElectron)) continue;
 
     Double_t phiTrigger = ptrigger->Phi();
     Double_t ptTrigger = ptrigger->Pt();
@@ -432,7 +559,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 		
     // loop on events in the pool; if it is SE analysis, stops at one
     for (Int_t jMix =0; jMix < NofEventsinPool; jMix++){
-      Bool_t analyzetracks = fCorrelator->ProcessAssociatedTracks(jMix, associatedTracks);
+      Bool_t analyzetracks = fCorrelator->ProcessAssociatedTracks(jMix, associatedTracks); //[FIXME] This line causes a segfault from AliHFCorrelator in some cases. Needs to be understood
 			
       if(!analyzetracks) {
 	AliError("AliHFCorrelator::Cannot process the track array");
@@ -443,6 +570,7 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 
       // looping on track candidates
       for(Int_t iTrack = 0; iTrack<NofTracks; iTrack++){ 
+	fPoolBin=-1;
 	Bool_t runcorrelation = fCorrelator->Correlate(iTrack);
 	if(!runcorrelation) continue;
 			
@@ -450,12 +578,57 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
 	fDeltaEta = fCorrelator->GetDeltaEta();
 	
 	AliReducedParticle *assoc = fCorrelator->GetAssociatedParticle();
+	//	Double_t efficiency = assoc->GetWeight();
+	if(!assoc) continue;
+
+	// Test associated particle, which is electron if trigger is D, 
+	// or D if trigger is electron
+	if(AliDxHFECorrelation::GetTriggerParticleType()==kD){
+	  if(! TestParticle(assoc,kElectron)) continue;
+	}
+	else if(AliDxHFECorrelation::GetTriggerParticleType()==kElectron)
+	  if(! TestParticle(assoc,kD)) continue;
+	Int_t multiplicity = -1;
+	Double_t MultipOrCent = -1;
+	AliCentrality *centralityObj = 0;
+	
+	// get the pool for event mixing
+	if(!fUseCentrality){ // pp or pPb
+	  //[FIXME][Old method] multiplicity = AOD->GetNumberOfTracks();
+	  //  fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys,fCutsD0);//fSys=0 use multiplicity, =1 use centrality
+	  //MultipOrCent = multiplicity; // convert from Int_t to Double_t
+	  MultipOrCent=fCorrelator->GetCentrality();
+	}
+	if(fUseCentrality){ // PbPb		
+	  centralityObj = ((AliVAODHeader*)AOD->GetHeader())->GetCentralityP();
+	  MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
+	  //AliInfo(Form("Centrality is %f", MultipOrCent));
+	}
+	fPoolBin=cuts->GetPoolBin(MultipOrCent, zvertex);
+	
+	Double_t weight =1.;
+	if(fUseTrackEfficiency){
+	  if(AliDxHFECorrelation::GetTriggerParticleType()==kElectron)
+	    weight=cuts->GetTrackWeight(ptrigger->Pt(),ptrigger->Eta(),zvertex);
+	  else
+	    weight=cuts->GetTrackWeight(assoc->Pt(),assoc->Eta(),zvertex);
+	  AliDebug(2,Form("Vertex: %f  weight: %f ",zvertex, weight));
+	}
+	if(fUseD0Efficiency){
+	  Double_t D0eff=1;
+	  if(AliDxHFECorrelation::GetTriggerParticleType()==kD)
+ 	    D0eff=GetD0Eff(ptrigger, multEv);
+	  else
+	    D0eff=GetD0Eff(assoc, multEv);
+	  weight=weight*D0eff;
+	  AliDebug(2,Form("D0eff: %f, combined efficiency: %f",D0eff, weight));
+	}
 
 	FillParticleProperties(ptrigger,assoc,ParticleProperties(),GetDimTHnSparse());
-	fCorrProperties->Fill(ParticleProperties());
-
+	if(weight!=0){ fCorrProperties->Fill(ParticleProperties(),1./weight);} //Due to possibility of empty regions in eff-map, weights may come out as 0, which crashes the code here.
       } // loop over electron tracks in event
     } // loop over events in pool
+    ((TH2D*)fControlObjects->FindObject("MultvsVtx"))->Fill(multEv,zvertex); // event properties
   } // loop over trigger particle
 
   Bool_t updated = fCorrelator->PoolUpdate(associatedTracks);
@@ -469,6 +642,24 @@ int AliDxHFECorrelation::Fill(const TObjArray* triggerCandidates, const TObjArra
   return 0;
 }
 
+double AliDxHFECorrelation::GetD0Eff(AliVParticle* tr, Double_t evMult){
+
+  AliReducedParticle *track=(AliReducedParticle*)tr;
+  if (!track) return -ENODATA;
+  Double_t pt=track->Pt();
+
+  AliHFAssociatedTrackCuts* cuts=dynamic_cast<AliHFAssociatedTrackCuts*>(fCuts);
+  if (!cuts) {
+    if (fCuts)
+      AliError(Form("cuts object of wrong type %s, required AliHFAssociatedTrackCuts", fCuts->ClassName()));
+    else
+      AliError("mandatory cuts object missing");
+    return -EINVAL;
+  }
+
+  return cuts->GetTrigWeight(pt,evMult);
+
+}
 
 
 int AliDxHFECorrelation::FillParticleProperties(AliVParticle* tr, AliVParticle *as, Double_t* data, int dimension) const
@@ -486,19 +677,20 @@ int AliDxHFECorrelation::FillParticleProperties(AliVParticle* tr, AliVParticle *
   if(fTriggerParticleType==kD){
     data[i++]=ptrigger->GetInvMass();
     data[i++]=ptrigger->Pt();
-    data[i++]=ptrigger->Phi();
-    data[i++]=ptrigger->GetPtBin(); 
+    if(RunFullMode()) data[i++]=ptrigger->Phi();
+    if(RunFullMode()) data[i++]=ptrigger->GetPtBin(); 
     data[i++]=assoc->Pt();
   } 
   else{
     data[i++]=assoc->GetInvMass();
     data[i++]=assoc->Pt();
-    data[i++]=assoc->Phi();
-    data[i++]=assoc->GetPtBin(); 
+    if(RunFullMode()) data[i++]=assoc->Phi();
+    if(RunFullMode()) data[i++]=assoc->GetPtBin(); 
     data[i++]=ptrigger->Pt();
   }
   data[i++]=GetDeltaPhi();
   data[i++]=GetDeltaEta();
+  if(fSystem==2) data[i++]=fPoolBin;
 
   return i;
 }
@@ -592,11 +784,13 @@ void AliDxHFECorrelation::EventMixingChecks(const AliVEvent* pEvent){
   Double_t MultipOrCent = -1;
 	
   // get the pool for event mixing
-  if(!fSystem){ // pp
+  if(!fUseCentrality){ // pp
+    /* Old method
     multiplicity = AOD->GetNumberOfTracks();
-    MultipOrCent = multiplicity; // convert from Int_t to Double_t
+    MultipOrCent = multiplicity; // convert from Int_t to Double_t */
+    MultipOrCent=fCorrelator->GetCentrality();
   }
-  if(fSystem){ // PbPb		
+  if(fUseCentrality){ // PbPb		
     centralityObj = ((AliVAODHeader*)AOD->GetHeader())->GetCentralityP();
     MultipOrCent = centralityObj->GetCentralityPercentileUnchecked("V0M");
     AliInfo(Form("Centrality is %f", MultipOrCent));
@@ -613,3 +807,8 @@ void AliDxHFECorrelation::EventMixingChecks(const AliVEvent* pEvent){
   ((TH3D*)fControlObjects->FindObject("NofTracksPerPoolBin"))->Fill(MultipOrCent,zvertex,pool->GetCurrentNEvents()); // number of calls of pool
 }
 	
+Bool_t AliDxHFECorrelation::TestParticle(AliVParticle* /*p*/, Int_t /*id*/){
+
+  // Testing particle - for now mainly needed in MC
+  return kTRUE;
+}

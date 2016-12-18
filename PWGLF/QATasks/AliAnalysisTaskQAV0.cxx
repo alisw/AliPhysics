@@ -75,6 +75,7 @@ class AliAODv0;
 
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskQAV0.h"
+#include "AliMultSelectionTask.h"
 
 //debugging purposes
 #include "TObjectTable.h"
@@ -117,6 +118,7 @@ AliAnalysisTaskQAV0::AliAnalysisTaskQAV0()
   f2dHistResponsePionFromLambda(0),
   f2dHistResponseProtonFromLambda(0),
 
+fTrigType(AliVEvent::kINT7),
 
   //Task Control / Utils
   fPIDResponse(0),
@@ -162,6 +164,8 @@ AliAnalysisTaskQAV0::AliAnalysisTaskQAV0(const char *name)
   f2dHistdEdxSignalProtonFromLambda(0),
   f2dHistResponsePionFromLambda(0),
   f2dHistResponseProtonFromLambda(0),
+
+fTrigType(AliVEvent::kINT7),
 
   //Task Control / Utils
   fPIDResponse(0),
@@ -333,7 +337,7 @@ void AliAnalysisTaskQAV0::UserExec(Option_t *)
   if( fkRunV0Vertexer ){
     lESDevent->ResetV0s();
     AliV0vertexer lV0vtxer;
-    lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+    lV0vtxer.SetCuts(fV0VertexerSels);
     lV0vtxer.Tracks2V0vertices(lESDevent);
   }
 
@@ -343,16 +347,8 @@ void AliAnalysisTaskQAV0::UserExec(Option_t *)
 // Physics Selection
 //------------------------------------------------
   
-  // new method
-  UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  Bool_t isSelected = 0;
-  isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
-  
-  //pA triggering: CINT7
-  //if( fkSwitchINT7 ) isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
-
   //Standard Min-Bias Selection
-  if ( !isSelected ) {
+    if ( ! AliMultSelectionTask::IsSelectedTrigger(lESDevent, fTrigType) ) {
     PostData(1, fOutput);
     return;
   }

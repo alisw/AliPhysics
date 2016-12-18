@@ -55,6 +55,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fCuts(),
     fRecalculatePhi(false),
     fMinQuality(AliFMDCorrELossFit::kDefaultQuality),
+    fHitThreshold(0.9),
     fCache(),
     fDoTiming(false),
     fHTiming(0), 
@@ -92,6 +93,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fCuts(),
     fRecalculatePhi(false),
     fMinQuality(AliFMDCorrELossFit::kDefaultQuality),
+    fHitThreshold(0.9),
     fCache(),
     fDoTiming(false),
     fHTiming(0), 
@@ -160,6 +162,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fCuts(o.fCuts),
     fRecalculatePhi(o.fRecalculatePhi),
     fMinQuality(o.fMinQuality),
+    fHitThreshold(o.fHitThreshold),
     fCache(o.fCache),
     fDoTiming(o.fDoTiming),
     fHTiming(o.fHTiming), 
@@ -223,6 +226,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fCuts               = o.fCuts;
   fRecalculatePhi     = o.fRecalculatePhi;
   fMinQuality         = o.fMinQuality;
+  fHitThreshold       = o.fHitThreshold;
   fCache              = o.fCache;
   fDoTiming           = o.fDoTiming;
   fHTiming            = o.fHTiming;
@@ -513,7 +517,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  rh->fCorr->Fill(eta, c);
 
 	  // --- Accumulate Poisson statistics -----------------------
-	  Bool_t hit = (n > 0.9 && c > 0);
+	  Bool_t hit = (n > fHitThreshold && c > 0);
 	  if (hit) {
 	    rh->fELossUsed->Fill(mult);
 	    if (fRecalculatePhi) {
@@ -1114,6 +1118,7 @@ AliFMDDensityCalculator::CreateOutputObjects(TList* dir)
   d->Add(AliForwardUtil::MakeParameter("recalcPhi",    fRecalculatePhi));
   d->Add(AliForwardUtil::MakeParameter("maxOutliers",  fMaxOutliers));
   d->Add(AliForwardUtil::MakeParameter("outlierCut",   fOutlierCut));
+  d->Add(AliForwardUtil::MakeParameter("hitThreshold", fHitThreshold));
   d->Add(nFiles);
   // d->Add(nxi);
   fCuts.Output(d,"lCuts");
@@ -1185,13 +1190,16 @@ AliFMDDensityCalculator::Print(Option_t* option) const
   case kPhiCorrectELoss: phiM = "correct energy loss"; break;
   }
 
-  PFV("Max(particles)",		fMaxParticles );
-  PFV("Min(quality)",           fMinQuality );
-  PFB("Poisson method",		fUsePoisson );
-  PFV("Eta lumping",		fEtaLumping );
-  PFV("Phi lumping",		fPhiLumping );
-  PFB("Recalculate phi",	fRecalculatePhi );
+  PFV("Max(particles)",		fMaxParticles);
+  PFB("Poisson method",		fUsePoisson);
+  PFV("Eta lumping",		fEtaLumping);
+  PFV("Phi lumping",		fPhiLumping);
+  PFB("Recalculate phi",	fRecalculatePhi);
   PFB("Use phi acceptance",     phiM);
+  PFV("Min(quality)",           fMinQuality);
+  PFV("Threshold(hit)",         fHitThreshold);
+  PFV("Max(outliers)",          fMaxOutliers);
+  PFV("Cut(outlier)",           fOutlierCut);
   PFV("Lower cut", "");
   fCuts.Print();
 

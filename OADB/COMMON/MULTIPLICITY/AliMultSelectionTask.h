@@ -45,10 +45,10 @@ class AliCFContainer;
 class AliESDAD;
 class AliMultVariable;
 class AliMultEstimator;
+class AliMultInput;
 class AliMultSelection;
 class AliMultSelectionCuts;
-class AliOADBMultSelection; 
-
+class AliOADBMultSelection;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -70,6 +70,7 @@ public:
     static Bool_t HasNoInconsistentSPDandTrackVertices (AliVEvent *event);
     static Bool_t IsNotAsymmetricInVZERO               (AliVEvent *event);
     static Bool_t IsNotIncompleteDAQ                   (AliVEvent *event);
+    static Bool_t HasGoodVertex2016                    (AliVEvent *event);
     
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
@@ -91,19 +92,23 @@ public:
     
     //Setup Run if needed (depends on run number!)     
     Int_t SetupRun( const AliVEvent* const esd );
-
+    
     //removed to avoid accidental usage!
     //void SetSaveCalibInfo( Bool_t lVar ) { fkCalibration = lVar; } ;
     void SetAddInfo      ( Bool_t lVar ) { fkAddInfo     = lVar; } ;
     void SetFilterMB     ( Bool_t lVar ) { fkFilterMB    = lVar; } ;
     void SetDebug        ( Bool_t lVar ) { fkDebug       = lVar; } ;
     void SetNDebug       ( Int_t  lVar ) { fNDebug       = lVar; } ;
+    void SetHighMultQABinning( Bool_t lVar ) { fkHighMultQABinning = lVar; }
     
     //override for getting estimator definitions from different OADB file
     //FIXME: should preferably be protected, extra functionality required
     void SetAlternateOADBforEstimators      ( TString lFile ){ fAlternateOADBForEstimators      = lFile.Data(); }
     void SetAlternateOADBFullManualBypass   ( TString lFile ){ fAlternateOADBFullManualBypass   = lFile.Data(); }
     void SetAlternateOADBFullManualBypassMC ( TString lFile ){ fAlternateOADBFullManualBypassMC = lFile.Data(); }
+    
+    //Customize AliMultSelection object name
+    void SetStoredObjectName ( TString lObjName ){ fStoredObjectName = lObjName.Data(); }
     
     //Default Setters
     void SetUseDefaultCalib   ( Bool_t lVar ){ fkUseDefaultCalib = lVar; }
@@ -130,6 +135,7 @@ private:
     Bool_t fkAddInfo;     //if true, save info
     Bool_t fkFilterMB;    //if true, save only kMB events
     Bool_t fkAttached;    //if true, has already attached to ESD (AOD)
+    Bool_t fkHighMultQABinning; //if true, use narrow binning for percentile histograms
     
     //Debug Options
     Bool_t fkDebug;       //if true, saves percentiles in TTree for debugging
@@ -147,6 +153,9 @@ private:
     TString fAlternateOADBForEstimators;
     TString fAlternateOADBFullManualBypass;
     TString fAlternateOADBFullManualBypassMC;
+    
+    //Object name for attaching to ESD/AOD
+    TString fStoredObjectName;
     
     AliESDtrackCuts *fESDtrackCuts;
     AliAnalysisUtils *fUtils;         // analysis utils
@@ -181,6 +190,8 @@ private:
     AliMultVariable *fnSPDClusters0;
     AliMultVariable *fnSPDClusters1;
     AliMultVariable *fnTracklets; //tracklet estimator
+    AliMultVariable *fnTracklets08; //tracklet estimator
+    AliMultVariable *fnTracklets15; //tracklet estimator
     AliMultVariable *fRefMultEta5; //tracklet estimator
     AliMultVariable *fRefMultEta8; //tracklet estimator
     //AD Related
@@ -215,21 +226,27 @@ private:
     Bool_t fEvSel_PassesTrackletVsCluster;  //!
     Bool_t fEvSel_IsNotAsymmetricInVZERO;   //!
     Bool_t fEvSel_IsNotIncompleteDAQ;       //!
-    
+    Bool_t fEvSel_HasGoodVertex2016;        //!
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
     Int_t   fnContributors; //! 'classical' number of contributors for vertex
 
     // A.T.
-    AliESDtrackCuts* fTrackCuts;  //! optional track cuts
+    AliESDtrackCuts* fTrackCuts;        // optional track cuts
+    AliESDtrackCuts* fTrackCutsGlobal2015;  // optional track cuts
+    AliESDtrackCuts* fTrackCutsITSsa2010; // optional track cuts
     
     AliMultVariable *fZnaFired;
     AliMultVariable *fZncFired;
     AliMultVariable *fZpaFired;
     AliMultVariable *fZpcFired;
     
-    Int_t    fNTracks;             //!  no. tracks
+    AliMultVariable *fNTracks;             //!  no. tracks
+    AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
+    AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
+    AliMultVariable *fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
+    
     Int_t fCurrentRun;
     
     Float_t fQuantiles[100]; //! percentiles
@@ -266,6 +283,20 @@ private:
     TProfile *fHistQASelected_TrackletsVsV0M; 
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
+
+    TProfile *fHistQASelected_NTracksGlobalVsV0M; 
+    TProfile *fHistQASelected_NTracksGlobalVsCL0; 
+    TProfile *fHistQASelected_NTracksGlobalVsCL1; 
+    TProfile *fHistQASelected_PtGlobalVsV0M; 
+    TProfile *fHistQASelected_PtGlobalVsCL0; 
+    TProfile *fHistQASelected_PtGlobalVsCL1; 
+
+    TProfile *fHistQASelected_NTracksITSsaVsV0M;
+    TProfile *fHistQASelected_NTracksITSsaVsCL0;
+    TProfile *fHistQASelected_NTracksITSsaVsCL1;
+    TProfile *fHistQASelected_PtITSsaVsV0M;
+    TProfile *fHistQASelected_PtITSsaVsCL0;
+    TProfile *fHistQASelected_PtITSsaVsCL1;
 
     //AliMultSelection Framework
     AliOADBMultSelection *fOadbMultSelection;

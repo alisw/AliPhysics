@@ -66,6 +66,16 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
  public:
 
   /**
+   * @enum EDataType_t
+   * @brief Switch for the data type
+   */
+  enum EDataType_t {
+    kUnknownDataType,
+    kESD,
+    kAOD
+  };
+
+  /**
    * @enum EBeamType_t
    * @brief Switch for the beam type
    */
@@ -74,15 +84,6 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
     kpp       = 0, //!< Proton-Proton
     kAA       = 1, //!< Nucleus-Nucleus
     kpA       = 2  //!< Proton-Nucleus
-  };
-
-  /**
-   * @enum EDataType_t
-   * @brief Switch for the data type
-   */
-  enum EDataType_t {
-    kAOD = 0,
-    kESD = 1
   };
 
   AliAnalysisTaskEmcalLight();
@@ -179,6 +180,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
+  static EBeamType_t          BeamTypeFromRunNumber(Int_t runnumber);
 
   static Double_t             fgkEMCalDCalPhiDivide;       ///<  phi value used to distinguish between DCal and EMCal
 
@@ -215,7 +217,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   TObjArray                   fRejectedTriggerClasses;     ///< list of accepted trigger classes
 
   // Service fields
-  Bool_t                      fInitialized;                //!<!whether or not the task has been already initialized
+  Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized
   EDataType_t                 fDataType;                   //!<!data type (ESD or AOD)
   AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
   AliVCaloCells              *fCaloCells;                  //!<!cells

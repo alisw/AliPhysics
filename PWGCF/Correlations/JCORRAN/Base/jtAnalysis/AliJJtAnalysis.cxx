@@ -17,6 +17,7 @@
 // used in local and grid execution
 
 #include <TH1D.h>
+#include <TRandom3.h>
 #include "AliJJtAnalysis.h"
 
 #include "AliJTrackCounter.h"
@@ -50,6 +51,7 @@ AliJJtAnalysis::AliJJtAnalysis() :
   fcard(0),
   finputFile(0),
   fInclusiveFile(""),
+  frandom(0x0),
   fevt(0),
   fhistos(0),
   fcorrelations(0),
@@ -68,6 +70,7 @@ AliJJtAnalysis::AliJJtAnalysis() :
   fbTriggCorrel(0),
   fbLPCorrel(0),
   fMinimumPt(0),
+  fbLPSystematics(false),
   fEventBC(0),
   fEfficiency(0),
   fRunTable(0),
@@ -85,6 +88,7 @@ AliJJtAnalysis::AliJJtAnalysis(Bool_t execLocal) :
   fcard(0),
   finputFile(0),
   fInclusiveFile(""),
+  frandom(0x0),
   fevt(0),
   fhistos(0),
   fcorrelations(0),
@@ -103,6 +107,7 @@ AliJJtAnalysis::AliJJtAnalysis(Bool_t execLocal) :
   fbTriggCorrel(0),
   fbLPCorrel(0),
   fMinimumPt(0),
+  fbLPSystematics(false),
   fEventBC(0),
   fEfficiency(0),
   fRunTable(0),
@@ -139,6 +144,7 @@ AliJJtAnalysis::AliJJtAnalysis(const AliJJtAnalysis& obj) :
   fcard(obj.fcard),
   finputFile(obj.finputFile),
   fInclusiveFile(obj.fInclusiveFile),
+  frandom(obj.frandom),
   fevt(obj.fevt),
   fhistos(obj.fhistos),
   fcorrelations(obj.fcorrelations),
@@ -157,6 +163,7 @@ AliJJtAnalysis::AliJJtAnalysis(const AliJJtAnalysis& obj) :
   fbTriggCorrel(obj.fbTriggCorrel),
   fbLPCorrel(obj.fbLPCorrel),
   fMinimumPt(obj.fMinimumPt),
+  fbLPSystematics(obj.fbLPSystematics),
   fEventBC(obj.fEventBC),
   fEfficiency(obj.fEfficiency),
   fRunTable(obj.fRunTable),
@@ -369,8 +376,12 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
 	//-------------------------------------------------------------------
 	fbTriggCorrel  = fcard->Get("CorrelationType")==0;
 	fbLPCorrel     = fcard->Get("CorrelationType")==1;
+  fbLPSystematics = fcard->Get("LeadingParticleSystematics")==1;
 	fMinimumPt = fcard->GetBinBorder(kAssocType, 0);
 
+  frandom = new TRandom3(); // Random number generator for systematic error estimation
+  frandom->SetSeed(0);
+  
 	// Initialize counters
   fcent = -1;
 	fhistos->fHMG->WriteConfig();
@@ -486,6 +497,11 @@ void AliJJtAnalysis::UserExec(){
 	//----------------------------------------------------
 	AliJTrackCounter *lpTrackCounter = new AliJTrackCounter();
 	AliJBaseTrack *lPTr = NULL;
+  
+  // Find also subleading particle in case of systematic error analysis
+  AliJTrackCounter *subLeadingTrackCounter = new AliJTrackCounter();
+  AliJBaseTrack *subLeadingTrack = NULL;
+  
 	int noTriggs=0;
 	ftriggList->Clear();
 	for(int itrack=0; itrack<noAllTriggTracks; itrack++){
@@ -507,13 +523,37 @@ void AliJJtAnalysis::UserExec(){
 		fhistos->fhIphiTrigg[cBin][iptt]->Fill( triggerTrack->Phi(), effCorr);
 		fhistos->fhIetaTrigg[cBin][iptt]->Fill( triggerTrack->Eta(), effCorr);
 
+    // If we find the second highest track remember it
+    if( fbLPSystematics && ptt > subLeadingTrackCounter->Pt() && ptt < lpTrackCounter->Pt()){
+      subLeadingTrackCounter->Store(noTriggs, ptt, iptt);
+      subLeadingTrack = triggerTrack;
+    }
+    
+    // Find the highest track as the leading particle
 		if( ptt > lpTrackCounter->Pt() ) {
+      
+      // Set the previous leading particle as the subleading particle when new leading particle is found
+      if(fbLPSystematics && lpTrackCounter->Exists()){
+        subLeadingTrackCounter->Store(lpTrackCounter->GetIndex(), lpTrackCounter->GetPt(), lpTrackCounter->GetPtBin());
+        subLeadingTrack = lPTr;
+      }
+      
 			lpTrackCounter->Store(noTriggs, ptt, iptt);
 			lPTr = triggerTrack;
 		}
 
 		new ((*ftriggList)[noTriggs++]) AliJBaseTrack(*triggerTrack);
 	}
+  
+  // For systematic error estimation, decide that whather we saw the leading particle based on tracking efficiency. For example if tracking efficiency is 90 %, use subleading particle in 10 % of the cases.
+  int idOfLostTrigger = -100;
+  if(fbLPSystematics && lpTrackCounter->Exists() && subLeadingTrackCounter->Exists()){
+    if(frandom->Rndm() > lPTr->GetTrackEff()){
+      idOfLostTrigger = lPTr->GetID();
+      lpTrackCounter->Store(subLeadingTrackCounter->GetIndex(), subLeadingTrackCounter->GetPt(), subLeadingTrackCounter->GetPtBin());
+      lPTr = subLeadingTrack;
+    }
+  }
 
 	//--------------------------------------------------
 	//---   Generate assoc list and pool             ---
@@ -531,6 +571,9 @@ void AliJJtAnalysis::UserExec(){
 
 		associatedTrack = (AliJBaseTrack*)finputList->At(itrack);
 		associatedTrack->SetAssocBin( fcard->GetBin(kAssocType, associatedTrack->Pt()) );
+    
+    // Skip the particle in the associated list that is lost in the trigger
+    if(fbLPSystematics && idOfLostTrigger != -100 && idOfLostTrigger == associatedTrack->GetID()) continue;
 
 		if(associatedTrack->IsInAssocBin()){ 
 
@@ -541,7 +584,7 @@ void AliJJtAnalysis::UserExec(){
 			new ((*fassocList)[noAssocs++]) AliJBaseTrack(*associatedTrack);
 		}
 	}
-
+  
 	//-----------------------------------------------
 	// Leading particle pT and eta
 	//-----------------------------------------------
@@ -591,7 +634,7 @@ void AliJJtAnalysis::UserExec(){
 	//--------------------------------------------------------------
   
   delete lpTrackCounter;
-
+  delete subLeadingTrackCounter;
 
 }
 

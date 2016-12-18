@@ -83,7 +83,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 				 ,fFMDGap(0)
 				 ,fZDCGap(0)
 				 ,fNtrk_ST(0)
-				 ,fNtrk_MS(0) {
+				 ,fNtrk_MS(0)
+		       		 ,fProcessType(0)
+				 ,fCDType(0){
 					 for (Int_t i = 0; i < 11; i++) {
 						 if (i < 3) {
 							 fVertexSPD[i] = 0; 
@@ -91,9 +93,11 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 							 fVertexTracks[i] = 0;
 							 fVertexUsed[i] = 0;
 							 fSysVertex[i] = 0;
+						 }
+						 if (i < 5) {
+							 fSysCluster[i] = 0;
 							 fSysPileUp[i] = 0;
 						 }
-						 if (i < 5) fSysCluster[i] = 0;
 						 fCheckTwoTrack[i] = fCheckFourTrack[i] = 0;
 					 }
 				 }
@@ -117,8 +121,10 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			Double_t fVertexTracks[3];//
 			Double_t fVertexUsed[3];//
 			Bool_t fSysVertex[3];//
-			Bool_t fSysPileUp[3];//
+			Bool_t fSysPileUp[5];//
 			Bool_t fSysCluster[5];//
+			Int_t fProcessType;//for MC
+			Int_t fCDType;//
 
 			ClassDef(EventInfo, 1);
 		};
@@ -157,7 +163,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		};
 
 		struct TrackInfo : public TObject{//Track information for PWA
-			TrackInfo(AliESDtrack *tr=NULL, AliPIDResponse *pid=NULL, AliPIDCombined *pidc=NULL)//Constructor
+			TrackInfo(AliESDtrack *tr=NULL, AliPIDResponse *pid=NULL, AliPIDCombined *pidc=NULL, Bool_t fMC=kFALSE, AliMCEvent *fMCevt=NULL)//Constructor
 				:TObject()
 				 , fSign(0)
 				 , fPx(0)
@@ -172,6 +178,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 				 , fCrossedRows(0)
 				 , fTPCNCluster(0)
 				 , fTPCnclsS(0)
+				 , fMotherPDGCode(-999)
+				 , fMotherID(-999)
+				 , fMotherPrimary(0)
 			
 			{
 				for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
@@ -179,10 +188,10 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 						fITSBayesProb[i] = fTRDBayesProb[i] = fTPCProb[i] = fTOFProb[i] = fITSProb[i] = ftotBayesProb[i] = -999.;
 					fDetMask[i] = 0;
 				}
-				Fill(tr,pid,pidc);
+				Fill(tr,pid,pidc,fMC,fMCevt);
 			}
 
-			void Fill(AliESDtrack *, AliPIDResponse *, AliPIDCombined *);
+			void Fill(AliESDtrack *, AliPIDResponse *, AliPIDCombined *, Bool_t fMC, AliMCEvent *);
 
 			Double_t fSign;
 			Double_t fPx, fPy, fPz, fEnergy, fIntegratedLength;
@@ -202,6 +211,9 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			Double_t fTOFProb[AliPID::kSPECIES];
 			Double_t fITSProb[AliPID::kSPECIES];
 			UInt_t fDetMask[5];
+			Int_t fMotherPDGCode;
+			Int_t fMotherID;
+			Bool_t fMotherPrimary;
 
 			ClassDef(TrackInfo, 1);
 
@@ -243,6 +255,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kNG_Data,// No-gap?
 			kSGA_Data,//Single-gap A-side
 			kSGC_Data,//Single-gap C-side
+			kDGFMDSPD,
+			kMBOR,
 			k2Tracks,
 			k4Tracks,
 			k2Tracks_ITSSA,
@@ -262,6 +276,15 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 			kTri_CDG7_SPD2,
 			kTriAll
 		};
+		enum {
+			kEvt2pi = 0,
+			kEvt4pi,
+			kEvtnpi,
+			kEvt2ka,
+			kEvtnka,
+			kEvtelse,
+			kEvtAll
+		};
 
 		AliAnalysisTaskCDPWA(const AliAnalysisTaskCDPWA  &p);
 		AliAnalysisTaskCDPWA& operator=(const AliAnalysisTaskCDPWA  &p);
@@ -273,6 +296,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t DoVertexCut(const AliESDEvent *esd);
 		void DoCombinatorics(const AliESDEvent *esd);
 		Bool_t DoMCPWA();
+		void DetermineProcessType();
+		void FillPassMCInfo(const Bool_t isV0, const Bool_t isV0FMD);
 
 		//Member variables
 		Bool_t fIsRun2;
@@ -288,6 +313,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		Bool_t fIsPhojet;
 		Bool_t fIsEPOS;
 		UInt_t fRunNumber;
+		Int_t fMCProcessType;
 
 		// Output objects-----------------------------------------------------
 		TTree *fTree; //! V0 2pion
@@ -324,7 +350,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fRunVsMBAND_AD;//!
 		TH1D *fRunVsMBOR_Global;//!
 		TH1D *fRunVsMBAND_Global;//!
-		TH1D *fRunVsDG[10];//!
+		TH1D *fRunVsDG[11];//!
 		TH1D *fRunVs2t;//!
 		TH1D *fRunVs2t_ITSSA;//!
 		TH1D *fRunVs4t;//!
@@ -335,6 +361,8 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fMultDG_MS;//!
 		TH1D *fMassNG_ST_2t;//!
 		TH1D *fMassNG_MS_2t;//!
+		TH1D *fpTNG_MS_2t;//!
+		TH2D *fMasspTNG_MS_2t;//!
 		TH1D *fMassDG_ST_2t;//!
 		TH1D *fMassDG_MS_2t;//!
 		TH1D *fMassNG_ST_4t;//!
@@ -342,6 +370,7 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fMassDG_ST_4t;//!
 		TH1D *fMassDG_MS_4t;//!
 		TH1D *fTrackCutsInfo;//!
+		TH1D *fTrackCutsInfo_NG;//!
 		TH1D *fTrackCutsInfo_ITSSA;//!
 		TH2D *fhClusterVsTracklets_bf;//!
 		TH2D *fhClusterVsTracklets_af;//!
@@ -358,13 +387,24 @@ class AliAnalysisTaskCDPWA : public AliAnalysisTaskSE
 		TH1D *fMC_Eta[7];//!
 		TH1D *fMC_DiffMass[7];//!
 		TH1D *fMC_DiffMass_PDG[7];//!
-		TH1D *fRunFiducial[6];//!
+		TH1D *fRunFiducial[7][12];//!
 		TH1D *fMult_Gen;//!
 		TH2D *fMult_Gen_Process;//!
 		TH2D *fMult_Rec_DG_Process;//!
 		TH2D *fMult_Rec_NG_Process;//!
 		TH2D *fV0Time[2];//!
 		TH2D *fADTime[2];//!
+		TH1D *hDCAz_MS;//!
+		TH1D *hMultNG_Test[6];//!
+		TH1D *hMC_PassEta[14];//!
+		TH1D *hMC_PassType[2];//!
+		TH1D *hMult_Ref[3];//!
+		TH1D *hMC_GenMass;//!
+		TH1D *hMC_GenpT;//!
+		TH1D *hMC_CDEvtType;//!
+		TH1D *hMC_CDGenMass[7];//!
+		TH1D *hMC_CDGenpT[7];//!
+//		TH2D *hMC_CDGenMasspT[7];//!
 		// -------------------------------------------------------------------
 
 		ClassDef(AliAnalysisTaskCDPWA, 1);

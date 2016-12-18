@@ -40,6 +40,7 @@ AliFemtoV0::AliFemtoV0():
   fTOFProtonTimeNeg(0), fTOFPionTimeNeg(0), fTOFKaonTimeNeg(0),
   fImpactDprimPos(-999), fImpactDweakPos(-999), fImpactDmatPos(-999), fImpactDprimNeg(-999), fImpactDweakNeg(-999), fImpactDmatNeg(-999),
   fCorrLam(0.0),
+  fCorrLamMinus(0.0),
   fRadiusV0(0.0),
   fHiddenInfo(NULL)
 {
@@ -108,7 +109,7 @@ AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
   fImpactDprimPos(v.fImpactDprimPos), fImpactDweakPos(v.fImpactDweakPos),
   fImpactDmatPos(v.fImpactDmatPos), fImpactDprimNeg(v.fImpactDprimNeg),
   fImpactDweakNeg(v.fImpactDweakNeg), fImpactDmatNeg(v.fImpactDmatNeg),
-  fCorrLam(v.fCorrLam), fRadiusV0(v.fRadiusV0),
+  fCorrLam(v.fCorrLam), fCorrLamMinus(v.fCorrLamMinus), fRadiusV0(v.fRadiusV0),
   fHiddenInfo( v.fHiddenInfo ? v.fHiddenInfo->Clone() : NULL)  /***/
 {
   // copy constructor
@@ -228,6 +229,7 @@ AliFemtoV0& AliFemtoV0::operator=(const AliFemtoV0& aV0)
   fImpactDmatNeg = aV0.fImpactDmatNeg;
 
   fCorrLam =  aV0.fCorrLam;
+  fCorrLamMinus =  aV0.fCorrLamMinus;
 
   fRadiusV0 = aV0.fRadiusV0;
 
@@ -372,6 +374,8 @@ const AliFmPhysicalHelixD& AliFemtoV0::HelixNeg() const {return fHelixNeg;}// Ga
 
 void AliFemtoV0::SetCorrectionLambdas(const double& x){fCorrLam=x;}
 float AliFemtoV0::CorrectionLambda() const {return fCorrLam;}
+void AliFemtoV0::SetCorrectionLambdasMinus(const double& x){fCorrLamMinus=x;}
+float AliFemtoV0::CorrectionLambdaMinus() const {return fCorrLamMinus;}
 
 void AliFemtoV0::SetHiddenInfo(AliFemtoHiddenInfo* aHiddenInfo) {fHiddenInfo=aHiddenInfo;}
 bool AliFemtoV0::ValidHiddenInfo() const { if (fHiddenInfo) return true; else return false; }

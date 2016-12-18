@@ -1,3 +1,8 @@
+/**
+ * @defgroup pwglf_forward_scripts_tasks_vz Valentina's code
+ * 
+ * @ingroup pwglf_forward_scripts_tasks
+ */
 /*
  * @file   AddTaskMultDistributions.C
  * @author Valentina Zaccolo
@@ -6,10 +11,22 @@
  * @brief Script to add a multiplicity task
  * 
  * 
+ * @ingroup pwglf_forward_scripts_tasks_vz
  */
-// class AliAnalysisTaskSE;
-// #include "AliForwardMultiplicityDistribution.h"
-
+/** 
+ * Script to add a multiplicity task
+ * 
+ * @param trig     Trigger class 
+ * @param vzMin    Least Z-coordiante of interaction point
+ * @param vzMax    Largest Z-coordiante of interaction point
+ * @param lowCent  Not used yet
+ * @param highCent Not used yet 
+ * @param nBins    Number of bins 
+ * 
+ * @return Pointer to task 
+ *
+ * @ingroup pwglf_forward_scripts_tasks_vz
+ */
 AliAnalysisTaskSE*
 AddTaskMultDistributions(const char* trig = "INEL",
 			 Double_t    vzMin = -4,

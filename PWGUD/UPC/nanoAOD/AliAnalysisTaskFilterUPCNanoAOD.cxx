@@ -84,10 +84,10 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
  //Trigger
   Bool_t isTriggered = kFALSE;
   TString trigger = aod->GetFiredTriggerClasses();
-
-  if(trigger.Contains("CCUP4-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0SM2 0OMU
-  if(trigger.Contains("CCUP2-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP 0OM2
-  if(trigger.Contains("CCUP7-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
+  /*/
+  if(trigger.Contains("CCUP4-B")) isTriggered = kTRUE; // *0VBA *0VBC 0SM2 0OMU
+  if(trigger.Contains("CCUP2-B")) isTriggered = kTRUE; // *0VBA *0VBC 0SM2 0OM2
+  if(trigger.Contains("CCUP7-B")) isTriggered = kTRUE; // *0VBA *0VBC 0STP 0OMU
   if(trigger.Contains("CINT1-B")) isTriggered = kTRUE; // 0VBA || 0VBC || 0SMB
   if(trigger.Contains("CTEST58-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0SH1
   if(trigger.Contains("CTEST59-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP
@@ -98,6 +98,10 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   if(trigger.Contains("CCUP10-B")) isTriggered = kTRUE; //*0VBA *0VBC *0UBA *0UBC 0SH1
   if(trigger.Contains("CCUP11-B")) isTriggered = kTRUE; //*0UBA *0UBC 0STP 0OMU
   if(trigger.Contains("CCUP12-B")) isTriggered = kTRUE; //*0UBA *0UBC 0STP
+  /*/
+  
+  if(trigger.Contains("CCUP")) isTriggered = kTRUE; // UPC central barrel
+  if(trigger.Contains("CMUP")) isTriggered = kTRUE; // UPC MUON
   
   //Vertex
   Bool_t hasGoodVertex = kFALSE;
@@ -109,9 +113,11 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
   	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(itr));
   	if( !trk ) continue;
   	if( trk->TestFilterBit(1<<0) || trk->TestFilterBit(1<<1)) nGoodTracks++;
+	if( trk->IsMuonTrack() && trk->GetRAtAbsorberEnd() > 17.5 && trk->GetRAtAbsorberEnd() < 89.5 && trk->Eta() > -4.0 && trk->Eta() < -2.5) nGoodTracks++;
 	}
   
-  if(!isTriggered || !hasGoodVertex || nGoodTracks == 0) return;
+  //if(!isTriggered || !hasGoodVertex || nGoodTracks == 0) return;
+  if(!isTriggered || nGoodTracks == 0) return;
   //if(!isTriggered) return;
   //AliInfo("Good UPC event");
   

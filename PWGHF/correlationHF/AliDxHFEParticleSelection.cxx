@@ -212,12 +212,24 @@ THnSparse* AliDxHFEParticleSelection::DefineTHnSparse()
 
   const double Pi=TMath::Pi();
   TString name;
-  //     		            0    1       2
-  // 	 	                    Pt   Phi    Eta
-  int         thnBins [thnSize] = { 1000,  200, 500};
-  double      thnMin  [thnSize] = {    0,    0, -1.};
-  double      thnMax  [thnSize] = {  100, 2*Pi,  1.};
+  int thnBins [thnSize];
+  double thnMin [thnSize];
+  double thnMax [thnSize];
   const char* thnNames[thnSize] = { "Pt","Phi","Eta"};
+
+  if(2==fSystem){ //Reduced bins for p-Pb
+    //     		            0    1       2
+    // 	 	                    Pt   Phi    Eta
+    int thnBins [thnSize] = { 80,  100, 125};
+    double thnMin [thnSize] = {    0,    0, -1.};
+    double thnMax [thnSize] = {  16, 2*Pi,  1.};
+  } else{
+    //     		            0    1       2
+    // 	 	                    Pt   Phi    Eta
+    int         thnBins [thnSize] = { 1000,  200, 500};
+    double      thnMin  [thnSize] = {    0,    0, -1.};
+    double      thnMax  [thnSize] = {  100, 2*Pi,  1.};
+  }
 
   name.Form("%s info", GetName());
 
@@ -305,10 +317,11 @@ TObjArray* AliDxHFEParticleSelection::Select(const AliVEvent* pEvent)
     if (selectionCode==0) continue;
     selectedTracks->Add(CreateParticle(track));
   }
+  HistogramEventProperties(AliDxHFEParticleSelection::kHistoNrTracksPrEvent,selectedTracks->GetEntries());
   return selectedTracks;
 }
 
-TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, const AliVEvent* pEvent)
+TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, AliVEvent* pEvent)
 {
   /// create selection from the array of particles,
   /// array contains only pointers but does not own the objects
@@ -327,6 +340,7 @@ TObjArray* AliDxHFEParticleSelection::Select(TObjArray* pParticles, const AliVEv
     if (selectionCode ==0) continue;
     selectedTracks->Add(CreateParticle(track));
   }
+  HistogramEventProperties(AliDxHFEParticleSelection::kHistoNrTracksPrEvent,selectedTracks->GetEntries());
   return selectedTracks;
 }
 

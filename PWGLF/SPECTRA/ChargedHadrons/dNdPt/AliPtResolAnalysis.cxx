@@ -56,6 +56,7 @@ ClassImp(AliPtResolAnalysis)
 
 //_____________________________________________________________________________
   AliPtResolAnalysis::AliPtResolAnalysis(): AlidNdPt(),
+  fSigmaScale(0),
   fAnalysisFolder(0),
   fTrackParamHist(0),
   fTrackParamHist2(0)
@@ -66,6 +67,7 @@ ClassImp(AliPtResolAnalysis)
 
 //_____________________________________________________________________________
 AliPtResolAnalysis::AliPtResolAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,title),
+  fSigmaScale(0),
   fAnalysisFolder(0),
   fTrackParamHist(0),
   fTrackParamHist2(0)
@@ -216,10 +218,10 @@ void AliPtResolAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const 
 	  //track->GetExternalParameters(x, p);
 	  //track->GetExternalCovariance(cov);
 
-	  Double_t v1[2] = {track->OneOverPt(),TMath::Sqrt(track->GetSigma1Pt2())};
+	  Double_t v1[2] = {track->OneOverPt(),TMath::Sqrt(track->GetSigma1Pt2()+fSigmaScale*fSigmaScale)};
 	  fTrackParamHist->Fill(v1);
 
-	  Double_t v2[2] = {track->Pt(),track->Pt()*TMath::Sqrt(track->GetSigma1Pt2())};
+	  Double_t v2[2] = {track->Pt(),track->Pt()*TMath::Sqrt(track->GetSigma1Pt2()+fSigmaScale*fSigmaScale)};
 	  fTrackParamHist2->Fill(v2);
         }
       }  

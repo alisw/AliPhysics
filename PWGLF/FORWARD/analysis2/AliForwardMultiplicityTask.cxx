@@ -117,7 +117,8 @@ AliForwardMultiplicityTask::PreCorrections(const AliESDEvent* esd)
 Bool_t
 AliForwardMultiplicityTask::PreEvent()
 {
-  // Clear stuff 
+  // Clear stuff
+  DMSG(fDebug, 1, "Pre-event clearing of structures");
   fHistos.Clear();
   fESDFMD.Clear();
   fAODFMD.Clear();

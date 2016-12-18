@@ -64,6 +64,8 @@ class AliFemtoModelWeightGeneratorLednicky : public  AliFemtoModelWeightGenerato
   void SetNuclCharge(const double aNuclCharge); // for 3-body calculation
   void SetNuclMass(const double aNuclMass);
 
+  void SetKpKmModelType(const int aModelType, const int aPhi_OffOn);  // K+K- model type,Phi off/on
+
   virtual AliFemtoString Report();
 
 protected:
@@ -96,7 +98,12 @@ protected:
   int *     fNumProcessPair; // number of process pairs of each type
   int       fNumbNonId;      // Number of unidentified pairs
 
+  //K+K- model type
+  int       fKpKmModel;      //ij (i=1..4, j=1..4; see AliFemtoFsiWeightLednicky.F)
+  int       fPhi_OffOn;      //0->Phi Off,1->Phi On
+
   // Interface to the fortran functions
+  void FsiSetKpKmModelType();  //// initialize K+K- model type
   void FsiInit();
   void FsiSetLL();
   void FsiNucl();

@@ -22,6 +22,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
 			   kStd2010crossedRows,
 			   kStd2011,
 			   kStd2011crossedRows,
+			   kStd2015crossedRows,
 			   kNCutSetTOFqa };
 
   AliAnalysisTaskTOFqaID();

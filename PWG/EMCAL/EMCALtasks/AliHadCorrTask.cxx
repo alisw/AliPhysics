@@ -536,7 +536,7 @@ void AliHadCorrTask::ExecOnce()
 
   // Do base class initializations and if it fails -> bail out
   AliAnalysisTaskEmcal::ExecOnce();
-  if (!fInitialized) return;
+  if (!fLocalInitialized) return;
 
   if (dynamic_cast<AliAODEvent*>(InputEvent())) fEsdMode = kFALSE;
 

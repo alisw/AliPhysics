@@ -113,17 +113,19 @@ struct FastSim : public TSelector
   /** 
    * Constructor 
    * 
-   * @param eg     Event generator 
-   * @param runNo  Run number to simulate 
-   * @param bMin   Lease impact parameter 
-   * @param bMax   Largest impact parameter 
+   * @param eg      Event generator 
+   * @param runNo   Run number to simulate 
+   * @param bMin    Lease impact parameter 
+   * @param bMax    Largest impact parameter 
+   * @param nEvents Number of events 
+   * @param monitor Monitor frequency 
    */
   FastSim(const char* eg="",
-	  ULong_t runNo=0,
-	  Double_t bMin=0,
-	  Double_t bMax=20,
-	  Long64_t nEvents=0,
-	  Int_t    monitor=0)
+	  ULong_t     runNo=0,
+	  Double_t    bMin=0,
+	  Double_t    bMax=20,
+	  Long64_t    nEvents=0,
+	  Int_t       monitor=0)
     : TSelector(),
       fEGName(eg),
       fRunNo(runNo),
@@ -526,8 +528,6 @@ struct FastSim : public TSelector
   }
   /** 
    * Setup the generator etc. of the job 
-   * 
-   * @param nev Maximum number of events per file 
    * 
    * @return true on success 
    */
@@ -1426,7 +1426,9 @@ struct FastSim : public TSelector
    * @param bMin       Least impact parameter [fm]
    * @param bMax       Largest impact parameter [fm]
    * @param monitor    Monitor frequency [s]
-   * 
+   * @param verbose    Be verbose 
+   * @param overrides  GRP overrides 
+   *
    * @return true on succes
    */
   static Bool_t  LocalRun(Long64_t       nev,
@@ -1499,6 +1501,9 @@ struct FastSim : public TSelector
    * @param bMax       Largest impact parameter [fm]
    * @param monitor    Monitor frequency [s]
    * @param opt        Compilation options
+   * @param verbose    Be verbose 
+   * @param overrides  GRP overrides 
+   * @param save       Where to save
    * 
    * @return true on succes
    */
@@ -1965,10 +1970,8 @@ struct EPosSim : public FastSim
    * 
    * @param nev        Number of events
    * @param run        Run number to anchor in
-   * @param gen        Generator 
-   * @param bMin       Least impact parameter [fm]
-   * @param bMax       Largest impact parameter [fm]
    * @param monitor    Monitor frequency [s]
+   * @param verbose    Whether to be verbose 
    * 
    * @return true on succes
    */
@@ -1997,12 +2000,6 @@ struct EPosSim : public FastSim
    * Run this selector in PROOF(Lite)
    * 
    * @param url        Proof URL
-   * @param nev        Number of events
-   * @param run        Run number to anchor in
-   * @param gen        Generator 
-   * @param bMin       Least impact parameter [fm]
-   * @param bMax       Largest impact parameter [fm]
-   * @param monitor    Monitor frequency [s]
    * @param opt        Compilation options
    * 
    * @return true on succes

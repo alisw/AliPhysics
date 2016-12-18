@@ -6313,7 +6313,9 @@ void AliAnaInsideClusterInvariantMass::GetMCPrimaryKine(AliVCluster* cluster, In
     
   const UInt_t nlabels = cluster->GetNLabels();
   Int_t overpdg[nlabels];
-  noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,mesonLabel,GetReader(),overpdg);
+  Int_t overlab[nlabels];
+  noverlaps = GetMCAnalysisUtils()->GetNOverlaps(cluster->GetLabels(), nlabels,mctag,mesonLabel,
+                                                 GetReader(),overpdg,overlab);
 
   for(Int_t iover = 0; iover < noverlaps; iover++)
   {

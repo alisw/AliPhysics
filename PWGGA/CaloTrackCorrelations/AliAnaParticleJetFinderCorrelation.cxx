@@ -2469,8 +2469,10 @@ void AliAnaParticleJetFinderCorrelation::FindMCgenInfo()
 
       Int_t nprim = mcparticles->GetEntriesFast();
       for(Int_t i=0; i < nprim; i++) {
-	if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
-	AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
+        
+        if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
+
+        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);
 	pdg = prim->GetPdgCode();
 	mother=prim->GetMother();
 	//photon=22, gluon=21, quarks=(1,...,6), antiquarks=(-1,...,-6)

@@ -156,8 +156,10 @@ public:
   //SoftDrop
   void              SetSoftDropZg(Double_t d)                                 { fSoftDropZg = d                      ; }
   void              SetSoftDropdR(Double_t d)                                 { fSoftDropdR = d                      ; }
+  void              SetSoftDropPtfrac(Double_t d)                             { fSoftDropPtfrac = d                  ; }
   Double_t          GetSoftDropZg()                                     const { return fSoftDropZg                   ; }
   Double_t          GetSoftDropdR()                                     const { return fSoftDropdR                   ; }
+  Double_t          GetSoftDropPtfrac()                                 const { return fSoftDropPtfrac               ; }
 
   void              PrintGR() const;
 
@@ -225,6 +227,7 @@ protected:
 
   Double_t          fSoftDropZg;                             //!<!   SoftDrop groomed momentum fraction
   Double_t          fSoftDropdR;                             //!<!   SoftDrop deltaR
+  Double_t          fSoftDropPtfrac;                         //!<!   SoftDrop pt fraction after grooming
 };
 
 #endif

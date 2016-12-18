@@ -329,7 +329,7 @@ class AliAnalysisTaskEMCALTimeCalib : public AliAnalysisTaskSE
   TObjArray     *fBadChannelMapArray;   ///< bad channel map array
   Bool_t         fBadChannelMapSet;     ///< flag whether bad channel map is set
   Int_t          fSetBadChannelMapSource;///< switch to load BC map 0-no BC,1-OADB,2-file
-  TString        fBadChannelFileName ;  //!<! name of file with bad channels
+  TString        fBadChannelFileName ;  ///< name of file with bad channels
 
   // histograms
   TH1F          *fhcalcEvtTime;         //!<! spectrum calcolot0[0]

@@ -14,6 +14,9 @@
 #include "TObject.h"
 #include "TString.h"
 #include "AliTrigChEffOutput.h"
+#include <map>
+#include <string>
+#include <vector>
 
 class TObjArray;
 class TDirectory;
@@ -21,6 +24,7 @@ class TH1;
 class TGraphAsymmErrors;
 class TArrayI;
 class TArrayD;
+class TList;
 
 class AliMTRChEffAnalysis : public TObject {
  public:
@@ -53,8 +57,10 @@ class AliMTRChEffAnalysis : public TObject {
   Bool_t SetResultsFromGrid ( const char *runList, const char *path, const char *pattern, const char* localFileList = "localFileList.txt", const char* outDir = "", const char *directory = "MTR_ChamberEffMap", const char *outputName = "testMTRChamberEff" );
   Bool_t SetResultsFromWeb ( const char *runList, const char *path, const char* localFileList = "localFileList.txt", const char* outDir = "", const char *directory = "MTR_ChamberEffMap", const char *outputName = "testMTRChamberEff" );
 
-  Bool_t WriteMergedToOCDB ( const char* outputCDB = "CDB" ) const;
+  Bool_t WriteMergedToOCDB ( const char* outputCDB = "CDB", Bool_t writeSystematics = kFALSE ) const;
   Bool_t DrawSystematicEnvelope ( Bool_t perRPC = kFALSE ) const;
+  Bool_t BuildSystematicMap ();
+  Bool_t RecoverEfficiency ( const char* runList, const char* ocdb, const char* systOcdb, Int_t referenceRun = -1 );
 
   virtual ~AliMTRChEffAnalysis();
 
@@ -64,18 +70,20 @@ class AliMTRChEffAnalysis : public TObject {
   TArrayI BoardsInRPC ( Int_t irpc ) const;
   void CopyDir ( TDirectory *source ) const;
   Bool_t CopyLocally ( const char* runList, const char* path, const char* pattern, const char* localFileList, const char* outDir, const char* directory ) const;
-  Int_t  CompareEfficiencies ( TObjArray* effMapList, const char* titles, const char* opt, const char* canvasNameSuffix ) const;
+  Int_t  CompareEfficiencies ( TObjArray* effHistoLists, const char* titles, const char* opt, const char* canvasNameSuffix ) const;
+  TList* CloneEffHistoList ( TList* effHistos ) const;
   Bool_t ExecCommand ( TString command, Bool_t prompt ) const;
   Double_t FitRangesFunc ( Double_t* x, Double_t* par );
   Double_t GetError ( Double_t errLow, Double_t errHigh ) const;
   TList* GetEffHistoList ( AliTrigChEffOutput* trigOut, TObjArray* condition ) const;
   TH1* GetHisto ( TList* effHistoList, Int_t itype, Int_t icount, Int_t ichamber ) const;
-  TString GetIdentifier ( AliTrigChEffOutput* trigOut, TObjArray* condition, Int_t itype, Int_t icount, Int_t ichamber ) const;
-  Int_t GetIndexFromRun ( UInt_t runNumber ) const;
+  Int_t GetIndexFromRun ( Int_t runNumber ) const;
   Int_t GetRunNumber ( Int_t ipt ) const;
   TList* GetRunList ( const char* runList ) const;
+  TString GetId ( const char* condition, Int_t minRun, Int_t maxRun = -1 ) const;
 
-  Bool_t GetShortConditionTitles ( AliTrigChEffOutput* trigOut, TObjArray& condTitles ) const;
+  TString GetShortConditionTitle ( const char* conditionName ) const;
+  AliTrigChEffOutput* Namer() const;
 
   TH1* GetSum ( AliTrigChEffOutput* trigOut, TObjArray* condition, Int_t itype, Int_t icount, Int_t ichamber ) const;
 
@@ -86,6 +94,8 @@ class AliMTRChEffAnalysis : public TObject {
 
   TArrayI MergeRangesForStat ( TArrayI runRanges, Double_t averageStatError, Bool_t excludePeriphericBoards = kTRUE ) const;
 
+  TList* ReadEffHistoList ( const char* src ) const;
+
   Bool_t SetCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod, Bool_t isBasic );
 
   Bool_t SetOutList ( const char *localFileList, const char *outputName );
@@ -95,9 +105,35 @@ class AliMTRChEffAnalysis : public TObject {
   /// Dummy
   AliMTRChEffAnalysis& operator=(const AliMTRChEffAnalysis&);
 
-  TObjArray* fOutputs; ///!<! List of outputs
-  TObjArray* fConditions; ///!<! List of conditions for trigger efficiency
-  TObjArray* fMergedOutputs; ///!<! List of merged outputs
+  TObjArray* fConditions; //!<! List of conditions for trigger efficiency
+
+  mutable AliTrigChEffOutput* fNamer; //!<! Namer for histograms
+
+  class AliMTRChEffInnerObj : public TObject {
+  public:
+    AliMTRChEffInnerObj ( const char* filename, const char* outputname, Int_t minRun, Int_t maxRun = -1 );
+    virtual ~AliMTRChEffInnerObj ();
+    TString GetFilename () const { return fFilename; }
+    TString GetOutputname () const { return fOutputname; }
+    Int_t GetMinRun () const { return fMinRun; }
+    Int_t GetMaxRun () const { return fMaxRun; }
+    std::map<std::string,TList*> GetEffLists() { return fEffLists; }
+    std::vector<std::string> GetSortKeys() { return fSortKeys; }
+    TList* GetEffHistoList ( const char* condition ) const;
+    Bool_t AddEffHistoList ( const char* condition, TList* effHistoList );
+    Bool_t RemoveEffHistoList ( const char* condition );
+
+  private:
+    TString fFilename;
+    TString fOutputname;
+    Int_t fMinRun;
+    Int_t fMaxRun;
+    std::map<std::string,TList*> fEffLists;
+    std::vector<std::string> fSortKeys;
+  };
+
+  std::vector<AliMTRChEffAnalysis::AliMTRChEffInnerObj*> fRunMap; //!<! Map of internal objects per run
+  std::vector<AliMTRChEffAnalysis::AliMTRChEffInnerObj*> fMergedMap; //!<! Map of merged internal objects
 
   /// \cond CLASSIMP
   ClassDef(AliMTRChEffAnalysis, 0); // Trigger chamber efficiencies

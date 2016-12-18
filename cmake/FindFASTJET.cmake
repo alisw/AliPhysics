@@ -60,7 +60,7 @@ if(FASTJET)
     string(REGEX REPLACE "^([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" FASTJET_VERSION_MAJOR "${FASTJET_VERSION}")
     string(REGEX REPLACE "^[0-9]+\\.([0-9])+\\.[0-9]+.*" "\\1" FASTJET_VERSION_MINOR "${FASTJET_VERSION}")
     string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" FASTJET_VERSION_PATCH "${FASTJET_VERSION}")
-    
+
     if(FASTJET_VERSION_MAJOR LESS 3)
         message(FATAL_ERROR "FastJet ${FASTJET_VERSION_MAJOR}.${FASTJET_VERSION_MINOR}.${FASTJET_VERSION_PATCH} not suported: install at least >= 3.0.*")
     endif()
@@ -70,7 +70,7 @@ if(FASTJET)
     if(error)
         message(FATAL_ERROR "Error retrieving FastJet compilation flags: ${error}")
     endif(error)
-    
+
     # Extracting the include path(s?) from the CXX flags (LIST)
     set(FASTJET_INCLUDE_DIR)
     if(FASTJET_CXXFLAGS)
@@ -90,7 +90,7 @@ if(FASTJET)
     if(error)
         message(FATAL_ERROR "Error retrieving FastJet libs: ${error}")
     endif(error)
-    
+
     # Extracting the list of needed libraries during linking and the linking directory
     set(FASTJET_LIBS)
     set(FASTJET_LIBS_DIR)
@@ -200,12 +200,17 @@ if(FASTJET)
     set(FASTJET_FOUND TRUE)
     set(FASTJET_DEFINITIONS "-DHAVE_FASTJET")
 
-    # ROOT 6+: additional options required for dictionary generation.
     if(ROOT_VERSION_MAJOR GREATER 5)
+        # ROOT 6+: additional options required for dictionary generation.
         set(FASTJET_ROOTDICT_OPTS "-I${FASTJET_INCLUDE_DIR}")
         foreach(fjl ${fjlibs};${fjextralibs})
             set(FASTJET_ROOTDICT_OPTS "${FASTJET_ROOTDICT_OPTS} -rml lib${fjl}")
         endforeach()
+    else(ROOT_VERSION_MAJOR GREATER 5)
+        if(NOT FASTJET_VERSION VERSION_LESS "3.2.0")
+            # Disable some C++11 constructs on ROOT 5 and FastJet >= 3.2.0
+            set(FASTJET_ROOTDICT_OPTS "${FASTJET_ROOTDICT_OPTS} -Doverride=")
+        endif()
     endif(ROOT_VERSION_MAJOR GREATER 5)
 
     message(STATUS "FastJet options for ROOT dictionary generation: ${FASTJET_ROOTDICT_OPTS}")

@@ -13,6 +13,12 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+#include "AliAnalysisManager.h"
+#include "AliVEventHandler.h"
+#include "AliMCEventHandler.h"
+#include "AliHFTrackContainer.h"
+#include "AliHFAODMCParticleContainer.h"
+
 #include "AliAnalysisTaskDmesonJetsDetectorResponse.h"
 
 // Definitions of class AliAnalysisTaskDmesonJetsDetectorResponse::AliDmesonMatchInfoSummary
@@ -176,6 +182,7 @@ TTree* AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::BuildTree(cons
   TString classname;
   switch (fCandidateType) {
   case kD0toKpi:
+  case kD0toKpiLikeSign:
     classname = "AliAnalysisTaskDmesonJetsDetectorResponse::AliD0MatchInfoSummary";
     fCurrentDmeson = new AliD0MatchInfoSummary();
     break;
@@ -209,7 +216,7 @@ TTree* AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::BuildTree(cons
 ///
 /// \param applyKinCuts Whether kinematic cuts should be applied
 /// \return Always kTRUE.
-Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_t applyKinCuts)
+Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_t applyKinCuts, Bool_t findNoDMesonRecoJets)
 {
   fRecontructed->FillQA(applyKinCuts);
   fGenerated->FillQA(applyKinCuts);
@@ -231,12 +238,16 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
     // Copy the reconstructed D meson information in the tree branch
     fCurrentDmeson->SetReconstructed(dmeson_reco.second);
 
+    Int_t accRecJets = 0;
+    Int_t accGenJets = 0;
+
     // Copy the reconstructed jet information in the tree branch
     for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
       AliJetInfo* jet = dmeson_reco.second.GetJet(fRecontructed->GetJetDefinitions()[ij].GetName());
       if (!jet) continue;
       if (applyKinCuts && !fRecontructed->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) continue;
       fCurrentJetInfoReco[ij]->Set(dmeson_reco.second, fRecontructed->GetJetDefinitions()[ij].GetName());
+      accRecJets++;
     }
 
     // Look for the generated D meson counterpart
@@ -248,18 +259,24 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
         dmeson_truth.second.fReconstructed = kTRUE;
         // Copy the generated D meson information in the tree branch
         fCurrentDmeson->SetGenerated((*it).second);
+
         // Copy the reconstructed jet information in the tree branch
         for (UInt_t ij = 0; ij < fGenerated->GetJetDefinitions().size(); ij++) {
           AliJetInfo* jet = dmeson_truth.second.GetJet(fGenerated->GetJetDefinitions()[ij].GetName());
           if (!jet) continue;
+          if (!applyKinCuts || fGenerated->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) accGenJets++;
           fCurrentJetInfoTruth[ij]->Set(dmeson_truth.second, fGenerated->GetJetDefinitions()[ij].GetName());
         }
       }
     }
 
     // Fill the tree with the current D meson
-    fTree->Fill();
+    if (accRecJets > 0 || accGenJets > 0) fTree->Fill();
   }
+
+  // Reset jet tree branches
+  for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) fCurrentJetInfoReco[ij]->Reset();
+  for (UInt_t ij = 0; ij < fGenerated->GetJetDefinitions().size(); ij++) fCurrentJetInfoTruth[ij]->Reset();
 
   // Loop over generated D meson that were not reconstructed
   for (auto& dmeson_truth : truthDmesons) {
@@ -269,6 +286,10 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
     if (dmeson_truth.second.fReconstructed) continue;
     // Copy the generated D meson information in the tree branch
     fCurrentDmeson->SetGenerated(dmeson_truth.second);
+
+    Int_t accRecJets = 0;
+    Int_t accGenJets = 0;
+
     // Copy the reconstructed jet information in the tree branch
     for (UInt_t ij = 0; ij < fGenerated->GetJetDefinitions().size(); ij++) {
       fCurrentJetInfoTruth[ij]->Reset();
@@ -276,22 +297,26 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::ResponseEngine::FillTree(Bool_
       if (!jet) continue;
       if (applyKinCuts && !fGenerated->GetJetDefinitions()[ij].IsJetInAcceptance(*jet)) continue;
       fCurrentJetInfoTruth[ij]->Set(dmeson_truth.second, fGenerated->GetJetDefinitions()[ij].GetName());
+      accGenJets++;
     }
 
     // Check if a matched reconstructed jet can be found and copy the reconstructed jet information in the tree branch
-    for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
-      // Reset reconstructed jet tree branch
-      fCurrentJetInfoReco[ij]->Reset();
-      // Look for a matched reconstructed jet
-      AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair jet = fRecontructed->FindJetMacthedToGeneratedDMeson(dmeson_truth.second, fRecontructed->GetJetDefinitions()[ij], fRecontructed->GetJetDefinitions()[ij].GetRadius() * fMaxJetDmesonDistance, applyKinCuts);
-      if (!jet.first) continue;
-      // Copy reconstructed jet information in the tree branch
-      fCurrentJetInfoReco[ij]->Set(*(jet.first));
-      fCurrentJetInfoReco[ij]->fR = jet.second;
+    if (findNoDMesonRecoJets) {
+      for (UInt_t ij = 0; ij < fRecontructed->GetJetDefinitions().size(); ij++) {
+        // Reset reconstructed jet tree branch
+        fCurrentJetInfoReco[ij]->Reset();
+        // Look for a matched reconstructed jet
+        AliAnalysisTaskDmesonJets::AnalysisEngine::jet_distance_pair jet = fRecontructed->FindJetMacthedToGeneratedDMeson(dmeson_truth.second, fRecontructed->GetJetDefinitions()[ij], fRecontructed->GetJetDefinitions()[ij].GetRadius() * fMaxJetDmesonDistance, applyKinCuts);
+        if (!jet.first) continue;
+        // Copy reconstructed jet information in the tree branch
+        fCurrentJetInfoReco[ij]->Set(*(jet.first));
+        fCurrentJetInfoReco[ij]->fR = jet.second;
+        accRecJets++;
+      }
     }
 
     // Fill the tree with the current D meson
-    fTree->Fill();
+    if (accRecJets > 0 || accGenJets > 0) fTree->Fill();
   }
 
   return kTRUE;
@@ -306,6 +331,7 @@ ClassImp(AliAnalysisTaskDmesonJetsDetectorResponse);
 /// This is the default constructor, used for ROOT I/O purposes.
 AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResponse() :
   AliAnalysisTaskDmesonJets(),
+  fFindRecoJetsForLostDMesons(kFALSE),
   fResponseEngines()
 {
   fOutputType = kNoOutput;
@@ -316,6 +342,7 @@ AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResp
 /// \param name Name of the task
 AliAnalysisTaskDmesonJetsDetectorResponse::AliAnalysisTaskDmesonJetsDetectorResponse(const char* name, Int_t nOutputTrees) :
   AliAnalysisTaskDmesonJets(name, nOutputTrees),
+  fFindRecoJetsForLostDMesons(kFALSE),
   fResponseEngines()
 {
   fOutputType = kNoOutput;
@@ -384,14 +411,14 @@ Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::Run()
 Bool_t AliAnalysisTaskDmesonJetsDetectorResponse::FillHistograms()
 {
   for (auto &resp : fResponseEngines) {
-
     if (resp.second.IsInhibit()) continue;
 
-    resp.second.FillTree(fApplyKinematicCuts);
+    resp.second.FillTree(fApplyKinematicCuts, fFindRecoJetsForLostDMesons);
 
     PostDataFromResponseEngine(resp.second);
   }
 
+  if (fMCContainer) FillPartonLevelHistograms();
   return kTRUE;
 
 }
@@ -424,3 +451,112 @@ Int_t AliAnalysisTaskDmesonJetsDetectorResponse::PostDataFromResponseEngine(cons
     return -1;
   }
 }
+
+/// Create an instance of this class and add it to the analysis manager
+///
+/// \param ntracks name of the track collection
+/// \param nclusters name of the calorimeter cluster collection
+/// \param nMCpart name of the MC particle collection
+/// \param nMaxTrees number of output trees
+/// \param suffix additional suffix that can be added at the end of the task name
+/// \return pointer to the new AliAnalysisTaskDmesonJets task
+AliAnalysisTaskDmesonJetsDetectorResponse* AliAnalysisTaskDmesonJetsDetectorResponse::AddTaskDmesonJetsDetectorResponse(TString trackName, TString clusName, TString mcPartName, Int_t nMaxTrees, TString suffix)
+{
+  // Get the pointer to the existing analysis manager via the static access method.
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddTaskDmesonJetsDetectorResponse", "No analysis manager to connect to.");
+    return 0;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler) {
+    ::Error("AddTaskDmesonJetsDetectorResponse", "This task requires an input event handler");
+    return 0;
+  }
+
+  EDataType_t dataType = kUnknownDataType;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  // Init the task and do settings
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  if (mcPartName == "usedefault") {
+    mcPartName = "mcparticles"; // Always needs AliAODMCParticle objects
+  }
+
+  TString name("AliAnalysisTaskDmesonJetsDetectorResponse");
+  if (!suffix.IsNull()) {
+    name += TString::Format("_%s", suffix.Data());
+  }
+
+  AliAnalysisTaskDmesonJetsDetectorResponse* jetTask = new AliAnalysisTaskDmesonJetsDetectorResponse(name, nMaxTrees);
+  jetTask->SetVzRange(-10,10);
+
+  if (!trackName.IsNull()) {
+    AliHFTrackContainer* trackCont = new AliHFTrackContainer(trackName);
+    jetTask->AdoptParticleContainer(trackCont);
+  }
+
+  if (!mcPartName.IsNull()) {
+    AliMCParticleContainer* partCont = new AliHFAODMCParticleContainer(mcPartName);
+    partCont->SetEtaLimits(-1.5, 1.5);
+    partCont->SetPtLimits(0, 1000);
+    jetTask->AdoptParticleContainer(partCont);
+  }
+
+  jetTask->AddClusterContainer(clusName);
+
+  // Final settings, pass to manager and set the containers
+  mgr->AddTask(jetTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer* cinput1 = mgr->GetCommonInputContainer();
+  TString contname1(name);
+  contname1 += "_histos";
+  AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(contname1.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s", AliAnalysisManager::GetCommonFileName()));
+
+  mgr->ConnectInput(jetTask, 0, cinput1);
+  mgr->ConnectOutput(jetTask, 1, coutput1);
+
+  for (Int_t i = 0; i < nMaxTrees; i++) {
+    TString contname = TString::Format("%s_tree_%d", name.Data(), i);
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer(contname.Data(),
+        TTree::Class(),AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput(jetTask, 2+i, coutput);
+  }
+  return jetTask;
+}
+

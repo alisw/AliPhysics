@@ -181,6 +181,7 @@ struct FastMonitor : public TObject, public TQObject
    * not the actual object to draw.
    * 
    * @param descr 
+   * @param proof  IF true, register for Proof(Lite)
    */
   void Register(TObject* descr, Bool_t proof=true)
   {
@@ -189,10 +190,10 @@ struct FastMonitor : public TObject, public TQObject
   /** 
    * Prepare a draw 
    * 
-   * @param c      List to add to 
    * @param name   Name (path) of object 
    * @param title  Drawing options  
    * @param flags  Flags 
+   * @param proof  Register for proof 
    */
   void Register(const char* name,
 		const char* title="",
@@ -278,8 +279,6 @@ struct FastMonitor : public TObject, public TQObject
 protected:
   /** 
    * Setup canvas, and registered object
-   * 
-   * @param names Names of objects to monitor 
    */
   Bool_t SetupCanvas()
   {
@@ -353,8 +352,11 @@ protected:
   /** 
    * Draw an object.
    * 
-   * @param o 
-   * @param same 
+   * @param o       Object to draw 
+   * @param opt     Options 
+   * @param scale   Scalar 
+   * @param nostats Do not show stats 
+   * @param same    Draw on current canvas 
    */
   void DrawObject(TObject*  o,
 		  Option_t* opt,

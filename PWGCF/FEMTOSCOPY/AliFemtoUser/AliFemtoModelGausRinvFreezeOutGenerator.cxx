@@ -121,8 +121,10 @@ void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   Double_t tPt = sqrt(tPx*tPx + tPy*tPy);
   Double_t tMt = sqrt(tEs*tEs - tPz*tPz);
 
-  if (!(tPx==0 && tPy==0 && tPz==0 )) {
-
+  //was: if (!(tPx==0 && tPy==0 && tPz==0 )) {
+  //Oct 2016: to be sure Pt and Mt are not equal zero:
+  if (tPt!=0 && tMt!=0 && tEs!=0 && tPt!=tMt && tPz!=tEs){
+ 
   // Generate positions in PRF from a Gaussian
   Double_t tROutS =  fRandom->Gaus(0,fSizeInv); // reuse of long
   Double_t tRSideS = fRandom->Gaus(0,fSizeInv);

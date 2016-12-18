@@ -1,45 +1,34 @@
-// Class for cutting on event information
+// Class for cutting on ALICE Var manager and other event specific information
 // Author: Ionut-Cristian Arsene (iarsene@cern.ch)
-//   10/09/2015
+//   07/09/2016
 
 #ifndef ALIREDUCEDEVENTCUT_H
 #define ALIREDUCEDEVENTCUT_H
 
-#include "AliReducedInfoCut.h"
+#include "AliReducedVarCut.h"
+#include "AliReducedVarManager.h"
 
 //_________________________________________________________________________
-class AliReducedEventCut : public AliReducedInfoCut {
+class AliReducedEventCut : public AliReducedVarCut {
 
  public:
   AliReducedEventCut();
   AliReducedEventCut(const Char_t* name, const Char_t* title);
   virtual ~AliReducedEventCut();
+
+  void AddEventTagFilter(ULong64_t filter) {fEventFilter |= filter; fEventTagFilterEnabled = kTRUE;};
+  void AddEventTagFilterBit(UShort_t bit)  {if(bit>63) return; fEventFilter |= (ULong64_t(1)<<bit); fEventTagFilterEnabled = kTRUE;};
+  void EnableVertexDistanceCut()  {fEventFilter |= (ULong64_t(1)<<13); fEventTagFilterEnabled = kTRUE;};
   
   virtual Bool_t IsSelected(TObject* obj);
-  
-  void SetEventTagMask(ULong64_t mask) {fEventTagMask = mask; fCutOnEventTag=kTRUE;}
-  void SetTriggerMask(ULong64_t mask) {fTriggerMask = mask; fCutOnTriggerMask=kTRUE;}
-  void SetVertexZRange(Float_t min, Float_t max) {fVertexZRange[0]=min; fVertexZRange[1]=max; fCutOnVertexZ=kTRUE;}
-  void SetCentVZERORange(Float_t min, Float_t max) {fCentVZERORange[0]=min; fCentVZERORange[1]=max; fCutOnCentralityVZERO = kTRUE;}
-  void SetCutOnPhysicsSelection(Bool_t cut) {fCutOnPhysicsSelection=cut;}
+  virtual Bool_t IsSelected(TObject* obj, Float_t* values);
   
  protected: 
+      
+  // Cuts on event specific quantities
+  Bool_t         fEventTagFilterEnabled;           // if true apply the filter to the event tag 
+  ULong64_t  fEventFilter;                             // filter for the event tag map
    
-  ULong64_t fEventTagMask;
-  Bool_t    fCutOnEventTag;
-  
-  ULong64_t fTriggerMask;
-  Bool_t    fCutOnTriggerMask;
-  
-  Float_t   fVertexZRange[2];
-  Bool_t    fCutOnVertexZ;
-  
-  Float_t   fCentVZERORange[2];
-  Bool_t    fCutOnCentralityVZERO;
-  
-  Bool_t    fCutOnPhysicsSelection;
-  
-  
   AliReducedEventCut(const AliReducedEventCut &c);
   AliReducedEventCut& operator= (const AliReducedEventCut &c);
   

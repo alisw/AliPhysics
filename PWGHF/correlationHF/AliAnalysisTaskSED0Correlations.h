@@ -58,6 +58,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetSoftPiFlag(Bool_t piflag) {fSoftPiCut=piflag;}
   void SetMEAxisThresh(Bool_t methresh) {fMEAxisThresh=methresh;}
   void SetKaonCorrelations(Bool_t kaonCorr) {fKaonCorr=kaonCorr;}
+  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
 
   Int_t  GetReadMC() const {return fReadMC;}
   Int_t  GetMCReconstructedTracks() const {return fRecoTr;}
@@ -114,7 +115,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void CreateCorrelationsObjs();
   void CalculateCorrelations(AliAODRecoDecayHF2Prong* d, Int_t labD0=-1, TClonesArray* mcArray=0x0);
   void CalculateCorrelationsMCKine(AliAODMCParticle* d, TClonesArray* mcArray=0x0);
-  void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origD0, Int_t PdgD0, AliReducedParticle* track, Int_t ptbin, Int_t type, Double_t wg=1.);
+  void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origD0, Int_t PdgD0, AliReducedParticle* track, Int_t ptbin, Int_t type, Int_t softpiME, Double_t wg=1.);
   Int_t CheckTrackOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* mcArray) const;
   Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
@@ -183,6 +184,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
 
   Bool_t    fFillTrees;			// Flag to fill ME offline trees
   Double_t  fFractAccME;		// Fraction of tracks to be accepted in the ME offline
+  Int_t     fAODProtection;  	        // flag to activate protection against AOD-dAOD mismatch.
 
   AliHFCorrelationBranchD   *fBranchD;
   AliHFCorrelationBranchTr  *fBranchTr;
@@ -192,7 +194,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   TObjArray *fTrackArray;		// Array with selected tracks for association
   Bool_t    fTrackArrayFilled;		// Flag to fill fTrackArray or not (if already filled)
 
-  ClassDef(AliAnalysisTaskSED0Correlations,11); // AliAnalysisTaskSE for D0->Kpi - h correlations
+  ClassDef(AliAnalysisTaskSED0Correlations,12); // AliAnalysisTaskSE for D0->Kpi - h correlations
 };
 
 #endif

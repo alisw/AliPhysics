@@ -9,9 +9,10 @@
 #endif
 
 
-//const Double_t centBinsMultV0M[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
-const Double_t centBinsMultV0M[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
-const Double_t centBinsMultRef[] = {0., 1., 4., 7., 10., 15., 20., 25., 30., 40., 50., 60., 70., 100., 200.};
+const Double_t centBinsMultV0MSPD[] = {1e-10, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
+const Double_t centBinsMultV0M[] =   {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
+const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
+const Double_t centBinsMultRef[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
 const Double_t centBinsMB[] = {0., 100.};
 
 
@@ -49,7 +50,12 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
                           float  ovlPhiCut   = 0.005,
                           float  ovlZetaCut  = 0.05,
                           Bool_t checkReconstructables = kFALSE,
-                          UInt_t trigSel = AliVEvent::kINT7//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
+                          UInt_t trigSel = AliVEvent::kINT7,//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
+                          Bool_t ridgeBins      = kFALSE,             // VOM percentiles with ridge binning
+                          Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
+                          Int_t BCmod4      = 2              // set Bunch crossing mode 4
+
+
 )
 {
 
@@ -92,7 +98,6 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
     mgr->AddTask(task);
     mgr->ConnectInput(task, 0, inputc);
     mgr->ConnectOutput(task, 1, outputc1);
-
     //__________________________________________________________________
     //__________________________________________________________________
     //__________________________________________________________________
@@ -107,20 +112,45 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
     task->SetUseCentralityVar(useCentVar);
 
     const Double_t *centBins = NULL;
+    //const Float_t *centBins = NULL;
+
     Int_t nCentBins = 0;
     TString strCentr = useCentVar;
     if (strCentr == "MB"){
       centBins = centBinsMB;
       nCentBins = sizeof(centBinsMB) / 8 - 1;
     }
+    else if (strCentr == "V0M" && ridgeBins){
+      centBins = centBinsMultV0M_Ridge;
+      nCentBins = sizeof(centBinsMultV0M_Ridge) / 8 - 1;
+    }
     else if (strCentr == "V0M" || strCentr == "V0av"){
       centBins = centBinsMultV0M;
       nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
     }
-    else if(strCentr == "Ref"){
+    else if(strCentr == "RefMult08"){
       centBins = centBinsMultRef;
       nCentBins = sizeof(centBinsMultRef) / 8 - 1;
     }
+    else if(strCentr == "SPDClusters1"){
+      centBins = centBinsMultV0MSPD;
+      nCentBins = sizeof(centBinsMultV0MSPD) / 8 - 1;
+    }
+    else if(strCentr == "CL0"){
+      centBins = centBinsMultV0M;
+      nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
+    }
+    else if(strCentr == "SPDTracklets08"){
+      centBins = centBinsMultV0M;
+      nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
+    }
+    else if(strCentr == "SPDTracklets08to15"){
+      centBins = centBinsMultV0M;
+      nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
+    }
+
+
+
 
     task->SetCentPercentiles(centBins, nCentBins);
     task->SetTriggerSelection(trigSel);
@@ -150,6 +180,10 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
     task->SetPhiRot(phiRot);
     task->SetInjScale(injScale);
     task->SetRemoveOverlaps(remOvl);
+    task->SetUseBCMod(useBCmod);
+    task->SetBCMod(BCmod4);
+
+
     //
     //    task->Dump();
     return task;

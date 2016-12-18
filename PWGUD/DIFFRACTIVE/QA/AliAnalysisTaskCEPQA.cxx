@@ -502,7 +502,7 @@ Bool_t AliAnalysisTaskCEPQA::FilterEvent()
   isaccepted = isaccepted && fisMBOR;
   
   // primary vertex cut
-  isaccepted = isaccepted && (abs(fVposz)<100.);
+  isaccepted = isaccepted && (TMath::Abs(fVposz)<100.);
   
   // pileup
   isaccepted = isaccepted && (!fisPileup);

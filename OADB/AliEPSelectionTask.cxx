@@ -15,7 +15,7 @@
 
 //*****************************************************
 //   Class AliEPSelectionTask
-//   Class to determine event plane            
+//   Class to determine event plane
 //   author: Alberica Toia, Johanna Gramling
 //*****************************************************
 
@@ -58,6 +58,7 @@
 #include "AliAODMCHeader.h"
 #include "AliAODTrack.h"
 #include "AliVTrack.h"
+#include "AliMultSelection.h"
 #include "AliEventplane.h"
 
 using std::cout;
@@ -94,7 +95,7 @@ AliAnalysisTaskSE(),
   fEventplaneQ(0),
   fQsub1(0),
   fQsub2(0),
-  fQsubRes(0),  
+  fQsubRes(0),
   fOutputList(0),
   fHOutEventplaneQ(0),
   fHOutPhi(0),
@@ -104,7 +105,7 @@ AliAnalysisTaskSE(),
   fHOutPTPsi(0),
   fHOutDiff(0),
   fHOutleadPTPsi(0)
-{   
+{
   // Default constructor
   AliInfo("Event Plane Selection enabled.");
   for(Int_t i = 0; i < 4; ++i) {
@@ -124,7 +125,7 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
   fCentrality(-1.),
   fUseMCRP(kFALSE),
   fUsePhiWeight(kFALSE),
-  fUsePtWeight(kFALSE),  
+  fUsePtWeight(kFALSE),
   fUseRecentering(kFALSE),
   fSaveTrackContribution(kFALSE),
   fUserphidist(kFALSE),
@@ -166,11 +167,11 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
      fQDist[i] = 0;
   }
 }
- 
+
 //________________________________________________________________________
 AliEPSelectionTask::~AliEPSelectionTask()
 {
-  // Destructor  
+  // Destructor
   if (fOutputList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
       delete fOutputList;
       fOutputList = 0;
@@ -206,11 +207,11 @@ AliEPSelectionTask::~AliEPSelectionTask()
       }
     }
   }
-}  
+}
 
 //________________________________________________________________________
 void AliEPSelectionTask::UserCreateOutputObjects()
-{  
+{
   // Create the output containers
   if (fDebug>1) printf("AliEPSelectionTask::UserCreateOutputObjects() \n");
   AliLog::SetClassDebugLevel("AliEPSelectionTask", AliLog::kInfo);
@@ -234,47 +235,47 @@ void AliEPSelectionTask::UserCreateOutputObjects()
   fOutputList->Add(fHOutPTPsi);
   fOutputList->Add(fHOutleadPTPsi);
   fOutputList->Add(fHOutDiff);
-  
-  PostData(1, fOutputList); 
+
+  PostData(1, fOutputList);
 
 
 }
 
 //________________________________________________________________________
 void AliEPSelectionTask::UserExec(Option_t */*option*/)
-{ 
+{
   // Execute analysis for current event:
   if (fDebug>1) printf(" **** AliEPSelectionTask::UserExec() \n");
-  
+
 //   fRunNumber = -15;
- 
+
   AliEventplane *esdEP;
   TVector2 qq1;
   TVector2 qq2;
   Double_t fRP = 0.; // monte carlo reaction plane angle
-    
+
   if (fAnalysisInput.CompareTo("ESD")==0){
 
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
-    if (esd){    
+    if (esd){
       if (!(fRunNumber == esd->GetRunNumber())) {
 	  fRunNumber = esd->GetRunNumber();
           AliInfo(Form("Changing Phi-distribution to run %d",fRunNumber));
           SetOADBandPeriod();
-	  SetPhiDist();      
+	  SetPhiDist();
 	  SetQvectorDist(); // recentring objects
       }
-      
-      
+
+
       if (fUseMCRP) {
-	  AliMCEvent* mcEvent  = MCEvent();      
+	  AliMCEvent* mcEvent  = MCEvent();
 	  if (mcEvent && mcEvent->GenEventHeader()) {
 	      AliGenHijingEventHeader* headerH = dynamic_cast<AliGenHijingEventHeader*>(mcEvent->GenEventHeader());
 	      if (headerH) fRP = headerH->ReactionPlaneAngle();
 	  }
       }
-      
+
       esdEP = esd->GetEventplane();
       if (fSaveTrackContribution) {
 	esdEP->GetQContributionXArray()->Set(esd->GetNumberOfTracks());
@@ -284,35 +285,35 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
         esdEP->GetQContributionXArraysub2()->Set(esd->GetNumberOfTracks());
 	esdEP->GetQContributionYArraysub2()->Set(esd->GetNumberOfTracks());
       }
-      
+
       TObjArray* tracklist = new TObjArray;
       if (fTrackType.CompareTo("GLOBAL")==0) tracklist = fESDtrackCuts->GetAcceptedTracks(esd,kFALSE);
       if (fTrackType.CompareTo("TPC")==0 && fPeriod.CompareTo("LHC10h")==0) tracklist = fESDtrackCuts->GetAcceptedTracks(esd,kTRUE);
       else if (fTrackType.CompareTo("TPC")==0 && fPeriod.CompareTo("LHC11h")==0) tracklist = GetTracksForLHC11h(esd);
       const int nt = tracklist->GetEntries();
-      
+
       if (nt>4){
 
 	// qvector full event
 	fQVector = new TVector2(GetQ(esdEP,tracklist));
-	fEventplaneQ = fQVector->Phi()/2; 
+	fEventplaneQ = fQVector->Phi()/2;
 	// q vector subevents
 	GetQsub(qq1, qq2, tracklist, esdEP);
 	fQsub1 = new TVector2(qq1);
 	fQsub2 = new TVector2(qq2);
 	fQsubRes = (fQsub1->Phi()/2 - fQsub2->Phi()/2);
-	
+
 	esdEP->SetQVector(fQVector);
 	esdEP->SetEventplaneQ(fEventplaneQ);
 	esdEP->SetQsub(fQsub1,fQsub2);
 	esdEP->SetQsubRes(fQsubRes);
-	
+
 	fHOutEventplaneQ->Fill(fEventplaneQ);
 	fHOutsub1sub2->Fill(fQsub1->Phi()/2,fQsub2->Phi()/2);
 	fHOutNTEPRes->Fill(nt,fQsubRes);
 
 	if (fUseMCRP) fHOutDiff->Fill(fEventplaneQ, fRP);
-	
+
 	for (int iter = 0; iter<nt;iter++){
 	  AliESDtrack* track = dynamic_cast<AliESDtrack*> (tracklist->At(iter));
 	  if (track) {
@@ -321,36 +322,39 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	    while (delta > TMath::Pi()) delta -= TMath::Pi();
 	    fHOutPTPsi->Fill(track->Pt(),delta);
 	    fHOutPhi->Fill(track->Phi());
-	    fHOutPhiCorr->Fill(track->Phi(),GetPhiWeight(track)); 
+	    fHOutPhiCorr->Fill(track->Phi(),GetPhiWeight(track));
           }
 	}
-	
+
 	AliESDtrack* trmax = esd->GetTrack(0);
 	for (int iter = 1; iter<nt;iter++){
 	  AliESDtrack* track = dynamic_cast<AliESDtrack*> (tracklist->At(iter));
 	  if (track && (track->Pt() > trmax->Pt())) trmax = track;
 	}
-	fHOutleadPTPsi->Fill(trmax->Phi(),fEventplaneQ);      
+	fHOutleadPTPsi->Fill(trmax->Phi(),fEventplaneQ);
       }
       tracklist->Clear();
       delete tracklist;
       tracklist = 0;
     }
   }
-  
+
     else if (fAnalysisInput.CompareTo("AOD")==0){
     AliVEvent* event = InputEvent();
     AliAODEvent* aod = dynamic_cast<AliAODEvent*>(event);
 
     if (aod){
-
       // get centrality of the event
       AliAODHeader *header=dynamic_cast<AliAODHeader*>(aod->GetHeader());
       if(!header) AliFatal("Not a standard AOD");
-      AliCentrality *centrality=header->GetCentralityP();
-      if(!centrality)  AliError(Form("No AliCentrality attached to AOD header"));
-      fCentrality = centrality->GetCentralityPercentile("V0M");
-
+      if(AliMultSelection *multSelection = (AliMultSelection*)event->FindListObject("MultSelection")){
+        fCentrality = multSelection->GetMultiplicityPercentile("V0M",kFALSE);
+      }
+      else{
+        AliCentrality *centrality=header->GetCentralityP();
+        if(!centrality)  AliError(Form("No AliCentrality attached to AOD header"));
+        fCentrality = centrality->GetCentralityPercentile("V0M");
+      }
       if (!(fRunNumber == aod->GetRunNumber())) {
         fRunNumber = aod->GetRunNumber();
         AliInfo(Form("Changing Phi-distribution to run %d",fRunNumber));
@@ -363,14 +367,14 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	AliAODMCHeader *headerH = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 	if (headerH) fRP = headerH->GetReactionPlaneAngle();
       }
-  
+
       esdEP = header->GetEventplaneP();
       if(!esdEP) return; // protection against missing EP branch (nanoAODs)
-      esdEP->Reset(); 
-     
+      esdEP->Reset();
+
       Int_t maxID = 0;
       TObjArray* tracklist = GetAODTracksAndMaxID(aod,maxID);
-	
+
       if (fSaveTrackContribution) {
 	esdEP->GetQContributionXArray()->Set(maxID+1);
 	esdEP->GetQContributionYArray()->Set(maxID+1);
@@ -379,14 +383,14 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	esdEP->GetQContributionXArraysub2()->Set(maxID+1);
 	esdEP->GetQContributionYArraysub2()->Set(maxID+1);
       }
-	
+
       const int NT = tracklist->GetEntries();
-      
+
       if (NT>4){
 
 	// qvector full event
 	fQVector = new TVector2(GetQ(esdEP,tracklist));
-	fEventplaneQ = fQVector->Phi()/2; 
+	fEventplaneQ = fQVector->Phi()/2;
 	// q vector subevents
 	GetQsub(qq1, qq2, tracklist, esdEP);
 	fQsub1 = new TVector2(qq1);
@@ -397,13 +401,13 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	esdEP->SetEventplaneQ(fEventplaneQ);
 	esdEP->SetQsub(fQsub1,fQsub2);
 	esdEP->SetQsubRes(fQsubRes);
-	
+
 	fHOutEventplaneQ->Fill(fEventplaneQ);
 	fHOutsub1sub2->Fill(fQsub1->Phi()/2.,fQsub2->Phi()/2.);
 	fHOutNTEPRes->Fill(NT,fQsubRes);
-	
+
 	if (fUseMCRP) fHOutDiff->Fill(fEventplaneQ, fRP);
-	
+
 	for (int iter = 0; iter<NT;iter++){
 	  AliAODTrack* track = dynamic_cast<AliAODTrack*> (tracklist->At(iter));
 	  if (track) {
@@ -415,28 +419,28 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
 	    fHOutPhiCorr->Fill(track->Phi(),GetPhiWeight(track));
 	  }
 	}
-	
+
 	AliAODTrack* trmax = dynamic_cast<AliAODTrack*>(aod->GetTrack(0));
 	if(!trmax) AliFatal("Not a standard AOD");
 	for (int iter = 1; iter<NT;iter++){
 	  AliAODTrack* track = dynamic_cast<AliAODTrack*> (tracklist->At(iter));
 	  if (track && (track->Pt() > trmax->Pt())) trmax = track;
 	}
-	fHOutleadPTPsi->Fill(trmax->Phi(),fEventplaneQ);      
-      }     
+	fHOutleadPTPsi->Fill(trmax->Phi(),fEventplaneQ);
+      }
       delete tracklist;
       tracklist = 0;
-    }	
-	
-    
-  }  
+    }
 
-  
+
+  }
+
+
   else {
     printf(" Analysis Input not known!\n\n ");
     return;
   }
-  PostData(1, fOutputList); 
+  PostData(1, fOutputList);
 }
 
 //________________________________________________________________________
@@ -467,7 +471,7 @@ TVector2 AliEPSelectionTask::GetQ(AliEventplane* EP, TObjArray* tracklist)
     if (track) {
       weight = GetWeight(track);
     if (fSaveTrackContribution){
-      idtemp = track->GetID(); 
+      idtemp = track->GetID();
       if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
       EP->GetQContributionXArray()->AddAt(weight*cos(2*track->Phi())/rms[0],idtemp);
       EP->GetQContributionYArray()->AddAt(weight*sin(2*track->Phi())/rms[1],idtemp);
@@ -479,7 +483,7 @@ TVector2 AliEPSelectionTask::GetQ(AliEventplane* EP, TObjArray* tracklist)
   mQ.Set(mQx-(mean[0]/rms[0]), mQy-(mean[1]/rms[1]));
   return mQ;
 }
-  
+
   //________________________________________________________________________
 void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklist,AliEventplane* EP)
 {
@@ -494,21 +498,21 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
 
   AliVTrack* track;
   TRandom2 rn = 0;
-  
+
   int nt = tracklist->GetEntries();
   int trackcounter1=0, trackcounter2=0;
   int idtemp = 0;
 
   if (fSplitMethod == AliEPSelectionTask::kRandom){
-    
+
     for (Int_t i = 0; i < nt; i++) {
       weight = 1;
       track = dynamic_cast<AliVTrack*> (tracklist->At(i));
       if (!track) continue;
       weight = GetWeight(track);
-      idtemp = track->GetID(); 
+      idtemp = track->GetID();
       if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
-    
+
       // This loop splits the track set into 2 random subsets
       if( trackcounter1 < int(nt/2.) && trackcounter2 < int(nt/2.)){
         float random = rn.Rndm();
@@ -551,17 +555,17 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
       }
     }
   } else if (fSplitMethod == AliEPSelectionTask::kEta) {
-     
+
     for (Int_t i = 0; i < nt; i++) {
       weight = 1;
       track = dynamic_cast<AliVTrack*> (tracklist->At(i));
       if (!track) continue;
       weight = GetWeight(track);
       Double_t eta = track->Eta();
-      idtemp = track->GetID(); 
+      idtemp = track->GetID();
       if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
 
-      if (eta > fEtaGap/2.) {  
+      if (eta > fEtaGap/2.) {
         mQx1 += (weight*cos(2*track->Phi())/rms[0]);
         mQy1 += (weight*sin(2*track->Phi())/rms[1]);
         if (fSaveTrackContribution){
@@ -578,17 +582,17 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
       }
     }
   } else if (fSplitMethod == AliEPSelectionTask::kCharge) {
-     
+
     for (Int_t i = 0; i < nt; i++) {
       weight = 1;
       track = dynamic_cast<AliVTrack*> (tracklist->At(i));
       if (!track) continue;
       weight = GetWeight(track);
       Short_t cha = track->Charge();
-      idtemp = track->GetID(); 
+      idtemp = track->GetID();
       if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
 
-      if (cha > 0) {  
+      if (cha > 0) {
         mQx1 += (weight*cos(2*track->Phi())/rms[0]);
         mQy1 += (weight*sin(2*track->Phi())/rms[1]);
         if (fSaveTrackContribution){
@@ -617,30 +621,30 @@ void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklis
 
 //________________________________________________________________________
 void AliEPSelectionTask::SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts){
-  
-  if(fESDtrackCuts){ 
+
+  if(fESDtrackCuts){
     delete fESDtrackCuts;
     fESDtrackCuts = 0;
   }
   if (fAnalysisInput.CompareTo("AOD")==0){
-    AliInfo("ESD track cuts not possible for AOD analysis; please use SetPersonalAODtrackCuts(); using TPC only track cuts");  
+    AliInfo("ESD track cuts not possible for AOD analysis; please use SetPersonalAODtrackCuts(); using TPC only track cuts");
     fUsercuts = kFALSE;
     SetTrackType("TPC");
     return;
-  } 
+  }
   fUsercuts = kTRUE;
   fESDtrackCuts = trackcuts;
 }
 
 //________________________________________________________________________
 void AliEPSelectionTask::SetPersonalAODtrackCuts(UInt_t filterbit, Float_t etalow, Float_t etaup, Float_t ptlow, Float_t ptup, Int_t ntpc){
-  
-  if(fESDtrackCuts){ 
+
+  if(fESDtrackCuts){
     delete fESDtrackCuts;
     fESDtrackCuts = 0;
   }
   if (fAnalysisInput.CompareTo("ESD")==0){
-    AliInfo("AOD track cuts not possible for ESD analysis; please use SetPersonalESDtrackCuts(); using TPC only track cuts");  
+    AliInfo("AOD track cuts not possible for ESD analysis; please use SetPersonalESDtrackCuts(); using TPC only track cuts");
     fUsercuts = kFALSE;
     SetTrackType("TPC");
     return;
@@ -658,11 +662,11 @@ void AliEPSelectionTask::SetPersonalAODtrackCuts(UInt_t filterbit, Float_t etalo
 void AliEPSelectionTask::SetTrackType(TString tracktype){
   fTrackType = tracktype;
   if (!fUsercuts) {
-  if (fTrackType.CompareTo("GLOBAL")==0){ 
+  if (fTrackType.CompareTo("GLOBAL")==0){
     fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
     fAODfilterbit = 32;
-  }	
-  if (fTrackType.CompareTo("TPC")==0){  
+  }
+  if (fTrackType.CompareTo("TPC")==0){
     fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fAODfilterbit = 128;
   }
@@ -676,7 +680,7 @@ Double_t AliEPSelectionTask::GetWeight(TObject* track1)
 {
   Double_t ptweight=1;
   AliVTrack* track = dynamic_cast<AliVTrack*>(track1);
-  if (fUsePtWeight && track) {      
+  if (fUsePtWeight && track) {
     if (track->Pt()<2) ptweight=track->Pt();
     else ptweight=2;
   }
@@ -691,18 +695,18 @@ Double_t AliEPSelectionTask::GetPhiWeight(TObject* track1)
 
   TH1F *phiDist = 0x0;
   if(track) phiDist = SelectPhiDist(track);
-  
+
   if (fUsePhiWeight && phiDist && track) {
     Double_t nParticles = phiDist->Integral();
     Double_t nPhibins = phiDist->GetNbinsX();
-  
+
     Double_t Phi = track->Phi();
-    
+
     while (Phi<0) Phi += TMath::TwoPi();
     while (Phi>TMath::TwoPi()) Phi -= TMath::TwoPi();
-      
+
     Double_t PhiDistValue = phiDist->GetBinContent(1+TMath::FloorNint((track->Phi())*nPhibins/TMath::TwoPi()));
-    
+
     if (PhiDistValue > 0) phiweight = nParticles/nPhibins/PhiDistValue;
   }
   return phiweight;
@@ -711,7 +715,7 @@ Double_t AliEPSelectionTask::GetPhiWeight(TObject* track1)
 //________________________________________________________________________
 void AliEPSelectionTask::Recenter(Int_t var, Double_t * values)
 {
-  
+
   if (fUseRecentering && fQDist[0] && fQDist[1] && fCentrality!=-1.) {
     Int_t centbin = fQDist[0]->FindBin(fCentrality);
 
@@ -735,7 +739,7 @@ void AliEPSelectionTask::Recenter(Int_t var, Double_t * values)
 }
 
 //__________________________________________________________________________
-void AliEPSelectionTask::SetPhiDist() 
+void AliEPSelectionTask::SetPhiDist()
 {
   if(!fUserphidist && (fPeriod.CompareTo("LHC10h") == 0 || fPeriod.CompareTo("LHC11h") == 0)) { // if it's already set and custom class is required, we use the one provided by the user
 
@@ -759,13 +763,13 @@ void AliEPSelectionTask::SetPhiDist()
                }
              if(i == 0){
                fSparseDist->GetAxis(1)->SetRange(1,1);  // neg charge
-               fSparseDist->GetAxis(2)->SetRange(1,1);} // neg eta 
+               fSparseDist->GetAxis(2)->SetRange(1,1);} // neg eta
              if(i == 1){
                fSparseDist->GetAxis(1)->SetRange(2,2);  // pos charge
                fSparseDist->GetAxis(2)->SetRange(1,1);} // neg eta
              if(i == 2){
                fSparseDist->GetAxis(1)->SetRange(1,1);  // neg charge
-               fSparseDist->GetAxis(2)->SetRange(2,2);} // pos eta 
+               fSparseDist->GetAxis(2)->SetRange(2,2);} // pos eta
              if(i == 3){
                fSparseDist->GetAxis(1)->SetRange(2,2);  // pos charge
                fSparseDist->GetAxis(2)->SetRange(2,2);} // pos eta
@@ -779,29 +783,29 @@ void AliEPSelectionTask::SetPhiDist()
 
     if (!fPhiDist[0]) AliFatal(Form("Cannot find OADB phi distribution for run %d", fRunNumber));
 
-  } 
-  
-    
+  }
+
+
   if (fPeriod.CompareTo("LHC10h")==0 || fUserphidist){
      Bool_t emptybins;
 
-     int iter = 0;  
+     int iter = 0;
      while (iter<3){
          emptybins = kFALSE;
-   
+
          for (int i=1; i<fPhiDist[0]->GetNbinsX(); i++){
 	   if (!((fPhiDist[0]->GetBinContent(i))>0)) {
 	     emptybins = kTRUE;
 	   }
-         }  
+         }
          if (emptybins) {
 	   cout << "empty bins - rebinning!" << endl;
 	   fPhiDist[0]->Rebin();
 	   iter++;
-         }      
+         }
          else iter = 3;
      }
-  
+
      if (emptybins) {
        AliError("After Maximum of rebinning still empty Phi-bins!!!");
      }
@@ -813,7 +817,7 @@ void AliEPSelectionTask::SetPhiDist()
 }
 
 //__________________________________________________________________________
-void AliEPSelectionTask::SetQvectorDist() 
+void AliEPSelectionTask::SetQvectorDist()
 {
   if(!fUseRecentering) return;
   AliInfo(Form("Setting q vector distributions"));
@@ -827,10 +831,10 @@ void AliEPSelectionTask::SetQvectorDist()
 
   Bool_t emptybins;
 
-  int iter = 0;  
+  int iter = 0;
   while (iter<3){
     emptybins = kFALSE;
-    
+
     for (int i=1; i<=fQDist[0]->GetNbinsX()-2; i++){
       if (!((fQDist[0]->GetBinEntries(i))>0)) {
 	emptybins = kTRUE;
@@ -844,7 +848,7 @@ void AliEPSelectionTask::SetQvectorDist()
     }
     else iter = 3;
   }
-  
+
   if (emptybins) {
     AliError("After Maximum of rebinning still empty Qxy-bins!!!");
   }
@@ -853,22 +857,22 @@ void AliEPSelectionTask::SetQvectorDist()
 //__________________________________________________________________________
 void AliEPSelectionTask::SetPersonalPhiDistribution(const char* infilename, char* listname)
 {
-  
+
   fUserphidist = kTRUE;
-  
+
   TFile f(infilename);
   TObject* list = f.Get(listname);
   fPhiDist[0] = (TH1F*)list->FindObject("fHOutPhi");
   if (!fPhiDist[0]) AliFatal("Phi Distribution not found!!!");
 
   f.Close();
-} 
+}
 
 //_________________________________________________________________________
 TObjArray* AliEPSelectionTask::GetAODTracksAndMaxID(AliAODEvent* aod, Int_t& maxid)
 {
   TObjArray *acctracks = new TObjArray();
-  
+
   AliAODTrack *tr = 0;
   Int_t maxid1 = 0;
   Int_t maxidtemp = -1;
@@ -878,12 +882,12 @@ TObjArray* AliEPSelectionTask::GetAODTracksAndMaxID(AliAODEvent* aod, Int_t& max
   Float_t etaup = 0;
   fESDtrackCuts->GetPtRange(ptlow,ptup);
   fESDtrackCuts->GetEtaRange(etalow,etaup);
-  Int_t ntpc = fESDtrackCuts->GetMinNClusterTPC(); 
-  
+  Int_t ntpc = fESDtrackCuts->GetMinNClusterTPC();
+
   for (Int_t i = 0; i < aod->GetNumberOfTracks() ; i++){
      tr = dynamic_cast<AliAODTrack*>(aod->GetTrack(i));
      if(!tr) AliFatal("Not a standard AOD");
-     maxidtemp = tr->GetID(); 
+     maxidtemp = tr->GetID();
      if(maxidtemp < 0 && fAODfilterbit != 128) continue;
      if(maxidtemp > -1 && fAODfilterbit == 128) continue;
      if (fAODfilterbit == 128) maxidtemp = maxidtemp*(-1) - 1;
@@ -892,52 +896,52 @@ TObjArray* AliEPSelectionTask::GetAODTracksAndMaxID(AliAODEvent* aod, Int_t& max
      acctracks->Add(tr);
      }
   }
-  
+
   maxid = maxid1;
-  
+
   return acctracks;
-  
+
 }
 
 //_________________________________________________________________________
 void AliEPSelectionTask::SetOADBandPeriod()
-{ 
-  TString oadbfilename; 
+{
+  TString oadbfilename;
 
   if (fRunNumber >= 136851 && fRunNumber <= 139515) // LHC10h
     {fPeriod = "LHC10h";
      if (!fUserphidist) { // if it's already set and custom class is required, we use the one provided by the user
-        
+
         if (fAnalysisInput.CompareTo("AOD")==0){
            oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.aod.root", AliAnalysisManager::GetOADBPath()));
            } else if (fAnalysisInput.CompareTo("ESD")==0){
            oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
            }
- 
-       TFile foadb(oadbfilename); 
+
+       TFile foadb(oadbfilename);
        if(!foadb.IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
 
        AliInfo("Using Standard OADB");
-       fEPContainer = (AliOADBContainer*) foadb.Get("epphidist");    
+       fEPContainer = (AliOADBContainer*) foadb.Get("epphidist");
        if (!fEPContainer) AliFatal("Cannot fetch OADB container for EP selection");
        foadb.Close();
        }
      }
-  
+
   if (fRunNumber >= 166529 && fRunNumber <= 170593) // LHC11h
      {fPeriod = "LHC11h";
       if (!fUserphidist) {
       // if it's already set and custom class is required, we use the one provided by the user
-      
+
       oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist2011.root", AliAnalysisManager::GetOADBPath()));
-      TFile *foadb = TFile::Open(oadbfilename); 
+      TFile *foadb = TFile::Open(oadbfilename);
       if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
 
       AliInfo("Using Standard OADB");
-      fSparseDist = (THnSparse*) foadb->Get("Default");    
+      fSparseDist = (THnSparse*) foadb->Get("Default");
       if (!fSparseDist) AliFatal("Cannot fetch OADB container for EP selection");
       foadb->Close();
-      if(!fHruns){ 
+      if(!fHruns){
            fHruns = (TH1F*)fSparseDist->Projection(0); //projection on run axis;
            fHruns->SetName("runsHisto");
       }
@@ -949,18 +953,18 @@ void AliEPSelectionTask::SetOADBandPeriod()
 	if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
 
 	AliInfo("Using Standard OADB");
-	fQxContainer = (AliOADBContainer*) foadb->Get("eprecentering.Qx");    
-	fQyContainer = (AliOADBContainer*) foadb->Get("eprecentering.Qy");    
+	fQxContainer = (AliOADBContainer*) foadb->Get("eprecentering.Qx");
+	fQyContainer = (AliOADBContainer*) foadb->Get("eprecentering.Qy");
 	if (!fQxContainer || !fQyContainer) AliFatal("Cannot fetch OADB container for EP recentering");
 	foadb->Close();
       }
 
-     } 
+     }
 }
 
 //_________________________________________________________________________
 TH1F* AliEPSelectionTask::SelectPhiDist(AliVTrack *track)
-{ 
+{
   if (fPeriod.CompareTo("LHC10h")==0  || fUserphidist) return fPhiDist[0];
   else if(fPeriod.CompareTo("LHC11h")==0)
     {
@@ -974,9 +978,9 @@ TH1F* AliEPSelectionTask::SelectPhiDist(AliVTrack *track)
         if(track->Eta() < 0.)       return fPhiDist[1];
         else if (track->Eta() > 0.) return fPhiDist[3];
        }
-       
+
     }
-  return 0;   
+  return 0;
 }
 
 TObjArray* AliEPSelectionTask::GetTracksForLHC11h(AliESDEvent* esd)
@@ -984,7 +988,7 @@ TObjArray* AliEPSelectionTask::GetTracksForLHC11h(AliESDEvent* esd)
   // Need to do this hack beacuse only this type of TPC only tracks in AOD is available and one type of Phi-weights is used
   TObjArray *acctracks = new TObjArray();
   acctracks->SetOwner(kTRUE);
-  
+
   const AliESDVertex *vtxSPD = esd->GetPrimaryVertexSPD();
 
   Float_t ptlow = 0;
@@ -993,25 +997,25 @@ TObjArray* AliEPSelectionTask::GetTracksForLHC11h(AliESDEvent* esd)
   Float_t etaup = 0;
   fESDtrackCuts->GetPtRange(ptlow,ptup);
   fESDtrackCuts->GetEtaRange(etalow,etaup);
-  
+
   Double_t pDCA[3] = { 0. }; // momentum at DCA
   Double_t rDCA[3] = { 0. }; // position at DCA
   Float_t  dDCA[2] = {0.};    // DCA to the vertex d and z
   Float_t  cDCA[3] = {0.};    // covariance of impact parameters
 
- 
-  
+
+
   for (Int_t i = 0; i < esd->GetNumberOfTracks() ; i++){
-  
-    AliESDtrack* esdTrack = esd->GetTrack(i); //carefull do not modify it othwise  need to work with a copy 
+
+    AliESDtrack* esdTrack = esd->GetTrack(i); //carefull do not modify it othwise  need to work with a copy
     //
     // Track selection
     if (!fESDtrackCuts->AcceptTrack(esdTrack)) continue;
-    
+
     // create a tpc only tracl
     AliESDtrack *track = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(esd),esdTrack->GetID());
     if(!track) continue;
-    
+
     if(track->Pt()>0.)
     {
       // only constrain tracks above threshold
@@ -1033,8 +1037,8 @@ TObjArray* AliEPSelectionTask::GetTracksForLHC11h(AliESDEvent* esd)
       // set the constrained parameters to the track
       track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
     }
-    
-    
+
+
     Float_t eta = track->Eta();
     Float_t pT = track->Pt();
 
@@ -1045,9 +1049,8 @@ TObjArray* AliEPSelectionTask::GetTracksForLHC11h(AliESDEvent* esd)
 
     acctracks->Add(track);
    }
-  
-  
-  return acctracks;
-  
-}
 
+
+  return acctracks;
+
+}

@@ -212,6 +212,6 @@ void AliTaskCDBconnect::SetSpecificStorage(const char* calibType, const char* db
   TNamed *nmpath = new TNamed(calibType,dbString);
   if (version<0) version = -1;
   if (subVersion<0) subVersion = -1;
-  nmpath->SetUniqueID(UInt_t(version+1)<<16+UInt_t(subVersion+1));
+  nmpath->SetUniqueID((UInt_t(version+1)<<16)+UInt_t(subVersion+1));
   fSpecCDBUri.AddLast(nmpath);
 }

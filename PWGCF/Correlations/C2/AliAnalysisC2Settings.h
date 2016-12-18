@@ -20,12 +20,8 @@ class AliAnalysisC2Settings : public TObject {
   enum {kMCTRUTH, kRECON};
   // The type of data this task is accessing
   Int_t fDataType;
-  // The lower bound of the eta acceptance region
-  Double_t fEtaAcceptanceLowEdge;
-  // The upper bound of the eta acceptance region
-  Double_t fEtaAcceptanceUpEdge;
-  // Number of bins used along eta
-  Int_t fNEtaBins;
+  // Vector holding the bin edges along eta
+  edgeContainer fEtaBinEdges;
   // Lower bound phi acceptance (should always be 0)
   Double_t fPhiAcceptanceLowEdge;
   // Upper bound phi acceptance (should always be 2pi)
@@ -56,6 +52,7 @@ class AliAnalysisC2Settings : public TObject {
   //    fMultEstimator = fMultEstimatorV0M;
   TString fMultEstimatorV0M;
   TString fMultEstimatorRefMult08;
+  TString fMultEstimatorValidTracks;
   // Require this trigger in the event selection. This is needed to
   // mitigate the missing physics selection in the ITS stand alone
   // runs (eg. 15j, at the time of writing)

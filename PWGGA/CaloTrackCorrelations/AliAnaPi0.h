@@ -108,16 +108,22 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   void         SwitchOnMultipleCutAnalysis()    { fMultiCutAna         = kTRUE  ; }
   void         SwitchOffMultipleCutAnalysis()   { fMultiCutAna         = kFALSE ; }
+  
+  void         SwitchOnMultipleCutAcceptAnalysis()  { fMultiCutAnaAcc  = kTRUE  ; }
+  void         SwitchOffMultipleCutAcceptAnalysis() { fMultiCutAnaAcc  = kFALSE ; }
 
   void         SetNPtCuts   (Int_t s)           { if(s <= 10)fNPtCuts    = s    ; }
   void         SetNAsymCuts (Int_t s)           { if(s <= 10)fNAsymCuts  = s    ; }
   void         SetNNCellCuts(Int_t s)           { if(s <= 10)fNCellNCuts = s    ; }
   void         SetNPIDBits  (Int_t s)           { if(s <= 10)fNPIDBits   = s    ; }
+  void         SetNAngleCutBins(Int_t s)        { if(s <= 10)fNAngleCutBins = s ; }
   
-  void         SetPtCutsAt  (Int_t p,Float_t v) { if(p < 10)fPtCuts[p]   = v    ; }
-  void         SetAsymCutsAt(Int_t p,Float_t v) { if(p < 10)fAsymCuts[p] = v    ; }
+  void         SetPtCutsAt   (Int_t p,Float_t v){ if(p < 11)fPtCuts[p]   = v    ; }
+  void         SetPtCutsMaxAt(Int_t p,Float_t v){ if(p < 11)fPtCutsMax[p]= v    ; }
+  void         SetAsymCutsAt (Int_t p,Float_t v){ if(p < 10)fAsymCuts[p] = v    ; }
   void         SetNCellCutsAt(Int_t p,Int_t v)  { if(p < 10)fCellNCuts[p]= v    ; }
   void         SetPIDBitsAt  (Int_t p,Int_t v)  { if(p < 10)fPIDBits[p]  = v    ; }
+  void         SetAngleCutBin(Int_t p,Float_t v){ if(p < 10)fAngleCutBinsArray[p]= v; }
   
   void         SwitchOnFillSSCombinations()     { fFillSSCombinations  = kTRUE  ; }
   void         SwitchOffFillSSCombinations()    { fFillSSCombinations  = kFALSE ; }
@@ -133,6 +139,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillSecondaryCellTimeSel()      { fFillSecondaryCellTiming = kTRUE  ; }
   void         SwitchOffFillSecondaryCellTimeSel()     { fFillSecondaryCellTiming = kFALSE ; }
+  
+  void         SwitchOnFillOpAngleCutHisto()    { fFillOpAngleCutHisto = kTRUE  ; }
+  void         SwitchOffFillOpAngleCutHisto()   { fFillOpAngleCutHisto = kFALSE ; }
   
   //-------------------------------------------
   // Pair 2 different inputs
@@ -157,10 +166,15 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         FillAcceptanceHistograms();
     
   void         FillMCVersusRecDataHistograms(Int_t    index1,  Int_t    index2,
+                                             Int_t    iclus1,  Int_t    iclus2,
+                                             Int_t    mctag1,  Int_t    mctag2,
                                              Float_t  pt1,     Float_t  pt2,
                                              Int_t    ncells1, Int_t    ncells2,
                                              Double_t mass,    Double_t pt,     Double_t asym,
-                                             Double_t deta,    Double_t dphi);
+                                             Double_t deta,    Double_t dphi,   Double_t angle);
+  
+  void         SetPi0MassSelectionWindow(Float_t min, Float_t max) { fPi0MassWindow[0] = min ; fPi0MassWindow[1] = max ; }
+  void         SetEtaMassSelectionWindow(Float_t min, Float_t max) { fEtaMassWindow[0] = min ; fEtaMassWindow[1] = max ; }
   
   void         FillArmenterosThetaStar(Int_t pdg);
 
@@ -176,17 +190,25 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fAngleCut ;                 ///<  Select pairs with opening angle larger than a threshold
   Float_t  fAngleMaxCut ;              ///<  Select pairs with opening angle smaller than a threshold
   
+  Float_t  fPi0MassWindow[2];          ///<  Pi0 mass selection window
+  Float_t  fEtaMassWindow[2];          ///<  Eta mass selection window
+  
   // Multiple cuts analysis
   Bool_t   fMultiCutAna;               ///<  Do analysis with several or fixed cut
   Bool_t   fMultiCutAnaSim;            ///<  Do analysis with several or fixed cut, in the simulation related part
+  Bool_t   fMultiCutAnaAcc;            ///<  Do analysis with several or fixed cut, acceptance plots (eta-phi, col-row)
   Int_t    fNPtCuts;                   ///<  Number of pt cuts
-  Float_t  fPtCuts[10];                ///<  Array with different pt cuts
+  Float_t  fPtCuts[11];                ///<  Array with different pt cuts, minimum
+  Float_t  fPtCutsMax[11];             ///<  Array with different pt cuts, maximum
   Int_t    fNAsymCuts;                 ///<  Number of assymmetry cuts
   Float_t  fAsymCuts[10];              ///<  Array with different assymetry cuts
   Int_t    fNCellNCuts;                ///<  Number of cuts with number of cells in cluster
   Int_t    fCellNCuts[10];             ///<  Array with different cell number cluster cuts
-  Int_t    fNPIDBits ;		           ///<  Number of possible PID bit combinations
+  Int_t    fNPIDBits ;                 ///<  Number of possible PID bit combinations
   Int_t    fPIDBits[10];               ///<  Array with different PID bits
+
+  Int_t    fNAngleCutBins ;            ///<  Number of angle cuts bins
+  Float_t  fAngleCutBinsArray[11];     ///<  Array with angle cut bins
   
   // Switchs of different analysis options
   Bool_t   fMakeInvPtPlots;            ///<  Do plots with inverse pt weight
@@ -200,7 +222,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOriginHisto;           ///<  Fill histograms depending on their origin
   Bool_t   fFillArmenterosThetaStar;   ///<  Fill armenteros histograms
   Bool_t   fFillOnlyMCAcceptanceHisto; ///<  Do analysis only of MC kinematics input
-  Bool_t   fFillSecondaryCellTiming;   ///<  Fill histograms depending of timing of secondary cells in clusters
+  Bool_t   fFillSecondaryCellTiming;   ///<  Fill histograms depending on timing of secondary cells in clusters
+  Bool_t   fFillOpAngleCutHisto;       ///<  Fill histograms depending on opening angle of pair
   
   Bool_t   fCheckAccInSector;          ///<  Check that the decay pi0 falls in the same SM or sector
   
@@ -210,22 +233,13 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TLorentzVector fPhotonMom1;          //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom1Boost;     //!<! Photon cluster momentum, temporary array
   TLorentzVector fPhotonMom2;          //!<! Photon cluster momentum, temporary array
-  TLorentzVector fPi0Mom;              //!<! Pi0 cluster momentum, temporary array
-  TVector3       fProdVertex;          //!<! Production vertex, temporary array
+  TLorentzVector fMCPrimMesonMom;      //!<! Pi0/Eta MC primary momentum, temporary array
+  TVector3       fMCProdVertex;        //!<! Pi0/Eta MC Production vertex, temporary array
     
   // ----------
   // Histograms
   // ----------
-    
-  // Event characterization
-    
-  TH1F *   fhAverTotECluster;          //!<! Average number of clusters in SM
-  TH1F *   fhAverTotECell;             //!<! Average number of cells    in SM
-  TH2F *   fhAverTotECellvsCluster;    //!<! Average number of cells    in SM
-  TH1F *   fhEDensityCluster;          //!<! Deposited energy in event per cluster
-  TH1F *   fhEDensityCell;             //!<! Deposited energy in event per cell vs cluster
-  TH2F *   fhEDensityCellvsCluster;    //!<! Deposited energy in event per cell vs cluster
-
+        
   /// REAL two-photon invariant mass distribution for different calorimeter modules.
   TH2F **  fhReMod ;                   //![fNModules]
     
@@ -324,14 +338,17 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F **  fhMiPtNCellAsymCuts ;       //![fNPtCuts*fNAsymCuts*fNCellNCuts]
     
   /// REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry for each module.
-  TH2F **  fhRePtNCellAsymCutsSM[12] ; //![fNPtCuts*fNAsymCuts*fNCellNCutsfNModules]
- 
-  /// REAL two-photon invariant mass distribution for different PID bits.
-  TH2F **  fhRePIDBits ;               //![fNPIDBits]
-    
-  /// REAL two-photon invariant mass distribution for different track multiplicity and assymetry cuts.
-  TH3F **  fhRePtMult ;                //![fNAsymCuts]
-    
+  TH2F **  fhRePtNCellAsymCutsSM[20] ; //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+
+  /// REAL two-photon opening angle distribution for different pt cut, n cell cuts and assymetry
+  TH2F **  fhRePtNCellAsymCutsOpAngle ;       //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+  
+  /// Mixed two-photon opening angle distribution for different pt cut, n cell cuts and assymetry.
+  TH2F **  fhMiPtNCellAsymCutsOpAngle ;       //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+  
+  /// REAL two-photon opening angle distribution for different pt cut, n cell cuts and assymetry for each module.
+  TH2F **  fhRePtNCellAsymCutsSMOpAngle[20] ; //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+
   TH2F *   fhReSS[3] ;                 //!<! Combine clusters with 3 different cuts on shower shape
     
   // Asymmetry vs pt, in pi0/eta regions
@@ -339,6 +356,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhRePtAsym    ;             //!<! REAL two-photon pt vs asymmetry
   TH2F *   fhRePtAsymPi0 ;             //!<! REAL two-photon pt vs asymmetry, close to pi0 mass
   TH2F *   fhRePtAsymEta ;             //!<! REAL two-photon pt vs asymmetry, close to eta mass
+  TH2F *   fhMiPtAsym    ;             //!<! Mix two-photon pt vs asymmetry
+  TH2F *   fhMiPtAsymPi0 ;             //!<! Mix two-photon pt vs asymmetry, close to pi0 mass
+  TH2F *   fhMiPtAsymEta ;             //!<! Mix two-photon pt vs asymmetry, close to eta mass
   
   // Centrality, Event plane bins
     
@@ -356,6 +376,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhMixedOpeningAngle ;       //!<! Opening angle of pair versus pair energy
   TH2F *   fhMixedCosOpeningAngle ;    //!<! Cosinus of opening angle of pair version pair energy
   
+  TH2F *   fhRealOpeningAnglePerSM [20]; //!<! Opening angle of pair versus pair energy, per SM
+  TH2F *   fhMixedOpeningAnglePerSM[20]; //!<! Opening angle of pair versus pair energy, per SM
+  
   // MC analysis histograms
   // Pi0 Acceptance
     
@@ -364,6 +387,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPrimPi0AccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH1F *   fhPrimPi0AccPtOpAngCuts[10];//!<! Spectrum of primary with accepted daughters, different opening angles
   TH2F *   fhPrimPi0Y ;                //!<! Rapidity distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccY ;             //!<! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0Yeta ;             //!<! PseudoRapidity distribution of primary particles  vs pT
@@ -387,6 +411,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPrimEtaAccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH1F *   fhPrimEtaAccPtOpAngCuts[10];//!<! Spectrum of primary with accepted daughters, different opening angles
   TH2F *   fhPrimEtaY ;                //!<! Rapidity distribution of primary particles vs pT
   TH2F *   fhPrimEtaAccY ;             //!<! Rapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimEtaYeta ;             //!<! PseudoRapidity distribution of primary particles vs pT
@@ -430,6 +455,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// Real pi0 pairs, reconstructed pt vs generated pt of pair.
   TH2F **  fhMCPi0PtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts]
   
+  /// Real pi0 pairs, reconstructed pt vs generated pt of pair, apply cut on pi0 mass
+  TH2F **  fhMCPi0PtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+  
   /// Real eta pairs, reconstructed mass vs reconstructed pt of original pair.
   TH2F **  fhMCEtaMassPtRec;           //![fNPtCuts*fNAsymCuts*fNCellNCuts]
   
@@ -439,6 +467,25 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// Real eta pairs, reconstructed pt vs generated pt of pair.
   TH2F **  fhMCEtaPtTruePtRec;         //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
+  /// Real eta pairs, reconstructed pt vs generated pt of pair, apply cut on eta mass
+  TH2F **  fhMCEtaPtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
+
+  TH2F *   fhMCPi0PtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
+  TH2F *   fhMCPi0PtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
+  TH2F *   fhMCPi0PtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
+  
+  TH2F *   fhMCEtaPtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
+  TH2F *   fhMCEtaPtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
+  TH2F *   fhMCEtaPtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
+
+  TH2F *   fhMCPi0PtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
+  TH2F *   fhMCPi0PtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
+  TH2F *   fhMCPi0PtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  
+  TH2F *   fhMCEtaPtTruePtRecRatMassCut; //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated, inside a mass window 
+  TH2F *   fhMCEtaPtTruePtRecDifMassCut; //!<! Real pi0 pairs, reco pT vs pT difference generated - reco, inside a mass window 
+  TH2F *   fhMCEtaPtRecOpenAngleMassCut; //!<! Real pi0 pairs, reco pT vs reco opening angle, inside a mass window 
+  
   TH2F *   fhMCPi0PtOrigin ;           //!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCEtaPtOrigin ;           //!<! Mass of reconstructed eta pairs in calorimeter vs mother origin ID.
   TH2F *   fhMCNotResonancePi0PtOrigin;//!<! Mass of reconstructed pi0 pairs in calorimeter vs mother origin ID, pi0 status 1.
@@ -461,10 +508,60 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEPairDiffTime;            //!<! E pair vs Pair of clusters time difference vs E
   
   // Select clusters depending on cell time content
-  TH2F* fhReSecondaryCellInTimeWindow; //!<! Combine clusters when all significant cells in cluster have t < 50 ns, same event
-  TH2F* fhMiSecondaryCellInTimeWindow; //!<! Combine clusters when all significant cells in cluster have t < 50 ns, different events
-  TH2F* fhReSecondaryCellOutTimeWindow;//!<! Combine clusters when at least one significant cells in cluster has t > 50 ns, same event
-  TH2F* fhMiSecondaryCellOutTimeWindow;//!<! Combine clusters when at least one significant cells in cluster has t > 50 ns, different events
+  TH2F * fhReSecondaryCellInTimeWindow; //!<! Combine clusters when all significant cells in cluster have t < 50 ns, same event
+  TH2F * fhMiSecondaryCellInTimeWindow; //!<! Combine clusters when all significant cells in cluster have t < 50 ns, different events
+  TH2F * fhReSecondaryCellOutTimeWindow;//!<! Combine clusters when at least one significant cells in cluster has t > 50 ns, same event
+  TH2F * fhMiSecondaryCellOutTimeWindow;//!<! Combine clusters when at least one significant cells in cluster has t > 50 ns, different events
+  
+  // Cluster pair studies depending on opening angle
+  TH2F *  fhReOpAngleBinMinClusterEtaPhi       [10] ; //!<! Eta-Phi location of lowest energy cluster in pair, depending on opening angle cut
+  TH2F *  fhReOpAngleBinMaxClusterEtaPhi       [10] ; //!<! Eta-Phi location of highest energy cluster in pair, depending on opening angle cut
+  TH2F *  fhReOpAngleBinMinClusterColRow       [10] ; //!<! Column and row location of main cell of lowest energy cluster in pair, depending on opening angle cut
+  TH2F *  fhReOpAngleBinMaxClusterColRow       [10] ; //!<! Column and row location of main cell of highest energy cluster in pair, depending on opening angle cut
+  TH2F *  fhReOpAngleBinMinClusterEPerSM       [10] ; //!<! energy of lowest energy cluster in pair, depending on opening angle cut, y axis is SM number
+  TH2F *  fhReOpAngleBinMaxClusterEPerSM       [10] ; //!<! energy of highest energy cluster in pair, depending on opening angle cut, y axis is SM number    
+  TH2F *  fhReOpAngleBinMinClusterTimePerSM    [10] ; //!<! time of lowest energy cluster in pair, depending on opening angle cut, y axis is SM number
+  TH2F *  fhReOpAngleBinMaxClusterTimePerSM    [10] ; //!<! time of highest energy cluster in pair, depending on opening angle cut, y axis is SM number    
+  TH2F *  fhReOpAngleBinMinClusterNCellPerSM   [10] ; //!<! N cells of lowest energy cluster in pair, depending on opening angle cut, y axis is SM number
+  TH2F *  fhReOpAngleBinMaxClusterNCellPerSM   [10] ; //!<! N cells of highest energy cluster in pair, depending on opening angle cut, y axis is SM number  
+  TH2F *  fhReOpAngleBinPairClusterRatioPerSM  [10] ; //!<! lowest/highest energy cluster in pair, depending on opening angle cut, y axis is SM number  
+  TH2F *  fhReOpAngleBinPairClusterMass        [10] ; //!<! cluster pair mass vs pT, depending on opening angle cut  
+  TH2F *  fhReOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number  
+//  TH2F *  fhReOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other 
+
+  TH2F *  fhReOpAngleBinPairClusterMassMCTruePi0[10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, true pi0 decay pairs from MC 
+  TH2F *  fhReOpAngleBinPairClusterMassMCTrueEta[10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, true eta decay pairs from MC
+  
+  TH2F *  fhMiOpAngleBinMinClusterEtaPhi       [10] ; //!<! Eta-Phi location of lowest energy cluster in pair, depending on opening angle cut, mixed event
+  TH2F *  fhMiOpAngleBinMaxClusterEtaPhi       [10] ; //!<! Eta-Phi location of highest energy cluster in pair, depending on opening angle cut, mixed event
+//TH2F *  fhMiOpAngleBinMinClusterColRow       [10] ; //!<! Column and row location of main cell of lowest energy cluster in pair, depending on opening angle cut, mixed event
+//TH2F *  fhMiOpAngleBinMaxClusterColRow       [10] ; //!<! Column and row location of main cell of highest energy cluster in pair, depending on opening angle cut, mixed event
+  TH2F *  fhMiOpAngleBinMinClusterEPerSM       [10] ; //!<! energy of lowest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event
+  TH2F *  fhMiOpAngleBinMaxClusterEPerSM       [10] ; //!<! energy of highest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event    
+  TH2F *  fhMiOpAngleBinMinClusterTimePerSM    [10] ; //!<! time of lowest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event
+  TH2F *  fhMiOpAngleBinMaxClusterTimePerSM    [10] ; //!<! time of highest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event  
+  TH2F *  fhMiOpAngleBinMinClusterNCellPerSM   [10] ; //!<! N cells of lowest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event
+  TH2F *  fhMiOpAngleBinMaxClusterNCellPerSM   [10] ; //!<! N cells of highest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event  
+  TH2F *  fhMiOpAngleBinPairClusterRatioPerSM  [10] ; //!<! lowest/highest energy cluster in pair, depending on opening angle cut, y axis is SM number, mixed event  
+  TH2F *  fhMiOpAngleBinPairClusterMass        [10] ; //!<! cluster pair mass vs pT, depending on opening angle cut, mixed event  
+  TH2F *  fhMiOpAngleBinPairClusterMassPerSM   [10] ; //!<! cluster pair mass, depending on opening angle cut, y axis is SM number, mixed event  
+//TH2F *  fhMiOpAngleBinPairClusterAbsIdMaxCell[10] ; //!<! Cluster cell with maximum energy in one selected photon vs the other, mixed event 
+  
+  TH2F *  fhPtBinClusterEtaPhi                 [10] ; //!<! Eta-Phi location of cluster in different energy bins.
+  TH2F *  fhPtBinClusterColRow                 [10] ; //!<! Column and row location of cluster in different energy bins.
+
+  TH2F *  fhPairGeneratorsBkgMass               [10][10]; //!<! Mass for a pair of clusters depending bkg type
+  TH2F *  fhPairGeneratorsBkgMassMCPi0          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs  
+  TH2F *  fhPairGeneratorsBkgMassMCEta          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEta[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEta [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, eta true pairs, eta mass window
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, eta true pairs, eta mass window
   
   /// Copy constructor not implemented.
   AliAnaPi0(              const AliAnaPi0 & api0) ;
@@ -473,7 +570,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0,32) ;
+  ClassDef(AliAnaPi0,35) ;
   /// \endcond
   
 } ;

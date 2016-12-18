@@ -18,12 +18,6 @@
 #pragma link C++ class AliAnalysisTaskFragmentationFunction::AliFragFuncQAJetHistos+;
 #pragma link C++ class AliFragmentationFunctionCorrections+;
 #pragma link C++ class AliFragmentationFunctionCorrections::AliFragFuncCorrHistos+;
-#pragma link C++ class AliAnalysisTaskPIDV0base+;
-#pragma link C++ class AliAnalysisTaskPID+;
-#pragma link C++ class AliAnalysisTaskIDFragmentationFunction+;
-#pragma link C++ class AliAnalysisTaskIDFragmentationFunction::AliFragFuncHistos+;
-#pragma link C++ class AliAnalysisTaskIDFragmentationFunction::AliFragFuncQATrackHistos+;
-#pragma link C++ class AliAnalysisTaskIDFragmentationFunction::AliFragFuncQAJetHistos+;
 #pragma link C++ class AliAnalysisTaskJetsTM+;
 #pragma link C++ class AliAnalysisTaskJetCore+;
 #pragma link C++ class AliAnalysisTaskJetCorePP+;

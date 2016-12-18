@@ -29,6 +29,7 @@
 #pragma link C++ class AliJetTriggerSelectionTask+;
 #pragma link C++ class AliAnalysisTaskEmcalJetQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraQA+;
+#pragma link C++ class AliAnalysisTaskPWGJEQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPP+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTreeBase::AliEmcalJetInfoSummaryPbPb+;
@@ -44,9 +45,14 @@
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
-#pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
+#pragma link C++ class AliAnalysisTaskJetExtractor+;
 #pragma link C++ class AliBasicJetConstituent+;
+#pragma link C++ class std::vector<AliBasicJetConstituent>+;
+#pragma link C++ class AliBasicJetSecondaryVertex+;
+#pragma link C++ class std::vector<AliBasicJetSecondaryVertex>+;
 #pragma link C++ class AliBasicJet+;
+#pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
+#pragma link C++ class AliChargedJetsHadronCFCuts+;
 #pragma link C++ class AliAnalysisTaskChargedJetsHadronToy+;
 #pragma link C++ class AliAnalysisTaskDcalDijetPerf+;
 #pragma link C++ class AliAnalysisTaskDeltaPtJEmb+;
@@ -86,6 +92,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalTriggerPatchJetMatch+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
+#pragma link C++ class AliAnalysisTaskIDFragmentationFunction+;
 #pragma link C++ class AliAnalysisTaskJetJTJT+;
 #pragma link C++ class AliAnalysisTaskJetShapeBase+;
 #pragma link C++ class AliAnalysisTaskJetShapeDeriv+;
@@ -94,7 +101,11 @@
 #pragma link C++ class AliAnalysisTaskJetMassResponseDet+;
 #pragma link C++ class AliAnalysisTaskJetMatching+;
 #pragma link C++ class AliAnalysisTaskJetV2+;
+#pragma link C++ class AliAnalysisTaskJetV3+;
 #pragma link C++ class AliAnalysisTaskEmcalJetv2QA+;
+#pragma link C++ class AliAnalysisTaskPID+;
+#pragma link C++ class AliAnalysisTaskPIDV0base+;
+#pragma link C++ class AliAnalysisTaskPSHFE+;
 #pragma link C++ class AliAnalysisTaskPrepareInputForEmbedding+;
 #pragma link C++ class AliAnalysisTaskRhoMassScale+;
 #pragma link C++ class AliAnalysisTaskSoftDrop+;
@@ -111,7 +122,9 @@
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerPosition+;
+#pragma link C++ class AliAnalysisTaskEmcalNeutralJets+;
 #pragma link C++ namespace EMCalTriggerPtAnalysis+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerBase+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<float>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<double>+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliCutValueRange<int>+;
@@ -123,8 +136,8 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerBinningDimension+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerKineCuts+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecision+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaTriggerDecisionConfig+;
@@ -147,7 +160,10 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesRefMC+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesMCTriggerMimic+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerMultiplicity+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterMatched+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOnlinePatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef+;
@@ -158,6 +174,10 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTrackDensityData+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEmcalTriggerEmulation+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalMaxPatch+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalNoiseTriggers+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ class AliAnalysisTaskParticleInJet+;
 #pragma link C++ namespace HighPtTracks+;
@@ -196,5 +216,6 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet+;
 #pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;
+#pragma link C++ class AliAnalysisTaskJetSubstructure+;
 #endif
 #endif

@@ -68,12 +68,30 @@
 #include <vector>
 #include <fstream>
 using std::ifstream;
-namespace
-{
-  Int_t splitLevel=10;
-}
 
 ClassImp(AliMuonAccEffSubmitter)
+
+//______________________________________________________________________________
+AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(Bool_t localOnly)
+: AliMuonGridSubmitter(AliMuonGridSubmitter::kAccEff,localOnly),
+fRatio(-1.0),
+fFixedNofEvents(10000),
+fMaxEventsPerChunk(5000),
+fOCDBPath(""),
+fSplitMaxInputFileNumber(20),
+fLogOutToKeep(""),
+fRootOutToKeep(""),
+fExternalConfig(""),
+fUseOCDBSnapshots(kFALSE),
+fSnapshotDir(""),
+fUseAODMerging(kFALSE)
+{
+  // default ctor
+
+  SetupCommon(localOnly);
+
+  AliWarning("Using default constructor : you will probably need to call a few Set methods to properly configure the object before getting it to do anything usefull");
+}
 
 //______________________________________________________________________________
 AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator, Bool_t localOnly,
@@ -101,95 +119,12 @@ fUseAODMerging(kFALSE)
   // if generator contains "pythia6" then generatorVersion should be the
   // X.YY part of libpythia6.X.YY.so
   //
-  
-  SetCompactMode(1);
 
-  AddIncludePath("-I$ALICE_ROOT/include");
-  
-  TString ocdbPath("raw://");
-  
-  if (localOnly) {
-    ocdbPath = "local://$ALICE_ROOT/OCDB";
-  }
-  
-  SetOCDBPath(ocdbPath.Data());
-  
-  SetLocalDirectory("Snapshot",LocalDir());
-  
-  SetVar("VAR_OCDB_PATH",Form("\"%s\"",ocdbPath.Data()));
-  SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.root,AliAOD.Muons.root\"");
-
-  SetVar("VAR_GENPARAM_INCLUDE","AliGenMUONlib.h");
-  SetVar("VAR_GENPARAM_NPART","1");
-  SetVar("VAR_GENPARAM_GENLIB_TYPE","AliGenMUONlib::kJpsi");
-  SetVar("VAR_GENPARAM_GENLIB_PARNAME","\"pPb 5.03\"");
-
-  SetVar("VAR_GENCORRHF_QUARK","5");
-  SetVar("VAR_GENCORRHF_ENERGY","5");
-
-  // some default values for J/psi
-  SetVar("VAR_GENPARAMCUSTOM_PDGPARTICLECODE","443");
-
-  // default values below are from J/psi p+Pb (from muon_calo pass)
-  SetVar("VAR_GENPARAMCUSTOM_Y_P0","4.08E5");
-  SetVar("VAR_GENPARAMCUSTOM_Y_P1","7.1E4");
-  
-  SetVar("VAR_GENPARAMCUSTOM_PT_P0","1.13E9");
-  SetVar("VAR_GENPARAMCUSTOM_PT_P1","18.05");
-  SetVar("VAR_GENPARAMCUSTOM_PT_P2","2.05");
-  SetVar("VAR_GENPARAMCUSTOM_PT_P3","3.34");
-
-  // some default values for single muons
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_PTMIN","0.35");
-  
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P0","4.05962");
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P1","1.0");
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P2","2.46187");
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P3","2.08644");
-
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P0","0.729545");
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P1","0.53837");
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P2","0.141776");
-  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P3","0.0130173");
-
-  // some default values for GenBox
-  
-  SetVar("VAR_GENMUBOX_PTMIN","0");
-  SetVar("VAR_GENMUBOX_PTMAX","20");
-  SetVar("VAR_GENMUBOX_YMIN","-4.1");
-  SetVar("VAR_GENMUBOX_YMAX","-2.4");
-
-  SetVar("VAR_PYTHIA8_CMS_ENERGY","8000");
-  SetVar("VAR_PYTHIA6_CMS_ENERGY","8000");
-  
-  SetVar("VAR_PURELY_LOCAL",Form("%d",localOnly));
-
-  SetVar("VAR_USE_RAW_ALIGN","1");
-
-  SetVar("VAR_SIM_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Ideal\"");
-  
-  SetVar("VAR_REC_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Residual\"");
-  
-  SetVar("VAR_USE_ITS_RECO","0");
-  SetVar("VAR_USE_MC_VERTEX","1");
-  SetVar("VAR_VERTEX_SIGMA_X","0.0025");
-  SetVar("VAR_VERTEX_SIGMA_Y","0.0029");
-  
-  UseOCDBSnapshots(fUseOCDBSnapshots);
-
-  SetVar("VAR_TRIGGER_CONFIGURATION","");
-  
-  SetVar("VAR_LHAPDF","liblhapdf");
-  SetVar("VAR_MUONMCMODE","1");
-
-  SetVar("VAR_PYTHIA8_SETENV","");
-  SetVar("VAR_PYTHIA6_SETENV","");
-  SetVar("VAR_NEEDS_PYTHIA6", "0");
-  SetVar("VAR_NEEDS_PYTHIA8", "0");
+  SetupCommon(localOnly);
 
   if ( TString(generator).Contains("pythia8",TString::kIgnoreCase) )
   {
-    fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia8 (and ITS+MUON...)
+    SetMaxEventsPerChunk(500); // 5000 is not reasonable with Pythia8 (and ITS+MUON...)
     
     SetCompactMode(2); // keep AOD as for the time being the filtering driven from AODtrain.C cannot
     // add SPD tracklets to muon AODs.
@@ -215,7 +150,7 @@ fUseAODMerging(kFALSE)
   
   if ( TString(generator).Contains("pythia6",TString::kIgnoreCase) )
   {
-    fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia6 (and ITS+MUON...)
+    SetMaxEventsPerChunk(500); // 5000 is not reasonable with Pythia6 (and ITS+MUON...)
 
     SetCompactMode(2); // keep AOD as for the time being the filtering driven from AODtrain.C cannot
     // add SPD tracklets to muon AODs.
@@ -232,31 +167,7 @@ fUseAODMerging(kFALSE)
     SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
   }
 
-  SetVar("VAR_EVENTS_PER_JOB",Form("%i",fMaxEventsPerChunk));
-
   SetGenerator(generator);
-  
-  if (localOnly)
-  {
-    MakeNofEventsFixed(10);
-  }
-  else
-  {
-    MakeNofEventsPropToTriggerCount();
-  }
-  
-  AddToTemplateFileList("CheckESD.C");
-  AddToTemplateFileList("CheckAOD.C");
-  AddToTemplateFileList("AODtrainsim.C");
-//  AddToTemplateFileList("validation.sh");
-  
-  AddToTemplateFileList("Config.C");
-  AddToTemplateFileList("rec.C");
-  AddToTemplateFileList("sim.C");
-  AddToTemplateFileList("simrun.sh");
-  AddToTemplateFileList(RunJDLName().Data());
-  
-  UseExternalConfig(fExternalConfig);
 }
 
 //______________________________________________________________________________
@@ -282,7 +193,6 @@ Bool_t AliMuonAccEffSubmitter::Generate(const char* jdlname) const
 Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
 {
   /// Create the JDL for merging jobs
-  /// FIXME: not checked !
   
   AliDebug(1,"");
 
@@ -293,7 +203,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
     return kFALSE;
   }
   
-  Bool_t final = TString(name).Contains("merge",TString::kIgnoreCase);
+  Bool_t final = TString(name).Contains("final",TString::kIgnoreCase);
 
   (*os) << "# Generated merging jdl (production mode)" << std::endl
   << "# $1 = run number" << std::endl
@@ -302,7 +212,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
 
   OutputToJDL(*os,"Packages",GetMapValue("AliPhysics"));
   
-  OutputToJDL(*os,"Executable","AOD_merge.sh");
+  OutputToJDL(*os,"Executable",Form("%s/AOD_merge.sh",RemoteDir().Data()));
   
   OutputToJDL(*os,"Price","1");
 
@@ -319,30 +229,47 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   
   OutputToJDL(*os,"Validationcommand",Form("%s/validation_merge.sh",RemoteDir().Data()));
   
-  OutputToJDL(*os,"TTL","14400");
+  OutputToJDL(*os,"TTL","7200");
   
   OutputToJDL(*os,"OutputArchive",
-    "log_archive.zip:stderr,stdout@disk=1",
-    "root_archive.zip:AliAOD.root,AliAOD.Muons.root,AnalysisResults.root@disk=3"
+    //"log_archive.zip:stderr,stdout@disk=1",
+    "root_archive.zip:AliAOD.root,AliAOD.Muons.root,Merged.QA.Data.root,AnalysisResults.root@disk=2"
          );
   
   OutputToJDL(*os,"Arguments",(final ? "2":"1")); // for AOD_merge.sh, 1 means intermediate merging stage, 2 means final merging
   
+  TObjArray files;
+  files.SetOwner(kTRUE);
+  TIter next(LocalFileList());
+  TObjString* file;
+  
+  while ( ( file = static_cast<TObjString*>(next())) )
+  {
+    if ( file->TestBit(BIT(23)) )
+    {
+      files.Add(new TObjString(Form("LF:%s/%s",RemoteDir().Data(),file->String().Data())));
+    }
+  }
+  
+  if ( final )
+  {
+    files.Add(new TObjString(Form("LF:%s/$1/wn.xml",MergedDir().Data())));
+  }
+  
+  OutputToJDL(*os,"InputFile",files);
+  
   if ( !final )
   {
-    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrainsim.C",RemoteDir().Data()));
-    OutputToJDL(*os,"OutputDir",Form("%s/$1/Stage_$2/#alien_counter_03i#",RemoteDir().Data()));
-    OutputToJDL(*os,"InputDataCollection",Form("%s/$1/Stage_$2.xml,nodownload",RemoteDir().Data()));
+    OutputToJDL(*os,"OutputDir",Form("%s/$1/Stage_$2/#alien_counter_03i#",MergedDir().Data()));
+    OutputToJDL(*os,"InputDataCollection",Form("LF:%s/$1/Stage_$2.xml,nodownload",MergedDir().Data()));
     OutputToJDL(*os,"split","se");
-    OutputToJDL(*os,"SplitMaxInputFileNumber",GetSplitMaxInputFileNumber());
+    OutputToJDL(*os,"SplitMaxInputFileNumber",Form("%d",GetSplitMaxInputFileNumber()));
     OutputToJDL(*os,"InputDataListFormat","xml-single");
     OutputToJDL(*os,"InputDataList","wn.xml");
   }
   else
   {
-    OutputToJDL(*os,"InputFile",Form("LF:%s/AODtrainsim.C",RemoteDir().Data()),
-           Form("LF:%s/$1/wn.xml",RemoteDir().Data()));
-    OutputToJDL(*os,"OutputDir",Form("%s/$1",RemoteDir().Data()));
+    OutputToJDL(*os,"OutputDir",Form("%s/$1",MergedDir().Data()));
   }
   
   return kTRUE;
@@ -448,8 +375,8 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
   {
     Int_t runNumber = runs[i];
 
-    TString ocdbSim(Form("%s/OCDB/%d/OCDB_sim.root",SnapshotDir().Data(),runNumber));
-    TString ocdbRec(Form("%s/OCDB/%d/OCDB_rec.root",SnapshotDir().Data(),runNumber));
+    TString ocdbSim(Form("%s/OCDB/%d/OCDB_sim.root",LocalSnapshotDir().Data(),runNumber));
+    TString ocdbRec(Form("%s/OCDB/%d/OCDB_rec.root",LocalSnapshotDir().Data(),runNumber));
 
     if ( !gSystem->AccessPathName(ocdbSim.Data()) &&
          !gSystem->AccessPathName(ocdbRec.Data()) )
@@ -486,16 +413,8 @@ Bool_t AliMuonAccEffSubmitter::Merge(Int_t stage, Bool_t dryRun)
 {
   /// Submit multiple merging jobs with the format "submit AOD_merge(_final).jdl run# (stage#)".
   /// Also produce the xml collection before sending jobs
-  /// Initial AODs will be taken from fRemoteDir/[RUNNUMBER] while the merged
-  /// ones will be put into fMergedDir/AODs/[RUNNUMBER]
-  ///
-  /// Example:
-  /// - inDir = "/alice/sim/2012/LHC12a10_bis" (where to find the data to merge)
-  ///         = 0x0 --> inDir = homeDir/outDir/resDir
-  /// - outDir = "Sim/LHC11h/embedding/AODs" (where to store merged results)
-  /// - runList.txt must contains the list of run number
-  /// - stage=0 --> final merging / stage>0 --> intermediate merging i
-  ///
+  /// Initial AODs will be taken from RemoteDir/[RUNNUMBER] while the merged
+  /// ones will be put into MergedDir/[RUNNUMBER]
   
   if (!RemoteDirectoryExists(MergedDir().Data())) {
     AliError(Form("directory %s does not exist", MergedDir().Data()));
@@ -555,7 +474,7 @@ Bool_t AliMuonAccEffSubmitter::Merge(Int_t stage, Bool_t dryRun)
     TString wn = (stage > 0) ? Form("Stage_%d.xml", stage) : "wn.xml";
     TString find = (lastStage == 0) ?
     Form("alien_find -x %s %s/%d *root_archive.zip", wn.Data(), RemoteDir().Data(), run) :
-    Form("alien_find -x %s %s/%d/Stage_%d *root_archive.zip", wn.Data(), RemoteDir().Data(), run, lastStage);
+    Form("alien_find -x %s %s/%d/Stage_%d *root_archive.zip", wn.Data(), MergedDir().Data(), run, lastStage);
     gSystem->Exec(Form("%s 1> %s 2>/dev/null", find.Data(), wn.Data()));
     gSystem->Exec(Form("grep -c /event %s > __nfiles__", wn.Data()));
     ifstream f2("__nfiles__");
@@ -568,9 +487,9 @@ Bool_t AliMuonAccEffSubmitter::Merge(Int_t stage, Bool_t dryRun)
       printf(" ! collection of files to merge is empty\n");
       gSystem->Exec(Form("rm -f %s", wn.Data()));
       continue;
-    } else if (stage > 0 && nFiles.Atoi() <= splitLevel && !reply.BeginsWith("y")) {
+    } else if (stage > 0 && nFiles.Atoi() <= GetSplitMaxInputFileNumber() && !reply.BeginsWith("y")) {
       if (!reply.BeginsWith("n")) {
-        printf(" ! number of files to merge <= split level (%d). Continue? [Y/n] ", splitLevel);
+        printf(" ! number of files to merge <= split level (%d). Continue? [Y/n] ", GetSplitMaxInputFileNumber());
         fflush(stdout);
         reply.Gets(stdin,kTRUE);
         reply.ToLower();
@@ -683,8 +602,6 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if (!IsValid()) return kFALSE;
   
-  if ( fRootOutToKeep.Contains("AliAOD.Muons.root") && ! fRootOutToKeep.Contains("AliAOD.root") ) SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.Muons.root\"");
-
   TString smode(mode);
   smode.ToUpper();
   
@@ -971,8 +888,146 @@ void AliMuonAccEffSubmitter::SetCompactMode ( Int_t mode )
   }
 }
 
+//____________________________________________________________________________
 
-///______________________________________________________________________________
+void AliMuonAccEffSubmitter::SetDefaultVariables()
+{
+  SetVar("VAR_OCDB_PATH",Form("\"%s\"",fOCDBPath.Data()));
+  SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.root,AliAOD.Muons.root\"");
+  SetVar("VAR_EFFTASK_PTMIN","-1.");
+  SetVar("VAR_EXTRATASKS_CONFIGMACRO","\"\"");
+
+  SetVar("VAR_GENPARAM_INCLUDE","AliGenMUONlib.h");
+  SetVar("VAR_GENPARAM_NPART","1");
+  SetVar("VAR_GENPARAM_GENLIB_TYPE","AliGenMUONlib::kJpsi");
+  SetVar("VAR_GENPARAM_GENLIB_PARNAME","\"pPb 5.03\"");
+
+  SetVar("VAR_GENCORRHF_QUARK","5");
+  SetVar("VAR_GENCORRHF_ENERGY","5");
+
+  // some default values for J/psi
+  SetVar("VAR_GENPARAMCUSTOM_PDGPARTICLECODE","443");
+
+  // default values below are from J/psi p+Pb (from muon_calo pass)
+  SetVar("VAR_GENPARAMCUSTOM_Y_P0","4.08E5");
+  SetVar("VAR_GENPARAMCUSTOM_Y_P1","7.1E4");
+  
+  SetVar("VAR_GENPARAMCUSTOM_PT_P0","1.13E9");
+  SetVar("VAR_GENPARAMCUSTOM_PT_P1","18.05");
+  SetVar("VAR_GENPARAMCUSTOM_PT_P2","2.05");
+  SetVar("VAR_GENPARAMCUSTOM_PT_P3","3.34");
+
+  // some default values for single muons
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PTMIN","0.35");
+  
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P0","4.05962");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P1","1.0");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P2","2.46187");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_PT_P3","2.08644");
+
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P0","0.729545");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P1","0.53837");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P2","0.141776");
+  SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P3","0.0130173");
+
+  // some default values for single muons ben
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_PTMIN","0.35");
+
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_PT_P0","135.137");
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_PT_P1","0.555323");
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_PT_P2","0.578374");
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_PT_P3","10.1345");
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_PT_P4","0.000232233");
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_PT_P5","-0.924726");
+
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_Y_P0","1.95551");
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_Y_P1","-0.104761");
+  SetVar("VAR_GENPARAMCUSTOMSINGLEBEN_Y_P2","0.00311324");
+
+  // some default values for GenBox
+  
+  SetVar("VAR_GENMUBOX_PTMIN","0");
+  SetVar("VAR_GENMUBOX_PTMAX","20");
+  SetVar("VAR_GENMUBOX_YMIN","-4.1");
+  SetVar("VAR_GENMUBOX_YMAX","-2.4");
+
+  SetVar("VAR_PYTHIA8_CMS_ENERGY","8000");
+  SetVar("VAR_PYTHIA6_CMS_ENERGY","8000");
+  
+  SetVar("VAR_PURELY_LOCAL","0");
+
+  SetVar("VAR_USE_RAW_ALIGN","1");
+
+  SetVar("VAR_SIM_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Ideal\"");
+  
+  SetVar("VAR_REC_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Residual\"");
+  
+  SetVar("VAR_USE_ITS_RECO","0");
+  SetVar("VAR_USE_MC_VERTEX","1");
+  SetVar("VAR_VERTEX_SIGMA_X","0.0025");
+  SetVar("VAR_VERTEX_SIGMA_Y","0.0029");
+  
+  SetVar("VAR_TRIGGER_CONFIGURATION","");
+  
+  SetVar("VAR_LHAPDF","liblhapdf");
+  SetVar("VAR_MUONMCMODE","1");
+
+  SetVar("VAR_PYTHIA8_SETENV","");
+  SetVar("VAR_PYTHIA6_SETENV","");
+  SetVar("VAR_NEEDS_PYTHIA6", "0");
+  SetVar("VAR_NEEDS_PYTHIA8", "0");
+}
+//____________________________________________________________________________
+
+void AliMuonAccEffSubmitter::SetLocalOnly()
+{
+    // ocdbPath = "local://$ALICE_ROOT/OCDB";
+  SetVar("VAR_OCDB_PATH","local://$ALICE_ROOT/OCDB");
+  SetVar("VAR_PURELY_LOCAL","0");
+  MakeNofEventsFixed(10);
+}
+
+//__________________________________________________________________________
+void AliMuonAccEffSubmitter::SetupCommon(Bool_t localOnly)
+{
+  SetCompactMode(1);
+
+  AddIncludePath("-I$ALICE_ROOT/include");
+  
+  SetOCDBPath("raw://");
+
+  SetDefaultVariables();
+
+  if (localOnly) {
+    SetLocalOnly(); 
+  }
+  
+  SetLocalDirectory("Snapshot",LocalDir());
+
+  UseOCDBSnapshots(fUseOCDBSnapshots);
+
+  SetMaxEventsPerChunk(fMaxEventsPerChunk);
+
+  if (!localOnly)
+  {
+      MakeNofEventsPropToTriggerCount();
+  }
+
+  AddToTemplateFileList("CheckESD.C");
+  AddToTemplateFileList("CheckAOD.C");
+  AddToTemplateFileList("AODtrainsim.C", kTRUE);
+//  AddToTemplateFileList("validation.sh");
+  
+  AddToTemplateFileList("Config.C");
+  AddToTemplateFileList("rec.C");
+  AddToTemplateFileList("sim.C");
+  AddToTemplateFileList("simrun.sh");
+  AddToTemplateFileList(RunJDLName().Data());
+  
+  UseExternalConfig(fExternalConfig);
+}
+
+//______________________________________________________________________________
 void AliMuonAccEffSubmitter::SetupPythia6 ( const char *version )
 {
   /// Setup pythia 6
@@ -980,6 +1035,7 @@ void AliMuonAccEffSubmitter::SetupPythia6 ( const char *version )
 
   TString p6env = Form("gSystem->Load(\"libpythia6_%s\");",version);
   SetVar("VAR_PYTHIA6_SETENV",p6env.Data());
+  gROOT->ProcessLine(p6env);
 }
 
 ///______________________________________________________________________________
@@ -1131,6 +1187,7 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
   
   Int_t nJobs(0);
   Int_t nEvts(0);
+  Bool_t failedRun(kFALSE);
   
   AliAnalysisTriggerScalers* ts(0x0);
   
@@ -1188,6 +1245,7 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
       res = gGrid->Command(query);
     }
     
+    Bool_t done = kFALSE;
     if (res)
     {
       TString cjobId1 = res->GetKey(0,"jobId");
@@ -1202,11 +1260,18 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
       {
         std::cout << "DONE" << std::endl;
         std::cout << Form("   --> the job Id is: %s",cjobId1.Data()) << std::endl << std::endl;
+        done = kTRUE;
       }
     }
     else
     {
       std::cout << " FAILED" << std::endl << std::endl;
+    }
+    
+    if (!dryRun && !done)
+    {
+      gSystem->Exec(Form("echo %d >> __failed__", runNumber));
+      failedRun = kTRUE;
     }
     
     delete res;
@@ -1216,6 +1281,14 @@ Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
   << "total number of jobs = " << nJobs << std::endl
   << "total number of generated events = " << nEvts << std::endl
   << std::endl;
+  
+  if (failedRun)
+  {
+    AliInfo("\n--------------------\n");
+    AliInfo("list of failed runs:\n");
+    gSystem->Exec("cat __failed__");
+    gSystem->Exec("rm -f __failed__");
+  }
   
   delete ts;
   
@@ -1256,7 +1329,7 @@ void AliMuonAccEffSubmitter::UpdateLocalFileList(Bool_t clearSnapshots)
     
     for ( Int_t t = 0; t < 2; ++t )
     {
-      TString snapshot(Form("%s/OCDB/%d/OCDB_%s.root",SnapshotDir().Data(),runNumber,type[t]));
+      TString snapshot(Form("%s/OCDB/%d/OCDB_%s.root",LocalSnapshotDir().Data(),runNumber,type[t]));
       
       if ( !gSystem->AccessPathName(snapshot.Data()) )
       {

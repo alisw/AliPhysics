@@ -19,6 +19,7 @@
 #include <TAxis.h>
 #include <TClonesArray.h>
 #include <THistManager.h>
+#include <TLinearBinning.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TString.h>
@@ -108,17 +109,17 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
   GetAllTriggerNamesAndTitles(triggerCombinations);
 
   // Create axis definitions
-  const AliEMCalTriggerBinningDimension *ptbinning = fBinning->GetBinning("pt"),
+  const TBinning *ptbinning = fBinning->GetBinning("pt"),
       *etabinning = fBinning->GetBinning("eta"),
       *phibinning = fBinning->GetBinning("phi"),
       *vertexbinning = fBinning->GetBinning("zvertex");
 
   const TAxis *trackaxes[5] = {
-      DefineAxis("pt", ptbinning),
-      DefineAxis("eta", etabinning),
-      DefineAxis("phi", phibinning),
-      DefineAxis("zvertex", vertexbinning),
-      DefineAxis("mbtrigger", 2, -0.5, 1.5)
+      DefineAxis("pt", *ptbinning),
+      DefineAxis("eta", *etabinning),
+      DefineAxis("phi", *phibinning),
+      DefineAxis("zvertex", *vertexbinning),
+      DefineAxis("mbtrigger", TLinearBinning(2, -0.5, 1.5))
   };
 
   // Build histograms
@@ -140,10 +141,10 @@ void AliEMCalTriggerRecTrackAnalysisComponent::CreateHistos() {
   // 3. rec eta
   // 4. rec phi
   const TAxis *corraxes[4] = {
-	  DefineAxis("ptgen", ptbinning),
-	  DefineAxis("ptrec", ptbinning),
-	  DefineAxis("eta", etabinning),
-	  DefineAxis("phi", phibinning)
+	  DefineAxis("ptgen", *ptbinning),
+	  DefineAxis("ptrec", *ptbinning),
+	  DefineAxis("eta", *etabinning),
+	  DefineAxis("phi", *phibinning)
   };
   fHistos->CreateTHnSparse("hTrackPtCorrelation", "Correlation matrix for track pt", 4, corraxes);
 

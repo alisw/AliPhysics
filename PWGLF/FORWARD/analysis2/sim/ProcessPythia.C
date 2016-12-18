@@ -1,5 +1,5 @@
 /**
- * @file   Process.C
+ * @file   ProcessPythia.C
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Fri Mar 20 12:16:33 2015
  * 

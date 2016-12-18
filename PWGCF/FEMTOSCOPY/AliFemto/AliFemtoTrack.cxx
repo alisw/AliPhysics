@@ -66,19 +66,21 @@ AliFemtoTrack::AliFemtoTrack():
   fXatDCA(0.0),
   fYatDCA(0.0),
   fZatDCA(0.0),
-  fHiddenInfo(NULL),
-  fTrueMomentum(NULL),    // True (simulated) momentum
-  fEmissionPoint(NULL),   // Emission point coordinates
+  fHiddenInfo(nullptr),
+  fTrueMomentum(nullptr),    // True (simulated) momentum
+  fEmissionPoint(nullptr),   // Emission point coordinates
   fPDGPid(0),             // True PID of the particle
   fMass(0.0),               // True particle mass
-  fGlobalEmissionPoint(NULL),
+  fGlobalEmissionPoint(nullptr),
   fCorrPi(0.0),
   fCorrK(0.0),
   fCorrP(0.0),
+  fCorrPiMinus(0.0),
+  fCorrKMinus(0.0),
+  fCorrPMinus(0.0),
   fCorrAll(0.0)
 {
   // Default constructor
-  fHiddenInfo = NULL;
   fKinkIndexes[0] = 0;
   fKinkIndexes[1] = 0;
   fKinkIndexes[2] = 0;
@@ -159,10 +161,13 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fCorrPi(t.fCorrPi),
   fCorrK(t.fCorrK),
   fCorrP(t.fCorrP),
+  fCorrPiMinus(t.fCorrPiMinus),
+  fCorrKMinus(t.fCorrKMinus),
+  fCorrPMinus(t.fCorrPMinus),
   fCorrAll(t.fCorrAll)
  {
    // copy constructor
-  fHiddenInfo = t.ValidHiddenInfo() ? t.GetHiddenInfo()->Clone() : NULL;
+  fHiddenInfo = t.ValidHiddenInfo() ? t.GetHiddenInfo()->Clone() : nullptr;
 
   for (int i = 0; i < 9; i++) {
     fNominalTpcPoints[i] = t.fNominalTpcPoints[i];
@@ -246,6 +251,9 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fCorrPi = aTrack.fCorrPi;
   fCorrK = aTrack.fCorrK;
   fCorrP = aTrack.fCorrP;
+  fCorrPiMinus = aTrack.fCorrPiMinus;
+  fCorrKMinus = aTrack.fCorrKMinus;
+  fCorrPMinus = aTrack.fCorrPMinus;
   fCorrAll = aTrack.fCorrAll;
 
   for (int i=0; i<6; i++) {
@@ -351,6 +359,9 @@ void AliFemtoTrack::SetZatDCA(const double& x) {fZatDCA=x;}
 void AliFemtoTrack::SetCorrectionPion(const double& x){fCorrPi=x;}
 void AliFemtoTrack::SetCorrectionKaon(const double& x){fCorrK=x;}
 void AliFemtoTrack::SetCorrectionProton(const double& x){fCorrP=x;}
+void AliFemtoTrack::SetCorrectionPionMinus(const double& x){fCorrPiMinus=x;}
+void AliFemtoTrack::SetCorrectionKaonMinus(const double& x){fCorrKMinus=x;}
+void AliFemtoTrack::SetCorrectionProtonMinus(const double& x){fCorrPMinus=x;}
 void AliFemtoTrack::SetCorrectionAll(const double& x){fCorrAll=x;}
 
 short AliFemtoTrack::Charge() const {return fCharge;}
@@ -396,6 +407,9 @@ float AliFemtoTrack::TOFprotonTime() const{return fTofProtonTime;}
 float AliFemtoTrack::CorrectionPion() const {return fCorrPi;}
 float AliFemtoTrack::CorrectionKaon() const {return fCorrK;}
 float AliFemtoTrack::CorrectionProton() const {return fCorrP;}
+float AliFemtoTrack::CorrectionPionMinus() const {return fCorrPiMinus;}
+float AliFemtoTrack::CorrectionKaonMinus() const {return fCorrKMinus;}
+float AliFemtoTrack::CorrectionProtonMinus() const {return fCorrPMinus;}
 float AliFemtoTrack::CorrectionAll() const {return fCorrAll;}
 
 double AliFemtoTrack::XatDCA() const {return fXatDCA;}
@@ -585,9 +599,7 @@ void                   AliFemtoTrack::SetTrueMomentum(AliFemtoThreeVector *aMom)
 {
   // Set momentum from vector
   if (fTrueMomentum) {
-    fTrueMomentum->SetX(aMom->x());
-    fTrueMomentum->SetY(aMom->y());
-    fTrueMomentum->SetZ(aMom->z());
+    *fTrueMomentum = *aMom;
   }
   else {
     fTrueMomentum = new AliFemtoThreeVector(*aMom);
@@ -598,33 +610,31 @@ void                   AliFemtoTrack::SetTrueMomentum(const AliFemtoThreeVector&
 {
   // Set momentum from vector
   if (fTrueMomentum) {
-    fTrueMomentum->SetX(aMom.x());
-    fTrueMomentum->SetY(aMom.y());
-    fTrueMomentum->SetZ(aMom.z());
+    *fTrueMomentum = aMom;
   }
   else {
-    fTrueMomentum = new AliFemtoThreeVector();
-    *fTrueMomentum = aMom;
+    fTrueMomentum = new AliFemtoThreeVector(aMom);
   }
 }
 //_____________________________________________
 void                   AliFemtoTrack::SetTrueMomentum(Double_t aPx, Double_t aPy, Double_t aPz)
 {
   // Set momentum from components
-  if (!fTrueMomentum) fTrueMomentum = new AliFemtoThreeVector();
+  if (fTrueMomentum) {
     fTrueMomentum->SetX(aPx);
     fTrueMomentum->SetY(aPy);
     fTrueMomentum->SetZ(aPz);
+  }
+  else {
+    fTrueMomentum = new AliFemtoThreeVector(aPx, aPy, aPz);
+  }
 }
 //_____________________________________________
 void                   AliFemtoTrack::SetEmissionPoint(AliFemtoLorentzVector *aPos)
 {
   // Set position from vector
   if (fEmissionPoint) {
-    fEmissionPoint->SetX(aPos->px());
-    fEmissionPoint->SetY(aPos->py());
-    fEmissionPoint->SetZ(aPos->pz());
-    fEmissionPoint->SetT(aPos->e());
+    *fEmissionPoint = *aPos;
   }
   else {
     fEmissionPoint = new AliFemtoLorentzVector(*aPos);
@@ -635,14 +645,10 @@ void                   AliFemtoTrack::SetEmissionPoint(const AliFemtoLorentzVect
 {
   // Set position from vector
   if (fEmissionPoint) {
-    fEmissionPoint->SetX(aPos.px());
-    fEmissionPoint->SetY(aPos.py());
-    fEmissionPoint->SetZ(aPos.pz());
-    fEmissionPoint->SetT(aPos.e());
+    *fEmissionPoint = aPos;
   }
   else {
-    fEmissionPoint = new AliFemtoLorentzVector();
-    *fEmissionPoint = aPos;
+    fEmissionPoint = new AliFemtoLorentzVector(aPos);
   }
 }
 //_____________________________________________
@@ -680,13 +686,9 @@ void                   AliFemtoTrack::SetGlobalEmissionPoint(const AliFemtoThree
 {
   // set position from vector
   if (fGlobalEmissionPoint) {
-    fGlobalEmissionPoint->SetX(aPos.x());
-    fGlobalEmissionPoint->SetY(aPos.y());
-    fGlobalEmissionPoint->SetZ(aPos.z());
-  }
-  else {
-    fGlobalEmissionPoint = new AliFemtoThreeVector();
     *fGlobalEmissionPoint = aPos;
+  } else {
+    fGlobalEmissionPoint = new AliFemtoThreeVector(aPos);
   }
 }
 //_____________________________________________

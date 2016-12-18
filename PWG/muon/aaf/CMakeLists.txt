@@ -28,7 +28,6 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  StageAndFilter.cxx
   FILTER_AODMUONWITHTRACKLETS.cxx
   FILTER_RAWMUON.cxx
   FILTER_ESDMUON.cxx
@@ -49,9 +48,6 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Add a shared library
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
-set(EXE aaf-stage-and-filter)
-
-add_executable(${EXE} ${EXE}.cxx)
 add_executable(aliraw-generate-entrylist aliraw-generate-entrylist.cxx)
 add_executable(aliraw-apply-entrylist aliraw-apply-entrylist.cxx)
 
@@ -62,7 +58,6 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
-target_link_libraries(${EXE} ${MODULE} Core)
 target_link_libraries(aliraw-generate-entrylist ${MODULE} Core RAWDatarec)
 target_link_libraries(aliraw-apply-entrylist ${MODULE} Core RIO )
 
@@ -81,6 +76,5 @@ install(TARGETS ${MODULE}
 
 install(FILES ${HDRS} DESTINATION include)
 
-install(TARGETS ${EXE} RUNTIME DESTINATION bin)
 install(TARGETS aliraw-generate-entrylist RUNTIME DESTINATION bin)
 install(TARGETS aliraw-apply-entrylist RUNTIME DESTINATION bin)

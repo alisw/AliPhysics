@@ -27,7 +27,7 @@
 
 bool IsADReady(Int_t run);
 
-Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 226444,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE)
+Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 245145,TString ocdbStorage = "raw://",Bool_t IsOnGrid = kFALSE,Bool_t printResults = kTRUE, Bool_t doRebin = kTRUE)
 {
   
   TTree *ttree=new TTree("trending","tree of trending variables");
@@ -647,8 +647,8 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPad1->cd();
     myHistSetUp(fHistTotalChargePerEventADA);
     myHistSetUp(fHistTotalChargePerEventADC);
-    fHistTotalChargePerEventADA->Rebin(10);
-    fHistTotalChargePerEventADC->Rebin(10);
+    if(doRebin)fHistTotalChargePerEventADA->Rebin(10);
+    if(doRebin)fHistTotalChargePerEventADC->Rebin(10);
     fHistTotalChargePerEventADA->SetLineColor(kBlue);
     fHistTotalChargePerEventADC->SetLineColor(kRed);
     fHistTotalChargePerEventADA->SetLineWidth(2);
@@ -677,14 +677,15 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPad21->Draw();
     myPadSetUp(myPad21->cd(1),0.15,0.15,0.15,0.15);
     myPadSetUp(myPad21->cd(2),0.15,0.15,0.15,0.15);
-    myPad21->cd(1);
-    gPad->SetLogz();
-    fHistChargePerPM_All->DrawCopy("COLZ");
     myPad21->cd(2);
     gPad->SetLogz();
     fHistChargePerPM_All->GetYaxis()->SetRangeUser(1,50);
     fHistChargePerPM_All->DrawCopy("COLZ");
-      
+    myPad21->cd(1);
+    gPad->SetLogz();
+    fHistChargePerPM_All->GetYaxis()->SetRangeUser(-1,-1);
+    if(doRebin)fHistChargePerPM_All->RebinY(10);
+    fHistChargePerPM_All->DrawCopy("COLZ");
     c21->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
     TCanvas *c25 = new TCanvas("ChargePerPM_Time"," ",1500,500);
@@ -695,14 +696,15 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPad25->Draw();
     myPadSetUp(myPad25->cd(1),0.15,0.15,0.15,0.15);
     myPadSetUp(myPad25->cd(2),0.15,0.15,0.15,0.15);
-    myPad25->cd(1);
-    gPad->SetLogz();
-    fHistChargePerPM_Time->DrawCopy("COLZ");
     myPad25->cd(2);
     gPad->SetLogz();
     fHistChargePerPM_Time->GetYaxis()->SetRangeUser(1,50);
     fHistChargePerPM_Time->DrawCopy("COLZ");
-      
+    myPad25->cd(1);
+    gPad->SetLogz();
+    fHistChargePerPM_Time->GetYaxis()->SetRangeUser(-1,-1);
+    if(doRebin)fHistChargePerPM_Time->RebinY(10);
+    fHistChargePerPM_Time->DrawCopy("COLZ"); 
     c25->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
     TCanvas *c22 = new TCanvas("ChargePerPM_BB"," ",1500,500);
@@ -713,14 +715,15 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPad22->Draw();
     myPadSetUp(myPad22->cd(1),0.15,0.15,0.15,0.15);
     myPadSetUp(myPad22->cd(2),0.15,0.15,0.15,0.15);
-    myPad22->cd(1);
-    gPad->SetLogz();
-    fHistChargePerPM_BB->DrawCopy("COLZ");
     myPad22->cd(2);
     gPad->SetLogz();
     fHistChargePerPM_BB->GetYaxis()->SetRangeUser(1,50);
     fHistChargePerPM_BB->DrawCopy("COLZ");
-      
+    myPad22->cd(1);
+    gPad->SetLogz();
+    fHistChargePerPM_BB->GetYaxis()->SetRangeUser(-1,-1);
+    if(doRebin)fHistChargePerPM_BB->RebinY(10);
+    fHistChargePerPM_BB->DrawCopy("COLZ");
     c22->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
     TCanvas *c23 = new TCanvas("ChargePerPM_BG"," ",1500,500);
@@ -731,14 +734,16 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPad23->Draw();
     myPadSetUp(myPad23->cd(1),0.15,0.15,0.15,0.15);
     myPadSetUp(myPad23->cd(2),0.15,0.15,0.15,0.15);
-    myPad23->cd(1);
-    gPad->SetLogz();
-    fHistChargePerPM_BG->DrawCopy("COLZ");
     myPad23->cd(2);
     gPad->SetLogz();
     fHistChargePerPM_BG->GetYaxis()->SetRangeUser(1,50);
     fHistChargePerPM_BG->DrawCopy("COLZ");
-      
+    myPad23->cd(1);
+    gPad->SetLogz();
+    fHistChargePerPM_BG->GetYaxis()->SetRangeUser(-1,-1);
+    if(doRebin)fHistChargePerPM_BG->RebinY(10);
+    fHistChargePerPM_BG->DrawCopy("COLZ");
+
     c23->Print(Form("ADQA_Run_%d.pdf",runNumber));
     
     TCanvas *c24 = new TCanvas("ChargeLandau"," ",1500,800);
@@ -824,11 +829,11 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPadSetUp(myPad3->cd(2),0.15,0.15,0.15,0.15);
     myPad3->cd(1);
     gPad->SetLogz();
-    //fHistTimePerPM_Corr->GetYaxis()->SetRangeUser(40,90);
+    if(doRebin)fHistTimePerPM_Corr->RebinY(2);
     fHistTimePerPM_Corr->Draw("COLZ");
     myPad3->cd(2);
     gPad->SetLogz();
-    //fHistTimePerPM_UnCorr->GetYaxis()->SetRangeUser(170,220);
+    if(doRebin)fHistTimePerPM_UnCorr->RebinY(2);
     fHistTimePerPM_UnCorr->Draw("COLZ");
 
     c3->Print(Form("ADQA_Run_%d.pdf",runNumber));
@@ -839,6 +844,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     TPad *myPad31 = new TPad("myPad31", "The pad",0,0,1,1);
     myPad31->Divide(4,4);
     myPad31->Draw();
+    TLatex latex;
     
     for(Int_t i=0; i<16; i++){
     	myPadSetUp(myPad31->cd(i+1),0.00,0.00,0.00,0.15);
@@ -848,6 +854,13 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     	if(i<8)hTimeChannelSlice[i]->GetXaxis()->SetRangeUser(62,68);
 	if(i>7)hTimeChannelSlice[i]->GetXaxis()->SetRangeUser(52,62);
 	hTimeChannelSlice[i]->Draw();
+	
+	latex.SetNDC();
+	latex.SetTextFont(42);
+	latex.SetTextSize(0.1);
+	latex.DrawLatex(0.8,0.9,TString::Format("#mu = %2.1f",channelTimeMean[i]));
+	latex.DrawLatex(0.8,0.8,TString::Format("#sigma = %0.2f",channelTimeSigma[i]));
+	
 	}
  
     c31->Print(Form("ADQA_Run_%d.pdf",runNumber));
@@ -884,6 +897,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     	    myPadSetUp(myPad41->cd(i-7),0.15,0.1,0.1,0.15);
     	    myPad41->cd(i-7);
     	    gPad->SetLogz();
+	    if(doRebin){hChannelSlice[i]->RebinX(2); hChannelSlice[i]->RebinY(2);}
 	    hChannelSlice[i]->GetYaxis()->SetRangeUser(1600,2400);
     	    hChannelSlice[i]->DrawCopy("COLZ");
     	    fTimeSlewingSpline[i]->Draw("Psame");
@@ -901,6 +915,7 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     	    myPadSetUp(myPad42->cd(i+1),0.15,0.1,0.1,0.15);
     	    myPad42->cd(i+1);
     	    gPad->SetLogz();
+	    if(doRebin){hChannelSlice[i]->RebinX(2); hChannelSlice[i]->RebinY(2);}
 	    hChannelSlice[i]->GetYaxis()->SetRangeUser(1600,2400);
     	    hChannelSlice[i]->DrawCopy("COLZ");
     	    fTimeSlewingSpline[i]->Draw("Psame");
@@ -929,26 +944,32 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPadSetUp(myPad5->cd(6),0.15,0.1,0.1,0.15);
     myPad5->cd(1);
     gPad->SetLogz();
+    if(doRebin){fHistTimeVsChargeADA_Cut->RebinX(2); fHistTimeVsChargeADA_Cut->RebinY(5);}
     fHistTimeVsChargeADA_Cut->GetXaxis()->SetRangeUser(40,80);
     fHistTimeVsChargeADA_Cut->Draw("COLZ");
     myPad5->cd(2);
     gPad->SetLogz();
+    if(doRebin){fHistTimeVsChargeADA_Corr->RebinX(2); fHistTimeVsChargeADA_Corr->RebinY(5);}
     fHistTimeVsChargeADA_Corr->GetXaxis()->SetRangeUser(40,80);
     fHistTimeVsChargeADA_Corr->Draw("COLZ");
     myPad5->cd(3);
     gPad->SetLogz();
+    if(doRebin){fHistTimeVsChargeADA_UnCorr->RebinX(2); fHistTimeVsChargeADA_UnCorr->RebinY(5);}
     fHistTimeVsChargeADA_UnCorr->GetXaxis()->SetRangeUser(170,220);
     fHistTimeVsChargeADA_UnCorr->Draw("COLZ");
     myPad5->cd(4);
     gPad->SetLogz();
+    if(doRebin){fHistTimeVsChargeADC_Cut->RebinX(2); fHistTimeVsChargeADC_Cut->RebinY(5);}
     fHistTimeVsChargeADC_Cut->GetXaxis()->SetRangeUser(40,80);
     fHistTimeVsChargeADC_Cut->Draw("COLZ");
     myPad5->cd(5);
     gPad->SetLogz();
+    if(doRebin){fHistTimeVsChargeADC_Corr->RebinX(2); fHistTimeVsChargeADC_Corr->RebinY(5);}
     fHistTimeVsChargeADC_Corr->GetXaxis()->SetRangeUser(40,80);
     fHistTimeVsChargeADC_Corr->Draw("COLZ");
     myPad5->cd(6);
     gPad->SetLogz();
+    if(doRebin){fHistTimeVsChargeADC_UnCorr->RebinX(2); fHistTimeVsChargeADC_UnCorr->RebinY(5);}
     fHistTimeVsChargeADC_UnCorr->GetXaxis()->SetRangeUser(170,220);
     fHistTimeVsChargeADC_UnCorr->Draw("COLZ");
 
@@ -997,9 +1018,11 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPadSetUp(myPad8->cd(2),0.15,0.1,0.1,0.15);
     myPad8->cd(1);
     gPad->SetLogz();
+    if(doRebin)fHistChargeNoTime->RebinY(10);
     fHistChargeNoTime->Draw("COLZ");
     myPad8->cd(2);
     gPad->SetLogz();
+    if(doRebin)fHistTimeNoFlag->RebinY(2);
     fHistTimeNoFlag->Draw("COLZ");
 
     c8->Print(Form("ADQA_Run_%d.pdf",runNumber));
@@ -1022,10 +1045,16 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     //gPad->SetLogy();
     fHistMeanTimeADA->GetXaxis()->SetRangeUser(52,62);
     fHistMeanTimeADA->Draw();
+    latex.SetTextSize(0.05);
+    latex.DrawLatex(0.65,0.75,TString::Format("#mu = %2.1f",meanTimeADA));
+    latex.DrawLatex(0.65,0.65,TString::Format("#sigma = %0.2f",meanTimeSigmaADA));
     myPad9->cd(2);
     //gPad->SetLogy();
     fHistMeanTimeADC->GetXaxis()->SetRangeUser(62,68);
     fHistMeanTimeADC->Draw();
+    latex.SetTextSize(0.05);
+    latex.DrawLatex(0.65,0.75,TString::Format("#mu = %2.1f",meanTimeADC));
+    latex.DrawLatex(0.65,0.65,TString::Format("#sigma = %0.2f",meanTimeSigmaADC));
     myPad9->cd(3);
     //gPad->SetLogy();
     fHistMeanTimeDifference->GetXaxis()->SetRangeUser(-16,0);
@@ -1047,9 +1076,11 @@ Int_t MakeTrendingADQA(TString QAfilename ="QAresults.root",Int_t runNumber = 22
     myPadSetUp(myPad10->cd(2),0.15,0.15,0.15,0.15);
     myPad10->cd(1);
     gPad->SetLogz();
+    if(doRebin){fHistMeanTimeCorrelation->RebinX(2);fHistMeanTimeCorrelation->RebinY(2);}
     fHistMeanTimeCorrelation->Draw("COLZ");
     myPad10->cd(2);
     gPad->SetLogz();
+    if(doRebin){fHistMeanTimeSumDiff->RebinX(2);fHistMeanTimeSumDiff->RebinY(2);} 
     fHistMeanTimeSumDiff->Draw("COLZ");
 
     c10->Print(Form("ADQA_Run_%d.pdf",runNumber));

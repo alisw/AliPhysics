@@ -103,7 +103,7 @@ void AliEmcalClusTrackMatcherTask::ExecOnce()
   AliClusterContainer* clusters = GetClusterContainer(0);
 
   AliAnalysisTaskEmcal::ExecOnce();
-  if (!fInitialized) return;
+  if (!fLocalInitialized) return;
 
   TString emcalTracksName(Form("EmcalTracks_%s", tracks->GetArrayName().Data()));
   TString emcalClustersName(Form("EmcalClusters_%s", clusters->GetArrayName().Data()));

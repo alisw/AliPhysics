@@ -94,12 +94,6 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   AliSysInfo::AddStamp("BeforeTRD");
   if ( detStr.Contains("TRD") && detStr.Contains("TPC"))  AddTaskTRDCalib(runNumber);
 
-  AliSysInfo::AddStamp("BeforeTOF");
-  if ( detStr.Contains("TOF") && detStr.Contains("TPC"))  {
-    AddTOFAnalysisTaskCalibPass0();
-    AddTOFAnalysisTaskCalibTree();
-  }
-
   AliSysInfo::AddStamp("BeforeT0");
   if ( detStr.Contains("T0"))   {
     AddTaskT0Calib(runNumber);
@@ -116,10 +110,18 @@ void runCalibTrain(Int_t runNumber, const char *inFileName = "AliESDs.root", con
   Bool_t writeITSTP = kFALSE;
   if (!okTPC) useTPCcrv = kFALSE;
   AliSysInfo::AddStamp("BeforeSDD");
-  AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv,detStr.Contains("TOF") ? 10.0:-1);
+  AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib(0,writeITSTP,useTPCcrv,detStr.Contains("TOF") ? 20.0:-1);
   if (!okTPC) itsAlign->SetUseITSstandaloneTracks(kTRUE);
   if (grpData->GetL3Current()[0] < 300) itsAlign->SetMinPt(0.001); 
   //
+
+  // Make sure the TOF is the last one since it modifies the ESDevent
+  AliSysInfo::AddStamp("BeforeTOF");
+  if ( detStr.Contains("TOF") && detStr.Contains("TPC"))  {
+    AddTOFAnalysisTaskCalibPass0();
+    AddTOFAnalysisTaskCalibTree();
+  }
+
   // dummy task to clean geometry in Terminate >>>>
   CleanGeom* clgmTask = new CleanGeom("cleanGeom");
   mgr->AddTask(clgmTask);

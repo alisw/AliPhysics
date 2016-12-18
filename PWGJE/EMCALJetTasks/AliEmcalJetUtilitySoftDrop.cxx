@@ -161,7 +161,10 @@ void AliEmcalJetUtilitySoftDrop::ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWra
 
   #ifdef FASTJET_VERSION
 
+  std::vector<fastjet::PseudoJet> jets_inclusive;
   std::vector<fastjet::PseudoJet> jets_groomed;
+  jets_inclusive = fjw.GetInclusiveJets();
+  Int_t ninc = (Int_t)jets_inclusive.size();
   jets_groomed = fjw.GetGroomedJets();
   Int_t ngrmd = (Int_t)jets_groomed.size();
   if( (ngrmd > 0) && (ij<ngrmd) ) {
@@ -175,6 +178,11 @@ void AliEmcalJetUtilitySoftDrop::ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWra
 
     jet->GetShapeProperties()->SetSoftDropZg(jets_groomed[ij].structure_of<fastjet::contrib::SoftDrop>().symmetry());
     jet->GetShapeProperties()->SetSoftDropdR(jets_groomed[ij].structure_of<fastjet::contrib::SoftDrop>().delta_R());
+
+    //getting ungroomed pt
+    unsigned k = jets_groomed[ij].user_index();
+    if ( (k>0) && (k<ninc) ) jet->GetShapeProperties()->SetSoftDropPtfrac( jets_groomed[ij].perp() / jets_inclusive[k].perp() );
+
   }
 
   #endif

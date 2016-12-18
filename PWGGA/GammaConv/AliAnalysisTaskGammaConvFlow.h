@@ -81,9 +81,12 @@ public:
     void                                 PrepareFlowEvent(Int_t iMulti, AliFlowEvent *FlowEv) const;
     void                                 SetRPCuts(AliFlowTrackCuts *cutsRP) { fCutsRP = cutsRP; }
     void                                 ProcessPhotonCandidatesforV2();
+    void                                 ProcessPhotonCandidatesforLTM();
     void                                 SetMassWindow(Float_t MinMass, Float_t MaxMass) { fMinMass = MinMass; fMaxMass = MaxMass; }
     void                                 SetKappaWindow(Float_t MinKappa, Float_t MaxKappa) { fMinKappa = MinKappa; fMaxKappa = MaxKappa; }
     void                                 SetFilterVariable(Int_t FilterVariable, Double_t MinFilter, Double_t MaxFilter) { fFilterVariable = FilterVariable; fMinFilter = MinFilter; fMaxFilter = MaxFilter;}
+    void                                 SetApplydPhidRCut(Int_t dPhiDRCut){ fApplydPhidRCut = dPhiDRCut; }
+    void                                 SetPerformExtraStudies(Bool_t ExtraStudies){ fPerformExtraStudies = ExtraStudies; }
     
     
 protected:
@@ -114,6 +117,13 @@ protected:
 	AliConversionMesonCuts 				*fMesonCuts;										//
 	TH1F 								**hESDConvGammaPt;									//
 	TH2F 								**hInvMassPair;									//
+	TH2F                **hLTMPt;                 //
+	TH2F                **hLTMPt_MC;                 //
+	TH2F                **hPt_TruePt;                 //
+	TH2F                **hdPhidRcandidates;         //
+	TH2F                **hdPhidRcandidates_MCsigsig;         //
+	TH2F                **hdPhidRcandidates_MCbkgsig;         //
+	TH2F                **hdPhidRcandidates_MCbkgbkg;         //
 	TH2F 								**hKappaTPC;									//
 	TH2F                **hKappaTPC_after;                  //
 	TH2F                **hKappaTPC_Temp0;                  //
@@ -203,6 +213,8 @@ protected:
   Double_t               fMinFilter;                      //
   Double_t               fMaxFilter;                      //
   Bool_t                fIsMC;                            //
+  Int_t                fApplydPhidRCut;                  //
+  Bool_t                fPerformExtraStudies;             //
   AliMCEvent*                 fMCEvent;                   //
   AliStack*                   fMCStack;                   //
 
@@ -214,11 +226,15 @@ private:
 	AliFlowEvent         **fFlowEvent; //! flow events Inclusive e
   
   Bool_t MCElectronElectron( AliAODConversionPhoton *MCPhoton );
+  Bool_t MCGammaSignal( AliAODConversionPhoton *MCPhoton );
+  Bool_t MCConversionPhotonCheck( TParticle *MCPhoton );
   Int_t GetTemplateID( AliAODConversionPhoton *MCPhoton );
+  void GetdPhidRtoCandidate();
+  Int_t GetdPhidRtoCandidate( AliAODConversionPhoton* gamma, Int_t PhotonID );
 
 	AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
 	AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvFlow, 8);
+    ClassDef(AliAnalysisTaskGammaConvFlow, 12);
 };
 
 #endif

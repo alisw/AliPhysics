@@ -956,7 +956,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessPionCandidates(){
 	vector<Int_t> lGoodNegPionIndexPrev(0);
 	vector<Int_t> lGoodPosPionIndexPrev(0);
 	
-	for(UInt_t i = 0; i < fSelectorNegPionIndex.size(); i++){
+    for(Long_t i = 0; i < fSelectorNegPionIndex.size(); i++){
 		AliESDtrack* negPionCandidate = fESDEvent->GetTrack(fSelectorNegPionIndex[i]);
 		if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(negPionCandidate) ) continue;
 		lGoodNegPionIndexPrev.push_back(   fSelectorNegPionIndex[i] );
@@ -983,7 +983,7 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessPionCandidates(){
 		}
 	}
 
-	for(UInt_t i = 0; i < fSelectorPosPionIndex.size(); i++){
+    for(Long_t i = 0; i < fSelectorPosPionIndex.size(); i++){
 		AliESDtrack* posPionCandidate = fESDEvent->GetTrack( fSelectorPosPionIndex[i] );
 		if(! ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->PionIsSelected(posPionCandidate) ) continue;
 		lGoodPosPionIndexPrev.push_back(   fSelectorPosPionIndex[i]  );
@@ -1012,12 +1012,12 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::ProcessPionCandidates(){
 	}
 
 
-	for(UInt_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
+    for(Long_t i = 0; i < lGoodNegPionIndexPrev.size(); i++){
 
 		AliESDtrack *negPionCandidate = fESDEvent->GetTrack(lGoodNegPionIndexPrev[i]);
 		AliKFParticle negPionCandidateKF( *negPionCandidate->GetConstrainedParam(), 211 );
 
-		for(UInt_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
+        for(Long_t j = 0; j < lGoodPosPionIndexPrev.size(); j++){
 
 			AliESDtrack *posPionCandidate = fESDEvent->GetTrack(lGoodPosPionIndexPrev[j]);
 			AliKFParticle posPionCandidateKF( *posPionCandidate->GetConstrainedParam(), 211 );
@@ -1327,10 +1327,10 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::CalculateBackground(){
 				bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
 			}
 
-			for(Int_t iCurrent=0;iCurrent<fGoodVirtualParticles->GetEntries();iCurrent++){
+            for(Int_t iCurrent=0;iCurrent<fGoodVirtualParticles->GetEntries();iCurrent++){
 				AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGoodVirtualParticles->At(iCurrent));
 
-				for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+                for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
 					AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
 
 					if(fMoveParticleAccordingToVertex == kTRUE && method == 1 ){
@@ -1357,11 +1357,11 @@ void AliAnalysisTaskEtaToPiPlPiMiGamma::CalculateBackground(){
 				if(fMoveParticleAccordingToVertex == kTRUE && method == 1){
 					bgEventVertex = fBGHandler[fiCut]->GetBGEventVertex(zbin,mbin,nEventsInBG);
 				}
-				for(Int_t iCurrent=0;iCurrent<fGoodVirtualParticles->GetEntries();iCurrent++){
+                for(Int_t iCurrent=0;iCurrent<fGoodVirtualParticles->GetEntries();iCurrent++){
 
 					AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(fGoodVirtualParticles->At(iCurrent));
 
-					for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
+                    for(Int_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
 
 						AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
 

@@ -28,13 +28,13 @@
  **************************************************************************/
 
 class TClonesArray;
-class TObjArray;
 class THistManager;
 class TString;
 class AliEMCALTriggerQA;
 class THnSparse;
 class AliESDEvent;
 
+#include <TObjArray.h>
 #include <AliEMCALTriggerQA.h>
 #include <AliLog.h>
 #include <AliEMCALTriggerChannelContainer.h>
@@ -62,6 +62,9 @@ class AliEmcalTriggerQATask : public AliAnalysisTaskEmcalLight {
   void EnableHistogramsByTimeStamp(UInt_t binWidth = 600){ fTimeStampBinWidth  = binWidth   ; }
 
   AliEMCALTriggerQA* GetTriggerQA(Int_t i = 0)    { return i >= 0 && i < fEMCALTriggerQA.GetEntriesFast() ? static_cast<AliEMCALTriggerQA*>(fEMCALTriggerQA.At(i)) : 0; }
+
+  static AliEmcalTriggerQATask* AddTaskEmcalTriggerQA(TString triggerPatchesName = "EmcalTriggers", TString cellsName = "", TString triggersName = "", Int_t nCentBins = 0, Bool_t online = kFALSE, TString subdir = "", TString suffix = "");
+  static void AddTaskEmcalTriggerQA_QAtrain(Int_t runnumber);
 
  protected:
   void                                      UserCreateOutputObjects();

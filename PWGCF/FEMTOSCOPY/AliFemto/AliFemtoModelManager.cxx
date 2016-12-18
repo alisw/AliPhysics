@@ -151,6 +151,24 @@ Double_t AliFemtoModelManager::GetWeight(AliFemtoPair *aPair)
       tPid1 = 321;
       tPid2 = -2212;
     }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::LambdaLambda()) {
+      tMass1 = 1.115683;
+      tMass2 = 1.115683;
+      tPid1 = 3122;
+      tPid2 = 3122;
+    }
+    if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::AntilambdaAntilambda()) {
+      tMass1 = 1.115683;
+      tMass2 = 1.115683;
+      tPid1 = -3122;
+      tPid2 = -3122;
+    }
+     if (fWeightGenerator->GetPairType() == AliFemtoModelWeightGenerator::LambdaAntilambda()) {
+      tMass1 = 1.115683;
+      tMass2 = 1.115683;
+      tPid1 = 3122;
+      tPid2 = -3122;
+    }
 
     if (!(aPair->Track1()->HiddenInfo())) {
       AliFemtoModelHiddenInfo *inf1 = new AliFemtoModelHiddenInfo();

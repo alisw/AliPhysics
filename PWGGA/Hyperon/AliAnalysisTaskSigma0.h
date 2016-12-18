@@ -101,14 +101,9 @@ protected:
     void SelectEMCALPhotons(); //collects EMCAL photons in event
     void FindLeaders(); //Mark leading particles
     
-    void REvalIsolation( TLorentzVector *p, const Int_t itype = 100 )  ;
-    
     void FillCorr(TLorentzVector * trig, const Int_t itype = 100) ;
      
     AliMCEvent   *fMCEvent;
-    
-    Int_t EvalIsolation(TLorentzVector *p) ; //checks if this particle isolated
-    Int_t EvalMCIsolation( TParticle *p) ; //checks if this particle generated to be isolated
     
     Bool_t IsGoodChannel(const char * det, Int_t mod, Int_t ix, Int_t iz) ; //apply bad map
     

@@ -1,5 +1,5 @@
-Re-implementation of tracklet dNch/deta code 
-============================================
+Re-implementation of Ruben's tracklet dNch/deta code (deprecated) {#pwglf_fwd_spd_tracklet_2}
+=================================================================
 
 The code in this sub-directory is a re-implementation of Ruben's code
 for analysing SPD tracklet data for dNch/deta.  

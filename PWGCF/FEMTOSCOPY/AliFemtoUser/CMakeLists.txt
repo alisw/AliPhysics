@@ -22,6 +22,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemtoUser)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/AliFemto
 )
 
@@ -31,6 +32,7 @@ set(SRCS
   AliFemtoShareQualityKTPairCut.cxx
   AliFemtoShareQualityTPCEntranceSepPairCut.cxx
   AliFemtoESDTrackCut.cxx
+  AliFemtoEPSelectionTaskThird.cxx
   AliFemtoEventCutCentrality.cxx
   AliFemtoMJTrackCut.cxx
   AliFemtoKKTrackCut.cxx
@@ -38,6 +40,7 @@ set(SRCS
   AliFemtoKpmTrackCut.cxx
   AliFemtoKpm45TrackCut.cxx
   AliFemtoKtBinnedCorrFunc.cxx
+  AliFemtoKTPairCutThird.cxx
   AliFemtoTPCInnerCorrFctn.cxx
   AliFemtoChi2CorrFctn.cxx
   AliFemtoModelAllHiddenInfo.cxx
@@ -47,6 +50,9 @@ set(SRCS
   AliFemtoModelCorrFctn3DSpherical.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
+  AliFemtoCorrFctnDEtaDPhiWithWeights.cxx
+  AliFemtoQinvCorrFctnWithWeights.cxx
+  AliFemtoModelCorrFctnDEtaDPhiWithWeights.cxx
   AliFemtoModelCorrFctnDirectYlm.cxx
   AliFemtoModelCorrFctnSource.cxx
   AliFemtoModelCorrFctnKStar.cxx
@@ -83,6 +89,7 @@ set(SRCS
   AliFemtoPairCutPt.cxx
   AliFemtoAvgSepCorrFctn.cxx
   AliFemtoAnalysisAzimuthalPbPb.cxx
+  AliFemtoAnalysisAzimuthalPbPbThird.cxx
   AliFemtoAnalysisAzimuthalPbPb2Order.cxx
   AliFemtoAnalysisPionLambda.cxx
   AliFemtoAnalysisPionPion.cxx
@@ -107,7 +114,16 @@ set(SRCS
   AliFemtoCorrFctnDYDPhiSimple.cxx
   AliFemtoV0TrackCutNSigmaFilter.cxx
   AliFemtoCutMonitorEventPartCollSize.cxx
+  AliFemtoModelCorrFctnWithWeights.cxx
+  AliFemtoCutMonitorParticleYPtWithWeights.cxx
   Faddeeva.cxx
+  AliFemtoESDTrackCutNSigmaFilter.cxx
+  AliFemtoModelCorrFctnKStarFull.cxx
+  AliFemtoModelWeightGeneratorBasicLednicky.cxx
+  AliFemtoAnalysisLambdaKaon.cxx
+  AliFemtoModelCorrFctnDEtaDPhiRM.cxx
+  AliFemtoCutMonitorPairKT.cxx
+  AliFemtoPairCutMInv.cxx
   )
 
 

@@ -26,6 +26,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations # what deps here?
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
@@ -34,6 +36,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/JPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/LMEE
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
                    )
 
 # Sources in alphabetical order
@@ -59,6 +62,7 @@ set(SRCS
       core/AliDielectronPair.cxx
       core/AliDielectronPairLegCuts.cxx
       core/AliDielectronPID.cxx
+      core/AliDielectronQnEPcorrection.cxx
       core/AliDielectronSignalMC.cxx
       core/AliDielectronTrackCuts.cxx
       core/AliDielectronTrackRotator.cxx
@@ -78,8 +82,12 @@ set(SRCS
       LMEE/AliAnalysisTask_Syst_PtDistributionsMC.cxx
       LMEE/AliAnalysisTaskDielectronsPbPb_Data.cxx
       LMEE/AliAnalysisTaskDielectronsPbPb_Efficiency.cxx
+      LMEE/AliAnalysisTaskMLTreeMaker.cxx
+      LMEE/AliAnalysisTaskSimpleTreeMaker.cxx
       LMEE/AliDielectronReducedTrack.cxx
-   )
+      LMEE/AliAnalysisTaskTGReducedTree.cxx
+      LMEE/AliAnalysisTaskLMeeCocktailMC.cxx
+  )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -93,18 +101,19 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 # Dependecies
 set(ROOT_DEPENDENCIES Core EG Gpad Graf Hist MathCore Matrix Minuit Net Physics RIO Tree)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD ESD PWGflowTasks PWGflowBase PWGTRD STEERBase TRDbase )
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(ALIPHYSICS_DEPENCIES PWGPPevcharQnInterface)
+set(LIBDEPS ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${ALIPHYSICS_DEPENCIES} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

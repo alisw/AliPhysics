@@ -810,16 +810,6 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
   fFuncWeightFONLL7overLHC10f7aLc=new TF1("funcWeightFONLL7overLHC10f7aLc","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",01.,20.);
 	fFuncWeightFONLL7overLHC10f7aLc->SetParameters(2.84268e+02,2.18850e+01,2.36298e+01,7.46144e+00,1.69747e-01,1.66993e+00,-5.54726e-02,-1.53869e+00,-1.18404e+00);
 
-
-	fOutput->Add(fFuncWeightPythia);
-	fOutput->Add(fFuncWeightFONLL7overLHC10f6a);
-	fOutput->Add(fFuncWeightFONLL5overLHC10f6a);
-	fOutput->Add(fFuncWeightFONLL5overLHC13d3);
-	fOutput->Add(fFuncWeightFONLL5overLHC13d3Lc);
-	fOutput->Add(fFuncWeightFONLL7overLHC11b2Lc);
-	fOutput->Add(fFuncWeightFONLL7overLHC10f7aLc);
-
-
 	// fhChi2 = new TH1F("fhChi2", "Chi2",100,0.,10.);
 	// fhChi2->Sumw2();
 	// fOutput->Add(fhChi2);
@@ -889,7 +879,7 @@ void AliAnalysisTaskSELambdacTMVA::UserCreateOutputObjects()
 		TString ntName="fNtupleLambdacReco";
 		AliAnalysisDataContainer *contntrec = GetOutputSlot(6)->GetContainer();
 		if(contntrec)ntName=(TString)contntrec->GetName();
-		fNtupleLambdacReco = new TNtuple(ntName.Data(), "Lc Reco", "isLcBkg:PtLc:PtLcMC:PtTr0:PtTr1:PtTr2:PtTr0MC:PtTr1MC:PtTr2MC:isTOFTr0:isTOFTr1:isTOFTr2:selectionCand:selectionPID:selectionPIDprob");
+		fNtupleLambdacReco = new TNtuple(ntName.Data(), "Lc Reco", "isLcBkg:PtLc:PtLcMC:PtTr0:PtTr1:PtTr2:PtTr0MC:PtTr1MC:PtTr2MC:isTOFTr0:isTOFTr1:isTOFTr2:selectionCand:selectionPID:selectionPIDprob:Charge");
 		PostData(6,fNtupleLambdacReco);
 	}
 
@@ -2007,9 +1997,9 @@ void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDec
 	}
 	if(fIsLc>=1 && fIsLc<=2) IsLc=kTRUE;
 	if(fIsLc==2) IsLcfromLb=kTRUE;
-	if(fReadMC && IsInjected && !IsLc && fSyst >=1 ) return; //dont fill if injected bkg, pPb or PbPb
+	//if(fReadMC && IsInjected && !IsLc && fSyst >=1 ) return; //dont fill if injected bkg, pPb or PbPb
 
-	Float_t tmp[15];
+	Float_t tmp[16];
 	//Is Lc
 	if(!IsInjected && IsLc==0) tmp[0]=0; //non-injected bkg
 	else if(IsLc==1 && !IsLcfromLb) tmp[0]=1; //prompt Lc
@@ -2063,6 +2053,7 @@ void AliAnalysisTaskSELambdacTMVA::FillRecoNtuple(AliAODEvent *aod,AliAODRecoDec
 	tmp[12]=selectionCand;
 	tmp[13]=selectionPID;
 	tmp[14]=selectionPIDprob;
+	tmp[15]=part->Charge();
 
 //	Bool_t ispKpiMC = IspKpiMC(part,arrayMC); 
 //	Bool_t ispiKpMC = IspiKpMC(part,arrayMC); 

@@ -1,20 +1,49 @@
-Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, const char* ocdbStorage) {
+void PrintProcStatus(int status) {
+  fflush(stdout);
+  printf("extraction of TPC SP calibration status: %d\n",status);
+  fflush(stdout);
+}
+
+Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, const char* ocdbStorage, 
+			 Bool_t corr=kTRUE, Bool_t dist=kTRUE) {
 
   // macro that process a list of files (xml or txt) to produce then the
   // OCDB entry for the TPC SP Distortion calibration; inspired by
   // AliAnalysisAlien::MergeOutput for simplicity
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
+  enum {kStatusFail=1, kStatusOK=0, kStatusLowStatUpdate=-1};
+  if (!gSystem->AccessPathName("CreateCorrMapObj.C")) {
+    gROOT->LoadMacro("CreateCorrMapObj.C");
+    ::Info("ProcessOutputCheb","using local version of ProcessOutputCheb.C");
+  }
+  else {
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
+    ::Info("ProcessOutputCheb","using %s","$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
+  }
+  //gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/TPC/CalibMacros/CreateCorrMapObj.C");
   //gROOT->LoadMacro("CreateCorrMapObj.C");
     
   Bool_t isGrid = kTRUE;
   TObjArray *listoffiles = new TObjArray();
+
+  int ntrminUser = -1;
+  int ntrminUserStop = -1;
+  float stopDefFrac = 0.7;
+  TString ntrminUserS = gSystem->Getenv("distMinTracks");
+  if (!ntrminUserS.IsNull() && (ntrminUser=ntrminUserS.Atoi())>0) {
+    ::Info("ProcessOutput","User provided min tracks to validate object as good: %d",ntrminUser);
+  } 
+  TString ntrminUserStopS = gSystem->Getenv("distMinTracksStop");
+  if (!ntrminUserStopS.IsNull() && (ntrminUserStop=ntrminUserStopS.Atoi())>0) {
+    ::Info("ProcessOutput","User provided min tracks to validate object as unusable: %d",ntrminUserStop);
+  }
   
   if (filesToProcess.Contains(".xml")) {
     // Merge files pointed by the xml 
     TGridCollection *coll = (TGridCollection*)gROOT->ProcessLine(Form("TAlienCollection::Open(\"%s\");", filesToProcess.Data()));
     if (!coll) {
       ::Error("ProcessOutput", "Input XML collection empty.");
+      PrintProcStatus(kStatusFail);
       return kFALSE;
     }
     coll->Print();
@@ -32,7 +61,8 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     in.open(filesToProcess);
     if (in.fail()) {
       ::Error("ProcessOutput", "File %s cannot be opened. Processing stopped." ,filesToProcess.Data());
-      return kTRUE;
+      PrintProcStatus(kStatusFail);
+      return kFALSE;
     }
     Int_t nfiles = 0;
     while (in.good()) {
@@ -46,6 +76,7 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     if (!nfiles) {
       ::Error("ProcessOutput","Input file %s contains no files to be processed\n", filesToProcess.Data());
       delete listoffiles;
+      PrintProcStatus(kStatusFail);
       return kFALSE;
     }
   }
@@ -53,11 +84,13 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   if (!listoffiles->GetEntries()) {
     ::Error("ProcessOutput","No files to process\n");
     delete listoffiles;
+    PrintProcStatus(kStatusFail);
     return kFALSE;
   }
   
   if (startRun != endRun) {
     Printf("The processing now is only run-level, please check again!");
+    PrintProcStatus(kStatusFail);
     return kFALSE;
   }
   
@@ -65,9 +98,13 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
   TObject *nextfile;
   TString snextfile;
   TIter next(listoffiles);   
-  TObjArray* a = new TObjArray();
-  a->SetOwner(kTRUE);
-  Int_t lowStatJobs = 0;
+  TObjArray* acorr = new TObjArray();
+  TObjArray* adist = new TObjArray();
+  acorr->SetOwner(kTRUE);
+  adist->SetOwner(kTRUE);
+
+
+  Int_t lowStatJobs = 0, badStatJobs = 0;
   Int_t nJobs = 0;
   while (nextfile=next()) {
     snextfile = nextfile->GetName();
@@ -76,28 +113,69 @@ Bool_t ProcessOutputCheb(TString filesToProcess, Int_t startRun, Int_t endRun, c
     AliTPCDcalibRes* dcalibRes = AliTPCDcalibRes::Load(snextfile.Data());
     if (!dcalibRes) {
       ::Error("ProcessOutput","Did not find calib object in %s, job Killed",snextfile.Data());
+      PrintProcStatus(kStatusFail);
       exit(1);
     }
     int ntrUse = dcalibRes->GetNTracksUsed();
     int ntrMin = dcalibRes->GetMinTrackToUse();
+    if (ntrminUser>0) ntrMin = ntrminUser;
+    int ntrMinBad = ntrminUserStop>0 ? ntrminUserStop : int(ntrMin*stopDefFrac);
+    if (ntrMinBad>=ntrMin) ntrMinBad = ntrMin;
     if (ntrUse<ntrMin) {
-      ::Error("ProcessOutput","Low stat:%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
+      ::Warning("ProcessOutput","Low stat:%d tracks used (min: %d, unusable: %d) in %s",ntrUse,ntrMin,ntrMinBad,snextfile.Data());
       lowStatJobs++;
+      if (ntrUse<ntrMinBad) badStatJobs++;
     }
     else {
-      ::Info("ProcessOutput","stat is OK :%d tracks used (min: %d) in %s",ntrUse,ntrMin,snextfile.Data());
+      ::Info("ProcessOutput","stat is OK :%d tracks used (min: %d, unusable: %d) in %s",ntrUse,ntrMin,ntrMinBad,snextfile.Data());
     }
-    AliTPCChebCorr* c = dcalibRes->GetChebCorrObject();
-    a->Add(c);
+    if (corr) { 
+      AliTPCChebCorr* c = dcalibRes->GetChebCorrObject();
+      if (!c) {
+	::Error("ProcessOutput","Did not find %s Cheb.parm in %s",corr ? "Correction":"Distortion" ,snextfile.Data());
+	PrintProcStatus(kStatusFail);
+	exit(1);
+      }
+      acorr->Add(c);
+    }
+    if (dist) { // 
+      AliTPCChebDist* d = dcalibRes->GetChebDistObject();
+      if (!d) {
+	::Error("ProcessOutput","Did not find %s Cheb.parm in %s",corr ? "Correction":"Distortion" ,snextfile.Data());
+	//PrintProcStatus(kStatusFail);
+	//exit(1);
+      }
+      else adist->Add(d);
+    }
+    //
+    nJobs++;
   }
-  if (lowStatJobs) {
-    ::Error("ProcessOutput","%d out of %d timebins have low stat, will not update OCDB",lowStatJobs,nJobs);
+  if (badStatJobs) {
+    ::Error("ProcessOutput","%d out of %d timebins have too low stat, will not update OCDB",badStatJobs,nJobs);
+    PrintProcStatus(kStatusFail);
   }
   else {
-    a->Print();
-    CreateCorrMapObjTime(a, startRun, endRun, ocdbStorage);
+    int status = kStatusOK;
+    if (lowStatJobs) {
+      ::Warning("ProcessOutput","%d out of %d timebins have low stat, still will update OCDB",lowStatJobs,nJobs);
+      status = kStatusLowStatUpdate;
+    }
+    if (corr) {
+      printf("Corrections\n");
+      acorr->Print();
+      CreateCorrMapObjTime(acorr, startRun, endRun, ocdbStorage);
+    }
+    if (dist && adist->GetEntries()) {
+      printf("Distortions\n");
+      adist->Print();
+      CreateCorrMapObjTime(adist, startRun, endRun, ocdbStorage);
+    }
+    PrintProcStatus(status);
   }
-  delete a;
+  acorr->SetOwner(kFALSE);
+  adist->SetOwner(kFALSE);
+  delete acorr;
+  delete adist;
   delete listoffiles;
   
   return kTRUE;

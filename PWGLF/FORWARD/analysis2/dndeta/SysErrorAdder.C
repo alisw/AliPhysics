@@ -73,6 +73,7 @@ struct SysErrorAdder
    * @param id    Identifier 
    * @param fill  Fill style 
    * @param l     Legend 
+   * @param off   Off-set 
    */
   void ModError(GraphSysErr* gse, Int_t id, Style_t fill,
 		TLegend* l, UShort_t off=64) const
@@ -224,7 +225,10 @@ struct SysErrorAdder
   /** 
    * Create a graph 
    * 
-   * @param h histogram 
+   * @param h    histogram 
+   * @param l    Option Legend to add to 
+   * @param eff  Efficiency 
+   * @param verb Be verbose 
    * 
    * @return Graph 
    */  
@@ -232,7 +236,7 @@ struct SysErrorAdder
 			    Bool_t verb=false)
   {
     // --- Reaction key ------------------------------------------------
-    if (verb) Info("", "Making graph from %s %p", h->GetName(), l);
+    if (verb) Info("", "Making graph from %s %p eff=%f", h->GetName(), l, eff);
     TString reac = fSys;
     reac.ToUpper();
     reac.Insert(reac.Index("P", 1, 1, TString::kIgnoreCase), " ");
@@ -250,16 +254,16 @@ struct SysErrorAdder
     gse->SetMarkerStyle(h->GetMarkerStyle());
     gse->SetFillStyle(h->GetFillStyle());
     gse->SetXTitle("\\mathit{\\eta}");
-    gse->SetYTitle("1/N \\hbox{d}N_{ch}/\\hbox{d}\\eta");
+    gse->SetYTitle("\\mathrm{d}N_{ch}/\\mathrm{d}\\eta");
     gse->SetKey("laboratory", "CERN");
     gse->SetKey("accelerator", "LHC");
     gse->SetKey("detector", "FORWARD");
     gse->SetKey("reackey", reac);
     gse->SetKey("obskey", "DN/DETARAP");
-    gse->SetKey("title", "Systematic study of 1/N dNch/deta over widest "
+    gse->SetKey("title", "Systematic study of dNch/deta over widest "
 		"possible eta region at the LHC");
     gse->SetKey("author", "CHRISTENSEN");
-    gse->SetKey("comment", "We present 1/N dNch/deta over widest "
+    gse->SetKey("comment", "We present dNch/deta over widest "
 		"possible eta region at the LHC");
     gse->SetKey("dscomment", "The pseudo-rapidity density of charged particle");
     gse->AddQualifier(Form("SQRT(S)%s IN GEV",
@@ -349,6 +353,8 @@ struct INELAdder : public SysErrorAdder
    * 
    * @param sys Collision system 
    * @param sNN Collision energy
+   * @param low  Low trigger uncertainty 
+   * @param high High trigger uncertainty 
    */
   INELAdder(const TString& sys, UShort_t sNN, Double_t low=-1, Double_t high=-1)
     : SysErrorAdder(sys, sNN, "INEL"), fLow(low), fHigh(high)
@@ -432,8 +438,9 @@ struct NSDAdder : public SysErrorAdder
   /** 
    * Constructor 
    * 
-   * @param sys Collision system 
-   * @param sNN Collision energy
+   * @param sys   Collision system 
+   * @param sNN   Collision energy
+   * @param value Value of uncertainty 
    */
   NSDAdder(const TString& sys, UShort_t sNN, Double_t value=-1)
     : SysErrorAdder(sys, sNN, "NSD"), fValue(value)
@@ -443,6 +450,7 @@ struct NSDAdder : public SysErrorAdder
       switch (fSNN) {
       case  900:   fValue = 0.02; break;
       case 2760:   fValue = 0.03; break;
+      case 5023:   fValue = 0.00; break;
       case 7000: 
       case 8000:
       case 13000:  fValue = 0.02; break;
@@ -485,7 +493,7 @@ struct CENTAdder : public SysErrorAdder
    * 
    * @param sys Collision system 
    * @param sNN Collision energy
-   * @param Method 
+   * @param method MEthod to use  
    */
   CENTAdder(const TString& sys, UShort_t sNN, const TString& method)
     : SysErrorAdder(sys, sNN, method), fCent(0), fValue(0), fCMin(0), fCMax(0),
@@ -571,6 +579,7 @@ struct CENTAdder : public SysErrorAdder
    * Get centrality 
    * 
    * @param h Histogram 
+   * @param verb Be verbose 
    * 
    * @return Centrality 
    */
@@ -600,6 +609,7 @@ struct CENTAdder : public SysErrorAdder
    * Declare the systematic error from the empirical correction 
    * 
    * @param gse Graph 
+   * @param l   Optional legend 
    * 
    * @return Id of systmatic error or -1
    */
@@ -617,6 +627,9 @@ struct CENTAdder : public SysErrorAdder
    * Create a graph 
    * 
    * @param h histogram 
+   * @param l 
+   * @param eff 
+   * @param verb 
    * 
    * @return Graph 
    */  

@@ -841,6 +841,25 @@ public:
     static void Format(TString& out, const char* format, va_list ap);
     TString fMsg;
   };
+  //__________________________________________________________________
+   /** 
+   * A guard to suppress messages 
+   */
+  struct SuppressGuard
+  {
+    /** The previous message level */
+    Int_t save;
+    /** 
+     * Constructor 
+     * 
+     * @param lvl Level to suppress to 
+     */
+    SuppressGuard(Int_t lvl=2000);
+    /** 
+     * Destructor 
+     */
+    ~SuppressGuard();
+  };
 private:
   /** 
    * Constructor 

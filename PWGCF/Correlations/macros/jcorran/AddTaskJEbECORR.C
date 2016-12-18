@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJEbECORR(TString taskName, Bool_t ismc, UInt_t triggSel, TString cardName, TString cardSetting, TString ebeCentFile, Bool_t enableCORR){
+AliAnalysisTask *AddTaskJEbECORR(TString taskName, Bool_t ismc, Bool_t iskinematiconly, UInt_t triggSel, TString cardName, TString cardSetting, TString ebeCentFile, Bool_t enableCORR){
 	// Load Custom Configuration and parameters
 	// override values with parameters
 
@@ -13,6 +13,7 @@ AliAnalysisTask *AddTaskJEbECORR(TString taskName, Bool_t ismc, UInt_t triggSel,
 	jebetask->SetEbePercentileInputFileName(ebeCentFile);
 	jebetask->SetIsMC(ismc);
 	jebetask->SetEnableCORR(enableCORR);
+	jebetask->SetKineOnly(iskinematiconly);
 	cout << jebetask->GetName() << endl;
 
 

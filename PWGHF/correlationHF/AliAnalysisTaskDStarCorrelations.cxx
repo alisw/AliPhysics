@@ -42,6 +42,7 @@
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoCascadeHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliAODPidHF.h"
 #include "AliVParticle.h"
 #include "AliAnalysisManager.h"
@@ -103,6 +104,7 @@ fDMesonSigmas(0),
 fD0Window(0),
 fMCEventType(kFALSE),
 fRefMult(9.26),
+fAODProtection(1),
 fOutput(0x0),
 fDmesonOutput(0x0),
 fTracksOutput(0x0),
@@ -162,6 +164,7 @@ fDMesonSigmas(0),
 fD0Window(0),
 fMCEventType(kFALSE),
 fRefMult(9.26),
+fAODProtection(1),
 fOutput(0x0),
 fDmesonOutput(0x0),
 fTracksOutput(0x0),
@@ -348,6 +351,13 @@ void AliAnalysisTaskDStarCorrelations::UserExec(Option_t *){
     
     fEvents++; // event counter
     ((TH1D*)fOutput->FindObject("NofEvents"))->Fill(0);
+    
+    if(fAODProtection>=0){
+      //   Protection against different number of events in the AOD and deltaAOD
+      //   In case of discrepancy the event is rejected.
+      Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
+      if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) return; // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
+    }
     
     fCounter->StoreEvent(aodEvent,fCuts,fmontecarlo); // store event in AliNormalizationCounter
     
@@ -631,7 +641,10 @@ if(fmult){
         arrayDStartoD0pi=(TClonesArray*)aodEvent->GetList()->FindObject("Dstar");
 	}
     
-    
+    // vHF object is needed to call the method that refills the missing info of the candidates
+    // if they have been deleted in dAOD reconstruction phase
+    // in order to reduce the size of the file
+    AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();    
     
     // D* related variables
     
@@ -714,6 +727,9 @@ if(fmult){
             // cout << "Task debug check 4 " << endl;
             // get the D objects
             dstarD0pi = (AliAODRecoCascadeHF*)arrayDStartoD0pi->At(iDStartoD0pi);
+            
+            if(!(vHF->FillRecoCand(aodEvent,dstarD0pi))) continue; //Fill the data members of the candidate only if they are empty.   
+            
             if(!dstarD0pi->GetSecondaryVtx()) continue;
             theD0particle = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
             if (!theD0particle) continue;
@@ -1384,7 +1400,7 @@ if(!fmult)
      Bool_t updated = fCorrelator->PoolUpdate(); // update event pool
     
   
-    
+    delete vHF;
     
     if(!updated) AliInfo("Pool was not updated");
     

@@ -345,9 +345,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ichg>=20 && ichg<=26)
 					  dtc4etaphitpc[aniter]->SetPt(1.4,maxPt); //0.5,5.0
 					if(ichg>=13 && ichg<=19)
-					  dtc4etaphitpc[aniter]->SetPt(0.5,1.4);
+					  dtc4etaphitpc[aniter]->SetPt(0.6,1.4);
 					if(ichg>=27 && ichg<=33)
-					  dtc4etaphitpc[aniter]->SetPt(0.5,maxPt);
+					  dtc4etaphitpc[aniter]->SetPt(0.6,maxPt);
 					dtc4etaphitpc[aniter]->SetEtaDaughters(0.8);
 					dtc4etaphitpc[aniter]->SetPtPosDaughter(0.3,4.0);
 					dtc4etaphitpc[aniter]->SetPtNegDaughter(0.16,4.0);
@@ -360,7 +360,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc4etaphitpc[aniter]->SetMaxDcaV0(0.5); //0.5
 					dtc4etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.07, 0.07); //0.05
 					dtc4etaphitpc[aniter]->SetMaxCosPointingAngle(0.998); //0.9993
-					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(100.0); //60
+					dtc4etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
 					dtc4etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
 					dtc4etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 					dtc4etaphitpc[aniter]->SetRadiusV0Min(0.5);
@@ -376,9 +376,9 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					if(ichg>=20 && ichg<=26)
 					  dtc5etaphitpc[aniter]->SetPt(1.4,maxPt);
 					if(ichg>=13 && ichg<=19)
-					  dtc5etaphitpc[aniter]->SetPt(0.5,1.4);
+					  dtc5etaphitpc[aniter]->SetPt(0.6,1.4);
 					if(ichg>=27 && ichg<=33)
-					  dtc5etaphitpc[aniter]->SetPt(0.5,maxPt);
+					  dtc5etaphitpc[aniter]->SetPt(0.6,maxPt);
 					dtc5etaphitpc[aniter]->SetEtaDaughters(0.8);
 					dtc5etaphitpc[aniter]->SetPtPosDaughter(0.16,4.0);
 					dtc5etaphitpc[aniter]->SetPtNegDaughter(0.3,4.0);
@@ -391,7 +391,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 					dtc5etaphitpc[aniter]->SetMaxDcaV0(0.5); //0.5
 					dtc5etaphitpc[aniter]->SetMinDaughtersToPrimVertex(0.07, 0.07); //0.05
 					dtc5etaphitpc[aniter]->SetMaxCosPointingAngle(0.998); //0.9993
-					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(100.0); //60
+					dtc5etaphitpc[aniter]->SetMaxV0DecayLength(60.0); //60
 					dtc5etaphitpc[aniter]->SetInvariantMassLambda(LambdaMass-0.0038,LambdaMass+0.0038);
 					dtc5etaphitpc[aniter]->SetInvariantMassRejectK0s(0.48,0.515);
 					dtc5etaphitpc[aniter]->SetRadiusV0Min(0.5);

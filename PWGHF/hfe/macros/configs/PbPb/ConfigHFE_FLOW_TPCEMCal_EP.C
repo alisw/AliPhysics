@@ -1,4 +1,4 @@
-AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t AssPtCut, Int_t AssTPCnCut, Bool_t AssITSrefitCut, Int_t TPCnCut){
+AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut,Double_t AssPtCut, Int_t AssTPCnCut, Int_t  ITSncut, Bool_t AssITSrefitCut, Int_t TPCnCut, Bool_t UseNewEP, Bool_t UseTender,Int_t period, TString passV0, TString passTPC,Bool_t TimeCut){
   //
   // HFE standard task configuration
   //
@@ -24,9 +24,18 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   task->SetHFECuts(hfecuts);
   task->SetAssPtCut(AssPtCut);
   task->SetAssTPCnCut(AssTPCnCut);
+  task->SetITSnCut(ITSncut);
   task->SetAssITSrefitCut(AssITSrefitCut);
-  
-
+  task->SetPeriod(period);
+  task->SetEP(UseNewEP);
+  task->SetTender(UseTender);
+  task->SetCorrectionPassV0(passV0);
+  task->SetCorrectionPassTPC(passTPC);
+  task->SetSigmaITScut(SigmaITScut);
+  task->SetSigmaTOFcut(SigmaTOFcut);
+  task->SetSigmaTPCcut(SigmaTPCcut);
+  task->SetTimeCut(TimeCut);
+    
   // Define PID
   AliHFEpid *pid = task->GetPID();
   if(useMC) pid->SetHasMCData(kTRUE);

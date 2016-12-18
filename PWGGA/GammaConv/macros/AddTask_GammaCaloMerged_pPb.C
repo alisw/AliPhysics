@@ -62,19 +62,54 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
                                   Int_t     isMC                        = 0,                  // run MC
                                   Int_t     enableQAMesonTask           = 0,                  // enable QA in AliAnalysisTaskGammaCalo
                                   Int_t     enableQAClusterTask         = 0,                  // enable additional QA task
-                                  TString   fileNameInputForWeighting   = "MCSpectraInput.root",       // path to file for weigting input
+                                  TString   fileNameInputForWeighting   = "MCSpectraInput.root",       // path to file for weigting input / modified acceptance
                                   TString   cutnumberAODBranch          = "000000006008400001001500000",
                                   TString   periodname                  = "LHC12f1x",         // period name
                                   Int_t     doWeightingPart             = 0,                  // enables weighting
-                                  Int_t     enableExtMatchAndQA         = 0,                  // enable QA(3), extMatch+QA(2), extMatch(1), disabled (0)
+                                  Int_t     enableExtMatchAndQA         = 0,                  // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                   Bool_t    enableTriggerMimicking      = kFALSE,             // enable trigger mimicking
                                   Bool_t    enableTriggerOverlapRej     = kFALSE,             // enable trigger overlap rejection
                                   Float_t   maxFacPtHard                = 3.,                 // maximum factor between hardest jet and ptHard generated
                                   TString   periodNameV0Reader          = "",                 // set period name for V0 Reader
                                   Bool_t    enableSortingMCLabels       = kTRUE,              // enable sorting for MC cluster labels
-                                  Bool_t    runLightOutput              = kFALSE              // switch to run light output (only essential histograms for afterburner)
+                                  Bool_t    runLightOutput              = kFALSE,             // switch to run light output (only essential histograms for afterburner)
+                                  TString   additionalTrainConfig       = "0"                 // additional counter for trainconfig, this has to be always the last parameter
 ) {
   
+  TH1S* histoAcc = 0x0;         // histo for modified acceptance
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaCaloMerged_pPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      if(tempStr.CompareTo("EPCLUSTree") == 0){
+        cout << "INFO: AddTask_GammaCaloMerged_pPb activating 'EPCLUSTree'" << endl;
+        doTreeEOverP = kTRUE;
+      }else if(tempStr.BeginsWith("MODIFYACC")){
+        cout << "INFO: AddTask_GammaCaloMerged_pPb activating 'MODIFYACC'" << endl;
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        cout << "INFO: connecting to alien..." << endl;
+        TGrid::Connect("alien://");
+        cout << "done!" << endl;
+        TFile *w = TFile::Open(fileNameInputForWeighting.Data());
+        if(!w){cout << "ERROR: Could not open file: " << fileNameInputForWeighting.Data() << endl;return;}
+        histoAcc = (TH1S*) w->Get(tempType.Data());
+        if(!histoAcc) {cout << "ERROR: Could not find histo: " << tempType.Data() << endl;return;}
+        cout << "found: " << histoAcc << endl;
+      }
+    }
+  }
+
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaCaloMerged_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }  
+
   Int_t isHeavyIon = 2;
   
   // ================== GetAnalysisManager ===============================
@@ -248,6 +283,17 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   AliConversionMesonCuts **analysisMesonCuts    = new AliConversionMesonCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
+    //create AliCaloTrackMatcher instance, if there is none present
+    TString caloCutPos = cuts.GetClusterCut(i);
+    caloCutPos.Resize(1);
+    TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
+      AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
+      fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      mgr->AddTask(fTrackMatcher);
+      mgr->ConnectInput(fTrackMatcher,0,cinput);
+    }
+
     analysisEventCuts[i]          = new AliConvEventCuts();
 
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
@@ -260,18 +306,22 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
-    analysisClusterCuts[i]        = new AliCaloPhotonCuts();
+    analysisClusterCuts[i]        = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
+    analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
     
-    analysisClusterMergedCuts[i]  = new AliCaloPhotonCuts();
+    analysisClusterMergedCuts[i]  = new AliCaloPhotonCuts(isMC);
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
+    analysisClusterMergedCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterMergedCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterMergedCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterMergedCuts[i]->SetLightOutput(runLightOutput);
     analysisClusterMergedCuts[i]->InitializeCutsFromCutString((cuts.GetClusterMergedCut(i)).Data());
     ClusterMergedCutList->Add(analysisClusterMergedCuts[i]);
@@ -294,7 +344,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
-  if(enableExtMatchAndQA == 2 || enableExtMatchAndQA == 3){ task->SetPlotHistsExtQA(kTRUE);}
+  if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   
   //connect containers
   AliAnalysisDataContainer *coutput =

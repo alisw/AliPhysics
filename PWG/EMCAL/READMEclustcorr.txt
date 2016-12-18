@@ -1,4 +1,4 @@
-/*! \page READMEclustcorr EMCal/DCal cluster corrections
+/*! \page READMEclustcorr Old EMCal Correction Framework
 The AliAODCaloCluster and AliESDCaloCluster objects can store different level of corrections to the cluster energy. The "bare" energy is obtained using the method `cluster->E()`. This energy usually:
 
 - implements all the basic energy/time calibrations

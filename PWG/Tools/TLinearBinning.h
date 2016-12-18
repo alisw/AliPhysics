@@ -88,8 +88,24 @@ public:
    * @param[in] max Maximum bin edge of the binning
    */
   TLinearBinning(Int_t nbins, Double_t min, Double_t max);
+
+  /**
+   * Destructor
+   */
   virtual ~TLinearBinning() {}
 
+  /**
+   * Implementation of the copy function for the linear binning class
+   * @return Copy of this binning with the exact same bin edges
+   */
+  virtual TBinning *MakeCopy() const;
+
+  /**
+   * Set the binning with minimum, maximum and number of bins
+   * @param[in] nbins Number of bins
+   * @param[in] min Minimum of the binning
+   * @param[in] max Maximum of the binning
+   */
   inline void Set(Int_t nbins, Double_t min, Double_t max);
 
   /**

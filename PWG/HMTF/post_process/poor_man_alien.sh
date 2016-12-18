@@ -10,8 +10,12 @@ source /afs/cern.ch/sw/lcg/app/releases/ROOT/5.34.30/x86_64-slc6-gcc49-opt/root/
 export GSHELL_ROOT="/cvmfs/alice.cern.ch/x86_64-2.6-gnu-4.1.2/Packages/AliEn-Runtime/v2-19-le-18"
 export X509_CERT_DIR=$GSHELL_ROOT"/globus/share/certificates"
 
+latest_alice_physics=$(/cvmfs/alice.cern.ch/bin/alienv q | grep AliPhysics::vAN | sort | tail -n1  | grep -Eo 'vAN-[[:digit:]]{8}-[[:digit:]]')
+export ALICE_PHYSICS="/cvmfs/alice.cern.ch/x86_64-2.6-gnu-4.1.2/Packages/AliPhysics/"$latest_alice_physics
+
 # source python virtual env
 mkdir -p ~/.virtualenvs
-virtualenv -q ~/.virtualenvs/hmtfc
-source .virtualenvs/hmtfc/bin/activate
-pip install --upgrade -e post_process/
+virtualenv -q ~/.virtualenvs/hmtfmc
+source ~/.virtualenvs/hmtfmc/bin/activate
+pip uninstall -q -y hmtfmc
+pip install --upgrade -e $ALICE_PHYSICS"/PWG/HMTF/post_process/post_process/"

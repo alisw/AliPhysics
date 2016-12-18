@@ -86,7 +86,7 @@ ClassImp(AliAnalysisTaskdNdEtapp13)
 
 
 //                                                     0     1     2     3     4     5    6      7      8        9      10          11        12       13    14
-const char* AliAnalysisTaskdNdEtapp13::fgCentSelName[] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","ZNA","TKLvsV0M","ZEMvsZDC","V0A123","V0A0","V0S", "MB", "Ref", "V0av"};
+const char* AliAnalysisTaskdNdEtapp13::fgCentSelName[] = {"V0M","V0A","V0C","FMD","TRK","TKL","CL0","SPDClusters1","V0MvsFMD","ZNA","TKLvsV0M","ZEMvsZDC","V0A123","V0A0","V0S", "MB", "RefMult08","SPDTracklets08","SPDTracklets08to15", "V0av"};
 
 const char*  AliAnalysisTaskdNdEtapp13::fgkPDGNames[] = {
   "#pi^{+}",
@@ -263,6 +263,8 @@ AliAnalysisTaskdNdEtapp13::AliAnalysisTaskdNdEtapp13(const char *name)
     fIsSelected(kFALSE),
     fVtxOK(kFALSE),
     fUseSpecialOutput(kFALSE),
+    fUseBCMod(kFALSE),
+    fBCMod4(2),
     //
     fWeight(1.),
     fPPVsMultUtils(new AliPPVsMultUtils())
@@ -598,6 +600,17 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
   Double_t v0c012 = vzero->GetMRingV0C(0) + vzero->GetMRingV0C(1) + vzero->GetMRingV0C(2);
   Double_t v0c3   = vzero->GetMRingV0C(3);
 
+if (fUseBCMod & !fUseMC){
+   Int_t  fBC = fInputEvent->GetBunchCrossNumber();
+  Int_t  bcmod4 = fBC%4;
+
+ fIsSelected &= (bcmod4 == fBCMod4);
+//if (bcmod4 ==2) fIsSelected &= (bcmod4 == 2);
+//else if (bcmod4 == 0)
+}
+
+
+
   //fIsSelected &= vzero->GetMTotV0C() < (330. + 100. * TMath::Power(vzero->GetMTotV0A(), .2));
   //fIsSelected &= (v0c012 < 160.) || (v0c3 > 12.*TMath::Power(.01*(v0c012 - 160.), 1.7));
   if(fIsSelected) hstat->Fill(kEvAfterAsymCut);
@@ -736,6 +749,7 @@ void AliAnalysisTaskdNdEtapp13::UserExec(Option_t *)
     ((TH2*)fHistosCustom->UncheckedAt(kHTotalNchNoPhSel))->Fill(totalNch,fCurrCentBin, fWeight);
     ((TH2*)fHistosCustom->UncheckedAt(kHZVtxMCNoPhSel))->Fill(fVtxMC[2],fCurrCentBin, fWeight);
     if (fIsSelected) ((TH2*)fHistosCustom->UncheckedAt(kHZVtxMCNoVtSel))->Fill(fVtxMC[2],fCurrCentBin, fWeight);
+
     if ((fVtxMC[2] < fZVertexMin || fVtxMC[2] > fZVertexMax)) hstat->Fill(kBinEntries+kEvInMltBin + kEntriesPerBin*fCurrCentBin, fWeight);
     //
   }
@@ -890,14 +904,13 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
   hstat = new TH1F("hStat","Run statistics",nbs,0.5,nbs+0.5);
   //
   hstat->GetXaxis()->SetBinLabel(kEvTot0, "Ev.Tot0");
-  hstat->GetXaxis()->SetBinLabel(kEvTot, "Ev.Tot");
 
   hstat->GetXaxis()->SetBinLabel(kEvAfterPhysSel , "Ev. After PS");
   hstat->GetXaxis()->SetBinLabel(kEvAfterPileUp  , "Ev. After Pup");
   hstat->GetXaxis()->SetBinLabel(kEvAfterClsVsTrk, "Ev. After ClsVsTrk");
   hstat->GetXaxis()->SetBinLabel(kEvAfterAsymCut , "Ev. After V0 Asym");
 
-
+  hstat->GetXaxis()->SetBinLabel(kEvTot, "Ev.Tot After All Evts. Sel");
 
   hstat->GetXaxis()->SetBinLabel(kOneUnit,"ScaleMerge");
   hstat->GetXaxis()->SetBinLabel(kNWorkers,"Workers");
@@ -1406,6 +1419,11 @@ void AliAnalysisTaskdNdEtapp13::FillHistos(Int_t type, const AliMultiplicity* ml
       double sint   =  TMath::Sin(theta);
       dThetaX /= (sint*sint);
     }
+
+//       if (!(phi > 0 && phi < (2*TMath::Pi()/3))) continue;
+//       if (!(phi > (2*TMath::Pi()/3) && phi < (4*TMath::Pi()/3))) continue;
+//       if (!(phi > (4*TMath::Pi()/3) && phi < (2*TMath::Pi()))) continue;
+
 
      if ((phi > 0.58 && phi < 0.60 ) || (phi > 1.2 && phi < 1.4 ) || (phi > 1.75 && phi < 2.3 ) || (phi > 4.2 && phi < 4.50 ) || (phi > 4.7 && phi < 5.0 ) || (phi > 5.8 )) continue;  // use only fidutial region by taking out data and mc mismatch regions
     if (fCutOnDThetaX && TMath::Abs(dThetaX)>fDThetaWindow) continue;

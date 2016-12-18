@@ -100,9 +100,9 @@ void AliAnalysisTaskEmcalTriggerEmulation::UserCreateOutputObjects(){
   fHistManager = new THistManager("histos");
   fHistManager->CreateTH1("hEvents", "Event counter", 1, 0.5, 1.5);
   fHistManager->CreateTH1("hVertexZ", "z-component of the primary vertex", 100, -40, 40);
-  fHistManager->CreateTH1("hParticles", Form("Particles (%s)", kinestring.str().c_str()), binhandler.GetBinning("pt")->GetBinning());
-  fHistManager->CreateTH1("hClusters", "Clusters", binhandler.GetBinning("pt")->GetBinning());
-  fHistManager->CreateTH1("hTracks", Form("Tracks (%s)", kinestring.str().c_str()), binhandler.GetBinning("pt")->GetBinning());
+  fHistManager->CreateTH1("hParticles", Form("Particles (%s)", kinestring.str().c_str()), *binhandler.GetBinning("pt"));
+  fHistManager->CreateTH1("hClusters", "Clusters", *binhandler.GetBinning("pt"));
+  fHistManager->CreateTH1("hTracks", Form("Tracks (%s)", kinestring.str().c_str()), *binhandler.GetBinning("pt"));
 
   for(auto histo : *fHistManager) fOutput->Add(histo);
 }

@@ -20,7 +20,7 @@
 
 enum EDDecay{kD0Kpi,kDplusKpipi,kDstarD0pi,kDsKKpi,kLcpKpi,kLcK0Sp};
 enum EFidY{kFixedY,kPtDepY};
-enum EPtShape{kFlat,kFONLL7TeV,kPythia7TeV,kFONLL5TeV};
+enum EPtShape{kFlat,kFONLL8TeV,kFONLL8TeVfeeddown,kFONLL7TeV,kPythia7TeV,kFONLL5TeV};
 
 // Configuration
 Int_t fDDecay=kD0Kpi;
@@ -121,7 +121,15 @@ void ComputeAcceptance(){
   hPtVsYGenAcc->GetYaxis()->SetTitle("y");
 
   TF1* funcPt=0x0;
-  if(fPtShape==kFONLL7TeV){
+  if(fPtShape==kFONLL8TeV){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    funcPt->SetParameters(0.518046,3.01138,3.38914,1.75899); // Prompt
+    outFileName.Append("FONLL8ptshape.root");
+  }else if(fPtShape==kFONLL8TeVfeeddown){
+    funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
+    funcPt->SetParameters(0.398252, 3.9603, 3.915, 1.51853); // FeedDown
+    outFileName.Append("FONLL8ptshapeFeedDown.root");
+  }else if(fPtShape==kFONLL7TeV){
     funcPt=new TF1("fFONLL","[0]*x/TMath::Power((1+TMath::Power(x/[1],[3])),[2])",0.,40.);
     funcPt->SetParameters(0.322643,2.96275,2.30301,2.5);
     outFileName.Append("FONLL7ptshape.root");

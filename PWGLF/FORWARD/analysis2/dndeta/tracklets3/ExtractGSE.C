@@ -1,9 +1,9 @@
 /**
- * @file   ExtractGSE.C
+ * @file   PWGLF/FORWARD/analysis2/dndeta/tracklets3/ExtractGSE.C
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Apr 27 16:51:39 2016
  * 
- * @brief  
+ * @brief  Extract GraphSysErr from results 
  * 
  * 
  * @ingroup pwglf_forward_tracklets

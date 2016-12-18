@@ -70,6 +70,7 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   }
 
   void Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval);
+  void Setd0Cut(Int_t nPtBins, Float_t *cutval);
   virtual void PrintAll()const;
 
   enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
@@ -88,10 +89,12 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   Bool_t fUseImpParProdCorrCut; /// switch for d0K*d0pi1 vs. d0K*d0pi2 cut
   Bool_t fUsed0MeasMinusExpCut; /// switch for cut on d0meas-d0exp
   Float_t* fMaxd0MeasMinusExp;  //[fnPtBins] cut values on d0meas-d0exp
-  Bool_t fScaleNormDLxyBypOverPt; /// switch for normDLxy variable 
+  Bool_t fUsed0Cut; /// switch for cut on d0
+  Float_t* fMaxd0;  //[fnPtBins] cut values on d0
+  Bool_t fScaleNormDLxyBypOverPt; /// switch for normDLxy variable
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsDplustoKpipi,8);  /// class for cuts on AOD reconstructed
+  ClassDef(AliRDHFCutsDplustoKpipi,9);  /// class for cuts on AOD reconstructed
                                    /// D+->Kpipi
   /// \endcond
 };

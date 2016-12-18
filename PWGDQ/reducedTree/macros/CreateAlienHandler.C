@@ -1,8 +1,21 @@
 //Macro to test Analysis Macros on the GRID 
 //please check settings for output files
 //for local test use 'test' mode
+/*#include <fstream>
+using namespace std;
 
-AliAnalysisGrid* CreateAlienHandlerPbPb(const Chart_t* inputRunList)
+#include <TString.h>
+
+#include "AliAnalysisAlien.h"
+*/
+
+void AddRunNumbers(AliAnalysisAlien* plugin, const Char_t* filename);
+
+
+AliAnalysisGrid* CreateAlienHandlerPbPb(const Char_t* inputRunList, TString gridRunMode="test", 
+                                        TString dataDir = "", TString dataPattern = "", Int_t maxInputFilesPerJob = 20, 
+                                        TString workingDir = "", TString outputDir = "", TString outputFiles = "dstTree.root",
+                                        TString rootVersion="v5-34-30-alice5-2", TString alirootVersion="v5-08-16-1", TString aliphysicsVersion="vAN-20160921-1")
 {
 // Check if user has a valid token, otherwise make one. This has limitations.
 // One can always follow the standard procedure of calling alien-token-init then
@@ -10,27 +23,39 @@ AliAnalysisGrid* CreateAlienHandlerPbPb(const Chart_t* inputRunList)
 //   if (!AliAnalysisGrid::CreateToken()) return NULL;
    AliAnalysisAlien *plugin = new AliAnalysisAlien();
    plugin->SetOverwriteMode();
-// Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-//   plugin->SetRunMode("test");
-//   plugin->SetRunMode("offline");
 
-   plugin->SetRunMode("full");
-
-//   plugin->SetRunMode("terminate");
+   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
+   if(!(!gridRunMode.CompareTo("full") || !gridRunMode.CompareTo("test") || 
+         !gridRunMode.CompareTo("offline") || !gridRunMode.CompareTo("submit") || !gridRunMode.CompareTo("terminate"))) {
+      printf("ERROR: In CreateAlienHandlerPbPb(), gridRunMode argument must be a valid grid run mode: full, test, offline, submit or terminate! \n");
+      printf("             You try to use %s \n", gridRunMode.Data());
+      return 0x0;
+   }   
+   else
+     plugin->SetRunMode(gridRunMode.Data());
+   
    plugin->SetNtestFiles(1);
-// Set versions of used packages
 
+   // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
    //   plugin->SetROOTVersion("v5-33-02b");
-   plugin->SetROOTVersion("v5-34-09");
-   plugin->SetAliROOTVersion("v5-05-12-AN");
+   plugin->SetROOTVersion(rootVersion.Data());
+   plugin->SetAliROOTVersion(alirootVersion.Data());
+   plugin->SetAliPhysicsVersion(aliphysicsVersion.Data());
 // Declare input data to be processed.
 // Method 1: Create automatically XML collections using alien 'find' command.
 // Define production directory LFN
 // On real reconstructed data:
-   plugin->SetGridDataDir("/alice/data/2011/LHC11h_2");
+   //plugin->SetGridDataDir("/alice/data/2011/LHC11h_2");
+   //plugin->SetGridDataDir("/alice/cern.ch/user/i/iarsene/work/outputDst");
+   plugin->SetGridDataDir(dataDir.Data());
 // Set data search pattern
-   plugin->SetDataPattern("*/pass2/*/AliESDs.root");
+   //plugin->SetDataPattern("*/pass2/*/AliESDs.root");
+   //plugin->SetDataPattern("*/*/dstTree.root");
+   plugin->SetDataPattern(dataPattern.Data());
+   
+   if(dataPattern.Contains("dstTree.root"))
+     plugin->SetTreeName("DstTree");
 
 //same for pp MC:
 //   plugin->SetGridDataDir("/alice/sim/LHC10f6a");
@@ -50,10 +75,13 @@ AliAnalysisGrid* CreateAlienHandlerPbPb(const Chart_t* inputRunList)
 //   plugin->AddDataFile("tag.xml");
 //   plugin->AddDataFile("/alice/data/2008/LHC08c/000057657/raw/Run57657.Merged.RAW.tag.root");
 // Define alien work directory where all files will be copied. Relative to alien $HOME.
-   plugin->SetGridWorkingDir("work");
+   plugin->SetGridWorkingDir(workingDir.Data());
 // Declare alien output directory. Relative to working directory.
-   plugin->SetGridOutputDir("outputDst");
-// Declare the analysis source files names separated by blancs. To be compiled runtime
+   plugin->SetGridOutputDir(outputDir.Data());
+   //plugin->SetGridOutputDir("outputTest");
+   
+   
+   // Declare the analysis source files names separated by blancs. To be compiled runtime
 // using ACLiC on the worker nodes.
    //plugin->SetAnalysisSource("alien:///alice/cern.ch/user/i/iarsene/work/AliReducedEvent.cxx alien:///alice/cern.ch/user/i/iarsene/work/AliAnalysisTaskReducedTree.cxx");
 
@@ -71,15 +99,15 @@ AliAnalysisGrid* CreateAlienHandlerPbPb(const Chart_t* inputRunList)
    //plugin->SetDefaultOutputs(); 
    //or specify files:
    plugin->SetDefaultOutputs(kFALSE);
-   plugin->SetOutputFiles("dstTree.root");    // TODO: adapt depending on what is attached to the train
-     
+   plugin->SetOutputFiles(outputFiles.Data());  
+   
 // Optionally define the files to be archived.
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr@disk=2 root_archive.zip:*.root@disk=2");
 //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
 // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro("ReducedEventAnalysis.C");
 // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-   plugin->SetSplitMaxInputFileNumber(10);
+   plugin->SetSplitMaxInputFileNumber(maxInputFilesPerJob);
 // Optionally modify the executable name (default analysis.sh)
    plugin->SetExecutable("ReducedEventAnalysis.sh");
    plugin->SetExecutableCommand("aliroot -b -q");

@@ -1022,11 +1022,11 @@ void  AliAnalysisTaskTOFqaID::AddPidHisto(TList *list, Int_t charge, TString suf
   HistogramMakeUp(hExpTimePiT0Sub1GeV,((charge>0)? kRed+2 : kBlue+2), 1, "colz", "","","n. tracks used for t_{0}^{TOF}","t_{TOF}-t_{#pi,exp}-t_{0}^{TOF}");    
   list->AddLast(hExpTimePiT0Sub1GeV) ;
 
-  TH1F* hExpTimePiFillSub = new TH1F(Form("hExpTimePiFillSub%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{#pi,exp}-t_{0,fill}",cLabel.Data()), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH1F* hExpTimePiFillSub = new TH1F(Form("hExpTimePiFillSub%s_%s",suffix.Data(),cLabel.Data()), Form("%s trk t_{TOF}-t_{#pi,exp}-t_{0,fill}",cLabel.Data()), 6150, -75030., 75030.) ; 
   HistogramMakeUp(hExpTimePiFillSub,((charge>0)? kRed+2 : kBlue+2), 1, "", "","","t_{TOF}-t_{#pi,exp} -t_{0,fill} [ps]","entries");    
   list->AddLast(hExpTimePiFillSub) ;
   
-  TH1F* hExpTimePi = new TH1F(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{#pi,exp}",cLabel.Data()), fnExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  TH1F* hExpTimePi = new TH1F(Form("hExpTimePi%s_%s",suffix.Data(),cLabel.Data()),Form("%s matched trk t_{TOF}-t_{#pi,exp}",cLabel.Data()), 6150, -75030., 75030.) ; 
   HistogramMakeUp(hExpTimePi,((charge>0)? kRed+2 : kBlue+2), 1, "", "","", "t_{TOF}-t_{#pi,exp} [ps]","tracks");
   list->AddLast(hExpTimePi);
   

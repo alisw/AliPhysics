@@ -73,11 +73,14 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     void               SetCreateAODs(Bool_t k=kTRUE)                    {fCreateAOD=k; return;}
     void               SetDeltaAODFilename(TString s)                   {fDeltaAODFilename=s; return;}
     void               SetDeltaAODBranchName(TString string)            {fDeltaAODBranchName = string;
+                                                                         fRelabelAODs = kTRUE;
                                                                          AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));
+                                                                         AliInfo(Form("Relabeling of AODs has automatically been switched ON!"));
                                                                          return;}
 
     void               RelabelAODs(Bool_t relabel=kTRUE)                {fRelabelAODs=relabel; return;}
     Bool_t             AreAODsRelabeled()                               {return fRelabelAODs;}
+    Int_t              IsReaderPerformingRelabeling()                   {return fPreviousV0ReaderPerformsAODRelabeling;}
     void               RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
     void               SetPeriodName(TString name)                      {fPeriodName = name;
                                                                          AliInfo(Form("Set PeriodName to: %s",fPeriodName.Data()));
@@ -142,6 +145,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     TString        fDeltaAODBranchName;           // File where Gamma Conv AOD is located, if not in default AOD
     TString        fDeltaAODFilename;             // set filename for delta/satellite aod
     Bool_t         fRelabelAODs;                  //
+    Int_t          fPreviousV0ReaderPerformsAODRelabeling; // 0->not set, meaning V0Reader has not yet determined if it should do AODRelabeling, 1-> V0Reader perfomrs relabeling, 2-> previous V0Reader in list perfomrs relabeling
     Bool_t         fEventIsSelected;
     Int_t          fNumberOfPrimaryTracks;        // Number of Primary Tracks in AOD or ESD
     TString        fPeriodName;
@@ -200,7 +204,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1(AliV0ReaderV1 &original);
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
-    ClassDef(AliV0ReaderV1, 11)
+    ClassDef(AliV0ReaderV1, 12)
 
 };
 

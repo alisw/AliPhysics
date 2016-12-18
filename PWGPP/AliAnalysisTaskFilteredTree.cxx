@@ -53,7 +53,7 @@
 
 #include "AliHeader.h"  
 #include "AliGenEventHeader.h"  
-#include "AliInputEventHandler.h"  
+#include "AliVEventHandler.h"  
 #include "AliStack.h"  
 #include "AliTrackReference.h"  
 #include "AliTrackPointArray.h"
@@ -164,13 +164,26 @@ Bool_t AliAnalysisTaskFilteredTree::Notify()
 {
   //
   //
+  
   static Int_t count = 0;
   count++;
   TTree *chain = (TChain*)GetInputData(0);
   if(chain){
     Printf("Processing %d. file: %s", count, chain->GetCurrentFile()->GetName());
   }  
-  fCurrentFileName=chain->GetCurrentFile()->GetName();
+  fCurrentFileName=chain->GetCurrentFile()->GetName();   // This is the way to get path infor processing on the Lego train
+  //  
+  if (fCurrentFileName.String().CountChar('/')<1){ 
+    //  in case path to input is not absolute use other handle to guess chunk ID
+    //  in case filtering done locally, use the Env varaible AliEn output path
+    //    this will work only in case we are doing alien processing
+    TString fns = gSystem->Getenv("OutputDir");
+    if (!fns.IsNull() && !fns.EndsWith("/")) fns += "/";
+    fns += chain->GetCurrentFile()->GetName();
+    Printf("Processing %d. file: %s", count, fns.Data());
+    fCurrentFileName = fns.Data();
+  }
+
   return kTRUE;
 }
 
@@ -296,7 +309,7 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   //
 
   // ESD event
-  fESD = (AliESDEvent*) (InputEvent());
+  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
     Printf("ERROR: ESD event not available");
     return;
@@ -315,12 +328,12 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
 
   if(fUseESDfriends) {
     //fESDfriend = dynamic_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
-    fESDfriend = ESDfriend();
+    fESDfriend = dynamic_cast<AliESDfriend*>(ESDfriend());
     if(!fESDfriend) {
       Printf("ERROR: ESD friends not available");
     }
   }
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   if (!inputHandler){
     return;
   }
@@ -540,7 +553,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   // trigger
   if(evtCuts->IsTriggerRequired())  
   {
@@ -801,7 +814,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
 
@@ -1531,7 +1544,7 @@ void AliAnalysisTaskFilteredTree::ProcessMCEff(AliESDEvent *const esdEvent, AliM
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
 
 
   // trigger
@@ -1829,7 +1842,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
   // trigger
@@ -2065,7 +2078,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
   AliTriggerAnalysis* triggerAnalysis = NULL;
 
   // 
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+  AliVEventHandler* inputHandler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
 
   if(evtCuts->IsTriggerRequired())  

@@ -1,7 +1,9 @@
 /*
  ***********************************************************
  Wrapper class for AliReducedAnalysisTaskSE to be used in the AliAnalysisTask framework*
-Contact: Jaap Onderwaater, j.onderwaater@gsi.de, jacobus.onderwaater@cern.ch
+Contact: 
+Ionut-Cristian Arsene, iarsene@cern.ch
+Jaap Onderwaater, j.onderwaater@gsi.de, jacobus.onderwaater@cern.ch
 Instructions in AddTask_EPcorrectionsExample.C
 2015/10/01
  *********************************************************
@@ -40,10 +42,11 @@ ClassImp(AliAnalysisTaskReducedEventProcessor);
 AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
   AliAnalysisTaskSE(),
   fReducedTask(0x0),
-  fOutputSlot(),
-  fContainerType(),
-  fNoutputSlots(),
+  //fOutputSlot(),
+  //fContainerType(),
+  //fNoutputSlots(),
   fRunningMode(kUseEventsFromTree),
+  fEventNumber(0),
   fReducedEvent()
 {
   //
@@ -55,10 +58,11 @@ AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor() :
 AliAnalysisTaskReducedEventProcessor::AliAnalysisTaskReducedEventProcessor(const char* name, Int_t runningMode) :
   AliAnalysisTaskSE(name),
   fReducedTask(0x0),
-  fOutputSlot(),
-  fContainerType(),
-  fNoutputSlots(0),
+  //fOutputSlot(),
+  //fContainerType(),
+  //fNoutputSlots(0),
   fRunningMode(runningMode),
+  fEventNumber(0),
   fReducedEvent()
 {
   //
@@ -107,7 +111,7 @@ void AliAnalysisTaskReducedEventProcessor::UserCreateOutputObjects()
   //
   fReducedTask->GetHistogramManager()->AddHistogramsToOutputList();
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
-                                          
+  //fReducedTask->Init();                                       
   //for(Int_t i=0; i<fNoutputSlots; i++)   DefineOutput(1, fOutputSlot[i]->Class());
   return;
 }
@@ -135,8 +139,13 @@ void AliAnalysisTaskReducedEventProcessor::UserExec(Option_t *){
   
   if(!event) return;
   
+  
+  //cout << "event number / vtxZ=" << fEventNumber << "/" << event->Vertex(2) << endl;
+  
   fReducedTask->SetEvent(event);
   fReducedTask->Process();
+  PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
+  ++fEventNumber;
   //for(Int_t i=0; i<fNoutputSlots; i++)   if(fContainerType[i]==1) PostData(i, fOutputSlot[i]);
 } 
 
@@ -148,7 +157,9 @@ void AliAnalysisTaskReducedEventProcessor::FinishTaskOutput()
     // Finish Task 
     //
   fReducedTask->Finish();
+  cout << "AliAnalysisTaskReducedEventProcessor::FinishTaskOutput() 0 " << endl;
   //for(Int_t i=0; i<fNoutputSlots; i++)   if(fContainerType[i]==0) PostData(i, fOutputSlot[i]);
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
+  cout << "AliAnalysisTaskReducedEventProcessor::FinishTaskOutput() 1 " << endl;
   return;
 }

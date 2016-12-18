@@ -29,7 +29,7 @@ class AliVParticle;
 class AliMCParticle;
 class AliFlowTrack;
 class AliMCEvent;
-class AliInputEventHandler;
+class AliVEventHandler;
 class AliVEvent;
 class AliMultiplicity; 
 class AliAODTracklets;  // XZhang 20120615
@@ -80,7 +80,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kUserB, // reserved for custom cuts
                             kBetaVZERO, // temporary enum for beta testing of new vzero calibration
                             kDeltaVZERO, // temporary enum for beta testing of new vzero calibration
-                            kKappaVZERO // permanent enum for beta testing of new vzero calibration
+                            kKappaVZERO, // permanent enum for beta testing of new vzero calibration, 
+                            kHotfixHI   // fix for HI runs
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 
@@ -110,7 +111,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   void SetMaxSharedITSCluster(Int_t b){fCutITSclusterShared = kTRUE; fMaxITSclusterShared = b;}
   void SetMaxChi2perITSCluster(Double_t b){fCutITSChi2 = kTRUE; fMaxITSChi2 = b;}
-    
+  void SetCutTPCSecbound( Bool_t a, Double_t ptmin=0.2 ) {fCutTPCSecbound = a; fCutTPCSecboundMinpt=ptmin;}
+  void SetCutTPCSecboundVar( Bool_t a ) {fCutTPCSecboundVar = a;}
   void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
   void SetMinNClustersITS( Int_t a ) {fCutNClustersITS=kTRUE; fNClustersITSMin=a;}
   void SetClusterRequirementITS( AliESDtrackCuts::Detector det,
@@ -118,6 +120,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                                  { InitESDcuts(); fAliESDtrackCuts->SetClusterRequirementITS(det,req); } 
   void SetMaxChi2PerClusterTPC( Float_t a ) {fMaxChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
   void SetMinChi2PerClusterTPC( Float_t a ) {fMinChi2PerClusterTPC=a;fCutChi2PerClusterTPC=kTRUE;}
+  void SetMaxFracSharedTPCCluster( Float_t a ) {fMaxFracSharedTPCCluster=a;fCutFracSharedTPCCluster=kTRUE;}
   void SetMaxChi2PerClusterITS( Float_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMaxChi2PerClusterITS(a);}
   void SetRequireTPCRefit( Bool_t a ) {InitESDcuts(); fAliESDtrackCuts->SetRequireTPCRefit(a);}
   void SetRequireTPCStandAlone( Bool_t a) {InitESDcuts(); fAliESDtrackCuts->SetRequireTPCStandAlone(a);}
@@ -149,7 +152,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetStandardMuonTrackCuts()      { InitMuonCuts(); fMuonTrackCuts->SetDefaultFilterMask(); return; }  // XZhang 20120604
   void SetIsMuonMC(Bool_t isMC)        { InitMuonCuts(); fMuonTrackCuts->SetIsMC(isMC);          return; }  // XZhang 20120604
   void SetMuonPassNumber(Int_t passN)  { InitMuonCuts(); fMuonTrackCuts->SetPassNumber(passN);   return; }  // XZhang 20121013
-  void SetRunsMuon(const AliInputEventHandler* eventHandler) { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(eventHandler); }  // XZhang 20120604
+  void SetRunsMuon(const AliVEventHandler* eventHandler) { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(eventHandler); }  // XZhang 20120604
 
   void SetForceTPCstandalone(Bool_t b) {fForceTPCstandalone=b;}
 
@@ -393,6 +396,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutChi2PerClusterTPC; //cut on tpc chi2
   Float_t fMaxChi2PerClusterTPC; //max chi2 tpc/cluster
   Float_t fMinChi2PerClusterTPC; //min chi2 tpc/cluster
+  Bool_t fCutFracSharedTPCCluster; //cut on fraction of shared TPC clusters?
+  Float_t fMaxFracSharedTPCCluster; //max fraction of shared TPC clusters
   Bool_t fCutNClustersTPC;       //cut on clusters?
   Int_t fNClustersTPCMax;        //max tpc ncls
   Int_t fNClustersTPCMin;        //min tpc clusters  
@@ -405,6 +410,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutDCAToVertexZ;       //dca z cut
   Bool_t fCutMinimalTPCdedx;    //cut on minimal dedx in TPC to reject noise tracks
   Double_t fMinimalTPCdedx;       //value for minimal TPC dedx
+  Bool_t fCutTPCSecbound;         // cut tracks entering TPC close to TPC sector boundaries
+  Double_t fCutTPCSecboundMinpt;  // minimum pT for previous cut
+  Bool_t fCutTPCSecboundVar;         // cut tracks entering TPC close to TPC sector boundaries
+  TF1* fPhiCutLow; //!
+  TF1* fPhiCutHigh; //!
   Bool_t fLinearizeVZEROresponse; //linearize VZERO response using AliESDUtil
  
   Int_t fCentralityPercentileMin; //centrality min
@@ -482,8 +492,6 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   AliPIDResponse *fPIDResponse;            //! Pid reponse to manage Nsigma cuts
   Float_t fNsigmaCut2;                     // Number of sigma^2 (cut value) for TPC+TOF nsigma cut
- 
- 
     
   //TPC TOF nsigma Purity based cut functions
   TFile                 *fPurityFunctionsFile;       //! purity functions file
@@ -495,12 +503,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t  fMaxITSclusterShared;          // fMaxITSclusterShared 
   Bool_t fCutITSChi2;                   // cut fMaxITSChi2
   Double_t  fMaxITSChi2;                // fMaxITSChi2
-  
   Int_t         fRun;                   // run number
-    
-    
-
-  ClassDef(AliFlowTrackCuts,18)
+  
+  ClassDef(AliFlowTrackCuts,20)
 };
 
 #endif

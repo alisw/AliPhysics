@@ -121,6 +121,7 @@ struct Trend : public SummaryDrawer
   /** 
    * Run it
    * 
+   * @param output
    * @param sys 
    * @param sNN 
    * @param trg 
@@ -308,12 +309,11 @@ struct Trend : public SummaryDrawer
   /** 
    * Process the next file 
    * 
-   * @param dir        Directory
-   * @param filename   File name
+   * @param run        Run 
+   * @param now        Time
    * @param out        Output directory 
    * @param binx       Bin number 
    * @param mean       Graphs of mean +/- variance 
-   * @param wspread    Graphs of mean +/- max/min
    * @param ratios     Ratios stack
    * 
    * @return true on success 

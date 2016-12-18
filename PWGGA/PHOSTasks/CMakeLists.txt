@@ -23,6 +23,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CPVperf
 		    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOSCalib
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Correlation
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_embedding
@@ -57,8 +58,10 @@ set(SRCS
     CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
     CaloCellQA/AliCaloCellsQA.cxx
     ClusterSelection/AliPHOSTriggerUtils.cxx
+    CPVperf/AliAnalysisTaskCPV.cxx
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
     PHOSCalib/AliAnalysisTaskEmeanCalib.cxx
+    PHOSCalib/AliAnalysisTaskPHOSTimeCalib.cxx
     PHOS_Correlation/AliPHOSCorrelations.cxx
     PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
     PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
@@ -163,14 +166,17 @@ install(FILES PHOS_PbPb/AddTaskPHOSPi0Flow.C DESTINATION PWGGA/PHOSTasks/PHOS_Pb
 install(FILES PHOS_PbPb/AddTaskPHOSPi0FlowMC.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(FILES PHOS_PbPb/AddTaskPHOSEtaPhi.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(FILES PHOS_PbPb/AddTaskPHOSEtaPhiMult.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
+install(DIRECTORY PHOSCalib/macros DESTINATION  PWGGA/PHOSTasks/PHOSCalib)
 install(DIRECTORY UserTasks/macros DESTINATION  PWGGA/PHOSTasks/UserTasks)
 install(DIRECTORY CaloCellQA/macros DESTINATION PWGGA/PHOSTasks/CaloCellQA)
 install(DIRECTORY PHOS_PbPbQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
 install(DIRECTORY PHOS_pPb DESTINATION PWGGA/PHOSTasks)
+install(DIRECTORY CPVperf/macros DESTINATION PWGGA/PHOSTasks/CPVperf)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpp.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpi0Conversion.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOSCalib/AddTaskEmeanCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCalib)
+install(FILES PHOSCalib/AddTaskPHOSTimeCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCalib)
 install(FILES PHOS_Correlation/AddTaskPi0Correlations.C DESTINATION PWGGA/PHOSTasks/PHOS_Correlation)
 install(FILES PHOS_EpRatio/AddTaskPHOSEpRatio.C DESTINATION PWGGA/PHOSTasks/PHOS_EpRatio)
 install(FILES PHOS_GAFlow/AddTaskThermalGAFlow.C DESTINATION PWGGA/PHOSTasks/PHOS_GAFlow)

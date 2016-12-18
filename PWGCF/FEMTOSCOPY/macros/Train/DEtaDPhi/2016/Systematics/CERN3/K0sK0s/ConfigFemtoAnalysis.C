@@ -62,7 +62,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
 	double PionMass = 0.13956995;
 	double KaonMass = 0.493677;
-	double K0sMass = 0.497614
+	double K0sMass = 0.497614;
 	double ProtonMass = 0.938272013;
 	double LambdaMass = 1.115683;
 	

@@ -262,7 +262,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* rea
   TObjArray* arrayCluster = 0;
   if      ( calorimeter == AliCaloTrackReader::kEMCAL ) arrayCluster = reader->GetEMCALClusters();
   else if ( calorimeter == AliCaloTrackReader::kPHOS  ) arrayCluster = reader->GetPHOSClusters();
-  
+    
   Int_t labels[]={label};
   
   //Select where the information is, ESD-galice stack or AOD mcparticles branch
@@ -272,7 +272,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliCaloTrackReader* rea
   else if(reader->ReadAODMCParticles()){
     tag = CheckOriginInAOD(labels, 1,reader->GetAODMCParticles(),arrayCluster);
   }
-  
+
   return tag ;
 }	
 
@@ -339,6 +339,13 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, Int_t nlabels,
       {
         //Mother
         iMom     = mom->GetFirstMother();
+        
+        if(iMom < 0) 
+        {
+          AliInfo(Form("pdg = %d, mother = %d, skip",pPdg,iMom));
+          break;
+        }
+        
         mom      = stack->Particle(iMom);
         mPdgSign = mom->GetPdgCode();
         mPdg     = TMath::Abs(mPdgSign);
@@ -377,13 +384,20 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, Int_t nlabels,
       {
         SetTagBit(tag,kMCConversion);
         iMom     = mom->GetFirstMother();
-        mom      = stack->Particle(iMom);
-        mPdgSign = mom->GetPdgCode();
-        mPdg     = TMath::Abs(mPdgSign);
         
-        AliDebug(2,"Converted hadron:");
-        AliDebug(2,Form("\t Mother label %d, pdg %d, status %d",iMom, mPdg, mStatus));
-        
+        if(iMom < 0) 
+        {
+          AliInfo(Form("pdg = %d, mother = %d, skip",pPdg,iMom));
+        }
+        else
+        {
+          mom      = stack->Particle(iMom);
+          mPdgSign = mom->GetPdgCode();
+          mPdg     = TMath::Abs(mPdgSign);
+          
+          AliDebug(2,"Converted hadron:");
+          AliDebug(2,Form("\t Mother label %d, pdg %d, status %d",iMom, mPdg, mStatus));
+        }
       }//hadron converted
       
       //Comment for the next lines, we do not check the parent of the hadron for the moment.
@@ -593,8 +607,8 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
 	
   Int_t tag = 0;
   Int_t label=labels[0];//Most significant particle contributing to the cluster
-  
   Int_t nprimaries = mcparticles->GetEntriesFast();
+
   if(label >= 0 && label < nprimaries)
   {
     //Mother
@@ -603,7 +617,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
     Int_t mPdgSign = mom->GetPdgCode();
     Int_t mPdg     = TMath::Abs(mPdgSign);
     Int_t iParent  = mom->GetMother() ;
-    
+
     //if(label < 8 && fMCGenerator != kBoxLike) AliDebug(1,Form("Mother is parton %d\n",iParent));
     
     //GrandParent
@@ -619,17 +633,24 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
     AliDebug(2,"Cluster most contributing mother and its parent:");
     AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
     AliDebug(2,Form("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d",iParent, pPdg, parent?parent->IsPrimary():-1, parent?parent->IsPhysicalPrimary():-1));
-    
+
     //Check if mother is converted, if not, get the first non converted mother
     if((mPdg == 22 || mPdg == 11) && (pPdg == 22 || pPdg == 11) && !mom->IsPrimary())
     {
       SetTagBit(tag,kMCConversion);
-      
+
       //Check if the mother is photon or electron with status not stable
       while ((pPdg == 22 || pPdg == 11) && !mom->IsPhysicalPrimary())
       {
         //Mother
         iMom     = mom->GetMother();
+        
+        if(iMom < 0) 
+        {
+          AliInfo(Form("pdg = %d, mother = %d, skip",pPdg,iMom));
+          break;
+        }
+        
         mom      = (AliAODMCParticle *) mcparticles->At(iMom);
         mPdgSign = mom->GetPdgCode();
         mPdg     = TMath::Abs(mPdgSign);
@@ -646,7 +667,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
         // printf("\t While Parent label %d, pdg %d, Primary? %d, Physical Primary? %d\n",iParent, pPdg, parent->IsPrimary(), parent->IsPhysicalPrimary()); 
         
       }//while	
-      
+            
       AliDebug(2,"AliMCAnalysisUtils::CheckOriginInAOD() - Converted photon/electron:");
       AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
       AliDebug(2,Form("\t Parent label %d, pdg %d, Primary? %d, Physical Primary? %d",iParent, pPdg, parent?parent->IsPrimary():-1, parent?parent->IsPhysicalPrimary():-1));
@@ -660,13 +681,20 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
       {
         SetTagBit(tag,kMCConversion);
         iMom     = mom->GetMother();
-        mom      = (AliAODMCParticle *) mcparticles->At(iMom);
-        mPdgSign = mom->GetPdgCode();
-        mPdg     = TMath::Abs(mPdgSign);
         
-       AliDebug(2,"AliMCAnalysisUtils::CheckOriginInAOD() - Converted hadron:");
-       AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
-      
+        if(iMom < 0) 
+        {
+          AliInfo(Form("pdg = %d, mother = %d, skip",pPdg,iMom));
+        }
+        else
+        {
+          mom      = (AliAODMCParticle *) mcparticles->At(iMom);
+          mPdgSign = mom->GetPdgCode();
+          mPdg     = TMath::Abs(mPdgSign);
+          
+          AliDebug(2,"AliMCAnalysisUtils::CheckOriginInAOD() - Converted hadron:");
+          AliDebug(2,Form("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d",iMom, mPdg, mom->IsPrimary(), mom->IsPhysicalPrimary()));
+        }
       }//hadron converted
       
       //Comment for next lines, we do not check the parent of the hadron for the moment.
@@ -692,7 +720,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
     else if(mPdgSign ==  2112) SetTagBit(tag,kMCNeutron);
     else if(mPdgSign == -2212) SetTagBit(tag,kMCAntiProton);
     else if(mPdgSign == -2112) SetTagBit(tag,kMCAntiNeutron);
-    
+       
     //check for pi0 and eta (shouldn't happen unless their decays were turned off)
     else if(mPdg == 111)
     {
@@ -812,6 +840,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, Int_t nlabels,
       AliDebug(1,Form("\t Setting kMCUnknown for cluster with pdg = %d, Parent pdg = %d",mPdg,pPdg));
       SetTagBit(tag,kMCUnknown);
     }
+
   }//Good label value
   else
   {//Bad label
@@ -1976,7 +2005,8 @@ Int_t AliMCAnalysisUtils::GetNDaughters(Int_t label, const AliCaloTrackReader* r
 //_________________________________________________________________________________
 Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
                                        Int_t mctag, Int_t mesonLabel,
-                                       AliCaloTrackReader * reader, Int_t *overpdg)
+                                       AliCaloTrackReader * reader, 
+                                       Int_t *overpdg, Int_t *overlabel)
 {  
   Int_t ancPDG = 0, ancStatus = -1;
   TVector3 prodVertex;
@@ -1998,7 +2028,9 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
       overlap = kTRUE;
       //printf("\t \t \t No Label = %d\n",ancLabel);
     }
-    else if( ( ancPDG==111 || ancPDG==221 ) && ( CheckTagBit(mctag,kMCPi0) ||  CheckTagBit(mctag,kMCEta)) && mesonLabel != ancLabel)
+    else if ( ( ancPDG==111 || ancPDG==221 ) && 
+              ( CheckTagBit(mctag,kMCPi0) ||  CheckTagBit(mctag,kMCEta) ) && 
+              ( (mesonLabel != ancLabel) && mesonLabel >=0 ) ) // in case the label is not provided check it is larger than 0
     {
       //printf("\t \t  meson Label %d, ancestor Label %d\n",mesonLabel,ancLabel);
       overlap = kTRUE;
@@ -2041,7 +2073,8 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
         labeltmp=gLabel;
       }
     }
-    overpdg[noverlaps-1] = mpdg;
+    overpdg  [noverlaps-1] = mpdg;
+    overlabel[noverlaps-1] = label[ilab];
   }
   
   return noverlaps ;

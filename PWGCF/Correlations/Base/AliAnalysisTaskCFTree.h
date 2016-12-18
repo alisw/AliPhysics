@@ -13,6 +13,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAODITSsaTrackCuts.h"
 #include "AliCFTreeMapping.h"
+#include "AliEventCuts.h"
 class TList;
 class TH1I;
 class TH1F;
@@ -59,6 +60,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   void SetStoreMcMuons(Bool_t val=kTRUE)     { fStoreMcMuons     = val; }
   void SetStoreTrackInfo(Bool_t val=kTRUE)   { fStoreTrackInfo   = val; }
   void SetStorePidInfo(Bool_t val=kTRUE)     { fStorePidInfo     = val; }
+  void SetStoreNsigma(Bool_t val=kTRUE)      { fStoreNsigma      = val; }
   void SetStoreAodDCAInfo(Bool_t val=kTRUE)  { fStoreAodDCAInfo  = val; }
   void SetStoreMuonOrigin(Bool_t val=kTRUE)  { fStoreMuonOrigin  = val; }
   void SetIs13TeV(Bool_t val=kTRUE)          { fIs13TeV          = val; }
@@ -70,8 +72,8 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   AliAnalysisTaskCFTree(const  AliAnalysisTaskCFTree &task);
   AliAnalysisTaskCFTree& operator=(const  AliAnalysisTaskCFTree &task);
 
-  UInt_t GetFilterMap(AliVTrack* part);
-  AliCFParticle* AddTrack(AliVTrack* track, UInt_t mask, UInt_t flag=0);
+  UInt_t GetFilterMap(const AliVTrack* part);
+  AliCFParticle* AddTrack(const AliVTrack* track, UInt_t mask, UInt_t flag=0);
 
   AliAnalysisFilter* fTrackFilter; // track filter used in ESD analysis
   UInt_t fHybridConstrainedMask;       // Filter mask for hybrid constrained tracks (ESD analysis)
@@ -142,6 +144,8 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   Int_t fNchV0Cmc;            //  tree var: Nch in the V0C acceptance - generated MC
   Int_t fNchCL1mc;            //  tree var: Nch in the CL1 acceptance - generated MC
   // Event cuts
+  AliEventCuts fEventCuts;    // Event cuts
+  Bool_t fEventCutsPassed;    // Event cuts passed
   UInt_t fClassBit;           // class selection mask (see cxx for datails)
   UInt_t fSelectBit;          // event selection bit
   Float_t fZVertexCut;        // Z-vertex cut
@@ -164,6 +168,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   Bool_t fStoreTrackInfo;     // if kTRUE - Store additional track info on tracks
   Bool_t fStoreAodDCAInfo;    // if kTRUE - Store dca track info on AOD tracks
   Bool_t fStorePidInfo;       // if kTRUE - Store PID info for tracks
+  Bool_t fStoreNsigma;        // if kTRUE - Store TPC and TOF Nsigma for e, pi, K, p
   Bool_t fStoreMuonOrigin;    // if kTRUE - Store muon origin in a TClonesArray of TObjStrings
   Bool_t fApplyPhysicsSelectionCut; // skip events not passing fSelectionBit mask
   Bool_t fStoreOnlyEventsWithMuons; // if kTRUE store only events with at least one muon
@@ -171,7 +176,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTaskSE {
   TClonesArray* fDecayArray;
   TPythia6Decayer* fDecayer;
 
-  ClassDef(AliAnalysisTaskCFTree,8);
+  ClassDef(AliAnalysisTaskCFTree,9);
 };
 #endif
 

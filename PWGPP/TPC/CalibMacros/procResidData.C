@@ -126,7 +126,7 @@ AliTPCDcalibRes*  CreateSetCalib(int run,int tmin,int tmax,const char* inp)
   envs = gSystem->Getenv("distNBinsY");;
   if (envs.IsDigit()) {
     ::Info("CreateResCalib","SetNY2XBins %s",envs.Data());
-    clbn->SetNZ2XBins(envs.Atoi());
+    clbn->SetNY2XBins(envs.Atoi());
   }
   //
   // binning <<<<<<<<<<<<<<<<<<<<<<<<<
@@ -233,6 +233,22 @@ AliTPCDcalibRes*  CreateSetCalib(int run,int tmin,int tmax,const char* inp)
     ::Info("CreateResCalib","SetNominalTimeBinPrec %s",envs.Data());
     clbn->SetNominalTimeBinPrec(envs.Atof());
   }
+  //
+  envs = gSystem->Getenv("distCreateDistortion");
+  if (!envs.IsNull()) {
+    envs.ToLower();
+    Bool_t extrDist=clbn->GetCreateDistortion();
+    if      (envs.Contains("true")) extrDist = kTRUE;
+    else if (envs.Contains("false")) extrDist = kFALSE;
+    else {
+      ::Error("CreateResCalib","Wrong distCreateDistortion = %s",envs.Data());
+      exit(1);
+    }
+    //
+    ::Info("CreateResCalib","SetCreateDistortion %s",envs.Data());
+    clbn->SetCreateDistortion(extrDist);
+  }
+
   //
   return clbn;
 }

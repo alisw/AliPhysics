@@ -3,7 +3,7 @@ import settings
 
 from rootpy.io import root_open
 
-from hmtfmc import roofie
+from hmtfmc import roofie, utils
 
 
 def summarize(args):
@@ -18,8 +18,12 @@ def summarize(args):
         with root_open(args.input_file, "read") as f:
             results_dir_name = "results_post" + global_trigger
 
+            if args.gen_name:
+                gen_name = args.gen_name
+            else:
+                gen_name = utils.get_generator_name_from_filename(args.input_file)
             latexdoc = roofie.Beamerdoc(author="HMTF (Christian Bourjau)",
-                                        title=r"{0} {1}".format(args.gen_name, global_trigger))
+                                        title=r"{0} {1}".format(gen_name, global_trigger))
 
             # Fish the plots we want out of the .root file and if necessary adjust some visual settings
             sec = latexdoc.add_section(r"Highlights")
@@ -68,6 +72,7 @@ def summarize(args):
             sec.add_figure(c)
 
             # "Backup section with __all__ plots
+            sec = latexdoc.add_section(r"Backup")
             sec = latexdoc.add_section(r"$dN/d\eta$")
             for est in settings.considered_ests:
                 try:

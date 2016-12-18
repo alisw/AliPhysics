@@ -2,12 +2,13 @@
 /// \file AliFemtoEventCutCentrality.h
 ///
 
+#pragma once
+
 #ifndef ALIFEMTOEVENTCUTCENTRALITY_H
 #define ALIFEMTOEVENTCUTCENTRALITY_H
 
-#pragma once
-
 #include "AliFemtoEventCut.h"
+#include "AliLog.h"
 
 #include <utility> // std::pair
 
@@ -15,16 +16,16 @@
 /// \class AliFemtoEventCutCentrality
 /// \brief Event cut based on the determined event centrality
 ///
-/// Cuts cuts on event multiplicity and z-vertex position
+/// Cuts cuts on event centrality, z-vertex position, and event plane angle (Ψ-EP)
 ///
 /// \author Andrew Kubera, The Ohio State University <andrew.kubera@cern.ch>
 ///
 class AliFemtoEventCutCentrality : public AliFemtoEventCut {
 public:
 
-  /**
-   * Enumerated type used to select the centrality algorithm
-   */
+  /// Enumerated type used to select the centrality algorithm.
+  /// Look at :class:`AliFemtoEvent` for more information.
+  ///
   enum CentralityType {
     kV0
   , kV0A
@@ -42,36 +43,48 @@ public:
   };
 
 public:
-  /**
-   * Default Constructor
-   *
-   * Uses the 'V0' event centrality calcuation.
-   */
+
+  /// Default Constructor
+  ///
+  /// Uses the 'V0' event centrality calcuation and wide ranges to allow all events.
+  ///
   AliFemtoEventCutCentrality();
 
-  /**
-   * Copy Constructor
-   */
+  /// Copy Constructor - Copies the parameters but NOT number of events
+  /// which have passed
+  ///
   AliFemtoEventCutCentrality(const AliFemtoEventCutCentrality& c);
 
-  /** Destructor */
-  virtual ~AliFemtoEventCutCentrality();
-
-  /** Assignment Operator */
+  /// Assignment Operator - Copies the parameters and RESETS the number
+  /// of events to 0
+  ///
   AliFemtoEventCutCentrality& operator=(const AliFemtoEventCutCentrality& c);
 
-  void SetCentralityRange(const int lo,const int hi); ///< Set min and max acceptable event centrality
-  void SetZPosRange(const float lo, const float hi);  ///< Set min and max acceptable vertex z-coordinate
-  void SetEPVZERO(const float lo, const float hi);    ///< Set the min and max allowed event reaction plane angle
+  /// Set min and max acceptable event centrality
+  void SetCentralityRange(const float lo, const float hi);
 
-  int NEventsPassed() const;  ///< Number of events passed
-  int NEventsFailed() const;  ///< Number of events failed
+  /// Set min and max acceptable vertex z-coordinate
+  void SetZPosRange(const float lo, const float hi);
 
+  /// Set the min and max allowed event reaction plane angle
+  void SetEPVZERO(const float lo, const float hi);
+
+  /// Number of events passed
+  ULong_t NEventsPassed() const;
+
+  /// Number of events failed
+  ULong_t NEventsFailed() const;
+
+  /// Set centrality type using the enum
   void SetCentralityType(const CentralityType);
-  void SetCentralityType(TString typestr);
+
+  /// Set centrality type by string identification (case-insensitive).
+  /// If string is unknown, a warning will be printed and no modification
+  /// to the cut will be made.
+  ///
+  void SetCentralityType(const TString& typestr);
 
   void SetTriggerSelection(int trig);  ///< Set the trigger cluster
-
 
   virtual TList* AppendSettings(TList*, const TString& prefix="") const;
   virtual AliFemtoString Report();
@@ -85,76 +98,70 @@ public:
 
   AliFemtoEventCutCentrality* Clone() const;
 
-  /**
-   * Return the centrality of the event based on algorithm selected in the
-   * event cut
-   */
+  /// Return the centrality of the event based on whatever algorithm is
+  /// selected by the CentralityType member.
+  ///
   float GetCentrality(const AliFemtoEvent*) const;
 
+  /// Function returnting whether first parameter is within the bounds
+  /// set by the second parameter
+  template <typename RangeType>
+  static bool within_range(float, const RangeType&);
+
 protected:
+  typedef std::pair<float, float> Range_t;
 
-  float fEventCentrality[2];      ///< range of centrality
-  CentralityType fCentralityType; ///< Selects which centrality calculation algorithm to use
-  std::pair<float, float> fVertZPos;  ///< range of z-position of vertex
-  float fPsiEP[2];                ///< range of event plane angle
-  int fSelectTrigger;             ///< If set, only given triggers will be selected
+  CentralityType fCentralityType;   ///< Selects which centrality calculation algorithm to use
+  Range_t fEventCentrality;  ///< range of centrality
+  Range_t fVertZPos;         ///< range of z-position of vertex
+  Range_t fPsiEP;            ///< range of event plane angle
+  int fSelectTrigger;        ///< If set, only given triggers will be selected
 
-  long fNEventsPassed;  ///< Number of events checked by this cut that passed
-  long fNEventsFailed;  ///< Number of events checked by this cut that failed
+  ULong_t fNEventsPassed;  ///< Number of events checked by this cut that passed
+  ULong_t fNEventsFailed;  ///< Number of events checked by this cut that failed
 
-#ifdef __ROOT__
-  /// \cond CLASSIMP
-  ClassDef(AliFemtoEventCutCentrality, 0);
-  /// \endcond
-#endif
-
+private:
+  /// Return the name of the class - required for use with AliWarning
+  TString ClassName() { return "AliFemtoEventCutCentrality"; }
 };
-
-inline void AliFemtoEventCutCentrality::SetCentralityRange(const int lo, const int hi)
-{
-  fEventCentrality[0] = lo;
-  fEventCentrality[1] = hi;
-}
 
 inline void AliFemtoEventCutCentrality::SetCentralityType(const CentralityType type)
 {
   fCentralityType = type;
 }
 
-inline void AliFemtoEventCutCentrality::SetCentralityType(TString typestr)
+inline void AliFemtoEventCutCentrality::SetCentralityType(const TString& typestr)
 {
-  typestr.ToLower();
-  const TString &t = typestr;
+  static const CentralityType BAD_STRING = (CentralityType)-9999;
 
-  if (t == "v0") {
-    SetCentralityType(kV0);
-  } else if (t == "v0a") {
-    SetCentralityType(kV0A);
-  } else if (t == "V0Collection") {
-    SetCentralityType(kV0C);
-  } else if (t == "zna") {
-    SetCentralityType(kZNA);
-  } else if (t == "znc") {
-    SetCentralityType(kZNC);
-  } else if (t == "cl0") {
-    SetCentralityType(kCL0);
-  } else if (t == "cl1") {
-    SetCentralityType(kCL1);
-  } else if (t == "tkl") {
-    SetCentralityType(kTKL);
-  } else if (t == "fmd") {
-    SetCentralityType(kFMD);
-  } else if (t == "trk") {
-    SetCentralityType(kTrk);
-  } else if (t == "cnd") {
-    SetCentralityType(kCND);
-  } else if (t == "npa") {
-    SetCentralityType(kNPA);
-  } else if (t == "spd1") {
-    SetCentralityType(kSPD1);
+  TString t = typestr;
+  t.ToLower();
+
+  CentralityType type = t == "v0" ? kV0
+                      : t == "v0a" ? kV0A
+                      : t == "v0collection" ? kV0C
+                      : t == "zna" ? kZNA
+                      : t == "znc" ? kZNC
+                      : t == "cl0" ? kCL0
+                      : t == "cl1" ? kCL1
+                      : t == "tkl" ? kTKL
+                      : t == "fmd" ? kFMD
+                      : t == "trk" ? kTrk
+                      : t == "cnd" ? kCND
+                      : t == "npa" ? kNPA
+                      : t == "spd1" ? kSPD1
+                      : BAD_STRING;
+
+  if (type == BAD_STRING) {
+    AliWarning("Bad centralty type string: '" + typestr + "'");
   } else {
-
+    SetCentralityType(type);
   }
+}
+
+inline void AliFemtoEventCutCentrality::SetCentralityRange(const float lo, const float hi)
+{
+  fEventCentrality = std::make_pair(lo, hi);
 }
 
 inline void AliFemtoEventCutCentrality::SetZPosRange(const float lo, const float hi)
@@ -164,16 +171,15 @@ inline void AliFemtoEventCutCentrality::SetZPosRange(const float lo, const float
 
 inline void AliFemtoEventCutCentrality::SetEPVZERO(const float lo, const float hi)
 {
-  fPsiEP[0] = lo;
-  fPsiEP[1] = hi;
+  fPsiEP = std::make_pair(lo, hi);
 }
 
-inline int AliFemtoEventCutCentrality::NEventsPassed() const
+inline ULong_t AliFemtoEventCutCentrality::NEventsPassed() const
 {
   return fNEventsPassed;
 }
 
-inline int AliFemtoEventCutCentrality::NEventsFailed() const
+inline ULong_t AliFemtoEventCutCentrality::NEventsFailed() const
 {
   return fNEventsFailed;
 }
@@ -191,35 +197,27 @@ inline AliFemtoEventCutCentrality* AliFemtoEventCutCentrality::Clone() const
 inline AliFemtoEventCutCentrality::AliFemtoEventCutCentrality(const AliFemtoEventCutCentrality& c):
   AliFemtoEventCut(c)
   , fCentralityType(c.fCentralityType)
+  , fEventCentrality(c.fEventCentrality)
   , fVertZPos(c.fVertZPos)
+  , fPsiEP(c.fPsiEP)
   , fSelectTrigger(c.fSelectTrigger)
   , fNEventsPassed(0)
   , fNEventsFailed(0)
 {
-  fEventCentrality[0] = c.fEventCentrality[0];
-  fEventCentrality[1] = c.fEventCentrality[1];
-  // fVertZPos[0] = c.fVertZPos[0];
-  // fVertZPos[1] = c.fVertZPos[1];
-  fPsiEP[0] = c.fPsiEP[0];
-  fPsiEP[1] = c.fPsiEP[1];
 }
 
 inline AliFemtoEventCutCentrality& AliFemtoEventCutCentrality::operator=(const AliFemtoEventCutCentrality& c)
 {
   if (this != &c) {
-    return *this;
+     AliFemtoEventCut::operator=(c);
+     fCentralityType = c.fCentralityType;
+     fSelectTrigger = c.fSelectTrigger;
+     fEventCentrality = c.fEventCentrality;
+     fVertZPos = c.fVertZPos;
+     fPsiEP = c.fPsiEP;
+     fNEventsPassed = 0;
+     fNEventsFailed = 0;
   }
-
-  AliFemtoEventCut::operator=(c);
-  fSelectTrigger = c.fSelectTrigger;
-  fEventCentrality[0] = c.fEventCentrality[0];
-  fEventCentrality[1] = c.fEventCentrality[1];
-  fCentralityType = c.fCentralityType;
-  fVertZPos = c.fVertZPos;
-  // fVertZPos[0] = c.fVertZPos[0];
-  // fVertZPos[1] = c.fVertZPos[1];
-  fPsiEP[0] = c.fPsiEP[0];
-  fPsiEP[1] = c.fPsiEP[1];
 
   return *this;
 }
@@ -246,25 +244,27 @@ float AliFemtoEventCutCentrality::GetCentrality(const AliFemtoEvent *ev) const
   }
 }
 
+template <typename RangeType> inline
+bool AliFemtoEventCutCentrality::within_range(float val, const RangeType &range) {
+    return (std::get<0>(range) <= val) && (val < std::get<1>(range));
+}
+
 inline
 bool AliFemtoEventCutCentrality::PassCentrality(const AliFemtoEvent* event) const
 {
-  const float cent = GetCentrality(event);
-  return (fEventCentrality[0] <= cent) && (cent < fEventCentrality[1]);
+  return within_range(GetCentrality(event), fEventCentrality);
 }
 
 inline
 bool AliFemtoEventCutCentrality::PassVertex(const AliFemtoEvent* event) const
 {
-  const float vertex_z = event->PrimVertPos().z();
-  return (fVertZPos.first <= vertex_z) && (vertex_z < fVertZPos.second);
+  return within_range(event->PrimVertPos().z(), fVertZPos);
 }
 
 inline
 bool AliFemtoEventCutCentrality::PassEventPlane(const AliFemtoEvent* event) const
 {
-  const double epvzero = event->ReactionPlaneAngle();
-  return (fPsiEP[0] < epvzero && epvzero < fPsiEP[1]);
+  return within_range(event->ReactionPlaneAngle(), fPsiEP);
 }
 
 inline

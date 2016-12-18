@@ -14,10 +14,10 @@
  */
 /**
  * @file   AddTaskForwardMult.C
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Mar 23 12:13:54 2011
  *
- * @brief
+ * @brief  Add task to put forward multiplicity in AOD 
  *
  *
  * @ingroup pwglf_forward_scripts_tasks

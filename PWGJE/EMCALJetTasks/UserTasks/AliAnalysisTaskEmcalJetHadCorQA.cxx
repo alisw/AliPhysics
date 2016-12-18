@@ -209,7 +209,7 @@ void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce()
     fCaloClusters2 = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fCalo2Name));
     if (!fCaloClusters2){
       AliError(Form("%s: Could not retrieve calo clusters %s!",GetName(),fCalo2Name.Data()));
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       return;
     }
   }
@@ -218,7 +218,7 @@ void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce()
     fMCParticles = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticlesName));
     if (!fMCParticles){
       AliError(Form("%s: Could not retrieve MC Particles %s!",GetName(),fMCParticlesName.Data()));
-      fInitialized = kFALSE;
+      fLocalInitialized = kFALSE;
       return;
     }
   }
@@ -228,7 +228,7 @@ void AliAnalysisTaskEmcalJetHadCorQA::ExecOnce()
  //    else if (!fJets->GetClass()->GetBaseClass("AliVCluster")){
 //       AliError(Form("%s: Collection %s does not contain AliEmcalParticle objects!",GetName(),fCalo2Name.Data()));
 //       fCaloClusters2 = 0;
-//       fInitialized = kFALSE;
+//       fLocalInitialized = kFALSE;
 //       return;
     //  }
 }

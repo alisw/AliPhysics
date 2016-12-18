@@ -221,7 +221,7 @@ void AliAnalysisTaskEmcalTmpSparseMaker::ExecOnce()
 //
 
   AliAnalysisTaskEmcalJet::ExecOnce();
-  if (!fInitialized) return;
+  if (!fLocalInitialized) return;
 //=============================================================================
 
   if (fContJets) if (fContJets->GetArray()==0) fContJets = 0x0;

@@ -36,6 +36,7 @@ TH1D ****histo;
 TGraphAsymmErrors ****err;
 TLatex ****ltscale;
 TH1D ****subtractedhisto;
+TH1D ***histopPbSuperimp;
 TGraphAsymmErrors ****suberr;
 TGraphAsymmErrors ****grbase;
 TGraphAsymmErrors ****grv2; 
@@ -130,12 +131,14 @@ void Init(){
     err[icoll]= new TGraphAsymmErrors**[nbinAssocpt];
     ltscale[icoll] = new TLatex **[nbinAssocpt];
     subtractedhisto[icoll]=new TH1D**[nbinAssocpt];
+    histopPbSuperimp=new TH1D**[nbinAssocpt];
     suberr[icoll]=new TGraphAsymmErrors**[nbinAssocpt]; 
     grbase[icoll]=new TGraphAsymmErrors**[nbinAssocpt]; 
     grv2[icoll]=new TGraphAsymmErrors**[nbinAssocpt]; 
     for(Int_t kassoc=0;kassoc<nbinAssocpt;kassoc++){
       histo[icoll][kassoc]=new TH1D*[nbinDpt];
       subtractedhisto[icoll][kassoc]=new TH1D*[nbinDpt];
+      histopPbSuperimp[kassoc]=new TH1D*[nbinDpt];
       err[icoll][kassoc]= new TGraphAsymmErrors*[nbinDpt]; 
       ltscale[icoll][kassoc] = new TLatex*[nbinDpt]; 
       suberr[icoll][kassoc]=new TGraphAsymmErrors*[nbinDpt]; 
@@ -144,6 +147,7 @@ void Init(){
       for(Int_t jmes=0;jmes<nbinDpt;jmes++){
       histo[icoll][kassoc][jmes]=0x0;
       subtractedhisto[icoll][kassoc][jmes]=0x0;
+      histopPbSuperimp[kassoc][jmes]=0x0;
       err[icoll][kassoc][jmes]=0x0; 
       ltscale[icoll][kassoc][jmes] =0x0; 
       suberr[icoll][kassoc][jmes]=0x0; 
@@ -515,8 +519,25 @@ TLegend *GetLegendDataPoints(TH1D *hpp,TH1D *hpPb,Int_t identifier){
     legend->SetTextFont(43);
     legend->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
 			// old settings with font 42, still good (0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-    legend->AddEntry(hpp,"pp, #sqrt{#it{s}} = 7 TeV, |#it{y}^{D}| < 0.5","lep");
+    legend->AddEntry(hpp,"pp, #sqrt{#it{s}} = 7 TeV, |#it{y}^{D}_{cms}| < 0.5","lep");
     legend->AddEntry(hpPb,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV, -0.96 < #it{y}^{D}_{cms} < 0.04","lep");
+    legend->SetName(Form("LegendDataPPandpPb_%d",identifier));
+    return legend;
+  }
+
+TLegend *GetLegendDataPointsFake(TH1D *hpp,TH1D *hpPb,Int_t identifier){
+    
+  TLegend * legend = new TLegend(0.008/gPad->GetWNDC()+gPad->GetLeftMargin(),0.18/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.245/gPad->GetHNDC()+gPad->GetBottomMargin());
+    //new TLegend(0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.14/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.2/gPad->GetHNDC()+gPad->GetBottomMargin());
+  //previous settings: (0.011/gPad->GetWNDC()+gPad->GetLeftMargin(),0.16/gPad->GetHNDC()+gPad->GetBottomMargin(),0.2/gPad->GetWNDC()+gPad->GetLeftMargin(),0.22/gPad->GetHNDC()+gPad->GetBottomMargin());
+    legend->SetFillColor(0);
+    legend->SetFillStyle(0);
+    legend->SetBorderSize(0);
+    legend->SetTextFont(43);
+    legend->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);
+			// old settings with font 42, still good (0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+    legend->AddEntry(hpp,"","lep");
+    legend->AddEntry(hpPb,"","lep");
     legend->SetName(Form("LegendDataPPandpPb_%d",identifier));
     return legend;
   }
@@ -541,9 +562,9 @@ TLegend *GetLegendBaselines(TGraphAsymmErrors *gpp,TGraphAsymmErrors *gpPb,Int_t
   legend->SetBorderSize(0);
   legend->SetTextFont(43);
   legend->SetTextAlign(12);
-  legend->SetTextSize(25*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42, 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-  legend->AddEntry(gpp,"baseline uncertainty pp","f");
-  legend->AddEntry(gpPb,"baseline uncertainty p-Pb","f");
+  legend->SetTextSize(23*innerPadHeight/referencePadHeight*resizeTextFactor);// old settings with font 42, 0.07/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
+  legend->AddEntry(gpp,"baseline-subtraction uncertainty (pp)","f");
+  legend->AddEntry(gpPb,"baseline-subtraction uncertainty (p-Pb)","f");
   // legend->AddEntry(box2[4],"v2 subtr p-Pb","f");
   legend->SetName(Form("LegendBaselineUncPPandpPb_%d",identifier));
   return legend;
@@ -569,7 +590,7 @@ TPaveText *GetAveragepavetext(Int_t identifier){
   SetPaveStyle(pvAverage);
   pvAverage->SetTextFont(43);
   pvAverage->SetTextSize(32*innerPadHeight/referencePadHeight*resizeTextFactor);//old settings with font 42: 0.08/(gPad->GetHNDC())*scaleHeightPads*resizeTextFactor);
-  pvAverage->AddText("Average D^{0},D^{+},D^{*+}");
+  pvAverage->AddText("Average D^{0}, D^{+}, D^{*+}");
   pvAverage->SetName(Form("paveAverage_%d",identifier));
   return pvAverage;
 }
@@ -821,7 +842,10 @@ void DoComparison_ppVspPballPanels(){
 	ltscale[1][iassoc][jDpt]->SetY(0.12/gPad->GetHNDC()+gPad->GetBottomMargin());	
       }
 
-
+      histopPbSuperimp[iassoc][jDpt] = subtractedhisto[1][iassoc][jDpt]->Clone();
+      histopPbSuperimp[iassoc][jDpt]->SetMarkerStyle(25);
+      histopPbSuperimp[iassoc][jDpt]->SetMarkerColor(kRed+1);
+      histopPbSuperimp[iassoc][jDpt]->Draw("same");
       //      ltscale[0][iassoc][jDpt]->SetTextSize(0.05/(gPad->GetHNDC())*scaleHeightPads);
 
 
@@ -829,17 +853,18 @@ void DoComparison_ppVspPballPanels(){
 
 
       ltscale[1][iassoc][jDpt]->Draw();//commented
-      subtractedhisto[0][iassoc][jDpt]->Draw("same");
       suberr[0][iassoc][jDpt]->Draw("E2");
+      subtractedhisto[0][iassoc][jDpt]->Draw("same");
       ltscale[0][iassoc][jDpt]->Draw();//commented
       Printf("Getting data legend");
       TLegend *legend=GetLegendDataPoints(histo[0][iassoc][firstDpt],histo[1][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
+      TLegend *legendSuperimp=GetLegendDataPointsFake(histo[0][iassoc][firstDpt],histopPbSuperimp[iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
       Printf("Getting baseline unc legend");
       TLegend *legend2;
       if(style==0)legend2=GetLegendBaselines(grbase[0][iassoc][firstDpt],grbase[1][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,0);
       else if(style==1)legend2=GetLegendBaselines(grbase[0][iassoc][firstDpt],grbase[1][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,3); // default option was 1 in older settings; 2 for draft 1 version;
       else legend2=GetLegendBaselines(grbase[0][iassoc][firstDpt],grbase[1][iassoc][firstDpt],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1,1);
-      if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1)legend->Draw();
+      if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==1){legend->Draw(); legendSuperimp->Draw();}
       if((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1==2)legend2->Draw();// was in pad 3 before
       Printf("Getting average pave text");
       TPaveText *pvAverage=GetAveragepavetext((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);

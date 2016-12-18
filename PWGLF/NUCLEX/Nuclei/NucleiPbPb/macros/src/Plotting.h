@@ -8,6 +8,7 @@
 
 const int kNcolors = 7;
 const Color_t kColor[kNcolors] = {kRed,kOrange,kGreen+1,kAzure+1,kBlue,kViolet+2,kBlack};
+const Style_t kMarker_[2] = {20,24};
 
 void SetHistStyle(TH1* h, int id = 0, int marker = 20, int linew = 1, int fillstyle = 0) {
   Color_t cc = kColor[id%kNcolors];

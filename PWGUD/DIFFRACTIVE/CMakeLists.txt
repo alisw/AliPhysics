@@ -22,12 +22,16 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/xsAndTwoProng
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/legotrain
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/DGTrigger
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/CEPdevel
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/Resonance
                    )
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGPP/ITS
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/base
                    )
 
 # Sources in alphabetical order
@@ -41,6 +45,7 @@ set(SRCS
     legotrain/AliMultiplicitySelectionCPPWA.cxx
     legotrain/AliAnalysisTaskDG.cxx
     legotrain/AliAnalysisTaskDiffCrossSections.cxx
+    legotrain/AliSPDGeometryUtils.cxx
     QA/AliAnalysisTaskCPQA.cxx
     QA/AliAnalysisTaskCEPQA.cxx
     xsAndTwoProng/AliAnalysisTaskCDMeson.cxx
@@ -49,6 +54,14 @@ set(SRCS
     xsAndTwoProng/AliCDMesonTracks.cxx
     xsAndTwoProng/AliCDMesonUtils.cxx
     DGTrigger/AliTriggerStudy0STP.cxx
+    CEPdevel/CEPEventBuffer.cxx
+    CEPdevel/CEPTrackBuffer.cxx
+    CEPdevel/AliPBBase.cxx
+    CEPdevel/AliPBTracks.cxx
+    CEPdevel/AliPBUtils.cxx
+    CEPdevel/AliAnalysisTaskPB.cxx
+    Resonance/AliAnalysisTaskf0f2.cxx
+    Resonance/AliAnalysisPseudoRapidityDensity.cxx
    )
 
 # Headers from sources

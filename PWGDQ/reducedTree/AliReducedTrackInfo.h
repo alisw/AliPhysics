@@ -35,10 +35,18 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  DCAxy()                       const {return fDCA[0];}
   Float_t  DCAz()                        const {return fDCA[1];}
   Float_t  TrackLength()                 const {return fTrackLength;}
+  Float_t  MassForTracking()        const {return fMassForTracking;}
+  Float_t  Chi2TPCConstrainedVsGlobal()  const {return fChi2TPCConstrainedVsGlobal;}
+  Float_t  HelixX()                      const {return fHelixCenter[0];}
+  Float_t  HelixY()                      const {return fHelixCenter[1];}
+  Float_t  HelixR()                      const {return fHelixRadius;}
   
   UShort_t ITSncls()                const;
   UChar_t  ITSclusterMap()          const {return fITSclusterMap;}
+  UChar_t  ITSSharedClusterMap()   const {return fITSSharedClusterMap;}
   Bool_t   ITSLayerHit(Int_t layer) const {return (layer>=0 && layer<6 ? (fITSclusterMap&(1<<layer)) : kFALSE);};
+  Bool_t   ITSClusterIsShared(Int_t layer) const {return (layer>=0 && layer<6 ? (fITSSharedClusterMap&(1<<layer)) : kFALSE);};
+  UShort_t     ITSnSharedCls() const;
   Float_t  ITSsignal()              const {return fITSsignal;}
   Float_t  ITSnSig(Int_t specie)    const {return (specie>=0 && specie<=3 ? fITSnSig[specie] : -999.);}
   Float_t  ITSchi2()                const {return fITSchi2;}
@@ -54,6 +62,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t TPCsignalN()                     const {return fTPCsignalN;}
   Float_t TPCnSig(Int_t specie)            const {return (specie>=0 && specie<=3 ? fTPCnSig[specie] : -999.);}
   Float_t TPCchi2()                        const {return fTPCchi2;}
+  Float_t TPCActiveLength()         const {return fTPCActiveLength;}
+  Float_t TPCGeomLength()       const {return fTPCGeomLength;}
   
   Float_t  TOFbeta()             const {return fTOFbeta;}
   Float_t  TOFtime()             const {return fTOFtime;}
@@ -72,7 +82,13 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t    CaloClusterId() const {return fCaloClusterId;}
   
   Float_t MCmom(Int_t dim) {return (dim>=0 && dim<3 ? fMCMom[dim] : 0.0);}
-  Float_t MCPt() {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]);}
+  Float_t PtMC() {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]);}
+  Float_t PMC()   const {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]);}
+  Float_t PhiMC() const;
+  Float_t EtaMC() const;
+  Float_t RapidityMC(Float_t massAssumption) const;
+  Float_t ThetaMC() const;
+  Float_t EnergyMC(Float_t massAssumption) const {return TMath::Sqrt(massAssumption*massAssumption+PMC()*PMC());}
   Float_t MCFreezeout(Int_t dim) {return (dim>=0 && dim<3 ? fMCFreezeout[dim] : 0.0);}
   Int_t MCLabel(Int_t history=0) {return (history>=0 && history<4 ? fMCLabels[history] : -9999);}
   Int_t MCPdg(Int_t history=0) {return (history>=0 && history<4 ? fMCPdg[history] : -9999);}
@@ -88,9 +104,14 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fDCA[2];              // DCA xy,z
   Float_t fTPCDCA[2];           // TPConly DCA xy,z
   Float_t fTrackLength;         // track length
+  Float_t fMassForTracking;    // mass hypothesis used for tracking
+  Float_t fChi2TPCConstrainedVsGlobal;   // AliESDtrack::GetChi2TPCConstrainedVsGlobal()
+  Float_t fHelixCenter[2];      // Helix Center x,y
+  Float_t fHelixRadius;         // Radius of the Helix
   
   // ITS
   UChar_t  fITSclusterMap;      // ITS cluster map
+  UChar_t  fITSSharedClusterMap;  // ITS shared cluster map
   Float_t  fITSsignal;          // ITS signal
   Float_t  fITSnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
   Float_t  fITSchi2;            // ITS chi2 / cls
@@ -105,6 +126,8 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t fTPCsignalN;         // TPC no clusters de/dx
   Float_t fTPCnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
   Float_t fTPCchi2;            // TPC chi2 / cls
+  Float_t fTPCActiveLength;   // track length in active parts of the TPC
+  Float_t fTPCGeomLength;   // geometrical track length in the TPC
     
   // TOF
   Float_t fTOFbeta;             // TOF pid info
@@ -135,8 +158,58 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   AliReducedTrackInfo(const AliReducedTrackInfo &c);
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
 
-  ClassDef(AliReducedTrackInfo, 2);
+  ClassDef(AliReducedTrackInfo, 4);
 };
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::PhiMC() const {
+   //
+   // Return the azimuthal angle of this particle
+   //
+   Float_t phi=TMath::ATan2(fMCMom[1],fMCMom[0]); 
+   if(phi>=0.0) 
+      return phi;
+   else 
+      return (TMath::TwoPi()+phi);
+}
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::ThetaMC() const {
+   //
+   // Return the polar angle for this particle
+   //
+   Float_t p=PMC(); 
+   if(p>=1.0e-6) 
+      return TMath::ACos(fMCMom[2]/p);
+   else 
+      return 0.0;
+}
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::EtaMC() const {
+   //
+   // Return the pseudorapidity of this particle
+   //
+   Float_t eta = TMath::Tan(0.5*ThetaMC());
+   if(eta>1.0e-6) 
+      return -1.0*TMath::Log(eta);
+   else 
+      return 0.0;
+}
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::RapidityMC(Float_t massAssumption) const {
+   //
+   // Return the rapidity of this particle using a massAssumption
+   //
+   Float_t e = EnergyMC(massAssumption);
+   Float_t factor = e-fMCMom[2];
+   if(TMath::Abs(factor)<1.0e-6) return 0.0;
+   factor = (e+fMCMom[2])/factor;
+   if(factor<1.0e-6) return 0.0;
+   return 0.5*TMath::Log(factor);
+}
+
 
 //_______________________________________________________________________________
 inline UShort_t AliReducedTrackInfo::ITSncls() const
@@ -147,6 +220,17 @@ inline UShort_t AliReducedTrackInfo::ITSncls() const
   UShort_t ncls=0;
   for(Int_t i=0; i<6; ++i) ncls += (ITSLayerHit(i) ? 1 : 0);
   return ncls;
+}
+
+//_______________________________________________________________________________
+inline UShort_t AliReducedTrackInfo::ITSnSharedCls() const
+{
+   //
+   // ITS number of shared clusters from the shared cluster map
+   //
+   UShort_t ncls=0;
+   for(Int_t i=0; i<6; ++i) ncls += (ITSClusterIsShared(i) ? 1 : 0);
+   return ncls;
 }
 
 

@@ -1,8 +1,6 @@
 
-
 AliAnalysisTaskEMCalHFEpA* ConfigEMCalHFEpA(
 											
-										
 
 Bool_t isMC=kFALSE, 
 Int_t triggerIndex=0, 
@@ -15,7 +13,9 @@ Int_t EMCalThreshould = 0, //0 == EG1, 1 == EG2
 Bool_t isTender = kFALSE,
 char* period = "b",
 Int_t   centralityEstimator = 0,
-Bool_t isCentralitySys 		= kFALSE
+Bool_t isCentralitySys 		= kFALSE,
+Bool_t isTOFdet 		= kFALSE
+											 
 )
 
 {
@@ -140,11 +140,13 @@ Bool_t isCentralitySys 		= kFALSE
 	if(period == "d"){
 		
 			printf("======================================================================================\n ");
-			printf("\n\n Running on 13d period!!! WITHOUT CALIBRATION \n\n  TPC Calibration NOT set !!! \n\n ");
+			printf("\n\n Running on 13d period!!! WITH CALIBRATION \n\n  \n\n ");
 			printf("======================================================================================\n ");
 		
 			task->SetTPCCalibration();
 	        task->SetTPC_mean_sigma(1.02, 1.68);
+			// task->SetTPC_mean_sigma(0.63, 1.17);
+
 		    task->SetTPCcal_cut_min(-1);
 		    task->SetTPCcal_cut_max(3);
 			
@@ -152,7 +154,10 @@ Bool_t isCentralitySys 		= kFALSE
 	
 	if(period == "e" || period == "f"){
 		task->SetTPCCalibration_eta(kTRUE);
+			//task->SetTPCCalibration_eta(kFALSE);
 	}
+	 
+	
 	
 	if(configIndex==300){
 		task->SetTPCCalibration_eta(kFALSE);
@@ -294,9 +299,18 @@ Bool_t isCentralitySys 		= kFALSE
 
 //______________________________________________________
 //Configure PID
+	
+	
+	if(isTOFdet){	
+		pid->AddDetector("TOF", 0); //Add TOF PID
+		pid->ConfigureTOF(3.0); //Configure TOF cut: Defaut = 3 sigmas
+	}
+	
 	//_________________________
 	//TPC PID
 	pid->AddDetector("TPC", 1);				//Add TPC PID
+	
+	
 	
 	//_________________________
 	//Configure TPC cut
@@ -362,7 +376,7 @@ Bool_t isCentralitySys 		= kFALSE
 			
 		}
 		
-		if(!isEMCal)params[0] = 0;
+		if(!isEMCal)params[0] = 0.09;
 	
 	}
 
@@ -395,6 +409,9 @@ Bool_t isCentralitySys 		= kFALSE
 	}
 	else{
 		Double_t max=3.0;
+		if(!isEMCal){
+			Double_t max=3.18;
+		}
 		if(period =="e"||period =="f"){
 			
 			if(configIndex==200){

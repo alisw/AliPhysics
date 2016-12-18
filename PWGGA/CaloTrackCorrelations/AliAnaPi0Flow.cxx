@@ -113,7 +113,6 @@ fHistEPV0AR4(0), fHistEPV0AR7(0), fHistEPV0CR0(0), fHistEPV0CR3(0),
 fHistEPTPCFlatten(0), fHistEPV0AFlatten(0), fHistEPV0CFlatten(0),
 fHistEPDiffV0A_V0CR0(0), fHistEPDiffV0A_V0CR3(0), fHistEPDiffV0CR0_V0CR3(0),
 fHistEPDiffV0C_V0AR4(0), fHistEPDiffV0C_V0AR7(0), fHistEPDiffV0AR4_V0AR7(0), fHistEPDiffV0AR_V0CR(0),
-fHistEPRBRCosV0A(0), fHistEPRBRSinV0A(0), fHistEPRBRCosV0C(0), fHistEPRBRSinV0C(0), fHistEPRBRCosTPC(0), fHistEPRBRSinTPC(0),
 fHistClusterEtaPhi(0), fHistClusterEN(0), fHistClusterEtN(0), fHistClusterEM02(0), fHistClusterEtM02(0),
 
 fDataV0(0), fDataV0A(0), fDataV0C(0), fDataTPC(0)
@@ -239,24 +238,6 @@ TList * AliAnaPi0Flow::GetCreateOutputObjects()
   fHistEPDiffV0AR_V0CR = new TH2F("fHistEPDiffV0AR_V0CR","",100,0,100,100,-1.0,1.0);
   outputList->Add(fHistEPDiffV0AR_V0CR);
 
-  fHistEPRBRCosV0A = new TProfile("fHistEPRBRCosV0A","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRCosV0A);
-
-  fHistEPRBRSinV0A = new TProfile("fHistEPRBRSinV0A","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRSinV0A);
-
-  fHistEPRBRCosV0C = new TProfile("fHistEPRBRCosV0C","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRCosV0C);
-
-  fHistEPRBRSinV0C = new TProfile("fHistEPRBRSinV0C","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRSinV0C);
-
-  fHistEPRBRCosTPC = new TProfile("fHistEPRBRCosTPC","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRCosTPC);
-
-  fHistEPRBRSinTPC = new TProfile("fHistEPRBRSinTPC","",45,0,45,-1.,1.);
-  outputList->Add(fHistEPRBRSinTPC);
-
   fHistClusterEtaPhi = new TH2F("fHistClusterEtaPhi","Cluster #eta vs #phi",100,-1.0,1.0,100,0.0,6.29);
   fHistClusterEtaPhi->GetXaxis()->SetTitle("#eta"); fHistClusterEtaPhi->GetYaxis()->SetTitle("#phi [rad]");
   outputList->Add(fHistClusterEtaPhi);
@@ -277,29 +258,29 @@ TList * AliAnaPi0Flow::GetCreateOutputObjects()
   fHistClusterEtM02->GetYaxis()->SetTitle("M02"); fHistClusterEtM02->GetXaxis()->SetTitle("E_{T} [GeV]");
   outputList->Add(fHistClusterEtM02);
 
-  //                    Et    M02   Cent     DeltaPhi      Cos[2*DeltaPhi]
-  Int_t    bins[5] = {  500,  500,  100,          100,     100};
-  Double_t min[5]  = {  0.0,  0.0,    0,          0.0,    -1.0};
-  Double_t max[5]  = { 50.0, 10.0,  100,  TMath::Pi(),     1.0};
+  //                   E    Et    M02   Cent     DeltaPhi      Cos[2*DeltaPhi]
+  Int_t    bins[6] = {500,  500,  500,  100,          100,     100};
+  Double_t min[6]  = {0,    0.0,  0.0,    0,          0.0,    -1.0};
+  Double_t max[6]  = {50.0, 50.0, 10.0, 100,  TMath::Pi(),     1.0};
    
-  fDataV0 = new THnSparseF("fDataV0","",5,bins,min,max);
-  fDataV0->GetAxis(0)->SetTitle("E_{T} [GeV]"); fDataV0->GetAxis(1)->SetTitle("M02"); fDataV0->GetAxis(2)->SetTitle("Centrality"); 
-  fDataV0->GetAxis(3)->SetTitle("#Delta(#phi) [rad]"); fDataV0->GetAxis(4)->SetTitle("Cos[2*#Delta(#phi)]");  
+  fDataV0 = new THnSparseF("fDataV0","",6,bins,min,max);
+  fDataV0->GetAxis(0)->SetTitle("E"); fDataV0->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0->GetAxis(2)->SetTitle("M02");
+  fDataV0->GetAxis(3)->SetTitle("Centrality"); fDataV0->GetAxis(4)->SetTitle("#Delta(#phi) [rad]"); fDataV0->GetAxis(5)->SetTitle("Cos[2*#Delta(#phi)]");  
   outputList->Add(fDataV0);
    
-  fDataV0A = new THnSparseF("fDataV0A","",5,bins,min,max);
-  fDataV0A->GetAxis(0)->SetTitle("E_{T} [GeV]"); fDataV0A->GetAxis(1)->SetTitle("M02"); fDataV0A->GetAxis(2)->SetTitle("Centrality"); 
-  fDataV0A->GetAxis(3)->SetTitle("#Delta(#phi) [rad]"); fDataV0A->GetAxis(4)->SetTitle("Cos[2*#Delta(#phi)]");  
+  fDataV0A = new THnSparseF("fDataV0A","",6,bins,min,max);
+  fDataV0A->GetAxis(0)->SetTitle("E"); fDataV0A->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0A->GetAxis(2)->SetTitle("M02"); 
+  fDataV0A->GetAxis(3)->SetTitle("Centrality"); fDataV0A->GetAxis(4)->SetTitle("#Delta(#phi) [rad]"); fDataV0A->GetAxis(5)->SetTitle("Cos[2*#Delta(#phi)]");  
   outputList->Add(fDataV0A);
    
-  fDataV0C = new THnSparseF("fDataV0C","",5,bins,min,max);
-  fDataV0C->GetAxis(0)->SetTitle("E_{T} [GeV]"); fDataV0C->GetAxis(1)->SetTitle("M02"); fDataV0C->GetAxis(2)->SetTitle("Centrality"); 
-  fDataV0C->GetAxis(3)->SetTitle("#Delta(#phi) [rad]"); fDataV0C->GetAxis(4)->SetTitle("Cos[2*#Delta(#phi)]");  
+  fDataV0C = new THnSparseF("fDataV0C","",6,bins,min,max);
+  fDataV0C->GetAxis(0)->SetTitle("E"); fDataV0C->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataV0C->GetAxis(2)->SetTitle("M02");
+  fDataV0C->GetAxis(3)->SetTitle("Centrality"); fDataV0C->GetAxis(4)->SetTitle("#Delta(#phi) [rad]"); fDataV0C->GetAxis(5)->SetTitle("Cos[2*#Delta(#phi)]");  
   outputList->Add(fDataV0C);
    
-  fDataTPC = new THnSparseF("fDataTPC","",5,bins,min,max);
-  fDataTPC->GetAxis(0)->SetTitle("E_{T} [GeV]"); fDataTPC->GetAxis(1)->SetTitle("M02"); fDataTPC->GetAxis(2)->SetTitle("Centrality"); 
-  fDataTPC->GetAxis(3)->SetTitle("#Delta(#phi) [rad]"); fDataTPC->GetAxis(4)->SetTitle("Cos[2*#Delta(#phi)]");  
+  fDataTPC = new THnSparseF("fDataTPC","",6,bins,min,max);
+  fDataTPC->GetAxis(0)->SetTitle("E"); fDataTPC->GetAxis(1)->SetTitle("E_{T} [GeV]"); fDataTPC->GetAxis(2)->SetTitle("M02");
+  fDataTPC->GetAxis(3)->SetTitle("Centrality"); fDataTPC->GetAxis(4)->SetTitle("#Delta(#phi) [rad]"); fDataTPC->GetAxis(5)->SetTitle("Cos[2*#Delta(#phi)]");  
   outputList->Add(fDataTPC);
 
   return outputList;
@@ -361,13 +342,12 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
 
     Double_t E = c->E();
     Double_t eta = c->Eta();
-    Double_t Et = E / TMath::CosH(eta);
-//  Double_t pt = c->Pt();
+    Double_t Et = c->Pt();
     Double_t phi = c->Phi();
     Double_t M02 = c->GetM02();
     Double_t N = c->GetNCells();
 
-    Double_t dphiV0  = TVector2::Phi_0_2pi(phi-fEPV0R); if(dphiV0>TMath::Pi()) {dphiV0-=TMath::Pi();} // ??
+    Double_t dphiV0  = TVector2::Phi_0_2pi(phi-fEPV0R); if(dphiV0 >TMath::Pi()) {dphiV0 -=TMath::Pi();}
     Double_t dphiV0A = TVector2::Phi_0_2pi(phi-fEPV0A); if(dphiV0A>TMath::Pi()) {dphiV0A-=TMath::Pi();}
     Double_t dphiV0C = TVector2::Phi_0_2pi(phi-fEPV0C); if(dphiV0C>TMath::Pi()) {dphiV0C-=TMath::Pi();}
     Double_t dphiTPC = TVector2::Phi_0_2pi(phi-fEPTPC); if(dphiTPC>TMath::Pi()) {dphiTPC-=TMath::Pi();}
@@ -375,36 +355,40 @@ void AliAnaPi0Flow::MakeAnalysisFillHistograms()
     //
     // Fill flow data
     //
-    Double_t dataV0[5];
-    dataV0[0] = Et;
-    dataV0[1] = M02;
-    dataV0[2] = fCentrality;
-    dataV0[3] = dphiV0;
-    dataV0[4] = TMath::Cos(2.0*(dphiV0));
+    Double_t dataV0[6];
+    dataV0[0] = E;
+    dataV0[1] = Et;
+    dataV0[2] = M02;
+    dataV0[3] = fCentrality;
+    dataV0[4] = dphiV0;
+    dataV0[5] = TMath::Cos(2.0*(dphiV0));
     fDataV0->Fill(dataV0);
 
-    Double_t dataV0A[5];
-    dataV0A[0] = Et;
-    dataV0A[1] = M02;
-    dataV0A[2] = fCentrality;
-    dataV0A[3] = dphiV0A;
-    dataV0A[4] = TMath::Cos(2.0*(dphiV0A));
+    Double_t dataV0A[6];
+    dataV0A[0] = E;
+    dataV0A[1] = Et;
+    dataV0A[2] = M02;
+    dataV0A[3] = fCentrality;
+    dataV0A[4] = dphiV0A;
+    dataV0A[5] = TMath::Cos(2.0*(dphiV0A));
     fDataV0A->Fill(dataV0A);
 
-    Double_t dataV0C[5];
-    dataV0C[0] = Et;
-    dataV0C[1] = M02;
-    dataV0C[2] = fCentrality;
-    dataV0C[3] = dphiV0C;
-    dataV0C[4] = TMath::Cos(2.0*(dphiV0C));
+    Double_t dataV0C[6];
+    dataV0C[0] = E;
+    dataV0C[1] = Et;
+    dataV0C[2] = M02;
+    dataV0C[3] = fCentrality;
+    dataV0C[4] = dphiV0C;
+    dataV0C[5] = TMath::Cos(2.0*(dphiV0C));
     fDataV0C->Fill(dataV0C);
 
-    Double_t dataTPC[5];
-    dataTPC[0] = Et;
-    dataTPC[1] = M02;
-    dataTPC[2] = fCentrality;
-    dataTPC[3] = dphiTPC;
-    dataTPC[4] = TMath::Cos(2.0*(dphiTPC));
+    Double_t dataTPC[6];
+    dataTPC[0] = E;
+    dataTPC[1] = Et;
+    dataTPC[2] = M02;
+    dataTPC[3] = fCentrality;
+    dataTPC[4] = dphiTPC;
+    dataTPC[5] = TMath::Cos(2.0*(dphiTPC));
     fDataTPC->Fill(dataTPC);
 
     //
@@ -554,14 +538,6 @@ void AliAnaPi0Flow::GetVZEROEventPlane(Bool_t flattenEP)
   fHistEPDiffV0C_V0AR7->Fill(fCentrality, TMath::Cos(2.0*(fEPV0C - fEPV0AR7)));
   fHistEPDiffV0AR4_V0AR7->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR4 - fEPV0AR7)));   
   fHistEPDiffV0AR_V0CR->Fill(fCentrality, TMath::Cos(2.0*(fEPV0AR - fEPV0CR)));
-
-  // run-by-run QA
-  fHistEPRBRCosV0A->Fill(fInternalRunNum, TMath::Cos(2*fEPV0A));
-  fHistEPRBRSinV0A->Fill(fInternalRunNum, TMath::Sin(2*fEPV0A));
-  fHistEPRBRCosV0C->Fill(fInternalRunNum, TMath::Cos(2*fEPV0C));
-  fHistEPRBRSinV0C->Fill(fInternalRunNum, TMath::Sin(2*fEPV0C));
-  fHistEPRBRCosTPC->Fill(fInternalRunNum, TMath::Cos(2*fEPTPC));
-  fHistEPRBRSinTPC->Fill(fInternalRunNum, TMath::Sin(2*fEPTPC));
 }
 
 Double_t AliAnaPi0Flow::ApplyFlatteningV0A(Double_t phi, Double_t c)

@@ -68,31 +68,47 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
                                 Bool_t    enableTriggerOverlapRej     = kFALSE,                         // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                = 3.,                             // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader          = "",
-                                Bool_t    runLightOutput              = kFALSE                          // switch to run light output (only essential histograms for afterburner)
+                                Bool_t    runLightOutput              = kFALSE,                         // switch to run light output (only essential histograms for afterburner)
+                                Int_t     enableMatBudWeightsPi0        = 0,                              // 1 = three radial bins, 2 = 10 radial bins
+                                TString   filenameMatBudWeights         = "MCInputFileMaterialBudgetWeights.root",
+                                TString   additionalTrainConfig       = "0"                             // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");  
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
-
+  //parse additionalTrainConfig flag
+  TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
+  if(rAddConfigArr->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pPb during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
+  TObjString* rAdditionalTrainConfig;
+  for(Int_t i = 0; i<rAddConfigArr->GetEntries() ; i++){
+    if(i==0) rAdditionalTrainConfig = (TObjString*)rAddConfigArr->At(i);
+    else{
+      TObjString* temp = (TObjString*) rAddConfigArr->At(i);
+      TString tempStr = temp->GetString();
+      cout<< tempStr.Data()<<endl;
+      
+      if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
+        TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
+	if(fileNameMatBudWeightsArr->GetEntries()<1 ){cout<<"ERROR: AddTask_GammaConvV1_pPb when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl; return;}  
+	 TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
+	 TString  oldfileName  = oldMatObjStr->GetString();
+	 TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
+	 cout<<newFileName.Data()<<endl;
+	 if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
+	 filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
+	 cout << "INFO: AddTask_GammaConvV1_pPb the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+	 }
+      }
+    }
+  }
+  
+  
+  TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
+  if (sAdditionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + sAdditionalTrainConfig.Atoi();
+    cout << "INFO: AddTask_GammaConvV1_pPb running additionalTrainConfig '" << sAdditionalTrainConfig.Atoi() << "', train config: '" << trainConfig << "'" << endl;
+  }
+  
   Int_t isHeavyIon = 2;
+  
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -1184,7 +1200,24 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     cuts.AddCut("80052113", "00200009217000008260404000", "0162101500000000");  //  kEMC7
     cuts.AddCut("80083113", "00200009217000008260404000", "0162101500000000");  //  kEMCEG1 based on INT7
     cuts.AddCut("80085113", "00200009217000008260404000", "0162101500000000");  //  kEMCEG2 based on INT7
-  } else {
+  } else if (trainConfig == 199) {   //Stephan weights
+    cuts.AddCut("80000113", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 200) {
+    cuts.AddCut("80000123", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 201) {
+    cuts.AddCut("80000113", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 202) {
+    cuts.AddCut("80000123", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 203) {
+    cuts.AddCut("80000113", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } else if (trainConfig == 204) {
+    cuts.AddCut("80000123", "00200009217000008260404000", "0162103500900000");  // standard dc cut 4
+  } 
+    
+   
+  
+  
+  else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
@@ -1228,6 +1261,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
   AliConversionPhotonCuts **analysisCuts = new AliConversionPhotonCuts*[numberOfCuts];
   MesonCutList->SetOwner(kTRUE);
   AliConversionMesonCuts **analysisMesonCuts = new AliConversionMesonCuts*[numberOfCuts];
+  Bool_t initializedMatBudWeigths_existing    = kFALSE;
   
   if (doWeighting) Printf("weighting has been switched on");
   
@@ -1238,7 +1272,8 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17||
         trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 ||
         trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177 || trainConfig == 179 ||
-        trainConfig == 181 || trainConfig == 183 || trainConfig == 185 || trainConfig == 187 || trainConfig == 189 || trainConfig == 191 || trainConfig == 193 || trainConfig == 195 || trainConfig == 197 || trainConfig == 198){
+        trainConfig == 181 || trainConfig == 183 || trainConfig == 185 || trainConfig == 187 || trainConfig == 189 || trainConfig == 191 || trainConfig == 193 || trainConfig == 195 || trainConfig == 197 || trainConfig == 198 ||
+	trainConfig == 199 || trainConfig == 201 || trainConfig == 203 ){
       if (doWeighting){
         if (generatorName.CompareTo("DPMJET")==0){
           analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -1252,7 +1287,8 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18||
         trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || 
         trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152 || trainConfig == 174 || trainConfig == 176 || trainConfig == 178 || trainConfig == 180 ||
-        trainConfig == 182 || trainConfig == 184 || trainConfig == 186 || trainConfig == 188 || trainConfig == 190 || trainConfig == 192 || trainConfig == 194 || trainConfig == 196){
+        trainConfig == 182 || trainConfig == 184 || trainConfig == 186 || trainConfig == 188 || trainConfig == 190 || trainConfig == 192 || trainConfig == 194 || trainConfig == 196 ||
+        trainConfig == 200 || trainConfig == 202 || trainConfig == 204){
       if (doWeighting){
         analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
                                       "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
@@ -1386,6 +1422,14 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
+    if (enableMatBudWeightsPi0 > 0){
+        if (isMC > 0){
+            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
+                initializedMatBudWeigths_existing = kTRUE;}
+            else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+        }
+        else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
@@ -1417,6 +1461,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoPlotVsCentrality(enablePlotVsCentrality);
+  if (initializedMatBudWeigths_existing) {
+      task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
+  }
   
   //connect containers
   AliAnalysisDataContainer *coutput =

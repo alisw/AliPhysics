@@ -46,6 +46,9 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(11,iPtBin)] : 1.e6);}
   UInt_t GetPIDTrackTPCTOFBitMap(AliAODTrack *track) const;
 
+  void Setd0MeasMinusExpCut(Int_t nPtBins, Float_t *cutval);
+  void Setd0Cut(Int_t nPtBins, Float_t *cutval);
+    
   enum TrackPIDBit{kTPCPionLess1,kTPCPionMore1Less2,kTPCPionMore2Less3,kTPCPionMore3,
                    kTPCKaonLess1,kTPCKaonMore1Less2,kTPCKaonMore2Less3,kTPCKaonMore3,
                    kTPCProtonLess1,kTPCProtonMore1Less2,kTPCProtonMore2Less3,kTPCProtonMore3,
@@ -98,9 +101,13 @@ class AliRDHFCutsDstoKKpi : public AliRDHFCuts
   Double_t fBayesThreshold;/// Threshold for Bayesian PID probability
   Double_t fWeightKKpi; /// weight for KKpi for kBayesianWeights
   Double_t fWeightpiKK; /// weight for piKK for kBayesianWeights
+  Bool_t fUsed0MeasMinusExpCut; /// switch for cut on d0meas-d0exp
+  Float_t* fMaxd0MeasMinusExp;  //[fnPtBins] cut values on d0meas-d0exp
+  Bool_t fUsed0Cut; /// switch for cut on d0
+  Float_t* fMaxd0;  //[fnPtBins] cut values on d0
 
   /// \cond CLASSIMP     
-  ClassDef(AliRDHFCutsDstoKKpi,4);  /// class for cuts on AOD reconstructed Ds->KKpi
+  ClassDef(AliRDHFCutsDstoKKpi,5);  /// class for cuts on AOD reconstructed Ds->KKpi
   /// \endcond
 };
 

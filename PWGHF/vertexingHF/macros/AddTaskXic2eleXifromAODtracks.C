@@ -1,6 +1,6 @@
 AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString finname="",
 								   Bool_t theMCon=kFALSE,
-									 Bool_t ispp= kFALSE,
+									 Int_t iscoltype= 0,
 								   Bool_t writeVariableTree=kTRUE,
 									 Bool_t domixing=kFALSE,
 									 Bool_t reconstructPrimVert=kFALSE,
@@ -46,11 +46,12 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   printf("CREATE TASK\n");
   AliAnalysisTaskSEXic2eleXifromAODtracks *task = new AliAnalysisTaskSEXic2eleXifromAODtracks("AliAnalysisTaskSEXic2eleXifromAODtracks",RDHFCutsXic2eleXianal,writeVariableTree);
   task->SetMC(theMCon);
-	if(ispp){
+	if(iscoltype==0){
 		task->SetUseCentralityV0M(kFALSE);
 		task->SetUseCentralitySPDTracklet(kFALSE);
 	}else{
 		task->SetUseCentralityV0M(kTRUE);
+		task->SetUseEventPlane(4);
 	}
   task->SetDebugLevel(1);
   task->SetReconstructPrimVert(reconstructPrimVert);
@@ -70,18 +71,37 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
 	Int_t cent_mult_bin_numbpPb = sizeof(cent_mult_binlimitspPb)/sizeof(Double_t) - 1;
 	Double_t cent_mult_binlimitspp[] = { 0,100};
 	Int_t cent_mult_bin_numbpp = sizeof(cent_mult_binlimitspp)/sizeof(Double_t) - 1;
+	Double_t cent_mult_binlimitsPbPb[] = { 0,2.5,5,7.5,10,20,30,40,50,60,70,80,90,100};
+	Int_t cent_mult_bin_numbPbPb = sizeof(cent_mult_binlimitsPbPb)/sizeof(Double_t) - 1;
 
 	task->SetPoolPVzBinLimits(pvzbinnumb,pvzbinlimits);
-	if(ispp){
+	if(iscoltype==0){
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpp,cent_mult_binlimitspp);
 		task->SetNumberOfEventsForMixing(10);//pp
-	}else{
+  }else if(iscoltype==0){
 		task->SetPoolCentBinLimits(cent_mult_bin_numbpPb,cent_mult_binlimitspPb);
 		task->SetNumberOfEventsForMixing(10);//pPb
+	}else{
+		task->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);
+		task->SetNumberOfEventsForMixing(10);//PbPb
 	}
 
+  if(iscoltype==0 || iscoltype==1){
+    Int_t nrpbin = 1.;
+    Double_t rpbinlimits[2] = {-3.2,3.2};
+    task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+  }else{
+    Int_t nrpbin = 8;
+    Double_t rpbinlimits[9];
+    Double_t steprp = TMath::Pi()/(Double_t)nrpbin;
+    for(Int_t ir=0;ir<9;ir++){
+      rpbinlimits[ir] = -1.*TMath::Pi()/2. + steprp * (Double_t) ir;
+    }
+    task->SetPoolRPBinLimits(nrpbin,rpbinlimits);
+  }
+
   //multiplicity study
-  if(ispp){
+  if(iscoltype==0){
     if(estimatorFilename.EqualTo("") ) {
       printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
     } else{
@@ -140,7 +160,9 @@ AliAnalysisTaskSEXic2eleXifromAODtracks *AddTaskXic2eleXifromAODtracks(TString f
   mgr->ConnectOutput(task,9,coutputLc9);
   AliAnalysisDataContainer *coutputLc10 = mgr->CreateContainer(Form("eleXi_mccascvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,10,coutputLc10);
-  AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleXi_mcgenpairvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  //AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleXi_mcgenpairvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+  //mgr->ConnectOutput(task,11,coutputLc11);
+  AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleXi_singlevariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,11,coutputLc11);
   AliAnalysisDataContainer *coutputLc12 = mgr->CreateContainer(Form("eleXi_correlationvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
   mgr->ConnectOutput(task,12,coutputLc12);

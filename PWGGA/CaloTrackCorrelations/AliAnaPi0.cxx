@@ -54,21 +54,19 @@ AliAnaPi0::AliAnaPi0() : AliAnaCaloTrackCorrBaseClass(),
 fEventsList(0x0),
 fNModules(22),
 fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(0.),
-fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),
-fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0),
+fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),      fMultiCutAnaAcc(kFALSE),
+fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0), fNAngleCutBins(0),
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),
 fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),
 fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          
 fFillArmenterosThetaStar(0), fFillOnlyMCAcceptanceHisto(0),
-fFillSecondaryCellTiming(0), fCheckAccInSector(0),
+fFillSecondaryCellTiming(0), fFillOpAngleCutHisto(0),      fCheckAccInSector(0),
 fPairWithOtherDetector(0),   fOtherDetectorInputName(""),
-fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),                fPi0Mom(),
-fProdVertex(),
+fPhotonMom1(),               fPhotonMom1Boost(),           fPhotonMom2(),                fMCPrimMesonMom(),
+fMCProdVertex(),
 
 // Histograms
-fhAverTotECluster(0),        fhAverTotECell(0),            fhAverTotECellvsCluster(0),
-fhEDensityCluster(0),        fhEDensityCell(0),            fhEDensityCellvsCluster(0),
 fhReMod(0x0),                fhReSameSideEMCALMod(0x0),    fhReSameSectorEMCALMod(0x0),  fhReDiffPHOSMod(0x0),
 fhReSameSectorDCALPHOSMod(0),fhReDiffSectorDCALPHOSMod(0),
 fhMiMod(0x0),                fhMiSameSideEMCALMod(0x0),    fhMiSameSectorEMCALMod(0x0),  fhMiDiffPHOSMod(0x0),
@@ -78,13 +76,13 @@ fhRe1(0x0),                  fhMi1(0x0),                   fhRe2(0x0),          
 fhRe3(0x0),                  fhMi3(0x0),                   fhReInvPt1(0x0),              fhMiInvPt1(0x0),
 fhReInvPt2(0x0),             fhMiInvPt2(0x0),              fhReInvPt3(0x0),              fhMiInvPt3(0x0),
 fhRePtNCellAsymCuts(0x0),    fhMiPtNCellAsymCuts(0x0),     fhRePtNCellAsymCutsSM(),
-fhRePIDBits(0x0),            fhRePtMult(0x0),              fhReSS(),
+fhRePtNCellAsymCutsOpAngle(0x0),    fhMiPtNCellAsymCutsOpAngle(0x0),                     
 fhRePtAsym(0x0),             fhRePtAsymPi0(0x0),           fhRePtAsymEta(0x0),
+fhMiPtAsym(0x0),             fhMiPtAsymPi0(0x0),           fhMiPtAsymEta(0x0),
 fhEventBin(0),               fhEventMixBin(0),
 fhCentrality(0x0),           fhCentralityNoPair(0x0),
 fhEventPlaneResolution(0x0),
 fhRealOpeningAngle(0x0),     fhRealCosOpeningAngle(0x0),   fhMixedOpeningAngle(0x0),     fhMixedCosOpeningAngle(0x0),
-
 // MC histograms
 fhPrimPi0E(0x0),             fhPrimPi0Pt(0x0),
 fhPrimPi0AccE(0x0),          fhPrimPi0AccPt(0x0),          fhPrimPi0AccPtPhotonCuts(0x0),
@@ -106,10 +104,16 @@ fhPrimEtaPtCentrality(0),    fhPrimEtaPtEventPlane(0),
 fhPrimEtaAccPtCentrality(0), fhPrimEtaAccPtEventPlane(0),
 fhPrimPi0PtOrigin(0x0),      fhPrimEtaPtOrigin(0x0),
 fhPrimNotResonancePi0PtOrigin(0x0),      fhPrimPi0PtStatus(0x0),
-fhMCOrgMass(),               fhMCOrgAsym(),                fhMCOrgDeltaEta(),            fhMCOrgDeltaPhi(),
-fhMCPi0MassPtRec(),          fhMCPi0MassPtTrue(),          fhMCPi0PtTruePtRec(),
-fhMCEtaMassPtRec(),          fhMCEtaMassPtTrue(),          fhMCEtaPtTruePtRec(),
-fhMCPi0PtOrigin(0x0),        fhMCEtaPtOrigin(0x0),
+fhMCPi0MassPtRec(0x0),       fhMCPi0MassPtTrue(0x0),
+fhMCPi0PtTruePtRec(0x0),     fhMCPi0PtTruePtRecMassCut(0x0),
+fhMCEtaMassPtRec(0x0),       fhMCEtaMassPtTrue(0x0),
+fhMCEtaPtTruePtRec(0x0),     fhMCEtaPtTruePtRecMassCut(0x0),
+
+fhMCPi0PtTruePtRecRat(0),    fhMCPi0PtTruePtRecDif(0), fhMCPi0PtRecOpenAngle(0),
+fhMCEtaPtTruePtRecRat(0),    fhMCEtaPtTruePtRecDif(0), fhMCEtaPtRecOpenAngle(0),
+fhMCPi0PtTruePtRecRatMassCut(0), fhMCPi0PtTruePtRecDifMassCut(0), fhMCPi0PtRecOpenAngleMassCut(0),
+fhMCEtaPtTruePtRecRatMassCut(0), fhMCEtaPtTruePtRecDifMassCut(0), fhMCEtaPtRecOpenAngleMassCut(0),
+fhMCPi0PtOrigin(0),          fhMCEtaPtOrigin(0),
 fhMCNotResonancePi0PtOrigin(0),fhMCPi0PtStatus(0x0),
 fhMCPi0ProdVertex(0),        fhMCEtaProdVertex(0),
 fhPrimPi0ProdVertex(0),      fhPrimEtaProdVertex(0),
@@ -126,6 +130,74 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
   {
     fhArmPrimEta[i] = 0;
     fhArmPrimPi0[i] = 0;
+  }
+  
+  for(Int_t ism = 0; ism < 20; ism++)
+  {
+    fhRealOpeningAnglePerSM [ism] = 0; 
+    fhMixedOpeningAnglePerSM[ism] = 0;    
+  }
+  
+  for(Int_t icut = 0; icut < 10; icut++)
+  {
+    fhReOpAngleBinMinClusterEtaPhi       [icut] = 0; 
+    fhReOpAngleBinMaxClusterEtaPhi       [icut] = 0; 
+    fhReOpAngleBinMinClusterColRow       [icut] = 0; 
+    fhReOpAngleBinMaxClusterColRow       [icut] = 0; 
+    fhReOpAngleBinMinClusterEPerSM       [icut] = 0; 
+    fhReOpAngleBinMaxClusterEPerSM       [icut] = 0; 
+    fhReOpAngleBinMinClusterTimePerSM    [icut] = 0; 
+    fhReOpAngleBinMaxClusterTimePerSM    [icut] = 0;     
+    fhReOpAngleBinMinClusterNCellPerSM   [icut] = 0; 
+    fhReOpAngleBinMaxClusterNCellPerSM   [icut] = 0; 
+    fhReOpAngleBinPairClusterRatioPerSM  [icut] = 0;   
+    fhReOpAngleBinPairClusterMass        [icut] = 0;   
+    fhReOpAngleBinPairClusterMassPerSM   [icut] = 0;   
+//  fhReOpAngleBinPairClusterAbsIdMaxCell[icut] = 0;
+    
+    fhReOpAngleBinPairClusterMassMCTruePi0[icut] = 0;   
+    fhReOpAngleBinPairClusterMassMCTrueEta[icut] = 0;   
+    fhPrimEtaAccPtOpAngCuts               [icut] = 0;
+    fhPrimPi0AccPtOpAngCuts               [icut] = 0;
+    
+    fhMiOpAngleBinMinClusterEtaPhi       [icut] = 0; 
+    fhMiOpAngleBinMaxClusterEtaPhi       [icut] = 0; 
+//  fhMiColRowClusterMinOpAngleBin       [icut] = 0; 
+//  fhMiOpAngleBinMaxClusterColRow       [icut] = 0; 
+    fhMiOpAngleBinMinClusterEPerSM       [icut] = 0; 
+    fhMiOpAngleBinMaxClusterEPerSM       [icut] = 0; 
+    fhMiOpAngleBinMinClusterTimePerSM    [icut] = 0; 
+    fhMiOpAngleBinMaxClusterTimePerSM    [icut] = 0; 
+    fhMiOpAngleBinMinClusterNCellPerSM   [icut] = 0; 
+    fhMiOpAngleBinMaxClusterNCellPerSM   [icut] = 0; 
+    fhMiOpAngleBinPairClusterRatioPerSM  [icut] = 0;
+    fhMiOpAngleBinPairClusterMass        [icut] = 0;   
+    fhMiOpAngleBinPairClusterMassPerSM   [icut] = 0;   
+//  fhMiOpAngleBinPairClusterAbsIdMaxCell[icut] = 0;
+    
+    fhPtBinClusterEtaPhi                 [icut] = 0; 
+    fhPtBinClusterColRow                 [icut] = 0; 
+  }
+  
+  fhReSS[0] = 0;  fhReSS[1] = 0; fhReSS[2] = 0; 
+
+  for(Int_t igen = 0; igen < 10; igen++)
+  {
+    for(Int_t itag = 0; itag < 10; itag++)
+    {    
+      fhPairGeneratorsBkgMass               [igen][itag] = 0;
+      fhPairGeneratorsBkgMassMCPi0          [igen][itag] = 0;
+      fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [igen][itag] = 0; 
+      fhPairGeneratorsBkgMassMCEta          [igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoDiffMCEta [igen][itag] = 0;
+      fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[igen][itag] = 0; 
+      fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [igen][itag] = 0; 
+
+    }
   }
 }
 
@@ -170,12 +242,15 @@ void AliAnaPi0::InitParameters()
   fAngleCut    = 0.;
   fAngleMaxCut = DegToRad(80.);  // 80 degrees cut, avoid EMCal/DCal combinations
   
-  fMultiCutAna = kFALSE;
+  fMultiCutAna    = kFALSE;
+  fMultiCutAnaAcc = kFALSE;
+  fMultiCutAnaSim = kFALSE;
   
   fNPtCuts = 3;
   fPtCuts[0] = 0.; fPtCuts[1] = 0.3;   fPtCuts[2] = 0.5;
-  for(Int_t i = fNPtCuts; i < 10; i++)fPtCuts[i] = 0.;
-  
+  for(Int_t i = fNPtCuts; i < 10; i++) fPtCuts[i] = 0.;
+  for(Int_t i = 0       ; i < 10; i++) fPtCutsMax[i] = 20.;
+ 
   fNAsymCuts = 2;
   fAsymCuts[0] = 1.;  fAsymCuts[1] = 0.7; //fAsymCuts[2] = 0.6; //  fAsymCuts[3] = 0.1;
   for(Int_t i = fNAsymCuts; i < 10; i++)fAsymCuts[i] = 0.;
@@ -187,6 +262,21 @@ void AliAnaPi0::InitParameters()
   fNPIDBits = 2;
   fPIDBits[0] = 0;   fPIDBits[1] = 2; //  fPIDBits[2] = 4; fPIDBits[3] = 6;// check, no cut,  dispersion, neutral, dispersion&&neutral
   for(Int_t i = fNPIDBits; i < 10; i++)fPIDBits[i] = 0;
+  
+//  fNAngleCutBins = 7;
+//  fAngleCutBinsArray[0] = 0.014; fAngleCutBinsArray[1] = 0.035;   fAngleCutBinsArray[2] = 0.07; fAngleCutBinsArray[3] = 0.5;
+//  fAngleCutBinsArray[4] = 0.95 ; fAngleCutBinsArray[5] = 1.03 ;   fAngleCutBinsArray[6] = 1.1 ; fAngleCutBinsArray[7] = 1.4 ;
+//  for(Int_t i = fNAngleCutBins+1; i < 11; i++)fAngleCutBinsArray[i] = 1000;
+  fNAngleCutBins = 10;
+  Float_t cellsize = 0.0143;
+  fAngleCutBinsArray[0] =  0;           fAngleCutBinsArray[1] = 1*cellsize;   fAngleCutBinsArray[2] = 0.02; // 1.5*cellsize
+  fAngleCutBinsArray[3] =  2*cellsize;  fAngleCutBinsArray[4] = 3*cellsize;   fAngleCutBinsArray[5] = 6*cellsize;  
+  fAngleCutBinsArray[6] = 12*cellsize;  fAngleCutBinsArray[7] = 24*cellsize;  fAngleCutBinsArray[8] = 48*cellsize; 
+  fAngleCutBinsArray[9] = 96*cellsize;  fAngleCutBinsArray[10]= 128*cellsize; 
+  
+  fPi0MassWindow[0] = 0.10; fPi0MassWindow[1] = 0.25;
+  fEtaMassWindow[0] = 0.45; fEtaMassWindow[1] = 0.65;
+  
 }
 
 //_______________________________________
@@ -223,7 +313,7 @@ TObjString * AliAnaPi0::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"Number of modules: %d:",fNModules) ;
   parList+=onePar ;
-  if(fMultiCutAna)
+  if(fMultiCutAna || fMultiCutAnaAcc)
   {
     snprintf(onePar, buffersize," pT cuts: n = %d, pt > ",fNPtCuts) ;
     for(Int_t i = 0; i < fNPtCuts; i++) snprintf(onePar,buffersize,"%s %2.2f;",onePar,fPtCuts[i]);
@@ -266,219 +356,290 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   Float_t asymmax = GetHistogramRanges()->GetHistoAsymmetryMax();
   Float_t massmin = GetHistogramRanges()->GetHistoMassMin();
   Float_t asymmin = GetHistogramRanges()->GetHistoAsymmetryMin();
-  Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
-  Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
-  Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
-  Int_t tdbins    = GetHistogramRanges()->GetHistoDiffTimeBins() ;
+//  Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
+//  Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
+//  Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin();
+  Int_t tdbins    = GetHistogramRanges()->GetHistoDiffTimeBins();
   Float_t tdmax   = GetHistogramRanges()->GetHistoDiffTimeMax();
   Float_t tdmin   = GetHistogramRanges()->GetHistoDiffTimeMin();
+  Int_t ntimebins = GetHistogramRanges()->GetHistoTimeBins();         
+  Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();         
+  Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();
 
+  Int_t   nopanbins = GetHistogramRanges()->GetHistoNOpeningAngleBins();
+  Float_t opanmin   = GetHistogramRanges()->GetHistoOpeningAngleMin()  ;
+  Float_t opanmax   = GetHistogramRanges()->GetHistoOpeningAngleMax()  ;
+
+  Int_t   nratbins = GetHistogramRanges()->GetHistoRatioBins();
+  Float_t ratmin   = GetHistogramRanges()->GetHistoRatioMin() ;
+  Float_t ratmax   = GetHistogramRanges()->GetHistoRatioMax() ;
+
+  Int_t   ndifbins = GetHistogramRanges()->GetHistoEDiffBins();
+  Float_t difmin   = GetHistogramRanges()->GetHistoEDiffMin() ;
+  Float_t difmax   = GetHistogramRanges()->GetHistoEDiffMax() ;
+  
   // Start with pure MC kinematics histograms
   // In case other tasks just need this info like AliAnaPi0EbE
   if(IsDataMC())
   {
     // Pi0
     
-    fhPrimPi0E     = new TH1F("hPrimPi0E","Primary #pi^{0} E, |#it{Y}|<1",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimPi0E     = new TH1F("hPrimPi0E","Primary #pi^{0} E, |#it{Y}|<1",
+                              nptbins,ptmin,ptmax) ;
     fhPrimPi0E   ->SetXTitle("#it{E} (GeV)");
-    fhPrimPi0AccE->SetXTitle("#it{E} (GeV)");
     outputContainer->Add(fhPrimPi0E) ;
-    outputContainer->Add(fhPrimPi0AccE) ;
-    
-    fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , |#it{Y}|<1",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
-    fhPrimPi0AccPtPhotonCuts  = new TH1F("hPrimPi0AccPtPhotonCuts","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+
+    fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary #pi^{0} #it{p}_{T} , |#it{Y}|<1",
+                               nptbins,ptmin,ptmax) ;
     fhPrimPi0Pt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimPi0AccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Pt) ;
-    outputContainer->Add(fhPrimPi0AccPt) ;
-    outputContainer->Add(fhPrimPi0AccPtPhotonCuts) ;
-    
+
     Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
-    fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",
+                               nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Y   ->SetYTitle("#it{Rapidity}");
     fhPrimPi0Y   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Y) ;
     
-    fhPrimPi0Yeta      = new TH2F("hPrimPi0PseudoRapidity","PseudoRapidity of primary #pi^{0}",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0Yeta      = new TH2F("hPrimPi0PseudoRapidity","PseudoRapidity of primary #pi^{0}",
+                                  nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Yeta   ->SetYTitle("#eta");
     fhPrimPi0Yeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Yeta) ;
     
-    fhPrimPi0YetaYcut      = new TH2F("hPrimPi0PseudoRapidityYcut","PseudoRapidity of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimPi0YetaYcut      = new TH2F("hPrimPi0PseudoRapidityYcut","PseudoRapidity of primary #pi^{0}, |#it{Y}|<1",
+                                      nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0YetaYcut   ->SetYTitle("#eta");
     fhPrimPi0YetaYcut   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0YetaYcut) ;
     
-    fhPrimPi0AccY   = new TH2F("hPrimPi0AccRapidity","Rapidity of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
-    fhPrimPi0AccY->SetYTitle("Rapidity");
-    fhPrimPi0AccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccY) ;
-    
-    fhPrimPi0AccYeta      = new TH2F("hPrimPi0AccPseudoRapidity","PseudoRapidity of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
-    fhPrimPi0AccYeta   ->SetYTitle("#eta");
-    fhPrimPi0AccYeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccYeta) ;
-    
     Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
-    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
+    fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",
+                               nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
     fhPrimPi0Phi->SetYTitle("#phi (deg)");
     fhPrimPi0Phi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Phi) ;
     
-    fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#phi of primary #pi^{0} with accepted daughters",nptbins,ptmin,ptmax,
-                               nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
-    fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
-    fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimPi0AccPhi) ;
-        
+    if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
+    {
+      fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} #it{E} with both photons in acceptance",
+                                nptbins,ptmin,ptmax) ;
+      fhPrimPi0AccE->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhPrimPi0AccE) ;
+      
+      fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",
+                                 nptbins,ptmin,ptmax) ;
+      fhPrimPi0AccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccPt) ;
+      
+      fhPrimPi0AccPtPhotonCuts  = new TH1F("hPrimPi0AccPtPhotonCuts","Primary #pi^{0} #it{p}_{T} with both photons in acceptance",
+                                           nptbins,ptmin,ptmax) ;
+      fhPrimPi0AccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccPtPhotonCuts) ;
+      
+      fhPrimPi0AccY   = new TH2F("hPrimPi0AccRapidity","Rapidity of primary #pi^{0} with accepted daughters",
+                                 nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
+      fhPrimPi0AccY->SetYTitle("Rapidity");
+      fhPrimPi0AccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccY) ;
+      
+      fhPrimPi0AccYeta      = new TH2F("hPrimPi0AccPseudoRapidity","PseudoRapidity of primary #pi^{0} with accepted daughters",
+                                       nptbins,ptmin,ptmax,netabins,etamin,etamax) ;
+      fhPrimPi0AccYeta   ->SetYTitle("#eta");
+      fhPrimPi0AccYeta   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccYeta) ;
+      
+      fhPrimPi0AccPhi = new TH2F("hPrimPi0AccPhi","#phi of primary #pi^{0} with accepted daughters",
+                                 nptbins,ptmin,ptmax,
+                                 nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
+      fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
+      fhPrimPi0AccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0AccPhi) ;
+    }
+    
     // Eta
     
-    fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",
+                              nptbins,ptmin,ptmax) ;
     fhPrimEtaE   ->SetXTitle("#it{E} (GeV)");
-    fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhPrimEtaE) ;
     outputContainer->Add(fhPrimEtaAccE) ;
-    
-    fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
-    fhPrimEtaAccPtPhotonCuts  = new TH1F("hPrimEtaAccPtPhotonCuts","Primary eta #it{p}_{T} with both photons in acceptance",nptbins,ptmin,ptmax) ;
+
+    fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",
+                               nptbins,ptmin,ptmax) ;
     fhPrimEtaPt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPrimEtaAccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaPt) ;
-    outputContainer->Add(fhPrimEtaAccPt) ;
-    outputContainer->Add(fhPrimEtaAccPtPhotonCuts) ;
     
-    fhPrimEtaY      = new TH2F("hPrimEtaRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaY      = new TH2F("hPrimEtaRapidity","Rapidity of primary #eta",
+                               nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimEtaY->SetYTitle("#it{Rapidity}");
     fhPrimEtaY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaY) ;
     
-    fhPrimEtaYeta      = new TH2F("hPrimEtaPseudoRapidityEta","PseudoRapidity of primary #eta",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaYeta      = new TH2F("hPrimEtaPseudoRapidityEta","PseudoRapidity of primary #eta",
+                                  nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimEtaYeta->SetYTitle("#it{Rapidity}");
     fhPrimEtaYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaYeta) ;
     
-    fhPrimEtaYetaYcut      = new TH2F("hPrimEtaPseudoRapidityEtaYcut","PseudoRapidity of primary #eta, |#it{Y}|<1",nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+    fhPrimEtaYetaYcut      = new TH2F("hPrimEtaPseudoRapidityEtaYcut","PseudoRapidity of primary #eta, |#it{Y}|<1",
+                                      nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimEtaYetaYcut->SetYTitle("#it{Pseudorapidity}");
     fhPrimEtaYetaYcut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaYetaYcut) ;
-    
-    fhPrimEtaAccY   = new TH2F("hPrimEtaAccRapidity","Rapidity of primary #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
-    fhPrimEtaAccY->SetYTitle("#it{Rapidity}");
-    fhPrimEtaAccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccY) ;
-    
-    fhPrimEtaAccYeta  = new TH2F("hPrimEtaAccPseudoRapidity","PseudoRapidity of primary #eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
-    fhPrimEtaAccYeta->SetYTitle("#it{Pseudorapidity}");
-    fhPrimEtaAccYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccYeta) ;
-    
-    fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary #eta",nptbins,ptmin,ptmax, nphibinsopen,0,360) ;
+        
+    fhPrimEtaPhi    = new TH2F("hPrimEtaPhi","Azimuthal of primary #eta",
+                               nptbins,ptmin,ptmax, nphibinsopen,0,360) ;
     fhPrimEtaPhi->SetYTitle("#phi (deg)");
     fhPrimEtaPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimEtaPhi) ;
     
-    fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary #eta with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
-    fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
-    fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    outputContainer->Add(fhPrimEtaAccPhi) ;
-    
+    if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
+    {
+      fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",
+                                nptbins,ptmin,ptmax) ;
+      fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
+      outputContainer->Add(fhPrimEtaE) ;
+      
+      fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",
+                                 nptbins,ptmin,ptmax) ;
+      fhPrimEtaAccPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccPt) ;
+      
+      fhPrimEtaAccPtPhotonCuts  = new TH1F("hPrimEtaAccPtPhotonCuts","Primary eta #it{p}_{T} with both photons in acceptance",
+                                           nptbins,ptmin,ptmax) ;
+      fhPrimEtaAccPtPhotonCuts->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccPtPhotonCuts) ;
+      
+      fhPrimEtaAccPhi = new TH2F("hPrimEtaAccPhi","Azimuthal of primary #eta with accepted daughters",
+                                 nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ;
+      fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
+      fhPrimEtaAccPhi->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccPhi) ;
+      
+      fhPrimEtaAccY   = new TH2F("hPrimEtaAccRapidity","Rapidity of primary #eta",
+                                 nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
+      fhPrimEtaAccY->SetYTitle("#it{Rapidity}");
+      fhPrimEtaAccY->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccY) ;
+      
+      fhPrimEtaAccYeta  = new TH2F("hPrimEtaAccPseudoRapidity","PseudoRapidity of primary #eta",
+                                   nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
+      fhPrimEtaAccYeta->SetYTitle("#it{Pseudorapidity}");
+      fhPrimEtaAccYeta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaAccYeta) ;
+    }
+      
     // Create histograms only for PbPb or high multiplicity analysis analysis
     if( IsHighMultiplicityAnalysisOn() )
     {
       fhPrimPi0PtCentrality     = new TH2F("hPrimPi0PtCentrality","Primary #pi^{0} #it{p}_{T} vs reco centrality, |#it{Y}|<1",
                                            nptbins,ptmin,ptmax, 100, 0, 100) ;
-      fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
-                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
       fhPrimPi0PtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtCentrality   ->SetYTitle("Centrality");
-      fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
       outputContainer->Add(fhPrimPi0PtCentrality) ;
-      outputContainer->Add(fhPrimPi0AccPtCentrality) ;
-      
-      fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, 100) ;
-      fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",nptbins,ptmin,ptmax, 100, 0, 100) ;
+
+      fhPrimEtaPtCentrality     = new TH2F("hPrimEtaPtCentrality","Primary #eta #it{p}_{T} vs reco centrality, |#it{Y}|<1",
+                                           nptbins,ptmin,ptmax, 100, 0, 100) ;
       fhPrimEtaPtCentrality   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimEtaPtCentrality   ->SetYTitle("Centrality");
-      fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
       outputContainer->Add(fhPrimEtaPtCentrality) ;
-      outputContainer->Add(fhPrimEtaAccPtCentrality) ;
+
       
       fhPrimPi0PtEventPlane     = new TH2F("hPrimPi0PtEventPlane","Primary #pi^{0} #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
                                            nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-      fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
-                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
       fhPrimPi0PtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimPi0PtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
-      fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
       outputContainer->Add(fhPrimPi0PtEventPlane) ;
-      outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
+
       
-      fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
-      fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+      fhPrimEtaPtEventPlane     = new TH2F("hPrimEtaPtEventPlane","Primary #eta #it{p}_{T} vs reco event plane angle, |#it{Y}|<1",
+                                           nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
       fhPrimEtaPtEventPlane   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhPrimEtaPtEventPlane   ->SetYTitle("Event Plane Angle (rad)");
-      fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
       outputContainer->Add(fhPrimEtaPtEventPlane) ;
-      outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
+
+      if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
+      {
+        fhPrimPi0AccPtCentrality  = new TH2F("hPrimPi0AccPtCentrality","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco centrality",
+                                             nptbins,ptmin,ptmax, 100, 0, 100) ;
+        fhPrimPi0AccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPrimPi0AccPtCentrality->SetYTitle("Centrality");
+        outputContainer->Add(fhPrimPi0AccPtCentrality) ;
+
+        fhPrimEtaAccPtCentrality  = new TH2F("hPrimEtaAccPtCentrality","Primary #eta with both photons in acceptance #it{p}_{T} vs reco centrality",
+                                             nptbins,ptmin,ptmax, 100, 0, 100) ;
+        fhPrimEtaAccPtCentrality->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPrimEtaAccPtCentrality->SetYTitle("Centrality");
+        outputContainer->Add(fhPrimEtaAccPtCentrality) ;
+
+        fhPrimPi0AccPtEventPlane  = new TH2F("hPrimPi0AccPtEventPlane","Primary #pi^{0} with both photons in acceptance #it{p}_{T} vs reco event plane angle",
+                                             nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+        fhPrimPi0AccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPrimPi0AccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+        outputContainer->Add(fhPrimPi0AccPtEventPlane) ;
+
+        fhPrimEtaAccPtEventPlane  = new TH2F("hPrimEtaAccPtEventPlane","Primary #eta with both #gamma_{decay} in acceptance #it{p}_{T} vs reco event plane angle",
+                                             nptbins,ptmin,ptmax, 100, 0, TMath::Pi()) ;
+        fhPrimEtaAccPtEventPlane->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        fhPrimEtaAccPtEventPlane->SetYTitle("Event Plane Angle (rad)");
+        outputContainer->Add(fhPrimEtaAccPtEventPlane) ;
+      }
     }
     
-    if(fFillAngleHisto)
+    if(fFillAngleHisto && ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() ) )
     {
       fhPrimPi0OpeningAngle  = new TH2F
-      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,200,0,0.7);
+      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}, in acceptance",
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAngle) ;
 
       fhPrimPi0OpeningAnglePhotonCuts  = new TH2F
-      ("hPrimPi0OpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,200,0,0.7);
+      ("hPrimPi0OpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#pi^{0}} in acceptance",
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhPrimPi0OpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
       fhPrimPi0OpeningAnglePhotonCuts->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0OpeningAnglePhotonCuts) ;
       
       fhPrimPi0OpeningAngleAsym  = new TH2F
-      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,200,0,0.7);
+      ("hPrimPi0OpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, in acceptance, #it{p}_{T}>5 GeV/#it{c}",
+       100,0,1,nopanbins,opanmin,opanmax);
       fhPrimPi0OpeningAngleAsym->SetXTitle("|A|=| (E_{1}-E_{2}) / (E_{1}+E_{2}) |");
       fhPrimPi0OpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimPi0OpeningAngleAsym) ;
       
       fhPrimPi0CosOpeningAngle  = new TH2F
-      ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,-1,1);
+      ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}, in acceptance",
+       nptbins,ptmin,ptmax,100,-1,1);
       fhPrimPi0CosOpeningAngle->SetYTitle("cos (#theta) ");
       fhPrimPi0CosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhPrimPi0CosOpeningAngle) ;
       
       fhPrimEtaOpeningAngle  = new TH2F
-      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,200,0,0.7);
+      ("hPrimEtaOpeningAngle","Angle between all primary #gamma pair vs E_{#eta}, in acceptance",
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhPrimEtaOpeningAngle->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAngle->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAngle) ;
 
       fhPrimEtaOpeningAnglePhotonCuts  = new TH2F
-      ("hPrimEtaOpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,200,0,0.7);
+      ("hPrimEtaOpeningAnglePhotonCuts","Angle between all primary #gamma pair vs E_{#eta}, in acceptance",
+       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhPrimEtaOpeningAnglePhotonCuts->SetYTitle("#theta(rad)");
       fhPrimEtaOpeningAnglePhotonCuts->SetXTitle("E_{#eta} (GeV)");
       outputContainer->Add(fhPrimEtaOpeningAnglePhotonCuts) ;
       
       fhPrimEtaOpeningAngleAsym  = new TH2F
-      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}",100,0,1,200,0,0.7);
+      ("hPrimEtaOpeningAngleAsym","Angle between all primary #gamma pair vs #it{Asymmetry}, #it{p}_{T}>5 GeV/#it{c}, in acceptance",
+       100,0,1,nopanbins,opanmin,opanmax);
       fhPrimEtaOpeningAngleAsym->SetXTitle("|#it{A}|=| (#it{E}_{1}-#it{E}_{2}) / (#it{E}_{1}+#it{E}_{2}) |");
       fhPrimEtaOpeningAngleAsym->SetYTitle("#theta(rad)");
       outputContainer->Add(fhPrimEtaOpeningAngleAsym) ;
       
-      
       fhPrimEtaCosOpeningAngle  = new TH2F
-      ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}",nptbins,ptmin,ptmax,100,-1,1);
+      ("hPrimEtaCosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#eta}, in acceptance",
+       nptbins,ptmin,ptmax,100,-1,1);
       fhPrimEtaCosOpeningAngle->SetYTitle("cos (#theta) ");
       fhPrimEtaCosOpeningAngle->SetXTitle("#it{E}_{ #eta} (GeV)");
       outputContainer->Add(fhPrimEtaCosOpeningAngle) ;
@@ -549,7 +710,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       outputContainer->Add(fhPrimEtaProdVertex) ;
     }
     
-    if(fFillArmenterosThetaStar)
+    if(fFillArmenterosThetaStar && ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() ) )
     {
       TString ebin[] = {"8 < E < 12 GeV","12 < E < 16 GeV", "16 < E < 20 GeV", "E > 20 GeV" };
       Int_t narmbins = 400;
@@ -861,41 +1022,92 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   if(fFillAsymmetryHisto)
   {
-    fhRePtAsym = new TH2F("hRePtAsym","#it{Asymmetry} vs #it{p}_{T} , for pairs",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+    fhRePtAsym = new TH2F("hRePtAsym","#it{Asymmetry} vs #it{p}_{T}, for pairs",
+                          nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
     fhRePtAsym->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhRePtAsym->SetYTitle("#it{Asymmetry}");
     outputContainer->Add(fhRePtAsym);
     
-    fhRePtAsymPi0 = new TH2F("hRePtAsymPi0","#it{Asymmetry} vs #it{p}_{T} , for pairs close to #pi^{0} mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+    fhRePtAsymPi0 = new TH2F("hRePtAsymPi0",Form("#it{Asymmetry} vs #it{p}_{T}, for pairs %2.2f<M<%2.2f MeV/#it{c}^{2}",
+                                                 fPi0MassWindow[0],fPi0MassWindow[1]),
+                             nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
     fhRePtAsymPi0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhRePtAsymPi0->SetYTitle("Asymmetry");
     outputContainer->Add(fhRePtAsymPi0);
     
-    fhRePtAsymEta = new TH2F("hRePtAsymEta","#it{Asymmetry} vs #it{p}_{T} , for pairs close to #eta mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+    fhRePtAsymEta = new TH2F("hRePtAsymEta",Form("#it{Asymmetry} vs #it{p}_{T}, for pairs %2.2f<M<%2.2f MeV/#it{c}^{2}",
+                                                 fEtaMassWindow[0],fEtaMassWindow[1]),
+                             nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
     fhRePtAsymEta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     fhRePtAsymEta->SetYTitle("#it{Asymmetry}");
     outputContainer->Add(fhRePtAsymEta);
+    
+    if(DoOwnMix())
+    {
+      fhMiPtAsym = new TH2F("hMiPtAsym","#it{Asymmetry} vs #it{p}_{T}, for mixed pairs",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+      fhMiPtAsym->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiPtAsym->SetYTitle("#it{Asymmetry}");
+      outputContainer->Add(fhMiPtAsym);
+      
+      fhMiPtAsymPi0 = new TH2F("hMiPtAsymPi0",Form("#it{Asymmetry} vs #it{p}_{T}, for mixed pairs %2.2f<M<%2.2f MeV/#it{c}^{2}",
+                                                   fPi0MassWindow[0],fPi0MassWindow[1]),
+                               nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+      fhMiPtAsymPi0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiPtAsymPi0->SetYTitle("Asymmetry");
+      outputContainer->Add(fhMiPtAsymPi0);
+      
+      fhMiPtAsymEta = new TH2F("hMiPtAsymEta",
+                               Form("#it{Asymmetry} vs #it{p}_{T}, for mixed pairs %2.2f<M<%2.2f MeV/#it{c}^{2}",
+                                    fEtaMassWindow[0],fEtaMassWindow[1]),
+                               nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+      fhMiPtAsymEta->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      fhMiPtAsymEta->SetYTitle("#it{Asymmetry}");
+      outputContainer->Add(fhMiPtAsymEta);
+    }
+  }
+  
+  if(fMultiCutAnaAcc)
+  {
+    for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
+    {
+      fhPtBinClusterEtaPhi[ipt] = new TH2F
+      (Form("hPtBin%d_Cluster_EtaPhi",ipt),
+       Form("#eta vs #phi, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fPtCuts[ipt],fPtCuts[ipt+1]),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhPtBinClusterEtaPhi[ipt]->SetYTitle("#phi (rad)");
+      fhPtBinClusterEtaPhi[ipt]->SetXTitle("#eta");
+      outputContainer->Add(fhPtBinClusterEtaPhi[ipt]) ;
+      
+      fhPtBinClusterColRow[ipt] = new TH2F
+      (Form("hPtBin%d_Cluster_ColRow",ipt),
+       Form("column vs row, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fPtCuts[ipt],fPtCuts[ipt+1]),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhPtBinClusterColRow[ipt]->SetYTitle("row");
+      fhPtBinClusterColRow[ipt]->SetXTitle("column");
+      outputContainer->Add(fhPtBinClusterColRow[ipt]) ;
+    }
   }
   
   if(fMultiCutAna)
-  {
-    fhRePIDBits         = new TH2F*[fNPIDBits];
-    for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
-      snprintf(key,   buffersize,"hRe_pidbit%d",ipid) ;
-      snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for PIDBit=%d",fPIDBits[ipid]) ;
-      fhRePIDBits[ipid] = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhRePIDBits[ipid]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      fhRePIDBits[ipid]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-      outputContainer->Add(fhRePIDBits[ipid]) ;
-    }// pid bit loop
-    
+  {    
     fhRePtNCellAsymCuts    = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
     fhMiPtNCellAsymCuts    = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+
+    if(fFillAngleHisto)
+    {
+      fhRePtNCellAsymCutsOpAngle = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+      fhMiPtNCellAsymCutsOpAngle = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+    }
     
     if(fFillSMCombinations)
-      for(Int_t iSM = 0; iSM < fNModules; iSM++) fhRePtNCellAsymCutsSM[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-    
-    
+    {
+      for(Int_t iSM = 0; iSM < fNModules; iSM++) 
+      {
+        fhRePtNCellAsymCutsSM[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        if(fFillAngleHisto) fhRePtNCellAsymCutsSMOpAngle[iSM] = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+      }
+    }
+        
     for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
     {
       for(Int_t icell=0; icell<fNCellNCuts; icell++)
@@ -903,51 +1115,88 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
         {
           snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
-          snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f ",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+          snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f ",
+                   fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+          
           Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
           //printf("ipt %d, icell %d, iassym %d, index %d\n",ipt, icell, iasym, index);
+          
           fhRePtNCellAsymCuts[index] = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
           fhRePtNCellAsymCuts[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fhRePtNCellAsymCuts[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
           outputContainer->Add(fhRePtNCellAsymCuts[index]) ;
           
-          snprintf(key,   buffersize,"hMi_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
-          snprintf(title, buffersize,"Mixed #it{M}_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
-          fhMiPtNCellAsymCuts[index] = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-          fhMiPtNCellAsymCuts[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-          fhMiPtNCellAsymCuts[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-          outputContainer->Add(fhMiPtNCellAsymCuts[index]) ;
+          if(DoOwnMix())
+          {
+            snprintf(key,   buffersize,"hMi_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
+            snprintf(title, buffersize,"Mixed #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f",
+                     fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+            fhMiPtNCellAsymCuts[index] = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+            fhMiPtNCellAsymCuts[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhMiPtNCellAsymCuts[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+            outputContainer->Add(fhMiPtNCellAsymCuts[index]) ;
+          }
           
           if(fFillSMCombinations)
           {
             for(Int_t iSM = 0; iSM < fNModules; iSM++)
             {
+              //printf("\t sm %d\n",iSM);
+              
               snprintf(key,   buffersize,"hRe_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
-              snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for pt >%2.2f, ncell>%d and asym >%1.2f, SM %d ",
-                       fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
+              snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f, SM %d ",
+                       fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
               fhRePtNCellAsymCutsSM[iSM][index] = new TH2F(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhRePtNCellAsymCutsSM[iSM][index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
               fhRePtNCellAsymCutsSM[iSM][index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhRePtNCellAsymCutsSM[iSM][index]) ;
+            }
+            
+            if(fFillAngleHisto)
+            {
+              snprintf(key,   buffersize,"hReOpAngle_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
+              snprintf(title, buffersize,"Real #theta_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f ",
+                       fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+              
+              Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
+              //printf("Angle ipt %d, icell %d, iassym %d, index %d, %s, %s\n",ipt, icell, iasym, index, key, title);
+              
+              fhRePtNCellAsymCutsOpAngle[index] = new TH2F(key,title,nptbins,ptmin,ptmax,280,0,1.4) ;
+              fhRePtNCellAsymCutsOpAngle[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              fhRePtNCellAsymCutsOpAngle[index]->SetYTitle("#theta_{#gamma,#gamma} (rad)");
+              outputContainer->Add(fhRePtNCellAsymCutsOpAngle[index]) ;
+              
+              if(DoOwnMix())
+              {
+                snprintf(key,   buffersize,"hMiOpAngle_pt%d_cell%d_asym%d",ipt,icell,iasym) ;
+                snprintf(title, buffersize,"Mixed #theta_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f",
+                         fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]) ;
+                fhMiPtNCellAsymCutsOpAngle[index] = new TH2F(key,title,nptbins,ptmin,ptmax,280,0,1.4) ;
+                fhMiPtNCellAsymCutsOpAngle[index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+                fhMiPtNCellAsymCutsOpAngle[index]->SetYTitle("#theta_{#gamma,#gamma} (rad)");
+                outputContainer->Add(fhMiPtNCellAsymCutsOpAngle[index]) ;
+              }
+            
+              //printf("\t %p, %p\n", fhRePtNCellAsymCutsOpAngle[index],  fhMiPtNCellAsymCutsOpAngle[index]);
+              if(fFillSMCombinations)
+              {
+                for(Int_t iSM = 0; iSM < fNModules; iSM++)
+                {
+                  snprintf(key,   buffersize,"hReOpAngle_pt%d_cell%d_asym%d_SM%d",ipt,icell,iasym,iSM) ;
+                  snprintf(title, buffersize,"Real #it{M}_{#gamma#gamma} distr. for %1.1f< #it{p}_{T} < %1.1f, ncell>%d and asym<%1.2f, SM %d ",
+                           fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym],iSM) ;
+                  fhRePtNCellAsymCutsSMOpAngle[iSM][index] = new TH2F(key,title,nptbins,ptmin,ptmax,280,0,1.4) ;
+                  fhRePtNCellAsymCutsSMOpAngle[iSM][index]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+                  fhRePtNCellAsymCutsSMOpAngle[iSM][index]->SetYTitle("#theta_{#gamma,#gamma} (rad)");
+                  outputContainer->Add(fhRePtNCellAsymCutsSMOpAngle[iSM][index]) ;
+                }
+              }
             }
           }
         }
       }
     }
     
-    if(ntrmbins!=0)
-    {
-      fhRePtMult = new TH3F*[fNAsymCuts] ;
-      for(Int_t iasym = 0; iasym<fNAsymCuts; iasym++)
-      {
-        fhRePtMult[iasym] = new TH3F(Form("hRePtMult_asym%d",iasym),Form("(#it{p}_{T},C,M)_{#gamma#gamma}, A<%1.2f",fAsymCuts[iasym]),
-                                     nptbins,ptmin,ptmax,ntrmbins,ntrmmin,ntrmmax,nmassbins,massmin,massmax);
-        fhRePtMult[iasym]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fhRePtMult[iasym]->SetYTitle("Track multiplicity");
-        fhRePtMult[iasym]->SetZTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
-        outputContainer->Add(fhRePtMult[iasym]) ;
-      }
-    }
   } // multi cuts analysis
   
   if(fFillSSCombinations)
@@ -1008,7 +1257,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   if(fFillAngleHisto)
   {
     fhRealOpeningAngle  = new TH2F
-    ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,300,0,TMath::Pi());
+    ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
     fhRealOpeningAngle->SetYTitle("#theta(rad)");
     fhRealOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
     outputContainer->Add(fhRealOpeningAngle) ;
@@ -1022,7 +1271,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     if(DoOwnMix())
     {
       fhMixedOpeningAngle  = new TH2F
-      ("hMixedOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,300,0,TMath::Pi());
+      ("hMixedOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
       fhMixedOpeningAngle->SetYTitle("#theta(rad)");
       fhMixedOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhMixedOpeningAngle) ;
@@ -1032,6 +1281,31 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMixedCosOpeningAngle->SetYTitle("cos (#theta) ");
       fhMixedCosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
       outputContainer->Add(fhMixedCosOpeningAngle) ;
+    }
+    
+    if(fFillSMCombinations)
+    {
+      for(Int_t ism = 0; ism < 20; ism++)
+      {
+        fhRealOpeningAnglePerSM[ism]  = new TH2F
+        (Form("hRealOpeningAngleMod_%d",ism),
+         Form("Angle between all #gamma pair vs E_{#pi^{0}}, SM %d",ism),
+         nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
+        fhRealOpeningAnglePerSM[ism]->SetYTitle("#theta(rad)");
+        fhRealOpeningAnglePerSM[ism]->SetXTitle("E_{ #pi^{0}} (GeV)");
+        outputContainer->Add(fhRealOpeningAnglePerSM[ism]) ;
+        
+        if(DoOwnMix())
+        {
+          fhMixedOpeningAnglePerSM[ism]  = new TH2F
+          (Form("hMixedOpeningAngleMod_%d",ism),
+           Form("Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs, SM %d",ism),
+           nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax);
+          fhMixedOpeningAnglePerSM[ism]->SetYTitle("#theta(rad)");
+          fhMixedOpeningAnglePerSM[ism]->SetXTitle("E_{ #pi^{0}} (GeV)");
+          outputContainer->Add(fhMixedOpeningAnglePerSM[ism]) ;
+        }
+      }
     }
   }
   
@@ -1058,7 +1332,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if(fFillOriginHisto)
     {
-      
       fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
       fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhMCPi0PtOrigin->SetYTitle("Origin");
@@ -1119,24 +1392,32 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
       outputContainer->Add(fhMCEtaProdVertex) ;
       
+      // Name of found ancestors of the cluster pairs. Check definitions in FillMCVsRecDataHistograms
+      TString ancestorTitle[] = {"Photon","Electron","Pi0","Eta","AntiProton","AntiNeutron","Muon & converted stable particles",
+        "Resonances","Strings","Initial state interaction","Final state radiations","Colliding protons","not found"};
+      
       for(Int_t i = 0; i<13; i++)
       {
-        fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("#it{M} vs #it{p}_{T}, origin %d",i),nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("#it{M} vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
         fhMCOrgMass[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCOrgMass[i]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhMCOrgMass[i]) ;
         
-        fhMCOrgAsym[i]= new TH2F(Form("hMCOrgAsym_%d",i),Form("#it{Asymmetry} vs #it{p}_{T}, origin %d",i),nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+        fhMCOrgAsym[i]= new TH2F(Form("hMCOrgAsym_%d",i),Form("#it{Asymmetry} vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+                                 nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
         fhMCOrgAsym[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCOrgAsym[i]->SetYTitle("A");
         outputContainer->Add(fhMCOrgAsym[i]) ;
         
-        fhMCOrgDeltaEta[i] = new TH2F(Form("hMCOrgDeltaEta_%d",i),Form("#Delta #eta of pair vs #it{p}_{T}, origin %d",i),nptbins,ptmin,ptmax,netabins,-1.4,1.4) ;
+        fhMCOrgDeltaEta[i] = new TH2F(Form("hMCOrgDeltaEta_%d",i),Form("#Delta #eta of pair vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+                                      nptbins,ptmin,ptmax,netabins,-1.4,1.4) ;
         fhMCOrgDeltaEta[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCOrgDeltaEta[i]->SetYTitle("#Delta #eta");
         outputContainer->Add(fhMCOrgDeltaEta[i]) ;
         
-        fhMCOrgDeltaPhi[i]= new TH2F(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #phi of pair vs #it{p}_{T}, origin %d",i),nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
+        fhMCOrgDeltaPhi[i]= new TH2F(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #phi of pair vs #it{p}_{T}, ancestor %s",ancestorTitle[i].Data()),
+                                     nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
         fhMCOrgDeltaPhi[i]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #phi (rad)");
         outputContainer->Add(fhMCOrgDeltaPhi[i]) ;
@@ -1150,7 +1431,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMCEtaMassPtRec   = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
         fhMCEtaMassPtTrue  = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
         fhMCEtaPtTruePtRec = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
-          
+        
+        fhMCPi0PtTruePtRecMassCut = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        fhMCEtaPtTruePtRecMassCut = new TH2F*[fNPtCuts*fNAsymCuts*fNCellNCuts];
+        
         for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
         {
           for(Int_t icell=0; icell<fNCellNCuts; icell++)
@@ -1160,77 +1444,220 @@ TList * AliAnaPi0::GetCreateOutputObjects()
               Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
               
               fhMCPi0MassPtRec[index] = new TH2F(Form("hMCPi0MassPtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                 Form("Reconstructed #it{M} vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                 Form("Reconstructed #it{M} vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs for %1.1f<#it{p}_{T}<%1.1f, #it{N}^{cluster}_{cell}>%d and |#it{A}|<%1.2f",
+                                                      fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhMCPi0MassPtRec[index]->SetXTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
               fhMCPi0MassPtRec[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhMCPi0MassPtRec[index]) ;
               
               fhMCPi0MassPtTrue[index] = new TH2F(Form("hMCPi0MassPtTrue_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                  Form("Reconstructed #it{M} vs generated #it{p}_{T} of true #pi^{0} cluster pairs for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                  Form("Reconstructed #it{M} vs generated #it{p}_{T} of true #pi^{0} cluster pairs for %1.1f<#it{p}_{T}<%1.1f, #it{N}^{cluster}_{cell}>%d and |#it{A}|<%1.2f",
+                                                       fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                   nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhMCPi0MassPtTrue[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCPi0MassPtTrue[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhMCPi0MassPtTrue[index]) ;
               
               fhMCPi0PtTruePtRec[index] = new TH2F(Form("hMCPi0PtTruePtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                   Form("Generated vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, 0.01 < rec. mass < 0.17 MeV/#it{c}^{2} for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                   Form("Generated vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs for %1.1f<#it{p}_{T}<%1.1f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",
+                                                        fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                    nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
               fhMCPi0PtTruePtRec[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCPi0PtTruePtRec[index]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
               outputContainer->Add(fhMCPi0PtTruePtRec[index]) ;
               
+              fhMCPi0PtTruePtRecMassCut[index] = new TH2F(Form("hMCPi0PtTruePtRecMassCut_pt%d_cell%d_asym%d",ipt,icell,iasym),
+                                                          Form("Generated vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2} for %1.1f<#it{p}_{T}<%1.1f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",
+                                                               fPi0MassWindow[0],fPi0MassWindow[1],fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                          nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+              fhMCPi0PtTruePtRecMassCut[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
+              fhMCPi0PtTruePtRecMassCut[index]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
+              outputContainer->Add(fhMCPi0PtTruePtRecMassCut[index]) ;
+              
               fhMCEtaMassPtRec[index] = new TH2F(Form("hMCEtaMassPtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                 Form("Reconstructed #it{M} vs reconstructed #it{p}_{T} of true #eta cluster pairs for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                 Form("Reconstructed #it{M} vs reconstructed #it{p}_{T} of true #eta cluster pairs for %1.1f<#it{p}_{T}<%1.1f, #it{N}^{cluster}_{cell}>%d and |#it{A}|<%1.2f",
+                                                      fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                  nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhMCEtaMassPtRec[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCEtaMassPtRec[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhMCEtaMassPtRec[index]) ;
               
               fhMCEtaMassPtTrue[index] = new TH2F(Form("hMCEtaMassPtTrue_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                  Form("Reconstructed #it{M} vs generated #it{p}_{T} of true #eta cluster pairs for #it{p}_{T} >%2.2f, #it{N}^{cluster}_{cell}>%d and |#it{A}|>%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                  Form("Reconstructed #it{M} vs generated #it{p}_{T} of true #eta cluster pairs for %1.1f<#it{p}_{T}<%1.1f, #it{N}^{cluster}_{cell}>%d and |#it{A}|<%1.2f",
+                                                       fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                   nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
               fhMCEtaMassPtTrue[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCEtaMassPtTrue[index]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
               outputContainer->Add(fhMCEtaMassPtTrue[index]) ;
               
               fhMCEtaPtTruePtRec[index] = new TH2F(Form("hMCEtaPtTruePtRec_pt%d_cell%d_asym%d",ipt,icell,iasym),
-                                                   Form("Generated vs reconstructed #it{p}_{T} of true #eta cluster pairs, 0.01 < rec. mass < 0.17 MeV/#it{c}^{2} for #it{p}_{T} >%2.2f, ncell>%d and asym >%1.2f",fPtCuts[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                   Form("Generated vs reconstructed #it{p}_{T} of true #eta cluster pairs for %1.1f<#it{p}_{T}<%1.1f, ncell>%d and asym<%1.2f",
+                                                        fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
                                                    nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
               fhMCEtaPtTruePtRec[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
               fhMCEtaPtTruePtRec[index]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
               outputContainer->Add(fhMCEtaPtTruePtRec[index]) ;
+              
+              
+              fhMCEtaPtTruePtRecMassCut[index] = new TH2F(Form("hMCEtaPtTruePtRecMassCut_pt%d_cell%d_asym%d",ipt,icell,iasym),
+                                                          Form("Generated vs reconstructed #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2} for %1.1f<#it{p}_{T}<%1.1f, ncell>%d and asym<%1.2f",
+                                                               fEtaMassWindow[0],fEtaMassWindow[1],fPtCuts[ipt],fPtCutsMax[ipt],fCellNCuts[icell], fAsymCuts[iasym]),
+                                                          nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+              fhMCEtaPtTruePtRecMassCut[index]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
+              fhMCEtaPtTruePtRecMassCut[index]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
+              outputContainer->Add(fhMCEtaPtTruePtRecMassCut[index]) ;
             }
           }
         }
       }//multi cut ana
       else
-      {
+      {        
         fhMCPi0MassPtTrue  = new TH2F*[1];
+        fhMCPi0MassPtRec   = new TH2F*[1];
         fhMCPi0PtTruePtRec = new TH2F*[1];
         fhMCEtaMassPtTrue  = new TH2F*[1];
+        fhMCEtaMassPtRec   = new TH2F*[1];
         fhMCEtaPtTruePtRec = new TH2F*[1];
         
-        fhMCPi0MassPtTrue[0] = new TH2F("hMCPi0MassPtTrue","Reconstructed Mass vs generated p_T of true #pi^{0} cluster pairs",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCPi0PtTruePtRecMassCut = new TH2F*[1];
+        fhMCEtaPtTruePtRecMassCut = new TH2F*[1];
+        
+        fhMCPi0MassPtTrue[0] = new TH2F("hMCPi0MassPtTrue","Reconstructed Mass vs generated #it{p}_{T} of true #pi^{0} cluster pairs",
+                                        nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
         fhMCPi0MassPtTrue[0]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
         fhMCPi0MassPtTrue[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhMCPi0MassPtTrue[0]) ;
-        
-        fhMCPi0PtTruePtRec[0]= new TH2F("hMCPi0PtTruePtRec","Generated vs reconstructed p_T of true #pi^{0} cluster pairs, 0.01 < rec. mass < 0.17 MeV/#it{c}^{2}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+
+        fhMCPi0MassPtRec[0] = new TH2F("hMCPi0MassPtRec","Reconstructed Mass vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
+                                        nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCPi0MassPtRec[0]->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCPi0MassPtRec[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+        outputContainer->Add(fhMCPi0MassPtRec[0]) ;
+
+        fhMCPi0PtTruePtRec[0]= new TH2F("hMCPi0PtTruePtRec","Generated vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
+                                        nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
         fhMCPi0PtTruePtRec[0]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
         fhMCPi0PtTruePtRec[0]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
         outputContainer->Add(fhMCPi0PtTruePtRec[0]) ;
         
-        fhMCEtaMassPtTrue[0] = new TH2F("hMCEtaMassPtTrue","Reconstructed Mass vs generated p_T of true #eta cluster pairs",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCPi0PtTruePtRecMassCut[0]= new TH2F("hMCPi0PtTruePtRecMassCut",
+                                               Form("Generated vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}",fPi0MassWindow[0],fPi0MassWindow[1]),
+                                               nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+        fhMCPi0PtTruePtRecMassCut[0]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
+        fhMCPi0PtTruePtRecMassCut[0]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
+        outputContainer->Add(fhMCPi0PtTruePtRecMassCut[0]) ;
+        
+        fhMCEtaMassPtTrue[0] = new TH2F("hMCEtaMassPtTrue","Reconstructed Mass vs generated #it{p}_{T} of true #eta cluster pairs",
+                                        nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
         fhMCEtaMassPtTrue[0]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
         fhMCEtaMassPtTrue[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhMCEtaMassPtTrue[0]) ;
         
-        fhMCEtaPtTruePtRec[0]= new TH2F("hMCEtaPtTruePtRec","Generated vs reconstructed p_T of true #eta cluster pairs, 0.01 < rec. mass < 0.17 MeV/#it{c}^{2}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+        fhMCEtaMassPtRec[0] = new TH2F("hMCEtaMassPtRec","Reconstructed Mass vs reconstructed #it{p}_{T} of true #eta cluster pairs",
+                                       nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMCEtaMassPtRec[0]->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCEtaMassPtRec[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
+        outputContainer->Add(fhMCEtaMassPtRec[0]) ;
+
+        fhMCEtaPtTruePtRec[0]= new TH2F("hMCEtaPtTruePtRec","Generated vs reconstructed #it{p}_{T} of true #eta cluster pairs",
+                                        nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
         fhMCEtaPtTruePtRec[0]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
         fhMCEtaPtTruePtRec[0]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
-        outputContainer->Add(fhMCEtaPtTruePtRec[0]) ;
+        outputContainer->Add(fhMCEtaPtTruePtRec[0]) ;       
+        
+        fhMCEtaPtTruePtRecMassCut[0]= new TH2F("hMCEtaPtTruePtRecMassCut",
+                                        Form("Generated vs reconstructed #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}",
+                                             fEtaMassWindow[0],fEtaMassWindow[1]), 
+                                        nptbins,ptmin,ptmax,nptbins,ptmin,ptmax) ;
+        fhMCEtaPtTruePtRecMassCut[0]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
+        fhMCEtaPtTruePtRecMassCut[0]->SetYTitle("#it{p}_{T, reconstructed} (GeV/#it{c})");
+        outputContainer->Add(fhMCEtaPtTruePtRecMassCut[0]) ;
       }
+      
+      fhMCPi0PtTruePtRecRat = new TH2F("hMCPi0PtTruePtRecRat","Reconstructed / generated #it{p}_{T} of true #pi^{0} cluster pairs",
+                                       nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
+      fhMCPi0PtTruePtRecRat->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtTruePtRecRat->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
+      outputContainer->Add(fhMCPi0PtTruePtRecRat) ;
+      
+      fhMCPi0PtTruePtRecRatMassCut = new TH2F("hMCPi0PtTruePtRecRatCutMassCut",
+                                              Form("Reconstructed / generated #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+                                                   fPi0MassWindow[0],fPi0MassWindow[1]),
+                                              nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
+      fhMCPi0PtTruePtRecRatMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtTruePtRecRatMassCut->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
+      outputContainer->Add(fhMCPi0PtTruePtRecRatMassCut) ;
+      
+      fhMCEtaPtTruePtRecRat = new TH2F("hMCEtaPtTruePtRecRat","Reconstructed / generated #it{p}_{T} of true #eta cluster pairs",
+                                       nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
+      fhMCEtaPtTruePtRecRat->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtTruePtRecRat->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
+      outputContainer->Add(fhMCEtaPtTruePtRecRat) ;
+      
+      fhMCEtaPtTruePtRecRatMassCut = new TH2F("hMCEtaPtTruePtRecRatCutMassCut",
+                                              Form("Reconstructed / generated #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+                                                   fEtaMassWindow[0],fEtaMassWindow[1]),
+                                              nptbins,ptmin,ptmax,nratbins,ratmin,ratmax) ;
+      fhMCEtaPtTruePtRecRatMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtTruePtRecRatMassCut->SetYTitle("#it{p}_{T, reco} / #it{p}_{T, gener}");
+      outputContainer->Add(fhMCEtaPtTruePtRecRatMassCut) ;
+      
+      fhMCPi0PtTruePtRecDif = new TH2F("hMCPi0PtTruePtRecDif","Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
+                                       nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
+      fhMCPi0PtTruePtRecDif->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtTruePtRecDif->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
+      outputContainer->Add(fhMCPi0PtTruePtRecDif) ;
+      
+      fhMCPi0PtTruePtRecDifMassCut = new TH2F("hMCPi0PtTruePtRecDifCutMassCut",
+                                              Form("Generated - reconstructed #it{p}_{T} of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+                                                   fPi0MassWindow[0],fPi0MassWindow[1]),
+                                              nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
+      fhMCPi0PtTruePtRecDifMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtTruePtRecDifMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
+      outputContainer->Add(fhMCPi0PtTruePtRecDifMassCut) ;
+      
+      fhMCEtaPtTruePtRecDif = new TH2F("hMCEtaPtTruePtRecDif","Generated - reconstructed #it{p}_{T} of true #eta cluster pairs",
+                                       nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
+      fhMCEtaPtTruePtRecDif->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtTruePtRecDif->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
+      outputContainer->Add(fhMCEtaPtTruePtRecDif) ;
+      
+      fhMCEtaPtTruePtRecDifMassCut = new TH2F("hMCEtaPtTruePtRecDifCutMassCut",
+                                              Form("Generated - reconstructed #it{p}_{T} of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+                                                   fEtaMassWindow[0],fEtaMassWindow[1]),
+                                              nptbins,ptmin,ptmax,ndifbins,difmin,difmax) ;
+      fhMCEtaPtTruePtRecDifMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtTruePtRecDifMassCut->SetYTitle("#it{p}_{T, gener} - #it{p}_{T, reco}");
+      outputContainer->Add(fhMCEtaPtTruePtRecDifMassCut) ;
+      
+      fhMCPi0PtRecOpenAngle = new TH2F("hMCPi0PtRecOpenAngle","Opening angle of true #pi^{0} cluster pairs",
+                                       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax) ;
+      fhMCPi0PtRecOpenAngle->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtRecOpenAngle->SetYTitle("#theta(rad)");
+      outputContainer->Add(fhMCPi0PtRecOpenAngle) ;
+      
+      fhMCPi0PtRecOpenAngleMassCut = new TH2F("hMCPi0PtRecOpenAngleCutMassCut",
+                                              Form("Opening angle of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+                                                   fPi0MassWindow[0],fPi0MassWindow[1]),
+                                              nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax) ;
+      fhMCPi0PtRecOpenAngleMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCPi0PtRecOpenAngleMassCut->SetYTitle("#theta(rad)");
+      outputContainer->Add(fhMCPi0PtRecOpenAngleMassCut) ;
+      
+      fhMCEtaPtRecOpenAngle = new TH2F("hMCEtaPtRecOpenAngle","Opening angle of true #eta cluster pairs",
+                                       nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax) ;
+      fhMCEtaPtRecOpenAngle->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtRecOpenAngle->SetYTitle("#theta(rad)");
+      outputContainer->Add(fhMCEtaPtRecOpenAngle) ;
+      
+      fhMCEtaPtRecOpenAngleMassCut = new TH2F("hMCEtaPtRecOpenAngleCutMassCut",
+                                              Form("Opening angle of true #eta cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+                                                   fEtaMassWindow[0],fEtaMassWindow[1]),
+                                              nptbins,ptmin,ptmax,nopanbins,opanmin,opanmax) ;
+      fhMCEtaPtRecOpenAngleMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+      fhMCEtaPtRecOpenAngleMassCut->SetYTitle("#theta(rad)");
+      outputContainer->Add(fhMCEtaPtRecOpenAngleMassCut) ;
     }
   }
   
@@ -1369,6 +1796,410 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   } // SM combinations
   
+  //
+  if(fFillOpAngleCutHisto)
+  {
+    for(Int_t icut = 0; icut < fNAngleCutBins; icut++)
+    {
+      fhReOpAngleBinMinClusterEtaPhi[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMin_EtaPhi",icut),
+       Form("#eta vs #phi, cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhReOpAngleBinMinClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
+      fhReOpAngleBinMinClusterEtaPhi[icut]->SetXTitle("#eta");
+      outputContainer->Add(fhReOpAngleBinMinClusterEtaPhi[icut]) ;
+
+      fhReOpAngleBinMaxClusterEtaPhi[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMax_EtaPhi",icut),
+       Form("#eta vs #phi, cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       netabins,etamin,etamax,nphibins,phimin,phimax);
+      fhReOpAngleBinMaxClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
+      fhReOpAngleBinMaxClusterEtaPhi[icut]->SetXTitle("#eta");
+      outputContainer->Add(fhReOpAngleBinMaxClusterEtaPhi[icut]) ;
+
+      fhReOpAngleBinMinClusterColRow[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMin_ColRow",icut),
+       Form("highest #it{E} cell, column vs row, cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhReOpAngleBinMinClusterColRow[icut]->SetYTitle("row");
+      fhReOpAngleBinMinClusterColRow[icut]->SetXTitle("column");
+      outputContainer->Add(fhReOpAngleBinMinClusterColRow[icut]) ;
+      
+      fhReOpAngleBinMaxClusterColRow[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMax_ColRow",icut),
+       Form("highest #it{E} cell, column vs row, cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+      fhReOpAngleBinMaxClusterColRow[icut]->SetYTitle("row");
+      fhReOpAngleBinMaxClusterColRow[icut]->SetXTitle("column");
+      outputContainer->Add(fhReOpAngleBinMaxClusterColRow[icut]) ;
+
+      fhReOpAngleBinMinClusterEPerSM[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMin_EPerSM",icut),
+       Form("cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       nptbins,ptmin,ptmax,20,0,20);
+      fhReOpAngleBinMinClusterEPerSM[icut]->SetYTitle("SM");
+      fhReOpAngleBinMinClusterEPerSM[icut]->SetXTitle("#it{E} (GeV/#it{c})");
+      outputContainer->Add(fhReOpAngleBinMinClusterEPerSM[icut]) ;
+      
+      fhReOpAngleBinMaxClusterEPerSM[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMax_EPerSM",icut),
+       Form("cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       nptbins,ptmin,ptmax,20,0,20);
+      fhReOpAngleBinMaxClusterEPerSM[icut]->SetYTitle("SM");
+      fhReOpAngleBinMaxClusterEPerSM[icut]->SetXTitle("#it{E} (GeV/#it{c})");
+      outputContainer->Add(fhReOpAngleBinMaxClusterEPerSM[icut]) ;
+
+      fhReOpAngleBinMinClusterTimePerSM[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMin_TimePerSM",icut),
+       Form("cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       ntimebins,timemin,timemax,20,0,20);
+      fhReOpAngleBinMinClusterTimePerSM[icut]->SetYTitle("SM");
+      fhReOpAngleBinMinClusterTimePerSM[icut]->SetXTitle("#it{t} (ns)");
+      outputContainer->Add(fhReOpAngleBinMinClusterTimePerSM[icut]) ;
+      
+      fhReOpAngleBinMaxClusterTimePerSM[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMax_TimePerSM",icut),
+       Form("cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       ntimebins,timemin,timemax,20,0,20);
+      fhReOpAngleBinMaxClusterTimePerSM[icut]->SetYTitle("SM");
+      fhReOpAngleBinMaxClusterTimePerSM[icut]->SetXTitle("#it{t} (ns)");
+      outputContainer->Add(fhReOpAngleBinMaxClusterTimePerSM[icut]) ;
+      
+      fhReOpAngleBinMinClusterNCellPerSM[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMin_NCellPerSM",icut),
+       Form("cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       30,0,30,20,0,20);
+      fhReOpAngleBinMinClusterNCellPerSM[icut]->SetYTitle("SM");
+      fhReOpAngleBinMinClusterNCellPerSM[icut]->SetXTitle("# cells");
+      outputContainer->Add(fhReOpAngleBinMinClusterNCellPerSM[icut]) ;
+      
+      fhReOpAngleBinMaxClusterNCellPerSM[icut] = new TH2F
+      (Form("hReOpAngleBin%d_ClusterMax_NCellPerSM",icut),
+       Form("cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       30,0,30,20,0,20);
+      fhReOpAngleBinMaxClusterNCellPerSM[icut]->SetYTitle("SM");
+      fhReOpAngleBinMaxClusterNCellPerSM[icut]->SetXTitle("# cells");
+      outputContainer->Add(fhReOpAngleBinMaxClusterNCellPerSM[icut]) ;
+      
+      fhReOpAngleBinPairClusterRatioPerSM[icut] = new TH2F
+      (Form("hReOpAngleBin%d_PairCluster_RatioPerSM",icut),
+       Form("cluster pair #it{E}_{high}/ #it{E}_{low}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       100,0,1,20,0,20);
+      fhReOpAngleBinPairClusterRatioPerSM[icut]->SetYTitle("SM");
+      fhReOpAngleBinPairClusterRatioPerSM[icut]->SetXTitle("#it{E}_{low}/ #it{E}_{high}");
+      outputContainer->Add(fhReOpAngleBinPairClusterRatioPerSM[icut]) ;
+
+      fhReOpAngleBinPairClusterMassPerSM[icut] = new TH2F
+      (Form("hReOpAngleBin%d_PairCluster_MassPerSM",icut),
+       Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       nmassbins,massmin,massmax,20,0,20);
+      fhReOpAngleBinPairClusterMassPerSM[icut]->SetXTitle("#it{M} (GeV/#it{c}^2)");
+      fhReOpAngleBinPairClusterMassPerSM[icut]->SetYTitle("SM");
+      outputContainer->Add(fhReOpAngleBinPairClusterMassPerSM[icut]) ;
+
+      fhReOpAngleBinPairClusterMass[icut] = new TH2F
+      (Form("hReOpAngleBin%d_PairCluster_Mass",icut),
+       Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+      fhReOpAngleBinPairClusterMass[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
+      fhReOpAngleBinPairClusterMass[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
+      outputContainer->Add(fhReOpAngleBinPairClusterMass[icut]) ;
+      
+      if(IsDataMC())
+      {
+        if(fFillOriginHisto)
+        {
+          fhReOpAngleBinPairClusterMassMCTruePi0[icut] = new TH2F
+          (Form("hReOpAngleBin%d_PairCluster_MassMCTruePi0",icut),
+           Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f, true mc #pi^{0}",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+           nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+          fhReOpAngleBinPairClusterMassMCTruePi0[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
+          fhReOpAngleBinPairClusterMassMCTruePi0[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
+          outputContainer->Add(fhReOpAngleBinPairClusterMassMCTruePi0[icut]) ;
+          
+          fhReOpAngleBinPairClusterMassMCTrueEta[icut] = new TH2F
+          (Form("hReOpAngleBin%d_PairCluster_MassMCTrueEta",icut),
+           Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f, true mc #eta",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+           nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+          fhReOpAngleBinPairClusterMassMCTrueEta[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
+          fhReOpAngleBinPairClusterMassMCTrueEta[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
+          outputContainer->Add(fhReOpAngleBinPairClusterMassMCTrueEta[icut]) ;
+        }
+        
+        fhPrimPi0AccPtOpAngCuts[icut]  = new TH1F
+        (Form("hPrimPi0AccPt_OpAngleBin%d",icut),
+         Form("Primary #pi^{0} #it{p}_{T} with both photons in acceptance, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         nptbins,ptmin,ptmax) ;
+        fhPrimPi0AccPtOpAngCuts[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPrimPi0AccPtOpAngCuts[icut]) ;
+
+        fhPrimEtaAccPtOpAngCuts[icut]  = new TH1F
+        (Form("hPrimEtaAccPt_OpAngleBin%d",icut),
+         Form("Primary #eta #it{p}_{T} with both photons in acceptance, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         nptbins,ptmin,ptmax) ;
+        fhPrimEtaAccPtOpAngCuts[icut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPrimEtaAccPtOpAngCuts[icut]) ;
+      }
+      
+//       fhReOpAngleBinPairClusterAbsIdMaxCell[icut] = new TH2F
+//      (Form("hReOpAngleBin%d_PairCluster_AbsIdCell",icut),
+//       Form("cluster pair Abs Cell ID low #it{E} vs high #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+//       //17664,0,17664,17664,0,17664);
+//       1689,0,16896,1689,0,16896);
+//      fhReOpAngleBinPairClusterAbsIdMaxCell[icut]->SetYTitle("AbsId-higher");
+//      fhReOpAngleBinPairClusterAbsIdMaxCell[icut]->SetXTitle("AbsId-lower");
+//      outputContainer->Add(fhReOpAngleBinPairClusterAbsIdMaxCell[icut]) ;
+
+      if( DoOwnMix() )
+      {
+        fhMiOpAngleBinMinClusterEtaPhi[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_ClusterMin_EtaPhi",icut),
+         Form("#eta vs #phi, mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         netabins,etamin,etamax,nphibins,phimin,phimax);
+        fhMiOpAngleBinMinClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
+        fhMiOpAngleBinMinClusterEtaPhi[icut]->SetXTitle("#eta");
+        outputContainer->Add(fhMiOpAngleBinMinClusterEtaPhi[icut]) ;
+        
+        fhMiOpAngleBinMaxClusterEtaPhi[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_ClusterMax_EtaPhi",icut),
+         Form("#eta vs #phi, mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         netabins,etamin,etamax,nphibins,phimin,phimax);
+        fhMiOpAngleBinMaxClusterEtaPhi[icut]->SetYTitle("#phi (rad)");
+        fhMiOpAngleBinMaxClusterEtaPhi[icut]->SetXTitle("#eta");
+        outputContainer->Add(fhMiOpAngleBinMaxClusterEtaPhi[icut]) ;
+        
+//        fhMiOpAngleBinMinClusterColRow[icut] = new TH2F
+//        (Form("hMiOpAngleBin%d_ClusterMin_ColRow",icut),
+//         Form("highest #it{E} cell, column vs row, mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//        fhMiOpAngleBinMinClusterColRow[icut]->SetYTitle("row");
+//        fhMiOpAngleBinMinClusterColRow[icut]->SetXTitle("column");
+//        outputContainer->Add(fhMiOpAngleBinMinClusterColRow[icut]) ;
+//        
+//        fhMiOpAngleBinMaxClusterColRow[icut] = new TH2F
+//        (Form("hMiOpAngleBin%d_ClusterMax_ColRow",icut),
+//         Form("highest #it{E} cell, column vs row, mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+//         96+2,-1.5,96+0.5,(8*24+2*8)+2,-1.5,(8*24+2*8)+0.5);
+//        fhMiOpAngleBinMaxClusterColRow[icut]->SetYTitle("row");
+//        fhMiOpAngleBinMaxClusterColRow[icut]->SetXTitle("column");
+//        outputContainer->Add(fhMiOpAngleBinMaxClusterColRow[icut]) ;
+        
+        fhMiOpAngleBinMinClusterEPerSM[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_ClusterMin_EPerSM",icut),
+         Form("mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         nptbins,ptmin,ptmax,20,0,20);
+        fhMiOpAngleBinMinClusterEPerSM[icut]->SetYTitle("SM");
+        fhMiOpAngleBinMinClusterEPerSM[icut]->SetXTitle("#it{E} (GeV/#it{c})");
+        outputContainer->Add(fhMiOpAngleBinMinClusterEPerSM[icut]) ;
+        
+        fhMiOpAngleBinMaxClusterEPerSM[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_ClusterMax_EPerSM",icut),
+         Form("mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         nptbins,ptmin,ptmax,20,0,20);
+        fhMiOpAngleBinMaxClusterEPerSM[icut]->SetYTitle("SM");
+        fhMiOpAngleBinMaxClusterEPerSM[icut]->SetXTitle("#it{E} (GeV/#it{c})");
+        outputContainer->Add(fhMiOpAngleBinMaxClusterEPerSM[icut]) ;
+        
+        fhMiOpAngleBinMinClusterTimePerSM[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_ClusterMin_TimePerSM",icut),
+         Form("mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         ntimebins,timemin,timemax,20,0,20);
+        fhMiOpAngleBinMinClusterTimePerSM[icut]->SetYTitle("SM");
+        fhMiOpAngleBinMinClusterTimePerSM[icut]->SetXTitle("#it{t} (ns)");
+        outputContainer->Add(fhMiOpAngleBinMinClusterTimePerSM[icut]) ;
+        
+        fhMiOpAngleBinMaxClusterTimePerSM[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_ClusterMax_TimePerSM",icut),
+         Form("mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         ntimebins,timemin,timemax,20,0,20);
+        fhMiOpAngleBinMaxClusterTimePerSM[icut]->SetYTitle("SM");
+        fhMiOpAngleBinMaxClusterTimePerSM[icut]->SetXTitle("#it{t} (ns)");
+        outputContainer->Add(fhMiOpAngleBinMaxClusterTimePerSM[icut]) ;
+
+        fhMiOpAngleBinMinClusterNCellPerSM[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_ClusterMin_NCellPerSM",icut),
+         Form("mixed cluster pair lower #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         30,0,30,20,0,20);
+        fhMiOpAngleBinMinClusterNCellPerSM[icut]->SetYTitle("SM");
+        fhMiOpAngleBinMinClusterNCellPerSM[icut]->SetXTitle("# cells");
+        outputContainer->Add(fhMiOpAngleBinMinClusterNCellPerSM[icut]) ;
+        
+        fhMiOpAngleBinMaxClusterNCellPerSM[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_ClusterMax_NCellPerSM",icut),
+         Form("mixed cluster pair higher #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         30,0,30,20,0,20);
+        fhMiOpAngleBinMaxClusterNCellPerSM[icut]->SetYTitle("SM");
+        fhMiOpAngleBinMaxClusterNCellPerSM[icut]->SetXTitle("# cells");
+        outputContainer->Add(fhMiOpAngleBinMaxClusterNCellPerSM[icut]) ;
+        
+        fhMiOpAngleBinPairClusterRatioPerSM[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_PairCluster_RatioPerSM",icut),
+         Form("mixed cluster pair #it{E}_{high}/ #it{E}_{low}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         100,0,1,20,0,20);
+        fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetYTitle("SM");
+        fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetXTitle("#it{E}_{low}/ #it{E}_{high}");
+        outputContainer->Add(fhMiOpAngleBinPairClusterRatioPerSM[icut]) ;
+        
+        fhMiOpAngleBinPairClusterMassPerSM[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_PairCluster_MassPerSM",icut),
+         Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         nmassbins,massmin,massmax,20,0,20);
+        fhMiOpAngleBinPairClusterMassPerSM[icut]->SetXTitle("#it{M} (GeV/#it{c}^2)");
+        fhMiOpAngleBinPairClusterMassPerSM[icut]->SetYTitle("SM");
+        outputContainer->Add(fhMiOpAngleBinPairClusterMassPerSM[icut]) ;
+        
+        fhMiOpAngleBinPairClusterMass[icut] = new TH2F
+        (Form("hMiOpAngleBin%d_PairCluster_Mass",icut),
+         Form("cluster pair #it{M}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhMiOpAngleBinPairClusterMass[icut]->SetYTitle("#it{M} (GeV/#it{c}^2)");
+        fhMiOpAngleBinPairClusterMass[icut]->SetXTitle("#it{p}_{T} GeV/#it{c}");
+        outputContainer->Add(fhMiOpAngleBinPairClusterMass[icut]) ;
+        
+//        fhMiOpAngleBinPairClusterAbsIdMaxCell[icut] = new TH2F
+//        (Form("hMiOpAngleBin%d_PairCluster_AbsIdCell",icut),
+//         Form("mixed cluster pair Abs Cell ID low #it{E} vs high #it{E}, pair %1.4f<#theta<%1.4f",fAngleCutBinsArray[icut],fAngleCutBinsArray[icut+1]),
+//         ntimebins,timemin,timemax,20,0,20);
+//        fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetYTitle("AbsId-higher");
+//        fhMiOpAngleBinPairClusterRatioPerSM[icut]->SetXTitle("AbsId-lower");
+//        outputContainer->Add(fhMiOpAngleBinPairClusterRatioPerSM[icut]) ;
+      }
+    } // angle bin
+  }  
+
+  if(IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn())
+  {
+    TString mcGenNames[] = {"","_MC_Pi0Merged","_MC_Pi0Decay","_MC_EtaDecay","_MC_PhotonOther","_MC_Electron","_MC_Other"};
+    TString mcGenTitle[] = {"",",MC Pi0-Merged",",MC Pi0-Decay",", MC Eta-Decay",", MC Photon other sources",", MC Electron",", MC other sources"};
+
+    TString tagBkgNames[] = { 
+      "Clean", "HijingBkg", "NotHijingBkg", "HijingAndOtherBkg",
+      "Clean_HijingBkg", "Clean_NotHijingBkg", "Clean_HijingAndOtherBkg",
+      "HijingBkg_NotHijingBkg", "HijingBkg_HijingAndOtherBkg", "NotHijingBkg_HijingAndOtherBkg" } ;
+    TString tagBkgTitle[] = {
+      "no overlap", "pair Hijing Bkg", "pair not Hijing bkg", "pair Hijing and other bkg",
+      "no overlap and hijing overlap", "no overlap and generator overlap", "no overlap and multiple overlap",
+      "hijing overlap and gener overlap", "hijing overlap and multiple overlap", "gener overlap and multiple overlap" } ;
+
+    for(Int_t igen = 0; igen < GetNCocktailGenNamesToCheck(); igen++)
+    {
+      TString add = "_MainGener_";
+      if(igen==0) add = "";
+      for(Int_t itag = 0; itag < 10; itag++)
+      {
+        fhPairGeneratorsBkgMass[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairMass%s%s",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Pair Mass with generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMass[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
+        fhPairGeneratorsBkgMass[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgMass[igen][itag]) ;
+        
+        fhPairGeneratorsBkgMassMCPi0[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairMass%s%s_MCPi0",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Pair Mass with contribution of true #pi^{0} generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMassMCPi0[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
+        fhPairGeneratorsBkgMassMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgMassMCPi0[igen][itag]) ;
+        
+        fhPairGeneratorsBkgMassMCEta[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairMass%s%s_MCEta",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Pair Mass with contribution of true #eta generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+        fhPairGeneratorsBkgMassMCEta[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
+        fhPairGeneratorsBkgMassMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgMassMCEta[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCPi0",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCEta",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCPi0",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCPi0[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCEta",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCEta[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCPi0MassCut",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCEtaMassCut",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}/#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,nratbins,ratmin,ratmax);
+        fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[igen][itag]->SetYTitle("#it{E}_{reco}/#it{E}_{gen}");
+        fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCPi0MassCut",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #pi^{0} generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut[igen][itag]) ;
+        
+        fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut[igen][itag] = new TH2F
+        (Form("h%sGeneratorPairEPrimRecoDiff%s%s_MCEtaMassCut",
+              tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#it{E}_{reco}-#it{E}_{gen} pair with contribution of true #eta generator%s, %s ",
+              GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+         nptbins,ptmin,ptmax,ndifbins,difmin,difmax);
+        fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut[igen][itag]->SetYTitle("#it{E}_{reco}-#it{E}_{gen} (GeV)");
+        fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+        outputContainer->Add(fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut[igen][itag]) ;
+      }
+    }
+  }
+  
 //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
 //
 //    printf("Histogram %d, name: %s\n ",i, outputContainer->At(i)->GetName());
@@ -1405,11 +2236,14 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   for(Int_t i = 0; i < fNPIDBits; i++) printf("%d ",fPIDBits[i]);
   printf("\n");
   
-  if(fMultiCutAna)
+  if(fMultiCutAna || fMultiCutAnaAcc)
   {
     printf("pT cuts: n = %d, \n",fNPtCuts) ;
     printf("\tpT > ");
     for(Int_t i = 0; i < fNPtCuts; i++) printf("%2.2f ",fPtCuts[i]);
+    printf("GeV/c\n");
+    printf("\tpT < ");
+    for(Int_t i = 0; i < fNPtCuts; i++) printf("%2.2f ",fPtCutsMax[i]);
     printf("GeV/c\n");
     
     printf("N cell in cluster cuts: n = %d, \n",fNCellNCuts) ;
@@ -1464,7 +2298,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
   
   for(Int_t i=0 ; i < nprim; i++)
   {
-    if(GetReader()->AcceptOnlyHIJINGLabels() && !GetReader()->IsHIJINGLabel(i)) continue ;
+    if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
     if(GetReader()->ReadStack())
     {
@@ -1492,7 +2326,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       //       prim->GetName(), prim->GetPdgCode());
       
       //Photon kinematics
-      primStack->Momentum(fPi0Mom);
+      primStack->Momentum(fMCPrimMesonMom);
       
       mesonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
     }
@@ -1518,8 +2352,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
           (primAOD->E() - primAOD->Pz()) < 1e-3      || 
           (primAOD->E() + primAOD->Pz()) < 0           )  continue ; 
       
-      //Photon kinematics
-      fPi0Mom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
+      // Photon kinematics
+      fMCPrimMesonMom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
       mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
     }
@@ -1527,10 +2361,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
     // Select only pi0 or eta
     if( pdg != 111 && pdg != 221) continue ;
     
-    mesonPt  = fPi0Mom.Pt () ;
-    mesonE   = fPi0Mom.E  () ;
-    mesonYeta= fPi0Mom.Eta() ;
-    mesonPhi = fPi0Mom.Phi() ;
+    mesonPt  = fMCPrimMesonMom.Pt () ;
+    mesonE   = fMCPrimMesonMom.E  () ;
+    mesonYeta= fMCPrimMesonMom.Eta() ;
+    mesonPhi = fMCPrimMesonMom.Phi() ;
     if( mesonPhi < 0 ) mesonPhi+=TMath::TwoPi();
     mesonPhi *= TMath::RadToDeg();
     
@@ -1575,7 +2409,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
       fhPrimEtaYeta->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
     }
     
-    //Origin of meson
+    // Origin of meson
     if(fFillOriginHisto && TMath::Abs(mesonY) < 0.7)
     {
       Int_t momindex  = -1;
@@ -1666,10 +2500,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
       } // pi0 has mother
     }
     
-    //Check if both photons hit Calorimeter
-    if(nDaught != 2 ) continue; //Only interested in 2 gamma decay
+    // Check if both photons hit calorimeter or a given fiducial region 
+    // only if those settings are specified.
+    if ( !IsFiducialCutOn() && !IsRealCaloAcceptanceOn() ) continue ;
     
-    if(iphot1 < 0 || iphot1 >= nprim || iphot2 < 0 || iphot2 >= nprim) continue ;
+    if ( nDaught != 2 ) continue; //Only interested in 2 gamma decay
+    
+    if ( iphot1 < 0 || iphot1 >= nprim || iphot2 < 0 || iphot2 >= nprim ) continue ;
     
     Int_t pdg1 = 0;
     Int_t pdg2 = 0;
@@ -1804,10 +2641,23 @@ void AliAnaPi0::FillAcceptanceHistograms()
         
         if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle)
         {
-          fhPrimPi0AccPtPhotonCuts->Fill(mesonPt,            GetEventWeight()) ;
+          fhPrimPi0AccPtPhotonCuts->Fill(mesonPt, GetEventWeight()) ;
           
           if(fFillAngleHisto)
             fhPrimPi0OpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight());
+          
+          if(fNAngleCutBins > 0)
+          {
+            Int_t angleBin = -1;
+            for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+            {
+              if(angle >= fAngleCutBinsArray[ibin] && 
+                 angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+            }
+            
+            if( angleBin >= 0 && angleBin < fNAngleCutBins)
+              fhPrimPi0AccPtOpAngCuts[angleBin]->Fill(mesonPt,GetEventWeight());
+          }
         }
       }
       else if(pdg==221)
@@ -1837,6 +2687,19 @@ void AliAnaPi0::FillAcceptanceHistograms()
             
             if(fFillAngleHisto)
               fhPrimEtaOpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight());
+            
+            if(fNAngleCutBins > 0)
+            {
+              Int_t angleBin = -1;
+              for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+              {
+                if(angle >= fAngleCutBinsArray[ibin] && 
+                   angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+              }
+              
+              if( angleBin >= 0 && angleBin < fNAngleCutBins)
+                fhPrimEtaAccPtOpAngCuts[angleBin]->Fill(mesonPt,GetEventWeight());
+            }
           }
         }
       }
@@ -1850,14 +2713,14 @@ void AliAnaPi0::FillAcceptanceHistograms()
 void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg)
 {
   // Get pTArm and AlphaArm
-  Float_t momentumSquaredMother = fPi0Mom.P()*fPi0Mom.P();
+  Float_t momentumSquaredMother = fMCPrimMesonMom.P()*fMCPrimMesonMom.P();
   Float_t momentumDaughter1AlongMother = 0.;
   Float_t momentumDaughter2AlongMother = 0.;
   
   if (momentumSquaredMother > 0.)
   {
-    momentumDaughter1AlongMother = (fPhotonMom1.Px()*fPi0Mom.Px() + fPhotonMom1.Py()*fPi0Mom.Py()+ fPhotonMom1.Pz()*fPi0Mom.Pz()) / sqrt(momentumSquaredMother);
-    momentumDaughter2AlongMother = (fPhotonMom2.Px()*fPi0Mom.Px() + fPhotonMom2.Py()*fPi0Mom.Py()+ fPhotonMom2.Pz()*fPi0Mom.Pz()) / sqrt(momentumSquaredMother);
+    momentumDaughter1AlongMother = (fPhotonMom1.Px()*fMCPrimMesonMom.Px() + fPhotonMom1.Py()*fMCPrimMesonMom.Py()+ fPhotonMom1.Pz()*fMCPrimMesonMom.Pz()) / sqrt(momentumSquaredMother);
+    momentumDaughter2AlongMother = (fPhotonMom2.Px()*fMCPrimMesonMom.Px() + fPhotonMom2.Py()*fMCPrimMesonMom.Py()+ fPhotonMom2.Pz()*fMCPrimMesonMom.Pz()) / sqrt(momentumSquaredMother);
   }
   
   Float_t momentumSquaredDaughter1 = fPhotonMom1.P()*fPhotonMom1.P();
@@ -1872,10 +2735,10 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg)
     alphaArm = (momentumDaughter1AlongMother -momentumDaughter2AlongMother) / (momentumDaughter1AlongMother + momentumDaughter2AlongMother);
   
   fPhotonMom1Boost = fPhotonMom1;
-  fPhotonMom1Boost.Boost(-fPi0Mom.BoostVector());
-  Float_t  cosThStar=TMath::Cos(fPhotonMom1Boost.Vect().Angle(fPi0Mom.Vect()));
+  fPhotonMom1Boost.Boost(-fMCPrimMesonMom.BoostVector());
+  Float_t  cosThStar=TMath::Cos(fPhotonMom1Boost.Vect().Angle(fMCPrimMesonMom.Vect()));
   
-  Float_t en   = fPi0Mom.Energy();
+  Float_t en   = fMCPrimMesonMom.Energy();
   Int_t   ebin = -1;
   if(en > 8  && en <= 12) ebin = 0;
   if(en > 12 && en <= 16) ebin = 1;
@@ -1911,15 +2774,17 @@ void AliAnaPi0::FillArmenterosThetaStar(Int_t pdg)
 /// 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 12-unrelated
 //_______________________________________________________________________________________
 void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
+                                              Int_t iclus1,  Int_t iclus2,
+                                              Int_t mctag1,  Int_t mctag2,
                                               Float_t pt1,   Float_t pt2,
                                               Int_t ncell1,  Int_t ncell2,
-                                              Double_t mass, Double_t pt,  Double_t asym,
-                                              Double_t deta, Double_t dphi)
+                                              Double_t mass, Double_t pt,   Double_t asym,
+                                              Double_t deta, Double_t dphi, Double_t angle)
 {
   Int_t ancPDG    = 0;
   Int_t ancStatus = 0;
   Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(index1, index2,
-                                                              GetReader(), ancPDG, ancStatus,fPi0Mom, fProdVertex);
+                                                              GetReader(), ancPDG, ancStatus,fMCPrimMesonMom, fMCProdVertex);
   
   Int_t momindex  = -1;
   Int_t mompdg    = -1;
@@ -1927,6 +2792,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   Int_t status    = -1;
   Float_t prodR = -1;
   Int_t mcIndex = -1;
+  Float_t ptPrim = fMCPrimMesonMom.Pt();
   
   if(ancLabel > -1)
   {
@@ -1944,6 +2810,18 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     else if(ancPDG==111)
     {//Pi0
       mcIndex = 2;
+
+      fhMCPi0PtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight());
+      fhMCPi0PtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight());
+      fhMCPi0PtRecOpenAngle->Fill(pt, angle    , GetEventWeight());
+      
+      if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
+      {
+        fhMCPi0PtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight());
+        fhMCPi0PtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight());
+        fhMCPi0PtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight());
+      }
+      
       if(fMultiCutAnaSim)
       {
         for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
@@ -1954,13 +2832,15 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
             {
               Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
               if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        &&
+                 pt1    <  fPtCutsMax[ipt]   && pt2    <  fPtCutsMax[ipt]     &&
                  asym   <  fAsymCuts[iasym]                                   &&
                  ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
               {
-                fhMCPi0MassPtRec [index]->Fill(pt,          mass, GetEventWeight());
-                fhMCPi0MassPtTrue[index]->Fill(fPi0Mom.Pt(),mass, GetEventWeight());
-                if(mass < 0.17 && mass > 0.1)
-                    fhMCPi0PtTruePtRec[index]->Fill(fPi0Mom.Pt(), pt, GetEventWeight());
+                fhMCPi0MassPtRec [index]->Fill(pt    ,mass, GetEventWeight());
+                fhMCPi0MassPtTrue[index]->Fill(ptPrim,mass, GetEventWeight());
+                
+                if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
+                  fhMCPi0PtTruePtRecMassCut[index]->Fill(ptPrim, pt, GetEventWeight());
               }//pass the different cuts
             }// pid bit cut loop
           }// icell loop
@@ -1968,24 +2848,30 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
       }// Multi cut ana sim
       else
       {
-        fhMCPi0MassPtTrue[0]->Fill(fPi0Mom.Pt(), mass, GetEventWeight());
-        
-        if(mass < 0.17 && mass > 0.1)
+        fhMCPi0MassPtTrue [0]->Fill(ptPrim, mass, GetEventWeight());
+        fhMCPi0MassPtRec  [0]->Fill(pt    , mass, GetEventWeight());
+        fhMCPi0PtTruePtRec[0]->Fill(ptPrim,   pt, GetEventWeight());
+
+        if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )        
         {
-          fhMCPi0PtTruePtRec[0]->Fill(fPi0Mom.Pt(), pt, GetEventWeight());
+          fhMCPi0PtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight());
           
+          Float_t momOK = kFALSE;
           //Int_t uniqueId = -1;
           if(GetReader()->ReadStack())
           {
             TParticle* ancestor = GetMCStack()->Particle(ancLabel);
             status = ancestor->GetStatusCode();
             momindex  = ancestor->GetFirstMother();
-            if(momindex < 0) return;
-            TParticle* mother = GetMCStack()->Particle(momindex);
-            mompdg    = TMath::Abs(mother->GetPdgCode());
-            momstatus = mother->GetStatusCode();
-            prodR = mother->R();
-            //uniqueId = mother->GetUniqueID();
+            if(momindex >= 0) 
+            {
+              TParticle* mother = GetMCStack()->Particle(momindex);
+              mompdg    = TMath::Abs(mother->GetPdgCode());
+              momstatus = mother->GetStatusCode();
+              prodR = mother->R();
+              //uniqueId = mother->GetUniqueID();
+              momOK = kTRUE;
+            }
           }
           else
           {
@@ -1993,58 +2879,91 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
             AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
             status = ancestor->GetStatus();
             momindex  = ancestor->GetMother();
-            if(momindex < 0) return;
-            AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
-            mompdg    = TMath::Abs(mother->GetPdgCode());
-            momstatus = mother->GetStatus();
-            prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
-            //uniqueId = mother->GetUniqueID();
+            if(momindex >= 0) 
+            {
+              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+              mompdg    = TMath::Abs(mother->GetPdgCode());
+              momstatus = mother->GetStatus();
+              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+              //uniqueId = mother->GetUniqueID();
+              momOK = kTRUE;
+            }
           }
           
-          //            printf("Reco Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
-          //                   pt,prodR,mompdg,momstatus,uniqueId);
-          
-          fhMCPi0ProdVertex->Fill(pt, prodR , GetEventWeight());
-          fhMCPi0PtStatus  ->Fill(pt, status, GetEventWeight());
-          
-          if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight());//parton
-          else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight());//quark
-          else if(mompdg     > 2100  && mompdg   < 2210)
-                                    fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight());// resonances
-          else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight());//eta
-          else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight());//eta prime
-          else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight());//rho
-          else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight());//omega
-          else if(mompdg    >= 310   && mompdg    <= 323)
-                                    fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight());//k0S, k+-,k*
-          else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight());//k0L
-          else if(momstatus == 11 || momstatus  == 12 )
-                                    fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight());//resonances
-          else                      fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight());//other?
-          
-          if(status!=11)
+          if(momOK)
           {
-            if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt, 0.5, GetEventWeight());//parton
-            else if(mompdg     < 22 ) fhMCNotResonancePi0PtOrigin->Fill(pt, 1.5, GetEventWeight());//quark
+            //            printf("Reco Pi0: pt %2.2f Prod vertex %3.3f, origin pdg %d, origin status %d, origin UI %d\n",
+            //                   pt,prodR,mompdg,momstatus,uniqueId);
+            
+            fhMCPi0ProdVertex->Fill(pt, prodR , GetEventWeight());
+            fhMCPi0PtStatus  ->Fill(pt, status, GetEventWeight());
+            
+            if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt, 0.5, GetEventWeight());//parton
+            else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt, 1.5, GetEventWeight());//quark
             else if(mompdg     > 2100  && mompdg   < 2210)
-                                      fhMCNotResonancePi0PtOrigin->Fill(pt, 2.5, GetEventWeight());// resonances
-            else if(mompdg    == 221) fhMCNotResonancePi0PtOrigin->Fill(pt, 8.5, GetEventWeight());//eta
-            else if(mompdg    == 331) fhMCNotResonancePi0PtOrigin->Fill(pt, 9.5, GetEventWeight());//eta prime
-            else if(mompdg    == 213) fhMCNotResonancePi0PtOrigin->Fill(pt, 4.5, GetEventWeight());//rho
-            else if(mompdg    == 223) fhMCNotResonancePi0PtOrigin->Fill(pt, 5.5, GetEventWeight());//omega
+              fhMCPi0PtOrigin->Fill(pt, 2.5, GetEventWeight());// resonances
+            else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt, 8.5, GetEventWeight());//eta
+            else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt, 9.5, GetEventWeight());//eta prime
+            else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt, 4.5, GetEventWeight());//rho
+            else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt, 5.5, GetEventWeight());//omega
             else if(mompdg    >= 310   && mompdg    <= 323)
-                                      fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight());//k0S, k+-,k*
-            else if(mompdg    == 130) fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight());//k0L
+              fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight());//k0S, k+-,k*
+            else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt, 6.5, GetEventWeight());//k0L
             else if(momstatus == 11 || momstatus  == 12 )
-                                      fhMCNotResonancePi0PtOrigin->Fill(pt, 3.5, GetEventWeight());//resonances
-            else                      fhMCNotResonancePi0PtOrigin->Fill(pt, 7.5, GetEventWeight());//other?
+              fhMCPi0PtOrigin->Fill(pt, 3.5, GetEventWeight());//resonances
+            else                      fhMCPi0PtOrigin->Fill(pt, 7.5, GetEventWeight());//other?
+            
+            if(status!=11)
+            {
+              if     (momstatus  == 21) fhMCNotResonancePi0PtOrigin->Fill(pt, 0.5, GetEventWeight());//parton
+              else if(mompdg     < 22 ) fhMCNotResonancePi0PtOrigin->Fill(pt, 1.5, GetEventWeight());//quark
+              else if(mompdg     > 2100  && mompdg   < 2210)
+                fhMCNotResonancePi0PtOrigin->Fill(pt, 2.5, GetEventWeight());// resonances
+              else if(mompdg    == 221) fhMCNotResonancePi0PtOrigin->Fill(pt, 8.5, GetEventWeight());//eta
+              else if(mompdg    == 331) fhMCNotResonancePi0PtOrigin->Fill(pt, 9.5, GetEventWeight());//eta prime
+              else if(mompdg    == 213) fhMCNotResonancePi0PtOrigin->Fill(pt, 4.5, GetEventWeight());//rho
+              else if(mompdg    == 223) fhMCNotResonancePi0PtOrigin->Fill(pt, 5.5, GetEventWeight());//omega
+              else if(mompdg    >= 310   && mompdg    <= 323)
+                fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight());//k0S, k+-,k*
+              else if(mompdg    == 130) fhMCNotResonancePi0PtOrigin->Fill(pt, 6.5, GetEventWeight());//k0L
+              else if(momstatus == 11 || momstatus  == 12 )
+                fhMCNotResonancePi0PtOrigin->Fill(pt, 3.5, GetEventWeight());//resonances
+              else                      fhMCNotResonancePi0PtOrigin->Fill(pt, 7.5, GetEventWeight());//other?
+            }
           }
+          
         }//pi0 mass region
       }
+      
+      if(fNAngleCutBins > 0)
+      {
+        Int_t angleBin = -1;
+        for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+        {
+          if(angle >= fAngleCutBinsArray[ibin] && 
+             angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+        }
+        
+        if( angleBin >= 0 && angleBin < fNAngleCutBins)
+          fhReOpAngleBinPairClusterMassMCTruePi0[angleBin]->Fill(pt, mass, GetEventWeight());
+      }
+      
     }
     else if(ancPDG==221)
     {//Eta
       mcIndex = 3;
+
+      fhMCEtaPtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight());
+      fhMCEtaPtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight());
+      fhMCEtaPtRecOpenAngle->Fill(pt, angle    , GetEventWeight());
+
+      if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
+      {
+        fhMCEtaPtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight());
+        fhMCEtaPtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight());
+        fhMCEtaPtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight());
+      }
+
       if(fMultiCutAnaSim)
       {
         for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
@@ -2055,58 +2974,90 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
             {
               Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
               if(pt1    >  fPtCuts[ipt]      && pt2    >  fPtCuts[ipt]        &&
+                 pt1    <  fPtCutsMax[ipt]   && pt2    <  fPtCutsMax[ipt]     &&
                  asym   <  fAsymCuts[iasym]                                   &&
                  ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell])
               {
-                fhMCEtaMassPtRec [index]->Fill(pt          , mass, GetEventWeight());
-                fhMCEtaMassPtTrue[index]->Fill(fPi0Mom.Pt(), mass, GetEventWeight());
-                if(mass < 0.65 && mass > 0.45)
-                    fhMCEtaPtTruePtRec[index]->Fill(fPi0Mom.Pt(), pt, GetEventWeight());
+                fhMCEtaMassPtRec  [index]->Fill(pt    , mass, GetEventWeight());
+                fhMCEtaMassPtTrue [index]->Fill(ptPrim, mass, GetEventWeight());
+                fhMCEtaPtTruePtRec[index]->Fill(ptPrim,   pt, GetEventWeight());
+
+                if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
+                    fhMCEtaPtTruePtRecMassCut[index]->Fill(ptPrim, pt, GetEventWeight());
               }//pass the different cuts
             }// pid bit cut loop
           }// icell loop
         }// pt cut loop
       } //Multi cut ana sim
       else
+      {        
+        fhMCEtaMassPtTrue [0]->Fill(ptPrim, mass, GetEventWeight());
+        fhMCEtaMassPtRec  [0]->Fill(pt    , mass, GetEventWeight());
+        fhMCEtaPtTruePtRec[0]->Fill(ptPrim,   pt, GetEventWeight());
+
+        if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] ) 
+        {
+          fhMCEtaPtTruePtRecMassCut[0]->Fill(ptPrim, pt, GetEventWeight());
+          
+          Float_t momOK = kFALSE;
+          
+          if(GetReader()->ReadStack())
+          {
+            TParticle* ancestor = GetMCStack()->Particle(ancLabel);
+            momindex  = ancestor->GetFirstMother();
+            if(momindex >= 0) 
+            {
+              TParticle* mother = GetMCStack()->Particle(momindex);
+              mompdg    = TMath::Abs(mother->GetPdgCode());
+              momstatus = mother->GetStatusCode();
+              prodR = mother->R();
+              momOK = kTRUE;
+            }
+          }
+          else
+          {
+            TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+            AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+            momindex  = ancestor->GetMother();
+            if(momindex >= 0) 
+            {
+              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+              mompdg    = TMath::Abs(mother->GetPdgCode());
+              momstatus = mother->GetStatus();
+              prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+              momOK = kTRUE;
+            }
+          }
+          
+          if(momOK)
+          {
+            fhMCEtaProdVertex->Fill(pt, prodR, GetEventWeight());
+            
+            if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight());//parton
+            else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight());//quark
+            else if(mompdg    > 2100  && mompdg  < 2210)
+              fhMCEtaPtOrigin->Fill(pt, 2.5, GetEventWeight());//qq resonances
+            else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight());//eta prime
+            else if(momstatus == 11 || momstatus == 12 )
+              fhMCEtaPtOrigin->Fill(pt, 3.5, GetEventWeight());//resonances
+            else                      fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight());//stable, conversions?
+            //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
+          }
+          
+        }// eta mass region
+    } 
+      if(fNAngleCutBins > 0)
       {
-        fhMCEtaMassPtTrue[0]->Fill(fPi0Mom.Pt(), mass, GetEventWeight());
-        if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[0]->Fill(fPi0Mom.Pt(), pt, GetEventWeight());
-        
-        if(GetReader()->ReadStack())
+        Int_t angleBin = -1;
+        for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
         {
-          TParticle* ancestor = GetMCStack()->Particle(ancLabel);
-          momindex  = ancestor->GetFirstMother();
-          if(momindex < 0) return;
-          TParticle* mother = GetMCStack()->Particle(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatusCode();
-          prodR = mother->R();
-        }
-        else
-        {
-          TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
-          AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
-          momindex  = ancestor->GetMother();
-          if(momindex < 0) return;
-          AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
-          mompdg    = TMath::Abs(mother->GetPdgCode());
-          momstatus = mother->GetStatus();
-          prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+          if(angle >= fAngleCutBinsArray[ibin] && 
+             angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
         }
         
-        fhMCEtaProdVertex->Fill(pt, prodR, GetEventWeight());
-        
-        if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt, 0.5, GetEventWeight());//parton
-        else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt, 1.5, GetEventWeight());//quark
-        else if(mompdg    > 2100  && mompdg  < 2210)
-                                  fhMCEtaPtOrigin->Fill(pt, 2.5, GetEventWeight());//qq resonances
-        else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt, 5.5, GetEventWeight());//eta prime
-        else if(momstatus == 11 || momstatus == 12 )
-                                  fhMCEtaPtOrigin->Fill(pt, 3.5, GetEventWeight());//resonances
-        else                      fhMCEtaPtOrigin->Fill(pt, 4.5, GetEventWeight());//stable, conversions?
-        //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );
-        
-      }// eta mass region
+        if( angleBin >= 0 && angleBin < fNAngleCutBins)
+          fhReOpAngleBinPairClusterMassMCTrueEta[angleBin]->Fill(pt, mass, GetEventWeight());
+      }
     }
     else if(ancPDG==-2212)
     {//AProton
@@ -2137,7 +3088,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
       {//String fragmentation
         mcIndex = 8;
       }
-      else if (ancStatus==21){
+      else if (ancStatus==21)
+      {
         if(ancLabel < 2)
         {//Colliding protons
           mcIndex = 11;
@@ -2176,6 +3128,140 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     fhMCOrgDeltaEta[mcIndex]->Fill(pt, deta, GetEventWeight());
     fhMCOrgDeltaPhi[mcIndex]->Fill(pt, dphi, GetEventWeight());
   }
+  
+  if( IsStudyClusterOverlapsPerGeneratorOn() )
+  {      
+    // Get the original clusters
+    //
+    Int_t first = 0;
+    AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),iclus1,first);
+    AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),iclus2,iclus1);
+    if(!cluster2 || !cluster1) 
+    { 
+      AliWarning(Form("Cluster1 %p or Cluster 2 %p not found!",cluster1,cluster2));
+      return;
+    }
+    
+    // Get the generators names of each cluster and background generator tag
+    //
+    TString genName1 = "", genName2 = "", genNameBkg1 = "", genNameBkg2 = "";
+    Int_t genBkgTag1 = GetCocktailGeneratorBackgroundTag(cluster1, mctag1, genName1, genNameBkg1);
+    if     (genBkgTag1 == -1) return;
+    else if(genBkgTag1  >  3) printf("Bkg1 generator tag larger than 3; Main %s Bkg %s\n",genName1.Data(),genNameBkg1.Data());
+
+    Int_t genBkgTag2 = GetCocktailGeneratorBackgroundTag(cluster2, mctag2, genName2, genNameBkg2);
+    if     (genBkgTag2 == -1) return;
+    else if(genBkgTag2  >  3) printf("Bkg2 generator tag larger than 3; Main %s Bkg %s\n",genName2.Data(),genNameBkg2.Data());
+    
+    // if the clusters do not come from the same generator exclude
+    if(genName1!=genName2) return;
+    
+    Int_t genType = GetNCocktailGenNamesToCheck()-1;
+    for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
+    {
+      if ( genName1.Contains(GetCocktailGenNameToCheck(igen)) )
+      {
+        genType = igen;
+        break;
+      }
+    }
+    
+    // Fill histograms
+    //
+    // assign histogram index number depending on pair combination
+    Int_t tag = -1;
+    if ( genBkgTag1 == genBkgTag2 )
+    {
+      tag = genBkgTag1; // 0,1,2,3
+    }
+    else
+    {
+      Int_t genBkgMin = -1; 
+      Int_t genBkgMax = -1;
+      
+      if(genBkgTag1 > genBkgTag2)
+      {
+        genBkgMax = genBkgTag1;
+        genBkgMin = genBkgTag2;
+      }
+      else
+      {
+        genBkgMax = genBkgTag2;
+        genBkgMin = genBkgTag1;
+      }
+    
+      if      ( genBkgMin == 0 )
+      {
+        if     (genBkgMax == 1 )   tag = 4; // clean+hijing
+        else if(genBkgMax == 2 )   tag = 5; // clean+not hijing
+        else if(genBkgMax == 3 )   tag = 6; // clean+multiple
+      }
+      else if ( genBkgMin == 1 ) 
+      {
+        if      ( genBkgMax == 2 ) tag = 7; // hijing + not hijing
+        else if ( genBkgMax == 3 ) tag = 8; // hijing + multiple
+      }
+      else if ( genBkgMin == 2 )   tag = 9; // not hijing + multiple
+    }
+    
+    if(tag == -1)
+    {
+      printf("Combination not found, bkg1 tag %d, bkg2 tag %d\n",genBkgTag1,genBkgTag2);
+      return;
+    }
+    
+    fhPairGeneratorsBkgMass[genType][tag]->Fill(pt, mass, GetEventWeight());
+    fhPairGeneratorsBkgMass      [0][tag]->Fill(pt, mass, GetEventWeight());
+    
+    //
+    if ( ptPrim < 0.1 || pt < 0.5 ) return;
+    
+    Float_t ratio = pt / ptPrim;
+    Float_t diff  = pt - ptPrim;
+
+    if     ( mcIndex==2 ) // Pi0
+    {
+      fhPairGeneratorsBkgMassMCPi0      [0][tag]->Fill(pt,  mass, GetEventWeight());
+      fhPairGeneratorsBkgMassMCPi0[genType][tag]->Fill(pt,  mass, GetEventWeight());
+
+      fhPairGeneratorsBkgEPrimRecoRatioMCPi0[0][tag]->Fill(pt, ratio, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [0][tag]->Fill(pt,  diff, GetEventWeight());
+      
+      fhPairGeneratorsBkgEPrimRecoRatioMCPi0[genType][tag]->Fill(pt, ratio, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      
+      if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
+      {
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[0][tag]->Fill(pt, ratio, GetEventWeight());
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [0][tag]->Fill(pt,  diff, GetEventWeight());
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[genType][tag]->Fill(pt, ratio, GetEventWeight());
+        fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      }
+    }
+    else if( mcIndex==3 ) // Eta
+    {
+      fhPairGeneratorsBkgMassMCEta      [0][tag]->Fill(pt,  mass, GetEventWeight());
+      fhPairGeneratorsBkgMassMCEta[genType][tag]->Fill(pt,  mass, GetEventWeight());
+
+      fhPairGeneratorsBkgEPrimRecoRatioMCEta[0][tag]->Fill(pt, ratio, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoDiffMCEta [0][tag]->Fill(pt,  diff, GetEventWeight());    
+      
+      fhPairGeneratorsBkgEPrimRecoRatioMCEta[genType][tag]->Fill(pt, ratio, GetEventWeight());
+      fhPairGeneratorsBkgEPrimRecoDiffMCEta [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      
+      if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
+      {
+        fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[0][tag]->Fill(pt, ratio, GetEventWeight());
+        fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [0][tag]->Fill(pt,  diff, GetEventWeight());    
+        
+        fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[genType][tag]->Fill(pt, ratio, GetEventWeight());
+        fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      }
+    }
+  } // do cluster overlaps from cocktails
+  
+  // carefull adding something else here, "returns" can affect
 }
 
 //__________________________________________
@@ -2332,9 +3418,38 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     
     //------------------------------------------
     // Recover original cluster
-    //    Int_t iclus1 = -1 ;
-    //    AliVCluster * cluster1 = FindCluster(clusters,p1->GetCaloLabel(0),iclus1);
-    //    if(!cluster1) AliWarning("Cluster1 not found!");
+    // Declare variables for absid col-row identification of pair
+    // Also fill col-row, eta-phi histograms depending on pt bin
+    
+    Int_t iclus1 = -1, iclus2 = -1 ;
+    Float_t maxCellFraction1 = 0, maxCellFraction2 = 0;
+    Int_t absIdMax1 = -1, absIdMax2 = -1;
+    Int_t   icol1 = -1, icol2 = -1, icolAbs1 = -1, icolAbs2 = -1;
+    Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
+    Int_t   iRCU1 = -1, iRCU2 = -1;
+
+    if(fMultiCutAnaAcc || fFillAngleHisto)
+    {
+      AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),p1->GetCaloLabel(0),iclus1);
+      if(!cluster1) AliWarning("Cluster1 not found!");
+      
+      absIdMax1 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster1,maxCellFraction1);
+      
+      GetModuleNumberCellIndexesAbsCaloMap(absIdMax1,GetCalorimeter(), icol1, irow1, iRCU1, icolAbs1, irowAbs1);
+      
+      if(fMultiCutAnaAcc)
+      { 
+        for(Int_t ipt = 0; ipt < fNPtCuts; ipt++)
+        {
+          if( p1->Pt() >   fPtCuts[ipt] && p1->Pt() < fPtCuts[ipt+1] )
+          {
+            fhPtBinClusterEtaPhi[ipt]->Fill(p1->Eta(),GetPhi(p1->Phi()),GetEventWeight()) ;
+            
+            fhPtBinClusterColRow[ipt]->Fill(icolAbs1,irowAbs1,GetEventWeight()) ;
+          }
+        }
+      }
+    }
     
     //---------------------------------
     // Second loop on photons/clusters
@@ -2461,7 +3576,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         if(!fPairWithOtherDetector)
         {
           if(module1==module2 && module1 >=0 && module1<fNModules)
+          {
             fhReMod[module1]->Fill(pt, m, GetEventWeight()) ;
+            if(fFillAngleHisto) fhRealOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
+          }
           
           if (GetCalorimeter() == kEMCAL )
           {
@@ -2549,7 +3667,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         else if( l02 > 0.01 && l02 < 0.4  && l01 > 0.4 ) fhReSS[2]->Fill(pt, m, GetEventWeight()); // Both
       }
       
+      //
+      // Main invariant mass histograms.
       // Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
+      //
       for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
       {
         if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)))
@@ -2585,6 +3706,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }// bad 1
       }// pid bit loop
       
+      //
       // Fill histograms with opening angle
       if(fFillAngleHisto)
       {
@@ -2592,12 +3714,101 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         fhRealCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
       }
       
+      //
+      // Fill histograms for different opening angle bins
+      if(fFillOpAngleCutHisto)
+      {        
+        Int_t angleBin = -1;
+        for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+        {
+          if(angle >= fAngleCutBinsArray[ibin] && 
+             angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+        }
+        
+        if( angleBin >= 0 && angleBin < fNAngleCutBins)
+        {
+          Float_t e1   = fPhotonMom1.E();
+          Float_t e2   = fPhotonMom2.E();
+
+          Float_t t1   = tof1;
+          Float_t t2   = tof2;
+          
+          Int_t nc1    = ncell1;
+          Int_t nc2    = ncell2;          
+          
+          Float_t eta1 = fPhotonMom1.Eta(); 
+          Float_t eta2 = fPhotonMom2.Eta(); 
+
+          Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+          Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+          
+          Int_t   mod1 = module1;
+          Int_t   mod2 = module2;
+          
+          // Recover original cluster
+          AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),p2->GetCaloLabel(0),iclus2);
+          if(!cluster2) AliWarning("Cluster2 not found!");
+
+          absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
+          
+          if(e2 > e1)
+          {
+            e1   = fPhotonMom2.E();
+            e2   = fPhotonMom1.E();
+
+            t1   = tof2;
+            t2   = tof1;
+            
+            nc1  = ncell2;
+            nc2  = ncell1;         
+            
+            eta1 = fPhotonMom2.Eta(); 
+            eta2 = fPhotonMom1.Eta(); 
+            
+            phi1 = GetPhi(fPhotonMom2.Phi());
+            phi2 = GetPhi(fPhotonMom1.Phi());
+            
+            mod1 = module2;
+            mod2 = module1;
+            
+            Int_t tmp = absIdMax2;
+            absIdMax2 = absIdMax1;
+            absIdMax1 = tmp;
+          }
+
+          fhReOpAngleBinMinClusterEPerSM[angleBin]->Fill(e2,mod2,GetEventWeight()) ; 
+          fhReOpAngleBinMaxClusterEPerSM[angleBin]->Fill(e1,mod1,GetEventWeight()) ; 
+          
+          fhReOpAngleBinMinClusterTimePerSM[angleBin]->Fill(t2,mod2,GetEventWeight()) ; 
+          fhReOpAngleBinMaxClusterTimePerSM[angleBin]->Fill(t1,mod1,GetEventWeight()) ; 
+          
+          fhReOpAngleBinMinClusterNCellPerSM[angleBin]->Fill(nc2,mod2,GetEventWeight()) ; 
+          fhReOpAngleBinMaxClusterNCellPerSM[angleBin]->Fill(nc1,mod1,GetEventWeight()) ; 
+
+          fhReOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()) ;
+          if(mod2 == mod1)  fhReOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
+                    
+          if(e1 > 0.01) fhReOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
+          
+          fhReOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()) ;
+          fhReOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()) ;
+                    
+          GetModuleNumberCellIndexesAbsCaloMap(absIdMax2,GetCalorimeter(), icol2, irow2, iRCU2, icolAbs2, irowAbs2);
+          
+          //fhReOpAngleBinPairClusterAbsIdMaxCell[angleBin]->Fill(absIdMax1,absIdMax2,GetEventWeight());
+
+          fhReOpAngleBinMinClusterColRow[angleBin]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+          fhReOpAngleBinMaxClusterColRow[angleBin]->Fill(icolAbs1,irowAbs1,GetEventWeight()) ;
+        }
+      } // fFillOpAngleHisto
+
+      
       // Fill histograms with pair assymmetry
       if(fFillAsymmetryHisto)
       {
         fhRePtAsym->Fill(pt, a, GetEventWeight());
-        if(m > 0.10 && m < 0.17) fhRePtAsymPi0->Fill(pt, a, GetEventWeight());
-        if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt, a, GetEventWeight());
+        if ( m > fPi0MassWindow[0] && m < fPi0MassWindow[1] ) fhRePtAsymPi0->Fill(pt, a, GetEventWeight());
+        if ( m > fEtaMassWindow[0] && m < fEtaMassWindow[1] ) fhRePtAsymEta->Fill(pt, a, GetEventWeight());
       }
       
       // Check cell time content in cluster
@@ -2609,7 +3820,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         else if ( p1->GetFiducialArea() != 0 && p2->GetFiducialArea() != 0 )
           fhReSecondaryCellOutTimeWindow->Fill(pt, m, GetEventWeight());
       }
-      
+
       //---------
       // MC data
       //---------
@@ -2632,23 +3843,18 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
         
         if(fFillOriginHisto)
-          FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),ncell1, ncell2, m, pt, a,deta, dphi);
+          FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),
+                                        p1->GetCaloLabel(0), p2->GetCaloLabel(0),
+                                        p1->GetTag(),p2->GetTag(),
+                                        p1->Pt(), p2->Pt(),
+                                        ncell1, ncell2, m, pt, a,deta, dphi, angle);
       }
       
       //-----------------------
       // Multi cuts analysis
       //-----------------------
       if(fMultiCutAna)
-      {
-        // Histograms for different PID bits selection
-        for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
-        {
-          if(p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)    &&
-             p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))   fhRePIDBits[ipid]->Fill(pt, m, GetEventWeight()) ;
-          
-          //printf("ipt %d, ipid%d, name %s\n",ipt, ipid, fhRePtPIDCuts[ipt*fNPIDBitsBits+ipid]->GetName());
-        } // pid bit cut loop
-        
+      {        
         // Several pt,ncell and asymmetry cuts
         for(Int_t ipt = 0; ipt < fNPtCuts; ipt++)
         {
@@ -2657,29 +3863,25 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++)
             {
               Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-              if(p1->E() >   fPtCuts[ipt]      && p2->E() > fPtCuts[ipt]        &&
-                 a        <   fAsymCuts[iasym]                                  &&
+              if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt()  > fPtCuts[ipt]    &&
+                 p1->Pt() <   fPtCutsMax[ipt]   && p2->Pt()  < fPtCutsMax[ipt] &&
+                 a        <   fAsymCuts[iasym]                                 &&
                  ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell])
               {
                 fhRePtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
-                //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
+                if(fFillAngleHisto)  fhRePtNCellAsymCutsOpAngle[index]->Fill(pt, angle, GetEventWeight()) ;
+                
                 if(fFillSMCombinations && module1==module2)
                 {
                   fhRePtNCellAsymCutsSM[module1][index]->Fill(pt, m, GetEventWeight()) ;
+                  if(fFillAngleHisto)  fhRePtNCellAsymCutsSMOpAngle[module1][index]->Fill(pt, angle, GetEventWeight()) ;
                 }
               }
             }// pid bit cut loop
           }// icell loop
         }// pt cut loop
-        
-        if(GetHistogramRanges()->GetHistoTrackMultiplicityBins())
-        {
-          for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++)
-          {
-            if(a < fAsymCuts[iasym]) fhRePtMult[iasym]->Fill(pt, GetTrackMultiplicity(), m, GetEventWeight()) ;
-          }
-        }
       }// multiple cuts analysis
+      
     }// second same event particle
   }// first cluster
   
@@ -2762,7 +3964,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           
           // In case we want only pairs in same (super) module, check their origin.
           module2 = GetModuleNumber(p2);
-          
+                    
           //-------------------------------------------------------------------------------------------------
           // Fill module dependent histograms, put a cut on assymmetry on the first available cut in the array
           //-------------------------------------------------------------------------------------------------
@@ -2771,7 +3973,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             if(!fPairWithOtherDetector)
             {
               if(module1==module2 && module1 >=0 && module1<fNModules)
+              {
                 fhMiMod[module1]->Fill(pt, m, GetEventWeight()) ;
+                if(fFillAngleHisto) fhMixedOpeningAnglePerSM[module1]->Fill(pt, angle, GetEventWeight());
+              }
               
               if(GetCalorimeter()==kEMCAL)
               {
@@ -2848,7 +4053,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             else if(p1->IsTagged() || p2->IsTagged()) fhMiConv ->Fill(pt, m, GetEventWeight());
           }
           
+          //
+          // Main invariant mass histograms
           // Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
+          //
           for(Int_t ipid=0; ipid<fNPIDBits; ipid++)
           {
             if((p1->IsPIDOK(ipid,AliCaloPID::kPhoton)) && (p2->IsPIDOK(ipid,AliCaloPID::kPhoton)))
@@ -2862,7 +4070,6 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                   if(index < 0 || index >= ncentr*fNPIDBits*fNAsymCuts) continue ;
                   
                   fhMi1[index]->Fill(pt, m, GetEventWeight()) ;
-                  
                   if(fMakeInvPtPlots)fhMiInvPt1[index]->Fill(pt, m, 1./pt * GetEventWeight()) ;
                   
                   if(fFillBadDistHisto)
@@ -2879,18 +4086,21 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                       }
                     }
                   }// Fill bad dist histo
+                  
                 }//Asymmetry cut
               }// Asymmetry loop
             }//PID cut
-          }//loop for histograms
-          
+          }// PID loop 
+
           //-----------------------
           // Multi cuts analysis
           //-----------------------
+          Int_t  ncell1 = p1->GetNCells();
+          Int_t  ncell2 = p1->GetNCells();
+          
           if(fMultiCutAna)
           {
             // Several pt,ncell and asymmetry cuts
-            
             for(Int_t ipt=0; ipt<fNPtCuts; ipt++)
             {
               for(Int_t icell=0; icell<fNCellNCuts; icell++)
@@ -2898,12 +4108,19 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
                 for(Int_t iasym=0; iasym<fNAsymCuts; iasym++)
                 {
                   Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
-                  if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]        &&
-                     a        <   fAsymCuts[iasym]                                    //&&
-                     //p1->GetBtag() >=  fCellNCuts[icell] && p2->GetBtag() >= fCellNCuts[icell] // trick, correct it.
+                  
+                  if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]      &&
+                     p1->Pt() <   fPtCutsMax[ipt]   && p2->Pt() < fPtCutsMax[ipt]   &&
+                     a        <   fAsymCuts[iasym]                                  &&
+                     ncell1   >=  fCellNCuts[icell] && ncell2   >= fCellNCuts[icell] 
                      )
                   {
+                    //printf("MI ipt %d, iasym%d, icell %d, index %d \n",ipt, iasym, icell, index);
+                    //printf("\t %p, %p\n",fhMiPtNCellAsymCuts[index],fhMiPtNCellAsymCutsOpAngle[index]);
+                    
                     fhMiPtNCellAsymCuts[index]->Fill(pt, m, GetEventWeight()) ;
+                    if(fFillAngleHisto)  fhMiPtNCellAsymCutsOpAngle[index]->Fill(pt, angle, GetEventWeight()) ;
+                    
                     //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
                   }
                 }// pid bit cut loop
@@ -2911,15 +4128,119 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             }// pt cut loop
           } // Multi cut ana
           
+          //
           // Fill histograms with opening angle
           if(fFillAngleHisto)
           {
             fhMixedOpeningAngle   ->Fill(pt, angle, GetEventWeight());
             fhMixedCosOpeningAngle->Fill(pt, TMath::Cos(angle), GetEventWeight());
+          }          
+          
+          //
+          // Fill histograms for different opening angle bins
+          if(fFillOpAngleCutHisto)
+          {
+            Int_t angleBin = -1;
+            for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
+            {
+              if(angle >= fAngleCutBinsArray[ibin] && 
+                 angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
+            }
+            
+            if( angleBin >= 0 && angleBin < fNAngleCutBins)
+            {
+              Float_t e1   = fPhotonMom1.E();
+              Float_t e2   = fPhotonMom2.E();
+              
+              Float_t t1   = p1->GetTime();
+              Float_t t2   = p2->GetTime();
+              
+              Int_t nc1    = ncell1;
+              Int_t nc2    = ncell2;
+              
+              Float_t eta1 = fPhotonMom1.Eta(); 
+              Float_t eta2 = fPhotonMom2.Eta(); 
+              
+              Float_t phi1 = GetPhi(fPhotonMom1.Phi());
+              Float_t phi2 = GetPhi(fPhotonMom2.Phi());
+              
+              Int_t   mod1 = module1;
+              Int_t   mod2 = module2;
+              
+              //              // Recover original cluster
+              //              Int_t iclus1 = -1, iclus2 = -1 ;
+              //              AliVCluster * cluster1 = FindCluster(GetEMCALClusters(),p1->GetCaloLabel(0),iclus1);
+              //              AliVCluster * cluster2 = FindCluster(GetEMCALClusters(),p2->GetCaloLabel(0),iclus2);
+              //              
+              //              Float_t maxCellFraction1 = 0, maxCellFraction2 = 0;
+              //              Int_t absIdMax1 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster1,maxCellFraction1);
+              //              Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(GetEMCALCells(),cluster2,maxCellFraction2);
+              
+              if(e2 > e1)
+              {
+                e1   = fPhotonMom2.E();
+                e2   = fPhotonMom1.E();
+                
+                t1   = p2->GetTime();
+                t2   = p1->GetTime();
+                
+                nc1  = ncell2;
+                nc2  = ncell1;
+                
+                eta1 = fPhotonMom2.Eta(); 
+                eta2 = fPhotonMom1.Eta(); 
+                
+                phi1 = GetPhi(fPhotonMom2.Phi());
+                phi2 = GetPhi(fPhotonMom1.Phi());
+                
+                mod1 = module2;
+                mod2 = module1;
+                
+                //                Int_t tmp = absIdMax2;
+                //                absIdMax2 = absIdMax1;
+                //                absIdMax1 = tmp;
+              }
+              
+              fhMiOpAngleBinMinClusterEPerSM[angleBin]->Fill(e2,mod2,GetEventWeight()) ; 
+              fhMiOpAngleBinMaxClusterEPerSM[angleBin]->Fill(e1,mod1,GetEventWeight()) ; 
+              
+              fhMiOpAngleBinMinClusterTimePerSM[angleBin]->Fill(t2,mod2,GetEventWeight()) ; 
+              fhMiOpAngleBinMaxClusterTimePerSM[angleBin]->Fill(t1,mod1,GetEventWeight()) ; 
+              
+              fhMiOpAngleBinMinClusterNCellPerSM[angleBin]->Fill(nc2,mod2,GetEventWeight()) ; 
+              fhMiOpAngleBinMaxClusterNCellPerSM[angleBin]->Fill(nc1,mod1,GetEventWeight()) ; 
+              
+              fhMiOpAngleBinPairClusterMass[angleBin]->Fill(pt,m,GetEventWeight()) ;
+              if(mod2 == mod1)  fhMiOpAngleBinPairClusterMassPerSM[angleBin]->Fill(m,mod1,GetEventWeight()) ;
+              
+              if(e1 > 0.01) fhMiOpAngleBinPairClusterRatioPerSM[angleBin]->Fill(e2/e1,mod1,GetEventWeight()) ;  
+              
+              fhMiOpAngleBinMinClusterEtaPhi[angleBin]->Fill(eta2,phi2,GetEventWeight()) ;
+              fhMiOpAngleBinMaxClusterEtaPhi[angleBin]->Fill(eta1,phi1,GetEventWeight()) ;
+              
+              //              Int_t   icol1 = -1, icol2 = -1, icolAbs1 = -1, icolAbs2 = -1;
+              //              Int_t   irow1 = -1, irow2 = -1, irowAbs1 = -1, irowAbs2 = -1;
+              //              Int_t   iRCU1 = -1, iRCU2 = -1;
+              //              GetModuleNumberCellIndexesAbsCaloMap(absIdMax1,GetCalorimeter(), icol1, irow1, iRCU1, icolAbs1, irowAbs1);
+              //              GetModuleNumberCellIndexesAbsCaloMap(absIdMax2,GetCalorimeter(), icol2, irow2, iRCU1, icolAbs2, irowAbs2);
+              //              
+              //              fhMiOpAngleBinPairClusterAbsIdMaxCell[angleBin]->Fill(absIdMax1,absIdMax2,GetEventWeight());
+              //
+              //              fhMiColRowClusterMinOpAngleBin[angleBin]->Fill(icolAbs2,irowAbs2,GetEventWeight()) ;
+              //              fhMiOpAngleBinMaxClusterColRow[angleBin]->Fill(icolAbs1,irowAbs1,GetEventWeight()) ;
+            }
           }
-
+          
+          // Fill histograms with pair assymmetry
+          if(fFillAsymmetryHisto)
+          {
+            fhMiPtAsym->Fill(pt, a, GetEventWeight());
+            if ( m > fPi0MassWindow[0] && m < fPi0MassWindow[1] ) fhMiPtAsymPi0->Fill(pt, a, GetEventWeight());
+            if ( m > fEtaMassWindow[0] && m < fEtaMassWindow[1] ) fhMiPtAsymEta->Fill(pt, a, GetEventWeight());
+          }
+          
           // Check cell time content in cluster
-          if ( fFillSecondaryCellTiming)
+          if ( fFillSecondaryCellTiming )
           {
             if      ( p1->GetFiducialArea() == 0 && p2->GetFiducialArea() == 0 )
               fhMiSecondaryCellInTimeWindow ->Fill(pt, m, GetEventWeight());
@@ -2927,7 +4248,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             else if ( p1->GetFiducialArea() != 0 && p2->GetFiducialArea() != 0 )
               fhMiSecondaryCellOutTimeWindow->Fill(pt, m, GetEventWeight());
           }
-          
+                  
         }// second cluster loop
       }//first cluster loop
     }//loop on mixed events

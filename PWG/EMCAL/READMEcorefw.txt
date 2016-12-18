@@ -56,6 +56,10 @@ Containers are a central concept in the EMCal framework. To conduct an analysis,
 Track selection is normally applied in the track selection task as part of the 
 framework. For more information, including on virtual track selection, see \subpage READMEtracks.
 
+# EMCal Corrections Framework
+
+Information about the corrections framework is available at \subpage READMEemcCorrections.
+
 # EMCal/DCal Cluster Corrections
 
 Information about the cell and cluster corrections is available at \subpage READMEclustcorr.

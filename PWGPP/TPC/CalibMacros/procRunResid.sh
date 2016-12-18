@@ -6,7 +6,8 @@ pattern="ResidualTrees.root"
 [[ $# < 2 ]] &&  echo 'procRunRes.sh <path> <run>' &&  exit
 
 dirname=$1
-run=$2
+runFiltered=$(echo "$2" | sed 's/^0*//')
+run=$(printf "%09d" $runFiltered)
 inpList="lst.txt"
 
 echo "...searching for data as:"

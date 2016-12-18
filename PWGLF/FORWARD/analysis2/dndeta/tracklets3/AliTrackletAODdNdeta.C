@@ -30,7 +30,7 @@
 #include <TGraphErrors.h>
 #else
 // class AliAODTracklet;
-class AliTrackletWeights;
+class AliTrackletBaseWeights;
 class AliVEvent;
 class AliMultSelection;  // Auto-load 
 class TClonesArray;
@@ -67,9 +67,27 @@ public:
     kSecondaryMask    = AliAODTracklet::kSecondary,
     kSecondaryVeto    = 0x0,
     kGeneratedMask    = AliAODTracklet::kGenerated,
-    kGeneratedVeto    = AliAODTracklet::kNeutral
+    kGeneratedVeto    = AliAODTracklet::kNeutral|AliAODTracklet::kSuppressed
   };
-    
+  // -----------------------------------------------------------------
+  /** Status of task */
+  enum {
+    kAll=1,          // Count all events
+    kEvent,          // Have event
+    kTracklets,      // Have tracklets
+    kTrigger,        // Have trigger 
+    kIP,             // Have IP
+    kCentrality,     // Have centrality
+    kCompleted       // Have completed
+  };
+  enum EStatus {
+    kOKEvent       = ((1<<(kAll      -1))|
+		      (1<<(kEvent    -1))|
+		      (1<<(kTracklets-1))),
+    kOKTrigger     = (kOKEvent|(1<<(kTrigger  -1))),
+    kOKIPz         = (kOKTrigger|(1<<kIP-1)),
+    kOkCentrality  = (kOKIPz|(1<<(kCentrality-1)))
+  };
   /** Type of containers */
   typedef TList Container;
   /** 
@@ -239,7 +257,7 @@ public:
     SetAxis(fPhiAxis, n, max);
   }
   /** 
-   * Set the @f$ \vareta@f$ axis 
+   * Set the @f$ \eta@f$ axis 
    * 
    * @param n   Number of bins
    * @param min Least value 
@@ -250,7 +268,7 @@ public:
     SetAxis(fEtaAxis, n, min, max);
   }
   /** 
-   * Set the @f$ \vareta@f$ axis 
+   * Set the @f$ \eta@f$ axis 
    * 
    * @param n   Number of bins
    * @param max Largest absolute value 
@@ -323,7 +341,33 @@ public:
    * 
    * @param w Weights to use 
    */
-  virtual void SetWeights(AliTrackletWeights* w) {};
+  virtual void SetWeights(AliTrackletBaseWeights* w) {};
+  /** 
+   * Whether to use square root of square (product) weights 
+   * 
+   * @param mode If true, take square root of square (product) weights
+   */
+  virtual void SetWeightCalc(UChar_t mode=0) {}
+  /** 
+   * Set the tracklet type mask to use on weights 
+   * 
+   * @param mask Tracklet type mask 
+   */
+  virtual void SetWeightMask(UChar_t mask=0xFF) {}
+  /** 
+   * Inverse the weights calculated.  That is, if this option is
+   * enabled, then the weight used is @f$1/w@f$ where @f$w@f$ is the
+   * normal weight.
+   * 
+   * @param inv If true, inverse weights 
+   */
+  virtual void SetWeightInverse(Bool_t inv) {}
+  /** 
+   * Set the tracklet type veto to use on weights 
+   * 
+   * @param veto Tracklet type veto 
+   */
+  virtual void SetWeightVeto(UChar_t veto=0xFF) {}
   /* @} */
   //__________________________________________________________________
   /**
@@ -454,6 +498,7 @@ public:
 	fVeto(veto),
 	fEtaIPz(0),
 	fEtaDeltaIPz(0),
+	fEtaDeltaPdg(0),
 	fEtaPdgIPz(0),
 	fEtaPdg(0),
 	fEtaPt(0),
@@ -471,6 +516,7 @@ public:
 	fVeto(o.fVeto),
 	fEtaIPz(0),
 	fEtaDeltaIPz(0),
+	fEtaDeltaPdg(0),
 	fEtaPdgIPz(0),
 	fEtaPdg(0),
 	fEtaPt(0),
@@ -606,10 +652,25 @@ public:
      */
     void Print(Option_t* option="") const;
   protected:
+    Bool_t ProjectEtaPdg(Container* result, Int_t nEvents);
+    Bool_t ProjectEtaDeltaPdgPart(Container*     result,
+				  Int_t          nEvents,
+				  Double_t       tailDelta,
+				  Double_t       tailMax,
+				  const TString& pre,
+				  const TString& tit);
+    Bool_t ProjectEtaDeltaPdg(Container* result,
+			      Int_t      nEvents,
+			      Double_t   tailCut,
+			      Double_t   tailMax);
+    Bool_t ProjectEtaPdgIPz(Container*     result,
+			    TH1*           ipz,
+			    const TString& shn);
     const UChar_t fMask;
     const UChar_t fVeto;
     TH2*          fEtaIPz;       //!
     TH3*          fEtaDeltaIPz;  //!
+    TH3*          fEtaDeltaPdg;  //!
     TH3*          fEtaPdgIPz;    //! 
     TH2*          fEtaPdg;       //! 
     TH2*          fEtaPt;        //! 
@@ -619,8 +680,7 @@ public:
     
     ClassDef(Histos,1); 
   };    
-
-
+      
   //__________________________________________________________________
   /**
    * A centrality bin.  Here, we need 
@@ -647,6 +707,7 @@ public:
 	fSubs(0),
 	fLow(0),
 	fHigh(0),
+	fStatus(0),
 	fIPz(0),
 	fCent(0),
 	fCentIPz(0),
@@ -670,6 +731,7 @@ public:
       : Sub(o),
 	fSubs(0),
 	fLow(o.fLow),
+	fStatus(0),
 	fIPz(0),
 	fCent(0),
 	fCentIPz(0),
@@ -718,14 +780,21 @@ public:
 		      const TAxis& ipzAxis,
 		      const TAxis& deltaAxis);
     /** 
+     * Check if this is the MB "centrality" bin
+     * 
+     * @return True if MB bin 
+     */
+    Bool_t IsAllBin() const;
+    /** 
      * Check if we should process this event 
      * 
-     * @param cent Event centrality 
-     * @param ipz  Event Z-coordinate of the interaction 
+     * @param status Event status 
+     * @param cent   Event centrality 
+     * @param ipz    Event Z-coordinate of the interaction 
      * 
      * @return true if we should process the event 
      */
-    Bool_t Accept(Double_t cent, Double_t ipz);
+    Bool_t Accept(UInt_t status, Double_t cent, Double_t ipz);
     /** 
      * Process a single tracklet 
      * 
@@ -740,6 +809,11 @@ public:
 			   Double_t        ipz,
 			   UShort_t        signal,
 			   Double_t        weight);
+    /** 
+     * Tell bin we're done with the processing. 
+     * 
+     */
+    void Completed();
     /** 
      * Initialize this sub-component at the time of finalizing the
      * job.  Should find sum container in @a parent and extract data
@@ -798,8 +872,9 @@ public:
     Container*  fSubs;
     Double_t    fLow;
     Double_t    fHigh;
-    TH1*        fIPz;  //! 
-    TH1*        fCent; //!
+    TH1*        fStatus;  //! 
+    TH1*        fIPz;     //! 
+    TH1*        fCent;    //!
     TProfile*   fCentIPz; //! 
     Histos*     fMeasured; 
     Histos*     fInjection;
@@ -837,7 +912,23 @@ protected:
   virtual CentBin* MakeCentBin(Float_t c1, Float_t c2)
   {
     return new CentBin(c1, c2);
-  }
+  } 
+  /** 
+   * Create and initialize a centrality bin 
+   * 
+   * @param bin        Bin number 
+   * @param c1         Least centrality 
+   * @param c2         Largest centrality 
+   * @param existing   Possible existing container to initialize from 
+   * @param deltaAxis  Axis for @f$ \Delta @f$ 
+   *
+   * @return Pointer to bin object or null
+   */
+  virtual CentBin* InitCentBin(Int_t        bin,
+			       Float_t      c1,
+			       Float_t      c2,
+			       Container*   existing,
+			       const TAxis& deltaAxis);
   /* @} */
   
   // -----------------------------------------------------------------
@@ -847,15 +938,23 @@ protected:
    */
   virtual const char* GetBranchName() const { return "AliAODTracklets"; }
   /** 
+   * Calculate bit flag corresponding to the bin number 
+   * 
+   * @param bin Bin number 
+   * 
+   * @return Bit flag 
+   */
+  static UInt_t Bin2Flag(UInt_t bin);
+  /** 
    * Check event 
    * 
    * @param cent        On return, the event centrality 
    * @param ip          On return, the event interaction point 
    * @param tracklets   On return, the list of tracklets 
    * 
-   * @return true if all selections pass x5
+   * @return Bit mask of completed requirements
    */
-  Bool_t CheckEvent(Double_t&          cent,
+  UInt_t CheckEvent(Double_t&          cent,
 		    const AliVVertex*& ip,
 		    TClonesArray*&     tracklets);
   /** 
@@ -966,10 +1065,13 @@ protected:
    * 
    * @param tracklet Tracklet 
    * @param cent     Centrality 
+   * @param ipz      Z coordinate of IP
    * 
    * @return The weight - in this class always 1
    */
-  virtual Double_t LookupWeight(AliAODTracklet* tracklet, Double_t cent);
+  virtual Double_t LookupWeight(AliAODTracklet* tracklet,
+				Double_t        cent,
+				Double_t        ipz);
   /** 
    * Check if the tracklet passed is a signal tracklet 
    * 
@@ -990,11 +1092,15 @@ protected:
   /** 
    * Process tracklets of an event 
    * 
+   * @param status      The event status flags 
    * @param cent        Event centrality 
    * @param ip          Event interaction point 
    * @param tracklets   List of tracklets 
    */
-  void ProcessEvent(Double_t cent,const AliVVertex* ip,TClonesArray* tracklets);
+  void ProcessEvent(UInt_t            status,
+		    Double_t          cent,
+		    const AliVVertex* ip,
+		    TClonesArray*     tracklets);
   /* @} */
 
   // -----------------------------------------------------------------
@@ -1012,17 +1118,14 @@ protected:
   virtual Bool_t MasterFinalize(Container* results);
   /* @} */
 
-  // -----------------------------------------------------------------
-  /** Status of task */
-  enum {
-    kAll=1,          // Count all events
-    kEvent,          // Have event
-    kTracklets,      // Have tracklets
-    kTrigger,        // Have trigger 
-    kIP,             // Have IP
-    kCentrality,     // Have centrality
-    kCompleted       // Have completed
-  };
+  /** 
+   * Make status histogram 
+   * 
+   * @param container Container to add to 
+   * 
+   * @return The status histogram created 
+   */
+  static TH1* MakeStatus(Container* container);
   
   // -----------------------------------------------------------------
   /** Container */
@@ -1037,6 +1140,18 @@ protected:
   TH1* fStatus;    //! 
   /** Histogram of all eta phi */
   TH2* fEtaPhi;    //!
+  /** Average good number of tracklets (weighed) vs total (unweighed) */
+  TProfile* fNBareVsGood;
+  /** Average fake number of tracklets (weighed) vs total (unweighed) */
+  TProfile* fNBareVsFake;
+  /** Average good number of tracklets (weighed) vs total (weighed) */
+  TProfile* fNTrackletVsGood;
+  /** Average fake number of tracklets (weighed) vs total (weighed) */
+  TProfile* fNTrackletVsFake;
+  /** Average good number of tracklets (weighed) vs generated tracks */
+  TProfile* fNGeneratedVsGood;
+  /** Average fake number of tracklets (weighed) vs generated tracks */
+  TProfile* fNGeneratedVsFake;  
   /** Histogram of centrality, nTracklets correlation */
   TProfile* fCentTracklets; //!
   /** Histogram of centrality vs average mult estimator */
@@ -1223,7 +1338,8 @@ public:
   AliTrackletAODWeightedMCdNdeta()
     : AliTrackletAODMCdNdeta(),
       fWeights(0),
-      fEtaWeight(0)
+      fEtaWeight(0),
+      fWeightCorr(0)
   {}
   /** 
    * Named - user - constructor
@@ -1231,7 +1347,8 @@ public:
   AliTrackletAODWeightedMCdNdeta(const char* name)
     : AliTrackletAODMCdNdeta(name),
       fWeights(0),
-      fEtaWeight(0)
+      fEtaWeight(0),
+      fWeightCorr(0)
   {}
   /**
    * Copy constructor 
@@ -1241,7 +1358,8 @@ public:
   AliTrackletAODWeightedMCdNdeta(const AliTrackletAODWeightedMCdNdeta& o)
     : AliTrackletAODMCdNdeta(o),
       fWeights(0),
-      fEtaWeight(0)
+      fEtaWeight(0),
+      fWeightCorr(0)
   {}
   /**
    * Destructor 
@@ -1273,7 +1391,39 @@ public:
    * 
    * @param w 
    */
-  void SetWeights(AliTrackletWeights* w) { fWeights = w; }
+  void SetWeights(AliTrackletBaseWeights* w) { fWeights = w; }
+  /** 
+   * Whether to use square root of square (product) weights 
+   * 
+   * @param mode If true, take square root of square (product) weights
+   */
+  void SetWeightCalc(UChar_t mode=0) {
+    Info("SetWeightCalc", "Use=%d", mode);
+    if (fWeights) fWeights->SetCalc(mode);}
+  /** 
+   * Set the tracklet type mask to use on weights 
+   * 
+   * @param mask Tracklet type mask 
+   */
+  void SetWeightMask(UChar_t mask=0xFF) {
+    Info("SetWeightMask", "mask=0x%x", mask);
+    if (fWeights) fWeights->SetMask(mask); }
+  /** 
+   * Set the tracklet type veto to use on weights 
+   * 
+   * @param veto Tracklet type veto 
+   */
+  void SetWeightVeto(UChar_t veto=0x0) {
+    Info("SetWeightVeto", "veto=0x%x", veto);
+    if (fWeights) fWeights->SetVeto(veto); }
+  /** 
+   * Inverse the weights calculated.  That is, if this option is
+   * enabled, then the weight used is @f$1/w@f$ where @f$w@f$ is the
+   * normal weight.
+   * 
+   * @param inv If true, inverse weights 
+   */
+  void SetWeightInverse(Bool_t inv) { if (fWeights) fWeights->SetInverse(inv); }
   /* @} */
 protected:
   // -----------------------------------------------------------------
@@ -1292,10 +1442,13 @@ protected:
    * 
    * @param tracklet Tracklet 
    * @param cent     Centrality 
+   * @param ipz      Z coordinate of IP
    * 
    * @return The weight - in this class always 1
    */
-  virtual Double_t LookupWeight(AliAODTracklet* tracklet, Double_t cent);
+  virtual Double_t LookupWeight(AliAODTracklet* tracklet,
+				Double_t        cent,
+				Double_t        ipz);
   /* @} */
   // -----------------------------------------------------------------
   /** 
@@ -1312,9 +1465,9 @@ protected:
   Bool_t MasterFinalize(Container* results);
   /* @} */
   // -----------------------------------------------------------------
-  AliTrackletWeights* fWeights;
-  TProfile2D*         fEtaWeight;
-  
+  AliTrackletBaseWeights* fWeights;
+  TProfile2D*             fEtaWeight;  //! 
+  TH2*                    fWeightCorr;    //! 
   ClassDef(AliTrackletAODWeightedMCdNdeta,1); 
 };
 
@@ -1327,6 +1480,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta()
     fCent(0),
     fStatus(0),
     fEtaPhi(0),
+    fNBareVsGood(0),
+    fNBareVsFake(0),
+    fNTrackletVsGood(0),
+    fNTrackletVsFake(0),
+    fNGeneratedVsGood(0),
+    fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
     fCentMethod(""),
@@ -1353,6 +1512,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
     fCent(0),
     fStatus(0),
     fEtaPhi(0),
+    fNBareVsGood(0),
+    fNBareVsFake(0),
+    fNTrackletVsGood(0),
+    fNTrackletVsFake(0),
+    fNGeneratedVsGood(0),
+    fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
     fCentMethod("V0M"),
@@ -1387,6 +1552,12 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const AliTrackletAODdNdeta& o)
     fCent(0),
     fStatus(0),
     fEtaPhi(0),
+    fNBareVsGood(0),
+    fNBareVsFake(0),
+    fNTrackletVsGood(0),
+    fNTrackletVsFake(0),
+    fNGeneratedVsGood(0),
+    fNGeneratedVsFake(0),    
     fCentTracklets(0),
     fCentEst(0),
     fCentMethod(o.fCentMethod),
@@ -1510,6 +1681,7 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
   Printf(" %22s: %f",   "tail Delta",	           fTailDelta);
   Printf(" %22s: %f",   "tail maximum",	           tailMax);
   Printf(" %22s: %f%%", "Absolute least c",        fAbsMinCent);
+  Printf(" %22s: %s (%d)", "Centrality estimator", fCentMethod.Data(),fCentIdx);
   PrintAxis(fEtaAxis);
   PrintAxis(fPhiAxis);
   PrintAxis(fIPzAxis,1,"IPz");
@@ -1577,9 +1749,10 @@ void AliTrackletAODdNdeta::Histos::Print(Option_t*) const
   char cMask[7]; Bits2String(fMask, cMask);
   char cVeto[7]; Bits2String(fVeto, cVeto);  
   Printf("  Histograms: %s", fName.Data());
-  Printf("   Mask:         0x%02x (%s)", fMask, cMask);
-  Printf("   Veto:         0x%02x (%s)", fVeto, cVeto);
-  Printf("   Delta:        %s", fEtaDeltaIPz ? "yes" : "no");
+  Printf("   Mask:          0x%02x (%s)", fMask, cMask);
+  Printf("   Veto:          0x%02x (%s)", fVeto, cVeto);
+  Printf("   Delta:         %s", fEtaDeltaIPz ? "yes" : "no");
+  Printf("   Delta per PDG: %s", fEtaDeltaPdg ? "yes" : "no");
 }
 
   
@@ -1605,9 +1778,43 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fContainer->SetName(Form("%sSums", GetName()));
   fContainer->SetOwner();
 
+  Bool_t save = TH1::GetDefaultSumw2();
+  TH1::SetDefaultSumw2();
   fIPz    = Make1D(fContainer, "ipz",  "", kMagenta+2, 20, fIPzAxis);
   fCent   = Make1D(fContainer, "cent", "", kMagenta+2, 20, fCentAxis);
   fEtaPhi = Make2D(fContainer, "etaPhi","",kMagenta+2, 20, fEtaAxis,fPhiAxis);
+
+  TAxis trackletAxis(1000, 0, 10000);
+  FixAxis(trackletAxis, "#it{N}_{tracklets}");
+  fNBareVsGood  = Make1P(fContainer, "nBareVsGood", "Good",
+			 kGreen+2, 20, trackletAxis);
+  fNBareVsFake  = Make1P(fContainer, "nBareVsFake", "Fake",
+			 kRed+2, 20, trackletAxis);
+  fNBareVsGood->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNBareVsFake->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNBareVsGood->SetStats(0);
+  fNBareVsFake->SetStats(0);
+
+  fNTrackletVsGood  = Make1P(fContainer, "nTrackletVsGood", "Good",
+			     kGreen+2, 20, trackletAxis);
+  fNTrackletVsFake  = Make1P(fContainer, "nTrackletVsFake", "Fake",
+			     kRed+2, 20, trackletAxis);
+  fNTrackletVsGood->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNTrackletVsFake->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNTrackletVsGood->SetStats(0);
+  fNTrackletVsFake->SetStats(0);
+  
+  TAxis generatedAxis(1000, 0, 15000);
+  FixAxis(generatedAxis, "#it{N}_{generated,|#eta|<2}");
+  fNGeneratedVsGood = Make1P(fContainer, "nGeneratedVsGood", "Good",
+			     kGreen+2, 24, generatedAxis);
+  fNGeneratedVsFake = Make1P(fContainer, "nGeneratedVsFake", "Fake",
+			     kRed+2, 24, generatedAxis);
+  fNGeneratedVsGood->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNGeneratedVsFake->SetYTitle("#LT#it{N}_{tracklet}#GT");
+  fNGeneratedVsGood->SetStats(0);
+  fNGeneratedVsFake->SetStats(0);
+
   fCentTracklets = new TProfile("centTracklets",
 				"Mean number of tracklets per centrality",
 				1050, 0, 105);
@@ -1620,28 +1827,9 @@ Bool_t AliTrackletAODdNdeta::WorkerInit()
   fContainer->Add(fCentTracklets);
   fCentEst = Make1P(fContainer,"centEstimator","",kMagenta+2, 20, fCentAxis);
   fCentEst->SetYTitle(Form("#LT%s%GT",fCentMethod.Data()));
+  TH1::SetDefaultSumw2(save);
 
-  fStatus = new TH1F("status", "Status of task",
-		     kCompleted, .5, kCompleted+.5);
-  fStatus->SetMarkerSize(2);
-  fStatus->SetMarkerColor(kMagenta+2);
-  fStatus->SetLineColor(kMagenta+2);
-  fStatus->SetFillColor(kMagenta+2);
-  fStatus->SetFillStyle(1001);
-  fStatus->SetBarOffset(0.1);
-  fStatus->SetBarWidth(0.4);
-  fStatus->SetDirectory(0);
-  fStatus->SetStats(0);
-  fStatus->SetXTitle("Event have");
-  fStatus->SetYTitle("# Events");
-  fStatus->GetXaxis()->SetBinLabel(kAll,            "Been seen");
-  fStatus->GetXaxis()->SetBinLabel(kEvent,          "Event data");
-  fStatus->GetXaxis()->SetBinLabel(kTracklets,      "Tracklets");
-  fStatus->GetXaxis()->SetBinLabel(kTrigger,        "Trigger");
-  fStatus->GetXaxis()->SetBinLabel(kIP,             "IP");
-  fStatus->GetXaxis()->SetBinLabel(kCentrality,     "Centrality");
-  fStatus->GetXaxis()->SetBinLabel(kCompleted,      "Completed");
-  fContainer->Add(fStatus);
+  fStatus = MakeStatus(fContainer);
 
   typedef TParameter<double> DP;
   typedef TParameter<bool>   BP;
@@ -1676,11 +1864,39 @@ Bool_t AliTrackletAODWeightedMCdNdeta::WorkerInit()
     AliFatal("No weights set!");
     return false;
   }
-  
+
+  TAxis wAxis(100,0,10);
+  FixAxis(wAxis,"#it{w}_{i}");
   fEtaWeight = Make2P(fContainer, "etaWeight", "#LTw#GT", kYellow+2, 24,
 		      fEtaAxis, fCentAxis);
+  fWeightCorr = Make2D(fContainer, "weightCorr", "w_{1} vs w_{2}",
+		       kCyan+2, 24, wAxis, wAxis);
   fWeights->Store(fContainer);
   return true;
+}
+//____________________________________________________________________
+AliTrackletAODdNdeta::CentBin*
+AliTrackletAODdNdeta::InitCentBin(Int_t        bin,
+				  Float_t      c1,
+				  Float_t      c2,
+				  Container*   existing,
+				  const TAxis& deltaAxis)
+{
+  CentBin* ret  = MakeCentBin(c1, c2);
+  Bool_t   ok   = true;
+  if (!existing) 
+    ok = ret->WorkerInit(fContainer,fEtaAxis,fIPzAxis,deltaAxis);
+  else
+    ok = ret->FinalizeInit(existing);
+  if (!ok) {
+    AliWarningF("Failed to initialize bin %s", ret->GetName());
+    delete ret;
+    return 0;
+  }
+  ret->SetDebug(DebugLevel());
+  fCentBins->AddAt(ret, bin);
+  return ret;
+
 }
 //____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::InitCentBins(Container* existing)
@@ -1693,42 +1909,22 @@ Bool_t AliTrackletAODdNdeta::InitCentBins(Container* existing)
   fCentBins->SetName("centralityBins");
   fCentBins->SetOwner();
 
-  TAxis    deltaAxis (Int_t(5*fMaxDelta),0,         fMaxDelta);
+  TAxis    deltaAxis (Int_t(5*fMaxDelta),0,fMaxDelta);
   FixAxis(deltaAxis,
 	  "#Delta=[(#Delta#phi-#delta#phi)/#sigma_{#phi}]^{2}+"
 	  "[#Delta#thetasin^{-2}(#theta)/#sigma_{#theta}]^{2}");
 
   // Add min-bias bin
-  Bool_t   ret  = true;
-  CentBin* bin  = MakeCentBin(0, 100);
-  if (!existing) 
-    ret = bin->WorkerInit(fContainer,fEtaAxis,fIPzAxis,deltaAxis);
-  else
-    ret = bin->FinalizeInit(existing);
-  if (!ret) {
-    AliWarningF("Failed to initialize bin %s", bin->GetName());
-    return false;
-  }
-  bin->SetDebug(DebugLevel());
-  fCentBins->AddAt(bin, 0);
+  if (!InitCentBin(0,0,0,existing,deltaAxis)) return false;
 
   // Add other bins
   Int_t nCentBins = fCentAxis.GetNbins();
   for (Int_t i = 1; i <= nCentBins; i++) {
     Float_t  c1 = fCentAxis.GetBinLowEdge(i);
     Float_t  c2 = fCentAxis.GetBinUpEdge(i);
-    bin         = MakeCentBin(c1, c2);
-    if (!existing) 
-      ret = bin->WorkerInit(fContainer,fEtaAxis,fIPzAxis,deltaAxis);
-    else
-      ret = bin->FinalizeInit(existing);
-    if (!ret) {
-      AliWarningF("Failed to initialize %s", bin->GetName());
-      return false;
-    }
-    bin->SetDebug(DebugLevel());
-    fCentBins->AddAt(bin, i);
+    if (!InitCentBin(i, c1, c2, existing, deltaAxis)) return false;
   }
+  if (!InitCentBin(nCentBins+1, 0, 100, existing, deltaAxis)) return false;
   return true;
 }
 
@@ -1738,15 +1934,17 @@ AliTrackletAODdNdeta::CentBin::CentBin(Double_t c1, Double_t c2)
     fSubs(0),
     fLow(c1),
     fHigh(c2),
+    fStatus(0),
     fIPz(0),
     fCent(0),
     fCentIPz(0),
     fMeasured(0),
     fInjection(0)
 {
-  fName.Form("cent%03dd%02d_%03dd%02d",
-	     Int_t(fLow), Int_t(fLow*100)%100,
-	     Int_t(fHigh), Int_t(fHigh*100)%100);
+  if (c1 >= c2)
+    fName = "all";
+  else 
+    fName = AliTrackletAODUtils::CentName(c1, c2);
   fMeasured  = MakeHistos("measured", kRed+2, 20,
 			  kMeasuredMask, // No requirements, just veto
 			  kMeasuredVeto);
@@ -1819,6 +2017,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::WorkerInit(Container* parent,
   
   TAxis centAxis(20, fLow, fHigh);
   FixAxis(centAxis, "Centrality [%]");
+  fStatus    = MakeStatus(fContainer);
   fCent      = Make1D(fContainer,"cent","Centrality [%]",
 		      kMagenta+2,20,centAxis);
   fIPz       = Make1D(fContainer,"ipz","IP_{#it{z}} [cm]",kRed+2,20,ipzAxis);
@@ -1836,7 +2035,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::WorkerInit(Container* parent,
 }
 //____________________________________________________________________
 Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
-						const TAxis& etaAxis,
+	  					const TAxis& etaAxis,
 						const TAxis& ipzAxis,
 						const TAxis& deltaAxis)
 {
@@ -1874,6 +2073,11 @@ Bool_t AliTrackletAODdNdeta::Histos::WorkerInit(Container* parent,
 		    "Primary transverse momentum",
 		    kCyan+2, 30, etaAxis, ptAxis);
   }
+  if (IsPrimary() || IsSecondary() || IsCombinatoric()) {
+    fEtaDeltaPdg = Make3D(fContainer, "etaDeltaPdg",
+			  "#Delta by primary particle type",
+			  kMagenta, 22, etaAxis, deltaAxis, PdgAxis());
+  }
   
   SetAttr(fColor, fStyle);
   return true;
@@ -1892,6 +2096,12 @@ void AliTrackletAODdNdeta::Histos::SetAttr(Color_t c, Style_t m)
     fEtaDeltaIPz->SetMarkerColor(c);
     fEtaDeltaIPz->SetLineColor(c);
     fEtaDeltaIPz->SetFillColor(c);
+  }
+  if (fEtaDeltaPdg) {
+    fEtaDeltaPdg->SetMarkerStyle(m);
+    fEtaDeltaPdg->SetMarkerColor(c);
+    fEtaDeltaPdg->SetLineColor(c);
+    fEtaDeltaPdg->SetFillColor(c);
   }
   if (fEtaPdgIPz) {
     fEtaPdgIPz->SetMarkerStyle(m);
@@ -1921,24 +2131,58 @@ AliTrackletAODdNdeta::UserExec(Option_t*)
   Double_t          cent      = -1;
   const AliVVertex* ip        = 0;
   TClonesArray*     tracklets = 0;
-  if (!CheckEvent(cent, ip, tracklets)) {
+  UInt_t            status    = CheckEvent(cent, ip, tracklets);
+  if ((status & kOKEvent) != kOKEvent) {
     AliWarningF("Event didn't pass %f, %p, %p", cent, ip, tracklets);
-    Printf("Argh, check data failed %f, %p, %p", cent, ip, tracklets);
     return;
   }
   if (DebugLevel() > 0) Printf("Got centrality=%f ipZ=%f %d tracklets",
 			       cent, ip->GetZ(), tracklets->GetEntriesFast());
-  ProcessEvent(cent, ip, tracklets);
+  ProcessEvent(status, cent, ip, tracklets);
 
   PostData(1,fContainer);
   fStatus->Fill(kCompleted);
 }
 
 //____________________________________________________________________
-Bool_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
+UInt_t AliTrackletAODdNdeta::Bin2Flag(UInt_t bin)
+{
+  return (1 << (bin-1));
+}
+
+//____________________________________________________________________
+TH1* AliTrackletAODdNdeta::MakeStatus(Container* container)
+{
+  TH1* status = new TH1F("status", "Status of task",
+			 kCompleted, .5, kCompleted+.5);
+  status->SetMarkerSize(2);
+  status->SetMarkerColor(kMagenta+2);
+  status->SetLineColor(kMagenta+2);
+  status->SetFillColor(kMagenta+2);
+  status->SetFillStyle(1001);
+  status->SetBarOffset(0.1);
+  status->SetBarWidth(0.4);
+  status->SetDirectory(0);
+  status->SetStats(0);
+  status->SetXTitle("Event have");
+  status->SetYTitle("# Events");
+  status->GetXaxis()->SetBinLabel(kAll,            "Been seen");
+  status->GetXaxis()->SetBinLabel(kEvent,          "Event data");
+  status->GetXaxis()->SetBinLabel(kTracklets,      "Tracklets");
+  status->GetXaxis()->SetBinLabel(kTrigger,        "Trigger");
+  status->GetXaxis()->SetBinLabel(kIP,             "IP");
+  status->GetXaxis()->SetBinLabel(kCentrality,     "Centrality");
+  status->GetXaxis()->SetBinLabel(kCompleted,      "Completed");
+  container->Add(status);
+  return status;
+}
+
+//____________________________________________________________________
+UInt_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
 					const AliVVertex*& ip,
 					TClonesArray*&     tracklets)
 {
+  UInt_t ret = Bin2Flag(kAll);
   // Count all events 
   fStatus->Fill(kAll);
 
@@ -1946,36 +2190,43 @@ Bool_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
   AliVEvent* event = InputEvent();
   if (!event) {
     AliWarning("No event");
-    return false;
+    return ret;
   }
+  ret |= Bin2Flag(kEvent);
   fStatus->Fill(kEvent);
 
   // Check if we have the tracklets 
   tracklets = FindTracklets(event);
-  if (!tracklets) return false;
+  if (!tracklets) return ret;
+  ret |= Bin2Flag(kTracklets);
   fStatus->Fill(kTracklets);
     
   // Check if event was triggered 
   Bool_t trg = FindTrigger();
-  if (!trg) return false;
+  if (!trg) return ret;
+  ret |= Bin2Flag(kTrigger);
   fStatus->Fill(kTrigger);
     
   // Check the interaction point 
   ip = FindIP(event);
-  if (!ip) return false;
+  if (!ip) return ret;
+  ret |= Bin2Flag(kIP);
   fStatus->Fill(kIP);
 
   // Check the centrality
   Int_t nTracklets = 0;
   cent = FindCentrality(event, nTracklets);
-  if (cent < 0) return false;
-  fStatus->Fill(kCentrality);
-
+  // Do not fail on missing centrality 
+  if (cent >= 0) {
+    ret |= Bin2Flag(kCentrality);
+    fStatus->Fill(kCentrality);
+  }
+  
   fIPz->Fill(ip->GetZ());
   fCent->Fill(cent);
   fCentTracklets->Fill(cent, nTracklets); 
   
-  return true;
+  return ret;
 }
 
 //____________________________________________________________________
@@ -2191,22 +2442,25 @@ Double_t AliTrackletAODdNdeta::FindCentrality(AliVEvent* event,
 
 //____________________________________________________________________
 Double_t AliTrackletAODdNdeta::LookupWeight(AliAODTracklet* tracklet,
-					    Double_t        cent)
+					    Double_t        cent,
+					    Double_t        ipz)
 {
   return 1;
 }
 //____________________________________________________________________
 Double_t AliTrackletAODWeightedMCdNdeta::LookupWeight(AliAODTracklet* tracklet,
-						      Double_t        cent)
+						      Double_t        cent,
+						      Double_t        ipz)
 {
   // We don't check for weights, as we must have them to come this far 
   // if (!fWeights) {
   // AliWarning("No weights defined");
   // return 1;
   // }
-  Double_t w = fWeights->LookupWeight(tracklet, cent);
-  if (tracklet->IsMeasured())
+  Double_t w = fWeights->LookupWeight(tracklet, cent, ipz, fWeightCorr);
+  if (tracklet->IsMeasured()) 
     fEtaWeight->Fill(tracklet->GetEta(), cent, w);
+    
   // printf("Looking up weight of tracklet -> %f ", w);
   // tracklet->Print();
   return w;
@@ -2228,44 +2482,98 @@ UShort_t AliTrackletAODdNdeta::CheckTracklet(AliAODTracklet* tracklet) const
 
     
 //____________________________________________________________________
-void AliTrackletAODdNdeta::ProcessEvent(Double_t          cent,
+void AliTrackletAODdNdeta::ProcessEvent(UInt_t            status,
+					Double_t          cent,
 					const AliVVertex* ip,
 					TClonesArray*     tracklets)
 {
   // Figure out which centrality bins to fill 
+  Double_t ipz        = (ip ? ip->GetZ() : -1000);
   Int_t    nAcc = 0;
   TIter    nextAcc(fCentBins);
   CentBin* bin = 0;
   TList    toRun;
   while ((bin = static_cast<CentBin*>(nextAcc()))) {
-    if (!bin->Accept(cent, ip->GetZ())) continue; // Not in range for this bin
+    // Not in range for this bin
+    if (!bin->Accept(status, cent, ipz)) continue; 
     toRun.Add(bin);
     nAcc++;
   }
   // If we have no centrality bins  to fill, we return immediately 
   if (nAcc <= 0) return;
 
-  AliAODTracklet* tracklet = 0;
+  Double_t        nBare      = 0;
+  Double_t        nMeasured  = 0;
+  Double_t        nGenerated = 0;
+  Double_t        nGood      = 0;
+  Double_t        nFake      = 0;
+  AliAODTracklet* tracklet   = 0;
   TIter           nextTracklet(tracklets);
   while ((tracklet = static_cast<AliAODTracklet*>(nextTracklet()))) {
-    Double_t weight = LookupWeight(tracklet, cent);
+    Double_t weight = LookupWeight(tracklet, cent, ipz);
     UShort_t signal = CheckTracklet(tracklet);
     if (signal) fEtaPhi->Fill(tracklet->GetEta(), tracklet->GetPhi());
+    if (tracklet->IsMeasured() && TMath::Abs(tracklet->GetEta()) < 0.7) {
+      nMeasured += weight;
+      nBare     ++;
+      if      (tracklet->IsCombinatorics()) nFake += weight;
+      else                                  nGood += weight;
+    }
+    else if (tracklet->IsGenerated() &&
+	     !tracklet->IsNeutral() &&
+	     TMath::Abs(tracklet->GetEta()) <= 1) nGenerated ++; // += weight;
     TIter nextBin(&toRun);
     while ((bin = static_cast<CentBin*>(nextBin()))) {
       bin->ProcessTracklet(tracklet, ip->GetZ(), signal, weight);
     }    
   }
+  TIter nextBin(&toRun);
+  while ((bin = static_cast<CentBin*>(nextBin()))) {
+    bin->Completed();
+  }    
+  fNBareVsFake     ->Fill(nBare,      nFake);
+  fNBareVsGood     ->Fill(nBare,      nGood);
+  fNTrackletVsFake ->Fill(nMeasured,  nFake);
+  fNTrackletVsGood ->Fill(nMeasured,  nGood);
+  fNGeneratedVsFake->Fill(nGenerated, nFake);
+  fNGeneratedVsGood->Fill(nGenerated, nGood);
 }    
 
 //____________________________________________________________________
-Bool_t AliTrackletAODdNdeta::CentBin::Accept(Double_t cent, Double_t ipz)
+Bool_t AliTrackletAODdNdeta::CentBin::IsAllBin() const
 {
-  if (cent < fLow || cent >= fHigh) return false;
-  fCent   ->Fill(cent);
-  fIPz    ->Fill(ipz);
-  fCentIPz->Fill(ipz, cent);
-  return true;
+  return fLow >= fHigh;
+}
+//____________________________________________________________________
+Bool_t AliTrackletAODdNdeta::CentBin::Accept(UInt_t   status,
+					     Double_t cent,
+					     Double_t ipz)
+{
+  Bool_t centOK = (IsAllBin() ||
+		   (status & Bin2Flag(kCentrality) &&
+		    cent >= fLow && cent < fHigh));
+  // We get out here already as we're not in this centrality bin 
+  if (!centOK) return false;
+  fStatus->Fill(kAll);
+  if (status & Bin2Flag(kEvent))     fStatus->Fill(kEvent);
+  if (status & Bin2Flag(kTracklets)) fStatus->Fill(kTracklets);
+  if (status & Bin2Flag(kTrigger))
+    fStatus->Fill(kTrigger);
+  else
+    return false; // In case we have no trigger
+  if (status & Bin2Flag(kCentrality)) {
+    fStatus->Fill(kCentrality);  
+    fCent->Fill(cent);
+  }
+  // We explicity check the IP status here, since we need that to
+  // calculate the per-bin vertex efficiency
+  if (status & Bin2Flag(kIP)) {
+    fStatus ->Fill(kIP);
+    fIPz    ->Fill(ipz);
+    fCentIPz->Fill(ipz, cent);
+    return true;
+  }
+  return false;
 }
 
 //____________________________________________________________________
@@ -2290,10 +2598,11 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
 {
   if (!fEtaIPz && !fEtaDeltaIPz) return true;
   // Get tracklet info 
-  Double_t eta    = tracklet->GetEta();
-  Double_t delta  = tracklet->GetDelta();
-  UChar_t  flags  = tracklet->GetFlags();
-  Int_t    pdgBin = -1;
+  Double_t eta     = tracklet->GetEta();
+  Double_t delta   = tracklet->GetDelta();
+  UChar_t  flags   = tracklet->GetFlags();
+  Int_t    pdgBin  = -1;
+  Int_t    pdgBin2 = -1;
 
   // For debugging 
   char m[7];
@@ -2307,12 +2616,16 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   }
 
   // If we need the PDG code, get that here
-  if (fEtaPdgIPz || fEtaPdg) pdgBin = PdgBin(tracklet->GetParentPdg());
+  if (fEtaPdgIPz || fEtaPdg || fEtaDeltaPdg) {
+    pdgBin  = PdgBin(tracklet->GetParentPdg());
+    if (tracklet->IsCombinatorics())
+      pdgBin2 = PdgBin(tracklet->GetParentPdg(true));
+  }
   
   // If we have the eta-vs-pdg histogram, we should fill before the
   // veto, which filters out the neutral particles.
   if (fEtaPdg) fEtaPdg->Fill(eta, pdgBin, weight);
-  
+
   // Check the veto mask 
   if (fVeto != 0 && (flags & fVeto) != 0) {
     if (fDebug > 3) Printf("%14s (----,0x%02x) %6s %7s (0x%02x) ",
@@ -2323,6 +2636,13 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   if (fDebug > 3) Printf("%14s (0x%02x,0x%02x) %6s %7s (0x%02x) ",
 			 GetName(), fMask, fVeto, "accept", m, flags);
   
+  // Fill PDG,eta dependent Delta distributions
+  if (fEtaDeltaPdg) {
+    fEtaDeltaPdg                ->Fill(eta, delta, pdgBin,  weight);
+    // Fill both particles 
+    if (pdgBin2 >= 0) fEtaPdgIPz->Fill(eta, delta, pdgBin2, weight);
+  }
+  
   // Both reguirements (Delta < cut, dPhi < cut)
   if (fEtaIPz && (signal == 0x3))     fEtaIPz->Fill(eta, ipZ, weight);
   // Just check dPhi
@@ -2332,10 +2652,9 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   if (!fEtaPdgIPz && !fEtaPt) return true;
 
   if (fEtaPdgIPz) {
-    fEtaPdgIPz->Fill(eta, pdgBin, ipZ, weight);
-    if (tracklet->IsCombinatorics())
-      // Fill both particles 
-      fEtaPdgIPz->Fill(eta, PdgBin(tracklet->GetParentPdg(true)), ipZ, weight);
+    fEtaPdgIPz                  ->Fill(eta, pdgBin,  ipZ, weight);
+    // Fill both particles 
+    if (pdgBin2 >= 0) fEtaPdgIPz->Fill(eta, pdgBin2, ipZ, weight);
   }
 
   if (fEtaPt) fEtaPt ->Fill(eta, tracklet->GetParentPt(), weight);
@@ -2343,14 +2662,24 @@ Bool_t AliTrackletAODdNdeta::Histos::ProcessTracklet(AliAODTracklet* tracklet,
   return true;
 }
 
+//____________________________________________________________________
+void AliTrackletAODdNdeta::CentBin::Completed()
+{
+  fStatus->Fill(kCompleted);
+}
 
 //____________________________________________________________________
 void 
 AliTrackletAODdNdeta::Terminate(Option_t*)
 {
+  TString resName; resName.Form("%sResults",GetName());
+  if (GetOutputData(2)) {
+    Warning("Terminate", "Already have a result container, making a new one");
+    resName.Append("New");
+  }
   Container* results = new Container;
-  results->SetName(Form("%sResults",GetName()));
-  results->SetOwner();
+  results->SetName(resName);
+  results->SetOwner();  
 
   Print("");
   fContainer = static_cast<Container*>(GetOutputData(1));
@@ -2378,10 +2707,11 @@ AliTrackletAODdNdeta::Terminate(Option_t*)
 Bool_t AliTrackletAODdNdeta::CentBin::FinalizeInit(Container* parent)
 {
   fContainer     = GetC(parent, fName);
+  fStatus        = GetH1(fContainer, "status");
   fCent          = GetH1(fContainer, "cent");
   fIPz           = GetH1(fContainer, "ipz");
   fCentIPz       = GetP1(fContainer, "centIpz");
-  if (!fContainer || !fCent || !fIPz) return false;
+  if (!fContainer || !fStatus || !fCent || !fIPz) return false;
   TIter next(fSubs);
   Histos* h = 0;
   while ((h = static_cast<Histos*>(next()))) 
@@ -2394,6 +2724,7 @@ Bool_t AliTrackletAODdNdeta::Histos::FinalizeInit(Container* parent)
   fContainer   = GetC(parent, fName);
   fEtaIPz      = GetH2(fContainer, "etaIPz",      false); // No complaints
   fEtaDeltaIPz = GetH3(fContainer, "etaDeltaIPz", false);
+  fEtaDeltaPdg = GetH3(fContainer, "etaDeltaPdg", false);
   fEtaPdgIPz   = GetH3(fContainer, "etaPdgIPz",   false);
   fEtaPdg      = GetH2(fContainer, "etaPdg",      false);
   fEtaPt       = GetH2(fContainer, "etaPt",       false);
@@ -2457,12 +2788,21 @@ Bool_t AliTrackletAODWeightedMCdNdeta::MasterFinalize(Container* results)
 
   TObject* o = fContainer->FindObject("etaWeight");
   if (o && o->IsA()->InheritsFrom(TH1::Class())) {
-    TH1* etaWeight = static_cast<TH1*>(o->Clone());
-    etaWeight->SetDirectory(0);
-    results->Add(etaWeight);
+    TH1* h = static_cast<TH1*>(o->Clone());
+    h->SetDirectory(0);
+    results->Add(h);
   }
   else {
     AliWarningF("Object %p (etaWeight) is not a TH1 or not found",o);
+  }
+  o = fContainer->FindObject("weightCorr");
+  if (o && o->IsA()->InheritsFrom(TH1::Class())) {
+    TH1* h = static_cast<TH1*>(o->Clone());
+    h->SetDirectory(0);
+    results->Add(h);
+  }
+  else {
+    AliWarningF("Object %p (weightCorr) is not a TH1 or not found",o);
   }
   if (!fWeights) return true;
 
@@ -2484,6 +2824,16 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
   result->SetOwner(true);
   parent->Add(result);
 
+  TH1* status = static_cast<TH1*>(CloneAndAdd(result, fStatus));
+  status->Scale(1./status->GetBinContent(kAll));
+
+  Double_t   trigEff = status->GetBinContent(kTrigger);
+  Double_t   vtxEff  = status->GetBinContent(kIP) / trigEff;
+  typedef TParameter<double> DP;
+
+  result->Add(new DP("triggerEfficiency", trigEff));
+  result->Add(new DP("ipEfficiency",      vtxEff));
+  
   Double_t   nEvents = fIPz->GetEntries();
   // Copy ipZ histogram and scale by number of events 
   TH1* ipZ = static_cast<TH1*>(CloneAndAdd(result, fIPz));
@@ -2492,6 +2842,7 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
   TH1* cent = static_cast<TH1*>(CloneAndAdd(result, fCent));
   cent->Scale(1./nEvents);
 
+				  
   CloneAndAdd(result, fCentIPz);
 
   Container* measCont = 0;
@@ -2523,6 +2874,512 @@ Bool_t AliTrackletAODdNdeta::CentBin::MasterFinalize(Container* parent,
 
 //____________________________________________________________________
 Bool_t 
+AliTrackletAODdNdeta::Histos::ProjectEtaPdg(Container* result,
+					    Int_t      nEvents)
+{
+  // Scale distribution of PDGs to number of events and bin width
+  if (!fEtaPdg) return true;
+
+  
+  TH2* etaPdg = static_cast<TH2*>(fEtaPdg->Clone());
+  etaPdg->SetDirectory(0);
+  etaPdg->Scale(1. / nEvents, "width");
+  result->Add(etaPdg);
+  
+  // Loop over PDG types and create 2D and 1D distributions 
+  TAxis*     yaxis  = etaPdg->GetYaxis();
+  Int_t      first  = yaxis->GetFirst();
+  Int_t      last   = yaxis->GetLast();
+  THStack*   pdgs   = new THStack("all","");
+  THStack*   toPion = new THStack("toPion", "");
+  THStack*   toAll  = new THStack("toAll", "");
+  TH1*       pion   = 0;
+  Container* pdgOut = new Container();
+  pdgOut->SetName("mix");
+  result->Add(pdgOut);
+  pdgOut->Add(pdgs);
+  pdgOut->Add(toPion);
+  pdgOut->Add(toAll);
+
+  TH1* all = static_cast<TH1*>(etaPdg->ProjectionX("total",
+						   1,etaPdg->GetNbinsY()));
+  all->SetDirectory(0);
+  all->SetName("total");
+  all->SetTitle("All");
+  all->SetYTitle(Form("d#it{N}_{%s}/d#eta", "all"));
+  all->SetFillColor(kBlack);
+  all->SetMarkerColor(kBlack);
+  all->SetLineColor(kBlack);
+  all->SetMarkerStyle(20);
+  all->SetFillStyle(0);
+  all->SetFillColor(0);
+  all->Reset();
+  pdgs->Add(all);
+  for (Int_t i = 1; i <= etaPdg->GetNbinsY(); i++) {
+    Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
+    TString nme;
+    Style_t sty;
+    Color_t col;
+    PdgAttr(pdg, nme, col, sty);
+    if (pdg < 0) pdg = 0;
+    if (pdg == 22) continue; // Ignore photons 
+
+    TH1* h1 = static_cast<TH1*>(etaPdg->ProjectionX(Form("h%d", pdg),i,i));
+    if (h1->GetEntries() <= 0) continue; // Do not store if empty
+    h1->SetDirectory(0);
+    h1->SetName(Form("eta_%d", pdg));
+    h1->SetTitle(nme);
+    h1->SetYTitle(Form("d#it{N}_{%s}/d#eta", nme.Data()));
+    h1->SetFillColor(col);
+    h1->SetMarkerColor(col);
+    h1->SetLineColor(col);
+    h1->SetMarkerStyle(sty);
+    h1->SetFillStyle(0);
+    h1->SetFillColor(0);
+    h1->SetBinContent(0,0);
+    all->Add(h1);
+    pdgs->Add(h1);
+    switch (pdg) {
+    case 321:  h1->SetBinContent(0, 0.15);   break; // PRC88,044910
+    case 2212: h1->SetBinContent(0, 0.05);   break; // PRC88,044910
+    case 310:  h1->SetBinContent(0, 0.075);  break; // PRL111,222301
+    case 3122: h1->SetBinContent(0, 0.018);  break; // PRL111,222301
+    case 3212: h1->SetBinContent(0, 0.0055); break; // NPA904,539
+    case 3322: h1->SetBinContent(0, 0.005);  break; // PLB734,409
+    case 211:  h1->SetBinContent(0, 1);      break; // it self 
+    default:   h1->SetBinContent(0, -1);     break; // Unknown
+    }
+    pdgOut->Add(h1);
+      
+    if (pdg == 211) pion = h1;
+  }
+  if (!pdgs->GetHists()) return true;
+  
+  TIter    next(pdgs->GetHists());
+  TH1*     tmp  = 0;
+  Double_t rmin = +1e9;
+  Double_t rmax = -1e9;
+  while ((tmp = static_cast<TH1*>(next()))) {
+    if (tmp == all)  continue;
+    // Calculate ratio to all
+    TH1* rat = static_cast<TH1*>(tmp->Clone());
+    rat->Divide(all);
+    rat->SetDirectory(0);
+    rat->SetTitle(Form("%s / all", tmp->GetTitle()));
+    toAll->Add(rat);
+	
+    if (tmp == pion) continue;
+    Double_t r276 = tmp->GetBinContent(0);
+    if (r276 < 0 || r276 >= 1) continue;
+	
+    // Calulate ratio to pions 
+    rat = static_cast<TH1*>(tmp->Clone());
+    rat->Divide(pion);
+    rat->SetTitle(Form("%s / %s", tmp->GetTitle(), pion->GetTitle()));
+    rat->SetDirectory(0);
+
+    TGraphErrors* g = new TGraphErrors(1);
+    g->SetName(Form("%s_2760", rat->GetName()));
+    g->SetTitle(Form("%s in #sqrt{s_{NN}}=2.76TeV", rat->GetTitle()));
+    g->SetPoint(0,0,r276);
+    g->SetPointError(0,.5,0);
+    g->SetLineColor(rat->GetLineColor());
+    g->SetLineStyle(rat->GetLineStyle());
+    g->SetMarkerColor(rat->GetMarkerColor());
+    g->SetMarkerStyle(rat->GetMarkerStyle());
+    g->SetMarkerSize(1.5*rat->GetMarkerSize());
+    rat->GetListOfFunctions()->Add(g,"p");
+    rat->SetMaximum(TMath::Max(rat->GetMaximum(),r276));
+    rat->SetMinimum(TMath::Min(rat->GetMinimum(),r276));
+    rmin = TMath::Min(rat->GetMinimum(),rmin);
+    rmax = TMath::Max(rat->GetMaximum(),rmax);
+	
+    toPion->Add(rat);
+  }
+  // toPion->SetMinimum(rmin);
+  toPion->SetMaximum(1.1*rmax);
+
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdgPart(Container*     result,
+						     Int_t          nEvents,
+						     Double_t       tailDelta,
+						     Double_t       tailMax,
+						     const TString& pre,
+						     const TString& tit)
+{
+  Container* pdgOut = new Container();
+  pdgOut->SetName(pre);
+  result->Add(pdgOut);
+  TAxis*     zaxis  = fEtaDeltaPdg->GetZaxis();
+  Int_t      first  = zaxis->GetFirst();
+  Int_t      last   = zaxis->GetLast();
+  Bool_t     isMid  = TString(pre).EqualTo("mid");
+  Int_t      nX     = fEtaDeltaPdg->GetNbinsX();
+  Int_t      nY     = fEtaDeltaPdg->GetNbinsY();
+  Int_t      nZ     = fEtaDeltaPdg->GetNbinsZ();
+  Int_t      l1     = fEtaDeltaPdg->GetXaxis()->FindBin(-1);
+  Int_t      r1     = fEtaDeltaPdg->GetXaxis()->FindBin(+1);
+  Int_t      b1     = (isMid ? l1 : 1);
+  Int_t      b2     = (isMid ? r1 : l1-1);
+  Int_t      b3     = (isMid ? -1 : r1+1);
+  Int_t      b4     = (isMid ? -1 : nX);
+  THStack*   stack  = new THStack("all", tit);
+  pdgOut->Add(stack);
+
+  TH1* total = fEtaDeltaPdg->ProjectionY("totalMid",1, 1,1, nZ);
+  total->SetDirectory(0);
+  total->SetName("total");
+  total->SetTitle("Total");
+  total->SetYTitle(Form("d#it{N}_{%s}/d#Delta", "total"));
+  total->SetFillColor(kBlack);
+  total->SetMarkerColor(kBlack);
+  total->SetLineColor(kBlack);
+  total->SetMarkerStyle(24);
+  total->SetFillStyle(0);
+  total->SetFillColor(0);
+  total->Reset();
+  stack->Add(total);
+
+  THStack* ratios = new THStack("ratios","");
+  TH1* ratioSig = Make1D(0, "ratioSig", "Ratio to all", kGreen+1, 24, *zaxis);
+  TH1* ratioBg  = Make1D(0, "ratioBg",  "Ratio to all", kRed+1,   25, *zaxis);
+  ratioSig->GetXaxis()->LabelsOption("v");
+  ratioBg ->GetXaxis()->LabelsOption("v");
+  ratioSig->SetFillColor(kGreen+1);
+  ratioBg ->SetFillColor(kRed  +1);
+  ratioSig->SetFillStyle(1001);
+  ratioBg ->SetFillStyle(1001);
+  ratioSig->SetBarWidth(0.4);
+  ratioBg ->SetBarWidth(0.4);
+  ratioSig->SetBarOffset(0.05);
+  ratioBg ->SetBarOffset(0.55);
+  ratios->Add(ratioSig, "bar0 e text30");
+  ratios->Add(ratioBg,  "bar0 e text30");
+  pdgOut->Add(ratios);
+
+  THStack* rows = new THStack("rows","");
+  TH1* rowSig = new TH1D("rowSig","row",6,0,6);
+  rowSig->SetDirectory(0);
+  rowSig->SetYTitle("Fraction of signal");
+  rowSig->GetXaxis()->SetBinLabel(1, "K^{0}_{S}");
+  rowSig->GetXaxis()->SetBinLabel(2, "K^{#pm}");
+  rowSig->GetXaxis()->SetBinLabel(3, "#Lambda");
+  rowSig->GetXaxis()->SetBinLabel(4, "#Xi");
+  rowSig->GetXaxis()->SetBinLabel(5, "#Sigma");
+  rowSig->GetXaxis()->SetBinLabel(6, "Other");
+  rowSig->GetXaxis()->LabelsOption("v");
+  rowSig->SetMaximum(100);
+  rowSig->SetMinimum(0);
+  rowSig->SetLineColor(kGreen+1);
+  rowSig->SetMarkerColor(kGreen+1);
+  rowSig->SetMarkerStyle(24);
+  TH1* rowBg = static_cast<TH1*>(rowSig->Clone("rowBg"));
+  rowBg->SetDirectory(0);
+  rowBg->SetYTitle("Fraction of background");
+  rowBg->SetLineColor(kRed+1);
+  rowBg->SetMarkerColor(kRed+1);
+  rowBg->SetMarkerStyle(25);
+  rowSig->SetFillStyle(1001);
+  rowBg ->SetFillColor(1001);
+  rowSig->SetFillColor(kGreen+1);
+  rowBg ->SetFillColor(kRed  +1);
+  rowSig->SetBarWidth(0.4);
+  rowBg ->SetBarWidth(0.4);
+  rowSig->SetBarOffset(0.05);
+  rowBg ->SetBarOffset(0.55);
+  rows->Add(rowSig, "bar0 e text30");
+  rows->Add(rowBg,  "bar0 e text30");
+  pdgOut->Add(rows);
+  
+  for (Int_t i = 1; i <= zaxis->GetNbins(); i++) {
+    Int_t   pdg = TString(zaxis->GetBinLabel(i)).Atoi();
+    TString nme;
+    Style_t sty;
+    Color_t col;
+    Int_t   ipdg = pdg;    
+    PdgAttr(pdg, nme, col, sty);
+    if (pdg < 0) pdg = 0;
+    ratioSig->GetXaxis()->SetBinLabel(i, nme);
+    ratioBg ->GetXaxis()->SetBinLabel(i, nme);
+    if (pdg == 22) continue; // Ignore photons 
+
+    
+    TH1* h1 = fEtaDeltaPdg->ProjectionY(Form("%d", pdg), b1, b2, i,i);
+    h1->SetDirectory(0);
+    if (b3 < b4) {
+      TH1* h2 = fEtaDeltaPdg->ProjectionY(Form("t%d", pdg), b3, b4, i,i);
+      h2->SetDirectory(0);
+      h1->Add(h2);
+      delete h2;
+    }
+    h1->SetUniqueID(i); // Store bin number 
+    if (h1->GetEntries() <= 0) continue; // Do not store if empty
+    h1->SetName(Form("%d", pdg));
+    h1->SetTitle(nme);
+    h1->SetYTitle(Form("d#it{N}_{%s}/d#Delta", nme.Data()));
+    h1->SetFillColor(col);
+    h1->SetMarkerColor(col);
+    h1->SetLineColor(col);
+    h1->SetMarkerStyle(sty);
+    h1->SetFillStyle(0);
+    h1->SetFillColor(0);
+    h1->SetBinContent(0,ipdg);
+    total->Add(h1);
+    stack->Add(h1);
+  }
+  total->SetBinContent(0,0);
+  total->Scale(1./nEvents);
+  Double_t deltaCut   = 1.5;
+  Double_t eTot, iTot = Integrate(total, 0,         tailMax,  eTot);
+  Double_t eSig, iSig = Integrate(total, 0,         deltaCut, eSig);
+  Double_t eBg,  iBg  = Integrate(total, tailDelta, tailMax,  eBg);
+
+  TH1* totInt = new TH1D("totalIntegrals", "Integrals of total:", 3, 0, 3);
+  totInt->SetDirectory(0);
+  totInt->GetXaxis()->SetBinLabel(1,Form("0#minus%4.1f", tailMax));
+  totInt->GetXaxis()->SetBinLabel(2,Form("0#minus%3.1f",deltaCut));
+  totInt->GetXaxis()->SetBinLabel(3,Form("%3.1f#minus%4.1f",tailDelta,tailMax));
+  totInt->SetBinContent(1,iTot); totInt->SetBinError(1, eTot);
+  totInt->SetBinContent(2,iSig); totInt->SetBinError(2, eSig);
+  totInt->SetBinContent(3,iBg);  totInt->SetBinError(3, eBg);
+  pdgOut->Add(totInt);
+  
+  if (!stack->GetHists()) return true;
+  
+  Double_t sigOth = 0, eSigOth = 0, bgOth = 0, eBgOth = 0;
+  Double_t sigK0s = 0, eSigK0s = 0, bgK0s = 0, eBgK0s = 0;
+  Double_t sigKpm = 0, eSigKpm = 0, bgKpm = 0, eBgKpm = 0;
+  Double_t sigLam = 0, eSigLam = 0, bgLam = 0, eBgLam = 0;
+  Double_t sigXi0 = 0, eSigXi0 = 0, bgXi0 = 0, eBgXi0 = 0;
+  Double_t sigSig = 0, eSigSig = 0, bgSig = 0, eBgSig = 0;
+  TIter    next(stack->GetHists());
+  TH1*     tmp  = 0;
+  while ((tmp = static_cast<TH1*>(next()))) {
+    // Calculate ratio to all
+    // Scale(tmp, iTot, eTot);
+    if (tmp == total) continue;
+    Int_t    pdg          = tmp->GetBinContent(0); tmp->SetBinContent(0,0);
+    tmp->Scale(1./  nEvents);
+    Double_t eiSig, iiSig = Integrate(tmp, 0,         deltaCut, eiSig);
+    Double_t eiBg,  iiBg  = Integrate(tmp, tailDelta, tailMax,  eiBg);
+    Double_t erS,  rS     = RatioE(iiSig, eiSig, iSig, eSig,  erS);
+    Double_t erB,  rB     = RatioE(iiBg,  eiBg,  iBg,  eBg,   erB);
+    Int_t    bin          = tmp->GetUniqueID();
+#if 0
+    Printf(" %10s(%4d,%3d) "
+	   "signal=%6.1f/%6.1f=%5.3f+/-%5.3f bg=%6.1f/%6.1f=%5.3f+/-%5.3f",
+	   tmp->GetTitle(), pdg, bin, iiSig, iSig, rS, erS, iiBg, iBg, rB, erB); 
+#endif 
+    ratioSig->SetBinContent(bin, rS);
+    ratioSig->SetBinError  (bin, erS);
+    ratioBg ->SetBinContent(bin, rB);
+    ratioBg ->SetBinError  (bin, erB);
+
+    switch (pdg) {
+    case 321:                   // K^{+}
+      sigKpm += rS; eSigKpm += erS*erS; bgKpm += rB; eBgKpm += erB*erB; break; 
+    case 310:                   // K^{0}_{S}
+      sigK0s += rS; eSigK0s += erS*erS; bgK0s += rB; eBgK0s += erB*erB; break; 
+    case 3112:                  // #Sigma^{-}			 
+    case 3222:		        // #Sigma^{+}			 
+      // case 3114:		// #Sigma^{*-}		 
+      // case 3224:		// #Sigma^{*+}		 
+      // case 4214:		// #Sigma^{*+}_{c}		 
+      // case 4224:             // #Sigma^{*++}_{c}
+      // case 3212: 	        // #Sigma^{0}			 
+      // case 4114:      	// #Sigma^{*0}_{c}		 
+      // case 3214:             // #Sigma^{*0}	
+      sigSig += rS; eSigSig += erS*erS; bgSig += rB; eBgSig += erB*erB; break;          
+    case 3312:                  // #Xi^{-}			 
+      // case 3314:             // #Xi^{*-}
+      // case 3324:     	// #Xi^{*0}			 
+      // case 4132:       	// #Xi^{0}_{c}		       
+      // case 4314:             // #Xi^{*0}_{c}	
+      sigXi0 += rS; eSigXi0 += erS*erS; bgXi0 += rB; eBgXi0 += erB*erB; break; 
+      // case 4122:             // #Lambda^{+}_{c}
+    case 3122:                  // #Lambda  
+      sigLam += rS; eSigLam += erS*erS; bgLam += rB; eBgLam += erB*erB; break; 
+    default:
+      sigOth += rS; eSigOth += erS*erS; bgOth += rB; eBgOth += erB*erB; break;
+    }    
+  } // while(tmp)
+  rowSig->SetBinContent(1,100*sigK0s);
+  rowSig->SetBinError  (1,100*TMath::Sqrt(eSigK0s));
+  rowSig->SetBinContent(2,100*sigKpm);
+  rowSig->SetBinError  (2,100*TMath::Sqrt(eSigKpm));
+  rowSig->SetBinContent(3,100*sigLam);
+  rowSig->SetBinError  (3,100*TMath::Sqrt(eSigLam));
+  rowSig->SetBinContent(4,100*sigXi0);
+  rowSig->SetBinError  (4,100*TMath::Sqrt(eSigXi0));
+  rowSig->SetBinContent(5,100*sigSig);
+  rowSig->SetBinError  (5,100*TMath::Sqrt(eSigSig));
+  rowSig->SetBinContent(6,100*sigOth);
+  rowSig->SetBinError  (6,100*TMath::Sqrt(eSigOth));
+  rowBg ->SetBinContent(1,100* bgK0s);
+  rowBg ->SetBinError  (1,100*TMath::Sqrt( eBgK0s));
+  rowBg ->SetBinContent(2,100* bgKpm);
+  rowBg ->SetBinError  (2,100*TMath::Sqrt( eBgKpm));
+  rowBg ->SetBinContent(3,100* bgLam);
+  rowBg ->SetBinError  (3,100*TMath::Sqrt( eBgLam));
+  rowBg ->SetBinContent(4,100* bgXi0);
+  rowBg ->SetBinError  (4,100*TMath::Sqrt( eBgXi0));
+  rowBg ->SetBinContent(5,100* bgSig);
+  rowBg ->SetBinError  (5,100*TMath::Sqrt( eBgSig));
+  rowBg ->SetBinContent(6,100* bgOth);
+  rowBg ->SetBinError  (6,100*TMath::Sqrt( eBgOth));
+
+  return true;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliTrackletAODdNdeta::Histos::ProjectEtaDeltaPdg(Container* result,
+						 Int_t      nEvents,
+						 Double_t   tailDelta,
+						 Double_t   tailMax)
+{
+  // Scale distribution of PDGs to number of events and bin width
+  if (!fEtaDeltaPdg) return true;
+
+  Container* pdgOut = new Container();
+  pdgOut->SetName("specie");
+  result->Add(pdgOut);
+  
+  ProjectEtaDeltaPdgPart(pdgOut,
+			 nEvents,
+			 tailDelta,
+			 tailMax,
+			 "mid",
+			 "|#eta|<1");
+  ProjectEtaDeltaPdgPart(pdgOut,
+			 nEvents,
+			 tailDelta,
+			 tailMax,
+			 "fwd",
+			 "|#eta|>1");
+}
+
+//____________________________________________________________________
+Bool_t 
+AliTrackletAODdNdeta::Histos::ProjectEtaPdgIPz(Container*     result,
+					       TH1*           ipz,
+					       const TString& shn)
+{
+  // If we have the PDG distributions, we project on eta,IPz, and then
+  // average over IPz to get dNpdg/deta.
+  if (!fEtaPdgIPz) return true;
+  
+  // Scale each vertex range by number of events in that range
+  TH3* etaPdgIPz = ScaleToIPz(fEtaPdgIPz, ipz, false);
+  result->Add(etaPdgIPz);
+  
+  // Loop over PDG types and create 2D and 1D distributions 
+  TAxis*     yaxis  = etaPdgIPz->GetYaxis();
+  Int_t      first  = yaxis->GetFirst();
+  Int_t      last   = yaxis->GetLast();
+  THStack*   pdgs   = new THStack("all","");
+  THStack*   ratios = new THStack("toPion", "");
+  TH1*       pion   = 0;
+  TH2*       dtfs   = 0;
+  Container* pdgOut = new Container();
+  pdgOut->SetName("types");
+  result->Add(pdgOut);
+  pdgOut->Add(pdgs);
+  pdgOut->Add(ratios);
+  for (Int_t i = 1; i <= etaPdgIPz->GetNbinsY(); i++) {
+    yaxis->SetRange(i,i);
+    
+    Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
+    TString nme;
+    Style_t sty;
+    Color_t col;
+    PdgAttr(pdg, nme, col, sty);
+    if (pdg < 0) pdg = 0;
+    
+    TH2*   h2    = static_cast<TH2*>(etaPdgIPz->Project3D("zx e"));
+    if (h2->GetEntries() <= 0) continue; // Do not store if empty
+    h2->SetDirectory(0);
+    h2->SetName(Form("etaIPz_%d", pdg));
+    h2->SetTitle(Form("%s#rightarrowX_{%s}", nme.Data(), shn.Data()));
+    h2->SetYTitle(Form("d#it{N}^{2}_{%s#rightarrow%s}/"
+		       "(d#etadIP_{#it{z}})",
+		       nme.Data(), shn.Data()));
+    h2->SetFillColor(col);
+    h2->SetMarkerColor(col);
+    h2->SetLineColor(col);
+    pdgOut->Add(h2);
+    
+    TH1* h1 = AverageOverIPz(h2, Form("eta_%d",pdg), 1, ipz, 0, false);
+    h1->SetDirectory(0);
+    h1->SetYTitle(Form("d#it{N}_{%s#rightarrow%s}/d#eta",
+		       nme.Data(), shn.Data()));
+    h1->SetMarkerStyle(sty);
+    pdgs->Add(h1);
+    
+    if (pdg == 211) pion = h1;
+    TH2* tmp = 0;
+    switch (pdg) {
+    case 321: 	  // Strange meson K^{+} 	     break;
+    case 323: 	  // Strange meson K^{*+} 	     break;
+    case 310: 	  // Strange meson K^{0}_{S} 	     break;
+    case 130: 	  // Strange meson K^{0}_{L} 	     break;
+    case 311: 	  // Strange meson K^{0} 	     break;
+    case 313: 	  // Strange meson K^{*} 	     break;
+    case 221: 	  // Strange meson #eta 	     break;
+    case 333: 	  // Strange meson #varphi 	     break;
+    case 331: 	  // Strange meson #eta' 	     break;
+    case 3112: 	  // Strange baryon #Sigma^{-}       break;
+    case 3222: 	  // Strange baryon #Sigma^{+}       break;
+    case 3114: 	  // Strange baryon #Sigma^{*-}      break;
+    case 3224: 	  // Strange baryon #Sigma^{*+}      break;
+    case 3312: 	  // Strange baryon #Xi^{-} 	     break;
+    case 3314: 	  // Strange baryon #Xi^{*-} 	     break;
+    case 3122: 	  // Strange baryon #Lambda 	     break;
+    case 3212: 	  // Strange baryon #Sigma^{0}       break;
+    case 3214: 	  // Strange baryon #Sigma^{*0}      break;
+    case 3322: 	  // Strange baryon #Xi^{0} 	     break;
+    case 3324: 	  // Strange baryon #Xi^{*0} 	     break;
+      tmp = h2;
+      break;
+    default: break;
+    }
+    if (tmp) {
+      if (!dtfs) {
+	dtfs = static_cast<TH2*>(tmp->Clone("dtfs"));
+	dtfs->SetDirectory(0);
+	dtfs->SetTitle("X_{s}#rightarrowX");
+	dtfs->SetYTitle("IP_{#it{z}} [cm]");
+	dtfs->Reset();
+	result->Add(dtfs);
+      }
+      // Add up contributions from strange particles 
+      dtfs->Add(tmp); 
+    }	
+  }
+  if (!pdgs->GetHists()) {
+    yaxis->SetRange(first, last);    
+    return true;
+  }
+  
+  TIter    next(pdgs->GetHists());
+  TH1*     tmp = 0;
+  while ((tmp = static_cast<TH1*>(next()))) {
+    if (tmp == pion) continue;
+    TH1* rat = static_cast<TH1*>(tmp->Clone());
+    rat->Divide(pion);
+    rat->SetDirectory(0);
+      ratios->Add(rat);
+  }
+  
+  yaxis->SetRange(first, last);    
+}
+
+//____________________________________________________________________
+Bool_t 
 AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
 					     TH1*       ipz,
 					     Double_t   tailDelta,
@@ -2542,205 +3399,20 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
     etaIPz = ScaleToIPz(fEtaIPz, ipz);
     result->Add(etaIPz);
   }
-
-  // Scale distribution of PDGs to number of events and bin width
-  if (fEtaPdg) {
-    TH2* etaPdg = static_cast<TH2*>(fEtaPdg->Clone());
-    etaPdg->SetDirectory(0);
-    etaPdg->Scale(1. / nEvents, "width");
-    result->Add(etaPdg);
-
-    // Loop over PDG types and create 2D and 1D distributions 
-    TAxis*     yaxis  = etaPdg->GetYaxis();
-    Int_t      first  = yaxis->GetFirst();
-    Int_t      last   = yaxis->GetLast();
-    THStack*   pdgs   = new THStack("all","");
-    THStack*   toPion = new THStack("toPion", "");
-    THStack*   toAll  = new THStack("toAll", "");
-    TH1*       pion   = 0;
-    Container* pdgOut = new Container();
-    pdgOut->SetName("mix");
-    result->Add(pdgOut);
-    pdgOut->Add(pdgs);
-    pdgOut->Add(toPion);
-    pdgOut->Add(toAll);
-
-    TH1* all = static_cast<TH1*>(etaPdg->ProjectionX("total",
-						     1,etaPdg->GetNbinsY()));
-    all->SetDirectory(0);
-    all->SetName("total");
-    all->SetTitle("All");
-    all->SetYTitle(Form("d#it{N}_{%s}/d#eta", "all"));
-    all->SetFillColor(kBlack);
-    all->SetMarkerColor(kBlack);
-    all->SetLineColor(kBlack);
-    all->SetMarkerStyle(20);
-    all->SetFillStyle(0);
-    all->SetFillColor(0);
-    all->Reset();
-    pdgs->Add(all);
-    for (Int_t i = 1; i <= etaPdg->GetNbinsY(); i++) {
-      Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
-      TString nme;
-      Style_t sty;
-      Color_t col;
-      PdgAttr(pdg, nme, col, sty);
-      if (pdg < 0) pdg = 0;
-      if (pdg == 22) continue; // Ignore photons 
-
-      TH1*   h1    = static_cast<TH1*>(etaPdg->ProjectionX(Form("h%d", pdg),i,i));
-      if (h1->GetEntries() <= 0) continue; // Do not store if empty
-      h1->SetDirectory(0);
-      h1->SetName(Form("eta_%d", pdg));
-      h1->SetTitle(nme);
-      h1->SetYTitle(Form("d#it{N}_{%s}/d#eta", nme.Data()));
-      h1->SetFillColor(col);
-      h1->SetMarkerColor(col);
-      h1->SetLineColor(col);
-      h1->SetMarkerStyle(sty);
-      h1->SetFillStyle(0);
-      h1->SetFillColor(0);
-      h1->SetBinContent(0,0);
-      all->Add(h1);
-      pdgs->Add(h1);
-      switch (pdg) {
-      case 321:  h1->SetBinContent(0, 0.15);   break; // PRC88,044910
-      case 2212: h1->SetBinContent(0, 0.05);   break; // PRC88,044910
-      case 310:  h1->SetBinContent(0, 0.075);  break; // PRL111,222301
-      case 3122: h1->SetBinContent(0, 0.018);  break; // PRL111,222301
-      case 3212: h1->SetBinContent(0, 0.0055); break; // NPA904,539
-      case 3322: h1->SetBinContent(0, 0.005);  break; // PLB734,409
-      case 211:  h1->SetBinContent(0, 1);      break; // it self 
-      default:   h1->SetBinContent(0, -1);     break; // Unknown
-      }
-      pdgOut->Add(h1);
-      
-      if (pdg == 211) pion = h1;
-    }
-    if (pdgs->GetHists()) {
-      TIter    next(pdgs->GetHists());
-      TH1*     tmp  = 0;
-      Double_t rmin = +1e9;
-      Double_t rmax = -1e9;
-      while ((tmp = static_cast<TH1*>(next()))) {
-	if (tmp == all)  continue;
-	// Calculate ratio to all
-	TH1* rat = static_cast<TH1*>(tmp->Clone());
-	rat->Divide(all);
-	rat->SetDirectory(0);
-	rat->SetTitle(Form("%s / all", tmp->GetTitle()));
-	toAll->Add(rat);
-	
-	if (tmp == pion) continue;
-	Double_t r276 = tmp->GetBinContent(0);
-	if (r276 < 0 || r276 >= 1) continue;
-	
-	// Calulate ratio to pions 
-	rat = static_cast<TH1*>(tmp->Clone());
-	rat->Divide(pion);
-	rat->SetTitle(Form("%s / %s", tmp->GetTitle(), pion->GetTitle()));
-	rat->SetDirectory(0);
-
-	TGraphErrors* g = new TGraphErrors(1);
-	g->SetName(Form("%s_2760", rat->GetName()));
-	g->SetTitle(Form("%s in #sqrt{s_{NN}}=2.76TeV", rat->GetTitle()));
-	g->SetPoint(0,0,r276);
-	g->SetPointError(0,.5,0);
-	g->SetLineColor(rat->GetLineColor());
-	g->SetLineStyle(rat->GetLineStyle());
-	g->SetMarkerColor(rat->GetMarkerColor());
-	g->SetMarkerStyle(rat->GetMarkerStyle());
-	g->SetMarkerSize(1.5*rat->GetMarkerSize());
-	rat->GetListOfFunctions()->Add(g,"p");
-	rat->SetMaximum(TMath::Max(rat->GetMaximum(),r276));
-	rat->SetMinimum(TMath::Min(rat->GetMinimum(),r276));
-	rmin = TMath::Min(rat->GetMinimum(),rmin);
-	rmax = TMath::Max(rat->GetMaximum(),rmax);
-	
-	toPion->Add(rat);
-      }
-      // toPion->SetMinimum(rmin);
-      toPion->SetMaximum(1.1*rmax);
-    }
-  }
-
   // Scale distribution of Pt to number of events and bin width
   if (fEtaPt) {
     TH2* etaPt = static_cast<TH2*>(fEtaPt->Clone());
     etaPt->SetDirectory(0);
     etaPt->Scale(1. / nEvents, "width");
     result->Add(etaPt);
-
-   }
-  
+  }
   // Short-hand-name
   TString shn(etaIPz ? etaIPz->GetTitle() : "X"); 
-
-  // If we have the PDG distributions, we project on eta,IPz, and then
-  // average over IPz to get dNpdg/deta.
-  if (fEtaPdgIPz) {
-    // Scale each vertex range by number of events in that range
-    TH3* etaPdgIPz = ScaleToIPz(fEtaPdgIPz, ipz, false);
-    result->Add(etaPdgIPz);
-
-    // Loop over PDG types and create 2D and 1D distributions 
-    TAxis*     yaxis  = etaPdgIPz->GetYaxis();
-    Int_t      first  = yaxis->GetFirst();
-    Int_t      last   = yaxis->GetLast();
-    THStack*   pdgs   = new THStack("all","");
-    THStack*   ratios = new THStack("toPion", "");
-    TH1*       pion   = 0;
-    Container* pdgOut = new Container();
-    pdgOut->SetName("types");
-    result->Add(pdgOut);
-    pdgOut->Add(pdgs);
-    pdgOut->Add(ratios);
-    for (Int_t i = 1; i <= etaPdgIPz->GetNbinsY(); i++) {
-      yaxis->SetRange(i,i);
-
-      Int_t   pdg = TString(yaxis->GetBinLabel(i)).Atoi();
-      TString nme;
-      Style_t sty;
-      Color_t col;
-      PdgAttr(pdg, nme, col, sty);
-      if (pdg < 0) pdg = 0;
-
-      TH2*   h2    = static_cast<TH2*>(etaPdgIPz->Project3D("zx e"));
-      if (h2->GetEntries() <= 0) continue; // Do not store if empty
-      h2->SetDirectory(0);
-      h2->SetName(Form("etaIPz_%d", pdg));
-      h2->SetTitle(Form("%s#rightarrowX_{%s}", nme.Data(), shn.Data()));
-      h2->SetYTitle(Form("d#it{N}^{2}_{%s#rightarrow%s}/"
-			 "(d#etadIP_{#it{z}})",
-			 nme.Data(), shn.Data()));
-      h2->SetFillColor(col);
-      h2->SetMarkerColor(col);
-      h2->SetLineColor(col);
-      pdgOut->Add(h2);
-
-      TH1* h1 = AverageOverIPz(h2, Form("eta_%d",pdg), 1, ipz, 0, false);
-      h1->SetDirectory(0);
-      h1->SetYTitle(Form("d#it{N}_{%s#rightarrow%s}/d#eta",
-			 nme.Data(), shn.Data()));
-      h1->SetMarkerStyle(sty);
-      pdgs->Add(h1);
-
-      if (pdg == 211) pion = h1;
-    }
-    if (pdgs->GetHists()) {
-      TIter    next(pdgs->GetHists());
-      TH1*     tmp = 0;
-      while ((tmp = static_cast<TH1*>(next()))) {
-	if (tmp == pion) continue;
-	TH1* rat = static_cast<TH1*>(tmp->Clone());
-	rat->Divide(pion);
-	rat->SetDirectory(0);
-	ratios->Add(rat);
-      }
-    }
-    
-    yaxis->SetRange(first, last);    
-  }
+  
+  ProjectEtaPdg     (result, nEvents);
+  ProjectEtaDeltaPdg(result, nEvents, tailDelta, tailMax);
+  ProjectEtaPdgIPz  (result, ipz, shn);
+  
   // If we do not have eta vs Delta, just return 
   if (!fEtaDeltaIPz) return true;
 
@@ -2761,6 +3433,7 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   // PArameters of integrals
   Double_t maxDelta = etaDeltaIPz->GetYaxis()->GetXmax();
   Int_t    lowBin   = etaDeltaIPz->GetYaxis()->FindBin(tailDelta);
+  Int_t    sigBin   = etaDeltaIPz->GetYaxis()->FindBin(1.5);
   Int_t    highBin  = TMath::Min(etaDeltaIPz->GetYaxis()->FindBin(tailMax),
 				 etaDeltaIPz->GetYaxis()->GetNbins());  
 
@@ -2781,6 +3454,12 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
   etaIPzDeltaTail->Reset();
   etaIPzDeltaTail->SetTitle(etaDeltaTail->GetTitle());
   etaIPzDeltaTail->SetZTitle(etaDelta->GetYaxis()->GetTitle());
+  TH2* etaIPzDeltaMain = static_cast<TH2*>(etaDeltaIPz->Project3D("zx e"));
+  etaIPzDeltaMain->SetName("etaIPzDeltaMain");
+  etaIPzDeltaMain->SetDirectory(0);
+  etaIPzDeltaMain->Reset();
+  etaIPzDeltaMain->SetTitle(etaDeltaTail->GetTitle());
+  etaIPzDeltaMain->SetZTitle(etaDelta->GetYaxis()->GetTitle());
   // Loop over eta
   Double_t intg = 0, eintg = 0;
   for (Int_t i = 1; i <= etaDeltaTail->GetNbinsX(); i++) {
@@ -2794,9 +3473,14 @@ AliTrackletAODdNdeta::Histos::MasterFinalize(Container* parent,
       intg = etaDeltaIPz->IntegralAndError(i,i,lowBin,highBin,j,j,eintg);
       etaIPzDeltaTail->SetBinContent(i, j, intg);
       etaIPzDeltaTail->SetBinError  (i, j, eintg);
+
+      intg = etaDeltaIPz->IntegralAndError(i,i,1,sigBin,j,j,eintg);
+      etaIPzDeltaMain->SetBinContent(i, j, intg);
+      etaIPzDeltaMain->SetBinError  (i, j, eintg);
     }
   }
   result->Add(etaIPzDeltaTail);
+  result->Add(etaIPzDeltaMain);
   result->Add(etaDeltaTail);
 
   // Integrate full tail
@@ -3025,13 +3709,13 @@ AliTrackletAODdNdeta::Create(Bool_t      mc,
 		  wnam.Data(), wfile->GetName());
 	return 0;
       }
-      if (!wobj->IsA()->InheritsFrom(AliTrackletWeights::Class())) {
+      if (!wobj->IsA()->InheritsFrom(AliTrackletBaseWeights::Class())) {
 	::Warning("Create", "Object %s from file %s not an "
-		  "AliTrackletWeights but a %s",
+		  "AliTrackletBaseWeights but a %s",
 		  wnam.Data(), wfile->GetName(), wobj->ClassName());
 	return 0;
       }
-      wret->SetWeights(static_cast<AliTrackletWeights*>(wobj));
+      wret->SetWeights(static_cast<AliTrackletBaseWeights*>(wobj));
       ret = wret;
     }
     else 

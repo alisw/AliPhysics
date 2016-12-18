@@ -42,7 +42,8 @@ class AliAnalysisTask;
 class AliESDInputHandler;
 class AliESDv0KineCuts;
 class AliAnalysisManager;
-class AliCentrality;
+//class AliCentrality;
+class AliMultSelection;
 class AliTRDgeometry;
 class TTree;
 class TSystem;
@@ -172,6 +173,6 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   AliTRDPIDTree(const AliTRDPIDTree&); // not implemented
   AliTRDPIDTree& operator=(const AliTRDPIDTree&); // not implemented
   
-  ClassDef(AliTRDPIDTree, 2);
+  ClassDef(AliTRDPIDTree, 3);
 };
 #endif

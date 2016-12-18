@@ -257,5 +257,6 @@ Double32_t AliJetShapeOpeningAngle_kt::result(const fastjet::PseudoJet &jet) con
   return Result;
 }
 
+
 #endif
 

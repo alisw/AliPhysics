@@ -1,8 +1,8 @@
 /**
  * @file   AddTaskForwardFlowQC.C
- * @author Alexander Hansen alexander.hansen@cern.ch 
+ * @author Alexander Hansen <alexander.hansen@cern.ch>
  * 
- * @brief  
+ * @brief  Add Q-cummulant forward task to train 
  * 
  * 
  * @ingroup pwglf_forward_scripts_tasks

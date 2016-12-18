@@ -19,6 +19,8 @@
  * @ingroup pwglf_forward_dndete
  * @ingroup pwglf_forward_flow
  * @ingroup pwglf_forward_trains_specific
+ *
+ * @deprecated Use step-wise trains instead 
  */
 class MakeFullTrain : public TrainSetup
 {

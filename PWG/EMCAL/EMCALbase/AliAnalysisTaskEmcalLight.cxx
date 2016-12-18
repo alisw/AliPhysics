@@ -84,7 +84,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fSelectPtHardBin(-999),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
-  fInitialized(kFALSE),
+  fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
   fCaloCells(0),
@@ -168,7 +168,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fSelectPtHardBin(-999),
   fAcceptedTriggerClasses(),
   fRejectedTriggerClasses(),
-  fInitialized(kFALSE),
+  fLocalInitialized(kFALSE),
   fDataType(kAOD),
   fGeom(0),
   fCaloCells(0),
@@ -446,10 +446,10 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms()
  */
 void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
 {
-  if (!fInitialized)
+  if (!fLocalInitialized)
     ExecOnce();
 
-  if (!fInitialized)
+  if (!fLocalInitialized)
     return;
 
   if (!RetrieveEventObjects())
@@ -678,7 +678,7 @@ void AliAnalysisTaskEmcalLight::ExecOnce()
 
   }
 
-  fInitialized = kTRUE;
+  fLocalInitialized = kTRUE;
 }
 
 /**
@@ -1345,4 +1345,25 @@ Byte_t AliAnalysisTaskEmcalLight::GetTrackType(const AliAODTrack *aodTrack, UInt
   }
 
   return res;
+}
+
+/**
+ * Determine the beam type based on hard-coded run ranges
+ * \param runnumber run number
+ * \return enumeration value corresponding to the beam type
+ */
+AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::BeamTypeFromRunNumber(Int_t runnumber)
+{
+  EBeamType_t b = kpp;
+  if ((runnumber >= 136833 && runnumber <= 139517) || // LHC10h Run-1 (Pb-Pb)
+      (runnumber >= 167693 && runnumber <= 170593) || // LHC11h Run-1 (Pb-Pb)
+      (runnumber >= 244824 && runnumber <= 246994)) { // LHC15o Run-2 (Pb-Pb)
+    b = kAA;
+  }
+  else if ((runnumber > 188356 && runnumber <= 188503) ||  // LHC12g Run-1 (p-Pb pilot)
+      (runnumber >= 195164 && runnumber <= 197388) ||      // LHC13b,c,d,e,f Run-1 (p-Pb)
+      (runnumber >= 265077 && runnumber <= 999999)) {      // LHC16 Run-2 (p-Pb)
+    b = kpA;
+  }
+  return b;
 }

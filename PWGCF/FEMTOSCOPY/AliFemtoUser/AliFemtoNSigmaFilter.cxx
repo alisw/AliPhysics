@@ -21,7 +21,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-
+//________________________________________________________________________________________________________________
 AliFemtoNSigmaFilter::AliFemtoNSigmaFilter():
 
   fMomMaxPreferTPC(0.5)
@@ -35,6 +35,46 @@ AliFemtoNSigmaFilter::AliFemtoNSigmaFilter():
   , fOverrideImproperConfig(false)
 {
   // no-op
+}
+
+
+//________________________________________________________________________________________________________________
+AliFemtoNSigmaFilter::AliFemtoNSigmaFilter(const AliFemtoNSigmaFilter& aFilter) :
+  fMomMaxPreferTPC(aFilter.fMomMaxPreferTPC)
+
+  , fTPCAndTOFCutCollection(aFilter.fTPCAndTOFCutCollection)
+  , fTPCCutCollection(aFilter.fTPCCutCollection)
+  , fTOFCutCollection(aFilter.fTOFCutCollection)
+
+  , fAbsoluteMomMax(aFilter.fAbsoluteMomMax)
+  , fImproperConfig(aFilter.fImproperConfig)
+  , fOverrideImproperConfig(aFilter.fOverrideImproperConfig)
+{
+  //no-op
+}
+
+//________________________________________________________________________________________________________________
+AliFemtoNSigmaFilter& AliFemtoNSigmaFilter::operator=(const AliFemtoNSigmaFilter& aFilter)
+{
+  if(this == &aFilter) {return *this;}
+
+  fMomMaxPreferTPC = aFilter.fMomMaxPreferTPC;
+
+  fTPCAndTOFCutCollection = aFilter.fTPCAndTOFCutCollection;
+  fTPCCutCollection = aFilter.fTPCCutCollection;
+  fTOFCutCollection = aFilter.fTOFCutCollection;
+
+  fAbsoluteMomMax = aFilter.fAbsoluteMomMax;
+  fImproperConfig = aFilter.fImproperConfig;
+  fOverrideImproperConfig = aFilter.fOverrideImproperConfig;
+
+  return *this;
+}
+
+//________________________________________________________________________________________________________________
+AliFemtoNSigmaFilter::~AliFemtoNSigmaFilter()
+{
+  //no-op
 }
 
 

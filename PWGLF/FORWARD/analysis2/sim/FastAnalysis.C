@@ -89,6 +89,7 @@ struct FastAnalysis : public TSelector
    * tree, header, and particle list.
    * 
    * @param verb     Whether to be verbose 
+   * @param monitor  Enable monitoring if non-zero 
    */  
   FastAnalysis(Bool_t verb=false, Int_t monitor=0)
     : fTree(0),
@@ -772,7 +773,9 @@ struct FastAnalysis : public TSelector
   /** 
    * Run an analysis.  Argument URL has format of 
    *
-   *  protocol://[[user@[password:]]host]/file?[options]#treeName
+   @verbatim 
+   protocol://[[user@[password:]]host]/file?[options]#treeName
+   @endverbatim
    * 
    * where 
    *
@@ -785,6 +788,7 @@ struct FastAnalysis : public TSelector
    * @param url     Processing and input URL
    * @param output  Output file name 
    * @param a       Analyser 
+   * @param script  Script that defines analysis 
    * @param nev     Max number of events
    * @param offset  Offset in events
    * @param monitor Monitor period in seconds (<0 disables)

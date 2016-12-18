@@ -4,117 +4,13 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TArrayD.h>
+#include <TBinning.h>
 #include <TNamed.h>
 #include <Riosfwd.h>
 
 class TObjArray;
 
 namespace EMCalTriggerPtAnalysis {
-
-/**
- * @class AliEMCalTriggerBinningDimension
- * @brief Binning definition for a certain dimension
- * @ingroup PWGJETASKS
- * @author Markus Fasel <markus.fasel@cern.ch>, Lawrence Berkeley National Laboratory
- * @date Dec 12, 2014
- *
- * This class contains the binning definition for a certain dimension. By construction
- * a variable binning is assumed.
- */
-class AliEMCalTriggerBinningDimension : public TNamed{
-public:
-
-  /**
-   * Dummy Constructor
-   */
-  AliEMCalTriggerBinningDimension():
-    TNamed(),
-    fBinning()
-  {}
-
-  /**
-   * Named constructor
-   * @param[in] name Name of the dimension
-   */
-  AliEMCalTriggerBinningDimension(const char *name):
-    TNamed(name, ""),
-    fBinning()
-  {}
-
-  /**
-   * Constructor initializing the dimension from a C-array
-   * @param[in] name Name of the dimension
-   * @param[in] nbins Number of bins
-   * @param[in] binning Array of bin limits
-   */
-  AliEMCalTriggerBinningDimension(const char *name, int nbins, const double *binning):
-    TNamed(name, ""),
-    fBinning(nbins+1, binning)
-  {}
-
-  /**
-   * Constructor initializing the dimension from a ROOT array
-   * @param[in] name Name of the dimension
-   * @param[in] binning Array of bin limits
-   */
-  AliEMCalTriggerBinningDimension(const char *name, const TArrayD &binning):
-    TNamed(name, ""),
-    fBinning(binning.GetSize(), binning.GetArray())
-  {}
-
-  /**
-   * Destructor
-   */
-  virtual ~AliEMCalTriggerBinningDimension() {}
-
-  /**
-   * Set the bin limits of the dimension from a C-array
-   * @param[in] nbins Number of bins
-   * @param[in] binning Array of bin limits
-   */
-  void Set(int nbins, const double *binning) { fBinning.Set(nbins+1, binning); }
-
-  /**
-   * Set the bin limits of the dimension from a ROOT array
-   * @param[in] binning Array of bin limits
-   */
-  void Set(const TArrayD &binning) { fBinning = binning; }
-
-  /**
-   * Get array of bin limits
-   * @return C-array of bin limits
-   */
-  const double *GetBinLimits() const { return fBinning.GetArray(); }
-
-  /**
-   * Get the array of bin limits for this dimension
-   * @return Array of bin limits
-   */
-  const TArrayD &GetBinning() const { return fBinning; }
-
-  /**
-   * Initialize output array with binning stored in this dimension
-   * @param[out] out Array to initialize with this binning
-   */
-  void InitializeArray(TArrayD out) const { out = fBinning; }
-
-  /**
-   * Get the number of bins of the dimension
-   * @return Number of bins
-   */
-  int GetNumberOfBins() const { return fBinning.GetSize() - 1; }
-  virtual void Print(Option_t *option="") const;
-  void PrintStream(std::ostream &stream) const;
-
-  friend std::ostream &operator<<(std::ostream &stream, const AliEMCalTriggerBinningDimension &dim);
-
-private:
-  TArrayD fBinning;             ///< Bin limits
-
-  /// \cond CLASSIMP
-  ClassDef(AliEMCalTriggerBinningDimension, 1);
-  /// \endcond
-};
 
 /**
  * @class AliEMCalTriggerBinningComponent
@@ -129,25 +25,132 @@ private:
  */
 class AliEMCalTriggerBinningComponent: public TObject {
 public:
+  /**
+   * @class AliEMCalTriggerBinningData
+   * @brief Wrapper for Binning data, connecting with name
+   */
+  class AliEMCalTriggerBinningData : public TNamed {
+  public:
+
+    /**
+     * Default constructor
+     */
+    AliEMCalTriggerBinningData();
+
+    /**
+     * Named constructor, defining name and binning
+     */
+    AliEMCalTriggerBinningData(const char *name, TBinning *data);
+
+    /**
+     * Copy constructor
+     * @param[in] data Reference for the copy
+     */
+    AliEMCalTriggerBinningData(const AliEMCalTriggerBinningData &data);
+
+    /**
+     * Assignment operator
+     * @param[in] data Reference for assignment
+     */
+    AliEMCalTriggerBinningData &operator=(const AliEMCalTriggerBinningData &data);
+
+    virtual ~AliEMCalTriggerBinningData();
+
+    /**
+     * Set the underlying binning. The data handler is the owner of the
+     * binning, so any binning assigned will be deleted
+     * @param [in] binning New binning to be set
+     */
+    void SetBinning(TBinning *binning);
+
+    /**
+     * Get the underlying binning
+     * @return Underlying binning
+     */
+    TBinning *GetBinning() const { return fBinning; }
+
+  private:
+    TBinning                          *fBinning;        ///< Underlying binning data
+
+    /// \cond CLASSIMP
+    ClassDef(AliEMCalTriggerBinningData, 1);
+    /// \endcond
+  };
+
+  /**
+   * Main constructor
+   */
   AliEMCalTriggerBinningComponent();
+
+  /**
+   * Copy constructor, creating a deep copy.
+   * @param[in] ref Reference for the copy
+   */
   AliEMCalTriggerBinningComponent(const AliEMCalTriggerBinningComponent &ref);
+
+  /**
+   * Assignment operator, doing a deep copy.
+   * @param[in] ref Reference for the assignment
+   */
   AliEMCalTriggerBinningComponent &operator=(const AliEMCalTriggerBinningComponent &ref);
+
+  /**
+   * Destructor
+   */
   virtual ~AliEMCalTriggerBinningComponent();
 
-  AliEMCalTriggerBinningDimension *GetBinning(const char *name) const;
+  /**
+   * Get binning information for a given axis. Return nullpointer if axis is not yet defined
+   * @param[in] name axis name
+   * @return the axis information
+   */
+  TBinning *GetBinning(const char *name) const;
+
+  /**
+   * Set binning for dimension. If not yet existing, create it
+   * @param[in] dimname: axis name
+   * @param[in] nbins: Number of bins
+   * @param[in] binning: array of bin limits (size nbins+1)
+   */
   void SetBinning(const char *dimname, int nbins, const double *binning);
+
+  /**
+   * Set binning for dimension. If not yet existing, create it.
+   * @param[in] dimname axis name
+   * @param[in] binning array of bin limits (size nbins+1)
+   */
   void SetBinning(const char *dimname, const TArrayD &binning);
+
+  /**
+   * Set pre-defined binning initialized outside of the binning component
+   * @param[in] dimname Name of the dimension
+   * @param[in] binning Binning for the dimension
+   */
+  void SetBinning(const char *dimname, TBinning *binning);
+
+  /**
+   * Set a linear binning for dimension. If not yet existing, create it.
+   * @param[in] dimname axis name
+   * @param[in] nbins Number of bins
+   * @param[in] min Minimum of the range (= lowest bin limit)
+   * @param[in] max Maximum of the range (= highest bin limit)
+   */
   void SetLinearBinning(const char *dirname, int nbins, double min, double max);
 
 private:
+  /**
+   * Find binning for the given dimension in the binning component
+   * @param[in] name of the dimension
+   * @return Binning data (null if not found)
+   */
+  AliEMCalTriggerBinningData *FindBinning(const char *dim) const;
+
   TObjArray       *fDimensions;           ///< List of binnings (dimensions)
 
   /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerBinningComponent, 1);
   /// \endcond
 };
-
-std::ostream &operator<<(std::ostream& stream, const AliEMCalTriggerBinningDimension &dim);
 
 } /* namespace EMCalTriggerPtAnalysis */
 

@@ -152,10 +152,24 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16a2c,        // anchored LHC15h pass 1
         kLHC15l1a2,       // anchored LHC15n pass 1
         kLHC15l1b2,       // anchored LHC15n pass 1
-        kLHC15k1,         // PbPb 5 no anchor
-        kLHC15k1a,        // PbPb 5 no anchor
-        kLHC15k1_plus,    // PbPb 5 no anchor
-        kLHC15k1b,        // PbPb 5 no anchor
+        kLHC15k1a1,       // LHC15o low IR firstPhysics
+        kLHC15k1a2,       // LHC15o low IR firstPhysics
+        kLHC15k1a3,       // LHC15o low IR firstPhysics
+	kLHC16j7,         // LHC15o low IR pass4
+        kLHC16g1,         // anchored LHC15o pass1 - general purpose
+        kLHC16g1a,        // anchored LHC15o pass1 - general purpose 0-10%
+        kLHC16g1b,        // anchored LHC15o pass1 - general purpose 10-50%
+        kLHC16g1c,        // anchored LHC15o pass1 - general purpose 50-90%
+        kLHC16g2,         // anchored LHC15o pass1 - general purpose EPOS-LHC
+        kLHC16g3,         // anchored LHC15o pass1 - general purpose DPMJET
+        kLHC16h4,         // anchored LHC15o pass1 - injected signals 0-100%
+        kLHC16h2a,        // anchored LHC15o pass1 - jet-jet 0-10%
+        kLHC16h2b,        // anchored LHC15o pass1 - jet-jet 10-50%
+        kLHC16h2c,        // anchored LHC15o pass1 - jet-jet 50-90%
+        kLHC16h3,          // anchored LHC15n pass2 - jet-jet first chunck
+        kLHC16h3b,         // anchored LHC15n pass2 - jet-jet second chunck
+        kLHC16h8a,        // anchored LHC15n pass2 - general purpose Pythia8
+        kLHC16h8b,        // anchored LHC15n pass2 - general purpose Pythia6
         
         // MC upgrade
         kLHC13d19,        // upgrade 5.5TeV PbPb
@@ -382,7 +396,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       
       //MC particle flags - determine whether particle is primary or secondary
       Bool_t    IsConversionPrimaryESD( AliStack *MCStack,
-                                        UInt_t stackpos, 
+                                        Long_t stackpos,
                                         Double_t prodVtxX, 
                                         Double_t prodVtxY,
                                         Double_t prodVtxZ);
@@ -499,7 +513,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,21)
+      ClassDef(AliConvEventCuts,22)
 };
 
 

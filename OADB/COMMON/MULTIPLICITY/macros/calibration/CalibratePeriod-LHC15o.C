@@ -28,6 +28,7 @@ CalibratePeriod_LHC15o(TString lPeriodName = "LHC15o"){
     Double_t lDesiredBoundaries[1000];
     Long_t   lNDesiredBoundaries=0;
     lDesiredBoundaries[0] = 100;
+    /*
    //From Low To High Multiplicity
     for( Int_t ib = 1; ib < 91; ib++) {
         lNDesiredBoundaries++;
@@ -46,7 +47,19 @@ CalibratePeriod_LHC15o(TString lPeriodName = "LHC15o"){
         lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] - 0.001;
     }
     lNDesiredBoundaries++;
+     */
+    
+    //Very simple 1%-wide bins all the way 
+    for( Int_t ib = 1; ib < 101; ib++) {
+        lNDesiredBoundaries++;
+        lDesiredBoundaries[lNDesiredBoundaries] = lDesiredBoundaries[lNDesiredBoundaries-1] - 1.0;
+    }
+    lNDesiredBoundaries++;
     lDesiredBoundaries[lNDesiredBoundaries] = 0;
+    
+    //cout<< "Dump for debug: "<<endl;
+    //for( Int_t ib=0;ib<101; ib++)
+    //    cout<<"Boundary #"<<ib<<" at "<<lDesiredBoundaries[ib]<<endl;
     
     lCalib->SetBoundaries( lNDesiredBoundaries, lDesiredBoundaries );
     cout<<"Boundaries set. Will attempt calibration now... "<<endl;

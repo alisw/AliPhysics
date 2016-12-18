@@ -97,6 +97,11 @@ AliAnalysisTaskCheckHFMCProd::AliAnalysisTaskCheckHFMCProd() :
   fHistEtaPhiPtRecPi(0),
   fHistEtaPhiPtRecK(0),
   fHistEtaPhiPtRecPro(0),
+  fHistPtRecVsPtGen(0),
+  fHistPhiRecVsPhiGen(0),
+  fHistEtaRecVsEtaGen(0),
+  fHistPtRecGood(0),
+  fHistPtRecFake(0),
   fSearchUpToQuark(kFALSE),
   fSystem(0),
   fESDtrackCuts(0x0),
@@ -323,7 +328,7 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
 
   fHistNcollHFtype=new TH2F("hNcollHFtype","",5,-1.5,3.5,30,-0.5,29.5);
   fOutput->Add(fHistNcollHFtype);
-  fHistNinjectedvsb=new TH2F("hNinjectedvsb","",50,0.,20.,100,-0.5,99.5);
+  fHistNinjectedvsb=new TH2F("hNinjectedvsb","",50,0.,20.,140,-0.5,139.5);
   fOutput->Add(fHistNinjectedvsb);
 
   Double_t binseta[11]={-1.0,-0.8,-0.6,-0.4,-0.2,0.,0.2,0.4,0.6,0.8,1.0};
@@ -356,7 +361,17 @@ void AliAnalysisTaskCheckHFMCProd::UserCreateOutputObjects() {
   fHistEtaPhiPtRecPro=new TH3F("hEtaPhiPtRecPro","",10,binseta,nBinsPhi,binsphi,nBinsPt,binspt);
   fOutput->Add(fHistEtaPhiPtRecPro);
 
- 
+  fHistPtRecVsPtGen=new TH2F("hPtRecVsPtGen","  ; particle p_{T}  (GeV/c); track p_{T} (GeV/c)",100,0.,10.,100,0.,10.);
+  fOutput->Add(fHistPtRecVsPtGen);
+  fHistPhiRecVsPhiGen=new TH2F("hPhiRecVsPhiGen","  ; particle #varphi ; track #varphi",100,0.,2.*TMath::Pi(),100,0.,2.*TMath::Pi());
+  fOutput->Add(fHistPhiRecVsPhiGen);
+  fHistEtaRecVsEtaGen=new TH2F("hEtaRecVsEtaGen","  ; particle #eta ; track #eta",100,0.,2.*TMath::Pi(),100,0.,2.*TMath::Pi());
+  fOutput->Add(fHistEtaRecVsEtaGen);
+
+  fHistPtRecGood=new TH1F("hPtRecGood"," ; track p_{T} (GeV/c)",100,0.,10.);
+  fOutput->Add(fHistPtRecGood);
+  fHistPtRecFake=new TH1F("hPtRecFake"," ; track p_{T} (GeV/c)",100,0.,10.);
+  fOutput->Add(fHistPtRecFake);
 
   PostData(1,fOutput);
 
@@ -481,7 +496,7 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
 	  nInjected++;
 	}else if(title.Contains("pythiaHF")){ 
 	  nInjected++;
-	}else if(title.Contains("hijing")){
+	}else if(title.Contains("hijing") || title.Contains("Hijing")){
 	  AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)lgen->At(ig);
 	  imppar=hijh->ImpactParameter();
 	}
@@ -489,6 +504,9 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
       nColl=lgen->GetEntries();
       fHistNcollHFtype->Fill(typeHF,nColl);
       fHistNinjectedvsb->Fill(imppar,nInjected);
+    }else if(genname.Contains("HijingEventHeader")){
+      AliGenHijingEventHeader* hijh=(AliGenHijingEventHeader*)mcEvent->GenEventHeader();
+      imppar=hijh->ImpactParameter();
     }else{
       TString genTitle=mcEvent->GenEventHeader()->GetTitle();
       if(genTitle.Contains("bchadr")) typeHF=1;
@@ -637,15 +655,20 @@ void AliAnalysisTaskCheckHFMCProd::UserExec(Option_t *)
     for(Int_t i=0; i<nTracks; i++){
       AliESDtrack* track=esd->GetTrack(i);
       if(fESDtrackCuts->AcceptTrack(track)){
+	if(track->GetLabel()>0) fHistPtRecGood->Fill(track->Pt());
+	else fHistPtRecFake->Fill(track->Pt());
 	Int_t label=TMath::Abs(track->GetLabel());
+	
 	if(stack->IsPhysicalPrimary(label)){
 	  TParticle* part = (TParticle*)stack->Particle(label);
 	  Int_t absPdg=TMath::Abs(part->GetPdgCode());
-	  Double_t eta=part->Eta();
-	  if(absPdg==11) fHistEtaPhiPtRecEle->Fill(eta,part->Phi(),part->Pt());
-	  else if(absPdg==211) fHistEtaPhiPtRecPi->Fill(eta,part->Phi(),part->Pt());
-	  else if(absPdg==321) fHistEtaPhiPtRecK->Fill(eta,part->Phi(),part->Pt());
-	  else if(absPdg==2212) fHistEtaPhiPtRecPro->Fill(eta,part->Phi(),part->Pt());      
+	  if(absPdg==11) fHistEtaPhiPtRecEle->Fill(part->Eta(),part->Phi(),part->Pt());
+	  else if(absPdg==211) fHistEtaPhiPtRecPi->Fill(part->Eta(),part->Phi(),part->Pt());
+	  else if(absPdg==321) fHistEtaPhiPtRecK->Fill(part->Eta(),part->Phi(),part->Pt());
+	  else if(absPdg==2212) fHistEtaPhiPtRecPro->Fill(part->Eta(),part->Phi(),part->Pt());
+	  fHistPtRecVsPtGen->Fill(part->Pt(),track->Pt());
+	  fHistPhiRecVsPhiGen->Fill(part->Phi(),track->Phi());
+	  fHistEtaRecVsEtaGen->Fill(part->Eta(),track->Eta());
 	}
       }
     }

@@ -90,7 +90,8 @@ fnMultBins(1),
 fnMultBinLimits(1),
 fMultBinLimits(0),
 fMinMultCand(-1.),
-fMaxMultCand(100000.)
+fMaxMultCand(100000.),
+fStoreInfoSoftPiME(kFALSE)
 {
 	// default constructor	
 }
@@ -140,7 +141,8 @@ fnMultBins(1),
 fnMultBinLimits(1),
 fMultBinLimits(0),
 fMinMultCand(-1.),
-fMaxMultCand(100000.)
+fMaxMultCand(100000.),
+fStoreInfoSoftPiME(kFALSE)
 {
 	fhadcuts = cuts;
      if(!fDMesonCutObject) AliInfo("D meson cut object not loaded - if using centrality the estimator will be V0M!");
@@ -189,7 +191,8 @@ fnMultBins(1),
 fnMultBinLimits(1),
 fMultBinLimits(0),
 fMinMultCand(-1.),
-fMaxMultCand(100000.)
+fMaxMultCand(100000.),
+fStoreInfoSoftPiME(kFALSE)
 {
 	fhadcuts = cuts;
     fDMesonCutObject = cutObject;
@@ -516,7 +519,8 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
 	if(!fhadcuts->CheckKaonCompatibility(track,fmontecarlo,fmcArray,fPIDmode)) continue; // check if it is a Kaon - data and MC
       }
       weight=fhadcuts->GetTrackWeight(pT,track->Eta(),pos[2]);
-      tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge(),weight));
+      if(fStoreInfoSoftPiME) tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge(),weight,track->Px(),track->Py(),track->Pz(),track->E(0.1396)));
+      else tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge(),weight));
     } // end loop on tracks
   } // end if use reconstruction kTRUE
   

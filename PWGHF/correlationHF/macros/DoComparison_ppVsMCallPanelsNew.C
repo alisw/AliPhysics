@@ -46,7 +46,7 @@ void SetIncludeAllMCmodels(Bool_t incl=kTRUE){
 }
 const Int_t nmodels=7;// does not matter that they are 6 maximum now; this is used only to define the 2 arrays modelColors and modelMarkerStyle
 Bool_t splitLegendMC=kFALSE;
-Color_t modelColors[nmodels]={kMagenta+1,kGreen+2,kBlue,kCyan,kRed+2,kOrange,kViolet};
+Color_t modelColors[nmodels]={kRed+2,kCyan,kGreen+2,kMagenta+1,kBlue,kOrange+1,kViolet};
 Int_t modelMarkerStyle[nmodels]={kOpenSquare,kOpenCircle,kOpenDiamond,3,28,26,33};
 TString pthadron[nbinAssocpt]={"0.3to99.0","0.3to1.0","1.0to99.0"};
 TString strmesonpt[nbinDpt]={"3to5","5to8","8to16"};
@@ -61,7 +61,7 @@ TString strPtAssocText[nbinAssocpt]={"#it{p}_{T}^{assoc} > 0.3 GeV/#it{c}, |#Del
 TString strPtRangeText[nbinDpt*nbinAssocpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 0.3 GeV/#it{c}", "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, 0.3 < #it{p}_{T}^{assoc} < 1 GeV/#it{c}","3 < #it{p}_{T}^{D} < 5 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, #it{p}_{T}^{assoc} > 1 GeV/#it{c}"};
 TString strPtMesonText[nbinDpt]={ "3 < #it{p}_{T}^{D} < 5 GeV/#it{c}", "5 < #it{p}_{T}^{D} < 8 GeV/#it{c}", "8 < #it{p}_{T}^{D} < 16 GeV/#it{c}, |#it{y}^{D}| < 0.5"};
 
-TString strYText= "|#it{y}^{D}| < 0.5, |#Delta#eta| < 1";
+TString strYText= "|#it{y}^{D}_{cms}| < 0.5, |#Delta#eta| < 1";
 
 TString filenames[nSets][nbinAssocpt][nbinDpt];// [coll syst][ptassoc][ptmes]
 TString pedestalfilenames[nSets][nbinAssocpt];// [coll syst][ptassoc]
@@ -605,7 +605,7 @@ void DoComparison_ppVsMCallPanels(){
 
       //      grbase[0][iassoc][jDpt]->SetFillStyle(3002);
       grbase[0][iassoc][jDpt]->SetFillColor(kGray+2);
-      grbase[0][iassoc][jDpt]->SetLineColor(kBlack);
+      grbase[0][iassoc][jDpt]->SetLineColor(kGray+2);
       suberr[0][iassoc][jDpt]->SetLineColor(kBlack);
 
       
@@ -615,7 +615,7 @@ void DoComparison_ppVsMCallPanels(){
       suberr[0][iassoc][jDpt]->Draw("E2");
 
       Float_t size=0.058;
-      SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.104,22);//0.08
+      SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.08,0.104,22);//0.08
       //      if(iassoc==2)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.11,0.2,0.06);
       if(iassoc==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.1,0.2,22);//0.087
       //      if(iassoc==0 && jDpt==1)SetScaleUncertaintyPositionAndSize(ltscale[0][iassoc][jDpt],0.11,0.11,0.062);
@@ -642,8 +642,9 @@ void DoComparison_ppVsMCallPanels(){
      //  subtractedhisto[3][iassoc][jDpt]->Draw("same");//Perugia2011
      //  subtractedhisto[4][iassoc][jDpt]->Draw("same");//PYTHIA8
      //  subtractedhisto[5][iassoc][jDpt]->Draw("same");//POWHEG
-      subtractedhisto[0][iassoc][jDpt]->Draw("same");//pp DATA
-     
+      subtractedhisto[0][iassoc][jDpt]->Draw("same");//pp DATA 
+      suberr[0][iassoc][jDpt]->Draw("E2");
+    
       TPaveText *pvAverage=GetAveragepavetext((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
       TPaveText *alice=GetALICEpavetext((nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);  
       //TPaveText *pvKineInfo = GetPaveKineInfo(strPtMesonText[jDpt],strPtAssocText[iassoc],(nbinDpt-firstDpt)*iassoc+jDpt-firstDpt+1);
@@ -1016,7 +1017,7 @@ TPaveText *  pvKineInfo = new TPaveText(0.02/gPad->GetWNDC()+gPad->GetLeftMargin
   return pvKineInfo;
 }
 TLegend *GetLegendBaselines(TGraphAsymmErrors *gpp,Int_t identifier){
-  TLegend * legend = new TLegend(0.50,0.39,0.9,0.47);//pad 0
+  TLegend * legend = new TLegend(0.27,0.39,0.55,0.47);//pad 0
   //  TLegend * legend = new TLegend(0.40,0.45,0.85,0.55);//pad 1
   // TLegend * legend = new TLegend(0.40,0.6,0.85,0.67);
   // TLegend * legend = new TLegend(0.40,0.64,0.85,0.72);
@@ -1027,9 +1028,9 @@ TLegend *GetLegendBaselines(TGraphAsymmErrors *gpp,Int_t identifier){
   legend->SetTextFont(43);
   legend->SetTextAlign(12);
   // legend->SetTextSize(0.055/(gPad->GetHNDC())*scaleHeightPads);
-  legend->SetTextSize(21.9*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
+  legend->SetTextSize(22*innerPadHeight/referencePadHeight*resizeTextFactor);// settings for font 42: 0.07/(gPad->GetHNDC())*scaleHeight
  
-  legend->AddEntry(gpp,"baseline uncertainty","f");
+  legend->AddEntry(gpp,"baseline-subtraction uncertainty","f");
   legend->SetName(Form("LegendBaselineUncPPandpPb_%d",identifier));
   return legend;
 }
@@ -1059,15 +1060,19 @@ TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4=0x0,TH1D *hMC5=
   if(hMC4)nEffectiveModels++;
   if(hMC5)nEffectiveModels++;
   if(hMC6)nEffectiveModels++;
-  
+
   Double_t ylegMin=0.4,ylegMax=0.75;
-  if(hMC1==0x0 || nEffectiveModels>=6)ylegMax=0.68; // no header in TLegend
+  if(hMC1==0x0 || nEffectiveModels>=6)ylegMax=0.675; // no header in TLegend
   if(nEffectiveModels>=6){
     ylegMin=0.37;
   }
   else if(nEffectiveModels<=4){
     ylegMin=0.46;
   }
+  if(nEffectiveModels==2){
+    ylegMin=0.535;
+  }
+printf("in max %f %f\n",ylegMin,ylegMax);
   TLegend * legend= new TLegend(0.1,ylegMin,0.7,ylegMax,NULL,"brNDC");
 //   if(nEffectiveModels<6){
 //     if(hMC1!=0x0) legend= new TLegend(0.1,0.4,0.7,0.75,NULL,"brNDC");
@@ -1099,7 +1104,7 @@ TLegend *GetLegendMC(TH1D *hMC1,TH1D *hMC2,TH1D *hMC3,TH1D *hMC4=0x0,TH1D *hMC5=
     if(hMC3)legend->AddEntry(hMC3,"PYTHIA6, Perugia 2011","l");   
     if(hMC4)legend->AddEntry(hMC4,"PYTHIA8, Tune 4C","l");
     if(hMC5)legend->AddEntry(hMC5,"POWHEG+PYTHIA6","l");
-    if(hMC6)legend->AddEntry(hMC6,"EPOS 3","l");
+    if(hMC6)legend->AddEntry(hMC6,"EPOS 3.117","l");
     
 
     //legend->AddEntry(hMC1,"PYTHIA6, Perugia0","lep");

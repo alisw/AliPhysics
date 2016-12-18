@@ -1,9 +1,9 @@
 /**
- * @file   ExtractGSE2.C
+ * @file   PWGLF/FORWARD/analysis2/dndeta/tracklets3/ExtractGSE2.C
  * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Apr 27 16:51:39 2016
  * 
- * @brief  
+ * @brief  Extract GraphSysErr from results 
  * 
  * 
  * @ingroup pwglf_forward_tracklets
@@ -132,19 +132,27 @@ Double_t EtaSysEval(Double_t x, Double_t sMin, Double_t sMax)
  * Make a GraphSysErr object
  * 
  * @param d   Directory 
+ * @param dimen Dimension 
  * @param sNN Collision energy in GeV
  * @param c1  Least centrality 
  * @param c2  Largest centrality 
  * 
  * @return Newly created GraphSysErr
  */
-TObject* MakeGSE(TDirectory* d, Int_t dimen, UShort_t sNN, Double_t c1, Double_t c2)
+TObject* MakeGSE(TDirectory* d,
+		 Int_t dimen,
+		 UShort_t sNN,
+		 Double_t c1,
+		 Double_t c2)
 {
   if (!gROOT->GetClass("GraphSysErr")) return 0;
   TString  bin; bin.Form("%03dd%02d_%03dd%02d",
 			 Int_t(c1), Int_t(c1*100)%100, 
 			 Int_t(c2), Int_t(c2*100)%100);
-  TString sub(bin); sub.Prepend("cent");
+  Bool_t isAll = (c1+1.e-9 >= c2);
+  if (isAll) bin = "all";
+  TString sub(bin);
+  if (!isAll) sub.Prepend("cent");
   sub.Append(Form("/results%dd/result", dimen));
   TString nme(bin); nme.Prepend("CENT_");
   TH1*    g = GetH1(d, sub);
@@ -168,7 +176,7 @@ TObject* MakeGSE(TDirectory* d, Int_t dimen, UShort_t sNN, Double_t c1, Double_t
   gse->SetKey("accelerator", "LHC");
   gse->SetKey("detector", "TRACKLETS");
   gse->SetKey("reference", sNN==5023 ? "ALICE-AN-2830" : "ALICE-AN-2180");
-  gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
+  if (!isAll)gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
   gse->AddQualifier("SQRT(S)/NUCLEON IN GEV", Form("%d", sNN));
   gse->SetXTitle("ETARAP");
   gse->SetYTitle("DN/DETARAP");
@@ -215,20 +223,27 @@ TObject* MakeGSE(TDirectory* d, Int_t dimen, UShort_t sNN, Double_t c1, Double_t
  * Make a GraphSysErr object for simulations 
  * 
  * @param d   Directory 
+ * @param dimen Dimension 
  * @param sNN Collision energy in GeV
  * @param c1 Least centrality 
  * @param c2 Largest centrality 
  * 
  * @return Newly created GraphSysErr
  */
-TObject* MakeTGSE(TDirectory* d, Int_t dimen, UShort_t sNN,  Double_t c1, Double_t c2)
+TObject* MakeTGSE(TDirectory* d,
+		  Int_t dimen,
+		  UShort_t sNN,
+		  Double_t c1,
+		  Double_t c2)
 {
   if (!gROOT->GetClass("GraphSysErr")) return 0;
   TString  bin; bin.Form("%03dd%02d_%03dd%02d",
 			 Int_t(c1), Int_t(c1*100)%100, 
 			 Int_t(c2), Int_t(c2*100)%100);
+  Bool_t isAll = (c1+1.e-9 >= c2);
+  if (isAll) bin = "all";
   TString sub(bin);
-  sub.Prepend("cent");
+  if (!isAll) sub.Prepend("cent");
   sub.Append(Form("/results%dd/simG",dimen));
   TString nme(bin); nme.Prepend("CENTT_");
   TH1*    g = GetH1(d, sub);
@@ -248,7 +263,7 @@ TObject* MakeTGSE(TDirectory* d, Int_t dimen, UShort_t sNN,  Double_t c1, Double
   gse->SetKey("accelerator", "LHC");
   gse->SetKey("detector", "TRACKLETS");
   gse->SetKey("reference", sNN==5023 ? "ALICE-AN-2830" : "ALICE-AN-2180");
-  gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
+  if (!isAll)gse->AddQualifier("CENTRALITY IN PCT", Form("%.1f TO %.1f",c1,c2));
   gse->AddQualifier("SQRT(S)/NUCLEON IN GEV", Form("%d", sNN));
   gse->SetXTitle("ETARAP");
   gse->SetYTitle("DN/DETARAP");
@@ -327,30 +342,35 @@ ExtractGSE2(const char* input, UShort_t sNN=5023)
   if (!gROOT->GetClass("GraphSysErr")) 
     gROOT->LoadMacro("$HOME/GraphSysErr/GraphSysErr.C+g");
 
-  TString base = gSystem->BaseName(input); base.ReplaceAll(".root","");
-  TFile*  file = TFile::Open(input, "READ");
-  if (!file) return;
-
+  TString base = input; //gSystem->DirName(input); base.ReplaceAll(".root","");
+  TFile*  file = TFile::Open(Form("%s/result.root",input), "READ");
+  if (!file) {
+    Warning("ExtractGSE2", "Failed to open %s/result.root", input);
+    return;
+  }
+  
   Int_t dimen = -1;
   if      (base.EndsWith("unit"))    dimen = 0;
   else if (base.EndsWith("const"))   dimen = 1;
   else if (base.EndsWith("eta"))     dimen = 2;
   else if (base.EndsWith("etaipz"))  dimen = 3;
   if (dimen < 0) {
-    Error("ExtractGSE2", "Don't know how to extract dimension from %s",input);
+    Error("ExtractGSE2", "Don't know how to extract dimension from %s",base);
     return;
   }
-  
-  TH1* cent = GetH1(file, "realCent");
 
-  Bool_t first = true;
-  TList* stack = new TList;
-  TList* truths = new TList;
+  TH1* frame = 0;
+  TH1* cent  = GetH1(file, "realCent");
+
+  Bool_t   first  = true;
+  TList*   stack  = new TList;
+  TList*   truths = new TList;
   for (Int_t i = 1; i <= cent->GetNbinsX(); i++) {
     Double_t c1 = cent->GetXaxis()->GetBinLowEdge(i);
     Double_t c2 = cent->GetXaxis()->GetBinUpEdge(i);
     TObject* g  = MakeGSE(file,  dimen, sNN, c1, c2);
     TObject* t  = MakeTGSE(file, dimen, sNN, c1, c2);
+    Double_t gmin, gmax, tmin, tmax;
     if (!g) continue;
     stack->Add(g);    
     truths->Add(t);    
@@ -358,16 +378,22 @@ ExtractGSE2(const char* input, UShort_t sNN=5023)
     else       g->Draw("quad stat combine");
     if (t)     t->Draw("quad");
     first = false;
+    if (!frame) {
+      GraphSysErr* gse = static_cast<GraphSysErr*>(g);
+      if (gse->GetMulti())
+	frame = gse->GetMulti()->GetHistogram();
+    }
   }
-
-  TString obase(base); obase.Prepend("GSE_");
+  if (frame) frame->SetMinimum(1);
+	       
+  // TString obase(base); obase.Prepend("GSE_");
   
-  std::ofstream out(Form("%s.input", obase.Data()));
+  std::ofstream out(Form("%s/gse.input", base.Data()));
   GraphSysErr::Export(stack, out, "HFC", 2);
   out << "*E" << std::endl;
   out.close();
 
-  TFile* rout = TFile::Open(Form("%s.root", obase.Data()), "RECREATE");
+  TFile* rout = TFile::Open(Form("%s/gse.root", base.Data()), "RECREATE");
   stack->AddAll(truths);
   stack->Write("container", TObject::kSingleKey);
   rout->Write();

@@ -436,8 +436,7 @@ void AliAnalysisTaskQnVectorAnalysis::FinishTaskOutput()
       for(Int_t h=0; h < kNharmonics; h++) {
         for(Int_t corrComp =0; corrComp< kNcorrelationComponents; corrComp++){
           if (fVn[iTrkDetector*nEPDetectors+iEPDetector][h][corrComp]) {
-            if (fVn[iTrkDetector*nEPDetectors+iEPDetector][h][corrComp]->GetEntries() > 0)
-              fEventQAList->Add(fVn[iTrkDetector*nEPDetectors+iEPDetector][h][corrComp]);
+            fEventQAList->Add(fVn[iTrkDetector*nEPDetectors+iEPDetector][h][corrComp]);
           }
         }
       }
@@ -479,7 +478,7 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskQnVectorAnalysis::GetQnVectorFrom
     else
       theQnVector = (AliQnCorrectionsQnVector*) pQvecList->FindObject(expectedstep);
 
-    if (theQnVector == NULL) {
+    if (theQnVector == NULL || !(theQnVector->IsGoodQuality()) || !(theQnVector->GetN() != 0)) {
       /* the Qn vector for the expected step was not there */
       if (TString(altstep).EqualTo("latest"))
         theQnVector = (AliQnCorrectionsQnVector*) pQvecList->First();

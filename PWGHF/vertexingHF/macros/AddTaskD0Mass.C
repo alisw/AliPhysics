@@ -5,7 +5,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
 				       TString finDirname="Loose",
 				       TString finname="",TString finObjname="D0toKpiCuts", Bool_t flagAOD049=kFALSE,
 				       Bool_t FillMassPt=false, Bool_t FillImpPar=false,
-				       Bool_t DrawDetSignal=false, Bool_t PIDCheck=false, Bool_t FillMassY=false, Bool_t FillMCAcc=true)
+				       Bool_t DrawDetSignal=false, Bool_t PIDCheck=false, Bool_t FillMassY=false, Bool_t FillMCAcc=true,Int_t AODProtection = 1)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -232,6 +232,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
   massD0Task->SetSystem(system); //0=pp, 1=PbPb
   massD0Task->SetFillVarHists(filldistr); // default is FALSE if System=PbPb
+
+  massD0Task->SetAODMismatchProtection(AODProtection);
 
   massD0Task->SetFillPtHistos(FillMassPt);
   massD0Task->SetFillImpactParameterHistos(FillImpPar);

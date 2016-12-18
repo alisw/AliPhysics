@@ -84,6 +84,9 @@ fSBInnerSigmas(4),
 fSBSingleBin(kTRUE),
 fDeltaEtaMin(-1.0),
 fDeltaEtaMax(1.0),
+fUseMC(kFALSE),
+fElSource(0),
+fD0Source(0),
 fSignalCorrel(0x0),
 fBackgrCorrel(0x0),
 fRangesSignL(0x0),
@@ -161,6 +164,9 @@ fSBInnerSigmas(source.fSBInnerSigmas),
 fSBSingleBin(source.fSBSingleBin),
 fDeltaEtaMin(source.fDeltaEtaMin),
 fDeltaEtaMax(source.fDeltaEtaMax),
+fUseMC(source.fUseMC),
+fElSource(source.fElSource),
+fD0Source(source.fD0Source),
 fSignalCorrel(source.fSignalCorrel),
 fBackgrCorrel(source.fBackgrCorrel),
 fRangesSignL(source.fRangesSignL),
@@ -188,11 +194,13 @@ AliDhCorrelationExtraction::~AliDhCorrelationExtraction() {
 //___________________________________________________________________________________________
 Bool_t AliDhCorrelationExtraction::SetDmesonSpecie(DMesonSpecies k){
 
-  if(k<0 || k>2) {
+  if(k<0 || k>3) {
     printf("Error! D meson specie not correctly set!\n");
     return kFALSE;
   } else if(k==0) fDmesonLabel="Dzero";
-  else if(k==1) fDmesonLabel="Dplus";  
+  else if(k==1) fDmesonLabel="Dplus"; 
+  //  else if(k==2) fDmesonLabel="Dstar"; //Suggested change instead of using else-statement for Dstar
+  else if(k==3) fDmesonLabel="Dzero";
   else fDmesonLabel="Dstar";
 
   fDmesonSpecies=k;
@@ -352,6 +360,11 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
         THnSparse *h = (THnSparse*)fMassList->FindObject(Form("%s%d",fMassHistoName.Data(),i+fFirstpTbin));
         fMassHisto[i] = (TH1F*)h->Projection(0);
       }
+      else if (fDmesonSpecies==kDxHFE) {
+	THnSparseF *h = (THnSparseF*)fMassList->FindObject("D0 info"); 
+	SetPtRanges(i+fFirstpTbin, h, kDxD0Pt);
+	fMassHisto[i] = (TH1F*)h->Projection(kDxD0Mass);
+      }
       else fMassHisto[i] = (TH1F*)fMassList->FindObject(Form("%s%d",fMassHistoName.Data(),i+fFirstpTbin));
     } else { //Integrate mass pT bins in wider correlation pT bin
       if(i>0) continue;
@@ -374,6 +387,10 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
       fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
       fitter->SetInitialGaussianMean(0.1454);
       fitter->SetInitialGaussianSigma(0.0005);
+    } else if(fDmesonSpecies==kDxHFE) {
+      fitter = new AliHFMassFitter(fMassHisto[i],fLeftFitRange,fRightFitRange,1,fBkgFitFunction,0);
+      fitter->SetInitialGaussianMean(1.864);
+      fitter->SetInitialGaussianSigma(0.010);
     } else {
       printf("Error! Decay channel not supported!\n"); 
       return kFALSE;
@@ -485,13 +502,17 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   //Histograms definition
   TH2D* hSE_Sign[fNpools][fNpTbins];
   TH2D* hME_Sign[fNpools][fNpTbins];  
+  TH2D* hME_Sign_SoftPi[fNpools][fNpTbins];  
   TH2D* hSE_Sideb[fNpools][fNpTbins];
   TH2D* hME_Sideb[fNpools][fNpTbins];
+  TH2D* hME_Sideb_SoftPi[fNpools][fNpTbins];  
 
   TH2D* hSE_Sign_PtInt[fNpools];
   TH2D* hME_Sign_PtInt[fNpools];
+  TH2D* hME_Sign_SoftPi_PtInt[fNpools];
   TH2D* hSE_Sideb_PtInt[fNpools];
   TH2D* hME_Sideb_PtInt[fNpools];
+  TH2D* hME_Sideb_SoftPi_PtInt[fNpools];
 
   TH2D* hCorr_Sign_PtInt[fNpools];
   TH2D* hCorr_Sideb_PtInt[fNpools];
@@ -516,12 +537,20 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
       hME_Sign[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax);
       hSE_Sideb[iPool][iBin] = GetCorrelHisto(kSE,kSideb,iPool,iBin,thrMin,thrMax);
       hME_Sideb[iPool][iBin] = GetCorrelHisto(kME,kSideb,iPool,iBin,thrMin,thrMax);
+      if(fSubtractSoftPiME) {
+        hME_Sign_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax,2); //2 = pick only bin2 of softpi axis (#5), i.e. pick the fake softpions
+        hME_Sideb_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax,2);
+      }
 
       //Scale bkg plots by ratio of signal region/sidebands
       hSE_Sideb[iPool][iBin]->Scale(fScaleFactor[iBin]);
       hME_Sideb[iPool][iBin]->Scale(fScaleFactor[iBin]);
       hSE_Sideb[iPool][iBin]->SetEntries(hSE_Sideb[iPool][iBin]->GetEntries()*fScaleFactor[iBin]);
       hME_Sideb[iPool][iBin]->SetEntries(hME_Sideb[iPool][iBin]->GetEntries()*fScaleFactor[iBin]);
+      if(fSubtractSoftPiME) {
+        hME_Sideb_SoftPi[iPool][iBin]->Scale(fScaleFactor[iBin]);
+        hME_Sideb_SoftPi[iPool][iBin]->SetEntries(hME_Sideb_SoftPi[iPool][iBin]->GetEntries()*fScaleFactor[iBin]); 
+      }
 
       if(fDebug>=1) { 
 	TCanvas *c = new TCanvas(Form("cInput_%d_%d_%1.1fto%1.1f",iPool,iBin,thrMin,thrMax),Form("InputCorr_%s_pool%d_bin%d_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),iPool,iBin,thrMin,thrMax),100,100,1200,900);
@@ -547,18 +576,27 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
         hME_Sign_PtInt[iPool] = (TH2D*)hME_Sign[iPool][iBin]->Clone(Form("hME_Sign_PtInt_p%d",iPool));
         hSE_Sideb_PtInt[iPool] = (TH2D*)hSE_Sideb[iPool][iBin]->Clone(Form("hSE_Sideb_PtInt_p%d",iPool));
         hME_Sideb_PtInt[iPool] = (TH2D*)hME_Sideb[iPool][iBin]->Clone(Form("hME_Sideb_PtInt_p%d",iPool));
+        if(fSubtractSoftPiME) {
+	  hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));
+          hME_Sideb_SoftPi_PtInt[iPool] = (TH2D*)hME_Sideb_SoftPi[iPool][iBin]->Clone(Form("hME_Sideb_SoftPi_PtInt_p%d",iPool));
+        }
       }
       else {
         hSE_Sign_PtInt[iPool]->Add(hSE_Sign[iPool][iBin]);
         hME_Sign_PtInt[iPool]->Add(hME_Sign[iPool][iBin]);
         hSE_Sideb_PtInt[iPool]->Add(hSE_Sideb[iPool][iBin]);
         hME_Sideb_PtInt[iPool]->Add(hME_Sideb[iPool][iBin]);
+        if(fSubtractSoftPiME) {
+	  hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
+          hME_Sideb_SoftPi_PtInt[iPool]->Add(hME_Sideb_SoftPi[iPool][iBin]);
+        }
       }
 
     } // end of pT for
 
-    NormalizeMEplot(hME_Sign_PtInt[iPool]);
-    NormalizeMEplot(hME_Sideb_PtInt[iPool]);
+    //Normalize ME plots and (if requested) remove the softpion-compatible tracks
+    NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
+    NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
 
     //Apply Event Mixing Correction
     hCorr_Sign_PtInt[iPool] = (TH2D*)hSE_Sign_PtInt[iPool]->Clone(Form("hCorr_Sign_PtInt_p%d",iPool));
@@ -785,6 +823,43 @@ void AliDhCorrelationExtraction::MergeCorrelPlotsVsPt(THnSparse* &hsparse, Int_t
       break;
     } //end case D*
 
+  case (kDxHFE): { //take 1st pT bin
+    if(SEorME==kSE) {
+      hsparse = (THnSparse*)(fSECorrelationList->FindObject(Form("%s",fSECorrelHistoName.Data())))->Clone();
+      SetPtRanges(fFirstpTbin, hsparse, kDxCorrD0Pt);
+      if(fUseMC){
+	if(fElSource!=kAll) SetElSource(fElSource, hsparse, kDxCorrMCOriginEl);
+	if(fD0Source!=kAll) SetD0Source(fD0Source, hsparse, kDxCorrMCOriginD0);
+      }
+      if(fCorrectPoolsSeparately){hsparse->GetAxis(kDxCorrPoolbin)->SetRangeUser(pool,pool);}
+    } else if(SEorME==kME) {
+      hsparse = (THnSparse*)(fMECorrelationList->FindObject(Form("%s%s",fSECorrelHistoName.Data(),fMEsuffix.Data())))->Clone();
+      if(fUseMC){
+	if(fElSource!=kAll) SetElSource(fElSource, hsparse, kDxCorrMCOriginEl);
+	if(fD0Source!=kAll) SetD0Source(fD0Source, hsparse, kDxCorrMCOriginD0);}
+      if(fCorrectPoolsSeparately){hsparse->GetAxis(kDxCorrPoolbin)->SetRangeUser(pool,pool);}
+    }
+    for(int iBin=1; iBin<fNpTbins; iBin++) { //now add other bins
+      if(SEorME==kSE) {
+	THnSparse *hsparse2=(THnSparse*)(fSECorrelationList->FindObject(Form("%s",fSECorrelHistoName.Data())))->Clone();
+	SetPtRanges(iBin+fFirstpTbin, hsparse2, kDxCorrD0Pt);
+	if(fUseMC){
+	  if(fElSource!=kAll) SetElSource(fElSource, hsparse2, kDxCorrMCOriginEl);
+	  if(fD0Source!=kAll) SetD0Source(fD0Source, hsparse2, kDxCorrMCOriginD0);
+	}
+	if(fCorrectPoolsSeparately){hsparse2->GetAxis(kDxCorrPoolbin)->SetRangeUser(pool,pool);}
+      } else if(SEorME==kME) {
+	THnSparse *hsparse2=(THnSparse*)(fMECorrelationList->FindObject(Form("%s%s",fSECorrelHistoName.Data(),fMEsuffix.Data())))->Clone();
+	SetPtRanges(iBin+fFirstpTbin, hsparse2, kDxCorrD0Pt);
+	if(fUseMC){
+	  if(fElSource!=kAll) SetElSource(fElSource, hsparse2, kDxCorrMCOriginEl);
+	  if(fD0Source!=kAll) SetD0Source(fD0Source, hsparse2, kDxCorrMCOriginD0);}
+	if(fCorrectPoolsSeparately){hsparse2->GetAxis(kDxCorrPoolbin)->SetRangeUser(pool,pool);}
+      }
+    }  
+    break;
+  } //end case DxHFE
+
     default:    
       printf("Error! Wrong setting in the D meson specie - Returning...\n");
       return; 
@@ -829,6 +904,11 @@ void AliDhCorrelationExtraction::MergeCorrelPlotsVsPtTTree(TH3D* &h3D, Int_t SEo
       break;
     } //end case D*
 
+  case (kDxHFE): { //Not yet implemented for DxHFE
+    printf("Error! Function not in place for DxHFE - Returning...\n");
+    return;
+  } //end case DxHFE
+
     default:    
       printf("Error! Wrong setting in the D meson specie - Returning...\n");
       return; 
@@ -838,13 +918,13 @@ void AliDhCorrelationExtraction::MergeCorrelPlotsVsPtTTree(TH3D* &h3D, Int_t SEo
 }
 
 //___________________________________________________________________________________________
-TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME) {
 
   switch(fDmesonSpecies) {
 
-    case (kD0toKpi): {
+    case (kD0toKpi): {  //in this case, it can also extract fake softpions from ME analysis (from online correl analysis only)
       if((fReadTreeSE && SEorME==kSE) || (fReadTreeME && SEorME==kME)) return GetCorrelHistoDzeroTTree(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
-      else return GetCorrelHistoDzero(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      else return GetCorrelHistoDzero(SEorME,SorSB,pool,pTbin,thrMin,thrMax,softPiME);
       break;
     } //end case D0
 
@@ -860,6 +940,11 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_
       break;
     } //end case D*
 
+    case (kDxHFE): {
+      return GetCorrelHistoDxHFE(SEorME,SorSB,pool,pTbin,thrMin,thrMax);
+      break;
+    } //end case DxHFE
+
     default:    
       printf("Error! Wrong setting in the D meson specie - Returning...\n");
       return 0x0; 
@@ -869,7 +954,7 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_
 
 
 //___________________________________________________________________________________________
-TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME) {
 
   TH2D* h2D = new TH2D(); //pointer to be returned
 
@@ -907,6 +992,12 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB,
     if(etaLowBin < 1) etaLowBin = 1;
     hsparse->GetAxis(2)->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
     hsparse->GetAxis(3)->SetRange(ptBinTrMin,ptBinTrMax); //Apply cut on pT
+    if(fSubtractSoftPiME) {
+      if(hsparse->GetNdimensions()==5) hsparse->GetAxis(4)->SetRange(softPiME,2); //Apply cut on softpi axis (bin1=accepted tracks, bin2=fake softpi)
+      else printf("*** Removal of fake-softpi from ME distributions not possible! Info not saved in the online analysis! ***\n");
+    } else {
+      if(hsparse->GetNdimensions()==5) hsparse->GetAxis(4)->SetRange(1,2); //just to be sure that everything is considered when projecting (though only bin1 will be filled)
+    }
     if(fDebug>=2 && pool==0) printf("Bin ranges - pT: %d-%d, dEta: %d-%d\n",ptBinTrMin,ptBinTrMax,etaLowBin,etaHighBin);
     h3D = (TH3D*)hsparse->Projection(1,2,0);//x,y,z axes
   }
@@ -1031,6 +1122,80 @@ TH2D* AliDhCorrelationExtraction::GetCorrelHistoDstar(Int_t SEorME, Int_t SorSB,
   return h2D;
 }
 
+//___________________________________________________________________________________________
+TH2D* AliDhCorrelationExtraction::GetCorrelHistoDxHFE(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
+  TH2D* h2D = new TH2D(); //pointer to be returned
+
+  TH3D* h3D; //for projecting the TH2Sparse onto
+  if(SEorME==kSE) {
+    THnSparse *hsparse = 0x0;
+    if(!fIntegratePtBins) {
+      hsparse = (THnSparse*)fSECorrelationList->FindObject(Form("%s",fSECorrelHistoName.Data()));
+      if(fCorrectPoolsSeparately){hsparse->GetAxis(kDxCorrPoolbin)->SetRangeUser(pool,pool);}
+      SetPtRanges(pTbin+fFirstpTbin, hsparse, kDxCorrD0Pt);
+      if(fUseMC){
+	if(fElSource!=kAll) SetElSource(fElSource, hsparse, kDxCorrMCOriginEl);
+	if(fD0Source!=kAll) SetD0Source(fD0Source, hsparse, kDxCorrMCOriginD0);
+      }
+    } else {MergeCorrelPlotsVsPt(hsparse,SEorME,SorSB,pool);}//check how ptbins are set in integrate scenario here
+    Int_t ptBinTrMin = (Int_t)(hsparse->GetAxis(kDxCorrElPt)->FindBin(thrMin+0.01)); //the 0.01 to avoid bin edges!
+    Int_t ptBinTrMax = (Int_t)(hsparse->GetAxis(kDxCorrElPt)->FindBin(thrMax-0.01));
+    Int_t etaLowBin = (Int_t)(hsparse->GetAxis(kDxCorrdEta)->FindBin(fDeltaEtaMin+0.01));
+    Int_t etaHighBin = (Int_t)(hsparse->GetAxis(kDxCorrdEta)->FindBin(fDeltaEtaMax-0.01));
+    if(ptBinTrMax > hsparse->GetAxis(kDxCorrElPt)->GetNbins()) ptBinTrMax = hsparse->GetAxis(kDxCorrElPt)->GetNbins();
+    if(etaHighBin > hsparse->GetAxis(kDxCorrdEta)->GetNbins()) etaHighBin = hsparse->GetAxis(kDxCorrdEta)->GetNbins();
+    if(etaLowBin < 1) etaLowBin = 1;
+    hsparse->GetAxis(kDxCorrElPt)->SetRange(ptBinTrMin,ptBinTrMax); //Apply cut on pT
+    //    hsparse->GetAxis(3)->SetRange(1,hsparse->GetAxis(3)->GetNbins()); //AApply cut on displacement
+    hsparse->GetAxis(kDxCorrdEta)->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
+    if(fDebug>=2 && pool==0) printf("Bin ranges - pT: %d-%d, dEta: %d-%d\n",ptBinTrMin,ptBinTrMax,etaLowBin,etaHighBin);
+    h3D = (TH3D*)hsparse->Projection(kDxCorrD0Mass,kDxCorrdEta,kDxCorrdPhi);//x,y,z axes (invmass, deta, dphi)
+  } else if(SEorME==kME) {
+    THnSparse *hsparse = 0x0;
+    if(!fIntegratePtBins) {
+      hsparse = (THnSparse*)fMECorrelationList->FindObject(Form("%s%s",fSECorrelHistoName.Data(),fMEsuffix.Data()));
+      if(fCorrectPoolsSeparately){hsparse->GetAxis(kDxCorrPoolbin)->SetRangeUser(pool,pool);}
+      SetPtRanges(pTbin+fFirstpTbin, hsparse, kDxCorrD0Pt);
+      if(fUseMC){
+	if(fElSource!=kAll) SetElSource(fElSource, hsparse, kDxCorrMCOriginEl);
+	if(fD0Source!=kAll) SetD0Source(fD0Source, hsparse, kDxCorrMCOriginD0);}
+    } else {MergeCorrelPlotsVsPt(hsparse,SEorME,SorSB,pool);}
+    Int_t ptBinTrMin = (Int_t)(hsparse->GetAxis(kDxCorrElPt)->FindBin(thrMin+0.01));
+    Int_t ptBinTrMax = (Int_t)(hsparse->GetAxis(kDxCorrElPt)->FindBin(thrMax-0.01));
+    Int_t etaLowBin = (Int_t)(hsparse->GetAxis(kDxCorrdEta)->FindBin(fDeltaEtaMin+0.01));
+    Int_t etaHighBin = (Int_t)(hsparse->GetAxis(kDxCorrdEta)->FindBin(fDeltaEtaMax-0.01));
+    if(ptBinTrMax > hsparse->GetAxis(kDxCorrElPt)->GetNbins()) ptBinTrMax = hsparse->GetAxis(kDxCorrElPt)->GetNbins();
+    if(etaHighBin > hsparse->GetAxis(kDxCorrdEta)->GetNbins()) etaHighBin = hsparse->GetAxis(kDxCorrdEta)->GetNbins();
+    if(etaLowBin < 1) etaLowBin = 1;
+    hsparse->GetAxis(kDxCorrElPt)->SetRange(ptBinTrMin,ptBinTrMax); //Apply cut on pT
+    hsparse->GetAxis(kDxCorrdEta)->SetRange(etaLowBin,etaHighBin); //Apply cut on deltaEta
+    if(fDebug>=2 && pool==0) printf("Bin ranges - pT: %d-%d, dEta: %d-%d\n",ptBinTrMin,ptBinTrMax,etaLowBin,etaHighBin);
+    h3D = (TH3D*)hsparse->Projection(kDxCorrD0Mass,kDxCorrdEta,kDxCorrdPhi);//x,y,z axes 
+  }
+  //now restrict to signal or to sidebands
+  if(SorSB==kSign) {
+    h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+    if(fDebug>=2 && pool==0) printf("Signal range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSignL[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSignR[pTbin]-0.00001));
+    h2D = (TH2D*)h3D->Project3D("yz");
+  } else if (SorSB==kSideb) {
+    TH3D* h3Da = (TH3D*)h3D->Clone(Form("%s_sb2",h3D->GetName()));
+    if(!fSBSingleBin) {
+      h3Da->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+      h3D->GetXaxis()->SetRange(h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+      if(fDebug>=2 && pool==0) printf("SB1 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB1L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB1R[pTbin]-0.00001));
+      if(fDebug>=2 && pool==0) printf("SB2 range bins: %d-%d\n",h3D->GetXaxis()->FindBin(fRangesSB2L[pTbin]+0.00001),h3D->GetXaxis()->FindBin(fRangesSB2R[pTbin]-0.00001));
+    } else {
+      h3Da->GetXaxis()->SetRange(h3Da->GetXaxis()->GetNbins(),h3Da->GetXaxis()->GetNbins());
+      h3D->GetXaxis()->SetRange(1,1);
+    }
+    TH2D* h2Da = (TH2D*)h3Da->Project3D("yz"); 
+    h2D = (TH2D*)h3D->Project3D("yz"); 
+    h2D->Add(h2Da);
+  }
+  h3D->SetName(Form("%s_SE-ME%d_S-SB%d_3D",h3D->GetName(),SEorME,SorSB));      
+  h2D->SetName(Form("%s_SE-ME%d_S-SB%d_2D",h2D->GetName(),SEorME,SorSB));
+  return h2D;
+}
 
 //___________________________________________________________________________________________
 TH2D* AliDhCorrelationExtraction::GetCorrelHistoDzeroTTree(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax) {
@@ -1250,15 +1415,20 @@ void AliDhCorrelationExtraction::GetSBScalingFactor(Int_t i, TH1F* &histo) {
 
 
 //___________________________________________________________________________________________
-void AliDhCorrelationExtraction::NormalizeMEplot(TH2D* &histoME) {
+void AliDhCorrelationExtraction::NormalizeMEplot(TH2D* &histoME, TH2D* &histoMEsoftPi) {
 
   Double_t bin0phi = histoME->GetXaxis()->FindBin(0.);
   Double_t bin0eta = histoME->GetYaxis()->FindBin(0.);
 
+  //evaluate the normalization (from ALL tracks, including possible fake softpions) -> **histoME indeed includes bin1+bin2 of THnSparse, i.e. all the tracks**
   Double_t factorAdd = 0;
   for(int in=-1;in<=0;in++) factorAdd+=histoME->GetBinContent(bin0phi+in,bin0eta);
   for(int in=-1;in<=0;in++) factorAdd+=histoME->GetBinContent(bin0phi+in,bin0eta-1);
   factorAdd/=4.;
+
+  if(fSubtractSoftPiME) histoME->Add(histoMEsoftPi,-1); //remove the tracks compatible with soft pion (if requested)
+
+  //apply the normalization
   histoME->Scale(1./factorAdd);
 
 }
@@ -1363,7 +1533,55 @@ void AliDhCorrelationExtraction::DefinePaveText(TPaveText* &paveText, Double_t x
   if(fDmesonSpecies == kD0toKpi) paveText->AddText("D^{0} #rightarrowK^{-}#pi^{+}");
   if(fDmesonSpecies == kDStarD0pi) paveText->AddText("D^{*+}#rightarrow D^{0}#pi^{+}, D^{0} #rightarrowK^{-}#pi^{+}");
   if(fDmesonSpecies == kDplusKpipi) paveText->AddText("D^{+} #rightarrowK^{-}#pi^{+}#pi^{+}");
+  if(fDmesonSpecies == kDxHFE) paveText->AddText("D^{0} #rightarrowK^{-}#pi^{+}");
   paveText->AddText(" ");
+}
+
+void AliDhCorrelationExtraction::SetPtRanges(Int_t ptBin, THnSparse* thn, Int_t dimension) {
+  Double_t ptLow, ptHigh;
+  switch(ptBin){
+  case 0 : ptLow=0.0   ; ptHigh=0.5    ; break;
+  case 1 : ptLow=0.5   ; ptHigh=1.0    ; break;
+  case 2 : ptLow=1.0   ; ptHigh=2.0    ; break;
+  case 3 : ptLow=2.0   ; ptHigh=3.0    ; break;
+  case 4 : ptLow=3.0   ; ptHigh=4.0    ; break;
+  case 5 : ptLow=4.0   ; ptHigh=5.0    ; break;
+  case 6 : ptLow=5.0   ; ptHigh=6.0    ; break;
+  case 7 : ptLow=6.0   ; ptHigh=7.0    ; break;
+  case 8 : ptLow=7.0   ; ptHigh=8.0    ; break;
+  case 9 : ptLow=8.0   ; ptHigh=12.0   ; break;
+  case 10 : ptLow=12.0 ; ptHigh=16.0   ; break;
+  case 11 : ptLow=16.0 ; ptHigh=20.0   ; break;
+  case 12 : ptLow=20.0 ; ptHigh=24.0   ; break;
+  case 13 : ptLow=24.0 ; ptHigh=9999.0 ; break;
+  default : ptLow=0.0  ; ptHigh=9999.0 ; break;
+  }   
+  thn->GetAxis(dimension)->SetRangeUser(ptLow, ptHigh);
+}
+
+void AliDhCorrelationExtraction::SetElSource(Int_t type, THnSparse* thn, Int_t dimension) {
+  Int_t sourceLow, sourceHigh;
+  switch(type){
+  case kAll    : sourceLow=-1  ; sourceHigh=18 ; break;
+  case kAllEl  : sourceLow=0   ; sourceHigh=18  ; break;
+  case kHFE    : sourceLow=4   ; sourceHigh=8  ; break;
+  case kNonHFE : sourceLow=9   ; sourceHigh=17 ; break;
+  case kcEl    : sourceLow=4   ; sourceHigh=4  ; break;
+  case kbEl    : sourceLow=5   ; sourceHigh=5  ; break;
+  default      : sourceLow=-1  ; sourceHigh=18 ; break;
+  }   
+  thn->GetAxis(dimension)->SetRangeUser(sourceLow, sourceHigh);
+}
+
+void AliDhCorrelationExtraction::SetD0Source(Int_t type, THnSparse* thn, Int_t dimension) {
+  Int_t sourceLow, sourceHigh;
+  switch(type){
+  case kAll    : sourceLow=-1  ; sourceHigh=8 ; break;
+  case kcD0    : sourceLow=4   ; sourceHigh=4  ; break; //Consider including kGtoC (bin 7)
+  case kbD0    : sourceLow=5   ; sourceHigh=5  ; break; //Consider including kGtoB (bin 8)
+  default      : sourceLow=-1  ; sourceHigh=8 ; break;
+  }   
+  thn->GetAxis(dimension)->SetRangeUser(sourceLow, sourceHigh);
 }
 
 //__________________________________________

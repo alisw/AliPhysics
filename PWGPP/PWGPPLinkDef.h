@@ -10,6 +10,8 @@
 #pragma link C++ class AliAnalysisTaskVtXY+;
 #pragma link C++ class AliESDresolParams+;
 #pragma link C++ class AliESDresolMakerFast+;
+#pragma link C++ class AliOfflineTrigger+;
+
 
 #pragma link C++ class AliAnalysisTaskGlobalQA+;
 
@@ -58,11 +60,14 @@
 
 #pragma link C++ class AliAnalysisTaskVertexESD+;
 #pragma link C++ class AliAnalysisTaskCheckPileup+;
+#pragma link C++ class AliAnalysisTaskCheckESDTracks+;
+#pragma link C++ class AliAnalysisTaskCheckAODTracks+;
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliAnalysisTaskITSTrackingCheck+;
 #pragma link C++ class AliAnalysisTaskITSsaTracks+;
 #pragma link C++ class AliAnalysisTaskITSAlignQA+;
 #pragma link C++ class AliAnalysisTaskSEImpParRes+;
+#pragma link C++ class AliAnalysisTaskSEImpParResSparse+;
 #pragma link C++ class AliTrackMatchingTPCITSCosmics+;
 #pragma link C++ class AliAnalysisTaskV0QA+;
 #pragma link C++ class AliMaterialBudget+;
@@ -118,6 +123,7 @@
 #pragma link C++ class  AliTRDonlineTrackletQA;
 #pragma link C++ class  AliTRDPIDTree+;
 #pragma link C++ class  AliTRDPIDmatching+;
+#pragma link C++ class  AliTRDdigitsFilter;
 
 // TRD offline calibration classes
 #pragma link C++ class  AliTRDmultiplicity+;
@@ -175,8 +181,9 @@
 #pragma link C++ class  AliGlobalFBFqa+;
 
 //EVENT AND TRACK SELECTION
-#pragma link C++ class  AliAnalysisTrackingUncertainties+;
 #pragma link C++ class  AliCFSingleTrackEfficiencyTask+;
 #pragma link C++ class  AliSingleTrackEffCuts+;
+#pragma link C++ class  AliAnalysisTrackingUncertaintiesAOT+;
+#pragma link C++ class  AliAnalysisTrackingUncertainties+;
 
 #endif

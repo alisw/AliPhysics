@@ -34,8 +34,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
     AliAnalysisTask3PCorrelations.cxx
     AliAnalysisTaskContMC.cxx
+    AliAnalysisTaskCorPIDTOFQA.cxx
     AliAnalysisTaskDiHadron.cxx
-    AliAnalysisTaskDiJetCorrelations.cxx
     AliAnalysisTaskDptDptCorrelations.cxx
     AlianalysisTaskDptPIDpPb.cxx    
     AliAnalysisTaskDptDptQA.cxx
@@ -59,7 +59,6 @@ set(SRCS
     AliLeadingV0Correlation.cxx
     AliPhiCorrelationsQATask.cxx
     AliAnalysisTaskDiJetCorrelationsAllb2b.cxx
-    AliAnalysisTaskDiJetCorr1plus1Bkg.cxx
     AliAnalysisTaskEPCorrPP.cxx
     AliAnalysisTaskEPCorrAA.cxx
     AliAnalysisTaskEPCorrAAMC.cxx

@@ -133,8 +133,10 @@ class AliHFEcuts : public TNamed{
     Bool_t IsRequireDCAToVertex() const {return TESTBIT(fRequirements, kDCAToVertex); };
     Bool_t IsRequireKineMCCuts() const {return TESTBIT(fRequirements, kKineMCCuts); };
     Double_t GetVertexRange() const {return fVertexRangeZ; };
-    Int_t GetMinTrackletsTRD() const { return fMinTrackletsTRD; }
+    Int_t GetMinTrackletsTRD() const { return fMinTrackletsTRD;};
     Bool_t GetUseMixedVertex() const { return fUseMixedVertex;};   
+    Bool_t GetUseTrackVertex() const { return fUseTrackVertex;};
+    Bool_t GetUseSPDVertex() const { return fUseSPDVertex;};
     
     // Setters
     inline void SetCutITSpixel(UChar_t cut);
@@ -172,6 +174,7 @@ class AliHFEcuts : public TNamed{
     void SetTPCPIDCleanUpStep(Bool_t tpcPIDCleanUpStep) {fTPCPIDCLEANUPStep = tpcPIDCleanUpStep;};
     void SetITSpatternCut() { fITSpatternCut = kTRUE; }
     inline void SetUseMixedVertex(Bool_t useMixedVertex);    
+    inline void SetUseTrackVertex(Bool_t useTrackVertex);
     inline void SetUseSPDVertex(Bool_t useSPDVertex);
     void SetUseCorrelationVertex() { fUseCorrelationVertex = kTRUE;};
     void SetSPDVtxResolutionCut() {fSPDVtxResolution = kTRUE;}
@@ -265,6 +268,7 @@ class AliHFEcuts : public TNamed{
     Bool_t   fTPCPIDCLEANUPStep;              // TPC PIC cleanup step
     Bool_t   fITSpatternCut;                  // Cut on ITS pattern
     Bool_t   fUseMixedVertex;                 // Use primary vertex from track if there otherwise SPD vertex
+    Bool_t   fUseTrackVertex;                 // Use primary vertex from track
     Bool_t   fUseSPDVertex;                   // Use primary SPD vertex 
     Bool_t   fUseCorrelationVertex;           // Use the correlation of the vertex in z
     Bool_t   fSPDVtxResolution;               // Check resolution of the SPD vertex
@@ -289,7 +293,7 @@ class AliHFEcuts : public TNamed{
 
     const AliPIDResponse *fPIDResponse;//! PID Response
     
-  ClassDef(AliHFEcuts, 7)                     // Container for HFE cuts
+  ClassDef(AliHFEcuts, 8)                     // Container for HFE cuts
 };
 
 //__________________________________________________________________
@@ -356,7 +360,21 @@ void AliHFEcuts::SetUseMixedVertex(Bool_t useMixedVertex){
   // Choice of a vertex
   //
   fUseMixedVertex = useMixedVertex;
-  if(useMixedVertex) fUseSPDVertex = kFALSE;
+    if(useMixedVertex){
+        fUseSPDVertex = kFALSE;
+        fUseTrackVertex = kFALSE;
+    }
+}
+//__________________________________________________________________
+void AliHFEcuts::SetUseTrackVertex(Bool_t useTrackVertex){
+    //
+    // Choice of a vertex
+    //
+    fUseTrackVertex = useTrackVertex;
+    if(useTrackVertex){
+        fUseMixedVertex = kFALSE;
+        fUseSPDVertex = kFALSE;
+    }
 }
 //__________________________________________________________________
 void AliHFEcuts::SetUseSPDVertex(Bool_t useSPDVertex){
@@ -364,9 +382,11 @@ void AliHFEcuts::SetUseSPDVertex(Bool_t useSPDVertex){
   // Choice of a vertex
   //
   fUseSPDVertex = useSPDVertex;
-  if(useSPDVertex) fUseMixedVertex = kFALSE;
+    if(useSPDVertex){
+        fUseMixedVertex = kFALSE;
+        fUseTrackVertex = kFALSE;
 }
-
+}
 //__________________________________________________________________
 void AliHFEcuts::CreateStandardCuts(){
   //

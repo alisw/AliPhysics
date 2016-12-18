@@ -40,6 +40,7 @@ protected:
   Double_t fRedChiSquare;
 
   void ObtainMassHistogram();
+  TH1F* ProjectDataSparse(Bool_t reflectedaxes);
   void FitMassHistogram();
 
   AliHFCutVarFDsubMassFitter(const AliHFCutVarFDsubMassFitter& mf); /// Copy constructor

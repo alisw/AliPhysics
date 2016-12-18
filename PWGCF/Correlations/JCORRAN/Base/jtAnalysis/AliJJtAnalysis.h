@@ -7,6 +7,7 @@
 #include "../AliJDataManager.h"
 #include "../AliJConst.h"
 #include <TH1D.h>
+#include <TRandom3.h>
 
 // jtAnalysis main class
 // used in local and grid execution
@@ -75,6 +76,8 @@ private:
   char *finputFile; //! Name of the Data Manager initialization file for local analysis
   TString fInclusiveFile; // File for inclusive distributions
   
+  TRandom3 *frandom; // Random number generator
+  
   Int_t fevt; // Event counter
   AliJJtHistograms *fhistos; //! Histogram container
   AliJJtCorrelations *fcorrelations; //! Correlation analysis details
@@ -95,6 +98,7 @@ private:
   bool fbTriggCorrel; //! Flag for triggered correlation
   bool fbLPCorrel; //! Flag for leading particle correlation
   double fMinimumPt; //!  Minimum pT value for a particle to be still accepted to analysis
+  bool fbLPSystematics; //! false = regular run, true = do systematic error estimate for missed leading particles
   
   Int_t fEventBC; //! Selector for some BC%4
   

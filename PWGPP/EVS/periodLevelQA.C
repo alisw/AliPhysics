@@ -113,6 +113,19 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   Double_t meanErrOFOHM = 0;
   Double_t meanErrTKLHM = 0;
   Double_t thresholdV0M = 0;
+  Double_t aV0MOnVsOfVal = 0;
+  Double_t bV0MOnVsOfVal = 0;
+  Double_t aV0MOnVsOfErr = 0;
+  Double_t bV0MOnVsOfErr = 0;
+  Double_t aSPDOnVsOfVal = 0;
+  Double_t bSPDOnVsOfVal = 0;
+  Double_t aSPDOnVsOfErr = 0;
+  Double_t bSPDOnVsOfErr = 0;
+  Double_t aV0MOnVsOfOADB = 0;
+  Double_t bV0MOnVsOfOADB = 0;
+  Double_t aSPDOnVsOfOADB = 0;
+  Double_t bSPDOnVsOfOADB = 0;
+
   TH2F* hHistStat = new TH2F();
   
   t->SetBranchAddress("run",&run);
@@ -171,6 +184,19 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   t->SetBranchAddress("meanErrOFOHM",&meanErrOFOHM);
   t->SetBranchAddress("meanErrTKLHM",&meanErrTKLHM);
   t->SetBranchAddress("thresholdV0M",&thresholdV0M);
+  t->SetBranchAddress("aV0MOnVsOfVal",&aV0MOnVsOfVal);
+  t->SetBranchAddress("bV0MOnVsOfVal",&bV0MOnVsOfVal);
+  t->SetBranchAddress("aV0MOnVsOfErr",&aV0MOnVsOfErr);
+  t->SetBranchAddress("bV0MOnVsOfErr",&bV0MOnVsOfErr);
+  t->SetBranchAddress("aSPDOnVsOfVal",&aSPDOnVsOfVal);
+  t->SetBranchAddress("bSPDOnVsOfVal",&bSPDOnVsOfVal);
+  t->SetBranchAddress("aSPDOnVsOfErr",&aSPDOnVsOfErr);
+  t->SetBranchAddress("bSPDOnVsOfErr",&bSPDOnVsOfErr);
+  t->SetBranchAddress("aV0MOnVsOfOADB",&aV0MOnVsOfOADB);
+  t->SetBranchAddress("bV0MOnVsOfOADB",&bV0MOnVsOfOADB);
+  t->SetBranchAddress("aSPDOnVsOfOADB",&aSPDOnVsOfOADB);
+  t->SetBranchAddress("bSPDOnVsOfOADB",&bSPDOnVsOfOADB);
+
   t->SetBranchAddress("hHistStat",&hHistStat);
 
   Int_t nRuns = t->GetEntries();
@@ -208,6 +234,14 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   TH1D* hMeanTKLHM          = new TH1D("hMeanTKLHM","Mean number of tracklets in kHighMultV0",nRuns,0,nRuns);
   TH1D* hThresholdV0M       = new TH1D("hThresholdV0M","V0M threshold",nRuns,0,nRuns);
   TH1D* hThresholdV0Mnorm   = new TH1D("hThresholdV0Mnorm","V0M threshold / <V0M>",nRuns,0,nRuns);
+  TH1D* hV0MOnVsOfA         = new TH1D("hV0MOnVsOfA","V0MOnVsOf cut parameter A",nRuns,0,nRuns);
+  TH1D* hV0MOnVsOfB         = new TH1D("hV0MOnVsOfB","V0MOnVsOf cut parameter B",nRuns,0,nRuns);
+  TH1D* hSPDOnVsOfA         = new TH1D("hSPDOnVsOfA","SPDOnVsOf cut parameter A",nRuns,0,nRuns);
+  TH1D* hSPDOnVsOfB         = new TH1D("hSPDOnVsOfB","SPDOnVsOf cut parameter B",nRuns,0,nRuns);
+  TH1D* hV0MOnVsOfA_OADB    = new TH1D("hV0MOnVsOfA_OADB","V0MOnVsOf cut parameter A in OADB",nRuns,0,nRuns);
+  TH1D* hV0MOnVsOfB_OADB    = new TH1D("hV0MOnVsOfB_OADB","V0MOnVsOf cut parameter B in OADB",nRuns,0,nRuns);
+  TH1D* hSPDOnVsOfA_OADB    = new TH1D("hSPDOnVsOfA_OADB","SPDOnVsOf cut parameter A in OADB",nRuns,0,nRuns);
+  TH1D* hSPDOnVsOfB_OADB    = new TH1D("hSPDOnVsOfB_OADB","SPDOnVsOf cut parameter B in OADB",nRuns,0,nRuns);
   
   map<Int_t,Int_t> fills;
   map<Int_t,TString> periods;
@@ -225,11 +259,20 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hLumiReconstructed ->SetBit(TH1::kCanRebin);
   hLumiAccepted      ->SetBit(TH1::kCanRebin);
 
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet()) man->SetDefaultStorage("local:///cvmfs/alice.cern.ch/calibration/data/2016/OCDB");
+
   for (Int_t r=0;r<nRuns;r++){
     t->GetEntry(r);
 //    if (!partition->String().Contains("PHYSICS_1")) continue;
 //    if (!lhcState->String().Contains("STABLE")) continue;
 //    if (!lhcPeriod->String().Contains("LHC15o")) continue;
+    Double_t thr = 0;
+    man->SetRun(run);
+    AliCDBEntry* triggerEntry = man->Get("VZERO/Trigger/Data");
+    AliVZEROTriggerData* trigData = triggerEntry ? (AliVZEROTriggerData*) triggerEntry->GetObject() : 0;
+    thr = trigData ? trigData->GetCentralityV0AThrLow() : 0;
+
     char* srun = Form("%i",run);
     hInteractionRate->Fill(srun,interactionRate);
     hMu             ->Fill(srun,mu);
@@ -252,10 +295,23 @@ void periodLevelQA(TString inputFileName ="trending.root"){
     hMeanV0MOfHM->SetBinError(hMeanV0MOfHM->GetXaxis()->FindBin(srun),meanErrV0MOfHM);
     hMeanOFOHM  ->SetBinError(hMeanOFOHM->GetXaxis()->FindBin(srun)  ,meanErrOFOHM);
     hMeanTKLHM  ->SetBinError(hMeanTKLHM->GetXaxis()->FindBin(srun)  ,meanErrTKLHM);
-    hThresholdV0M->Fill(srun,thresholdV0M);
-    hThresholdV0Mnorm->Fill(srun,meanV0MOnHM>1e-4 ? thresholdV0M/meanV0MOn : 0);
-    hThresholdV0Mnorm->SetBinError(hThresholdV0Mnorm->GetXaxis()->FindBin(srun),0);
-    printf("%f\n",thresholdV0M);
+    hV0MOnVsOfA    ->Fill(srun,aV0MOnVsOfVal);
+    hV0MOnVsOfB    ->Fill(srun,bV0MOnVsOfVal);
+    hSPDOnVsOfA    ->Fill(srun,aSPDOnVsOfVal);
+    hSPDOnVsOfB    ->Fill(srun,bSPDOnVsOfVal);
+    hV0MOnVsOfA->SetBinError(hV0MOnVsOfA->GetXaxis()->FindBin(srun),aV0MOnVsOfErr);
+    hV0MOnVsOfB->SetBinError(hV0MOnVsOfB->GetXaxis()->FindBin(srun),bV0MOnVsOfErr);
+    hSPDOnVsOfA->SetBinError(hSPDOnVsOfA->GetXaxis()->FindBin(srun),aSPDOnVsOfErr);
+    hSPDOnVsOfB->SetBinError(hSPDOnVsOfB->GetXaxis()->FindBin(srun),bSPDOnVsOfErr);
+    hV0MOnVsOfA_OADB->Fill(srun,aV0MOnVsOfOADB);
+    hV0MOnVsOfB_OADB->Fill(srun,bV0MOnVsOfOADB);
+    hSPDOnVsOfA_OADB->Fill(srun,aSPDOnVsOfOADB);
+    hSPDOnVsOfB_OADB->Fill(srun,bSPDOnVsOfOADB);
+    
+    hThresholdV0M->Fill(srun,thr);
+    hThresholdV0Mnorm->Fill(srun,meanV0MOn>1e-4 ? thr/meanV0MOn : 0);
+    hThresholdV0Mnorm->SetBinError(hThresholdV0Mnorm->GetXaxis()->FindBin(srun),meanV0MOn>1e-4 ? thr/meanV0MOn*meanErrV0MOn/meanV0MOn : 0);
+    printf("threshold %f\n",thr);
     fills[run]=fill;
     periods[run]=lhcPeriod->String();
 
@@ -310,6 +366,14 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   hMeanV0MOfHM       ->LabelsDeflate("X");
   hMeanOFOHM         ->LabelsDeflate("X");
   hMeanTKLHM         ->LabelsDeflate("X");
+  hV0MOnVsOfA        ->LabelsDeflate("X");
+  hV0MOnVsOfB        ->LabelsDeflate("X");
+  hSPDOnVsOfA        ->LabelsDeflate("X");
+  hSPDOnVsOfB        ->LabelsDeflate("X");
+  hV0MOnVsOfA_OADB   ->LabelsDeflate("X");
+  hV0MOnVsOfB_OADB   ->LabelsDeflate("X");
+  hSPDOnVsOfA_OADB   ->LabelsDeflate("X");
+  hSPDOnVsOfB_OADB   ->LabelsDeflate("X");
   hThresholdV0M      ->LabelsDeflate("X");
   hThresholdV0Mnorm  ->LabelsDeflate("X");
   hClassL0BvsRun     ->LabelsDeflate("XY");
@@ -344,6 +408,14 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   SetHisto(hMeanV0MOfHM);
   SetHisto(hMeanOFOHM);
   SetHisto(hMeanTKLHM);
+  SetHisto(hV0MOnVsOfA);
+  SetHisto(hV0MOnVsOfB);
+  SetHisto(hSPDOnVsOfA);
+  SetHisto(hSPDOnVsOfB);
+  SetHisto(hV0MOnVsOfA_OADB);
+  SetHisto(hV0MOnVsOfB_OADB);
+  SetHisto(hSPDOnVsOfA_OADB);
+  SetHisto(hSPDOnVsOfB_OADB);
   SetHisto(hThresholdV0M);
   SetHisto(hThresholdV0Mnorm);
   SetHisto(hClassL0BvsRun);
@@ -500,6 +572,79 @@ void periodLevelQA(TString inputFileName ="trending.root"){
   gPad->Print("thresholdV0Mnorm.png");
   
   gPad->Print("global_properties.pdf)");
+  
+  TCanvas* cV0MOnVsOfA = new TCanvas("aV0MOnVsOf","aV0MOnVsOf",1800,500);
+  cV0MOnVsOfA->SetMargin(0.05,0.01,0.18,0.06);
+  hV0MOnVsOfA_OADB->SetLineColor(kRed);
+  Int_t maxBin1,minBin1,maxBin2,minBin2;
+  Double_t ymin,ymax;
+  maxBin1 = hV0MOnVsOfA_OADB->GetMaximumBin();
+  minBin1 = hV0MOnVsOfA_OADB->GetMinimumBin();
+  maxBin2 = hV0MOnVsOfA->GetMaximumBin();
+  minBin2 = hV0MOnVsOfA->GetMinimumBin();
+  ymin = TMath::Min(hV0MOnVsOfA_OADB->GetBinContent(minBin1),hV0MOnVsOfA->GetBinContent(minBin2));
+  ymax = TMath::Max(hV0MOnVsOfA_OADB->GetBinContent(maxBin1),hV0MOnVsOfA->GetBinContent(maxBin2));
+  hV0MOnVsOfA_OADB->SetMinimum(ymin-(ymax-ymin)*0.1);
+  hV0MOnVsOfA_OADB->SetMaximum(ymax+(ymax-ymin)*0.1);
+  hV0MOnVsOfA_OADB->Draw("");
+  hV0MOnVsOfA->Draw("e same");
+  AddFillSeparationLines(hV0MOnVsOfA,fills);
+  AddPeriodSeparationLines(hV0MOnVsOfA,periods);
+  gPad->Print("V0MOnVsOfA.png");
+
+  TCanvas* cV0MOnVsOfB = new TCanvas("V0MOnVsOfB","V0MOnVsOfB",1800,500);
+  cV0MOnVsOfB->SetMargin(0.05,0.01,0.18,0.06);
+  hV0MOnVsOfB_OADB->SetLineColor(kRed);
+  maxBin1 = hV0MOnVsOfB_OADB->GetMaximumBin();
+  minBin1 = hV0MOnVsOfB_OADB->GetMinimumBin();
+  maxBin2 = hV0MOnVsOfB->GetMaximumBin();
+  minBin2 = hV0MOnVsOfB->GetMinimumBin();
+  ymin = TMath::Min(hV0MOnVsOfB_OADB->GetBinContent(minBin1),hV0MOnVsOfB->GetBinContent(minBin2));
+  ymax = TMath::Max(hV0MOnVsOfB_OADB->GetBinContent(maxBin1),hV0MOnVsOfB->GetBinContent(maxBin2));
+  hV0MOnVsOfB_OADB->SetMinimum(ymin-(ymax-ymin)*0.1);
+  hV0MOnVsOfB_OADB->SetMaximum(ymax+(ymax-ymin)*0.1);
+  hV0MOnVsOfB_OADB->Draw("");
+  hV0MOnVsOfB->Draw("e same");
+  AddFillSeparationLines(hV0MOnVsOfB,fills);
+  AddPeriodSeparationLines(hV0MOnVsOfB,periods);
+  gPad->Print("V0MOnVsOfB.png");
+
+  TCanvas* cSPDOnVsOfA = new TCanvas("aSPDOnVsOf","aSPDOnVsOf",1800,500);
+  cSPDOnVsOfA->SetMargin(0.05,0.01,0.18,0.06);
+  hSPDOnVsOfA_OADB->SetLineColor(kRed);
+  maxBin1 = hSPDOnVsOfA_OADB->GetMaximumBin();
+  minBin1 = hSPDOnVsOfA_OADB->GetMinimumBin();
+  maxBin2 = hSPDOnVsOfA->GetMaximumBin();
+  minBin2 = hSPDOnVsOfA->GetMinimumBin();
+  ymin = TMath::Min(hSPDOnVsOfA_OADB->GetBinContent(minBin1),hSPDOnVsOfA->GetBinContent(minBin2));
+  ymax = TMath::Max(hSPDOnVsOfA_OADB->GetBinContent(maxBin1),hSPDOnVsOfA->GetBinContent(maxBin2));
+  hSPDOnVsOfA_OADB->SetMinimum(ymin-(ymax-ymin)*0.1);
+  hSPDOnVsOfA_OADB->SetMaximum(ymax+(ymax-ymin)*0.1);
+
+  hSPDOnVsOfA_OADB->Draw("");
+  hSPDOnVsOfA->Draw("e same");
+  AddFillSeparationLines(hSPDOnVsOfA,fills);
+  AddPeriodSeparationLines(hSPDOnVsOfA,periods);
+  gPad->Print("SPDOnVsOfA.png");
+
+  TCanvas* cSPDOnVsOfB = new TCanvas("SPDOnVsOfB","SPDOnVsOfB",1800,500);
+  cSPDOnVsOfB->SetMargin(0.05,0.01,0.18,0.06);
+  hSPDOnVsOfB_OADB->SetLineColor(kRed);
+  maxBin1 = hSPDOnVsOfB_OADB->GetMaximumBin();
+  minBin1 = hSPDOnVsOfB_OADB->GetMinimumBin();
+  maxBin2 = hSPDOnVsOfB->GetMaximumBin();
+  minBin2 = hSPDOnVsOfB->GetMinimumBin();
+  ymin = TMath::Min(hSPDOnVsOfB_OADB->GetBinContent(minBin1),hSPDOnVsOfB->GetBinContent(minBin2));
+  ymax = TMath::Max(hSPDOnVsOfB_OADB->GetBinContent(maxBin1),hSPDOnVsOfB->GetBinContent(maxBin2));
+  hSPDOnVsOfB_OADB->SetMinimum(ymin-(ymax-ymin)*0.1);
+  hSPDOnVsOfB_OADB->SetMaximum(ymax+(ymax-ymin)*0.1);
+
+  hSPDOnVsOfB_OADB->Draw("");
+  hSPDOnVsOfB->Draw("e same");
+  AddFillSeparationLines(hSPDOnVsOfB,fills);
+  AddPeriodSeparationLines(hSPDOnVsOfB,periods);
+  gPad->Print("SPDOnVsOfB.png");
+
   
   TFile* fglobal = new TFile("global_properties.root","recreate");
   hActiveDetectors->Write();

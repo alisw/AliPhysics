@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: July 21th, 2016.							          //
+	//		version: August 18th, 2016.							          //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -343,6 +343,10 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCnsigma_pt_2D3(0)
 ,fTPCnsigma_pt_2D4(0)
 ,fTPCnsigma_pt_2D5(0)
+
+
+	//TOF
+,fTPCnsigma_pt_2D3_tof(0)
 
 	//centrality
 ,fTPCnsigma_pt_2D3_0(0)
@@ -907,6 +911,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCnsigma_pt_2D4(0)
 ,fTPCnsigma_pt_2D5(0)
 
+	//TOF
+,fTPCnsigma_pt_2D3_tof(0)
+
 	//centrality
 ,fTPCnsigma_pt_2D3_0(0)
 ,fTPCnsigma_pt_2D3_1(0)
@@ -1447,6 +1454,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fTPCnsigma_pt_2D1 = new TH2F("fTPCnsigma_pt_2D1",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D2 = new TH2F("fTPCnsigma_pt_2D2",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D3 = new TH2F("fTPCnsigma_pt_2D3",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
+	fTPCnsigma_pt_2D3_tof = new TH2F("fTPCnsigma_pt_2D3_tof",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D4 = new TH2F("fTPCnsigma_pt_2D4",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 	fTPCnsigma_pt_2D5 = new TH2F("fTPCnsigma_pt_2D5",";pt (GeV/c);TPC Electron N#sigma",1000,0.3,30,1000,-15,10);
 
@@ -1659,6 +1667,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fTPCnsigma_pt_2D1);
 	fOutputList->Add(fTPCnsigma_pt_2D2);
 	fOutputList->Add(fTPCnsigma_pt_2D3);
+	fOutputList->Add(fTPCnsigma_pt_2D3_tof);
 	fOutputList->Add(fTPCnsigma_pt_2D4);
 	fOutputList->Add(fTPCnsigma_pt_2D5);
 	
@@ -3210,6 +3219,14 @@ if(!fIspp){
 
 											centrality = fCentrality->GetCentralityPercentile("V0A");
 										}
+										if(fEstimator==2){
+											centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+										}
+										
+										if(fEstimator==3){
+											centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+										}
+										
 											
 											//printf("fPtMCparticleAllHfe1   Estimator %d, Centrality %f \n", fEstimator, centrality);
 										
@@ -3405,6 +3422,13 @@ if(!fIspp){
 
 			centrality = fCentrality->GetCentralityPercentile("V0A");
 		}
+		if(fEstimator==2){
+			centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+		}
+		
+		if(fEstimator==3){
+			centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+		}
 
 		
 		
@@ -3569,6 +3593,13 @@ if(!fIspp){
 						if(fEstimator==0){
 							centrality = fCentrality->GetCentralityPercentile("V0A");
 						}
+						if(fEstimator==2){
+							centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+						}
+						
+						if(fEstimator==3){
+							centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+						}
 
 						
 						if(centrality>=0 && centrality<20)fECluster_pure_0->Fill(clust->E());
@@ -3628,6 +3659,13 @@ if(!fIspp){
 					if(fEstimator==0){
 
 						centrality = fCentrality->GetCentralityPercentile("V0A");
+					}
+					if(fEstimator==2){
+						centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+					}
+					
+					if(fEstimator==3){
+						centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 					}
 
 					
@@ -3740,7 +3778,7 @@ if(!fIspp){
 		Double_t fTPCnSigma0 = -999;
 		Double_t fTPCnSigma_eta_prov = -999;
 		Double_t fTPCnSigma = -999;
-			//Double_t fTOFnSigma = -999;
+		Double_t fTOFnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
 		Double_t fTPCnSigma_proton = -999;
 		Double_t fTPCnSigma_kaon = -999;
@@ -3760,7 +3798,7 @@ if(!fIspp){
 		
 		fTPCsignal = track->GetTPCsignal();
 		fTPCnSigma = fPidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
-			//fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+		fTOFnSigma = fPidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
 		fTPCnSigma_pion = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
 		fTPCnSigma_proton = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
 		fTPCnSigma_kaon = fPidResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
@@ -4148,6 +4186,13 @@ if(!fIspp){
 										if(fEstimator==0){
 											centrality = fCentrality->GetCentralityPercentile("V0A");
 										}
+										if(fEstimator==2){
+											centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+										}
+										
+										if(fEstimator==3){
+											centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+										}
 									//===================================================================================	
 
 											//printf("fPtMCparticleRecoHfe1   Estimator %d, Centrality %f \n", fEstimator, centrality);
@@ -4240,6 +4285,13 @@ if(!fIspp){
 				if(fEstimator==0){
 
 					centrality = fCentrality->GetCentralityPercentile("V0A");
+				}
+				if(fEstimator==2){
+					centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+				}
+				
+				if(fEstimator==3){
+					centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 				}
               //===================================================================================	
 				
@@ -4431,6 +4483,13 @@ if(!fIspp){
 								if(fEstimator==0){
 
 									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 								}
 										
 									//printf("fEoverP_pt_pions2   Estimator %d, Centrality %f \n", fEstimator, centrality);
@@ -4665,6 +4724,13 @@ if(!fIspp){
 								if(fEstimator==0){
 									centrality = fCentrality->GetCentralityPercentile("V0A");
 								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+								}
 								//===================================================================================
 								
 								if(centrality>=0 && centrality<20) fPtMC_TPC_All_0->Fill(fMCparticle->Pt());
@@ -4703,11 +4769,16 @@ if(!fIspp){
 			}
 		}
 		
-		/*
-			if(fPt>1 && fPt<2) fTOF01->Fill(fTOFnSigma,fTPCnSigma);
-			if(fPt>2 && fPt<4) fTOF02->Fill(fTOFnSigma,fTPCnSigma);
-			if(fPt>4 && fPt<6) fTOF03->Fill(fTOFnSigma,fTPCnSigma);
-		*/
+		
+			if(fPt>0.5 && fPt<1) fTOF01->Fill(fTOFnSigma,fTPCnSigma);
+			if(fPt>1 && fPt<2)   fTOF02->Fill(fTOFnSigma,fTPCnSigma);
+			if(fPt>2 && fPt<2.5) fTOF03->Fill(fTOFnSigma,fTPCnSigma);
+		
+			//TPC signal after TOF cut
+		if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax && fTOFnSigma > -3 && fTOFnSigma < 3){
+			fTPCnsigma_pt_2D3_tof->Fill(fPt,fTPCnSigma);
+		}
+		
 		
 ///________________________________________________________________________
 ///PID
@@ -4762,6 +4833,13 @@ if(!fIspp){
 				if(fEstimator==0){
 
 					centrality = fCentrality->GetCentralityPercentile("V0A");
+				}
+				if(fEstimator==2){
+					centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+				}
+				
+				if(fEstimator==3){
+					centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 				}
 					//===================================================================================	
 				
@@ -4832,6 +4910,13 @@ if(!fIspp){
 								if(fEstimator==0){
 
 									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 								}
 								//===================================================================================
 								
@@ -5124,6 +5209,13 @@ if(!fIspp){
 									if(fEstimator==0){
 
 										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 									}
 									
 									
@@ -5582,7 +5674,13 @@ if(!fIspp){
 
 															centrality = fCentrality->GetCentralityPercentile("V0A");
 														}
+														if(fEstimator==2){
+															centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+														}
 														
+														if(fEstimator==3){
+															centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+														}
 														
 														if(centrality>=0 && centrality<20) fPtMCelectronAfterAll_unfolding_0->Fill(track->Pt());
 														if(centrality>=20 && centrality<40) fPtMCelectronAfterAll_unfolding_1->Fill(track->Pt());
@@ -5835,6 +5933,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 
 								centrality = fCentrality->GetCentralityPercentile("V0A");
 							}
+							if(fEstimator==2){
+								centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+							}
+							
+							if(fEstimator==3){
+								centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+							}
 
 							
 							if(centrality>=0 && centrality<20)fPtBackgroundBeforeReco_0->Fill(track->Pt());
@@ -5867,6 +5972,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(fEstimator==0){
 
 								centrality = fCentrality->GetCentralityPercentile("V0A");
+							}
+							if(fEstimator==2){
+								centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+							}
+							
+							if(fEstimator==3){
+								centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 							}
 							
 							if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_0->Fill(track->Pt());
@@ -5929,6 +6041,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									
 									centrality = fCentrality->GetCentralityPercentile("V0A");
 								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt(), 1./mweight);
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt(), 1./mweight);
@@ -5962,6 +6081,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								if(fEstimator==0){
 									
 									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt(), 1./mweight);
@@ -6024,6 +6150,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									
 									centrality = fCentrality->GetCentralityPercentile("V0A");
 								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt(), 1./gmweight);
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt(), 1./gmweight);
@@ -6057,6 +6190,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								if(fEstimator==0){
 									
 									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt(), 1./gmweight);
@@ -6096,6 +6236,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									
 									centrality = fCentrality->GetCentralityPercentile("V0A");
 								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco_weight_0->Fill(track->Pt());
 								if(centrality>=20 && centrality<40)fPtBackgroundBeforeReco_weight_1->Fill(track->Pt());
@@ -6127,6 +6274,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								if(fEstimator==0){
 									
 									centrality = fCentrality->GetCentralityPercentile("V0A");
+								}
+								if(fEstimator==2){
+									centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+								}
+								
+								if(fEstimator==3){
+									centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 								}
 								
 								if(centrality>=0 && centrality<20) fPtBackgroundBeforeReco2_weight_0->Fill(track->Pt());
@@ -6381,6 +6535,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
 									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE, mweight1);
 									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE, mweight1);
@@ -6413,6 +6574,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									if(fEstimator==0){
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE, mweight2);
@@ -6479,6 +6647,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
 									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE, gmweight1);
 									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE, gmweight1);
@@ -6513,6 +6688,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									if(fEstimator==0){
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE, gmweight2);
@@ -6551,6 +6733,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
 									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS_weight_0->Fill(fPtE,fNonHFE->GetNULS());
 									if(centrality>=20 && centrality<40)fPtElec_ULS_weight_1->Fill(fPtE,fNonHFE->GetNULS());
@@ -6585,6 +6774,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									if(fEstimator==0){
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS_weight_0->Fill(fPtE,fNonHFE->GetNULS());
@@ -6658,6 +6854,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
 									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE, mweight1);
 									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE, mweight1);
@@ -6692,6 +6895,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									if(fEstimator==0){
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE, mweight2);
@@ -6763,6 +6973,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
 									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE, gmweight1);
 									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE, gmweight1);
@@ -6795,6 +7012,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									if(fEstimator==0){
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE, gmweight2);
@@ -6838,6 +7062,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
 									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_ULS2_weight_0->Fill(fPtE,fNonHFE->GetNULS());
 									if(centrality>=20 && centrality<40)fPtElec_ULS2_weight_1->Fill(fPtE,fNonHFE->GetNULS());
@@ -6870,6 +7101,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 									if(fEstimator==0){
 										
 										centrality = fCentrality->GetCentralityPercentile("V0A");
+									}
+									if(fEstimator==2){
+										centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+									}
+									
+									if(fEstimator==3){
+										centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
 									}
 									
 									if(centrality>=0 && centrality<20) fPtElec_LS2_weight_0->Fill(fPtE,fNonHFE->GetNLS());
@@ -7023,6 +7261,13 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 
 						centrality = fCentrality->GetCentralityPercentile("V0A");
 					}
+					if(fEstimator==2){
+						centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+					}
+					
+					if(fEstimator==3){
+						centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+					}
 					
 					
 					if(centrality>=0 && centrality<20){
@@ -7083,7 +7328,14 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 					if(fEstimator==0){
 
 						centrality = fCentrality->GetCentralityPercentile("V0A");
-					}					
+					}	
+					if(fEstimator==2){
+						centrality = fCentrality->GetCentralityPercentile("V0C");//used in the cut
+					}
+					
+					if(fEstimator==3){
+						centrality = fCentrality->GetCentralityPercentile("ZNC");//used in the cut
+					}
 					
 					
 					if(centrality>=0 && centrality<20){

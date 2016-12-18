@@ -41,6 +41,7 @@ set(SRCS
     nanoAOD/AliAnalysisTaskFilterUPCNanoAOD.cxx
     nanoAOD/AliAODUPCReplicator.cxx
     nanoAOD/AliAnalysisTaskUpcTriggerCounter.cxx
+    nanoAOD/AliAnalysisTaskUpcNano_MB.cxx
    )
 
 # Headers from sources

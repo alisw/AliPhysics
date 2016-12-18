@@ -28,7 +28,7 @@ class AliFemtoEvent;
 class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader 
 {
  public:
-  enum EventMult {kGlobalCount=0, kVZERO=1};
+  enum EventMult {kGlobalCount=0, kVZERO=1, kImpactParameter=2};
   typedef enum EventMult EstEventMult;
 
   AliFemtoEventReaderKinematicsChain();
@@ -53,6 +53,9 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   void ReadOnlyPrimariesV0(bool primaries);
   void ReadPrimariesSecWeakMaterial(bool primaries);
   void ReadPrimariesSecWeakMaterialV0(bool primaries);
+  void IsMisalignment(bool isMisalignment);
+  void RemoveWeakDecaysManually(bool removeWeakDecaysInMC);
+  void DiscardStatusCode(bool flag, int code=0);
 
  protected:
 
@@ -71,6 +74,10 @@ class AliFemtoEventReaderKinematicsChain : public AliFemtoEventReader
   bool           fReadOnlyPrimariesV0; // read only primaries, V0 analysis
   bool           fReadPrimariesSecWeakMaterial; //read only primaries, secondaries from weak decays and secondaries from material
   bool           fReadPrimariesSecWeakMaterialV0; //read only primaries, secondaries from weak decays and secondaries from material, V0 analysis
+  bool           fIsMisalignment; //in case of misalignement tracks are duplicated; this setter checks if two consectutive tracks are the same, and throw out the second one if so
+  bool           fRemoveWeakDecaysInMC; //for AMPT models some weak decays have to be removed by hand, since IsPhysicslPrimary does not catch them
+  bool           fDiscardStatusCodeFlag;
+  int            fDiscardStatusCode;
 
   Float_t GetSigmaToVertex(double *impact, double *covar);
 
