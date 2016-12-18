@@ -35,7 +35,7 @@ set(SRCS
     TStatToolkit.cxx
     AliNDLocalRegression.cxx
     AliExternalInfo.cxx
-    AliFFTsmoother.cxx   
+    AliFFTsmoother.cxx
     AliTreePlayer.cxx
     AliTreeTrending.cxx
     AliNDFormulaBrowser.cxx
@@ -51,10 +51,10 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase Graf Tree TreePlayer)
+set(LIBDEPS STEERBase Graf Tree TreePlayer GeomBuilder)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
@@ -93,7 +93,7 @@ message(STATUS "${MODULE} enabled")
 if(ALIROOT_STATIC)
     add_library(${MODULE}-static STATIC $<TARGET_OBJECTS:${MODULE}-object>)
     set_target_properties(${MODULE}-static PROPERTIES OUTPUT_NAME ${MODULE})
-    
+
     # list of shared dependencies / the name of the variable containing the list of static ones
     generate_static_dependencies("${ALIROOT_DEPENDENCIES}" "STATIC_ALIROOT_DEPENDENCIES")
     target_link_libraries(${MODULE}-static ${STATIC_ALIROOT_DEPENDENCIES} Root RootExtra)
