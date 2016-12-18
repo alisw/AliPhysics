@@ -85,6 +85,7 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         Double_t                             GetCenMax() const {return fCentralityMax; }
         const char*                          GetCentralityMethod() const {return fkCentralityMethodA; }
         void                                 SetVertexZ(Float_t z) { fVertexRange = z; }
+        void                                 SetHarmonic(Float_t h) {fHarmonic = h; }
         Float_t                              GetVertexZ() const { return fVertexRange; }
         //   void                                 SetMaxDeltaDipAngleAndPt(Float_t a, Float_t pt) { fDeltaDipAngle = a;
         //                                                                                          fDeltaDipPt = pt;
@@ -241,12 +242,13 @@ class AliAnalysisTaskPhiFlow : public AliAnalysisTaskSE
         TH1                  *fHistCentralityWeights; // 
         Float_t              fCentralityWeight;//! 
         TH1F                 *fVertexZ; //! z vertex position
+        Float_t              fHarmonic; // which harmonic to take
 
         AliAnalysisTaskPhiFlow(const AliAnalysisTaskPhiFlow&); // Not implemented
         AliAnalysisTaskPhiFlow& operator=(const AliAnalysisTaskPhiFlow&); // Not implemented
         void                 MakeTrack(Double_t, Double_t, Double_t, Double_t, Int_t , Int_t[], Double_t p = 0., Double_t pz = 0.) const;
 
-        ClassDef(AliAnalysisTaskPhiFlow, 8);
+        ClassDef(AliAnalysisTaskPhiFlow, 9);
 };
 
 #endif

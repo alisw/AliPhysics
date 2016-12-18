@@ -31,7 +31,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         Bool_t bCentralTrigger = kTRUE, // trigger selection
         Float_t EtaGap = 0., // eta gap for SPSUB
         TString DCA = "pt", // dca mode (see task implementation)
-        Int_t harm = 2, // harmonic vn
+        Int_t harm = 3, // harmonic vn
         UInt_t poi_filter = 32, // aod filterbits
         UInt_t rp_filter = 1,
         Bool_t event_mixing = kTRUE,
@@ -90,6 +90,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
     }
     // create the main task
     AliAnalysisTaskPhiFlow *task = new AliAnalysisTaskPhiFlow("TaskPhiFlow");
+    task->SetHarmonic(harm);
     if(debug) cout << " === AliAnalysisTaskPhiFlow === " << task << endl;
     if(!task) {
         if(debug) cout << " --> Unexpected error occurred: NO TASK WAS CREATED! (could be a library problem!) " << endl;
