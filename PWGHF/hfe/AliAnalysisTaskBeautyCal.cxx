@@ -939,7 +939,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       {
       //if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
       if(!atrack->IsHybridGlobalConstrainedGlobal()) continue; 
-      if(atrack->IsGlobalConstrained()) continue; 
+      //if(atrack->IsGlobalConstrained()) continue; 
       } // select track have MaxChi2TPCconstrained cut
 
     if(fESD)
