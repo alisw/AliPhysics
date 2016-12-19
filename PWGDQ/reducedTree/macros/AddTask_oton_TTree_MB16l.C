@@ -24,7 +24,7 @@ AliAnalysisTask *AddTask_oton_TTree_MB16l(Int_t reducedEventType=-1, Bool_t writ
 
   // Pile up, Physics Selection, Analysis Utils
   //-------------------------------------------
-  //task->SetRejectPileup();
+  task->SetRejectPileup(kTRUE);
   task->UsePhysicsSelection(kTRUE); 
   task->SetUseAnalysisUtils(kFALSE); // moved to false 16/10/2016 // ???
   
@@ -146,7 +146,7 @@ AliAnalysisTask *AddTask_oton_TTree_MB16l(Int_t reducedEventType=-1, Bool_t writ
   task->SetTreeInactiveBranch("fBC");
   task->SetTreeInactiveBranch("fTimeStamp");
   task->SetTreeInactiveBranch("fEventType");
-  task->SetTreeInactiveBranch("fTriggerMask");
+  //task->SetTreeInactiveBranch("fTriggerMask");
   task->SetTreeInactiveBranch("fIRIntClosestIntMap*");
   task->SetTreeInactiveBranch("fVtxTPC*");
   task->SetTreeInactiveBranch("fNVtxTPCContributors");
