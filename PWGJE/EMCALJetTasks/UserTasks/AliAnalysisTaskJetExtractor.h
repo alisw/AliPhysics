@@ -44,8 +44,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetHadronMatchingRadius(Double_t val) { fHadronMatchingRadius = val; }
   void                        SetInitialCollisionMatchingRadius(Double_t val)     { fInitialCollisionMatchingRadius = val; }
   void                        SetTruthParticleArrayName(const char* val)     { fTruthParticleArrayName = val; }
-  void                        SetSecondaryVertexUseThreeProng(Bool_t val)    { fSecondaryVertexUseThreeProng = val; }
   void                        SetSecondaryVertexMaxChi2(Int_t val)     { fSecondaryVertexMaxChi2 = val; }
+  void                        SetSecondaryVertexMaxDispersion(Int_t val)  { fSecondaryVertexMaxDispersion = val; }
 
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
@@ -96,7 +96,6 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Int_t                       GetTrackPID(AliVParticle* part);
   Double_t                    GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track);
   void                        AddSecondaryVertices(const AliVVertex* vtx, AliEmcalJet* jet, AliBasicJet& basicJet);
-  AliAODVertex*               GetSecondaryVertex(AliESDVertex* esdVtx, TObjArray* trkArray);
 
 
   // ################## BASIC EVENT VARIABLES
@@ -133,8 +132,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
   Double_t                    fInitialCollisionMatchingRadius;          ///< Matching radius to find a jet of the IC
   TString                     fTruthParticleArrayName;                  ///< Array name of MC particles in event (mcparticles)
-  Bool_t                      fSecondaryVertexUseThreeProng;            ///< Reconstruct sec. vtx with 3 tracks (default: 2)
   Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
+  Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
 
   // ######### HISTOGRAM FUNCTIONS
   void                        FillHistogram(const char * key, Double_t x);
@@ -219,9 +218,9 @@ class AliBasicJetConstituent
 class AliBasicJetSecondaryVertex
 {
   public:
-    AliBasicJetSecondaryVertex() : fVx(0), fVy(0), fVz(0), fChi2(0) {}
-    AliBasicJetSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2)
-    : fVx(vx), fVy(vy), fVz(vz), fChi2(chi2)
+    AliBasicJetSecondaryVertex() : fVx(0), fVy(0), fVz(0), fChi2(0), fDispersion(0) {}
+    AliBasicJetSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2, Float_t dispersion)
+    : fVx(vx), fVy(vy), fVz(vz), fChi2(chi2), fDispersion(dispersion)
     {
     }
     ~AliBasicJetSecondaryVertex();
@@ -231,12 +230,14 @@ class AliBasicJetSecondaryVertex
     Float_t Vz()        { return fVz; }
 
     Float_t Chi2()      { return fChi2; }
+    Float_t Dispersion(){ return fDispersion; }
   private:
 
     Float_t fVx;         ///< vertex X
     Float_t fVy;         ///< vertex Y
     Float_t fVz;         ///< vertex Z
     Float_t fChi2;       ///< Chi2/ndf for vertex
+    Float_t fDispersion; ///< Dispersion of vertex
 };
 
 //###############################################################################################################################################3
@@ -278,6 +279,7 @@ class AliBasicJet
     Long64_t                  EventID() { return fEventID; }
     Short_t                   Centrality() { return fCentrality; }
     Int_t                     GetNumbersOfConstituents() { return fConstituents.size(); }
+    Int_t                     GetNumbersOfSecVertices() { return fSecondaryVertices.size(); }
     void                      SetTruePt(Double_t val)  {fTruepT = val;}
 
     // Basic constituent functions
@@ -291,9 +293,9 @@ class AliBasicJet
 
     // Basic secondary vertex functions
     AliBasicJetSecondaryVertex* GetSecondaryVertex(Int_t index) { return &fSecondaryVertices[index]; }
-    void                      AddSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2=0)
+    void                      AddSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2=0, Float_t dispersion=0)
     {
-      AliBasicJetSecondaryVertex vtx (vx, vy, vz, chi2);
+      AliBasicJetSecondaryVertex vtx (vx, vy, vz, chi2, dispersion);
       AddSecondaryVertex(&vtx);
     }
     void                      AddSecondaryVertex(AliBasicJetSecondaryVertex* vtx) {fSecondaryVertices.push_back(*vtx);}
