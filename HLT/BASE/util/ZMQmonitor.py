@@ -49,16 +49,6 @@ if len(theMessage)<1:
 if len(theMessage)%2==1:
   theMessage.append("")
 
-# fill in the header information
-for idx in range(0, len(theMessage)):
-    if idx%2:
-        continue
-    payloadSize=len(theMessage[idx+1])
-    origin=theMessage[idx][8:12]
-    if origin[:3]=="***":
-        origin=origin[:3]+'\0'
-    theMessage[idx]=o2header.make(theMessage[idx],origin,payloadSize);
-
 #  Prepare our context and sockets
 context = zmq.Context()
 
