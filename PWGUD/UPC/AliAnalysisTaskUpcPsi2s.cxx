@@ -1150,7 +1150,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   }//Track loop
       
   fPsi2sAODTracks->Clear("C");  
-  if(nGoodTracks == 4){
+  //if(nGoodTracks == 4){
+  if(0){
 
   	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
 	  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );

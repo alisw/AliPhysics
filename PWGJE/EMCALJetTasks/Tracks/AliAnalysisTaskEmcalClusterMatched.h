@@ -51,10 +51,17 @@ public:
   void SetClusterTimeRange(double mintime, double maxtime) { fTimeCut.SetLimits(mintime, maxtime); }
 
   /**
-   * Set the name of the track container (from which matched tracks are selected)
-   * @param[in] nametracks Name of the track container
+   * Enable sumw2 option
+   * @param[in] doenable If true sumw2 is enabled for all histograms
    */
-  void SetNameClusterContainer(const char *nametracks) { fNameTrackContainer = nametracks; }
+  void EnableSumw2(bool doenable) { fEnableSumw2 = doenable; }
+
+  /**
+   * Create and configure task skeleton
+   * @param[in] suffix Suffix in task and output container name
+   * @return Pre-configured task
+   */
+  static AliAnalysisTaskEmcalClusterMatched *AddTaskEmcalClusterMatched(const char *suffix);
 
 protected:
 
@@ -86,13 +93,6 @@ protected:
    */
   void InitializeTrackSelections(bool isAOD);
 
-  /**
-   * Create and configure task skeleton
-   * @param[in] suffix Suffix in task and output container name
-   * @return Pre-configured task
-   */
-  static AliAnalysisTaskEmcalClusterMatched *AddTaskEmcalClusterMatched(const char *suffix);
-
 private:
 
   /**
@@ -116,7 +116,6 @@ private:
   AliAnalysisTaskEmcalClusterMatched(const AliAnalysisTaskEmcalClusterMatched &);
   AliAnalysisTaskEmcalClusterMatched &operator=(const AliAnalysisTaskEmcalClusterMatched &);
 
-  TString                                   fNameTrackContainer;                    ///< Name of the track container
   AliEmcalTrackSelection                    *fTrackSelectionGlobal;                 ///< Global track cuts (strong condition)
   AliEmcalTrackSelection                    *fTrackSelectionTPConly;                ///< TPC-only track cuts (weak condition)
   AliCutValueRange<double>                  fTimeCut;                               ///< Cut on cluster time
