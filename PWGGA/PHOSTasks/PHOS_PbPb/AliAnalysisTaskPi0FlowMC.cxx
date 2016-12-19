@@ -78,7 +78,7 @@ const Double_t AliAnalysisTaskPi0FlowMC::kRCut = 1.;
 
 AliAnalysisTaskPi0FlowMC::AliAnalysisTaskPi0FlowMC(const char* name, AliAnalysisTaskPi0Flow::Period period)
 : AliAnalysisTaskPi0Flow(name, period),
-  fStack(0x0),kOffVertexCutSet(kTRUE)
+  fStack(0x0),kOffVertexCutSet(kTRUE),fWeights(0x0)
 {
 }
 

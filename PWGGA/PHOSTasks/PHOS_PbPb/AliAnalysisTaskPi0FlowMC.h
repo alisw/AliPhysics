@@ -23,7 +23,8 @@ public:
   virtual ~AliAnalysisTaskPi0FlowMC();
     
   void SetOffVertexPhotonCut(Bool_t setCut=kTRUE) { kOffVertexCutSet=setCut; }
-
+  void SetWeightsParametrization(TF1* weights) { fWeights = weights; }
+  
 protected: // Override:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
@@ -43,6 +44,7 @@ protected: // member functions:
 protected: // member variables:
   AliStack* fStack;
   Bool_t kOffVertexCutSet;
+  TF1* fWeights; // weights parametrization
     
   void FillMCHist();
   
