@@ -879,8 +879,8 @@ public:
   TH1D* GetEtaWeightsHist(Int_t h, Int_t b, Int_t c) const {return this->fEtaWeightsHist[h][b][c];};
   void SetNvsCenCut(TH1D* const n, Int_t c, Int_t h) {this->fNvsCenCut[c][h] = n;};
   TH1D* GetNvsCenCut(Int_t c, Int_t h) const {return this->fNvsCenCut[c][h];};
-  void SetZNCenDis(TH2F* const n, Int_t const eg, Int_t const h) {this->fhZNCenDis[eg][h] = n;};
-  TH2F* GetZNCenDis(Int_t const eg, Int_t const h) const {return this->fhZNCenDis[eg][h];};
+  void SetZNCenDis(TH3F* const n, Int_t const h) {this->fhZNCenDis[h] = n;};
+  TH3F* GetZNCenDis(Int_t const h) const {return this->fhZNCenDis[h];};
   void SetZNCvsZNA(TH2F* const n, Int_t const h) {this->fhZNCvsZNA[h] = n;};
   TH2F* GetZNCvsZNA(Int_t const h) const {return this->fhZNCvsZNA[h];};
   void SetZNvsCen(TH2F* const n, Int_t const h) {this->fhZNvsCen[h] = n;};
@@ -954,8 +954,8 @@ public:
   
   void SetFlowQCSpectra(TH2D* const TH) {this->fFlowQCSpectra = TH;};
   TH2D* GetFlowQCSpectra() const {return this->fFlowQCSpectra;};
-  void SetFlowQCIntCorProTest(TH2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorProTest[eg][k] = TP;};
-  TH2D* GetFlowQCIntCorNUAProTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProTest[eg][h];};
+  void SetFlowQCIntCorProTest(TProfile2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorProTest[eg][k] = TP;};
+  TProfile2D* GetFlowQCIntCorNUAProTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProTest[eg][h];};
   
   TProfile* GetFlowQCRefCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorPro[eg][h];};
   void SetFlowQCRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorPro[eg][k] = TP;};
@@ -1731,7 +1731,7 @@ private:
   const static Int_t fkNHistOrdMag = 4;
   TH1D *fFlowQCIntCorHistOrdMag[fFlowNHarm][fkNOrdMag][fkNHistOrdMag]; //!
   
-  TH2D *fFlowQCIntCorProTest[fFlowNHarm][3]; //! correlation profile, precision test
+  TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][3]; //! correlation profile, precision test
   
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
@@ -1813,7 +1813,7 @@ private:
   Double_t fZDCESELC2tot;
   Double_t *fCorrMap; //!
   Double_t fCenWeightEbE;
-  TH2F* fhZNCenDis[fCRCMaxnCen][2]; //! ZN spectra
+  TH3F* fhZNCenDis[4]; //! ZN spectra
   TH2F* fhZNCvsZNA[fCRCMaxnCen]; //! ZNA-ZNC correlation
   TH2F* fhZNCenvsMul[fCRCMaxnCen][2]; //! rad vs mul
   TH2F* fhZNResvsMul[fCRCMaxnCen][2]; //! res vs mul
@@ -1852,7 +1852,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 39);
+  ClassDef(AliFlowAnalysisCRC, 40);
   
 };
 
