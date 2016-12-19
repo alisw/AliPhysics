@@ -59,6 +59,7 @@
 //#include "AliHLTTPCCATrackParam.h"
 //#include "AliHLTVertexer.h"
 #include <vector>
+#include "AliHLTITSTrackPoint.h"
 
 using std::vector;
 ClassImp(AliITStrackerHLT)
@@ -1136,5 +1137,69 @@ Bool_t AliITStrackerHLT::GetTrackPointTrackingError(Int_t /*index*/,
 						    AliTrackPoint& /*p*/, const AliESDtrack */*t*/) 
 {
   // dummy
+  return 0;
+}
+
+Int_t AliITStrackerHLT::GetTrackPoint( Int_t clusterIndex, AliHLTITSTrackPoint& p ) const 
+{
+  //--------------------------------------------------------------------
+  // Get track space point with index clusterIndex
+  //--------------------------------------------------------------------
+
+  Int_t iLayer = ( clusterIndex & 0xf0000000) >> 28;
+  Int_t iCluster = (clusterIndex & 0x0fffffff) >> 00;
+
+  if( iLayer >= AliITSgeomTGeo::kNLayers ){
+    AliError( "AliITSSAPTracker: wrong cluster layer" );
+    p.Reset();
+    return -1;
+  }
+
+  const AliITSRecPoint* cl = fLayers[iLayer].GetCluster(iCluster);
+  if( !cl ){
+    AliError( "AliITSSAPTracker: wrong cluster pointer" );
+    p.Reset();
+    return -1;
+  }
+
+  Int_t idet = cl->GetDetectorIndex();
+
+  bool ok = cl->GetGlobalXYZ(p.fXYZ) && cl->GetGlobalCov(p.fCov);
+  if( !ok ){
+    AliError( "AliITStrackerHLT: can not get global coordinates of a cluster" );
+    p.Reset();
+    return -1;
+  }
+
+  p.fCharge = cl->GetQ();
+  p.fChargeRatio = cl->GetChargeRatio();
+  p.fClusterType = cl->GetClusterType();
+  p.fDriftTime = cl->GetDriftTime();
+
+  AliGeomManager::ELayerID layerID = AliGeomManager::kInvalidLayer; 
+  switch (cl->GetLayer()) {
+  case 0:
+    layerID = AliGeomManager::kSPD1;
+    break;
+  case 1:
+    layerID = AliGeomManager::kSPD2;
+    break;
+  case 2:
+    layerID = AliGeomManager::kSDD1;
+    break;
+  case 3:
+    layerID = AliGeomManager::kSDD2;
+    break;
+  case 4:
+    layerID = AliGeomManager::kSSD1;
+    break;
+  case 5:
+    layerID = AliGeomManager::kSSD2;
+    break;
+  default:
+    AliWarning(Form("AliITSSAPTracker: Wrong layer index in ITS (%d) !",iLayer));
+    break;
+  };
+  p.fVolumeID = AliGeomManager::LayerToVolUID(layerID,idet);
   return 0;
 }

@@ -138,6 +138,7 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackDataType);
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackPointDataType);
+  list.push_back(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
   list.push_back(kAliHLTDataTypeITSSAPTrackPoint|kAliHLTDataOriginITS);
 }
 
@@ -961,45 +962,99 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
 
   // 3.2. now update ESD tracks with the ITS info
-  if (storeTracks) for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
-       pBlock!=NULL; pBlock=GetNextInputBlock()) {
-    fBenchmark.AddInput(pBlock->fSize);
-    vector<AliHLTGlobalBarrelTrack> tracks;
-    if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
-      for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
-	   element!=tracks.end(); element++) {
-	int tpcID=element->TrackID();
+  if (storeTracks){
+    const AliHLTITSTrackPointData * trackPoints = 0;
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {          
+      trackPoints = reinterpret_cast<const AliHLTITSTrackPointData*>(pBlock->fPtr);    
+      fBenchmark.AddInput(pBlock->fSize);
+      break;
+    }
+    
+    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
+	 pBlock!=NULL; pBlock=GetNextInputBlock()) {
+      fBenchmark.AddInput(pBlock->fSize);
+      vector<AliHLTGlobalBarrelTrack> tracks;
+      if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>0) {
 
-	Int_t esdID = -1;
-	if( mapTpcId2esdId.find(tpcID) != mapTpcId2esdId.end() ) esdID = mapTpcId2esdId[tpcID];
-	
-	// the ITS tracker assigns the TPC track used as seed for a certain track to
-	// the trackID
-	if( esdID<0 || esdID>=pESD->GetNumberOfTracks()) continue;
-	Int_t mcLabel = -1;
-	if( mcLabelsITS.find(tpcID)!=mcLabelsITS.end() )
-	  mcLabel = mcLabelsITS[tpcID];
+	int nClustersRead=0;
 
-	AliESDtrack *tESD = pESD->GetTrack( esdID );
-	
-	if (!tESD) continue;
-	// the labels for the TPC and ITS tracking params can be different, e.g.
-	// there can be a decay. The ITS label should then be the better one, the
-	// TPC label is saved in a member of AliESDtrack
-	if (mcLabel>=0) {
-	  // upadte only if the ITS label is available, otherwise keep TPC label
-	  element->SetLabel( mcLabel );
-	} else {
-	  // bugfix https://savannah.cern.ch/bugs/?69713
-	  element->SetLabel( tESD->GetLabel() );	  
+	for (vector<AliHLTGlobalBarrelTrack>::iterator element=tracks.begin();
+	     element!=tracks.end();  nClustersRead+=element->GetNumberOfPoints(), element++ ) {
+
+	  int tpcID=element->TrackID();
+	  
+	  Int_t esdID = -1;
+	  if( mapTpcId2esdId.find(tpcID) != mapTpcId2esdId.end() ) esdID = mapTpcId2esdId[tpcID];
+	  
+	  // the ITS tracker assigns the TPC track used as seed for a certain track to
+	  // the trackID
+	  if( esdID<0 || esdID>=pESD->GetNumberOfTracks()) continue;
+	  Int_t mcLabel = -1;
+	  if( mcLabelsITS.find(tpcID)!=mcLabelsITS.end() )
+	    mcLabel = mcLabelsITS[tpcID];
+	  
+	  AliESDtrack *tESD = pESD->GetTrack( esdID );
+	  
+	  if (!tESD) continue;
+	  // the labels for the TPC and ITS tracking params can be different, e.g.
+	  // there can be a decay. The ITS label should then be the better one, the
+	  // TPC label is saved in a member of AliESDtrack
+	  if (mcLabel>=0) {
+	    // upadte only if the ITS label is available, otherwise keep TPC label
+	    element->SetLabel( mcLabel );
+	  } else {
+	    // bugfix https://savannah.cern.ch/bugs/?69713
+	    element->SetLabel( tESD->GetLabel() );	  
+	  }
+	  tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
+	  
+	  // TODO: add a proper refit
+	  //tESD->UpdateTrackParams( &(*element), AliESDtrack::kTPCrefit );
+
+	  if( pESDfriend ) {
+	    AliESDfriendTrack *friendTrack = pESDfriend->GetTrack(esdID);
+	    if( friendTrack ){	      
+	      if( trackPoints ){
+		int nPoints = element->GetNumberOfPoints();
+		if( nClustersRead + nPoints > trackPoints->fCount ){
+		  HLTError("Wrong number of ITS track points");
+		} else if( nPoints>0 ){
+		  vector<AliHLTITSTrackPoint> store;
+		  for( int i=nClustersRead; i<nClustersRead+nPoints; i++){
+		    const AliHLTITSTrackPoint &sp = trackPoints->fPoints[i];
+		    if( sp.fVolumeID == 0 ) continue; // no track point stored for this ITS cluster for whatever reason
+		    store.push_back(sp);
+		  }
+		  nPoints = store.size();
+		  if( nPoints>0 ){
+		    const AliTrackPointArray* oldPoints = friendTrack->GetTrackPointArray();
+		    int nOld=0;
+		    if( oldPoints ) nOld = oldPoints->GetNPoints();
+		    AliTrackPointArray *spArray = new AliTrackPointArray(nOld + nPoints);
+		    spArray->SetBit(AliTrackPointArray::kTOFBugFixed);
+		    for( int i=0; i<nOld; i++){
+		      AliTrackPoint p;
+		      if( oldPoints->GetPoint(p, i) ){
+			spArray->AddPoint( i, &p );
+		      }
+		    }
+		    //cout<<"ITS Points: "<<nPoints<<endl;
+		    for( int i=0; i<nPoints; i++){
+		      AliTrackPoint p = store[i].GetAliTrackPoint();
+		      //p.Print("");
+		      spArray->AddPoint( nOld + i, &p );
+		    }		    		    
+		    friendTrack->SetTrackPointArray(spArray);
+		  }
+		}
+	      } // trackPoints
+	    } // friendTrack
+	  } //pESDfriend
 	}
-	tESD->UpdateTrackParams( &(*element), AliESDtrack::kITSin );
-
-	// TODO: add a proper refit
-	//tESD->UpdateTrackParams( &(*element), AliESDtrack::kTPCrefit );
       }
     }
-  }
+  } // storeTracks
 
   // update with  vertices and vertex-fitted tracks
   // output of the GlobalVertexerComponent

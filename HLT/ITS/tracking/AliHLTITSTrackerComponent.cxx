@@ -47,6 +47,7 @@
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliGeomManager.h"
 #include "AliHLTTrackMCLabel.h"
+#include "AliHLTITSTrackPoint.h"
 #include <map>
 
 using namespace std;
@@ -126,6 +127,7 @@ int AliHLTITSTrackerComponent::GetOutputDataTypes(AliHLTComponentDataTypeList& t
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITS);
   tgtList.push_back(kAliHLTDataTypeTrack|kAliHLTDataOriginITSOut);
   tgtList.push_back( kAliHLTDataTypeTrackMC|kAliHLTDataOriginITS );
+  tgtList.push_back(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
   return tgtList.size();
 }
 
@@ -133,7 +135,7 @@ void AliHLTITSTrackerComponent::GetOutputDataSize( unsigned long& constBase, dou
 {
   // define guess for the output data size
   constBase = 200;       // minimum size
-  inputMultiplier = 2.; // size relative to input
+  inputMultiplier = 3.; // size relative to input
 }
 
 AliHLTComponent* AliHLTITSTrackerComponent::Spawn()
@@ -461,8 +463,10 @@ int AliHLTITSTrackerComponent::DoEvent
   
   // Fill output tracks
   int nITSUpdated = 0;
-  {
-    
+  int nTrackClusters = 0;
+  AliHLTTracksData* outTrackData = 0;
+
+  {    
     for( int iOut=0; iOut<=1; iOut++ ){
 
       unsigned int blockSize = 0;
@@ -478,8 +482,10 @@ int AliHLTITSTrackerComponent::DoEvent
 	break;
       }
 
+      if( iOut==0 ) outTrackData = outPtr;
+      
       outPtr->fCount = 0;
-       AliHLTITSTrack *tracks=0;
+      AliHLTITSTrack *tracks=0;
       int nTracks = 0;
       if( iOut==0 ){
 	tracks = fTracker->Tracks();
@@ -518,9 +524,12 @@ int AliHLTITSTrackerComponent::DoEvent
 	currOutTrack->fFlags = 0;
 	currOutTrack->fNPoints = nClusters;    
 	for ( int i = 0; i < nClusters; i++ ) currOutTrack->fPointIDs[i] = t.GetClusterIndex( i );
+
+	if( iOut==0 ) nTrackClusters+=nClusters;
+
 	currOutTrack = ( AliHLTExternalTrackParam* )( (( Byte_t * )currOutTrack) + dSize );
 	blockSize += dSize;
-	outPtr->fCount++;
+	outPtr->fCount++;	
       }
   
 
@@ -537,9 +546,52 @@ int AliHLTITSTrackerComponent::DoEvent
       outputBlocks.push_back( resultData );
       size += resultData.fSize;       
     }
-  }  
+  }
 
-  {// fill MC labels
+  if ( iResult>=0 && outTrackData ){  // Fill output track points    
+
+    AliHLTITSTrackPointData* outTrackPoints = reinterpret_cast<AliHLTITSTrackPointData*>( outputPtr + size );
+    AliHLTUInt32_t blockSize = sizeof(AliHLTITSTrackPointData) + nTrackClusters*sizeof(AliHLTITSTrackPoint);
+    
+    if( size + blockSize > maxBufferSize ){    	
+      HLTWarning( "Output buffer size exceed (buffer size %d, current size %d), %d track points are not stored", 
+		  maxBufferSize, size + blockSize, nTrackClusters);
+      iResult = -ENOSPC;       
+
+    } else {
+
+      outTrackPoints->fCount = 0; 
+
+      AliHLTITSTrack *tracks = fTracker->Tracks();
+      int nTracks = fTracker->NTracks();
+
+      for ( int itr = 0; itr < nTracks; itr++ ) {
+	AliHLTITSTrack &t = tracks[itr];
+	int nClusters = t.GetNumberOfClusters();	  
+	for ( int i = 0; i < nClusters; i++ ){
+	  int id = t.GetClusterIndex( i );
+	  if( fTracker->GetTrackPoint( id, outTrackPoints->fPoints[outTrackPoints->fCount] )!=0 ){
+	    HLTError( "wrong cluster pointer" );
+	    outTrackPoints->fPoints[outTrackPoints->fCount].Reset();	
+	  }
+	  outTrackPoints->fCount++;
+	}
+      }
+      blockSize = sizeof(AliHLTITSTrackPointData) + outTrackPoints->fCount*sizeof(AliHLTITSTrackPoint);
+      
+      AliHLTComponentBlockData resultData;
+      FillBlockData( resultData );
+      resultData.fOffset = size;
+      resultData.fSize = blockSize;
+      resultData.fDataType = kAliHLTDataTypeITSTrackPoint |kAliHLTDataOriginITS;
+      fBenchmark.AddOutput(resultData.fSize);
+      outputBlocks.push_back( resultData );
+      size += resultData.fSize;   
+    }
+  }
+  
+
+  if ( iResult>=0 ) {// fill MC labels
 
     unsigned int blockSize = 0;
       
@@ -594,5 +646,8 @@ int AliHLTITSTrackerComponent::DoEvent
 	   nITSUpdated, nClustersTotal, tracksTPC.size() );
 
   HLTInfo(fBenchmark.GetStatistics());
+
+  if( iResult<0 ) size = 0;
+
   return iResult;
 }

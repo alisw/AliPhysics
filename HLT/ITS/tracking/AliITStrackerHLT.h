@@ -12,6 +12,7 @@ class AliESDtrack;
 class AliITSChannelStatus;
 class AliITSDetTypeRec;
 class AliITSRecoParam;
+class AliHLTITSTrackPoint;
 #include "AliHLTITSTrack.h" 
 #include "AliHLTITSDetector.h"
 #include "AliHLTITSLayer.h"
@@ -69,6 +70,9 @@ public:
 
   void Init();
 
+ // track point calculation
+
+  Int_t GetTrackPoint( Int_t clusterIndex, AliHLTITSTrackPoint& p ) const ;
 
 protected:
 

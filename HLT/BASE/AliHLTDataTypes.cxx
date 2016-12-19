@@ -258,6 +258,9 @@ const AliHLTComponentDataType fgkITSTracksDataType = AliHLTComponentDataTypeInit
 const AliHLTComponentDataType kAliHLTDataTypeITSSAPData = AliHLTComponentDataTypeInitializer( "SAPTRACK", kAliHLTDataOriginITS );
 
 /** Container of HLT ITS track point data */
+const AliHLTComponentDataType kAliHLTDataTypeITSTrackPoint = AliHLTComponentDataTypeInitializer( "ITSTRPNT", kAliHLTDataOriginITS );
+
+/** Container of HLT ITS SAP track point data */
 const AliHLTComponentDataType kAliHLTDataTypeITSSAPTrackPoint = AliHLTComponentDataTypeInitializer( "SAPTRPNT", kAliHLTDataOriginITS );
 
 /** Container of HLT calorimeter clusters */
