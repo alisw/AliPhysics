@@ -34,8 +34,6 @@
 #include "TObjArray.h"
 #include "AliESDVertex.h"
 #include "AliAODVertex.h"
-#include "AliKFParticle.h"
-#include "AliKFVertex.h"
 
 #include "AliVTrack.h"
 #include "AliVHeader.h"
@@ -102,8 +100,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
   fTruthParticleArrayName("mcparticles"),
-  fSecondaryVertexUseThreeProng(kFALSE),
-  fSecondaryVertexMaxChi2(1e10)
+  fSecondaryVertexMaxChi2(1e10),
+  fSecondaryVertexMaxDispersion(0.02)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -139,8 +137,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fHadronMatchingRadius(0.5),
   fInitialCollisionMatchingRadius(0.3),
   fTruthParticleArrayName("mcparticles"),
-  fSecondaryVertexUseThreeProng(kFALSE),
-  fSecondaryVertexMaxChi2(1e10)
+  fSecondaryVertexMaxChi2(1e10),
+  fSecondaryVertexMaxDispersion(0.02)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -156,7 +154,6 @@ AliAnalysisTaskJetExtractor::~AliAnalysisTaskJetExtractor()
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 {
-  std::cout << "########################################\n";
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
   // ### Basic container settings
@@ -287,6 +284,19 @@ void AliAnalysisTaskJetExtractor::AddJetToTree(AliEmcalJet* jet)
     AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
     if(!particle) continue;
 
+    /*
+    // ############## DEBUG: Show prod. vertices
+    TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
+    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
+    {
+      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(i));
+      if(!part) continue;
+      if(part->GetLabel() != particle->GetLabel())
+        continue;
+    }
+    // ############## DEBUG: Show prod. vertices
+    */
+
     // Secondary vertex analysis
     Double_t z = GetTrackImpactParameter(myVertex, dynamic_cast<AliAODTrack*>(particle));
 
@@ -294,7 +304,7 @@ void AliAnalysisTaskJetExtractor::AddJetToTree(AliEmcalJet* jet)
     basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid, particle->Xv(), particle->Yv(), particle->Zv(), z);
   }
 
-  // Calculate and add secondary vertices to jet
+  // Add secondary vertices to jet (from AOD.VertexingHF)
   AddSecondaryVertices(myVertex, jet, basicJet);
 
   // Field currently not used
@@ -356,87 +366,49 @@ void AliAnalysisTaskJetExtractor::AddSecondaryVertices(const AliVVertex* vtx, Al
   Double_t vtxPos[3]   = {vtx->GetX(), vtx->GetY(), vtx->GetZ()};
   Double_t covMatrix[6] = {0};
   vtx->GetCovarianceMatrix(&covMatrix[0]);
-  AliESDVertex *esdVtx = new AliESDVertex(&vtxPos[0], &covMatrix[0], vtx->GetChi2(), vtx->GetNContributors());
+  AliESDVertex* esdVtx = new AliESDVertex(&vtxPos[0], &covMatrix[0], vtx->GetChi2(), vtx->GetNContributors());
 
-  // Loop over all 2 or 3-particle pairs in jet:
-  TObjArray* trackArray = new TObjArray(3);
-  for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
+  // Load HF vertex branch from AOD event
+  TClonesArray* secVertexArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("VerticesHF"));
+  if(!secVertexArr)
   {
-    // Add first particle to array
-    AliAODTrack* particleOne = static_cast<AliAODTrack*>(jet->TrackAt(i, fTracksCont->GetArray()));
-    if(!particleOne) continue;
-    trackArray->AddAt(particleOne, 0);
+    AliError("VerticesHF branch not found!");
+    return;
+  }
 
-    for(Int_t j = 0; j < jet->GetNumberOfTracks(); j++)
+  // Loop over all potential secondary vertices
+  for(Int_t i=0; i<secVertexArr->GetEntriesFast(); i++)
+  {
+    AliAODVertex* vtx = (AliAODVertex*)(secVertexArr->UncheckedAt(i));
+    // Only select three-prong vertices
+    if((strcmp(vtx->GetParent()->ClassName(), "AliAODRecoDecayHF3Prong")))
+      continue;
+
+    // Calculate vtx distance
+    Double_t effX = vtx->GetX() - esdVtx->GetX();
+    Double_t effY = vtx->GetY() - esdVtx->GetY();
+    Double_t effZ = vtx->GetZ() - esdVtx->GetZ();
+    Double_t vtxDistance = TMath::Sqrt(effX*effX + effY*effY + effZ*effZ);
+
+    // Vertex dispersion
+    Double_t dispersion = 0.;
+    for(Int_t j=0; j<vtx->GetNDaughters(); j++)
     {
-      // Add second particle to array
-      if (i==j) continue;
-      AliAODTrack* particleTwo = static_cast<AliAODTrack*>(jet->TrackAt(j, fTracksCont->GetArray()));
-      if(!particleTwo) continue;
-      trackArray->AddAt(particleTwo, 1);
-
-      for(Int_t k = 0; k < jet->GetNumberOfTracks(); k++)
-      {
-        // On demand, add third particle to array
-        if(fSecondaryVertexUseThreeProng)
-        {
-          if (i==k) continue;
-          if (j==k) continue;
-          AliAODTrack* particleThree = static_cast<AliAODTrack*>(jet->TrackAt(k, fTracksCont->GetArray()));
-          if(!particleThree) continue;
-          trackArray->AddAt(particleThree, 2);
-        }
-
-        AliAODVertex* secVtx = GetSecondaryVertex(esdVtx, trackArray);
-        // Add the secondary vertex to the basic jet (if cut is fulfilled)
-        if(secVtx)
-        {
-          if(TMath::Abs(secVtx->GetChi2perNDF()) <= fSecondaryVertexMaxChi2)
-            basicJet.AddSecondaryVertex(secVtx->GetX(), secVtx->GetY(), secVtx->GetZ(), TMath::Abs(secVtx->GetChi2perNDF()));
-          delete secVtx;
-        }
-
-        // Do not run a third loop if not demanded
-        if(!fSecondaryVertexUseThreeProng)
-          break;
-      }
+      if(!vtx->GetDaughter(j))
+        continue;
+      Double_t impact = GetTrackImpactParameter(vtx, static_cast<AliAODTrack*>(vtx->GetDaughter(j)));
+      dispersion += impact*impact;
     }
+    dispersion = TMath::Sqrt(dispersion);
+
+    // Add secondary vertices if they fulfill the conditions
+    if( (dispersion > fSecondaryVertexMaxDispersion) || (TMath::Abs(vtx->GetChi2perNDF()) > fSecondaryVertexMaxChi2) )
+      continue;
+
+    basicJet.AddSecondaryVertex(vtx->GetX(), vtx->GetY(), vtx->GetZ(), TMath::Abs(vtx->GetChi2perNDF()), dispersion);
   }
-  delete trackArray;
+
   delete esdVtx;
-}
-
-//________________________________________________________________________
-AliAODVertex* AliAnalysisTaskJetExtractor::GetSecondaryVertex(AliESDVertex* esdVtx, TObjArray* trkArray)
-{
-  // ### Code adapted from code in AliHFJetsTaggingVertex
-  // Kalman Filter vertexer (AliKFParticle)
-
-  Int_t nProngTrks = 2;
-  if (fSecondaryVertexUseThreeProng)
-    nProngTrks     = 3;
-  AliKFParticle::SetField(InputEvent()->GetMagneticField());
-  AliKFVertex vertexKF;
-
-  for (Int_t i = 0; i < nProngTrks; ++i) {
-    AliAODTrack* aodTrack = (AliAODTrack*)trkArray->At(i);
-    AliKFParticle daughterKF(*aodTrack, 211);
-    vertexKF.AddDaughter(daughterKF);
-  }
-
-  AliESDVertex* vertexESD = new AliESDVertex(vertexKF.Parameters(),
-                               vertexKF.CovarianceMatrix(),
-                               vertexKF.GetChi2(),
-                               vertexKF.GetNContributors());
-
-  // convert to AliAODVertex
-  Double_t pos[3], cov[6], chi2xNDF;
-  vertexESD->GetXYZ(pos); // position
-  vertexESD->GetCovMatrix(cov); //covariance matrix
-  chi2xNDF = vertexESD->GetChi2toNDF();
-  delete vertexESD; vertexESD = NULL;
-
-  return (new AliAODVertex(pos, cov, chi2xNDF, NULL, -1, AliAODVertex::kUndef, nProngTrks));
 }
 
 //________________________________________________________________________
