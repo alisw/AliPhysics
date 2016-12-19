@@ -46,6 +46,7 @@ public:
   void SetDetectorsUsed(TString det) { fDetectorsUsed = det; }
   void SetUseBranch(TString b)       { fUseBranch = b; }
 
+  void SetFMDMultLowCut(Float_t cut) { fFMDMultLowCut = cut; }
   TString GetTreeName() const {
     TString s = "TE";
     if (!fIsMC && fTriggerSelection != "") {
@@ -132,7 +133,7 @@ public:
       for (Int_t i=0; i<5; ++i)
        	fMult[i] = 0;
     }
-    void Fill(const AliESDEvent*);
+    void Fill(const AliESDEvent*, Float_t);
 
     Int_t   fMult[5];   // A-side: 1,2i,2o; C-side: 3i,3o
   } ;
@@ -200,6 +201,7 @@ private:
   TString          fDetectorsUsed;       //
   TString          fUseBranch;           //
   Bool_t           fUseSDFromGenerator;  //
+  Float_t          fFMDMultLowCut;       //
 
   AliTriggerAnalysis fTriggerAnalysis;   //!
   AliAnalysisUtils   fAnalysisUtils;     //!

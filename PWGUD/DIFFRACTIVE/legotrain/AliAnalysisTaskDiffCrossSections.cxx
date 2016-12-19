@@ -352,12 +352,11 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent,
   for (Int_t ch=0; ch<64; ++ch)
     fCharge[ch/32] += esdV0->GetMultiplicity(ch);
 }
-void AliAnalysisTaskDiffCrossSections::FMDInfo::Fill(const AliESDEvent *esdEvent) {
+void AliAnalysisTaskDiffCrossSections::FMDInfo::Fill(const AliESDEvent *esdEvent, Float_t fmdMultLowCut) {
   for (Int_t i=0; i<5; ++i)
     fMult[i] = 0.0f;
 
   const AliESDFMD* esdFMD = esdEvent->GetFMDData();
-  const Float_t fFMDLowCut = 0.2;
   const Int_t idx[4][2] = {
     {0, 0},
     {0, 0},
@@ -373,7 +372,7 @@ void AliAnalysisTaskDiffCrossSections::FMDInfo::Fill(const AliESDEvent *esdEvent
       for (UShort_t s=0; s<nSec; ++s) {
 	for (UShort_t t=0; t<nStr; ++t) {
 	  const Float_t fmdMult = esdFMD->Multiplicity(d, r, s, t);
-	  if (fmdMult < fFMDLowCut || fmdMult == AliESDFMD::kInvalidMult)
+	  if (fmdMult < fmdMultLowCut || fmdMult == AliESDFMD::kInvalidMult)
 	    continue;
 	  fMult[idx[d][i]] += 1;
 	}
@@ -391,6 +390,7 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fDetectorsUsed("ADA ADC V0 FMD SPD")
   , fUseSDFromGenerator(kTRUE)
   , fUseBranch("")
+  , fFMDMultLowCut(0.3)
   , fTriggerAnalysis()
   , fAnalysisUtils()
   , fTE(NULL)
@@ -624,7 +624,7 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   fTreeData.fIsIncompleteDAQ          = esdEvent->IsIncompleteDAQ();
   fTreeData.fIsSPDClusterVsTrackletBG = fAnalysisUtils.IsSPDClusterVsTrackletBG(esdEvent);
   fTreeData.fV0Info.FillV0(esdEvent, fTriggerAnalysis);
-  fTreeData.fFMDInfo.Fill(esdEvent);
+  fTreeData.fFMDInfo.Fill(esdEvent, fFMDMultLowCut);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
 
   fTreeData.fVtxInfo.Fill(esdEvent->GetPrimaryVertexSPD());
@@ -670,7 +670,6 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   // FMD
   const AliESDFMD* esdFMD = esdEvent->GetFMDData();
   if (fDetectorsUsed.Contains("FMD") && esdFMD) {
-    const Float_t fFMDLowCut = 0.2;
     for (UShort_t d=1; d<4; ++d) {
       const UShort_t nRng(d == 1 ? 1 : 2);
       for (UShort_t i=0; i<nRng; ++i) {
@@ -680,7 +679,7 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 	for (UShort_t s=0; s<nSec; ++s) {
 	  for (UShort_t t=0; t<nStr; ++t) {
 	    const Float_t fmdMult = esdFMD->Multiplicity(d, r, s, t);
-	    if (fmdMult < fFMDLowCut || fmdMult == AliESDFMD::kInvalidMult)
+	    if (fmdMult < fFMDMultLowCut || fmdMult == AliESDFMD::kInvalidMult)
 	      continue;
 	    phi.push_back(esdFMD->Phi(d, r, s, t)*TMath::Pi()/180.0);
 	    eta.push_back(esdFMD->Eta(d, r, s, t));
@@ -734,6 +733,12 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
     fEtaL = eta.front();
     fEtaR = eta.back();
 
+    TString line = "eta: ";
+    for (Int_t i=0; i<eta.size(); ++i) {
+      line += TString::Format("%6.3f ", eta[i]);
+    }
+    AliDebugF(5, "%s", line.Data());
+
     const Double_t phiMin = phi.front();
     const Double_t phiMax = phi.back();
     // the following is OK for SPD,FMD,V0 but presumably needs to be generalized for AD
@@ -742,6 +747,8 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
     if (isOneTrack) {
       const Double_t etaCenter = 0.5*(fEtaL + fEtaR);
       fEventType = 2*(etaCenter > 0.0) - 1;
+      AliDebugF(5, "eventType=%2d center=%6.3f etaLR=%6.3f,%6.3f",
+		fEventType, etaCenter, fEtaL, fEtaR);
     } else {
       const Double_t dL = fEtaL - etaAccL;
       const Double_t dR = etaAccR - fEtaR;
@@ -764,6 +771,8 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
       } else {
 	fEventType = 2;
       }
+      AliDebugF(5, "eventType=%2d gap=%6.3f etaLR=%6.3f,%6.3f dLR=%6.3f,%6.3f",
+		fEventType, fEtaGap, fEtaL, fEtaR, dL, dR);
     }
   }
 
