@@ -59,6 +59,7 @@ set(SRCS
   AliMuonCompactTreeMaker.cxx
   AliMuonGridSubmitter.cxx
   AliMuonQAMergeSubmitter.cxx
+  AliMuonOCDBSnapshotGenerator.cxx
   )
 
 # Headers from sources

@@ -132,6 +132,21 @@ void AddAnalysisTasks(Int_t merge){
   // Tender and supplies. Needs to be called for every event.
   //
 
+  if ( VAR_OCDB_SNAPSHOT )
+  {
+      AliCDBManager::Instance()->SetDefaultStorage("local:///donotexist"); 
+      // explicitely wrong default storage
+      // so we take _EVERYTHING_ from the snapshot.
+      AliCDBManager::Instance()->SetRun(0);
+      AliCDBManager::Instance()->SetSnapshotMode("OCDB_rec.root");
+  }
+
+  if ( VAR_MAKE_COMPACT_ESD )
+  {
+      gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskCompactTreeMaker.C");
+      AddTaskCompactTreeMaker();
+  }
+  
   if (iMUONCDBConnect) {
     if (iMUONCDBConnect > 1) gROOT->LoadMacro("AddTaskMuonCDBConnect.C");
     else gROOT->LoadMacro("$ALICE_PHYSICS/PWG/muondep/AddTaskMuonCDBConnect.C");

@@ -55,7 +55,11 @@
 #include "AliMuonAccEffSubmitter.h"
 
 #include "AliAnalysisTriggerScalers.h"
+#include "AliCDBId.h"
+#include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliLog.h"
+#include "AliMuonOCDBSnapshotGenerator.h"
 #include "TFile.h"
 #include "TGrid.h"
 #include "TGridResult.h"
@@ -65,8 +69,10 @@
 #include "TROOT.h"
 #include "TString.h"
 #include "TSystem.h"
-#include <vector>
+#include <cassert>
 #include <fstream>
+#include <vector>
+
 using std::ifstream;
 
 ClassImp(AliMuonAccEffSubmitter)
@@ -77,12 +83,10 @@ AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(Bool_t localOnly)
 fRatio(-1.0),
 fFixedNofEvents(10000),
 fMaxEventsPerChunk(5000),
-fOCDBPath(""),
 fSplitMaxInputFileNumber(20),
 fLogOutToKeep(""),
 fRootOutToKeep(""),
 fExternalConfig(""),
-fUseOCDBSnapshots(kFALSE),
 fSnapshotDir(""),
 fUseAODMerging(kFALSE)
 {
@@ -100,12 +104,10 @@ AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator, Bool_t loc
 fRatio(-1.0),
 fFixedNofEvents(10000),
 fMaxEventsPerChunk(5000),
-fOCDBPath(""),
 fSplitMaxInputFileNumber(20),
 fLogOutToKeep(""),
 fRootOutToKeep(""),
 fExternalConfig(""),
-fUseOCDBSnapshots(kFALSE),
 fSnapshotDir(""),
 fUseAODMerging(kFALSE)
 {
@@ -168,6 +170,49 @@ fUseAODMerging(kFALSE)
   }
 
   SetGenerator(generator);
+}
+
+//______________________________________________________________________________
+AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator,
+          Bool_t localOnly,
+          const char* pythia6version,
+          Int_t numberOfEventsForPseudoIdealSimulation,
+          Int_t maxEventsPerChunk)
+: AliMuonGridSubmitter(AliMuonGridSubmitter::kAccEff,localOnly)
+{
+    /// special mode to generate pseudo-ideal simulations
+    // in order to compute a quick acc x eff 
+    //
+    // pseudo-ideal simulation means we : 
+    // - use ideal pedestals (mean 0, sigma 1)
+    // - complete configuration (i.e. all manus are there)
+    // - raw/full alignment
+    // - do _not_ cut on the pad status, i.e. disregard occupancy, HV, LV or RejectList  completely
+    //
+    // we use the real RecoParam, but with a patch to change the status mask to disregard above problems
+    //
+    AliWarning("THIS IS A SPECIAL MODE TO GENERATE PSEUDO-IDEAL SIMULATIONS !");
+
+    SetupCommon(localOnly);
+    SetupPythia6(pythia6version);
+    SetMaxEventsPerChunk(maxEventsPerChunk);
+    SetGenerator(generator);
+    ShouldOverwriteFiles(true);
+    UseOCDBSnapshots(true);
+    SetVar("VAR_USE_ITS_RECO","0");
+    SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
+    SetCompactMode(0);
+    SetAliPhysicsVersion("VO_ALICE@AliPhysics::v5-08-13o-01-1");
+    MakeNofEventsFixed(numberOfEventsForPseudoIdealSimulation);
+    
+    // 2015 pp 
+    // SetVar("VAR_SIM_ALIGNDATA","\"alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC15Sim/Ideal\"");
+    // SetVar("VAR_REC_ALIGNDATA","\"alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC15Sim/Residual\"");
+
+    SetVar("VAR_SIM_ALIGNDATA","\"alien://folder=/alice/cern.ch/user/j/jcastill/pp16wrk/LHC16_mcp1vsrealv2_tr_MisAlignCDB\"");
+    SetVar("VAR_REC_ALIGNDATA","\"alien://folder=/alice/data/2016/OCDB\"");
+
+    SetVar("VAR_MAKE_COMPACT_ESD","1");
 }
 
 //______________________________________________________________________________
@@ -316,7 +361,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
     }
   }
   
-  if ( fUseOCDBSnapshots )
+  if ( UseOCDBSnapshots() )
   {
     files.Add(new TObjString(Form("LF:%s/OCDB/$1/OCDB_sim.root",RemoteDir().Data())));
     files.Add(new TObjString(Form("LF:%s/OCDB/$1/OCDB_rec.root",RemoteDir().Data())));
@@ -361,7 +406,7 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
   
   if (!IsValid()) return kFALSE;
 
-  if (!fUseOCDBSnapshots) return kTRUE;
+  if (!UseOCDBSnapshots()) return kTRUE;
   
   if (!NofRuns()) return kFALSE;
   
@@ -371,40 +416,44 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
   
   const std::vector<int>& runs = RunList();
   
-  for ( std::vector<int>::size_type i = 0; i < runs.size(); ++i )
+  // we must create some default (perfect) objects for some calibration
+  // data so they'll be picked up by the snapshots
+  // : Pedestals, Config, OccupancyMap, HV, LV
+ 
+  AliMuonOCDBSnapshotGenerator ogen(runs[0],Form("local://%s/OCDB",gSystem->WorkingDirectory()),OCDBPath().Data());
+
+  ogen.CreateLocalOCDBWithDefaultObjects(kFALSE);
+
+  for ( std::vector<int>::size_type i = 0; i < runs.size() && ok; ++i )
   {
     Int_t runNumber = runs[i];
 
     TString ocdbSim(Form("%s/OCDB/%d/OCDB_sim.root",LocalSnapshotDir().Data(),runNumber));
     TString ocdbRec(Form("%s/OCDB/%d/OCDB_rec.root",LocalSnapshotDir().Data(),runNumber));
 
+    ok = kFALSE;
+
     if ( !gSystem->AccessPathName(ocdbSim.Data()) &&
          !gSystem->AccessPathName(ocdbRec.Data()) )
     {
+      ok = kTRUE; 
       AliWarning(Form("Local OCDB snapshots already there for run %d. Will not redo them. If you want to force them, delete them by hand !",runNumber));
-      continue;
     }
     else
     {
-      gSystem->Exec(Form("simrun.sh --run %d --snapshot",runNumber));
-    
-      if ( gSystem->AccessPathName(ocdbSim.Data()) )
-      {
-        AliError(Form("Could not create OCDB snapshot for simulation"));
-        ok = kFALSE;
-      }
-
-      if ( gSystem->AccessPathName(ocdbRec.Data()) )
-      {
-        AliError(Form("Could not create OCDB snapshot for reconstruction"));
-        ok = kFALSE;
-      }
+        ok = ogen.CreateSnapshot(0,ocdbSim.Data(),GetVar("VAR_SIM_ALIGNDATA"))
+            && ogen.CreateSnapshot(1,ocdbRec.Data(),GetVar("VAR_REC_ALIGNDATA"));
     }
-    
-    AddToLocalFileList(ocdbSim);
-    AddToLocalFileList(ocdbRec);
+ 
+    if (ok)
+    {
+        AddToLocalFileList(ocdbRec);
+        AddToLocalFileList(ocdbSim);
+    }
   }
-  
+
+  LocalFileList()->Print();
+
   return ok;
 }
 
@@ -582,7 +631,7 @@ void AliMuonAccEffSubmitter::Print(Option_t* opt) const
   
   std::cout << "-- MaxEventsPerChunk = " << fMaxEventsPerChunk << std::endl;
   
-  std::cout << "-- Will" << (fUseOCDBSnapshots ? "" : " NOT") << " use OCDB snaphosts" << std::endl;
+  std::cout << "-- Will" << (UseOCDBSnapshots() ? "" : " NOT") << " use OCDB snaphosts" << std::endl;
 }
 
 //______________________________________________________________________________
@@ -607,7 +656,7 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if ( smode == "FULL")
   {
-    return  ( Run("LOCAL") && Run("OCDB") && Run("UPLOAD") && Run("SUBMIT") );
+    return  ( Run("OCDB") && Run("UPLOAD") && Run("SUBMIT") );
   }
   
   if ( smode == "LOCAL")
@@ -632,7 +681,7 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if ( smode == "TEST" )
   {
-    Bool_t ok = Run("LOCAL") && Run("OCDB") && Run("UPLOAD");
+    Bool_t ok = Run("OCDB") && Run("UPLOAD");
     if ( ok )
     {
       ok = (Submit(kTRUE)>0);
@@ -642,7 +691,7 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if ( smode == "FULL" )
   {
-    Bool_t ok = Run("LOCAL")  && Run("OCDB") && Run("UPLOAD");
+    Bool_t ok = Run("OCDB") && Run("UPLOAD");
     if ( ok )
     {
       ok = (Submit(kFALSE)>0);
@@ -657,7 +706,7 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   
   if ( smode == "LOCALTEST" )
   {
-    Bool_t ok = Run("LOCAL");
+    Bool_t ok = Run("OCDB");
     if ( ok )
     {
       ok = LocalTest();
@@ -803,10 +852,15 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
 
   gSystem->Exec("rm -rf TrackRefs.root *.SDigits*.root Kinematics.root *.Hits.root geometry.root gphysi.dat Run*.tag.root HLT*.root *.ps *.Digits.root *.RecPoints.root galice.root *QA*.root Trigger.root *.log AliESD* AliAOD* *.d *.so *.stat");
 
+  if ( UseOCDBSnapshots() )
+  {
+    gSystem->Exec(Form("ln -si %s/OCDB/%d/OCDB_sim.root .",LocalSnapshotDir().Data(),runs[0]));
+    gSystem->Exec(Form("ln -si %s/OCDB/%d/OCDB_rec.root .",LocalSnapshotDir().Data(),runs[0]));
+  }
+  
   TString command = Form("./aliroot_new --run %i --event 1 --eventsPerJob %i", runs[0], fFixedNofEvents);
 
   std::cout << "Executing the script : " << command.Data() << std::endl;
-
 
   gSystem->Exec(command.Data());
   
@@ -892,7 +946,7 @@ void AliMuonAccEffSubmitter::SetCompactMode ( Int_t mode )
 
 void AliMuonAccEffSubmitter::SetDefaultVariables()
 {
-  SetVar("VAR_OCDB_PATH",Form("\"%s\"",fOCDBPath.Data()));
+  SetVar("VAR_OCDB_PATH",Form("\"%s\"",OCDBPath().Data()));
   SetVar("VAR_AOD_MERGE_FILES","\"AliAOD.root,AliAOD.Muons.root\"");
   SetVar("VAR_EFFTASK_PTMIN","-1.");
   SetVar("VAR_EXTRATASKS_CONFIGMACRO","\"\"");
@@ -976,13 +1030,14 @@ void AliMuonAccEffSubmitter::SetDefaultVariables()
   SetVar("VAR_PYTHIA6_SETENV","");
   SetVar("VAR_NEEDS_PYTHIA6", "0");
   SetVar("VAR_NEEDS_PYTHIA8", "0");
+
+  SetVar("VAR_MAKE_COMPACT_ESD","0");
 }
 //____________________________________________________________________________
 
 void AliMuonAccEffSubmitter::SetLocalOnly()
 {
-    // ocdbPath = "local://$ALICE_ROOT/OCDB";
-  SetVar("VAR_OCDB_PATH","local://$ALICE_ROOT/OCDB");
+  SetVar("VAR_OCDB_PATH","\"local://$ALICE_ROOT/OCDB\"");
   SetVar("VAR_PURELY_LOCAL","1");
   MakeNofEventsFixed(10);
 }
@@ -1003,8 +1058,6 @@ void AliMuonAccEffSubmitter::SetupCommon(Bool_t localOnly)
   }
   
   SetLocalDirectory("Snapshot",LocalDir());
-
-  UseOCDBSnapshots(fUseOCDBSnapshots);
 
   SetMaxEventsPerChunk(fMaxEventsPerChunk);
 
@@ -1340,6 +1393,12 @@ void AliMuonAccEffSubmitter::UpdateLocalFileList(Bool_t clearSnapshots)
 }
 
 //______________________________________________________________________________
+Bool_t AliMuonAccEffSubmitter::UseOCDBSnapshots() const
+{
+    return GetVar("VAR_OCDB_SNAPSHOT")=="kTRUE";
+}
+
+//______________________________________________________________________________
 void AliMuonAccEffSubmitter::UseOCDBSnapshots(Bool_t flag)
 {
   /// Whether or not to use OCDB snapshots
@@ -1347,15 +1406,9 @@ void AliMuonAccEffSubmitter::UseOCDBSnapshots(Bool_t flag)
   /// phases on each worker node, but takes time to produce...
   /// So using them is not always a win-win...
   
-  fUseOCDBSnapshots = flag;
   if ( flag )
   {
     SetVar("VAR_OCDB_SNAPSHOT","kTRUE");
-    
-    // for some reason must include ITS objects in the snapshot
-    // (to be able to instantiante the vertexer later on ?)
-    
-    SetVar("VAR_USE_ITS_RECO","1");
   }
   else
   {

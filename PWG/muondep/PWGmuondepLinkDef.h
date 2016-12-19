@@ -29,6 +29,7 @@
 #pragma link C++ class AliMuonGridSubmitter+;
 #pragma link C++ class AliMuonAccEffSubmitter+;
 #pragma link C++ class AliMuonQAMergeSubmitter+;
+#pragma link C++ class AliMuonOCDBSnapshotGenerator+;
 
 #pragma link C++ class AliMuonCompactMapping+;
 #pragma link C++ class AliMuonCompactEvent+;

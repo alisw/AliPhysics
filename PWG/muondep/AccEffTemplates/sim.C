@@ -23,9 +23,15 @@ void sim(Int_t nev=VAR_EVENTS_PER_JOB)
   simulator.SetRunQA("MUON:ALL");
   simulator.SetRunHLT("");
 
-  simulator.SetDefaultStorage(VAR_OCDB_PATH);
-  if ( VAR_OCDB_SNAPSHOT ) simulator.SetCDBSnapshotMode("OCDB_sim.root");
-
+  if ( VAR_OCDB_SNAPSHOT ) 
+  {
+      simulator.SetCDBSnapshotMode("OCDB_sim.root");
+  }
+  else
+  {
+      simulator.SetDefaultStorage(VAR_OCDB_PATH);
+  }
+  
   if ( VAR_USE_ITS_RECO )
   {
     simulator.SetMakeSDigits("MUON T0 VZERO FMD"); // T0 and VZERO for trigger efficiencies, FMD for diffractive studies
