@@ -18,7 +18,6 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
 #include <THnSparse.h>
 #include <TMath.h>
 #include <TString.h>
@@ -61,9 +60,7 @@ ClassImp(AliAnalysisTaskPWGJEQA);
 AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskPWGJEQA", kTRUE),
   fCellEnergyCut(0.05),
-  fPtBinWidth(0.5),
   fMaxPt(250),
-  fSeparateEMCalDCal(kTRUE),
   fNTotTracks(0),
   fLeadingTrack(),
   fGeneratorLevel(0),
@@ -82,16 +79,11 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fPtRelDiffHistBins(0),
   fNPtResHistBins(0),
   fPtResHistBins(0),
-  f1OverPtResHistBins(0),
-  fN1OverPtResHistBins(0),
   fNIntegerHistBins(0),
   fIntegerHistBins(0),
-  fTracks(0),
-  fParticlesPhysPrim(0),
-  fParticlesMatched(0),
   fHistManager("AliAnalysisTaskPWGJEQA"),
   fDoTrackQA(kTRUE),
-  fDoEmcalQA(kTRUE),
+  fDoCaloQA(kTRUE),
   fDoJetQA(kTRUE),
   fDoEventQA(kTRUE),
   fRejectOutlierEvents(kFALSE),
@@ -111,9 +103,7 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
 AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fCellEnergyCut(0.05),
-  fPtBinWidth(0.5),
   fMaxPt(250),
-  fSeparateEMCalDCal(kTRUE),
   fNTotTracks(0),
   fLeadingTrack(),
   fGeneratorLevel(0),
@@ -132,16 +122,11 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fPtRelDiffHistBins(0),
   fNPtResHistBins(0),
   fPtResHistBins(0),
-  f1OverPtResHistBins(0),
-  fN1OverPtResHistBins(0),
   fNIntegerHistBins(0),
   fIntegerHistBins(0),
-  fTracks(0),
-  fParticlesPhysPrim(0),
-  fParticlesMatched(0),
   fHistManager(name),
   fDoTrackQA(kTRUE),
-  fDoEmcalQA(kTRUE),
+  fDoCaloQA(kTRUE),
   fDoJetQA(kTRUE),
   fDoEventQA(kTRUE),
   fRejectOutlierEvents(kFALSE),
@@ -172,8 +157,8 @@ void AliAnalysisTaskPWGJEQA::UserCreateOutputObjects()
   
   // Allocate histograms for tracks, cells, clusters, jets
   if (fDoTrackQA) AllocateTrackHistograms();
-  if (fDoEmcalQA) AllocateCellHistograms();
-  if (fDoEmcalQA) AllocateClusterHistograms();
+  if (fDoCaloQA) AllocateCellHistograms();
+  if (fDoCaloQA) AllocateClusterHistograms();
   if (fDoJetQA) AllocateJetHistograms();
   if (fDoEventQA) AllocateEventQAHistograms();
   
@@ -220,16 +205,20 @@ void AliAnalysisTaskPWGJEQA::AllocateCellHistograms() {
     title = histname + ";cell absId;<#it{t}_{cell}> (s)";
     fHistManager.CreateTProfile(histname.Data(), title.Data(), 18000,0,18000);
     
+    histname = TString::Format("%s/fHistCellEvsTime", fCaloCellsName.Data());
+    title = histname + ";<#it{t}_{cell}> (s);<#it{E}_{cell}> (GeV)";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 1000, -1e-6, 1e-6, 200, 0, 100);
+    
   }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskPWGJEQA::AllocateClusterHistograms() {
-  
+
   AliEmcalContainer* cont = 0;
   TString histname;
   TString title;
-  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
+  Int_t nPtBins = 2*fMaxPt;
   
   TIter nextClusColl(&fClusterCollArray);
   while ((cont = static_cast<AliEmcalContainer*>(nextClusColl()))) {
@@ -251,58 +240,63 @@ void AliAnalysisTaskPWGJEQA::AllocateClusterHistograms() {
       title = histname + ";#it{E}_{cluster} (GeV);counts";
       fHistManager.CreateTH1(histname.Data(), title.Data(), nPtBins, 0, fMaxPt);
     }
-   
+    
     // Cluster THnSparse
     Int_t dim = 0;
     TString title[20];
     Int_t nbins[20] = {0};
     Double_t min[30] = {0.};
     Double_t max[30] = {0.};
+    Double_t *binEdges[20] = {0};
     
     if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
       title[dim] = "Centrality %";
-      nbins[dim] = 5;
-      min[dim] = 0;
-      max[dim]= 100;
+      nbins[dim] = fNCentHistBins;
+      binEdges[dim] = fCentHistBins;
+      min[dim] = fCentHistBins[0];
+      max[dim] = fCentHistBins[fNCentHistBins];
       dim++;
     }
     
     title[dim] = "#it{E}_{clus} (GeV)";
-    nbins[dim] = nPtBins/2;
-    min[dim] = 0;
-    max[dim] = fMaxPt;
+    nbins[dim] = fNPtHistBins;
+    binEdges[dim] = fPtHistBins;
+    min[dim] = fPtHistBins[0];
+    max[dim] = fPtHistBins[fNPtHistBins];
     dim++;
     
     title[dim] = "#eta";
     nbins[dim] = fNEtaHistBins;
-    min[dim] = -1;
-    max[dim] = 1;
+    binEdges[dim] = fEtaHistBins;
+    min[dim] = fEtaHistBins[0];
+    max[dim] = fEtaHistBins[fNEtaHistBins];
     dim++;
     
     title[dim] = "#phi";
     nbins[dim] = fNPhiHistBins;
-    min[dim] = 0;
-    max[dim] = 2*TMath::Pi();
+    binEdges[dim] = fPhiHistBins;
+    min[dim] = fPhiHistBins[0];
+    max[dim] = fPhiHistBins[fNPhiHistBins];
     dim++;
     
     title[dim] = "cluster type";
     nbins[dim] = 3;
-    min[dim] = -0.5;
-    max[dim] = 2.5;
+    binEdges[dim] = fIntegerHistBins;
+    min[dim] = fIntegerHistBins[0];
+    max[dim] = fIntegerHistBins[3];
     dim++;
     
     TString thnname = TString::Format("%s/clusterObservables", cont->GetArrayName().Data());
     THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
     for (Int_t i = 0; i < dim; i++) {
       hn->GetAxis(i)->SetTitle(title[i]);
+      hn->SetBinEdges(i, binEdges[i]);
     }
   }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskPWGJEQA::AllocateJetHistograms() {
-  
-  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
   
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
@@ -315,75 +309,60 @@ void AliAnalysisTaskPWGJEQA::AllocateJetHistograms() {
     Int_t nbins[30]  = {0};
     Double_t min[30] = {0.};
     Double_t max[30] = {0.};
+    Double_t *binEdges[20] = {0};
     Int_t dim = 0;
     
     if (fForceBeamType != kpp) {
       axisTitle[dim] = "Centrality (%)";
-      nbins[dim] = 5;
-      min[dim] = 0;
-      max[dim] = 100;
+      nbins[dim] = fNCentHistBins;
+      binEdges[dim] = fCentHistBins;
+      min[dim] = fCentHistBins[0];
+      max[dim] = fCentHistBins[fNCentHistBins];
       dim++;
     }
     
     axisTitle[dim] = "#eta_{jet}";
-    nbins[dim] = nPtBins/10;
-    min[dim] = -1;
-    max[dim] = 1;
+    nbins[dim] = fNEtaHistBins;
+    binEdges[dim] = fEtaHistBins;
+    min[dim] = fEtaHistBins[0];
+    max[dim] = fEtaHistBins[fNEtaHistBins];
     dim++;
     
     axisTitle[dim] = "#phi_{jet} (rad)";
-    nbins[dim] = nPtBins/10*3;
-    min[dim] = 0;
-    max[dim] = 2*TMath::Pi();
+    nbins[dim] = fNPhiHistBins;
+    binEdges[dim] = fPhiHistBins;
+    min[dim] = fPhiHistBins[0];
+    max[dim] = fPhiHistBins[fNPhiHistBins];
     dim++;
     
     axisTitle[dim] = "#it{p}_{T} (GeV/#it{c})";
-    nbins[dim] = nPtBins/2;
+    nbins[dim] = TMath::CeilNint(fMaxPt/3);
     min[dim] = 0;
     max[dim] = fMaxPt;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     if (fForceBeamType != kpp) {
       axisTitle[dim] = "#it{p}_{T}^{corr} (GeV/#it{c})";
-      nbins[dim] = nPtBins/2;
-      min[dim] = -fMaxPt/2;
-      max[dim] = fMaxPt/2;
-      dim++;
-    }
-    
-    if (fClusterCollArray.GetEntriesFast() > 0 && fParticleCollArray.GetEntriesFast() > 0) {
-      axisTitle[dim] = "NEF";
-      nbins[dim] = nPtBins/20;
-      min[dim] = 0;
-      max[dim] = 1.0;
-      dim++;
-    }
-    
-    if (fForceBeamType != kpp) {
-      axisTitle[dim] = "No. of constituents";
-      nbins[dim] = 125;
-      min[dim] = 0;
-      max[dim] = 250;
-      dim++;
-    }
-    else {
-      axisTitle[dim] = "No. of constituents";
-      nbins[dim] = 50;
-      min[dim] = -0.5;
-      max[dim] = 49.5;
+      nbins[dim] = TMath::CeilNint(fMaxPt/3);
+      min[dim] = -fMaxPt/2 + 25;
+      max[dim] = fMaxPt/2 + 25;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
       dim++;
     }
     
     axisTitle[dim] = "#it{p}_{T,particle}^{leading} (GeV/#it{c})";
-    nbins[dim] = nPtBins/10*3;
+    nbins[dim] = fMaxPt/5;
     min[dim] = 0;
     max[dim] = 150;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
     
     TString thnname = TString::Format("%s/fHistJetObservables", jets->GetArrayName().Data());
     THnSparse* hn = fHistManager.CreateTHnSparse(thnname.Data(), thnname.Data(), dim, nbins, min, max);
     for (Int_t i = 0; i < dim; i++) {
       hn->GetAxis(i)->SetTitle(axisTitle[i]);
+      hn->SetBinEdges(i, binEdges[i]);
     }
     
     // Allocate other jet histograms
@@ -404,41 +383,46 @@ void AliAnalysisTaskPWGJEQA::AllocateJetHistograms() {
 
 //________________________________________________________________________
 void AliAnalysisTaskPWGJEQA::AllocateEventQAHistograms() {
-
-  Int_t nPtBins = TMath::CeilNint(fMaxPt / fPtBinWidth);
+  
+  Int_t nPtBins = 2*fMaxPt;
   
   Int_t dim = 0;
   TString axistitle[40];
   Int_t nbins[40] = {0};
   Double_t min[40] = {0};
   Double_t max[40] = {0};
+  Double_t *binEdges[20] = {0};
   
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
     axistitle[dim] = "Centrality %";
-    nbins[dim] = 5;
-    min[dim] = 0;
-    max[dim] = 100;
+    nbins[dim] = fNCentHistBins;
+    binEdges[dim] = fCentHistBins;
+    min[dim] = fCentHistBins[0];
+    max[dim] = fCentHistBins[fNCentHistBins];
     dim++;
   }
   
   if (fParticleCollArray.GetEntriesFast()>0) {
     axistitle[dim] = "No. of tracks";
     if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
-      nbins[dim] = 100;
+      nbins[dim] = 50;
       min[dim] = -0.5;
-      max[dim] = 6000-0.5;
+      max[dim] = 10000-0.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     }
     else {
-      nbins[dim] = 100;
+      nbins[dim] = 50;
       min[dim] = 0;
       max[dim] = 200;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     }
     dim++;
     
     axistitle[dim] = "#it{p}_{T,track}^{leading} (GeV/c)";
-    nbins[dim] = nPtBins/2;
+    nbins[dim] = fMaxPt/5;
     min[dim] = 0;
-    max[dim] = fMaxPt;
+    max[dim] = 150;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     dim++;
   }
   
@@ -446,49 +430,33 @@ void AliAnalysisTaskPWGJEQA::AllocateEventQAHistograms() {
     axistitle[dim] = "No. of clusters";
     
     if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
-      nbins[dim] = 100;
+      nbins[dim] = 50;
       min[dim] = -0.5;
       max[dim] = 4000-0.5;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     }
     else {
-      nbins[dim] = 100;
+      nbins[dim] = 50;
       min[dim] = 0;
       max[dim] = 200;
+      binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
     }
     dim++;
     
-    if (fSeparateEMCalDCal) {
-      axistitle[dim] = "#it{E}_{EMCal cluster}^{leading} (GeV)";
-      nbins[dim] = nPtBins/2;
-      min[dim] = 0;
-      max[dim] = fMaxPt;
-      dim++;
-      
-      axistitle[dim] = "#it{E}_{DCal cluster}^{leading} (GeV)";
-      nbins[dim] = nPtBins/2;
-      min[dim] = 0;
-      max[dim] = fMaxPt;
-      dim++;
-      
-      axistitle[dim] = "#it{E}_{PHOS cluster}^{leading} (GeV)";
-      nbins[dim] = nPtBins/2;
-      min[dim] = 0;
-      max[dim] = fMaxPt;
-      dim++;
-    }
-    else {
-      axistitle[dim] = "#it{E}_{cluster}^{leading} (GeV)";
-      nbins[dim] = nPtBins/2;
-      min[dim] = 0;
-      max[dim] = fMaxPt;
-      dim++;
-    }
+    axistitle[dim] = "#it{E}_{cluster}^{leading} (GeV)";
+    nbins[dim] = fMaxPt/5;
+    min[dim] = 0;
+    max[dim] = 150;
+    binEdges[dim] = GenerateFixedBinArray(nbins[dim], min[dim], max[dim]);
+    dim++;
   }
   
   THnSparse* hn = fHistManager.CreateTHnSparse("eventQA","eventQA",dim,nbins,min,max);
-  for (Int_t i = 0; i < dim; i++)
+  for (Int_t i = 0; i < dim; i++) {
     hn->GetAxis(i)->SetTitle(axistitle[i]);
-  
+    hn->SetBinEdges(i, binEdges[i]);
+  }
+    
   if (fIsPtHard) {
     TString histname = "hPtHard";
     TString title = histname + ";#it{p}_{T,hard} (GeV/c);counts";
@@ -506,7 +474,206 @@ void AliAnalysisTaskPWGJEQA::AllocateEventQAHistograms() {
 }
 
 //________________________________________________________________________
-/// Generate histogram binning arrays for track histograms
+void AliAnalysisTaskPWGJEQA::AllocateDetectorLevelTHnSparse()
+{
+  Int_t dim = 0;
+  TString title[20];
+  Int_t nbins[20] = {0};
+  Double_t min[30] = {0.};
+  Double_t max[30] = {0.};
+  Double_t *binEdges[20] = {0};
+  
+  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+    title[dim] = "Centrality %";
+    nbins[dim] = fNCentHistBins;
+    binEdges[dim] = fCentHistBins;
+    min[dim] = fCentHistBins[0];
+    max[dim] = fCentHistBins[fNCentHistBins];
+    dim++;
+  }
+  
+  title[dim] = "#it{p}_{T} (GeV/#it{c})";
+  nbins[dim] = fNPtHistBins;
+  binEdges[dim] = fPtHistBins;
+  min[dim] = fPtHistBins[0];
+  max[dim] = fPtHistBins[fNPtHistBins];
+  dim++;
+  
+  title[dim] = "#eta";
+  nbins[dim] = fNEtaHistBins;
+  binEdges[dim] = fEtaHistBins;
+  min[dim] = fEtaHistBins[0];
+  max[dim] = fEtaHistBins[fNEtaHistBins];
+  dim++;
+  
+  title[dim] = "#phi";
+  nbins[dim] = fNPhiHistBins;
+  binEdges[dim] = fPhiHistBins;
+  min[dim] = fPhiHistBins[0];
+  max[dim] = fPhiHistBins[fNPhiHistBins];
+  dim++;
+  
+  title[dim] = "track type";
+  nbins[dim] = 3;
+  binEdges[dim] = fIntegerHistBins;
+  min[dim] = fIntegerHistBins[0];
+  max[dim] = fIntegerHistBins[3];
+  dim++;
+  
+  title[dim] = "#sigma(#it{p}_{T}) / #it{p}_{T}";
+  nbins[dim] = fNPtResHistBins;
+  binEdges[dim] = fPtResHistBins;
+  min[dim] = fPtResHistBins[0];
+  max[dim] = fPtResHistBins[fNPtResHistBins];
+  dim++;
+
+  THnSparse* hn = fHistManager.CreateTHnSparse("tracks","tracks", dim, nbins, min, max);
+  for (Int_t i = 0; i < dim; i++) {
+    hn->GetAxis(i)->SetTitle(title[i]);
+    hn->SetBinEdges(i, binEdges[i]);
+  }
+  
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskPWGJEQA::AllocateGeneratorLevelTHnSparse()
+{
+  Int_t dim = 0;
+  TString title[20];
+  Int_t nbins[20] = {0};
+  Double_t min[30] = {0.};
+  Double_t max[30] = {0.};
+  Double_t *binEdges[20] = {0};
+  
+  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+    title[dim] = "Centrality %";
+    nbins[dim] = fNCentHistBins;
+    binEdges[dim] = fCentHistBins;
+    min[dim] = fCentHistBins[0];
+    max[dim] = fCentHistBins[fNCentHistBins];
+    dim++;
+  }
+  
+  title[dim] = "#it{p}_{T} (GeV/#it{c})";
+  nbins[dim] = fNPtHistBins;
+  binEdges[dim] = fPtHistBins;
+  min[dim] = fPtHistBins[0];
+  max[dim] = fPtHistBins[fNPtHistBins];
+  dim++;
+  
+  title[dim] = "#eta";
+  nbins[dim] = fNEtaHistBins;
+  binEdges[dim] = fEtaHistBins;
+  min[dim] = fEtaHistBins[0];
+  max[dim] = fEtaHistBins[fNEtaHistBins];
+  dim++;
+  
+  title[dim] = "#phi";
+  nbins[dim] = fNPhiHistBins;
+  binEdges[dim] = fPhiHistBins;
+  min[dim] = fPhiHistBins[0];
+  max[dim] = fPhiHistBins[fNPhiHistBins];
+  dim++;
+  
+  title[dim] = "Findable";
+  nbins[dim] = 2;
+  binEdges[dim] = fIntegerHistBins;
+  min[dim] = fIntegerHistBins[0];
+  max[dim] = fIntegerHistBins[2];
+  dim++;
+  
+  THnSparse* hn = fHistManager.CreateTHnSparse("tracks_PhysPrim","tracks_PhysPrim", dim, nbins, min, max);
+  for (Int_t i = 0; i < dim; i++) {
+    hn->GetAxis(i)->SetTitle(title[i]);
+    hn->SetBinEdges(i, binEdges[i]);
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskPWGJEQA::AllocateMatchedParticlesTHnSparse()
+{
+  Int_t dim = 0;
+  TString title[20];
+  Int_t nbins[20] = {0};
+  Double_t min[30] = {0.};
+  Double_t max[30] = {0.};
+  Double_t *binEdges[20] = {0};
+  
+  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
+    title[dim] = "Centrality %";
+    nbins[dim] = fNCentHistBins;
+    binEdges[dim] = fCentHistBins;
+    min[dim] = fCentHistBins[0];
+    max[dim] = fCentHistBins[fNCentHistBins];
+    dim++;
+  }
+  
+  title[dim] = "#it{p}_{T}^{gen} (GeV/#it{c})";
+  nbins[dim] = fNPtHistBins;
+  binEdges[dim] = fPtHistBins;
+  min[dim] = fPtHistBins[0];
+  max[dim] = fPtHistBins[fNPtHistBins];
+  dim++;
+  
+  title[dim] = "#eta^{gen}";
+  nbins[dim] = fNEtaHistBins;
+  binEdges[dim] = fEtaHistBins;
+  min[dim] = fEtaHistBins[0];
+  max[dim] = fEtaHistBins[fNEtaHistBins];
+  dim++;
+  
+  title[dim] = "#phi^{gen}";
+  nbins[dim] = fNPhiHistBins;
+  binEdges[dim] = fPhiHistBins;
+  min[dim] = fPhiHistBins[0];
+  max[dim] = fPhiHistBins[fNPhiHistBins];
+  dim++;
+  
+  title[dim] = "#it{p}_{T}^{det} (GeV/#it{c})";
+  nbins[dim] = fNPtHistBins;
+  binEdges[dim] = fPtHistBins;
+  min[dim] = fPtHistBins[0];
+  max[dim] = fPtHistBins[fNPtHistBins];
+  dim++;
+  
+  title[dim] = "#eta^{det}";
+  nbins[dim] = fNEtaHistBins;
+  binEdges[dim] = fEtaHistBins;
+  min[dim] = fEtaHistBins[0];
+  max[dim] = fEtaHistBins[fNEtaHistBins];
+  dim++;
+  
+  title[dim] = "#phi^{det}";
+  nbins[dim] = fNPhiHistBins;
+  binEdges[dim] = fPhiHistBins;
+  min[dim] = fPhiHistBins[0];
+  max[dim] = fPhiHistBins[fNPhiHistBins];
+  dim++;
+  
+  title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}";
+  nbins[dim] = fNPtRelDiffHistBins;
+  binEdges[dim] = fPtRelDiffHistBins;
+  min[dim] = fPtRelDiffHistBins[0];
+  max[dim] = fPtRelDiffHistBins[fNPtRelDiffHistBins];
+  dim++;
+
+  title[dim] = "track type";
+  nbins[dim] = 3;
+  binEdges[dim] = fIntegerHistBins;
+  min[dim] = fIntegerHistBins[0];
+  max[dim] = fIntegerHistBins[3];
+  dim++;
+
+  THnSparse* hn = fHistManager.CreateTHnSparse("tracks_Matched","tracks_Matched", dim, nbins, min, max);
+  for (Int_t i = 0; i < dim; i++) {
+    hn->GetAxis(i)->SetTitle(title[i]);
+    hn->SetBinEdges(i, binEdges[i]);
+  }
+}
+
+
+//________________________________________________________________________
+/// Generate histogram binning arrays
 void AliAnalysisTaskPWGJEQA::GenerateHistoBins()
 {
   fNPtHistBins = 82;
@@ -519,7 +686,7 @@ void AliAnalysisTaskPWGJEQA::GenerateHistoBins()
   GenerateFixedBinArray(15, 20, 50, fPtHistBins+47);
   GenerateFixedBinArray(20, 50, 150, fPtHistBins+62);
   
-  fNEtaHistBins = 100;
+  fNEtaHistBins = 70;
   fEtaHistBins = new Double_t[fNEtaHistBins+1];
   GenerateFixedBinArray(fNEtaHistBins, -1, 1, fEtaHistBins);
   
@@ -535,189 +702,20 @@ void AliAnalysisTaskPWGJEQA::GenerateHistoBins()
   fCentHistBins[3] = 50;
   fCentHistBins[4] = 90;
   
-  fNPtResHistBins = 175;
+  fNPtResHistBins = 100;
   fPtResHistBins = new Double_t[fNPtResHistBins+1];
   GenerateFixedBinArray(50, 0, 0.05, fPtResHistBins);
   GenerateFixedBinArray(25, 0.05, 0.10, fPtResHistBins+50);
-  GenerateFixedBinArray(25, 0.10, 0.20, fPtResHistBins+75);
-  GenerateFixedBinArray(30, 0.20, 0.50, fPtResHistBins+100);
-  GenerateFixedBinArray(25, 0.50, 1.00, fPtResHistBins+130);
-  GenerateFixedBinArray(20, 1.00, 2.00, fPtResHistBins+155);
+  GenerateFixedBinArray(15, 0.10, 0.20, fPtResHistBins+75);
+  GenerateFixedBinArray(10, 0.20, 0.50, fPtResHistBins+90);
   
-  fNPtRelDiffHistBins = 200;
+  fNPtRelDiffHistBins = 50;
   fPtRelDiffHistBins = new Double_t[fNPtRelDiffHistBins+1];
-  GenerateFixedBinArray(fNPtRelDiffHistBins, -2, 2, fPtRelDiffHistBins);
+  GenerateFixedBinArray(fNPtRelDiffHistBins, -0.5, 0.5, fPtRelDiffHistBins);
   
-  fN1OverPtResHistBins = 385;
-  f1OverPtResHistBins = new Double_t[fN1OverPtResHistBins+1];
-  GenerateFixedBinArray(100, 0, 0.02, f1OverPtResHistBins);
-  GenerateFixedBinArray(60, 0.02, 0.05, f1OverPtResHistBins+100);
-  GenerateFixedBinArray(50, 0.05, 0.1, f1OverPtResHistBins+160);
-  GenerateFixedBinArray(50, 0.1, 0.2, f1OverPtResHistBins+210);
-  GenerateFixedBinArray(75, 0.2, 0.5, f1OverPtResHistBins+260);
-  GenerateFixedBinArray(50, 0.5, 1.5, f1OverPtResHistBins+335);
-  
-  fNIntegerHistBins = 10;
+  fNIntegerHistBins = 3;
   fIntegerHistBins = new Double_t[fNIntegerHistBins+1];
-  GenerateFixedBinArray(fNIntegerHistBins, -0.5, 9.5, fIntegerHistBins);
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskPWGJEQA::AllocateDetectorLevelTHnSparse()
-{
-  Int_t dim = 0;
-  TString title[20];
-  Int_t nbins[20] = {0};
-  Double_t *binEdges[20] = {0};
-  
-  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
-    title[dim] = "Centrality %";
-    nbins[dim] = fNCentHistBins;
-    binEdges[dim] = fCentHistBins;
-    dim++;
-  }
-  
-  title[dim] = "#it{p}_{T} (GeV/#it{c})";
-  nbins[dim] = fNPtHistBins;
-  binEdges[dim] = fPtHistBins;
-  dim++;
-  
-  title[dim] = "#eta";
-  nbins[dim] = fNEtaHistBins;
-  binEdges[dim] = fEtaHistBins;
-  dim++;
-  
-  title[dim] = "#phi";
-  nbins[dim] = fNPhiHistBins;
-  binEdges[dim] = fPhiHistBins;
-  dim++;
-  
-  title[dim] = "track type";
-  nbins[dim] = 3;
-  binEdges[dim] = fIntegerHistBins;
-  dim++;
-  
-  title[dim] = "#sigma(#it{p}_{T}) / #it{p}_{T}";
-  nbins[dim] = fNPtResHistBins;
-  binEdges[dim] = fPtResHistBins;
-  dim++;
-  
-  fTracks = new THnSparseF("tracks","tracks",dim,nbins);
-  for (Int_t i = 0; i < dim; i++) {
-    fTracks->GetAxis(i)->SetTitle(title[i]);
-    fTracks->SetBinEdges(i, binEdges[i]);
-  }
-  
-  fOutput->Add(fTracks);
-  
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskPWGJEQA::AllocateGeneratorLevelTHnSparse()
-{
-  Int_t dim = 0;
-  TString title[20];
-  Int_t nbins[20] = {0};
-  Double_t *binEdges[20] = {0};
-  
-  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
-    title[dim] = "Centrality %";
-    nbins[dim] = fNCentHistBins;
-    binEdges[dim] = fCentHistBins;
-    dim++;
-  }
-  
-  title[dim] = "#it{p}_{T} (GeV/#it{c})";
-  nbins[dim] = fNPtHistBins;
-  binEdges[dim] = fPtHistBins;
-  dim++;
-  
-  title[dim] = "#eta";
-  nbins[dim] = fNEtaHistBins;
-  binEdges[dim] = fEtaHistBins;
-  dim++;
-  
-  title[dim] = "#phi";
-  nbins[dim] = fNPhiHistBins;
-  binEdges[dim] = fPhiHistBins;
-  dim++;
-  
-  title[dim] = "Findable";
-  nbins[dim] = 2;
-  binEdges[dim] = fIntegerHistBins;
-  dim++;
-  
-  fParticlesPhysPrim = new THnSparseF("tracks_PhysPrim","tracks_PhysPrim",dim,nbins);
-  for (Int_t i = 0; i < dim; i++) {
-    fParticlesPhysPrim->GetAxis(i)->SetTitle(title[i]);
-    fParticlesPhysPrim->SetBinEdges(i, binEdges[i]);
-  }
-  
-  fOutput->Add(fParticlesPhysPrim);
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskPWGJEQA::AllocateMatchedParticlesTHnSparse()
-{
-  Int_t dim = 0;
-  TString title[20];
-  Int_t nbins[20] = {0};
-  Double_t *binEdges[20] = {0};
-  
-  if (fForceBeamType != AliAnalysisTaskEmcal::kpp) {
-    title[dim] = "Centrality %";
-    nbins[dim] = fNCentHistBins;
-    binEdges[dim] = fCentHistBins;
-    dim++;
-  }
-  
-  title[dim] = "#it{p}_{T}^{gen} (GeV/#it{c})";
-  nbins[dim] = fNPtHistBins;
-  binEdges[dim] = fPtHistBins;
-  dim++;
-  
-  title[dim] = "#eta^{gen}";
-  nbins[dim] = fNEtaHistBins;
-  binEdges[dim] = fEtaHistBins;
-  dim++;
-  
-  title[dim] = "#phi^{gen}";
-  nbins[dim] = fNPhiHistBins;
-  binEdges[dim] = fPhiHistBins;
-  dim++;
-  
-  title[dim] = "#it{p}_{T}^{det} (GeV/#it{c})";
-  nbins[dim] = fNPtHistBins;
-  binEdges[dim] = fPtHistBins;
-  dim++;
-  
-  title[dim] = "#eta^{det}";
-  nbins[dim] = fNEtaHistBins;
-  binEdges[dim] = fEtaHistBins;
-  dim++;
-  
-  title[dim] = "#phi^{det}";
-  nbins[dim] = fNPhiHistBins;
-  binEdges[dim] = fPhiHistBins;
-  dim++;
-  
-  title[dim] = "(#it{p}_{T}^{gen} - #it{p}_{T}^{det}) / #it{p}_{T}^{gen}";
-  nbins[dim] = fNPtRelDiffHistBins;
-  binEdges[dim] = fPtRelDiffHistBins;
-  dim++;
-
-  title[dim] = "track type";
-  nbins[dim] = 3;
-  binEdges[dim] = fIntegerHistBins;
-  dim++;
-  
-  fParticlesMatched = new THnSparseF("tracks_Matched","tracks_Matched",dim,nbins);
-  for (Int_t i = 0; i < dim; i++) {
-    fParticlesMatched->GetAxis(i)->SetTitle(title[i]);
-    fParticlesMatched->SetBinEdges(i, binEdges[i]);
-  }
-  
-  fOutput->Add(fParticlesMatched);
+  GenerateFixedBinArray(fNIntegerHistBins, -0.5, 2.5, fIntegerHistBins);
 }
 
 //________________________________________________________________________
@@ -807,6 +805,7 @@ Bool_t AliAnalysisTaskPWGJEQA::RetrieveEventObjects()
  * @return False if the data tree or the data file
  * doesn't exist, true otherwise
  */
+//________________________________________________________________________
 Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
 {
   if (fIsPtHard) {
@@ -841,8 +840,8 @@ Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
 Bool_t AliAnalysisTaskPWGJEQA::FillHistograms()
 {
   if (fDoTrackQA) FillTrackHistograms();
-  if (fDoEmcalQA) FillCellHistograms();
-  if (fDoEmcalQA) FillClusterHistograms();
+  if (fDoCaloQA) FillCellHistograms();
+  if (fDoCaloQA) FillClusterHistograms();
   if (fDoJetQA) FillJetHistograms();
   if (fDoEventQA) FillEventQAHistograms();
   
@@ -945,6 +944,7 @@ void AliAnalysisTaskPWGJEQA::FillCellHistograms() {
   TString histname_time = TString::Format("%s/fHistCellTime", fCaloCellsName.Data());
   TString histname_energyProf = TString::Format("%s/fProfCellAbsIdEnergy", fCaloCellsName.Data());
   TString histname_timeProf = TString::Format("%s/fProfCellAbsIdTime", fCaloCellsName.Data());
+  TString histname_EnergyvsTime = TString::Format("%s/fHistCellEvsTime", fCaloCellsName.Data());
   
   const Int_t ncells = fCaloCells->GetNumberOfCells();
   for (Int_t pos = 0; pos < ncells; pos++) {
@@ -959,6 +959,8 @@ void AliAnalysisTaskPWGJEQA::FillCellHistograms() {
     
     fHistManager.FillProfile(histname_energyProf, absId, amp);
     fHistManager.FillProfile(histname_timeProf, absId, time);
+    
+    fHistManager.FillTH2(histname_EnergyvsTime, time, amp);
   }
 }
 
@@ -1098,10 +1100,6 @@ void AliAnalysisTaskPWGJEQA::FillJetHistograms() {
           contents[i] = jet->MCPt();
         else if (title=="#it{p}_{T}^{corr} (GeV/#it{c})")
           contents[i] = corrPt;
-        else if (title=="NEF")
-          contents[i] = jet->NEF();
-        else if (title=="No. of constituents")
-          contents[i] = jet->GetNumberOfConstituents();
         else if (title=="#it{p}_{T,particle}^{leading} (GeV/#it{c})")
           contents[i] = ptLeading;
         else
@@ -1147,12 +1145,6 @@ void AliAnalysisTaskPWGJEQA::FillEventQAHistograms() {
       contents[i] = eventQA.fMaxTrack.Pt();
     else if (title=="#it{E}_{cluster}^{leading} (GeV)")
       contents[i] = globalMaxCluster.E();
-    else if (title=="#it{E}_{EMCal cluster}^{leading} (GeV)")
-      contents[i] = eventQA.fMaxCluster[0].E();
-    else if (title=="#it{E}_{DCal cluster}^{leading} (GeV)")
-      contents[i] = eventQA.fMaxCluster[1].E();
-    else if (title=="#it{E}_{PHOS cluster}^{leading} (GeV)")
-      contents[i] = eventQA.fMaxCluster[2].E();
     else
       AliWarning(Form("Unable to fill dimension %s!",title.Data()));
   }
@@ -1171,8 +1163,10 @@ void AliAnalysisTaskPWGJEQA::FillDetectorLevelTHnSparse(Double_t cent, Double_t 
 {
   Double_t contents[20]={0};
   
-  for (Int_t i = 0; i < fTracks->GetNdimensions(); i++) {
-    TString title(fTracks->GetAxis(i)->GetTitle());
+  THnSparse* thnTracks = static_cast<THnSparse*>(fHistManager.FindObject("tracks"));
+  if (!thnTracks) return;
+  for (Int_t i = 0; i < thnTracks->GetNdimensions(); i++) {
+    TString title(thnTracks->GetAxis(i)->GetTitle());
     if (title=="Centrality %")
       contents[i] = cent;
     else if (title=="#it{p}_{T} (GeV/#it{c})")
@@ -1188,10 +1182,10 @@ void AliAnalysisTaskPWGJEQA::FillDetectorLevelTHnSparse(Double_t cent, Double_t 
     else if (title=="track type")
       contents[i] = trackType;
     else
-      AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fTracks->GetName()));
+      AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), thnTracks->GetName()));
   }
   
-  fTracks->Fill(contents);
+  thnTracks->Fill(contents);
 }
 
 //________________________________________________________________________
@@ -1199,8 +1193,10 @@ void AliAnalysisTaskPWGJEQA::FillGeneratorLevelTHnSparse(Double_t cent, Double_t
 {
   Double_t contents[20]={0};
   
-  for (Int_t i = 0; i < fParticlesPhysPrim->GetNdimensions(); i++) {
-    TString title(fParticlesPhysPrim->GetAxis(i)->GetTitle());
+  THnSparse* thnTracks_PhysPrim = static_cast<THnSparse*>(fHistManager.FindObject("tracks_PhysPrim"));
+  if (!thnTracks_PhysPrim) return;
+  for (Int_t i = 0; i < thnTracks_PhysPrim->GetNdimensions(); i++) {
+    TString title(thnTracks_PhysPrim->GetAxis(i)->GetTitle());
     if (title=="Centrality %")
       contents[i] = cent;
     else if (title=="#it{p}_{T} (GeV/#it{c})")
@@ -1212,10 +1208,10 @@ void AliAnalysisTaskPWGJEQA::FillGeneratorLevelTHnSparse(Double_t cent, Double_t
     else if (title=="Findable")
       contents[i] = findable;
     else
-      AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fParticlesPhysPrim->GetName()));
+      AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), thnTracks_PhysPrim->GetName()));
   }
   
-  fParticlesPhysPrim->Fill(contents);
+  thnTracks_PhysPrim->Fill(contents);
 }
 
 //________________________________________________________________________
@@ -1224,8 +1220,10 @@ void AliAnalysisTaskPWGJEQA::FillMatchedParticlesTHnSparse(Double_t cent, Double
 {
   Double_t contents[20]={0};
   
-  for (Int_t i = 0; i < fParticlesMatched->GetNdimensions(); i++) {
-    TString title(fParticlesMatched->GetAxis(i)->GetTitle());
+  THnSparse* thnTracks_Matched = static_cast<THnSparse*>(fHistManager.FindObject("tracks_Matched"));
+  if (!thnTracks_Matched) return;
+  for (Int_t i = 0; i < thnTracks_Matched->GetNdimensions(); i++) {
+    TString title(thnTracks_Matched->GetAxis(i)->GetTitle());
     if (title=="Centrality %")
       contents[i] = cent;
     else if (title=="#it{p}_{T}^{gen} (GeV/#it{c})")
@@ -1247,8 +1245,8 @@ void AliAnalysisTaskPWGJEQA::FillMatchedParticlesTHnSparse(Double_t cent, Double
     else if (title=="track type")
       contents[i] = (Double_t)trackType;
     else
-      AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), fParticlesMatched->GetName()));
+      AliWarning(Form("Unable to fill dimension %s of histogram %s!", title.Data(), thnTracks_Matched->GetName()));
   }
   
-  fParticlesMatched->Fill(contents);
+  thnTracks_Matched->Fill(contents);
 }

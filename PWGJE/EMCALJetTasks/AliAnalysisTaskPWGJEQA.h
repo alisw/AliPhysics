@@ -58,13 +58,11 @@ public:
   void                        UserCreateOutputObjects();
 
   void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
-  void                        SetSeparateEMCalDCal(Bool_t b)                       { fSeparateEMCalDCal = b           ; }
-  void                        SetPtBin(Float_t w, Float_t max)                     { fPtBinWidth        = w; fMaxPt = max ; }
   void                        SetGeneratorLevelName(const char* name)              { fGeneratorLevelName = name       ; }
   void                        SetDetectorLevelName(const char* name)               { fDetectorLevelName = name        ; }
   
   void                        SetDoTrackQA(Bool_t b) { fDoTrackQA = b; }
-  void                        SetDoEmcalQA(Bool_t b) { fDoEmcalQA = b; }
+  void                        SetDoCaloQA(Bool_t b) { fDoCaloQA = b; }
   void                        SetDoJetQA(Bool_t b)   { fDoJetQA   = b; }
   void                        SetDoEventQA(Bool_t b) { fDoEventQA = b; }
   void                        SetRejectOutlierEvents(Bool_t b) {fRejectOutlierEvents = b; }
@@ -100,15 +98,13 @@ protected:
                                                             Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
   
   Float_t                     fCellEnergyCut;            ///< Energy cell cut
-  Float_t                     fPtBinWidth;               ///< Histogram pt bin width
   Float_t                     fMaxPt;                    ///< Histogram pt limit
-  Bool_t                      fSeparateEMCalDCal;        ///< Separate EMCal from DCal in QA plots
   Int_t                       fNTotClusters[3];          //!<!Total number of accepted clusters in current event (DCal/EMCal)
   AliTLorentzVector           fLeadingCluster[3];        //!<!Leading cluster in current event (EMCal/DCal)
   Int_t                       fNTotTracks;               //!<!Total number of accepted tracks in current event
   AliTLorentzVector           fLeadingTrack;             //!<!Leading track in current event
   Bool_t                      fDoTrackQA;                ///< Set whether to enable track QA
-  Bool_t                      fDoEmcalQA;                ///< Set whether to enable cell/cluster QA
+  Bool_t                      fDoCaloQA;                 ///< Set whether to enable cell/cluster QA
   Bool_t                      fDoJetQA;                  ///< Set whether to enable jet QA
   Bool_t                      fDoEventQA;                ///< Set whether to enable event QA
   TString                     fGeneratorLevelName;       ///< generator level container name
@@ -131,25 +127,18 @@ protected:
   Double_t*             fPtRelDiffHistBins     ; //! pt relative difference bins
   Int_t                 fNPtResHistBins        ; //! number of pt res bins
   Double_t*             fPtResHistBins         ; //! pt res bins
-  Double_t*             f1OverPtResHistBins    ; //! 1/pt res bins
-  Int_t                 fN1OverPtResHistBins   ; //! number of 1/pt res bins
   Int_t                 fNIntegerHistBins      ; //! number of integer bins
   Double_t*             fIntegerHistBins       ; //! integer bins
   AliPHOSGeometry*      fPHOSGeo;              ; //!<! phos geometry
   
-  // Histograms
-  THnSparse*            fTracks                ; //! all tracks
-  THnSparse*            fParticlesPhysPrim     ; //! all physical primary particles
-  THnSparse*            fParticlesMatched      ; //! primary particles matched to detector level tracks
-  
-  THistManager                fHistManager;              //!< Histogram manager
+  THistManager          fHistManager           ; //!< Histogram manager
   
 private:
   AliAnalysisTaskPWGJEQA(const AliAnalysisTaskPWGJEQA&);            // not implemented
   AliAnalysisTaskPWGJEQA &operator=(const AliAnalysisTaskPWGJEQA&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPWGJEQA, 2);
+  ClassDef(AliAnalysisTaskPWGJEQA, 3);
   /// \endcond
 };
 #endif
