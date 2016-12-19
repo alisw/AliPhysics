@@ -64,7 +64,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   ULong64_t GetSpecie() {return fspecie;}
  private:
     
-  void   BinLogAxis(const THn *h, Int_t axisNumber);
+  void   BinLogAxis(const THnSparseF *h, Int_t axisNumber);
   Bool_t IsVertexAccepted(AliESDEvent * esd);
   Bool_t IsElectron(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
   Bool_t IsPion(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
