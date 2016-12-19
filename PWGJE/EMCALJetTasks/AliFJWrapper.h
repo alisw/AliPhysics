@@ -1300,7 +1300,7 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   if(SubJet1_Phi < -1*TMath::Pi()) SubJet1_Phi += (2*TMath::Pi());
   else if (SubJet1_Phi > TMath::Pi()) SubJet1_Phi -= (2*TMath::Pi());
   Double_t SubJet2_Phi;
-  Double_t DeltaPhi=-5;
+  Double_t DeltaPhi=-5;  
   if (SubJet_Axes.size()>1){
     SubJet2_Axis=SubJet_Axes[1];
     SubJet2_Eta=SubJet2_Axis.pseudorapidity();
@@ -1321,6 +1321,12 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   else if (SubJet1Phi > TMath::Pi()) SubJet1Phi -= (2*TMath::Pi());
   Double_t SubJet2Phi;
   Double_t DeltaPhiSubJets=-5;
+  Double_t SubJet1LeadingTrackPt=-3.0;
+  Double_t SubJet2LeadingTrackPt=-3.0;
+  std::vector<fj::PseudoJet> SubJet1Tracks = SubJet1.constituents();
+  for (Int_t i=0; i<SubJet1Tracks.size(); i++){
+    if (SubJet1Tracks[i].perp() > SubJet1LeadingTrackPt) SubJet1LeadingTrackPt=SubJet1Tracks[i].perp();
+  }
   if (SubJet_Axes.size()>1){
     SubJet2=SubJets[1];
     SubJet2Eta=SubJet2.pseudorapidity();
@@ -1330,6 +1336,10 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     DeltaPhiSubJets=SubJet1Phi-SubJet2Phi;
     if(DeltaPhiSubJets < -1*TMath::Pi()) DeltaPhiSubJets += (2*TMath::Pi());
     else if (DeltaPhiSubJets > TMath::Pi()) DeltaPhiSubJets -= (2*TMath::Pi());
+    std::vector<fj::PseudoJet> SubJet2Tracks = SubJet2.constituents();
+    for (Int_t i=0; i<SubJet2Tracks.size(); i++){
+      if (SubJet2Tracks[i].perp() > SubJet2LeadingTrackPt) SubJet2LeadingTrackPt=SubJet2Tracks[i].perp();
+    }
   }
 
   //Added for quality control of the DeltaR-Nsubjettiness variable (comparing Nsubjettiness and soft drop results)
@@ -1344,6 +1354,7 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
     if (Option==4) Result_SoftDrop=Soft_Dropped_Jet.structure_of<fj::contrib::SoftDrop>().symmetry();
   }
 
+
   if (Option==0) return Result;
   else if (Option==1 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
   else if (Option==2 && SubJet_Axes.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1_Eta-SubJet2_Eta,2)+TMath::Power(DeltaPhi,2));
@@ -1351,6 +1362,8 @@ Double_t AliFJWrapper::NSubjettiness(Int_t N, Int_t Algorithm, Double_t Radius, 
   else if (Option==5 && SubJets.size()>1 && N==2) return SubJet1.perp();
   else if (Option==6 && SubJets.size()>1 && N==2) return SubJet2.perp();
   else if (Option==7 && SubJets.size()>1 && N==2) return TMath::Sqrt(TMath::Power(SubJet1Eta-SubJet2Eta,2)+TMath::Power(DeltaPhiSubJets,2));
+  else if (Option==8 && SubJets.size()>1 && N==2) return SubJet1LeadingTrackPt;
+  else if (Option==9 && SubJets.size()>1 && N==2) return SubJet2LeadingTrackPt;
   else return -2;
 }
 
