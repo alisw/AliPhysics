@@ -90,6 +90,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   // Setters for detector level effects
   void SetRequireT0vtx(Bool_t b = true)                {fkRequireTZEROvtx = b;} 			   // Set to require T0 vtx 
   void SetRequireV0AC(Bool_t b = true)                 {fkRequireVZEROAC = b;} 			           // Set to require V0 AC 
+  void SetRejectFastCluster(Bool_t b = false)          {fkRejectFastOnly = b;}                             // Reject fast cluster
   void SetPtHardCuts(Double_t jetpt = 0, Double_t trackpt = 0) {fPtHardAndPythiaJetPtFactor = jetpt; fPtHardAndTrackPtFactor = trackpt;}
 
   // Tracks
@@ -292,6 +293,7 @@ class AliAnalysisTaskJetFFMoments : public AliAnalysisTaskSE
   TRefArray*         fRef;			    //! TRefArray for track references within the jet
   Bool_t             fkIsPbPb;                      // PbPb case
   Bool_t 	     fkEventSelection;		    // Use to bypass event selection?
+  Bool_t             fkRejectFastOnly;              // Switch to reject FastCluster
   Bool_t 	     fkRequireVZEROAC;		    // Switch to require V0 AC
   Bool_t 	     fkRequireTZEROvtx;		    // Switch to require T0 vtx
   Float_t 	     fCentCutUp;		    // Upper limit on centrality
