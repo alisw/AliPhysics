@@ -46,6 +46,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask() :
   fSetFilterBit(kFALSE),
   fbit(0),
   fRemoveNegativeLabelTracks(kTRUE),
+  fMatchToKinematicTrack(kTRUE),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
   fConfiguration(kFast), // default  use the minimal configuration
@@ -68,6 +69,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const Char_t* nam
   fSetFilterBit(kFALSE),
   fbit(0),
   fRemoveNegativeLabelTracks(kTRUE),
+  fMatchToKinematicTrack(kTRUE),
   fEvalCentrality(kFALSE),
   fCentralityEstimator("V0M"),
   fConfiguration(kFast), // default  use the minimal configuration
@@ -110,6 +112,7 @@ AliCFSingleTrackEfficiencyTask& AliCFSingleTrackEfficiencyTask::operator=(const 
     fSetFilterBit  = c.fSetFilterBit;
     fbit = c.fbit;
     fRemoveNegativeLabelTracks = c.fRemoveNegativeLabelTracks;
+    fMatchToKinematicTrack = c.fMatchToKinematicTrack;
 
     fEvalCentrality = c.fEvalCentrality;
     fCentralityEstimator = c.fCentralityEstimator;
@@ -133,6 +136,7 @@ AliCFSingleTrackEfficiencyTask::AliCFSingleTrackEfficiencyTask(const AliCFSingle
   fSetFilterBit(c.fSetFilterBit),
   fbit(c.fbit),
   fRemoveNegativeLabelTracks(c.fRemoveNegativeLabelTracks),
+  fMatchToKinematicTrack(c.fMatchToKinematicTrack),
   fEvalCentrality(c.fEvalCentrality),
   fCentralityEstimator(c.fCentralityEstimator),
   fConfiguration(c.fConfiguration),
@@ -608,16 +612,17 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
     //
 
     // check particle selections at MC level
-    AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(label);
-    if(!mcPart) continue;
-    containerInputMC[0] = (Float_t)mcPart->Pt();
-    containerInputMC[1] = mcPart->Eta();
-    containerInputMC[2] = mcPart->Phi();
-    containerInputMC[3] = mcPart->Theta();
+    if(fMatchToKinematicTrack){
+        AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(label);
+        if(!mcPart) continue;
+        containerInputMC[0] = (Float_t)mcPart->Pt();
+        containerInputMC[1] = mcPart->Eta();
+        containerInputMC[2] = mcPart->Phi();
+        containerInputMC[3] = mcPart->Theta();
 
-    if (!fMCCuts->IsMCParticleGenerated(mcPart)) continue;
-    //    cout<< "MC matching did work"<<endl;
-
+        if (!fMCCuts->IsMCParticleGenerated(mcPart)) continue;
+        //    cout<< "MC matching did work"<<endl;
+    }
 
     // for filter bit selection
     AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(track);
