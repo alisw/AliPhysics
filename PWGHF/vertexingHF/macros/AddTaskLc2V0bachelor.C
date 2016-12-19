@@ -12,7 +12,8 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
 						     Double_t maxRotAngle=7.*TMath::Pi()/6.,
 						     Bool_t useTPCpidToFillTree=kFALSE,
 						     Char_t sign=2,
-						     Bool_t origin=kFALSE)
+						     Bool_t origin=kFALSE,
+						     Bool_t recSecVtx=kFALSE)
 {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -68,6 +69,7 @@ AliAnalysisTaskSELc2V0bachelor *AddTaskLc2V0bachelor(TString finname="Lc2V0bache
   task->SetPtMaxToFillTheTree(pTmax);
   task->SetMinAngleForRot(minRotAngle);
   task->SetMaxAngleForRot(maxRotAngle);
+  task->ReconstructSecVtx(recSecVtx);
   mgr->AddTask(task);
 
   // Create and connect containers for input/output  
