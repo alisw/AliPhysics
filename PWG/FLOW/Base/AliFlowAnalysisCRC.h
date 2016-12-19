@@ -1012,10 +1012,10 @@ public:
   // v1
   void SetFlowSPZDCv1Pro(TProfile* const TP, Int_t const r) {this->fFlowSPZDCv1Pro[r] = TP;};
   TProfile* GetFlowSPZDCv1Pro(Int_t const r) const {return this->fFlowSPZDCv1Pro[r];};
-  void SetFlowSPZDCv1etaPro(TProfile* const TP, Int_t const r) {this->fFlowSPZDCv1etaPro[r] = TP;};
-  TProfile* GetFlowSPZDCv1etaPro(Int_t const r) const {return this->fFlowSPZDCv1etaPro[r];};
-  void SetFlowSPZDCv1etaHist(TH1D* const TP, Int_t const r) {this->fFlowSPZDCv1etaHist[r] = TP;};
-  TH1D* GetFlowSPZDCv1etaHist(Int_t const r) const {return this->fFlowSPZDCv1etaHist[r];};
+  void SetFlowSPZDCv1etaPro(TProfile* const TP, Int_t const c, Int_t const r) {this->fFlowSPZDCv1etaPro[c][r] = TP;};
+  TProfile* GetFlowSPZDCv1etaPro(Int_t const c, Int_t const r) const {return this->fFlowSPZDCv1etaPro[c][r];};
+  void SetFlowSPZDCv1etaHist(TH1D* const TP, Int_t const c, Int_t const r) {this->fFlowSPZDCv1etaHist[c][r] = TP;};
+  TH1D* GetFlowSPZDCv1etaHist(Int_t const c, Int_t const r) const {return this->fFlowSPZDCv1etaHist[c][r];};
   
   // Flow SP VZ
   void SetFlowSPVZList(TList* const TL) {this->fFlowSPVZList = TL;};
@@ -1692,8 +1692,8 @@ private:
   
   TProfile *fFlowSPZDCv1Pro[4]; //!
   const static Int_t fkNHistv1eta = 17;
-  TProfile *fFlowSPZDCv1etaPro[fkNHistv1eta]; //!
-  TH1D *fFlowSPZDCv1etaHist[fkNHistv1eta]; //!
+  TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHistv1eta]; //!
+  TH1D *fFlowSPZDCv1etaHist[fCRCMaxnCen][fkNHistv1eta]; //!
   const static Int_t fkNHistQVecCorrv1eta = 10;
   TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
   TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!
