@@ -21,13 +21,14 @@
 #include "TParticle.h"
 #include "AliCaloPhoton.h"
 #include "TH1.h"
+#include "TF1.h"
 
 #include "AliAnalysisTaskPi0FlowMCParamWeights.h"
 
 ClassImp(AliAnalysisTaskPi0FlowMCParamWeights);
 
 AliAnalysisTaskPi0FlowMCParamWeights::AliAnalysisTaskPi0FlowMCParamWeights(const char* name, AliAnalysisTaskPi0Flow::Period period)
-: AliAnalysisTaskPi0FlowMC(name, period)
+  : AliAnalysisTaskPi0FlowMC(name, period)
 {}
 
 AliAnalysisTaskPi0FlowMCParamWeights::~AliAnalysisTaskPi0FlowMCParamWeights()
@@ -103,14 +104,17 @@ Double_t AliAnalysisTaskPi0FlowMCParamWeights::PrimaryParticleWeight(TParticle *
     }
     
 
-    //lhc13e7    
-    Double_t w = 15.9695 -26.2752*x + 16.7259*x*x -4.77561*x*x*x +0.602569*x*x*x*x;
+    // //lhc13e7    
+    // Double_t w = 15.9695 -26.2752*x + 16.7259*x*x -4.77561*x*x*x +0.602569*x*x*x*x;
     
-    //single pi0: 0-25GeV-flat
-    //Double_t w = 1.48592 -2.78259*x + 2.01851*x*x -0.661467*x*x*x +0.0980217*x*x*x*x;
+    // //single pi0: 0-25GeV-flat
+    // //Double_t w = 1.48592 -2.78259*x + 2.01851*x*x -0.661467*x*x*x +0.0980217*x*x*x*x;
 
-    //single pi0: 0-6GeV-flat
-    //Double_t w = 55.6309 -102.175*x + 73.7241*x*x -24.3558*x*x*x +3.74631*x*x*x*x;
+    // //single pi0: 0-6GeV-flat
+    // //Double_t w = 55.6309 -102.175*x + 73.7241*x*x -24.3558*x*x*x +3.74631*x*x*x*x;
+
+    Double_t w = 1.;
+    if(fWeights) w = fWeights->Eval(x);
 
     return 1./w;
     
