@@ -440,12 +440,12 @@ AliAnalysisTaskSubJetFraction::~AliAnalysisTaskSubJetFraction()
     fShapesVarNames[3] = "Tau1_Truth";
     fShapesVarNames[4] = "Tau2";
     fShapesVarNames[5] = "Tau2_Truth";
-    fShapesVarNames[6] = "OpeningAngleSubJets";
-    fShapesVarNames[7] = "OpeningAngleSubJets_Truth";
+    fShapesVarNames[6] = "SubJet1LeadingTrackPt";
+    fShapesVarNames[7] = "SubJet1LeadingTrackPt_Truth";
     fShapesVarNames[8] = "OpeningAngle";
     fShapesVarNames[9] = "OpeningAngle_Truth";
-    fShapesVarNames[10] = "JetMultiplicity";
-    fShapesVarNames[11] = "JetMultiplicity_Truth";
+    fShapesVarNames[10] = "SubJet2LeadingTrackPt";
+    fShapesVarNames[11] = "SubJet2LeadingTrackPt_Truth";
     fShapesVarNames[12] = "OpeningAngleSD";
     fShapesVarNames[13] = "OpeningAngleSD_Truth";
     fShapesVarNames[14] = "SubJet1Pt";
@@ -829,9 +829,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  else fShapesVar[0]=Jet1->Pt()-(GetRhoVal(0)*Jet1->Area());
 	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
 	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,7);
+	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,8);
 	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
-	  fShapesVar[10]=Jet1->GetNumberOfTracks();
+	  // fShapesVar[10]=Jet1->GetNumberOfTracks();
+	  fShapesVar[10]=fjNSubJettiness(Jet1,0,2,0,1,9);
 	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
 	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont1->GetParticleContainer()->GetArray())->Pt();
@@ -848,9 +849,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    fShapesVar[1]=Jet4->Pt();
 	    fShapesVar[3]=fjNSubJettiness(Jet4,3,1,0,1,0);
 	    fShapesVar[5]=fjNSubJettiness(Jet4,3,2,0,1,0);
-	    fShapesVar[7]=fjNSubJettiness(Jet4,3,2,0,1,7);
+	    fShapesVar[7]=fjNSubJettiness(Jet4,3,2,0,1,8);
 	    fShapesVar[9]=fjNSubJettiness(Jet4,3,2,0,1,1);
-	    fShapesVar[11]=Jet4->GetNumberOfTracks();
+	    //fShapesVar[11]=Jet4->GetNumberOfTracks();
+	    fShapesVar[11]=fjNSubJettiness(Jet4,3,2,0,1,9);
 	    fShapesVar[13]=fjNSubJettiness(Jet4,3,2,0,1,3,fBeta_SD,fZCut);
 	    fShapesVar[15]=fjNSubJettiness(Jet4,3,2,0,1,5,fBeta_SD,fZCut);
 	    fShapesVar[17]=Jet4->GetLeadingTrack(JetCont4->GetParticleContainer()->GetArray())->Pt();
@@ -977,9 +979,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  fShapesVar[0]=Jet1->Pt();
 	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
 	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,7);
+	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,8);
 	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
-	  fShapesVar[10]=Jet1->GetNumberOfTracks();
+	  // fShapesVar[10]=Jet1->GetNumberOfTracks();
+	  fShapesVar[10]=fjNSubJettiness(Jet1,0,2,0,1,9);
 	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
 	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont1->GetParticleContainer()->GetArray())->Pt();
@@ -995,9 +998,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    fShapesVar[1]=Jet2->Pt();
 	    fShapesVar[3]=fjNSubJettiness(Jet2,1,1,0,1,0);
 	    fShapesVar[5]=fjNSubJettiness(Jet2,1,2,0,1,0);
-	    fShapesVar[7]=fjNSubJettiness(Jet2,1,2,0,1,7);
+	    fShapesVar[7]=fjNSubJettiness(Jet2,1,2,0,1,8);
 	    fShapesVar[9]=fjNSubJettiness(Jet2,1,2,0,1,1);
-	    fShapesVar[11]=Jet2->GetNumberOfTracks();
+	    // fShapesVar[11]=Jet2->GetNumberOfTracks();
+	    fShapesVar[11]=fjNSubJettiness(Jet2,1,2,0,1,9);
 	    fShapesVar[13]=fjNSubJettiness(Jet2,1,2,0,1,3,fBeta_SD,fZCut);
 	    fShapesVar[15]=fjNSubJettiness(Jet2,1,2,0,1,5,fBeta_SD,fZCut);
 	    fShapesVar[17]=Jet2->GetLeadingTrack(JetCont2->GetParticleContainer()->GetArray())->Pt();
@@ -1115,9 +1119,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  else fShapesVar[0]=Jet1->Pt();
 	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
 	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,7);
+	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,8);
 	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
-	  fShapesVar[10]=Jet1->GetNumberOfTracks();
+	  //fShapesVar[10]=Jet1->GetNumberOfTracks();
+	  fShapesVar[10]=fjNSubJettiness(Jet1,0,2,0,1,9);
 	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
 	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont->GetParticleContainer()->GetArray())->Pt();
@@ -1294,9 +1299,10 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	  else fShapesVar[0]=Jet1->Pt(); 
 	  fShapesVar[2]=fjNSubJettiness(Jet1,0,1,0,1,0);
 	  fShapesVar[4]=fjNSubJettiness(Jet1,0,2,0,1,0);
-	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,7);
+	  fShapesVar[6]=fjNSubJettiness(Jet1,0,2,0,1,8);
 	  fShapesVar[8]=fjNSubJettiness(Jet1,0,2,0,1,1);
-	  fShapesVar[10]=Jet1->GetNumberOfTracks();
+	  // fShapesVar[10]=Jet1->GetNumberOfTracks();
+	  fShapesVar[10]=fjNSubJettiness(Jet1,0,2,0,1,9);
 	  fShapesVar[12]=fjNSubJettiness(Jet1,0,2,0,1,3,fBeta_SD,fZCut);
 	  fShapesVar[14]=fjNSubJettiness(Jet1,0,2,0,1,5,fBeta_SD,fZCut);
 	  fShapesVar[16]=Jet1->GetLeadingTrack(JetCont->GetParticleContainer()->GetArray())->Pt();
@@ -1622,7 +1628,9 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
   //Option==4 returns Symmetry measure (Zg) for soft dropped jet
   //Option==5 returns Pt of Subjet1
   //Option==6 returns Pt of Subjet2
-  //Options==7 trutns deltaR of subjets...Is this different to before?? 
+  //Options==7 trutns deltaR of subjets...Is this different to before??
+  //Option==8 Subjet1 Leading track Pt
+  //Option==9 Subjet1 Leading track Pt
   if (Jet->GetNumberOfTracks()>=N){
     if((fJetShapeSub==kDerivSub) && (JetContNb==0) && (N==1) && (Algorithm==0) && (Beta==1.0) && (Option==0)){
       if (fDerivSubtrOrder == kFirstOrder) return Jet->GetShapeProperties()->GetFirstOrderSubtracted1subjettiness_kt();
