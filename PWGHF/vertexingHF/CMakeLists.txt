@@ -95,6 +95,7 @@ set(SRCS
   AliSignificanceCalculator.cxx
   AliHFMassFitter.cxx
   AliHFMassFitterVAR.cxx
+  AliHFInvMassFitter.cxx
   AliHFMultiTrials.cxx
   AliHFPtSpectrum.cxx
   AliHFsubtractBFDcuts.cxx
