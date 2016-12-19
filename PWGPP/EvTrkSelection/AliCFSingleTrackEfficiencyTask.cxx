@@ -613,7 +613,7 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
 
     // check particle selections at MC level
     if(fMatchToKinematicTrack){
-        AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(label);
+        AliVParticle *mcPart  = (AliVParticle*)fMCEvent->GetTrack(TMath::Abs(label));
         if(!mcPart) continue;
         containerInputMC[0] = (Float_t)mcPart->Pt();
         containerInputMC[1] = mcPart->Eta();
