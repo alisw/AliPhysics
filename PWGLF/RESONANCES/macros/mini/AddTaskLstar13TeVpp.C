@@ -96,6 +96,9 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
      }
    */
 
+   //   task->UseMultiplicity("QUALITY");
+
+   
    if (isPP) {
      //     task->UseMultiplicity("QUALITY");
      if (MultBins == 1) task->UseMultiplicity("AliMultSelection_V0M"); // for multiplicity percentile
@@ -104,7 +107,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    }
    else
      task->UseCentrality("V0M");   
-
+   
 
 
 
@@ -212,9 +215,9 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
    
    //for systematic checks
      {
-       gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
+       //       gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigLStar.C");
        //      gROOT->LoadMacro("ConfigureLstar13TeVpp.C");
-       //       gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp.C");
+       gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp.C");
        if (!ConfigureLstar13TeVpp(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly, signedPdg, monitorOpt, useCrossedRows, yaxisVar ,useMixLS)) 
 return 0x0;  
      }
