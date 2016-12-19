@@ -307,7 +307,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
   //
   // initialize histograms
   //
-  THnF * histTpcItsMatch = (THnF *) fListHist->FindObject("histTpcItsMatch");
+  THnSparseF * histTpcItsMatch = (THnSparseF*) fListHist->FindObject("histTpcItsMatch");
     
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for the vertex cut
     
@@ -343,7 +343,6 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     nITS+=track->GetITSNcls();
 
     track->GetImpactParameters(dca, cov);
-        
     if(fMC){
       part    = (TParticle*)stack->Particle(TMath::Abs(track->GetLabel()));
       pdgPart = part->GetPDG();
@@ -429,7 +428,6 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     if((track->GetStatus() & AliESDtrack::kTPCrefit)) tpcrefit=kTRUE;
     if(tpcrefit){
       if(fESDtrackCuts->AcceptTrack(track)) {
-
 	TH1F * histTOFBC = (TH1F *) fListHist->FindObject("histTOFBC");
 	TH1F * histTOFBC0 = (TH1F *) fListHist->FindObject("histTOFBC0");
 	if(track->GetTOFBunchCrossing()!=0){
@@ -508,7 +506,7 @@ void AliAnalysisTrackingUncertaintiesAOT::Terminate(Option_t *)
 
 
 //________________________________________________________________________
-void AliAnalysisTrackingUncertaintiesAOT::BinLogAxis(const THn *h, Int_t axisNumber) {
+void AliAnalysisTrackingUncertaintiesAOT::BinLogAxis(const THnSparseF *h, Int_t axisNumber) {
   //
   // Method for the correct logarithmic binning of histograms
   //
@@ -662,14 +660,14 @@ void AliAnalysisTrackingUncertaintiesAOT::InitializeTrackCutHistograms() {
   //
   //  match TPC->ITS
   //                                  0-is matched, 1-pt, 2-eta,   3-phi,   4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all) 6-bcTOF 7-DCAxy 8-DCAz
-  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   50,    20,            18,  6,      3,    2, 600,   62};
-  Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.1,    -1,             0, -0.5, -1.5, -0.5, -3., -3.2};
-  Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5,   20,    +1, 2*TMath::Pi(),  5.5,  1.5,  1.5,  3.,  3.2};
+  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   50,    20,            18,  6,      3,    2,600,62};   
+  Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.1,    -1,             0, -0.5, -1.5, -0.5,-3.,-3.2};
+  Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5,   20,    +1, 2*TMath::Pi(),  5.5,  1.5,  1.5, 3., 3.2};
   //
-  TString axisNameTpcItsMatch[kNumberOfAxes]  = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","DCAxy","DCAz"};
-  TString axisTitleTpcItsMatch[kNumberOfAxes] = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","DCAxy","DCAz"};
+  TString axisNameTpcItsMatch[kNumberOfAxes]  = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","dcaxy","dcaz"};
+  TString axisTitleTpcItsMatch[kNumberOfAxes] = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","dcaxy","dcaz"};
   //
-  THnF * histTpcItsMatch = new THnF("histTpcItsMatch","TPC -> ITS matching",kNumberOfAxes, binsTpcItsMatch, minTpcItsMatch, maxTpcItsMatch);
+  THnSparseF * histTpcItsMatch = new THnSparseF("histTpcItsMatch","TPC -> ITS matching",kNumberOfAxes, binsTpcItsMatch, minTpcItsMatch, maxTpcItsMatch);
   BinLogAxis(histTpcItsMatch, 1);
   fListHist->Add(histTpcItsMatch);
   //
