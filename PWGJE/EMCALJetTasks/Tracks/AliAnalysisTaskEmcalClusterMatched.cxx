@@ -73,17 +73,23 @@ void AliAnalysisTaskEmcalClusterMatched::CreateUserObjects(){
 
 void AliAnalysisTaskEmcalClusterMatched::CreateUserHistos(){
   EnergyBinning enbinning;
-  TLinearBinning smbinning(20, -0.5, 19.5);
+  TLinearBinning smbinning(20, -0.5, 19.5), timebinning(1000, -0.5e-6, 0.5e-6);
 
   TString optionstring = fEnableSumw2 ? "s" : "";
 
   for(const auto &t :GetSupportedTriggers()){
     fHistos->CreateTH1("hEventCount" + t, "Event count for trigger " + t, 1, 0.5, 1.5, optionstring);
     fHistos->CreateTH1("hVertexZ" + t, "Position of the z-vertex for trigger" + t, 500, -50., 50., optionstring);
+    fHistos->CreateTH2("hClusterEnergyTime" + t, "Cluster energy vs time for trigger " + t, enbinning, timebinning, optionstring);
     fHistos->CreateTH2("hClusterEnergyAllSM" + t, "Cluster energy vs supermodule for all clusters for trigger " + t, smbinning, enbinning, optionstring);
-    fHistos->CreateTH2("hClusterEnergyMatchGlobalSM" + t, "Cluster energy vs supermodule for matched clusters (gl) for trigger " +t, smbinning, enbinning, optionstring);
+    fHistos->CreateTH2("hClusterEnergyMatchGlobalSM" + t, "Cluster energy vs supermodule for matched clusters (gl) for trigger " + t, smbinning, enbinning, optionstring);
+    fHistos->CreateTH2("hClusterEnergyTimeMatchGlobal" + t, "Cluster energy vs time for matched clusters (gl) for trigger" + t, enbinning, timebinning, optionstring);
     fHistos->CreateTH2("hClusterEnergyMatchTPConlySM" + t, "Cluster energy vs supermodule for matched clusters (tpc) for trigger " + t, smbinning, enbinning, optionstring);
+    fHistos->CreateTH2("hClusterEnergyTimeMatchTPConly" + t, "Cluster energy vs time for matched clusters (tpc) for trigger" + t, enbinning, timebinning, optionstring);
     fHistos->CreateTH2("hClusterEnergyMatchTPCexclSM" + t, "Cluster energy vs supermodule for matched clusters (tpc excl) for trigger " + t, smbinning, enbinning, optionstring);
+    fHistos->CreateTH2("hClusterEnergyTimeMatchTPCexcl" + t, "Cluster energy vs time for matched clusters (tpc excl) for trigger " + t, enbinning, timebinning, optionstring);
+    fHistos->CreateTH2("hClusterEnergyUnmatchSM" + t, "Cluster energy vs supermodule for unmatched clusters for trigger " + t, smbinning, enbinning, optionstring);
+    fHistos->CreateTH2("hClusterEnergyTimeUnmatch" + t, "Cluster energy vs time for unmatched clusters for trigger " + t, enbinning, timebinning, optionstring);
   }
 }
 
@@ -106,7 +112,11 @@ bool AliAnalysisTaskEmcalClusterMatched::Run(){
     clust->GetMomentum(clustervec,fVertex);
     int supermoduleID;
     fGeom->SuperModuleNumberFromEtaPhi(clustervec.Eta(), clustervec.Phi(), supermoduleID);
-    for(const auto &t : fSelectedTriggers) fHistos->FillTH2("hClusterEnergyAllSM" + t, supermoduleID, energy, GetTriggerWeight(t));
+    for(const auto &t : fSelectedTriggers){
+      double weight = GetTriggerWeight(t);
+      fHistos->FillTH2("hClusterEnergyAllSM" + t, supermoduleID, energy, weight);
+      fHistos->FillTH2("hClusterEnergyTime" + t, energy, clust->GetTOF(), weight);
+    }
 
     // check whether cluster was matched to global or TPC-only track
     // attention: tpc tracks always subset of global tracks, exclusive TPC tracks
@@ -127,9 +137,26 @@ bool AliAnalysisTaskEmcalClusterMatched::Run(){
 
     if(nglobal || ntpc){
       for(const auto &t : fSelectedTriggers){
-        if(nglobal) fHistos->FillTH2("hClusterEnergyMatchGlobalSM" + t, supermoduleID, energy, GetTriggerWeight(t));
-        if(ntpc) fHistos->FillTH2("hClusterEnergyMatchTPConlySM" + t, supermoduleID, energy, GetTriggerWeight(t));
-        if(ntpc && !nglobal) fHistos->FillTH2("hClusterEnergyMatchTPCexclSM" + t, supermoduleID, energy, GetTriggerWeight(t));
+        double weight = GetTriggerWeight(t);
+        if(nglobal){
+          fHistos->FillTH2("hClusterEnergyMatchGlobalSM" + t, supermoduleID, energy, weight);
+          fHistos->FillTH2("hClusterEnergyTimeMatchGlobal" + t, energy, clust->GetTOF(), weight);
+        }
+        if(ntpc){
+          fHistos->FillTH2("hClusterEnergyMatchTPConlySM" + t, supermoduleID, energy, weight);
+          fHistos->FillTH2("hClusterEnergyTimeMatchTPConly" + t, energy, clust->GetTOF(), weight);
+        }
+        if(ntpc && !nglobal){
+          fHistos->FillTH2("hClusterEnergyMatchTPCexclSM" + t, supermoduleID, energy, weight);
+          fHistos->FillTH2("hClusterEnergyTimeMatchTPCexcl" + t, energy, clust->GetTOF(), weight);
+        }
+      }
+    } else {
+      // Unmatched cluster
+      for(const auto &t : fSelectedTriggers){
+        double weight = GetTriggerWeight(t);
+        fHistos->FillTH2("hClusterEnergyUnmatchSM" + t, supermoduleID, energy, weight);
+        fHistos->FillTH2("hClusterEnergyTimeUnmatch" + t, energy, clust->GetTOF(), weight);
       }
     }
   }
@@ -143,7 +170,7 @@ void AliAnalysisTaskEmcalClusterMatched::InitializeTrackSelections(bool isAOD){
     fTrackSelectionGlobal = globalAOD;
 
     AliEmcalTrackSelectionAOD *tpcOnlyAOD = new AliEmcalTrackSelectionAOD;
-    tpcOnlyAOD->AddFilterBit(AliAODTrack::kTrkTPCOnlyConstrained);
+    tpcOnlyAOD->AddFilterBit(AliAODTrack::kTrkTPCOnly);
     fTrackSelectionTPConly = tpcOnlyAOD;
   } else {
     AliEmcalTrackSelectionESD *globalESD = new AliEmcalTrackSelectionESD;
