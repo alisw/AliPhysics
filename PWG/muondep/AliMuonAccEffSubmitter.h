@@ -18,6 +18,11 @@ public:
   AliMuonAccEffSubmitter(const char* generator,
                          Bool_t localOnly=kFALSE,
                          const char* generatorVersion="8125");
+  AliMuonAccEffSubmitter(const char* generator,
+          Bool_t localOnly,
+          const char* pythia6version,
+          Int_t numberOfEventsForPseudoIdealSimulation,
+          Int_t maxEventsPerChunk);
 
   virtual Bool_t Generate(const char* jdlname) const;
   virtual Bool_t Run(const char* mode);
@@ -27,7 +32,9 @@ public:
   void MakeNofEventsPropToTriggerCount(const char* trigger="CMUL7-B-NOPF-MUON", Float_t ratio=1.0);
   
   void MakeNofEventsFixed(Int_t nevents);
-  
+ 
+  Bool_t UseOCDBSnapshots() const;
+
   void UseOCDBSnapshots(Bool_t flag);
   
   void UseExternalConfig(const char* externalConfigFullFilePath);
@@ -76,8 +83,16 @@ public:
 
   Int_t SplitRunList(const char* inputList, int maxJobs=1500);
   
+// private:
+
+  void DefaultSpecificStorage(Int_t mode);
+
+  Bool_t CreateSnapshot(const char* snapshotFileName);
+
+  Bool_t ExcludeFromSnapshot(const char* path);
+
 private:
-  
+
   Bool_t GenerateRunJDL(const char* name) const;
   
   Bool_t GenerateMergeJDL(const char* name) const;
@@ -100,16 +115,14 @@ private:
   Float_t fRatio; // ratio simulated events vs real events
   Int_t fFixedNofEvents; // fixed number of events to be used per run
   Int_t fMaxEventsPerChunk; // max events to generate per subjob
-  TString fOCDBPath; // OCDB path
   Int_t fSplitMaxInputFileNumber; // used for merging jdl
   TString fLogOutToKeep; // specify the log files to be kept
   TString fRootOutToKeep; // specify the output files to be kept
   TString fExternalConfig; // path to an (optional) external config file
-  Bool_t fUseOCDBSnapshots; // whether to use OCDB snapshots or not
   TString fSnapshotDir; // directory for OCDB snapshots
   Bool_t fUseAODMerging; // whether or not to perform (aod) merging
   
-  ClassDef(AliMuonAccEffSubmitter,3) // Helper class to submit AccxEff single particle simulations
+  ClassDef(AliMuonAccEffSubmitter,5) // Helper class to submit AccxEff single particle simulations
 };
 
 #endif

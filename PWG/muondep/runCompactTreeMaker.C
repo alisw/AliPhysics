@@ -14,35 +14,29 @@ TChain* CreateLocalChain(const char* filelist, const char* treeName)
   return c;
 }
 
-void runCompactTreeMaker(const char* inputFileName="list.esd.txt", const char* outputFileName="compacttreemaker.root")
+void runCompactTreeMaker(const char* inputFileName="list.esd.txt", const char* outputFileName="compacttreemaker.root", const char* ocdbPath="raw://")
 {
-    AliAnalysisManager mgr("COMPACTESDMUON");
+    AliAnalysisManager* mgr = new AliAnalysisManager("COMPACTESDMUON");
 
-    mgr.SetInputEventHandler(new AliESDInputHandler);
+    mgr->SetInputEventHandler(new AliESDInputHandler);
 
-   mgr.SetMCtruthEventHandler(new AliMCEventHandler);
+    mgr->SetMCtruthEventHandler(new AliMCEventHandler);
 
-    //AliMuonCompactTreeMaker task("raw://");
-    AliMuonCompactTreeMaker task("local:///alice/data/2015/OCDB");
+    gROOT->LoadMacro("AddTaskCompactTreeMaker.C");
 
-    AliAnalysisDataContainer* output = mgr.CreateContainer("compactevents",TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName);
+    AddTaskCompactTreeMaker(outputFileName,ocdbPath);
 
-    mgr.AddTask(&task);
-
-    mgr.ConnectInput(&task,0,mgr.GetCommonInputContainer());
-    mgr.ConnectOutput(&task,1,output);
-
-    if (!mgr.InitAnalysis()) 
+    if (!mgr->InitAnalysis()) 
     {
         std::cout << "Could not InitAnalysis" << std::endl;
         return 1;
     }
 
-    mgr.Print();
+    mgr->Print();
 
     TChain* chain = CreateLocalChain(inputFileName,"esdTree");
 
     TStopwatch timer;
-    mgr.StartAnalysis("local",chain);
+    mgr->StartAnalysis("local",chain);
     timer.Print();
 }
