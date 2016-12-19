@@ -107,7 +107,8 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fPtMaxToFillTheTree(999.),
   fUseTPCPIDtoFillTree(kFALSE),
   fSign(2),
-  fCheckOrigin(kFALSE)
+  fCheckOrigin(kFALSE),
+  fReconstructSecVtx(kFALSE)
 {
   //
   /// Default ctor
@@ -149,7 +150,8 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fPtMaxToFillTheTree(999.),
   fUseTPCPIDtoFillTree(useTPCpid),
   fSign(sign),
-  fCheckOrigin(origin)
+  fCheckOrigin(origin),
+  fReconstructSecVtx(kFALSE)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -511,6 +513,11 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(AliAODEvent *aodEve
     if(!vHF->FillRecoCasc(aodEvent,lcK0Spr,kFALSE)){//Fill the data members of the candidate only if they are empty.
        fCEvents->Fill(18);//monitor how often this fails
     continue;
+    }
+    if (fReconstructSecVtx) {
+      if (!(vHF->RecoSecondaryVertexForCascades(aodEvent, lcK0Spr))) {
+	continue;
+      }
     }
     if (!lcK0Spr->GetSecondaryVtx()) {
       AliInfo("No secondary vertex"); // it will be done in AliRDHFCutsLctoV0::IsSelected

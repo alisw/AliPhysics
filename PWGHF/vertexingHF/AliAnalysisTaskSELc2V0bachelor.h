@@ -98,6 +98,10 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void SetCheckOrigin(Bool_t origin) {fCheckOrigin = origin;}
   Bool_t GetCheckOrigin() const {return fCheckOrigin;}
 
+
+  void ReconstructSecVtx(Bool_t dummy=kTRUE) {fReconstructSecVtx=dummy;}
+  Bool_t GetReconstructSecVtx() const {return fReconstructSecVtx;}
+
  private:
   
   void CheckEventSelection(AliAODEvent *aodEvent);
@@ -167,9 +171,10 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   Bool_t fUseTPCPIDtoFillTree;///kFALSE
   Char_t fSign;
   Bool_t fCheckOrigin;
+  Bool_t fReconstructSecVtx;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,9); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,10); /// class for Lc->p K0
   /// \endcond
 };
 
