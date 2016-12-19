@@ -52,8 +52,45 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 	const int numOfMultBins = 1; //biny w krotniosci
 	const int numOfChTypes = 16; // liczba mozliwych par
 	const int numOfpTbins = 1; // biny w pedzie poprzecznym
+	//parameters:
+	  char *parameter[16];
+	  if(strlen(params)!=0)
+		{
+		  parameter[0] = strtok(params, ","); // PP
+		  parameter[1] = strtok(NULL, ","); //aPaP
+		  parameter[2] = strtok(NULL, ","); //PaP
+		  parameter[3] = strtok(NULL, ","); //KpKp
+		  parameter[4] = strtok(NULL, ","); //KmKm
+		  parameter[5] = strtok(NULL, ","); //KpKm
+		  parameter[6] = strtok(NULL, ","); //PIpPIp
+		  parameter[7] = strtok(NULL, ","); //PImPIm
+		  parameter[8] = strtok(NULL, ","); //PIpPIm
+		  parameter[9] = strtok(NULL, ","); //LL
+		  parameter[10] = strtok(NULL, ","); //aLaL
+		  parameter[11] = strtok(NULL, ","); //LaL
+		  parameter[12] = strtok(NULL, ","); //all
+		  parameter[13] = strtok(NULL, ","); //plus
+		  parameter[14] = strtok(NULL, ","); //minus
+		  parameter[15] = strtok(NULL, ","); //mixed
+		}
+	  int PP = atoi(parameter[0]);
+	  int aPaP = atoi(parameter[1]);
+	  int PaP = atoi(parameter[2]);
+	  int KpKp = atoi(parameter[3]);
+	  int KmKm = atoi(parameter[4]);
+	  int KpKm = atoi(parameter[5]);
+	  int PIpPIp = atoi(parameter[6]);
+	  int PImPIm = atoi(parameter[7]);
+	  int PIpPIm = atoi(parameter[8]);
+	  int LL = atoi(parameter[9]);
+	  int aLaL = atoi(parameter[10]);
+	  int LaL = atoi(parameter[11]);
+	  int all = atoi(parameter[12]);
+	  int plus = atoi(parameter[13]);
+	  int minus = atoi(parameter[14]);
+	  int mixed = atoi(parameter[15]);
 
-   int runch[numOfChTypes] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0}; // 1 - wlacza czastki do analizy: wlaczone PIpPIm , all
+	  int runch[numOfChTypes] = {PP, aPaP, PaP, KpKp, KmKm, KpKm, PIpPIp, PImPIm, PIpPIm, LL, aLaL, LaL, all, plus, minus, mixed}; 
    const char *chrgs[numOfChTypes] = { "PP", "aPaP", "PaP", "KpKp", "KmKm", "KpKm", "PIpPIp", "PImPIm", "PIpPIm", "LL", "aLaL", "LaL", "all", "plus", "minus", "mixed"};
    // pary czastek ktore analizujemy PP - proton proton; KpKp - K plus
    int runktdep = 0; // czy chcemy wlaczac analize w zaleznosci od pedow poprzecznych; 0 - nie ma, 1 - jest
@@ -135,7 +172,7 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params) {
 
                aniter = ichg * numOfMultBins + imult;
                //miksujemy tylko po podobnych krotnosciach
-               int multmix = 200;
+               int multmix = 20;
               
                anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, multmix, multbins[imult], multbins[imult+1]);
                anetaphitpc[aniter]->SetNumEventsToMix(5); //zwiekszamy statystyke w mianowkiku sygnalu korelacji
