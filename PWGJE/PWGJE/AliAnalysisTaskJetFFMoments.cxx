@@ -43,6 +43,7 @@
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliInputEventHandler.h"
 #include "AliAODMCHeader.h"
 #ifndef __CINT__
 #include "fastjet/PseudoJet.hh"
@@ -127,6 +128,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
   fRef(0x0),
   fkIsPbPb(kFALSE),
   fkEventSelection(kTRUE),
+  fkRejectFastOnly(kFALSE),
   fkRequireVZEROAC(kFALSE),
   fkRequireTZEROvtx(kFALSE),
   fCentCutUp(0),
@@ -321,6 +323,7 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments(const char* name):
   fRef(new TRefArray),
   fkIsPbPb(kFALSE),
   fkEventSelection(kTRUE),
+  fkRejectFastOnly(kFALSE),
   fkRequireVZEROAC(kFALSE),
   fkRequireTZEROvtx(kFALSE),
   fCentCutUp(0),
@@ -745,6 +748,15 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
   //
   Bool_t selectEvent =  false;
   Bool_t physicsSelection = true;// handled by the framework(fInputHandler->IsEventSelected()&AliVEvent::kMB)==AliVEvent::kMB;
+
+   // Trigger selection
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
+   ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+   if( fkRejectFastOnly && ((inputHandler->IsEventSelected() & AliVEvent::kFastOnly) == AliVEvent::kFastOnly)){
+   if (fDebug > 10) std::cout<<fAOD->GetFiredTriggerClasses()<<std::endl;
+   physicsSelection = false;
+   return;
+   }
 
   Float_t cent = 0;
   Float_t zVtx  = 0;
