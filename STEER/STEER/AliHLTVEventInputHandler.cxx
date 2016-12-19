@@ -25,6 +25,7 @@
 #include "TList.h"
 #include "AliAnalysisTask.h"
 #include "AliVfriendEvent.h"
+#include "TTree.h"
 
 ClassImp(AliHLTVEventInputHandler)
 
@@ -33,8 +34,10 @@ AliHLTVEventInputHandler::AliHLTVEventInputHandler()
   : AliVEventHandler()
   , fEvent(NULL)
   , fFriendEvent(NULL)
+  , fFakeTree(new TTree)
 {
 // default constructor
+  fFakeTree->SetDirectory(0);
 }
 
 //______________________________________________________________________________
@@ -42,8 +45,10 @@ AliHLTVEventInputHandler::AliHLTVEventInputHandler(const char* name, const char*
   : AliVEventHandler(name,title)
   , fEvent(NULL)
   , fFriendEvent(NULL)
+  , fFakeTree(new TTree)
 {
 // Named constructor
+  fFakeTree->SetDirectory(0);
 }
 
 //______________________________________________________________________________
@@ -51,8 +56,15 @@ AliHLTVEventInputHandler::AliHLTVEventInputHandler(AliHLTVEventInputHandler& tha
   : AliVEventHandler(that)
   , fEvent(that.fEvent)
   , fFriendEvent(that.fFriendEvent)
+  , fFakeTree(new TTree)
 {
 // dummy cpy constructor
+  fFakeTree->SetDirectory(0);
+}
+
+AliHLTVEventInputHandler::~AliHLTVEventInputHandler()
+{
+    delete fFakeTree;
 }
 
 //______________________________________________________________________________
@@ -107,4 +119,10 @@ Bool_t AliHLTVEventInputHandler::InitTaskInputData(AliVEvent* esdEvent, AliVfrie
     t->ConnectInputData("");
   }
   return kTRUE;
+}
+
+//______________________________________________________________________________
+TTree* AliHLTVEventInputHandler::GetTree() const
+{
+  return fFakeTree;
 }

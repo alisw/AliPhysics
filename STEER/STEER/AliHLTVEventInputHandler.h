@@ -16,6 +16,7 @@ class TObjArray;
 class AliVfriendEvent;
 class AliVEvent;
 class AliVCuts;
+class TTree;
 
 class AliHLTVEventInputHandler : public AliVEventHandler {
 
@@ -23,7 +24,7 @@ class AliHLTVEventInputHandler : public AliVEventHandler {
     AliHLTVEventInputHandler();
     AliHLTVEventInputHandler(AliHLTVEventInputHandler&);
     AliHLTVEventInputHandler(const char* name, const char* title);
-    virtual ~AliHLTVEventInputHandler() {}
+    virtual ~AliHLTVEventInputHandler();
     AliHLTVEventInputHandler& operator=(const AliHLTVEventInputHandler&) {return *this;}
     virtual Bool_t Notify() { return kFALSE; }
     virtual Bool_t Notify(const char *) {return kTRUE;}
@@ -44,6 +45,9 @@ class AliHLTVEventInputHandler : public AliVEventHandler {
     // Especially needed for HLT
     virtual Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, AliVfriendEvent* /*friendEvent*/, TObjArray* /*arrTasks*/);
 
+    //this is to lie to AliAnalysisTaskSE which for some reason checks if there is a tree.
+    virtual TTree* GetTree() const;
+
     AliVEvent* GetEvent() const {return fEvent; printf("---->AliHLTVEventInputHandler: GetEvent %p\n",fEvent);}
     //AliVEvent* GetEvent() const {return NULL;}
     void  SetEvent(AliVEvent *event) {fEvent = event;}
@@ -58,7 +62,9 @@ class AliHLTVEventInputHandler : public AliVEventHandler {
     AliVEvent       *fEvent;          //! Pointer to the event
     AliVfriendEvent *fFriendEvent;    //! Pointer to the friend event
 
-    ClassDef(AliHLTVEventInputHandler, 1);
+    TTree* fFakeTree; //! just a fake tree
+
+    ClassDef(AliHLTVEventInputHandler, 2);
 };
 
 #endif
