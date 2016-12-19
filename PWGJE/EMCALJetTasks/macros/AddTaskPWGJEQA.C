@@ -6,7 +6,7 @@ AliAnalysisTaskPWGJEQA* AddTaskPWGJEQA(
                                        const char* ncells             = "usedefault",
                                        const char *nGenLev            = "mcparticles",
                                        Bool_t      doTrackQA          = kTRUE,
-                                       Bool_t      doEmcalQA          = kTRUE,
+                                       Bool_t      doCaloQA          = kTRUE,
                                        Bool_t      doJetQA            = kTRUE,
                                        Bool_t      doEventQA          = kTRUE,
                                        Double_t    trackPtCut         = 0.15,
@@ -112,7 +112,7 @@ AliAnalysisTaskPWGJEQA* AddTaskPWGJEQA(
   qaTask->SetDetectorLevelName(trackName);
   if (nGenLev && strcmp(nGenLev,"")!=0) qaTask->SetGeneratorLevelName(nGenLev);
   qaTask->SetDoTrackQA(doTrackQA);
-  qaTask->SetDoEmcalQA(doEmcalQA);
+  qaTask->SetDoCaloQA(doCaloQA);
   qaTask->SetDoJetQA(doJetQA);
   qaTask->SetDoEventQA(doEventQA);
   
