@@ -1,12 +1,14 @@
 #include "FILTER_COMPACTESDMUON.h"
 
-#include <iostream>
-#include "AliAnalysisManager.h"
-#include "AliMuonCompactTreeMaker.h"
-#include "AliESDInputHandler.h"
 #include "AliAnalysisDataContainer.h"
-#include "TChain.h"
+#include "AliAnalysisManager.h"
+#include "AliESDInputHandler.h"
 #include "AliMCEventHandler.h"
+#include "AliMuonCompactTreeMaker.h"
+#include "TChain.h"
+#include "TFile.h"
+#include "TSystem.h"
+#include <iostream>
 
 namespace AAF {
 
@@ -20,8 +22,11 @@ int FILTER_COMPACTESDMUON(const char* from, const char* to)
 
     AliMuonCompactTreeMaker task("raw://");
 
-    AliAnalysisDataContainer* output = mgr.CreateContainer("compactevents",TTree::Class(),AliAnalysisManager::kOutputContainer,to);
+    TString destination(gSystem->BaseName(to));
 
+    gSystem->ChangeDirectory(gSystem->DirName(to));
+
+    AliAnalysisDataContainer* output = mgr.CreateContainer("compactevents",TTree::Class(),AliAnalysisManager::kOutputContainer,destination.Data());
     mgr.AddTask(&task);
 
     mgr.ConnectInput(&task,0,mgr.GetCommonInputContainer());
