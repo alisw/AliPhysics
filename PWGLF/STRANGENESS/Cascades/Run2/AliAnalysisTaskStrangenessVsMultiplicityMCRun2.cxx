@@ -227,6 +227,7 @@ fTreeCascVarV0CosPointingAngle(0),
 fTreeCascVarV0CosPointingAngleSpecial(0),
 fTreeCascVarV0Radius(0),
 fTreeCascVarDCABachToBaryon(0),
+fTreeCascVarWrongCosPA(0),
 fTreeCascVarLeastNbrClusters(0),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarNegNSigmaPion(0),
@@ -433,6 +434,7 @@ fTreeCascVarV0CosPointingAngle(0),
 fTreeCascVarV0CosPointingAngleSpecial(0),
 fTreeCascVarV0Radius(0),
 fTreeCascVarDCABachToBaryon(0),
+fTreeCascVarWrongCosPA(0),
 fTreeCascVarLeastNbrClusters(0),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarNegNSigmaPion(0),
@@ -710,6 +712,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarV0CosPointingAngleSpecial",&fTreeCascVarV0CosPointingAngleSpecial,"fTreeCascVarV0CosPointingAngleSpecial/F");
         fTreeCascade->Branch("fTreeCascVarV0Radius",&fTreeCascVarV0Radius,"fTreeCascVarV0Radius/F");
         fTreeCascade->Branch("fTreeCascVarDCABachToBaryon",&fTreeCascVarDCABachToBaryon,"fTreeCascVarDCABachToBaryon/F");
+        fTreeCascade->Branch("fTreeCascVarWrongCosPA",&fTreeCascVarWrongCosPA,"fTreeCascVarWrongCosPA/F");
         fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
@@ -1892,6 +1895,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         // miscellaneous pieces of info that may help regarding data quality assessment.
         //-------------
 
+        fTreeCascVarWrongCosPA = -1;
+        if( bachTrackXi->Charge() < 0 )
+            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , pTrackXi, lESDevent );
+        if( bachTrackXi->Charge() > 0 )
+            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , nTrackXi, lESDevent );
+    
         xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
         lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
         lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY   + lXiMomZ*lXiMomZ );
@@ -3018,3 +3027,43 @@ Float_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::GetDCAz(AliESDtrack *lTr
     
     return dcaToVertexZ;
 }
+
+//________________________________________________________________________
+Float_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent)
+//Encapsulation of CosPA calculation (warning: considers AliESDtrack clones)
+{
+    Float_t lCosPA = -1;
+    AliESDtrack* lNegClone = (AliESDtrack*) lNegTrack->Clone("lNegClone"); //need clone, in order not to change track parameters
+    AliESDtrack* lPosClone = (AliESDtrack*) lPosTrack->Clone("lPosClone"); //need clone, in order not to change track parameters
+    
+    //Get Magnetic field and primary vertex
+    Double_t b=lEvent->GetMagneticField();
+    const AliESDVertex *vtxT3D=lEvent->GetPrimaryVertex();
+    Double_t xPrimaryVertex=vtxT3D->GetX();
+    Double_t yPrimaryVertex=vtxT3D->GetY();
+    Double_t zPrimaryVertex=vtxT3D->GetZ();
+    
+    //Get ExternalTrackParam
+    AliExternalTrackParam nt(*lNegClone), pt(*lPosClone);
+    
+    //Find DCA
+    Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,b,xn,xp);
+    
+    //Propagate to it
+    lNegClone->PropagateTo(xn,b); lPosClone->PropagateTo(xp,b);
+    
+    //Create V0 object to do propagation
+    AliESDv0 vertex(nt,1,pt,2); //Never mind indices, won't use
+    
+    //Get CosPA
+    lCosPA=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+    
+    //Cleanup
+    delete lNegClone;
+    delete lPosClone;
+    
+    //Return value
+    return lCosPA;
+}
+
+
