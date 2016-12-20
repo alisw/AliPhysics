@@ -28,6 +28,9 @@ using std::endl;
 #include <TLegend.h>
 #include <TLine.h>
 #include <TROOT.h>
+#include <TFile.h>
+
+#include "AliHistogramManager.h"
 
 ClassImp(AliResonanceFits)
 
@@ -37,7 +40,7 @@ TH1* AliResonanceFits::fTempHistBkgnd = 0x0;
 Int_t AliResonanceFits::fNdf = 0;
 Float_t AliResonanceFits::fFitRange[2] = {0.0, 20.0};
 Float_t AliResonanceFits::fExclusionRange[2] = {0.0,0.0};
-Float_t AliResonanceFits::fPtRange[2] = {gkDEFAULT_FLOAT_INIT, gkDEFAULT_FLOAT_INIT};
+Float_t AliResonanceFits::fPtRange[2] = {-1., 999.};
 Bool_t AliResonanceFits::fUse2DMatching = kFALSE;
 
 //_______________________________________________________________________________
@@ -258,6 +261,122 @@ void AliResonanceFits::Process(Int_t bkgMethod, Int_t matchOption, Float_t waPow
   fLSmethod = lsMethod;
   Process();
 }
+
+
+//____________________________________________________________________________________
+void AliResonanceFits::ProcessRunWise(const Char_t* path, const Char_t* cutSetting, Int_t* runList, const Int_t nRuns, const Char_t* saveFilename /* = "jpsiSignal.root" */) {
+   //
+   // run the signal extraction separately on each run
+   //
+   TH1* histBkgSubtracted[nRuns] = {0x0};
+   TH1* histSEOS[nRuns] = {0x0};
+   TH1* histSELSbkg[nRuns] = {0x0};
+   TH1* histMEbkg[nRuns] = {0x0};
+   AliHistogramManager* histMan=new AliHistogramManager();
+
+   TH1* histSEOSTotal = 0x0;
+   TH1* histSELSbkgTotal = 0x0;
+   TH1* histMEbkgTotal = 0x0;
+   
+   for(Int_t iRun = 0; iRun<nRuns; ++iRun) {
+      cout << "++++++++++++++ Signal extraction for run " << runList[iRun] << " ++++++++++++++++++++++++" << endl;
+      
+      histMan->InitFile(Form("%s/000%d/dstAnalysisHistograms.root", path, runList[iRun]),"jpsi2eeHistos");
+      THnF* seos = (THnF*)histMan->GetHistogram(Form("PairSEPM_%s",cutSetting),"PairInvMass");
+      THnF* meos = (THnF*)histMan->GetHistogram(Form("PairMEPM_%s",cutSetting),"PairInvMass");
+      THnF* sepp = (THnF*)histMan->GetHistogram(Form("PairSEPP_%s",cutSetting),"PairInvMass");
+      THnF* semm = (THnF*)histMan->GetHistogram(Form("PairSEMM_%s",cutSetting),"PairInvMass");
+      THnF* mepp = (THnF*)histMan->GetHistogram(Form("PairMEPP_%s",cutSetting),"PairInvMass");
+      THnF* memm = (THnF*)histMan->GetHistogram(Form("PairMEMM_%s",cutSetting),"PairInvMass");
+      fSEOS = seos; fMEOS = meos;
+      fSELSleg1 = sepp; fSELSleg2 = semm;
+      fMELSleg1 = mepp; fMELSleg2 = memm;
+      cout << "fSEOS / fSELSleg1 / fSELSleg2 / fMEOS / fMELSleg1 / fMELSleg2 :: " << fSEOS << " / " << fSELSleg1 << " / " << fSELSleg2 << " / "
+              << fMEOS << " / " << fMELSleg1 << " / " << fMELSleg2 << endl;
+      Process();
+      
+      if(fUse2DMatching) {
+        histBkgSubtracted[iRun] = (TH2D*)fHistBkgSubtracted->Clone(Form("%s_run%d", fHistBkgSubtracted->GetName(), runList[iRun])); 
+        histSEOS[iRun] = (TH2D*)fHistSEOS->Clone(Form("%s_run%d", fHistSEOS->GetName(), runList[iRun])); 
+        if(fBkgMethod==2)
+          histSELSbkg[iRun] = (TH2D*)fHistSELSbkg->Clone(Form("%s_run%d", fHistSELSbkg->GetName(), runList[iRun])); 
+        if(fBkgMethod==1)
+          histMEbkg[iRun] = (TH2D*)fHistMEbkg->Clone(Form("%s_run%d", fHistMEbkg->GetName(), runList[iRun])); 
+        if(iRun==0) {
+           histSEOSTotal = (TH2D*)fHistSEOS->Clone(Form("%s_total", fHistSEOS->GetName())); 
+           histSEOSTotal->SetDirectory(0x0);
+           if(fBkgMethod==2) {
+              histSELSbkgTotal = (TH2D*)fHistSELSbkg->Clone(Form("%s_total", fHistSELSbkg->GetName())); 
+              histSELSbkgTotal->SetDirectory(0x0);
+           }
+           if(fBkgMethod==1) {
+              histMEbkgTotal = (TH2D*)fHistMEbkg->Clone(Form("%s_total", fHistMEbkg->GetName())); 
+              histMEbkgTotal->SetDirectory(0x0);
+           }
+        }
+      }
+      else {
+        histBkgSubtracted[iRun] = (TH2D*)fHistBkgSubtracted->Clone(Form("%s_run%d", fHistBkgSubtracted->GetName(), runList[iRun])); 
+        histSEOS[iRun] = (TH2D*)fHistSEOS->Clone(Form("%s_run%d", fHistSEOS->GetName(), runList[iRun])); 
+        if(fBkgMethod==2)
+          histSELSbkg[iRun] = (TH2D*)fHistSELSbkg->Clone(Form("%s_run%d", fHistSELSbkg->GetName(), runList[iRun])); 
+        if(fBkgMethod==1)
+          histMEbkg[iRun] = (TH2D*)fHistMEbkg->Clone(Form("%s_run%d", fHistMEbkg->GetName(), runList[iRun])); 
+        if(iRun==0) {
+           histSEOSTotal = (TH1D*)fHistSEOS->Clone(Form("%s_total", fHistSEOS->GetName())); 
+           histSEOSTotal->SetDirectory(0x0);
+           if(fBkgMethod==2) {
+              histSELSbkgTotal = (TH1D*)fHistSELSbkg->Clone(Form("%s_total", fHistSELSbkg->GetName())); 
+              histSELSbkgTotal->SetDirectory(0x0);
+           }
+           if(fBkgMethod==1) {
+              histMEbkgTotal = (TH1D*)fHistMEbkg->Clone(Form("%s_total", fHistMEbkg->GetName())); 
+              histMEbkgTotal->SetDirectory(0x0);
+           }
+        }
+      }
+      histBkgSubtracted[iRun]->SetDirectory(0x0);
+      histSEOS[iRun]->SetDirectory(0x0);
+      if(fBkgMethod==2) histSELSbkg[iRun]->SetDirectory(0x0);
+      if(fBkgMethod==1) histMEbkg[iRun]->SetDirectory(0x0);
+      
+      if(iRun!=0) {
+         histSEOSTotal->Add(histSEOS[iRun]);
+         if(fBkgMethod==2) histSELSbkgTotal->Add(histSELSbkg[iRun]);
+         if(fBkgMethod==1) histMEbkgTotal->Add(histMEbkg[iRun]);
+      }
+      
+      delete fHistSEOS; fHistSEOS = 0x0;
+      if(fBkgMethod==2) {delete fHistSELSbkg; fHistSELSbkg = 0x0;}
+      if(fBkgMethod==1) {delete fHistMEbkg; fHistMEbkg = 0x0;}
+      delete fHistBkgSubtracted; fHistBkgSubtracted = 0x0;
+      
+      histMan->CloseFile();
+   }   // end loop over runs  
+   
+   if(fBkgMethod==1) {
+      ExtractSignal(histSEOSTotal, histMEbkgTotal);
+      fHistSEOS = histSEOSTotal;
+      fHistMEbkg = histMEbkgTotal;
+   }
+   if(fBkgMethod==2) {
+      ExtractSignal(histSEOSTotal, histSELSbkgTotal);
+      fHistSEOS = histSEOSTotal;
+      fHistSELSbkg = histSELSbkgTotal;
+   }
+   
+   TFile* saveFile = new TFile(saveFilename, "RECREATE");
+   for(Int_t iRun = 0; iRun<nRuns; ++iRun) {
+      histBkgSubtracted[iRun]->Write();
+      histSEOS[iRun]->Write();
+      if(fBkgMethod==2) histSELSbkg[iRun]->Write();
+      if(fBkgMethod==1) histMEbkg[iRun]->Write();
+   }
+   saveFile->Close();
+   
+   fIsProcessed = kTRUE;
+}
+
 
 //____________________________________________________________________________________
 void AliResonanceFits::Process() {
@@ -792,6 +911,7 @@ void AliResonanceFits::MakeSEOS() {
                                       minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
          else fHistSEOS = (TH1D*)tempProj->Clone(Form("fHistSEOS_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
             minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
+         fHistSEOS->SetDirectory(0x0);
       }
       else {
          fHistSEOS->Add(tempProj);
@@ -1049,6 +1169,7 @@ void AliResonanceFits::MakeLSbkg() {
                fHistSELSbkg = (TH1D*)seLScorr->Clone(Form("fHistSELSbkg_pt%.2f_%.2f_cent%.1f_%.1f_msig%.2f_%.2f_mbkg%.2f_%.2f", 
                                                           minPt, maxPt, minCent, maxCent, fSignalRange[0], fSignalRange[1], fFitRange[0], fFitRange[1]));
             }
+            fHistSELSbkg->SetDirectory(0x0);
 	    fHistSELSbkg->Scale(evWeight/eff);
 	  } 
 	  else
@@ -1061,6 +1182,7 @@ void AliResonanceFits::MakeLSbkg() {
     }  // end loop over pt bins
   }  // end loop over centrality bins
   //fHistSELSbkg->Draw();
+  cout << "MakeSELS  fHistSELSbkg(10)" << fHistSELSbkg->GetBinContent(10) << endl;
 }
 
 //_____________________________________________________________________________________________
@@ -1273,6 +1395,7 @@ void AliResonanceFits::MakeMEbkg() {
 	    else
 	      fHistMEbkg = (TH1D*)meos_proj->Clone(Form("fHistMEbkg%.2f_%.2f_cent%.1f_%.1f", 
 		  				        minPt, maxPt, minCent, maxCent));
+            fHistMEbkg->SetDirectory(0x0);
 	    fHistMEbkg->Scale(evWeight/eff);
 	  }
 	  else
@@ -1284,6 +1407,7 @@ void AliResonanceFits::MakeMEbkg() {
     }  // end loop over pt
   }  // end loop over centrality bins
   //fHistMEbkg->Draw();
+  cout << "MakeMEbkg  fHistMEbkg(10)" << fHistMEbkg->GetBinContent(10) << endl;
 }
 
 //_____________________________________________________________________________________________
