@@ -117,7 +117,7 @@ bool AliEmcalTriggerOfflineSelection::ApplyClusterTrigger(EmcalTriggerClass trgc
   for(auto o : *clusters){
     AliVCluster *c = dynamic_cast<AliVCluster *>(o);
     if(!c->IsEMCAL()) continue;
-    if(c->GetTOF() < -50e-9 || c->GetTOF() > 50e-9) continue;
+    // don't apply a time cut in case of simulations
     double energy = c->GetNonLinCorrEnergy();
     if(fEnergyDefinition == kClusterTransverseEnergy) {
       TLorentzVector vec;
