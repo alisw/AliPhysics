@@ -562,6 +562,11 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
     Printf("ERROR: ESD not available");
     return;
   }
+  
+  //Trigger
+  TString trigger = fESD->GetFiredTriggerClasses();
+  if(!trigger.Contains("CMUP"))return;
+  
   AliESDAD* esdAD = fESD->GetADData();
   if (!esdAD) {
     Printf("ERROR: No ESD AD");
