@@ -1895,12 +1895,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         // miscellaneous pieces of info that may help regarding data quality assessment.
         //-------------
 
-        fTreeCascVarWrongCosPA = -1;
-        if( bachTrackXi->Charge() < 0 )
-            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , pTrackXi, lESDevent );
-        if( bachTrackXi->Charge() > 0 )
-            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , nTrackXi, lESDevent );
-    
         xi->GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
         lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
         lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY   + lXiMomZ*lXiMomZ );
@@ -1985,6 +1979,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             //Attempt zero: Calculate DCA between bachelor and baryon daughter
             fTreeCascVarDCABachToBaryon = lBaryonTrack->GetDCA(lBachelorTrack, bMag, xn, xp);
         }
+        
+        fTreeCascVarWrongCosPA = -1;
+        if( bachTrackXi->Charge() < 0 )
+            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , pTrackXi, lESDevent );
+        if( bachTrackXi->Charge() > 0 )
+            fTreeCascVarWrongCosPA = GetCosPA( bachTrackXi , nTrackXi, lESDevent );
         
         //----------------------------------------
         // Regular MC ASSOCIATION STARTS HERE
