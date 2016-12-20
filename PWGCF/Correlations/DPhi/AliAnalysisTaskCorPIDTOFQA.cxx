@@ -77,14 +77,14 @@ Int_t NEvents = 0;
 ClassImp(AliAnalysisTaskCorPIDTOFQA) // classimp: necessary for root
 
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(), 
-    fAOD(0), fOutputList(0), fPIDResponse(0), fHistPt(0), /* fEMCal_cluster(0), fEMCal_phi(0), fEMCal_eta(0), fEMCal_eta_phi(0), fEMCal_E(0), fEMCal_P(0), fEMCal_E_over_P(0), fEMCal_E_P(0), fEMCal_M(0), pion_pt(0), kaon_pt(0), prot_pt(0), kaon_pion(0), prot_pion(0),*/ cent_ntracks(0), t_minus_tpion(0), m_squared(0), species_num(0), /* tof_lit_eta(0), tof_big_eta(0), TPCrows(0), DCA_XY(0),*/ dtof_dEdx(0)
+    fAOD(0), fOutputList(0), fPIDResponse(0), fHistPt(0), /* fEMCal_cluster(0), fEMCal_phi(0), fEMCal_eta(0), fEMCal_eta_phi(0), fEMCal_E(0), fEMCal_P(0), fEMCal_E_over_P(0), fEMCal_E_P(0), fEMCal_M(0), pion_pt(0), kaon_pt(0), prot_pt(0), kaon_pion(0), prot_pion(0),*/ cent_ntracks(0), t_minus_tpion(0), m_squared_pos_raw(0), m_squared_pos(0), m_squared_neg_raw(0), m_squared_neg(0),/* species_num(0), tof_lit_eta(0), tof_big_eta(0), TPCrows(0), DCA_XY(0),*/ dtof_dEdx(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAnalysisTaskSE(name),
-								     fAOD(0), fOutputList(0), fPIDResponse(0), fHistPt(0), /* fEMCal_cluster(0), fEMCal_phi(0), fEMCal_eta(0), fEMCal_eta_phi(0), fEMCal_E(0), fEMCal_P(0), fEMCal_E_over_P(0), fEMCal_E_P(0), fEMCal_M(0), pion_pt(0), kaon_pt(0), prot_pt(0), kaon_pion(0), prot_pion(0), */ cent_ntracks(0), t_minus_tpion(0), m_squared(0), species_num(0), /*tof_lit_eta(0), tof_big_eta(0), TPCrows(0), DCA_XY(0),*/ dtof_dEdx(0)
+									   fAOD(0), fOutputList(0), fPIDResponse(0), fHistPt(0), /* fEMCal_cluster(0), fEMCal_phi(0), fEMCal_eta(0), fEMCal_eta_phi(0), fEMCal_E(0), fEMCal_P(0), fEMCal_E_over_P(0), fEMCal_E_P(0), fEMCal_M(0), pion_pt(0), kaon_pt(0), prot_pt(0), kaon_pion(0), prot_pion(0), */ cent_ntracks(0), t_minus_tpion(0), m_squared_pos_raw(0), m_squared_pos(0), m_squared_neg_raw(0), m_squared_neg(0), /* species_num(0), tof_lit_eta(0), tof_big_eta(0), TPCrows(0), DCA_XY(0),*/ dtof_dEdx(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -130,10 +130,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fHistPt             = new TH1F("fHistPt",           "Pt()",              100,     0,    10);
     cent_ntracks        = new TH2F("cent_vs_ntracks",   "cent_vs_ntracks",   100,     0,   100,     100,     0,   800);
     t_minus_tpion       = new TH1F("t_minus_tpion",     "t_minus_tpion",     900,  -2.0,   7.0);
-    m_squared           = new TH2F("m_squared",         "m_squared",         320,   0.0,   8.0,     350,  -1.0,   6.0);
-    species_num         = new TH1F("species_num",       "species_num",        14,     0,    14);
+    m_squared_pos       = new TH2F("m_squared_pos",     "m_squared_pos",     320,   0.0,   8.0,     350,  -1.0,   6.0);
+    m_squared_pos_raw   = new TH2F("m_squared_pos_raw", "m_squared_pos_raw", 320,   0.0,   8.0,     350,  -1.0,   6.0);
+    m_squared_neg       = new TH2F("m_squared_neg",     "m_squared_neg",     320,   0.0,   8.0,     350,  -1.0,   6.0);
+    m_squared_neg_raw   = new TH2F("m_squared_neg_raw", "m_squared_neg_raw", 320,   0.0,   8.0,     350,  -1.0,   6.0);
+//  species_num         = new TH1F("species_num",       "species_num",        14,     0,    14);
     beta_vs_p           = new TH2F("beta_vs_p",         "beta_vs_p",         320,   0.0,   8.0,     300,   0.1,   1.1);
-    sigma_vs_p          = new TH2F("sigma_vs_p",        "sigma_vs_p",        320,   0.0,   8.0,     300,  -4.0,   4.0);
+//  sigma_vs_p          = new TH2F("sigma_vs_p",        "sigma_vs_p",        320,   0.0,   8.0,     300,  -6.0,   6.0);
     dtof_dEdx           = new TH2F("dtof_dEdx",         "dtof_dEdx",         600, -30.0,  30.0,     900,  -2.0,   7.0);
     
 
@@ -143,10 +146,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 
     fOutputList->Add(cent_ntracks);                                                                 //// added by Brennan
     fOutputList->Add(t_minus_tpion);                                                                //// added by Brennan
-    fOutputList->Add(m_squared);                                                                    //// added by Brennan
-    fOutputList->Add(species_num);                                                                  //// added by Brennan
+    fOutputList->Add(m_squared_pos);                                                                //// added by Brennan
+    fOutputList->Add(m_squared_pos_raw);                                                            //// added by Brennan
+    fOutputList->Add(m_squared_neg);                                                                //// added by Brennan
+    fOutputList->Add(m_squared_neg_raw);                                                            //// added by Brennan
+//  fOutputList->Add(species_num);                                                                  //// added by Brennan
     fOutputList->Add(beta_vs_p);                                                                    //// added by Brennan
-    fOutputList->Add(sigma_vs_p);                                                                   //// added by Brennan
+//  fOutputList->Add(sigma_vs_p);                                                                   //// added by Brennan
     fOutputList->Add(dtof_dEdx);                                                                    //// added by Brennan
 
     
@@ -246,6 +252,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	float    mass    = track->M();
 	float    pt      = track->Pt();
 	Double_t tpc_mom = track->GetTPCmomentum();
+	Short_t  charge  = track->Charge();
 
 
 	fHistPt->Fill(track->Pt());                                                // plot the pt value of the track in a histogram
@@ -272,23 +279,74 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    Double_t sigma_min = -999.0;
 	    int      id        = 14;
 	    
-	    for(int i=0; i<15; i++)
-	    {
-		AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) i, nsigmaTPC);
+//	    for(int i=0; i<15; i++)
+//	    {
+//		if(i < 5  ||  i > 5)  // exclude kDeuteron
+
+//	    {
+//	        AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,(AliPID::EParticleType) i, nsigmaTPC);
+	    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,(AliPID::EParticleType) 2, nsigmaTPC);
+		    
+		    
 //		AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) i, nsigmaTOF);
 //		AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) i, nsigmaTOF);
 
 //		nsigmaTOF = fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) i);
-		if(fabs(nsigmaTPC) < fabs(sigma_min))
+
+//		    if(fabs(nsigmaTPC) < fabs(sigma_min))
+//		    {
+//			sigma_min = nsigmaTPC;
+//			id = i;
+//		    }
+
+		    
+//		}
+//	    }
+//	    species_num->Fill(id);
+//	    sigma_vs_p->Fill(mom, sigma_min);
+//	    sigma_vs_p->Fill(mom, nsigmaTPC);
+
+	    if(charge > 0)
+	    {
+		m_squared_pos_raw->Fill(mom,m2tof);
+	    }
+	    else if(charge < 0)
+	    {
+		m_squared_neg_raw->Fill(mom,m2tof);
+	    }
+	    
+	    if(fabs(nsigmaTPC) > 2.0)  // is it a pion?
+	    {
+		AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,(AliPID::EParticleType) 3, nsigmaTPC);
+		if(fabs(nsigmaTPC) > 2.0)
 		{
-		    sigma_min = nsigmaTPC;
-		    id = i;
+		    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,(AliPID::EParticleType) 4, nsigmaTPC);
+		    if(fabs(nsigmaTPC) > 2.0)
+		    {
+			AliPIDResponse::EDetPidStatus statusTPC=fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,(AliPID::EParticleType)1,nsigmaTPC);
+			if(fabs(nsigmaTPC) > 2.0)
+			{
+			    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,track,(AliPID::EParticleType) 0, nsigmaTPC);
+			    if(fabs(nsigmaTPC) > 2.0)
+			    {
+//				m_squared_pos->Fill(mom,m2tof);
+				if(charge > 0)
+				{
+				    m_squared_pos->Fill(mom,m2tof);
+				}
+				else if(charge < 0)
+				{
+				    m_squared_neg->Fill(mom,m2tof);
+				}
+			    }
+			}
+		    }
 		}
 	    }
-	    species_num->Fill(id);
-	    sigma_vs_p->Fill(mom, sigma_min);
-	    m_squared->Fill(mom,m2tof);
-	    
+
+
+
+		
 	    if(mom > 2.90  &&  mom < 3.00)
 	    {
 		Double_t pion_dEdx = fPIDResponse->GetTPCResponse().GetExpectedSignal(tpc_mom,AliPID::kPion);
@@ -357,7 +415,7 @@ Double_t AliAnalysisTaskCorPIDTOFQA::tof_minus_tpion(AliAODTrack *track)
     time_of_flight          = time_of_flight * 0.001;                                                       // convert from ps to ns
     Double_t length         = fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion)*1E-3*c; // in meters
     length = length * 100;                                                                                  // convert to cm
-    Double_t pion_time      = fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion);        // doesn't work, returns essentially 0
+    Double_t pion_time      = fPIDResponse->GetTOFResponse().GetExpectedSignal(track,AliPID::kPion);        // // take a close look at this function -BRENNAN SCHAEFER-
     pion_time               = pion_time * 0.001;
     return time_of_flight - pion_time;
 }
