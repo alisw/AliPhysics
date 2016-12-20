@@ -675,14 +675,6 @@ Int_t DoReceive(aliZMQmsg::iterator block, void* socket)
         delete container;
         break;
       }
-      AliMergeable* unpackable = dynamic_cast<AliMergeable*>(object);
-      if (unpackable) {
-        if (fVerbose) printf("unpacking custom AliMergeable container %p\n", unpackable);
-        GetObjects(unpackable, &fListOfObjects);
-        if (fVerbose) printf("deleting custom AliMergeable container %p\n", unpackable);
-        delete unpackable;
-        break;
-      }
     }
 
     if (TCollection* collection = dynamic_cast<TCollection*>(object)) {
