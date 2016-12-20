@@ -761,7 +761,7 @@ private:
   
   //DCA Histograms
   //-> Data and MC
-  TH1F* hDCAxy[2][3][kPtBins];                ///< DCAxy Distribution in Pt bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
+  TH1F* hDCAxy[2][3][kPtBins][kEvtMultBins];  ///< DCAxy Distribution in Pt bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
   //-> MC only
   TH1F* hDCAxyPrimMC[2][3][kPtBins];          ///< DCAxy Distribution in Pt bins for Primary reconstructed tracks identified with MC Truth
   TH1F* hDCAxySecStMC[2][3][kPtBins];         ///< DCAxy Distribution in Pt bins for Secondary from Strangeness reconstructed tracks identified with MC Truth
@@ -771,7 +771,7 @@ private:
   AliAnalysisTaskTOFSpectra (const AliAnalysisTaskTOFSpectra&);              //! Not implemented
   AliAnalysisTaskTOFSpectra & operator=(const AliAnalysisTaskTOFSpectra&);   //! Not implemented
   
-  ClassDef(AliAnalysisTaskTOFSpectra, 4);
+  ClassDef(AliAnalysisTaskTOFSpectra, 5);
 };
 
 #endif
