@@ -16,7 +16,7 @@ class AliTOFcalib;
 
 class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
  public:
-  
+
   enum ETrackCutSetTOFqa_t { kRun1Cuts = 0,
 			   kStd2010,
 			   kStd2010crossedRows,
@@ -30,11 +30,11 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFqaID(const AliAnalysisTaskTOFqaID& copy);
   AliAnalysisTaskTOFqaID& operator= (const AliAnalysisTaskTOFqaID& copy);
   virtual ~AliAnalysisTaskTOFqaID();
-  
+
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
-    
+
   Int_t   GetStripIndex(const Int_t * in);
   void    SetTrackFilter(AliAnalysisFilter *filter) { fTrackFilter = filter; return; };
   void    SetMinPtCut(Float_t minpt) { fMatchingMomCut = minpt; return; }
@@ -61,7 +61,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   void    FillTofBaseHisto(AliESDtrack * track, Int_t charge, TString suffix);
   void    FillMatchedTrkHisto(Int_t charge, TString suffix);
   void    FillPrimaryTrkHisto(Int_t charge, TString suffix);
-  void    FillPidHisto(AliESDtrack * track,Int_t charge, TString suffix);
+  void    FillPidHisto(AliESDtrack * track, Int_t charge, TString suffix);
   void    FillStartTimeHisto(TString suffix);
   void    FillTrdHisto(AliESDtrack * track, Int_t charge);
   void    FillStartTimeMaskHisto(TString suffix);
@@ -70,13 +70,13 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Bool_t  ComputeTimeZeroByTOF1GeV();
   Bool_t  SelectMCspecies(AliMCEvent * ev, AliESDtrack * track);
   Bool_t  ComputeMatchingEfficiency(TList* list, TString variable);
-  Bool_t  IsTPCTOFMatched(AliESDtrack * track);
+  Bool_t  IsTPCTOFMatched(AliESDtrack * track, Bool_t checkMatchLabel);
   Bool_t  IsInTRD(AliESDtrack * track);
   Bool_t  IsEventSelected(AliESDEvent * event);
   void    LoadChannelMapsFromOCDB();
   Bool_t  IsChannelGood(Int_t channel);
 
- private: 
+ private:
   Int_t               fRunNumber; //run number
   AliESDEvent *       fESD;    //ESD object
   AliMCEvent *        fMCevent;    //MC event
@@ -99,10 +99,10 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Float_t             fExpTimeSmallRangeMin, fExpTimeSmallRangeMax; //reduced range of t-texp histogram
   Int_t               fnExpTimeBins;
   Int_t               fnExpTimeSmallBins;
-  
+
   Double_t            fMyTimeZeroTOF, fMyTimeZeroTOFsigma; //timeZero by TOF recomputed
   Int_t               fMyTimeZeroTOFtracks; // number of tracks used to recompute TOF_T0
-  Bool_t              fIsMC; //flag for MC 
+  Bool_t              fIsMC; //flag for MC
   Int_t               fSelectedPdg; //pdg code of the selected specie (for MC only)
   Double_t            fP; //momentum
   Double_t            fPt; //transverse momentum
@@ -110,9 +110,10 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Double_t            fPhi; //phi at vertex
   Double_t            fTPCOuterPhi; //phi at outer tpc radius
   Double_t            fL; //integrated track lenght
-  Double_t            fMatchingMomCut;//minimum pT cut for matching eff vs eta, phi 
+  Double_t            fMatchingMomCut;//minimum pT cut for matching eff vs eta, phi
   Double_t            fMatchingEtaCut;//simmetric eta cut for matching eff vs pt, eta, phi
   Double_t            fTof;
+  Short_t             fMCTOFMatch; //status of matching in MC
   TString             fOCDBLocation;       // ocdb path
   AliTOFChannelOnlineStatusArray * fChannelArray; //array of channel status
   AliTOFcalib *       fCalib; //TOF calibration object
@@ -123,10 +124,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   TList *             fHlistTRD;  //list of general histos for positive tracks
   TList *             fHlistTrigger;  //list of general histos for TOF trg infos
 
-  ClassDef(AliAnalysisTaskTOFqaID, 4); // example of analysis
+  ClassDef(AliAnalysisTaskTOFqaID, 5); // example of analysis
 };
 
 #endif
-
-
-
