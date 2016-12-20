@@ -1,4 +1,4 @@
-AliGenerator* AddMCGenEPOS_3()
+AliGenerator* AddMCGenEPOS_3(double energy = 7000.0)
 {
 
   // prepare environment
@@ -20,7 +20,7 @@ AliGenerator* AddMCGenEPOS_3()
 
 
    
-   TString cmd = Form("$CRMC_BASEDIR/bin/crmc -t -c crmc.local.param -f crmceventfifo -o hepmc -p%d -P-%d -n201 -m0 crmceventfifo", (Int_t)7000.0/2, (Int_t)7.000/2);
+   TString cmd = Form("$CRMC_BASEDIR/bin/crmc -t -c crmc.local.param -f crmceventfifo -o hepmc -p%d -P-%d -n201 -m0 crmceventfifo", (Int_t)energy/2, (Int_t)energy/2);
    printf("%s\n", cmd.Data());
    printf("----- CRMC PARAM -----\n");
    gROOT->ProcessLine(".! cp crmc.param crmc.local.param");
