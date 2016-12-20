@@ -70,23 +70,22 @@ ClassImp(AliPerformanceDEdx)
 Bool_t AliPerformanceDEdx::fgMergeTHnSparse = kFALSE;
 Bool_t AliPerformanceDEdx::fgUseMergeTHnSparse = kFALSE;
 
-TH1D *h_tpc_dedx_mips_0 = 0;
-TH1D *h_tpc_dedx_mipsele_0 = 0;
-
-TH2D *h_tpc_dedx_mips_c_0_5 = 0;
-TH2D *h_tpc_dedx_mips_a_0_5 = 0;
-TH2D *h_tpc_dedx_mips_c_0_1 = 0;
-TH2D *h_tpc_dedx_mips_a_0_1 = 0;
-
 
 //_____________________________________________________________________________
 AliPerformanceDEdx::AliPerformanceDEdx(TRootIoCtor* b):
  AliPerformanceObject(b),
   // dEdx 
   fDeDxHisto(0),
-  fFolderObj(0),
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+  fFolderObj(0),
+  h_tpc_dedx_mips_0(NULL),
+  h_tpc_dedx_mipsele_0(0),
+  h_tpc_dedx_mips_c_0_5(0),
+  h_tpc_dedx_mips_a_0_5(0),
+  h_tpc_dedx_mips_c_0_1(0),
+  h_tpc_dedx_mips_a_0_1(0)
+
 {
   // io constructor
 }
@@ -97,10 +96,14 @@ AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, 
 
   // dEdx 
   fDeDxHisto(0),
-  fFolderObj(0),
-  
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+  fFolderObj(0),
+  h_tpc_dedx_mipsele_0(0),
+  h_tpc_dedx_mips_c_0_5(0),
+  h_tpc_dedx_mips_a_0_5(0),
+  h_tpc_dedx_mips_c_0_1(0),
+  h_tpc_dedx_mips_a_0_1(0)
 {
   // named constructor
 
@@ -115,15 +118,11 @@ AliPerformanceDEdx::AliPerformanceDEdx(const Char_t* name, const Char_t* title, 
 AliPerformanceDEdx::~AliPerformanceDEdx()
 {
   // destructor
-  if(fDeDxHisto)  delete fDeDxHisto; fDeDxHisto=0;
-  if(h_tpc_dedx_mips_0) delete h_tpc_dedx_mips_0; h_tpc_dedx_mips_0 = 0;
-  if(h_tpc_dedx_mipsele_0) delete h_tpc_dedx_mipsele_0; h_tpc_dedx_mipsele_0 = 0;
-  if(h_tpc_dedx_mips_c_0_5) delete h_tpc_dedx_mips_c_0_5; h_tpc_dedx_mips_c_0_5 = 0;
-  if(h_tpc_dedx_mips_a_0_5) delete h_tpc_dedx_mips_a_0_5; h_tpc_dedx_mips_a_0_5 = 0;
-  if(h_tpc_dedx_mips_c_0_1) delete h_tpc_dedx_mips_c_0_1; h_tpc_dedx_mips_c_0_1 = 0;
-  if(h_tpc_dedx_mips_a_0_1) delete h_tpc_dedx_mips_a_0_1; h_tpc_dedx_mips_a_0_1 = 0;
+  delete fDeDxHisto;
+  delete fAnalysisFolder;
 
-  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+  if (fFolderObj) { fFolderObj->Delete(); }
+  delete fFolderObj;
 }
 
 //_____________________________________________________________________________
