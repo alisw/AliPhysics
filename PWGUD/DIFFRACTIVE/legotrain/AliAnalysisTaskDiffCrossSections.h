@@ -6,7 +6,6 @@ class TH1;
 class TTree;
 class TList;
 
-class AliESDHeader;
 class AliESDAD;
 class AliESDVZERO;
 class AliESDFMD;
@@ -41,7 +40,6 @@ public:
   void SetIsMC(Bool_t b=kTRUE) { fIsMC = b; }
   void SetMCType(TString s) { fMCType = s; }
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
-  void SetUseSDFromGenerator(Bool_t b) { fUseSDFromGenerator = b; }
 
   void SetDetectorsUsed(TString det) { fDetectorsUsed = det; }
   void SetUseBranch(TString b)       { fUseBranch = b; }
@@ -67,12 +65,14 @@ public:
       , fL0Inputs(0)
       , fL1Inputs(0)
       , fRunNumber(0)
+      , fEventNumberInFile(0)
       , fnTrklet(0)
-      , fOrbitID(0) {
+      , fOrbitID(0)
+      , fInputFileName("") {
       fnSPDClusters[0] = fnSPDClusters[1] = 0;
     }
 
-    void Fill(const AliESDEvent *);
+    void Fill(const AliESDEvent *, const char*);
 
     ULong64_t fClassMask;
     ULong64_t fClassMaskNext50;
@@ -82,11 +82,12 @@ public:
     UInt_t    fL0Inputs;
     UInt_t    fL1Inputs;
     UInt_t    fnSPDClusters[2]; // 0 -> inner layer, 1 -> outer layer
+    Int_t     fEventNumberInFile;
     Int_t     fRunNumber;
     UShort_t  fnTrklet;
     UShort_t  fL2Inputs;
     UShort_t  fOrbitID;
-
+    TString   fInputFileName;
   } ;
 
   struct ADV0 {
@@ -111,8 +112,8 @@ public:
 
     Float_t    fTime[2];            //
     Float_t    fCharge[2];          //
-    Char_t     fBB[2];              //
-    Char_t     fBG[2];              //
+    Short_t    fBB[2];              //
+    Short_t    fBG[2];              //
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
   } ;
@@ -159,7 +160,7 @@ public:
     UInt_t    fPhysSelBits;
     Bool_t    fIsIncompleteDAQ;
     Bool_t    fIsSPDClusterVsTrackletBG;
-    ClassDef(TreeData, 2);
+    ClassDef(TreeData, 3);
   } ;
 
   class MCInfo : public TObject {
@@ -175,16 +176,24 @@ public:
     };
 
     MCInfo()
-      : TObject() {}
+      : TObject()
+      , fEventType(kInvalid)
+      , fEventTypeGen(kInvalid)
+    {
+      for (Int_t i=0; i<2; ++i)
+	fDiffMass[i] = fDiffMassGen[i] = -1.0;
+    }
     virtual ~MCInfo() {}
 
-    void   Fill(const AliMCEvent *, TString, Bool_t);
+    void   Fill(const AliMCEvent *, TString);
     Bool_t FindSingleDiffraction(AliStack *stack, TString mcType,
 				 Int_t &side, Double_t &mass) const;
 
-    Float_t fEventType;    //[-3,5,3]
-    Float_t fDiffMass[2];  // 0 -> L, 1 -> R
-    ClassDef(MCInfo, 1);
+    Float_t  fEventType;      //[-3,5,3]
+    Float_t  fEventTypeGen;   //[-3,5,3]
+    Double_t fDiffMass[2];    // 0 -> L, 1 -> R
+    Double_t fDiffMassGen[2]; // 0 -> L, 1 -> R
+    ClassDef(MCInfo, 2);
   } ;
 
 protected:
@@ -200,7 +209,6 @@ private:
   TString          fTriggerSelection;    //
   TString          fDetectorsUsed;       //
   TString          fUseBranch;           //
-  Bool_t           fUseSDFromGenerator;  //
   Float_t          fFMDMultLowCut;       //
 
   AliTriggerAnalysis fTriggerAnalysis;   //!
