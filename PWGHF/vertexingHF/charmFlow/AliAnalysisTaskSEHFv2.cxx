@@ -697,7 +697,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
     }
     else if(fDecChannel == 2) {
-      if(!vHF->FillRecoCand(aod,(AliAODRecoCascadeHF*)d))continue;
+      if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue; 
     }
       
       
