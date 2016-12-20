@@ -45,8 +45,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetHadronMatchingRadius(Double_t val) { fHadronMatchingRadius = val; }
   void                        SetInitialCollisionMatchingRadius(Double_t val)     { fInitialCollisionMatchingRadius = val; }
   void                        SetTruthParticleArrayName(const char* val)     { fTruthParticleArrayName = val; }
-  void                        SetSecondaryVertexMaxChi2(Int_t val)     { fSecondaryVertexMaxChi2 = val; }
-  void                        SetSecondaryVertexMaxDispersion(Int_t val)  { fSecondaryVertexMaxDispersion = val; }
+  void                        SetSecondaryVertexMaxChi2(Double_t val   )     { fSecondaryVertexMaxChi2 = val; }
+  void                        SetSecondaryVertexMaxDispersion(Double_t val)  { fSecondaryVertexMaxDispersion = val; }
   void                        SetAddPIDSignal(Bool_t val)  { fAddPIDSignal = val; }
 
   void                        SetExtractionCutListPIDHM(const char* val)
