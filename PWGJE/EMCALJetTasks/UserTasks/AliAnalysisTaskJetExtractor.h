@@ -7,6 +7,7 @@
 class THn;
 class AliAODVertex;
 class AliBasicJet;
+class AliBasicJetConstituent;
 
 //###############################################################################################################################################3
 
@@ -46,6 +47,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetTruthParticleArrayName(const char* val)     { fTruthParticleArrayName = val; }
   void                        SetSecondaryVertexMaxChi2(Int_t val)     { fSecondaryVertexMaxChi2 = val; }
   void                        SetSecondaryVertexMaxDispersion(Int_t val)  { fSecondaryVertexMaxDispersion = val; }
+  void                        SetAddPIDSignal(Bool_t val)  { fAddPIDSignal = val; }
 
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
@@ -93,9 +95,9 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   void                        CalculateJetProperties(AliEmcalJet* jet);
   void                        CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
-  Int_t                       GetTrackPID(AliVParticle* part);
   Double_t                    GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track);
   void                        AddSecondaryVertices(const AliVVertex* vtx, AliEmcalJet* jet, AliBasicJet& basicJet);
+  void                        AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent);
 
 
   // ################## BASIC EVENT VARIABLES
@@ -134,6 +136,8 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   TString                     fTruthParticleArrayName;                  ///< Array name of MC particles in event (mcparticles)
   Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
   Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
+  Bool_t                      fAddPIDSignal;                            ///< Add pid signal to each jet constituent
+
 
   // ######### HISTOGRAM FUNCTIONS
   void                        FillHistogram(const char * key, Double_t x);
@@ -158,6 +162,44 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 //###############################################################################################################################################3
 
 /**
+ * \class AliBasicPID
+ * \brief Simple class containing available (raw) information from PID detectors
+ *
+ * This class is used to save PID information for each constituents in a tree
+ *
+ * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
+ * \date Dec 20, 2016
+ */
+// 
+class AliBasicPID
+{
+  public:
+    AliBasicPID() : fSignalITS(0), fSignalTPC(0), fSignalTOF(0), fSignalTRD(0), fTruthPID(9), fRecoPID(9)  {}
+    AliBasicPID(Float_t its, Float_t tpc, Float_t tof, Float_t trd, Short_t truthPID, Short_t recoPID)
+    : fSignalITS(its), fSignalTPC(tpc), fSignalTOF(tof), fSignalTRD(trd), fTruthPID(truthPID), fRecoPID(recoPID)
+    {
+    }
+    ~AliBasicPID();
+
+    Float_t SignalITS()        { return fSignalITS; }
+    Float_t SignalTPC()        { return fSignalTPC; }
+    Float_t SignalTOF()        { return fSignalTOF; }
+    Float_t SignalTRD()        { return fSignalTRD; }
+    Short_t TruthPID()         { return fTruthPID; }
+    Short_t RecoPID()          { return fRecoPID; }
+
+  private:
+    Float_t fSignalITS;      ///< ITS PID signal
+    Float_t fSignalTPC;      ///< TPC PID signal
+    Float_t fSignalTOF;      ///< TOF PID signal
+    Float_t fSignalTRD;      ///< TRD PID signal
+    Short_t fTruthPID;       ///< truth PID
+    Short_t fRecoPID;        ///< reco PID
+};
+
+//###############################################################################################################################################3
+
+/**
  * \class AliBasicJetConstituent
  * \brief Simple class containing basic information for a constituent
  *
@@ -170,9 +212,9 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 class AliBasicJetConstituent
 {
   public:
-    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0), fPID(0), fVx(0), fVy(0), fVz(0), fImpactParameter(0) {}
-    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t pid, Float_t vx, Float_t vy, Float_t vz, Float_t z)
-    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fPID(pid), fVx(vx), fVy(vy), fVz(vz), fImpactParameter(z)
+    AliBasicJetConstituent() : fEta(0), fPhi(0), fpT(0), fCharge(0), fVx(0), fVy(0), fVz(0), fImpactParameter(0), fPID(0) {}
+    AliBasicJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t vx, Float_t vy, Float_t vz, Float_t z)
+    : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge), fVx(vx), fVy(vy), fVz(vz), fImpactParameter(z), fPID(0)
     {
     }
     ~AliBasicJetConstituent();
@@ -181,26 +223,33 @@ class AliBasicJetConstituent
     Float_t Phi()       { return fPhi; }
     Float_t Eta()       { return fEta; }
     Short_t Charge()    { return fCharge; }
-    Short_t PID()       { return fPID; }
 
     Float_t Vx()        { return fVx; }
     Float_t Vy()        { return fVy; }
     Float_t Vz()        { return fVz; }
 
     Float_t ImpactParameter() { return fImpactParameter; }
+    AliBasicPID* PID()  { return &fPID.at(0); }
+
+    void SetPIDSignal(Float_t its, Float_t tpc, Float_t tof, Float_t trd, Short_t truthPID, Short_t recoPID)
+    { 
+      if(fPID.size()) fPID.clear();
+      AliBasicPID* newPID = new AliBasicPID(its,tpc,tof,trd,truthPID,recoPID);
+      fPID.push_back(*newPID);
+    }
 
   private:
     Float_t fEta;      ///< eta
     Float_t fPhi;      ///< phi
     Float_t fpT;       ///< pT
     Short_t fCharge;   ///< charge
-    Short_t fPID;      ///< most probably PID code/PDG code
 
     Float_t fVx;       ///< production vertex X
     Float_t fVy;       ///< production vertex Y
     Float_t fVz;       ///< production vertex Z
 
     Float_t fImpactParameter; ///< impact parameter z
+    std::vector<AliBasicPID> fPID; ///< PID 
 };
 
 //###############################################################################################################################################3
@@ -284,9 +333,9 @@ class AliBasicJet
 
     // Basic constituent functions
     AliBasicJetConstituent*   GetJetConstituent(Int_t index) { return &fConstituents[index]; }
-    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Short_t pid=0, Float_t vx=0, Float_t vy=0, Float_t vz=0, Float_t z=0)
+    void                      AddJetConstituent(Float_t eta, Float_t phi, Float_t pt, Short_t charge, Float_t vx=0, Float_t vy=0, Float_t vz=0, Float_t z=0)
     {
-      AliBasicJetConstituent c (eta, phi, pt, charge, pid, vx, vy, vz, z);
+      AliBasicJetConstituent c (eta, phi, pt, charge, vx, vy, vz, z);
       AddJetConstituent(&c);
     }
     void                      AddJetConstituent(AliBasicJetConstituent* constituent) {fConstituents.push_back(*constituent); }

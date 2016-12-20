@@ -34,6 +34,7 @@
 #include "TObjArray.h"
 #include "AliESDVertex.h"
 #include "AliAODVertex.h"
+#include "AliAODPid.h"
 
 #include "AliVTrack.h"
 #include "AliVHeader.h"
@@ -52,6 +53,12 @@
 
 //________________________________________________________________________
 AliBasicJet::~AliBasicJet() 
+{
+// dummy destructor
+}
+
+//________________________________________________________________________
+AliBasicPID::~AliBasicPID() 
 {
 // dummy destructor
 }
@@ -101,7 +108,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fInitialCollisionMatchingRadius(0.3),
   fTruthParticleArrayName("mcparticles"),
   fSecondaryVertexMaxChi2(1e10),
-  fSecondaryVertexMaxDispersion(0.02)
+  fSecondaryVertexMaxDispersion(0.02),
+  fAddPIDSignal(kFALSE)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -138,7 +146,8 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fInitialCollisionMatchingRadius(0.3),
   fTruthParticleArrayName("mcparticles"),
   fSecondaryVertexMaxChi2(1e10),
-  fSecondaryVertexMaxDispersion(0.02)
+  fSecondaryVertexMaxDispersion(0.02),
+  fAddPIDSignal(kFALSE)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -167,14 +176,18 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 
   //if(fTracksCont) fTracksCont->SetClassName("AliVTrack");
 
-  // ### Add control histograms (already some create in base task)
+  // ### Add control histograms (already some created in base task)
   AddHistogram2D<TH2D>("hJetCount", "Number of jets in acceptance vs. centrality", "COLZ", 100, 0., 100., 100, 0, 100, "N Jets","Centrality", "dN^{Events}/dN^{Jets}");
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "COLZ", 500, 0., 5000., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
   AddHistogram2D<TH2D>("hBackgroundPt", "Background p_{T} distribution", "", 150, 0., 150., 100, 0, 100, "Background p_{T} (GeV/c)", "Centrality", "dN^{Events}/dp_{T}");
+
   AddHistogram2D<TH2D>("hJetPtRaw", "Jets p_{T} distribution (raw)", "COLZ", 300, 0., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hJetPhiEta", "Jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
   AddHistogram2D<TH2D>("hJetArea", "Jet area", "COLZ", 200, 0., 2., 100, 0, 100, "Jet A", "Centrality", "dN^{Jets}/dA");
+
+  AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
+  AddHistogram2D<TH2D>("hConstituentPhiEta", "Jet constituent relative #phi/#eta distribution", "COLZ", 120, -0.6, 0.6, 120, -0.6, 0.6, "#Delta#phi", "#Delta#eta", "dN^{Const}/d#phi d#eta");
 
   TH1* tmpHisto = AddHistogram1D<TH1D>("hJetAcceptance", "Accepted jets", "", 5, 0, 5, "stage","N^{jets}/cut");
   tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
@@ -284,24 +297,11 @@ void AliAnalysisTaskJetExtractor::AddJetToTree(AliEmcalJet* jet)
     AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
     if(!particle) continue;
 
-    /*
-    // ############## DEBUG: Show prod. vertices
-    TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
-    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
-    {
-      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(i));
-      if(!part) continue;
-      if(part->GetLabel() != particle->GetLabel())
-        continue;
-    }
-    // ############## DEBUG: Show prod. vertices
-    */
-
     // Secondary vertex analysis
-    Double_t z = GetTrackImpactParameter(myVertex, dynamic_cast<AliAODTrack*>(particle));
+    Double_t z     = GetTrackImpactParameter(myVertex, dynamic_cast<AliAODTrack*>(particle));
 
-    Int_t constid = GetTrackPID(particle);
-    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid, particle->Xv(), particle->Yv(), particle->Zv(), z);
+    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), particle->Xv(), particle->Yv(), particle->Zv(), z);
+    AddPIDInformation(particle, *basicJet.GetJetConstituent(basicJet.GetNumbersOfConstituents()-1));
   }
 
   // Add secondary vertices to jet (from AOD.VertexingHF)
@@ -331,6 +331,22 @@ void AliAnalysisTaskJetExtractor::FillJetControlHistograms(AliEmcalJet* jet)
   FillHistogram("hJetPt", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), fCent);
   FillHistogram("hJetPhiEta", jet->Phi(), jet->Eta());
   FillHistogram("hJetArea", jet->Area(), fCent);
+
+  // ### Jet constituent plots
+  for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
+  {
+    AliVParticle* jetConst = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
+    if(!jetConst) continue;
+
+    // Constituent eta/phi (relative to jet)
+    Double_t deltaEta = jet->Eta() - jetConst->Eta();
+    Double_t deltaPhi = TMath::Min(TMath::Abs(jet->Phi() - jetConst->Phi()), TMath::TwoPi() - TMath::Abs(jet->Phi() - jetConst->Phi()));
+    if(!((jet->Phi() - jetConst->Phi() < 0) && (jet->Phi() - jetConst->Phi() <= TMath::Pi())))
+    deltaPhi = -deltaPhi;
+
+    FillHistogram("hConstituentPt", jetConst->Pt(), fCent);
+    FillHistogram("hConstituentPhiEta", deltaPhi, deltaEta);
+  }
 }
 
 //________________________________________________________________________
@@ -368,13 +384,10 @@ void AliAnalysisTaskJetExtractor::AddSecondaryVertices(const AliVVertex* vtx, Al
   vtx->GetCovarianceMatrix(&covMatrix[0]);
   AliESDVertex* esdVtx = new AliESDVertex(&vtxPos[0], &covMatrix[0], vtx->GetChi2(), vtx->GetNContributors());
 
-  // Load HF vertex branch from AOD event
+  // Load HF vertex branch from AOD event, if possible
   TClonesArray* secVertexArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("VerticesHF"));
   if(!secVertexArr)
-  {
-    AliError("VerticesHF branch not found!");
     return;
-  }
 
   // Loop over all potential secondary vertices
   for(Int_t i=0; i<secVertexArr->GetEntriesFast(); i++)
@@ -396,7 +409,7 @@ void AliAnalysisTaskJetExtractor::AddSecondaryVertices(const AliVVertex* vtx, Al
     {
       if(!vtx->GetDaughter(j))
         continue;
-      Double_t impact = GetTrackImpactParameter(vtx, static_cast<AliAODTrack*>(vtx->GetDaughter(j)));
+      Double_t impact = GetTrackImpactParameter(vtx, dynamic_cast<AliAODTrack*>(vtx->GetDaughter(j)));
       dispersion += impact*impact;
     }
     dispersion = TMath::Sqrt(dispersion);
@@ -529,28 +542,61 @@ void AliAnalysisTaskJetExtractor::CalculateJetType(AliEmcalJet* jet, Int_t& type
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskJetExtractor::GetTrackPID(AliVParticle* particle)
+void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent)
 {
-  AliAODTrack*  aodtrack = static_cast<AliAODTrack*>(particle);
-  Int_t constid = 9; // 9 means unknown
+  // On demand and if we have AODs, add the particle PID signal object
+  // Add the truth values if available
+  AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(particle);
 
-  if(fPythiaInfo || MCEvent()) // in case of PYTHIA or MC, use PDG codes for PID
+  if(!fAddPIDSignal)
+    return;
+  if(!aodtrack)
+    return;
+
+  // Get AOD value from reco
+  Int_t recoPID  = aodtrack->GetMostProbablePID();
+  Int_t truthPID = 9;
+
+  // Get truth values if we are on MC
+  TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
+  if(fTruthParticleArray)
   {
-    // Use same convention as PID in AODs
-    if(TMath::Abs(particle->PdgCode()) == 2212) // proton
-      constid = 4;
-    else if (TMath::Abs(particle->PdgCode()) == 211) // pion
-      constid = 2;
-    else if (TMath::Abs(particle->PdgCode()) == 321) // kaon
-      constid = 3;
-    else if (TMath::Abs(particle->PdgCode()) == 11) // electron
-      constid = 0;
-    else if (TMath::Abs(particle->PdgCode()) == 13) // muon
-      constid = 1;
+    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
+    {
+      AliAODMCParticle* mcParticle = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(i));
+      if(!mcParticle) continue;
+
+      if (mcParticle->GetLabel() == particle->GetLabel())
+      {
+        // Use same convention as PID in AODs
+        if(TMath::Abs(mcParticle->PdgCode()) == 2212) // proton
+          truthPID = 4;
+        else if (TMath::Abs(mcParticle->PdgCode()) == 211) // pion
+          truthPID = 2;
+        else if (TMath::Abs(mcParticle->PdgCode()) == 321) // kaon
+          truthPID = 3;
+        else if (TMath::Abs(mcParticle->PdgCode()) == 11) // electron
+          truthPID = 0;
+        else if (TMath::Abs(mcParticle->PdgCode()) == 13) // muon
+          truthPID = 1;
+        else if (TMath::Abs(mcParticle->PdgCode()) == 700201) // deuteron
+          truthPID = 5;
+        else if (TMath::Abs(mcParticle->PdgCode()) == 700301) // triton
+          truthPID = 6;
+        else if (TMath::Abs(mcParticle->PdgCode()) == 700302) // He3
+          truthPID = 7;
+        else if (TMath::Abs(mcParticle->PdgCode()) == 700202) // alpha
+          truthPID = 8;
+        else
+          truthPID = 9;
+
+        break;
+      }
+    }
   }
-  else if (aodtrack) // data
-    constid = aodtrack->GetMostProbablePID();
-  return constid;
+
+  AliAODPid* pidObj = aodtrack->GetDetPid();
+  constituent.SetPIDSignal(pidObj->GetITSsignal(), pidObj->GetTPCsignal(), pidObj->GetTOFsignal(), pidObj->GetTRDsignal(), truthPID, recoPID);
 }
 
 //________________________________________________________________________

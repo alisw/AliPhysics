@@ -127,13 +127,8 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        SetNumberOfCentralityBins(Int_t val)   { fNumberOfCentralityBins = val; }
   void                        SetJetParticleArrayName(const char* name)   { fJetParticleArrayName = name; }
   void                        SetTrackParticleArrayName(const char* name) { fTrackParticleArrayName = name; }
-  void                        SetHadronMatchingRadius(Double_t val)   { fHadronMatchingRadius = val; }
 
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
-  void                        SetPythiaExtractionMode(Int_t mode) {fPythiaExtractionMode = mode;}
-  void                        SetPythiaExtractionUseHadronMatching(Bool_t val) { fPythiaExtractionUseHadronMatching = val; }
-
-  void                        ActivateJetExtraction(Double_t percentage, Double_t minPt, Double_t maxPt) {fExtractionPercentage = percentage; fExtractionMinPt = minPt; fExtractionMaxPt = maxPt;}
   void                        ActivateEventExtraction(Double_t percentage, Double_t minJetPt, Double_t maxJetPt) {fEventExtractionPercentage = percentage; fEventExtractionMinJetPt = minJetPt; fEventExtractionMaxJetPt = maxJetPt;}
 
  protected:
@@ -142,7 +137,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   // ######### META FUNCTIONS
   void                        BinLogAxis(const THn *h, Int_t axisNumber);
-  void                        AddJetToTree(AliEmcalJet* jet);
   void                        AddEventToTree();
   void                        AddJetToOutputArray(AliEmcalJet* jet, Int_t arrayIndex, Int_t& jetsAlreadyInArray);
   void                        AddTrackToOutputArray(AliVTrack* track);
@@ -152,16 +146,10 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   AliJetContainer            *fJetsCont;                                //!<! Jets
   AliTrackContainer          *fTracksCont;                              //!<! Tracks
-  TTree*                      fJetsTree;                                //!<! Jets that will be saved to a tree (optionally)
-  void*                       fJetsTreeBuffer;                          //!<!  buffer for one jet (that will be saved to the tree)
-  Double_t                    fExtractionPercentage;                    ///< percentage that is recorded
-  Double_t                    fExtractionMinPt;                         ///< minimum pt of recorded jets
-  Double_t                    fExtractionMaxPt;                         ///< maximum pt of recorded jets
   Double_t                    fEventExtractionPercentage;               ///< percentage of events that is recorded
   Double_t                    fEventExtractionMinJetPt;                 ///< minimum jet pt of recorded events
   Double_t                    fEventExtractionMaxJetPt;                 ///< maximum jet pt of recorded events
   
-  Double_t                    fHadronMatchingRadius;                    ///< Radius used in the hadron matching (MC jet extraction)
   Int_t                       fConstPtFilterBit;                        ///< For const pt plot, filter bit
   Int_t                       fNumberOfCentralityBins;                  ///< Number of centrality bins
   std::vector<TClonesArray*>  fJetsOutput;                              //!<! vector of arrays of basic correlation particles attached to the event (jets)
@@ -188,8 +176,6 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   // Criteria for the selection of jets that are passed to the correlation task
   Int_t                       fJetOutputMode;                           ///< mode which jets are written to array (0: all accepted, 1: leading,  2: subleading, 3: leading+subleading)
-  Int_t                       fPythiaExtractionMode;                    ///< Mode which PYTHIA-jets to extract for fJetOutputMode==6: 0: all, 1: quark-jets, 2: gluon jets
-  Bool_t                      fPythiaExtractionUseHadronMatching;       ///< Use hadron matching to select/label jets (works for b,c,s and others)
 
   // Event properties
   AliEmcalJet*                fLeadingJet;                              //!<!  leading jet (calculated event-by-event)
@@ -230,7 +216,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskChargedJetsHadronCF &operator=(const AliAnalysisTaskChargedJetsHadronCF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 10) // Charged jet+h analysis support task
+  ClassDef(AliAnalysisTaskChargedJetsHadronCF, 11) // Charged jet+h analysis support task
   /// \endcond
 };
 
