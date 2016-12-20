@@ -262,9 +262,9 @@ void AliResonanceFits::Process(Int_t bkgMethod, Int_t matchOption, Float_t waPow
   Process();
 }
 
-
+/*
 //____________________________________________________________________________________
-void AliResonanceFits::ProcessRunWise(const Char_t* path, const Char_t* cutSetting, Int_t* runList, const Int_t nRuns, const Char_t* saveFilename /* = "jpsiSignal.root" */) {
+void AliResonanceFits::ProcessRunWise(const Char_t* path, const Char_t* cutSetting, Int_t* runList, const Int_t nRuns, const Char_t* saveFilename  = "jpsiSignal.root") {
    //
    // run the signal extraction separately on each run
    //
@@ -376,7 +376,7 @@ void AliResonanceFits::ProcessRunWise(const Char_t* path, const Char_t* cutSetti
    
    fIsProcessed = kTRUE;
 }
-
+*/
 
 //____________________________________________________________________________________
 void AliResonanceFits::Process() {

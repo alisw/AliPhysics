@@ -89,7 +89,7 @@ class AliResonanceFits : public TObject {
   void Process();
   void Process(Int_t bkgMethod, Int_t matchOption, Float_t waPower, Float_t minuitOption, Float_t fixBkgScale, 
 	       Int_t meMatchBkg, Int_t lsMethod);
-  void ProcessRunWise(const Char_t* path, const Char_t* cutSetting, Int_t* runList, const Int_t nRuns, const Char_t* saveFilename =  "jpsiSignal.root");
+  //void ProcessRunWise(const Char_t* path, const Char_t* cutSetting, Int_t* runList, const Int_t nRuns, const Char_t* saveFilename =  "jpsiSignal.root");
   void ExtractSignal(TH1* signal, TH1* bkg, Bool_t fixScale=kFALSE);
   void DrawSignalExtraction(Bool_t save=kFALSE, const Char_t* name="", const Char_t* outputDir="",
                             Bool_t makeNicePlot=kFALSE, 
