@@ -14,6 +14,7 @@
 **************************************************************************/
 
 #include "AliTrackContainerToyModel.h"
+#include <TMath.h>
 #include <TRandom3.h>
 /// \cond CLASSIMP
 ClassImp(AliTrackContainerToyModel);
