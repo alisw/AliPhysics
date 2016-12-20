@@ -46,6 +46,8 @@
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
 #pragma link C++ class AliAnalysisTaskJetExtractor+;
+#pragma link C++ class AliBasicPID+;
+#pragma link C++ class std::vector<AliBasicPID>+;
 #pragma link C++ class AliBasicJetConstituent+;
 #pragma link C++ class std::vector<AliBasicJetConstituent>+;
 #pragma link C++ class AliBasicJetSecondaryVertex+;

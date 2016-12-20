@@ -60,15 +60,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronCF", kTRUE),
   fJetsCont(0),
   fTracksCont(0),
-  fJetsTree(0),
-  fJetsTreeBuffer(0),
-  fExtractionPercentage(0),
-  fExtractionMinPt(0),
-  fExtractionMaxPt(0),
   fEventExtractionPercentage(0),
   fEventExtractionMinJetPt(0),
   fEventExtractionMaxJetPt(0),
-  fHadronMatchingRadius(0.5),
   fConstPtFilterBit(1024),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
@@ -90,8 +84,6 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
-  fPythiaExtractionMode(0),
-  fPythiaExtractionUseHadronMatching(kFALSE),
   fLeadingJet(0),
   fSubleadingJet(0),
   fInitialPartonMatchedJet1(0),
@@ -110,15 +102,9 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fJetsCont(0),
   fTracksCont(0),
-  fJetsTree(0),
-  fJetsTreeBuffer(0),
-  fExtractionPercentage(0),
-  fExtractionMinPt(0),
-  fExtractionMaxPt(0),
   fEventExtractionPercentage(0),
   fEventExtractionMinJetPt(0),
   fEventExtractionMaxJetPt(0),
-  fHadronMatchingRadius(0.5),
   fConstPtFilterBit(1024),
   fNumberOfCentralityBins(10),
   fJetsOutput(),
@@ -140,8 +126,6 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fMatchedJets(),
   fRandom(0),
   fJetOutputMode(0),
-  fPythiaExtractionMode(0),
-  fPythiaExtractionUseHadronMatching(kFALSE),
   fLeadingJet(0),
   fSubleadingJet(0),
   fInitialPartonMatchedJet1(0),
@@ -420,16 +404,6 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
     if(!fJetVetoArray)
       AliFatal(Form("Importing jets for veto failed! Array '%s' not found!", fJetVetoArrayName.Data()));
   }
-
-  // ### Jets tree (optional)
-  if(fExtractionPercentage)
-  {
-    fJetsTree = new TTree("ExtractedJets", "ExtractedJets");
-    fJetsTree->Branch("Jets", "AliBasicJet", &fJetsTreeBuffer, 1000);
-    fOutput->Add(fJetsTree);
-  }
-
-
 }
 
 //________________________________________________________________________
@@ -649,93 +623,6 @@ void AliAnalysisTaskChargedJetsHadronCF::AddTrackToOutputArray(AliVTrack* track)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskChargedJetsHadronCF::AddJetToTree(AliEmcalJet* jet)
-{
-  // Check pT threshold
-  if( ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionMinPt) || ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) >= fExtractionMaxPt) )
-    return;
-
-  AliVHeader* eventIDHeader = InputEvent()->GetHeader();
-  Long64_t eventID = 0;
-  if(eventIDHeader)
-    eventID = eventIDHeader->GetEventIdAsLong();
-
-  // if only the two initial collision partons will be added, get info on them
-  Int_t matchedIC = 0;
-  Int_t matchedHadron = 0;
-  if(fJetOutputMode==6)
-  {
-    // Get type of jet
-    CalculateJetType(jet, matchedIC, matchedHadron);
-    Int_t partid = matchedIC;
-    if (fPythiaExtractionUseHadronMatching)
-      partid = matchedHadron;
-    // If fPythiaExtractionMode is set, only extract certain jets
-    if( (fPythiaExtractionMode==1) && not (partid>=1 && partid<=6)) // all quark-jet extraction
-      return;
-    else if( (fPythiaExtractionMode==2) && not (partid==21)) // gluon-jet extraction
-      return;
-    else if( (fPythiaExtractionMode==3) && not (partid==0)) // extract only those w/o hadron matching
-      return;
-    else if( (fPythiaExtractionMode<0) && (fPythiaExtractionMode!=-partid) ) // custom type jet extraction by given a negative number
-      return;
-  }
-
-  // Load vertex if possible
-  Double_t vtxX = 0;
-  Double_t vtxY = 0;
-  Double_t vtxZ = 0;
-  const AliVVertex* myVertex = InputEvent()->GetPrimaryVertex();
-  if(!myVertex && MCEvent())
-    myVertex = MCEvent()->GetPrimaryVertex();
-  if(myVertex)
-  {
-    vtxX = myVertex->GetX();
-    vtxY = myVertex->GetY();
-    vtxZ = myVertex->GetZ();
-  }
-
-  // Discard jets statistically
-  if(fRandom->Rndm() >= fExtractionPercentage)
-    return;
-
-  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), matchedIC, matchedHadron, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent);
-
-  // Add constituents
-  for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
-  {
-    AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
-    if(!particle) continue;
-
-    AliAODTrack*  aodtrack = static_cast<AliAODTrack*>(jet->TrackAt(i, fTracksCont->GetArray()));
-    Int_t constid = 9; // 9 mean unknown
-    if(fJetOutputMode==6) // MC
-    {
-      // Use same convention as PID in AODs
-      if(TMath::Abs(particle->PdgCode()) == 2212) // proton
-        constid = 4;
-      else if (TMath::Abs(particle->PdgCode()) == 211) // pion
-        constid = 2;
-      else if (TMath::Abs(particle->PdgCode()) == 321) // kaon
-        constid = 3;
-      else if (TMath::Abs(particle->PdgCode()) == 11) // electron
-        constid = 0;
-      else if (TMath::Abs(particle->PdgCode()) == 13) // muon
-        constid = 1;
-    }
-    else if (aodtrack) // data
-      constid = aodtrack->GetMostProbablePID();
-
-    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), constid, particle->Xv(), particle->Yv(), particle->Zv(), 0);
-  }
-  if(std::find(fMatchedJets.begin(), fMatchedJets.end(), jet) != fMatchedJets.end()) // set the true pT from the matched jets (only possible in modes 4 & 7)
-    basicJet.SetTruePt(fMatchedJetsReference[std::find(fMatchedJets.begin(), fMatchedJets.end(), jet)-fMatchedJets.begin()]->Pt());
-
-  fJetsTreeBuffer = &basicJet;
-  fJetsTree->Fill();
-}
-
-//________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronCF::AddEventToTree()
 {
   // Check jet pT threshold
@@ -804,10 +691,6 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
       FillHistogramsJets(jet, currentCut.fCutName.Data());
       AddJetToOutputArray(jet, currentCut.fArrayIndex, currentCut.fAcceptedJets);
     }
-
-    // Add jet to output array
-    if(fExtractionPercentage)
-      AddJetToTree(jet);
   }
 
   // ####### Particle loop
@@ -957,51 +840,6 @@ void AliAnalysisTaskChargedJetsHadronCF::GetMatchingJets()
       fMatchedJets.push_back(matchedJet);
       fMatchedJetsReference.push_back(matchedJetReference);
     }
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskChargedJetsHadronCF::CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM)
-{
-  typeIC = 0;
-  if(!fPythiaInfo)
-    AliError("fPythiaInfo object not available. Is it activated with SetGeneratePythiaInfoObject()?");
-  else if(jet==fInitialPartonMatchedJet1)
-    typeIC = fPythiaInfo->GetPartonFlag6();
-  else if (jet==fInitialPartonMatchedJet2)
-    typeIC = fPythiaInfo->GetPartonFlag7();
-
-
-  typeHM = 0;
-  AliStack* stack = MCEvent()->Stack();
-  // Go through the whole particle stack
-  for(Int_t i=0; i<stack->GetNtrack(); i++)
-  {
-    TParticle *part = stack->Particle(i);
-    if(!part) continue;
-
-    // Check if particle is in a radius around the jet
-    Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
-    if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
-    {
-      continue;
-    }
-
-    // Check if the particle has beauty, charm or strangeness
-    // If it has beauty, we are done (exclusive definition)
-    Int_t absPDG = TMath::Abs(part->GetPdgCode());
-    // Particle has beauty
-    if ((absPDG > 500 && absPDG < 600) || (absPDG > 5000 && absPDG < 6000))
-    {
-      typeHM = 5; // beauty
-      break;
-    }
-    // Particle has charm
-    else if ((absPDG > 400 && absPDG < 500) || (absPDG > 4000 && absPDG < 5000))
-      typeHM = 4; // charm
-    // Particle has strangeness: Only search for strangeness, if charm was not already found
-    else if (typeHM != 4 && (absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
-      typeHM = 3; // strange
   }
 }
 
