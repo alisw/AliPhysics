@@ -84,16 +84,22 @@ private:
   
   // TPC dE/dx 
   THnSparseF *fDeDxHisto; //-> signal:phi:y:z:snp:tgl:ncls:p:nclsDEdx:nclsF
-  TObjArray* fFolderObj; // array of analysed histograms
-  
   // analysis folder 
   TFolder *fAnalysisFolder; // folder for analysed histograms
+  
+  TObjArray* fFolderObj; // array of analysed histograms
+  TH1D *h_tpc_dedx_mips_0; //!
+  TH1D *h_tpc_dedx_mipsele_0; //!
+  TH2D *h_tpc_dedx_mips_c_0_5; //!
+  TH2D *h_tpc_dedx_mips_a_0_5; //!
+  TH2D *h_tpc_dedx_mips_c_0_1; //!
+  TH2D *h_tpc_dedx_mips_a_0_1; //!
   
 
   AliPerformanceDEdx(const AliPerformanceDEdx&); // not implemented
   AliPerformanceDEdx& operator=(const AliPerformanceDEdx&); // not implemented
 
-  ClassDef(AliPerformanceDEdx,7);
+  ClassDef(AliPerformanceDEdx,8);
 };
 
 #endif

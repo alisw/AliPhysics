@@ -252,36 +252,9 @@ AliPerformanceTPC::~AliPerformanceTPC()
     delete fTPCClustHisto;
     delete fTPCEventHisto;
     delete fTPCTrackHisto;
-    delete fFolderObj;
     delete fAnalysisFolder;
-
-    //globals, need to set to null
-    delete h_tpc_clust_0_1_2;
-    delete h_tpc_event_recvertex_0;
-    delete h_tpc_event_recvertex_1;
-    delete h_tpc_event_recvertex_2;
-    delete h_tpc_event_recvertex_3;
-    delete h_tpc_event_recvertex_4;
-    delete h_tpc_event_recvertex_5;
-    delete h_tpc_event_6;
-    delete h_tpc_track_all_recvertex_5_8;
-    delete h_tpc_track_all_recvertex_0_5_7;
-    delete h_tpc_track_pos_recvertex_0_5_7;
-    delete h_tpc_track_neg_recvertex_0_5_7;
-    delete h_tpc_track_all_recvertex_1_5_7;
-    delete h_tpc_track_all_recvertex_2_5_7;
-    delete h_tpc_track_all_recvertex_3_5_7;
-    delete h_tpc_track_pos_recvertex_3_5_7;
-    delete h_tpc_track_neg_recvertex_3_5_7;
-    delete h_tpc_track_all_recvertex_4_5_7;
-    delete h_tpc_track_pos_recvertex_4_5_7;
-    delete h_tpc_track_neg_recvertex_4_5_7;
-    delete h_tpc_track_pos_recvertex_3_5_6;
-    delete h_tpc_track_pos_recvertex_4_5_6;
-    delete h_tpc_track_neg_recvertex_3_5_6;
-    delete h_tpc_track_neg_recvertex_4_5_6;
-    delete h_tpc_track_pos_recvertex_2_5_6;
-    delete h_tpc_track_neg_recvertex_2_5_6;
+    if (fFolderObj) { fFolderObj->Delete(); } //delete the registered non-sparse histograms
+    delete fFolderObj;
 }
 
 
