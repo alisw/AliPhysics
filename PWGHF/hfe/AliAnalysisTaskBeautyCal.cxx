@@ -937,8 +937,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     ////////////////////
     if(fAOD)
       {
-      //if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
-      if(!atrack->IsHybridGlobalConstrainedGlobal()) continue; 
+      if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
+      //if(!atrack->IsHybridGlobalConstrainedGlobal()) continue; 
       //if(atrack->IsGlobalConstrained()) continue; 
       } // select track have MaxChi2TPCconstrained cut
 
@@ -999,6 +999,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(atrack->P()<2.0)continue;
     }
  
+      Double_t Chi2TPCcontGlobal = atrack->GetChi2TPCConstrainedVsGlobal();
+      //cout << "Chi2TPCcontGlobal = " << Chi2TPCcontGlobal << endl;
+
     Double_t DCAxy = d0z0[0]*atrack->Charge()*MagSign;
     //cout << "DCAxy = " << DCAxy << endl;
 
