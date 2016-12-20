@@ -1,9 +1,9 @@
-AliGenerator* AddMCGenEPOS_2()
+AliGenerator* AddMCGenEPOS_2(double energy = 7000.0)
 {
   //TString comment = comment.Append(" pp: EPOS-LHC");
   // //    EPOS LHC
    printf("--- LAUNCHING CRMC ---\n");
-   TString cmd = Form("$CRMC_BASEDIR/bin/crmc -t -c crmc.local.param -f crmceventfifo -o hepmc -p%d -P-%d -n201 -m0", (Int_t)7000.0 / 2, (Int_t)7.000 / 2);
+   TString cmd = Form("$CRMC_BASEDIR/bin/crmc -t -c crmc.local.param -f crmceventfifo -o hepmc -p%d -P-%d -n201 -m0", (Int_t)energy / 2, (Int_t)energy / 2);
    printf("%s\n", cmd.Data());
    printf("----- CRMC PARAM -----\n");
    gROOT->ProcessLine(".! cp crmc.param crmc.local.param");
