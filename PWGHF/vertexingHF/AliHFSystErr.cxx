@@ -1138,9 +1138,10 @@ void AliHFSystErr::InitDplustoKpipi2010ppPass4(){
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
   fRawYield->SetBinContent(1,1);
   fRawYield->SetBinContent(2,0.06);
-  fRawYield->SetBinContent(3,0.05);
+  fRawYield->SetBinContent(3,0.06);
   for(Int_t i=4;i<=12;i++) fRawYield->SetBinContent(i,0.03);  
-  for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.07);  
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.05);  
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.06);  
   for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.20);  
   
   // Cuts efficiency (from cuts variation)
@@ -1154,9 +1155,9 @@ void AliHFSystErr::InitDplustoKpipi2010ppPass4(){
 
   // MC dN/dpt  
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
-  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0);
-  fMCPtShape->SetBinContent(1,0.03);
+  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0.01);
   fMCPtShape->SetBinContent(2,0.03);
+  for(Int_t i=8;i<=24;i++) fMCPtShape->SetBinContent(i,0.02);
 
 
   // particle-antiparticle
