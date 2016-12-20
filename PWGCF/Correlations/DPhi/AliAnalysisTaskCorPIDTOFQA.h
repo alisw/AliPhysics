@@ -33,10 +33,13 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 
 	TH2F*                   cent_ntracks;      //!                              //// added by Brennan
 	TH1F*                   t_minus_tpion;     //!                              //// added by Brennan
-	TH2F*                   m_squared;         //!                              //// added by Brennan
-	TH1F*                   species_num;       //!                              //// added by Brennan
+	TH2F*                   m_squared_pos_raw; //!                              //// added by Brennan
+	TH2F*                   m_squared_pos;     //!                              //// added by Brennan
+	TH2F*                   m_squared_neg_raw; //!                              //// added by Brennan
+	TH2F*                   m_squared_neg;     //!                              //// added by Brennan
+//	TH1F*                   species_num;       //!                              //// added by Brennan
 	TH2F*                   beta_vs_p;         //!                              //// added by Brennan
-	TH2F*                   sigma_vs_p;        //!                              //// added by Brennan
+//	TH2F*                   sigma_vs_p;        //!                              //// added by Brennan
 	TH2F*                   dtof_dEdx;         //!                              //// added by Brennan
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
