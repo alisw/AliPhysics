@@ -733,7 +733,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
 	fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
 	fImpParzSparsePtBchargePhi->Fill(pointz1);
-	fImpParzSparsePtzVtxEtaPhi->Fill(pointz1);
+	fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
       }
       fPtDistrib->Fill(pt);
       fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
@@ -748,7 +748,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
 	fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
 	fImpParzSparsePtBchargePhi->Fill(pointz1);
-	fImpParzSparsePtzVtxEtaPhi->Fill(pointz1);
+	fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
       }
       fPtDistrib->Fill(pt);
       fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
@@ -763,7 +763,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 	fImpParrphiSparsePtBchargePhi->Fill(pointrphi1);
 	fImpParrphiSparsePtzVtxEtaPhi->Fill(pointrphi2);
 	fImpParzSparsePtBchargePhi->Fill(pointz1);
-	fImpParzSparsePtzVtxEtaPhi->Fill(pointz1);
+	fImpParzSparsePtzVtxEtaPhi->Fill(pointz2);
       }
       fPtDistrib->Fill(pt);
       fImpParrphiSparsePtEtaPhi->Fill(pointrphi);
