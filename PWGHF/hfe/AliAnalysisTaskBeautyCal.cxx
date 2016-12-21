@@ -180,6 +180,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistHFEpos(0),
   fHistHFEneg(0),
   fHistHFmcCheck(0), 
+  fCheckEta(0),
+  fCheckEtaMC(0),
   fhfeCuts(0) 
 {
   // Constructor
@@ -303,6 +305,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistHFEpos(0),
   fHistHFEneg(0),
   fHistHFmcCheck(0),
+  fCheckEta(0),
+  fCheckEtaMC(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -652,6 +656,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fHistHFmcCheck = new TH1D("fHistHFmcCheck", "HFE mc ilabel", 4,-1.5,2.5);
   fOutputList->Add(fHistHFmcCheck);
 
+  fCheckEta = new TH1F("fCheckEta","check Eta range cut",160,-0.8,0.8);
+  fOutputList->Add(fCheckEta);
+ 
+  fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
+  fOutputList->Add(fCheckEtaMC);
+
   PostData(1,fOutputList);
 }
 
@@ -985,7 +995,21 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(atrack->GetTPCNCrossedRows() < 120) continue; // add
       if(atrack->GetTPCchi2() > 4) continue; // add
       if(atrack->GetITSchi2() > 36) continue; // add
-      if(TMath::Abs(atrack->Eta()) > 0.6) continue;
+
+      if(fetarange==0)
+        {
+         if(TMath::Abs(atrack->Eta()) > 0.6) continue;
+        }
+      else if(fetarange==1)
+        {
+         if(atrack->Eta() > 0.6 || atrack->Eta() < 0.0)continue; 
+        }
+      else
+        {
+         if(atrack->Eta() > 0.0 || atrack->Eta() < -0.6)continue; 
+        }
+      fCheckEta->Fill(atrack->Eta());
+
       if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
 
@@ -1698,13 +1722,14 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
     }
 
  //cout << "NpureMC =" << NpureMC << endl;
- cout << "NembMCpi0 =" << NembMCpi0 << endl;
- cout << "NembMCeta =" << NembMCeta << endl;
- cout << "NpureMCproc =" << NpureMCproc << endl;
+ //cout << "NembMCpi0 =" << NembMCpi0 << endl;
+ //cout << "NembMCeta =" << NembMCeta << endl;
+ //cout << "NpureMCproc =" << NpureMCproc << endl;
 
  //for(int imc=0; imc<fMCarray->GetEntries(); imc++)
  for(int imc=0; imc<NpureMCproc; imc++)
      {
+      //cout << "imc = " << imc << endl;
       Bool_t iEnhance = kFALSE;
       if(imc>=NpureMC)iEnhance = kTRUE;
       Int_t iHijing = 1;  // select particles from Hijing or PYTHIA
@@ -1716,11 +1741,26 @@ void AliAnalysisTaskBeautyCal::CheckMCgen(AliAODMCHeader* fMCheader)
       Double_t pdgEta = fMCparticle->Eta(); 
       Double_t pTtrue = fMCparticle->Pt(); 
 
-      if(TMath::Abs(pdgEta)>0.6)continue;
+      //cout << "fetarange = " << fetarange << endl;
+      if(fetarange==0)
+        {
+         if(TMath::Abs(pdgEta)>0.6)continue;
+        }
+      else if(fetarange==1)
+        {
+        if(pdgEta > 0.6 || pdgEta < 0.0)continue;
+        }
+      else
+        {
+         if(pdgEta > 0.0 || pdgEta < -0.6)continue; 
+        }      
+
+      fCheckEtaMC->Fill(pdgEta);
 
       Int_t pdgMom = -99;
       Int_t labelMom = -1;
       Double_t pTmom = -1.0;
+      //cout << "check Mother" << endl;
       FindMother(fMCparticle,labelMom,pdgMom,pTmom);
       if(pdgMom==-99 && iEnhance)iHijing = 0;  // particles from enhance
       if(pdgMom>0 && iEnhance)iHijing = -1;  // particles from enhance but feeddown
