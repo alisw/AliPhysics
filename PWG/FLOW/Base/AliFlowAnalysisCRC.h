@@ -753,6 +753,8 @@ public:
   TList* GetCRCQVecWeightsList() const {return this->fCRCQVecWeightsList;}
   void SetCRCZDCCalibList(TList* const wlist) {this->fCRCZDCCalibList = wlist;}
   TList* GetCRCZDCCalibList() const {return this->fCRCZDCCalibList;}
+  void SetCRCZDCResList(TList* const wlist) {this->fCRCZDCResList = wlist;}
+  TList* GetCRCZDCResList() const {return this->fCRCZDCResList;}
   void SetZDCESEList(TList* const kList) {this->fZDCESEList = kList;};
   TList* GetZDCESEList() const {return this->fZDCESEList;};
   // 12.a) EbE Corr:
@@ -1497,6 +1499,7 @@ private:
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
   TList *fCRCQVecWeightsList; //! Weights for Q Vectors
   TList *fCRCZDCCalibList; //! ZDC calibration
+  TList *fCRCZDCResList; //! ZDC rescaling list
   TList *fZDCESEList; //! ZDC ESE
   TProfile *fCRCQnRe[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Re
   TProfile *fCRCQnIm[fCRCMaxnRun][fCRCnHar]; //! Q Vectors Im
@@ -1519,6 +1522,8 @@ private:
   TProfile *fTPCQHist[fCRCnHar][2];  //! Run-by-run TPCQvecHist
   TProfile *fZDCQHist[8];  //! Run-by-run ZDCQvecHist
   TH2D *fZDCQHist2;  //! Run-by-run ZDCQvecHist
+  const static Int_t fkNZDCResHist = 4;
+  TH1D *fZDCResHist[fkNZDCResHist]; //!
   TH1D *fZDCEPHist[20][3];  //! Run-by-run ZDCQvecHist
   TF1* fFitPol0EP; //!
   TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
@@ -1850,7 +1855,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 41);
+  ClassDef(AliFlowAnalysisCRC, 42);
   
 };
 
