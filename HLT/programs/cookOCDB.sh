@@ -4,6 +4,23 @@ TARGET=/opt/HLT/data/HCDB_new_2016-09-02
 FUTURE_RUN=500000
 SOURCE_RUN=260014
 
+if [ "0$1" != "0" ]; then
+    echo Using Source $1
+    SOURCE=$1
+fi
+if [ "0$2" != "0" ]; then
+    echo Using Target $2
+    TARGET=$2
+fi
+if [ "0$3" != "0" ]; then
+    echo Using run for default objects: $3
+    FUTURE_RUN=$3
+fi
+if [ "0$4" != "0" ]; then
+    echo Reference run for extending objects: $4
+    SOURCE_RUN=$4
+fi
+
 #Download default CDB entries for future run
 aliroot -l -b -q $ALICE_SOURCE/HLT/programs/downloadCDB.C"($FUTURE_RUN,\"local://$SOURCE\",\"local://$TARGET/tmp\",\"*/*/*\")"
 
@@ -87,3 +104,5 @@ aliroot -l -q -b $ALICE_SOURCE/HLT/programs/adjustOCDBObject.C"(\"$TARGET/HLT/Co
 
 #copy old GRP entries
 cp -n $ALIHLT_HCDBDIR/GRP/GRP/Data/* $TARGET/GRP/GRP/Data
+
+exit 0
