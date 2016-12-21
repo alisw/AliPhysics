@@ -3062,7 +3062,7 @@ Float_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::GetCosPA(AliESDtrack *lP
     Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,b,xn,xp);
     
     //Propagate to it
-    lNegClone->PropagateTo(xn,b); lPosClone->PropagateTo(xp,b);
+    nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
     
     //Create V0 object to do propagation
     AliESDv0 vertex(nt,1,pt,2); //Never mind indices, won't use
