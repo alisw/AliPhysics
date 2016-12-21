@@ -30,7 +30,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic=3,
                              TString PtWeightsFileName="",
                              Bool_t bUsePhiEtaWeights=kFALSE,
                              Bool_t bUsePhiEtaWeightsChDep=kFALSE,
-                             Bool_t bCalibEZDC=kFALSE,
+                             Bool_t bRescaleZDC=kFALSE,
                              Bool_t bSetQAZDC=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
@@ -159,7 +159,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic=3,
       exit(1);
     }
   } // end of if(sDataSet=="2010" && !bZDCMCCen)
-  if(bCalibEZDC && sDataSet=="2015") {
+  if(sDataSet=="2015") {
     TString ZDCTowerEqFileName = "alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root";
     TFile* ZDCTowerEqFile = TFile::Open(ZDCTowerEqFileName,"READ");
     gROOT->cd();
@@ -545,24 +545,43 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic=3,
     }
   } // end of if(bUseCRCRecenter)
   
- if(ZDCCalibFileName != "" && bUseZDC) {
-  TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
-  if(!ZDCCalibFile) {
-   cout << "ERROR: ZDC calibration not found!" << endl;
-   exit(1);
+  if(ZDCCalibFileName != "" && bUseZDC) {
+    TFile* ZDCCalibFile = TFile::Open(ZDCCalibFileName,"READ");
+    if(!ZDCCalibFile) {
+      cout << "ERROR: ZDC calibration not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* ZDCCalibList = (TList*)(ZDCCalibFile->FindObjectAny("Q Vectors"));
+    if(ZDCCalibList) {
+      taskQC->SetCRCZDCCalibList(ZDCCalibList);
+      cout << "ZDC calibration set (from " <<  ZDCCalibFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: ZDCCalibList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCCalibFile;
+  } // end of if(bUseZDC)
+  if(bRescaleZDC) {
+    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCRescaling.root";
+    TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
+    if(!ZDCRecFile) {
+      cout << "ERROR: ZDC calibration (rescaling) not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* ZDCRecList = (TList*)(ZDCRecFile->FindObjectAny("ZDC Rescaling"));
+    if(ZDCRecList) {
+      taskQC->SetCRCZDCResList(ZDCRecList);
+      cout << "ZDC calibration (rescaling) set (from " <<  ZDCRecFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: ZDCResList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCRecFile;
   }
-   gROOT->cd();
-  TList* ZDCCalibList = (TList*)(ZDCCalibFile->FindObjectAny("Q Vectors"));
-  if(ZDCCalibList) {
-   taskQC->SetCRCZDCCalibList(ZDCCalibList);
-   cout << "ZDC calibration set (from " <<  ZDCCalibFileName.Data() << ")" << endl;
-  }
-  else {
-   cout << "ERROR: ZDCCalibList not found!" << endl;
-   exit(1);
-  }
-   delete ZDCCalibFile;
- } // end of if(bUseZDC)
   
  taskQC->SetUsePhiEtaWeights(bUsePhiEtaWeights);
  if(bUsePhiEtaWeights) {
