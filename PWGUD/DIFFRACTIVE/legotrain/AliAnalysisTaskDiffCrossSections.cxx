@@ -35,7 +35,7 @@ ClassImp(AliAnalysisTaskDiffCrossSections::TreeData);
 ClassImp(AliAnalysisTaskDiffCrossSections::MCInfo);
 
 void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, TString mcType) {
-  fEventType = kInvalid;
+  fEventType = fEventTypeGen = kInvalid;
   if (!mcEvent)
     AliFatal("NULL == mcEvent");
 
@@ -52,19 +52,19 @@ void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, T
       AliFatal("NULL == ph");
     switch (ph->ProcessType()) {
     case 92:
-      fEventType = kSDR;
+      fEventTypeGen = kSDR;
       break;
     case 93:
-      fEventType = kSDL;
+      fEventTypeGen = kSDL;
       break;
     case 94:
-      fEventType = kDD;
+      fEventTypeGen = kDD;
       break;
     case 91:
-      fEventType = kElastic;
+      fEventTypeGen = kElastic;
       break;
     default:
-      fEventType = kND;
+      fEventTypeGen = kND;
    }
   }
   if (mcType.Contains("Pythia8")) {
@@ -74,22 +74,22 @@ void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, T
       AliFatal("NULL == ph");
     switch (ph->ProcessType()) {
     case 103:
-      fEventType = kSDR;
+      fEventTypeGen = kSDR;
       break;
     case 104:
-      fEventType = kSDL;
+      fEventTypeGen = kSDL;
       break;
     case 105:
-      fEventType = kDD;
+      fEventTypeGen = kDD;
       break;
     case 106:
-      fEventType = kCD;
+      fEventTypeGen = kCD;
       break;
     case 102:
-      fEventType = kElastic;
+      fEventTypeGen = kElastic;
       break;
     default:
-      fEventType = kND;
+      fEventTypeGen = kND;
     }
   }
   if (mcType.Contains("PHOJET")) {
@@ -98,31 +98,30 @@ void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, T
       AliFatal("NULL == ph");
     switch (ph->ProcessType()) {
     case  5:
-      fEventType = kSDR;
+      fEventTypeGen = kSDR;
       break;
     case  6:
-      fEventType = kSDL;
+      fEventTypeGen = kSDL;
       break;
     case  7:
-      fEventType = kDD;
+      fEventTypeGen = kDD;
       break;
     case  4:
-      fEventType = kCD;
+      fEventTypeGen = kCD;
       break;
     case  2:
-      fEventType = kElastic;
+      fEventTypeGen = kElastic;
       break;
     default:
-      fEventType = kND;
+      fEventTypeGen = kND;
     }
   }
+
+  fEventType = fEventTypeGen;
 
   AliStack* stack  = dynamic_cast<AliStack *>(const_cast<AliMCEvent*>(mcEvent)->Stack());
   if (!stack)
     AliFatal("NULL == stack");
-  const Int_t npart = stack->GetNprimary();
-
-  fEventTypeGen = fEventType;
 
   for (Int_t i=0; i<2; ++i)
     fDiffMass[i] = fDiffMassGen[i] = -1.0;
@@ -139,10 +138,11 @@ void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, T
       fDiffMassGen[v.Eta()>0] = v.M(); // eta>0,<0 <-> SDL,SDR
     }
   }
+
+  // determine SD mass without coorperation from MC generator
   for (Int_t i=0; i<2; ++i)
     fDiffMass[i] = fDiffMassGen[i];
 
-  // determine SD mass without coorperation from MC generator
   Int_t    side =  0;
   Double_t mass = -1;
   const Bool_t isSD = FindSingleDiffraction(stack, mcType, side, mass);
@@ -192,7 +192,7 @@ Bool_t AliAnalysisTaskDiffCrossSections::MCInfo::FindSingleDiffraction(AliStack 
     3222, // Sigma Plus
     3312, // Xsi Minus
     3322, // Xsi0
-    3334, // Omega
+    3334  // Omega
   };
   const Int_t kNstable=sizeof(pdgStable)/sizeof(Int_t);
 
@@ -219,7 +219,7 @@ Bool_t AliAnalysisTaskDiffCrossSections::MCInfo::FindSingleDiffraction(AliStack 
     if (!isStable)
       continue;
 
-    const Double_t yp = GetV(part).Y(); //part->Y();
+    const Double_t yp = GetV(part).Rapidity(); //part->Y();
     if (idx[0] == -1) {
       y[0]   = yp;
       idx[0] = i;
@@ -234,7 +234,7 @@ Bool_t AliAnalysisTaskDiffCrossSections::MCInfo::FindSingleDiffraction(AliStack 
       y[1]   = yp;
       idx[1] = i;
     }
-  }
+  } // next particle
 
   if (idx[0] < 0 && idx[1] < 0)
     return kFALSE;
@@ -263,6 +263,8 @@ Bool_t AliAnalysisTaskDiffCrossSections::MCInfo::FindSingleDiffraction(AliStack 
   }
   if (i < 0)
     return kFALSE;
+
+  Printf("i=%4d idx= %4d,%4d y=%6.3f,%6.3f pdg=%4i,%4i", i, idx[0], idx[1], y[0], y[1], pdg[0], pdg[1]);
 
   const TParticle  *psel = stack->Particle(i);
   const TLorentzVector v = GetV(psel);
