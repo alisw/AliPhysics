@@ -1657,6 +1657,16 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3Lc(){
 	fFuncWeight->SetParameters(5.94428e+01,1.63585e+01,9.65555e+00,6.71944e+00,8.88338e-02,2.40477e+00,-4.88649e-02,-6.78599e-01,-2.10951e-01);
 	fUseWeight=kTRUE;
 }
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC16i6a(){
+	// weight function from the ratio of the LHC16i6a MC
+	// and FONLL calculations for pp data
+	// using D0 simulated pt distribution
+	if(fFuncWeight) delete fFuncWeight;
+	fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.2,20.);
+	fFuncWeight->SetParameters(2.70821e+03,2.98122e+00,8.67776e+01,1.16611e+00,1.17276e-02,5.41670e+00,6.01099e-02,-2.04524e+00,6.69208e-02);
+	fUseWeight=kTRUE;
+}
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC11b2Lc(){
@@ -1795,7 +1805,7 @@ Double_t AliCFTaskVertexingHF::GetNchWeight(Int_t nch){
 }
 //__________________________________________________________________________________________________
 void AliCFTaskVertexingHF::CreateMeasuredNchHisto(){
-  // creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345–354)
+  // creates historgam with measured multiplcity distribution in pp 7 TeV collisions (from Eur. Phys. J. C (2010) 68: 345â€“354)
   //
   // for Nch  > 70 the points were obtained with a double NBD distribution fit
   // TF1 *fit1 = new TF1("fit1","[0]*(TMath::Gamma(x+[1])/(TMath::Gamma(x+1)*TMath::Gamma([1])))*(TMath::Power(([2]/[1]),x))*(TMath::Power((1+([2]/[1])),-x-[1]))"); fit1->SetParameter(0,1.);// normalization constant

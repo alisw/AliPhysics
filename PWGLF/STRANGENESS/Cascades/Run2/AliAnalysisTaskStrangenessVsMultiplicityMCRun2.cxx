@@ -2460,8 +2460,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus && lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) )&&
                 
                 //Check 6: Experimental DCA Bachelor to Baryon cut
-                ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() )
+                ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
                 
+                //Check 7: Explicit associate-with-bump
+                ( ! (lCascadeResult->GetCutMCSelectBump())    || (//Start bump-selection
+                                                                  //Case: XiMinus or OmegaMinus
+                                                                  (lCharge == -1 &&
+                                                                   fTreeCascVarPosLabelMother == fTreeCascVarBachLabelMother &&
+                                                                   fTreeCascVarPIDBachelorMother ==  3122)||
+                                                                  //Case: XiPlus or OmegaPlus
+                                                                  (lCharge == +1 &&
+                                                                  fTreeCascVarNegLabelMother == fTreeCascVarBachLabelMother &&
+                                                                  fTreeCascVarPIDBachelorMother == -3122)
+                                                                  )//End bump-selection
+                 )
                 ){
                 
                 //This satisfies all my conditionals! Fill histogram
@@ -3050,7 +3062,7 @@ Float_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::GetCosPA(AliESDtrack *lP
     Double_t xn, xp, dca=lNegClone->GetDCA(lPosClone,b,xn,xp);
     
     //Propagate to it
-    lNegClone->PropagateTo(xn,b); lPosClone->PropagateTo(xp,b);
+    nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
     
     //Create V0 object to do propagation
     AliESDv0 vertex(nt,1,pt,2); //Never mind indices, won't use

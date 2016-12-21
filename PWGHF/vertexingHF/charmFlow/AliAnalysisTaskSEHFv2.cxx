@@ -126,6 +126,7 @@ AliAnalysisTaskSE(),
     fHistEvPlaneQncorrTPC[i]   = 0x0;
     fHistEvPlaneQncorrVZERO[i] = 0x0;
   }
+  
 }
 
 //________________________________________________________________________
@@ -223,7 +224,7 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fDetV0ConfName[0]  = "VZERO";
   fDetV0ConfName[1]  = "VZEROA";
   fDetV0ConfName[2]  = "VZEROC";
-    
+  
 }
 
 //________________________________________________________________________
@@ -350,7 +351,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     fOutput->Add(fHistEvPlaneQncorrTPC[iDet]);
     fOutput->Add(fHistEvPlaneQncorrVZERO[iDet]);
   }
-    
+  
   for(Int_t icentr=fMinCentr*10+fCentBinSizePerMil;icentr<=fMaxCentr*10;icentr=icentr+fCentBinSizePerMil){
     TString centrname;centrname.Form("centr%d_%d",icentr-fCentBinSizePerMil,icentr);
 
@@ -440,11 +441,11 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
       else if(fq2Meth==kq2VZEROC) {q2axisname="q_{2}^{V0C}";}
       
       // histos for EP resolution vs q2
-      TH2F* hEvPlaneResoVsq2=new TH2F(Form("hEvPlaneReso1Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{A}-#psi_{B});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,100,0,10.);
+      TH2F* hEvPlaneResoVsq2=new TH2F(Form("hEvPlaneReso1Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{A}-#psi_{B});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,500,0,10.);
       fOutput->Add(hEvPlaneResoVsq2);
-      TH2F* hEvPlaneReso2Vsq2=new TH2F(Form("hEvPlaneReso2Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{A}-#psi_{C});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,100,0,10.);
+      TH2F* hEvPlaneReso2Vsq2=new TH2F(Form("hEvPlaneReso2Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{A}-#psi_{C});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,500,0,10.);
       fOutput->Add(hEvPlaneReso2Vsq2);
-      TH2F* hEvPlaneReso3Vsq2=new TH2F(Form("hEvPlaneReso3Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{B}-#psi_{C});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,100,0.,10.);
+      TH2F* hEvPlaneReso3Vsq2=new TH2F(Form("hEvPlaneReso3Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{B}-#psi_{C});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,500,0.,10.);
       fOutput->Add(hEvPlaneReso3Vsq2);
     }
   }
@@ -768,38 +769,38 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       
       //fill the THnSparseF
       if((fDecChannel==0 || fDecChannel==2) && isSelected) {
-        Double_t sparsearray[4] = {invMass[0],d->Pt(),deltaphi,q2};
+        Double_t sparsearray[5] = {invMass[0],d->Pt(),deltaphi,q2,centr};
         fHistMassPtPhiq2Centr->Fill(sparsearray);
       }
       else if(fDecChannel==1) {
         if(fSeparateD0D0bar) {
           if(isSelected==1 || isSelected==3) {
-            Double_t sparsearray1[5] = {invMass[0],d->Pt(),deltaphi,q2,(Double_t)isSelected};
+            Double_t sparsearray1[6] = {invMass[0],d->Pt(),deltaphi,q2,centr,(Double_t)isSelected};
             fHistMassPtPhiq2Centr->Fill(sparsearray1);
           }
           if(isSelected>=2) {
-            Double_t sparsearray2[5] = {invMass[1],d->Pt(),deltaphi,q2,(Double_t)isSelected};
+            Double_t sparsearray2[6] = {invMass[1],d->Pt(),deltaphi,q2,centr,(Double_t)isSelected};
             fHistMassPtPhiq2Centr->Fill(sparsearray2);
           }
         }
         else {
           if(isSelected==1 || isSelected==3) {
-            Double_t sparsearray1[4] = {invMass[0],d->Pt(),deltaphi,q2};
+            Double_t sparsearray1[5] = {invMass[0],d->Pt(),deltaphi,q2,centr};
             fHistMassPtPhiq2Centr->Fill(sparsearray1);
           }
           if(isSelected>=2) {
-            Double_t sparsearray2[4] = {invMass[1],d->Pt(),deltaphi,q2};
+            Double_t sparsearray2[5] = {invMass[1],d->Pt(),deltaphi,q2,centr};
             fHistMassPtPhiq2Centr->Fill(sparsearray2);
           }
         }
       }
       else if(fDecChannel==3) {
         if(isSelected==1 || isSelected==3) {
-          Double_t sparsearray1[4] = {invMass[0],d->Pt(),deltaphi,q2};
+          Double_t sparsearray1[5] = {invMass[0],d->Pt(),deltaphi,q2,centr};
           fHistMassPtPhiq2Centr->Fill(sparsearray1);
         }
         if(isSelected>=2) {
-          Double_t sparsearray2[4] = {invMass[1],d->Pt(),deltaphi,q2};
+          Double_t sparsearray2[5] = {invMass[1],d->Pt(),deltaphi,q2,centr};
           fHistMassPtPhiq2Centr->Fill(sparsearray2);
         }
       }
@@ -825,9 +826,11 @@ void AliAnalysisTaskSEHFv2::CreateSparseForEvShapeAnalysis() {
   Double_t minphi=0.;
   Double_t maxphi = TMath::Pi();
   
-  Int_t nq2bins=100;
+  Int_t nq2bins=500;
   Double_t minq2=0.;
   Double_t maxq2=10.;
+
+  Int_t ncentbins=(fMaxCentr-fMinCentr)/(fCentBinSizePerMil/10);
   
   TString massaxisname;
   if(fDecChannel==0) massaxisname = "M_{K#pi#pi} (GeV/c^{2})";
@@ -835,27 +838,27 @@ void AliAnalysisTaskSEHFv2::CreateSparseForEvShapeAnalysis() {
   else if(fDecChannel==2) massaxisname = "M_{K#pi#pi}-M_{K#pi} (GeV/c^{2})";
   else if(fDecChannel==3) massaxisname = "M_{KK#pi} (GeV/c^{2})";
   
-  Int_t naxes=4;
+  Int_t naxes=5;
   
   if(fSeparateD0D0bar && fDecChannel==1) {
     Int_t npartantipartbins=3;
     Double_t minpartantipart=0.5;
     Double_t maxpartantipart=3.5;
     
-    Int_t nbins[5]={fNMassBins,nptbins,nphibins,nq2bins,npartantipartbins};
-    Double_t xmin[5]={fLowmasslimit,ptmin,minphi,minq2,(Double_t)minpartantipart};
-    Double_t xmax[5]={fUpmasslimit,ptmax,maxphi,maxq2,(Double_t)maxpartantipart};
+    Int_t nbins[6]={fNMassBins,nptbins,nphibins,nq2bins,ncentbins,npartantipartbins};
+    Double_t xmin[6]={fLowmasslimit,ptmin,minphi,minq2,(Double_t)fMinCentr,(Double_t)minpartantipart};
+    Double_t xmax[6]={fUpmasslimit,ptmax,maxphi,maxq2,(Double_t)fMaxCentr,(Double_t)maxpartantipart};
     
-    naxes=5;
+    naxes=6;
     
-    fHistMassPtPhiq2Centr=new THnSparseF("hMassPtPhiq2Centr","Mass vs. pt vs. #Delta#phi vs. q_{2} vs. D0-D0bar",naxes,nbins,xmin,xmax);
+    fHistMassPtPhiq2Centr=new THnSparseF("hMassPtPhiq2Centr","Mass vs. pt vs. #Delta#phi vs. q_{2} vs. centr vs. D0-D0bar",naxes,nbins,xmin,xmax);
   }
   else {
-    Int_t nbins[4]={fNMassBins,nptbins,nphibins,nq2bins};
-    Double_t xmin[4]={fLowmasslimit,ptmin,minphi,minq2};
-    Double_t xmax[4]={fUpmasslimit,ptmax,maxphi,maxq2};
+    Int_t nbins[5]={fNMassBins,nptbins,nphibins,nq2bins,ncentbins};
+    Double_t xmin[5]={fLowmasslimit,ptmin,minphi,minq2,(Double_t)fMinCentr};
+    Double_t xmax[5]={fUpmasslimit,ptmax,maxphi,maxq2,(Double_t)fMaxCentr};
     
-    fHistMassPtPhiq2Centr=new THnSparseF("hMassPtPhiq2Centr","Mass vs. pt vs. #Delta#phi vs. q_{2}",naxes,nbins,xmin,xmax);
+    fHistMassPtPhiq2Centr=new THnSparseF("hMassPtPhiq2Centr","Mass vs. pt vs. #Delta#phi vs. q_{2} vs. centr",naxes,nbins,xmin,xmax);
   }
   
   TString q2axisname="q_{2}^{TPC}";
@@ -865,7 +868,7 @@ void AliAnalysisTaskSEHFv2::CreateSparseForEvShapeAnalysis() {
   else if(fq2Meth==kq2VZEROA) {q2axisname="q_{2}^{V0A}";}
   else if(fq2Meth==kq2VZEROC) {q2axisname="q_{2}^{V0C}";}
   
-  TString axTit[5]={massaxisname,"p_{T} (GeV/c)","#Delta#phi",q2axisname,"part-antipart"};
+  TString axTit[6]={massaxisname,"p_{T} (GeV/c)","#Delta#phi",q2axisname,"Centrality (%)","part-antipart"};
   
   for(Int_t iax=0; iax<naxes; iax++)
     fHistMassPtPhiq2Centr->GetAxis(iax)->SetTitle(axTit[iax].Data());

@@ -19,4 +19,4 @@ eval $(alienv printenv CRMC::v1.5.4-2)
 sed -e s#__CRMC_BASEDIR__#"$CRMC_ROOT"# ${ALICE_PHYSICS}/PWG/MCLEGO/CRMC/crmc_template.param > crmc.param
 
 # run CRMC
-crmc -o hepmc -p 6500 -P-6500 -n 201 -m 0 -f $1
+crmc -o hepmc -p 3500 -P-3500 -n 201 -m 0 -f $1
