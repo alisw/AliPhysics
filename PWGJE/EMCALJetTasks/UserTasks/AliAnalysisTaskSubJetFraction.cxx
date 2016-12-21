@@ -817,7 +817,7 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
 	    Jet3=Jet2->ClosestJet();
 	  }
 	  if(!(fJetShapeSub==kConstSub)){
-	    if (!(JetCont1->AliJetContainer::GetFractionSharedPt(Jet1)<fSharedFractionPtMin)) continue;
+	    if (JetCont1->AliJetContainer::GetFractionSharedPt(Jet1)<fSharedFractionPtMin) continue;
 	    Jet3 = Jet1->ClosestJet();   //Note for NoSub and Deriv Sub cases you must fill both the Unsubtracted and Subtracted Hybrid jet containers with the same jet branch
 	  }
 	  if (!Jet3) continue;
