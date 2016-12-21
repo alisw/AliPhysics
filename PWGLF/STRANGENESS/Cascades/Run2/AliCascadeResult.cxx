@@ -37,6 +37,7 @@ fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
+fCutMCSelectBump(kFALSE),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -81,6 +82,7 @@ fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
+fCutMCSelectBump(kFALSE),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -131,6 +133,7 @@ fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
+fCutMCSelectBump(kFALSE),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -191,6 +194,7 @@ fCutXiRejection(lCopyMe.fCutXiRejection),
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
 fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties),
+fCutMCSelectBump(lCopyMe.fCutMCSelectBump),
 fCutUseVariableCascCosPA(lCopyMe.fCutUseVariableCascCosPA),
 fCutVarCascCosPA_Exp0Const(lCopyMe.fCutVarCascCosPA_Exp0Const),
 fCutVarCascCosPA_Exp0Slope(lCopyMe.fCutVarCascCosPA_Exp0Slope),
@@ -249,6 +253,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutMCPhysicalPrimary    = lCopyMe -> GetCutMCPhysicalPrimary();
     fCutMCPDGCodeAssociation = lCopyMe -> GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
+    fCutMCSelectBump         = lCopyMe -> GetCutMCSelectBump();
     
     //Variable CascCosPA
     fCutUseVariableCascCosPA = lCopyMe -> GetCutUseVarCascCosPA();
@@ -318,6 +323,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutMCPhysicalPrimary = lCopyMe.GetCutMCPhysicalPrimary();
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
+    fCutMCSelectBump      = lCopyMe.GetCutMCSelectBump();
     
     //Variable CascCosPA
     fCutUseVariableCascCosPA = lCopyMe.GetCutUseVarCascCosPA();
@@ -478,6 +484,7 @@ void AliCascadeResult::Print()
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
     cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
+    cout<<" MC Select bump.....: "<<fCutMCSelectBump<<endl;
     cout<<"========================================"<<endl;
     return;
 }

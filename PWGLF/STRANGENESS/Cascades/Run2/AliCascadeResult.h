@@ -65,6 +65,7 @@ public:
     void SetCutMCPhysicalPrimary    ( Bool_t lCut ) { fCutMCPhysicalPrimary    = lCut; }
     void SetCutMCPDGCodeAssociation ( Bool_t lCut ) { fCutMCPDGCodeAssociation = lCut; }
     void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
+    void SetCutMCSelectBump         ( Bool_t lCut ) { fCutMCSelectBump         = lCut; }
     
     //Variable CascCosPA
     void SetCutUseVarCascCosPA      ( Bool_t lCut )   { fCutUseVariableCascCosPA     = lCut; }
@@ -125,6 +126,7 @@ public:
     Bool_t GetCutMCPhysicalPrimary    () const { return fCutMCPhysicalPrimary; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
     Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
+    Bool_t GetCutMCSelectBump         () const { return fCutMCSelectBump; }
     
     //Variable CascCosPA
     Bool_t GetCutUseVarCascCosPA        () const { return fCutUseVariableCascCosPA;   }
@@ -177,6 +179,7 @@ private:
     Bool_t fCutMCPhysicalPrimary; //IsPhysicalPrimary requirement
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
     Bool_t fCutMCUseMCProperties; //Use true MC pT, y
+    Bool_t fCutMCSelectBump; //select bachelor and baryon from a single lambda decay
     
     //Experimental: pt-variable cascade cosPA
     //Warning: if this cut is tighter than fCutCascCosPA, this gets used instead!
@@ -198,7 +201,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 11)
+    ClassDef(AliCascadeResult, 12)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -210,5 +213,6 @@ private:
     // 9 - Cleanup + experimental bach-pos DCA cut added
     // 10 - Variable CascCosPA parametrization added (exp0 + exp1 + pol0)
     // 11 - Variable V0CosPA parametrization added (exp0 + exp1 + pol0)
+    // 12 - Added explicit bump selection flag
 };
 #endif
