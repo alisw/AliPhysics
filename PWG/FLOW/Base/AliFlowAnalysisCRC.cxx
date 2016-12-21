@@ -295,6 +295,7 @@ fSelectCharge(kAllCh),
 fCRCQVecList(NULL),
 fCRCQVecWeightsList(NULL),
 fCRCZDCCalibList(NULL),
+fCRCZDCResList(NULL),
 fZDCESEList(NULL),
 fPhiEtaCutsList(NULL),
 fCRCVZList(NULL),
@@ -383,6 +384,7 @@ AliFlowAnalysisCRC::~AliFlowAnalysisCRC()
   delete fTempList;
   delete fCRCQVecWeightsList;
   delete fCRCZDCCalibList;
+  delete fCRCZDCResList;
   delete fZDCESEList;
   delete fPhiEtaCutsList;
   delete[] fCRCPtvarPtBins;
@@ -16421,6 +16423,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
   for(Int_t k=0; k<8; k++) {
     fZDCQHist[k] = NULL;
   }
+  for(Int_t k=0; k<fkNZDCResHist; k++) {
+    fZDCResHist[k] = NULL;
+  }
   fZDCQHist2 = NULL;
   for(Int_t c=0; c<20; c++) {
     for(Int_t k=0; k<3; k++) {
@@ -18418,11 +18423,15 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
       }
     }
     
-//    for (Int_t k=0; k<4; k++) {
-//      fZDCQHist[k+4] = (TProfile*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecEPFlatTerms[%d][%d]",fRunNum,k)));
-//      if(fZDCQHist[k+4]) fZDCQHist[k+4]->Fit(fZDCFitSec[k],"QRN","",3.,85.);
-//    }
-    
+    if(fCRCZDCResList) {
+      // ZNC
+      fZDCResHist[0] = (TH1D*)(fCRCZDCResList->FindObject(Form("fZNPhase[%d][%d]",fRunNum,0)));
+      fZDCResHist[1] = (TH1D*)(fCRCZDCResList->FindObject(Form("fZNRatio[%d][%d]",fRunNum,0)));
+      // ZNA
+      fZDCResHist[2] = (TH1D*)(fCRCZDCResList->FindObject(Form("fZNPhase[%d][%d]",fRunNum,1)));
+      fZDCResHist[3] = (TH1D*)(fCRCZDCResList->FindObject(Form("fZNRatio[%d][%d]",fRunNum,1)));
+    }
+  
     for (Int_t k=0; k<3; k++) {
       fZDCQHist2 = (TH2D*)(fCRCZDCCalibList->FindObject(Form("Run %d",fRunNum))->FindObject(Form("fCRCZDCQVecEP[%d][%d]",fRunNum,k)));
       if(!fZDCQHist2) continue;
@@ -18564,26 +18573,28 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
     }
   }
   
-//  // rotate, correct, rotate back
-//  // ZNA
-//  Double_t thetaC[10] = {3.845373e-01, 3.882812e-01, 3.709353e-01, 4.591053e-01, 4.274379e-01, 3.245123e-01, 3.428571e-01, 2.988185e-01, 2.348829e-01, 1.302154e-01};
-//  Double_t corrfC[10] = {1.033995e+00, 1.072864e+00, 1.077347e+00, 1.081166e+00, 1.088658e+00, 1.088798e+00, 1.098567e+00, 1.097997e+00, 1.100449e+00, 1.083381e+00};
-//  // ZNC
-//  Double_t thetaA[10] = {8.971592e-02, -5.643473e-01, -7.486515e-01, -7.597897e-01, -7.703863e-01, -7.496290e-01, -7.000264e-01, -6.645144e-01, -5.959965e-01, -5.621717e-01};
-//  Double_t corrfA[10] = {1.031712e+00, 1.067469e+00, 1.130756e+00, 1.185407e+00, 1.225979e+00, 1.258092e+00, 1.287155e+00, 1.298695e+00, 1.336978e+00, 1.354721e+00};
-//  
-//  Double_t QCReRt = TMath::Cos(thetaC[fCenBin])*QCReR - TMath::Sin(thetaC[fCenBin])*QCImR;
-//  Double_t QCImRt = TMath::Sin(thetaC[fCenBin])*QCReR + TMath::Cos(thetaC[fCenBin])*QCImR;
-//  Double_t QAReRt = TMath::Cos(thetaA[fCenBin])*QAReR - TMath::Sin(thetaA[fCenBin])*QAImR;
-//  Double_t QAImRt = TMath::Sin(thetaA[fCenBin])*QAReR + TMath::Cos(thetaA[fCenBin])*QAImR;
-//  
-//  QCReRt /= corrfC[fCenBin];
-//  QAReRt /= corrfA[fCenBin];
-//
-//  QCReR = TMath::Cos(-thetaC[fCenBin])*QCReRt - TMath::Sin(-thetaC[fCenBin])*QCImRt;
-//  QCImR = TMath::Sin(-thetaC[fCenBin])*QCReRt + TMath::Cos(-thetaC[fCenBin])*QCImRt;
-//  QAReR = TMath::Cos(-thetaA[fCenBin])*QAReRt - TMath::Sin(-thetaA[fCenBin])*QAImRt;
-//  QAImR = TMath::Sin(-thetaA[fCenBin])*QAReRt + TMath::Cos(-thetaA[fCenBin])*QAImRt;
+  if(fZDCResHist[0] && fZDCResHist[1] && fZDCResHist[2] && fZDCResHist[3]) {
+    // rotate, correct, rotate back
+    // ZNA
+    Double_t thetaC = fZDCResHist[0]->GetBinContent(fZDCResHist[0]->FindBin(fCentralityEBE));
+    Double_t corrfC = fZDCResHist[1]->GetBinContent(fZDCResHist[1]->FindBin(fCentralityEBE));
+    // ZNC
+    Double_t thetaA = fZDCResHist[2]->GetBinContent(fZDCResHist[2]->FindBin(fCentralityEBE));
+    Double_t corrfA = fZDCResHist[3]->GetBinContent(fZDCResHist[3]->FindBin(fCentralityEBE));
+    
+    Double_t QCReRt = TMath::Cos(thetaC)*QCReR - TMath::Sin(thetaC)*QCImR;
+    Double_t QCImRt = TMath::Sin(thetaC)*QCReR + TMath::Cos(thetaC)*QCImR;
+    Double_t QAReRt = TMath::Cos(thetaA)*QAReR - TMath::Sin(thetaA)*QAImR;
+    Double_t QAImRt = TMath::Sin(thetaA)*QAReR + TMath::Cos(thetaA)*QAImR;
+    
+    QCReRt /= corrfC;
+    QAReRt /= corrfA;
+    
+    QCReR = TMath::Cos(-thetaC)*QCReRt - TMath::Sin(-thetaC)*QCImRt;
+    QCImR = TMath::Sin(-thetaC)*QCReRt + TMath::Cos(-thetaC)*QCImRt;
+    QAReR = TMath::Cos(-thetaA)*QAReRt - TMath::Sin(-thetaA)*QAImRt;
+    QAImR = TMath::Sin(-thetaA)*QAReRt + TMath::Cos(-thetaA)*QAImRt;
+  }
   
   // store results after correction
   if(QMC>0. && QMA>0. && sqrt(QCReR*QCReR+QCImR*QCImR)>1.E-6 && sqrt(QAReR*QAReR+QAImR*QAImR)>1.E-6) {
@@ -28197,6 +28208,10 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   for(Int_t k=0; k<8; k++) {
     fZDCQHist[k] = new TProfile();
     fTempList->Add(fZDCQHist[k]);
+  }
+  for(Int_t k=0; k<fkNZDCResHist; k++) {
+    fZDCResHist[k] = new TH1D();
+    fTempList->Add(fZDCResHist[k]);
   }
   fZDCQHist2 = new TH2D();
   fTempList->Add(fZDCQHist2);

@@ -53,6 +53,8 @@ public:
     void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
     void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
 
+    void SetEtaRange(Int_t etarange){fetarange = etarange;};
+
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight);
@@ -109,6 +111,7 @@ private:
     Int_t fcentMax; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
+    Int_t fetarange;  
    
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
@@ -161,7 +164,9 @@ private:
     TH2F        *fInvmassHfULS;//!Invmass of ULS
     TH2F        *fInvmassHfLS;//!Invmass of LS
     TH1F        *fMCcheckMother;
-    
+    TH1F        *fCheckEta;    
+    TH1F        *fCheckEtaMC;    
+
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
     
@@ -205,6 +210,8 @@ private:
     TH1D        *fHistHFEpos;
     TH1D        *fHistHFEneg;
     TH1D        *fHistHFmcCheck;
+    TH1D        *fHistEta;
+    TH1D        *fHistEtaMC;
 
     AliHFEcuts  *fhfeCuts;
 
