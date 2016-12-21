@@ -816,16 +816,16 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       if(!particle) continue;
       Bool_t acceptParticle = kFALSE;
       if(particle->PdgCode()==443) acceptParticle = kTRUE;
-      if(particle->PdgCode()==411) acceptParticle = kTRUE;
-      if(particle->PdgCode()==421) acceptParticle = kTRUE;
-      if(particle->PdgCode()==431) acceptParticle = kTRUE;
-      if(particle->PdgCode()==4122) acceptParticle = kTRUE;
+      if(TMath::Abs(particle->PdgCode())==411) acceptParticle = kTRUE;
+      if(TMath::Abs(particle->PdgCode())==421) acceptParticle = kTRUE;
+      if(TMath::Abs(particle->PdgCode())==431) acceptParticle = kTRUE;
+      if(TMath::Abs(particle->PdgCode())==4122) acceptParticle = kTRUE;
       AliVParticle* mother = mcHandler->GetMCTrackFromMCEvent(particle->GetMother());
       if(mother && mother->PdgCode()==443) acceptParticle = kTRUE;
-      if(mother && mother->PdgCode()==411) acceptParticle = kTRUE;
-      if(mother && mother->PdgCode()==421) acceptParticle = kTRUE;
-      if(mother && mother->PdgCode()==431) acceptParticle = kTRUE;
-      if(mother && mother->PdgCode()==4122) acceptParticle = kTRUE;      
+      if(mother && TMath::Abs(mother->PdgCode())==411) acceptParticle = kTRUE;
+      if(mother && TMath::Abs(mother->PdgCode())==421) acceptParticle = kTRUE;
+      if(mother && TMath::Abs(mother->PdgCode())==431) acceptParticle = kTRUE;
+      if(mother && TMath::Abs(mother->PdgCode())==4122) acceptParticle = kTRUE;      
       if(!acceptParticle) continue;
       
       TClonesArray& tracks = *(fReducedEvent->fTracks);
