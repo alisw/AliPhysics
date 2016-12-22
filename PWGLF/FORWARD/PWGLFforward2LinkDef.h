@@ -1,4 +1,4 @@
-// -*- mode: c++ -*- 
+// -*- mode: c++ -*-
 /* Copyright (C) 2007 Christian Holm Christensen <cholm@nbi.dk>
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
  * @file   PWGLFforward2LinkDef.h
  * @author Christian Holm Christensen <cholm@master.hehi.nbi.dk>
  * @date   Fri May 24 09:24:36 2013
- * 
+ *
  * @brief  Link specifications
  */
 #pragma link off all globals;
@@ -29,8 +29,7 @@
 #pragma link off all functions;
 
 #pragma link C++ nestedclasses;
-// ZDC tasks 
-#pragma link C++ class AliAnalysisTaskZDCPbPb+;
+// ZDC tasks
 #pragma link C++ class AliAnalysisTaskZDCTreeMaker+;
 #pragma link C++ class AliAnalysisTaskZDCpAcalib+;
 
@@ -41,61 +40,61 @@
 // AOD objects
 #pragma link C++ class AliAODCentralMult+;
 #pragma link C++ class AliAODForwardEP+;
-#pragma link C++ class AliAODForwardMult+; 
+#pragma link C++ class AliAODForwardMult+;
 #pragma link C++ class AliAODMultEventClass+;
 
 
-// Interface to OADB backed by a TTree 
+// Interface to OADB backed by a TTree
 #pragma link C++ class AliOADBForward+;
 #pragma link C++ class AliOADBForward::Entry+;
 #pragma link C++ class AliOADBForward::Table+;
 
-// Correction managers 
+// Correction managers
 #pragma link C++ class AliCorrectionManagerBase+;
 #pragma link C++ class AliCorrectionManagerBase::Correction+;
 // Note: custom streamer to ensure singleton consistency!
 #pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliCentralCorrectionManager-;
 
-// Base tasks etc. 
+// Base tasks etc.
 #pragma link C++ class AliBaseESDTask+;
 #pragma link C++ class AliBaseAODTask+;
 #pragma link C++ class AliBaseMCCorrectionsTask+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed. 
+// Used internally and never streamed.
 #pragma link C++ class AliBaseMCCorrectionsTask::VtxBin+;
 #endif
 #pragma link C++ class AliBasedNdetaTask+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed. 
+// Used internally and never streamed.
 #pragma link C++ class AliBasedNdetaTask::CentralityBin+;
-// Used internally and never streamed. 
+// Used internally and never streamed.
 #pragma link C++ class AliBasedNdetaTask::Sum+;
 #endif
 #pragma link C++ class AliBaseMCTrackDensity+;
 
-// Central (SPD) code 
+// Central (SPD) code
 #pragma link C++ class AliCentralCorrAcceptance+;
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentraldNdetaTask+;
 #pragma link C++ class AliCentralMCCorrectionsTask+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed. 
+// Used internally and never streamed.
 #pragma link C++ class AliCentralMCCorrectionsTask::VtxBin+;
 #endif
 #pragma link C++ class AliCentralMCMultiplicityTask+;
 #pragma link C++ class AliCentralMultiplicityTask+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed 
+// Used internally and never streamed
 #pragma link C++ class AliCentralMultiplicityTask::VtxBin+;
 #endif
 #pragma link C++ class AliSPDMCTrackDensity+;
 
-// Aux tasks and code 
+// Aux tasks and code
 #pragma link C++ class AliCopyHeaderTask+;
 #pragma link C++ class AliMCTruthdNdetaTask+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed. 
+// Used internally and never streamed.
 #pragma link C++ class AliMCTruthdNdetaTask::CentralityBin+;
 #endif
 #pragma link C++ class AliDisplacedVertexSelection+;
@@ -121,7 +120,7 @@
 #pragma link C++ class AliFMDCorrVertexBias+;
 #pragma link C++ class AliFMDCorrNoiseGain+;
 
-// FMD algorithms 
+// FMD algorithms
 #pragma link C++ class AliFMDEnergyFitter+;
 #pragma link C++ class AliFMDEnergyFitter::RingHistos+;
 #pragma link C++ class AliFMDEventInspector+;
@@ -130,17 +129,17 @@
 #pragma link C++ class AliFMDESDFixer+;
 #pragma link C++ class AliFMDSharingFilter+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed 
+// Used internally and never streamed
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
 #endif
 #pragma link C++ class AliFMDDensityCalculator+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed 
+// Used internally and never streamed
 #pragma link C++ class AliFMDDensityCalculator::RingHistos+;
 #endif
 #pragma link C++ class AliFMDCorrector+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed 
+// Used internally and never streamed
 #pragma link C++ class AliFMDCorrector::RingHistos+;
 #endif
 #pragma link C++ class AliMultEventClassifier+;
@@ -152,30 +151,30 @@
 #pragma link C++ class AliFMDMCSharingFilter+;
 #pragma link C++ class AliFMDMCTrackDensity+;
 
-// FMD MC investigations 
+// FMD MC investigations
 #pragma link C++ class AliFMDMCTrackELoss+;
 #pragma link C++ class AliFMDMCTrackELoss::Hit+;
 #pragma link C++ class AliFMDMCTrackInspector+;
 #pragma link C++ class AliFMDMCTrackInspector::RingHistos+;
 #pragma link C++ class AliFMDMCTrackInspectorTask+;
 
-// Forward (FMD) tasks 
+// Forward (FMD) tasks
 #pragma link C++ class AliFMDEnergyFitterTask+;
 #pragma link C++ class AliFMDEventPlaneTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed. 
+// Used internally and never streamed.
 #pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
 #endif
 #pragma link C++ class AliForwardFlowTaskQC+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed. 
+// Used internally and never streamed.
 #pragma link C++ class AliForwardFlowTaskQC::CumuHistos+;
 #pragma link C++ class AliForwardFlowTaskQC::VertexBin+;
 #endif
 #pragma link C++ class AliForwardMCCorrectionsTask+;
 #if ROOT_VERSION_CODE < 0x56300/* ROOT_VERSION(5,99,0)*/ && __GNUC__ < 5
-// Used internally and never streamed. 
+// Used internally and never streamed.
 #pragma link C++ class AliForwardMCCorrectionsTask::VtxBin+;
 #endif
 #pragma link C++ class AliForwardMCFlowTaskQC+;
