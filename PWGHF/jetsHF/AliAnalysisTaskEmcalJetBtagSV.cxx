@@ -27,6 +27,7 @@
 #include <TFile.h>
 #include <TH1F.h>
 #include <TKey.h>
+#include <THn.h>
 #include <THnSparse.h>
 #include <TList.h>
 #include <TProfile.h>
@@ -92,6 +93,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fhRhoQa(NULL),
   fhMCRhoQa(NULL),
   fhnDetRespMtx(NULL),
+  fhnGenerated(NULL),
   fhXsec(NULL),
   fhTrials(NULL),
   fEvent(NULL),
@@ -147,6 +149,7 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fhJetVtxData(NULL),
   fhQaVtx(NULL),
   fhnDetRespMtx(NULL),
+  fhnGenerated(NULL),
   fhEntries(NULL),
   fhEvtRej(NULL),
   fhHFjetQa(NULL),
@@ -215,13 +218,22 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
 
     if (fDoDetRespMtx) {
       // detector response matrix for unfolding (from Gyulnara)
-      // dimensions: pt_reco, pt_gen, eta_reco, eta_gen, flavor{g=1, L=2, C=3, B=4}
-      const Int_t kNbins = 6;
+      // dimensions: pt_reco, pt_gen, eta_reco, eta_gen, flavor{g=1, L=2, C=3, B=4} BH and BP
+	  const int kNbins = 6;
       Int_t bins[kNbins]    = {200, 200,  20, 20,    5,   5};
       Double_t xmin[kNbins] = {  0,   0, -1., -1., -.5, -.5};
       Double_t xmax[kNbins] = {200, 200,  1.,  1., 4.5, 4.5};
       fhnDetRespMtx = new THnSparseF("fhnDetRespMtx", "Detector response matrix", kNbins, bins, xmin, xmax);
       fOutputList->Add(fhnDetRespMtx);
+      
+      // MC generated histogram is needed to calculate efficiency during unfolding
+      // dimensions: pt_gen, eta_gen, flavor{g=1, L=2, C=3, B=4} BH and BP
+	  const Int_t kNhbins = 4;
+      Int_t binsh[kNhbins]  =   {200,  20,    5,   5};
+      Double_t xminh[kNhbins] = {  0,  -1., -.5, -.5};
+      Double_t xmaxh[kNhbins] = {200,   1., 4.5, 4.5};
+      fhnGenerated = new THnF("fhnGenerated", "MC Generated histogram", kNhbins, binsh, xminh, xmaxh);
+      fOutputList->Add(fhnGenerated);
     }
   } else {
     // vertices within the jet - Data
@@ -482,35 +494,41 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
   aVtxDisp.reserve(5);
 
   // Loop on MC jets
-  if (!fDoOnlyMtxAna) {
-    AliEmcalJet* jetMC;
-    for (Int_t jetcand = 0; jetcand < nMCJets; ++jetcand) {
+  AliEmcalJet* jetMC;
+  for (Int_t jetcand = 0; jetcand < nMCJets; ++jetcand) {
 
-      jetMC = (AliEmcalJet*)fMCJetArray->UncheckedAt(jetcand);
-      if (!jetMC) continue;
+    jetMC = (AliEmcalJet*)fMCJetArray->UncheckedAt(jetcand);
+    if (!jetMC) continue;
 
-      // restrict jet eta and pT ranges
-      if (!fCutsHFjets->IsJetSelected(jetMC)) {
-        AliDebugF(5, MSGDEBUG("JetMC not selected: pT=%f, eta=%f!"), jetMC->Pt(), jetMC->Eta());
-        continue;
-      }
+    // restrict jet eta and pT ranges
+    if (!fCutsHFjets->IsJetSelected(jetMC)) {
+      AliDebugF(5, MSGDEBUG("JetMC not selected: pT=%f, eta=%f!"), jetMC->Pt(), jetMC->Eta());
+      continue;
+    }
 
-      // Get jet flavour from 2 methods
-      Double_t partonnatMC[2] = { -1, -1};
-      Double_t ptpartMC[2]    = { -1, -1};
+    // Get jet flavour from 2 methods
+    Double_t partonnatMC[2] = { -1, -1};
+    Double_t ptpartMC[2]    = { -1, -1};
 
-      GetFlavour2Methods(jetMC, partonnatMC, ptpartMC, fTaggingRadius);
+    GetFlavour2Methods(jetMC, partonnatMC, ptpartMC, fTaggingRadius);
 
-      Double_t ptJetGen_wBkgRej = jetMC->Pt() - (jetMC->Area() * rhoMC);
+    Double_t ptJetGen_wBkgRej = jetMC->Pt() - (jetMC->Area() * rhoMC);
 
+    if (!fDoOnlyMtxAna) {
       // Fill container tagger
       // At this point we do not need to fill the secondary vertex QA container
-      fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepEventSelected, 0, 0, ptJetGen_wBkgRej, aVtxDisp,
+       fhJetVtxSim->FillStepJetVtxSim(AliHFJetsContainer::kCFStepEventSelected, 0, 0, ptJetGen_wBkgRej, aVtxDisp,
                                      NULL, NULL, jetMC, NULL, partonnatMC, ptpartMC, fMCWeight);
 
-      aVtxDisp.clear(); //just on case
-    } // end loop on jets
-  }
+       aVtxDisp.clear(); //just on case
+    } 
+    
+    if (fDoDetRespMtx) {
+      Double_t vector[4] = {ptJetGen_wBkgRej, jetMC->Eta(), partonnatMC[0], partonnatMC[1]};
+      fhnGenerated->Fill(vector, fMCWeight);
+	}
+    
+  } // end loop on jets
   // Loop on jets (clusterized on RECO particles)
   AliEmcalJet* jet;
   for (Int_t jetcand = 0; jetcand < nJets; ++jetcand) {
@@ -566,6 +584,8 @@ void AliAnalysisTaskEmcalJetBtagSV::AnalyseCorrectionsMode()
                                fHFvertexing, fMCPartArray, aVtxDisp, partonnat, fMCWeight);
       }
     }
+
+
 
     AliEmcalJet* matchedjet = jet->ClosestJet();
     if (!matchedjet) continue;

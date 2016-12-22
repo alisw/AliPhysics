@@ -17,6 +17,7 @@
 //--Root--
 class TH1F;
 class TList;
+class THn;
 class THnSparse;
 class TProfile;
 class AliAODMCHeader;
@@ -201,6 +202,7 @@ private:
   TH1F*                       fhMCRhoQa;
 
   THnSparse*                  fhnDetRespMtx;     //!<! THnSparse to fill response matrix
+  THn*                        fhnGenerated;      //!<! THn to fill MC generated histo 
 
   TProfile*                   fhXsec;            //!<! Cross section in PYTHIA.
   TH1F*                       fhTrials;          //!<! Number of event trials in PYTHIA.
