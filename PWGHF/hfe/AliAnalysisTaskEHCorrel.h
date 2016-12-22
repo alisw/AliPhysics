@@ -73,7 +73,16 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-
+    
+    void    SetPartnerEleMinTPCNCls(Int_t MinNClsPE) {fTPCNClsPartnerE = MinNClsPE;};
+    void    SetPartnerEleMinPt(Double_t PtPE) {fPartElePt = PtPE;};
+    void    SetInvmassCut(Double_t invmasscut) {fInvmassCut = invmasscut;};
+    
+    void    SetHadMinTPCNCls(Int_t MinNClsHad) {fTPCNClsHad = MinNClsHad;};
+    void    SetHadSPDkAny(Bool_t HadSPDkAny) {fFlagHadSPDkAny = HadSPDkAny;};
+    void    SetHadLargeITSNCls(Bool_t HadLargITSNCls) {fFlagHadITSNCls = HadLargITSNCls;};
+    
+    void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
 
   private:
     AliVEvent 		    *fVevent;//!V event object
@@ -101,7 +110,11 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fEovPMin;//
     Double_t            fEovPMax;//
     Int_t               fTPCNClsHad;// Had track TPC NClusters
+    Int_t               fTPCNClsPartnerE;//
+    Double_t            fPartElePt;//
     Double_t            fInvmassCut;//
+    Bool_t              fFlagHadSPDkAny;//
+    Bool_t              fFlagHadITSNCls;//
     Double_t            fTPCnSigmaHadMin;//
     Double_t            fTPCnSigmaHadMax;//
     Int_t               fHadCutCase;//
@@ -110,6 +123,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNEle;//!
     Double_t            fVtxZBin;//!
     Double_t            fCentBin;//!
+    Bool_t              fFlagMEBinChange;//!
 
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events
