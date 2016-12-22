@@ -164,8 +164,8 @@ private:
     TH2F        *fInvmassHfULS;//!Invmass of ULS
     TH2F        *fInvmassHfLS;//!Invmass of LS
     TH1F        *fMCcheckMother;
-    TH1F        *fCheckEta;    
-    TH1F        *fCheckEtaMC;    
+    //TH1F        *fCheckEta;    
+    //TH1F        *fCheckEtaMC;    
 
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info
@@ -210,8 +210,10 @@ private:
     TH1D        *fHistHFEpos;
     TH1D        *fHistHFEneg;
     TH1D        *fHistHFmcCheck;
-    TH1D        *fHistEta;
-    TH1D        *fHistEtaMC;
+    //TH1D        *fHistEta;
+    //TH1D        *fHistEtaMC;
+    TH1F        *fCheckEta;    
+    TH1F        *fCheckEtaMC;    
 
     AliHFEcuts  *fhfeCuts;
 
