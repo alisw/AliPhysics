@@ -31,6 +31,7 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoCascadeHF.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliNeutralTrackParam.h"
 #include "AliAnalysisTaskSEImproveITS.h"
 
@@ -343,12 +344,15 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   // TODO: recalculated primary vertex
   AliVVertex *primaryVertex=ev->GetPrimaryVertex();
 
+  AliAnalysisVertexingHF *vHF = new AliAnalysisVertexingHF();
+  
   // Recalculate all candidates
   // D0->Kpi
   TClonesArray *array2Prong=static_cast<TClonesArray*>(ev->GetList()->FindObject("D0toKpi"));
   if (array2Prong) {
       for (Int_t icand=0;icand<array2Prong->GetEntries();++icand) {
       AliAODRecoDecayHF2Prong *decay=static_cast<AliAODRecoDecayHF2Prong*>(array2Prong->At(icand));
+      if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF2Prong*)decay))continue;
 
       // recalculate vertices
       AliVVertex *oldSecondaryVertex=decay->GetSecondaryVtx();
@@ -412,6 +416,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   if (arrayCascade) {
     for (Int_t icand=0;icand<arrayCascade->GetEntries();++icand) {
       AliAODRecoCascadeHF *decayDstar=static_cast<AliAODRecoCascadeHF*>(arrayCascade->At(icand));
+      if(!vHF->FillRecoCasc(ev,((AliAODRecoCascadeHF*)decayDstar),kTRUE))continue;
       //Get D0 from D*
       AliAODRecoDecayHF2Prong* decay=(AliAODRecoDecayHF2Prong*)decayDstar->Get2Prong();
       
@@ -462,6 +467,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   if (array3Prong) {
     for (Int_t icand=0;icand<array3Prong->GetEntries();++icand) {
       AliAODRecoDecayHF3Prong *decay=static_cast<AliAODRecoDecayHF3Prong*>(array3Prong->At(icand));
+      if(!vHF->FillRecoCand(ev,(AliAODRecoDecayHF3Prong*)decay))continue;
 
       // recalculate vertices
       AliVVertex *oldSecondaryVertex=decay->GetSecondaryVtx();
@@ -531,6 +537,8 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
       decay->SetPxPyPzProngs(3,px,py,pz);
     }
   }
+  delete vHF;
+
 }
 
 void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArray *mcs) {
