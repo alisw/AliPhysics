@@ -221,7 +221,7 @@ public:
   ///
   /// Computes the Rapidity of the track in the 3 mass hypothesis: pions kaons and protons
   void ComputeRapidity(){
-    for(Int_t species = 0; species < 3; species++) fRapidity[species] = ComputeY(AliPID::ParticleMass(species+2));
+    for(Int_t species = 0; species < 3; species++) fRapidity[species] = ComputeY(AliPID::ParticleMass(species+AliPID::kPion));
   }
   
   ///
@@ -486,6 +486,7 @@ private:
   Bool_t fCutmode;           ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
   const Int_t fSimpleCutmode;///<  Index to set simple configuration of the track cuts
   const Bool_t fBuilTPCTOF;  ///<  Flag to build the TPC TOF separation
+  const Bool_t fBuilDCAchi2; ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
   const Bool_t fUseTPCShift; ///<  Flag to use the Shift of the TPC nsigma
   const Bool_t fPerformance; ///<  Flag to fill the performance plots
   UInt_t fSelectBit;         ///<  Mask for Trigger selection
@@ -661,8 +662,8 @@ private:
   TH1F* hTrkITSChi2NDF[2];                      ///<  Histogram with the reduced chi2 in ITS of all not accepted and accepted tracks
   TH1F* hTrkActiveLength[2];                    ///<  Histogram with the length of the track in the active region
   TH1F* hTrkITSTPCMatch[2];                     ///<  Histogram with the match between ITS and TPC
-  TH1F* hTrkDCAxy[2];                           ///<  Histogram with the DCA XY and Z of all not accepted and accepted tracks
-  TH1F* hTrkDCAz[2];                            ///<  Histogram with the DCA XY and Z of all not accepted and accepted tracks
+  TH1F* hTrkDCAxy[2];                           ///<  Histogram with the DCA XY of all not accepted and accepted tracks
+  TH1F* hTrkDCAz[2];                            ///<  Histogram with the DCA Z of all not accepted and accepted tracks
   #ifdef CHECKTRACKCUTS//Only if required
   TH2I* hTrkTPCClsCorr[2][3];                   ///<  Correlation between pt [0] - eta [1] - phi [2] and the number of TPC clusters before and after the cut
   TH2I* hTrkTPCRowsCorr[2][3];                  ///<  Correlation between pt [0] - eta [1] - phi [2] and the number of TPC crossed rows before and after the cut
@@ -685,6 +686,7 @@ private:
   TH1D* hTimeOfFlightGoodRes;                   ///<  Histogram with the Time Of Flight for tracks with good matching
   TH1D* hTimeOfFlightResNoMismatch;             ///<  Histogram with the Time Of Flight for PID consistent with TPC for Pi K P
   TH2F* hPadDist;                               ///<  Histogram with the Impact Residual X and Residual Z values
+  TH2F* hTOFDist;                               ///<  Histogram with the distributions of the TOF strips and sectors
   TH2F* hBeta;                                  ///<  Histogram with the track beta vs the track momentum
   TH2F* hBetaNoMismatch;                        ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
   TH2F* hBetaNoMismatchEtaCut;                  ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
@@ -706,6 +708,7 @@ private:
   #endif
   #ifdef BUILDTOFDISTRIBUTIONS// Build TOF distributions only if requested
   TH1F * hTOF[kPtBins][kCharges][kSpecies];                    ///<  Distribution for T-Texp-T0
+  TH1F * hTOFNoYCut[kPtBins][kCharges][kSpecies];              ///<  Distribution for T-Texp-T0 without the cut on rapidity
   TH1F * hTOFSigma[kPtBins][kCharges][kSpecies];               ///<  Sigma distributions for T-Texp-T0
   TH1F * hTOFNoMismatch[kPtBins][kCharges][kSpecies];          ///<  Distribution for T-Texp-T0 without Mismatch, removed with the information on the TPC
   TH1F * hTOFSigmaNoMismatch[kPtBins][kCharges][kSpecies];     ///<  Distribution for T-Texp-T0 without Mismatch, removed with the information on the TPC
@@ -761,7 +764,8 @@ private:
   
   //DCA Histograms
   //-> Data and MC
-  TH1F* hDCAxy[2][3][kPtBins][kEvtMultBins];  ///< DCAxy Distribution in Pt bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
+  TH1F* hDCAxy[2][3][kPtBins][kEvtMultBins];                ///< DCAxy Distribution in Pt bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
+  TH1F* hDCAxyGoldenChi2[2][3][kPtBins][kEvtMultBins];      ///< DCAxy Distribution in Pt bins for all the reconstructed tracks but with the cut on the golden Chi2
   //-> MC only
   TH1F* hDCAxyPrimMC[2][3][kPtBins];          ///< DCAxy Distribution in Pt bins for Primary reconstructed tracks identified with MC Truth
   TH1F* hDCAxySecStMC[2][3][kPtBins];         ///< DCAxy Distribution in Pt bins for Secondary from Strangeness reconstructed tracks identified with MC Truth
