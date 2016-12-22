@@ -35,8 +35,8 @@ void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
       gCentrality[23] = 50;
     }
     else if(!is2011) {
-      for(Int_t i = 0; i < 6; i++) 
-	gCentrality[i] = 50 + i*10;
+      for(Int_t i = 0; i < 11; i++) 
+	gCentrality[i] = 0 + i*10;
     }
   }
   
@@ -197,25 +197,25 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
                                            Bool_t is2011 = kTRUE,
                                            AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
                                            Bool_t doQA = kFALSE) {
-    //Part of the code that creates the event cut objects
-    Double_t gVertexZmin = -10., gVertexZmax = 10.;
-    
-    //Create the event cut objects
-    AliFlowEventCuts *cutsEvent = new AliFlowEventCuts(Form("eventcutsCentrality%dTo%d",gCentralityMin,gCentralityMax));
-    if(isPbPb) {
-        cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax);
-        cutsEvent->SetCentralityPercentileMethod(gCentralityEstimator);
-        cutsEvent->SetLHC11h(is2011);
-        cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
-    }
-    else
-        cutsEvent->SetCheckPileup(kTRUE);
-    
-    cutsEvent->SetPrimaryVertexZrange(gVertexZmin,gVertexZmax);
-    cutsEvent->SetQA(doQA);
-    
-    //return the object
-    return cutsEvent;
+  //Part of the code that creates the event cut objects
+  Double_t gVertexZmin = -10., gVertexZmax = 10.;
+  
+  //Create the event cut objects
+  AliFlowEventCuts *cutsEvent = new AliFlowEventCuts(Form("eventcutsCentrality%dTo%d",gCentralityMin,gCentralityMax));
+  if(isPbPb) {
+    cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax);//,kTRUE
+    cutsEvent->SetCentralityPercentileMethod(gCentralityEstimator);
+    cutsEvent->SetLHC11h(is2011);
+    cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+  }
+  else
+    cutsEvent->SetCheckPileup(kTRUE);
+  
+  cutsEvent->SetPrimaryVertexZrange(gVertexZmin,gVertexZmax);
+  cutsEvent->SetQA(doQA);
+  
+  //return the object
+  return cutsEvent;
 }
 
 //_________________________________________________________//
@@ -274,6 +274,8 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
     Int_t gMinTPCdedx = 10;
     Bool_t isPID = kTRUE;
     AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian;
+   
+    //AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTPCTOFNsigma;
     AliPID::EParticleType particleType = AliPID::kPion;
     
     if(particleSpecies.Contains("Pion")) {
@@ -320,7 +322,7 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
     if (gCharge!=0) cutsPOI->SetCharge(gCharge);
     
     cutsPOI->SetMinNClustersTPC(70);
-    cutsPOI->SetPtRange(0.2,20.);
+    cutsPOI->SetPtRange(0.2,10.);
     cutsPOI->SetAODfilterBit(gAODfilterBit);
     if(gDCAvtxXY > 0) 
         cutsPOI->SetMaxDCAToVertexXY(gDCAvtxXY);
