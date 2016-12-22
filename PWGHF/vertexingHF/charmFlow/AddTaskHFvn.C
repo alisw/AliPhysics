@@ -80,7 +80,6 @@ AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/
   v2Task->SetMinCentrality(minC);
   v2Task->SetMaxCentrality(maxC);
   v2Task->SetDebugLevel(0);
-  v2Task->SetV0EventPlaneOrder(2);
   v2Task->SetEventPlaneMethod(flagep);
   if(flagep==AliAnalysisTaskSEHFvn::kTPC) {
     suffix+="TPC";
