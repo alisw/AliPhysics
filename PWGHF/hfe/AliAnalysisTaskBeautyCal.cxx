@@ -762,10 +762,22 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   //printf("There are %d tracks in this event\n",ntracks);
 
   fNevents->Fill(0); //all events
+
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
-  Double_t NcontV = pVtx->GetNContributors();
-  if(NcontV<2)return;
+  //Double_t NcontV = pVtx->GetNContributors();
+  //if(NcontV<2)return;
+  const AliVVertex *spdVtx = fVevent->GetPrimaryVertexSPD();
+  double covTrc[6],covSPD[6];
+  pVtx->GetCovarianceMatrix(covTrc);
+  spdVtx->GetCovarianceMatrix(covSPD);
+  double dz = pVtx->GetZ()-spdVtx->GetZ();
+  double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+  double errTrc = TMath::Sqrt(covTrc[5]); 
+  double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+  //cout << TMath::Abs(dz) << " ; " << nsigTot << " ; " << nsigTrc << endl;
+  if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20)return;
+  
   fNevents->Fill(1); //events with 2 tracks
 
   Zvertex = pVtx->GetZ();
