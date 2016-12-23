@@ -74,6 +74,8 @@ public:
     void SetSigmaTOFcut(Double_t SigmaTOFcut) {fSigmaTOFcut = SigmaTOFcut;};
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
     void SetTimeCut(Bool_t TimeCut) {fTimeCut = TimeCut;};
+    void SetWeightSyst(Bool_t WeightSyst) {fWeightSyst = WeightSyst;};
+    void SetSystTOFcut(Bool_t SystTOFcut) {fSystTOFcut = SystTOFcut;};
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
     void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0, Bool_t IsPassedSScuts);
@@ -114,6 +116,8 @@ private:
     Double_t              fSigmaTOFcut;
     Double_t              fSigmaTPCcut;
     Bool_t                fTimeCut;
+    Bool_t                fWeightSyst;
+    Bool_t                fSystTOFcut;
     
     // AliESDEvent        	*fESD;	            	 //! ESD object
     AliAODEvent           *fAOD;                  //! AOD object
