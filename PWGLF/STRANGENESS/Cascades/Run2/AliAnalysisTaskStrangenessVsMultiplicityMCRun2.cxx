@@ -762,19 +762,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNegDCAz",&fTreeCascVarNegDCAz,"fTreeCascVarNegDCAz/F");
             fTreeCascade->Branch("fTreeCascVarPosDCAz",&fTreeCascVarPosDCAz,"fTreeCascVarPosDCAz/F");
             fTreeCascade->Branch("fTreeCascVarBachDCAz",&fTreeCascVarBachDCAz,"fTreeCascVarBachDCAz/F");
-            
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegative",&fTreeCascVarIsPhysicalPrimaryNegative,"fTreeCascVarIsPhysicalPrimaryNegative/O");
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositive",&fTreeCascVarIsPhysicalPrimaryPositive,"fTreeCascVarIsPhysicalPrimaryPositive/O");
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelor",&fTreeCascVarIsPhysicalPrimaryBachelor,"fTreeCascVarIsPhysicalPrimaryBachelor/O");
-            
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegativeMother",&fTreeCascVarIsPhysicalPrimaryNegativeMother,"fTreeCascVarIsPhysicalPrimaryNegativeMother/O");
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositiveMother",&fTreeCascVarIsPhysicalPrimaryPositiveMother,"fTreeCascVarIsPhysicalPrimaryPositiveMother/O");
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelorMother",&fTreeCascVarIsPhysicalPrimaryBachelorMother,"fTreeCascVarIsPhysicalPrimaryBachelorMother/O");
-            
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegativeGrandMother",&fTreeCascVarIsPhysicalPrimaryNegativeGrandMother,"fTreeCascVarIsPhysicalPrimaryNegativeGrandMother/O");
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositiveGrandMother",&fTreeCascVarIsPhysicalPrimaryPositiveGrandMother,"fTreeCascVarIsPhysicalPrimaryPositiveGrandMother/O");
-            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelorGrandMother",&fTreeCascVarIsPhysicalPrimaryBachelorGrandMother,"fTreeCascVarIsPhysicalPrimaryBachelorGrandMother/O");
-            
         }
         //------------------------------------------------
         if ( fkDebugBump ){
@@ -815,6 +802,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachLabelGrandMother",&fTreeCascVarBachLabelGrandMother,"fTreeCascVarBachLabelGrandMother/I");
             //Event Number (check same-event index mixups)
             fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
+            
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegative",&fTreeCascVarIsPhysicalPrimaryNegative,"fTreeCascVarIsPhysicalPrimaryNegative/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositive",&fTreeCascVarIsPhysicalPrimaryPositive,"fTreeCascVarIsPhysicalPrimaryPositive/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelor",&fTreeCascVarIsPhysicalPrimaryBachelor,"fTreeCascVarIsPhysicalPrimaryBachelor/O");
+            
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegativeMother",&fTreeCascVarIsPhysicalPrimaryNegativeMother,"fTreeCascVarIsPhysicalPrimaryNegativeMother/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositiveMother",&fTreeCascVarIsPhysicalPrimaryPositiveMother,"fTreeCascVarIsPhysicalPrimaryPositiveMother/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelorMother",&fTreeCascVarIsPhysicalPrimaryBachelorMother,"fTreeCascVarIsPhysicalPrimaryBachelorMother/O");
+            
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegativeGrandMother",&fTreeCascVarIsPhysicalPrimaryNegativeGrandMother,"fTreeCascVarIsPhysicalPrimaryNegativeGrandMother/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositiveGrandMother",&fTreeCascVarIsPhysicalPrimaryPositiveGrandMother,"fTreeCascVarIsPhysicalPrimaryPositiveGrandMother/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelorGrandMother",&fTreeCascVarIsPhysicalPrimaryBachelorGrandMother,"fTreeCascVarIsPhysicalPrimaryBachelorGrandMother/O");
         }
         //-----------MC Exclusive info--------------------
         fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimary",&fTreeCascVarIsPhysicalPrimary,"fTreeCascVarIsPhysicalPrimary/I");
