@@ -379,6 +379,17 @@ private:
     Int_t   fTreeCascVarPIDNegativeGrandMother;         //!
     Int_t   fTreeCascVarPIDPositiveGrandMother;         //!
     Int_t   fTreeCascVarPIDBachelorGrandMother;         //!
+    
+    Bool_t fTreeCascVarIsPhysicalPrimaryNegative;
+    Bool_t fTreeCascVarIsPhysicalPrimaryPositive;
+    Bool_t fTreeCascVarIsPhysicalPrimaryBachelor;
+    Bool_t fTreeCascVarIsPhysicalPrimaryNegativeMother;
+    Bool_t fTreeCascVarIsPhysicalPrimaryPositiveMother;
+    Bool_t fTreeCascVarIsPhysicalPrimaryBachelorMother;
+    Bool_t fTreeCascVarIsPhysicalPrimaryNegativeGrandMother;
+    Bool_t fTreeCascVarIsPhysicalPrimaryPositiveGrandMother;
+    Bool_t fTreeCascVarIsPhysicalPrimaryBachelorGrandMother;
+    
     //Well, why not? Let's give it a shot
     Int_t   fTreeCascVarSwappedPID;         //!
     

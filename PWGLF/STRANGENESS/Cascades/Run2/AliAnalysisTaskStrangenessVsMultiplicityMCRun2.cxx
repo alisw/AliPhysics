@@ -286,6 +286,15 @@ fTreeCascVarBachLabelMother(0),
 fTreeCascVarNegLabelGrandMother(0),
 fTreeCascVarPosLabelGrandMother(0),
 fTreeCascVarBachLabelGrandMother(0),
+fTreeCascVarIsPhysicalPrimaryNegative(kFALSE),
+fTreeCascVarIsPhysicalPrimaryPositive(kFALSE),
+fTreeCascVarIsPhysicalPrimaryBachelor(kFALSE),
+fTreeCascVarIsPhysicalPrimaryNegativeMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryPositiveMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryBachelorMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryNegativeGrandMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryPositiveGrandMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryBachelorGrandMother(kFALSE),
 //Event Number (check same-event index mixups)
 fTreeCascVarEventNumber(0),
 
@@ -492,6 +501,16 @@ fTreeCascVarBachLabelMother(0),
 fTreeCascVarNegLabelGrandMother(0),
 fTreeCascVarPosLabelGrandMother(0),
 fTreeCascVarBachLabelGrandMother(0),
+fTreeCascVarIsPhysicalPrimaryNegative(kFALSE),
+fTreeCascVarIsPhysicalPrimaryPositive(kFALSE),
+fTreeCascVarIsPhysicalPrimaryBachelor(kFALSE),
+fTreeCascVarIsPhysicalPrimaryNegativeMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryPositiveMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryBachelorMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryNegativeGrandMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryPositiveGrandMother(kFALSE),
+fTreeCascVarIsPhysicalPrimaryBachelorGrandMother(kFALSE),
+
 //Event Number (check same-event index mixups)
 fTreeCascVarEventNumber(0),
 
@@ -743,6 +762,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarNegDCAz",&fTreeCascVarNegDCAz,"fTreeCascVarNegDCAz/F");
             fTreeCascade->Branch("fTreeCascVarPosDCAz",&fTreeCascVarPosDCAz,"fTreeCascVarPosDCAz/F");
             fTreeCascade->Branch("fTreeCascVarBachDCAz",&fTreeCascVarBachDCAz,"fTreeCascVarBachDCAz/F");
+            
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegative",&fTreeCascVarIsPhysicalPrimaryNegative,"fTreeCascVarIsPhysicalPrimaryNegative/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositive",&fTreeCascVarIsPhysicalPrimaryPositive,"fTreeCascVarIsPhysicalPrimaryPositive/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelor",&fTreeCascVarIsPhysicalPrimaryBachelor,"fTreeCascVarIsPhysicalPrimaryBachelor/O");
+            
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegativeMother",&fTreeCascVarIsPhysicalPrimaryNegativeMother,"fTreeCascVarIsPhysicalPrimaryNegativeMother/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositiveMother",&fTreeCascVarIsPhysicalPrimaryPositiveMother,"fTreeCascVarIsPhysicalPrimaryPositiveMother/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelorMother",&fTreeCascVarIsPhysicalPrimaryBachelorMother,"fTreeCascVarIsPhysicalPrimaryBachelorMother/O");
+            
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryNegativeGrandMother",&fTreeCascVarIsPhysicalPrimaryNegativeGrandMother,"fTreeCascVarIsPhysicalPrimaryNegativeGrandMother/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryPositiveGrandMother",&fTreeCascVarIsPhysicalPrimaryPositiveGrandMother,"fTreeCascVarIsPhysicalPrimaryPositiveGrandMother/O");
+            fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimaryBachelorGrandMother",&fTreeCascVarIsPhysicalPrimaryBachelorGrandMother,"fTreeCascVarIsPhysicalPrimaryBachelorGrandMother/O");
+            
         }
         //------------------------------------------------
         if ( fkDebugBump ){
@@ -2014,6 +2046,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarBachPyMC = mcBach->Py();
         fTreeCascVarBachPzMC = mcBach->Pz();
         
+        fTreeCascVarIsPhysicalPrimaryNegative = kFALSE;
+        fTreeCascVarIsPhysicalPrimaryPositive = kFALSE;
+        fTreeCascVarIsPhysicalPrimaryBachelor = kFALSE;
+        fTreeCascVarIsPhysicalPrimaryNegativeMother = kFALSE;
+        fTreeCascVarIsPhysicalPrimaryPositiveMother = kFALSE;
+        fTreeCascVarIsPhysicalPrimaryBachelorMother = kFALSE;
+        fTreeCascVarIsPhysicalPrimaryNegativeGrandMother = kFALSE;
+        fTreeCascVarIsPhysicalPrimaryPositiveGrandMother = kFALSE;
+        fTreeCascVarIsPhysicalPrimaryBachelorGrandMother = kFALSE;
+        
+        if( lMCstack->IsPhysicalPrimary( lblNegV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryNegative = kTRUE;
+        if( lMCstack->IsPhysicalPrimary( lblPosV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryPositive = kTRUE;
+        if( lMCstack->IsPhysicalPrimary( lblBach        ) ) fTreeCascVarIsPhysicalPrimaryBachelor = kTRUE;
+        
         //fTreeCascVarPosTransvMomentumMC = mcPosV0Dghter->Pt();
         //fTreeCascVarNegTransvMomentumMC = mcNegV0Dghter->Pt();
         
@@ -2031,12 +2077,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         // Meant to provide extra info related to the bump
         if ( lblMotherPosV0Dghter > -1 ){
             TParticle *lPosMother = lMCstack->Particle( lblMotherPosV0Dghter );
+            if( lMCstack->IsPhysicalPrimary( lblMotherPosV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryPositiveMother = kTRUE;
             fTreeCascVarPIDPositiveMother = lPosMother->GetPdgCode();
             fTreeCascVarPosLabelMother = lblMotherPosV0Dghter;
             //Go further than that, please
             Int_t lblGrandMother = lPosMother->GetFirstMother();
             if( lblGrandMother > -1 ){
                 TParticle *lPosGrandMother = lMCstack->Particle( lblGrandMother );
+                if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeCascVarIsPhysicalPrimaryPositiveGrandMother = kTRUE;
                 fTreeCascVarPIDPositiveGrandMother = lPosGrandMother->GetPdgCode();
                 fTreeCascVarPosLabelGrandMother = lblGrandMother;
             }
@@ -2044,12 +2092,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         if ( lblMotherNegV0Dghter > -1 ){
             TParticle *lNegMother = lMCstack->Particle( lblMotherNegV0Dghter );
+            if( lMCstack->IsPhysicalPrimary( lblMotherNegV0Dghter ) ) fTreeCascVarIsPhysicalPrimaryNegativeMother = kTRUE;
             fTreeCascVarPIDNegativeMother = lNegMother->GetPdgCode();
             fTreeCascVarNegLabelMother = lblMotherPosV0Dghter;
             //Go further than that, please
             Int_t lblGrandMother = lNegMother->GetFirstMother();
             if( lblGrandMother > -1 ){
                 TParticle *lNegGrandMother = lMCstack->Particle( lblGrandMother );
+                if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeCascVarIsPhysicalPrimaryNegativeGrandMother = kTRUE;
                 fTreeCascVarPIDNegativeGrandMother = lNegGrandMother->GetPdgCode();
                 fTreeCascVarNegLabelGrandMother = lblGrandMother;
             }
@@ -2057,12 +2107,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         if ( lblMotherBachelor > -1 ){
             TParticle *lBachMother = lMCstack->Particle( lblMotherBachelor );
+            if( lMCstack->IsPhysicalPrimary( lblMotherBachelor ) ) fTreeCascVarIsPhysicalPrimaryBachelorMother = kTRUE;
             fTreeCascVarPIDBachelorMother = lBachMother->GetPdgCode();
             fTreeCascVarBachLabelMother = lblMotherBachelor;
             //Go further than that, please
             Int_t lblGrandMother = lBachMother->GetFirstMother();
             if( lblGrandMother > -1 ){
                 TParticle *lBachGrandMother = lMCstack->Particle( lblGrandMother );
+                if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeCascVarIsPhysicalPrimaryBachelorGrandMother = kTRUE;
                 fTreeCascVarPIDBachelorGrandMother = lBachGrandMother->GetPdgCode();
                 fTreeCascVarBachLabelGrandMother = lblGrandMother;
             }
