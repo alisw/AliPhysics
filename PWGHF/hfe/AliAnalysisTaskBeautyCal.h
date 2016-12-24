@@ -214,6 +214,8 @@ private:
     //TH1D        *fHistEtaMC;
     TH1F        *fCheckEta;    
     TH1F        *fCheckEtaMC;    
+    TH2D        *fHistIncTPCchi2; 
+    TH2D        *fHistIncITSchi2; 
 
     AliHFEcuts  *fhfeCuts;
 
