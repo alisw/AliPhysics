@@ -1801,7 +1801,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus && lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) ) &&
                 
                 //Check 6: Experimental DCA Bachelor to Baryon cut
-                ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() )
+                ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
+                
+                //Check 7: Experimental Bach Baryon CosPA
+                ( fTreeCascVarDCABachToBaryon < lCascadeResult->GetCutBachBaryonCosPA()  )
                 
                 ){
                 //This satisfies all my conditionals! Fill histogram
