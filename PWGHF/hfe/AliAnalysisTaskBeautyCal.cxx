@@ -182,6 +182,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fHistHFmcCheck(0), 
   fCheckEta(0),
   fCheckEtaMC(0),
+  fHistIncTPCchi2(0),
+  fHistIncITSchi2(0),
   fhfeCuts(0) 
 {
   // Constructor
@@ -307,6 +309,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fHistHFmcCheck(0),
   fCheckEta(0),
   fCheckEtaMC(0),
+  fHistIncTPCchi2(0),
+  fHistIncITSchi2(0),
   fhfeCuts(0) 
 {
   //Default constructor
@@ -662,6 +666,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
   fOutputList->Add(fCheckEtaMC);
 
+  fHistIncTPCchi2 = new TH2D("fHistIncTPCchi2","TPC chi2 vs. electron",40,0,40,40,0,4);
+  fOutputList->Add(fHistIncTPCchi2);
+
+  fHistIncITSchi2 = new TH2D("fHistIncITSchi2","ITS chi2 vs. electron",40,0,40,400,0,40);
+  fOutputList->Add(fHistIncITSchi2);
+
   PostData(1,fOutputList);
 }
 
@@ -968,6 +978,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(!esdTrackCutsH->AcceptTrack(etrack))continue;
 
     //reject kink
+    
     if(IsAODanalysis()){
       Bool_t kinkmotherpass = kTRUE;
       for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
@@ -981,6 +992,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     else{
       if(etrack->GetKinkIndex(0) != 0) continue;
     }
+ 
 
     //other cuts
     Double_t d0z0[2]={-999,-999}, cov[3];
@@ -1309,6 +1321,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
           }
 
         fHistDCAinc->Fill(track->Pt(),DCAxy);
+        fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
+        fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());
 
         if(pid_eleD)fHistDCAdeInc->Fill(track->Pt(),DCAxy);
         if(pid_eleB)fHistDCAbeInc->Fill(track->Pt(),DCAxy);
