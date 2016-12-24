@@ -2513,7 +2513,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //Check 6: Experimental DCA Bachelor to Baryon cut
                 ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
                 
-                //Check 7: Explicit associate-with-bump
+                //Check 7: Experimental Bach Baryon CosPA
+                ( fTreeCascVarDCABachToBaryon < lCascadeResult->GetCutBachBaryonCosPA()  ) &&
+                
+                //Check 8: Explicit associate-with-bump
                 ( ! (lCascadeResult->GetCutMCSelectBump())    || (//Start bump-selection
                                                                   //Case: XiMinus or OmegaMinus
                                                                   (lCharge == -1 &&

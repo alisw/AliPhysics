@@ -54,6 +54,7 @@ public:
     void SetCutCascCosPA        ( Double_t lCut ) { fCutCascCosPA         = lCut; }
     void SetCutCascRadius       ( Double_t lCut ) { fCutCascRadius        = lCut; }
     void SetCutDCABachToBaryon  ( Double_t lCut ) { fCutDCABachToBaryon   = lCut; }
+    void SetCutBachBaryonCosPA  ( Double_t lCut ) { fCutBachBaryonCosPA   = lCut; }
     
     //Miscellaneous
     void SetCutProperLifetime        ( Double_t lCut ) { fCutProperLifetime        = lCut; }
@@ -116,6 +117,7 @@ public:
     Double_t GetCutCascCosPA        () const { return fCutCascCosPA; }
     Double_t GetCutCascRadius       () const { return fCutCascRadius; }
     Double_t GetCutDCABachToBaryon  () const { return fCutDCABachToBaryon; }
+    Double_t GetCutBachBaryonCosPA  () const { return fCutBachBaryonCosPA; }
     
     //Miscellaneous
     Double_t GetCutProperLifetime () const { return fCutProperLifetime; }
@@ -170,6 +172,7 @@ private:
     Double_t fCutCascCosPA;        //ca vertexer 5
     Double_t fCutCascRadius;       //ca vertexer 6
     Double_t fCutDCABachToBaryon;  //extra selection on dca bach-pos (experimental)
+    Double_t fCutBachBaryonCosPA;  //extra selection on bach-baryon CosPA (experimental)
     
     Double_t fCutProperLifetime;
     Double_t fCutLeastNumberOfClusters;
@@ -201,7 +204,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 12)
+    ClassDef(AliCascadeResult, 13)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -214,5 +217,6 @@ private:
     // 10 - Variable CascCosPA parametrization added (exp0 + exp1 + pol0)
     // 11 - Variable V0CosPA parametrization added (exp0 + exp1 + pol0)
     // 12 - Added explicit bump selection flag
+    // 13 - Added Bach Baryon CosPA (experimental)
 };
 #endif

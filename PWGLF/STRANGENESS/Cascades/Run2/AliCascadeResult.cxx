@@ -29,6 +29,7 @@ fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
 fCutCascRadius(0.4),
 fCutDCABachToBaryon(-1),
+fCutBachBaryonCosPA(+2),
 //Miscellaneous
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
@@ -74,6 +75,7 @@ fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
 fCutCascRadius(0.4),
 fCutDCABachToBaryon(-1),
+fCutBachBaryonCosPA(+2),
 //Miscellaneous
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
@@ -125,6 +127,7 @@ fCutDCACascDaughters(2.0),
 fCutCascCosPA(0.95),
 fCutCascRadius(0.4),
 fCutDCABachToBaryon(-1),
+fCutBachBaryonCosPA(+2),
 //Miscellaneous
 fCutProperLifetime(1000),
 fCutLeastNumberOfClusters(70),
@@ -185,6 +188,7 @@ fCutDCACascDaughters(lCopyMe.fCutDCACascDaughters),
 fCutCascCosPA(lCopyMe.fCutCascCosPA),
 fCutCascRadius(lCopyMe.fCutCascRadius),
 fCutDCABachToBaryon(lCopyMe.fCutDCABachToBaryon),
+fCutBachBaryonCosPA(lCopyMe.fCutBachBaryonCosPA),
 //Miscellaneous
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
@@ -242,6 +246,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutCascCosPA  = lCopyMe -> GetCutCascCosPA();
     fCutCascRadius = lCopyMe -> GetCutCascRadius();
     fCutDCABachToBaryon = lCopyMe -> GetCutDCABachToBaryon();
+    fCutBachBaryonCosPA = lCopyMe -> GetCutBachBaryonCosPA();
     
     //Miscellaneous
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
@@ -312,6 +317,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutCascCosPA  = lCopyMe.GetCutCascCosPA();
     fCutCascRadius = lCopyMe.GetCutCascRadius();
     fCutDCABachToBaryon = lCopyMe.GetCutDCABachToBaryon();
+    fCutBachBaryonCosPA = lCopyMe.GetCutBachBaryonCosPA();
     
     //Miscellaneous
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
@@ -406,6 +412,7 @@ Bool_t AliCascadeResult::HasSameCuts(AliCascadeResult *lCompare)
     if( TMath::Abs( fCutCascCosPA - lCompare->GetCutCascCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutCascRadius - lCompare->GetCutCascRadius() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutDCABachToBaryon - lCompare->GetCutDCABachToBaryon() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutBachBaryonCosPA - lCompare->GetCutBachBaryonCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutProperLifetime - lCompare->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutLeastNumberOfClusters - lCompare->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
@@ -475,6 +482,7 @@ void AliCascadeResult::Print()
     }
     cout<<" Casc 2D Radius.....: "<<fCutCascRadius<<endl;
     cout<<" DCA Bach to Baryon.: "<<fCutDCABachToBaryon<<endl;
+    cout<<" Bach Baryon CosPA..: "<<fCutBachBaryonCosPA<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
     cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
