@@ -547,10 +547,10 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 */
   if(fFlagSparse)
     {
-     Int_t bins[8]=   { 47,  80, 130,  100, 110,   8,   24, 100}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
-     Double_t xmin[8]={  3,  -4, 0.2,  0.0,  70,   0, -0.6, -50};
-     Double_t xmax[8]={ 50,   4, 1.5,  1.0, 180,   8,  0.6,  50};
-     fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;nTPC;nITS;eta;timing",8,bins,xmin,xmax);
+     Int_t bins[11]=   {  60,  90, 110,   50, 110,   8,   24,  20, 50,  50,   25}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
+     Double_t xmin[11]={ -30,  -5, 0.3,  0.0,  70,   0, -0.6,   0,  0, 100,    0};
+     Double_t xmax[11]={  30,   4, 1.4,  0.5, 180,   8,  0.6,   5, 50, 150, 0.05};
+     fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;nTPC;nITS;eta;TPCchi2;ITSchi2;crossR;matchR",11,bins,xmin,xmax);
      fOutputList->Add(fSparseElectron);
     }
 
@@ -1004,22 +1004,18 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       Double_t nTPCstand = 80;
       Double_t nITSstand = 3;
 
-      if(fSys)
-         {
-          nTPCstand = 70;
-          nITSstand = 1;
-         }
+      // applied lose cut first
+      if(atrack->GetTPCNcls() < 60) continue;
+      if(atrack->GetITSNcls() < 2) continue;
+      if(atrack->GetTPCNCrossedRows() < 80) continue; 
 
-      //cout << "nTPCstand = " << nTPCstand << " ; nITSstand = " << nITSstand << endl;
-
-      //if(atrack->GetTPCNcls() < 80) continue;
-      //if(atrack->GetITSNcls() < 3) continue;
+      /*
       if(atrack->GetTPCNcls() < nTPCstand) continue;
       if(atrack->GetITSNcls() < nITSstand) continue;
       if(atrack->GetTPCNCrossedRows() < 120) continue; // add
       if(atrack->GetTPCchi2() > 4) continue; // add
       if(atrack->GetITSchi2() > 36) continue; // add
-
+      */
       if(fetarange==0)
         {
          if(TMath::Abs(atrack->Eta()) > 0.6) continue;
@@ -1037,7 +1033,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
 
-      //Double_t TPCfound = atrack->GetTPCNclsF();
+      Double_t TPCfound = atrack->GetTPCNclsF();
       //cout << "TPCfound = " << TPCfound << " ; r = " << atrack->GetTPCNCrossedRows()/TPCfound  <<  endl;
       //Double_t Chi2TPCcontGlobal = atrack->GetChi2TPCConstrainedVsGlobal(pVtx);
 
@@ -1052,6 +1048,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
     Double_t DCAxy = d0z0[0]*atrack->Charge()*MagSign;
     //cout << "DCAxy = " << DCAxy << endl;
+
+    //cout << atrack->GetTPCNCrossedRows() << endl;
 
     ///////////////////////
     // Get MC information//
@@ -1177,9 +1175,12 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
     Double_t emcphi = -999, emceta=-999;
     fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
+    Double_t MatchR = -1.0; 
+
     if(clustMatch && clustMatch->IsEMCAL())
     {
       if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
+      MatchR = sqrt(pow(clustMatch->GetTrackDx(),2)+pow(clustMatch->GetTrackDz(),2));
 
       /////////////////////////////////
       //Select EMCAL or DCAL clusters//
@@ -1211,7 +1212,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       fClsEtaPhiAftMatch->Fill(emceta,emcphi);
 
       Float_t tof = clustMatch->GetTOF()*1e+9; // ns
-      if(!fMCarray)
+      if(!fMCarray && fUseTender)
          {
           if(tof<-30 || tof>30)continue; // timing cut on data
          }
@@ -1243,12 +1244,6 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         fM20EovP->Fill(eop,clustMatch->GetM20());
         fM02EovP->Fill(eop,clustMatch->GetM02());
       }
-      if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
-      if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
-      if(fTPCnSigma < -3.5)fHistEopHad2->Fill(track->Pt(),eop);
-      //if(fTPCnSigma > -0.5 && fTPCnSigma < 3)fHistEop->Fill(track->Pt(),eop);
-      fM20->Fill(track->Pt(),clustMatch->GetM20());
-      fM02->Fill(track->Pt(),clustMatch->GetM02());
 
       //if(fMCarray && fFlagSparse)
       if(fMCarray && fSys)
@@ -1256,26 +1251,23 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          fFlagSparse = kFALSE;
          if(pid_eleD || pid_eleB)fFlagSparse = kTRUE;
         }
-
    
       //if(fFlagSparse && track->Pt()>3.0){
-      if(fSys && fFlagSparse && track->Pt()>3.0){
+      if(fSys && fFlagSparse && track->Pt()>3.0 && eop>0.3 && fTPCnSigma>-5){
          //EID THnsparse
          //fvalueElectron[0] = trigger;
          //cout << "pid_eleD = " << pid_eleD << " ; pie_eleB = " << pid_eleB << endl; 
-         fvalueElectron[0] = track->Pt();
+         fvalueElectron[0] = track->Pt()*track->Charge();
          fvalueElectron[1] = fTPCnSigma;
          fvalueElectron[2] = eop;
          fvalueElectron[3] = m20;
          fvalueElectron[4] = atrack->GetTPCNcls();
          fvalueElectron[5] = atrack->GetITSNcls();
          fvalueElectron[6] = track->Eta();
-         fvalueElectron[7] = tof;
-         //fvalueElectron[5] = clustMatch->GetM02();
-         //fvalueElectron[6] = sqm02m20;
-         //fvalueElectron[7] = pid_ele;
-         //fvalueElectron[8] = fTPCnSigma_Pi;
-         //fvalueElectron[9] = centrality;
+         fvalueElectron[7] = atrack->GetTPCchi2();
+         fvalueElectron[8] = atrack->GetITSchi2();
+         fvalueElectron[9] = atrack->GetTPCNCrossedRows();
+         fvalueElectron[10] = MatchR;
 
          fSparseElectron->Fill(fvalueElectron);
       }
@@ -1291,7 +1283,20 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          maxSig =  10.0;
         }
 
+    
+      // track cut + eID
+      if(atrack->GetTPCNcls() < 80) continue;
+      if(atrack->GetITSNcls() < 3) continue;
+      if(atrack->GetTPCNCrossedRows() < 120) continue; 
+      if(atrack->GetTPCchi2() > 4) continue; 
+      if(atrack->GetITSchi2() > 36) continue; 
  
+      if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
+      if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
+      if(fTPCnSigma < -3.5)fHistEopHad2->Fill(track->Pt(),eop);
+      fM20->Fill(track->Pt(),clustMatch->GetM20());
+      fM02->Fill(track->Pt(),clustMatch->GetM02());
+
       if(fTPCnSigma > mimSig && fTPCnSigma < maxSig && eop>0.9 && eop<1.3 && m20>m20mim && m20<m20max)
         {
           fHistTotalAccPhi->Fill(1.0/track->Pt(),TrkPhi);
