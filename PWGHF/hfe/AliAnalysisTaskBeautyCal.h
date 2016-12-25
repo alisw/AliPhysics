@@ -163,6 +163,8 @@ private:
     TH2F        *fInvmassLSeta;//!Invmass of LS
     TH2F        *fInvmassHfULS;//!Invmass of ULS
     TH2F        *fInvmassHfLS;//!Invmass of LS
+    TH2D        *fHistMassULScount;
+    TH2D        *fHistMassLScount;
     TH1F        *fMCcheckMother;
     //TH1F        *fCheckEta;    
     //TH1F        *fCheckEtaMC;    
