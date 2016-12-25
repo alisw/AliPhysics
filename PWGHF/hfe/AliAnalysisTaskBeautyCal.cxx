@@ -143,6 +143,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fInvmassLSeta(0),
   fInvmassHfULS(0),
   fInvmassHfLS(0),
+  fHistMassULScount(0),
+  fHistMassLScount(0),
   fMCcheckMother(0),
   fSparseElectron(0),
   fvalueElectron(0),
@@ -270,6 +272,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fInvmassLSeta(0),
   fInvmassHfULS(0),
   fInvmassHfLS(0),
+  fHistMassULScount(0),
+  fHistMassLScount(0),
   fMCcheckMother(0), 
   fSparseElectron(0),
   fvalueElectron(0),
@@ -532,6 +536,12 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fInvmassHfULS = new TH2F("fInvmassHfULS", "Invmass HF of ULS for pt^{e}>3; mass(GeV/c^2); counts;", 4000,-0.2,0.2, 3000,0,6);
   fOutputList->Add(fInvmassHfULS);
   */
+
+  fHistMassULScount = new TH2D("fHistMassULScount","Ncount ULS;p_{T};Ncount",30,0,30,30,-0.5,29.5);
+  fOutputList->Add(fHistMassULScount);
+  
+  fHistMassLScount = new TH2D("fHistMassLScount","Ncount LS;p_{T};Ncount",30,0,30,30,-0.5,29.5);
+  fOutputList->Add(fHistMassLScount);
 
   fMCcheckMother = new TH1F("fMCcheckMother", "Mother MC PDG", 1000,-0.5,999.5);
   fOutputList->Add(fMCcheckMother);
@@ -1410,6 +1420,9 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
   Bool_t flagULSElec = kFALSE;  // ULS
   Bool_t flagLSElec = kFALSE;   // LS
 
+  Int_t Nuls = 0;
+  Int_t Nls = 0;
+
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
@@ -1487,6 +1500,9 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
        if(track->Pt()>1 && EmbEta) fInvmassULSeta->Fill(track->Pt(),mass,weight);
      }
 
+    if(mass<fInvmassCut && fFlagULS)Nuls++;
+    if(mass<fInvmassCut && fFlagLS)Nls++;
+
     //if(mass<0.1 && fFlagULS && !flagULSElec)
     if(mass<fInvmassCut && fFlagULS && !flagULSElec)
       flagULSElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
@@ -1498,6 +1514,8 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
   fFlagULSElec = flagULSElec;
   fFlagLSElec = flagLSElec;
 
+  fHistMassULScount->Fill(track->Pt(),Nuls);
+  fHistMassLScount->Fill(track->Pt(),Nls);
   //cout << "fFlagULSElec = " << fFlagULSElec << " ; fFlagLSElec = " << fFlagLSElec << endl; 
 
 }
