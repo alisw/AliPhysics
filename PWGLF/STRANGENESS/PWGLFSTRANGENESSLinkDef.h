@@ -39,6 +39,7 @@
 #pragma link C++ class AliAnalysisTaskCheckPerformanceCascadepp+;
 #pragma link C++ class AliLightV0vertexer+;
 #pragma link C++ class AliLightCascadeVertexer+;
+#pragma link C++ class AliVWeakResult+;
 #pragma link C++ class AliV0Result+;
 #pragma link C++ class AliCascadeResult+;
 #endif

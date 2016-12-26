@@ -156,7 +156,7 @@ public:
     TH3F* GetHistogramFeeddown       ()       { return 0x0; }
     TH3F* GetHistogramFeeddownToCopy () const { return 0x0; }
     
-    Bool_t HasSameCuts( AliCascadeResult *lCompare );
+    Bool_t HasSameCuts( AliVWeakResult *lCompare, Bool_t lCheckdEdx = kTRUE );
     void Print();
     
     

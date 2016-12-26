@@ -67,6 +67,7 @@ set(SRCS
   Cascades/AliAnalysisTaskCheckPerformanceCascadepp.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx
   Cascades/lightvertexers/AliLightCascadeVertexer.cxx
+  Cascades/Run2/AliVWeakResult.cxx
   Cascades/Run2/AliV0Result.cxx
   Cascades/Run2/AliCascadeResult.cxx
   )
