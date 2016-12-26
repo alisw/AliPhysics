@@ -89,7 +89,7 @@ public:
     TH3F* GetHistogramFeeddown       ()       { return fHistoFeeddown; }
     TH3F* GetHistogramFeeddownToCopy () const { return fHistoFeeddown; }
     
-    Bool_t HasSameCuts( AliV0Result *lCompare );
+    Bool_t HasSameCuts( AliVWeakResult *lCompare, Bool_t lCheckdEdx = kTRUE );
     void Print();
     
 private:

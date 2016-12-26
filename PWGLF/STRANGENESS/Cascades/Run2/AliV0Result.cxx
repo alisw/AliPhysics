@@ -283,29 +283,36 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
     return (Long64_t) GetHistogram()->GetEntries();
 }
 //________________________________________________________________
-Bool_t AliV0Result::HasSameCuts(AliV0Result *lCompare)
+Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
 //Function to compare the cuts contained in this result with another
 //Returns kTRUE if all selection cuts are identical within 1e-6
 //WARNING: Does not check MC association flags
 {
     Bool_t lReturnValue = kTRUE;
     
-    if( fMassHypo != lCompare->GetMassHypothesis() ) lReturnValue = kFALSE;
+    if( !lCompare->InheritsFrom(AliV0Result::Class() ) ){
+        //Apples and oranges! Return kFALSE
+        return kFALSE;
+    }
+    
+    AliV0Result *lCompareV0 = (AliV0Result*) lCompare;
+    
+    if( fMassHypo != lCompareV0->GetMassHypothesis() ) lReturnValue = kFALSE;
     
     //V0 Selection Criteria
-    if( TMath::Abs( fCutDCANegToPV - lCompare->GetCutDCANegToPV() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutDCAPosToPV - lCompare->GetCutDCAPosToPV() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutDCAV0Daughters - lCompare->GetCutDCAV0Daughters() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutV0CosPA - lCompare->GetCutV0CosPA() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutV0Radius - lCompare->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCANegToPV - lCompareV0->GetCutDCANegToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAPosToPV - lCompareV0->GetCutDCAPosToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAV0Daughters - lCompareV0->GetCutDCAV0Daughters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0CosPA - lCompareV0->GetCutV0CosPA() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0Radius - lCompareV0->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
     
-    if( TMath::Abs( fCutProperLifetime - lCompare->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompare->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfCrossedRowsOverFindable - lCompare->GetCutLeastNumberOfCrossedRowsOverFindable() ) > 1e-6 ) lReturnValue = kFALSE;
-    //if( fCutCompetingV0Rejection != lCompare->GetCutCompetingV0Rejection() ) lReturnValue = kFALSE;
-    if( fCutArmenteros != lCompare->GetCutArmenteros() ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutMinBaryonMomentum - lCompare->GetCutMinBaryonMomentum() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutProperLifetime - lCompareV0->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompareV0->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRowsOverFindable - lCompareV0->GetCutLeastNumberOfCrossedRowsOverFindable() ) > 1e-6 ) lReturnValue = kFALSE;
+    //if( fCutCompetingV0Rejection != lCompareV0->GetCutCompetingV0Rejection() ) lReturnValue = kFALSE;
+    if( fCutArmenteros != lCompareV0->GetCutArmenteros() ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutTPCdEdx - lCompareV0->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinBaryonMomentum - lCompareV0->GetCutMinBaryonMomentum() ) > 1e-6 ) lReturnValue = kFALSE;
     
     return lReturnValue;
 }

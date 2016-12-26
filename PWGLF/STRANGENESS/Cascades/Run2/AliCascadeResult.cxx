@@ -369,52 +369,59 @@ Long64_t AliCascadeResult::Merge(TCollection *hlist)
     return (Long64_t) GetHistogram()->GetEntries();
 }
 //________________________________________________________________
-Bool_t AliCascadeResult::HasSameCuts(AliCascadeResult *lCompare)
+Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
 //Function to compare the cuts contained in this result with another
 //Returns kTRUE if all selection cuts are identical within 1e-6
 //WARNING: Does not check MC association flags 
 {
     Bool_t lReturnValue = kTRUE;
     
-    if( fMassHypo != lCompare->GetMassHypothesis() ) lReturnValue = kFALSE;
+    if( !lCompare->InheritsFrom(AliCascadeResult::Class() ) ){
+        //Apples and oranges! Return kFALSE
+        return kFALSE;
+    }
+    
+    AliCascadeResult *lCompareCascade = (AliCascadeResult*) lCompare;
+    
+    if( fMassHypo != lCompareCascade->GetMassHypothesis() ) lReturnValue = kFALSE;
     
     //V0 Selection Criteria
-    if( TMath::Abs( fCutDCANegToPV - lCompare->GetCutDCANegToPV() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutDCAPosToPV - lCompare->GetCutDCAPosToPV() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutDCAV0Daughters - lCompare->GetCutDCAV0Daughters() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutV0CosPA - lCompare->GetCutV0CosPA() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutV0Radius - lCompare->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCANegToPV - lCompareCascade->GetCutDCANegToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAPosToPV - lCompareCascade->GetCutDCAPosToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAV0Daughters - lCompareCascade->GetCutDCAV0Daughters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0CosPA - lCompareCascade->GetCutV0CosPA() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0Radius - lCompareCascade->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //Cascade Selection Criteria
-    if( TMath::Abs( fCutDCAV0ToPV - lCompare->GetCutDCAV0ToPV() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutV0Mass - lCompare->GetCutV0Mass() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutDCABachToPV - lCompare->GetCutDCABachToPV() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutDCACascDaughters - lCompare->GetCutDCACascDaughters() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutCascCosPA - lCompare->GetCutCascCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutCascRadius - lCompare->GetCutCascRadius() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutDCABachToBaryon - lCompare->GetCutDCABachToBaryon() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutBachBaryonCosPA - lCompare->GetCutBachBaryonCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCAV0ToPV - lCompareCascade->GetCutDCAV0ToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutV0Mass - lCompareCascade->GetCutV0Mass() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCABachToPV - lCompareCascade->GetCutDCABachToPV() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCACascDaughters - lCompareCascade->GetCutDCACascDaughters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutCascCosPA - lCompareCascade->GetCutCascCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutCascRadius - lCompareCascade->GetCutCascRadius() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutDCABachToBaryon - lCompareCascade->GetCutDCABachToBaryon() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutBachBaryonCosPA - lCompareCascade->GetCutBachBaryonCosPA() ) > 1e-6 ) lReturnValue = kFALSE;
     
-    if( TMath::Abs( fCutProperLifetime - lCompare->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfClusters - lCompare->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutTPCdEdx - lCompare->GetCutTPCdEdx() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutXiRejection - lCompare->GetCutXiRejection() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutProperLifetime - lCompareCascade->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfClusters - lCompareCascade->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutTPCdEdx - lCompareCascade->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutXiRejection - lCompareCascade->GetCutXiRejection() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //Variable CascCosPA
-    if ( TMath::Abs(fCutUseVariableCascCosPA - lCompare->GetCutUseVarCascCosPA()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarCascCosPA_Exp0Const - lCompare->GetCutVarCascCosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarCascCosPA_Exp0Slope - lCompare->GetCutVarCascCosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarCascCosPA_Exp1Const - lCompare->GetCutVarCascCosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarCascCosPA_Exp1Slope - lCompare->GetCutVarCascCosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarCascCosPA_Const  - lCompare->GetCutVarCascCosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutUseVariableCascCosPA - lCompareCascade->GetCutUseVarCascCosPA()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Exp0Const - lCompareCascade->GetCutVarCascCosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Exp0Slope - lCompareCascade->GetCutVarCascCosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Exp1Const - lCompareCascade->GetCutVarCascCosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Exp1Slope - lCompareCascade->GetCutVarCascCosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarCascCosPA_Const  - lCompareCascade->GetCutVarCascCosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
     
     //Variable V0CosPA
-    if ( TMath::Abs(fCutUseVariableV0CosPA - lCompare->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarV0CosPA_Exp0Const - lCompare->GetCutVarV0CosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarV0CosPA_Exp0Slope - lCompare->GetCutVarV0CosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarV0CosPA_Exp1Const - lCompare->GetCutVarV0CosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarV0CosPA_Exp1Slope - lCompare->GetCutVarV0CosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
-    if ( TMath::Abs(fCutVarV0CosPA_Const  - lCompare->GetCutVarV0CosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutUseVariableV0CosPA - lCompareCascade->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp0Const - lCompareCascade->GetCutVarV0CosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp0Slope - lCompareCascade->GetCutVarV0CosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp1Const - lCompareCascade->GetCutVarV0CosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp1Slope - lCompareCascade->GetCutVarV0CosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Const  - lCompareCascade->GetCutVarV0CosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
     
     return lReturnValue;
 }
