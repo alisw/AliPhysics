@@ -557,9 +557,9 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 */
   if(fFlagSparse)
     {
-     Int_t bins[11]=   {  60,  90, 110,   50, 110,   8,   24,  20, 50,  50,   25}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
+     Int_t bins[11]=   {  60,  90, 110,   50, 110,   8,   24,  20, 50,  80,   25}; //pt, TPCnsig, E/p, M20, NTPC,nITS 
      Double_t xmin[11]={ -30,  -5, 0.3,  0.0,  70,   0, -0.6,   0,  0, 100,    0};
-     Double_t xmax[11]={  30,   4, 1.4,  0.5, 180,   8,  0.6,   5, 50, 150, 0.05};
+     Double_t xmax[11]={  30,   4, 1.4,  0.5, 180,   8,  0.6,   5, 50, 180, 0.05};
      fSparseElectron = new THnSparseD ("Electron","Electron;pT;nSigma;eop;m20;nTPC;nITS;eta;TPCchi2;ITSchi2;crossR;matchR",11,bins,xmin,xmax);
      fOutputList->Add(fSparseElectron);
     }
