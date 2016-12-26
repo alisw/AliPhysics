@@ -190,8 +190,8 @@ ClassImp(AliAnalysisTaskBeautyCal)
 {
   // Constructor
 
-  //fvalueElectron = new Double_t[9];
-  fvalueElectron = new Double_t[8];
+  fvalueElectron = new Double_t[11];
+  //fvalueElectron = new Double_t[8];
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -319,8 +319,8 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
 {
   //Default constructor
 
-  //fvalueElectron = new Double_t[10];
-  fvalueElectron = new Double_t[8];
+  fvalueElectron = new Double_t[11];
+  //fvalueElectron = new Double_t[8];
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
