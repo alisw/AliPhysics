@@ -4,6 +4,7 @@
 
 #include "TList.h"
 #include "TH3F.h"
+#include "AliVWeakResult.h"
 #include "AliCascadeResult.h"
 #include "AliLog.h"
 #include <iostream>
@@ -13,7 +14,7 @@ using namespace std;
 ClassImp(AliCascadeResult);
 //________________________________________________________________
 AliCascadeResult::AliCascadeResult() :
-  TNamed(),
+  AliVWeakResult(),
 fMassHypo(AliCascadeResult::kXiMinus),
 //V0 Cuts
 fCutDCANegToPV(0.1),
@@ -59,7 +60,7 @@ fCutVarV0CosPA_Const(1)
 }
 //________________________________________________________________
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title):
-TNamed(name,title),
+AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
 //V0 Cuts
 fCutDCANegToPV(0.1),
@@ -99,11 +100,7 @@ fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1)
 {
     // Constructor
-    Double_t lThisMass = 0;
-    if( fMassHypo == AliCascadeResult::kXiMinus      ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kXiPlus       ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lThisMass = 1.67245;
-    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
+    Double_t lThisMass = GetMass();
     
     //Main output histogram: Centrality, mass, transverse momentum
     fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
@@ -111,7 +108,7 @@ fCutVarV0CosPA_Const(1)
 }
 //________________________________________________________________
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
-TNamed(name,title),
+AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
 //V0 Cuts
 fCutDCANegToPV(0.1),
@@ -151,11 +148,7 @@ fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1)
 {
     // Constructor
-    Double_t lThisMass = 0;
-    if( fMassHypo == AliCascadeResult::kXiMinus      ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kXiPlus       ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lThisMass = 1.67245;
-    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
+    Double_t lThisMass = GetMass();
     
     //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
     const Long_t lNMassBins = 400;
@@ -172,7 +165,7 @@ fCutVarV0CosPA_Const(1)
 }
 //________________________________________________________________
 AliCascadeResult::AliCascadeResult(const AliCascadeResult& lCopyMe, TString lNewName)
-: TNamed(lCopyMe),
+: AliVWeakResult(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
 //V0 Cuts
 fCutDCANegToPV(lCopyMe.fCutDCANegToPV),
@@ -216,18 +209,14 @@ fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const)
     SetName( lNewName.Data() );
     
     // Constructor
-    Double_t lThisMass = 0;
-    if( fMassHypo == AliCascadeResult::kXiMinus      ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kXiPlus       ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lThisMass = 1.67245;
-    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
+    Double_t lThisMass = GetMass();
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
 }
 //________________________________________________________________
 AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
-    : TNamed(*lCopyMe),
+    : AliVWeakResult(*lCopyMe),
       fHisto(0)
 {
     SetName(lNewName.Data());
@@ -277,11 +266,7 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutVarV0CosPA_Const = lCopyMe -> GetCutVarV0CosPAConst();
     
     // Constructor
-    Double_t lThisMass = 0;
-    if( fMassHypo == AliCascadeResult::kXiMinus      ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kXiPlus       ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lThisMass = 1.67245;
-    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
+    Double_t lThisMass = GetMass();
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe->GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
@@ -352,11 +337,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
         fHisto = 0;
     }
     // Constructor
-    Double_t lThisMass = 0;
-    if( fMassHypo == AliCascadeResult::kXiMinus      ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kXiPlus       ) lThisMass = 1.32171;
-    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lThisMass = 1.67245;
-    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
+    Double_t lThisMass = GetMass();
     
     //Main output histogram: Centrality, mass, transverse momentum
     fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1);
@@ -452,6 +433,7 @@ void AliCascadeResult::Print()
     if( fMassHypo == AliCascadeResult::kXiPlus       ) cout<<" Mass Hypothesis....: XiPlus"<<endl;
     if( fMassHypo == AliCascadeResult::kOmegaMinus   ) cout<<" Mass Hypothesis....: OmegaMinus"<<endl;
     if( fMassHypo == AliCascadeResult::kOmegaPlus    ) cout<<" Mass Hypothesis....: OmegaPlus"<<endl;
+    cout<<" Expected mass......: "<<GetMass()<<endl; 
     
     cout<<" DCA Neg to PV......: "<<fCutDCANegToPV<<endl;
     cout<<" DCA Pos to PV......: "<<fCutDCAPosToPV<<endl;
@@ -496,3 +478,21 @@ void AliCascadeResult::Print()
     cout<<"========================================"<<endl;
     return;
 }
+
+//________________________________________________________________
+Double_t AliCascadeResult::GetMass () const
+//Get Mass under expected hypothesis
+//N.B. masses are rounded within 1MeV/c^2 just to simplify binning
+{
+    Double_t lReturnValue = 0;
+    //if( fMassHypo == AliCascadeResult::kXiMinus      ) lThisMass = 1.32171;
+    //if( fMassHypo == AliCascadeResult::kXiPlus       ) lThisMass = 1.32171;
+    //if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lThisMass = 1.67245;
+    //if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lThisMass = 1.67245;
+    if( fMassHypo == AliCascadeResult::kXiMinus      ) lReturnValue = 1.322;
+    if( fMassHypo == AliCascadeResult::kXiPlus       ) lReturnValue = 1.322;
+    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lReturnValue = 1.672;
+    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lReturnValue = 1.672;
+    return lReturnValue;
+}
+

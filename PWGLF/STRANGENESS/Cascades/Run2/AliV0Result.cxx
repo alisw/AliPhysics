@@ -4,6 +4,7 @@
 
 #include "TList.h"
 #include "TH3F.h"
+#include "AliVWeakResult.h"
 #include "AliV0Result.h"
 #include "AliLog.h"
 #include <iostream>
@@ -13,7 +14,7 @@ using namespace std;
 ClassImp(AliV0Result);
 //________________________________________________________________
 AliV0Result::AliV0Result() :
-  TNamed(),
+  AliVWeakResult(),
 fMassHypo(AliV0Result::kK0Short),
 fCutV0Radius(5.0),
 fCutDCANegToPV(0.1),
@@ -42,7 +43,7 @@ fHistoFeeddown(0)
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title):
-TNamed(name,title),
+AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
 fCutV0Radius(5.0),
 fCutDCANegToPV(0.1),
@@ -63,15 +64,12 @@ fCutMCUseMCProperties(kTRUE),
 fHistoFeeddown(0) //do not initialize by default
 {
     // Constructor
-    Double_t lThisMass = 0;
+    Double_t lThisMass = GetMass();
     Double_t lMassWindow = 0.1; // Default : good for Lambdas, not good for K0
     
     if( lMassHypo == AliV0Result::kK0Short      ){
-        lThisMass = 0.497;
         lMassWindow = 0.15; // will be 300 MeV/c^2 wide
     }
-    if( lMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
-    if( lMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum
     //Warning: This has super-fine binning in all dimensions!
@@ -81,7 +79,7 @@ fHistoFeeddown(0) //do not initialize by default
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
-TNamed(name,title),
+AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
 fCutV0Radius(5.0),
 fCutDCANegToPV(0.1),
@@ -102,15 +100,12 @@ fCutMCUseMCProperties(kTRUE),
 fHistoFeeddown(0) //do not initialize by default
 {
     // Constructor
-    Double_t lThisMass = 0;
+    Double_t lThisMass = GetMass();
     Double_t lMassWindow = 0.1 ;
     
     if( lMassHypo == AliV0Result::kK0Short      ){
-        lThisMass = 0.497;
         lMassWindow = 0.15; // will be 300 MeV/c^2 wide
     }
-    if( lMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
-    if( lMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
     const Long_t lNMassBins = 400;
@@ -125,7 +120,7 @@ fHistoFeeddown(0) //do not initialize by default
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(const AliV0Result& lCopyMe, TString lNewName)
-: TNamed(lCopyMe),
+: AliVWeakResult(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
 fCutV0Radius(lCopyMe.fCutV0Radius),
 fCutDCANegToPV(lCopyMe.fCutDCANegToPV),
@@ -146,15 +141,12 @@ fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
     SetName( lNewName.Data() ); 
     
     // Constructor
-    Double_t lThisMass = 0;
+    Double_t lThisMass = GetMass();
     Double_t lMassWindow = 0.1 ;
     
     if( fMassHypo == AliV0Result::kK0Short      ){
-        lThisMass = 0.497;
         lMassWindow = 0.15; // will be 300 MeV/c^2 wide
     }
-    if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
-    if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
@@ -166,7 +158,7 @@ fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
-    : TNamed(*lCopyMe),
+    : AliVWeakResult(*lCopyMe),
       fHisto(0)
 {
     SetName(lNewName.Data()); 
@@ -190,15 +182,12 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
     
     // Constructor
-    Double_t lThisMass = 0;
+    Double_t lThisMass = GetMass();
     Double_t lMassWindow = 0.1 ;
     
     if( fMassHypo == AliV0Result::kK0Short      ){
-        lThisMass = 0.497;
         lMassWindow = 0.15; // will be 300 MeV/c^2 wide
     }
-    if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
-    if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe->GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
@@ -249,15 +238,12 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
         fHisto = 0;
     }
     // Constructor
-    Double_t lThisMass = 0;
+    Double_t lThisMass = GetMass();
     Double_t lMassWindow = 0.1 ;
     
     if( fMassHypo == AliV0Result::kK0Short      ){
-        lThisMass = 0.497;
         lMassWindow = 0.15; // will be 300 MeV/c^2 wide
     }
-    if( fMassHypo == AliV0Result::kLambda       ) lThisMass = 1.116;
-    if( fMassHypo == AliV0Result::kAntiLambda   ) lThisMass = 1.116;
     
     //Main output histogram: Centrality, mass, transverse momentum: Clone from copied object
     fHisto = (TH3F*) lCopyMe.GetHistogramToCopy()->Clone(Form("fHisto_%s",GetName()));
@@ -337,7 +323,7 @@ void AliV0Result::Print()
     if( fMassHypo == AliV0Result::kK0Short      ) cout<<" Mass Hypothesis....: K0Short"<<endl;
     if( fMassHypo == AliV0Result::kLambda       ) cout<<" Mass Hypothesis....: Lambda"<<endl;
     if( fMassHypo == AliV0Result::kAntiLambda   ) cout<<" Mass Hypothesis....: AntiLambda"<<endl;
-    
+    cout<<" Expected Mass......: "<<GetMass()<<endl;
     cout<<" DCA Neg to PV......: "<<fCutDCANegToPV<<endl;
     cout<<" DCA Pos to PV......: "<<fCutDCAPosToPV<<endl;
     cout<<" DCA V0 Daughters...: "<<fCutDCAV0Daughters<<endl;
@@ -382,4 +368,19 @@ void AliV0Result::InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLam
     //Initialize
     fHistoFeeddown = new TH3F( Form("fHistoFeeddown_%s",GetName()), "", lNLambdaPtBins, lLambdaPtBins, lNXiPtPins, lXiPtPins, lNCentBins, lCentBins );
 }
+
+//________________________________________________________________
+Double_t AliV0Result::GetMass () const
+//Get Mass under expected hypothesis
+//N.B. masses are rounded within 1MeV/c^2 just to simplify binning 
+{
+    Double_t lReturnValue = 0;
+    
+    if( fMassHypo == AliV0Result::kK0Short    ) lReturnValue = 0.498;
+    if( fMassHypo == AliV0Result::kLambda     ) lReturnValue = 1.116;
+    if( fMassHypo == AliV0Result::kAntiLambda ) lReturnValue = 1.116;
+    return lReturnValue;
+}
+
+
 

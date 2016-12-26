@@ -3,12 +3,13 @@
 #include <TNamed.h>
 #include <TList.h>
 #include <TH3F.h>
+#include "AliVWeakResult.h"
 
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // TObject to hold Cascade configuration + results histogram
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-class AliCascadeResult : public TNamed {
+class AliCascadeResult : public AliVWeakResult {
     
 public:
     enum EMassHypo {
@@ -101,6 +102,7 @@ public:
     }
     
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
+    Double_t GetMass() const; 
     
     //Getters for V0 Cuts
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
@@ -148,6 +150,11 @@ public:
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
+    
+    //No such thing as feeddown corrections for this result
+    //Kept to satisfy AliVWeakResult published interface, don't use in this case
+    TH3F* GetHistogramFeeddown       ()       { return 0x0; }
+    TH3F* GetHistogramFeeddownToCopy () const { return 0x0; }
     
     Bool_t HasSameCuts( AliCascadeResult *lCompare );
     void Print();
@@ -204,7 +211,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 13)
+    ClassDef(AliCascadeResult, 14)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -218,5 +225,6 @@ private:
     // 11 - Variable V0CosPA parametrization added (exp0 + exp1 + pol0)
     // 12 - Added explicit bump selection flag
     // 13 - Added Bach Baryon CosPA (experimental)
+    // 14 - Addition of GetMass + inherit from AliVWeakResult
 };
 #endif
