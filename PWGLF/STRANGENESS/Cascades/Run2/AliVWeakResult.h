@@ -25,6 +25,7 @@ public:
     
     //Basic Functionality
     virtual Double_t GetMass() const { return 0; }
+    virtual TString GetParticleName() const { return ""; } 
     virtual TH3F* GetHistogram       ()       { return 0x0; }
     virtual TH3F* GetHistogramToCopy () const { return 0x0; }
     virtual TH3F* GetHistogramFeeddown       ()       { return 0x0; }
@@ -33,7 +34,8 @@ public:
     virtual void Print() {};
     
 private:
-    ClassDef(AliVWeakResult, 1)
+    ClassDef(AliVWeakResult, 2)
     // 1 - original implementation
+    // 2 - ajustments for general-purpose functionality
 };
 #endif

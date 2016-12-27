@@ -70,6 +70,7 @@ set(SRCS
   Cascades/Run2/AliVWeakResult.cxx
   Cascades/Run2/AliV0Result.cxx
   Cascades/Run2/AliCascadeResult.cxx
+  Cascades/Run2/AliStrangenessModule.cxx
   )
 
 # Headers from sources

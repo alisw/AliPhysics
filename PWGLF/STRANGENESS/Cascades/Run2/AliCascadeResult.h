@@ -102,7 +102,8 @@ public:
     }
     
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
-    Double_t GetMass() const; 
+    Double_t GetMass() const;
+    TString GetParticleName() const; 
     
     //Getters for V0 Cuts
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
@@ -174,7 +175,7 @@ private:
     //Cascade Selection Criteria
     Double_t fCutDCAV0ToPV;        //ca vertexer 1
     Double_t fCutV0Mass;           //ca vertexer 2
-    Double_t fCutDCABachToPV;         //ca vertexer 3
+    Double_t fCutDCABachToPV;      //ca vertexer 3
     Double_t fCutDCACascDaughters; //ca vertexer 4
     Double_t fCutCascCosPA;        //ca vertexer 5
     Double_t fCutCascRadius;       //ca vertexer 6
@@ -211,7 +212,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 14)
+    ClassDef(AliCascadeResult, 15)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -226,5 +227,6 @@ private:
     // 12 - Added explicit bump selection flag
     // 13 - Added Bach Baryon CosPA (experimental)
     // 14 - Addition of GetMass + inherit from AliVWeakResult
+    // 15 - Adjustments for gen-purpose functionality
 };
 #endif

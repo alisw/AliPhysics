@@ -1,5 +1,5 @@
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-// TObject to hold V0 configuration + results histogram
+// TObject to hold V0 configuration + results histogram 
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 #include "TList.h"
@@ -34,7 +34,7 @@ fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fHistoFeeddown(0)
 {
-    // Dummy Constructor - not to be used!
+    // Dummy Constructor - not to be used! 
     //Main output histogram: Centrality, mass, transverse momentum
     //Warning: This has super-fine binning in all dimensions!
     //It may be quite costly to use, memory-wise!
@@ -388,6 +388,19 @@ Double_t AliV0Result::GetMass () const
     if( fMassHypo == AliV0Result::kAntiLambda ) lReturnValue = 1.116;
     return lReturnValue;
 }
+
+//________________________________________________________________
+TString AliV0Result::GetParticleName () const
+//Get particle name
+{
+    TString lName = "";
+    if( fMassHypo == AliV0Result::kK0Short    ) lName = "K0Short";
+    if( fMassHypo == AliV0Result::kLambda     ) lName = "Lambda";
+    if( fMassHypo == AliV0Result::kAntiLambda ) lName = "AntiLambda";
+    return lName;
+}
+
+
 
 
 

@@ -503,3 +503,17 @@ Double_t AliCascadeResult::GetMass () const
     return lReturnValue;
 }
 
+//________________________________________________________________
+TString AliCascadeResult::GetParticleName () const
+//Get particle name
+{
+    TString lName = ""; 
+    if( fMassHypo == AliCascadeResult::kXiMinus      ) lName = "XiMinus";
+    if( fMassHypo == AliCascadeResult::kXiPlus       ) lName = "XiPlus";
+    if( fMassHypo == AliCascadeResult::kOmegaMinus   ) lName = "OmegaMinus";
+    if( fMassHypo == AliCascadeResult::kOmegaPlus    ) lName = "OmegaPlus";
+    return lName;
+}
+
+
+
