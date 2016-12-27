@@ -1,15 +1,15 @@
 // $Id$
 
 AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
-  Bool_t      InputGammaOrPi0        = 0,      //gamma analysis=0, pi0 analyis=1
-  Bool_t      InputDoMixing          = 0,      //same event=0 mixed event =1 (currenlty used to init the pool=1, throw out events without clusters=0)
-  Double_t    trackEta               = 9,                //+- eta range for track acceptance
-  Double_t    clusterEta             = 7,                //+- eta range for cluster acceptance
-  UInt_t      evtTriggerType         = AliVEvent::kEMCEGA, //use this type of events to combine gammas(trigger) with hadrons
-  UInt_t      evtMixingType          = AliVEvent::kAnyINT, //use only this type of events to fill your mixed event pool with tracks
-  Double_t    trackptcut             = 0.15,
-  Double_t    clusptcut              = 0.30,
-  Bool_t      SavePool               = 0,                  //saves a mixed event pool to the output event
+  Bool_t      InputGammaOrPi0        = 0,                 //..gamma analysis=0, pi0 analyis=1
+  Bool_t      InputDoMixing          = 0,                 //..same event=0 mixed event =1 (currenlty used to init the pool=1, throw out events without clusters=0)
+  Double_t    trackEta               = 0.9,               //..+- eta range for track acceptance
+  Double_t    clusterEta             = 0.7,               //..+- eta range for cluster acceptance
+  UInt_t      evtTriggerType         = AliVEvent::kEMCEGA,//..use this type of events to combine gammas(trigger) with hadrons
+  UInt_t      evtMixingType          = AliVEvent::kAnyINT,//..use only this type of events to fill your mixed event pool with tracks
+  Double_t    trackptcut             = 0.15,              //..
+  Double_t    clusptcut              = 0.30,              //..
+  Bool_t      SavePool               = 0,                 //..saves a mixed event pool to the output event
   const char *trackName              = "usedefault",
   const char *clusName               = "usedefault",
   const char *taskname               = "AliAnalysisTask",
@@ -40,7 +40,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  return 0;
    }
 
-  //in case of AOD the default names are:
+  //..in case of AOD the default names are:
   if(trackName=="usedefault")trackName = "tracks";
   if(clusName =="usedefault")clusName  = "caloClusters";
 
@@ -67,7 +67,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   }
 
   TString combinedName;
-  combinedName.Form("%s_%s_%s_%s_%s_EtaTr%d_EtaCl%d",taskname,(const char*)GammaPi0Name,(const char*)SameMixName,trackName,clusName,trackEta,clusterEta);
+  combinedName.Form("%s_%s_%s_%s_%s_",taskname,(const char*)GammaPi0Name,(const char*)SameMixName,trackName,clusName);
   if(suffix!="")
   {
 	  combinedName += "_";
@@ -75,9 +75,6 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   }
   cout<<"combinedName: "<<combinedName<<endl;
 
-  //..before only used for name
-  trackEta*=0.1;
-  clusterEta*=0.1;
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
@@ -108,7 +105,9 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	 return 0;
   }
 
-  //..Add some selection criteria
+  //-------------------------------------------------------
+  // Add some selection criteria
+  //-------------------------------------------------------
   AnalysisTask->SetVzRange(-10,10);
   //..for Run1
   AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
