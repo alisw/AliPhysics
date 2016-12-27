@@ -300,12 +300,12 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	for(Int_t identifier=0;identifier<kNIdentifier;identifier++)
 	{
 		fHistBinCheckPt[identifier] = new TH1F(Form("fHistBinCheckPt_%0d",identifier),Form("fHistBinCheckPt_%0d",identifier), 500, 0, 100);
-		fHistBinCheckPt[identifier]->GetXaxis()->SetTitle("p_T^{#gamma}");
+		fHistBinCheckPt[identifier]->GetXaxis()->SetTitle("p_{T}^{#gamma}");
 		fHistBinCheckPt[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckPt[identifier]);
 
 		fHistBinCheckZt[identifier] = new TH1F(Form("fHistBinCheckZt_%0d",identifier),Form("fHistBinCheckZt_%0d",identifier), 500, 0, 100);
-		fHistBinCheckZt[identifier]->GetXaxis()->SetTitle("z_T^{#gamma-h}");
+		fHistBinCheckZt[identifier]->GetXaxis()->SetTitle("z_{T}^{#gamma-h}");
 		fHistBinCheckZt[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckZt[identifier]);
 
