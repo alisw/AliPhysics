@@ -78,6 +78,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetFullTree(Bool_t FullTree)                         {fFullTree = FullTree;}
   void SetBetaSD(Double_t BetaSD)                           {fBeta_SD = BetaSD;}
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
+  void SetReclusteringAlgorithm(Int_t ReclusteringAlgorithm)     {fReclusteringAlgorithm = ReclusteringAlgorithm;}
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
 
@@ -127,6 +128,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Bool_t                              fFullTree;
   Double_t                            fBeta_SD;
   Double_t                            fZCut;
+  Int_t                               fReclusteringAlgorithm;
 
   Bool_t                              fNsubMeasure;
   
