@@ -6,7 +6,7 @@
 #include "AliVWeakResult.h"
 
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-// TObject to hold V0 configuration + results histogram
+// TObject to hold V0 configuration + results histogram 
 //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 class AliV0Result : public AliVWeakResult {
@@ -64,7 +64,9 @@ public:
                                   Long_t lNCentBins, Double_t *lCentBins );
     
     AliV0Result::EMassHypo GetMassHypothesis () const { return fMassHypo; }
-    Double_t GetMass() const; 
+    Double_t GetMass() const;
+    TString GetParticleName() const; 
+    
     Double_t GetCutV0Radius       () const { return fCutV0Radius; }
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
     Double_t GetCutDCAPosToPV     () const { return fCutDCAPosToPV; }
@@ -117,7 +119,7 @@ private:
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 9)
+    ClassDef(AliV0Result, 10)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -127,5 +129,6 @@ private:
     // 7 - First implementation of feeddown matrix as standard output
     // 8 - Addition of minimum momentum cut for baryon daughters
     // 9 - Addition of GetMass + inherit from AliVWeakResult
+    //10 - Adjustments for gen-purpose functionality 
 };
 #endif

@@ -42,4 +42,5 @@
 #pragma link C++ class AliVWeakResult+;
 #pragma link C++ class AliV0Result+;
 #pragma link C++ class AliCascadeResult+;
+#pragma link C++ class AliStrangenessModule+;
 #endif

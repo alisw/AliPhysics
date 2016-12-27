@@ -1,0 +1,490 @@
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// General class to do weak decay analysis
+//
+// WARNING: THIS IS EXPERIMENTAL!
+//
+// Please send any questions, etc to:
+//    david.dobrigkeit.chinellato@cern.ch
+//
+//+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+#include "TList.h"
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TH3F.h"
+#include "TF1.h"
+#include "TVirtualFitter.h"
+#include "AliVWeakResult.h"
+#include "AliV0Result.h"
+#include "AliCascadeResult.h"
+#include "AliStrangenessModule.h"
+#include "AliLog.h"
+#include <iostream>
+#include <TROOT.h>
+using namespace std;
+
+ClassImp(AliStrangenessModule);
+
+//________________________________________________________________
+AliStrangenessModule::AliStrangenessModule() :
+TNamed(),
+lDataInput(0x0),
+lDataCountersInput(0x0),
+lMCInput(0x0),
+lMCCountersInput(0x0),
+lLoMult(0.0),
+lHiMult(90.0),
+lNPtBins(0),
+lLoLeftBg(-6),
+lHiLeftBg(-4),
+lLoPeak(-3),
+lHiPeak(3),
+lLoRightBg(4),
+lHiRightBg(7)
+{
+    // Dummy Constructor - not to be used!
+    for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0;
+}
+
+//________________________________________________________________
+AliStrangenessModule::AliStrangenessModule(const char * name, const char * title) :
+TNamed(name,title),
+lDataInput(0x0),
+lDataCountersInput(0x0),
+lMCInput(0x0),
+lMCCountersInput(0x0),
+lLoMult(0.0),
+lHiMult(90.0),
+lNPtBins(0),
+lLoLeftBg(-6),
+lHiLeftBg(-4),
+lLoPeak(-3),
+lHiPeak(3),
+lLoRightBg(4),
+lHiRightBg(7)
+{
+    // Main constructor
+    for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0; 
+}
+
+//________________________________________________________________
+AliStrangenessModule::~AliStrangenessModule(){
+    // Nothing to delete
+}
+
+//________________________________________________________________
+void AliStrangenessModule::SetPtBinning(  Long_t lRecNPtBins, Double_t *lRecPtBins  ){
+    //Function to set pt binning. First argument is the number of pt bins, second is
+    //an array with bin limits.
+    lNPtBins = lRecNPtBins;
+    for(int ix = 0;ix<lNPtBins+1;ix++){
+        lPtBins[ix] = lRecPtBins[ix];
+    }
+}
+
+//________________________________________________________________
+void AliStrangenessModule::SetSigExtRanges( Double_t lRLoLeftBg, Double_t lRHiLeftBg,  Double_t lRLoPeak,
+                                           Double_t lRHiPeak,   Double_t lRLoRightBg, Double_t lRHiRightBg ){
+    //Function to set signal extraction ranges (in sigmas!)
+    lLoLeftBg  = lRLoLeftBg;
+    lHiLeftBg  = lRHiLeftBg;
+    lLoPeak    = lRLoPeak;
+    lHiPeak    = lRHiPeak;
+    lLoRightBg = lRLoRightBg;
+    lHiRightBg = lRHiRightBg;
+    
+}
+
+//________________________________________________________________
+TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
+    //Main analysis code
+    
+    //"Die hard" fitting, please
+    TVirtualFitter::SetMaxIterations( 50000 ); 
+    
+    //Check if input has been provied
+    if( !lDataInput ) {
+        AliWarning("Data input not defined!"); return 0x0;
+    }
+    if( !lMCInput ) {
+        AliWarning("MC input not defined!"); return 0x0;
+    }
+    
+    //Open File for output
+    TFile *fFileOut = new TFile(Form("Results_%s.root",lConfiguration.Data() ), "RECREATE");
+    TList *fListData = new TList();
+    fListData->SetName("cListData");
+    fListData->SetOwner(kTRUE);
+
+    TList *fListMC = new TList();
+    fListMC->SetName("cListMC");
+    fListMC->SetOwner(kTRUE);
+    
+    TList *fListOutput = new TList();
+    fListOutput->SetName("cAnalysisOutput");
+    fListOutput->SetOwner(kTRUE);
+    
+    //Step 1: Open real data object
+    AliVWeakResult *lDataResult = (AliVWeakResult*) lDataInput->FindObject(lConfiguration.Data());
+    TString lDataName = lDataResult->GetName();
+    lDataName.Append("_Data");
+    lDataResult->SetName( lDataName.Data() );
+    lDataResult->Print();
+    
+    //_________________________________________________
+    // Process TH3Fs and expand into histograms of interest
+    TH3F *f3dHistData = lDataResult->GetHistogram();
+    f3dHistData->SetName("f3dHistData");
+    
+    //Check if multiplicity interval requested is possible
+    Bool_t lCheckMult = CheckCompatibleMultiplicity ( f3dHistData );
+    if ( !lCheckMult ){
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning("Requested mult interval is inconsistent with the data provided!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        return 0x0;
+    }
+    
+    //Check if pt interval requested is possible
+    Bool_t lCheckPt = CheckCompatiblePt ( f3dHistData );
+    if ( !lCheckPt ){
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning(" Requested pt binning is inconsistent with the data provided!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        return 0x0;
+    }
+    
+    //Project into relevant invariant mass histograms
+    TH1D *lHistoData[100];
+    
+    for( Long_t ibin = 0; ibin<lNPtBins; ibin++){
+        lHistoData[ibin] = f3dHistData->ProjectionZ( Form("lHistoData_%.1f_%.1f", lPtBins[ibin], lPtBins[ibin+1]),
+                                              f3dHistData->GetXaxis()->FindBin( lLoMult+1e-5 ),
+                                              f3dHistData->GetXaxis()->FindBin( lHiMult-1e-5 ),
+                                              f3dHistData->GetYaxis()->FindBin( lPtBins[ibin  ]+1e-5 ),
+                                              f3dHistData->GetYaxis()->FindBin( lPtBins[ibin+1]-1e-5 )
+                                              );
+        lHistoData[ibin]->SetDirectory(0); 
+        fListData->Add(lHistoData[ibin]);
+    }
+    
+    //Perform early fit with gaussian+linear for acquisition of fit range
+    Double_t lMeanVsPt[100], lMeanErrVsPt[100];
+    Double_t lSigmaVsPt[100], lSigmaErrVsPt[100];
+    TH1D* fHistMeanVsPt  = new TH1D("fHistMeanVsPt", "",lNPtBins,lPtBins);
+    TH1D* fHistSigmaVsPt = new TH1D("fHistSigmaVsPt","",lNPtBins,lPtBins);
+    fHistMeanVsPt->SetDirectory(0);
+    fHistSigmaVsPt->SetDirectory(0);
+    for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
+        lMeanVsPt[ibin] = lDataResult->GetMass(); //Initial guess
+        PerformInitialFit( lHistoData[ibin], lMeanVsPt[ibin], lMeanErrVsPt[ibin], lSigmaVsPt[ibin], lSigmaErrVsPt[ibin], fListData );
+        fHistMeanVsPt->SetBinContent(ibin+1, lMeanVsPt[ibin] );
+        fHistMeanVsPt->SetBinError(ibin+1, lMeanErrVsPt[ibin] );
+        fHistSigmaVsPt->SetBinContent(ibin+1, lSigmaVsPt[ibin] );
+        fHistSigmaVsPt->SetBinError(ibin+1, lSigmaErrVsPt[ibin] );
+    }
+    
+    //FIXME: Invoke TH1D::Smooth here if asked to do so 
+    
+    fListData->Add( fHistMeanVsPt );
+    fListData->Add( fHistSigmaVsPt );
+    
+    //Perform actual signal extraction
+    Double_t lSignalVsPt[100], lSignalErrVsPt[100];
+    TH1D* fHistRawVsPt  = new TH1D("fHistRawVsPt", "",lNPtBins,lPtBins);
+    fHistRawVsPt->SetDirectory(0);
+    
+    for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
+        PerformSignalExtraction( lHistoData[ibin], lSignalVsPt[ibin], lSignalErrVsPt[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], fListData );
+        fHistRawVsPt->SetBinContent(ibin+1, lSignalVsPt[ibin] );
+        fHistRawVsPt->SetBinError(ibin+1, lSignalErrVsPt[ibin] );
+    }
+    
+    //Add raw spectra as main analysis output
+    fListOutput->Add(fHistRawVsPt);
+    
+    //Step N: Open MC data object
+    AliVWeakResult *lMCResult = (AliVWeakResult*) lMCInput->FindObject(lConfiguration.Data());
+    TString lMCName = lMCResult->GetName();
+    lMCName.Append("_MC");
+    lMCResult->SetName( lMCName.Data() );
+    lMCResult->Print();
+    
+    //Compatibility check 1: check if generated with the same cuts
+    if( !lDataResult->HasSameCuts(lMCResult) ){
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning(" You are attempting to correct data with MC results obtained");
+        AliWarning(" with different selection criteria! Will stop here. Please ");
+        AliWarning(" check your input files!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        return 0x0;
+    }
+    
+    //_________________________________________________
+    // Process TH3Fs and expand into histograms of interest
+    TH3F *f3dHistMC = lMCResult->GetHistogram();
+    f3dHistMC->SetName("f3dHistMC");
+    
+    //Check if multiplicity interval requested is possible
+    Bool_t lCheckMultMC = CheckCompatibleMultiplicity ( f3dHistMC );
+    if ( !lCheckMultMC ){
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning("Requested mult interval is inconsistent with the MC provided!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        return 0x0;
+    }
+    
+    //Check if pt interval requested is possible
+    Bool_t lCheckPtMC = CheckCompatiblePt ( f3dHistMC );
+    if ( !lCheckPtMC ){
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning(" Requested pt binning is inconsistent with the MC provided!");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        return 0x0;
+    }
+    
+    //Project into relevant invariant mass histograms
+    TH1D *lHistoMC[100];
+    
+    for( Long_t ibin = 0; ibin<lNPtBins; ibin++){
+        lHistoMC[ibin] = f3dHistMC->ProjectionZ( Form("lHistoMC_%.1f_%.1f", lPtBins[ibin], lPtBins[ibin+1]),
+                                                    f3dHistMC->GetXaxis()->FindBin( lLoMult+1e-5 ),
+                                                    f3dHistMC->GetXaxis()->FindBin( lHiMult-1e-5 ),
+                                                    f3dHistMC->GetYaxis()->FindBin( lPtBins[ibin  ]+1e-5 ),
+                                                    f3dHistMC->GetYaxis()->FindBin( lPtBins[ibin+1]-1e-5 )
+                                                    );
+        lHistoMC[ibin]->SetDirectory(0);
+        fListMC->Add(lHistoMC[ibin]);
+    }
+    
+    //Perform actual signal extraction
+    Double_t lSignalVsPtMC[100], lSignalErrVsPtMC[100];
+    TH1D* fHistRawVsPtMC  = new TH1D("fHistRawVsPtMC", "",lNPtBins,lPtBins);
+    fHistRawVsPtMC->SetDirectory(0);
+    
+    for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
+        PerformSignalExtraction( lHistoMC[ibin], lSignalVsPtMC[ibin], lSignalErrVsPtMC[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], fListMC, "MC" );
+        fHistRawVsPtMC->SetBinContent(ibin+1, lSignalVsPtMC[ibin] );
+        fHistRawVsPtMC->SetBinError(ibin+1, lSignalErrVsPtMC[ibin] );
+    }
+    
+    //Add raw spectra as main analysis output
+    fListOutput->Add(fHistRawVsPtMC);
+    
+    //Acquire generated histogram
+    TString lGenObjName = "fHistGeneratedPtVsYVsCentrality";
+    lGenObjName.Append( lDataResult->GetParticleName() ) ;
+    TH3F *f3dHistGenMC = (TH3F*) lMCCountersInput->FindObject( lGenObjName.Data() );
+    f3dHistGenMC->Sumw2();
+    //Project this into a 1D histogram, please
+    TH1D* fHistGeneratedOriginal = f3dHistGenMC -> ProjectionX( "fHistGeneratedOriginal",
+                                                       f3dHistGenMC->GetYaxis()->FindBin(-0.5+1e-5),
+                                                       f3dHistGenMC->GetYaxis()->FindBin(+0.5-1e-5),
+                                                       f3dHistGenMC->GetZaxis()->FindBin( lLoMult+1e-5 ),
+                                                       f3dHistGenMC->GetZaxis()->FindBin( lHiMult-1e-5 )
+                                                       );
+    fHistGeneratedOriginal->SetDirectory(0);
+    
+    //Save this as a very relevant histogram
+    fListOutput->Add(fHistGeneratedOriginal);
+    
+    //Rebin
+    TH1D* fHistGenerated = (TH1D*) fHistGeneratedOriginal->Rebin( lNPtBins, "fHistGenerated", lPtBins );
+    fHistGenerated->SetDirectory(0);
+    
+    //Save this as a very relevant histogram
+    fListOutput->Add(fHistGeneratedOriginal);
+    fListOutput->Add(fHistGenerated);
+    
+    //Generate Efficiency Histogram
+    TH1D* fHistEfficiency = (TH1D*) fHistRawVsPtMC -> Clone ("fHistEfficiency") ;
+    fHistEfficiency->SetDirectory(0);
+    fHistEfficiency->Divide(fHistGenerated);
+    fListOutput->Add(fHistEfficiency);
+    
+    //Generate Corrected Spectrum
+    TH1D *fHistSpectra = (TH1D*) fHistRawVsPt->Clone("fHistSpectra");
+    fHistSpectra->SetDirectory(0);
+    fHistSpectra->Divide(fHistEfficiency);
+    fHistSpectra->Scale(1.0, "width");
+    fListOutput->Add(fHistSpectra);
+    
+    TH1D *fHistSpectraToReturn = (TH1D*) fHistSpectra->Clone("fHistSpectraToReturn");
+    fHistSpectraToReturn->SetDirectory(0);
+    
+    fFileOut->cd();
+    //Save all objects owned by the TLists
+    fListData  ->Write("cListData",       TObject::kSingleKey);
+    fListMC    ->Write("cListMC",         TObject::kSingleKey);
+    fListOutput->Write("cAnalysisOutput", TObject::kSingleKey);
+    fFileOut->Write();
+    fFileOut->Close();
+}
+
+//________________________________________________________________
+Bool_t AliStrangenessModule::CheckCompatibleMultiplicity( TH3F *lHisto ){
+    Bool_t lLoMultMatch = kFALSE;
+    Bool_t lHiMultMatch = kFALSE;
+    for( Long_t ibin = 1; ibin<lHisto->GetNbinsX()+2; ibin++){
+        Double_t lLowEdge = lHisto->GetXaxis()->GetBinLowEdge(ibin);
+        if( TMath::Abs( lLowEdge - lLoMult) < 1e-5 ) lLoMultMatch = kTRUE;
+        if( TMath::Abs( lLowEdge - lHiMult) < 1e-5 ) lHiMultMatch = kTRUE;
+    }
+    Bool_t lReturnValue = kFALSE;
+    if ( lLoMultMatch && lHiMultMatch ) lReturnValue = kTRUE;
+    return lReturnValue;
+}
+
+//________________________________________________________________
+Bool_t AliStrangenessModule::CheckCompatiblePt( TH3F *lHisto ){
+    Bool_t lMatchFound = kFALSE;
+    Bool_t lReturnValue = kTRUE;
+    for( Long_t iptbin = 0; iptbin<lNPtBins+1; iptbin++){
+        lMatchFound = kFALSE;
+        for( Long_t ibin = 1; ibin<lHisto->GetNbinsY()+2; ibin++){
+            Double_t lLowEdge = lHisto->GetYaxis()->GetBinLowEdge(ibin);
+            if( TMath::Abs( lLowEdge - lPtBins[iptbin]) < 1e-5 ) lMatchFound = kTRUE;
+        }
+        if ( ! lMatchFound ) lReturnValue = kFALSE;
+    }
+    return lReturnValue;
+}
+
+
+//________________________________________________________________
+void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, TList *lControlList ){
+    //Helper function to perform initial gaussian + linear fit
+    //Will expect to have mass received as mean value here
+    Double_t lMass = lMean;
+    TString lName = lHisto->GetName();
+    lName.Append("_InitialFit");
+    TF1 *fit = new TF1(lName.Data(),"[0]+[1]*x+[2]*TMath::Gaus(x, [3], [4])", lMean-0.030, lMean+0.035);
+    //Guess linear parameters
+    Double_t lAverageBg = 0.5*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-0.015) )
+                             +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+0.015) ));
+    fit->SetParameter(0, lAverageBg);
+    fit->SetParameter(1, 0);
+    
+    //Guess Gaussian Parameters
+    fit->SetParameter(2, lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) );
+    fit->SetParameter(3, lMean);
+    fit->SetParameter(4,0.003);
+    
+    //Perform fit
+    lHisto->Fit( lName.Data(), "IREM0");
+    
+    //Store to control output
+    lControlList->Add(fit);
+    
+    //Provide output variables
+
+    lMean = fit->GetParameter(3);
+    lMeanErr = fit->GetParError(3);
+    lSigma = fit->GetParameter(4);
+    lSigmaErr = fit->GetParError(4);
+}
+
+//________________________________________________________________
+void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, TList *lControlList, TString lOption ){
+    //Helper function to perform actual signal extraction
+    
+    //Find bins in which signal extraction is to be performed
+    Long_t lBinPeakLo = lHisto->GetXaxis()->FindBin ( lMean + lLoPeak*lSigma );
+    Long_t lBinPeakHi = lHisto->GetXaxis()->FindBin ( lMean + lHiPeak*lSigma );
+    
+    //Pointers
+    TF1 *fitLinear = 0x0;
+    TF1 *fitQuadratic = 0x0;
+    TF1 *fitToSubtract = 0x0;
+    TH1D *lHistoSubtracted = 0x0;
+    
+    if( !lOption.Contains("MC") ){
+        //Step 1: Perform Linear Fit to start with
+        TString lName = lHisto->GetName();
+        lName.Append("_LinearFit");
+        fitLinear = new TF1(lName, this, &AliStrangenessModule::BgPol1,
+                                 lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 4 , "AliStrangenessModule", "BgPol1");
+        
+        //Guess linear parameters
+        Double_t lAverageBg = 0.5*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-3*lSigma) )
+                                  +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+3*lSigma) ));
+        fitLinear->FixParameter(0, lMean + lHiLeftBg*lSigma );
+        fitLinear->FixParameter(1, lMean + lLoRightBg*lSigma);
+        fitLinear->SetParameter(2, lAverageBg);
+        fitLinear->SetParameter(3, 0);
+        
+        //Perform fit
+        lHisto->Fit( lName.Data(), "IREM0");
+        
+        //Step 2: Perform Quadratic Fit to improve results
+        TString lNameQuad = lHisto->GetName();
+        lNameQuad.Append("_QuadraticFit");
+        fitQuadratic = new TF1(lNameQuad, this, &AliStrangenessModule::BgPol2,
+                                    lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 5 , "AliStrangenessModule", "BgPol2");
+        
+        //Guess linear parameters
+        fitQuadratic->FixParameter(0, lMean + lHiLeftBg*lSigma );
+        fitQuadratic->FixParameter(1, lMean + lLoRightBg*lSigma);
+        fitQuadratic->SetParameter(2, fitLinear->GetParameter(2) );
+        fitQuadratic->SetParameter(3, fitLinear->GetParameter(3) );
+        
+        //Perform fit
+        lHisto->Fit( lNameQuad.Data(), "IREM0");
+        
+        //Subtract
+        TString lNameSubtracted = lHisto->GetName();
+        lNameSubtracted.Append("_BgSubtracted");
+        lHistoSubtracted = (TH1D*) lHisto->Clone(lNameSubtracted.Data());
+        lHistoSubtracted->SetDirectory(0);
+        
+        TString lNameFitToSub = lHisto->GetName();
+        lNameFitToSub.Append("_SubtractedFit");
+        fitToSubtract = new TF1(lNameFitToSub, "[0]+[1]*x+[2]*x*x", lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma);
+        fitToSubtract->SetParameter(0, fitQuadratic->GetParameter(2) );
+        fitToSubtract->SetParameter(1, fitQuadratic->GetParameter(3) );
+        fitToSubtract->SetParameter(2, fitQuadratic->GetParameter(4) );
+        lHistoSubtracted->Add(fitToSubtract, -1.0, "I");
+
+        //Store to control output
+        lControlList->Add(fitLinear);
+        lControlList->Add(fitQuadratic);
+        lControlList->Add(fitToSubtract);
+        lControlList->Add(lHistoSubtracted);
+    }else{
+        lHistoSubtracted = lHisto;
+    }
+    lSignal = lHistoSubtracted->IntegralAndError(lBinPeakLo,lBinPeakHi,lSignalErr);
+
+}
+
+//________________________________________________________________
+Double_t AliStrangenessModule::BgPol1(const Double_t *x, const Double_t *par)
+{
+    //Function for background fitting, rejects peak region
+    //Parameter [0] -> Hi LeftBg Boundary
+    //Parameter [1] -> Lo RightBg Boundary
+    if ( x[0] > par[0] && x[0] < par[1]) {
+        TF1::RejectPoint();
+        return 0;
+    }
+    return par[2] + par[3]*x[0];
+}
+
+
+//________________________________________________________________
+Double_t AliStrangenessModule::BgPol2(const Double_t *x, const Double_t *par)
+{
+    //Function for background fitting, rejects peak region
+    //Parameter [0] -> Hi LeftBg Boundary
+    //Parameter [1] -> Lo RightBg Boundary
+    if ( x[0] > par[0] && x[0] < par[1]) {
+        TF1::RejectPoint();
+        return 0;
+    }
+    return par[2] + par[3]*x[0] + par[4]*x[0]*x[0];
+}
+
+
+

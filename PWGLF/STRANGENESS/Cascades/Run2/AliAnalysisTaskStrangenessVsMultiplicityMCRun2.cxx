@@ -2484,7 +2484,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 fTreeCascVarDCANegToPrimVtx > lCascadeResult->GetCutDCANegToPV() &&
                 fTreeCascVarDCAPosToPrimVtx > lCascadeResult->GetCutDCAPosToPV() &&
                 fTreeCascVarDCAV0Daughters < lCascadeResult->GetCutDCAV0Daughters() &&
-                fTreeCascVarV0CosPointingAngle > lCascadeResult->GetCutV0CosPA() &&
+                fTreeCascVarV0CosPointingAngle > lV0CosPACut &&
                 fTreeCascVarV0Radius > lCascadeResult->GetCutV0Radius() &&
                 // - Cascade Selections
                 fTreeCascVarDCAV0ToPrimVtx > lCascadeResult->GetCutDCAV0ToPV() &&
