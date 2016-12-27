@@ -98,6 +98,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fFullTree(kFALSE),
   fBeta_SD(0),
   fZCut(0.1),
+  fReclusteringAlgorithm(0),
   fNsubMeasure(kFALSE),
   fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
@@ -250,6 +251,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fFullTree(kFALSE),
   fBeta_SD(0),
   fZCut(0.1),
+  fReclusteringAlgorithm(0),
   fNsubMeasure(kFALSE),
   fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
@@ -1649,6 +1651,7 @@ Double_t AliAnalysisTaskSubJetFraction::fjNSubJettiness(AliEmcalJet *Jet, Int_t 
       else return Jet->GetShapeProperties()->GetSecondOrderSubtractedOpeningAngle_kt();
     }
     else{
+      if (fJetShapeType != AliAnalysisTaskSubJetFraction::kGenOnTheFly) Algorithm=fReclusteringAlgorithm;   //Lazy programming!! Change this later, just a quick fix for now...it stops you being able to fill tree with two different reclutering algorithms or change algortihm inside this .cxx  (can only be changed via the external setter).
       AliJetContainer *JetCont = GetJetContainer(JetContNb);
       AliEmcalJetFinder *JetFinder=new AliEmcalJetFinder("Nsubjettiness");
       JetFinder->SetJetMaxEta(0.9-fJetRadius);
