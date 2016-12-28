@@ -2039,3 +2039,62 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
   return spherocity;
 
 }
+//________________________________________________________________________
+Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC, 
+						     Double_t etaMin, Double_t etaMax, 
+						     Double_t ptMin, Double_t ptMax,
+						     Int_t minMult, Double_t phiStepSizeDeg){
+
+  /// compute generated spherocity
+
+  Int_t nParticles=arrayMC->GetEntriesFast();
+  Int_t nSelParticles=0;
+
+  Double_t* ptArr=new Double_t[nParticles];
+  Double_t* phiArr=new Double_t[nParticles];
+  Double_t sumpt=0.;
+
+  for(Int_t ip=0; ip<nParticles; ip++) {
+    AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(ip);
+    if(!part) continue;
+    Float_t eta = part->Eta();
+    Float_t pt  = part->Pt();
+    Float_t phi  = part->Phi();
+    Int_t charge = part->Charge();
+    Bool_t isPhysPrim = part->IsPhysicalPrimary();
+    if(!isPhysPrim) continue;
+    if(charge==0) continue;
+    if(eta<etaMin || eta>etaMax) continue;
+    if(pt<ptMin || pt>ptMax) continue;    
+
+    ptArr[nSelParticles]=pt;
+    phiArr[nSelParticles]=phi;
+    nSelParticles++;
+    sumpt+=pt;
+  }
+
+  if(nSelParticles<minMult) return -0.5;
+
+  //Getting thrust
+  Double_t spherocity=2.;
+  for(Int_t i=0; i<360/phiStepSizeDeg; ++i){
+    Double_t phistep=TMath::Pi()*(Double_t)i*phiStepSizeDeg/180.;
+    Double_t nx=TMath::Cos(phistep);
+    Double_t ny=TMath::Sin(phistep);
+    Double_t numer=0.;
+    for(Int_t j=0; j<nSelParticles; ++j){
+      Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
+      Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
+      numer+=TMath::Abs(ny*pxA - nx*pyA);  
+    }
+    Double_t pFull=numer*numer/(sumpt*sumpt);
+    if(pFull<spherocity) spherocity=pFull; // minimization;
+  }
+
+  delete [] ptArr;
+  delete [] phiArr;
+
+  spherocity*=(TMath::Pi()*TMath::Pi()/4.);
+  return spherocity;
+
+}
