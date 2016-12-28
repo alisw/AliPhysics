@@ -107,7 +107,7 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   // Test for biased jet
   Bool_t                 BiasedJet(AliEmcalJet * jet);
   // Corrections
-  virtual Double_t       EffCorrection(Double_t trkETA, Double_t trkPT, Int_t effswitch) const; // efficiency correction function
+  virtual Double_t       EffCorrection(Double_t trkETA, Double_t trkPT) const; // efficiency correction function
   // Fill methods which allow for the embedding correction
   void                   FillHist(TH1 * hist, Double_t fillValue, Double_t weight = 1.0, Bool_t noCorrection = kTRUE);
   void                   FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight = 1.0, Bool_t noCorrection = kTRUE);
