@@ -1520,7 +1520,7 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
   if(Nuls>0)
     {
      Int_t SubComb = Nuls-Nls;
-     fHistMassULScount->Fill(track->Pt(),Nuls);
+     fHistMassULScount->Fill(track->Pt(),SubComb);
      //fHistMassLScount->Fill(track->Pt(),Nls);
     }
   //cout << "fFlagULSElec = " << fFlagULSElec << " ; fFlagLSElec = " << fFlagLSElec << endl; 
