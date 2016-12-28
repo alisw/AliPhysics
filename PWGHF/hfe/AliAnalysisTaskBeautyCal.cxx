@@ -537,7 +537,7 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   fOutputList->Add(fInvmassHfULS);
   */
 
-  fHistMassULScount = new TH2D("fHistMassULScount","Ncount ULS;p_{T};Ncount",30,0,30,30,-0.5,29.5);
+  fHistMassULScount = new TH2D("fHistMassULScount","Ncount ULS;p_{T};Ncount",30,0,30,21,-10.5,10.5);
   fOutputList->Add(fHistMassULScount);
   
   fHistMassLScount = new TH2D("fHistMassLScount","Ncount LS;p_{T};Ncount",30,0,30,30,-0.5,29.5);
@@ -972,7 +972,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 
     double m20mim = 0.03;
-    double m20max = 0.3;
+    //double m20max = 0.3;
+    double m20max = 0.28;
 
     ////////////////////
     //Apply track cuts//
@@ -1189,8 +1190,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
     if(clustMatch && clustMatch->IsEMCAL())
     {
-      if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
+      //if(TMath::Abs(clustMatch->GetTrackDx())>0.05 || TMath::Abs(clustMatch->GetTrackDz())>0.05) continue;
       MatchR = sqrt(pow(clustMatch->GetTrackDx(),2)+pow(clustMatch->GetTrackDz(),2));
+      if(MatchR>0.03)continue;
 
       /////////////////////////////////
       //Select EMCAL or DCAL clusters//
@@ -1236,7 +1238,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         {
          if(fUseTender)
            { 
-            eop += 0.036; 
+            eop += 0.04; 
            }
          else
            {
@@ -1299,7 +1301,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(atrack->GetITSNcls() < 3) continue;
       if(atrack->GetTPCNCrossedRows() < 120) continue; 
       if(atrack->GetTPCchi2() > 4) continue; 
-      if(atrack->GetITSchi2() > 36) continue; 
+      //if(atrack->GetITSchi2() > 36) continue; 
+      if(atrack->GetITSchi2() > 25) continue; 
  
       if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);
@@ -1514,8 +1517,12 @@ void AliAnalysisTaskBeautyCal::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
   fFlagULSElec = flagULSElec;
   fFlagLSElec = flagLSElec;
 
-  fHistMassULScount->Fill(track->Pt(),Nuls);
-  fHistMassLScount->Fill(track->Pt(),Nls);
+  if(Nuls>0)
+    {
+     Int_t SubComb = Nuls-Nls;
+     fHistMassULScount->Fill(track->Pt(),Nuls);
+     //fHistMassLScount->Fill(track->Pt(),Nls);
+    }
   //cout << "fFlagULSElec = " << fFlagULSElec << " ; fFlagLSElec = " << fFlagLSElec << endl; 
 
 }
