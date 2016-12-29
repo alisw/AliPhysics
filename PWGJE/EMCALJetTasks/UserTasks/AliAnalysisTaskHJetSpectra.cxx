@@ -10,6 +10,7 @@
 #include <TProfile2D.h>
 #include <TH1.h>
 #include <TH1F.h>
+#include <TF1.h>
 #include <TH2F.h>
 #include <TH1D.h>
 #include <TH1I.h>
@@ -89,8 +90,10 @@ fCentralityType("V0A"), fMinFractionShared(0.5),
 fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), fInitializedLocal(0),
  fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
 fHistEvtSelection(0x0),fhKTAreaPt(0x0),
- fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
- fhDphiTriggerJetAccept(0x0), fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
+ fhVertexZ(0x0), fhVertexXAccept(0x0), fhVertexYAccept(0x0), fhVertexZAccept(0x0), 
+ fhVertexXAcceptTT(0x0), fhVertexYAcceptTT(0x0), fhVertexZAcceptTT(0x0), 
+fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
+ fhDphiTriggerJetAccept(0x0),  fhDphiTTTT(0x0),fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhDiffPtVsPtTrackTrue(0x0),
 fhTrackPhiCG(0x0), fhTrackPhiTPCG(0x0),
@@ -101,6 +104,8 @@ fhDCAinYVsPtStrange(0x0),
 fhDCAinXVsPtNonStrange(0x0),
 fhDCAinYVsPtNonStrange(0x0),
 fCentralityBins(kCAll),
+fTrackPtRef(0x0),
+fTrackPtSig(0x0),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
 fpyVtx(3)
@@ -195,6 +200,10 @@ fpyVtx(3)
    ftmpArrayX[0]=0.;              
    ftmpArrayX[1]=0.;              
    ftmpArrayX[2]=0.;              
+   fVtxArray[0]=0.;              
+   fVtxArray[1]=0.;              
+   fVtxArray[2]=0.;              
+
 
    for(Int_t i=0; i<999; i++){
       frhovec[i] = 0.;
@@ -232,8 +241,10 @@ fCentralityType("V0A"),   fMinFractionShared(0.5),
 fCrossSection(0.0), fTrials(0.0), fImpParam(-1.0), fRandom(0), fHelperClass(0), fInitializedLocal(0), 
  fDphiCut(TMath::Pi()-0.6), fUseDoubleBinPrecision(0),
 fHistEvtSelection(0x0), fhKTAreaPt(0x0), 
- fhVertexZ(0x0), fhVertexZAccept(0x0), fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
-fhDphiTriggerJetAccept(0x0),fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
+ fhVertexZ(0x0), fhVertexXAccept(0x0), fhVertexYAccept(0x0), fhVertexZAccept(0x0), 
+ fhVertexXAcceptTT(0x0), fhVertexYAcceptTT(0x0), fhVertexZAcceptTT(0x0), 
+fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
+fhDphiTriggerJetAccept(0x0),  fhDphiTTTT(0x0), fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/
 fhDiffPtVsPtTrackTrue(0x0),
@@ -245,6 +256,8 @@ fhDCAinYVsPtStrange(0x0),
 fhDCAinXVsPtNonStrange(0x0),
 fhDCAinYVsPtNonStrange(0x0),
 fCentralityBins(kCAll),
+fTrackPtRef(0x0),
+fTrackPtSig(0x0),
 fNofRandomCones(1),
 fZVertexCut(10.0),fCutPhi(0.6),
 fpyVtx(3)
@@ -340,6 +353,10 @@ fpyVtx(3)
    ftmpArrayX[0]=0.;              
    ftmpArrayX[1]=0.;              
    ftmpArrayX[2]=0.;              
+   fVtxArray[0]=0.;              
+   fVtxArray[1]=0.;              
+   fVtxArray[2]=0.;              
+
 
    for(Int_t i=0; i<999; i++){
       frhovec[i] = 0.;
@@ -361,6 +378,13 @@ fpyVtx(3)
       fhInvPtQVsPhiCSide[i] = NULL;
       fhSigmaPtOverPtVsPt[i] = NULL;
    }
+
+   fTrackPtRef = new TF1("fTrackPtRef","[0]*exp(-x*[1])",fTTlow[kRef],fTThigh[kRef]);
+   fTrackPtRef->SetParameters(1.46886e+08,8.37087e-01); 
+
+   fTrackPtSig = new TF1("fTrackPtSig","[0]*exp(-x*[1])+[2]*exp(-x*[3])+[4]*exp(-x*[5])",fTTlow[kSig],fTThigh[kSig]);
+   fTrackPtSig->SetParameters(1.85619e+07,6.08943e-01,3.10336e+05,2.71288e-01,2.28454e+03,1.01523e-01);
+
    DefineOutput(1, TList::Class());
 }
 //________________________________________________________________________
@@ -537,10 +561,20 @@ Bool_t AliAnalysisTaskHJetSpectra::IsEventInAcceptance(AliVEvent* event){
          fHistEvtSelection->Fill(3); //count events rejected by vertex cut 
          return kFALSE;
       }
+      if(event->GetPrimaryVertex()->GetNContributors()<1){
+         fHistEvtSelection->Fill(3); //count events rejected by vertex cut 
+         return kFALSE;
+      }
    }
    //___________________________________________________
    //AFTER VERTEX CUT
+   fhVertexXAccept->Fill(event->GetPrimaryVertex()->GetX());
+   fhVertexYAccept->Fill(event->GetPrimaryVertex()->GetY());
    fhVertexZAccept->Fill(event->GetPrimaryVertex()->GetZ());
+   fVtxArray[0]=event->GetPrimaryVertex()->GetX();              
+   fVtxArray[1]=event->GetPrimaryVertex()->GetY();              
+   fVtxArray[2]=event->GetPrimaryVertex()->GetZ();              
+
 
   return kTRUE;
 }
@@ -878,6 +912,8 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
    Bool_t bStrange = 0;
    Int_t  lab = 0;
    Double_t newJetPt=0., newSumFakePt=0., enhw =0.; //
+   TF1 *tmpFunc;
+   Double_t normprob, prob, probTT, dphiTTTT;
 
    if(fTypeOfAnal == kEff || fTypeOfAnal == kKine){
 
@@ -912,10 +948,32 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             fh1TriggerMultGen[ficb[ic]][it]->Fill(ntriggersGen[it]); 
          } 
         
-         if(ntriggersGen[it]>0){
-            indexSingleRndTrigGen[it] = fRandom->Integer(ntriggersGen[it]); //Integer 0 ... ntriggers-1
+         if(ntriggersGen[it]==1){ //only one trigger candidate
+            indexSingleRndTrigGen[it] = 0; 
+            trackTTGen[it] = (AliVParticle*) (fTrigTracksGen[it][indexSingleRndTrigGen[it]]);
+
+         }else if(ntriggersGen[it]>1){  //more trigger candiates
+            tmpFunc = (it==kRef) ? fTrackPtRef : fTrackPtSig;
+            normprob = 0;                       
+            for(Int_t ik=0; ik<ntriggersGen[it]; ik++){
+               normprob += tmpFunc->Eval(((AliVParticle*) (fTrigTracksGen[it][ik]))->Pt()); 
+            }
+            prob = fRandom->Uniform(0,1);
+            probTT = 0; 
+            if(normprob>0){
+               for(Int_t ik=0; ik<ntriggersGen[it]; ik++){
+                  probTT += tmpFunc->Eval(((AliVParticle*) (fTrigTracksGen[it][ik]))->Pt())/normprob;
+                  if(prob <= probTT){
+                     indexSingleRndTrigGen[it] = ik; 
+                     break;
+                  }
+               }
+            }else{
+               indexSingleRndTrigGen[it] = 0; 
+            }
             trackTTGen[it] = (AliVParticle*) (fTrigTracksGen[it][indexSingleRndTrigGen[it]]);
          }
+
       }
    }
    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -968,11 +1026,51 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
             fh1TriggerMult[ficb[ic]][it]->Fill(ntriggers[it]); 
          } 
          
-         if(ntriggers[it]>0){
-            indexSingleRndTrig[it] = fRandom->Integer(ntriggers[it]); //Integer 0 ... ntriggers-1
-            trackTT[it] = (AliVParticle*) (fTrigTracks[it][indexSingleRndTrig[it]]);
+        // if(ntriggers[it]>0){
+        //    indexSingleRndTrig[it] = fRandom->Integer(ntriggers[it]); //Integer 0 ... ntriggers-1
+        //    trackTT[it] = (AliVParticle*) (fTrigTracks[it][indexSingleRndTrig[it]]);
             //if(fDebug>20)  Printf("TT index = %d   size =%d", indexSingleRndTrig, (int)fTrigTracks.size());
+        // }
+         if(ntriggers[it]==1){ //only one trigger candidate
+            indexSingleRndTrig[it] = 0; 
+            trackTT[it] = (AliVParticle*) (fTrigTracks[it][indexSingleRndTrig[it]]);
+
+         }else if(ntriggers[it]>1){  //more trigger candiates pickupt the trigger based on inclusive probabilities
+            tmpFunc = (it==kRef) ? fTrackPtRef : fTrackPtSig;
+            normprob = 0;              
+            for(Int_t ik=0; ik<ntriggers[it]; ik++){
+               normprob += tmpFunc->Eval(((AliVParticle*) (fTrigTracks[it][ik]))->Pt()); 
+
+               if(ik>0){ //azimuthal angle between triggers 
+                  dphiTTTT =  RelativePhi(((AliVParticle*) (fTrigTracks[it][0]))->Phi(), 
+                                          ((AliVParticle*) (fTrigTracks[it][ik]))->Phi());
+                  if(dphiTTTT<-0.5*TMath::Pi()) dphiTTTT += TMath::TwoPi();
+                  if(dphiTTTT> 1.5*TMath::Pi()) dphiTTTT -= TMath::TwoPi();
+
+                  fhDphiTTTT->Fill(dphiTTTT);
+               }
+            }
+            prob = fRandom->Uniform(0,1);
+            probTT = 0; 
+            if(normprob>0){
+               for(Int_t ik=0; ik<ntriggers[it]; ik++){
+                  probTT += tmpFunc->Eval(((AliVParticle*) (fTrigTracks[it][ik]))->Pt())/normprob;
+                  if(prob <= probTT){
+                     indexSingleRndTrig[it] = ik; 
+                     break;
+                  }
+               }
+            }else{
+               indexSingleRndTrig[it] = 0; 
+            }
+            trackTT[it] = (AliVParticle*) (fTrigTracks[it][indexSingleRndTrig[it]]);
          }
+      }
+
+      if(ntriggers[kRef]>0 || ntriggers[kSig]>0){
+         fhVertexXAcceptTT->Fill(fVtxArray[0]);
+         fhVertexYAcceptTT->Fill(fVtxArray[1]);
+         fhVertexZAcceptTT->Fill(fVtxArray[2]);
       }
    }
  
@@ -2011,8 +2109,24 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fhVertexZ = new TH1F("fhVertexZ","z vertex",40,-20,20);
    if(bNotKine) fOutput->Add(fhVertexZ);
    //-------------------------
+   fhVertexXAccept = new TH1F("fhVertexXAccept","vertex after cut",600,-3,3);
+   if(bNotKine) fOutput->Add(fhVertexXAccept);
+ 
+   fhVertexYAccept = (TH1F*) fhVertexXAccept->Clone("fhVertexYAccept");
+   if(bNotKine) fOutput->Add(fhVertexYAccept);
+ 
    fhVertexZAccept = new TH1F("fhVertexZAccept","z vertex after cut",40,-20,20);
    if(bNotKine) fOutput->Add(fhVertexZAccept);
+
+   fhVertexXAcceptTT = (TH1F*) fhVertexXAccept->Clone("fhVertexXAcceptTT");
+   if(bNotKine) fOutput->Add(fhVertexXAcceptTT);
+ 
+   fhVertexYAcceptTT = (TH1F*) fhVertexXAccept->Clone("fhVertexYAcceptTT");
+   if(bNotKine) fOutput->Add(fhVertexYAcceptTT);
+ 
+   fhVertexZAcceptTT = (TH1F*) fhVertexZAccept->Clone("fhVertexZAcceptTT");
+   if(bNotKine) fOutput->Add(fhVertexZAcceptTT);
+ 
    //-------------------------
 
    if(fTypeOfData!=kReal){
@@ -2041,6 +2155,9 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
 
    fhDphiTriggerJetAccept = new TH1F("fhDphiTriggerJetAccept","Deltaphi trig-jet after cut",50, -0.5*TMath::Pi(),1.5*TMath::Pi());
    if(bHistRec)  fOutput->Add(fhDphiTriggerJetAccept);
+
+   fhDphiTTTT = new TH1F("fhDphiTTTT","Deltaphi between multiple TT",50, -0.5*TMath::Pi(),1.5*TMath::Pi());
+   if(bHistRec)  fOutput->Add(fhDphiTTTT);
 
    fhJetPhiIncl = new TH2F("fhJetPhiIncl","Azim dist jets vs pTjet", 50, 0, 100, 50,-TMath::Pi(),TMath::Pi());
    if(bHistRec)  fOutput->Add((TH2F*) fhJetPhiIncl);
