@@ -20,7 +20,6 @@
 #include <TNtupleD.h>
 #include <TProfile.h>
 #include <TTree.h>
-#include "AliESDMuonTrack.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
@@ -29,10 +28,12 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliESDEvent.h"
+#include "AliESDMuonTrack.h"
 #include "AliEmcalJet.h"
 #include "AliExternalTrackParam.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
+#include "AliMultSelection.h"
 #include "AliPicoTrack.h"
 #include "AliTrackerBase.h"
 #include "AliVCluster.h"
@@ -141,12 +142,20 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
   // accepted events
   fHists[9]->Fill(1,run);
 
-  AliCentrality *cent = InputEvent()->GetCentrality();
-  Double_t v0acent = cent->GetCentralityPercentile("V0A");
+  AliMultSelection *ms = dynamic_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+  Double_t v0acent=-1,znacent=-1,v0mcent=-1;
+  if (ms) {
+    v0acent = ms->GetMultiplicityPercentile("V0A");
+    znacent = ms->GetMultiplicityPercentile("ZNA");
+    v0mcent = ms->GetMultiplicityPercentile("V0M");
+  } else {
+    AliCentrality *cent = InputEvent()->GetCentrality();
+    v0acent = cent->GetCentralityPercentile("V0A");
+    znacent = cent->GetCentralityPercentile("ZNA");
+    v0mcent = cent->GetCentralityPercentile("V0M");
+  }
   fHists[10]->Fill(v0acent);
-  Double_t znacent = cent->GetCentralityPercentile("ZNA");
   fHists[11]->Fill(znacent);
-  Double_t v0mcent = cent->GetCentralityPercentile("V0M");
   fHists[12]->Fill(v0mcent);
 
   if (fDoTracking) {
@@ -527,13 +536,23 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
     fNtupCumInfo->fMV0M     = vzero->GetMTotV0A()+vzero->GetMTotV0C();
   }
 
-  AliCentrality *cent = InputEvent()->GetCentrality();
-  fNtupCumInfo->fCl1      = cent->GetCentralityPercentile("CL1");
-  fNtupCumInfo->fV0M      = cent->GetCentralityPercentile("V0M");
-  fNtupCumInfo->fV0MEq    = cent->GetCentralityPercentile("V0MEq");
-  fNtupCumInfo->fV0A      = cent->GetCentralityPercentile("V0A");
-  fNtupCumInfo->fV0AEq    = cent->GetCentralityPercentile("V0AEq");
-  fNtupCumInfo->fZNA      = cent->GetCentralityPercentile("ZNA");
+  AliMultSelection *ms = dynamic_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
+  if (ms) {
+    fNtupCumInfo->fCl1      = ms->GetMultiplicityPercentile("CL1");
+    fNtupCumInfo->fV0M      = ms->GetMultiplicityPercentile("V0M");
+    fNtupCumInfo->fV0MEq    = ms->GetMultiplicityPercentile("V0MEq");
+    fNtupCumInfo->fV0A      = ms->GetMultiplicityPercentile("V0A");
+    fNtupCumInfo->fV0AEq    = ms->GetMultiplicityPercentile("V0AEq");
+    fNtupCumInfo->fZNA      = ms->GetMultiplicityPercentile("ZNA");
+  } else {
+    AliCentrality *cent = InputEvent()->GetCentrality();
+    fNtupCumInfo->fCl1      = cent->GetCentralityPercentile("CL1");
+    fNtupCumInfo->fV0M      = cent->GetCentralityPercentile("V0M");
+    fNtupCumInfo->fV0MEq    = cent->GetCentralityPercentile("V0MEq");
+    fNtupCumInfo->fV0A      = cent->GetCentralityPercentile("V0A");
+    fNtupCumInfo->fV0AEq    = cent->GetCentralityPercentile("V0AEq");
+    fNtupCumInfo->fZNA      = cent->GetCentralityPercentile("ZNA");
+  }
 
   AliVZDC *vZDC = InputEvent()->GetZDCData();
   const Double_t *znaTowers = vZDC->GetZNATowerEnergy(); 
