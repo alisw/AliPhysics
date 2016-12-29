@@ -109,6 +109,9 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 ,fTimeCut(kFALSE)
 ,fWeightSyst(kFALSE)
 ,fSystTOFcut(kFALSE)
+,fCutM02(2.)
+,fCutM20(2.)
+,fSScut(kFALSE)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -192,6 +195,13 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
         fHistTPCnSigEop[k] = NULL;
         fHistTPCnSigEMCalnSig[k] = NULL;
         
+        fHistM02sig[k] = NULL;
+        fHistM20sig[k] = NULL;
+        fHistM02backg[k] = NULL;
+        fHistM20backg[k] = NULL;
+        fHistM02EoverP[k] = NULL;
+        fHistM20EoverP[k] = NULL;
+        
         fEoverPsignalTPC[k] = NULL;
         fEoverPsignalTPCM02[k] = NULL;
         fEoverPbackg[k] = NULL;
@@ -224,6 +234,9 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 ,fTimeCut(kFALSE)
 ,fWeightSyst(kFALSE)
 ,fSystTOFcut(kFALSE)
+,fCutM02(2.)
+,fCutM20(2.)
+,fSScut(kFALSE)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -307,6 +320,13 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
         fHistTPCnSigITSTOFcut[k] = NULL;
         fHistTPCnSigEop[k] = NULL;
         fHistTPCnSigEMCalnSig[k] = NULL;
+        
+        fHistM02sig[k] = NULL;
+        fHistM20sig[k] = NULL;
+        fHistM02backg[k] = NULL;
+        fHistM20backg[k] = NULL;
+        fHistM02EoverP[k] = NULL;
+        fHistM20EoverP[k] = NULL;
         
         fEoverPsignalTPC[k] = NULL;
         fEoverPsignalTPCM02[k] = NULL;
@@ -825,6 +845,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             }
         }
         
+        
         if(fUseTender && !fMCarray && fTimeCut && pt>=3 && (TMath::Abs(clsTime)>50)) continue;
         
         EovP = clsE/p;
@@ -849,6 +870,21 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
         if (fITSnSigma>-2 && fITSnSigma<2 && fTOFnSigma>-2 && fTOFnSigma<2) fHistTPCnSigITSTOFcut[iCent]->Fill(p,fTPCnSigma);
         if (pt>2) fHistTPCnSigEop[iCent]->Fill(fTPCnSigma,EovP);
         if (pt>2) fHistTPCnSigEMCalnSig[iCent]->Fill(fTPCnSigma,fEMCalnSigma);
+
+        if(!fMCarray){
+            if (fTPCnSigma>-1  && fTPCnSigma<3 && EovP>0.8 && EovP<1.2){
+                fHistM02sig[iCent]->Fill(pt,m02);
+                fHistM20sig[iCent]->Fill(pt,m20);
+            }
+            
+            if (fTPCnSigma<-4  && EovP<0.5){
+                fHistM02backg[iCent]->Fill(pt,m02);
+                fHistM20backg[iCent]->Fill(pt,m20);
+            }
+        }
+
+        if (pt>3) fHistM02EoverP[iCent]->Fill(m02,EovP);
+        if (pt>3) fHistM20EoverP[iCent]->Fill(m20,EovP);
         
         
         if (pt<3 && fTPCnSigma>0  && fTPCnSigma<3 && fTOFnSigma>-2 && fTOFnSigma<2 && fITSnSigma>-2 && fITSnSigma<2)
@@ -901,16 +937,16 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             }
         }
         
-        Bool_t IsPassedSScuts = kFALSE;
-        if (m02>0.02 && m20>0.02 && m02<0.3) IsPassedSScuts = kTRUE;
+        if (pt>=3 && fSScut && (m02<0.02 || m02>fCutM02)) continue;
+        if (pt>=3 && fSScut && (m20<0.02 || m20>fCutM20)) continue;
         
         if(!fMCarray){
-            SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0,EovP,fTPCnSigma,evPlaneV0,IsPassedSScuts);
+            SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,1,iCent,0,0,EovP,fTPCnSigma,evPlaneV0);
             
             if (pt<3 || (pt>=3 && fTPCnSigma>=-1 && fTPCnSigma<3 && EovP>0.8 && EovP<1.2))
                 fInclElec[iCent]->Fill(pt,0.);
             
-            Double_t corr[7]={static_cast<Double_t>(iCent),pt,fTPCnSigma,EovP,dphi,(Double_t)IsPassedSScuts,0.};
+            Double_t corr[7]={static_cast<Double_t>(iCent),pt,fTPCnSigma,EovP,dphi,cosdphi,0.};
             fCorr->Fill(corr,wEvent);
         }
         
@@ -923,13 +959,24 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
                     partPDG = fMCparticle->GetPdgCode();
                     partPt = fMCparticle->Pt();
                     
+                    if (TMath::Abs(partPDG)==11){
+                        fHistM02sig[iCent]->Fill(pt,m02);
+                        fHistM20sig[iCent]->Fill(pt,m20);
+                    }
+                    
+                    if (TMath::Abs(partPDG)!=11){
+                        fHistM02backg[iCent]->Fill(pt,m02);
+                        fHistM20backg[iCent]->Fill(pt,m20);
+                    }
+                    
+                    
                     Bool_t iEnhance = kFALSE;
                     
                     if(label>=NpureMC)iEnhance = kTRUE;
                     
                     GetWeightAndDecay(fMCparticle,iCent,iDecay,MCweight);
                     
-                    Double_t corr[7]={static_cast<Double_t>(iCent),pt,fTPCnSigma,EovP,dphi,(Double_t)IsPassedSScuts,static_cast<Double_t>(iDecay)};
+                    Double_t corr[7]={static_cast<Double_t>(iCent),pt,fTPCnSigma,EovP,dphi,cosdphi,static_cast<Double_t>(iDecay)};
                     fCorr->Fill(corr,MCweight);
                     
                     if (TMath::Abs(partPDG)!=11) continue;
@@ -938,7 +985,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
                     if (pt<3 || (pt>=3 && fTPCnSigma>=-1 && fTPCnSigma<3 && EovP>0.8 && EovP<1.2))
                         fInclElec[iCent]->Fill(pt,(Double_t)iDecay);
                     
-                    SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iEnhance,iDecay,EovP,fTPCnSigma,evPlaneV0,IsPassedSScuts);
+                    SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG,MCweight,iCent,iEnhance,iDecay,EovP,fTPCnSigma,evPlaneV0);
                     
                 }// end particle
             }// end label
@@ -1041,19 +1088,19 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
     fcpV2_4050 = new TH2F("fcpV2_4050","",nbin_cpv2,bin_cpv2,20,-1,1) ;
     fOutputList->Add(fcpV2_4050);
     
-    //iCent,pt,fTPCnSigma,EovP,dphi,SScuts,iDecay
-    Int_t binsv2[7]=   {3,20,20,40,4        ,2,7};
-    Double_t xminv2[7]={0,0 ,-5, 0,0          , 0,0};
-    Double_t xmaxv2[7]={3,10, 5, 2,TMath::Pi(),  2,7};
+    //iCent,pt,fTPCnSigma,EovP,dphi,cosphi,iDecay
+    Int_t binsv2[7]=   {3,20,20,40,4        ,20,7};
+    Double_t xminv2[7]={0,0 ,-5, 0,0          , -1,0};
+    Double_t xmaxv2[7]={3,10, 5, 2,TMath::Pi(),  1,7};
     fCorr = new THnSparseD ("fCorr","Correlations",7,binsv2,xminv2,xmaxv2);
     fCorr->Sumw2();
     fOutputList->Add(fCorr);
     
-    //iCent,pt,mass,fFlagLS,iEnhance,iDecay,EovP,fTPCnSigma,dphiPhotElec,SScuts
-    Int_t binsv3[10]=   {3,20,30 ,2,2,7,40,20,4,2};
-    Double_t xminv3[10]={0,0 ,0  ,0,0,0,0 ,-5,0,0};
-    Double_t xmaxv3[10]={3,10,0.3,2,2,7,2 , 5,TMath::Pi(),2};
-    fElecMC = new THnSparseD ("fElecMC","MC",10,binsv3,xminv3,xmaxv3);
+    //iCent,pt,mass,fFlagLS,iEnhance,iDecay,EovP,fTPCnSigma,dphiPhotElec
+    Int_t binsv3[9]=   {3,20,30 ,2,2,7,40,20,4};
+    Double_t xminv3[9]={0,0 ,0  ,0,0,0,0 ,-5,0};
+    Double_t xmaxv3[9]={3,10,0.3,2,2,7,2 , 5,TMath::Pi()};
+    fElecMC = new THnSparseD ("fElecMC","MC",9,binsv3,xminv3,xmaxv3);
     fElecMC->Sumw2();
     fOutputList->Add(fElecMC);
     
@@ -1149,6 +1196,24 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
         
         fHistTPCnSigEMCalnSig[i]  = new TH2F(Form("fHistTPCnSigEMCalnSig%d",i),Form("fHistTPCnSigEMCalnSig%d",i),100,-5,5,100,-5,5);
         fOutputList->Add(fHistTPCnSigEMCalnSig[i]);
+        
+        fHistM02sig[i]  = new TH2F(Form("fHistM02sig%d",i),Form("fHistM02sig%d",i),nbin_v2,bin_v2,200,0,2);
+        fOutputList->Add(fHistM02sig[i]);
+        
+        fHistM20sig[i]  = new TH2F(Form("fHistM20sig%d",i),Form("fHistM20sig%d",i),nbin_v2,bin_v2,200,0,2);
+        fOutputList->Add(fHistM20sig[i]);
+        
+        fHistM02backg[i]  = new TH2F(Form("fHistM02backg%d",i),Form("fHistM02backg%d",i),nbin_v2,bin_v2,200,0,2);
+        fOutputList->Add(fHistM02backg[i]);
+        
+        fHistM20backg[i]  = new TH2F(Form("fHistM20backg%d",i),Form("fHistM20backg%d",i),nbin_v2,bin_v2,200,0,2);
+        fOutputList->Add(fHistM20backg[i]);
+        
+        fHistM02EoverP[i]  = new TH2F(Form("fHistM02EoverP%d",i),Form("fHistM02EoverP%d",i),200,0,2,200,0,2);
+        fOutputList->Add(fHistM02EoverP[i]);
+        
+        fHistM20EoverP[i]  = new TH2F(Form("fHistM20EoverP%d",i),Form("fHistM20EoverP%d",i),200,0,2,200,0,2);
+        fOutputList->Add(fHistM20EoverP[i]);
         
         fEoverPsignalTPC[i]  = new TH2F(Form("fEoverPsignalTPC%d",i),Form("fEoverPsignalTPC%d",i),nbin_v2,bin_v2,40,0,2);
         fOutputList->Add(fEoverPsignalTPC[i]);
@@ -1687,7 +1752,7 @@ Bool_t AliAnalysisTaskFlowTPCEMCalEP::IsPrimary(AliAODMCParticle *particle)
 }
 //_________________________________________
 void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec,
-                                                           Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iEnhance, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0, Bool_t IsPassedSScuts)
+                                                           Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iEnhance, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0)
 {
     //Identify non-heavy flavour electrons using Invariant mass method
     
@@ -1800,7 +1865,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
         
         recg.GetMass(mass,width);
         
-        Double_t elecMC[10]={(Double_t)iCent,pt,mass,(Double_t)fFlagLS,(Double_t)iEnhance,(Double_t)iDecay, EovP, fTPCnSigma,dphiPhotElec,(Double_t)IsPassedSScuts};
+        Double_t elecMC[9]={(Double_t)iCent,pt,mass,(Double_t)fFlagLS,(Double_t)iEnhance,(Double_t)iDecay, EovP, fTPCnSigma,dphiPhotElec};
         fElecMC->Fill(elecMC,weight);
         
         if(fFlagLS) fInvmassLS[iCent]->Fill(mass,pt,weight);
