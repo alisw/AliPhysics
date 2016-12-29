@@ -604,6 +604,14 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
       fHists[125]->Fill(M,v3g14);
       fHists[126]->Fill(M,v2g18);
       fHists[127]->Fill(M,v3g18);
+      fHists[130]->Fill(M,Q2r/M);
+      fHists[131]->Fill(M,Q2i/M);
+      fHists[132]->Fill(M,Q3r/M);
+      fHists[133]->Fill(M,Q3i/M);
+      fHists[134]->Fill(M,Q4r/M);
+      fHists[135]->Fill(M,Q4i/M);
+      fHists[136]->Fill(M,Q6r/M);
+      fHists[137]->Fill(M,Q6i/M);
     }
     if (M>3) {
       Double_t qc4tmp = (Q22*Q22+Q42-2*Q42re-4*(M-2)*Q22+2*M*(M-3));
@@ -831,13 +839,28 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     fOutput->Add(fHists[126]);
     fHists[127] = new TProfile("fEtaGapV318",";M",fCumMbins,0,fCumMbins);
     fOutput->Add(fHists[127]);
-    fHists[128] = new TH3D("fDPhiDEtaTracks",";#Delta#phi;#Delta#eta;M",64,-0.5*TMath::Pi(),1.5*TMath::Pi(),60,-3,3,
-                           fCumMbins/10,0,fCumMbins);
+    fHists[128] = new TH3D("fDPhiDEtaTracks",";#Delta#phi;#Delta#eta;M",64,-0.5*TMath::Pi(),1.5*TMath::Pi(),60,-3,3,fCumMbins/10,0,fCumMbins);
     fHists[128]->Sumw2();
     fOutput->Add(fHists[128]);
     fHists[129] = new TH1D("fDPhiDEtaTrigs",";M",fCumMbins/10,0,fCumMbins);
     fHists[129]->Sumw2();
     fOutput->Add(fHists[129]);
+    fHists[130] = new TProfile("fCumQ2r",";q2r",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[130]);
+    fHists[131] = new TProfile("fCumQ2i",";q2i",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[131]);
+    fHists[132] = new TProfile("fCumQ3r",";q3r",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[132]);
+    fHists[133] = new TProfile("fCumQ3i",";q3i",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[133]);
+    fHists[134] = new TProfile("fCumQ4r",";q4r",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[134]);
+    fHists[135] = new TProfile("fCumQ4i",";q4i",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[135]);
+    fHists[136] = new TProfile("fCumQ6r",";q6r",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[136]);
+    fHists[137] = new TProfile("fCumQ6i",";q6i",fCumMbins,0,fCumMbins);
+    fOutput->Add(fHists[137]);
 
     fNtupCum = new TTree("NtupCum", "Ntuple for cumulant analysis");
     if (1) {
