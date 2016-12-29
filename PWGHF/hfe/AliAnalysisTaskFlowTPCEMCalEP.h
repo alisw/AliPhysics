@@ -76,9 +76,12 @@ public:
     void SetTimeCut(Bool_t TimeCut) {fTimeCut = TimeCut;};
     void SetWeightSyst(Bool_t WeightSyst) {fWeightSyst = WeightSyst;};
     void SetSystTOFcut(Bool_t SystTOFcut) {fSystTOFcut = SystTOFcut;};
+    void SetCutM02(Double_t CutM02) {fCutM02 = CutM02;};
+    void SetCutM20(Double_t CutM20) {fCutM20 = CutM20;};
+    void SetSScut(Bool_t SScut) {fSScut = SScut;};
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-    void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0, Bool_t IsPassedSScuts);
+    void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0);
     void GetWeightAndDecay(AliAODMCParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
     Bool_t InclElecTrackCuts(AliAODTrack *ietrack);
     Bool_t AssElecTrackCuts(AliAODTrack *aetrack);
@@ -118,6 +121,9 @@ private:
     Bool_t                fTimeCut;
     Bool_t                fWeightSyst;
     Bool_t                fSystTOFcut;
+    Double_t              fCutM02;
+    Double_t              fCutM20;
+    Bool_t                fSScut;
     
     // AliESDEvent        	*fESD;	            	 //! ESD object
     AliAODEvent           *fAOD;                  //! AOD object
@@ -208,6 +214,12 @@ private:
     TH2F                  *fHistTPCnSigITSTOFcut[3];      //! TPC sigma vs p (ITS+TOF cuts)
     TH2F                  *fHistTPCnSigEop[3];      //! TPC sigma vs E/p
     TH2F                  *fHistTPCnSigEMCalnSig[3];      //! TPC sigma vs EMCal Sig
+    TH2F                  *fHistM02sig[3]; //! m02 vs pt for electrons
+    TH2F                  *fHistM20sig[3]; //! m20 vs pt for electrons
+    TH2F                  *fHistM02backg[3]; //! m02 vs pt for hadrons
+    TH2F                  *fHistM20backg[3]; //! m02 vs pt for hadrons
+    TH2F                  *fHistM02EoverP[3]; //! m02 vs E/p
+    TH2F                  *fHistM20EoverP[3]; //! m20 vs E/p
     
     TH2F                  *fEoverPsignalTPC[3];    //! E/p for electrons (TPC cut)
     TH2F                  *fEoverPsignalTPCM02[3];    //! E/p for electrons (TPCcut + M02 cuts)
