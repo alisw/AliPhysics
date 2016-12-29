@@ -84,10 +84,11 @@ void AliTaskCDBconnect::InitGRP()
     else if (fRun<199999) year = 2013;
     else if (fRun<208504) year = 2014;
     else if (fRun<247170) year = 2015;
+    else if (fRun<267255) year = 2016;
     else {
-      year = 2016;
+      year = 2017;
       TDatime today;
-      if (today.GetYear()!=2016) AliError("Adjust CDB connect, we are now in 2017!");
+      if (today.GetYear()!=year) AliErrorF("Adjust CDB connect, we are now in %d!",today.GetYear());
     }
     //
     Bool_t useCVMFS = kFALSE;
