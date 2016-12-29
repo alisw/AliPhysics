@@ -23,15 +23,15 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   AliAnalysisTaskCLQA(const char *name);
   virtual ~AliAnalysisTaskCLQA();
 
-  void                        SetCentCL1In(TH1F *h)             { fCentCL1In       = h; }
-  void                        SetCentV0AIn(TH1F *h)             { fCentV0AIn       = h; }
+  void                        SetCentCL1In(TH1F *h)                 { fCentCL1In       = h; }
+  void                        SetCentV0AIn(TH1F *h)                 { fCentV0AIn       = h; }
   void                        SetCumParams(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax);
-  void                        SetDoCumulants(Bool_t b)          { fDoCumulants     = b; }
-  void                        SetDoMuonTracking(Bool_t b)       { fDoMuonTracking  = b; }
-  void                        SetDoTracking(Bool_t b)           { fDoTracking      = b; }
-  void                        SetDo2013VertexCut(Bool_t b)      { fDo2013VertexCut = b; }
+  void                        SetDoCumulants(Bool_t b, Bool_t bn=0) { fDoCumulants     = b; fDoCumNtuple = bn; }
+  void                        SetDoMuonTracking(Bool_t b)           { fDoMuonTracking  = b; }
+  void                        SetDoTracking(Bool_t b)               { fDoTracking      = b; }
+  void                        SetDo2013VertexCut(Bool_t b)          { fDo2013VertexCut = b; }
   void                        SetHetParams(Double_t Etmin);
-  void                        SetDoHet(Bool_t b)                { fDoHet           = b; }
+  void                        SetDoHet(Bool_t b)                    { fDoHet           = b; }
 
   void                        UserCreateOutputObjects();
 
