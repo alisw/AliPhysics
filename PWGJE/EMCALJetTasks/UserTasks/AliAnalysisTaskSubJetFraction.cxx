@@ -750,8 +750,14 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     Int_t TriggerHadronLabel = SelectTriggerHadron(fPtMinTriggerHadron, fPtMaxTriggerHadron);    
     if (TriggerHadronLabel==-99999) return 0;  //Trigger Hadron Not Found
     AliTrackContainer *PartCont =NULL;
-    if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
-    else PartCont = GetTrackContainer(0);
+    if (fJetShapeSub==kConstSub){
+      if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartCont = GetParticleContainer(1);
+      else PartCont = GetTrackContainer(1);
+    }
+    else{
+      if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartCont = GetParticleContainer(0);
+      PartCont = GetTrackContainer(0);
+    }
     TClonesArray *TrackArray = PartCont->GetArray();
     TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
     if (!TriggerHadron) return 0;//No trigger hadron with label found   
