@@ -149,10 +149,10 @@ private:
     TProfile* GetEstimatorHistogram(const AliVEvent *event);
     void CreateImpactParameterHistos();
     void CreateMeasuredNchHisto();
-    Bool_t FillTrackControlHisto(AliAODEvent* aod, Int_t nSelTrkCorr, Int_t nSelectedEvwithCand);
+    Bool_t FillTrackControlHisto(AliAODEvent* aod, Int_t nSelTrkCorr, Double_t spherocity, Double_t genspherocity, Int_t nSelectedEvwithCand);
     void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t countMult, Double_t spherocity, Double_t sphericity, Double_t recSpherocity, Double_t nchWeight);
     void FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight);
-    
+
     TList  *fOutput; //! list send on output slot 1
     TList  *fListCuts; // list of cuts
     TList  *fOutputCounters; //! list send on output slot 3
@@ -185,6 +185,9 @@ private:
     
     TH3F *fHistnTrackvsEtavsPhi;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi
     TH3F *fHistnTrackvsEtavsPhiEvWithCand;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi for event with atleast one D meson
+    
+    TH2F *fHistTrueSovsMeasSo;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi
+    TH2F *fHistTrueSovsMeasSoEvWithCand;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi for event with atleast one D meson
     
     THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
     THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
@@ -260,7 +263,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,10); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,11); // D vs. mult task
 };
 
 #endif
