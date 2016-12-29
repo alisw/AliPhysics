@@ -379,16 +379,15 @@ void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Dou
     Double_t lMass = lMean;
     TString lName = lHisto->GetName();
     lName.Append("_InitialFit");
-    TF1 *fit = new TF1(lName.Data(),"[0]+[1]*(x-[5])+[2]*TMath::Gaus(x, [3], [4])", lMean-0.025, lMean+0.025);
+    TF1 *fit = new TF1(lName.Data(),"[0]+[1]*x+[2]*TMath::Gaus(x, [3], [4])", lMean-0.025, lMean+0.025);
     //Guess linear parameters
     Double_t lAverageBg = 0.5*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-0.015) )
                              +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+0.015) ));
-    fit->SetParameter(0, lAverageBg);
-    
-    //Trick to do linear expansion around peak
-    fit->FixParameter(5, lMass);
     Double_t lGuessedSlope = (lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+0.020) ) -
-                              lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) ) / 0.020;
+                              lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-0.020) ) ) / 0.040;
+    
+    //constant at zero: lAverageBg - lMean*lGuessedSlope
+    fit->SetParameter(0, lAverageBg - lMean*lGuessedSlope);
     fit->SetParameter(1, lGuessedSlope);
     
     //Guess Gaussian Parameters
@@ -436,9 +435,7 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
         fitLinear = new TF1(lName, this, &AliStrangenessModule::BgPol1,
                             lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 4 , "AliStrangenessModule", "BgPol1");
         
-        //Guess linear parameters
-        Double_t lAverageBg = 0.5*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-3*lSigma) )
-                                   +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+3*lSigma) ));
+        //Start with parameters from initial fit: probably a good initial guess
         fitLinear->FixParameter(0, lMean + lHiLeftBg*lSigma );
         fitLinear->FixParameter(1, lMean + lLoRightBg*lSigma);
         fitLinear->SetParameter(2, lBgConst);
@@ -453,11 +450,11 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
         fitQuadratic = new TF1(lNameQuad, this, &AliStrangenessModule::BgPol2,
                                lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 5 , "AliStrangenessModule", "BgPol2");
         
-        //Guess linear parameters
+        //Start with parameters from initial fit: probably a good initial guess
         fitQuadratic->FixParameter(0, lMean + lHiLeftBg*lSigma );
         fitQuadratic->FixParameter(1, lMean + lLoRightBg*lSigma);
-        fitQuadratic->SetParameter(2, fitLinear->GetParameter(2) );
-        fitQuadratic->SetParameter(3, fitLinear->GetParameter(3) );
+        fitQuadratic->SetParameter(2, lBgConst );
+        fitQuadratic->SetParameter(3, lBgSlope );
         fitQuadratic->SetParameter(4, 0.000 );
         
         if( lOption.Contains("quadratic") ){

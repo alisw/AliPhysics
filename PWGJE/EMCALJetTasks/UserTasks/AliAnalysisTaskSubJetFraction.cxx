@@ -750,10 +750,21 @@ Bool_t AliAnalysisTaskSubJetFraction::FillHistograms()
     Int_t TriggerHadronLabel = SelectTriggerHadron(fPtMinTriggerHadron, fPtMaxTriggerHadron);    
     if (TriggerHadronLabel==-99999) return 0;  //Trigger Hadron Not Found
     AliTrackContainer *PartCont =NULL;
-    if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
-    else PartCont = GetTrackContainer(0);
-    TClonesArray *TrackArray = PartCont->GetArray();
-    TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
+    AliParticleContainer *PartContMC=NULL;
+    if (fJetShapeSub==kConstSub){
+      if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartContMC = GetParticleContainer(1);
+      else PartCont = GetTrackContainer(1);
+    }
+    else{
+      if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartContMC = GetParticleContainer(0);
+      else PartCont = GetTrackContainer(0);
+    }
+    TClonesArray *TrackArray = NULL;
+    TClonesArray *TrackArrayMC = NULL;
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) TrackArrayMC = PartContMC->GetArray();
+    else TrackArray = PartCont->GetArray();    
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) TriggerHadron = static_cast<AliAODTrack*>(TrackArrayMC->At(TriggerHadronLabel));
+    else TriggerHadron = static_cast<AliAODTrack*>(TrackArray->At(TriggerHadronLabel));
     if (!TriggerHadron) return 0;//No trigger hadron with label found   
     if(fSemigoodCorrect){
       Double_t HoleDistance=RelativePhi(TriggerHadron->Phi(),fHolePos);
@@ -1378,24 +1389,60 @@ Double_t AliAnalysisTaskSubJetFraction::RelativePhi(Double_t Phi1, Double_t Phi2
 Int_t AliAnalysisTaskSubJetFraction::SelectTriggerHadron(Float_t PtMin, Float_t PtMax){
 
   AliTrackContainer *PartCont = NULL;
-  if (fJetShapeSub==kConstSub) PartCont = GetTrackContainer(1);
-  else PartCont = GetTrackContainer(0);
-  TClonesArray *TracksArray = PartCont->GetArray(); 
-  if(!PartCont || !TracksArray) return -99999;
+  AliParticleContainer *PartContMC = NULL;
+
+
+  if (fJetShapeSub==kConstSub){
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartContMC = GetParticleContainer(1);
+    else PartCont = GetTrackContainer(1);
+  }
+  else{
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) PartContMC = GetParticleContainer(0);
+    else PartCont = GetTrackContainer(0);
+  }
+  
+  TClonesArray *TracksArray = NULL;
+  TClonesArray *TracksArrayMC = NULL;
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) TracksArrayMC = PartContMC->GetArray();
+  else TracksArray = PartCont->GetArray();
+ 
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+    if(!PartContMC || !TracksArrayMC) return -99999;
+  }
+  else {
+    if(!PartCont || !TracksArray) return -99999;
+  }
+    
   AliAODTrack *Track = 0x0;
   Int_t Trigger_Index[100];
   for (Int_t i=0; i<100; i++) Trigger_Index[i] = 0;
   Int_t Trigger_Counter = 0;
-  for(Int_t i=0; i < TracksArray->GetEntriesFast(); i++){  
-    if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
-      if (!Track) continue;
-      if(TMath::Abs(Track->Eta())>0.9) continue;
-      if (Track->Pt()<0.15) continue;
-      if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
-	Trigger_Index[Trigger_Counter] = i;
-	Trigger_Counter++;
+  Int_t NTracks=0;
+  if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly) NTracks = TracksArrayMC->GetEntriesFast();
+  else NTracks = TracksArray->GetEntriesFast();
+  for(Int_t i=0; i < NTracks; i++){
+    if (fJetShapeType == AliAnalysisTaskSubJetFraction::kGenOnTheFly){
+      if((Track = static_cast<AliAODTrack*>(PartContMC->GetAcceptParticle(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
+	  Trigger_Index[Trigger_Counter] = i;
+	  Trigger_Counter++;
+	}
       }
     }
+    else{ 
+      if((Track = static_cast<AliAODTrack*>(PartCont->GetAcceptTrack(i)))){
+	if (!Track) continue;
+	if(TMath::Abs(Track->Eta())>0.9) continue;
+	if (Track->Pt()<0.15) continue;
+	if ((Track->Pt() >= PtMin) && (Track->Pt()< PtMax)) {
+	  Trigger_Index[Trigger_Counter] = i;
+	  Trigger_Counter++;
+	}
+      }
+    } 
   }
   if (Trigger_Counter == 0) return -99999;
   Int_t RandomNumber = 0, Index = 0 ; 
