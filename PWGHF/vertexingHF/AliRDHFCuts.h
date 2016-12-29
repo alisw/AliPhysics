@@ -183,6 +183,7 @@ class AliRDHFCuts : public AliAnalysisCuts
     fUseOnlyOneTrigger=kFALSE;
   }
 
+  void SetUseV0ANDSelectionOffline(Bool_t flag=kFALSE) {fUseV0ANDSelectionOffline=flag;};
   void SetMaxDifferenceTRKV0Centraltity(Double_t maxd=5.) {fMaxDiffTRKV0Centr=maxd;}
   void SetNotUseCutOnTRKVsV0Centraltity() {fMaxDiffTRKV0Centr=-1.;}
   void SetRemoveTrackletOutliers(Bool_t opt) {fRemoveTrackletOutliers=opt;}
@@ -446,10 +447,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fCutGeoNcrNclGeom1Pt; /// 3rd parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
+  Bool_t fUseV0ANDSelectionOffline; ///flag to apply V0AND selection offline
   
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,38);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,39);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

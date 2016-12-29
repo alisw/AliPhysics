@@ -46,6 +46,7 @@
 #include "AliPIDResponse.h"
 #include "AliAnalysisUtils.h"
 #include "AliMultSelection.h"
+#include "AliAODVZERO.h"
 #include "TRandom.h"
 #include <TF1.h>
 #include <TFile.h>
@@ -122,7 +123,8 @@ fDeadZoneWidth(3.),
 fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
-fCutGeoNcrNclFractionNcl(0.7)
+fCutGeoNcrNclFractionNcl(0.7),
+fUseV0ANDSelectionOffline(kFALSE)
 {
   //
   // Default Constructor
@@ -193,7 +195,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fCutGeoNcrNclLength(source.fCutGeoNcrNclLength),
   fCutGeoNcrNclGeom1Pt(source.fCutGeoNcrNclGeom1Pt),
   fCutGeoNcrNclFractionNcr(source.fCutGeoNcrNclFractionNcr),
-  fCutGeoNcrNclFractionNcl(source.fCutGeoNcrNclFractionNcl)
+  fCutGeoNcrNclFractionNcl(source.fCutGeoNcrNclFractionNcl),
+  fUseV0ANDSelectionOffline(source.fUseV0ANDSelectionOffline)
 {
   //
   // Copy constructor
@@ -291,6 +294,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fCutGeoNcrNclGeom1Pt=source.fCutGeoNcrNclGeom1Pt;
   fCutGeoNcrNclFractionNcr=source.fCutGeoNcrNclFractionNcr;
   fCutGeoNcrNclFractionNcl=source.fCutGeoNcrNclFractionNcl;
+  fUseV0ANDSelectionOffline=source.fUseV0ANDSelectionOffline;
 
   PrintAll();
 
@@ -536,6 +540,16 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }else{
       if(fUseOnlyOneTrigger){
 	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()!=fTriggerMask){
+	  if(accept) fWhyRejection=7;
+	  fEvRejectionBits+=1<<kPhysicsSelection;
+	  accept=kFALSE;
+	}
+      }
+      if(fUseV0ANDSelectionOffline){
+	AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)event)->GetVZEROData();
+	Int_t tv0a=v0data->GetV0ADecision();
+	Int_t tv0c=v0data->GetV0CDecision();
+	if(tv0a==1 && tv0c==1){
 	  if(accept) fWhyRejection=7;
 	  fEvRejectionBits+=1<<kPhysicsSelection;
 	  accept=kFALSE;
