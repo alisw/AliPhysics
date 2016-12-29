@@ -4,6 +4,7 @@
 
 class TH1I;
 class TH1F;
+class TF1;
 class TH2F;
 class TH2D;
 class TH1D;
@@ -245,12 +246,18 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH1F     *fhTrackPt[kCAll]; //! gc X=centrality; Y= track pT
    TH1F     *fhTrackPtGen[kCAll]; //!   gc X=centrality; Y= track pT
    TH1F     *fhVertexZ;  //! gc vertexZ inclusive
+   TH1F     *fhVertexXAccept; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexYAccept; //! gc vertexZ accepted after vtx cut
    TH1F     *fhVertexZAccept; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexXAcceptTT; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexYAcceptTT; //! gc vertexZ accepted after vtx cut
+   TH1F     *fhVertexZAcceptTT; //! gc vertexZ accepted after vtx cut
    TH1F     *fhVertexZMC;  //! gc vertexZ inclusive in MC
    TH1F     *fhVertexZAcceptMC; //! gc vertexZ accepted after vtx cut in MC
    TH2F     *fhDphiTriggerJet[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
    TH2F     *fhDphiTriggerJetGen[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
    TH1F     *fhDphiTriggerJetAccept; //!Dphi of accepted jets after dphi cut
+   TH1F     *fhDphiTTTT; //!Dphi between multiple trigger tracks 
 
    TH2F     *fhJetPhiIncl;//!minimum bias phi inclusive
    TH2F     *fhJetEtaIncl;//!minimum bias eta inclusive
@@ -310,6 +317,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TArrayD  fRhoMC[kTT];   // labels of particles on reconstructed track level
    TArrayD  fCentralityBins; //bin boaders
 
+   TF1 *fTrackPtRef;  //inclusive track pt spectrum 6-7 GeV
+   TF1 *fTrackPtSig;  //inclusive track pt spectrum 12-50 GeV
 
    Int_t  fNofRandomCones; // the number of random cones per event
  
@@ -322,13 +331,14 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    Int_t ficb[2];  //centrality bin 0=MB 1=CENT bin
    Double_t ftmpArray[2]; //tmp array
    Double_t ftmpArrayX[3]; //tmp array
+   Double_t fVtxArray[3]; //tmp array vx,vy,vz
    TArrayF fpyVtx;   //primaru vertex
    Double_t frhovec[999]; //auxiliary array to store pT/A of kT jets
 
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 21); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 22); // Charged jet analysis for pA
 
 };
 #endif
