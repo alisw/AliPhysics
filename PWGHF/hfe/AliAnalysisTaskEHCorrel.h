@@ -70,19 +70,20 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetHadronCutCase(Int_t hadCutCase) {fHadCutCase = hadCutCase;};
     void    SetTriggerElePtCut(Bool_t trigElePtcut) {fTrigElePtCut = trigElePtcut;};
     void    GetVtxZCentralityBin();
-    
+
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-    
+
     void    SetPartnerEleMinTPCNCls(Int_t MinNClsPE) {fTPCNClsPartnerE = MinNClsPE;};
     void    SetPartnerEleMinPt(Double_t PtPE) {fPartElePt = PtPE;};
     void    SetInvmassCut(Double_t invmasscut) {fInvmassCut = invmasscut;};
-    
+
     void    SetHadMinTPCNCls(Int_t MinNClsHad) {fTPCNClsHad = MinNClsHad;};
     void    SetHadSPDkAny(Bool_t HadSPDkAny) {fFlagHadSPDkAny = HadSPDkAny;};
     void    SetHadLargeITSNCls(Bool_t HadLargITSNCls) {fFlagHadITSNCls = HadLargITSNCls;};
-    
+
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
+    void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
 
   private:
     AliVEvent 		    *fVevent;//!V event object
@@ -99,7 +100,8 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Bool_t              fEMCEG2;//
     Bool_t              fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;//switch to select DCAL clusters
-    Int_t               fTPCNClsElec;// Had track TPC NClusters
+    Int_t               fTPCNClsElec;// track TPC NClusters
+    Bool_t              fFlagEleSPDkFirst;//
     Double_t            fTPCnSigma;//!
     Double_t            fTPCnSigmaMin;//
     Double_t            fTPCnSigmaMax;//
@@ -119,11 +121,11 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fTPCnSigmaHadMax;//
     Int_t               fHadCutCase;//
     AliEventPoolManager *fPoolMgr;//!
-    Bool_t              fTrigElePtCut;//!
+    Bool_t              fTrigElePtCut;//
     Int_t               fNEle;//!
     Double_t            fVtxZBin;//!
     Double_t            fCentBin;//!
-    Bool_t              fFlagMEBinChange;//!
+    Bool_t              fFlagMEBinChange;//
 
     TList       	   	*fOutputList;		//!output list
     TH1F                *fNevents;		//!no of events
@@ -185,7 +187,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH2F                *fMixStatCent;//!
     TH2F                *fMixStatVtxZ;//!
     TH2F                *fMixStatCentVtxz;//!
-    
+
     //TH2F                *fHisHadDphi;//!
     //TH2F                *fHisIncEDphi;//!
     //TH2F                *fHisLSDphi;//!
