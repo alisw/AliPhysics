@@ -42,7 +42,8 @@ lHiLeftBg(-4),
 lLoPeak(-3),
 lHiPeak(3),
 lLoRightBg(4),
-lHiRightBg(7)
+lHiRightBg(7),
+lSigExtTech("linear")
 {
     // Dummy Constructor - not to be used!
     for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0;
@@ -63,7 +64,8 @@ lHiLeftBg(-4),
 lLoPeak(-3),
 lHiPeak(3),
 lLoRightBg(4),
-lHiRightBg(7)
+lHiRightBg(7),
+lSigExtTech("linear")
 {
     // Main constructor
     for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0; 
@@ -108,8 +110,14 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     if( !lDataInput ) {
         AliWarning("Data input not defined!"); return 0x0;
     }
+    if( !lDataCountersInput ) {
+        AliWarning("Data counters list not defined!"); return 0x0;
+    }
     if( !lMCInput ) {
         AliWarning("MC input not defined!"); return 0x0;
+    }
+    if( !lMCCountersInput ) {
+        AliWarning("MC counters list not defined!"); return 0x0;
     }
     
     //Open File for output
@@ -173,13 +181,15 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     //Perform early fit with gaussian+linear for acquisition of fit range
     Double_t lMeanVsPt[100], lMeanErrVsPt[100];
     Double_t lSigmaVsPt[100], lSigmaErrVsPt[100];
+    Double_t lBgConstVsPt[100], lBgSlopeVsPt[100];
     TH1D* fHistMeanVsPt  = new TH1D("fHistMeanVsPt", "",lNPtBins,lPtBins);
     TH1D* fHistSigmaVsPt = new TH1D("fHistSigmaVsPt","",lNPtBins,lPtBins);
     fHistMeanVsPt->SetDirectory(0);
     fHistSigmaVsPt->SetDirectory(0);
     for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
         lMeanVsPt[ibin] = lDataResult->GetMass(); //Initial guess
-        PerformInitialFit( lHistoData[ibin], lMeanVsPt[ibin], lMeanErrVsPt[ibin], lSigmaVsPt[ibin], lSigmaErrVsPt[ibin], fListData );
+        AliWarning(Form("Initial fit on: %s",lHistoData[ibin]->GetName()));
+        PerformInitialFit( lHistoData[ibin], lMeanVsPt[ibin], lMeanErrVsPt[ibin], lSigmaVsPt[ibin], lSigmaErrVsPt[ibin], lBgConstVsPt[ibin], lBgSlopeVsPt[ibin], fListData );
         fHistMeanVsPt->SetBinContent(ibin+1, lMeanVsPt[ibin] );
         fHistMeanVsPt->SetBinError(ibin+1, lMeanErrVsPt[ibin] );
         fHistSigmaVsPt->SetBinContent(ibin+1, lSigmaVsPt[ibin] );
@@ -197,7 +207,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     fHistRawVsPt->SetDirectory(0);
     
     for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
-        PerformSignalExtraction( lHistoData[ibin], lSignalVsPt[ibin], lSignalErrVsPt[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], fListData );
+        AliWarning(Form("Signal extraction on: %s",lHistoData[ibin]->GetName()));
+        PerformSignalExtraction( lHistoData[ibin], lSignalVsPt[ibin], lSignalErrVsPt[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], lBgConstVsPt[ibin], lBgSlopeVsPt[ibin], fListData, lSigExtTech.Data() );
         fHistRawVsPt->SetBinContent(ibin+1, lSignalVsPt[ibin] );
         fHistRawVsPt->SetBinError(ibin+1, lSignalErrVsPt[ibin] );
     }
@@ -265,7 +276,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     fHistRawVsPtMC->SetDirectory(0);
     
     for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
-        PerformSignalExtraction( lHistoMC[ibin], lSignalVsPtMC[ibin], lSignalErrVsPtMC[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], fListMC, "MC" );
+        AliWarning(Form("MC Signal extraction on: %s",lHistoData[ibin]->GetName()));
+        PerformSignalExtraction( lHistoMC[ibin], lSignalVsPtMC[ibin], lSignalErrVsPtMC[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], 0, 0, fListMC, "MC" );
         fHistRawVsPtMC->SetBinContent(ibin+1, lSignalVsPtMC[ibin] );
         fHistRawVsPtMC->SetBinError(ibin+1, lSignalErrVsPtMC[ibin] );
     }
@@ -304,11 +316,18 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     fHistEfficiency->Divide(fHistGenerated);
     fListOutput->Add(fHistEfficiency);
     
+    //Get number of events from data
+    TH1D *fHistCentrality = (TH1D*) lDataCountersInput->FindObject( "fHistCentrality" );
+    fHistCentrality->SetDirectory(0);
+    Double_t lNEvents = fHistCentrality->Integral( fHistCentrality->GetXaxis()->FindBin( lLoMult+1e-5 ),
+                                                  fHistCentrality->GetXaxis()->FindBin( lHiMult-1e-5 ) );
+    AliWarning( Form("Number of events in this multiplicity class: %.0f", lNEvents) );
+    
     //Generate Corrected Spectrum
     TH1D *fHistSpectra = (TH1D*) fHistRawVsPt->Clone("fHistSpectra");
     fHistSpectra->SetDirectory(0);
     fHistSpectra->Divide(fHistEfficiency);
-    fHistSpectra->Scale(1.0, "width");
+    fHistSpectra->Scale(1.0/lNEvents, "width");
     fListOutput->Add(fHistSpectra);
     
     TH1D *fHistSpectraToReturn = (TH1D*) fHistSpectra->Clone("fHistSpectraToReturn");
@@ -354,23 +373,31 @@ Bool_t AliStrangenessModule::CheckCompatiblePt( TH3F *lHisto ){
 
 
 //________________________________________________________________
-void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, TList *lControlList ){
+void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, Double_t &lBgConst, Double_t &lBgSlope, TList *lControlList ){
     //Helper function to perform initial gaussian + linear fit
     //Will expect to have mass received as mean value here
     Double_t lMass = lMean;
     TString lName = lHisto->GetName();
     lName.Append("_InitialFit");
-    TF1 *fit = new TF1(lName.Data(),"[0]+[1]*x+[2]*TMath::Gaus(x, [3], [4])", lMean-0.030, lMean+0.035);
+    TF1 *fit = new TF1(lName.Data(),"[0]+[1]*(x-[5])+[2]*TMath::Gaus(x, [3], [4])", lMean-0.025, lMean+0.025);
     //Guess linear parameters
     Double_t lAverageBg = 0.5*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-0.015) )
                              +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+0.015) ));
     fit->SetParameter(0, lAverageBg);
-    fit->SetParameter(1, 0);
+    
+    //Trick to do linear expansion around peak
+    fit->FixParameter(5, lMass);
+    Double_t lGuessedSlope = (lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+0.020) ) -
+                              lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) ) / 0.020;
+    fit->SetParameter(1, lGuessedSlope);
     
     //Guess Gaussian Parameters
-    fit->SetParameter(2, lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) );
+    fit->SetParameter(2, lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) - lAverageBg );
+    fit->SetParLimits(2, 10, 10*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) - lAverageBg));
     fit->SetParameter(3, lMean);
+    fit->SetParLimits(3, lMean-0.006,lMean+0.006); //ALICE is never off by that much
     fit->SetParameter(4,0.003);
+    fit->SetParLimits(4,0.001, 0.035); //ALICE tracking is (usually) never worse than this
     
     //Perform fit
     lHisto->Fit( lName.Data(), "IREM0");
@@ -380,6 +407,8 @@ void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Dou
     
     //Provide output variables
 
+    lBgConst = fit->GetParameter(0);
+    lBgSlope = fit->GetParameter(1);
     lMean = fit->GetParameter(3);
     lMeanErr = fit->GetParError(3);
     lSigma = fit->GetParameter(4);
@@ -387,7 +416,7 @@ void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Dou
 }
 
 //________________________________________________________________
-void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, TList *lControlList, TString lOption ){
+void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, Double_t lBgConst, Double_t lBgSlope, TList *lControlList, TString lOption ){
     //Helper function to perform actual signal extraction
     
     //Find bins in which signal extraction is to be performed
@@ -405,33 +434,36 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
         TString lName = lHisto->GetName();
         lName.Append("_LinearFit");
         fitLinear = new TF1(lName, this, &AliStrangenessModule::BgPol1,
-                                 lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 4 , "AliStrangenessModule", "BgPol1");
+                            lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 4 , "AliStrangenessModule", "BgPol1");
         
         //Guess linear parameters
         Double_t lAverageBg = 0.5*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-3*lSigma) )
-                                  +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+3*lSigma) ));
+                                   +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+3*lSigma) ));
         fitLinear->FixParameter(0, lMean + lHiLeftBg*lSigma );
         fitLinear->FixParameter(1, lMean + lLoRightBg*lSigma);
-        fitLinear->SetParameter(2, lAverageBg);
-        fitLinear->SetParameter(3, 0);
+        fitLinear->SetParameter(2, lBgConst);
+        fitLinear->SetParameter(3, lBgSlope);
         
         //Perform fit
-        lHisto->Fit( lName.Data(), "IREM0");
+        lHisto->Fit( lName.Data(), "R0");
         
         //Step 2: Perform Quadratic Fit to improve results
         TString lNameQuad = lHisto->GetName();
         lNameQuad.Append("_QuadraticFit");
         fitQuadratic = new TF1(lNameQuad, this, &AliStrangenessModule::BgPol2,
-                                    lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 5 , "AliStrangenessModule", "BgPol2");
+                               lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 5 , "AliStrangenessModule", "BgPol2");
         
         //Guess linear parameters
         fitQuadratic->FixParameter(0, lMean + lHiLeftBg*lSigma );
         fitQuadratic->FixParameter(1, lMean + lLoRightBg*lSigma);
         fitQuadratic->SetParameter(2, fitLinear->GetParameter(2) );
         fitQuadratic->SetParameter(3, fitLinear->GetParameter(3) );
+        fitQuadratic->SetParameter(4, 0.000 );
         
-        //Perform fit
-        lHisto->Fit( lNameQuad.Data(), "IREM0");
+        if( lOption.Contains("quadratic") ){
+            //Perform fit - otherwise stick to initial (linear) guess
+            lHisto->Fit( lNameQuad.Data(), "R0");
+        }
         
         //Subtract
         TString lNameSubtracted = lHisto->GetName();
@@ -442,11 +474,13 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
         TString lNameFitToSub = lHisto->GetName();
         lNameFitToSub.Append("_SubtractedFit");
         fitToSubtract = new TF1(lNameFitToSub, "[0]+[1]*x+[2]*x*x", lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma);
+        
         fitToSubtract->SetParameter(0, fitQuadratic->GetParameter(2) );
         fitToSubtract->SetParameter(1, fitQuadratic->GetParameter(3) );
         fitToSubtract->SetParameter(2, fitQuadratic->GetParameter(4) );
-        lHistoSubtracted->Add(fitToSubtract, -1.0, "I");
 
+        lHistoSubtracted->Add(fitToSubtract, -1.0, "I");
+        
         //Store to control output
         lControlList->Add(fitLinear);
         lControlList->Add(fitQuadratic);
@@ -456,7 +490,7 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
         lHistoSubtracted = lHisto;
     }
     lSignal = lHistoSubtracted->IntegralAndError(lBinPeakLo,lBinPeakHi,lSignalErr);
-
+    
 }
 
 //________________________________________________________________

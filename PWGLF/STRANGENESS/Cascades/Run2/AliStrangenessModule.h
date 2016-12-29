@@ -40,6 +40,7 @@ public:
     void SetMultBinning ( Double_t lRecLoMult, Double_t lRecHiMult ){ lLoMult = lRecLoMult; lHiMult = lRecHiMult; }
     void SetSigExtRanges (Double_t lRLoLeftBg, Double_t lRHiLeftBg,  Double_t lRLoPeak,
                           Double_t lRHiPeak,   Double_t lRLoRightBg, Double_t lRHiRightBg);
+    void SetSigExtTech ( TString lRecSigExtTech ) { lSigExtTech = lRecSigExtTech.Data(); } 
     
     //Do analysis based on a specific configuration
     //Return corrected result right away
@@ -48,8 +49,8 @@ public:
     //Helper functions
     Bool_t CheckCompatibleMultiplicity( TH3F *lHisto );
     Bool_t CheckCompatiblePt          ( TH3F *lHisto );
-    void PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, TList *lControlList );
-    void PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, TList *lControlList, TString lOption = "Quadratic" );
+    void PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, Double_t &lBgConst, Double_t &lBgSlope, TList *lControlList );
+    void PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, Double_t lBgConst, Double_t lBgSlope, TList *lControlList, TString lOption = "linear" );
     Double_t BgPol1(const Double_t *x, const Double_t *par);
     Double_t BgPol2(const Double_t *x, const Double_t *par);
     
@@ -75,6 +76,9 @@ private:
     //Pt Bins to use
     Long_t lNPtBins;
     Double_t lPtBins[100];
+    
+    //Signal Extraction technique to use
+    TString lSigExtTech; 
     
     ClassDef(AliStrangenessModule, 1)
     // 1 - original implementation
