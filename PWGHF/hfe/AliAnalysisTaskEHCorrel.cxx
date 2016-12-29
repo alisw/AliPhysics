@@ -107,6 +107,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
   fTPCNClsElec(90),
+  fFlagEleSPDkFirst(kFALSE),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -237,6 +238,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
   fTPCNClsElec(90),
+  fFlagEleSPDkFirst(kFALSE),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -1198,6 +1200,10 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   if(atrack->GetITSNcls() < 3) return kFALSE;
   if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) return kFALSE;
   if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
+
+  if(fFlagEleSPDkFirst) {
+    if(!(atrack->HasPointOnITSLayer(0))) return kFALSE;
+  }
 
   if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
