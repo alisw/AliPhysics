@@ -1804,7 +1804,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
                 
                 //Check 7: Experimental Bach Baryon CosPA
-                ( fTreeCascVarDCABachToBaryon < lCascadeResult->GetCutBachBaryonCosPA()  )
+                ( fTreeCascVarWrongCosPA < lCascadeResult->GetCutBachBaryonCosPA()  )
                 
                 ){
                 //This satisfies all my conditionals! Fill histogram
