@@ -15,6 +15,7 @@
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TF1.h"
+#include "TMath.h"
 #include "TVirtualFitter.h"
 #include "AliVWeakResult.h"
 #include "AliV0Result.h"
@@ -422,72 +423,125 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
     Long_t lBinPeakLo = lHisto->GetXaxis()->FindBin ( lMean + lLoPeak*lSigma );
     Long_t lBinPeakHi = lHisto->GetXaxis()->FindBin ( lMean + lHiPeak*lSigma );
     
-    //Pointers
-    TF1 *fitLinear = 0x0;
-    TF1 *fitQuadratic = 0x0;
-    TF1 *fitToSubtract = 0x0;
-    TH1D *lHistoSubtracted = 0x0;
+    //Inclusive on lower and upper limits
+    Double_t lValPeakLo = lHisto->GetBinLowEdge( lBinPeakLo   );
+    Double_t lValPeakHi = lHisto->GetBinLowEdge( lBinPeakHi+1 );
     
-    if( !lOption.Contains("MC") ){
+    //Clone histogram and create a control histogram with the peak ranges highlighted
+    TString lNameHistoPeak = lHisto->GetName();
+    lNameHistoPeak.Append("_Peak");
+    TH1D *lHistoPeak = (TH1D*) lHisto->Clone(lNameHistoPeak.Data());
+    lHistoPeak->SetDirectory(0);
+    lHistoPeak->Reset();
+    for(Long_t ibin=lBinPeakLo; ibin<lBinPeakHi+1; ibin++){
+        lHistoPeak->SetBinContent(ibin, lHisto->GetBinContent(ibin));
+        lHistoPeak->SetBinError(ibin, lHisto->GetBinError(ibin));
+    }
+    lControlList->Add(lHistoPeak);
+    
+    //Pointer to fit (if it exists)
+    TF1 *fit           = 0x0;
+    TF1 *fitToSubtract = 0x0;
+    
+    //N.B. if option "MC" is chosen, background will be assumed zero! 
+    Double_t lBgEstimate = 0;
+    Double_t lBgEstimateError = 0;
+    
+    if( lOption.Contains("linear") ){
         //Step 1: Perform Linear Fit to start with
         TString lName = lHisto->GetName();
         lName.Append("_LinearFit");
-        fitLinear = new TF1(lName, this, &AliStrangenessModule::BgPol1,
-                            lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 4 , "AliStrangenessModule", "BgPol1");
+        fit = new TF1(lName.Data(), this, &AliStrangenessModule::BgPol1,
+                      lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 4 , "AliStrangenessModule", "BgPol1");
         
         //Start with parameters from initial fit: probably a good initial guess
-        fitLinear->FixParameter(0, lMean + lHiLeftBg*lSigma );
-        fitLinear->FixParameter(1, lMean + lLoRightBg*lSigma);
-        fitLinear->SetParameter(2, lBgConst);
-        fitLinear->SetParameter(3, lBgSlope);
+        fit->FixParameter(0, lMean + lHiLeftBg*lSigma );
+        fit->FixParameter(1, lMean + lLoRightBg*lSigma);
+        fit->SetParameter(2, lBgConst);
+        fit->SetParameter(3, lBgSlope);
         
         //Perform fit
         lHisto->Fit( lName.Data(), "R0");
         
+        TString lNameToSubtract = lHisto->GetName();
+        lNameToSubtract.Append("_FitToSubtract");
+        fitToSubtract = new TF1(lNameToSubtract.Data(), "[0]+[1]*x",
+                      lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma);
+        fitToSubtract->SetParameter( 0, fit->GetParameter(2) );
+        fitToSubtract->SetParameter( 1, fit->GetParameter(3) );
+        
+        lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
+        lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
+        lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
+    }
+    
+    if ( lOption.Contains("quadratic") ){
         //Step 2: Perform Quadratic Fit to improve results
         TString lNameQuad = lHisto->GetName();
         lNameQuad.Append("_QuadraticFit");
-        fitQuadratic = new TF1(lNameQuad, this, &AliStrangenessModule::BgPol2,
+        fit = new TF1(lNameQuad, this, &AliStrangenessModule::BgPol2,
                                lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma, 5 , "AliStrangenessModule", "BgPol2");
         
         //Start with parameters from initial fit: probably a good initial guess
-        fitQuadratic->FixParameter(0, lMean + lHiLeftBg*lSigma );
-        fitQuadratic->FixParameter(1, lMean + lLoRightBg*lSigma);
-        fitQuadratic->SetParameter(2, lBgConst );
-        fitQuadratic->SetParameter(3, lBgSlope );
-        fitQuadratic->SetParameter(4, 0.000 );
+        fit->FixParameter(0, lMean + lHiLeftBg*lSigma );
+        fit->FixParameter(1, lMean + lLoRightBg*lSigma);
+        fit->SetParameter(2, lBgConst );
+        fit->SetParameter(3, lBgSlope );
+        fit->SetParameter(4, 0.000 );
         
-        if( lOption.Contains("quadratic") ){
-            //Perform fit - otherwise stick to initial (linear) guess
-            lHisto->Fit( lNameQuad.Data(), "R0");
-        }
+        //Perform fit - otherwise stick to initial (linear) guess
+        lHisto->Fit( lNameQuad.Data(), "R0");
         
-        //Subtract
-        TString lNameSubtracted = lHisto->GetName();
-        lNameSubtracted.Append("_BgSubtracted");
-        lHistoSubtracted = (TH1D*) lHisto->Clone(lNameSubtracted.Data());
-        lHistoSubtracted->SetDirectory(0);
+        TString lNameToSubtract = lHisto->GetName();
+        lNameToSubtract.Append("_FitToSubtract");
+        fitToSubtract = new TF1(lNameToSubtract.Data(), "[0]+[1]*x+[2]*x*x",
+                                lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma);
+        fitToSubtract->SetParameter( 0, fit->GetParameter(2) );
+        fitToSubtract->SetParameter( 1, fit->GetParameter(3) );
+        fitToSubtract->SetParameter( 2, fit->GetParameter(4) );
         
-        TString lNameFitToSub = lHisto->GetName();
-        lNameFitToSub.Append("_SubtractedFit");
-        fitToSubtract = new TF1(lNameFitToSub, "[0]+[1]*x+[2]*x*x", lMean + lLoLeftBg*lSigma, lMean + lHiRightBg*lSigma);
-        
-        fitToSubtract->SetParameter(0, fitQuadratic->GetParameter(2) );
-        fitToSubtract->SetParameter(1, fitQuadratic->GetParameter(3) );
-        fitToSubtract->SetParameter(2, fitQuadratic->GetParameter(4) );
-
-        lHistoSubtracted->Add(fitToSubtract, -1.0, "I");
-        
-        //Store to control output
-        lControlList->Add(fitLinear);
-        lControlList->Add(fitQuadratic);
-        lControlList->Add(fitToSubtract);
-        lControlList->Add(lHistoSubtracted);
-    }else{
-        lHistoSubtracted = lHisto;
+        lBgEstimate      = fitToSubtract->Integral     ( lValPeakLo, lValPeakHi );
+        lBgEstimate      /= lHisto->GetBinWidth(lBinPeakLo); //Transform into counts!
+        lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
     }
-    lSignal = lHistoSubtracted->IntegralAndError(lBinPeakLo,lBinPeakHi,lSignalErr);
     
+    if ( lOption.Contains("bincounting") ){
+        //Find bins for LeftBg and RightBg
+        Long_t lBinLeftBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoLeftBg*lSigma );
+        Long_t lBinLeftBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiLeftBg*lSigma );
+        Long_t lBinRightBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoRightBg*lSigma );
+        Long_t lBinRightBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiRightBg*lSigma );
+        
+        //Sum up yields in corresponding bins
+        for( Long_t ibin=lBinLeftBgLo; ibin<lBinLeftBgHi+1; ibin++)
+            lBgEstimate += lHisto->GetBinContent(ibin);
+        for( Long_t ibin=lBinRightBgLo; ibin<lBinRightBgHi+1; ibin++)
+            lBgEstimate += lHisto->GetBinContent(ibin);
+        
+        //Error: sqrt(counts
+        lBgEstimateError = TMath::Sqrt(lBgEstimate);
+        
+        //Scale according to number of bins
+        Double_t lNBinsSummed = lBinLeftBgHi - lBinLeftBgLo + lBinRightBgHi - lBinRightBgLo + 2;
+        Double_t lNBinsPeak   = lBinPeakHi - lBinPeakLo + 1;
+        Double_t lScalingFactor = lNBinsPeak / lNBinsSummed;
+        
+        //Scale everything to match the current area of the peak
+        lBgEstimate      = lBgEstimate      * lScalingFactor;
+        lBgEstimateError = lBgEstimateError * lScalingFactor;
+    }
+    
+    //Save a fit if there is one
+    if ( fit           ) lControlList->Add(fit          );
+    if ( fitToSubtract ) lControlList->Add(fitToSubtract);
+    
+    Double_t lPeakPlusBg      = 0;
+    Double_t lPeakPlusBgError = 0;
+    lPeakPlusBg = lHisto->IntegralAndError(lBinPeakLo,lBinPeakHi,lPeakPlusBgError);
+    lPeakPlusBgError = TMath::Sqrt(lPeakPlusBg);
+    
+    lSignal = lPeakPlusBg - lBgEstimate;
+    lSignalErr = TMath::Sqrt( lPeakPlusBgError*lPeakPlusBgError + lBgEstimateError*lBgEstimateError );
 }
 
 //________________________________________________________________
