@@ -2514,7 +2514,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
                 
                 //Check 7: Experimental Bach Baryon CosPA
-                ( fTreeCascVarDCABachToBaryon < lCascadeResult->GetCutBachBaryonCosPA()  ) &&
+                ( fTreeCascVarWrongCosPA < lCascadeResult->GetCutBachBaryonCosPA()  ) &&
                 
                 //Check 8: Explicit associate-with-bump
                 ( ! (lCascadeResult->GetCutMCSelectBump())    || (//Start bump-selection
