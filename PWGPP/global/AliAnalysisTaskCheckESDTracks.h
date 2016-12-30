@@ -76,8 +76,11 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   
   TList*  fOutput;                   //!<!  list of output histos
 
-  TH1F* fHistNEvents;                //!<!  histo with N of events  
+  TH1F* fHistNEvents;                //!<!  histo with N of events
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
+  TH1F* fHistNITSClu;             //!<!  histo with N of ITS clusters
+  TH1F* fHistCluInITSLay;        //!<!  histo with cluters in ITS layers
+  
   TH2F* fHistNtracksTPCselVsV0befEvSel;    //!<!  histo of tracks vs. centr.
   TH2F* fHistNtracksSPDanyVsV0befEvSel;    //!<!  histo of tracks vs. centr.
   TH2F* fHistNtracksTPCselVsV0aftEvSel;    //!<!  histo of tracks vs. centr.
@@ -156,7 +159,9 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanyGood;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanyFake;   //!<!  histo of impact parameter (pion)
 
-  TH2F* fHistInvMassK0s;
+  TH3F* fHistInvMassK0s;
+  TH3F* fHistInvMassLambda;
+  TH3F* fHistInvMassAntiLambda;
   TH3F* fHistInvMassLambdaGoodHyp;     //!<!  histo of lambda inv mass
   TH3F* fHistInvMassAntiLambdaGoodHyp; //!<!  histo of lambdabar inv mass
   TH3F* fHistInvMassLambdaBadHyp;      //!<!  histo of lambda inv mass
@@ -172,6 +177,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUseTOFbcSelection;  // flag use/not use TOF for pileup rejection
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
+  Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
   Int_t   fTriggerMask;        // mask used in physics selection
   Int_t fNPtBins;              // number of pt intervals in histos
   Double_t fMinPt;             // minimum pt for histos
@@ -179,7 +185,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,3);
+  ClassDef(AliAnalysisTaskCheckESDTracks,4);
 };
 
 

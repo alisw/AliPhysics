@@ -7,6 +7,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMultiplicity.h"
+#include "AliAnalysisUtils.h"
 #include <TParticle.h>
 #include <TSystem.h>
 #include <TTree.h>
@@ -51,6 +52,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fOutput(0x0),
   fHistNEvents(0x0),
   fHistNTracks(0x0),
+  fHistNITSClu(0x0),
+  fHistCluInITSLay(0x0),
   fHistNtracksTPCselVsV0befEvSel(0x0),
   fHistNtracksSPDanyVsV0befEvSel(0x0),
   fHistNtracksTPCselVsV0aftEvSel(0x0),
@@ -115,6 +118,8 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fHistImpParXYPtMulTPCselSPDanyGood(0x0),
   fHistImpParXYPtMulTPCselSPDanyFake(0x0),
   fHistInvMassK0s(0x0),
+  fHistInvMassLambda(0x0),
+  fHistInvMassAntiLambda(0x0),
   fHistInvMassLambdaGoodHyp(0x0),
   fHistInvMassAntiLambdaGoodHyp(0x0),
   fHistInvMassLambdaBadHyp(0x0),
@@ -127,6 +132,7 @@ AliAnalysisTaskCheckESDTracks::AliAnalysisTaskCheckESDTracks() :
   fMinNumOfTPCPIDclu(0),
   fUseTOFbcSelection(kTRUE),
   fUsePhysSel(kTRUE),
+  fUsePileupCut(kTRUE),
   fTriggerMask(AliVEvent::kAnyINT),
   fNPtBins(100),
   fMinPt(0.),
@@ -170,6 +176,8 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
     delete fHistNTracks;
+    delete fHistNITSClu;
+    delete fHistCluInITSLay;
     delete fHistNtracksTPCselVsV0befEvSel;
     delete fHistNtracksSPDanyVsV0befEvSel;
     delete fHistNtracksTPCselVsV0aftEvSel;
@@ -234,6 +242,8 @@ AliAnalysisTaskCheckESDTracks::~AliAnalysisTaskCheckESDTracks(){
     delete fHistImpParXYPtMulTPCselSPDanyGood;
     delete fHistImpParXYPtMulTPCselSPDanyFake;
     delete fHistInvMassK0s;
+    delete fHistInvMassLambda;
+    delete fHistInvMassAntiLambda;
     delete fHistInvMassLambdaGoodHyp;
     delete fHistInvMassAntiLambdaGoodHyp;
     delete fHistInvMassLambdaBadHyp;
@@ -330,10 +340,16 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(3,"Good vertex"); 
   fHistNEvents->GetXaxis()->SetBinLabel(4,"Pass zSPD-zTrk vert sel"); 
   fHistNEvents->GetXaxis()->SetBinLabel(5,"|zvert|<10"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Pileup cut"); 
   fOutput->Add(fHistNEvents);
 
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in ESD events ; N_{tracks}",5001,-0.5,5000.5);
   fOutput->Add(fHistNTracks);
+  fHistNITSClu = new TH1F("hNITSClu"," ; N_{ITS clusters}",7,-0.5,6.5);
+  fOutput->Add(fHistNITSClu);
+  fHistCluInITSLay = new TH1F("fHistCluInITSLay"," ; Layer",7,-1.5,5.5);
+  fOutput->Add(fHistCluInITSLay);
+
   fHistNtracksTPCselVsV0befEvSel=new TH2F("hNtracksTPCselVsV0befEvSel"," ; V0 signal ; N_{tracks}",250,0.,15000.,250,0.,5000.);
   fHistNtracksSPDanyVsV0befEvSel=new TH2F("hNtracksSPDanyVsV0befEvSel"," ; V0 signal ; N_{tracks}",250,0.,15000.,250,0.,5000.);
   fHistNtracksTPCselVsV0aftEvSel=new TH2F("hNtracksTPCselVsV0aftEvSel"," ; V0 signal ; N_{tracks}",250,0.,15000.,250,0.,5000.);
@@ -486,12 +502,16 @@ void AliAnalysisTaskCheckESDTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyGood);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyFake);
 
-  fHistInvMassK0s = new TH2F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ",200,0.4,0.6,25,0.,5.);
+  fHistInvMassK0s = new TH3F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ; R (cm)",200,0.4,0.6,25,0.,5.,50,0.,50.);
+  fHistInvMassLambda = new TH3F("hInvMassLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; R (cm)",200,1.0,1.2,25,0.,5.,50,0.,50.);
+  fHistInvMassAntiLambda = new TH3F("hInvMassAntiLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; R (cm)",200,1.0,1.2,25,0.,5.,50,0.,50.);
   fHistInvMassLambdaGoodHyp = new TH3F("hInvMassLambdaGoodHyp"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; p_{T,TPC}(p)",200,1.0,1.2,25,0.,5.,50,0.,5.);
   fHistInvMassAntiLambdaGoodHyp = new TH3F("hInvMassAntiLambdaGoodHyp"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; p_{T,TPC}(p)",200,1.0,1.2,25,0.,5.,50,0.,5.);
   fHistInvMassLambdaBadHyp = new TH3F("hInvMassLambdaBadHyp"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; p_{T,TPC}(p)",200,1.0,1.2,25,0.,5.,50,0.,5.);
   fHistInvMassAntiLambdaBadHyp = new TH3F("hInvMassAntiLambdaBadHyp"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; p_{T,TPC}(p)",200,1.0,1.2,25,0.,5.,50,0.,5.);
   fOutput->Add(fHistInvMassK0s);
+  fOutput->Add(fHistInvMassLambda);
+  fOutput->Add(fHistInvMassAntiLambda);
   fOutput->Add(fHistInvMassLambdaGoodHyp);
   fOutput->Add(fHistInvMassAntiLambdaGoodHyp);
   fOutput->Add(fHistInvMassLambdaBadHyp);
@@ -597,6 +617,17 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
 
   if(TMath::Abs(zvert)>10) return;
   fHistNEvents->Fill(4);
+
+  if(fUsePileupCut){
+    AliAnalysisUtils utils;
+    utils.SetMinPlpContribMV(5);
+    utils.SetMaxPlpChi2MV(5.);
+    utils.SetMinWDistMV(15.);
+    utils.SetCheckPlpFromDifferentBCMV(kTRUE);
+    Bool_t isPUMV = utils.IsPileUpMV(esd);
+    if(isPUMV) return;
+    fHistNEvents->Fill(5);
+  }
 
   fHistNtracksTPCselVsV0aftEvSel->Fill(vZEROampl,ntracksTPCsel);
   fHistNtracksSPDanyVsV0aftEvSel->Fill(vZEROampl,ntracksSPDany);
@@ -755,6 +786,11 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     
     if(!fTrCutsTPC->AcceptTrack(track)) continue;
     if(track->GetTPCsignalN()<fMinNumOfTPCPIDclu) continue;
+    fHistNITSClu->Fill(track->GetNcls(0));
+    fHistCluInITSLay->Fill(-1);
+    for(Int_t iBit=0; iBit<6; iBit++){
+      if(clumap&(1<<iBit)) fHistCluInITSLay->Fill(iBit);
+    }
 
     if (fFillTree) fTrackTree->Fill();    
 
@@ -917,6 +953,9 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     v0->ChangeMassHypothesis(-3122);
     Double_t invMassAntiLambda = v0->GetEffMass();
     Double_t ptv0=v0->Pt();
+    Double_t xv0=v0->Xv();
+    Double_t yv0=v0->Yv();
+    Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
 
     if(!fTrCutsTPC->AcceptTrack(pTrack)) continue;
     if(!fTrCutsTPC->AcceptTrack(nTrack)) continue;
@@ -962,7 +1001,12 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       keepAntiLambda=kFALSE;
     }
 
+    if(keepK0s){
+      fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
+    }
+
     if(keepLambda){
+      fHistInvMassLambda->Fill(invMassLambda,ptv0,rv0);
       if(pTrack->GetPIDForTracking()==AliPID::kProton){
 	fHistInvMassLambdaGoodHyp->Fill(invMassLambda,ptv0,pTrack->GetInnerParam()->Pt());
       }else{
@@ -970,6 +1014,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       }
     }
     if(keepAntiLambda){
+      fHistInvMassAntiLambda->Fill(invMassAntiLambda,ptv0,rv0);
       if(nTrack->GetPIDForTracking()==AliPID::kProton){
 	fHistInvMassAntiLambdaGoodHyp->Fill(invMassAntiLambda,ptv0,nTrack->GetInnerParam()->Pt());
       }else{
