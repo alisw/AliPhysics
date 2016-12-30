@@ -506,6 +506,20 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
     }
     
     if ( lOption.Contains("bincounting") ){
+        //Check if possible
+        if( lLoLeftBg+lHiRightBg > 1e-6 ||
+           lLoRightBg+lLoRightBg > 1e-6 ||
+           lLoPeak + lHiPeak > 1e-6 ){
+            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+            AliWarning(" Cannot perform bin counting with asymmetric peak and bg regions!");
+            AliWarning("   In this case, please prefer the \'linear\' sig. ext. option");
+            AliWarning("                  Will not produce spectra");
+            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+            lSignal = 0.0;
+            lSignalErr = 0.0;
+            return;
+        }
+        
         //Find bins for LeftBg and RightBg
         Long_t lBinLeftBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoLeftBg*lSigma );
         Long_t lBinLeftBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiLeftBg*lSigma );
@@ -518,7 +532,7 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
         for( Long_t ibin=lBinRightBgLo; ibin<lBinRightBgHi+1; ibin++)
             lBgEstimate += lHisto->GetBinContent(ibin);
         
-        //Error: sqrt(counts
+        //Error: sqrt(counts)
         lBgEstimateError = TMath::Sqrt(lBgEstimate);
         
         //Scale according to number of bins
