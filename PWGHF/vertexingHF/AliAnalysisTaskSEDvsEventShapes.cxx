@@ -427,8 +427,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #phi[rad]; nTracks;", 100, -1.5, 1.5, 100, 0., 6.28,nMultBins,firstMultBin,lastMultBin);
     fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #phi[rad]; nTracks;", 100, -1.5, 1.5, 100, 0., 6.28,nMultBins,firstMultBin,lastMultBin);
     
-    fHistTrueSovsMeasSo = new TH2F("hTrueSovsMeasSo", "trueSo vs measSo; S_{o} (true); S_{o} (meas);", 20, 0., 1., 20, 0., 1.);
-    fHistTrueSovsMeasSoEvWithCand = new TH2F("hTrueSovsMeasSoEvWithCand", "trueSo vs measSo; S_{o} (true); S_{o} (meas);", 20, 0., 1., 20, 0., 1.);
+    fHistTrueSovsMeasSo = new TH2F("hTrueSovsMeasSo", "trueSo vs measSo; S_{o} (true); S_{o} (meas);", 100, 0., 1., 100, 0., 1.);
+    fHistTrueSovsMeasSoEvWithCand = new TH2F("hTrueSovsMeasSoEvWithCand", "trueSo vs measSo; S_{o} (true); S_{o} (meas);", 100, 0., 1., 100, 0., 1.);
     
     TString histoNtrSphriName;
     TString histoNtrCorrSphriName;
