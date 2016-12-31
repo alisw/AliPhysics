@@ -3,6 +3,8 @@
 #include "TRandom.h"
 #include "AliGenerator.h"
 #include "AliGenParam.h"
+#include "AliGenCocktail.h"
+#include "AliGenEvtGen.h"
 #endif
 
 static Int_t IpCustom( TRandom *ran);
@@ -11,7 +13,7 @@ static Double_t YCustom( const Double_t *py, const Double_t */*dummy*/ );
 static Double_t V2Custom( const Double_t *pv, const Double_t */*dummy*/ );
 
 //-------------------------------------------------------------------------
-AliGenerator* GenParamCustom()
+AliGenerator* GenParamCustomRadiativeDecay()
 {
   
   AliGenCocktail *gener = new AliGenCocktail();
