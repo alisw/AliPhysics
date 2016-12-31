@@ -983,7 +983,7 @@ void AliMuonAccEffSubmitter::SetLocalOnly()
 {
     // ocdbPath = "local://$ALICE_ROOT/OCDB";
   SetVar("VAR_OCDB_PATH","local://$ALICE_ROOT/OCDB");
-  SetVar("VAR_PURELY_LOCAL","0");
+  SetVar("VAR_PURELY_LOCAL","1");
   MakeNofEventsFixed(10);
 }
 
