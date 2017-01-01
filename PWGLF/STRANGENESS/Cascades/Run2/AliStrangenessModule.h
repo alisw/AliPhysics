@@ -15,6 +15,8 @@
 #include <TList.h>
 #include <TH3F.h>
 
+using namespace std;
+
 class AliStrangenessModule : public TNamed {
     
 public:
@@ -40,7 +42,8 @@ public:
     void SetMultBinning ( Double_t lRecLoMult, Double_t lRecHiMult ){ lLoMult = lRecLoMult; lHiMult = lRecHiMult; }
     void SetSigExtRanges (Double_t lRLoLeftBg, Double_t lRHiLeftBg,  Double_t lRLoPeak,
                           Double_t lRHiPeak,   Double_t lRLoRightBg, Double_t lRHiRightBg);
-    void SetSigExtTech ( TString lRecSigExtTech ) { lSigExtTech = lRecSigExtTech.Data(); } 
+    void SetSigExtTech ( TString lRecSigExtTech ) { lSigExtTech = lRecSigExtTech.Data(); }
+    void SetVerbose ( Bool_t lVerb = kTRUE ) { lVerbose = lVerb; } 
     
     //Do analysis based on a specific configuration
     //Return corrected result right away
@@ -49,8 +52,8 @@ public:
     //Helper functions
     Bool_t CheckCompatibleMultiplicity( TH3F *lHisto );
     Bool_t CheckCompatiblePt          ( TH3F *lHisto );
-    void PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, Double_t &lBgConst, Double_t &lBgSlope, TList *lControlList );
-    void PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, Double_t lBgConst, Double_t lBgSlope, TList *lControlList, TString lOption = "linear" );
+    Bool_t PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, Double_t &lBgConst, Double_t &lBgSlope, TList *lControlList );
+    Bool_t PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, Double_t lBgConst, Double_t lBgSlope, TList *lControlList, TString lOption = "linear" );
     Double_t BgPol1(const Double_t *x, const Double_t *par);
     Double_t BgPol2(const Double_t *x, const Double_t *par);
     
@@ -78,7 +81,10 @@ private:
     Double_t lPtBins[100];
     
     //Signal Extraction technique to use
-    TString lSigExtTech; 
+    TString lSigExtTech;
+    
+    //Verbosity boolean
+    Bool_t lVerbose; 
     
     ClassDef(AliStrangenessModule, 1)
     // 1 - original implementation
