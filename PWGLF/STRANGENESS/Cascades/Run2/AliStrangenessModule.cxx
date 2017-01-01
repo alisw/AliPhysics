@@ -17,6 +17,9 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "TVirtualFitter.h"
+#include "TFitResult.h"
+#include "TFitResultPtr.h"
+#include "TStopwatch.h"
 #include "AliVWeakResult.h"
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
@@ -44,7 +47,8 @@ lLoPeak(-3),
 lHiPeak(3),
 lLoRightBg(4),
 lHiRightBg(7),
-lSigExtTech("linear")
+lSigExtTech("linear"),
+lVerbose(kFALSE)
 {
     // Dummy Constructor - not to be used!
     for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0;
@@ -66,7 +70,8 @@ lLoPeak(-3),
 lHiPeak(3),
 lLoRightBg(4),
 lHiRightBg(7),
-lSigExtTech("linear")
+lSigExtTech("linear"),
+lVerbose(kFALSE)
 {
     // Main constructor
     for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0; 
@@ -104,6 +109,12 @@ void AliStrangenessModule::SetSigExtRanges( Double_t lRLoLeftBg, Double_t lRHiLe
 TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     //Main analysis code
     
+    //Report time at the end
+    TStopwatch* timer = new TStopwatch();
+    timer->Start ( kTRUE );
+    
+    cout<<"AliStrangenessModule -> Requested to process config: "<<lConfiguration.Data()<<endl;
+    
     //"Die hard" fitting, please
     TVirtualFitter::SetMaxIterations( 50000 ); 
     
@@ -135,12 +146,19 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     fListOutput->SetName("cAnalysisOutput");
     fListOutput->SetOwner(kTRUE);
     
+    //In preparation: get number of events from real data
+    TH1D *fHistCentrality = (TH1D*) lDataCountersInput->FindObject( "fHistCentrality" );
+    fHistCentrality->SetDirectory(0);
+    Double_t lNEvents = fHistCentrality->Integral( fHistCentrality->GetXaxis()->FindBin( lLoMult+1e-5 ),
+                                                  fHistCentrality->GetXaxis()->FindBin( lHiMult-1e-5 ) );
+    cout<<"AliStrangenessModule -> Number of events in multiplicity class "<<lLoMult<<" to "<<lHiMult<<": "<<lNEvents<<endl;
+    
     //Step 1: Open real data object
     AliVWeakResult *lDataResult = (AliVWeakResult*) lDataInput->FindObject(lConfiguration.Data());
     TString lDataName = lDataResult->GetName();
     lDataName.Append("_Data");
     lDataResult->SetName( lDataName.Data() );
-    lDataResult->Print();
+    if(lVerbose) lDataResult->Print();
     
     //_________________________________________________
     // Process TH3Fs and expand into histograms of interest
@@ -187,15 +205,21 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     TH1D* fHistSigmaVsPt = new TH1D("fHistSigmaVsPt","",lNPtBins,lPtBins);
     fHistMeanVsPt->SetDirectory(0);
     fHistSigmaVsPt->SetDirectory(0);
+    if(!lVerbose) cout<<"AliStrangenessModule -> Initial fit (data):       ["<<flush;
+    Bool_t lExtStatus = kTRUE;
     for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
         lMeanVsPt[ibin] = lDataResult->GetMass(); //Initial guess
-        AliWarning(Form("Initial fit on: %s",lHistoData[ibin]->GetName()));
-        PerformInitialFit( lHistoData[ibin], lMeanVsPt[ibin], lMeanErrVsPt[ibin], lSigmaVsPt[ibin], lSigmaErrVsPt[ibin], lBgConstVsPt[ibin], lBgSlopeVsPt[ibin], fListData );
+        if(lVerbose) AliWarning(Form("Initial fit on: %s",lHistoData[ibin]->GetName()));
+        lExtStatus = PerformInitialFit( lHistoData[ibin], lMeanVsPt[ibin], lMeanErrVsPt[ibin], lSigmaVsPt[ibin], lSigmaErrVsPt[ibin], lBgConstVsPt[ibin], lBgSlopeVsPt[ibin], fListData );
+        if( !lVerbose ){
+            if( lExtStatus ){ cout<<"="<<flush; } else { cout<<"!"<<flush; }
+        }
         fHistMeanVsPt->SetBinContent(ibin+1, lMeanVsPt[ibin] );
         fHistMeanVsPt->SetBinError(ibin+1, lMeanErrVsPt[ibin] );
         fHistSigmaVsPt->SetBinContent(ibin+1, lSigmaVsPt[ibin] );
         fHistSigmaVsPt->SetBinError(ibin+1, lSigmaErrVsPt[ibin] );
     }
+    if(!lVerbose) cout<<"] Done!"<<endl;
     
     //FIXME: Invoke TH1D::Smooth here if asked to do so 
     
@@ -207,12 +231,19 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     TH1D* fHistRawVsPt  = new TH1D("fHistRawVsPt", "",lNPtBins,lPtBins);
     fHistRawVsPt->SetDirectory(0);
     
+    if(!lVerbose) cout<<"AliStrangenessModule -> Extracting signal (data): ["<<flush;
+    lExtStatus = kTRUE;
     for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
-        AliWarning(Form("Signal extraction on: %s",lHistoData[ibin]->GetName()));
-        PerformSignalExtraction( lHistoData[ibin], lSignalVsPt[ibin], lSignalErrVsPt[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], lBgConstVsPt[ibin], lBgSlopeVsPt[ibin], fListData, lSigExtTech.Data() );
+        if( lVerbose) AliWarning(Form("Signal extraction on: %s",lHistoData[ibin]->GetName()));
+        lExtStatus = PerformSignalExtraction( lHistoData[ibin], lSignalVsPt[ibin], lSignalErrVsPt[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], lBgConstVsPt[ibin], lBgSlopeVsPt[ibin], fListData, lSigExtTech.Data() );
+        if( !lVerbose ){
+            //Report errors with "!"
+            if( lExtStatus ){ cout<<"="<<flush; } else { cout<<"!"<<flush; }
+        }
         fHistRawVsPt->SetBinContent(ibin+1, lSignalVsPt[ibin] );
         fHistRawVsPt->SetBinError(ibin+1, lSignalErrVsPt[ibin] );
     }
+    if(!lVerbose) cout<<"] Done!"<<endl;
     
     //Add raw spectra as main analysis output
     fListOutput->Add(fHistRawVsPt);
@@ -222,7 +253,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     TString lMCName = lMCResult->GetName();
     lMCName.Append("_MC");
     lMCResult->SetName( lMCName.Data() );
-    lMCResult->Print();
+    if(lVerbose) lMCResult->Print();
     
     //Compatibility check 1: check if generated with the same cuts
     if( !lDataResult->HasSameCuts(lMCResult) ){
@@ -276,12 +307,19 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     TH1D* fHistRawVsPtMC  = new TH1D("fHistRawVsPtMC", "",lNPtBins,lPtBins);
     fHistRawVsPtMC->SetDirectory(0);
     
+    if(!lVerbose) cout<<"AliStrangenessModule -> Extracting signal (mc):   ["<<flush;
+    lExtStatus = kTRUE;
     for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
-        AliWarning(Form("MC Signal extraction on: %s",lHistoData[ibin]->GetName()));
-        PerformSignalExtraction( lHistoMC[ibin], lSignalVsPtMC[ibin], lSignalErrVsPtMC[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], 0, 0, fListMC, "MC" );
+        if(lVerbose) AliWarning(Form("MC Signal extraction on: %s",lHistoData[ibin]->GetName()));
+        lExtStatus = PerformSignalExtraction( lHistoMC[ibin], lSignalVsPtMC[ibin], lSignalErrVsPtMC[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], 0, 0, fListMC, "MC" );
+        if( !lVerbose ){
+            //Report errors with "!"
+            if( lExtStatus ){ cout<<"="<<flush; } else { cout<<"!"<<flush; }
+        }
         fHistRawVsPtMC->SetBinContent(ibin+1, lSignalVsPtMC[ibin] );
         fHistRawVsPtMC->SetBinError(ibin+1, lSignalErrVsPtMC[ibin] );
     }
+    if(!lVerbose) cout<<"] Done!"<<endl;
     
     //Add raw spectra as main analysis output
     fListOutput->Add(fHistRawVsPtMC);
@@ -317,13 +355,6 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     fHistEfficiency->Divide(fHistGenerated);
     fListOutput->Add(fHistEfficiency);
     
-    //Get number of events from data
-    TH1D *fHistCentrality = (TH1D*) lDataCountersInput->FindObject( "fHistCentrality" );
-    fHistCentrality->SetDirectory(0);
-    Double_t lNEvents = fHistCentrality->Integral( fHistCentrality->GetXaxis()->FindBin( lLoMult+1e-5 ),
-                                                  fHistCentrality->GetXaxis()->FindBin( lHiMult-1e-5 ) );
-    AliWarning( Form("Number of events in this multiplicity class: %.0f", lNEvents) );
-    
     //Generate Corrected Spectrum
     TH1D *fHistSpectra = (TH1D*) fHistRawVsPt->Clone("fHistSpectra");
     fHistSpectra->SetDirectory(0);
@@ -341,6 +372,10 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
     fListOutput->Write("cAnalysisOutput", TObject::kSingleKey);
     fFileOut->Write();
     fFileOut->Close();
+    
+    timer->Stop();
+    cout<<"AliStrangenessModule -> Done! Total time: "<<timer->RealTime()<<"s (real), "<< timer->CpuTime() <<"s (cpu)"<<endl;
+    delete timer;
 }
 
 //________________________________________________________________
@@ -374,8 +409,11 @@ Bool_t AliStrangenessModule::CheckCompatiblePt( TH3F *lHisto ){
 
 
 //________________________________________________________________
-void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, Double_t &lBgConst, Double_t &lBgSlope, TList *lControlList ){
+Bool_t AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Double_t &lMeanErr, Double_t &lSigma, Double_t &lSigmaErr, Double_t &lBgConst, Double_t &lBgSlope, TList *lControlList ){
     //Helper function to perform initial gaussian + linear fit
+    
+    Bool_t lReturnValue = kTRUE; //everything ok = kTRUE
+    
     //Will expect to have mass received as mean value here
     Double_t lMass = lMean;
     TString lName = lHisto->GetName();
@@ -399,8 +437,13 @@ void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Dou
     fit->SetParameter(4,0.003);
     fit->SetParLimits(4,0.001, 0.035); //ALICE tracking is (usually) never worse than this
     
+    //Fit options
+    TString lFitOptions = "IREM0S";
+    if (!lVerbose) lFitOptions.Append("Q") ;
+    
     //Perform fit
-    lHisto->Fit( lName.Data(), "IREM0");
+    TFitResultPtr fitResultPtr = lHisto->Fit( lName.Data(), lFitOptions.Data());
+    if ( !fitResultPtr->IsValid() ) lReturnValue = kFALSE; //went bad
     
     //Store to control output
     lControlList->Add(fit);
@@ -413,11 +456,18 @@ void AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, Dou
     lMeanErr = fit->GetParError(3);
     lSigma = fit->GetParameter(4);
     lSigmaErr = fit->GetParError(4);
+    
+    return lReturnValue;
 }
 
 //________________________________________________________________
-void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, Double_t lBgConst, Double_t lBgSlope, TList *lControlList, TString lOption ){
+Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSignal, Double_t &lSignalErr, Double_t lMean, Double_t lSigma, Double_t lBgConst, Double_t lBgSlope, TList *lControlList, TString lOption ){
     //Helper function to perform actual signal extraction
+    
+    Bool_t lReturnValue = kTRUE; //everything went alright -> kTRUE
+    
+    TString lFitOptions = "R0S";
+    if (!lVerbose) lFitOptions.Append("Q");
     
     //Find bins in which signal extraction is to be performed
     Long_t lBinPeakLo = lHisto->GetXaxis()->FindBin ( lMean + lLoPeak*lSigma );
@@ -461,7 +511,9 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
         fit->SetParameter(3, lBgSlope);
         
         //Perform fit
-        lHisto->Fit( lName.Data(), "R0");
+        
+        TFitResultPtr fitResultPtr = lHisto->Fit( lName.Data(), lFitOptions.Data());
+        if ( !fitResultPtr->IsValid() ) lReturnValue = kFALSE; //went bad
         
         TString lNameToSubtract = lHisto->GetName();
         lNameToSubtract.Append("_FitToSubtract");
@@ -490,7 +542,8 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
         fit->SetParameter(4, 0.000 );
         
         //Perform fit - otherwise stick to initial (linear) guess
-        lHisto->Fit( lNameQuad.Data(), "R0");
+        TFitResultPtr fitResultPtr = lHisto->Fit( lNameQuad.Data(), lFitOptions.Data());
+        if ( !fitResultPtr->IsValid() ) lReturnValue = kFALSE; //went bad
         
         TString lNameToSubtract = lHisto->GetName();
         lNameToSubtract.Append("_FitToSubtract");
@@ -517,7 +570,7 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
             lSignal = 0.0;
             lSignalErr = 0.0;
-            return;
+            return kFALSE;
         }
         
         //Find bins for LeftBg and RightBg
@@ -556,6 +609,8 @@ void AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lSig
     
     lSignal = lPeakPlusBg - lBgEstimate;
     lSignalErr = TMath::Sqrt( lPeakPlusBgError*lPeakPlusBgError + lBgEstimateError*lBgEstimateError );
+    
+    return lReturnValue;
 }
 
 //________________________________________________________________
