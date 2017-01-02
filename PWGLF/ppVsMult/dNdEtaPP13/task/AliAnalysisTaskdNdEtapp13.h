@@ -107,11 +107,11 @@ class AliAnalysisTaskdNdEtapp13 : public AliAnalysisTaskSE {
     // These MUST be last one: this is just beginning of many histos (one per bin)
     kHZVEtaPrimMC,                        // Zv gen vs eta for all primary tracks (true MC multiplicity) in all events
     kHZVrEtaPrimMC=kHZVEtaPrimMC+50,      // Zv rec vs eta for all primary tracks (true MC multiplicity) in sel. events
-    kHZVResMC=kHZVrEtaPrimMC+50,      // zv resolution
+   kHZVResMC=kHZVrEtaPrimMC+50,      // zv resolution
 
-    kHCorrMatrix=kHZVResMC+50 // correlation matrix
+    kHCorrMatrix=kHZVResMC+50, // correlation matrix
 
-//kHPtEtaPrimMC = kHCorrMatrix+50 // pT gen vs eta
+   kHCorrMatrixSel = kHCorrMatrix+50 // correlation matrix with events sel
 
   }; // custom histos
 
