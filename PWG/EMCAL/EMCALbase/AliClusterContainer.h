@@ -88,7 +88,15 @@ class AliClusterContainer : public AliEmcalContainer {
 #endif
 
  protected:
-  virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const { return ""; }
+  /**
+   * Create default array name for the cluster container. The
+   * default array name will be
+   * - *caloClusters* in case of AOD event
+   * - *CaloClusters* in case of ESD event
+   * @param[in] ev Input event, used for data type selection
+   * @return Appropriate default array name
+   */
+  virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const;
 
   
   Double_t         fClusTimeCutLow;             ///< low time cut for clusters

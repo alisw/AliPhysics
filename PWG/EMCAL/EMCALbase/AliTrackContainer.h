@@ -107,6 +107,14 @@ class AliTrackContainer : public AliParticleContainer {
 #endif
 
  protected:
+  /**
+   * Create default array name for the track container. The
+   * default array name will be
+   * - *tracks* in case of AOD event
+   * - *Tracks* in case of ESD event
+   * @param[in] ev Input event, used for data type selection
+   * @return Appropriate default array name
+   */
   virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const;
 
   static TString              fgDefTrackCutsPeriod;           //!<! default period string used to generate track cuts
