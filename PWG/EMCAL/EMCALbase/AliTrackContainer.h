@@ -107,6 +107,8 @@ class AliTrackContainer : public AliParticleContainer {
 #endif
 
  protected:
+  virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const;
+
   static TString              fgDefTrackCutsPeriod;           //!<! default period string used to generate track cuts
 
   ETrackFilterType_t          fTrackFilterType;               ///< track filter type

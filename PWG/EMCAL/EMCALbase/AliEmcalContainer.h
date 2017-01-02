@@ -186,6 +186,16 @@ class AliEmcalContainer : public TObject {
 #endif
 
  protected:
+  /**
+   * Hnadling default Array names. Default names might differ
+   * based on the input event type. Therefore it is determined
+   * for the first time and event is handled.
+   *
+   * @param ev Input event used to read the input array
+   * @return Default array name
+   */
+  virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const { return ""; }
+
   TString                     fName;                    ///< object name
   TString                     fClArrayName;             ///< name of branch
   TString                     fBaseClassName;           ///< name of the base class that this container can handle

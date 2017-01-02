@@ -88,6 +88,8 @@ class AliClusterContainer : public AliEmcalContainer {
 #endif
 
  protected:
+  virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const { return ""; }
+
   
   Double_t         fClusTimeCutLow;             ///< low time cut for clusters
   Double_t         fClusTimeCutUp;              ///< up time cut for clusters

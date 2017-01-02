@@ -14,6 +14,8 @@
  **************************************************************************/
 #include <TClonesArray.h>
 
+#include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliVEvent.h"
 #include "AliLog.h"
 #include "AliVCuts.h"
@@ -607,4 +609,10 @@ const char* AliTrackContainer::GetTitle() const
   }
 
   return trackString.Data();
+}
+
+TString AliTrackContainer::GetDefaultArrayName(const AliVEvent *const ev) const {
+  if(ev->IsA() == AliAODEvent::Class()) return "tracks";
+  else if(ev->IsA() == AliESDEvent::Class()) return "Tracks";
+  else return "";
 }

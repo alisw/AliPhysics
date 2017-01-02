@@ -61,6 +61,8 @@ class AliMCParticleContainer : public AliParticleContainer {
 #endif
 
  protected:
+  virtual TString             GetDefaultArrayName(const AliVEvent * const ev) const { return "mcparticles"; }
+
   UInt_t                      fMCFlag;                        ///< select MC particles with flags
 
  private:
