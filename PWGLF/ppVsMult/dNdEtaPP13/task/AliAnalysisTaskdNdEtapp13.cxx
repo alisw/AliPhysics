@@ -739,7 +739,7 @@ if (fUseBCMod & !fUseMC){
   //
   //  if (!fVtxOK || !fIsSelected) return;
 
-//if (fVtxOK && fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
+if (fVtxOK && fIsSelected) ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrixSel+fCurrCentBin))->Fill(totalNch, totalNtr);
 ((TH2F *)fHistosCustom->UncheckedAt(kHCorrMatrix+fCurrCentBin))->Fill(totalNch, totalNtr);
 
 
@@ -1140,6 +1140,19 @@ TObjArray* AliAnalysisTaskdNdEtapp13::BookCustomHistos()
     AddHisto(histos,hcorr3,kHCorrMatrix+ib1);
     //
   }
+
+
+  char mybuffn2[100],mybufft2[500];
+  for (int ib2=0;ib2<fNCentBins;ib2++) {
+    sprintf(mybuffn2,"b%d_corrMatrixSel",ib2);
+    sprintf(mybufft2,"bin%d Correlation Matrix Selected",ib2);
+    TH2F* hcorr4 = new  TH2F(mybuffn2,mybufft2, kMaxMlt, 0, kMaxMlt, kMaxMlt, 0, kMaxMlt);
+    hcorr4->GetXaxis()->SetTitle("n_{ch}");
+    hcorr4->GetYaxis()->SetTitle("n_{tracklets}");
+    AddHisto(histos,hcorr4,kHCorrMatrixSel+ib2);
+    //
+  }
+
 
 
 
