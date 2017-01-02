@@ -822,7 +822,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	Int_t nAccClusters = 0;
 	Int_t nAccPi0Clusters = 0;
 	Double_t Pi0Mass = 0.13487;
-	Double_t Pi0Window = 0.03; //can eventually modulate this based on pT of Pi0 candidate!
+	Double_t Pi0Window = 0.02;//0.03 //can eventually modulate this based on pT of Pi0 candidate!
 	Double_t EffWeight_Gamma;
 	Double_t EffWeight_Hadron;
 	Double_t Weight;    //weight to normalize mixed and same event distributions individually
@@ -907,10 +907,12 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				TLorentzVector CaloClusterVec2;
 				TLorentzVector CaloClusterVecpi0;
 				//old framework			cluster2->GetMomentum(CaloClusterVec2, fVertex);
-				clusters->GetMomentum(CaloClusterVec,cluster2);
+				clusters->GetMomentum(CaloClusterVec2,cluster2); /// Vec+=2 2.1.17
 				if(cluster2->E()>2 && cluster->E()>2)
 				{
 					CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
+
+					if((CaloClusterVecpi0.M()<Pi0Mass-Pi0Window) || (CaloClusterVecpi0.M()>Pi0Mass+Pi0Window)) continue; /// 2.1.17
 
 
 					//here I don't really know what to do in your case
