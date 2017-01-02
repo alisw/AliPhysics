@@ -41,6 +41,7 @@ set(SRCS
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
   AliEmcalPythiaInfo.cxx
+  AliEmcalTrackSelResultPtr.cxx
   AliEmcalTrackSelection.cxx
   AliEmcalTrackSelectionESD.cxx
   AliEmcalTrackSelectionAOD.cxx
