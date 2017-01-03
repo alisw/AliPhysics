@@ -117,6 +117,10 @@ fhMCConversionVertex(0),              fhMCConversionVertexTRD(0),
 //fhDistanceAddedPhotonAddedPrimarySignal  (0), fhDistanceHijingPhotonAddedPrimarySignal  (0),
 //fhDistanceAddedPhotonAddedSecondarySignal(0), fhDistanceHijingPhotonAddedSecondarySignal(0),
 //fhDistanceAddedPhotonHijingSecondary(0)
+fhLocalRegionClusterEnergySumHijing2(0), 
+fhLocalRegionClusterMultiplicityHijing2(0),
+fhLocalRegionClusterEnergySumPerCentralityHijing2(0),
+fhLocalRegionClusterMultiplicityPerCentralityHijing2(0), 
 fhDistance2AddedSignals(0),           fhDistanceAddedSignalsHijing(0),
 fhDistance2Hijing(0)
 {
@@ -393,6 +397,10 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
   {
     TString genName, genNameBkg;
     Int_t genBkgTag = -1;
+    
+    TString genName2, genNameBkg2;
+    Int_t genBkgTag2 = -1;
+
     if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
     {
       AliVCluster * calo = (AliVCluster*) (clusterList->At(icalo));
@@ -413,6 +421,9 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
     Int_t   sumM   = 0;
     Float_t sumEHi = 0;
     Int_t   sumMHi = 0;
+    Float_t sumEHi2 = 0;
+    Int_t   sumMHi2 = 0;
+
     for(Int_t icalo2 = 0; icalo2 < clusterList->GetEntriesFast(); icalo2++)
     {
       if ( icalo2 == icalo ) continue;
@@ -430,11 +441,13 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
             
       Float_t distance = TMath::Sqrt( dEta*dEta + dPhi*dPhi );
       
-      TString genName2;
+      genNameBkg2 = "";
+      genName2    = "";
+      genBkgTag2  = -1;
       if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() && calo2->GetNLabels() > 0 && distance < 0.4)
       {
-        (GetReader()->GetMC())->GetCocktailGenerator(calo2->GetLabel(),genName2);
-        
+        genBkgTag2 = GetCocktailGeneratorBackgroundTag(calo2, -1, genName2, genNameBkg2);
+
         if( !genName.Contains("ijing") && !genName2.Contains("ijing")) fhDistance2AddedSignals     ->Fill(en,distance,GetEventWeight());
         if( !genName.Contains("ijing") &&  genName2.Contains("ijing")) fhDistanceAddedSignalsHijing->Fill(en,distance,GetEventWeight());
         if(  genName.Contains("ijing") &&  genName2.Contains("ijing")) fhDistance2Hijing           ->Fill(en,distance,GetEventWeight());
@@ -452,6 +465,13 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
           sumMHi++;
           sumEHi += calo2->E();
         }
+      
+        if(genName2.Contains("ijing") || genBkgTag2 == 1 || genBkgTag2 == 3)
+        {
+          sumMHi2++;
+          sumEHi2 += calo2->E();
+        }
+
       }
     }
     
@@ -483,6 +503,9 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
     {
       fhLocalRegionClusterEnergySumHijing   [0]->Fill(en,sumEHi ,GetEventWeight());
       fhLocalRegionClusterMultiplicityHijing[0]->Fill(en,sumMHi ,GetEventWeight());
+
+      fhLocalRegionClusterEnergySumHijing2   ->Fill(en,sumEHi2 ,GetEventWeight());
+      fhLocalRegionClusterMultiplicityHijing2->Fill(en,sumMHi2 ,GetEventWeight());
       
       fhLocalRegionClusterEnergySumAdded    [0]->Fill(en,sumEAdd,GetEventWeight());
       fhLocalRegionClusterMultiplicityAdded [0]->Fill(en,sumMAdd,GetEventWeight());
@@ -491,6 +514,9 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
       {
         fhLocalRegionClusterEnergySumPerCentralityHijing   [0]->Fill(GetEventCentrality(),sumEHi ,GetEventWeight());
         fhLocalRegionClusterMultiplicityPerCentralityHijing[0]->Fill(GetEventCentrality(),sumMHi ,GetEventWeight());        
+
+        fhLocalRegionClusterEnergySumPerCentralityHijing2   ->Fill(GetEventCentrality(),sumEHi2 ,GetEventWeight());
+        fhLocalRegionClusterMultiplicityPerCentralityHijing2->Fill(GetEventCentrality(),sumMHi2 ,GetEventWeight());    
         
         fhLocalRegionClusterEnergySumPerCentralityAdded    [0]->Fill(GetEventCentrality(),sumEAdd,GetEventWeight());
         fhLocalRegionClusterMultiplicityPerCentralityAdded [0]->Fill(GetEventCentrality(),sumMAdd,GetEventWeight());
@@ -3986,41 +4012,77 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       }
     }
     
-    
-//    fhDistanceAddedPhotonAddedPrimarySignal = new TH2F
-//    ("hDistanceAddedPhotonAddedPrimarySignal", "Distance added #gamma to primary particle from added generator"
-//    ,nptbins,ptmin,ptmax,100,0,0.4);
-//    fhDistanceAddedPhotonAddedPrimarySignal->SetYTitle("#it{R}");
-//    fhDistanceAddedPhotonAddedPrimarySignal->SetXTitle("#it{p}_{T}");
-//    outputContainer->Add(fhDistanceAddedPhotonAddedPrimarySignal) ;
-//    
-//    fhDistanceHijingPhotonAddedPrimarySignal = new TH2F
-//    ("hDistanceHijingPhotonAddedPrimarySignal", "Distance Hijing #gamma to primary particle from added generator"
-//     ,nptbins,ptmin,ptmax,100,0,0.4);
-//    fhDistanceHijingPhotonAddedPrimarySignal->SetYTitle("#it{R}");
-//    fhDistanceHijingPhotonAddedPrimarySignal->SetXTitle("#it{p}_{T}");
-//    outputContainer->Add(fhDistanceHijingPhotonAddedPrimarySignal) ;
-//
-//    fhDistanceAddedPhotonAddedSecondarySignal = new TH2F
-//    ("hDistanceAddedPhotonAddedSecondarySignal", "Distance added #gamma to secondary particle from added generator"
-//     ,nptbins,ptmin,ptmax,100,0,0.4);
-//    fhDistanceAddedPhotonAddedSecondarySignal->SetYTitle("#it{R}");
-//    fhDistanceAddedPhotonAddedSecondarySignal->SetXTitle("#it{p}_{T}");
-//    outputContainer->Add(fhDistanceAddedPhotonAddedSecondarySignal) ;
-//    
-//    fhDistanceHijingPhotonAddedSecondarySignal = new TH2F
-//    ("hDistanceHijingPhotonAddedSecondarySignal", "Distance Hijing #gamma to secondary particle from added generator"
-//     ,nptbins,ptmin,ptmax,100,0,0.4);
-//    fhDistanceHijingPhotonAddedSecondarySignal->SetYTitle("#it{R}");
-//    fhDistanceHijingPhotonAddedSecondarySignal->SetXTitle("#it{p}_{T}");
-//    outputContainer->Add(fhDistanceHijingPhotonAddedSecondarySignal) ;
-//
-//    fhDistanceAddedPhotonHijingSecondary = new TH2F
-//    ("hDistanceAddedPhotonHijingSecondary", "Distance added #gamma to secondary particle from hijing"
-//     ,nptbins,ptmin,ptmax,100,0,0.4);
-//    fhDistanceAddedPhotonHijingSecondary->SetYTitle("#it{R}");
-//    fhDistanceAddedPhotonHijingSecondary->SetXTitle("#it{p}_{T}");
-//    outputContainer->Add(fhDistanceAddedPhotonHijingSecondary) ;
+    if(IsDataMC())
+    {
+      fhLocalRegionClusterEnergySumHijing2 = new TH2F 
+      ("hLocalRegionClusterEnergySumHijing2",
+       "Sum of cluster energy (HIJING) around trigger cluster #it{E} with R=0.2", 
+       nptbins,ptmin,ptmax, 200,0,100);
+      fhLocalRegionClusterEnergySumHijing2->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterEnergySumHijing2->SetYTitle("#Sigma #it{E} (GeV)");
+      outputContainer->Add(fhLocalRegionClusterEnergySumHijing2);    
+      
+      fhLocalRegionClusterMultiplicityHijing2 = new TH2F 
+      ("hLocalRegionClusterMultiplicityHijing2",
+       "Cluster multiplicity (HIJING) around trigger cluster #it{E} with R=0.2", 
+       nptbins,ptmin,ptmax, 200,0,200);
+      fhLocalRegionClusterMultiplicityHijing2->SetXTitle("#it{E} (GeV)");
+      fhLocalRegionClusterMultiplicityHijing2->SetYTitle("Multiplicity");
+      outputContainer->Add(fhLocalRegionClusterMultiplicityHijing2); 
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhLocalRegionClusterEnergySumPerCentralityHijing2 = new TH2F 
+        ("hLocalRegionClusterEnergySumPerCentralityHijing2",
+         "Sum of cluster energy (HIJING) around trigger cluster vs centrality with R=0.2", 
+         100,0,100, 200,0,100);
+        fhLocalRegionClusterEnergySumPerCentralityHijing2->SetXTitle("Centrality");
+        fhLocalRegionClusterEnergySumPerCentralityHijing2->SetYTitle("#Sigma #it{E} (GeV)");
+        outputContainer->Add(fhLocalRegionClusterEnergySumPerCentralityHijing2);    
+        
+        fhLocalRegionClusterMultiplicityPerCentralityHijing2 = new TH2F 
+        ("hLocalRegionClusterMultiplicityPerCentralityHijing2",
+         "Cluster multiplicity (HIJING) around trigger cluster vs centrality with R=0.2", 
+         100,0,100, 200,0,200);
+        fhLocalRegionClusterMultiplicityPerCentralityHijing2->SetXTitle("Centrality");
+        fhLocalRegionClusterMultiplicityPerCentralityHijing2->SetYTitle("Multiplicity");
+        outputContainer->Add(fhLocalRegionClusterMultiplicityPerCentralityHijing2);     
+      }
+    }
+    //    fhDistanceAddedPhotonAddedPrimarySignal = new TH2F
+    //    ("hDistanceAddedPhotonAddedPrimarySignal", "Distance added #gamma to primary particle from added generator"
+    //    ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceAddedPhotonAddedPrimarySignal->SetYTitle("#it{R}");
+    //    fhDistanceAddedPhotonAddedPrimarySignal->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceAddedPhotonAddedPrimarySignal) ;
+    //    
+    //    fhDistanceHijingPhotonAddedPrimarySignal = new TH2F
+    //    ("hDistanceHijingPhotonAddedPrimarySignal", "Distance Hijing #gamma to primary particle from added generator"
+    //     ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceHijingPhotonAddedPrimarySignal->SetYTitle("#it{R}");
+    //    fhDistanceHijingPhotonAddedPrimarySignal->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceHijingPhotonAddedPrimarySignal) ;
+    //
+    //    fhDistanceAddedPhotonAddedSecondarySignal = new TH2F
+    //    ("hDistanceAddedPhotonAddedSecondarySignal", "Distance added #gamma to secondary particle from added generator"
+    //     ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceAddedPhotonAddedSecondarySignal->SetYTitle("#it{R}");
+    //    fhDistanceAddedPhotonAddedSecondarySignal->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceAddedPhotonAddedSecondarySignal) ;
+    //    
+    //    fhDistanceHijingPhotonAddedSecondarySignal = new TH2F
+    //    ("hDistanceHijingPhotonAddedSecondarySignal", "Distance Hijing #gamma to secondary particle from added generator"
+    //     ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceHijingPhotonAddedSecondarySignal->SetYTitle("#it{R}");
+    //    fhDistanceHijingPhotonAddedSecondarySignal->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceHijingPhotonAddedSecondarySignal) ;
+    //
+    //    fhDistanceAddedPhotonHijingSecondary = new TH2F
+    //    ("hDistanceAddedPhotonHijingSecondary", "Distance added #gamma to secondary particle from hijing"
+    //     ,nptbins,ptmin,ptmax,100,0,0.4);
+    //    fhDistanceAddedPhotonHijingSecondary->SetYTitle("#it{R}");
+    //    fhDistanceAddedPhotonHijingSecondary->SetXTitle("#it{p}_{T}");
+    //    outputContainer->Add(fhDistanceAddedPhotonHijingSecondary) ;
     
     
     fhDistance2AddedSignals = new TH2F
