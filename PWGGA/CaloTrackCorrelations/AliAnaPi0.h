@@ -435,6 +435,19 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimNotResonancePi0PtOrigin ; //!<! Spectrum of generated pi0 vs mother
   TH2F *   fhPrimPi0PtStatus ;         //!<! Spectrum of generated pi0 vs pi0 status
 
+  // Per Generator in Cocktail
+  TH1F *   fhPrimPi0PtPerGenerator[10] ;               //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimPi0AccPtPerGenerator[10] ;            //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimPi0AccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH2F *   fhPrimPi0PhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
+  TH2F *   fhPrimPi0YPerGenerator[10] ;                //!<! Rapidity distribution of primary particles  vs pT
+
+  TH1F *   fhPrimEtaPtPerGenerator[10] ;               //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimEtaAccPtPerGenerator[10] ;            //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimEtaAccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
+  TH2F *   fhPrimEtaPhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
+  TH2F *   fhPrimEtaYPerGenerator[10] ;                //!<! Rapidity distribution of primary particles  vs pT
+  
   // Pair origin
   // Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles,
   // 7-other decays, 8-string, 9-final parton, 10-initial parton, intermediate, 11-colliding proton, 12-unrelated
