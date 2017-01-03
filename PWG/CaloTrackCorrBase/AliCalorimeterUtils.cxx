@@ -868,6 +868,54 @@ void AliCalorimeterUtils::GetEMCALSubregion(AliVCluster   * clus, AliVCaloCells 
 }
 
 //________________________________________________________________________________________
+/// Fill array with 4 possibly correlated channels absId
+///
+///  \param absId: Reference absId cell
+///  \param absIdCorr: List of cells correlated to absId, absId is included
+///  \return true if 4 channels found
+///
+//________________________________________________________________________________________
+Bool_t  AliCalorimeterUtils::GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdCorr[4]) const 
+{
+  // Get SM number
+  Int_t sm = fEMCALGeo->GetSuperModuleNumber(absId);
+
+  // Get first absId of SM
+  Int_t absIdSMMin = fEMCALGeo->GetAbsCellIdFromCellIndexes(sm,0,0)-1; // Check the shift!
+
+  // Get reference n and correlated 3
+  for(Int_t k = 0; k < 4; k++ )
+  {
+    for(Int_t p = 0; p < 72; p++ )
+    {
+     Int_t  n = absIdSMMin + 2*k + 16 *p;
+     
+      if ( absId == n   || absId == n+1 || 
+           absId == n+8 || absId == n+9   ) 
+      {
+        absIdCorr[0] = n   ;
+        absIdCorr[1] = n+1 ;
+        absIdCorr[2] = n+8 ;
+        absIdCorr[3] = n+9 ;
+        
+        //printf("n=%d, n+1=%d, n+8=%d, n+9=%d\n",
+        //       absIdCorr[0],absIdCorr[1],absIdCorr[2],absIdCorr[3]);
+        
+        return kTRUE;
+      }
+    }
+  }
+  
+  // Not found;
+  absIdCorr[0] = -1 ;
+  absIdCorr[1] = -1 ;
+  absIdCorr[2] = -1 ;
+  absIdCorr[3] = -1 ;
+  
+  return kFALSE;
+}
+
+//________________________________________________________________________________________
 /// For a given CaloCluster, it gets the absId of the cell with maximum energy deposit.
 //________________________________________________________________________________________
 Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells * cells,
