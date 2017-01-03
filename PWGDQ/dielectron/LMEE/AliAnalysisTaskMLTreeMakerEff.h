@@ -72,7 +72,7 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
 
   std::vector<Float_t> NCrossedRowsTPC;
   std::vector<Int_t> NClustersTPC;
-  std::vector<Bool_t> HasSPDfirstHit; 
+  std::vector<Int_t> HasSPDfirstHit; 
   std::vector<Double_t> RatioCrossedRowsFindableClusters;  
   std::vector<Int_t> NTPCSignal;    
   
@@ -115,6 +115,10 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
   std::vector<Double_t> chi2Global;
   std::vector<Double_t> chi2GlobalvsTPC;
   Int_t	fCutMaxChi2TPCConstrainedVsGlobalVertexType;
+  
+  std::vector<Double_t> ProdVx;
+  std::vector<Double_t> ProdVy;
+  std::vector<Double_t> ProdVz;
   
   std::vector<Float_t> dcar;    //DCA
   std::vector<Float_t> dcaz;
@@ -163,6 +167,7 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
   std::vector<Int_t> enh;  
   std::vector<Int_t> charge;
   std::vector<Int_t> IsRec;
+  std::vector<Int_t> pass;
   Bool_t Rej;
 
   
