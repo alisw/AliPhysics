@@ -70,18 +70,20 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetHadronCutCase(Int_t hadCutCase) {fHadCutCase = hadCutCase;};
     void    SetTriggerElePtCut(Bool_t trigElePtcut) {fTrigElePtCut = trigElePtcut;};
     void    GetVtxZCentralityBin();
-
-    void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
-    void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-
+    Bool_t  GetTenderSwitch() {return fUseTender;};
+    void    SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
+    
+    void    SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
+    void    SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
+    
     void    SetPartnerEleMinTPCNCls(Int_t MinNClsPE) {fTPCNClsPartnerE = MinNClsPE;};
     void    SetPartnerEleMinPt(Double_t PtPE) {fPartElePt = PtPE;};
     void    SetInvmassCut(Double_t invmasscut) {fInvmassCut = invmasscut;};
-
+    
     void    SetHadMinTPCNCls(Int_t MinNClsHad) {fTPCNClsHad = MinNClsHad;};
     void    SetHadSPDkAny(Bool_t HadSPDkAny) {fFlagHadSPDkAny = HadSPDkAny;};
     void    SetHadLargeITSNCls(Bool_t HadLargITSNCls) {fFlagHadITSNCls = HadLargITSNCls;};
-
+    
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
 
@@ -91,7 +93,11 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     const AliVVertex    *fpVtx; //!
     AliPIDResponse      *fpidResponse; //!pid response
     AliMultSelection    *fMultSelection;//!
+    
+    TClonesArray        *fTracks_tender;//Tender tracks
+    TClonesArray        *fCaloClusters_tender;//Tender cluster
 
+    Bool_t              fUseTender;// switch to add tender
     Double_t            fCentrality;//!
     Double_t            fCentralityMin;//
     Double_t            fCentralityMax;//
@@ -187,7 +193,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH2F                *fMixStatCent;//!
     TH2F                *fMixStatVtxZ;//!
     TH2F                *fMixStatCentVtxz;//!
-
+    
     //TH2F                *fHisHadDphi;//!
     //TH2F                *fHisIncEDphi;//!
     //TH2F                *fHisLSDphi;//!
