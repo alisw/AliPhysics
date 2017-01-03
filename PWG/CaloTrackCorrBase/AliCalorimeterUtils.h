@@ -60,6 +60,8 @@ class AliCalorimeterUtils : public TObject {
   Bool_t        IsClusterSharedByTwoSuperModules(const AliEMCALGeometry * geom,
                                                  AliVCluster* cluster);
   
+  Bool_t        GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdCorr[4]) const ;
+  
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells)  ;
   
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
