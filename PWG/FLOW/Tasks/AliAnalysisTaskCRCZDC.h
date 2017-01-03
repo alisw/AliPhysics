@@ -280,6 +280,9 @@ private:
   TH2F *fhZNCpmcvscentr;	//! ZNC vs. centrality
   TH2F *fhZNApmcvscentr;   	//! ZNA vs. centrality
   
+  TH3D *fhZNSpectra;   	//! ZNA vs. centrality
+  TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
+  
   const static Int_t fCRCMaxnRun = 211;
   const static Int_t fCRCnTow = 8;
   const static Int_t fnCen = 10;
@@ -311,7 +314,7 @@ private:
   TH1D *fTowerGainEq[2][5]; //!
   Int_t fCachedRunNum;   //
   
-  ClassDef(AliAnalysisTaskCRCZDC,7);
+  ClassDef(AliAnalysisTaskCRCZDC,8);
   
 };
 
