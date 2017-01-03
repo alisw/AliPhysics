@@ -149,23 +149,21 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     fListOutput->SetOwner(kTRUE);
     
     //In preparation: get number of events from real data
-    TH1D *fHistCentrality = (TH1D*) lDataCountersInput->FindObject( "fHistCentrality" );
+    TH1D *fHistCentrality = (TH1D*) lDataCountersInput->FindObject( "fHistCentrality" )->Clone("fHistCentralityClone");
     fHistCentrality->SetDirectory(0);
     Double_t lNEvents = fHistCentrality->Integral( fHistCentrality->GetXaxis()->FindBin( lLoMult+1e-5 ),
                                                   fHistCentrality->GetXaxis()->FindBin( lHiMult-1e-5 ) );
     cout<<"AliStrangenessModule -> Number of events in multiplicity class "<<lLoMult<<" to "<<lHiMult<<": "<<lNEvents<<endl;
     
     //Step 1: Open real data object
-    AliVWeakResult *lDataResult = (AliVWeakResult*) lDataInput->FindObject(lConfiguration.Data());
-    TString lDataName = lDataResult->GetName();
+    TString lDataName = lConfiguration.Data();
     lDataName.Append("_Data");
-    lDataResult->SetName( lDataName.Data() );
+    AliVWeakResult *lDataResult = (AliVWeakResult*) lDataInput->FindObject(lConfiguration.Data())->Clone( lDataName.Data() );
     if(lVerbose) lDataResult->Print();
     
     //_________________________________________________
     // Process TH3Fs and expand into histograms of interest
-    TH3F *f3dHistData = lDataResult->GetHistogram();
-    f3dHistData->SetName("f3dHistData");
+    TH3F *f3dHistData = (TH3F*) lDataResult->GetHistogram()->Clone("f3dHistData");
     
     //Check if multiplicity interval requested is possible
     Bool_t lCheckMult = CheckCompatibleMultiplicity ( f3dHistData );
@@ -251,10 +249,9 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     fListOutput->Add(fHistRawVsPt);
     
     //Step N: Open MC data object
-    AliVWeakResult *lMCResult = (AliVWeakResult*) lMCInput->FindObject(lConfiguration.Data());
-    TString lMCName = lMCResult->GetName();
+    TString lMCName = lConfiguration.Data();
     lMCName.Append("_MC");
-    lMCResult->SetName( lMCName.Data() );
+    AliVWeakResult *lMCResult = (AliVWeakResult*) lMCInput->FindObject(lConfiguration.Data())->Clone( lMCName.Data() ) ;
     if(lVerbose) lMCResult->Print();
     
     //Compatibility check 1: check if generated with the same cuts
@@ -269,8 +266,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     
     //_________________________________________________
     // Process TH3Fs and expand into histograms of interest
-    TH3F *f3dHistMC = lMCResult->GetHistogram();
-    f3dHistMC->SetName("f3dHistMC");
+    TH3F *f3dHistMC = (TH3F*) lMCResult->GetHistogram()->Clone("f3dHistMC");
     
     //Check if multiplicity interval requested is possible
     Bool_t lCheckMultMC = CheckCompatibleMultiplicity ( f3dHistMC );
@@ -329,7 +325,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     //Acquire generated histogram
     TString lGenObjName = "fHistGeneratedPtVsYVsCentrality";
     lGenObjName.Append( lDataResult->GetParticleName() ) ;
-    TH3F *f3dHistGenMC = (TH3F*) lMCCountersInput->FindObject( lGenObjName.Data() );
+    TH3F *f3dHistGenMC = (TH3F*) lMCCountersInput->FindObject( lGenObjName.Data() )->Clone("f3dHistGenMC");
     f3dHistGenMC->Sumw2();
     //Project this into a 1D histogram, please
     TH1D* fHistGeneratedOriginal = f3dHistGenMC -> ProjectionX( "fHistGeneratedOriginal",
