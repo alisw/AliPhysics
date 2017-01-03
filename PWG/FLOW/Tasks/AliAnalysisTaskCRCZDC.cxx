@@ -193,7 +193,9 @@ fMultTOFLowCut(0x0),
 fMultTOFHighCut(0x0),
 fTowerEqList(NULL),
 fSpectraMCList(NULL),
-fCachedRunNum(0)
+fCachedRunNum(0),
+fhZNSpectra(0x0),
+fhZNBCCorr(0x0)
 {
   for(int i=0; i<5; i++){
     fhZNCPM[i] = 0x0;
@@ -322,7 +324,9 @@ fPileUpMultSelCount(0x0),
 fMultTOFLowCut(0x0),
 fMultTOFHighCut(0x0),
 fTowerEqList(NULL),
-fCachedRunNum(0)
+fCachedRunNum(0),
+fhZNSpectra(0x0),
+fhZNBCCorr(0x0)
 {
   
   for(int i=0; i<5; i++){
@@ -490,6 +494,10 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       fOutput->Add(fTowerGainEq[c][i]);
     }
   }
+  fhZNSpectra = new TH3D("fhZNSpectra","fhZNSpectra",100,0.,100.,8,0.,8.,1000,0.,1.E5);
+  fOutput->Add(fhZNSpectra);
+  fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
+  fOutput->Add(fhZNBCCorr);
   
   if(fAnalysisType == "MCAOD") {
     
@@ -1324,12 +1332,20 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           numXZNC += x[i]*wZNC;
           numYZNC += y[i]*wZNC;
           denZNC += wZNC;
+          fhZNSpectra->Fill(centrperc,i+0.5,towZNC[i+1]);
           
           if(i==1) wZNA = TMath::Power(towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4], fZDCGainAlpha);
           else wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
           numXZNA += x[i]*wZNA;
           numYZNA += y[i]*wZNA;
           denZNA += wZNA;
+          fhZNSpectra->Fill(centrperc,i+4.5,(i!=1?towZNA[i+1]:towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4]));
+        }
+        // store distribution for unfolding
+        if(RunNum<245829) {
+          Double_t recoE = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
+          Double_t trueE = towZNA[2];
+          fhZNBCCorr->Fill(centrperc,trueE,recoE);
         }
         if(denZNC!=0){
           Float_t nSpecnC = zncEnergy/Enucl;

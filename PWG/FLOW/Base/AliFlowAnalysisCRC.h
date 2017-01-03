@@ -1541,7 +1541,7 @@ private:
   const static Int_t fCRCQVecnCov = 12;
   TProfile *fCRCZDCQVecCov[fCRCMaxnRun][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
   const static Int_t fCRCQVecnResVtx = 12;
-  TProfile *fCRCZDCQVecResVtx[fCRCMaxnRun][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
+  TProfile *fCRCZDCQVecResVtx[fCRCMaxnRun][fCRCMaxnCen][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
   
   TProfile *fCRCZDCQVecA[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
@@ -1806,6 +1806,7 @@ private:
   TH1D *fCenHist; //! Centrality distribution
   TH1D *fEventCounter; //! Event counter for different methods
   TH2F *fVtxHist[3]; //! primary vertex
+  TH3D* fCRCQVecPhiHistVtxDep[fCRCMaxnCen]; //! phi ditribution POIs, vtx dep
   TH1D* fCenWeightsHist; //! Centrality weights
   TH1D* fCenWeigCalHist; //! Centrality weights
   TH1D* fPtWeightsHist[10]; //! Pt weights
@@ -1855,7 +1856,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 42);
+  ClassDef(AliFlowAnalysisCRC, 43);
   
 };
 
