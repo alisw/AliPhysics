@@ -13,15 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-/// \ingroup mumu
-// AliAnalysisMuMuSpectra : a class to encapsulate results from MuMu analysis
-//
-// Spectra can be merged and converted into histograms
-//
-// author: L. Aphecetche (Subatech)
-//
-
 #include "AliAnalysisMuMuSpectra.h"
 
 #include "AliLog.h"

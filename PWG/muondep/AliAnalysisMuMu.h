@@ -6,11 +6,19 @@
 
 // $Id$
 
-///
-/// AliAnalysisMuMu : Facade class of all subclass called to digest/plot/massage results from
-/// AliAnalysisTaskMuMu
-///
-/// author : Laurent Aphecetche (Subatech), Javier Martin Blanco, Benjamin Audurier
+
+/**
+ 
+  @ingroup pwg_muondep_mumu
+
+  @class AliAnalysisMuMu
+
+  @brief Facade class of classes called to  digest/plot/massage results from AliAnalysisTaskMuMu
+ 
+  @author Laurent Aphecetche (Subatech)
+  @author Javier Martin Blanco (Subatech)
+  @author Benjamin Audurier (Subatech)
+*/
 
 #include "AliAnalysisMuMuBinning.h"
 #include "AliAnalysisMuMuFnorm.h"

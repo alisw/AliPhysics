@@ -13,13 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/// \ingroup mumu
-///
-/// Class to deal with Spectra after the fitting procedure.
-///
-/// author: Benjamin Audurier (Subatech)
-///
-
 #include "AliAnalysisMuMuSpectraCapsulePP.h"
 
 ClassImp(AliAnalysisMuMuSpectraCapsulePP)

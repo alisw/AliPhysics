@@ -13,29 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//
-// AliMuonGridSubmitter : a class to help submit jobs for several runs
-//
-// This class is dealing with 3 different directories :
-//
-// - template directory ($ALICE_ROOT/PWG/muondep/XXXTemplates) containing the
-//   basic template files to be used for a particular job type (XXX). A template can contain
-//   some variables that will be replaced during during the copy from template
-//   to local dir
-//
-// - local directory, where the files from the template directory, are copied
-//   once the class has been configured properly (i.e. using the various Set, Use,
-//   etc... methods). Some other files (e.g. JDL ones) are generated from
-//   scratch and also copied into this directory.
-//   At this point one could(should) check the files, as they are the ones
-//   to be copied to the remote directory for the production
-//
-// - remote directory, the alien directory where the files will be copied
-//   (from the local directory) before the actual submission
-//
-// author: Laurent Aphecetche (Subatech
-//
-
 #include "AliMuonGridSubmitter.h"
 
 #include "AliLog.h"
@@ -48,11 +25,13 @@
 #include "TString.h"
 #include "TSystem.h"
 #include <vector>
-#include "AliAnalysisTriggerScalers.h"
+#include "AliAnalysisRunList.h"
 #include "Riostream.h"
 
-/// \ingroup submitter
 
+/// Constructor
+/// \param jobType type of job to handle (Acc x Eff or QA merging)
+/// \param localOnly whether or not the jobs will be completely local
 //______________________________________________________________________________
 AliMuonGridSubmitter::AliMuonGridSubmitter(AliMuonGridSubmitter::EJobType jobType, Bool_t localOnly)
 : TObject(),
@@ -64,8 +43,6 @@ fTemplateFileList(0x0),
 fLocalFileList(0x0),
 fRunList()
 {
-  // ctor
-  
   if (!gGrid && !localOnly)
   {
     TGrid::Connect("alien://");
@@ -75,10 +52,8 @@ fRunList()
     }
   }
   
-  SetAliPhysicsVersion("VO_ALICE@AliPhysics::v5-06-30-01");
+  SetAliPhysicsVersion("VO_ALICE@AliPhysics::v5-08-19-01");
   
-  SetMapKeyValue("API","VO_ALICE@APISCONFIG::V1.1x");
-
   TString basedir = gSystem->ExpandPathName("$ALICE_PHYSICS/PWG/muondep");
   
   TString dir;
@@ -102,6 +77,7 @@ AliMuonGridSubmitter::~AliMuonGridSubmitter()
   delete fVars;
 }
 
+/// Add include path for Root ACliC, insuring there's no duplicate
 ///______________________________________________________________________________
 void AliMuonGridSubmitter::AddIncludePath(const char* pathList) const
 {
@@ -122,11 +98,11 @@ void AliMuonGridSubmitter::AddIncludePath(const char* pathList) const
 }
 
 
+/// Add a file to the list of templates
+/// and update the local file list if needed
 //______________________________________________________________________________
 void AliMuonGridSubmitter::AddToTemplateFileList(const char* filename, Bool_t alsoForMerging)
 {
-  // add a file to the list of templates
-  // and update the local file list if needed
   
   TObjArray* a = TemplateFileList();
   
@@ -139,11 +115,10 @@ void AliMuonGridSubmitter::AddToTemplateFileList(const char* filename, Bool_t al
   }
 }
 
+/// Add a file to the list of local files
 //______________________________________________________________________________
 void AliMuonGridSubmitter::AddToLocalFileList(const char* filename, Bool_t alsoForMerging)
 {
-  // add a file to the list of local files
-  
   TObjArray* a = LocalFileList();
   
   if ( !a->FindObject(filename) )
@@ -154,12 +129,11 @@ void AliMuonGridSubmitter::AddToLocalFileList(const char* filename, Bool_t alsoF
   }
 }
 
+/// Check whether file can be compiled or not
+/// FIXME: use gSystem->TempFileName for tmpfile !
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::CheckCompilation(const char* file) const
 {
-  /// Check whether file can be compiled or not
-  /// FIXME: use gSystem->TempFileName for tmpfile !
-  
   Bool_t rv(kTRUE);
   
   TString sfile(gSystem->BaseName(file));
@@ -181,10 +155,10 @@ Bool_t AliMuonGridSubmitter::CheckCompilation(const char* file) const
 }
 
 
+/// Check whether all required local files are there
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::CheckLocal() const
 {
-  /// Check whether all required local files are there
   TIter next(LocalFileList());
   TObjString* file;
   
@@ -207,13 +181,12 @@ Bool_t AliMuonGridSubmitter::CheckRemote() const
   return kFALSE;
 }
 
+/// Clean (remove) local generated files
+/// \param excludeList contains a list of comma separated pattern of files
+/// to be avoided (i.e. that will _not_ be removed)
 //______________________________________________________________________________
 void AliMuonGridSubmitter::CleanLocal(const char* excludeList) const
 {
-  /// Clean (remove) local generated files
-  /// exclude contains a list of comma separated pattern of files
-  /// to be avoided
-  
   TIter next(LocalFileList());
   TObjString* file;
   TObjArray* excludeArray = TString(excludeList).Tokenize(",");
@@ -239,10 +212,10 @@ void AliMuonGridSubmitter::CleanLocal(const char* excludeList) const
   delete excludeArray;
 }
 
+/// Copy (upload) a local file to remote destination
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::CopyFile(const char* localFile)
 {
-  /// copy a local file to remote destination
   TString local;
   
   if ( gSystem->IsAbsoluteFileName(localFile) )
@@ -297,11 +270,10 @@ Bool_t AliMuonGridSubmitter::CopyFile(const char* localFile)
   }
 }
 
+/// Check we have a grid connection and that the remote dir exists
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::CheckRemoteDir() const
 {
-  /// Check we have a grid connection and that the remote dir exists
-  
   if (RemoteDir().IsNull())
   {
     AliError("you must provide the grid location where to copy the files");
@@ -317,11 +289,10 @@ Bool_t AliMuonGridSubmitter::CheckRemoteDir() const
   return kTRUE;
 }
 
+/// Copy all files necessary to run the simulation into remote directory
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::CopyLocalFilesToRemote()
 {
-  /// copy all files necessary to run the simulation into remote directory
-  
   TIter next(LocalFileList());
   TObjString* ftc;
     
@@ -334,11 +305,10 @@ Bool_t AliMuonGridSubmitter::CopyLocalFilesToRemote()
   return allok;
 }
 
+/// Copy (or generate) local files from the template ones
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::CopyTemplateFilesToLocal()
 {
-  // copy (or generate) local files from the template ones
-  
   if (!IsValid()) return kFALSE;
 
   AliDebug(1,"");
@@ -409,11 +379,10 @@ Bool_t AliMuonGridSubmitter::CopyTemplateFilesToLocal()
   return (err==0);
 }
 
+/// Create a (local and empty) JDL file
 //______________________________________________________________________________
 std::ostream* AliMuonGridSubmitter::CreateJDLFile(const char* name) const
 {
-  /// Create a (local and empty) JDL file
-  
   AliDebugClass(1,"");
   
   TString jdl(Form("%s/%s",LocalDir().Data(),name));
@@ -436,11 +405,10 @@ std::ostream* AliMuonGridSubmitter::CreateJDLFile(const char* name) const
   return os;
 }
 
+/// Get the last staging phase already performed
 //______________________________________________________________________________
 Int_t AliMuonGridSubmitter::GetLastStage(const char* remoteDir)
 {
-  /// Get the last staging phase already performed
-  
   TGridResult* r = gGrid->Ls(remoteDir);
   Int_t i(0);
   Int_t lastStage(0);
@@ -460,10 +428,10 @@ Int_t AliMuonGridSubmitter::GetLastStage(const char* remoteDir)
   return lastStage;
 }
 
+/// Convenience method to access internal map of TObjStrings
 //______________________________________________________________________________
 TString AliMuonGridSubmitter::GetMapValue(const char* key) const
 {
-  // convenience method to access internal map of TObjStrings
   if (!fInternalMap) return "";
   
   TObject* o = fInternalMap->GetValue(key);
@@ -476,11 +444,10 @@ TString AliMuonGridSubmitter::GetMapValue(const char* key) const
   return "";
 }
 
+/// Find the variables in the file
 //______________________________________________________________________________
 TObjArray* AliMuonGridSubmitter::GetVariables(const char* file) const
 {
-  /// Find the variables in the file
-  
   std::ifstream in(file);
   char line[1024];
   TObjArray* variables(0x0);
@@ -515,12 +482,27 @@ TObjArray* AliMuonGridSubmitter::GetVariables(const char* file) const
   return variables;
 }
 
+/// Whether or not the file contains variable var
+//______________________________________________________________________________
+Bool_t AliMuonGridSubmitter::HasVar(const char* file, const char* var) const
+{
+  std::ifstream in(file);
+  char line[1024];
+  while ( in.getline(line,1023,'\n') )
+  {
+    TString sline(line);
+    if (sline.Contains("VAR_") && !sline.BeginsWith("//") && sline.Contains(var))
+    {
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+
+/// Whether or not the file contains variables that have to be substituted
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::HasVars(const char* file) const
 {
-  /// Whether or not the file contains variables that have to
-  /// be substituted
-  
   std::ifstream in(file);
   char line[1024];
   while ( in.getline(line,1023,'\n') )
@@ -559,12 +541,11 @@ TString AliMuonGridSubmitter::JobTypeName(AliMuonGridSubmitter::EJobType jobType
   return "unknown";
 }
 
+/// Return (after createing and filling it if needed)
+/// the internal file list with paths from the local directory
 //______________________________________________________________________________
 TObjArray* AliMuonGridSubmitter::LocalFileList() const
 {
-  /// Return (after createing and filling it if needed)
-  /// the internal file list with paths from the local directory
-  
   if (!fLocalFileList)
   {
     fLocalFileList = static_cast<TObjArray*>(TemplateFileList()->Clone());
@@ -573,19 +554,18 @@ TObjArray* AliMuonGridSubmitter::LocalFileList() const
   return fLocalFileList;
 }
 
+/// Number of runs we are dealing with
 //______________________________________________________________________________
 UInt_t AliMuonGridSubmitter::NofRuns() const
 {
-    // number of runs we're dealing with
   return fRunList.size();
 }
 
+/// Return an array where the map's keys are sorted alphabetically
+/// the returned array should be deleted by the client
 //______________________________________________________________________________
 TObjArray* AliMuonGridSubmitter::OrderKeys(const TMap& map) const
 {
-  /// return an array where the map's keys are sorted alphabetically
-  /// the returned array should be deleted by the client
-  
   TObjArray* keyArray = new TObjArray;
   keyArray->SetOwner(kTRUE);
   TObjString* key;
@@ -601,12 +581,11 @@ TObjArray* AliMuonGridSubmitter::OrderKeys(const TMap& map) const
 }
 
 
+/// output to ostream of key,{values} pair
 //______________________________________________________________________________
 void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key,
                                     const TObjArray& values) const
 {
-  /// output to ostream of key,{values} pair
-  
   out << key << " = ";
   
   Int_t n = values.GetEntries();
@@ -645,14 +624,13 @@ void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key,
   out << ";" << std::endl;
 }
 
+/// output to ostream
 //______________________________________________________________________________
 void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key, const char* v1,
                                     const char* v2, const char* v3, const char* v4,
                                     const char* v5, const char* v6, const char* v7,
                                     const char* v8, const char* v9) const
 {
-  /// output to ostream
-  
   TObjArray values;
   values.SetOwner(kTRUE);
   
@@ -669,18 +647,19 @@ void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key, const
   OutputToJDL(out,key,values);
 }
 
-
+/// Printout
 //______________________________________________________________________________
-void AliMuonGridSubmitter::Print(Option_t* /*opt*/) const
+void AliMuonGridSubmitter::Print(Option_t* opt) const
 {
-  /// Printout
-  
   if (!IsValid())
   {
     std::cout << std::string(80,'*') << std::endl;
     std::cout << "INVALID OBJECT. CHECK BELOW THE CONFIGURATION." << std::endl;
     std::cout << std::string(80,'*') << std::endl;
   }
+
+  TString sopt(opt);
+  sopt.ToUpper();
 
   std::cout << "-- Internals : " << std::endl;
   
@@ -709,20 +688,9 @@ void AliMuonGridSubmitter::Print(Option_t* /*opt*/) const
     }
     std::cout << std::endl;
   }
-  
-  std::cout << std::endl << "-- Variables : " << std::endl;
 
-  TObjArray* iv = OrderKeys(*fVars);
-  
-  TIter nextVar(iv);
-  while ( ( key = static_cast<TObjString*>(nextVar())) )
-  {
-    TObjString* value = static_cast<TObjString*>(fVars->GetValue(key->String()));
-    std::cout << "Variable " << key->String() << " will be replaced by " << value->String() << std::endl;
-  }
-  
-  delete iv;
-  
+  PrintVariables(sopt.Contains("ALLVARS"));
+
   std::cout << std::endl << "-- Files to be uploaded:" << std::endl;
   TIter nextFile(LocalFileList());
   TObjString* sfile;
@@ -732,11 +700,55 @@ void AliMuonGridSubmitter::Print(Option_t* /*opt*/) const
   }
 }
 
+/// Show the variables 
+/// \param all set it to true to show all variables, not just those which exist in the list of template files 
+//______________________________________________________________________________
+void AliMuonGridSubmitter::PrintVariables(Bool_t all) const
+{
+  std::cout << std::endl << "-- Variables : " << std::endl;
 
+  TObjArray* iv = OrderKeys(*fVars);
+  
+  TIter nextVar(iv);
+  TObjString* key;
+
+  while ( ( key = static_cast<TObjString*>(nextVar())) )
+  {
+      Bool_t showIt = kTRUE;
+
+    if ( !all )
+    {
+        showIt = kFALSE;
+        // check first the variable is used somewhere in the template file list
+        TIter next(TemplateFileList());
+        TObjString* file;
+        while ( ( file = static_cast<TObjString*>(next())))
+        {
+            TString filename = TemplateDir();
+            filename += "/";
+            filename += file->String();
+            if ( HasVar(filename.Data(),key->String().Data())) 
+            {
+                showIt = kTRUE;
+                break;
+            }
+        }
+    }
+
+    if ( showIt )
+    {
+        TObjString* value = static_cast<TObjString*>(fVars->GetValue(key->String()));
+        std::cout << "Variable " << key->String() << " will be replaced by " << value->String() << std::endl;
+    }
+  }
+  
+  delete iv;
+}
+
+/// Returns true if dirname exists. Can be also a path.
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::RemoteDirectoryExists(const char *dirname) const
 {
-  // Returns true if directory exists. Can be also a path.
   if (!gGrid) return kFALSE;
   // Check if dirname is a path
   TString dirstripped = dirname;
@@ -762,10 +774,10 @@ Bool_t AliMuonGridSubmitter::RemoteDirectoryExists(const char *dirname) const
   return kFALSE;
 }
 
+/// Returns true if lfn exists.
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::RemoteFileExists(const char *lfn)
 {
-  // Returns true if file exists.
   if (!gGrid) return kFALSE;
   TGridResult *res = gGrid->Ls(lfn);
   if (!res) return kFALSE;
@@ -783,11 +795,11 @@ Bool_t AliMuonGridSubmitter::RemoteFileExists(const char *lfn)
   return kTRUE;
 }
 
+/// Replace the variables (i.e. things starting by VAR_) found in file
+/// by their value
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::ReplaceVars(const char* file) const
 {
-  /// Replace the variables (i.e. things starting by VAR_) found in file
-  
   AliDebug(1,file);
   
   std::ifstream in(file);
@@ -828,7 +840,7 @@ Bool_t AliMuonGridSubmitter::ReplaceVars(const char* file) const
       
       if (n==0)
       {
-        AliError(Form("Could not find a replacement for variable %s",sline.Data()));
+        AliError(Form("Could not find a replacement for variable %s in file %s",sline.Data(),file));
         break;
       }
     }
@@ -860,38 +872,35 @@ Bool_t AliMuonGridSubmitter::ReplaceVars(const char* file) const
   return kTRUE;
 }
 
+/// Return a reference to our runlist
 //______________________________________________________________________________
 const std::vector<int>& AliMuonGridSubmitter::RunList() const
 {
-  /// Return a reference to our runlist
   return fRunList;
 }
 
+/// Set the AliPhysics package to be used by the jobs
+/// the corresponding aliroot, root, geant3 versions
+/// should be set automatically by alien.
 //______________________________________________________________________________
 void AliMuonGridSubmitter::SetAliPhysicsVersion(const char* aliphysics)
 {
-  /// Set the package to be used by the jobs
-  /// the corresponding aliroot, root, geant3 versions
-  /// should be set automatically by alien.
-  
   SetMapKeyValue("AliPhysics",aliphysics);
 }
 
+/// Set the AliRoot package to be used by the jobs
+/// the corresponding root, geant3 versions
+/// should be set automatically by alien.
 //______________________________________________________________________________
 void AliMuonGridSubmitter::SetAliRootVersion(const char* aliroot)
 {
-  /// Set the package to be used by the jobs
-  /// the corresponding root, geant3 versions
-  /// should be set automatically by alien.
-  
   SetMapKeyValue("AliRoot",aliroot);
 }
 
+/// Set the generator package to be used by the jobs
 //______________________________________________________________________________
 void AliMuonGridSubmitter::SetGeneratorPackage(const char* generator)
 {
-  /// Set the package to be used by the jobs
-
   SetMapKeyValue("Generator",generator);
 }
 
@@ -915,11 +924,10 @@ void AliMuonGridSubmitter::SetPackages(const char* aliroot,
   SetMapKeyValue("API",api);
 }
 
+/// Set the target remote directory (on the grid)
 //______________________________________________________________________________
 TString AliMuonGridSubmitter::GetRemoteDir(const char* dir, Bool_t create)
 {
-  /// Set the target remote directory (on the grid)
-  
   if (!RemoteDirectoryExists(dir))
   {
     if (!create)
@@ -977,8 +985,8 @@ Bool_t AliMuonGridSubmitter::SetRemoteDirectory(const char* type, const char* pa
 void AliMuonGridSubmitter::SetRunList(const char* runlist)
 {
     // set the runlist from a text file
-  AliAnalysisTriggerScalers ts(runlist);
-  fRunList = ts.GetRunList();
+  AliAnalysisRunList rl(runlist);
+  fRunList = rl.AsVector();
 }
 
 //______________________________________________________________________________
@@ -1000,16 +1008,15 @@ TString AliMuonGridSubmitter::GetVar(const char* key) const
   return "";
 }
 
+/// Set the value of a variable
+///
+/// Pay attention to how string variables should be given here : you have
+/// to espace the quotation marks :
+///
+/// SetVar("VAR_PYTHIA8_SETUP_STRINGS","\"SoftQCD:doubleDiffractive=off\"");
 //______________________________________________________________________________
 Bool_t AliMuonGridSubmitter::SetVar(const char* varname, const char* value)
 {
-  /// Set a variable
-  ///
-  /// Pay attention to how string variables should be given here : you have
-  /// to espace the quotation marks :
-  ///
-  /// SetVar("VAR_PYTHIA8_SETUP_STRINGS","\"SoftQCD:doubleDiffractive=off\"");
-  
   TString s(varname);
   s.ToUpper();
   if (!s.BeginsWith("VAR_"))
@@ -1031,11 +1038,10 @@ Bool_t AliMuonGridSubmitter::SetVar(const char* varname, const char* value)
   return kTRUE;
 }
 
+/// Return (after creating if needed) the list of template files
 //______________________________________________________________________________
 TObjArray* AliMuonGridSubmitter::TemplateFileList() const
 {
-  /// Return (after createing if needed)
-  
   if (!fTemplateFileList)
   {
     fTemplateFileList = new TObjArray;
@@ -1044,10 +1050,10 @@ TObjArray* AliMuonGridSubmitter::TemplateFileList() const
   return fTemplateFileList;
 }
 
+/// Insure that local file list contains at least all of the template files
 //______________________________________________________________________________
 void AliMuonGridSubmitter::UpdateLocalFileList()
 {
-  // insure that local file list contains at least all of the template files
   TIter next(TemplateFileList());
   TObjString* s;
   

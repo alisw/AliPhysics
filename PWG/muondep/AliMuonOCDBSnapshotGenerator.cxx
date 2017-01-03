@@ -12,9 +12,10 @@
 #include "TObjArray.h"
 #include "TSystem.h"
 
-///  \ingroup submitter
 
+/// \cond CLASSIMP
 ClassImp(AliMuonOCDBSnapshotGenerator)
+/// \endcond
 
 AliMuonOCDBSnapshotGenerator::AliMuonOCDBSnapshotGenerator(Int_t runNumber, const char* localOCDBPath, const char* sourceOCDBPath)
     : TObject(), fRunNumber(runNumber), fLocalOCDBPath(localOCDBPath), fSourceOCDBPath(sourceOCDBPath)
@@ -109,14 +110,8 @@ Bool_t AliMuonOCDBSnapshotGenerator::CreateSnapshot(Int_t mode, const char* snap
   AliCDBStorage *defStorage = man->GetDefaultStorage();
   TObjArray* arrCDBID = defStorage->GetQueryCDBList();
 
-  AliInfo("arrCDBID=");
-  arrCDBID->Print();
-
   const TMap* stMap = man->GetStorageMap();
   man->SetCacheFlag(kTRUE);
-
-  AliInfo("stMap=");
-  stMap->Print();
 
   AliCDBId* cdbID = 0;
   TIter nxt(arrCDBID);
@@ -272,11 +267,8 @@ Bool_t AliMuonOCDBSnapshotGenerator::PopulateLocalOCDBWithPatchedRecoParam()
                 AliFatal("OUPS. OUPS");
                 return kFALSE;
             }
-            rp->SetHVLimit(1,-99999);
             rp->SetPadGoodnessMask(0);
-            rp->Print("");
         }
-
     }
 
     man->SetSpecificStorage("MUON/Calib/RecoParam",LocalOCDBPath().Data());

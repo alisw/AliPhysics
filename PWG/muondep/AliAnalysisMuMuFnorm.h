@@ -24,6 +24,26 @@ class AliCounterCollection;
 class AliMergeableCollection;
 class AliAnalysisMuMuConfig;
 
+/** 
+
+  @ingroup pwg_muondep_mumu
+
+@class AliAnalysisMuMuFnorm 
+
+@brief Encapsulates computation(s)
+ of the normalisation factor used to get the equivalent
+number of MB events from the number of REF triggers
+
+ The computed objects are stored within a AliMergeableCollection
+ with 3 subdirectories, dependinf on their type
+
+ /GRAPHS/
+ /RESULTS/
+ /HISTOS/
+
+@author  Laurent Aphecetche (Subatech)
+*/
+
 class AliAnalysisMuMuFnorm : public TObject
 {
 

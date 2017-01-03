@@ -17,8 +17,6 @@
 #include <set>
 #include "AliAnalysisMuMuResult.h"
 
-/// \ingroup mumu
-
 ClassImp(AliAnalysisMuMuGraphUtil)
 
 //____________________________________________________________________________

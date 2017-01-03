@@ -6,11 +6,19 @@
 
 // $Id$
 
-///
-/// AliAnalysisMuMuResult : helper class to store results from
-/// AliAnalysisTaskMuMu
-///
-/// author : Laurent Aphecetche (Subatech)
+/**
+
+  @ingroup pwg_muondep_mumu
+
+  @class AliAnalysisMuMuResult
+
+  @brief Store results from AliAnalysisTaskMuMu
+
+ Base class to hold a set of results for the same quantity,
+ computed using various methods, each with their errors
+
+ @author Laurent Aphecetche (Subatech)
+ */
 
 #include "TNamed.h"
 #include <TString.h>

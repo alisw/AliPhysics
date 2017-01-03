@@ -5,6 +5,17 @@
 #include <set>
 #include <iostream>
 
+/**
+
+  @ingroup pwg_muondep_misc
+
+  @class AliAnalysisRunList
+
+  @brief Manipulates run lists
+
+  @author Laurent Aphecetche (Subatech)
+  */
+
 class AliAnalysisRunList
 {
     public:

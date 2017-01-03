@@ -13,45 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//
-// AliMuonAccEffSubmitter : a class to help submit Acc x Eff simulations
-// anchored to real runs for J/psi, upsilon, single muons, etc...
-//
-// This class is dealing with 3 different directories :
-//
-// - template directory ($ALICE_ROOT/PWG/muondep/AccEffTemplates) containing the
-//   basic template files to be used for a simuation. A template can contain
-//   some variables that will be replaced during during the copy from template
-//   to local dir
-//
-// - local directory, where the files from the template directory, are copied
-//   once the class has been configured properly (i.e. using the various Set, Use,
-//   etc... methods). Some other files (e.g. JDL ones) are generated from
-//   scratch and also copied into this directory.
-//   At this point one could(should) check the files, as they are the ones
-//   to be copied to the remote directory for the production
-//
-// - remote directory, the alien directory where the files will be copied
-//   (from the local directory) before the actual submission
-//
-// ==========================================================
-//
-// Basic usage
-//
-// AliMuonAccEffSubmitter a; // (1)
-// a.UseOCDBSnapshots(kFALSE);
-// a.SetRemoteDir("/alice/cern.ch/user/l/laphecet/Analysis/LHC13d/simjpsi/pp503z0");
-// a.ShouldOverwriteFiles(true);
-// a.MakeNofEventsPropToTriggerCount("CMUL7-B-NOPF-MUON");
-// a.SetVar("VAR_GENLIB_PARNAME","\"pp 5.03\"");
-// a.SetRunList(195682);
-// a.Print();
-// a.Run("test"); // will do everything but the submit
-// a.Submit(false); // actual submission
-//
-// author: Laurent Aphecetche (Subatech)
-//
-
 #include "AliMuonAccEffSubmitter.h"
 
 #include "AliAnalysisTriggerScalers.h"
@@ -75,7 +36,9 @@
 
 using std::ifstream;
 
-ClassImp(AliMuonAccEffSubmitter)
+/// \cond CLASSIMP
+ClassImp(AliMuonAccEffSubmitter);
+/// \endcond
 
 //______________________________________________________________________________
 AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(Bool_t localOnly)
@@ -90,13 +53,28 @@ fExternalConfig(""),
 fSnapshotDir(""),
 fUseAODMerging(kFALSE)
 {
-  // default ctor
+  /// default ctor
 
   SetupCommon(localOnly);
 
   AliWarning("Using default constructor : you will probably need to call a few Set methods to properly configure the object before getting it to do anything usefull");
 }
 
+/// Normal constructor
+///
+/// \param generator name of the generator to be used (see \ref SetGenerator)
+/// \param localOnly whether the generated files are meant to be used only locally (i.e. not on the Grid) 
+/// \param generatorVersion optional speficiation to trigger the setup of some external libraries
+///
+/// if generator contains "pythia8" and generatorVersion is given then
+/// the pythiaversion must represent the integer part XXX of the
+/// include directory $ALICE_ROOT/PYTHI8/pythiaXXX/include where the file
+/// Analysis.h is to be found.
+///
+/// if generator contains "pythia6" then generatorVersion should be the
+/// X.YY part of libpythia6.X.YY.so
+
+//
 //______________________________________________________________________________
 AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator, Bool_t localOnly,
                                                const char* generatorVersion)
@@ -111,17 +89,6 @@ fExternalConfig(""),
 fSnapshotDir(""),
 fUseAODMerging(kFALSE)
 {
-  // ctor
-  //
-  // if generator contains "pythia8" and generatorVersion is given then
-  // the pythiaversion must represent the integer part XXX of the
-  // include directory $ALICE_ROOT/PYTHI8/pythiaXXX/include where the file
-  // Analysis.h is to be found.
-  //
-  // if generator contains "pythia6" then generatorVersion should be the
-  // X.YY part of libpythia6.X.YY.so
-  //
-
   SetupCommon(localOnly);
 
   if ( TString(generator).Contains("pythia8",TString::kIgnoreCase) )
@@ -135,18 +102,6 @@ fUseAODMerging(kFALSE)
 
     SetupPythia8(generatorVersion);
   
-//    TString p8env;
-//    
-//    p8env += Form("  gSystem->Setenv(\"PYTHIA8DATA\", gSystem->ExpandPathName(\"$ALICE_ROOT/PYTHIA8/pythia%s/xmldoc\"));\n",generatorVersion);
-//    
-//    p8env += "  gSystem->Setenv(\"LHAPDF\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF\"));\n";
-//    
-//    p8env +=  "  gSystem->Setenv(\"LHAPATH\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF/PDFsets\"));\n";
-//    
-//    SetVar("VAR_PYTHIA8_SETENV",p8env.Data());
-//
-//    SetVar("VAR_PYTHIA8_SETUP_STRINGS","\"\"");
-
     SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
   }
   
@@ -158,11 +113,6 @@ fUseAODMerging(kFALSE)
     // add SPD tracklets to muon AODs.
 
     SetupPythia6(generatorVersion);
-//    TString p6env;
-//    
-//    p6env += Form("gSystem->Load(\"libpythia6_%s\");",generatorVersion);
-//    
-//    SetVar("VAR_PYTHIA6_SETENV",p6env.Data());
 
     SetVar("VAR_USE_ITS_RECO","1");
     
@@ -172,6 +122,17 @@ fUseAODMerging(kFALSE)
   SetGenerator(generator);
 }
 
+/// special mode to generate pseudo-ideal simulations
+/// in order to compute a quick acc x eff 
+///
+/// pseudo-ideal simulation means we : 
+/// - use ideal pedestals (mean 0, sigma 1)
+/// - complete configuration (i.e. all manus are there)
+/// - raw/full alignment
+/// - do _not_ cut on the pad status, i.e. disregard occupancy, HV, LV or RejectList  completely
+///
+/// we use the real RecoParam, but with a patch to change the status mask to disregard above problems
+///
 //______________________________________________________________________________
 AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator,
           Bool_t localOnly,
@@ -180,17 +141,6 @@ AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator,
           Int_t maxEventsPerChunk)
 : AliMuonGridSubmitter(AliMuonGridSubmitter::kAccEff,localOnly)
 {
-    /// special mode to generate pseudo-ideal simulations
-    // in order to compute a quick acc x eff 
-    //
-    // pseudo-ideal simulation means we : 
-    // - use ideal pedestals (mean 0, sigma 1)
-    // - complete configuration (i.e. all manus are there)
-    // - raw/full alignment
-    // - do _not_ cut on the pad status, i.e. disregard occupancy, HV, LV or RejectList  completely
-    //
-    // we use the real RecoParam, but with a patch to change the status mask to disregard above problems
-    //
     AliWarning("THIS IS A SPECIAL MODE TO GENERATE PSEUDO-IDEAL SIMULATIONS !");
 
     SetupCommon(localOnly);
@@ -717,11 +667,13 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   return kFALSE;
 }
 
+/// Set the variable to select the generator macro in Config.C
+/// generator must contain the name of a macro (without the extension .C) containing
+/// a function of the same name that returns a pointer to an AliGenerator. 
+/// (see the examples in the template directory). That macro must be compilable.
 //______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::SetGenerator(const char* generator)
 {
-  // set the variable to select the generator macro in Config.C
-
   Invalidate();
   
   TString generatorFile(Form("%s/%s.C",TemplateDir().Data(),generator));
@@ -769,19 +721,17 @@ Bool_t AliMuonAccEffSubmitter::SetGenerator(const char* generator)
   return kFALSE;
 }
 
+/// Sets the OCDB path to be used
 //______________________________________________________________________________
 void AliMuonAccEffSubmitter::SetOCDBPath(const char* ocdbPath)
 {
-  /// Sets the OCDB path to be used
-  
   SetMapKeyValue("OCDBPath",ocdbPath);
 }
 
-
+/// Change the remote directory used for snapshot
 //______________________________________________________________________________
 void AliMuonAccEffSubmitter::SetOCDBSnapshotDir(const char* dir)
 {
-  // change the directory used for snapshot
   
   if (gSystem->AccessPathName(Form("%s/OCDB",dir)))
   {
@@ -793,6 +743,10 @@ void AliMuonAccEffSubmitter::SetOCDBSnapshotDir(const char* dir)
   }
 }
 
+/// Specify that the number of simulated events to be produced should be proportional to
+/// the number of real events of the given trigger. 
+/// \param trigger the reference trigger classname to be used
+/// \param ratio the proportionality factor to be used (must be positive, can be < 1)
 //______________________________________________________________________________
 void AliMuonAccEffSubmitter::MakeNofEventsPropToTriggerCount(const char* trigger, Float_t ratio)
 {
@@ -800,6 +754,7 @@ void AliMuonAccEffSubmitter::MakeNofEventsPropToTriggerCount(const char* trigger
   fRatio = ratio;
 }
 
+/// Make the number of simulated events to be produced a specific one
 //______________________________________________________________________________
 void AliMuonAccEffSubmitter::MakeNofEventsFixed(Int_t nevents)
 {
@@ -942,8 +897,8 @@ void AliMuonAccEffSubmitter::SetCompactMode ( Int_t mode )
   }
 }
 
+/// Initialize the variables to some default (possibly sensible) values
 //____________________________________________________________________________
-
 void AliMuonAccEffSubmitter::SetDefaultVariables()
 {
   SetVar("VAR_OCDB_PATH",Form("\"%s\"",OCDBPath().Data()));
@@ -1033,8 +988,11 @@ void AliMuonAccEffSubmitter::SetDefaultVariables()
 
   SetVar("VAR_MAKE_COMPACT_ESD","0");
 }
-//____________________________________________________________________________
 
+/// Enter a mode where we don't need the Grid at all
+/// Note that this is just for testing purposes as this is a bit
+/// opposite to the very intent of this class ;-)
+//____________________________________________________________________________
 void AliMuonAccEffSubmitter::SetLocalOnly()
 {
   SetVar("VAR_OCDB_PATH","\"local://$ALICE_ROOT/OCDB\"");
@@ -1042,9 +1000,12 @@ void AliMuonAccEffSubmitter::SetLocalOnly()
   MakeNofEventsFixed(10);
 }
 
+/// Common setup (aka constructor) to the different ways to construct this object
 //__________________________________________________________________________
 void AliMuonAccEffSubmitter::SetupCommon(Bool_t localOnly)
 {
+  UseOCDBSnapshots(kFALSE);
+
   SetCompactMode(1);
 
   AddIncludePath("-I$ALICE_ROOT/include");
@@ -1392,6 +1353,7 @@ void AliMuonAccEffSubmitter::UpdateLocalFileList(Bool_t clearSnapshots)
   }
 }
 
+/// Whether or not we should use OCDB snapshots
 //______________________________________________________________________________
 Bool_t AliMuonAccEffSubmitter::UseOCDBSnapshots() const
 {
@@ -1431,10 +1393,10 @@ void AliMuonAccEffSubmitter::UseAODMerging(Bool_t flag)
   AddToTemplateFileList("validation_merge.sh");
 }
 
+/// Use an external config (or the default Config.C if externalConfigFullFilePath="")
 //______________________________________________________________________________
 void AliMuonAccEffSubmitter::UseExternalConfig(const char* externalConfigFullFilePath)
 {
-  // use an external config (or the default Config.C if externalConfigFullFilePath="")
   
   fExternalConfig = externalConfigFullFilePath;
   if ( fExternalConfig.Length() > 0 )

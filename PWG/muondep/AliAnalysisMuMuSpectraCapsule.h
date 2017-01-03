@@ -8,12 +8,17 @@
 
 // $Id$
 
-///
-/// AliAnalysisMuMuSpectraCapsule : mother class to all capsule class.
-///
-/// author : Benjamin Audurier (Subatech)
+/**
+ 
+  @ingroup pwg_muondep_mumu
 
+  @class AliAnalysisMuMuSpectraCapsule
 
+  @brief Handle operations on Spectra after fit procedure
+
+  @author Benjamin Audurier (Subatech)
+
+*/
 
 #include <TString.h>
 #include "TObject.h"

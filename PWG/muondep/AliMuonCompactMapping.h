@@ -7,6 +7,18 @@
 
 #include "Rtypes.h"
 
+/**
+
+@ingroup pwg_muondep_compact
+
+@struct AliMuonCompactMapping
+
+@brief A minimal mapping at Manu level
+
+The base concept here is to get an absolute index 0..16827 for each manu.
+
+*/
+
 struct AliMuonCompactMapping
 {
     AliMuonCompactMapping() : mManuIds(), mManuMap(), mNpads() {}
