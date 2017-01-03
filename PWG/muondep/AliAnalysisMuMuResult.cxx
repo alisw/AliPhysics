@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/// \ingroup mumu
 ///
 /// Base class to hold a set of results for the same quantity,
 /// computed using various methods, each with their errors

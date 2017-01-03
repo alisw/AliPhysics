@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/// \ingroup mumu
 ///
 /// AliAnalysisMuMuFnorm : class to encapsulate computation(s)
 /// of the normalisation factor used to get the equivalent

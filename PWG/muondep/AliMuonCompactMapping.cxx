@@ -10,6 +10,8 @@
 #include <cassert>
 #include <algorithm>
 
+/// \ingroup compact
+
 namespace {
     Int_t DECODELOW(UInt_t e)
     {

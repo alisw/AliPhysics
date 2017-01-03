@@ -8,6 +8,8 @@
 #include "TSystem.h"
 #include <fstream>
 
+/// \ingroup utils
+
 //______________________________________________________________________________
 AliAnalysisRunList::AliAnalysisRunList(const char* runlist)
 {

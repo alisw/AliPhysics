@@ -1,5 +1,6 @@
 #include "AliMuonCompactTrack.h"
 
+/// \ingroup compact
 std::ostream& operator<<(std::ostream& out, const AliMuonCompactTrack& track)
 {
     out << "AliMuonCompactTrack ";

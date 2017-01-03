@@ -73,6 +73,8 @@
 #define SafeDelete(x) if (x != NULL) { delete x; x = NULL; }
 #endif
 
+/// \ingroup utils
+
 ClassImp(AliAnalysisTaskMuonRefit)
 
 //________________________________________________________________________

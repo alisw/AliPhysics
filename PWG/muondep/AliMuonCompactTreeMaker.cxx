@@ -25,6 +25,7 @@
 
 #include <cassert>
 
+/// \ingroup compact
 namespace {
     const Int_t kCANNOTSETUPOCDB = -1;
     const Int_t kCANNOTGETESDTREE = -2;

@@ -15,6 +15,7 @@
 #include <cassert>
 #include <iostream>
 
+/// \ingroup compact
 AliMuonCompactQuickAccEff::AliMuonCompactQuickAccEff(int maxevents, bool rejectMonoCathodeClusters)
     : fMaxEvents(maxevents), fRejectMonoCathodeClusters(rejectMonoCathodeClusters)
 {

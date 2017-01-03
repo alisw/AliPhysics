@@ -51,6 +51,8 @@
 #include "AliAnalysisTriggerScalers.h"
 #include "Riostream.h"
 
+/// \ingroup submitter
+
 //______________________________________________________________________________
 AliMuonGridSubmitter::AliMuonGridSubmitter(AliMuonGridSubmitter::EJobType jobType, Bool_t localOnly)
 : TObject(),

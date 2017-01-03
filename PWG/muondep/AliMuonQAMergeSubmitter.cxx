@@ -12,6 +12,8 @@ namespace {
   const Int_t kFinal(999);
 }
 
+/// \ingroup submitter
+
 ClassImp(AliMuonQAMergeSubmitter)
 
 //_____________________________________________________________________________
