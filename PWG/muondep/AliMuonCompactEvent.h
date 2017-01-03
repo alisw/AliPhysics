@@ -4,6 +4,15 @@
 #include <vector>
 #include "AliMuonCompactTrack.h"
 
+/**
+
+  @ingroup pwg_muondep_compact
+
+  @struct AliMuonCompactEvent
+
+  @brief A compact event (list of tracks and initial basic kinematics)
+*/
+
 struct AliMuonCompactEvent
 {
     AliMuonCompactEvent() : mTracks() {}

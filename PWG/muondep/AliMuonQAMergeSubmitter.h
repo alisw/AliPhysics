@@ -6,6 +6,15 @@
 
 #include <vector>
 
+/**
+  \ingroup pwg_muondep_submitter
+  \class AliMuonQAMergeSubmitter
+  \brief QA merging Grid jobs submitter
+  \author Laurent Aphecetche, Subatech
+
+  @todo This class has not be completed, thus there is no guarantee it's working in any way...
+  */
+
 class AliMuonQAMergeSubmitter : public AliMuonGridSubmitter
 {
 public:
@@ -43,7 +52,9 @@ private:
   TString fWhatToMerge; // file to be merged
   UInt_t fSplitMaxInputFileNumber;
   
-  ClassDef(AliMuonQAMergeSubmitter,1)
+/// \cond CLASSIMP
+  ClassDef(AliMuonQAMergeSubmitter,1);
+/// \endcond
 };
 
 #endif

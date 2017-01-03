@@ -5,7 +5,7 @@
 
 /* $Id$ */ 
 
-/// \ingroup muondep
+/// \ingroup pwg_muondep_misc
 /// \class AliAnalysisTaskMuonRefit
 /// \brief intermediate task for refitting
 //Author: Philippe Pillot - SUBATECH Nantes

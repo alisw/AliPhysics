@@ -13,6 +13,16 @@ class TTree;
 #include "AliAnalysisTaskSE.h"
 #endif
 
+/**
+
+@ingroup pwg_muondep_compact
+
+@class AliMuonCompactTreeMaker
+
+@brief Class to transform regular ESD into a very compact muon one
+
+*/
+
 class AliMuonCompactTreeMaker : public AliAnalysisTaskSE
 {
     public:

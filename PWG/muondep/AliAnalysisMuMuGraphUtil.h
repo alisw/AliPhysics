@@ -20,6 +20,17 @@ class TObjArray;
 #include "TAttAxis.h"
 #include "TString.h"
 
+/**
+
+  @ingroup pwg_muondep_mumu
+
+  @class AliAnalysisMuMuGraphUtil
+
+  @brief Utilities for graph drawing
+
+  @author Laurent Aphecetche (Subatech)
+*/
+
 class AliAnalysisMuMuGraphUtil : public TObject
 {
 public:

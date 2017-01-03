@@ -1,13 +1,22 @@
 #ifndef ALIANALYSISMUMUSPECTRA_H
 #define ALIANALYSISMUMUSPECTRA_H
 
-///
-/// AliAnalysisMuMuSpectra : a spectra is a binning (AliAnalysisMuMuBinning)
-/// and the results per bin (AliAnalysisMuMuResult), and is mergeable, so
-/// it can be put into an AliMergeableCollection
-///
-/// author : Laurent Aphecetche (Subatech)
-//
+
+/**
+
+@ingroup pwg_muondep_mumu
+
+@class AliAnalysisMuMuSpectra
+
+@brief Encapsulates results from MuMu analysis
+
+AliAnalysisMuMuSpectra is a spectra with a binning (AliAnalysisMuMuBinning)
+and the results per bin (AliAnalysisMuMuResult). It is mergeable, so
+it can be put into an AliMergeableCollection. It can also be converted into
+ histograms.
+
+@author Laurent Aphecetche (Subatech)
+*/
 
 #include "TNamed.h"
 

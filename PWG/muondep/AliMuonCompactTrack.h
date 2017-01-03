@@ -7,6 +7,15 @@
 
 #include "Rtypes.h"
 
+/**
+
+  @ingroup pwg_muondep_compact
+
+  @struct AliMuonCompactTrack
+
+  @brief A very compact muon track
+*/
+
 struct AliMuonCompactTrack
 {
     AliMuonCompactTrack(Double_t x=0.0, Double_t y=0.0, Double_t z=0.0) 

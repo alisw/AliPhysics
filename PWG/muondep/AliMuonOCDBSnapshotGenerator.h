@@ -8,6 +8,7 @@
 #  include "TString.h"
 #endif
 
+/// \ingroup pwg_muondep_submitter
 /// \class AliMuonOCDBSnapshotGenerator
 /// \brief Generate a custom OCDB snapshot for pseudo-ideal muon simulations
 /// 
@@ -42,11 +43,13 @@ class AliMuonOCDBSnapshotGenerator : public TObject
 
         Bool_t ExcludeFromSnapshot(const char* path);
 
-        Int_t fRunNumber;
-        TString fLocalOCDBPath;
-        TString fSourceOCDBPath;
+        Int_t fRunNumber; ///< reference run to be used for the objects taken from the sourceOCDB
+        TString fLocalOCDBPath; ///< path of the temporary local OCDB that will be created as one source of the snapshot
+        TString fSourceOCDBPath; ///< the reference OCDB for most of the objects of the snapshot
 
-        ClassDef(AliMuonOCDBSnapshotGenerator,0)
+/// \cond CLASSIMP
+        ClassDef(AliMuonOCDBSnapshotGenerator,0);
+/// \endcond
 };
 
 #endif

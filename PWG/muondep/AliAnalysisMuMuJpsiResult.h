@@ -4,11 +4,25 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-///
-/// AliAnalysisMuMuJpsiResult : helper class to store Jpsi results from
-/// AliAnalysisTaskMuMu
-///
-/// author : Laurent Aphecetche (Subatech)
+/** 
+ 
+@ingroup pwg_muondep_mumu
+
+@class AliAnalysisMuMuJpsiResult 
+
+@brief Class to hold results about J/psi
+
+The class is used to hold results like number of of J/psi (before and after Acc x Eff correction),
+Acc x Eff correction, Yield, RAB, etc...
+
+A note on "naming conventions" : 
+
+-  FitFunctionXY : denotes a function with a prototype double func(double*,double*)
+ which can be used in a fit. X = Background, Signal or Total for Background+Signal
+Y is the functio name
+
+@author Laurent Aphecetche (Subatech)
+*/
 
 #include "TNamed.h"
 #include <TString.h>

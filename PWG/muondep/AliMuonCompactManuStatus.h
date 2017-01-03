@@ -5,6 +5,16 @@
 #include <vector>
 #include "Rtypes.h"
 
+/**
+
+@ingroup pwg_muondep_compact
+
+@class AliMuonCompactManuStatus
+
+@brief Utility class to compute status of MCH manus
+
+*/
+
 class AliMuonCompactManuStatus
 {
 public:
