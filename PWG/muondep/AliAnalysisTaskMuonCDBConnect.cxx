@@ -39,6 +39,8 @@
 #include "AliMpDDLStore.h"
 #include "AliMpManuStore.h"
 
+/// \ingroup utils
+
 ClassImp(AliAnalysisTaskMuonCDBConnect)
 
 //________________________________________________________________________

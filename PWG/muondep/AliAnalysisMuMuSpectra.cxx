@@ -14,6 +14,7 @@
  **************************************************************************/
 
 
+/// \ingroup mumu
 // AliAnalysisMuMuSpectra : a class to encapsulate results from MuMu analysis
 //
 // Spectra can be merged and converted into histograms

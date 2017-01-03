@@ -15,6 +15,7 @@
 
 // $Id$
 
+/// \ingroup utils
 //
 // AliAnalysisTriggerScalers : utility class to play with OCDB scalers.
 //

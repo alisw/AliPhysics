@@ -38,6 +38,8 @@
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONESDInterface.h"
 
+/// \ingroup utils
+
 ClassImp(AliAnalysisTaskMuonRefitVtx)
 
 //________________________________________________________________________

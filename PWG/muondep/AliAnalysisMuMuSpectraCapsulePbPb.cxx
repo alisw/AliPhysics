@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/// \ingroup mumu
 ///
 /// Class to deal with Spectra after the fitting procedure.
 ///

@@ -16,6 +16,7 @@
 
 // $Id$
 
+/// \ingroup mumu
 // AliAnalysisMuMuConfig : class to hold various configuration
 // options for the AliAnalysisMuMu and AliAnalysisMuMuEvolution classes
 // like the list of triggers to consider, the fit to be performed, etc...

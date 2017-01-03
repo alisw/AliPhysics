@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 
+/// \ingroup compact
 void AliMuonCompactQuickAccEffChecker::CompareWithFullAccEff(const char* fullacceff, const char* quickacceff, const char* quickAccEffWithoutMonoCathodeClusters)
 {
     // mind your steps here.

@@ -15,6 +15,7 @@
 #include "AliMuonCompactMapping.h"
 #include <cassert>
 
+/// \ingroup compact
 const UInt_t AliMuonCompactManuStatus::MANUBADPEDMASK = ( 1 << 0 );
 const UInt_t AliMuonCompactManuStatus::MANUBADHVMASK = ( 1 << 1 );
 const UInt_t AliMuonCompactManuStatus::MANUBADLVMASK =  (1 << 2 );

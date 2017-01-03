@@ -2,6 +2,8 @@
 #include "TString.h"
 #include <cassert>
 
+/// \ingroup compact
+
 std::ostream& operator<<(std::ostream& out, const AliMuonCompactCluster& cl)
 {
     out << Form("DE %04d (B %6d NB %6d)",

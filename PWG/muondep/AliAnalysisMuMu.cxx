@@ -77,6 +77,8 @@ using std::ifstream;
 
 ClassImp(AliAnalysisMuMu)
 
+/// \ingroup mumu
+
 //_____________________________________________________________________________
 AliAnalysisMuMu::AliAnalysisMuMu(const char* filename, AliAnalysisMuMuConfig& config) : TObject(),
 fFilename(),

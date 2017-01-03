@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/// \ingroup mumu
 ///
 /// Class to hold results about J/psi
 /// like number of of J/psi (before and after Acc x Eff correction),

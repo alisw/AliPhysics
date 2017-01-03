@@ -12,6 +12,8 @@
 #include "TObjArray.h"
 #include "TSystem.h"
 
+///  \ingroup submitter
+
 ClassImp(AliMuonOCDBSnapshotGenerator)
 
 AliMuonOCDBSnapshotGenerator::AliMuonOCDBSnapshotGenerator(Int_t runNumber, const char* localOCDBPath, const char* sourceOCDBPath)
@@ -20,6 +22,12 @@ AliMuonOCDBSnapshotGenerator::AliMuonOCDBSnapshotGenerator(Int_t runNumber, cons
 
 }
 
+/// Generate a local OCDB containing some default MUON/*/* objects.
+/// 
+/// The actual creation of the default objects is delegated to the AliMUONCDB class.
+/// 
+/// \param overwrite whether or not existing local OCDB should be overwritten.
+///
 Bool_t AliMuonOCDBSnapshotGenerator::CreateLocalOCDBWithDefaultObjects(Bool_t overwrite)
 {
     Bool_t shouldDoIt = kFALSE;
@@ -74,6 +82,12 @@ Bool_t AliMuonOCDBSnapshotGenerator::CreateLocalOCDBWithDefaultObjects(Bool_t ov
     return kTRUE; 
 }
 
+/// Create a snapshot 
+///
+/// \param mode @see DefaultSpecificStorage()
+/// \param snapshotName name of the snapshot file (typicall OCDB_rec.root or OCDB_sim.root)
+/// \param alignSpecificStorage the specific storage location to be used for the (mis)alignement file
+///
 Bool_t AliMuonOCDBSnapshotGenerator::CreateSnapshot(Int_t mode, const char* snapshotName,
         const char* alignSpecificStorage)
 {
@@ -130,6 +144,11 @@ Bool_t AliMuonOCDBSnapshotGenerator::CreateSnapshot(Int_t mode, const char* snap
   return kTRUE;
 }
 
+/// Set some specific storages, depending on the intended usage of the snapshot (simulation or reconstruction)
+///
+/// \param mode 0 for simulation and 1 for reconstruction
+/// \param alignSpecificStorage the storage to be used for the (mis)alignement 
+///
 void AliMuonOCDBSnapshotGenerator::DefaultSpecificStorage(Int_t mode, const char* alignSpecificStorage)
 {
    assert(mode==0 || mode==1);
@@ -177,6 +196,9 @@ void AliMuonOCDBSnapshotGenerator::DefaultSpecificStorage(Int_t mode, const char
   man->SetSpecificStorage("MUON/Calib/Config",LocalOCDBPath().Data());
 }
 
+/// Whether or not to exclude a given path from the snapshot
+/// The idea here is to make the snapshot as slim as possible for muon simulations, so
+/// we remove everything not strictly needed for the purpose, like TPC objects etc...
 Bool_t AliMuonOCDBSnapshotGenerator::ExcludeFromSnapshot(const char* path)
 {
     TString spath(path);
@@ -213,6 +235,8 @@ Bool_t AliMuonOCDBSnapshotGenerator::ExcludeFromSnapshot(const char* path)
     return kFALSE;
 }
 
+/// Read the MUON/Calib/RecoParam object from the source OCDB, change the
+/// PadGoodnessMask, and write it to the local OCDB.
 Bool_t AliMuonOCDBSnapshotGenerator::PopulateLocalOCDBWithPatchedRecoParam()
 {
     AliCDBManager* man = AliCDBManager::Instance();
