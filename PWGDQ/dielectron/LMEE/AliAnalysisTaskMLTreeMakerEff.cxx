@@ -131,7 +131,11 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff():
   NClustersTPC(0),
   HasSPDfirstHit(0), 
   RatioCrossedRowsFindableClusters(0), 
-  NTPCSignal(0)    
+  NTPCSignal(0),
+  ProdVx(0),
+  ProdVy(0),
+  ProdVz(0),
+  pass(0)        
 {
 
 }
@@ -205,7 +209,11 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff(const char *name) :
   NClustersTPC(0),
   HasSPDfirstHit(0), 
   RatioCrossedRowsFindableClusters(0), 
-  NTPCSignal(0)        
+  NTPCSignal(0),
+  ProdVx(0),
+  ProdVy(0),
+  ProdVz(0),
+  pass(0)
 {  
 
   DefineOutput(1, TList::Class());
@@ -275,16 +283,25 @@ void AliAnalysisTaskMLTreeMakerEff::UserCreateOutputObjects() {
   fTree->Branch("chi2TPC", &chi2TPC);
   fTree->Branch("chi2GlobalvsTPC", &chi2GlobalvsTPC);
   
+  fTree->Branch("DCAxy", &dcar);
+  fTree->Branch("DCAz", &dcaz);
+  
   fTree->Branch("vertx", &vertx);
   fTree->Branch("verty", &verty);
   fTree->Branch("vertz", &vertz);
+  
+  fTree->Branch("ProdVx", &ProdVx);
+  fTree->Branch("ProdVy", &ProdVy);
+  fTree->Branch("ProdVz", &ProdVz);
       
   fTree->Branch("Pdg", &pdg);
   fTree->Branch("Pdg_Mother", &pdgmother);
   fTree->Branch("Mother_label", &motherlabel);
   fTree->Branch("Has_Mother", &hasmother);
   fTree->Branch("IsEnh", &enh);
-  fTree->Branch("IsRecnPass", &IsRec);
+  fTree->Branch("IsRec", &IsRec);
+  fTree->Branch("PassCuts", &pass);
+  
   
   fTree->Branch("MCpt", &MCpt);
   fTree->Branch("MCeta", &MCeta);
@@ -406,7 +423,7 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
   charge.clear();
   enh.clear();
   IsRec.clear();
-  
+  pass.clear();
   
   NCrossedRowsTPC.clear();
   NClustersTPC.clear();
@@ -430,6 +447,11 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
   chi2TPC.clear();
   chi2Global.clear();
   chi2GlobalvsTPC.clear();
+  
+  ProdVx.clear();
+  ProdVy.clear();
+  ProdVz.clear();
+  
   
   // Loop over tracks in event
   AliGenCocktailEventHeader* coHeader;
@@ -520,7 +542,7 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
  
       if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
 
-      passtrcuts = 1;          
+      passtrcuts = 0;          
           
       //check if MC particle was reconstructed      
       temprec=vec[iTracks][1];
@@ -529,7 +551,9 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
       esdTrack = dynamic_cast<AliESDtrack *>(event->GetTrack(vec[iTracks][2]));
       if (!esdTrack) {
 	      AliError(Form("Could not receive ESD track %d", vec[iTracks][2]));
-      }       
+      }   
+      
+      passtrcuts=1;
       
       if(!fESDTrackCuts->AcceptTrack(esdTrack))   passtrcuts = 0;
       
@@ -558,8 +582,7 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
      fQAHist->Fill("Is Rec after ESD cut",1);
       
       
-      if(passtrcuts){
-      //Fill Tree with non MC data
+      //Fill Tree with rec data
       EsigTPC.push_back(tempEsigTPC);
       EsigITS.push_back(tempEsigITS);
       EsigTOF.push_back(tempEsigTOF);
@@ -627,10 +650,13 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
       if (vertex->GetStatus()){
         chi2GlobalvsTPC.push_back(esdTrack->GetChi2TPCConstrainedVsGlobal(vertex));}
       
+      
+         
       }
-      else{
-          
-      //Fill Tree with non MC dummy data
+      
+      
+      else{   
+      //Fill Tree with non MC dummy data for those not rec
       EsigTPC.push_back(-9999);
       EsigITS.push_back(-9999);
       EsigTOF.push_back(-9999);
@@ -659,20 +685,22 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
       nITSshared.push_back(-9999);
       chi2ITS.push_back(-9999);
       chi2TPC.push_back(-9999);
-      chi2GlobalvsTPC.push_back(-9999);}
-      
+      chi2GlobalvsTPC.push_back(-9999);
       }
-      
       
       
       //Fill MC Data
       fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
-
+      
+      ProdVx.push_back(mcTrack->Xv());
+      ProdVy.push_back(mcTrack->Yv());
+      ProdVz.push_back(mcTrack->Zv());
 
       pdg.push_back( mcTrack->PdgCode());
       if(Rej) enh.push_back(1);
       else enh.push_back(0);
-      IsRec.push_back(passtrcuts);
+      pass.push_back(passtrcuts);
+      IsRec.push_back(temprec);
       
       MCpt.push_back(pttemp);
       MCeta.push_back(etatemp);
