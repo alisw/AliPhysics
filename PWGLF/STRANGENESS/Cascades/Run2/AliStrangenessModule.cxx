@@ -106,7 +106,7 @@ void AliStrangenessModule::SetSigExtRanges( Double_t lRLoLeftBg, Double_t lRHiLe
 }
 
 //________________________________________________________________
-TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
+TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputFile ){
     //Main analysis code
     
     //Report time at the end
@@ -132,8 +132,10 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration ){
         AliWarning("MC counters list not defined!"); return 0x0;
     }
     
-    //Open File for output
-    TFile *fFileOut = new TFile(Form("Results_%s.root",lConfiguration.Data() ), "RECREATE");
+    //Open File for output: default name if not defined in DoAnalysis call
+    if ( lOutputFile.EqualTo("") ) lOutputFile = Form("Results_%s.root",lConfiguration.Data() );
+    
+    TFile *fFileOut = new TFile(lOutputFile.Data(), "RECREATE");
     TList *fListData = new TList();
     fListData->SetName("cListData");
     fListData->SetOwner(kTRUE);
