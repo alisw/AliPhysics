@@ -38,6 +38,7 @@
 #include "AliNeutralMesonSelection.h"
 #include "AliMixedEvent.h"
 #include "AliAODMCParticle.h"
+#include "AliMCEvent.h"
 
 // --- Detectors ---
 #include "AliPHOSGeoUtils.h"
@@ -180,7 +181,7 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
   }
   
   fhReSS[0] = 0;  fhReSS[1] = 0; fhReSS[2] = 0; 
-
+  
   for(Int_t igen = 0; igen < 10; igen++)
   {
     for(Int_t itag = 0; itag < 10; itag++)
@@ -196,8 +197,20 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
       fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [igen][itag] = 0; 
       fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[igen][itag] = 0; 
       fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [igen][itag] = 0; 
-
+      
     }
+    
+    fhPrimPi0PtPerGenerator   [igen] = 0;  
+    fhPrimPi0AccPtPerGenerator[igen] = 0; 
+    fhPrimPi0AccPtPhotonCutsPerGenerator[igen] = 0;
+    fhPrimPi0PhiPerGenerator  [igen] = 0;
+    fhPrimPi0YPerGenerator    [igen] = 0;
+    
+    fhPrimEtaPtPerGenerator   [igen] = 0;
+    fhPrimEtaAccPtPerGenerator[igen] = 0;
+    fhPrimEtaAccPtPhotonCutsPerGenerator[igen] = 0;
+    fhPrimEtaPhiPerGenerator  [igen] = 0;
+    fhPrimEtaYPerGenerator    [igen] = 0;
   }
 }
 
@@ -378,6 +391,9 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   Float_t difmin   = GetHistogramRanges()->GetHistoEDiffMin() ;
   Float_t difmax   = GetHistogramRanges()->GetHistoEDiffMax() ;
   
+  Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
+  Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
+  
   // Start with pure MC kinematics histograms
   // In case other tasks just need this info like AliAnaPi0EbE
   if(IsDataMC())
@@ -394,7 +410,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimPi0Pt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Pt) ;
 
-    Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
     fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",
                                nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Y   ->SetYTitle("#it{Rapidity}");
@@ -413,7 +428,6 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimPi0YetaYcut   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0YetaYcut) ;
     
-    Int_t nphibinsopen = TMath::Nint(nphibins*TMath::TwoPi()/(phimax-phimin));
     fhPrimPi0Phi    = new TH2F("hPrimPi0Phi","#phi of primary #pi^{0}, |#it{Y}|<1",
                                nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
     fhPrimPi0Phi->SetYTitle("#phi (deg)");
@@ -2084,7 +2098,95 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     for(Int_t igen = 0; igen < GetNCocktailGenNamesToCheck(); igen++)
     {
       TString add = "_MainGener_";
-      if(igen==0) add = "";
+      if(igen==0)
+        add = "";
+      else
+      {
+        fhPrimPi0PtPerGenerator[igen-1]     = new TH1F
+        (Form("hPrimPi0Pt%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Primary #pi^{0} #it{p}_{T}, |#it{Y}| < 1, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+         nptbins,ptmin,ptmax) ;
+        fhPrimPi0PtPerGenerator[igen-1]   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPrimPi0PtPerGenerator[igen-1]) ;
+        
+        fhPrimPi0YPerGenerator[igen-1]      = new TH2F
+        (Form("hPrimPi0Rapidity%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Rapidity of primary #pi^{0}, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+         nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+        fhPrimPi0YPerGenerator[igen-1]   ->SetYTitle("#it{Rapidity}");
+        fhPrimPi0YPerGenerator[igen-1]   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPrimPi0YPerGenerator[igen-1]) ;
+        
+        fhPrimPi0PhiPerGenerator[igen-1]    = new TH2F
+        (Form("hPrimPi0Phi%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#phi of primary #pi^{0}, |#it{Y}|<1, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+         nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
+        fhPrimPi0PhiPerGenerator[igen-1]->SetYTitle("#phi (deg)");
+        fhPrimPi0PhiPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPrimPi0PhiPerGenerator[igen-1]) ;
+        
+        if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
+        {
+          fhPrimPi0AccPtPerGenerator[igen-1]  = new TH1F
+          (Form("hPrimPi0AccPt%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Primary #pi^{0} #it{p}_{T} with both photons in acceptance, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+           nptbins,ptmin,ptmax) ;
+          fhPrimPi0AccPtPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPrimPi0AccPtPerGenerator[igen-1]) ;
+          
+          fhPrimPi0AccPtPhotonCutsPerGenerator[igen-1]  = new TH1F
+          (Form("hPrimPi0AccPtPhotonCuts%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Primary #pi^{0} #it{p}_{T} with both photons in acceptance, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+           nptbins,ptmin,ptmax) ;
+          fhPrimPi0AccPtPhotonCutsPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPrimPi0AccPtPhotonCutsPerGenerator[igen-1]) ;
+        }
+        
+        //
+        
+        fhPrimEtaPtPerGenerator[igen-1]     = new TH1F
+        (Form("hPrimEtaPt%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Primary #eta #it{p}_{T}, |#it{Y}| < 1, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+         nptbins,ptmin,ptmax) ;
+        fhPrimEtaPtPerGenerator[igen-1]   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPrimEtaPtPerGenerator[igen-1]) ;
+        
+        Int_t netabinsopen =  TMath::Nint(netabins*4/(etamax-etamin));
+        fhPrimEtaYPerGenerator[igen-1]      = new TH2F
+        (Form("hPrimEtaRapidity%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("Rapidity of primary #eta, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+         nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
+        fhPrimEtaYPerGenerator[igen-1]   ->SetYTitle("#it{Rapidity}");
+        fhPrimEtaYPerGenerator[igen-1]   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPrimEtaYPerGenerator[igen-1]) ;
+        
+        fhPrimEtaPhiPerGenerator[igen-1]    = new TH2F
+        (Form("hPrimEtaPhi%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+         Form("#phi of primary #eta, |#it{Y}|<1, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+         nptbins,ptmin,ptmax,nphibinsopen,0,360) ;
+        fhPrimEtaPhiPerGenerator[igen-1]->SetYTitle("#phi (deg)");
+        fhPrimEtaPhiPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPrimEtaPhiPerGenerator[igen-1]) ;
+        
+        if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
+        {
+          fhPrimEtaAccPtPerGenerator[igen-1]  = new TH1F
+          (Form("hPrimEtaAccPt%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Primary #eta #it{p}_{T} with both photons in acceptance, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+           nptbins,ptmin,ptmax) ;
+          fhPrimEtaAccPtPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPrimEtaAccPtPerGenerator[igen-1]) ;
+          
+          fhPrimEtaAccPtPhotonCutsPerGenerator[igen-1]  = new TH1F
+          (Form("hPrimEtaAccPtPhotonCuts%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Primary #eta #it{p}_{T} with both photons in acceptance, generator %s",GetCocktailGenNameToCheck(igen).Data()),
+           nptbins,ptmin,ptmax) ;
+          fhPrimEtaAccPtPhotonCutsPerGenerator[igen-1]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPrimEtaAccPtPhotonCutsPerGenerator[igen-1]) ;
+        }
+
+      }
+      
       for(Int_t itag = 0; itag < 10; itag++)
       {
         fhPairGeneratorsBkgMass[igen][itag] = new TH2F
@@ -2278,6 +2380,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
   TParticle        * primStack = 0;
   AliAODMCParticle * primAOD   = 0;
   
+  TString genName = "";
+  
   // Get the ESD MC particles container
   AliStack * stack = 0;
   if( GetReader()->ReadStack() )
@@ -2368,6 +2472,23 @@ void AliAnaPi0::FillAcceptanceHistograms()
     if( mesonPhi < 0 ) mesonPhi+=TMath::TwoPi();
     mesonPhi *= TMath::RadToDeg();
     
+    ////
+    Int_t genType = GetNCocktailGenNamesToCheck()-2; // bin 0 is not null 
+    if(IsStudyClusterOverlapsPerGeneratorOn())
+    {
+      for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
+      {
+        (GetReader()->GetMC())->GetCocktailGenerator(i,genName);
+
+        if ( genName.Contains(GetCocktailGenNameToCheck(igen)) )
+        {
+          genType = igen-1;
+          break;
+        }
+      }
+    }
+    ///
+    
     if(pdg == 111)
     {
       if(TMath::Abs(mesonY) < 1.0)
@@ -2378,6 +2499,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
         
         fhPrimPi0YetaYcut->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
         
+        if(IsStudyClusterOverlapsPerGeneratorOn())
+        {
+          fhPrimPi0PtPerGenerator [genType]->Fill(mesonPt,           GetEventWeight()) ;
+          fhPrimPi0PhiPerGenerator[genType]->Fill(mesonPt, mesonPhi, GetEventWeight()) ;
+        }
+        
         if( IsHighMultiplicityAnalysisOn() )
         {
           fhPrimPi0PtCentrality->Fill(mesonPt, cen, GetEventWeight()) ;
@@ -2387,6 +2514,10 @@ void AliAnaPi0::FillAcceptanceHistograms()
       
       fhPrimPi0Y   ->Fill(mesonPt, mesonY   , GetEventWeight()) ;
       fhPrimPi0Yeta->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
+      
+      if(IsStudyClusterOverlapsPerGeneratorOn())
+        fhPrimPi0YPerGenerator[genType]->Fill(mesonPt, mesonY, GetEventWeight()) ;
+      
     }
     else if(pdg == 221)
     {
@@ -2395,6 +2526,12 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimEtaE  ->Fill(mesonE ,           GetEventWeight()) ;
         fhPrimEtaPt ->Fill(mesonPt,           GetEventWeight()) ;
         fhPrimEtaPhi->Fill(mesonPt, mesonPhi, GetEventWeight()) ;
+        
+        if(IsStudyClusterOverlapsPerGeneratorOn())
+        {
+          fhPrimEtaPtPerGenerator [genType]->Fill(mesonPt,           GetEventWeight()) ;
+          fhPrimEtaPhiPerGenerator[genType]->Fill(mesonPt, mesonPhi, GetEventWeight()) ;
+        }
         
         fhPrimEtaYetaYcut->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
         
@@ -2407,6 +2544,9 @@ void AliAnaPi0::FillAcceptanceHistograms()
       
       fhPrimEtaY   ->Fill(mesonPt, mesonY   , GetEventWeight()) ;
       fhPrimEtaYeta->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
+      
+      if(IsStudyClusterOverlapsPerGeneratorOn())
+        fhPrimEtaYPerGenerator[genType]->Fill(mesonPt, mesonY, GetEventWeight()) ;
     }
     
     // Origin of meson
@@ -2626,6 +2766,9 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimPi0AccY   ->Fill(mesonPt, mesonY   , GetEventWeight()) ;
         fhPrimPi0AccYeta->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
         
+        if(IsStudyClusterOverlapsPerGeneratorOn())
+          fhPrimPi0AccPtPerGenerator[genType]  ->Fill(mesonPt,GetEventWeight()) ;
+
         if( IsHighMultiplicityAnalysisOn() )
         {
           fhPrimPi0AccPtCentrality->Fill(mesonPt, cen, GetEventWeight()) ;
@@ -2643,6 +2786,9 @@ void AliAnaPi0::FillAcceptanceHistograms()
         {
           fhPrimPi0AccPtPhotonCuts->Fill(mesonPt, GetEventWeight()) ;
           
+          if(IsStudyClusterOverlapsPerGeneratorOn())
+            fhPrimPi0AccPtPhotonCutsPerGenerator[genType]  ->Fill(mesonPt,GetEventWeight()) ;
+
           if(fFillAngleHisto)
             fhPrimPi0OpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight());
           
@@ -2668,6 +2814,9 @@ void AliAnaPi0::FillAcceptanceHistograms()
         fhPrimEtaAccY   ->Fill(mesonPt, mesonY   , GetEventWeight()) ;
         fhPrimEtaAccYeta->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
         
+        if(IsStudyClusterOverlapsPerGeneratorOn())
+          fhPrimEtaAccPtPerGenerator[genType]  ->Fill(mesonPt,GetEventWeight()) ;
+        
         if( IsHighMultiplicityAnalysisOn() )
         {
           fhPrimEtaAccPtCentrality->Fill(mesonPt, cen, GetEventWeight()) ;
@@ -2679,27 +2828,29 @@ void AliAnaPi0::FillAcceptanceHistograms()
           fhPrimEtaOpeningAngle    ->Fill(mesonPt, angle, GetEventWeight());
           if(mesonPt > 5)fhPrimEtaOpeningAngleAsym->Fill(asym, angle, GetEventWeight());
           fhPrimEtaCosOpeningAngle ->Fill(mesonPt, TMath::Cos(angle), GetEventWeight());
+        }  
+        
+        if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle)
+        {
+          fhPrimEtaAccPtPhotonCuts->Fill(mesonPt, GetEventWeight()) ;
           
-          if(fPhotonMom1.Pt() > GetMinPt() && fPhotonMom2.Pt() > GetMinPt() && !cutAngle)
+          if(IsStudyClusterOverlapsPerGeneratorOn())
+            fhPrimEtaAccPtPhotonCutsPerGenerator[genType]->Fill(mesonPt,GetEventWeight()) ;
+          
+          if(fFillAngleHisto)
+            fhPrimEtaOpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight());
+          
+          if(fNAngleCutBins > 0)
           {
-            if(fUseAngleCut && angle > fAngleCut && angle < fAngleMaxCut) 
-              fhPrimEtaAccPtPhotonCuts->Fill(mesonPt,            GetEventWeight()) ;
-            
-            if(fFillAngleHisto)
-              fhPrimEtaOpeningAnglePhotonCuts->Fill(mesonPt, angle, GetEventWeight());
-            
-            if(fNAngleCutBins > 0)
+            Int_t angleBin = -1;
+            for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
             {
-              Int_t angleBin = -1;
-              for(Int_t ibin = 0; ibin < fNAngleCutBins; ibin++)
-              {
-                if(angle >= fAngleCutBinsArray[ibin] && 
-                   angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
-              }
-              
-              if( angleBin >= 0 && angleBin < fNAngleCutBins)
-                fhPrimEtaAccPtOpAngCuts[angleBin]->Fill(mesonPt,GetEventWeight());
+              if(angle >= fAngleCutBinsArray[ibin] && 
+                 angle <  fAngleCutBinsArray[ibin+1]) angleBin = ibin;
             }
+            
+            if( angleBin >= 0 && angleBin < fNAngleCutBins)
+              fhPrimEtaAccPtOpAngCuts[angleBin]->Fill(mesonPt,GetEventWeight());
           }
         }
       }
