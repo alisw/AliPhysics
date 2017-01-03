@@ -37,8 +37,8 @@ class AliVEvent;
  *   high pt track, pt hard bin, etc.
  * - Load the event in memory: this is the "external" event, as opposed to
  *   the "internal" event provided by the analysis manager
- * - Provide a public static method GetExternalEvent() that allows
- *   to retrieve a pointer to the external event.
+ * - Provide a public method GetExternalEvent() that allows to retrieve a pointer to
+ *   the external event.
  *
  * Note that only one instance of this class is allowed in each train (singleton class).
  *
@@ -65,8 +65,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
   void      UserExec(Option_t *option)                           ;
   void      UserCreateOutputObjects()                            ;
-  void           SetPtHardBin(Int_t r)                               {fPtHardBin                                   =r;}
-  void           SetAnchorRun(Int_t r)                             { fAnchorRun                                 = r ; }
+  void      SetPtHardBin(Int_t r)                                 { fPtHardBin           = r; }
+  void      SetAnchorRun(Int_t r)                                 { fAnchorRun           = r; }
   void      Terminate(Option_t *option)                          ;
 
   static const AliAnalysisTaskEmcalEmbeddingHelper* GetInstance() { return fgInstance       ; }
@@ -102,6 +102,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
 
  protected:
   void            GetFilenames()        ;
+  std::string     GenerateUniqueFileListFilename();
   void            SetupEmbedding()      ;
   Bool_t          SetupInputFiles()     ;
   Bool_t          GetNextEntry()        ;

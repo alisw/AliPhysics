@@ -173,27 +173,28 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       }
     }
 
-    // Retrieve AliEn filenames
-    if (fFilePattern.BeginsWith("alien://") && !gGrid) {
-      AliInfo("Trying to connect to AliEn ...");
-      TGrid::Connect("alien://");
-
+    // Setup AliEn access if needed
+    if (fFilePattern.Contains("alien://") || fFileListFilename.Contains("alien://")) {
+      if (!gGrid) {
+        AliInfo("Trying to connect to AliEn ...");
+        TGrid::Connect("alien://");
+      }
       if (!gGrid) {
         AliFatal(Form("Cannot access AliEn to retrieve file list with pattern %s!", fFilePattern.Data()));
       }
+    }
 
+    // Retrieve AliEn filenames directly from AliEn
+    if (fFilePattern.Contains("alien://")) {
       AliDebug(2,Form("Trying to retrieve file list from AliEn with pattern file %s...", fFilePattern.Data()));
 
       // Create a temporary filename based on a UUID to make sure that it doesn't overwrite any files
       if (fFileListFilename == "") {
-        TUUID tempUUID;
-        fFileListFilename = "fileList";
-        fFileListFilename += tempUUID.AsString();
-        fFileListFilename += ".txt";
+        fFileListFilename += GenerateUniqueFileListFilename();
       }
 
       // Retrieve filenames from alien using alien_find
-      TString command = "alien_find -l";
+      TString command = "alien_find";
       command += fFilePattern;
       command += " > ";
       command += fFileListFilename;
@@ -201,6 +202,16 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
       // Execute the alien_find command to get the filenames
       AliDebug(2,Form("Trying to retrieve file list from AliEn with alien_find command \"%s\"", command.Data()));
       gSystem->Exec(command.Data());
+    }
+
+    // Handle a filelist on AliEn
+    if (fFileListFilename.Contains("alien://")) {
+      // Determine the local filename and copy file to local directory
+      std::string alienFilename = fFileListFilename.Data();
+      fFileListFilename = gSystem->BaseName(alienFilename.c_str());
+      fFileListFilename += GenerateUniqueFileListFilename();
+
+      TFile::Cp(alienFilename.c_str(), fFileListFilename.Data());
     }
 
     std::ifstream inputFile(fFileListFilename);
@@ -251,6 +262,27 @@ void AliAnalysisTaskEmcalEmbeddingHelper::GetFilenames()
   }
 
   AliInfo(TString::Format("Starting with file number %i out of %lu", fFilenameIndex, fFilenames.size()));
+}
+
+/**
+ * Simple helper function to generate a unique file list filename. This filename will be used to store the
+ * filelist locally. It will be of the form fFileListFilename + ".UUID.txt". If fFileListFilename is empty,
+ * then the beginning of the filename will be "fileList".
+ *
+ * @return std::string containing the rest of the file to be appended to fFileListFilename
+ */
+std::string AliAnalysisTaskEmcalEmbeddingHelper::GenerateUniqueFileListFilename()
+{
+  std::string tempStr = "";
+  if (fFileListFilename == "") {
+    tempStr = "fileList";
+  }
+  TUUID tempUUID;
+  tempStr += ".";
+  tempStr += tempUUID.AsString();
+  tempStr += ".txt";
+
+  return tempStr;
 }
 
 /**
