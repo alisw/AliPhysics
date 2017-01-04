@@ -136,10 +136,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cutnumberPhoton = "10000000000000000500000000";
   }
 
-  if (trainConfig ==  8 ) {
+  if (trainConfig ==  8 || trainConfig ==  10) {
     cutnumberPhoton = "00000009266300008804004000";
   }
- if (trainConfig ==  108 ) {
+  if (trainConfig ==  108 || trainConfig ==  110 ) {
     cutnumberPhoton = "10000009266300008804004000";
   }
 
@@ -249,6 +249,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
  } else if (trainConfig == 9) {
     cuts.AddCut("00010103", "00000009266300008804004000");
     cuts.AddCut("00010103", "00000009266300008800404000");
+ } else if (trainConfig == 10) {
+    cuts.AddCut("00010103", "00000009266300008804004000");
+    cuts.AddCut("00010103", "00000009266300008800404000");
+    cuts.AddCut("00010103", "00000009266370008804004000");
 
     // Offline V0Finder is used
 
@@ -287,7 +291,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
  } else if (trainConfig == 109) {
     cuts.AddCut("00010103", "10000009266300008804004000");
     cuts.AddCut("00010103", "10000009266300008800404000");
-
+ } else if (trainConfig == 110) {
+    cuts.AddCut("00010103", "10000009266300008804004000");
+    cuts.AddCut("00010103", "10000009266300008800404000");
+    cuts.AddCut("00010103", "10000009266370008804004000");
  
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
