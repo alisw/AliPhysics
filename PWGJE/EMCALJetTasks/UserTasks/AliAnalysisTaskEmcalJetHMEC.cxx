@@ -37,6 +37,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fEmbeddingCorrectionHist(0),
+  fNoMixedEventEmbeddingCorrection(kFALSE),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fHistTrackPt(0),
   fHistJetEtaPhi(0), 
@@ -60,6 +61,7 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDoEffCorrection(0), fEffFunctionCorrection(0),
   fEmbeddingCorrectionHist(0),
+  fNoMixedEventEmbeddingCorrection(kFALSE),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fHistTrackPt(0),
   fHistJetEtaPhi(0), 
@@ -465,10 +467,10 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
                 if(fDoLessSparseAxes) {  // check if we want all the axis filled
                   Double_t triggerEntries[6] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
-                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), kTRUE);
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventEmbeddingCorrection);
                 } else {
                   Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
-                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), kTRUE);
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventEmbeddingCorrection);
                 }
               }
             }
@@ -784,7 +786,7 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
     if (fDoEffCorrection != 0) {
       // If the trackPt > 6 GeV, then all we need is this coefficient
       Double_t coefficient = 0.898052;                                                // p6
-      if (trackPT <= 6) {
+      if (trackPT < 6) {
         coefficient =  (1 + -0.442232 * trackPT                                     // p0
                  +  0.501831 * std::pow(trackPT, 2)                        // p1
                  + -0.252024 * std::pow(trackPT, 3)                        // p2
@@ -813,6 +815,10 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(TH1 * hist, Double_t fillValue, Doubl
 {
   if (fEmbeddingCorrectionHist == 0 || noCorrection == kTRUE)
   {
+    AliDebugStream(3) << std::boolalpha << "Using normal weights: EmbeddingHist: " << (fEmbeddingCorrectionHist ? fEmbeddingCorrectionHist->GetName() : "Null") << ", noCorrection: " << noCorrection << std::endl;
+    // TEMP INTENTIONAL
+    //fEmbeddingCorrectionHist->GetName();
+    // ENDTEMP
     hist->Fill(fillValue, weight);
   }
   else
@@ -821,18 +827,23 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(TH1 * hist, Double_t fillValue, Doubl
     Int_t xBin = fEmbeddingCorrectionHist->GetXaxis()->FindBin(fillValue);
 
     std::vector <Double_t> yBinsContent;
-    accessSetOfYBinValues(fEmbeddingCorrectionHist, xBin, yBinsContent);
+    AliDebug(3, TString::Format("Attempt to access weights from embedding correction hist for jet pt %f!", fillValue));
+    AccessSetOfYBinValues(fEmbeddingCorrectionHist, xBin, yBinsContent);
+    AliDebug(3, TString::Format("weights size: %zd", yBinsContent.size()));
 
     // Loop over all possible bins to contribute.
     // If content is 0 then calling Fill won't make a difference
     for (Int_t index = 1; index <= fEmbeddingCorrectionHist->GetYaxis()->GetNbins(); index++)
     {
-      // Determine the value to fill based on the center of the bins.
-      // This in principle allows the binning between the correction and hist to be different
-      Double_t fillLocation = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
-      Printf("fillLocation: %f, weight: %f", fillLocation, yBinsContent.at(index-1));
-      // minus 1 since loop starts at 1
-      hist->Fill(fillLocation, weight*yBinsContent.at(index-1));
+      // Don't bother trying to fill in the weight is 0
+      if (yBinsContent.at(index-1) > 0) {
+        // Determine the value to fill based on the center of the bins.
+        // This in principle allows the binning between the correction and hist to be different
+        Double_t fillLocation = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
+        AliDebug(4, TString::Format("fillLocation: %f, weight: %f", fillLocation, yBinsContent.at(index-1)));
+        // minus 1 since loop starts at 1
+        hist->Fill(fillLocation, weight*yBinsContent.at(index-1));
+      }
     }
 
     //TEMP
@@ -846,6 +857,10 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue
 {
   if (fEmbeddingCorrectionHist == 0 || noCorrection == kTRUE)
   {
+    AliDebugStream(3) << std::boolalpha << "Using normal weights: EmbeddingHist: " << (fEmbeddingCorrectionHist ? fEmbeddingCorrectionHist->GetName() : "Null") << ", noCorrection: " << noCorrection << std::endl;
+    // TEMP INTENTIONAL
+    //fEmbeddingCorrectionHist->GetName();
+    // ENDTEMP
     hist->Fill(fillValue, weight);
   }
   else
@@ -857,24 +872,29 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue
     Int_t xBin = fEmbeddingCorrectionHist->GetXaxis()->FindBin(jetPt);
 
     std::vector <Double_t> yBinsContent;
-    accessSetOfYBinValues(fEmbeddingCorrectionHist, xBin, yBinsContent);
+    AliDebug(3, TString::Format("Attempt to access weights from embedding correction hist for jet pt %f!", jetPt));
+    AccessSetOfYBinValues(fEmbeddingCorrectionHist, xBin, yBinsContent);
+    AliDebug(3, TString::Format("weights size: %zd", yBinsContent.size()));
 
     // Loop over all possible bins to contribute.
     // If content is 0 then calling Fill won't make a difference
     for (Int_t index = 1; index <= fEmbeddingCorrectionHist->GetYaxis()->GetNbins(); index++)
     {
-      // Determine the value to fill based on the center of the bins.
-      // This in principle allows the binning between the correction and hist to be different
-      fillValue[1] = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
-      Printf("fillValue[1]: %f, weight: %f", fillValue[1], yBinsContent.at(index-1));
-      // minus 1 since loop starts at 1
-      hist->Fill(fillValue, weight*yBinsContent.at(index-1));
+      // Don't bother trying to fill in the weight is 0
+      if (yBinsContent.at(index-1) > 0) {
+        // Determine the value to fill based on the center of the bins.
+        // This in principle allows the binning between the correction and hist to be different
+        fillValue[1] = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
+        AliDebug(4,TString::Format("fillValue[1]: %f, weight: %f", fillValue[1], yBinsContent.at(index-1)));
+        // minus 1 since loop starts at 1
+        hist->Fill(fillValue, weight*yBinsContent.at(index-1));
+      }
     }
   }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetHMEC::accessSetOfYBinValues(TH2F * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor)
+void AliAnalysisTaskEmcalJetHMEC::AccessSetOfYBinValues(TH2F * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor)
 {
   for (Int_t index = 1; index <= hist->GetYaxis()->GetNbins(); index++)
   {
@@ -892,7 +912,6 @@ void AliAnalysisTaskEmcalJetHMEC::accessSetOfYBinValues(TH2F * hist, Int_t xBin,
 /**
  * AddTask for the jet-hadron task. We benefit for actually having compiled code, as opposed to
  * struggle with CINT.
- *
  */
 AliAnalysisTaskEmcalJetHMEC * AliAnalysisTaskEmcalJetHMEC::AddTaskEmcalJetHMEC(
    const char *nTracks,
@@ -1040,7 +1059,12 @@ AliAnalysisTaskEmcalJetHMEC * AliAnalysisTaskEmcalJetHMEC::AddTaskEmcalJetHMEC(
       return NULL;
     }
 
-    correlationTask->SetEmbeddingCorrectionHist(embeddingCorrectionHist);
+    // Clone to ensure have the hist available
+    TH2F * tempHist = static_cast<TH2F *>(embeddingCorrectionHist->Clone());
+    tempHist->SetDirectory(0);
+    correlationTask->SetEmbeddingCorrectionHist(tempHist);
+
+    embeddingCorrectionFile->Close();
   }
 
   // Jet parameters determined by how we ran the jet finder
