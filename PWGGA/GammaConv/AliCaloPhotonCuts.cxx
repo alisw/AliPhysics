@@ -3496,55 +3496,91 @@ Bool_t AliCaloPhotonCuts::SetExoticClusterCut(Int_t exoticCell)
 Bool_t AliCaloPhotonCuts::SetMinEnergyCut(Int_t minEnergy)
 {
   if (fIsPureCalo != 1){
-    switch(minEnergy){
-    case 0: 
-      if (!fUseMinEnergy) fUseMinEnergy=0;
-      fMinEnergy=0.1;
-      break;
-    case 1: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=0.5;
-      break;
-    case 2: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=0.6;
-      break;
-    case 3: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=0.7;
-      break;
-    case 4: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=0.8;
-      break;
-    case 5: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=0.9;
-      break;
-    case 6: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=4.5;
-      break;
-    case 7: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=5.0;
-      break;
-    case 8: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=5.5;
-      break;
-    case 9: 
-      if (!fUseMinEnergy) fUseMinEnergy=1;
-      fMinEnergy=6.0;
-      break;
-    default:
-      AliError(Form("Minimum Energy Cut not defined %d",minEnergy));
-      return kFALSE;
+    if (fClusterType!=2) {
+      switch(minEnergy){
+        case 0:
+          if (!fUseMinEnergy) fUseMinEnergy=0;
+          fMinEnergy=0.1;
+          break;
+        case 1:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.5;
+          break;
+        case 2:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.6;
+          break;
+        case 3:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.7;
+          break;
+        case 4:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.8;
+          break;
+        case 5:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.9;
+          break;
+        case 6:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=4.5;
+          break;
+        case 7:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=5.0;
+          break;
+        case 8:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=5.5;
+          break;
+        case 9:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=6.0;
+          break;
+        default:
+          AliError(Form("Minimum Energy Cut not defined %d",minEnergy));
+          return kFALSE;
+      }
+    } else {
+      switch(minEnergy){
+        case 0:
+          if (!fUseMinEnergy) fUseMinEnergy=0;
+          fMinEnergy=0.1;
+          break;
+        case 1:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.3;
+          break;
+        case 2:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.5;
+          break;
+        case 3:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.6;
+          break;
+        case 4:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.7;
+          break;
+        case 5:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.8;
+          break;
+        case 6:
+          if (!fUseMinEnergy) fUseMinEnergy=1;
+          fMinEnergy=0.9;
+          break;
+        default:
+          AliError(Form("Minimum Energy Cut not defined %d",minEnergy));
+          return kFALSE;
+      }
     }
     return kTRUE;
-  } else   {
+  } else {
     switch(minEnergy){
-    case 0: 
+    case 0:
       if (!fUseMinEnergy) fUseMinEnergy=0;
       fMinEnergy=0.1;
       break;

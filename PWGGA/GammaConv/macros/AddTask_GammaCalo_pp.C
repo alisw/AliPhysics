@@ -951,7 +951,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00000113","1111111063032230000","0163103100000050"); // pt const track matching, M02 < 0.5
     cuts.AddCut("00000113","1111111067032220000","0163103100000050"); // pt dep track matching, M02 < 0.7
     cuts.AddCut("00000113","1111111067032230000","0163103100000050"); // pt dep track matching, M02 < 0.5
-      
+    
   } else if (trainConfig == 299){ // EMCAL clusters pp, jet triggers
     cuts.AddCut("00045113","1111111063032220000","0163103100000050"); // std
     cuts.AddCut("00046113","1111111063032220000","0163103100000050"); // std
@@ -970,6 +970,16 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00003113","2444400040033200000","0163003100900050");
     cuts.AddCut("00003123","2444400040033200000","0163003100900050");
     
+    // 7 TeV direct photon
+  } else if (trainConfig == 351){
+    cuts.AddCut("00000113","2444400000013300000","0163103100000050"); // QA
+  } else if (trainConfig == 352){
+    cuts.AddCut("00000113","2444400040013300000","0163103100000050"); // 100ns timing cut, no track matching
+    cuts.AddCut("00000113","2444400043013300000","0163103100000050"); // 100ns timing cut
+    cuts.AddCut("00000113","2444400043013350000","0163103100000050"); // 100ns timing cut, M02<0.3
+    cuts.AddCut("00000113","2444400043013330000","0163103100000050"); // 100ns timing cut, M02<0.5
+    cuts.AddCut("00000113","2444400043013320000","0163103100000050"); // 100ns timing cut, M02<0.7
+  
 // PHOS @ 8 TeV
   } else if (trainConfig == 381){ // PHOS clusters
     cuts.AddCut("00010113","2444400070023200000","0163003100900050");
