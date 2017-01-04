@@ -229,7 +229,9 @@ void AddTask_GammaConvV1_pp2(  Int_t    trainConfig                 = 1,        
     
   //----------------------------- configuration for run 2 analysis 5 TeV ----------------------------------------------------  
   } else if (trainConfig == 50){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152101500000000"); //New standard cut pp 5 TeV VAND=
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152101500000000"); //old standard cut pp 5 TeV VAND
+  } else if (trainConfig == 51){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
     
     
   } else {
