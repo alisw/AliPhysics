@@ -6,6 +6,8 @@
 #include "AliAODTrack.h"
 #include "AliVEvent.h"
 #include "AliAnalysisC2Utils.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 
 using std::cout;
 using std::endl;
@@ -169,4 +171,17 @@ Int_t AliAnalysisC2Utils::ComputePtPairBin(Int_t pt1Bin, Int_t pt2Bin){
   idx += (pt1Bin - pt2Bin);
   idx -= 1;
   return idx;
+}
+
+Bool_t AliAnalysisC2Utils::EventFitsTrigger(UInt_t trig)
+{
+  UInt_t maskIsSelected =
+    dynamic_cast<AliInputEventHandler*>
+    (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())
+    ->IsEventSelected();
+  if (maskIsSelected & trig) {
+    return true;
+  } else {
+    return false;
+  }
 }

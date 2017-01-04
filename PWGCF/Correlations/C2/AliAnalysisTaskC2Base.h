@@ -5,9 +5,8 @@
 #include "AliAnalysisC2Settings.h"
 #include "AliAnalysisC2NanoTrack.h"
 
-class AliAODITSsaTrackCuts;
 class TH1F;
-class TH2F;
+class THn;
 
 class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
  public:
@@ -27,40 +26,51 @@ class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
   // Make sure to only call this function
   // on valid events!!!
   Float_t GetEventClassifierValue();
-  // Get an array of all (including invalid) tracks in this event
-  TClonesArray* GetAllTracks();
 
   // Get all tracks that pass the track cut including FMD hits
   std::vector< AliAnalysisC2NanoTrack > &GetValidTracks();
 
+  // Return true if we are currently running over an AOD dataset, else false.
+  Bool_t IsAODdataset();
+
  protected:
-  // Get FMD hits
+  // Get an array of all (including invalid) __tracks__ in this event. Note that
+  // this does not include FMD hits in reconstructed data
+  TClonesArray* GetAllTracks();
+
+  // Get FMD hits; pT is set to the minimum value of analysis!
   std::vector< AliAnalysisC2NanoTrack > GetFMDhits();
+
+  // Get SPD hits based on clusters; pT is set to the minimum value of analysis!
+  std::vector< AliAnalysisC2NanoTrack > GetSPDhits();
+
+  // Get NanoTracks based on *tracks* from the central region, ie, they have a proper pT.
+  // Only tracks passing the track selection criteria are returned.
+  std::vector< AliAnalysisC2NanoTrack > GetValidCentralTracks();
 
   // Load and set up things that need to be updated for each event
   void SetupEventForBase();
   // Evaluate asymmetry in V0; Taken from Leonardo / Katarina; TODO:Cross-check
   Bool_t IsAsymmetricV0();
-  // Taken from Leonardo / Katarina; TODO:Cross-check
-  Bool_t IsOutOfBunchPileup();
 
   // Vector holding all tracks that pass the track selection
   std::vector< AliAnalysisC2NanoTrack > fValidTracks;
 
   TList *fOutputList;  //!
-  AliAODITSsaTrackCuts* fitssatrackcuts;  //!
   TH1 *fDiscardedEvents;  //!
   TH1 *fDiscardedTracks;  //!
   TH1F *fmultDistribution; //!
-  TH2F *fetaVsZvtx;        //!
+  THn *fEtaPhiZvtx_max_res;        //!
 
   /// Possible reasons to discard an event as use in QA histogram
   struct cDiscardEventReasons {
     enum type {
       _eventIsValid,
+      isMB,
       invalidxVertex,
       isIncomplete,
       isOutOfBunchPileup,
+      SPDClusterVsTrackletBG,
       multEstimatorNotAvailable,
       noMultSelectionObject,
       MeanMult0,
@@ -88,9 +98,7 @@ class AliAnalysisTaskC2Base : public AliAnalysisTaskSE {
       dca,
       etaAcceptance,
       failedFilterBits,
-      failedITSCut,
       neutralCharge,
-      notAODPrimary,
       notHybridGCG,  // filter BIT(20)
       notMCPrimary,
       // not a reason, just the number of reasons

@@ -22,8 +22,11 @@ class AliAnalysisTaskC2 : public AliAnalysisTaskC2Base {
  private:
   // Histograms to construct C2
   THn *fEventCounter;  //!
-  THn *fSingles;       //!
-  THn *fPairs;         //!
+  // THn *fSingles;       //!
+  // THn *fPairs;         //!
+
+  std::vector< THn* > fpairHists; //!
+  std::vector< THn* > fsingleHists; //!
 
   struct cEventCounterDims {
     enum type {kMult, kZvtx, kNdimensions};

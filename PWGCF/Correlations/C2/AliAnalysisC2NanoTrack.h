@@ -15,9 +15,10 @@ class AliAnalysisC2NanoTrack : public TObject {
   Double_t eta;
   Double_t phi;
   Double_t pt;
+  Double_t weight;
   // Default constructor
   AliAnalysisC2NanoTrack();
-  AliAnalysisC2NanoTrack(Double_t eta_in, Double_t phi_in, Double_t pt_in);
+  AliAnalysisC2NanoTrack(Double_t eta_in, Double_t phi_in, Double_t pt_in, Double_t weight);
   virtual ~AliAnalysisC2NanoTrack() {};
  private:
   ClassDef(AliAnalysisC2NanoTrack,1);
