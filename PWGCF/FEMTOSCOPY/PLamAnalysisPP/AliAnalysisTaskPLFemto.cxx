@@ -213,7 +213,9 @@ AliAnalysisTaskPLFemto::~AliAnalysisTaskPLFemto() {
   if(fXicand) delete[] fXicand;
   if(fCuts) delete fCuts;
   if(fPIDResponse) delete fPIDResponse;
-  if(fAnaUtils) delete fAnaUtils;
+
+  // TODO: Uncomment this line when the AliAnalysisUtils destructor is fixed
+  // if(fAnaUtils) delete fAnaUtils;
 }
 //_________________________________________________
 void AliAnalysisTaskPLFemto::Init()
