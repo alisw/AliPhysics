@@ -243,7 +243,7 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
 
   TString currName = "";
   Double_t xref=0., yref=0., xpt=0., ypt=0.;
-  Double_t nSigmas = 2.;
+  Double_t nSigmas = 1.;
 
   for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) {
 
