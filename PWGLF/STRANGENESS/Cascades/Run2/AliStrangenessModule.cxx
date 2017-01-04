@@ -464,16 +464,25 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     
     Bool_t lReturnValue = kTRUE; //everything went alright -> kTRUE
     
-    TString lFitOptions = "R0S";
+    TString lFitOptions = "LR0S";
     if (!lVerbose) lFitOptions.Append("Q");
     
     //Find bins in which signal extraction is to be performed
     Long_t lBinPeakLo = lHisto->GetXaxis()->FindBin ( lMean + lLoPeak*lSigma );
     Long_t lBinPeakHi = lHisto->GetXaxis()->FindBin ( lMean + lHiPeak*lSigma );
+    Long_t lBinLeftBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoLeftBg*lSigma );
+    Long_t lBinLeftBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiLeftBg*lSigma );
+    Long_t lBinRightBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoRightBg*lSigma );
+    Long_t lBinRightBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiRightBg*lSigma );
     
     //Inclusive on lower and upper limits
+    //Get values and use these values for fit ranges: meant to harmonize bin counting wrt fitting
     Double_t lValPeakLo = lHisto->GetBinLowEdge( lBinPeakLo   );
     Double_t lValPeakHi = lHisto->GetBinLowEdge( lBinPeakHi+1 );
+    Double_t lValLeftBgLo = lHisto->GetBinLowEdge( lBinLeftBgLo   );
+    Double_t lValLeftBgHi = lHisto->GetBinLowEdge( lBinLeftBgHi+1 );
+    Double_t lValRightBgLo = lHisto->GetBinLowEdge( lBinRightBgLo   );
+    Double_t lValRightBgHi = lHisto->GetBinLowEdge( lBinRightBgHi+1 );
     
     //Clone histogram and create a control histogram with the peak ranges highlighted
     TString lNameHistoPeak = lHisto->GetName();
@@ -571,11 +580,7 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
             return kFALSE;
         }
         
-        //Find bins for LeftBg and RightBg
-        Long_t lBinLeftBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoLeftBg*lSigma );
-        Long_t lBinLeftBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiLeftBg*lSigma );
-        Long_t lBinRightBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoRightBg*lSigma );
-        Long_t lBinRightBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiRightBg*lSigma );
+
         
         //Sum up yields in corresponding bins
         for( Long_t ibin=lBinLeftBgLo; ibin<lBinLeftBgHi+1; ibin++)
