@@ -13,5 +13,6 @@ add_subdirectory(HCascadeAnalysis)
 add_subdirectory(K0Analysis)
 add_subdirectory(UNICOR)
 add_subdirectory(V0LamAnalysis)
+add_subdirectory(PLamAnalysisPP)
 
 install(DIRECTORY macros DESTINATION PWGCF/FEMTOSCOPY)
