@@ -262,6 +262,8 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
     //   AliFlowTrackCuts* cutsPOI = cutsPOI->GetStandardGlobalTrackCuts2010();
     cutsPOI->SetPtRange(POIPtMin, POIPtMax); // pt range of DAUGHTERS !!!
     cutsPOI->SetEtaRange(-.8, .8);
+    cutsPOI->SetPhiMin(0.);
+    cutsPOI->SetPhiMax(5.);
     //   cutsPOI->SetMaxDCAToVertexXY(0.3); // FIXME not implemented in aod086 aod095 see PassesDCACut() in implementation
     //   cutsPOI->SetMaxDCAToVertexZ(0.3);
 
