@@ -49,8 +49,9 @@ Double_t
   AliLightCascadeVertexer::fgRmax=100.;     //max radius of the fiducial volume
 
 Double_t AliLightCascadeVertexer::fgMaxEta=0.8;        //max |eta|
-Double_t AliLightCascadeVertexer::fgMinClusters=70;   //min clusters (>=)
-Bool_t AliLightCascadeVertexer::fgSwitchCharges=kFALSE;   //min clusters (>=)
+Int_t AliLightCascadeVertexer::fgMinClusters=70;   //min clusters (>=)
+Bool_t AliLightCascadeVertexer::fgSwitchCharges=kFALSE;   //
+Bool_t AliLightCascadeVertexer::fgUseOnTheFlyV0=kFALSE;   //HIGHLY EXPERIMENTAL
 
 Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
   //--------------------------------------------------------------------
@@ -71,7 +72,12 @@ Int_t AliLightCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
    Int_t i;
    for (i=0; i<nV0; i++) {
        AliESDv0 *v=event->GetV0(i);
-       if (v->GetOnFlyStatus()) continue;
+       if ( v->GetOnFlyStatus() && !fUseOnTheFlyV0) continue;
+       if (!v->GetOnFlyStatus() &&  fUseOnTheFlyV0) continue;
+       
+       //Fix incorrect storing of charges in on-the-fly V0s
+       if( fUseOnTheFlyV0 ) CheckChargeV0( v );
+       
        if (v->GetD(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex)<fDV0min) continue;
        vtcs.AddLast(v);
    }
@@ -224,9 +230,6 @@ Double_t AliLightCascadeVertexer::Det(Double_t a00,Double_t a01,Double_t a02,
   return  a00*Det(a11,a12,a21,a22)-a01*Det(a10,a12,a20,a22)+a02*Det(a10,a11,a20,a21);
 }
 
-
-
-
 Double_t AliLightCascadeVertexer::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, Double_t b) {
   //--------------------------------------------------------------------
   // This function returns the DCA between the V0 and the track
@@ -270,13 +273,66 @@ Double_t AliLightCascadeVertexer::PropagateToDCA(AliESDv0 *v, AliExternalTrackPa
   return dca;
 }
 
-
-
-
-
-
-
-
-
-
+//________________________________________________________________________
+void AliLightCascadeVertexer::CheckChargeV0(AliESDv0 *v0)
+{
+    // This function checks charge of negative and positive daughter tracks.
+    // If incorrectly defined (onfly vertexer), swaps out.
+    if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0 ) {
+        //V0 daughter track swapping is required! Note: everything is swapped here... P->N, N->P
+        Long_t lCorrectNidx = v0->GetPindex();
+        Long_t lCorrectPidx = v0->GetNindex();
+        Double32_t	lCorrectNmom[3];
+        Double32_t	lCorrectPmom[3];
+        v0->GetPPxPyPz( lCorrectNmom[0], lCorrectNmom[1], lCorrectNmom[2] );
+        v0->GetNPxPyPz( lCorrectPmom[0], lCorrectPmom[1], lCorrectPmom[2] );
+        
+        AliExternalTrackParam	lCorrectParamN(
+                                               v0->GetParamP()->GetX() ,
+                                               v0->GetParamP()->GetAlpha() ,
+                                               v0->GetParamP()->GetParameter() ,
+                                               v0->GetParamP()->GetCovariance()
+                                               );
+        AliExternalTrackParam	lCorrectParamP(
+                                               v0->GetParamN()->GetX() ,
+                                               v0->GetParamN()->GetAlpha() ,
+                                               v0->GetParamN()->GetParameter() ,
+                                               v0->GetParamN()->GetCovariance()
+                                               );
+        lCorrectParamN.SetMostProbablePt( v0->GetParamP()->GetMostProbablePt() );
+        lCorrectParamP.SetMostProbablePt( v0->GetParamN()->GetMostProbablePt() );
+        
+        //Get Variables___________________________________________________
+        Double_t lDcaV0Daughters = v0 -> GetDcaV0Daughters();
+        Double_t lCosPALocal     = v0 -> GetV0CosineOfPointingAngle();
+        Bool_t lOnFlyStatusLocal = v0 -> GetOnFlyStatus();
+        
+        //Create Replacement Object_______________________________________
+        AliESDv0 *v0correct = new AliESDv0(lCorrectParamN,lCorrectNidx,lCorrectParamP,lCorrectPidx);
+        v0correct->SetDcaV0Daughters          ( lDcaV0Daughters   );
+        v0correct->SetV0CosineOfPointingAngle ( lCosPALocal       );
+        v0correct->ChangeMassHypothesis       ( kK0Short          );
+        v0correct->SetOnFlyStatus             ( lOnFlyStatusLocal );
+        
+        //Reverse Cluster info..._________________________________________
+        v0correct->SetClusters( v0->GetClusters( 1 ), v0->GetClusters ( 0 ) );
+        
+        *v0 = *v0correct;
+        //Proper cleanup..._______________________________________________
+        v0correct->Delete();
+        v0correct = 0x0;
+        
+        //Just another cross-check and output_____________________________
+        if( v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0 ) {
+            AliWarning("Found Swapped Charges, tried to correct but something FAILED!");
+        } else {
+            //AliWarning("Found Swapped Charges and fixed.");
+        }
+        //________________________________________________________________
+    } else {
+        //Don't touch it! ---
+        //Printf("Ah, nice. Charges are already ordered...");
+    }
+    return;
+}
 

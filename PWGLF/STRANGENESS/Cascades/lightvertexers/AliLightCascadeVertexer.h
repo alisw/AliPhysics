@@ -29,15 +29,16 @@ public:
 	       Double_t a20,Double_t a21,Double_t a22) const;
 
   Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk,Double_t b);
+    void CheckChargeV0(AliESDv0 *v0);
 
   void GetCuts(Double_t cuts[8]) const;
-  static void GetDefaultCuts(Double_t cuts[8]);
-    
+    static void GetDefaultCuts(Double_t cuts[8]);
     static void SetDefaultMaxEta(Double_t lMaxEta);
-    static void SetDefaultMinClusters(Double_t lMaxEta);
+    static void SetDefaultMinClusters(Int_t lMinClusters);
     void SetMaxEta(Double_t lMaxEta);
-    void SetMinClusters(Double_t lMaxEta);
+    void SetMinClusters(Int_t lMinClusters);
     void SetSwitchCharges(Bool_t lOption);
+    void SetUseOnTheFlyV0 (Bool_t lOption);
 private:
   static
   Double_t fgChi2max;   // maximal allowed chi2 
@@ -54,8 +55,9 @@ private:
   static
   Double_t fgRmin, fgRmax;// max & min radii of the fiducial volume
     static Double_t fgMaxEta;       // maximum eta value for track pre-selection
-    static Double_t fgMinClusters;  // minimum single-track clusters value (>=)
+    static Int_t fgMinClusters;  // minimum single-track clusters value (>=)
   static Bool_t fgSwitchCharges;  // minimum single-track clusters value (>=)
+  static Bool_t fgUseOnTheFlyV0;  // minimum single-track clusters value (>=)
     
   Double_t fChi2max;    // maximal allowed chi2 
   Double_t fDV0min;     // min. allowed V0 impact parameter
@@ -65,8 +67,9 @@ private:
   Double_t fCPAmin;     // minimal allowed cosine of the cascade pointing angle
   Double_t fRmin, fRmax;// max & min radii of the fiducial volume
     Double_t fMaxEta;       // maximum eta value for track pre-selection
-    Double_t fMinClusters;  // minimum single-track clusters value (>=)
+    Int_t fMinClusters;  // minimum single-track clusters value (>=)
     Bool_t fSwitchCharges; //switch to change bachelor charge
+    Bool_t fUseOnTheFlyV0; //switch to use on-the-fly V0s (HIGHLY EXPERIMENTAL)
   
   ClassDef(AliLightCascadeVertexer,3)  // cascade verterxer 
 };
@@ -83,7 +86,8 @@ inline AliLightCascadeVertexer::AliLightCascadeVertexer() :
 fRmax(fgRmax),
 fMaxEta(fgMaxEta),
 fMinClusters(fgMinClusters),
-fSwitchCharges(fgSwitchCharges)
+fSwitchCharges(fgSwitchCharges),
+fUseOnTheFlyV0(fgUseOnTheFlyV0)
 {
 }
 
@@ -118,17 +122,20 @@ inline void AliLightCascadeVertexer::GetDefaultCuts(Double_t cuts[8]) {
 inline void AliLightCascadeVertexer::SetDefaultMaxEta(Double_t lMaxEta) {
     fgMaxEta = lMaxEta;
 }
-inline void AliLightCascadeVertexer::SetDefaultMinClusters(Double_t lMinClusters) {
+inline void AliLightCascadeVertexer::SetDefaultMinClusters(Int_t lMinClusters) {
     fgMinClusters = lMinClusters;
 }
 inline void AliLightCascadeVertexer::SetMaxEta(Double_t lMaxEta) {
     fMaxEta = lMaxEta;
 }
-inline void AliLightCascadeVertexer::SetMinClusters(Double_t lMinClusters) {
+inline void AliLightCascadeVertexer::SetMinClusters(Int_t lMinClusters) {
     fMinClusters = lMinClusters;
 }
 inline void AliLightCascadeVertexer::SetSwitchCharges(Bool_t lOption) {
     fSwitchCharges = lOption;
+}
+inline void AliLightCascadeVertexer::SetUseOnTheFlyV0(Bool_t lOption) {
+    fUseOnTheFlyV0 = lOption;
 }
 
 #endif
