@@ -201,14 +201,19 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
 			    multiplicity,
 			    zvtx};
     for (auto single: this->fsingleHists) {
-      single->Fill(stuffing, evWeight * track.weight);
+      	if (// Check overflow; see comments in the loop for the pairs.
+	    single->GetAxis(cSinglesDims::kEta)->GetBinLowEdge(1) <= stuffing[cSinglesDims::kEta]
+	    && stuffing[cSinglesDims::kEta] < single->GetAxis(cSinglesDims::kEta)->
+	    GetBinUpEdge(single->GetAxis(cSinglesDims::kEta)->GetNbins()))
+	  {
+	    single->Fill(stuffing, evWeight * track.weight);
+	  }
     }
   }
   {
     Double_t stuffing[3] = {multiplicity, zvtx};
     this->fEventCounter->Fill(stuffing, evWeight);
   }
-  // n: number of valid tracks
   const vector< AliAnalysisC2NanoTrack > tracks = this->GetValidTracks();
   const AliAnalysisC2NanoTrack *trigger, *assoc;
   for (Int_t i = 0; i < tracks.size(); i++) {
@@ -248,11 +253,15 @@ void AliAnalysisTaskC2::UserExec(Option_t *)
 	 multiplicity,
 	 zvtx};
       for (auto pair: this->fpairHists) {
-	// Only envoc fill if we are in the right eta region. If we
-	// filled, move to the next track Ie. Asume that histograms do
-	// not overlap in phace-space so each pair can only go into one
-	// histogram.  This is so ugly because ROOT does not report
-	// back if the fill was successful or in an overflow...
+	// Only call Fill if we are in the right eta region. If we
+	// filled, move to the next track. I.e., asume that histograms
+	// do not overlap in phace-space so each pair can only go into
+	// one histogram.  This is so ugly because ROOT does not
+	// report back if the fill was successful or in an
+	// overflow. At the same time, there is a problem with ROOT's
+	// THn where filling in an overflow bin might end up in a fill
+	// in a valid bin instead. See
+	// https://sft.its.cern.ch/jira/browse/ROOT-8457
 	if (// Check bounderies for eta1
 	    pair->GetAxis(cPairsDims::kEta1)->GetBinLowEdge(1) <= stuffing[cPairsDims::kEta1]
 	    && stuffing[cPairsDims::kEta1] < pair->GetAxis(cPairsDims::kEta1)->
