@@ -239,10 +239,10 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         if(debug) cout << "    --> kGlobal RP's " << cutsRP << endl;
     }
     if(VZERO_SP) { // use vzero sub analysis
-        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
+        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
         cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
         cutsRP->SetApplyRecentering(kTRUE);
-        cutsRP->SetParamType(AliFlowTrackCuts::kHotfixHI);
+        cutsRP->SetParamType(AliFlowTrackCuts::kVZERO);//HotfixHI);
         //       cutsRP->SetUseVZERORing(7, kFALSE);
         SP = kFALSE; // disable other methods
         SPSUB = kTRUE; // calculate sp_qa and sp_qb
@@ -262,8 +262,8 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
     //   AliFlowTrackCuts* cutsPOI = cutsPOI->GetStandardGlobalTrackCuts2010();
     cutsPOI->SetPtRange(POIPtMin, POIPtMax); // pt range of DAUGHTERS !!!
     cutsPOI->SetEtaRange(-.8, .8);
-    cutsPOI->SetPhiMin(0.);
-    cutsPOI->SetPhiMax(5.);
+    //cutsPOI->SetPhiMin(0.);
+    //cutsPOI->SetPhiMax(5.);
     //   cutsPOI->SetMaxDCAToVertexXY(0.3); // FIXME not implemented in aod086 aod095 see PassesDCACut() in implementation
     //   cutsPOI->SetMaxDCAToVertexZ(0.3);
 

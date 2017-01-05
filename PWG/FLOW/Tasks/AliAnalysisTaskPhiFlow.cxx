@@ -922,12 +922,14 @@ void AliAnalysisTaskPhiFlow::UserExec(Option_t *)
 
             fMultCorAfterCuts->Fill(v0Centr,cl0Centr);
 
+
+            //new function for 2015 to remove incomplete events
+            if (fAOD->IsIncompleteDAQ()) return;
+        } else {
+            if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) > fVertexRange) return;
+            fVertex = fAOD->GetPrimaryVertex()->GetZ();
+            fVertexZ->Fill(fVertex);
         }
-
-        //new function for 2015 to remove incomplete events
-        if (fAOD->IsIncompleteDAQ())
-
-            return;
 
 
         //      InitializeBayesianPID(fAOD); // init event objects
