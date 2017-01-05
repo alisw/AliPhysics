@@ -696,7 +696,7 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 	fHistEvent->Fill(kMCCheck);
 	//-------------------------------------------------------------------------
 
-	//Check event selected-----------------------------------------------------
+	// Check event selected-----------------------------------------------------
 	AliInputEventHandler *inputHandler = (AliInputEventHandler*)
 		AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
 	if (!inputHandler) {
@@ -826,6 +826,7 @@ void AliAnalysisTaskCDTree::UserExec(Option_t *)
 			}
 			nmbTrk_NG++;
 		}
+    
 		//Only 2tracks with standard ITSTPC cut
 		if (nmbTrk_NG==2) {
 			for (Int_t iTrack = 0; iTrack < fESDEvent->GetNumberOfTracks(); iTrack++) {

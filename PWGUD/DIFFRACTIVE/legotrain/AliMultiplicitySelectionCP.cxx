@@ -99,143 +99,143 @@ Bool_t AliMultiplicitySelectionCP::InitV0Daughters(AliESDEvent *esd)
 
 
   if(fkNtrackMax < esd->GetNumberOfTracks() )
-    {
-      AliFatal(" fkNtrackMax < esd->GetNumberOfTracks() !!!\n");
-    }
+  {
+    AliFatal(" fkNtrackMax < esd->GetNumberOfTracks() !!!\n");
+  }
 
 
   for(Int_t i=0; i< esd->GetNumberOfTracks(); i++)
-    {
-      fkIsTrackSec[i] = kFALSE;
-    }
+  {
+    fkIsTrackSec[i] = kFALSE;
+  }
 
   //  if(!fkIgnoreV0s) return kTRUE;
 
+  // mark tracks which belong to a V0
   Int_t Nv0  = esd->GetNumberOfV0s();
-
   for(Int_t iv0 = 0; iv0<Nv0; iv0++)
-    {
-      AliESDv0 *v0 = esd->GetV0(iv0);
-      if(!v0) continue;
+  {
+    AliESDv0 *v0 = esd->GetV0(iv0);
+    if(!v0) continue;
 
-      fkIsTrackSec[v0->GetPindex()] = kTRUE;
-      fkIsTrackSec[v0->GetNindex()] = kTRUE;
-    }
+    fkIsTrackSec[v0->GetPindex()] = kTRUE;
+    fkIsTrackSec[v0->GetNindex()] = kTRUE;
+  }
 
   return kTRUE;
+  
 }
 
 
 Int_t AliMultiplicitySelectionCP::GetNumberOfITSTPCtracks(AliESDEvent *esd, TArrayI &indices)
 {
+  // initialisation
   //  return -1000;
   indices.Set(esd->GetNumberOfTracks());
   indices.Reset(-1);
-
 
   fIndicesN.Set(esd->GetNumberOfTracks());
   fIndicesN.Reset(-1);
   fIndicesP.Set(esd->GetNumberOfTracks());
   fIndicesP.Reset(-1);
 
+  // retrieve main vertex
   const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
 
   Int_t NtracksSel = 0;
   Int_t NpureITStracks = 0;
-
-
   Int_t NtracksSelN = 0;
   Int_t NtracksSelP = 0;
 
+  // prepare magnetic field
   Double_t bfield = esd->GetMagneticField();
   Double_t dca[2], cov[3];
 
-
+  // sets event of all tracks to esd
   esd->ConnectTracks();
 
+  // mark tracks which belong to a V0
   if(fkIgnoreV0s) InitV0Daughters(esd); 
 
-
-
-
+  // loop over all tracks and apply selection criteria
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++)
+  {
+    AliESDtrack* track = esd->GetTrack(iTrack);
+    track->SetESDEvent(esd);
+
+    // fTPCnclsS is by default = 3
+    // check number of shared TPC clusters
+    if (track->GetTPCnclsS()>fTPCnclsS) return -1;
+
+    // check whether DCA to vertex is not bigger than 500
+    if (!track->PropagateToDCA(vtxESD, bfield, 500., dca, cov))
+      continue;
+
+    // check if track belongs to a V0
+    if (fkIgnoreV0s && fkIsTrackSec[iTrack])
+      continue;
+
+    Bool_t isITSpureSA = ((track->GetStatus() & AliESDtrack::kITSpureSA) != 0);
+    if (isITSpureSA) 
     {
-      AliESDtrack* track = esd->GetTrack(iTrack);
-      track->SetESDEvent(esd);
-
-      if(track->GetTPCnclsS()>fTPCnclsS) return -1;
-
-      if(!track->PropagateToDCA(vtxESD, bfield, 500., dca, cov))
-	continue;
-
-      if(fkIgnoreV0s && fkIsTrackSec[iTrack])
-        continue;
-
-      Bool_t isITSpureSA = ((track->GetStatus() & AliESDtrack::kITSpureSA) != 0);
-      if(isITSpureSA) 
-	{
-	  NpureITStracks++;
-	  continue;
-	}
-
-      if(TMath::Abs(track->Zv() - vtxESD->GetZ())>fTrackDCAz) 
-	continue;
-
-      indices.AddAt(iTrack, NtracksSel);
-
-      NtracksSel++;
-      
-      if(track->GetSign()<0)
-	{
-	  fIndicesN.AddAt(iTrack, NtracksSelN);
-	  NtracksSelN++;
-	}
-      else if(track->GetSign()>0)
-	{
-	  fIndicesP.AddAt(iTrack, NtracksSelP);
-	  NtracksSelP++;
-	}
-      
-
+      NpureITStracks++;
+      continue;
     }
+
+    // fTrackDCAz is by default 6
+    if (TMath::Abs(track->Zv() - vtxESD->GetZ())>fTrackDCAz) 
+      continue;
+
+    // this is a selectd track
+    indices.AddAt(iTrack, NtracksSel);
+    NtracksSel++;
+    
+    // positive / negative charge tracks
+    if(track->GetSign()<0)
+    {
+      fIndicesN.AddAt(iTrack, NtracksSelN);
+      NtracksSelN++;
+    }
+    else if(track->GetSign()>0)
+    {
+      fIndicesP.AddAt(iTrack, NtracksSelP);
+      NtracksSelP++;
+    }
+    
+  }
 
   indices.Set(NtracksSel);
-
-//  printf("NtracksSelN = %d   NtracksSelP = %d   ***************\n",NtracksSelN,NtracksSelP);
-
-
   fIndicesN.Set(NtracksSelN);
   fIndicesP.Set(NtracksSelP);
+// printf("NtracksSelN = %d   NtracksSelP = %d   ***************\n",NtracksSelN,NtracksSelP);
 
-
+  // now check for eta and default cuts
   for(Int_t i = 0; i< NtracksSel; i++)
-    {
-      AliESDtrack* tr = esd->GetTrack(indices.At(i));
-      if(tr->Eta() < fTrackEtaMin || tr->Eta() > fTrackEtaMax)
-	return -2;
-      if(!AcceptTrack(tr, kTRUE))
-	return -3;
-    }
+  {
+    AliESDtrack* tr = esd->GetTrack(indices.At(i));
+    if (tr->Eta() < fTrackEtaMin || tr->Eta() > fTrackEtaMax)
+      return -2;
+    if (!AcceptTrack(tr, kTRUE))
+      return -3;
+  }
 
- 
-
+  // NtracksSel must be >= NpureITStracks and <= GetNumberOfTracklets()
   const AliMultiplicity *mult = esd->GetMultiplicity();
-
-  if(NpureITStracks>NtracksSel || mult->GetNumberOfTracklets() > NtracksSel)
+  if (NpureITStracks>NtracksSel || mult->GetNumberOfTracklets() > NtracksSel)
     return -4;
 
-
-  if(!TestFiredChips(esd, indices))
+  // ITS fired chips are checked
+  if (!TestFiredChips(esd, indices))
     return -5;
 
+  // check against reference cuts - is disbaled here
+  if (fkCheckReferenceMultiplicity)
+  {
+    Int_t NRefMult = AliESDtrackCuts::GetReferenceMultiplicity(esd, AliESDtrackCuts::kTrackletsITSTPC, 3);
 
-  if(fkCheckReferenceMultiplicity)
-    {
-      Int_t NRefMult = AliESDtrackCuts::GetReferenceMultiplicity(esd, AliESDtrackCuts::kTrackletsITSTPC, 3);
-
-      if(NRefMult > NtracksSel)
-	return -6;
-    }
+    if (NRefMult > NtracksSel)
+      return -6;
+  }
 
   return NtracksSel; 
 
@@ -311,24 +311,25 @@ Bool_t AliMultiplicitySelectionCP::TestFiredChips(AliESDEvent *esd, TArrayI indi
 
   UInt_t eq, hs, chip;
   for (Int_t i=0; i<1200; i++)
-    {
-      if (!mult->TestFiredChipMap(i)) continue;
-      AliSPDUtils::GetOnlineFromOfflineChipKey(i, eq, hs,  chip);
-      UInt_t module = AliSPDUtils::GetOfflineModuleFromOnline(eq, hs, chip);
+  {
+    if (!mult->TestFiredChipMap(i)) continue;
+    AliSPDUtils::GetOnlineFromOfflineChipKey(i, eq, hs,  chip);
+    UInt_t module = AliSPDUtils::GetOfflineModuleFromOnline(eq, hs, chip);
 
-      Bool_t ktmp = kFALSE;
-      for(Int_t iM = 0; iM<2*Ntracks; iM++)
-	{
-	  if(Modules[iM]==module)
-	    ktmp=kTRUE;
-	}
-      if(!ktmp) 
-	{
-	  delete[] Modules;
-	  return kFALSE;
-	}
+    Bool_t ktmp = kFALSE;
+    for(Int_t iM = 0; iM<2*Ntracks; iM++)
+    {
+      if(Modules[iM]==module)
+        ktmp=kTRUE;
     }
+    if(!ktmp) 
+    {
+      delete[] Modules;
+      return kFALSE;
+    }
+  }
 
   delete[] Modules;
   return kTRUE;
+
 }

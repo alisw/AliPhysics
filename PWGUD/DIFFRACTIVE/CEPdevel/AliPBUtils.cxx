@@ -393,6 +393,7 @@ Bool_t AliPBUtils::CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd,
 	// Primary vertex
 	Bool_t kpr0 = kTRUE;
 	const AliESDVertex *vertex = ESDEvent->GetPrimaryVertexTracks();
+	if (!vertex) return kFALSE;
   
   if (vertex->GetNContributors()<1) {
 		// SPD vertex
@@ -710,7 +711,7 @@ Int_t AliPBUtils::GetFMD(const AliESDEvent *ESDEvent, TH2 *hitMapFMDa,
   //  triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDA),
   //  triggerAnalysis.IsOfflineTriggerFired(ESDEvent,AliTriggerAnalysis::kFMDC) );
 
-	// prepartions for a charge summation algorithm
+	// preparations for a charge summation algorithm
 	Bool_t hitMaps = (Bool_t)(hitMapFMDa && hitMapFMDc);
 	Bool_t calcSum = fmdSums ?
 		(fmdSums[0] && fmdSums[1] && fmdSums[2] && fmdSums[3] && fmdSums[4]) :
