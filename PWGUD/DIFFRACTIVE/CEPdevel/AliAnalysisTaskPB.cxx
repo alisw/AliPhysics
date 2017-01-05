@@ -32,6 +32,7 @@
 #include <TRandom3.h>
 #include <TVector2.h>
 
+#include "AliTriggerAnalysis.h"
 #include "AliAODInputHandler.h"
 #include "AliAODHandler.h"
 #include "AliESDInputHandler.h"
@@ -44,7 +45,7 @@
 #include "AliMCEvent.h"
 #include "AliESDtrack.h"
 #include "AliStack.h"
-
+#include "AliMultiplicitySelectionCP.h"
 #include "AliAnalysisTaskPB.h"
 #include "AliPBBase.h"
 #include "AliPBUtils.h"
@@ -1177,7 +1178,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   
   // increment event number
   fEvent = ((TTree*)GetInputData(0))->GetTree()->GetReadEntry();
-  printf("\nEvent %ld ************************************************\n",fEvent);  
+  printf("\nEvent %ld !************************************************\n",fEvent);  
   
   // events running through UserExec
   if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
@@ -1185,16 +1186,13 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	}
 
 	//= INPUT DATA SANITY TESTS ==================================================
-	// printf("Checking Input ...");
   if (!CheckInput()) {
-	  printf("... FAIL!\n");
 		PostOutputs();
 		return;
 	}
 	if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
 		fhStatsFlow->Fill(AliPBBase::kBinGoodInput); // stats flow
 	}
-	// printf("... success\n");
 
   // Reset the event buffer
   TClonesArray &evb = *fCEPEvents;
@@ -1207,10 +1205,18 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
     
   // check event with ALiPhysicsSelection
   if (fMCEvent) fPhysicsSelection->SetAnalyzeMC(kTRUE);
-  evbuf->SetPhyssel(fPhysicsSelection->IsCollisionCandidate(fESDEvent)>0);      
-  // printf("Event is selected: %u\n",
-  //  fPhysicsSelection->IsCollisionCandidate(fESDEvent));
-  //fPhysicsSelection->Print();
+  evbuf->SetPhyssel(fPhysicsSelection->IsCollisionCandidate(fESDEvent)>0);
+  
+  // check event with AliInputEventHandler
+	AliInputEventHandler *inputHandler = (AliInputEventHandler*)
+		AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+	if (!inputHandler) {
+    if (!inputHandler->IsEventSelected()) {
+      evbuf->SetEvHandlersel(kFALSE);
+    }
+  } else {
+    evbuf->SetEvHandlersel(kTRUE);
+  }
 
 	//= ANALYZE ONLY PHOJET CD EVENTS ============================================
 	if (fAnalysisStatus & AliPBBase::kBitCDonly) {
@@ -1287,12 +1293,14 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 		AliPBUtils::CutEvent(fESDEvent, fhspd, fhpriv, fhpriVtxPos,
       fhpriVtxDist, fhfo, fhFOchans, kfo, ninnerp,
       nouterp, fPriVtxX, fPriVtxY, fPriVtxZ);
-	
+  
+  /*
   // printf("This event is %i valid\n",eventIsValid);
   if (!eventIsValid) {
-		//PostOutputs();
-		//return;
+		PostOutputs();
+		return;
 	}
+  */
 
 	if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
 		fhStatsFlow->Fill(AliPBBase::kBinEventsAfterCuts); // stats flow
@@ -1318,27 +1326,63 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	  	2., 	// nSigmaDiamXY, default = 2.
 	  	5.		// nSigmaDiamZ, default = 5.
 	  );
+  evbuf->SetPileup(isPileup);
   // printf("This is a pileup %i event\n",isPileup);
   
+  /*
   if (isPileup) {
-		//PostOutputs();
-		//return;
+		PostOutputs();
+		return;
 	}
+  */
 
 	if (!fAnalysisStatus || (fAnalysisStatus & AliPBBase::kBitStatsFlow)) {
 		fhStatsFlow->Fill(AliPBBase::kBinEventsWithOutPileUp); // stats flow
 	}
 
-	//= VZERO TRIGGER STUDY ======================================================
+	//Cluster Cut--------------------------------------------------------------
+	const AliMultiplicity *mult = fESDEvent->GetMultiplicity();
+	Double_t cut_slope = 4.;
+	Double_t cut_offset = 65.;
+	Bool_t IsClusterCut = kFALSE;
+	if (fESDEvent->GetNumberOfITSClusters(0) + fESDEvent->GetNumberOfITSClusters(1) <= (cut_offset+cut_slope*mult->GetNumberOfTracklets())) IsClusterCut=kTRUE;
+	
+  evbuf->SetClusterCut(IsClusterCut);
+  /*
+  if (!IsClusterCut) {
+		PostOutputs();
+		return;
+	}
+  */
+  
+	// -------------------------------------------------------------------------
+	//= VZERO TRIGGER STUDY
 	// dtermine the VZERO signal distributions
 	if (fVZEROhists) {
 		AliPBUtils::DoVZEROStudy(fESDEvent, fVZEROhists, fRun);
 	}
 
+	// TRIGGER ANALYSIS -------------------------------------------------------
+	AliTriggerAnalysis *fTrigger = new AliTriggerAnalysis;
+	Bool_t IsMBOR  = (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kMB1)) ? kTRUE : kFALSE;
+	Bool_t IsMBAND = (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0AND)) ? kTRUE : kFALSE;
+
+  evbuf->SetMBOR(IsMBOR);
+  evbuf->SetMBAND(IsMBAND);
+  /*
+	if (!IsMBOR) {
+		PostOutputs();
+		return;
+	}
+  */
+  
+	//-------------------------------------------------------------------------
 	//= GAP ======================================================================
 	// determine the complete gap configuration (for all gap-tagging detectors)
 	Bool_t gapcond = DetermineGap();
   
+  evbuf->SetGapCondition(fCurrentGapCondition);
+    
   //if (!gapcond) {
 	//	PostOutputs();
 	//	return;
@@ -1350,17 +1394,26 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 
 	//= VERTEX COINCIDENCE AND POSITION ==========================================
 	AnalyzeVtx();
+  evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
 
 	//= TRACK CUTS ===============================================================
 	// counts tracks after cuts were applied
   // and fills buffer with selected cuts
-  // TObjArray* fTracks contains normal tracks
-  // TObjArray* fSoftTracks contains soft tracks
+  // TObjArray* fTracks contains normal tracks (fNch)
+  // TObjArray* fSoftTracks contains soft tracks (fNsoft)
   Bool_t doSoft = !fAnalysisStatus ||
 		(fAnalysisStatus & AliPBBase::kBitSoftTracks);
 	fTracks->ProcessEvent(fAODEvent, fESDEvent, doSoft); // apply cuts
 	
+	// Martin's selection
+	AliMultiplicitySelectionCP *MartinSel = new AliMultiplicitySelectionCP();
+	MartinSel->InitDefaultTrackCuts(1);// 1 = b and c, 0 = d and e
+	TArrayI Mindices;
+	Int_t NMartinSel = MartinSel->GetNumberOfITSTPCtracks(fESDEvent,Mindices);
+  evbuf->SetnumMSelection(NMartinSel);
+
   DoMultiplicityStudy(nMCprimaries); // fill corresponding histograms
+  evbuf->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
   
 	if (fMAllTrackMass &&
 	    (fGapInformation[kV0FMDSPDTPC] == AliPBBase::kBinDG)) {
@@ -1373,11 +1426,15 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   // more than 2 tracks are needed for background studies
 	// GetTracks:             ITS + TPC
 	// GetCombinedTracks:     ITS + TPC and ITS only
-  Int_t nch       = fTracks->GetTracks();
-	Int_t ncombined = fTracks->GetCombinedTracks();
+  Int_t nch        = fTracks->GetTracks();
+	Int_t ncombined  = fTracks->GetCombinedTracks();
+	Int_t nITSpureSA = fTracks->GetITSpureSACount();
+  if (NMartinSel>0 && NMartinSel==nch)
+    printf("Number of selected tracks; %i %i %i %i\n",
+      nch,ncombined,nITSpureSA,NMartinSel);
 
-	Bool_t wSoft = ((ncombined >= 2) && (ncombined <= 3) ); // including soft tracks
-	Bool_t woSoft = ((nch >= 2) && (nch <= 3));             // excluding soft tracks
+	//Bool_t wSoft = ((ncombined >= 2) && (ncombined <= 3) ); // including soft tracks
+	//Bool_t woSoft = ((nch >= 2) && (nch <= 3));             // excluding soft tracks
 	//Bool_t wSoft  = ( ncombined == 2 ); // including soft tracks
 	//Bool_t woSoft = ( nch == 2 );       // excluding soft tracks
 
@@ -1389,17 +1446,17 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 
 	//= TRACK PAIRS ==============================================================
 	// loop over all track combinations
-	for(Int_t ii=0; ii<ncombined; ii++){
-		for(Int_t jj=ii+1; jj<ncombined; jj++){
-			// assign current tracks
-			fTrkPair[0] = fTracks->GetTrack(ii);
-			fTrkPair[1] = fTracks->GetTrack(jj);
-
-			// analyze track pairs
-			if (wSoft) DoTrackPair(kTRUE);
-			if (woSoft && (ii < nch) && (jj < nch)) DoTrackPair(kFALSE);
-		}
-	}
+	//for(Int_t ii=0; ii<ncombined; ii++){
+	//	for(Int_t jj=ii+1; jj<ncombined; jj++){
+	//		// assign current tracks
+	//		fTrkPair[0] = fTracks->GetTrack(ii);
+	//		fTrkPair[1] = fTracks->GetTrack(jj);
+  //
+	//		// analyze track pairs
+	//		if (wSoft) DoTrackPair(kTRUE);
+	//		if (woSoft && (ii < nch) && (jj < nch)) DoTrackPair(kFALSE);
+	//	}
+	//}
 
 	//============================================================================
   // save tree for 2 and 4 tracks events
@@ -1407,13 +1464,13 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	// GetTracks:             ITS + TPC
 	// GetCombinedTracks:     ITS + TPC and ITS only
 
-	Bool_t fCheck2tracks = (ncombined == 2) ? kTRUE : kFALSE;
-	Bool_t fCheck4tracks = (ncombined == 4) ? kTRUE : kFALSE;
+	//Bool_t fCheck2tracks = (ncombined == 2) ? kTRUE : kFALSE;
+	//Bool_t fCheck4tracks = (ncombined == 4) ? kTRUE : kFALSE;
 	
-  Bool_t wSoft2tracks  = (ncombined == 2);  // including soft tracks
-  Bool_t wSoft4tracks  = (ncombined == 4);  // including soft tracks
-	Bool_t woSoft2tracks =(nch == 2);         // excluding soft tracks
-	Bool_t woSoft4tracks =(nch == 4);         // excluding soft tracks
+  //Bool_t wSoft2tracks  = (ncombined == 2);  // including soft tracks
+  //Bool_t wSoft4tracks  = (ncombined == 4);  // including soft tracks
+	//Bool_t woSoft2tracks =(nch == 2);         // excluding soft tracks
+	//Bool_t woSoft4tracks =(nch == 4);         // excluding soft tracks
 
 	//if (!wSoft2tracks && !wSoft4tracks && !woSoft2tracks && !woSoft4tracks) {
 	//	// multiplicity out of range (both with soft and without soft track)
@@ -1424,7 +1481,6 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//============================================================================
   // save information into a CEPEventBuffer
   //  
-	Int_t nITSpureSA = fTracks->GetITSpureSACount();
 
   // printf("\nNumber of tracks: %i %i\n",nch,ncombined-nch);
   // printf("Number of residual tracks: %i %i %i\n",fResidualTracks,fResidualTrackletsCB,fResidualTrackletsFW);
@@ -1432,10 +1488,6 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   if (ncombined <= fnumTracksMax) {
     // set event parameters
     // printf("setting event information ...\n");
-    evbuf->SetPileup(isPileup);
-    evbuf->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
-    evbuf->SetGapCondition(fCurrentGapCondition);
-    evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
     
     // add normal tracks to event buffer
     Double_t mom[3];
@@ -1851,12 +1903,40 @@ Bool_t AliAnalysisTaskPB::DetermineGap()
 		else {
 			// determine gaps from ESDs
       // 
-			TH1F* fmdSums[] = {fFMDsum1I, fFMDsum2I, fFMDsum2O, fFMDsum3I, fFMDsum3O};
+			/*
+      TH1F* fmdSums[] = {fFMDsum1I, fFMDsum2I, fFMDsum2O, fFMDsum3I, fFMDsum3O};
 		  fCurrentGapCondition = AliPBUtils::GetGapConfig(fESDEvent,
         fHitMapSPDinner, fHitMapSPDouter, fHitMapSPDtrklt,
         fHitMapFMDa, fHitMapFMDc, (TH1**)fmdSums,
         fmulADA, fmulADC, ftimeADA, ftimeADC,
         fTPCGapDCAaSide, fTPCGapDCAcSide);
+    */
+    
+    // adapted from AliAnalysisTaskCDTree.cxx
+    AliTriggerAnalysis triggerAnalysis;
+	  const Bool_t v0A = triggerAnalysis.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0A);
+	  const Bool_t v0C = triggerAnalysis.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0C);
+	  
+    //Check central activity
+	  Bool_t centAct = kFALSE;
+	  if (triggerAnalysis.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kSPDGFO)) {
+		  centAct = kTRUE;
+	  }
+	  
+    // Check FMD activity by offine
+	  triggerAnalysis.SetFMDThreshold(0.3,0.5);
+	  const Bool_t fmdA = triggerAnalysis.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kFMDA);
+	  const Bool_t fmdC = triggerAnalysis.IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kFMDC);
+    
+    // compose fCurrentGapCondition
+    // there is no distinction between SPDA and SPDC, SPD is save on SPDA
+    fCurrentGapCondition = AliPBBase::kBitBaseLine
+      + v0A * AliPBBase::kBitV0A + v0C * AliPBBase::kBitV0C
+      + fmdA * AliPBBase::kBitFMDA + fmdC * AliPBBase::kBitFMDC
+      + centAct * AliPBBase::kBitSPDA
+      + AliPBUtils::GetAD(fESDEvent, fmulADA,fmulADC,ftimeADA,ftimeADC)
+      + AliPBUtils::GetZDC(fESDEvent);
+    
 		}
 		if (!fCurrentGapCondition) {
 			fCurrentGapCondition = 0xfffe;
@@ -1943,9 +2023,9 @@ void AliAnalysisTaskPB::DoMultiplicityStudy(Int_t nMCprimaries)
 	//
 
 	// retrieve values from the track object
-	Int_t ntrk0 = fTracks->GetTracksBeforeCuts();
-	Int_t nch = fTracks->GetTracks();
-	Int_t ncombined = fTracks->GetCombinedTracks();
+	Int_t ntrk0      = fTracks->GetTracksBeforeCuts();
+	Int_t nch        = fTracks->GetTracks();
+	Int_t ncombined  = fTracks->GetCombinedTracks();
 	Int_t nITSpureSA = fTracks->GetITSpureSACount();
 
 	// determine the residual tracks / tracklets
@@ -2532,7 +2612,6 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
   if (!fMCEvent) return -1;
 	AliStack* stack = fMCEvent->Stack();
 	if (!stack) return -1;
-  //printf("We got a MC stack ...\n");
 
   // print the MC stack
 	if (kFALSE)stack->DumpPStack ();
@@ -2620,14 +2699,13 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
     
     TParticle* part = stack->Particle(dauID);
     TParticle* prim = stack->Particle(primID);
-    
     //printf("MC track IDs: %i (daughter), %i (parent), %i (primary)\n",
     //  dauID,parID,primID);
     //printf("PDG code of track/primary %i: %i/%i\n",
-        
     //  iTracks,part->GetPdgCode(),prim->GetPdgCode());
+    
 		if (stack->IsPhysicalPrimary(iTracks) && (part->GetPDG()->Charge() != 0.) &&
-		    (part->Eta() < 0.9) && (part->Eta() > -0.9)) { // TODO add parameter
+		    (part->Eta() < 0.9) && (part->Eta() > -0.9)) {
 			++nPhysicalPrimaries;
 		}
     
@@ -2653,21 +2731,26 @@ Int_t AliAnalysisTaskPB::DoMCTruth()
 	Int_t gapA = 0;
 	Int_t gapAv0 = 0;
 	Int_t gapAv0fmd = 0;
+	Int_t gapAad = 0;
 	Int_t gapC = 0;
 	Int_t gapCv0 = 0;
 	Int_t gapCv0fmd = 0;
+	Int_t gapCad = 0;
 	Int_t central = 0;
+	part = NULL;
 	for (Int_t iTracks = 0; iTracks <  nPrimaries; ++iTracks) {
-		TParticle* part = (TParticle*)stack->Particle(iTracks);
+		part = (TParticle*)stack->Particle(iTracks);
 		if (part && stack->IsPhysicalPrimary(iTracks) &&
 		    (part->GetPDG()->Charge() != 0.)) {
 			if (part->Eta() > -0.9 && part->Eta() < 0.9) central++;
-			if (part->Eta() > 0.9 && part->Eta() < 5.1) gapA++;
+			if (part->Eta() > 0.9 && part->Eta() < 6.3) gapA++;
 			if (part->Eta() > 2.8 && part->Eta() < 5.1) gapAv0++;
 			if (part->Eta() > 1.7 && part->Eta() < 5.1) gapAv0fmd++;
-			if (part->Eta() < -0.9 && part->Eta() > -3.7) gapC++;
+			if (part->Eta() > 4.77 && part->Eta() < 6.30) gapAad++;
+			if ((part->Eta() < -0.9 && part->Eta() > -3.7) || (part->Eta() < -4.92 && part->Eta() > -6.96)) gapC++;
 			if (part->Eta() < -1.9 && part->Eta() > -3.7) gapCv0++;
 			if (part->Eta() < -1.9 && part->Eta() > -3.7) gapCv0fmd++;
+			if (part->Eta() < -4.92 && part->Eta() > -6.96) gapCad++;
 		}
 	}
 

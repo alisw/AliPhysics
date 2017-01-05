@@ -122,15 +122,15 @@ AliPBTracks::~AliPBTracks()
 
 
 //------------------------------------------------------------------------------
-Bool_t AliPBTracks::ProcessEvent(AliAODEvent* aodEvent,
-                                      AliESDEvent* esdEvent,
-                                      Bool_t doSoft /* = kTRUE */)
+Bool_t AliPBTracks::ProcessEvent(
+  AliAODEvent* aodEvent,
+  AliESDEvent* esdEvent,
+  Bool_t doSoft /* = kTRUE */)
 {
 	//
-  // this function controlls the processing of an event, after the processing
-  // is done, the results can be used via the getters
-	//
-
+  // this function controlls the processing of an event - selection of tracks -,
+  // after the processing is done, the results can be used via the getters
+  
 	if ((aodEvent && esdEvent) || (!aodEvent && !esdEvent)) {
 		// only one event type is allowed, no event type is also not allowed
 		return fIsValid = fDoAOD = kFALSE;
@@ -215,18 +215,24 @@ void AliPBTracks::ApplyCuts()
 	fNTrk0 = (fDoAOD) ?
 		fAODEvent->GetNumberOfTracks() : fESDEvent->GetNumberOfTracks();
 
-	fNch = -999;
+	// counters of different track types
+  // fNch       : ITS + TPC
+  // fNsoft     : ITS only
+  // fNcombined : fNch + fNsoft;
+  // fNITSpureSA: ITSpureSA
+  
+  fNch = -999;
 	fNsoft = -999;
 	fNcombined = -999;
 	fNITSpureSA = -999;
 
 	// determine fNch and fNsoft
   if (fDoAOD) {
-		CutTrack(fAODEvent); // ordinary tracks
+		CutTrack(fAODEvent, 0); // ordinary tracks
 		CutTrack(fAODEvent, 2); // kITSpureSA
 	}
 	else {
-		CutTrack(fESDEvent); // ordinary tracks
+		CutTrack(fESDEvent, 0); // ordinary tracks
 		CutTrack(fESDEvent, 2); // kITSpureSA
 	}
 
@@ -285,15 +291,12 @@ void AliPBTracks::CutTrack(AliESDEvent *ESDEvent, Int_t mode /* = 0 */)
 			fTracks = 0x0;
 		}
 
+    // GetStandardITSTPCTrackCuts2010 => fNch
 		// TPC
-		esdTrackCuts.SetAcceptKinkDaughters(kFALSE);
 		esdTrackCuts.SetMinNClustersTPC(70);
 		esdTrackCuts.SetMaxChi2PerClusterTPC(4);
-		esdTrackCuts.SetMaxDCAToVertexZ(2);
+		esdTrackCuts.SetAcceptKinkDaughters(kFALSE);
 		esdTrackCuts.SetRequireTPCRefit(kTRUE);
-
-		//esdTrackCuts.SetMinNCrossedRowsTPC(70);
-		//esdTrackCuts.SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 
 		// ITS
 		esdTrackCuts.SetRequireITSRefit(kTRUE);
@@ -301,9 +304,14 @@ void AliPBTracks::CutTrack(AliESDEvent *ESDEvent, Int_t mode /* = 0 */)
 		                                      AliESDtrackCuts::kAny);
 		// 7*(0.0026+0.0050/pt^1.01)
 		esdTrackCuts.SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    esdTrackCuts.SetMaxChi2TPCConstrainedGlobal(36);
 
+		esdTrackCuts.SetMaxDCAToVertexZ(2);
 		esdTrackCuts.SetDCAToVertex2D(kFALSE);
 		esdTrackCuts.SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts.SetMaxChi2PerClusterITS(36);
+    
+    // eta cut
 		esdTrackCuts.SetEtaRange(-etacut, etacut);
 
 		fTracks = esdTrackCuts.GetAcceptedTracks(ESDEvent);
@@ -312,6 +320,7 @@ void AliPBTracks::CutTrack(AliESDEvent *ESDEvent, Int_t mode /* = 0 */)
   }
 	else if (mode == 1) {
 		// cuts for soft tracks (ITS only - kITSsa)
+    // GetStandardITSSATrackCuts2009 => fNsoft
 
 		if (fSoftTracks) {
 			fSoftTracks->Clear();
@@ -328,6 +337,7 @@ void AliPBTracks::CutTrack(AliESDEvent *ESDEvent, Int_t mode /* = 0 */)
 		esdTrackCuts.SetMaxChi2PerClusterITS(1.);
 		esdTrackCuts.SetMaxDCAToVertexXYPtDep("0.0595+0.0182/pt^1.55");
 
+    // eta cut
 		esdTrackCuts.SetEtaRange(-etacut, etacut);
 
 		fSoftTracks = esdTrackCuts.GetAcceptedTracks(ESDEvent);
@@ -336,14 +346,14 @@ void AliPBTracks::CutTrack(AliESDEvent *ESDEvent, Int_t mode /* = 0 */)
   }
 	else {
 		
-    // cuts for ITSpureSA tracks used in order to get rid of them for noise
+    // determines ITSpureSA tracks used in order to get rid of them for noise
 		// studies
 
 		// selection according to cuts
 		esdTrackCuts.SetRequireITSPureStandAlone(kTRUE);
 
 		// do selection according to status bits (never tested!!!)
-		//for(Int_t itrack = 0; itrack < ESDEvent->GetNumberOfTracks(); itrack++){
+		// for(Int_t itrack = 0; itrack < ESDEvent->GetNumberOfTracks(); itrack++){
 		//	const AliESDtrack* esdtrack = ESDEvent->GetTrack(itrack);
 		//	UInt64 status = esdtrack->GetStatus();
 		//	if ((status & kITSpureSA) && !(status & kITSsa)){
@@ -470,6 +480,7 @@ void AliPBTracks::GetRemainingTracklets()
 			}
 		}
 	}
+
 }
 
 //------------------------------------------------------------------------------ 

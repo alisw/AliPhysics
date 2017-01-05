@@ -19,9 +19,13 @@ CEPEventBuffer::CEPEventBuffer()
   , fRunNumber(CEPTrackBuffer::kdumval)
   , fEventNumber(CEPTrackBuffer::kdumval)
   , fisPileup(kFALSE)
+  , fisClusterCut(kFALSE)
+  , fPhysel(kFALSE)
+  , fisMBOR(kFALSE)
   , fnumTracks(0)
   , fnumSoftTracks(0)
   , fnumResiduals(0)
+  , fnumMSelection(0)
   , fGapCondition(0)
   , fCEPTracks(new TClonesArray("CEPTrackBuffer"))
   , ftrb(*fCEPTracks)
@@ -64,18 +68,21 @@ void CEPEventBuffer::Reset()
   // reset all counters
   fRunNumber     = CEPTrackBuffer::kdumval;
   fEventNumber   = CEPTrackBuffer::kdumval;
-  fisPileup      = kFALSE;
   fGapCondition  = 0;  
   fMCProcessType = CEPTrackBuffer::kdumval;
   fMCGenerator   = "";
   fPhysel        = kFALSE;
+  fEvHandlersel  = kFALSE;
   fisPileup      = kFALSE;
+  fisClusterCut  = kFALSE;
+  fisMBOR        = kFALSE;
 
   // clear the track list
   fCEPTracks->Clear();
   fnumTracks     = 0;
   fnumSoftTracks = 0;
   fnumResiduals  = 0;
+  fnumMSelection = 0;
   
   fVertexPos     = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
   fMCVertexPos   = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
