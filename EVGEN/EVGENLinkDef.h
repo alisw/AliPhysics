@@ -30,6 +30,7 @@
 #pragma link C++ class  AliGenDoubleScan+;
 #pragma link C++ class  AliGenLib+;
 #pragma link C++ class  AliGenMUONlib+;
+#pragma link C++ class  AliGenMuonUncorr+;
 #pragma link C++ class  AliGenHMPIDlib+;
 #pragma link C++ class  AliGenHalo+;
 #pragma link C++ class  AliGenHaloProtvino+;

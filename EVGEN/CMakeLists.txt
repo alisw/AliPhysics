@@ -70,6 +70,7 @@ set(SRCS
     AliGenMUONCocktailpp.cxx
     AliGenMUONlib.cxx
     AliGenMUONLMR.cxx
+    AliGenMuonUncorr.cxx
     AliGenPairFlat.cxx
     AliGenParam.cxx
     AliGenPHOSlib.cxx
