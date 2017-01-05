@@ -549,7 +549,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 	AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)event)->GetVZEROData();
 	Int_t tv0a=v0data->GetV0ADecision();
 	Int_t tv0c=v0data->GetV0CDecision();
-	if(tv0a==1 && tv0c==1){
+	if(!(tv0a==1 && tv0c==1)){
 	  if(accept) fWhyRejection=7;
 	  fEvRejectionBits+=1<<kPhysicsSelection;
 	  accept=kFALSE;
