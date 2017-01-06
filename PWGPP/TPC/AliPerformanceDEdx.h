@@ -19,14 +19,14 @@ class AliVEvent;
 class AliVfriendEvent;
 class AliMCEvent;
 class AliVTrack;
-class TRootIoCtor;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceDEdx : public AliPerformanceObject {
 public :
-  AliPerformanceDEdx(TRootIoCtor*);
+  AliPerformanceDEdx(TRootIOCtor*);
   AliPerformanceDEdx(const Char_t* name="AliPerformanceDEdx", const Char_t* title="AliPerformanceDEdx",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE, Bool_t useSparse=kTRUE);
   
   virtual ~AliPerformanceDEdx();
