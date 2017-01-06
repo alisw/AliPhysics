@@ -48,14 +48,20 @@ class LMEECutLib {
 public:
   // Possible PID Settings
   enum LMEEPIDAna{
-    kPbPb2015_pidV0_pt400,
-    kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton,
+    kPbPb2015_pidV0_electron_pt100,
+    kPbPb2015_pure_pion_pt100,
+    kPbPb2015_pure_kaon_pt100,
+    kPbPb2015_pure_proton_pt100,
     kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton2,
     kITSTPCTOFif_trkSPDfirst_kINT7_pt100_woPID,
     kPbPb2015_Pt400_TPCele_symITS_tightTOFif,
     kPbPb2015_Pt400_TPCele_symITS_tightTOFreq,
+    kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton,
     kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif,
     kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq,
+    kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton_noTPCcut,
+    kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif_noTPCcut,
+    kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq_noTPCcut,
     kPbPb2015_Pt400_ITSSA
   };
   enum LMEEPIDPre{
@@ -108,7 +114,8 @@ public:
     kStandardESD
   };
   enum LMEEEventCut{
-    kStandard
+    kStandard,
+    kStandard_run2cuts
   };
   LMEECutLib() {}
 
@@ -187,6 +194,14 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
   AliDielectronEventCuts* eventCuts = 0x0;
   switch (cutSet) {
     case kStandard:
+      //Basic Event Cuts for pp and Pb-Pb, additional cuts may be in the AddTask
+      eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+      eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
+      eventCuts->SetRequireVertex();
+      eventCuts->SetMinVtxContributors(1);
+      eventCuts->SetVertexZ(-10.,10.);
+      break;
+    case kStandard_run2cuts:
       //Basic Event Cuts for pp and Pb-Pb, additional cuts may be in the AddTask
       eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
       eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
@@ -354,23 +369,6 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   //ITS: electron inclusion asymmetric OVER FULL MOMENTUM RANGE
   //TOF: electron inclusion 3sigma - BUT ONLY IF AVAILABLE
 
-  // PID for V0 task
-  AliDielectronPID *pid_TOFonly = new AliDielectronPID("pid_TOFonly","pid_TOFonly");
-  pid_TOFonly->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3, 3, 0. ,100., kFALSE);
-  pid_TOFonly->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 2. , 0. ,100., kTRUE);
-
-  AliDielectronPID *pid_TPCele_AsymITS_tightTOFif = new AliDielectronPID("pid_TPCele_AsymITS_tightTOFif","pid_TPCele_AsymITS_tightTOFif");
-  pid_TPCele_AsymITS_tightTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
-  pid_TPCele_AsymITS_tightTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
-  pid_TPCele_AsymITS_tightTOFif->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
-  pid_TPCele_AsymITS_tightTOFif->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
-
-  AliDielectronPID *pid_TPCele_AsymITS_tightTOFreq = new AliDielectronPID("pid_TPCele_AsymITS_tightTOFreq","pid_TPCele_AsymITS_tightTOFreq");
-  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
-  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
-  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
-  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
-
 
   // eta range:
   AliDielectronVarCuts *etaRange090 = new AliDielectronVarCuts("etaRange090","etaRange090");
@@ -386,16 +384,46 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   ptRange500to3500->AddCut(AliDielectronVarManager::kPt, 0.5, 3.5);
   AliDielectronVarCuts *ptRange400to3500 = new AliDielectronVarCuts("ptRange400to3500","ptRange400to3500");
   ptRange400to3500->AddCut(AliDielectronVarManager::kPt, 0.4, 3.5);
-  AliDielectronVarCuts *ptRange400to8000 = new AliDielectronVarCuts("ptRange400to3500","ptRange400to3500");
-  ptRange400to3500->AddCut(AliDielectronVarManager::kPt, 0.4, 8.0);
+  AliDielectronVarCuts *ptRange400to8000 = new AliDielectronVarCuts("ptRange400to8000","ptRange400to8000");
+  ptRange400to8000->AddCut(AliDielectronVarManager::kPt, 0.4, 8.0);
   AliDielectronVarCuts *ptRange300to3500 = new AliDielectronVarCuts("ptRange300to3500","ptRange300to3500");
   ptRange300to3500->AddCut(AliDielectronVarManager::kPt, 0.3, 3.5);
   AliDielectronVarCuts *ptRange200to3500 = new AliDielectronVarCuts("ptRange200to3500","ptRange200to3500");
   ptRange200to3500->AddCut(AliDielectronVarManager::kPt, 0.2, 3.5);
   AliDielectronVarCuts *ptRange100to3500 = new AliDielectronVarCuts("ptRange100to3500","ptRange100to3500");
   ptRange100to3500->AddCut(AliDielectronVarManager::kPt, 0.1, 3.5);
+  AliDielectronVarCuts *ptRange100to8000 = new AliDielectronVarCuts("ptRange100to8000","ptRange100to8000");
+  ptRange100to8000->AddCut(AliDielectronVarManager::kPt, 0.1, 8.0);
 
+  // PID for V0 task
+  AliDielectronPID *pid_TOFonly = new AliDielectronPID("pid_TOFonly","pid_TOFonly");
+  pid_TOFonly->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3, 3, 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  pid_TOFonly->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99. , 2. , 0. ,100., kTRUE);
 
+  AliDielectronPID *pid_pion = new AliDielectronPID("pid_pion","pid_pion");
+  pid_pion->AddCut(AliDielectronPID::kTOF,AliPID::kPion, -3., 3., 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  pid_pion->AddCut(AliDielectronPID::kITS,AliPID::kPion, -3., 3., 0. ,100., kFALSE);
+
+  AliDielectronPID *pid_kaon = new AliDielectronPID("pid_kaon","pid_kaon");
+  pid_kaon->AddCut(AliDielectronPID::kTOF,AliPID::kKaon, -3., 3., 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  pid_kaon->AddCut(AliDielectronPID::kITS,AliPID::kKaon, -3., 3., 0. ,100., kFALSE);
+
+  AliDielectronPID *pid_proton = new AliDielectronPID("pid_proton","pid_proton");
+  pid_proton->AddCut(AliDielectronPID::kTOF,AliPID::kProton, -3., 3., 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  pid_proton->AddCut(AliDielectronPID::kITS,AliPID::kProton, -3., 3., 0. ,100., kFALSE);
+
+  // Normal Analysis Cuts
+  AliDielectronPID *pid_TPCele_AsymITS_tightTOFif = new AliDielectronPID("pid_TPCele_AsymITS_tightTOFif","pid_TPCele_AsymITS_tightTOFif");
+  pid_TPCele_AsymITS_tightTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFif->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
+  pid_TPCele_AsymITS_tightTOFif->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFif->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
+  AliDielectronPID *pid_TPCele_AsymITS_tightTOFreq = new AliDielectronPID("pid_TPCele_AsymITS_tightTOFreq","pid_TPCele_AsymITS_tightTOFreq");
+  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
+  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFreq->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
 
   AliDielectronPID *PID_cutoff_pion_kaon_proton = new AliDielectronPID("PID_cutoff_pion_kaon_proton","PID_cutoff_pion_kaon_proton");
   PID_cutoff_pion_kaon_proton->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE);
@@ -414,6 +442,38 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   AliDielectronCutGroup* PID_cutoff_pion_kaon_proton_cg = new AliDielectronCutGroup("PID_cutoff_pion_kaon_proton_cg","PID_cutoff_pion_kaon_proton_cg",AliDielectronCutGroup::kCompOR);
   PID_cutoff_pion_kaon_proton_cg->AddCut(PID_cutoff_pion_kaon_proton);
   PID_cutoff_pion_kaon_proton_cg->AddCut(PID_cutoff_pion_kaon_proton_EleIncl);
+
+
+  // Cuts for PID Contamination Analysis
+  AliDielectronPID *pid_TPCele_AsymITS_tightTOFif_noTPCcut = new AliDielectronPID("pid_TPCele_AsymITS_tightTOFif_noTPCcut","pid_TPCele_AsymITS_tightTOFif_noTPCcut");
+  // pid_TPCele_AsymITS_tightTOFif_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFif_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
+  pid_TPCele_AsymITS_tightTOFif_noTPCcut->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFif_noTPCcut->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
+  AliDielectronPID *pid_TPCele_AsymITS_tightTOFreq_noTPCcut = new AliDielectronPID("pid_TPCele_AsymITS_tightTOFreq_noTPCcut","pid_TPCele_AsymITS_tightTOFreq_noTPCcut");
+  // pid_TPCele_AsymITS_tightTOFreq_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.0, 3. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFreq_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kPion,     -99., 5. , 0. ,100., kTRUE);
+  pid_TPCele_AsymITS_tightTOFreq_noTPCcut->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 1. , 0. ,100., kFALSE);
+  pid_TPCele_AsymITS_tightTOFreq_noTPCcut->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+
+  AliDielectronPID *PID_cutoff_pion_kaon_proton_noTPCcut = new AliDielectronPID("PID_cutoff_pion_kaon_proton_noTPCcut","PID_cutoff_pion_kaon_proton_noTPCcut");
+  // PID_cutoff_pion_kaon_proton_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.0, 3. , 0. ,100., kFALSE);
+  PID_cutoff_pion_kaon_proton_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -99.0, 4. , 0. ,100., kTRUE);
+  PID_cutoff_pion_kaon_proton_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kKaon,     -2.0, 2. , 0. ,100., kTRUE);
+  PID_cutoff_pion_kaon_proton_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kProton,   -2.0, 2. , 0. ,100., kTRUE);
+  PID_cutoff_pion_kaon_proton_noTPCcut->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+  PID_cutoff_pion_kaon_proton_noTPCcut->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
+  AliDielectronPID *PID_cutoff_pion_kaon_proton_EleIncl_noTPCcut = new AliDielectronPID("PID_cutoff_pion_kaon_proton_EleIncl_noTPCcut","PID_cutoff_pion_kaon_proton_EleIncl_noTPCcut");
+  PID_cutoff_pion_kaon_proton_EleIncl_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kPion,    -99.0, 4. , 0. ,100., kTRUE);
+  // PID_cutoff_pion_kaon_proton_EleIncl_noTPCcut->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2.5, 3. , 0. ,100., kFALSE);
+  PID_cutoff_pion_kaon_proton_EleIncl_noTPCcut->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kRequire);
+  PID_cutoff_pion_kaon_proton_EleIncl_noTPCcut->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3. , 3. , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
+  AliDielectronCutGroup* PID_cutoff_pion_kaon_proton_cg_noTPCcut = new AliDielectronCutGroup("PID_cutoff_pion_kaon_proton_cg_noTPCcut","PID_cutoff_pion_kaon_proton_cg_noTPCcut",AliDielectronCutGroup::kCompOR);
+  PID_cutoff_pion_kaon_proton_cg_noTPCcut->AddCut(PID_cutoff_pion_kaon_proton_noTPCcut);
+  PID_cutoff_pion_kaon_proton_cg_noTPCcut->AddCut(PID_cutoff_pion_kaon_proton_EleIncl_noTPCcut);
 
 
   //-----------------------------------------------
@@ -440,16 +500,6 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
       pidCuts = cgPIDCutsAna;
       break;
 
-    case kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton2:
-    // Cut out pion/kaon/proton band LHC15o
-      AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
-      cgPIDCutsAna->AddCut(etaRange080);
-      cgPIDCutsAna->AddCut(ptRange400to8000);
-      cgPIDCutsAna->AddCut(PID_cutoff_pion_kaon_proton);
-      cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
-      pidCuts = cgPIDCutsAna;
-      break;
-
     case kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif:
     // ITS & TOFifavailable & TPC sigma cut for LHC15o
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
@@ -469,6 +519,35 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
       pidCuts = cgPIDCutsAna;
       break;
 
+    case kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton_noTPCcut:
+    // Cut out pion/kaon/proton band LHC15o but refilled when particle in TOF electron band
+      AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
+      cgPIDCutsAna->AddCut(etaRange080);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
+      cgPIDCutsAna->AddCut(PID_cutoff_pion_kaon_proton_cg_noTPCcut);
+      cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
+      pidCuts = cgPIDCutsAna;
+      break;
+
+    case kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif_noTPCcut:
+    // ITS & TOFifavailable & TPC sigma cut for LHC15o
+      AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
+      cgPIDCutsAna->AddCut(etaRange080);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
+      cgPIDCutsAna->AddCut(pid_TPCele_AsymITS_tightTOFif_noTPCcut);
+      cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
+      pidCuts = cgPIDCutsAna;
+      break;
+    case kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq_noTPCcut:
+    // ITS & TOFrequired & TPC sigma cut for LHC15o
+      AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
+      cgPIDCutsAna->AddCut(etaRange080);
+      cgPIDCutsAna->AddCut(ptRange400to8000);
+      cgPIDCutsAna->AddCut(pid_TPCele_AsymITS_tightTOFreq_noTPCcut);
+      cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
+      pidCuts = cgPIDCutsAna;
+      break;
+
     case kPbPb2015_Pt400_ITSSA:
     // only ITSSA tracks
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
@@ -477,12 +556,36 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
       cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
       pidCuts = cgPIDCutsAna;
       break;
-    case kPbPb2015_pidV0_pt400:
+    case kPbPb2015_pidV0_electron_pt100:
     // Only TOF PID for V0 selection
       AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
       cgPIDCutsAna->AddCut(etaRange080);
-      cgPIDCutsAna->AddCut(ptRange400to8000);
+      cgPIDCutsAna->AddCut(ptRange100to8000);
       cgPIDCutsAna->AddCut(pid_TOFonly);
+      cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
+      pidCuts = cgPIDCutsAna;
+      break;
+    case kPbPb2015_pure_pion_pt100:
+      AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
+      cgPIDCutsAna->AddCut(etaRange080);
+      cgPIDCutsAna->AddCut(ptRange100to8000);
+      cgPIDCutsAna->AddCut(pid_pion);
+      cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
+      pidCuts = cgPIDCutsAna;
+      break;
+    case kPbPb2015_pure_kaon_pt100:
+      AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
+      cgPIDCutsAna->AddCut(etaRange080);
+      cgPIDCutsAna->AddCut(ptRange100to8000);
+      cgPIDCutsAna->AddCut(pid_kaon);
+      cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
+      pidCuts = cgPIDCutsAna;
+      break;
+    case kPbPb2015_pure_proton_pt100:
+      AliDielectronCutGroup* cgPIDCutsAna = new AliDielectronCutGroup("cgPIDCutsAna","cgPIDCutsAna",AliDielectronCutGroup::kCompAND);
+      cgPIDCutsAna->AddCut(etaRange080);
+      cgPIDCutsAna->AddCut(ptRange100to8000);
+      cgPIDCutsAna->AddCut(pid_proton);
       cgPIDCutsAna->AddCut(GetTrackSelectionAna(AnaCut));
       pidCuts = cgPIDCutsAna;
       break;
@@ -637,7 +740,6 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsPre(AnalysisCut AnaCut) {
       //pidCuts->Print();
       break;
 
-    case default:
     default: cout << "No Prefilter PID Cut defined " << endl;
   }
   return pidCuts;
@@ -691,7 +793,8 @@ AliAnalysisCuts* LMEECutLib::GetESDTrackCutsAna(AnalysisCut AnaCut) {
     default:
       // standard cuts with very loose DCA: Bit4 (Int: 16), AOD095&115
 
-      esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
+      esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      // esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kTRUE);
       esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
       esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
       esdTrackCutsH->SetDCAToVertex2D(kTRUE);

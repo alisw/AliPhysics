@@ -1,16 +1,14 @@
 //#include "AliDielectron.h"
 
-void      InitHistograms(AliDielectron *die, Int_t cutDefinition);
-void      InitCF(AliDielectron* die, Int_t cutDefinition);
+void      InitHistograms(AliDielectron *die);
+void      InitCF(AliDielectron* die);
 TVectorD* BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD* GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx};
 
-//   "kPbPb2015_pidV0_pt400", kITSTPCTOFif_trkSPDfirst_kINT7_pt100_woPID
-//    kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq, kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif
- // TString names=("kPbPb2015_Pt400_mastermind;kPbPb2015_Pt400_mastermind2;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
- TString names=("kPbPb2015_Pt400_mastermind;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
- // TString names=("noPID");
+TString names=("kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif");
+// TString names=("kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton_noTPCcut;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq_noTPCcut;kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif_noTPCcut");
+// TString names=("kPbPb2015_pidV0_electron_pt100;kPbPb2015_pure_pion_pt100;kPbPb2015_pure_kaon_pt100;kPbPb2015_pure_proton_pt100");
 
 
 TObjArray *arrNames = names.Tokenize(";");
@@ -20,11 +18,11 @@ const Int_t nDie = arrNames->GetEntries();
 Bool_t MCenabled = kFALSE;//needed for LMEEcutlib
 Bool_t isQAtask = kFALSE;
 
-Bool_t SetMixing = kTRUE;
-Bool_t SetPairing = kTRUE;
+Bool_t SetMixing = kFALSE;
+Bool_t SetPairing = kFALSE;
 
 
-AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE)
+AliDielectron* Config_caklein_LMEEPbPb_AOD(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
@@ -34,8 +32,7 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
   LMEECutLib*  LMcutlib = new LMEECutLib();
 
   // task name
-  TString name=Form("%02d",cutDefinition);
-  if (cutDefinition<arrNames->GetEntriesFast())  name=arrNames->At(cutDefinition)->GetName();
+  TString name = cutDefinition;
 
   // init AliDielectron
   AliDielectron *die = new AliDielectron(Form("%s",name.Data()), Form("AliDielectron with cuts: %s",name.Data()));
@@ -44,114 +41,92 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
 
   cout << "cutDefinition = " << cutDefinition << endl;
   // Setup Analysis Selection
-  if (cutDefinition == -100) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_ITSSA);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kITSSA);
-      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+  if (cutDefinition == "kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
-      AnaCut.SetCentrality(LMEECutLib::kPbPb_00to90);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
   }
-  if (cutDefinition == 0) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
-      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  else if (cutDefinition == "kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
 
-      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
   }
-  if (cutDefinition == -100) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton2);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
-      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  else if (cutDefinition == "kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
 
-      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
   }
-  if (cutDefinition == 1) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
-      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  else if (cutDefinition == "kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton_noTPCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_PID_cutoff_pion_kaon_proton_noTPCcut);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
 
-      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
   }
-  if (cutDefinition == 2) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
-      AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+  else if (cutDefinition == "kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq_noTPCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq_noTPCcut);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
 
-      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
   }
-  else if (cutDefinition == -100) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFreq);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
-      AnaCut.SetPairCutsAna(LMEECutLib::kPairCutsAna);
+  else if (cutDefinition == "kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif_noTPCcut"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif_noTPCcut);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
 
-      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
   }
-  else if (cutDefinition == -100) {
-      AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_TPCele_AsymITS_tightTOFif);
-      AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
-      AnaCut.SetPairCutsAna(LMEECutLib::kPairCutsAna);
-
-      AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
-      AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
-      AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
-      AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
-
-      AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
-      AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
-      AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-      // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
-  }
-
-
-  else if (cutDefinition==-100) {
+  else if (cutDefinition == "kITSTPCTOFif_trkSPDfirst_kINT7_pt100_woPID"){
     AnaCut.SetPIDAna(LMEECutLib::kITSTPCTOFif_trkSPDfirst_kINT7_pt100_woPID);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
@@ -164,11 +139,70 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
     AnaCut.SetCentrality(LMEECutLib::kPbPb_00to90);
     AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
     AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-    // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
   }
-  else if (cutDefinition==-100) {
-    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_pidV0_pt400);
+  else if (cutDefinition == "kPbPb2015_pidV0_electron_pt100"){
+    std::cout << "kPbPb2015_pidV0_electron_pt100" << std::endl;
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_pidV0_electron_pt100);
     AnaCut.SetTrackSelectionAna(LMEECutLib::kV0);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+  }
+  else if (cutDefinition == "kPbPb2015_pure_pion_pt100"){
+    std::cout << "kPbPb2015_pure_pion_pt100" << std::endl;
+
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_pure_pion_pt100);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+  }
+  else if (cutDefinition == "kPbPb2015_pure_kaon_pt100"){
+    std::cout << "kPbPb2015_pure_kaon_pt100" << std::endl;
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_pure_kaon_pt100);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+  }
+  else if (cutDefinition == "kPbPb2015_pure_proton_pt100"){
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_pure_proton_pt100);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kSPDfirst);
+    AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
+
+    AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
+    AnaCut.SetPIDPre(LMEECutLib::kStandardPre);
+    AnaCut.SetTrackSelectionPre(LMEECutLib::kPrefilter_cut1);
+    AnaCut.SetPairCutsPre(LMEECutLib::kNoPairCutsPre);
+
+    AnaCut.SetCentrality(LMEECutLib::kPbPbSemiCentral);
+    AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
+    AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
+  }
+  else if (cutDefinition == "kPbPb2015_Pt400_ITSSA") {
+    AnaCut.SetPIDAna(LMEECutLib::kPbPb2015_Pt400_ITSSA);
+    AnaCut.SetTrackSelectionAna(LMEECutLib::kITSSA);
     AnaCut.SetPairCutsAna(LMEECutLib::kNoPairCutsAna);
 
     AnaCut.SetPreFilterType(LMEECutLib::kNoPreFilter);
@@ -179,16 +213,16 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
     AnaCut.SetCentrality(LMEECutLib::kPbPb_00to90);
     AnaCut.SetMixing(LMEECutLib::kEventMixing_1);
     AnaCut.SetESDTrackSelection(LMEECutLib::kStandardESD);
-    // LMcutlib->SetEtaCorrection(die, AnaCut.GetPIDAna(), AnaCut.GetCentrality(), AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kEta);
   }
-
-
   else {
-    cout << " =============================== " << endl;
-    cout << " ==== INVALID CONFIGURATION ==== " << endl;
-    cout << " cutDefinition = " << cutDefinition << endl;
-    cout << " =============================== " << endl;
+      cout << " =============================== " << endl;
+      cout << " ==== INVALID CONFIGURATION ==== " << endl;
+      cout << " cutDefinition = " << cutDefinition << endl;
+      cout << " =============================== " << endl;
   }
+
+
+
   // __________________________________________________
   // POSSIBLE FURTHER SETTINGS
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -267,7 +301,7 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
   // only if an AliDielectronHistos object is attached to the
   // dielectron framework histograms will be filled
   //
-  InitHistograms(die,cutDefinition);
+  InitHistograms(die);
 
   // the last definition uses no cuts and only the QA histograms should be filled!
   //  InitCF(die,cutDefinition);
@@ -277,7 +311,7 @@ AliDielectron* Config_caklein_LMEEPbPb_AOD(Int_t cutDefinition, Bool_t hasMC=kFA
 
 //______________________________________________________________________________________
 
-void InitHistograms(AliDielectron *die, Int_t cutDefinition)
+void InitHistograms(AliDielectron *die)
 {
   //
   // Initialise the histograms
@@ -355,6 +389,8 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   // histos->UserHistogram("Event","nESDTracks","",8000,0,80000,AliDielectronVarManager::kNTrk);
   // histos->UserHistogram("Event","Nacc","",8000,0,8000,AliDielectronVarManager::kNacc);
   // histos->UserHistogram("Event","RefMultTPConly","",8000,0,8000,AliDielectronVarManager::kRefMultTPConly);
+  histos->UserHistogram("Event","V0_vs_RefMult",";# Tracks V0;# Global Tracks;",AliDielectronHelper::MakeLinBinning(1000,  0.,30000.),AliDielectronHelper::MakeLinBinning(1000,  0.,30000.),AliDielectronVarManager::kMultV0,AliDielectronVarManager::kRefMult);
+  histos->UserHistogram("Event","SPD_vs_RefMult",";# Tracks SPD;# Global Tracks;",AliDielectronHelper::MakeLinBinning(1000,  0.,30000.),AliDielectronHelper::MakeLinBinning(1000,  0.,30000.),AliDielectronVarManager::kMultV0,AliDielectronVarManager::kRefMult);
   // histos->UserHistogram("Event","epTPC","",240,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kTPCrpH2uc);
   // histos->UserHistogram("Event","epV0AC","",240,-TMath::Pi(),TMath::Pi(),AliDielectronVarManager::kv0ACrpH2);
   // histos->UserHistogram("Event","epV0AC_epTPC","",120,-TMath::PiOver2(),TMath::PiOver2(),120,-TMath::PiOver2(),TMath::PiOver2(),AliDielectronVarManager::kTPCrpH2uc,AliDielectronVarManager::kv0ACrpH2);
@@ -397,8 +433,10 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //                       GetVector(kRuns), GetVector(kSigmaEle), AliDielectronVarManager::kRunNumber,AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","TPCnSigmaPio_P",";p_{in} (GeV/c);n#sigma_{pion}^{TPC}",
                         GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPio);
-  // histos->UserHistogram("Track","TPCnSigmaKao_P",";p_{in} (GeV/c);n#sigma_{kaon}^{TPC}",
-  //                       GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
+  histos->UserHistogram("Track","TPCnSigmaKao_P",";p_{in} (GeV/c);n#sigma_{kaon}^{TPC}",
+                        GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaKao);
+  histos->UserHistogram("Track","TPCnSigmaPro_P",";p_{in} (GeV/c);n#sigma_{proton}^{TPC}",
+                        GetVector(kP2D), GetVector(kSigmaOther), AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaPro);
   histos->UserHistogram("Track","TPCnSigmaEle_Eta",";Eta;n#sigma_{ele}^{TPC};p_{in} (GeV/c)",
                         GetVector(kEta3D), GetVector(kSigmaEle), AliDielectronVarManager::kEta, AliDielectronVarManager::kTPCnSigmaEle);
   histos->UserHistogram("Track","TPCnSigmaEle_Phi",";Phi;n#sigma_{ele}^{TPC};p_{in} (GeV/c)",
@@ -670,7 +708,7 @@ TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max) {
 
 
 
-void InitCF(AliDielectron* die, Int_t cutDefinition)
+void InitCF(AliDielectron* die)
 {
   //
   // Setupd the CF Manager if needed
