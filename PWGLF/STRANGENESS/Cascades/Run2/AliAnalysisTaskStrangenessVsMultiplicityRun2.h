@@ -66,6 +66,10 @@ public:
     void SetPreselectDedx (Bool_t lPreselectDedx= kTRUE ) {
         fkPreselectDedx   = lPreselectDedx;
     }
+    void SetUseOnTheFlyV0Cascading( Bool_t lUseOnTheFlyV0Cascading = kTRUE ){
+        //Highly experimental, use with care!
+        fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
+    }
 
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection 
@@ -179,6 +183,7 @@ private:
     Bool_t fkDownScaleV0;
     Double_t fDownScaleFactorV0;
     Bool_t fkPreselectDedx;
+    Bool_t fkUseOnTheFlyV0Cascading; 
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     

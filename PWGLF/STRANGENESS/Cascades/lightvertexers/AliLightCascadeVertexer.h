@@ -35,6 +35,7 @@ public:
     static void GetDefaultCuts(Double_t cuts[8]);
     static void SetDefaultMaxEta(Double_t lMaxEta);
     static void SetDefaultMinClusters(Int_t lMinClusters);
+    static void SetDefaultUseOnTheFlyV0 (Bool_t lOption);
     void SetMaxEta(Double_t lMaxEta);
     void SetMinClusters(Int_t lMinClusters);
     void SetSwitchCharges(Bool_t lOption);
@@ -124,6 +125,9 @@ inline void AliLightCascadeVertexer::SetDefaultMaxEta(Double_t lMaxEta) {
 }
 inline void AliLightCascadeVertexer::SetDefaultMinClusters(Int_t lMinClusters) {
     fgMinClusters = lMinClusters;
+}
+inline void AliLightCascadeVertexer::SetDefaultUseOnTheFlyV0(Bool_t lOption) {
+    fgUseOnTheFlyV0 = lOption;
 }
 inline void AliLightCascadeVertexer::SetMaxEta(Double_t lMaxEta) {
     fMaxEta = lMaxEta;
