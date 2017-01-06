@@ -168,6 +168,7 @@ class AliAnalysisTaskMLTreeMakerEff : public AliAnalysisTaskSE {
   std::vector<Int_t> charge;
   std::vector<Int_t> IsRec;
   std::vector<Int_t> pass;
+  std::vector<Int_t> IsPrim;
   Bool_t Rej;
 
   

@@ -135,7 +135,8 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff():
   ProdVx(0),
   ProdVy(0),
   ProdVz(0),
-  pass(0)        
+  pass(0),
+  IsPrim(0)      
 {
 
 }
@@ -213,7 +214,8 @@ AliAnalysisTaskMLTreeMakerEff::AliAnalysisTaskMLTreeMakerEff(const char *name) :
   ProdVx(0),
   ProdVy(0),
   ProdVz(0),
-  pass(0)
+  pass(0),
+  IsPrim(0)       
 {  
 
   DefineOutput(1, TList::Class());
@@ -301,7 +303,7 @@ void AliAnalysisTaskMLTreeMakerEff::UserCreateOutputObjects() {
   fTree->Branch("IsEnh", &enh);
   fTree->Branch("IsRec", &IsRec);
   fTree->Branch("PassCuts", &pass);
-  
+  fTree->Branch("IsPrim", &IsPrim);
   
   fTree->Branch("MCpt", &MCpt);
   fTree->Branch("MCeta", &MCeta);
@@ -404,7 +406,7 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
   Int_t passtrcuts;
   
   std::vector<std::vector<int>> vec;
-  std::vector<int> row(3,0);        // 1 is el, 2 is rec, pos (=label) in esd event of rec
+  std::vector<int> row(3,0);        // 1 is el, 2 is rec, 3 pos (=label) in esd event of rec
   std::vector<int> ellabels;
   
   MCpt.clear();
@@ -424,6 +426,7 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
   enh.clear();
   IsRec.clear();
   pass.clear();
+  IsPrim.clear();
   
   NCrossedRowsTPC.clear();
   NClustersTPC.clear();
@@ -468,17 +471,16 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
           return -1;
   }
   
-  //1st loop to get info for each MC particle if it is an electron in the 2d vec and to store where they are in the ellabels 
+  //1st loop to get info for each MC particle if it is an electron and if primary in the 2d vec and to store where they are in the ellabels 
   for (Int_t iTracks = 0; iTracks < mcEvent->GetNumberOfTracks(); iTracks++) {
       mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iTracks));
       if (!mcTrack) {
 	      AliWarning(Form("Could not receive MC particle %d", iTracks));
 	      continue;}
       
-     row[1]=0; 
-     
-     if( abs(mcTrack->PdgCode())!=11 || !mcEvent->IsPhysicalPrimary(iTracks)) row[0]=0;
-     else {row[0]=1;
+     row[0]=0; 
+
+     if( abs(mcTrack->PdgCode())==11) {row[0]=1;
               ellabels.push_back(iTracks);
      }
      
@@ -492,13 +494,13 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
 	      AliError(Form("Could not receive ESD track %d", iTracks));
 	      continue;
       } 
-      if(vec[TMath::Abs(esdTrack1->GetLabel())][0] == 0) continue;      //if not physical primary electron go on
+      if(vec[TMath::Abs(esdTrack1->GetLabel())][0] == 0) continue;      //if not electron go on
       vec[TMath::Abs(esdTrack1->GetLabel())][1] = 1;
       vec[TMath::Abs(esdTrack1->GetLabel())][2] = iTracks;
   }
   
   
-// loop over physical primary electrons
+// loop over electrons
   for (Int_t i = 0; i < ellabels.size(); i++) {  
       Int_t iTracks = ellabels[i];
       mcTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(iTracks));
@@ -507,8 +509,9 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
 	      continue;
       }
         
-      if( abs(mcTrack->PdgCode())!=11 || !mcEvent->IsPhysicalPrimary(iTracks)) AliError("This is not a physical primary electron!");
- 
+      if( abs(mcTrack->PdgCode())!=11 ) AliError("This is not an electron!");
+      
+      
       Rej=kFALSE;
  
       mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(TMath::Abs(mcTrack->GetLabel())));
@@ -548,6 +551,7 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
       temprec=vec[iTracks][1];
       
       if(temprec) {
+          
       esdTrack = dynamic_cast<AliESDtrack *>(event->GetTrack(vec[iTracks][2]));
       if (!esdTrack) {
 	      AliError(Form("Could not receive ESD track %d", vec[iTracks][2]));
@@ -560,11 +564,11 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
       fQAHist->Fill("Is Rec bef ESD cut",1); 
       
       // Kinematic cuts
-      Double_t pttemp = esdTrack->Pt();
-      Double_t etatemp = esdTrack->Eta();
+      Double_t pttemprec = esdTrack->Pt();
+      Double_t etatemprec = esdTrack->Eta();
       
-      if( pttemp > fPtMax || pttemp < fPtMin ) passtrcuts = 0;
-      if( etatemp > fEtaMax || etatemp < fEtaMin ) passtrcuts = 0;
+      if( pttemprec > fPtMax || pttemprec < fPtMin ) passtrcuts = 0;
+      if( etatemprec > fEtaMax || etatemprec < fEtaMin ) passtrcuts = 0;
  
       Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(esdTrack, (AliPID::EParticleType) 0);
       Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(esdTrack, (AliPID::EParticleType) 0);
@@ -602,9 +606,9 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
         KsigITS.push_back(tempKsigITS);
         KsigTOF.push_back(tempKsigTOF);
       }
-      eta.push_back(etatemp);
+      eta.push_back(etatemprec);
       phi.push_back(esdTrack->Phi());
-      pt.push_back(pttemp);
+      pt.push_back(pttemprec);
       charge.push_back(esdTrack->Charge());   
   
       NCrossedRowsTPC.push_back(esdTrack->GetTPCCrossedRows());
@@ -697,10 +701,15 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
       ProdVz.push_back(mcTrack->Zv());
 
       pdg.push_back( mcTrack->PdgCode());
+      
       if(Rej) enh.push_back(1);
       else enh.push_back(0);
+      
       pass.push_back(passtrcuts);
       IsRec.push_back(temprec);
+      
+      if(mcEvent->IsPhysicalPrimary(iTracks)) IsPrim.push_back(1);
+      else IsPrim.push_back(0);
       
       MCpt.push_back(pttemp);
       MCeta.push_back(etatemp);
