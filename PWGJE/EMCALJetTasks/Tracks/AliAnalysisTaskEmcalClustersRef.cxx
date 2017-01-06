@@ -61,6 +61,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fRequestCentrality(false),
     fEventCentrality(-1),
     fCentralityEstimator("V0M"),
+    fBunchCrossingIndex(-1),
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
     fClusterTimeRange(-50e-6, 50e-6)
@@ -73,6 +74,7 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fRequestCentrality(false),
     fEventCentrality(-1),
     fCentralityEstimator("V0M"),
+    fBunchCrossingIndex(-1),
     fEnergyDefinition(kDefaultEnergy),
     fEnableSumw2(false),
     fClusterTimeRange(-50e-6, 50e-6)
@@ -152,6 +154,11 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
     }
   } else {
     AliDebugStream(1) << GetName() << ": No centrality selection applied" << std::endl;
+  }
+
+  if(fBunchCrossingIndex > -1){
+    int bcindex = fInputEvent->GetHeader()->GetBunchCrossNumber() % 4;
+    if(bcindex != fBunchCrossingIndex) return false;
   }
   return true;
 }
