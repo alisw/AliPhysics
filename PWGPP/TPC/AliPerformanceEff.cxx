@@ -53,7 +53,7 @@ using namespace std;
 ClassImp(AliPerformanceEff)
 
 //_____________________________________________________________________________
-AliPerformanceEff::AliPerformanceEff(TRootIoCtor* b):
+AliPerformanceEff::AliPerformanceEff(TRootIOCtor* b):
   AliPerformanceObject(b),
   // histograms
   fEffHisto(0),

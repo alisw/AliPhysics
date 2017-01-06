@@ -32,7 +32,7 @@ using namespace std;
 ClassImp(AliMCInfoCuts)
 
 //_____________________________________________________________________________
-AliMCInfoCuts::AliMCInfoCuts(TRootIoCtor*) : 
+AliMCInfoCuts::AliMCInfoCuts(TRootIOCtor*) : 
 AliAnalysisCuts()
 , fMinRowsWithDigits(0)
 , fMaxR(0)

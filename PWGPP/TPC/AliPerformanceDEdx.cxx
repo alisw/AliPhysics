@@ -71,7 +71,7 @@ Bool_t AliPerformanceDEdx::fgUseMergeTHnSparse = kFALSE;
 
 
 //_____________________________________________________________________________
-AliPerformanceDEdx::AliPerformanceDEdx(TRootIoCtor* b):
+AliPerformanceDEdx::AliPerformanceDEdx(TRootIOCtor* b):
  AliPerformanceObject(b),
   // dEdx 
   fDeDxHisto(0),

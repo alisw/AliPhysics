@@ -80,7 +80,7 @@ Bool_t AliPerformanceTPC::fgMergeTHnSparse = kFALSE;
 Bool_t AliPerformanceTPC::fgUseMergeTHnSparse = kFALSE;
 
 //_____________________________________________________________________________
-AliPerformanceTPC::AliPerformanceTPC(TRootIoCtor*):
+AliPerformanceTPC::AliPerformanceTPC(TRootIOCtor*):
   AliPerformanceObject(),
   fTPCClustHisto(0),
   fTPCEventHisto(0),

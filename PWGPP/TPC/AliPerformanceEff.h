@@ -21,13 +21,13 @@ class AliVfriendEvent;
 class AliMCEvent; 
 class AliMCParticle; 
 class AliVtrack;
-class TRootIoCtor;
+class TRootIOCtor;
 
 #include "AliPerformanceObject.h"
 
 class AliPerformanceEff : public AliPerformanceObject {
 public :
-  AliPerformanceEff(TRootIoCtor*);
+  AliPerformanceEff(TRootIOCtor*);
   AliPerformanceEff(const Char_t* name="AliPerformanceEff",const Char_t*title="AliPerformanceEff",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE);
   virtual ~AliPerformanceEff();
 
