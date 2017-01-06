@@ -157,9 +157,12 @@ public:
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone();};
   TList* GetTowerEqList() const {return this->fTowerEqList;};
+  void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone();};
+  TList* GetBadTowerCalibList() const {return this->fBadTowerCalibList;};
   virtual Int_t GetCenBin(Double_t Centrality);
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
   Bool_t plpMV(const AliAODEvent* aod);
+  Double_t GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist);
   
 private:
   AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
@@ -312,6 +315,9 @@ private:
   AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
   TList *fTowerEqList;   // list with weights
   TH1D *fTowerGainEq[2][5]; //!
+  TList *fBadTowerStuffList; //! list for storing calib files
+  TList *fBadTowerCalibList; // list with original calib files
+  TH2D *fBadTowerCalibHist[100]; //!
   Int_t fCachedRunNum;   //
   
   ClassDef(AliAnalysisTaskCRCZDC,8);

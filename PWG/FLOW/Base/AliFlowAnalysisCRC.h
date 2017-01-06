@@ -1677,6 +1677,13 @@ private:
   TH1D *fPOIPtDiffQReEG[2][fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPtDiffQImEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPtDiffMulEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
+  LongDouble_t fLDQRe[fQVecPower][fFlowNHarmMax]; //
+  LongDouble_t fLDQIm[fQVecPower][fFlowNHarmMax]; //
+  LongDouble_t fLDQM[fQVecPower][fFlowNHarmMax]; //
+  LongDouble_t fLDcor2Hist[100]; //
+  LongDouble_t fLDweg2Hist[100]; //
+  LongDouble_t fLDcor4Hist[100]; //
+  LongDouble_t fLDweg4Hist[100]; //
   
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
@@ -1723,26 +1730,24 @@ private:
   const static Int_t fkFlowQCnHarVtx = 3;
   TProfile *fFlowQCIntCorProVtx[fCRCMaxnRun][fCRCMaxnCen][fkFlowQCnHarVtx][fkFlowQCnVtx]; //!
   
-  TProfile *fFlowQCIntCorPro[fFlowNHarm][3]; //!
-  TH1D *fFlowQCIntCorHist[fFlowNHarm][3]; //!
+  const static Int_t fkFlowQCnIntCorPro = 5;
+  TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TH1D *fFlowQCIntCorHist[fFlowNHarm][fkFlowQCnIntCorPro]; //!
+  TH1D *fFlowQCIntCumHist[fFlowNHarm][fkFlowQCnIntCorPro]; //!
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
   
-  TProfile *fFlowQCIntCorProOld[3]; //!
+  TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][fkFlowQCnIntCorPro]; //! correlation profile, precision test
   
   TList* fFlowQCOrdMagList;
   const static Int_t fkNOrdMag = 20;
   const static Int_t fkNHistOrdMag = 4;
   TH1D *fFlowQCIntCorHistOrdMag[fFlowNHarm][fkNOrdMag][fkNHistOrdMag]; //!
   
-  TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][3]; //! correlation profile, precision test
-  
   TProfile *fFlowQCIntCorProEG[fFlowNHarm]; //!
   TH1D *fFlowQCIntCorHistEG[fFlowNHarm]; //!
   TProfile *fFlowQCIntCorNUAProEG[fFlowNHarm][4]; //!
   TH1D *fFlowQCIntCorNUAHistEG[fFlowNHarm][4]; //!
-  
-  TH1D *fFlowQCIntCumHist[fFlowNHarm][3]; //!
   
   const static Int_t fFlowQCNRef = 14;
   TProfile *fFlowQCRefCorPro[fFlowNHarm][fFlowQCNRef]; //!

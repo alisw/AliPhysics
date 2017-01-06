@@ -1,5 +1,4 @@
-AliAnalysisTask * AddTaskCRC(Int_t nHarmonic=3,
-                             Double_t ptMin=0.2,
+AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t ptMax=50.,
                              TString analysisTypeUser="AOD",
                              Int_t AODfilterBit=768,
@@ -11,6 +10,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic=3,
                              Bool_t bUseZDC=kFALSE,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
+                             Bool_t bCorrectForBadChannel=kFALSE,
                              Bool_t bZDCMCCen=kTRUE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
@@ -86,6 +86,7 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic=3,
   Bool_t bCalculateCRCZDC=kFALSE;
   Bool_t bCalculateCME=kFALSE;
   Bool_t bUseVZERO=kFALSE;
+  Int_t nHarmonic=2;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -172,6 +173,20 @@ AliAnalysisTask * AddTaskCRC(Int_t nHarmonic=3,
       exit(1);
     }
     delete ZDCTowerEqFile;
+  }
+  if(bCorrectForBadChannel) {
+    TString ZDCBadTowerFileName = "alien:///alice/cern.ch/user/j/jmargutt/ZDCCalibBadChannel.root";
+    TFile* ZDCBadTowerFile = TFile::Open(ZDCBadTowerFileName,"READ");
+    gROOT->cd();
+    TList* ZDCBadTowerList = (TList*)(ZDCBadTowerFile->FindObjectAny("resp"));
+    if(ZDCBadTowerList) {
+      taskFE->SetBadTowerCalibList(ZDCBadTowerList);
+      cout << "BadTowerCalibList set (from " <<  ZDCBadTowerFileName.Data() << ")" << endl;
+    } else {
+      cout << "ERROR: BadTowerCalibList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCBadTowerFile;
   }
   
   // add the task to the manager
