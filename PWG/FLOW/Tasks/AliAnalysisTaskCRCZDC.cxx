@@ -192,7 +192,9 @@ fPileUpMultSelCount(0x0),
 fMultTOFLowCut(0x0),
 fMultTOFHighCut(0x0),
 fTowerEqList(NULL),
+fBadTowerCalibList(NULL),
 fSpectraMCList(NULL),
+fBadTowerStuffList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
 fhZNBCCorr(0x0)
@@ -212,6 +214,9 @@ fhZNBCCorr(0x0)
     for(Int_t i=0; i<5; i++) {
       fTowerGainEq[c][i] =  NULL;
     }
+  }
+  for(Int_t c=0; c<100; c++) {
+    fBadTowerCalibHist[c] = NULL;
   }
   this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(1);
@@ -324,6 +329,7 @@ fPileUpMultSelCount(0x0),
 fMultTOFLowCut(0x0),
 fMultTOFHighCut(0x0),
 fTowerEqList(NULL),
+fBadTowerCalibList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
 fhZNBCCorr(0x0)
@@ -344,6 +350,9 @@ fhZNBCCorr(0x0)
     for(Int_t i=0; i<5; i++) {
       fTowerGainEq[c][i] =  NULL;
     }
+  }
+  for(Int_t c=0; c<100; c++) {
+    fBadTowerCalibHist[c] = NULL;
   }
   this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(iseed);
@@ -379,6 +388,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
   delete fFlowTrack;
   delete fCutsEvent;
   if (fTowerEqList)  delete fTowerEqList;
+  if (fBadTowerCalibList) delete fBadTowerCalibList;
   if (fAnalysisUtil) delete fAnalysisUtil;
   if (fQAList) delete fQAList;
   if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
@@ -494,6 +504,19 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       fOutput->Add(fTowerGainEq[c][i]);
     }
   }
+  
+  fBadTowerStuffList = new TList();
+  fBadTowerStuffList->SetOwner(kTRUE);
+  fBadTowerStuffList->SetName("BadTowerCalib");
+  fOutput->Add(fBadTowerStuffList);
+  
+  if(fBadTowerCalibList) {
+    for(Int_t c=0; c<100; c++) {
+      fBadTowerCalibHist[c] = (TH2D*)fBadTowerCalibList->FindObject(Form("TH2Resp[%d]",c));
+      fBadTowerStuffList->Add(fBadTowerCalibHist[c]);
+    }
+  }
+  
   fhZNSpectra = new TH3D("fhZNSpectra","fhZNSpectra",100,0.,100.,8,0.,8.,1000,0.,1.E5);
   fOutput->Add(fhZNSpectra);
   fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
@@ -1266,6 +1289,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if(hdr->IsEventSelected() && AliVEvent::kAny) {
       
       Float_t centrperc = fFlowEvent->GetCentrality();
+      Int_t cenb = (Int_t)centrperc;
       
       AliAODTracklets *trackl = aod->GetTracklets();
       Int_t nTracklets = trackl->GetNumberOfTracklets();
@@ -1334,7 +1358,11 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           denZNC += wZNC;
           fhZNSpectra->Fill(centrperc,i+0.5,towZNC[i+1]);
           
-          if(i==1) wZNA = TMath::Power(towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4], fZDCGainAlpha);
+          if(i==1) {
+            wZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
+            if(fBadTowerCalibHist[cenb]) wZNA = GetBadTowerResp(wZNA, fBadTowerCalibHist[cenb]);
+            wZNA = TMath::Power(wZNA, fZDCGainAlpha);
+          }
           else wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
           numXZNA += x[i]*wZNA;
           numYZNA += y[i]*wZNA;
@@ -1448,6 +1476,14 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   
   PostData(2, fOutput);
 }
+//________________________________________________________________________
+
+Double_t AliAnalysisTaskCRCZDC::GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist)
+{
+  Double_t EtC = BadTowerCalibHist->ProjectionY("",BadTowerCalibHist->GetXaxis()->FindBin(Et),BadTowerCalibHist->GetXaxis()->FindBin(Et))->GetRandom();
+  return EtC;
+}
+
 //________________________________________________________________________
 
 Int_t AliAnalysisTaskCRCZDC::GetCenBin(Double_t Centrality)
