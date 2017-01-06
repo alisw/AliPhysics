@@ -1,18 +1,21 @@
-AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput.root",
-                                              Bool_t getFromAlien=kTRUE,
+// #include "Config_amichalik_LMEE_MC.C"
+// #include "LMEECutLib_amichalik.C"
+
+AliAnalysisTask *AddTask_amichalik_MC2(Char_t* outputFileName="LMEEoutput.root",
+                                              Bool_t getFromAlien=kFALSE,
                                               Int_t triggerNames=(AliVEvent::kINT7),
-                                              Int_t collCands=AliVEvent::kINT7)
+                                              Int_t collCands=AliVEvent::kINT7 )
 {
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_caklein_LMEEPbPb_AOD", "No analysis manager found.");
+    Error("AddTast_amichalik_MC2", "No analysis manager found.");
     return 0;
   }
   cout << "NEW CLASSES USED" << std::endl;
   //  create task and add it to the manager
-  //	gSystem->AddIncludePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE");
+  	// gSystem->AddIncludePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE");
 
   TString configBasePath("$TRAIN_ROOT/caklein_lowmass/");
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
@@ -21,19 +24,19 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput
 
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/Config_caklein_LMEEPbPb_AOD.C ."))
-      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/LMEECutLib_caklein.C ."))
+      // && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/Config_caklein_LMEEPbPb_AOD.C ."))
+      // && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/LMEECutLib_caklein.C ."))
       ) {
-    cout << "Copy config from Alien" << std::endl;
     configBasePath=Form("%s/",gSystem->pwd());
   }
 
-  TString configFile("Config_caklein_LMEEPbPb_AOD.C");
-  TString configLMEECutLib("LMEECutLib_caklein.C");
+  TString configFile("Config_amichalik_LMEE_MC.C");
+  TString configLMEECutLib("LMEECutLib_amichalik.C");
 
   TString configFilePath(configBasePath+configFile);
   TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
+  //AOD Usage currently tested with separate task, to be merged
   if (mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class()){
     ::Info("AddTaskLMEEPbPb2011", "no dedicated AOD configuration");
   }
@@ -71,7 +74,7 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     //MB
-    AliDielectron *diel_low = Config_caklein_LMEEPbPb_AOD(arrNames->At(i)->GetName(),hasMC,bESDANA);
+    AliDielectron *diel_low = Config_amichalik_LMEEPbPb(i,hasMC,bESDANA);
     if(!diel_low)continue;
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());
@@ -81,25 +84,25 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD(Char_t* outputFileName="LMEEoutput
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
-	mgr->CreateContainer("caklein_LMEEPbPb_tree",
+	mgr->CreateContainer("amichalik_LMEEPbPb_tree",
                        TTree::Class(),
                        AliAnalysisManager::kExchangeContainer,
                        outputFileName);
 
   AliAnalysisDataContainer *cOutputHist1 =
-	mgr->CreateContainer("caklein_LMEEPbPb_out",
+	mgr->CreateContainer("amichalik_LMEEPbPb_out",
                        TList::Class(),
                        AliAnalysisManager::kOutputContainer,
                        outputFileName);
 
   AliAnalysisDataContainer *cOutputHist2 =
-	mgr->CreateContainer("caklein_LMEEPbPb_CF",
+	mgr->CreateContainer("amichalik_LMEEPbPb_CF",
                        TList::Class(),
                        AliAnalysisManager::kOutputContainer,
                        outputFileName);
 
   AliAnalysisDataContainer *cOutputHist3 =
-	mgr->CreateContainer("caklein_EventStatPbPb",
+	mgr->CreateContainer("amichalik_EventStatPbPb",
                        TH1D::Class(),
                        AliAnalysisManager::kOutputContainer,
                        outputFileName);
