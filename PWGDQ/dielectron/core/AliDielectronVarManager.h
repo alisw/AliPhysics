@@ -358,9 +358,9 @@ public:
     kXvPrim=kPairMax,        // prim vertex
     kYvPrim,                 // prim vertex
     kZvPrim,                 // prim vertex
-    kXvPrimMCtruth,
-    kYvPrimMCtruth,
-    kZvPrimMCtruth,
+    kXvPrimMCtruth,          // MC true prim vertex, so that it is available also for reco tracks
+    kYvPrimMCtruth,          // MC true prim vertex, so that it is available also for reco tracks
+    kZvPrimMCtruth,          // MC true prim vertex, so that it is available also for reco tracks
     kXRes,                   // primary vertex x-resolution
     kYRes,                   // primary vertex y-resolution
     kZRes,                   // primary vertex z-resolution
@@ -938,11 +938,13 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
       AliMCParticle *motherMC=mc->GetMCTrackMother(particle); //mother
       if(motherMC) values[AliDielectronVarManager::kPdgCodeGrandMother]=mc->GetMotherPDG(motherMC);
       AliMCParticle *MCpart = mc->GetMCTrack(particle);
-        // Fill distance of primary vertex to secondary vertex -> IP is not defined since no propagation
-        // Pure MC variable no reconstucted value filled
-      values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2)
-                                                  + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
-      values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(MCpart->Zv() - values[AliDielectronVarManager::kZvPrimMCtruth]);
+      // Fill distance of primary vertex to secondary vertex (as an alternative to the IP)
+      // Pure MC variable by intention, no reconstucted value filled.
+      if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC)) {
+        values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(MCpart->Xv() - values[AliDielectronVarManager::kXvPrimMCtruth],2)
+                                                                             + TMath::Power(MCpart->Yv() - values[AliDielectronVarManager::kYvPrimMCtruth],2));
+        values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(MCpart->Zv() - values[AliDielectronVarManager::kZvPrimMCtruth]);
+      }
     }
     values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
   } //if(mc->HasMC())
@@ -1475,10 +1477,13 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
 
   // Fill common AliVParticle interface information
   FillVarVParticle(particle, values);
-  // Fill distance of primary vertex to secondary vertex -> IP is not defined since no propagation
-  values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(TMath::Power(particle->Xv() - values[AliDielectronVarManager::kXvPrim],2)
-                                                  + TMath::Power(particle->Yv() - values[AliDielectronVarManager::kYvPrim],2));
-  values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(particle->Zv() - values[AliDielectronVarManager::kZvPrim]);
+
+  // Fill distance of primary vertex to secondary vertex (as a well-defined alternative to the IP-approximation below)
+  if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC)) {
+    values[AliDielectronVarManager::kDistPrimToSecVtxXYMC] = TMath::Sqrt(  TMath::Power(particle->Xv() - values[AliDielectronVarManager::kXvPrim],2)
+                                                                         + TMath::Power(particle->Yv() - values[AliDielectronVarManager::kYvPrim],2));
+    values[AliDielectronVarManager::kDistPrimToSecVtxZMC] = TMath::Abs(particle->Zv() - values[AliDielectronVarManager::kZvPrim]);
+  }
   //Approximation of the Impact Parameter
   //Get TVectors for primary and secondary vertex as well as particle momentum
   // distance of space point to a straight line
@@ -2255,16 +2260,6 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
   values[AliDielectronVarManager::kXvPrim]       = 0;
   values[AliDielectronVarManager::kYvPrim]       = 0;
   values[AliDielectronVarManager::kZvPrim]       = 0;
-  // The true vertex is needed for the pair DCA analysis (needs DCA of reco track w.r.t. true vertex).
-  AliDielectronMC *mc=AliDielectronMC::Instance();
-  if (mc->HasMC()){
-    AliMCEvent* mcevent = mc->GetMCEvent();
-    const AliVVertex* mcvtx = mcevent->GetPrimaryVertex();
-    values[AliDielectronVarManager::kXvPrimMCtruth]       = (mcvtx ? mcvtx->GetX() : 0.0);
-    values[AliDielectronVarManager::kYvPrimMCtruth]       = (mcvtx ? mcvtx->GetY() : 0.0);
-    values[AliDielectronVarManager::kZvPrimMCtruth]       = (mcvtx ? mcvtx->GetZ() : 0.0);
-  }
-
   values[AliDielectronVarManager::kNVtxContrib]  = 0;
 //   values[AliDielectronVarManager::kChi2NDF]      = 0; //This is the pair value!!!
 
@@ -2577,6 +2572,17 @@ inline void AliDielectronVarManager::FillVarESDEvent(const AliESDEvent *event, D
   const AliESDVertex *vtxTPC = event->GetPrimaryVertexTPC();
   values[AliDielectronVarManager::kNVtxContribTPC] = (vtxTPC ? vtxTPC->GetNContributors() : 0);
 
+  // The true vertex is needed for the pair DCA analysis (needs DCA of reco track w.r.t. true vertex).
+  if (AliDielectronMC::Instance()->HasMC()){
+    if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC) || Req(kXvPrimMCtruth) || Req(kYvPrimMCtruth) || Req(kZvPrimMCtruth)) {
+      AliMCEvent* mcevent = AliDielectronMC::Instance()->GetMCEvent();
+      const AliVVertex* mcvtx = mcevent->GetPrimaryVertex();
+      values[AliDielectronVarManager::kXvPrimMCtruth] = (mcvtx ? mcvtx->GetX() : 0.0);
+      values[AliDielectronVarManager::kYvPrimMCtruth] = (mcvtx ? mcvtx->GetY() : 0.0);
+      values[AliDielectronVarManager::kZvPrimMCtruth] = (mcvtx ? mcvtx->GetZ() : 0.0);
+    }
+  }
+
   // Event multiplicity estimators
   Int_t nTrSPD05=0; Int_t nTrITSTPC05=0; Int_t nTrITSSA05=0;
   nTrSPD05    = AliESDtrackCuts::GetReferenceMultiplicity(event, AliESDtrackCuts::kTracklets, 0.5);
@@ -2669,6 +2675,17 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   values[AliDielectronVarManager::kRefMultTPConly] = header->GetTPConlyRefMultiplicity(); // similar to Nacc
   values[AliDielectronVarManager::kRefMultOvRefMultTPConly] = (values[AliDielectronVarManager::kRefMultTPConly] > 0. ? (values[AliDielectronVarManager::kRefMult]/values[AliDielectronVarManager::kRefMultTPConly]) : 0.);
 
+  // The true vertex is needed for the pair DCA analysis (needs DCA of reco track w.r.t. true vertex).
+  if (AliDielectronMC::Instance()->HasMC()){
+    if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC) || Req(kXvPrimMCtruth) || Req(kYvPrimMCtruth) || Req(kZvPrimMCtruth)) {
+      // @TODO: adopt the code from FillVarESDEvent() for AOD...
+      printf("WARNING: filling of MC true vertex not implemented for AOD tracks!\n");
+      values[AliDielectronVarManager::kXvPrimMCtruth] = 0.;
+      values[AliDielectronVarManager::kYvPrimMCtruth] = 0.;
+      values[AliDielectronVarManager::kZvPrimMCtruth] = 0.;
+    }
+  }
+  
   ///////////////////////////////////////////
   //////////// NANO AODs ////////////////////
   ///////////////////////////////////////////
@@ -2757,7 +2774,7 @@ inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Dou
   values[AliDielectronVarManager::kXvPrim]       = (vtx ? vtx->GetX() : 0.0);
   values[AliDielectronVarManager::kYvPrim]       = (vtx ? vtx->GetY() : 0.0);
   values[AliDielectronVarManager::kZvPrim]       = (vtx ? vtx->GetZ() : 0.0);
-  // For MC this is identical (see comment in FillVarVEvent()).
+  // For MC truth, these variables are identical to the above. (different in FillVarESDEvent() / FillVarAODEvent()).
   values[AliDielectronVarManager::kXvPrimMCtruth]       = values[AliDielectronVarManager::kXvPrim];
   values[AliDielectronVarManager::kYvPrimMCtruth]       = values[AliDielectronVarManager::kYvPrim];
   values[AliDielectronVarManager::kZvPrimMCtruth]       = values[AliDielectronVarManager::kZvPrim];
