@@ -79,7 +79,7 @@ using namespace std;
 ClassImp(AliPerformancePtCalib)
 
 //________________________________________________________________________
-AliPerformancePtCalib::AliPerformancePtCalib(TRootIoCtor* b):
+AliPerformancePtCalib::AliPerformancePtCalib(TRootIOCtor* b):
    AliPerformanceObject(b),
    
    // option parameter for AliPerformancePtCalib::Analyse()

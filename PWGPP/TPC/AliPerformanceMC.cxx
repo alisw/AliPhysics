@@ -60,7 +60,7 @@ using namespace std;
 ClassImp(AliPerformanceMC)
 
 //_____________________________________________________________________________
-AliPerformanceMC::AliPerformanceMC(TRootIoCtor* b):
+AliPerformanceMC::AliPerformanceMC(TRootIOCtor* b):
   AliPerformanceObject(b),
   fResolHisto(0),
   fPullHisto(0),

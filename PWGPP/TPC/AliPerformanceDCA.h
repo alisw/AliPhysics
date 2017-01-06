@@ -20,14 +20,14 @@ class TH2;
 class TH1;
 class TString;
 class TNamed;
-class TRootIoCtor;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceDCA : public AliPerformanceObject {
 public :
-  AliPerformanceDCA(TRootIoCtor*);
+  AliPerformanceDCA(TRootIOCtor*);
   AliPerformanceDCA(const Char_t* name="AliPerformanceDCA", const Char_t* title="AliPerformanceDCA",Int_t analysisMode=0, Bool_t hptGenerator=kFALSE);
 
   virtual ~AliPerformanceDCA();

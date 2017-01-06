@@ -26,14 +26,14 @@ class AliVfriendTrack;
 class AliMCEvent;
 class AliMCParticle;
 class AliExternalTrackParam;
-class TRootIoCtor;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceMatch : public AliPerformanceObject {
 public :
-  AliPerformanceMatch(TRootIoCtor*);
+  AliPerformanceMatch(TRootIOCtor*);
   AliPerformanceMatch(const Char_t* name="AliPerformanceMatch", const Char_t* title="AliPerformanceMatch",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Bool_t useSparse=kTRUE);
   virtual ~AliPerformanceMatch();
 

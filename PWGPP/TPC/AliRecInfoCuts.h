@@ -11,12 +11,12 @@
 
 class AliVTrack;
 class AliVEvent;
-class TRootIoCtor;
+class TRootIOCtor;
 
 class AliRecInfoCuts : public AliESDtrackCuts
 {
 public:
-  AliRecInfoCuts(TRootIoCtor*);
+  AliRecInfoCuts(TRootIOCtor*);
   AliRecInfoCuts(const Char_t* name="", const Char_t *title ="");
   virtual ~AliRecInfoCuts() {;}
  

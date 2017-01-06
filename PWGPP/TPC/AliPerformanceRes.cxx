@@ -64,7 +64,7 @@ ClassImp(AliPerformanceRes)
 Double_t AliPerformanceRes::fgkMergeEntriesCut=5000000.; //5*10**6 tracks (small default to keep default memory foorprint low)
 
 //_____________________________________________________________________________
-AliPerformanceRes::AliPerformanceRes(TRootIoCtor* b):
+AliPerformanceRes::AliPerformanceRes(TRootIOCtor* b):
   AliPerformanceObject(b),
   fResolHisto(0),
   fPullHisto(0),

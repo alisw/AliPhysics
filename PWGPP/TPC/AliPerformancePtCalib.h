@@ -30,14 +30,14 @@ class AliVEvent;
 class AliVfriendEvent; 
 class AliESDtrackCuts;
 class AliESDpid;
-class TRootIoCtor;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformancePtCalib : public AliPerformanceObject {
 public:
-  AliPerformancePtCalib(TRootIoCtor*);
+  AliPerformancePtCalib(TRootIOCtor*);
   AliPerformancePtCalib(const Char_t * name="AliPerformancePtCalib",const Char_t* title ="AliPerformancePtCalib");
    virtual ~AliPerformancePtCalib();
 

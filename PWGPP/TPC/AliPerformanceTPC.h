@@ -26,14 +26,14 @@ class AliStack;
 class AliVEvent;
 class AliVEvent;
 class AliVfriendEvent; 
-class TRootIoCtor;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceTPC : public AliPerformanceObject {
 public :
-  AliPerformanceTPC(TRootIoCtor*);
+  AliPerformanceTPC(TRootIOCtor*);
   AliPerformanceTPC(const Char_t* name="AliPerformanceTPC", const Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE, Bool_t useSparse = kTRUE);
 
   AliPerformanceTPC(const AliPerformanceTPC&);

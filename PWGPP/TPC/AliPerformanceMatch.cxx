@@ -70,7 +70,7 @@ Bool_t AliPerformanceMatch::fgMergeTHnSparse = kFALSE;
 Bool_t AliPerformanceMatch::fgUseMergeTHnSparse = kFALSE;
 
 //_____________________________________________________________________________
-AliPerformanceMatch::AliPerformanceMatch(TRootIoCtor*):
+AliPerformanceMatch::AliPerformanceMatch(TRootIOCtor*):
   AliPerformanceObject(),
   fResolHisto(0),
   fPullHisto(0),

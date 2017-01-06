@@ -30,7 +30,7 @@
 ClassImp(AliRecInfoCuts)
 
 //_____________________________________________________________________________
-AliRecInfoCuts::AliRecInfoCuts(TRootIoCtor*) : AliESDtrackCuts()
+AliRecInfoCuts::AliRecInfoCuts(TRootIOCtor*) : AliESDtrackCuts()
 , fMinTPCsignalN(0)
 , fMaxAbsTanTheta(0)
 , fMinNClustersTRD(0)

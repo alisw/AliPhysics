@@ -24,14 +24,14 @@ class AliVfriendEvent;
 class AliVfriendTrack; 
 class AliMCEvent;
 class AliMCParticle;
-class TRootIoCtor;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformanceRes : public AliPerformanceObject {
 public :
-  AliPerformanceRes(TRootIoCtor*);
+  AliPerformanceRes(TRootIOCtor*);
   AliPerformanceRes(const Char_t* name="AliPerformanceRes", const Char_t* title="AliPerformanceRes",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE);
   virtual ~AliPerformanceRes();
 
