@@ -22,13 +22,13 @@ class AliRecInfoCuts;
 class AliMCInfoCuts;
 class AliVfriendEvent;
 class AliESDVertex;
-class TRootIoCtor;
+class TRootIOCtor;
 #include "AliRecInfoCuts.h"
 #include "AliMCInfoCuts.h"
 
 class AliPerformanceObject : public AliMergeable, public TNamed {
 public :
-  AliPerformanceObject(TRootIoCtor*); 
+  AliPerformanceObject(TRootIOCtor*); 
   AliPerformanceObject(const char* name="AliPerformanceObject", const char* title="AliPerformanceObject", Int_t run=-1, Bool_t highMult=kFALSE); 
   virtual ~AliPerformanceObject();
 

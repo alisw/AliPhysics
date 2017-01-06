@@ -41,7 +41,7 @@ using namespace std;
 ClassImp(AliPerformanceObject)
 
 //_____________________________________________________________________________
-AliPerformanceObject::AliPerformanceObject(TRootIoCtor*):
+AliPerformanceObject::AliPerformanceObject(TRootIOCtor*):
   AliMergeable(),
   TNamed(),
   fMergeTHnSparseObj(kFALSE),
