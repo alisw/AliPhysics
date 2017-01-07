@@ -123,8 +123,9 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	Double_t centmix[NcentBins+1] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0};
 	fMixBCent = new TAxis(NcentBins,centmix);
 
-	static const Int_t NvertBins=8;
-	Double_t zvtxmix[NvertBins+1] = {-10,-6,-4,-2,0,2,4,6,10};
+	static const Int_t NvertBins=20;
+	//Double_t zvtxmix[NvertBins+1] = {-10,-6,-4,-2,0,2,4,6,10};
+	Double_t zvtxmix[NvertBins+1] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
 	fMixBZvtx = new TAxis(NvertBins,zvtxmix);
 
 	//..Raymond/Megan gives more mixed event yield - don't know about the quality though
@@ -725,6 +726,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 	{
 		Weight=1;
 	}
+
 	//...........................................
 	//..run the loop for filling the histograms
 	Int_t GammaCounter=0;
@@ -1043,32 +1045,57 @@ void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterCont
 	fHistClusterTime[identifier]  ->Fill(caloCluster->GetTOF()*1000000000,caloCluster->GetHadCorrEnergy());
 
 }
+//
+// Accept cluster for analysis. More cuts besides in ApplyClusterCuts and ApplyKinematicCuts
+//
+//
 //________________________________________________________________________
 Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster)
 {
 	TLorentzVector caloClusterVec;
 	clusters->GetMomentum(caloClusterVec,caloCluster);
-    Double_t deltaPhi=2;   //..phi away from detector edges.
-    Double_t deltaEta=0.0; //..eta away from detector edges.
+	Double_t deltaPhi=2;   //..phi away from detector edges.
+	Double_t deltaEta=0.0; //..eta away from detector edges.
 
 	//..Accepts clusters if certain conditions are fulfilled
 	Bool_t Accepted=1; //..By default accepted
 
 	//!!double check these cuts carefully with the experts!!
+	//-----------------------------
+	//..at least 2 cells in cluster
 	if(caloCluster->GetNCells()<2)
 	{
 		//..Reject the cluster as a good candidate for your analysis
 		Accepted=0;
 	}
-	//..If not in EMCal Phi acceptance - reject
+	//-----------------------------
+	//..number of local maxima should be 1 (for cluster splitting this has to be changed)
+	if(caloCluster->GetNExMax()==1) //&& fClusterSplit==0
+	{
+		//..Reject the cluster as a good candidate for your analysis
+		Accepted=0;
+	}
+	//-----------------------------
+	//..Do we need a distance to bad channel cut?
+	//caloCluster->GetDistanceToBadChannel()
+
+
+	//-----------------------------
+	//..Do fiducial volume cut
+
+
+	/*//..If not in EMCal Phi acceptance - reject
 	if(caloClusterVec.Phi()*fRtoD<(80+deltaPhi) || caloClusterVec.Phi()*fRtoD>(187-deltaPhi))
 	{
+		cout<<"not in EMCal "<<endl;
 		if(caloClusterVec.Phi()*fRtoD>(260+deltaPhi) && caloClusterVec.Phi()*fRtoD<(327-deltaPhi))
 		{
+			cout<<"but in DCal "<<endl;
 			  //..if instead in DCal -> OK
 		}
 		else  //..if not reject
 		{
+			cout<<"not in EMcal- not in Dcal"<<endl;
 			Accepted=0;
 		}
 	}
@@ -1083,7 +1110,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 		{
 			Accepted=0;
 		}
-	}
+	}*/
 	return Accepted;
 }
 //________________________________________________________________________
