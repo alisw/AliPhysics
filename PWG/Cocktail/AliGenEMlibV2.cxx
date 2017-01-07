@@ -987,20 +987,22 @@ Double_t AliGenEMlibV2::GetTAA(Int_t cent){
 //                        set pt parametrizations
 //
 //--------------------------------------------------------------------------
-Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
+Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName, TString dirName) {
   
   // open parametrizations file
   TFile* fParametrizationFile = TFile::Open(fileName.Data());
   if (!fParametrizationFile) AliFatalClass(Form("File %s not found",fileName.Data()));
+  TDirectory* fParametrizationDir = (TDirectory*)fParametrizationFile->Get(dirName.Data());
+  if (!fParametrizationDir) AliFatalClass(Form("Directory %s not found",dirName.Data()));
   
   // check for pi0 parametrization
-  TF1* fPtParametrizationTemp = (TF1*)fParametrizationFile->Get("111_pt");
+  TF1* fPtParametrizationTemp = (TF1*)fParametrizationDir->Get("111_pt");
   if (!fPtParametrizationTemp) AliFatalClass(Form("File %s doesn't contain pi0 parametrization",fileName.Data()));
   fPtParametrization[0] = new TF1(*fPtParametrizationTemp);
   fPtParametrization[0]->SetName("111_pt");
 
   // check for proton parametrization (base for baryon mt scaling)
-  TF1* fPtParametrizationProtonTemp = (TF1*)fParametrizationFile->Get("2212_pt");
+  TF1* fPtParametrizationProtonTemp = (TF1*)fParametrizationDir->Get("2212_pt");
   if (!fPtParametrizationProtonTemp) {
     AliWarningClass(Form("File %s doesn't contain proton parametrization, scaling baryons from pi0.", fileName.Data()));
     fPtParametrizationProton = NULL;
@@ -1015,7 +1017,7 @@ Bool_t AliGenEMlibV2::SetPtParametrizations(TString fileName) {
   // get parametrizations from file
   for (Int_t i=1; i<18; i++) {
     Int_t ip = (Int_t)(lib.GetIp(i, ""))(rndm);
-    fPtParametrizationTemp = (TF1*)fParametrizationFile->Get(Form("%d_pt", ip));
+    fPtParametrizationTemp = (TF1*)fParametrizationDir->Get(Form("%d_pt", ip));
     if (fPtParametrizationTemp) {
       fPtParametrization[i] = new TF1(*fPtParametrizationTemp);
       fPtParametrization[i]->SetName(Form("%d_pt", ip));
@@ -1054,7 +1056,7 @@ TF1* AliGenEMlibV2::GetPtParametrization(Int_t np) {
 //                     set mt scaling factor histo
 //
 //--------------------------------------------------------------------------
-void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
+void AliGenEMlibV2::SetMtScalingFactors(TString fileName, TString dirName) {
   
   // set collision system
   Int_t selectedCol;
@@ -1081,10 +1083,11 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
   
   // open file
   TFile* fMtFactorFile = TFile::Open(fileName.Data());
+  TDirectory* fMtFactorDir = (TDirectory*)fMtFactorFile->Get(dirName.Data());
   
   // check for mt scaling factor histo
   TH1D* fMtFactorHistoTemp              = NULL;
-  if (fMtFactorFile) fMtFactorHistoTemp = (TH1D*)fMtFactorFile->Get("histoMtScaleFactor");
+  if (fMtFactorDir) fMtFactorHistoTemp = (TH1D*)fMtFactorDir->Get("histoMtScaleFactor");
   if (fMtFactorHistoTemp) {
     fMtFactorHisto                      = new TH1D(*fMtFactorHistoTemp);
     for (Int_t i=1; i<19; i++) {
@@ -1118,11 +1121,9 @@ void AliGenEMlibV2::SetMtScalingFactors(TString fileName) {
       fMtFactorHisto->SetBinContent(i, fgkMtFactor[selectedCol][i-1]);
   }
   fMtFactorHisto->SetDirectory(0);
-  
+
   fMtFactorFile->Close();
   delete fMtFactorFile;
-
-  
 }
 
 
