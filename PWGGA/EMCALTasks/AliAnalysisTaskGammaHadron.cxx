@@ -242,9 +242,9 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	Double_t fZtStep =1.0/(7-1.0);  // Bin width for the zT histograms
 	Double_t fXiStep =2.5/(8-1.0);  // Bin width for the Xi histograms
 
-	Int_t Array_G_Bins[10]   ={0,5,7,9,11,14,17,22,30,100};
-	Double_t Array_ZT_Bins[8]={0,fZtStep,2*fZtStep,3*fZtStep,4*fZtStep,5*fZtStep,6*fZtStep,100};
-	Double_t Array_XI_Bins[9]={-100,0,fXiStep,2*fXiStep,3*fXiStep,4*fXiStep,5*fXiStep,6*fXiStep,100};
+	Int_t Array_G_Bins[10]   ={0,5,7,9,11,14,17,22,30,60};
+	Double_t Array_ZT_Bins[8]={0,fZtStep,2*fZtStep,3*fZtStep,4*fZtStep,5*fZtStep,6*fZtStep,20};
+	Double_t Array_XI_Bins[9]={-10,0,fXiStep,2*fXiStep,3*fXiStep,4*fXiStep,5*fXiStep,6*fXiStep,10};
 
 	for(Int_t i=0;i<10;i++)
 	{
@@ -305,12 +305,12 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		fHistBinCheckPt[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckPt[identifier]);
 
-		fHistBinCheckZt[identifier] = new TH1F(Form("fHistBinCheckZt_%0d",identifier),Form("fHistBinCheckZt_%0d",identifier), 500, 0, 100);
+		fHistBinCheckZt[identifier] = new TH1F(Form("fHistBinCheckZt_%0d",identifier),Form("fHistBinCheckZt_%0d",identifier), 1500, 0, 60);
 		fHistBinCheckZt[identifier]->GetXaxis()->SetTitle("z_{T}^{#gamma-h}");
 		fHistBinCheckZt[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckZt[identifier]);
 
-		fHistBinCheckXi[identifier] = new TH1F(Form("fHistBinCheckXi_%0d",identifier),Form("fHistBinCheckXi_%0d",identifier), 500, -100, 100);
+		fHistBinCheckXi[identifier] = new TH1F(Form("fHistBinCheckXi_%0d",identifier),Form("fHistBinCheckXi_%0d",identifier), 500, -20, 20);
 		fHistBinCheckXi[identifier]->GetXaxis()->SetTitle("#xi^{#gamma-h}");
 		fHistBinCheckXi[identifier]->GetYaxis()->SetTitle("Entries");
 		fOutput->Add(fHistBinCheckXi[identifier]);
