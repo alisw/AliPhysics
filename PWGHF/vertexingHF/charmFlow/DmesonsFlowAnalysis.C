@@ -402,6 +402,9 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       }
       fitter->SetInitialGaussianMean(massD);
       fitter->SetInitialGaussianSigma(0.012);
+      if (partname.Contains("Dstar")) {
+	fitter->SetInitialGaussianSigma(0.0004);
+      }
       fitter->SetUseLikelihoodFit();
       Bool_t ok=fitter->MassFitter(kFALSE);
       Double_t sigmaforcounting=0;
@@ -459,6 +462,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       fitter->SetFixReflOverS(sOverRef,kTRUE);
     }
     fitter->SetInitialGaussianMean(massD);
+    if (partname.Contains("Dstar")) fitter->SetInitialGaussianSigma(0.0004);
     fitter->SetUseLikelihoodFit();
     Bool_t ok=fitter->MassFitter(kFALSE);
     Double_t sigmatot=0;
@@ -483,6 +487,7 @@ void FillSignalGraph(TList *histlist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
 	fitter2->SetFixReflOverS(sOverRef,kTRUE);
       }
       fitter2->SetInitialGaussianMean(massD);
+      if (partname.Contains("Dstar")) fitter2->SetInitialGaussianSigma(0.0004);
       fitter2->SetFixGaussianSigma(sigmatot);
       fitter2->SetUseLikelihoodFit();
       if(fixAlsoMass) fitter2->SetFixGaussianMean(massFromFit);
@@ -606,7 +611,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     cutsobj=((AliRDHFCutsDstoKKpi*)dir->Get(dir->GetListOfKeys()->At(2)->GetName()));
     massD=(TDatabasePDG::Instance()->GetParticle(431)->Mass());
   }
-
+  
   TList *list =(TList*)dir->Get(listname.Data());
   if(!list){
     printf("list %s not found in file, please check list name\n",listname.Data());return;
@@ -652,6 +657,10 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     Int_t nMassBins=histtofit->GetNbinsX();
     Double_t hmin=histtofit->GetBinLowEdge(2); // need wide range for <pt>
     Double_t hmax=histtofit->GetBinLowEdge(nMassBins-2); // need wide range for <pt>
+    if (partname.Contains("Dstar")) {
+      if (hmin < 0.140) hmin=0.140;
+      if (hmax > 0.175) hmax=0.175;
+    }
     AliHFMassFitterVAR* fitter=new AliHFMassFitterVAR(histtofit,hmin,hmax,1,typeb,types);
     if(useTemplD0Refl){
       Printf("USE TEMPLATE FOR AVERAGE Pt");
@@ -663,6 +672,10 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
       Float_t sOverRef=(hrflTempl->Integral(hrflTempl->FindBin(hmin*1.0001),hrflTempl->FindBin(hmax*0.999)))/(hsigMC->Integral(hsigMC->FindBin(hmin*1.0001),hsigMC->FindBin(hmax*0.999)));
       Printf("R OVER S = %f",sOverRef);
       fitter->SetFixReflOverS(sOverRef,kTRUE);
+    }
+    if (partname.Contains("Dstar")) {
+      fitter->SetInitialGaussianMean(massD);
+      fitter->SetInitialGaussianSigma(0.0004);
     }
     fitter->MassFitter(kFALSE);
     Double_t massFromFit=fitter->GetMean();
@@ -734,7 +747,7 @@ void DmesonsFlowAnalysis(Bool_t inoutanis){
     hChiSquarefs[iphi]->SetMarkerColor(colors[1]);
     hChiSquarefs[iphi]->SetLineColor(colors[1]);
   }
-  
+ 
   FillSignalGraph(histlist,gSignal,gSignalfs,gSignalBC1,gSignalBC2,hSigmaFree,hSigmaFixed,hMean,hMeanfs,hChiSquare,hChiSquarefs,histoSignal,inoutanis,typeb,types,minMassForFit,maxMassForFit,rebin);
 
 
