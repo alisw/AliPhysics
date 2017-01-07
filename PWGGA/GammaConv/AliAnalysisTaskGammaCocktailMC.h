@@ -82,14 +82,14 @@ class AliAnalysisTaskGammaCocktailMC : public AliAnalysisTaskSE {
   
     TF1*                        fPtParametrization[17];         //!
     TF1*                        fPtParametrizationProton;       //!
-    TObjString*                 fCocktailSettings[9];           //!
+    TObjString*                 fCocktailSettings[10];          //!
     TH1D*                       fMtScalingFactors;              //!
 
   private:
     AliAnalysisTaskGammaCocktailMC(const AliAnalysisTaskGammaCocktailMC&);            // Prevent copy-construction
     AliAnalysisTaskGammaCocktailMC &operator=(const AliAnalysisTaskGammaCocktailMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCocktailMC, 2);
+    ClassDef(AliAnalysisTaskGammaCocktailMC, 3);
 };
 
 #endif
