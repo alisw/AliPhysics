@@ -109,8 +109,8 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   // Add some selection criteria
   //-------------------------------------------------------
   AnalysisTask->SetVzRange(-10,10);
-  //..for Run1
-  AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
+  //..for Run1 pPb
+//  AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
   //..new task for run2 (neue cut klasse, ask Markus)
 
 
@@ -127,12 +127,8 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,0);
 	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
 	  //AnalysisTask->GetClusterContainer(clusName)->SetClusTimeCut(,);
-	  AnalysisTask->GetClusterContainer(clusName)->SetEtaLimits(-clusterEta,clusterEta);
-	  AnalysisTask->GetClusterContainer(clusName)->SetPhiLimits(68*phiToR,174*phiToR);
-	 // cout<<"cut0: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(0)<<endl;
-	 // cout<<"cut1: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(1)<<endl;
-	 // cout<<"cut2: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(2)<<endl;
-	 // cout<<"cut3: "<<AnalysisTask->GetClusterContainer(clusName)->GetClusUserDefEnergyCut(3)<<endl;
+//	  AnalysisTask->GetClusterContainer(clusName)->SetEtaLimits(-clusterEta,clusterEta);
+//	  AnalysisTask->GetClusterContainer(clusName)->SetPhiLimits(68*phiToR,174*phiToR);
   }
 
   //..some additional input for the analysis
