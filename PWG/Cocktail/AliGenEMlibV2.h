@@ -59,8 +59,8 @@ public:
   GenFunc   GetV2(Int_t param, const char * tname=0) const;
   
   // General functions
-  static Bool_t SetPtParametrizations(TString fileName);
-  static void   SetMtScalingFactors(TString fileName);
+  static Bool_t SetPtParametrizations(TString fileName, TString dirName);
+  static void   SetMtScalingFactors(TString fileName, TString dirName);
   static TF1*   GetPtParametrization(Int_t np);
   static TH1D*  GetMtScalingFactors();
   
@@ -217,7 +217,7 @@ private:
   static TF1*     fPtParametrizationProton;   // pt paramtrization
   static TH1D*    fMtFactorHisto;             // mt scaling factors
 
-  ClassDef(AliGenEMlibV2,4);
+  ClassDef(AliGenEMlibV2,5);
   
 };
 

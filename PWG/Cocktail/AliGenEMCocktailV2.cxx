@@ -57,19 +57,19 @@
 ClassImp(AliGenEMCocktailV2)
 
 //________________________________________________________________________
-AliGenEMCocktailV2::AliGenEMCocktailV2()
-:AliGenCocktail(),
-fDecayer(0),
-fDecayMode(kAll),
-fWeightingMode(kNonAnalog),
-fNPart(1000),
-fParametrizationFile(""),
-fYieldArray(),
-fCollisionSystem(AliGenEMlibV2::kpp7TeV),
-fCentrality(AliGenEMlibV2::kpp),
-fV2Systematic(AliGenEMlibV2::kNoV2Sys),
-fForceConv(kFALSE),
-fSelectedParticles(kGenHadrons)
+AliGenEMCocktailV2::AliGenEMCocktailV2():AliGenCocktail(),
+  fDecayer(0),
+  fDecayMode(kAll),
+  fWeightingMode(kNonAnalog),
+  fNPart(1000),
+  fParametrizationFile(""),
+  fParametrizationDir(""),
+  fYieldArray(),
+  fCollisionSystem(AliGenEMlibV2::kpp7TeV),
+  fCentrality(AliGenEMlibV2::kpp),
+  fV2Systematic(AliGenEMlibV2::kNoV2Sys),
+  fForceConv(kFALSE),
+  fSelectedParticles(kGenHadrons)
 {
   // Constructor
 }
@@ -137,9 +137,9 @@ void AliGenEMCocktailV2::CreateCocktail()
   AliInfo(Form("Selected Params:collision system - %d , centrality - %d",fCollisionSystem, fCentrality));
   //Initialize user selection for Pt Parameterization and centrality:
   AliGenEMlibV2::SelectParams(fCollisionSystem, fCentrality,fV2Systematic);
-  AliGenEMlibV2::SetMtScalingFactors(fParametrizationFile);
+  AliGenEMlibV2::SetMtScalingFactors(fParametrizationFile, fParametrizationDir);
   SetMtScalingFactors();
-  AliGenEMlibV2::SetPtParametrizations(fParametrizationFile);
+  AliGenEMlibV2::SetPtParametrizations(fParametrizationFile, fParametrizationDir);
   SetPtParametrizations();
   
   // Create and add electron sources to the generator

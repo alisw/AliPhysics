@@ -3,6 +3,7 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
                                   Int_t decayMode             = 1,
                                   Int_t selectedMothers       = 62591,
                                   TString paramFile           = "",
+                                  TString paramFileDir        = "",
                                   Int_t numberOfParticles     = 1000,
                                   Double_t minPt              = 0.,
                                   Double_t maxPt              = 20,
@@ -34,6 +35,7 @@ AliGenerator* AddMCEMCocktailV2(  Int_t collisionsSystem      = 200,
   if (decayLongLived) decayer->AliDecayerPythia::DecayLongLivedParticles();
   
   gener->SetParametrizationFile(paramFile);
+  gener->SetParametrizationFileDirectory(paramFileDir);
   gener->SetNPart(numberOfParticles);                         // source multiplicity per event
   gener->SetPtRange(minPt,maxPt);
   gener->SetYRange(-1.,1.);
