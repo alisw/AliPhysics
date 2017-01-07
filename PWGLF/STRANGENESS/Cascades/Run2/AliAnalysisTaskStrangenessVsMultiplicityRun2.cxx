@@ -1159,7 +1159,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
     if( fkRunVertexers ) {
         lESDevent->ResetCascades();
-        lESDevent->ResetV0s();
+        
+        //Only reset if not using on-the-fly (or else nothing passes)
+        if( !fkUseOnTheFlyV0Cascading ) lESDevent->ResetV0s();
         
         //Decide between regular and light vertexer (default: light)
         if ( ! fkUseLightVertexer ){
@@ -1186,7 +1188,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             
             if( fkUseOnTheFlyV0Cascading ) lCascVtxer.SetUseOnTheFlyV0(kTRUE); 
             
-            lV0vtxer.Tracks2V0vertices(lESDevent);
+            //Only revertex if not using on-the-fly
+            if( !fkUseOnTheFlyV0Cascading ) lV0vtxer.Tracks2V0vertices(lESDevent);
+            
+            //Always redo cascades
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
         }
     }
