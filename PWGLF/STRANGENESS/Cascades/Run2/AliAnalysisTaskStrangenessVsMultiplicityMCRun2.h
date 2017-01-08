@@ -352,6 +352,8 @@ private:
     Float_t fTreeCascVarBachPxMC; //!
     Float_t fTreeCascVarBachPyMC; //!
     Float_t fTreeCascVarBachPzMC; //!
+    
+    Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p) 
     //Track Labels (check for duplicates, etc)
     Int_t fTreeCascVarNegIndex; //!
     Int_t fTreeCascVarPosIndex; //!
