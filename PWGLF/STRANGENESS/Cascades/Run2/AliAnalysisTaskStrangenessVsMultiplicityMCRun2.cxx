@@ -274,6 +274,7 @@ fTreeCascVarPosPzMC(0),
 fTreeCascVarBachPxMC(0),
 fTreeCascVarBachPyMC(0),
 fTreeCascVarBachPzMC(0),
+fTreeCascVarV0Lifetime(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
@@ -490,6 +491,7 @@ fTreeCascVarPosPzMC(0),
 fTreeCascVarBachPxMC(0),
 fTreeCascVarBachPyMC(0),
 fTreeCascVarBachPzMC(0),
+fTreeCascVarV0Lifetime(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
 fTreeCascVarPosIndex(0),
@@ -768,7 +770,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         //------------------------------------------------
         if ( fkDebugBump ){
             //Variables for debugging the invariant mass bump
-            //Full momentum information
+            /*
+            //Full momentum info: unnecessary, commented out for now
             fTreeCascade->Branch("fTreeCascVarPosPx",&fTreeCascVarPosPx,"fTreeCascVarPosPx/F");
             fTreeCascade->Branch("fTreeCascVarPosPy",&fTreeCascVarPosPy,"fTreeCascVarPosPy/F");
             fTreeCascade->Branch("fTreeCascVarPosPz",&fTreeCascVarPosPz,"fTreeCascVarPosPz/F");
@@ -778,7 +781,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
             fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
             fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
-            
             fTreeCascade->Branch("fTreeCascVarPosPxMC",&fTreeCascVarPosPxMC,"fTreeCascVarPosPxMC/F");
             fTreeCascade->Branch("fTreeCascVarPosPyMC",&fTreeCascVarPosPyMC,"fTreeCascVarPosPyMC/F");
             fTreeCascade->Branch("fTreeCascVarPosPzMC",&fTreeCascVarPosPzMC,"fTreeCascVarPosPzMC/F");
@@ -788,6 +790,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachPxMC",&fTreeCascVarBachPxMC,"fTreeCascVarBachPxMC/F");
             fTreeCascade->Branch("fTreeCascVarBachPyMC",&fTreeCascVarBachPyMC,"fTreeCascVarBachPyMC/F");
             fTreeCascade->Branch("fTreeCascVarBachPzMC",&fTreeCascVarBachPzMC,"fTreeCascVarBachPzMC/F");
+             */
+            fTreeCascade->Branch("fTreeCascVarV0Lifetime",&fTreeCascVarV0Lifetime,"fTreeCascVarV0Lifetime/F");
             //Track Labels (check for duplicates, etc)
             fTreeCascade->Branch("fTreeCascVarNegIndex",&fTreeCascVarNegIndex,"fTreeCascVarNegIndex/I");
             fTreeCascade->Branch("fTreeCascVarPosIndex",&fTreeCascVarPosIndex,"fTreeCascVarPosIndex/I");
@@ -1885,6 +1889,26 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
 
         xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
         lV0RadiusXi		= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
+        
+        //========================================================================================
+        //Calculate V0 lifetime for adaptive decay radius cut
+        //3D Distance travelled by the V0 in the cascade
+        Float_t lV0DistanceTrav =  TMath::Sqrt(  TMath::Power( lPosV0Xi[0]-lPosXi[0] , 2)
+                                               + TMath::Power( lPosV0Xi[1]-lPosXi[1] , 2)
+                                               + TMath::Power( lPosV0Xi[2]-lPosXi[2] , 2) );
+        
+        //Total V0 momentum
+        Float_t lV0TotMomentum = TMath::Sqrt(  TMath::Power( lNMom[0]+lPMom[0] , 2)
+                                             + TMath::Power( lNMom[1]+lPMom[1] , 2)
+                                             + TMath::Power( lNMom[2]+lPMom[2] , 2) );
+        
+        //Calculate V0 lifetime: mL/p
+        if( TMath::Abs(lV0TotMomentum)>1e-5 ){
+            fTreeCascVarV0Lifetime = 1.115683*lV0DistanceTrav / lV0TotMomentum;
+        }else{
+            fTreeCascVarV0Lifetime = -1;
+        }
+        //========================================================================================
 
         lDcaPosToPrimVertexXi 	= TMath::Abs( pTrackXi	->GetD(	lBestPrimaryVtxPos[0],
                                               lBestPrimaryVtxPos[1],
