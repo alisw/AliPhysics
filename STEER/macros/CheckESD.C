@@ -343,7 +343,7 @@ Bool_t CheckESD(const char* gAliceFileName = "galice.root",
     }
 
     // Initialise PID for the current event
-    pidResponse.InitialiseEvent(esd,1,0); //pass=1, run=0
+    pidResponse.InitialiseEvent(esd,1,"",0); //pass=1, passname="", run=0
 
     // loop over tracks
     for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
