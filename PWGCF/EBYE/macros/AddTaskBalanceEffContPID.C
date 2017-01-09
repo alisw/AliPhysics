@@ -2,6 +2,10 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
 						 Double_t centrMin=0.,
 						 Double_t centrMax=80.,
 						 Double_t vertexZ=10.,
+                                                 Double_t DCAxy=-1,
+                                                 Double_t DCAz=-1,
+                                                 Double_t maxTPCchi2 = -1,
+                                                 Int_t minNClustersTPC = -1,
                                                  Double_t ptmin = 0.2,
                                                  Double_t ptmax = 2.0,
                                                  Double_t pttpcmax = 0.6,
@@ -75,6 +79,12 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
   taskEffContPIDBF->SetMisMatchTOFProb(tofMisValue,tofMistMatch);
   taskEffContPIDBF->SetRapidityUse(RapidityUse);
 
+
+  taskEffContPIDBF->SetExtraDCACutsAOD(DCAxy,DCAz);
+
+    // set extra TPC chi2 / nr of clusters cut
+   taskEffContPIDBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
+
   // electron rejection
     if(bUseElectronRejection){
       taskEffContPIDBF->SetElectronOnlyRejection(3.); // no other particle in nsigma (this is what we use standard in BF code)
@@ -91,10 +101,12 @@ AliAnalysisTaskEffContPIDBF *AddTaskBalanceEffContPID(TString  centralityEstimat
   outputFileName += ":PWGCFEbyE.outputBalanceFunctionEffContPIDAnalysis";
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s_Bit%d_%s%s",centralityName.Data(),AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutEffContBF = mgr->CreateContainer(Form("listEffContBF_%s_Bit%d_%s%s",centralityName.Data(),AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutQATruthReco = mgr->CreateContainer(Form("listQARecoTruth_%s_Bit%d_%s%s",centralityName.Data(),AODfilterBit,centralityEstimator.Data(),dirNameExtra.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskEffContPIDBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskEffContPIDBF, 1, coutQA);
   mgr->ConnectOutput(taskEffContPIDBF, 2, coutEffContBF);
+  mgr->ConnectOutput(taskEffContPIDBF, 3, coutQATruthReco);
   
   return taskEffContPIDBF;
 }
