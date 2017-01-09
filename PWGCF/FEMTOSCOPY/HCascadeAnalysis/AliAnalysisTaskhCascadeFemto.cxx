@@ -200,7 +200,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
   fHistpTOFnsigmavsp(0x0),
   fHistpTOFsignalvsp(0x0),
   fHistpnsigTOFnsigTPC(0x0),
-  fHistpsignalTOFsignalTPC(0x0),
+  fHistptsignalTPC(0x0),
   fHistProtonMultvsCent(0x0),
 
   fHistMCPrimProtons(0x0),
@@ -237,7 +237,8 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto():AliAnalysisTaskSE()
   fHistInvMassAntiL(0x0),
   fHistInvMassXiInPairs(0x0),
   fHistXiMultvsCent(0x0),
-  fHistIPtoPVxyGlobalvspt(0x0),
+  fHistProtonsIPtoPVxyGlobalvspt(0x0),
+  fHistAProtonsIPtoPVxyGlobalvspt(0x0),
 //  fCFContCascadeCuts(0x0),
 
   fHistpXiSignalRealKstar(0x0),
@@ -402,7 +403,7 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   fHistpTOFnsigmavsp(0x0),
   fHistpTOFsignalvsp(0x0),
   fHistpnsigTOFnsigTPC(0x0),
-  fHistpsignalTOFsignalTPC(0x0),
+  fHistptsignalTPC(0x0),
   fHistProtonMultvsCent(0x0),
 
   fHistMCPrimProtons(0x0),
@@ -439,7 +440,8 @@ AliAnalysisTaskhCascadeFemto::AliAnalysisTaskhCascadeFemto(const char *name):Ali
   fHistInvMassAntiL(0x0),
   fHistInvMassXiInPairs(0x0),
   fHistXiMultvsCent(0x0),
-  fHistIPtoPVxyGlobalvspt(0x0),
+  fHistProtonsIPtoPVxyGlobalvspt(0x0),
+  fHistAProtonsIPtoPVxyGlobalvspt(0x0),
 //  fCFContCascadeCuts(0x0),
 
   fHistpXiSignalRealKstar(0x0),
@@ -691,37 +693,37 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
   fOutputContainer->Add(fHistpTOFsignalvsp);
   fHistpnsigTOFnsigTPC = new TH3F("fHistpnsigTOFnsigTPC","",100, 0., 5., 100, -10., 10., 100, -10., 10);
   fOutputContainer->Add(fHistpnsigTOFnsigTPC);
-  fHistpsignalTOFsignalTPC = new TH3F("fHistpsignalTOFsignalTPC","", 100, 0., 5., 100, -3000, 3000, 500, 0.0, 2000);
-  fHistpsignalTOFsignalTPC->GetZaxis()->SetTitle("TPC dE/dx (a.u.)");
-  fHistpsignalTOFsignalTPC->GetYaxis()->SetTitle("t_{meas}-t_{0}-t_{expected} (ps)");
-  fHistpsignalTOFsignalTPC->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
-  fOutputContainer->Add(fHistpsignalTOFsignalTPC);
+  fHistptsignalTPC = new TH2F("fHistptsignalTPC","", 40, 0., 4., 500, 0.0, 2000);
+  fHistptsignalTPC->GetYaxis()->SetTitle("TPC dE/dx (a.u.)");
+  fHistptsignalTPC->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fOutputContainer->Add(fHistptsignalTPC);
 
   fHistProtonMultvsCent = new TH2F("fHistProtonMultvsCent","",400,0.,2000.,10,0.,100.);
   fOutputContainer->Add(fHistProtonMultvsCent);
 
-  fHistMCPrimProtons = new TH2F("fHistMCPrimProtons", "", 30, 0., 5.,200, -3.,3.);
+  fHistMCPrimProtons = new TH2F("fHistMCPrimProtons", "", 40, 0., 4.,300, -3.,3.);
   fOutputContainer->Add(fHistMCPrimProtons);
-  fHistMCFromWdecayProtons = new TH2F("fHistMCFromWdecayProtons", "", 30, 0., 5.,200, -3.,3.);
+  fHistMCFromWdecayProtons = new TH2F("fHistMCFromWdecayProtons", "", 40, 0., 4.,300, -3.,3.);
   fOutputContainer->Add(fHistMCFromWdecayProtons);
-  fHistMCFromMaterialProtons = new TH2F("fHistMCFromMaterialProtons", "", 30, 0., 5.,200, -3.,3.);
+  fHistMCFromMaterialProtons = new TH2F("fHistMCFromMaterialProtons", "", 40, 0., 4.,300, -3.,3.);
   fOutputContainer->Add(fHistMCFromMaterialProtons);
-  fHistMCOtherProtons = new TH2F("fHistMCOtherProtons", "", 30, 0., 5.,30, -3.,3.);
+  fHistMCOtherProtons = new TH2F("fHistMCOtherProtons", "", 40, 0., 4.,300, -3.,3.);
   fOutputContainer->Add(fHistMCOtherProtons);
-  fHistMCPrimAProtons = new TH2F("fHistMCPrimAProtons", "", 30, 0., 5.,30, -3.,3.);
+  fHistMCPrimAProtons = new TH2F("fHistMCPrimAProtons", "", 40, 0., 4.,300, -3.,3.);
   fOutputContainer->Add(fHistMCPrimAProtons);
-  fHistMCFromWdecayAProtons = new TH2F("fHistMCFromWdecayAProtons", "", 30, 0., 5.,200, -3.,3.);
+  fHistMCFromWdecayAProtons = new TH2F("fHistMCFromWdecayAProtons", "", 40, 0., 4.,300, -3.,3.);
   fOutputContainer->Add(fHistMCFromWdecayAProtons);
-  fHistMCFromMaterialAProtons = new TH2F("fHistMCFromMaterialAProtons", "", 30, 0., 5.,200, -3.,3.);
+  fHistMCFromMaterialAProtons = new TH2F("fHistMCFromMaterialAProtons", "", 40, 0., 4.,300, -3.,3.);
   fOutputContainer->Add(fHistMCFromMaterialAProtons);
-  fHistMCOtherAProtons = new TH2F("fHistMCOtherAProtons", "", 30, 0., 5.,30, -3.,3.);
+  fHistMCOtherAProtons = new TH2F("fHistMCOtherAProtons", "", 40, 0., 4.,300, -3.,3.);
   fOutputContainer->Add(fHistMCOtherAProtons);
 
-  fHistpTPCdEdx = new TH2F("fHistpTPCdEdx", "", 400, -6.0, 6.0, 500, 0.0, 2000);
+
+  fHistpTPCdEdx = new TH2F("fHistpTPCdEdx", "", 200, -5.0, 5.0, 500, 0.0, 2000);
   fOutputContainer->Add(fHistpTPCdEdx);
-  fHistnTPCdEdx = new TH2F("fHistnTPCdEdx", "", 400, -6.0, 6.0, 500, 0.0, 2000);
+  fHistnTPCdEdx = new TH2F("fHistnTPCdEdx", "", 200, -5.0, 5.0, 500, 0.0, 2000);
   fOutputContainer->Add(fHistnTPCdEdx);
-  fHistbTPCdEdx = new TH2F("fHistbTPCdEdx", "", 400, -6.0, 6.0, 500, 0.0, 2000);
+  fHistbTPCdEdx = new TH2F("fHistbTPCdEdx", "", 200, -5.0, 5.0, 500, 0.0, 2000);
   fOutputContainer->Add(fHistbTPCdEdx);
 
   fHistPosV0TPCClusters = new TH1F("fHistPosV0TPCClusters", "", 100, 0.,200.);
@@ -767,8 +769,10 @@ void AliAnalysisTaskhCascadeFemto::UserCreateOutputObjects() {
   fHistInvMassXiInPairs = new TH2F("fHistInvMassXiInPairs","", fNbinsMassGm, fLowMassLimGm, fUpMassLimGm,20,0.,100.);
   fOutputContainer->Add(fHistInvMassXiInPairs);
 
-  fHistIPtoPVxyGlobalvspt = new TH2F("fHistIPtoPVxyGlobalvspt", "", 30, 0., 5.,200, -3.,3.);
-  fOutputContainer->Add(fHistIPtoPVxyGlobalvspt);
+  fHistProtonsIPtoPVxyGlobalvspt = new TH2F("fHistProtonsIPtoPVxyGlobalvspt", "", 40, 0., 4.,300, -3.,3.);
+  fOutputContainer->Add(fHistProtonsIPtoPVxyGlobalvspt);
+  fHistAProtonsIPtoPVxyGlobalvspt = new TH2F("fHistAProtonsIPtoPVxyGlobalvspt", "", 40, 0., 4.,300, -3.,3.);
+  fOutputContainer->Add(fHistAProtonsIPtoPVxyGlobalvspt);
 
 /*  if(! fCFContCascadeCuts) {
 
@@ -1471,17 +1475,11 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
     if (lcentrality>0. && lcentrality<=10.) {
       if (fkCutOnTPCIP) {
         if (TMath::Abs(dz[0])<fIPCutxy) {
-          if (trackmomentum < fMomemtumLimitForTOFPID) fHistpsignalTOFsignalTPC->Fill(trackmomentum,0.,tpcSignal);
-          else {
-            if (isTOFPIDok&&(probMis>0.01)) fHistpsignalTOFsignalTPC->Fill(trackmomentum,tTOF,tpcSignal);
-          }
+          if (trackmomentum < fMomemtumLimitForTOFPID) fHistptsignalTPC->Fill(tracktransversemomentum,tpcSignal);
         }
       } else {
         if (TMath::Abs(dzg[0])<fIPCutxy) {
-          if (trackmomentum < fMomemtumLimitForTOFPID) fHistpsignalTOFsignalTPC->Fill(trackmomentum,0.,tpcSignal);
-          else {
-            if (isTOFPIDok&&(probMis>0.01)) fHistpsignalTOFsignalTPC->Fill(trackmomentum,tTOF,tpcSignal);
-          }
+          if (trackmomentum < fMomemtumLimitForTOFPID) fHistptsignalTPC->Fill(tracktransversemomentum,tpcSignal);
         }
       }
     }
@@ -1503,8 +1501,11 @@ void AliAnalysisTaskhCascadeFemto::UserExec(Option_t *) {
         if (TMath::Abs(nsigmaTPCp)> fnSigmaTPCPIDfirstParticle) continue;
     }
 
+    // Still for purity studies... MC templates to fit DCA distributions 
     if (lcentrality>0. && lcentrality<=10.) {
-      fHistIPtoPVxyGlobalvspt->Fill(tracktransversemomentum,dzg[0]);
+      if (isP) fHistProtonsIPtoPVxyGlobalvspt->Fill(tracktransversemomentum,dzg[0]);
+      else if (isaP) fHistAProtonsIPtoPVxyGlobalvspt->Fill(tracktransversemomentum,dzg[0]);
+
       if (fReadMCTruth) { 
         mcProtonOrigin = ProtonOrigin( TMath::Abs(globaltrack->GetLabel()), arrayMC, pMomentumTruth); //  for purity and momentum resolution correction
         if (isP) {
