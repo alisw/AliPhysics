@@ -11,7 +11,7 @@
 // Author Laurent Aphecetche
 
 #include <Rtypes.h>
-#include <Riosfwd.h>
+#include <iosfwd>
 
 using std::ostream;
 

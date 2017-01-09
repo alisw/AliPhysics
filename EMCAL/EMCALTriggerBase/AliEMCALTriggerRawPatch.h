@@ -8,7 +8,7 @@
 /* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <Riosfwd.h>
+#include <iosfwd>
 #include <TObject.h>
 
 /**
