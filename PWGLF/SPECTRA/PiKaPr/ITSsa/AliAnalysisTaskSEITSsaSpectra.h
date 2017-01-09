@@ -230,9 +230,13 @@ private:
   TH1F* fHistRecoDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution in the pion hypotesis (positive)
 
   //DCA Templates
-  TH1F* fHistPrimDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution, MC truth
-  TH1F* fHistSstrDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution, MC truth
-  TH1F* fHistSmatDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution, MC truth
+  TH1F* fHistPrimDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and dedx PID
+  TH1F* fHistSstrDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and dedx PID
+  TH1F* fHistSmatDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and dedx PID
+
+  TH1F* fHistMCtruthPrimDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and MC truth PID
+  TH1F* fHistMCtruthSstrDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and MC truth PID
+  TH1F* fHistMCtruthSmatDCA[kNchg * kNspc][kNbins]; //! histo with DCA distibution and MC truth PID
 
   TH1F* fHistCharge[4]; //! histo with charge distribution to check the calibration
 
@@ -337,7 +341,7 @@ private:
   Double_t  fSmearP;    // extra relative smearing on simulated momentum
   Double_t  fSmeardEdx; // extra relative smearing on simulated dE/dx
 
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 10);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 11);
 };
 
 #endif
