@@ -158,9 +158,14 @@ AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
 
       for (Int_t iptbin = 0; iptbin < kNbins; ++iptbin) {
         fHistRecoDCA[index][iptbin] = NULL; //! histo with DCA distibution
-        fHistPrimDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
-        fHistSstrDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
-        fHistSmatDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
+
+        fHistPrimDCA[index][iptbin] = NULL; //! histo with DCA distibution and dedx PID
+        fHistSstrDCA[index][iptbin] = NULL; //! histo with DCA distibution and dedx PID
+        fHistSmatDCA[index][iptbin] = NULL; //! histo with DCA distibution and dedx PID
+
+        fHistMCtruthPrimDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
+        fHistMCtruthSstrDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
+        fHistMCtruthSmatDCA[index][iptbin] = NULL; //! histo with DCA distibution, MC truth
       }
     }
   }
@@ -456,9 +461,21 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
           histName = Form("fHistSmatDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
           fHistSmatDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
 
+          histName = Form("fHistMCtruthPrimDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
+          fHistMCtruthPrimDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
+
+          histName = Form("fHistMCtruthSstrDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
+          fHistMCtruthSstrDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
+
+          histName = Form("fHistMCtruthSmatDCA%s%s_%d", spcName[ispc], chgName[ichg], iptbin);
+          fHistMCtruthSmatDCA[index][iptbin] = new TH1F(histName, histName, 2000, -2, 2);
+
           fOutput->Add(fHistPrimDCA[index][iptbin]);
           fOutput->Add(fHistSstrDCA[index][iptbin]);
           fOutput->Add(fHistSmatDCA[index][iptbin]);
+          fOutput->Add(fHistMCtruthPrimDCA[index][iptbin]);
+          fOutput->Add(fHistMCtruthSstrDCA[index][iptbin]);
+          fOutput->Add(fHistMCtruthSmatDCA[index][iptbin]);
         }//end isMC
       }
     }
@@ -863,6 +880,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
         if (TMath::Abs(lMCpdg) ==  321) lMCspc = AliPID::kKaon; // select K+/K- only
         if (TMath::Abs(lMCpdg) == 2212) lMCspc = AliPID::kProton; // select p+/p- only
       }
+      Bool_t lIsGoodPart = ((lMCspc > AliPID::kMuon) && IsRapIn(y[lMCspc]));
+      Int_t lMCtIndex = lIsGoodPart ? ((lMCspc - 2) *  kNchg + iChg) : -1;
 
       if (lIsGoodTrack) {
         //DCA distributions, before the DCA cuts, based on PID approach
@@ -874,7 +893,14 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
           if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk)) fHistSstrDCA[lPidIndex][trkPtBin]->Fill(impactXY);
           if (lMCstack->IsSecondaryFromMaterial(lMCtrk))  fHistSmatDCA[lPidIndex][trkPtBin]->Fill(impactXY);
         }
-      }// end lIsGooTrack
+      }// end lIsGoodTrack
+      if (fIsMC && lIsGoodPart) {
+        //DCA distributions, before the DCAxy cuts from the MC kinematics
+        //Filling DCA distribution with MC truth Physics values
+        if (lMCstack->IsPhysicalPrimary(lMCtrk))        fHistMCtruthPrimDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
+        if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk)) fHistMCtruthSstrDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
+        if (lMCstack->IsSecondaryFromMaterial(lMCtrk))  fHistMCtruthSmatDCA[lMCtIndex][trkPtBin]->Fill(impactXY);
+      }// end lIsGoodPart
       //"DCAxy"
       if (!DCAcutXY(impactXY, trkPt)) continue;
       trkSel = kPassDCAxycut;
@@ -883,21 +909,19 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t*)
       if (lIsGoodTrack) fHistReco[lPidIndex]->Fill(trkPt);
       //Filling Histos for Reco Efficiency
       //information from the MC kinematics
-      if (fIsMC) {
-        if ((lMCspc > AliPID::kMuon) && IsRapIn(y[lMCspc])) {
-          Int_t index = (lMCspc - 2) * kNchg + iChg;
-          if (lMCstack->IsPhysicalPrimary(lMCtrk))         fHistPrimMCReco[index]->Fill(trkPt);
-          if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk))  fHistSstrMCReco[index]->Fill(trkPt);
-          if (lMCstack->IsSecondaryFromMaterial(lMCtrk))   fHistSmatMCReco[index]->Fill(trkPt);
-        }
+      if (fIsMC && lIsGoodPart) {
+        if (lMCstack->IsPhysicalPrimary(lMCtrk))         fHistPrimMCReco[lMCtIndex]->Fill(trkPt);
+        if (lMCstack->IsSecondaryFromWeakDecay(lMCtrk))  fHistSstrMCReco[lMCtIndex]->Fill(trkPt);
+        if (lMCstack->IsSecondaryFromMaterial(lMCtrk))   fHistSmatMCReco[lMCtIndex]->Fill(trkPt);
+      }
 
-        Int_t binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
-        if (lIsGoodTrack) {
-          fHistMCReco[lPidIndex]->Fill(trkPt, binPart);
-          if (lMCstack->IsPhysicalPrimary(lMCtrk))
-            fHistMCPrimReco[lPidIndex]->Fill(trkPt, binPart);
-        }//end y
-      }//end is MC
+      Int_t binPart = (lMCspc > AliPID::kMuon) ? (lMCspc - 2) : -1;
+      if (fIsMC && lIsGoodTrack) {
+        fHistMCReco[lPidIndex]->Fill(trkPt, binPart);
+        if (lMCstack->IsPhysicalPrimary(lMCtrk))
+          fHistMCPrimReco[lPidIndex]->Fill(trkPt, binPart);
+      }//end y
+
       if (lIsGoodTrack && fFillIntDistHist) {
         //
         //integral approach histograms
