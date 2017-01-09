@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKPIDBF_H
-#define ALIANALYSISTASKPIDBF_H
+#ifndef ALIANALYSISTASKPIDBF1_H
+#define ALIANALYSISTASKPIDBF1_H
 
 // Analysis task for the PID BF code:
 // Base Class : AliBalancePsi.cxx
@@ -161,7 +161,7 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
 
   //pid
   enum kDetectorUsedForPID { kTPCpid, kTOFpid, kTPCTOF }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
-  enum kDetectorPID_ { kTPCTOFpid_, kTogether_ }; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
+  enum kDetectorPID_ { kTPCTOFpid_, kTogether_, kTPC_,kTOF_}; // default TPC & TOF pid (via GetTPCpid & GetTOFpid)  
   enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
   enum kParticleType_ { kPion_, kKaon_, kProton_ };
 
@@ -254,6 +254,11 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   Double_t GetChannelEqualizationFactor(Int_t run, Int_t channel);
   Double_t GetEqualizationFactor(Int_t run, const char *side);
 
+
+// Add On 17.11.2016 For Finding Min sigma between Pion , Koan and Proton
+
+   Int_t MinNsigma(Int_t n, const Double_t *a);
+
 // Add By N.Alam on 13/12/2015
    Bool_t IsTOF(AliAODTrack *track) const; // Here we use TOF Track Pt .6 to 2.0 GeV
    Bool_t IsTPC(AliAODTrack *track) const;  // For TPC Track Pt .2 to .6 GeV
@@ -306,6 +311,11 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2F *fHistPhi;//phi (QA histogram)
   TH3F *fHistEtaPhiPos;//eta-phi pos particles (QA histogram) 		 	 
   TH3F *fHistEtaPhiNeg;//eta-phi neg particles (QA histogram)
+
+  TH1F *fHistEta1D;
+  TH1F *fHistPhi1D;
+
+
 //  TH2F *fHistPhiBefore;//phi before v2 afterburner (QA histogram)
 //  TH2F *fHistPhiAfter;//phi after v2 afterburner (QA histogram)
   TH2F *fHistPhiPos;//phi for positive particles (QA histogram)
@@ -494,6 +504,14 @@ class AliAnalysisTaskPIDBF : public AliAnalysisTaskSE {
   TH2F  *fHistNsigmaTPCTOFAfterPIDCut;
 
   TH1D  *fHistMostProbableNsigma;
+
+
+  TH2F *fHistNsigmaTPCPionAfterPIDCut;
+  TH2F *fHistNsigmaTPCKaonAfterPIDCut;
+  TH2F *fHistNsigmaTPCProtonAfterPIDCut;
+  TH2F *fHistNsigmaTOFPionAfterPIDCut;
+  TH2F *fHistNsigmaTOFKaonAfterPIDCut;
+  TH2F *fHistNsigmaTOFProtonAfterPIDCut;
 
 
 // TOF Mismatch: 

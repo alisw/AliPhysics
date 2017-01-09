@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKEFFCONTPIDBF_cxx
-#define ALIANALYSISTASKEFFCONTPIDBF_cxx
+#ifndef ALIANALYSISTASKEFFCONTPIDBF1_cxx
+#define ALIANALYSISTASKEFFCONTPIDBF1_cxx
 
 // ---------------------------------------------------------------------
 //
@@ -16,6 +16,7 @@ class TH2D;
 class TH3F;
 class TString;
 class AliAODEvent;
+class AliVEvent;
 class AliAODInputHandler;
 class AliAODMCParticle;
 class AliAODTrack;
@@ -31,6 +32,7 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
     fArrayMC(0), 
     fQAList(0), 
     fOutputList(0), 
+    fQAListTruthReco(0),
     fHistEventStats(0), 
     fHistCentrality(0),
     fHistVz(0), 
@@ -199,9 +201,132 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
     fHistPhiVertexzContaminationKaonMinus(0),
     fHistPhiVertexzContaminationProton(0),
     fHistPhiVertexzContaminationProtonPlus(0),
-    fHistPhiVertexzContaminationProtonMinus(0)
+    fHistPhiVertexzContaminationProtonMinus(0),
+    fHistNsigmaTPCPionAfterPIDCut(0),
+    fHistNsigmaTPCKaonAfterPIDCut(0),
+    fHistNsigmaTPCProtonAfterPIDCut(0),
+    fHistNsigmaTOFPionAfterPIDCut(0),
+    fHistNsigmaTOFKaonAfterPIDCut(0),
+    fHistNsigmaTOFProtonAfterPIDCut(0),
+    fHistEtaMCPion(0),
+    fHistEtaMCAll(0),
+    fHistPhiMCAll(0),
+    fHistEtaMCKaon(0),
+    fHistEtaMCProton(0),
+    fHistPhiMCPion(0),
+    fHistPhiMCKaon(0),
+    fHistPhiMCProton(0),
+    fHistEtaMCRecoPion(0),
+    fHistEtaMCRecoKaon(0),
+    fHistEtaMCRecoProton(0),
+    fHistPhiMCRecoPion(0),
+    fHistPhiMCRecoKaon(0),
+    fHistPhiMCRecoProton(0),
+    fHistPtMCProton(0),
+    fHistPhiMCProtonTruthPlus(0),
+    fHistPtMCProtonTruthPlus(0),
+    fHistEtaMCProtonTruthPlus(0),
+    fHistPhiMCProtonTruthMinus(0),
+    fHistPtMCProtonTruthMinus(0),
+    fHistEtaMCProtonTruthMinus(0),
+    fHistPtMCPion(0),
+    fHistPhiMCPionTruthPlus(0),
+    fHistPtMCPionTruthPlus(0),
+    fHistEtaMCPionTruthPlus(0),
+    fHistPhiMCPionTruthMinus(0),
+    fHistPtMCPionTruthMinus(0),
+    fHistEtaMCPionTruthMinus(0),
+    fHistPtMCKaon(0),
+    fHistPhiMCKaonTruthPlus(0),
+    fHistPtMCKaonTruthPlus(0),
+    fHistEtaMCKaonTruthPlus(0),
+    fHistPhiMCKaonTruthMinus(0),
+    fHistPtMCKaonTruthMinus(0),
+    fHistEtaMCKaonTruthMinus(0),
+    fHistPtMCRecoPion(0),
+    fHistPtMCRecoPionPlus(0),
+    fHistPhiMCRecoPionPlus(0),
+    fHistPtMCRecoPionMinus(0),
+    fHistPhiMCRecoPionMinus(0),
+    fHistEtaMCRecoPionPlus(0),
+    fHistEtaMCRecoPionMinus(0),
+    fHistPtMCRecoKaon(0),
+    fHistPtMCRecoKaonPlus(0),
+    fHistPhiMCRecoKaonPlus(0),
+    fHistPtMCRecoKaonMinus(0),
+    fHistPhiMCRecoKaonMinus(0),
+    fHistEtaMCRecoKaonPlus(0),
+    fHistEtaMCRecoKaonMinus(0),
+    fHistPtMCRecoProton(0),
+    fHistPtMCRecoProtonPlus(0),
+    fHistPhiMCRecoProtonPlus(0),
+    fHistPtMCRecoProtonMinus(0),
+    fHistPhiMCRecoProtonMinus(0),
+    fHistEtaMCRecoProtonPlus(0),
+    fHistEtaMCRecoProtonMinus(0),
+    fHistPhiContaminationPion(0),
+    fHistEtaContaminationPion(0),
+    fHistPtContaminationPion(0),
+    fHistPhiContaminationPionPlus(0),
+    fHistEtaContaminationPionPlus(0),
+    fHistPtContaminationPionPlus(0),
+    fHistPhiContaminationPionMinus(0),
+    fHistEtaContaminationPionMinus(0),
+    fHistPtContaminationPionMinus(0),
+    fHistPhiContaminationKaon(0),
+    fHistEtaContaminationKaon(0),
+    fHistPtContaminationKaon(0),
+    fHistPhiContaminationKaonPlus(0),
+    fHistEtaContaminationKaonPlus(0),
+    fHistPtContaminationKaonPlus(0),
+    fHistPhiContaminationKaonMinus(0),
+    fHistEtaContaminationKaonMinus(0),
+    fHistPtContaminationKaonMinus(0),
+    fHistPhiContaminationProton(0),
+    fHistEtaContaminationProton(0),
+    fHistPtContaminationProton(0),
+    fHistPhiContaminationProtonPlus(0),
+    fHistEtaContaminationProtonPlus(0),
+    fHistPtContaminationProtonPlus(0),
+    fHistPhiContaminationProtonMinus(0),
+    fHistEtaContaminationProtonMinus(0),
+    fHistPtContaminationProtonMinus(0),
+    fVertexZ(0),
+    fDCAxyCut(-1),
+    fDCAzCut(-1),
+    fTPCchi2Cut(-1),
+    fNClustersTPCCut(-1)
+
+
+    //fHistEtaPtPhiVertxezTruthPion(0)
+/* fHistEtaPtPhiVertxezTruthPionPlus(0),
+ fHistEtaPtPhiVertxezTruthPionMinus(0),
+ fHistEtaPtPhiVertxezTruthKaon(0),
+ fHistEtaPtPhiVertxezTruthKaonPlus(0),
+ fHistEtaPtPhiVertxezTruthKaonMinus(0),
+ fHistEtaPtPhiVertxezTruthProton(0),
+ fHistEtaPtPhiVertxezTruthProtonPlus(0),
+ fHistEtaPtPhiVertxezTruthProtonMinus(0),
+ fHistEtaPtPhiVertxezContaminationPion(0),
+ fHistEtaPtPhiVertxezContaminationPionPlus(0),
+ fHistEtaPtPhiVertxezContaminationPionMinus(0),
+ fHistEtaPtPhiVertxezContaminationKaon(0),
+ fHistEtaPtPhiVertxezContaminationKaonPlus(0),
+ fHistEtaPtPhiVertxezContaminationKaonMinus(0),
+ fHistEtaPtPhiVertxezContaminationProton(0),
+ fHistEtaPtPhiVertxezContaminationProtonPlus(0),
+ fHistEtaPtPhiVertxezContaminationProtonMinus(0),
+ fHistEtaPtPhiVertxezRecoPion(0),
+ fHistEtaPtPhiVertxezRecoPionPlus(0),
+ fHistEtaPtPhiVertxezRecoPionMinus(0),
+ fHistEtaPtPhiVertxezRecoKaon(0),
+ fHistEtaPtPhiVertxezRecoKaonPlus(0),
+ fHistEtaPtPhiVertxezRecoKaonMinus(0),
+ fHistEtaPtPhiVertxezRecoProton(0),
+ fHistEtaPtPhiVertxezRecoProtonPlus(0),
+ fHistEtaPtPhiVertxezRecoProtonMinus(0) */                                        
 { 
-    for(Int_t ipart=0;ipart<6;ipart++){
+    for(Int_t ipart=0;ipart<5;ipart++){
    fNsigmaTPC[ipart]=999.0;
    fNsigmaTOF[ipart]=999.0;
    }
@@ -256,7 +381,7 @@ class AliAnalysisTaskEffContPIDBF : public AliAnalysisTaskSE {
   }
 
 
-  enum kDetectorPID_ { kTPCTOFpid_, kTogether_ };
+  enum kDetectorPID_ { kTPCTOFpid_, kTogether_ , kTPC_, kTOF_};
   enum kParticleType_ { kPion_, kKaon_, kProton_ };
 
 
@@ -307,6 +432,18 @@ void SetRapidityUse(Bool_t rapidityUse) {fRapidityInsteadOfEta=rapidityUse;}
       }
  void SetNSigmaCut(Double_t nsigma) { fNSigmaPID = nsigma; }
 
+
+ void SetExtraDCACutsAOD(Double_t DCAxy, Double_t DCAz){
+    fDCAxyCut  = DCAxy;
+    fDCAzCut = DCAz;
+  }
+
+   void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC){
+    fTPCchi2Cut      = maxTPCchi2;
+    fNClustersTPCCut = minNClustersTPC;
+  }
+
+
    Bool_t IsMCParticleCut(AliAODMCParticle* particle);
 
    Double_t Beta(AliAODTrack *track);
@@ -316,18 +453,119 @@ void SetRapidityUse(Bool_t rapidityUse) {fRapidityInsteadOfEta=rapidityUse;}
 
    Double_t GetNsigmas(AliPIDResponse* fPIDResponse , AliAODTrack* track , Int_t specie);
 
+   Int_t MinNsigma(Int_t n, const Double_t *b);
 
+   Double_t IsEventAccepted(AliVEvent *event);
+   Double_t GetRefMultiOrCentrality(AliVEvent *event);
  
  private:
-  AliAODEvent* fAOD; //! AOD object  
+ // AliAODEvent* fAOD; //! AOD object  
+  AliVEvent* fAOD; //! AOD object  
   TClonesArray *fArrayMC; //! array of MC particles  
   TList       *fQAList; //! QA list
   TList       *fOutputList; //! Output list
+  TList       *fQAListTruthReco; //! QA list
  
    Double_t fNSigmaPID;
    Bool_t fRapidityInsteadOfEta;
 
   // Truth MC Particle Pt , Eta abd Phi distribution Histogram 
+
+    TH1F *fHistEtaMCPion;
+    TH1F *fHistEtaMCKaon;
+    TH1F *fHistEtaMCProton;
+    TH1F *fHistPhiMCPion;
+    TH1F *fHistPhiMCKaon;
+    TH1F *fHistPhiMCProton;
+    TH1F *fHistEtaMCRecoPion;
+    TH1F *fHistEtaMCRecoKaon;
+    TH1F *fHistEtaMCRecoProton;
+    TH1F *fHistPhiMCRecoPion;
+    TH1F *fHistPhiMCRecoKaon;
+    TH1F *fHistPhiMCRecoProton;
+
+    TH1F *fHistEtaMCAll;
+    TH1F *fHistPhiMCAll;
+
+
+    TH1F *fHistPtMCProton;
+    TH1F *fHistPhiMCProtonTruthPlus;
+    TH1F *fHistPtMCProtonTruthPlus;
+    TH1F *fHistEtaMCProtonTruthPlus;
+    TH1F *fHistPhiMCProtonTruthMinus;
+    TH1F *fHistPtMCProtonTruthMinus;
+    TH1F *fHistEtaMCProtonTruthMinus;
+    TH1F *fHistPtMCPion;
+    TH1F *fHistPhiMCPionTruthPlus;
+    TH1F *fHistPtMCPionTruthPlus;
+    TH1F *fHistEtaMCPionTruthPlus;
+    TH1F *fHistPhiMCPionTruthMinus;
+    TH1F *fHistPtMCPionTruthMinus;
+    TH1F *fHistEtaMCPionTruthMinus;
+    TH1F *fHistPtMCKaon;
+    TH1F *fHistPhiMCKaonTruthPlus;
+    TH1F *fHistPtMCKaonTruthPlus;
+    TH1F *fHistEtaMCKaonTruthPlus;
+    TH1F *fHistPhiMCKaonTruthMinus;
+    TH1F *fHistPtMCKaonTruthMinus;
+    TH1F *fHistEtaMCKaonTruthMinus;
+
+
+    TH1F *fHistPtMCRecoPion;
+    TH1F *fHistPtMCRecoPionPlus;
+    TH1F *fHistPhiMCRecoPionPlus;
+    TH1F *fHistPtMCRecoPionMinus;
+    TH1F *fHistPhiMCRecoPionMinus;
+    TH1F *fHistEtaMCRecoPionPlus;
+    TH1F *fHistEtaMCRecoPionMinus;
+
+    TH1F *fHistPtMCRecoKaon;
+    TH1F *fHistPtMCRecoKaonPlus;
+    TH1F *fHistPhiMCRecoKaonPlus;
+    TH1F *fHistPtMCRecoKaonMinus;
+    TH1F *fHistPhiMCRecoKaonMinus;
+    TH1F *fHistEtaMCRecoKaonPlus;
+    TH1F *fHistEtaMCRecoKaonMinus;
+
+    TH1F *fHistPtMCRecoProton;
+    TH1F *fHistPtMCRecoProtonPlus;
+    TH1F *fHistPhiMCRecoProtonPlus;
+    TH1F *fHistPtMCRecoProtonMinus;
+    TH1F *fHistPhiMCRecoProtonMinus;
+    TH1F *fHistEtaMCRecoProtonPlus;
+    TH1F *fHistEtaMCRecoProtonMinus;
+
+    TH1F *fHistPhiContaminationPion;
+    TH1F *fHistEtaContaminationPion;
+    TH1F *fHistPtContaminationPion;
+    TH1F *fHistPhiContaminationPionPlus;
+    TH1F *fHistEtaContaminationPionPlus;
+    TH1F *fHistPtContaminationPionPlus;
+    TH1F *fHistPhiContaminationPionMinus;
+    TH1F *fHistEtaContaminationPionMinus;
+    TH1F *fHistPtContaminationPionMinus;
+
+    TH1F *fHistPhiContaminationKaon;
+    TH1F *fHistEtaContaminationKaon;
+    TH1F *fHistPtContaminationKaon;
+    TH1F *fHistPhiContaminationKaonPlus;
+    TH1F *fHistEtaContaminationKaonPlus;
+    TH1F *fHistPtContaminationKaonPlus;
+    TH1F *fHistPhiContaminationKaonMinus;
+    TH1F *fHistEtaContaminationKaonMinus;
+    TH1F *fHistPtContaminationKaonMinus;
+
+    TH1F *fHistPhiContaminationProton;
+    TH1F *fHistEtaContaminationProton;
+    TH1F *fHistPtContaminationProton;
+    TH1F *fHistPhiContaminationProtonPlus;
+    TH1F *fHistEtaContaminationProtonPlus;
+    TH1F *fHistPtContaminationProtonPlus;
+    TH1F *fHistPhiContaminationProtonMinus;
+    TH1F *fHistEtaContaminationProtonMinus;
+    TH1F *fHistPtContaminationProtonMinus;
+
+
 
 // Contamination and Purity Histogram 
 
@@ -372,6 +610,55 @@ TH2F *fHistdEdxTPCProtonAfterPIDCut;
 TH2F *fHistBetaTOFPionAfterPIDCut;
 TH2F *fHistBetaTOFKaonAfterPIDCut;
 TH2F *fHistBetaTOFProtonAfterPIDCut;
+
+ TH2F *fHistNsigmaTPCPionAfterPIDCut;
+ TH2F *fHistNsigmaTPCKaonAfterPIDCut;
+ TH2F *fHistNsigmaTPCProtonAfterPIDCut;
+ TH2F *fHistNsigmaTOFPionAfterPIDCut;
+ TH2F *fHistNsigmaTOFKaonAfterPIDCut;
+ TH2F *fHistNsigmaTOFProtonAfterPIDCut;
+
+
+//TH4D histigram .................................................
+/*TH4D *fHistEtaPtPhiVertxezTruthPion;
+TH4D *fHistEtaPtPhiVertxezTruthPionPlus;
+TH4D *fHistEtaPtPhiVertxezTruthPionMinus;
+
+TH4D *fHistEtaPtPhiVertxezTruthKaon;
+TH4D *fHistEtaPtPhiVertxezTruthKaonPlus;
+TH4D *fHistEtaPtPhiVertxezTruthKaonMinus;
+
+TH4D *fHistEtaPtPhiVertxezTruthProton;
+TH4D *fHistEtaPtPhiVertxezTruthProtonPlus;
+TH4D *fHistEtaPtPhiVertxezTruthProtonMinus;
+
+TH4D *fHistEtaPtPhiVertxezContaminationPion;
+TH4D *fHistEtaPtPhiVertxezContaminationPionPlus;
+TH4D *fHistEtaPtPhiVertxezContaminationPionMinus;
+
+TH4D *fHistEtaPtPhiVertxezContaminationKaon;
+TH4D *fHistEtaPtPhiVertxezContaminationKaonPlus;
+TH4D *fHistEtaPtPhiVertxezContaminationKaonMinus;
+
+TH4D *fHistEtaPtPhiVertxezContaminationProton;
+TH4D *fHistEtaPtPhiVertxezContaminationProtonPlus;
+TH4D *fHistEtaPtPhiVertxezContaminationProtonMinus;
+
+TH4D *fHistEtaPtPhiVertxezRecoPion;
+TH4D *fHistEtaPtPhiVertxezRecoPionPlus;
+TH4D *fHistEtaPtPhiVertxezRecoPionMinus;
+
+TH4D *fHistEtaPtPhiVertxezRecoKaon;
+TH4D *fHistEtaPtPhiVertxezRecoKaonPlus;
+TH4D *fHistEtaPtPhiVertxezRecoKaonMinus;
+
+TH4D *fHistEtaPtPhiVertxezRecoProton;
+TH4D *fHistEtaPtPhiVertxezRecoProtonPlus;
+TH4D *fHistEtaPtPhiVertxezRecoProtonMinus;*/
+//TH4D histigram .................................................
+
+
+
 
 
 
@@ -538,6 +825,7 @@ TH2F *fHistBetaTOFProtonAfterPIDCut;
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
+  Double_t fVertexZ;
   
   Int_t fAODTrackCutBit;//track cut bit from track selection (only used for AODs)
 
@@ -565,6 +853,11 @@ TH2F *fHistBetaTOFProtonAfterPIDCut;
   kParticleType_ fParticleType_; // particle type for analysis
   kDetectorPID_ fDetectorPID_; // particle type for analysis
 
+  Double_t fDCAxyCut;//only used for AODs
+  Double_t fDCAzCut;//only used for AODs
+
+  Double_t fTPCchi2Cut;//only used for AODs
+  Int_t fNClustersTPCCut;//only used for AODs
 
   AliAnalysisTaskEffContPIDBF(const AliAnalysisTaskEffContPIDBF&); // not implemented
   AliAnalysisTaskEffContPIDBF& operator=(const AliAnalysisTaskEffContPIDBF&); // not implemented
