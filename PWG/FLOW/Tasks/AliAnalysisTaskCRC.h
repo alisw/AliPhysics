@@ -93,6 +93,8 @@ public:
   TList* GetWeightsList() const {return this->fWeightsList;};
   void SetWeightsListChDep(TList* const kList) {this->fWeightsListChDep = (TList*)kList->Clone();};
   TList* GetWeightsListChDep() const {return this->fWeightsListChDep;};
+  void SetWeightsListVtxDep(TList* const kList) {this->fWeightsListVtxDep = (TList*)kList->Clone();};
+  TList* GetWeightsListVtxDep() const {return this->fWeightsListVtxDep;};
   
   // Multiparticle correlations vs multiplicity:
   void SetnBinsMult(Int_t const nbm) {this->fnBinsMult = nbm;};
@@ -115,6 +117,8 @@ public:
   Bool_t GetUsePhiEtaWeights() const {return this->fUsePhiEtaWeights;};
   void SetUsePhiEtaWeightsChDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsChDep = uPhiEtaW;};
   Bool_t GetUsePhiEtaWeightsChDep() const {return this->fUsePhiEtaWeightsChDep;};
+  void SetUsePhiEtaWeightsVtxDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsVtxDep = uPhiEtaW;};
+  Bool_t GetUsePhiEtaWeightsVtxDep() const {return this->fUsePhiEtaWeightsVtxDep;};
   void SetPhiEtaCutsList(TList* const wlist) {this->fPhiEtaCutsList = wlist;}
   TList* GetPhiEtaCutsList() const {return this->fPhiEtaCutsList;}
   void SetUsePhiEtaCuts(Bool_t const uPhiEtaW) {this->fUsePhiEtaCuts = uPhiEtaW;};
@@ -283,10 +287,12 @@ private:
   Bool_t fUseTrackWeights;            // use track weights (e.g. VZERO sector weights)
   Bool_t fUsePhiEtaWeights;           // use phi,eta weights
   Bool_t fUsePhiEtaWeightsChDep;      // use phi,eta weights ch dep
+  Bool_t fUsePhiEtaWeightsVtxDep;      // use phi,eta weights vtx dep
   Bool_t fUseZDCESEMulWeights;        // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE mult. weights
   TList *fWeightsList;                // list with weights
   TList *fWeightsListChDep;           // list with weights ch dep
+  TList *fWeightsListVtxDep;          // list with weights vtx dep
   TList *fPhiEtaCutsList;             //
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
