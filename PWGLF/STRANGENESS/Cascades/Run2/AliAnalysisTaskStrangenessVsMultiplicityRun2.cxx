@@ -1837,7 +1837,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 ( fTreeCascVarDCABachToBaryon > lCascadeResult->GetCutDCABachToBaryon() ) &&
                 
                 //Check 7: Experimental Bach Baryon CosPA
-                ( fTreeCascVarWrongCosPA < lCascadeResult->GetCutBachBaryonCosPA()  )
+                ( fTreeCascVarWrongCosPA < lCascadeResult->GetCutBachBaryonCosPA()  ) &&
+                
+                //Check 8: Min/Max V0 Lifetime cut
+                ( ( fTreeCascVarV0Lifetime > lCascadeResult->GetCutMinV0Lifetime() ) &&
+                ( fTreeCascVarV0Lifetime < lCascadeResult->GetCutMaxV0Lifetime() ||
+                 lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) )
                 
                 ){
                 //This satisfies all my conditionals! Fill histogram

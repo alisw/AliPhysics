@@ -2562,7 +2562,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //Check 7: Experimental Bach Baryon CosPA
                 ( fTreeCascVarWrongCosPA < lCascadeResult->GetCutBachBaryonCosPA()  ) &&
                 
-                //Check 8: Explicit associate-with-bump
+                //Check 8: Min/Max V0 Lifetime cut
+                ( ( fTreeCascVarV0Lifetime > lCascadeResult->GetCutMinV0Lifetime() ) &&
+                 ( fTreeCascVarV0Lifetime < lCascadeResult->GetCutMaxV0Lifetime() ||
+                  lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) ) &&
+                
+                //Check 9: Explicit associate-with-bump
                 ( ! (lCascadeResult->GetCutMCSelectBump())    || (//Start bump-selection
                                                                   //Case: XiMinus or OmegaMinus
                                                                   (lCharge == -1 &&

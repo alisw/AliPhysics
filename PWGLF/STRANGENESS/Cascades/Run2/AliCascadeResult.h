@@ -56,6 +56,8 @@ public:
     void SetCutCascRadius       ( Double_t lCut ) { fCutCascRadius        = lCut; }
     void SetCutDCABachToBaryon  ( Double_t lCut ) { fCutDCABachToBaryon   = lCut; }
     void SetCutBachBaryonCosPA  ( Double_t lCut ) { fCutBachBaryonCosPA   = lCut; }
+    void SetCutMinV0Lifetime    ( Double_t lCut ) { fCutMinV0Lifetime     = lCut; }
+    void SetCutMaxV0Lifetime    ( Double_t lCut ) { fCutMaxV0Lifetime     = lCut; }
     
     //Miscellaneous
     void SetCutProperLifetime        ( Double_t lCut ) { fCutProperLifetime        = lCut; }
@@ -121,6 +123,8 @@ public:
     Double_t GetCutCascRadius       () const { return fCutCascRadius; }
     Double_t GetCutDCABachToBaryon  () const { return fCutDCABachToBaryon; }
     Double_t GetCutBachBaryonCosPA  () const { return fCutBachBaryonCosPA; }
+    Double_t GetCutMinV0Lifetime    () const { return fCutMinV0Lifetime; }
+    Double_t GetCutMaxV0Lifetime    () const { return fCutMaxV0Lifetime; }
     
     //Miscellaneous
     Double_t GetCutProperLifetime () const { return fCutProperLifetime; }
@@ -181,6 +185,8 @@ private:
     Double_t fCutCascRadius;       //ca vertexer 6
     Double_t fCutDCABachToBaryon;  //extra selection on dca bach-pos (experimental)
     Double_t fCutBachBaryonCosPA;  //extra selection on bach-baryon CosPA (experimental)
+    Double_t fCutMinV0Lifetime; //min V0 lifetime (cm/c)
+    Double_t fCutMaxV0Lifetime; //max V0 lifetime (cm/c)
     
     Double_t fCutProperLifetime;
     Double_t fCutLeastNumberOfClusters;
