@@ -458,6 +458,12 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(particle,valuesPair);
 
+  // make MC truth information avaiable also in non-MCtruth steps
+  AliDielectronMC* dieMC = AliDielectronMC::Instance();
+  if(dieMC && dieMC->GetMCEvent()){
+    AliDielectronVarManager::Fill(dieMC->GetMCEvent(), valuesPair);
+  }
+  
   for (Int_t iVar=0; iVar<fNVars; ++iVar){
     Int_t var=fVariables[iVar];
     fValues[iVar]=valuesPair[var];
