@@ -12,6 +12,7 @@
 #include <TString.h>
 #include <TChain.h>
 #include <TH2F.h>
+#include <TProfile2D.h>
 
 class AliReducedBaseEvent;
 class AliReducedEventInfo;
@@ -226,6 +227,7 @@ class AliReducedVarManager : public TObject {
     kNV0total,          // total number of V0s in the esd      
     kNV0selected,       // number of V0s selected              
     kNpairsSelected,    // number of selected pairs per event  
+    kEvAverageTPCchi2,   // average TPC chi2 for the tracks in a given event
     kNDplusToK0sPiplusSelected,       // D+           -> K0s pi+
     kNDplusToK0sKplusSelected,        // D+           -> K0s K+
     kNDplusToPhiPiplusSelected,       // D+           -> phi pi+
@@ -391,10 +393,10 @@ class AliReducedVarManager : public TObject {
     kPairLxy,           
     kPairOpeningAngle,  
     kPairPointingAngle, 
-    kPairThetaCS,       
-    kPairPhiCS,         
-    kPairThetaHE,       
-    kPairPhiHE,
+    kPairThetaCS,                // cos (theta*) in Collins-Soper frame       
+    kPairPhiCS,                    // phi* in Collins-Soper frame
+    kPairThetaHE,                // cos (theta*) in helicity frame       
+    kPairPhiHE,                    // phi* in helicity frame
     kPairQualityFlag,
     kDMA,                        // Distance of minimal approach
     kPairPhiV,                   // angle between pair plane and magnetic field
@@ -406,8 +408,10 @@ class AliReducedVarManager : public TObject {
     kPairDcaZSqrt,
     kMassDcaPtCorr,             // invariant mass, corrected for DCA and pT effects
     kOpAngDcaPtCorr,            // opening angle, corrected for DCA and pT effects
+    kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
+    kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
     // Track-only variables -------------------------------------
-    kPtTPC,     
+    kPtTPC=kPairLegTPCchi2+2,     
     kPhiTPC,    
     kEtaTPC,    
     kDcaXYTPC,    
@@ -531,7 +535,7 @@ class AliReducedVarManager : public TObject {
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
   static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
-  static void FillMCTruthInfo(AliReducedTrackInfo* p, Float_t* values);
+  static void FillMCTruthInfo(AliReducedTrackInfo* p, Float_t* values, AliReducedTrackInfo* leg1 = 0x0, AliReducedTrackInfo* leg2 = 0x0);
   
   static void PrintTrackFlags(AliReducedTrackInfo* track);
   static void PrintBits(ULong_t mask, Int_t maxBit=64);
@@ -550,6 +554,9 @@ class AliReducedVarManager : public TObject {
   static void SetGRPDataInfo(TH1I* dipolePolarity, TH1I* l3Polarity, TH1I* timeStart, TH1I* timeStop);
   static void SetRunNumbers( TString runNumbers );
   static void SetTrackletsProfile( TProfile * profileTracklets );
+  static void SetVZEROCalibrationPath(const Char_t* path);
+  static void SetCalibrateVZEROqVector(Bool_t option);
+  static void SetRecenterVZEROqVector(Bool_t option);
   
  private:
   static Int_t     fgCurrentRunNumber;               // current run number
@@ -585,7 +592,12 @@ class AliReducedVarManager : public TObject {
   static Int_t fgRunID;                       // run ID
   static TProfile* fgAvgSpdTrackletsVertex; // average number of SPD tracklets vs. z-vertex
   static Double_t fgRefMult;                  // reference multiplicity for z-vertex correction
-
+  static TString fgVZEROCalibrationPath;       // path to the VZERO calibration histograms
+  static TProfile2D* fgAvgVZEROChannelMult[64];       // average multiplicity in VZERO channels vs (vtxZ,centSPD)
+  static TProfile2D* fgVZEROqVecRecentering[4];       // (vtxZ,centSPD) maps of the VZERO A and C recentering Qvector offsets
+  static Bool_t fgOptionCalibrateVZEROqVec;
+  static Bool_t fgOptionRecenterVZEROqVec;
+  
   AliReducedVarManager(AliReducedVarManager const&);
   AliReducedVarManager& operator=(AliReducedVarManager const&);  
   

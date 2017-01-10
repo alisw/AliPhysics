@@ -24,7 +24,9 @@ using std::ifstream;
 #include <TH2F.h>
 #include <TProfile.h>
 #include <TRandom.h>
-//#include <TObject.h>
+#include <TProfile2D.h>
+#include <TFile.h>
+#include <THashList.h>
 
 #include "AliReducedBaseEvent.h"
 #include "AliReducedEventInfo.h"
@@ -98,7 +100,7 @@ const Double_t AliReducedVarManager::fgkVZEROChannelRadii[64] = {
 };
 const Double_t AliReducedVarManager::fgkVZEROAz = 340.0;   // cm
 const Double_t AliReducedVarManager::fgkVZEROCz = 90.0;    // cm
-const Double_t AliReducedVarManager::fgkVZEROminMult = 0.0;   // minimum VZERO channel multiplicity
+const Double_t AliReducedVarManager::fgkVZEROminMult = 0.5;   // minimum VZERO channel multiplicity
 const Float_t  AliReducedVarManager::fgkTPCQvecRapGap = 0.8;    // symmetric interval in the middle of the TPC excluded from EP calculation
       Float_t  AliReducedVarManager::fgBeamMomentum = 1380.;   // beam momentum in GeV/c
      
@@ -124,6 +126,11 @@ std::vector<Int_t>  AliReducedVarManager::fgRunNumbers;
 Int_t AliReducedVarManager::fgRunID = -1;
 TProfile* AliReducedVarManager::fgAvgSpdTrackletsVertex = 0x0;
 Double_t AliReducedVarManager::fgRefMult = 0.;
+TString AliReducedVarManager::fgVZEROCalibrationPath = "";
+TProfile2D* AliReducedVarManager::fgAvgVZEROChannelMult[64] = {0x0};
+TProfile2D* AliReducedVarManager::fgVZEROqVecRecentering[4] = {0x0};
+Bool_t AliReducedVarManager::fgOptionCalibrateVZEROqVec = kFALSE;
+Bool_t AliReducedVarManager::fgOptionRecenterVZEROqVec = kFALSE;
 
 //__________________________________________________________________
 AliReducedVarManager::AliReducedVarManager() :
@@ -321,9 +328,10 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   
   EVENT* event = (EVENT*)baseEvent;
   
-  // fill GRP information if available (needed for the first event filled and whenever the run changes)
+  // Update run wise information if available (needed for the first event filled and whenever the run changes)
   if(fgCurrentRunNumber!=baseEvent->RunNo()) {
     fgCurrentRunNumber = baseEvent->RunNo();
+    // GRP and LHC information
     if(fgRunTotalLuminosity) values[kTotalLuminosity] = fgRunTotalLuminosity->GetBinContent(fgRunTotalLuminosity->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
     if(fgRunTotalIntensity0) values[kBeamIntensity0] = fgRunTotalIntensity0->GetBinContent(fgRunTotalIntensity0->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
     if(fgRunTotalIntensity1) values[kBeamIntensity1] = fgRunTotalIntensity1->GetBinContent(fgRunTotalIntensity1->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
@@ -332,6 +340,39 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
     if(fgRunL3Polarity) values[kL3Polarity] = fgRunL3Polarity->GetBinContent(fgRunL3Polarity->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
     if(fgRunTimeStart) values[kRunTimeStart] = fgRunTimeStart->GetBinContent(fgRunTimeStart->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
     if(fgRunTimeEnd) values[kRunTimeEnd] = fgRunTimeEnd->GetBinContent(fgRunTimeEnd->GetXaxis()->FindBin(Form("%d",fgCurrentRunNumber)));
+    
+    // VZERO calibration
+    if(fgVZEROCalibrationPath.Data()[0]!='\0') {
+       cout << "AliReducedVarManager::Info  Attempting to load VZERO calibration and/or recentering histograms from path: " << endl << fgVZEROCalibrationPath.Data() << endl;
+      TFile* calibFile = TFile::Open(Form("%s/000%d/dstAnalysisHistograms.root", fgVZEROCalibrationPath.Data(), fgCurrentRunNumber));
+      THashList* mainList = (THashList*)calibFile->Get("jpsi2eeHistos");
+      THashList* calibList = (THashList*)mainList->FindObject("Event_AfterCuts");
+      if(!calibList) {
+         cout << "AliReducedVarManager::Info  Cannot open calibration file for run " << fgCurrentRunNumber << endl;
+         cout << "                        Will run uncalibrated and not-recentered!" << endl;
+         fgOptionCalibrateVZEROqVec = kFALSE;
+         fgOptionRecenterVZEROqVec = kFALSE;
+      }
+      cout << "AliReducedVarManager::Info  Loading VZERO calibration and/or recentering parameters for run " << fgCurrentRunNumber << endl;
+      if(fgOptionCalibrateVZEROqVec) {
+        for(Int_t iCh=0; iCh<64; ++iCh) {
+           
+           fgAvgVZEROChannelMult[iCh] = (TProfile2D*)calibList->FindObject(Form("VZEROmult_ch%d_VtxCent_prof", iCh))->Clone(Form("run%d_ch%d", fgCurrentRunNumber, iCh));
+           fgAvgVZEROChannelMult[iCh]->SetDirectory(0x0);
+        }
+      }
+      if(fgOptionRecenterVZEROqVec) {
+         fgVZEROqVecRecentering[0] = (TProfile2D*)calibList->FindObject(Form("QvecX_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROA", fgCurrentRunNumber));
+         fgVZEROqVecRecentering[0]->SetDirectory(0x0);
+         fgVZEROqVecRecentering[1] = (TProfile2D*)calibList->FindObject(Form("QvecY_sideA_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROA", fgCurrentRunNumber));
+         fgVZEROqVecRecentering[1]->SetDirectory(0x0);
+         fgVZEROqVecRecentering[2] = (TProfile2D*)calibList->FindObject(Form("QvecX_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecX_VZEROC", fgCurrentRunNumber));
+         fgVZEROqVecRecentering[2]->SetDirectory(0x0);
+         fgVZEROqVecRecentering[3] = (TProfile2D*)calibList->FindObject(Form("QvecY_sideC_h2_CentSPDVtxZ_prof"))->Clone(Form("run%d_QvecY_VZEROC", fgCurrentRunNumber));
+         fgVZEROqVecRecentering[3]->SetDirectory(0x0);
+      }
+      calibFile->Close();
+    }
   }
   
   values[kEventNumberInFile]    = event->EventNumberInFile();
@@ -471,6 +512,83 @@ void AliReducedVarManager::FillEventInfo(BASEEVENT* baseEvent, Float_t* values, 
   if(values[kVZEROTotalMult]>0.0)
      values[kNTracksTPCoutFromPileup] = values[kNTracksPerTrackingStatus+kTPCout] - (-2.55+TMath::Sqrt(2.55*2.55+4.0e-5*values[kVZEROTotalMult]))/2.0e-5;
   else fgUsedVars[kNTracksTPCoutFromPileup] = kFALSE;
+  
+  if(!eventF && (fgUsedVars[kVZEROQvecX+0*6+1] || fgUsedVars[kVZEROQvecY+0*6+1] || fgUsedVars[kVZERORP+0*6+1])) {
+    Double_t qvecVZEROA[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
+    Double_t qvecVZEROC[EVENTPLANE::fgkNMaxHarmonics][2] = {{0.0}};
+    if(fgOptionCalibrateVZEROqVec && fgAvgVZEROChannelMult[0]) {
+      Float_t calibVZEROMult[64] = {0.};
+      for(Int_t iCh=0; iCh<64; ++iCh) {
+         if(event->MultChannelVZERO(iCh)>=fgkVZEROminMult) {
+            Float_t avMult = fgAvgVZEROChannelMult[iCh]->GetBinContent(fgAvgVZEROChannelMult[iCh]->FindBin(event->Vertex(2), event->CentralitySPD()));
+            calibVZEROMult[iCh] = event->MultChannelVZERO(iCh) / (avMult>1.0e-6 ? avMult : 1.0);
+         }
+      }
+      event->GetVZEROQvector(qvecVZEROA, EVENTPLANE::kVZEROA, calibVZEROMult);
+      event->GetVZEROQvector(qvecVZEROC, EVENTPLANE::kVZEROC, calibVZEROMult);
+    }
+    else {
+      event->GetVZEROQvector(qvecVZEROA, EVENTPLANE::kVZEROA);
+      event->GetVZEROQvector(qvecVZEROC, EVENTPLANE::kVZEROC);
+    }
+    if(fgOptionRecenterVZEROqVec && fgVZEROqVecRecentering[0]) {
+       Float_t recenterOffset = fgVZEROqVecRecentering[0]->GetBinContent(fgVZEROqVecRecentering[0]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+       qvecVZEROA[1][0] -= recenterOffset;
+       recenterOffset = fgVZEROqVecRecentering[1]->GetBinContent(fgVZEROqVecRecentering[1]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+       qvecVZEROA[1][1] -= recenterOffset;
+       recenterOffset = fgVZEROqVecRecentering[2]->GetBinContent(fgVZEROqVecRecentering[2]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+       qvecVZEROC[1][0] -= recenterOffset;
+       recenterOffset = fgVZEROqVecRecentering[3]->GetBinContent(fgVZEROqVecRecentering[3]->FindBin(event->CentralitySPD(), event->Vertex(2)));
+       qvecVZEROC[1][1] -= recenterOffset;
+    }
+    for(Int_t ih=1; ih<2; ++ih) {
+       // VZERO event plane variables
+       values[kVZEROQvecX+0*6+ih] = qvecVZEROA[ih][0];
+       values[kVZEROQvecY+0*6+ih] = qvecVZEROA[ih][1];
+       values[kVZEROQvecX+1*6+ih] = qvecVZEROC[ih][0];
+       values[kVZEROQvecY+1*6+ih] = qvecVZEROC[ih][1];
+       values[kVZERORP+0*6+ih] = TMath::ATan2(qvecVZEROA[ih][1], qvecVZEROA[ih][0])/Double_t(ih+1);
+       values[kVZERORP+1*6+ih] = TMath::ATan2(qvecVZEROC[ih][1], qvecVZEROC[ih][0])/Double_t(ih+1);
+       values[kVZEROQvecX+2*6+ih] = qvecVZEROA[ih][0] + qvecVZEROC[ih][0];
+       values[kVZEROQvecY+2*6+ih] = qvecVZEROA[ih][1] + qvecVZEROC[ih][1];
+       values[kVZERORP   +2*6+ih] = TMath::ATan2(values[kVZEROQvecY+2*6+ih], values[kVZEROQvecX+2*6+ih])/Double_t(ih+1);
+     
+       if(fgUsedVars[kVZEROQaQcSP+ih]) {
+          values[kVZEROQaQcSP+ih] = TMath::Cos((ih+1)*(values[kVZERORP+0*6+ih]-values[kVZERORP+1*6+ih]));
+          values[kVZEROQaQcSP+ih] *= TMath::Sqrt(values[kVZEROQvecX+0*6+ih]*values[kVZEROQvecX+0*6+ih]+
+          values[kVZEROQvecY+0*6+ih]*values[kVZEROQvecY+0*6+ih]);
+          values[kVZEROQaQcSP+ih] *= TMath::Sqrt(values[kVZEROQvecX+1*6+ih]*values[kVZEROQvecX+1*6+ih]+
+          values[kVZEROQvecY+1*6+ih]*values[kVZEROQvecY+1*6+ih]);
+       }
+       values[kVZEROQaQcSPsine+ih] = TMath::Sin((ih+1)*(values[kVZERORP+0*6+ih]-values[kVZERORP+1*6+ih]));
+       values[kVZEROQaQcSPsine+ih] *= TMath::Sqrt(values[kVZEROQvecX+0*6+ih]*values[kVZEROQvecX+0*6+ih]+
+       values[kVZEROQvecY+0*6+ih]*values[kVZEROQvecY+0*6+ih]);
+       values[kVZEROQaQcSPsine+ih] *= TMath::Sqrt(values[kVZEROQvecX+1*6+ih]*values[kVZEROQvecX+1*6+ih]+
+       values[kVZEROQvecY+1*6+ih]*values[kVZEROQvecY+1*6+ih]);
+       values[kVZERORP   +2*6+ih] = TMath::ATan2(values[kVZEROQvecY+2*6+ih],values[kVZEROQvecX+2*6+ih])/Double_t(ih+1);
+       // cos (n*(psi_A-psi_C))
+       if(fgUsedVars[kVZERORPres + ih]) {
+          values[kVZERORPres + ih] = DeltaPhi(values[kVZERORP+0*6+ih], values[kVZERORP+1*6+ih]);
+          values[kVZERORPres + ih] = TMath::Cos(values[kVZERORPres + ih]*(ih+1));
+       }
+       // Qx,Qy correlations for VZERO
+       if(fgUsedVars[kVZEROXaXc+ih]) 
+          values[kVZEROXaXc+ih] = qvecVZEROA[ih][0]*qvecVZEROC[ih][0];
+       if(fgUsedVars[kVZEROXaYa+ih]) 
+          values[kVZEROXaYa+ih] = qvecVZEROA[ih][0]*qvecVZEROA[ih][1];
+       if(fgUsedVars[kVZEROXaYc+ih]) 
+          values[kVZEROXaYc+ih] = qvecVZEROA[ih][0]*qvecVZEROC[ih][1];
+       if(fgUsedVars[kVZEROYaXc+ih]) 
+          values[kVZEROYaXc+ih] = qvecVZEROA[ih][1]*qvecVZEROC[ih][0];
+       if(fgUsedVars[kVZEROYaYc+ih]) 
+          values[kVZEROYaYc+ih] = qvecVZEROA[ih][1]*qvecVZEROC[ih][1];
+       if(fgUsedVars[kVZEROXcYc+ih]) 
+          values[kVZEROXcYc+ih] = qvecVZEROC[ih][0]*qvecVZEROC[ih][1];
+       // Psi_A - Psi_C
+       if(fgUsedVars[kVZEROdeltaRPac+ih])
+          values[kVZEROdeltaRPac+ih] = DeltaPhi(values[kVZERORP+0*6+ih], values[kVZERORP+1*6+ih]);
+    }    // end loop over harmonics
+  }
   
   if(eventF) {
     for(Int_t ih=0; ih<6; ++ih) {
@@ -745,7 +863,7 @@ void AliReducedVarManager::FillEventOnlineTrigger(UShort_t triggerBit, Float_t* 
 }
 
 //_________________________________________________________________
-void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values) {
+void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg1 /* = 0x0 */, TRACK* leg2 /* = 0x0 */) {
    //
    //  Fill pure MC truth information
    //
@@ -769,6 +887,13 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values) {
    values[kPdgMC+1] = p->MCPdg(1);
    values[kPdgMC+2] = p->MCPdg(2);
    values[kPdgMC+3] = p->MCPdg(3);
+   
+   // polarization variables
+   Bool_t usePolarization=kFALSE;
+   if(leg1 && leg2 && (fgUsedVars[kPairThetaCS] || fgUsedVars[kPairThetaHE] || fgUsedVars[kPairPhiCS] || fgUsedVars[kPairPhiHE]))
+      usePolarization = kTRUE;
+   if(usePolarization)
+      GetThetaPhiCM(leg1, leg2, values[kPairThetaHE], values[kPairPhiHE], values[kPairThetaCS], values[kPairPhiCS]);
 }
 
 //_________________________________________________________________
@@ -981,6 +1106,10 @@ void AliReducedVarManager::FillTrackInfo(BASETRACK* p, Float_t* values) {
      if(fgUsedVars[kEtaMC]) values[kEtaMC] = pinfo->EtaMC();
      if(fgUsedVars[kPhiMC]) values[kPhiMC] = pinfo->PhiMC();
      //TODO: add also the massMC and RapMC   
+     values[kPdgMC] = pinfo->MCPdg(0);
+     values[kPdgMC+1] = pinfo->MCPdg(1);
+     values[kPdgMC+2] = pinfo->MCPdg(2);
+     values[kPdgMC+3] = pinfo->MCPdg(3);
   }
 }
 
@@ -1160,6 +1289,17 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
   if(fgUsedVars[kDMA] && (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
      TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
      values[kDMA]=TMath::Sqrt((ti1->HelixX()-ti2->HelixX())*(ti1->HelixX()-ti2->HelixX())+(ti1->HelixY()-ti2->HelixY())*(ti1->HelixY()-ti2->HelixY()))-ti1->HelixR()-ti2->HelixR();   
+  }
+  
+  if((fgUsedVars[kPairLegTPCchi2] || fgUsedVars[kPairLegTPCchi2+1]) && (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
+     TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
+     values[kPairLegTPCchi2] = ti1->TPCchi2();
+     values[kPairLegTPCchi2+1] = ti2->TPCchi2();
+  }
+  if((fgUsedVars[kPairLegITSchi2] || fgUsedVars[kPairLegITSchi2+1]) && (t1->IsA()==TRACK::Class()) && (t2->IsA()==TRACK::Class())) {
+     TRACK* ti1=(TRACK*)t1; TRACK* ti2=(TRACK*)t2;
+    values[kPairLegITSchi2] = ti1->ITSchi2();
+    values[kPairLegITSchi2+1] = ti2->ITSchi2();
   }
   
   if(p.PairType()==1 && t1->HasMCTruthInfo() && t2->HasMCTruthInfo()) {
@@ -1647,6 +1787,7 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kNV0total]                    = "Total number of V0s";             fgVariableUnits[kNV0total]       = "";  
   fgVariableNames[kNV0selected]                 = "Number of selected V0s";          fgVariableUnits[kNV0selected]    = "";  
   fgVariableNames[kNpairsSelected]              = "Number of pairs per event";       fgVariableUnits[kNpairsSelected] = "";    
+  fgVariableNames[kEvAverageTPCchi2]        = "Event TPC <chi2>";            fgVariableUnits[kEvAverageTPCchi2] = "";
   fgVariableNames[kNDplusToK0sPiplusSelected]     = "Number of D+ ->K0s pi+ pairs per event";     fgVariableUnits[kNDplusToK0sPiplusSelected]     = "";
   fgVariableNames[kNDplusToK0sKplusSelected]      = "Number of D+ ->K0s K+ pairs per event";      fgVariableUnits[kNDplusToK0sKplusSelected]      = "";
   fgVariableNames[kNDplusToPhiPiplusSelected]     = "Number of D+ ->phi pi+ pairs per event";     fgVariableUnits[kNDplusToPhiPiplusSelected]     = "";
@@ -1935,7 +2076,13 @@ void AliReducedVarManager::SetDefaultVarNames() {
   fgVariableNames[kPairThetaHE]       = "cos(#theta^{*}_{HE})";  fgVariableUnits[kPairThetaHE]       = "";  
   fgVariableNames[kPairPhiHE]         = "#varphi^{*}_{HE}";      fgVariableUnits[kPairPhiHE]         = "rad.";
   fgVariableNames[kPairPhiV]         = "#varphi^{*}_{v}";        fgVariableUnits[kPairPhiV]         = "rad.";
-
+  for(Int_t i=0;i<2;++i) {
+     fgVariableNames[kPairLegTPCchi2+i] = Form("TPC #chi^{2}, leg %d", i+1);
+     fgVariableUnits[kPairLegTPCchi2+i] = "";
+     fgVariableNames[kPairLegITSchi2+i] = Form("ITS #chi^{2}, leg %d", i+1);
+     fgVariableUnits[kPairLegITSchi2+i] = "";
+  }
+  
   fgVariableNames[kPtTPC]             = "p_{T}^{TPC}";                  fgVariableUnits[kPtTPC] = "GeV/c";
   fgVariableNames[kPhiTPC]            = "#varphi^{TPC}";                fgVariableUnits[kPhiTPC] = "rad.";
   fgVariableNames[kEtaTPC]            = "#eta^{TPC}";                   fgVariableUnits[kEtaTPC] = "";
@@ -2166,4 +2313,29 @@ void AliReducedVarManager::SetTrackletsProfile(TProfile* profileTracklets) {
      fgAvgSpdTrackletsVertex = (TProfile*)profileTracklets->Clone(Form("AliReducedVarManager_AverageSPDtrackletsVsVertex"));
      fgAvgSpdTrackletsVertex->SetDirectory(0x0);
    }
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetVZEROCalibrationPath(const Char_t* path) {
+   //
+   // initialize the path to the VZERO calibration histograms
+   //
+   fgVZEROCalibrationPath = path;
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetCalibrateVZEROqVector(Bool_t option) {
+   //
+   // set the option whether to calibrate the VZERO event plane
+   //
+   fgOptionCalibrateVZEROqVec = option;
+}
+
+//____________________________________________________________________________________
+void AliReducedVarManager::SetRecenterVZEROqVector(Bool_t option) {
+   //
+   // set the option whether to recenter the VZERO event plane
+   //   
+   fgOptionRecenterVZEROqVec = option;
+   //if(fgOptionRecenterVZEROqVec) fgOptionCalibrateVZEROqVec = kTRUE;
 }

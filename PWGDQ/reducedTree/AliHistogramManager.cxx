@@ -605,8 +605,8 @@ void AliHistogramManager::FillHistClass(const Char_t* className, Float_t* values
   //
   THashList* hList = (THashList*)fMainList.FindObject(className);
   if(!hList) {
-    cout << "Warning in AliHistogramManager::FillHistClass(): Histogram list " << className << " not found!" << endl;
-    cout << "         Histogram list not filled" << endl;
+    /*cout << "Warning in AliHistogramManager::FillHistClass(): Histogram list " << className << " not found!" << endl;
+    cout << "         Histogram list not filled" << endl; */
     return;
   }
   if(!hList) {

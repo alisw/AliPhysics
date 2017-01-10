@@ -40,6 +40,11 @@ public:
   void SetRunEventMixing(Bool_t option) {fOptionRunMixing = option;};
   void SetRunPairing(Bool_t option) {fOptionRunPairing = option;};
   void SetRunOverMC(Bool_t option) {fOptionRunOverMC = option;};
+  void SetRunLikeSignPairing(Bool_t option) {fOptionRunLikeSignPairing = option;}
+  void SetLoopOverTracks(Bool_t option) {
+     fOptionLoopOverTracks = option; 
+     if(!fOptionLoopOverTracks) {fOptionRunPairing = kFALSE; fOptionRunMixing = kFALSE; fOptionRunLikeSignPairing = kFALSE;}     
+  }
   
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
@@ -47,6 +52,10 @@ public:
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
   const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");} 
   Bool_t GetRunOverMC() {return fOptionRunOverMC;};
+  Bool_t GetRunLikeSignPairing() {return fOptionRunLikeSignPairing;}
+  Bool_t GetRunEventMixing() {return fOptionRunMixing;}
+  Bool_t GetRunPairing() {return fOptionRunPairing;}
+  Bool_t GetLoopOverTracks() {return fOptionLoopOverTracks;}
   
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
@@ -55,7 +64,9 @@ protected:
    Bool_t fOptionRunMixing;    // true: run event mixing, false: no event mixing
    Bool_t fOptionRunPairing;    // true: run pairing, false: only apply the track cuts
    Bool_t fOptionRunOverMC;  // true: trees contain MC info -> fill histos to compute efficiencies, false: run normally as on data
-   
+   Bool_t fOptionRunLikeSignPairing;   // true (default): performs the like sign pairing in addition to the opposite pairing
+   Bool_t fOptionLoopOverTracks;       // true (default); if false do not loop over tracks and consequently no pairing
+  
    TList fEventCuts;               // array of event cuts
    TList fTrackCuts;               // array of track cuts
    TList fPreFilterTrackCuts;  // track cuts to be used at the prefilter stage
@@ -76,7 +87,7 @@ protected:
   Bool_t IsPairPreFilterSelected(Float_t* values);
   Bool_t IsMCTruth(AliReducedTrackInfo* ptrack, AliReducedTrackInfo* ntrack);
   Bool_t IsMCTruth(AliReducedTrackInfo* track);
-  Bool_t IsMCTruthSelected(AliReducedTrackInfo* track);
+  void    FindJpsiTruthLegs(AliReducedTrackInfo* mother, Int_t& leg1, Int_t& leg2);
   
   void RunPrefilter();
   void RunSameEventPairing(TString pairClass = "PairSE");
@@ -86,7 +97,7 @@ protected:
   void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", Bool_t isMCTruth = kFALSE);
   void FillMCTruthHistograms();
   
-  ClassDef(AliReducedAnalysisJpsi2ee,2);
+  ClassDef(AliReducedAnalysisJpsi2ee,3);
 };
 
 #endif
