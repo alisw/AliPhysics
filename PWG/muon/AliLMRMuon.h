@@ -18,7 +18,10 @@ public:
 	void SetChi2(Double_t  chi2) {fChi2 = chi2 ;};
 	void SetChi2Match(Double_t chi2Match) {fChi2Match = chi2Match;};
 	void SetCharge(Short_t charge) {fCharge=charge;};
+	void SetSelectionMask(UInt_t mask) {fSelectionMask=mask;};
+	void SetLocalBoard(UShort_t LB) {fLocalBoard=LB;};
 
+	UInt_t GetSekectionMask(){return fSelectionMask;};
 	Short_t GetTriggerMatch() {return fTriggerMatch;};
 	Double_t GetpDCA() {return fpDCA ;};
 	Double_t GetRabs() {return fRabs ;};
@@ -31,10 +34,12 @@ public:
 	Double_t Energy() const {return (TMath::Sqrt(P()*P() + kMuonMass*kMuonMass)) ;};
 	Short_t Charge() const {return fCharge;};
 	TLorentzVector P4() const;
-		
+	UShort_t GetLocalBoard() {return fLocalBoard;};
 
 private:
 	Short_t fTriggerMatch;
+	UShort_t fLocalBoard;
+	UInt_t fSelectionMask;	
 	Double_t fpDCA;
 	Double_t fRabs;
 	Short_t fCharge;
@@ -43,7 +48,6 @@ private:
 	Double_t fPz;
 	Double_t fChi2;
 	Double_t fChi2Match;
-		
 	static const Double_t kMuonMass;
 
 	ClassDef(AliLMRMuon, 2)  //The class title
