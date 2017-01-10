@@ -239,7 +239,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         if(debug) cout << "    --> kGlobal RP's " << cutsRP << endl;
     }
     if(VZERO_SP) { // use vzero sub analysis
-        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
+        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
         cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
         cutsRP->SetApplyRecentering(kTRUE);
         cutsRP->SetParamType(AliFlowTrackCuts::kVZERO);//HotfixHI);
