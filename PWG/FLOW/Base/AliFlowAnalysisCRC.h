@@ -1762,6 +1762,7 @@ private:
   TH1D *fFlowQCRefCorFinal[fFlowNHarm][3]; //!
   
   TH2D *fFlowQCSpectra; //!
+  TH2D *fFlowQCSpectraPubBin; //!
   TH2F *fFlowQCNewCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCCenSpec[fZDCESEnCl]; //!
   TH2F *fFlowQCMetricCent; //!

@@ -994,6 +994,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         }
         fCRCQVecPhiHist[fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
         fCRCQVecPhiHistVtxDep[fCenBin]->Fill(fVtxPos[2],dPhi,dEta,wPhiEta);
+        fFlowQCSpectraPubBin->Fill(fCentralityEBE,dPt,wPhiEta*fCenWeightEbE);
       } // end of if(pTrack->InPOISelection())
     } else // to if(aftsTrack)
     {
@@ -16613,6 +16614,7 @@ void AliFlowAnalysisCRC::InitializeArraysForFlowQC()
     }
   } // end of for (Int_t h=0;h<fCRCnCen;h++)
   fFlowQCSpectra = NULL;
+  fFlowQCSpectraPubBin = NULL;
   
   for (Int_t k=0; k<fZDCESEnCl; k++) {
     fFlowQCNewCenSpec[k] = NULL;
@@ -20635,7 +20637,9 @@ void AliFlowAnalysisCRC::CalculateFlowQC()
       
       qpM4 = fPOIPtDiffMul[4][0]->GetBinContent(pt+1);
      
-      if(hr==0) fFlowQCSpectra->Fill(fCentralityEBE,FillPtBin,qpM*fCenWeightEbE);
+      if(hr==0) {
+       fFlowQCSpectra->Fill(fCentralityEBE,FillPtBin,qpM*fCenWeightEbE);
+      }
       
       if(fUseCRCRecenter) {
         qpRe0 -= fTProTempDif[fCenBin][hr][0]->GetBinContent(fTProTempDif[fCenBin][hr][0]->FindBin(FillPtBin))*qpM0;
@@ -28973,6 +28977,12 @@ void AliFlowAnalysisCRC::BookEverythingForFlowQC()
   fFlowQCSpectra = new TH2D("fFlowQCSpectra","fFlowQCSpectra",100,0.,100.,fPtDiffNBins,fCRCPtBins);
   fFlowQCSpectra->Sumw2();
   fFlowQCList->Add(fFlowQCSpectra);
+  
+  Double_t ptpubbins[66] = {1.500000e-01, 2.000000e-01, 2.500000e-01, 3.000000e-01, 3.500000e-01, 4.000000e-01, 4.500000e-01, 5.000000e-01, 5.500000e-01, 6.000000e-01, 6.500000e-01, 7.000000e-01, 7.500000e-01, 8.000000e-01, 8.500000e-01, 9.000000e-01, 9.500000e-01, 1.000000e+00, 1.100000e+00, 1.200000e+00, 1.300000e+00, 1.400000e+00, 1.500000e+00, 1.600000e+00, 1.700000e+00, 1.800000e+00, 1.900000e+00, 2.000000e+00, 2.200000e+00, 2.400000e+00, 2.600000e+00, 2.800000e+00, 3.000000e+00, 3.200000e+00, 3.400000e+00, 3.600000e+00, 3.800000e+00, 4.000000e+00, 4.500000e+00, 5.000000e+00, 5.500000e+00, 6.000000e+00, 6.500000e+00, 7.000000e+00, 8.000000e+00, 9.000000e+00, 1.000000e+01, 1.100000e+01, 1.200000e+01, 1.300000e+01, 1.400000e+01, 1.500000e+01, 1.600000e+01, 1.800000e+01, 2.000000e+01, 2.200000e+01, 2.400000e+01, 2.600000e+01, 2.800000e+01, 3.000000e+01, 3.200000e+01, 3.400000e+01, 3.600000e+01, 4.000000e+01, 4.500000e+01, 5.e+01};
+  
+  fFlowQCSpectraPubBin = new TH2D("fFlowQCSpectraPubBin","fFlowQCSpectraPubBin",100,0.,100.,65,ptpubbins);
+  fFlowQCSpectraPubBin->Sumw2();
+  fFlowQCList->Add(fFlowQCSpectraPubBin);
   
   for (Int_t k=0; k<fZDCESEnCl; k++) {
     fFlowQCNewCenSpec[k] = new TH2F(Form("fFlowQCNewCenSpec[%d]",k),Form("fFlowQCNewCenSpec[%d]",k),fPtDiffNBins,fCRCPtBins,100,0.,100.);
