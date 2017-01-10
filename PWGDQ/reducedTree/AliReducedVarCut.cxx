@@ -29,7 +29,7 @@ AliReducedVarCut::AliReducedVarCut() :
   //
   // default constructor
   //
-  for(Int_t i=0; i<AliReducedVarManager::kNVars; ++i) { 
+  for(Int_t i=0; i<kNMaxCuts; ++i) { 
      fCutVariables[i] = AliReducedVarManager::kNothing;
      fDependentVariable[i] = AliReducedVarManager::kNothing;
      fCutLow[i] = 0.;
@@ -52,7 +52,7 @@ AliReducedVarCut::AliReducedVarCut(const Char_t* name, const Char_t* title) :
   //
   // named constructor
   //
-   for(Int_t i=0; i<AliReducedVarManager::kNVars; ++i) { 
+   for(Int_t i=0; i<kNMaxCuts; ++i) { 
       fCutVariables[i] = AliReducedVarManager::kNothing;
       fDependentVariable[i] = AliReducedVarManager::kNothing;
       fCutLow[i] = 0.;
@@ -82,6 +82,11 @@ void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, Float_t cutLo
    //
    //  Add a cut
    //
+   if(fNCuts==kNMaxCuts) {
+      cout << "AliReducedVarCut::AddCut() Too many cuts added! Reduce the number of cuts in your config macro or increase the maximum allowed limit!" << endl;
+      cout << "                  Cut not added !!" << endl;
+      return;
+   }
    fCutVariables[fNCuts] = var; fCutLow[fNCuts] = cutLow; fCutHigh[fNCuts] = cutHigh; fCutExclude[fNCuts] = exclude;
    AliReducedVarManager::SetUseVariable(var);
    if(dependentVar != AliReducedVarManager::kNothing) {
@@ -102,6 +107,11 @@ void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, Float_t cutLo
    //
    // Add a cut with a function as a high cut
    //
+   if(fNCuts==kNMaxCuts) {
+      cout << "AliReducedVarCut::AddCut() Too many cuts added! Reduce the number of cuts in your config macro or increase the maximum allowed limit!" << endl;
+      cout << "                  Cut not added !!" << endl;
+      return;
+   }
    if(dependentVar == AliReducedVarManager::kNothing) {
       cout << "AliReducedVarCut::AddCut() When adding a cut with a function as high limit, the dependentVar must be set otherwise this does not make sense!" << endl;
       cout << "                  Cut not added !!" << endl;
@@ -127,6 +137,11 @@ void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, TF1* funcCutL
    //
    // Add a cut with a function as a low cut
    //
+   if(fNCuts==kNMaxCuts) {
+      cout << "AliReducedVarCut::AddCut() Too many cuts added! Reduce the number of cuts in your config macro or increase the maximum allowed limit!" << endl;
+      cout << "                  Cut not added !!" << endl;
+      return;
+   }
    if(dependentVar == AliReducedVarManager::kNothing) {
       cout << "AliReducedVarCut::AddCut() When adding a cut with a function as low limit, the dependentVar must be set otherwise this does not make sense!" << endl;
       cout << "                  Cut not added !!" << endl;
@@ -152,6 +167,11 @@ void AliReducedVarCut::AddCut(AliReducedVarManager::Variables var, TF1* funcCutL
    //
    // Add a cut with functions as low and high cuts
    //
+   if(fNCuts==kNMaxCuts) {
+      cout << "AliReducedVarCut::AddCut() Too many cuts added! Reduce the number of cuts in your config macro or increase the maximum allowed limit!" << endl;
+      cout << "                  Cut not added !!" << endl;
+      return;
+   }
    if(dependentVar == AliReducedVarManager::kNothing) {
       cout << "AliReducedVarCut::AddCut() When adding a cut with functions as low and high limits, the dependentVar must be set otherwise this does not make sense!" << endl;
       cout << "                  Cut not added !!" << endl;

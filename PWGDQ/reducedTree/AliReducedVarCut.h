@@ -11,12 +11,16 @@
 
 //_________________________________________________________________________
 class AliReducedVarCut : public AliReducedInfoCut {
-
+   
  public:
   AliReducedVarCut();
   AliReducedVarCut(const Char_t* name, const Char_t* title);
   virtual ~AliReducedVarCut();
 
+  enum Constants {
+     kNMaxCuts=200       // maximum number of cuts
+  }; 
+  
   // NOTE: Apply a selection on variable "var" to be in the range [cutLow,cutHigh] or outside this range if "exclude" is set to true
   // NOTE: If a dependent variable is specified, then the selection is applied only if the dependent variable is in the range [depCutLow,depCutHigh]
   // NOTE:       or outside if "depCutExclude" is true
@@ -37,23 +41,23 @@ class AliReducedVarCut : public AliReducedInfoCut {
   
  protected: 
   
-   Int_t       fNCuts;                                                                 // number of enabled cuts
-   Short_t   fCutVariables[AliReducedVarManager::kNVars];    // list of variables enabled to cut on
-   Short_t   fDependentVariable[AliReducedVarManager::kNVars];      // one can specify that a cut is applied only if a specified variable is within a given range (or outside)   
-   Float_t   fCutLow[AliReducedVarManager::kNVars];          // lower limit for all quantities defined in the AliReducedVarManager 
-   Float_t   fCutHigh[AliReducedVarManager::kNVars];         // higher limit for all quantities defined in the AliReducedVarManager 
-   Bool_t    fCutExclude[AliReducedVarManager::kNVars];    // if true, then use the selection range for exclusion
-   Bool_t    fCutHasDependentVariable[AliReducedVarManager::kNVars];    // if true, check the requirements of the dependent variable
-   Float_t   fDependentVariableCutLow[AliReducedVarManager::kNVars];    // lower limit for the dependent variable
-   Float_t   fDependentVariableCutHigh[AliReducedVarManager::kNVars];   // higher limit for the dependent variable
-   Bool_t    fDependentVariableExclude[AliReducedVarManager::kNVars];  // if true, then use the dependent variable range as exclusion
-   TF1*      fFuncCutLow[AliReducedVarManager::kNVars];     // low cut functions
-   TF1*      fFuncCutHigh[AliReducedVarManager::kNVars];    // high cut functions
+   Int_t       fNCuts;                                    // number of enabled cuts
+   Short_t   fCutVariables[kNMaxCuts];    // list of variables enabled to cut on
+   Short_t   fDependentVariable[kNMaxCuts];      // one can specify that a cut is applied only if a specified variable is within a given range (or outside)   
+   Float_t   fCutLow[kNMaxCuts];          // lower limit for all quantities defined in the AliReducedVarManager 
+   Float_t   fCutHigh[kNMaxCuts];         // higher limit for all quantities defined in the AliReducedVarManager 
+   Bool_t    fCutExclude[kNMaxCuts];    // if true, then use the selection range for exclusion
+   Bool_t    fCutHasDependentVariable[kNMaxCuts];    // if true, check the requirements of the dependent variable
+   Float_t   fDependentVariableCutLow[kNMaxCuts];    // lower limit for the dependent variable
+   Float_t   fDependentVariableCutHigh[kNMaxCuts];   // higher limit for the dependent variable
+   Bool_t    fDependentVariableExclude[kNMaxCuts];  // if true, then use the dependent variable range as exclusion
+   TF1*      fFuncCutLow[kNMaxCuts];     // low cut functions
+   TF1*      fFuncCutHigh[kNMaxCuts];    // high cut functions
       
   AliReducedVarCut(const AliReducedVarCut &c);
   AliReducedVarCut& operator= (const AliReducedVarCut &c);
   
-  ClassDef(AliReducedVarCut,1);
+  ClassDef(AliReducedVarCut,2);
 };
 
 #endif
