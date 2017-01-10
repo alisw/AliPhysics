@@ -118,6 +118,7 @@ AliAnalysisTaskSE(),
   fq2Meth(kq2TPC),
   fSeparateD0D0bar(kFALSE),
   fOnTheFlyTPCEP(kFALSE),
+  fEtaGapInTPCHalves(-1.),
   fUsePtWeights(kFALSE)
 {
   // Default constructor
@@ -161,6 +162,7 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fq2Meth(kq2TPC),
   fSeparateD0D0bar(kFALSE),
   fOnTheFlyTPCEP(kFALSE),
+  fEtaGapInTPCHalves(-1.),
   fUsePtWeights(kFALSE)
 {
   // standard constructor
@@ -1506,6 +1508,7 @@ void AliAnalysisTaskSEHFv2::ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpa
     if(!track) continue;
     if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
       Double_t eta=track->Eta();
+      if(fEtaGapInTPCHalves>0. && TMath::Abs(eta)<fEtaGapInTPCHalves) continue;
       Double_t phi=track->Phi();
       Double_t wi=1.;
       if(fUsePtWeights){
