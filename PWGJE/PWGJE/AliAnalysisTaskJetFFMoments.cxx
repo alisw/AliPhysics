@@ -1866,6 +1866,8 @@ void AliAnalysisTaskJetFFMoments::AssociateGenRec(TList* tracksAODMCCharged, TLi
 	if(listIndex>=0){
 	  indexAODTr[listIndex] = iRec;
 	  indexMCTr[iRec] = listIndex;
+          fh2TrackResPt->Fill(gentrack->Pt(),100*(TMath::Abs(gentrack->Pt()-rectrack->Pt())/gentrack->Pt()));
+          fh1TrackResPtInv->Fill(100. * (TMath::Abs(1/rectrack->Pt()) - 1./gentrack->Pt()) * gentrack->Pt());
 	}
   } // End loop on rec tracks
 
