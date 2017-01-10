@@ -728,8 +728,8 @@ void AliDielectronCF::FillMC(Int_t label1, Int_t label2, Int_t nSignal) {
   }
 
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
-  AliDielectronVarManager::Fill(dieMC->GetMCEvent(), valuesPair);
   AliDielectronVarManager::FillVarMCParticle2(part1,part2,valuesPair);
+  AliDielectronVarManager::Fill(dieMC->GetMCEvent(), valuesPair);
 
   if(part1->Charge()*part2->Charge()<0)
     valuesPair[AliDielectronVarManager::kPairType]=1;
