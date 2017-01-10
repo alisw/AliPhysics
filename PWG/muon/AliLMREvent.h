@@ -37,8 +37,8 @@ public:
 	Int_t GetNVtxContributors(){return fNVtxContributors;};
 	Double_t GetMultiplicity(TString method);
 	
-	AliLMRMuon * AddMuon();
-	AliLMRMuon * GetMuon(Int_t imu) { return ((imu < fMuons->GetEntriesFast()) ? (AliLMRMuon *)fMuons->At(imu) : 0);};
+	AliLMRMuon *AddMuon();
+	AliLMRMuon *GetMuon(Int_t imu) { return ((imu < fMuons->GetEntriesFast()) ? (AliLMRMuon *)fMuons->At(imu) : 0);};
 	Int_t GetNMuons() const {return (fMuons ? fMuons->GetEntriesFast() : -1);}
 	
 private:

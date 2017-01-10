@@ -39,7 +39,7 @@
 #include "AliCentrality.h"
 #include "AliLog.h"
 #include "TBits.h"
-
+#include "AliAnalysisMuonUtility.h"
 #include "AliOADBContainer.h"
 #include "AliOADBMultSelection.h"
 #include "AliMultEstimator.h"
@@ -132,6 +132,8 @@ AliAnalysisTaskLMREventFilter::~AliAnalysisTaskLMREventFilter()
 void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
  {
   // Called once
+  fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca); 
+  fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
 
   fEventTree = new TTree("Data","Data");
   fAliLMREvent = new AliLMREvent();
@@ -159,12 +161,17 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   printf("End of create Output\n");
 }
 
+
+void AliAnalysisTaskLMREventFilter::NotifyRun()
+{
+  fMuonTrackCuts->SetRun(fInputHandler);//(AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+}
 //====================================================================================================================================================
 
 void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
  {
   //   Main loop
-  //   Called for each event	
+  //   Called for each event
   UShort_t evtTrigSelect=0;
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(InputEvent());  
   if (!fAOD) 
@@ -195,9 +202,10 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
   TString triggerWord(((AliAODHeader*) fAOD->GetHeader())->GetFiredTriggerClasses());
   // ---
 
+  
   AliMultSelection *MultSelection = (AliMultSelection*)fAOD-> FindListObject("MultSelection");
 
-  // all multiplicity are initialized at 166 and is used for error code of multselection non actived 
+  // All multiplicity are initialized at 166 and is used for error code of multselection non actived
   Double_t Multiplicity_V0M          = 166.;
   Double_t Multiplicity_ADM          = 166.;
   Double_t Multiplicity_SPDTracklets = 166.;
@@ -215,7 +223,7 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
       Multiplicity_RefMult08    = MultSelection->GetMultiplicityPercentile("RefMult08");
     }
   
-  
+
   AliAODVertex *vert = fAOD->GetPrimaryVertex();
   if (!vert) {
     printf ("No vertex found\n");
@@ -273,6 +281,8 @@ void AliAnalysisTaskLMREventFilter::UserExec(Option_t *)
 	  trk->SetRabs(rAbs);
 	  trk->SetpDCA(pDca);
 	  trk->SetTriggerMatch(match);
+	  trk->SetSelectionMask(fMuonTrackCuts->GetSelectionMask(track));
+	  trk->SetLocalBoard((UShort_t)AliAnalysisMuonUtility::GetLoCircuit(track));
 	}
     }
   
