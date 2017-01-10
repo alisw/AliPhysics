@@ -47,7 +47,7 @@ class AliReducedBaseTrack : public TObject {
     Bool_t IsALambdaLeg()                 const {return fQualityFlags&(ULong_t(1)<<4);}
     Bool_t IsPureALambdaLeg()          const {return fQualityFlags&(ULong_t(1)<<11);}
     Bool_t IsKink(Int_t i=0)               const {return (i>=0 && i<3 ? ((fQualityFlags&(ULong_t(1)<<(5+i))) || 
-                                                                        (fFlags&(UShort_t(1)<<(12+i)))) : kFALSE);}
+                                                                        ( fQualityFlags&(ULong_t(1)<<(12+i)))) : kFALSE);}
     Float_t GetBayesProb(Int_t specie)  const { return (fQualityFlags&(ULong_t(1)<<(15+specie)) ? (fQualityFlags&(ULong_t(1)<<21) ? 0.9 : (fQualityFlags&(ULong_t(1)<<20) ? 0.8 : (fQualityFlags&(ULong_t(1)<<19)           ? 0.7 : 0.5)))   : 0.0);}
     
     // setters
