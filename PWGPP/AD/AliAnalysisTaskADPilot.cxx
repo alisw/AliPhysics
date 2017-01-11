@@ -565,7 +565,7 @@ void AliAnalysisTaskADPilot::UserExec(Option_t *)
   
   //Trigger
   TString trigger = fESD->GetFiredTriggerClasses();
-  if(!trigger.Contains("CCUP9-B"))return;
+  if(!trigger.Contains("CCUP8-B"))return;
   
   AliESDAD* esdAD = fESD->GetADData();
   if (!esdAD) {
