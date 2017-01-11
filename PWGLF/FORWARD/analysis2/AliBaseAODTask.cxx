@@ -4,11 +4,14 @@
 #include "AliAODCentralMult.h"
 #include "AliAODMultEventClass.h"
 #include <AliAnalysisManager.h>
+#include <AliAnalysisDataSlot.h>
+#include <AliAnalysisDataContainer.h>
 #include <AliLog.h>
 #include <AliAODEvent.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
+#include <TFile.h>
 #include <TH2.h>
 #include <iostream>
 
@@ -620,6 +623,45 @@ AliBaseAODTask::StoreInformation(AliAODForwardMult& forward)
 }
 
 //____________________________________________________________________
+Bool_t
+AliBaseAODTask::StoreTrainName(Int_t no)
+{
+  AliAnalysisDataSlot* slot = GetOutputSlot(no);
+  if (!slot) {
+    AliWarningF("No output slot # %d defined", no);
+    return false;
+  }
+
+  AliAnalysisDataContainer* cont = slot->GetContainer();
+  if (!cont) {
+    AliWarningF("Output slot # %d has no container", no);
+    return false;
+  }
+
+  TFile* file = cont->GetFile();
+  if (!file) {
+    AliWarningF("Container of output slot %d has no file", no);
+    return false;
+  }
+  if (!file->IsWritable()) {
+    AliWarningF("File (%s) associated with output slot # %d not writable",
+		file->GetName(), no);
+    return false;
+  }
+
+  TDirectory* save  = gDirectory;
+  TNamed* tag = new TNamed("trainName",
+			   AliAnalysisManager::GetAnalysisManager()->GetName());
+  file->cd();
+  tag->Write();
+  AliInfoF("Wrote train name (%s) to output file %s",
+	   tag->GetTitle(), file->GetName());
+  save->cd();
+
+  return true;
+}
+
+//____________________________________________________________________
 void
 AliBaseAODTask::Terminate(Option_t*)
 {
@@ -649,7 +691,13 @@ AliBaseAODTask::Terminate(Option_t*)
     return;
   }
 
-  PostData(2, fResults);
+  // Store name in output
+  if (!StoreTrainName(2)) 
+    fResults->Add(new TNamed("trainName",
+			     AliAnalysisManager::GetAnalysisManager()
+			     ->GetName()));
+  
+  PostData(2, fResults);  
 }
 
 #define PF(N,V,...)					\

@@ -379,6 +379,13 @@ protected:
    */
   virtual void StoreInformation(AliAODForwardMult& forward);
   /** 
+   * Store the analysis trains name on the output pointed to by slot
+   * number @a no.
+   * 
+   * @param no Output slot 
+   */
+  virtual Bool_t StoreTrainName(Int_t no);
+  /** 
    * Check if the event corresponds to the selected trigger(s),
    * vertex, and centrality.  Derived classes can overload this to
    * enable event processing - even if the event is not within cuts.
