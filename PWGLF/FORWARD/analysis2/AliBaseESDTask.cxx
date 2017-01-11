@@ -4,12 +4,15 @@
 #include "AliForwardUtil.h"
 #include "AliFMDCorrELossFit.h"
 #include <AliAnalysisManager.h>
+#include <AliAnalysisDataSlot.h>
+#include <AliAnalysisDataContainer.h>
 #include <AliAODHandler.h>
 #include <AliLog.h>
 #include <AliESDEvent.h>
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
+#include <TFile.h>
 #include <iostream>
 #include <iomanip>
 
@@ -243,6 +246,29 @@ AliBaseESDTask::UserExec(Option_t*)
 }
 
 //____________________________________________________________________
+Bool_t
+AliBaseESDTask::StoreTrainName(Int_t no)
+{
+  AliAnalysisDataSlot* slot = GetOutputSlot(no);
+  if (!slot) return false;
+
+  AliAnalysisDataContainer* cont = slot->GetContainer();
+  if (!cont) return false;
+
+  TFile* file = cont->GetFile();
+  if (!file || !file->IsWritable()) return false;
+
+  TDirectory* save  = gDirectory;
+  TNamed* tag = new TNamed("trainName",
+			   AliAnalysisManager::GetAnalysisManager()->GetName());
+  file->cd();
+  tag->Write();
+  save->cd();
+
+  return true;
+}
+
+//____________________________________________________________________
 void
 AliBaseESDTask::Terminate(Option_t*)
 {
@@ -272,6 +298,11 @@ AliBaseESDTask::Terminate(Option_t*)
     return;
   }
 
+  // Store name in output
+  if (!StoreTrainName(2)) 
+    fResults->Add(new TNamed("trainName",
+			     AliAnalysisManager::GetAnalysisManager()
+			     ->GetName()));
   PostData(2, fResults);
 }
 

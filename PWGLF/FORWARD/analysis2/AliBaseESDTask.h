@@ -363,7 +363,18 @@ protected:
    * @return Pointer to ESD event structore 
    */
   virtual AliESDEvent* GetESDEvent();
-
+  /** 
+   * Store the analysis trains name on the output pointed to by slot
+   * number @a no.
+   * 
+   * @param no Output slot 
+   */
+  virtual Bool_t StoreTrainName(Int_t no);
+  /** 
+   * Get default configuration script name
+   * 
+   * @return Script name
+   */
   virtual const char* DefaultConfig() const 
   {
     return "ForwardAODConfig.C";
