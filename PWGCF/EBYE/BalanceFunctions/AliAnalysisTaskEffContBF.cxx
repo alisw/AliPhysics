@@ -588,7 +588,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  
 		  if (mcLabel != TMath::Abs(label)) continue;
 		  if(mcLabel != label) continue;		    
-		  if(label > trackAOD->GetLabel()) continue; 
+		  // if(label > trackAOD->GetLabel()) continue; // MODIFIED 11.01.2017 (take all labels for efficiency)
 		  
 		  //acceptance
 		  if(TMath::Abs(trackAOD->Eta()) > fMaxEta) 
