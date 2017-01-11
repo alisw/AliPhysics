@@ -23,6 +23,7 @@ struct SysErrorAdder
     kDensityFill   = 3002, // 0, // 3002,
     kEmpiricalFill = 3144, // 0, // 3244
     kHadronFill    = 3244, // 0,
+    kEMFill        = 3344, 
     kOtherFill     = 0
   };
   /** System */
@@ -353,6 +354,28 @@ struct OfflineAdder : public SysErrorAdder
   }
 };
 
+struct BareAdder : public SysErrorAdder
+{
+  BareAdder(const TString& sys, UShort_t sNN, TString& trig)
+    : SysErrorAdder(sys,sNN,trig)
+  {}
+  /** 
+   * Get trigger systematic error 
+   * 
+   * @param low   On return, the low error 
+   * @param high  On return, the high error
+   */
+  virtual void GetTrigger(Double_t& low, Double_t& high) const
+  {
+    low  = high = 0;
+  }
+  Int_t  MakeTrigger(GraphSysErr* gse, TLegend* l) const
+  {
+    gse->AddQualifier("TRIGGER", fTrig);
+    return SysErrorAdder::MakeTrigger(gse, l);
+  }
+};
+  
 /**
  * For pp INEL results
  * 
@@ -418,6 +441,7 @@ struct INELGt0Adder : public SysErrorAdder
     : SysErrorAdder(sys, sNN, "INEL>0"), fLow(0), fHigh(0)
   {
     switch (sNN) {
+    case  5023:  fLow = fHigh = 0.023; break;
     case 13000:  fLow = fHigh = 0.023; break;
     }    
   }
@@ -461,9 +485,9 @@ struct NSDAdder : public SysErrorAdder
     if (value > 0) return;
     if (fSys.EqualTo("pp", TString::kIgnoreCase)) {
       switch (fSNN) {
-      case  900:   fValue = 0.02; break;
-      case 2760:   fValue = 0.03; break;
-      case 5023:   fValue = 0.00; break;
+      case  900:   fValue = 0.02;  break;
+      case 2760:   fValue = 0.03;  break;
+      case 5023:   fValue = 0.044; break;
       case 7000: 
       case 8000:
       case 13000:  fValue = 0.02; break;
@@ -473,7 +497,7 @@ struct NSDAdder : public SysErrorAdder
   }
   const char* MakeName(Double_t e) const
   {
-    if (e < 1e-3 || TMath::Abs(e - 1) < 1e-3) return "V0AND";
+    // if (e < 1e-3 || TMath::Abs(e - 1) < 1e-3) return "V0AND";
     return "NSD";
   }
   /** 
@@ -510,6 +534,7 @@ struct CENTAdder : public SysErrorAdder
   TH1*     fLookup;
   Double_t fCMin;
   Double_t fCMax;
+  Double_t fEM;
   /** 
    * Constructor 
    * 
@@ -518,7 +543,12 @@ struct CENTAdder : public SysErrorAdder
    * @param method MEthod to use  
    */
   CENTAdder(const TString& sys, UShort_t sNN, const TString& method)
-    : SysErrorAdder(sys, sNN, method), fCent(0), fValue(0), fCMin(0), fCMax(0),
+    : SysErrorAdder(sys, sNN, method),
+      fCent(0),
+      fValue(0),
+      fCMin(0),
+      fCMax(0),
+      fEM(0),
       fLookup(0)
   {
     Double_t off = .1;
@@ -551,8 +581,9 @@ struct CENTAdder : public SysErrorAdder
       Double_t min = 0.004, max = 0.062, top = 100; // 0.02
       if (sNN == 5023) {
 	min = 0.005;
-	max = 0.075;
-	top = 80;
+	max = 0.095;
+	top = 90;
+	fEM = 0.04;
 	// max = (7.5-min)/TMath::Power(80,2) * TMath::Power(100,2) + min;
       }
       for (Int_t i = 1; i <= 100; i++) {
@@ -595,7 +626,14 @@ struct CENTAdder : public SysErrorAdder
   {
     gse->AddQualifier("TRIGGER", fTrig);
     gse->AddQualifier("CENTRALITY IN PCT", Form("%6.2f TO %6.2f",fCMin,fCMax));
-    return SysErrorAdder::MakeTrigger(gse, l);
+
+    Int_t ret = SysErrorAdder::MakeTrigger(gse, l);
+
+    Double_t em = fCMax >= 80 ? fEM : 0;
+    Int_t    ei = gse->DefineCommon("EM contamination", true, em, em);
+    ModError(gse, ei, kEMFill, l, 0);
+    
+    return ret;
   }
   /** 
    * Get centrality 
@@ -677,11 +715,16 @@ SysErrorAdder::Create(const TString& t,
   tt.ToUpper();
 
   SysErrorAdder* a = 0;
-  if (tt.EqualTo("OFFLINE")    ||tt.EqualTo("UNKNOWN"))a=new OfflineAdder(s,e);
-  else if (tt.EqualTo("INEL")  ||tt.EqualTo("MBOR"))   a=new INELAdder(s,e);
-  else if (tt.EqualTo("INEL>0")||tt.EqualTo("INELGT0"))a=new INELGt0Adder(s,e);
-  else if (tt.EqualTo("NSD")   ||tt.EqualTo("V0AND"))  a=new NSDAdder(s,e);
-  else                                                 a=new CENTAdder(s,e,c);
+  if      (tt.EqualTo("OFFLINE"))  a=new OfflineAdder(s,e);
+  else if (tt.EqualTo("UNKNOWN"))  a=new OfflineAdder(s,e);
+  else if (tt.EqualTo("INEL"))     a=new INELAdder(s,e);
+  else if (tt.EqualTo("INEL>0"))   a=new INELGt0Adder(s,e);
+  else if (tt.EqualTo("INELGT0"))  a=new INELGt0Adder(s,e);
+  else if (tt.EqualTo("NSD"))      a=new NSDAdder(s,e);
+  else if (tt.EqualTo("MBOR"))     a=new BareAdder(s,e,tt);
+  else if (tt.EqualTo("V0AND"))    a=new BareAdder(s,e,tt);
+  else if (tt.EqualTo("VISX"))     a=new BareAdder(s,e,tt);
+  else                             a=new CENTAdder(s,e,c);
   Info("Create", "Created %s adder for %s/%s/%hu/%s: %p",
        a->GetTriggerString(), t.Data(), s.Data(), e, c.Data(), a);
   return a;
