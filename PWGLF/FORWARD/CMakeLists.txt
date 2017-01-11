@@ -301,11 +301,14 @@ install ( FILES analysis2/AddTaskdNdeta.C
            DESTINATION PWGLF/FORWARD/analysis2 )
 
 # Install corrections
-install ( DIRECTORY corrections/Empirical
-		    corrections/Normalization
-          DESTINATION PWGLF/FORWARD/corrections
-	  PATTERN "*~"   EXCLUDE
-	  PATTERN ".svn" EXCLUDE)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/corrections/Empirical)
+  install(DIRECTORY corrections/Empirical
+          DESTINATION PWGLF/FORWARD/corrections)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/corrections/Normalization)
+  install(DIRECTORY corrections/Normalization
+          DESTINATION PWGLF/FORWARD/corrections)
+endif()
 
 # Install shell script
 install ( FILES analysis2/Run.sh

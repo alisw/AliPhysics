@@ -73,4 +73,6 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWG/Cocktail)
-install (DIRECTORY parametrisations DESTINATION PWG/Cocktail)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/parametrisations)
+  install (DIRECTORY parametrisations DESTINATION PWG/Cocktail)
+endif()
