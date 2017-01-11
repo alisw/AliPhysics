@@ -170,6 +170,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16h3b,         // anchored LHC15n pass2 - jet-jet second chunck
         kLHC16h8a,        // anchored LHC15n pass2 - general purpose Pythia8
         kLHC16h8b,        // anchored LHC15n pass2 - general purpose Pythia6
+        kLHC16k5a,        // anchored LHC15n pass3 - general purpose Pythia8
+        kLHC16k5b,        // anchored LHC15n pass3 - general purpose Pythia6
+        kLHC16k3a,        // anchored LHC15n pass2 - gen. purpose Pyt6wpileup
+        kLHC16k3a2,       // anchored LHC15n pass2 - gen. purpose Pyt6wpileup
         
         // MC upgrade
         kLHC13d19,        // upgrade 5.5TeV PbPb
