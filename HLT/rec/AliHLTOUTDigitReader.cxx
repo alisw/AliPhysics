@@ -78,7 +78,10 @@ Bool_t AliHLTOUTDigitReader::ReadNextData(UChar_t*& data)
   while (++fCurrentLink<fNofDDLs) {
     if (fMinDDL>-1 && fMinDDL>fpEquipments[fCurrentLink]) continue;
     if (fMaxDDL>-1 && fMaxDDL<fpEquipments[fCurrentLink]) continue;
-    AliHLTCDHWrapper cdh((void*)fppDigitArrays[fCurrentLink]->GetArray());
+    if (fppDigitArrays[fCurrentLink] == NULL) continue;
+    void* ptr = (void*)fppDigitArrays[fCurrentLink]->GetArray();
+    if (ptr == NULL) continue;
+    AliHLTCDHWrapper cdh(ptr);
     UInt_t headerSize=cdh.GetHeaderSize();
     if (fppDigitArrays[fCurrentLink]->GetSize()>(int)headerSize) {
       data=reinterpret_cast<UChar_t*>(fppDigitArrays[fCurrentLink]->GetArray());
