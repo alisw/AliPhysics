@@ -105,6 +105,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k16h3b,
       k16h8a,
       k16h8b,
+      k16k3a,
+      k16k3b,
+      k16k5a,
+      k16k5b,
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
