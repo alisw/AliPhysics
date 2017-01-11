@@ -324,7 +324,7 @@ AliHLTUInt8_t* AliHLTDataBuffer::GetTargetBuffer(int iMinSize)
   if (fpBuffer) {
     pTargetBuffer=*fpBuffer;
   } else {
-    HLTError("can not create raw buffer");
+    HLTError("can not create raw buffer of size %d", iMinSize);
   }
   return pTargetBuffer;
 }
