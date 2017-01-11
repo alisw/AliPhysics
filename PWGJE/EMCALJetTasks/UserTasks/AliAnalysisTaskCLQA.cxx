@@ -40,14 +40,16 @@
 #include "AliVEventHandler.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
+#include "AliPhysicsSelectionTask.h"
+#include "AliPhysicsSelection.h"
 
 ClassImp(AliAnalysisTaskCLQA)
 
 //________________________________________________________________________
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() : 
   AliAnalysisTaskEmcal("AliAnalysisTaskCLQA", kTRUE),
-  fDo2013VertexCut(1),
-  fDoTracking(0), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0),
+  fDoVertexCut(1),
+  fDoTracking(0), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0), fDoProp(0),
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15), fCumMbins(250), 
   fDoHet(0), fHetEtmin(6),
   fCentCL1In(0), fCentV0AIn(0),
@@ -63,8 +65,8 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() :
 //________________________________________________________________________
 AliAnalysisTaskCLQA::AliAnalysisTaskCLQA(const char *name) : 
   AliAnalysisTaskEmcal(name, kTRUE),
-  fDo2013VertexCut(1),
-  fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0),
+  fDoVertexCut(1),
+  fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0), fDoProp(0),
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15), fCumMbins(250), 
   fDoHet(0), fHetEtmin(6),
   fCentCL1In(0), fCentV0AIn(0),
@@ -123,18 +125,39 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
   Int_t  run = event->GetRunNumber();
   Int_t  vzn = event->GetPrimaryVertex()->GetNContributors();
   if ((vzn<1)&&(run>0))
-    return kTRUE;
+    return kFALSE;
   fHists[2]->Fill(vz);
 
   if (TMath::Abs(vz)>10)
-    return kTRUE;
+    return kFALSE;
 
-  if (fDo2013VertexCut) {
+  if (fDoVertexCut) {
     if ((run>=188356&&run<=188366) || (run>=195344&&run<=197388)) {
       AliAnalysisUtils anau;
       if (anau.IsFirstEventInChunk(event))
 	return kFALSE;
       if (!anau.IsVertexSelected2013pA(event))
+	return kFALSE;
+    } else if (run>=260014) {
+      //https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsEventProp#Pileup_removal
+      const Double_t SPDZDiffCut=0.8; // (vertices with z separation lower than 8 mm are not considered for tagging)
+      Int_t SPDContributorsCut=5; //3 for low multiplicity pp events (higher efficiency, but also higher contamination from false positives), fSPDContributorsCut=5 at high multiplicity 
+      Bool_t isPileupFromSPD=event->IsPileupFromSPD(SPDContributorsCut,SPDZDiffCut,3.,2.,5.);
+      if (isPileupFromSPD)
+	fHists[3]->Fill(1);
+      const Double_t minContributors=5; 
+      const Double_t minChi2=5.; 
+      const Double_t minWeiZDiff=15; 
+      const Bool_t checkPlpFromDifferentBC=kFALSE; 
+      AliAnalysisUtils anau;
+      anau.SetMinPlpContribMV(minContributors);
+      anau.SetMaxPlpChi2MV(minChi2);
+      anau.SetMinWDistMV(minWeiZDiff);
+      anau.SetCheckPlpFromDifferentBCMV(checkPlpFromDifferentBC);
+      Bool_t isPileupFromMV = anau.IsPileUpMV(event);
+      if (isPileupFromMV)
+	fHists[3]->Fill(2);
+      if (isPileupFromSPD||isPileupFromMV)
 	return kFALSE;
     }
   }
@@ -184,33 +207,35 @@ Bool_t AliAnalysisTaskCLQA::FillHistograms()
         }
 	Int_t ttype = AliPicoTrack::GetTrackType(track);
 	fHists[25+ttype]->Fill(phi,pt);
-	if (track->IsExtrapolatedToEMCAL()) {
-	  Double_t dphi = TVector2::Phi_mpi_pi(phi-track->GetTrackPhiOnEMCal());
-	  fHists[28]->Fill(dphi,pt);
-	} else {
-	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track,440);
+	if (fDoProp) {
 	  if (track->IsExtrapolatedToEMCAL()) {
 	    Double_t dphi = TVector2::Phi_mpi_pi(phi-track->GetTrackPhiOnEMCal());
-	    fHists[29]->Fill(dphi,pt);
+	    fHists[28]->Fill(dphi,pt);
+	  } else {
+	    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track,440);
+	    if (track->IsExtrapolatedToEMCAL()) {
+	      Double_t dphi = TVector2::Phi_mpi_pi(phi-track->GetTrackPhiOnEMCal());
+	      fHists[29]->Fill(dphi,pt);
+	    }
 	  }
-	}
-	if (track->IsEMCAL() && track->IsExtrapolatedToEMCAL()) {
-	  Int_t id = track->GetEMCALcluster();
-	  AliVCluster *clus = InputEvent()->GetCaloCluster(id);
-	  if (id>=0&&clus) {
-	    Float_t pos[3];
-	    clus->GetPosition(pos);
-	    TVector3 vpos(pos);
-	    Double_t dphi = TVector2::Phi_mpi_pi(vpos.Phi()-track->GetTrackPhiOnEMCal());
-	    fHists[30]->Fill(dphi,pt);
+	  if (track->IsEMCAL() && track->IsExtrapolatedToEMCAL()) {
+	    Int_t id = track->GetEMCALcluster();
+	    AliVCluster *clus = InputEvent()->GetCaloCluster(id);
+	    if (id>=0&&clus) {
+	      Float_t pos[3];
+	      clus->GetPosition(pos);
+	      TVector3 vpos(pos);
+	      Double_t dphi = TVector2::Phi_mpi_pi(vpos.Phi()-track->GetTrackPhiOnEMCal());
+	      fHists[30]->Fill(dphi,pt);
+	    }
 	  }
-	}
-	if (track->IsExtrapolatedToEMCAL()) {
-	  Double_t phi1 = track->GetTrackPhiOnEMCal();
-	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track,440);
-	  Double_t phi2 = track->GetTrackPhiOnEMCal();
-	  Double_t dphi = TVector2::Phi_mpi_pi(phi1-phi2);
-	  fHists[31]->Fill(dphi,pt);
+	  if (track->IsExtrapolatedToEMCAL()) {
+	    Double_t phi1 = track->GetTrackPhiOnEMCal();
+	    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(track,440);
+	    Double_t phi2 = track->GetTrackPhiOnEMCal();
+	    Double_t dphi = TVector2::Phi_mpi_pi(phi1-phi2);
+	    fHists[31]->Fill(dphi,pt);
+	  }
 	}
       }
     }
@@ -573,7 +598,7 @@ void AliAnalysisTaskCLQA::RunCumulants(Double_t Mmin, Double_t ptmin, Double_t p
   Bool_t fillCumHist = kTRUE;
   if (fillCumHist) {
     Int_t  run = InputEvent()->GetRunNumber();
-    if (fDo2013VertexCut) {
+    if (fDoVertexCut) {
       if ((run>=188356&&run<=188366) || (run>=195344&&run<=197388)) {
 	if (anau.IsFirstEventInChunk(event))
 	  fillCumHist = kFALSE;
@@ -707,12 +732,23 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
+  AliAnalysisManager *am  = AliAnalysisManager::GetAnalysisManager();
+  if (am) {
+    AliPhysicsSelectionTask *t=dynamic_cast<AliPhysicsSelectionTask*>(am->GetTopTasks()->At(0));
+    if (t) {
+      AliPhysicsSelection *ps=t->GetPhysicsSelection();
+      fOutput->Add(ps->GetStatistics(""));
+    }
+  }
+
   fHists[0] = new TH1D("fTrigBits",";bit",32,-0.5,31.5);
   fOutput->Add(fHists[0]);
   fHists[1] = new TH1D("fVertexZ",";vertex z (cm)",51,-25.5,25.5);
   fOutput->Add(fHists[1]);
   fHists[2] = new TH1D("fVertexZnc",";vertex z (cm)",51,-25.5,25.5);
   fOutput->Add(fHists[2]);
+  fHists[3] = new TH1D("fVertexCuts","",1,0.5,2.5);
+  fOutput->Add(fHists[3]);
   fHists[9] = new TProfile("fAccepted","",1,0.5,1.5);
   fOutput->Add(fHists[9]);
   fHists[10] = new TH1D("fV0ACent",";percentile",20,0,100);
@@ -747,18 +783,20 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
     fHists[27] = new TH2D("fPhiPtTracks_type2",";#phi;p_{T} (GeV/c)",60,0,TMath::TwoPi(),40,0,20);
     fHists[27]->Sumw2();
     fOutput->Add(fHists[27]);
-    fHists[28] = new TH2D("fDPhiPtTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
-    fHists[28]->Sumw2();
-    fOutput->Add(fHists[28]);
-    fHists[29] = new TH2D("fDPhiPtTracks2",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
-    fHists[29]->Sumw2();
-    fOutput->Add(fHists[29]);
-    fHists[30] = new TH2D("fDPhiPtClusTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
-    fHists[30]->Sumw2();
-    fOutput->Add(fHists[30]);
-    fHists[31] = new TH2D("fDPhiPtReTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
-    fHists[31]->Sumw2();
-    fOutput->Add(fHists[31]);
+    if (fDoProp) {
+      fHists[28] = new TH2D("fDPhiPtTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
+      fHists[28]->Sumw2();
+      fOutput->Add(fHists[28]);
+      fHists[29] = new TH2D("fDPhiPtTracks2",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
+      fHists[29]->Sumw2();
+      fOutput->Add(fHists[29]);
+      fHists[30] = new TH2D("fDPhiPtClusTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
+      fHists[30]->Sumw2();
+      fOutput->Add(fHists[30]);
+      fHists[31] = new TH2D("fDPhiPtReTracks",";#Delta#phi;p_{T} (GeV/c)",60,-TMath::Pi(),TMath::Pi(),40,0,20);
+      fHists[31]->Sumw2();
+      fOutput->Add(fHists[31]);
+    }
   }
 
   if (fDoMuonTracking) {

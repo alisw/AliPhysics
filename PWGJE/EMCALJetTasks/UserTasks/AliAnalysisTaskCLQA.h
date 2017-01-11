@@ -28,8 +28,9 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   void                        SetCumParams(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax);
   void                        SetDoCumulants(Bool_t b, Bool_t bn=0) { fDoCumulants     = b; fDoCumNtuple = bn; }
   void                        SetDoMuonTracking(Bool_t b)           { fDoMuonTracking  = b; }
+  void                        SetDoTrackProp(Bool_t b)              { fDoProp          = b; }
   void                        SetDoTracking(Bool_t b)               { fDoTracking      = b; }
-  void                        SetDo2013VertexCut(Bool_t b)          { fDo2013VertexCut = b; }
+  void                        SetDoVertexCut(Bool_t b)              { fDoVertexCut     = b; }
   void                        SetHetParams(Double_t Etmin);
   void                        SetDoHet(Bool_t b)                    { fDoHet           = b; }
 
@@ -42,11 +43,12 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   void                        RunCumulants(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax);
   void                        RunHet(Double_t Etmin);
 
-  Bool_t                      fDo2013VertexCut;  // if true then use 2013 pA vertex check (only if 2013 pPb run)
+  Bool_t                      fDoVertexCut;      // if true then use special (pileup) vertex checks
   Bool_t                      fDoTracking;       // if true run tracking analysis
   Bool_t                      fDoMuonTracking;   // if true run muon tracking analysis
   Bool_t                      fDoCumulants;      // if true run cumulant analysis
   Bool_t                      fDoCumNtuple;      // if true save cumulant ntuple
+  Bool_t                      fDoProp;           // if true do track propagation
   Bool_t                      fDoHet;            // if true run het analysis
   Double_t                    fCumPtMin;         // minimum pt for cumulants
   Double_t                    fCumPtMax;         // maximum pt for cumulants
@@ -71,7 +73,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   AliAnalysisTaskCLQA(const AliAnalysisTaskCLQA&);            // not implemented
   AliAnalysisTaskCLQA &operator=(const AliAnalysisTaskCLQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskCLQA, 7) // Constantin's Task
+  ClassDef(AliAnalysisTaskCLQA, 8) // Constantin's Task
 };
 
 class AliNtupHetInfo {
