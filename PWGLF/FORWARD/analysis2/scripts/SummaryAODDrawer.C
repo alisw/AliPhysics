@@ -344,6 +344,7 @@ protected:
     case 3: return "c=#Delta_{p}-X#times#xi";
     case 4: return "c=#Delta_{p}-X#times(#xi+#sigma)";
     case 5: return "c:P(#Delta<c)<X";
+    case 6: return "c:#Delta_{p}-X#times#bar#xi+#sigma}";
     }
     return "unknown";
   }

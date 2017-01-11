@@ -91,6 +91,8 @@ CreateIndex(const TString& dir,
     }
     libsArray->Delete();
   }
+  Bool_t local           = (!remote || remote[0] == '\0');
+  Bool_t localLibsNotPar = false;
   
   // Load packages
   TString pars(ppars);
@@ -147,6 +149,7 @@ CreateIndex(const TString& dir,
   if (zip) {
     pat.Prepend("root_archive.zip@");
     pat.ReplaceAll("*", ".root");
+    pat.ReplaceAll(".zip", "*.zip");
   }
 
 

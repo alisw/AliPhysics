@@ -143,7 +143,19 @@ protected:
     ltx->SetNDC();
     ltx->Draw();
     y -= .075;
-    
+
+    TObject* tN = GetObject(file, "trainName");
+    if (!tN) tN = GetObject(c, "trainName");
+
+    if (tN) {
+      TLatex* ltN = new TLatex(.5, y, Form("(%s)", tN->GetTitle()));
+      ltN->SetTextSize(0.05);
+      ltN->SetTextFont(82);
+      ltN->SetTextAlign(22);
+      ltN->SetNDC();
+      ltN->Draw();
+      y -= .055;
+    }
     if (mc) {
       ltx = new TLatex(.5, y, "Simulation input");
       ltx->SetNDC();
@@ -479,7 +491,8 @@ protected:
     PrintCanvas(Form("%s results", base.Data()));
 
     Int_t     sys = GetObject(c, "sys")->GetUniqueID();
-    TH1*      emp = GetH1(c, "empirical");
+    TObject*  emp = GetObject(c, "empirical");
+    // TH1*      emp = GetH1(c, "empirical");
     TF1*      dc  = static_cast<TF1*>(GetObject(c,"deltaCorr"));
     TF1*      vw  = static_cast<TF1*>(GetObject(s,"ipZw"));
     TProfile* sc  = static_cast<TProfile*>(GetObject(s,"sumVsC"));
@@ -527,7 +540,8 @@ protected:
     THStack* leftRight  = GetStack(c, "leftRight");
     if (!leftRight || !leftRight->GetHists() ||
 	leftRight->GetHists()->GetEntries() < 0) leftRight = 0;
-
+    if (leftRight) { leftRight->SetMinimum(0.8); leftRight->SetMaximum(1.2); }
+    
     if (!onlyMB) {
       Double_t y1 = fLandscape ? 0  : .3;
       Double_t x2 = fLandscape ? .7 : 1;
@@ -556,6 +570,9 @@ protected:
       p1->GetPad(1)->SetGridx();
       p1->GetPad(2)->SetGridx();
       p1->GetPad(3)->SetGridx();
+      p1->GetPad(1)->SetGridy();
+      p1->GetPad(2)->SetGridy();
+      p1->GetPad(3)->SetGridy();
       
       PrintCanvas(Form("%s results - stacks", base.Data()));
     }

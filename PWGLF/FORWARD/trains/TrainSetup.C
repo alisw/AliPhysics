@@ -549,6 +549,7 @@ protected:
       else {
 	Info("CreateInputHandler", "Special handler for rec-points");
 	AliESDInputHandlerRP* esd = new AliESDInputHandlerRP();
+	// if (fRailway->Mode() != Railway::kGrid)
 	// esd->ReadFromDirectory();
 	input = esd;	
       }

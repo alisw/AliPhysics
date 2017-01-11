@@ -146,11 +146,17 @@ protected:
     // --- Figure out the trigger options ----------------------------
     TString trg = fOptions.Get("trig"); trg.ToUpper();
     UInt_t  sel = AliVEvent::kINT7;
-    if      (trg.EqualTo("MB"))    sel = AliVEvent::kMB;
-    else if (trg.EqualTo("V0AND")) sel = AliVEvent::kINT7;
-    else if (trg.EqualTo("V0OR"))  sel = AliVEvent::kCINT5;
-    else if (trg.EqualTo("ANY"))   sel = AliVEvent::kAny;
+    UInt_t  mb  = AliVEvent::kINT1; // AliVEvent::kMB;
+    if      (trg.EqualTo("MB"))      sel = mb;
+    else if (trg.EqualTo("MBOR"))    sel = mb;
+    else if (trg.EqualTo("INEL"))    sel = mb;
+    else if (trg.EqualTo("INELGT0")) sel = mb;
+    else if (trg.EqualTo("V0AND"))   sel = AliVEvent::kINT7;
+    else if (trg.EqualTo("NSD"))     sel = AliVEvent::kINT7;
+    else if (trg.EqualTo("V0OR"))    sel = AliVEvent::kCINT5;
+    else if (trg.EqualTo("ANY"))     sel = AliVEvent::kAny;
     task->SelectCollisionCandidates(sel);
+    Int_t minTrk = trg.EqualTo("INELGT0") ? 1 : 0;
 
     // --- Figure out calculation mode -------------------------------
     TString calc = fOptions.Get("reweigh-calc"); calc.ToUpper();
@@ -177,6 +183,8 @@ protected:
     FromOption(task, "WeightVeto",      "reweigh-veto",     0x0);
     SetOnTask (task, "WeightCalc",                          mcal);
     FromOption(task, "WeightInverse",   "reweigh-inv",      false);
+    FromOption(task, "TriggerEff",      "trigEff",          0.);
+    SetOnTask (task, "MinEta1",                             minTrk);
     // if (mc && we) {
     //   TUrl wurl(fOptions.AsString("reweight"));
     //   TFile* wfile = TFile::Open(wurl.GetFile());
