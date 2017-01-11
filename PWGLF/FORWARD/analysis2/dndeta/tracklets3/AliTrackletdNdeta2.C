@@ -208,6 +208,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * @param c2         Upper centrality bound 
    * @param realTop    Real container 
    * @param simTop     Simulation container 
+   * @param realEff    Trigger efficiency for real data
+   * @param simEff     Trigger efficiency for simulated data
    * @param outTop     Top-level output directory 
    * 
    * @return true on success 
@@ -216,6 +218,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 		    Double_t    c2,
 		    Container*  realTop,
 		    Container*  simTop,
+		    Double_t    realEff,
+		    Double_t    simEff,
 		    TDirectory* outTop);
   /** 
    * Process a single centrality bin 
@@ -224,6 +228,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * @param c2         Upper centrality bound 
    * @param realCont   Real container 
    * @param simCont    Simulation container 
+   * @param realEff    Trigger efficiency for real data
+   * @param simEff     Trigger efficiency for simulated data
    * @param outTop     Top-level output directory 
    * @param outDir     Current output directory 
    * @param dimen      Dimensions of k depdendence 
@@ -234,6 +240,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
 		    Double_t    c2,
 		    Container*  realCont,
 		    Container*  simCont,
+		    Double_t    realEff,
+		    Double_t    simEff,
 		    TDirectory* outTop, 
 		    TDirectory* outDir,
 		    Int_t       dimen);
@@ -436,6 +444,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    * 
    * @param realCont   Container of real data 
    * @param simCont    Container of simulated data 
+   * @param realEff    Trigger efficiency for real data
+   * @param simEff     Trigger efficiency for simulated data
    * @param outParent  Output directory 
    * @param deltaDimen Dimensionality of @f$\Delta@f$ distribution. 
    * 
@@ -443,6 +453,8 @@ struct AliTrackletdNdeta2 : public AliTrackletAODUtils
    */
   TH1* Results(Container*  realCont,
 	       Container*  simCont,
+	       Double_t    realEff,
+	       Double_t    simEff,
 	       TDirectory* outParent,
 	       Int_t       deltaDimen);
   
@@ -955,15 +967,21 @@ Bool_t AliTrackletdNdeta2::Process(Container*  realTop,
   // Calculate strangeness enhancement factor
   CalculateSEF(simTop,simCent->GetXaxis(),outDir);
 
+  // Get trigger efficiencies
+  Double_t realEff  = GetD(realTop, "triggerEfficiency", 1);
+  Double_t simEff   = GetD(simTop,  "triggerEfficiency", 1);
+  Printf("Trigger efficiencies:  real=%6.4f  sim=%6.4f", realEff, simEff);
+
+  // Process MB bin 
   if (realCent->GetNbinsX() <= 1)
-    ProcessBin(0, 0, realTop, simTop, outDir);
+    ProcessBin(0, 0, realTop, simTop, realEff, simEff, outDir);
   
   // Loop over defined centrality bins 
   for (Int_t i = 1; i <= realCent->GetNbinsX() && i <= maxBins ; i++) {
     Double_t c1 = realCent->GetXaxis()->GetBinLowEdge(i);
     Double_t c2 = realCent->GetXaxis()->GetBinUpEdge (i);
       
-    ProcessBin(c1, c2, realTop, simTop, outDir);
+    ProcessBin(c1, c2, realTop, simTop, 1, 1, outDir);
   }
   // Close output file
   outDir->cd();
@@ -998,6 +1016,8 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
 				      Double_t    c2,
 				      Container*  realTop,
 				      Container*  simTop,
+				      Double_t    realEff,
+				      Double_t    simEff,
 				      TDirectory* outTop)
 {
   // Form the folder name
@@ -1023,7 +1043,8 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
   printf("%5.1f - %5.1f%%:", c1, c2);
   for (Int_t i = 0; i < 4; i++) {
     if ((fProc & (1 << i)) == 0) continue;
-    if (!ProcessBin(c1, c2, realCont, simCont, outTop, outDir, i))
+    if (!ProcessBin(c1, c2, realCont, simCont, realEff, simEff,
+		    outTop, outDir, i))
       return false;
   }
   printf("\n");
@@ -1034,6 +1055,8 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
 				      Double_t    c2,
 				      Container*  realCont,
 				      Container*  simCont,
+				      Double_t    realEff,
+				      Double_t    simEff,
 				      TDirectory* outTop, 
 				      TDirectory* outDir,
 				      Int_t       dimen)
@@ -1045,7 +1068,7 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
   }  
   DebugGuard g(fProc&kDebug,1,"Processing bin %s", realCont->GetName());
   if (!Deltas(realCont, simCont, outDir, dimen)) return false;
-  TH1* dndeta = Results(realCont, simCont, outDir, dimen);
+  TH1* dndeta = Results(realCont, simCont, realEff, simEff, outDir, dimen);
   if (!dndeta) {
     Warning("ProcessBin", "Failed on Deltas for %f - %f", c1, c2);
     return false;
@@ -1093,7 +1116,8 @@ Bool_t AliTrackletdNdeta2::ProcessBin(Double_t    c1,
   full->Write(full->GetName(), TObject::kOverwrite);
 
   THStack* clos = GetHS(final, "closure", false);
-  TH1*     clss = GetH1(GetT(outDir, Form("results%dd",dimen)), "closure", false);
+  TH1*     clss = GetH1(GetT(outDir, Form("results%dd",dimen)),
+			"closure", false);
   if (clos && clss) {
     copy = static_cast<TH1*>(clss->Clone(outDir->GetName()));
     copy->SetDirectory(0);
@@ -1749,6 +1773,8 @@ void AliTrackletdNdeta2::WriteDeltas(TDirectory* outDir,
 //====================================================================
 TH1* AliTrackletdNdeta2::Results(Container*  realCont,
 				 Container*  simCont,
+				 Double_t    realEff,
+				 Double_t    simEff,
 				 TDirectory* outParent,
 				 Int_t       deltaDimen)
 {
@@ -2010,7 +2036,9 @@ TH1* AliTrackletdNdeta2::Results(Container*  realCont,
   /*      */ fiducial->SetDirectory(full);
 
   outParent->cd();
-
+  dndeta->SetBinContent(0,                   realEff);
+  dndeta->SetBinContent(dndeta->GetNbinsX()+1,simEff);
+  
   return dndeta;
 }
 

@@ -157,6 +157,12 @@ TObject* MakeGSE(TDirectory* d,
   TString nme(bin); nme.Prepend("CENT_");
   TH1*    g = GetH1(d, sub);
   if (!g) return 0;
+
+  Double_t eff = g->GetBinContent(0); 
+  Printf("Trigger efficiency: %6.4f", eff);
+  if (eff < 1e-6) eff = 1;
+  g->Scale(eff);
+  g->SetBinContent(0,0);
   
   Color_t  col     = PbPbColor(c1,c2); // g->GetMarkerColor();
   // Double_t bg      = (1-c1/100)*(2-0.1)+0.1;
@@ -168,7 +174,7 @@ TObject* MakeGSE(TDirectory* d,
   GraphSysErr* gse = new GraphSysErr(g->GetNbinsX());
   gse->SetName(nme);
   gse->SetTitle(Form("%5.1f - %5.1f%%", c1, c2));
-  gse->SetKey("author", (sNN == 5023 ? "PREGHENELLA : 2015":"SHAHOYAN : 2013"));
+  //gse->SetKey("author",(sNN == 5023?"PREGHENELLA : 2015":"SHAHOYAN : 2013"));
   gse->SetKey("title", Form("dNch/deta in PbPb at %d GeV", sNN));
   gse->SetKey("obskey", "DN/DETARAP");
   gse->SetKey("reackey", "PB PB --> CHARGED X");
@@ -198,6 +204,9 @@ TObject* MakeGSE(TDirectory* d,
   MakeCommon(gse, "EG dependence",		0.02,   col);
   MakeCommon(gse, "Background subtraction",	bg,     col);
   MakeCommon(gse, "Centrality",			c,      col);
+  if (eff) {
+    MakeCommon(gse, "TRIGGER", 0.02, col);
+  }
   Int_t acc = MakeP2P(gse, "Acceptance", col);
 
   Int_t j =  0;

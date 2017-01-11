@@ -30,8 +30,8 @@
 #include <TGraphErrors.h>
 #else
 // class AliAODTracklet;
-class AliTrackletBaseWeights;
 class AliVEvent;
+class AliTrackletBaseWeights;
 class AliMultSelection;  // Auto-load 
 class TClonesArray;
 #endif
@@ -411,6 +411,8 @@ public:
    */
   virtual void SetWeightVeto(UChar_t veto=0xFF) {}
   /* @} */
+  virtual void SetTriggerEfficiency(Double_t eff) { fTriggerEff = eff; }
+  virtual void SetMinEta1(Int_t n) { fMinEta1 = n; }
   /* @} */
   //__________________________________________________________________
   /**
@@ -1255,8 +1257,12 @@ protected:
   Double_t   fAbsMinCent;
   /** Maximum number of tracklets for fake centrality */
   Double_t   fMaxNTracklet;
+  /** External set trigger efficiency */
+  Double_t   fTriggerEff;
+  /** Least number of tracklets in |eta|<1 */
+  Int_t      fMinEta1;
   
-  ClassDef(AliTrackletAODdNdeta,1); 
+  ClassDef(AliTrackletAODdNdeta,2); 
 };
 //====================================================================
 /**
@@ -1576,7 +1582,9 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta()
     fShiftedDPhiCut(0),
     fDeltaCut(0),
     fAbsMinCent(-1),
-    fMaxNTracklet(6000)
+    fMaxNTracklet(6000),
+    fTriggerEff(0),
+    fMinEta1(0)
 {}
 //____________________________________________________________________
 AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
@@ -1612,7 +1620,9 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const char* name)
     fShiftedDPhiCut(-1),
     fDeltaCut(1.5),
     fAbsMinCent(-1),
-    fMaxNTracklet(6000)
+    fMaxNTracklet(6000),
+    fTriggerEff(0),
+    fMinEta1(0)
 {
   FixAxis(fCentAxis, "Centrality [%]");
   FixAxis(fIPzAxis,  "IP_{#it{z}} [cm]");
@@ -1656,7 +1666,9 @@ AliTrackletAODdNdeta::AliTrackletAODdNdeta(const AliTrackletAODdNdeta& o)
     fShiftedDPhiCut(o.fShiftedDPhiCut),
     fDeltaCut(o.fDeltaCut),
     fAbsMinCent(o.fAbsMinCent),
-    fMaxNTracklet(o.fMaxNTracklet)
+    fMaxNTracklet(o.fMaxNTracklet),
+    fTriggerEff(o.fTriggerEff),
+    fMinEta1(o.fMinEta1)
 {}
 //____________________________________________________________________
 AliTrackletAODdNdeta&
@@ -1690,6 +1702,8 @@ AliTrackletAODdNdeta::operator=(const AliTrackletAODdNdeta& o)
   fDeltaCut       = o.fDeltaCut;
   fAbsMinCent     = o.fAbsMinCent;
   fMaxNTracklet   = o.fMaxNTracklet;
+  fTriggerEff     = o.fTriggerEff;
+  fMinEta1        = o.fMinEta1;
   return *this;
 }
 //____________________________________________________________________
@@ -1768,6 +1782,8 @@ void AliTrackletAODdNdeta::Print(Option_t* option) const
   Printf(" %22s: %f",   "tail maximum",	           tailMax);
   Printf(" %22s: %f%%", "Absolute least c",        fAbsMinCent);
   Printf(" %22s: %f",   "Max(Ntracklet)",          fMaxNTracklet);
+  Printf(" %22s: %f",   "Trigger eff)",            fTriggerEff);
+  Printf(" %22s: %d",   "Min(Ntracklet)",          fMinEta1);
   Printf(" %22s: %s (%d)", "Centrality estimator", fCentMethod.Data(),fCentIdx);
   PrintAxis(fEtaAxis);
   PrintAxis(fPhiAxis);
@@ -2299,7 +2315,18 @@ UInt_t AliTrackletAODdNdeta::CheckEvent(Double_t&          cent,
   if (!tracklets) return ret;
   ret |= Bin2Flag(kTracklets);
   fStatus->Fill(kTracklets);
-    
+
+  // Check for least number of tracklets in |Eta|<1
+  if (fMinEta1 > 0) {
+    Int_t nOK = 0;
+    AliAODTracklet* tracklet   = 0;
+    TIter           nextTracklet(tracklets);
+    while ((tracklet = static_cast<AliAODTracklet*>(nextTracklet()))) {
+      UShort_t signal = CheckTracklet(tracklet);
+      if (signal && tracklet->IsMeasured() && TMath::Abs(tracklet->GetEta()) < 1) nOK++;
+    }
+    if (nOK < fMinEta1) return ret;    
+  }
   // Check if event was triggered 
   Bool_t trg = FindTrigger();
   if (!trg) return ret;
@@ -2954,6 +2981,28 @@ Bool_t AliTrackletAODdNdeta::MasterFinalize(Container* results)
   fCentEst =
     static_cast<TProfile*>(CloneAndAdd(results,GetP(fContainer,
 						    "centEstimator")));
+  typedef TParameter<double> DP;
+  results->Add(new DP("triggerEfficiency", fTriggerEff));
+
+  TString tstr("UNKNOWN");
+  if      (fOfflineTriggerMask & AliVEvent::kMB) {
+    tstr = "MBOR ";
+    if (fTriggerEff > 0 && fTriggerEff < 1) {
+      tstr = "INEL";
+      if (fMinEta1 > 0) tstr.Append(Form(">%d",fMinEta1-1));
+    }
+  }
+  else if (fOfflineTriggerMask & AliVEvent::kINT7) {
+    tstr = "V0AND ";
+    if (fTriggerEff > 0 && fTriggerEff < 1) tstr = "NSD";
+  }
+  else if (fOfflineTriggerMask & AliVEvent::kINT5)
+    tstr = "MBAND";
+  else if (fOfflineTriggerMask == AliVEvent::kAny)
+    tstr = "OFFLINE";
+  results->Add(new TNamed("trigger", tstr.Data()));
+  
+  
   Double_t nEvents = fIPz->GetEntries();
   Printf("Event summary:");
   for (Int_t i = 1; i <= fStatus->GetNbinsX(); i++) 
