@@ -194,19 +194,22 @@ AliForwarddNdetaTask::LoadEmpirical(const char* prx)
   TUrl    empUrl;
   TFile*  empFile = 0;
 
-  if (gSystem->ExpandPathName(path)) {
-    // Expand with TString argument return 0 on success, 1 on failure
-    return false;
-  }
-  if (!path.Contains("empirical"))
-    path = gSystem->ConcatFileName(path.Data(), "empirical.root");
-  empUrl.SetUrl(path);
-  if (!empUrl.GetAnchor() || empUrl.GetAnchor()[0] == '\0')
-    empUrl.SetAnchor("default");
-  empFile = TFile::Open(empUrl.GetUrl());
-  if (!empFile) {
-    DMSG(fDebug,1,"%s not found", empUrl.GetUrl());
-    return false;
+  {
+    AliForwardUtil::SuppressGuard g(5001);  
+    if (gSystem->ExpandPathName(path)) {
+      // Expand with TString argument return 0 on success, 1 on failure
+      return false;
+    }
+    if (!path.Contains("empirical"))
+      path = gSystem->ConcatFileName(path.Data(), "empirical.root");
+    empUrl.SetUrl(path);
+    if (!empUrl.GetAnchor() || empUrl.GetAnchor()[0] == '\0')
+      empUrl.SetAnchor("default");
+    empFile = TFile::Open(empUrl.GetUrl());
+    if (!empFile) {
+      DMSG(fDebug,1,"%s not found", empUrl.GetUrl());
+      return false;
+    }
   }
   DMSG(fDebug,0,"Got empirical file %s", empUrl.GetUrl());
   
@@ -215,6 +218,7 @@ AliForwarddNdetaTask::LoadEmpirical(const char* prx)
   TObject*    empObj  = empFile->Get(Form("%s/%s",base.Data(),empAnch.Data()));
   if (!(empObj &&
 	(empObj->IsA()->InheritsFrom(TH1::Class()) ||
+	 empObj->IsA()->InheritsFrom(TF1::Class()) ||
 	 empObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) {
     Warning("LoadEmpirical", "Didn't get Forward/%s from %s",
 	    empAnch.Data(), empUrl.GetUrl());
@@ -297,14 +301,23 @@ AliForwarddNdetaTask::Finalize()
   while (*pdir) {
     const char*  fns[] = { "", "empirical_000138190.root", 0 };
     const char** pfn   = fns;
+    const char*  dir   = *pdir;
+    pdir++;
     while (*pfn) {
       AliForwardUtil::SuppressGuard g(1000);
-      TString path(gSystem->ConcatFileName(*pdir, *pfn));
-      if ((ok = LoadEmpirical(path))) break;
+      TString path(gSystem->ConcatFileName(dir, *pfn));
       pfn++;
+      const char*  ancs[] = { "param", "default", 0 };
+      const char** pan    = ancs;
+      while (*pan) {
+	const char* anch = *pan;
+	pan++;
+	TString u(path);  u.Append("#"); u.Append(anch);
+	if ((ok = LoadEmpirical(u))) break;
+      }
+      if (ok) break;
     }
     if (ok) break;
-    pdir++;
   }
   return AliBasedNdetaTask::Finalize();
 }
@@ -332,8 +345,8 @@ AliForwarddNdetaTask::CentralityBin::EmpiricalCorrection(TList* results)
     return 0;
   }
 
-  Info("EmpiricalCorrection", "Correcting %s/%s with %s",
-       out->GetName(), h->GetName(), o->GetName());
+  Info("EmpiricalCorrection", "Correcting %s/%s with %s [%s]",
+       out->GetName(), h->GetName(), o->GetName(), o->ClassName());
 
   // Make a clone 
   h = static_cast<TH1*>(h->Clone(Form("%sEmp", h->GetName())));
@@ -348,6 +361,10 @@ AliForwarddNdetaTask::CentralityBin::EmpiricalCorrection(TList* results)
       Double_t c = empCorr->Eval(x);
       h->SetBinContent(i, y / c);
     }
+  }
+  else if (o->IsA()->InheritsFrom(TF1::Class())) {
+    TF1* empCorr = static_cast<TF1*>(o);
+    h->Divide(empCorr);
   }
   else if (o->IsA()->InheritsFrom(TH1::Class())) {
     TH1* empCorr = static_cast<TH1*>(o);
@@ -395,7 +412,8 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 
   THStack* res = 0;
   {
-    AliForwardUtil::SuppressGuard g;
+    if (gSystem->AccessPathName("forward.root")) return;
+
     TFile* file = TFile::Open("forward.root", "READ");
     if (!file) return;
     
