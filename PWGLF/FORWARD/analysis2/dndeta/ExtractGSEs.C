@@ -263,7 +263,28 @@ DoOne(TCollection*   c,
 
   return gse;
 }
-  
+
+//____________________________________________________________________
+void ModOne(TObject* o, TString& sys, UInt_t sNN, TString trg, Color_t col)
+{
+  GraphSysErr* g = static_cast<GraphSysErr*>(o);
+  if (!sys.EqualTo("pp"))
+    g->AddQualifier("SQRT(S)/NUCLEON IN GEV", Form("%d.0", sNN), true);
+  else {
+    g->AddQualifier("SQRT(S) IN GEV", Form("%d.0", sNN), true);
+    g->AddQualifier("TRIGGER", trg);
+  }
+
+  g->SetMarkerColor(col);
+  g->SetSumFillColor(kWhite);
+  g->SetSumFillStyle(0);
+  g->SetSumLineColor(col);
+  g->SetCommonSumFillColor(col);
+  g->SetCommonSumFillStyle(1001);
+  g->SetCommonSumLineColor(col);
+  g->Print("sys qual key");
+}
+
 //____________________________________________________________________
 TH1*
 DrawOne(TObject* o, Option_t* opt, Double_t& min, Double_t& max)
@@ -312,8 +333,9 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
   if (!results) return 0;
 
 
-  TH1*     empH   = GetH1    (results, "empirical");
-  Bool_t   emp    = (empH != 0 && !raw);
+  // TH1*     empH   = GetH1    (results, "empirical");
+  TObject* empO   = GetObject(results, "empirical");
+  Bool_t   emp    = (empO != 0 && !raw);
   TObject* osNN   = GetObject(results, "sNN");
   TObject* osys   = GetObject(results, "sys");
   TObject* otrg   = GetObject(results, "trigger");
@@ -332,21 +354,30 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
 	 "  System:      %s (%p)\n"
 	 "  Energy:      %d (%s - %p)\n"
 	 "  Trigger:     %s (%s - %p)\n"
+	 "  Efficiency:  %6.4f\n"
 	 "  Centrality:  %s (%p)\n"
 	 "    Axis:      %p",
-	 (emp  ? "yes" : "no"), empH,
+	 (emp  ? "yes" : "no"), empO,
 	 sys.Data(), osys,
 	 sNN, (osNN ? osNN->GetTitle() : ""), osNN,
-	 trg.Data(), otrg->GetTitle(), otrg, mth.Data(),
+	 trg.Data(), eff, otrg->GetTitle(), otrg, mth.Data(),
 	 ocentM, centA);
   if (centA) Printf("    %d bins between %f and %f",
 		    centA->GetNbins(), centA->GetXmin(), centA->GetXmax());
+
+  // Possibly change trigger 
+  if (trg.EqualTo("MBOR")  && eff > 0 && eff < 1) trg="INEL";
+  if (trg.EqualTo("V0AND") && eff > 0 && eff < 1) trg="NSD";
+  if (trg.EqualTo("VISX")  && eff > 0 && eff < 1) trg="NSD";
+  TString strg(trg);
+  if (strg.Contains("INEL>0")) trg = "INELGt0";
+  
+  
   SysErrorAdder* adder = SysErrorAdder::Create(trg,sys,sNN,mth);
   if (!adder) {
     Warning("ExtractGSEs", "Failed to make adder");
     return 0;
   }
-
 
   TCanvas* c = new TCanvas("c", "C");
   c->SetTopMargin(0.01);
@@ -373,6 +404,9 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
       Warning("ExtractGSEs", "Nothing returned from DoOne(\"all\"...)");
       return 0;
     }
+    GraphSysErr* gg = static_cast<GraphSysErr*>(all); 
+    ModOne(gg, sys, sNN, trg, gg->GetMarkerColor());
+    gg->SetName(strg);
     ret->Add(all);
     frame = DrawOne(all, "SUM QUAD AXIS", min, max);
   }
@@ -391,14 +425,7 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
 
       GraphSysErr* gse = static_cast<GraphSysErr*>(g);
       Color_t col = PbPbColor(low, high);
-      gse->SetMarkerColor(col);
-      gse->SetSumFillColor(kWhite);
-      gse->SetSumFillStyle(0);
-      gse->SetSumLineColor(col);
-      gse->SetCommonSumFillColor(col);
-      gse->SetCommonSumFillStyle(1001);
-      gse->SetCommonSumLineColor(col);
-
+      ModOne(gse, sys, sNN, trg, col);
       if (first) frame = DrawOne(g, "SUM QUAD AXIS", min, max);
       else  	         DrawOne(g, "SUM QUAD", min, max);
       TLegendEntry* e = l->AddEntry("", Form("%3d-%3d%%",
@@ -424,7 +451,7 @@ ExtractGSEs(const char* filename="forward_dndeta.root",
       sys.EqualTo("PbPb",TString::kIgnoreCase))
     mth = "";
   if (raw) mth = "RAW";
-  outName.Form("%s_%05d_%s%s.root",sys.Data(),sNN,trg.Data(),mth.Data());
+  outName.Form("%s_%05d_%s%s.root",sys.Data(),sNN,strg.Data(),mth.Data());
   TFile* out = TFile::Open(outName,"RECREATE");
   ret->Write("container",TObject::kSingleKey);
   out->Write();
