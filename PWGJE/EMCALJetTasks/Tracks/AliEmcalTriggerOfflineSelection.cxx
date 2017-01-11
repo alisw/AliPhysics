@@ -62,6 +62,7 @@ Bool_t AliEmcalTriggerOfflineSelection::IsOfflineSelected(EmcalTriggerClass trgc
 }
 
 bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const {
+  AliDebugStream(1) << "Using patch trigger with energy definition " << fEnergyDefinition << std::endl;
   bool isSingleShower = IsSingleShower(trgcls), isDCAL = IsDCAL(trgcls);
   int nfound = 0;
   AliEMCALTriggerPatchInfo *patch = NULL;
@@ -111,6 +112,7 @@ bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls
 }
 
 bool AliEmcalTriggerOfflineSelection::ApplyClusterTrigger(EmcalTriggerClass trgcls, const AliVEvent * const ev) const {
+  AliDebugStream(1) << "Applying cluster trigger with energy definition " << fEnergyDefinition << std::endl;
   int ntrigger = 0;
   TClonesArray *clusters = static_cast<TClonesArray *>(ev->FindListObject(fNameClusterContainer));
   double vertex[3]; ev->GetPrimaryVertex()->GetXYZ(vertex);
@@ -122,6 +124,7 @@ bool AliEmcalTriggerOfflineSelection::ApplyClusterTrigger(EmcalTriggerClass trgc
     if(fEnergyDefinition == kClusterTransverseEnergy) {
       TLorentzVector vec;
       c->GetMomentum(vec, vertex);
+      vec.SetE(c->GetNonLinCorrEnergy());
       energy = vec.Et();
     }
     if(energy > fOfflineEnergyThreshold[trgcls]) ntrigger++;

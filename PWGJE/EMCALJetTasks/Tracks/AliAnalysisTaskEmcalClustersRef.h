@@ -157,7 +157,7 @@ protected:
    */
   void GetPatchBoundaries(TObject *o, Double_t *boundaries) const;
 
-  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, TList *triggerpatches);
+  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, int ncell, TList *triggerpatches);
 
   /**
    * Find all patches in an event which could have fired the trigger
