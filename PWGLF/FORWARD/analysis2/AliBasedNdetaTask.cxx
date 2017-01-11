@@ -19,6 +19,7 @@
 #include <TROOT.h>
 #include <TParameter.h>
 #include <TColor.h>
+#include <TLatex.h>
 
 //====================================================================
 namespace {
@@ -1047,9 +1048,14 @@ AliBasedNdetaTask::Finalize()
   fResults->Add(AliForwardUtil::MakeParameter("absMinCent", fAbsMinCent));
   
   // Output trigger string 
-  if (trig) { 
-    TNamed* maskObj = new TNamed("trigger",
-				 AliAODForwardMult::GetTriggerString(trig));
+  if (trig) {
+    TString tstr = AliAODForwardMult::GetTriggerString(trig);
+    if (fTriggerEff > 0 && fTriggerEff < 1) {
+      if      (tstr.EqualTo("MBOR"))  tstr = "INEL";
+      else if (tstr.EqualTo("V0AND")) tstr = "NSD";
+    }
+    else if (tstr.EqualTo("V0AND"))   tstr = "VISX";
+    TNamed* maskObj = new TNamed("trigger",tstr.Data());
     maskObj->SetUniqueID(trig);
     fResults->Add(maskObj); 
   }
@@ -2349,25 +2355,38 @@ AliBasedNdetaTask::Asymmetry(TH1* h)
   ret->SetYTitle("Right/Left");
   Int_t nBins = h->GetNbinsX();
   for (Int_t i = 1; i <= nBins; i++) { 
-    Double_t x = h->GetBinCenter(i);
+    Double_t x   = h->GetBinCenter(i);
     if (x > 0) break;
     
-    Double_t c1 = h->GetBinContent(i);
-    Double_t e1 = h->GetBinError(i);
+    Double_t c1  = h->GetBinContent(i);
+    Double_t e1  = h->GetBinError(i);
     if (c1 <= 0) continue; 
     
-    Int_t    j  = h->FindBin(-x);
+    Int_t    j   = h->FindBin(-x);
     if (j <= 0 || j > nBins) continue;
     
-    Double_t c2 = h->GetBinContent(j);
-    Double_t e2 = h->GetBinError(j);
-    
+    Double_t c2  = h->GetBinContent(j);
+    Double_t e2  = h->GetBinError(j);    
     Double_t c12 = c1*c1;
-    Double_t e   = TMath::Sqrt((e2*e2*c1*c1+e1*e1*c2*c2)/(c12*c12));
-    
+    Double_t e   = TMath::Sqrt((e2*e2*c1*c1+e1*e1*c2*c2)/(c12*c12));    
     Int_t    k   = ret->FindBin(x);
     ret->SetBinContent(k, c2/c1);
     ret->SetBinError(k, e);
+  }
+  TF1* fit = new TF1("fit", "pol0");
+  ret->Fit(fit,"QN+");
+  // TF1* fit = ret->GetFunction("pol0");
+  if (fit) {
+    TLatex* ltx = new TLatex(-1, fit->GetParameter(0),
+			     Form("%6.4f#pm%6.4f #chi^{2}/#nu=%5.2f",
+				  fit->GetParameter(0),
+				  fit->GetParError(0),
+				  fit->GetChisquare()/fit->GetNDF()));
+    ltx->SetTextColor(ret->GetMarkerColor());
+    ltx->SetTextAlign(12);
+    if (!ret->GetListOfFunctions()->FindObject(fit))
+      ret->GetListOfFunctions()->Add(fit);
+    ret->GetListOfFunctions()->Add(ltx);
   }
   
   return ret;
