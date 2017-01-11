@@ -164,7 +164,7 @@ void AliAnalysisTaskPIDResponse::UserExec(Option_t */*option*/)
 
   if (fRun!=fOldRun){
     SetRecoInfo();
-    if(fIsTunedOnData) fPIDResponse->SetTunedOnData(kTRUE,fRecoPassTuned);
+    if(fIsTunedOnData) fPIDResponse->SetTunedOnData(kTRUE,fRecoPassTuned, fRecoPassNameTuned);
 
     fOldRun=fRun;
 
