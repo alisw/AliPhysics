@@ -1165,11 +1165,15 @@ AliForwardUtil::SuppressGuard::SuppressGuard(Int_t lvl)
   : save(gErrorIgnoreLevel)
 {
   gErrorIgnoreLevel = lvl;
+  AliLog::SetModuleDebugLevel("ROOT", lvl);
+  AliLog::SetGlobalDebugLevel(lvl);
 }
 //____________________________________________________________________
 AliForwardUtil::SuppressGuard::~SuppressGuard()
 {
   gErrorIgnoreLevel = save;
+  AliLog::SetModuleDebugLevel("ROOT", save);
+  AliLog::SetGlobalDebugLevel(save);
 }
 
 //
