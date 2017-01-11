@@ -136,4 +136,6 @@ install(DIRECTORY Cascades/Run2/macros DESTINATION PWGLF/STRANGENESS/Cascades/Ru
 install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
-install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)
+  install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
+endif()

@@ -91,17 +91,20 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
-install(DIRECTORY COMMON
-                  EMCAL
-                  PHOS
-                  PWG
-                  PWGCF
-                  PWGPP
-                  PWGLF
-                  PWGJE
-                  PWGLF
-        DESTINATION OADB)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/EMCAL)
+  install(DIRECTORY EMCAL
+                    PHOS
+                    PWG
+                    PWGCF
+                    PWGPP
+                    PWGLF
+                    PWGJE
+                    PWGLF
+          DESTINATION OADB)
+endif()
 
-install(DIRECTORY macros DESTINATION OADB)
+install(DIRECTORY COMMON
+                  macros
+        DESTINATION OADB)
 
 message(STATUS "${MODULE} enabled")
