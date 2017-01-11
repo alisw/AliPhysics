@@ -238,6 +238,9 @@ AliFMDMultCuts::Method2String(EMethod method, Bool_t latex)
     return latex ? "c=#Delta_{p}-X#times(#xi+#sigma)" : "landau+sigma width";
   case kProbability:      
     return latex ? "c:P(#Delta<c)<X" : "probability";
+  case kLandauSigmaAvg:
+    return latex ? "x=#Delta_{p}-X#times#bar{#xi+#sigma}" :
+      "landau+sigma avg";
   }
   return latex ? "c:?" : "unknown";
 } 
@@ -254,6 +257,8 @@ AliFMDMultCuts::String2Method(const char* str)
     return kFitRange;
   else if (m.EqualTo("landau width")    || m.Contains("xi") || 
 	   m.Contains("width")) return kLandauWidth;
+  else if (m.EqualTo("landau+sigma avg") || m.Contains("avg")) 
+    return kLandauSigmaAvg;
   else if (m.EqualTo("landau+sigma width") || m.Contains("sig")) 
     return kLandauSigmaWidth;
   else if (m.EqualTo("probability")        || m.Contains("prob")) 
