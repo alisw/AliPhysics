@@ -1547,8 +1547,6 @@ private:
   TProfile *fCRCVZQVecC[fCRCMaxnRun][2]; //! Q Vectors VZERO-C
   const static Int_t fCRCQVecnCov = 12;
   TProfile *fCRCZDCQVecCov[fCRCMaxnRun][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
-  const static Int_t fCRCQVecnResVtx = 12;
-  TProfile *fCRCZDCQVecResVtx[fCRCMaxnRun][fCRCMaxnCen][fCRCQVecnCov]; //! ZDCs Q Vectors correlations
   
   TProfile *fCRCZDCQVecA[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecC[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
@@ -1869,7 +1867,7 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   
-  ClassDef(AliFlowAnalysisCRC, 43);
+  ClassDef(AliFlowAnalysisCRC, 44);
   
 };
 

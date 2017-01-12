@@ -529,7 +529,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fSpectraMCList->SetName("Spectra");
     fOutput->Add(fSpectraMCList);
     
-    Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,9.,20.};
+    Double_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,9.,20.};
     for(Int_t j=0; j<2; j++) {
       for(Int_t c=0; c<10; c++) {
         fPtSpecGen[j][c] = new TH1F(Form("fPtSpecGen[%d][%d]",j,c), Form("fPtSpecGen[%d][%d]",j,c), 23, xmin);
@@ -705,7 +705,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   if (fAnalysisType == "AUTOMATIC") {
     
     // get centrality
-    Float_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
+    Double_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
     if(fDataSet!=k2015) {
       centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
       centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
@@ -872,16 +872,16 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             
           } // end of for (Int_t it = 0; it < nTracks; it++)
           
-          Float_t multTPCn = multTPC;
-          Float_t multEsdn = multEsd;
-          Float_t multESDTPCDif = multEsdn - multTPCn*3.38;
+          Double_t multTPCn = multTPC;
+          Double_t multEsdn = multEsd;
+          Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
           
           if (multESDTPCDif > 15000.) {
             fPileUpCount->Fill(7.5);
             BisPileup=kTRUE;
           }
           
-//          if (Float_t(multTrkTOFBefC) < fMultTOFLowCut->Eval(Float_t(multTrkBefC)) || Float_t(multTrkTOFBefC) > fMultTOFHighCut->Eval(Float_t(multTrkBefC))) {
+//          if (Double_t(multTrkTOFBefC) < fMultTOFLowCut->Eval(Double_t(multTrkBefC)) || Double_t(multTrkTOFBefC) > fMultTOFHighCut->Eval(Double_t(multTrkBefC))) {
 //            fPileUpCount->Fill(8.5);
 //            BisPileup=kTRUE;
 //          }
@@ -955,7 +955,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     }
     
     // get centrality (from AliMultSelection or AliCentrality)
-    Float_t centr = 300;
+    Double_t centr = 300;
     if(fDataSet==k2015) {
       fMultSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
       if(!fMultSelection) {
@@ -1288,24 +1288,24 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
     if(hdr->IsEventSelected() && AliVEvent::kAny) {
       
-      Float_t centrperc = fFlowEvent->GetCentrality();
+      Double_t centrperc = fFlowEvent->GetCentrality();
       Int_t cenb = (Int_t)centrperc;
       
       AliAODTracklets *trackl = aod->GetTracklets();
       Int_t nTracklets = trackl->GetNumberOfTracklets();
       
       AliAODVZERO *vzeroAOD = aod->GetVZEROData();
-      Float_t multV0A = vzeroAOD->GetMTotV0A();
-      Float_t multV0C = vzeroAOD->GetMTotV0C();
+      Double_t multV0A = vzeroAOD->GetMTotV0A();
+      Double_t multV0C = vzeroAOD->GetMTotV0C();
       
       AliAODZDC *aodZDC = aod->GetZDCData();
       
-      Float_t energyZNC  = (Float_t) (aodZDC->GetZNCEnergy());
-      Float_t energyZPC  = (Float_t) (aodZDC->GetZPCEnergy());
-      Float_t energyZNA  = (Float_t) (aodZDC->GetZNAEnergy());
-      Float_t energyZPA  = (Float_t) (aodZDC->GetZPAEnergy());
-      Float_t energyZEM1 = (Float_t) (aodZDC->GetZEM1Energy());
-      Float_t energyZEM2 = (Float_t) (aodZDC->GetZEM2Energy());
+      Double_t energyZNC  = (Double_t) (aodZDC->GetZNCEnergy());
+      Double_t energyZPC  = (Double_t) (aodZDC->GetZPCEnergy());
+      Double_t energyZNA  = (Double_t) (aodZDC->GetZNAEnergy());
+      Double_t energyZPA  = (Double_t) (aodZDC->GetZPAEnergy());
+      Double_t energyZEM1 = (Double_t) (aodZDC->GetZEM1Energy());
+      Double_t energyZEM2 = (Double_t) (aodZDC->GetZEM2Energy());
       
       const Double_t * towZNCraw = aodZDC->GetZNCTowerEnergy();
       const Double_t * towZNAraw = aodZDC->GetZNATowerEnergy();
@@ -1336,7 +1336,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       }
       
       if(RunNum>=245829) towZNA[2] = 0.;
-      Float_t zncEnergy=0., znaEnergy=0.;
+      Double_t zncEnergy=0., znaEnergy=0.;
       for(Int_t i=0; i<5; i++){
         zncEnergy += towZNC[i];
         znaEnergy += towZNA[i];
@@ -1345,10 +1345,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fFlowEvent->SetZNCEnergy(towZNC[0]);
       fFlowEvent->SetZNAEnergy(towZNA[0]);
       
-      const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-      const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-      Float_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC;
-      Float_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA;
+      const Double_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+      const Double_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+      Double_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC;
+      Double_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA, BadChOr;
       
       if (fUseMCCen) {
         for(Int_t i=0; i<4; i++){
@@ -1360,14 +1360,17 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           
           if(i==1) {
             wZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
-            if(fBadTowerCalibHist[cenb]) wZNA = GetBadTowerResp(wZNA, fBadTowerCalibHist[cenb]);
+            if(fBadTowerCalibHist[cenb]) {
+              wZNA = GetBadTowerResp(wZNA, fBadTowerCalibHist[cenb]);
+            }
+            BadChOr = wZNA;
             wZNA = TMath::Power(wZNA, fZDCGainAlpha);
           }
           else wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
           numXZNA += x[i]*wZNA;
           numYZNA += y[i]*wZNA;
           denZNA += wZNA;
-          fhZNSpectra->Fill(centrperc,i+4.5,(i!=1?towZNA[i+1]:towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4]));
+          fhZNSpectra->Fill(centrperc,i+4.5,(i!=1?towZNA[i+1]:BadChOr));
         }
         // store distribution for unfolding
         if(RunNum<245829) {
@@ -1376,7 +1379,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           fhZNBCCorr->Fill(centrperc,trueE,recoE);
         }
         if(denZNC!=0){
-          Float_t nSpecnC = zncEnergy/Enucl;
+          Double_t nSpecnC = zncEnergy/Enucl;
           cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
           xyZNC[0] = cZNC*numXZNC/denZNC;
           xyZNC[1] = cZNC*numYZNC/denZNC;
@@ -1385,7 +1388,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           xyZNC[0] = xyZNC[1] = 999.;
         }
         if(denZNA!=0){
-          Float_t nSpecnA = znaEnergy/Enucl;
+          Double_t nSpecnA = znaEnergy/Enucl;
           cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
           xyZNA[0] = cZNA*numXZNA/denZNA;
           xyZNA[1] = cZNA*numYZNA/denZNA;
@@ -1432,8 +1435,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       // ******************************************************************************
       
-      Float_t tdcSum = aodZDC->GetZDCTimeSum();
-      Float_t tdcDiff = aodZDC->GetZDCTimeDiff();
+      Double_t tdcSum = aodZDC->GetZDCTimeSum();
+      Double_t tdcDiff = aodZDC->GetZDCTimeDiff();
       fhDebunch->Fill(tdcDiff, tdcSum);
       
       for(int i=0; i<5; i++){
@@ -1452,7 +1455,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
       fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);
       fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);
-      fhZDCvsTracklets->Fill((Float_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
+      fhZDCvsTracklets->Fill((Double_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
       
       Double_t asymmetry = -999.;
       if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
