@@ -71,6 +71,9 @@ public:
     void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
     void SetCutMCSelectBump         ( Bool_t lCut ) { fCutMCSelectBump         = lCut; }
     
+    //Track Quality
+    void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
+    
     //Variable CascCosPA
     void SetCutUseVarCascCosPA      ( Bool_t lCut )   { fCutUseVariableCascCosPA     = lCut; }
     void SetCutVarCascCosPAExp0Const( Double_t lCut ) { fCutVarCascCosPA_Exp0Const = lCut; }
@@ -137,6 +140,9 @@ public:
     Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
     Bool_t GetCutMCSelectBump         () const { return fCutMCSelectBump; }
     
+    //Track Quality
+    Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
+    
     //Variable CascCosPA
     Bool_t GetCutUseVarCascCosPA        () const { return fCutUseVariableCascCosPA;   }
     Double_t GetCutVarCascCosPAExp0Const() const { return fCutVarCascCosPA_Exp0Const; }
@@ -197,6 +203,7 @@ private:
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
     Bool_t fCutMCUseMCProperties; //Use true MC pT, y
     Bool_t fCutMCSelectBump; //select bachelor and baryon from a single lambda decay
+    Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
     
     //Experimental: pt-variable cascade cosPA
     //Warning: if this cut is tighter than fCutCascCosPA, this gets used instead!
@@ -218,7 +225,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 15)
+    ClassDef(AliCascadeResult, 16)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -234,5 +241,6 @@ private:
     // 13 - Added Bach Baryon CosPA (experimental)
     // 14 - Addition of GetMass + inherit from AliVWeakResult
     // 15 - Adjustments for gen-purpose functionality
+    // 16 - Addition of ITSrefit track requirement for cross-checks
 };
 #endif

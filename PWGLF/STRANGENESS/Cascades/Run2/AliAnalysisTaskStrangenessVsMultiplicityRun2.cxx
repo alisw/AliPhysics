@@ -1093,6 +1093,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             Float_t lPosdEdx = 100;
             Float_t lBaryonMomentum = -0.5;
             
+            //========================================================================
+            //Setting up: Variable V0 CosPA
+            Float_t lV0CosPACut = lV0Result -> GetCutV0CosPA();
+            Float_t lVarV0CosPApar[5];
+            lVarV0CosPApar[0] = lV0Result->GetCutVarV0CosPAExp0Const();
+            lVarV0CosPApar[1] = lV0Result->GetCutVarV0CosPAExp0Slope();
+            lVarV0CosPApar[2] = lV0Result->GetCutVarV0CosPAExp1Const();
+            lVarV0CosPApar[3] = lV0Result->GetCutVarV0CosPAExp1Slope();
+            lVarV0CosPApar[4] = lV0Result->GetCutVarV0CosPAConst();
+            Float_t lVarV0CosPA = TMath::Cos(
+                                             lVarV0CosPApar[0]*TMath::Exp(lVarV0CosPApar[1]*fTreeVariablePt) +
+                                             lVarV0CosPApar[2]*TMath::Exp(lVarV0CosPApar[3]*fTreeVariablePt) +
+                                             lVarV0CosPApar[4]);
+            if( lV0Result->GetCutUseVarV0CosPA() ){
+                //Only use if tighter than the non-variable cut
+                if( lVarV0CosPA > lV0CosPACut ) lV0CosPACut = lVarV0CosPA;
+            }
+            //========================================================================
+            
             if ( lV0Result->GetMassHypothesis() == AliV0Result::kK0Short     ){
                 lMass    = fTreeVariableInvMassK0s;
                 lRap     = fTreeVariableRapK0Short;
@@ -1131,7 +1150,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeVariableDcaNegToPrimVertex > lV0Result->GetCutDCANegToPV() &&
                 fTreeVariableDcaPosToPrimVertex > lV0Result->GetCutDCAPosToPV() &&
                 fTreeVariableDcaV0Daughters < lV0Result->GetCutDCAV0Daughters() &&
-                fTreeVariableV0CosineOfPointingAngle > lV0Result->GetCutV0CosPA() &&
+                fTreeVariableV0CosineOfPointingAngle > lV0CosPACut &&
                 fTreeVariableDistOverTotMom*lPDGMass < lV0Result->GetCutProperLifetime() &&
                 fTreeVariableLeastNbrCrossedRows > lV0Result->GetCutLeastNumberOfCrossedRows() &&
                 fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
@@ -1142,9 +1161,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 //Check 5: TPC dEdx selections
                 TMath::Abs(lNegdEdx)<lV0Result->GetCutTPCdEdx() &&
                 TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() &&
-            
+                
                 //Check 6: Armenteros-Podolanski space cut (for K0Short analysis)
-                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )
+                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) ) &&
+                
+                //Check 7: kITSrefit track selection if requested
+                (
+                 ( (fTreeVariableNegTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) )
+                 ||
+                 !lV0Result->GetCutUseITSRefitTracks()
+                 )
                 )
             {
                 //This satisfies all my conditionals! Fill histogram
@@ -1842,8 +1869,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 //Check 8: Min/Max V0 Lifetime cut
                 ( ( fTreeCascVarV0Lifetime > lCascadeResult->GetCutMinV0Lifetime() ) &&
                 ( fTreeCascVarV0Lifetime < lCascadeResult->GetCutMaxV0Lifetime() ||
-                 lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) )
+                 lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) ) &&
                 
+                //Check 9: kITSrefit track selection if requested
+                (
+                 ( (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit)
+                  )
+                 ||
+                 !lCascadeResult->GetCutUseITSRefitTracks()
+                 )
                 ){
                 //This satisfies all my conditionals! Fill histogram
                 histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );

@@ -1523,7 +1523,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() &&
             
                 //Check 6: Armenteros-Podolanski space cut (for K0Short analysis)
-                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )
+                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )&&
+                
+                //Check 7: kITSrefit track selection if requested
+                (
+                 ( (fTreeVariableNegTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) )
+                 ||
+                 !lV0Result->GetCutUseITSRefitTracks()
+                 )
                 )
             {
                 //Regular fill histogram here
@@ -2567,7 +2575,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                  ( fTreeCascVarV0Lifetime < lCascadeResult->GetCutMaxV0Lifetime() ||
                   lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) ) &&
                 
-                //Check 9: Explicit associate-with-bump
+                //Check 9: kITSrefit track selection if requested
+                (
+                 ( (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit)
+                  )
+                 ||
+                 !lCascadeResult->GetCutUseITSRefitTracks()
+                 ) &&
+                
+                //Check 10: Explicit associate-with-bump
                 ( ! (lCascadeResult->GetCutMCSelectBump())    || (//Start bump-selection
                                                                   //Case: XiMinus or OmegaMinus
                                                                   (lCharge == -1 &&

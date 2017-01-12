@@ -42,6 +42,7 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fCutUseITSRefitTracks(kFALSE),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -90,6 +91,7 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fCutUseITSRefitTracks(kFALSE),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -140,6 +142,7 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fCutUseITSRefitTracks(kFALSE), 
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -200,6 +203,7 @@ fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
 fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties),
 fCutMCSelectBump(lCopyMe.fCutMCSelectBump),
+fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
 fCutUseVariableCascCosPA(lCopyMe.fCutUseVariableCascCosPA),
 fCutVarCascCosPA_Exp0Const(lCopyMe.fCutVarCascCosPA_Exp0Const),
 fCutVarCascCosPA_Exp0Slope(lCopyMe.fCutVarCascCosPA_Exp0Slope),
@@ -249,7 +253,6 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     
     //Miscellaneous
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
-    fCutLeastNumberOfClusters = lCopyMe->GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
     fCutXiRejection = lCopyMe->GetCutXiRejection();
     
@@ -258,6 +261,10 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutMCPDGCodeAssociation = lCopyMe -> GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
     fCutMCSelectBump         = lCopyMe -> GetCutMCSelectBump();
+    
+    //Track cuts
+    fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
+    fCutLeastNumberOfClusters= lCopyMe -> GetCutLeastNumberOfClusters();
     
     //Variable CascCosPA
     fCutUseVariableCascCosPA = lCopyMe -> GetCutUseVarCascCosPA();
@@ -318,7 +325,6 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     
     //Miscellaneous
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
-    fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
     fCutXiRejection = lCopyMe.GetCutXiRejection();
     
@@ -327,6 +333,10 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
     fCutMCSelectBump      = lCopyMe.GetCutMCSelectBump();
+    
+    //Track cuts
+    fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
+    fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters();
     
     //Variable CascCosPA
     fCutUseVariableCascCosPA = lCopyMe.GetCutUseVarCascCosPA();
@@ -417,9 +427,12 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if( TMath::Abs( fCutMaxV0Lifetime - lCompareCascade->GetCutMaxV0Lifetime() ) > 1e-6 ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutProperLifetime - lCompareCascade->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfClusters - lCompareCascade->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompareCascade->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutXiRejection - lCompareCascade->GetCutXiRejection() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    //Track cuts
+    if( TMath::Abs( fCutLeastNumberOfClusters - lCompareCascade->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutUseITSRefitTracks - lCompareCascade->GetCutUseITSRefitTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //Variable CascCosPA
     if ( TMath::Abs(fCutUseVariableCascCosPA - lCompareCascade->GetCutUseVarCascCosPA()) > 1e-6 ) lReturnValue = kFALSE;
@@ -490,9 +503,11 @@ void AliCascadeResult::Print()
     cout<<" Max V0 Lifetime....: "<<fCutMaxV0Lifetime<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
-    cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Xi Rej (for Omega).: "<<fCutXiRejection<<endl;
+    
+    cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
+    cout<<" Use ITSref tracks..: "<<fCutUseITSRefitTracks<<endl;
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;

@@ -58,6 +58,25 @@ public:
     void SetCutMCPDGCodeAssociation ( Bool_t lCut ) { fCutMCPDGCodeAssociation = lCut; }
     void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
     
+    //Track Quality
+    void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
+    
+    //Variable V0CosPA
+    void SetCutUseVarV0CosPA      ( Bool_t lCut )   { fCutUseVariableV0CosPA     = lCut; }
+    void SetCutVarV0CosPAExp0Const( Double_t lCut ) { fCutVarV0CosPA_Exp0Const = lCut; }
+    void SetCutVarV0CosPAExp0Slope( Double_t lCut ) { fCutVarV0CosPA_Exp0Slope = lCut; }
+    void SetCutVarV0CosPAExp1Const( Double_t lCut ) { fCutVarV0CosPA_Exp1Const = lCut; }
+    void SetCutVarV0CosPAExp1Slope( Double_t lCut ) { fCutVarV0CosPA_Exp1Slope = lCut; }
+    void SetCutVarV0CosPAConst    ( Double_t lCut ) { fCutVarV0CosPA_Const     = lCut; }
+    void SetCutVarV0CosPA ( Double_t l1, Double_t l2, Double_t l3, Double_t l4, Double_t l5 ){
+        fCutUseVariableV0CosPA = kTRUE; //Automatically switch on!
+        fCutVarV0CosPA_Exp0Const = l1;
+        fCutVarV0CosPA_Exp0Slope = l2;
+        fCutVarV0CosPA_Exp1Const = l3;
+        fCutVarV0CosPA_Exp1Slope = l4;
+        fCutVarV0CosPA_Const     = l5;
+    }
+    
     //Feeddown matrix initializer
     void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
                                   Long_t lNXiPtPins, Double_t *lXiPtPins,
@@ -84,6 +103,17 @@ public:
     Bool_t GetCutMCLambdaFromPrimaryXi() const { return fCutMCLambdaFromPrimaryXi; }
     Bool_t GetCutMCPDGCodeAssociation () const { return fCutMCPDGCodeAssociation; }
     Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
+    
+    //Track Quality
+    Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
+    
+    //Variable V0CosPA
+    Bool_t GetCutUseVarV0CosPA        () const { return fCutUseVariableV0CosPA;   }
+    Double_t GetCutVarV0CosPAExp0Const() const { return fCutVarV0CosPA_Exp0Const; }
+    Double_t GetCutVarV0CosPAExp0Slope() const { return fCutVarV0CosPA_Exp0Slope; }
+    Double_t GetCutVarV0CosPAExp1Const() const { return fCutVarV0CosPA_Exp1Const; }
+    Double_t GetCutVarV0CosPAExp1Slope() const { return fCutVarV0CosPA_Exp1Slope; }
+    Double_t GetCutVarV0CosPAConst    () const { return fCutVarV0CosPA_Const;     }
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
@@ -115,11 +145,22 @@ private:
     Bool_t fCutMCLambdaFromPrimaryXi; //Checking for feeddown contributions
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
     Bool_t fCutMCUseMCProperties; //Use true MC pT, y
+
+    Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
+    
+    //Experimental: pt-variable V0 cosPA
+    //Warning: if this cut is tighter than fCutV0CosPA, this gets used instead!
+    Bool_t fCutUseVariableV0CosPA;
+    Double_t fCutVarV0CosPA_Exp0Const;
+    Double_t fCutVarV0CosPA_Exp0Slope;
+    Double_t fCutVarV0CosPA_Exp1Const;
+    Double_t fCutVarV0CosPA_Exp1Slope;
+    Double_t fCutVarV0CosPA_Const;
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 10)
+    ClassDef(AliV0Result, 11)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -129,6 +170,7 @@ private:
     // 7 - First implementation of feeddown matrix as standard output
     // 8 - Addition of minimum momentum cut for baryon daughters
     // 9 - Addition of GetMass + inherit from AliVWeakResult
-    //10 - Adjustments for gen-purpose functionality 
+    //10 - Adjustments for gen-purpose functionality
+    //11 - Addition of variable CosPA, ITSrefit requirement
 };
 #endif

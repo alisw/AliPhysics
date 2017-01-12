@@ -32,7 +32,14 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
-fHistoFeeddown(0)
+fCutUseITSRefitTracks(kFALSE),
+fHistoFeeddown(0),
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Dummy Constructor - not to be used! 
     //Main output histogram: Centrality, mass, transverse momentum
@@ -61,7 +68,14 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
-fHistoFeeddown(0) //do not initialize by default
+fCutUseITSRefitTracks(kFALSE),
+fHistoFeeddown(0), //do not initialize by default
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -97,7 +111,14 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
-fHistoFeeddown(0) //do not initialize by default
+fCutUseITSRefitTracks(kFALSE),
+fHistoFeeddown(0), //do not initialize by default
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -136,7 +157,14 @@ fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
-fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
+fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties),
+fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
+fCutUseVariableV0CosPA(lCopyMe.fCutUseVariableV0CosPA),
+fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
+fCutVarV0CosPA_Exp0Slope(lCopyMe.fCutVarV0CosPA_Exp0Slope),
+fCutVarV0CosPA_Exp1Const(lCopyMe.fCutVarV0CosPA_Exp1Const),
+fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
+fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const)
 {
     SetName( lNewName.Data() ); 
     
@@ -169,8 +197,6 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutDCAV0Daughters = lCopyMe->GetCutDCAV0Daughters();
     fCutV0CosPA = lCopyMe->GetCutV0CosPA();
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
-    fCutLeastNumberOfCrossedRows = lCopyMe->GetCutLeastNumberOfCrossedRows();
-    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe->GetCutLeastNumberOfCrossedRowsOverFindable();
     fCutCompetingV0Rejection = lCopyMe->GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe->GetCutArmenteros();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
@@ -180,6 +206,19 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutMCLambdaFromPrimaryXi = lCopyMe->GetCutMCLambdaFromPrimaryXi();
     fCutMCPDGCodeAssociation = lCopyMe->GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
+    
+    //Track cuts 
+    fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
+    fCutLeastNumberOfCrossedRows = lCopyMe->GetCutLeastNumberOfCrossedRows();
+    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe->GetCutLeastNumberOfCrossedRowsOverFindable();
+    
+    //Variable V0CosPA
+    fCutUseVariableV0CosPA = lCopyMe -> GetCutUseVarV0CosPA();
+    fCutVarV0CosPA_Exp0Const = lCopyMe -> GetCutVarV0CosPAExp0Const();
+    fCutVarV0CosPA_Exp0Slope = lCopyMe -> GetCutVarV0CosPAExp0Slope();
+    fCutVarV0CosPA_Exp1Const = lCopyMe -> GetCutVarV0CosPAExp1Const();
+    fCutVarV0CosPA_Exp1Slope = lCopyMe -> GetCutVarV0CosPAExp1Slope();
+    fCutVarV0CosPA_Const = lCopyMe -> GetCutVarV0CosPAConst();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -221,8 +260,6 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters();
     fCutV0CosPA = lCopyMe.GetCutV0CosPA();
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
-    fCutLeastNumberOfCrossedRows = lCopyMe.GetCutLeastNumberOfCrossedRows();
-    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe.GetCutLeastNumberOfCrossedRowsOverFindable(),
     fCutCompetingV0Rejection = lCopyMe.GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe.GetCutArmenteros();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
@@ -232,6 +269,19 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutMCLambdaFromPrimaryXi = lCopyMe.GetCutMCLambdaFromPrimaryXi();
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
+    
+    //Track Cuts
+    fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
+    fCutLeastNumberOfCrossedRows = lCopyMe.GetCutLeastNumberOfCrossedRows();
+    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe.GetCutLeastNumberOfCrossedRowsOverFindable();
+    
+    //Variable V0CosPA
+    fCutUseVariableV0CosPA = lCopyMe.GetCutUseVarV0CosPA();
+    fCutVarV0CosPA_Exp0Const = lCopyMe.GetCutVarV0CosPAExp0Const();
+    fCutVarV0CosPA_Exp0Slope = lCopyMe.GetCutVarV0CosPAExp0Slope();
+    fCutVarV0CosPA_Exp1Const = lCopyMe.GetCutVarV0CosPAExp1Const();
+    fCutVarV0CosPA_Exp1Slope = lCopyMe.GetCutVarV0CosPAExp1Slope();
+    fCutVarV0CosPA_Const = lCopyMe.GetCutVarV0CosPAConst();
     
     if (fHisto) {
         delete fHisto;
@@ -314,6 +364,17 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( TMath::Abs( fCutTPCdEdx - lCompareV0->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinBaryonMomentum - lCompareV0->GetCutMinBaryonMomentum() ) > 1e-6 ) lReturnValue = kFALSE;
     
+    //Use ITS refit tracks
+    if( TMath::Abs( fCutUseITSRefitTracks - lCompareV0->GetCutUseITSRefitTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    //Variable V0CosPA
+    if ( TMath::Abs(fCutUseVariableV0CosPA - lCompareV0->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp0Const - lCompareV0->GetCutVarV0CosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp0Slope - lCompareV0->GetCutVarV0CosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp1Const - lCompareV0->GetCutVarV0CosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp1Slope - lCompareV0->GetCutVarV0CosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Const  - lCompareV0->GetCutVarV0CosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -335,6 +396,14 @@ void AliV0Result::Print()
     cout<<" DCA Pos to PV......: "<<fCutDCAPosToPV<<endl;
     cout<<" DCA V0 Daughters...: "<<fCutDCAV0Daughters<<endl;
     cout<<" V0 Cos PA..........: "<<fCutV0CosPA<<endl;
+    cout<<" Use Var V0CosPA....: "<<fCutUseVariableV0CosPA<<endl;
+    if( fCutUseVariableV0CosPA ){
+        cout<<" ^--Exp. 0 Const....: "<<fCutVarV0CosPA_Exp0Const<<endl;
+        cout<<" ^--Exp. 0 Slope....: "<<fCutVarV0CosPA_Exp0Slope<<endl;
+        cout<<" ^--Exp. 1 Const....: "<<fCutVarV0CosPA_Exp1Const<<endl;
+        cout<<" ^--Exp. 1 Slope....: "<<fCutVarV0CosPA_Exp1Slope<<endl;
+        cout<<" ^--Constant........: "<<fCutVarV0CosPA_Const<<endl;
+    }
     cout<<" V0 2D Radius.......: "<<fCutV0Radius<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
@@ -348,6 +417,7 @@ void AliV0Result::Print()
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
     cout<<" Lambda from Xi.....: "<<fCutMCLambdaFromPrimaryXi<<endl;
     cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
+    cout<<" Use ITSref tracks..: "<<fCutUseITSRefitTracks<<endl;
     cout<<"========================================"<<endl;
     return;
 }
