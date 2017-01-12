@@ -6,7 +6,7 @@ AliAnalysisTask *AddTaskBeautyCal(
                                  Bool_t ispPb=kFALSE,
                                  Int_t MimCent = -1, Int_t MaxCent = -1, 
                                  Int_t EtaRange = 0,
-                                 Int_t ITSchi2 = 26;
+                                 Int_t ITSchi2 = 26,
                                  Double_t mass = 0.1, Double_t ptAss = 0.2, 
                                  Int_t thEG1ADC=140, Int_t thEG2ADC=89,
                                  TString ContNameExt = "")
