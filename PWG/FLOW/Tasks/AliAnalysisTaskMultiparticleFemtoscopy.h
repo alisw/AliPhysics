@@ -47,8 +47,10 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void InitializeArraysForBackground();
   virtual void InitializeArraysForBuffers();
   virtual void InitializeArraysForQA();
+  virtual void InitializeArraysForGlobalTrackCuts();
 
   // 1.) Methods called in UserCreateOutputObjects():
+  //  2a) Directly:
   virtual void InsanityChecksUserCreateOutputObjects();
   virtual void BookAndNestAllLists();
   virtual void BookEverything(); // use this to book all un-classified objects
@@ -58,6 +60,9 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void BookEverythingForBackground();
   virtual void BookEverythingForBuffers();
   virtual void BookEverythingForQA();
+  virtual void BookEverythingForGlobalTrackCuts();
+  //  2b) Indirectly:
+  Int_t InsanityChecksForGlobalTrackCuts(); // insanity checks for global track cuts
 
   // 2.) Methods called in UserExec(Option_t *):
   //  2a) Directly:
@@ -84,7 +89,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t Proton(AliAODTrack *atrack, Int_t charge = 1, Bool_t bPrimary = kTRUE);
   Bool_t PassesCommonEventCuts(AliVEvent *ave);
   Bool_t PassesMixedEventCuts(AliVEvent *ave);
-  Bool_t PassesCommonGlobalTrackCuts(AliAODTrack *gtrack); // common cuts for global tracks TBI make it uniform with MC
+  Bool_t PassesGlobalTrackCuts(AliAODTrack *gtrack); // common cuts for global tracks TBI make it uniform with MC
   Bool_t PassesCommonTrackCuts(AliAODTrack *atrack); // common cuts for analysis specific tracks (e.g. TPC-only) TBI make it uniform with MC
   Bool_t PassesCommonTrackCuts(AliAODMCParticle *amcparticle); // common cuts for analysis specific tracks TBI see above two lines
   virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAOD in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAOD
@@ -265,6 +270,26 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
    this->fMaxNContributors = maxNc;
   };
 
+  // 8.) Common global track cuts:
+  void SetPtRange(Float_t ptMin, Float_t ptMax)
+  {
+   fApplyGlobalTrackCuts = kTRUE;
+   this->fPtRange[0] = ptMin;
+   this->fPtRange[1] = ptMax;
+  };
+  void SetEtaRange(Float_t etaMin, Float_t etaMax)
+  {
+   fApplyGlobalTrackCuts = kTRUE;
+   this->fEtaRange[0] = etaMin;
+   this->fEtaRange[1] = etaMax;
+  };
+  void SetPhiRange(Float_t phiMin, Float_t phiMax)
+  {
+   fApplyGlobalTrackCuts = kTRUE;
+   this->fPhiRange[0] = phiMin;
+   this->fPhiRange[1] = phiMax;
+  };
+
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
   {
@@ -434,7 +459,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList *fBuffersList;                             // list to hold all objects for buffers
   TProfile *fBuffersFlagsPro;                      // profile to hold all flags for buffers
   Bool_t fFillBuffers;                             // hold some thingies for bunch of events in memories
-  Int_t fMaxBuffer;                                // max buffer size (e.g. for 3-p correlations it is 3, etc.)
+  Int_t fMaxBuffer;                                // max buffer size (e.g. for 3-p correlations it is 3, etc.) TBI there is a problem apparently, re-think
   TClonesArray *fChargedParticlesCA[2][10][10000]; // [0=AOD||ESD,1=MC][#events,max=10][particles]
   TExMap *fChargedParticlesEM[10];                 // [#events,max=10,has to correspond to 2nd entry above] this is standard mapping, nothing more nor less than that...
 
@@ -481,6 +506,14 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t fCutOnNContributors; // cut on avtx->GetNContributors()
   Int_t fMinNContributors;    // default values never in effect; if avtx->GetNContributors() < fMinNContributors, event is rejected
   Int_t fMaxNContributors;    // default values never in effect; if avtx->GetNContributors() > fMaxNContributors, event is rejected
+
+  // 8.) Common global track cuts (applied only on "normal" global tracks in AOD):
+  TList *fGlobalTrackCutsList;        // list to hold all objects for common global track cuts
+  TProfile *fGlobalTrackCutsFlagsPro; // profile to hold all flags
+  Bool_t fApplyGlobalTrackCuts;       // if set to kFALSE, the default hardwired cuts will be used
+  Float_t fPtRange[2];                // ptMin = fPtRange[0], ptMax = fPtRange[1]
+  Float_t fEtaRange[2];               // etaMin = etaRange[0], etaMax = etaRange[1]
+  Float_t fPhiRange[2];               // phiMin = phiRange[0], phiMax = phiRange[1]
 
   // *.) Online monitoring:
   Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it

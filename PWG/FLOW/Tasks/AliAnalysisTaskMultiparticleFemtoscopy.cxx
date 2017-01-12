@@ -183,6 +183,10 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fCutOnNContributors(kFALSE),
  fMinNContributors(-44),
  fMaxNContributors(-44),
+ // 8.) Global track cuts:
+ fGlobalTrackCutsList(NULL),
+ fGlobalTrackCutsFlagsPro(NULL),
+ fApplyGlobalTrackCuts(kFALSE),
 
  // *.) Online monitoring:
  fOnlineMonitoring(kFALSE),
@@ -204,7 +208,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
 
   // Base list:
   fHistList = new TList();
-  fHistList->SetName("GMlist"); // TBI
+  fHistList->SetName("MPF"); // MultiParticle Femtoscopy
   fHistList->SetOwner(kTRUE);
 
   // Initialize all arrays:
@@ -215,6 +219,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
   this->InitializeArraysForBackground();
   this->InitializeArraysForBuffers();
   this->InitializeArraysForQA();
+  this->InitializeArraysForGlobalTrackCuts();
 
   // Define input and output slots here
   // Input slot #0 works with an AliFlowEventSimple
@@ -376,6 +381,10 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fCutOnNContributors(kFALSE),
  fMinNContributors(-44),
  fMaxNContributors(-44),
+ // 8.) Global track cuts:
+ fGlobalTrackCutsList(NULL),
+ fGlobalTrackCutsFlagsPro(NULL),
+ fApplyGlobalTrackCuts(kFALSE),
 
  // *.) Online monitoring:
  fOnlineMonitoring(kFALSE),
@@ -448,6 +457,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::UserCreateOutputObjects()
  this->BookEverythingForBackground();
  this->BookEverythingForBuffers();
  this->BookEverythingForQA();
+ this->BookEverythingForGlobalTrackCuts();
 
  // f) Trick to avoid name clashes, part 2:
  TH1::AddDirectory(oldHistAddStatus);
@@ -561,7 +571,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Terminate(Option_t *)
  // d) Dump the results.
 
  // a) Get pointer to the grandmother of all lists:
- fHistList = (TList*)GetOutputData(1);
+ fHistList = (TList*)GetOutputData(1); // TBI doesn't work locally :'(
  if(!fHistList){exit(1);}
 
  // b) Get pointers to all objects in "fHistList":
@@ -905,7 +915,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedP
  if(!gtrack){Fatal(sMethodName.Data(),"!gtrack");} // TBI keep this for some time, eventually just continue
 
  // b) Check out common selection criteria for 'normal global' tracks:
- if(!PassesCommonGlobalTrackCuts(gtrack)){return;} // TBI in the method PassesCommonGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
+ if(!PassesGlobalTrackCuts(gtrack)){return;} // TBI in the method PassesGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
 
  // c) Fill control histograms:
  fChargeHist->Fill(gtrack->Charge()+0.5); // see how this histogram was booked for convention used
@@ -937,7 +947,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedP
  if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
 
  // b) Check cut selection criteria:
- //if(!PassesCommonGlobalTrackCuts(gtrack)){return;} // TBI in the method PassesCommonGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
+ //if(!PassesGlobalTrackCuts(gtrack)){return;} // TBI in the method PassesGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
 
  // c) Fill control histograms:
  fChargeHist->Fill(amcparticle->Charge()+0.5); // see how this histogram was booked for convention used
@@ -999,7 +1009,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
  if(!gtrack){Fatal(sMethodName.Data(),"!gtrack");} // TBI keep this for some time, eventually just continue
 
  // b) Check cut selection criteria:
- if(!PassesCommonTrackCuts(atrack)){return;} // TBI in the method PassesCommonGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
+ if(!PassesCommonTrackCuts(atrack)){return;} // TBI in the method PassesGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
  // TBI do I need some check for atrack?
 
  // c) Fill control histograms:
@@ -1158,7 +1168,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
  } // else if(aESD)
  else if(aAOD)
  {
-  if(!PassesMixedEventCuts(aAOD)){return;}
+  if(!PassesMixedEventCuts(aAOD)){return;} // TBI returns always true at the moment...
 
   if(!fMixedEvents[0])
   {
@@ -1199,7 +1209,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
    if(fEstimate2pBackground) CalculateBackground(fMixedEvents[0],fMixedEvents[1]); // TBI rename
    if(fEstimate3pBackground) Calculate3pBackground(fMixedEvents[0],fMixedEvents[1],fMixedEvents[2]);
    if(fEstimate4pBackground) Calculate4pBackground(fMixedEvents[0],fMixedEvents[1],fMixedEvents[2],fMixedEvents[3]);
-
    // Shift mixed events:
    // [1] -> [0]
    fMixedEvents[0] = (TClonesArray*)fMixedEvents[1]->Clone();
@@ -1217,7 +1226,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
   } // if(fMixedEvents[0] && fMixedEvents[1] && fMixedEvents[2] && fMixedEvents[3]) // TBI re-think
 
  } // else if(aAOD)
-
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
 
@@ -1331,9 +1339,21 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjec
 {
  // Insanity checks for UserCreateOutputObjects() method.
 
- // TBI
+ // a) Insanity checks for global track cuts;
+ // b) ...
 
- //
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjects()";
+
+ // a) Insanity checks for global track cuts:
+ Int_t returnValueICFGTC = this->InsanityChecksForGlobalTrackCuts();
+ if(0!=returnValueICFGTC)
+ {
+  cout<<Form("\n\nSomething is fundamentally wrong with global track cuts!!!!")<<endl;
+  cout<<Form("InsanityChecksForGlobalTrackCuts() returns %d, check its implementation for an explanation of return values.\n\n",returnValueICFGTC)<<endl;
+  Fatal(sMethodName.Data(),"if(0!=returnValueICFGTC)");
+ } // if(0!=returnValueICFGTC)
+
+ // b) ...
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjects()
 
@@ -2066,6 +2086,45 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForQA()
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForGlobalTrackCuts()
+{
+ // Initialize all arrays for common global tracks cuts. In essence, these are the default cuts for "normal" global tracks in AOD.
+
+ fPtRange[0] = 0.2; // pt min
+ fPtRange[1] = 5.0; // pt max
+ fEtaRange[0] = -0.8; // eta min
+ fEtaRange[1] = 0.8; // eta max
+ fPhiRange[0] = 0.; // phi min
+ fPhiRange[1] = TMath::TwoPi(); // phi max
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForGlobalTrackCuts()
+
+//=======================================================================================================================
+
+Int_t AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksForGlobalTrackCuts()
+{
+ // Isanity checks for global track cuts.
+
+ // Return values:
+ // 1) pt range;
+ // 2) eta range;
+ // 3) phi range;
+
+ if(fPtRange[0]<0.||fPtRange[1]<0.){return 1;} // pt is positive
+ if(fPtRange[0]>fPtRange[1]){return 1;} // ptmin > ptmax
+
+ if(fEtaRange[0]>fEtaRange[1]){return 2;} // etamin > etamax
+
+ if(fPhiRange[0]<0.||fPhiRange[1]<0.){return 3;} // phi is positive
+ //if(fPhiRange[0]>TMath::TwoPi()||fPhiRange[1]>TMath::TwoPi()){return 3;} // phi shall be smaller than 2\pi TBI
+ if(fPhiRange[0]>fPhiRange[1]){return 3;} // phimin > phimax
+
+ return 0; // Life is like a wheel...
+
+} // Int_t AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksForGlobalTrackCuts()
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
 {
  // Book and nest all lists nested in the base list fHistList.
@@ -2075,7 +2134,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  // c) Book and nest lists for correlation functions;
  // d) Book and nest lists for background;
  // e) Book and nest lists for buffers;
- // f) Book and nest lists for QA.
+ // f) Book and nest lists for QA;
+ // g) Book and nest lists for common global track cuts.
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()";
  if(!fHistList){Fatal(sMethodName.Data(),"fHistList is NULL");}
@@ -2149,6 +2209,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
   fQAParticlesList->SetOwner(kTRUE);
   fQAList->Add(fQAParticlesList);
  }
+
+ // g) Book and nest lists for common global track cuts:
+ fGlobalTrackCutsList = new TList();
+ fGlobalTrackCutsList->SetName("Global_track_cuts");
+ fGlobalTrackCutsList->SetOwner(kTRUE);
+ fHistList->Add(fGlobalTrackCutsList);
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
 
@@ -2635,7 +2701,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  // e) Book all 4-p correlation functions.
 
  // a) Book the profile holding all the flags for correlation functions objects:
- fCorrelationFunctionsFlagsPro = new TProfile("fCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",3,0,3);
+ fCorrelationFunctionsFlagsPro = new TProfile("fCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",4,0,4);
  fCorrelationFunctionsFlagsPro->SetTickLength(-0.01,"Y");
  fCorrelationFunctionsFlagsPro->SetMarkerStyle(25);
  fCorrelationFunctionsFlagsPro->SetLabelSize(0.04);
@@ -2646,6 +2712,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(1,"fFillCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(0.5,fFillCorrelationFunctions);
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(2,"fNormalizeCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(1.5,fNormalizeCorrelationFunctions);
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(3,"fFill3pCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(2.5,fFill3pCorrelationFunctions);
+ fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(4,"fFill4pCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(3.5,fFill4pCorrelationFunctions);
  fCorrelationFunctionsList->Add(fCorrelationFunctionsFlagsPro);
 
  if(!fFillCorrelationFunctions){return;} // TBI is this safe? It is not, because now if I want to fill 3-p, I always have to fill also 2-p
@@ -2757,7 +2824,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
  fBackgroundFlagsPro->GetXaxis()->SetBinLabel(3,"fEstimate4pBackground"); fBackgroundFlagsPro->Fill(2.5,fEstimate4pBackground);
  fBackgroundList->Add(fBackgroundFlagsPro);
 
- //if(!fTerEstimateBackground){return;} // TBI is this safe?
+ //if(!fEstimateBackground){return;} // TBI is this safe?
 
  const Int_t nParticleSpecies = 5; // Supported at the moment: 0=e,1=mu,2=pi,3=K,4=p
  TString sParticles[2*nParticleSpecies] = {"e^{+}","#mu^{+}","#pi^{+}","K^{+}","p^{+}","e^{-}","#mu^{-}","#pi^{-}","K^{-}","p^{-}"};
@@ -2792,7 +2859,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
     for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
     {
      // Background:
-     f3pBackground[pid1][pid2][pid3] = new TH1F(Form("fBackground[%d][%d][%d]",pid1,pid2,pid3),Form("fBackground[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+     f3pBackground[pid1][pid2][pid3] = new TH1F(Form("f3pBackground[%d][%d][%d]",pid1,pid2,pid3),Form("f3pBackground[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
      f3pBackground[pid1][pid2][pid3]->SetStats(kFALSE);
      f3pBackground[pid1][pid2][pid3]->SetFillColor(kBlue-10);
      f3pBackground[pid1][pid2][pid3]->SetXTitle("Q_{3}");
@@ -2815,7 +2882,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
      for(Int_t pid4=0;pid4<2*nParticleSpecies;pid4++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
      {
       // Background:
-      f4pBackground[pid1][pid2][pid3][pid4] = new TH1F(Form("fBackground[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("fBackground[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+      f4pBackground[pid1][pid2][pid3][pid4] = new TH1F(Form("f4pBackground[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("f4pBackground[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
       f4pBackground[pid1][pid2][pid3][pid4]->SetStats(kFALSE);
       f4pBackground[pid1][pid2][pid3][pid4]->SetFillColor(kBlue-10);
       f4pBackground[pid1][pid2][pid3][pid4]->SetXTitle("Q_{4}");
@@ -2971,6 +3038,35 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForQA()
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForGlobalTrackCuts()
+{
+ // Book all objects for global track cuts (applied only on "normal" global tracks in AOD).
+
+ // a) Book the profile holding all the flags;
+ // b) ...
+
+ // a) Book the profile holding all the flags:
+ fGlobalTrackCutsFlagsPro = new TProfile("fGlobalTrackCutsFlagsPro","Flags and settings for global track cuts",7,0.,7.);
+ fGlobalTrackCutsFlagsPro->SetTickLength(-0.01,"Y");
+ fGlobalTrackCutsFlagsPro->SetMarkerStyle(25);
+ fGlobalTrackCutsFlagsPro->SetLabelSize(0.04);
+ fGlobalTrackCutsFlagsPro->SetLabelOffset(0.02,"Y");
+ fGlobalTrackCutsFlagsPro->SetStats(kFALSE);
+ fGlobalTrackCutsFlagsPro->SetFillColor(kGray);
+ fGlobalTrackCutsFlagsPro->SetLineColor(kBlack);
+ fGlobalTrackCutsFlagsPro->GetXaxis()->SetBinLabel(1,"fApplyGlobalTrackCuts"); fGlobalTrackCutsFlagsPro->Fill(0.5,(Int_t)fApplyGlobalTrackCuts);
+ fGlobalTrackCutsFlagsPro->GetXaxis()->SetBinLabel(2,"fPtRange[0]"); fGlobalTrackCutsFlagsPro->Fill(1.5,fPtRange[0]);
+ fGlobalTrackCutsFlagsPro->GetXaxis()->SetBinLabel(3,"fPtRange[1]"); fGlobalTrackCutsFlagsPro->Fill(2.5,fPtRange[1]);
+ fGlobalTrackCutsFlagsPro->GetXaxis()->SetBinLabel(4,"fEtaRange[0]"); fGlobalTrackCutsFlagsPro->Fill(3.5,fEtaRange[0]);
+ fGlobalTrackCutsFlagsPro->GetXaxis()->SetBinLabel(5,"fEtaRange[1]"); fGlobalTrackCutsFlagsPro->Fill(4.5,fEtaRange[1]);
+ fGlobalTrackCutsFlagsPro->GetXaxis()->SetBinLabel(6,"fPhiRange[0]"); fGlobalTrackCutsFlagsPro->Fill(5.5,fPhiRange[0]);
+ fGlobalTrackCutsFlagsPro->GetXaxis()->SetBinLabel(7,"fPhiRange[1]"); fGlobalTrackCutsFlagsPro->Fill(6.5,fPhiRange[1]);
+ fGlobalTrackCutsList->Add(fGlobalTrackCutsFlagsPro);
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForGlobalTrackCuts()
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD, Int_t index)
 {
  // Filter out unique global tracks in AOD and store them in fGlobalTracksAOD[index].
@@ -3033,26 +3129,24 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::SpecifiedEvent(UInt_t run, UShort
 } // void AliAnalysisTaskMultiparticleFemtoscopy::SpecifiedEvent(UInt_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
 
 //=======================================================================================================================
-Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonGlobalTrackCuts(AliAODTrack *gtrack)
+
+Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesGlobalTrackCuts(AliAODTrack *gtrack)
 {
  // Check if the track passes common global track cuts (irrespectively of PID).
 
- TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonGlobalTrackCuts(AliAODTrack *gtrack)";
+ TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesGlobalTrackCuts(AliAODTrack *gtrack)";
  if(!gtrack){Fatal(sMethodName.Data(),"!gtrack");}
 
  // To do: add data members and corresponding setters:
- // fPtMin, fPtMax
- // fEtaMin, fEtaMax
- // fPhiMin, fPhiMax
  // fTPCNclsMin, fTPCNclsMax
  // fTPCsignalNMin, fTPCsignalNMax
 
- if(gtrack->Pt()<0.2) return kFALSE;
- if(gtrack->Pt()>=5.0) return kFALSE;
- if(gtrack->Eta()<-0.8) return kFALSE;
- if(gtrack->Eta()>=0.8) return kFALSE;
- //if(gtrack->Phi()<-0.6) return kFALSE;
- //if(gtrack->Phi()>=0.6) return kFALSE;
+ if(gtrack->Pt()<fPtRange[0]) return kFALSE;
+ if(gtrack->Pt()>=fPtRange[1]) return kFALSE;
+ if(gtrack->Eta()<fEtaRange[0]) return kFALSE;
+ if(gtrack->Eta()>=fEtaRange[1]) return kFALSE;
+ if(gtrack->Phi()<fPhiRange[0]) return kFALSE;
+ if(gtrack->Phi()>=fPhiRange[1]) return kFALSE;
  //if(gtrack->GetTPCNcls()<70) return kFALSE;
  //if(gtrack->GetTPCsignalN()<70) return kFALSE;
 
@@ -3060,7 +3154,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonGlobalTrackCuts(AliAO
 
  return kTRUE;
 
-} // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonGlobalTrackCuts(AliAODTrack *gtrack)
+} // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesGlobalTrackCuts(AliAODTrack *gtrack)
 
 //=======================================================================================================================
 
@@ -3178,6 +3272,8 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesMixedEventCuts(AliVEvent *a
 {
  // Check if the event passes mixed event cuts.
 
+ // Remark: PassesCommonEventCuts() is already checked beforehand in UserExec(), therefore here only some new cuts characteristic only for mixed events shall be implemented.
+
  // a) Determine Ali{MC,ESD,AOD}Event;
 
  // a) Determine Ali{MC,ESD,AOD}Event:
@@ -3195,6 +3291,9 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesMixedEventCuts(AliVEvent *a
  }
  else if(aAOD)
  {
+
+  // TBI
+  /* Check whether the cuts below are already being applied in PassesCommonEventCuts()
   if(!aAOD->GetPrimaryVertex()) return kFALSE;
   if(TMath::Abs(aAOD->GetMagneticField())<0.001) return kFALSE;
   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
@@ -3202,6 +3301,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesMixedEventCuts(AliVEvent *a
   //if(TMath::Abs(avtx->GetY())>10.0) return kFALSE;
   if(TMath::Abs(avtx->GetZ())>10.0) return kFALSE; // TBI setter
   if(avtx->GetNContributors()<=2) return kFALSE; // TBI setter
+  */
  }
 
  return kTRUE;
@@ -3240,7 +3340,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
   if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
   Int_t gid1 = (id1>=0 ? id1 : -(id1+1)); // ID of corresponding global track
   // Common track selection criteria for all "normal" global tracks:
-  if(!PassesCommonGlobalTrackCuts(gtrack1)){continue;}
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
 
   // Loop over the 2nd particle:
   for(Int_t iTrack2=iTrack1+1;iTrack2<nTracks;iTrack2++)
@@ -3259,7 +3359,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
    if(gid1==gid2){continue;} // Eliminate self-correlations:
 
    // Common track selection criteria for all "normal" global tracks:
-   if(!PassesCommonGlobalTrackCuts(gtrack2)){continue;}
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
 
    // Okay, so we have two tracks, let's check PID, and fill the correlation functions:
 
@@ -3421,7 +3521,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pCorrelationFunctions(Ali
   if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
   Int_t gid1 = (id1>=0 ? id1 : -(id1+1)); // ID of corresponding global track
   // Common track selection criteria for all "normal" global tracks:
-  if(!PassesCommonGlobalTrackCuts(gtrack1)){continue;}
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
 
   // Loop over the 2nd particle:
   for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++)
@@ -3440,7 +3540,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pCorrelationFunctions(Ali
    Int_t gid2 = (id2>=0 ? id2 : -(id2+1)); // ID of corresponding global track
    if(gid1==gid2){continue;} // Eliminate not-so-evident self-correlations:
    // Common track selection criteria for all "normal" global tracks:
-   if(!PassesCommonGlobalTrackCuts(gtrack2)){continue;}
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
 
    // Loop over the 3rd particle:
    for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -3459,33 +3559,182 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pCorrelationFunctions(Ali
     Int_t gid3 = (id3>=0 ? id3 : -(id3+1)); // ID of corresponding global track
     if(gid3==gid2 || gid3==gid1){continue;} // Eliminate not-so-evident self-correlations
     // Common track selection criteria for all "normal" global tracks:
-    if(!PassesCommonGlobalTrackCuts(gtrack3)){continue;}
+    if(!PassesGlobalTrackCuts(gtrack3)){continue;}
 
     // Okay, so we have three tracks, let's check PID, and fill the correlation functions:
 
-    // TBI
-    // First test example: pi+pi+pi+
+    // Cases of interest:
+    // a) Same species and same charge;
+    // b) Same species but different charge combinations (modulo permutations);
+    // c) Two pions + something else (modulo permutations);
+    // d) Two nucleons + something else (modulo permutations).
+
+    // a) Same species:
+    // pi+pi+pi+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
      f3pCorrelationFunctions[2][2][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
     }
-
-    // Second test example: ppp
+    // pi-pi-pi-
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[7][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K+K+
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[3][3][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K-K-K-
+    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[8][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+p+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
      f3pCorrelationFunctions[4][4][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
     }
-
-    // Third test example: pi+pp
-    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    // p-p-p-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[2][4][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[9][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
     }
 
-    // Fourth test example: pi-pi-pi-
-    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    // b) Same species but different charge combinations (modulo permutations):
+    // pi+pi+pi-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[7][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][2][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-pi-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K+K-
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[3][3][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K-K-
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[3][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+p-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[4][4][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p-p-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[4][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+    // c) Two pions + something else (modulo permutations):
+    // pi+pi+K+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][2][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+K-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][2][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-K+
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[7][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-K-
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[7][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-K+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-K-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+p+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][2][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+p-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][2][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-p+
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[7][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-p-
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[7][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-p+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-p-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[2][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+    // d) Two nucleons + something else (modulo permutations):
+    // p+p+pi+
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[4][4][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+pi-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[4][4][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+K+
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[4][4][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+K-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[4][4][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-pi+
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[9][9][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-pi-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[9][9][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-K+
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pCorrelationFunctions[9][9][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-K-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pCorrelationFunctions[9][9][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
     }
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -3524,7 +3773,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate4pCorrelationFunctions(Ali
   if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
   Int_t gid1 = (id1>=0 ? id1 : -(id1+1)); // ID of corresponding global track
   // Common track selection criteria for all "normal" global tracks:
-  if(!PassesCommonGlobalTrackCuts(gtrack1)){continue;}
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
 
   // Loop over the 2nd particle:
   for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++)
@@ -3543,7 +3792,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate4pCorrelationFunctions(Ali
    Int_t gid2 = (id2>=0 ? id2 : -(id2+1)); // ID of corresponding global track
    if(gid1==gid2){continue;} // Eliminate not-so-evident self-correlations:
    // Common track selection criteria for all "normal" global tracks:
-   if(!PassesCommonGlobalTrackCuts(gtrack2)){continue;}
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
 
    // Loop over the 3rd particle:
    for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -3562,7 +3811,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate4pCorrelationFunctions(Ali
     Int_t gid3 = (id3>=0 ? id3 : -(id3+1)); // ID of corresponding global track
     if(gid3==gid2 || gid3==gid1){continue;} // Eliminate not-so-evident self-correlations
     // Common track selection criteria for all "normal" global tracks:
-    if(!PassesCommonGlobalTrackCuts(gtrack3)){continue;}
+    if(!PassesGlobalTrackCuts(gtrack3)){continue;}
 
     // Loop over the 4th particle:
     for(Int_t iTrack4=0;iTrack4<nTracks;iTrack4++)
@@ -3581,7 +3830,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate4pCorrelationFunctions(Ali
      Int_t gid4 = (id4>=0 ? id4 : -(id4+1)); // ID of corresponding global track
      if(gid4==gid3 || gid4==gid2 || gid4==gid1){continue;} // Eliminate not-so-evident self-correlations
      // Common track selection criteria for all "normal" global tracks:
-     if(!PassesCommonGlobalTrackCuts(gtrack4)){continue;}
+     if(!PassesGlobalTrackCuts(gtrack4)){continue;}
 
 
 
@@ -3811,7 +4060,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
   AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? ca1->UncheckedAt(fGlobalTracksAOD[1]->GetValue(id1)) : ca1->UncheckedAt(fGlobalTracksAOD[1]->GetValue(-(id1+1))));
   if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
   // Common track selection criteria for all "normal" global tracks:
-  if(!PassesCommonGlobalTrackCuts(gtrack1)){continue;}
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
 
   // Start loop over tracks in the 2nd event:
   for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
@@ -3827,7 +4076,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
    AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? ca2->UncheckedAt(fGlobalTracksAOD[2]->GetValue(id2)) : ca2->UncheckedAt(fGlobalTracksAOD[2]->GetValue(-(id2+1))));
    if(!gtrack2){Fatal(sMethodName.Data(),"!gtrack2");} // TBI keep this for some time, eventually just continue
    // Common track selection criteria for all "normal" global tracks:
-   if(!PassesCommonGlobalTrackCuts(gtrack2)){continue;}
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
 
    // Okay... So we have two tracks from two different events ready. Let's check PID, and calculate the background:
 
@@ -3971,8 +4220,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
 {
  // Calculate background.
 
- // TBI this method is not really validated
-
  // a) Insanity checks;
  // b) Temporary primitive algorithm: correlate particles from 'previous event' to particles from 'current event';
  // c) Three nested loops to calculate B(k);
@@ -4005,7 +4252,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
   AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? ca1->UncheckedAt(fGlobalTracksAOD[1]->GetValue(id1)) : ca1->UncheckedAt(fGlobalTracksAOD[1]->GetValue(-(id1+1))));
   if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
   // Common track selection criteria for all "normal" global tracks:
-  if(!PassesCommonGlobalTrackCuts(gtrack1)){continue;}
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
 
   // Start loop over tracks in the 2nd event:
   for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
@@ -4021,7 +4268,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
    AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? ca2->UncheckedAt(fGlobalTracksAOD[2]->GetValue(id2)) : ca2->UncheckedAt(fGlobalTracksAOD[2]->GetValue(-(id2+1))));
    if(!gtrack2){Fatal(sMethodName.Data(),"!gtrack2");} // TBI keep this for some time, eventually just continue
    // Common track selection criteria for all "normal" global tracks:
-   if(!PassesCommonGlobalTrackCuts(gtrack2)){continue;}
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
 
    // Start loop over tracks in the 3rd event:
    for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
@@ -4037,20 +4284,182 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
     AliAODTrack *gtrack3 = dynamic_cast<AliAODTrack*>(id3>=0 ? ca3->UncheckedAt(fGlobalTracksAOD[3]->GetValue(id3)) : ca3->UncheckedAt(fGlobalTracksAOD[3]->GetValue(-(id3+1))));
     if(!gtrack3){Fatal(sMethodName.Data(),"!gtrack3");} // TBI keep this for some time, eventually just continue
     // Common track selection criteria for all "normal" global tracks:
-    if(!PassesCommonGlobalTrackCuts(gtrack3)){continue;}
+    if(!PassesGlobalTrackCuts(gtrack3)){continue;}
 
     // Okay... So we have three tracks from two different events ready. Let's check PID, and calculate the background:
 
-    // Example 1: TBI: pi+pi+pi+
+    // Cases of interest (needs to be synchronized with the calculations of correlations functions):
+    // a) Same species and same charge;
+    // b) Same species but different charge combinations (modulo permutations);
+    // c) Two pions + something else (modulo permutations);
+    // d) Two nucleons + something else (modulo permutations).
+
+    // a) Same species:
+    // pi+pi+pi+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
      f3pBackground[2][2][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
     }
-
-    // Example 2: TBI: pi-pi-pi-
+    // pi-pi-pi-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
      f3pBackground[7][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K+K+
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[3][3][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K-K-K-
+    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[8][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+p+
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pBackground[4][4][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-p-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[9][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+    // b) Same species but different charge combinations (modulo permutations):
+    // pi+pi+pi-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][2][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-pi-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K+K-
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[3][3][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K-K-
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[3][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+p-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[4][4][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p-p-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[4][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+    // c) Two pions + something else (modulo permutations):
+    // pi+pi+K+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][2][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+K-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][2][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-K+
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[7][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-K-
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[7][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-K+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-K-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+p+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][2][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+p-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][2][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-p+
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pBackground[7][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-p-
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[7][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-p+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-p-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+    // d) Two nucleons + something else (modulo permutations):
+    // p+p+pi+
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
+    {
+     f3pBackground[4][4][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+pi-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[4][4][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+K+
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[4][4][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+K-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[4][4][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-pi+
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,1,kTRUE))
+    {
+     f3pBackground[9][9][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-pi-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[9][9][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-K+
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[9][9][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-K-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[9][9][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
     }
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
@@ -4169,7 +4578,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetOutputHistograms(TList *histList
  // Get pointers for everything in the base list "fHistList".
 
  // a) Get pointer for base list fHistList;
- // b) Get pointer for profile holding internal flags and set again all flags TBI this profile is not implemented yet;
+ // b) Get pointer for profile holding internal flags and set again all flags (TBI this profile is not implemented yet!!!!);
  // *) TBI ...
  // *) Get pointers for correlation functions;
  // *) Get pointers for background;
@@ -4226,6 +4635,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
  fFillCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(1);
  fNormalizeCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(2);
  fFill3pCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(3);
+ fFill4pCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(4);
 
  if(!fFillCorrelationFunctions){return;} // TBI is this safe enough
 
@@ -4326,11 +4736,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
    for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
    {
     f3pBackground[pid1][pid2][pid3] = dynamic_cast<TH1F*>(fBackgroundList->FindObject(Form("f3pBackground[%d][%d][%d]",pid1,pid2,pid3)));
-    //if(!f3pBackground[pid1][pid2][pid3]){Fatal(sMethodName.Data(),"f3pBackground[%d][%d][%d]",pid1,pid2,pid3);} TBI
+    if(!f3pBackground[pid1][pid2][pid3]){Fatal(sMethodName.Data(),"f3pBackground[%d][%d][%d]",pid1,pid2,pid3);}
    }
   } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
  } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
 
+ // f) TBI get pointers for 4p background
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
 
