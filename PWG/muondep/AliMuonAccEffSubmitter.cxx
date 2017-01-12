@@ -119,6 +119,11 @@ fUseAODMerging(kFALSE)
     SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
   }
 
+  if ( TString(generator).Contains("Powheg") ) {
+    SetupCollision(5023);
+    SetupPowheg("Z");
+  }
+
   SetGenerator(generator);
 }
 
@@ -805,7 +810,7 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
 
   std::cout << "Cleaning up left-over files from previous simulation/reconstructions" << std::endl;
 
-  gSystem->Exec("rm -rf TrackRefs.root *.SDigits*.root Kinematics.root *.Hits.root geometry.root gphysi.dat Run*.tag.root HLT*.root *.ps *.Digits.root *.RecPoints.root galice.root *QA*.root Trigger.root *.log AliESD* AliAOD* *.d *.so *.stat");
+  gSystem->Exec("rm -rf TrackRefs.root *.SDigits*.root Kinematics.root *.Hits.root geometry.root gphysi.dat Run*.tag.root HLT*.root *.ps *.Digits.root *.RecPoints.root galice.root *QA*.root Trigger.root *.log AliESD* AliAOD* *.d *.so *.stat pwgevents.lhe pwg*.dat pwg*.top pwhg_checklimits bornequiv FlavRegList");
 
   if ( UseOCDBSnapshots() )
   {
@@ -962,7 +967,11 @@ void AliMuonAccEffSubmitter::SetDefaultVariables()
 
   SetVar("VAR_PYTHIA8_CMS_ENERGY","8000");
   SetVar("VAR_PYTHIA6_CMS_ENERGY","8000");
-  
+
+  SetVar("VAR_POWHEG_INPUT","powheg_Z.input");
+  SetVar("VAR_POWHEG_EXEC","pwhg_main_Z");
+  SetVar("VAR_POWHEG_SCALE_EVENTS","1");
+
   SetVar("VAR_PURELY_LOCAL","0");
 
   SetVar("VAR_USE_RAW_ALIGN","1");
@@ -1039,6 +1048,169 @@ void AliMuonAccEffSubmitter::SetupCommon(Bool_t localOnly)
   AddToTemplateFileList(RunJDLName().Data());
   
   UseExternalConfig(fExternalConfig);
+}
+
+//______________________________________________________________________________
+Bool_t AliMuonAccEffSubmitter::SetupCollision ( Double_t cmsEnergy, Int_t lhapdf, const char *nucleons, const char *collSystem, Int_t npdf, Int_t npdfErr )
+{
+  /// Setup of the collision system
+
+  TString nucl(nucleons);
+  TString system(collSystem);
+
+  Bool_t checkConsistency = kTRUE;
+  if ( system.Contains("p") ) {
+    if ( ! nucl.Contains("p") ) checkConsistency = kFALSE;
+    if ( system == "pp" && nucl != "pp" ) checkConsistency = kFALSE;
+  }
+  if ( ! checkConsistency ) {
+    AliError(Form("Cannot have a %s nucleon collision in %s",nucleons,collSystem));
+    return kFALSE;
+  }
+
+  if ( system == "Pbp" && nucl == "pn" ) nucl = "np";
+
+  Int_t ih[2] = {1, 1};
+  for ( Int_t ipart=0; ipart<2; ipart++ ) {
+    if ( nucl[ipart] == 'n' ) ih[1-ipart] = 2;
+  }
+
+  Int_t zNumber[2] = {1,1};
+  Int_t aNumber[2] = {1,1};
+
+  if ( system == "pPb" || system == "PbPb" ) {
+    aNumber[0] = 208;
+    zNumber[0] = 82;
+  }
+  if ( system == "Pbp" || system == "PbPb") {
+    aNumber[1] = 208;
+    zNumber[1] = 82;
+  }
+
+  SetVar("VAR_PROJECTILE_NAME",Form("\"%s\"",(ih[0] == 2)?"n":"p"));
+  SetVar("VAR_PROJECTILE_A",Form("%i",aNumber[0]));
+  SetVar("VAR_PROJECTILE_Z",Form("%i",zNumber[0]));
+  SetVar("VAR_TARGET_NAME",Form("\"%s\"",(ih[1] == 2)?"n":"p"));
+  SetVar("VAR_TARGET_A",Form("%i",aNumber[1]));
+  SetVar("VAR_TARGET_Z",Form("%i",zNumber[1]));
+
+  SetVar("VAR_POWHEG_PROJECTILE",Form("%i",ih[0]));
+  SetVar("VAR_POWHEG_TARGET",Form("%i",ih[1]));
+  SetVar("VAR_PROJECTILE_ENERGY", Form("%gd0",cmsEnergy/2.));
+  SetVar("VAR_TARGET_ENERGY", Form("%gd0",cmsEnergy/2.));
+
+  // FIXME: this is ugly, but necessary to avoid a direct dependence on LHAPDF
+  const Int_t kNsets = 12;
+  Int_t lhaPdfSets[kNsets] = {19170,19150,19070,19050,80060,10040,10100,10050,10041,10042,10800,11000};
+  TString lhaPdfSetsPythia[kNsets] = {"kCTEQ4L","kCTEQ4M","kCTEQ5L","kCTEQ5M","kGRVLO98","kCTEQ6","kCTEQ61","kCTEQ6m","kCTEQ6l","kCTEQ6ll","kCT10","kCT10nlo"};
+
+  const Int_t kNnpdfSets = 4;
+  // EKS98 EPS08 EPS09LO EPS09NLO
+  Int_t npdfSetsPythia[kNnpdfSets] = {0, 8, 9, 19};
+
+  Int_t chosenSet = lhapdf;
+  if ( lhapdf >= kNsets ) {
+    for ( Int_t iset=0; iset<kNsets; iset++ ) {
+      if ( lhaPdfSets[iset] == lhapdf ) {
+        chosenSet = iset;
+        break;
+      }
+    }
+  }
+
+  if ( chosenSet >= kNsets ) {
+    AliError(Form("Cannot find PDF set %i",lhapdf));
+    return kFALSE;
+  }
+
+  Int_t chosenNpdfSet = npdf;
+  if ( npdf >= kNnpdfSets ) {
+    for ( Int_t iset=0; iset<kNnpdfSets; iset++ ) {
+      if ( npdfSetsPythia[iset] == npdf ) {
+        chosenNpdfSet = iset;
+        break;
+      }
+    }
+  }
+
+  if ( chosenNpdfSet >= kNnpdfSets ) {
+    AliError(Form("Cannot find PDF set %i",npdf));
+    return kFALSE;
+  }
+  SetVar("VAR_LHAPDF_STRUCFUNC_SET",lhaPdfSetsPythia[chosenSet].Data());
+  SetVar("VAR_NPDF_SET",Form("%i",npdfSetsPythia[chosenNpdfSet]));
+
+  SetVar("VAR_LHAPDF_SET",Form("%i",lhaPdfSets[chosenSet]));
+  SetVar("VAR_POWHEG_NPDF_SET",Form("%i",chosenNpdfSet));
+  SetVar("VAR_POWHEG_NPDF_ERR",Form("%i",npdfErr));
+
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliMuonAccEffSubmitter::SetupPowheg ( const char *particle, const char* version )
+{
+  /// Setup powheg
+  TString part(particle);
+  part.ToUpper();
+  TString pythiaProc = "";
+  TString baseName = "";
+  TString muonPtMin = "0.";
+  if ( part == "CHARM" ) {
+    pythiaProc = "kPyCharmPWHG";
+    SetVar("VAR_POWHEG_HVQ_MASS","1.5");
+    SetVar("VAR_POWHEG_HVQ_NCALL1","50000");
+    SetVar("VAR_POWHEG_HVQ_FOLDCSI","5");
+    baseName = "hvq";
+  }
+  else if ( part == "BEAUTY" ) {
+    pythiaProc = "kPyBeautyPWHG";
+    SetVar("VAR_POWHEG_HVQ_MASS","4.75");
+    SetVar("VAR_POWHEG_HVQ_NCALL1","10000");
+    SetVar("VAR_POWHEG_HVQ_FOLDCSI","2");
+    baseName = "hvq";
+  }
+  else if ( part == "WPLUS" || part == "WMINUS" ) {
+    pythiaProc = "kPyWPWHG";
+    SetVar("VAR_POWHEG_IDVECBOS",Form("%i",part.Contains("PLUS")?24:-24));
+    baseName = "W";
+  }
+  else if ( part == "Z" ) {
+    pythiaProc = "kPyWPWHG";
+    SetVar("VAR_POWHEG_ZMASS_LOW", "16");
+    muonPtMin = "8.";
+    baseName = "Z";
+  }
+  else {
+    AliError(Form("Unrecognized particle %s",particle));
+    return kFALSE;
+  }
+
+  TString powhegInput = Form("powheg_%s.input",baseName.Data());
+  SetVar("VAR_POWHEG_INPUT",powhegInput.Data());
+  SetVar("VAR_POWHEG_EXEC",Form("pwhg_main_%s",baseName.Data()));
+
+  SetVar("VAR_PYTHIA_POWHEG_PROCESS",pythiaProc.Data());
+  SetVar("VAR_CHILD_PT_MIN", muonPtMin.Data());
+
+  for ( Int_t ilist=0; ilist<2; ilist++ ) {
+    TObjArray* fileList = ( ilist == 0 ) ? TemplateFileList() : LocalFileList();
+    TIter next(fileList);
+    TObjString *str = 0x0;
+    while ( (str = static_cast<TObjString*>(next())) ) {
+      if ( str->String().Contains(".input") ) {
+        fileList->Remove(str);
+        break;
+      }
+      fileList->Compress();
+    }
+  }
+
+  AddToTemplateFileList(powhegInput.Data());
+
+  SetGeneratorPackage(Form("VO_ALICE@POWHEG::%s",version));
+
+  return kTRUE;
 }
 
 //______________________________________________________________________________

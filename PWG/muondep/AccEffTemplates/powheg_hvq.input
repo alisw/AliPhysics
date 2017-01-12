@@ -1,0 +1,45 @@
+!randomseed 12345 ! uncomment to set the random seed to a value of your choice.
+! It generates the call RM48IN(352345,0,0) (see the RM48 manual).
+! THIS MAY ONLY AFFECTS THE GENERATION OF POWHEG EVENTS!
+! If POWHEG is interfaced to a shower MC, refer to the shower MC
+! documentation to set its seed.
+
+iseed    12345    ! initialize random number sequence
+
+!Heavy flavour production parameters
+
+numevts 12345   ! number of events to be generated
+ih1   VAR_POWHEG_PROJECTILE        ! hadron 1
+ih2   VAR_POWHEG_TARGET        ! hadron 2
+#ndns1 131      ! pdf for hadron 1 (hvqpdf numbering)
+#ndns2 131      ! pdf for hadron 2
+lhans1  VAR_LHAPDF_SET         ! pdf set for hadron 1 (LHA numbering)
+lhans2  VAR_LHAPDF_SET         ! pdf set for hadron 2 (LHA numbering)
+ebeam1 VAR_PROJECTILE_ENERGY    ! energy of beam 1
+ebeam2 VAR_TARGET_ENERGY    ! energy of beam 2
+qmass  VAR_POWHEG_HVQ_MASS     ! mass of heavy quark in GeV
+facscfact 1    ! factorization scale factor: mufact=muref*facscfact
+renscfact 1    ! renormalization scale factor: muren=muref*renscfact
+#fixedscale 1    ! use ref. scale=qmass (default 0, use running scale)
+
+! To be set for nPDF
+nPDFset VAR_POWHEG_NPDF_SET        ! (0:EKS98, 1:EPS08, 2:EPS09LO, 3:EPS09NLO)
+nPDFerrSet VAR_POWHEG_NPDF_ERR     ! (1:central, 2:+1, 3:-1..., 30:+15, 31:-15)
+AA1 VAR_PROJECTILE_A          ! (Atomic number of hadron 1)
+AA2 VAR_TARGET_A          ! (Atomic number of hadron 2)
+
+! Parameters to allow-disallow use of stored data
+use-old-grid 1    ! if 1 use old grid if file pwggrids.dat is present (# 1: regenerate)
+use-old-ubound 1  ! if 1 use norm of upper bounding function stored in pwgubound.dat, if present; # 1: regenerate
+
+ncall1 VAR_POWHEG_HVQ_NCALL1   ! number of calls for initializing the integration grid
+itmx1 5        ! number of iterations for initializing the integration grid
+ncall2 100000  ! number of calls for computing the integral and finding upper bound
+itmx2 5        ! number of iterations for computing the integral and finding upper bound
+foldcsi   VAR_POWHEG_HVQ_FOLDCSI      ! number of folds on x integration
+foldy   5      ! number of folds on y integration
+foldphi 1      ! number of folds on phi integration
+nubound 500000  ! number of bbarra calls to setup norm of upper bounding function
+iymax 1        ! <= 10, normalization of upper bounding function in iunorm X iunorm square in y, log(m2qq)
+ixmax 1        ! <= 10, normalization of upper bounding function in iunorm X iunorm square in y, log(m2qq)
+xupbound 2      ! increase upper bound for radiation generation
