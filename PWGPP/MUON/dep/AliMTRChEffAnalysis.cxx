@@ -534,8 +534,6 @@ void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
 
   AliInfo("Comparing the merged efficiencies");
 
-
-
   TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
   TString titles = "";
 
@@ -548,6 +546,37 @@ void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
   titles.Remove(TString::kTrailing,',');
 
   CompareEfficiencies(&effHistoList, titles.Data(), opt, "MergedComp");
+}
+
+//________________________________________________________________________
+Int_t AliMTRChEffAnalysis::ComputeAndCompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
+{
+  /// Copute the efficiency for the selected condition and compare them
+  TString srcs(sources);
+  TObjArray* sourceList = srcs.Tokenize(",");
+  TObjArray effHistoLists;
+  effHistoLists.SetOwner();
+
+  TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
+  if ( ! condition ) {
+    AliError("The method requires to set an efficiency confition with SetEffConditions");
+    return -1;
+  }
+
+  TIter next(sourceList);
+  TObjString* src = 0x0;
+  while ( (src = static_cast<TObjString*>(next())) ) {
+    if ( ! src->String().EndsWith(".root") ) {
+      AliError("The method reads files with the output of AliAnalysisTaskTrigChEff and re-compute the efficiency");
+      return -1;
+    }
+    AliTrigChEffOutput trigOut(src->GetName());
+    TList* readList = GetEffHistoList(&trigOut,condition);
+    if ( ! readList ) continue;
+    effHistoLists.Add(readList);
+  }
+
+  return CompareEfficiencies(&effHistoLists, titles, opt, canvasNameSuffix);
 }
 
 
