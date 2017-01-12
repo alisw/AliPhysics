@@ -167,15 +167,65 @@ public:
    */
   static const TString &GetTriggerName(EmcalTriggerClass cls) { return fgkTriggerNames[cls]; }
 
+  /**
+   * Set the energy resolution used to smear the threshold. Note that
+   * an absolute value for the energy is used.
+   * @param[in] resolution Energy resolution used for smearing
+   */
+  void SetEnergyResolution(Double_t resolution) { fResolution = resolution; }
+
 
 protected:
 
+  /**
+   * @brief Run event selection using trigger patches.
+   *
+   * Events are selected in case at least one trigger patch is found
+   * with an energy above threshold. The energy can be of different
+   * types (energy, transverse energy, ADC, transverse ADC). Note
+   * that triggers with transverse energy definitions are hypothetical
+   * triggers, used for principal studies, and are not implemented in
+   * the hardware.
+   *
+   * Trigger patches must match the correct type. This means that for
+   * L0 or gamma triggers only gamma patches are used, while for
+   * jet triggers only jet patches are used.
+   *
+   * Effects of the energy resolution are studied using randomized
+   * thresholds.
+   *
+   * @param[in] trgcls EMCAL trigger class to be triggered
+   * @param[in] triggerpatches Container of trigger patches used to trigger the event
+   * @return True if the event is selected, false otherwise
+   */
   bool ApplyPatchTrigger(EmcalTriggerClass trgcls, const TClonesArray * const triggerpatches) const;
 
-  bool ApplyClusterTrigger(EmcalTriggerClass trgcls, const AliVEvent * const triggerpatches) const;
+  /**
+   * @brief Run event selection using a EMCAL clusters
+   *
+   * Events are selected requiring at least one EMCAL cluster with
+   * energy above threshold. The energy can be either the total
+   * cluster energy ot the cluster transverse energy. Note
+   * that this trigger is a hypothetical trigger, used for
+   * principal studies, and is not implemented as such in the
+   * hardware.
+   *
+   * @param[in] trgcls EMCAL trigger classs
+   * @param[in] event Input event, containing the cluster container
+   * @return True if the event is selected, false otherwise
+   */
+  bool ApplyClusterTrigger(EmcalTriggerClass trgcls, const AliVEvent * const event) const;
 
+  /**
+   * @brief Check whether the trigger observable is based on clusters
+   * @return True if the trigger is based on clusters, false otherwise
+   */
   bool UseClusters() const;
 
+  /**
+   * @brief Check whether the trigger observable is based on trigger patches
+   * @return True if the observable is based on trigger patches
+   */
   bool UsePatches() const;
 
   static const TString        fgkTriggerNames[kTrgn];                     ///< Names of the various trigger classes
@@ -183,6 +233,7 @@ protected:
   const TH2                   *fAcceptanceMaps[kTrgn];                    //!<! Online acceptance distribution
   EmcalEnergyDefinition_t     fEnergyDefinition;                          ///< Define type of energy to be use for the patch selection
   TString                     fNameClusterContainer;                      ///< Name of the cluster container
+  Double_t                    fResolution;                                ///< Resolution for threshold smearing
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerOfflineSelection, 1);

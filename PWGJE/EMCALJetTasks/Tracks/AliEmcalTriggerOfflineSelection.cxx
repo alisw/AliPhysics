@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <algorithm>
+#include <cfloat>
 #include <iostream>
 #include <vector>
 
@@ -40,7 +41,8 @@ const TString AliEmcalTriggerOfflineSelection::fgkTriggerNames[AliEmcalTriggerOf
 AliEmcalTriggerOfflineSelection::AliEmcalTriggerOfflineSelection():
     TObject(),
     fEnergyDefinition(kFEEEnergy),
-    fNameClusterContainer()
+    fNameClusterContainer(),
+    fResolution(0)
 {
   for(int itrg = 0; itrg < kTrgn; itrg++) fOfflineEnergyThreshold[itrg] = 100000.;  // unimplemented triggers get very high threshold assinged, so that the result is automatically false
   memset(fAcceptanceMaps, 0, sizeof(TH2 *) * kTrgn);
@@ -82,7 +84,16 @@ bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls
     else if(fEnergyDefinition == kFEETransverseEnergy) energy = patch->GetPatchET();
     else if(fEnergyDefinition == kFEEADC) energy = patch->GetADCOfflineAmp();
     else if(fEnergyDefinition == kFEETransverseADC) energy = patch->GetPatchET() / EMCALTrigger::kEMCL1ADCtoGeV;
-    if(energy > fOfflineEnergyThreshold[trgcls]){
+    double threshold(fOfflineEnergyThreshold[trgcls]);
+    if(TMath::Abs(fResolution) > DBL_EPSILON){
+      // Simulation effect of the finite online energy resolution:
+      // The threshold is smeared using a gaussinan using the
+      // energy resolution as parameter for the smearing. A patch is
+      // selected in case the energy is above the smeared threshold.
+      // The approach is equivalent to smearing the patch energy itself.
+      threshold = gRandom->Gaus(threshold, fResolution);
+    }
+    if(energy > threshold){
       AliDebugStream(2) << GetTriggerName(trgcls) << " patch above threshold (" << patch->GetPatchE() << " | " << fOfflineEnergyThreshold[trgcls] << ")" <<  std::endl;
       if(fAcceptanceMaps[trgcls]){
         // Handle azimuthal inefficiencies of the trigger observed online:
@@ -127,7 +138,16 @@ bool AliEmcalTriggerOfflineSelection::ApplyClusterTrigger(EmcalTriggerClass trgc
       vec.SetE(c->GetNonLinCorrEnergy());
       energy = vec.Et();
     }
-    if(energy > fOfflineEnergyThreshold[trgcls]) ntrigger++;
+    double threshold(fOfflineEnergyThreshold[trgcls]);
+    if(TMath::Abs(fResolution) > DBL_EPSILON){
+      // Simulation effect of the finite online energy resolution:
+      // The threshold is smeared using a gaussinan using the
+      // energy resolution as parameter for the smearing. A patch is
+      // selected in case the energy is above the smeared threshold.
+      // The approach is equivalent to smearing the patch energy itself.
+      threshold = gRandom->Gaus(threshold, fResolution);
+    }
+    if(energy > threshold) ntrigger++;
   }
   return ntrigger > 0;
 }
