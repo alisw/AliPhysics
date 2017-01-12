@@ -900,9 +900,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       fEMCClsEtaPhi->Fill(emceta,emcphi);
       // remove some bad runs
-      if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
-      if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
-      if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
+      //if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
+      //if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
+      //if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
 
       Double_t clustE = clust->E();
       fHistClustE->Fill(clustE);
@@ -1214,9 +1214,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
       // remove some bad runs
-      if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
-      if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
-      if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
+      //if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
+      //if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
+      //if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
 
       Double_t clustMatchE = clustMatch->E();
       //fClsEAftMatch->Fill(clustMatchE);
@@ -1302,7 +1302,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(atrack->GetTPCNCrossedRows() < 120) continue; 
       if(atrack->GetTPCchi2() > 4) continue; 
       //if(atrack->GetITSchi2() > 36) continue; 
-      if(atrack->GetITSchi2() > 25) continue; 
+      //if(atrack->GetITSchi2() > 26) continue; 
+      //cout << "itschi2 = " << fitschi2 << endl;
+      if(atrack->GetITSchi2() > fitschi2) continue; 
  
       if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);

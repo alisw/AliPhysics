@@ -50,6 +50,8 @@ public:
     void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
 
+    void SetITSchi2(Int_t itschi2){fitschi2 = itschi2;};
+
     void SetInvMassCut0(Double_t InvmassCut) {fInvmassCut = InvmassCut;};
     void SetInvMassCut1(Double_t ptAssocut) {fptAssocut = ptAssocut;};
 
@@ -109,6 +111,7 @@ private:
     
     Int_t fcentMim; // mim. centrality
     Int_t fcentMax; // max. centrality
+    Int_t fitschi2; // max. centrality
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Int_t fetarange;  
