@@ -22,7 +22,9 @@
 
 #include "AliEmcalFastOrMonitorTask.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALTriggerConstants.h"
 #include "AliInputEventHandler.h"
+#include "AliVCaloCells.h"
 #include "AliVCaloTrigger.h"
 #include "AliVEvent.h"
 #include "AliVVertex.h"
@@ -38,6 +40,7 @@ AliEmcalFastOrMonitorTask::AliEmcalFastOrMonitorTask() :
   fLocalInitialized(false),
   fOldRun(-1),
   fRequestTrigger(AliVEvent::kAny),
+  fCellData(),
   fTriggerPattern("")
 {
 
@@ -73,12 +76,16 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   fHistos->CreateTH2("hFastOrNL0Times", "FastOr Number of L0 times", kMaxFastOr, -0.5, kMaxFastOr - 0.5, 16, -0.5, 15.5);
   fHistos->CreateTH2("hFastOrColRowFrequencyL0", "FastOr Frequency (col-row) at Level1", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
   fHistos->CreateTH2("hFastOrColRowFrequencyL1", "FastOr Frequency (col-row) at Level0", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
+  fHistos->CreateTH2("hEnergyFastorCell", "Sum of cell energy vs. fastor Energy", 1000, 0., 20., 1000 , 0., 20.);
 
   PostData(1, fHistos->GetListOfHistograms());
 }
 
 void AliEmcalFastOrMonitorTask::ExecOnce(){
   fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
+
+  int nrow = fGeom->GetTriggerMappingVersion() == 2 ? 104 : 64;
+  fCellData.Allocate(48, nrow);
 }
 
 void AliEmcalFastOrMonitorTask::RunChanged(){
@@ -107,6 +114,8 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
   Double_t vtxpos[3];
   vtx->GetXYZ(vtxpos);
 
+  LoadEventCellData();
+
   fHistos->FillTH1("hEvents", 1);
 
   AliVCaloTrigger *triggerdata = InputEvent()->GetCaloTrigger("EMCAL");
@@ -132,10 +141,24 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
       fHistos->FillTH2("hFastOrTimeSum", fastOrID, l1timesum);
       fHistos->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
       fHistos->FillTH2("hFastOrTransverseTimeSum", fastOrID, GetTransverseTimeSum(fastOrID, l1timesum, vtxpos));
+      fHistos->FillTH2("hEnergyFastorCell", fCellData(globCol, globRow), l1timesum * EMCALTrigger::kEMCL1ADCtoGeV);
     }
   }
 
   PostData(1, fHistos->GetListOfHistograms());
+}
+
+void AliEmcalFastOrMonitorTask::LoadEventCellData(){
+   fCellData.Reset();
+   AliVCaloCells *emccells = InputEvent()->GetEMCALCells();
+   for(int icell = 0; icell < emccells->GetNumberOfCells(); icell++){
+     int position = emccells->GetCellPosition(icell);
+     double amplitude = emccells->GetAmplitude(icell);
+     int absFastor, col, row;
+     fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);
+     fGeom->GetPositionInEMCALFromAbsFastORIndex(absFastor, col, row);
+     fCellData(col, row) += amplitude;
+   }
 }
 
 Double_t AliEmcalFastOrMonitorTask::GetTransverseTimeSum(Int_t fastorAbsID, Double_t adc, const Double_t *vertex) const{

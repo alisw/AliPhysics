@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEMCALTriggerDataGrid.h"
 #include <TString.h>
 
 class AliEMCALGeometry;
@@ -70,13 +71,17 @@ public:
 protected:
 
   /**
-   * Creating output objects. In this case only the histogram handler is created.
+   * @brief Creating output objects
+   *
+   * For this task only the histogram handler is created.
    * Histograms are done inside the function ExecOnce.
    */
   virtual void UserCreateOutputObjects();
 
   /**
-   * Event loop. Filling the monitoring histograms for each FastOR:
+   * @brief Event loop
+   *
+   * Processing of events: Filling the monitoring histograms for each FastOR:
    * - Frequency
    * - Amplitude
    * - L0timeSum
@@ -87,6 +92,8 @@ protected:
   virtual void UserExec(Option_t *);
 
   /**
+   * @brief Initialization of the task
+   *
    * Performing initial initializations. In contrast to UserCreateOutputObjects,
    * which is called before the event loop, ExecOnce is called for the first event
    * within the event loop. At that step some basic event information is already
@@ -95,19 +102,32 @@ protected:
   virtual void ExecOnce();
 
   /**
-   * Performing run-dependent initializations. This function is useful
-   * i.e. to load parameters from the OCDB/OADB
+   * @brief Run-dependent setup of the task
+   *
+   * Performing run-dependent initializations. Function is called each time the run number
+   * of the current event differs to the run number of the previous event. This function is
+   * useful i.e. to load parameters from the OCDB/OADB
    */
   virtual void RunChanged();
 
   /**
-   * Calculate transverse L1 time sum of a FastOR.
+   * @brief Calculate transverse L1 time sum of a FastOR.
    * @param fastorAbsID FastOR absolute ID (for position calculation)
    * @param adc FastOR ADC
    * @param vtx Position of the primary vertex
    * @return Transverse L1 time sum
    */
   Double_t GetTransverseTimeSum(Int_t fastorAbsID, Double_t adc, const Double_t *vtx) const;
+
+  /**
+   * @brief Load event-dependent cell data
+   *
+   * For easier processing EMCAL cell data is loaded into a trigger
+   * data grid with the fastor granularity. Energy of the cells belonging
+   * to the same fastor is summed. The data grid is allocated for with
+   * the proper size once the first event is processed.
+   */
+  void LoadEventCellData();
 
   THistManager                            *fHistos;           //!<! Histogram handler
   AliEMCALGeometry                        *fGeom;             //!<! EMCAL Geometry object
@@ -117,6 +137,7 @@ protected:
   ULong_t                                 fRequestTrigger;    ///< Trigger selection bits
   TString                                 fTriggerPattern;    ///< Trigger string pattern used in addition to the trigger selection bits
 
+  AliEMCALTriggerDataGrid<double>         fCellData;          ///< Grid with summed cell data
   std::vector<int>                        fMaskedFastors;     ///< List of masked fastors
 
   /// \cond CLASSIMP
