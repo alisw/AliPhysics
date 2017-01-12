@@ -45,6 +45,7 @@ class AliFJWrapper;
 class THashList;
 class TTree;
 class AliEMCALGeometry;
+class TRandom;
 
 #include <list>
 #include <vector>
@@ -407,8 +408,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     TTree* GetTree() const { return fTree; }
     Bool_t FillTree(Bool_t applyKinCuts);
 
-    void AssignDataSlot(Int_t n) { fDataSlotNumber = n; }
-    Int_t GetDataSlotNumber() const { return fDataSlotNumber; }
+    void SetTrackEfficiency(Double_t t)      { fTrackEfficiency       = t; }
+    void AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
+    Int_t GetDataSlotNumber() const          { return fDataSlotNumber    ; }
 
     void BuildHnSparse(UInt_t enabledAxis);
     Bool_t FillHnSparse(Bool_t applyKinCuts);
@@ -452,6 +454,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     std::vector<AliHFJetDefinition>    fJetDefinitions        ; ///<  Jet definitions
     Float_t                            fPtBinWidth            ; ///<  Histogram pt bin width
     Float_t                            fMaxPt                 ; ///<  Histogram pt limit
+    TRandom                           *fRandomGen             ; //!<! Random number generator
+    Double_t                           fTrackEfficiency       ; //!<! Artificial tracking inefficiency (0...1) -> set automatically at ExecOnce by AliAnalysisTaskDmesonJets
     Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
     TTree                             *fTree                  ; //!<! Output tree
     AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
@@ -469,7 +473,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   private:
 
-    void                AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist=0);
+    void                AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist=0, Double_t eff=0.);
     void                SetCandidateProperties(Double_t range);
     AliAODMCParticle*   MatchToMC() const;
     void                RunDetectorLevelAnalysis();
@@ -505,6 +509,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   void SetApplyKinematicCuts(Bool_t b)            { fApplyKinematicCuts = b ; }
   void SetOutputType(EOutputType_t b)             { SetOutputTypeInternal(b); }
+  void SetTrackEfficiency(Double_t t)             { fTrackEfficiency    = t ; }
 
   virtual void         UserCreateOutputObjects();
   virtual void         ExecOnce();
@@ -533,6 +538,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   THistManager         fHistManager               ; ///<  Histogram manager
   Bool_t               fApplyKinematicCuts        ; ///<  Apply jet kinematic cuts
   Int_t                fNOutputTrees              ; ///<  Maximum number of output trees
+  Double_t             fTrackEfficiency           ; ///<  Artificial tracking inefficiency (0...1)
   AliAODEvent         *fAodEvent                  ; //!<! AOD event
   AliFJWrapper        *fFastJetWrapper            ; //!<! Fastjet wrapper
   AliHFAODMCParticleContainer
@@ -544,7 +550,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   AliAnalysisTaskDmesonJets& operator=(const AliAnalysisTaskDmesonJets& source);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonJets, 6);
+  ClassDef(AliAnalysisTaskDmesonJets, 7);
   /// \endcond
 };
 

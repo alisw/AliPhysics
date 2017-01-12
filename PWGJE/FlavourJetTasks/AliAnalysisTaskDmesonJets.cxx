@@ -23,6 +23,7 @@
 #include <TMath.h>
 #include <THashList.h>
 #include <TFile.h>
+#include <TRandom3.h>
 
 // Aliroot general
 #include "AliLog.h"
@@ -671,6 +672,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fRandomGen(0),
+  fTrackEfficiency(0),
   fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
@@ -713,6 +716,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fRandomGen(0),
+  fTrackEfficiency(0),
   fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
@@ -752,6 +757,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fJetDefinitions(source.fJetDefinitions),
   fPtBinWidth(source.fPtBinWidth),
   fMaxPt(source.fMaxPt),
+  fRandomGen(source.fRandomGen),
+  fTrackEfficiency(source.fTrackEfficiency),
   fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
@@ -1469,7 +1476,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
   if (fTrackContainer && jetDef.fJetType != AliJetContainer::kNeutralJet) {
     fTrackContainer->SetDMesonCandidate(Dcand);
     hname = TString::Format("%s/%s/fHistTrackRejectionReason", GetName(), jetDef.GetName());
-    AddInputVectors(fTrackContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)));
+    AddInputVectors(fTrackContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)), fTrackEfficiency);
 
     hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", GetName(), jetDef.GetName());
     TH1* histDaughterNotInJet = static_cast<TH1*>(fHistManager->FindObject(hname));
@@ -1529,7 +1536,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
 /// Adds all the particles contained in the container into the fastjet wrapper
 ///
 /// \param cont Pointer to a valid AliEmcalContainer object
-void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist)
+void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist, Double_t eff)
 {
   auto itcont = cont->all_momentum();
   for (AliEmcalIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
@@ -1537,6 +1544,13 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContaine
     if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
       if (rejectHist) rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
+    }
+    if (fRandomGen) {
+      Double_t rnd = fRandomGen->Rndm();
+      if (eff < rnd) {
+        if (rejectHist) rejectHist->Fill(6, it->first.Pt());
+        continue;
+      }
     }
     Int_t uid = offset >= 0 ? it.current_index() + offset: -it.current_index() - offset;
     fFastJetWrapper->AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
@@ -2120,6 +2134,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
   fHistManager(),
   fApplyKinematicCuts(kTRUE),
   fNOutputTrees(0),
+  fTrackEfficiency(0),
   fAodEvent(0),
   fFastJetWrapper(0),
   fMCContainer(0)
@@ -2138,6 +2153,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name, Int_t nOu
   fHistManager(name),
   fApplyKinematicCuts(kTRUE),
   fNOutputTrees(nOutputTrees),
+  fTrackEfficiency(0),
   fAodEvent(0),
   fFastJetWrapper(0),
   fMCContainer(0)
@@ -2496,10 +2512,16 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
   fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(0));
   if (!fMCContainer) fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(1));
 
+  TRandom* rnd = 0;
+  if (fTrackEfficiency > 0 && fTrackEfficiency < 1) rnd = new TRandom3(0);
+
   for (auto &params : fAnalysisEngines) {
 
     params.fAodEvent = fAodEvent;
     params.fFastJetWrapper = fFastJetWrapper;
+    params.fTrackEfficiency = fTrackEfficiency;
+    params.fRandomGen = rnd;
+
     if (fAodEvent) params.Init(fGeom, fAodEvent->GetRunNumber());
 
     if (params.fMCMode != kMCTruth && fAodEvent) {
