@@ -419,7 +419,7 @@ public:
     if      ( nGen > 5 ) fNMCGenerToAccept = 5 ; 
     else if ( nGen < 0 ) fNMCGenerToAccept = 0 ; }
   
-  TString  GetNameOfMCGeneratorsToAccept(Int_t ig, TString name) const 
+  TString  GetNameOfMCGeneratorsToAccept(Int_t ig) const 
   { if (ig < fNMCGenerToAccept && ig > 0 && ig < 5 ) return fMCGenerToAccept[ig] ; 
     else return "" ; }
   void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }
