@@ -1462,6 +1462,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Int_t lPDGCodeXiMother = 0;
             Float_t lBaryonMomentum = -0.5;
             
+            //========================================================================
+            //Setting up: Variable V0 CosPA
+            Float_t lV0CosPACut = lV0Result -> GetCutV0CosPA();
+            Float_t lVarV0CosPApar[5];
+            lVarV0CosPApar[0] = lV0Result->GetCutVarV0CosPAExp0Const();
+            lVarV0CosPApar[1] = lV0Result->GetCutVarV0CosPAExp0Slope();
+            lVarV0CosPApar[2] = lV0Result->GetCutVarV0CosPAExp1Const();
+            lVarV0CosPApar[3] = lV0Result->GetCutVarV0CosPAExp1Slope();
+            lVarV0CosPApar[4] = lV0Result->GetCutVarV0CosPAConst();
+            Float_t lVarV0CosPA = TMath::Cos(
+                                             lVarV0CosPApar[0]*TMath::Exp(lVarV0CosPApar[1]*fTreeVariablePt) +
+                                             lVarV0CosPApar[2]*TMath::Exp(lVarV0CosPApar[3]*fTreeVariablePt) +
+                                             lVarV0CosPApar[4]);
+            if( lV0Result->GetCutUseVarV0CosPA() ){
+                //Only use if tighter than the non-variable cut
+                if( lVarV0CosPA > lV0CosPACut ) lV0CosPACut = lVarV0CosPA;
+            }
+            //========================================================================
+            
             if ( lV0Result->GetMassHypothesis() == AliV0Result::kK0Short     ){
                 lMass    = fTreeVariableInvMassK0s;
                 lRap     = fTreeVariableRapK0Short;
@@ -1510,7 +1529,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 fTreeVariableDcaNegToPrimVertex > lV0Result->GetCutDCANegToPV() &&
                 fTreeVariableDcaPosToPrimVertex > lV0Result->GetCutDCAPosToPV() &&
                 fTreeVariableDcaV0Daughters < lV0Result->GetCutDCAV0Daughters() &&
-                fTreeVariableV0CosineOfPointingAngle > lV0Result->GetCutV0CosPA() &&
+                fTreeVariableV0CosineOfPointingAngle > lV0CosPACut &&
                 fTreeVariableDistOverTotMom*lPDGMass < lV0Result->GetCutProperLifetime() &&
                 fTreeVariableLeastNbrCrossedRows > lV0Result->GetCutLeastNumberOfCrossedRows() &&
                 fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
