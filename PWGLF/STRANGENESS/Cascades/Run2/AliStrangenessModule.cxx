@@ -567,9 +567,9 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     
     if ( lOption.Contains("bincounting") ){
         //Check if possible
-        if( lLoLeftBg+lHiRightBg > 1e-6 ||
-           lLoRightBg+lLoRightBg > 1e-6 ||
-           lLoPeak + lHiPeak > 1e-6 ){
+        if( lLoLeftBg + lHiRightBg > 1e-6 ||
+            lHiLeftBg + lLoRightBg > 1e-6 ||
+            lLoPeak   + lHiPeak    > 1e-6 ){
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
             AliWarning(" Cannot perform bin counting with asymmetric peak and bg regions!");
             AliWarning("   In this case, please prefer the \'linear\' sig. ext. option");
@@ -579,9 +579,7 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
             lSignalErr = 0.0;
             return kFALSE;
         }
-        
 
-        
         //Sum up yields in corresponding bins
         for( Long_t ibin=lBinLeftBgLo; ibin<lBinLeftBgHi+1; ibin++)
             lBgEstimate += lHisto->GetBinContent(ibin);
