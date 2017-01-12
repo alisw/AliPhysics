@@ -854,7 +854,7 @@ void AliAnalysisTaskCheckCascadepp::UserCreateOutputObjects() {
 	// Container meant to store all the relevant distributions corresponding to the cut variables.
         // NB: overflow/underflow of variables on which we want to cut later should be 0!!! 
    const Int_t  lNbSteps      =  4 ;
-   const Int_t  lNbVariables  =  19 ;
+   const Int_t  lNbVariables  =  20 ;
      //Array for the number of bins in each dimension :
    Int_t lNbBinsPerVar[lNbVariables] = {0};
    lNbBinsPerVar[0]  = 25;     //DcaCascDaughters             :  [0.0,2.5]           -> Rec.Cut = 2.0;
@@ -876,6 +876,7 @@ void AliAnalysisTaskCheckCascadepp::UserCreateOutputObjects() {
    lNbBinsPerVar[16] = 112;    //Proper lenght of cascade       
    lNbBinsPerVar[17] = 112;    //Proper lenght of V0
    lNbBinsPerVar[18] = 112;    //Distance V0-Xi in transverse plane
+   lNbBinsPerVar[19] = 26;     //Proton cascade daughter momentum
    fCFContCascadeCuts = new AliCFContainer(cfcontname_casccuts,"Container for Cascade cuts", lNbSteps, lNbVariables, lNbBinsPerVar);
      //Setting the bin limits 
      //0 -  DcaXiDaughters
@@ -948,6 +949,12 @@ void AliAnalysisTaskCheckCascadepp::UserCreateOutputObjects() {
    fCFContCascadeCuts->SetBinLimits(17, lBinLim16);
      //18 - Distance V0-Xi in transverse plane
    fCFContCascadeCuts->SetBinLimits(18, lBinLim16);
+     //19 - (Anti-)Proton cascade daughter momentum
+   Double_t *lBinLim19  = new Double_t[ lNbBinsPerVar[19]+1 ];
+        for(Int_t i=0; i< lNbBinsPerVar[19];i++)   lBinLim19[i] = (Double_t)0.0 + (0.5-0.0)/(lNbBinsPerVar[19]-1) * (Double_t)i;
+        lBinLim19[ lNbBinsPerVar[19]  ] = 50.0;
+   fCFContCascadeCuts->SetBinLimits(19, lBinLim19);
+   delete [] lBinLim19;
      // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
    fCFContCascadeCuts->SetStepTitle(0, "#Xi^{-} candidates");
    fCFContCascadeCuts->SetStepTitle(1, "#bar{#Xi}^{+} candidates");
@@ -974,6 +981,7 @@ void AliAnalysisTaskCheckCascadepp::UserCreateOutputObjects() {
    fCFContCascadeCuts->SetVarTitle(16, "mL/p (cascade) (cm)");
    fCFContCascadeCuts->SetVarTitle(17, "mL/p (V0) (cm)");
    fCFContCascadeCuts->SetVarTitle(18, "Distance V0-Cascade in transverse plane (cm)");
+   fCFContCascadeCuts->SetVarTitle(19, "(Anti-)Proton casc. daught. momemtum (GeV/c)");
  }
 
  PostData(1, fListHistCascade);
@@ -2164,7 +2172,7 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
         	
     //--------------------------------------------------------------------
     // Filling the AliCFContainer (optimisation of topological selections)
-    Double_t lContainerCutVars[19] = {0.0};
+    Double_t lContainerCutVars[20] = {0.0};
                         
     lContainerCutVars[0]  = lDcaXiDaughters;
     lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
@@ -2182,28 +2190,31 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
     lContainerCutVars[16] = lctau;
     lContainerCutVars[17] = lctauV0;
     lContainerCutVars[18] = distTV0Xi;
- 
     if ( lChargeXi < 0 ) {
          lContainerCutVars[11] = lInvMassXiMinus;
          lContainerCutVars[12] = lInvMassOmegaMinus;
          lContainerCutVars[14] = lRapXi;
          lContainerCutVars[15] = -1.;
+         lContainerCutVars[19] = TMath::Abs(lInnerWallMomCascDghters[0]);
          if (lIsBachelorPionForTPC && lIsPosProtonForTPC && lIsNegPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,0); // for Xi-
          lContainerCutVars[11] = lInvMassXiMinus;
          lContainerCutVars[12] = lInvMassOmegaMinus;
          lContainerCutVars[14] = -1.;
          lContainerCutVars[15] = lRapOmega;
+         lContainerCutVars[19] = TMath::Abs(lInnerWallMomCascDghters[0]); 
          if (lIsBachelorKaonForTPC && lIsPosProtonForTPC && lIsNegPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,2); // for Omega-
     } else {
          lContainerCutVars[11] = lInvMassXiPlus;
          lContainerCutVars[12] = lInvMassOmegaPlus; 
          lContainerCutVars[14] = lRapXi;
          lContainerCutVars[15] = -1.; 
+         lContainerCutVars[19] = TMath::Abs(lInnerWallMomCascDghters[1]);
          if (lIsBachelorPionForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,1); // for Xi+
          lContainerCutVars[11] = lInvMassXiPlus;
          lContainerCutVars[12] = lInvMassOmegaPlus;
          lContainerCutVars[14] = -1.;
          lContainerCutVars[15] = lRapOmega;
+         lContainerCutVars[19] = TMath::Abs(lInnerWallMomCascDghters[1]);
          if (lIsBachelorKaonForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) fCFContCascadeCuts->Fill(lContainerCutVars,3); // for Omega+ 
     }                 
   } //end of the Cascade loop (ESD or AOD)
