@@ -78,7 +78,7 @@ AliAnalysisTask *AddTask_oton_TTree_16l(Int_t reducedEventType=-1, Bool_t writeT
   // Alternatively, you can define the inactive branches of the tree, all other branches will be set to active
   task->SetTreeInactiveBranch("fUniqueID");
   task->SetTreeInactiveBranch("fBits");
-  //task->SetTreeInactiveBranch("fEventTag");
+  task->SetTreeInactiveBranch("fEventTag");
   task->SetTreeInactiveBranch("fNVtxContributors");
   task->SetTreeInactiveBranch("fCentQuality");
   task->SetTreeInactiveBranch("fNV0candidates*");
@@ -86,7 +86,7 @@ AliAnalysisTask *AddTask_oton_TTree_16l(Int_t reducedEventType=-1, Bool_t writeT
   task->SetTreeInactiveBranch("fTracks.fBits");
   task->SetTreeInactiveBranch("fTracks.fIsCartesian");
   task->SetTreeInactiveBranch("fTracks.fFlags");
-  task->SetTreeInactiveBranch("fTracks.fQualityFlags");
+  //task->SetTreeInactiveBranch("fTracks.fQualityFlags");
   task->SetTreeInactiveBranch("fTracks.fTrackId");
   task->SetTreeInactiveBranch("fTracks.fStatus");
   task->SetTreeInactiveBranch("fTracks.fTPCPhi");
@@ -227,33 +227,33 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
 
     // TPC
     trackCuts->SetRequireTPCRefit(kTRUE);
-    //trackCuts->SetMinNCrossedRowsTPC(100);
-     trackCuts->SetMinNCrossedRowsTPC(80);
-    //trackCuts->SetMinNClustersTPC(80);
-     trackCuts->SetMinNClustersTPC(60);
-    //trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-     trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
-    //trackCuts->SetMaxChi2PerClusterTPC(4.);
-     trackCuts->SetMaxChi2PerClusterTPC(6.);
-    //trackCuts->SetMaxFractionSharedTPCClusters(0.4);
-     trackCuts->SetMaxFractionSharedTPCClusters(1.0);
+    trackCuts->SetMinNCrossedRowsTPC(100);
+    // trackCuts->SetMinNCrossedRowsTPC(80);
+    trackCuts->SetMinNClustersTPC(80);
+    // trackCuts->SetMinNClustersTPC(60);
+    trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    // trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
+    trackCuts->SetMaxChi2PerClusterTPC(4.);
+    // trackCuts->SetMaxChi2PerClusterTPC(6.);
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    // trackCuts->SetMaxFractionSharedTPCClusters(1.0);
 
     // ITS
     trackCuts->SetRequireITSRefit(kTRUE);
-    //trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
+    //trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
     trackCuts->SetMinNClustersITS(3);
-    //trackCuts->SetMaxChi2PerClusterITS(4.5);
-     trackCuts->SetMaxChi2PerClusterITS(10.);
+    trackCuts->SetMaxChi2PerClusterITS(4.5);
+    // trackCuts->SetMaxChi2PerClusterITS(10.);
 
     // primary selection
     trackCuts->SetAcceptKinkDaughters(kFALSE);
     trackCuts->SetDCAToVertex2D(kFALSE);
     trackCuts->SetRequireSigmaToVertex(kFALSE);
-    //trackCuts->SetMaxDCAToVertexZ(3.0);
-     trackCuts->SetMaxDCAToVertexZ(5.0);
-    //trackCuts->SetMaxDCAToVertexXY(1.0);
-     trackCuts->SetMaxDCAToVertexXY(2.0);
+    trackCuts->SetMaxDCAToVertexZ(3.0);
+    // trackCuts->SetMaxDCAToVertexZ(5.0);
+    trackCuts->SetMaxDCAToVertexXY(1.0);
+    // trackCuts->SetMaxDCAToVertexXY(2.0);
 
     cuts->AddCut(trackCuts);
  
@@ -263,15 +263,15 @@ AliAnalysisCuts* CreateGlobalTrackFilter(Bool_t isAOD) {
   AliDielectronPID *pid = new AliDielectronPID();
 
     //TPC
-    //pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.,3., 0.0,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-      pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -4.,4., 0.0,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-    //pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,  -100. ,4., 0.0,1e30, kTRUE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
-      pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,  -100. ,3., 0.0,1e30, kTRUE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -3.,3., 0.0,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+    //  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -4.,4., 0.0,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+    pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,  -100. ,4., 0.0,1e30, kTRUE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
+    //  pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,  -100. ,3., 0.0,1e30, kTRUE,AliDielectronPID::kRequire,AliDielectronVarManager::kPt);
 
     //TOF
-    //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.,3., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
+    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.,3., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
     //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kRequire,AliDielectronVarManager::kP);
-    pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kP);
+    //pid->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -4.,4., 0.4,1e30, kFALSE,AliDielectronPID::kIfAvailable,AliDielectronVarManager::kP);
 
     cuts->AddCut(pid);
 
