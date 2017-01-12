@@ -1545,7 +1545,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContaine
       if (rejectHist) rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
     }
-    if (fRandomGen) {
+    if (fRandomGen && eff > 0 && eff < 1) {
       Double_t rnd = fRandomGen->Rndm();
       if (eff < rnd) {
         if (rejectHist) rejectHist->Fill(6, it->first.Pt());
