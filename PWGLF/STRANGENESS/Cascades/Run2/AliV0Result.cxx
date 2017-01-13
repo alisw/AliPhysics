@@ -22,8 +22,6 @@ fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
 fCutV0CosPA(0.998),
 fCutProperLifetime(10),
-fCutLeastNumberOfCrossedRows(70),
-fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
@@ -33,6 +31,10 @@ fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfCrossedRows(70),
+fCutLeastNumberOfCrossedRowsOverFindable(0.8),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
 fHistoFeeddown(0),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
@@ -58,8 +60,6 @@ fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
 fCutV0CosPA(0.998),
 fCutProperLifetime(10),
-fCutLeastNumberOfCrossedRows(70),
-fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
@@ -69,6 +69,10 @@ fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfCrossedRows(70),
+fCutLeastNumberOfCrossedRowsOverFindable(0.8),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
 fHistoFeeddown(0), //do not initialize by default
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
@@ -101,8 +105,6 @@ fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
 fCutV0CosPA(0.998),
 fCutProperLifetime(10),
-fCutLeastNumberOfCrossedRows(70),
-fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
@@ -112,6 +114,10 @@ fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfCrossedRows(70),
+fCutLeastNumberOfCrossedRowsOverFindable(0.8),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
 fHistoFeeddown(0), //do not initialize by default
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
@@ -149,8 +155,6 @@ fCutDCAPosToPV(lCopyMe.fCutDCAPosToPV),
 fCutDCAV0Daughters(lCopyMe.fCutDCAV0Daughters),
 fCutV0CosPA(lCopyMe.fCutV0CosPA),
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
-fCutLeastNumberOfCrossedRows(lCopyMe.fCutLeastNumberOfCrossedRows),
-fCutLeastNumberOfCrossedRowsOverFindable(lCopyMe.fCutLeastNumberOfCrossedRowsOverFindable),
 fCutCompetingV0Rejection(lCopyMe.fCutCompetingV0Rejection),
 fCutArmenteros(lCopyMe.fCutArmenteros),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
@@ -158,7 +162,13 @@ fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
 fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties),
+
 fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
+fCutLeastNumberOfCrossedRows(lCopyMe.fCutLeastNumberOfCrossedRows),
+fCutLeastNumberOfCrossedRowsOverFindable(lCopyMe.fCutLeastNumberOfCrossedRowsOverFindable),
+fCutMinEtaTracks(lCopyMe.fCutMinEtaTracks),
+fCutMaxEtaTracks(lCopyMe.fCutMaxEtaTracks),
+
 fCutUseVariableV0CosPA(lCopyMe.fCutUseVariableV0CosPA),
 fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
 fCutVarV0CosPA_Exp0Slope(lCopyMe.fCutVarV0CosPA_Exp0Slope),
@@ -211,6 +221,8 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
     fCutLeastNumberOfCrossedRows = lCopyMe->GetCutLeastNumberOfCrossedRows();
     fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe->GetCutLeastNumberOfCrossedRowsOverFindable();
+    fCutMinEtaTracks = lCopyMe -> GetCutMinEtaTracks();
+    fCutMaxEtaTracks = lCopyMe -> GetCutMaxEtaTracks();
     
     //Variable V0CosPA
     fCutUseVariableV0CosPA = lCopyMe -> GetCutUseVarV0CosPA();
@@ -274,6 +286,8 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
     fCutLeastNumberOfCrossedRows = lCopyMe.GetCutLeastNumberOfCrossedRows();
     fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe.GetCutLeastNumberOfCrossedRowsOverFindable();
+    fCutMinEtaTracks = lCopyMe.GetCutMinEtaTracks();
+    fCutMaxEtaTracks = lCopyMe.GetCutMaxEtaTracks();
     
     //Variable V0CosPA
     fCutUseVariableV0CosPA = lCopyMe.GetCutUseVarV0CosPA();
@@ -357,8 +371,7 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( TMath::Abs( fCutV0Radius - lCompareV0->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutProperLifetime - lCompareV0->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompareV0->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfCrossedRowsOverFindable - lCompareV0->GetCutLeastNumberOfCrossedRowsOverFindable() ) > 1e-6 ) lReturnValue = kFALSE;
+
     //if( fCutCompetingV0Rejection != lCompareV0->GetCutCompetingV0Rejection() ) lReturnValue = kFALSE;
     if( fCutArmenteros != lCompareV0->GetCutArmenteros() ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompareV0->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
@@ -366,6 +379,10 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     
     //Use ITS refit tracks
     if( TMath::Abs( fCutUseITSRefitTracks - lCompareV0->GetCutUseITSRefitTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompareV0->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRowsOverFindable - lCompareV0->GetCutLeastNumberOfCrossedRowsOverFindable() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinEtaTracks - lCompareV0->GetCutMinEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxEtaTracks - lCompareV0->GetCutMaxEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //Variable V0CosPA
     if ( TMath::Abs(fCutUseVariableV0CosPA - lCompareV0->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;
@@ -407,8 +424,6 @@ void AliV0Result::Print()
     cout<<" V0 2D Radius.......: "<<fCutV0Radius<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
-    cout<<" Nbr Crossed Rows...: "<<fCutLeastNumberOfCrossedRows<<endl;
-    cout<<" Nbr Crsd Rows / Fdb: "<<fCutLeastNumberOfCrossedRowsOverFindable<<endl;
     cout<<" Armenteros (for K0): "<<fCutArmenteros<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Min baryon momentum: "<<fCutMinBaryonMomentum<<endl;
@@ -418,6 +433,10 @@ void AliV0Result::Print()
     cout<<" Lambda from Xi.....: "<<fCutMCLambdaFromPrimaryXi<<endl;
     cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
     cout<<" Use ITSref tracks..: "<<fCutUseITSRefitTracks<<endl;
+    cout<<" Nbr Crossed Rows...: "<<fCutLeastNumberOfCrossedRows<<endl;
+    cout<<" Nbr Crsd Rows / Fdb: "<<fCutLeastNumberOfCrossedRowsOverFindable<<endl;
+    cout<<" Min track eta......: "<<fCutMinEtaTracks<<endl;
+    cout<<" Max track eta......: "<<fCutMaxEtaTracks<<endl;
     cout<<"========================================"<<endl;
     return;
 }

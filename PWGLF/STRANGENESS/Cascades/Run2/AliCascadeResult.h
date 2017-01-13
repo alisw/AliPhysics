@@ -61,7 +61,6 @@ public:
     
     //Miscellaneous
     void SetCutProperLifetime        ( Double_t lCut ) { fCutProperLifetime        = lCut; }
-    void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
     void SetCutTPCdEdx               ( Double_t lCut ) { fCutTPCdEdx               = lCut; }
     void SetCutXiRejection           ( Double_t lCut ) { fCutXiRejection           = lCut; }
     
@@ -73,6 +72,9 @@ public:
     
     //Track Quality
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
+    void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
+    void SetCutMinEtaTracks ( Double_t lCut ) { fCutMinEtaTracks = lCut; }
+    void SetCutMaxEtaTracks ( Double_t lCut ) { fCutMaxEtaTracks = lCut; }
     
     //Variable CascCosPA
     void SetCutUseVarCascCosPA      ( Bool_t lCut )   { fCutUseVariableCascCosPA     = lCut; }
@@ -131,7 +133,6 @@ public:
     
     //Miscellaneous
     Double_t GetCutProperLifetime () const { return fCutProperLifetime; }
-    Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutTPCdEdx () const { return fCutTPCdEdx; }
     Double_t GetCutXiRejection () const { return fCutXiRejection; }
     
@@ -142,6 +143,9 @@ public:
     
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
+    Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
+    Double_t GetCutMinEtaTracks () const { return fCutMinEtaTracks; }
+    Double_t GetCutMaxEtaTracks () const { return fCutMaxEtaTracks; }
     
     //Variable CascCosPA
     Bool_t GetCutUseVarCascCosPA        () const { return fCutUseVariableCascCosPA;   }
@@ -195,7 +199,6 @@ private:
     Double_t fCutMaxV0Lifetime; //max V0 lifetime (cm/c)
     
     Double_t fCutProperLifetime;
-    Double_t fCutLeastNumberOfClusters;
     Double_t fCutTPCdEdx;
     Double_t fCutXiRejection; //Xi rejection (for omega analysis only!)
     
@@ -203,7 +206,12 @@ private:
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
     Bool_t fCutMCUseMCProperties; //Use true MC pT, y
     Bool_t fCutMCSelectBump; //select bachelor and baryon from a single lambda decay
+    
+    //Track selections
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
+    Double_t fCutLeastNumberOfClusters; //min number of TPC clusters
+    Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
+    Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
     
     //Experimental: pt-variable cascade cosPA
     //Warning: if this cut is tighter than fCutCascCosPA, this gets used instead!
@@ -225,7 +233,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 16)
+    ClassDef(AliCascadeResult, 17)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -242,5 +250,6 @@ private:
     // 14 - Addition of GetMass + inherit from AliVWeakResult
     // 15 - Adjustments for gen-purpose functionality
     // 16 - Addition of ITSrefit track requirement for cross-checks
+    // 17 - Addition of eta window selection
 };
 #endif

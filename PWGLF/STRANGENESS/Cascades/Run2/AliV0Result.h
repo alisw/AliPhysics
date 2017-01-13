@@ -45,8 +45,7 @@ public:
     void SetCutDCAV0Daughters ( Double_t lCut ) { fCutDCAV0Daughters   = lCut; }
     void SetCutV0CosPA        ( Double_t lCut ) { fCutV0CosPA          = lCut; }
     void SetCutProperLifetime    ( Double_t lCut ) { fCutProperLifetime   = lCut; }
-    void SetCutLeastNumberOfCrossedRows             ( Double_t lCut ) { fCutLeastNumberOfCrossedRows = lCut; }
-    void SetCutLeastNumberOfCrossedRowsOverFindable ( Double_t lCut ) { fCutLeastNumberOfCrossedRowsOverFindable = lCut; }
+    
     void SetCutCompetingV0Rejection ( Double_t lCut ) { fCutCompetingV0Rejection   = lCut; }
     void SetCutArmenteros           ( Bool_t lCut   ) { fCutArmenteros        = lCut; }
     void SetCutTPCdEdx              ( Double_t lCut ) { fCutTPCdEdx           = lCut; }
@@ -60,6 +59,10 @@ public:
     
     //Track Quality
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
+    void SetCutLeastNumberOfCrossedRows             ( Double_t lCut ) { fCutLeastNumberOfCrossedRows = lCut; }
+    void SetCutLeastNumberOfCrossedRowsOverFindable ( Double_t lCut ) { fCutLeastNumberOfCrossedRowsOverFindable = lCut; }
+    void SetCutMinEtaTracks ( Double_t lCut ) { fCutMinEtaTracks = lCut; }
+    void SetCutMaxEtaTracks ( Double_t lCut ) { fCutMaxEtaTracks = lCut; }
     
     //Variable V0CosPA
     void SetCutUseVarV0CosPA      ( Bool_t lCut )   { fCutUseVariableV0CosPA     = lCut; }
@@ -92,8 +95,7 @@ public:
     Double_t GetCutDCAV0Daughters () const { return fCutDCAV0Daughters; }
     Double_t GetCutV0CosPA        () const { return fCutV0CosPA; }
     Double_t GetCutProperLifetime () const { return fCutProperLifetime; }
-    Double_t GetCutLeastNumberOfCrossedRows             () const { return fCutLeastNumberOfCrossedRows; }
-    Double_t GetCutLeastNumberOfCrossedRowsOverFindable () const { return fCutLeastNumberOfCrossedRowsOverFindable; }
+
     Double_t GetCutCompetingV0Rejection () const { return fCutCompetingV0Rejection; }
     Bool_t   GetCutArmenteros           () const { return fCutArmenteros; }
     Double_t GetCutTPCdEdx              () const { return fCutTPCdEdx; }
@@ -106,6 +108,10 @@ public:
     
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
+    Double_t GetCutLeastNumberOfCrossedRows             () const { return fCutLeastNumberOfCrossedRows; }
+    Double_t GetCutLeastNumberOfCrossedRowsOverFindable () const { return fCutLeastNumberOfCrossedRowsOverFindable; }
+    Double_t GetCutMinEtaTracks () const { return fCutMinEtaTracks; }
+    Double_t GetCutMaxEtaTracks () const { return fCutMaxEtaTracks; }
     
     //Variable V0CosPA
     Bool_t GetCutUseVarV0CosPA        () const { return fCutUseVariableV0CosPA;   }
@@ -134,8 +140,6 @@ private:
     Double_t fCutDCAV0Daughters;
     Double_t fCutV0CosPA;
     Double_t fCutProperLifetime;
-    Double_t fCutLeastNumberOfCrossedRows;
-    Double_t fCutLeastNumberOfCrossedRowsOverFindable;
     Double_t fCutCompetingV0Rejection;
     Bool_t fCutArmenteros;
     Double_t fCutTPCdEdx;
@@ -146,7 +150,12 @@ private:
     Bool_t fCutMCPDGCodeAssociation; //Associate with correct PDG code
     Bool_t fCutMCUseMCProperties; //Use true MC pT, y
 
+    //Track selections
+    Double_t fCutLeastNumberOfCrossedRows;
+    Double_t fCutLeastNumberOfCrossedRowsOverFindable;
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
+    Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
+    Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
     
     //Experimental: pt-variable V0 cosPA
     //Warning: if this cut is tighter than fCutV0CosPA, this gets used instead!
@@ -160,7 +169,7 @@ private:
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 11)
+    ClassDef(AliV0Result, 12)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -172,5 +181,6 @@ private:
     // 9 - Addition of GetMass + inherit from AliVWeakResult
     //10 - Adjustments for gen-purpose functionality
     //11 - Addition of variable CosPA, ITSrefit requirement
+    //12 - Addition of eta window selection
 };
 #endif

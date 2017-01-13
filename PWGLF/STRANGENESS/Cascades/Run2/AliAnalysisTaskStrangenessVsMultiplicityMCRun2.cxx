@@ -1520,8 +1520,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 lOnFlyStatus == 0 &&
                 
                 //Check 2: Basic Acceptance cuts
-                TMath::Abs(fTreeVariableNegEta)<0.8 &&
-                TMath::Abs(fTreeVariablePosEta)<0.8 &&
+                lV0Result->GetCutMinEtaTracks() < fTreeVariableNegEta && fTreeVariableNegEta < lV0Result->GetCutMaxEtaTracks() &&
+                lV0Result->GetCutMinEtaTracks() < fTreeVariablePosEta && fTreeVariablePosEta < lV0Result->GetCutMaxEtaTracks() &&
                 TMath::Abs(lRap) < 0.5 &&
                 
                 //Check 3: Topological Variables
@@ -2547,9 +2547,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 fTreeCascVarCharge == lCharge &&
                 
                 //Check 2: Basic Acceptance cuts
-                TMath::Abs(fTreeCascVarPosEta)<0.8 &&
-                TMath::Abs(fTreeCascVarNegEta)<0.8 &&
-                TMath::Abs(fTreeCascVarBachEta)<0.8 &&
+                lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarPosEta && fTreeCascVarPosEta < lCascadeResult->GetCutMaxEtaTracks() &&
+                lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarNegEta && fTreeCascVarNegEta < lCascadeResult->GetCutMaxEtaTracks() &&
+                lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarBachEta && fTreeCascVarBachEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 TMath::Abs(lRap) < 0.5 &&
                 
                 //Check 3: Topological Variables
