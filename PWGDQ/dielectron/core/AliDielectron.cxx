@@ -154,6 +154,7 @@ AliDielectron::AliDielectron() :
   fStoreRotatedPairs(kFALSE),
   fDontClearArrays(kFALSE),
   fEventProcess(kTRUE),
+  fUseGammaTracks(kTRUE),
   fEstimatorFilename(""),
   fEstimatorObjArray(0x0),
   fTRDpidCorrectionFilename(""),
@@ -225,6 +226,7 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fStoreRotatedPairs(kFALSE),
   fDontClearArrays(kFALSE),
   fEventProcess(kTRUE),
+  fUseGammaTracks(kTRUE),
   fEstimatorFilename(""),
   fEstimatorObjArray(0x0),
   fTRDpidCorrectionFilename(""),
@@ -1406,7 +1408,7 @@ void AliDielectron::FillPairArrays(Int_t arr1, Int_t arr2, const AliVEvent *ev)
 
       // check for gamma kf particle
       label=AliDielectronMC::Instance()->GetLabelMotherWithPdg(candidate,22);
-      if (label>-1) {
+      if (label>-1 && fUseGammaTracks) {
         candidate->SetGammaTracks(static_cast<AliVTrack*>(arrTracks1.UncheckedAt(itrack1)), fPdgLeg1,
                                   static_cast<AliVTrack*>(arrTracks2.UncheckedAt(itrack2)), fPdgLeg2);
       // should we set the pdgmothercode and the label
