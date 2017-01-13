@@ -67,7 +67,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput };
   enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
-  enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth };
+  enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth, kWrongPID };
   enum EMesonOrigin_t {
     kUnknownQuark = BIT(0),
     kFromDown     = BIT(1),
