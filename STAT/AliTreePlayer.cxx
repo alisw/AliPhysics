@@ -360,14 +360,8 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
   // for the moment not all parameters used
   // Example usage:
   /*
-     AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
-
-   */
-  /* Check from command line:
-    Int_t firstentry=0;
-    Int_t nentries=10;
-    TString what="run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements";
-    TString where="1";
+    AliTreePlayer::selectWhatWhereOrderBy(treeTPC,"run:Logbook.run:meanMIP:meanMIPele:meanMIPvsSector.fElements:fitMIP.fElements","meanMIP>0", "", 0,10,"html","qatpc.html");
+    
   */
   if (tree==NULL || tree->GetPlayer()==NULL){
     ::Error("AliTreePlayer::selectWhatWhereOrderBy","Input tree not defiend");
@@ -385,12 +379,51 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
   }
   TObjArray *fArray=what.Tokenize(":");
   Int_t      nCols=fArray->GetEntries();
-  TObjArray *fFormulaList=new TObjArray(nCols+1);
-  TTreeFormula ** rFormulaList=new TTreeFormula*[nCols+1];
+  TObjArray *fFormulaList       = new TObjArray(nCols+1);
+  TTreeFormula ** rFormulaList  = new TTreeFormula*[nCols+1];
+  TObjString **printFormatList  = new TObjString*[nCols];     // how to format variables 
+  TObjString **columnNameList   = new TObjString*[nCols];
+  TObjString **outputFormatList = new TObjString*[nCols];     // root header formatting
+
   for (Int_t iCol=0; iCol<nCols; iCol++){
-    TTreeFormula * formula = new TTreeFormula(fArray->At(iCol)->GetName(), fArray->At(iCol)->GetName(), tree);
+    TObjArray * arrayDesc = TString(fArray->At(iCol)->GetName()).Tokenize(";");
+    if (arrayDesc->GetEntries()<=0) {
+      ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid descriptor %s", arrayDesc->At(iCol)->GetName());
+      return;
+    }
+    TString  fname=arrayDesc->At(0)->GetName();    // variable content
+    TTreeFormula * formula = new TTreeFormula(fname.Data(), fname.Data(), tree);
+    TString  printFormat="";                       // printing format          - column 1 - use default if not specified
+    TString  colName=arrayDesc->At(0)->GetName();  // variable name in ouptut  - column 2 - using defaut ("variable name") as in input
+    TString  outputFormat="";                      // output column format specification for TLeaf (see also reading using TTree::ReadFile)
+    
+    if (arrayDesc->At(1)!=NULL){  // format
+      printFormat=arrayDesc->At(1)->GetName();
+    }else{
+      if (formula->IsInteger()) {
+	printFormat="1.20";
+      }else{
+	printFormat="1.20";
+      }
+    }
+    if (arrayDesc->At(2)!=NULL)  {
+      colName=arrayDesc->At(2)->GetName();
+    }else{
+      colName=arrayDesc->At(0)->GetName();
+    }	    
+    //colName = (arrayDesc->GetEntries()>1) ? arrayDesc->At(2)->GetName() : arrayDesc->At(0)->GetName();     
+    if (arrayDesc->At(3)!=NULL){  //outputFormat (for csv)
+      outputFormat= arrayDesc->At(3)->GetName();
+    }else{
+      outputFormat="/D";
+      if (formula->IsInteger()) outputFormat="/I";
+      if (formula->IsString())  outputFormat="/C";
+    }    
     fFormulaList->AddLast(formula);
     rFormulaList[iCol]=formula;
+    printFormatList[iCol]=new TObjString(printFormat);
+    outputFormatList[iCol]=new TObjString(outputFormat);
+    columnNameList[iCol]=new TObjString(colName);   
   }
   TTreeFormula *select = new TTreeFormula("Selection",where.Data(),tree);
   fFormulaList->AddLast(select);
@@ -428,16 +461,20 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
     fprintf(default_fp,"<table>"); // add metadata info
     fprintf(default_fp,"<tr>"); // add metadata info
     for (Int_t iCol=0; iCol<nCols; iCol++){
-      fprintf(default_fp,"<th>%s</th>",rFormulaList[iCol]->GetName()); // add metadata info
+      fprintf(default_fp,"<th>%s</th>",columnNameList[iCol]->GetName()); // add metadata info
     }
     fprintf(default_fp,"<tr>"); // add metadata info
   }
   if (isCSV){
     // add header info
-     for (Int_t iCol=0; iCol<nCols; iCol++){
-      fprintf(default_fp,"%s\t",rFormulaList[iCol]->GetName()); // TODO -add type - can be done  later
+    for (Int_t iCol=0; iCol<nCols; iCol++){
+      fprintf(default_fp,"%s%s",columnNameList[iCol]->GetName(), outputFormatList[iCol]->GetName());
+      if (iCol<nCols-1)  {
+	fprintf(default_fp,":");
+      }else{
+	fprintf(default_fp,"\n"); // add metadata info
+      }
     }
-     fprintf(default_fp,"\n"); // add metadata info
   }
 
 
@@ -490,7 +527,7 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
       for (Int_t icol=0; icol<nCols; icol++){
 	Int_t nData=rFormulaList[icol]->GetNdata();
 	if (nData<=1){
-	  fprintf(default_fp,"\t<td>%s</td>",rFormulaList[icol]->PrintValue(0));
+	  fprintf(default_fp,"\t<td>%s</td>",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
 	}else{
 	  fprintf(default_fp,"\t<td>");
 	  for (Int_t iData=0; iData<nData;iData++){
@@ -511,7 +548,7 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
       for (Int_t icol=0; icol<nCols; icol++){  // formula loop
 	Int_t nData=rFormulaList[icol]->GetNdata();
 	if (nData<=1){
-	  fprintf(default_fp,"%s\t",rFormulaList[icol]->PrintValue(0));
+	  fprintf(default_fp,"%s\t",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
 	}else{
 	  for (Int_t iData=0; iData<nData;iData++){  // array loo
 	    fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
