@@ -717,28 +717,29 @@ private:
   //
   //MC Info
   //
-  TH1F* hNumMatchMC[2][3];                               ///<  Matching efficiency numerator with MC information on PID
-  TH1F* hDenMatchMC[2][3];                               ///<  Matching efficiency denominator with MC information on PID
-  TH1F* hNumMatchPrimMC[2][3];                           ///<  Matching efficiency numerator with MC information on PID and on Primary production
-  TH1F* hDenMatchPrimMC[2][3];                           ///<  Matching efficiency denominator with MC information on PID and on Primary production
-  TH1F* hNumMatchPrimMCYCut[2][3][kEvtMultBins];         ///<  Matching efficiency numerator with MC information on PID and on Primary production with a cut on |y| < 0.5
-  TH1F* hDenMatchPrimMCYCut[2][3][kEvtMultBins];         ///<  Matching efficiency denominator with MC information on PID and on Primary production with a cut on |y| < 0.5
-  TH1F* hNumMatchMultTrkTRDOut[2][3][kEvtMultBins];      ///<  Matching efficiency numerator with kTRDOut flag and MC information on PID
-  TH1F* hDenMatchMultTrkTRDOut[2][3][kEvtMultBins];      ///<  Matching efficiency denominator with kTRDOut flag and MC information on PID
-  TH1F* hNumMatchMultTrkNoTRDOut[2][3][kEvtMultBins];    ///<  Matching efficiency numerator without kTRDOut flag and with MC information on PID
-  TH1F* hDenMatchMultTrkNoTRDOut[2][3][kEvtMultBins];    ///<  Matching efficiency denominator without kTRDOut flag and with MC information on PID
-  TH1F* hNumMatchMultTrk[2][3][kEvtMultBins];            ///<  Matching efficiency numerator with kTIME, kTRDOut flags and MC information on PID
-  TH1F* hDenMatchMultTrk[2][3][kEvtMultBins];            ///<  Matching efficiency denominator with kTIME, kTRDOut flags and MC information on PID
-  TH1F* hNumMatchMultTrkInc[2][kEvtMultBins];            ///<  Matching efficiency numerator with kTIME, kTRDOut flags
-  TH1F* hDenMatchMultTrkInc[2][kEvtMultBins];            ///<  Matching efficiency denominator with kTIME, kTRDOut flags
-  TH1F* hDenTrkVertMultTrk[2][3];                        ///<  Matching efficiency denominator with MC truth for events that passed Vertex Cuts
-  TH1F* hDenTrkTriggerMultTrk[2][3];                     ///<  Matching efficiency denominator with MC truth for events that passed Physics Selection
-  TH1F* hDenPrimMCYCut[2][3][kEvtMultBins];              ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max y
-  TH1F* hDenPrimMCEtaCut[2][3][kEvtMultBins];            ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta
-  TH1F* hDenPrimMCEtaYCut[2][3][kEvtMultBins];           ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta and max y
-  TH1F* hNumPrimMCTrueMatch[2][3][kEvtMultBins];         ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector
-  TH1F* hNumPrimMCTrueMatchYCut[2][3][kEvtMultBins];     ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
-  TH1F* hNumPrimMCTrueMatchYCutTPC[2][3][kEvtMultBins];  ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut and a TPC 5sigma cut on the signal for pi/k/p
+  TH1F* hNumMatchMC[2][3];                                     ///<  Matching efficiency numerator with MC information on PID
+  TH1F* hDenMatchMC[2][3];                                     ///<  Matching efficiency denominator with MC information on PID
+  TH1F* hNumMatchPrimMC[2][3];                                 ///<  Matching efficiency numerator with MC information on PID and on Primary production
+  TH1F* hDenMatchPrimMC[2][3];                                 ///<  Matching efficiency denominator with MC information on PID and on Primary production
+  TH1F* hNumMatchPrimMCYCut[2][3][kEvtMultBins];               ///<  Matching efficiency numerator with MC information on PID and on Primary production with a cut on |y| < 0.5
+  TH1F* hDenMatchPrimMCYCut[2][3][kEvtMultBins];               ///<  Matching efficiency denominator with MC information on PID and on Primary production with a cut on |y| < 0.5
+  TH1F* hNumMatchMultTrkTRDOut[2][3][kEvtMultBins];            ///<  Matching efficiency numerator with kTRDOut flag and MC information on PID
+  TH1F* hDenMatchMultTrkTRDOut[2][3][kEvtMultBins];            ///<  Matching efficiency denominator with kTRDOut flag and MC information on PID
+  TH1F* hNumMatchMultTrkNoTRDOut[2][3][kEvtMultBins];          ///<  Matching efficiency numerator without kTRDOut flag and with MC information on PID
+  TH1F* hDenMatchMultTrkNoTRDOut[2][3][kEvtMultBins];          ///<  Matching efficiency denominator without kTRDOut flag and with MC information on PID
+  TH1F* hNumMatchMultTrk[2][3][kEvtMultBins];                  ///<  Matching efficiency numerator with kTIME, kTRDOut flags and MC information on PID
+  TH1F* hDenMatchMultTrk[2][3][kEvtMultBins];                  ///<  Matching efficiency denominator with kTIME, kTRDOut flags and MC information on PID
+  TH1F* hNumMatchMultTrkInc[2][kEvtMultBins];                  ///<  Matching efficiency numerator with kTIME, kTRDOut flags
+  TH1F* hDenMatchMultTrkInc[2][kEvtMultBins];                  ///<  Matching efficiency denominator with kTIME, kTRDOut flags
+  TH1F* hDenTrkVertMultTrk[2][3];                              ///<  Matching efficiency denominator with MC truth for events that passed Vertex Cuts
+  TH1F* hDenTrkTriggerMultTrk[2][3];                           ///<  Matching efficiency denominator with MC truth for events that passed Physics Selection
+  TH1F* hDenPrimMCYCut[2][3][kEvtMultBins];                    ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max y
+  TH1F* hDenPrimMCEtaCut[2][3][kEvtMultBins];                  ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta
+  TH1F* hDenPrimMCEtaYCut[2][3][kEvtMultBins];                 ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta and max y
+  TH1F* hNumPrimMCTrueMatch[2][3][kEvtMultBins];               ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector
+  TH1F* hNumPrimMCTrueMatchYCut[2][3][kEvtMultBins];           ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
+  TH1F* hNumPrimMCTrueMatchYCutTPC[2][3][kEvtMultBins];        ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut and a TPC 5sigma cut on the signal for pi/k/p
+  TH1F* hNumPrimMCConsistentMatchYCut[2][3][kEvtMultBins];     ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
   
   //histograms for matching efficiency calculation
   //Positive / Negative

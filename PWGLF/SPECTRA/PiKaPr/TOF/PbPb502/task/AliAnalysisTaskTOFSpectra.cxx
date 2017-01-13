@@ -420,6 +420,7 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
         hNumPrimMCTrueMatch[charge][species][mult] = 0x0;
         hNumPrimMCTrueMatchYCut[charge][species][mult] = 0x0;
         hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = 0x0;
+        hNumPrimMCConsistentMatchYCut[charge][species][mult] = 0x0;
       }
       
     }
@@ -1154,6 +1155,10 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
             hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = new TH1F(Form("hNumPrimMCTrueMatchYCutTPC_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
             hNumPrimMCTrueMatchYCutTPC[charge][species][mult]->Sumw2();
             fListHist->AddLast(hNumPrimMCTrueMatchYCutTPC[charge][species][mult]);
+            
+            hNumPrimMCConsistentMatchYCut[charge][species][mult] = new TH1F(Form("hNumPrimMCConsistentMatchYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
+            hNumPrimMCConsistentMatchYCut[charge][species][mult]->Sumw2();
+            fListHist->AddLast(hNumPrimMCConsistentMatchYCut[charge][species][mult]);
           }
         }
       }
@@ -1915,6 +1920,11 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
               if((TMath::Abs(fTPCSigma[kpi]) < 5) && (TMath::Abs(fTPCSigma[kK]) < 5) && (TMath::Abs(fTPCSigma[kp]) < 5)) hNumPrimMCTrueMatchYCutTPC[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
             }
             
+          }
+          else if(fMCTOFMatch > 0 && fTOFSigma[kpi + fPdgIndex] < 2.){//Consistent match in TOF
+            if(TMath::Abs(fRapidityMC) < fRapidityCut){
+              hNumPrimMCConsistentMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+            }
           }
         }
       }
