@@ -106,6 +106,22 @@ void AliStrangenessModule::SetSigExtRanges( Double_t lRLoLeftBg, Double_t lRHiLe
 }
 
 //________________________________________________________________
+void AliStrangenessModule::SetSigExtTech ( TString lRecSigExtTech ) {
+    if( !lRecSigExtTech.Contains("bincounting") &&
+       !lRecSigExtTech.Contains("linear") &&
+       !lRecSigExtTech.Contains("quadratic") &&
+       !lRecSigExtTech.Contains("MC") ){
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        AliWarning(Form(" Sig. ext. mode \"%s\" not recognized!",lRecSigExtTech.Data() ) );
+        AliWarning("   Accepted modes: \"bincounting\", \"linear\" or \"quadratic\"");
+        AliWarning("               WARNING: Will set to linear! ");
+        AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+        lRecSigExtTech = "linear";
+    }
+    lSigExtTech = lRecSigExtTech.Data();
+}
+
+//________________________________________________________________
 TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputFile ){
     //Main analysis code
     

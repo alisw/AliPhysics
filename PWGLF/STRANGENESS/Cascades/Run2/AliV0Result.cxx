@@ -35,6 +35,8 @@ fCutLeastNumberOfCrossedRows(70),
 fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
 fHistoFeeddown(0),
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
@@ -73,6 +75,8 @@ fCutLeastNumberOfCrossedRows(70),
 fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
 fHistoFeeddown(0), //do not initialize by default
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
@@ -118,6 +122,8 @@ fCutLeastNumberOfCrossedRows(70),
 fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
 fHistoFeeddown(0), //do not initialize by default
 fCutUseVariableV0CosPA(kFALSE),
 fCutVarV0CosPA_Exp0Const(0),
@@ -168,6 +174,8 @@ fCutLeastNumberOfCrossedRows(lCopyMe.fCutLeastNumberOfCrossedRows),
 fCutLeastNumberOfCrossedRowsOverFindable(lCopyMe.fCutLeastNumberOfCrossedRowsOverFindable),
 fCutMinEtaTracks(lCopyMe.fCutMinEtaTracks),
 fCutMaxEtaTracks(lCopyMe.fCutMaxEtaTracks),
+fCutMaxChi2PerCluster(lCopyMe.fCutMaxChi2PerCluster),
+fCutMinTrackLength(lCopyMe.fCutMinTrackLength),
 
 fCutUseVariableV0CosPA(lCopyMe.fCutUseVariableV0CosPA),
 fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
@@ -223,6 +231,8 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe->GetCutLeastNumberOfCrossedRowsOverFindable();
     fCutMinEtaTracks = lCopyMe -> GetCutMinEtaTracks();
     fCutMaxEtaTracks = lCopyMe -> GetCutMaxEtaTracks();
+    fCutMaxChi2PerCluster = lCopyMe -> GetCutMaxChi2PerCluster();
+    fCutMinTrackLength = lCopyMe -> GetCutMinTrackLength();
     
     //Variable V0CosPA
     fCutUseVariableV0CosPA = lCopyMe -> GetCutUseVarV0CosPA();
@@ -288,6 +298,8 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe.GetCutLeastNumberOfCrossedRowsOverFindable();
     fCutMinEtaTracks = lCopyMe.GetCutMinEtaTracks();
     fCutMaxEtaTracks = lCopyMe.GetCutMaxEtaTracks();
+    fCutMaxChi2PerCluster = lCopyMe.GetCutMaxChi2PerCluster();
+    fCutMinTrackLength = lCopyMe.GetCutMinTrackLength();
     
     //Variable V0CosPA
     fCutUseVariableV0CosPA = lCopyMe.GetCutUseVarV0CosPA();
@@ -377,12 +389,14 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( TMath::Abs( fCutTPCdEdx - lCompareV0->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinBaryonMomentum - lCompareV0->GetCutMinBaryonMomentum() ) > 1e-6 ) lReturnValue = kFALSE;
     
-    //Use ITS refit tracks
+    //Track Selections
     if( TMath::Abs( fCutUseITSRefitTracks - lCompareV0->GetCutUseITSRefitTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompareV0->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutLeastNumberOfCrossedRowsOverFindable - lCompareV0->GetCutLeastNumberOfCrossedRowsOverFindable() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinEtaTracks - lCompareV0->GetCutMinEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMaxEtaTracks - lCompareV0->GetCutMaxEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxChi2PerCluster - lCompareV0->GetCutMaxChi2PerCluster() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinTrackLength - lCompareV0->GetCutMinTrackLength() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //Variable V0CosPA
     if ( TMath::Abs(fCutUseVariableV0CosPA - lCompareV0->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;
@@ -437,6 +451,8 @@ void AliV0Result::Print()
     cout<<" Nbr Crsd Rows / Fdb: "<<fCutLeastNumberOfCrossedRowsOverFindable<<endl;
     cout<<" Min track eta......: "<<fCutMinEtaTracks<<endl;
     cout<<" Max track eta......: "<<fCutMaxEtaTracks<<endl;
+    cout<<" Max chi2/clusters..: "<<fCutMaxChi2PerCluster<<endl;
+    cout<<" Min Track Length...: "<<fCutMinTrackLength<<endl;
     cout<<"========================================"<<endl;
     return;
 }

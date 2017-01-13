@@ -75,6 +75,8 @@ public:
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
     void SetCutMinEtaTracks ( Double_t lCut ) { fCutMinEtaTracks = lCut; }
     void SetCutMaxEtaTracks ( Double_t lCut ) { fCutMaxEtaTracks = lCut; }
+    void SetCutMaxChi2PerCluster ( Double_t lCut ) { fCutMaxChi2PerCluster = lCut; }
+    void SetCutMinTrackLength    ( Double_t lCut ) { fCutMinTrackLength    = lCut; }
     
     //Variable CascCosPA
     void SetCutUseVarCascCosPA      ( Bool_t lCut )   { fCutUseVariableCascCosPA     = lCut; }
@@ -146,6 +148,8 @@ public:
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutMinEtaTracks () const { return fCutMinEtaTracks; }
     Double_t GetCutMaxEtaTracks () const { return fCutMaxEtaTracks; }
+    Double_t GetCutMaxChi2PerCluster () const { return fCutMaxChi2PerCluster; }
+    Double_t GetCutMinTrackLength    () const { return fCutMinTrackLength; }
     
     //Variable CascCosPA
     Bool_t GetCutUseVarCascCosPA        () const { return fCutUseVariableCascCosPA;   }
@@ -212,6 +216,8 @@ private:
     Double_t fCutLeastNumberOfClusters; //min number of TPC clusters
     Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
     Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
+    Double_t fCutMaxChi2PerCluster; //Max chi2/clusters
+    Double_t fCutMinTrackLength; //Minimum track length in the active TPC zone
     
     //Experimental: pt-variable cascade cosPA
     //Warning: if this cut is tighter than fCutCascCosPA, this gets used instead!
@@ -233,7 +239,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 17)
+    ClassDef(AliCascadeResult, 18)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -251,5 +257,6 @@ private:
     // 15 - Adjustments for gen-purpose functionality
     // 16 - Addition of ITSrefit track requirement for cross-checks
     // 17 - Addition of eta window selection
+    // 18 - Max chi2/clusters, min track length added for cross-checking 
 };
 #endif

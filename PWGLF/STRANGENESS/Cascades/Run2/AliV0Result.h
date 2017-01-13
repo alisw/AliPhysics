@@ -61,8 +61,10 @@ public:
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
     void SetCutLeastNumberOfCrossedRows             ( Double_t lCut ) { fCutLeastNumberOfCrossedRows = lCut; }
     void SetCutLeastNumberOfCrossedRowsOverFindable ( Double_t lCut ) { fCutLeastNumberOfCrossedRowsOverFindable = lCut; }
-    void SetCutMinEtaTracks ( Double_t lCut ) { fCutMinEtaTracks = lCut; }
-    void SetCutMaxEtaTracks ( Double_t lCut ) { fCutMaxEtaTracks = lCut; }
+    void SetCutMinEtaTracks      ( Double_t lCut ) { fCutMinEtaTracks      = lCut; }
+    void SetCutMaxEtaTracks      ( Double_t lCut ) { fCutMaxEtaTracks      = lCut; }
+    void SetCutMaxChi2PerCluster ( Double_t lCut ) { fCutMaxChi2PerCluster = lCut; }
+    void SetCutMinTrackLength    ( Double_t lCut ) { fCutMinTrackLength    = lCut; }
     
     //Variable V0CosPA
     void SetCutUseVarV0CosPA      ( Bool_t lCut )   { fCutUseVariableV0CosPA     = lCut; }
@@ -110,8 +112,10 @@ public:
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
     Double_t GetCutLeastNumberOfCrossedRows             () const { return fCutLeastNumberOfCrossedRows; }
     Double_t GetCutLeastNumberOfCrossedRowsOverFindable () const { return fCutLeastNumberOfCrossedRowsOverFindable; }
-    Double_t GetCutMinEtaTracks () const { return fCutMinEtaTracks; }
-    Double_t GetCutMaxEtaTracks () const { return fCutMaxEtaTracks; }
+    Double_t GetCutMinEtaTracks      () const { return fCutMinEtaTracks; }
+    Double_t GetCutMaxEtaTracks      () const { return fCutMaxEtaTracks; }
+    Double_t GetCutMaxChi2PerCluster () const { return fCutMaxChi2PerCluster; }
+    Double_t GetCutMinTrackLength    () const { return fCutMinTrackLength; }
     
     //Variable V0CosPA
     Bool_t GetCutUseVarV0CosPA        () const { return fCutUseVariableV0CosPA;   }
@@ -156,6 +160,8 @@ private:
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
     Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
     Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
+    Double_t fCutMaxChi2PerCluster; //Max chi2/clusters
+    Double_t fCutMinTrackLength; //Minimum track length in the active TPC zone
     
     //Experimental: pt-variable V0 cosPA
     //Warning: if this cut is tighter than fCutV0CosPA, this gets used instead!
@@ -169,7 +175,7 @@ private:
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 12)
+    ClassDef(AliV0Result, 13)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -182,5 +188,6 @@ private:
     //10 - Adjustments for gen-purpose functionality
     //11 - Addition of variable CosPA, ITSrefit requirement
     //12 - Addition of eta window selection
+    //13 - Max chi2/clusters, min track length for checking
 };
 #endif

@@ -42,7 +42,7 @@ public:
     void SetMultBinning ( Double_t lRecLoMult, Double_t lRecHiMult ){ lLoMult = lRecLoMult; lHiMult = lRecHiMult; }
     void SetSigExtRanges (Double_t lRLoLeftBg, Double_t lRHiLeftBg,  Double_t lRLoPeak,
                           Double_t lRHiPeak,   Double_t lRLoRightBg, Double_t lRHiRightBg);
-    void SetSigExtTech ( TString lRecSigExtTech ) { lSigExtTech = lRecSigExtTech.Data(); }
+    void SetSigExtTech ( TString lRecSigExtTech );
     void SetVerbose ( Bool_t lVerb = kTRUE ) { lVerbose = lVerb; } 
     
     //Do analysis based on a specific configuration
