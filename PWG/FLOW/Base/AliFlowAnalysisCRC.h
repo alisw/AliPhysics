@@ -959,7 +959,13 @@ public:
   void SetFlowQCSpectra(TH2D* const TH) {this->fFlowQCSpectra = TH;};
   TH2D* GetFlowQCSpectra() const {return this->fFlowQCSpectra;};
   void SetFlowQCIntCorProTest(TProfile2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorProTest[eg][k] = TP;};
-  TProfile2D* GetFlowQCIntCorNUAProTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProTest[eg][h];};
+  TProfile2D* GetFlowQCIntCorProTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorProTest[eg][h];};
+  void SetFlowQCIntCorHistTest(TH2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCorHistTest[eg][k] = TP;};
+  TH2D* GetFlowQCIntCorHistTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCorHistTest[eg][h];};
+  void SetFlowQCIntCumHistTest(TH2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntCumHistTest[eg][k] = TP;};
+  TH2D* GetFlowQCIntCumHistTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntCumHistTest[eg][h];};
+  void SetFlowQCIntFinHistTest(TH2D* const TP, Int_t const eg, Int_t const k) {this->fFlowQCIntFinHistTest[eg][k] = TP;};
+  TH2D* GetFlowQCIntFinHistTest(Int_t const eg, Int_t const h) const {return this->fFlowQCIntFinHistTest[eg][h];};
   
   TProfile* GetFlowQCRefCorPro(Int_t const eg, Int_t const h) const {return this->fFlowQCRefCorPro[eg][h];};
   void SetFlowQCRefCorPro(TProfile* const TP, Int_t const eg, Int_t const k) {this->fFlowQCRefCorPro[eg][k] = TP;};
@@ -1682,13 +1688,6 @@ private:
   TH1D *fPOIPtDiffQReEG[2][fQVecPower][fFlowNHarmMax]; //! real part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPtDiffQImEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][m]
   TH1D *fPOIPtDiffMulEG[2][fQVecPower][fFlowNHarmMax]; //! imaginary part [0=pos,1=neg][0=back,1=forw][p][k]
-  LongDouble_t fLDQRe[fQVecPower][fFlowNHarmMax]; //
-  LongDouble_t fLDQIm[fQVecPower][fFlowNHarmMax]; //
-  LongDouble_t fLDQM[fQVecPower][fFlowNHarmMax]; //
-  LongDouble_t fLDcor2Hist[100]; //
-  LongDouble_t fLDweg2Hist[100]; //
-  LongDouble_t fLDcor4Hist[100]; //
-  LongDouble_t fLDweg4Hist[100]; //
   
   // Flow SP ZDC
   TList *fFlowSPZDCList;    //! SPZDC List
@@ -1717,8 +1716,8 @@ private:
   // Flow QC
   TList *fFlowQCList;    //! QC List
   const static Int_t fFlowQCNPro = 4;
-  const static Int_t fFlowQCNNUA = 10;
-  const static Int_t fFlowQCNCov = 6;
+  const static Int_t fFlowQCNNUA = 12;
+  const static Int_t fFlowQCNCov = 8;
   Int_t fFlowQCCenBin; //
   Double_t fFlowQCDeltaEta; //
   TProfile *fFlowQCCorPro[fCRCMaxnCen][fFlowNHarm][fFlowQCNPro]; //! correlation profile, [CRCBin][eg]
@@ -1735,14 +1734,18 @@ private:
   const static Int_t fkFlowQCnHarVtx = 3;
   TProfile *fFlowQCIntCorProVtx[fCRCMaxnRun][fCRCMaxnCen][fkFlowQCnHarVtx][fkFlowQCnVtx]; //!
   
-  const static Int_t fkFlowQCnIntCorPro = 5;
+  const static Int_t fkFlowQCnIntCorPro = 3;
   TProfile *fFlowQCIntCorPro[fFlowNHarm][fkFlowQCnIntCorPro]; //!
   TH1D *fFlowQCIntCorHist[fFlowNHarm][fkFlowQCnIntCorPro]; //!
   TH1D *fFlowQCIntCumHist[fFlowNHarm][fkFlowQCnIntCorPro]; //!
   TProfile *fFlowQCIntCorNUAPro[fFlowNHarm][6]; //!
   TH1D *fFlowQCIntCorNUAHist[fFlowNHarm][6]; //!
   
-  TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][fkFlowQCnIntCorPro]; //! correlation profile, precision test
+  const static Int_t fkFlowQCnIntCorTest = 6;
+  TProfile2D *fFlowQCIntCorProTest[fFlowNHarm][fkFlowQCnIntCorTest]; //! correlation profile, precision test
+  TH2D *fFlowQCIntCorHistTest[fFlowNHarm][fkFlowQCnIntCorTest]; //! correlation profile, precision test
+  TH2D *fFlowQCIntCumHistTest[fFlowNHarm][fkFlowQCnIntCorTest]; //! correlation profile, precision test
+  TH2D *fFlowQCIntFinHistTest[fFlowNHarm][fkFlowQCnIntCorTest]; //! correlation profile, precision test
   
   TList* fFlowQCOrdMagList;
   const static Int_t fkNOrdMag = 20;

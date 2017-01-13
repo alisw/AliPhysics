@@ -547,6 +547,8 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   }
   
   fAnalysisUtil = new AliAnalysisUtils();
+  fAnalysisUtil->SetUseMVPlpSelection(kTRUE);
+  fAnalysisUtil->SetUseOutOfBunchPileUp(kTRUE);
   
   for(int i=0; i<5; i++){
     char hname[20];
@@ -729,26 +731,34 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
       if(fRejectPileUp) {
         if(fDataSet!=k2015) {
+          
+          Bool_t BisPileup=kFALSE;
+          
           // check anyway pileup
           if (plpMV(aod)) {
             fPileUpCount->Fill(0.5);
+            BisPileup=kTRUE;
           }
           
           Short_t isPileup = aod->IsPileupFromSPD(3);
           if (isPileup != 0) {
             fPileUpCount->Fill(1.5);
+            BisPileup=kTRUE;
           }
           
           if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
             fPileUpCount->Fill(2.5);
+            BisPileup=kTRUE;
           }
           
           if (aod->IsIncompleteDAQ())  {
             fPileUpCount->Fill(3.5);
+            BisPileup=kTRUE;
           }
           
           if(fabs(centrV0M-centrCL1)>7.5)  {
             fPileUpCount->Fill(4.5);
+            BisPileup=kTRUE;
           }
           
           // check vertex consistency
@@ -757,6 +767,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           
           if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
             fPileUpCount->Fill(5.5);
+            BisPileup=kTRUE;
           }
           
           double covTrc[6], covSPD[6];
@@ -772,9 +783,15 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           
           if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
             fPileUpCount->Fill(6.5);
+            BisPileup=kTRUE;
           }
           
-          if (fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+          if (fAnalysisUtil->IsPileUpEvent(InputEvent())) {
+            fPileUpCount->Fill(7.5);
+            BisPileup=kTRUE;
+          }
+          
+          if(BisPileup) return;
         } else {
           // pileup from AliMultSelection
           if(!fMultSelection->GetThisEventIsNotPileup()) fPileUpMultSelCount->Fill(0.5);

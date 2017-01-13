@@ -612,13 +612,16 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
           if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_CenPhiEtaWeights.root";
           if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_CenPhiEtaWeights.root";
         } else {
-          if(PtWeightsFileName.Contains("eff.root") || PtWeightsFileName.Contains("eff_CorSec.root")) {
+          if(PtWeightsFileName.Contains("eff.root")) {
             if(AODfilterBit==32)  PhiEtaWeightsFileName += "15oHI_FB32_pteff_CenPhiEtaWeights.root";
             if(AODfilterBit==96)  PhiEtaWeightsFileName += "15oHI_FB96_pteff_CenPhiEtaWeights.root";
             if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff_CenPhiEtaWeights.root";
           }
           else if(PtWeightsFileName.Contains("eff_2.root")) {
             if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff2_CenPhiEtaWeights.root";
+          }
+          else if(PtWeightsFileName.Contains("eff_CorSec.root")) {
+            if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff3_CenPhiEtaWeights.root";
           }
         }
       }
