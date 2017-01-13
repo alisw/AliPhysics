@@ -704,6 +704,11 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
 const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
   //Provides shift-rotation matrix for PHOS (EMC+CPV) 
 
+  //If manually set matrises exist, use them rather than TGeoManager (analysis case)  
+  if(fPHOSMatrix[mod-1]){
+    return fPHOSMatrix[mod-1] ;
+  }    
+    
   //If GeoManager exists, take matrixes from it
   if(gGeoManager){
 
@@ -721,9 +726,6 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
     }
     gGeoManager->cd(path) ;
     return gGeoManager->GetCurrentMatrix();
-  }
-  if(fPHOSMatrix[mod-1]){
-    return fPHOSMatrix[mod-1] ;
   }
   else{
     AliWarning("Can not find PHOS misalignment matrixes\n") ;
