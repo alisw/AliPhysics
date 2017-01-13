@@ -5,7 +5,7 @@
  * See cxx source for full Copyright notice                               */
 
 //#############################################################
-//#                                                           # 
+//#                                                           #
 //#         Class AliDielectronEventCuts                     #
 //#                                                           #
 //#  Authors:                                                 #
@@ -34,7 +34,7 @@ class AliAODVertex;
 class AliDielectronEventCuts : public AliAnalysisCuts {
 public:
   enum EVtxType { kVtxTracks=0, kVtxSPD, kVtxTPC, kVtxAny, kVtxTracksOrSPD };
-  
+
   AliDielectronEventCuts();
   AliDielectronEventCuts(const char*name, const char* title);
 
@@ -44,9 +44,9 @@ public:
   void SetVertexType(EVtxType type)             { fVtxType=type;                }
   void SetVertexZ(Double_t zmin, Double_t zmax) { fVtxZmin=zmin; fVtxZmax=zmax; }
   void SetRequireVertex(Bool_t req=kTRUE)       { fRequireVtx=req;              }
+  void SetMaxVertexDifference(Float_t diff = 0.2)    { fVtxDiff = diff;              }
   void SetRequireV0and(UChar_t type=1)          { fRequireV0and=type;           }
-  void SetRequireCompleteDAQ(Bool_t req =kTRUE) { f2015IsIncompleteDAQ=req;
-     }
+  void SetRequireCompleteDAQ(Bool_t req =kTRUE) { f2015IsIncompleteDAQ=req;     }
   void SetMinVtxContributors(Int_t min=1)       { fMinVtxContributors=min;      }
   void SetCutOnMultipicityITSTPC(Bool_t mult=kTRUE) { fMultITSTPC=mult;         }
   void SetCentralityRange(Double_t min, Double_t max, Bool_t userun2=kFALSE) { fCentMin=min; fCentMax=max;fRun2=userun2;}
@@ -64,10 +64,10 @@ public:
   Bool_t IsSelectedAOD(TObject* event);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
 
-  
+
   enum ETRDTriggerClass{ kSE, kQU, kSEorQU, kSEandQU};
   static Bool_t IsTRDTriggerFired( const AliVEvent* event, const ETRDTriggerClass triggerClass, Bool_t &trackMatched, Int_t &bin );
-  
+
   void Print(const Option_t* option = "") const;
 
 private:
@@ -80,15 +80,16 @@ private:
   Bool_t   fRequireVtx;             // require a vertex
   Int_t    fMinVtxContributors;     // min number of vertex contributors
   Bool_t   fMultITSTPC;             // if to cut on the ITS TPC multiplicity correlation (Pb-Pb)
-  Double_t fCentMin;                // minimum multiplity percentile
-  Double_t fCentMax;                // maximum multiplity percentile
+  Double_t fCentMin;                // minimum multiplicity percentile
+  Double_t fCentMax;                // maximum multiplicity percentile
   Bool_t fRun2;                     //using run2 centrality
   EVtxType fVtxType;                // vertex type
-  Bool_t fRequire13sel;             //bit to select event and vertex selection proposed for 2013 in 
+  Bool_t fRequire13sel;             //bit to select event and vertex selection proposed for 2013 in
                                     //https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PAVertexSelectionStudies
   Bool_t f2015IsIncompleteDAQ;	    // Needed for Run2-2015 data analysis, where a problem with incomplete events from the daq-side exists -- kFALSE will reject incomplete events
+  Float_t fVtxDiff;                 // cut values for a cut on the difference between the position of the vtx from SPD and tracks. Used in LHC15o std. 0.2 plus additional cut on both vtx resolutions
   AliAnalysisUtils fUtils;          //data member to use utility class for event and vertex selection in 2013
-  
+
 
   UChar_t fRequireV0and;             // use V0and triggered events only
 
@@ -102,12 +103,12 @@ private:
   TF1*     fparMean;                // parametrization of the mean values
   TF1*     fparSigma;               // parametrization of the sigmas
   Double_t fcutSigma;               // number of absolut sigmas inclusion
-  TF1*     fparMinVtxContributors;  // parametrization of #vtx contributors global vs TPC (lower limit) 
-  TF1*     fparMaxVtxContributors;  // parametrization of #vtx contributors global vs TPC (upper limit) 
+  TF1*     fparMinVtxContributors;  // parametrization of #vtx contributors global vs TPC (lower limit)
+  TF1*     fparMaxVtxContributors;  // parametrization of #vtx contributors global vs TPC (upper limit)
   AliDielectronEventCuts(const AliDielectronEventCuts &c);
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
-  
+
   ClassDef(AliDielectronEventCuts,4)         // Dielectron EventCuts
 };
 
