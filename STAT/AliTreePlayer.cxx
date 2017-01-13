@@ -488,6 +488,7 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
       for(Int_t iCol=0;iCol<nCols;iCol++) {
 	rFormulaList[iCol]->UpdateFormulaLeaves();
       }
+      select->UpdateFormulaLeaves();
     }
     if (select) {
       //      if (select->EvalInstance(inst) == 0) {
