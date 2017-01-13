@@ -75,7 +75,7 @@ public:
    *
    * @param[in] doUse If true then recalc patches (and recalc energy) is used
    */
-  void SetUseRecalcPatches(Bool_t doUse = kTRUE);
+  void SetUseRecalcPatches(Bool_t doUse = kTRUE) { fUseRecalcPatches = doUse; }
 
 protected:
 
