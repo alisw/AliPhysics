@@ -93,7 +93,7 @@ fHistEvtSelection(0x0),fhKTAreaPt(0x0),
  fhVertexZ(0x0), fhVertexXAccept(0x0), fhVertexYAccept(0x0), fhVertexZAccept(0x0), 
  fhVertexXAcceptTT(0x0), fhVertexYAcceptTT(0x0), fhVertexZAcceptTT(0x0), 
 fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
- fhDphiTriggerJetAccept(0x0),  fhDphiTTTT(0x0),fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
+ fhDphiTriggerJetAccept(0x0),  fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 fhDiffPtVsPtTrackTrue(0x0),
 fhTrackPhiCG(0x0), fhTrackPhiTPCG(0x0),
@@ -114,6 +114,7 @@ fpyVtx(3)
    for(Int_t it=0; it<kTT;it++){ 
       fRhoRec[it].Set(kRho);
       fRhoMC[it].Set(kRho);
+      fhDphiTTTT[it]=NULL;
  
       fhCentralityTT[it] = NULL;
    }
@@ -244,7 +245,7 @@ fHistEvtSelection(0x0), fhKTAreaPt(0x0),
  fhVertexZ(0x0), fhVertexXAccept(0x0), fhVertexYAccept(0x0), fhVertexZAccept(0x0), 
  fhVertexXAcceptTT(0x0), fhVertexYAcceptTT(0x0), fhVertexZAcceptTT(0x0), 
 fhVertexZMC(0x0), fhVertexZAcceptMC(0x0),
-fhDphiTriggerJetAccept(0x0),  fhDphiTTTT(0x0), fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
+fhDphiTriggerJetAccept(0x0),  fhJetPhiIncl(0x0), fhJetEtaIncl(0x0),
 fhCentralityV0M(0x0), fhCentralityV0A(0x0), fhCentralityV0C(0x0), fhCentralityZNA(0x0),
 /*fh1Xsec(0x0), fh1Trials(0x0), fh1PtHard(0x0),*/
 fhDiffPtVsPtTrackTrue(0x0),
@@ -266,7 +267,7 @@ fpyVtx(3)
    for(Int_t it=0; it<kTT;it++){ 
       fRhoRec[it].Set(kRho);
       fRhoMC[it].Set(kRho); 
-
+      fhDphiTTTT[it] = NULL;
       fhCentralityTT[it] = NULL;
    }
 
@@ -382,8 +383,9 @@ fpyVtx(3)
    fTrackPtRef = new TF1("fTrackPtRef","[0]*exp(-x*[1])",fTTlow[kRef],fTThigh[kRef]);
    fTrackPtRef->SetParameters(1.46886e+08,8.37087e-01); 
 
-   fTrackPtSig = new TF1("fTrackPtSig","[0]*exp(-x*[1])+[2]*exp(-x*[3])+[4]*exp(-x*[5])",fTTlow[kSig],fTThigh[kSig]);
-   fTrackPtSig->SetParameters(1.85619e+07,6.08943e-01,3.10336e+05,2.71288e-01,2.28454e+03,1.01523e-01);
+   //inclusive pT spectrum times the boost function
+   fTrackPtSig = new TF1("fTrackPtSig","([0]*exp(-x*[1])+[2]*exp(-x*[3])+[4]*exp(-x*[5]))*([6]+x*[7]+x*x*[8])",fTTlow[kSig],fTThigh[kSig]);
+   fTrackPtSig->SetParameters(1.85619e+07,6.08943e-01,3.10336e+05,2.71288e-01,2.28454e+03,1.01523e-01,  8.43568e-01, 6.64789e-03, 2.13813e-04);
 
    DefineOutput(1, TList::Class());
 }
@@ -1042,12 +1044,12 @@ Bool_t AliAnalysisTaskHJetSpectra::FillHistograms(){
                normprob += tmpFunc->Eval(((AliVParticle*) (fTrigTracks[it][ik]))->Pt()); 
 
                if(ik>0){ //azimuthal angle between triggers 
-                  dphiTTTT =  RelativePhi(((AliVParticle*) (fTrigTracks[it][0]))->Phi(), 
+                  dphiTTTT   =  RelativePhi(((AliVParticle*) (fTrigTracks[it][0]))->Phi(),
                                           ((AliVParticle*) (fTrigTracks[it][ik]))->Phi());
                   if(dphiTTTT<-0.5*TMath::Pi()) dphiTTTT += TMath::TwoPi();
                   if(dphiTTTT> 1.5*TMath::Pi()) dphiTTTT -= TMath::TwoPi();
 
-                  fhDphiTTTT->Fill(dphiTTTT);
+                  fhDphiTTTT[it]->Fill(dphiTTTT);
                }
             }
             prob = fRandom->Uniform(0,1);
@@ -2156,8 +2158,11 @@ void AliAnalysisTaskHJetSpectra::UserCreateOutputObjects(){
    fhDphiTriggerJetAccept = new TH1F("fhDphiTriggerJetAccept","Deltaphi trig-jet after cut",50, -0.5*TMath::Pi(),1.5*TMath::Pi());
    if(bHistRec)  fOutput->Add(fhDphiTriggerJetAccept);
 
-   fhDphiTTTT = new TH1F("fhDphiTTTT","Deltaphi between multiple TT",50, -0.5*TMath::Pi(),1.5*TMath::Pi());
-   if(bHistRec)  fOutput->Add(fhDphiTTTT);
+   fhDphiTTTT[kRef] = new TH1F("fhDphiTTTT67","Deltaphi between multiple TT",50, -0.5*TMath::Pi(),1.5*TMath::Pi());
+   if(bHistRec)  fOutput->Add((TH1F*) fhDphiTTTT[kRef]);
+
+   fhDphiTTTT[kSig] = (TH1F*) fhDphiTTTT[kRef]->Clone("fhDphiTTTT1250");
+   if(bHistRec)  fOutput->Add((TH1F*) fhDphiTTTT[kSig]);
 
    fhJetPhiIncl = new TH2F("fhJetPhiIncl","Azim dist jets vs pTjet", 50, 0, 100, 50,-TMath::Pi(),TMath::Pi());
    if(bHistRec)  fOutput->Add((TH2F*) fhJetPhiIncl);

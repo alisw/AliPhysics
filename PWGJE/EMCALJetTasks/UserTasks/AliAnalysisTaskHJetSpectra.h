@@ -257,7 +257,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    TH2F     *fhDphiTriggerJet[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
    TH2F     *fhDphiTriggerJetGen[kCAll][kTT][kRho]; //! gc Delta phi versus jet pT
    TH1F     *fhDphiTriggerJetAccept; //!Dphi of accepted jets after dphi cut
-   TH1F     *fhDphiTTTT; //!Dphi between multiple trigger tracks 
+   TH1F     *fhDphiTTTT[kTT]; //!Dphi between multiple trigger tracks
 
    TH2F     *fhJetPhiIncl;//!minimum bias phi inclusive
    TH2F     *fhJetEtaIncl;//!minimum bias eta inclusive
@@ -338,7 +338,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
    AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-   ClassDef(AliAnalysisTaskHJetSpectra, 22); // Charged jet analysis for pA
+   ClassDef(AliAnalysisTaskHJetSpectra, 23); // Charged jet analysis for pA
 
 };
 #endif
