@@ -170,12 +170,12 @@ fChannelmode(chan),
 fCutmode(cuts),
 fSimpleCutmode(simplecuts),
 fBuilTPCTOF(kFALSE),
-fBuilDCAchi2(kTRUE),
+fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
 fSelectBit(AliVEvent::kINT7),
 
-tb(),
+tb(),//TBenchmark
 hPerformanceTime(0x0),
 hPerformanceCPUTime(0x0),
 
@@ -1908,7 +1908,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         if(fProdInfo == 0 ){//Primaries
           hNumMatchPrimMC[fSign][fPdgIndex]->Fill(fPt);
           if(TMath::Abs(fRapidityMC) < fRapidityCut) hNumMatchPrimMCYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
-          if(fMCTOFMatch == 0 || (fMCTOFMatch > 0 && fTOFSigma[kpi + fPdgIndex] < 2.)){//True match in TOF
+          if(fMCTOFMatch == 0){//True match in TOF
             hNumPrimMCTrueMatch[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
             if(TMath::Abs(fRapidityMC) < fRapidityCut){
               hNumPrimMCTrueMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
@@ -2303,10 +2303,12 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseMCTracks(){//Returns kTRUE if it reache
   
   if(fPdgIndex < 0) return kFALSE;//Pi/K/P only!
   hDenMatchMultTrk[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+  if(fTRDout == kTRUE) hDenMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+  else hDenMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
   if((fTOFout == kTRUE) && (fTime == kTRUE)){
     hNumMatchMultTrk[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
-    if(fTRDout == kTRUE) {hNumMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);}
-    if(fTRDout == kFALSE) {hNumMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);}
+    if(fTRDout == kTRUE) hNumMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+    else hNumMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
   }
   
   
