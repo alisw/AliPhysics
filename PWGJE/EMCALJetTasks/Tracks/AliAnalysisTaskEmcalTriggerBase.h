@@ -59,18 +59,21 @@ class AliAnalysisTaskEmcalTriggerBase : public AliAnalysisTaskEmcal{
 public:
 
   /**
-   * Dummy I/O constructor
+   * @brief Dummy I/O constructor
    */
   AliAnalysisTaskEmcalTriggerBase();
 
   /**
-   * Main Constructor: Initializes the task and sets the name
+   * @brief Main Constructor
+   *
+   * Initializes the task and sets the name
+   *
    * @param[in] name Name of the task
    */
   AliAnalysisTaskEmcalTriggerBase(const char *name);
 
   /**
-   * Destructor
+   * @brief Destructor
    */
   virtual ~AliAnalysisTaskEmcalTriggerBase();
 
@@ -120,11 +123,25 @@ public:
   void SetMaskedFastorOADB(TString oadbname) { fNameMaskedFastorOADB = oadbname; }
 
   /**
-   * Set an offline trigger selection (selection of trigger according to the presence
-   * of an trigger patch from cells above energy)
+   * @brief Set an offline trigger selection.
+   *
+   * The offline trigger selection will select events
+   * based on the presence of a trigger patch from
+   * cells above energy.
+   *
    * @param[in] sel Trigger offline selection
    */
   void SetOfflineTriggerSelection(AliEmcalTriggerOfflineSelection *sel) { fTriggerSelection = sel; }
+
+  /**
+   * @brief Providing access to the offline trigger selection.
+   *
+   * Note that the trigger offline selection need to be
+   * defined from outside the task.
+   *
+   * @return Trigger offline selection
+   */
+  AliEmcalTriggerOfflineSelection *GetOfflineTriggerSelection() const { return fTriggerSelection; }
 
   /**
    * Set z-range of the primary vertex which is selected
@@ -179,6 +196,7 @@ public:
   void SetTriggerAcceptanceOADB(const TString &nameAcceptanceOADB) { fNameAcceptanceOADB = nameAcceptanceOADB; }
 
 protected:
+
   /**
    * Steering of object creation. Handles general objects (histogram manager
    * and analysis utils) and steers user objects

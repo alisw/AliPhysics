@@ -78,33 +78,40 @@ public:
   };
 
   /**
-   * Default constructor
+   * @brief Default constructor
    */
   AliEmcalTriggerOfflineSelection();
 
   /**
-   * Destructor
+   * @brief Destructor
    */
   virtual ~AliEmcalTriggerOfflineSelection();
 
   /**
-   * Specify threshold for a given offline trigger class. Convention is a threshold
-   * on the patch energy (from cells) in GeV
+   * @brief Specify threshold for a given offline trigger class.
+   *
+   * Convention is a threshold on the patch energy (from cells) in GeV
+   *
    * @param[in] trgcls Trigger class for which to set the threshold
    * @param[in] threshold Threshold value for the trigger class
    */
   void SetOfflineEnergyThreshold(EmcalTriggerClass trgcls, double threshold) { fOfflineEnergyThreshold[trgcls] = threshold; }
 
   /**
-   * Define according to which energy measurement a patch is selected as trigger patch See @ref EmcalEnergyDefinition_t
-   * for possible settings.
+   * @brief Define according to which energy measurement a patch is selected as trigger patch.
+   *
+   * See @ref EmcalEnergyDefinition_t for possible settings.
+   *
    * @param[in] endef Type of the energy measurement.
    */
   void SetEnergyDefinition(EmcalEnergyDefinition_t endef) { fEnergyDefinition = endef; }
 
   /**
-   * Set acceptance map for a given trigger class. The acceptance map is expected to be normalized
-   * to 1 for the position with the largest trigger patch
+   * @brief Set acceptance map for a given trigger class.
+   *
+   * The acceptance map is expected to be normalized to 1 for the position with the largest
+   * trigger patch.
+   *
    * @param[in] trgcls Trigger class for which to set then acceptance map
    * @param[in] accmap Acceptance map as 2D histogram
    */
@@ -117,6 +124,8 @@ public:
   void SetClusterContainer(const TString &clustercont) { fNameClusterContainer = clustercont; }
 
   /**
+   * @brief Select event as triggered event.
+   *
    * Apply additional cut requiring at least one offline patch above a given energy (not fake ADC!)
    * Attention: This task groups into single shower triggers (L0, EG1, EG2) and jet triggers (EJ1 and EJ2).
    * Per convention the low threshold patch is selected. No energy cut should be applied in the trigger maker.
@@ -134,42 +143,45 @@ public:
   Bool_t IsOfflineSelected(EmcalTriggerClass trgcls, const AliVEvent * const data) const;
 
   /**
-   * Get the offline trigger threshold (on energy) for a given trigger class.
+   * @brief Get the offline trigger threshold (on energy) for a given trigger class.
    * @param[in] trgcls Trigger class for which to check the threshold
    * @return Threshold for the given trigger class (0 if not set)
    */
   Double_t GetThresholdForTrigger(EmcalTriggerClass trgcls) const {return fOfflineEnergyThreshold[trgcls]; }
 
   /**
-   * Get the name of the cluster container
+   * @brief Get the name of the cluster container
    * @return Name of the cluster container
    */
   const TString &GetNameClusterContainer() const  { return fNameClusterContainer; }
 
   /**
-   * Checks if the trigger class is a single shower patch trigger class
+   * @brief Checks if the trigger class is a single shower patch trigger class
    * @param[in] cls Type of the trigger class to check
    * @return True if the trigger class is a single shower patch trigger class
    */
   static Bool_t IsSingleShower(EmcalTriggerClass cls);
 
   /**
-   * Checks if the trigger class is a jet patch trigger class
+   * @brief Checks if the trigger class is a jet patch trigger class
    * @param[in] cls Type of the trigger class to check
    * @return True if the trigger class is a single shower patch trigger class
    */
   static Bool_t IsDCAL(EmcalTriggerClass cls);
 
   /**
-   * Get the name of the trigger class as string representation
+   * @brief Get the name of the trigger class as string representation
    * @param[in] cls EMCAL/DCAL trigger class
    * @return Name of the trigger class
    */
   static const TString &GetTriggerName(EmcalTriggerClass cls) { return fgkTriggerNames[cls]; }
 
   /**
-   * Set the energy resolution used to smear the threshold. Note that
-   * an absolute value for the energy is used.
+   * @brief Set the energy resolution used to smear the threshold.
+   *
+   * Note that an absolute value for the energy is used. In case the
+   * resolution is set to 0, no smearing is applied.
+   *
    * @param[in] resolution Energy resolution used for smearing
    */
   void SetEnergyResolution(Double_t resolution) { fResolution = resolution; }

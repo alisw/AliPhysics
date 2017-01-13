@@ -91,7 +91,9 @@ bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls
       // energy resolution as parameter for the smearing. A patch is
       // selected in case the energy is above the smeared threshold.
       // The approach is equivalent to smearing the patch energy itself.
+      AliDebugStream(1) << "Smearing energy with resolution " << fResolution << std::endl;
       threshold = gRandom->Gaus(threshold, fResolution);
+      AliDebugStream(1) << "Thresholds: original(" << fOfflineEnergyThreshold[trgcls] << "), smeared(" << threshold << ")" << std::endl;
     }
     if(energy > threshold){
       AliDebugStream(2) << GetTriggerName(trgcls) << " patch above threshold (" << patch->GetPatchE() << " | " << fOfflineEnergyThreshold[trgcls] << ")" <<  std::endl;
