@@ -152,7 +152,7 @@ void AliEmcalFastOrMonitorTask::LoadEventCellData(){
    fCellData.Reset();
    AliVCaloCells *emccells = InputEvent()->GetEMCALCells();
    for(int icell = 0; icell < emccells->GetNumberOfCells(); icell++){
-     int position = emccells->GetCellPosition(icell);
+     int position = emccells->GetCellNumber(icell);
      double amplitude = emccells->GetAmplitude(icell);
      int absFastor, col, row;
      fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);
