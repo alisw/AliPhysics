@@ -565,11 +565,11 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         lBgEstimateError = TMath::Sqrt(lBgEstimate); //fit->IntegralError( lValPeakLo, lValPeakHi );
     }
     
-    if ( lOption.Contains("bincounting") ){
+    if ( lOption.Contains("bincounting") || lOption.Contains("MC") ){
         //Check if possible
-        if( lLoLeftBg + lHiRightBg > 1e-6 ||
+        if((lLoLeftBg + lHiRightBg > 1e-6 ||
             lHiLeftBg + lLoRightBg > 1e-6 ||
-            lLoPeak   + lHiPeak    > 1e-6 ){
+            lLoPeak   + lHiPeak    > 1e-6 ) || lOption.Contains("MC") ){
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
             AliWarning(" Cannot perform bin counting with asymmetric peak and bg regions!");
             AliWarning("   In this case, please prefer the \'linear\' sig. ext. option");
