@@ -172,7 +172,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     cout<<"AliStrangenessModule -> Number of events in multiplicity class "<<lLoMult<<" to "<<lHiMult<<": "<<lNEvents<<endl;
     
     //In preparation bis: get number of events from MC data
-    TH1D *fHistCentralityMC = (TH1D*) lMCCountersInput->FindObject( "fHistCentralityMC" )->Clone("fHistCentralityCloneMC");
+    TH1D *fHistCentralityMC = (TH1D*) lMCCountersInput->FindObject( "fHistCentrality" )->Clone("fHistCentralityCloneMC");
     fHistCentralityMC->SetDirectory(0);
     Double_t lNEventsMC = fHistCentralityMC->Integral( fHistCentralityMC->GetXaxis()->FindBin( lLoMult+1e-5 ),
                                                   fHistCentralityMC->GetXaxis()->FindBin( lHiMult-1e-5 ) );
@@ -185,7 +185,7 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     fHistEventCounter->GetXaxis()->SetBinLabel(2, "# Events (MC)");
     
     fHistEventCounter->SetBinContent(1,lNEvents);
-    fHistEventCounter->SetBinContent(1,lNEventsMC);
+    fHistEventCounter->SetBinContent(2,lNEventsMC);
     
     fListOutput->Add(fHistEventCounter);
     
@@ -603,7 +603,7 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
         //Check if possible
         if((lLoLeftBg + lHiRightBg > 1e-6 ||
             lHiLeftBg + lLoRightBg > 1e-6 ||
-            lLoPeak   + lHiPeak    > 1e-6 ) || !lOption.Contains("MC") ){
+            lLoPeak   + lHiPeak    > 1e-6 ) && !lOption.Contains("MC") ){
             AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
             AliWarning(" Cannot perform bin counting with asymmetric peak and bg regions!");
             AliWarning("   In this case, please prefer the \'linear\' sig. ext. option");
