@@ -47,6 +47,7 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef() :
     AliAnalysisTaskEmcalTriggerBase(),
     fCentralityRange(-999., 999.),
     fEnableSumw2(false),
+    fUseRecalcPatches(false),
     fRequestCentrality(false),
     fEventCentrality(0)
 {
@@ -57,6 +58,7 @@ AliAnalysisTaskEmcalPatchesRef::AliAnalysisTaskEmcalPatchesRef(const char *name)
     AliAnalysisTaskEmcalTriggerBase(name),
     fCentralityRange(-999., 999.),
     fEnableSumw2(false),
+    fUseRecalcPatches(false),
     fRequestCentrality(false),
     fEventCentrality(0)
 {
@@ -154,7 +156,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
     }
 
     TLorentzVector posvec;
-    energy = patch->GetPatchE();
+    energy = fUseRecalcPatches ? patch->GetADCAmpGeVRough() : patch->GetPatchE();
     eta = patch->GetEtaGeo();
     phi = patch->GetPhiGeo();
     col = patch->GetColStart();
@@ -207,13 +209,23 @@ void AliAnalysisTaskEmcalPatchesRef::GetPatchBoundaries(const AliEMCALTriggerPat
 }
 
 bool AliAnalysisTaskEmcalPatchesRef::SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const{
-  if(!patch->IsOfflineSimple()) return false;
-  return patch->IsGammaLowSimple();
+  if(fUseRecalcPatches){
+    if(!patch->IsRecalc()) return false;
+    return patch->IsGammaLowRecalc();
+  } else {
+    if(!patch->IsOfflineSimple()) return false;
+    return patch->IsGammaLowSimple();
+  }
 }
 
 bool AliAnalysisTaskEmcalPatchesRef::SelectJetPatch(const AliEMCALTriggerPatchInfo *patch) const{
-  if(!patch->IsOfflineSimple()) return false;
-  return patch->IsJetLowSimple();
+  if(fUseRecalcPatches){
+    if(!patch->IsRecalc()) return false;
+    return patch->IsJetLowRecalc();
+  } else {
+    if(!patch->IsOfflineSimple()) return false;
+    return patch->IsJetLowSimple();
+  }
 }
 
 AliAnalysisTaskEmcalPatchesRef::EnergyBinning::EnergyBinning():

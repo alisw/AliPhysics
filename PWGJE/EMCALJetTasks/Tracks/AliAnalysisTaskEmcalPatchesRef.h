@@ -29,36 +29,53 @@ class AliEmcalTriggerOfflineSelection;
 class AliAnalysisTaskEmcalPatchesRef : public AliAnalysisTaskEmcalTriggerBase {
 public:
   /**
-   * Dummy (I/O) onstructor
+   * @brief Dummy (I/O) onstructor
    */
   AliAnalysisTaskEmcalPatchesRef();
 
   /**
-   * Named constructor
+   * @brief Named constructor
    * @param[in] name Name of the task
    */
   AliAnalysisTaskEmcalPatchesRef(const char *name);
 
   /**
-   * Destructor
+   * @brief Destructor
    */
   virtual ~AliAnalysisTaskEmcalPatchesRef(){}
 
   /**
-   * Enable Sumw2 when creating the histograms. Attention: Enabling Sumw2
-   * will increase memory consumption significantly. Option should only be
-   * used in case histograms are filled with a weight.
+   * @brief Enable Sumw2 when creating the histograms.
+   *
+   * Attention: Enabling Sumw2 will increase memory consumption
+   * significantly. Option should only be used in case histograms
+   * are filled with a weight.
+   *
    * @param[in] doEnable If true Sumw2 is enabled for all histograms
    */
   void EnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
 
   /**
-   * Set centrality selection.
+   * @brief Set centrality selection.
+   *
    * Note: Needs multiplicity task to run in front
+   *
    * @param[in] min Min. value of the centrality interval
    * @param[in] max Max. value of the centrality interval
    */
   void SetCentralityRange(double min, double max) { fCentralityRange.SetLimits(min,max); fRequestCentrality = true; }
+
+  /**
+   * @brief Switch for recalc patches
+   *
+   * By default the task analyzes offline patches and offline energy (meaning
+   * energy calculated from FEE cells).  Switching on recalc mode the task
+   * is using recalc patches (calculated from L1 time sums, but ignoring STU
+   * decision).
+   *
+   * @param[in] doUse If true then recalc patches (and recalc energy) is used
+   */
+  void SetUseRecalcPatches(Bool_t doUse = kTRUE);
 
 protected:
 
@@ -68,27 +85,39 @@ protected:
   virtual void CreateUserObjects() {}
 
   /**
-   * Creating output histograms:
+   * @brief Creating output histograms.
+   *
+   * Supported user histograms are:
    * - Patch (calibrated) energy spectrum - separated by patch type - for different trigger classes
    * - Patch eta-phi map - separated by patch type - for different trigger classes and different min. energies
    */
   virtual void CreateUserHistos();
 
   /**
-   * Handle centrality selection (if requested, and multiplicity information available)
+   * @brief Apply additional event selection requested by the user
+   *
+   * Handle only centrality selection (if requested, and multiplicity
+   * information available). Supported is only new centrality framework.
+   *
    * @return True if event is in proper centrality class
    */
   virtual bool IsUserEventSelected();
 
   /**
-   * Run event loop: Loop over all patches, assign them to trigger classes, and
-   * fill relevant histograms
+   * @brief Main event loop.
+   *
+   * Loop over all patches, assign them to trigger classes, and
+   * fill relevant histograms. Event loop is only called once the event
+   * selection (common and user) is passed.
+   *
    * @param Not used
    */
   virtual bool Run();
 
   /**
-   * Fill event-based histograms. Monitored are
+   * @brief Fill event-based histograms.
+   *
+   * Monitored are:
    * - Number of events
    * - Centrality percentile (if available)
    * - z-position of the primary vertex
@@ -106,22 +135,25 @@ protected:
   void GetPatchBoundaries(const AliEMCALTriggerPatchInfo *patch, Double_t *boundaries) const;
 
   /**
-   * Helper function, selecting offline simple single shower (gamma or L0) patches
+   * @brief Selecting offline/recalc simple single shower (gamma or L0) patches
    * @param[in] patch Patch to check
    * @return True if the patch is selected
    */
   bool SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const;
 
   /**
-   * Helper function, selecting offline simple jet patches
+   * @brief Selecting offline/recalc simple jet patches.
    * @param[in] patch Patch to check
    * @return True if the patch is selected
    */
   bool SelectJetPatch(const AliEMCALTriggerPatchInfo  *patch) const;
 
   /**
-   * Filling patch related histogram. In case a downscaling correction is
-   * available it is applied to the histograms as weight
+   * @brief Filling patch related histogram.
+   *
+   * In case a downscaling correction is available it is applied to the
+   * histograms as weight.
+   *
    * @param[in] triggerclass Name of the trigger class firing the event
    * @param[in] patchname Name of the patchtype
    * @param[in] energy Calibrated energy of the patch
@@ -132,20 +164,25 @@ protected:
 
   AliCutValueRange<double>            fCentralityRange;           ///< Range of accepted event centralities
   Bool_t                              fEnableSumw2;               ///< Enable sumw2 during histogram creation
+  Bool_t                              fUseRecalcPatches;          ///< Switch between offline (FEE) and recalc (L1) patches
   Bool_t                              fRequestCentrality;         ///< Switch for request of centrality selection
   Double_t                            fEventCentrality;           //!<1! Event centrality
 
 private:
 
+  /**
+   * @class EnergyBinning
+   * @brief Common energy binning used in the patch QA task
+   */
   class EnergyBinning : public TCustomBinning {
   public:
     /**
-     * Constructor
+     * @brief Constructor
      */
     EnergyBinning();
 
     /**
-     * Destructor
+     * @brief Destructor
      */
     virtual ~EnergyBinning() {}
   };
