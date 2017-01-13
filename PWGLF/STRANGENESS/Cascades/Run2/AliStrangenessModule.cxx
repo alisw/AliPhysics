@@ -171,6 +171,24 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
                                                   fHistCentrality->GetXaxis()->FindBin( lHiMult-1e-5 ) );
     cout<<"AliStrangenessModule -> Number of events in multiplicity class "<<lLoMult<<" to "<<lHiMult<<": "<<lNEvents<<endl;
     
+    //In preparation bis: get number of events from MC data
+    TH1D *fHistCentralityMC = (TH1D*) lMCCountersInput->FindObject( "fHistCentralityMC" )->Clone("fHistCentralityCloneMC");
+    fHistCentralityMC->SetDirectory(0);
+    Double_t lNEventsMC = fHistCentralityMC->Integral( fHistCentralityMC->GetXaxis()->FindBin( lLoMult+1e-5 ),
+                                                  fHistCentralityMC->GetXaxis()->FindBin( lHiMult-1e-5 ) );
+    
+    //Save number of events to output
+    TH1D *fHistEventCounter = new TH1D("fHistEventCounter", "", 2,0,2);
+    fHistEventCounter->SetDirectory(0);
+    
+    fHistEventCounter->GetXaxis()->SetBinLabel(1, "# Events (Data)");
+    fHistEventCounter->GetXaxis()->SetBinLabel(2, "# Events (MC)");
+    
+    fHistEventCounter->SetBinContent(1,lNEvents);
+    fHistEventCounter->SetBinContent(1,lNEventsMC);
+    
+    fListOutput->Add(fHistEventCounter);
+    
     //Step 1: Open real data object
     TString lDataName = lConfiguration.Data();
     lDataName.Append("_Data");

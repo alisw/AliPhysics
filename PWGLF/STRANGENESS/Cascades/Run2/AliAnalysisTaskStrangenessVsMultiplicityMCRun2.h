@@ -243,6 +243,8 @@ private:
     Float_t fTreeVariableDistOverTotMom;//!
     Int_t   fTreeVariableLeastNbrCrossedRows;//!
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
+    Float_t fTreeVariableMaxChi2PerCluster; //!
+    Float_t fTreeVariableMinTrackLength; //! 
 
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
@@ -302,6 +304,8 @@ private:
     Float_t fTreeCascVarWrongCosPA;                   //!
     Int_t   fTreeCascVarLeastNbrClusters;             //!
     Float_t fTreeCascVarDistOverTotMom;               //!
+    Float_t fTreeCascVarMaxChi2PerCluster; //!
+    Float_t fTreeCascVarMinTrackLength; //!
 
     //TPC dEdx
     Float_t fTreeCascVarNegNSigmaPion;   //!

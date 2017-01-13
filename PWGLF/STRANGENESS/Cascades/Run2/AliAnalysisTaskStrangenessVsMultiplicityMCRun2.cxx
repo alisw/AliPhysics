@@ -170,6 +170,8 @@ fTreeVariableAlphaV0(0),
 fTreeVariablePtArmV0(0),
 fTreeVariableNegEta(0),
 fTreeVariablePosEta(0),
+fTreeVariableMaxChi2PerCluster(0),
+fTreeVariableMinTrackLength(0),
 
 fTreeVariableNSigmasPosProton(0),
 fTreeVariableNSigmasPosPion(0),
@@ -252,6 +254,8 @@ fTreeCascVarBachTrackStatus(0), //!
 fTreeCascVarNegDCAz(-1),
 fTreeCascVarPosDCAz(-1),
 fTreeCascVarBachDCAz(-1),
+fTreeCascVarMaxChi2PerCluster(0),
+fTreeCascVarMinTrackLength(0), 
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -387,6 +391,8 @@ fTreeVariableAlphaV0(0),
 fTreeVariablePtArmV0(0),
 fTreeVariableNegEta(0),
 fTreeVariablePosEta(0),
+fTreeVariableMaxChi2PerCluster(0),
+fTreeVariableMinTrackLength(0),
 
 fTreeVariableNSigmasPosProton(0),
 fTreeVariableNSigmasPosPion(0),
@@ -470,6 +476,8 @@ fTreeCascVarBachTrackStatus(0), //!
 fTreeCascVarNegDCAz(-1),
 fTreeCascVarPosDCAz(-1),
 fTreeCascVarBachDCAz(-1),
+fTreeCascVarMaxChi2PerCluster(0),
+fTreeCascVarMinTrackLength(0),
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -668,6 +676,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePtArmV0",&fTreeVariablePtArmV0,"fTreeVariablePtArmV0/F");
         fTreeV0->Branch("fTreeVariableLeastNbrCrossedRows",&fTreeVariableLeastNbrCrossedRows,"fTreeVariableLeastNbrCrossedRows/I");
         fTreeV0->Branch("fTreeVariableLeastRatioCrossedRowsOverFindable",&fTreeVariableLeastRatioCrossedRowsOverFindable,"fTreeVariableLeastRatioCrossedRowsOverFindable/F");
+        fTreeV0->Branch("fTreeVariableMaxChi2PerCluster",&fTreeVariableMaxChi2PerCluster,"fTreeVariableMaxChi2PerCluster/F");
+        fTreeV0->Branch("fTreeVariableMinTrackLength",&fTreeVariableMinTrackLength,"fTreeVariableMinTrackLength/F");
         fTreeV0->Branch("fTreeVariableDistOverTotMom",&fTreeVariableDistOverTotMom,"fTreeVariableDistOverTotMom/F");
         fTreeV0->Branch("fTreeVariableNSigmasPosProton",&fTreeVariableNSigmasPosProton,"fTreeVariableNSigmasPosProton/F");
         fTreeV0->Branch("fTreeVariableNSigmasPosPion",&fTreeVariableNSigmasPosPion,"fTreeVariableNSigmasPosPion/F");
@@ -737,6 +747,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarDCABachToBaryon",&fTreeCascVarDCABachToBaryon,"fTreeCascVarDCABachToBaryon/F");
         fTreeCascade->Branch("fTreeCascVarWrongCosPA",&fTreeCascVarWrongCosPA,"fTreeCascVarWrongCosPA/F");
         fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
+        fTreeCascade->Branch("fTreeCascVarMaxChi2PerCluster",&fTreeCascVarMaxChi2PerCluster,"fTreeCascVarMaxChi2PerCluster/F");
+        fTreeCascade->Branch("fTreeCascVarMinTrackLength",&fTreeCascVarMinTrackLength,"fTreeCascVarMinTrackLength/F");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
         fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
@@ -1244,6 +1256,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
         if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
 
+        //Extra track quality: Chi2/cluster for cross-checks
+        Float_t lBiggestChi2PerCluster = -1;
+        
+        Float_t lPosChi2PerCluster = 1000;
+        Float_t lNegChi2PerCluster = 1000;
+        
+        if( pTrack->GetTPCNcls() > 0 ) lPosChi2PerCluster = pTrack->GetTPCchi2() / ((Float_t)pTrack->GetTPCNcls());
+        if( nTrack->GetTPCNcls() > 0 ) lNegChi2PerCluster = nTrack->GetTPCchi2() / ((Float_t)nTrack->GetTPCNcls());
+        
+        if ( lPosChi2PerCluster  > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lPosChi2PerCluster;
+        if ( lNegChi2PerCluster  > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lNegChi2PerCluster;
+        
+        fTreeVariableMaxChi2PerCluster = lBiggestChi2PerCluster;
+        
         //End track Quality Cuts
         //________________________________________________________________________
 
@@ -1550,6 +1576,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                   (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) )
                  ||
                  !lV0Result->GetCutUseITSRefitTracks()
+                 )&&
+                
+                //Check 8: Max Chi2/Clusters if not absurd
+                ( lV0Result->GetCutMaxChi2PerCluster()>1e+3 ||
+                 fTreeVariableMaxChi2PerCluster < lV0Result->GetCutMaxChi2PerCluster()
                  )
                 )
             {
@@ -1887,10 +1918,23 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             AliDebug(1, "Pb / Bach.   track has less than 70 TPC clusters ... continue!");
             continue;
         }
+        
+        Float_t lPosChi2PerCluster = pTrackXi->GetTPCchi2() / ((Float_t) lPosTPCClusters);
+        Float_t lNegChi2PerCluster = nTrackXi->GetTPCchi2() / ((Float_t) lNegTPCClusters);
+        Float_t lBachChi2PerCluster = bachTrackXi->GetTPCchi2() / ((Float_t) lBachTPCClusters);
+        
         Int_t leastnumberofclusters = 1000;
+        Float_t lBiggestChi2PerCluster = -1;
+        
+        //Pick minimum
         if( lPosTPCClusters < leastnumberofclusters ) leastnumberofclusters = lPosTPCClusters;
         if( lNegTPCClusters < leastnumberofclusters ) leastnumberofclusters = lNegTPCClusters;
         if( lBachTPCClusters < leastnumberofclusters ) leastnumberofclusters = lBachTPCClusters;
+        
+        //Pick maximum
+        if( lPosChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lPosChi2PerCluster;
+        if( lNegChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lNegChi2PerCluster;
+        if( lBachChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lBachChi2PerCluster;
 
         lInvMassLambdaAsCascDghter	= xi->GetEffMass();
         // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
@@ -2360,6 +2404,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeCascVarV0CosPointingAngleSpecial = lV0CosineOfPointingAngleXiSpecial;
         fTreeCascVarV0Radius = lV0RadiusXi;
         fTreeCascVarLeastNbrClusters = leastnumberofclusters;
+        fTreeCascVarMaxChi2PerCluster = lBiggestChi2PerCluster;
 
         //Copy Multiplicity information
         fTreeCascVarCentrality = fCentrality;
@@ -2602,9 +2647,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                   )
                  ||
                  !lCascadeResult->GetCutUseITSRefitTracks()
+                 )  &&
+                
+                //Check 10: Max Chi2/Clusters if not absurd
+                ( lCascadeResult->GetCutMaxChi2PerCluster()>1e+3 ||
+                 fTreeCascVarMaxChi2PerCluster < lCascadeResult->GetCutMaxChi2PerCluster()
                  ) &&
                 
-                //Check 10: Explicit associate-with-bump
+                //Check 11: Explicit associate-with-bump
                 ( ! (lCascadeResult->GetCutMCSelectBump())    || (//Start bump-selection
                                                                   //Case: XiMinus or OmegaMinus
                                                                   (lCharge == -1 &&
