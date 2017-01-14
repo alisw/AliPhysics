@@ -604,6 +604,9 @@ void AliPHOSGeoUtils::GetIncidentVector(const TVector3 &vtx, Int_t module, Float
 const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
   //Provides shift-rotation matrix for module mod
 
+  if(fEMCMatrix[mod-1]){
+    return fEMCMatrix[mod-1] ;
+  }
   //If GeoManager exists, take matrixes from it
   if(gGeoManager){
     char path[255] ;
@@ -623,9 +626,6 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
     gGeoManager->cd(path) ;
     return gGeoManager->GetCurrentMatrix();
   }
-  if(fEMCMatrix[mod-1]){
-    return fEMCMatrix[mod-1] ;
-  }
   else{
  //   AliWarning("Can not find PHOS misalignment matrixes\n") ;
  //   AliWarning("Either import TGeoManager from geometry.root or \n");
@@ -639,6 +639,9 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
 const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)const {
   //Provides shift-rotation matrix for strip unit of the module mod
 
+  if(fStripMatrix[mod-1][strip-1]){
+    return fStripMatrix[mod-1][strip-1] ;
+  }    
   //If GeoManager exists, take matrixes from it
   if(gGeoManager){
     char path[255] ;
@@ -657,9 +660,6 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)co
     gGeoManager->cd(path) ;
     return gGeoManager->GetCurrentMatrix();
   } 
-  if(fStripMatrix[mod-1][strip-1]){
-    return fStripMatrix[mod-1][strip-1] ;
-  }
   else{
     AliWarning("Can not find PHOS misalignment matrixes\n") ;
     AliWarning("Either import TGeoManager from geometry.root or \n");
@@ -673,6 +673,9 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)co
 const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
   //Provides shift-rotation matrix for CPV of the module mod
 
+  if(fCPVMatrix[mod-1]){
+    return fCPVMatrix[mod-1] ;
+  }
   //If GeoManager exists, take matrixes from it
   if(gGeoManager){ 
     char path[255] ;
@@ -687,9 +690,6 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
     }
     gGeoManager->cd(path) ;
     return gGeoManager->GetCurrentMatrix();
-  }
-  if(fCPVMatrix[mod-1]){
-    return fCPVMatrix[mod-1] ;
   }
   else{
     AliWarning("Can not find PHOS misalignment matrixes\n") ;
