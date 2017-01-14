@@ -7,6 +7,7 @@ AliAnalysisTask *AddTaskBeautyCal(
                                  Int_t MimCent = -1, Int_t MaxCent = -1, 
                                  Int_t EtaRange = 0,
                                  Int_t ITSchi2 = 26,
+                                 Bool_t pileup = kFALSE,
                                  Double_t mass = 0.1, Double_t ptAss = 0.2, 
                                  Int_t thEG1ADC=140, Int_t thEG2ADC=89,
                                  TString ContNameExt = "")
@@ -104,6 +105,7 @@ AliAnalysisTask *AddTaskBeautyCal(
     hfecalqa7->SetInvMassCut1(ptAss);
     hfecalqa7->SetEtaRange(EtaRange);
     hfecalqa7->SetITSchi2(ITSchi2);
+    hfecalqa7->SetPileUpCut(pileup);
     
     TString containerName7 = mgr->GetCommonFileName();
     containerName7 += ":PWGHF_hfeBeautyCalINT7";
@@ -220,6 +222,7 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig01->SetInvMassCut1(ptAss);
         hfecalqaTrig01->SetEtaRange(EtaRange);
         hfecalqaTrig01->SetITSchi2(ITSchi2);
+        hfecalqaTrig01->SetPileUpCut(pileup);
         
         TString containerName01 = mgr->GetCommonFileName();
         containerName01 += ":PWGHF_hfeBeautyCalTrigGAEG1";
@@ -249,6 +252,7 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig02->SetInvMassCut1(ptAss);
         hfecalqaTrig02->SetEtaRange(EtaRange);
         hfecalqaTrig02->SetITSchi2(ITSchi2);        
+        hfecalqaTrig02->SetPileUpCut(pileup);
 
         TString containerName02 = mgr->GetCommonFileName();
         containerName02 += ":PWGHF_hfeBeautyCalTrigGAEG2";
@@ -279,6 +283,7 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig0->SetInvMassCut1(ptAss);
         hfecalqaTrig0->SetEtaRange(EtaRange);
         hfecalqaTrig0->SetITSchi2(ITSchi2);        
+        hfecalqaTrig0->SetPileUpCut(pileup);
 
         TString containerName1 = mgr->GetCommonFileName();
         containerName1 += ":PWGHF_hfeBeautyCalTrigGA";
@@ -308,6 +313,7 @@ AliAnalysisTask *AddTaskBeautyCal(
     hfecalqaMB->SetInvMassCut1(ptAss);
     hfecalqaMB->SetEtaRange(EtaRange);
     hfecalqaMB->SetITSchi2(ITSchi2);     
+    hfecalqaMB->SetPileUpCut(pileup);     
 
     TString containerName2 = mgr->GetCommonFileName();
     containerName2 += ":PWGHF_hfeBeautyCalMB";

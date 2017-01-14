@@ -805,6 +805,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
   fNevents->Fill(0); //all events
 
+  // remove event 1
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
   //Double_t NcontV = pVtx->GetNContributors();
@@ -820,6 +821,33 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   //cout << TMath::Abs(dz) << " ; " << nsigTot << " ; " << nsigTrc << endl;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20)return;
   
+  // remove event2
+
+    Int_t nTPCout=0;
+    Float_t mTotV0=0;
+    
+    AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
+    Float_t mTotV0A=v0data->GetMTotV0A();
+    Float_t mTotV0C=v0data->GetMTotV0C();
+    mTotV0=mTotV0A+mTotV0C;
+    
+    Int_t ntracksEv = fAOD->GetNumberOfTracks();
+    for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+        AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if(!track) {AliFatal("Not a standard AOD");}
+        if(track->GetID()<0)continue;
+        if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
+        else continue;
+    }
+    Float_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
+   
+     //Bool_t fEnablePileupRejVZEROTPCout = kFALSE;
+
+     if(fEnablePileupRejVZEROTPCout)
+       {
+        if(mTotV0<mV0Cut) return;
+       }
+
   fNevents->Fill(1); //events with 2 tracks
 
   Zvertex = pVtx->GetZ();
