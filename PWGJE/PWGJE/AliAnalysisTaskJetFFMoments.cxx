@@ -850,6 +850,7 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
    Float_t zvtx = t.GetAt(2);
    Float_t r2   = yvtx*yvtx+xvtx*xvtx;
    if(!(TMath::Abs(zvtx)<fVtxZMax&&r2<fVtxR2Max)) return;
+   if((fPtHardAndPythiaJetPtFactor || fPtHardAndTrackPtFactor) && IsOutlier(GetPythiaHeader()))  return;
    fh1vZSelect->Fill(t.GetAt(2));
    fh1Xsec->Fill("<#sigma>",  pythiaHeader->GetXsection());
    fh1Trials->Fill("#sum{ntrials}",pythiaHeader->Trials());
@@ -1568,6 +1569,13 @@ Int_t  AliAnalysisTaskJetFFMoments::GetListOfTracks(TList *list,Int_t type)
          if(part->Particle()->GetPDG()->Charge()==0)continue;
         }
 
+        if((type == kTrackKineChargedAcceptance || type == kTrackKineChargedAcceptanceDet || type == kTrackKineAcceptance || type == kTrackKineAcceptanceDet) &&
+           (       part->Eta() < fTrackEtaMin
+                || part->Eta() > fTrackEtaMax
+                || part->Phi() < fTrackPhiMin
+                || part->Phi() > fTrackPhiMax
+                || part->Pt()  < fTrackPtMin)) continue;
+
         if(type == kTrackKineChargedAcceptanceDet || type == kTrackKineAcceptanceDet)
           {
 
@@ -1632,19 +1640,19 @@ Int_t  AliAnalysisTaskJetFFMoments::GetListOfTracks(TList *list,Int_t type)
           if (fEffi &&  fEffi->InheritsFrom("TF1") &&  (((1+fEffivar/100.)*(((TF1*) fEffi)->Eval(part->Pt()))) > 1) ) continue;
           if (fEffi &&  fEffi->InheritsFrom("TH1") &&  (((1+fEffivar/100.)*(((TH1*) fEffi)->GetBinContent(((TH1*)fEffi)->FindBin(part->Pt())))) > 1)) continue;
 
+        
+        if (       part->Eta() < fTrackEtaMin
+                || part->Eta() > fTrackEtaMax
+                || part->Phi() < fTrackPhiMin
+                || part->Phi() > fTrackPhiMax
+                || part->Pt()  < fTrackPtMin) continue;
+
+
          fh1TrackEffPtRec->Fill(part->Pt());
          fh2TrackEffEtaPhiRec->Fill(part->Eta(),TVector2::Phi_0_2pi(part->Phi()));
 
 
          }
-
-
-        if((type == kTrackKineChargedAcceptance || type == kTrackKineChargedAcceptanceDet || type == kTrackKineAcceptance || type == kTrackKineAcceptanceDet) &&
-           (       part->Eta() < fTrackEtaMin
-                || part->Eta() > fTrackEtaMax
-                || part->Phi() < fTrackPhiMin
-                || part->Phi() > fTrackPhiMax
-                || part->Pt()  < fTrackPtMin)) continue;
 
 	list->Add(part);
 	iCount++;
