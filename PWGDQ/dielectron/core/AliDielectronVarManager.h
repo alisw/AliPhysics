@@ -115,6 +115,7 @@ public:
     kY,                      // rapidity
     kE,                      // energy
     kM,                      // mass
+    kMCorr,                  // mass, corrected (for photons)
     kMMC,                    // MC mass
     kCharge,                 // charge
     kNclsITS,                // number of clusters assigned in the ITS
@@ -257,6 +258,7 @@ public:
     kDecayLength,            // decay length
     kR,                      // distance to the origin
     kOpeningAngle,           // opening angle
+    kOpeningAngleCorr,        // opening angle, corrected (for photons)
     kOpeningAngleXY,           // opening angle at in XY direction
     kOpeningAngleRZ,           // opening angle at in RZ direction
     kTriangularConversionCut, // triangular cut on opening angle and kPhivPair
@@ -610,8 +612,11 @@ public:
     kRefMultOvRefMultTPConly,   // ref mult / tpc only ref mult should give a hint on out of bunch pile-up if much higher than factor ~4 (LHC15o)
 
     kNch,                    // MC true number of charged particles in |eta|<1.6
+    kNchJpsiExcl,            // MC true number of charged particles in |eta|<1.6 without J/psi daughter tracks
     kNch05,                  // MC true number of charged particles in |eta|<0.5
+    kNch05JpsiExcl,          // MC true number of charged particles in |eta|<0.5 without J/psi daughter tracks
     kNch10,                  // MC true number of charged particles in |eta|<1.0
+    kNch10JpsiExcl,          // MC true number of charged particles in |eta|<1.0 without J/psi daughter tracks
 
     kCentrality,             // event centrality fraction V0M
     kCentralityV0A,          // event centrality fraction V0A
@@ -1978,6 +1983,21 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	values[AliDielectronVarManager::kPsiPair]      = 0.;
 
 	 */
+
+    if(Req(kOpeningAngleCorr)) {
+      Float_t a = 1.54e-01;
+      values[AliDielectronVarManager::kOpeningAngleCorr]  = 
+        values[AliDielectronVarManager::kOpeningAngle]
+        - a * TMath::Sqrt(  values[AliDielectronVarManager::kPairDCAabsXY] * values[AliDielectronVarManager::kOneOverPt] );
+    } 
+    
+    if(Req(kMCorr)) {
+      Float_t a =  7.59e-02;
+      values[AliDielectronVarManager::kMCorr]  = 
+        values[AliDielectronVarManager::kM]
+        - a * TMath::Sqrt( values[AliDielectronVarManager::kPairDCAabsXY] * values[AliDielectronVarManager::kPt] );
+    } 
+
   }
   //common, regardless of calculation method
 
@@ -2743,8 +2763,11 @@ inline void AliDielectronVarManager::FillVarMCEvent(const AliMCEvent *event, Dou
   values[AliDielectronVarManager::kZvPrimMCtruth]       = values[AliDielectronVarManager::kZvPrim];
   // Fill AliMCEvent interface specific information
   values[AliDielectronVarManager::kNch]   = AliDielectronHelper::GetNch(event, 1.6);
+  values[AliDielectronVarManager::kNchJpsiExcl]   = AliDielectronHelper::GetNch(event, 1.6, kTRUE);
   values[AliDielectronVarManager::kNch05] = AliDielectronHelper::GetNch(event, 0.5);
+  values[AliDielectronVarManager::kNch05JpsiExcl] = AliDielectronHelper::GetNch(event, 0.5, kTRUE);
   values[AliDielectronVarManager::kNch10] = AliDielectronHelper::GetNch(event, 1.0);
+  values[AliDielectronVarManager::kNch10JpsiExcl] = AliDielectronHelper::GetNch(event, 1.0, kTRUE);
 
   values[AliDielectronVarManager::kNumberOfJPsis] = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11);
   values[AliDielectronVarManager::kNumberOfJPsisPrompt]  = AliDielectronHelper::GetNMothers(event, 0.9, 443, 11, 1);
