@@ -102,6 +102,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fMultiplicity(-1),
   fTracks_tender(0),
   fCaloClusters_tender(0),
+  fApplyAddPileUpCuts(kFALSE),
   fUseTender(kFALSE),
   fCentralityMin(0),
   fCentralityMax(20),
@@ -241,6 +242,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fMultiplicity(-1),
   fTracks_tender(0),
   fCaloClusters_tender(0),
+  fApplyAddPileUpCuts(kFALSE),
   fUseTender(kFALSE),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
@@ -397,7 +399,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   AliDebug(3, "Creating Output Objects");
 
   Double_t pi = TMath::Pi();
-
+    
   ////////////////////////
   //Initiale mixed event//
   ////////////////////////
@@ -593,7 +595,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fInclsElecPt = new TH1F("fInclsElecPt","p_{T} distribution of inclusive electrons;p_{T} (GeV/c);counts",500,0,50);
   fOutputList->Add(fInclsElecPt);
 
-  fNElecInEvt = new TH1F("fNElecInEvt","No of electrons in the event; N^{ele};counts",100,0,100);
+  fNElecInEvt = new TH1F("fNElecInEvt","No of electrons in the event; N^{ele};counts",20,-0.5,19.5);
   fOutputList->Add(fNElecInEvt);
 
   fHadEop = new TH2F("fHadEop", "E/p distribution for hadrons;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
@@ -744,15 +746,6 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fpVtx = fVevent->GetPrimaryVertex();
 
-  //////////////
-  //if Tender //
-  //////////////
-  if(fUseTender){
-    //new branches with calibrated tracks and clusters
-    fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
-  }
-
   ///////////////////
   //PID initialised//
   ///////////////////
@@ -773,6 +766,10 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   //event selection///
   ////////////////////
   if(!PassEventSelect(fVevent)) return;
+    
+    if(fApplyAddPileUpCuts){
+        if(!PassAddtionalPileUpCuts()) return;
+    }
 
   /////////////////
   // Centrality ///
@@ -786,6 +783,15 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   //Get VtxZ and Cent Bin//
   /////////////////////////
   GetVtxZCentralityBin();
+    
+    //////////////
+    //if Tender //
+    //////////////
+    if(fUseTender){
+        //new branches with calibrated tracks and clusters
+        fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+    }
 
   //////////////////////
   //EMcal cluster info//
@@ -799,10 +805,10 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
-  for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
+    for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliVParticle* Vtrack = 0x0;
-    if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
-    if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
+        if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
+        if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(iTracks));
     if (!Vtrack) {
       printf("ERROR: Could not receive track %d\n", iTracks);
       continue;
@@ -837,7 +843,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     AliVCluster *clustMatch=0x0;
     if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
     if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
-
+        
     Double_t emcphi = -999, emceta=-999;
     Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;
     if(clustMatch && clustMatch->IsEMCAL())
@@ -901,7 +907,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       if(!fElectTrack) continue;
       fInclsElecPt->Fill(TrkPt);
       fNEle++;
-
+    
       ///////////////////
       //E-H Correlation//
       ///////////////////
@@ -966,18 +972,18 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
   Double_t ptEle = -999;
   Double_t phiEle = -999, phiHad = -999, Dphi = -999;
   Double_t etaEle = -999, etaHad = -999, Deta = -999;
-
+    
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
     if(ktracks == itrack) continue; //do not select the same electron
-
-    AliVParticle* VtrackHad = 0x0;
-    if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
-    if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
-
+      
+      AliVParticle* VtrackHad = 0x0;
+      if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
+      if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
+      
     if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
@@ -1029,18 +1035,18 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
   Double_t ptEle = -999;
   Double_t phiEle = -999, phiHad = -999, Dphi = -999;
   Double_t etaEle = -999, etaHad = -999, Deta = -999;
-
-  Int_t ntracks = -999;
-  if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
-  if(fUseTender) ntracks = fTracks_tender->GetEntries();
+    
+    Int_t ntracks = -999;
+    if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+    if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
     if(ktracks == itrack || ktracks == jtrack) continue; //do not select the same electron and partner etrack from invmass
-
-    AliVParticle* VtrackHad = 0x0;
-    if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
-    if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
-
+      
+      AliVParticle* VtrackHad = 0x0;
+      if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
+      if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
+      
     if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
@@ -1083,18 +1089,18 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrelNoPartner(Int_t itrack, Int_t jtr
 void AliAnalysisTaskEHCorrel::HadronInfo(Int_t itrack)
 {
   //Hadron information
-
-  Int_t ntracks = -999;
-  if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
-  if(fUseTender) ntracks = fTracks_tender->GetEntries();
+    
+    Int_t ntracks = -999;
+    if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+    if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
 
     if(ktracks == itrack) continue; //do not select the same electron
-    AliVParticle* VtrackHad = 0x0;
-    if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
-    if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
-
+      AliVParticle* VtrackHad = 0x0;
+      if(!fUseTender) VtrackHad = fVevent->GetTrack(ktracks);
+      if(fUseTender) VtrackHad = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
+      
     if (!VtrackHad) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;
@@ -1158,19 +1164,19 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   if(fFlagHadITSNCls){
     if(HadTrack->GetITSNcls() < 3) return kFALSE;
   }
-
+    
   if(fFlagHadFiducialCut){
     if(HadTrack->Eta()< -0.8 || HadTrack->Eta()>0.8) return kFALSE;
   }
-
+ 
   if(fFlagHadPosEtaOnly){
-    if(HadTrack->Eta()< 0 || HadTrack->Eta()>0.9) return kFALSE;
+        if(HadTrack->Eta()< 0 || HadTrack->Eta()>0.9) return kFALSE;
   }
 
-  if(fFlagHadNegEtaOnly){
-    if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0) return kFALSE;
-  }
-
+    if(fFlagHadNegEtaOnly){
+        if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0) return kFALSE;
+    }
+    
   return kTRUE;
 }
 //___________________________________________
@@ -1262,10 +1268,10 @@ Bool_t AliAnalysisTaskEHCorrel::PassTrackCuts(AliAODTrack *atrack)
   if(atrack->GetITSNcls() < 3) return kFALSE;
   if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) return kFALSE;
   if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
-
-  if(fFlagEleSPDkFirst) {
-    if(!(atrack->HasPointOnITSLayer(0))) return kFALSE;
-  }
+    
+    if(fFlagEleSPDkFirst) {
+        if(!(atrack->HasPointOnITSLayer(0))) return kFALSE;
+    }
 
   if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
@@ -1331,6 +1337,34 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
   return kTRUE;
 }
 //___________________________________________
+Bool_t AliAnalysisTaskEHCorrel::PassAddtionalPileUpCuts()
+{
+    //additional cuts to reject pile-up
+    Int_t nTPCout=0;
+    Float_t mTotV0=0;
+    
+    //get multiplicity
+    AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
+    Float_t mTotV0A=v0data->GetMTotV0A();
+    Float_t mTotV0C=v0data->GetMTotV0C();
+    mTotV0=mTotV0A+mTotV0C;
+    
+    //get no of tracks with kTPCout
+    Int_t ntracksEv = fAOD->GetNumberOfTracks();
+    for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+        AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if(!track) {AliFatal("Not a standard AOD");}
+        if(track->GetID()<0)continue;
+        if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
+        else continue;
+    }
+    Double_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
+    
+    if(mTotV0 < mV0Cut) return kFALSE;
+    
+    return kTRUE;
+}
+//___________________________________________
 void AliAnalysisTaskEHCorrel::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)
 {
   //check centrality, Run 2
@@ -1374,9 +1408,9 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
   Double_t clustE=-999, emcphi = -999, emceta=-999;
   Float_t tof=-999;
 
-  if(!fUseTender) Nclust = fVevent->GetNumberOfCaloClusters();
-  if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
-  for(Int_t icl=0; icl<Nclust; icl++)
+    if(!fUseTender) Nclust = fVevent->GetNumberOfCaloClusters();
+    if(fUseTender) Nclust = fCaloClusters_tender->GetEntries();
+    for(Int_t icl=0; icl<Nclust; icl++)
   {
     AliVCluster *clust = 0x0;
     if(!fUseTender) clust = fVevent->GetCaloCluster(icl);
@@ -1446,18 +1480,18 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
   Bool_t flagPhotonicElec = kFALSE, flagLSElec = kFALSE;
   Double_t ptAsso=-999., nsigmaAsso=-999.0;
   Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-
-
+    
+    
   Int_t ntracks = -999;
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t jTracks = 0; jTracks < ntracks; jTracks++){
     if(jTracks==itrack) continue;
-
-    AliVParticle* VtrackAsso = 0x0;
-    if(!fUseTender) VtrackAsso  = fVevent->GetTrack(jTracks);
-    if(fUseTender) VtrackAsso = dynamic_cast<AliVTrack*>(fTracks_tender->At(jTracks)); //take tracks from Tender list
+      
+      AliVParticle* VtrackAsso = 0x0;
+      if(!fUseTender) VtrackAsso  = fVevent->GetTrack(jTracks);
+      if(fUseTender) VtrackAsso = dynamic_cast<AliVTrack*>(fTracks_tender->At(jTracks)); //take tracks from Tender list
     if (!VtrackAsso) {
       printf("ERROR: Could not receive track %d\n", jTracks);
       continue;
@@ -1618,16 +1652,16 @@ TObjArray* AliAnalysisTaskEHCorrel::CloneAndReduceTrackList()
   // clones a track list by using AliehDPhiBasicParticle which uses much less memory (used for event mixing)
   TObjArray* fArrayTracksMix = new TObjArray;
   fArrayTracksMix->SetOwner(kTRUE);
-
-  Int_t ntracks = -999;
-  if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
-  if(fUseTender) ntracks = fTracks_tender->GetEntries();
+    
+    Int_t ntracks = -999;
+    if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
+    if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
   for(Int_t ktracks = 0; ktracks < ntracks; ktracks++){
-    AliVParticle* Vtrack = 0x0;
-    if(!fUseTender) Vtrack  =  fVevent->GetTrack(ktracks);
-    if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
-
+      AliVParticle* Vtrack = 0x0;
+      if(!fUseTender) Vtrack  =  fVevent->GetTrack(ktracks);
+      if(fUseTender) Vtrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(ktracks)); //take tracks from Tender list
+      
     if (!Vtrack) {
       printf("ERROR: Could not receive track %d\n", ktracks);
       continue;

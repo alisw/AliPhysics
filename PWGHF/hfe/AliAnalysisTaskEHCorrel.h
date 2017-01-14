@@ -45,6 +45,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t *);
 
     Bool_t  PassEventSelect(AliVEvent *fVevent);
+    Bool_t  PassAddtionalPileUpCuts();
     void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
     void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
     void    CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass);
@@ -72,24 +73,26 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    GetVtxZCentralityBin();
     Bool_t  GetTenderSwitch() {return fUseTender;};
     void    SetTenderSwitch(Bool_t usetender){fUseTender = usetender;};
-
+    
     void    SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void    SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-
+    
     void    SetPartnerEleMinTPCNCls(Int_t MinNClsPE) {fTPCNClsPartnerE = MinNClsPE;};
     void    SetPartnerEleMinPt(Double_t PtPE) {fPartElePt = PtPE;};
     void    SetInvmassCut(Double_t invmasscut) {fInvmassCut = invmasscut;};
-
+    
     void    SetHadMinTPCNCls(Int_t MinNClsHad) {fTPCNClsHad = MinNClsHad;};
     void    SetHadSPDkAny(Bool_t HadSPDkAny) {fFlagHadSPDkAny = HadSPDkAny;};
     void    SetHadLargeITSNCls(Bool_t HadLargITSNCls) {fFlagHadITSNCls = HadLargITSNCls;};
-
+    
     void    SetHadFiducialCut(Bool_t HadFiducialCut) {fFlagHadFiducialCut = HadFiducialCut;};
     void    SetHadPosEtaOnly(Bool_t HadPosEtaOnly) {fFlagHadPosEtaOnly = HadPosEtaOnly;};
     void    SetHadNegEtaOnly(Bool_t HadNegEtaOnly) {fFlagHadNegEtaOnly = HadNegEtaOnly;};
-
+    
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
+    
+    void    SetAdditionalPileUpCuts(Bool_t addpilupcuts) {fApplyAddPileUpCuts = addpilupcuts;};
 
   private:
     AliVEvent 		    *fVevent;//!V event object
@@ -97,10 +100,11 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     const AliVVertex    *fpVtx; //!
     AliPIDResponse      *fpidResponse; //!pid response
     AliMultSelection    *fMultSelection;//!
-
+    
     TClonesArray        *fTracks_tender;//Tender tracks
     TClonesArray        *fCaloClusters_tender;//Tender cluster
 
+    Bool_t              fApplyAddPileUpCuts;//
     Bool_t              fUseTender;// switch to add tender
     Double_t            fCentrality;//!
     Double_t            fCentralityMin;//
@@ -200,7 +204,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TH2F                *fMixStatCent;//!
     TH2F                *fMixStatVtxZ;//!
     TH2F                *fMixStatCentVtxz;//!
-
+    
     //TH2F                *fHisHadDphi;//!
     //TH2F                *fHisIncEDphi;//!
     //TH2F                *fHisLSDphi;//!

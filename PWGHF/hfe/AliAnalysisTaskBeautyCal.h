@@ -120,8 +120,12 @@ private:
     Int_t NembMCpi0; // # of process in MC (no GEANT process)
     Int_t NembMCeta; // # of process in MC (no GEANT process)
    
-    TF1 *fPi3040;
-    TF1 *fEta3040;
+    //TF1 *fPi3040;
+    //TF1 *fEta3040;
+    TF1 *fPi3040_0;
+    TF1 *fPi3040_1;
+    TF1 *fEta3040_0;
+    TF1 *fEta3040_1;
 
     TList       *fOutputList; //!Output list
     TH1F        *fNevents;//! no of events

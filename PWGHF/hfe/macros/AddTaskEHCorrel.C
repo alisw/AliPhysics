@@ -7,7 +7,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Double_t centMin=0, D
                                   Double_t m02Min=0.01,  Double_t m02Max=0.35, Double_t eovpMin=0.9, Double_t eovpMax=1.2,
                                   Bool_t useTender = kFALSE,
                                   Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
-                                  Int_t PhysSel = AliVEvent::kINT7, Int_t hadCutCase=2, Bool_t trigElePtcut=kFALSE)
+                                  Int_t PhysSel = AliVEvent::kINT7, Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2, Bool_t trigElePtcut=kFALSE)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -60,6 +60,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Double_t centMin=0, D
   taskHFEeh->SetTriggerElePtCut(trigElePtcut);
   taskHFEeh->SetElecSPDkFirst(EleSPDkFirst);
   taskHFEeh->SetTenderSwitch(useTender);
+  taskHFEeh->SetAdditionalPileUpCuts(AddPileUpCut);
     
   TString containerName = mgr->GetCommonFileName();
   TString SubcontainerName = ContNameExt;

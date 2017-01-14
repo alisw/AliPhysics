@@ -98,8 +98,12 @@ ClassImp(AliAnalysisTaskBeautyCal)
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
-  fPi3040(0),
-  fEta3040(0),
+  //fPi3040(0),
+  //fEta3040(0),
+  fPi3040_0(0),
+  fPi3040_1(0),
+  fEta3040_0(0),
+  fEta3040_1(0),
   fOutputList(0),
   fNevents(0),
   fCent(0),
@@ -227,8 +231,12 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
-  fPi3040(0),
-  fEta3040(0),
+  //fPi3040(0),
+  //fEta3040(0),
+  fPi3040_0(0),
+  fPi3040_1(0),
+  fEta3040_0(0),
+  fEta3040_1(0),
   fOutputList(0),
   fNevents(0),
   fCent(0), 
@@ -388,12 +396,26 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   ////////////////////////
   //  Define weight for pho reco
   ////////////////////////
-
+  
+  /*
+  // HIJING weight
   fPi3040 = new TF1("fPi3040","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
   fPi3040->SetParameters(7.42299e+01,5.54794e-01,1.50584e+00,1.90916e+01,4.32718e+00);
 
   fEta3040 = new TF1("fEta3040","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
   fEta3040->SetParameters(3.35675e+01,3.23948e-01,2.31469e+00,1.46099e+01,3.87158e+00);
+
+  */
+
+  fPi3040_0 = new TF1("fPi3040_0","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fPi3040_0->SetParameters(0.937028,0.674846,9.02659,10.);
+  fPi3040_1 = new TF1("fPi3040_1","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fPi3040_1->SetParameters(2.7883,0.,2.5684,5.63827);
+
+  fEta3040_0 = new TF1("fEta3040_0","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fEta3040_0->SetParameters(2.26982,0.75242,7.12772,10.);
+  fEta3040_1 = new TF1("fEta3040_1","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fEta3040_1->SetParameters(2.57403,0.,2.28527,5.659);
 
   ////////////////
   //Output list//
@@ -1149,8 +1171,31 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       }
 
     Double_t WeightPho = -1.0;
-    if(iEmbPi0)WeightPho = fPi3040->Eval(pTmom);
-    if(iEmbEta)WeightPho = fEta3040->Eval(pTmom);
+    //if(iEmbPi0)WeightPho = fPi3040->Eval(pTmom);
+    //if(iEmbEta)WeightPho = fEta3040->Eval(pTmom);
+    if(iEmbPi0)
+       {
+        if(pTmom<4.0)
+          {
+           WeightPho = fPi3040_0->Eval(pTmom);
+          }
+        if(pTmom>4.0)
+          {
+           WeightPho = fPi3040_1->Eval(pTmom);
+          }
+       }
+    if(iEmbEta)
+       {
+        if(pTmom<4.0)
+          {
+           WeightPho = fEta3040_0->Eval(pTmom);
+          }
+        if(pTmom>4.0)
+          {
+           WeightPho = fEta3040_1->Eval(pTmom);
+          }
+       }
+         
 
     ////////////////////
     //Track properties//
