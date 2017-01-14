@@ -123,8 +123,9 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 	Double_t centmix[NcentBins+1] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 80.0, 100.0};
 	fMixBCent = new TAxis(NcentBins,centmix);
 
-	static const Int_t NvertBins=20;
+	//static const Int_t NvertBins=8;
 	//Double_t zvtxmix[NvertBins+1] = {-10,-6,-4,-2,0,2,4,6,10};
+	static const Int_t NvertBins=20;
 	Double_t zvtxmix[NvertBins+1] = {-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10};
 	fMixBZvtx = new TAxis(NvertBins,zvtxmix);
 
@@ -562,7 +563,7 @@ Bool_t AliAnalysisTaskGammaHadron::Run()
 */
 	if(fCurrentEventTrigger & fTriggerType)
 	{
-		if(fCurrentEventTrigger & fMixingEventType)cout<<"contains both triggers!!"<<endl;
+		//if(fCurrentEventTrigger & fMixingEventType)cout<<"contains both triggers!!"<<endl;
 	}
 	/*Char_t cr[100];
  	TBits bitNo;
@@ -730,30 +731,34 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 	//...........................................
 	//..run the loop for filling the histograms
 	Int_t GammaCounter=0;
-	Int_t trackCounter=0;
 	for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
 	{
 		cluster=(AliVCluster*) clusters->GetAcceptCluster(NoCluster1); //->GetCluster(NoCluster1);
 		if(!cluster || !AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
+		//if(!cluster)continue; //check if the cluster is a good cluster
 		//clusters->GetLeadingCluster("e");
 
 		TLorentzVector CaloClusterVec;
 		clusters->GetMomentum(CaloClusterVec, cluster);
-		EffWeight_Gamma=GetEff(CaloClusterVec);
+		AliTLorentzVector aliCaloClusterVec = AliTLorentzVector(CaloClusterVec); //..can acess phi from
+		EffWeight_Gamma=GetEff(aliCaloClusterVec);
 
-		FillQAHisograms(0,clusters,cluster,trackNULL,0,0);
+		FillQAHisograms(0,clusters,cluster,trackNULL);
 		fHistNoClusPt->Fill(CaloClusterVec.Pt()); //the .pt only works for gammas (E=M) for other particle this is wrong
+
+        //cout<<"Cluster eta: "<<CaloClusterVec.Eta()<<", Cluster phi:"<<aliCaloClusterVec.Phi_0_2pi()*fRtoD<<", Cluster E:"<<cluster->E()<<endl;
+
 		//cout<<"Cluster number: "<<NoCluster1<<", pT = "<<CaloClusterVec.Pt()<<endl;
 		//...........................................
 		//..combine gammas with same event tracks
 		GammaCounter++;
 		if(SameMix==1)
 		{
-			//cout<<"SameMix==1"<<endl;
 			if(!tracks)  return 0;
 			Int_t NoOfTracksInEvent =tracks->GetNParticles();
 			AliVParticle* track=0;
 
+			Int_t trackCounter=0;
 			for(Int_t NoTrack = 0; NoTrack < NoOfTracksInEvent; NoTrack++)
 			{
 				track = (AliVParticle*)tracks->GetAcceptParticle(NoTrack);
@@ -762,12 +767,10 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 				//cout<<"..Track number: "<<NoTrack<<", pT = "<<track->Pt()<<endl;
 
 				//EffWeight_Hadron=GetEff(<TLorentzVector>track);
-				FillGhHisograms(1,CaloClusterVec,track,2,0,Weight);
+				FillGhHisograms(1,aliCaloClusterVec,track,2,0,Weight);
 
-				if(GammaCounter==1)FillQAHisograms(1,clusters,cluster,track,2,0); //fill only once per track (first gamma) - good for each track
-				if(trackCounter==1)FillQAHisograms(2,clusters,cluster,track,2,0); //fill only once per gamma (first track) - good for gamma distr.
-				if(CaloClusterVec.Eta()>0)FillQAHisograms(3,clusters,cluster,track,2,0); //fill for each gamma?? makes sense?
-				if(CaloClusterVec.Eta()<0)FillQAHisograms(4,clusters,cluster,track,2,0); //fill for each gamma?? makes sense?
+				if(GammaCounter==1)FillQAHisograms(1,clusters,cluster,track); //fill only once per track (first gamma) - good for each track
+				if(trackCounter==1)FillQAHisograms(2,clusters,cluster,track); //fill only once per gamma (first track) - good for gamma distr.
 			}
 		}
 		//...........................................
@@ -781,7 +784,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelateClusterAndTrack(AliParticleContainer*
 				if(!track) continue;
 
 				//EffWeight_Hadron=GetEff(<TLorentzVector>track);
-				FillGhHisograms(0,CaloClusterVec,track,2,0,Weight);
+				FillGhHisograms(0,aliCaloClusterVec,track,2,0,Weight);
 			}
 		}
 		//...........................................
@@ -898,6 +901,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 		TLorentzVector CaloClusterVec;
 		//old framework	cluster->GetMomentum(CaloClusterVec, fVertex);
 		clusters->GetMomentum(CaloClusterVec,cluster);
+		AliTLorentzVector aliCaloClusterVec = AliTLorentzVector(CaloClusterVec); //..can acess phi from
 
 		for( Int_t NoCluster2 = 0; NoCluster2 < NoOfClustersInEvent; NoCluster2++ )
 		{
@@ -907,21 +911,23 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				if(!cluster2 || !AccClusterForAna(clusters,cluster2))continue; //check if the cluster is a good cluster
 
 				TLorentzVector CaloClusterVec2;
-				TLorentzVector CaloClusterVecpi0;
+				TLorentzVector aliCaloClusterVecpi0;
 				//old framework			cluster2->GetMomentum(CaloClusterVec2, fVertex);
 				clusters->GetMomentum(CaloClusterVec2,cluster2); /// Vec+=2 2.1.17
+				AliTLorentzVector aliCaloClusterVec2 = AliTLorentzVector(CaloClusterVec2); //..can acess phi from
+
 				if(cluster2->E()>2 && cluster->E()>2)
 				{
-					CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
+					aliCaloClusterVecpi0=aliCaloClusterVec+aliCaloClusterVec2;
 
-					if((CaloClusterVecpi0.M()<Pi0Mass-Pi0Window) || (CaloClusterVecpi0.M()>Pi0Mass+Pi0Window)) continue; /// 2.1.17
+					if((aliCaloClusterVecpi0.M()<Pi0Mass-Pi0Window) || (aliCaloClusterVecpi0.M()>Pi0Mass+Pi0Window)) continue; /// 2.1.17
 
 
 					//here I don't really know what to do in your case
 					//eff of pi0? or eff of gamma? or some mix up of the two ?
-					EffWeight_Gamma=GetEff(CaloClusterVecpi0);//currently just assigns 1!!! need eventually to input Pi0 efficiency histogram
+					EffWeight_Gamma=GetEff(aliCaloClusterVecpi0);//currently just assigns 1!!! need eventually to input Pi0 efficiency histogram
 
-					fHistNoClusPt->Fill(CaloClusterVecpi0.Pt()); //the .pt only works for gammas (E=M) for other particle this is wrong
+					fHistNoClusPt->Fill(aliCaloClusterVecpi0.Pt()); //the .pt only works for gammas (E=M) for other particle this is wrong
 
 					//...........................................
 					//..combine gammas with same event tracks
@@ -939,7 +945,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 							//..fill here eventually a pi0 four-vector instead of CaloClusterVec
 							//EffWeight_Hadron=GetEff(TLorentzVector)track);
-							FillGhHisograms(1,CaloClusterVecpi0,track,2,0,Weight);
+							FillGhHisograms(1,aliCaloClusterVecpi0,track,2,0,Weight);
 						}
 					}
 					//...........................................
@@ -954,7 +960,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 							//**fill here eventually a pi0 four-vector instead of CaloClusterVec
 							//EffWeight_Hadron=GetEff((TLorentzVector)track);
-							FillGhHisograms(0,CaloClusterVecpi0,track,2,0,Weight);
+							FillGhHisograms(0,aliCaloClusterVecpi0,track,2,0,Weight);
 						}
 					}
 				}
@@ -964,7 +970,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	return nAccPi0Clusters/2;
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight)
+void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight)
 {
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::FillGhHisograms()"<<endl;
 
@@ -1032,12 +1038,13 @@ void AliAnalysisTaskGammaHadron::FillGhHisograms(Int_t identifier,TLorentzVector
 	}
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut)
+void AliAnalysisTaskGammaHadron::FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec)
 {
 	TLorentzVector caloClusterVec;
 	clusters->GetMomentum(caloClusterVec,caloCluster);
+	AliTLorentzVector aliCaloClusterVec = AliTLorentzVector(caloClusterVec); //..can acess phi from
 
-	/*do similar test here?*/fHistDEtaDPhiGammaQA[identifier] ->Fill(caloClusterVec.Phi()*fRtoD,caloClusterVec.Eta());
+	/*do similar test here?*/fHistDEtaDPhiGammaQA[identifier] ->Fill(aliCaloClusterVec.Phi_0_2pi()*fRtoD,caloClusterVec.Eta());
 	if(TrackVec)             fHistDEtaDPhiTrackQA[identifier] ->Fill(TrackVec->Phi()*fRtoD,TrackVec->Eta());
 
 	fHistCellsCluster[identifier] ->Fill(caloCluster->GetHadCorrEnergy(),caloCluster->GetNCells());
@@ -1056,6 +1063,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	clusters->GetMomentum(caloClusterVec,caloCluster);
 	Double_t deltaPhi=2;   //..phi away from detector edges.
 	Double_t deltaEta=0.0; //..eta away from detector edges.
+    //!!!! eventually transform to AliTLorentzvector
 
 	//..Accepts clusters if certain conditions are fulfilled
 	Bool_t Accepted=1; //..By default accepted
@@ -1066,14 +1074,14 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	if(caloCluster->GetNCells()<2)
 	{
 		//..Reject the cluster as a good candidate for your analysis
-		Accepted=0;
+		return 0;
 	}
 	//-----------------------------
-	//..number of local maxima should be 1 (for cluster splitting this has to be changed)
-	if(caloCluster->GetNExMax()==1) //&& fClusterSplit==0
+	//..number of local maxima should be 1 or 0 (for cluster splitting this has to be changed)
+	if(caloCluster->GetNExMax()>1) //&& fClusterSplit==0
 	{
 		//..Reject the cluster as a good candidate for your analysis
-		Accepted=0;
+		return 0;
 	}
 	//-----------------------------
 	//..Do we need a distance to bad channel cut?
@@ -1114,9 +1122,9 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	return Accepted;
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskGammaHadron::DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)
+Double_t AliAnalysisTaskGammaHadron::DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec)
 {
-	Double_t Phi_g = ClusterVec.Phi();
+	Double_t Phi_g = ClusterVec.Phi_0_2pi();
 	Double_t Phi_h = TrackVec->Phi();
 
 	Double_t dPhi = -999;
@@ -1134,7 +1142,7 @@ Double_t AliAnalysisTaskGammaHadron::DeltaPhi(TLorentzVector ClusterVec,AliVPart
 	return dPhi;
 }
 //________________________________________________________________________
-Double_t AliAnalysisTaskGammaHadron::GetEff(TLorentzVector ClusterVec)
+Double_t AliAnalysisTaskGammaHadron::GetEff(AliTLorentzVector ClusterVec)
 {
 	Double_t DetectionEff=1;
 

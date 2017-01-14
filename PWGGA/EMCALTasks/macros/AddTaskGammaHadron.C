@@ -67,7 +67,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   }
 
   TString combinedName;
-  combinedName.Form("%s_%s_%s_%s_%s_",taskname,(const char*)GammaPi0Name,(const char*)SameMixName,trackName,clusName);
+  combinedName.Form("%s_%s_%s_%s_%s",taskname,(const char*)GammaPi0Name,(const char*)SameMixName,trackName,clusName);
   if(suffix!="")
   {
 	  combinedName += "_";
@@ -108,11 +108,14 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //-------------------------------------------------------
   // Add some selection criteria
   //-------------------------------------------------------
+  //
   AnalysisTask->SetVzRange(-10,10);
   //..for Run1 pPb
-//  AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
-  //..new task for run2 (neue cut klasse, ask Markus)
+  //AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
 
+  //..new task for run2 (neue cut klasse, ask Markus)
+  //AnalysisTask->SetNCentBins(5);     //for PbPb run2 data
+  //AnalysisTask->SetUseNewCentralityEstimation(kTRUE);      //for PbPb run2 data
 
   if(AnalysisTask->GetTrackContainer(trackName))
   {

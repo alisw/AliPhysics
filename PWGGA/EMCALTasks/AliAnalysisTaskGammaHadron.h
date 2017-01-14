@@ -50,12 +50,12 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillGhHisograms(Int_t identifier,TLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight);
-  void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut);
+  void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight);
+  void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
   //Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
-  Double_t                    DeltaPhi(TLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
-  Double_t                    GetEff(TLorentzVector ParticleVec)                            ;
+  Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
+  Double_t                    GetEff(AliTLorentzVector ParticleVec)                            ;
   Bool_t                      fGammaOrPi0;               // This tells me whether the correltation and the filling of histograms is done for gamma or pi0
   Bool_t                      fDoMixing;                 // This option enables mixed events being used in the analysi
   Bool_t                      fDebug;			        // Can be set for debugging
