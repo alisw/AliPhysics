@@ -1270,6 +1270,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         fTreeVariableMaxChi2PerCluster = lBiggestChi2PerCluster;
         
+        //Extra track quality: min track length
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
+        
+        if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        
+        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
+        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        
+        fTreeVariableMinTrackLength = lSmallestTrackLength;
+        
         //End track Quality Cuts
         //________________________________________________________________________
 
@@ -1581,6 +1594,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 //Check 8: Max Chi2/Clusters if not absurd
                 ( lV0Result->GetCutMaxChi2PerCluster()>1e+3 ||
                  fTreeVariableMaxChi2PerCluster < lV0Result->GetCutMaxChi2PerCluster()
+                 ) &&
+                
+                //Check 9: Min Track Length if positive
+                ( lV0Result->GetCutMinTrackLength()<0 || //this is a bit paranoid...
+                 fTreeVariableMinTrackLength < lV0Result->GetCutMinTrackLength()
                  )
                 )
             {
@@ -1936,6 +1954,22 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if( lNegChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lNegChi2PerCluster;
         if( lBachChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lBachChi2PerCluster;
 
+        //Extra track quality: min track length
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
+        Float_t lBachTrackLength = -1;
+        
+        if (pTrackXi->GetInnerParam()) lPosTrackLength = pTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        if (nTrackXi->GetInnerParam()) lNegTrackLength = nTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        if (bachTrackXi->GetInnerParam()) lBachTrackLength = bachTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        
+        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
+        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        if ( lBachTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lBachTrackLength;
+        
+        fTreeCascVarMinTrackLength = lSmallestTrackLength;
+        
         lInvMassLambdaAsCascDghter	= xi->GetEffMass();
         // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
         lDcaV0DaughtersXi 		= xi->GetDcaV0Daughters();
@@ -2654,7 +2688,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                  fTreeCascVarMaxChi2PerCluster < lCascadeResult->GetCutMaxChi2PerCluster()
                  ) &&
                 
-                //Check 11: Explicit associate-with-bump
+                //Check 11: Min Track Length if positive
+                ( lCascadeResult->GetCutMinTrackLength()<0 || //this is a bit paranoid...
+                 fTreeCascVarMinTrackLength < lCascadeResult->GetCutMinTrackLength()
+                 ) &&
+                
+                //Check 12: Explicit associate-with-bump
                 ( ! (lCascadeResult->GetCutMCSelectBump())    || (//Start bump-selection
                                                                   //Case: XiMinus or OmegaMinus
                                                                   (lCharge == -1 &&
