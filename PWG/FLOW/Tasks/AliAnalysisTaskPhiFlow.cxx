@@ -427,6 +427,7 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
     // check if the AliMultSelection object is present. If so, we should invoke the
     // new centrality framework
 
+    if(fPileUp) {
     AliMultSelection *multSelection = 0x0; 
     multSelection = static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
     if(multSelection) {
@@ -442,7 +443,7 @@ template <typename T> Bool_t AliAnalysisTaskPhiFlow::CheckCentrality(T* event)
             return kFALSE;
         }
     }
-
+    }
     else  fCentrality = event->GetCentrality()->GetCentralityPercentile(fkCentralityMethodA);
     Double_t cenB(-999);
     // if a second centrality estimator is requited, set it
