@@ -81,6 +81,7 @@ public:
     void SetSScut(Bool_t SScut) {fSScut = SScut;};
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
+    void SetPileUpCut(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};
     void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0);
     void GetWeightAndDecay(AliAODMCParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
     Bool_t InclElecTrackCuts(AliAODTrack *ietrack);
@@ -124,6 +125,7 @@ private:
     Double_t              fCutM02;
     Double_t              fCutM20;
     Bool_t                fSScut;
+    Bool_t                fEnablePileupRejVZEROTPCout;
     
     // AliESDEvent        	*fESD;	            	 //! ESD object
     AliAODEvent           *fAOD;                  //! AOD object

@@ -112,6 +112,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
 ,fCutM02(2.)
 ,fCutM20(2.)
 ,fSScut(kFALSE)
+,fEnablePileupRejVZEROTPCout(kFALSE)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -237,6 +238,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
 ,fCutM02(2.)
 ,fCutM20(2.)
 ,fSScut(kFALSE)
+,fEnablePileupRejVZEROTPCout(kFALSE)
 //,fESD(0)
 ,fAOD(0)
 ,fVevent(0)
@@ -445,6 +447,29 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return; // bad vertexing
     
     if(TMath::Abs(pVtxZ)>10) return;
+    
+    // suggested by Ionut to remove pile-up
+    
+    Int_t nTPCout=0;
+    Float_t mTotV0=0;
+    
+    AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
+    Float_t mTotV0A=v0data->GetMTotV0A();
+    Float_t mTotV0C=v0data->GetMTotV0C();
+    
+    mTotV0=mTotV0A+mTotV0C;
+    
+    for(Int_t itrack=0; itrack<fNOtrks; itrack++) { // loop on tracks
+        AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if(!track) {AliFatal("Not a standard AOD");}
+        if(track->GetID()<0)continue;
+        if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
+        else continue;
+    }
+    Float_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
+    
+    if(fEnablePileupRejVZEROTPCout && (mTotV0<mV0Cut)) return;
+
     
     fNoEvents->Fill(0);
     
