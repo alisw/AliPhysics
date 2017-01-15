@@ -116,6 +116,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double_t Eta()       const { return fMomentum.Eta()      ; }
     Double_t Phi()       const { return fMomentum.Phi()      ; }
     Double_t Phi_0_2pi() const { return fMomentum.Phi_0_2pi(); }
+    Int_t GetNConstituents() const { return  fNConstituents; }
     Double_t GetDistance(const AliJetInfo& jet, Double_t& deta, Double_t& dphi) const;
     Double_t GetDistance(const AliJetInfo& jet) const;
 
@@ -175,10 +176,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Lightweight class that encapsulates D meson jets
   ///
   /// This class encapsulates D meson jet
-  /// information in a very compact data structure (50 bits)
+  /// information in a very compact data structure (55 bits)
   class AliJetInfoSummary {
   public:
-    AliJetInfoSummary() : fPt(0), fEta(0), fPhi(0), fR(0), fZ(0) {;}
+    AliJetInfoSummary() : fPt(0), fEta(0), fPhi(0), fR(0), fZ(0), fN(0) {;}
     AliJetInfoSummary(const AliDmesonJetInfo& source, std::string n);
     virtual ~AliJetInfoSummary() {}
 
@@ -196,9 +197,11 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Double32_t  fR         ; //[0,2.56,7]
     /// Z of the D meson
     Double32_t  fZ         ; //[0,1.024,10]
+    /// Number of jet constituents
+    Double32_t  fN         ; //[0, 64, 6]
 
     /// \cond CLASSIMP
-    ClassDef(AliJetInfoSummary, 3);
+    ClassDef(AliJetInfoSummary, 4);
     /// \endcond
   };
 

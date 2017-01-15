@@ -288,7 +288,8 @@ AliAnalysisTaskDmesonJets::AliJetInfoSummary::AliJetInfoSummary(const AliDmesonJ
   fEta(0),
   fPhi(0),
   fR(0),
-  fZ(0)
+  fZ(0),
+  fN(0)
 {
   Set(source, n);
 }
@@ -301,6 +302,7 @@ void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Reset()
   fPhi = 0;
   fR = 0;
   fZ = 0;
+  fN = 0;
 }
 
 /// Set the current object using an instance of AliDmesonJetInfo as its source
@@ -317,6 +319,7 @@ void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Set(const AliDmesonJetInfo& s
   fPhi = (*it).second.Phi_0_2pi();
   fR = source.GetDistance(n);
   fZ = source.GetZ(n);
+  fN = (*it).second.GetNConstituents();
 }
 
 /// Set the current object using an instance of AliJetInfo as its source
@@ -327,6 +330,7 @@ void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Set(const AliJetInfo& source)
   fPt = source.Pt();
   fEta = source.Eta();
   fPhi = source.Phi_0_2pi();
+  fN = source.GetNConstituents();
   fR = 0;
   fZ = 0;
 }
