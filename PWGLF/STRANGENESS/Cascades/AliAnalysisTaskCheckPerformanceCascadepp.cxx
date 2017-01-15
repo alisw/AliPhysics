@@ -1507,7 +1507,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
 	// Container meant to store all the relevant distributions corresponding to the cut variables.
         //          - NB overflow/underflow of variables on which we want to cut later should be 0!!!
      const Int_t  lNbSteps      =  4;
-     const Int_t  lNbVariables  =  19;
+     const Int_t  lNbVariables  =  20;
        //Array for the number of bins in each dimension :
      Int_t lNbBinsPerVar[lNbVariables] = {0};
      lNbBinsPerVar[0]  = 25;   //DcaCascDaughters                : [0.0,2.,3.0]        -> Rec.Cut = 2.0; 
@@ -1530,6 +1530,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
      lNbBinsPerVar[16] = 112;  //Proper lenght of cascade
      lNbBinsPerVar[17] = 112;  //Proper lenght of V0 
      lNbBinsPerVar[18] = 112;  //Distance V0-Xi in the transverse plane  
+     lNbBinsPerVar[19] = 26;   //Proton cascade daughter momentum
      fCFContAsCascadeCuts = new AliCFContainer(cfcontname_casccuts,"Cut Container for Asso. Cascades", lNbSteps, lNbVariables, lNbBinsPerVar );
        //Setting the bin limits 
        //0 - DcaCascDaughters
@@ -1603,6 +1604,12 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
        //18 - Distance V0-Xi in the transverse plane
      fCFContAsCascadeCuts -> SetBinLimits(18, lBinLim16);
      delete [] lBinLim16;
+      //19 - (Anti-)Proton cascade daughter momentum
+     Double_t *lBinLim19  = new Double_t[ lNbBinsPerVar[19]+1 ];
+        for(Int_t i=0; i< lNbBinsPerVar[19];i++)   lBinLim19[i] = (Double_t)0.0 + (0.5-0.0)/(lNbBinsPerVar[19]-1) * (Double_t)i;
+        lBinLim19[ lNbBinsPerVar[19]  ] = 50.0;
+     fCFContAsCascadeCuts->SetBinLimits(19, lBinLim19);
+     delete [] lBinLim19;
        // Setting the number of steps : one for each cascade species (Xi-, Xi+ and Omega-, Omega+)
      fCFContAsCascadeCuts->SetStepTitle(0, "#Xi^{-} candidates associated to MC");
      fCFContAsCascadeCuts->SetStepTitle(1, "#bar{#Xi}^{+} candidates associated to MC");
@@ -1629,6 +1636,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserCreateOutputObjects() {
      fCFContAsCascadeCuts->SetVarTitle(16, "mL/p cascade (cm)");
      fCFContAsCascadeCuts->SetVarTitle(17, "mL/p V0 (cm)"); 
      fCFContAsCascadeCuts->SetVarTitle(18, "Distance V0-Cascade in the transverse plane (cm)");
+     fCFContAsCascadeCuts->SetVarTitle(19, "(Anti-)Proton casc. daught. momemtum (GeV/c)");
   }
 
  PostData(1, fListHistCascade); 
@@ -2775,6 +2783,8 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
         lblBachForPID = 0;
         Double_t nV0mom[3] = {0. ,0. ,0. };
         Double_t pV0mom[3] = {0. ,0. ,0. };
+        Double_t lInnerWallMomCascDghters[3] = {-100., -100., -100.};
+
 
         if ( fAnalysisType == "ESD" ) {		
 
@@ -2810,6 +2820,15 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                 if(lNegTPCClusters  < fMinnTPCcls) { AliWarning("Pb / V0 Neg. track has less than 80 TPC clusters ... continue!"); continue; }
                 if(lBachTPCClusters < fMinnTPCcls) { AliWarning("Pb / Bach.   track has less than 80 TPC clusters ... continue!"); continue; }
              }
+
+             const AliExternalTrackParam *pExtTrack    = pTrackXi->GetInnerParam();
+             const AliExternalTrackParam *nExtTrack    = nTrackXi->GetInnerParam();
+             const AliExternalTrackParam *bachExtTrack = bachTrackXi->GetInnerParam();
+             if (pExtTrack)    lInnerWallMomCascDghters[0] = pExtTrack->GetP() * pExtTrack->Charge();
+             if (nExtTrack)    lInnerWallMomCascDghters[1] = nExtTrack->GetP() * nExtTrack->Charge();
+             if (bachExtTrack) lInnerWallMomCascDghters[2] = bachExtTrack->GetP() * bachExtTrack->Charge();
+
+
              etaPos  = pTrackXi->Eta();
              etaNeg  = nTrackXi->Eta();
              etaBach = bachTrackXi->Eta();
@@ -3303,7 +3322,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
         fHistBachTPCClusters->Fill( lBachTPCClusters );
         // - Fill containers
         // - Filling the AliCFContainer (optimisation of topological selections + systematics)
-        Double_t lContainerCutVars[19] = {0.0};
+        Double_t lContainerCutVars[20] = {0.0};
         lContainerCutVars[0]  = lDcaXiDaughters;
         lContainerCutVars[1]  = lDcaBachToPrimVertexXi;
         lContainerCutVars[2]  = lXiCosineOfPointingAngle;
@@ -3326,6 +3345,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                      lContainerCutVars[12] = lInvMassOmegaMinus;
                      lContainerCutVars[14] = lmcRapCasc;
                      lContainerCutVars[15] = -1.;
+                     lContainerCutVars[19] = TMath::Abs(lInnerWallMomCascDghters[0]);
                      if (lIsBachelorPionForTPC && lIsPosProtonForTPC && lIsNegPionForTPC) fCFContAsCascadeCuts->Fill(lContainerCutVars,0);
         }
         if (lChargeXi > 0 && lAssoXiPlus) {
@@ -3333,6 +3353,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                      lContainerCutVars[12] = lInvMassOmegaPlus;
                      lContainerCutVars[14] = lmcRapCasc;
                      lContainerCutVars[15] = -1.; 
+                     lContainerCutVars[19] = TMath::Abs(lInnerWallMomCascDghters[1]);
                      if (lIsBachelorPionForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) fCFContAsCascadeCuts->Fill(lContainerCutVars,1);
         }
         if (lChargeXi < 0 && lAssoOmegaMinus) {
@@ -3340,6 +3361,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                      lContainerCutVars[12] = lInvMassOmegaMinus;
                      lContainerCutVars[14] = -1.;
                      lContainerCutVars[15] = lmcRapCasc;
+                     lContainerCutVars[19] = TMath::Abs(lInnerWallMomCascDghters[0]);
                      if (lIsBachelorKaonForTPC && lIsPosProtonForTPC && lIsNegPionForTPC) fCFContAsCascadeCuts->Fill(lContainerCutVars,2);
         }
         if(lChargeXi > 0 && lAssoOmegaPlus) {
@@ -3347,6 +3369,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
                      lContainerCutVars[12] = lInvMassOmegaPlus;
                      lContainerCutVars[14] = -1.;
                      lContainerCutVars[15] = lmcRapCasc;
+                     lContainerCutVars[19] = TMath::Abs(lInnerWallMomCascDghters[1]);
                      if (lIsBachelorKaonForTPC && lIsNegProtonForTPC && lIsPosPionForTPC) fCFContAsCascadeCuts->Fill(lContainerCutVars,3);
         }
         // - Filling the AliCFContainers related to PID
