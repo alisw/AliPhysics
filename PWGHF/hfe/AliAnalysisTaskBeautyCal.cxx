@@ -407,14 +407,14 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
 
   */
 
-  fPi3040_0 = new TF1("fPi3040_0","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fPi3040_0 = new TF1("fPi3040_0","[0]*x/pow([1]+x/[2],[3])");
   fPi3040_0->SetParameters(0.937028,0.674846,9.02659,10.);
-  fPi3040_1 = new TF1("fPi3040_1","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fPi3040_1 = new TF1("fPi3040_1","[0]*x/pow([1]+x/[2],[3])");
   fPi3040_1->SetParameters(2.7883,0.,2.5684,5.63827);
 
-  fEta3040_0 = new TF1("fEta3040_0","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fEta3040_0 = new TF1("fEta3040_0","[0]*x/pow([1]+x/[2],[3])");
   fEta3040_0->SetParameters(2.26982,0.75242,7.12772,10.);
-  fEta3040_1 = new TF1("fEta3040_1","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
+  fEta3040_1 = new TF1("fEta3040_1","[0]*x/pow([1]+x/[2],[3])");
   fEta3040_1->SetParameters(2.57403,0.,2.28527,5.659);
 
   ////////////////
