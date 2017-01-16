@@ -30,6 +30,7 @@ AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo() :
   fEdge2(),
   fADCAmp(0),
   fADCOfflineAmp(0),
+  fEnergySmeared(0),
   fTriggerBits(0),
   fOffSet(0),            // To be set explicitly by the trigger maker in order to avoid hard coding
   fRow0(-1),
@@ -50,6 +51,7 @@ AliEMCALTriggerPatchInfo::AliEMCALTriggerPatchInfo(const AliEMCALTriggerPatchInf
   fEdge2(p.fEdge2),
   fADCAmp(p.fADCAmp),
   fADCOfflineAmp(p.fADCOfflineAmp),
+  fEnergySmeared(p.fEnergySmeared),
   fTriggerBits(p.fTriggerBits),
   fOffSet(p.fOffSet),
   fRow0(p.fRow0),
