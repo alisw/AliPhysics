@@ -52,11 +52,11 @@ lLoPeak(-3),
 lHiPeak(3),
 lLoRightBg(4),
 lHiRightBg(7),
-lSigExtTech("linear"),
 lVerbose(kFALSE)
 {
     // Dummy Constructor - not to be used!
     for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0;
+    for(Long_t ibin = 0; ibin<100; ibin++) lSigExtTech[ibin] = "linear";
 }
 
 //________________________________________________________________
@@ -80,11 +80,11 @@ lLoPeak(-3),
 lHiPeak(3),
 lLoRightBg(4),
 lHiRightBg(7),
-lSigExtTech("linear"),
 lVerbose(kFALSE)
 {
     // Main constructor
-    for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0; 
+    for(Long_t ibin = 0; ibin<100; ibin++) lPtBins[ibin] = 0;
+    for(Long_t ibin = 0; ibin<100; ibin++) lSigExtTech[ibin] = "linear";
 }
 
 //________________________________________________________________
@@ -112,7 +112,6 @@ void AliStrangenessModule::SetSigExtRanges( Double_t lRLoLeftBg, Double_t lRHiLe
     lHiPeak    = lRHiPeak;
     lLoRightBg = lRLoRightBg;
     lHiRightBg = lRHiRightBg;
-    
 }
 
 //________________________________________________________________
@@ -128,7 +127,29 @@ void AliStrangenessModule::SetSigExtTech ( TString lRecSigExtTech ) {
         AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
         lRecSigExtTech = "linear";
     }
-    lSigExtTech = lRecSigExtTech.Data();
+    for(Int_t ibin = 0; ibin<100; ibin++){
+        lSigExtTech[ibin] = lRecSigExtTech.Data();
+    }
+}
+
+//________________________________________________________________
+void AliStrangenessModule::SetVariableSigExtTech ( Long_t lRecNPtBins, TString *lRecSigExtTech ) {
+    if (lVerbose ) cout<<"Variable signal extraction technique received!"<<endl;
+    for(Int_t ibin = 0; ibin<lRecNPtBins; ibin++){
+        if( !lRecSigExtTech[ibin].Contains("bincounting") &&
+           !lRecSigExtTech[ibin].Contains("linear") &&
+           !lRecSigExtTech[ibin].Contains("quadratic") &&
+           !lRecSigExtTech[ibin].Contains("MC") ){
+            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+            AliWarning(Form(" Sig. ext. mode \"%s\" not recognized!",lRecSigExtTech[ibin].Data() ) );
+            AliWarning("   Accepted modes: \"bincounting\", \"linear\" or \"quadratic\"");
+            AliWarning("               WARNING: Will set to linear! ");
+            AliWarning("!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!");
+            lRecSigExtTech[ibin] = "linear";
+        }
+        lSigExtTech[ibin] = lRecSigExtTech[ibin].Data();
+        if( lVerbose ) cout<<"Bin #"<<ibin<<Form("\t%.1f-%1.f",lPtBins[ibin],lPtBins[ibin+1])<<" Technique: "<<lRecSigExtTech[ibin]<<endl;
+    }
 }
 
 //________________________________________________________________
@@ -299,8 +320,8 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     if(!lVerbose) cout<<"AliStrangenessModule -> Extracting signal (data): ["<<flush;
     lExtStatus = kTRUE;
     for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
-        if( lVerbose) AliWarning(Form("Signal extraction on: %s",lHistoData[ibin]->GetName()));
-        lExtStatus = PerformSignalExtraction( lHistoData[ibin], lSignalVsPt[ibin], lSignalErrVsPt[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], fListData, lSigExtTech.Data() );
+        if( lVerbose) cout<<"Extracting yield for bin #"<<ibin<<Form("\t%.1f-%.1f",lPtBins[ibin],lPtBins[ibin+1])<<endl;
+        lExtStatus = PerformSignalExtraction( lHistoData[ibin], lSignalVsPt[ibin], lSignalErrVsPt[ibin], lMeanVsPt[ibin], lSigmaVsPt[ibin], fListData, lSigExtTech[ibin].Data() );
         if( !lVerbose ){
             //Report errors with "!"
             if( lExtStatus ){ cout<<"="<<flush; } else { cout<<"!"<<flush; }
@@ -308,6 +329,14 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
         fHistRawVsPt->SetBinContent(ibin+1, lSignalVsPt[ibin] );
         fHistRawVsPt->SetBinError(ibin+1, lSignalErrVsPt[ibin] );
     }
+    if( lVerbose){
+        cout<<"---] Signal Extraction summary [----------------------------"<<endl;
+        for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
+            if( lVerbose ) cout<<"Bin #"<<ibin<<Form("\t%.1f-%.1f",lPtBins[ibin],lPtBins[ibin+1])<<" Signal: "<<lSignalVsPt[ibin]<<" +/- "<<lSignalErrVsPt[ibin] <<" via technique: "<<lSigExtTech[ibin]<<endl;
+        }
+        cout<<"---] End Signal Extraction summary [------------------------"<<endl;
+    }
+    
     if(!lVerbose) cout<<"] Done!"<<endl;
     
     //Add raw spectra as main analysis output
@@ -505,6 +534,14 @@ Bool_t AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, D
     TString lFitOptions = "IREM0S";
     if (!lVerbose) lFitOptions.Append("Q") ;
     
+    //Check if low-statistics histogram and add corresponding options if needed
+    Int_t lBinLeft  = lHisto->GetXaxis()->FindBin(lMean+lOffsetFromMeanLeft);
+    Int_t lBinRight = lHisto->GetXaxis()->FindBin(lMean+lOffsetFromMeanRight);
+    lFitOptions.Append( GetGoodFitOption ( lHisto, lBinLeft, lBinRight ));
+    
+    //Printout options used for the fit
+    if ( lVerbose ) cout<<"Fit to histogram "<<lHisto->GetName()<<" will be carried out with options: "<<lFitOptions.Data()<<endl;
+    
     //Perform fit
     TFitResultPtr fitResultPtr = lHisto->Fit( lName.Data(), lFitOptions.Data());
     if ( !fitResultPtr->IsValid() ) lReturnValue = kFALSE; //went bad
@@ -527,7 +564,7 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     
     Bool_t lReturnValue = kTRUE; //everything went alright -> kTRUE
     
-    TString lFitOptions = "LR0S";
+    TString lFitOptions = "R0S";
     if (!lVerbose) lFitOptions.Append("Q");
     
     //Get very first guess for linear background
@@ -545,6 +582,11 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     Long_t lBinLeftBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiLeftBg*lSigma );
     Long_t lBinRightBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoRightBg*lSigma );
     Long_t lBinRightBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiRightBg*lSigma );
+    
+    //Check if this is a low-statistics bin and if so use either "L" or "LL" fit options
+    lFitOptions.Append( GetGoodFitOption ( lHisto, lBinLeftBgLo, lBinRightBgHi ) ); 
+    
+    if ( lVerbose ) cout<<"Fit to histogram "<<lHisto->GetName()<<" will be carried out with options: "<<lFitOptions.Data()<<endl; 
     
     //Inclusive on lower and upper limits
     //Get values and use these values for fit ranges: meant to harmonize bin counting wrt fitting
@@ -683,6 +725,19 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     lSignalErr = TMath::Sqrt( lPeakPlusBgError*lPeakPlusBgError + lBgEstimateError*lBgEstimateError );
     
     return lReturnValue;
+}
+
+//________________________________________________________________
+TString AliStrangenessModule::GetGoodFitOption( TH1D *lHisto , Int_t ilow, Int_t ihigh )
+{
+    //Function for guessing good fit options for the histo lHisto
+    //(between bins numbered ilow, ihigh
+    TString lResult = "";
+    for(Int_t ibin=ilow; ibin<ihigh+1; ibin++){
+        if( lHisto->GetBinContent(ibin) < 100 ) lResult = "L";
+        if( lHisto->GetBinContent(ibin) <  20 ) lResult = "LL";
+    }
+    return lResult;
 }
 
 //________________________________________________________________
