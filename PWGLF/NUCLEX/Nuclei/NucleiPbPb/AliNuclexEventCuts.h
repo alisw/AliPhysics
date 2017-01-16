@@ -53,6 +53,7 @@ class AliNuclexEventCuts : public TList {
     bool   AcceptEvent (AliVEvent *ev);
     bool   PassedCut (AliNuclexEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
     void   AddQAplotsToList(TList *qaList = 0x0);
+    void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupLHC11h();
     void   SetupLHC15o();
@@ -122,6 +123,8 @@ class AliNuclexEventCuts : public TList {
 
     ///
     bool          fNewEvent;                      //!<  True if the AliVEvent identifier in the AcceptEvent and fIdentifier are different
+    /// Overrides
+    bool          fOverrideAutoTriggerMask;       //!<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1I* fCutStats;               //!<! Cuts statistics

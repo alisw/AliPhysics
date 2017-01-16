@@ -61,6 +61,7 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fCentPercentiles{-1.f},
   fPrimaryVertex{nullptr},
   fNewEvent{true},
+  fOverrideAutoTriggerMask{false},
   fCutStats{nullptr},
   fVtz{nullptr},
   fDeltaTrackSPDvtz{nullptr},
@@ -358,7 +359,7 @@ void AliNuclexEventCuts::SetupRun2pp() {
   fMinCentrality = 0.f;
   fMaxCentrality = 100.f;
 
-  fTriggerMask = AliVEvent::kINT7;
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
 }
 
@@ -401,7 +402,7 @@ void AliNuclexEventCuts::SetupLHC15o() {
   fDeltaEstimatorNsigma[0] = 5.;
   fDeltaEstimatorNsigma[1] = 5.5;
 
-  fTriggerMask = AliVEvent::kINT7;
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
 }
 
@@ -418,5 +419,5 @@ void AliNuclexEventCuts::SetupLHC11h() {
 
   fUseEstimatorsCorrelationCut = false;
 
-  fTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
 }
