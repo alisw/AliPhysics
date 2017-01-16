@@ -214,6 +214,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
+	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
         UserTasks/AliAnalysisTaskJetSubstructure.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
