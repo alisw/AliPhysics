@@ -113,23 +113,23 @@ protected:
   Bool_t                      fIsPtHard;                 ///< flag to enable pt-hard histos and make available outlier cut
   
   // Service fields (non-streamed)
-  AliMCParticleContainer* fGeneratorLevel      ; //! generator level container
-  AliTrackContainer*    fDetectorLevel         ; //! detector level container
-  Int_t                 fNPtHistBins           ; //! number of pt bins
-  Double_t*             fPtHistBins            ; //! pt bins
-  Int_t                 fNEtaHistBins          ; //! number of eta bins
-  Double_t*             fEtaHistBins           ; //! eta bins
-  Int_t                 fNPhiHistBins          ; //! number of phi bins
-  Double_t*             fPhiHistBins           ; //! phi bins
-  Int_t                 fNCentHistBins         ; //! number of cent bins
-  Double_t*             fCentHistBins          ; //! cent bins
-  Int_t                 fNPtRelDiffHistBins    ; //! number of pt relative difference bins
-  Double_t*             fPtRelDiffHistBins     ; //! pt relative difference bins
-  Int_t                 fNPtResHistBins        ; //! number of pt res bins
-  Double_t*             fPtResHistBins         ; //! pt res bins
-  Int_t                 fNIntegerHistBins      ; //! number of integer bins
-  Double_t*             fIntegerHistBins       ; //! integer bins
-  AliPHOSGeometry*      fPHOSGeo;              ; //!<! phos geometry
+  AliMCParticleContainer* fGeneratorLevel      ; //!<! generator level container
+  AliTrackContainer*    fDetectorLevel         ; //!<! detector level container
+  Int_t                 fNPtHistBins           ; //!<! number of pt bins
+  Double_t*             fPtHistBins            ; //!<! pt bins
+  Int_t                 fNEtaHistBins          ; //!<! number of eta bins
+  Double_t*             fEtaHistBins           ; //!<! eta bins
+  Int_t                 fNPhiHistBins          ; //!<! number of phi bins
+  Double_t*             fPhiHistBins           ; //!<! phi bins
+  Int_t                 fNCentHistBins         ; //!<! number of cent bins
+  Double_t*             fCentHistBins          ; //!<! cent bins
+  Int_t                 fNPtRelDiffHistBins    ; //!<! number of pt relative difference bins
+  Double_t*             fPtRelDiffHistBins     ; //!<! pt relative difference bins
+  Int_t                 fNPtResHistBins        ; //!<! number of pt res bins
+  Double_t*             fPtResHistBins         ; //!<! pt res bins
+  Int_t                 fNIntegerHistBins      ; //!<! number of integer bins
+  Double_t*             fIntegerHistBins       ; //!<! integer bins
+  AliPHOSGeometry*      fPHOSGeo               ; //!<! phos geometry
   
   THistManager          fHistManager           ; //!< Histogram manager
   
