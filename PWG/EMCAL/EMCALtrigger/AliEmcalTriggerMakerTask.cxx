@@ -25,7 +25,7 @@
 #include "AliEMCALTriggerBitConfig.h"
 #include "AliEMCALTriggerDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
-#include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALTriggerPatchInfoV1.h"
 #include "AliEmcalTriggerMakerKernel.h"
 #include "AliEmcalTriggerMakerTask.h"
 #include "AliEMCALTriggerMapping.h"
@@ -155,7 +155,7 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
   if (!fLocalInitialized) return;
 
   if (!fCaloTriggersOutName.IsNull()) {
-    fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfo");
+    fCaloTriggersOut = new TClonesArray("AliEMCALTriggerPatchInfoV1");
     fCaloTriggersOut->SetName(fCaloTriggersOutName);
 
     if (!(InputEvent()->FindListObject(fCaloTriggersOutName))) {
@@ -226,12 +226,12 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   fTriggerMaker->BuildL1ThresholdsOffline(fV0);
   fTriggerMaker->SetIsMC(MCEvent());
   TObjArray *patches = fTriggerMaker->CreateTriggerPatches(InputEvent(), fUseL0Amplitudes);
-  AliEMCALTriggerPatchInfo *recpatch = NULL;
+  AliEMCALTriggerPatchInfoV1 *recpatch = NULL;
   Int_t patchcounter = 0;
   TString triggerstring;
   AliDebugStream(2) << GetName() << ": Found " << patches->GetEntries() << " patches" << std::endl;
   for(TIter patchIter = TIter(patches).Begin(); patchIter != TIter::End(); ++patchIter){
-    recpatch = dynamic_cast<AliEMCALTriggerPatchInfo *>(*patchIter);
+    recpatch = dynamic_cast<AliEMCALTriggerPatchInfoV1 *>(*patchIter);
     if(fDoQA){
       AliDebugStream(3) <<  GetName() << ": Next patch: size " << recpatch->GetPatchSize() << " , trigger bits " << std::bitset<sizeof(Int_t)*8>(recpatch->GetTriggerBits()) << std::endl;
       // Handle types different - online - offline - re
@@ -250,7 +250,7 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
         }
       }
     }
-    new((*fCaloTriggersOut)[patchcounter++]) AliEMCALTriggerPatchInfo(*recpatch);
+    new((*fCaloTriggersOut)[patchcounter++]) AliEMCALTriggerPatchInfoV1(*recpatch);
   }
   if(patches) delete patches;
   return true;
