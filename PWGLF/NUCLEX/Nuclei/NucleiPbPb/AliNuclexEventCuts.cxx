@@ -19,11 +19,13 @@ using std::vector;
 #include <AliAODEvent.h>
 #include <AliESDEvent.h>
 
+ClassImp(AliNuclexEventCutsContainer);
 ClassImp(AliNuclexEventCuts);
 
 /// Standard constructor with null selection
 ///
 AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
+  fUtils{},
   fRequireTrackVertex{false},
   fMinVtz{-1000.f},
   fMaxVtz{1000.f},
@@ -58,6 +60,7 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fCentEstimators{"V0M","CL0"},
   fCentPercentiles{-1.f},
   fPrimaryVertex{nullptr},
+  fNewEvent{true},
   fCutStats{nullptr},
   fVtz{nullptr},
   fDeltaTrackSPDvtz{nullptr},
@@ -249,13 +252,21 @@ string AliNuclexEventCuts::GetCentralityEstimator (unsigned int estimator) const
     return fCentEstimators[estimator];
 }
 
+
 void AliNuclexEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
   AliNuclexEventCutsContainer* tmp_cont = static_cast<AliNuclexEventCutsContainer*>(ev->FindListObject("AliNuclexEventCutsContainer"));
   if (tmp_cont) {
-    fContainer = *tmp_cont;
-    return;
-  }
-  tmp_cont = new AliNuclexEventCutsContainer;
+    unsigned long evid = ((unsigned long)(ev->GetBunchCrossNumber()) << 32) + ev->GetTimeStamp();
+    fNewEvent = (tmp_cont->fEventId != evid);
+    tmp_cont->fEventId = evid;
+    //if (fNewEvent) ::Info("AliNuclexEventCuts::AcceptEvent","New event. %Lu", evid);
+    //else ::Info("AliNuclexEventCuts::AcceptEvent","Old event. %Lu", evid);
+
+    if (!fNewEvent) {
+      fContainer = *tmp_cont;
+      return;
+    }
+  } else tmp_cont = new AliNuclexEventCutsContainer;
 
   bool isAOD = false;
   if (dynamic_cast<AliAODEvent*>(ev))

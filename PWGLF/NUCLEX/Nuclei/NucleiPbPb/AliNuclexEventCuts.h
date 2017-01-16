@@ -17,11 +17,14 @@ class TH2D;
 class AliNuclexEventCutsContainer : public TNamed {
   public:
     AliNuclexEventCutsContainer() : TNamed("AliNuclexEventCutsContainer","AliNuclexEventCutsContainer"),
+    fEventId(0u),
     fMultESD(-1),
     fMultTrkFB32(-1),
     fMultTrkFB32Acc(-1),
+    fMultTrkFB32TOF(-1),
     fMultTrkTPC(-1) {}
 
+    unsigned long fEventId;
     int fMultESD;
     int fMultTrkFB32;
     int fMultTrkFB32Acc;
@@ -116,6 +119,9 @@ class AliNuclexEventCuts : public TList {
     string        fCentEstimators[2];             ///< Centrality estimators: the first is used as main estimators, that is correlated with the second to monitor spurious events.
     float         fCentPercentiles[2];            ///< Centrality percentiles
     AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
+
+    ///
+    bool          fNewEvent;                      //!<  True if the AliVEvent identifier in the AcceptEvent and fIdentifier are different
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1I* fCutStats;               //!<! Cuts statistics
