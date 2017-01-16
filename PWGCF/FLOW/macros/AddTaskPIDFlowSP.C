@@ -1,12 +1,12 @@
 void AddTaskPIDFlowSP(TString particleSpecies = "Pion",
-                      TString gPID = "kTOFbayesian",
                       TString qVector = "Qa",
                       Int_t uptoWhichHarmonics = 5,
                       Double_t gEtaGap = 0.0,
+                      Double_t whichData = 2011,
                       Bool_t isVZERO = kFALSE,
                       Bool_t isPbPb = kTRUE,
                       Bool_t isHijing = kFALSE,
-                      Bool_t is2011 = kTRUE,
+		      AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian,
                       AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
                       Int_t gAODfilterBit = 768,
                       Double_t gProbPID = 0.9,
@@ -28,22 +28,22 @@ if(isHijing) {
     gCentrality[1] = 50;
 }
 else {
-    if(is2011) {
+    if(whichData == 2011) {
         for(Int_t i = 0; i < nCentralitiesMax-3; i++)
             gCentrality[i] = i;
         gCentrality[21] = 30;
         gCentrality[22] = 40;
         gCentrality[23] = 50;
     }
-    else if(!is2011) {
+    else if(whichData != 2011) {
         for(Int_t i = 0; i < 11; i++)
             gCentrality[i] = 0 + i*10;
     }
 }
 
 Int_t nCentralities = 2;
-if((isPbPb)&&(is2011)&&(!isHijing)) nCentralities = nCentralitiesMax;
-else if((isPbPb)&&(!is2011)&&(!isHijing)) nCentralities = 6;
+if((isPbPb)&&(whichData==2011)&&(!isHijing)) nCentralities = nCentralitiesMax;
+else if((isPbPb)&&(whichData!=2011)&&(!isHijing)) nCentralities = 6;
 
 //static const Int_t nCentralitiesMax = 3;
 //Double_t gCentrality[nCentralitiesMax] = {0,10,20};
@@ -60,18 +60,16 @@ AliFlowTrackCuts* cutsRP[nCentralitiesMax];
 AliFlowTrackCuts* cutsPOI[nCentralitiesMax];
 TString suffixName[nCentralitiesMax];
 TString outputSlotName[nCentralitiesMax][nHarmonics];
-//Int_t nCentralities = 2;
-//if((isPbPb)&&(is2011)&&(!isHijing)) nCentralities = nCentralitiesMax;
-//else if((isPbPb)&&(!is2011)&&(!isHijing)) nCentralities = 6;
+
 for(Int_t iCentralityBin = 0; iCentralityBin < nCentralities - 1; iCentralityBin++) {
     //Create the event cut object
-    cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,is2011,gCentralityEstimator,doQA);
+    cutsEvent[iCentralityBin] = createFlowEventCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isPbPb,whichData,gCentralityEstimator,doQA);
     
     //Create the RP cut object
-    cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,is2011,gAODfilterBit,gCharge,doQA);
+    cutsRP[iCentralityBin] = createFlowRPCutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],isVZERO,gAODfilterBit,whichData,gCharge,doQA);
     
     //Create the POI cut object
-    cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],particleSpecies,gPID,qVector,gEtaGap,isVZERO,is2011,isPbPb,gAODfilterBit,gProbPID,gDCAvtxXY,gDCAvtxZ,gCharge,doQA);
+    cutsPOI[iCentralityBin] = createFlowPOICutObject(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1],particleSpecies,sourcePID,qVector,gEtaGap,isVZERO,isPbPb,gAODfilterBit,whichData,gProbPID,gDCAvtxXY,gDCAvtxZ,gCharge,doQA);
     
     suffixName[iCentralityBin] = particleSpecies.Data();
     suffixName[iCentralityBin] += "_";
@@ -198,7 +196,7 @@ if (taskFE[iCentralityBin]->GetQAOn()) {
 AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
                                            Int_t gCentralityMax = -1,
                                            Bool_t isPbPb = kTRUE,
-                                           Bool_t is2011 = kTRUE,
+                                           Double_t whichData = 2011,
                                            AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
                                            Bool_t doQA = kFALSE) {
     //Part of the code that creates the event cut objects
@@ -207,10 +205,17 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
     //Create the event cut objects
     AliFlowEventCuts *cutsEvent = new AliFlowEventCuts(Form("eventcutsCentrality%dTo%d",gCentralityMin,gCentralityMax));
     if(isPbPb) {
-        cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax);//,kTRUE
+        cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax);
         cutsEvent->SetCentralityPercentileMethod(gCentralityEstimator);
-        cutsEvent->SetLHC11h(is2011);
-        cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+        cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax,kFALSE);
+	if(whichData==2011){ 
+		cutsEvent->SetLHC11h(kTRUE);
+	}
+        if(whichData!=2011){
+		cutsEvent->SetLHC11h(kFALSE);
+                if(whichData==2015) cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax,kTRUE);
+	}
+	cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
     }
     else
         cutsEvent->SetCheckPileup(kTRUE);
@@ -226,30 +231,31 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
 AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
                                         Int_t gCentralityMax = -1,
                                         Bool_t isVZERO = kFALSE,
-                                        Bool_t is2011 = kTRUE,
                                         Int_t gAODfilterBit = 768,
+					Double_t whichData = 2011,
                                         Double_t gCharge = 0.,
                                         Bool_t doQA = kFALSE) {
     //Part of the code that creates the RP cut objects
     Double_t gEtaMin = -0.8, gEtaMax = 0.8;
     Int_t gMinTPCdedx = 10;
-    
+   //  Int_t gMinTPCdedx = -999;
+ 
     //Create the event cut objects
     AliFlowTrackCuts *cutsRP = new AliFlowTrackCuts(Form("rpCutsCentrality%dTo%d",gCentralityMin,gCentralityMax));
     if(!isVZERO) {
         cutsRP->SetPtRange(0.2,5.);
         cutsRP->SetEtaRange(gEtaMin,gEtaMax);
         cutsRP->SetMinimalTPCdedx(gMinTPCdedx);
-        cutsRP->SetAODfilterBit(gAODfilterBit);
-        
+        cutsRP->SetAODfilterBit(gAODfilterBit);       
         if (gCharge!=0) cutsRP->SetCharge(gCharge);
     }
     else if(isVZERO) { // use vzero sub analysis
-        if(!is2011)
+        if(whichData = 2010)
             cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010();
-        if(is2011)
+        if(whichData = 2011)
             cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011();
-    }//VZERO
+	else{ cout<<"VZEROonly track cuts for this dataset are automatically set to 2010 settings!"<<endl; cutsRP = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010();}
+   }//VZERO
     
     
     cutsRP->SetQA(doQA);
@@ -262,13 +268,13 @@ AliFlowTrackCuts *createFlowRPCutObject(Int_t gCentralityMin = -1,
 AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
                                          Int_t gCentralityMax = -1,
                                          TString particleSpecies = "Pion",
-                                         TString gPID = "kTOFbayesian",
+                                         AliFlowTrackCuts::PIDsource sourcePID = AliFlowTrackCuts::kTOFbayesian,
                                          TString gQvector = "Qa",
                                          Double_t gEtaGap = 0.0,
                                          Bool_t isVZERO = kFALSE,
-                                         Bool_t is2011 = kTRUE,
                                          Bool_t isPbPb = kTRUE,
                                          Int_t gAODfilterBit = 768,
+					 Double_t whichData = 2011,
                                          Double_t gProbPID = 0.9,
                                          Double_t gDCAvtxXY = -1.,
                                          Double_t gDCAvtxZ = -1.,
@@ -277,11 +283,10 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
     //Part of the code that creates the POI cut objects
     Double_t gEtaMin = -0.8, gEtaMax = 0.8;
     Int_t gMinTPCdedx = 10;
-    Bool_t isPID = kTRUE;
-    if(gPID == "kTOFbayesian"){ AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian;}
-    else if(gPID == "kTPCTOFNsigmaPurity"){ AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTPCTOFNsigmaPurity;}
-    else if(gPID == "kTPCTOFNsigma"){ AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTPCTOFNsigma;}
-    else{ AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian; }
+//    Int_t gMinTPCdedx = -999;
+
+    Bool_t isPID = kTRUE; 
+    //AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian;
     AliPID::EParticleType particleType = AliPID::kPion;
     
     if(particleSpecies.Contains("Pion")) {
@@ -300,7 +305,7 @@ AliFlowTrackCuts *createFlowPOICutObject(Int_t gCentralityMin = -1,
     AliFlowTrackCuts *cutsPOI = new AliFlowTrackCuts(Form("poiCutsCentrality%dTo%d",gCentralityMin,gCentralityMax));
     
     //for 2010 data to use old TPC PID Response instead of the official one
-    if(!is2011)
+    if(whichData == 2010)
         cutsPOI->GetBayesianResponse()->ForceOldDedx();
     
     if(!isVZERO) {
