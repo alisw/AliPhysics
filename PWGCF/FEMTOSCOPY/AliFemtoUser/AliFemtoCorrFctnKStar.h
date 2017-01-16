@@ -76,6 +76,7 @@ public:
                  int aNbinsKStarLong, double aKStarLongMin, double aKStarLongMax);
 
   float CalcMt(const AliFemtoPair* aPair);
+  float CalcMtv2(const AliFemtoPair* aPair);  //TODO testing effect of m_reduced vs 0.5(m1+m2) in calculation
 
 
   void SetCalculateDetaDphis(Bool_t, Double_t);
@@ -117,6 +118,9 @@ protected:
   Bool_t fBuildmTBinned;
   TH2F *fNumerator_mT;
   TH2F *fDenominator_mT;
+  //TODO testing effect of m_reduced vs 0.5(m1+m2) in calculation
+  TH2F *fNumeratorv2_mT;
+  TH2F *fDenominatorv2_mT;
 
   // 3D k*_out, _side, _long Cf
   Bool_t fBuild3d;
