@@ -150,6 +150,7 @@ public:
   void SetMCInput() {fIsMCInput = kTRUE;}
   void SetUseMCCen( Bool_t kB ) { fUseMCCen = kB; }
   void SetRejectPileUp( Bool_t kB ) { fRejectPileUp = kB; }
+  void SetRejectPileUpTight( Bool_t kB ) { fRejectPileUpTight = kB; }
   void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
     fCentrUpLim=centrup;}
   void SetCentralityEstimator(CentrEstimator centrest) {fCentrEstimator=centrest;}
@@ -251,6 +252,7 @@ private:
   Float_t  fCentrUpLim;		// centrality upper limit
   CentrEstimator  fCentrEstimator;     // string for the centrality estimator
   Bool_t   fRejectPileUp;
+  Bool_t   fRejectPileUpTight;
   //
   TList       *fOutput;	   	//! list send on output slot 0
   //

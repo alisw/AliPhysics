@@ -159,6 +159,7 @@ fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
+fRejectPileUpTight(kFALSE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator(kV0M),
@@ -291,6 +292,7 @@ fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
+fRejectPileUpTight(kFALSE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator(kV0M),
@@ -478,7 +480,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(8,"multESDTPCDif");
-  fPileUpCount->GetXaxis()->SetBinLabel(9,"multTrkTOF");
+  fPileUpCount->GetXaxis()->SetBinLabel(9,"extraPileUpMultSel");
   fOutput->Add(fPileUpCount);
   fPileUpMultSelCount = new TH1F("fPileUpMultSelCount", "fPileUpMultSelCount", 8, 0., 8.);
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(1,"IsNotPileup");
@@ -756,11 +758,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             BisPileup=kTRUE;
           }
           
-          if(fabs(centrV0M-centrCL1)>7.5)  {
-            fPileUpCount->Fill(4.5);
-            BisPileup=kTRUE;
-          }
-          
           // check vertex consistency
           const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
           const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
@@ -893,15 +890,23 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           Double_t multEsdn = multEsd;
           Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
           
-          if (multESDTPCDif > 15000.) {
+          if (multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
             fPileUpCount->Fill(7.5);
             BisPileup=kTRUE;
           }
           
-//          if (Double_t(multTrkTOFBefC) < fMultTOFLowCut->Eval(Double_t(multTrkBefC)) || Double_t(multTrkTOFBefC) > fMultTOFHighCut->Eval(Double_t(multTrkBefC))) {
-//            fPileUpCount->Fill(8.5);
-//            BisPileup=kTRUE;
-//          }
+          if(fRejectPileUpTight) {
+            if(BisPileup==kFALSE) {
+              if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
+              if(BisPileup) fPileUpCount->Fill(8.5);
+            }
+          }
           
           if(BisPileup) return;
         }

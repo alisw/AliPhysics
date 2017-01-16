@@ -6,7 +6,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString sIntRuns="low",
                              TString sIntRate="low",
                              TString EvTrigger="MB",
-                             Bool_t bUseCRCRecenter=kFALSE,
+                             Bool_t bUseTightPileUp=kFALSE,
                              Bool_t bUseZDC=kFALSE,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
@@ -86,6 +86,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bCalculateCME=kFALSE;
   Bool_t bUseVZERO=kFALSE;
   Int_t nHarmonic=2;
+  Bool_t bUseCRCRecenter=kFALSE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -128,6 +129,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if(sCentrEstimator=="CL1") taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kCL1);
   if(sCentrEstimator=="CL0") taskFE->SetCentralityEstimator(AliAnalysisTaskCRCZDC::kCL0);
  taskFE->SetRejectPileUp(kTRUE);
+  taskFE->SetRejectPileUpTight(bUseTightPileUp);
  taskFE->SetUseMCCen(bZDCMCCen);
  taskFE->SetZDCGainAlpha(ZDCGainAlpha);
   if (sDataSet == "2010") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2010);
