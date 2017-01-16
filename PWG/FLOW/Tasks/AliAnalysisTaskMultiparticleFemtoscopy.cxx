@@ -1120,7 +1120,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
  {
   TString pattern = ".11.13.211.321.2212."; // TBI this can be done programatically TBI only for these particles I need to estimate background
 
-  return; // TBI re-validate the lines below, within if statement
+  return; // TBI re-validate the lines below, within if statement, by following the analogy with AOD case
 
   if(!PassesMixedEventCuts(aMC)){return;} // TBI this is empty at the moment for MC
   Int_t nTracks = aMC->GetNumberOfTracks();
@@ -1170,60 +1170,50 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
  {
   if(!PassesMixedEventCuts(aAOD)){return;} // TBI returns always true at the moment...
 
-  if(!fMixedEvents[0])
+  if(0==fMixedEvents[0]->GetEntries())
   {
    if(fGlobalTracksAOD[1]) fGlobalTracksAOD[1]->Delete();
    GlobalTracksAOD(aAOD,1);
    if(0 == fGlobalTracksAOD[1]->GetSize()){return;}
-   fMixedEvents[0] = (TClonesArray*)aAOD->GetTracks()->Clone();
-   if(!fMixedEvents[0]){Fatal(sMethodName.Data(),"!fMixedEvents[0]");}
+   *fMixedEvents[0] = *(aAOD->GetTracks());
+   if(0==fMixedEvents[0]->GetEntries()){return;}
   }
-  else if(!fMixedEvents[1])
+  else if(0==fMixedEvents[1]->GetEntries())
   {
    if(fGlobalTracksAOD[2]) fGlobalTracksAOD[2]->Delete();
    GlobalTracksAOD(aAOD,2);
    if(0 == fGlobalTracksAOD[2]->GetSize()){return;}
-   fMixedEvents[1] = (TClonesArray*)aAOD->GetTracks()->Clone();
-   if(!fMixedEvents[1]){Fatal(sMethodName.Data(),"!fMixedEvents[1]");}
+   *fMixedEvents[1] = *(aAOD->GetTracks());
+   if(0==fMixedEvents[1]->GetEntries()){return;}
   }
-  else if(!fMixedEvents[2])
+  else if(0==fMixedEvents[2]->GetEntries())
   {
    if(fGlobalTracksAOD[3]) fGlobalTracksAOD[3]->Delete();
    GlobalTracksAOD(aAOD,3);
    if(0 == fGlobalTracksAOD[3]->GetSize()){return;}
-   fMixedEvents[2] = (TClonesArray*)aAOD->GetTracks()->Clone();
-   if(!fMixedEvents[2]){Fatal(sMethodName.Data(),"!fMixedEvents[2]");}
-  }
-  else if(!fMixedEvents[3])
-  {
-   if(fGlobalTracksAOD[4]) fGlobalTracksAOD[4]->Delete();
-   GlobalTracksAOD(aAOD,4);
-   if(0 == fGlobalTracksAOD[4]->GetSize()){return;}
-   fMixedEvents[3] = (TClonesArray*)aAOD->GetTracks()->Clone();
-   if(!fMixedEvents[3]){Fatal(sMethodName.Data(),"!fMixedEvents[3]");}
+   *fMixedEvents[2] = *(aAOD->GetTracks());
+   if(0==fMixedEvents[2]->GetEntries()){return;}
   }
 
   // Shall we do something?
-  if(fMixedEvents[0] && fMixedEvents[1] && fMixedEvents[2] && fMixedEvents[3]) // TBI re-think
+  if(0!=fMixedEvents[0]->GetEntries() && 0!=fMixedEvents[1]->GetEntries() && 0!=fMixedEvents[2]->GetEntries())
   {
    if(fEstimate2pBackground) CalculateBackground(fMixedEvents[0],fMixedEvents[1]); // TBI rename
    if(fEstimate3pBackground) Calculate3pBackground(fMixedEvents[0],fMixedEvents[1],fMixedEvents[2]);
-   if(fEstimate4pBackground) Calculate4pBackground(fMixedEvents[0],fMixedEvents[1],fMixedEvents[2],fMixedEvents[3]);
+   //if(fEstimate4pBackground) Calculate4pBackground(fMixedEvents[0],fMixedEvents[1],fMixedEvents[2],fMixedEvents[3]);
    // Shift mixed events:
    // [1] -> [0]
-   fMixedEvents[0] = (TClonesArray*)fMixedEvents[1]->Clone();
-   fGlobalTracksAOD[1] = (TExMap*)fGlobalTracksAOD[2]->Clone();
+   fMixedEvents[0]->Delete();
+   *fMixedEvents[0] = *fMixedEvents[1];
+   *fGlobalTracksAOD[1] = *fGlobalTracksAOD[2];
    // [2] -> [1]
-   fMixedEvents[1] = (TClonesArray*)fMixedEvents[2]->Clone();
-   fGlobalTracksAOD[2] = (TExMap*)fGlobalTracksAOD[3]->Clone();
-   // [3] -> [2]
-   fMixedEvents[2] = (TClonesArray*)fMixedEvents[3]->Clone();
-   fGlobalTracksAOD[3] = (TExMap*)fGlobalTracksAOD[4]->Clone();
-   // Clean [3]:
-   fMixedEvents[3] = NULL;
-   fGlobalTracksAOD[4]->Delete(); // TBI or = NULL ?
-
-  } // if(fMixedEvents[0] && fMixedEvents[1] && fMixedEvents[2] && fMixedEvents[3]) // TBI re-think
+   fMixedEvents[1]->Delete();
+   *fMixedEvents[1] = *fMixedEvents[2];
+   *fGlobalTracksAOD[2] = *fGlobalTracksAOD[3];
+   // Clean [2]:
+   fMixedEvents[2]->Delete();
+   fGlobalTracksAOD[3]->Delete();
+  } // if(0!=fMixedEvents[0]->GetEntries() && 0!=fMixedEvents[1]->GetEntries() && 0!=fMixedEvents[2]->GetEntries())
 
  } // else if(aAOD)
 
@@ -1340,7 +1330,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjec
  // Insanity checks for UserCreateOutputObjects() method.
 
  // a) Insanity checks for global track cuts;
- // b) ...
+ // b) Disabled temporarily 4-p stuff. TBI a) fMixedEvents[3] needs to be upgraded to fMixedEvents[4], and b) EstimateBackground(AliVEvent *ave) needs to be re-implemented
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjects()";
 
@@ -1353,7 +1343,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjec
   Fatal(sMethodName.Data(),"if(0!=returnValueICFGTC)");
  } // if(0!=returnValueICFGTC)
 
- // b) ...
+ // b) Disabled temporarily 4-p stuff. TBI
+ if(fFill4pCorrelationFunctions || fEstimate4pBackground)
+ {
+  cout<<Form("\n\nCalculation of 4-p stuff is not validated yet!!!! \n\n")<<endl; // TBI
+  Fatal(sMethodName.Data(),"fFill4pCorrelationFunctions || fEstimate4pBackground");
+ }
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjects()
 
@@ -2031,7 +2026,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackground()
   }
  }
 
- for(Int_t me=0;me<4;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
+ for(Int_t me=0;me<3;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
  {
   fMixedEvents[me] = NULL;
  }
@@ -2896,9 +2891,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
 
  // e) Book buffer objects:
  // TBI not sure why I need this here again. Re-think...
- for(Int_t me=0;me<4;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
+ for(Int_t me=0;me<3;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
  {
-  fMixedEvents[me] = NULL;
+  fMixedEvents[me] = new TClonesArray("AliAODTrack",10000);
  }
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
@@ -4201,17 +4196,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
- /* TBI I have moved this on another place
- // d) Shift [1] -> [0]:
- // TBI re-think the lines below, there should be a better way...
- fMixedEvents[0] = (TClonesArray*)fMixedEvents[1]->Clone();
- fGlobalTracksAOD[1] = (TExMap*)fGlobalTracksAOD[2]->Clone();
-
- // e) Clean [1]:
- fMixedEvents[1] = NULL;
- fGlobalTracksAOD[2]->Delete(); // TBI or = NULL ?
- */
-
 } // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2)
 
 //=======================================================================================================================
@@ -4465,17 +4449,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
    } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
-
- /* TBI I have moved this on another place
- // d) Shift [1] -> [0]:
- // TBI re-think the lines below, there should be a better way...
- fMixedEvents[0] = (TClonesArray*)fMixedEvents[1]->Clone();
- fGlobalTracksAOD[1] = (TExMap*)fGlobalTracksAOD[2]->Clone();
-
- // e) Clean [1]:
- fMixedEvents[1] = NULL;
- fGlobalTracksAOD[2]->Delete(); // TBI or = NULL ?
- */
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3)
 

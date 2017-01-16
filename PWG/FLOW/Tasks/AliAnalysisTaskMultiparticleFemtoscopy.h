@@ -453,7 +453,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TH1F *fBackground[10][10];           //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same]. Booking only upper 1/2 of the matrix, diagonal included.
   TH1F *f3pBackground[10][10][10];     //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same] x [same]
   TH1F *f4pBackground[10][10][10][10]; //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same] x [same]
-  TClonesArray *fMixedEvents[4];       //! tracks for mixed events (supporting up to 4-mixed events at the moment)
+  TClonesArray *fMixedEvents[3];       //! tracks for mixed events (supporting up to 3-mixed events at the moment)
 
   // 5.) Buffers:
   TList *fBuffersList;                             // list to hold all objects for buffers
