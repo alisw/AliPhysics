@@ -32,6 +32,15 @@ struct MacroParams {
   std::vector<unsigned char> pair_codes;
   float qinv_bin_size_MeV;
   float qinv_max_GeV;
+
+  UInt_t delta_phi_bin_count;
+  Float_t delta_phi_min;
+  Float_t delta_phi_max;
+
+  UInt_t delta_eta_bin_count;
+  Float_t delta_eta_min;
+  Float_t delta_eta_max;
+
   bool do_qinv_cf;
   bool do_q3d_cf;
   bool do_deltaeta_deltaphi_cf;
@@ -73,6 +82,15 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_trueq_cf = true;
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
+
+  macro_config.delta_phi_bin_count = 72;
+  macro_config.delta_phi_min = -0.1;
+  macro_config.delta_phi_max =  0.1;
+
+  macro_config.delta_eta_bin_count = 72;
+  macro_config.delta_eta_min = -0.1;
+  macro_config.delta_eta_max =  0.1;
+
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -171,8 +189,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
               // 100, 0.0, 2.0
               // 200, 0.0, 0.5,
               // 200, 0.0, 0.5
-              75, -0.1, 0.1,
-              75, -0.1, 0.1
+              macro_config.delta_phi_bin_count, macro_config.delta_phi_min, macro_config.delta_phi_max,
+	      macro_config.delta_eta_bin_count, macro_config.delta_eta_min, macro_config.delta_eta_max
         );
         deta_dphi_cf->SetMagneticFieldSign(1);
         analysis->AddCorrFctn(deta_dphi_cf);
@@ -200,7 +218,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
           AliFemtoModelCorrFctnDEtaDPhiStar::Build()
             .GroupOutput(true)
             .Radius(cut_config.pair_phi_star_radius)
-          // .Phi(72, -0.1, 0.1).Eta(72, -0.1, 0.2)
+            .Phi(macro_config.delta_phi_bin_count, macro_config.delta_phi_min, macro_config.delta_phi_max)
+            .Eta(macro_config.delta_eta_bin_count, macro_config.delta_eta_min, macro_config.delta_eta_max)
             .Build();
         mc_deta_dphistar_cf->ConnectToManager(model_manager);
 

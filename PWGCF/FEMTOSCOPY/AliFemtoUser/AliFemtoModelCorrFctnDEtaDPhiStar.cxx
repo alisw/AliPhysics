@@ -57,7 +57,7 @@ AliFemtoModelCorrFctnDEtaDPhiStar::AliFemtoModelCorrFctnDEtaDPhiStar(
 
   fDPhiStarNumeratorTrue = new TH1F("NumDPhiTrue" + p.title, "#Delta#phi* Numerator_{true}; #Delta#phi*",
                                     p.phi.bin_count, p.phi.low, p.phi.high);
-  fDPhiStarNumeratorTrue = new TH1F("NumDPhiFake" + p.title,"#Delta#phi* Numerator_{fake}; #Delta#phi*",
+  fDPhiStarNumeratorFake = new TH1F("NumDPhiFake" + p.title,"#Delta#phi* Numerator_{fake}; #Delta#phi*",
                                     p.phi.bin_count, p.phi.low, p.phi.high);
   fDPhiStarDenominator = new TH1F("DenDPhi" + p.title, "#Delta#phi* Denominator; #Delta#phi*",
                                   p.phi.bin_count, p.phi.low, p.phi.high);
