@@ -122,9 +122,9 @@ class AliNuclexEventCuts : public TList {
     AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
 
     ///
-    bool          fNewEvent;                      //!<  True if the AliVEvent identifier in the AcceptEvent and fIdentifier are different
+    bool          fNewEvent;                      ///<  True if the AliVEvent identifier in the AcceptEvent and fIdentifier are different
     /// Overrides
-    bool          fOverrideAutoTriggerMask;       //!<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
+    bool          fOverrideAutoTriggerMask;       ///<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1I* fCutStats;               //!<! Cuts statistics
