@@ -72,7 +72,8 @@
 #include "AliOfflineTrigger.h"
 #include "AliSysInfo.h"
 #include "TTimeStamp.h"
-
+#include "TAlienCollection.h"
+#include "TPRegexp.h"
 using std::cout;
 using std::endl;
 
@@ -548,6 +549,8 @@ void  AliOfflineTrigger::ExtractSelected(const char *rawFile, Int_t verbose){
     fRawTriggerTree=itree->CloneTree(0);
   }
   Int_t nEvents=itree->GetEntries();
+  Int_t size= itree->GetEntry(0);
+  fRawTriggerTree->CopyAddresses(itree);
   for (Int_t iEvent=0; iEvent<nEvents; iEvent++){
     ULong64_t gid=fRAWEventNrGID[iEvent];
     Bool_t isSelected = kFALSE;
@@ -558,10 +561,10 @@ void  AliOfflineTrigger::ExtractSelected(const char *rawFile, Int_t verbose){
       ::Info(" AliOfflineTrigger::ExtractSelected", "%s\t%d\t%llu\t%d\t%s",rawFile,iEvent,gid,fTrgGIDTimeStamp[fRAWEventNrGID[iEvent]], TTimeStamp(fTrgGIDTimeStamp[fRAWEventNrGID[iEvent]]).AsString("short"));
     }
     AliSysInfo::AddStamp(TString::Format("%s_BR",rawFile).Data(), 10, fCounterFileInput,fCounterFileInput);    
-    Int_t size= itree->GetEntry(iEvent);
+    size= itree->GetEntry(iEvent);
     AliSysInfo::AddStamp(TString::Format("%s_ER",rawFile).Data(), 11, fCounterFileInput,fCounterFileInput);    
     Int_t readEntry=itree->GetReadEntry();   
-    fRawTriggerTree->CopyAddresses(itree);
+    //fRawTriggerTree->CopyAddresses(itree);
     AliSysInfo::AddStamp(TString::Format("%s_BF",rawFile).Data(), 100, fCounterFileInput,fCounterFileInput);
     fRawTriggerTree->Fill();
     AliSysInfo::AddStamp(TString::Format("%s_EF",rawFile).Data(), 101, fCounterFileInput,fCounterFileInput);
@@ -585,7 +588,17 @@ void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * trig
    Int_t maxSize=100000000;  // max size of raw trees before moving to next file
    verbose=2
   */
-  TObjArray* rawArray = gSystem->GetFromPipe(TString::Format("cat %s", rawList)).Tokenize("\n");  
+  TObjArray* rawArray = 0;
+  if (TPRegexp(".xml$").Match(rawList)){
+    TAlienCollection *coll = (TAlienCollection *)TAlienCollection::Open(rawList);
+    Int_t nFiles =  coll->GetNofGroups();
+    rawArray=new TObjArray(nFiles);
+    while( coll->Next()){
+      rawArray->AddLast(new TObjString(coll->GetTURL()));
+    }
+  }else{
+    rawArray = gSystem->GetFromPipe(TString::Format("cat %s", rawList)).Tokenize("\n");  
+  }
   Int_t nFiles=rawArray->GetEntries();
   if (nFiles<=0){
     ::Error("AliOfflineTrigger::ExtractSelected","Empty input list");
