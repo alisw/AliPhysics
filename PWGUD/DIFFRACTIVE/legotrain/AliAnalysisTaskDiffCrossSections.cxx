@@ -320,6 +320,8 @@ void AliAnalysisTaskDiffCrossSections::VtxInfo::Fill(const AliESDVertex *vtx) {
 void AliAnalysisTaskDiffCrossSections::ADV0::FillInvalid() {
   fTime[0] = fTime[1] = -10240.0f;
   fCharge[0] = fCharge[1] = fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1.0f;
+  for (Int_t ch=0; ch<16; ++ch)
+    fBBFlags[ch] = fCharges[ch] = -1;
 }
 
 void AliAnalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
@@ -338,11 +340,18 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent,
   fTime[1] = esdAD->GetADATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
+  for (Int_t ch=0; ch<16; ++ch)
+    fBBFlags[ch] = fCharges[ch] = 0;
+
   for (Int_t ch=0; ch<4; ++ch) {
     fBB[0] += (esdAD->GetBBFlag(ch  ) && esdAD->GetBBFlag(ch+ 4));
     fBB[1] += (esdAD->GetBBFlag(ch+8) && esdAD->GetBBFlag(ch+12));
     fBG[0] += (esdAD->GetBGFlag(ch  ) && esdAD->GetBGFlag(ch+ 4));
     fBG[1] += (esdAD->GetBGFlag(ch+8) && esdAD->GetBGFlag(ch+12));
+    for (Int_t j=0; j<4; ++j) {
+      fBBFlags[ch+4*j] += esdAD->GetBBFlag(ch + 4*j);
+      fCharges[ch+4*j] += esdAD->GetMultiplicity(ch + 4*j);
+    }
   }
   fCharge[0] = fCharge[1] = 0.0;
   for (Int_t ch=0; ch<16; ++ch)
@@ -365,13 +374,17 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent,
   fTime[1] = esdV0->GetV0ATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
+  fCharge[0] = fCharge[1] = 0.0;
+  for (Int_t ch=0; ch<16; ++ch)
+    fBBFlags[ch] = fCharges[ch] = 0;
+
   for (Int_t ch=0; ch<64; ++ch) {
     fBB[ch/32] += esdV0->GetBBFlag(ch);
     fBG[ch/32] += esdV0->GetBGFlag(ch);
-  }
-  fCharge[0] = fCharge[1] = 0.0;
-  for (Int_t ch=0; ch<64; ++ch)
     fCharge[ch/32] += esdV0->GetMultiplicity(ch);
+    fBBFlags[ch/4] += esdV0->GetBBFlag(ch);
+    fCharges[ch/4] += esdV0->GetMultiplicity(ch);
+  }
 }
 void AliAnalysisTaskDiffCrossSections::FMDInfo::Fill(const AliESDEvent *esdEvent, Float_t fmdMultLowCut) {
   for (Int_t i=0; i<5; ++i)
