@@ -23,7 +23,7 @@
 #include <TRandom.h>
 
 #include "AliEMCALTriggerConstants.h"
-#include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALTriggerPatchInfoV1.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliLog.h"
 #include "AliVEvent.h"
@@ -42,7 +42,8 @@ AliEmcalTriggerOfflineSelection::AliEmcalTriggerOfflineSelection():
     TObject(),
     fEnergyDefinition(kFEEEnergy),
     fNameClusterContainer(),
-    fResolution(0)
+    fResolution(0),
+    fUseSmearedEnergy(false)
 {
   for(int itrg = 0; itrg < kTrgn; itrg++) fOfflineEnergyThreshold[itrg] = 100000.;  // unimplemented triggers get very high threshold assinged, so that the result is automatically false
   memset(fAcceptanceMaps, 0, sizeof(TH2 *) * kTrgn);
@@ -67,10 +68,10 @@ bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls
   AliDebugStream(1) << "Using patch trigger with energy definition " << fEnergyDefinition << std::endl;
   bool isSingleShower = IsSingleShower(trgcls), isDCAL = IsDCAL(trgcls);
   int nfound = 0;
-  AliEMCALTriggerPatchInfo *patch = NULL;
+  AliEMCALTriggerPatchInfoV1 *patch = NULL;
   std::vector<double> patchefficiencies;
   for(auto patchIter : *triggerpatches){
-    patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
+    patch = static_cast<AliEMCALTriggerPatchInfoV1 *>(patchIter);
     if(!patch->IsOfflineSimple()) continue;
     if((isDCAL && !patch->IsDCalPHOS()) || (!isDCAL && patch->IsDCalPHOS())) continue;      // reject patches in opposite detector
     if(isSingleShower){
@@ -78,10 +79,25 @@ bool AliEmcalTriggerOfflineSelection::ApplyPatchTrigger(EmcalTriggerClass trgcls
     } else {
       if(!patch->IsJetLowSimple()) continue;
     }
+    AliDebugStream(1) << "Patch energy: " << patch->GetPatchE() << ", smeared " << patch->GetSmearedETV1() << std::endl;
     double energy(0);
     // No switch as only cases for patches are handled in this class
-    if(fEnergyDefinition == kFEEEnergy) energy = patch->GetPatchE();
-    else if(fEnergyDefinition == kFEETransverseEnergy) energy = patch->GetPatchET();
+    if(fEnergyDefinition == kFEEEnergy){
+      if(fUseSmearedEnergy){
+        AliDebugStream(1) << "Using smeared energy" << std::endl;
+        energy = patch->GetSmearedEnergyV1();
+      } else {
+        AliDebugStream (1) << "Using default energy" << std::endl;
+        energy = patch->GetPatchE();
+      }
+    }
+    else if(fEnergyDefinition == kFEETransverseEnergy){
+      if(fUseSmearedEnergy){
+        energy = patch->GetSmearedETV1();
+      } else {
+        energy = patch->GetPatchET();
+      }
+    }
     else if(fEnergyDefinition == kFEEADC) energy = patch->GetADCOfflineAmp();
     else if(fEnergyDefinition == kFEETransverseADC) energy = patch->GetPatchET() / EMCALTrigger::kEMCL1ADCtoGeV;
     double threshold(fOfflineEnergyThreshold[trgcls]);

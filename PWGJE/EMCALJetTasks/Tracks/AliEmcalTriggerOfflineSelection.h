@@ -186,6 +186,12 @@ public:
    */
   void SetEnergyResolution(Double_t resolution) { fResolution = resolution; }
 
+  /**
+   * @brief Switch whether to use original or smeared energy.
+   * @param[in] doUse If true then the smeared energy is used
+   */
+  void SetUseSmearedEnergy(Bool_t doUse) { fUseSmearedEnergy = doUse; }
+
 
 protected:
 
@@ -246,6 +252,7 @@ protected:
   EmcalEnergyDefinition_t     fEnergyDefinition;                          ///< Define type of energy to be use for the patch selection
   TString                     fNameClusterContainer;                      ///< Name of the cluster container
   Double_t                    fResolution;                                ///< Resolution for threshold smearing
+  Bool_t                      fUseSmearedEnergy;                          ///< Switch whether to use smeared or original energy
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerOfflineSelection, 1);
