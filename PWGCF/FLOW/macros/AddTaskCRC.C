@@ -623,7 +623,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
             if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff2_CenPhiEtaWeights.root";
           }
           else if(PtWeightsFileName.Contains("eff_CorSec.root")) {
-            if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff3_CenPhiEtaWeights.root";
+            if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff3_CenPhiEtaWeights_2.root";
             if(AODfilterBit==256) PhiEtaWeightsFileName += "15oHI_FB256_pteff_CenPhiEtaWeights.root";
           }
         }
@@ -699,7 +699,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
     if(sDataSet=="2015" && sIntRuns=="high") {
       if(bUsePtWeights && AODfilterBit==768) {
-        PhiEtaWeightsFileName += "15oHI_FB768_pteff2_CenVtxDepPhiEtaWeights.root";
+        PhiEtaWeightsFileName += "15oHI_FB768_pteff3_CenVtxDepPhiEtaWeights.root";
       }
     }
     TFile* PhiEtaWeightsFileVtxDep = TFile::Open(PhiEtaWeightsFileName,"READ");

@@ -614,6 +614,15 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
       AliWarning(Form("WARNING: nch cenphieta weights not found for run %d! \n",fRunNum));
     }
   }
+  if(fUsePhiEtaWeightsVtxDep && fRunNum!=fCachedRunNum) {
+    for(Int_t c=0;c<fCRCnCen;c++) {
+      if(fWeightsListVtxDep->FindObject(Form("fCenVtxDepPhiEtaWeights[%d][%d]",fRunNum,c))) {
+        fPhiEtaWeights = (TH3D*)(fWeightsListVtxDep->FindObject(Form("fCenVtxDepPhiEtaWeights[%d][%d]",fRunNum,c)));
+      } else {
+        AliWarning(Form("WARNING: cenphieta weights vtxdep not found for run %d! \n",fRunNum));
+      }
+    }
+  }
   if(fUsePhiEtaCuts && fRunNum!=fCachedRunNum) {
     if(fPhiEtaCutsList->FindObject(Form("fCenPhiEtaCut[%d]",fRunNum))) {
       fPhiEtaCuts = (TH3F*)(fPhiEtaCutsList->FindObject(Form("fCenPhiEtaCut[%d]",fRunNum)));
@@ -687,6 +696,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         {
           wt = fPhiEtaWeightsVtx[fCenBin]->GetBinContent(fPhiEtaWeightsVtx[fCenBin]->FindBin(fVtxPos[2],dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+          if(wt==0.) wPhiEta = 0.;
         }
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
           if(dPt>0.2 && dPt<20.) wt = fPtWeightsHist[fCenBin]->Interpolate(dPt);
@@ -858,6 +868,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         {
           wt = fPhiEtaWeightsVtx[fCenBin]->GetBinContent(fPhiEtaWeightsVtx[fCenBin]->FindBin(fVtxPos[2],dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+          if(wt==0.) wPhiEta = 0.;
         }
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
           if(dPt>0.2 && dPt<20.) wt = fPtWeightsHist[fCenBin]->Interpolate(dPt);
@@ -989,7 +1000,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           if(fEBEFlowMulBin>=0) fEbEFlowAzimDis[fEBEFlowMulBin]->Fill(dPhi,wPhiEta);
         }
         fCRCQVecPhiHist[fRunBin]->Fill(fCentralityEBE,dPhi,dEta,wPhiEta);
-        fCRCQVecPhiHistVtxDep[fRunBin][fCenBin]->Fill(fVtxPos[2],dPhi,dEta,wPhiEta);
+//        fCRCQVecPhiHistVtxDep[fRunBin][fCenBin]->Fill(fVtxPos[2],dPhi,dEta,wPhiEta);
         fFlowQCSpectraPubBin->Fill(fCentralityEBE,dPt,wPhiEta*fCenWeightEbE);
       } // end of if(pTrack->InPOISelection())
     } else // to if(aftsTrack)
@@ -16386,9 +16397,9 @@ void AliFlowAnalysisCRC::InitializeArraysForQVec()
       fCRCVZSinnC[r][h] = NULL;
     }
     fCRCQVecPhiHist[r] = NULL;
-    for (Int_t k=0;k<fCRCnCen;k++) {
-      fCRCQVecPhiHistVtxDep[r][k] = NULL;
-    }
+//    for (Int_t k=0;k<fCRCnCen;k++) {
+//      fCRCQVecPhiHistVtxDep[r][k] = NULL;
+//    }
 //    for(Int_t h=0;h<fkNHistQVecCorrv1eta;h++) {
 //      fCRCQVecEtaHist[r][h] = NULL;
 //    }
@@ -28760,11 +28771,11 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
     fCRCQVecListRun[r]->Add(fCRCQVecPhiHist[r]);
     
     Double_t vtxbinsforphihist[] = {-10.,-9.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,9.,10.};
-    for (Int_t k=0;k<fCRCnCen;k++) {
-      fCRCQVecPhiHistVtxDep[r][k] = new TH3D(Form("fCRCQVecPhiHistVtxDep[%d][%d]",fRunList[r],k),
-                                          Form("fCRCQVecPhiHistVtxDep[%d][%d]",fRunList[r],k),12,vtxbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
-      fCRCQVecListRun[r]->Add(fCRCQVecPhiHistVtxDep[r][k]);
-    }
+//    for (Int_t k=0;k<fCRCnCen;k++) {
+//      fCRCQVecPhiHistVtxDep[r][k] = new TH3D(Form("fCRCQVecPhiHistVtxDep[%d][%d]",fRunList[r],k),
+//                                          Form("fCRCQVecPhiHistVtxDep[%d][%d]",fRunList[r],k),12,vtxbinsforphihist,100,phibinsforphihist,16,etabinsforphihist);
+//      fCRCQVecListRun[r]->Add(fCRCQVecPhiHistVtxDep[r][k]);
+//    }
     
 //    for(Int_t h=0;h<fkNHistQVecCorrv1eta;h++) {
 //      fCRCQVecEtaHist[r][h] = new TProfile2D(Form("fCRCQVecEtaHist[%d][%d]",fRunList[r],h),
@@ -28942,7 +28953,7 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
   }
   if(fUsePhiEtaWeightsVtxDep) {
     for(Int_t c=0;c<fCRCnCen;c++) {
-      fPhiEtaWeightsVtx[c] = (TH3D*)(fWeightsListVtxDep->FindObject(Form("fCenVtxDepPhiEtaWeights[%d]",c)));
+      fPhiEtaWeightsVtx[c] = new TH3D();
       fTempList->Add(fPhiEtaWeightsVtx[c]);
     }
   }
