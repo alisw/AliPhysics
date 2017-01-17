@@ -1061,7 +1061,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     fAODMCParticles = static_cast <TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
     
     fmcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
-    Printf("%d",fmcHeader->GetEventType());
+//    Printf("%d",fmcHeader->GetEventType());
     if (!fIsMC)
       return kFALSE;
       //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
@@ -1077,11 +1077,11 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       AliError("number of MC particles insufficient");
       return kFALSE;
     }
-    Printf("%d",fMCtruth);
-    Printf("Passe analyze MC");
+//    Printf("%d",fMCtruth);
+//    Printf("Passe analyze MC");
 
     if(fMCtruth || (fmcHeader->GetEventType()==14 || fmcHeader->GetEventType()==29)){
-      Printf("Analysing mc");
+//      Printf("Analysing mc");
       AnalyzeMC();
     }
   }
