@@ -307,6 +307,14 @@ TH1D* AliStrangenessModule::DoAnalysis( TString lConfiguration, TString lOutputF
     }
     if(!lVerbose) cout<<"] Done!"<<endl;
     
+    if( lVerbose){
+        cout<<"---] Peak position, width summary [-------------------------"<<endl;
+        for(Long_t ibin = 0; ibin<lNPtBins; ibin++){
+            if( lVerbose ) cout<<"Bin #"<<ibin<<Form("\t%.1f-%.1f",lPtBins[ibin],lPtBins[ibin+1])<<" Peak Pos: "<<lMeanVsPt[ibin]<<", width: "<<lSigmaVsPt[ibin] <<endl;
+        }
+        cout<<"---] End Peak position, width summary [---------------------"<<endl;
+    }
+    
     //FIXME: Invoke TH1D::Smooth here if asked to do so 
     
     fListData->Add( fHistMeanVsPt );
@@ -511,12 +519,13 @@ Bool_t AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, D
     TString lName = lHisto->GetName();
     lName.Append("_InitialFit");
     TF1 *fit = new TF1(lName.Data(),"[0]+[1]*x+[2]*TMath::Gaus(x, [3], [4])", lMean+lOffsetFromMeanLeft, lMean+lOffsetFromMeanRight);
+    
     //Guess linear parameters
     Double_t lAverageBg = 0.5*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+lOffsetFromMeanLeft) )
                                +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+lOffsetFromMeanRight) ));
-    Double_t lGuessedSlope = (lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+lOffsetFromMeanRight) ) -
-                              lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+lOffsetFromMeanLeft) ) ) /
-                            ( lOffsetFromMeanRight - lOffsetFromMeanLeft ) ;
+    Double_t lGuessedSlope = (lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-0.010) ) -
+                              lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+0.010) ) ) /
+                            ( 0.020 ) ;
     
     //constant at zero: lAverageBg - lMean*lGuessedSlope
     fit->SetParameter(0, lAverageBg - lMean*lGuessedSlope);
@@ -524,7 +533,7 @@ Bool_t AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, D
     
     //Guess Gaussian Parameters
     fit->SetParameter(2, lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) - lAverageBg );
-    fit->SetParLimits(2, 10, 10*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) - lAverageBg));
+    fit->SetParLimits(2, 1, 10*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean) ) - lAverageBg));
     fit->SetParameter(3, lMean);
     fit->SetParLimits(3, lMean-0.006,lMean+0.006); //ALICE is never off by that much
     fit->SetParameter(4,0.003);
@@ -533,11 +542,6 @@ Bool_t AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, D
     //Fit options
     TString lFitOptions = "IREM0S";
     if (!lVerbose) lFitOptions.Append("Q") ;
-    
-    //Check if low-statistics histogram and add corresponding options if needed
-    Int_t lBinLeft  = lHisto->GetXaxis()->FindBin(lMean+lOffsetFromMeanLeft);
-    Int_t lBinRight = lHisto->GetXaxis()->FindBin(lMean+lOffsetFromMeanRight);
-    lFitOptions.Append( GetGoodFitOption ( lHisto, lBinLeft, lBinRight ));
     
     //Printout options used for the fit
     if ( lVerbose ) cout<<"Fit to histogram "<<lHisto->GetName()<<" will be carried out with options: "<<lFitOptions.Data()<<endl;
@@ -567,14 +571,6 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     TString lFitOptions = "R0S";
     if (!lVerbose) lFitOptions.Append("Q");
     
-    //Get very first guess for linear background
-    Double_t lAverageBg = 0.5*(lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-0.015) )
-                               +lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+0.015) ));
-    Double_t lGuessedSlope = (lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean+0.015) ) -
-                              lHisto->GetBinContent(lHisto->GetXaxis()->FindBin(lMean-0.015) ) ) / 0.030;
-    Double_t lBgConst = lAverageBg - lMean*lGuessedSlope;
-    Double_t lBgSlope = lGuessedSlope;
-    
     //Find bins in which signal extraction is to be performed
     Long_t lBinPeakLo = lHisto->GetXaxis()->FindBin ( lMean + lLoPeak*lSigma );
     Long_t lBinPeakHi = lHisto->GetXaxis()->FindBin ( lMean + lHiPeak*lSigma );
@@ -582,11 +578,6 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     Long_t lBinLeftBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiLeftBg*lSigma );
     Long_t lBinRightBgLo = lHisto->GetXaxis()->FindBin ( lMean + lLoRightBg*lSigma );
     Long_t lBinRightBgHi = lHisto->GetXaxis()->FindBin ( lMean + lHiRightBg*lSigma );
-    
-    //Check if this is a low-statistics bin and if so use either "L" or "LL" fit options
-    lFitOptions.Append( GetGoodFitOption ( lHisto, lBinLeftBgLo, lBinRightBgHi ) ); 
-    
-    if ( lVerbose ) cout<<"Fit to histogram "<<lHisto->GetName()<<" will be carried out with options: "<<lFitOptions.Data()<<endl; 
     
     //Inclusive on lower and upper limits
     //Get values and use these values for fit ranges: meant to harmonize bin counting wrt fitting
@@ -596,6 +587,26 @@ Bool_t AliStrangenessModule::PerformSignalExtraction( TH1D *lHisto, Double_t &lS
     Double_t lValLeftBgHi = lHisto->GetBinLowEdge( lBinLeftBgHi+1 );
     Double_t lValRightBgLo = lHisto->GetBinLowEdge( lBinRightBgLo   );
     Double_t lValRightBgHi = lHisto->GetBinLowEdge( lBinRightBgHi+1 );
+    
+    //Get very first guess for linear background
+    Double_t lAverageBg = lHisto->Integral(lBinLeftBgLo,lBinLeftBgHi )+lHisto->Integral(lBinRightBgLo,lBinRightBgHi) ;
+    lAverageBg = lAverageBg / ( lValLeftBgHi-lValLeftBgLo + lValRightBgHi-lValRightBgLo);
+    
+    Double_t lLeftY = lHisto->Integral(lBinLeftBgLo, lBinLeftBgHi  ) / (lValLeftBgHi -lValLeftBgLo );
+    Double_t lLeftX = 0.5*(lValLeftBgHi+lValLeftBgLo );
+    
+    Double_t lRightY = lHisto->Integral(lBinRightBgLo,lBinRightBgHi ) / (lValRightBgHi-lValRightBgLo);
+    Double_t lRightX = 0.5*(lValRightBgHi+lValRightBgLo );
+    
+    Double_t lGuessedSlope = (lRightY-lLeftY)/(lRightX-lLeftX);
+    
+    Double_t lBgConst = lAverageBg - lMean*lGuessedSlope;
+    Double_t lBgSlope = lGuessedSlope;
+    
+    //Check if this is a low-statistics bin and if so use either "L" or "LL" fit options
+    lFitOptions.Append( GetGoodFitOption ( lHisto, lBinLeftBgLo, lBinRightBgHi ) ); 
+    
+    if ( lVerbose ) cout<<"Fit to histogram "<<lHisto->GetName()<<" will be carried out with options: "<<lFitOptions.Data()<<endl; 
     
     //Clone histogram and create a control histogram with the peak ranges highlighted
     TString lNameHistoPeak = lHisto->GetName();
@@ -734,7 +745,7 @@ TString AliStrangenessModule::GetGoodFitOption( TH1D *lHisto , Int_t ilow, Int_t
     //(between bins numbered ilow, ihigh
     TString lResult = "";
     for(Int_t ibin=ilow; ibin<ihigh+1; ibin++){
-        if( lHisto->GetBinContent(ibin) < 100 ) lResult = "L";
+        if( lHisto->GetBinContent(ibin) < 10 ) lResult = "L";
         //if( lHisto->GetBinContent(ibin) <  20 ) lResult = "LL";
     }
     return lResult;
