@@ -2494,8 +2494,6 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	  if (tpcrecoparam->GetUseExBCorrection()) xyz[2]+=correction; // In Correction there is already a corretion for the time 0 offset so not needed
 	  xyz[2]+=fTPCParam->GetNTBinsL1();    // adding Level 1 time bin offset
 	  //
-	  // Electron track time (for pileup simulation)
-	  xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
 	}
 	else { // use Transform for time-aware Z -> Tbin conversion
 	  // go back from L drift to Z
@@ -2503,6 +2501,8 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 	  if (sideC) z = -z;
 	  xyz[2] = transform->Z2TimeBin(z,isec, yLab);
 	}
+	// Electron track time (for pileup simulation)
+	xyz[2]+=tpcHit->Time()/fTPCParam->GetTSample(); // adding time of flight
 
 	xyz[4] =0;	  
 	//
