@@ -425,6 +425,7 @@ void AliOfflineTrigger::LoadTriggerList(const char * triggerList){
     fTrgGIDEventNr[gid]=i;                               
     fTrgGIDTimeStamp[gid]=timeStamp;                   // for consitency check
   }
+  delete tree;
 }
 
 
