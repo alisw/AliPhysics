@@ -8,37 +8,63 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoManager.h"
-#include <TString.h>
+//#include "AliFemtoParticleCollection.h"
+//#include "AliFemtoTrackCut.h"
+//#include "AliFemtoV0Cut.h"
+#include <cstdio>
+
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassImp(AliFemtoManager);
+  /// \endcond
+#endif
+
+
 
 //____________________________
 AliFemtoManager::AliFemtoManager():
-  fAnalysisCollection(),
-  fEventReader(nullptr),
-  fEventWriterCollection()
+  fAnalysisCollection(NULL),
+  fEventReader(NULL),
+  fEventWriterCollection(NULL)
 {
   // default constructor
+  fAnalysisCollection = new AliFemtoAnalysisCollection;
+  fEventWriterCollection = new AliFemtoEventWriterCollection;
 }
 //____________________________
 AliFemtoManager::AliFemtoManager(const AliFemtoManager& aManager):
-  fAnalysisCollection(aManager.fAnalysisCollection),
+  fAnalysisCollection(new AliFemtoAnalysisCollection),
   fEventReader(aManager.fEventReader),
-  fEventWriterCollection(aManager.fEventWriterCollection)
+  fEventWriterCollection(new AliFemtoEventWriterCollection)
 {
   // copy constructor
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
+  for (tAnalysisIter=aManager.fAnalysisCollection->begin();tAnalysisIter!=aManager.fAnalysisCollection->end();tAnalysisIter++){
+    fAnalysisCollection->push_back(*tAnalysisIter);
+  }
+  AliFemtoEventWriterIterator tEventWriterIter;
+  for (tEventWriterIter=aManager.fEventWriterCollection->begin();tEventWriterIter!=aManager.fEventWriterCollection->end();tEventWriterIter++){
+    fEventWriterCollection->push_back(*tEventWriterIter);
+  }
 }
+
 //____________________________
 AliFemtoManager::~AliFemtoManager()
 {
   // destructor
   delete fEventReader;
-
-  for (auto analysis : fAnalysisCollection) {
-    delete analysis;
+  // now delete each Analysis in the Collection, and then the Collection itself
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
+  for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
+    delete *tAnalysisIter;
   }
-
-  for (auto writer : fEventWriterCollection) {
-    delete writer;
+  delete fAnalysisCollection;
+  // now delete each EventWriter in the Collection, and then the Collection itself
+  AliFemtoEventWriterIterator tEventWriterIter;
+  for (tEventWriterIter=fEventWriterCollection->begin();tEventWriterIter!=fEventWriterCollection->end();tEventWriterIter++){
+    delete *tEventWriterIter;
   }
+  delete fEventWriterCollection;
 }
 //____________________________
 AliFemtoManager& AliFemtoManager::operator=(const AliFemtoManager& aManager)
@@ -49,21 +75,36 @@ AliFemtoManager& AliFemtoManager::operator=(const AliFemtoManager& aManager)
   }
 
   fEventReader = aManager.fEventReader;
-
-  // delete old analyses, then copy the collection
-  for (auto analysis : fAnalysisCollection) {
-    delete analysis;
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
+  if (fAnalysisCollection) {
+    for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
+      delete *tAnalysisIter;
+      *tAnalysisIter = 0;
+    }
+    delete fAnalysisCollection;
   }
-  fAnalysisCollection = aManager.fAnalysisCollection;
-
-  // delete old event_writers, then copy the collection
-  for (auto event_writer : fEventWriterCollection) {
-    delete event_writer;
+  // now delete each EventWriter in the Collection, and then the Collection itself
+  AliFemtoEventWriterIterator tEventWriterIter;
+  if (fEventWriterCollection) {
+    for (tEventWriterIter=fEventWriterCollection->begin();tEventWriterIter!=fEventWriterCollection->end();tEventWriterIter++){
+      delete *tEventWriterIter;
+      *tEventWriterIter = 0;
+    }
+    delete fEventWriterCollection;
   }
-  fEventWriterCollection = aManager.fEventWriterCollection;
 
+  fAnalysisCollection = new AliFemtoAnalysisCollection;
+  for (tAnalysisIter=aManager.fAnalysisCollection->begin();tAnalysisIter!=aManager.fAnalysisCollection->end();tAnalysisIter++){
+    fAnalysisCollection->push_back(*tAnalysisIter);
+  }
+
+  fEventWriterCollection = new AliFemtoEventWriterCollection;
+  for (tEventWriterIter=aManager.fEventWriterCollection->begin();tEventWriterIter!=aManager.fEventWriterCollection->end();tEventWriterIter++){
+    fEventWriterCollection->push_back(*tEventWriterIter);
+  }
   return *this;
 }
+
 //____________________________
 int AliFemtoManager::Init()
 {
@@ -72,22 +113,26 @@ int AliFemtoManager::Init()
   readerMessage += "*** *** *** *** *** *** *** *** *** *** *** *** \n";
   // EventReader
   if (fEventReader) {
-    if (fEventReader->Init("r", readerMessage)) {
+    if (fEventReader->Init("r",readerMessage)){
       cout << " AliFemtoManager::Init() - Reader initialization failed " << endl;
       return 1;
     }
     readerMessage += fEventReader->Report();
   }
   // EventWriters
-  for (auto event_writer : fEventWriterCollection) {
+  AliFemtoEventWriterIterator tEventWriterIter;
+  for (tEventWriterIter=fEventWriterCollection->begin();tEventWriterIter!=fEventWriterCollection->end();tEventWriterIter++){
+    //cout << "*EventWriterIter " << *EventWriterIter << endl;
     // The message (AliFemtoString) passed into Init will be at the file header.
     // for that reason take the readerReport, add my own report and pass as message
     AliFemtoString writerMessage = readerMessage;
     writerMessage += "*** *** *** *** *** *** *** *** *** *** *** *** \n";
-    writerMessage += event_writer->Report();
-    if (event_writer->Init("w", writerMessage)) { // yes, the message from the reader is passed into the writer
-      cout << " AliFemtoManager::Init() - Writer initialization failed " << endl;
-      return 1;
+    writerMessage += (*tEventWriterIter)->Report();
+    if (*tEventWriterIter) {
+      if ( (*tEventWriterIter)->Init("w",writerMessage) ) { // yes, the message from the reader is passed into the writer
+        cout << " AliFemtoManager::Init() - Writer initialization failed " << endl;
+        return 1;
+      }
     }
   }
   return 0;
@@ -97,65 +142,77 @@ void AliFemtoManager::Finish()
 {
   // Initialize finish procedures
   // EventReader
-  if (fEventReader) {
-    fEventReader->Finish();
-  }
-
+  if (fEventReader) fEventReader->Finish();
   // EventWriters
-  for (auto event_writer : fEventWriterCollection) {
-    event_writer->Finish();
+  AliFemtoEventWriterIterator tEventWriterIter;
+  AliFemtoEventWriter* currentEventWriter;
+  for (tEventWriterIter=fEventWriterCollection->begin();tEventWriterIter!=fEventWriterCollection->end();tEventWriterIter++){
+    currentEventWriter = *tEventWriterIter;
+    currentEventWriter->Finish();
   }
-
   // Analyses
-  for (auto analysis : fAnalysisCollection) {
-    analysis->Finish();
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
+  AliFemtoAnalysis* currentAnalysis;
+  for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
+    currentAnalysis = *tAnalysisIter;
+    currentAnalysis->Finish();
   }
 }
 //____________________________
 AliFemtoString AliFemtoManager::Report()
 {
   // Construct a report from all the classes
-  TString report;
-
+  string stemp;
+  char ctemp[100];
   // EventReader
-  report = fEventReader->Report();
-
+  stemp = fEventReader->Report();
   // EventWriters
-  report += TString::Format("\nAliFemtoManager Reporting %lu EventWriters\n", fEventWriterCollection.size());
-  for (auto event_writer : fEventWriterCollection) {
-    report += event_writer->Report();
+  snprintf(ctemp , 100, "\nAliFemtoManager Reporting %u EventWriters\n",(unsigned int) fEventWriterCollection->size());
+  stemp += ctemp;
+  AliFemtoEventWriterIterator tEventWriterIter;
+  AliFemtoEventWriter* currentEventWriter;
+  for (tEventWriterIter=fEventWriterCollection->begin();tEventWriterIter!=fEventWriterCollection->end();tEventWriterIter++){
+    //    cout << "AliFemtoManager - asking for EventWriter Report" << endl;
+    currentEventWriter = *tEventWriterIter;
+    stemp+=currentEventWriter->Report();
   }
-
   // Analyses
-  report += TString::Format("\nAliFemtoManager Reporting %lu Analyses\n", fAnalysisCollection.size());
-  for (auto analysis : fAnalysisCollection) {
-    report += analysis->Report();
+  snprintf(ctemp , 100, "\nAliFemtoManager Reporting %u Analyses\n",(unsigned int) fAnalysisCollection->size());
+  stemp += ctemp;
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
+  AliFemtoAnalysis* currentAnalysis;
+  for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
+    //    cout << "AliFemtoManager - asking for Analysis Report" << endl;
+    currentAnalysis = *tAnalysisIter;
+    stemp+=currentAnalysis->Report();
   }
 
-  return AliFemtoString(report);
+  AliFemtoString returnThis = stemp;
+  return returnThis;
 }
 //____________________________
-AliFemtoAnalysis* AliFemtoManager::Analysis(int n)
+AliFemtoAnalysis* AliFemtoManager::Analysis( int n )
 {  // return pointer to n-th analysis
-  if (n < 0 || static_cast<size_t>(n) > fAnalysisCollection.size()) {
-    return nullptr;
+  if ( n < 0 || n > (int) fAnalysisCollection->size() )
+    return NULL;
+  AliFemtoSimpleAnalysisIterator iter = fAnalysisCollection->begin();
+  for (int i=0; i<n ;i++){
+    iter++;
   }
-
-  AliFemtoSimpleAnalysisIterator iter = fAnalysisCollection.begin();
-  std::advance(iter, n);
   return *iter;
 }
 //____________________________
-AliFemtoEventWriter* AliFemtoManager::EventWriter(int n)
+AliFemtoEventWriter* AliFemtoManager::EventWriter( int n )
 { /// return pointer to n-th event writer
-  if (n < 0 || static_cast<size_t>(n) > fEventWriterCollection.size()) {
-    return nullptr;
+  if ( n < 0 || n > (int) fEventWriterCollection->size() )
+    return NULL;
+  AliFemtoEventWriterIterator iter = fEventWriterCollection->begin();
+  for (int i=0; i<n ;i++) {
+    iter++;
   }
-  AliFemtoEventWriterIterator iter = std::begin(fEventWriterCollection);
-  std::advance(iter, n);
   return *iter;
 }
-//____________________________
+ //____________________________
 int AliFemtoManager::ProcessEvent()
 {
   // process a single event by reading it and passing it to each
@@ -164,26 +221,38 @@ int AliFemtoManager::ProcessEvent()
   // NOTE - this ReturnHbtEvent makes a *new* AliFemtoEvent - delete it when done!
   AliFemtoEvent* currentHbtEvent = fEventReader->ReturnHbtEvent();
   //  cout << "Event reader has returned control to manager" << endl;
-
   // if no HbtEvent is returned, then we abort processing.
   // the question is now: do we try again next time (i.e. there may be an HbtEvent next time)
   // or are we at EOF or something?  If Reader says Status=0, then that means try again later.
   // so, we just return the Reader's Status.
-  if (currentHbtEvent == nullptr) {
+  if (!currentHbtEvent){
+#ifdef STHBRDEBUG
+    cout << "AliFemtoManager::ProcessEvent() - Reader::ReturnHbtEvent() has returned null pointer\n";
+#endif
     return fEventReader->Status();
   }
 
   // loop over all the EventWriters
-  for (auto event_writer : fEventWriterCollection) {
-    event_writer->WriteHbtEvent(currentHbtEvent);
+  AliFemtoEventWriterIterator tEventWriterIter;
+  for (tEventWriterIter=fEventWriterCollection->begin();tEventWriterIter!=fEventWriterCollection->end();tEventWriterIter++){
+#ifdef STHBRDEBUG
+    cout << " *tEventWriterIter " <<  *tEventWriterIter << endl;
+#endif
+    (*tEventWriterIter)->WriteHbtEvent(currentHbtEvent);
   }
 
   // loop over all the Analysis
-  for (auto analysis : fAnalysisCollection) {
-    analysis->ProcessEvent(currentHbtEvent);
+  AliFemtoSimpleAnalysisIterator tAnalysisIter;
+  for (tAnalysisIter=fAnalysisCollection->begin();tAnalysisIter!=fAnalysisCollection->end();tAnalysisIter++){
+    (*tAnalysisIter)->ProcessEvent(currentHbtEvent);
   }
 
-  delete currentHbtEvent;
-
+  if (currentHbtEvent) {
+    delete currentHbtEvent;
+    currentHbtEvent = NULL;
+  }
+#ifdef STHBRDEBUG
+  cout << "AliFemtoManager::ProcessEvent() - return to caller ... " << endl;
+#endif
   return 0;    // 0 = "good return"
-}
+}       // ProcessEvent

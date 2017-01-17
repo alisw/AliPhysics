@@ -1,8 +1,12 @@
 ///
 /// \file  AliFemtoManager.h
+/// \class AliFemtoManager
+/// \brief Main class for managing femtoscopic analyses
 ///
-
-#pragma once
+/// The Manager is the top-level object that coordinates activities
+/// and performs event, particle, and pair loops, and checks the
+/// various cuts of the snalyses in its AnalysisCollection
+///
 
 #ifndef ALIFEMTOMANAGER_H
 #define ALIFEMTOMANAGER_H
@@ -10,6 +14,7 @@
 #include "AliFemtoTypes.h"
 #include "AliFemtoAnalysisCollection.h"
 #include "AliFemtoEventWriterCollection.h"
+#include "AliFemtoEvent.h"
 #include "AliFemtoAnalysis.h"
 #include "AliFemtoEventReader.h"
 #include "AliFemtoEventWriter.h"
@@ -41,19 +46,16 @@
 class AliFemtoManager {
 
 private:
-  AliFemtoAnalysisCollection fAnalysisCollection;        ///< Collection of analyzes
+  AliFemtoAnalysisCollection* fAnalysisCollection;       ///< Collection of analyzes
   AliFemtoEventReader*        fEventReader;              ///< Event reader
-  AliFemtoEventWriterCollection fEventWriterCollection;  ///< Event writer collection
-
-  /// private to avoid memory bugs
-  AliFemtoManager(const AliFemtoManager& aManager);
-
-  /// private to avoid memory bugs
-  AliFemtoManager& operator=(const AliFemtoManager& aManager);
+  AliFemtoEventWriterCollection* fEventWriterCollection; ///< Event writer collection
 
 public:
   AliFemtoManager();
+  AliFemtoManager(const AliFemtoManager& aManager);
   virtual ~AliFemtoManager();
+
+  AliFemtoManager& operator=(const AliFemtoManager& aManager);
 
   // Gets and Sets...
   AliFemtoAnalysisCollection* AnalysisCollection();
@@ -74,27 +76,25 @@ public:
   ///
   int Init();
 
-  /// Reads event from EventReader and passes to each EventWriters'
-  /// `WriteHbtEvent` and each Analyses' `ProcessEvent` methods.
-  ///
-  /// Returns 0 if successful, otherwise the 'Status' of the
-  /// EventReader after failing to return an AliFemtoEvent.
-  ///
-  int ProcessEvent();
+  int ProcessEvent();   ///< a "0" return value means success - otherwise quit
 
   /// Calls `Finish()` on the EventReader, EventWriters, and the Analyses.
   void Finish();
 
-  /// Returns combined report of all readers, writers, and analyses.
-  AliFemtoString Report();
+  AliFemtoString Report(); //!<
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoManager, 0);
+  /// \endcond
+#endif
 };
 
-inline AliFemtoAnalysisCollection* AliFemtoManager::AnalysisCollection(){return &fAnalysisCollection;}
-inline void AliFemtoManager::AddAnalysis(AliFemtoAnalysis* anal){fAnalysisCollection.push_back(anal);}
+inline AliFemtoAnalysisCollection* AliFemtoManager::AnalysisCollection(){return fAnalysisCollection;}
+inline void AliFemtoManager::AddAnalysis(AliFemtoAnalysis* anal){fAnalysisCollection->push_back(anal);}
 
-inline AliFemtoEventWriterCollection* AliFemtoManager::EventWriterCollection(){return &fEventWriterCollection;}
-inline void AliFemtoManager::AddEventWriter(AliFemtoEventWriter* writer){fEventWriterCollection.push_back(writer);}
-inline void AliFemtoManager::SetEventWriter(AliFemtoEventWriter* writer){fEventWriterCollection.push_back(writer);}
+inline AliFemtoEventWriterCollection* AliFemtoManager::EventWriterCollection(){return fEventWriterCollection;}
+inline void AliFemtoManager::AddEventWriter(AliFemtoEventWriter* writer){fEventWriterCollection->push_back(writer);}
+inline void AliFemtoManager::SetEventWriter(AliFemtoEventWriter* writer){fEventWriterCollection->push_back(writer);}
 
 inline AliFemtoEventReader* AliFemtoManager::EventReader(){return fEventReader;}
 inline void AliFemtoManager::SetEventReader(AliFemtoEventReader* reader){fEventReader = reader;}
