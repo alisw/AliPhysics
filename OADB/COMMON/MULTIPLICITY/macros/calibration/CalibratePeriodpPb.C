@@ -102,9 +102,9 @@ CalibratePeriodpPb(TString lPeriodName = "LHC16s") {
     lCalib->SetMultSelection(lMultSel);
     
     if ( lPeriodName.Contains("LHC16q") ) lCalib->SetRunToUseAsDefault( 265309 ); // LHC16q
-    if ( lPeriodName.Contains("LHC16r") ) lCalib->SetRunToUseAsDefault( 265746 ); // LHC16r
+    if ( lPeriodName.Contains("LHC16r") ) lCalib->SetRunToUseAsDefault( 266025 ); // LHC16r
     if ( lPeriodName.Contains("LHC16s") ) lCalib->SetRunToUseAsDefault( 266441 ); // LHC16s
-    if ( lPeriodName.Contains("LHC16t") ) lCalib->SetRunToUseAsDefault( 267161 ); // LHC16t
+    if ( lPeriodName.Contains("LHC16t") ) lCalib->SetRunToUseAsDefault( 267163 ); // LHC16t
     //============================================================
     // --- Definition of Estimators ---
     //============================================================
@@ -126,6 +126,10 @@ CalibratePeriodpPb(TString lPeriodName = "LHC16s") {
     AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
     AliMultEstimator *fEstV0A = new AliMultEstimator("V0A", "", "((fAmplitude_V0A)/(1+((fEvSel_VtxZ)-1.0)*(-0.0016)))");
     AliMultEstimator *fEstV0C = new AliMultEstimator("V0C", "", "((fAmplitude_V0C)/(1+((fEvSel_VtxZ)-1.0)*(0.0058)))");
+
+    AliMultEstimator *fEstV0MEq = new AliMultEstimator("V0MEq", "", "(fAmplitude_V0AEq)+(fAmplitude_V0CEq)");
+    AliMultEstimator *fEstV0AEq = new AliMultEstimator("V0AEq", "", "((fAmplitude_V0AEq)/(1+((fEvSel_VtxZ)-1.0)*(-0.0030)))");
+    AliMultEstimator *fEstV0CEq = new AliMultEstimator("V0CEq", "", "((fAmplitude_V0CEq)/(1+((fEvSel_VtxZ)-1.0)*(0.0061)))");
 
     AliMultEstimator *fEstOnlineV0M = new AliMultEstimator("OnlineV0M", "", "(fAmplitude_OnlineV0A)+(fAmplitude_OnlineV0C)");
     AliMultEstimator *fEstOnlineV0A = new AliMultEstimator("OnlineV0A", "", "(fAmplitude_OnlineV0A)");
@@ -156,20 +160,21 @@ CalibratePeriodpPb(TString lPeriodName = "LHC16s") {
     
     //Universal: V0
     lCalib->GetMultSelection() -> AddEstimator( fEstV0M );
-    if ( lPeriodName.Contains("LHC16q") || lPeriodName.Contains("LHC16r") || lPeriodName.Contains("LHC16t")  )
-      lCalib->GetMultSelection() -> AddEstimator( fEstV0A );
-    if ( lPeriodName.Contains("LHC16s") )
-      lCalib->GetMultSelection() -> AddEstimator( fEstV0C );
+    lCalib->GetMultSelection() -> AddEstimator( fEstV0A );
+    lCalib->GetMultSelection() -> AddEstimator( fEstV0C );
 
     // SPD clusters
     lCalib ->GetMultSelection() -> AddEstimator( fEstCL0 );
     lCalib ->GetMultSelection() -> AddEstimator( fEstCL1 );        
 
     // ZDC
-    if ( lPeriodName.Contains("LHC16q") || lPeriodName.Contains("LHC16r")  || lPeriodName.Contains("LHC16t") )
-      lCalib->GetMultSelection() -> AddEstimator( fEstZNA );
-    if ( lPeriodName.Contains("LHC16s") )
-      lCalib->GetMultSelection() -> AddEstimator( fEstZNC );
+    lCalib->GetMultSelection() -> AddEstimator( fEstZNA );
+    lCalib->GetMultSelection() -> AddEstimator( fEstZNC );
+
+    //Universal: V0Eq
+    lCalib->GetMultSelection() -> AddEstimator( fEstV0MEq );
+    lCalib->GetMultSelection() -> AddEstimator( fEstV0AEq );
+    lCalib->GetMultSelection() -> AddEstimator( fEstV0CEq );
 
     // SPD tracklets (used for MC scaling)
     lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets );
@@ -179,13 +184,16 @@ CalibratePeriodpPb(TString lPeriodName = "LHC16s") {
     //============================================================
     // single runs to test
     //lCalib -> SetInputFile  ( "/lustre/nyx/alice/users/alberica/centrality/Trees/Singles/LHC16q/muon_calo_pass1_1111/files/AnalysisResults_265309.root");
-    //lCalib -> SetInputFile  ( "/lustre/nyx/alice/users/alberica/centrality/Trees/Singles/LHC16r/muon_calo_pass1_2311/files/AnalysisResults_265746.root");
+    //lCalib -> SetInputFile  ( "/lustre/nyx/alice/users/alberica/centrality/Trees/Singles/LHC16r/muon_calo_pass1_1412/files/AnalysisResults_265746.root");
     //lCalib -> SetInputFile  ( "/lustre/nyx/alice/users/alberica/centrality/Trees/Singles/LHC16s/muon_calo_pass1_2811/files/AnalysisResults_266441.root");
     //lCalib -> SetInputFile  ( "/lustre/nyx/alice/users/alberica/centrality/Trees/Singles/LHC16t/muon_calo_pass1_0412/files/AnalysisResults_267161.root");
 
-    lCalib -> SetInputFile  ( "/lustre/nyx/alice/users/alberica/centrality/Trees/Merged/pPb/Merged_LHC16s_0412.root");
-    lCalib -> SetBufferFile ( "/lustre/nyx/alice/users/alberica/centrality/OADB/LHC16s/buffer_0412.root" );
-    lCalib -> SetOutputFile ( "/lustre/nyx/alice/users/alberica/centrality/OADB/LHC16s/OADB-LHC16s_0412.root" );
+
+    lCalib -> SetInputFile  ( Form("/lustre/nyx/alice/users/alberica/centrality/Trees/Merged/pPb/Merged_%s.root",lPeriodName.Data() ) );
+    lCalib -> SetBufferFile ( Form("/lustre/nyx/alice/users/alberica/centrality/OADB/buffer-%s.root",lPeriodName.Data() ) );
+    lCalib -> SetOutputFile ( Form("/lustre/nyx/alice/users/alberica/centrality/OADB/OADB-%s.root"  , lPeriodName.Data() ) );
+    	
+	
     lCalib -> Calibrate     ();
 
     
