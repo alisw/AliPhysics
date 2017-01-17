@@ -56,6 +56,7 @@ class AliESDCaloCluster;
 class AliVCaloCells;
 class AliAODMCParticle;
 class AliGenPythiaEventHeader;
+class AliAODMCHeader;
   //class AliEventPoolManager;
 
 #include "AliAnalysisTaskEmcal.h"
@@ -109,7 +110,8 @@ public:
   void			   SetDxBinning(vector<Double_t> binedges)			   { fBinsDx = binedges; }
   void			   SetDzBinning(vector<Double_t> binedges)			   { fBinsDz = binedges; }
   void			   SetDecayBinning(vector<Double_t> binedges)			   { fBinsDecay = binedges; }
-
+  void         SetMCtruth(Bool_t mctruth)                       {fMCtruth=mctruth;}
+  
 protected:
   
   void                     FillQAHistograms(AliVCluster *coi, TLorentzVector vecCOI); // Fill some QA histograms
@@ -155,6 +157,7 @@ protected:
   
   TClonesArray               *fNCluster;       // Neutral clusters
   TClonesArray               *fAODMCParticles; //!<!
+  AliAODMCHeader             *fmcHeader;
   TClonesArray               *fTracksAna;      //!<! hybrid track array in
   AliStack                   *fStack;          //!<!
   AliEMCALRecoUtils          *fEMCALRecoUtils; //!<!  EMCAL utils for cluster rereconstruction.
@@ -197,6 +200,7 @@ protected:
   Int_t       fTriggerLevel1;                  // enable to choose the trigger L1 gamma to "simulate" for the MC 1 = EMCEGA1 and 2 = EMCEGA2
   Int_t       fTest1;
   Int_t       fTest2;
+  Bool_t      fMCtruth;
   
     // Initialization for TTree variables
   Double_t    fEClustersT;                     // E for all clusters
@@ -331,7 +335,7 @@ private:
   AliAnalysisTaskEMCALPhotonIsolation&operator=(const AliAnalysisTaskEMCALPhotonIsolation&); // not implemented
   
     /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 12);    //EMCAL Neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 13);    //EMCAL Neutrals base analysis task
                                                        /// \endcond
 };
 #endif
