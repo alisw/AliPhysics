@@ -735,7 +735,7 @@ TString AliStrangenessModule::GetGoodFitOption( TH1D *lHisto , Int_t ilow, Int_t
     TString lResult = "";
     for(Int_t ibin=ilow; ibin<ihigh+1; ibin++){
         if( lHisto->GetBinContent(ibin) < 100 ) lResult = "L";
-        if( lHisto->GetBinContent(ibin) <  20 ) lResult = "LL";
+        //if( lHisto->GetBinContent(ibin) <  20 ) lResult = "LL";
     }
     return lResult;
 }
