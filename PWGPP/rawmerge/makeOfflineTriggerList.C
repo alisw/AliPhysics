@@ -113,7 +113,7 @@ void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long_t
   TString outputString="";
   outputString+="fileName.GetString();1;fname;/C:";
   outputString+="run;1;run;/i:";
-  outputString+="evtNumberInFile;1.20;eventCounter;/i:";
+  outputString+="evtNumberInFile;1.20;eventID;/i:";
   outputString+="time;1.20;timeStamp;/i:";
   outputString+="gid;1.30;gid;/l:";
   outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
@@ -175,7 +175,7 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long_t nEvents, 
   TString outputString="";
   outputString+="fileName.GetString();1;fname;/C:";
   outputString+="runNumber;1;run;/i:";
-  outputString+="evtNumberInFile;1.20;eventCounter;/i:";
+  outputString+="evtNumberInFile;1.20;eventID;/i:";
   outputString+="evtTimeStamp;1.20;timeStamp;/i:";
   outputString+="gid;1.30;gid;/l:";
   outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
@@ -233,7 +233,7 @@ void TriggerHighPtV0( const char * chinput,  const char * filter, Long_t nEvents
   TString outputString="";
   outputString+="fileName.GetString();1;fname;/C:";
   outputString+="runNumber;1;run;/i:";
-  outputString+="evtNumberInFile;1.20;eventCounter;/i:";
+  outputString+="evtNumberInFile;1.20;eventID;/i:";
   outputString+="evtTimeStamp;1.20;timeStamp;/i:";
   outputString+="gid;1.30;gid;/l:";
   outputString+=TString::Format("This->GetUserInfo()->At(%d)->GetName();1;trigger;/C:",triggerIndex);
