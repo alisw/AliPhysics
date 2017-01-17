@@ -40,6 +40,7 @@
 #include <TRandom3.h>
 #include <TVector2.h>
 #include <TArrayF.h>
+#include <TAxis.h>
 
 #include <AliLog.h>
 #include <AliAnalysisDataSlot.h>
@@ -119,7 +120,10 @@ AliAnalysisTaskSE(),
   fSeparateD0D0bar(kFALSE),
   fOnTheFlyTPCEP(kFALSE),
   fEtaGapInTPCHalves(-1.),
-  fUsePtWeights(kFALSE)
+  fUsePtWeights(kFALSE),
+  fq2SmearingHisto(0x0),
+  fq2Smearing(kFALSE),
+  fq2SmearingAxis(1)
 {
   // Default constructor
   for(int i = 0; i < 3; i++) {
@@ -163,7 +167,10 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fSeparateD0D0bar(kFALSE),
   fOnTheFlyTPCEP(kFALSE),
   fEtaGapInTPCHalves(-1.),
-  fUsePtWeights(kFALSE)
+  fUsePtWeights(kFALSE),
+  fq2SmearingHisto(0x0),
+  fq2Smearing(kFALSE),
+  fq2SmearingAxis(1)
 {
   // standard constructor
   for(int i = 0; i < 3; i++) {
@@ -442,6 +449,14 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
       else if(fq2Meth==kq2VZEROA) {q2axisname="q_{2}^{V0A}";}
       else if(fq2Meth==kq2VZEROC) {q2axisname="q_{2}^{V0C}";}
       
+      //q2TPC correlations
+      TH2F* hq2TPCPosEtaVsNegEta = new TH2F("hq2TPCPosEtaVsNegEta","q_{2}^{pos TPC} vs. q_{2}^{neg TPC};q_{2}^{neg TPC};q_{2}^{pos TPC}",500,0.,10.,500,0.,10.);
+      TH2F* hq2TPCFullEtaVsNegEta = new TH2F("hq2TPCFullEtaVsNegEta","q_{2}^{full TPC} vs. q_{2}^{neg TPC};q_{2}^{neg TPC};q_{2}^{full TPC}",500,0.,10.,500,0.,10.);
+      TH2F* hq2TPCFullEtaVsPosEta = new TH2F("hq2TPCFullEtaVsPosEta","q_{2}^{full TPC} vs. q_{2}^{pos TPC};q_{2}^{pos TPC};q_{2}^{full TPC}",500,0.,10.,500,0.,10.);
+      fOutput->Add(hq2TPCPosEtaVsNegEta);
+      fOutput->Add(hq2TPCFullEtaVsNegEta);
+      fOutput->Add(hq2TPCFullEtaVsPosEta);
+      
       // histos for EP resolution vs q2
       TH2F* hEvPlaneResoVsq2=new TH2F(Form("hEvPlaneReso1Vsq2%s",centrname.Data()),Form("Event plane angle Resolution vs. %s %s;cos2(#psi_{A}-#psi_{B});%s;Entries",q2axisname.Data(),centrname.Data(),q2axisname.Data()),220,-1.1,1.1,500,0,10.);
       fOutput->Add(hEvPlaneResoVsq2);
@@ -637,9 +652,18 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 
   //get q2 for event shape anaylsis
   Double_t q2=-1;
+  Double_t q2PosTPC=-1;
+  Double_t q2NegTPC=-1;
+  Double_t q2FullTPC=-1;
   if(fFlowMethod==kEvShape) {
-    q2 = Getq2(qnlist);
-    if(q2<0) return;
+    q2 = Getq2(qnlist,fq2Meth);
+    q2PosTPC = Getq2(qnlist,kq2PosTPC);
+    q2NegTPC = Getq2(qnlist,kq2NegTPC);
+    q2FullTPC = Getq2(qnlist,kq2TPC);
+    if(q2<0 || q2PosTPC<0 || q2NegTPC<0 || q2FullTPC<0) return;
+    ((TH1F*)fOutput->FindObject("hq2TPCPosEtaVsNegEta"))->Fill(q2PosTPC,q2NegTPC);
+    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsNegEta"))->Fill(q2FullTPC,q2NegTPC);
+    ((TH1F*)fOutput->FindObject("hq2TPCFullEtaVsPosEta"))->Fill(q2FullTPC,q2PosTPC);
   }
   
   AliEventplane *pl=aod->GetEventplane();
@@ -770,6 +794,18 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       }
       
       //fill the THnSparseF
+      if(fq2Smearing && fq2SmearingAxis) {
+        TAxis* ax=0x0;
+        if(fq2SmearingAxis==1) {ax=(TAxis*)fq2SmearingHisto->GetYaxis();}
+        else {ax=(TAxis*)fq2SmearingHisto->GetXaxis();}
+        Int_t bin = ax->FindBin(q2);
+        TH1F* hq2Slice = 0x0;
+        if(fq2SmearingAxis==1) {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionX("hq2Slice",bin,bin);}
+        else {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionY("hq2Slice",bin,bin);}
+        if(hq2Slice->GetEntries()>10) {q2 = hq2Slice->GetRandom();}
+        delete hq2Slice;
+        delete ax;
+      }
       if((fDecChannel==0 || fDecChannel==2) && isSelected) {
         Double_t sparsearray[5] = {invMass[0],d->Pt(),deltaphi,q2,centr};
         fHistMassPtPhiq2Centr->Fill(sparsearray);
@@ -1807,23 +1843,23 @@ const AliQnCorrectionsQnVector *AliAnalysisTaskSEHFv2::GetQnVectorFromList(const
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskSEHFv2::Getq2(TList* qnlist)
+Double_t AliAnalysisTaskSEHFv2::Getq2(TList* qnlist, Int_t q2meth)
 {
   if(!qnlist) {return -1;}
 
   const AliQnCorrectionsQnVector* qnVect = 0x0;
   
-  if(fq2Meth==kq2TPC)
+  if(q2meth==kq2TPC)
     qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[0].Data()), "latest", "plain");
-  else if(fq2Meth==kq2NegTPC)
+  else if(q2meth==kq2NegTPC)
     qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[1].Data()), "latest", "plain");
-  else if(fq2Meth==kq2PosTPC)
+  else if(q2meth==kq2PosTPC)
     qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetTPCConfName[2].Data()), "latest", "plain");
-  else if(fq2Meth==kq2VZERO)
+  else if(q2meth==kq2VZERO)
     qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[0].Data()), "latest", "raw");
-  else if(fq2Meth==kq2VZEROA)
+  else if(q2meth==kq2VZEROA)
     qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[1].Data()), "latest", "raw");
-  else if(fq2Meth==kq2VZEROC)
+  else if(q2meth==kq2VZEROC)
     qnVect = GetQnVectorFromList(qnlist, Form("%sQoverSqrtM",fDetV0ConfName[2].Data()), "latest", "raw");
   else {return -1;}
 
@@ -1831,6 +1867,16 @@ Double_t AliAnalysisTaskSEHFv2::Getq2(TList* qnlist)
   
   Double_t q2 = TMath::Sqrt(qnVect->Qx(2)*qnVect->Qx(2)+qnVect->Qy(2)*qnVect->Qy(2)); //qnVect->Length();
   return q2;
+}
+
+void AliAnalysisTaskSEHFv2::Setq2Smearing(TString smearingfilepath, TString histoname, Int_t smearingaxis) {
+  fq2Smearing=kTRUE;
+  fq2SmearingAxis=smearingaxis;
+  
+  TFile* smearingfile = TFile::Open(smearingfilepath.Data(),"READ");
+  fq2SmearingHisto=(TH2F*)smearingfile->Get(histoname.Data());
+  if(fq2SmearingHisto) {fq2SmearingHisto->SetDirectory(0);}
+  smearingfile->Close();
 }
 
 //________________________________________________________________________
