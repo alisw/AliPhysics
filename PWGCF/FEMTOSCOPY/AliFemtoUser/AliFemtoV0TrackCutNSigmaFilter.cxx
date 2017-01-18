@@ -653,11 +653,7 @@ bool AliFemtoV0TrackCutNSigmaFilter::IsMisIDK0s(const AliFemtoV0* aV0)
     double tK0ShortMass = 0.497614, tLambdaMass = 1.115683;
     if((fParticleType==kLambda) && (TMath::Abs(aV0->MassLambda()-tLambdaMass) < TMath::Abs(aV0->MassK0Short()-tK0ShortMass))) return false;
     else if((fParticleType==kAntiLambda) && (TMath::Abs(aV0->MassAntiLambda()-tLambdaMass) < TMath::Abs(aV0->MassK0Short()-tK0ShortMass))) return false;
-    else
-    {
-      cerr << "E-AliFemtoV0TrackCutNSigmaFilter::IsMisIDK0s: Invalid fParticleType "
-              "selection '" << fParticleType << "'.  This method should only be used when selecting Lambdas or AntiLambdas!!!!!" << endl;
-    }
+    else {}
 
     return true;
   }
