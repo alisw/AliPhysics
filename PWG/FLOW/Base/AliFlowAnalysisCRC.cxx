@@ -863,6 +863,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           if(dCharge > 0.) wt = fPhiEtaWeightsPos->GetBinContent(fPhiEtaWeightsPos->FindBin(fCentralityEBE,dPhi,dEta));
           else wt = fPhiEtaWeightsNeg->GetBinContent(fPhiEtaWeightsNeg->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
+          if(wt==0.) wPhiEta = 0.;
         }
         if(fUsePhiEtaWeightsVtxDep && fPhiEtaWeightsVtx[fCenBin]) // determine phieta weight for POI:
         {
