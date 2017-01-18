@@ -37,6 +37,7 @@
 #include "AliEmcalPythiaInfo.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliESDEvent.h"
+#include "AliAODInputHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliEventplane.h"
 #include "AliGenPythiaEventHeader.h"
@@ -922,9 +923,8 @@ void AliAnalysisTaskEmcal::ExecOnce()
  * ESDs have it directly, AODs get it from hardcoded run number ranges
  * @return Beam type of the run.
  */
-AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
+AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType() const
 {
-
   if (fForceBeamType != kNA)
     return fForceBeamType;
 
@@ -2023,6 +2023,38 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
   if(pythiaGenHeader){ 
     Float_t ptWeight=pythiaGenHeader->EventWeight(); 
     fPythiaInfo->SetPythiaEventWeight(ptWeight);}
+}
+
+/**
+ * Add an AOD handler to the analysis manager
+ * @return pointer to the new AOD handler
+ */
+AliAODInputHandler* AliAnalysisTaskEmcal::AddAODHandler()
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddAODHandler", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  AliAODInputHandler* aodHandler = new AliAODInputHandler();
+
+  AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
+  if (inputHandler && (inputHandler->IsA() == AliMultiInputEventHandler::Class())) {
+    AliMultiInputEventHandler *multiInputHandler=(AliMultiInputEventHandler*)inputHandler;
+    multiInputHandler->AddInputEventHandler(aodHandler);
+  }
+  else {
+    if (!inputHandler) {
+      mgr->SetInputEventHandler(aodHandler);
+    }
+    else {
+      ::Error("AddAODHandler", "inputHandler is NOT null. AOD handler was NOT added !!!");
+      return NULL;
+    }
+  }
+
+  return aodHandler;
 }
 
 /**

@@ -19,6 +19,7 @@ class AliAnalysisUtils;
 class AliEMCALTriggerPatchInfo;
 class AliAODTrack;
 class AliEmcalPythiaInfo;
+class AliAODInputHandler;
 class AliESDInputHandler;
 
 #include "Rtypes.h"
@@ -190,6 +191,10 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
 
+  // Static Utilities
+  static AliAODInputHandler*  AddAODHandler();
+  static AliESDInputHandler*  AddESDHandler();
+
  protected:
   void                        LoadPythiaInfo(AliVEvent *event);
   void                        SetRejectionReasonLabels(TAxis* axis);
@@ -199,7 +204,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliVParticle               *GetAcceptParticleFromArray(Int_t p, Int_t c=0)     const;
   AliVCluster                *GetAcceptClusterFromArray(Int_t cl, Int_t c=0)     const;
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
-  BeamType                    GetBeamType();
+  BeamType                    GetBeamType()                                      const;
   TClonesArray               *GetParticleArray(Int_t i=0)                        const;
   TClonesArray               *GetClusterArray(Int_t i=0)                         const;
   Int_t                       GetNParticles(Int_t i=0)                           const;
@@ -263,7 +268,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
-  static AliESDInputHandler*  AddESDHandler();
 
   static Double_t             fgkEMCalDCalPhiDivide;       ///<  phi value used to distinguish between DCal and EMCal
 
