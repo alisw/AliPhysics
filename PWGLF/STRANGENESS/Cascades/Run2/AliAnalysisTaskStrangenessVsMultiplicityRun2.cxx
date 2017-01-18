@@ -108,6 +108,7 @@ class AliAODv0;
 #include "AliGenEventHeader.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityRun2.h"
@@ -131,6 +132,7 @@ fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump(kFALSE),
+fkDoExtraEvSels(kTRUE),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -293,6 +295,7 @@ fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
+fkDoExtraEvSels(kTRUE),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -711,6 +714,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
 
+    fEventCuts.AddQAplotsToList(fListHist);
+    
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
         fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",2,0,2);
@@ -719,13 +724,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fListHist->Add(fHistEventCounter);
     }
     
-    
     if(! fHistCentrality ) {
         //Histogram Output: Event-by-Event
         fHistCentrality = new TH1D( "fHistCentrality", "WARNING: no pileup rejection applied!;Centrality;Event Count",100,0,100);
         fListHist->Add(fHistCentrality);
     }
-
+    
     //Superlight mode output
     if ( !fListV0 ){
         fListV0 = new TList();
@@ -827,6 +831,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     fCentrality = lPercentile;
     
     if( lEvSelCode != 0 ) {
+        PostData(1, fListHist    );
+        PostData(2, fListV0      );
+        PostData(3, fListCascade );
+        if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
+        if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
+        if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
+        return;
+    }
+    
+    AliVEvent *ev = InputEvent();
+    if( (!fEventCuts.AcceptEvent(ev)) && fkDoExtraEvSels ) {
         PostData(1, fListHist    );
         PostData(2, fListV0      );
         PostData(3, fListCascade );

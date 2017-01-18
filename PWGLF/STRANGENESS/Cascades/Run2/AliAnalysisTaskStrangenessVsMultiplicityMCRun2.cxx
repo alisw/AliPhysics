@@ -107,6 +107,7 @@ class AliAODv0;
 #include "AliGenEventHeader.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityMCRun2.h"
@@ -131,6 +132,7 @@ fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump( kFALSE ),
+fkDoExtraEvSels( kTRUE ),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -352,6 +354,7 @@ fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ), 
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
+fkDoExtraEvSels( kTRUE ), 
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -886,6 +889,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
 
+    fEventCuts.AddQAplotsToList(fListHist);
+    
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
         fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",2,0,2);
@@ -893,7 +898,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fHistEventCounter->GetXaxis()->SetBinLabel(2, "Selected");
         fListHist->Add(fHistEventCounter);
     }
-    
     
     if(! fHistCentrality ) {
         //Histogram Output: Event-by-Event
@@ -1065,7 +1069,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
         return;
     }
-
+    
+    AliVEvent *ev = InputEvent();
+    if( (!fEventCuts.AcceptEvent(ev)) && fkDoExtraEvSels ) {
+        PostData(1, fListHist    );
+        PostData(2, fListV0      );
+        PostData(3, fListCascade );
+        if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
+        if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
+        if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
+        return;
+    }
+    
     fHistEventCounter->Fill(1.5);
     
     //Bookkeep event number for debugging
