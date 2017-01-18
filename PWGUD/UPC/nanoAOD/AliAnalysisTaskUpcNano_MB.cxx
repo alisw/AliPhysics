@@ -72,6 +72,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
 	hTOFtrigCorr(0),
+	hFOinner(0),
+	hFOouter(0),
 	fTOFmask(0)   
 
 {
@@ -103,6 +105,8 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name)
 	hITSPIDKaonCorr(0),
 	hTPCdEdxCorr(0),
 	hTOFtrigCorr(0),
+	hFOinner(0),
+	hFOouter(0),
 	fTOFmask(0)    
 
 {
@@ -150,7 +154,7 @@ void AliAnalysisTaskUpcNano_MB::UserCreateOutputObjects()
   for (Int_t i = 0; i<12; i++) fHistMCTriggers->GetXaxis()->SetBinLabel(i+1,gTriggerName[i].Data());
   fOutputList->Add(fHistMCTriggers);
   
-fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
+  fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
   fTreeJPsi ->Branch("fPt", &fPt, "fPt/D");
   fTreeJPsi ->Branch("fY", &fY, "fY/D");
   fTreeJPsi ->Branch("fM", &fM, "fM/D");
@@ -279,9 +283,16 @@ fTreeJPsi = new TTree("fTreeJPsi", "fTreeJPsi");
   hTOFtrigCorr->GetYaxis()->SetBinLabel(1,"!OM2");
   hTOFtrigCorr->GetYaxis()->SetBinLabel(2,"OM2 && !OMU");
   hTOFtrigCorr->GetYaxis()->SetBinLabel(3,"OMU");
-
   fOutputList->Add(hTOFtrigCorr);
   
+  hFOinner = new TH2D("hFOinner"," ",20,-0.5,19.5,20,-0.5,19.5);
+  hFOinner->GetXaxis()->SetTitle("Stave");
+  hFOinner->GetYaxis()->SetTitle("Chip");
+  fOutputList->Add(hFOinner);
+  hFOouter = new TH2D("hFOouter"," ",40,-0.5,39.5,20,-0.5,19.5);
+  hFOouter->GetXaxis()->SetTitle("Stave");
+  hFOouter->GetYaxis()->SetTitle("Chip");
+  fOutputList->Add(hFOouter);
 
   PostData(1, fOutputList);
 
@@ -303,6 +314,13 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   
   const AliTOFHeader *tofH = aod->GetTOFHeader();
   fTOFmask = tofH->GetTriggerMask();
+  
+  const AliAODTracklets *mult = aod->GetMultiplicity();
+  for (Int_t i(0); i<1200; ++i) {
+    if(!mult->TestFastOrFiredChips(i))continue;
+    if (i<400) hFOinner->Fill(i/20,i%20);
+    else hFOouter->Fill((i-400)/20,i%20);
+    }
   
   TString trigger = aod->GetFiredTriggerClasses();
   fHistEvents->Fill(1);
