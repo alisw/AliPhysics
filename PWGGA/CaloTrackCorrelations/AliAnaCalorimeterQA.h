@@ -339,12 +339,43 @@ public:
   
   TH2F *   fhLambda0;                           //!<! Cluster Lambda0 vs Energy
   TH2F *   fhLambda1;                           //!<! Cluster Lambda1 vs Energy  
+
+  TH2F *   fhLambda0MaxFECPair;                 //!<! Cluster Lambda0 vs Energy, main cell is pair in eta col in FEC correlated convention
+  TH2F *   fhLambda1MaxFECPair;                 //!<! Cluster Lambda1 vs Energy, main cell is pair in eta col in FEC correlated convention
+
+  TH2F *   fhLambda0MaxFECOdd;                  //!<! Cluster Lambda0 vs Energy, main cell is odd in eta col in FEC correlated convention
+  TH2F *   fhLambda1MaxFECOdd;                  //!<! Cluster Lambda1 vs Energy, main cell is odd in eta col in FEC correlated convention
   
-  TH2F *   fhLambda0MaxFECCorrel[7];            //!<! Cluster Lambda0 vs Energy, different FEC correlation with max cell cases
-  TH2F *   fhLambda1MaxFECCorrel[7];            //!<! Cluster Lambda1 vs Energy, different FEC correlation with max cell cases
+  TH2F *   fhLambda0Max2FECPair;                //!<! Cluster Lambda0 vs Energy, 2 highest E cells are correlated, main cell is pair in eta col in FEC correlated convention
+  TH2F *   fhLambda1Max2FECPair;                //!<! Cluster Lambda1 vs Energy, 2 highest E cells are correlated, main cell is pair in eta col in FEC correlated convention
+  
+  TH2F *   fhLambda0Max2FECOdd;                 //!<! Cluster Lambda0 vs Energy, 2 highest E cells are correlated, main cell is odd in eta col in FEC correlated convention
+  TH2F *   fhLambda1Max2FECOdd;                 //!<! Cluster Lambda1 vs Energy, 2 highest E cells are correlated, main cell is odd in eta col in FEC correlated convention
+  
+  TH2F *   fhLambda0MaxFECCorrel[4];            //!<! Cluster Lambda0 vs Energy, different FEC correlation with max cell cases
+  TH2F *   fhLambda1MaxFECCorrel[4];            //!<! Cluster Lambda1 vs Energy, different FEC correlation with max cell cases
 
   TH2F *   fhLambda0FECCorrel[6];               //!<! Cluster Lambda0 vs Energy, different FEC correlation with max cell cases
   TH2F *   fhLambda1FECCorrel[6];               //!<! Cluster Lambda1 vs Energy, different FEC correlation with max cell cases
+  
+  TH2F *   fhLambda0MaxFECPairLargeNCells;      //!<! Cluster Lambda0 vs Energy, main cell is pair in eta col in FEC correlated convention, ncells > 5
+  TH2F *   fhLambda1MaxFECPairLargeNCells;      //!<! Cluster Lambda1 vs Energy, main cell is pair in eta col in FEC correlated convention, ncells > 5
+  
+  TH2F *   fhLambda0MaxFECOddLargeNCells;       //!<! Cluster Lambda0 vs Energy, main cell is odd in eta col in FEC correlated convention, ncells > 5
+  TH2F *   fhLambda1MaxFECOddLargeNCells;       //!<! Cluster Lambda1 vs Energy, main cell is odd in eta col in FEC correlated convention, ncells > 5
+  
+  TH2F *   fhLambda0Max2FECPairLargeNCells;     //!<! Cluster Lambda0 vs Energy, 2 highest E cells are correlated, main cell is pair in eta col in FEC corr, ncells > 5
+  TH2F *   fhLambda1Max2FECPairLargeNCells;     //!<! Cluster Lambda1 vs Energy, 2 highest E cells are correlated, main cell is pair in eta col in FEC corr, ncells > 5
+  
+  TH2F *   fhLambda0Max2FECOddLargeNCells;      //!<! Cluster Lambda0 vs Energy, 2 highest E cells are correlated, main cell is odd in eta col in FEC corr, ncells > 5
+  TH2F *   fhLambda1Max2FECOddLargeNCells;      //!<! Cluster Lambda1 vs Energy, 2 highest E cells are correlated, main cell is odd in eta col in FEC corr, ncells > 5
+  
+  TH2F *   fhLambda0MaxFECCorrelLargeNCells[4]; //!<! Cluster Lambda0 vs Energy, different FEC correlation with max cell cases, ncells > 5
+  TH2F *   fhLambda1MaxFECCorrelLargeNCells[4]; //!<! Cluster Lambda1 vs Energy, different FEC correlation with max cell cases, ncells > 5
+  
+  TH2F *   fhLambda0FECCorrelLargeNCells[6];    //!<! Cluster Lambda0 vs Energy, different FEC correlation with max cell cases, ncells > 5
+  TH2F *   fhLambda1FECCorrelLargeNCells[6];    //!<! Cluster Lambda1 vs Energy, different FEC correlation with max cell cases, ncells > 5
+
   TH2F *   fhEtaPhiFECCorrControl;              //!<! eta-phi cluster location control histogram
 
 //TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy

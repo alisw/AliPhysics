@@ -105,7 +105,17 @@ fhClusterMaxCellCloseCellRatio(0),     fhClusterMaxCellCloseCellDiff(0),
 fhClusterMaxCellDiff(0),               fhClusterMaxCellDiffNoCut(0), 
 //fhClusterMaxCellDiffAverageTime(0),    fhClusterMaxCellDiffWeightedTime(0),    
 fhClusterMaxCellECross(0),
-fhLambda0(0),                          fhLambda1(0),                          // fhDispersion(0),
+fhLambda0(0),                          fhLambda1(0),                          
+fhLambda0MaxFECPair(0),                fhLambda1MaxFECPair(0),
+fhLambda0MaxFECOdd(0),                 fhLambda1MaxFECOdd(0),
+fhLambda0Max2FECPair(0),               fhLambda1Max2FECPair(0),
+fhLambda0Max2FECOdd(0),                fhLambda1Max2FECOdd(0),
+fhLambda0MaxFECPairLargeNCells(0),     fhLambda1MaxFECPairLargeNCells(0),
+fhLambda0MaxFECOddLargeNCells(0),      fhLambda1MaxFECOddLargeNCells(0),
+fhLambda0Max2FECPairLargeNCells(0),    fhLambda1Max2FECPairLargeNCells(0),
+fhLambda0Max2FECOddLargeNCells(0),     fhLambda1Max2FECOddLargeNCells(0),
+
+// fhDispersion(0),
 fhEtaPhiFECCorrControl(0),
 // bad clusters
 fhBadClusterEnergy(0),                 fhBadClusterTimeEnergy(0),              fhBadClusterEtaPhi(0),            
@@ -283,13 +293,19 @@ fhClusterMaxCellDiffM02(0),            fhClusterMaxCellECrossM02(0),           f
   
   for(Int_t bc = 0; bc < 4; bc++) fhTimePerSMPerBC[bc] = 0 ;
   
-  for(Int_t i = 0; i < 7; i++)
+  for(Int_t i = 0; i < 6; i++)
   {
-    fhLambda0MaxFECCorrel[i] = 0 ;
-    fhLambda1MaxFECCorrel[i] = 0 ;
-    if ( i > 5 ) continue;
     fhLambda0FECCorrel   [i] = 0 ;
     fhLambda1FECCorrel   [i] = 0 ;
+    fhLambda0FECCorrelLargeNCells   [i] = 0 ;
+    fhLambda1FECCorrelLargeNCells   [i] = 0 ;
+  }
+  for(Int_t i = 0; i < 4; i++)
+  {
+    fhLambda0MaxFECCorrel[i] = 0 ;
+    fhLambda1MaxFECCorrel[i] = 0 ; 
+    fhLambda0MaxFECCorrelLargeNCells[i] = 0 ;
+    fhLambda1MaxFECCorrelLargeNCells[i] = 0 ;
   }
 
   InitParameters();
@@ -868,16 +884,26 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
   Int_t nCorr = 0;
   Bool_t near = kFALSE;
   Bool_t far  = kFALSE;
+  // Get second highest energy cell
+  Int_t absId2ndMax = -1;
+  Float_t emax = 0;
   if(correlMaxOK)
-  {
+  {    
     for (Int_t ipos = 0; ipos < ncells; ipos++) 
     {
       Int_t absId  = clus->GetCellsAbsId()[ipos];   
       
+      Float_t eCell = cells->GetCellAmplitude(absId);      
       // consider cells with enough energy weight and not the reference one
-      Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(cells->GetCellAmplitude(absId), energy);
+      Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
       
       if( absId == absIdMax || weight < 0.01 ) continue;
+      
+      if ( eCell > emax ) 
+      {
+        emax        = eCell;
+        absId2ndMax = absId;
+      }
       
       for(Int_t id = 0; id < 4; id++)
       {
@@ -893,30 +919,27 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
     
     //if ( nCorr || close || far ) printf("nCorr = %d, close %d, far %d; E %2.2f, ncell %d\n",nCorr,close,far,e,nCaloCellsPerCluster);
     
-    if ( nCorr > 3) printf("More than 3 correlations: %d\n",nCorr);
+    //if ( nCorr > 3) printf("More than 3 correlations: %d\n",nCorr);
     
-    if ( nCorr < 4 )
+    // Fill histograms assign index
+    Int_t index = -1;
+    if ( nCorr == 0 ) index = 0;
+    else     
     {
-      fhLambda0MaxFECCorrel[nCorr]->Fill(energy, m02, GetEventWeight());
-      fhLambda1MaxFECCorrel[nCorr]->Fill(energy, m20, GetEventWeight());
+      if      ( near && !far ) index = 1;
+      else if (!near &&  far ) index = 2;
+      else if ( near &&  far ) index = 3;
+    }
+    
+    if ( index >= 0 )
+    {
+      fhLambda0MaxFECCorrel[index]->Fill(energy, m02, GetEventWeight());
+      fhLambda1MaxFECCorrel[index]->Fill(energy, m20, GetEventWeight());
       
-      if ( nCorr > 0 )
+      if(ncells > 5)
       {
-        if      ( near && !far )
-        {
-          fhLambda0MaxFECCorrel[4]->Fill(energy, m02, GetEventWeight());
-          fhLambda1MaxFECCorrel[4]->Fill(energy, m20, GetEventWeight());
-        }
-        else if (!near &&  far )
-        {
-          fhLambda0MaxFECCorrel[5]->Fill(energy, m02, GetEventWeight());
-          fhLambda1MaxFECCorrel[5]->Fill(energy, m20, GetEventWeight()); 
-        }     
-        else if ( near &&  far )
-        {
-          fhLambda0MaxFECCorrel[6]->Fill(energy, m02, GetEventWeight());
-          fhLambda1MaxFECCorrel[6]->Fill(energy, m20, GetEventWeight()); 
-        }
+        fhLambda0MaxFECCorrelLargeNCells[index]->Fill(energy, m02, GetEventWeight());
+        fhLambda1MaxFECCorrelLargeNCells[index]->Fill(energy, m20, GetEventWeight());
       }
     }
   } // list of correlated towers is found
@@ -939,11 +962,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
     
     Bool_t correlOK = GetCaloUtils()->GetFECCorrelatedCellAbsId(absId, absIdCorrSecondary);
     
-    if(!correlOK) 
-    {
-      continue;
-      printf("Correl cells not found\n");
-    }
+    if(!correlOK) continue;
     
     for (Int_t ipos2 = ipos+1; ipos2 < ncells; ipos2++) 
     {
@@ -967,16 +986,82 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
   if      ( counter == 1 ) distCase = 1;
   else if ( counter >= 2 ) distCase = 2;
   
-  if(nCorr == 0)
+  if ( nCorr > 0 ) distCase+=3;
+  
+  fhLambda0FECCorrel[distCase]->Fill(energy, m02, GetEventWeight());
+  fhLambda1FECCorrel[distCase]->Fill(energy, m20, GetEventWeight());
+  if(ncells > 5)
   {
-    fhLambda0FECCorrel[distCase]->Fill(energy, m02, GetEventWeight());
-    fhLambda1FECCorrel[distCase]->Fill(energy, m20, GetEventWeight());
+    fhLambda0FECCorrelLargeNCells[distCase]->Fill(energy, m02, GetEventWeight());
+    fhLambda1FECCorrelLargeNCells[distCase]->Fill(energy, m20, GetEventWeight());
   } 
+   
+  //
+  // Compare pair and odd eta
+  //
+  Int_t idMax = -1;
+  Int_t idMax2 = -1;
+  Bool_t pairCol = kFALSE;
+  for(Int_t id = 0; id < 4; id++)
+  {
+    if     ( absIdMax    == absIdCorr[id]) idMax  = id;
+    else if( absId2ndMax == absIdCorr[id]) idMax2 = id;
+  }
+  
+  if(idMax < 0)
+  {
+    printf("something wrong, absId max not found in correlated");
+    return;
+  }
+  
+  if(idMax == 0 || idMax == 3) pairCol = kTRUE; // n and n+8
+                                                // else n+1 and n+9
+
+  if(pairCol)
+  {
+    fhLambda0MaxFECPair->Fill(energy, m02, GetEventWeight());
+    fhLambda1MaxFECPair->Fill(energy, m20, GetEventWeight());
+    if ( idMax2 >=0 )
+    {
+      fhLambda0Max2FECPair->Fill(energy, m02, GetEventWeight());
+      fhLambda1Max2FECPair->Fill(energy, m20, GetEventWeight());
+    }
+  }
   else
   {
-    fhLambda0FECCorrel[distCase+3]->Fill(energy, m02, GetEventWeight());
-    fhLambda1FECCorrel[distCase+3]->Fill(energy, m20, GetEventWeight());
+    fhLambda0MaxFECOdd->Fill(energy, m02, GetEventWeight());
+    fhLambda1MaxFECOdd->Fill(energy, m20, GetEventWeight());
+    if ( idMax2 >=0 )
+    {
+      fhLambda0Max2FECOdd->Fill(energy, m02, GetEventWeight());
+      fhLambda1Max2FECOdd->Fill(energy, m20, GetEventWeight());
+    }
   }
+  
+  if(ncells > 5)
+  {
+    if(pairCol)
+    {
+      fhLambda0MaxFECPairLargeNCells->Fill(energy, m02, GetEventWeight());
+      fhLambda1MaxFECPairLargeNCells->Fill(energy, m20, GetEventWeight());
+      if ( idMax2 >=0 )
+      {
+        fhLambda0Max2FECPairLargeNCells->Fill(energy, m02, GetEventWeight());
+        fhLambda1Max2FECPairLargeNCells->Fill(energy, m20, GetEventWeight());
+      }
+    }
+    else
+    {
+      fhLambda0MaxFECOddLargeNCells->Fill(energy, m02, GetEventWeight());
+      fhLambda1MaxFECOddLargeNCells->Fill(energy, m20, GetEventWeight());
+      if ( idMax2 >=0 )
+      {
+        fhLambda0Max2FECOddLargeNCells->Fill(energy, m02, GetEventWeight());
+        fhLambda1Max2FECOddLargeNCells->Fill(energy, m20, GetEventWeight());
+      }
+    }
+  }
+  
 }
 
 //_____________________________________________________________________________________
@@ -2301,7 +2386,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhLambda0->SetYTitle("#lambda^{2}_{0}");
   outputContainer->Add(fhLambda0); 
   
-  fhLambda1  = new TH2F ("hLambda1","shower shape, #lambda^{2}_{1} vs E for bad cluster ",
+  fhLambda1  = new TH2F ("hLambda1","shower shape, #lambda^{2}_{1} vs E",
                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
   fhLambda1->SetXTitle("#it{E}_{cluster}");
   fhLambda1->SetYTitle("#lambda^{2}_{1}");
@@ -2309,9 +2394,107 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
 
   if(fStudyFECCorrelation)
   {
+    fhLambda0MaxFECPair  = new TH2F ("hLambda0MaxFECPair","#lambda^{2}_{0} vs E, FEC pair eta column",
+                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda0MaxFECPair->SetXTitle("#it{E}_{cluster}");
+    fhLambda0MaxFECPair->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhLambda0MaxFECPair); 
+    
+    fhLambda1MaxFECPair  = new TH2F ("hLambda1MaxFECPair","#lambda^{2}_{1} vs E, FEC pair eta column",
+                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda1MaxFECPair->SetXTitle("#it{E}_{cluster}");
+    fhLambda1MaxFECPair->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhLambda1MaxFECPair); 
+
+    fhLambda0Max2FECPair  = new TH2F ("hLambda0Max2FECPair","#lambda^{2}_{0} vs E, FEC pair eta column, 2 highest cells corr.",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda0Max2FECPair->SetXTitle("#it{E}_{cluster}");
+    fhLambda0Max2FECPair->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhLambda0Max2FECPair); 
+    
+    fhLambda1Max2FECPair  = new TH2F ("hLambda1Max2FECPair","#lambda^{2}_{1} vs E, FEC pair eta column, 2 highest cells corr.",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda1Max2FECPair->SetXTitle("#it{E}_{cluster}");
+    fhLambda1Max2FECPair->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhLambda1Max2FECPair); 
+
+    fhLambda0MaxFECOdd  = new TH2F ("hLambda0MaxFECOdd","#lambda^{2}_{0} vs E, FEC odd eta column",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda0MaxFECOdd->SetXTitle("#it{E}_{cluster}");
+    fhLambda0MaxFECOdd->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhLambda0MaxFECOdd); 
+    
+    fhLambda1MaxFECOdd  = new TH2F ("hLambda1MaxFECOdd","#lambda^{2}_{1} vs E, FEC odd eta column",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda1MaxFECOdd->SetXTitle("#it{E}_{cluster}");
+    fhLambda1MaxFECOdd->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhLambda1MaxFECOdd); 
+    
+    fhLambda0Max2FECOdd  = new TH2F ("hLambda0Max2FECOdd","#lambda^{2}_{0} vs E, FEC odd eta column, 2 highest cells corr.",
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda0Max2FECOdd->SetXTitle("#it{E}_{cluster}");
+    fhLambda0Max2FECOdd->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhLambda0Max2FECOdd); 
+    
+    fhLambda1Max2FECOdd  = new TH2F ("hLambda1Max2FECOdd","#lambda^{2}_{1} vs E, FEC odd eta column, 2 highest cells corr.",
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda1Max2FECOdd->SetXTitle("#it{E}_{cluster}");
+    fhLambda1Max2FECOdd->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhLambda1Max2FECOdd); 
+
+    fhLambda0MaxFECPairLargeNCells  = new TH2F ("hLambda0MaxFECPair_LargeNCells","#lambda^{2}_{0} vs E, FEC pair eta column, ncell>5",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda0MaxFECPairLargeNCells->SetXTitle("#it{E}_{cluster}");
+    fhLambda0MaxFECPairLargeNCells->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhLambda0MaxFECPairLargeNCells); 
+    
+    fhLambda1MaxFECPairLargeNCells  = new TH2F ("hLambda1MaxFECPair_LargeNCells","#lambda^{2}_{1} vs E, FEC pair eta column, ncell>5",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda1MaxFECPairLargeNCells->SetXTitle("#it{E}_{cluster}");
+    fhLambda1MaxFECPairLargeNCells->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhLambda1MaxFECPairLargeNCells); 
+    
+    fhLambda0Max2FECPairLargeNCells  = new TH2F ("hLambda0Max2FECPair_LargeNCells","#lambda^{2}_{0} vs E, FEC pair eta column, 2 highest cells corr., ncell>5",
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda0Max2FECPairLargeNCells->SetXTitle("#it{E}_{cluster}");
+    fhLambda0Max2FECPairLargeNCells->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhLambda0Max2FECPairLargeNCells); 
+    
+    fhLambda1Max2FECPairLargeNCells  = new TH2F ("hLambda1Max2FECPair_LargeNCells","#lambda^{2}_{1} vs E, FEC pair eta column, 2 highest cells corr., ncell>5",
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda1Max2FECPairLargeNCells->SetXTitle("#it{E}_{cluster}");
+    fhLambda1Max2FECPairLargeNCells->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhLambda1Max2FECPairLargeNCells); 
+    
+    fhLambda0MaxFECOddLargeNCells  = new TH2F ("hLambda0MaxFECOdd_LargeNCells","#lambda^{2}_{0} vs E, FEC odd eta column, ncell>5",
+                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda0MaxFECOddLargeNCells->SetXTitle("#it{E}_{cluster}");
+    fhLambda0MaxFECOddLargeNCells->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhLambda0MaxFECOddLargeNCells); 
+    
+    fhLambda1MaxFECOddLargeNCells  = new TH2F ("hLambda1MaxFECOdd_LargeNCells","#lambda^{2}_{1} vs E, FEC odd eta column, ncell>5",
+                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda1MaxFECOddLargeNCells->SetXTitle("#it{E}_{cluster}");
+    fhLambda1MaxFECOddLargeNCells->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhLambda1MaxFECOddLargeNCells); 
+    
+    fhLambda0Max2FECOddLargeNCells  = new TH2F ("hLambda0Max2FECOdd_LargeNCells","#lambda^{2}_{0} vs E, FEC odd eta column, 2 highest cells corr., ncell>5",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda0Max2FECOddLargeNCells->SetXTitle("#it{E}_{cluster}");
+    fhLambda0Max2FECOddLargeNCells->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhLambda0Max2FECOddLargeNCells); 
+    
+    fhLambda1Max2FECOddLargeNCells  = new TH2F ("hLambda1Max2FECOdd_LargeNCells","#lambda^{2}_{1} vs E, FEC odd eta column, 2 highest cells corr., ncell>5",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhLambda1Max2FECOddLargeNCells->SetXTitle("#it{E}_{cluster}");
+    fhLambda1Max2FECOddLargeNCells->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhLambda1Max2FECOddLargeNCells); 
+
+    
     TString titleMaxFEC[] = 
-    {"No correlation with main cell","1 cell corr. with main cell","2 corr. with main cell","3 cell corr. with main cell",
-     "Main cell corr. with near cell","Main cell corr. with far cell","Main cell corr. with near and far"};  
+    {"No correlation with main cell", "Main cell corr. with near cell", 
+     "Main cell corr. with far cell", "Main cell corr. with near and far"}; 
+    
     TString titleFEC[] = 
     {"No main cell corr., no other inside cluster" , "No main cell corr., 1 cell correl in cluster" , "No main cell corr., >=2 cell correl in cluster",
      "Main cell corr. & no other inside cluster"   , "Main cell corr. & 1 cell corr. inside cluster", "Main cell corr. & >=2 cell corr. inside cluster"};
@@ -2322,7 +2505,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhEtaPhiFECCorrControl->SetYTitle("#phi (rad)");
     outputContainer->Add(fhEtaPhiFECCorrControl);
     
-    for(Int_t i = 0; i < 7; i++)
+    for(Int_t i = 0; i < 4; i++)
     {
       fhLambda0MaxFECCorrel[i]  = new TH2F 
       (Form("hLambda0MaxFECCorrel_Case%d",i),
@@ -2340,11 +2523,28 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhLambda1MaxFECCorrel[i]->SetYTitle("#lambda^{2}_{1}");
       outputContainer->Add(fhLambda1MaxFECCorrel[i]);
       
-      if(i > 5) continue;
+      fhLambda0MaxFECCorrelLargeNCells[i]  = new TH2F 
+      (Form("hLambda0MaxFECCorrel_Case%d_LargeNCells",i),
+       Form("#lambda^{2}_{0} vs E, Max FEC correl %s, ncells>5",titleMaxFEC[i].Data()),
+       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhLambda0MaxFECCorrelLargeNCells[i]->SetXTitle("#it{E}_{cluster}");
+      fhLambda0MaxFECCorrelLargeNCells[i]->SetYTitle("#lambda^{2}_{0}");
+      outputContainer->Add(fhLambda0MaxFECCorrelLargeNCells[i]); 
       
+      fhLambda1MaxFECCorrelLargeNCells[i]  = new TH2F 
+      (Form("hLambda1MaxFECCorrel_Case%d_LargeNCells",i),
+       Form("#lambda^{2}_{1} vs E for bad cluster, Max FEC correl %s, ncells>5",titleMaxFEC[i].Data()),
+       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhLambda1MaxFECCorrelLargeNCells[i]->SetXTitle("#it{E}_{cluster}");
+      fhLambda1MaxFECCorrelLargeNCells[i]->SetYTitle("#lambda^{2}_{1}");
+      outputContainer->Add(fhLambda1MaxFECCorrelLargeNCells[i]);
+    }
+
+    for(Int_t i = 0; i < 6; i++)
+    {
       fhLambda0FECCorrel[i]  = new TH2F 
       (Form("hLambda0FECCorrel_Case%d",i),
-       Form("#lambda^{2}_{0} vs E,%s",titleFEC[i].Data()),
+       Form("#lambda^{2}_{0} vs E, %s",titleFEC[i].Data()),
        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhLambda0FECCorrel[i]->SetXTitle("#it{E}_{cluster}");
       fhLambda0FECCorrel[i]->SetYTitle("#lambda^{2}_{0}");
@@ -2357,7 +2557,24 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhLambda1FECCorrel[i]->SetXTitle("#it{E}_{cluster}");
       fhLambda1FECCorrel[i]->SetYTitle("#lambda^{2}_{1}");
       outputContainer->Add(fhLambda1FECCorrel[i]); 
+      
+      fhLambda0FECCorrelLargeNCells[i]  = new TH2F 
+      (Form("hLambda0FECCorrel_Case%d_LargeNCells",i),
+       Form("#lambda^{2}_{0} vs E, %s, ncells>5",titleFEC[i].Data()),
+       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhLambda0FECCorrelLargeNCells[i]->SetXTitle("#it{E}_{cluster}");
+      fhLambda0FECCorrelLargeNCells[i]->SetYTitle("#lambda^{2}_{0}");
+      outputContainer->Add(fhLambda0FECCorrelLargeNCells[i]); 
+      
+      fhLambda1FECCorrelLargeNCells[i]  = new TH2F 
+      (Form("hLambda1FECCorrel_Case%d_LargeNCells",i),
+       Form("#lambda^{2}_{1} vs E for bad cluster, %s, ncells>5",titleFEC[i].Data()),
+       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhLambda1FECCorrelLargeNCells[i]->SetXTitle("#it{E}_{cluster}");
+      fhLambda1FECCorrelLargeNCells[i]->SetYTitle("#lambda^{2}_{1}");
+      outputContainer->Add(fhLambda1FECCorrelLargeNCells[i]); 
     }
+      
   }
 //  fhDispersion  = new TH2F ("hDispersion","shower shape, Dispersion^{2} vs E for bad cluster ",
 //                            nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
