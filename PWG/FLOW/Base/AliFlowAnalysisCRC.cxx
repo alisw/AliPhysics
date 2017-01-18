@@ -617,7 +617,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
   if(fUsePhiEtaWeightsVtxDep && fRunNum!=fCachedRunNum) {
     for(Int_t c=0;c<fCRCnCen;c++) {
       if(fWeightsListVtxDep->FindObject(Form("fCenVtxDepPhiEtaWeights[%d][%d]",fRunNum,c))) {
-        fPhiEtaWeights = (TH3D*)(fWeightsListVtxDep->FindObject(Form("fCenVtxDepPhiEtaWeights[%d][%d]",fRunNum,c)));
+        fPhiEtaWeightsVtx[c] = (TH3D*)(fWeightsListVtxDep->FindObject(Form("fCenVtxDepPhiEtaWeights[%d][%d]",fRunNum,c)));
       } else {
         AliWarning(Form("WARNING: cenphieta weights vtxdep not found for run %d! \n",fRunNum));
       }
@@ -868,7 +868,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         {
           wt = fPhiEtaWeightsVtx[fCenBin]->GetBinContent(fPhiEtaWeightsVtx[fCenBin]->FindBin(fVtxPos[2],dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
-          if(wt==0.) wPhiEta = 0.;
         }
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
           if(dPt>0.2 && dPt<20.) wt = fPtWeightsHist[fCenBin]->Interpolate(dPt);
