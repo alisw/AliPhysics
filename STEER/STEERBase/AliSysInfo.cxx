@@ -263,7 +263,7 @@ void AliSysInfo::AddStamp(const char *sname, Int_t id0, Int_t id1, Int_t id2, In
 TTree * AliSysInfo::MakeTree(const char *lname, const char * fout){
   // char * lname = "syswatch.log"
   TTree * tree = new TTree;
-  tree->ReadFile(lname);
+  tree->ReadFile(lname,"",'\t');
   tree->SetAlias("deltaT","stampSec-stampOldSec");
   tree->SetAlias("T","stampSec-first");
   tree->SetAlias("deltaVM","(pI.fMemVirtual-pIOld.fMemVirtual)");
