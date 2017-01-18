@@ -22,7 +22,8 @@ class Cumulants : public TNamed {
   void                  EnableQC4with4NL(Int_t mn=50,  Double_t etamin=0.0);
   void                  EnableQC4with3NL(Int_t mn=100, Double_t etamin=0.0);
   void                  EnableQC4withEG(Double_t etal=-0.5,Double_t etau=0.5);
-  TList                *GetList() { return fList; }
+  TList                *GetList() const { return fList; }
+  Int_t                 GetM()    const { return fM; }
   void                  RunAll();
   void                  RunEG();
   void                  RunQC();  

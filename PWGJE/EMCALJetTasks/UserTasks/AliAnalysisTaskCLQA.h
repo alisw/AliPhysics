@@ -12,6 +12,7 @@ class TNtupleD;
 class TTree;
 
 #include "AliAnalysisTaskEmcal.h"
+#include "Cumulants.h"
 
 class AliNtupHetInfo;
 class AliNtupCumInfo;
@@ -33,6 +34,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   void                        SetDoVertexCut(Bool_t b)              { fDoVertexCut     = b; }
   void                        SetHetParams(Double_t Etmin);
   void                        SetDoHet(Bool_t b)                    { fDoHet           = b; }
+  void                        SetQCEtaGap(Double_t e)               { fQC4EG           = e; }
 
   void                        UserCreateOutputObjects();
 
@@ -40,6 +42,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   Bool_t                      FillHistograms();
   Bool_t                      RetrieveEventObjects();
   Bool_t                      Run();
+  void                        RunCumulants();
   void                        RunCumulants(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax);
   void                        RunHet(Double_t Etmin);
 
@@ -56,6 +59,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   Double_t                    fCumEtaMax;        // maximum eta for cumulants
   Double_t                    fCumMmin;          // minimum number of tracks for cumulants 
   Int_t                       fCumMbins;         // number of bins for M
+  Double_t                    fQC4EG;            // value for etagap (+-fQC4EG)
   Double_t                    fHetEtmin;         // minimum et cut for het
   TH1F                       *fCentCL1In;        // input for MC based CL1 centrality
   TH1F                       *fCentV0AIn;        // input for MC based V0A centrality
@@ -65,7 +69,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   TTree                      *fNtupHet;          //!ntuple for het analysis
   AliNtupHetInfo             *fNtupHetInfo;      //!object holding het info
   TH1                        *fHists[1000];      //!pointers to histograms
-
+  Cumulants                  *fCum;              //!pointer to cumulant class
  private:
   Double_t                    DeltaPhi(Double_t phia, Double_t phib,
                                        Double_t rangeMin = -TMath::Pi()/2, 
@@ -73,7 +77,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   AliAnalysisTaskCLQA(const AliAnalysisTaskCLQA&);            // not implemented
   AliAnalysisTaskCLQA &operator=(const AliAnalysisTaskCLQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskCLQA, 8) // Constantin's Task
+  ClassDef(AliAnalysisTaskCLQA, 9) // Constantin's Task
 };
 
 class AliNtupHetInfo {
