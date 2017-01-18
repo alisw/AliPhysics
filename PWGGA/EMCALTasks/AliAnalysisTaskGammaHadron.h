@@ -53,7 +53,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        FillGhHisograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t ClusterEcut, Double_t TrackPcut, Double_t Weight);
   void                        FillQAHisograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
-  //Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
+  //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
   Double_t                    GetEff(AliTLorentzVector ParticleVec)                            ;
   Bool_t                      fGammaOrPi0;               // This tells me whether the correltation and the filling of histograms is done for gamma or pi0
@@ -61,11 +61,11 @@ virtual ~AliAnalysisTaskGammaHadron();
   Bool_t                      fDebug;			        // Can be set for debugging
   Bool_t                      fSavePool;                 // Defines whether to save output pools in a root file
 
-  // Input histograms
+  //..Input histograms
   THnF                       *fHistEffGamma;             // input efficiency for trigger particles
   THnF                       *fHistEffHadron;            // input efficiency for associate particles
 
-  // Constants
+  //..Constants
   Double_t                    fRtoD;                     // conversion of rad to degree
   static const Int_t          kNIdentifier=3;            // number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
   vector<Int_t>               fVector_G_Bins;            // vector that contains the bins of the G historgram
@@ -76,14 +76,14 @@ virtual ~AliAnalysisTaskGammaHadron();
   Int_t                       fNoGammaBins;
   Int_t                       fNoZtBins;
   Int_t                       fNoXiBins;
-  // Event pool variables
+  //..Event pool variables
   TAxis                      *fMixBCent;                 //! Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 //! Number of vertex bins for the mixed event
   AliEventPoolManager        *fPoolMgr;                  //! event pool manager
   Int_t                       fTrackDepth;               //  #tracks to fill pool
   Int_t                       fPoolSize;                 //  Maximum number of events
   vector<vector<Double_t> >   fEventPoolOutputList;      //  vector representing a list of pools (given by value range) that will be saved
-  // Event selection types
+  //..Event selection types
   UInt_t                      fTriggerType;              ///<  Event types that are used for the trigger (gamma or pi0)
   UInt_t                      fMixingEventType;          ///<  Event types that are used for the tracks in the mixed event
   UInt_t                      fCurrentEventTrigger;      ///<  Trigger of the current event
@@ -95,8 +95,7 @@ virtual ~AliAnalysisTaskGammaHadron();
 
   // Other stuff
   TList                      *fOutputList1;            //! Output list
-  TList                      *fOutputList2;            //! Output list
-  TList                      *fOutputList3;            //! Output list
+  TList                      *fOutputListTrAs;         //! Output list
   TList                      *fOutputListGamma;        //! Output list
   TList                      *fOutputListXi;           //! Output list
   TList                      *fOutputListZeta;         //! Output list
@@ -104,12 +103,17 @@ virtual ~AliAnalysisTaskGammaHadron();
 
   // Histograms -
   TH1  					    *fHistNoClusPt;            //! ?No of calorimeter Clusters as a function of p_T
-  TH1					   **fHistptAssHadron[3];      //! ?pt distributions of the associated hadron in a certain p_t bin of the gamma
-  TH1					   **fHistDpGh[3];             //! ?delta phi g-h distribution fro a given p_t gamma bin
+  TH1					   **fHistptAssHadronG[3];     //! pt distr. of the associated hadron as a function of Eg
+  TH1					   **fHistptAssHadronZt[3];    //! pt distr. of the associated hadron as a function of Zt
+  TH1					   **fHistptAssHadronXi[3];    //! pt distr. of the associated hadron as a function of Xi
+  TH1					   **fHistptTriggG[3];   //! pt distr. of the associated hadron as a function of Eg
+  TH1					   **fHistptTriggZt[3];  //! pt distr. of the associated hadron as a function of Zt
+  TH1					   **fHistptTriggXi[3];  //! pt distr. of the associated hadron as a function of Xi
+
   TH1 					    *fHistPi0;                 //!
-  TH1 					   **fHistBinCheckPt;       //! plot Pt distribution for ideal binning
-  TH1 					   **fHistBinCheckZt;       //! plot Zt distribution for ideal binning
-  TH1 					   **fHistBinCheckXi;       //! plot Xi distribution for ideal binning
+  TH1 					   **fHistBinCheckPt;          //! plot Pt distribution for ideal binning
+  TH1 					   **fHistBinCheckZt;          //! plot Zt distribution for ideal binning
+  TH1 					   **fHistBinCheckXi;          //! plot Xi distribution for ideal binning
   TH2					   **fHistDEtaDPhiG[3];        //! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
   TH2					   **fHistDEtaDPhiZT[3];       //! No of g-h pairs in the deta eta delta phi plane for certain zT values
   TH2					   **fHistDEtaDPhiXI[3];       //! No of g-h pairs in the deta eta delta phi plane for certain Xi values
