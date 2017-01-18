@@ -92,6 +92,8 @@ public:
   void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
                                 AliVCluster *clus, AliVCaloCells* cells);
   
+  void         ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCells * cells, Int_t absIdMax) const ;
+  
   Float_t      GetECross(Int_t absId, AliVCaloCells* cells,Float_t dtcut = 10000);
   
   void         InvariantMassHistograms(Int_t iclus, Int_t nModule, const TObjArray* caloClusters, AliVCaloCells * cells);
@@ -180,7 +182,7 @@ public:
   void SwitchOffStudyBadClusters()              { fStudyBadClusters = kFALSE ; }
   
   // Analysis not to be used in QA
-  
+  //==============================
   void SwitchOnAcceptanceHistoPerEBin()         { fFillEBinAcceptanceHisto = kTRUE  ; }
   void SwitchOffAcceptanceHistoPerEBin()        { fFillEBinAcceptanceHisto = kFALSE ; }
   
@@ -190,9 +192,16 @@ public:
   void SwitchOnStudyWeight()                    { fStudyWeight      = kTRUE  ; }
   void SwitchOffStudyWeight()                   { fStudyWeight      = kFALSE ; }
   
+  void SwitchOnStudyFECCorrelation()            { fStudyFECCorrelation = kTRUE  ; }
+  void SwitchOffStudyFECCorrelation()           { fStudyFECCorrelation = kFALSE ; }
+
+  void SwitchOnStudyM02Dependence()             { fStudyM02Dependence = kTRUE  ; }
+  void SwitchOffStudyM02Dependence()            { fStudyM02Dependence = kFALSE ; }
+  
   void SwitchOnStudyExotic()                    { fStudyExotic      = kTRUE  ; }
   void SwitchOffStudyExotic()                   { fStudyExotic      = kFALSE ; }
-  
+  //===============================
+
   void SetNECrossCuts(Int_t n)                  { fExoNECrossCuts   = n      ; }
   void SetNDTimeCuts (Int_t n)                  { fExoNDTimeCuts    = n      ; }
   
@@ -227,6 +236,8 @@ public:
   Bool_t   fStudyClustersAsymmetry;             ///<  Study asymmetry of clusters, not QA related
   Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, not QA related
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations, not QA related
+  Bool_t   fStudyFECCorrelation;                ///<  Study 4 FEC channels cross correlation
+  Bool_t   fStudyM02Dependence;                 ///<  TH3 histograms where M02 and energy are 2 axes and 
   
   // Parameters
     
@@ -321,13 +332,21 @@ public:
   TH2F *   fhClusterMaxCellCloseCellDiff;       //!<! Difference between max cell energy and cell energy of the same cluster
   TH2F *   fhClusterMaxCellDiff;                //!<! Difference between cluster energy and energy of cell with more energy, good clusters only
   TH2F *   fhClusterMaxCellDiffNoCut;           //!<! Difference between cluster energy and energy of cell with more energy, no bad cluster rejection
-  
+
 //  TH2F *   fhClusterMaxCellDiffAverageTime;     //!<! Difference between cluster average time and time of cell with more energy
 //  TH2F *   fhClusterMaxCellDiffWeightedTime;    //!<! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhClusterMaxCellECross;              //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
   
+
   TH2F *   fhLambda0;                           //!<! Cluster Lambda0    vs Energy
-  TH2F *   fhLambda1;                           //!<! Cluster Lambda1    vs Energy
+  TH2F *   fhLambda1;                           //!<! Cluster Lambda1    vs Energy  
+  
+  TH2F *   fhLambda0MaxFECCorrel[7];            //!<! Cluster Lambda0    vs Energy, different FEC correlation with max cell cases
+  TH2F *   fhLambda1MaxFECCorrel[7];            //!<! Cluster Lambda1    vs Energy, different FEC correlation with max cell cases
+
+  TH2F *   fhLambda0FECCorrel[6];            //!<! Cluster Lambda0    vs Energy, different FEC correlation with max cell cases
+  TH2F *   fhLambda1FECCorrel[6];            //!<! Cluster Lambda1    vs Energy, different FEC correlation with max cell cases
+  
 //  TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
   
   // Bad clusters histograms
@@ -601,6 +620,14 @@ public:
   TH2F *  fhEBinClusterColRow[14] ;             //!<! Column and row location of cluster max E cell in different energy bins.
   TH2F *  fhEBinCellColRow   [14] ;             //!<! Column and row location of cell in different energy bins.
 
+  TH3F *   fhClusterTimeEnergyM02;                 //!<! Cluster Time vs Energy
+  TH3F *   fhCellTimeSpreadRespectToCellMaxM02;    //!<! Difference of the time of cell with maximum dep energy and the rest of cells
+  TH3F *   fhClusterMaxCellCloseCellRatioM02;      //!<! Ratio between max cell energy and cell energy of the same cluster
+  TH3F *   fhClusterMaxCellCloseCellDiffM02;       //!<! Difference between max cell energy and cell energy of the same cluster
+  TH3F *   fhClusterMaxCellDiffM02;                //!<! Difference between cluster energy and energy of cell with more energy, good clusters onl
+  TH3F *   fhClusterMaxCellECrossM02;              //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
+  TH3F *   fhNCellsPerClusterM02;                  //!<! N cells per cluster vs cluster energy vs eta of cluster
+  
   /// Copy constructor not implemented.
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;
     
@@ -608,7 +635,7 @@ public:
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaCalorimeterQA,34) ;
+  ClassDef(AliAnaCalorimeterQA,35) ;
   /// \endcond
 
 } ;
