@@ -27,6 +27,7 @@ class AliFemtoXiTrackCut : public AliFemtoV0TrackCut
 
   AliFemtoXiTrackCut(const AliFemtoXiTrackCut& aCut);
   AliFemtoXiTrackCut& operator=(const AliFemtoXiTrackCut& aCut);
+  virtual AliFemtoXiTrackCut* Clone();
 
   virtual bool Pass(const AliFemtoXi* aXi);
 

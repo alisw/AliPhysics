@@ -899,7 +899,7 @@ AliFemtoXiTrackCut* AliFemtoAnalysisLambdaKaon::CreateXiCut(XiCutParams &aCutPar
   tXiCut->SetOnFlyStatus(aCutParams.onFlyStatusV0);
   tXiCut->SetMaxV0DecayLength(aCutParams.maxV0DecayLength);
     //Lambda daughter cuts
-    tXiCut->SetMinDaughtersToPrimVertex(aCutParams.minV0DaughtersToPrimVertex,aCutParams.maxV0DaughtersToPrimVertex);
+    tXiCut->SetMinDaughtersToPrimVertex(aCutParams.minV0PosDaughterToPrimVertex,aCutParams.minV0NegDaughterToPrimVertex);
     tXiCut->SetMaxDcaV0Daughters(aCutParams.maxDcaV0Daughters);
     tXiCut->SetEtaDaughters(aCutParams.etaV0Daughters);
     tXiCut->SetPtPosDaughter(aCutParams.minPtPosV0Daughter,aCutParams.maxPtPosV0Daughter); //0.5 for protons
@@ -1646,8 +1646,8 @@ AliFemtoAnalysisLambdaKaon::DefaultXiCutParams()
   tReturnParams.maxPtV0 = 100.;
   tReturnParams.onFlyStatusV0 = false;
   tReturnParams.maxV0DecayLength = 100.;
-  tReturnParams.minV0DaughtersToPrimVertex = 0.1;
-  tReturnParams.maxV0DaughtersToPrimVertex = 0.1;
+  tReturnParams.minV0PosDaughterToPrimVertex = 0.1;
+  tReturnParams.minV0NegDaughterToPrimVertex = 0.1;
   tReturnParams.maxDcaV0Daughters = 0.8;
   tReturnParams.etaV0Daughters = 0.8;
   tReturnParams.minPtPosV0Daughter = 0.;
@@ -1699,8 +1699,8 @@ AliFemtoAnalysisLambdaKaon::DefaultAXiCutParams()
   tReturnParams.maxPtV0 = 100.;
   tReturnParams.onFlyStatusV0 = true;
   tReturnParams.maxV0DecayLength = 100.;
-  tReturnParams.minV0DaughtersToPrimVertex = 0.1;
-  tReturnParams.maxV0DaughtersToPrimVertex = 0.1;
+  tReturnParams.minV0PosDaughterToPrimVertex = 0.1;
+  tReturnParams.minV0NegDaughterToPrimVertex = 0.1;
   tReturnParams.maxDcaV0Daughters = 0.8;
   tReturnParams.etaV0Daughters = 0.8;
   tReturnParams.minPtPosV0Daughter = 0.;
