@@ -318,6 +318,9 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
 		if(out && fDrawIndividualFits && thePad){
 		  thePad->Clear();
 		  fitter->DrawHere(thePad);
+		  for (auto format : fInvMassFitSaveAsFormats) {
+		    thePad->SaveAs(Form("FitOutput_%s_Trial%d.%s",hInvMassHisto->GetName(),globBin, format.c_str()));
+		  }
 		}
 	      }
 	      // else{

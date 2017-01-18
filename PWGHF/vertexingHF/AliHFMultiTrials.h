@@ -6,6 +6,7 @@
 #include <TNamed.h>
 #include <TString.h>
 #include <TPad.h>
+#include <set>
 
 /// \class AliHFMultiTrials
 
@@ -88,6 +89,9 @@ class AliHFMultiTrials : public TNamed {
 
   void SetFixRefoS(Float_t refloS){fFixRefloS=refloS;}
 
+  void AddInvMassFitSaveAsFormat(std::string format) { fInvMassFitSaveAsFormats.insert(format); }
+  void DisableInvMassFitSaveAs() { fInvMassFitSaveAsFormats.clear(); }
+
 
   enum EBkgFuncCases{ kExpoBkg, kLinBkg, kPol2Bkg, kPol3Bkg, kPol4Bkg, kPol5Bkg, kPowBkg, kPowTimesExpoBkg, kNBkgFuncCases };
   enum EFitParamCases{ kFixSigFreeMean, kFixSigUpFreeMean, kFixSigDownFreeMean, kFreeSigFreeMean, kFixSigFixMean, kFreeSigFixMean, kNFitConfCases};
@@ -103,6 +107,7 @@ class AliHFMultiTrials : public TNamed {
   AliHFMultiTrials(const AliHFMultiTrials &source);
   AliHFMultiTrials& operator=(const AliHFMultiTrials& source); 
 
+  std::set<std::string> fInvMassFitSaveAsFormats; /// saves the invariant mass fit canvases in the file formats listed in this vector (if empty, does nothing)
   Int_t fNumOfRebinSteps; /// number of rebin steps
   Int_t* fRebinSteps;     //[fNumOfRebinSteps] values of rebin
   Int_t fNumOfFirstBinSteps; /// number of steps in the first bin for rebin
