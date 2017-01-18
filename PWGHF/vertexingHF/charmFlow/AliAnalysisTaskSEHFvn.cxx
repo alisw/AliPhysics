@@ -39,6 +39,7 @@
 #include <TRandom3.h>
 #include <TVector2.h>
 #include <TArrayF.h>
+#include <TAxis.h>
 
 #include <AliLog.h>
 #include <AliAnalysisDataSlot.h>
@@ -117,7 +118,11 @@ AliAnalysisTaskSE(),
   fq2Meth(kq2TPC),
   fSeparateD0D0bar(kFALSE),
   fOnTheFlyTPCEP(kFALSE),
-  fUsePtWeights(kFALSE)
+  fEtaGapInTPCHalves(-1.),
+  fUsePtWeights(kFALSE),
+  fq2SmearingHisto(0x0),
+  fq2Smearing(kFALSE),
+  fq2SmearingAxis(1)
 {
   // Default constructor
   for(int i = 0; i < 3; i++) {
@@ -160,7 +165,11 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fq2Meth(kq2TPC),
   fSeparateD0D0bar(kFALSE),
   fOnTheFlyTPCEP(kFALSE),
-  fUsePtWeights(kFALSE)
+  fEtaGapInTPCHalves(-1.),
+  fUsePtWeights(kFALSE),
+  fq2SmearingHisto(0x0),
+  fq2Smearing(kFALSE),
+  fq2SmearingAxis(1)
 {
   // standard constructor
   for(int i = 0; i < 3; i++) {
@@ -767,6 +776,17 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
       
       //fill the THnSparseF
+      if(fq2Smearing && fq2SmearingAxis) {
+        TAxis* ax=0x0;
+        if(fq2SmearingAxis==1) {ax=(TAxis*)fq2SmearingHisto->GetYaxis();}
+        else {ax=(TAxis*)fq2SmearingHisto->GetXaxis();}
+        Int_t bin = ax->FindBin(q2);
+        TH1F* hq2Slice = 0x0;
+        if(fq2SmearingAxis==1) {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionX("hq2Slice",bin,bin);}
+        else {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionY("hq2Slice",bin,bin);}
+        if(hq2Slice->GetEntries()>10) {q2 = hq2Slice->GetRandom();}
+        delete hq2Slice;
+      }
       if((fDecChannel==0 || fDecChannel==2) && isSelected) {
         Double_t sparsearray[5] = {invMass[0],d->Pt(),deltaphi,q2,centr};
         fHistMassPtPhiq2Centr->Fill(sparsearray);
@@ -1507,6 +1527,7 @@ void AliAnalysisTaskSEHFvn::ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpa
     if(!track) continue;
     if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
       Double_t eta=track->Eta();
+      if(fEtaGapInTPCHalves>0. && TMath::Abs(eta)<fEtaGapInTPCHalves) continue;
       Double_t phi=track->Phi();
       Double_t wi=1.;
       if(fUsePtWeights){
@@ -1837,6 +1858,16 @@ Double_t AliAnalysisTaskSEHFvn::Getq2(TList* qnlist)
   
   Double_t q2 = TMath::Sqrt(qnVect->Qx(2)*qnVect->Qx(2)+qnVect->Qy(2)*qnVect->Qy(2)); //qnVect->Length();
   return q2;
+}
+
+void AliAnalysisTaskSEHFvn::Setq2Smearing(TString smearingfilepath, TString histoname, Int_t smearingaxis) {
+  fq2Smearing=kTRUE;
+  fq2SmearingAxis=smearingaxis;
+  
+  TFile* smearingfile = TFile::Open(smearingfilepath.Data(),"READ");
+  fq2SmearingHisto=(TH2F*)smearingfile->Get(histoname.Data());
+  if(fq2SmearingHisto) {fq2SmearingHisto->SetDirectory(0);}
+  smearingfile->Close();
 }
 
 //________________________________________________________________________
