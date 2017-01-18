@@ -106,7 +106,7 @@ fhClusterMaxCellDiff(0),               fhClusterMaxCellDiffNoCut(0),
 //fhClusterMaxCellDiffAverageTime(0),    fhClusterMaxCellDiffWeightedTime(0),    
 fhClusterMaxCellECross(0),
 fhLambda0(0),                          fhLambda1(0),                          // fhDispersion(0),
-
+fhEtaPhiFECCorrControl(0),
 // bad clusters
 fhBadClusterEnergy(0),                 fhBadClusterTimeEnergy(0),              fhBadClusterEtaPhi(0),            
 fhBadClusterPairDiffTimeE(0),          fhBadCellTimeSpreadRespectToCellMax(0), 
@@ -835,8 +835,25 @@ void AliAnaCalorimeterQA::CellInClusterPositionHistograms(AliVCluster* clus)
 /// \param absIdMax: id of highest energy cell in cluster
 ///
 //___________________________________________________
-void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCells* cells, Int_t absIdMax) const
+void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCells* cells, 
+                                                  Bool_t matched, Int_t absIdMax) const 
 {
+  // Clean the sample
+  
+  // select neutral
+  if ( matched ) return;
+
+  // away from dead region
+  if ( clus->GetDistanceToBadChannel() < 5 ) return ;  
+  
+  // in center of SM
+  Int_t etaRegion = -1, phiRegion = -1;
+  GetCaloUtils()->GetEMCALSubregion(clus,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
+  // Region 0: center of SM ~0.18<|eta|<0.55
+  if ( etaRegion !=0 ) return ;
+
+  fhEtaPhiFECCorrControl->Fill(fClusterMomentum.Eta(),GetPhi(fClusterMomentum.Phi()));
+  
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
   Float_t m20    = clus->GetM20();
@@ -1077,9 +1094,6 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   fhLambda0             ->Fill(clus->E(), clus->GetM02()       , GetEventWeight());
   fhLambda1             ->Fill(clus->E(), clus->GetM20()       , GetEventWeight());
   //  fhDispersion          ->Fill(clus->E(), clus->GetDispersion(), GetEventWeight());
-  
-  //
-  if(fStudyFECCorrelation) ChannelCorrelationInFEC(clus, cells, absIdMax);
   
   fhClusterMaxCellDiff  ->Fill(clus->E(), maxCellFraction, GetEventWeight());
   fhClusterMaxCellECross->Fill(clus->E(), eCrossFrac     , GetEventWeight());
@@ -1359,11 +1373,16 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
       continue;
     }
         
-
+    //
     ClusterHistograms(clus, caloClusters, cells, absIdMax, 
                       maxCellFraction, eCrossFrac, tmax);
     
     nCaloClustersAccepted++;
+    
+    //
+    if(fStudyFECCorrelation) ChannelCorrelationInFEC(clus, cells, matched, absIdMax);
+    
+    //
     nModule = GetModuleNumber(clus);
     if(nModule >=0 && nModule < fNModules && fClusterMomentum.E() > 2*fCellAmpMin)
     {
@@ -2296,6 +2315,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     TString titleFEC[] = 
     {"No main cell corr., no other inside cluster" , "No main cell corr., 1 cell correl in cluster" , "No main cell corr., >=2 cell correl in cluster",
      "Main cell corr. & no other inside cluster"   , "Main cell corr. & 1 cell corr. inside cluster", "Main cell corr. & >=2 cell corr. inside cluster"};
+    
+    fhEtaPhiFECCorrControl  = new TH2F ("hEtaPhiFECCorrControl","#eta vs #phi for FEC correlation selected clusters",
+                          netabins,etamin,etamax,nphibins,phimin,phimax); 
+    fhEtaPhiFECCorrControl->SetXTitle("#eta ");
+    fhEtaPhiFECCorrControl->SetYTitle("#phi (rad)");
+    outputContainer->Add(fhEtaPhiFECCorrControl);
     
     for(Int_t i = 0; i < 7; i++)
     {

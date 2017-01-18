@@ -92,7 +92,7 @@ public:
   void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
                                 AliVCluster *clus, AliVCaloCells* cells);
   
-  void         ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCells * cells, Int_t absIdMax) const ;
+  void         ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax) const ;
   
   Float_t      GetECross(Int_t absId, AliVCaloCells* cells,Float_t dtcut = 10000);
   
@@ -337,17 +337,17 @@ public:
 //  TH2F *   fhClusterMaxCellDiffWeightedTime;    //!<! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhClusterMaxCellECross;              //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
   
-
-  TH2F *   fhLambda0;                           //!<! Cluster Lambda0    vs Energy
-  TH2F *   fhLambda1;                           //!<! Cluster Lambda1    vs Energy  
+  TH2F *   fhLambda0;                           //!<! Cluster Lambda0 vs Energy
+  TH2F *   fhLambda1;                           //!<! Cluster Lambda1 vs Energy  
   
-  TH2F *   fhLambda0MaxFECCorrel[7];            //!<! Cluster Lambda0    vs Energy, different FEC correlation with max cell cases
-  TH2F *   fhLambda1MaxFECCorrel[7];            //!<! Cluster Lambda1    vs Energy, different FEC correlation with max cell cases
+  TH2F *   fhLambda0MaxFECCorrel[7];            //!<! Cluster Lambda0 vs Energy, different FEC correlation with max cell cases
+  TH2F *   fhLambda1MaxFECCorrel[7];            //!<! Cluster Lambda1 vs Energy, different FEC correlation with max cell cases
 
-  TH2F *   fhLambda0FECCorrel[6];            //!<! Cluster Lambda0    vs Energy, different FEC correlation with max cell cases
-  TH2F *   fhLambda1FECCorrel[6];            //!<! Cluster Lambda1    vs Energy, different FEC correlation with max cell cases
-  
-//  TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
+  TH2F *   fhLambda0FECCorrel[6];               //!<! Cluster Lambda0 vs Energy, different FEC correlation with max cell cases
+  TH2F *   fhLambda1FECCorrel[6];               //!<! Cluster Lambda1 vs Energy, different FEC correlation with max cell cases
+  TH2F *   fhEtaPhiFECCorrControl;              //!<! eta-phi cluster location control histogram
+
+//TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
   
   // Bad clusters histograms
   
