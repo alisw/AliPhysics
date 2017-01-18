@@ -251,6 +251,7 @@ AliAnalysisTaskSEHFv2::~AliAnalysisTaskSEHFv2()
   delete fhEventsInfo;
   delete fRDCuts;
   delete fAfterBurner;
+  if(fq2SmearingHisto) {delete fq2SmearingHisto;}
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEHFv2::SetMassLimits(Float_t range, Int_t pdg){
@@ -804,7 +805,6 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
         else {hq2Slice = (TH1F*)fq2SmearingHisto->ProjectionY("hq2Slice",bin,bin);}
         if(hq2Slice->GetEntries()>10) {q2 = hq2Slice->GetRandom();}
         delete hq2Slice;
-        delete ax;
       }
       if((fDecChannel==0 || fDecChannel==2) && isSelected) {
         Double_t sparsearray[5] = {invMass[0],d->Pt(),deltaphi,q2,centr};
