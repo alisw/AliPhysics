@@ -21,6 +21,9 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHMEC(const char *name);
   virtual ~AliAnalysisTaskEmcalJetHMEC() {}
 
+  Double_t                GetTrackBias() const                       { return fTrackBias; }
+  Double_t                GetClusterBias() const                     { return fClusterBias; }
+
   // Jet bias - setters
   /// Require a track with pt > b in jet
   virtual void            SetTrackBias(Double_t b)                   { fTrackBias    = b; }
@@ -41,9 +44,11 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   // set efficiency correction
   void                    SetDoEffCorr(Int_t effcorr)                { fDoEffCorrection = effcorr; }
   virtual void            SetEffCorrFunc(Double_t efffunc)           { fEffFunctionCorrection = efffunc; }
-  // Set embedding correction
-  void                    SetEmbeddingCorrectionHist(TH2F * hist)    { fEmbeddingCorrectionHist = hist; }
-  void                    SetNoMixedEventEmbeddingCorrection(Bool_t b) { fNoMixedEventEmbeddingCorrection = b; }
+  // Setup JES correction
+  void                    SetJESCorrectionHist(TH2D * hist)          { fJESCorrectionHist = hist; }
+  void                    SetNoMixedEventJESCorrection(Bool_t b) { fNoMixedEventJESCorrection = b; }
+
+  Bool_t                  RetrieveAndInitializeJESCorrectionHist(TString filename, TString histName, Double_t trackBias = AliAnalysisTaskEmcalJetHMEC::kDisableBias, Double_t clusterBias = AliAnalysisTaskEmcalJetHMEC::kDisableBias);
 
   virtual void            UserCreateOutputObjects();
   virtual void            Terminate(Option_t *);
@@ -65,16 +70,14 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
      UInt_t trigEvent                 = AliVEvent::kAny,
      UInt_t mixEvent                  = AliVEvent::kAny,
      // Options
-     const char *CentEst              = "V0M",
-     const Int_t nCentBins            = 5,
      const Double_t trackEta          = 0.9,
      const Bool_t lessSparseAxes      = 0,
      const Bool_t widerTrackBin       = 0,
      // Corrections
      const Int_t doEffCorrSW          = 0,
-     const Bool_t embeddingCorrection = kFALSE,
-     const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
-     const char * embeddingCorrectionHistName = "embeddingCorrection",
+     const Bool_t JESCorrection = kFALSE,
+     const char * JESCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
+     const char * JESCorrectionHistName = "embeddingCorrection",
      const char *suffix               = "biased"
    );
 
@@ -110,10 +113,10 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   Bool_t                 BiasedJet(AliEmcalJet * jet);
   // Corrections
   virtual Double_t       EffCorrection(Double_t trkETA, Double_t trkPT) const; // efficiency correction function
-  // Fill methods which allow for the embedding correction
+  // Fill methods which allow for the JES correction
   void                   FillHist(TH1 * hist, Double_t fillValue, Double_t weight = 1.0, Bool_t noCorrection = kFALSE);
   void                   FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight = 1.0, Bool_t noCorrection = kFALSE);
-  void                   AccessSetOfYBinValues(TH2F * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor = -1.0);
+  void                   AccessSetOfYBinValues(TH2D * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor = -1.0);
   
   // Jet bias
   Double_t               fTrackBias;               ///< Jet track bias
@@ -131,9 +134,9 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   // Efficiency correction
   Int_t                  fDoEffCorrection;         ///<
   Double_t               fEffFunctionCorrection;   ///<
-  // Embedding correction
-  Bool_t                 fNoMixedEventEmbeddingCorrection; ///<
-  TH2F                  *fEmbeddingCorrectionHist; ///<
+  // JES correction
+  Bool_t                 fNoMixedEventJESCorrection; ///<
+  TH2D                  *fJESCorrectionHist;       ///<
   // Histogram binning variables
   Bool_t                 fDoLessSparseAxes;        ///<
   Bool_t                 fDoWiderTrackBin;         ///<
@@ -157,6 +160,6 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetHMEC(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
   AliAnalysisTaskEmcalJetHMEC& operator=(const AliAnalysisTaskEmcalJetHMEC&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetHMEC, 11); 
+  ClassDef(AliAnalysisTaskEmcalJetHMEC, 12);
 };
 #endif
