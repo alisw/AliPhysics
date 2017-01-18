@@ -92,7 +92,7 @@ class VPart: public AliVParticle {
  public:
   VPart() : AliVParticle(), fMom(), fCharge(0) {;}
   VPart(const VPart &p) : AliVParticle(p), fMom(p.fMom), fCharge(p.fCharge) {;} 
-  VPart& operator=(const VPart &p) {;}
+  VPart& operator=(const VPart &p) { return *this;}
   virtual ~VPart() {;}
   virtual Double_t Px() const {return 0;}
   virtual Double_t Py() const {return 0;}
