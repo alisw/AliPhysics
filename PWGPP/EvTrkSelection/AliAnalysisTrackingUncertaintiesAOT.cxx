@@ -72,7 +72,8 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT()
   fRequireVtxTracks(kTRUE),
   fListHist(0x0),
   fESDtrackCuts(0x0),
-  fVertex(0x0)
+  fVertex(0x0),
+  fUsePtLogAxis(kFALSE)
 {
     
 }
@@ -96,7 +97,8 @@ AliAnalysisTrackingUncertaintiesAOT::AliAnalysisTrackingUncertaintiesAOT(const c
     fRequireVtxTracks(kTRUE),
     fListHist(0x0),
     fESDtrackCuts(0x0),
-    fVertex(0x0)
+    fVertex(0x0),
+    fUsePtLogAxis(kFALSE)
 {
   //
   // standard constructur
@@ -167,9 +169,6 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   //
   InitializeTrackCutHistograms();
     
-  const int nbPt=40;
-  const double ptMax=5;
-    
   //add default track cuts in the output list
   fListHist->Add(fESDtrackCuts);
     
@@ -178,9 +177,9 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   Int_t nEtaBins = 2*fMaxEta/0.1;
   if(fMC) {
     const Int_t nvars = 10;
-    Int_t nBins[nvars]   = {600,   62,   297,  297,   18,   nEtaBins,    3,   2,    5,    2};
-    Double_t xmin[nvars] = {-3., -3.2,  0.15, 0.15,   0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
-    Double_t xmax[nvars] = {3.,   3.2,   15.,  15., 6.28,    fMaxEta,  2.5,  2.,  4.5,  1.5};
+    Int_t nBins[nvars]   = {300,   64,   31,    31,   18,   nEtaBins,    3,   2,    5,    2};
+    Double_t xmin[nvars] = {-3., -3.2,  0.1,   0.1,   0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
+    Double_t xmax[nvars] = {3.,   3.2, 15.6,  15.6, 6.28,    fMaxEta,  2.5,  2.,  4.5,  1.5};
     TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc"};
         
     fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
@@ -194,9 +193,9 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   }
   else {
     const Int_t nvars = 6;
-    Int_t nBins[nvars]   = {600,   62,   297,    18,  nEtaBins,    2};
-    Double_t xmin[nvars] = {-3., -3.2,  0.15,    0.,  -fMaxEta, -0.5};
-    Double_t xmax[nvars] = {3.,   3.2,    15., 6.28,   fMaxEta,  1.5};
+    Int_t nBins[nvars]   = {300,   64,    31,    18,  nEtaBins,    2};
+    Double_t xmin[nvars] = {-3., -3.2,   0.1,    0.,  -fMaxEta, -0.5};
+    Double_t xmax[nvars] = {3.,   3.2,  15.6,  6.28,   fMaxEta,  1.5};
     TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","phi","eta","TOFbc"};
         
     fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
@@ -204,7 +203,7 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
     for (Int_t j=0; j<nvars; j++) fHistData->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
     fListHist->Add(fHistData);
   }
-
+    
   TH1F * histTOFBC = new TH1F("histTOFBC", "TOF  BC!=0;pt (GeV/c)", 100, 0., 25.);
   fListHist->Add(histTOFBC);
   TH1F * histTOFBC0 = new TH1F("histTOFBC0", "TOF  BC==0;pt (GeV/c)", 100, 0., 25);
@@ -318,7 +317,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
   Float_t label = 1;
   Float_t specie = -10;
   Int_t nTPC=0;
-  Int_t nITS=0; 
+  Int_t nITS=0;
   Int_t ntracklets=0;
   fESD->InitMagneticField();
   Int_t ncl1=0;
@@ -341,7 +340,7 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
     //fill TPCcls histo
     nTPC+=track->GetTPCncls();
     nITS+=track->GetITSNcls();
-
+        
     track->GetImpactParameters(dca, cov);
     if(fMC){
       part    = (TParticle*)stack->Particle(TMath::Abs(track->GetLabel()));
@@ -434,11 +433,11 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
 	  histTOFBC->Fill(track->Pt());
 	  bcTOF_d=1;
 	}
-        histTOFBC0->Fill(track->Pt());
+	histTOFBC0->Fill(track->Pt());
 	for(int iSpec=0; iSpec<5; iSpec++) {
 	  if(fspecie&BIT(iSpec)) {
 	    if(IsConsistentWithPid(iSpec, track)) {
-	      Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0],dca[1]};
+	      Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_d,dca[0]};
 	      histTpcItsMatch->Fill(vecHistTpcItsMatch);
 	      if(fMC){
 		Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_d};
@@ -465,11 +464,11 @@ void AliAnalysisTrackingUncertaintiesAOT::ProcessTracks(AliStack *stack) {
       if(track->GetTOFBunchCrossing()!=0){
 	bcTOF_n=1;
       }
-
+            
       for(int iSpec=0; iSpec<5; iSpec++) {
 	if(fspecie&BIT(iSpec)) {
 	  if(IsConsistentWithPid(iSpec, track)) {
-	    Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0],dca[1]};
+	    Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, (Double_t)iSpec, (Double_t)isph,(Double_t)bcTOF_n,dca[0]};
 	    histTpcItsMatch->Fill(vecHistTpcItsMatch);
 	    if(fMC){
 	      Double_t vec4Sparse[10] = {dca[0],dca[1],pT,part->Pt(),phi,eta,partType,label,specie,(Double_t)bcTOF_n};
@@ -659,16 +658,17 @@ void AliAnalysisTrackingUncertaintiesAOT::InitializeTrackCutHistograms() {
   // create histograms for the track cut studies
   //
   //  match TPC->ITS
-  //                                  0-is matched, 1-pt, 2-eta,   3-phi,   4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all) 6-bcTOF 7-DCAxy 8-DCAz
-  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   50,    20,            18,  6,      3,    2,600,62};   
-  Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.1,    -1,             0, -0.5, -1.5, -0.5,-3.,-3.2};
-  Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5,   20,    +1, 2*TMath::Pi(),  5.5,  1.5,  1.5, 3., 3.2};
+  //                                  0-is matched, 1-pt, 2-eta,   3-phi,   4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all) 6-bcTOF 7-DCAxy
+  Int_t nEtaBins = 2*fMaxEta/0.1;
+  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   31, nEtaBins,            18,  6,      3,    2,  30};
+  Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.1, -fMaxEta,             0, -0.5, -1.5, -0.5, -3.};
+  Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5, 15.1,  fMaxEta, 2*TMath::Pi(),  5.5,  1.5,  1.5,  3.};
   //
-  TString axisNameTpcItsMatch[kNumberOfAxes]  = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","dcaxy","dcaz"};
-  TString axisTitleTpcItsMatch[kNumberOfAxes] = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","dcaxy","dcaz"};
+  TString axisNameTpcItsMatch[kNumberOfAxes]  = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","dcaxy"};
+  TString axisTitleTpcItsMatch[kNumberOfAxes] = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","dcaxy"};
   //
   THnSparseF * histTpcItsMatch = new THnSparseF("histTpcItsMatch","TPC -> ITS matching",kNumberOfAxes, binsTpcItsMatch, minTpcItsMatch, maxTpcItsMatch);
-  BinLogAxis(histTpcItsMatch, 1);
+  if(fUsePtLogAxis)BinLogAxis(histTpcItsMatch, 1);
   fListHist->Add(histTpcItsMatch);
   //
   for (Int_t iaxis=0; iaxis<kNumberOfAxes;iaxis++){
