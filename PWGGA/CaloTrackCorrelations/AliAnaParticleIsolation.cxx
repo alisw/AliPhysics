@@ -1060,11 +1060,10 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
       }
 
       Int_t absIdCorr[] = {-1,-1,-1,-1};
-      Bool_t correlMaxOK = GetCaloUtils()->GetFECCorrelatedCellAbsId(absIdMax, absIdCorr);
+      GetCaloUtils()->GetFECCorrelatedCellAbsId(absIdMax, absIdCorr);
       
       Int_t idMax  = -1;
       Int_t idMax2 = -1;
-      Bool_t pairCol = kFALSE;
       for(Int_t id = 0; id < 4; id++)
       {
         if     ( absIdMax  == absIdCorr[id]) idMax  = id;
