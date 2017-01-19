@@ -157,25 +157,31 @@ void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResp
     fNumSigmaITS[i] = pidResponse->NumberOfSigmasITS(tr, particleType);
     fNumSigmaTPC[i] = pidResponse->NumberOfSigmasTPC(tr, particleType);
     fNumSigmaTOF[i] = pidResponse->NumberOfSigmasTOF(tr, particleType);
-    AliInfo(Form("%d %f %f %f", i, fNumSigmaITS[i], fNumSigmaTPC[i], fNumSigmaTOF[i]));
+    AliInfoF("%d %f %f %f", i, fNumSigmaITS[i], fNumSigmaTPC[i], fNumSigmaTOF[i]);
   }
 
-  Int_t   idet=0, status=0;
+  Int_t   idet=0;
   Float_t xloc=0,   zloc=0;
   const AliITSsegmentationSPD seg;
   for (Int_t layer=0; layer<2; ++layer) {
     fChipKey[layer] = -1;
+    fStatus[layer]  = -1;
     const Int_t module = tr->GetITSModuleIndex(layer);
     if (module < 0)
       continue;
 
-    tr->GetITSModuleIndexInfo(layer, idet, status, xloc, zloc);
-    if (status == 0)
+    tr->GetITSModuleIndexInfo(layer, idet, fStatus[layer], xloc, zloc);
+    if (fStatus[layer] == 0)
       continue;
 
     Int_t off = seg.GetChipFromLocal(xloc, zloc);
+    if (off < 0)
+      continue;
+
     off = (layer==0 ? 4-off : off);
-    fChipKey[layer] = 5*module + off;
+    AliDebugF(5, "layer=%d module=%10d idet=%3d xloc=%5.1f zloc=%5.1f off=%d status=%d chipKey=%4d",
+	      layer, module, idet, xloc, zloc, off, fStatus[layer], 5*idet + off);
+    fChipKey[layer] = 5*idet + off;
   }
 }
 
@@ -313,7 +319,7 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
 
 void AliAnalysisTaskDG::NotifyRun()
 {
-  AliInfo(Form("run %d %s", fCurrentRunNumber, fCDBStorage.Data()));
+  AliInfoF("run %d %s", fCurrentRunNumber, fCDBStorage.Data());
   fUseTriggerMask = (fTriggerSelection != "");
   if (fUseTriggerMask && fCDBStorage != "NONE") {
     fClassMask = fClassMaskNext50 = 0ULL;
@@ -340,7 +346,7 @@ void AliAnalysisTaskDG::NotifyRun()
 	    fClassMask       |= (1ULL << ULong64_t(c->GetIndex()- 1));
 	  else
 	    fClassMaskNext50 |= (1ULL << ULong64_t(c->GetIndex()-51));
-	  AliInfo(Form("Selected trigger class %s %lld %lld", c->GetName(), fClassMask, fClassMaskNext50));
+	  AliInfoF("Selected trigger class %s %lld %lld", c->GetName(), fClassMask, fClassMaskNext50);
 	}
       }
     }
@@ -421,7 +427,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   PostData(1, fList);
 
-  AliInfo(Form("fUseTriggerMask=%d %lld %lld", fUseTriggerMask, fClassMask, fClassMaskNext50));
+  AliInfoF("fUseTriggerMask=%d %lld %lld", fUseTriggerMask, fClassMask, fClassMaskNext50);
 
   Bool_t cutNotV0    = kFALSE;
   Bool_t useOnly2Trk = kFALSE;
@@ -430,10 +436,10 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     if (fCDBStorage != "NONE") { // OCDB used
       if ((esdHeader->GetTriggerMask()       & fClassMask)       == 0LL &&
 	  (esdHeader->GetTriggerMaskNext50() & fClassMaskNext50) == 0LL) {
-	AliInfo(Form("not selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
+	AliInfoF("not selected: %s", esdEvent->GetFiredTriggerClasses().Data());
 	return;
       } else {
-	AliInfo(Form("selected: %s", esdEvent->GetFiredTriggerClasses().Data()));
+	AliInfoF("selected: %s", esdEvent->GetFiredTriggerClasses().Data());
       }
     } else { // no OCDB used
       // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS2&Only2Trk"
@@ -458,7 +464,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
       cutNotV0    = (counter == sumCutNotV0);
       useOnly2Trk = (counter == sumUseOnly2Trk);
 
-      AliInfo(Form("selected: %d %d %d %s ", selected, cutNotV0, useOnly2Trk, esdEvent->GetFiredTriggerClasses().Data()));
+      AliInfoF("selected: %d %d %d %s ", selected, cutNotV0, useOnly2Trk, esdEvent->GetFiredTriggerClasses().Data());
       if (!selected)
 	return;
     }
@@ -469,7 +475,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fTreeData.fIsIncompleteDAQ          = esdEvent->IsIncompleteDAQ();
   fTreeData.fIsSPDClusterVsTrackletBG = fAnalysisUtils.IsSPDClusterVsTrackletBG(esdEvent);
   fTreeData.fIskMB                    = (inputHandler->IsEventSelected() & AliVEvent::kMB);
-  AliInfo(Form("inputHandler->IsEventSelected() = %d", inputHandler->IsEventSelected()));
+  AliInfoF("inputHandler->IsEventSelected() = %d", inputHandler->IsEventSelected());
   fTreeData.fV0Info.FillV0(esdEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
 
