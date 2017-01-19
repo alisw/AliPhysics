@@ -298,7 +298,6 @@ fCRCQVecWeightsList(NULL),
 fCRCZDCCalibList(NULL),
 fCRCZDCResList(NULL),
 fZDCESEList(NULL),
-fPhiEtaCutsList(NULL),
 fCRCVZList(NULL),
 fCRCVZRbRList(NULL),
 fCRCZDCList(NULL),
@@ -387,7 +386,6 @@ AliFlowAnalysisCRC::~AliFlowAnalysisCRC()
   delete fCRCZDCCalibList;
   delete fCRCZDCResList;
   delete fZDCESEList;
-  delete fPhiEtaCutsList;
   delete[] fCRCPtvarPtBins;
   delete[] fCRCPtBins;
   delete[] fZDCEPweightEbE;
@@ -623,13 +621,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
       }
     }
   }
-  if(fUsePhiEtaCuts && fRunNum!=fCachedRunNum) {
-    if(fPhiEtaCutsList->FindObject(Form("fCenPhiEtaCut[%d]",fRunNum))) {
-      fPhiEtaCuts = (TH3F*)(fPhiEtaCutsList->FindObject(Form("fCenPhiEtaCut[%d]",fRunNum)));
-    } else {
-      AliWarning(Form("WARNING: cenphieta cut not found for run %d! \n",fRunNum));
-    }
-  }
   
   // EbE flow *********************************************************************************************************
   
@@ -701,11 +692,6 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         if(fUsePtWeights && fPtWeightsHist[fCenBin]) {
           if(dPt>0.2 && dPt<20.) wt = fPtWeightsHist[fCenBin]->Interpolate(dPt);
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
-        }
-        if(fUsePhiEtaCuts && fPhiEtaCuts) // determine phieta weight for POI:
-        {
-          wProbCut = fPhiEtaCuts->GetBinContent(fPhiEtaCuts->FindBin(fCentralityEBE,dPhi,dEta));
-          if(fRandom->Uniform(1.)>wProbCut) continue;
         }
         if(fUseEtaWeights && fEtaWeightsHist[fCenBin][0][0]) {
           //          Int_t ptbin = GetCRCPtBin(dPt);
@@ -863,7 +849,7 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           if(dCharge > 0.) wt = fPhiEtaWeightsPos->GetBinContent(fPhiEtaWeightsPos->FindBin(fCentralityEBE,dPhi,dEta));
           else wt = fPhiEtaWeightsNeg->GetBinContent(fPhiEtaWeightsNeg->FindBin(fCentralityEBE,dPhi,dEta));
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
-          if(wt==0.) wPhiEta = 0.;
+          if(wt==0.) continue;
         }
         if(fUsePhiEtaWeightsVtxDep && fPhiEtaWeightsVtx[fCenBin]) // determine phieta weight for POI:
         {
@@ -874,10 +860,10 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
           if(dPt>0.2 && dPt<20.) wt = fPtWeightsHist[fCenBin]->Interpolate(dPt);
           if(std::isfinite(1./wt)) wPhiEta *= 1./wt;
         }
-        if(fUsePhiEtaCuts && fPhiEtaCuts) // determine phieta weight for POI:
+        if(fUsePhiEtaCuts)
         {
-          wProbCut = fPhiEtaCuts->GetBinContent(fPhiEtaCuts->FindBin(fCentralityEBE,dPhi,dEta));
-          if(fRandom->Uniform(1.)>wProbCut) continue;
+          // test: remove region with low SPD efficiency
+          if(dPhi>2.136283 && dPhi<2.324779) continue;
         }
         if(fUseEtaWeights && fEtaWeightsHist[fCenBin][0][0]) {
 //          Int_t ptbin = GetCRCPtBin(dPt);
@@ -962,14 +948,17 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
         // Flow SP ZDC
         for (Int_t k=0; k<fQVecPower; k++) {
           for (Int_t h=0;h<fFlowNHarmMax;h++) {
-            fPOIPtDiffQRe[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
-            fPOIPtDiffQIm[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
-            fPOIPtDiffMul[k][h]->Fill(dPt,pow(wPhiEta,k));
             
-            fPOIPhiDiffQRe[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
-            fPOIPhiDiffQIm[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
-            fPOIPhiDiffMul[k][h]->Fill(dPhi,pow(wPhiEta,k));
             if(fFlowQCDeltaEta>0.) {
+              
+              fPOIPtDiffQRe[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+              fPOIPtDiffQIm[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+              fPOIPtDiffMul[k][h]->Fill(dPt,pow(wPhiEta,k));
+              
+              fPOIPhiDiffQRe[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+              fPOIPhiDiffQIm[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+              fPOIPhiDiffMul[k][h]->Fill(dPhi,pow(wPhiEta,k));
+              
               if(fabs(dEta)>fFlowQCDeltaEta/2.) {
                 Int_t keta = (dEta<0.?0:1);
                 fPOIPtDiffQReEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
@@ -979,13 +968,45 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
                 fPOIPhiDiffQImEG[keta][k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
                 fPOIPhiDiffMulEG[keta][k][h]->Fill(dPhi,pow(wPhiEta,k));
               }
-            } else {
-              if(fabs(dEta)<0.6 && fabs(dEta)>0.3) {
-                Int_t keta = (dEta<0.?0:1);
+              
+            } else if(fFlowQCDeltaEta<0. && fFlowQCDeltaEta>-1.) {
+              
+              if(dEta>0.) {
+                fPOIPtDiffQRe[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+                fPOIPtDiffQIm[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+                fPOIPtDiffMul[k][h]->Fill(dPt,pow(wPhiEta,k));
+                
+                fPOIPhiDiffQRe[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+                fPOIPhiDiffQIm[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+                fPOIPhiDiffMul[k][h]->Fill(dPhi,pow(wPhiEta,k));
+                
+                Int_t keta = (dEta<0.4?0:1);
                 fPOIPtDiffQReEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
                 fPOIPtDiffQImEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
                 fPOIPtDiffMulEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k));
+              } else {
+                wPhiEta = 0.;
               }
+              
+            } else if(fFlowQCDeltaEta<-1. && fFlowQCDeltaEta>-2.) {
+              
+              if(dEta<0.) {
+                fPOIPtDiffQRe[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+                fPOIPtDiffQIm[k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+                fPOIPtDiffMul[k][h]->Fill(dPt,pow(wPhiEta,k));
+                
+                fPOIPhiDiffQRe[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+                fPOIPhiDiffQIm[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+                fPOIPhiDiffMul[k][h]->Fill(dPhi,pow(wPhiEta,k));
+                
+                Int_t keta = (dEta<-0.4?0:1);
+                fPOIPtDiffQReEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+                fPOIPtDiffQImEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+                fPOIPtDiffMulEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k));
+              } else {
+                wPhiEta = 0.;
+              }
+              
             }
           }
         }
@@ -17173,7 +17194,6 @@ void AliFlowAnalysisCRC::InitializeArraysForVarious()
   for(Int_t k=0; k<fZDCESEnCl; k++) {
     fZDCESEMultWeightsHist[k] = NULL;
   }
-  fPhiEtaCuts = NULL;
   
 } //  end of void AliFlowAnalysisCRC::InitializeArraysForVarious()
 
@@ -28956,10 +28976,6 @@ void AliFlowAnalysisCRC::BookEverythingForQVec()
       fPhiEtaWeightsVtx[c] = new TH3D();
       fTempList->Add(fPhiEtaWeightsVtx[c]);
     }
-  }
-  if(fUsePhiEtaCuts) {
-    fPhiEtaCuts = new TH3F();
-    fTempList->Add(fPhiEtaCuts);
   }
   
 //  for(Int_t k=0; k<fkNHistQVecCorrv1eta; k++) {

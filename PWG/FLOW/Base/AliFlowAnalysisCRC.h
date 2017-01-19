@@ -375,8 +375,6 @@ public:
   Bool_t GetUsePhiEtaWeightsChDep() const {return this->fUsePhiEtaWeightsChDep;};
   void SetUsePhiEtaWeightsVtxDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsVtxDep = uPhiEtaW;};
   Bool_t GetUsePhiEtaWeightsVtxDep() const {return this->fUsePhiEtaWeightsVtxDep;};
-  void SetPhiEtaCutsList(TList* const wlist) {this->fPhiEtaCutsList = wlist;}
-  TList* GetPhiEtaCutsList() const {return this->fPhiEtaCutsList;}
   void SetUsePhiEtaCuts(Bool_t const uPhiEtaW) {this->fUsePhiEtaCuts = uPhiEtaW;};
   Bool_t GetUsePhiEtaCuts() const {return this->fUsePhiEtaCuts;};
   void SetUseZDCESEMulWeights(Bool_t const uPhiEtaW) {this->fUseZDCESEMulWeights = uPhiEtaW;};
@@ -1153,7 +1151,6 @@ private:
   TList *fWeightsList; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
   TList *fWeightsListChDep; // list to hold all histograms with particle weights: fUseParticleWeights, fPhiWeights, fPtWeights and fEtaWeights
   TList *fWeightsListVtxDep; // list
-  TList *fPhiEtaCutsList; // list for phi,eta cuts (for NUA)
   Bool_t fUsePhiWeights; // use phi weights
   Bool_t fUsePtWeights; // use pt weights
   Bool_t fUseEtaWeights; // use eta weights
@@ -1482,7 +1479,6 @@ private:
   TH3D *fPhiEtaWeightsPos; //!
   TH3D *fPhiEtaWeightsNeg; //!
   TH3D *fPhiEtaWeightsVtx[fCRCMaxnCen]; //!
-  TH3F *fPhiEtaCuts; //!
   
   TList *fCRCIntRbRList; //! CRC list of histograms RbR
   TList *fCRCIntRunsList[fCRCMaxnRun]; //! list of runs

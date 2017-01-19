@@ -11,7 +11,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bCorrectForBadChannel=kFALSE,
-                             Bool_t bZDCMCCen=kTRUE,
+                             Bool_t bRequireTOFSignal=kFALSE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
                              TString sCentrEstimator="V0",
@@ -26,6 +26,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
+                             Bool_t bUsePhiEtaCuts=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
@@ -77,7 +78,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  Bool_t bCalculateCRC2=kFALSE;
  Float_t MaxDevZN=10.;
  Bool_t bCalculateCRCVZ=kFALSE;
-  Bool_t bUsePhiEtaCuts=kFALSE;
  TString PhiEtaWeightsFileName="";
   Bool_t bCutsQA=kTRUE;
   Bool_t bCalculateEbEFlow=kFALSE;
@@ -87,6 +87,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bUseVZERO=kFALSE;
   Int_t nHarmonic=2;
   Bool_t bUseCRCRecenter=kFALSE;
+  Bool_t bZDCMCCen=kTRUE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -318,6 +319,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
   cutsPOI->SetMaxFracSharedTPCCluster(MaxFracSharedTPCCl);
+  cutsPOI->SetRequireTOFSignal(bRequireTOFSignal);
   if(bCutTPCbound==1) cutsPOI->SetCutTPCSecbound(kTRUE,ptMin); // new cut for LHC15o
   if(bCutTPCbound==2) cutsPOI->SetCutTPCSecboundVar(kTRUE); // new cut for LHC15o
   cutsPOI->SetQA(bCutsQA);
@@ -625,6 +627,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
           else if(PtWeightsFileName.Contains("eff_CorSec.root")) {
             if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff3_CenPhiEtaWeights_2.root";
             if(AODfilterBit==256) PhiEtaWeightsFileName += "15oHI_FB256_pteff_CenPhiEtaWeights.root";
+            if(AODfilterBit==32) PhiEtaWeightsFileName += "15oHI_FB32_pteff3_CenPhiEtaWeights.root";
+            if(AODfilterBit==96) PhiEtaWeightsFileName += "15oHI_FB96_pteff3_CenPhiEtaWeights.root";
           }
         }
       }
@@ -721,34 +725,6 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   }
   
   taskQC->SetUsePhiEtaCuts(bUsePhiEtaCuts);
-  if(bUsePhiEtaCuts) {
-    TString PhiEtaCutsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
-    if(sDataSet=="2015" && sIntRuns=="high") {
-      if(AODfilterBit==32) PhiEtaCutsFileName +=  "15oHI_FB32_CenPhiEtaCut.root";
-      if(AODfilterBit==768) PhiEtaCutsFileName += "15oHI_FB768_CenPhiEtaCut.root";
-    }
-    if(sDataSet=="2015" && sIntRuns=="low") {
-      if(AODfilterBit==32) PhiEtaCutsFileName +=  "15oLI_FB32_CenPhiEtaCut.root";
-      if(AODfilterBit==768) PhiEtaCutsFileName += "15oLI_FB768_CenPhiEtaCut.root";
-    }
-      
-    TFile* PhiEtaCutsFile = TFile::Open(PhiEtaCutsFileName,"READ");
-    if(!PhiEtaCutsFile) {
-      cout << "ERROR: PhiEtaCutsFile not found!" << endl;
-      exit(1);
-    }
-    gROOT->cd();
-    TList* PhiEtaCutsList = (TList*)(PhiEtaCutsFile->FindObjectAny("CenPhiEta Cut"));
-    if(PhiEtaCutsList) {
-      taskQC->SetPhiEtaCutsList(PhiEtaCutsList);
-      cout << "CenPhiEta cuts set (from " <<  PhiEtaCutsFileName.Data() << ")" << endl;
-    }
-    else {
-      cout << "ERROR: PhiEtaCutsList not found!" << endl;
-      exit(1);
-    }
-    delete PhiEtaCutsFile;
-  } // end of if(bUsePhiEtaCuts)
 
  // connect the task to the analysis manager
  mgr->AddTask(taskQC);
