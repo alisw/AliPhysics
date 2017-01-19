@@ -2265,8 +2265,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine* AliAnalysisTaskDmesonJets::AddAnalysi
     ::Info("AliAnalysisTaskDmesonJets::AddAnalysisEngine", "An analysis engine '%s' with %lu jet definitions has been found. The total number of analysis engines is %lu. A new jet definition '%s' is being added.", found_eng->GetName(), found_eng->fJetDefinitions.size(), fAnalysisEngines.size(), jetDef.GetName());
     found_eng->AddJetDefinition(jetDef);
 
-    if (cuts && found_eng->fRDHFCuts != 0) {
-      ::Warning("AliAnalysisTaskDmesonJets::AddAnalysisEngine", "D meson cuts were already defined for this D meson type. They will be overwritten.");
+    if (cuts) {
+      if (found_eng->fRDHFCuts != 0) ::Warning("AliAnalysisTaskDmesonJets::AddAnalysisEngine", "D meson cuts were already defined for this D meson type. They will be overwritten.");
       found_eng->SetRDHFCuts(cuts);
     }
   }
