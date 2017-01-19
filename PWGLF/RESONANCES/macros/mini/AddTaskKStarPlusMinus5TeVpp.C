@@ -17,29 +17,6 @@
 //
 ****************************************************************************/
 
-enum pairYCutSet { kPairDefault,    // USED ONLY FOR pA
-		   kNegative,       // USED ONLY FOR pA
-		   kCentral         // USED ONLY FOR pA
-                 };
-
-/*enum eventCutSet { kOld = -1, 
-		   kEvtDefault, //=0
-		   kNoPileUpCut, //=1
-		   kPileUpMV, //=2
-		   kPileUpSPD3, //=3		      
-		   kDefaultVtx8, //=4
-		   kDefaultVtx5 //=5                    
-};*/
-
-enum eventCutSet { kEvtDefault=0,
-                   kNoPileUpCut, //=1                                                                                                         
-                   kDefaultVtx12,//=2                                                                                                         
-                   kDefaultVtx8, //=3                                                                                                         
-                   kDefaultVtx5, //=4                                                                                                         
-                   kMCEvtDefault //=5                                                                                                         
-};
-
-
 enum eventMixConfig { kDisabled = -1,
 		      kMixDefault,     //=0 //10 events, Dvz = 1cm, DC = 10
 		      k5Evts,          //=1 //5 events, Dvz = 1cm, DC = 10
@@ -52,11 +29,10 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Bool_t      isMC,
  Bool_t      isPP,
  Float_t     cutV = 10.0,
- Int_t       evtCutSetID = 0,
- Int_t       pairCutSetID = 0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
- Int_t       customQualityCutsID=AliRsnCutSetDaughterParticle::kDisableCustom,
+ Bool_t      enableSys = kFALSE,
+ Int_t       Sys = 0,
  Bool_t      enableMonitor=kTRUE,
  TString     monitorOpt="NoSIGN",
  Float_t     piPIDCut = 3.0,
@@ -64,7 +40,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
  Float_t     massTol = 0.03,
  Float_t     k0sDCA = 0.3,
  Float_t     k0sCosPoinAn = 0.97,
- Float_t     k0sDaughDCA = 1.5,
+ Float_t     k0sDaughDCA = 1.0,
  Int_t       NTPCcluster = 70,
  Float_t     maxDiffVzMix = 1.0,
  Float_t     maxDiffMultMix = 10.0,
@@ -80,14 +56,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
   //-------------------------------------------                                                                                               
   UInt_t      triggerMask=AliVEvent::kINT7;
   Bool_t      rejectPileUp=kTRUE;
-  Double_t    vtxZcut=10.0;//cm, default cut on vtx z                                                                                       
-                                                                                        
-  if(evtCutSetID==eventCutSet::kDefaultVtx12) vtxZcut=12.0; //cm                                                                              
-  if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm                                                                                
-  if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm                                                                                
-  if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
-
-
+  Double_t    vtxZcut=10.0;//cm, default cut on vtx z                                                   
   if(isMC) rejectPileUp=kFALSE;
   
   //-------------------------------------------
@@ -194,14 +163,14 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinus5TeVpp.C");
-   //gROOT->LoadMacro("ConfigKStarPlusMinus5TeVpp.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinus5TeVpp.C");
+   // gROOT->LoadMacro("ConfigKStarPlusMinus5TeVpp.C");
    if (isMC) {
      Printf("========================== MC analysis - PID cuts not used"); 
    } else 
      Printf("========================== DATA analysis - PID cuts used");
    
-   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,customQualityCutsID,enableMonitor,monitorOpt.Data(),massTol, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
+   if (!ConfigKStarPlusMinus5TeVpp(task, isPP, isMC, piPIDCut, pi_k0s_PIDCut, aodFilterBit,enableSys,Sys,enableMonitor,monitorOpt.Data(),massTol, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
@@ -211,7 +180,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinus5TeVpp
    Printf("AddTaskKStarPlusMinus5TeVpp - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", outNameSuffix.Data(),cutV,NTPCcluster,piPIDCut,pi_k0s_PIDCut, massTol,k0sDCA,k0sCosPoinAn,k0sDaughDCA), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s", outNameSuffix.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
    
    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(task, 1, output);
