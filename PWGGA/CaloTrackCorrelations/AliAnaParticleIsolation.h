@@ -173,6 +173,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnOverlapHistograms()           { fFillOverlapHistograms = kTRUE ; }
   void         SwitchOffOverlapHistograms()          { fFillOverlapHistograms = kFALSE; }
   
+  // Study of pT cut in cone
+  void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
+  void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
+
+  void         SetNPtCutInCone(Int_t n)              { if(n < 19) fNPtCutsInCone = n ; }
+  void         SetPtCutInConeAt(Int_t i,Float_t l)   { if(i <= fNPtCutsInCone) fPtCutInCone[i] = l; }
+  
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
                      kmcPrimPrompt = 4, kmcPrimFrag     = 5, kmcPrimISR       = 6,
@@ -230,6 +237,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fPtThresholds[5] ;                         ///<  Array with pt thresholds to test. Multiple cones and pt thresholds analysis.
   Float_t  fPtFractions[5] ;                          ///<  Array with pt thresholds to test frac. Multiple cones and pt thresholds analysis.
   Float_t  fSumPtThresholds[5] ;                      ///<  Array with pt thresholds to test frac. Multiple cones and pt thresholds analysis.
+  
+  Bool_t   fStudyPtCutInCone;                         ///<  Activate study of track/cluster min pT on sum of pT in cone
+  Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
+  Float_t  fPtCutInCone[20];                          ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
   
   TLorentzVector fMomentum;                           //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomIso;                             //!<! Temporary vector, avoid creation per event.
@@ -431,8 +442,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtPrimMCEtaOverlap;                       //!<! Eta with overlapped decay photons.
   TH1F *   fhPtPrimMCEtaIsoOverlap;                    //!<! Eta isolated with overlapped decay photons.
 
-  
-  
   TH1F *   fhPtNoIsoMC  [fgkNmcTypes];                 //!<! Number of not isolated mcTypes particle.
   TH1F *   fhPtIsoMC    [fgkNmcTypes];                 //!<! Number of isolated mcTypes particle.
   TH2F *   fhPhiIsoMC   [fgkNmcTypes];                 //!<! phi of isolated mcTypes particle.
@@ -605,6 +614,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhLam0EMCALRegionPerSM[2][4][3][20];          //!<! Cluster lambda0 vs  E, in different EMCal regions
   TH2F *   fhEtaPhiLam0BinPtBin[2][7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different E bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
 
+  TH2F *   fhConeSumPtClusterPerPtCut;                   //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtClusterPerPtCutLargePtTrig;        //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeSumPtTrackPerPtCut;                     //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtTrackPerPtCutLargePtTrig;          //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
@@ -613,7 +626,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,38) ;
+  ClassDef(AliAnaParticleIsolation,39) ;
   /// \endcond
 
 } ;
