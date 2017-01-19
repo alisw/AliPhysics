@@ -841,14 +841,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     }
     
     AliVEvent *ev = InputEvent();
-    if( (!fEventCuts.AcceptEvent(ev)) && fkDoExtraEvSels ) {
-        PostData(1, fListHist    );
-        PostData(2, fListV0      );
-        PostData(3, fListCascade );
-        if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
-        if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
-        if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
-        return;
+    if( fkDoExtraEvSels ) {
+        if( !fEventCuts.AcceptEvent(ev) ) {
+            PostData(1, fListHist    );
+            PostData(2, fListV0      );
+            PostData(3, fListCascade );
+            if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
+            if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
+            if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
+            return;
+        }
     }
     
     fHistEventCounter->Fill(1.5);
