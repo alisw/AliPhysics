@@ -259,6 +259,11 @@ class AliHFSystErr : public TNamed
   void InitLctopK0S2013pPb();
   void InitLctopK0S2013pPbBDT();
 
+  void InitD0toKpi2015PbPb3050();
+  void InitDplustoKpipi2015PbPb3050();
+  void InitDstoKKpi2015PbPb3050();
+  void InitDstartoD0pi2015PbPb3050();
+
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
