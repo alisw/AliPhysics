@@ -180,6 +180,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   TTree*                      fTracksTree;                              //!<! Tree of extracted jets
   AliBasicParticle*           fTreeBufferTrack;                         //!<! Tree of extracted jets (buffer)
   AliAODPid*                  fTreeBufferPID;                           //!<! Tree of extracted jets (buffer)
+  Int_t                       fTreeBufferPDG;                           //!<! Tree of extracted jets (buffer)
   Double_t                    fTrackExtractionPercentagePower;          ///< Extraction percentage for tracks
 
 

@@ -38,6 +38,7 @@
 #include "AliJetContainer.h"
 #include "AliTrackContainer.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliAODPid.h"
 #include "AliPicoTrack.h"
 #include "AliVParticle.h"
@@ -87,6 +88,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fTracksTree(0),
   fTreeBufferTrack(0),
   fTreeBufferPID(0),
+  fTreeBufferPDG(0),
   fTrackExtractionPercentagePower(0),
   fJetOutputMode(0),
   fLeadingJet(0),
@@ -133,6 +135,7 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fTracksTree(0),
   fTreeBufferTrack(0),
   fTreeBufferPID(0),
+  fTreeBufferPDG(0),
   fTrackExtractionPercentagePower(0),
   fJetOutputMode(0),
   fLeadingJet(0),
@@ -389,6 +392,7 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
     fTracksTree = new TTree("ExtractedTracks", "ExtractedTracks");
     fTracksTree->Branch("Kinematics", "AliBasicParticle", &fTreeBufferTrack, 1000);
     fTracksTree->Branch("PID", "AliAODPid", &fTreeBufferPID, 1000);
+    fTracksTree->Branch("PDG",&fTreeBufferPDG,"a/I");
     fOutput->Add(fTracksTree);
   }
 
@@ -655,6 +659,28 @@ void AliAnalysisTaskChargedJetsHadronCF::AddTrackToTree(AliVTrack* track)
 
   // Create basic particle from track and extract pid object
   fTreeBufferPID = aodtrack->GetDetPid();
+
+  Int_t truthPID = 0;
+
+  // Get truth values if we are on MC
+  TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("mcparticles"));
+  if(fTruthParticleArray)
+  {
+    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
+    {
+      AliAODMCParticle* mcParticle = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(i));
+      if(!mcParticle) continue;
+
+      if (mcParticle->GetLabel() == aodtrack->GetLabel())
+      {
+        truthPID = mcParticle->PdgCode();
+        break;
+      }
+    }
+  }
+
+  fTreeBufferPDG = truthPID;
+
   AliBasicParticle basicParticle(aodtrack->Eta(), aodtrack->Phi(), aodtrack->Pt(), aodtrack->Charge());
   fTreeBufferTrack = &basicParticle;
 
