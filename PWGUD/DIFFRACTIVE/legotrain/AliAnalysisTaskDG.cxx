@@ -43,13 +43,13 @@ void AliAnalysisTaskDG::EventInfo::Fill(const AliESDEvent* esdEvent) {
 
   fClassMask       = esdHeader->GetTriggerMask();
   fClassMaskNext50 = esdHeader->GetTriggerMaskNext50();
-  
+
   fRunNumber       = esdEvent->GetRunNumber();
-  
+
   fL0Inputs        = esdHeader->GetL0TriggerInputs();
   fL1Inputs        = esdHeader->GetL1TriggerInputs();
   fL2Inputs        = esdHeader->GetL2TriggerInputs();
-  
+
   fBCID            = esdHeader->GetBunchCrossNumber();
   fOrbitID         = esdHeader->GetOrbitNumber();
   fPeriod          = esdHeader->GetPeriodNumber();
@@ -142,8 +142,8 @@ void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResp
   }
   fSign = tr->GetSign();
   fPx   = tr->Px();
-  fPy   = tr->Py();  
-  fPz   = tr->Pz();  
+  fPy   = tr->Py();
+  fPz   = tr->Pz();
   fITSsignal = tr->GetITSsignal();
   fTPCsignal = tr->GetTPCsignal();
   fTOFsignal = tr->GetTOFsignal();
@@ -206,7 +206,7 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fUseTriggerMask(kFALSE)
   , fClassMask(0ULL)
   , fClassMaskNext50(0ULL)
-{  
+{
   for (Int_t i=0; i<kNHist;++i) {
     fHist[i] = NULL;
   }
@@ -281,9 +281,15 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
 
   if (fTrackCutType == "TPCOnly")
     fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  
+
   if (fTrackCutType == "ITSTPC2011")
     fTrackCuts  = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 1);
+
+  if (fTrackCutType == "ITSTPC2011_SPDboth") {
+    fTrackCuts  = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 1);
+    fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kBoth);
+  }
 
   if (NULL == fTrackCuts) {
     AliFatal(Form("NULL == fTrackCuts (%s)", fTrackCutType.Data()));
@@ -323,7 +329,7 @@ void AliAnalysisTaskDG::NotifyRun()
     if (NULL == triggerConfig) {
       AliFatal("NULL == triggerConfig");
     }
- 
+
     std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
     const TObjArray &classes = triggerConfig->GetClasses();
     for (Int_t i=0, n=classes.GetEntries(); i<n; ++i) {
@@ -368,7 +374,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     AliFatal("NULL == esdEvent");
     return;
   }
-  
+
   // input handler
   const AliAnalysisManager* man(AliAnalysisManager::GetAnalysisManager());
   if (NULL == man) {
@@ -376,7 +382,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     return;
   }
 
-  AliESDInputHandler* inputHandler(dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler()));  
+  AliESDInputHandler* inputHandler(dynamic_cast<AliESDInputHandler*>(man->GetInputEventHandler()));
   if (NULL == inputHandler) {
     AliFatal("NULL == inputHandler");
     return;
@@ -436,7 +442,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
       Bool_t selected = kFALSE;
       Int_t sumCutNotV0(0);
       Int_t sumUseOnly2Trk(0);
-      
+
       Int_t counter=0;
       for (Int_t i=0, n=split->GetEntries(); i<n; ++i) {
 	TString tcName(split->At(i)->GetName());
@@ -447,7 +453,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 	  ++counter;
 	}
       }
-      
+
       selected    = (counter != 0);
       cutNotV0    = (counter == sumCutNotV0);
       useOnly2Trk = (counter == sumUseOnly2Trk);
