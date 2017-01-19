@@ -129,7 +129,7 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusPtCut(clusptcut);        //by default set to 0.15
 	  AnalysisTask->GetClusterContainer(clusName)->SetClusUserDefEnergyCut(AliVCluster::kHadCorr,0);
 	  AnalysisTask->GetClusterContainer(clusName)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-	  //AnalysisTask->GetClusterContainer(clusName)->SetClusTimeCut(,);
+//    AnalysisTask->GetClusterContainer(clusName)->SetClusTimeCut(,);
 //	  AnalysisTask->GetClusterContainer(clusName)->SetEtaLimits(-clusterEta,clusterEta);
 //	  AnalysisTask->GetClusterContainer(clusName)->SetPhiLimits(68*phiToR,174*phiToR);
   }
@@ -139,6 +139,9 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   AnalysisTask->SetSavePool(SavePool);
   AnalysisTask->SetEvtTriggerType(evtTriggerType);   //..Trigger to be used for filling same event histograms
   AnalysisTask->SetEvtMixType(evtMixingType);        //..Trigger to be used to fill tracks into the pool (no GA trigger!!)
+  AnalysisTask->SetNLM(1);                           //..Maximum of number of local maxima
+  AnalysisTask->SetM02(0,0.4);                       //..Ranges of allowed cluster shapes in the analysis
+  AnalysisTask->SetRmvMatchedTrack(1);               //..Removes all clusters that have a matched track
   //for later AnalysisTask->SetEffHistGamma(THnF *h);
   //for later AnalysisTask->SetEffHistHadron(THnF *h);
 

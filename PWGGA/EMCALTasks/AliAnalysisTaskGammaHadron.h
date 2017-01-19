@@ -28,6 +28,10 @@ virtual ~AliAnalysisTaskGammaHadron();
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
+//  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
+  void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
+  void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
+  void                        SetRmvMatchedTrack(Bool_t input)                      { fRmvMTrack  = input;}
 
   //Functions for mixed event purposes
   void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
@@ -56,75 +60,83 @@ virtual ~AliAnalysisTaskGammaHadron();
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec)    ;
   Double_t                    GetEff(AliTLorentzVector ParticleVec)                            ;
-  Bool_t                      fGammaOrPi0;               // This tells me whether the correltation and the filling of histograms is done for gamma or pi0
-  Bool_t                      fDoMixing;                 // This option enables mixed events being used in the analysi
-  Bool_t                      fDebug;			        // Can be set for debugging
-  Bool_t                      fSavePool;                 // Defines whether to save output pools in a root file
+
+  Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
+  Bool_t                      fDoMixing;                 ///< This option enables mixed events being used in the analysi
+  Bool_t                      fDebug;			        ///< Can be set for debugging
+  Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
 
   //..Input histograms
-  THnF                       *fHistEffGamma;             // input efficiency for trigger particles
-  THnF                       *fHistEffHadron;            // input efficiency for associate particles
+  THnF                       *fHistEffGamma;             ///< ??input efficiency for trigger particles
+  THnF                       *fHistEffHadron;            ///< ??input efficiency for associate particles
 
   //..Constants
-  Double_t                    fRtoD;                     // conversion of rad to degree
-  static const Int_t          kNIdentifier=3;            // number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
-  vector<Int_t>               fVector_G_Bins;            // vector that contains the bins of the G historgram
-  vector<Double_t>            fVector_ZT_Bins;           // vector that contains the bins of the Zt historgram
-  vector<Double_t>            fVector_XI_Bins;           // vector that contains the bins of the Xi historgram
-  Double_t                    fZtStep;                   // Bin width for the zT histograms
-  Double_t                    fXiStep;                   // Bin width for the Xi histograms
-  Int_t                       fNoGammaBins;
-  Int_t                       fNoZtBins;
-  Int_t                       fNoXiBins;
+  Double_t                    fRtoD;                     ///< conversion of rad to degree
+  static const Int_t          kNIdentifier=3;            ///< number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
+  vector<Int_t>               fVector_G_Bins;            ///< vector that contains the bins of the G historgram
+  vector<Double_t>            fVector_ZT_Bins;           ///< vector that contains the bins of the Zt historgram
+  vector<Double_t>            fVector_XI_Bins;           ///< vector that contains the bins of the Xi historgram
+  Double_t                    fZtStep;                   ///< Bin width for the zT histograms
+  Double_t                    fXiStep;                   ///< Bin width for the Xi histograms
+  Int_t                       fNoGammaBins;              ///< Bins in gamma pT
+  Int_t                       fNoZtBins;                 ///< Bins in Zt
+  Int_t                       fNoXiBins;                 ///< Bins in Xi
+  //..cuts
+  Double_t                    fClShapeMin;               ///< Minimum cluster shape
+  Double_t                    fClShapeMax;               ///< Maximum cluster shape
+  Int_t                       fMaxNLM;                   ///< Maximum number of local maxima
+  Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
   //..Event pool variables
-  TAxis                      *fMixBCent;                 //! Number of centrality bins for the mixed event
-  TAxis                      *fMixBZvtx;                 //! Number of vertex bins for the mixed event
-  AliEventPoolManager        *fPoolMgr;                  //! event pool manager
-  Int_t                       fTrackDepth;               //  #tracks to fill pool
-  Int_t                       fPoolSize;                 //  Maximum number of events
-  vector<vector<Double_t> >   fEventPoolOutputList;      //  vector representing a list of pools (given by value range) that will be saved
+  TAxis                      *fMixBCent;                 ///< Number of centrality bins for the mixed event
+  TAxis                      *fMixBZvtx;                 ///< Number of vertex bins for the mixed event
+  AliEventPoolManager        *fPoolMgr;                  ///< event pool manager
+  Int_t                       fTrackDepth;               ///<  #tracks to fill pool
+  Int_t                       fPoolSize;                 ///<  Maximum number of events
+  vector<vector<Double_t> >   fEventPoolOutputList;      //!<! ???vector representing a list of pools (given by value range) that will be saved
   //..Event selection types
   UInt_t                      fTriggerType;              ///<  Event types that are used for the trigger (gamma or pi0)
   UInt_t                      fMixingEventType;          ///<  Event types that are used for the tracks in the mixed event
-  UInt_t                      fCurrentEventTrigger;      ///<  Trigger of the current event
+  UInt_t                      fCurrentEventTrigger;      //!<! Trigger of the current event
 
   // MC stuff
-  Bool_t                      fParticleLevel;            // Set particle level analysis
-  Bool_t                      fIsMC;                     // Trigger, MC analysis
-  UInt_t                      fAODfilterBits[2];         // AOD track filter bit map
+  Bool_t                      fParticleLevel;            ///< Set particle level analysis
+  Bool_t                      fIsMC;                     ///< Trigger, MC analysis
+  UInt_t                      fAODfilterBits[2];         ///< AOD track filter bit map
 
   // Other stuff
-  TList                      *fOutputList1;            //! Output list
-  TList                      *fOutputListTrAs;         //! Output list
-  TList                      *fOutputListGamma;        //! Output list
-  TList                      *fOutputListXi;           //! Output list
-  TList                      *fOutputListZeta;         //! Output list
-  TList                      *fOutputListQA;           //! Output list
+  TList                      *fOutputList1;            //!<! Output list
+  TList                      *fOutputListTrAs;         //!<! Output list
+  TList                      *fOutputListGamma;        //!<! Output list
+  TList                      *fOutputListXi;           //!<! Output list
+  TList                      *fOutputListZeta;         //!<! Output list
+  TList                      *fOutputListQA;           //!<! Output list
 
   // Histograms -
-  TH1  					    *fHistNoClusPt;            //! ?No of calorimeter Clusters as a function of p_T
-  TH1					   **fHistptAssHadronG[3];     //! pt distr. of the associated hadron as a function of Eg
-  TH1					   **fHistptAssHadronZt[3];    //! pt distr. of the associated hadron as a function of Zt
-  TH1					   **fHistptAssHadronXi[3];    //! pt distr. of the associated hadron as a function of Xi
-  TH1					   **fHistptTriggG[3];   //! pt distr. of the associated hadron as a function of Eg
-  TH1					   **fHistptTriggZt[3];  //! pt distr. of the associated hadron as a function of Zt
-  TH1					   **fHistptTriggXi[3];  //! pt distr. of the associated hadron as a function of Xi
+  TH2                       *fHistClusPairInvarMasspT; //!<! Tyler's histogram
 
-  TH1 					    *fHistPi0;                 //!
-  TH2                                       *fHistClusPairInvarMasspT; //!
-  TH1 					   **fHistBinCheckPt;          //! plot Pt distribution for ideal binning
-  TH1 					   **fHistBinCheckZt;          //! plot Zt distribution for ideal binning
-  TH1 					   **fHistBinCheckXi;          //! plot Xi distribution for ideal binning
-  TH2					   **fHistDEtaDPhiG[3];        //! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
-  TH2					   **fHistDEtaDPhiZT[3];       //! No of g-h pairs in the deta eta delta phi plane for certain zT values
-  TH2					   **fHistDEtaDPhiXI[3];       //! No of g-h pairs in the deta eta delta phi plane for certain Xi values
-  TH2                      **fHistDEtaDPhiGammaQA;     //! Distribution of gammas in delta phi delta eta
-  TH2                      **fHistDEtaDPhiTrackQA;     //! Distribution of tracks in delta phi delta eta
-  TH2                      **fHistCellsCluster;        //! Number of cells in cluster as function of energy
-  TH2                      **fHistClusterShape;        //! Cluster shape vs energy
-  TH2                      **fHistClusterTime;          //! Cluster time vs energy
 
-  TH2                	    *fHPoolReady;              //! Check how many Jobs start mixing
+  TH1  					    *fHistNoClusPt;            //!<! ?No of calorimeter Clusters as a function of p_T
+  TH1					   **fHistptAssHadronG[3];     //!<! pt distr. of the associated hadron as a function of Eg
+  TH1					   **fHistptAssHadronZt[3];    //!<! pt distr. of the associated hadron as a function of Zt
+  TH1					   **fHistptAssHadronXi[3];    //!<! pt distr. of the associated hadron as a function of Xi
+  TH1					   **fHistptTriggG[3];         //!<! pt distr. of the trigger as a function of Eg
+  TH1					   **fHistptTriggZt[3];        //!<! pt distr. of the trigger as a function of Zt
+  TH1					   **fHistptTriggXi[3];        //!<! pt distr. of the trigger as a function of Xi
+
+  TH1 					    *fHistPi0;                 //!<!
+  TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
+  TH1 					   **fHistBinCheckZt;          //!<! plot Zt distribution for ideal binning
+  TH1 					   **fHistBinCheckXi;          //!<! plot Xi distribution for ideal binning
+  TH2					   **fHistDEtaDPhiG[3];        //!<! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
+  TH2					   **fHistDEtaDPhiZT[3];       //!<! No of g-h pairs in the deta eta delta phi plane for certain zT values
+  TH2					   **fHistDEtaDPhiXI[3];       //!<! No of g-h pairs in the deta eta delta phi plane for certain Xi values
+  TH2                      **fHistDEtaDPhiGammaQA;     //!<! Distribution of gammas in delta phi delta eta
+  TH2                      **fHistDEtaDPhiTrackQA;     //!<! Distribution of tracks in delta phi delta eta
+  TH2                      **fHistCellsCluster;        //!<! Number of cells in cluster as function of energy
+  TH2                      **fHistClusterShape;        //!<! Cluster shape vs energy
+  TH2                      **fHistClusterTime;         //!<! Cluster time vs energy
+
+  TH2                	    *fHPoolReady;              //!<! Check how many Jobs start mixing
   //
   //
 
