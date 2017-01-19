@@ -23350,7 +23350,7 @@ void AliFlowAnalysisCRC::FinalizeFlowSPZDC()
       Double_t VAVC      = fFlowSPZDCIntHist[hr][1]->GetBinContent(c);
       Double_t VAVCErr   = fFlowSPZDCIntHist[hr][1]->GetBinError(c);
       
-      if(VAVC>0.) {
+      if(VAVC<0.) {
         Double_t Flow = abs(q2VAVC/VAVC);
         Double_t FlowE = Flow*sqrt(pow(VAVCErr/VAVC,2.)+pow(q2VAVCErr/q2VAVC,2.)); // TBI
         fFlowSPZDCIntFinalHist[hr][0]->SetBinContent(c,Flow);
