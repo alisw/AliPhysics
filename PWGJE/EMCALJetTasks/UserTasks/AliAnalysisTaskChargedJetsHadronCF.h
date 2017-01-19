@@ -4,6 +4,8 @@
  * See cxx source for full Copyright notice                               */
 
 class THn;
+class AliBasicParticle;
+class AliAODPid;
 
 //###############################################################################################################################################3
 /**
@@ -130,6 +132,8 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
 
   void                        SetJetOutputMode(Int_t mode) {fJetOutputMode = mode;}
   void                        ActivateEventExtraction(Double_t percentage, Double_t minJetPt, Double_t maxJetPt) {fEventExtractionPercentage = percentage; fEventExtractionMinJetPt = minJetPt; fEventExtractionMaxJetPt = maxJetPt;}
+  void                        SetTrackExtractionPercentagePower(Double_t val)   { fTrackExtractionPercentagePower = val; }
+
 
  protected:
   void                        ExecOnce();
@@ -140,6 +144,7 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   void                        AddEventToTree();
   void                        AddJetToOutputArray(AliEmcalJet* jet, Int_t arrayIndex, Int_t& jetsAlreadyInArray);
   void                        AddTrackToOutputArray(AliVTrack* track);
+  void                        AddTrackToTree(AliVTrack* track);
   void                        FillHistogramsTracks(AliVTrack* track);
   void                        FillHistogramsJets(AliEmcalJet* jet, const char* cutName);
   Bool_t                      IsJetSelected(AliEmcalJet* jet);
@@ -172,6 +177,10 @@ class AliAnalysisTaskChargedJetsHadronCF : public AliAnalysisTaskEmcalJet {
   std::vector<AliEmcalJet*>   fMatchedJets;                             ///< Jets matched in an event (embedded)
   std::vector<AliEmcalJet*>   fMatchedJetsReference;                    ///< Jets matched in an event (reference)
   TRandom3*                   fRandom;                                  ///< random number generator
+  TTree*                      fTracksTree;                              //!<! Tree of extracted jets
+  AliBasicParticle*           fTreeBufferTrack;                         //!<! Tree of extracted jets (buffer)
+  AliAODPid*                  fTreeBufferPID;                           //!<! Tree of extracted jets (buffer)
+  Double_t                    fTrackExtractionPercentagePower;          ///< Extraction percentage for tracks
 
 
   // Criteria for the selection of jets that are passed to the correlation task
