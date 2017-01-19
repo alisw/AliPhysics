@@ -829,6 +829,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsD0toKpi();
       fRDHFCuts->SetStandardCutsPP2010();
+      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
       fRDHFCuts->SetUsePhysicsSelection(kFALSE);
       fRDHFCuts->SetTriggerClass("","");
     }
@@ -845,6 +846,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsD0toKpi();
       fRDHFCuts->SetStandardCutsPP2010();
+      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
       fRDHFCuts->SetUsePhysicsSelection(kFALSE);
       fRDHFCuts->SetTriggerClass("","");
     }
@@ -863,6 +865,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsDStartoKpipi();
       fRDHFCuts->SetStandardCutsPP2010();
+      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
       fRDHFCuts->SetUsePhysicsSelection(kFALSE);
       fRDHFCuts->SetTriggerClass("","");
     }
