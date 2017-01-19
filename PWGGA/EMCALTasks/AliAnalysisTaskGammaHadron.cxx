@@ -58,7 +58,7 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
 
-fHistNoClusPt(0),fHistPi0(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
+fHistNoClusPt(0),fHistPi0(0),fHistClusPairInvarMasspT(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
 fHistCellsCluster(0),fHistClusterShape(0),fHistClusterTime(0),
 
@@ -84,7 +84,7 @@ fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEvent
 fParticleLevel(kFALSE),fIsMC(kFALSE),
 fOutputList1(0),fOutputListTrAs(0),fOutputListGamma(0),fOutputListXi(0),fOutputListZeta(0),
 
-fHistNoClusPt(0),fHistPi0(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
+fHistNoClusPt(0),fHistPi0(0),fHistClusPairInvarMasspT(0),fHistBinCheckPt(0),fHistBinCheckZt(0),fHistBinCheckXi(0),
 fHistDEtaDPhiGammaQA(0),fHistDEtaDPhiTrackQA(0),
 fHistCellsCluster(0),fHistClusterShape(0),fHistClusterTime(0),
 
@@ -308,6 +308,11 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fHistPi0->GetXaxis()->SetTitle("M_{#gamma#gamma}");
 	fHistPi0->GetYaxis()->SetTitle("Entries");
 	fOutput->Add(fHistPi0);
+
+	fHistClusPairInvarMasspT= new TH2F("fHistClusPairInvarMasspT","fHistClusPairInvarMasspT", 500, 0, 0.5, 250, 0, 50);
+	fHistClusPairInvarMasspT->GetXaxis()->SetTitle("M_{#gamma#gamma}");
+	fHistClusPairInvarMasspT->GetYaxis()->SetTitle("p_{T}_{#pi^{0}}");
+	fOutput->Add(fHistClusPairInvarMasspT);
 
 
 	//..by the identifier different histograms can be filled under different cut conditions
@@ -864,6 +869,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 					{
 						CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
 						fHistPi0->Fill(CaloClusterVecpi0.M());
+						fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt());  //eventually divide by 2
 						if((CaloClusterVecpi0.M()>=Pi0Mass-Pi0Window) && (CaloClusterVecpi0.M()<=Pi0Mass+Pi0Window)){
 							nAccPi0Clusters++; //need eventually to divide by 2, otherwise double counting the pi0's
 						}
