@@ -173,6 +173,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnOverlapHistograms()           { fFillOverlapHistograms = kTRUE ; }
   void         SwitchOffOverlapHistograms()          { fFillOverlapHistograms = kFALSE; }
   
+  void         SwitchOnStudyFECCorrelation()         { fStudyFECCorrelation = kTRUE  ; }
+  void         SwitchOffStudyFECCorrelation()        { fStudyFECCorrelation = kFALSE ; }
+
   // Study of pT cut in cone
   void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
   void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
@@ -207,6 +210,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
+  Bool_t   fStudyFECCorrelation;                      ///<  Study 4 FEC channels cross correlation
 
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
@@ -618,6 +622,17 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterPerPtCutLargePtTrig;        //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerPtCut;                     //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhConeSumPtTrackPerPtCutLargePtTrig;          //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  
+  TH2F *   fhConeSumPtClusterFECCorrPair    ;            //!<! cluster sum pt for pair column cells in correlated FEC
+  TH2F *   fhConeSumPtClusterFECCorrOdd     ;            //!<! cluster sum pt for odd column cells in correlated FEC
+  TH2F *   fhConeSumPtClusterFECCorrPair2Max;            //!<! cluster sum pt for pair column cells in correlated FEC, and both cells are max
+  TH2F *   fhConeSumPtClusterFECCorrOdd2Max ;            //!<! cluster sum pt for pair column cells in correlated FEC, and both cells are max
+  
+  TH2F *   fhConeSumPtClusterFECCorrPairHighCut    ;     //!<! cluster sum pt for pair column cells in correlated FEC, pT > 0.7 GeV
+  TH2F *   fhConeSumPtClusterFECCorrOddHighCut     ;     //!<! cluster sum pt for odd column cells in correlated FEC, pT > 0.7 GeV   
+  TH2F *   fhConeSumPtClusterFECCorrPair2MaxHighCut;     //!<! cluster sum pt for pair column cells in correlated FEC, and both cells are max, pT > 0.7 GeV
+  TH2F *   fhConeSumPtClusterFECCorrOdd2MaxHighCut ;     //!<! cluster sum pt for odd column cells in correlated FEC, and both cells are max, pT > 0.7 GeV
+
   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;

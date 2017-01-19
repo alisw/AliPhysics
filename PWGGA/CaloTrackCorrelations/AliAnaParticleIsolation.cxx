@@ -57,7 +57,7 @@ fIsoDetector(-1),                 fIsoDetectorString(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
 fFillTMHisto(0),                  fFillSSHisto(1),                          fFillEMCALRegionSSHistograms(0),
 fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
-fFillOverlapHistograms(0),
+fFillOverlapHistograms(0),        fStudyFECCorrelation(0), 
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
 fDecayBits(),                     fDecayTagsM02Cut(0),
 fFillNLMHistograms(0),
@@ -190,7 +190,11 @@ fhTimeNPileUpVertSPD(0),          fhTimeNPileUpVertTrack(0),
 fhTimeNPileUpVertContributors(0),
 fhTimePileUpMainVertexZDistance(0), fhTimePileUpMainVertexZDiamond(0),
 fhConeSumPtClusterPerPtCut(0),    fhConeSumPtClusterPerPtCutLargePtTrig(0),
-fhConeSumPtTrackPerPtCut(0),      fhConeSumPtTrackPerPtCutLargePtTrig(0)
+fhConeSumPtTrackPerPtCut(0),      fhConeSumPtTrackPerPtCutLargePtTrig(0),
+fhConeSumPtClusterFECCorrPair(0), fhConeSumPtClusterFECCorrOdd(0),
+fhConeSumPtClusterFECCorrPair2Max(0), fhConeSumPtClusterFECCorrOdd2Max(0),
+fhConeSumPtClusterFECCorrPairHighCut(0), fhConeSumPtClusterFECCorrOddHighCut(0),
+fhConeSumPtClusterFECCorrPair2MaxHighCut(0), fhConeSumPtClusterFECCorrOdd2MaxHighCut(0)
 {
   InitParameters();
   
@@ -984,6 +988,15 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
       coneptsumClusterPerCut[icut] = 0;
   }
   
+  Float_t ptSumPairFEC     = 0;
+  Float_t ptSumPairFEC2Max = 0;
+  Float_t ptSumOddFEC      = 0;
+  Float_t ptSumOddFEC2Max  = 0;
+  Float_t ptSumPairFECHighCut     = 0;
+  Float_t ptSumPairFEC2MaxHighCut = 0;
+  Float_t ptSumOddFECHighCut      = 0;
+  Float_t ptSumOddFEC2MaxHighCut  = 0;
+
   for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
   {
     AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
@@ -1017,6 +1030,68 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
         if ( ptcone > fPtCutInCone[icut] ) coneptsumClusterPerCut[icut]+=ptcone;
       }
     }
+    
+    if(fStudyFECCorrelation)
+    {
+      // Find 2 highest energy cells in cluster
+      Int_t absIdMax  = -1;
+      Int_t absIdMax2 = -1;
+      Float_t emax  = 0;
+      Float_t emax2 = 0;   
+      for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++) 
+      {
+        Int_t absId  = calo->GetCellsAbsId()[ipos];   
+        
+        Float_t eCell = GetEMCALCells()->GetCellAmplitude(absId);      
+
+        if ( eCell > emax ) 
+        {
+          emax2     = emax;
+          absIdMax2 = absIdMax;
+
+          emax     = eCell;
+          absIdMax = absId;
+        }
+        else if(eCell > emax2)
+        {
+          emax2     = eCell;
+          absIdMax2 = absId;
+        }
+      }
+
+      Int_t absIdCorr[] = {-1,-1,-1,-1};
+      Bool_t correlMaxOK = GetCaloUtils()->GetFECCorrelatedCellAbsId(absIdMax, absIdCorr);
+      
+      Int_t idMax  = -1;
+      Int_t idMax2 = -1;
+      Bool_t pairCol = kFALSE;
+      for(Int_t id = 0; id < 4; id++)
+      {
+        if     ( absIdMax  == absIdCorr[id]) idMax  = id;
+        else if( absIdMax2 == absIdCorr[id]) idMax2 = id;
+      }
+      
+      if ( idMax==0 || idMax == 3 ) ptSumPairFEC+=ptcone;
+      else                          ptSumOddFEC +=ptcone;
+      
+      if ( idMax2 >=0 )
+      {
+        if ( idMax==0 || idMax == 3 ) ptSumPairFEC2Max+=ptcone;
+        else                          ptSumOddFEC2Max +=ptcone;
+      }
+      
+      if(ptcone > 0.7)
+      {
+        if ( idMax==0 || idMax == 3 ) ptSumPairFECHighCut+=ptcone;
+        else                          ptSumOddFECHighCut +=ptcone;
+        
+        if ( idMax2 >=0 )
+        {
+          if ( idMax==0 || idMax == 3 ) ptSumPairFEC2MaxHighCut+=ptcone;
+          else                          ptSumOddFEC2MaxHighCut +=ptcone;
+        }
+      }
+    } // FEC corr
   }
   
   fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
@@ -1029,9 +1104,22 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
     {
-      fhConeSumPtClusterPerPtCut ->Fill(icut, coneptsumClusterPerCut[icut], GetEventWeight());
+      fhConeSumPtClusterPerPtCut->Fill(icut, coneptsumClusterPerCut[icut], GetEventWeight());
       if ( ptTrig > 10 ) fhConeSumPtClusterPerPtCutLargePtTrig->Fill(icut, coneptsumClusterPerCut[icut], GetEventWeight());
     }
+  }
+  
+  if(fStudyFECCorrelation)
+  {
+    fhConeSumPtClusterFECCorrPair     ->Fill(ptTrig, ptSumPairFEC, GetEventWeight());
+    fhConeSumPtClusterFECCorrOdd      ->Fill(ptTrig, ptSumOddFEC , GetEventWeight());    
+    fhConeSumPtClusterFECCorrPair2Max ->Fill(ptTrig, ptSumPairFEC2Max, GetEventWeight());
+    fhConeSumPtClusterFECCorrOdd2Max  ->Fill(ptTrig, ptSumOddFEC2Max , GetEventWeight());
+    
+    fhConeSumPtClusterFECCorrPairHighCut     ->Fill(ptTrig, ptSumPairFECHighCut, GetEventWeight());
+    fhConeSumPtClusterFECCorrOddHighCut      ->Fill(ptTrig, ptSumOddFECHighCut , GetEventWeight());    
+    fhConeSumPtClusterFECCorrPair2MaxHighCut ->Fill(ptTrig, ptSumPairFEC2MaxHighCut, GetEventWeight());
+    fhConeSumPtClusterFECCorrOdd2MaxHighCut  ->Fill(ptTrig, ptSumOddFEC2MaxHighCut , GetEventWeight());
   }
 }
 
@@ -2509,7 +2597,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(fStudyPtCutInCone)
       {
-        fhConeSumPtClusterPerPtCut = new TH2F("hConeSumPtClusterPerPtCut",
+        fhConeSumPtClusterPerPtCut = new TH2F("hConePtSumClusterPerPtCut",
                                               Form("Cluster #Sigma #it{p}_{T}, different pT cuts in isolation cone for #it{R} = %2.2f",r),
                                               fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtClusterPerPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
@@ -2518,7 +2606,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhConeSumPtClusterPerPtCut->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fPtCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtClusterPerPtCut) ;
         
-        fhConeSumPtClusterPerPtCutLargePtTrig = new TH2F("hConeSumPtClusterPerPtCutLargePtTrig",
+        fhConeSumPtClusterPerPtCutLargePtTrig = new TH2F("hConePtSumClusterPerPtCutLargePtTrig",
                                               Form("Cluster #Sigma #it{p}_{T}, different pT cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
                                               fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtClusterPerPtCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
@@ -2526,6 +2614,66 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         for(Int_t i = 1; i <= fNPtCutsInCone; i++)
           fhConeSumPtClusterPerPtCutLargePtTrig->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fPtCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtClusterPerPtCutLargePtTrig) ;
+      }
+      
+      if(fStudyFECCorrelation)
+      {
+        fhConeSumPtClusterFECCorrOdd  = new TH2F("hConePtSumClusterFECCorrOdd",
+                                                 Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, odd column in FEC",r),
+                                                 nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterFECCorrOdd->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterFECCorrOdd->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtClusterFECCorrOdd) ;
+        
+        fhConeSumPtClusterFECCorrOdd2Max  = new TH2F("hConePtSumClusterFECCorrOdd2Max",
+                                                     Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, odd column in FEC, (n,n+1) max cells",r),
+                                                     nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterFECCorrOdd2Max->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterFECCorrOdd2Max->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtClusterFECCorrOdd2Max) ;
+        
+        fhConeSumPtClusterFECCorrOddHighCut  = new TH2F("hConePtSumClusterFECCorrOddHighCut",
+                                                        Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, odd column in FEC, #it{E}_{T} > 0.7 GeV",r),
+                                                        nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterFECCorrOddHighCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterFECCorrOddHighCut->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtClusterFECCorrOddHighCut) ;
+        
+        fhConeSumPtClusterFECCorrOdd2MaxHighCut  = new TH2F("hConePtSumClusterFECCorrOdd2Max",
+                                                            Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, odd column in FEC, (n,n+1) max cells, #it{E}_{T}> 0.7 GeV",r),
+                                                            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterFECCorrOdd2MaxHighCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterFECCorrOdd2MaxHighCut->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtClusterFECCorrOdd2MaxHighCut) ;
+        
+        fhConeSumPtClusterFECCorrPair  = new TH2F("hConePtSumClusterFECCorrPair",
+                                                 Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, pair column in FEC",r),
+                                                 nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterFECCorrPair->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterFECCorrPair->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtClusterFECCorrPair) ;
+        
+        fhConeSumPtClusterFECCorrPair2Max  = new TH2F("hConePtSumClusterFECCorrPair2Max",
+                                                     Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, pair column in FEC, (n,n+1) max cells",r),
+                                                     nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterFECCorrPair2Max->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterFECCorrPair2Max->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtClusterFECCorrPair2Max) ;
+        
+        fhConeSumPtClusterFECCorrPairHighCut  = new TH2F("hConePtSumClusterFECCorrPairHighCut",
+                                                        Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, pair column in FEC, #it{E}_{T} > 0.7 GeV",r),
+                                                        nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterFECCorrPairHighCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterFECCorrPairHighCut->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtClusterFECCorrPairHighCut) ;
+        
+        fhConeSumPtClusterFECCorrPair2MaxHighCut  = new TH2F("hConePtSumClusterFECCorrPair2Max",
+                                                            Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, pair column in FEC, (n,n+1) max cells, #it{E}_{T}> 0.7 GeV",r),
+                                                            nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhConeSumPtClusterFECCorrPair2MaxHighCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+        fhConeSumPtClusterFECCorrPair2MaxHighCut->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+
+        outputContainer->Add(fhConeSumPtClusterFECCorrPair2MaxHighCut) ;
       }
       
       fhConePtLeadCluster  = new TH2F("hConeLeadPtCluster",
@@ -2885,7 +3033,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
       if(fStudyPtCutInCone)
       {
-        fhConeSumPtTrackPerPtCut = new TH2F("hConeSumPtTrackPerPtCut",
+        fhConeSumPtTrackPerPtCut = new TH2F("hConePtSumTrackPerPtCut",
                                             Form("Track #Sigma #it{p}_{T}, different pT cuts in isolation cone for #it{R} = %2.2f",r),
                                             fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtTrackPerPtCut->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
@@ -2894,7 +3042,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           fhConeSumPtTrackPerPtCut->GetXaxis()->SetBinLabel(i ,Form("%2.1f",fPtCutInCone[i-1]));
         outputContainer->Add(fhConeSumPtTrackPerPtCut) ;
         
-        fhConeSumPtTrackPerPtCutLargePtTrig = new TH2F("hConeSumPtTrackPerPtCutLargePtTrig",
+        fhConeSumPtTrackPerPtCutLargePtTrig = new TH2F("hConePtSumTrackPerPtCutLargePtTrig",
                                                        Form("Track #Sigma #it{p}_{T}, different pT cuts in isolation cone for #it{R} = %2.2f, #it{p}_{T}^{trig} > 10 GeV",r),
                                                        fNPtCutsInCone,-0.5,fNPtCutsInCone-0.5,nptsumbins,ptsummin,ptsummax);
         fhConeSumPtTrackPerPtCutLargePtTrig->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
@@ -2904,7 +3052,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         outputContainer->Add(fhConeSumPtTrackPerPtCutLargePtTrig) ;
       }
 
-      
       fhConePtLeadTrack  = new TH2F("hConeLeadPtTrack",
                                    Form("Track leading in isolation cone for #it{R} =  %2.2f",r),
                                    nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
