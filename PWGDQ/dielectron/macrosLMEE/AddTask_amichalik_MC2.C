@@ -24,8 +24,8 @@ AliAnalysisTask *AddTask_amichalik_MC2(Char_t* outputFileName="LMEEoutput.root",
 
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
-      // && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/Config_caklein_LMEEPbPb_AOD.C ."))
-      // && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/LMEECutLib_caklein.C ."))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/Config_amichalik_LMEE_MC.C ."))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/PWGDQ/dielectron/macrosLMEE/LMEECutLib_amichalik.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
