@@ -672,6 +672,32 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     delete PhiEtaWeightsFile;
   }
   
+  if(sPhiEtaWeight=="TOF") {
+    taskQC->SetUsePhiEtaWeights(kTRUE);
+    TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+    if(sDataSet=="2015" && sIntRuns=="high") {
+      if(AODfilterBit==768) PhiEtaWeightsFileName += "15oHI_FB768_pteff3_TOF_CenPhiEtaWeights.root";
+      if(AODfilterBit==32) PhiEtaWeightsFileName += "15oHI_FB32_pteff3_TOF_CenPhiEtaWeights.root";
+      if(AODfilterBit==96) PhiEtaWeightsFileName += "15oHI_FB96_pteff3_TOF_CenPhiEtaWeights.root";
+    }
+    TFile* PhiEtaWeightsFile = TFile::Open(PhiEtaWeightsFileName,"READ");
+    if(!PhiEtaWeightsFile) {
+      cout << "ERROR: PhiEtaWeightsFile not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* PhiEtaWeightsList = (TList*)(PhiEtaWeightsFile->FindObjectAny("CenPhiEta Weights"));
+    if(PhiEtaWeightsList) {
+      taskQC->SetWeightsList(PhiEtaWeightsList);
+      cout << "CenPhiEta weights set (from " <<  PhiEtaWeightsFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: CenPhiEtaWeightsList not found!" << endl;
+      exit(1);
+    }
+    delete PhiEtaWeightsFile;
+  }
+  
   if(sPhiEtaWeight=="chdep") {
     taskQC->SetUsePhiEtaWeightsChDep(kTRUE);
     TString PhiEtaWeightsFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
