@@ -1805,52 +1805,26 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
         }
         AliAODTrack *trackAsso = dynamic_cast<AliAODTrack*>(Vassotrack);
         if(!trackAsso) continue;
-        
+        if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+        if(trackAsso->Pt() < fAssPtCut) continue;
+        if(TMath::Abs(trackAsso->Eta())>0.9) continue;
+        if(trackAsso->GetTPCNcls() < fAssTPCnCut) continue;
+        if (fAssITSrefitCut && !(trackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
+        if(!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
         
         Double_t pt=-999., ptAsso=-999., nTPCsigmaAsso=-999.;
         Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
         Double_t openingAngle = -999., mass=999., width = -999;
         Int_t chargeAsso = 0, charge = 0, pdgAsso = 0;
         
-        nTPCsigmaAsso = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
+        nTPCsigmaAsso = fpidResponse->NumberOfSigmasTPC(trackAsso, AliPID::kElectron);        
         pt = track->Pt();
         ptAsso = trackAsso->Pt();
         chargeAsso = trackAsso->Charge();
         charge = track->Charge();
         
-        if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-        
-        // track cuts
-        
-        //Bool_t IsGoodPEtrack = AssElecTrackCuts(trackAsso);
-        //if(!IsGoodPEtrack) continue;
-        
-        //if(!fAssTrackCuts->AcceptTrack(trackAsso)) continue; // check this later
-        
-        if(trackAsso->Pt() < fAssPtCut) continue;
-        if(TMath::Abs(trackAsso->Eta())>0.9) continue;
-        if(trackAsso->GetTPCNcls() < fAssTPCnCut) continue;
-        if (fAssITSrefitCut && !trackAsso->IsOn(AliAODTrack::kITSrefit)) continue;
-        if(!trackAsso->IsOn(AliAODTrack::kTPCrefit)) continue;
-        if(trackAsso->GetTPCFoundFraction() < 0.6) continue;
-        
-        
-        // analysis
-        
-        
-        
         if(TMath::Abs(nTPCsigmaAsso)>3) continue;
-        
-        /*if(fIsMC && fMC && fStack){
-         Int_t labelAsso = trackAsso->GetLabel();
-         if(labelAsso!=0){
-         TParticle *particleAsso = fStack->Particle(TMath::Abs(labelAsso));
-         if(particleAsso){
-         pdgAsso = particleAsso->GetPdgCode();
-         if(!(TMath::Abs(pdgAsso)==11)) continue;
-         }
-         }
-         }*/
+
         
         Double_t dphiPhotElec = -9, phi=0;
         phi = trackAsso->Pt();
@@ -1864,6 +1838,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
         if(charge == chargeAsso) fFlagLS = kTRUE;
         if(charge != chargeAsso) fFlagULS = kTRUE;
         
+        AliKFParticle::SetField(fVevent->GetMagneticField());
         AliKFParticle ge1(*track, fPDGe1);
         AliKFParticle ge2(*trackAsso, fPDGe2);
         AliKFParticle recg(ge1, ge2);
@@ -1872,15 +1847,6 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
         Double_t chi2recg = recg.GetChi2()/recg.GetNDF();
         if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
         
-        if(fSetMassConstraint && pVtx) {
-            AliKFVertex primV(*pVtx);
-            primV += recg;
-            primV -= ge1;
-            primV -= ge2;
-            recg.SetProductionVertex(primV);
-            recg.SetMassConstraint(0,0.0001);
-        }
-        
         openingAngle = ge1.GetAngle(ge2);
         
         if(fFlagLS) fOpeningAngleLS[iCent]->Fill(openingAngle,ptAsso);
@@ -1888,7 +1854,8 @@ void AliAnalysisTaskFlowTPCEMCalEP::SelectPhotonicElectron(Int_t iTracks,AliAODT
         
         //if(openingAngle > fOpeningAngleCut) continue;
         
-        recg.GetMass(mass,width);
+        Int_t MassCorrect;
+        MassCorrect = recg.GetMass(mass,width);
         
         Double_t elecMC[9]={(Double_t)iCent,pt,mass,(Double_t)fFlagLS,(Double_t)iEnhance,(Double_t)iDecay, EovP, fTPCnSigma,dphiPhotElec};
         fElecMC->Fill(elecMC,weight);
