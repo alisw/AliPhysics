@@ -53,6 +53,7 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fZgAxis(0),
   fdRAxis(0),
   fPtgAxis(0),
+  fDBCAxis(0),
   fFlavourZAxis(0),
   fFlavourPtAxis(0),
   fIsJet1Rho(kFALSE),
@@ -139,6 +140,7 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fZgAxis(0),
   fdRAxis(0),
   fPtgAxis(0),
+  fDBCAxis(0),
   fFlavourZAxis(0),
   fFlavourPtAxis(0),
   fIsJet1Rho(kFALSE),
@@ -939,6 +941,19 @@ void AliJetResponseMaker::AllocateTHnSparse()
     dim++;
   }
 
+  if (fDBCAxis) {
+    title[dim] = "DBC_{1}";
+    nbins[dim] = 20;
+    min[dim] = 0.0;
+    max[dim] = 20.0;
+    dim++;
+    title[dim] = "DBC_{2}";
+    nbins[dim] = 20;
+    min[dim] = 0.0;
+    max[dim] = 20.0;
+    dim++;
+  }
+
   fHistMatching = new THnSparseD("fHistMatching","fHistMatching",dim,nbins,min,max);
 
   for (Int_t i = 0; i < dim; i++)
@@ -1193,6 +1208,10 @@ void AliJetResponseMaker::FillMatchingHistos(AliEmcalJet* jet1, AliEmcalJet* jet
         contents[i] = ( jet1->GetShapeProperties()->GetSoftDropPtfrac() )*( jet1->Pt() );
       else if (title=="p_{T,g,2}")
         contents[i] = ( jet2->GetShapeProperties()->GetSoftDropPtfrac() )*( jet2->Pt() );
+      else if (title=="DBC_{1}")
+        contents[i] = ( jet1->GetShapeProperties()->GetSoftDropDropCount() );
+      else if (title=="DBC_{2}")
+        contents[i] = ( jet2->GetShapeProperties()->GetSoftDropDropCount() );
       else 
         AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
