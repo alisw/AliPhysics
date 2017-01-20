@@ -51,6 +51,30 @@ AliAnalysisTaskJetExtractorHF* AddTaskJetExtractorHF(
   jetTask->SetNeedEmcalGeom(kFALSE);
   jetTask->SetVzRange(-10.,10.);
 
+  AliRDHFJetsCutsVertex* cuts = new AliRDHFJetsCutsVertex("jetCuts");
+
+  // vertexing
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  esdTrackCuts->SetMinNClustersTPC(90);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetEtaRange(-0.8, 0.8);
+  esdTrackCuts->SetPtRange(1.0, 1.e10);
+
+  cuts->AddTrackCuts(esdTrackCuts);
+  cuts->SetNprongs(3);
+  cuts->SetMinPtHardestTrack(1.0);//default 0.3
+  cuts->SetSecVtxWithKF(kFALSE);//default with StrLinMinDist
+  cuts->SetImpParCut(0.);//default 0
+  cuts->SetDistPrimSec(0.);//default 0
+  cuts->SetCospCut(-1);//default -1
+
+  jetTask->SetVertexerCuts(cuts);
+
   AliParticleContainer *trackCont = 0;
   if(!strcmp(trackArray,"mctracks") || !strcmp(trackArray, "mcparticles"))
     trackCont = jetTask->AddMCParticleContainer(trackArray);

@@ -48,6 +48,7 @@
 #include "AliVParticle.h"
 #include "TRandom3.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliHFJetsTaggingVertex.h"
 #include "AliAnalysisTaskJetExtractorHF.h"
@@ -111,7 +112,8 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
   fAddPIDSignal(kFALSE),
-  fCalculateSecondaryVertices(kFALSE)
+  fCalculateSecondaryVertices(kFALSE),
+  fVertexerCuts(0)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -150,7 +152,8 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fSecondaryVertexMaxChi2(1e10),
   fSecondaryVertexMaxDispersion(0.05),
   fAddPIDSignal(kFALSE),
-  fCalculateSecondaryVertices(kFALSE)
+  fCalculateSecondaryVertices(kFALSE),
+  fVertexerCuts(0)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -390,22 +393,15 @@ void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* vtx, 
   TClonesArray* secVertexArr = 0;
   if(fCalculateSecondaryVertices)
   {
+    if(!fVertexerCuts)
+      AliFatal("VertexerCuts not given but secondary vertex calculation turned on.");
+
     //###########################################################################
     // ********* Calculate secondary vertices
     // Derived from AliAnalysisTaskEmcalJetBtagSV
     secVertexArr = new TClonesArray("AliAODVertex");
     AliHFJetsTaggingVertex* tagger = new AliHFJetsTaggingVertex();
-    AliRDHFJetsCutsVertex* cuts = new AliRDHFJetsCutsVertex("jetCuts");
-
-    // vertexing
-    cuts->SetNprongs(3);
-    cuts->SetMinPtHardestTrack(0.15);//default 0.3
-    cuts->SetSecVtxWithKF(kFALSE);//default with StrLinMinDist
-    cuts->SetImpParCut(0.);//default 0
-    cuts->SetDistPrimSec(0.);//default 0
-    cuts->SetCospCut(-1);//default -1
-
-    tagger->SetCuts(cuts);
+    tagger->SetCuts(fVertexerCuts);
 
     Int_t nDauRejCount = 0;
     vctr_pair_dbl_int dummy;
@@ -420,7 +416,6 @@ void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* vtx, 
                                          nDauRejCount);
 
     delete tagger;
-    delete cuts;
 
     if(nVtx <= 0)
       return;

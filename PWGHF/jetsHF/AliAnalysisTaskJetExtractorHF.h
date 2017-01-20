@@ -49,6 +49,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   void                        SetSecondaryVertexMaxDispersion(Double_t val)  { fSecondaryVertexMaxDispersion = val; }
   void                        SetAddPIDSignal(Bool_t val)  { fAddPIDSignal = val; }
   void                        SetCalculateSecondaryVertices(Bool_t val)  { fCalculateSecondaryVertices = val; }
+  void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)  { fVertexerCuts = val; }
 
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
@@ -140,6 +141,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
   Bool_t                      fAddPIDSignal;                            ///< Add pid signal to each jet constituent
   Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)
+  AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
 
 
   // ######### HISTOGRAM FUNCTIONS
