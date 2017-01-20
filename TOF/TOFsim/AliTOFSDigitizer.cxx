@@ -486,11 +486,11 @@ void AliTOFSDigitizer::Digitize(Option_t *verboseOption) {
 	}
 	
 	geantTime *= 1.e+09;  // conversion from [s] to [ns]
-	// TOF matching window (~200ns) control
-	if (geantTime>=AliTOFGeometry::MatchingWindow()*1E-3) {
-	  AliDebug(2,Form("Time measurement (%f) greater than the matching window (%f)",
-			  geantTime, AliTOFGeometry::MatchingWindow()*1E-3));
-	  continue;
+	// TOF matching window (-200ns - 400 ns) control
+	if (geantTime>=AliTOFGeometry::MatchingWindow()*2E-3 || geantTime<-AliTOFGeometry::MatchingWindow()*1E-3) {
+	  AliDebug(2,Form("Time measurement (%f ps) outside the matching window (%f-%f ps)",
+			  geantTime, -AliTOFGeometry::MatchingWindow()*1E-3,AliTOFGeometry::MatchingWindow()*2E-3));
+ 	  continue;
 	}
 
 	// selection case for sdigitizing only hits in a given plate of a given sector
@@ -532,10 +532,10 @@ void AliTOFSDigitizer::Digitize(Option_t *verboseOption) {
 
 		  Float_t timediff=geantTime-tofAfterSimul[indexOfPad];
 
-		  // TOF matching window (~200ns) control
-		  if (tofAfterSimul[indexOfPad]>=AliTOFGeometry::MatchingWindow()*1E-3) {
-		    AliDebug(2,Form("Time measurement (%f) greater than the matching window (%f)",
-				    tofAfterSimul[indexOfPad], AliTOFGeometry::MatchingWindow()*1E-3));
+		  // TOF matching window (-200ns - 400 ns) control
+		  if (tofAfterSimul[indexOfPad]>=AliTOFGeometry::MatchingWindow()*2E-3 || tofAfterSimul[indexOfPad]<-AliTOFGeometry::MatchingWindow()*1E-3) {
+		    AliDebug(2,Form("Time measurement (%f ps) outside the matching window (%f-%f ps)",
+				    tofAfterSimul[indexOfPad], -AliTOFGeometry::MatchingWindow()*1E-3,AliTOFGeometry::MatchingWindow()*2E-3)); 
 		    continue;
 		  }
 
