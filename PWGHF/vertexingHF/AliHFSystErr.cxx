@@ -2021,10 +2021,10 @@ void AliHFSystErr::InitDstartoD0pi2010ppPass4(){
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
   fTrackingEff->SetBinContent(1,1.0);
-  fTrackingEff->SetBinContent(2,0.09); //
-  fTrackingEff->SetBinContent(3,0.09);
-  fTrackingEff->SetBinContent(3,0.09);
-  for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.09); // 
+  fTrackingEff->SetBinContent(2,0.06); //
+  fTrackingEff->SetBinContent(3,0.06);
+  fTrackingEff->SetBinContent(3,0.06);
+  for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.06); //
 
 
   // Raw yield extraction
