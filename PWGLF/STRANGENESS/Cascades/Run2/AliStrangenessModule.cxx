@@ -537,7 +537,7 @@ Bool_t AliStrangenessModule::PerformInitialFit( TH1D *lHisto, Double_t &lMean, D
     fit->SetParameter(3, lMean);
     fit->SetParLimits(3, lMean-0.006,lMean+0.006); //ALICE is never off by that much
     fit->SetParameter(4,0.003);
-    fit->SetParLimits(4,0.001, 0.035); //ALICE tracking is (usually) never worse than this
+    fit->SetParLimits(4,0.001, 0.015); //ALICE tracking is (usually) never worse than this
     
     //Fit options
     TString lFitOptions = "IREM0S";
