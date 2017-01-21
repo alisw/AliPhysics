@@ -888,7 +888,38 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
     Double_t fMinV0Pt = 0;
     Double_t fMaxV0Pt = 100;
-
+    
+    //------------------------------------------------
+    // Rerun V0 Vertexer!
+    // WARNING: this will only work if the
+    // special "use on the fly cascading" flag
+    // is disabled!
+    //------------------------------------------------
+    
+    if( fkRunVertexers && !fkUseOnTheFlyV0Cascading ) {
+        //Only reset if not using on-the-fly (or else nothing passes)
+        lESDevent->ResetV0s();
+        
+        //Decide between regular and light vertexer (default: light)
+        if ( ! fkUseLightVertexer ){
+            //Instantiate vertexer object
+            AliV0vertexer lV0vtxer;
+            //Set Cuts
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            //Redo
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+        } else {
+            //Instantiate vertexer object
+            AliLightV0vertexer lV0vtxer;
+            //Set Cuts
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            //Redo
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+        }
+    }
+    
     Int_t nv0s = 0;
     nv0s = lESDevent->GetNumberOfV0s();
 
@@ -1254,40 +1285,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     //------------------------------------------------
 
     if( fkRunVertexers ) {
+        //Remove existing cascades
         lESDevent->ResetCascades();
-        
-        //Only reset if not using on-the-fly (or else nothing passes)
-        if( !fkUseOnTheFlyV0Cascading ) lESDevent->ResetV0s();
         
         //Decide between regular and light vertexer (default: light)
         if ( ! fkUseLightVertexer ){
-            AliV0vertexer lV0vtxer;
+            //Instantiate vertexer object
             AliCascadeVertexer lCascVtxer;
-            
-            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-
-            lV0vtxer.SetCuts(fV0VertexerSels);
             lCascVtxer.SetCuts(fCascadeVertexerSels);
-            
-            lV0vtxer.Tracks2V0vertices(lESDevent);
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
         } else {
-            AliLightV0vertexer lV0vtxer;
             AliLightCascadeVertexer lCascVtxer;
-            
-            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-            
-            lV0vtxer.SetCuts(fV0VertexerSels);
             lCascVtxer.SetCuts(fCascadeVertexerSels);
-            
-            if( fkUseOnTheFlyV0Cascading ) lCascVtxer.SetUseOnTheFlyV0(kTRUE); 
-            
-            //Only revertex if not using on-the-fly
-            if( !fkUseOnTheFlyV0Cascading ) lV0vtxer.Tracks2V0vertices(lESDevent);
-            
-            //Always redo cascades
+            if( fkUseOnTheFlyV0Cascading ) lCascVtxer.SetUseOnTheFlyV0(kTRUE);
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
         }
     }
