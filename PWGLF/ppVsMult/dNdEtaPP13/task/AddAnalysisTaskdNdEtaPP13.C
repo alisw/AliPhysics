@@ -53,7 +53,8 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
                           UInt_t trigSel = AliVEvent::kINT7,//kTRUE, // fill histos for reconstructable (needs useMC and doRec)
                           Bool_t ridgeBins      = kFALSE,             // VOM percentiles with ridge binning
                           Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
-                          Int_t BCmod4      = 2              // set Bunch crossing mode 4
+                          Int_t BCmod4      = 2,              // set Bunch crossing mode 4
+                         Bool_t phicuts      = kFALSE       // set cut on affected phi regions
 
 
 )
@@ -182,6 +183,8 @@ AddAnalysisTaskdNdEtaPP13(const Char_t *outfilename = "AnalysisResults.root",
     task->SetRemoveOverlaps(remOvl);
     task->SetUseBCMod(useBCmod);
     task->SetBCMod(BCmod4);
+    task->SetCutOnPhi(phicuts);
+
 
 
     //
