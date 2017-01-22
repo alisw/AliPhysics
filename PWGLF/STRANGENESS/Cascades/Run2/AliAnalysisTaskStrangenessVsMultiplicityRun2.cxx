@@ -1266,7 +1266,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                  ) &&
                 //Check 9: Min Track Length if positive
                 ( lV0Result->GetCutMinTrackLength()<0 || //this is a bit paranoid...
-                 fTreeVariableMinTrackLength < lV0Result->GetCutMinTrackLength()
+                 fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()
                  )
                 )
             {
@@ -1995,7 +1995,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 
                 //Check 11: Min Track Length if positive
                 ( lCascadeResult->GetCutMinTrackLength()<0 || //this is a bit paranoid...
-                 fTreeCascVarMinTrackLength < lCascadeResult->GetCutMinTrackLength()
+                 fTreeCascVarMinTrackLength > lCascadeResult->GetCutMinTrackLength()
                  )
                 ){
                 //This satisfies all my conditionals! Fill histogram
