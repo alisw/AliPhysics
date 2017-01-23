@@ -5466,7 +5466,7 @@ c     (here taken as its central value + 2* B-W fullwidth):
           IF(PR2.LE.0.)PR2=1.e-09
           PR=SQRT(PR2)/(2.*SRT)
               if(srt.le.2.14)C1= 1.0 - 2.0 * RANART(NSEED)
-         if(srt.gt.2.14.and.srt.le.2.4)c1=ang(srt,iseed)
+         if(srt.gt.2.14.and.srt.le.2.4)c1=anga(srt,iseed)
          if(srt.gt.2.4)then
 
 clin-10/25/02 get rid of argument usage mismatch in PTR():
