@@ -8,10 +8,10 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   AliHFEcuts *hfecuts = new AliHFEcuts("hfeCutsEMCAL","HFE Standard Cuts");
   hfecuts->CreateStandardCuts();
   hfecuts->SetMinNClustersTPC(TPCnCut);
-  //hfecuts->SetMinRatioTPCclusters(0.6);
+  hfecuts->SetMinRatioTPCclusters(0.6);
   hfecuts->SetMaxChi2perClusterTPC(3.5);
-  //hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
-  //hfecuts->SetMinNClustersITS(3);
+  hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
+  //hfecuts->SetMinNClustersITS(ITSncut);
   hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetVertexRange(10.);
@@ -24,6 +24,7 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   task->SetHFECuts(hfecuts);
   task->SetAssPtCut(AssPtCut);
   task->SetAssTPCnCut(AssTPCnCut);
+  task->SetTPCnCut(TPCnCut);
   task->SetITSnCut(ITSncut);
   task->SetAssITSrefitCut(AssITSrefitCut);
   task->SetPeriod(period);
