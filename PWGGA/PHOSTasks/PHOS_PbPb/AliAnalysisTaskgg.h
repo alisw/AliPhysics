@@ -1,13 +1,14 @@
 #ifndef AliAnalysisTaskgg_cxx
 #define AliAnalysisTaskgg_cxx
 
-// example of an analysis task creating a p_t spectrum
-// Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
+// Class for analysis of photon dEta-dPhi correlations
+// Authors: D.Peresunko
 
 class THashList ;
 class AliPHOSGeometry;
 class AliCaloPhoton ;
 class AliAODTrack ;
+class AliAODEvent ;
 class AliEPFlattener ;
 
 #include "AliAnalysisTaskSE.h"
@@ -36,8 +37,11 @@ protected:
   
   Int_t ConvertRunNumber(Int_t run) ; 
   Bool_t PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const ; 
-  
+  Bool_t PHOSCut(const AliCaloPhoton * ph1, Int_t cut) const ;   
   Int_t JetRejection(Int_t module) const; //Looks is there is a jet around
+  Bool_t TestCPV(Double_t emcX, Double_t emcZ, Double_t e) ;
+  Bool_t TestCPVCluster(Double_t cpvX, Double_t cpvZ, Double_t emcX, Double_t emcZ, Double_t e) ; //return true if neutral
+  void ReclusterizeCPV();
 
   Double_t EtaPhiWeight(Int_t kTbin, Double_t x) const ;
   
@@ -49,18 +53,19 @@ private:
 protected:
 
   THashList *   fOutputContainer;        //final histogram container
-  AliAODEvent * fEvent ;        //!
+  AliAODEvent * fEvent ;                 //!
   TList *       fPHOSEvents[10][10][11] ; //Containers for events with PHOS photons
-  TClonesArray* fPHOSEvent ;      //PHOS photons in current event
+  TClonesArray* fPHOSEvent ;      //! PHOS photons in current event
+  TClonesArray* fCPVEvent ;       //! CPV event
  
   //Reaction plain for v2
   AliEPFlattener * fV0AFlat ; //!
-  AliEPFlattener * fV0CFlat ; //!
-  
+  AliEPFlattener * fV0CFlat ; //!  
 
   Int_t fRunNumber ;    //Current run number
   Float_t fCentrality ; //!Centrality of the currecnt event
   Int_t fCenBin ;       //! Current centrality bin
+  Double_t fRP ;        //! Reaction plane
 
   AliPHOSGeometry  *fPHOSGeo;  //! PHOS geometry
   Int_t fEventCounter;         // number of analyzed events
