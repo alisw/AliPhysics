@@ -48,6 +48,7 @@
 #include "TTreeFormulaManager.h"
 #include "AliTreePlayer.h"
 #include "TEntryList.h"
+#include "THn.h"
 
 ClassImp(AliTreePlayer)
 
@@ -750,3 +751,283 @@ void  AliTreePlayer::AddStatInfo(TTree* treeLeft,  TTree * treeRight , const TSt
   delete[]coordArray;coordArray=0;
 
 }
+
+
+
+
+TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TString defaultCut, Int_t firstEntry, Int_t lastEntry, Int_t chunkSize, Int_t verbose){
+  //
+  // Return list of histograms specified by selection
+  // Should be rough equivalent of the "ALICE train" TTree->Draw();
+  //  a.) Data are read only once
+  //  b.) values expression are reused (evaluated only once)
+  // default cut 
+  //       default selection applied common for all histrograms (can be empty)
+  // 
+  // hislist:
+  //    his0;his1; ...; hisN 
+  // histogram syntax:
+  //    var0:var1:...:<#weight>>>hisName(bins0,min0,max0,bins1,min0,min, minValue,maxValue)
+  //    Syntax:
+  //            vari are histogramming expression
+  //            weight (or cut) entry is optional 
+  //                 - default cut is always applied, weight is applied on top
+  //    ranges syntax:
+  //           nbins,max,min where max and min are double or format strings
+  //           in case format string % specified using (Fraction, mean,meanFraction, rms, rmsFraction)
+  //              %fraction.sigma  
+  //              #cumulant
+  //           range for bin content can be specified in the same format (by default is not set)
+  //  Algortihm:
+  //  1.) Analyze formula, create minimal formula expression
+  //  2.) Event loop
+  //  3.) Filling of histograms
+  //            
+  // Example usage:
+  /*
+    chunkSize=10000;
+    verbose=7;
+    chinput=gSystem->ExpandPathName("$NOTES/JIRA/PWGPP-227/data/2016/LHC16t/000267161/pass1_CENT_wSDD/filteredLocal.list");
+    TString defaultCut="esdTrack.fTPCncls>70";
+    TTree *tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "highPt", 0, 1000000000,0);
+    TString hisString="";
+    hisString+="esdTrack.Pt():#esdTrack.fTPCncls>70>>hisPtAll(100,0,30);";
+    hisString+="esdTrack.GetAlpha():#esdTrack.fTPCncls>70>>hisAlpha(90,-3.2,3.2);";
+    hisString+="esdTrack.GetTgl():#esdTrack.fTPCncls>70>>hisTgl(20,-1.2,1.2);";
+    hisString+="esdTrack.Pt():esdTrack.GetAlpha():esdTrack.GetTgl():#esdTrack.fTPCncls>70>>hisPtPhiThetaAll(100,0,30,90,-3.2,3.2,20,-1.2,1.2);";
+    hisString+="esdTrack.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtITS(100,1,10);";    
+    hisString+="esdTrack.fIp.Pt():#(esdTrack.fFlags&0x4)>0>>hisPtTPCOnly(100,1,10);";    
+    TStopwatch timer; hisArray = AliTreePalyer::MakeHistograms(tree, hisString, "(esdTrack.fFlags&0x40)>0&&esdTrack.fTPCncls>70",0,60000,100000); timer.Print();
+  */
+  // CPU time to process one histogram or set of histograms (in paricular case of esdTrack queries) is the same - and it is determined (90 %) by tree->GetEntry 
+  /*
+    THn * his0= (THn*)hisArray->At(0);
+    his0->Projection(0)->Draw("");
+    tree->SetLineColor(2);
+    TStopwatch timer; tree->Draw("esdTrack.Pt()","(esdTrack.fFlags&0x40)>0&&esdTrack.fTPCncls>70","same",60000); timer.Print();
+  */
+  const Int_t kMaxDim=10;
+  Int_t entriesAll=tree->GetEntriesFast();
+  if (chunkSize<=0) chunkSize=entriesAll;
+  if (lastEntry>entriesAll) lastEntry=entriesAll;
+  //
+  TObjArray *hisDescriptionList=hisString.Tokenize(";");
+  Int_t nHistograms = hisDescriptionList->GetEntries();
+  TObjArray * hisArray = new TObjArray(nHistograms);
+  TObjArray * hisDescriptionArray=new TObjArray(nHistograms); // OWNER
+  TObjArray * hisFormulaArray=new TObjArray(nHistograms);     // array of TFomula arrays - Not OWNER
+  TObjArray * hisWeightArray=new TObjArray(nHistograms);     // array of TFomula arrays - Not OWNER
+  TArrayI     hisDims(nHistograms);
+  //
+  Int_t nExpressions=hisString.CountChar(':')+hisString.CountChar(';')+1;
+  TObjArray * formulaArray   = new TObjArray(nExpressions);    // array of all expressions  - OWNER
+  TString queryString = "";
+  //
+  //  1.) Analyze formula, book list of TObjString
+  //
+  Bool_t isOK=kTRUE;
+  for (Int_t iHis=0; iHis<nHistograms; iHis++){
+    TString hisDescription = hisDescriptionList->At(iHis)->GetName(); 
+    Int_t hisIndex=hisDescription.Index(">>"); 
+    if (hisIndex<=0) {  
+      isOK=kFALSE;
+      ::Error("MakeHistograms","Invalid expression %s",hisDescription.Data());
+      break;
+    }else{
+      hisDescriptionArray->AddAtAndExpand(new TObjString(((hisDescriptionList->At(iHis)->GetName()))+(hisIndex+2)),iHis);
+    }   
+    hisDescription.Remove(hisIndex);
+    TObjArray *hisDimArray=hisDescription.Tokenize(":");
+    Int_t nDims=hisDimArray->GetEntries();
+    if (nDims<=0){
+      isOK=kFALSE;
+      ::Error("MakeHistograms","Invalid description %s",hisDescription.Data());
+      delete hisDimArray;
+      break;
+    }
+    TObjArray * varArray = new TObjArray(nDims);
+    if (hisDimArray->At(nDims-1)->GetName()[0]=='#'){
+      TString formulaName=&((hisDimArray->At(nDims-1)->GetName())[1]);
+      nDims-=1;
+      TObjString *tFormula = new TObjString(formulaName.Data());
+      hisWeightArray->AddAt(tFormula,iHis);
+      if (formulaArray->FindObject(formulaName.Data())==NULL){
+	formulaArray->AddLast(tFormula);
+	varArray->AddAt(tFormula,nDims);
+      }
+    }
+    for (Int_t iDim=0; iDim<nDims;iDim++){
+      TObjString *tFormula =  (TObjString*) (formulaArray->FindObject(hisDimArray->At(iDim)->GetName()));
+      if (tFormula==NULL){	
+	tFormula = new TObjString(hisDimArray->At(iDim)->GetName());
+	formulaArray->AddLast(tFormula);
+      }
+      varArray->AddAt(tFormula,iDim);
+    }
+    hisFormulaArray->AddAt(varArray,iHis);
+    hisDims[iHis]=nDims;
+    delete hisDimArray;
+  }
+  queryString="";  
+  Int_t nFormulas=formulaArray->GetEntries();
+  for (Int_t iFor=0; iFor<nFormulas; iFor++){
+    queryString+=formulaArray->At(iFor)->GetName();
+    queryString+=":";
+  }
+  queryString+=formulaArray->At(nFormulas-1)->GetName();
+  if (verbose&0x2) hisDescriptionArray->Print();
+  if (verbose&0x4) formulaArray->Print(); 
+  //
+  //  2.) Event loop
+  //
+  Int_t tNumber=-1;
+  for (Int_t bEntry=firstEntry; bEntry<lastEntry; bEntry+=chunkSize){  // chunks loop
+    Int_t toQuery=TMath::Min(chunkSize, lastEntry-bEntry);
+    Int_t qLength = tree->Draw(queryString,defaultCut,"goffpara",toQuery, bEntry); // query varaibles
+    if (qLength>tree->GetEstimate()){
+      tree->SetEstimate(qLength*1.5);
+      qLength = tree->Draw(queryString,defaultCut,"goffpara",chunkSize, bEntry); 
+    }
+
+    //  2.2 fill histograms if  not yet done
+    if (hisArray->GetEntriesFast()==0){  // book histograms if not yet done
+      for (Int_t iHis=0; iHis<nHistograms; iHis++){
+	TString hisDescription= hisDescriptionArray->At(iHis)->GetName();	
+	TString  varDecription=hisDescriptionList->At(iHis)->GetName();	
+	TObjArray * descriptionArray=hisDescription.Tokenize("(,)");
+	TObjArray * varArray= TString(hisDescriptionList->At(iHis)->GetName()).Tokenize(":");
+	Int_t nLength=descriptionArray->GetEntries();
+	if ((nLength-1)/3 < hisDims[iHis]){
+	  ::Error("xxx", "Histogram dimension Mismatch %s", hisDescriptionArray->At(iHis)->GetName());
+	  return NULL; 
+	}
+	if (varArray->GetEntries()<hisDims[iHis]){
+	  ::Error("xxx", "Variable mismatch %s", hisDescriptionArray->At(iHis)->GetName());
+	  return NULL; 
+	}
+	TString hName(descriptionArray->At(0)->GetName());
+	THnBase * his = 0;
+	Int_t nBins[kMaxDim];
+	Double_t xMin[kMaxDim], xMax[kMaxDim];   
+	for (Int_t iDim=0; iDim<hisDims[iHis]; iDim++){
+	  nBins[iDim]= TString(descriptionArray->At(3*iDim+1)->GetName()).Atoi();
+	  if (descriptionArray->At(3*iDim+2)->GetName()[0]!='#'){
+	    xMin[iDim]= TString(descriptionArray->At(3*iDim+2)->GetName()).Atof();	  
+	    xMax[iDim]= TString(descriptionArray->At(3*iDim+3)->GetName()).Atof();
+	  }
+	  if (xMax[iDim]<=xMin[iDim]){
+	    ::Error("xxx","Invalid range specification %s\t%s",descriptionArray->At(3*iDim+2)->GetName(), descriptionArray->At(3*iDim+3)->GetName() );
+	  }
+	}
+	THnF * phis = new THnF(hName.Data(),hName.Data(), hisDims[iHis],nBins, xMin,xMax);
+	hisArray->AddAt(phis,iHis);
+	for (Int_t iDim=0;iDim<hisDims[iHis]; iDim++){
+	  phis->GetAxis(iDim)->SetTitle(varArray->At(iDim)->GetName());
+	}
+      }      
+    }
+    //    2.3 fill histograms
+    Double_t values[kMaxDim];
+    for (Int_t iHis=0; iHis<nHistograms; iHis++){
+      Int_t indeces[kMaxDim+1];
+      TObjArray *formulaArrayHis = (TObjArray*) (hisFormulaArray->At(iHis));
+      for (Int_t iVec=0; iVec<formulaArrayHis->GetEntriesFast(); iVec++){      
+	indeces[iVec]= formulaArray->IndexOf(formulaArray->FindObject(formulaArrayHis->At(iVec)->GetName()));
+      }
+      Int_t indexW=-1;
+      if (hisWeightArray->GetEntriesFast()>=iHis){
+	if (hisWeightArray->UncheckedAt(iHis)!=NULL){
+	  if (hisWeightArray->UncheckedAt(iHis)->GetName()){
+	    indexW= formulaArray->IndexOf(formulaArray->FindObject(hisWeightArray->UncheckedAt(iHis)->GetName()));
+	  }else{
+	    ::Error("xxx","Problem to find %s", hisWeightArray->UncheckedAt(iHis)->GetName());
+	  }
+	}
+      }      
+      THnBase * his = (THnBase*) hisArray->UncheckedAt(iHis);
+      for (Int_t cEvent=0; cEvent<qLength; cEvent++){ 
+	for (Int_t iDim=0; iDim<hisDims[iHis]; iDim++){
+	  values[iDim]=tree->GetVal(indeces[iDim])[cEvent];	  
+	}
+	Double_t weight=(indexW<0)? 1: tree->GetVal(indexW)[cEvent]; 
+	if (weight>0) his->Fill(values,weight);
+      }
+    }    
+  }
+  //
+  delete hisDescriptionArray;
+  delete formulaArray;
+  return hisArray;
+
+}
+
+
+
+
+TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression){
+  //
+  //
+  // Example usage:
+  /*
+    TPad *pad= 0;
+    TString drawExpression="";
+    drawExpression="[1,1,1]:" 
+    drawExpression+="hisPtAll(0,10)(0)(errpl);hisPtITS(0,10)(0)(err);hisPtPhiThetaAll(0,10,-3.2,3.2,-1.2,1.2)(0)(err):";
+    drawExpression+="hisAlpha(-3.2,3.2)(0)(errpl);hisPtPhiThetaAll(0,10,-3.2,3.2,-1.2,1.2)(1)(err):";
+    drawExpression+="hisTgl(-1,1)(0)(errpl);hisPtPhiThetaAll(0,10,-3.2,3.2,-1.2,1.2)(2)(err):";
+    pad = DrawHistograms(0,hisArray,drawExpression);
+  */  
+  
+  TObjArray *drawList=drawExpression.Tokenize(":"); 
+  // structure pad
+  TString padDescription=drawList->At(0)->GetName();
+  if (pad==NULL){
+    pad = new TCanvas(drawExpression, drawExpression,1000,800);
+  }
+  // divide pads
+  Int_t nPads=0, nRows=0;
+  TObjArray *padRows=padDescription.Tokenize("[](),");
+  nRows=padRows->GetEntries();
+  for (Int_t iRow=0; iRow<nRows; iRow++){
+    Int_t nCols=TString(padRows->At(iRow)->GetName()).Atoi();
+    for (Int_t iCol=0; iCol<nCols; iCol++){
+      pad->cd();      
+      TPad * newPad=new TPad("pad","pad",iCol/Double_t(nCols),(nRows-iRow-1)/Double_t(nRows),(iCol+1)/Double_t(nCols),(nRows-iRow)/Double_t(nRows));
+      newPad->Draw();
+      nPads++;
+      newPad->SetNumber(nPads);
+    }
+  }
+  delete padRows;
+  //
+  //
+  for (Int_t iPad=0; iPad<nPads; iPad++){
+    if (drawList->At(iPad+1)==NULL) break;
+    //TVirtualPad  *cPad = 
+    pad->cd(iPad+1);
+    TObjArray * padDrawList= TString(drawList->At(iPad+1)->GetName()).Tokenize(";");
+    for (Int_t ihis=0; ihis<padDrawList->GetEntries(); ihis++){
+      TObjArray *hisDescription= TString(padDrawList->At(ihis)->GetName()).Tokenize("()[]");
+      THn * his = (THn*)hisArray->FindObject(hisDescription->At(0)->GetName());      
+      if (his==NULL) continue;
+      TString projString=hisDescription->At(2)->GetName();
+      Int_t nDims = projString.CountChar(';')+1;
+      TH1 * hProj =0;
+      if (nDims==1) hProj=his->Projection(projString.Atoi());
+      if (hProj){
+	if (ihis==0)  hProj->DrawClone(hisDescription->At(3)->GetName());
+	else{
+	  hProj->DrawClone((TString(hisDescription->At(3)->GetName())+"same").Data());
+	}
+      }
+    }
+  }
+  return pad;
+
+}
+
+
+
+
+
+
