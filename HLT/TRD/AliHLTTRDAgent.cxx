@@ -70,24 +70,31 @@ int AliHLTTRDAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 {
   // see header file for class documentation
 
-  TString rawInput="";
+  if( !handler ) return 0;
 
-  if (rawReader || !runloader)
-  {
+  if (rawReader || !runloader){
+    TString rawInput="";
     for (int module = 0;module < 18;module++)
-    {
-      TString arg, publisher;
-      // raw data publisher components
-      publisher.Form("TRD-RP_%02d", module);
-      arg.Form("-minid %d -datatype 'DDL_RAW ' 'TRD ' -dataspec %i", 1024 + module, (int) TMath::Power(2, module));
-      handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
-      if( module>0 ) rawInput+=" ";
-      rawInput+=publisher;
-    }
+      {
+	TString arg, publisher;
+	// raw data publisher components
+	publisher.Form("TRD-RP_%02d", module);
+	arg.Form("-minid %d -datatype 'DDL_RAW ' 'TRD ' -dataspec %i", 1024 + module, (int) TMath::Power(2, module));
+	handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+	if( module>0 ) rawInput+=" ";
+	rawInput+=publisher;
+      }
     handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", rawInput.Data(),"");
     handler->CreateConfiguration("TRD-tracker", "TRDTracker", "TRD-tracklet-reader TPC-globalmerger","");
   }
-  return 0;
+  else if (runloader && !rawReader) {
+    
+    // indicates AliSimulation with no RawReader available -> run on digits
+    
+    // handler->CreateConfiguration("TRDDigitPublisher","AliLoaderPublisher",NULL,"-loader TRDLoader -tree tracklets -datatype 'ALITREED' 'TRD '");
+    // handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", "TRDDigitPublisher","");
+  }
+ return 0;
 }
 
 const char* AliHLTTRDAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,

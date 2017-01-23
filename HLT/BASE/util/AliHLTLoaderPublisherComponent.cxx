@@ -236,6 +236,12 @@ TTree* AliHLTLoaderPublisherComponent::GetTree()
       pTree=fpLoader->TreeD();
     else if (fTreeType.CompareTo("clusters")==0) {
       pTree=fpLoader->TreeR();
+    } else if (fTreeType.CompareTo("tracklets")==0){
+      AliDataLoader *dataLoader = fpLoader->GetDataLoader("tracklets");
+      if (dataLoader) {      
+	dataLoader->Load();
+	pTree = dataLoader->Tree();
+      }
     }
   } else {
   }
