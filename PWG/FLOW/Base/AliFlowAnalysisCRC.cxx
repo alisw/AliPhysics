@@ -980,12 +980,18 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
                 fPOIPhiDiffQIm[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
                 fPOIPhiDiffMul[k][h]->Fill(dPhi,pow(wPhiEta,k));
                 
-                Int_t keta = (dEta<0.4?0:1);
-                fPOIPtDiffQReEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
-                fPOIPtDiffQImEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
-                fPOIPtDiffMulEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k));
+                Double_t boundetagap = fabs(fFlowQCDeltaEta);
+                
+                if((dEta>0. && dEta<0.4-boundetagap/2.) || (dEta>0.4+boundetagap/2. && dEta<0.8)) {
+                  Int_t keta;
+                  if(dEta>0. && dEta<0.4-boundetagap/2.) keta = 0;
+                  else keta = 1;
+                  fPOIPtDiffQReEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+                  fPOIPtDiffQImEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+                  fPOIPtDiffMulEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k));
+                }
               } else {
-                wPhiEta = 0.;
+                continue;
               }
               
             } else if(fFlowQCDeltaEta<-1. && fFlowQCDeltaEta>-2.) {
@@ -999,12 +1005,18 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
                 fPOIPhiDiffQIm[k][h]->Fill(dPhi,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
                 fPOIPhiDiffMul[k][h]->Fill(dPhi,pow(wPhiEta,k));
                 
-                Int_t keta = (dEta<-0.4?0:1);
-                fPOIPtDiffQReEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
-                fPOIPtDiffQImEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
-                fPOIPtDiffMulEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k));
+                Double_t boundetagap = fabs(fFlowQCDeltaEta)-1.;
+                
+                if((dEta<0. && dEta>-0.4+boundetagap/2.) || (dEta<-0.4-boundetagap/2. && dEta>-0.8)) {
+                  Int_t keta;
+                  if(dEta<0. && dEta>-0.4+boundetagap/2.) keta = 0;
+                  else keta = 1;
+                  fPOIPtDiffQReEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Cos((h+1.)*dPhi));
+                  fPOIPtDiffQImEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k)*TMath::Sin((h+1.)*dPhi));
+                  fPOIPtDiffMulEG[keta][k][h]->Fill(dPt,pow(wPhiEta,k));
+                }
               } else {
-                wPhiEta = 0.;
+                continue;
               }
               
             }
@@ -18614,25 +18626,18 @@ void AliFlowAnalysisCRC::RecenterCRCQVecZDC()
 //      QAImR = fZDCFlowVect[1].Y();
       
       Double_t AvQCRe = fZDCQHist[4]->GetBinContent(fZDCQHist[0]->FindBin(fCentralityEBE));
-      Double_t SDQCRe = fZDCQHist[4]->GetBinError(fZDCQHist[0]->FindBin(fCentralityEBE));
       Double_t AvQCIm = fZDCQHist[5]->GetBinContent(fZDCQHist[1]->FindBin(fCentralityEBE));
-      Double_t SDQCIm = fZDCQHist[5]->GetBinError(fZDCQHist[1]->FindBin(fCentralityEBE));
       
       Double_t AvQARe = fZDCQHist[6]->GetBinContent(fZDCQHist[2]->FindBin(fCentralityEBE));
-      Double_t SDQARe = fZDCQHist[6]->GetBinError(fZDCQHist[2]->FindBin(fCentralityEBE));
       Double_t AvQAIm = fZDCQHist[7]->GetBinContent(fZDCQHist[3]->FindBin(fCentralityEBE));
-      Double_t SDQAIm = fZDCQHist[7]->GetBinError(fZDCQHist[3]->FindBin(fCentralityEBE));
       
-      if(AvQCRe && AvQCIm && QMC>0.) {
-        QCReR = QCRe-AvQCRe;
-        QCImR = QCIm-AvQCIm;
-        fZDCFlowVect[0].Set(QCReR,QCImR);
-      }
-      if(AvQARe && AvQAIm && QMA>0.) {
-        QAReR = QARe-AvQARe;
-        QAImR = QAIm-AvQAIm;
-        fZDCFlowVect[1].Set(QAReR,QAImR);
-      }
+      QCReR -= AvQCRe;
+      QCImR -= AvQCIm;
+      fZDCFlowVect[0].Set(QCReR,QCImR);
+      
+      QAReR -= AvQARe;
+      QAImR -= AvQAIm;
+      fZDCFlowVect[1].Set(QAReR,QAImR);
     }
     
 //    Int_t EPCenBin = fCRCZDCQVecEP[fRunBin][0]->GetXaxis()->FindBin(fCentralityEBE)-1;
