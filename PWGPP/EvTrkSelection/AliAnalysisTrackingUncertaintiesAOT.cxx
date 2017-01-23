@@ -177,9 +177,9 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   Int_t nEtaBins = 2*fMaxEta/0.1;
   if(fMC) {
     const Int_t nvars = 10;
-    Int_t nBins[nvars]   = {300,   64,   31,    31,   18,   nEtaBins,    3,   2,    5,    2};
-    Double_t xmin[nvars] = {-3., -3.2,  0.1,   0.1,   0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
-    Double_t xmax[nvars] = {3.,   3.2, 15.6,  15.6, 6.28,    fMaxEta,  2.5,  2.,  4.5,  1.5};
+    Int_t nBins[nvars]   = {300,   64,   29,    29,   18,   nEtaBins,    3,   2,    5,    2};
+    Double_t xmin[nvars] = {-3., -3.2,  0.5,   0.5,   0.,   -fMaxEta, -0.5, -2., -0.5, -0.5};
+    Double_t xmax[nvars] = {3.,   3.2, 15.0,  15.0, 6.28,    fMaxEta,  2.5,  2.,  4.5,  1.5};
     TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","particle p_{T}","phi","eta","type (0=prim,1=sec,2=mat)","track label (1=lab>0,-1=lab<0)","species (0=e,1=#pi,2=k,3=p) - MC truth","TOFbc"};
         
     fHistMC  = new THnSparseF("fHistMC","fHistMC", nvars, nBins, xmin, xmax);
@@ -193,9 +193,9 @@ void AliAnalysisTrackingUncertaintiesAOT::UserCreateOutputObjects()
   }
   else {
     const Int_t nvars = 6;
-    Int_t nBins[nvars]   = {300,   64,    31,    18,  nEtaBins,    2};
-    Double_t xmin[nvars] = {-3., -3.2,   0.1,    0.,  -fMaxEta, -0.5};
-    Double_t xmax[nvars] = {3.,   3.2,  15.6,  6.28,   fMaxEta,  1.5};
+    Int_t nBins[nvars]   = {300,   64,    29,    18,  nEtaBins,    2};
+    Double_t xmin[nvars] = {-3., -3.2,   0.5,    0.,  -fMaxEta, -0.5};
+    Double_t xmax[nvars] = {3.,   3.2,  15.0,  6.28,   fMaxEta,  1.5};
     TString axis[nvars]  = {"DCAxy","DCAz","track p_{T}","phi","eta","TOFbc"};
         
     fHistData  = new THnSparseF("fHistData","fHistData", nvars, nBins, xmin, xmax);
@@ -660,9 +660,9 @@ void AliAnalysisTrackingUncertaintiesAOT::InitializeTrackCutHistograms() {
   //  match TPC->ITS
   //                                  0-is matched, 1-pt, 2-eta,   3-phi,   4-pid(0-3 -> electron-proton, 4 -> undef, 5 -> all) 6-bcTOF 7-DCAxy
   Int_t nEtaBins = 2*fMaxEta/0.1;
-  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   31, nEtaBins,            18,  6,      3,    2,  30};
-  Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.1, -fMaxEta,             0, -0.5, -1.5, -0.5, -3.};
-  Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5, 15.1,  fMaxEta, 2*TMath::Pi(),  5.5,  1.5,  1.5,  3.};
+  Int_t    binsTpcItsMatch[kNumberOfAxes] = {    2,   29, nEtaBins,            18,  6,      3,    2,  30};
+  Double_t minTpcItsMatch[kNumberOfAxes]  = { -0.5,  0.5, -fMaxEta,             0, -0.5, -1.5, -0.5, -3.};
+  Double_t maxTpcItsMatch[kNumberOfAxes]  = {  1.5, 15.0,  fMaxEta, 2*TMath::Pi(),  5.5,  1.5,  1.5,  3.};
   //
   TString axisNameTpcItsMatch[kNumberOfAxes]  = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","dcaxy"};
   TString axisTitleTpcItsMatch[kNumberOfAxes] = {"isMatched","pT","eta","phi","pid","primSec","bcTOF","dcaxy"};
