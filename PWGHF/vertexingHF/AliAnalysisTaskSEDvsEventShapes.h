@@ -186,8 +186,8 @@ private:
     TH3F *fHistnTrackvsEtavsPhi;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi
     TH3F *fHistnTrackvsEtavsPhiEvWithCand;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi for event with atleast one D meson
     
-    TH2F *fHistTrueSovsMeasSo;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi
-    TH2F *fHistTrueSovsMeasSoEvWithCand;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi for event with atleast one D meson
+    TH3F *fHistTrueSovsMeasSo;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi
+    TH3F *fHistTrueSovsMeasSoEvWithCand;  //!<! hist. of number of tracks passing track selection for spherocity calculation vs eta vs. phi for event with atleast one D meson
     
     THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
     THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
@@ -263,7 +263,7 @@ private:
     Int_t ffiltbit2;
     Double_t fphiStepSizeDeg;
     
-    ClassDef(AliAnalysisTaskSEDvsEventShapes,11); // D vs. mult task
+    ClassDef(AliAnalysisTaskSEDvsEventShapes,12); // D vs. mult task
 };
 
 #endif
