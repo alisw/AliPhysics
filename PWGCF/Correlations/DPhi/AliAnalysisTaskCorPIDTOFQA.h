@@ -26,21 +26,28 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	
     private:
 
-        AliAODEvent*            fAOD;              //! input event
-        TList*                  fOutputList;       //! output list
-	AliPIDResponse*         fPIDResponse;      //! PID response object          //// added by Brennan
-	TH1F*                   fHistPt;           //! pt histogram
+        AliAODEvent*            fAOD;               //! input event
+        TList*                  fOutputList;        //! output list
+	AliPIDResponse*         fPIDResponse;       //! PID response object          //// added by Brennan
+	TH1F*                   fHistPt;            //! pt histogram
 
-	TH2F*                   cent_ntracks;      //!                              //// added by Brennan
-	TH1F*                   t_minus_tpion;     //!                              //// added by Brennan
-	TH2F*                   m_squared_pos_raw; //!                              //// added by Brennan
-	TH2F*                   m_squared_pos;     //!                              //// added by Brennan
-	TH2F*                   m_squared_neg_raw; //!                              //// added by Brennan
-	TH2F*                   m_squared_neg;     //!                              //// added by Brennan
-//	TH1F*                   species_num;       //!                              //// added by Brennan
-	TH2F*                   beta_vs_p;         //!                              //// added by Brennan
-//	TH2F*                   sigma_vs_p;        //!                              //// added by Brennan
-	TH2F*                   dtof_dEdx;         //!                              //// added by Brennan
+	TH2F*                   cent_ntracks;       //!                              //// added by Brennan
+	TH2F*                   m_squared_pos_raw;  //!                              //// added by Brennan
+	TH2F*                   m_squared_pos_cut;  //!                              //// added by Brennan
+	TH2F*                   m_squared_pos;      //!                              //// added by Brennan
+	TH2F*                   m_squared_neg_raw;  //!                              //// added by Brennan
+	TH2F*                   m_squared_neg_cut;  //!                              //// added by Brennan
+	TH2F*                   m_squared_neg;      //!                              //// added by Brennan
+//	TH1F*                   species_num;        //!                              //// added by Brennan
+	TH2F*                   beta_vs_mom;        //!                              //// added by Brennan
+//	TH2F*                   sigma_vs_p;         //!                              //// added by Brennan
+	TH2F*                   dtof_dEdx;          //!                              //// added by Brennan
+	TH1F*                   mapped_ttof;        //!                              //// added by Brennan
+	TH2F*                   m_squared_pos_deut; //!                              //// added by Brennan
+	TH2F*                   m_squared_neg_deut; //!                              //// added by Brennan
+	TH2F*                   plength_vs_mom;     //!                              //// added by Brennan
+	TH2F*                   ttof_vs_mom;        //!                              //// added by Brennan
+	TH2F*                   deltat_vs_mom;      //!                              //// added by Brennan
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
