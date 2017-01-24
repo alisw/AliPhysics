@@ -137,9 +137,11 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
+ fBackgroundOption(0),
  fEstimate2pBackground(kFALSE),
  fEstimate3pBackground(kFALSE),
  fEstimate4pBackground(kFALSE),
+ fMaxBufferSize1(10),
  // 5.) Buffers:
  fBuffersList(NULL),
  fBuffersFlagsPro(NULL),
@@ -335,9 +337,11 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
+ fBackgroundOption(0),
  fEstimate2pBackground(kFALSE),
  fEstimate3pBackground(kFALSE),
  fEstimate4pBackground(kFALSE),
+ fMaxBufferSize1(0),
  // 5.) Buffers:
  fBuffersList(NULL),
  fBuffersFlagsPro(NULL),
@@ -704,9 +708,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::NormalizeCorrelationFunctions()
   for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
   {
    if(fCorrelationFunctions[pid1][pid2] && fCorrelationFunctions[pid1][pid2]->GetEntries() > 0 &&
-      fBackground[pid1][pid2] && fBackground[pid1][pid2]->GetEntries() > 0)
+      f2pBackground[pid1][pid2] && f2pBackground[pid1][pid2]->GetEntries() > 0)
    {
-    fCorrelationFunctions[pid1][pid2]->Divide(fBackground[pid1][pid2]);
+    fCorrelationFunctions[pid1][pid2]->Divide(f2pBackground[pid1][pid2]);
    } // if(..)
   } // for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  } // for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -1124,9 +1128,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
 
   if(!PassesMixedEventCuts(aMC)){return;} // TBI this is empty at the moment for MC
   Int_t nTracks = aMC->GetNumberOfTracks();
-  if(!fMixedEvents[0])
+  if(!fMixedEvents0[0])
   {
-   TClonesArray ca0("AliAODMCParticle"); // temporary holder, its entries will be copied to fMixedEvents[0]
+   TClonesArray ca0("AliAODMCParticle"); // temporary holder, its entries will be copied to fMixedEvents0[0]
    Int_t ca0Counter = 0;
    for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
    {
@@ -1134,15 +1138,15 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
     if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
     if(!PassesCommonTrackCuts(amcparticle)){continue;} // TBI re-think, see implemntation of this method
     if(!(pattern.Contains(Form(".%d.",TMath::Abs(amcparticle->GetPdgCode()))))){continue;}
-    // Fill fMixedEvents[0] with tracks which survived all checks:
+    // Fill fMixedEvents0[0] with tracks which survived all checks:
     ca0[ca0Counter++] = amcparticle;
    } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
-   fMixedEvents[0] = (TClonesArray*)ca0.Clone();
-   if(!fMixedEvents[0]){Fatal(sMethodName.Data(),"!fMixedEvents[0]");}
+   fMixedEvents0[0] = (TClonesArray*)ca0.Clone();
+   if(!fMixedEvents0[0]){Fatal(sMethodName.Data(),"!fMixedEvents0[0]");}
   }
-  else if(!fMixedEvents[1])
+  else if(!fMixedEvents0[1])
   {
-   TClonesArray ca1("AliAODMCParticle"); // temporary holder, its entries will be copied to fMixedEvents[1]
+   TClonesArray ca1("AliAODMCParticle"); // temporary holder, its entries will be copied to fMixedEvents0[1]
    Int_t ca1Counter = 0;
    for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
    {
@@ -1150,16 +1154,16 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
     if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
     if(!PassesCommonTrackCuts(amcparticle)){continue;} // TBI re-think, see implemntation of this method
     if(!(pattern.Contains(Form(".%d.",TMath::Abs(amcparticle->GetPdgCode()))))){continue;}
-    // Fill fMixedEvents[0] with tracks which survived all checks:
+    // Fill fMixedEvents0[0] with tracks which survived all checks:
     ca1[ca1Counter++] = amcparticle;
    } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++)
-   fMixedEvents[1] = (TClonesArray*)ca1.Clone();
-   if(!fMixedEvents[1]){Fatal(sMethodName.Data(),"!fMixedEvents[1]");}
+   fMixedEvents0[1] = (TClonesArray*)ca1.Clone();
+   if(!fMixedEvents0[1]){Fatal(sMethodName.Data(),"!fMixedEvents0[1]");}
   }
   // Shall we do something?
-  if(fMixedEvents[0] && fMixedEvents[1])
+  if(fMixedEvents0[0] && fMixedEvents0[1])
   {
-   CalculateBackground(fMixedEvents[0],fMixedEvents[1],kTRUE);
+   Calculate2pBackground(fMixedEvents0[0],fMixedEvents0[1],kTRUE);
   }
  } // if(aMC)
  else if(aESD)
@@ -1170,50 +1174,147 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
  {
   if(!PassesMixedEventCuts(aAOD)){return;} // TBI returns always true at the moment...
 
-  if(0==fMixedEvents[0]->GetEntries())
+  switch(fBackgroundOption)
   {
-   if(fGlobalTracksAOD[1]) fGlobalTracksAOD[1]->Delete();
-   GlobalTracksAOD(aAOD,1);
-   if(0 == fGlobalTracksAOD[1]->GetSize()){return;}
-   *fMixedEvents[0] = *(aAOD->GetTracks());
-   if(0==fMixedEvents[0]->GetEntries()){return;}
-  }
-  else if(0==fMixedEvents[1]->GetEntries())
-  {
-   if(fGlobalTracksAOD[2]) fGlobalTracksAOD[2]->Delete();
-   GlobalTracksAOD(aAOD,2);
-   if(0 == fGlobalTracksAOD[2]->GetSize()){return;}
-   *fMixedEvents[1] = *(aAOD->GetTracks());
-   if(0==fMixedEvents[1]->GetEntries()){return;}
-  }
-  else if(0==fMixedEvents[2]->GetEntries())
-  {
-   if(fGlobalTracksAOD[3]) fGlobalTracksAOD[3]->Delete();
-   GlobalTracksAOD(aAOD,3);
-   if(0 == fGlobalTracksAOD[3]->GetSize()){return;}
-   *fMixedEvents[2] = *(aAOD->GetTracks());
-   if(0==fMixedEvents[2]->GetEntries()){return;}
-  }
+   // 0 : shifting
+   // 1 : permutations + binning in vertex z-position
+   //     Key objects are fMixedEvents1[10][5]. First index indicates the vertex-z range, when the all entries in the second index are filled, then:
+   //     a) Make all possible permutations of 2-events, 3-events, etc.
+   //     b) For each permutation call Calculate2pBackground(...), Calculate3pBackground(...), etc.
 
-  // Shall we do something?
-  if(0!=fMixedEvents[0]->GetEntries() && 0!=fMixedEvents[1]->GetEntries() && 0!=fMixedEvents[2]->GetEntries())
-  {
-   if(fEstimate2pBackground) CalculateBackground(fMixedEvents[0],fMixedEvents[1]); // TBI rename
-   if(fEstimate3pBackground) Calculate3pBackground(fMixedEvents[0],fMixedEvents[1],fMixedEvents[2]);
-   //if(fEstimate4pBackground) Calculate4pBackground(fMixedEvents[0],fMixedEvents[1],fMixedEvents[2],fMixedEvents[3]);
-   // Shift mixed events:
-   // [1] -> [0]
-   fMixedEvents[0]->Delete();
-   *fMixedEvents[0] = *fMixedEvents[1];
-   *fGlobalTracksAOD[1] = *fGlobalTracksAOD[2];
-   // [2] -> [1]
-   fMixedEvents[1]->Delete();
-   *fMixedEvents[1] = *fMixedEvents[2];
-   *fGlobalTracksAOD[2] = *fGlobalTracksAOD[3];
-   // Clean [2]:
-   fMixedEvents[2]->Delete();
-   fGlobalTracksAOD[3]->Delete();
-  } // if(0!=fMixedEvents[0]->GetEntries() && 0!=fMixedEvents[1]->GetEntries() && 0!=fMixedEvents[2]->GetEntries())
+   case 0: // shifting
+   if(0==fMixedEvents0[0]->GetEntries())
+   {
+    if(fGlobalTracksAOD[1]) fGlobalTracksAOD[1]->Delete();
+    GlobalTracksAOD(aAOD,1);
+    if(0 == fGlobalTracksAOD[1]->GetSize()){return;}
+    *fMixedEvents0[0] = *(aAOD->GetTracks());
+    if(0==fMixedEvents0[0]->GetEntries()){return;}
+   }
+   else if(0==fMixedEvents0[1]->GetEntries())
+   {
+    if(fGlobalTracksAOD[2]) fGlobalTracksAOD[2]->Delete();
+    GlobalTracksAOD(aAOD,2);
+    if(0 == fGlobalTracksAOD[2]->GetSize()){return;}
+    *fMixedEvents0[1] = *(aAOD->GetTracks());
+    if(0==fMixedEvents0[1]->GetEntries()){return;}
+   }
+   else if(0==fMixedEvents0[2]->GetEntries())
+   {
+    if(fGlobalTracksAOD[3]) fGlobalTracksAOD[3]->Delete();
+    GlobalTracksAOD(aAOD,3);
+    if(0 == fGlobalTracksAOD[3]->GetSize()){return;}
+    *fMixedEvents0[2] = *(aAOD->GetTracks());
+    if(0==fMixedEvents0[2]->GetEntries()){return;}
+   }
+   // Shall we do something?
+   if(0!=fMixedEvents0[0]->GetEntries() && 0!=fMixedEvents0[1]->GetEntries() && 0!=fMixedEvents0[2]->GetEntries())
+   {
+    if(fEstimate2pBackground) Calculate2pBackground(fMixedEvents0[0],fMixedEvents0[1]); // TBI rename
+    if(fEstimate3pBackground) Calculate3pBackground(fMixedEvents0[0],fMixedEvents0[1],fMixedEvents0[2]);
+    //if(fEstimate4pBackground) Calculate4pBackground(fMixedEvents0[0],fMixedEvents0[1],fMixedEvents0[2],fMixedEvents0[3]);
+    // Shift mixed events:
+    // [1] -> [0]
+    fMixedEvents0[0]->Delete();
+    *fMixedEvents0[0] = *fMixedEvents0[1];
+    *fGlobalTracksAOD[1] = *fGlobalTracksAOD[2];
+    // [2] -> [1]
+    fMixedEvents0[1]->Delete();
+    *fMixedEvents0[1] = *fMixedEvents0[2];
+    *fGlobalTracksAOD[2] = *fGlobalTracksAOD[3];
+    // Clean [2]:
+    fMixedEvents0[2]->Delete();
+    fGlobalTracksAOD[3]->Delete();
+   } // if(0!=fMixedEvents0[0]->GetEntries() && 0!=fMixedEvents0[1]->GetEntries() && 0!=fMixedEvents0[2]->GetEntries())
+   break; // case 0: // shifting
+
+   //=============================================================
+
+   case 1: // permutations + binning in vertex z-position
+   AliAODVertex *avtx = (AliAODVertex*)aAOD->GetPrimaryVertex();
+   if(!avtx){return;}
+   Int_t nBinsVertexZrange = sizeof(fMixedEvents1)/sizeof(fMixedEvents1[0]); // extracts numbers of rows in TClonesArray *fMixedEvents1[10][5];
+   if(nBinsVertexZrange<=0){Fatal(sMethodName.Data(),"nBinsVertexZrange<=0");}
+   Int_t indexX = -44; // this is eventually the first index in TClonesArray *fMixedEvents1[10][5];
+   Float_t flBinWidthVertexZrange = (fMaxVertexZ-fMinVertexZ)/(1.*nBinsVertexZrange);
+   for(Int_t b=0;b<nBinsVertexZrange;b++)
+   {
+    //cout<<Form("%f - %f : %f",fMinVertexZ+1.*b*flBinWidthVertexZrange,fMinVertexZ+1.*(b+1)*flBinWidthVertexZrange,avtx->GetZ())<<endl;
+    if(avtx->GetZ()>=fMinVertexZ+1.*b*flBinWidthVertexZrange && avtx->GetZ()<fMinVertexZ+1.*(b+1)*flBinWidthVertexZrange)
+    {
+     indexX = b;
+     break;
+    }
+   } // for(Int_t b=0;b<nBinsVertexZrange;b++)
+   if(-44==indexX){Fatal(sMethodName.Data(),"-44==indexX");}
+   Int_t indexY = -44; // this is eventually the second index in TClonesArray *fMixedEvents1[10][5];
+   for(Int_t bufferNo=0;bufferNo<fMaxBufferSize1;bufferNo++) // determining the 1st empty buffer
+   {
+    if(0==fMixedEvents1[indexX][bufferNo]->GetEntries()) // empty buffer
+    {
+     indexY = bufferNo;
+     break;
+    }
+   } // for(Int_t bufferNo=0;bufferNo<5;bufferNo++)
+   // Save in the buffer this event:
+   *fMixedEvents1[indexX][indexY] = *(aAOD->GetTracks());
+   GlobalTracksAOD(aAOD,indexX,indexY);
+   // Shall we do something for 2p background?
+   if(fMaxBufferSize1-1==indexY)
+   {
+    if(fEstimate2pBackground) // this buffer is full TBI hardwired 4. Making all possible combinations of 2 events
+    {
+     for(Int_t bufferNo1=0;bufferNo1<fMaxBufferSize1;bufferNo1++) // 1st event in the mixed events
+     {
+      for(Int_t bufferNo2=bufferNo1+1;bufferNo2<fMaxBufferSize1;bufferNo2++) // 2nd event in the mixed events
+      {
+       Calculate2pBackground(fMixedEvents1[indexX][bufferNo1],fMixedEvents1[indexX][bufferNo2],fGlobalTracksAOD1[indexX][bufferNo1],fGlobalTracksAOD1[indexX][bufferNo2]);
+      } // for(Int_t bufferNo2=bufferNo1+1;bufferNo2<5;bufferNo2++) // 2nd event in the mixed events
+     } // for(Int_t bufferNo1=0;bufferNo1<5;bufferNo1++) // first event in the mixed events
+    } // if(fEstimate2pBackground)
+    // Shall we do something for 3p background?
+    if(fEstimate3pBackground) // this buffer is full TBI hardwired 4. Making all possible combinations of 3 events
+    {
+     for(Int_t bufferNo1=0;bufferNo1<fMaxBufferSize1;bufferNo1++) // 1st event in the mixed events
+     {
+      for(Int_t bufferNo2=0;bufferNo2<fMaxBufferSize1;bufferNo2++) // 2nd event in the mixed events
+      {
+       if(bufferNo2<=bufferNo1){continue;}
+       for(Int_t bufferNo3=0;bufferNo3<fMaxBufferSize1;bufferNo3++) // 3rd event in the mixed events
+       {
+        if(bufferNo2<=bufferNo1 || bufferNo3<=bufferNo1 || bufferNo3<=bufferNo2){continue;}
+        //cout<<Form("%d %d %d",bufferNo1,bufferNo2,bufferNo3)<<endl;
+        Calculate3pBackground(fMixedEvents1[indexX][bufferNo1],fMixedEvents1[indexX][bufferNo2],fMixedEvents1[indexX][bufferNo3],fGlobalTracksAOD1[indexX][bufferNo1],fGlobalTracksAOD1[indexX][bufferNo2],fGlobalTracksAOD1[indexX][bufferNo3]);
+       } // for(Int_t bufferNo3=0;bufferNo3<fMaxBufferSize1;bufferNo3++) // 3rd event in the mixed events
+      } // for(Int_t bufferNo2=bufferNo1+1;bufferNo2<5;bufferNo2++) // 2nd event in the mixed events
+     } // for(Int_t bufferNo1=0;bufferNo1<5;bufferNo1++) // first event in the mixed events
+    } // if(fEstimate3pBackground)
+
+    if(fEstimate4pBackground) // this buffer is full TBI hardwired 4. Making all possible combinations of 4 events
+    {
+     // ...
+    } // if(fEstimate4pBackground)
+
+    // Clean the buffer:
+    for(Int_t bufferNo=0;bufferNo<fMaxBufferSize1;bufferNo++)
+    {
+     fMixedEvents1[indexX][bufferNo]->Delete();
+     fGlobalTracksAOD1[indexX][bufferNo]->Delete();
+    } // for(Int_t bufferNo=0;bufferNo<5;bufferNo++)
+
+   } // if(4==indexY)
+
+   break; // permutations + binning in vertex z-position
+
+   //=============================================================
+
+/*
+   default:
+    cout<<Form("And the fatal 'fBackgroundOption' value is... %d. Congratulations!!",fBackgroundOption)<<endl;
+    Fatal(sMethodName.Data(),"switch(fBackgroundOption)");
+*/
+
+  } // switch(fBackgroundOption)
 
  } // else if(aAOD)
 
@@ -1330,7 +1431,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjec
  // Insanity checks for UserCreateOutputObjects() method.
 
  // a) Insanity checks for global track cuts;
- // b) Disabled temporarily 4-p stuff. TBI a) fMixedEvents[3] needs to be upgraded to fMixedEvents[4], and b) EstimateBackground(AliVEvent *ave) needs to be re-implemented
+ // b) Disabled temporarily 4-p stuff. TBI a) fMixedEvents0[3] needs to be upgraded to fMixedEvents0[4], and b) EstimateBackground(AliVEvent *ave) needs to be re-implemented
+ // c) Insanity checks for background.
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjects()";
 
@@ -1348,6 +1450,18 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjec
  {
   cout<<Form("\n\nCalculation of 4-p stuff is not validated yet!!!! \n\n")<<endl; // TBI
   Fatal(sMethodName.Data(),"fFill4pCorrelationFunctions || fEstimate4pBackground");
+ }
+
+ // c) Insanity checks for background:
+ if(!(fBackgroundOption == 0 || fBackgroundOption == 1))
+ {
+  cout<<Form("\n\nThis option for calculating background is not supported yet!!!! \n\n")<<endl; // TBI
+  Fatal(sMethodName.Data(),"!(fBackgroundOption == 0 || fBackgroundOption == 1)");
+ } // if(fBackgroundOption !=0 || fBackgroundOption != 1)
+ if(fMaxBufferSize1>=50)
+ {
+  cout<<Form("\n\nfMaxBufferSize1 can be at maximum 50 !!!! \n\n")<<endl; // TBI
+  Fatal(sMethodName.Data(),"fMaxBufferSize1>=50");
  }
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksUserCreateOutputObjects()
@@ -2007,11 +2121,16 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackground()
 {
  // Initialize all arrays for background.
 
+ for(Int_t bs=0;bs<3;bs++)
+ {
+  fBackgroundSublist[bs] = NULL;        // lists to hold all background correlations, for 2p [0], 3p [1], 4p [2], etc., separately
+ }
+
  for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  {
   for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
   {
-   fBackground[pid1][pid2] = NULL;
+   f2pBackground[pid1][pid2] = NULL;
   }
  }
 
@@ -2028,7 +2147,16 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackground()
 
  for(Int_t me=0;me<3;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
  {
-  fMixedEvents[me] = NULL;
+  fMixedEvents0[me] = NULL;
+ }
+
+ for(Int_t vzr=0;vzr<10;vzr++) // vertez-z range
+ {
+  for(Int_t me=0;me<fMaxBufferSize1;me++) // mixed events
+  {
+   fMixedEvents1[vzr][me] = NULL;
+   fGlobalTracksAOD1[vzr][me] = NULL;
+  }
  }
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForBackground()
@@ -2178,6 +2306,14 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  fBackgroundList->SetName("Background");
  fBackgroundList->SetOwner(kTRUE);
  fHistList->Add(fBackgroundList);
+ // Background sublists:
+ for(Int_t bs=0;bs<3;bs++)
+ {
+  fBackgroundSublist[bs] = new TList();
+  fBackgroundSublist[bs]->SetName(Form("f%dpBackground",bs+2));
+  fBackgroundSublist[bs]->SetOwner(kTRUE);
+  fBackgroundList->Add(fBackgroundSublist[bs]);
+ } // for(Int_t bs=0;bs<3;bs++)
 
  // e) Book and nest lists for buffers:
  fBuffersList = new TList();
@@ -2806,7 +2942,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
  // e) Book buffer objects.
 
  // a) Book the profile holding all the flags for correlation functions objects:
- fBackgroundFlagsPro = new TProfile("fBackgroundFlagsPro","Flags and settings for background histograms",3,0,3);
+ fBackgroundFlagsPro = new TProfile("fBackgroundFlagsPro","Flags and settings for background histograms",4,0,4);
  fBackgroundFlagsPro->SetTickLength(-0.01,"Y");
  fBackgroundFlagsPro->SetMarkerStyle(25);
  fBackgroundFlagsPro->SetLabelSize(0.04);
@@ -2814,9 +2950,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
  fBackgroundFlagsPro->SetStats(kFALSE);
  fBackgroundFlagsPro->SetFillColor(kGray);
  fBackgroundFlagsPro->SetLineColor(kBlack);
- fBackgroundFlagsPro->GetXaxis()->SetBinLabel(1,"fEstimate2pBackground"); fBackgroundFlagsPro->Fill(0.5,fEstimate2pBackground);
- fBackgroundFlagsPro->GetXaxis()->SetBinLabel(2,"fEstimate3pBackground"); fBackgroundFlagsPro->Fill(1.5,fEstimate3pBackground);
- fBackgroundFlagsPro->GetXaxis()->SetBinLabel(3,"fEstimate4pBackground"); fBackgroundFlagsPro->Fill(2.5,fEstimate4pBackground);
+ fBackgroundFlagsPro->GetXaxis()->SetBinLabel(1,"fBackgroundOption"); fBackgroundFlagsPro->Fill(0.5,fBackgroundOption);
+ fBackgroundFlagsPro->GetXaxis()->SetBinLabel(2,"fEstimate2pBackground"); fBackgroundFlagsPro->Fill(1.5,fEstimate2pBackground);
+ fBackgroundFlagsPro->GetXaxis()->SetBinLabel(3,"fEstimate3pBackground"); fBackgroundFlagsPro->Fill(2.5,fEstimate3pBackground);
+ fBackgroundFlagsPro->GetXaxis()->SetBinLabel(4,"fEstimate4pBackground"); fBackgroundFlagsPro->Fill(3.5,fEstimate4pBackground);
  fBackgroundList->Add(fBackgroundFlagsPro);
 
  //if(!fEstimateBackground){return;} // TBI is this safe?
@@ -2834,12 +2971,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
    for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
    {
     // Background:
-    fBackground[pid1][pid2] = new TH1F(Form("fBackground[%d][%d]",pid1,pid2),Form("fBackground[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
-    fBackground[pid1][pid2]->SetStats(kFALSE);
-    fBackground[pid1][pid2]->SetFillColor(kBlue-10);
-    fBackground[pid1][pid2]->SetXTitle("k");
-    fBackground[pid1][pid2]->SetYTitle("B(k)");
-    fBackgroundList->Add(fBackground[pid1][pid2]);
+    f2pBackground[pid1][pid2] = new TH1F(Form("f2pBackground[%d][%d]",pid1,pid2),Form("f2pBackground[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
+    f2pBackground[pid1][pid2]->SetStats(kFALSE);
+    f2pBackground[pid1][pid2]->SetFillColor(kBlue-10);
+    f2pBackground[pid1][pid2]->SetXTitle("k");
+    f2pBackground[pid1][pid2]->SetYTitle("B(k)");
+    fBackgroundSublist[0]->Add(f2pBackground[pid1][pid2]);
    } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
   } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
  } // if(fEstimate2pBackground)
@@ -2859,7 +2996,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
      f3pBackground[pid1][pid2][pid3]->SetFillColor(kBlue-10);
      f3pBackground[pid1][pid2][pid3]->SetXTitle("Q_{3}");
      f3pBackground[pid1][pid2][pid3]->SetYTitle("B(Q_{3})");
-     fBackgroundList->Add(f3pBackground[pid1][pid2][pid3]);
+     fBackgroundSublist[1]->Add(f3pBackground[pid1][pid2][pid3]);
     } // for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
    } // for(Int_t pid2=0;pid2<2*nParticleSpecies;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
   } // for(Int_t pid=0;pid<2*nParticleSpecies;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
@@ -2882,7 +3019,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
       f4pBackground[pid1][pid2][pid3][pid4]->SetFillColor(kBlue-10);
       f4pBackground[pid1][pid2][pid3][pid4]->SetXTitle("Q_{4}");
       f4pBackground[pid1][pid2][pid3][pid4]->SetYTitle("B(Q_{4})");
-      fBackgroundList->Add(f4pBackground[pid1][pid2][pid3][pid4]);
+      fBackgroundSublist[2]->Add(f4pBackground[pid1][pid2][pid3][pid4]);
      } // for(Int_t pid4=0;pid4<2*nParticleSpecies;pid4++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
     } // for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
    } // for(Int_t pid2=0;pid2<2*nParticleSpecies;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
@@ -2890,11 +3027,32 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
  } // if(fEstimate2pBackground)
 
  // e) Book buffer objects:
- // TBI not sure why I need this here again. Re-think...
- for(Int_t me=0;me<3;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
+ switch(fBackgroundOption)
  {
-  fMixedEvents[me] = new TClonesArray("AliAODTrack",10000);
- }
+  case 0: // shifting (see documentation in EstimateBackground(...))
+   for(Int_t me=0;me<3;me++) // [0] is buffer for 1st event; [1] for 2nd, etc.
+   {
+    fMixedEvents0[me] = new TClonesArray("AliAODTrack",10000);
+   }
+  break; // case 0: // shifting
+
+  case 1: // permutations + binning in vertex z-position
+   for(Int_t vzr=0;vzr<10;vzr++) // vertez-z range
+   {
+    for(Int_t me=0;me<fMaxBufferSize1;me++) // buffer for mixed events
+    {
+     fMixedEvents1[vzr][me] = new TClonesArray("AliAODTrack",10000);
+     fGlobalTracksAOD1[vzr][me] = new TExMap();
+    }
+   }
+  break; // permutations + binning in vertex z-position
+
+  /*
+  default:
+   cout<<Form("And the fatal 'fBackgroundOption' value is... %d. Congratulations!!",fBackgroundOption)<<endl;
+   Fatal(sMethodName.Data(),"switch(fBackgroundOption)");
+  */
+ } // switch(fBackgroundOption)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
 
@@ -3110,6 +3268,53 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD, 
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD, Int_t indexX, Int_t indexY)
+{
+ // Filter out unique global tracks in AOD and store them in fGlobalTracksAOD1[10][5]. TBI hardwired "1" in an array, not in the function name, so this is a bit incosistent...
+
+ // Remark 0: All global tracks have positive ID, the duplicated TPC-only tracks have -(ID+1);
+ // Remark 1: The issue here is that there are apparently two sets of global tracks: a) "normal" and b) constrained to primary vertex.
+ //           However, only the "normal" global tracks come with positive ID, additionally they can be discriminated simply via: aodTrack->IsGlobalConstrained()
+ //           Global constrained tracks have the same negative ID as the TPC-only tracks, both associated with the same "normal global" tracks. E.g. we can have
+ //            iTrack: atrack->GetID(): atrack->Pt() atrack->Eta() atrack->Phi()
+ //                 1:               0:     2.073798     -0.503640      2.935432
+ //                19:              -1:     2.075537     -0.495988      2.935377 => this is TPC-only
+ //                35:              -1:     2.073740     -0.493576      2.935515 => this is IsGlobalConstrained()
+ //           In fact, this is important, otherwise there is double or even triple counting in some cases.
+ // Remark 2: There are tracks for which: 0 == aodTrack->GetFilterMap()
+ //           a) Basically all of them pass: atrack->GetType() == AliAODTrack::kFromDecayVtx , but few exceptions also pass atrack->GetType() == AliAODTrack::kPrimary
+ //           b) All of them apparently have positive ID, i.e. these are global tracks
+ //           c) Clearly, we cannot use TestFilterBit() on them
+ //           d) None of them apparently satisfies: atrack->IsGlobalConstrained()
+ // Remark 3: Used only for fBackgroundOption = 1, i.e. permutations + binning in vertex z-position
+
+ // a) Insanity checks;
+ // b) Determine the map.
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD, Int_t indexX, Int_t indexY)";
+ if(!fGlobalTracksAOD1[indexX][indexY]){Fatal(sMethodName.Data(),"fGlobalTracksAOD[%d][%d]",indexX,indexY);}
+ if(0 != fGlobalTracksAOD1[indexX][indexY]->GetSize()){fGlobalTracksAOD1[indexX][indexY]->Delete();} // yes, this method determines mapping from scratch each time
+
+ // b) Determine the map:
+ for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
+ {
+  AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
+  if(aodTrack)
+  {
+   Int_t id = aodTrack->GetID();
+   //if(id>=0 && aodTrack->GetFilterMap()>0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this
+   if(id>=0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this, it seems that id>=0 is just enough, the second constraint is most likely just an overkill
+   {
+    fGlobalTracksAOD1[indexX][indexY]->Add(id,iTrack); // "key" = id, "value" = iTrack
+   } // if(id>=0 && !aodTrack->IsGlobalConstrained())
+  } // if(aodTrack)
+ } // for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::GlobalTracksAOD(AliAODEvent *aAOD, Int_t indexX, Int_t indexY)
+
+//=======================================================================================================================
+
 Bool_t AliAnalysisTaskMultiparticleFemtoscopy::SpecifiedEvent(UInt_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
 {
  // Check if this is event specified in a steering macro via the setter void SetWaitForSpecifiedEvent(UInt_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period).
@@ -3161,7 +3366,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack *atrack)";
  if(!atrack){Fatal(sMethodName.Data(),"!atrack");}
 
- //if(!atrack->TestFilterBit(128)) return kFALSE; // TPC-only TBI setter TBI#2 There might be some conflict with FillControlHistogramsNonIdentifiedParticlesFTSF
+ if(!atrack->TestFilterBit(128)) return kFALSE; // TPC-only TBI setter TBI#2 There might be some conflict with FillControlHistogramsNonIdentifiedParticlesFTSF
 
  if(fRejectFakeTracks && atrack->GetLabel()<0) return kFALSE; // TBI is it more precise <=0 ?
 
@@ -3521,7 +3726,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pCorrelationFunctions(Ali
   // Loop over the 2nd particle:
   for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++)
   {
-   if(iTrack1==iTrack2){continue;} // Eliminate self-evident self-correlations
+   if(iTrack2<=iTrack1){continue;} // Eliminate self-evident self-correlations, and permutations as well
    AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack2));
    // TBI Temporary track insanity checks:
    if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
@@ -3540,7 +3745,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pCorrelationFunctions(Ali
    // Loop over the 3rd particle:
    for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
    {
-    if(iTrack3==iTrack2 || iTrack3==iTrack1){continue;} // Eliminate self-evident self-correlations
+    if(iTrack3<=iTrack2 || iTrack3<=iTrack1){continue;} // Eliminate self-evident self-correlations, and permutations as well
     AliAODTrack *atrack3 = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack3));
     // TBI Temporary track insanity checks:
     if(!atrack3){Fatal(sMethodName.Data(),"!atrack3");} // TBI keep this for some time, eventually just continue
@@ -3569,6 +3774,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pCorrelationFunctions(Ali
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
      f3pCorrelationFunctions[2][2][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     cout<<Form("iTrack1 = [%d], iTrack2 = [%d], iTrack3 = [%d]",iTrack1,iTrack2,iTrack3)<<endl;
+     cout<<Form("gid1    = [%d], gid2    = [%d],    gid3 = [%d]",gid1,gid2,gid3)<<endl;
+     cout<<gtrack1<<" "<<gtrack2<<" "<<gtrack3<<endl;
     }
     // pi-pi-pi-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
@@ -4017,7 +4225,7 @@ Double_t AliAnalysisTaskMultiparticleFemtoscopy::Q4(AliAODTrack *agtrack1, AliAO
 
 //=======================================================================================================================
 
-void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2)
+void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2)
 {
  // Calculate background.
 
@@ -4030,7 +4238,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
  // e) Clean [1]. TBI I have moved this on another place
 
  // a) Insanity checks:
- TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2)";
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2)";
  if(!ca1){Fatal(sMethodName.Data(),"!ca1");}
  if(!ca2){Fatal(sMethodName.Data(),"!ca2");}
 
@@ -4081,51 +4289,51 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
    //  a1) pi+pi+ [2][2]:
    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
    {
-    fBackground[2][2]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][2]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  a2) pi-pi- [7][7]:
    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fBackground[7][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  a3) pi+pi- || pi-pi+ [2][7]:
    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,1,kTRUE)))
    {
-    fBackground[2][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
 
    // b) kaon-kaon:
    //  b1) K+K+ [3][3]:
    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    fBackground[3][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  b2) K-K- [8][8]:
    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fBackground[8][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[8][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  b3) K+K- || K-K+ [3][8]:
    if((Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE)) || (Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,1,kTRUE)))
    {
-    fBackground[3][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
 
    // c) proton-proton:
    //  c1) p+p+ [4][4]:
    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fBackground[4][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  c2) p-p- [9][9]:
    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fBackground[9][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[9][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  c3) p+p- || p-p+ [4][9]:
    if((Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE)) || (Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,1,kTRUE)))
    {
-    fBackground[4][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
 
    // 2.) Mixed particle species:
@@ -4133,70 +4341,249 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
    //  a1) pi+K+ [2][3]:
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    fBackground[2][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  a2) pi+K- [2][8]
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fBackground[2][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  a3) K+pi- [3][7]
    if(Kaon(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fBackground[3][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fBackground[7][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fBackground[2][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  b2) pi+p- [2][9]
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fBackground[2][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  b3) p+pi- [4][7]
    if(Proton(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fBackground[4][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  b4) pi-p- [7][9]
    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fBackground[7][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    // c) kaon-proton
    //  c1) K+p+ [3][4]:
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fBackground[3][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  c2) K+p- [3][9]
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fBackground[3][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  c3) p+K- [4][8]
    if(Proton(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fBackground[4][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
    //  c4) K-p- [8][9]
    if(Kaon(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fBackground[8][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[8][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
    }
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
-} // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2)
+} // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2)
+{
+ // Calculate background.
+
+ // a) Insanity checks;
+ // b) Two nested loops to calculate B(k);
+ // c) Shift [1] -> [0]; TBI I have moved this on another place
+ // d) Clean [1]. TBI I have moved this on another place
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2)";
+ if(!ca1){Fatal(sMethodName.Data(),"!ca1");}
+ if(!ca2){Fatal(sMethodName.Data(),"!ca2");}
+ if(!em1){Fatal(sMethodName.Data(),"!em1");}
+ if(!em2){Fatal(sMethodName.Data(),"!em2");}
+
+ // b) Two nested loops to calculate B(k):
+ Int_t nTracks1 = ca1->GetEntries();
+ Int_t nTracks2 = ca2->GetEntries();
+
+ // Start loop over tracks in the 1st event:
+ for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+ {
+  AliAODTrack *atrack1 = dynamic_cast<AliAODTrack*>(ca1->UncheckedAt(iTrack1)); // TBI cross-check UncheckedAt
+  // TBI Temporary track insanity checks:
+  if(!atrack1){Fatal(sMethodName.Data(),"!atrack1");} // TBI keep this for some time, eventually just continue
+  if(atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(atrack1->TestFilterBit(128) && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->TestFiletrBit(128) && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(atrack1)){continue;} // TBI re-think
+  // Corresponding AOD global track:
+  Int_t id1 = atrack1->GetID();
+  AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? ca1->UncheckedAt(em1->GetValue(id1)) : ca1->UncheckedAt(em1->GetValue(-(id1+1))));
+  if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
+  // Common track selection criteria for all "normal" global tracks:
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
+
+  // Start loop over tracks in the 2nd event:
+  for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+  {
+   AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(ca2->UncheckedAt(iTrack2));
+   // TBI Temporary track insanity checks:
+   if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
+   if(atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(atrack2->TestFilterBit(128) && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->TestFiletrBit(128) && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(atrack2)){continue;} // TBI re-think
+   // Corresponding AOD global track:
+   Int_t id2 = atrack2->GetID();
+   AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? ca2->UncheckedAt(em2->GetValue(id2)) : ca2->UncheckedAt(em2->GetValue(-(id2+1))));
+   if(!gtrack2){Fatal(sMethodName.Data(),"!gtrack2");} // TBI keep this for some time, eventually just continue
+   // Common track selection criteria for all "normal" global tracks:
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
+
+   // Okay... So we have two tracks from two different events ready. Let's check PID, and calculate the background:
+
+   // 1.) Same particle species:
+   // a) pion-pion:
+   //  a1) pi+pi+ [2][2]:
+   if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
+   {
+    f2pBackground[2][2]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+
+   //  a2) pi-pi- [7][7]:
+   if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[7][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  a3) pi+pi- || pi-pi+ [2][7]:
+   if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,1,kTRUE)))
+   {
+    f2pBackground[2][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+
+   // b) kaon-kaon:
+   //  b1) K+K+ [3][3]:
+   if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
+   {
+    f2pBackground[3][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  b2) K-K- [8][8]:
+   if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[8][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  b3) K+K- || K-K+ [3][8]:
+   if((Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE)) || (Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,1,kTRUE)))
+   {
+    f2pBackground[3][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+
+   // c) proton-proton:
+   //  c1) p+p+ [4][4]:
+   if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
+   {
+    f2pBackground[4][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  c2) p-p- [9][9]:
+   if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[9][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  c3) p+p- || p-p+ [4][9]:
+   if((Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE)) || (Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,1,kTRUE)))
+   {
+    f2pBackground[4][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+
+   // 2.) Mixed particle species:
+   // a) pion-kaon
+   //  a1) pi+K+ [2][3]:
+   if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
+   {
+    f2pBackground[2][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  a2) pi+K- [2][8]
+   if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[2][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  a3) K+pi- [3][7]
+   if(Kaon(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[3][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  a4) pi-K- [7][8]
+   if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[7][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   // b) pion-proton
+   //  b1) pi+p+ [2][4]:
+   if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
+   {
+    f2pBackground[2][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  b2) pi+p- [2][9]
+   if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[2][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  b3) p+pi- [4][7]
+   if(Proton(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[4][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  b4) pi-p- [7][9]
+   if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[7][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   // c) kaon-proton
+   //  c1) K+p+ [3][4]:
+   if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
+   {
+    f2pBackground[3][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  c2) K+p- [3][9]
+   if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[3][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  c3) p+K- [4][8]
+   if(Proton(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[4][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+   //  c4) K-p- [8][9]
+   if(Kaon(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
+   {
+    f2pBackground[8][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+   }
+
+  } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+ } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2)
 
 //=======================================================================================================================
 
@@ -4452,6 +4839,265 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3)
 
+
+
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3)
+{
+ // Calculate background.
+
+ // a) Insanity checks;
+ // b) Three nested loops to calculate B(k);
+
+ // a) Insanity checks:
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3)";
+ if(!ca1){Fatal(sMethodName.Data(),"!ca1");}
+ if(!ca2){Fatal(sMethodName.Data(),"!ca2");}
+ if(!ca3){Fatal(sMethodName.Data(),"!ca3");}
+ if(!em1){Fatal(sMethodName.Data(),"!em1");}
+ if(!em2){Fatal(sMethodName.Data(),"!em2");}
+ if(!em3){Fatal(sMethodName.Data(),"!em3");}
+
+ // b) Three nested loops to calculate B(k):
+ Int_t nTracks1 = ca1->GetEntries();
+ Int_t nTracks2 = ca2->GetEntries();
+ Int_t nTracks3 = ca3->GetEntries();
+
+ // Start loop over tracks in the 1st event:
+ for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+ {
+  AliAODTrack *atrack1 = dynamic_cast<AliAODTrack*>(ca1->UncheckedAt(iTrack1)); // TBI cross-check UncheckedAt
+  // TBI Temporary track insanity checks:
+  if(!atrack1){Fatal(sMethodName.Data(),"!atrack1");} // TBI keep this for some time, eventually just continue
+  if(atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->GetID()>=0 && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(atrack1->TestFilterBit(128) && atrack1->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack1->TestFiletrBit(128) && atrack1->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+  if(!PassesCommonTrackCuts(atrack1)){continue;} // TBI re-think
+  // Corresponding AOD global track:
+  Int_t id1 = atrack1->GetID();
+  AliAODTrack *gtrack1 = dynamic_cast<AliAODTrack*>(id1>=0 ? ca1->UncheckedAt(em1->GetValue(id1)) : ca1->UncheckedAt(em1->GetValue(-(id1+1))));
+  if(!gtrack1){Fatal(sMethodName.Data(),"!gtrack1");} // TBI keep this for some time, eventually just continue
+  // Common track selection criteria for all "normal" global tracks:
+  if(!PassesGlobalTrackCuts(gtrack1)){continue;}
+
+  // Start loop over tracks in the 2nd event:
+  for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+  {
+   AliAODTrack *atrack2 = dynamic_cast<AliAODTrack*>(ca2->UncheckedAt(iTrack2));
+   // TBI Temporary track insanity checks:
+   if(!atrack2){Fatal(sMethodName.Data(),"!atrack2");} // TBI keep this for some time, eventually just continue
+   if(atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->GetID()>=0 && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(atrack2->TestFilterBit(128) && atrack2->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack2->TestFiletrBit(128) && atrack2->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+   if(!PassesCommonTrackCuts(atrack2)){continue;} // TBI re-think
+   // Corresponding AOD global track:
+   Int_t id2 = atrack2->GetID();
+   AliAODTrack *gtrack2 = dynamic_cast<AliAODTrack*>(id2>=0 ? ca2->UncheckedAt(em2->GetValue(id2)) : ca2->UncheckedAt(em2->GetValue(-(id2+1))));
+   if(!gtrack2){Fatal(sMethodName.Data(),"!gtrack2");} // TBI keep this for some time, eventually just continue
+   // Common track selection criteria for all "normal" global tracks:
+   if(!PassesGlobalTrackCuts(gtrack2)){continue;}
+
+   // Start loop over tracks in the 3rd event:
+   for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
+   {
+    AliAODTrack *atrack3 = dynamic_cast<AliAODTrack*>(ca3->UncheckedAt(iTrack3));
+    // TBI Temporary track insanity checks:
+    if(!atrack3){Fatal(sMethodName.Data(),"!atrack3");} // TBI keep this for some time, eventually just continue
+    if(atrack3->GetID()>=0 && atrack3->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack3->GetID()>=0 && atrack3->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+    if(atrack3->TestFilterBit(128) && atrack3->IsGlobalConstrained()){Fatal(sMethodName.Data(),"atrack3->TestFiletrBit(128) && atrack3->IsGlobalConstrained()");} // TBI keep this for some time, eventually just continue
+    if(!PassesCommonTrackCuts(atrack3)){continue;} // TBI re-think
+    // Corresponding AOD global track:
+    Int_t id3 = atrack3->GetID();
+    AliAODTrack *gtrack3 = dynamic_cast<AliAODTrack*>(id3>=0 ? ca3->UncheckedAt(em3->GetValue(id3)) : ca3->UncheckedAt(em3->GetValue(-(id3+1))));
+    if(!gtrack3){Fatal(sMethodName.Data(),"!gtrack3");} // TBI keep this for some time, eventually just continue
+    // Common track selection criteria for all "normal" global tracks:
+    if(!PassesGlobalTrackCuts(gtrack3)){continue;}
+
+    // Okay... So we have three tracks from two different events ready. Let's check PID, and calculate the background:
+
+    // Cases of interest (needs to be synchronized with the calculations of correlations functions):
+    // a) Same species and same charge;
+    // b) Same species but different charge combinations (modulo permutations);
+    // c) Two pions + something else (modulo permutations);
+    // d) Two nucleons + something else (modulo permutations).
+
+    // a) Same species:
+    // pi+pi+pi+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][2][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-pi-
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[7][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K+K+
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[3][3][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K-K-K-
+    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[8][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+p+
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pBackground[4][4][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-p-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[9][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+    // b) Same species but different charge combinations (modulo permutations):
+    // pi+pi+pi-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][2][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-pi-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K+K-
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[3][3][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // K+K-K-
+    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[3][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+p-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[4][4][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p-p-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[4][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+    // c) Two pions + something else (modulo permutations):
+    // pi+pi+K+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][2][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+K-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][2][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-K+
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[7][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-K-
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[7][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-K+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-K-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+p+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][2][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi+p-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][2][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-p+
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pBackground[7][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi-pi-p-
+    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[7][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-p+
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
+    {
+     f3pBackground[2][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // pi+pi-p-
+    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[2][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+    // d) Two nucleons + something else (modulo permutations):
+    // p+p+pi+
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
+    {
+     f3pBackground[4][4][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+pi-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[4][4][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+K+
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[4][4][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p+p+K-
+    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[4][4][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-pi+
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,1,kTRUE))
+    {
+     f3pBackground[9][9][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-pi-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[9][9][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-K+
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
+    {
+     f3pBackground[9][9][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+    // p-p-K-
+    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
+    {
+     f3pBackground[9][9][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+    }
+
+   } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
+  } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
+ } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
+
+} // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3)
+
+
+
+
 //=======================================================================================================================
 
 void AliAnalysisTaskMultiparticleFemtoscopy::Calculate4pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TClonesArray *ca4)
@@ -4464,7 +5110,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate4pBackground(TClonesArray 
 
 //=======================================================================================================================
 
-void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)
+void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)
 {
  // Calculate background for MC events.
 
@@ -4483,7 +5129,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
 
  // a) Insanity checks:
  if(!bMC) return; // TBI this is not really needed...
- TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)";
+ TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)";
  if(!ca1){Fatal(sMethodName.Data(),"!ca1");}
  if(!ca2){Fatal(sMethodName.Data(),"!ca2");}
 
@@ -4530,19 +5176,19 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *c
    if(-44 == index2){Fatal(sMethodName.Data(),"-44 == index2");}
 
    // Fill or die:
-   fBackground[index1][index2]->Fill(RelativeMomenta(amcparticle1,amcparticle2)); // for the relative momenta ordering doesn't matter
+   f2pBackground[index1][index2]->Fill(RelativeMomenta(amcparticle1,amcparticle2)); // for the relative momenta ordering doesn't matter
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
  // d) Shift [1] -> [0]:
  // TBI re-think the lines below, there should be a better way...
- fMixedEvents[0] = (TClonesArray*)fMixedEvents[1]->Clone();
+ fMixedEvents0[0] = (TClonesArray*)fMixedEvents0[1]->Clone();
 
  // e) Clean [1]:
- fMixedEvents[1] = NULL;
+ fMixedEvents0[1] = NULL;
 
-} // void AliAnalysisTaskMultiparticleFemtoscopy::CalculateBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)
+} // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC)
 
 //=======================================================================================================================
 
@@ -4666,38 +5312,44 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
 {
  // Get pointers for background.
 
- // a) Get pointer for fBackgroundList;
+ // a) Get pointer for fBackgroundList and fBackgroundSubist[3];
  // b) Get pointer for fBackgroundFlagsPro;
  // c) Set again all flags;
- // d) Get pointers for fBackground[10][10];
+ // d) Get pointers for f2pBackground[10][10];
  // e) Get pointers for f3pBackground[10][10][10].
  // f) TBI 4p
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()";
 
- // a) Get pointer for fBackgroundList:
+ // a) Get pointer for fBackgroundList and fBackgroundSubist[3];
  fBackgroundList = dynamic_cast<TList*>(fHistList->FindObject("Background"));
  if(!fBackgroundList){Fatal(sMethodName.Data(),"fBackgroundList");}
+ for(Int_t bs=0;bs<3;bs++)
+ {
+  fBackgroundSublist[bs] = dynamic_cast<TList*>(fBackgroundList->FindObject(Form("f%dpBackground",bs+2)));
+  if(!fBackgroundSublist[bs]){Fatal(sMethodName.Data(),"fBackgroundSublist[%d]",bs);}
+ } // for(Int_t bs=0;bs<3;bs++)
 
  // b) Get pointer for fBackgroundFlagsPro:
  fBackgroundFlagsPro = dynamic_cast<TProfile*>(fBackgroundList->FindObject("fBackgroundFlagsPro"));
  if(!fBackgroundFlagsPro){Fatal(sMethodName.Data(),"fBackgroundFlagsPro");}
 
  // c) Set again all flags:
- fEstimate2pBackground = (Bool_t) fBackgroundFlagsPro->GetBinContent(1);
- fEstimate3pBackground = (Bool_t) fBackgroundFlagsPro->GetBinContent(2);
- fEstimate4pBackground = (Bool_t) fBackgroundFlagsPro->GetBinContent(3);
+ fBackgroundOption = (Int_t) fBackgroundFlagsPro->GetBinContent(1);
+ fEstimate2pBackground = (Bool_t) fBackgroundFlagsPro->GetBinContent(2);
+ fEstimate3pBackground = (Bool_t) fBackgroundFlagsPro->GetBinContent(3);
+ fEstimate4pBackground = (Bool_t) fBackgroundFlagsPro->GetBinContent(4);
 
  if(! (fEstimate2pBackground || fEstimate3pBackground || fEstimate4pBackground )){return;} // TBI is this safe enough
 
- // d) Get pointers for fBackground[10][10]:
+ // d) Get pointers for f2pBackground[10][10]:
  const Int_t nParticleSpecies = 5; // Supported at the moment: 0=e,1=mu,2=pi,3=K,4=p
  for(Int_t pid1=0;pid1<2*nParticleSpecies;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  {
   for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
   {
-   fBackground[pid1][pid2] = dynamic_cast<TH1F*>(fBackgroundList->FindObject(Form("fBackground[%d][%d]",pid1,pid2)));
-   if(!fBackground[pid1][pid2]){Fatal(sMethodName.Data(),"fBackground[%d][%d]",pid1,pid2);}
+   f2pBackground[pid1][pid2] = dynamic_cast<TH1F*>(fBackgroundSublist[0]->FindObject(Form("f2pBackground[%d][%d]",pid1,pid2)));
+   if(!f2pBackground[pid1][pid2]){Fatal(sMethodName.Data(),"f2pBackground[%d][%d]",pid1,pid2);}
   } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
  } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
 
@@ -4708,7 +5360,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
   {
    for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
    {
-    f3pBackground[pid1][pid2][pid3] = dynamic_cast<TH1F*>(fBackgroundList->FindObject(Form("f3pBackground[%d][%d][%d]",pid1,pid2,pid3)));
+    f3pBackground[pid1][pid2][pid3] = dynamic_cast<TH1F*>(fBackgroundSublist[1]->FindObject(Form("f3pBackground[%d][%d][%d]",pid1,pid2,pid3)));
     if(!f3pBackground[pid1][pid2][pid3]){Fatal(sMethodName.Data(),"f3pBackground[%d][%d][%d]",pid1,pid2,pid3);}
    }
   } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]

@@ -93,6 +93,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t PassesCommonTrackCuts(AliAODTrack *atrack); // common cuts for analysis specific tracks (e.g. TPC-only) TBI make it uniform with MC
   Bool_t PassesCommonTrackCuts(AliAODMCParticle *amcparticle); // common cuts for analysis specific tracks TBI see above two lines
   virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t index); // fill fGlobalTracksAOD in e-b-e . For the meaning of 'index', see declaration of fGlobalTracksAOD
+  virtual void GlobalTracksAOD(AliAODEvent *aAOD, Int_t indexX, Int_t indexY); // fill TExMap *fGlobalTracksAOD1[10][5];
   Double_t RelativeMomenta(AliAODTrack *agtrack1, AliAODTrack *agtrack2);
   Double_t RelativeMomenta(AliAODMCParticle *amcparticle1, AliAODMCParticle *amcparticle2);
   Double_t Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3);
@@ -106,10 +107,12 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
    virtual void Calculate3pCorrelationFunctions(AliAODEvent *aAOD);
    virtual void Calculate4pCorrelationFunctions(AliAODEvent *aAOD);
   virtual void CalculateCorrelationFunctions(AliMCEvent *aMC);
-  virtual void CalculateBackground(TClonesArray *ca1, TClonesArray *ca2);
-   virtual void Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3);
-   virtual void Calculate4pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TClonesArray *ca4);
-  virtual void CalculateBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC); // TBI unify with the previous function
+  virtual void Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2); // TBI soon will become obsolete
+  virtual void Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, TExMap *em1, TExMap *em2);
+  virtual void Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3); // TBI soon will become obsolete
+  virtual void Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3);
+  virtual void Calculate4pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TClonesArray *ca4);
+  virtual void Calculate2pBackground(TClonesArray *ca1, TClonesArray *ca2, Bool_t bMC); // TBI unify with the previous function
   // 3.) Methods called in Terminate(Option_t *):
   virtual void GetOutputHistograms(TList *histList);
    // TBI implement the rest as well
@@ -186,12 +189,16 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList* GetBackgroundList() const {return this->fBackgroundList;}
   void SetBackgroundFlagsPro(TProfile* const bfp) {this->fBackgroundFlagsPro = bfp;};
   TProfile* GetBackgroundFlagsPro() const {return this->fBackgroundFlagsPro;};
+  void SetBackgroundOption(Int_t bo) {this->fBackgroundOption = bo;};
+  Int_t GetBackgroundOption() const {return this->fBackgroundOption;};
   void SetEstimate2pBackground(Bool_t fe2pb) {this->fEstimate2pBackground = fe2pb;};
   Bool_t GetEstimate2pBackground() const {return this->fEstimate2pBackground;};
   void SetEstimate3pBackground(Bool_t fe3pb) {this->fEstimate3pBackground = fe3pb;};
   Bool_t GetEstimate3pBackground() const {return this->fEstimate3pBackground;};
   void SetEstimate4pBackground(Bool_t fe4pb) {this->fEstimate4pBackground = fe4pb;};
   Bool_t GetEstimate4pBackground() const {return this->fEstimate4pBackground;};
+  void SetMaxBufferSize1(Int_t mbs1) {this->fMaxBufferSize1 = mbs1;};
+  Int_t GetMaxBufferSize1() const {return this->fMaxBufferSize1;};
 
   // 5.) Buffers:
   void SetBuffersList(TList* const bl) {this->fBuffersList = bl;};
@@ -437,7 +444,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile *fCorrelationFunctionsFlagsPro;       // profile to hold all flags for correlation functions
   Bool_t fFillCorrelationFunctions;              // fill or not correlation functions (by default they are not filled)
   Bool_t fNormalizeCorrelationFunctions;         // normalize correlation functions with the background
-  TExMap *fCorrelationFunctionsIndices;          // associates pdg code to index of correlation function
+  TExMap *fCorrelationFunctionsIndices;          //! associates pdg code to index of correlation function
   TH1F *fCorrelationFunctions[10][10];           //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 5=e,6=mu,7=pi,8=K,9=p] x [same]. Booking only upper 1/2 of the matrix, diagonal included.
   Bool_t fFill3pCorrelationFunctions;            // fill 3-p correlation functions
   TH1F *f3pCorrelationFunctions[10][10][10];     //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 5=e,6=mu,7=pi,8=K,9=p] x [same] x [same].
@@ -445,23 +452,29 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TH1F *f4pCorrelationFunctions[10][10][10][10]; //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 5=e,6=mu,7=pi,8=K,9=p] x [same] x [same] x [same].
 
   // 4.) Background:
-  TList *fBackgroundList;              // list to hold all correlation functions for primary particle
+  TList *fBackgroundList;              // list to hold all background objects primary particle
   TProfile *fBackgroundFlagsPro;       // profile to hold all flags for correlation functions
+  TList *fBackgroundSublist[3];        // lists to hold all background correlations, for 2p [0], 3p [1], 4p [2], etc., separately
+  Int_t fBackgroundOption;             // set how to estimate background: 0 = "shifting", 1 = "permutations", etc. (see .cxx for further explanation). By default, it is "shifting"
   Bool_t fEstimate2pBackground;        // enable or not 2p background estimation
   Bool_t fEstimate3pBackground;        // enable or not 3p background estimation
   Bool_t fEstimate4pBackground;        // enable or not 4p background estimation
-  TH1F *fBackground[10][10];           //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same]. Booking only upper 1/2 of the matrix, diagonal included.
+  TH1F *f2pBackground[10][10];         //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same]. Booking only upper 1/2 of the matrix, diagonal included.
   TH1F *f3pBackground[10][10][10];     //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same] x [same]
   TH1F *f4pBackground[10][10][10][10]; //! [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p] x [same] x [same]
-  TClonesArray *fMixedEvents[3];       //! tracks for mixed events (supporting up to 3-mixed events at the moment)
+  TClonesArray *fMixedEvents0[3];      //! tracks for mixed events (supporting up to 3-mixed events at the moment). Used only for fBackgroundOption = 0. Global tracks are in TExMap *fGlobalTracksAOD[10]; above, TBI make it uniform eventually, i.e. decouple global tracks for the default analysis from the background
+  Int_t fMaxBufferSize1;                // the second index in fMixedEvents1[10][50]; and fGlobalTracksAOD1[10][50]; is booked only up to this number. When this number is reached, calculation is done, and buffer is cleaned. max = 50. defaulted to 10
+  TClonesArray *fMixedEvents1[10][50];  //! tracks for mixed events. 10 vertex z-ranges. Keep at maximum 5 events in the buffer. Used only for fBackgroundOption = 1
+  TExMap *fGlobalTracksAOD1[10][50];    //! global tracks in AOD. Used only for fBackgroundOption = 1. Indices must be the same as in TClonesArray *fMixedEvents1[10][5];
+
 
   // 5.) Buffers:
   TList *fBuffersList;                             // list to hold all objects for buffers
   TProfile *fBuffersFlagsPro;                      // profile to hold all flags for buffers
   Bool_t fFillBuffers;                             // hold some thingies for bunch of events in memories
   Int_t fMaxBuffer;                                // max buffer size (e.g. for 3-p correlations it is 3, etc.) TBI there is a problem apparently, re-think
-  TClonesArray *fChargedParticlesCA[2][10][10000]; // [0=AOD||ESD,1=MC][#events,max=10][particles]
-  TExMap *fChargedParticlesEM[10];                 // [#events,max=10,has to correspond to 2nd entry above] this is standard mapping, nothing more nor less than that...
+  TClonesArray *fChargedParticlesCA[2][10][10000]; //! [0=AOD||ESD,1=MC][#events,max=10][particles]
+  TExMap *fChargedParticlesEM[10];                 //! [#events,max=10,has to correspond to 2nd entry above] this is standard mapping, nothing more nor less than that...
 
   // 6.) QA:
   TList *fQAList;                   // list to holds all QA objects. It is nested in: a) "QA events"; b) "QA particles"; c) ...
@@ -474,7 +487,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList *fQAParticlesList;          // list to holds all objects for "QA particles"
   TH1I *fQAFilterBitScan;           // for each track in AOD, dump it's filterbits
   TH2I *fQAIDvsFilterBit;           // atrack->ID() vs. filterbit
-  TH1F *fQAParticleHist[2][10][10]; // [0="before rain",1="after rain"][distribution_index][cut_index]
+  TH1F *fQAParticleHist[2][10][10]; //! [0="before rain",1="after rain"][distribution_index][cut_index]
 
   // 7.) Common event cuts (TBI validated only for AOD analysis, for the time being...):
   //  a) Cuts on AliAODEvent:
@@ -511,9 +524,9 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList *fGlobalTrackCutsList;        // list to hold all objects for common global track cuts
   TProfile *fGlobalTrackCutsFlagsPro; // profile to hold all flags
   Bool_t fApplyGlobalTrackCuts;       // if set to kFALSE, the default hardwired cuts will be used
-  Float_t fPtRange[2];                // ptMin = fPtRange[0], ptMax = fPtRange[1]
-  Float_t fEtaRange[2];               // etaMin = etaRange[0], etaMax = etaRange[1]
-  Float_t fPhiRange[2];               // phiMin = phiRange[0], phiMax = phiRange[1]
+  Float_t fPtRange[2];                //! ptMin = fPtRange[0], ptMax = fPtRange[1]
+  Float_t fEtaRange[2];               //! etaMin = etaRange[0], etaMax = etaRange[1]
+  Float_t fPhiRange[2];               //! phiMin = phiRange[0], phiMax = phiRange[1]
 
   // *.) Online monitoring:
   Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
@@ -530,7 +543,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  //! do something only for the specified event
   UInt_t fPeriod;                 //! do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,8);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,9);
 
 };
 
