@@ -520,7 +520,6 @@ AliAnalysisTaskDmesonJetsDetectorResponse* AliAnalysisTaskDmesonJetsDetectorResp
   }
 
   AliAnalysisTaskDmesonJetsDetectorResponse* jetTask = new AliAnalysisTaskDmesonJetsDetectorResponse(name, nMaxTrees);
-  jetTask->SetVzRange(-10,10);
 
   if (!trackName.IsNull()) {
     AliHFTrackContainer* trackCont = new AliHFTrackContainer(trackName);

@@ -2914,7 +2914,6 @@ AliAnalysisTaskDmesonJets* AliAnalysisTaskDmesonJets::AddTaskDmesonJets(TString 
   }
 
   AliAnalysisTaskDmesonJets* jetTask = new AliAnalysisTaskDmesonJets(name, nMaxTrees);
-  jetTask->SetVzRange(-10,10);
 
   if (!ntracks.IsNull()) {
     AliHFTrackContainer* trackCont = new AliHFTrackContainer(ntracks);
