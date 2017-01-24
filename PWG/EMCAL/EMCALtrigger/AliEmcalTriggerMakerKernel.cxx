@@ -574,6 +574,61 @@ TObjArray *AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inp
   return result;
 }
 
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelADC(Int_t col, Int_t row) const{
+  double adc = 0;
+  try {
+    adc = (*fPatchADC)(col, row);
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelEnergyRough(Int_t col, Int_t row) const{
+  double adc = 0;
+  try {
+    adc = (*fPatchADC)(col, row) * EMCALTrigger::kEMCL1ADCtoGeV;
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelADCSimple(Int_t col, Int_t row) const{
+  double adc = 0;
+  try {
+    adc = (*fPatchADCSimple)(col, row);
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelEnergy(Int_t col, Int_t row) const {
+  double adc = 0;
+  try {
+    adc = (*fPatchADCSimple)(col, row) * fADCtoGeV;
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetTriggerChannelEnergySmeared(Int_t col, Int_t row) const {
+  double adc = 0;
+  try {
+    adc = (*fPatchEnergySimpleSmeared)(col, row);
+  } catch (AliEMCALTriggerDataGrid<double>::OutOfBoundsException &e) {
+
+  }
+  return adc;
+}
+
+double AliEmcalTriggerMakerKernel::GetDataGridDimensionRows() const{
+  return fPatchADC->GetNumberOfRows();
+}
+
 AliEmcalTriggerMakerKernel::ELevel0TriggerStatus_t AliEmcalTriggerMakerKernel::CheckForL0(Int_t col, Int_t row) const {
   ELevel0TriggerStatus_t result = kLevel0Candidate;
 

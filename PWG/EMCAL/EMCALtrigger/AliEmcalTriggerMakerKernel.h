@@ -112,6 +112,52 @@ public:
   void SetL0Threshold(Int_t t)                                   { fL0Threshold              = t; }
 
   /**
+   * @brief Get ADC value of a given trigger channel (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return ADC value of the given trigger channel (0 for invalid channel IDs)
+   */
+  double GetTriggerChannelADC(Int_t col, Int_t row) const;
+
+  /**
+   * @brief Get estimated energy of the trigger channel based on ADC measurement (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return Estimated trigger energy of the given channel (0 for invalid channel IDs)
+   */
+  double GetTriggerChannelEnergyRough(Int_t col, Int_t row) const;
+
+  /**
+   * @brief Get ADC value of trigger channel estimated from cell energies
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return ADC value of the trigger channel from cell energies (0 for invalid channel IDs)
+   */
+  double GetTriggerChannelADCSimple(Int_t col, Int_t row) const;
+
+   /**
+    * @brief Get energy of the trigger channel estimated from cells (in col-row space)
+    * @param[in] col Column of the trigger channel
+    * @param[in] row Row of the trigger channel
+    * @return Energy of the trigger channel (0 for invalid channel IDs)
+    */
+  double GetTriggerChannelEnergy(Int_t col, Int_t row) const;
+
+  /**
+   * @brief Get (simulated) smeared energy of a trigger channel estimated based on the measured energy from cells (in col-row space)
+   * @param[in] col Column of the trigger channel
+   * @param[in] row Row of the trigger channel
+   * @return Smeared fastor energy (0 for invalid channel IDs)
+   */
+  double GetTriggerChannelEnergySmeared(Int_t col, Int_t row) const;
+
+  /**
+   * @brief Get the dimension of the underlying data grids in row direction
+   * @return Number of rows
+   */
+  double GetDataGridDimensionRows() const;
+
+  /**
    * @brief Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
    */
@@ -143,6 +189,12 @@ public:
    * @param[in] cell Threshold for cell amplitudes
    */
   void SetFastORandCellThresholds(Int_t l0, Int_t l1, Int_t cell) { fMinL0FastORAmp = l0; fMinL1FastORAmp = l1; fMinCellAmp = cell; }
+
+  /**
+   * @brief Set conversion between ADC counts and energy in GeV
+   * @param[in] conversionfactor Conversion between ADC counts and energy
+   */
+  void SetL1ADCtoGeVConversion(Double_t conversionfactor) { fADCtoGeV = conversionfactor; }
 
   /**
    * @brief Add a FastOR bad channel to the list

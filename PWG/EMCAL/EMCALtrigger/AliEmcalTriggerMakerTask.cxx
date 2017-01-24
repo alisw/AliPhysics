@@ -18,6 +18,9 @@
 #include <THistManager.h>
 #include <TObjArray.h>
 #include <TParameter.h>
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,8,0)
+#include <ROOT/TSeq.hxx>
+#endif
 
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -32,7 +35,9 @@
 #include "AliLog.h"
 #include "AliOADBContainer.h"
 
+#include <array>
 #include <bitset>
+#include <cfloat>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -84,38 +89,48 @@ AliEmcalTriggerMakerTask::~AliEmcalTriggerMakerTask() {
  */
 void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-  const TString kTriggerTypeNames[3] = {"EJE", "EGA", "EL0"},
-                kPatchTypes[3] = {"Online", "Offline", "Recalc"};
+  const std::array<const TString, 3>  kTriggerTypeNames = {"EJE", "EGA", "EL0"},
+                                      kPatchTypes = {"Online", "Offline", "Recalc"};
 
-  if(fDoQA) std::cout << "Trigger maker - QA requested" << std::endl;
-  else std::cout << "Trigger maker - no QA requested" << std::endl;
-  if(!fOutput) std::cout << "No output container initialized" << std::endl;
+  if(fDoQA) AliInfoStream() << "Trigger maker - QA requested" << std::endl;
+  else AliInfoStream() << "Trigger maker - no QA requested" << std::endl;
+  if(!fOutput) AliErrorStream() << "No output container initialized" << std::endl;
 
   if(fDoQA){
     if(fOutput){
       AliInfoStream() << "Enabling QA for trigger maker" << std::endl;
       fQAHistos = new THistManager("TriggerQA");
 
-      for(const TString *triggertype = kTriggerTypeNames; triggertype < kTriggerTypeNames + sizeof(kTriggerTypeNames)/sizeof(TString); triggertype++){
-        for(const TString *patchtype = kPatchTypes; patchtype < kPatchTypes + sizeof(kPatchTypes)/sizeof(TString); ++patchtype){
+      for(const auto &triggertype : kTriggerTypeNames){
+        for(const auto &patchtype : kPatchTypes){
           fQAHistos->CreateTH2(
-              Form("RCPos%s%s", triggertype->Data(), patchtype->Data()),
-              Form("Lower edge position of %s %s patches (col-row);iEta;iPhi", patchtype->Data(), triggertype->Data()),
+              "RCPos" + triggertype + patchtype,
+              "Lower edge position of " + patchtype + " " + triggertype + " patches (col-row);iEta;iPhi",
               48, -0.5, 47.5, 104, -0.5, 103.5
               );
           fQAHistos->CreateTH2(
-              Form("EPCentPos%s%s", triggertype->Data(), patchtype->Data()),
-              Form("Center position of the %s %s trigger patches;#eta;#phi", patchtype->Data(), triggertype->Data()),
+              "EPCentPos" + triggertype + patchtype,
+              "Center position of the " + patchtype + "  " + triggertype + " trigger patches;#eta;#phi",
               20, -0.8, 0.8, 700, 0., 7.
               );
           fQAHistos->CreateTH2(
-              Form("PatchADCvsE%s%s", triggertype->Data(), patchtype->Data()),
-              Form("Patch ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype->Data(), triggertype->Data()),
+              "PatchADCvsE" + triggertype + patchtype,
+              "Patch ADC value for trigger type " + patchtype + " " + triggertype + "; Trigger ADC; FEE patch energy (GeV)",
               2000, 0., 2000, 200, 0., 200
               );
           fQAHistos->CreateTH2(
-              Form("PatchADCOffvsE%s%s", triggertype->Data(), patchtype->Data()),
-              Form("Patch offline ADC value for trigger type %s %s;Trigger ADC;FEE patch energy (GeV)", patchtype->Data(), triggertype->Data()),
+              "PatchEvsEsmear" + triggertype + patchtype,
+              "Patch energy vs. smeared energy for " + patchtype + " " + triggertype +"; FEE patch energy (GeV); smeared FEE energy (GeV)",
+              200, 0., 200, 200, 0., 200
+          );
+          fQAHistos->CreateTH2(
+              "PatchADCvsEsmear" + triggertype + patchtype,
+              "Patch ADC vs. smeared energy for " + patchtype + " " + triggertype + "; Trigger ADC; smeared FEE energy (GeV)",
+              2000, 0., 2000, 200, 0., 200
+          );
+          fQAHistos->CreateTH2(
+              "PatchADCOffvsE" + triggertype + patchtype,
+              "Patch offline ADC value for trigger type " + patchtype + " " + triggertype + "; Trigger ADC; FEE patch energy (GeV)",
               2000, 0., 2000, 200, 0., 200
               );
         }
@@ -123,6 +138,15 @@ void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
       fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
       fQAHistos->CreateTH1("triggerBitsSel", "Trigger bits for reconstructed patches;bit nr", 64, -0.5, 63.5);
       fQAHistos->CreateTH2("FastORMaskOnline", "Masked FastORs at online level; col; row", 48, -0.5, 47.5, 104, -0.5, 103.5);
+
+      // Monitoring of FastOR raw signals:
+      fQAHistos->CreateTH2("FastORCorrEnergyADCrough", "FastOR cell energy vs. ADC energy",  200, 0., 20., 200, 0., 20.);
+      fQAHistos->CreateTH2("FastORCorrEnergyESmear", "FastOR cell energy vs. smeared energy",  200, 0., 20., 200, 0., 20.);
+      fQAHistos->CreateTH2("FastORCorrADCroughEsmear", "FastOR ADC rough vs. smeared energy", 200, 0., 20., 200, 0., 20.);
+      fQAHistos->CreateTH2("FastORDiffEnergyADCrough", "FastOR ADCrough - cell energy", 4994, -0.5, 4993.5, 200, -10., 10);
+      fQAHistos->CreateTH2("FastORDiffEnergyEsmear", "FastOR smeared energy - cell energy", 4994, -0.5, 4993.5, 200, -10., 10);
+      fQAHistos->CreateTH2("FastORDiffEsmearADCrough", "FastOR ADC rough - smeared energy", 4994, -0.5, 4993.5, 200, -10., 10);
+
       fOutput->Add(fQAHistos->GetListOfHistograms());
       PostData(1, fOutput);
     } else {
@@ -146,9 +170,6 @@ void AliEmcalTriggerMakerTask::SetUseTriggerBitConfig(TriggerMakerBitConfig_t bi
   fTriggerMaker->SetTriggerBitConfig(triggerBitConfig);
 }
 
-/**
- * Initializes the trigger maker kernel
- */
 void AliEmcalTriggerMakerTask::ExecOnce(){
   AliAnalysisTaskEmcal::ExecOnce();
 
@@ -225,6 +246,41 @@ Bool_t AliEmcalTriggerMakerTask::Run(){
   fTriggerMaker->ReadTriggerData(fCaloTriggers);
   fTriggerMaker->BuildL1ThresholdsOffline(fV0);
   fTriggerMaker->SetIsMC(MCEvent());
+
+  // QA on FastOR level (if enabled)
+  if(fDoQA){
+    double ecell, eadc, esmear;
+    int fastORAbsID;
+#if ROOT_VERSION_CODE >= ROOT_VERSION(6,8,0)
+    // beautiful ROOT6 version - with generators
+    for(auto icol : ROOT::TSeqI(0, 48)){
+      for(auto irow : ROOT::TSeqI(0, fTriggerMaker->GetDataGridDimensionRows())){
+#else
+    // stupid ROOT5-compatible version
+    for(int icol = 0; icol < 48; icol++){
+      for(int irow = 0; irow < fTriggerMaker->GetDataGridDimensionRows(); irow++){
+#endif
+        ecell = fTriggerMaker->GetTriggerChannelEnergy(icol, irow);
+        eadc = fTriggerMaker->GetTriggerChannelEnergyRough(icol, irow);
+        esmear = fTriggerMaker->GetTriggerChannelEnergySmeared(icol, irow);
+        fGeom->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastORAbsID);
+        // suppress pairs at (0,0)
+        if(TMath::Abs(ecell) > DBL_EPSILON || TMath::Abs(eadc) > DBL_EPSILON){
+          fQAHistos->FillTH2("FastORCorrEnergyADCrough", ecell, eadc);
+          fQAHistos->FillTH2("FastORDiffEnergyADCrough", fastORAbsID, eadc - ecell);
+        }
+        if(TMath::Abs(ecell) > DBL_EPSILON || TMath::Abs(esmear) > DBL_EPSILON){
+          fQAHistos->FillTH2("FastORCorrEnergyESmear", ecell, esmear);
+          fQAHistos->FillTH2("FastORDiffEnergyEsmear", fastORAbsID, esmear - ecell);
+        }
+        if(TMath::Abs(eadc) > DBL_EPSILON || TMath::Abs(esmear) >  DBL_EPSILON){
+          fQAHistos->FillTH2("FastORCorrADCroughEsmear", eadc, esmear);
+          fQAHistos->FillTH2("FastORDiffEsmearADCrough", fastORAbsID, esmear - eadc);
+        }
+      }
+    }
+  }
+
   TObjArray *patches = fTriggerMaker->CreateTriggerPatches(InputEvent(), fUseL0Amplitudes);
   AliEMCALTriggerPatchInfoV1 *recpatch = NULL;
   Int_t patchcounter = 0;
@@ -370,9 +426,11 @@ std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMas
   }
 }
 
-void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch){
-  fQAHistos->FillTH2(Form("RCPos%s", patchtype.Data()), recpatch.GetColStart(), recpatch.GetRowStart());
-  fQAHistos->FillTH2(Form("EPCentPos%s", patchtype.Data()), recpatch.GetEtaGeo(), recpatch.GetPhiGeo());
-  fQAHistos->FillTH2(Form("PatchADCvsE%s", patchtype.Data()), recpatch.GetADCAmp(), recpatch.GetPatchE());
-  fQAHistos->FillTH2(Form("PatchADCOffvsE%s", patchtype.Data()), recpatch.GetADCOfflineAmp(), recpatch.GetPatchE());
+void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfoV1 &recpatch){
+  fQAHistos->FillTH2("RCPos" + patchtype, recpatch.GetColStart(), recpatch.GetRowStart());
+  fQAHistos->FillTH2("EPCentPos" + patchtype, recpatch.GetEtaGeo(), recpatch.GetPhiGeo());
+  fQAHistos->FillTH2("PatchADCvsE" + patchtype, recpatch.GetADCAmp(), recpatch.GetPatchE());
+  fQAHistos->FillTH2("PatchEvsEsmear" + patchtype, recpatch.GetPatchE(), recpatch.GetSmearedEnergyV1());
+  fQAHistos->FillTH2("PatchADCvsEsmear" + patchtype, recpatch.GetADCAmp(), recpatch.GetSmearedEnergyV1());
+  fQAHistos->FillTH2("PatchADCOffvsE" + patchtype, recpatch.GetADCOfflineAmp(), recpatch.GetPatchE());
 }
