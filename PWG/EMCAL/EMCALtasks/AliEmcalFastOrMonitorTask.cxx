@@ -78,6 +78,14 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   fHistos->CreateTH2("hFastOrColRowFrequencyL1", "FastOr Frequency (col-row) at Level0", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
   fHistos->CreateTH2("hEnergyFastorCell", "Sum of cell energy vs. fastor Energy", 1000, 0., 20., 1000 , 0., 20.);
 
+  // THnSparse for fastor-by-fastor energy decalibration
+  TAxis fastorIDAxis(4992, -0.5, 4991.5), offlineaxis(200, 0., 20.), onlineaxis(200, 0., 20.);
+  const TAxis *sparseaxis[3] = {&fastorIDAxis, &offlineaxis, &onlineaxis};
+  fastorIDAxis.SetNameTitle("fastorAbsID", "FastOR abs. ID");
+  offlineaxis.SetNameTitle("offlinenergy", "E_{2x2 cells} (GeV)");
+  onlineaxis.SetNameTitle("onlineenergy", "E_{FastOR} (GeV)");
+  fHistos->CreateTHnSparse("hFastOrEnergyOfflineOnline", "FastOr Offline vs Online energy", 3, sparseaxis);
+
   PostData(1, fHistos->GetListOfHistograms());
 }
 
@@ -142,6 +150,8 @@ void AliEmcalFastOrMonitorTask::UserExec(Option_t *) {
       fHistos->FillTH2("hFastOrNL0Times", fastOrID, nl0times);
       fHistos->FillTH2("hFastOrTransverseTimeSum", fastOrID, GetTransverseTimeSum(fastOrID, l1timesum, vtxpos));
       fHistos->FillTH2("hEnergyFastorCell", fCellData(globCol, globRow), l1timesum * EMCALTrigger::kEMCL1ADCtoGeV);
+      double energydata[3] = {static_cast<double>(fastOrID), fCellData(globCol, globRow), l1timesum * EMCALTrigger::kEMCL1ADCtoGeV};
+      fHistos->FillTHnSparse("hFastOrEnergyOfflineOnline", energydata);
     }
   }
 
