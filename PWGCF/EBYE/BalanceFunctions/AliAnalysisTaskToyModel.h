@@ -156,6 +156,11 @@ class AliAnalysisTaskToyModel : public TObject {
   void SetPentangularFlowForProtons(Double_t v5) {
     fPentangularFlowProtons = v5;}
 
+  // particle selection: -1 no selection, 0 pions, 1 kaons, 2 protons
+  void SelectParticleSpecies(Int_t iParticle){
+    fSelectParticle = iParticle;
+  }
+
   //Dynamical correlations
   void SetCorrelationPercentage(Double_t percentage) {
     fUseDynamicalCorrelations = kTRUE; 
@@ -173,6 +178,11 @@ class AliAnalysisTaskToyModel : public TObject {
   //Rapidity shift
   void SetRapidityShift() {
     fUseRapidityShift = kTRUE;
+  }
+
+  //Use rapidity instead of eta in correlation functions
+  void SetUseRapidity() {
+    fUseRapidity = kTRUE;
   }
   
   //Jet-like structures
@@ -276,6 +286,7 @@ class AliAnalysisTaskToyModel : public TObject {
 
   //Kinematics
   Bool_t   fUseAllCharges; //use all charges
+  Int_t    fSelectParticle; //select particle species (no selection -1 [default], pions 0, kaons 1, protons 2)
   Double_t fParticleMass; //particle mass
   TF1     *fPtSpectraAllCharges; //spectra for all charges
   Double_t fTemperatureAllCharges; //temperature for pt spectra
@@ -327,6 +338,7 @@ class AliAnalysisTaskToyModel : public TObject {
 
   Bool_t fUseRapidityShift; //Usage of rapidity shift
   Double_t fRapidityShift;//shift in rapidity (only applicable if fUseAllCharges==kFALSE)
+  Bool_t fUseRapidity;  //Usage of rapidity instead of eta in correlation functions
   TLorentzVector *vTmp;// temporary vector for calculating shifted observables
   TLorentzVector *vShift;// rapidity shift
   TLorentzVector *vBeam_p;// proton beam

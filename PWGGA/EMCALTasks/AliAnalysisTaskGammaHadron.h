@@ -111,6 +111,7 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH1					   **fHistptTriggXi[3];  //! pt distr. of the associated hadron as a function of Xi
 
   TH1 					    *fHistPi0;                 //!
+  TH2                                       *fHistClusPairInvarMasspT; //!
   TH1 					   **fHistBinCheckPt;          //! plot Pt distribution for ideal binning
   TH1 					   **fHistBinCheckZt;          //! plot Zt distribution for ideal binning
   TH1 					   **fHistBinCheckXi;          //! plot Xi distribution for ideal binning

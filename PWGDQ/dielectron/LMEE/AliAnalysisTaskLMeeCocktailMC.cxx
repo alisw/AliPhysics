@@ -54,11 +54,22 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fMCEvent(NULL),
   fMCStack(NULL),
   fHistNEvents(NULL),
+  fhwEffpT(NULL),
+  fhwMultpT(NULL),
+  fhwMultmT(NULL),
+  fhwMultpT2(NULL),
+  fhwMultmT2(NULL),
   fArr(0x0),
   fmee(NULL),
+  fmee_wmult(NULL),
+  fmee_orig(NULL),
+  fmee_orig_wmult(NULL),
   fphi(NULL),
   frap(NULL),
   fpteevsmee(NULL),
+  fpteevsmee_wmult(NULL),
+  fpteevsmee_orig(NULL),
+  fpteevsmee_orig_wmult(NULL),
   fd1origpt(-1),
   fd1origp(-1),
   fd1origeta(-1),
@@ -82,21 +93,30 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   feeorigphi(-1),
   feeorigphiv(-1),
   feept(-1),
+  feemt(-1),
   feep(-1),
   feem(-1),
   feeeta(-1),
   feephi(-1),
   feephiv(-1),
   fmotherpt(-1),
+  fmothermt(-1),
   fmotherp(-1),
   fmotherm(-1),
   fmothereta(-1),
   fmotherphi(-1),
   fID(-1),
   fweight(-1),
+  fwEffpT(-1),
+  fwMultpT(-1),
+  fwMultmT(-1),
+  fwMultpT2(-1),
+  fwMultmT2(-1),
   fpass(-1),
   fFileName(0),
   fFile(0),
+  fFileNameW(0),
+  fFileW(0),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -117,11 +137,22 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fMCEvent(NULL),
   fMCStack(NULL),
   fHistNEvents(NULL),
+  fhwEffpT(NULL),
+  fhwMultpT(NULL),
+  fhwMultmT(NULL),
+  fhwMultpT2(NULL),
+  fhwMultmT2(NULL),
   fArr(0x0),
   fmee(NULL),
+  fmee_wmult(NULL),
+  fmee_orig(NULL),
+  fmee_orig_wmult(NULL),
   fphi(NULL),
   frap(NULL),
   fpteevsmee(NULL),
+  fpteevsmee_wmult(NULL),
+  fpteevsmee_orig(NULL),
+  fpteevsmee_orig_wmult(NULL),
   fd1origpt(-1),
   fd1origp(-1),
   fd1origeta(-1),
@@ -145,21 +176,30 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   feeorigphi(-1),
   feeorigphiv(-1),
   feept(-1),
+  feemt(-1),
   feep(-1),
   feem(-1),
   feeeta(-1),
   feephi(-1),
   feephiv(-1),
   fmotherpt(-1),
+  fmothermt(-1),
   fmotherp(-1),
   fmotherm(-1),
   fmothereta(-1),
   fmotherphi(-1),
   fID(-1),
   fweight(-1),
+  fwEffpT(-1),
+  fwMultpT(-1),
+  fwMultmT(-1),
+  fwMultpT2(-1),
+  fwMultmT2(-1),
   fpass(-1),
   fFileName(0),
   fFile(0),
+  fFileNameW(0),
+  fFileW(0),
   teeTTree(NULL),
   fParticleList(NULL),
   fParticleListNames(NULL),
@@ -195,7 +235,25 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fHistNEvents                = new TH1F("NEvents", "NEvents", 1, 0, 1);
   fHistNEvents->Sumw2();
   fOutputContainer->Add(fHistNEvents);
- 
+
+
+  // Get Multiplicity weight file:
+  fFileNameW = "$ALICE_PHYSICS/PWGDQ/dielectron/files/MultiplicityWeight_mT.root";
+  fFileW = TFile::Open(fFileNameW.Data());
+  if(!fFileW->IsOpen()){
+   AliError(Form("Could not open Multiplicity weight file %s",fFileNameW.Data() ));
+  }
+  fhwEffpT = (TH1F*) fFileW->Get("fhwEffpT"); // histo: eff weight in function of pT.
+  fhwMultpT = (TH1F*) fFileW->Get("fhwMultpT"); // histo: multiplicity weight in function of pT.
+  fhwMultmT = (TH1F*) fFileW->Get("fhwMultmT"); // histo: multiplicity weight in function of mT.
+  fhwMultpT2 = (TH1F*) fFileW->Get("fhwMultpT_upperlimit"); // histo: multiplicity weight in function of pT.
+  fhwMultmT2 = (TH1F*) fFileW->Get("fhwMultmT_upperlimit"); // histo: multiplicity weight in function of mT.
+  fOutputContainer->Add(fhwEffpT);
+  fOutputContainer->Add(fhwMultpT);
+  fOutputContainer->Add(fhwMultmT);
+  fOutputContainer->Add(fhwMultpT2);
+  fOutputContainer->Add(fhwMultmT2);
+
   // Prepare resolution file
   if(fcollisionSystem<=200) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/histos_smear_brems_pp_LongP_fix.root";
   if(fcollisionSystem==300) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/histos_smear_brems_pPb_LongP_fix.root";
@@ -236,18 +294,25 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   teeTTree->Branch("eeorigphi",&feeorigphi,"feeorigphi/F");
   teeTTree->Branch("eeorigphiv",&feeorigphiv,"feeorigphiv/F");
   teeTTree->Branch("eept",&feept,"feept/F");
+  teeTTree->Branch("eemt",&feemt,"feemt/F");
   teeTTree->Branch("eep",&feep,"feep/F");
   teeTTree->Branch("eem",&feem,"feem/F");
   teeTTree->Branch("eeeta",&feeeta,"feeeta/F");
   teeTTree->Branch("eephi",&feephi,"feephi/F");
   teeTTree->Branch("eephiv",&feephiv,"feephiv/F");
   teeTTree->Branch("motherpt",&fmotherpt,"fmotherpt/F");
+  teeTTree->Branch("mothermt",&fmothermt,"fmothermt/F");
   teeTTree->Branch("motherp",&fmotherp,"fmotherp/F");
   teeTTree->Branch("motherm",&fmotherm,"fmotherm/F");
   teeTTree->Branch("mothereta",&fmothereta,"fmothereta/F");
   teeTTree->Branch("motherphi",&fmotherphi,"fmotherphi/F");
   teeTTree->Branch("ID",&fID,"fID/I");
   teeTTree->Branch("weight",&fweight,"fweight/D");
+  teeTTree->Branch("wEffpT",&fwEffpT,"fwEffpT/D");
+  teeTTree->Branch("wMultpT",&fwMultpT,"fwMultpT/D");
+  teeTTree->Branch("wMultmT",&fwMultmT,"fwMultmT/D");
+  teeTTree->Branch("wMultpT2",&fwMultpT2,"fwMultpT2/D");
+  teeTTree->Branch("wMultmT2",&fwMultmT2,"fwMultmT2/D");
   teeTTree->Branch("pass",&fpass,"fpass/O");
 
   fOutputContainer->Add(teeTTree);
@@ -255,7 +320,9 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
    //to read this tree in a root session something like this has to be done:
    TDirectory *thedir = _file0->GetDirectory("LMeeCocktailMC");
    TList *thelist = (TList*)thedir->Get("LMeeCocktailMC_0.80");
-   TTree *g3 = (TTree*)thelist->FindObject("eeTTree");
+   TTree *eeTTree = (TTree*)thelist->FindObject("eeTTree");
+   //or simply
+   TList* list =(TList*)_file0->Get("LMeeCocktailMC/LMeeCocktailMC_0.80");TTree* eeTTree=(TTree*)list.FindObject("eeTTree");
   */
 
   // Define the histograms
@@ -283,9 +350,15 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fParticleList       = fParticleList_local;
   fParticleListNames  = fParticleListNames_local;
   fmee = new TH1F*[nInputParticles+1];
+  fmee_wmult = new TH1F*[nInputParticles+1];
+  fmee_orig = new TH1F*[nInputParticles+1];
+  fmee_orig_wmult = new TH1F*[nInputParticles+1];
   fphi = new TH1F*[nInputParticles+1];
   frap = new TH1F*[nInputParticles+1];
   fpteevsmee = new TH2F*[nInputParticles];
+  fpteevsmee_wmult = new TH2F*[nInputParticles];
+  fpteevsmee_orig = new TH2F*[nInputParticles];
+  fpteevsmee_orig_wmult = new TH2F*[nInputParticles];
  
   //Int_t   histBinM  = 2000;
   Int_t   histBinM  = 600; //400
@@ -303,6 +376,15 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fmee[nInputParticles] = new TH1F("mee","mee",histBinM,histMinM,histMaxM);
   fmee[nInputParticles]->Sumw2();
   fOutputContainer->Add(fmee[nInputParticles]);
+  fmee_wmult[nInputParticles] = new TH1F("mee_wmult","mee_wmult",histBinM,histMinM,histMaxM);
+  fmee_wmult[nInputParticles]->Sumw2();
+  fOutputContainer->Add(fmee_wmult[nInputParticles]);
+  fmee_orig[nInputParticles] = new TH1F("mee_orig","mee_orig",histBinM,histMinM,histMaxM);
+  fmee_orig[nInputParticles]->Sumw2();
+  fOutputContainer->Add(fmee_orig[nInputParticles]);
+  fmee_orig_wmult[nInputParticles] = new TH1F("mee_orig_wmult","mee_orig_wmult",histBinM,histMinM,histMaxM);
+  fmee_orig_wmult[nInputParticles]->Sumw2();
+  fOutputContainer->Add(fmee_orig_wmult[nInputParticles]);
   fphi[nInputParticles] = new TH1F("phi","phi",histBinPhi,histMinPhi,histMaxPhi);
   fphi[nInputParticles]->Sumw2();
   fOutputContainer->Add(fphi[nInputParticles]);
@@ -312,11 +394,29 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
   fpteevsmee[nInputParticles] = new TH2F("pteevsmee","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
   fpteevsmee[nInputParticles]->Sumw2();
   fOutputContainer->Add(fpteevsmee[nInputParticles]);
+  fpteevsmee_wmult[nInputParticles] = new TH2F("pteevsmee_wmult","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
+  fpteevsmee_wmult[nInputParticles]->Sumw2();
+  fOutputContainer->Add(fpteevsmee_wmult[nInputParticles]);
+  fpteevsmee_orig[nInputParticles] = new TH2F("pteevsmee_orig","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
+  fpteevsmee_orig[nInputParticles]->Sumw2();
+  fOutputContainer->Add(fpteevsmee_orig[nInputParticles]);
+  fpteevsmee_orig_wmult[nInputParticles] = new TH2F("pteevsmee_orig_wmult","ptvsmee;#it{m}_{ee};#it{p}_{T,ee}",histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
+  fpteevsmee_orig_wmult[nInputParticles]->Sumw2();
+  fOutputContainer->Add(fpteevsmee_orig_wmult[nInputParticles]);
 
   for(Int_t i=0; i<nInputParticles; i++){
    fmee[i] = new TH1F(Form("mee_%s",fParticleListNames[i].Data()),Form("mee_%s",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM);
    fmee[i]->Sumw2();
    fOutputContainer->Add(fmee[i]);
+   fmee_wmult[i] = new TH1F(Form("mee_%s_wmult",fParticleListNames[i].Data()),Form("mee_%s_wmult",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM);
+   fmee_wmult[i]->Sumw2();
+   fOutputContainer->Add(fmee_wmult[i]);
+   fmee_orig[i] = new TH1F(Form("mee_%s_orig",fParticleListNames[i].Data()),Form("mee_%s_orig",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM);
+   fmee_orig[i]->Sumw2();
+   fOutputContainer->Add(fmee_orig[i]);
+   fmee_orig_wmult[i] = new TH1F(Form("mee_%s_orig_wmult",fParticleListNames[i].Data()),Form("mee_%s_orig_wmult",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM);
+   fmee_orig_wmult[i]->Sumw2();
+   fOutputContainer->Add(fmee_orig_wmult[i]);
    fphi[i] = new TH1F(Form("phi_%s",fParticleListNames[i].Data()),Form("phi_%s",fParticleListNames[i].Data()),histBinPhi,histMinPhi,histMaxPhi);
    fphi[i]->Sumw2();
    fOutputContainer->Add(fphi[i]);
@@ -326,6 +426,15 @@ void AliAnalysisTaskLMeeCocktailMC::UserCreateOutputObjects(){
    fpteevsmee[i] = new TH2F(Form("pteevsmee_%s",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
    fpteevsmee[i]->Sumw2();
    fOutputContainer->Add(fpteevsmee[i]);
+   fpteevsmee_wmult[i] = new TH2F(Form("pteevsmee_%s_wmult",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
+   fpteevsmee_wmult[i]->Sumw2();
+   fOutputContainer->Add(fpteevsmee_wmult[i]);
+   fpteevsmee_orig[i] = new TH2F(Form("pteevsmee_%s_orig",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
+   fpteevsmee_orig[i]->Sumw2();
+   fOutputContainer->Add(fpteevsmee_orig[i]);
+   fpteevsmee_orig_wmult[i] = new TH2F(Form("pteevsmee_%s_orig_wmult",fParticleListNames[i].Data()),Form("%s;#it{m}_{ee};#it{p}_{T,ee}",fParticleListNames[i].Data()),histBinM,histMinM,histMaxM,histBinPt,histMinPt,histMaxPt);
+   fpteevsmee_orig_wmult[i]->Sumw2();
+   fOutputContainer->Add(fpteevsmee_orig_wmult[i]);
   }
   
   PostData(1, fOutputContainer);
@@ -501,6 +610,11 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         feeorigeta=ee.Eta();
         feeorigphi=ee.Phi();
         if(particle->GetPdgCode()>0) { feeorigphiv=PhiV(dau1,dau2); }else{ feeorigphiv=PhiV(dau2,dau1);};
+        //get the efficiency weight
+        Int_t effbin=fhwEffpT->FindBin(dau1.Pt());
+        fwEffpT=fhwEffpT->GetBinContent(effbin);
+        effbin=fhwEffpT->FindBin(dau2.Pt());
+        fwEffpT=fwEffpT*fhwEffpT->GetBinContent(effbin);
 
         //Resolution and acceptance  
         dau1=ApplyResolution(dau1);
@@ -520,31 +634,64 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         fd2eta=dau2.Eta();
         fd2phi=dau2.Phi();
         feept=ee.Pt();
+        feemt=ee.Mt();
         feep=ee.P();
         feem=ee.M();
         feeeta=ee.Eta();
         feephi=ee.Phi();
         if(particle->GetPdgCode()>0) { feephiv=PhiV(dau1,dau2); }else{ feephiv=PhiV(dau2,dau1);};
         fmotherpt=motherParticle->Pt();
+        fmothermt=sqrt(pow(motherParticle->GetCalcMass(),2)+pow(motherParticle->Pt(),2));
         fmotherp=motherParticle->P();
         fmotherm=motherParticle->GetCalcMass();
         fmothereta=motherParticle->Eta();
         fmotherphi=motherParticle->Phi();
         fID=1000*dectyp+motherParticle->GetPdgCode();
-        fweight=particle->GetWeight();
+        fweight=particle->GetWeight(); //get particle weight from generator
+        //now get multiplicity based weight:
+        int iwbin=fhwMultpT->FindBin(fmotherpt);
+        fwMultpT=fhwMultpT->GetBinContent(iwbin); //pT weight
+        fwMultpT2=fhwMultpT2->GetBinContent(iwbin); //pT weight
+        double min_mT=fhwMultmT->GetBinLowEdge(1); // consider as minimum valid mT value the edge of the weight histo.
+        if(fmothermt>min_mT){
+         iwbin=fhwMultmT->FindBin(fmothermt);
+         fwMultmT = fhwMultmT->GetBinContent(iwbin); //mT weight
+         fwMultmT2 = fhwMultmT2->GetBinContent(iwbin); //mT weight
+        }else{
+         printf("AliAnalysisTaskLMeeCocktailMC ERROR = Generated particle with mT < Pion mass cannot be weighted \n");
+         fwMultmT = 0.;
+         fwMultmT2 = 0.;
+        }
  
         //Fill the tree
         if(fWriteTTree) teeTTree->Fill();
 
         //Fill the histograms
-        if(fpass&&dectyp<4){
-         fmee[hindex]->Fill(ee.M(), particle->GetWeight());
-         fphi[hindex]->Fill(ee.Phi(), particle->GetWeight());
-         frap[hindex]->Fill(ee.Phi(), particle->GetWeight());
+        if(dectyp<4){
+         fmee_orig[hindex]->Fill(ee.M(), particle->GetWeight()*fwEffpT);
+         fmee_orig_wmult[hindex]->Fill(ee.M(), particle->GetWeight()*fwEffpT*fwMultmT);
+         fpteevsmee_orig[hindex]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwEffpT);
+         fpteevsmee_orig_wmult[hindex]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwEffpT*fwMultmT);
          const Int_t nInputParticles = 14;
-         fmee[nInputParticles]->Fill(ee.M(), particle->GetWeight());
-         fphi[nInputParticles]->Fill(ee.Phi(), particle->GetWeight());
-         frap[nInputParticles]->Fill(ee.Phi(), particle->GetWeight());
+         fmee_orig[nInputParticles]->Fill(ee.M(), particle->GetWeight()*fwEffpT);
+         fmee_orig_wmult[nInputParticles]->Fill(ee.M(), particle->GetWeight()*fwEffpT*fwMultmT);
+         fpteevsmee_orig[nInputParticles]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwEffpT);
+         fpteevsmee_orig_wmult[nInputParticles]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwEffpT*fwMultmT);
+         if(fpass&&dectyp<4){
+          fmee[hindex]->Fill(ee.M(), particle->GetWeight()*fwEffpT);
+          fmee_wmult[hindex]->Fill(ee.M(), particle->GetWeight()*fwEffpT*fwMultmT);
+          fphi[hindex]->Fill(ee.Phi(), particle->GetWeight()*fwEffpT);
+          frap[hindex]->Fill(ee.Phi(), particle->GetWeight()*fwEffpT);
+          fpteevsmee[hindex]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwEffpT);
+          fpteevsmee_wmult[hindex]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwEffpT*fwMultmT);
+          //const Int_t nInputParticles = 14;
+          fmee[nInputParticles]->Fill(ee.M(), particle->GetWeight()*fwEffpT);
+          fmee_wmult[nInputParticles]->Fill(ee.M(), particle->GetWeight()*fwEffpT*fwMultmT);
+          fphi[nInputParticles]->Fill(ee.Phi(), particle->GetWeight()*fwEffpT);
+          frap[nInputParticles]->Fill(ee.Phi(), particle->GetWeight()*fwEffpT);
+          fpteevsmee[nInputParticles]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwEffpT);
+          fpteevsmee_wmult[nInputParticles]->Fill(ee.M(),ee.Pt(), particle->GetWeight()*fwEffpT*fwMultmT);
+         }
         }
 
        } // legs coincide

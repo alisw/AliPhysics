@@ -70,6 +70,7 @@ public:
     void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};
     void SetITSnCut (Int_t ITSncut) {fITSncut = ITSncut;};
     void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
+    void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
     void SetSigmaITScut(Double_t SigmaITScut) {fSigmaITScut = SigmaITScut;};
     void SetSigmaTOFcut(Double_t SigmaTOFcut) {fSigmaTOFcut = SigmaTOFcut;};
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
@@ -113,6 +114,7 @@ private:
     Double_t              fAssPtCut;          // pt cut for associated electron
     Int_t                 fITSncut;             // ITC number of clusters for tagged electrons
     Int_t                 fAssTPCnCut;		// TPC number of clusters for associated electron
+    Int_t                 fTPCnCut;         // TPC number of clusters for tagged electron
     Bool_t                fAssITSrefitCut;	// ITS refit for associated electron
     Bool_t                fUseNewEP;          // Use new EP framework
     Bool_t                fUseTender;          // Use tender
@@ -191,6 +193,8 @@ private:
     
     TH1F                  *fTrackPtBefTrkCuts;	//! Track pt before track cuts
     TH1F                  *fTrackPtAftTrkCuts;	//! Track pt after track cuts
+    TH1F                  *fChargedParticlePhi;         //! Track phi
+    TH1F                  *fElectronPhi;                //! electron phi
     
     TH1F                  *fCent;			//! centrality distribution
     TH1F                  *fCentAftFlt;		//! centrality distribution after centrality flattening

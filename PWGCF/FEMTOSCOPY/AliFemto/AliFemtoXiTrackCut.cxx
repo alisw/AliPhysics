@@ -69,6 +69,11 @@ AliFemtoXiTrackCut& AliFemtoXiTrackCut::operator=(const AliFemtoXiTrackCut& aCut
   return *this;
 }
 
+//------------------------------
+AliFemtoXiTrackCut* AliFemtoXiTrackCut::Clone()
+{
+  return(new AliFemtoXiTrackCut(*this));
+}
 
 
 

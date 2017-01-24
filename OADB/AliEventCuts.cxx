@@ -1,24 +1,37 @@
 #include "AliEventCuts.h"
 
+#include <algorithm>
+#include <array>
+using std::array;
+#include <memory>
 #include <vector>
 using std::vector;
 
 #include <TH1D.h>
 #include <TH1I.h>
 #include <TH2D.h>
+#include <TH2F.h>
 
 #include <AliAnalysisManager.h>
 #include <AliCentrality.h>
+#include <AliESDtrackCuts.h>
 #include <AliInputEventHandler.h>
 #include <AliMultSelection.h>
 #include <AliVEventHandler.h>
 #include <AliVMultiplicity.h>
 
+#include <AliAODEvent.h>
+#include <AliESDEvent.h>
+
+ClassImp(AliEventCutsContainer);
 ClassImp(AliEventCuts);
+
+
 
 /// Standard constructor with null selection
 ///
 AliEventCuts::AliEventCuts(bool saveplots) : TList(),
+  fUtils{},
   fRequireTrackVertex{false},
   fMinVtz{-1000.f},
   fMaxVtz{1000.f},
@@ -37,12 +50,20 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fCentralityFramework{0},
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
+  fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fEstimatorsCorrelationCoef{0.,1.},
   fEstimatorsSigmaPars{10000.,0.,0.,0.},
   fDeltaEstimatorNsigma{1.,1.},
+  fTOFvsFB32correlationPars{0.},
+  fTOFvsFB32sigmaPars{1.e8,0.,0.,0.,0.,0.},
+  fTOFvsFB32nSigmaCut{1.,1.},
+  fESDvsTPConlyLinearCut{1.e8,0.},
+  fMultiplicityV0McorrCut{nullptr},
+  fFB128vsTrklLinearCut{1.e8,0.},
   fRequireExactTriggerMask{false},
   fTriggerMask{AliVEvent::kAny},
+  fContainer{},
   fkLabels{"raw","selected"},
   fManualMode{false},
   fSavePlots{saveplots},
@@ -51,19 +72,25 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fCentEstimators{"V0M","CL0"},
   fCentPercentiles{-1.f},
   fPrimaryVertex{nullptr},
+  fNewEvent{true},
+  fOverrideAutoTriggerMask{false},
   fCutStats{nullptr},
   fVtz{nullptr},
   fDeltaTrackSPDvtz{nullptr},
   fCentrality{nullptr},
-  fEstimCorrelation{nullptr},   
-  fMultCentCorrelation{nullptr}
+  fEstimCorrelation{nullptr},
+  fMultCentCorrelation{nullptr},
+  fTOFvsFB32{nullptr},
+  fTPCvsAll{nullptr},
+  fMultvsV0M{nullptr},
+  fTPCvsTrkl{nullptr}
 {
   SetName("AliEventCuts");
   SetOwner(true);
 }
 
 bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
-  /// If not specified the cuts are set according to the run period 
+  /// If not specified the cuts are set according to the run period
   const int current_run = ev->GetRunNumber();
   if (!fManualMode && current_run != fCurrentRun) {
     ::Info("AliEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
@@ -79,7 +106,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   fFlag = BIT(kNoCuts);
 
   /// Rejection of the DAQ incomplete events
-  if (!fRejectDAQincomplete || !ev->IsIncompleteDAQ()) fFlag |= BIT(kDAQincomplete); 
+  if (!fRejectDAQincomplete || !ev->IsIncompleteDAQ()) fFlag |= BIT(kDAQincomplete);
 
   /// Magnetic field selection
   float bField = ev->GetMagneticField();
@@ -116,7 +143,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   fPrimaryVertex = const_cast<AliVVertex*>(vtx);
 
   /// SPD pile-up rejection
-  if (!ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ) && 
+  if (!ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ) &&
       (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)))
     fFlag |= BIT(kPileUp);
 
@@ -138,35 +165,57 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     const auto& x = fCentPercentiles[1];
     const double center = x * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
     const double sigma = fEstimatorsSigmaPars[0] + fEstimatorsSigmaPars[1] * x + fEstimatorsSigmaPars[2] * x * x + fEstimatorsSigmaPars[3] * x * x * x;
-    if ((!fUseEstimatorsCorrelationCut || 
+    if ((!fUseEstimatorsCorrelationCut ||
           (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
-        && fCentPercentiles[0] >= fMinCentrality 
+        && fCentPercentiles[0] >= fMinCentrality
         && fCentPercentiles[0] <= fMaxCentrality) fFlag |= BIT(kMultiplicity);
   } else fFlag |= BIT(kMultiplicity);
+
+  if (fUseVariablesCorrelationCuts) {
+    ComputeTrackMultiplicity(ev);
+    const double fb32 = fContainer.fMultTrkFB32;
+    const double fb32acc = fContainer.fMultTrkFB32Acc;
+    const double fb32tof = fContainer.fMultTrkFB32TOF;
+    const double fb128 = fContainer.fMultTrkTPC;
+    const double esd = fContainer.fMultESD;
+    const double mu32tof = PolN(fb32,fTOFvsFB32correlationPars,3);
+    const double sigma32tof = PolN(fb32,fTOFvsFB32sigmaPars, 5);
+    const bool multV0Mcut = (fMultiplicityV0McorrCut) ? fb32acc > fMultiplicityV0McorrCut->Eval(fCentPercentiles[0]) : true;
+    if ((fb32tof <= mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof && fb32tof >= mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof) &&
+        (esd < fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * fb128) &&
+        multV0Mcut &&
+        (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl))
+      fFlag |= BIT(kCorrelations);
+  } else fFlag |= BIT(kCorrelations);
 
   bool allcuts = (fFlag == (BIT(kAllCuts) - 1));
   if (allcuts) fFlag |= BIT(kAllCuts);
   if (fCutStats) {
     for (int iCut = kNoCuts; iCut <= kAllCuts; ++iCut) {
-      if (TESTBIT(fFlag,iCut)) 
+      if (TESTBIT(fFlag,iCut))
         fCutStats->Fill(iCut);
     }
   }
 
+
   /// Filling the monitoring histograms (first iteration always filled, second iteration only for selected events.
   for (int befaft = 0; befaft < 2; ++befaft) {
-    if (fCentrality[befaft] != nullptr) fCentrality[befaft]->Fill(fCentPercentiles[0]);
-    if (fEstimCorrelation[befaft] != nullptr) fEstimCorrelation[befaft]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
-    if (fMultCentCorrelation[befaft] != nullptr) fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
-    if (fVtz[befaft] != nullptr) fVtz[befaft]->Fill(vtx->GetZ());
-    if (fDeltaTrackSPDvtz[befaft] != nullptr) fDeltaTrackSPDvtz[befaft]->Fill(dz);
+    if (fCentrality[befaft]) fCentrality[befaft]->Fill(fCentPercentiles[0]);
+    if (fEstimCorrelation[befaft]) fEstimCorrelation[befaft]->Fill(fCentPercentiles[1],fCentPercentiles[0]);
+    if (fMultCentCorrelation[befaft]) fMultCentCorrelation[befaft]->Fill(fCentPercentiles[0],ntrkl);
+    if (fVtz[befaft]) fVtz[befaft]->Fill(vtx->GetZ());
+    if (fDeltaTrackSPDvtz[befaft]) fDeltaTrackSPDvtz[befaft]->Fill(dz);
+    if (fTOFvsFB32[befaft]) fTOFvsFB32[befaft]->Fill(fContainer.fMultTrkFB32,fContainer.fMultTrkFB32TOF);
+    if (fTPCvsAll[befaft])  fTPCvsAll[befaft]->Fill(fContainer.fMultTrkTPC,float(fContainer.fMultESD) - fESDvsTPConlyLinearCut[1] * fContainer.fMultTrkTPC);
+    if (fMultvsV0M[befaft]) fMultvsV0M[befaft]->Fill(GetCentrality(),fContainer.fMultTrkFB32Acc);
+    if (fTPCvsTrkl[befaft]) fTPCvsTrkl[befaft]->Fill(ntrkl,fContainer.fMultTrkTPC);
     if (!allcuts) return false; /// Do not fill the "after" histograms if the event does not pass the cuts.
   }
 
   return true;
 }
 
-void AliEventCuts::AddQAplotsToList(TList *qaList) {
+void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
   if (!qaList) {
     if (fSavePlots)
       qaList = static_cast<TList*>(this);
@@ -175,7 +224,7 @@ void AliEventCuts::AddQAplotsToList(TList *qaList) {
   }
   static_cast<TList*>(this)->Delete();
 
-  vector<string> bin_labels = {"No cuts","DAQ Incomplete","Magnetic field choice","Trigger selection","Vertex position","Vertex quality","Pile-up","Centrality selection","All cuts"};
+  vector<string> bin_labels = {"No cuts","DAQ Incomplete","Magnetic field choice","Trigger selection","Vertex position","Vertex quality","Pile-up","Centrality selection","Correlations","All cuts"};
   fCutStats = new TH1I("fCutStats",";;Number of selected events",bin_labels.size(),-.5,bin_labels.size() - 0.5);
   for (int iB = 1; iB <= bin_labels.size(); ++iB) fCutStats->GetXaxis()->SetBinLabel(iB,bin_labels[iB-1].data());
   qaList->Add(fCutStats);
@@ -193,11 +242,27 @@ void AliEventCuts::AddQAplotsToList(TList *qaList) {
     qaList->Add(fCentrality[iS]);
     qaList->Add(fEstimCorrelation[iS]);
     qaList->Add(fMultCentCorrelation[iS]);
+
+    if (addCorrelationPlots) {
+      fTOFvsFB32[iS] = new TH2F(Form("fTOFvsFB32_%s",fkLabels[iS].data()),Form("%s;Multiplicity FB32;Multiplicity FB32+TOF",titles[iS].data()),500,0.,3000.,500,0.,2000.);
+      fTPCvsAll[iS] = new TH2F(Form("fTPCvsAll_%s",fkLabels[iS].data()),Form("%s;Multiplicity TPC;Multiplicity ESD - a_{0} #times Multiplicity TPC",titles[iS].data()),300,0.,3000.,3000,-200.,28800.);
+      fMultvsV0M[iS] = new TH2F(Form("fMultvsV0M_%s",fkLabels[iS].data()),Form("%s;Centrality (V0M);FB32",titles[iS].data()),100,0.,100.,500,0.,3000.);
+      fTPCvsTrkl[iS] = new TH2F(Form("fTPCvsTrkl_%s",fkLabels[iS].data()),Form("%s;SPD tracklets;FB128",titles[iS].data()),2500,0.,5000.,2500,0.,5000.);
+      qaList->Add(fTOFvsFB32[iS]);
+      qaList->Add(fTPCvsAll[iS]);
+      qaList->Add(fMultvsV0M[iS]);
+      qaList->Add(fTPCvsTrkl[iS]);
+    }
   }
 
 }
 
 void AliEventCuts::AutomaticSetup() {
+  if (fCurrentRun >= 166423 && fCurrentRun <= 170593) {
+    SetupLHC11h();
+    return;
+  }
+
   if ((fCurrentRun >= 225000 && fCurrentRun <= 244628) ||
       (fCurrentRun >= 256146 && fCurrentRun <= 260187)) {
     SetupRun2pp();
@@ -213,22 +278,98 @@ void AliEventCuts::AutomaticSetup() {
   ::Fatal("AliEventCuts::AutomaticSetup","Automatic period detection failed, please use the manual mode.");
 }
 
-float AliEventCuts::GetCentrality (unsigned int estimator) const { 
+float AliEventCuts::GetCentrality (unsigned int estimator) const {
   if (estimator > 1) {
     /// Escalate to Fatal
     ::Fatal("AliEventCuts::GetCentrality","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
     return -1.f;
-  } else 
+  } else
     return fCentPercentiles[estimator];
 }
 
-string AliEventCuts::GetCentralityEstimator (unsigned int estimator) const { 
+string AliEventCuts::GetCentralityEstimator (unsigned int estimator) const {
   if (estimator > 1) {
     /// Escalate to Fatal
     ::Fatal("AliEventCuts::GetCentralityEstimator","You asked for the centrality estimator with index %i, but you should choose between index 0 and 1.", estimator);
     return "";
-  } else 
+  } else
     return fCentEstimators[estimator];
+}
+
+
+void AliEventCuts::ComputeTrackMultiplicity(AliVEvent *ev) {
+  AliEventCutsContainer* tmp_cont = static_cast<AliEventCutsContainer*>(ev->FindListObject("AliEventCutsContainer"));
+  if (tmp_cont) {
+    unsigned long evid = ((unsigned long)(ev->GetBunchCrossNumber()) << 32) + ev->GetTimeStamp();
+    fNewEvent = (tmp_cont->fEventId != evid);
+    tmp_cont->fEventId = evid;
+    //if (fNewEvent) ::Info("AliEventCuts::AcceptEvent","New event. %Lu", evid);
+    //else ::Info("AliEventCuts::AcceptEvent","Old event. %Lu", evid);
+
+    if (!fNewEvent) {
+      fContainer = *tmp_cont;
+      return;
+    }
+  } else tmp_cont = new AliEventCutsContainer;
+
+  bool isAOD = false;
+  if (dynamic_cast<AliAODEvent*>(ev))
+    isAOD = true;
+  else if (!dynamic_cast<AliESDEvent*>(ev))
+    AliFatal("I don't find the AOD event nor the ESD one, aborting.");
+
+  std::unique_ptr<AliESDtrackCuts> FB32cuts{AliESDtrackCuts::GetStandardITSTPCTrackCuts2011()};
+  std::unique_ptr<AliESDtrackCuts> TPConlyCuts{AliESDtrackCuts::GetStandardTPCOnlyTrackCuts()};
+
+  const int nTracks = ev->GetNumberOfTracks();
+  tmp_cont->fMultESD = (isAOD) ? ((AliAODHeader*)ev->GetHeader())->GetNumberOfESDTracks() : dynamic_cast<AliESDEvent*>(ev)->GetNumberOfTracks();
+  tmp_cont->fMultTrkFB32 = 0;
+  tmp_cont->fMultTrkFB32Acc = 0;
+  tmp_cont->fMultTrkFB32TOF = 0;
+  tmp_cont->fMultTrkTPC = 0;
+  for (int it = 0; it < nTracks; it++) {
+    if (isAOD) {
+      AliAODTrack* trk = (AliAODTrack*)ev->GetTrack(it);
+      if (!trk) continue;
+      if (trk->TestFilterBit(32)) {
+        tmp_cont->fMultTrkFB32++;
+        if ( TMath::Abs(trk->GetTOFsignalDz()) <= 10. && trk->GetTOFsignal() >= 12000. && trk->GetTOFsignal() <= 25000.)
+          tmp_cont->fMultTrkFB32TOF++;
+        if ((fabs(trk->Eta()) < 0.8) && (trk->GetTPCNcls() >= 70) && (trk->Pt() >= 0.2) && (trk->Pt() < 50))
+          tmp_cont->fMultTrkFB32Acc++;
+      }
+      if (trk->TestFilterBit(128))
+        tmp_cont->fMultTrkTPC++;
+    } else {
+      AliESDtrack* esdTrack = (AliESDtrack*)ev->GetTrack(it);
+      if (!esdTrack) continue;
+
+      if (FB32cuts->AcceptTrack(esdTrack)) {
+        tmp_cont->fMultTrkFB32++;
+        if (TMath::Abs(esdTrack->GetTOFsignalDz()) <= 10 && esdTrack->GetTOFsignal() >= 12000 && esdTrack->GetTOFsignal() <= 25000)
+          tmp_cont->fMultTrkFB32TOF++;
+
+        if ((TMath::Abs(esdTrack->Eta()) < 0.8) && (esdTrack->GetTPCNcls() > 70) && (esdTrack->Pt() > 0.2) && (esdTrack->Pt() < 50))
+          tmp_cont->fMultTrkFB32Acc++;
+      }
+
+      /// TPC only tracks, with the same cuts of the filter bit 128
+      AliESDtrack tpcParam;
+      if (!esdTrack->FillTPCOnlyTrack(tpcParam)) continue;
+      if (!TPConlyCuts->AcceptTrack(&tpcParam)) continue;
+      if (tpcParam.Pt() > 0.) {
+        // only constrain tracks above threshold
+        AliExternalTrackParam exParam;
+        // take the B-field from the ESD, no 3D fieldMap available at this point
+        bool relate = false;
+        relate = tpcParam.RelateToVertexTPC((AliESDVertex*)ev->GetPrimaryVertexSPD(),ev->GetMagneticField(),kVeryBig, &exParam);
+        if(!relate) continue;
+      }
+      tmp_cont->fMultTrkTPC++;
+    }
+  }
+  ev->AddObject(tmp_cont);
+  fContainer = *tmp_cont;
 }
 
 void AliEventCuts::SetupRun2pp() {
@@ -261,7 +402,10 @@ void AliEventCuts::SetupRun2pp() {
   fMinCentrality = 0.f;
   fMaxCentrality = 100.f;
 
-  fTriggerMask = AliVEvent::kINT7;
+  fFB128vsTrklLinearCut[0] = 32.077;
+  fFB128vsTrklLinearCut[1] = 0.932;
+
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
 }
 
@@ -304,8 +448,35 @@ void AliEventCuts::SetupLHC15o() {
   fDeltaEstimatorNsigma[0] = 5.;
   fDeltaEstimatorNsigma[1] = 5.5;
 
-  fTriggerMask = AliVEvent::kINT7;
+  array<double,4> tof_fb32_corr = {-1.0178, 0.333132, 9.10282e-05, -1.61861e-08};
+  std::copy(tof_fb32_corr.begin(),tof_fb32_corr.end(),fTOFvsFB32correlationPars);
+  array<double,6> tof_fb32_sigma = {1.47848, 0.0385923, -5.06153e-05, 4.37641e-08, -1.69082e-11, 2.35085e-15};
+  std::copy(tof_fb32_sigma.begin(),tof_fb32_sigma.end(),fTOFvsFB32sigmaPars);
+  fTOFvsFB32nSigmaCut[0] = 4.;
+  fTOFvsFB32nSigmaCut[1] = 4.;
+
+  fESDvsTPConlyLinearCut[0] = 15000.;
+  fESDvsTPConlyLinearCut[1] = 3.38;
+
+  if(!fMultiplicityV0McorrCut) fMultiplicityV0McorrCut = new TF1("fMultiplicityV0McorrCut","[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))",0,100);
+  fMultiplicityV0McorrCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
+
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
 }
 
+void AliEventCuts::SetupLHC11h() {
+  fRequireTrackVertex = true;
+  fMinVtz = -10.f;
+  fMaxVtz = 10.f;
 
+  fCentralityFramework = 2;
+  fCentEstimators[0] = "V0M";
+  fCentEstimators[1] = "CL0";
+  fMinCentrality = 0.f;
+  fMaxCentrality = 90.f;
+
+  fUseEstimatorsCorrelationCut = false;
+
+  if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
+}

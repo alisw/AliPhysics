@@ -119,8 +119,6 @@ public:
   Bool_t GetUsePhiEtaWeightsChDep() const {return this->fUsePhiEtaWeightsChDep;};
   void SetUsePhiEtaWeightsVtxDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsVtxDep = uPhiEtaW;};
   Bool_t GetUsePhiEtaWeightsVtxDep() const {return this->fUsePhiEtaWeightsVtxDep;};
-  void SetPhiEtaCutsList(TList* const wlist) {this->fPhiEtaCutsList = wlist;}
-  TList* GetPhiEtaCutsList() const {return this->fPhiEtaCutsList;}
   void SetUsePhiEtaCuts(Bool_t const uPhiEtaW) {this->fUsePhiEtaCuts = uPhiEtaW;};
   Bool_t GetUsePhiEtaCuts() const {return this->fUsePhiEtaCuts;};
   void SetUseZDCESEMulWeights(Bool_t const uPhiEtaW) {this->fUseZDCESEMulWeights = uPhiEtaW;};
@@ -293,7 +291,6 @@ private:
   TList *fWeightsList;                // list with weights
   TList *fWeightsListChDep;           // list with weights ch dep
   TList *fWeightsListVtxDep;          // list with weights vtx dep
-  TList *fPhiEtaCutsList;             //
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
   AliFlowCommonConstants::ERefMultSource fMultiplicityIs;           // by default "#RPs", other supported options are "RefMultFromESD" = ref. mult. from ESD, and "#POIs"

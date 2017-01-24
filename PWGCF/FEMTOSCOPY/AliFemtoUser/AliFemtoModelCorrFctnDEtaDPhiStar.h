@@ -24,6 +24,27 @@ typedef struct {UInt_t bin_count; Float_t low; Float_t high;} BinData;
 ///        given radial distance (Δϕ*), storing both reconstructed and MonteCarlo
 ///        data.
 ///
+/// Instead of a standard constructor with many unnamed parameters, this
+/// class uses the *Builder Pattern* to allow for both named parameter setting
+/// and the ability to easily duplicate parameters across object construction.
+///
+/// ```c++11
+/// auto detadphi_cf = AliFemtoModelCorrFctnDEtaDPhiStar::Builder()
+///                       .Title("DeltaPhiStar_1.6")
+///                       .Radius(1.6)
+///                       .Phi(101, -0.2, 0.2) // <- histogram bin information
+///                       .Eta(101, -0.2, 0.2)
+///                       .Build();
+/// ```
+///
+/// Share some of the same build parameters between two correlation functions:
+///
+/// ```
+/// auto cf_builder = AliFemtoModelCorrFctnDEtaDPhiStar::Builder().Phi(75, -0.2, 0.2).Eta(75, -0.3, 0.3);
+/// auto detadphi_12_cf = cf_builder.Title("DeltaPhiStar_1.2").Radius(1.2).Build();
+/// auto detadphi_16_cf = cf_builder.Title("DeltaPhiStar_1.6").Radius(1.6).Build();
+/// ```
+///
 /// \authors: Andrew Kubera, The Ohio State University, andrew.kubera@cern.ch
 ///
 class AliFemtoModelCorrFctnDEtaDPhiStar : public AliFemtoModelCorrFctn {
@@ -45,7 +66,6 @@ public:
 
   };
 #pragma GCC diagnostic pop
-
 
   /// Structure used to build a Parameters object and return the AliFemtoModelCorrFctnDEtaDPhiStar.
   struct Builder {
@@ -108,9 +128,9 @@ protected:
   TString fTitle;
 
   /// Numerator of ΔηΔϕ* true function
-  TH2F *fDPhiStarDEtaNumeratorTrue;
+  TH2F *fDPhiStarDEtaNumeratorWeighted;
   /// Numerator of ΔηΔϕ* fake function
-  TH2F *fDPhiStarDEtaNumeratorFake;
+  TH2F *fDPhiStarDEtaNumeratorUnweighted;
   /// Denominator of ΔηΔϕ* function
   TH2F *fDPhiStarDEtaDenominator;
 
@@ -118,20 +138,6 @@ protected:
   TH2F *fDPhiStarDEtaColNumerator;
   /// Denominator of colinear ΔηΔϕ* function
   TH2F *fDPhiStarDEtaColDenominator;
-
-  /// Numerator of Δϕ* true correlation
-  TH1F *fDPhiStarNumeratorTrue;
-  /// Numerator of Δϕ* fake correlation
-  TH1F *fDPhiStarNumeratorFake;
-  // Denominator of Δϕ* correlation
-  TH1F *fDPhiStarDenominator;
-
-  /// Numerator of colinearity true correlation
-  TH1F *fDCosNumeratorTrue;
-  /// Numerator of colinearity fake correlation
-  TH1F *fDCosNumeratorFake;
-  /// Denominator of colinearity correlation
-  TH1F *fDCosDenominator;
 
   /// Numerator of Δϕ* correlation vs. Pt min
   TH2F *fDPhiStarPtNumerator;

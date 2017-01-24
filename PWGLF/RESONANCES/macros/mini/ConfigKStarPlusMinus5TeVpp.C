@@ -16,9 +16,10 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    Float_t                 piPIDCut,
    Float_t                 pi_k0s_PIDCut,
    Int_t                   aodFilterBit,
-   Int_t                   customQualityCutsID=AliRsnCutSetDaughterParticle::kDisableCustom,
-   Bool_t                  enableMonitor=kTRUE,
-   TString                 monitorOpt="NoSIGN",
+   Bool_t                  enableSys,
+   Int_t                   Sys,  
+   Bool_t                  enableMonitor,
+   TString                 monitorOpt,
    Float_t                 massTol,
    Float_t                 k0sDCA,
    Float_t                 k0sCosPoinAn,
@@ -39,22 +40,45 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForKStarPlusMinus", AliPID::kPion);
    
    cutPi->SetPIDCut(piPIDCut);    // fPIDCut used in IsSelected() after the call to trkQualityCut
-   AliRsnCutTrackQuality *trkQualityCut = (AliRsnCutTrackQuality*) cutPi->CutQuality();
+
+   if(enableSys)
+     {
+       AliRsnCutTrackQuality *trkQualityCut = (AliRsnCutTrackQuality*) cutPi->CutQuality();
+
+       trkQualityCut->SetDefaults2011(kTRUE,1);// psahoo                                                 
+       trkQualityCut->SetPtRange(0.15, 30.0);// psahoo                                                  
+       trkQualityCut->SetEtaRange(-0.8, 0.8);// psahoo
+
+       if(Sys==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
+       else if(Sys==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
+       else if(Sys==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
+       else if(Sys==6){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(0.2);}
+       else if(Sys==7){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(5.);}
+       else if(Sys==8){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(2.3);}
+       else if(Sys==9){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(60);}
+       else if(Sys==10){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(100);}
+       else if(Sys==11){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
+       else if(Sys==12){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
+       else if(Sys==13){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(49.);}
+       else if(Sys==14){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(4.);}
+       else if(Sys==15){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(49.);}
+       else if(Sys==16){trkQualityCut->GetESDtrackCuts()->SetMaxChi2TPCConstrainedGlobal(25.);}
+       else if(Sys==17){trkQualityCut->GetESDtrackCuts()->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);}
+       else if(Sys==56){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(1.);}
+       else if(Sys==58){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterTPC(3.);}
+       else if(Sys==60){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
+       else if(Sys==64){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
+     }
+   else
+     {
+       AliRsnCutTrackQuality *trkQualityCut = (AliRsnCutTrackQuality*) cutPi->CutQuality();
+       trkQualityCut->SetDefaults2011(kTRUE,1);// psahoo              
+       trkQualityCut->SetPtRange(0.15, 30.0);// psahoo                                                  
+       trkQualityCut->SetEtaRange(-0.8, 0.8);// psahoo      
+     }
    
-   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
-     //Set custom quality cuts for systematic checks
-     cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForKStarPlusMinus", AliPID::kPion);
-   }else{
-     //use default quality cuts std 2010 with crossed rows TPC
-     
-     cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForKStarPlusMinus", AliPID::kPion);
-     trkQualityCut->SetDefaults2011(kTRUE,1);// psahoo
-     trkQualityCut->SetPtRange(0.15, 30.0);// psahoo
-     trkQualityCut->SetEtaRange(-0.8, 0.8);// psahoo
-   }
-  
-   //trkQualityCut->SetDefaults2010(0,1);  // 1st par. not default (0 -> use TPC clusters). 2nd par. default (-> standard Pt and eta range)
-     
+   
+   
    AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForKStarPlusMinus", AliRsnTarget::kDaughter);
    cutSetPi->AddCut(cutPi);
    cutSetPi->SetCutScheme(cutPi->GetName());
@@ -67,23 +91,25 @@ Bool_t ConfigKStarPlusMinus5TeVpp
    // selections for pion daugthers of K0s
    AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterK0s");   
    esdTrackCuts->SetPtRange(0.15,1.E10);
-   esdTrackCuts->SetEtaRange(-0.8,0.8);
-   esdTrackCuts->SetRequireTPCRefit();
-   esdTrackCuts->SetAcceptKinkDaughters(0); //
-   esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
-   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   esdTrackCuts->SetMinDCAToVertexXY(0.15);   
+   esdTrackCuts->SetEtaRange(-0.8,0.8); // Standard
+   esdTrackCuts->SetRequireTPCRefit(); // Standard
+   esdTrackCuts->SetAcceptKinkDaughters(0); // Standard
+   esdTrackCuts->SetMinNClustersTPC(NTPCcluster);// 70 Standard
+   esdTrackCuts->SetMaxChi2PerClusterTPC(5.);
+   esdTrackCuts->SetMinDCAToVertexXY(0.06); // 0.06 cm Standard   
+   esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);// Standard
    //
    /////////////////////////////////////////////////
    // selections for K0s
+   ////////////////////////////////////////////////   
    AliRsnCutV0 *cutK0s = new AliRsnCutV0("cutK0s", kK0Short, AliPID::kPion, AliPID::kPion);
-   cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s
-   cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
-   cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);
-   cutK0s->SetMaxDCAVertex(k0sDCA);
-   cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
-   cutK0s->SetTolerance(massTol);
+   cutK0s->SetPIDCutPion(pi_k0s_PIDCut);        // PID for the pion daughter of K0s  5sigma // Standard
+   cutK0s->SetMaxDaughtersDCA(k0sDaughDCA);// 1.0 sigma
+   cutK0s->SetMaxDCAVertex(k0sDCA); // 0.3cm K0S 
+   cutK0s->SetMinCosPointingAngle(k0sCosPoinAn); // 0.97 Standard
+   cutK0s->SetTolerance(massTol); // 0.03 GeV Standard
    cutK0s->SetMaxRapidity(0.5);
+   cutK0s->SetESDtrackCuts(esdTrackCuts);  // all the other selections (defined above) for proton and pion daughters of K0s
    //
    AliRsnCutSet *cutSetK0s = new AliRsnCutSet("setK0s", AliRsnTarget::kDaughter);
    cutSetK0s->AddCut(cutK0s);
@@ -530,7 +556,7 @@ void AddMonitorOutput_K0sAntiPionPID(TObjArray *mon=0,TString opt="",AliRsnLoopD
 }
 // Psahoo for systematics.......................
 //-------------------------------------------------------  
-Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0)
+/*Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0)
 {
   //Sets configuration for track quality object different from std quality cuts.
   //Returns kTRUE if track quality cut object is successfully defined,
@@ -664,4 +690,4 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   trkQualityCut->Print();
   return kTRUE;
 }
-
+*/

@@ -38,11 +38,13 @@
 #include "AliJetContainer.h"
 #include "AliTrackContainer.h"
 #include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
+#include "AliAODPid.h"
 #include "AliPicoTrack.h"
 #include "AliVParticle.h"
 #include "TRandom3.h"
 #include "AliAnalysisTaskEmcalJet.h"
-#include "AliAnalysisTaskJetExtractor.h"
+#include "AliBasicParticle.h"
 
 #include "AliAnalysisTaskChargedJetsHadronCF.h"
 
@@ -83,6 +85,11 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF() :
   fJetVetoJetByJet(1),
   fMatchedJets(),
   fRandom(0),
+  fTracksTree(0),
+  fTreeBufferTrack(0),
+  fTreeBufferPID(0),
+  fTreeBufferPDG(0),
+  fTrackExtractionPercentagePower(0),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -125,6 +132,11 @@ AliAnalysisTaskChargedJetsHadronCF::AliAnalysisTaskChargedJetsHadronCF(const cha
   fJetVetoJetByJet(1),
   fMatchedJets(),
   fRandom(0),
+  fTracksTree(0),
+  fTreeBufferTrack(0),
+  fTreeBufferPID(0),
+  fTreeBufferPDG(0),
+  fTrackExtractionPercentagePower(0),
   fJetOutputMode(0),
   fLeadingJet(0),
   fSubleadingJet(0),
@@ -373,6 +385,16 @@ void AliAnalysisTaskChargedJetsHadronCF::ExecOnce() {
 
   // ##############################################
   // ##############################################
+
+  // ### Prepare the track tree
+  if(fTrackExtractionPercentagePower > 0)
+  {
+    fTracksTree = new TTree("ExtractedTracks", "ExtractedTracks");
+    fTracksTree->Branch("Kinematics", "AliBasicParticle", &fTreeBufferTrack, 1000);
+    fTracksTree->Branch("PID", "AliAODPid", &fTreeBufferPID, 1000);
+    fTracksTree->Branch("PDG",&fTreeBufferPDG,"a/I");
+    fOutput->Add(fTracksTree);
+  }
 
   // ### Add the tracks as basic correlation particles to the event (optional)
   if(fTrackParticleArrayName != "")
@@ -623,6 +645,49 @@ void AliAnalysisTaskChargedJetsHadronCF::AddTrackToOutputArray(AliVTrack* track)
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronCF::AddTrackToTree(AliVTrack* track)
+{
+  // Only allow when we have aod tracks
+  AliAODTrack* aodtrack = dynamic_cast<AliAODTrack*>(track);
+  if(!aodtrack)
+    return;
+
+  // Discard tracks according to their pT (below 20 GeV)
+  if(track->Pt() < 20.)
+    if(fRandom->Rndm() >= TMath::Power((1/20. * track->Pt()), fTrackExtractionPercentagePower))
+      return;
+
+  // Create basic particle from track and extract pid object
+  fTreeBufferPID = aodtrack->GetDetPid();
+
+  Int_t truthPID = 0;
+
+  // Get truth values if we are on MC
+  TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("mcparticles"));
+  if(fTruthParticleArray)
+  {
+    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
+    {
+      AliAODMCParticle* mcParticle = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(i));
+      if(!mcParticle) continue;
+
+      if (mcParticle->GetLabel() == aodtrack->GetLabel())
+      {
+        truthPID = mcParticle->PdgCode();
+        break;
+      }
+    }
+  }
+
+  fTreeBufferPDG = truthPID;
+
+  AliBasicParticle basicParticle(aodtrack->Eta(), aodtrack->Phi(), aodtrack->Pt(), aodtrack->Charge());
+  fTreeBufferTrack = &basicParticle;
+
+  fTracksTree->Fill();
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronCF::AddEventToTree()
 {
   // Check jet pT threshold
@@ -718,6 +783,8 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
     // Add track to output array
     trackcount++;
     AddTrackToOutputArray(track);
+    if(fTrackExtractionPercentagePower)
+      AddTrackToTree(track);
   }
 
   // Add event to output tree

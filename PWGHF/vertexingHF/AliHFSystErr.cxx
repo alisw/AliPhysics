@@ -137,6 +137,10 @@ void AliHFSystErr::Init(Int_t decay){
 	else if (fCentralityClass=="5080") InitD0toKpi2010PbPb5080CentScan();
 	else AliFatal("Not yet implemented");
       }
+       else if (fRunNumber == 15){
+	if (fCentralityClass=="3050") InitD0toKpi2015PbPb3050();
+	else AliFatal("Not yet implemented");
+      }
     } 
     else if (fCollisionType==2) { 
       if (fCentralityClass=="0100"){
@@ -204,6 +208,10 @@ void AliHFSystErr::Init(Int_t decay){
     else if (fCentralityClass=="3050") InitDplustoKpipi2011PbPb3050();
 	else AliFatal("Not yet implemented");
       }
+      if(fRunNumber == 15){
+	if (fCentralityClass=="3050") InitDplustoKpipi2015PbPb3050();
+	else AliFatal("Not yet implemented");
+      }
     } 
     else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitDplustoKpipi2013pPb0100();
@@ -267,7 +275,11 @@ void AliHFSystErr::Init(Int_t decay){
 	else if (fCentralityClass=="3040") InitDstartoD0pi2011PbPb3040CentScan();
 	else if (fCentralityClass=="4050") InitDstartoD0pi2011PbPb4050CentScan();
 	else if (fCentralityClass=="5080") InitDstartoD0pi2010PbPb5080CentScan();
-    else if (fCentralityClass=="3050") InitDstartoD0pi2011PbPb3050();
+	else if (fCentralityClass=="3050") InitDstartoD0pi2011PbPb3050();
+	else AliFatal("Not yet implemented");
+      }
+      else if (fRunNumber == 15){
+	if (fCentralityClass=="3050") InitDstartoD0pi2015PbPb3050();
 	else AliFatal("Not yet implemented");
       }
     }
@@ -306,10 +318,16 @@ void AliHFSystErr::Init(Int_t decay){
       else InitDstoKKpi2010pp();
     }
     else if (fCollisionType==1) {
-      if (fCentralityClass=="07half") InitDstoKKpi2011PbPb07half();
-      else if (fCentralityClass=="010") InitDstoKKpi2011PbPb010();
-      else if (fCentralityClass=="2050") InitDstoKKpi2011PbPb2050();
-      else AliFatal("Not yet implemented");
+      if (fRunNumber == 15){
+	if (fCentralityClass=="3050") InitDstoKKpi2015PbPb3050();
+	else AliFatal("Not yet implemented");
+      }
+      else{
+	if (fCentralityClass=="07half") InitDstoKKpi2011PbPb07half();
+	else if (fCentralityClass=="010") InitDstoKKpi2011PbPb010();
+	else if (fCentralityClass=="2050") InitDstoKKpi2011PbPb2050();
+	else AliFatal("Not yet implemented");
+      }
     }
     else if (fCollisionType==2) { 
       if (fCentralityClass=="0100") InitDstoKKpi2013pPb0100();
@@ -2003,10 +2021,10 @@ void AliHFSystErr::InitDstartoD0pi2010ppPass4(){
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
   fTrackingEff->SetBinContent(1,1.0);
-  fTrackingEff->SetBinContent(2,0.09); //
-  fTrackingEff->SetBinContent(3,0.09);
-  fTrackingEff->SetBinContent(3,0.09);
-  for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.09); // 
+  fTrackingEff->SetBinContent(2,0.06); //
+  fTrackingEff->SetBinContent(3,0.06);
+  fTrackingEff->SetBinContent(3,0.06);
+  for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.06); //
 
 
   // Raw yield extraction
@@ -5102,7 +5120,278 @@ void AliHFSystErr::InitLctopK0S2013pPbBDT() {
     for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.093); // 9.3% PDG2015
     
 }
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2015PbPb3050() {
+    //
+    // D0->Kpi syst errors. Responsible: X. peng
+    //   2015 PbPb sample, 30-50 CC
+    //
+    
+    // Normalization
+    fNorm = new TH1F("fNorm","fNorm",36,0,36);
+    for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
+    
+    // Branching ratio
+    fBR = new TH1F("fBR","fBR",36,0,36);
+    for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.0004); // 0.04% PDG2016
+    
+    // Tracking efficiency
+    fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
+    fTrackingEff->SetBinContent(1,4.5*0.01); // Jacek, 5% per track
+    fTrackingEff->SetBinContent(2,4.5*0.01);
+    fTrackingEff->SetBinContent(3,4.8*0.01);
+    fTrackingEff->SetBinContent(4,5.3*0.01);
+    fTrackingEff->SetBinContent(5,5.3*0.01);
+    fTrackingEff->SetBinContent(6,5.1*0.01);
+    fTrackingEff->SetBinContent(7,4.9*0.01);
+    fTrackingEff->SetBinContent(8,4.8*0.01);
+    fTrackingEff->SetBinContent(9,4.8*0.01);
+    fTrackingEff->SetBinContent(10,4.8*0.01);
+    fTrackingEff->SetBinContent(11,4.8*0.01);
+    fTrackingEff->SetBinContent(12,4.8*0.01);
+    fTrackingEff->SetBinContent(13,5.1*0.01);
+    fTrackingEff->SetBinContent(14,5.1*0.01);
+    fTrackingEff->SetBinContent(15,5.1*0.01);
+    fTrackingEff->SetBinContent(16,5.1*0.01);
+    fTrackingEff->SetBinContent(17,5.5*0.01);
+    fTrackingEff->SetBinContent(18,5.5*0.01);
+    fTrackingEff->SetBinContent(19,5.5*0.01);
+    fTrackingEff->SetBinContent(20,5.5*0.01);
+    fTrackingEff->SetBinContent(21,5.5*0.01);
+    fTrackingEff->SetBinContent(22,5.5*0.01);
+    fTrackingEff->SetBinContent(23,5.5*0.01);
+    fTrackingEff->SetBinContent(24,5.5*0.01);
+    fTrackingEff->SetBinContent(25,6.3*0.01);
+    fTrackingEff->SetBinContent(26,6.3*0.01);
+    fTrackingEff->SetBinContent(27,6.3*0.01);
+    fTrackingEff->SetBinContent(28,6.3*0.01);
+    fTrackingEff->SetBinContent(29,6.3*0.01);
+    fTrackingEff->SetBinContent(30,6.3*0.01);
+    fTrackingEff->SetBinContent(31,6.3*0.01);
+    fTrackingEff->SetBinContent(32,6.3*0.01);
+    fTrackingEff->SetBinContent(33,6.3*0.01);
+    fTrackingEff->SetBinContent(34,6.3*0.01);
+    fTrackingEff->SetBinContent(35,6.3*0.01);
+    fTrackingEff->SetBinContent(36,6.3*0.01);
+    
+    // Raw yield extraction
+    fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+    fRawYield->SetBinContent(1,0);
+    fRawYield->SetBinContent(2,0.13);
+    fRawYield->SetBinContent(3,0.095);
+    fRawYield->SetBinContent(4,0.03);
+    fRawYield->SetBinContent(5,0.02);
+    fRawYield->SetBinContent(6,0.02);
+    fRawYield->SetBinContent(7,0.025);
+    fRawYield->SetBinContent(8,0.03);
+    fRawYield->SetBinContent(9,0.03);
+    fRawYield->SetBinContent(10,0.03);
+    fRawYield->SetBinContent(11,0.03);
+    fRawYield->SetBinContent(12,0.03);
+    for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.04);
+    for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.11);
+    for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.13);
+    
+    fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+    fCutsEff->SetBinContent(1,0.);
+    fCutsEff->SetBinContent(2,0.10);
+    fCutsEff->SetBinContent(3,0.05);
+    fCutsEff->SetBinContent(4,0.05);
+    fCutsEff->SetBinContent(5,0.05);
+    fCutsEff->SetBinContent(6,0.05);
+    for(Int_t i=7;i<=8;i++) fCutsEff->SetBinContent(i,0.05);
+    for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.05);
+    for(Int_t i=17;i<=36;i++) fCutsEff->SetBinContent(i,0.05);
+    
+    
+    // PID efficiency (from PID/noPID)
+    fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+    //   for(Int_t i=3;i<=6;i++) fPIDEff->SetBinContent(i,0.10);
+    //   for(Int_t i=7;i<=16;i++) fPIDEff->SetBinContent(i,0.05);
+    for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0);
+    
+    // MC dN/dpt
+    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+    for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0.);
+    fMCPtShape->SetBinContent(2,0.14);
+    fMCPtShape->SetBinContent(3,0.03);
+    fMCPtShape->SetBinContent(4,0.01);
+    for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,0.);
+    for(Int_t i=17;i<=36;i++) fMCPtShape->SetBinContent(i,0.);
+    //   // particle-antiparticle
+    //   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
+    //   for(Int_t i=3;i<=12;i++) fPartAntipart->SetBinContent(i,0.05);
+    
+    return;
+}
+//___________________________________________________________________
+void AliHFSystErr::InitDplustoKpipi2015PbPb3050() {
+  //
+  // D+->Kpipi syst errors. Responsible: F. Grosa
+  //  2015 PbPb sample, 30-50% CC
+  //
+  
+  AliInfo(" Settings for D+ --> K pi pi, Pb-Pb collisions for 30-50 CC");
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",36,0,36);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
+  
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",36,0,36);
+  for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.0024); // 0.24% PDG2016
+  
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
+  fTrackingEff->SetBinContent(3,0.065);
+  for(Int_t i=4; i<=5; i++) fTrackingEff->SetBinContent(i,0.070);
+  for(Int_t i=6; i<=8; i++) fTrackingEff->SetBinContent(i,0.075);
+  for(Int_t i=9; i<=16; i++) fTrackingEff->SetBinContent(i,0.070);
+  for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i,0.075);
+  for(Int_t i=24; i<=36; i++) fTrackingEff->SetBinContent(i,0.085);
+  
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  for(Int_t i=3;i<=4;i++) fRawYield->SetBinContent(i,0.08);
+  for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=7;i<=16;i++) fRawYield->SetBinContent(i,0.04);
+  for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.06);
+  for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.08);
+  
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+  for(Int_t i=3;i<=4;i++) fCutsEff->SetBinContent(i,0.10);
+  fCutsEff->SetBinContent(5,0.08);
+  for(Int_t i=6;i<=7;i++) fCutsEff->SetBinContent(i,0.06);
+  for(Int_t i=7;i<=36;i++) fCutsEff->SetBinContent(i,0.05);
+  
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.); // 0%
+  
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  fMCPtShape->SetBinContent(3,0.05);
+  fMCPtShape->SetBinContent(4,0.01);
+  for(Int_t i=5;i<=36;i++) fMCPtShape->SetBinContent(i,0.00);
+  
+  // particle-antiparticle
+  /*
+   fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",20,0,20);
+   fPartAntipart->SetBinContent(1,1);
+   fPartAntipart->SetBinContent(2,1);
+   fPartAntipart->SetBinContent(3,0.12);
+   for(Int_t i=4;i<=20;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
+   */
 
+  return;
+}
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstoKKpi2015PbPb3050() {
+    //
+    // D+s->Kpipi syst errors. Responsible: A.Barbano
+    //  2015 PbPb sample, 30-50% CC
+    //
+    
+    AliInfo(" Settings for Ds --> K K pi, Pb-Pb collisions at 5 TeV for 30-50 CC");
+    // Normalization
+    fNorm = new TH1F("fNorm","fNorm",16,0,16);
+    for(Int_t i=1;i<=16;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm 
+    
+    // Branching ratio
+    fBR = new TH1F("fBR","fBR",16,0,16);
+    for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.0008); // 0.08% PDG2016
+    
+    // Tracking efficiency
+    fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
+    for(Int_t i=1;i<=4;i++) fTrackingEff->SetBinContent(i,0.065);
+    for(Int_t i=5;i<=6;i++) fTrackingEff->SetBinContent(i,0.075);
+    for(Int_t i=7;i<=8;i++) fTrackingEff->SetBinContent(i,0.075);
+    for(Int_t i=9;i<=12;i++) fTrackingEff->SetBinContent(i,0.075);
+    for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.070);
+    
+    // Raw yield extraction
+    fRawYield = new TH1F("fRawYield","fRawYield",16,0,16);
+    for(Int_t i=1;i<=4;i++) fRawYield->SetBinContent(i,0.12);
+    for(Int_t i=5;i<=6;i++) fRawYield->SetBinContent(i,0.09);
+    for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.07);
+    for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.06);
+    for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.05);
+    
+    
+    // Cuts efficiency (from cuts variation + phi selection cuts)
+    fCutsEff = new TH1F("fCutsEff","fCutsEff",16,0,16);
+    for(Int_t i=1;i<=8;i++) fCutsEff->SetBinContent(i,0.20);
+    for(Int_t i=9;i<=16;i++) fCutsEff->SetBinContent(i,0.10);
+    
+    // PID efficiency (from PID/noPID)
+    fPIDEff = new TH1F("fPIDEff","fPIDEff",16,0,16);
+    for(Int_t i=1;i<=16;i++) fPIDEff->SetBinContent(i,0.00);
+    
+    // MC dN/dpt
+    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",16,0,16);
+    for(Int_t i=1;i<=4;i++) fMCPtShape->SetBinContent(i,0.02);
+    for(Int_t i=5;i<=6;i++) fMCPtShape->SetBinContent(i,0.04);
+    for(Int_t i=7;i<=8;i++) fMCPtShape->SetBinContent(i,0.01);
+    for(Int_t i=9;i<=12;i++) fMCPtShape->SetBinContent(i,0.02);
+    for(Int_t i=13;i<=16;i++) fMCPtShape->SetBinContent(i,0.01);
+    
+    return;
+}
+//--------------------------------------------------------------------------
+
+void AliHFSystErr::InitDstartoD0pi2015PbPb3050() {
+    //
+    // D*+->D0pi syst errors. Responsible: S. Jaelani
+    //  2015 PbPb sample, 30-50 CC
+    //
+    
+    AliInfo(" Settings for D*+ --> D0pi Pb-Pb collisions at 5.02 TeV - 30-50 centrality - DUMMY");
+    
+    // Normalization
+    fNorm = new TH1F("fNorm","fNorm",36,0,36);
+    for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.04); // TAA and pp norm
+    
+    // Branching ratio
+    fBR = new TH1F("fBR","fBR",36,0,36);
+    for(Int_t i=1;i<=36;i++) fBR->SetBinContent(i,0.005); // 0.5% PDG2016
+    
+     // Tracking efficiency
+    fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
+    fTrackingEff->SetBinContent(2,0.06);
+    for(Int_t i=3;  i<=16; i++) fTrackingEff->SetBinContent(i,0.09);
+    for(Int_t i=17; i<=36; i++) fTrackingEff->SetBinContent(i,0.010);		
+     
+    // Raw yield extraction
+    fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+    fRawYield->SetBinContent(2,0.36);
+    fRawYield->SetBinContent(3,0.10);
+    fRawYield->SetBinContent(4,0.06);
+    fRawYield->SetBinContent(5,0.05);
+    fRawYield->SetBinContent(6,0.05);
+    fRawYield->SetBinContent(7,0.04);
+    fRawYield->SetBinContent(8,0.04);
+    for(Int_t i=9;i<=36;i++) fRawYield->SetBinContent(i,0.03); 
+    
+    // Cuts efficiency (from cuts variation)
+    fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+    fCutsEff->SetBinContent(2,0.20);
+    for(Int_t i=3;i<=4;i++) fCutsEff->SetBinContent(i,0.10);
+    for(Int_t i=5;i<=24;i++) fCutsEff->SetBinContent(i,0.05);
+    fCutsEff->SetBinContent(36,0.00);
+    
+    // PID efficiency (from PID/noPID)
+    fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+    for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.00); 
+    
+    // MC Pt-shape
+    fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+    fMCPtShape->SetBinContent(2,0.05);
+    fMCPtShape->SetBinContent(3,0.05);
+    fMCPtShape->SetBinContent(4,0.01);
+    for(Int_t i=5;i<=36;i++) fMCPtShape->SetBinContent(i,0.0);
+
+    return;
+}
 
 //--------------------------------------------------------------------------
 Double_t AliHFSystErr::GetCutsEffErr(Double_t pt) const {

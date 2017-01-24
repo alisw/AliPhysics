@@ -51,7 +51,7 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA() :
   fDoVertexCut(1),
   fDoTracking(0), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0), fDoProp(0),
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15), fCumMbins(250), 
-  fDoHet(0), fQC4EG(0.5), fHetEtmin(6),
+  fDoHet(0), fQC4EG(-1), fHetEtmin(6),
   fCentCL1In(0), fCentV0AIn(0),
   fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0), 
   fNtupHet(0), fNtupHetInfo(0), fCum(0)
@@ -68,7 +68,7 @@ AliAnalysisTaskCLQA::AliAnalysisTaskCLQA(const char *name) :
   fDoVertexCut(1),
   fDoTracking(1), fDoMuonTracking(0), fDoCumulants(0), fDoCumNtuple(0), fDoProp(0),
   fCumPtMin(0.3), fCumPtMax(5.0), fCumEtaMin(-1.0), fCumEtaMax(1.0), fCumMmin(15), fCumMbins(250), 
-  fDoHet(0), fQC4EG(0.5), fHetEtmin(6),
+  fDoHet(0), fQC4EG(-1), fHetEtmin(6),
   fCentCL1In(0), fCentV0AIn(0),
   fNtupCum(0), fNtupCumInfo(0), fNtupZdcInfo(0), 
   fNtupHet(0), fNtupHetInfo(0), fCum(0)
@@ -851,10 +851,13 @@ void AliAnalysisTaskCLQA::UserCreateOutputObjects()
 
   if (fDoCumulants) {
     fCum = new Cumulants("cmhists",fCumMbins,fCumMmin);
+    fCum->SetKine(fCumEtaMin,fCumEtaMax,fCumPtMin,fCumPtMax);
     fCum->EnableEG();
     fCum->EnableQC();
-    fCum->EnableQC4withEG(-TMath::Abs(fQC4EG),+TMath::Abs(fQC4EG));
-    fCum->SetKine(fCumEtaMin,fCumEtaMax,fCumPtMin,fCumPtMax);
+    if (fQC4EG<0)
+      fCum->EnableQC4withEG();
+    else
+      fCum->AddQC4withEG(fQC4EG);
     TList *l=fCum->GetList();
     for (Int_t i=0; i<l->GetEntries(); ++i)
       fOutput->Add(l->At(i));

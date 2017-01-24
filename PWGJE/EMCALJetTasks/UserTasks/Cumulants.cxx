@@ -20,7 +20,7 @@ CPart::CPart(const TParticle &p) : fPt(p.Pt()), fEta(p.Eta()), fPhi(TVector2::Ph
 Cumulants::Cumulants(const char *name, Int_t mbins, Int_t minM) : 
   TNamed(name,""), fCumMBins(mbins), fMinM(minM), fEtaMin(-1), fEtaMax(1), fPtMin(0.3), fPtMax(3), fDoEtaGap(0),
   fDoCharge(1), fDoQC(0), fDoQC44(0), fMaxNL4(50), fEGminNL4(0), fDoQC43(0), fMaxNL3(100), fEGminNL3(0), 
-  fDoQC4withEG(0), fQC4el(-0.5), fQC4eu(0.5), fDoDebug(0), fDoPrint(0) 
+  fDoQC4withEG(0), fDoDebug(0), fDoPrint(0) 
 {
   fList = new TList;
   fList->SetName(name);
@@ -34,6 +34,25 @@ Cumulants::Cumulants(const char *name, Int_t mbins, Int_t minM) :
   fHists[3] = new TH1D("fCumM",";mult",fCumMBins,0,fCumMBins);
   fList->Add(fHists[3]);
   Info("Cumulants","Standalone version 1.0 started");
+}
+
+void Cumulants::AddQC4withEG(Double_t etagap)
+{
+  // Add (and enable) QC4 measurements with one eta gap (for 1-3 and 2-4)
+  fDoQC4withEG = 1;
+
+  Double_t eg=TMath::Abs(etagap);
+  fEGQCCuts.push_back(eg);
+  Int_t n = fEGQCCuts.size()-1;
+  Int_t hindex=400+4*n;
+  fHists[hindex] = new TH1D(Form("fCumMnegeta%d",n),Form(";mult (#eta<-%.1f)",eg),fCumMBins,0,fCumMBins);
+  fList->Add(fHists[hindex++]);
+  fHists[hindex] = new TH1D(Form("fCumMposeta%d",n),Form(";mult (#eta>+%.1f)",eg),fCumMBins,0,fCumMBins);
+  fList->Add(fHists[hindex++]);
+  fHists[hindex] = new TProfile(Form("fCumQC2wEG%d",n),Form(";M;qc2 (|#eta|>%.1f)",eg),fCumMBins,0,fCumMBins);
+  fList->Add(fHists[hindex++]);
+  fHists[hindex] = new TProfile(Form("fCumQC4wEG%d",n),Form(";M;qc4 (|#eta|>%.1f)",eg),fCumMBins,0,fCumMBins);
+  fList->Add(fHists[hindex++]);
 }
 
 void Cumulants::EnableEG()
@@ -161,22 +180,11 @@ void Cumulants::EnableQC4with3NL(Int_t mn, Double_t etamin)
   }
 }
 
-void Cumulants::EnableQC4withEG(Double_t etal, Double_t etau)
+void Cumulants::EnableQC4withEG()
 {
-  // Enable QC measurements with two eta gaps (for 1-3 and 2-4)
-  fDoQC4withEG = 1;
-  fQC4el = etal;
-  fQC4eu = etau;
-
-  Int_t hindex=380;
-  fHists[hindex] = new TH1D("fCumMnegeta",";mult (pos)",fCumMBins,0,fCumMBins);
-  fList->Add(fHists[hindex++]);
-  fHists[hindex] = new TH1D("fCumMposeta",";mult (neg)",fCumMBins,0,fCumMBins);
-  fList->Add(fHists[hindex++]);
-  fHists[hindex] = new TProfile("fCumQC2wEG",";M;qc2",fCumMBins,0,fCumMBins);
-  fList->Add(fHists[hindex++]);
-  fHists[hindex] = new TProfile("fCumQC4wEG",";M;qc4",fCumMBins,0,fCumMBins);
-  fList->Add(fHists[hindex++]);
+  // Enable QC4 measurements with one eta gap (for 1-3 and 2-4)
+  for (Double_t eg=0.05;eg<=0.5;eg+=0.05)
+    AddQC4withEG(eg);
 }
 
 void Cumulants::RunAll()
@@ -548,25 +556,27 @@ void Cumulants::RunQC4with3NL()
   }
 }
 
-void Cumulants::RunQC4withEG()
+void Cumulants::RunQC4withEG(Double_t etagap, Int_t &nn, Int_t &np, Double_t &val2, Double_t &val4)
 {
-  // Run QC4 with two eta gaps (between 1-3, and 2-4, from https://aliceinfo.cern.ch/Notes/node/554)
+  // Run QC4 with one eta gap (between 1-3, and 2-4, from https://aliceinfo.cern.ch/Notes/node/554)
 
+  const Double_t el=-TMath::Abs(etagap);
+  const Double_t eh=+TMath::Abs(etagap);
   TComplex cp[5][5]={0};
   TComplex cm[5][5]={0};
-  Int_t nn=0,np=0;
+  nn=0,np=0;
   for (Int_t i=0; i<fM; ++i) {
     CPart &p = fParts.at(i);
     Double_t phi=p.Phi();
     Double_t eta=p.Eta();
-    if (eta<fQC4el) {
+    if (eta<el) {
       ++nn;
       for(Int_t iharm=0; iharm<5; ++iharm) {
 	for(Int_t ipow=0; ipow<5; ++ipow) {
 	  cm[iharm][ipow] += TComplex(TMath::Power(TMath::Cos(iharm*phi),ipow),TMath::Power(TMath::Sin(iharm*phi),ipow));
 	}
       }
-    } else if (eta>fQC4eu) {
+    } else if (eta>eh) {
       ++np;
       for(Int_t iharm=0; iharm<5; ++iharm) {
 	for(Int_t ipow=0; ipow<5; ++ipow) {
@@ -575,24 +585,37 @@ void Cumulants::RunQC4withEG()
       }
     }
   }
-  
-  Int_t hindex=380;
-  fHists[hindex++]->Fill(nn);
-  fHists[hindex++]->Fill(np);
-  
-  if ((nn<2)||(np<2))
-    return;
 
-  Double_t val2 = TComplex(cp[2][1]*TComplex::Conjugate(cm[2][1])).Re()/nn/np;
+  if (nn>0&&np>0)
+    val2 = TComplex(cp[2][1]*TComplex::Conjugate(cm[2][1])).Re()/nn/np;
     
   TComplex Dn4Gap(cp[0][1]*cp[0][1]*cm[0][1]*cm[0][1] - cp[0][2]*cm[0][1]*cm[0][1] - cp[0][1]*cp[0][1]*cm[0][2] + cp[0][2]*cm[0][2]);
   TComplex v24Gap(cp[2][1]*cp[2][1]*TComplex::Conjugate(cm[2][1])*TComplex::Conjugate(cm[2][1]) 
                   - cp[4][2]*TComplex::Conjugate(cm[2][1])*TComplex::Conjugate(cm[2][1])
                   - cp[2][1]*cp[2][1]*TComplex::Conjugate(cm[4][2]) + cp[4][2]*TComplex::Conjugate(cm[4][2]));
-  Double_t val4 = v24Gap.Re()/Dn4Gap.Re();
+  if (Dn4Gap.Re()>0)
+    val4 = v24Gap.Re()/Dn4Gap.Re();
+}
 
-  fHists[hindex++]->Fill(fM,val2);
-  fHists[hindex++]->Fill(fM,val4);
+void Cumulants::RunQC4withEG()
+{
+  // Run QC4 with two eta gaps (between 1-3, and 2-4, from https://aliceinfo.cern.ch/Notes/node/554)
+
+  Int_t nn=0,np=0;
+  Double_t val2=0,val4=0;
+
+  Int_t n=fEGQCCuts.size();
+  for (Int_t i=0;i<n;++i) {
+    Double_t etagap = fEGQCCuts.at(i);
+    RunQC4withEG(etagap,nn,np,val2,val4);
+    Int_t hindex=400+4*i;
+    fHists[hindex++]->Fill(nn);
+    fHists[hindex++]->Fill(np);
+    if ((nn<2)||(np<2))
+      return;
+    fHists[hindex++]->Fill(fM,val2);
+    fHists[hindex++]->Fill(fM,val4);
+  }
 }
 
 void Cumulants::SetTracks(TObjArray &trks, Bool_t doKinCuts)
@@ -638,10 +661,9 @@ void Cumulants::SetTracks(TObjArray &trks, Bool_t doKinCuts)
   fHists[2]->Fill(fM);
 }
 
-#if 0
+#if 0 /*from Alex*/
 void v224pPb()
 {
-
   TProfile* hqqqqG = new TProfile("hqqqqG", ";multiplicity;Q_{1}Q_{2}Q_{3}^{*}Q_{4}^{*}/(M_{1}M_{2}M_{3}M_{4})", 30, 0, 150);
 
   TProfile* hqqG13 = new TProfile("hqqG13", ";multiplicity;Q_{1}Q_{2}^{*}/(M_{1}M_{2})", 30, 0, 150); 
@@ -650,14 +672,10 @@ void v224pPb()
   TProfile* hqqG23 = new TProfile("hqqG23", ";multiplicity;Q_{1}Q_{2}^{*}/(M_{1}M_{2})", 30, 0, 150);
   TProfile* hqqG34 = new TProfile("hqqG34", ";multiplicity;Q_{1}Q_{2}^{*}/(M_{1}M_{2})", 30, 0, 150);
 
-
   for(Int_t n = 0; n < nEvents; n++) {
-    
     inTree->GetEntry(n);
 
     Int_t nTracks = trackArray->GetEntries();
-
-
     Double_t QxRnd1g = 0, QyRnd1g = 0;
     Double_t QxRnd2g = 0, QyRnd2g = 0;
     Double_t QxRnd3g = 0, QyRnd3g = 0;
@@ -665,7 +683,6 @@ void v224pPb()
     Int_t mult1g = 0, mult2g = 0, mult3g = 0, mult4g = 0;
 
     for(Int_t i = 0; i < nTracks; i++) {
-	
       Track* trk = (Track*)trackArray->At(i);
 
         if ((trk->eta>-0.8) && (trk->eta<-0.55)){
@@ -694,7 +711,6 @@ void v224pPb()
 
     }
 
-
     if (mult1g != 0 && mult2g != 0 && mult3g != 0 && mult4g != 0){
 
       Double_t qqqqg = QxRnd1g*QxRnd2g*QxRnd3g*QxRnd4g - QxRnd1g*QxRnd2g*QyRnd3g*QyRnd4g + QxRnd1g*QyRnd2g*QxRnd3g*QyRnd4g + QxRnd1g*QyRnd2g*QyRnd3g*QxRnd4g + QyRnd1g*QxRnd2g*QxRnd3g*QyRnd4g + QyRnd1g*QxRnd2g*QyRnd3g*QxRnd4g - QyRnd1g*QyRnd2g*QxRnd3g*QxRnd4g + QyRnd1g*QyRnd2g*QyRnd3g*QyRnd4g;
@@ -705,12 +721,6 @@ void v224pPb()
       hqqG14->Fill(mult, (QxRnd1g*QxRnd4g + QyRnd1g*QyRnd4g)/Double_t(mult1g*mult4g));
       hqqG23->Fill(mult, (QxRnd2g*QxRnd3g + QyRnd2g*QyRnd3g)/Double_t(mult2g*mult3g));
       hqqG34->Fill(mult, (QxRnd3g*QxRnd4g + QyRnd3g*QyRnd4g)/Double_t(mult3g*mult4g));
-
-
-
     }
-
-
-
 }
 #endif

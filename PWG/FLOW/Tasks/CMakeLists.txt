@@ -59,7 +59,6 @@ set(SRCS
   AliAnalysisTaskQAPmdflow.cxx 
   AliFlowBayesianPID.cxx
   AliAnalysisTaskPhiFlow.cxx
-  AliAnalysisTaskLegacyPhiFlow.cxx
   AliAnalysisTaskFilterFE.cxx
   AliAnalysisTaskVnV0.cxx
   AliFlowVZEROResults.cxx

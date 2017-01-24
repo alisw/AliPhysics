@@ -43,29 +43,28 @@ void runStandaloneLMeeCocktail(Long64_t nEvents = 10)
 	AliMCGenHandler* mcInputHandler = new AliMCGenHandler();  
 	mgr->SetMCtruthEventHandler(mcInputHandler);
 
-  //Generator:
-  //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddMCEMCocktail.C");
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/Cocktail/macros/AddMCEMCocktail.C");
-
-  // Number of generated particles of each kind
+  //=========================== Generator settings ==============================================
+  Int_t selectedMothers   = 63; // pi0, eta, rho0, omega, eta', phi (111111)_2
+    // Full Example (
+    // (62591)_10 = (1111010001111111)_2
+    // includes: pi0, eta, rho0, omega, etaprime, phi, J/psi, Delta+, Delta0, Rho+, Rho-, K0*
   Int_t numberOfParticles = 1000;
-
-  // Generator parameters:  
-  //----------------------
   Int_t collisionSystem  = 200;
   Int_t centrality        = 0;
   Int_t decayMode         = 3; // ee
   Int_t selectedMothers   = 63; // pi0, eta, rho0, omega, eta', phi
-  Int_t paramPi0          = 0;
-  //Int_t paramEta          = 3;
-  Int_t paramEta          = 0;
-  Int_t paramOmega        = 3;
-  Int_t paramPhi          = 0;
   Double_t minPt          = 0.;
-  Double_t maxPt          = 2;
-  Int_t ExternalDecayer  = 1; // 0 = Pythia; 1 = Exodus
-  AliGenerator* gener = AddMCEMCocktail(collisionSystem,centrality,decayMode,selectedMothers,paramPi0,paramEta,paramOmega,paramPhi,numberOfParticles,minPt,maxPt,ExternalDecayer);
- 
+  Double_t maxPt          = 20;
+  Int_t pythiaErrorTolerance  = 2000;
+  Bool_t ExternalDecayer      = 1; //0 pythia, 1 exodus
+  Bool_t decayLongLived       = 0;
+
+  // cocktail generator
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWG/Cocktail/macros/AddMCEMCocktailV2.C");
+  //AliGenerator* gener = AddMCEMCocktailV2(collisionSystem,centrality,decayMode,selectedMothers,"$ALICE_PHYSICS/PWG/Cocktail/parametrisations/pp_7TeV_default.root","7TeV_default",numberOfParticles,minPt,maxPt,pythiaErrorTolerance,ExternalDecayer); // 7TeV
+  AliGenerator* gener = AddMCEMCocktailV2(collisionSystem,centrality,decayMode,selectedMothers,"$ALICE_PHYSICS/PWGDQ/dielectron/files/pp_13TeV_defalt_parametrizations.root","13TeV_default",numberOfParticles,minPt,maxPt,pythiaErrorTolerance,ExternalDecayer); //13TeV
+  
+
   mcInputHandler->SetGenerator(gener);
   mcInputHandler->SetSeedMode(2);
 

@@ -1991,7 +1991,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
            //delete lV0vtxer;
            //delete lCascVtxer; 
    }
-   fHistCascadeMultiplicityAfterRevertexing->Fill(nTrackMultiplicity);
+   fHistCascadeMultiplicityAfterRevertexing->Fill(ncascades);
 
    // - (D) Efficiency denominator after Re-vertexing
    Int_t lNbMCPrimary_D = 0;   lNbMCPrimary_D = lMCstack->GetNprimary();
@@ -2063,7 +2063,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
              }
         }
    }
-   fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(nTrackMultiplicity);
+   fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(ncascades);
 
    // - (E) Efficiency denominator after rejection of events that has only vertex from TPC
    Int_t lNbMCPrimary_E = 0;  lNbMCPrimary_E = lMCstack->GetNprimary();
@@ -2128,7 +2128,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
              return;
         }
    }
-   fHistCascadeMultiplicityAfterSPDresolution->Fill(nTrackMultiplicity);
+   fHistCascadeMultiplicityAfterSPDresolution->Fill(ncascades);
 
    // - (F) Efficiency denominator after the rejection of events that do not satisfy the request on the dispersion and resolution of the SPD vertex
    Int_t lNbMCPrimary_F = 0;   lNbMCPrimary_F = lMCstack->GetNprimary();
@@ -2241,7 +2241,7 @@ void AliAnalysisTaskCheckPerformanceCascadepp::UserExec(Option_t *) {
               } 
           }
    }
-   fHistCascadeMultiplicityAfterVerticesProximity->Fill(nTrackMultiplicity);
+   fHistCascadeMultiplicityAfterVerticesProximity->Fill(ncascades);
 
    // - (G) Efficiency denominator after proximity check for the vertices
    Int_t lNbMCPrimary_G = 0;   lNbMCPrimary_G = lMCstack->GetNprimary();

@@ -89,7 +89,6 @@ fUseZDCESESpecWeights(kFALSE),
 fWeightsList(NULL),
 fWeightsListChDep(NULL),
 fWeightsListVtxDep(NULL),
-fPhiEtaCutsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
 fnBinsForCorrelations(10000),
@@ -240,7 +239,6 @@ fUseZDCESESpecWeights(kFALSE),
 fWeightsList(NULL),
 fWeightsListChDep(NULL),
 fWeightsListVtxDep(NULL),
-fPhiEtaCutsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
 fnBinsForCorrelations(0),
@@ -425,7 +423,6 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fWeightsListVtxDep) fQC->SetWeightsListVtxDep(fWeightsListVtxDep);
   }
   if(fUsePhiEtaCuts) fQC->SetUsePhiEtaCuts(fUsePhiEtaCuts);
-  if(fPhiEtaCutsList) fQC->SetPhiEtaCutsList(fPhiEtaCutsList);
   // Event weights:
   if(!fMultiplicityWeight->Contains("combinations")) {
     fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());

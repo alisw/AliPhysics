@@ -788,7 +788,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             BisPileup=kTRUE;
           }
           
-          if(BisPileup) return;
+//        if(BisPileup) return;
         } else {
           // pileup from AliMultSelection
           if(!fMultSelection->GetThisEventIsNotPileup()) fPileUpMultSelCount->Fill(0.5);

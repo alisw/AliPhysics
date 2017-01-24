@@ -427,8 +427,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #phi[rad]; nTracks;", 100, -1.5, 1.5, 100, 0., 6.28,nMultBins,firstMultBin,lastMultBin);
     fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #phi[rad]; nTracks;", 100, -1.5, 1.5, 100, 0., 6.28,nMultBins,firstMultBin,lastMultBin);
     
-    fHistTrueSovsMeasSo = new TH2F("hTrueSovsMeasSo", "trueSo vs measSo; S_{o} (true); S_{o} (meas);", 100, 0., 1., 100, 0., 1.);
-    fHistTrueSovsMeasSoEvWithCand = new TH2F("hTrueSovsMeasSoEvWithCand", "trueSo vs measSo; S_{o} (true); S_{o} (meas);", 100, 0., 1., 100, 0., 1.);
+    fHistTrueSovsMeasSo = new TH3F("hTrueSovsMeasSo", "trueSo vs measSo; S_{o} (true); S_{o} (meas); tracklets;", 100, 0., 1., 100, 0., 1., nMultBins, firstMultBin, lastMultBin);
+    fHistTrueSovsMeasSoEvWithCand = new TH3F("hTrueSovsMeasSoEvWithCand", "trueSo vs measSo; S_{o} (true); S_{o} (meas); tracklets;", 100, 0., 1., 100, 0., 1., nMultBins, firstMultBin, lastMultBin);
     
     TString histoNtrSphriName;
     TString histoNtrCorrSphriName;
@@ -922,6 +922,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     }
     
     if(!isEvSel)return;
+    fHistNEvents->Fill(2);
     
     if(vtx1){
         fHistNtrVsZvtx->Fill(vtx1->GetZ(),countMult);
@@ -1428,10 +1429,10 @@ Bool_t AliAnalysisTaskSEDvsEventShapes::FillTrackControlHisto(AliAODEvent* aod, 
     
     for(Int_t iselt=0; iselt<nSelTracks; iselt++) {
         fHistnTrackvsEtavsPhi->Fill(etaArr[iselt], phiArr[iselt], nSelTracks);
-        fHistTrueSovsMeasSo->Fill(genspherocity, spherocity);
+        fHistTrueSovsMeasSo->Fill(genspherocity, spherocity, nSelTrkCorr);
         if(nSelectedEvwithCand>0){
             fHistnTrackvsEtavsPhiEvWithCand->Fill(etaArr[iselt], phiArr[iselt], nSelTracks);
-            fHistTrueSovsMeasSoEvWithCand->Fill(genspherocity, spherocity);
+            fHistTrueSovsMeasSoEvWithCand->Fill(genspherocity, spherocity, nSelTrkCorr);
         }
     }
     

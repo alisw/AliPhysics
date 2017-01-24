@@ -179,13 +179,13 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(AnalysisCut AnaCut) {
   AliDielectronCutGroup* leptons = new AliDielectronCutGroup("leptons","leptons",AliDielectronCutGroup::kCompOR);
   leptons->AddCut(electrons);
   leptons->AddCut(positrons);
-  leptons->AddCut(pion);
-  leptons->AddCut(anti_pion);
-  leptons->AddCut(kaon);
-  leptons->AddCut(anti_kaon);
-  leptons->AddCut(proton);
-  leptons->AddCut(anti_proton);
-  leptons->AddCut(gamma);
+  // leptons->AddCut(pion);
+  // leptons->AddCut(anti_pion);
+  // leptons->AddCut(kaon);
+  // leptons->AddCut(anti_kaon);
+  // leptons->AddCut(proton);
+  // leptons->AddCut(anti_proton);
+  // leptons->AddCut(gamma);
 
 
 

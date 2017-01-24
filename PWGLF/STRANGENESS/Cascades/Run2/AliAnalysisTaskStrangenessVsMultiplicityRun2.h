@@ -45,6 +45,7 @@ class AliCascadeResult;
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
 //#include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
 public:
@@ -81,6 +82,10 @@ public:
     }
     void SetUseLightVertexers ( Bool_t lUseLightVertexers = kTRUE) {
         fkUseLightVertexer = lUseLightVertexers;
+    }
+//---------------------------------------------------------------------------------------
+    void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
+        fkDoExtraEvSels = lUseExtraEvSels;
     }
 //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
@@ -175,6 +180,10 @@ private:
     AliPIDResponse *fPIDResponse;     // PID response object
     AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
+    
+    //Implementation of event selection utility 
+    AliEventCuts fEventCuts; /// Event cuts class
+
     TRandom3 *fRand; 
 
     //Objects Controlling Task Behaviour
@@ -186,6 +195,7 @@ private:
     Bool_t fkUseOnTheFlyV0Cascading; 
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
+    Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;

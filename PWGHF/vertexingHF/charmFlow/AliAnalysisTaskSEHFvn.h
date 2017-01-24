@@ -119,7 +119,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   void ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const;
 
   void CreateSparseForEvShapeAnalysis();
-  Double_t Getq2(TList* qnlist);
+  Double_t Getq2(TList* qnlist, Int_t q2meth);
   
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP

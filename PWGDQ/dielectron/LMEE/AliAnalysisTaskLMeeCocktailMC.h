@@ -42,11 +42,24 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     // histograms events
     TH1F*                 fHistNEvents;               // number of events histo
 
+    //histos multiplicity weight:
+    TH1F* fhwEffpT;
+    TH1F* fhwMultpT;
+    TH1F* fhwMultmT;
+    TH1F* fhwMultpT2;
+    TH1F* fhwMultmT2;
+
     //TTree:
     TH1F** fmee;
+    TH1F** fmee_wmult;
+    TH1F** fmee_orig;
+    TH1F** fmee_orig_wmult;
     TH1F** fphi;
     TH1F** frap;
     TH2F** fpteevsmee;
+    TH2F** fpteevsmee_wmult;
+    TH2F** fpteevsmee_orig;
+    TH2F** fpteevsmee_orig_wmult;
     Float_t fd1origpt;
     Float_t fd1origp;
     Float_t fd1origeta;
@@ -70,22 +83,31 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     Float_t feeorigphi;
     Float_t feeorigphiv;
     Float_t feept;
+    Float_t feemt;
     Float_t feep;
     Float_t feem;
     Float_t feeeta;
     Float_t feephi;
     Float_t feephiv;
     Float_t fmotherpt;
+    Float_t fmothermt;
     Float_t fmotherp;
     Float_t fmotherm;
     Float_t fmothereta;
     Float_t fmotherphi;
     Int_t fID;
     Double_t fweight;
+    Double_t fwEffpT;
+    Double_t fwMultpT;
+    Double_t fwMultmT;
+    Double_t fwMultpT2;
+    Double_t fwMultmT2;
     Bool_t fpass;
 
     TString     fFileName;    // Name of the input file
     TFile*      fFile;        //! Pointer to input file
+    TString     fFileNameW;    // Name of the input file
+    TFile*      fFileW;        //! Pointer to input file
     //tree
     TTree*               teeTTree; 
 

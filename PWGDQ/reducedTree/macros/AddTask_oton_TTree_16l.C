@@ -137,7 +137,7 @@ AliAnalysisTask *AddTask_oton_TTree_16l(Int_t reducedEventType=-1, Bool_t writeT
   task->SetTreeInactiveBranch("fNVtxSPDContributors");
   //task->SetTreeInactiveBranch("fIsSPDPileup");
   //task->SetTreeInactiveBranch("fIsSPDPileupMultBins");
-  task->SetTreeInactiveBranch("fSPDntracklets");
+  //task->SetTreeInactiveBranch("fSPDntracklets");
   task->SetTreeInactiveBranch("fITSClusters*");
   task->SetTreeInactiveBranch("fSPDnSingle");
   task->SetTreeInactiveBranch("fL0TriggerInputs");
@@ -155,7 +155,7 @@ AliAnalysisTask *AddTask_oton_TTree_16l(Int_t reducedEventType=-1, Bool_t writeT
   task->SetTreeInactiveBranch("fNPMDtracks");
   task->SetTreeInactiveBranch("fNTRDtracks");
   task->SetTreeInactiveBranch("fNTRDtracklets");
-  task->SetTreeInactiveBranch("fSPDntrackletsEta*");
+  //task->SetTreeInactiveBranch("fSPDntrackletsEta*");
   task->SetTreeInactiveBranch("fSPDFiredChips*");
   task->SetTreeInactiveBranch("fNtracksPerTrackingFlag*");
   task->SetTreeInactiveBranch("fVZEROMult*");

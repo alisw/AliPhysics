@@ -112,6 +112,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMinChi2PerClusterTPC(-FLT_MAX),
   fCutFracSharedTPCCluster(kFALSE),
   fMaxFracSharedTPCCluster(FLT_MAX),
+  fRequireTOFSignal(kFALSE),
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
@@ -248,6 +249,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMinChi2PerClusterTPC(-FLT_MAX),
   fCutFracSharedTPCCluster(kFALSE),
   fMaxFracSharedTPCCluster(FLT_MAX),
+  fRequireTOFSignal(kFALSE),
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
@@ -387,6 +389,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMinChi2PerClusterTPC(that.fMinChi2PerClusterTPC),
   fCutFracSharedTPCCluster(that.fCutFracSharedTPCCluster),
   fMaxFracSharedTPCCluster(that.fMaxFracSharedTPCCluster),
+  fRequireTOFSignal(that.fRequireTOFSignal),
   fCutNClustersTPC(that.fCutNClustersTPC),
   fNClustersTPCMax(that.fNClustersTPCMax),
   fNClustersTPCMin(that.fNClustersTPCMin),
@@ -548,6 +551,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMinChi2PerClusterTPC=that.fMinChi2PerClusterTPC;
   fCutFracSharedTPCCluster=that.fCutFracSharedTPCCluster;
   fMaxFracSharedTPCCluster=that.fMaxFracSharedTPCCluster;
+  fRequireTOFSignal=that.fRequireTOFSignal;
   fCutNClustersTPC=that.fCutNClustersTPC;
   fNClustersTPCMax=that.fNClustersTPCMax;
   fNClustersTPCMin=that.fNClustersTPCMin;  
@@ -1356,6 +1360,13 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
       Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
       if (fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
     }
+  }
+  
+  if (fRequireTOFSignal)
+  {
+    if(TMath::Abs(track->GetTOFsignalDz())>10.)  pass=kFALSE;
+    if(track->GetTOFsignal() < 12000.)  pass=kFALSE;
+    if(track->GetTOFsignal() > 25000.)  pass=kFALSE;
   }
   
   if (GetRequireTPCRefit() && !(track->GetStatus() & AliESDtrack::kTPCrefit) ) pass=kFALSE;

@@ -1403,7 +1403,7 @@ void AliAnalysisTaskCheckCascadepp::UserExec(Option_t *) {
               }  
           }
       }
-  fHistCascadeMultiplicityAfterNoTPConlyPrimVtxSel->Fill(ncascades);
+  fHistCascadeMultiplicityAfterVerticesProximity->Fill(ncascades);
  
   //=========================================================
   // 3.4) Vertex Z position selection (+ magnetic field info)

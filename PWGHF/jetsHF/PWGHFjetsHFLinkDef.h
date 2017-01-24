@@ -10,6 +10,7 @@
 #pragma link C++ class AliHFJetTaggingIP+;
 #pragma link C++ class AliAnalysisTaskEmcalJetBJetTaggingIP+;
 
+#pragma link C++ class AliAnalysisTaskJetExtractorHF+;
 #pragma link C++ class AliAnalysisTaskEmcalJetBtagSV+;
 #pragma link C++ class AliRDHFJetsCuts+;
 #pragma link C++ class AliRDHFJetsCutsVertex+;

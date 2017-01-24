@@ -184,6 +184,16 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
       for (Int_t ii=0; ii<nptbins; ii++) {
 	anacutsval[2][ii]=anacutsval[2][ii]/kmInvPipPim_pp7TeV_pass2[ii]*kmInvPipPim_pp7TeV_pass4[ii]; // inv. mass V0 if K0S [GeV/c2]
       }
+      anacutsval[13][0]=0.005; // inv. mass V0 if Lambda/LambdaBar [GeV/c2]
+      anacutsval[13][1]=0.005; // inv. mass V0 if Lambda/LambdaBar [GeV/c2]
+      anacutsval[13][2]=0.005; // inv. mass V0 if Lambda/LambdaBar [GeV/c2]
+      anacutsval[13][3]=0.005; // inv. mass V0 if Lambda/LambdaBar [GeV/c2]
+      anacutsval[13][4]=0.005; // inv. mass V0 if Lambda/LambdaBar [GeV/c2]
+      anacutsval[13][5]=0.005; // inv. mass V0 if Lambda/LambdaBar [GeV/c2]
+      // just to start to see pass4
+      for (Int_t ii=0; ii<nptbins; ii++) {
+	anacutsval[13][ii]=anacutsval[13][ii]/kmInvPPi_pp7TeV_pass2[ii]*kmInvPPi_pp7TeV_pass4[ii]; // inv. mass V0 if Lambda/LambdaBar [GeV/c2]
+      }
       if (fDataType==kLHC15a2a) {
 	for (Int_t ii=0; ii<nptbins; ii++) {
 	  if (fChangeK0ScutOnMC) {

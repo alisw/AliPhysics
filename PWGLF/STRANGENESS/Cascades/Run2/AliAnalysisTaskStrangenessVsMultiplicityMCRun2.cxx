@@ -107,6 +107,7 @@ class AliAODv0;
 #include "AliGenEventHeader.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityMCRun2.h"
@@ -131,6 +132,7 @@ fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump( kFALSE ),
+fkDoExtraEvSels( kTRUE ),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -352,6 +354,7 @@ fkPreselectPID  ( kTRUE  ),
 fkUseOnTheFlyV0Cascading( kFALSE ), 
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
+fkDoExtraEvSels( kTRUE ), 
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -886,6 +889,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
 
+    fEventCuts.AddQAplotsToList(fListHist);
+    
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
         fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",2,0,2);
@@ -893,7 +898,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         fHistEventCounter->GetXaxis()->SetBinLabel(2, "Selected");
         fListHist->Add(fHistEventCounter);
     }
-    
     
     if(! fHistCentrality ) {
         //Histogram Output: Event-by-Event
@@ -1065,7 +1069,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
         return;
     }
-
+    
+    AliVEvent *ev = InputEvent();
+    if( fkDoExtraEvSels ) {
+        if( !fEventCuts.AcceptEvent(ev) ) {
+            PostData(1, fListHist    );
+            PostData(2, fListV0      );
+            PostData(3, fListCascade );
+            if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
+            if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
+            if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
+            return;
+        }
+    }
+    
     fHistEventCounter->Fill(1.5);
     
     //Bookkeep event number for debugging
@@ -1153,6 +1170,37 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     Double_t fMinV0Pt = 0;
     Double_t fMaxV0Pt = 100;
 
+    //------------------------------------------------
+    // Rerun V0 Vertexer!
+    // WARNING: this will only work if the
+    // special "use on the fly cascading" flag
+    // is disabled!
+    //------------------------------------------------
+    
+    if( fkRunVertexers && !fkUseOnTheFlyV0Cascading ) {
+        //Only reset if not using on-the-fly (or else nothing passes)
+        lESDevent->ResetV0s();
+        
+        //Decide between regular and light vertexer (default: light)
+        if ( ! fkUseLightVertexer ){
+            //Instantiate vertexer object
+            AliV0vertexer lV0vtxer;
+            //Set Cuts
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            //Redo
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+        } else {
+            //Instantiate vertexer object
+            AliLightV0vertexer lV0vtxer;
+            //Set Cuts
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            //Redo
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+        }
+    }
+    
     Int_t nv0s = 0;
     nv0s = lESDevent->GetNumberOfV0s();
 
@@ -1598,7 +1646,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 
                 //Check 9: Min Track Length if positive
                 ( lV0Result->GetCutMinTrackLength()<0 || //this is a bit paranoid...
-                 fTreeVariableMinTrackLength < lV0Result->GetCutMinTrackLength()
+                 fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()
                  )
                 )
             {
@@ -1641,40 +1689,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     //------------------------------------------------
 
     if( fkRunVertexers ) {
+        //Remove existing cascades
         lESDevent->ResetCascades();
-        
-        //Only reset if not using on-the-fly (or else nothing passes)
-        if( !fkUseOnTheFlyV0Cascading ) lESDevent->ResetV0s();
         
         //Decide between regular and light vertexer (default: light)
         if ( ! fkUseLightVertexer ){
-            AliV0vertexer lV0vtxer;
+            //Instantiate vertexer object
             AliCascadeVertexer lCascVtxer;
-            
-            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-            
-            lV0vtxer.SetCuts(fV0VertexerSels);
             lCascVtxer.SetCuts(fCascadeVertexerSels);
-            
-            lV0vtxer.Tracks2V0vertices(lESDevent);
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
         } else {
-            AliLightV0vertexer lV0vtxer;
             AliLightCascadeVertexer lCascVtxer;
-            
-            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-            
-            lV0vtxer.SetCuts(fV0VertexerSels);
             lCascVtxer.SetCuts(fCascadeVertexerSels);
-            
             if( fkUseOnTheFlyV0Cascading ) lCascVtxer.SetUseOnTheFlyV0(kTRUE);
-            
-            //Only revertex if not using on-the-fly
-            if( !fkUseOnTheFlyV0Cascading ) lV0vtxer.Tracks2V0vertices(lESDevent);
-            
-            //Always redo cascades
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
         }
     }
@@ -2690,7 +2719,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                 
                 //Check 11: Min Track Length if positive
                 ( lCascadeResult->GetCutMinTrackLength()<0 || //this is a bit paranoid...
-                 fTreeCascVarMinTrackLength < lCascadeResult->GetCutMinTrackLength()
+                 fTreeCascVarMinTrackLength > lCascadeResult->GetCutMinTrackLength()
                  ) &&
                 
                 //Check 12: Explicit associate-with-bump

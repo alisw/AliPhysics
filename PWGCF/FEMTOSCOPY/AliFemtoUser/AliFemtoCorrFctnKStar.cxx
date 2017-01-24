@@ -452,11 +452,7 @@ float AliFemtoCorrFctnKStar::CalcMt(const AliFemtoPair* aPair)
 //____________________________
 float AliFemtoCorrFctnKStar::CalcMtv2(const AliFemtoPair* aPair)
 {
-//  return aPair->FourMomentumSum().mt();  //This is not correct for this application
-  const double mass_1 = aPair->Track1()->FourMomentum().m(),
-               mass_2 = aPair->Track2()->FourMomentum().m();
-  const double avg_mass = (mass_1 * mass_2)/(mass_1 + mass_2);
-  return TMath::Sqrt(avg_mass * avg_mass + ::pow(aPair->KT(), 2));
+  return 0.5*aPair->FourMomentumSum().mt();
 }
 
 //____________________________

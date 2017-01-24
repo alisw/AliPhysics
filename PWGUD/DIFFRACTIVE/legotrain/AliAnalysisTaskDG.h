@@ -32,7 +32,7 @@ public:
 
   AliAnalysisTaskDG(const char *name="AliAnalysisTaskDG");
   virtual ~AliAnalysisTaskDG();
-  
+
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t *);
@@ -80,7 +80,7 @@ public:
     UShort_t  fnTrklet[4]; // all, C,cent,A
     Char_t    fCharge;
     UShort_t  fL2Inputs;
-    UShort_t  fOrbitID;  
+    UShort_t  fOrbitID;
 
   } ;
 
@@ -106,7 +106,7 @@ public:
     void FillInvalid();
 
     Float_t    fTime[2];            //
-    Char_t     fBB[2];              // 
+    Char_t     fBB[2];              //
     Char_t     fBG[2];              //
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
@@ -129,7 +129,7 @@ public:
 
   class TreeData : public TObject {
   public:
-    TreeData() 
+    TreeData()
       : TObject()
       , fEventInfo()
       , fV0Info()
@@ -164,6 +164,7 @@ public:
 	fNumSigmaITS[i] = fNumSigmaTPC[i] = fNumSigmaTOF[i] = -32.0f;
       }
       fChipKey[0] = fChipKey[1] = -1;
+      fStatus[0]  = fStatus[1]  = -1;
       Fill(tr, pidResponse);
     }
 
@@ -176,8 +177,9 @@ public:
     Double32_t fNumSigmaTPC[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fNumSigmaTOF[AliPID::kSPECIES]; //[-32,32,8]
     Double32_t fPIDStatus[3];                  //[0,4,2] ITS,TPC,TOF
-    Short_t    fChipKey[2];                    //
-    ClassDef(TrackData, 3);
+    Short_t    fChipKey[2];                    // L0,L1 (SPD)
+    Int_t      fStatus[2];                     // L0,L1 (SPD)
+    ClassDef(TrackData, 4);
   } ;
 
 
@@ -189,7 +191,7 @@ protected:
     kNHist
   };
 
-private:  
+private:
   AliAnalysisTaskDG(const AliAnalysisTaskDG&); // not implemented
   AliAnalysisTaskDG& operator=(const AliAnalysisTaskDG&); // not implemented
 
@@ -223,7 +225,7 @@ private:
   Bool_t           fUseTriggerMask;      //!
   ULong64_t        fClassMask;           //!
   ULong64_t        fClassMaskNext50;     //!
-  
+
   ClassDef(AliAnalysisTaskDG, 7);
 } ;
 
