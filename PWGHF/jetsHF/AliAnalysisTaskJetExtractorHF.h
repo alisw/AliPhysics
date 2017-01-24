@@ -102,7 +102,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   void                        CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
   void                        CalculateJetType_HFMethod(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
   Double_t                    GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track);
-  void                        AddSecondaryVertices(const AliVVertex* vtx, const AliEmcalJet* jet, AliBasicJet& basicJet);
+  void                        AddSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, AliBasicJet& basicJet);
   void                        AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent);
 
 
@@ -164,7 +164,7 @@ class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractorHF &operator=(const AliAnalysisTaskJetExtractorHF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractorHF, 2) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractorHF, 3) // Jet extraction task
   /// \endcond
 };
 
@@ -277,9 +277,9 @@ class AliBasicJetConstituent
 class AliBasicJetSecondaryVertex
 {
   public:
-    AliBasicJetSecondaryVertex() : fVx(0), fVy(0), fVz(0), fChi2(0), fDispersion(0) {}
-    AliBasicJetSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2, Float_t dispersion)
-    : fVx(vx), fVy(vy), fVz(vz), fChi2(chi2), fDispersion(dispersion)
+    AliBasicJetSecondaryVertex() : fVx(0), fVy(0), fVz(0), fMass(0), fLxy(0), fSigmaLxy(0), fChi2(0), fDispersion(0) {}
+    AliBasicJetSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2, Float_t dispersion, Float_t mass, Float_t lxy, Float_t sigmalxy)
+    : fVx(vx), fVy(vy), fVz(vz), fMass(mass), fLxy(lxy), fSigmaLxy(sigmalxy), fChi2(chi2), fDispersion(dispersion)
     {
     }
     ~AliBasicJetSecondaryVertex();
@@ -288,6 +288,10 @@ class AliBasicJetSecondaryVertex
     Float_t Vy()        { return fVy; }
     Float_t Vz()        { return fVz; }
 
+    Float_t Mass()      { return fMass; }
+    Float_t Lxy()       { return fLxy; }
+    Float_t SigmaLxy()  { return fSigmaLxy; }
+
     Float_t Chi2()      { return fChi2; }
     Float_t Dispersion(){ return fDispersion; }
   private:
@@ -295,6 +299,9 @@ class AliBasicJetSecondaryVertex
     Float_t fVx;         ///< vertex X
     Float_t fVy;         ///< vertex Y
     Float_t fVz;         ///< vertex Z
+    Float_t fMass;       ///< Invariant mass of vertex daughters
+    Float_t fLxy;        ///< Signed decay length in XY
+    Float_t fSigmaLxy;   ///< Sigma of decay length in XY
     Float_t fChi2;       ///< Chi2/ndf for vertex
     Float_t fDispersion; ///< Dispersion of vertex
 };
@@ -352,9 +359,9 @@ class AliBasicJet
 
     // Basic secondary vertex functions
     AliBasicJetSecondaryVertex* GetSecondaryVertex(Int_t index) { return &fSecondaryVertices[index]; }
-    void                      AddSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2=0, Float_t dispersion=0)
+    void                      AddSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2=0, Float_t dispersion=0, Float_t mass=0, Float_t lxy=0, Float_t sigmalxy=0)
     {
-      AliBasicJetSecondaryVertex vtx (vx, vy, vz, chi2, dispersion);
+      AliBasicJetSecondaryVertex vtx (vx, vy, vz, chi2, dispersion, mass, lxy, sigmalxy);
       AddSecondaryVertex(&vtx);
     }
     void                      AddSecondaryVertex(AliBasicJetSecondaryVertex* vtx) {fSecondaryVertices.push_back(*vtx);}

@@ -392,16 +392,16 @@ Bool_t AliAnalysisTaskJetExtractorHF::Run()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* vtx, const AliEmcalJet* jet, AliBasicJet& basicJet)
+void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, AliBasicJet& basicJet)
 {
-  if(!vtx)
+  if(!primVtx)
     return;
 
   // Create ESD vertex from the existing AliVVertex
-  Double_t vtxPos[3]   = {vtx->GetX(), vtx->GetY(), vtx->GetZ()};
+  Double_t vtxPos[3]   = {primVtx->GetX(), primVtx->GetY(), primVtx->GetZ()};
   Double_t covMatrix[6] = {0};
-  vtx->GetCovarianceMatrix(covMatrix);
-  AliESDVertex* esdVtx = new AliESDVertex(vtxPos, covMatrix, vtx->GetChi2(), vtx->GetNContributors());
+  primVtx->GetCovarianceMatrix(covMatrix);
+  AliESDVertex* esdVtx = new AliESDVertex(vtxPos, covMatrix, primVtx->GetChi2(), primVtx->GetNContributors());
 
   TClonesArray* secVertexArr = 0;
   vctr_pair_dbl_int arrDispersion;
@@ -442,25 +442,39 @@ void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* vtx, 
   // Loop over all potential secondary vertices
   for(Int_t i=0; i<secVertexArr->GetEntriesFast(); i++)
   {
-    AliAODVertex* vtx = (AliAODVertex*)(secVertexArr->UncheckedAt(i));
+    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArr->UncheckedAt(i));
     if(!fCalculateSecondaryVertices)
-      if((strcmp(vtx->GetParent()->ClassName(), "AliAODRecoDecayHF3Prong")))
+      if((strcmp(secVtx->GetParent()->ClassName(), "AliAODRecoDecayHF3Prong")))
         continue;
 
     // Calculate vtx distance
-    Double_t effX = vtx->GetX() - esdVtx->GetX();
-    Double_t effY = vtx->GetY() - esdVtx->GetY();
-    Double_t effZ = vtx->GetZ() - esdVtx->GetZ();
-    Double_t vtxDistance = TMath::Sqrt(effX*effX + effY*effY + effZ*effZ);
+    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+    Double_t effZ = secVtx->GetZ() - esdVtx->GetZ();
 
-    // Vertex dispersion
+    // ##### Vertex properties
+    // vertex dispersion
     Double_t dispersion = arrDispersion[i].first;
 
+    // invariant mass
+    Double_t mass = fVtxTagger->GetVertexInvariantMass(secVtx);
+
+    // signed length
+    Double_t Lxy  = TMath::Sqrt(effX*effX + effY*effY);
+    Double_t jetP[3]; jet->PxPyPz(jetP);
+    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+    if (signLxy < 0.) Lxy *= -1.;
+
+    Double_t sigmaLxy  = 0;
+    AliAODVertex* aodVtx = (AliAODVertex*)(primVtx);
+    if (aodVtx)
+      sigmaLxy = aodVtx->ErrorDistanceXYToVertex(secVtx);
+
     // Add secondary vertices if they fulfill the conditions
-    if( (dispersion > fSecondaryVertexMaxDispersion) || (TMath::Abs(vtx->GetChi2perNDF()) > fSecondaryVertexMaxChi2) )
+    if( (dispersion > fSecondaryVertexMaxDispersion) || (TMath::Abs(secVtx->GetChi2perNDF()) > fSecondaryVertexMaxChi2) )
       continue;
 
-    basicJet.AddSecondaryVertex(vtx->GetX(), vtx->GetY(), vtx->GetZ(), TMath::Abs(vtx->GetChi2perNDF()), dispersion);
+    basicJet.AddSecondaryVertex(secVtx->GetX(), secVtx->GetY(), secVtx->GetZ(), TMath::Abs(secVtx->GetChi2perNDF()), dispersion, mass, Lxy, sigmaLxy);
 
     //cout << Form("(%3.3f, %3.3f, %3.3f), r=%3.3f, chi2=%3.3f, dispersion=%3.3f", effX, effY, effZ, vtxDistance, TMath::Abs(vtx->GetChi2perNDF()), dispersion) << endl;
   }
