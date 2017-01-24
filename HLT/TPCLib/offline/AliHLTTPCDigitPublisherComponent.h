@@ -106,10 +106,10 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
    * @return neg. error code if failed
    */
   int GetEvent( const AliHLTComponentEventData& evtData,
-		AliHLTComponentTriggerData& trigData,
-		AliHLTUInt8_t* outputPtr, 
-		AliHLTUInt32_t& size,
-		vector<AliHLTComponentBlockData>& outputBlocks );
+    AliHLTComponentTriggerData& trigData,
+    AliHLTUInt8_t* outputPtr, 
+    AliHLTUInt32_t& size,
+    vector<AliHLTComponentBlockData>& outputBlocks );
 
  private:
   /** copy constructor prohibited */
