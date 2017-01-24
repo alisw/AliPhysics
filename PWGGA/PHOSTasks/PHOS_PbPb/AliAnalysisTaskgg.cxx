@@ -1303,7 +1303,7 @@ void AliAnalysisTaskgg::ReclusterizeCPV(){
   AliAODCaloCells * cells = event->GetPHOSCells() ;
   const Int_t nCells=cells->GetNumberOfCells();
   Int_t relId[4] ;
-  pairs arr[nCells];
+  pairs arr[nCPVPadsZ*nCPVPadsX];
   Int_t nCPV=0 ;
   for (Int_t iCell=0; iCell<nCells; iCell++) {
     Int_t cellAbsId = cells->GetCellNumber(iCell);
