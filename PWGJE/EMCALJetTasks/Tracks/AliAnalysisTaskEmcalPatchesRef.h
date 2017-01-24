@@ -156,11 +156,15 @@ protected:
    *
    * @param[in] triggerclass Name of the trigger class firing the event
    * @param[in] patchname Name of the patchtype
-   * @param[in] energy Calibrated energy of the patch
-   * @param[in] eta Patch eta at the geometrical center
-   * @param[in] phi Patch phi at the geometrical center
+   * @param[in] energy Calibrated energy (calculated from cells) of the patch
+   * @param[in] transverseenergy Calibrated transverse energy (calculated from cells) of the patch
+   * @param[in] smearedenergy Calibrated energy (from cells) after gaussian smearing at fastor level
+   * @param[in] eta Patch \f$ eta \f$ at the geometrical center
+   * @param[in] phi Patch \f$ varphi \f$ at the geometrical center
+   * @param[in] col Column (\f$ \eta \f$-direction) of the patch
+   * @param[in] row Row (\f$ \varphi \f$-direction) of the patch
    */
-  void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi, int col, int row);
+  void FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double smearedenergy, double eta, double phi, int col, int row);
 
   AliCutValueRange<double>            fCentralityRange;           ///< Range of accepted event centralities
   Bool_t                              fEnableSumw2;               ///< Enable sumw2 during histogram creation

@@ -27,7 +27,7 @@
 
 #include "AliAnalysisUtils.h"
 #include "AliESDEvent.h"
-#include "AliEMCALTriggerPatchInfo.h"
+#include "AliEMCALTriggerPatchInfoV1.h"
 #include "AliEmcalTriggerOfflineSelection.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -70,21 +70,22 @@ void AliAnalysisTaskEmcalPatchesRef::CreateUserHistos(){
 
   EnergyBinning energybinning;
   TLinearBinning etabinning(100, -0.7, 0.7);
-  std::array<TString, 10> patchtypes = {"EG1", "EG2", "EJ1", "EJ2", "EMC7", "DG1", "DG2", "DJ1", "DJ2", "DMC7"};
+  const std::array<const TString, 10> patchtypes = {"EG1", "EG2", "EJ1", "EJ2", "EMC7", "DG1", "DG2", "DJ1", "DJ2", "DMC7"};
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
   TString optionstring = fEnableSumw2 ? "s" : "";
-  for(auto trg : GetSupportedTriggers()){
-    fHistos->CreateTH1(Form("hEventCount%s", trg.Data()), Form("Event count for trigger class %s", trg.Data()), 1, 0.5, 1.5, optionstring);
-    fHistos->CreateTH1(Form("hEventCentrality%s", trg.Data()), Form("Event centrality for trigger class %s", trg.Data()), 103, -2., 101., optionstring);
-    fHistos->CreateTH1(Form("hVertexZ%s", trg.Data()), Form("z-position of the primary vertex for trigger class %s", trg.Data()), 200, -40., 40., optionstring);
-    for(auto patch : patchtypes){
-      fHistos->CreateTH1(Form("h%sPatchEnergy%s", patch.Data(), trg.Data()), Form("%s-patch energy for trigger class %s", patch.Data(), trg.Data()), energybinning, optionstring);
-      fHistos->CreateTH1(Form("h%sPatchET%s", patch.Data(), trg.Data()), Form("%s-patch transverse energy for trigger class %s", patch.Data(), trg.Data()), energybinning, optionstring);
-      fHistos->CreateTH2(Form("h%sPatchEnergyEta%s", patch.Data(), trg.Data()), Form("%s-patch energy for trigger class %s", patch.Data(), trg.Data()), energybinning, etabinning, optionstring);
-      fHistos->CreateTH2(Form("h%sPatchETEta%s", patch.Data(), trg.Data()), Form("%s-patch transverse energy for trigger class %s", patch.Data(), trg.Data()), energybinning, etabinning, optionstring);
+  for(const auto &trg : GetSupportedTriggers()){
+    fHistos->CreateTH1("EventCount" + trg, "Event count for trigger class " + trg, 1, 0.5, 1.5, optionstring);
+    fHistos->CreateTH1("EventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
+    fHistos->CreateTH1("VertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
+    for(const auto &patch : patchtypes){
+      fHistos->CreateTH1(patch + "PatchEnergy" + trg,  patch + "-patch energy for trigger class " + trg, energybinning, optionstring);
+      fHistos->CreateTH1(patch + "PatchET" + trg,  patch +"-patch transverse energy for trigger class "+ trg, energybinning, optionstring);
+      fHistos->CreateTH2(patch + "PatchEnergyEsmear" + trg, patch + "-patch energy vs. smeared energy for trigger class " + trg, energybinning, energybinning);
+      fHistos->CreateTH2(patch + "PatchEnergyEta" + trg, patch + "%s-patch energy for trigger class " + trg, energybinning, etabinning, optionstring);
+      fHistos->CreateTH2(patch + "PatchETEta%s" +trg, patch + "-patch transverse energy for trigger class " + trg, energybinning, etabinning, optionstring);
       for(int ien = 0; ien < 5; ien++){
-        fHistos->CreateTH2(Form("h%sEtaPhi%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch #eta-#phi map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 100, -0.7, 0.7, 200, 0, TMath::TwoPi(), optionstring);
-        fHistos->CreateTH2(Form("h%sColRow%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch col-row map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 48, -0.5, 47.5, 104, -0.5, 103.5, optionstring);
+        fHistos->CreateTH2(Form("%sEtaPhi%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch #eta-#phi map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 100, -0.7, 0.7, 200, 0, TMath::TwoPi(), optionstring);
+        fHistos->CreateTH2(Form("%sColRow%dG%s", patch.Data(), static_cast<int>(encuts[ien]), trg.Data()), Form("%s-patch col-row map for patches with energy larger than %f GeV/c for trigger class %s", patch.Data(), encuts[ien], trg.Data()), 48, -0.5, 47.5, 104, -0.5, 103.5, optionstring);
       }
     }
   }
@@ -119,10 +120,10 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
 
   AliDebugStream(1) << GetName() << ": Number of trigger patches " << fTriggerPatchInfo->GetEntries() << std::endl;
 
-  Double_t energy, eta, phi, et;
+  Double_t energy, eta, phi, et, smearedenergy;
   Int_t col, row;
   for(auto patchIter : *fTriggerPatchInfo){
-    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(patchIter);
+    AliEMCALTriggerPatchInfoV1 *patch = static_cast<AliEMCALTriggerPatchInfoV1 *>(patchIter);
     if(!patch->IsOfflineSimple()) continue;
 
     bool isDCAL         = patch->IsDCalPHOS(),
@@ -157,6 +158,7 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
 
     TLorentzVector posvec;
     energy = fUseRecalcPatches ? patch->GetADCAmpGeVRough() : patch->GetPatchE();
+    smearedenergy = patch->GetSmearedEnergyV1();
     eta = patch->GetEtaGeo();
     phi = patch->GetPhiGeo();
     col = patch->GetColStart();
@@ -166,25 +168,26 @@ bool AliAnalysisTaskEmcalPatchesRef::Run(){
     // fill histograms allEta
     for(const auto &nameit : patchnames){
       for(const auto &trg : fSelectedTriggers){
-        FillPatchHistograms(trg.Data(), nameit, energy, et, eta, phi, col, row);
+        FillPatchHistograms(trg.Data(), nameit, energy, et, smearedenergy, eta, phi, col, row);
       }
     }
   }
   return true;
 }
 
-void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double eta, double phi, int col, int row){
+void AliAnalysisTaskEmcalPatchesRef::FillPatchHistograms(TString triggerclass, TString patchname, double energy, double transverseenergy, double smearedenergy, double eta, double phi, int col, int row){
   Double_t weight = GetTriggerWeight(triggerclass);
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << " in patch histograms." << std::endl;
-  fHistos->FillTH1(Form("h%sPatchEnergy%s", patchname.Data(), triggerclass.Data()), energy, weight);
-  fHistos->FillTH1(Form("h%sPatchET%s", patchname.Data(), triggerclass.Data()), transverseenergy, weight);
-  fHistos->FillTH2(Form("h%sPatchEnergyEta%s", patchname.Data(), triggerclass.Data()), energy, eta, weight);
-  fHistos->FillTH2(Form("h%sPatchETEta%s", patchname.Data(), triggerclass.Data()), transverseenergy, eta, weight);
+  fHistos->FillTH1(patchname + "PatchEnergy" + triggerclass, energy, weight);
+  fHistos->FillTH1(patchname + "PatchET" + triggerclass, transverseenergy, weight);
+  fHistos->FillTH2(patchname + "PatchEnergyEta" + triggerclass, energy, eta, weight);
+  fHistos->FillTH2(patchname + "PatchETEta" + triggerclass, transverseenergy, eta, weight);
+  fHistos->FillTH2(patchname + "PatchEnergyEsmear" + triggerclass, energy, smearedenergy, weight);
   Double_t encuts[5] = {1., 2., 5., 10., 20.};
   for(int ien = 0; ien < 5; ien++){
     if(energy > encuts[ien]){
-      fHistos->FillTH2(Form("h%sEtaPhi%dG%s", patchname.Data(), static_cast<int>(encuts[ien]), triggerclass.Data()), eta, phi, weight);
-      fHistos->FillTH2(Form("h%sColRow%dG%s", patchname.Data(), static_cast<int>(encuts[ien]), triggerclass.Data()), col, row, weight);
+      fHistos->FillTH2(Form("%sEtaPhi%dG%s", patchname.Data(), static_cast<int>(encuts[ien]), triggerclass.Data()), eta, phi, weight);
+      fHistos->FillTH2(Form("%sColRow%dG%s", patchname.Data(), static_cast<int>(encuts[ien]), triggerclass.Data()), col, row, weight);
     }
   }
 }
@@ -194,9 +197,9 @@ void AliAnalysisTaskEmcalPatchesRef::UserFillHistosAfterEventSelection(){
   for(const auto &trg : fSelectedTriggers){
     Double_t weight = GetTriggerWeight(trg);
     AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << trg << " in event histograms." << std::endl;
-    fHistos->FillTH1(Form("hEventCount%s", trg.Data()), 1, weight);
-    fHistos->FillTH1(Form("hEventCentrality%s", trg.Data()), fEventCentrality, weight);
-    fHistos->FillTH1(Form("hVertexZ%s", trg.Data()), fVertex[2], weight);
+    fHistos->FillTH1("EventCount" + trg, 1, weight);
+    fHistos->FillTH1("EventCentrality" + trg, fEventCentrality, weight);
+    fHistos->FillTH1("VertexZ" + trg, fVertex[2], weight);
   }
 
 }
