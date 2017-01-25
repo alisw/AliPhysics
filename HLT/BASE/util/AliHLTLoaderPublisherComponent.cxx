@@ -158,12 +158,22 @@ int AliHLTLoaderPublisherComponent::DoInit( int argc, const char** argv )
       // prepare the loader
       fpLoader->LoadDigits("read");
 
+      if (fTreeType.CompareTo("tracklets")==0){
+	AliDataLoader *dataLoader = fpLoader->GetDataLoader("tracklets");
+	TTree* pTree=GetTree();
+	if (dataLoader) {      
+	  dataLoader->Load("read");
+	} else {
+	  HLTWarning("Loader %s does not have data loader for %s", fLoaderType.Data(), fTreeType.Data());
+	}
+      }
       // scan trough all events and estimate the size of the digits
       for (int i=0; i<pRunLoader->GetNumberOfEvents(); i++) {
 	pRunLoader->GetEvent(i);
 	TTree* pTree=GetTree();
 	if (pTree) {
-	  int size=EstimateObjectSize(pTree);
+	  pTree->LoadBaskets();
+	  int size=EstimateObjectSize(pTree);	  
 	  if (size>fMaxSize) fMaxSize=size;
 	  if (fVerbose) {
 	    AliInfoStream() << "event " << i << " " 
@@ -216,6 +226,7 @@ int AliHLTLoaderPublisherComponent::GetEvent(const AliHLTComponentEventData& /*e
     pRunLoader->GetEvent(GetEventCount());
     TTree* pTree=GetTree();
     if (pTree) {
+      pTree->LoadBaskets();
       PushBack(pTree, fDataType);
     } else {
       AliWarningStream() << "no " << fTreeType << " tree for event " << GetEventCount() << endl;
@@ -238,9 +249,11 @@ TTree* AliHLTLoaderPublisherComponent::GetTree()
       pTree=fpLoader->TreeR();
     } else if (fTreeType.CompareTo("tracklets")==0){
       AliDataLoader *dataLoader = fpLoader->GetDataLoader("tracklets");
-      if (dataLoader) {      
-	dataLoader->Load();
+      if (dataLoader) {
 	pTree = dataLoader->Tree();
+	//if( !pTree ) HLTInfo("No TRD tracklet tree found in event %d", GetEventCount());	
+      } else {
+	HLTWarning("TRD tracklet loader not found");
       }
     }
   } else {

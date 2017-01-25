@@ -91,8 +91,8 @@ int AliHLTTRDAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     
     // indicates AliSimulation with no RawReader available -> run on digits
     
-    // handler->CreateConfiguration("TRDDigitPublisher","AliLoaderPublisher",NULL,"-loader TRDLoader -tree tracklets -datatype 'ALITREED' 'TRD '");
-    // handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", "TRDDigitPublisher","");
+    handler->CreateConfiguration("TRDDigitPublisher","AliLoaderPublisher",NULL,"-loader TRDLoader -tree tracklets -datatype 'ALITREED' 'TRD '");
+    handler->CreateConfiguration("TRD-tracklet-reader", "TRDTrackletReader", "TRDDigitPublisher","");
   }
  return 0;
 }
