@@ -335,10 +335,20 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistSPDFiredTrkVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFiredTrkVsMult]);
 
-  fHist[kHistSPDFOTrkVsMult] = new TH3D("HSPDFOTrkVsMult", ";chip key;BCmod4;;log_{10}(number of tracklets)",
+  fHist[kHistSPDFOTrkVsMult] = new TH3D("HSPDFOTrkVsMult", ";chip key;BCmod4;log_{10}(number of tracklets)",
 					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFOTrkVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFOTrkVsMult]);
+
+  fHist[kHistSPDFiredVsMult] = new TH3D("HSPDFiredVsMult", ";chip key;BCmod4;log_{10}(number of tracklets)",
+					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
+  fHist[kHistSPDFiredVsMult]->SetStats(0);
+  fList->Add(fHist[kHistSPDFiredVsMult]);
+
+  fHist[kHistSPDFOVsMult] = new TH3D("HSPDFOVsMult", ";chip key;BCmod4;log_{10}(number of tracklets)",
+				     1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
+  fHist[kHistSPDFOVsMult]->SetStats(0);
+  fList->Add(fHist[kHistSPDFOVsMult]);
 
   PostData(1, fList);
 
@@ -503,11 +513,15 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 	  }
 	}
 	const Int_t bcMod4 = (esdHeader->GetBunchCrossNumber() % 4);
+	Int_t matched[1200] = { 0 };
+	for (Int_t l=0; l<1200; ++l)
+	  matched[l] = 0;
 	for (Int_t i=0, n=oa->GetEntries(); i<n; ++i) {
 	  AliESDtrack *tr = (AliESDtrack*)oa->At(i);
 	  AliAnalysisTaskDG::FindChipKeys(tr, chipKey, status);
 	  for (Int_t layer=0; layer<2; ++layer) {
 	    if (chipKey[layer] >= 0 && chipKey[layer]<1200 && status[layer] == 1) {
+	      matched[chipKey[layer]] += 1;
 	      dynamic_cast<TH3*>(fHist[kHistSPDFiredTrk])->Fill(chipKey[layer], bcMod4, nT[chipKey[layer]], mult->TestFiredChipMap(    chipKey[layer]));
 	      dynamic_cast<TH3*>(fHist[kHistSPDFOTrk]   )->Fill(chipKey[layer], bcMod4, nT[chipKey[layer]], mult->TestFastOrFiredChips(chipKey[layer]));
 	    }
@@ -517,8 +531,11 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 					 ? TMath::Log10(mult->GetNumberOfTracklets())
 					 : -1.0);
 	for (Int_t l=0; l<1200; ++l) {
-	  dynamic_cast<TH3*>(fHist[kHistSPDFiredTrkVsMult])->Fill(l, bcMod4, log10Tracklets, mult->TestFiredChipMap(    l));
-	  dynamic_cast<TH3*>(fHist[kHistSPDFOTrkVsMult]   )->Fill(l, bcMod4, log10Tracklets, mult->TestFastOrFiredChips(l));
+	  dynamic_cast<TH3*>(fHist[kHistSPDFiredTrkVsMult])->Fill(l, bcMod4, log10Tracklets, matched[l]*mult->TestFiredChipMap(    l));
+	  dynamic_cast<TH3*>(fHist[kHistSPDFOTrkVsMult]   )->Fill(l, bcMod4, log10Tracklets, matched[l]*mult->TestFastOrFiredChips(l));
+
+	  dynamic_cast<TH3*>(fHist[kHistSPDFiredVsMult])->Fill(l, bcMod4, log10Tracklets, mult->TestFiredChipMap(    l));
+	  dynamic_cast<TH3*>(fHist[kHistSPDFOVsMult]   )->Fill(l, bcMod4, log10Tracklets, mult->TestFastOrFiredChips(l));
 	}
       }
     }

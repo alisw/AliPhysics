@@ -195,6 +195,8 @@ protected:
     kHistSPDFOTrk,
     kHistSPDFiredTrkVsMult,
     kHistSPDFOTrkVsMult,
+    kHistSPDFiredVsMult,
+    kHistSPDFOVsMult,
     kNHist
   };
 
