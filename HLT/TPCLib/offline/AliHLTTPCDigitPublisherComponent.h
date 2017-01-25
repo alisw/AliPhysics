@@ -86,6 +86,7 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
     int fSlice;
     int fPart;
     int fEvent;
+	int fID;
   };
   
   static void* FillLateInputBuffer(AliHLTTPCDigitPublisherLateFillData* reference, size_t& size);

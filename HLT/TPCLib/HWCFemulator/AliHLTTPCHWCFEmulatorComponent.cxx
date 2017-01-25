@@ -31,6 +31,7 @@
 #include "AliHLTTPCHWCFDataTypes.h"
 #include "AliHLTTPCClusterMCData.h"
 #include "AliHLTTPCHWCFData.h"
+#include "AliHLTTPCDigitPublisherComponent.h"
 
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
@@ -68,7 +69,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
   fProcessingRCU2Data(0),
-  fUseGain(1),
+  fUseGain(0),
   fNoiseSuppression(0),
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
@@ -79,7 +80,9 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fForceOutputBufferSize(0),
   fCFSupport(),
   fCFEmulator(),
-  fBenchmark("TPCHWClusterFinderEmulator")
+  fBenchmark("TPCHWClusterFinderEmulator"),
+  fEnableTempBuffer(true),
+  fTempBufferUsed(false)
 {
   // see header file for class documentation
   // or
@@ -108,7 +111,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
   fProcessingRCU2Data(0),
-  fUseGain(1),
+  fUseGain(0),
   fNoiseSuppression(0),
   fNoiseSuppressionMinimum(0),
   fNoiseSuppressionNeighbor(0),
@@ -119,7 +122,9 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fForceOutputBufferSize(0),
   fCFSupport(),
   fCFEmulator(),
-  fBenchmark("TPCHWClusterFinderEmulator")
+  fBenchmark("TPCHWClusterFinderEmulator"),
+  fEnableTempBuffer(true),
+  fTempBufferUsed(false)
 {
   // dummy
 }
@@ -257,8 +262,9 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fChargeFluctuation = 0;
   fTagDeconvolutedClusters = 0;
   fProcessingRCU2Data = 0;
-  fIORatioCorrection = 1.;
+  fUseGain = 1;
   fDebug = 0;
+  fEnableTempBuffer = true;
   fBenchmark.Reset();
   fBenchmark.SetTimer(0,"total");
   fBenchmark.SetTimer(1,"reco");    
@@ -456,6 +462,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
 
+	if ( argument.CompareTo( "-temp-buffer" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fEnableTempBuffer  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Temporary buffer set to: %d", fEnableTempBuffer );
+      continue;
+    }
+
     HLTError( "Unknown option \"%s\"", argument.Data() );
     iResult = -EINVAL;
   }
@@ -571,11 +584,13 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
   AliHLTTPCHWCFEmulator::CreateConfiguration
     ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, fUseTimeBinWindow, fChargeFluctuation, fUseTimeFollow, configWord1, configWord2 );
 
-  AliHLTUInt8_t *outBlock = NULL;
+  AliHLTUInt8_t *allocOutBlock = NULL;
   AliHLTTPCClusterMCLabel *allocOutMC = NULL;
   size_t neededBufferSize = 0;
   
   bool usingLateBuffer = false;
+  bool needTempBuffer = false;
+  bool reloadedMessage = false;
 
   for ( unsigned long ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {
@@ -591,127 +606,182 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 
       int slice = AliHLTTPCDefinitions::GetMinSliceNr( *iter );
       int patch = AliHLTTPCDefinitions::GetMinPatchNr( *iter );
- 
   
       if (!iter->fPtr) continue;
- 
-      // create input block for the HW cluster finder
-
-      const AliHLTUInt32_t *rawEvent=0;
-      const AliHLTTPCClusterMCLabel *mcLabels = 0;
-      AliHLTUInt32_t rawEventSize32 = 0;
-      AliHLTUInt32_t nMCLabels = 0;
-
-      if( fCFSupport.CreateRawEvent( iter, rawEvent, rawEventSize32, mcLabels, nMCLabels )<0 ) continue; 
-      if( !fDoMC ){
-		mcLabels = 0;
-		nMCLabels = 0;
-      }
-
-      
-      AliHLTUInt32_t maxNClusters = rawEventSize32 + 1; // N 32-bit words in input
-      AliHLTUInt32_t clustersSize32 = maxNClusters*AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
-      AliHLTUInt32_t nOutputMC = maxNClusters;
-
-      // create or forward the CDH header
-
-      AliRawDataHeaderV3 dummyCDHHeader;
-
-      bool isRawInput = ( iter->fDataType == kAliHLTDataTypeDDLRaw );
-
-      AliHLTCDHWrapper header( isRawInput ?iter->fPtr : &dummyCDHHeader );
-
-      AliHLTUInt32_t headerSize = header.GetHeaderSize();
-
-      // book memory for the output
-
-      AliHLTUInt32_t outBlockSize = headerSize+clustersSize32*sizeof(AliHLTUInt32_t);
-
-      if( outBlock ) delete[] outBlock;
-      if( allocOutMC ) delete[] allocOutMC;      
-      outBlock = new AliHLTUInt8_t[outBlockSize];
-      allocOutMC = new AliHLTTPCClusterMCLabel[nOutputMC+1];
- 
-      if (!outBlock || !allocOutMC) {
-		iResult=-ENOMEM;
-		break;
-      } 
-
-      memset(outBlock, 0, outBlockSize*sizeof(AliHLTUInt8_t));
-      memset(allocOutMC, 0, (nOutputMC+1)*sizeof(AliHLTTPCClusterMCLabel));
-      AliHLTTPCClusterMCData *outMC = reinterpret_cast<AliHLTTPCClusterMCData *>(allocOutMC);
-      
-      // fill CDH header here, since the HW clusterfinder does not receive it
-      memcpy(outBlock, header.GetHeader(), headerSize );
-      memset(outBlock,0xFF,4);
-
-      //AliRawDataHeader *cdhHeader = reinterpret_cast<AliRawDataHeader*>(iter->fPtr);
-      //AliRawDataHeader *outCDHHeader = reinterpret_cast<AliRawDataHeader*>(outBlock);
-      //*outCDHHeader = *cdhHeader;
-      //outCDHHeader->fSize = 0xFFFFFFFF;
-
-      AliHLTUInt32_t *outClusters = reinterpret_cast<AliHLTUInt32_t*> (outBlock + headerSize);
-     
-      fBenchmark.Start(1);
-      fCFEmulator.Init( fCFSupport.GetMapping(slice,patch), configWord1, configWord2 );
-
-      fCFEmulator.SetTagDeconvolutedClusters( fTagDeconvolutedClusters );
-      fCFEmulator.SetProcessingRCU2Data( fProcessingRCU2Data );
-      fCFEmulator.SetNoiseSuppression( fNoiseSuppression );
-      fCFEmulator.SetNoiseSuppressionMinimum( fNoiseSuppressionMinimum );
-      fCFEmulator.SetNoiseSuppressionNeighbor( fNoiseSuppressionNeighbor );
-      fCFEmulator.SetSmoothing( fSmoothing );
-      fCFEmulator.SetSmoothingThreshold( fSmoothingThreshold );
-      fCFEmulator.SetClusterQMaxLowerLimit( fClusterQMaxLowerLimit );
-      fCFEmulator.SetImprovedDeconvolution( fImprovedDeconvolution );
-
-      int err = fCFEmulator.FindClusters( rawEvent, rawEventSize32, 
-					  outClusters, clustersSize32, 
-					  mcLabels, nMCLabels,
-					  outMC );
-      fBenchmark.Stop(1);
-      if( err==-1 ){ HLTWarning("NULL input pointer (warning %d)",err);}
-      else if( err==-2 ){  HLTWarning("No space left in the output buffer (warning %d)",err); }
-      else if( err<0 ){ HLTWarning("HWCF emulator finished with error code %d",err); }
-      if( err<0 ){
-        continue;
-      }
-
-      if( fDebug ){
-		int elsize=AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
-		printf("\nHWCF Emulator: output clusters for slice%d patch %d:\n",slice,patch);
-		for( AliHLTUInt32_t i=0; i<clustersSize32; i+=elsize ){
-		  AliHLTUInt32_t *c = outClusters+i;
-		  AliHLTUInt32_t flag = (c[0]>>30);  	  
-		  if( flag == 0x3){ //beginning of a cluster
-		    int padRow  = (c[0]>>24)&0x3f;
-		    int q  = c[1];
-		    double p   = *((AliHLTFloat32_t*)&c[2]);
-		    double t  = *((AliHLTFloat32_t*)&c[3]);
-		    AliHLTFloat32_t p2 = *((AliHLTFloat32_t*)&c[4]);
-		    AliHLTFloat32_t t2 = *((AliHLTFloat32_t*)&c[5]);
-		    printf("N: %3d    R: %3d    C: %4d    P:  %7.4f    T:  %8.4f    DP: %6.4f    DT: %6.4f\n", 
-			   i/elsize+1, padRow, q, p, t, sqrt(fabs(p2-p*p)), sqrt(fabs(t2-t*t)));
-
-		    if( outMC && outMC->fCount>0 ){
-		      printf("        MC: (%3d,%6.1f) (%3d,%6.1f) (%3d,%6.1f)\n",
-			     outMC->fLabels[i/elsize].fClusterID[0].fMCID,outMC->fLabels[i/elsize].fClusterID[0].fWeight,
-			     outMC->fLabels[i/elsize].fClusterID[1].fMCID,outMC->fLabels[i/elsize].fClusterID[1].fWeight,
-			     outMC->fLabels[i/elsize].fClusterID[2].fMCID,outMC->fLabels[i/elsize].fClusterID[2].fWeight
-			     );
-		    }
+	  AliHLTTPCDigitPublisherComponent::AliHLTTPCDigitPublisherLateFillData* reference = NULL;
+	  
+	  bool bufferReloaded = false;
+	  if (usingLateBuffer)
+	  {
+		  reference = (AliHLTTPCDigitPublisherComponent::AliHLTTPCDigitPublisherLateFillData*) iter->fPtr;
+		  if (fTempBufferUsed && fTempBuffer[reference->fSlice][reference->fPart][0].fID == reference->fID && fTempBuffer[reference->fSlice][reference->fPart][0].fEvent == reference->fEvent)
+		  {
+			  bufferReloaded = true;
+			  if (reloadedMessage == false)
+			  {
+				  HLTImportant("Reading data from temporary buffer instead of rerunning emulator");
+				  reloadedMessage = true;
+			  }
 		  }
-		}
-      }
-          
+	  }
 
-      AliHLTUInt32_t outSize = headerSize + clustersSize32*sizeof(AliHLTUInt32_t);
+	  AliHLTTPCClusterMCData *outMC;
+	  AliHLTUInt8_t *outBlock;
+	  AliHLTUInt32_t outSize;
+	  tempBufferDescriptor& tb = fTempBuffer[!usingLateBuffer ? 0 : reference->fSlice][!usingLateBuffer ? 0 : reference->fPart][0];
+	  tempBufferDescriptor& tbMC = fTempBuffer[!usingLateBuffer ? 0 : reference->fSlice][!usingLateBuffer ? 0 : reference->fPart][1];
+      if (bufferReloaded == false)
+	  {
+		// create input block for the HW cluster finder
+
+		const AliHLTUInt32_t *rawEvent = 0;
+		const AliHLTTPCClusterMCLabel *mcLabels = 0;
+		AliHLTUInt32_t rawEventSize32 = 0;
+		AliHLTUInt32_t nMCLabels = 0;
+
+		if (fCFSupport.CreateRawEvent(iter, rawEvent, rawEventSize32, mcLabels, nMCLabels) < 0) continue;
+		if (!fDoMC) {
+			mcLabels = 0;
+			nMCLabels = 0;
+		}
+
+		AliHLTUInt32_t maxNClusters = rawEventSize32 + 1; // N 32-bit words in input
+		AliHLTUInt32_t clustersSize32 = maxNClusters * AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
+		AliHLTUInt32_t nOutputMC = maxNClusters;
+
+		// create or forward the CDH header
+
+		AliRawDataHeaderV3 dummyCDHHeader;
+
+		bool isRawInput = (iter->fDataType == kAliHLTDataTypeDDLRaw);
+
+		AliHLTCDHWrapper header(isRawInput ? iter->fPtr : &dummyCDHHeader);
+
+		AliHLTUInt32_t headerSize = header.GetHeaderSize();
+
+		// book memory for the output
+
+		AliHLTUInt32_t outBlockSize = headerSize + clustersSize32 * sizeof(AliHLTUInt32_t);
+
+		if (allocOutBlock) delete[] allocOutBlock;
+		if (allocOutMC) delete[] allocOutMC;
+		allocOutBlock = new AliHLTUInt8_t[outBlockSize];
+		allocOutMC = new AliHLTTPCClusterMCLabel[nOutputMC + 1];
+
+		if (!allocOutBlock || !allocOutMC) {
+			iResult = -ENOMEM;
+			break;
+		}
+
+		memset(allocOutBlock, 0, outBlockSize * sizeof(AliHLTUInt8_t));
+		memset(allocOutMC, 0, (nOutputMC + 1) * sizeof(AliHLTTPCClusterMCLabel));
+		outMC = reinterpret_cast<AliHLTTPCClusterMCData *>(allocOutMC);
+		outBlock = allocOutBlock;
+
+		// fill CDH header here, since the HW clusterfinder does not receive it
+		memcpy(outBlock, header.GetHeader(), headerSize);
+		memset(outBlock, 0xFF, 4);
+
+		//AliRawDataHeader *cdhHeader = reinterpret_cast<AliRawDataHeader*>(iter->fPtr);
+		//AliRawDataHeader *outCDHHeader = reinterpret_cast<AliRawDataHeader*>(outBlock);
+		//*outCDHHeader = *cdhHeader;
+		//outCDHHeader->fSize = 0xFFFFFFFF;
+
+		AliHLTUInt32_t *outClusters = reinterpret_cast<AliHLTUInt32_t *>(outBlock + headerSize);
+
+		fBenchmark.Start(1);
+		fCFEmulator.Init(fCFSupport.GetMapping(slice, patch), configWord1, configWord2);
+
+		fCFEmulator.SetTagDeconvolutedClusters(fTagDeconvolutedClusters);
+		fCFEmulator.SetProcessingRCU2Data(fProcessingRCU2Data);
+		fCFEmulator.SetNoiseSuppression(fNoiseSuppression);
+		fCFEmulator.SetNoiseSuppressionMinimum(fNoiseSuppressionMinimum);
+		fCFEmulator.SetNoiseSuppressionNeighbor(fNoiseSuppressionNeighbor);
+		fCFEmulator.SetSmoothing(fSmoothing);
+		fCFEmulator.SetSmoothingThreshold(fSmoothingThreshold);
+		fCFEmulator.SetClusterQMaxLowerLimit(fClusterQMaxLowerLimit);
+		fCFEmulator.SetImprovedDeconvolution(fImprovedDeconvolution);
+
+		int err = fCFEmulator.FindClusters(rawEvent, rawEventSize32,
+		                                   outClusters, clustersSize32,
+		                                   mcLabels, nMCLabels,
+		                                   outMC);
+		fBenchmark.Stop(1);
+		if (err == -1) {
+			HLTWarning("NULL input pointer (warning %d)", err);
+		}
+		else if (err == -2)
+		{
+			HLTWarning("No space left in the output buffer (warning %d)", err);
+		}
+		else if (err < 0)
+		{
+			HLTWarning("HWCF emulator finished with error code %d", err);
+		}
+		if (err < 0) {
+			continue;
+		}
+
+		if (fDebug) {
+			int elsize = AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
+			printf("\nHWCF Emulator: output clusters for slice%d patch %d:\n", slice, patch);
+			for (AliHLTUInt32_t i = 0; i < clustersSize32; i += elsize)
+			{
+				AliHLTUInt32_t *c = outClusters + i;
+				AliHLTUInt32_t flag = (c[0] >> 30);
+				if (flag == 0x3) { //beginning of a cluster
+					int padRow = (c[0] >> 24) & 0x3f;
+					int q = c[1];
+					double p = *((AliHLTFloat32_t *) &c[2]);
+					double t = *((AliHLTFloat32_t *) &c[3]);
+					AliHLTFloat32_t p2 = *((AliHLTFloat32_t *) &c[4]);
+					AliHLTFloat32_t t2 = *((AliHLTFloat32_t *) &c[5]);
+					printf("N: %3d    R: %3d    C: %4d    P:  %7.4f    T:  %8.4f    DP: %6.4f    DT: %6.4f\n",
+					       i / elsize + 1, padRow, q, p, t, sqrt(fabs(p2 - p * p)), sqrt(fabs(t2 - t * t)));
+
+					if (outMC && outMC->fCount > 0) {
+						printf("        MC: (%3d,%6.1f) (%3d,%6.1f) (%3d,%6.1f)\n",
+						       outMC->fLabels[i / elsize].fClusterID[0].fMCID, outMC->fLabels[i / elsize].fClusterID[0].fWeight,
+						       outMC->fLabels[i / elsize].fClusterID[1].fMCID, outMC->fLabels[i / elsize].fClusterID[1].fWeight,
+						       outMC->fLabels[i / elsize].fClusterID[2].fMCID, outMC->fLabels[i / elsize].fClusterID[2].fWeight);
+					}
+				}
+			}
+		}
+		outSize = headerSize + clustersSize32 * sizeof(AliHLTUInt32_t);
+	  }
+	  else
+	  {
+		  outBlock = (AliHLTUInt8_t*) tb.fPtr;
+		  outSize = tb.fSize;
+		  outMC = (AliHLTTPCClusterMCData*) tbMC.fPtr;
+	  }
       
+	  bool prepareTempBuffer = fEnableTempBuffer && usingLateBuffer && !fTempBufferUsed;
 	  neededBufferSize += outSize;
-      if( size + outSize <= maxSize ){
-	
+	  bool sizeOK = size + outSize <= maxSize;
+	  if (prepareTempBuffer)
+	  {
+		  tb.fSize = outSize;
+		  tb.fID = reference->fID;
+		  tb.fEvent = reference->fEvent;
+		  tb.fFillState = 0;
+	  }
+	  
+	  if (needTempBuffer || (prepareTempBuffer && !sizeOK))
+	  {
+		  if ((tb.fPtr = malloc(outSize)) == NULL) HLTFatal("Memory Allocation Error");
+		  memcpy( tb.fPtr, outBlock, outSize );
+		  tb.fFillState = 2;
+		  needTempBuffer = true;
+	  }
+      else if( sizeOK ){
 		memcpy( outputPtr, outBlock, outSize );
-		
+		if (prepareTempBuffer)
+		{
+			tb.fPtr = outputPtr;
+			tb.fFillState = 1;
+		}
 		AliHLTComponentBlockData bd;
 		FillBlockData( bd );
 		bd.fOffset = size;
@@ -726,16 +796,40 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 		iResult=-ENOSPC;
 		if (!usingLateBuffer)
 		{
-			HLTWarning( "Output buffer (%db) is too small, required %db", maxSize, size+outSize);
-			break;
-		}
+		  HLTWarning( "Output buffer (%db) is too small, required %db", maxSize, size+outSize);
+		  break;
+	    }
       }
-
-      if( fDoMC && outMC && outMC->fCount>0 ){
+	  
+	  if (prepareTempBuffer)
+	  {
+		  tbMC.fID = reference->fID;
+		  tbMC.fEvent = reference->fEvent;
+		  tbMC.fFillState = 0;
+		  tbMC.fPtr = NULL;
+	  }
+	  if( fDoMC && outMC && outMC->fCount>0 ){
 		int s = sizeof(AliHLTTPCClusterMCData) + outMC->fCount*sizeof(AliHLTTPCClusterMCLabel);
 		neededBufferSize += s;
-		if( size + s <= maxSize ){
+		bool sizeMCOK = size + s <= maxSize;
+		if (prepareTempBuffer)
+		{
+			tbMC.fSize = s;
+		}
+		if (needTempBuffer || (prepareTempBuffer && !sizeMCOK))
+		{
+			if ((tbMC.fPtr = malloc(s)) == NULL) HLTFatal("Memory Allocation Error");
+			memcpy(tbMC.fPtr, outMC, s);
+			tbMC.fFillState = 2;
+			needTempBuffer = true;
+		}
+		else if( sizeMCOK ){
 		  memcpy( outputPtr, outMC, s );	  	  
+		  if (prepareTempBuffer)
+		  {
+  			tbMC.fPtr = outputPtr;
+  			tbMC.fFillState = 1;
+		  }
 		  AliHLTComponentBlockData bdMCInfo;
 		  FillBlockData( bdMCInfo );
 		  bdMCInfo.fOffset = size;
@@ -750,15 +844,46 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 		  iResult=-ENOSPC;
 		  if (!usingLateBuffer)
 		  {
-			HLTWarning( "Output buffer (%db) is too small, required %db", maxSize, size+s);
-			break;
+		  	HLTWarning( "Output buffer (%db) is too small, required %db", maxSize, size+s);
+		  	break;
 		  }
 		}
       }
     }
  
-  if( outBlock ) delete[] outBlock;
+  if( allocOutBlock ) delete[] allocOutBlock;
   if( allocOutMC ) delete[] allocOutMC;
+  allocOutBlock = NULL;
+  allocOutMC = NULL;
+  
+  if (needTempBuffer)
+  {
+	iResult = -ENOSPC;
+	int copied = 0;
+	for (int i = 0;i < sizeof(fTempBuffer) / sizeof(fTempBuffer[0][0][0]);i++)
+	{
+		tempBufferDescriptor* t = &fTempBuffer[0][0][0];
+		if (t[i].fFillState == 1)
+		{
+			void* ptr = t[i].fPtr;
+			if ((t[i].fPtr = malloc(t[i].fSize)) == NULL) HLTFatal("Memory Allocation Error");
+			memcpy(t[i].fPtr, ptr, t[i].fSize);
+			t[i].fFillState = 2;
+			copied++;
+		}
+	}
+	HLTImportant("Cluster finding output buffer exceeded, filling temp buffer to avoid rerunning emulator (%d buffers retrieved from old output buffer, %d buffers stored in temp memory directly)", copied, sizeof(fTempBuffer) / sizeof(fTempBuffer[0][0][0]) - copied);
+	fTempBufferUsed = true;
+  }
+  else if (fTempBufferUsed)
+  {
+	tempBufferDescriptor* t = &fTempBuffer[0][0][0];
+	for (int i = 0;i < sizeof(fTempBuffer) / sizeof(fTempBuffer[0][0][0]);i++)
+	{
+		if (t[i].fFillState == 2) free(t[i].fPtr);
+	}
+	fTempBufferUsed = false;
+  }
   
   if (usingLateBuffer && iResult==-ENOSPC)
   {
@@ -779,9 +904,9 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
     for( unsigned long ndx = 0; ndx < evtData.fBlockCnt; ndx++ ){
       const AliHLTComponentBlockData* iter = blocks+ndx;      
       if(  iter->fDataType == AliHLTTPCDefinitions::RawClustersDataType() || iter->fDataType == AliHLTTPCDefinitions::RawClustersDescriptorDataType() ){
-	if( !iter->fPtr ) continue;
-	fBenchmark.AddOutput(iter->fSize);
-	outputBlocks.push_back( *iter );
+		if( !iter->fPtr ) continue;
+		fBenchmark.AddOutput(iter->fSize);
+		outputBlocks.push_back( *iter );
       }
     } 
   }

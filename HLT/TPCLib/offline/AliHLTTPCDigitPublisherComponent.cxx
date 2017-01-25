@@ -287,6 +287,7 @@ int AliHLTTPCDigitPublisherComponent::GetEvent(const AliHLTComponentEventData & 
 				reference->fEvent = event;
 				reference->fSlice = fMinSlice;
 				reference->fPart = fMinPart;
+				reference->fID = rand();
 				outputBlocks.push_back(bd);
 			}
 			else
