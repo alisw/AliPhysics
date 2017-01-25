@@ -193,6 +193,8 @@ protected:
     kHistTrig,
     kHistSPDFiredTrk,
     kHistSPDFOTrk,
+    kHistSPDFiredTrkVsMult,
+    kHistSPDFOTrkVsMult,
     kNHist
   };
 
@@ -235,7 +237,7 @@ private:
   ULong64_t        fClassMaskSPD;        //!
   ULong64_t        fClassMaskNext50SPD;  //!
 
-  ClassDef(AliAnalysisTaskDG, 7);
+  ClassDef(AliAnalysisTaskDG, 8);
 } ;
 
 #endif // ALIANALYSISTASKDG_H

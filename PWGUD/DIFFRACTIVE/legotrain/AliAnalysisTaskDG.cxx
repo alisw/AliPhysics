@@ -330,6 +330,16 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistSPDFOTrk]->SetStats(0);
   fList->Add(fHist[kHistSPDFOTrk]);
 
+  fHist[kHistSPDFiredTrkVsMult] = new TH3D("HSPDFiredTrkVsMult", ";chip key;BCmod4;log_{10}(number of tracklets)",
+					   1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
+  fHist[kHistSPDFiredTrkVsMult]->SetStats(0);
+  fList->Add(fHist[kHistSPDFiredTrkVsMult]);
+
+  fHist[kHistSPDFOTrkVsMult] = new TH3D("HSPDFOTrkVsMult", ";chip key;BCmod4;;log_{10}(number of tracklets)",
+					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
+  fHist[kHistSPDFOTrkVsMult]->SetStats(0);
+  fList->Add(fHist[kHistSPDFOTrkVsMult]);
+
   PostData(1, fList);
 
   TDirectory *owd = gDirectory;
@@ -502,6 +512,13 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 	      dynamic_cast<TH3*>(fHist[kHistSPDFOTrk]   )->Fill(chipKey[layer], bcMod4, nT[chipKey[layer]], mult->TestFastOrFiredChips(chipKey[layer]));
 	    }
 	  }
+	}
+	const Double_t log10Tracklets = (mult->GetNumberOfTracklets() > 0
+					 ? TMath::Log10(mult->GetNumberOfTracklets())
+					 : -1.0);
+	for (Int_t l=0; l<1200; ++l) {
+	  dynamic_cast<TH3*>(fHist[kHistSPDFiredTrkVsMult])->Fill(l, bcMod4, log10Tracklets, mult->TestFiredChipMap(    l));
+	  dynamic_cast<TH3*>(fHist[kHistSPDFOTrkVsMult]   )->Fill(l, bcMod4, log10Tracklets, mult->TestFastOrFiredChips(l));
 	}
       }
     }
