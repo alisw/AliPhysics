@@ -34,9 +34,7 @@
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliStack.h"
-
-#include "TCanvas.h" // TBI
-#include "TFile.h" // TBI
+#include "TFile.h"
 
 using std::cout;
 using std::endl;
@@ -105,6 +103,10 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fControlHistogramsIdentifiedParticlesList(NULL),
  fControlHistogramsIdentifiedParticlesFlagsPro(NULL),
  fFillControlHistogramsIdentifiedParticles(kFALSE),
+ fInclusiveSigmaCutsPro(NULL),
+ fExclusiveSigmaCutsPro(NULL),
+ fUseDefaultInclusiveSigmaCuts(kTRUE),
+ fUseDefaultExclusiveSigmaCuts(kTRUE),
  fControlHistogramsV0sList(NULL),
  fControlHistogramsV0sFlagsPro(NULL),
  fFillControlHistogramsV0s(kFALSE),
@@ -305,6 +307,10 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fControlHistogramsIdentifiedParticlesList(NULL),
  fControlHistogramsIdentifiedParticlesFlagsPro(NULL),
  fFillControlHistogramsIdentifiedParticles(kFALSE),
+ fInclusiveSigmaCutsPro(NULL),
+ fExclusiveSigmaCutsPro(NULL),
+ fUseDefaultInclusiveSigmaCuts(kFALSE),
+ fUseDefaultExclusiveSigmaCuts(kFALSE),
  fControlHistogramsV0sList(NULL),
  fControlHistogramsV0sFlagsPro(NULL),
  fFillControlHistogramsV0s(kFALSE),
@@ -1002,6 +1008,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
 
  // To do:
  // 1) Add support for MC and ESD, now it works only for AliAODTrack.
+ // 2) Shall I instead fill the parameters from atrack?
 
  // a) Insanity checks;
  // b) Check cut selection criteria;
@@ -1053,7 +1060,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
  } // for(Int_t charge=0;charge<2;charge++) // 0 = +q, 1 = -q
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedParticles(AliAODTrack *atrack, AliAODTrack *gtrack)
-
 
 //================================================================================================================
 
@@ -1178,7 +1184,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
   {
    // 0 : shifting
    // 1 : permutations + binning in vertex z-position
-   //     Key objects are fMixedEvents1[10][5]. First index indicates the vertex-z range, when the all entries in the second index are filled, then:
+   //     Key objects are fMixedEvents1[10][50]. First index indicates the vertex-z range, when the all entries in the second index are filled, then:
    //     a) Make all possible permutations of 2-events, 3-events, etc.
    //     b) For each permutation call Calculate2pBackground(...), Calculate3pBackground(...), etc.
 
@@ -1259,9 +1265,11 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
    // Save in the buffer this event:
    *fMixedEvents1[indexX][indexY] = *(aAOD->GetTracks());
    GlobalTracksAOD(aAOD,indexX,indexY);
-   // Shall we do something for 2p background?
+   // If the buffer is full, calculate background:
    if(fMaxBufferSize1-1==indexY)
    {
+
+    // Shall we do something for 2p background?
     if(fEstimate2pBackground) // this buffer is full TBI hardwired 4. Making all possible combinations of 2 events
     {
      for(Int_t bufferNo1=0;bufferNo1<fMaxBufferSize1;bufferNo1++) // 1st event in the mixed events
@@ -1272,6 +1280,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
       } // for(Int_t bufferNo2=bufferNo1+1;bufferNo2<5;bufferNo2++) // 2nd event in the mixed events
      } // for(Int_t bufferNo1=0;bufferNo1<5;bufferNo1++) // first event in the mixed events
     } // if(fEstimate2pBackground)
+
     // Shall we do something for 3p background?
     if(fEstimate3pBackground) // this buffer is full TBI hardwired 4. Making all possible combinations of 3 events
     {
@@ -1290,6 +1299,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
      } // for(Int_t bufferNo1=0;bufferNo1<5;bufferNo1++) // first event in the mixed events
     } // if(fEstimate3pBackground)
 
+    // Shall we do something for 4p background?
     if(fEstimate4pBackground) // this buffer is full TBI hardwired 4. Making all possible combinations of 4 events
     {
      // ...
@@ -1302,7 +1312,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
      fGlobalTracksAOD1[indexX][bufferNo]->Delete();
     } // for(Int_t bufferNo=0;bufferNo<5;bufferNo++)
 
-   } // if(4==indexY)
+   } // if(fMaxBufferSize1-1==indexY)
 
    break; // permutations + binning in vertex z-position
 
@@ -2077,7 +2087,18 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunct
 {
  // Initialize all arrays for correlation functions.
 
- // 2-p:
+ // a) Initialize sublists;
+ // b) Initialize 2p correlation functions;
+ // c) Initialize 3p correlation functions;
+ // d) Initialize 4p correlation functions.
+
+ // a) Initialize sublists:
+ for(Int_t cfs=0;cfs<3;cfs++)
+ {
+  fCorrelationFunctionsSublist[cfs] = NULL;
+ }
+
+ // b) Initialize 2p correlation functions:
  for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  {
   for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -2086,7 +2107,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunct
   }
  }
 
- // 3-p:
+ // c) Initialize 3p correlation functions:
  for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  {
   for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -2098,7 +2119,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForCorrelationFunct
   }
  }
 
- // 4-p:
+ // c) Initialize 4p correlation functions:
  for(Int_t pid1=0;pid1<10;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
  {
   for(Int_t pid2=0;pid2<10;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -2297,9 +2318,17 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
 
  // c) Book and nest lists for correlation functions:
  fCorrelationFunctionsList = new TList();
- fCorrelationFunctionsList->SetName("Correlation_Functions");
+ fCorrelationFunctionsList->SetName("CorrelationFunctions");
  fCorrelationFunctionsList->SetOwner(kTRUE);
  fHistList->Add(fCorrelationFunctionsList);
+ // Correlation functions sublists:
+ for(Int_t cfs=0;cfs<3;cfs++)
+ {
+  fCorrelationFunctionsSublist[cfs] = new TList();
+  fCorrelationFunctionsSublist[cfs]->SetName(Form("f%dpCorrelationFunctions",cfs+2));
+  fCorrelationFunctionsSublist[cfs]->SetOwner(kTRUE);
+  fCorrelationFunctionsList->Add(fCorrelationFunctionsSublist[cfs]);
+ } // for(Int_t cfs=0;cfs<3;cfs++)
 
  // d) Book and nest lists for background:
  fBackgroundList = new TList();
@@ -2364,21 +2393,67 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverything()
   fGlobalTracksAOD[index] = new TExMap();
  }
 
- // Inclusive sigma cuts:
- fInclusiveSigmaCuts[2] = 2.; // i.e. in function Pion(...) the inclusive cut for pions is 2 sigma
- fInclusiveSigmaCuts[3] = 2.; // i.e. in function Kaon(...) the inclusive cut for kaons is 2 sigma
- fInclusiveSigmaCuts[4] = 2.; // i.e. in function Proton(...) the inclusive cut for protons is 2 sigma
+ // Default inclusive sigma cuts:
+ if(fUseDefaultInclusiveSigmaCuts)
+ {
+  fInclusiveSigmaCuts[2] = 3.; // i.e. in function Pion(...) the inclusive cut for pions is 2 sigma
+  fInclusiveSigmaCuts[3] = 3.; // i.e. in function Kaon(...) the inclusive cut for kaons is 2 sigma
+  fInclusiveSigmaCuts[4] = 3.; // i.e. in function Proton(...) the inclusive cut for protons is 2 sigma
+ }
+ const Int_t nPidFunctions = 5; //
+ TString sPidFunctions[nPidFunctions] = {"Electron(...)","Muon(...)","Pion(...)","Kaon(...)","Proton(...)"};
+ const Int_t nParticleSpecies = 5;
+ TString sParticleSpecies[nParticleSpecies] = {"e","#mu","#pi","K","p"};
+ fInclusiveSigmaCutsPro = new TProfile("fInclusiveSigmaCutsPro","Inclusive sigma cuts",nPidFunctions,0.,nPidFunctions);
+ fInclusiveSigmaCutsPro->GetYaxis()->SetTitle("n#sigma");
+ for(Int_t pidFunction=0;pidFunction<5;pidFunction++)
+ {
+  fInclusiveSigmaCutsPro->SetTickLength(-0.01,"Y");
+  fInclusiveSigmaCutsPro->SetMarkerStyle(25);
+  fInclusiveSigmaCutsPro->SetLabelSize(0.04);
+  fInclusiveSigmaCutsPro->SetLabelOffset(0.02,"Y");
+  fInclusiveSigmaCutsPro->SetStats(kFALSE);
+  fInclusiveSigmaCutsPro->SetFillColor(kGray);
+  fInclusiveSigmaCutsPro->SetLineColor(kBlack);
+  fInclusiveSigmaCutsPro->GetXaxis()->SetBinLabel(pidFunction+1,sPidFunctions[pidFunction].Data());
+  fInclusiveSigmaCutsPro->Fill(pidFunction+0.5,fInclusiveSigmaCuts[pidFunction]);
+  fControlHistogramsIdentifiedParticlesList->Add(fInclusiveSigmaCutsPro);
+ } // for(Int_t pidFunction=0;pidFunction<5;pidFunction++)
 
- // Exclusive sigma cuts:
- // Pion(...)
- fExclusiveSigmaCuts[2][3] = 4.; // i.e. in function Pion(...) the exclusive cut for kaons is 4 sigma
- fExclusiveSigmaCuts[2][4] = 4.; // i.e. in function Pion(...) the exclusive cut for protons is 4 sigma
- // Kaon(...)
- fExclusiveSigmaCuts[3][2] = 4.; // i.e. in function Kaon(...) the exclusive cut for pions is 4 sigma
- fExclusiveSigmaCuts[3][4] = 4.; // i.e. in function Kaon(...) the exclusive cut for protons is 4 sigma
- // Proton(...)
- fExclusiveSigmaCuts[4][2] = 4.; // i.e. in function Proton(...) the exclusive cut for pions is 4 sigma
- fExclusiveSigmaCuts[4][3] = 4.; // i.e. in function Proton(...) the exclusive cut for kaons is 4 sigma
+ // Default exclusive sigma cuts:
+ if(fUseDefaultExclusiveSigmaCuts)
+ {
+  // Pion(...)
+  fExclusiveSigmaCuts[2][3] = 4.; // i.e. in function Pion(...) the exclusive cut for kaons is 4 sigma
+  fExclusiveSigmaCuts[2][4] = 4.; // i.e. in function Pion(...) the exclusive cut for protons is 4 sigma
+  // Kaon(...)
+  fExclusiveSigmaCuts[3][2] = 4.; // i.e. in function Kaon(...) the exclusive cut for pions is 4 sigma
+  fExclusiveSigmaCuts[3][4] = 4.; // i.e. in function Kaon(...) the exclusive cut for protons is 4 sigma
+  // Proton(...)
+  fExclusiveSigmaCuts[4][2] = 4.; // i.e. in function Proton(...) the exclusive cut for pions is 4 sigma
+  fExclusiveSigmaCuts[4][3] = 4.; // i.e. in function Proton(...) the exclusive cut for kaons is 4 sigma
+ } // if(fUseDefaultExclusiveSigmaCuts)
+ fExclusiveSigmaCutsPro = new TProfile2D("fExclusiveSigmaCutsPro","Exclusive sigma cuts",nPidFunctions,0.,nPidFunctions,nParticleSpecies,0.,nParticleSpecies);
+ fExclusiveSigmaCutsPro->SetTickLength(-0.01,"Y");
+ fExclusiveSigmaCutsPro->SetMarkerStyle(25);
+ fExclusiveSigmaCutsPro->SetLabelSize(0.04);
+ //fExclusiveSigmaCutsPro->SetLabelOffset(0.01,"X");
+ //fExclusiveSigmaCutsPro->SetLabelOffset(0.01,"Y");
+ fExclusiveSigmaCutsPro->SetTitleOffset(0.9,"Z");
+ fExclusiveSigmaCutsPro->SetStats(kFALSE);
+ fExclusiveSigmaCutsPro->SetFillColor(kGray);
+ fExclusiveSigmaCutsPro->SetLineColor(kBlack);
+ fExclusiveSigmaCutsPro->GetZaxis()->SetTitle("n#sigma");
+ for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
+ {
+  fExclusiveSigmaCutsPro->GetXaxis()->SetBinLabel(pidFunction+1,sPidFunctions[pidFunction].Data());
+  for(Int_t particleSpecies=0;particleSpecies<nParticleSpecies;particleSpecies++)
+  {
+   if(0==pidFunction){fExclusiveSigmaCutsPro->GetYaxis()->SetBinLabel(particleSpecies+1,sParticleSpecies[particleSpecies].Data());}
+   fExclusiveSigmaCutsPro->Fill(pidFunction+0.5,particleSpecies+0.5,fExclusiveSigmaCuts[pidFunction][particleSpecies]);
+   fControlHistogramsIdentifiedParticlesList->Add(fExclusiveSigmaCutsPro);
+  } // for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
+ } // for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverything()
 
@@ -2635,8 +2710,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  } // if(fFillControlFTSFHistogramsNonIdentifiedParticlesFTSF)
 
  //  c3) Identified particles:
- // Book the profile holding all the flags for TBI:
- fControlHistogramsIdentifiedParticlesFlagsPro = new TProfile("fControlHistogramsIdentifiedParticlesFlagsPro","Flags and settings for TBI",1,0,1);
+ fControlHistogramsIdentifiedParticlesFlagsPro = new TProfile("fControlHistogramsIdentifiedParticlesFlagsPro","Flags and settings for identified particles",3,0,3);
  fControlHistogramsIdentifiedParticlesFlagsPro->SetTickLength(-0.01,"Y");
  fControlHistogramsIdentifiedParticlesFlagsPro->SetMarkerStyle(25);
  fControlHistogramsIdentifiedParticlesFlagsPro->SetLabelSize(0.04);
@@ -2645,6 +2719,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  fControlHistogramsIdentifiedParticlesFlagsPro->SetFillColor(kGray);
  fControlHistogramsIdentifiedParticlesFlagsPro->SetLineColor(kBlack);
  fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(1,"fFillControlHistogramsIdentifiedParticles"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(0.5,fFillControlHistogramsIdentifiedParticles);
+ fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(2,"fUseDefaultInclusiveSigmaCuts"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(1.5,(Int_t)fUseDefaultInclusiveSigmaCuts);
+ fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(3,"fUseDefaultExclusiveSigmaCuts"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(2.5,(Int_t)fUseDefaultExclusiveSigmaCuts);
  fControlHistogramsIdentifiedParticlesList->Add(fControlHistogramsIdentifiedParticlesFlagsPro);
  if(fFillControlHistogramsIdentifiedParticles)
  {
@@ -2826,10 +2902,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  // Book all the stuff for correlation functions objects.
 
  // a) Book the profile holding all the flags for correlation functions objects;
- // b) Book all correlation functions;
+ // b) Book all 2p correlation functions;
  // c) Book TExMap *fCorrelationFunctionsIndices;
- // d) Book all 3-p correlation functions;
- // e) Book all 4-p correlation functions.
+ // d) Book all 3p correlation functions;
+ // e) Book all 4p correlation functions.
 
  // a) Book the profile holding all the flags for correlation functions objects:
  fCorrelationFunctionsFlagsPro = new TProfile("fCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",4,0,4);
@@ -2851,7 +2927,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  const Int_t nParticleSpecies = 5; // Supported at the moment: 0=e,1=mu,2=pi,3=K,4=p
  TString sParticles[2*nParticleSpecies] = {"e^{+}","#mu^{+}","#pi^{+}","K^{+}","p^{+}","e^{-}","#mu^{-}","#pi^{-}","K^{-}","p^{-}"};
 
- // b) Book all correlation functions:
+ // b) Book all 2p correlation functions:
  // Remark 0: First particle in the pair is always the one with positive charge.
  // Remark 1: Diagonal elements are particle/antiparticle pairs.
  for(Int_t pid1=0;pid1<2*nParticleSpecies;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -2860,11 +2936,11 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
   {
    // Correlation functions:
    fCorrelationFunctions[pid1][pid2] = new TH1F(Form("fCorrelationFunctions[%d][%d]",pid1,pid2),Form("fCorrelationFunctions[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
-   fCorrelationFunctions[pid1][pid2]->SetStats(kFALSE);
+   fCorrelationFunctions[pid1][pid2]->SetStats(kTRUE);
    fCorrelationFunctions[pid1][pid2]->SetFillColor(kBlue-10);
    fCorrelationFunctions[pid1][pid2]->SetXTitle("k");
    fCorrelationFunctions[pid1][pid2]->SetYTitle("C(k)");
-   fCorrelationFunctionsList->Add(fCorrelationFunctions[pid1][pid2]);
+   fCorrelationFunctionsSublist[0]->Add(fCorrelationFunctions[pid1][pid2]);
   } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
  } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
 
@@ -2882,7 +2958,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  fCorrelationFunctionsIndices->Add(-321,8);
  fCorrelationFunctionsIndices->Add(-2212,9);
 
- // d) Book all 3-p correlation functions:
+ // d) Book all 3p correlation functions:
  if(fFill3pCorrelationFunctions)
  {
   for(Int_t pid1=0;pid1<2*nParticleSpecies;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -2893,17 +2969,17 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
     {
      // 3-p correlation functions:
      f3pCorrelationFunctions[pid1][pid2][pid3] = new TH1F(Form("f3pCorrelationFunctions[%d][%d][%d]",pid1,pid2,pid3),Form("f3pCorrelationFunctions[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
-     f3pCorrelationFunctions[pid1][pid2][pid3]->SetStats(kFALSE);
+     f3pCorrelationFunctions[pid1][pid2][pid3]->SetStats(kTRUE);
      f3pCorrelationFunctions[pid1][pid2][pid3]->SetFillColor(kBlue-10);
      f3pCorrelationFunctions[pid1][pid2][pid3]->SetXTitle("Q_{3}");
      f3pCorrelationFunctions[pid1][pid2][pid3]->SetYTitle("C(Q_{3})");
-     fCorrelationFunctionsList->Add(f3pCorrelationFunctions[pid1][pid2][pid3]);
+     fCorrelationFunctionsSublist[1]->Add(f3pCorrelationFunctions[pid1][pid2][pid3]);
     } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
    } // for(Int_t pid2=0;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
   } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
  } // if(fFill3pCorrelationFunctions)
 
- // e) Book all 4-p correlation functions:
+ // e) Book all 4p correlation functions:
  if(fFill4pCorrelationFunctions)
  {
   for(Int_t pid1=0;pid1<2*nParticleSpecies;pid1++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -2916,11 +2992,11 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
      {
       // 4-p correlation functions:
       f4pCorrelationFunctions[pid1][pid2][pid3][pid4] = new TH1F(Form("f4pCorrelationFunctions[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("f4pCorrelationFunctions[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
-      f4pCorrelationFunctions[pid1][pid2][pid3][pid4]->SetStats(kFALSE);
+      f4pCorrelationFunctions[pid1][pid2][pid3][pid4]->SetStats(kTRUE);
       f4pCorrelationFunctions[pid1][pid2][pid3][pid4]->SetFillColor(kBlue-10);
       f4pCorrelationFunctions[pid1][pid2][pid3][pid4]->SetXTitle("Q_{4}");
       f4pCorrelationFunctions[pid1][pid2][pid3][pid4]->SetYTitle("C(Q_{4})");
-      fCorrelationFunctionsList->Add(f4pCorrelationFunctions[pid1][pid2][pid3][pid4]);
+      fCorrelationFunctionsSublist[2]->Add(f4pCorrelationFunctions[pid1][pid2][pid3][pid4]);
      } // for(Int_t pid4=0;pid4<2*nParticleSpecies;pid4++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
     } // for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
    } // for(Int_t pid2=0;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -2972,8 +3048,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
    {
     // Background:
     f2pBackground[pid1][pid2] = new TH1F(Form("f2pBackground[%d][%d]",pid1,pid2),Form("f2pBackground[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
-    f2pBackground[pid1][pid2]->SetStats(kFALSE);
-    f2pBackground[pid1][pid2]->SetFillColor(kBlue-10);
+    f2pBackground[pid1][pid2]->SetStats(kTRUE);
+    f2pBackground[pid1][pid2]->SetFillColor(kRed-10);
     f2pBackground[pid1][pid2]->SetXTitle("k");
     f2pBackground[pid1][pid2]->SetYTitle("B(k)");
     fBackgroundSublist[0]->Add(f2pBackground[pid1][pid2]);
@@ -2992,8 +3068,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
     {
      // Background:
      f3pBackground[pid1][pid2][pid3] = new TH1F(Form("f3pBackground[%d][%d][%d]",pid1,pid2,pid3),Form("f3pBackground[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
-     f3pBackground[pid1][pid2][pid3]->SetStats(kFALSE);
-     f3pBackground[pid1][pid2][pid3]->SetFillColor(kBlue-10);
+     f3pBackground[pid1][pid2][pid3]->SetStats(kTRUE);
+     f3pBackground[pid1][pid2][pid3]->SetFillColor(kRed-10);
      f3pBackground[pid1][pid2][pid3]->SetXTitle("Q_{3}");
      f3pBackground[pid1][pid2][pid3]->SetYTitle("B(Q_{3})");
      fBackgroundSublist[1]->Add(f3pBackground[pid1][pid2][pid3]);
@@ -3015,8 +3091,8 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
      {
       // Background:
       f4pBackground[pid1][pid2][pid3][pid4] = new TH1F(Form("f4pBackground[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("f4pBackground[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
-      f4pBackground[pid1][pid2][pid3][pid4]->SetStats(kFALSE);
-      f4pBackground[pid1][pid2][pid3][pid4]->SetFillColor(kBlue-10);
+      f4pBackground[pid1][pid2][pid3][pid4]->SetStats(kTRUE);
+      f4pBackground[pid1][pid2][pid3][pid4]->SetFillColor(kRed-10);
       f4pBackground[pid1][pid2][pid3][pid4]->SetXTitle("Q_{4}");
       f4pBackground[pid1][pid2][pid3][pid4]->SetYTitle("B(Q_{4})");
       fBackgroundSublist[2]->Add(f4pBackground[pid1][pid2][pid3][pid4]);
@@ -5233,7 +5309,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
 {
  // Get pointers for correlation functions.
 
- // a) Get pointer for fCorrelationFunctionsList;
+ // a) Get pointer for fCorrelationFunctionsList and fCorrelationFunctionsSublist[3];
  // b) Get pointer for fCorrelationFunctionsFlagsPro;
  // c) Set again all flags;
  // d) Get pointers for fCorrelationFunctions[10][10];
@@ -5242,9 +5318,14 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
 
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions()";
 
- // a) Get pointer for fCorrelationFunctionsList:
- fCorrelationFunctionsList = dynamic_cast<TList*>(fHistList->FindObject("Correlation_Functions"));
+ // a) Get pointer for fCorrelationFunctionsList and fCorrelationFunctionsSublist[3]:
+ fCorrelationFunctionsList = dynamic_cast<TList*>(fHistList->FindObject("CorrelationFunctions"));
  if(!fCorrelationFunctionsList){Fatal(sMethodName.Data(),"fCorrelationFunctionsList");}
+ for(Int_t cfs=0;cfs<3;cfs++)
+ {
+  fCorrelationFunctionsSublist[cfs] = dynamic_cast<TList*>(fCorrelationFunctionsList->FindObject(Form("f%dpCorrelationFunctions",cfs+2)));
+  if(!fCorrelationFunctionsSublist[cfs]){Fatal(sMethodName.Data(),"fCorrelationFunctionsSublist[%d]",cfs);}
+ } // for(Int_t cfs=0;cfs<3;cfs++)
 
  // b) Get pointer for fCorrelationFunctionsFlagsPro:
  fCorrelationFunctionsFlagsPro = dynamic_cast<TProfile*>(fCorrelationFunctionsList->FindObject("fCorrelationFunctionsFlagsPro"));
@@ -5264,7 +5345,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
  {
   for(Int_t pid2=pid1;pid2<2*nParticleSpecies;pid2++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
   {
-   fCorrelationFunctions[pid1][pid2] = dynamic_cast<TH1F*>(fCorrelationFunctionsList->FindObject(Form("fCorrelationFunctions[%d][%d]",pid1,pid2)));
+   fCorrelationFunctions[pid1][pid2] = dynamic_cast<TH1F*>(fCorrelationFunctionsSublist[0]->FindObject(Form("fCorrelationFunctions[%d][%d]",pid1,pid2)));
    if(!fCorrelationFunctions[pid1][pid2]){Fatal(sMethodName.Data(),"fCorrelationFunctions[%d][%d]",pid1,pid2);}
   } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
  } // for(Int_t pid=0;pid<5;pid++) // particle [0=e,1=mu,2=pi,3=K,4=p]
@@ -5278,7 +5359,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
    {
     for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
     {
-     f3pCorrelationFunctions[pid1][pid2][pid3] = dynamic_cast<TH1F*>(fCorrelationFunctionsList->FindObject(Form("f3pCorrelationFunctions[%d][%d][%d]",pid1,pid2,pid3)));
+     f3pCorrelationFunctions[pid1][pid2][pid3] = dynamic_cast<TH1F*>(fCorrelationFunctionsSublist[1]->FindObject(Form("f3pCorrelationFunctions[%d][%d][%d]",pid1,pid2,pid3)));
      if(!f3pCorrelationFunctions[pid1][pid2][pid3]){Fatal(sMethodName.Data(),"f3pCorrelationFunctions[%d][%d][%d]",pid1,pid2,pid3);}
     } // for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
    } // for(Int_t pid2=0;pid2<5;pid2++) // anti-particle [0=e,1=mu,2=pi,3=K,4=p]
@@ -5296,7 +5377,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
     {
      for(Int_t pid4=0;pid4<2*nParticleSpecies;pid4++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
      {
-      f4pCorrelationFunctions[pid1][pid2][pid3][pid4] = dynamic_cast<TH1F*>(fCorrelationFunctionsList->FindObject(Form("f4pCorrelationFunctions[%d][%d][%d][%d]",pid1,pid2,pid3,pid4)));
+      f4pCorrelationFunctions[pid1][pid2][pid3][pid4] = dynamic_cast<TH1F*>(fCorrelationFunctionsSublist[2]->FindObject(Form("f4pCorrelationFunctions[%d][%d][%d][%d]",pid1,pid2,pid3,pid4)));
       if(!f4pCorrelationFunctions[pid1][pid2][pid3][pid4]){Fatal(sMethodName.Data(),"f4pCorrelationFunctions[%d][%d][%d][%d]",pid1,pid2,pid3,pid4);}
      } // for(Int_t pid4=0;pid4<2*nParticleSpecies;pid4++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
     } // for(Int_t pid3=0;pid3<2*nParticleSpecies;pid3++) // [particle(+q): 0=e,1=mu,2=pi,3=K,4=p, anti-particle(-q): 0=e,1=mu,2=pi,3=K,4=p]
@@ -5312,7 +5393,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
 {
  // Get pointers for background.
 
- // a) Get pointer for fBackgroundList and fBackgroundSubist[3];
+ // a) Get pointer for fBackgroundList and fBackgroundSublist[3];
  // b) Get pointer for fBackgroundFlagsPro;
  // c) Set again all flags;
  // d) Get pointers for f2pBackground[10][10];

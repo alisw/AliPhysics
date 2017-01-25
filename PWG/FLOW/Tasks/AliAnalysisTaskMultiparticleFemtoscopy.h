@@ -25,6 +25,7 @@
 #include "AliAODMCParticle.h"
 #include "TExMap.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 #include "TH1F.h"
 #include "TH1I.h"
 
@@ -163,6 +164,22 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t GetFillControlHistogramsIdentifiedParticles() const {return this->fFillControlHistogramsIdentifiedParticles;};
   void SetFillControlHistogramsV0s(Bool_t fchv) {this->fFillControlHistogramsV0s = fchv;};
   Bool_t GetFillControlHistogramsV0s() const {return this->fFillControlHistogramsV0s;};
+  // 1d) Identified particles:
+  void SetInclusiveSigmaCuts(Int_t pidFunction, Double_t sigmaValue)
+  {
+   // pidFunction: [0=Electron(...),1=Muon(...),2=Pion(...),3=Kaon(...),4=Proton(...)]
+   // Example: SetInclusiveSigmaCuts(2,3.); sets in function Pion() inclusive cuts for pions to 3.0 sigmas
+   fUseDefaultInclusiveSigmaCuts = kFALSE;
+   this->fInclusiveSigmaCuts[pidFunction] = sigmaValue;
+  };
+  void SetExclusiveSigmaCuts(Int_t pidFunction, Int_t pidExclusive, Double_t sigmaValue)
+  {
+   // pidFunction: [0=Electron(...),1=Muon(...),2=Pion(...),3=Kaon(...),4=Proton(...)]
+   // Example: SetExclusiveSigmaCuts(3,4,4.); sets in function Kaon() exclusive cuts for protons to 4.0 sigmas
+   fUseDefaultExclusiveSigmaCuts = kFALSE;
+   this->fExclusiveSigmaCuts[pidFunction][pidExclusive] = sigmaValue;
+  };
+
   // 2.) Event-by-event histograms:
   void SetEBEHistogramsList(TList* const ehl) {this->fEBEHistogramsList = ehl;};
   TList* GetEBEHistogramsList() const {return this->fEBEHistogramsList;} 
@@ -357,7 +374,6 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TH1D *fGetMagneticFieldHist;               // aAOD->GetMagneticField()
   TH1I *fGetEventTypeHist;                   // aAOD->GetEventType()
   TH1D *fGetCentralityHist;                  // aAOD->GetCentrality()
-
   TH1F *fVertexXYZ[3];                       //! [avtx->GetX(),avtx->GetY(),avtx->GetZ()]
   TH1I *fGetNContributorsHist;               // avtx->GetNContributors()
   TH1F *fGetChi2perNDFHist;                  // avtx->GetChi2perNDF();
@@ -400,10 +416,14 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList *fControlHistogramsIdentifiedParticlesList;        // list to hold all 'control histograms' for identified particles
   TProfile *fControlHistogramsIdentifiedParticlesFlagsPro; // profile to hold all flags for control histograms for identified particles
   Bool_t fFillControlHistogramsIdentifiedParticles;        // fill or not control histograms for identified particles (by default they are not filled)
+  TProfile *fInclusiveSigmaCutsPro;                        // holds the values of fInclusiveSigmaCuts[5];
+  TProfile2D *fExclusiveSigmaCutsPro;                      // holds the values of fExclusiveSigmaCuts[5][5];
   TH1F *fMassPIDHist[5][2][2];                             //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPtPIDHist[5][2][2];                               //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fEtaPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPhiPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
+  Bool_t fUseDefaultInclusiveSigmaCuts;                    // if the setter SetInclusiveSigmaCuts(...) (see above) is not called explicitly, the default hardwired values will be used
+  Bool_t fUseDefaultExclusiveSigmaCuts;                    // if the setter SetExclusiveSigmaCuts(...) (see above) is not called explicitly, the default hardwired values will be used
   Double_t fInclusiveSigmaCuts[5];                         //! [PID function] see .cxx for detailed documentation
   Double_t fExclusiveSigmaCuts[5][5];                      //! [PID function][PID exclusive] see .cxx for detailed documentation
 
@@ -433,8 +453,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
 
   // 2.) Event-by-event objects:
   TList *fEBEHistogramsList;        // list to hold all stuff from e-b-e histograms
-  TProfile *fEBEObjectsFlagsPro; // profile to hold all flags for e-b-e histograms for V0s 
-  //Bool_t fFillEBEHistograms;        // fill or not e-b-e histograms TBI do I really need this?
+  TProfile *fEBEObjectsFlagsPro;    // profile to hold all flags for e-b-e histograms for V0s
+  //Bool_t fFillEBEHistograms;      // fill or not e-b-e histograms TBI do I really need this?
   TH1I *fUniqueIDHistEBE;           // filled with aAODv0->GetPosID() and aAODv0->GetNegID(). If the bin corresponding to that ID is already filled, two V0s share the same daughter     
   TClonesArray *fPIDCA[5][2][2];    //! holds AliAODTrack candidates for each event [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TClonesArray *fPIDV0sCA[1];       //! holds AliAODv0 candidates for each event [0=Lambda,1=...]
@@ -442,6 +462,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // 3.) Correlation functions:
   TList *fCorrelationFunctionsList;              // list to hold all correlation functions for primary particle
   TProfile *fCorrelationFunctionsFlagsPro;       // profile to hold all flags for correlation functions
+  TList *fCorrelationFunctionsSublist[3];        // lists to hold all correlation functions, for 2p [0], 3p [1], 4p [2], etc., separately
   Bool_t fFillCorrelationFunctions;              // fill or not correlation functions (by default they are not filled)
   Bool_t fNormalizeCorrelationFunctions;         // normalize correlation functions with the background
   TExMap *fCorrelationFunctionsIndices;          //! associates pdg code to index of correlation function
@@ -466,7 +487,6 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Int_t fMaxBufferSize1;                // the second index in fMixedEvents1[10][50]; and fGlobalTracksAOD1[10][50]; is booked only up to this number. When this number is reached, calculation is done, and buffer is cleaned. max = 50. defaulted to 10
   TClonesArray *fMixedEvents1[10][50];  //! tracks for mixed events. 10 vertex z-ranges. Keep at maximum 5 events in the buffer. Used only for fBackgroundOption = 1
   TExMap *fGlobalTracksAOD1[10][50];    //! global tracks in AOD. Used only for fBackgroundOption = 1. Indices must be the same as in TClonesArray *fMixedEvents1[10][5];
-
 
   // 5.) Buffers:
   TList *fBuffersList;                             // list to hold all objects for buffers
@@ -543,7 +563,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  //! do something only for the specified event
   UInt_t fPeriod;                 //! do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,9);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,10);
 
 };
 
