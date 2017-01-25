@@ -278,20 +278,22 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtClusterInCone ;                         //!<! Cluster Pt in the cone.
   TH2F *   fhPtCellInCone ;                            //!<! Cell amplitude in the cone.
   TH2F *   fhPtTrackInCone ;                           //!<! Track Pt in the cone.
-  TH2F *   fhPtTrackInConeOtherBC ;                    //!<! Track Pt in the cone, tracks out of main BC Time window.
   TH2F *   fhPtTrackInConeOtherBCPileUpSPD ;           //!<! Track Pt in the cone, tracks out of main BC Time window.
-  TH2F *   fhPtTrackInConeBC0 ;                        //!<! Track Pt in the cone, tracks in BC=0.
   TH2F *   fhPtTrackInConeVtxBC0 ;                     //!<! Track Pt in the cone, tracks in BC=0.
   TH2F *   fhPtTrackInConeBC0PileUpSPD ;               //!<! Track Pt in the cone, tracks in BC=0.
   TH2F *   fhPtInConePileUp[7] ;                       //!<! Particle Pt in the cone, if event is from pile-up (SPD method).
   TH2F *   fhPtInConeCent ;                            //!<! Particle Pt in the cone versus centrality.
   TH2F *   fhPerpConeSumPt ;                           //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90).
+  TH2F *   fhPerpConeSumPtTOFBC0 ;                     //!<! Sum Pt in cone at the perpendicular phi region to trigger axis  (phi +90), TOF BC=0
   TH2F *   fhPtInPerpCone ;                            //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90).
+  TH2F *   fhPtInPerpConeTOFBC0 ;                      //!<! Particle Pt  in cone at the perpendicular phi region to trigger axis  (phi +90), TOF BC=0
   
   TH2F *   fhEtaPhiInConeCluster ;                     //!<! Eta vs. phi of clusters in cone.
   TH2F *   fhEtaPhiCluster ;                           //!<! Eta vs. phi of all clusters.
   TH2F *   fhEtaPhiInConeTrack ;                       //!<! Eta vs. phi of tracks in cone.
   TH2F *   fhEtaPhiTrack ;                             //!<! Eta vs. phi of all tracks.
+  TH2F *   fhEtaPhiInPerpCone ;                        //!<! Eta vs. phi of tracks in perpendicular cone
+  TH2F *   fhEtaPhiInPerpConeTOFBC0 ;                  //!<! Eta vs. phi of tracks in perpendicular cone, with TOF BC=0.
   
   TH2F *   fhEtaBandCluster ;                          //!<! Accumulated pT in Eta band to estimate UE in cone, only clusters.
   TH2F *   fhPhiBandCluster ;                          //!<! Accumulated pT in Phi band to estimate UE in cone, only clusters.
@@ -633,6 +635,26 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterFECCorrPair2MaxHighCut;     //!<! cluster sum pt for pair column cells in correlated FEC, and both cells are max, pT > 0.7 GeV
   TH2F *   fhConeSumPtClusterFECCorrOdd2MaxHighCut ;     //!<! cluster sum pt for odd column cells in correlated FEC, and both cells are max, pT > 0.7 GeV
 
+  TH2F *   fhConeSumPtTrackTOFBC0;                       //!<! track with TOF hit sum pt, tof in BC0 
+  TH2F *   fhConeSumPtTrackTOFBCN;                       //!<! track with TOF hit sum pt, tof not in BC0 
+  TH2F *   fhConeSumPtTrackTOFNo ;                       //!<! track without TOF hit sum pt 
+  TH2F *   fhPtTrackInConeTOFBC0;                        //!<! track with TOF hit, pt, tof in BC0 
+  TH2F *   fhPtTrackInConeTOFBCN;                        //!<! track with TOF hit, pt, tof not in BC0 
+  TH2F *   fhPtTrackInConeTOFNo ;                        //!<! track without TOF hit, pt 
+  TH2F *   fhPhiTrackInCone;                             //!<! track azhimuthal angle
+  TH2F *   fhEtaTrackInCone;                             //!<! track pseudo-rapidity
+  TH2F *   fhEtaPhiTrackInCone;                          //!<! track azhimuthal angle vs pseudo-rapidity
+  TH2F *   fhPhiTrackInConeTOFBC0;                       //!<! track with TOF hit, phi, tof in BC0 
+  TH2F *   fhPhiTrackInConeTOFBCN;                       //!<! track with TOF hit, phi, tof not in BC0 
+  TH2F *   fhPhiTrackInConeTOFNo ;                       //!<! track without TOF hit, phi 
+  TH2F *   fhEtaTrackInConeTOFBC0;                       //!<! track with TOF hit, eta, tof in BC0 
+  TH2F *   fhEtaTrackInConeTOFBCN;                       //!<! track with TOF hit, eta, tof not in BC0 
+  TH2F *   fhEtaTrackInConeTOFNo ;                       //!<! track without TOF hit, eta 
+  TH2F *   fhEtaPhiTrackInConeTOFBC0;                    //!<! track with TOF hit, eta-phi, tof in BC0 
+  TH2F *   fhEtaPhiTrackInConeTOFBCN;                    //!<! track with TOF hit, eta-phi, tof not in BC0 
+  TH2F *   fhEtaPhiTrackInConeTOFNo ;                    //!<! track without TOF hit, eta-phi 
+  TH2F *   fhTrackTOFInCone ;                            //!<! track TOF in cone
+  TH2F *   fhTrackTOFInConeBC0 ;                         //!<! track TOF in cone and BC0
   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;

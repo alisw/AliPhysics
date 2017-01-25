@@ -84,13 +84,14 @@ fhEtaPhiNoIso(0),
 fhENoIso(0),                      fhPtNoIso(0),                             fhPtNLocMaxNoIso(0),
 fhPtInCone(0),
 fhPtClusterInCone(0),             fhPtCellInCone(0),                        fhPtTrackInCone(0),
-fhPtTrackInConeOtherBC(0),        fhPtTrackInConeOtherBCPileUpSPD(0),
-fhPtTrackInConeBC0(0),            fhPtTrackInConeVtxBC0(0),
+fhPtTrackInConeOtherBCPileUpSPD(0), fhPtTrackInConeVtxBC0(0),
 fhPtTrackInConeBC0PileUpSPD(0),
 fhPtInConePileUp(),               fhPtInConeCent(0),
-fhPerpConeSumPt(0),               fhPtInPerpCone(0),
+fhPerpConeSumPt(0),               fhPerpConeSumPtTOFBC0(0),               
+fhPtInPerpCone(0),                fhPtInPerpConeTOFBC0(0),
 fhEtaPhiInConeCluster(0),         fhEtaPhiCluster(0),
 fhEtaPhiInConeTrack(0),           fhEtaPhiTrack(0),
+fhEtaPhiInPerpCone(0),            fhEtaPhiInPerpConeTOFBC0(0),
 fhEtaBandCluster(0),              fhPhiBandCluster(0),
 fhEtaBandTrack(0),                fhPhiBandTrack(0),
 fhEtaBandCell(0),                 fhPhiBandCell(0),
@@ -194,7 +195,15 @@ fhConeSumPtTrackPerPtCut(0),      fhConeSumPtTrackPerPtCutLargePtTrig(0),
 fhConeSumPtClusterFECCorrPair(0), fhConeSumPtClusterFECCorrOdd(0),
 fhConeSumPtClusterFECCorrPair2Max(0), fhConeSumPtClusterFECCorrOdd2Max(0),
 fhConeSumPtClusterFECCorrPairHighCut(0), fhConeSumPtClusterFECCorrOddHighCut(0),
-fhConeSumPtClusterFECCorrPair2MaxHighCut(0), fhConeSumPtClusterFECCorrOdd2MaxHighCut(0)
+fhConeSumPtClusterFECCorrPair2MaxHighCut(0), fhConeSumPtClusterFECCorrOdd2MaxHighCut(0),
+fhConeSumPtTrackTOFBC0(0), fhConeSumPtTrackTOFBCN(0), fhConeSumPtTrackTOFNo(0),
+fhPtTrackInConeTOFBC0 (0), fhPtTrackInConeTOFBCN (0), fhPtTrackInConeTOFNo (0),
+fhPhiTrackInCone(0), fhEtaTrackInCone(0), fhEtaPhiTrackInCone(0),
+fhPhiTrackInConeTOFBC0(0), fhPhiTrackInConeTOFBCN(0), fhPhiTrackInConeTOFNo(0),
+fhEtaTrackInConeTOFBC0(0), fhEtaTrackInConeTOFBCN(0), fhEtaTrackInConeTOFNo(0),
+fhEtaPhiTrackInConeTOFBC0(0), fhEtaPhiTrackInConeTOFBCN(0), fhEtaPhiTrackInConeTOFNo(0),
+fhTrackTOFInCone(0),       fhTrackTOFInConeBC0(0)
+
 {
   InitParameters();
   
@@ -595,9 +604,12 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
   Float_t conesize   = GetIsolationCut()->GetConeSize();
   
   Double_t sumptPerp= 0. ;
+  Double_t sumptPerpBC0= 0. ;
   Float_t ptTrig    = pCandidate->Pt() ;
   Float_t phiTrig   = pCandidate->Phi();
   Float_t etaTrig   = pCandidate->Eta();
+  
+  Double_t bz = GetReader()->GetInputEvent()->GetMagneticField();
   
   TObjArray * trackList   = GetCTSTracks() ;
   for(Int_t itrack=0; itrack < trackList->GetEntriesFast(); itrack++)
@@ -653,28 +665,60 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
     }
      
     // Fill the histograms at +-45 degrees in phi from trigger particle, perpedicular to trigger axis in phi
-    Double_t pTrack = TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py());
+    //++++++++
     Double_t dPhi   = phiTrig - track->Phi() + TMath::PiOver2();
     Double_t dEta   = etaTrig - track->Eta();
     Double_t arg    = dPhi*dPhi + dEta*dEta;
  
     if(TMath::Sqrt(arg) < conesize)
     {
-      fhPtInPerpCone->Fill(ptTrig, pTrack, GetEventWeight());
+      fhPtInPerpCone->Fill(ptTrig, track->Pt(), GetEventWeight());
+      fhEtaPhiInPerpCone->Fill(track->Eta(),GetPhi(track->Phi()), GetEventWeight());
+
       sumptPerp+=track->Pt();
+      
+      ULong_t status = track->GetStatus();
+      Bool_t okTOF = (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ;
+      Int_t trackBC = track->GetTOFBunchCrossing(bz);
+      //Double32_t tof = track->GetTOFsignal()*1e-3;    
+      
+      if(okTOF && trackBC == 0)
+      {
+        fhPtInPerpConeTOFBC0->Fill(ptTrig, track->Pt(), GetEventWeight());
+        fhEtaPhiInPerpConeTOFBC0->Fill(track->Eta(),GetPhi(track->Phi()), GetEventWeight());
+        
+        sumptPerpBC0+=track->Pt();
+      }
     }
     
+    //----------
     dPhi = phiTrig - track->Phi() - TMath::PiOver2();
     arg  = dPhi*dPhi + dEta*dEta;
                                   
     if(TMath::Sqrt(arg) < conesize)
     {
-      fhPtInPerpCone->Fill(ptTrig, pTrack, GetEventWeight());
+      fhPtInPerpCone->Fill(ptTrig, track->Pt(), GetEventWeight());
+      fhEtaPhiInPerpCone->Fill(track->Eta(),GetPhi(track->Phi()), GetEventWeight());
+      
       sumptPerp+=track->Pt();
+      
+      ULong_t status = track->GetStatus();
+      Bool_t okTOF = (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ;
+      Int_t trackBC = track->GetTOFBunchCrossing(bz);
+      //Double32_t tof = track->GetTOFsignal()*1e-3;    
+      
+      if(okTOF && trackBC == 0)
+      {
+        fhPtInPerpConeTOFBC0->Fill(ptTrig, track->Pt(), GetEventWeight());
+        fhEtaPhiInPerpConeTOFBC0->Fill(track->Eta(),GetPhi(track->Phi()), GetEventWeight());
+        
+        sumptPerpBC0+=track->Pt();
+      }
     }
   }
   
   fhPerpConeSumPt                    ->Fill(ptTrig ,          sumptPerp   , GetEventWeight());
+  fhPerpConeSumPtTOFBC0              ->Fill(ptTrig ,          sumptPerpBC0, GetEventWeight());
   fhConeSumPtEtaBandUETrack          ->Fill(ptTrig ,          etaBandPtSum, GetEventWeight());
   fhConeSumPtPhiBandUETrack          ->Fill(ptTrig ,          phiBandPtSum, GetEventWeight());
   fhConeSumPtEtaBandUETrackTrigEtaPhi->Fill(etaTrig, phiTrig, etaBandPtSum *GetEventWeight()); // check
@@ -969,8 +1013,11 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   TObjArray * refclusters = aodParticle->GetObjArray(GetAODObjArrayName()+"Clusters");
   if(!refclusters)
   {
-    fhConeSumPtCluster ->Fill(ptTrig, coneptsumCluster , GetEventWeight());
-    fhConePtLeadCluster->Fill(ptTrig, coneptLeadCluster, GetEventWeight());
+    fhConeSumPtCluster ->Fill(ptTrig, 0., GetEventWeight());
+    fhConePtLeadCluster->Fill(ptTrig, 0., GetEventWeight());
+    
+    if(coneptLeadCluster > 0  || coneptsumCluster > 0) 
+      AliError(Form("No ref tracks!!! sum %f, lead %f",coneptsumCluster,coneptLeadCluster));
     
     return ;
   }
@@ -1218,16 +1265,25 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   TObjArray * reftracks   = aodParticle->GetObjArray(GetAODObjArrayName()+"Tracks");
   if(!reftracks)
   {
-    fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight());
-    fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, GetEventWeight());
-    
+    fhConeSumPtTrack      ->Fill(ptTrig, 0., GetEventWeight());
+    fhConeSumPtTrackTOFNo ->Fill(ptTrig, 0., GetEventWeight());
+    fhConeSumPtTrackTOFBC0->Fill(ptTrig, 0., GetEventWeight());
+    fhConeSumPtTrackTOFBCN->Fill(ptTrig, 0., GetEventWeight());
+    fhConePtLeadTrack     ->Fill(ptTrig, 0., GetEventWeight());
+    if(coneptLeadTrack > 0  || coneptsumTrack > 0) 
+      AliError(Form("No ref tracks!!! sum %f, lead %f",coneptsumTrack,coneptLeadTrack));
     return ;
   }
   
-  Double_t bz     = GetReader()->GetInputEvent()->GetMagneticField();
+  Double_t bz = GetReader()->GetInputEvent()->GetMagneticField();
   
-  Float_t pTtrack       = 0;
+  Float_t pTtrack  = 0;
+  Float_t phitrack = 0;
+  Float_t etatrack = 0;
   Float_t coneptsumTrackPerCut[20];
+  Float_t coneptsumTrackTOFBC0 = 0;
+  Float_t coneptsumTrackTOFBCN = 0;
+  Float_t coneptsumTrackTOFNo  = 0;
   if(fStudyPtCutInCone)
   {
     for(Int_t icut = 0; icut < fNPtCutsInCone; icut++) 
@@ -1238,34 +1294,15 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
   {
     AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
     
-    pTtrack       = track->Pt();
+    pTtrack  = track->Pt();
+    phitrack = GetPhi(track->Phi());
+    etatrack = track->Eta();
     
-    fhPtInCone     ->Fill(ptTrig, pTtrack, GetEventWeight());
-    fhPtTrackInCone->Fill(ptTrig, pTtrack, GetEventWeight());
-    
-    if(IsPileUpAnalysisOn())
-    {
-      ULong_t status = track->GetStatus();
-      Bool_t okTOF = ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) ;
-      //Double32_t tof = track->GetTOFsignal()*1e-3;
-      Int_t trackBC = track->GetTOFBunchCrossing(bz);
-      
-      if     ( okTOF && trackBC!=0 ) fhPtTrackInConeOtherBC->Fill(ptTrig,pTtrack, GetEventWeight());
-      else if( okTOF && trackBC==0 ) fhPtTrackInConeBC0    ->Fill(ptTrig,pTtrack, GetEventWeight());
-      
-      Int_t vtxBC = GetReader()->GetVertexBC();
-      if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA) fhPtTrackInConeVtxBC0->Fill(ptTrig, pTtrack, GetEventWeight());
-      
-      if(GetReader()->IsPileUpFromSPD())             {   fhPtInConePileUp[0]            ->Fill(ptTrig, pTtrack, GetEventWeight());
-        if(okTOF && trackBC!=0 )                         fhPtTrackInConeOtherBCPileUpSPD->Fill(ptTrig, pTtrack, GetEventWeight());
-        if(okTOF && trackBC==0 )                         fhPtTrackInConeBC0PileUpSPD    ->Fill(ptTrig, pTtrack, GetEventWeight()); }
-      if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, pTtrack, GetEventWeight());
-      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, pTtrack, GetEventWeight());
-    }
+    fhPtInCone      ->Fill(ptTrig , pTtrack , GetEventWeight());
+    fhPtTrackInCone ->Fill(ptTrig , pTtrack , GetEventWeight());
+    fhPhiTrackInCone->Fill(pTtrack, phitrack, GetEventWeight());
+    fhEtaTrackInCone->Fill(pTtrack, etatrack, GetEventWeight());
+    fhEtaPhiTrackInCone->Fill(etatrack, phitrack, GetEventWeight());
     
     if(IsHighMultiplicityAnalysisOn()) fhPtInConeCent->Fill(GetEventCentrality(), pTtrack, GetEventWeight());
     
@@ -1279,10 +1316,69 @@ void AliAnaParticleIsolation::CalculateTrackSignalInCone(AliAODPWG4ParticleCorre
         if ( pTtrack > fPtCutInCone[icut] ) coneptsumTrackPerCut[icut]+=pTtrack;
       }
     }
+    
+    // TOF
+    ULong_t status = track->GetStatus();
+    Bool_t okTOF = (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ;
+    Int_t trackBC = track->GetTOFBunchCrossing(bz);
+    Double32_t tof = track->GetTOFsignal()*1e-3;    
+
+    Int_t vtxBC = GetReader()->GetVertexBC();
+    if(vtxBC == 0 || vtxBC==AliVTrack::kTOFBCNA) fhPtTrackInConeVtxBC0->Fill(ptTrig, pTtrack, GetEventWeight());
+    
+    if(okTOF)
+    {
+      fhTrackTOFInCone->Fill(pTtrack,tof,GetEventWeight());
+      
+      if(trackBC == 0) 
+      {
+        fhPtTrackInConeTOFBC0 ->Fill(ptTrig , pTtrack , GetEventWeight());
+        fhPhiTrackInConeTOFBC0->Fill(pTtrack, phitrack, GetEventWeight());
+        fhEtaTrackInConeTOFBC0->Fill(pTtrack, etatrack, GetEventWeight());
+        fhEtaPhiTrackInConeTOFBC0->Fill(etatrack, phitrack, GetEventWeight());
+
+        fhTrackTOFInConeBC0   ->Fill(pTtrack, tof     , GetEventWeight());
+        coneptsumTrackTOFBC0 += pTtrack;
+      }
+      else 
+      {
+        fhPtTrackInConeTOFBCN ->Fill(ptTrig , pTtrack , GetEventWeight());
+        fhPhiTrackInConeTOFBCN->Fill(pTtrack, phitrack, GetEventWeight());
+        fhEtaTrackInConeTOFBCN->Fill(pTtrack, etatrack, GetEventWeight());
+        fhEtaPhiTrackInConeTOFBCN->Fill(etatrack, phitrack, GetEventWeight());
+        coneptsumTrackTOFBCN += pTtrack;
+      }
+    }
+    else
+    {
+      fhPtTrackInConeTOFNo ->Fill(ptTrig, pTtrack , GetEventWeight());
+      fhPhiTrackInConeTOFNo->Fill(ptTrig, phitrack, GetEventWeight());
+      fhEtaTrackInConeTOFNo->Fill(ptTrig, etatrack, GetEventWeight());
+      fhEtaPhiTrackInConeTOFNo->Fill(etatrack, phitrack, GetEventWeight());
+      coneptsumTrackTOFNo  += pTtrack;
+    }
+
+    if(IsPileUpAnalysisOn())
+    {
+      if(GetReader()->IsPileUpFromSPD())             {   fhPtInConePileUp[0]            ->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(okTOF && trackBC!=0 )                         fhPtTrackInConeOtherBCPileUpSPD->Fill(ptTrig, pTtrack, GetEventWeight());
+        if(okTOF && trackBC==0 )                         fhPtTrackInConeBC0PileUpSPD    ->Fill(ptTrig, pTtrack, GetEventWeight()); }
+      if(GetReader()->IsPileUpFromEMCal())             fhPtInConePileUp[1]->Fill(ptTrig, pTtrack, GetEventWeight());
+      if(GetReader()->IsPileUpFromSPDOrEMCal())        fhPtInConePileUp[2]->Fill(ptTrig, pTtrack, GetEventWeight());
+      if(GetReader()->IsPileUpFromSPDAndEMCal())       fhPtInConePileUp[3]->Fill(ptTrig, pTtrack, GetEventWeight());
+      if(GetReader()->IsPileUpFromSPDAndNotEMCal())    fhPtInConePileUp[4]->Fill(ptTrig, pTtrack, GetEventWeight());
+      if(GetReader()->IsPileUpFromEMCalAndNotSPD())    fhPtInConePileUp[5]->Fill(ptTrig, pTtrack, GetEventWeight());
+      if(GetReader()->IsPileUpFromNotSPDAndNotEMCal()) fhPtInConePileUp[6]->Fill(ptTrig, pTtrack, GetEventWeight());
+    }
+
   }
 
   fhConeSumPtTrack ->Fill(ptTrig, coneptsumTrack , GetEventWeight());
   fhConePtLeadTrack->Fill(ptTrig, coneptLeadTrack, GetEventWeight());
+  
+  fhConeSumPtTrackTOFBC0->Fill(ptTrig, coneptsumTrackTOFBC0, GetEventWeight());
+  fhConeSumPtTrackTOFBCN->Fill(ptTrig, coneptsumTrackTOFBCN, GetEventWeight());
+  fhConeSumPtTrackTOFNo ->Fill(ptTrig, coneptsumTrackTOFNo , GetEventWeight());
   
   aodParticle->SetChargedLeadPtInCone(coneptLeadTrack);
   aodParticle->SetChargedPtSumInCone(coneptsumTrack);
@@ -3030,6 +3126,42 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhConeSumPtTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtTrack) ;
 
+      fhConeSumPtTrackTOFBC0  = new TH2F("hConePtSumTrackTOFBC0",
+                                   Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f, track TOF BC=0",r),
+                                   nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConeSumPtTrackTOFBC0->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtTrackTOFBC0->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtTrackTOFBC0) ;
+
+      fhConeSumPtTrackTOFBCN  = new TH2F("hConePtSumTrackTOFBCN",
+                                         Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f, track TOF BC!=0",r),
+                                         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConeSumPtTrackTOFBCN->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtTrackTOFBCN->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtTrackTOFBCN) ;
+      
+      fhConeSumPtTrackTOFNo  = new TH2F("hConePtSumTrackTOFNo",
+                                         Form("Track #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f, track no TOF",r),
+                                         nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConeSumPtTrackTOFNo->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtTrackTOFNo->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtTrackTOFNo) ;
+      
+      Int_t ntofbins = 1000;
+      Int_t mintof = -500;
+      Int_t maxtof =  500;
+      
+      fhTrackTOFInCone  = new TH2F ("hTrackTOFInCone","TOF signal vs track pT", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+      fhTrackTOFInCone->SetYTitle("TOF signal (ns)");
+      fhTrackTOFInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhTrackTOFInCone);
+
+      fhTrackTOFInConeBC0  = new TH2F ("hTrackTOFInConeBC0","TOF signal vs track pT, BC=0", nptbins,ptmin,ptmax,ntofbins,mintof,maxtof);
+      fhTrackTOFInConeBC0->SetYTitle("TOF signal (ns)");
+      fhTrackTOFInConeBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhTrackTOFInConeBC0);
+
+      
       if(fStudyPtCutInCone)
       {
         fhConeSumPtTrackPerPtCut = new TH2F("hConePtSumTrackPerPtCut",
@@ -3052,20 +3184,133 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       }
 
       fhConePtLeadTrack  = new TH2F("hConeLeadPtTrack",
-                                   Form("Track leading in isolation cone for #it{R} =  %2.2f",r),
+                                   Form("Track leading in isolation cone for #it{R} = %2.2f",r),
                                    nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
       fhConePtLeadTrack->SetYTitle("#it{p}_{T, leading} (GeV/#it{c})");
       fhConePtLeadTrack->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConePtLeadTrack) ;
       
       fhPtTrackInCone  = new TH2F("hPtTrackInCone",
-                                  Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f",r),
+                                  Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f",r),
                                   nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
       fhPtTrackInCone->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
       fhPtTrackInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtTrackInCone) ;
       
       
+      fhPtTrackInConeVtxBC0  = new TH2F("hPtTrackInConeVtxBC0",
+                                        Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, TOF from BC==0",r),
+                                        nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeVtxBC0->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+      fhPtTrackInConeVtxBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtTrackInConeVtxBC0) ;
+      
+      fhPtTrackInConeTOFBC0  = new TH2F("hPtTrackInConeTOFBC0",
+                                     Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, TOF from BC=0",r),
+                                     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeTOFBC0->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+      fhPtTrackInConeTOFBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtTrackInConeTOFBC0) ;
+ 
+      fhPtTrackInConeTOFBCN  = new TH2F("hPtTrackInConeTOFBCN",
+                                        Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC!=0",r),
+                                        nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeTOFBCN->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+      fhPtTrackInConeTOFBCN->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtTrackInConeTOFBCN) ;
+
+      fhPtTrackInConeTOFNo  = new TH2F("hPtTrackInConeTOFBCN",
+                                        Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, no TOF",r),
+                                        nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+      fhPtTrackInConeTOFNo->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+      fhPtTrackInConeTOFNo->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtTrackInConeTOFNo) ;
+      
+      fhEtaPhiTrackInCone = new TH2F("hEtaPhiTrackInCone",
+                                    Form("#eta vs #varphi of Tracks in cone for #it{R} = %2.2f",r),
+                                    netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiTrackInCone->SetXTitle("#eta");
+      fhEtaPhiTrackInCone->SetYTitle("#varphi (rad)");
+      outputContainer->Add(fhEtaPhiTrackInCone) ;
+
+      fhEtaPhiTrackInConeTOFBC0 = new TH2F("hEtaPhiTrackInConeTOFBC0",
+                                           Form("#eta vs #varphi of Tracks in cone for #it{R} = %2.2f, TOF BC=0",r),
+                                           netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiTrackInConeTOFBC0->SetXTitle("#eta");
+      fhEtaPhiTrackInConeTOFBC0->SetYTitle("#varphi (rad)");
+      outputContainer->Add(fhEtaPhiTrackInConeTOFBC0) ;  
+      
+      fhEtaPhiTrackInConeTOFBCN = new TH2F("hEtaPhiTrackInConeTOFBCN",
+                                           Form("#eta vs #varphi of Tracks in cone for #it{R} = %2.2f, TOF BC!=0",r),
+                                           netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiTrackInConeTOFBC0->SetXTitle("#eta");
+      fhEtaPhiTrackInConeTOFBC0->SetYTitle("#varphi (rad)");
+      outputContainer->Add(fhEtaPhiTrackInConeTOFBCN) ;
+      
+      fhEtaPhiTrackInConeTOFNo = new TH2F("hEtaPhiTrackInConeTOFNo",
+                                           Form("#eta vs #varphi of Tracks in cone for #it{R} = %2.2f, no TOF",r),
+                                           netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiTrackInConeTOFNo->SetXTitle("#eta");
+      fhEtaPhiTrackInConeTOFNo->SetYTitle("#varphi (rad)");
+      outputContainer->Add(fhEtaPhiTrackInConeTOFNo) ;
+
+      fhEtaTrackInCone = new TH2F("hEtaTrackInCone",
+                                     Form("#eta vs pT of Tracks in cone for #it{R} = %2.2f",r),
+                                     nptbins,ptmin,ptmax,netabins,-1,1);
+      fhEtaTrackInCone->SetYTitle("#eta");
+      fhEtaTrackInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhEtaTrackInCone) ;
+      
+      fhEtaTrackInConeTOFBC0 = new TH2F("hEtaTrackInConeTOFBC0",
+                                           Form("#eta vs pT of Tracks in cone for #it{R} = %2.2f, TOF BC=0",r),
+                                           nptbins,ptmin,ptmax,netabins,-1,1);
+      fhEtaTrackInConeTOFBC0->SetYTitle("#eta");
+      fhEtaTrackInConeTOFBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhEtaTrackInConeTOFBC0) ;  
+      
+      fhEtaTrackInConeTOFBCN = new TH2F("hEtaTrackInConeTOFBCN",
+                                           Form("#eta vs pT of Tracks in cone for #it{R} = %2.2f, TOF BC!=0",r),
+                                           nptbins,ptmin,ptmax,netabins,-1,1);
+      fhEtaTrackInConeTOFBC0->SetYTitle("#eta");
+      fhEtaTrackInConeTOFBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhEtaTrackInConeTOFBCN) ;
+      
+      fhEtaTrackInConeTOFNo = new TH2F("hEtaTrackInConeTOFNo",
+                                          Form("#eta vs pT of Tracks in cone for #it{R} = %2.2f, no TOF",r),
+                                          nptbins,ptmin,ptmax,netabins,-1,1);
+      fhEtaTrackInConeTOFNo->SetYTitle("#eta");
+      fhEtaTrackInConeTOFNo->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhEtaTrackInConeTOFNo) ;
+
+      
+      fhPhiTrackInCone = new TH2F("hPhiTrackInCone",
+                                  Form("#varphi vs pT of Tracks in cone for #it{R} = %2.2f",r),
+                                  nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
+      fhPhiTrackInCone->SetYTitle("#varphi (rad)");
+      fhPhiTrackInCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPhiTrackInCone) ;
+      
+      fhPhiTrackInConeTOFBC0 = new TH2F("hPhiTrackInConeTOFBC0",
+                                        Form("#varphi vs pT of Tracks in cone for #it{R} = %2.2f, TOF BC=0",r),
+                                        nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
+      fhPhiTrackInConeTOFBC0->SetYTitle("#varphi (rad)");
+      fhPhiTrackInConeTOFBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPhiTrackInConeTOFBC0) ;  
+      
+      fhPhiTrackInConeTOFBCN = new TH2F("hPhiTrackInConeTOFBCN",
+                                        Form("#varphi vs pT of Tracks in cone for #it{R} = %2.2f, TOF BC!=0",r),
+                                        nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
+      fhPhiTrackInConeTOFBC0->SetYTitle("#varphi (rad)");
+      fhPhiTrackInConeTOFBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPhiTrackInConeTOFBCN) ;
+      
+      fhPhiTrackInConeTOFNo = new TH2F("hPhiTrackInConeTOFNo",
+                                       Form("#varphi vs pT of Tracks in cone for #it{R} = %2.2f, no TOF",r),
+                                       nptbins,ptmin,ptmax,nphibins,0,TMath::TwoPi());
+      fhPhiTrackInConeTOFNo->SetYTitle("#varphi (rad)");
+      fhPhiTrackInConeTOFNo->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPhiTrackInConeTOFNo) ;
+
       if(fFillUEBandSubtractHistograms)
       {
         fhConeSumPtEtaBandUETrack  = new TH2F("hConePtSumEtaBandUETrack",
@@ -3194,6 +3439,14 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPerpConeSumPt->SetYTitle("#Sigma #it{p}_{T}");
         fhPerpConeSumPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPerpConeSumPt) ;
+
+        fhPerpConeSumPtTOFBC0  = new TH2F("hPerpConePtSumTOFBC0",
+                                    Form("#Sigma #it{p}_{T} in isolation cone at #pm 45 degree phi from trigger particle, #it{R} =  %2.2f, TOF BC=0",r),
+                                    nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+        fhPerpConeSumPtTOFBC0->SetYTitle("#Sigma #it{p}_{T}");
+        fhPerpConeSumPtTOFBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPerpConeSumPtTOFBC0) ;
+
         
         fhPtInPerpCone  = new TH2F("hPtInPerpCone",
                                    Form("#it{p}_{T} in isolation cone at #pm 45 degree phi from trigger particle, #it{R} =  %2.2f",r),
@@ -3202,11 +3455,32 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtInPerpCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPtInPerpCone) ;
         
+        fhPtInPerpConeTOFBC0  = new TH2F("hPtInPerpConeTOFBC0",
+                                   Form("#it{p}_{T} in isolation cone at #pm 45 degree phi from trigger particle, #it{R} =  %2.2f, TOF BC=0",r),
+                                   nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
+        fhPtInPerpConeTOFBC0->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
+        fhPtInPerpConeTOFBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhPtInPerpConeTOFBC0) ;
+   
+        fhEtaPhiInPerpCone= new TH2F("hEtaPhiInPerpCone",
+                                Form("#eta vs #varphi of all Tracks"),
+                                netabins,-1,1,nphibins,0,TMath::TwoPi());
+        fhEtaPhiInPerpCone->SetXTitle("#eta");
+        fhEtaPhiInPerpCone->SetYTitle("#varphi (rad)");
+        outputContainer->Add(fhEtaPhiInPerpCone) ;
+
+        fhEtaPhiInPerpConeTOFBC0= new TH2F("hEtaPhiInPerpConeTOFBC0",
+                                    Form("#eta vs #varphi of all Tracks, TOF BC=0"),
+                                    netabins,-1,1,nphibins,0,TMath::TwoPi());
+        fhEtaPhiInPerpConeTOFBC0->SetXTitle("#eta");
+        fhEtaPhiInPerpConeTOFBC0->SetYTitle("#varphi (rad)");
+        outputContainer->Add(fhEtaPhiInPerpConeTOFBC0) ;
+        
         fhEtaPhiTrack= new TH2F("hEtaPhiTrack",
                                 Form("#eta vs #phi of all Tracks"),
                                 netabins,-1,1,nphibins,0,TMath::TwoPi());
         fhEtaPhiTrack->SetXTitle("#eta");
-        fhEtaPhiTrack->SetYTitle("#phi");
+        fhEtaPhiTrack->SetYTitle("#varphi (rad)");
         outputContainer->Add(fhEtaPhiTrack) ;
         
         fhEtaPhiInConeTrack= new TH2F("hEtaPhiInConeTrack",
@@ -3862,36 +4136,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       }
     } // control histograms for isolated and non isolated objects
     
-    
     if(IsPileUpAnalysisOn())
     {
-      fhPtTrackInConeOtherBC  = new TH2F("hPtTrackInConeOtherBC",
-                                         Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC!=0",r),
-                                         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
-      fhPtTrackInConeOtherBC->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
-      fhPtTrackInConeOtherBC->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtTrackInConeOtherBC) ;
-      
       fhPtTrackInConeOtherBCPileUpSPD  = new TH2F("hPtTrackInConeOtherBCPileUpSPD",
                                                   Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC!=0, pile-up from SPD",r),
                                                   nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
       fhPtTrackInConeOtherBCPileUpSPD->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
       fhPtTrackInConeOtherBCPileUpSPD->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtTrackInConeOtherBCPileUpSPD) ;
-      
-      fhPtTrackInConeBC0  = new TH2F("hPtTrackInConeBC0",
-                                     Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC==0",r),
-                                     nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
-      fhPtTrackInConeBC0->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
-      fhPtTrackInConeBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtTrackInConeBC0) ;
-      
-      fhPtTrackInConeVtxBC0  = new TH2F("hPtTrackInConeVtxBC0",
-                                        Form("#it{p}_{T} of tracks in isolation cone for #it{R} =  %2.2f, TOF from BC==0",r),
-                                        nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
-      fhPtTrackInConeVtxBC0->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
-      fhPtTrackInConeVtxBC0->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhPtTrackInConeVtxBC0) ;
+            
       
       
       fhPtTrackInConeBC0PileUpSPD  = new TH2F("hPtTrackInConeBC0PileUpSPD",
