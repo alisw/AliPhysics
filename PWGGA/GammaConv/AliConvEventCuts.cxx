@@ -121,6 +121,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hCentralityNotFlat(NULL),
   //hCentralityVsNumberOfPrimaryTracks(NULL),
   hVertexZ(NULL),
+  hNPileupVertices(NULL),
+  hPileupVertexToPrimZ(NULL),
   hEventPlaneAngle(NULL),
   fEventPlaneAngle(0),
   hTriggerClass(NULL),
@@ -224,6 +226,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hCentralityNotFlat(ref.hCentralityNotFlat),
   //hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
   hVertexZ(ref.hVertexZ),
+  hNPileupVertices(ref.hNPileupVertices),
+  hPileupVertexToPrimZ(ref.hPileupVertexToPrimZ),
   hEventPlaneAngle(ref.hEventPlaneAngle),
   fEventPlaneAngle(ref.fEventPlaneAngle),
   hTriggerClass(NULL),
@@ -360,9 +364,15 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   //hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
 
-  hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
+  hVertexZ              = new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
   fHistograms->Add(hVertexZ);
 
+  hNPileupVertices      = new TH1F(Form("NPileupVertices %s",GetCutNumber().Data()),"NPileupVertices",30,-0.5,29.5);
+  fHistograms->Add(hNPileupVertices);
+
+  hPileupVertexToPrimZ  = new TH1F(Form("PileupVertexDistance %s",GetCutNumber().Data()),"PileupVertexDistance",600,-15,15);
+  fHistograms->Add(hPileupVertexToPrimZ);
+  
   if(fIsHeavyIon == 1){
     hEventPlaneAngle = new TH1F(Form("EventPlaneAngle %s",GetCutNumber().Data()),"EventPlaneAngle",60, 0, TMath::Pi());
     fHistograms->Add(hEventPlaneAngle);
@@ -554,6 +564,24 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
   Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    Int_t nPileVert = ((AliESDEvent*)fInputEvent)->GetNumberOfPileupVerticesSPD();
+    hNPileupVertices->Fill(nPileVert);
+    if (nPileVert > 0){
+      for(Int_t i=0; i<nPileVert;i++){
+        const AliESDVertex* pv= ((AliESDEvent*)fInputEvent)->GetPileupVertexSPD(i);
+        Int_t nc2             = pv->GetNContributors();
+        Double_t distZ = -10000;
+        if(nc2>=1){
+          Double_t z1 = ((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetZ();
+          Double_t z2 = pv->GetZ();
+          distZ       = TMath::Abs(z2-z1);
+          hPileupVertexToPrimZ->Fill(distZ);
+        }
+      }
+    }  
+  }
   
   // Pile Up Rejection
   if (fIsHeavyIon == 2){
@@ -3183,8 +3211,28 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   Int_t nTracklets      = InputEvent->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
+  if(InputEvent->IsA()==AliESDEvent::Class()){
+    Int_t nPileVert = ((AliESDEvent*)InputEvent)->GetNumberOfPileupVerticesSPD();
+    hNPileupVertices->Fill(nPileVert);
+    if (nPileVert > 0){
+      for(Int_t i=0; i<nPileVert;i++){
+        const AliESDVertex* pv= ((AliESDEvent*)InputEvent)->GetPileupVertexSPD(i);
+        Int_t nc2             = pv->GetNContributors();
+        Double_t distZ = -10000;
+        if(nc2>=1){
+          Double_t z1 = ((AliESDEvent*)InputEvent)->GetPrimaryVertexSPD()->GetZ();
+          Double_t z2 = pv->GetZ();
+          distZ       = TMath::Abs(z2-z1);
+          hPileupVertexToPrimZ->Fill(distZ);
+        }
+      }
+    }  
+  }
+
+  
   
   if( isHeavyIon != 2 && GetIsFromPileup()){
+    
     if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }

@@ -225,6 +225,9 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     cuts.AddCut("80000113", "00200009217000008260404000", "0162103500000000");   //standard Eta
   } else if (trainConfig == 23) {
     cuts.AddCut("80000123", "00200009217000008260404000", "0162103500000000");   //standard Eta
+  } else if (trainConfig == 24) {  
+    cuts.AddCut("80000113", "00200009217000008260400000", "0162103500000000");
+    
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

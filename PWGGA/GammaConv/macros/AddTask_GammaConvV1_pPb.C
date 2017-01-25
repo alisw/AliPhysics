@@ -87,15 +87,18 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
       
       if(tempStr.Contains("MaterialBudgetWeights") && enableMatBudWeightsPi0 > 0){
         TObjArray *fileNameMatBudWeightsArr = filenameMatBudWeights.Tokenize("/");
-	if(fileNameMatBudWeightsArr->GetEntries()<1 ){cout<<"ERROR: AddTask_GammaConvV1_pPb when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl; return;}  
-	 TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
-	 TString  oldfileName  = oldMatObjStr->GetString();
-	 TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
-	 cout<<newFileName.Data()<<endl;
-	 if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
-	 filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
-	 cout << "INFO: AddTask_GammaConvV1_pPb the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
-	 }
+        if(fileNameMatBudWeightsArr->GetEntries()<1 ){
+          cout<<"ERROR: AddTask_GammaConvV1_pPb when reading material budget weights file name" << filenameMatBudWeights.Data()<< "'" << endl; 
+          return;
+        }  
+        TObjString * oldMatObjStr = (TObjString*)fileNameMatBudWeightsArr->At( fileNameMatBudWeightsArr->GetEntries()-1);
+        TString  oldfileName  = oldMatObjStr->GetString();
+        TString  newFileName  = Form("MCInputFile%s.root",tempStr.Data());
+        cout<<newFileName.Data()<<endl;
+        if( oldfileName.EqualTo(newFileName.Data()) == 0 ){
+          filenameMatBudWeights.ReplaceAll(oldfileName.Data(),newFileName.Data());
+          cout << "INFO: AddTask_GammaConvV1_pPb the material budget weights file has been change to " <<filenameMatBudWeights.Data()<<"'"<< endl;
+        }
       }
     }
   }

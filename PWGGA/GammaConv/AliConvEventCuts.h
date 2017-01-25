@@ -472,6 +472,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1D*                       hCentralityNotFlat;                     // centrality distribution loaded for cent. flattening
       //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    // centrality distribution for selected events
       TH1F*                       hVertexZ;                               // vertex z distribution for selected events
+      TH1F*                       hNPileupVertices;                       // number of SPD pileup vertices
+      TH1F*                       hPileupVertexToPrimZ;                   // distance of SPD pileup vertex to prim vertex in z
       TH1F*                       hEventPlaneAngle;                       //
       Double_t                    fEventPlaneAngle;                       // EventPlaneAngle
       TH1F*                       hTriggerClass;                          // fired offline trigger class
@@ -518,7 +520,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,23)
+      ClassDef(AliConvEventCuts,24)
 };
 
 
