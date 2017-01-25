@@ -42,6 +42,7 @@ public:
   void SetBranchNames(TString options) { fTreeBranchNames = options; }
   void SetTrackCutType(TString tc) { fTrackCutType = tc; }
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
+  void SetTriggerSelectionSPD(TString ts) { fTriggerSelectionSPD = ts; }
   void SetCDBStorage(TString s) { fCDBStorage = s; }
 
   TString GetListName() const { return fTrackCutType+"_TL"; }
@@ -185,9 +186,13 @@ public:
 
 protected:
   void SetBranches(TTree* t);
+  void SetClassMask(TString triggerSel, ULong64_t &mask, ULong64_t &maskNext50);
+  static void FindChipKeys(AliESDtrack *tr, Short_t chipKey[2], Int_t status[2]);
 
   enum {
     kHistTrig,
+    kHistSPDFiredTrk,
+    kHistSPDFOTrk,
     kNHist
   };
 
@@ -199,6 +204,7 @@ private:
   TString          fTreeBranchNames;     //
   TString          fTrackCutType;        //
   TString          fTriggerSelection;    //
+  TString          fTriggerSelectionSPD; //
   TString          fCDBStorage;          //
   Int_t            fMaxTrackSave;        //
 
@@ -225,6 +231,9 @@ private:
   Bool_t           fUseTriggerMask;      //!
   ULong64_t        fClassMask;           //!
   ULong64_t        fClassMaskNext50;     //!
+  Bool_t           fUseTriggerMaskSPD;   //!
+  ULong64_t        fClassMaskSPD;        //!
+  ULong64_t        fClassMaskNext50SPD;  //!
 
   ClassDef(AliAnalysisTaskDG, 7);
 } ;
