@@ -136,16 +136,18 @@ void AliAnalysisTaskDG::FMD::Fill(const AliESDEvent *esdEvent, AliTriggerAnalysi
   fC = trigAna.FMDTrigger(esdEvent, AliTriggerAnalysis::kCSide);
 }
 
-void AliAnalysisTaskDG::FindChipKeys(AliESDtrack *tr, Short_t chipKey[2], Int_t status[2]) {
-  chipKey[0] = chipKey[1] = -1;
-  status[0]  = status[1]  = -1;
+void AliAnalysisTaskDG::FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]) {
+  chipKeys[0] = chipKeys[1] = -1;
+  status[0]   = status[1]   = -1;
+  if (!tr)
+    return;
 
   Int_t   idet=0;
-  Float_t xloc=0,   zloc=0;
+  Float_t xloc=0, zloc=0;
   const AliITSsegmentationSPD seg;
   for (Int_t layer=0; layer<2; ++layer) {
-    chipKey[layer] = -1;
-    status[layer]  = -1;
+    chipKeys[layer] = -1;
+    status[layer]   = -1;
     const Int_t module = tr->GetITSModuleIndex(layer);
     if (module < 0)
       continue;
@@ -160,8 +162,8 @@ void AliAnalysisTaskDG::FindChipKeys(AliESDtrack *tr, Short_t chipKey[2], Int_t 
 
     off = (layer==0 ? 4-off : off);
     AliDebugClassF(5, "layer=%d module=%10d idet=%3d xloc=%5.1f zloc=%5.1f off=%d status=%d chipKey=%4d",
-	      layer, module, idet, xloc, zloc, off, status[layer], 5*idet + off);
-    chipKey[layer] = 5*idet + off;
+		   layer, module, idet, xloc, zloc, off, status[layer], 5*idet + off);
+    chipKeys[layer] = 5*idet + off;
   }
 }
 
@@ -187,7 +189,7 @@ void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResp
     fNumSigmaITS[i] = pidResponse->NumberOfSigmasITS(tr, particleType);
     fNumSigmaTPC[i] = pidResponse->NumberOfSigmasTPC(tr, particleType);
     fNumSigmaTOF[i] = pidResponse->NumberOfSigmasTOF(tr, particleType);
-    AliInfoF("%d %f %f %f", i, fNumSigmaITS[i], fNumSigmaTPC[i], fNumSigmaTOF[i]);
+    AliDebugF(5, "%d %f %f %f", i, fNumSigmaITS[i], fNumSigmaTPC[i], fNumSigmaTOF[i]);
   }
 
   AliAnalysisTaskDG::FindChipKeys(tr, fChipKey, fStatus);
@@ -466,7 +468,6 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     return;
   }
 
-
   fHist[kHistTrig]->Fill(-1); // # analyzed events in underflow bin
 
   for (Int_t i=0; i<50; ++i) {
@@ -499,43 +500,36 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 	  nBB += esdV0->GetPFBBFlag(ch, bc);
       }
       if (!nBB) {
-	Short_t chipKey[2];
-	Int_t status[2];
-	std::unique_ptr<AliESDtrackCuts> tc(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
-	std::unique_ptr<const TObjArray> oa(tc->GetAcceptedTracks(esdEvent));
-	Int_t nT[1200] = {0};
-	for (Int_t i=0, n=oa->GetEntries(); i<n; ++i) {
-	  AliESDtrack *tr = (AliESDtrack*)oa->At(i);
-	  AliAnalysisTaskDG::FindChipKeys(tr, chipKey, status);
-	  for (Int_t layer=0; layer<2; ++layer) {
-	    if (chipKey[layer] >= 0 && chipKey[layer]<1200 && status[layer] == 1)
-	      nT[chipKey[layer]] += 1;
-	  }
-	}
-	const Int_t bcMod4 = (esdHeader->GetBunchCrossNumber() % 4);
 	Int_t matched[1200] = { 0 };
 	for (Int_t l=0; l<1200; ++l)
 	  matched[l] = 0;
+	std::unique_ptr<AliESDtrackCuts> tc(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
+	std::unique_ptr<const TObjArray> oa(tc->GetAcceptedTracks(esdEvent));
 	for (Int_t i=0, n=oa->GetEntries(); i<n; ++i) {
-	  AliESDtrack *tr = (AliESDtrack*)oa->At(i);
-	  AliAnalysisTaskDG::FindChipKeys(tr, chipKey, status);
+	  AliESDtrack *tr = dynamic_cast<AliESDtrack*>(oa->At(i));
+	  Short_t chipKeys[2] = { -1, -1};
+	  Int_t   status[2]   = { -1, -1};
+	  AliAnalysisTaskDG::FindChipKeys(tr, chipKeys, status);
 	  for (Int_t layer=0; layer<2; ++layer) {
-	    if (chipKey[layer] >= 0 && chipKey[layer]<1200 && status[layer] == 1) {
-	      matched[chipKey[layer]] += 1;
-	      dynamic_cast<TH3*>(fHist[kHistSPDFiredTrk])->Fill(chipKey[layer], bcMod4, nT[chipKey[layer]], mult->TestFiredChipMap(    chipKey[layer]));
-	      dynamic_cast<TH3*>(fHist[kHistSPDFOTrk]   )->Fill(chipKey[layer], bcMod4, nT[chipKey[layer]], mult->TestFastOrFiredChips(chipKey[layer]));
-	    }
+	    if (chipKeys[layer] >= 0 && chipKeys[layer]<1200 && status[layer] == 1)
+	      matched[chipKeys[layer]] += 1;
 	  }
 	}
+	const Int_t    bcMod4         = (esdHeader->GetBunchCrossNumber() % 4);
 	const Double_t log10Tracklets = (mult->GetNumberOfTracklets() > 0
 					 ? TMath::Log10(mult->GetNumberOfTracklets())
 					 : -1.0);
-	for (Int_t l=0; l<1200; ++l) {
-	  dynamic_cast<TH3*>(fHist[kHistSPDFiredTrkVsMult])->Fill(l, bcMod4, log10Tracklets, matched[l]*mult->TestFiredChipMap(    l));
-	  dynamic_cast<TH3*>(fHist[kHistSPDFOTrkVsMult]   )->Fill(l, bcMod4, log10Tracklets, matched[l]*mult->TestFastOrFiredChips(l));
-
-	  dynamic_cast<TH3*>(fHist[kHistSPDFiredVsMult])->Fill(l, bcMod4, log10Tracklets, mult->TestFiredChipMap(    l));
-	  dynamic_cast<TH3*>(fHist[kHistSPDFOVsMult]   )->Fill(l, bcMod4, log10Tracklets, mult->TestFastOrFiredChips(l));
+	for (Int_t chipKey=0; chipKey<1200; ++chipKey) {
+	  if (mult->TestFiredChipMap(chipKey)) {
+	    dynamic_cast<TH3*>(fHist[kHistSPDFiredTrk]      )->Fill(chipKey, bcMod4, matched[chipKey]);
+	    dynamic_cast<TH3*>(fHist[kHistSPDFiredTrkVsMult])->Fill(chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
+	    dynamic_cast<TH3*>(fHist[kHistSPDFiredVsMult]   )->Fill(chipKey, bcMod4, log10Tracklets);
+	  }
+	  if (mult->TestFastOrFiredChips(chipKey)) {
+	    dynamic_cast<TH3*>(fHist[kHistSPDFOTrk]      )->Fill(chipKey, bcMod4, matched[chipKey]);
+	    dynamic_cast<TH3*>(fHist[kHistSPDFOTrkVsMult])->Fill(chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
+	    dynamic_cast<TH3*>(fHist[kHistSPDFOVsMult]   )->Fill(chipKey, bcMod4, log10Tracklets);
+	  }
 	}
       }
     }

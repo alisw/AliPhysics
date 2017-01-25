@@ -187,7 +187,7 @@ public:
 protected:
   void SetBranches(TTree* t);
   void SetClassMask(TString triggerSel, ULong64_t &mask, ULong64_t &maskNext50);
-  static void FindChipKeys(AliESDtrack *tr, Short_t chipKey[2], Int_t status[2]);
+  static void FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]);
 
   enum {
     kHistTrig,
