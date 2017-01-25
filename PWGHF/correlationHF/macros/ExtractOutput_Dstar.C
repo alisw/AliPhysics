@@ -48,6 +48,7 @@ void ExtractOutput(
   plotter->SetNpools(npools);
   plotter->SetCorrectPoolsSeparately(poolByPool); //kTRUE = pool.by-pool extraction and correction; kFALSE = merged ME pools
   plotter->SetDeltaEtaRange(deltaEtaMin,deltaEtaMax);
+  plotter->SetSubtractSoftPiInMEdistr(kFALSE);
   plotter->ReadTTreeOutputFiles(treeSE,treeME);
   if(!flagSpecie) return;
 
