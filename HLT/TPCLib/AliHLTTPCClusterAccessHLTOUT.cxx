@@ -569,6 +569,10 @@ int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClone
     {
       pCluster->SetType((int) map[i].fCluster.GetFlagSplitPad() + ((int) map[i].fCluster.GetFlagSplitTime() << 1));
     }
+    else
+    {
+      pCluster->SetType(0);
+    }
     
     if (propagateEdgeClusterFlag && map[i].fCluster.GetFlagEdge())
     {
