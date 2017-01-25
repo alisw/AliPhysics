@@ -163,6 +163,7 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   Bool_t fUseGain; // Use gain correction factor from OCDB
   Double_t fIORatioCorrection; // multiplier for data size ratio Output/Input 
   Int_t fDebug; // debug level
+  size_t fForceOutputBufferSize;
   AliHLTTPCHWCFSupport fCFSupport;     // !transient
   AliHLTTPCHWCFEmulator fCFEmulator;   // !transient
   AliHLTComponentBenchmark fBenchmark; // benchmark

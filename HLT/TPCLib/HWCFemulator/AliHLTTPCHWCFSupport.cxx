@@ -37,6 +37,7 @@
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
 #include "TMath.h"
+#include "AliHLTTPCDigitPublisherComponent.h"
 
 #include <cstdlib>
 #include <algorithm>
@@ -91,6 +92,7 @@ void AliHLTTPCHWCFSupport::ReleaseEventMemory()
   if( fEventMCMemory )delete[] fEventMCMemory;
   fEventMemory = 0;
   fEventMCMemory = 0;
+  AliHLTTPCDigitPublisherComponent::ReleaseDigitTree();
 }
 
 void AliHLTTPCHWCFSupport::UnloadMapping()
@@ -381,13 +383,28 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
       rawEventSize32 = ( blockSize - headerSize )/sizeof(AliHLTUInt32_t);
 
     }
-  else if ( block->fDataType == AliHLTTPCDefinitions::fgkUnpackedRawDataType )
+  else if ( block->fDataType == AliHLTTPCDefinitions::fgkUnpackedRawDataType || block->fDataType == AliHLTTPCDefinitions::fgkUnpackedRawLateDataType )
     {
 
+      void* inputPtr;
+      size_t inputSize;
+      if (block->fDataType == AliHLTTPCDefinitions::fgkUnpackedRawLateDataType)
+      {
+          inputPtr = AliHLTTPCDigitPublisherComponent::FillLateInputBuffer((AliHLTTPCDigitPublisherComponent::AliHLTTPCDigitPublisherLateFillData*) block->fPtr, inputSize);
+          if (inputPtr == NULL)
+          {
+              HLTFatal("Error obtaining TPC digits");
+          }
+      }
+      else
+      {
+          inputPtr = block->fPtr;
+          inputSize = block->fSize;      
+      }
       AliHLTTPCDigitReaderUnpacked digitReader; 	 
       digitReader.SetUnsorted(kTRUE);      
       
-      if( digitReader.InitBlock(block->fPtr,block->fSize,patch,slice)<0 ) {
+      if( digitReader.InitBlock(inputPtr,inputSize,patch,slice)<0 ) {
 	HLTWarning("failed setting up digit reader (InitBlock)");
 	return 0;
       }
@@ -404,7 +421,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
       
       digitReader.Reset();
 
-      if( digitReader.InitBlock(block->fPtr,block->fSize,patch,slice)<0) {
+      if( digitReader.InitBlock(inputPtr,inputSize,patch,slice)<0) {
 	HLTWarning("failed setting up digit reader (InitBlock)");
 	return 0;
       }
@@ -779,4 +796,3 @@ int AliHLTTPCHWCFSupport::CheckRawData( const AliHLTUInt32_t *buffer,
 
   return 1;
 }
-

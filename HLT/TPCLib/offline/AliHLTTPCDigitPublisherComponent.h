@@ -63,6 +63,7 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
    * @return output data type
    */
   AliHLTComponentDataType GetOutputDataType();
+  int GetOutputDataTypes(AliHLTComponentDataTypeList& tgtList);
 
   /**
    * Get a ratio by how much the data volume is shrinked or enhanced.
@@ -80,6 +81,15 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
    * @return new class instance
    */
   virtual AliHLTComponent* Spawn();
+  
+  struct AliHLTTPCDigitPublisherLateFillData {
+    int fSlice;
+    int fPart;
+    int fEvent;
+  };
+  
+  static void* FillLateInputBuffer(AliHLTTPCDigitPublisherLateFillData* reference, size_t& size);
+  static void ReleaseDigitTree();
 
  protected:
 
@@ -134,7 +144,14 @@ class AliHLTTPCDigitPublisherComponent : public AliHLTOfflineDataSource {
 
   /** event no the file handler is currently initialized for */
   static int              fgCurrEvent;                             //!transient
-
+  static bool             fgCurrEventInitialized;                  //!transient
+  
+  //Temporary buffer to fill data during reading instead of straight ahead
+  bool fLateFill;                                                   //!
+  static void* fgLateFillBuffer;                                    //!
+  static size_t fgLateBufferSize;                                      //!
+  static const int fgkLateBufferInitialSize = 10 * 1024;            //!
+  
   ClassDef(AliHLTTPCDigitPublisherComponent, 0);
 };
 

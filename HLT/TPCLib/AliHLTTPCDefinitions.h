@@ -103,6 +103,9 @@ public:
   /** unpacked RAW data */
   static const AliHLTComponentDataType fgkUnpackedRawDataType;          // see above
   static const AliHLTComponentDataType& UnpackedRawDataType();
+  /** unpacked RAW data late filling*/
+  static const AliHLTComponentDataType fgkUnpackedRawLateDataType;      // see above
+  static const AliHLTComponentDataType& UnpackedRawLateDataType();
   /** cluster data */
   static const AliHLTComponentDataType fgkClustersDataType;             // see above
   static const AliHLTComponentDataType& ClustersDataType();

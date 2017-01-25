@@ -205,7 +205,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	  if (sinkRawData.Length()>0) sinkRawData+=" ";
 	  sinkRawData+=publisher;
 	} else {
-	  arg.Form("-slice %d -partition %d", slice, part);
+	  //arg.Form("-slice %d -partition %d", slice, part);
+	  arg.Form("-slice %d -partition %d -late-fill", slice, part);
 	  handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
 	  if (hwcfemuInput.Length()>0) hwcfemuInput+=" ";
 	  hwcfemuInput+=publisher;
