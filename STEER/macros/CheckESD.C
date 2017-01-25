@@ -87,7 +87,7 @@ Bool_t FitHisto(TH1* histo, Double_t& res, Double_t& resError)
     Float_t mean = histo->GetMean();
     Float_t rms = histo->GetRMS();
     fitFunc->SetRange(mean - maxFitRange*rms, mean + maxFitRange*rms);
-    fitFunc->SetParameters(mean, rms);
+    fitFunc->SetParameters(0.,mean, rms);
     histo->Fit(fitFunc, "QRI0");
     histo->GetFunction("fitFunc")->ResetBit(1<<9);
     res = TMath::Abs(fitFunc->GetParameter(2));
