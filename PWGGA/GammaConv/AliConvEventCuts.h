@@ -474,6 +474,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1F*                       hVertexZ;                               // vertex z distribution for selected events
       TH1F*                       hNPileupVertices;                       // number of SPD pileup vertices
       TH1F*                       hPileupVertexToPrimZ;                   // distance of SPD pileup vertex to prim vertex in z
+      TH1F*                       hPileupVertexToPrimZSPDPileup;          // distance of SPD pileup vertex to prim vertex in z for SPD pileup flagged events
+      TH1F*                       hPileupVertexToPrimZTrackletvsHits;     // distance of SPD pileup vertex to prim vertex in z for Tracklet vs Hits flagged events
       TH1F*                       hEventPlaneAngle;                       //
       Double_t                    fEventPlaneAngle;                       // EventPlaneAngle
       TH1F*                       hTriggerClass;                          // fired offline trigger class
