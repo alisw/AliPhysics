@@ -26,7 +26,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
-                             Bool_t bUsePhiEtaCuts=kFALSE,
+                             Bool_t bRequireITSRefit=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
@@ -90,6 +90,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bZDCMCCen=kTRUE;
   Bool_t bRequireTOFSignal=kFALSE;
   Int_t bCutTPCbound=0;
+  Bool_t bUsePhiEtaCuts=kFALSE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -326,6 +327,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
      cutsPOI->SetCutChi2PerClusterITS(36.);
      cutsPOI->SetCutITSClusterGlobal(kTRUE);
   }
+  if(bRequireITSRefit) cutsPOI->SetRequireITSRefit(kTRUE);
   if(bPtDepDCAxyCut) cutsPOI->SetMaxDCAToVertexXYPtDepAOD(kTRUE);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
