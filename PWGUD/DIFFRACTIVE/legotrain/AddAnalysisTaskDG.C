@@ -4,12 +4,13 @@ AliAnalysisTaskDG* AddAnalysisTaskDG(Bool_t isMC,
 				     TString branchNames,
 				     TString trackCutType,
 				     TString triggerSelection,
-				     TString cdbStorage="raw://")
+				     TString triggerSelectionSPD="",
+				     Int_t   maxTracksSave=4)
 {
   // create manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("My test train");
-  
+
   if (isMC) {
     AliMCEventHandler* handler = new AliMCEventHandler;
     handler->SetReadTR(kFALSE);
@@ -23,7 +24,8 @@ AliAnalysisTaskDG* AddAnalysisTaskDG(Bool_t isMC,
   task->SetBranchNames(branchNames);
   task->SetTrackCutType(trackCutType);
   task->SetTriggerSelection(triggerSelection);
-  task->SetCDBStorage(cdbStorage);
+  task->SetTriggerSelectionSPD(triggerSelectionSPD);
+  task->SetMaxTracksSave(maxTracksSave);
 
   Printf("created task");
 
@@ -33,9 +35,9 @@ AliAnalysisTaskDG* AddAnalysisTaskDG(Bool_t isMC,
 			 TString(AliAnalysisManager::GetCommonFileName())+":"+task->GetResultsFileName());
   AliAnalysisDataContainer* output2 =
     mgr->CreateContainer(task->GetTreeName(), TTree::Class(), AliAnalysisManager::kOutputContainer,
-			 TString(AliAnalysisManager::GetCommonFileName())+":"+task->GetResultsFileName());  
+			 TString(AliAnalysisManager::GetCommonFileName())+":"+task->GetResultsFileName());
   mgr->AddTask(task);
-  
+
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, output1);
   mgr->ConnectOutput(task, 2, output2);
@@ -43,4 +45,3 @@ AliAnalysisTaskDG* AddAnalysisTaskDG(Bool_t isMC,
   Printf("--------------------------------------------------------------------------------");
   return task;
 }
-
