@@ -635,6 +635,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterFECCorrPair2MaxHighCut;     //!<! cluster sum pt for pair column cells in correlated FEC, and both cells are max, pT > 0.7 GeV
   TH2F *   fhConeSumPtClusterFECCorrOdd2MaxHighCut ;     //!<! cluster sum pt for odd column cells in correlated FEC, and both cells are max, pT > 0.7 GeV
 
+  TH2F *   fhConeSumPtClusterFECCorrMax[4];              //!<! cluster sum pt for pair column cells in correlated FEC Max, 4 cases
+  TH2F *   fhConeSumPtClusterFECCorr[6]   ;              //!<! cluster sum pt for odd column cells in correlated FEC, 6 cases  
+
+  
   TH2F *   fhConeSumPtTrackTOFBC0;                       //!<! track with TOF hit sum pt, tof in BC0 
   TH2F *   fhConeSumPtTrackTOFBCN;                       //!<! track with TOF hit sum pt, tof not in BC0 
   TH2F *   fhConeSumPtTrackTOFNo ;                       //!<! track without TOF hit sum pt 

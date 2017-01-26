@@ -352,6 +352,11 @@ fhTrackTOFInCone(0),       fhTrackTOFInConeBC0(0)
     fhENoIsoPileUp  [i] = 0 ;
     fhPtNoIsoPileUp [i] = 0 ;
   }
+  
+  for(Int_t icase = 0; icase < 4; icase++)
+    fhConeSumPtClusterFECCorrMax[icase] = 0;
+  for(Int_t icase = 0; icase < 6; icase++)
+    fhConeSumPtClusterFECCorr[icase] = 0;
 }
 
 //_______________________________________________________________________________________________
@@ -1016,6 +1021,25 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     fhConeSumPtCluster ->Fill(ptTrig, 0., GetEventWeight());
     fhConePtLeadCluster->Fill(ptTrig, 0., GetEventWeight());
     
+    if(fStudyFECCorrelation)
+    {
+      fhConeSumPtClusterFECCorrPair     ->Fill(ptTrig, 0., GetEventWeight());
+      fhConeSumPtClusterFECCorrOdd      ->Fill(ptTrig, 0., GetEventWeight());    
+      fhConeSumPtClusterFECCorrPair2Max ->Fill(ptTrig, 0., GetEventWeight());
+      fhConeSumPtClusterFECCorrOdd2Max  ->Fill(ptTrig, 0., GetEventWeight());
+      
+      fhConeSumPtClusterFECCorrPairHighCut     ->Fill(ptTrig, 0., GetEventWeight());
+      fhConeSumPtClusterFECCorrOddHighCut      ->Fill(ptTrig, 0., GetEventWeight());    
+      fhConeSumPtClusterFECCorrPair2MaxHighCut ->Fill(ptTrig, 0., GetEventWeight());
+      fhConeSumPtClusterFECCorrOdd2MaxHighCut  ->Fill(ptTrig, 0., GetEventWeight());
+      
+      for(Int_t icase = 0; icase < 4; icase++)
+        fhConeSumPtClusterFECCorrMax[icase]->Fill(ptTrig, 0., GetEventWeight());
+      for(Int_t icase = 0; icase < 6; icase++)
+        fhConeSumPtClusterFECCorr[icase]->Fill(ptTrig, 0., GetEventWeight());
+    }
+
+    
     if(coneptLeadCluster > 0  || coneptsumCluster > 0) 
       AliError(Form("No ref tracks!!! sum %f, lead %f",coneptsumCluster,coneptLeadCluster));
     
@@ -1043,7 +1067,9 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
   Float_t ptSumPairFEC2MaxHighCut = 0;
   Float_t ptSumOddFECHighCut      = 0;
   Float_t ptSumOddFEC2MaxHighCut  = 0;
-
+  Float_t ptSumFECMaxCorr[] = {0,0,0,0};
+  Float_t ptSumFECCorr[] = {0,0,0,0,0,0};
+  
   for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++)
   {
     AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
@@ -1080,12 +1106,15 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     
     if(fStudyFECCorrelation)
     {
+      //
       // Find 2 highest energy cells in cluster
+      //
       Int_t absIdMax  = -1;
       Int_t absIdMax2 = -1;
       Float_t emax  = 0;
-      Float_t emax2 = 0;   
-      for (Int_t ipos = 0; ipos < calo->GetNCells(); ipos++) 
+      Float_t emax2 = 0; 
+      Int_t ncells = calo->GetNCells();
+      for (Int_t ipos = 0; ipos < ncells; ipos++) 
       {
         Int_t absId  = calo->GetCellsAbsId()[ipos];   
         
@@ -1106,9 +1135,98 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
         }
       }
 
+      //
+      // Get correlated 4 to max and check correlation in cluster
+      //
       Int_t absIdCorr[] = {-1,-1,-1,-1};
       GetCaloUtils()->GetFECCorrelatedCellAbsId(absIdMax, absIdCorr);
       
+      Int_t nCorr = 0;
+      Bool_t near = kFALSE;
+      Bool_t far  = kFALSE;
+      for (Int_t ipos = 0; ipos < ncells; ipos++) 
+      {
+        Int_t absId  = calo->GetCellsAbsId()[ipos];   
+        
+        Float_t eCell = GetEMCALCells()->GetCellAmplitude(absId);      
+        // consider cells with enough energy weight and not the reference one
+        Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, calo->E());
+        
+        if( absId == absIdMax || weight < 0.01 ) continue;
+                
+        for(Int_t id = 0; id < 4; id++)
+        {
+          if ( absId == absIdCorr[id] ) 
+          {
+            nCorr++;
+            Int_t diff = TMath::Abs(absId-absIdMax);
+            if     ( diff == 1 ) near = kTRUE;
+            else if( diff >= 8 ) far  = kTRUE;
+          }
+        }
+      }
+      
+      // Fill histograms assign index
+      Int_t index = -1;
+      if ( nCorr == 0 ) index = 0;
+      else     
+      {
+        if      ( near && !far ) index = 1;
+        else if (!near &&  far ) index = 2;
+        else if ( near &&  far ) index = 3;
+      }
+
+      if ( index >= 0 ) ptSumFECMaxCorr[index]+=ptcone;
+
+      //
+      // Any cell correlation, excluding max and their associates
+      //
+      Int_t  absIdCorrSecondary [] = {-1,-1,-1,-1};
+      Int_t  counter   = 0;
+      for (Int_t ipos = 0; ipos < ncells; ipos++) 
+      {
+        Int_t absId  = calo->GetCellsAbsId()[ipos];   
+        
+        // consider cells with enough energy weight and not the reference one or their correlated
+        Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(GetEMCALCells()->GetCellAmplitude(absId), calo->E());
+        
+        if( absId == absIdCorr[0] || absId == absIdCorr[1] || 
+            absId == absIdCorr[2] || absId == absIdCorr[3] || weight < 0.01 ) continue;
+        
+        Bool_t correlOK = GetCaloUtils()->GetFECCorrelatedCellAbsId(absId, absIdCorrSecondary);
+        
+        if(!correlOK) continue;
+        
+        for (Int_t ipos2 = ipos+1; ipos2 < ncells; ipos2++) 
+        {
+          Int_t absId2  = calo->GetCellsAbsId()[ipos2];  
+          
+          // consider cells with enough energy weight and not the reference one or their correlated
+          Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(GetEMCALCells()->GetCellAmplitude(absId2), calo->E());
+          
+          if( absId2 == absIdCorr[0] || absId2 == absIdCorr[1] || absId2 == absId ||
+              absId2 == absIdCorr[2] || absId2 == absIdCorr[3] || weight < 0.01      ) continue;
+          
+          for(Int_t id = 0; id < 4; id++)
+          {
+            if ( absId2 == absIdCorrSecondary[id] ) 
+            counter++;
+          }
+        }
+      }
+      
+      Int_t distCase = 0;
+      if      ( counter == 1 ) distCase = 1;
+      else if ( counter >= 2 ) distCase = 2;
+      
+      if ( nCorr > 0 ) distCase+=3;
+
+      ptSumFECCorr[distCase]+=ptcone;
+      
+      
+      ///
+      /// Odd/Even max
+      ///
       Int_t idMax  = -1;
       Int_t idMax2 = -1;
       for(Int_t id = 0; id < 4; id++)
@@ -1166,6 +1284,11 @@ void AliAnaParticleIsolation::CalculateCaloSignalInCone(AliAODPWG4ParticleCorrel
     fhConeSumPtClusterFECCorrOddHighCut      ->Fill(ptTrig, ptSumOddFECHighCut , GetEventWeight());    
     fhConeSumPtClusterFECCorrPair2MaxHighCut ->Fill(ptTrig, ptSumPairFEC2MaxHighCut, GetEventWeight());
     fhConeSumPtClusterFECCorrOdd2MaxHighCut  ->Fill(ptTrig, ptSumOddFEC2MaxHighCut , GetEventWeight());
+    
+    for(Int_t icase = 0; icase < 4; icase++)
+      fhConeSumPtClusterFECCorrMax[icase]->Fill(ptTrig, ptSumFECMaxCorr[icase], GetEventWeight());
+    for(Int_t icase = 0; icase < 6; icase++)
+      fhConeSumPtClusterFECCorr[icase]->Fill(ptTrig, ptSumFECCorr[icase], GetEventWeight());
   }
 }
 
@@ -2713,6 +2836,36 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(fStudyFECCorrelation)
       {
+        TString titleMaxFEC[] = 
+        {"No correlation with main cell", "Main cell corr. with near cell", 
+          "Main cell corr. with far cell", "Main cell corr. with near and far"}; 
+        
+        TString titleFEC[] = 
+        {"No main cell corr., no other inside cluster" , "No main cell corr., 1 cell correl in cluster" , "No main cell corr., >=2 cell correl in cluster",
+          "Main cell corr. & no other inside cluster"   , "Main cell corr. & 1 cell corr. inside cluster", "Main cell corr. & >=2 cell corr. inside cluster"};
+        
+        for(Int_t icase = 0; icase < 4; icase++)
+        {
+          fhConeSumPtClusterFECCorrMax[icase] = new TH2F
+          (Form("hConePtSumClusterFECCorrMax_Case%d",icase),
+           Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, %s",r, titleMaxFEC[icase].Data()),
+           nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+          fhConeSumPtClusterFECCorrMax[icase]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtClusterFECCorrMax[icase]->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtClusterFECCorrMax[icase]) ;
+        }
+        
+        for(Int_t icase = 0; icase < 6; icase++)
+        {
+          fhConeSumPtClusterFECCorr[icase] = new TH2F
+          (Form("hConePtSumClusterFECCorr_Case%d",icase),
+           Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, %s",r, titleFEC[icase].Data()),
+           nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+          fhConeSumPtClusterFECCorr[icase]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+          fhConeSumPtClusterFECCorr[icase]->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+          outputContainer->Add(fhConeSumPtClusterFECCorr[icase]) ;
+        }
+                
         fhConeSumPtClusterFECCorrOdd  = new TH2F("hConePtSumClusterFECCorrOdd",
                                                  Form("Cluster #Sigma #it{p}_{T} for #it{R} = %2.2f, odd column in FEC",r),
                                                  nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
