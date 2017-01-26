@@ -11,7 +11,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bCorrectForBadChannel=kFALSE,
-                             Bool_t bRequireTOFSignal=kFALSE,
+                             Bool_t bMimicGlobalCuts=kFALSE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
                              TString sCentrEstimator="V0",
@@ -22,7 +22,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t MaxChi2PerClTPC=4.,
                              Double_t MaxFracSharedTPCCl=0.4,
                              TString sSelecCharge="",
-                             Int_t bCutTPCbound=0,
+                             Bool_t bPtDepDCAxyCut=kFALSE,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
@@ -88,6 +88,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Int_t nHarmonic=2;
   Bool_t bUseCRCRecenter=kFALSE;
   Bool_t bZDCMCCen=kTRUE;
+  Bool_t bRequireTOFSignal=kFALSE;
+  Int_t bCutTPCbound=0;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -310,11 +312,21 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   cutsPOI->SetAODfilterBit(AODfilterBit);
   cutsPOI->SetMinimalTPCdedx(-999999999);
-  cutsPOI->SetMaxDCAToVertexXY(dDCAxy);
-  cutsPOI->SetMaxDCAToVertexZ(dDCAz);
+  cutsPOI->SetMaxDCAToVertexXYAOD(dDCAxy);
+  cutsPOI->SetMaxDCAToVertexZAOD(dDCAz);
   cutsPOI->SetMinNClustersTPC(dMinClusTPC);
   cutsPOI->SetMinChi2PerClusterTPC(0.1);
   cutsPOI->SetMaxChi2PerClusterTPC(MaxChi2PerClTPC);
+  if(bMimicGlobalCuts) {
+     cutsPOI->SetMinNClustersTPC(50);
+     cutsPOI->SetCutCrossedTPCRows(70,0.8);
+     cutsPOI->SetRequireITSRefit(kTRUE);
+     cutsPOI->SetMaxDCAToVertexXYPtDepAOD(kTRUE);
+     cutsPOI->SetCutGoldenChi2(kTRUE);
+     cutsPOI->SetCutChi2PerClusterITS(36.);
+     cutsPOI->SetCutITSClusterGlobal(kTRUE);
+  }
+  if(bPtDepDCAxyCut) cutsPOI->SetMaxDCAToVertexXYPtDepAOD(kTRUE);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
