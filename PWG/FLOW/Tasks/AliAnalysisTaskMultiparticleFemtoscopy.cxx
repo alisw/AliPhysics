@@ -103,6 +103,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fControlHistogramsIdentifiedParticlesList(NULL),
  fControlHistogramsIdentifiedParticlesFlagsPro(NULL),
  fFillControlHistogramsIdentifiedParticles(kFALSE),
+ fFillControlHistogramsWithGlobalTrackInfo(kFALSE),
  fInclusiveSigmaCutsPro(NULL),
  fExclusiveSigmaCutsPro(NULL),
  fUseDefaultInclusiveSigmaCuts(kTRUE),
@@ -191,7 +192,6 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  fGlobalTrackCutsList(NULL),
  fGlobalTrackCutsFlagsPro(NULL),
  fApplyGlobalTrackCuts(kFALSE),
-
  // *.) Online monitoring:
  fOnlineMonitoring(kFALSE),
  fUpdateOutputFile(kFALSE),
@@ -307,6 +307,7 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fControlHistogramsIdentifiedParticlesList(NULL),
  fControlHistogramsIdentifiedParticlesFlagsPro(NULL),
  fFillControlHistogramsIdentifiedParticles(kFALSE),
+ fFillControlHistogramsWithGlobalTrackInfo(kFALSE),
  fInclusiveSigmaCutsPro(NULL),
  fExclusiveSigmaCutsPro(NULL),
  fUseDefaultInclusiveSigmaCuts(kFALSE),
@@ -395,7 +396,6 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  fGlobalTrackCutsList(NULL),
  fGlobalTrackCutsFlagsPro(NULL),
  fApplyGlobalTrackCuts(kFALSE),
-
  // *.) Online monitoring:
  fOnlineMonitoring(kFALSE),
  fUpdateOutputFile(kFALSE),
@@ -768,7 +768,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsEvent(AliVEven
 {
  // Fill control histograms for global event observables.
 
- // TBI: add support for fProcessBothKineAndReco
+ // TBI: not really validated, synchronize all if statements eventually with the analogous ones in UserExec(...)
 
  // To do:
  // 1) Add support for MC and ESD.
@@ -781,16 +781,17 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsEvent(AliVEven
  AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
 
- if(aMC)
+ if(aMC && fProcessOnlyKine) // TBI not validated
  {
   // MC event:
   fGetNumberOfTracksHist->Fill(aMC->GetNumberOfTracks());
+  // ... TBI fill the rest
  } // if(aMC)
  else if(aESD)
  {
   // TBI
  } // else if(aESD)
- else if(aAOD)
+ else if(aAOD) // TBI not validated, nevertheless works at the moment only for fProcessBothKineAndReco = kTRUE and fProcessOnlyReco = kTRUE
  {
   // AOD event:
   fGetNumberOfTracksHist->Fill(aAOD->GetNumberOfTracks()); // not all tracks are unique, see comments in function GlobalTracksAOD(AliAODEvent *aAOD, Int_t index)
@@ -822,6 +823,10 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVE
  // Fill control histograms for particles.
  // Remark: The idea is to have one loop over the particles and to fill everything which needs to be filled.
 
+ // To do:
+ // a) Not really validated for fProcessOnlyKine = kTRUE
+ // b) ESD not supported yet
+
  TString sMethodName = "void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVEvent *ave)";
 
  // a) Determine Ali{MC,ESD,AOD}Event:
@@ -829,7 +834,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVE
  AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
 
- if(aMC)
+ if(aMC && fProcessOnlyKine) // TBI not validated
  {
   // MC tracks:
   for(Int_t iTrack=0;iTrack<aMC->GetNumberOfTracks();iTrack++)
@@ -863,7 +868,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVE
 
  //=================================================================================================================
 
- else if(aAOD)
+ else if(aAOD) // TBI: Works for fProcessBothKineAndReco = kTRUE and fProcessOnlyReco = kTRUE
  {
   // AOD tracks:
   for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
@@ -872,9 +877,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsParticle(AliVE
    // b) Insanity checks for "atrack";
    // c) Determine the corresponding "gtrack" (a.k.a. "normal global" track);
    // d) Insanity checks for "gtrack";
-   // e) Fill the control histograms for non-identified particles;
-   // f) Fill the control histograms for non-identified particles (f.t.s.f); // for the specific filterbit
-   // g) Fill the control histograms for identified particles;
+   // e) Fill the control histograms for non-identified particles; TBI: not validated
+   // f) Fill the control histograms for non-identified particles (f.t.s.f); // for the specific filterbit TBI: not validated
+   // g) Fill the control histograms for identified particles (validated, works both for fProcessBothKineAndReco = kTRUE and fProcessOnlyReco = kTRUE, shall be used for purities)
 
    // a) Determine "atrack" (a.k.a. "any track in AOD"):
    AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
@@ -1004,11 +1009,11 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsNonIdentifiedP
 void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedParticles(AliAODTrack *atrack, AliAODTrack *gtrack)
 {
  // Fill control histograms for identified particles.
- // Uses PassesCommonTrackCuts(...) TBI yet still it stored the paremeters of corresponding global track... TBI
 
- // To do:
- // 1) Add support for MC and ESD, now it works only for AliAODTrack.
- // 2) Shall I instead fill the parameters from atrack?
+ // Remark 0: if fFillControlHistogramsWithGlobalTrackInfo = kTRUE track parameters are taken from 'gtrack', otherwise (and by default) from 'atrack'
+ // Remark 1: if fFillControlHistogramsWithGlobalTrackInfo = kTRUE, only PassesGlobalTrackCuts(gtrack) is checked
+ //           if fFillControlHistogramsWithGlobalTrackInfo = kFALSE, only PassesCommonTrackCuts(atrack) is checked.
+ //           In both cases, PID functions Pion(...), etc. are called for 'gtrack', as only it has a PID info
 
  // a) Insanity checks;
  // b) Check cut selection criteria;
@@ -1020,10 +1025,21 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
  if(!gtrack){Fatal(sMethodName.Data(),"!gtrack");} // TBI keep this for some time, eventually just continue
 
  // b) Check cut selection criteria:
- if(!PassesCommonTrackCuts(atrack)){return;} // TBI in the method PassesGlobalTrackCuts track is hardwired to AliAODTrack. Try to generalize
- // TBI do I need some check for atrack?
+ if(fFillControlHistogramsWithGlobalTrackInfo)
+ {
+  if(atrack->GetID()<0){return;} // this is needed to avoid double counting, I think. TBI well, re-think...
+  if(!PassesGlobalTrackCuts(gtrack)){return;}
+ }
+ else
+ {
+  if(!PassesCommonTrackCuts(atrack)){return;}
+ } // if(fFillControlHistogramsWithGlobalTrackInfo)
 
  // c) Fill control histograms:
+ AliAODTrack *agtrack = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+ if(fFillControlHistogramsWithGlobalTrackInfo){agtrack = gtrack;}
+ else {agtrack = atrack;}
+ if(!agtrack){Fatal(sMethodName.Data(),"!agtrack");}
  Int_t nCharge = 1;
  Bool_t bPrimary = kTRUE;
  for(Int_t charge=0;charge<2;charge++) // 0 = +q, 1 = -q
@@ -1035,26 +1051,26 @@ void AliAnalysisTaskMultiparticleFemtoscopy::FillControlHistogramsIdentifiedPart
    // c2) Pions:
    if(Pion(gtrack,nCharge,bPrimary))
    {
-    fPtPIDHist[2][charge][ps]->Fill(gtrack->Pt());
-    fMassPIDHist[2][charge][ps]->Fill(gtrack->M());
-    fEtaPIDHist[2][charge][ps]->Fill(gtrack->Eta());
-    fPhiPIDHist[2][charge][ps]->Fill(gtrack->Phi());
+    fPtPIDHist[2][charge][ps]->Fill(agtrack->Pt());
+    fMassPIDHist[2][charge][ps]->Fill(agtrack->M());
+    fEtaPIDHist[2][charge][ps]->Fill(agtrack->Eta());
+    fPhiPIDHist[2][charge][ps]->Fill(agtrack->Phi());
    }
    // c3) Kaons:
    if(Kaon(gtrack,nCharge,bPrimary))
    {
-    fPtPIDHist[3][charge][ps]->Fill(gtrack->Pt());
-    fMassPIDHist[3][charge][ps]->Fill(gtrack->M());
-    fEtaPIDHist[3][charge][ps]->Fill(gtrack->Eta());
-    fPhiPIDHist[3][charge][ps]->Fill(gtrack->Phi());
+    fPtPIDHist[3][charge][ps]->Fill(agtrack->Pt());
+    fMassPIDHist[3][charge][ps]->Fill(agtrack->M());
+    fEtaPIDHist[3][charge][ps]->Fill(agtrack->Eta());
+    fPhiPIDHist[3][charge][ps]->Fill(agtrack->Phi());
    }
    // c4) Protons:
    if(Proton(gtrack,nCharge,bPrimary))
    {
-    fPtPIDHist[4][charge][ps]->Fill(gtrack->Pt());
-    fMassPIDHist[4][charge][ps]->Fill(gtrack->M());
-    fEtaPIDHist[4][charge][ps]->Fill(gtrack->Eta());
-    fPhiPIDHist[4][charge][ps]->Fill(gtrack->Phi());
+    fPtPIDHist[4][charge][ps]->Fill(agtrack->Pt());
+    fMassPIDHist[4][charge][ps]->Fill(agtrack->M());
+    fEtaPIDHist[4][charge][ps]->Fill(agtrack->Eta());
+    fPhiPIDHist[4][charge][ps]->Fill(agtrack->Phi());
    }
   } // for(Int_t ps=0;ps<2;ps++) // 0 = kPrimary, 1 = kFromDecayVtx
  } // for(Int_t charge=0;charge<2;charge++) // 0 = +q, 1 = -q
@@ -1268,7 +1284,9 @@ void AliAnalysisTaskMultiparticleFemtoscopy::EstimateBackground(AliVEvent *ave)
    // If the buffer is full, calculate background:
    if(fMaxBufferSize1-1==indexY)
    {
-
+    cout<<"Flushing the buffer for background..."<<endl;
+    cout<<Form("fMaxBufferSize1 = %d",fMaxBufferSize1)<<endl;
+    cout<<Form("fMixedEvents1[indexX][indexY] = fMixedEvents1[%d][%d]",indexX,indexY)<<endl;
     // Shall we do something for 2p background?
     if(fEstimate2pBackground) // this buffer is full TBI hardwired 4. Making all possible combinations of 2 events
     {
@@ -1854,6 +1872,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Pion(AliAODTrack *gtrack, Int_t c
  {
   if(!fMC){Fatal(sMethodName.Data(),"!fMC");}
   AliAODMCParticle *mcParticle = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(TMath::Abs(gtrack->GetLabel())));
+  if(!mcParticle){cout<<"WARNING: mcParticle is NULL in Pion(...)! gtrack = "<<gtrack<<endl; return kFALSE; } // TBI well, it remains undetermined, investigate further why in some very rare cases I cannot get this pointer. if I get too many warnings, that purity estimation will be affected
   if(charge < 0 && mcParticle->GetPdgCode() == -211) return kTRUE;
   else if(charge > 0 && mcParticle->GetPdgCode() == 211) return kTRUE;
   else return kFALSE;
@@ -1924,6 +1943,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Kaon(AliAODTrack *gtrack, Int_t c
  {
   if(!fMC){Fatal(sMethodName.Data(),"!fMC");}
   AliAODMCParticle *mcParticle = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(TMath::Abs(gtrack->GetLabel())));
+  if(!mcParticle){cout<<"WARNING: mcParticle is NULL in Kaon(...)! gtrack = "<<gtrack<<endl; return kFALSE; } // TBI well, it remains undetermined, investigate further why in some very rare cases I cannot get this pointer. if I get too many warnings, that purity estimation will be affected
   if(charge < 0 && mcParticle->GetPdgCode() == -321) return kTRUE;
   else if(charge > 0 && mcParticle->GetPdgCode() == 321) return kTRUE;
   else return kFALSE;
@@ -1992,6 +2012,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::Proton(AliAODTrack *gtrack, Int_t
  {
   if(!fMC){Fatal(sMethodName.Data(),"!fMC");}
   AliAODMCParticle *mcParticle = dynamic_cast<AliAODMCParticle*>(fMC->GetTrack(TMath::Abs(gtrack->GetLabel())));
+  if(!mcParticle){cout<<"WARNING: mcParticle is NULL in Proton(...)! gtrack = "<<gtrack<<endl; return kFALSE; } // TBI well, it remains undetermined, investigate further why in some very rare cases I cannot get this pointer. if I get too many warnings, that purity estimation will be affected
   if(charge < 0 && mcParticle->GetPdgCode() == -2212) return kTRUE;
   else if(charge > 0 && mcParticle->GetPdgCode() == 2212) return kTRUE;
   else return kFALSE;
@@ -2234,6 +2255,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::InitializeArraysForGlobalTrackCuts(
 {
  // Initialize all arrays for common global tracks cuts. In essence, these are the default cuts for "normal" global tracks in AOD.
 
+ // The default values, can be overwritten with the setters SetPtRange(...), etc.
  fPtRange[0] = 0.2; // pt min
  fPtRange[1] = 5.0; // pt max
  fEtaRange[0] = -0.8; // eta min
@@ -2254,14 +2276,14 @@ Int_t AliAnalysisTaskMultiparticleFemtoscopy::InsanityChecksForGlobalTrackCuts()
  // 2) eta range;
  // 3) phi range;
 
- if(fPtRange[0]<0.||fPtRange[1]<0.){return 1;} // pt is positive
- if(fPtRange[0]>fPtRange[1]){return 1;} // ptmin > ptmax
+ if(fPtRange[0]<0.||fPtRange[1]<0.){cout<<Form("fPtRange[0] = %f, fPtRange[1] = %f",fPtRange[0],fPtRange[1])<<endl; return 1;} // pt is positive
+ if(fPtRange[0]>fPtRange[1]){cout<<Form("fPtRange[0] = %f, fPtRange[1] = %f",fPtRange[0],fPtRange[1])<<endl; return 1;} // ptmin > ptmax
 
- if(fEtaRange[0]>fEtaRange[1]){return 2;} // etamin > etamax
+ if(fEtaRange[0]>fEtaRange[1]){cout<<Form("fEtaRange[0] = %f, fEtaRange[1] = %f",fEtaRange[0],fEtaRange[1])<<endl; return 2;} // etamin > etamax
 
- if(fPhiRange[0]<0.||fPhiRange[1]<0.){return 3;} // phi is positive
+ if(fPhiRange[0]<0.||fPhiRange[1]<0.){cout<<Form("fPhiRange[0] = %f, fPhiRange[1] = %f",fPhiRange[0],fPhiRange[1])<<endl; return 3;} // phi is positive
  //if(fPhiRange[0]>TMath::TwoPi()||fPhiRange[1]>TMath::TwoPi()){return 3;} // phi shall be smaller than 2\pi TBI
- if(fPhiRange[0]>fPhiRange[1]){return 3;} // phimin > phimax
+ if(fPhiRange[0]>fPhiRange[1]){cout<<Form("fPhiRange[0] = %f, fPhiRange[1] = %f",fPhiRange[0],fPhiRange[1])<<endl; return 3;} // phimin > phimax
 
  return 0; // Life is like a wheel...
 
@@ -2710,7 +2732,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  } // if(fFillControlFTSFHistogramsNonIdentifiedParticlesFTSF)
 
  //  c3) Identified particles:
- fControlHistogramsIdentifiedParticlesFlagsPro = new TProfile("fControlHistogramsIdentifiedParticlesFlagsPro","Flags and settings for identified particles",3,0,3);
+ fControlHistogramsIdentifiedParticlesFlagsPro = new TProfile("fControlHistogramsIdentifiedParticlesFlagsPro","Flags and settings for identified particles",4,0,4);
  fControlHistogramsIdentifiedParticlesFlagsPro->SetTickLength(-0.01,"Y");
  fControlHistogramsIdentifiedParticlesFlagsPro->SetMarkerStyle(25);
  fControlHistogramsIdentifiedParticlesFlagsPro->SetLabelSize(0.04);
@@ -2721,6 +2743,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(1,"fFillControlHistogramsIdentifiedParticles"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(0.5,fFillControlHistogramsIdentifiedParticles);
  fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(2,"fUseDefaultInclusiveSigmaCuts"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(1.5,(Int_t)fUseDefaultInclusiveSigmaCuts);
  fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(3,"fUseDefaultExclusiveSigmaCuts"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(2.5,(Int_t)fUseDefaultExclusiveSigmaCuts);
+ fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(4,"fFillControlHistogramsWithGlobalTrackInfo"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(3.5,(Int_t)fFillControlHistogramsWithGlobalTrackInfo);
  fControlHistogramsIdentifiedParticlesList->Add(fControlHistogramsIdentifiedParticlesFlagsPro);
  if(fFillControlHistogramsIdentifiedParticles)
  {
@@ -2730,7 +2753,14 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
    {
     for(Int_t ps=0;ps<2;ps++) // kPrimary/kFromDecayVtx
     {
-     fMassPIDHist[pid][pa][ps] = new TH1F(Form("fMassPIDHist[%d][%d][%d]",pid,pa,ps),Form("fMassPIDHist[%d][%d][%d] (%s)",pid,pa,ps,sParticleLabel[pid].Data()),10000,0.,10.);
+     if(fFillControlHistogramsWithGlobalTrackInfo)
+     {
+      fMassPIDHist[pid][pa][ps] = new TH1F(Form("fMassPIDHist[%d][%d][%d]",pid,pa,ps),Form("fMassPIDHist[%d][%d][%d] (%s) ('gtrack' parameters)",pid,pa,ps,sParticleLabel[pid].Data()),10000,0.,10.);
+     }
+     else
+     {
+      fMassPIDHist[pid][pa][ps] = new TH1F(Form("fMassPIDHist[%d][%d][%d]",pid,pa,ps),Form("fMassPIDHist[%d][%d][%d] (%s) ('atrack' parameters)",pid,pa,ps,sParticleLabel[pid].Data()),10000,0.,10.);
+     }
      fMassPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("m [GeV/c^{2}]");
      for(Int_t nm=0;nm<5;nm++) // nominal masses
      {
@@ -2738,14 +2768,35 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
      }
      fMassPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
      fControlHistogramsIdentifiedParticlesList->Add(fMassPIDHist[pid][pa][ps]);
-     fPtPIDHist[pid][pa][ps] = new TH1F(Form("fPtPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPtPIDHist[%d][%d][%d]",pid,pa,ps),1000,0.,10.);
-     fPtPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("p_{T} [TBI units]");
+     if(fFillControlHistogramsWithGlobalTrackInfo)
+     {
+      fPtPIDHist[pid][pa][ps] = new TH1F(Form("fPtPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPtPIDHist[%d][%d][%d] ('gtrack' parameters)",pid,pa,ps),1000,0.,10.);
+     }
+     else
+     {
+      fPtPIDHist[pid][pa][ps] = new TH1F(Form("fPtPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPtPIDHist[%d][%d][%d] ('atrack' parameters)",pid,pa,ps),1000,0.,10.);
+     }
+     fPtPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("p_{T} [GeV/c]");
      fPtPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
      fControlHistogramsIdentifiedParticlesList->Add(fPtPIDHist[pid][pa][ps]);
-     fEtaPIDHist[pid][pa][ps] = new TH1F(Form("fEtaPIDHist[%d][%d][%d]",pid,pa,ps),Form("fEtaPIDHist[%d][%d][%d]",pid,pa,ps),200000,-2.,2.);
+     if(fFillControlHistogramsWithGlobalTrackInfo)
+     {
+      fEtaPIDHist[pid][pa][ps] = new TH1F(Form("fEtaPIDHist[%d][%d][%d]",pid,pa,ps),Form("fEtaPIDHist[%d][%d][%d] ('gtrack' parameters)",pid,pa,ps),200000,-2.,2.);
+     }
+     else
+     {
+      fEtaPIDHist[pid][pa][ps] = new TH1F(Form("fEtaPIDHist[%d][%d][%d]",pid,pa,ps),Form("fEtaPIDHist[%d][%d][%d] ('atrack' parameters)",pid,pa,ps),200000,-2.,2.);
+     }
      fEtaPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
      fControlHistogramsIdentifiedParticlesList->Add(fEtaPIDHist[pid][pa][ps]);
-     fPhiPIDHist[pid][pa][ps] = new TH1F(Form("fPhiPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPhiPIDHist[%d][%d][%d]",pid,pa,ps),360,0.,TMath::TwoPi());
+     if(fFillControlHistogramsWithGlobalTrackInfo)
+     {
+      fPhiPIDHist[pid][pa][ps] = new TH1F(Form("fPhiPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPhiPIDHist[%d][%d][%d] ('gtrack' parameters)",pid,pa,ps),360,0.,TMath::TwoPi());
+     }
+     else
+     {
+      fPhiPIDHist[pid][pa][ps] = new TH1F(Form("fPhiPIDHist[%d][%d][%d]",pid,pa,ps),Form("fPhiPIDHist[%d][%d][%d] ('atrack' parameters)",pid,pa,ps),360,0.,TMath::TwoPi());
+     }
      fPhiPIDHist[pid][pa][ps]->GetXaxis()->SetTitle("#phi");
      fPhiPIDHist[pid][pa][ps]->SetFillColor(kBlue-10);
      fControlHistogramsIdentifiedParticlesList->Add(fPhiPIDHist[pid][pa][ps]);
@@ -3050,6 +3101,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
     f2pBackground[pid1][pid2] = new TH1F(Form("f2pBackground[%d][%d]",pid1,pid2),Form("f2pBackground[%d][%d] = (%s,%s)",pid1,pid2,sParticles[pid1].Data(),sParticles[pid2].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
     f2pBackground[pid1][pid2]->SetStats(kTRUE);
     f2pBackground[pid1][pid2]->SetFillColor(kRed-10);
+    f2pBackground[pid1][pid2]->SetLineColor(kRed);
     f2pBackground[pid1][pid2]->SetXTitle("k");
     f2pBackground[pid1][pid2]->SetYTitle("B(k)");
     fBackgroundSublist[0]->Add(f2pBackground[pid1][pid2]);
@@ -3070,6 +3122,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
      f3pBackground[pid1][pid2][pid3] = new TH1F(Form("f3pBackground[%d][%d][%d]",pid1,pid2,pid3),Form("f3pBackground[%d][%d][%d] = (%s,%s,%s)",pid1,pid2,pid3,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
      f3pBackground[pid1][pid2][pid3]->SetStats(kTRUE);
      f3pBackground[pid1][pid2][pid3]->SetFillColor(kRed-10);
+     f3pBackground[pid1][pid2][pid3]->SetLineColor(kRed);
      f3pBackground[pid1][pid2][pid3]->SetXTitle("Q_{3}");
      f3pBackground[pid1][pid2][pid3]->SetYTitle("B(Q_{3})");
      fBackgroundSublist[1]->Add(f3pBackground[pid1][pid2][pid3]);
@@ -3093,6 +3146,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
       f4pBackground[pid1][pid2][pid3][pid4] = new TH1F(Form("f4pBackground[%d][%d][%d][%d]",pid1,pid2,pid3,pid4),Form("f4pBackground[%d][%d][%d][%d] = (%s,%s,%s,%s)",pid1,pid2,pid3,pid4,sParticles[pid1].Data(),sParticles[pid2].Data(),sParticles[pid3].Data(),sParticles[pid4].Data()),10000,0.,10.); // TBI rethink the boundaries and nbins
       f4pBackground[pid1][pid2][pid3][pid4]->SetStats(kTRUE);
       f4pBackground[pid1][pid2][pid3][pid4]->SetFillColor(kRed-10);
+      f4pBackground[pid1][pid2][pid3][pid4]->SetLineColor(kRed);
       f4pBackground[pid1][pid2][pid3][pid4]->SetXTitle("Q_{4}");
       f4pBackground[pid1][pid2][pid3][pid4]->SetYTitle("B(Q_{4})");
       fBackgroundSublist[2]->Add(f4pBackground[pid1][pid2][pid3][pid4]);
@@ -3416,7 +3470,6 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesGlobalTrackCuts(AliAODTrack
  // To do: add data members and corresponding setters:
  // fTPCNclsMin, fTPCNclsMax
  // fTPCsignalNMin, fTPCsignalNMax
-
  if(gtrack->Pt()<fPtRange[0]) return kFALSE;
  if(gtrack->Pt()>=fPtRange[1]) return kFALSE;
  if(gtrack->Eta()<fEtaRange[0]) return kFALSE;
@@ -3444,9 +3497,19 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack
 
  if(!atrack->TestFilterBit(128)) return kFALSE; // TPC-only TBI setter TBI#2 There might be some conflict with FillControlHistogramsNonIdentifiedParticlesFTSF
 
+ // TBI: implement eventually separate cuts for 'atracks' and 'gtracks'
+ if(atrack->Pt()<fPtRange[0]) return kFALSE;
+ if(atrack->Pt()>=fPtRange[1]) return kFALSE;
+ if(atrack->Eta()<fEtaRange[0]) return kFALSE;
+ if(atrack->Eta()>=fEtaRange[1]) return kFALSE;
+ if(atrack->Phi()<fPhiRange[0]) return kFALSE;
+ if(atrack->Phi()>=fPhiRange[1]) return kFALSE;
+ //if(gtrack->GetTPCNcls()<70) return kFALSE;
+ //if(gtrack->GetTPCsignalN()<70) return kFALSE;
+
  if(fRejectFakeTracks && atrack->GetLabel()<0) return kFALSE; // TBI is it more precise <=0 ?
 
- return kTRUE; 
+ return kTRUE;
 
 } // Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack *atrack)
 
@@ -3454,7 +3517,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODTrack
 
 Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODMCParticle *amcparticle)
 {
- // TBI this method applies only to MC, make it uniform with AOD.
+ // TBI not validated. this method applies only to MC, make it uniform with AOD.
 
  TString sMethodName = "Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonTrackCuts(AliAODMCParticle *amcparticle)";
  if(!amcparticle){Fatal(sMethodName.Data(),"!amcparticle");}
@@ -3485,7 +3548,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonEventCuts(AliVEvent *
  AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
 
- if(aMC)
+ if(aMC && fProcessOnlyKine)
  {
   // TBI
  }
@@ -3493,7 +3556,7 @@ Bool_t AliAnalysisTaskMultiparticleFemtoscopy::PassesCommonEventCuts(AliVEvent *
  {
   // TBI
  }
- else if(aAOD)
+ else if(aAOD) // shall work both for fProcessBothKineAndReco = kTRUE and fProcessOnlyReco = kTRUE
  {
   // a) Cuts on AliAODEvent:
   if(fRejectEventsWithoutPrimaryVertex && !aAOD->GetPrimaryVertex()) return kFALSE;
@@ -3637,7 +3700,21 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
    // Common track selection criteria for all "normal" global tracks:
    if(!PassesGlobalTrackCuts(gtrack2)){continue;}
 
-   // Okay, so we have two tracks, let's check PID, and fill the correlation functions:
+   // Okay, so we have two tracks, let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and fill the correlation functions:
+   AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   if(fFillControlHistogramsWithGlobalTrackInfo)
+   {
+    agtrack1 = gtrack1;
+    agtrack2 = gtrack2;
+   }
+   else
+   {
+    agtrack1 = atrack1;
+    agtrack2 = atrack2;
+   } // if(fFillControlHistogramsWithGlobalTrackInfo)
+   if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+   if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
 
    // 1.) Same particle species:
 
@@ -3645,51 +3722,51 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
    //  a1) pi+pi+ [2][2]:
    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[2][2]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a2) pi-pi- [7][7]:
    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[7][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[7][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a3) pi+pi- || pi-pi+ [2][7]:
    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,1,kTRUE)))
    {
-    fCorrelationFunctions[2][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[2][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // b) kaon-kaon:
    //  b1) K+K+ [3][3]:
    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[3][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[3][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b2) K-K- [8][8]:
    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[8][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[8][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b3) K+K- || K-K+ [3][8]:
    if((Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE)) || (Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,1,kTRUE)))
    {
-    fCorrelationFunctions[3][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[3][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // c) proton-proton:
    //  c1) p+p+ [4][4]:
    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[4][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[4][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c2) p-p- [9][9]:
    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[9][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[9][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c3) p+p- || p-p+ [4][9]:
    if((Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE)) || (Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,1,kTRUE)))
    {
-    fCorrelationFunctions[4][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[4][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // 2.) Mixed particle species:
@@ -3697,64 +3774,64 @@ void AliAnalysisTaskMultiparticleFemtoscopy::CalculateCorrelationFunctions(AliAO
    //  a1) pi+K+ [2][3]:
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[2][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[2][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a2) pi+K- [2][8]
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[2][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[2][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a3) K+pi- [3][7]
    if(Kaon(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[3][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[3][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[7][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[7][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[2][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[2][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b2) pi+p- [2][9]
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[2][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[2][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b3) p+pi- [4][7]
    if(Proton(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[4][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[4][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b4) pi-p- [7][9]
    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[7][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[7][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    // c) kaon-proton
    //  c1) K+p+ [3][4]:
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    fCorrelationFunctions[3][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[3][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c2) K+p- [3][9]
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[3][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[3][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c3) p+K- [4][8]
    if(Proton(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[4][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[4][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c4) K-p- [8][9]
    if(Kaon(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    fCorrelationFunctions[8][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    fCorrelationFunctions[8][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
   } // for(Int_t iTrack2=0;iTrack2<nTracks;iTrack2++)
  } // for(Int_t iTrack1=0;iTrack1<nTracks;iTrack1++)
@@ -3837,7 +3914,25 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pCorrelationFunctions(Ali
     // Common track selection criteria for all "normal" global tracks:
     if(!PassesGlobalTrackCuts(gtrack3)){continue;}
 
-    // Okay, so we have three tracks, let's check PID, and fill the correlation functions:
+    // Okay, so we have three tracks, let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and fill the correlation functions:
+    AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    AliAODTrack *agtrack3 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    if(fFillControlHistogramsWithGlobalTrackInfo)
+    {
+     agtrack1 = gtrack1;
+     agtrack2 = gtrack2;
+     agtrack3 = gtrack3;
+    }
+    else
+    {
+     agtrack1 = atrack1;
+     agtrack2 = atrack2;
+     agtrack3 = atrack3;
+    } // if(fFillControlHistogramsWithGlobalTrackInfo)
+    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
+    if(!agtrack3){Fatal(sMethodName.Data(),"!agtrack3");}
 
     // Cases of interest:
     // a) Same species and same charge;
@@ -3849,171 +3944,168 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pCorrelationFunctions(Ali
     // pi+pi+pi+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[2][2][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
-     cout<<Form("iTrack1 = [%d], iTrack2 = [%d], iTrack3 = [%d]",iTrack1,iTrack2,iTrack3)<<endl;
-     cout<<Form("gid1    = [%d], gid2    = [%d],    gid3 = [%d]",gid1,gid2,gid3)<<endl;
-     cout<<gtrack1<<" "<<gtrack2<<" "<<gtrack3<<endl;
+     f3pCorrelationFunctions[2][2][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-pi-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[7][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[7][7][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K+K+
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[3][3][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[3][3][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K-K-K-
     if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[8][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[8][8][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+p+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[4][4][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[4][4][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-p-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[9][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[9][9][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // b) Same species but different charge combinations (modulo permutations):
     // pi+pi+pi-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[2][2][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][2][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-pi-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[2][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][7][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K+K-
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[3][3][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[3][3][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K-K-
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[3][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[3][8][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+p-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[4][4][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[4][4][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p-p-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[4][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[4][9][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // c) Two pions + something else (modulo permutations):
     // pi+pi+K+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[2][2][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][2][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+K-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[2][2][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][2][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-K+
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[7][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[7][7][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-K-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[7][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[7][7][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-K+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[2][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][7][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-K-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[2][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][7][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+p+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[2][2][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][2][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+p-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[2][2][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][2][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-p+
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[7][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[7][7][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-p-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[7][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[7][7][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-p+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[2][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][7][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-p-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[2][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[2][7][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // d) Two nucleons + something else (modulo permutations):
     // p+p+pi+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[4][4][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[4][4][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+pi-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[4][4][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[4][4][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+K+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[4][4][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[4][4][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+K-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[4][4][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[4][4][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-pi+
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[9][9][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[9][9][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-pi-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[9][9][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[9][9][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-K+
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pCorrelationFunctions[9][9][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[9][9][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-K-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pCorrelationFunctions[9][9][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pCorrelationFunctions[9][9][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks;iTrack3++)
@@ -4111,21 +4203,42 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate4pCorrelationFunctions(Ali
      // Common track selection criteria for all "normal" global tracks:
      if(!PassesGlobalTrackCuts(gtrack4)){continue;}
 
+     // Okay, so we have four tracks, let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and fill the correlation functions:
+     AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+     AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+     AliAODTrack *agtrack3 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+     AliAODTrack *agtrack4 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+     if(fFillControlHistogramsWithGlobalTrackInfo)
+     {
+      agtrack1 = gtrack1;
+      agtrack2 = gtrack2;
+      agtrack3 = gtrack3;
+      agtrack4 = gtrack4;
+     }
+     else
+     {
+      agtrack1 = atrack1;
+      agtrack2 = atrack2;
+      agtrack3 = atrack3;
+      agtrack4 = atrack4;
+     } // if(fFillControlHistogramsWithGlobalTrackInfo)
+     if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+     if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
+     if(!agtrack3){Fatal(sMethodName.Data(),"!agtrack3");}
+     if(!agtrack4){Fatal(sMethodName.Data(),"!agtrack4");}
 
-
-     // Okay, so we have four tracks, let's check PID, and fill the correlation functions:
 
      // TBI
      // First test example: pi+pi+pi+pi+
      if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE) && Pion(gtrack4,1,kTRUE))
      {
-      f4pCorrelationFunctions[2][2][2][2]->Fill(Q4(gtrack1,gtrack2,gtrack3,gtrack4));
+      f4pCorrelationFunctions[2][2][2][2]->Fill(Q4(agtrack1,agtrack2,agtrack3,agtrack4));
      }
 
      // Second test example: pi-pi-pi-pi-
      if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE) && Pion(gtrack4,-1,kTRUE))
      {
-      f4pCorrelationFunctions[7][7][7][7]->Fill(Q4(gtrack1,gtrack2,gtrack3,gtrack4));
+      f4pCorrelationFunctions[7][7][7][7]->Fill(Q4(agtrack1,agtrack2,agtrack3,agtrack4));
      }
 
 
@@ -4357,7 +4470,21 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    // Common track selection criteria for all "normal" global tracks:
    if(!PassesGlobalTrackCuts(gtrack2)){continue;}
 
-   // Okay... So we have two tracks from two different events ready. Let's check PID, and calculate the background:
+   // Okay... So we have two tracks from two different events ready. let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and calculate the background:
+   AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   if(fFillControlHistogramsWithGlobalTrackInfo)
+   {
+    agtrack1 = gtrack1;
+    agtrack2 = gtrack2;
+   }
+   else
+   {
+    agtrack1 = atrack1;
+    agtrack2 = atrack2;
+   } // if(fFillControlHistogramsWithGlobalTrackInfo)
+   if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+   if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
 
    // 1.) Same particle species:
 
@@ -4365,51 +4492,51 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    //  a1) pi+pi+ [2][2]:
    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][2]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a2) pi-pi- [7][7]:
    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a3) pi+pi- || pi-pi+ [2][7]:
    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,1,kTRUE)))
    {
-    f2pBackground[2][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // b) kaon-kaon:
    //  b1) K+K+ [3][3]:
    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    f2pBackground[3][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b2) K-K- [8][8]:
    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[8][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[8][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b3) K+K- || K-K+ [3][8]:
    if((Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE)) || (Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,1,kTRUE)))
    {
-    f2pBackground[3][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // c) proton-proton:
    //  c1) p+p+ [4][4]:
    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[4][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c2) p-p- [9][9]:
    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[9][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[9][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c3) p+p- || p-p+ [4][9]:
    if((Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE)) || (Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,1,kTRUE)))
    {
-    f2pBackground[4][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // 2.) Mixed particle species:
@@ -4417,64 +4544,64 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    //  a1) pi+K+ [2][3]:
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a2) pi+K- [2][8]
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[2][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a3) K+pi- [3][7]
    if(Kaon(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[3][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b2) pi+p- [2][9]
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[2][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b3) p+pi- [4][7]
    if(Proton(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[4][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b4) pi-p- [7][9]
    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    // c) kaon-proton
    //  c1) K+p+ [3][4]:
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[3][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c2) K+p- [3][9]
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[3][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c3) p+K- [4][8]
    if(Proton(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[4][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c4) K-p- [8][9]
    if(Kaon(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[8][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[8][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
@@ -4536,59 +4663,73 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    // Common track selection criteria for all "normal" global tracks:
    if(!PassesGlobalTrackCuts(gtrack2)){continue;}
 
-   // Okay... So we have two tracks from two different events ready. Let's check PID, and calculate the background:
+   // Okay... So we have two tracks from two different events ready. let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and calculate the background:
+   AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+   if(fFillControlHistogramsWithGlobalTrackInfo)
+   {
+    agtrack1 = gtrack1;
+    agtrack2 = gtrack2;
+   }
+   else
+   {
+    agtrack1 = atrack1;
+    agtrack2 = atrack2;
+   } // if(fFillControlHistogramsWithGlobalTrackInfo)
+   if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+   if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
 
    // 1.) Same particle species:
    // a) pion-pion:
    //  a1) pi+pi+ [2][2]:
    if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][2]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][2]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    //  a2) pi-pi- [7][7]:
    if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a3) pi+pi- || pi-pi+ [2][7]:
    if((Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE)) || (Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,1,kTRUE)))
    {
-    f2pBackground[2][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // b) kaon-kaon:
    //  b1) K+K+ [3][3]:
    if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    f2pBackground[3][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b2) K-K- [8][8]:
    if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[8][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[8][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b3) K+K- || K-K+ [3][8]:
    if((Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE)) || (Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,1,kTRUE)))
    {
-    f2pBackground[3][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // c) proton-proton:
    //  c1) p+p+ [4][4]:
    if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[4][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c2) p-p- [9][9]:
    if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[9][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[9][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c3) p+p- || p-p+ [4][9]:
    if((Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE)) || (Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,1,kTRUE)))
    {
-    f2pBackground[4][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
    // 2.) Mixed particle species:
@@ -4596,64 +4737,64 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate2pBackground(TClonesArray 
    //  a1) pi+K+ [2][3]:
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][3]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][3]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a2) pi+K- [2][8]
    if(Pion(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[2][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a3) K+pi- [3][7]
    if(Kaon(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[3][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  a4) pi-K- [7][8]
    if(Pion(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    // b) pion-proton
    //  b1) pi+p+ [2][4]:
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[2][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b2) pi+p- [2][9]
    if(Pion(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[2][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[2][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b3) p+pi- [4][7]
    if(Proton(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE))
    {
-    f2pBackground[4][7]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][7]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  b4) pi-p- [7][9]
    if(Pion(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[7][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[7][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    // c) kaon-proton
    //  c1) K+p+ [3][4]:
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE))
    {
-    f2pBackground[3][4]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][4]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c2) K+p- [3][9]
    if(Kaon(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[3][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[3][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c3) p+K- [4][8]
    if(Proton(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE))
    {
-    f2pBackground[4][8]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[4][8]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
    //  c4) K-p- [8][9]
    if(Kaon(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE))
    {
-    f2pBackground[8][9]->Fill(RelativeMomenta(gtrack1,gtrack2));
+    f2pBackground[8][9]->Fill(RelativeMomenta(agtrack1,agtrack2));
    }
 
   } // for(Int_t iTrack2=0;iTrack2<nTracks2;iTrack2++)
@@ -4733,7 +4874,25 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
     // Common track selection criteria for all "normal" global tracks:
     if(!PassesGlobalTrackCuts(gtrack3)){continue;}
 
-    // Okay... So we have three tracks from two different events ready. Let's check PID, and calculate the background:
+    // Okay... So we have three tracks from three different events ready. let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and calculate the background:
+    AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    AliAODTrack *agtrack3 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    if(fFillControlHistogramsWithGlobalTrackInfo)
+    {
+     agtrack1 = gtrack1;
+     agtrack2 = gtrack2;
+     agtrack3 = gtrack3;
+    }
+    else
+    {
+     agtrack1 = atrack1;
+     agtrack2 = atrack2;
+     agtrack3 = atrack3;
+    } // if(fFillControlHistogramsWithGlobalTrackInfo)
+    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
+    if(!agtrack3){Fatal(sMethodName.Data(),"!agtrack3");}
 
     // Cases of interest (needs to be synchronized with the calculations of correlations functions):
     // a) Same species and same charge;
@@ -4745,168 +4904,168 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
     // pi+pi+pi+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][2][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-pi-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[7][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K+K+
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[3][3][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[3][3][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K-K-K-
     if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[8][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[8][8][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+p+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pBackground[4][4][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-p-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[9][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // b) Same species but different charge combinations (modulo permutations):
     // pi+pi+pi-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][2][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-pi-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K+K-
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[3][3][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[3][3][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K-K-
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[3][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[3][8][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+p-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[4][4][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p-p-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[4][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][9][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // c) Two pions + something else (modulo permutations):
     // pi+pi+K+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][2][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+K-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][2][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-K+
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[7][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-K-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[7][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-K+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-K-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+p+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][2][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+p-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][2][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-p+
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pBackground[7][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-p-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[7][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-p+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-p-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // d) Two nucleons + something else (modulo permutations):
     // p+p+pi+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pBackground[4][4][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+pi-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[4][4][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+K+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[4][4][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+K-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[4][4][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-pi+
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pBackground[9][9][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-pi-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[9][9][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-K+
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[9][9][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-K-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[9][9][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
@@ -4914,9 +5073,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3)
-
-
-
 
 //=======================================================================================================================
 
@@ -4989,7 +5145,25 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
     // Common track selection criteria for all "normal" global tracks:
     if(!PassesGlobalTrackCuts(gtrack3)){continue;}
 
-    // Okay... So we have three tracks from two different events ready. Let's check PID, and calculate the background:
+    // Okay... So we have three tracks from three different events ready. let's decide whether kinemetics from 'atrack' or 'gtrack' is taken, let's check PID, and calculate the background:
+    AliAODTrack *agtrack1 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    AliAODTrack *agtrack2 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    AliAODTrack *agtrack3 = NULL; // either 'atrack' or 'gtrack', depending on the flag fFillControlHistogramsWithGlobalTrackInfo. By default, agtrack = 'atrack'
+    if(fFillControlHistogramsWithGlobalTrackInfo)
+    {
+     agtrack1 = gtrack1;
+     agtrack2 = gtrack2;
+     agtrack3 = gtrack3;
+    }
+    else
+    {
+     agtrack1 = atrack1;
+     agtrack2 = atrack2;
+     agtrack3 = atrack3;
+    } // if(fFillControlHistogramsWithGlobalTrackInfo)
+    if(!agtrack1){Fatal(sMethodName.Data(),"!agtrack1");}
+    if(!agtrack2){Fatal(sMethodName.Data(),"!agtrack2");}
+    if(!agtrack3){Fatal(sMethodName.Data(),"!agtrack3");}
 
     // Cases of interest (needs to be synchronized with the calculations of correlations functions):
     // a) Same species and same charge;
@@ -5001,168 +5175,168 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
     // pi+pi+pi+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][2][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-pi-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[7][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K+K+
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[3][3][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[3][3][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K-K-K-
     if(Kaon(gtrack1,-1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[8][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[8][8][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+p+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pBackground[4][4][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-p-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[9][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // b) Same species but different charge combinations (modulo permutations):
     // pi+pi+pi-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][2][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-pi-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][7][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K+K-
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[3][3][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[3][3][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // K+K-K-
     if(Kaon(gtrack1,1,kTRUE) && Kaon(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[3][8][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[3][8][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+p-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[4][4][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p-p-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[4][9][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][9][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // c) Two pions + something else (modulo permutations):
     // pi+pi+K+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][2][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+K-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][2][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-K+
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[7][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-K-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[7][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-K+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][7][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-K-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][7][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+p+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][2][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi+p-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][2][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][2][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-p+
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pBackground[7][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi-pi-p-
     if(Pion(gtrack1,-1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[7][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[7][7][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-p+
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,1,kTRUE))
     {
-     f3pBackground[2][7][4]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][4]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // pi+pi-p-
     if(Pion(gtrack1,1,kTRUE) && Pion(gtrack2,-1,kTRUE) && Proton(gtrack3,-1,kTRUE))
     {
-     f3pBackground[2][7][9]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[2][7][9]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
     // d) Two nucleons + something else (modulo permutations):
     // p+p+pi+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pBackground[4][4][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+pi-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[4][4][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+K+
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[4][4][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p+p+K-
     if(Proton(gtrack1,1,kTRUE) && Proton(gtrack2,1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[4][4][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[4][4][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-pi+
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,1,kTRUE))
     {
-     f3pBackground[9][9][2]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][2]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-pi-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Pion(gtrack3,-1,kTRUE))
     {
-     f3pBackground[9][9][7]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][7]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-K+
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,1,kTRUE))
     {
-     f3pBackground[9][9][3]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][3]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
     // p-p-K-
     if(Proton(gtrack1,-1,kTRUE) && Proton(gtrack2,-1,kTRUE) && Kaon(gtrack3,-1,kTRUE))
     {
-     f3pBackground[9][9][8]->Fill(Q3(gtrack1,gtrack2,gtrack3));
+     f3pBackground[9][9][8]->Fill(Q3(agtrack1,agtrack2,agtrack3));
     }
 
    } // for(Int_t iTrack3=0;iTrack3<nTracks3;iTrack3++)
@@ -5170,9 +5344,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray 
  } // for(Int_t iTrack1=0;iTrack1<nTracks1;iTrack1++)
 
 } // void AliAnalysisTaskMultiparticleFemtoscopy::Calculate3pBackground(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3)
-
-
-
 
 //=======================================================================================================================
 

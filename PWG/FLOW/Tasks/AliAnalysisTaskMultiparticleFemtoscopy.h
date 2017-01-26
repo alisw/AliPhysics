@@ -162,6 +162,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Int_t GetFilterBitFTSF() const {return this->fFilterBitFTSF;};
   void SetFillControlHistogramsIdentifiedParticles(Bool_t fchip) {this->fFillControlHistogramsIdentifiedParticles = fchip;};
   Bool_t GetFillControlHistogramsIdentifiedParticles() const {return this->fFillControlHistogramsIdentifiedParticles;};
+  void SetFillControlHistogramsWithGlobalTrackInfo(Bool_t fchwgti) {this->fFillControlHistogramsWithGlobalTrackInfo = fchwgti;};
+  Bool_t GetFillControlHistogramsWithGlobalTrackInfo() const {return this->fFillControlHistogramsWithGlobalTrackInfo;};
   void SetFillControlHistogramsV0s(Bool_t fchv) {this->fFillControlHistogramsV0s = fchv;};
   Bool_t GetFillControlHistogramsV0s() const {return this->fFillControlHistogramsV0s;};
   // 1d) Identified particles:
@@ -294,7 +296,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
    this->fMaxNContributors = maxNc;
   };
 
-  // 8.) Common global track cuts:
+  // 8.) Common global track cuts: // TBI at the moment, they are applied both to 'atracks' and 'gtracks', decouple eventually
   void SetPtRange(Float_t ptMin, Float_t ptMax)
   {
    fApplyGlobalTrackCuts = kTRUE;
@@ -368,7 +370,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile *fControlHistogramsEventFlagsPro; // profile to hold all flags for control histograms for events TBI
   Bool_t fFillControlHistogramsEvent;        // fill or not control histograms for global event observables
   TH1I *fGetNumberOfTracksHist;              // a{AOD,MC}->GetNumberOfTracks()
-  TH1I *fGetNumberOfGlobalTracksHist;        // fGlobalTracksAOD[0]->GetSize() this is then my multiplicity...
+  TH1I *fGetNumberOfGlobalTracksHist;        //! fGlobalTracksAOD[0]->GetSize() this is then my multiplicity...
   TH1I *fGetNumberOfV0sHist;                 // aAOD->GetNumberOfV0s()
   TH1I *fGetNumberOfCascadesHist;            // aAOD->GetNumberOfCascades()
   TH1D *fGetMagneticFieldHist;               // aAOD->GetMagneticField()
@@ -416,16 +418,17 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList *fControlHistogramsIdentifiedParticlesList;        // list to hold all 'control histograms' for identified particles
   TProfile *fControlHistogramsIdentifiedParticlesFlagsPro; // profile to hold all flags for control histograms for identified particles
   Bool_t fFillControlHistogramsIdentifiedParticles;        // fill or not control histograms for identified particles (by default they are not filled)
-  TProfile *fInclusiveSigmaCutsPro;                        // holds the values of fInclusiveSigmaCuts[5];
-  TProfile2D *fExclusiveSigmaCutsPro;                      // holds the values of fExclusiveSigmaCuts[5][5];
+  Bool_t fFillControlHistogramsWithGlobalTrackInfo;        // by default, control histograms are filled with info from 'atrack'. If this flag is TRUE, then instead info from 'gtrack' is used. This then also applies to info used to get correlation functions and background as well
+  TProfile *fInclusiveSigmaCutsPro;                        //! holds the values of fInclusiveSigmaCuts[5];
+  TProfile2D *fExclusiveSigmaCutsPro;                      //! holds the values of fExclusiveSigmaCuts[5][5];
   TH1F *fMassPIDHist[5][2][2];                             //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPtPIDHist[5][2][2];                               //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fEtaPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPhiPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   Bool_t fUseDefaultInclusiveSigmaCuts;                    // if the setter SetInclusiveSigmaCuts(...) (see above) is not called explicitly, the default hardwired values will be used
   Bool_t fUseDefaultExclusiveSigmaCuts;                    // if the setter SetExclusiveSigmaCuts(...) (see above) is not called explicitly, the default hardwired values will be used
-  Double_t fInclusiveSigmaCuts[5];                         //! [PID function] see .cxx for detailed documentation
-  Double_t fExclusiveSigmaCuts[5][5];                      //! [PID function][PID exclusive] see .cxx for detailed documentation
+  Double_t fInclusiveSigmaCuts[5];                         // [PID function] see .cxx for detailed documentation
+  Double_t fExclusiveSigmaCuts[5][5];                      // [PID function][PID exclusive] see .cxx for detailed documentation
 
   // ...
   // 1e) V0s:
@@ -450,7 +453,6 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // 1d) Cascades:
   // ...
 
-
   // 2.) Event-by-event objects:
   TList *fEBEHistogramsList;        // list to hold all stuff from e-b-e histograms
   TProfile *fEBEObjectsFlagsPro;    // profile to hold all flags for e-b-e histograms for V0s
@@ -462,7 +464,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // 3.) Correlation functions:
   TList *fCorrelationFunctionsList;              // list to hold all correlation functions for primary particle
   TProfile *fCorrelationFunctionsFlagsPro;       // profile to hold all flags for correlation functions
-  TList *fCorrelationFunctionsSublist[3];        // lists to hold all correlation functions, for 2p [0], 3p [1], 4p [2], etc., separately
+  TList *fCorrelationFunctionsSublist[3];        //! lists to hold all correlation functions, for 2p [0], 3p [1], 4p [2], etc., separately
   Bool_t fFillCorrelationFunctions;              // fill or not correlation functions (by default they are not filled)
   Bool_t fNormalizeCorrelationFunctions;         // normalize correlation functions with the background
   TExMap *fCorrelationFunctionsIndices;          //! associates pdg code to index of correlation function
@@ -475,7 +477,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // 4.) Background:
   TList *fBackgroundList;              // list to hold all background objects primary particle
   TProfile *fBackgroundFlagsPro;       // profile to hold all flags for correlation functions
-  TList *fBackgroundSublist[3];        // lists to hold all background correlations, for 2p [0], 3p [1], 4p [2], etc., separately
+  TList *fBackgroundSublist[3];        //! lists to hold all background correlations, for 2p [0], 3p [1], 4p [2], etc., separately
   Int_t fBackgroundOption;             // set how to estimate background: 0 = "shifting", 1 = "permutations", etc. (see .cxx for further explanation). By default, it is "shifting"
   Bool_t fEstimate2pBackground;        // enable or not 2p background estimation
   Bool_t fEstimate3pBackground;        // enable or not 3p background estimation
@@ -525,8 +527,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Bool_t fCutOnNumberOfCascades;            // cut on the total number of cascades in AOD, i.e. on aAOD->GetNumberOfCascades()
   Int_t fMinNumberOfCascades;               // default values never in effect; if aAOD->GetNumberOfCascades() < fMinNumberOfCascades, event is rejected
   Int_t fMaxNumberOfCascades;               // default values never in effect; if aAOD->GetNumberOfCascades() > fMaxNumberOfCascades, event is rejected
-
   //  b) Cuts on AliAODVertex:
+
   Bool_t fCutOnVertexX;       // cut on the x position of vertex, i.e. on avtx->GetX()
   Float_t fMinVertexX;        // default values never in effect; if avtx->GetX() < fMinVertexX, event is rejected
   Float_t fMaxVertexX;        // default values never in effect; if avtx->GetX() > fMaxVertexX, event is rejected
@@ -543,10 +545,10 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // 8.) Common global track cuts (applied only on "normal" global tracks in AOD):
   TList *fGlobalTrackCutsList;        // list to hold all objects for common global track cuts
   TProfile *fGlobalTrackCutsFlagsPro; // profile to hold all flags
-  Bool_t fApplyGlobalTrackCuts;       // if set to kFALSE, the default hardwired cuts will be used
-  Float_t fPtRange[2];                //! ptMin = fPtRange[0], ptMax = fPtRange[1]
-  Float_t fEtaRange[2];               //! etaMin = etaRange[0], etaMax = etaRange[1]
-  Float_t fPhiRange[2];               //! phiMin = phiRange[0], phiMax = phiRange[1]
+  Bool_t fApplyGlobalTrackCuts;       // if set to kFALSE, the default hardwired cuts will be used. TBI doesn't do anything at the moment in .cxx
+  Float_t fPtRange[2];                // ptMin = fPtRange[0], ptMax = fPtRange[1]
+  Float_t fEtaRange[2];               // etaMin = etaRange[0], etaMax = etaRange[1]
+  Float_t fPhiRange[2];               // phiMin = phiRange[0], phiMax = phiRange[1]
 
   // *.) Online monitoring:
   Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
@@ -556,14 +558,14 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Int_t fMaxNumberOfEvents;        // if this number of events is reached, write to external file and bail out
 
   // *.) Debugging:
-  Bool_t fDoSomeDebugging;        //! enable call to function within which debugging is done. Set indirectly.
-  Bool_t fWaitForSpecifiedEvent;  //! do something only for the specified event
-  UInt_t fRun;                    //! do something only for the specified event
-  UShort_t fBunchCross;           //! do something only for the specified event
-  UInt_t fOrbit;                  //! do something only for the specified event
-  UInt_t fPeriod;                 //! do something only for the specified event
+  Bool_t fDoSomeDebugging;        // enable call to function within which debugging is done. Set indirectly.
+  Bool_t fWaitForSpecifiedEvent;  // do something only for the specified event
+  UInt_t fRun;                    // do something only for the specified event
+  UShort_t fBunchCross;           // do something only for the specified event
+  UInt_t fOrbit;                  // do something only for the specified event
+  UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,10);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,11);
 
 };
 
