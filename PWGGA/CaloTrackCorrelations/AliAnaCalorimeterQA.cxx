@@ -96,7 +96,9 @@ fhIMDCALPHOS(0),                       fhIMDCALPHOSSame(0),
 fhIMEMCALPHOS(0),                      fhIMEMCALPHOSSame(0), 
 fhAsym(0), 
 fhOpAngle(0),                          fhIMvsOpAngle(0),
-fhNCellsPerCluster(0),                 fhNCellsPerClusterNoCut(0),             fhNClusters(0),
+fhNCellsPerCluster(0),                 fhNCellsPerClusterNoCut(0),             
+fhNCellsPerClusterWithWeight(0),       fhNCellsPerClusterRatioWithWeight(0),             
+fhNClusters(0),
 
 // Timing
 fhClusterTimeEnergy(0),                fhCellTimeSpreadRespectToCellMax(0),  
@@ -882,6 +884,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
   // Correlation to max
   //
   Int_t nCorr = 0;
+  Int_t nCellWithWeight = 1;
   Bool_t near = kFALSE;
   Bool_t far  = kFALSE;
   // Get second highest energy cell
@@ -898,6 +901,8 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
       Float_t weight = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell, energy);
       
       if( absId == absIdMax || weight < 0.01 ) continue;
+      
+      nCellWithWeight++;
       
       if ( eCell > emax ) 
       {
@@ -917,6 +922,11 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
       }
     }
     
+    fhNCellsPerClusterWithWeight->Fill(energy, nCellWithWeight, GetEventWeight());
+    Float_t ratioNcells = nCellWithWeight/(ncells*1.);
+    //printf("E %2.2f, ncells %d, nCellWithWeight %d, ratio %2.2f\n",energy,ncells,nCellWithWeight,ratioNcells);
+    fhNCellsPerClusterRatioWithWeight->Fill(energy, ratioNcells, GetEventWeight());
+
     //if ( nCorr || close || far ) printf("nCorr = %d, close %d, far %d; E %2.2f, ncell %d\n",nCorr,close,far,e,nCaloCellsPerCluster);
     
     //if ( nCorr > 3) printf("More than 3 correlations: %d\n",nCorr);
@@ -936,7 +946,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
       fhLambda0MaxFECCorrel[index]->Fill(energy, m02, GetEventWeight());
       fhLambda1MaxFECCorrel[index]->Fill(energy, m20, GetEventWeight());
       
-      if(ncells > 5)
+      if(nCellWithWeight > 3)
       {
         fhLambda0MaxFECCorrelLargeNCells[index]->Fill(energy, m02, GetEventWeight());
         fhLambda1MaxFECCorrelLargeNCells[index]->Fill(energy, m20, GetEventWeight());
@@ -990,7 +1000,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
   
   fhLambda0FECCorrel[distCase]->Fill(energy, m02, GetEventWeight());
   fhLambda1FECCorrel[distCase]->Fill(energy, m20, GetEventWeight());
-  if(ncells > 5)
+  if(nCellWithWeight > 3)
   {
     fhLambda0FECCorrelLargeNCells[distCase]->Fill(energy, m02, GetEventWeight());
     fhLambda1FECCorrelLargeNCells[distCase]->Fill(energy, m20, GetEventWeight());
@@ -1038,7 +1048,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCel
     }
   }
   
-  if(ncells > 5)
+  if(nCellWithWeight > 3)
   {
     if(pairCol)
     {
@@ -2628,6 +2638,21 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhNCellsPerCluster->SetXTitle("#it{E} (GeV)");
   fhNCellsPerCluster->SetYTitle("#it{n}_{cells}");
   outputContainer->Add(fhNCellsPerCluster);
+
+  if(fStudyFECCorrelation)
+  {
+    fhNCellsPerClusterWithWeight  = new TH2F 
+    ("hNCellsPerClusterWithWeight","# cells per cluster vs energy",nptbins,ptmin,ptmax, nceclbins,nceclmin,nceclmax); 
+    fhNCellsPerClusterWithWeight->SetXTitle("#it{E} (GeV)");
+    fhNCellsPerClusterWithWeight->SetYTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCellsPerClusterWithWeight);
+
+    fhNCellsPerClusterRatioWithWeight  = new TH2F 
+    ("hNCellsPerClusterRatioWithWeight","# cells per cluster vs energy",nptbins,ptmin,ptmax, 100,0,1); 
+    fhNCellsPerClusterRatioWithWeight->SetXTitle("#it{E} (GeV)");
+    fhNCellsPerClusterRatioWithWeight->SetYTitle("#it{n}_{cells}");
+    outputContainer->Add(fhNCellsPerClusterRatioWithWeight);
+  }
   
   if(fStudyBadClusters)
   {
