@@ -586,7 +586,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
           Double_t z1     = ((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetZ();
           Double_t z2     = pv->GetZ();
           Double_t distZ  = z2-z1;
-          if (TMath::Abs(distZMax) <  TMath::Abs(distZMax) ){
+          if (TMath::Abs(distZMax) <  TMath::Abs(distZ) ){
             distZMax      = distZ;
           }
         }
@@ -3240,7 +3240,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
           Double_t z1 = ((AliESDEvent*)InputEvent)->GetPrimaryVertexSPD()->GetZ();
           Double_t z2 = pv->GetZ();
           Double_t distZ  = z2-z1;
-          if (TMath::Abs(distZMax) <  TMath::Abs(distZMax) ){
+          if (TMath::Abs(distZMax) <  TMath::Abs(distZ) ){
             distZMax      = distZ;
           }
         }
