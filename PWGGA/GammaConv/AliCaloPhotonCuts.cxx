@@ -1757,7 +1757,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
 
   if( (fClusterType == 1 || fClusterType == 3) && !fEMCALInitialized ) InitializeEMCAL(event);
   if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
-  
+    
   Int_t nModulesStart = 0;
   if( fClusterType == 1 || fClusterType == 3){ //EMCAL & DCAL
     cells = event->GetEMCALCells();
@@ -1774,7 +1774,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
   } else{
     AliError(Form("fExtendedMatchAndQA(%i):FillHistogramsExtendedMatchAndQA() not (yet) defined for cluster type (%i)",fExtendedMatchAndQA,fClusterType));
   }
-
+  
   nCellsBigger100MeV = new Int_t[nModules];
   nCellsBigger1500MeV = new Int_t[nModules];
   EnergyOfMod = new Double_t[nModules];
@@ -1791,6 +1791,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
 
     cells->GetCell(iCell,cellNumber,cellAmplitude,cellTime,cellMCLabel,cellEFrac);
     if( fClusterType == 3 && cellNumber < 12288){continue;}
+    if( fClusterType == 2 && cellNumber < 0){continue;} //Scip CPV cells in PHOS case
     Int_t imod = -1;Int_t iTower = -1, iIphi = -1, iIeta = -1;
     Int_t icol = -1;Int_t irow = -1;
     Int_t relid[4];// for PHOS
@@ -1826,7 +1827,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       if(fHistCellTimevsCellID && (cellAmplitude > 0.2)) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
     }
   }
-
+  
   for(Int_t iModule=0;iModule<nModules;iModule++){
     if(fHistNCellsBigger100MeVvsMod) fHistNCellsBigger100MeVvsMod->Fill(nCellsBigger100MeV[iModule],iModule+nModulesStart);
     if(fHistNCellsBigger1500MeVvsMod) fHistNCellsBigger1500MeVvsMod->Fill(nCellsBigger1500MeV[iModule],iModule+nModulesStart);
@@ -1846,7 +1847,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     else if(event->IsA()==AliAODEvent::Class()) cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus));
 
     if( (fClusterType == 1 || fClusterType == 3) && !cluster->IsEMCAL()){delete cluster; continue;}
-    if( fClusterType == 2 && !cluster->IsPHOS()){delete cluster; continue;}
+    if( fClusterType == 2 && cluster->GetType() !=AliVCluster::kPHOSNeutral){delete cluster; continue;}
 
     Float_t clusPos[3]={0,0,0};
     cluster->GetPosition(clusPos);
@@ -1883,7 +1884,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       else if(event->IsA()==AliAODEvent::Class()) clusterMatched = new AliAODCaloCluster(*(AliAODCaloCluster*)event->GetCaloCluster(iClus2));
 
       if( (fClusterType == 1 || fClusterType == 3) && !clusterMatched->IsEMCAL()){delete clusterMatched; continue;}
-      if( fClusterType == 2 && !clusterMatched->IsPHOS()){delete clusterMatched; continue;}
+      if( fClusterType == 2 && clusterMatched->GetType() !=AliVCluster::kPHOSNeutral){delete clusterMatched; continue;}
 
       Float_t clusPos2[3]={0,0,0};
       clusterMatched->GetPosition(clusPos2);
