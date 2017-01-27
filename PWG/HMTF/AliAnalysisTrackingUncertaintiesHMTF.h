@@ -90,6 +90,9 @@ class AliAnalysisTrackingUncertaintiesHMTF : public AliAnalysisTaskSE {
   THnSparse *fHistMCTPConly;        //! sparse of the tracks on MC and only TPC request
   THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
     
+  // histograms for testing
+  TH2F *fHistTrackletsTRDvsSPD;     //! histo tracklets: TRD vs SPD (for pile-up checks)
+
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
   Bool_t   fUsePtLogAxis;           //flage to use log scale on pt axis in match. eff. sparse

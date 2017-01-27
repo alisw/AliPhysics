@@ -68,6 +68,7 @@ AliAnalysisTrackingUncertaintiesHMTF::AliAnalysisTrackingUncertaintiesHMTF()
   fHistMC(0x0),
   fHistMCTPConly(0x0),
   fHistData(0x0),
+  fHistTrackletsTRDvsSPD(0x0),
   fMC(0),
   fRequireVtxTracks(kTRUE),
   fListHist(0x0),
@@ -93,6 +94,7 @@ AliAnalysisTrackingUncertaintiesHMTF::AliAnalysisTrackingUncertaintiesHMTF(const
     fHistMC(0x0),
     fHistMCTPConly(0x0),
     fHistData(0x0),
+    fHistTrackletsTRDvsSPD(0x0),
     fMC(0),
     fRequireVtxTracks(kTRUE),
     fListHist(0x0),
@@ -164,6 +166,12 @@ void AliAnalysisTrackingUncertaintiesHMTF::UserCreateOutputObjects()
   fListHist->Add(histTPCITS);
   fListHist->Add(histTPCCL1);
   fListHist->Add(histTPCntrkl);
+
+  fHistTrackletsTRDvsSPD = new TH2F("fHistTrackletsTRDvsSPD", "Tracklets in TRD vs SPD;N_{tkl}^{TRD};N_{tkl}^{SPD}",
+                                    400, 0, 2000,
+                                    200, 0, 400);
+  fListHist->Add(fHistTrackletsTRDvsSPD);
+
   //
   // (2.) track cut variation histograms
   //
@@ -221,7 +229,6 @@ void AliAnalysisTrackingUncertaintiesHMTF::UserExec(Option_t *)
   //
   // main event loop
   //
-  Printf("Main event loop");
   fESD = dynamic_cast<AliESDEvent*>( InputEvent() );
   if (!fESD) {
     AliWarning("AliAnalysisTrackingUncertaintiesHMTF::Exec(): bad ESD");
@@ -292,6 +299,10 @@ void AliAnalysisTrackingUncertaintiesHMTF::UserExec(Option_t *)
   // Fill track cut variation histograms
   //
   ProcessTracks(stack);
+
+  // additional histograms
+  fHistTrackletsTRDvsSPD->Fill(fESD->GetNumberOfTrdTracklets(), fESD->GetMultiplicity()->GetNumberOfTracklets());
+
   //
   // Post output data
   //

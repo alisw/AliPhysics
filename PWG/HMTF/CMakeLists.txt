@@ -81,6 +81,7 @@ install(FILES ${HDRS} DESTINATION include)
 ## Installing the macros
 install (FILES
   macros/AddTaskHMTFMCMultEst.C
+  macros/AddTaskTrackingUncertHMTF.C
   DESTINATION PWG/HMTF/macros)
 
 set (INPUT_FILES
