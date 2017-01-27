@@ -133,6 +133,11 @@ void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
               "Patch offline ADC value for trigger type " + patchtype + " " + triggertype + "; Trigger ADC; FEE patch energy (GeV)",
               2000, 0., 2000, 200, 0., 200
               );
+          fQAHistos->CreateTH2(
+              "PatchEvsADCrough" + triggertype + patchtype,
+              "Patch Energy vs. ADC rough for trigger type " + patchtype + " " + triggertype + "; FEE patch energy (GeV); ADC rough (GeV)",
+              2000, 0., 2000, 200, 0., 200
+              );
         }
       }
       fQAHistos->CreateTH1("triggerBitsAll", "Trigger bits for all incoming patches;bit nr", 64, -0.5, 63.5);
@@ -147,7 +152,7 @@ void AliEmcalTriggerMakerTask::UserCreateOutputObjects(){
       fQAHistos->CreateTH2("FastORDiffEnergyEsmear", "FastOR smeared energy - cell energy", 4994, -0.5, 4993.5, 200, -10., 10);
       fQAHistos->CreateTH2("FastORDiffEsmearADCrough", "FastOR ADC rough - smeared energy", 4994, -0.5, 4993.5, 200, -10., 10);
 
-      fOutput->Add(fQAHistos->GetListOfHistograms());
+      for(auto h : *(fQAHistos->GetListOfHistograms())) fOutput->Add(h);
       PostData(1, fOutput);
     } else {
       AliWarningStream() << "QA requested but no output container initialized - QA needs to be disabled" << std::endl;
@@ -433,4 +438,5 @@ void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliE
   fQAHistos->FillTH2("PatchEvsEsmear" + patchtype, recpatch.GetPatchE(), recpatch.GetSmearedEnergyV1());
   fQAHistos->FillTH2("PatchADCvsEsmear" + patchtype, recpatch.GetADCAmp(), recpatch.GetSmearedEnergyV1());
   fQAHistos->FillTH2("PatchADCOffvsE" + patchtype, recpatch.GetADCOfflineAmp(), recpatch.GetPatchE());
+  fQAHistos->FillTH2("PatchEvsADCrough" + patchtype, recpatch.GetPatchE(), recpatch.GetADCAmpGeVRough());
 }
