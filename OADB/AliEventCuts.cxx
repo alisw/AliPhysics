@@ -47,6 +47,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fSPDpileupNsigmaDiamXY{-1.f},
   fSPDpileupNsigmaDiamZ{-1.f},
   fTrackletBGcut{false},
+  fPileUpCutMV{false},
   fCentralityFramework{0},
   fMinCentrality{-1000.f},
   fMaxCentrality{1000.f},
@@ -144,7 +145,8 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 
   /// SPD pile-up rejection
   if (!ev->IsPileupFromSPD(fSPDpileupMinContributors,fSPDpileupMinZdist,fSPDpileupNsigmaZdist,fSPDpileupNsigmaDiamXY,fSPDpileupNsigmaDiamZ) &&
-      (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)))
+      (!fTrackletBGcut || !fUtils.IsSPDClusterVsTrackletBG(ev)) &&
+      (!fPileUpCutMV || !fUtils.IsPileUpMV(ev)))
     fFlag |= BIT(kPileUp);
 
   /// Centrality cuts:
@@ -407,6 +409,10 @@ void AliEventCuts::SetupRun2pp() {
 
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
+  fUtils.SetMinPlpContribMV(5);
+  fUtils.SetMaxPlpChi2MV(5);
+  fUtils.SetMinWDistMV(15);
+  fUtils.SetCheckPlpFromDifferentBCMV(kFALSE);
 }
 
 void AliEventCuts::SetupLHC15o() {
