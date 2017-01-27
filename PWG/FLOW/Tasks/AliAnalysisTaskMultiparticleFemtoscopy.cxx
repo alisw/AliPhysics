@@ -2344,7 +2344,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  fCorrelationFunctionsList->SetOwner(kTRUE);
  fHistList->Add(fCorrelationFunctionsList);
  // Correlation functions sublists:
- for(Int_t cfs=0;cfs<3;cfs++)
+ for(Int_t cfs=0;cfs<2;cfs++)
  {
   fCorrelationFunctionsSublist[cfs] = new TList();
   fCorrelationFunctionsSublist[cfs]->SetName(Form("f%dpCorrelationFunctions",cfs+2));
@@ -2358,7 +2358,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  fBackgroundList->SetOwner(kTRUE);
  fHistList->Add(fBackgroundList);
  // Background sublists:
- for(Int_t bs=0;bs<3;bs++)
+ for(Int_t bs=0;bs<2;bs++)
  {
   fBackgroundSublist[bs] = new TList();
   fBackgroundSublist[bs]->SetName(Form("f%dpBackground",bs+2));
