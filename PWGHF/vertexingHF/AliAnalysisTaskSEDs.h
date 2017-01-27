@@ -29,24 +29,25 @@ class AliNormalizationCounter;
 class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {
  public:
- 
+    
   AliAnalysisTaskSEDs();
   AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
   virtual ~AliAnalysisTaskSEDs();
-  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}	
+  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetWriteOnlySignalInNtuple(Bool_t opt=kTRUE){
     if(fReadMC) fWriteOnlySignal=opt;
     else AliError("fReadMC has to be kTRUE");
   }
   void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
   void SetFillNSparse(Bool_t fill=kTRUE){fFillSparse=fill;}
+  void SetFillNSparseDplus(Bool_t fill=kTRUE){fFillSparseDplus=fill;if(fill)fFillSparse=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
   void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
   Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau);
   void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
-  
+    
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetAnalysisCuts(AliRDHFCutsDstoKKpi* cuts){fAnalysisCuts=cuts;}
@@ -63,14 +64,14 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*4+2;}
   Int_t GetReflSignalHistoIndex(Int_t iPtBin) const { return iPtBin*4+3;}
-
+    
   enum {kMaxPtBins=20,knVarForSparse=12,knVarForSparseAcc=2,knVarForSparseIP=6};
-
+    
   AliAnalysisTaskSEDs(const AliAnalysisTaskSEDs &source);
-  AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source); 
-
+  AliAnalysisTaskSEDs& operator=(const AliAnalysisTaskSEDs& source);
+    
   TList*  fOutput;                    //!<! list send on output slot 0
-  TH1F*   fHistNEvents;               //!<! hist. for No. of events  
+  TH1F*   fHistNEvents;               //!<! hist. for No. of events
   TH1F*   fChanHist[4];               //!<! hist. with KKpi and piKK candidates (sig,bkg,tot)
   TH1F*   fMassHist[4*kMaxPtBins];    //!<! hist. of mass spectra (sig,bkg,tot)
   TH1F*   fMassHistPhi[4*kMaxPtBins];    //!<! hist. of mass spectra via phi (sig,bkg,tot)
@@ -99,26 +100,27 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F *fHistCentralityMult[3];//!<!hist. for cent distr vs mult (all,sel ev, )
   TNtuple *fNtupleDs; //!<! output ntuple
   Int_t fFillNtuple;                 /// 0 not to fill ntuple
-                                     /// 1 for filling ntuple for events through Phi
-                                     /// 2 for filling ntuple for events through K0Star
-                                     /// 3 for filling all
+  /// 1 for filling ntuple for events through Phi
+  /// 2 for filling ntuple for events through K0Star
+  /// 3 for filling all
   Int_t   fSystem;                    /// 0 = pp, 1 = pPb,PbPb
   Bool_t  fReadMC;                    ///  flag for access to MC
   Bool_t  fWriteOnlySignal;           ///  flag to control ntuple writing in MC
   Bool_t  fDoCutVarHistos;            ///  flag to create and fill histos with distributions of cut variables
   Bool_t  fUseSelectionBit;           /// flag for usage of HasSelectionBit
   Bool_t  fFillSparse;                /// flag for usage of THnSparse
+  Bool_t  fFillSparseDplus;           /// flag for usage of THnSparse
   Int_t fAODProtection;               /// flag to activate protection against AOD-dAOD mismatch.
-                                      /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
   UChar_t fNPtBins;                   /// number of Pt bins
   TList *fListCuts; //list of cuts
   Float_t fPtLimits[kMaxPtBins+1];    ///  limits for pt bins
   Double_t fMassRange;                /// range for mass histogram
   Double_t fMassBinSize;              /// bin size for inv. mass histo
-
+    
   AliNormalizationCounter *fCounter;//!<!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; /// Cuts for Analysis
-  
+    
   THnSparseF *fnSparse;       ///!<!THnSparse for candidates on data
   THnSparseF *fnSparseIP;       ///!<!THnSparse for topomatic variable
   THnSparseF *fnSparseMC[4];  ///!<!THnSparse for MC
@@ -126,9 +128,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   ///[1]: Acc step FD Ds
   ///[2]: Selected prompt Ds
   ///[3]: Selected FD Ds
-  
+  THnSparseF *fnSparseMCDplus[4];  ///!<!THnSparse for MC for D+->kkpi
+    
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEDs,18);    ///  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,19);    ///  AliAnalysisTaskSE for Ds mass spectra
   /// \endcond
 };
 
