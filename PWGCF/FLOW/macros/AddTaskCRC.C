@@ -139,6 +139,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if (sDataSet == "2010") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2010);
   if (sDataSet == "2011") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2011);
   if (sDataSet == "2015") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015);
+  if (sDataSet == "2015v6") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015v6);
  taskFE->SetQAOn(bCutsQA);
  // set the analysis type
  TString analysisType = "AUTOMATIC";
@@ -152,7 +153,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
   if (EvTrigger == "MB")
     taskFE->SelectCollisionCandidates(AliVEvent::kMB);
-  if (EvTrigger == "MB" && sDataSet == "2015")
+  if (EvTrigger == "MB" && sDataSet.Contains("2015"))
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   if (EvTrigger == "Any")
     taskFE->SelectCollisionCandidates(AliVEvent::kAny);
@@ -209,7 +210,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     if (sDataSet == "2010" || sDataSet == "2011") {
       cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
     }
-    if (sDataSet == "2015") {
+    if (sDataSet.Contains("2015")) {
       cutsEvent->SetCentralityPercentileRange(centrMin,centrMax,kTRUE);
     }
       cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
@@ -219,7 +220,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    if (sDataSet == "2010" || sDataSet == "2011") {
      cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
    }
-   if (sDataSet == "2015") {
+   if (sDataSet.Contains("2015")) {
      cutsEvent->SetCentralityPercentileRange(centrMin,centrMax,kTRUE);
    }
   // method used for centrality determination
@@ -280,7 +281,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsRP->SetParamType(AliFlowTrackCuts::kDeltaVZERO);
    if (sDataSet == "2010")
     cutsRP->SetParamType(AliFlowTrackCuts::kBetaVZERO);
-   if (sDataSet == "2015")
+   if (sDataSet.Contains("2015"))
     cutsRP->SetParamType(AliFlowTrackCuts::kKappaVZERO);
    cutsRP->SetEtaRange(-10.,+10.);
    cutsRP->SetEtaGap(-1.,1.);
@@ -398,7 +399,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
  else if (EvTrigger == "MB")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB);
- if (EvTrigger == "MB" && sDataSet == "2015")
+ if (EvTrigger == "MB" && sDataSet.Contains("2015"))
   taskQC->SelectCollisionCandidates(AliVEvent::kINT7);
  else if (EvTrigger == "Any")
   taskQC->SelectCollisionCandidates(AliVEvent::kAny);
@@ -439,7 +440,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetQAZDCCuts(bSetQAZDC);
  taskQC->SetMinMulZN(MinMulZN);
  taskQC->SetMaxDevZN(MaxDevZN);
-  if(bSetQAZDC && bUseZDC && sDataSet != "2015") {
+  if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();
     if(!ZDCESEFile) {

@@ -56,6 +56,7 @@ public:
   enum DataSet { k2010,
     k2011,
     k2015,
+    k2015v6,
     kAny
   };
   
@@ -156,7 +157,7 @@ public:
   void SetCentralityEstimator(CentrEstimator centrest) {fCentrEstimator=centrest;}
   void SetDataSet(DataSet cDataSet) {fDataSet = cDataSet;}
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
-  void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone();};
+  void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone(); fUseTowerEq=kTRUE;};
   TList* GetTowerEqList() const {return this->fTowerEqList;};
   void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone();};
   TList* GetBadTowerCalibList() const {return this->fBadTowerCalibList;};
@@ -289,17 +290,16 @@ private:
   TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
   
   const static Int_t fCRCMaxnRun = 211;
-  const static Int_t fCRCnTow = 8;
+  const static Int_t fCRCnTow = 5;
   const static Int_t fnCen = 10;
   Int_t fCRCnRun;
   Float_t fZDCGainAlpha;
   DataSet fDataSet;
   Int_t fRunList[fCRCMaxnRun];                   //! Run list
-  // TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
-  // TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
+//  TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
-  // TProfile *fZNCTower[fCRCMaxnRun];		//! ZNC tower spectra
-  // TProfile *fZNATower[fCRCMaxnRun];		//! ZNA tower spectra
+  TProfile *fZNCTower[fCRCMaxnRun][fCRCnTow];		//! ZNC tower spectra
+  TProfile *fZNATower[fCRCMaxnRun][fCRCnTow];		//! ZNA tower spectra
   TClonesArray* fStack; //!
   TList *fSpectraMCList;   //! list with pt spectra
   TH1F *fPtSpecGen[2][10];		//! PtSpecGen
@@ -315,6 +315,7 @@ private:
   TF1 *fMultTOFHighCut; //!
   
   AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
+  Bool_t fUseTowerEq; //
   TList *fTowerEqList;   // list with weights
   TH1D *fTowerGainEq[2][5]; //!
   TList *fBadTowerStuffList; //! list for storing calib files
