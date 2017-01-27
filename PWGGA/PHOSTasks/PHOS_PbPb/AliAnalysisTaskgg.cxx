@@ -73,14 +73,34 @@ AliAnalysisTaskgg::AliAnalysisTaskgg(const char *name)
 	fPHOSEvents[i][j][k]=0 ;
   }
   
+  fNCuts=21 ;
+  sprintf(fCuts[0], "All") ;   //all clusters
+  sprintf(fCuts[1], "Disp") ;  //shower shape
+  sprintf(fCuts[2], "CPV") ;   //neutrality using CPV
+  sprintf(fCuts[3], "Both") ;  //shower shape && neutrality CPV
+  sprintf(fCuts[4], "Disp2") ; //strict shower shape
+  sprintf(fCuts[5], "CPV2") ;  //neutrality using tracks
+  sprintf(fCuts[6], "Both2") ; //shower shape && neutrality from tacks
+  sprintf(fCuts[7], "D10") ;   //all clusters, min distance = 10 cm
+  sprintf(fCuts[8], "D13") ;   //all clusters, min distance = 13 cm
+  sprintf(fCuts[9], "D15") ;   //all clusters, min distance = 15 cm
+  sprintf(fCuts[10],"D18") ;   //all clusters, min distance = 18 cm
+  sprintf(fCuts[11],"D20") ;   //all clusters, min distance = 20 cm
+  sprintf(fCuts[12],"BothD10") ;   //all clusters, min distance = 10 cm
+  sprintf(fCuts[13],"BothD13") ;   //all clusters, min distance = 13 cm
+  sprintf(fCuts[14],"BothD15") ;   //all clusters, min distance = 15 cm
+  sprintf(fCuts[15],"BothD18") ;   //all clusters, min distance = 18 cm
+  sprintf(fCuts[16],"BothD20") ;   //all clusters, min distance = 20 cm
+  sprintf(fCuts[17],"AllJet") ;   //all clusters, min distance = 20 cm
+  sprintf(fCuts[18],"DispJet") ;   //all clusters, min distance = 20 cm
+  sprintf(fCuts[19],"CPVJet") ;   //all clusters, min distance = 20 cm
+  sprintf(fCuts[20],"BothJet") ;   //all clusters, min distance = 20 cm
+  
+ 
+  
+  
   // Output slots #0 write into a TH1 container
-//  DefineOutput(1,TList::Class());
-
-  // Initialize the PHOS geometry
-
-  //We have to apply re-calibration for pass1 LCH10h
-  // Initialize decalibration factors in the form of the OCDB object
-
+ DefineOutput(1,TList::Class());
 
 }
 
@@ -126,6 +146,12 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCluEvsClu_Both","ClusterMult vs E",20,0.,2.,50,0.,50.)) ;
 //   fOutputContainer->Add(new TH2F("hCluEvsCluM","ClusterMult vs E",200,0.,20.,100,0.,20.)) ;
   fOutputContainer->Add(new TH2F("hCenTOF","Centrality vs PHOS TOF", 100,0.,100.,600,-6.e-6,6.e-6)) ;
+  for(Int_t mod=1; mod<5; mod++){
+    fOutputContainer->Add(new TH2F(Form("hJetEMod%d_th1",mod),"Cone Energy vs Centrality ", 100,0.,50.,20,0.,100.)) ;
+    fOutputContainer->Add(new TH2F(Form("hJetEMod%d_th2",mod),"Cone Energy vs Centrality ", 100,0.,50.,20,0.,100.)) ;
+    fOutputContainer->Add(new TH2F(Form("hJetEMod%d_th3",mod),"Cone Energy vs Centrality ", 100,0.,50.,20,0.,100.)) ;  
+  }
+  
     
   //PHOS QA
 //   fOutputContainer->Add(new TH1I("hCellMultEvent"  ,"PHOS cell multiplicity per event"    ,2000,0,2000));
@@ -179,65 +205,56 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   Int_t nQ=120 ;
   Double_t qMax=0.3 ;
   
-  char kTbins[6][20] ;
-  sprintf(kTbins[0],"Kt00-02") ;
-  sprintf(kTbins[1],"Kt02-04") ;
-  sprintf(kTbins[2],"Kt04-07") ;
-  sprintf(kTbins[3],"Kt07-10") ;
-  sprintf(kTbins[4],"Kt10-13") ;
-  sprintf(kTbins[5],"Kt13-20") ;
+//   char kTbins[6][20] ;
+//   sprintf(kTbins[0],"Kt00-02") ;
+//   sprintf(kTbins[1],"Kt02-04") ;
+//   sprintf(kTbins[2],"Kt04-07") ;
+//   sprintf(kTbins[3],"Kt07-10") ;
+//   sprintf(kTbins[4],"Kt10-13") ;
+//   sprintf(kTbins[5],"Kt13-20") ;
 
-  const Int_t nCuts=7 ;
-  char cut[7][20] ;
-  sprintf(cut[0],"All") ;
-  sprintf(cut[1],"Disp") ;
-  sprintf(cut[2],"CPV") ;
-  sprintf(cut[3],"Both") ;
-  sprintf(cut[4],"Disp2") ;
-  sprintf(cut[5],"CPV2") ;
-  sprintf(cut[6],"Both2") ;
   
   const Int_t nCenBin=4;
   for(Int_t cen=0; cen<nCenBin; cen++){  
-    for(Int_t iCut=0; iCut<nCuts; iCut++){
-      for(Int_t ikT=0; ikT<6; ikT++){ 
-//      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+    for(Int_t iCut=0; iCut<fNCuts; iCut++){
+      for(Int_t mod=1; mod<4; mod++){
+//       for(Int_t ikT=0; ikT<6; ikT++){ 
+//      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",fCuts[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hYKPCMS_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
  
           
-      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s_cen%d",cut[iCut],kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//       fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_%s_cen%d",fCuts[iCut],kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-//       fOutputContainer->Add(new TH2F(Form("hetaphi2D_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
-//       fOutputContainer->Add(new TH2F(Form("hetaphiRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
-//      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+//       fOutputContainer->Add(new TH2F(Form("hetaphi2D_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
+//       fOutputContainer->Add(new TH2F(Form("hetaphiRP_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
+//      fOutputContainer->Add(new TH2F(Form("hdXdZ_%s_%s",fCuts[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
 
-      fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s_cen%d",cut[iCut],kTbins[ikT],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,5,0.,2.));
+//       fOutputContainer->Add(new TH3F(Form("hetaphi_%s_%s_cen%d",fCuts[iCut],kTbins[ikT],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,5,0.,2.));
       
       
-//      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",cut[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiOSLPF_%s_%s",fCuts[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiYKPPF_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//      fOutputContainer->Add(new TH3F(Form("hMiYKPCMS_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
-      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s_cen%d",cut[iCut],kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
-//       fOutputContainer->Add(new TH3F(Form("hMi2OSLCMS_%s_%s",cut[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//       fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_%s_cen%d",fCuts[iCut],kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+//       fOutputContainer->Add(new TH3F(Form("hMi2OSLCMS_%s_%s",fCuts[iCut],kTbins[ikT]),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 
       
       
-//       fOutputContainer->Add(new TH2F(Form("hMietaphi2D_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
-      fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s_cen%d",cut[iCut],kTbins[ikT],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,5,0.,2.));
-//       fOutputContainer->Add(new TH2F(Form("hMietaphiRP_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
-//       fOutputContainer->Add(new TH3F(Form("hMi2etaphi_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
-//      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",cut[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
+//       fOutputContainer->Add(new TH2F(Form("hMietaphi2D_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.));
+//       fOutputContainer->Add(new TH3F(Form("hMietaphi_%s_%s_cen%d",fCuts[iCut],kTbins[ikT],cen),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,5,0.,2.));
+//       fOutputContainer->Add(new TH2F(Form("hMietaphiRP_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/6.,TMath::Pi()/6.));
+//       fOutputContainer->Add(new TH3F(Form("hMi2etaphi_%s_%s",fCuts[iCut],kTbins[ikT]),"Eta-phi-E correlations",50,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,20,-0.2,0.2));
+//      fOutputContainer->Add(new TH2F(Form("hMidXdZ_%s_%s",fCuts[iCut],kTbins[ikT]),"dXdZ",200,-200,200,200,-200.,200.));
     
-    }        
+//     }        
 
-    fOutputContainer->Add(new TH2F(Form("hQinv_%s_cen%d",cut[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinv_%s_cen%d",cut[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-//     fOutputContainer->Add(new TH2F(Form("hMi2Qinv_%s_cen%d",cut[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hQinvCut_%s_cen%d",cut[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-    fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s_cen%d",cut[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
-//     fOutputContainer->Add(new TH2F(Form("hMi2QinvCut_%s_cen%d",cut[iCut],cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hQinv_%s_mod%d_cen%d",fCuts[iCut],mod,cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiQinv_%s_mod%d_cen%d",fCuts[iCut],mod,cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hQinvCut_%s_mod%d_cen%d",fCuts[iCut],mod,cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+    fOutputContainer->Add(new TH2F(Form("hMiQinvCut_%s_mod%d_cen%d",fCuts[iCut],mod,cen),"Qinv distribution",200,0.,0.5,100,0.,10.));
+      }
     }
   }
 
@@ -282,7 +299,7 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hMiPi0M33","Pairs in modules",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 */    
   
-//   PostData(1, fOutputContainer);
+  PostData(1, fOutputContainer);
 
 }
 
@@ -298,7 +315,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent) {
     Printf("ERROR: Could not retrieve event");
-//     PostData(1, fOutputContainer);
+    PostData(1, fOutputContainer);
     return;
   }
 
@@ -356,7 +373,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   
   FillHistogram("hZvertex",esdVertex5->GetZ());
   if (TMath::Abs(esdVertex5->GetZ()) > 10. ){
-//     PostData(1, fOutputContainer);
+    PostData(1, fOutputContainer);
     return;
   }
 //   FillHistogram("hSelEvents",2.5,fRunNumber-0.5) ;
@@ -364,7 +381,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
   
   if(fEvent->IsPileupFromSPD()){
-//    PostData(1, fOutputContainer);
+   PostData(1, fOutputContainer);
     return;
   } 
 
@@ -397,7 +414,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   FillHistogram("hCentrality",fCentrality) ;
  
   if( fCentrality <= 0. || fCentrality>80. ){
-//     PostData(1, fOutputContainer);
+    PostData(1, fOutputContainer);
     return;
   }
 
@@ -418,7 +435,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   Int_t irp=0 ;
   AliEventplane *eventPlane = fEvent->GetEventplane();
   if( ! eventPlane ) { //Event has no event plane
-//       PostData(1, fOutputContainer);
+      PostData(1, fOutputContainer);
       return;
   }
   const Int_t harmonics = 2; 
@@ -515,7 +532,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3] ;
     
-    if(mod!=3)
+    if(mod==4)
       continue ;  
     //Remove 6 noisy channels in run 139036
     if(fEvent->GetRunNumber()==139036 && mod==1 && 
@@ -531,7 +548,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     
     if(clu->GetNCells()<3) continue ;
     if(clu->GetM02()<0.2)   continue ;    
-    if(clu->GetMCEnergyFraction()>0.98) //Ecross cut, should be filled with Tender
+    if(clu->GetMCEnergyFraction()>0.98) //Ecross fCuts, should be filled with Tender
      continue ;    
            
     TLorentzVector pv1 ;
@@ -593,26 +610,16 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
   for(Int_t mod=1; mod<5; mod++)
      FillHistogram(Form("hCenPHOSm%d",mod),fCentrality,nPHOSclu[mod]) ;
   if(inPHOS==0){
-//     PostData(1, fOutputContainer);
+    PostData(1, fOutputContainer);
     fEventCounter++;
     return ; 
   }
   
-  Int_t jetStatus[5]; 
   for(Int_t mod=1; mod<5; mod++)
-    jetStatus[mod]=JetRejection(mod) ;
+    fJetStatus[mod]=JetRejection(mod) ;
 
   const Double_t kgMass=0. ;
 	
-  const Int_t nCuts=7 ;
-  char cut[7][20] ;
-  sprintf(cut[0],"All") ;
-  sprintf(cut[1],"Disp") ;
-  sprintf(cut[2],"CPV") ;
-  sprintf(cut[3],"Both") ;
-  sprintf(cut[4],"Disp2") ;
-  sprintf(cut[5],"CPV2") ;
-  sprintf(cut[6],"Both2") ;
 
   //Real
   for (Int_t i1=0; i1<inPHOS-1; i1++) {
@@ -630,7 +637,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
       //Cut on pair
 // 	if(!PairCut(ph1,ph2,kDefault))
-	if(!PairCut(ph1,ph2,0)) //Distance cut
+	if(!PairCut(ph1,ph2,0)) //Distance fCuts
 	  continue;
      
 //      if(!SecondaryPi0Cut(ph1,ph2))
@@ -670,22 +677,23 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       AliFemtoPair pair(a,b);
       Double_t qinv= pair.QInv();
       Double_t kT = pair.KT() ;
-      TString kTbin="15" ;
-      if(kT<0.2) kTbin="Kt00-02";
-      else if(kT<0.4) kTbin="Kt02-04";
-      else if(kT<0.7) kTbin="Kt04-07";
-      else if(kT<1.) kTbin="Kt07-10";
-      else if(kT<1.3) kTbin="Kt10-13";
-      else if(kT<2.) kTbin="Kt13-20";
-      else  continue;
+//       TString kTbin="15" ;
+//       if(kT<0.2) kTbin="Kt00-02";
+//       else if(kT<0.4) kTbin="Kt02-04";
+//       else if(kT<0.7) kTbin="Kt04-07";
+//       else if(kT<1.) kTbin="Kt07-10";
+//       else if(kT<1.3) kTbin="Kt10-13";
+//       else if(kT<2.) kTbin="Kt13-20";
+//       else  continue;
       
-      Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
-      Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
-      
-      Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
-      Double_t dPsi = fRP-pairPhi ;
-      while(dPsi<0)dPsi+=TMath::Pi() ;
-      while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
+      Double_t  qo=pair.QOutCMS();
+//       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
+//       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
+//       
+//       Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
+//       Double_t dPsi = fRP-pairPhi ;
+//       while(dPsi<0)dPsi+=TMath::Pi() ;
+//       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
       
 //       // Yano-Koonin-Podgoretskii Parametrisation 
 //       Double_t qP=0., qT=0., q0=0. ;
@@ -693,14 +701,14 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //       pair.QYKPCMS(qP, qT, q0);
 
 	
-      for(Int_t iCut=0; iCut<7; iCut++){
+      for(Int_t iCut=0; iCut<fNCuts; iCut++){
 	if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	
-//         FillHistogram(Form("hetaphi2D_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi) ;
+//         FillHistogram(Form("hetaphi2D_%s_%s",fCuts[iCut],kTbin.Data()),dEta,dPhi) ;
  
-// 	if(ph1->Module()!=ph2->Module())
-//           continue ;
+	if(ph1->Module()!=ph2->Module())
+          continue ;
 	
 	
 // 	if(iCut>3){
@@ -717,25 +725,25 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
           FillHistogram(Form("hSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
 	}*/
 	  
-	FillHistogram(Form("hQinv_%s_cen%d",cut[iCut],fCenBin),qinv,kT) ;
+	FillHistogram(Form("hQinv_%s_mod%d_cen%d",fCuts[iCut],ph1->Module(),fCenBin),qinv,kT) ;
 	if(TMath::Abs(qo) < 0.05)
-	  FillHistogram(Form("hQinvCut_%s_cen%d",cut[iCut],fCenBin),qinv,kT) ;
+	  FillHistogram(Form("hQinvCut_%s_mod%d_cen%d",fCuts[iCut],ph1->Module(),fCenBin),qinv,kT) ;
 
         // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-//        FillHistogram(Form("hOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
+//        FillHistogram(Form("hOSLPF_%s_%s",fCuts[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
         // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-        FillHistogram(Form("hOSLCMS_%s_%s_cen%d",cut[iCut],kTbin.Data(),fCenBin),qs,qo,ql) ;
-        FillHistogram(Form("hetaphi_%s_%s_cen%d",cut[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
+//         FillHistogram(Form("hOSLCMS_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),qs,qo,ql) ;
+//         FillHistogram(Form("hetaphi_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
 // 	if(TMath::Abs(dEta)>0.02)
-//           FillHistogram(Form("hetaphiRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi) ;
+//           FillHistogram(Form("hetaphiRP_%s_%s",fCuts[iCut],kTbin.Data()),dPsi,dPhi) ;
 	
-//        FillHistogram(Form("hdXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
+//        FillHistogram(Form("hdXdZ_%s_%s",fCuts[iCut],kTbin.Data()),dX,dZ) ;
 
 
-//        FillHistogram(Form("hYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
+//        FillHistogram(Form("hYKPCMS_%s_%s",fCuts[iCut],kTbin.Data()),qP, qT, q0);       
       
-//        FillHistogram(Form("hYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
+//        FillHistogram(Form("hYKPPF_%s_%s",fCuts[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
         
       }          
     } // end of loop i2
@@ -791,25 +799,26 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
 	Double_t qinv= pair.QInv();
         Double_t kT = pair.KT() ;
-        TString kTbin ;
-	Int_t ikTbin=0 ;
-        if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
-        else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
-        else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
-        else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
-        else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
-        else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
-        else  continue;
+//         TString kTbin ;
+// 	Int_t ikTbin=0 ;
+//         if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
+//         else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
+//         else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
+//         else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
+//         else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
+//         else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
+//         else  continue;
       
-      Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
+      Double_t qo=pair.QOutCMS();
+//       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
 //       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
       
 //       Double_t wMix = EtaPhiWeight(ikTbin,dPhi );
 
-      Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
-      Double_t dPsi = fRP-pairPhi ;
-      while(dPsi<0)dPsi+=TMath::Pi() ;
-      while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
+//       Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
+//       Double_t dPsi = fRP-pairPhi ;
+//       while(dPsi<0)dPsi+=TMath::Pi() ;
+//       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
       
 //       // Yano-Koonin-Podgoretskii Parametrisation 
 //       Double_t qP=0., qT=0., q0=0. ;
@@ -820,11 +829,11 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //       // longitudinal comoving frame
 //         pair.QYKPPF(qPpf,qTpf,q0pf) ;
 	
-	for(Int_t iCut=0; iCut<7; iCut++){
+	for(Int_t iCut=0; iCut<fNCuts; iCut++){
    	  if(!PairCut(ph1,ph2,iCut))
 	    continue ;
 	  
-//           FillHistogram(Form("hMietaphi2D_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi) ;
+//           FillHistogram(Form("hMietaphi2D_%s_%s",fCuts[iCut],kTbin.Data()),dEta,dPhi) ;
  
 	  if(ph1->Module()!=ph2->Module())
             continue ;
@@ -838,28 +847,28 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
             FillHistogram(Form("hMiSLr_%s",kTbin.Data()),qspf,qlpf,r) ;	  
 	  }  */
 	  
-	  FillHistogram(Form("hMiQinv_%s_cen%d",cut[iCut],fCenBin),qinv,kT) ;
-// 	  FillHistogram(Form("hMi2Qinv_%s",cut[iCut]),qinv,kT,wMix) ;
+	  FillHistogram(Form("hMiQinv_%s_mod%d_cen%d",fCuts[iCut],ph1->Module(),fCenBin),qinv,kT) ;
+// 	  FillHistogram(Form("hMi2Qinv_%s",fCuts[iCut]),qinv,kT,wMix) ;
 	   if(TMath::Abs(qo) < 0.05){
-	     FillHistogram(Form("hMiQinvCut_%s_cen%d",cut[iCut],fCenBin),qinv,kT) ;
-// 	     FillHistogram(Form("hMi2QinvCut_%s",cut[iCut]),qinv,kT,wMix) ;
+	     FillHistogram(Form("hMiQinvCut_%s_mod%d_cen%d",fCuts[iCut],ph1->Module(),fCenBin),qinv,kT) ;
+// 	     FillHistogram(Form("hMi2QinvCut_%s",fCuts[iCut]),qinv,kT,wMix) ;
 	   }
           // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
-//          FillHistogram(Form("hMiOSLPF_%s_%s",cut[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
+//          FillHistogram(Form("hMiOSLPF_%s_%s",fCuts[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-          FillHistogram(Form("hMiOSLCMS_%s_%s_cen%d",cut[iCut],kTbin.Data(),fCenBin),qs,qo,ql) ;
-//           FillHistogram(Form("hMi2OSLCMS_%s_%s",cut[iCut],kTbin.Data()),qs,qo,ql,wMix) ;
+//           FillHistogram(Form("hMiOSLCMS_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),qs,qo,ql) ;
+//           FillHistogram(Form("hMi2OSLCMS_%s_%s",fCuts[iCut],kTbin.Data()),qs,qo,ql,wMix) ;
 
-          FillHistogram(Form("hMietaphi_%s_%s_cen%d",cut[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
+//           FillHistogram(Form("hMietaphi_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
 // 	  if(TMath::Abs(dEta)>0.02)
-//             FillHistogram(Form("hMietaphiRP_%s_%s",cut[iCut],kTbin.Data()),dPsi,dPhi) ;
-//           FillHistogram(Form("hMi2etaphi_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,dE,wMix) ;
-//          FillHistogram(Form("hMidXdZ_%s_%s",cut[iCut],kTbin.Data()),dX,dZ) ;
+//             FillHistogram(Form("hMietaphiRP_%s_%s",fCuts[iCut],kTbin.Data()),dPsi,dPhi) ;
+//           FillHistogram(Form("hMi2etaphi_%s_%s",fCuts[iCut],kTbin.Data()),dEta,dPhi,dE,wMix) ;
+//          FillHistogram(Form("hMidXdZ_%s_%s",fCuts[iCut],kTbin.Data()),dX,dZ) ;
 	  
-//          FillHistogram(Form("hMiYKPCMS_%s_%s",cut[iCut],kTbin.Data()),qP, qT, q0);       
+//          FillHistogram(Form("hMiYKPCMS_%s_%s",fCuts[iCut],kTbin.Data()),qP, qT, q0);       
       
-//          FillHistogram(Form("hMiYKPPF_%s_%s",cut[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
+//          FillHistogram(Form("hMiYKPPF_%s_%s",fCuts[iCut],kTbin.Data()),qPpf, qTpf, q0pf);       
 	}
 	
       } // end of loop i2
@@ -880,7 +889,7 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
     }
   }
   // Post output data.
-//   PostData(1, fOutputContainer);
+  PostData(1, fOutputContainer);
   fEventCounter++;
 }
 
@@ -898,7 +907,7 @@ void AliAnalysisTaskgg::Terminate(Option_t *)
       
   }
   fout.Close() ;
-  fOutputContainer->Delete() ;
+//   fOutputContainer->Delete() ;
   
   
 }
@@ -1122,11 +1131,16 @@ Int_t AliAnalysisTaskgg::ConvertRunNumber(Int_t run){
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const{
+Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t fCuts) const{
   
-   //First distance cut based on non-overlapping CPV cuts
+   //First distance fCuts based on non-overlapping CPV fCutss
+  
+  if(ph1->Module()!=ph2->Module())
+    return kFALSE ;   
     
+  Double_t dl=999.;  
     
+  
   if(ph1->Module()==ph2->Module()){
     // offset for first photon   
     Double_t dxMax1= 3.36783/ph1->E()-11.5189/TMath::Sqrt(ph1->E())+3.08283;
@@ -1148,10 +1162,11 @@ Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton
     //use this excentricity in distance calculation
     Double_t dxC=ph1->EMCx() - ph2->EMCx() ;
     Double_t dzC=ph1->EMCz() - ph2->EMCz() ;
-        //rough cut 
+    dl=TMath::Sqrt(dxC*dxC + dzC*dzC) ;
+        //rough fCuts 
     if(TMath::Abs(dzC)<6. && TMath::Abs(dxC)<25.){
 
-      //distance cut: too close if ellipses overlap
+      //distance fCuts: too close if ellipses overlap
       Double_t dx=dxC+dxMin1+dxMin2 ;
       Double_t dz=dzC ;
       if(dx*dx+dz*dz*eps*eps< TMath::Power(2.5*(sigmaX1 + sigmaX2),2))
@@ -1168,57 +1183,100 @@ Bool_t AliAnalysisTaskgg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton
     }
   } 
   
- // if(cut==kDefault){
-  if(cut==0){
+ // if(fCuts==kDefault){
+  if(fCuts==0){
     return kTRUE ;
   }
-  if(cut==1){
+  if(fCuts==1){
     return ph1->IsDispOK()&& ph2->IsDispOK() ;  
   }
-  if(cut==2){
+  if(fCuts==2){
     return ph1->IsCPVOK() && ph2->IsCPVOK()  ;  
   }
-  if(cut==3){
+  if(fCuts==3){
     return ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
   }
-  if(cut==4){
+  if(fCuts==4){
     return ph1->IsDisp2OK() && ph2->IsDisp2OK()  ;  
   }
-  if(cut==5){
+  if(fCuts==5){
     return ph1->IsCPV2OK() && ph2->IsCPV2OK() ;  
   }
-  if(cut==6){
+  if(fCuts==6){
     return ph1->IsDispOK()&& ph1->IsCPV2OK() && ph2->IsDispOK()&& ph2->IsCPV2OK() ;  
   }
+  if(fCuts==7){
+    return dl>10. ;
+  }
+  if(fCuts==8){
+    return dl>13. ;
+  }
+  if(fCuts==9){
+    return dl>15. ;
+  }
+  if(fCuts==10){
+    return dl>18. ;
+  }
+  if(fCuts==11){
+    return dl>20. ;
+  }
+  if(fCuts==12){
+    return (dl>10.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  }
+  if(fCuts==13){
+    return (dl>13.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  }
+  if(fCuts==14){
+    return (dl>15.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  }
+  if(fCuts==15){
+    return (dl>18.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  }
+  if(fCuts==16){
+    return (dl>20.) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  }
+  if(fCuts==17){
+    return (fJetStatus[ph1->Module()]&1<<0) ;  
+  }
+ if(fCuts==18){
+    return (fJetStatus[ph1->Module()]&1<<0) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  }
+ if(fCuts==19){
+    return (fJetStatus[ph1->Module()]&1<<1) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  }
+ if(fCuts==20){
+    return (fJetStatus[ph1->Module()]&1<<2) && ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  }
     
+  
   return kTRUE ;
   
 }
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskgg::PHOSCut(const AliCaloPhoton * ph1, Int_t cut) const{
+Bool_t AliAnalysisTaskgg::PHOSCut(const AliCaloPhoton * ph1, Int_t fCuts) const{
   
- // if(cut==kDefault){
-  if(cut==0){
-    return kTRUE ;
-  }
-  if(cut==1){
-    return ph1->IsDispOK()  ;  
-  }
-  if(cut==2){
-    return ph1->IsCPVOK()  ;  
-  }
-  if(cut==3){
-    return ph1->IsDispOK()  && ph1->IsCPVOK()  ;  
-  }
-  if(cut==4){
-    return ph1->IsDisp2OK()  ;  
-  }
-  if(cut==5){
-    return ph1->IsCPV2OK()  ;  
-  }
-  if(cut==6){
-    return ph1->IsDispOK()&& ph1->IsCPV2OK()  ;  
-  }
+//  // if(fCuts==kDefault){
+//   if(fCuts==0){
+//     return kTRUE ;
+//   }
+//   if(fCuts==1){
+//     return ph1->IsDispOK()  ;  
+//   }
+//   if(fCuts==2){
+//     return ph1->IsCPVOK()  ;  
+//   }
+//   if(fCuts==3){
+//     return ph1->IsDispOK()  && ph1->IsCPVOK()  ;  
+//   }
+//   if(fCuts==4){
+//     return ph1->IsDisp2OK()  ;  
+//   }
+//   if(fCuts==5){
+//     return ph1->IsCPV2OK()  ;  
+//   }
+//   if(fCuts==6){
+//     return ph1->IsDispOK()&& ph1->IsCPV2OK()  ;  
+//   }
     
   return kTRUE ;
   
@@ -1235,7 +1293,7 @@ Int_t AliAnalysisTaskgg::JetRejection(Int_t module) const{
   const Double_t cutR=0.5*0.5 ; //Cone radius squared
   
   Int_t result=0 ;
-  
+  Double_t sumE=0.;
   //azimuthal angle of PHOS module
   Double_t phiPHOS = TMath::DegToRad()*(270.+fPHOSGeo->GetPHOSAngle(module)); // (40,20,0,-20,-40) degrees
   
@@ -1252,17 +1310,21 @@ Int_t AliAnalysisTaskgg::JetRejection(Int_t module) const{
     Double_t deta=aodTrack->Eta() ;
     Double_t r=dphi*dphi+deta*deta;
     if(r<cutR){
+      sumE+= aodTrack->Pt() ; 
       result=result|1<<0 ;
       if(aodTrack->Pt()>cutPt2)
 	result=result|1<<1 ;
         if(aodTrack->Pt()>cutPt1){
 	  result=result|1<<2 ;
-	  return result ;
-	}
-      
+        }
     }
 
   }
+  if(result&1<<2)
+    FillHistogram(Form("hJetEMod%d_th3",module),sumE,fCentrality) ;
+  if(result&1<<1)
+    FillHistogram(Form("hJetEMod%d_th2",module),sumE,fCentrality) ;
+  FillHistogram(Form("hJetEMod%d_th1",module),sumE,fCentrality) ;
   return result ;
 }
 //___________________________________________________________________________
