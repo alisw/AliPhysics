@@ -387,15 +387,15 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
   
   if (fFillYieldRapidity) {
-    const Int_t nPtBins = 400;
+    const Int_t nPtBins = 200;
     Double_t ptBins[nPtBins+1];
     for (int i=0; i<=nPtBins; i++)
       ptBins[i] = 20.0 / nPtBins * i;
     
-    const Int_t nyBins = 20;
+    const Int_t nyBins = 200;
     Double_t yBins[nyBins+1];
     for (int i=0; i<=nyBins; i++)
-      yBins[i] = -1.0 + 2.0 / nyBins * i;
+      yBins[i] = -10.0 + 20.0 / nyBins * i;
 
     fListOfHistos->Add(new TH3F("yieldsRapidity", ";centrality;pT;y", nCentralityBins, centralityBins, nPtBins, ptBins, nyBins, yBins));
   }
