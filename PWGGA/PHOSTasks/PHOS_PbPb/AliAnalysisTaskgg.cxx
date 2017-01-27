@@ -887,7 +887,9 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskgg::Terminate(Option_t *)
 {
-    
+  if(!fOutputContainer)
+    return ;
+  
   TFile fout("histos.root","recreate") ;  
     // Draw result to the screen
   // Called once at the end of the query
@@ -897,6 +899,7 @@ void AliAnalysisTaskgg::Terminate(Option_t *)
   }
   fout.Close() ;
   fOutputContainer->Delete() ;
+  
   
 }
 
