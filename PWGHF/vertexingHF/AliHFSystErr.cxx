@@ -5417,8 +5417,8 @@ void AliHFSystErr::InitDstartoD0pi2015PbPb3050() {
      // Tracking efficiency
     fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
     fTrackingEff->SetBinContent(2,0.06);
-    for(Int_t i=3;  i<=16; i++) fTrackingEff->SetBinContent(i,0.09);
-    for(Int_t i=17; i<=36; i++) fTrackingEff->SetBinContent(i,0.010);		
+    for(Int_t i=3;  i<=16; i++) fTrackingEff->SetBinContent(i,0.06);
+    for(Int_t i=17; i<=36; i++) fTrackingEff->SetBinContent(i,0.07);
      
     // Raw yield extraction
     fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
