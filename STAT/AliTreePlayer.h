@@ -9,7 +9,7 @@
 //  Alice extension of TTreePlayer            //
 ////////////////////////////////////////////////
 
- 
+class TPad; 
 #include "AliTreePlayer.h"
 
 class AliTreePlayer : public TNamed {
@@ -38,7 +38,7 @@ public:
   //static TH1* DrawSorted(TTree * tree, const char* varexp, const TCut& selection, Bool_t nbins=20, Long64_t nentries = 1000000000, Long64_t firstentry = 0);
   //
   static TObjArray  * MakeHistograms(TTree * tree, TString hisString, TString defaultCut, Int_t firstEntry, Int_t lastEntry, Int_t chunkSize=-1, Int_t verbose=1);
-  static TPad *  DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression);
+  static TPad *  DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression, Int_t verbose=1);
   
   template <typename T> static Long64_t BinarySearchSmaller(Long64_t n, const T *array, T value);
   enum TStatType {kUndef=-1,kEntries, kSum, kMean, kRMS, kMedian, kLTM, kLTMRMS, kMedianLeft,kMedianRight}; 

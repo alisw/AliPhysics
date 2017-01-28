@@ -49,6 +49,7 @@
 #include "AliTreePlayer.h"
 #include "TEntryList.h"
 #include "THn.h"
+#include "TLegend.h"
 
 ClassImp(AliTreePlayer)
 
@@ -911,9 +912,21 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 	Double_t xMin[kMaxDim], xMax[kMaxDim];   
 	for (Int_t iDim=0; iDim<hisDims[iHis]; iDim++){
 	  nBins[iDim]= TString(descriptionArray->At(3*iDim+1)->GetName()).Atoi();
-	  if (descriptionArray->At(3*iDim+2)->GetName()[0]!='#'){
+	  if (descriptionArray->At(3*iDim+2)->GetName()[0]!='%'){
 	    xMin[iDim]= TString(descriptionArray->At(3*iDim+2)->GetName()).Atof();	  
+	  }else{
+	    if (descriptionArray->At(3*iDim+2)->GetName()[1]=='A'){ // %A - alias describing range
+	      TTreeFormula falias("falias",&(descriptionArray->At(3*iDim+2)->GetName()[2]),tree);
+	      xMin[iDim]=falias.EvalInstance();	      
+	    }
+	  }
+	  if (descriptionArray->At(3*iDim+3)->GetName()[0]!='%'){
 	    xMax[iDim]= TString(descriptionArray->At(3*iDim+3)->GetName()).Atof();
+	  }else{
+	    if (descriptionArray->At(3*iDim+3)->GetName()[1]=='A'){ // %A - alias describing range
+	      TTreeFormula falias("falias",&(descriptionArray->At(3*iDim+3)->GetName()[2]),tree);
+	      xMax[iDim]=falias.EvalInstance();	      
+	    }
 	  }
 	  if (xMax[iDim]<=xMin[iDim]){
 	    ::Error("xxx","Invalid range specification %s\t%s",descriptionArray->At(3*iDim+2)->GetName(), descriptionArray->At(3*iDim+3)->GetName() );
@@ -964,7 +977,7 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 
 
 
-TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression){
+TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression, Int_t verbose){
   //
   //
   // Example usage:
@@ -1005,22 +1018,77 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
     if (drawList->At(iPad+1)==NULL) break;
     //TVirtualPad  *cPad = 
     pad->cd(iPad+1);
+    TLegend * legend = new TLegend(0.11,0.75, 0.89,0.89, TString::Format("Pad%d",iPad));
+    legend->SetNColumns(2);
+    legend->SetBorderSize(0);
     TObjArray * padDrawList= TString(drawList->At(iPad+1)->GetName()).Tokenize(";");
+    Double_t hisMin=0, hisMax=-1;
+    TH1 * hisToDraw=0;
     for (Int_t ihis=0; ihis<padDrawList->GetEntries(); ihis++){
-      TObjArray *hisDescription= TString(padDrawList->At(ihis)->GetName()).Tokenize("()[]");
-      THn * his = (THn*)hisArray->FindObject(hisDescription->At(0)->GetName());      
+      TObjArray *hisDescription= TString(padDrawList->At(ihis)->GetName()).Tokenize("()");
+      THn * his = (THn*)hisArray->FindObject(hisDescription->At(0)->GetName());   
       if (his==NULL) continue;
+      if (verbose&0x4){
+	::Info("AliTreePlayer::DrawHistograms","Pad %d. Processing his %s",iPad, hisDescription->At(0)->GetName());
+      }    
+      Int_t ndim=his->GetNdimensions();      
+      TString rangeDescription(hisDescription->At(1)->GetName());
+      Int_t ndimRange= (rangeDescription.CountChar(',')+1)/2;
+      if (ndimRange>0){
+	TObjArray *rangeArray=rangeDescription.Tokenize(",");
+	for (Int_t iDim=0; iDim<ndimRange; iDim+=2){
+	  if (rangeArray->At(iDim*2)->GetName()[0]=='U') {
+	    Double_t min=TString(&(rangeArray->At(iDim*2)->GetName()[1])).Atof();
+	    Double_t max=TString(&(rangeArray->At(iDim*2+1)->GetName()[1])).Atof();
+	    if (verbose&0x8){
+	      ::Info("AliTreePlayer::DrawHistograms","Pad %d. %s.GetAxis(%d).SetRangeUser(%f,%f).",iPad,hisDescription->At(0)->GetName(), iDim, min,max);
+	    }
+	    his->GetAxis(iDim)->SetRangeUser(min,max);
+	  }else{
+	    Int_t min=TString((rangeArray->At(iDim*2)->GetName())).Atoi();
+	    Int_t max=TString((rangeArray->At(iDim*2+1)->GetName())).Atoi();
+	    if (verbose&0x8){
+	      ::Info("AliTreePlayer::DrawHistograms","Pad %d. %s.GetAxis(%d).SetRange(%d,%d).",iPad,hisDescription->At(0)->GetName(), iDim, min,max);
+	    }
+	    his->GetAxis(iDim)->SetRange(min,max);
+	  }
+	}
+	delete rangeArray;
+      }
+
       TString projString=hisDescription->At(2)->GetName();
       Int_t nDims = projString.CountChar(';')+1;
       TH1 * hProj =0;
       if (nDims==1) hProj=his->Projection(projString.Atoi());
       if (hProj){
-	if (ihis==0)  hProj->DrawClone(hisDescription->At(3)->GetName());
+	hProj->SetMarkerColor(ihis+1);
+	hProj->SetLineColor(ihis+1);
+	hProj->SetMarkerStyle(21+ihis);
+	//TString projTitle=his->Get();
+	//
+	if (hisMax<hisMin) hisMin=hProj->GetMinimum();  hisMax=hProj->GetMaximum();
+	if (hisMax<hProj->GetMaximum()) hisMax=hProj->GetMaximum();
+	if (hisMin>hProj->GetMinimum()) hisMin=hProj->GetMinimum();		
+	if (ihis==0)  {
+	  hisToDraw = hProj;
+	  hProj->Draw((TString(hisDescription->At(3)->GetName())+"same").Data());
+	  legend->AddEntry(hProj);
+	}
 	else{
-	  hProj->DrawClone((TString(hisDescription->At(3)->GetName())+"same").Data());
+	  hProj->Draw((TString(hisDescription->At(3)->GetName())+"same").Data());
+	  legend->AddEntry(hProj);
 	}
       }
+    } 
+    pad->cd(iPad+1);
+    if (hisToDraw!=NULL){
+      hisToDraw->SetMaximum(hisMax+(hisMax-hisMin)/3);
+      hisToDraw->SetMinimum(hisMin);
+      pad->cd(iPad+1)->Modified();
+      pad->cd(iPad+1)->Update();
+      legend->Draw("same");
     }
+    pad->cd(iPad+1);
   }
   return pad;
 
