@@ -3372,7 +3372,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtTrackInConeTOFBCN->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtTrackInConeTOFBCN) ;
 
-      fhPtTrackInConeTOFNo  = new TH2F("hPtTrackInConeTOFBCN",
+      fhPtTrackInConeTOFNo  = new TH2F("hPtTrackInConeTOFNo",
                                         Form("#it{p}_{T} of tracks in isolation cone for #it{R} = %2.2f, no TOF",r),
                                         nptbins,ptmin,ptmax,nptinconebins,ptinconemin,ptinconemax);
       fhPtTrackInConeTOFNo->SetYTitle("#it{p}_{T in cone} (GeV/#it{c})");
