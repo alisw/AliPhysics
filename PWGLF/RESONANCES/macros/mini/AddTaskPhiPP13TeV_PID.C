@@ -165,7 +165,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
     }else if(cutEventUtils && !cutVertex){
       eventCuts->AddCut(cutEventUtils);
       eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
-    }else if(!cutEventUtils && !cutVertex){
+    }else if(!cutEventUtils && cutVertex){
       eventCuts->AddCut(cutVertex);
       eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
     }
