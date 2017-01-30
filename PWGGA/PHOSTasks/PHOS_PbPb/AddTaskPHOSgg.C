@@ -25,15 +25,15 @@ AliAnalysisTaskgg* AddTaskPHOSgg(const char* name = "PHOSgg",
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   
   AliAnalysisDataContainer *cinput   = mgr->GetCommonInputContainer(); 
-//  TString trigger;
-//  if(offlineTriggerMask==AliVEvent::kCentral) trigger = "Central" ;
-//  else if(offlineTriggerMask==AliVEvent::kSemiCentral) trigger = "SemiCentral" ;
-//  else trigger = "Other" ;
-//  TString cname(Form("%s%s", name,trigger.Data()));
-//  TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), name));
- // AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
+  TString trigger;
+  if(offlineTriggerMask==AliVEvent::kCentral) trigger = "Central" ;
+  else if(offlineTriggerMask==AliVEvent::kSemiCentral) trigger = "SemiCentral" ;
+  else trigger = "Other" ;
+  TString cname(Form("%s%s", name,trigger.Data()));
+  TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), name));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
   mgr->ConnectInput(task , 0, cinput);
-//  mgr->ConnectOutput(task, 1, coutput1);
+  mgr->ConnectOutput(task, 1, coutput1);
   
   return task;
 }

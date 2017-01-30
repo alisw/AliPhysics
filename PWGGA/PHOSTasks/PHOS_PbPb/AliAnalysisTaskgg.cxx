@@ -205,19 +205,23 @@ void AliAnalysisTaskgg::UserCreateOutputObjects()
   Int_t nQ=120 ;
   Double_t qMax=0.3 ;
   
-//   char kTbins[6][20] ;
-//   sprintf(kTbins[0],"Kt00-02") ;
-//   sprintf(kTbins[1],"Kt02-04") ;
-//   sprintf(kTbins[2],"Kt04-07") ;
-//   sprintf(kTbins[3],"Kt07-10") ;
-//   sprintf(kTbins[4],"Kt10-13") ;
-//   sprintf(kTbins[5],"Kt13-20") ;
+  char kTbins[6][20] ;
+  sprintf(kTbins[0],"Kt00-02") ;
+  sprintf(kTbins[1],"Kt02-04") ;
+  sprintf(kTbins[2],"Kt04-07") ;
+  sprintf(kTbins[3],"Kt07-10") ;
+  sprintf(kTbins[4],"Kt10-13") ;
+  sprintf(kTbins[5],"Kt13-20") ;
 
   
   const Int_t nCenBin=4;
   for(Int_t cen=0; cen<nCenBin; cen++){  
-    for(Int_t iCut=0; iCut<fNCuts; iCut++){
-      for(Int_t mod=1; mod<4; mod++){
+    for(Int_t ikT=0; ikT<6; ikT++){ 
+      fOutputContainer->Add(new TH3F(Form("hOSLCMS_%s_cen%d",kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+      fOutputContainer->Add(new TH3F(Form("hMiOSLCMS_%s_cen%d",kTbins[ikT],cen),"Out-Side-Long, CMS",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
+    }
+    for(Int_t mod=1; mod<4; mod++){
+      for(Int_t iCut=0; iCut<fNCuts; iCut++){
 //       for(Int_t ikT=0; ikT<6; ikT++){ 
 //      fOutputContainer->Add(new TH3F(Form("hOSLPF_%s_%s",fCuts[iCut],kTbins[ikT]),"Out-Side-Long, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
 //      fOutputContainer->Add(new TH3F(Form("hYKPPF_%s_%s",fCuts[iCut],kTbins[ikT]),"YKP, Pair Frame",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax));
@@ -677,17 +681,17 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
       AliFemtoPair pair(a,b);
       Double_t qinv= pair.QInv();
       Double_t kT = pair.KT() ;
-//       TString kTbin="15" ;
-//       if(kT<0.2) kTbin="Kt00-02";
-//       else if(kT<0.4) kTbin="Kt02-04";
-//       else if(kT<0.7) kTbin="Kt04-07";
-//       else if(kT<1.) kTbin="Kt07-10";
-//       else if(kT<1.3) kTbin="Kt10-13";
-//       else if(kT<2.) kTbin="Kt13-20";
+      TString kTbin="" ;
+      if(kT<0.2) kTbin="Kt00-02";
+      else if(kT<0.4) kTbin="Kt02-04";
+      else if(kT<0.7) kTbin="Kt04-07";
+      else if(kT<1.) kTbin="Kt07-10";
+      else if(kT<1.3) kTbin="Kt10-13";
+      else if(kT<2.) kTbin="Kt13-20";
 //       else  continue;
       
-      Double_t  qo=pair.QOutCMS();
-//       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
+//       Double_t  qo=pair.QOutCMS();
+      Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
 //       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
 //       
 //       Double_t pairPhi=TMath::ATan2(ph1->Py()+ph2->Py(),ph1->Px()+ph2->Px()) ;
@@ -731,9 +735,11 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
         // Bertsch-Pratt momentum components in Pair Frame - written by Bekele/Humanic
 //        FillHistogram(Form("hOSLPF_%s_%s",fCuts[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
-   
-        // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-//         FillHistogram(Form("hOSLCMS_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),qs,qo,ql) ;
+
+        if(iCut==6&&kTbin.Length()>0){
+          // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
+           FillHistogram(Form("hOSLCMS_%s_cen%d",kTbin.Data(),fCenBin),qs,qo,ql) ;
+        }    
 //         FillHistogram(Form("hetaphi_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
 // 	if(TMath::Abs(dEta)>0.02)
 //           FillHistogram(Form("hetaphiRP_%s_%s",fCuts[iCut],kTbin.Data()),dPsi,dPhi) ;
@@ -799,18 +805,18 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 
 	Double_t qinv= pair.QInv();
         Double_t kT = pair.KT() ;
-//         TString kTbin ;
-// 	Int_t ikTbin=0 ;
-//         if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
-//         else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
-//         else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
-//         else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
-//         else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
-//         else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
-//         else  continue;
+        TString kTbin ;
+	Int_t ikTbin=0 ;
+        if(kT<0.2){ kTbin="Kt00-02"; ikTbin=0; }
+        else if(kT<0.4){  kTbin="Kt02-04"; ikTbin=1; }
+        else if(kT<0.7){  kTbin="Kt04-07"; ikTbin=2; }
+        else if(kT<1.0){  kTbin="Kt07-10"; ikTbin=3; }
+        else if(kT<1.3){  kTbin="Kt10-13"; ikTbin=4; }
+        else if(kT<2.0){  kTbin="Kt13-20"; ikTbin=5; }
+        else  continue;
       
-      Double_t qo=pair.QOutCMS();
-//       Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
+//       Double_t qo=pair.QOutCMS();
+      Double_t qs=pair.QSideCMS(), qo=pair.QOutCMS(), ql=pair.QLongCMS();
 //       Double_t qspf=pair.QSidePf(),qopf=pair.QOutPf(),qlpf=pair.QLongPf() ;
       
 //       Double_t wMix = EtaPhiWeight(ikTbin,dPhi );
@@ -857,9 +863,10 @@ void AliAnalysisTaskgg::UserExec(Option_t *)
 //          FillHistogram(Form("hMiOSLPF_%s_%s",fCuts[iCut],kTbin.Data()),qspf,qopf,qlpf) ;
    
           // Bertsch-Pratt momentum components in Local CMS (longitudinally comoving) frame
-//           FillHistogram(Form("hMiOSLCMS_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),qs,qo,ql) ;
+        if(iCut==6&&kTbin.Length()>0){          
+          FillHistogram(Form("hMiOSLCMS_%s_cen%d",kTbin.Data(),fCenBin),qs,qo,ql) ;
 //           FillHistogram(Form("hMi2OSLCMS_%s_%s",fCuts[iCut],kTbin.Data()),qs,qo,ql,wMix) ;
-
+        }
 //           FillHistogram(Form("hMietaphi_%s_%s_cen%d",fCuts[iCut],kTbin.Data(),fCenBin),dEta,dPhi,kT) ;
 // 	  if(TMath::Abs(dEta)>0.02)
 //             FillHistogram(Form("hMietaphiRP_%s_%s",fCuts[iCut],kTbin.Data()),dPsi,dPhi) ;
