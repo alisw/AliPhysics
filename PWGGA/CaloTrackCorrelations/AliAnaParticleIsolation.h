@@ -183,8 +183,14 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
   void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
 
+  void         SwitchOnStudyEtaCutInCone()           { fStudyEtaCutInCone = kTRUE ; }
+  void         SwitchOffStudyEtaCutInCone()          { fStudyEtaCutInCone = kFALSE; }
+
   void         SetNPtCutInCone(Int_t n)              { if(n < 19) fNPtCutsInCone = n ; }
   void         SetPtCutInConeAt(Int_t i,Float_t l)   { if(i <= fNPtCutsInCone) fPtCutInCone[i] = l; }
+
+  void         SetNEtaCutInCone(Int_t n)             { if(n < 10) fNEtaCutsInCone = n ; }
+  void         SetEtaCutInConeAt(Int_t i,Float_t l)  { if(i <= fNEtaCutsInCone) fEtaCutInCone[i] = l; }
   
   /// For primary histograms in arrays, index in the array, corresponding to a photon origin.
   enum mcPrimTypes { kmcPrimPhoton = 0, kmcPrimPi0Decay = 1, kmcPrimEtaDecay  = 2, kmcPrimOtherDecay  = 3,
@@ -249,6 +255,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fStudyPtCutInCone;                         ///<  Activate study of track/cluster min pT on sum of pT in cone
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
   Float_t  fPtCutInCone[20];                          ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
+
+  Bool_t   fStudyEtaCutInCone;                        ///<  Activate study of track/cluster max eta on sum of pT in cone
+  Int_t    fNEtaCutsInCone;                           ///<  Number of track/cluster max eta cut to test in cone for sum pT calculation.
+  Float_t  fEtaCutInCone[10];                         ///<  List of track/cluster max eta cut to test in cone for sum pT calculation.
   
   TLorentzVector fMomentum;                           //!<! Temporary vector, avoid creation per event.
   TLorentzVector fMomIso;                             //!<! Temporary vector, avoid creation per event.
@@ -628,6 +638,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterPerPtCutLargePtTrig;        //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerPtCut;                     //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
   TH2F *   fhConeSumPtTrackPerPtCutLargePtTrig;          //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeSumPtTrackPerEtaCut;                    //!<! Tracks Sum Pt in the cone for different min eta cuts, x axis.
+  TH2F *   fhConeSumPtTrackPerEtaCutLargePtTrig;         //!<! Tracks Sum Pt in the cone for different min eta cuts, x axis. Trigger pT > 10 GeV fixed
   
   TH2F *   fhConeSumPtClusterFECCorrPair    ;            //!<! cluster sum pt for pair column cells in correlated FEC
   TH2F *   fhConeSumPtClusterFECCorrOdd     ;            //!<! cluster sum pt for odd column cells in correlated FEC
