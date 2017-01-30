@@ -414,6 +414,10 @@ void AliJJtAnalysis::UserExec(){
 		cout << "sqrts = "<< sqrtS << ",runnumber = "<< frunHeader->GetRunNumber() << endl;
 		fEfficiency->SetRunNumber( frunHeader->GetRunNumber() );
 		fEfficiency->Load();
+    double magneticFieldPolarity = 1;
+    if(frunHeader->GetL3MagnetFieldIntensity() < 0) magneticFieldPolarity = -1;
+    fcorrelations->SetMagneticFieldPolarity(magneticFieldPolarity);
+    cout << "Magnetic field polarity is: " << magneticFieldPolarity << endl;
 		fFirstEvent = kFALSE;
 	}
 
@@ -601,7 +605,12 @@ void AliJJtAnalysis::UserExec(){
 	//----------------------ooooo---------------------------------------
 	int nTriggerTracks=-1;
 	nTriggerTracks = fbTriggCorrel ? noTriggs : 1;
-	if(fbLPCorrel && !lpTrackCounter->Exists()) return;
+  if(fbLPCorrel && !lpTrackCounter->Exists()){
+    delete lpTrackCounter;
+    delete subLeadingTrackCounter;
+    return;
+  }
+  
 	triggerTrack = NULL;
 
 	for(int ii=0;ii<nTriggerTracks;ii++){ // trigger loop 

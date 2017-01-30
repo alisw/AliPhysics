@@ -85,6 +85,8 @@ EnableKlongBins 0 # 0 = Do not fill klong bins. 1 = Fill klong bins
 DoResonancePythia 0 # 0 = Regular PYTHIA8 run. 1 = Generate two gluon initial state in PYTHIA8
 NRandomizationTrials 20 # Number of pairs generated from found background pair
 LeadingParticleSystematics 0 # 0 = regular run, 1 = do systematic error estimate for missed leading particles
+TrackMergeSystematics 0 # 0 = regular run, 1 = do systematic error estimate for track merging effect
+TrackMergeCut 0.02 # If track merging is taken into account, remove tracks if deltaEta and deltaPhi* are smaller than this value
 
 #======= Level of used quality control histograms =======
 QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = quality control for acceptance correction, 2 = lots of 2D quality control histograms added
