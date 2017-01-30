@@ -45,9 +45,17 @@
   //
   AliOfflineTrigger trigger("default", 30,100000000);
   trigger.LoadTriggerList("gidesdTrigger.list");
-
   trigger.ExtractSelected("raw.list", "gidesdTrigger.list", "rawSelected[].root",1000000, 1  );
   //
+  // 6.) Example to compare content of the raw filtered data with input flitered list as used in the filterning produnction
+  TTree * tree = AliOfflineTrigger::MakeDiffTree("gidrawTree.list","filteredHighPt.list;filteredHighPtV0s.list;filteredMult.list");
+  Int_t entriesAll=tree->GetEntries();
+  Int_t entriesHighPt = tree->Draw("gid/10.","(gid==T0.gid)","goff");
+  Int_t entriesHighPtV0 = tree->Draw("gid/10.","(gid==T1.gid)","goff");
+  Int_t entriesMult = tree->Draw("gid/10.","(gid==T2.gid)","goff");
+  ::Info("AliOfflineTrigger::MakeDiffTree.KeyValue","All:%d",entriesAll);
+  ::Info("AliOfflineTrigger::MakeDiffTree.KeyValue","entriesHighPt+entriesHighPtV0+entriesMult:%d",entriesHighPt+entriesHighPtV0+entriesMult);  
+
 */
 
 
@@ -190,63 +198,99 @@ void  AliOfflineTrigger::DumpGIDRAWTree(const char *rawFile){
 
   if (rawFile==NULL) return;
   if (TPRegexp("^alien").Match(rawFile) && gGrid==0)  TGrid::Connect("alien");
-
-  TFile * finput =TFile::Open(rawFile);
-  if (finput==NULL){
-    ::Error("dumpRAWGIDTree","rawFile %s not accessible",rawFile);
-    return;
+  TFile * finput=NULL;
+  TTree * tree=NULL;
+  TPRegexp expRoot(".root$");
+  TPRegexp expList(".list$");
+  TObjArray *fileList=NULL;
+  
+  if (TString(rawFile).Contains(expRoot)){
+    fileList = new TObjArray(1);
+    fileList->AddLast(new TObjString(rawFile));
   }
-  TTree * tree = (TTree*)finput->Get("RAW");
-  if (tree==NULL){
-    ::Error("dumpRAWGIDTree","rawFile %s  does not contained requested tree",rawFile);
-    return;
+  if (TString(rawFile).Contains(expList)){  
+    fileList = gSystem->GetFromPipe(TString::Format("cat %s", rawFile)).Tokenize("\n");
   }
-  TString chunkName=rawFile;
-  TPRegexp reg0(".*/");
-  reg0.Substitute(chunkName,"");
-  TPRegexp reg1(".root$");
-  reg1.Substitute(chunkName,"");
-
-  AliRawVEvent*    fEvent=0;              // (super) event
-  tree->SetBranchStatus("TPC*",kFALSE);
-  tree->SetBranchStatus("TRD*",kFALSE);
-  tree->SetBranchStatus("rawevent",kTRUE);
-  TBranch *fBranch = tree->GetBranch("rawevent");  // as in AliRawReaderRoot::AliRawReaderRoot  
-  fBranch->SetAddress(&fEvent);  
-  if (fDefaultTreeCache>0) {
-    tree->SetCacheSize(fDefaultTreeCache);
-    //tree->AddBranchToCache("*",kFALSE); 
+  if (fileList==NULL){
+    ::Error("dumpRAWGIDTree","Invalid input r %s",rawFile);
   }
-  Int_t nevents=tree->GetEntries();
-
   std::ofstream file_out("gidrawTree.list");
   //  file_out<<"gid/D:eventCounter/D:period/D:orbit/D:bcid/D:fname/C:eventID/D\n";  // print headaer
   //file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
   file_out<<"fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i"<<endl;  // print header
 
-  for (Int_t ievent=0; ievent<nevents; ievent++){
-    fBranch->GetEntry(ievent);
-    Int_t run = fEvent->GetHeader()->Get("RunNb");
+  Int_t nFiles=  fileList->GetEntries();
+  for (Int_t iFile=0; iFile<nFiles; iFile++){
+    if (TPRegexp("^alien").Match(fileList->At(iFile)->GetName()) && gGrid==0)  TGrid::Connect("alien");    
+    finput =TFile::Open(fileList->At(iFile)->GetName());
+    if (finput==NULL){
+      ::Error("dumpRAWGIDTree","rawFile %s not accessible", fileList->At(iFile)->GetName());
+      continue;
+    }
+    tree = (TTree*)finput->Get("RAW");
+    if (tree==NULL){
+      ::Error("dumpRAWGIDTree","rawFile %s  does not contained requested tree",rawFile);
+      continue;
+    }
+  
+    TString chunkName=fileList->At(iFile)->GetName();
+    TPRegexp yearExp("./20.*/");
+    Int_t indexShort=chunkName.Index(yearExp);
+    TString chunkShort(&(chunkName[indexShort+7]));
     //
-    const UInt_t *id  = fEvent->GetHeader()->GetP("Id");                             // copy of AliRawReaderRoot::GetEventId()
-    ULong64_t  period = id ? (((id)[0]>>4)&0x0fffffff): 0;                           // AliRawReader::Get<>
-    ULong64_t  orbit  = id ? ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)) : 0; // AliRawReader::Get<>
-    ULong64_t  bcID   =  id ? ((id)[1]&0x00000fff) : 0;                              // AliRawReader::Get<>
-    ULong64_t  gid    = (((ULong64_t)period << 36) | ((ULong64_t)orbit << 12) |(ULong64_t)bcID); // AliRawReader::GetEventIdAsLong() 
-    UInt_t     timeStamp=fEvent->GetHeader()->Get("Timestamp");  
-    //
-    file_out<<    // dump contet
-      chunkName.Data()<<       // chunkName
-      "\t"<< ievent<<           // event counter
-      "\t"<<gid<<               // gid
-      "\t"<<timeStamp<<         // time stamp
-      "\t"<< period<<           // period
-      "\t"<< orbit<<            // orbit 
-      "\t"<< bcID<<             // bcID
-      "\t"<<ievent<<            // event ID  - for the tree ir is the same as counter
-      endl;
+    TPRegexp reg0(".*/");
+    reg0.Substitute(chunkName,"");
+    TPRegexp reg1(".root$");
+    reg1.Substitute(chunkName,"");
     
-    if (ievent%100==0)     printf("EventNumber\t%d\t%llu\n",ievent,gid);
+    AliRawVEvent*    fEvent=0;              // (super) event
+    tree->SetBranchStatus("TPC*",kFALSE);
+    tree->SetBranchStatus("TRD*",kFALSE);
+    tree->SetBranchStatus("rawevent",kTRUE);
+    TBranch *fBranch = tree->GetBranch("rawevent");  // as in AliRawReaderRoot::AliRawReaderRoot  
+    //    fBranch->SetAddress(&fEvent);  
+    if (fDefaultTreeCache>0) {
+      tree->SetCacheSize(fDefaultTreeCache);
+      //tree->AddBranchToCache("*",kFALSE); 
+    }
+    Int_t nevents=tree->GetEntries();
+    
+    AliSysInfo::AddStamp(TString::Format("%s_0",chunkShort.Data()).Data(), 1, fCounterFileInput,fCounterFileInput);    
+    for (Int_t ievent=0; ievent<nevents; ievent++){
+      fBranch->SetAddress(&fEvent);  
+      fBranch->GetEntry(ievent);
+      AliRawEventHeaderBase *header = fEvent->GetHeader();
+      Int_t run = header->Get("RunNb");
+      //
+      const UInt_t *id  = header->GetP("Id");                             // copy of AliRawReaderRoot::GetEventId()
+      ULong64_t  period = id ? (((id)[0]>>4)&0x0fffffff): 0;                           // AliRawReader::Get<>
+      ULong64_t  orbit  = id ? ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)) : 0; // AliRawReader::Get<>
+      ULong64_t  bcID   =  id ? ((id)[1]&0x00000fff) : 0;                              // AliRawReader::Get<>
+      ULong64_t  gid    = (((ULong64_t)period << 36) | ((ULong64_t)orbit << 12) |(ULong64_t)bcID); // AliRawReader::GetEventIdAsLong() 
+      UInt_t     timeStamp=header->Get("Timestamp");  
+      delete fEvent;
+      fEvent=NULL;
+      //
+      AliSysInfo::AddStamp(TString::Format("%s",chunkShort.Data()).Data(), 2, iFile, ievent);
+      file_out<<    // dump contet
+	chunkShort.Data()<<       // chunkName
+	"\t"<< ievent<<           // event counter
+	"\t"<<gid<<               // gid
+	"\t"<<timeStamp<<         // time stamp
+	"\t"<< period<<           // period
+	"\t"<< orbit<<            // orbit 
+	"\t"<< bcID<<             // bcID
+	"\t"<<ievent<<            // event ID  - for the tree ir is the same as counter
+	endl;      
+      if (ievent%100==0)     printf("EventNumber\t%d\t%llu\n",ievent,gid);      
+    }
+    AliSysInfo::AddStamp(TString::Format("%s_1",chunkShort.Data()).Data(), 3, fCounterFileInput,fCounterFileInput);
+    delete fBranch;
+    delete fEvent;
+    delete tree;
+    finput->Close();
+    delete finput;
+    AliSysInfo::AddStamp(TString::Format("%s_2",chunkShort.Data()).Data(), 4, fCounterFileInput,fCounterFileInput);
   }
 }
 
@@ -554,7 +598,7 @@ void  AliOfflineTrigger::ExtractSelected(const char *rawFile, Int_t verbose){
   for (Int_t iEvent=0; iEvent<nEvents; iEvent++){
     ULong64_t gid=fRAWEventNrGID[iEvent];
     Bool_t isSelected = kFALSE;
-    isSelected=(fTrgGIDEventNr[gid]==iEvent);   // gid in the list of triggered events
+    isSelected=(fTrgGIDEventNr[gid]==iEvent && fTrgGIDTimeStamp[gid]>0);   // gid in the list of triggered events
     fCounterFileInput++;
     if (!isSelected) continue;
     if (verbose&1>0) {
