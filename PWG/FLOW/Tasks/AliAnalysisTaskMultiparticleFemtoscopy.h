@@ -194,6 +194,12 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList* GetCorrelationFunctionsList() const {return this->fCorrelationFunctionsList;}
   void SetCorrelationFunctionsFlagsPro(TProfile* const cffp) {this->fCorrelationFunctionsFlagsPro = cffp;};
   TProfile* GetCorrelationFunctionsFlagsPro() const {return this->fCorrelationFunctionsFlagsPro;};
+  void Set2pCorrelationFunctionsFlagsPro(TProfile* const cffp2p) {this->f2pCorrelationFunctionsFlagsPro = cffp2p;};
+  TProfile* Get2pCorrelationFunctionsFlagsPro() const {return this->f2pCorrelationFunctionsFlagsPro;};
+  void Set3pCorrelationFunctionsFlagsPro(TProfile* const cffp3p) {this->f3pCorrelationFunctionsFlagsPro = cffp3p;};
+  TProfile* Get3pCorrelationFunctionsFlagsPro() const {return this->f3pCorrelationFunctionsFlagsPro;};
+  void Set4pCorrelationFunctionsFlagsPro(TProfile* const cffp4p) {this->f4pCorrelationFunctionsFlagsPro = cffp4p;};
+  TProfile* Get4pCorrelationFunctionsFlagsPro() const {return this->f4pCorrelationFunctionsFlagsPro;};
   void SetFillCorrelationFunctions(Bool_t fcf) {this->fFillCorrelationFunctions = fcf;};
   Bool_t GetFillCorrelationFunctions() const {return this->fFillCorrelationFunctions;};
   void SetNormalizeCorrelationFunctions(Bool_t ncf) {this->fNormalizeCorrelationFunctions = ncf;};
@@ -208,6 +214,12 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TList* GetBackgroundList() const {return this->fBackgroundList;}
   void SetBackgroundFlagsPro(TProfile* const bfp) {this->fBackgroundFlagsPro = bfp;};
   TProfile* GetBackgroundFlagsPro() const {return this->fBackgroundFlagsPro;};
+  void Set2pBackgroundFlagsPro(TProfile* const bfp2p) {this->f2pBackgroundFlagsPro = bfp2p;};
+  TProfile* Get2pBackgroundFlagsPro() const {return this->f2pBackgroundFlagsPro;};
+  void Set3pBackgroundFlagsPro(TProfile* const bfp3p) {this->f3pBackgroundFlagsPro = bfp3p;};
+  TProfile* Get3pBackgroundFlagsPro() const {return this->f3pBackgroundFlagsPro;};
+  void Set4pBackgroundFlagsPro(TProfile* const bfp4p) {this->f4pBackgroundFlagsPro = bfp4p;};
+  TProfile* Get4pBackgroundFlagsPro() const {return this->f4pBackgroundFlagsPro;};
   void SetBackgroundOption(Int_t bo) {this->fBackgroundOption = bo;};
   Int_t GetBackgroundOption() const {return this->fBackgroundOption;};
   void SetEstimate2pBackground(Bool_t fe2pb) {this->fEstimate2pBackground = fe2pb;};
@@ -419,8 +431,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TProfile *fControlHistogramsIdentifiedParticlesFlagsPro; // profile to hold all flags for control histograms for identified particles
   Bool_t fFillControlHistogramsIdentifiedParticles;        // fill or not control histograms for identified particles (by default they are not filled)
   Bool_t fFillControlHistogramsWithGlobalTrackInfo;        // by default, control histograms are filled with info from 'atrack'. If this flag is TRUE, then instead info from 'gtrack' is used. This then also applies to info used to get correlation functions and background as well
-  TProfile *fInclusiveSigmaCutsPro;                        //! holds the values of fInclusiveSigmaCuts[5];
-  TProfile2D *fExclusiveSigmaCutsPro;                      //! holds the values of fExclusiveSigmaCuts[5][5];
+  TProfile *fInclusiveSigmaCutsPro;                        // holds the values of fInclusiveSigmaCuts[5];
+  TProfile2D *fExclusiveSigmaCutsPro;                      // holds the values of fExclusiveSigmaCuts[5][5];
   TH1F *fMassPIDHist[5][2][2];                             //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fPtPIDHist[5][2][2];                               //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
   TH1F *fEtaPIDHist[5][2][2];                              //! [0=e,1=mu,2=pi,3=K,4=p][particle(+q)/antiparticle(-q)][kPrimary/kFromDecayVtx]
@@ -464,6 +476,9 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   // 3.) Correlation functions:
   TList *fCorrelationFunctionsList;              // list to hold all correlation functions for primary particle
   TProfile *fCorrelationFunctionsFlagsPro;       // profile to hold all flags for correlation functions
+  TProfile *f2pCorrelationFunctionsFlagsPro;     // profile to hold all flags for 2p correlation functions (placed in fCorrelationFunctionsSublist[0])
+  TProfile *f3pCorrelationFunctionsFlagsPro;     // profile to hold all flags for 3p correlation functions (placed in fCorrelationFunctionsSublist[1])
+  TProfile *f4pCorrelationFunctionsFlagsPro;     // profile to hold all flags for 4p correlation functions (placed in fCorrelationFunctionsSublist[2])
   TList *fCorrelationFunctionsSublist[3];        //! lists to hold all correlation functions, for 2p [0], 3p [1], 4p [2], etc., separately
   Bool_t fFillCorrelationFunctions;              // fill or not correlation functions (by default they are not filled)
   Bool_t fNormalizeCorrelationFunctions;         // normalize correlation functions with the background
@@ -476,7 +491,10 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
 
   // 4.) Background:
   TList *fBackgroundList;              // list to hold all background objects primary particle
-  TProfile *fBackgroundFlagsPro;       // profile to hold all flags for correlation functions
+  TProfile *fBackgroundFlagsPro;       // profile to hold all flags for background
+  TProfile *f2pBackgroundFlagsPro;     // profile to hold all flags for 2p background (placed in fBackgroundSublist[0])
+  TProfile *f3pBackgroundFlagsPro;     // profile to hold all flags for 3p background (placed in fBackgroundSublist[1])
+  TProfile *f4pBackgroundFlagsPro;     // profile to hold all flags for 4p background (placed in fBackgroundSublist[2])
   TList *fBackgroundSublist[3];        //! lists to hold all background correlations, for 2p [0], 3p [1], 4p [2], etc., separately
   Int_t fBackgroundOption;             // set how to estimate background: 0 = "shifting", 1 = "permutations", etc. (see .cxx for further explanation). By default, it is "shifting"
   Bool_t fEstimate2pBackground;        // enable or not 2p background estimation

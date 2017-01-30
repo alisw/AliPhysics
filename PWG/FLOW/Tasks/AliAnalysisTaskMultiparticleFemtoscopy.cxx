@@ -132,6 +132,9 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  // 3.) Correlation functions:
  fCorrelationFunctionsList(NULL),
  fCorrelationFunctionsFlagsPro(NULL),
+ f2pCorrelationFunctionsFlagsPro(NULL),
+ f3pCorrelationFunctionsFlagsPro(NULL),
+ f4pCorrelationFunctionsFlagsPro(NULL),
  fFillCorrelationFunctions(kFALSE),
  fNormalizeCorrelationFunctions(kFALSE),
  fCorrelationFunctionsIndices(NULL),
@@ -140,6 +143,9 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy(c
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
+ f2pBackgroundFlagsPro(NULL),
+ f3pBackgroundFlagsPro(NULL),
+ f4pBackgroundFlagsPro(NULL),
  fBackgroundOption(0),
  fEstimate2pBackground(kFALSE),
  fEstimate3pBackground(kFALSE),
@@ -336,6 +342,9 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  // 3.) Correlation functions:
  fCorrelationFunctionsList(NULL),
  fCorrelationFunctionsFlagsPro(NULL),
+ f2pCorrelationFunctionsFlagsPro(NULL),
+ f3pCorrelationFunctionsFlagsPro(NULL),
+ f4pCorrelationFunctionsFlagsPro(NULL),
  fFillCorrelationFunctions(kFALSE),
  fNormalizeCorrelationFunctions(kFALSE),
  fCorrelationFunctionsIndices(NULL),
@@ -344,6 +353,9 @@ AliAnalysisTaskMultiparticleFemtoscopy::AliAnalysisTaskMultiparticleFemtoscopy()
  // 4.) Background:
  fBackgroundList(NULL),
  fBackgroundFlagsPro(NULL),
+ f2pBackgroundFlagsPro(NULL),
+ f3pBackgroundFlagsPro(NULL),
+ f4pBackgroundFlagsPro(NULL),
  fBackgroundOption(0),
  fEstimate2pBackground(kFALSE),
  fEstimate3pBackground(kFALSE),
@@ -2344,7 +2356,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  fCorrelationFunctionsList->SetOwner(kTRUE);
  fHistList->Add(fCorrelationFunctionsList);
  // Correlation functions sublists:
- for(Int_t cfs=0;cfs<2;cfs++)
+ for(Int_t cfs=0;cfs<3;cfs++)
  {
   fCorrelationFunctionsSublist[cfs] = new TList();
   fCorrelationFunctionsSublist[cfs]->SetName(Form("f%dpCorrelationFunctions",cfs+2));
@@ -2358,7 +2370,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookAndNestAllLists()
  fBackgroundList->SetOwner(kTRUE);
  fHistList->Add(fBackgroundList);
  // Background sublists:
- for(Int_t bs=0;bs<2;bs++)
+ for(Int_t bs=0;bs<3;bs++)
  {
   fBackgroundSublist[bs] = new TList();
   fBackgroundSublist[bs]->SetName(Form("f%dpBackground",bs+2));
@@ -2415,68 +2427,6 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverything()
   fGlobalTracksAOD[index] = new TExMap();
  }
 
- // Default inclusive sigma cuts:
- if(fUseDefaultInclusiveSigmaCuts)
- {
-  fInclusiveSigmaCuts[2] = 3.; // i.e. in function Pion(...) the inclusive cut for pions is 2 sigma
-  fInclusiveSigmaCuts[3] = 3.; // i.e. in function Kaon(...) the inclusive cut for kaons is 2 sigma
-  fInclusiveSigmaCuts[4] = 3.; // i.e. in function Proton(...) the inclusive cut for protons is 2 sigma
- }
- const Int_t nPidFunctions = 5; //
- TString sPidFunctions[nPidFunctions] = {"Electron(...)","Muon(...)","Pion(...)","Kaon(...)","Proton(...)"};
- const Int_t nParticleSpecies = 5;
- TString sParticleSpecies[nParticleSpecies] = {"e","#mu","#pi","K","p"};
- fInclusiveSigmaCutsPro = new TProfile("fInclusiveSigmaCutsPro","Inclusive sigma cuts",nPidFunctions,0.,nPidFunctions);
- fInclusiveSigmaCutsPro->GetYaxis()->SetTitle("n#sigma");
- for(Int_t pidFunction=0;pidFunction<5;pidFunction++)
- {
-  fInclusiveSigmaCutsPro->SetTickLength(-0.01,"Y");
-  fInclusiveSigmaCutsPro->SetMarkerStyle(25);
-  fInclusiveSigmaCutsPro->SetLabelSize(0.04);
-  fInclusiveSigmaCutsPro->SetLabelOffset(0.02,"Y");
-  fInclusiveSigmaCutsPro->SetStats(kFALSE);
-  fInclusiveSigmaCutsPro->SetFillColor(kGray);
-  fInclusiveSigmaCutsPro->SetLineColor(kBlack);
-  fInclusiveSigmaCutsPro->GetXaxis()->SetBinLabel(pidFunction+1,sPidFunctions[pidFunction].Data());
-  fInclusiveSigmaCutsPro->Fill(pidFunction+0.5,fInclusiveSigmaCuts[pidFunction]);
-  fControlHistogramsIdentifiedParticlesList->Add(fInclusiveSigmaCutsPro);
- } // for(Int_t pidFunction=0;pidFunction<5;pidFunction++)
-
- // Default exclusive sigma cuts:
- if(fUseDefaultExclusiveSigmaCuts)
- {
-  // Pion(...)
-  fExclusiveSigmaCuts[2][3] = 4.; // i.e. in function Pion(...) the exclusive cut for kaons is 4 sigma
-  fExclusiveSigmaCuts[2][4] = 4.; // i.e. in function Pion(...) the exclusive cut for protons is 4 sigma
-  // Kaon(...)
-  fExclusiveSigmaCuts[3][2] = 4.; // i.e. in function Kaon(...) the exclusive cut for pions is 4 sigma
-  fExclusiveSigmaCuts[3][4] = 4.; // i.e. in function Kaon(...) the exclusive cut for protons is 4 sigma
-  // Proton(...)
-  fExclusiveSigmaCuts[4][2] = 4.; // i.e. in function Proton(...) the exclusive cut for pions is 4 sigma
-  fExclusiveSigmaCuts[4][3] = 4.; // i.e. in function Proton(...) the exclusive cut for kaons is 4 sigma
- } // if(fUseDefaultExclusiveSigmaCuts)
- fExclusiveSigmaCutsPro = new TProfile2D("fExclusiveSigmaCutsPro","Exclusive sigma cuts",nPidFunctions,0.,nPidFunctions,nParticleSpecies,0.,nParticleSpecies);
- fExclusiveSigmaCutsPro->SetTickLength(-0.01,"Y");
- fExclusiveSigmaCutsPro->SetMarkerStyle(25);
- fExclusiveSigmaCutsPro->SetLabelSize(0.04);
- //fExclusiveSigmaCutsPro->SetLabelOffset(0.01,"X");
- //fExclusiveSigmaCutsPro->SetLabelOffset(0.01,"Y");
- fExclusiveSigmaCutsPro->SetTitleOffset(0.9,"Z");
- fExclusiveSigmaCutsPro->SetStats(kFALSE);
- fExclusiveSigmaCutsPro->SetFillColor(kGray);
- fExclusiveSigmaCutsPro->SetLineColor(kBlack);
- fExclusiveSigmaCutsPro->GetZaxis()->SetTitle("n#sigma");
- for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
- {
-  fExclusiveSigmaCutsPro->GetXaxis()->SetBinLabel(pidFunction+1,sPidFunctions[pidFunction].Data());
-  for(Int_t particleSpecies=0;particleSpecies<nParticleSpecies;particleSpecies++)
-  {
-   if(0==pidFunction){fExclusiveSigmaCutsPro->GetYaxis()->SetBinLabel(particleSpecies+1,sParticleSpecies[particleSpecies].Data());}
-   fExclusiveSigmaCutsPro->Fill(pidFunction+0.5,particleSpecies+0.5,fExclusiveSigmaCuts[pidFunction][particleSpecies]);
-   fControlHistogramsIdentifiedParticlesList->Add(fExclusiveSigmaCutsPro);
-  } // for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
- } // for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
-
 } // void AliAnalysisTaskMultiparticleFemtoscopy::BookEverything()
 
 //=======================================================================================================================
@@ -2486,7 +2436,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  // Book all the stuff for control histograms.
 
  // a) Book the profile holding all the flags for control histograms;
- // b) Common vaiables;
+ // b) Common variables;
  // c) Book all control histograms...
  //  c0) Event;
  //  c1) Non-identified particles (for AOD these are "normal global" tracks);
@@ -2508,7 +2458,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
 
  if(!fFillControlHistograms){return;}
 
- // b) Common vaiables:
+ // b) Common variables:
  TString sParticleLabel[5] = {"e","#mu","#pi","K","p"};
  Double_t dNominalMass[5] = {TDatabasePDG::Instance()->GetParticle(11)->Mass(),TDatabasePDG::Instance()->GetParticle(13)->Mass(),TDatabasePDG::Instance()->GetParticle(211)->Mass(),TDatabasePDG::Instance()->GetParticle(321)->Mass(),TDatabasePDG::Instance()->GetParticle(2212)->Mass()};
  // ...
@@ -2745,8 +2695,71 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForControlHistograms(
  fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(3,"fUseDefaultExclusiveSigmaCuts"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(2.5,(Int_t)fUseDefaultExclusiveSigmaCuts);
  fControlHistogramsIdentifiedParticlesFlagsPro->GetXaxis()->SetBinLabel(4,"fFillControlHistogramsWithGlobalTrackInfo"); fControlHistogramsIdentifiedParticlesFlagsPro->Fill(3.5,(Int_t)fFillControlHistogramsWithGlobalTrackInfo);
  fControlHistogramsIdentifiedParticlesList->Add(fControlHistogramsIdentifiedParticlesFlagsPro);
+
  if(fFillControlHistogramsIdentifiedParticles)
  {
+  // Default inclusive sigma cuts:
+  if(fUseDefaultInclusiveSigmaCuts)
+  {
+   fInclusiveSigmaCuts[2] = 3.; // i.e. in function Pion(...) the inclusive cut for pions is 2 sigma
+   fInclusiveSigmaCuts[3] = 3.; // i.e. in function Kaon(...) the inclusive cut for kaons is 2 sigma
+   fInclusiveSigmaCuts[4] = 3.; // i.e. in function Proton(...) the inclusive cut for protons is 2 sigma
+  }
+  const Int_t nPidFunctions = 5; //
+  TString sPidFunctions[nPidFunctions] = {"Electron(...)","Muon(...)","Pion(...)","Kaon(...)","Proton(...)"};
+  const Int_t nParticleSpecies = 5;
+  TString sParticleSpecies[nParticleSpecies] = {"e","#mu","#pi","K","p"};
+  fInclusiveSigmaCutsPro = new TProfile("fInclusiveSigmaCutsPro","Inclusive sigma cuts",nPidFunctions,0.,nPidFunctions);
+  fInclusiveSigmaCutsPro->GetYaxis()->SetTitle("n#sigma");
+  for(Int_t pidFunction=0;pidFunction<5;pidFunction++)
+  {
+   fInclusiveSigmaCutsPro->SetTickLength(-0.01,"Y");
+   fInclusiveSigmaCutsPro->SetMarkerStyle(25);
+   fInclusiveSigmaCutsPro->SetLabelSize(0.04);
+   fInclusiveSigmaCutsPro->SetLabelOffset(0.02,"Y");
+   fInclusiveSigmaCutsPro->SetStats(kFALSE);
+   fInclusiveSigmaCutsPro->SetFillColor(kGray);
+   fInclusiveSigmaCutsPro->SetLineColor(kBlack);
+   fInclusiveSigmaCutsPro->GetXaxis()->SetBinLabel(pidFunction+1,sPidFunctions[pidFunction].Data());
+   fInclusiveSigmaCutsPro->Fill(pidFunction+0.5,fInclusiveSigmaCuts[pidFunction]);
+  } // for(Int_t pidFunction=0;pidFunction<5;pidFunction++)
+  fControlHistogramsIdentifiedParticlesList->Add(fInclusiveSigmaCutsPro);
+
+  // Default exclusive sigma cuts:
+  if(fUseDefaultExclusiveSigmaCuts)
+  {
+   // Pion(...)
+   fExclusiveSigmaCuts[2][3] = 4.; // i.e. in function Pion(...) the exclusive cut for kaons is 4 sigma
+   fExclusiveSigmaCuts[2][4] = 4.; // i.e. in function Pion(...) the exclusive cut for protons is 4 sigma
+   // Kaon(...)
+   fExclusiveSigmaCuts[3][2] = 4.; // i.e. in function Kaon(...) the exclusive cut for pions is 4 sigma
+   fExclusiveSigmaCuts[3][4] = 4.; // i.e. in function Kaon(...) the exclusive cut for protons is 4 sigma
+   // Proton(...)
+   fExclusiveSigmaCuts[4][2] = 4.; // i.e. in function Proton(...) the exclusive cut for pions is 4 sigma
+   fExclusiveSigmaCuts[4][3] = 4.; // i.e. in function Proton(...) the exclusive cut for kaons is 4 sigma
+  } // if(fUseDefaultExclusiveSigmaCuts)
+  fExclusiveSigmaCutsPro = new TProfile2D("fExclusiveSigmaCutsPro","Exclusive sigma cuts",nPidFunctions,0.,nPidFunctions,nParticleSpecies,0.,nParticleSpecies);
+  fExclusiveSigmaCutsPro->SetTickLength(-0.01,"Y");
+  fExclusiveSigmaCutsPro->SetMarkerStyle(25);
+  fExclusiveSigmaCutsPro->SetLabelSize(0.04);
+  //fExclusiveSigmaCutsPro->SetLabelOffset(0.01,"X");
+  //fExclusiveSigmaCutsPro->SetLabelOffset(0.01,"Y");
+  fExclusiveSigmaCutsPro->SetTitleOffset(0.9,"Z");
+  fExclusiveSigmaCutsPro->SetStats(kFALSE);
+  fExclusiveSigmaCutsPro->SetFillColor(kGray);
+  fExclusiveSigmaCutsPro->SetLineColor(kBlack);
+  fExclusiveSigmaCutsPro->GetZaxis()->SetTitle("n#sigma");
+  for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
+  {
+   fExclusiveSigmaCutsPro->GetXaxis()->SetBinLabel(pidFunction+1,sPidFunctions[pidFunction].Data());
+   for(Int_t particleSpecies=0;particleSpecies<nParticleSpecies;particleSpecies++)
+   {
+    if(0==pidFunction){fExclusiveSigmaCutsPro->GetYaxis()->SetBinLabel(particleSpecies+1,sParticleSpecies[particleSpecies].Data());}
+    fExclusiveSigmaCutsPro->Fill(pidFunction+0.5,particleSpecies+0.5,fExclusiveSigmaCuts[pidFunction][particleSpecies]);
+   } // for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
+  } // for(Int_t pidFunction=0;pidFunction<nPidFunctions;pidFunction++)
+  fControlHistogramsIdentifiedParticlesList->Add(fExclusiveSigmaCutsPro);
+
   for(Int_t pid=0;pid<5;pid++) // [0=e,1=mu,2=pi,3=K,4=p]
   {
    for(Int_t pa=0;pa<2;pa++) // particle(+q)/antiparticle(-q)
@@ -2972,6 +2985,39 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForCorrelationFunctio
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(3,"fFill3pCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(2.5,fFill3pCorrelationFunctions);
  fCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(4,"fFill4pCorrelationFunctions"); fCorrelationFunctionsFlagsPro->Fill(3.5,fFill4pCorrelationFunctions);
  fCorrelationFunctionsList->Add(fCorrelationFunctionsFlagsPro);
+ // 2p:
+ f2pCorrelationFunctionsFlagsPro = new TProfile("f2pCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",1,0,1);
+ f2pCorrelationFunctionsFlagsPro->SetTickLength(-0.01,"Y");
+ f2pCorrelationFunctionsFlagsPro->SetMarkerStyle(25);
+ f2pCorrelationFunctionsFlagsPro->SetLabelSize(0.04);
+ f2pCorrelationFunctionsFlagsPro->SetLabelOffset(0.02,"Y");
+ f2pCorrelationFunctionsFlagsPro->SetStats(kFALSE);
+ f2pCorrelationFunctionsFlagsPro->SetFillColor(kGray);
+ f2pCorrelationFunctionsFlagsPro->SetLineColor(kBlack);
+ f2pCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(1,"TBI"); f2pCorrelationFunctionsFlagsPro->Fill(0.5,0.); // TBI dummy at the moment
+ fCorrelationFunctionsSublist[0]->Add(f2pCorrelationFunctionsFlagsPro);
+ // 3p:
+ f3pCorrelationFunctionsFlagsPro = new TProfile("f3pCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",1,0,1);
+ f3pCorrelationFunctionsFlagsPro->SetTickLength(-0.01,"Y");
+ f3pCorrelationFunctionsFlagsPro->SetMarkerStyle(25);
+ f3pCorrelationFunctionsFlagsPro->SetLabelSize(0.04);
+ f3pCorrelationFunctionsFlagsPro->SetLabelOffset(0.02,"Y");
+ f3pCorrelationFunctionsFlagsPro->SetStats(kFALSE);
+ f3pCorrelationFunctionsFlagsPro->SetFillColor(kGray);
+ f3pCorrelationFunctionsFlagsPro->SetLineColor(kBlack);
+ f3pCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(1,"TBI"); f3pCorrelationFunctionsFlagsPro->Fill(0.5,0.); // TBI dummy at the moment
+ fCorrelationFunctionsSublist[1]->Add(f3pCorrelationFunctionsFlagsPro);
+ // 4p:
+ f4pCorrelationFunctionsFlagsPro = new TProfile("f4pCorrelationFunctionsFlagsPro","Flags and settings for correlation functions histograms",1,0,1);
+ f4pCorrelationFunctionsFlagsPro->SetTickLength(-0.01,"Y");
+ f4pCorrelationFunctionsFlagsPro->SetMarkerStyle(25);
+ f4pCorrelationFunctionsFlagsPro->SetLabelSize(0.04);
+ f4pCorrelationFunctionsFlagsPro->SetLabelOffset(0.02,"Y");
+ f4pCorrelationFunctionsFlagsPro->SetStats(kFALSE);
+ f4pCorrelationFunctionsFlagsPro->SetFillColor(kGray);
+ f4pCorrelationFunctionsFlagsPro->SetLineColor(kBlack);
+ f4pCorrelationFunctionsFlagsPro->GetXaxis()->SetBinLabel(1,"TBI"); f4pCorrelationFunctionsFlagsPro->Fill(0.5,0.); // TBI dummy at the moment
+ fCorrelationFunctionsSublist[2]->Add(f4pCorrelationFunctionsFlagsPro);
 
  if(!fFillCorrelationFunctions){return;} // TBI is this safe? It is not, because now if I want to fill 3-p, I always have to fill also 2-p
 
@@ -3068,7 +3114,7 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
  // d) Book all histograms for 4p background;
  // e) Book buffer objects.
 
- // a) Book the profile holding all the flags for correlation functions objects:
+ // a) Book the profile holding all the flags for background objects:
  fBackgroundFlagsPro = new TProfile("fBackgroundFlagsPro","Flags and settings for background histograms",4,0,4);
  fBackgroundFlagsPro->SetTickLength(-0.01,"Y");
  fBackgroundFlagsPro->SetMarkerStyle(25);
@@ -3082,6 +3128,39 @@ void AliAnalysisTaskMultiparticleFemtoscopy::BookEverythingForBackground()
  fBackgroundFlagsPro->GetXaxis()->SetBinLabel(3,"fEstimate3pBackground"); fBackgroundFlagsPro->Fill(2.5,fEstimate3pBackground);
  fBackgroundFlagsPro->GetXaxis()->SetBinLabel(4,"fEstimate4pBackground"); fBackgroundFlagsPro->Fill(3.5,fEstimate4pBackground);
  fBackgroundList->Add(fBackgroundFlagsPro);
+ // 2p:
+ f2pBackgroundFlagsPro = new TProfile("f2pBackgroundFlagsPro","Flags and settings for 2p background histograms",1,0,1);
+ f2pBackgroundFlagsPro->SetTickLength(-0.01,"Y");
+ f2pBackgroundFlagsPro->SetMarkerStyle(25);
+ f2pBackgroundFlagsPro->SetLabelSize(0.04);
+ f2pBackgroundFlagsPro->SetLabelOffset(0.02,"Y");
+ f2pBackgroundFlagsPro->SetStats(kFALSE);
+ f2pBackgroundFlagsPro->SetFillColor(kGray);
+ f2pBackgroundFlagsPro->SetLineColor(kBlack);
+ f2pBackgroundFlagsPro->GetXaxis()->SetBinLabel(1,"TBI"); f2pBackgroundFlagsPro->Fill(0.5,0); // TBI dummy at the moment
+ fBackgroundSublist[0]->Add(f2pBackgroundFlagsPro);
+ // 3p:
+ f3pBackgroundFlagsPro = new TProfile("f3pBackgroundFlagsPro","Flags and settings for 3p background histograms",1,0,1);
+ f3pBackgroundFlagsPro->SetTickLength(-0.01,"Y");
+ f3pBackgroundFlagsPro->SetMarkerStyle(25);
+ f3pBackgroundFlagsPro->SetLabelSize(0.04);
+ f3pBackgroundFlagsPro->SetLabelOffset(0.02,"Y");
+ f3pBackgroundFlagsPro->SetStats(kFALSE);
+ f3pBackgroundFlagsPro->SetFillColor(kGray);
+ f3pBackgroundFlagsPro->SetLineColor(kBlack);
+ f3pBackgroundFlagsPro->GetXaxis()->SetBinLabel(1,"TBI"); f3pBackgroundFlagsPro->Fill(0.5,0); // TBI dummy at the moment
+ fBackgroundSublist[1]->Add(f3pBackgroundFlagsPro);
+ // 4p:
+ f4pBackgroundFlagsPro = new TProfile("f4pBackgroundFlagsPro","Flags and settings for 4p background histograms",1,0,1);
+ f4pBackgroundFlagsPro->SetTickLength(-0.01,"Y");
+ f4pBackgroundFlagsPro->SetMarkerStyle(25);
+ f4pBackgroundFlagsPro->SetLabelSize(0.04);
+ f4pBackgroundFlagsPro->SetLabelOffset(0.02,"Y");
+ f4pBackgroundFlagsPro->SetStats(kFALSE);
+ f4pBackgroundFlagsPro->SetFillColor(kGray);
+ f4pBackgroundFlagsPro->SetLineColor(kBlack);
+ f4pBackgroundFlagsPro->GetXaxis()->SetBinLabel(1,"TBI"); f4pBackgroundFlagsPro->Fill(0.5,0); // TBI dummy at the moment
+ fBackgroundSublist[2]->Add(f4pBackgroundFlagsPro);
 
  //if(!fEstimateBackground){return;} // TBI is this safe?
 
@@ -5501,6 +5580,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForCorrelationFunctions(
  // b) Get pointer for fCorrelationFunctionsFlagsPro:
  fCorrelationFunctionsFlagsPro = dynamic_cast<TProfile*>(fCorrelationFunctionsList->FindObject("fCorrelationFunctionsFlagsPro"));
  if(!fCorrelationFunctionsFlagsPro){Fatal(sMethodName.Data(),"fCorrelationFunctionsFlagsPro");}
+ f2pCorrelationFunctionsFlagsPro = dynamic_cast<TProfile*>(fCorrelationFunctionsSublist[0]->FindObject("f2pCorrelationFunctionsFlagsPro"));
+ if(!f2pCorrelationFunctionsFlagsPro){Fatal(sMethodName.Data(),"f2pCorrelationFunctionsFlagsPro");}
+ f3pCorrelationFunctionsFlagsPro = dynamic_cast<TProfile*>(fCorrelationFunctionsSublist[1]->FindObject("f3pCorrelationFunctionsFlagsPro"));
+ if(!f3pCorrelationFunctionsFlagsPro){Fatal(sMethodName.Data(),"f3pCorrelationFunctionsFlagsPro");}
+ f4pCorrelationFunctionsFlagsPro = dynamic_cast<TProfile*>(fCorrelationFunctionsSublist[2]->FindObject("f4pCorrelationFunctionsFlagsPro"));
+ if(!f4pCorrelationFunctionsFlagsPro){Fatal(sMethodName.Data(),"f4pCorrelationFunctionsFlagsPro");}
 
  // c) Set again all flags:
  fFillCorrelationFunctions = (Bool_t) fCorrelationFunctionsFlagsPro->GetBinContent(1);
@@ -5585,6 +5670,12 @@ void AliAnalysisTaskMultiparticleFemtoscopy::GetPointersForBackground()
  // b) Get pointer for fBackgroundFlagsPro:
  fBackgroundFlagsPro = dynamic_cast<TProfile*>(fBackgroundList->FindObject("fBackgroundFlagsPro"));
  if(!fBackgroundFlagsPro){Fatal(sMethodName.Data(),"fBackgroundFlagsPro");}
+ f2pBackgroundFlagsPro = dynamic_cast<TProfile*>(fBackgroundSublist[0]->FindObject("f2pBackgroundFlagsPro"));
+ if(!f2pBackgroundFlagsPro){Fatal(sMethodName.Data(),"f2pBackgroundFlagsPro");}
+ f3pBackgroundFlagsPro = dynamic_cast<TProfile*>(fBackgroundSublist[1]->FindObject("f3pBackgroundFlagsPro"));
+ if(!f3pBackgroundFlagsPro){Fatal(sMethodName.Data(),"f3pBackgroundFlagsPro");}
+ f4pBackgroundFlagsPro = dynamic_cast<TProfile*>(fBackgroundSublist[2]->FindObject("f4pBackgroundFlagsPro"));
+ if(!f4pBackgroundFlagsPro){Fatal(sMethodName.Data(),"f4pBackgroundFlagsPro");}
 
  // c) Set again all flags:
  fBackgroundOption = (Int_t) fBackgroundFlagsPro->GetBinContent(1);
