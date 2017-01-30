@@ -176,6 +176,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyFECCorrelation()         { fStudyFECCorrelation = kTRUE  ; }
   void         SwitchOffStudyFECCorrelation()        { fStudyFECCorrelation = kFALSE ; }
 
+  void         SwitchOnStudyTracksInCone()           { fStudyTracksInCone = kTRUE  ; }
+  void         SwitchOffStudyTracksInCone()          { fStudyTracksInCone = kFALSE ; }
+
   // Study of pT cut in cone
   void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
   void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
@@ -211,6 +214,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   Bool_t   fStudyFECCorrelation;                      ///<  Study 4 FEC channels cross correlation
+  Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
 
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
