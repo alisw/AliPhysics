@@ -21,6 +21,13 @@
 #include "AliTreePlayer.h"
 #include "AliXRDPROOFtoolkit.h"
 #include "TTreeStream.h"
+#include <fstream>
+#include <iostream>
+#include <iomanip>
+using namespace std;
+using std::cout;
+using std::setw;
+
 
 
 void TriggerHighMultiplicity( const char * chinput,  const char * filter="ntracks<1000", Long_t ntracksPrim=200000, Float_t fractionTracks=0.8, Long_t nEvents=200000);
@@ -38,7 +45,7 @@ void makeOfflineTriggerList(const char * chinput){
   Long_t  highMultiplicityNEvents=10000000;
   if (gSystem->Getenv("highMultiplicityFilter"))        highMultiplicityFilter=gSystem->Getenv("highMultiplicityFilter");
   if (gSystem->Getenv("highMultiplicityNTracksPrim"))   highMultiplicityNTracksPrim=TString(gSystem->Getenv("highMultiplicityNTracksPrim")).Atof();
-  if (gSystem->Getenv("highMultiplicityFractionTracks"))highMultiplicityFractionTracks=TString(gSystem->Getenv("highMultiplicityfractionTracks")).Atof();
+  if (gSystem->Getenv("highMultiplicityFractionTracks"))highMultiplicityFractionTracks=TString(gSystem->Getenv("highMultiplicityFractionTracks")).Atof();
   if (gSystem->Getenv("highMultiplicityNEvents"))       highMultiplicityNEvents=TString(gSystem->Getenv("highMultiplicityNEvents")).Atof();
   TriggerHighMultiplicity(chinput, highMultiplicityFilter.Data(),highMultiplicityNTracksPrim,  highMultiplicityFractionTracks, highMultiplicityNEvents);
   // High pt filters
@@ -73,10 +80,16 @@ void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long_t
   */
   //Int_t nEvents=100000;
   const char * treeName="eventInfoV0";
+  TTree *tree=NULL; 
   if (fractionTracks>1) {
     ::Error("TriggerHighMultiplicity","Invalid fraction of tracks - %f should be in <0,1",fractionTracks);
   }
-  TTree *tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, treeName, 0, 1000000000,0);
+  if (TString(chinput).Contains(".root")){
+    TFile * fInputFile = TFile::Open(chinput);
+    tree               = (TTree*)fInputFile->Get(treeName);
+  } else {
+    tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, treeName, 0, 1000000000,0);
+  }
   tree->SetEstimate(tree->GetEntries());
   TTreeSRedirector * pcstream = new TTreeSRedirector("filteredMultQA.root","recreate");
   //
@@ -128,9 +141,9 @@ void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long_t
   Int_t nTracksPrimAll= tree->GetHistogram()->Integral();
   tree->Draw("ntracks","ntracks","",nEvents);
   tree->GetHistogram()->Write("multTracksAllWeighted");
-  Int_t nTracksAll= tree->GetHistogram()->Integral();
+  Double_t nTracksAll= tree->GetHistogram()->Integral();
   //
-  Int_t nEventsSelected = tree->Draw("mult", "cutMultSelect","",nEvents);
+  Int_t nHighMultiplicitySelected = tree->Draw("mult", "cutMultSelect","",nEvents);
   tree->GetHistogram()->Write("multSelected");
   tree->Draw("mult", "mult*(cutMultSelect)","",nEvents);
   tree->GetHistogram()->Write("multPrimSelectedWeighted");
@@ -143,8 +156,8 @@ void TriggerHighMultiplicity( const char * chinput,  const char * filter, Long_t
   // Dump counters
   ::Info("KeyValue.TriggerHighMultiplicity.Selection","%s",tree->GetAlias("cutMultSelect"));
   ::Info("KeyValue.TriggerHighMultiplicity.NEventsAll","%d",nEventsAll);
-  ::Info("KeyValue.TriggerHighMultiplicity.NEventsSelected","%d",nEventsSelected);
-  ::Info("KeyValue.TriggerHighMultiplicity.NTracksAll","%d",nTracksAll);
+  ::Info("KeyValue.TriggerHighMultiplicity.NHighMultiplicitySelected","%d",nHighMultiplicitySelected);
+  ::Info("KeyValue.TriggerHighMultiplicity.NTracksAll","%.0f",nTracksAll);
   ::Info("KeyValue.TriggerHighMultiplicity.NTracksSelected","%d",nTracksSelected);
   ::Info("KeyValue.TriggerHighMultiplicity.NTracksPrimAll","%d",nTracksPrimAll);
   ::Info("KeyValue.TriggerHighMultiplicity.NTracksPrimSelected","%d",nTracksPrimSelected);
@@ -163,8 +176,18 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long_t nEvents, 
     Double_t dcaCut=3;    
   */
   const char * treeName="highPt";
-  TTree *tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, treeName, 0, 1000000000,0);
-  TTree *treeEvent=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "eventInfoV0", 0, 1000000000,0);
+  TTree *tree=NULL; 
+  TTree *treeEvent=NULL; 
+
+  if (TString(chinput).Contains(".root")){
+    TFile * fInputFile = TFile::Open(chinput);
+    tree               = (TTree*)fInputFile->Get(treeName);
+    treeEvent          = (TTree*)fInputFile->Get("eventInfoV0");
+  } else {
+    tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, treeName, 0, 1000000000,0);
+    treeEvent=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "eventInfoV0", 0, 1000000000,0);
+  }
+
   tree->SetEstimate(tree->GetEntries());
   TTreeSRedirector * pcstream = new TTreeSRedirector("filteredHighPtQA.root","recreate");
   // Dump selected Events
@@ -182,7 +205,7 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long_t nEvents, 
   outputString+="triggerClass.GetName();20.20;triggerClass;/C:";
   AliTreePlayer::selectWhatWhereOrderBy(tree, outputString.Data(), "cutHighPt","",0,nEvents, "csv","filteredHighPt.list");
   //
-  Int_t nTracksSelected = tree->Draw("esdTrack.fTPCncls","cutHighPt");
+  Int_t nHighPtSelected = tree->Draw("esdTrack.fTPCncls","cutHighPt");
   Int_t nEventsAll=treeEvent->GetEntries();
    // Dump input parameters
   
@@ -192,7 +215,7 @@ void TriggerHighPt( const char * chinput,  const char * filter, Long_t nEvents, 
   // Dump counters
   ::Info("KeyValue.TriggerHighPt.Selection","%s",tree->GetAlias("cutHighPt"));
   ::Info("KeyValue.TriggerHighPt.NEventsAll","%d",nEventsAll);
-  ::Info("KeyValue.TriggerHighPt.NTracksSelected","%d",nTracksSelected);
+  ::Info("KeyValue.TriggerHighPt.NHighPtSelected","%d",nHighPtSelected);
   delete pcstream;
 }
 
@@ -209,8 +232,16 @@ void TriggerHighPtV0( const char * chinput,  const char * filter, Long_t nEvents
 
   */
   const char * treeName="V0s";
-  TTree *tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, treeName, 0, 1000000000,0);
-  TTree *treeEvent=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "eventInfoV0", 0, 1000000000,0);
+  TTree *tree=NULL; 
+  TTree *treeEvent=NULL; 
+  if (TString(chinput).Contains(".root")){
+    TFile * fInputFile = TFile::Open(chinput);
+    tree               = (TTree*)fInputFile->Get(treeName);
+    treeEvent          = (TTree*)fInputFile->Get("eventInfoV0");
+  } else {
+    tree=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, treeName, 0, 1000000000,0);
+    treeEvent=(TTree*)AliXRDPROOFtoolkit::MakeChain(chinput, "eventInfoV0", 0, 1000000000,0);
+  }
   tree->SetEstimate(tree->GetEntries());
   TTreeSRedirector * pcstream = new TTreeSRedirector("filteredHighPtV0.root","recreate");
   //
@@ -249,4 +280,27 @@ void TriggerHighPtV0( const char * chinput,  const char * filter, Long_t nEvents
   ::Info("KeyValue.TriggerHighPtV0s.NEventsAll","%d",nEventsAll);
   ::Info("KeyValue.TriggerHighPtV0s.NV0Selected","%d",nV0Selected);
   delete pcstream;
+}
+
+
+void SummarizeLogs(const char * logTreeFile="log.tree"){
+  //
+  // Input parsed log files 
+  // obtained as        egrep KeyValue 0002*/lists/*.log | sed s_":I-KeyValue."_"\t"_ >  log.tree
+  //
+  TTree logTree;
+  logTree.ReadFile(logTreeFile,"name/C:key/C:value/d",'\t');  
+  //
+  logTree->SetAlias("nEvents","value");
+  logTree.SetMarkerStyle(21);
+  logTree.SetMarkerColor(1);
+  logTree.Draw("value:name","(strstr(key,\"TriggerHighPt.NEventsAll\")!=0)");
+  gPad->SetBottomeMargin(0.25);
+  logTree.SetMarkerColor(2);
+  logTree.Draw("value*100:name","(strstr(key,\"PtSelected\")!=0)","same");
+  logTree.SetMarkerColor(4);
+  logTree.Draw("value*100:name","(strstr(key,\"V0Selected\")!=0)","same");
+  //
+  //Int_t sumAll=
+
 }
