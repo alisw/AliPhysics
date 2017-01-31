@@ -70,6 +70,10 @@ protected:
   AliPHOSGeometry  *fPHOSGeo;  //! PHOS geometry
   Int_t fEventCounter;         // number of analyzed events
   Bool_t fIsPbPb ;             // Switch to PbPb or pp/pPb mode
+  
+  Int_t fNCuts ;   //Number of cuts
+  char fCuts[21][10] ;  //Cut names
+  Int_t fJetStatus[5] ; //Presence of jets around PHOS
 
   ClassDef(AliAnalysisTaskgg, 1); // PHOS analysis task
 };

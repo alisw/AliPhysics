@@ -28,11 +28,6 @@
 
 #include "AliITSsegmentationSPD.h"
 
-#include "AliCDBManager.h"
-#include "AliCDBEntry.h"
-#include "AliTriggerConfiguration.h"
-#include "AliTriggerClass.h"
-
 ClassImp(AliAnalysisTaskDG);
 ClassImp(AliAnalysisTaskDG::TreeData);
 ClassImp(AliAnalysisTaskDG::TrackData);
@@ -195,6 +190,11 @@ void AliAnalysisTaskDG::TrackData::Fill(AliESDtrack *tr, AliPIDResponse *pidResp
   AliAnalysisTaskDG::FindChipKeys(tr, fChipKey, fStatus);
 }
 
+void AliAnalysisTaskDG::SetMaxTracksSave(Int_t m) {
+  fTrackData.Expand(m);
+  fMaxTracksSave = m;
+}
+
 AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   : AliAnalysisTaskSE(name)
   , fIsMC(kFALSE)
@@ -202,8 +202,7 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fTrackCutType("TPCOnly")
   , fTriggerSelection("")
   , fTriggerSelectionSPD("")
-  , fCDBStorage("raw://")
-  , fMaxTrackSave(4)
+  , fMaxTracksSave(4)
   , fTriggerAnalysis()
   , fAnalysisUtils()
   , fList(NULL)
@@ -217,15 +216,9 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fVertexTracks()
   , fTOFHeader()
   , fTriggerIRs("AliTriggerIR", 3)
-  , fTrackData("AliAnalysisTaskDG::TrackData", fMaxTrackSave)
+  , fTrackData("AliAnalysisTaskDG::TrackData", fMaxTracksSave)
   , fMCTracks("TLorentzVector", 2)
   , fTrackCuts(NULL)
-  , fUseTriggerMask(kFALSE)
-  , fClassMask(0ULL)
-  , fClassMaskNext50(0ULL)
-  , fUseTriggerMaskSPD(kFALSE)
-  , fClassMaskSPD(0ULL)
-  , fClassMaskNext50SPD(0ULL)
 {
   for (Int_t i=0; i<kNHist;++i) {
     fHist[i] = NULL;
@@ -322,32 +315,32 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistTrig]->SetStats(0);
   fList->Add(fHist[kHistTrig]);
 
-  fHist[kHistSPDFiredTrk] = new TH3D("HSPDFiredTrk", ";chip key;BCmod4;mult",
+  fHist[kHistSPDFiredTrk] = new TH3D("HSPDFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult",
 				     1200, -0.5, 1199.5, 4, -0.5, 3.5, 10, -0.5, 9.5);
   fHist[kHistSPDFiredTrk]->SetStats(0);
   fList->Add(fHist[kHistSPDFiredTrk]);
 
-  fHist[kHistSPDFOTrk] = new TH3D("HSPDFOTrk", ";chip key;BCmod4;mult",
+  fHist[kHistSPDFOTrk] = new TH3D("HSPDFOTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult",
 				  1200, -0.5, 1199.5, 4, -0.5, 3.5, 10, -0.5, 9.5);
   fHist[kHistSPDFOTrk]->SetStats(0);
   fList->Add(fHist[kHistSPDFOTrk]);
 
-  fHist[kHistSPDFiredTrkVsMult] = new TH3D("HSPDFiredTrkVsMult", ";chip key;BCmod4;log_{10}(number of tracklets)",
+  fHist[kHistSPDFiredTrkVsMult] = new TH3D("HSPDFiredTrkVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
 					   1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFiredTrkVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFiredTrkVsMult]);
 
-  fHist[kHistSPDFOTrkVsMult] = new TH3D("HSPDFOTrkVsMult", ";chip key;BCmod4;log_{10}(number of tracklets)",
+  fHist[kHistSPDFOTrkVsMult] = new TH3D("HSPDFOTrkVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
 					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFOTrkVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFOTrkVsMult]);
 
-  fHist[kHistSPDFiredVsMult] = new TH3D("HSPDFiredVsMult", ";chip key;BCmod4;log_{10}(number of tracklets)",
+  fHist[kHistSPDFiredVsMult] = new TH3D("HSPDFiredVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
 					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFiredVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFiredVsMult]);
 
-  fHist[kHistSPDFOVsMult] = new TH3D("HSPDFOVsMult", ";chip key;BCmod4;log_{10}(number of tracklets)",
+  fHist[kHistSPDFOVsMult] = new TH3D("HSPDFOVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
 				     1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
   fHist[kHistSPDFOVsMult]->SetStats(0);
   fList->Add(fHist[kHistSPDFOVsMult]);
@@ -362,48 +355,9 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   owd->cd();
 }
 
-void AliAnalysisTaskDG::SetClassMask(TString triggerSelection, ULong64_t &mask, ULong64_t &maskNext50) {
-  mask = maskNext50 = 0ULL;
-  AliCDBManager *man = AliCDBManager::Instance();
-  if (NULL == man) {
-    AliFatal("NULL == man");
-  }
-  if (!man->IsDefaultStorageSet())
-    man->SetDefaultStorage(fCDBStorage);
-  man->SetRun(fCurrentRunNumber);
-  AliCDBEntry *entry = man->Get("GRP/CTP/Config");
-  const AliTriggerConfiguration *triggerConfig  = dynamic_cast<const AliTriggerConfiguration*>(entry->GetObject());
-  if (NULL == triggerConfig) {
-    AliFatal("NULL == triggerConfig");
-  }
-
-  std::unique_ptr<const TObjArray> split(triggerSelection.Tokenize("|"));
-  const TObjArray &classes = triggerConfig->GetClasses();
-  for (Int_t i=0, n=classes.GetEntries(); i<n; ++i) {
-    const AliTriggerClass *c = dynamic_cast<const AliTriggerClass*>(classes.At(i));
-    for (Int_t j=0, m=split->GetEntries(); j<m; ++j) {
-      if (TString(c->GetName()).Contains(split->At(j)->GetName())) {
-	if (c->GetIndex() < 51)
-	  mask       |= (1ULL << ULong64_t(c->GetIndex()- 1));
-	else
-	  maskNext50 |= (1ULL << ULong64_t(c->GetIndex()-51));
-	AliInfoF("Selected trigger class %s %lld %lld", c->GetName(), mask, maskNext50);
-      }
-    }
-  }
-}
-
 void AliAnalysisTaskDG::NotifyRun()
 {
-  AliInfoF("run %d %s", fCurrentRunNumber, fCDBStorage.Data());
-
-  fUseTriggerMask = (fTriggerSelection != "");
-  if (fUseTriggerMask && fCDBStorage != "NONE")
-    SetClassMask(fTriggerSelection, fClassMask, fClassMaskNext50);
-
-  fUseTriggerMaskSPD = (fTriggerSelectionSPD != "");
-  if (fUseTriggerMaskSPD && fCDBStorage != "NONE")
-    SetClassMask(fTriggerSelectionSPD, fClassMaskSPD, fClassMaskNext50SPD);
+  AliInfoF("run %d", fCurrentRunNumber);
 }
 
 class TClonesArrayGuard {
@@ -419,6 +373,14 @@ private:
   TClonesArray& fA;
 } ;
 
+void AliAnalysisTaskDG::FillTH3(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t w) {
+  if (idx < 0 || idx >= kNHist)
+    AliFatalF("idx=%d", idx);
+  TH3 *h = dynamic_cast<TH3*>(fHist[idx]);
+  if (!h)
+    AliFatal("h==NULL");
+  h->Fill(x, y, z, w);
+}
 void AliAnalysisTaskDG::UserExec(Option_t *)
 {
   AliVEvent *event = InputEvent();
@@ -478,58 +440,59 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
       fHist[kHistTrig]->Fill(50+i);
   }
 
-  { // trigger selection for SPD efficiency studies
-    Bool_t selectedForSPD = (fTriggerSelectionSPD == "");
+  Bool_t selectedForSPD = (fTriggerSelectionSPD == "");
+  if (!selectedForSPD) { // trigger selection for SPD efficiency studies
     std::unique_ptr<const TObjArray> split(fTriggerSelectionSPD.Tokenize("|"));
     for (Int_t i=0, n=split->GetEntries() && !selectedForSPD; i<n; ++i) {
       const TString tcName(split->At(i)->GetName());
       selectedForSPD = esdEvent->GetFiredTriggerClasses().Contains(tcName);
     }
-    if (selectedForSPD) { // PF protection
-      const AliESDAD    *esdAD = esdEvent->GetADData();
-      const AliESDVZERO *esdV0 = esdEvent->GetVZEROData();
-      Int_t nBB=0;
-      for (Int_t bc=3; bc<=17 && !nBB; ++bc) {
-	if (bc == 10)
-	  continue;
-	for (Int_t ch=0; ch<4; ++ch) {
-	  nBB += (esdAD->GetPFBBFlag(ch,   bc) && esdAD->GetPFBBFlag(ch+ 4, bc));
-	  nBB += (esdAD->GetPFBBFlag(ch+8, bc) && esdAD->GetPFBBFlag(ch+12, bc));
-	}
-	for (Int_t ch=0; ch<64; ++ch)
-	  nBB += esdV0->GetPFBBFlag(ch, bc);
+  }
+  AliInfoF("selectedForSPD = %d", selectedForSPD);
+  if (selectedForSPD) { // PF protection
+    const AliESDAD    *esdAD = esdEvent->GetADData();
+    const AliESDVZERO *esdV0 = esdEvent->GetVZEROData();
+    Int_t nBB=0;
+    for (Int_t bc=3; bc<=17 && !nBB; ++bc) {
+      if (bc == 10)
+	continue;
+      for (Int_t ch=0; ch<4; ++ch) {
+	nBB += (esdAD->GetPFBBFlag(ch,   bc) && esdAD->GetPFBBFlag(ch+ 4, bc));
+	nBB += (esdAD->GetPFBBFlag(ch+8, bc) && esdAD->GetPFBBFlag(ch+12, bc));
       }
-      if (!nBB) {
-	Int_t matched[1200] = { 0 };
-	for (Int_t l=0; l<1200; ++l)
-	  matched[l] = 0;
-	std::unique_ptr<AliESDtrackCuts> tc(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
-	std::unique_ptr<const TObjArray> oa(tc->GetAcceptedTracks(esdEvent));
-	for (Int_t i=0, n=oa->GetEntries(); i<n; ++i) {
-	  AliESDtrack *tr = dynamic_cast<AliESDtrack*>(oa->At(i));
-	  Short_t chipKeys[2] = { -1, -1};
-	  Int_t   status[2]   = { -1, -1};
-	  AliAnalysisTaskDG::FindChipKeys(tr, chipKeys, status);
-	  for (Int_t layer=0; layer<2; ++layer) {
-	    if (chipKeys[layer] >= 0 && chipKeys[layer]<1200 && status[layer] == 1)
-	      matched[chipKeys[layer]] += 1;
-	  }
+      for (Int_t ch=0; ch<64; ++ch)
+	nBB += esdV0->GetPFBBFlag(ch, bc);
+    }
+    if (!nBB) {
+      Int_t matched[1200] = { 0 };
+      for (Int_t l=0; l<1200; ++l)
+	matched[l] = 0;
+      std::unique_ptr<AliESDtrackCuts> tc(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
+      std::unique_ptr<const TObjArray> oa(tc->GetAcceptedTracks(esdEvent));
+      for (Int_t i=0, n=oa->GetEntries(); i<n; ++i) {
+	AliESDtrack *tr = dynamic_cast<AliESDtrack*>(oa->At(i));
+	Short_t chipKeys[2] = { -1, -1};
+	Int_t   status[2]   = { -1, -1};
+	AliAnalysisTaskDG::FindChipKeys(tr, chipKeys, status);
+	for (Int_t layer=0; layer<2; ++layer) {
+	  if (chipKeys[layer] >= 0 && chipKeys[layer]<1200 && status[layer] == 1)
+	    matched[chipKeys[layer]] += 1;
 	}
-	const Int_t    bcMod4         = (esdHeader->GetBunchCrossNumber() % 4);
-	const Double_t log10Tracklets = (mult->GetNumberOfTracklets() > 0
-					 ? TMath::Log10(mult->GetNumberOfTracklets())
-					 : -1.0);
-	for (Int_t chipKey=0; chipKey<1200; ++chipKey) {
-	  if (mult->TestFiredChipMap(chipKey)) {
-	    dynamic_cast<TH3*>(fHist[kHistSPDFiredTrk]      )->Fill(chipKey, bcMod4, matched[chipKey]);
-	    dynamic_cast<TH3*>(fHist[kHistSPDFiredTrkVsMult])->Fill(chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
-	    dynamic_cast<TH3*>(fHist[kHistSPDFiredVsMult]   )->Fill(chipKey, bcMod4, log10Tracklets);
-	  }
-	  if (mult->TestFastOrFiredChips(chipKey)) {
-	    dynamic_cast<TH3*>(fHist[kHistSPDFOTrk]      )->Fill(chipKey, bcMod4, matched[chipKey]);
-	    dynamic_cast<TH3*>(fHist[kHistSPDFOTrkVsMult])->Fill(chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
-	    dynamic_cast<TH3*>(fHist[kHistSPDFOVsMult]   )->Fill(chipKey, bcMod4, log10Tracklets);
-	  }
+      }
+      const Int_t    bcMod4         = (esdHeader->GetBunchCrossNumber() % 4);
+      const Double_t log10Tracklets = (mult->GetNumberOfTracklets() > 0
+				       ? TMath::Log10(mult->GetNumberOfTracklets())
+				       : -1.0);
+      for (Int_t chipKey=0; chipKey<1200; ++chipKey) {
+	if (mult->TestFiredChipMap(chipKey)) {
+	  FillTH3(kHistSPDFiredTrk,       chipKey, bcMod4, matched[chipKey]);
+	  FillTH3(kHistSPDFiredTrkVsMult, chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
+	  FillTH3(kHistSPDFiredVsMult,    chipKey, bcMod4, log10Tracklets);
+	}
+	if (mult->TestFastOrFiredChips(chipKey)) {
+	  FillTH3(kHistSPDFOTrk,       chipKey, bcMod4, matched[chipKey]);
+	  FillTH3(kHistSPDFOTrkVsMult, chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
+	  FillTH3(kHistSPDFOVsMult,    chipKey, bcMod4, log10Tracklets);
 	}
       }
     }
@@ -537,48 +500,37 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   PostData(1, fList);
 
-  AliInfoF("fUseTriggerMask=%d %lld %lld", fUseTriggerMask, fClassMask, fClassMaskNext50);
-
   Bool_t cutNotV0    = kFALSE;
   Bool_t useOnly2Trk = kFALSE;
 
-  if (fUseTriggerMask) {
-    if (fCDBStorage != "NONE") { // OCDB used
-      if ((esdHeader->GetTriggerMask()       & fClassMask)       == 0LL &&
-	  (esdHeader->GetTriggerMaskNext50() & fClassMaskNext50) == 0LL) {
-	AliInfoF("not selected: %s", esdEvent->GetFiredTriggerClasses().Data());
-	return;
-      } else {
-	AliInfoF("selected: %s", esdEvent->GetFiredTriggerClasses().Data());
+  Bool_t selected = (fTriggerSelection == "");
+
+  if (!selected) {
+    // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS2&Only2Trk"
+    std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
+
+    Int_t sumCutNotV0(0);
+    Int_t sumUseOnly2Trk(0);
+
+    Int_t counter=0;
+    for (Int_t i=0, n=split->GetEntries(); i<n; ++i) {
+      TString tcName(split->At(i)->GetName());
+      std::unique_ptr<const TObjArray> s(tcName.Tokenize("&"));
+      if (esdEvent->GetFiredTriggerClasses().Contains(s->At(0)->GetName())) {
+	sumCutNotV0    += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "NotV0");
+	sumUseOnly2Trk += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "Only2Trk");
+	++counter;
       }
-    } else { // no OCDB used
-      // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS2&Only2Trk"
-      std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
-
-      Bool_t selected = kFALSE;
-      Int_t sumCutNotV0(0);
-      Int_t sumUseOnly2Trk(0);
-
-      Int_t counter=0;
-      for (Int_t i=0, n=split->GetEntries(); i<n; ++i) {
-	TString tcName(split->At(i)->GetName());
-	std::unique_ptr<const TObjArray> s(tcName.Tokenize("&"));
-	if (esdEvent->GetFiredTriggerClasses().Contains(s->At(0)->GetName())) {
-	  sumCutNotV0    += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "NotV0");
-	  sumUseOnly2Trk += (s->GetEntries() == 2 && TString(s->At(1)->GetName()) == "Only2Trk");
-	  ++counter;
-	}
-      }
-
-      selected    = (counter != 0);
-      cutNotV0    = (counter == sumCutNotV0);
-      useOnly2Trk = (counter == sumUseOnly2Trk);
-
-      AliInfoF("selected: %d %d %d %s ", selected, cutNotV0, useOnly2Trk, esdEvent->GetFiredTriggerClasses().Data());
-      if (!selected)
-	return;
     }
+
+    selected    = (counter != 0);
+    cutNotV0    = (counter == sumCutNotV0);
+    useOnly2Trk = (counter == sumUseOnly2Trk);
   }
+
+  AliInfoF("selected: %d %d %d %s ", selected, cutNotV0, useOnly2Trk, esdEvent->GetFiredTriggerClasses().Data());
+  if (!selected)
+    return;
 
   fTreeData.fEventInfo.Fill(esdEvent);
 
@@ -636,8 +588,8 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
     fTreeData.fEventInfo.fCharge += Int_t(dynamic_cast<AliESDtrack*>(oa->At(i))->GetSign());
 
   TClonesArrayGuard guardTrackData(fTrackData);
-  if (oa->GetEntries() <= fMaxTrackSave)  {
-    for (Int_t i=0, n=TMath::Min(oa->GetEntries(), fMaxTrackSave); i<n; ++i)
+  if (oa->GetEntries() <= fMaxTracksSave)  {
+    for (Int_t i=0, n=TMath::Min(oa->GetEntries(), fMaxTracksSave); i<n; ++i)
       new(fTrackData[i]) TrackData(dynamic_cast<AliESDtrack*>(oa->At(i)), pidResponse);
   }
 

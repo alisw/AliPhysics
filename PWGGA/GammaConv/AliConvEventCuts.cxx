@@ -123,6 +123,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hVertexZ(NULL),
   hNPileupVertices(NULL),
   hPileupVertexToPrimZ(NULL),
+  hPileupVertexToPrimZSPDPileup(NULL),
+  hPileupVertexToPrimZTrackletvsHits(NULL),
   hEventPlaneAngle(NULL),
   fEventPlaneAngle(0),
   hTriggerClass(NULL),
@@ -228,6 +230,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hVertexZ(ref.hVertexZ),
   hNPileupVertices(ref.hNPileupVertices),
   hPileupVertexToPrimZ(ref.hPileupVertexToPrimZ),
+  hPileupVertexToPrimZSPDPileup(ref.hPileupVertexToPrimZSPDPileup),
+  hPileupVertexToPrimZTrackletvsHits(ref.hPileupVertexToPrimZTrackletvsHits),
   hEventPlaneAngle(ref.hEventPlaneAngle),
   fEventPlaneAngle(ref.fEventPlaneAngle),
   hTriggerClass(NULL),
@@ -372,6 +376,10 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
 
   hPileupVertexToPrimZ  = new TH1F(Form("PileupVertexDistance %s",GetCutNumber().Data()),"PileupVertexDistance",600,-15,15);
   fHistograms->Add(hPileupVertexToPrimZ);
+  hPileupVertexToPrimZSPDPileup  = new TH1F(Form("PileupVertexDistance_SPDPileup %s",GetCutNumber().Data()),"PileupVertexDistance_SPDPileup",600,-15,15);
+  fHistograms->Add(hPileupVertexToPrimZSPDPileup);
+  hPileupVertexToPrimZTrackletvsHits  = new TH1F(Form("PileupVertexDistance_TrackletvsHits %s",GetCutNumber().Data()),"PileupVertexDistance_TrackletvsHits",600,-15,15);
+  fHistograms->Add(hPileupVertexToPrimZTrackletvsHits);
   
   if(fIsHeavyIon == 1){
     hEventPlaneAngle = new TH1F(Form("EventPlaneAngle %s",GetCutNumber().Data()),"EventPlaneAngle",60, 0, TMath::Pi());
@@ -565,21 +573,25 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
+  
+  Double_t distZMax     = 0;
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     Int_t nPileVert = ((AliESDEvent*)fInputEvent)->GetNumberOfPileupVerticesSPD();
     hNPileupVertices->Fill(nPileVert);
     if (nPileVert > 0){
       for(Int_t i=0; i<nPileVert;i++){
-        const AliESDVertex* pv= ((AliESDEvent*)fInputEvent)->GetPileupVertexSPD(i);
-        Int_t nc2             = pv->GetNContributors();
-        Double_t distZ = -10000;
-        if(nc2>=1){
-          Double_t z1 = ((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetZ();
-          Double_t z2 = pv->GetZ();
-          distZ       = TMath::Abs(z2-z1);
-          hPileupVertexToPrimZ->Fill(distZ);
+        const AliESDVertex* pv  = ((AliESDEvent*)fInputEvent)->GetPileupVertexSPD(i);
+        Int_t nc2               = pv->GetNContributors();
+        if(nc2>=3){
+          Double_t z1     = ((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetZ();
+          Double_t z2     = pv->GetZ();
+          Double_t distZ  = z2-z1;
+          if (TMath::Abs(distZMax) <  TMath::Abs(distZ) ){
+            distZMax      = distZ;
+          }
         }
       }
+      hPileupVertexToPrimZ->Fill(distZMax);
     }  
   }
   
@@ -593,11 +605,13 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
     if(fRemovePileUp){
       if(fUtils->IsPileUpEvent(fInputEvent)){
         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+        hPileupVertexToPrimZSPDPileup->Fill(distZMax);
         fEventQuality = 6;
         return kFALSE;
       }
       if (fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+        hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
         fEventQuality = 11;
         return kFALSE;
       }  
@@ -605,11 +619,13 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   } else if(fRemovePileUp){
     if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+      hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       fEventQuality = 6;
       return kFALSE;
     }
     if (fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+      hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       fEventQuality = 11;
       return kFALSE;
     }  
@@ -3211,6 +3227,8 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   Int_t nTracklets      = InputEvent->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
+  
+  Double_t distZMax     = 0;
   if(InputEvent->IsA()==AliESDEvent::Class()){
     Int_t nPileVert = ((AliESDEvent*)InputEvent)->GetNumberOfPileupVerticesSPD();
     hNPileupVertices->Fill(nPileVert);
@@ -3218,33 +3236,36 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       for(Int_t i=0; i<nPileVert;i++){
         const AliESDVertex* pv= ((AliESDEvent*)InputEvent)->GetPileupVertexSPD(i);
         Int_t nc2             = pv->GetNContributors();
-        Double_t distZ = -10000;
-        if(nc2>=1){
+        if(nc2>=3){
           Double_t z1 = ((AliESDEvent*)InputEvent)->GetPrimaryVertexSPD()->GetZ();
           Double_t z2 = pv->GetZ();
-          distZ       = TMath::Abs(z2-z1);
-          hPileupVertexToPrimZ->Fill(distZ);
+          Double_t distZ  = z2-z1;
+          if (TMath::Abs(distZMax) <  TMath::Abs(distZ) ){
+            distZMax      = distZ;
+          }
         }
       }
+      hPileupVertexToPrimZ->Fill(distZMax);
     }  
   }
 
-  
-  
   if( isHeavyIon != 2 && GetIsFromPileup()){
-    
     if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
+      hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }
     if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
+      hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
   }
   if(isHeavyIon == 2 && GetIsFromPileup()){
     if(fUtils->IsPileUpEvent(InputEvent) ){
+      hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }
     if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
+      hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
   }

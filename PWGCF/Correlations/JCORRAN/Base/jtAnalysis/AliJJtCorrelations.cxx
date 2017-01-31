@@ -45,6 +45,7 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fDeltaEta(0),
   fXlong(0),
   fZBin(0),
+  fMagneticFieldPolarity(0),
   fNearSide(true),
   fNearSide3D(true),
   fEtaGapBin(0),
@@ -55,12 +56,16 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fUseKlongBins(false),
   fNTrial(20),
   fIsLikeSign(false),
-  fUseZVertexBinsAcceptance(false)
+  fUseZVertexBinsAcceptance(false),
+  fDoTrackMergingCorrection(false),
+  fTrackMergeCut(0)
 {
   // constructor
   fmaxEtaRange = fcard->Get("EtaRange");
   if(fcard->Get("EnableKlongBins") == 1) fUseKlongBins = true;
   fNTrial = fcard->Get("NRandomizationTrials");
+  if(fcard->Get("TrackMergeSystematics") == 1) fDoTrackMergingCorrection = true;
+  fTrackMergeCut = fcard->Get("TrackMergeCut");
   
   frandom = new TRandom3(); // Random number generator for background randomization
   frandom->SetSeed(0);
@@ -91,6 +96,7 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fDeltaEta(0),
   fXlong(0),
   fZBin(0),
+  fMagneticFieldPolarity(0),
   fNearSide(true),
   fNearSide3D(true),
   fEtaGapBin(0),
@@ -101,7 +107,9 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fNTrial(20),
   fUseKlongBins(false),
   fIsLikeSign(false),
-  fUseZVertexBinsAcceptance(false)
+  fUseZVertexBinsAcceptance(false),
+  fDoTrackMergingCorrection(false),
+  fTrackMergeCut(0)
 {
   // default constructor
 }
@@ -129,6 +137,7 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fDeltaEta(in.fDeltaEta),
   fXlong(in.fXlong),
   fZBin(in.fZBin),
+  fMagneticFieldPolarity(in.fMagneticFieldPolarity),
   fNearSide(in.fNearSide),
   fNearSide3D(in.fNearSide3D),
   fEtaGapBin(in.fEtaGapBin),
@@ -139,7 +148,9 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fNTrial(in.fNTrial),
   fUseKlongBins(in.fUseKlongBins),
   fIsLikeSign(in.fIsLikeSign),
-  fUseZVertexBinsAcceptance(in.fUseZVertexBinsAcceptance)
+  fUseZVertexBinsAcceptance(in.fUseZVertexBinsAcceptance),
+  fDoTrackMergingCorrection(in.fDoTrackMergingCorrection),
+  fTrackMergeCut(in.fTrackMergeCut)
 {
   // The pointers to card and histos are just copied. I think this is safe, since they are not created by
   // AliJJtCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
@@ -167,6 +178,7 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fDeltaEta = in.fDeltaEta;
   fXlong = in.fXlong;
   fZBin = in.fZBin;
+  fMagneticFieldPolarity = in.fMagneticFieldPolarity;
   fNearSide = in.fNearSide;
   fNearSide3D = in.fNearSide3D;
   fEtaGapBin = in.fEtaGapBin;
@@ -182,6 +194,8 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fsamplingMethod = in.fsamplingMethod;
   fmaxEtaRange = in.fmaxEtaRange;
   fUseZVertexBinsAcceptance = in.fUseZVertexBinsAcceptance;
+  fDoTrackMergingCorrection = in.fDoTrackMergingCorrection;
+  fTrackMergeCut = in.fTrackMergeCut;
   
   // The pointers to card and histos are just copied. I think this is safe, since they are not created by
   // AliJJtCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
@@ -203,6 +217,40 @@ AliJJtCorrelations::~AliJJtCorrelations(){
 
 }
 
+/*
+ * Calculate deltaPhi*
+ *
+ *  Float_t phi1 = azimuthal angle of the trigger particle
+ *  Float_t pt1 = transverse momentum of the trigger particle
+ *  Float_t charge1 = charge of the trigger particle
+ *  Float_t phi2 = azimuthal angle of the associated particle
+ *  Float_t pt2 = transverse momentum of the associated particle
+ *  Float_t charge2 = charge of the associated particle
+ *  Float_t radius = radius inside TPC
+ *  Float_t bSign = magnetic field polarisation
+ */
+Float_t AliJJtCorrelations::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign){
+  //
+  // calculates dphistar
+  //
+  
+  Float_t dphistar = phi1 - phi2 - charge1 * bSign * TMath::ASin(0.075 * radius / pt1) + charge2 * bSign * TMath::ASin(0.075 * radius / pt2);
+  
+  // circularity
+  //   if (dphistar > 2 * kPi)
+  //     dphistar -= 2 * kPi;
+  //   if (dphistar < -2 * kPi)
+  //     dphistar += 2 * kPi;
+  
+  if (dphistar > TMath::Pi())
+    dphistar = TMath::Pi() * 2 - dphistar;
+  if (dphistar < -TMath::Pi())
+    dphistar = -TMath::Pi() * 2 - dphistar;
+  if (dphistar > TMath::Pi()) // might look funny but is needed
+    dphistar = TMath::Pi() * 2 - dphistar;
+  
+  return dphistar;
+}
 
 /*
  * Histogram filled based on correlation type. Only calls the main histogram filler in case of correct correlation type.
@@ -281,6 +329,40 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
     ftk2->Print();
     exit(-1);
     //return;
+  }
+  
+  // Track merging check for systematic error estimation
+  if ((TMath::Abs(fDeltaEta) < fTrackMergeCut * 2.5 * 3) && fDoTrackMergingCorrection){
+    
+    double triggerCharge = ftk1->GetCharge();
+    double associatedCharge = ftk2->GetCharge();
+    double twoTrackCutMinRadius = 0.039; // Value from Monika Kofarago
+    
+    // check first boundaries to see if is worth to loop and find the minimum
+    Float_t dphistar1 = GetDPhiStar(fPhiTrigger, fptt, triggerCharge, fPhiAssoc, fpta, associatedCharge, twoTrackCutMinRadius, fMagneticFieldPolarity);
+    Float_t dphistar2 = GetDPhiStar(fPhiTrigger, fptt, triggerCharge, fPhiAssoc, fpta, associatedCharge, 2.5, fMagneticFieldPolarity);
+    
+    const Float_t kLimit = fTrackMergeCut * 3;
+    
+    Float_t dphistarminabs = 1e5;
+    Float_t dphistarmin = 1e5;
+    if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0){
+      for (Double_t rad=twoTrackCutMinRadius; rad<2.51; rad+=0.01){
+        Float_t dphistar = GetDPhiStar(fPhiTrigger, fptt, triggerCharge, fPhiAssoc, fpta, associatedCharge, rad, fMagneticFieldPolarity);
+        
+        Float_t dphistarabs = TMath::Abs(dphistar);
+        
+        if (dphistarabs < dphistarminabs){
+          dphistarmin = dphistar;
+          dphistarminabs = dphistarabs;
+        }
+      }
+      
+      // Remove the pair if deltaPhi* and deltaEta values are too close
+      if (dphistarminabs < fTrackMergeCut && TMath::Abs(fDeltaEta) < fTrackMergeCut){
+        return;
+      }
+    }
   }
   
   

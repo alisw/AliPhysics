@@ -47,9 +47,12 @@ public:
   void SetSamplingInclusive(){fsamplingMethod = 1;} // Setter for inclusive sampling
   void UseZVertexAcceptance(bool useZ){fUseZVertexBinsAcceptance = useZ;} // Setter for fUseZVertexBinsAcceptance
   void SetAcceptanceCorrection(AliJAcceptanceCorrection *accCorr){fAcceptanceCorrection = accCorr;} // Setter for acceptance correction
+  void SetMagneticFieldPolarity(double magneticFieldPolarity){fMagneticFieldPolarity = magneticFieldPolarity;}
   
   
 protected:
+  
+  inline Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
   
   AliJCard* fcard; // Card with binning information etc.
   AliJJtHistograms* fhistos;  // Histograms needed in the analysis
@@ -75,6 +78,7 @@ protected:
   double fDeltaEta;  // Difference of the pseudorapidities of the trigger and associated particles
   double fXlong;  // The xlong value of the trigger and associated particles
   int fZBin; // z-vertex bin
+  double fMagneticFieldPolarity; // polarity of the magnetic field
   
   bool fNearSide;  // true if near side correlation, false if away side
   bool fNearSide3D; // near side defined by the half ball around the trigger
@@ -89,6 +93,8 @@ protected:
   bool fIsLikeSign; // True = like sign correlation, false = unlike sign correlation
   
   bool fUseZVertexBinsAcceptance; // false = integrate over z-vertex bins, true = Do acceptance correction in z-vertex bins
+  bool fDoTrackMergingCorrection; // Switch for track merging correction
+  double fTrackMergeCut; // Cut value in case track merging correction is applied
   
 private:
   

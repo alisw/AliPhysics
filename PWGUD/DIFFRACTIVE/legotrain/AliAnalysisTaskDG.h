@@ -43,7 +43,7 @@ public:
   void SetTrackCutType(TString tc) { fTrackCutType = tc; }
   void SetTriggerSelection(TString ts) { fTriggerSelection = ts; }
   void SetTriggerSelectionSPD(TString ts) { fTriggerSelectionSPD = ts; }
-  void SetCDBStorage(TString s) { fCDBStorage = s; }
+  void SetMaxTracksSave(Int_t m);
 
   TString GetListName() const { return fTrackCutType+"_TL"; }
   TString GetTreeName() const { return fTrackCutType+"_TE"; }
@@ -189,6 +189,8 @@ protected:
   void SetClassMask(TString triggerSel, ULong64_t &mask, ULong64_t &maskNext50);
   static void FindChipKeys(AliESDtrack *tr, Short_t chipKeys[2], Int_t status[2]);
 
+  void FillTH3(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t w=1);
+
   enum {
     kHistTrig,
     kHistSPDFiredTrk,
@@ -209,8 +211,7 @@ private:
   TString          fTrackCutType;        //
   TString          fTriggerSelection;    //
   TString          fTriggerSelectionSPD; //
-  TString          fCDBStorage;          //
-  Int_t            fMaxTrackSave;        //
+  Int_t            fMaxTracksSave;       //
 
   AliTriggerAnalysis fTriggerAnalysis;   //!
   AliAnalysisUtils   fAnalysisUtils;     //!
@@ -232,14 +233,8 @@ private:
   TClonesArray     fTrackData;           //!
   TClonesArray     fMCTracks;            //!
   AliESDtrackCuts *fTrackCuts;           //!
-  Bool_t           fUseTriggerMask;      //!
-  ULong64_t        fClassMask;           //!
-  ULong64_t        fClassMaskNext50;     //!
-  Bool_t           fUseTriggerMaskSPD;   //!
-  ULong64_t        fClassMaskSPD;        //!
-  ULong64_t        fClassMaskNext50SPD;  //!
 
-  ClassDef(AliAnalysisTaskDG, 8);
+  ClassDef(AliAnalysisTaskDG, 9);
 } ;
 
 #endif // ALIANALYSISTASKDG_H

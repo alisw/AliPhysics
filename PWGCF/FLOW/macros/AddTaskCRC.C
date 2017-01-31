@@ -11,7 +11,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString ZDCCalibFileName,
                              TString sCorrWeight="TPCmVZuZDCu",
                              Bool_t bCorrectForBadChannel=kFALSE,
-                             Bool_t bRequireTOFSignal=kFALSE,
+                             Bool_t bMimicGlobalCuts=kFALSE,
                              Float_t ZDCGainAlpha=0.395,
                              TString Label="",
                              TString sCentrEstimator="V0",
@@ -22,11 +22,11 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Double_t MaxChi2PerClTPC=4.,
                              Double_t MaxFracSharedTPCCl=0.4,
                              TString sSelecCharge="",
-                             Int_t bCutTPCbound=0,
+                             Bool_t bPtDepDCAxyCut=kFALSE,
                              Bool_t bCalculateFlow=kFALSE,
                              Int_t NumCenBins=100,
                              Double_t DeltaEta=0.4,
-                             Bool_t bUsePhiEtaCuts=kFALSE,
+                             Bool_t bRequireITSRefit=kFALSE,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
@@ -88,6 +88,9 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Int_t nHarmonic=2;
   Bool_t bUseCRCRecenter=kFALSE;
   Bool_t bZDCMCCen=kTRUE;
+  Bool_t bRequireTOFSignal=kFALSE;
+  Int_t bCutTPCbound=0;
+  Bool_t bUsePhiEtaCuts=kFALSE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -136,6 +139,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if (sDataSet == "2010") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2010);
   if (sDataSet == "2011") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2011);
   if (sDataSet == "2015") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015);
+  if (sDataSet == "2015v6") taskFE->SetDataSet(AliAnalysisTaskCRCZDC::k2015v6);
  taskFE->SetQAOn(bCutsQA);
  // set the analysis type
  TString analysisType = "AUTOMATIC";
@@ -149,7 +153,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     taskFE->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);
   if (EvTrigger == "MB")
     taskFE->SelectCollisionCandidates(AliVEvent::kMB);
-  if (EvTrigger == "MB" && sDataSet == "2015")
+  if (EvTrigger == "MB" && sDataSet.Contains("2015"))
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   if (EvTrigger == "Any")
     taskFE->SelectCollisionCandidates(AliVEvent::kAny);
@@ -206,7 +210,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     if (sDataSet == "2010" || sDataSet == "2011") {
       cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
     }
-    if (sDataSet == "2015") {
+    if (sDataSet.Contains("2015")) {
       cutsEvent->SetCentralityPercentileRange(centrMin,centrMax,kTRUE);
     }
       cutsEvent->SetPrimaryVertexZrange(-dVertexRange,dVertexRange);
@@ -216,7 +220,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
    if (sDataSet == "2010" || sDataSet == "2011") {
      cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
    }
-   if (sDataSet == "2015") {
+   if (sDataSet.Contains("2015")) {
      cutsEvent->SetCentralityPercentileRange(centrMin,centrMax,kTRUE);
    }
   // method used for centrality determination
@@ -277,7 +281,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     cutsRP->SetParamType(AliFlowTrackCuts::kDeltaVZERO);
    if (sDataSet == "2010")
     cutsRP->SetParamType(AliFlowTrackCuts::kBetaVZERO);
-   if (sDataSet == "2015")
+   if (sDataSet.Contains("2015"))
     cutsRP->SetParamType(AliFlowTrackCuts::kKappaVZERO);
    cutsRP->SetEtaRange(-10.,+10.);
    cutsRP->SetEtaGap(-1.,1.);
@@ -310,11 +314,22 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   cutsPOI->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   cutsPOI->SetAODfilterBit(AODfilterBit);
   cutsPOI->SetMinimalTPCdedx(-999999999);
-  cutsPOI->SetMaxDCAToVertexXY(dDCAxy);
-  cutsPOI->SetMaxDCAToVertexZ(dDCAz);
+  cutsPOI->SetMaxDCAToVertexXYAOD(dDCAxy);
+  cutsPOI->SetMaxDCAToVertexZAOD(dDCAz);
   cutsPOI->SetMinNClustersTPC(dMinClusTPC);
   cutsPOI->SetMinChi2PerClusterTPC(0.1);
   cutsPOI->SetMaxChi2PerClusterTPC(MaxChi2PerClTPC);
+  if(bMimicGlobalCuts) {
+     cutsPOI->SetMinNClustersTPC(50);
+     cutsPOI->SetCutCrossedTPCRows(70,0.8);
+     cutsPOI->SetRequireITSRefit(kTRUE);
+     cutsPOI->SetMaxDCAToVertexXYPtDepAOD(kTRUE);
+     cutsPOI->SetCutGoldenChi2(kTRUE);
+     cutsPOI->SetCutChi2PerClusterITS(36.);
+     cutsPOI->SetCutITSClusterGlobal(kTRUE);
+  }
+  if(bRequireITSRefit) cutsPOI->SetRequireITSRefit(kTRUE);
+  if(bPtDepDCAxyCut) cutsPOI->SetMaxDCAToVertexXYPtDepAOD(kTRUE);
   cutsPOI->SetPtRange(ptMin,ptMax);
   cutsPOI->SetEtaRange(etaMin,etaMax);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
@@ -384,7 +399,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   taskQC->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
  else if (EvTrigger == "MB")
   taskQC->SelectCollisionCandidates(AliVEvent::kMB);
- if (EvTrigger == "MB" && sDataSet == "2015")
+ if (EvTrigger == "MB" && sDataSet.Contains("2015"))
   taskQC->SelectCollisionCandidates(AliVEvent::kINT7);
  else if (EvTrigger == "Any")
   taskQC->SelectCollisionCandidates(AliVEvent::kAny);
@@ -425,7 +440,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
  taskQC->SetQAZDCCuts(bSetQAZDC);
  taskQC->SetMinMulZN(MinMulZN);
  taskQC->SetMaxDevZN(MaxDevZN);
-  if(bSetQAZDC && bUseZDC && sDataSet != "2015") {
+  if(bSetQAZDC && bUseZDC && sDataSet == "2010") {
     TFile* ZDCESEFile = TFile::Open(ZDCESEFileName,"READ");
     gROOT->cd();
     if(!ZDCESEFile) {

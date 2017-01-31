@@ -96,6 +96,8 @@ class AliEventCuts : public TList {
     double        fSPDpileupNsigmaDiamZ;          ///<
     bool          fTrackletBGcut;                 ///<
 
+    bool          fPileUpCutMV;                   ///< Reject pile-up based on multi-vertexer
+
     unsigned int  fCentralityFramework;           ///< 0: skip centrality checks, 1: multiplicity framework, 2: legacy centrality framework
     float         fMinCentrality;                 ///< Minimum centrality to be analised
     float         fMaxCentrality;                 ///< Maximum centrality to be analised

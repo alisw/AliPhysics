@@ -112,16 +112,29 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMinChi2PerClusterTPC(-FLT_MAX),
   fCutFracSharedTPCCluster(kFALSE),
   fMaxFracSharedTPCCluster(FLT_MAX),
+  fCutCrossedTPCRows(kFALSE),
+  fMinNCrossedRows(0),
+  fMinCrossedRowsOverFindableClusters(2.),
+  fCutGoldenChi2(kFALSE),
+  fMaxGoldenChi2(FLT_MAX),
   fRequireTOFSignal(kFALSE),
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
-  fNClustersITSMin(INT_MIN),  
+  fNClustersITSMin(INT_MIN),
+  fCutChi2PerClusterITS(kFALSE),
+  fCutITSClusterGlobal(kFALSE),
+  fMaxChi2PerClusterITS(FLT_MAX),
   fUseAODFilterBit(kTRUE),
   fAODFilterBit(1),
   fCutDCAToVertexXY(kFALSE),
+  fCutDCAToVertexXYPtDepAOD(kFALSE),
+  fCutDCAToVertexXYAOD(kFALSE),
+  fMaxDCAxyAOD(FLT_MAX),
+  fCutDCAToVertexZAOD(kFALSE),
+  fMaxDCAzAOD(FLT_MAX),
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
@@ -249,6 +262,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMinChi2PerClusterTPC(-FLT_MAX),
   fCutFracSharedTPCCluster(kFALSE),
   fMaxFracSharedTPCCluster(FLT_MAX),
+  fCutCrossedTPCRows(kFALSE),
+  fMinNCrossedRows(0),
+  fMinCrossedRowsOverFindableClusters(2.),
+  fCutGoldenChi2(kFALSE),
+  fMaxGoldenChi2(FLT_MAX),
   fRequireTOFSignal(kFALSE),
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
@@ -256,9 +274,17 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
   fNClustersITSMin(INT_MIN),
+  fCutChi2PerClusterITS(kFALSE),
+  fCutITSClusterGlobal(kFALSE),
+  fMaxChi2PerClusterITS(FLT_MAX),
   fUseAODFilterBit(kTRUE),
   fAODFilterBit(1),
   fCutDCAToVertexXY(kFALSE),
+  fCutDCAToVertexXYPtDepAOD(kFALSE),
+  fCutDCAToVertexXYAOD(kFALSE),
+  fMaxDCAxyAOD(FLT_MAX),
+  fCutDCAToVertexZAOD(kFALSE),
+  fMaxDCAzAOD(FLT_MAX),
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
@@ -389,6 +415,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMinChi2PerClusterTPC(that.fMinChi2PerClusterTPC),
   fCutFracSharedTPCCluster(that.fCutFracSharedTPCCluster),
   fMaxFracSharedTPCCluster(that.fMaxFracSharedTPCCluster),
+  fCutCrossedTPCRows(that.fCutCrossedTPCRows),
+  fMinNCrossedRows(that.fMinNCrossedRows),
+  fMinCrossedRowsOverFindableClusters(that.fMinCrossedRowsOverFindableClusters),
+  fCutGoldenChi2(that.fCutGoldenChi2),
+  fMaxGoldenChi2(that.fMaxGoldenChi2),
   fRequireTOFSignal(that.fRequireTOFSignal),
   fCutNClustersTPC(that.fCutNClustersTPC),
   fNClustersTPCMax(that.fNClustersTPCMax),
@@ -396,9 +427,17 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutNClustersITS(that.fCutNClustersITS),
   fNClustersITSMax(that.fNClustersITSMax),
   fNClustersITSMin(that.fNClustersITSMin),
+  fCutChi2PerClusterITS(that.fCutChi2PerClusterITS),
+  fCutITSClusterGlobal(that.fCutITSClusterGlobal),
+  fMaxChi2PerClusterITS(that.fMaxChi2PerClusterITS),
   fUseAODFilterBit(that.fUseAODFilterBit),
   fAODFilterBit(that.fAODFilterBit),
   fCutDCAToVertexXY(that.fCutDCAToVertexXY),
+  fCutDCAToVertexXYPtDepAOD(that.fCutDCAToVertexXYPtDepAOD),
+  fCutDCAToVertexXYAOD(that.fCutDCAToVertexXYAOD),
+  fMaxDCAxyAOD(that.fMaxDCAxyAOD),
+  fCutDCAToVertexZAOD(that.fCutDCAToVertexZAOD),
+  fMaxDCAzAOD(that.fMaxDCAzAOD),
   fCutDCAToVertexZ(that.fCutDCAToVertexZ),
   fCutMinimalTPCdedx(that.fCutMinimalTPCdedx),
   fMinimalTPCdedx(that.fMinimalTPCdedx),
@@ -551,16 +590,29 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMinChi2PerClusterTPC=that.fMinChi2PerClusterTPC;
   fCutFracSharedTPCCluster=that.fCutFracSharedTPCCluster;
   fMaxFracSharedTPCCluster=that.fMaxFracSharedTPCCluster;
+  fCutCrossedTPCRows=that.fCutCrossedTPCRows;
+  fMinNCrossedRows=that.fMinNCrossedRows;
+  fMinCrossedRowsOverFindableClusters=that.fMinCrossedRowsOverFindableClusters;
+  fCutGoldenChi2=that.fCutGoldenChi2;
+  fMaxGoldenChi2=that.fMaxGoldenChi2;
   fRequireTOFSignal=that.fRequireTOFSignal;
   fCutNClustersTPC=that.fCutNClustersTPC;
   fNClustersTPCMax=that.fNClustersTPCMax;
   fNClustersTPCMin=that.fNClustersTPCMin;  
   fCutNClustersITS=that.fCutNClustersITS;
   fNClustersITSMax=that.fNClustersITSMax;
-  fNClustersITSMin=that.fNClustersITSMin;  
+  fNClustersITSMin=that.fNClustersITSMin;
+  fCutChi2PerClusterITS=that.fCutChi2PerClusterITS;
+  fCutITSClusterGlobal=that.fCutITSClusterGlobal;
+  fMaxChi2PerClusterITS=that.fMaxChi2PerClusterITS;
   fUseAODFilterBit=that.fUseAODFilterBit;
   fAODFilterBit=that.fAODFilterBit;
   fCutDCAToVertexXY=that.fCutDCAToVertexXY;
+  fCutDCAToVertexXYPtDepAOD=that.fCutDCAToVertexXYPtDepAOD;
+  fCutDCAToVertexXYAOD=that.fCutDCAToVertexXYAOD;
+  fMaxDCAxyAOD=that.fMaxDCAxyAOD;
+  fCutDCAToVertexZAOD=that.fCutDCAToVertexZAOD;
+  fMaxDCAzAOD=that.fMaxDCAzAOD;
   fCutDCAToVertexZ=that.fCutDCAToVertexZ;
   fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
   fMinimalTPCdedx=that.fMinimalTPCdedx;
@@ -1352,6 +1404,25 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC) pass=kFALSE;
   }
   
+  if (fCutChi2PerClusterITS)
+  {
+    Double_t chi2TIS = track->GetITSchi2()/track->GetITSNcls();
+    if (chi2TIS >= fMaxChi2PerClusterITS) pass=kFALSE;
+  }
+  
+  if (fCutITSClusterGlobal)
+  {
+    Bool_t bSPDCl = kFALSE;
+    for (Int_t i=0; i<2; i++) {
+      if(track->HasPointOnITSLayer(i)) bSPDCl = kTRUE;
+    }
+    Bool_t bSDDCl = track->HasPointOnITSLayer(2);
+    Bool_t temppass = kTRUE;
+    if (bSPDCl || (!bSPDCl && bSDDCl)) temppass = kTRUE;
+    else temppass = kFALSE;
+    if(!temppass) pass=kFALSE;
+  }
+  
   if (fCutFracSharedTPCCluster)
   {
     Int_t ntpccls = track->GetTPCncls();
@@ -1360,6 +1431,20 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
       Double_t fshtpccls = 1.*ntpcclsS/ntpccls;
       if (fshtpccls > fMaxFracSharedTPCCluster) pass=kFALSE;
     }
+  }
+  
+  if (fCutCrossedTPCRows)
+  {
+    Int_t nCrossedRows = track->GetTPCNCrossedRows();
+    if (nCrossedRows <= fMinNCrossedRows) pass=kFALSE;
+    Float_t CrossedRowsOverFindableClusters = track->GetTPCFoundFraction();
+    if (CrossedRowsOverFindableClusters < fMinCrossedRowsOverFindableClusters) pass=kFALSE;
+  }
+  
+  if (fCutGoldenChi2)
+  {
+    Double_t GoldenChi2 = track->GetChi2TPCConstrainedVsGlobal();
+    if (GoldenChi2 >= fMaxGoldenChi2) pass=kFALSE;
   }
   
   if (fRequireTOFSignal)
@@ -1375,7 +1460,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
   Double_t DCAxy = track->DCA();
   Double_t DCAz = track->ZAtDCA();
-  if(fCutDCAToVertexXY || fCutDCAToVertexZ) {
+  if(fCutDCAToVertexXYAOD || fCutDCAToVertexZAOD || fCutDCAToVertexXYPtDepAOD) {
     if (std::abs((Int_t)DCAxy)==999 || std::abs((Int_t)DCAz)==999) {
       // re-evaluate the dca as it seems to not be natively present
       // allowed only for tracks inside the beam pipe
@@ -1391,8 +1476,16 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
         }
       }
     }
-    if (TMath::Abs(DCAxy)>GetMaxDCAToVertexXY()) pass=kFALSE;
-    if (TMath::Abs(DCAz)>GetMaxDCAToVertexZ()) pass=kFALSE;
+    if (fCutDCAToVertexXYAOD) {
+      if (TMath::Abs(DCAxy)>fMaxDCAxyAOD) pass=kFALSE;
+    }
+    if (fCutDCAToVertexXYPtDepAOD) {
+      Double_t MaxDCAPtDep = 0.0182+0.0350/pow(track->Pt(),1.01);
+      if (TMath::Abs(DCAxy)>MaxDCAPtDep) pass=kFALSE;
+    }
+    if (fCutDCAToVertexZAOD) {
+      if (TMath::Abs(DCAz)>fMaxDCAzAOD) pass=kFALSE;
+    }
   }
   Double_t dedx = track->GetTPCsignal();
   if(fCutMinimalTPCdedx) {

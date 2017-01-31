@@ -317,9 +317,12 @@ public:
   TH2F *   fhClusterPairDiffTimeEPi0MassDCal;     //!<! DCal Cluster time TOF difference, for pairs in 0.1 < mass < 0.18
   TH2F *   fhClusterPairDiffTimeEPi0MassDCalSame; //!<! DCal Cluster time TOF difference, for pairs in 0.1 < mass < 0.18, pairs in same Module
   
-  TH2F *   fhNCellsPerCluster;                  //!<! N cells per cluster vs cluster energy vs eta of cluster
-  TH2F *   fhNCellsPerClusterNoCut;             //!<! N cells per cluster vs cluster energy vs eta of cluster
+  TH2F *   fhNCellsPerCluster;                  //!<! N cells per cluster vs cluster energy 
+  TH2F *   fhNCellsPerClusterNoCut;             //!<! N cells per cluster vs cluster energy, before cuts 
 
+  TH2F *   fhNCellsPerClusterWithWeight;        //!<! N cells per cluster vs cluster energy, select cells with significant weight
+  TH2F *   fhNCellsPerClusterRatioWithWeight;   //!<! N cells per cluster / N cells per cluster with significant weigth  vs cluster energy
+  
   TH1F *   fhNClusters;                         //!<! Number of clusters
 
   TH2F *   fhClusterTimeEnergy;                 //!<! Cluster Time vs Energy
