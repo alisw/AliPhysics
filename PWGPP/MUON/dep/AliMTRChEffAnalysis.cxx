@@ -96,8 +96,8 @@ AliMTRChEffAnalysis::~AliMTRChEffAnalysis()
   //
   delete fConditions;
   delete fNamer;
-  fRunMap.clear();
-  fMergedMap.clear();
+  for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fRunMap ) delete obj;
+  for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) delete obj;
 }
 
 //________________________________________________________________________
@@ -333,7 +333,9 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
           }
         }
       } // loop on points
+      for ( TGraphAsymmErrors* obj : checkEffList ) delete obj;
       checkEffList.clear();
+      for ( TGraphAsymmErrors* obj : refEffList ) delete obj;
       refEffList.clear();
     } // loop on chambers
     obj->AddEffHistoList("Systematics",systematicList);
@@ -1729,7 +1731,10 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
   Int_t nRanges = mergedRanges.GetSize()/2;
 
 
-  if ( fMergedMap.size() > 0 ) fMergedMap.clear();
+  if ( fMergedMap.size() > 0 ) {
+    for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) delete obj;
+    fMergedMap.clear();
+  }
 
   for ( Int_t irange=0; irange<nRanges; irange++ ) {
     Int_t firstRun = mergedRanges[2*irange];
@@ -1990,7 +1995,7 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
   } // loop on merged objects
 
   // Delete objects
-
+  for ( TList* obj : systLists ) delete obj;
   readEffLists.clear();
   delete rList;
 
@@ -2210,8 +2215,8 @@ AliMTRChEffAnalysis::AliMTRChEffInnerObj::AliMTRChEffInnerObj ( const char* file
 AliMTRChEffAnalysis::AliMTRChEffInnerObj::~AliMTRChEffInnerObj ()
 {
   /// Destructor
+  for ( auto& mapEntry : fEffLists ) delete mapEntry.second;
   fEffLists.clear();
-  fSortKeys.clear();
 }
 
 //___________________________________________________________________________
@@ -2239,6 +2244,9 @@ Bool_t AliMTRChEffAnalysis::AliMTRChEffInnerObj::AddEffHistoList ( const char* c
 //___________________________________________________________________________
 Bool_t AliMTRChEffAnalysis::AliMTRChEffInnerObj::RemoveEffHistoList ( const char* condition )
 {
-  /// Add efficiency list for specific condition
+  /// Remove condition from the efficiency list
+  auto const& mapEntry = fEffLists.find(condition);
+  if ( mapEntry == fEffLists.end() ) return kFALSE;
+  delete mapEntry->second;
   return fEffLists.erase(condition);
 }
