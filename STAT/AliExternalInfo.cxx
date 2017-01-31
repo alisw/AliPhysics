@@ -249,13 +249,15 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
 	gSystem->Exec(TString::Format("cat %s | sed -l 1 s/raw_run/run/ |  sed -l 1 s/RunNo/run/ > %s",mifFilePath.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
       }else{
 	gSystem->Exec(TString::Format("cat %s | sed -l 1 s/%s/%s/  > %s",mifFilePath.Data(), oldIndexName.Data(), indexName.Data(),  (mifFilePath+"RunFix").Data())); // use standrd run number IDS
-      }
+      } 
+
+      gSystem->GetFromPipe(TString::Format("cat %s  | sed s_\\\"\\\"_\\\"\\ \\\"_g | sed s_\\\"\\\"_\\\"\\ \\\"_g > %s",  (mifFilePath+"RunFix").Data(),  (mifFilePath+"RunFix").Data()).Data());
       // Store it in a tree inside a root file
       TFile tempfile(internalFilename, "RECREATE");
       tempfile.cd();
       TTree tree(treeName, treeName);
 
-      if ( (tree.ReadFile(mifFilePath+"RunFix", "", '\"')) > 0) {
+      if ( (tree.ReadFile(mifFilePath, "", '\"')) > 0) {
         if (fVerbose>1) AliInfo("Successfully read in tree");
       }
       else {
