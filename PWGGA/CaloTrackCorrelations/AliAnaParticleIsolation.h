@@ -654,7 +654,6 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterFECCorrMax[4];              //!<! cluster sum pt for pair column cells in correlated FEC Max, 4 cases
   TH2F *   fhConeSumPtClusterFECCorr[6]   ;              //!<! cluster sum pt for odd column cells in correlated FEC, 6 cases  
 
-  
   TH2F *   fhConeSumPtTrackTOFBC0;                       //!<! track with TOF hit sum pt, tof in BC0 
   TH2F *   fhConeSumPtTrackTOFBCN;                       //!<! track with TOF hit sum pt, tof not in BC0 
   TH2F *   fhConeSumPtTrackTOFNo ;                       //!<! track without TOF hit sum pt 
@@ -675,6 +674,36 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiTrackInConeTOFNo ;                    //!<! track without TOF hit, eta-phi 
   TH2F *   fhTrackTOFInCone ;                            //!<! track TOF in cone
   TH2F *   fhTrackTOFInConeBC0 ;                         //!<! track TOF in cone and BC0
+  
+  TH2F *   fhConeSumPtTrackITSRefitOnSPDOn;              //!<! track with ITS Refit On SPD On 
+  TH2F *   fhConeSumPtTrackITSRefitOnSPDOff;             //!<! track with ITS Refit On SPD Off 
+  TH2F *   fhConeSumPtTrackITSRefitOffSPDOff ;           //!<! track with ITS Refit Off SPD Off 
+  TH2F *   fhPtTrackInConeITSRefitOnSPDOn;               //!<! track with ITS Refit On SPD On
+  TH2F *   fhPtTrackInConeITSRefitOnSPDOff;              //!<! track with ITS Refit On SPD Off 
+  TH2F *   fhPtTrackInConeITSRefitOffSPDOff ;            //!<! track with ITS Refit Off SPD Off
+  TH2F *   fhPhiTrackInConeITSRefitOnSPDOn;              //!<! track with ITS Refit On SPD On 
+  TH2F *   fhPhiTrackInConeITSRefitOnSPDOff;             //!<! track with ITS Refit On SPD Off
+  TH2F *   fhPhiTrackInConeITSRefitOffSPDOff ;           //!<! track with ITS Refit Off SPD Off 
+  TH2F *   fhEtaTrackInConeITSRefitOnSPDOn;              //!<! track with ITS Refit On SPD On
+  TH2F *   fhEtaTrackInConeITSRefitOnSPDOff;             //!<! track with ITS Refit On SPD Off 
+  TH2F *   fhEtaTrackInConeITSRefitOffSPDOff ;           //!<! track with ITS Refit Off SPD Off 
+  TH2F *   fhEtaPhiTrackInConeITSRefitOnSPDOn;           //!<! track with ITS Refit On SPD On
+  TH2F *   fhEtaPhiTrackInConeITSRefitOnSPDOff;          //!<! track with ITS Refit On SPD Off
+  TH2F *   fhEtaPhiTrackInConeITSRefitOffSPDOff ;        //!<! track with ITS Refit Off SPD Off
+
+  TH2F *   fhConeSumPtTrackTOFBC0ITSRefitOnSPDOn;        //!<! track with ITS Refit On SPD On, TOF BC=0 
+  TH2F *   fhPtTrackInConeTOFBC0ITSRefitOnSPDOn;         //!<! track with ITS Refit On SPD On, TOF BC=0
+  TH2F *   fhPhiTrackInConeTOFBC0ITSRefitOnSPDOn;        //!<! track with ITS Refit On SPD On, TOF BC=0 
+  TH2F *   fhEtaTrackInConeTOFBC0ITSRefitOnSPDOn;        //!<! track with ITS Refit On SPD On, TOF BC=0 
+  TH2F *   fhEtaPhiTrackInConeTOFBC0ITSRefitOnSPDOn;     //!<! track with ITS Refit On SPD On, TOF BC=0
+  
+  TH2F *   fhPerpConeSumPtITSRefitOnSPDOn ;              //!<! Sum track Pt in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On
+  TH2F *   fhPtInPerpConeITSRefitOnSPDOn ;               //!<! track Pt  in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On
+  TH2F *   fhEtaPhiInPerpConeITSRefitOnSPDOn ;           //!<! tracl eta vs phi in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On
+
+  TH2F *   fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn ;        //!<! Sum track Pt in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
+  TH2F *   fhPtInPerpConeTOFBC0ITSRefitOnSPDOn ;         //!<! track Pt  in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
+  TH2F *   fhEtaPhiInPerpConeTOFBC0ITSRefitOnSPDOn ;     //!<! tracl eta vs phi in cone at the perpendicular phi region to trigger axis  (phi +90), ITS Refit On, SPD On, TOF BC=0
   
   /// Copy constructor not implemented.
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ;
