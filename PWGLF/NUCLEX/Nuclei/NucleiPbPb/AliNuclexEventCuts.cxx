@@ -82,7 +82,8 @@ AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fMultCentCorrelation{nullptr},
   fTOFvsFB32{nullptr},
   fTPCvsAll{nullptr},
-  fMultvsV0M{nullptr}
+  fMultvsV0M{nullptr},
+  fTPCvsTrkl{nullptr}
 {
   SetName("AliNuclexEventCuts");
   SetOwner(true);
