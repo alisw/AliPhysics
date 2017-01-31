@@ -2359,8 +2359,8 @@ TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
 /// Create histograms to be saved in output file and
 /// store them in outputContainer.
 //________________________________________________________
-TList *  
-{AliAnaParticleIsolation::GetCreateOutputObjects()
+TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
+{  
   TList * outputContainer = new TList() ;
   outputContainer->SetName("IsolatedParticleHistos") ;
   
