@@ -483,6 +483,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// Real eta pairs, reconstructed pt vs generated pt of pair, apply cut on eta mass
   TH2F **  fhMCEtaPtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
+  TH2F *   fhMCPi0PerCentrality;       //!<! Real pi0 pairs, reco pT vs centrality 
+  TH2F *   fhMCPi0PerCentralityMassCut;//!<! Real pi0 pairs, reco pT vs centrality, mass cut around pi0 
+  TH2F *   fhMCEtaPerCentrality;       //!<! Real eta pairs, reco pT vs centrality  
+  TH2F *   fhMCEtaPerCentralityMassCut;//!<! Real eta pairs, reco pT vs centrality, mass cut around eta 
+  
   TH2F *   fhMCPi0PtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
   TH2F *   fhMCPi0PtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
   TH2F *   fhMCPi0PtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
@@ -565,11 +570,15 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F *  fhPairGeneratorsBkgMass               [10][10]; //!<! Mass for a pair of clusters depending bkg type
   TH2F *  fhPairGeneratorsBkgMassMCPi0          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCPi0          [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCPi0MassCut   [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, pi0 true pairs, mass cut
   TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
   TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs  
-  TH2F *  fhPairGeneratorsBkgMassMCEta          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
-  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEta[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
-  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEta [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgMassMCEta          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCEta          [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCEtaMassCut   [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, eta true pairs, mass cut
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEta[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEta [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, eta true pairs
   
   TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
   TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window

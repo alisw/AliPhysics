@@ -109,7 +109,8 @@ fhMCPi0MassPtRec(0x0),       fhMCPi0MassPtTrue(0x0),
 fhMCPi0PtTruePtRec(0x0),     fhMCPi0PtTruePtRecMassCut(0x0),
 fhMCEtaMassPtRec(0x0),       fhMCEtaMassPtTrue(0x0),
 fhMCEtaPtTruePtRec(0x0),     fhMCEtaPtTruePtRecMassCut(0x0),
-
+fhMCPi0PerCentrality(0),     fhMCPi0PerCentralityMassCut(0),
+fhMCEtaPerCentrality(0),     fhMCEtaPerCentralityMassCut(0),
 fhMCPi0PtTruePtRecRat(0),    fhMCPi0PtTruePtRecDif(0), fhMCPi0PtRecOpenAngle(0),
 fhMCEtaPtTruePtRecRat(0),    fhMCEtaPtTruePtRecDif(0), fhMCEtaPtRecOpenAngle(0),
 fhMCPi0PtTruePtRecRatMassCut(0), fhMCPi0PtTruePtRecDifMassCut(0), fhMCPi0PtRecOpenAngleMassCut(0),
@@ -188,9 +189,13 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     {    
       fhPairGeneratorsBkgMass               [igen][itag] = 0;
       fhPairGeneratorsBkgMassMCPi0          [igen][itag] = 0;
+      fhPairGeneratorsBkgCentMCPi0          [igen][itag] = 0;
+      fhPairGeneratorsBkgCentMCPi0MassCut   [igen][itag] = 0;
       fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag] = 0; 
       fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [igen][itag] = 0; 
       fhPairGeneratorsBkgMassMCEta          [igen][itag] = 0; 
+      fhPairGeneratorsBkgCentMCEta          [igen][itag] = 0; 
+      fhPairGeneratorsBkgCentMCEtaMassCut   [igen][itag] = 0; 
       fhPairGeneratorsBkgEPrimRecoRatioMCEta[igen][itag] = 0; 
       fhPairGeneratorsBkgEPrimRecoDiffMCEta [igen][itag] = 0;
       fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[igen][itag] = 0; 
@@ -1542,7 +1547,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhMCPi0MassPtTrue[0]->SetXTitle("#it{p}_{T, generated} (GeV/#it{c})");
         fhMCPi0MassPtTrue[0]->SetYTitle("#it{M}_{#gamma,#gamma} (GeV/#it{c}^{2})");
         outputContainer->Add(fhMCPi0MassPtTrue[0]) ;
-
+        
         fhMCPi0MassPtRec[0] = new TH2F("hMCPi0MassPtRec","Reconstructed Mass vs reconstructed #it{p}_{T} of true #pi^{0} cluster pairs",
                                         nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
         fhMCPi0MassPtRec[0]->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
@@ -1672,6 +1677,43 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCEtaPtRecOpenAngleMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
       fhMCEtaPtRecOpenAngleMassCut->SetYTitle("#theta(rad)");
       outputContainer->Add(fhMCEtaPtRecOpenAngleMassCut) ;
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhMCPi0PerCentrality = new TH2F
+        ("hMCPi0PerCentrality",
+         "Reconstructed #it{p}_{T}  vs centrality of true #pi^{0} cluster pairs",
+         nptbins,ptmin,ptmax,100,0,100) ;
+        fhMCPi0PerCentrality->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCPi0PerCentrality->SetYTitle("Centrality");
+        outputContainer->Add(fhMCPi0PerCentrality) ;
+        
+        fhMCPi0PerCentralityMassCut = new TH2F
+        ("hMCPi0PerCentralityMassCut",
+         Form("Reconstructed #it{p}_{T} vs centrality of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+              fPi0MassWindow[0],fPi0MassWindow[1]),
+         nptbins,ptmin,ptmax,100,0,100) ;
+        fhMCPi0PerCentralityMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCPi0PerCentralityMassCut->SetYTitle("Centrality");
+        outputContainer->Add(fhMCPi0PerCentralityMassCut) ;
+
+        fhMCEtaPerCentrality = new TH2F
+        ("hMCEtaPerCentrality",
+         "Reconstructed #it{p}_{T}  vs centrality of true #pi^{0} cluster pairs",
+         nptbins,ptmin,ptmax,100,0,100) ;
+        fhMCEtaPerCentrality->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCEtaPerCentrality->SetYTitle("Centrality");
+        outputContainer->Add(fhMCEtaPerCentrality) ;
+        
+        fhMCEtaPerCentralityMassCut = new TH2F
+        ("hMCEtaPerCentralityMassCut",
+         Form("Reconstructed #it{p}_{T} vs centrality of true #pi^{0} cluster pairs, %2.2f < rec. mass < %2.2f MeV/#it{c}^{2}", 
+              fEtaMassWindow[0],fEtaMassWindow[1]),
+         nptbins,ptmin,ptmax,100,0,100) ;
+        fhMCEtaPerCentralityMassCut->SetXTitle("#it{p}_{T, reco} (GeV/#it{c})");
+        fhMCEtaPerCentralityMassCut->SetYTitle("Centrality");
+        outputContainer->Add(fhMCEtaPerCentralityMassCut) ;
+      }
     }
   }
   
@@ -2208,7 +2250,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhPairGeneratorsBkgMassMCPi0[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
         fhPairGeneratorsBkgMassMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgMassMCPi0[igen][itag]) ;
-        
+
         fhPairGeneratorsBkgMassMCEta[igen][itag] = new TH2F
         (Form("h%sGeneratorPairMass%s%s_MCEta",
               tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
@@ -2218,6 +2260,49 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         fhPairGeneratorsBkgMassMCEta[igen][itag]->SetYTitle("#it{M} (MeV/#it{c}^{2})");
         fhPairGeneratorsBkgMassMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
         outputContainer->Add(fhPairGeneratorsBkgMassMCEta[igen][itag]) ;
+        
+        if(IsHighMultiplicityAnalysisOn())
+        {
+          fhPairGeneratorsBkgCentMCPi0[igen][itag] = new TH2F
+          (Form("h%sGeneratorPairCent%s%s_MCPi0",
+                tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Pair Mass with contribution of true #pi^{0} generator%s, %s ",
+                GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+           nptbins,ptmin,ptmax,100,0,100);
+          fhPairGeneratorsBkgCentMCPi0[igen][itag]->SetYTitle("Centrality");
+          fhPairGeneratorsBkgCentMCPi0[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+          outputContainer->Add(fhPairGeneratorsBkgCentMCPi0[igen][itag]) ;
+          
+          fhPairGeneratorsBkgCentMCPi0MassCut[igen][itag] = new TH2F
+          (Form("h%sGeneratorPairCent%s%s_MCPi0_MassCut",
+                tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Pair Mass with contribution of true #pi^{0} generator%s, %s, %2.2f<M<%2.2f",
+                GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data(),fPi0MassWindow[0],fPi0MassWindow[1]),
+           nptbins,ptmin,ptmax,100,0,100);
+          fhPairGeneratorsBkgCentMCPi0MassCut[igen][itag]->SetYTitle("Centrality");
+          fhPairGeneratorsBkgCentMCPi0MassCut[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+          outputContainer->Add(fhPairGeneratorsBkgCentMCPi0MassCut[igen][itag]) ;
+          
+          fhPairGeneratorsBkgCentMCEta[igen][itag] = new TH2F
+          (Form("h%sGeneratorPairCent%s%s_MCEta",
+                tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Pair Mass with contribution of true #eta generator%s, %s ",
+                GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data()),
+           nptbins,ptmin,ptmax,100,0,100);
+          fhPairGeneratorsBkgCentMCEta[igen][itag]->SetYTitle("Centrality");
+          fhPairGeneratorsBkgCentMCEta[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+          outputContainer->Add(fhPairGeneratorsBkgCentMCEta[igen][itag]) ;
+          
+          fhPairGeneratorsBkgCentMCEtaMassCut[igen][itag] = new TH2F
+          (Form("h%sGeneratorPairCent%s%s_MCEta_MassCut",
+                tagBkgNames[itag].Data(),add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Pair Mass with contribution of true #eta generator%s, %s, %2.2f<M<%2.2f",
+                GetCocktailGenNameToCheck(igen).Data(),tagBkgTitle[itag].Data(),fEtaMassWindow[0],fEtaMassWindow[1]),
+           nptbins,ptmin,ptmax,100,0,100);
+          fhPairGeneratorsBkgCentMCEtaMassCut[igen][itag]->SetYTitle("Centrality");
+          fhPairGeneratorsBkgCentMCEtaMassCut[igen][itag]->SetXTitle("#it{E}_{reco} (GeV)");
+          outputContainer->Add(fhPairGeneratorsBkgCentMCEtaMassCut[igen][itag]) ;
+        }
         
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0[igen][itag] = new TH2F
         (Form("h%sGeneratorPairEPrimRecoRatio%s%s_MCPi0",
@@ -2944,7 +3029,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
   Float_t prodR = -1;
   Int_t mcIndex = -1;
   Float_t ptPrim = fMCPrimMesonMom.Pt();
-  
+  Float_t cent   = GetEventCentrality();
+
   if(ancLabel > -1)
   {
     AliDebug(1,Form("Common ancestor label %d, pdg %d, name %s, status %d",
@@ -2965,12 +3051,16 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
       fhMCPi0PtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight());
       fhMCPi0PtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight());
       fhMCPi0PtRecOpenAngle->Fill(pt, angle    , GetEventWeight());
-      
+      if(IsHighMultiplicityAnalysisOn())
+        fhMCPi0PerCentrality->Fill(pt, cent, GetEventWeight());
+
       if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
       {
         fhMCPi0PtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight());
         fhMCPi0PtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight());
         fhMCPi0PtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight());
+        if(IsHighMultiplicityAnalysisOn())
+          fhMCPi0PerCentralityMassCut->Fill(pt, cent, GetEventWeight());
       }
       
       if(fMultiCutAnaSim)
@@ -3107,12 +3197,16 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
       fhMCEtaPtTruePtRecRat->Fill(pt, ptPrim/pt, GetEventWeight());
       fhMCEtaPtTruePtRecDif->Fill(pt, pt-ptPrim, GetEventWeight());
       fhMCEtaPtRecOpenAngle->Fill(pt, angle    , GetEventWeight());
+      if(IsHighMultiplicityAnalysisOn())
+        fhMCEtaPerCentrality->Fill(pt, cent, GetEventWeight());
 
       if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
       {
         fhMCEtaPtTruePtRecRatMassCut->Fill(pt, ptPrim/pt, GetEventWeight());
         fhMCEtaPtTruePtRecDifMassCut->Fill(pt, pt-ptPrim, GetEventWeight());
         fhMCEtaPtRecOpenAngleMassCut->Fill(pt, angle    , GetEventWeight());
+        if(IsHighMultiplicityAnalysisOn())
+          fhMCEtaPerCentralityMassCut->Fill(pt, cent, GetEventWeight());
       }
 
       if(fMultiCutAnaSim)
@@ -3389,6 +3483,17 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
         fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[genType][tag]->Fill(pt, ratio, GetEventWeight());
         fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [genType][tag]->Fill(pt,  diff, GetEventWeight());
       }
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhPairGeneratorsBkgCentMCPi0      [0][tag]->Fill(pt,  cent, GetEventWeight());
+        fhPairGeneratorsBkgCentMCPi0[genType][tag]->Fill(pt,  cent, GetEventWeight());
+        if ( mass < fPi0MassWindow[1] && mass > fPi0MassWindow[0] )
+        {
+          fhPairGeneratorsBkgCentMCPi0MassCut      [0][tag]->Fill(pt,  cent, GetEventWeight());
+          fhPairGeneratorsBkgCentMCPi0MassCut[genType][tag]->Fill(pt,  cent, GetEventWeight());
+        }
+      }
     }
     else if( mcIndex==3 ) // Eta
     {
@@ -3408,6 +3513,17 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
         
         fhPairGeneratorsBkgEPrimRecoRatioMCEtaMassCut[genType][tag]->Fill(pt, ratio, GetEventWeight());
         fhPairGeneratorsBkgEPrimRecoDiffMCEtaMassCut [genType][tag]->Fill(pt,  diff, GetEventWeight());
+      }
+      
+      if(IsHighMultiplicityAnalysisOn())
+      {
+        fhPairGeneratorsBkgCentMCEta      [0][tag]->Fill(pt,  cent, GetEventWeight());
+        fhPairGeneratorsBkgCentMCEta[genType][tag]->Fill(pt,  cent, GetEventWeight());
+        if ( mass < fEtaMassWindow[1] && mass > fEtaMassWindow[0] )
+        {
+          fhPairGeneratorsBkgCentMCEtaMassCut      [0][tag]->Fill(pt,  cent, GetEventWeight());
+          fhPairGeneratorsBkgCentMCEtaMassCut[genType][tag]->Fill(pt,  cent, GetEventWeight());
+        }
       }
     }
   } // do cluster overlaps from cocktails
