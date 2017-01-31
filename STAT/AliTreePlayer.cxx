@@ -386,15 +386,22 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
   TObjString **printFormatList  = new TObjString*[nCols];     // how to format variables 
   TObjString **columnNameList   = new TObjString*[nCols];
   TObjString **outputFormatList = new TObjString*[nCols];     // root header formatting
-
-  for (Int_t iCol=0; iCol<nCols; iCol++){
+  Bool_t isIndex[nCols];
+  TPRegexp indexPattern("^%I"); // pattern for index  
+  for (Int_t iCol=0; iCol<nCols; iCol++){    
     TObjArray * arrayDesc = TString(fArray->At(iCol)->GetName()).Tokenize(";");
     if (arrayDesc->GetEntries()<=0) {
       ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid descriptor %s", arrayDesc->At(iCol)->GetName());
       return;
     }
-    TString  fname=arrayDesc->At(0)->GetName();    // variable content
-    TTreeFormula * formula = new TTreeFormula(fname.Data(), fname.Data(), tree);
+    TString  fieldName=arrayDesc->At(0)->GetName();    // variable content
+    if (fieldName.Contains(indexPattern)){             // variable is index 
+      isIndex[iCol]=kTRUE;
+      indexPattern.Substitute(fieldName,"");
+    }else{
+      isIndex[iCol]=kFALSE;
+    }
+    TTreeFormula * formula = new TTreeFormula(fieldName.Data(), fieldName.Data(), tree);
     TString  printFormat="";                       // printing format          - column 1 - use default if not specified
     TString  colName=arrayDesc->At(0)->GetName();  // variable name in ouptut  - column 2 - using defaut ("variable name") as in input
     TString  outputFormat="";                      // output column format specification for TLeaf (see also reading using TTree::ReadFile)
@@ -479,7 +486,7 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
     }
   }
 
-
+  Int_t selected=0;
   for (Int_t ientry=firstentry; ientry<firstentry+nentries; ientry++){
     Int_t entryNumber = tree->GetEntryNumber(ientry);
     if (entryNumber < 0) break;
@@ -498,31 +505,64 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
 	continue;
       }
     }
+    selected++;
     // if json out
     if (isJSON){
-      fprintf(default_fp,"{\n");
+      if (selected>1){
+	if (isElastic) {
+	  fprintf(default_fp,"}\n{\"index\":{\"_id\": \"");
+	}
+	else{
+	  fprintf(default_fp,"},\n{\n");
+	}
+      }else{
+	if (isElastic){
+	  fprintf(default_fp,"{\"index\":{\"_id\": \"");
+	}else{
+	  fprintf(default_fp,"{{\n");
+	}
+      }
       for (Int_t icol=0; icol<nCols; icol++){
 	Int_t nData=rFormulaList[icol]->GetNdata();
-	fprintf(default_fp,"\t\"%s\":",rFormulaList[icol]->GetName());
+	if (isElastic==kFALSE){
+	  fprintf(default_fp,"\t\"%s\":",rFormulaList[icol]->GetName());
+	}else{
+	  if (isIndex[icol]==kFALSE){  
+	    TString fieldName(rFormulaList[icol]->GetName());
+	    fieldName.ReplaceAll(".","%_");
+	    fprintf(default_fp,"\t\"%s\":",fieldName.Data());
+	  }
+	}
 	if (nData<=1){
-	  fprintf(default_fp,"\t%f",rFormulaList[icol]->EvalInstance(0));
+	  if (isIndex[icol]==kFALSE){
+	    if (isElastic && rFormulaList[icol]->IsString()){
+	      fprintf(default_fp,"\t\"%s\"",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+	    }else{
+	      fprintf(default_fp,"\t%s",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+	    }
+	  }else{
+	    fprintf(default_fp,"%s",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
+	    if (isIndex[icol+1]){
+	      fprintf(default_fp,".");
+	    }else{
+	      fprintf(default_fp,"\"}}\n{");
+	    }
+	  }
 	}else{
 	  fprintf(default_fp,"\t[");
 	  for (Int_t iData=0; iData<nData;iData++){
 	    fprintf(default_fp,"%f",rFormulaList[icol]->EvalInstance(iData));
 	    if (iData<nData-1) {
 	      fprintf(default_fp,",");
-	        }   else{
+	    }   else{
 	      fprintf(default_fp,"]");
 	    }
 	  }
 	}
-	if (icol<nCols-1) fprintf(default_fp,",");
-	fprintf(default_fp,"\n");
+	if (icol<nCols-1 && isIndex[icol]==kFALSE) fprintf(default_fp,",");
+	//fprintf(default_fp,"\n");
       }
-      fprintf(default_fp,"}\n");
     }
-
 
     //
     if (isHTML){
@@ -565,10 +605,12 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
       }
       fprintf(default_fp,"\n");
     }
-  }
+  }	
+  if (isJSON) fprintf(default_fp,"}\n");
   if (isHTML){
     fprintf(default_fp,"</table>"); // add metadata info
   }
+  
   if (default_fp!=stdout) fclose (default_fp);
 
 }
