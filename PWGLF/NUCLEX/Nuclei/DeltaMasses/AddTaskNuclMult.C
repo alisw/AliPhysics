@@ -24,10 +24,10 @@ AliAnalysisTaskSE *AddTaskNuclMult(Bool_t isMC=kFALSE){
     
   AliPPVsMultUtils *fAliPPVsMultUtils = new AliPPVsMultUtils();
 
-  const Int_t Ntask = 3;
+  const Int_t Ntask = 2;
   
-  Float_t DCAxyMax[Ntask] = {0.5, 0.1, 0.2};
-  Float_t DCAzMax[Ntask] = {1., 1., 1.};
+  Float_t DCAxyMax[Ntask] = {0.5, 0.1};
+  Float_t DCAzMax[Ntask] = {1., 1.};
 
   AliAnalysisNuclMult *task[Ntask];
   for(Int_t i=0;i<Ntask;i++) {

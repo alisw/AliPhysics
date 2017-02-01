@@ -16,6 +16,7 @@
 #include "TList.h"
 #include "TH3F.h"
 #include "TTree.h"
+#include "THnSparse.h"
 
 // AliRoot includes
 #include "AliAnalysisManager.h"
@@ -42,6 +43,9 @@ const Int_t PdgStd[18]={ 11, 13, 211, 321, 2212, 10020, 10030, 20030, 20040,
 
 const Float_t multMin[7]={  0, 0,  5, 10, 20, 40,  70};
 const Float_t multMax[7]={100, 5, 10, 20, 40, 70, 100};
+
+const Float_t trackletsMin[14]={   0, 0, 1, 4,  7, 10, 15, 20, 25, 30, 40, 50, 60,   70};
+const Float_t trackletsMax[14]={1000, 1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 1000};
 
 //_____________________________________________________________________________
 AliAnalysisNuclMult::AliAnalysisNuclMult():
@@ -105,7 +109,20 @@ void AliAnalysisNuclMult::UserCreateOutputObjects()
   const Char_t nameSpec[18][30]={"e^{+}","#mu^{+}","#pi^{+}","K^{+}",     "p",      "d",      "t",      "^{3}He",      "^{4}He",
 				 "e^{-}","#mu^{-}","#pi^{-}","K^{-}","#bar{p}","#bar{d}","#bar{t}","^{3}#bar{He}","^{4}#bar{He}"};
     
-  const Int_t Nmultbin=20;
+  const Int_t Nmultbins=20;
+  const Float_t multV0Min=0, multV0Max=100;
+
+  const Int_t Ntrackletsbins=13;
+  const Float_t trackletsbins[Ntrackletsbins+1]={0, 1, 4, 7, 10, 15, 20, 25, 30, 40, 50, 60, 70, 1000};
+
+  const Int_t Nptbins=100;
+  const Float_t ptMin=0, ptMax=10;
+
+  const Int_t Nsigmabins=500;
+  const Float_t sigmaMin=-50, sigmaMax=50;
+
+  const Int_t NDCAzbins=100;
+  const Int_t NDCAxybins=100;
   
   htriggerMask[0] = new TH1F("htriggerMask","Trigger mask (before the event selection)",32,0,32);
   const Char_t *xaxisTitle[32]={"kMB","kINT7","kMUON","kHighMult","kEMC1","kCINT5","kCMUS5","kMUSH7","kMUL7","kMUU7","kEMC7","kEMC8","kMUS7","kPHI1","kPHI7","kEMCEJE","kEMCEGA","kCentral","kSemiCentral","kDG5","kZED","kSPI7","kSPI","kINT8","kMuonSingleLowPt8","kMuonSingleHighPt8","kMuonLikeLowPt8","kMuonUnlikeLowPt8","kMuonUnlikeLowPt0","kTRD","kFastOnly","kUserDefined"};
@@ -187,48 +204,137 @@ for(Int_t i=0;i<7;i++) {
     hDeDxExp[iS] = new TProfile(name_hDeDxExp[iS],title_hDeDxExp[iS],200,0,10,0,1000,"");//,500,0,5,0,1000,"");
   }
 
+  if(1) {
+    const Int_t Ndim=4;
+    Int_t bins[Ndim] = {Nsigmabins, Nptbins, Nmultbins, Ntrackletsbins};
+    Double_t xmin[Ndim] = {sigmaMin, ptMin, multV0Min,    0};
+    Double_t xmax[Ndim] = {sigmaMax, ptMax, multV0Max, 1000};
+    Char_t name_fSparse[200];
+    Char_t title_fSparse[200];
+    for(Int_t iS=0;iS<18;iS++) {
+      snprintf(name_fSparse,200,"fSparseNsigmaTPC_%s",nameSpec[iS]);
+      snprintf(title_fSparse,200,"%s",nameSpec[iS]);
+      TString axis[Ndim] = {Form("n_{#sigma_{TPC}}^{%s}",nameSpec[iS]),"p_{T} (GeV/c)","V0M Multiplicity Percentile","Number of tracklets"};
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
+	fSparseNsigmaTPC[iS]=new THnSparseF(name_fSparse, title_fSparse, Ndim, bins, xmin, xmax);
+	fSparseNsigmaTPC[iS]->GetAxis(3)->Set(Ntrackletsbins, trackletsbins);
+      }
+      else {
+	Int_t Ebins[Ndim] = {1, 1, 1, 1};
+	fSparseNsigmaTPC[iS]=new THnSparseF(name_fSparse, title_fSparse, Ndim, Ebins, xmin, xmax);
+      }
+      for(Int_t j=0;j<Ndim;j++) {
+	fSparseNsigmaTPC[iS]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
+    }
+  }
+
   Char_t name_fNsigmaTPC[18][200];
   Char_t title_fNsigmaTPC[18][200];
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fNsigmaTPC[iS],200,"NsigmaTPC_%s",nameSpec[iS]);
+    snprintf(name_fNsigmaTPC[iS],200,"NsigmaTPC_0_%s",nameSpec[iS]);
     snprintf(title_fNsigmaTPC[iS],200,"n#sigma_{TPC} (%s);p_{T} (GeV/c);V0M Multiplicity Percentile;n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS]);
-    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmaTPC[iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],200,0,10,Nmultbin,0,100,1000,-50,50);
-    else fNsigmaTPC[iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,0,10,1,0,100,1,-10,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmaTPC[0][iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],Nptbins,ptMin,ptMax,Nmultbins,multV0Min,multV0Max,Nsigmabins,sigmaMin,sigmaMax);
+    else fNsigmaTPC[0][iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,ptMin,ptMax,1,multV0Min,multV0Max,1,sigmaMin,sigmaMax);
+  
+    snprintf(name_fNsigmaTPC[iS],200,"NsigmaTPC_1_%s",nameSpec[iS]);
+    snprintf(title_fNsigmaTPC[iS],200,"n#sigma_{TPC} (%s);p_{T} (GeV/c);Number of tracklets;n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) {
+      fNsigmaTPC[1][iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nsigmabins,sigmaMin,sigmaMax);
+      fNsigmaTPC[1][iS]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
+    }
+    else fNsigmaTPC[1][iS] = new TH3F(name_fNsigmaTPC[iS],title_fNsigmaTPC[iS],1,ptMin,ptMax,1,0,1000,1,sigmaMin,sigmaMax);
   }
-
+  
+  Char_t name_fNsigmaTPCwTOF[18][200];
+  Char_t title_fNsigmaTPCwTOF[18][200];
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fNsigmaTPCwTOF[iS],200,"NsigmaTPCwTOF_%s",nameSpec[iS]);
+    snprintf(title_fNsigmaTPCwTOF[iS],200,"n#sigma_{TPC} (%s) (TOF matching required);p_{T} (GeV/c);n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS]);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmaTPCwTOF[iS] = new TH2F(name_fNsigmaTPCwTOF[iS],title_fNsigmaTPCwTOF[iS],Nptbins,ptMin,ptMax,Nsigmabins,sigmaMin,sigmaMax);
+    else fNsigmaTPCwTOF[iS] = new TH2F(name_fNsigmaTPCwTOF[iS],title_fNsigmaTPCwTOF[iS],1,ptMin,ptMax,1,sigmaMin,sigmaMax);
+  }
+    
+  if(1) {
+    const Int_t Ndim=4;
+    Int_t bins[Ndim] = {NDCAxybins, 50, Nmultbins, Ntrackletsbins};
+    Double_t xmin[Ndim] = {-0.5, 0, multV0Min,    0};
+    Double_t xmax[Ndim] = { 0.5, 5, multV0Max, 1000};
+    Char_t name_fSparse[200];
+    Char_t title_fSparse[200];
+    TString axis[Ndim] = {"DCA_{xy} (cm)","p_{T} (GeV/c)","V0M Multiplicity Percentile","Number of tracklets"};
+    for(Int_t iS=0;iS<18;iS++) {
+      snprintf(name_fSparse,200,"fSparseDcaxy_%s",nameSpec[iS]);
+      snprintf(title_fSparse,200,"%s",nameSpec[iS]);
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
+	fSparseDcaxy[iS]=new THnSparseF(name_fSparse, title_fSparse, Ndim, bins, xmin, xmax);
+	fSparseDcaxy[iS]->GetAxis(3)->Set(Ntrackletsbins, trackletsbins);
+      }
+      else {
+	Int_t Ebins[Ndim] = {1, 1, 1, 1};
+	fSparseDcaxy[iS]=new THnSparseF(name_fSparse, title_fSparse, Ndim, Ebins, xmin, xmax);
+      }
+      for(Int_t j=0;j<Ndim;j++) {
+	fSparseDcaxy[iS]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
+    }
+  }
+  
+  Char_t name_fDcaxy[18][200];
+  Char_t title_fDcaxy[18][200];
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fDcaxy[iS],200,"fDca_xy_0_%s",nameSpec[iS]);
+    snprintf(title_fDcaxy[iS],200,"%s;DCA_{xy} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9)
+      fDcaxy[0][iS]=new TH3F(name_fDcaxy[iS],title_fDcaxy[iS],NDCAxybins,-0.5,0.5,Nmultbins,multV0Min,multV0Max,50,0,5);
+    else fDcaxy[0][iS]=new TH3F(name_fDcaxy[iS],title_fDcaxy[iS],1,-0.5,0.5,1,multV0Min,multV0Max,1,0,5);
+    
+    snprintf(name_fDcaxy[iS],200,"fDca_xy_1_%s",nameSpec[iS]);
+    snprintf(title_fDcaxy[iS],200,"%s;DCA_{xy} (cm);Number of tracklets;p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
+      fDcaxy[1][iS]=new TH3F(name_fDcaxy[iS],title_fDcaxy[iS],NDCAxybins,-0.5,0.5,Ntrackletsbins,0,1000,50,0,5);
+      fDcaxy[1][iS]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
+    }
+    else fDcaxy[1][iS]=new TH3F(name_fDcaxy[iS],title_fDcaxy[iS],1,-0.5,0.5,1,0,1000,1,0,5);
+  }
+  
   Char_t name_fDca[18][200];
   Char_t title_fDca[18][200];
-  for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fDca[iS],200,"fDca_xy_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"%s;DCA_{xy} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],200,-0.5,0.5,Nmultbin,0,100,100,0,5);
-    else fDca[0][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,0,100,1,0,5);
-
-    snprintf(name_fDca[iS],200,"fDca_z_%s",nameSpec[iS]);
-    snprintf(title_fDca[iS],200,"%s;DCA_{z} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
-      fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],100,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
-    }
-    else fDca[1][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-DCAzMax,DCAzMax,1,0,100,1,0,5);
-  }
-  
   for(Int_t iM=0;iM<7;iM++) {
     for(Int_t iS=0;iS<18;iS++) {
-      snprintf(name_fDca[iS],200,"fDca_xy_wTOF_multMin=%.0f_multMax=%.0f_%s",multMin[iM],multMax[iM],nameSpec[iS]);
+      snprintf(name_fDca[iS],200,"fDca_xy_wTOF_0_multMin=%.0f_multMax=%.0f_%s",multMin[iM],multMax[iM],nameSpec[iS]);
       snprintf(title_fDca[iS],200,"%s (wTOF) V0M %.0f-%.0f%%;DCA_{xy} (cm);m^{2}_{TOF} (GeV^{2}/c^{4});p_{T} (GeV/c)",
 	       nameSpec[iS],multMin[iM],multMax[iM]);
-      if(iS==5 || iS==5+9) fDcawTOF[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],100,-0.5,0.5,100,0,10,100,0,5);
-      else fDcawTOF[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,0,10,1,0,5);
+      if(iS==5 || iS==5+9) fDcawTOF_0[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],NDCAxybins,-0.5,0.5,100,0,10,50,0,5);
+      else fDcawTOF_0[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,ptMin,ptMax,1,0,5);
     }
   }
-  
+  for(Int_t iM=0;iM<14;iM++) {
+    for(Int_t iS=0;iS<18;iS++) {
+      snprintf(name_fDca[iS],200,"fDca_xy_wTOF_1_multMin=%.0f_multMax=%.0f_%s",trackletsMin[iM],trackletsMax[iM],nameSpec[iS]);
+      snprintf(title_fDca[iS],200,"%s (wTOF) Number of tracklets [%.0f-%.0f[;DCA_{xy} (cm);m^{2}_{TOF} (GeV^{2}/c^{4});p_{T} (GeV/c)",
+	       nameSpec[iS],trackletsMin[iM],trackletsMax[iM]);
+      if(iS==5 || iS==5+9) fDcawTOF_1[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],NDCAxybins,-0.5,0.5,100,0,10,50,0,5);
+      else fDcawTOF_1[iM][iS]=new TH3F(name_fDca[iS],title_fDca[iS],1,-0.5,0.5,1,ptMin,ptMax,1,0,5);
+    }
+  }
+
+Char_t name_fDcaz[18][200];
+  Char_t title_fDcaz[18][200];
+  for(Int_t iS=0;iS<18;iS++) {
+    snprintf(name_fDcaz[iS],200,"fDca_z_%s",nameSpec[iS]);
+    snprintf(title_fDcaz[iS],200,"%s;DCA_{z} (cm);p_{T} (GeV/c)",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fDcaz[iS]=new TH2F(name_fDcaz[iS],title_fDcaz[iS],NDCAzbins,-DCAzMax,DCAzMax,50,0,5);
+    else fDcaz[iS]=new TH2F(name_fDcaz[iS],title_fDcaz[iS],1,-DCAzMax,DCAzMax,1,0,5);
+  }
+
   Char_t name_fNsigmaTOF[18][200];
   Char_t title_fNsigmaTOF[18][200];    
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fNsigmaTOF[iS],200,"NsigmaTOF_%s",nameSpec[iS]);
     snprintf(title_fNsigmaTOF[iS],200,"n#sigma_{TOF} (%s);p_{T} (GeV/c);n_{#sigma_{TOF}}^{%s}",nameSpec[iS],nameSpec[iS]);
-    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmaTOF[iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],200,0,10,1000,-50,50);
-    else fNsigmaTOF[iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,0,10,1,-10,10);
+    if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmaTOF[iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],Nptbins,ptMin,ptMax,Nsigmabins,sigmaMin,sigmaMax);
+    else fNsigmaTOF[iS] = new TH2F(name_fNsigmaTOF[iS],title_fNsigmaTOF[iS],1,ptMin,ptMax,1,sigmaMin,sigmaMax);
   }
 
   Char_t name_fNsigmas[18][200];
@@ -236,8 +342,8 @@ for(Int_t i=0;i<7;i++) {
   for(Int_t iS=0;iS<18;iS++) {
     snprintf(name_fNsigmas[iS],200,"NsigmaTPCvsTOF_%s",nameSpec[iS]);
     snprintf(title_fNsigmas[iS],200,"%s;p_{T} (GeV/c);n_{#sigma_{TOF}}^{%s};n_{#sigma_{TPC}}^{%s}",nameSpec[iS],nameSpec[iS],nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmas[iS] = new TH3F(name_fNsigmas[iS],title_fNsigmas[iS],200,0,10,200,-10,10,200,-10,10);
-    else fNsigmas[iS] = new TH3F(name_fNsigmas[iS],title_fNsigmas[iS],1,0,10,1,-10,10,1,-10,10);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fNsigmas[iS] = new TH3F(name_fNsigmas[iS],title_fNsigmas[iS],Nptbins,ptMin,ptMax,100,-10,10,100,-10,10);
+    else fNsigmas[iS] = new TH3F(name_fNsigmas[iS],title_fNsigmas[iS],1,ptMin,ptMax,1,-10,10,1,-10,10);
   }
 
   fBetaTOFvspt[0] = new TH2F("fBetaTOFvspt_pos","#beta_{TOF} (positive charges);p_{T}/|z| (GeV/c);#beta_{TOF}",200,0,10,260,0.4,1.05);//500,520//200,260
@@ -251,17 +357,58 @@ for(Int_t i=0;i<7;i++) {
     hBetaExp[iS] = new TProfile(name_hBetaExp[iS],title_hBetaExp[iS],200,0,10,0.4,1.05,"");
   }
 
-  fM2tof[0] = new TH3F("fM2tof_pos","m^{2}_{TOF} (positive charges);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",200,0,10,Nmultbin,0,100,500,0,10);
-  fM2tof[1] = new TH3F("fM2tof_neg","m^{2}_{TOF} (negative charges);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",200,0,10,Nmultbin,0,100,500,0,10);
+  fM2tof[0][0] = new TH3F("fM2tof_pos_0","m^{2}_{TOF} (positive charges);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",Nptbins,ptMin,ptMax,Nmultbins,multV0Min,multV0Max,500,0,10);
+  fM2tof[0][1] = new TH3F("fM2tof_neg_0","m^{2}_{TOF} (negative charges);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",Nptbins,ptMin,ptMax,Nmultbins,multV0Min,multV0Max,500,0,10);
   
+  fM2tof[1][0] = new TH3F("fM2tof_pos_1","m^{2}_{TOF} (positive charges);p_{T} (GeV/c);Number of tracklets;m^{2}_{TOF} (GeV^{2}/c^{4})",Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,500,0,10);
+  fM2tof[1][1] = new TH3F("fM2tof_neg_1","m^{2}_{TOF} (negative charges);p_{T} (GeV/c);Number of tracklets;m^{2}_{TOF} (GeV^{2}/c^{4})",Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,500,0,10);
+  for(Int_t i=0;i<2;i++) {
+    fM2tof[1][i]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
+  }
+
+  if(1) {
+    const Int_t Ndim=5;
+    Int_t bins[Ndim] = {500, 50, NDCAxybins, Nmultbins, Ntrackletsbins};
+    Double_t xmin[Ndim] = { 0, 0, -0.5, multV0Min,    0};
+    Double_t xmax[Ndim] = {10, 5,  0.5, multV0Max, 1000};
+    Char_t name_fSparse[200];
+    Char_t title_fSparse[200];
+    TString axis[Ndim] = {"m^{2}_{TOF} (GeV^{2}/c^{4})", "p_{T} (GeV/c)", "DCA_{xy} (cm)", "V0M Multiplicity Percentile","Number of tracklets"};
+    for(Int_t iS=0;iS<18;iS++) {
+      snprintf(name_fSparse,200,"fSparseM2vspt_%s",nameSpec[iS]);
+      snprintf(title_fSparse,200,"%s",nameSpec[iS]);
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
+	fSparseM2vspt[iS]=new THnSparseF(name_fSparse, title_fSparse, Ndim, bins, xmin, xmax);
+	fSparseM2vspt[iS]->GetAxis(4)->Set(Ntrackletsbins, trackletsbins);
+      }
+      else {
+	Int_t Ebins[Ndim] = {1, 1, 1, 1, 1};
+	fSparseM2vspt[iS]=new THnSparseF(name_fSparse, title_fSparse, Ndim, Ebins, xmin, xmax);
+      }
+      for(Int_t j=0;j<Ndim;j++) {
+	fSparseM2vspt[iS]->GetAxis(j)->SetTitle(Form("%s",axis[j].Data()));
+      }
+    }
+  }
+
   Char_t name_fM2vspt[18][200];
   Char_t title_fM2vspt[18][200];
   for(Int_t iS=0;iS<18;iS++) {
-    snprintf(name_fM2vspt[iS],200,"fM2vspt_%s",nameSpec[iS]);
+    snprintf(name_fM2vspt[iS],200,"fM2vspt_0_%s",nameSpec[iS]);
     snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} (3#sigma TPC dE/dx cut on %s);p_{T} (GeV/c);V0M Multiplicity Percentile;m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS]);
-    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fM2vspt[iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],200,0,10,Nmultbin,0,100,500,0,10);
-    else fM2vspt[iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],1,0,10,1,0,100,1,0,10);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fM2vspt[0][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],Nptbins,ptMin,ptMax,Nmultbins,multV0Min,multV0Max,500,0,10);
+    else fM2vspt[0][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],1,ptMin,ptMax,1,multV0Min,multV0Max,1,0,10);
+        
+    snprintf(name_fM2vspt[iS],200,"fM2vspt_1_%s",nameSpec[iS]);
+    snprintf(title_fM2vspt[iS],200,"m^{2}_{TOF} (3#sigma TPC dE/dx cut on %s);p_{T} (GeV/c);Number of tracklets;m^{2}_{TOF} (GeV^{2}/c^{4})",nameSpec[iS]);
+    if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
+      fM2vspt[1][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,500,0,10);
+      fM2vspt[1][iS]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
+    }
+    else fM2vspt[1][iS] = new TH3F(name_fM2vspt[iS],title_fM2vspt[iS],1,ptMin,ptMax,1,0,1000,1,0,10);
   }
+
+  htemp[0]=new TH1F("htemp0","Ntracklets for identified deuterons with TPC (pt<5)", Ntrackletsbins, trackletsbins);
   
   //Only for MC:
   if(isMC) {
@@ -269,82 +416,104 @@ for(Int_t i=0;i<7;i++) {
     hpdg[0] = new TH2F("hpdg","Pdg label of generated particles (after the event selection);Pdg label;isPrimary           isSecMat           isSecWeak   ",50082,-25041,25041,3,0,3);
     hpdg[0]->GetYaxis()->SetNdivisions(105);
 
+    //variable binning on Ntracklets set below
     Char_t name_hpt[200];
     Char_t title_hpt[200];
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_gen_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of generated primary %s for |y|<0.5.;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][0][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[0][0][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of generated primary %s for |y|<0.5.;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[0][0][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[0][0][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_gen_secMat_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of generated secondary %s from mat. for |y|<0.5.;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][1][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[0][1][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of generated secondary %s from mat. for |y|<0.5.;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[0][1][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[0][1][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_gen_secWeak_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of generated secondary %s from w.d. for |y|<0.5.;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[0][2][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[0][2][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of generated secondary %s from w.d. for |y|<0.5.;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[0][2][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[0][2][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_reco_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][0][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[1][0][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[1][0][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[1][0][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_reco_secMat_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat.;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][1][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[1][1][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat.;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[1][1][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[1][1][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_reco_secWeak_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d.;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[1][2][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[1][2][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d.;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[1][2][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[1][2][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_matchedTof_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s matched at TOF;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][0][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[2][0][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s matched at TOF;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[2][0][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[2][0][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_matchedTof_secMat_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat. matched at TOF;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][1][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[2][1][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat. matched at TOF;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[2][1][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[2][1][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_matchedTof_secWeak_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d. matched at TOF;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[2][2][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[2][2][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d. matched at TOF;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[2][2][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[2][2][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_goodmatchTof_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s matched correctly at TOF;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][0][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[3][0][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. primary %s matched correctly at TOF;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[3][0][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[3][0][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_goodmatchTof_secMat_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat. matched correctly at TOF;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][1][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[3][1][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from mat. matched correctly at TOF;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[3][1][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[3][1][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_hpt,200,"hpt_goodmatchTof_secWeak_%s",nameSpec[iS]);
-      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d. matched correctly at TOF;p_{T} (GeV/c);V0M Multiplicity Percentile",nameSpec[iS]);
-      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9) hpt[3][2][iS] = new TH2F(name_hpt,title_hpt,200,0,10,Nmultbin,0,100);
-      else hpt[3][2][iS] = new TH2F(name_hpt,title_hpt,1,0,10,1,0,100);
+      snprintf(title_hpt,200,"p_{T} distribution of reco. secondary %s from w.d. matched correctly at TOF;p_{T} (GeV/c);Number of tracklets;V0M Multiplicity Percentile",nameSpec[iS]);
+      if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	hpt[3][2][iS] = new TH3F(name_hpt,title_hpt,Nptbins,ptMin,ptMax,Ntrackletsbins,0,1000,Nmultbins,multV0Min,multV0Max);
+      else hpt[3][2][iS] = new TH3F(name_hpt,title_hpt,1,ptMin,ptMax,1,0,1000,1,multV0Min,multV0Max);
+    }
+    
+    for(Int_t i=0;i<4;i++) {
+      for(Int_t j=0;j<3;j++) {
+	for(Int_t iS=0;iS<18;iS++) {
+	  if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
+	    hpt[i][j][iS]->GetYaxis()->Set(Ntrackletsbins, trackletsbins);
+	}
+      }
     }
     
     Char_t name_fptRecoVsTrue[200];
@@ -366,45 +535,36 @@ for(Int_t i=0;i<7;i++) {
     Char_t title_fmcDca[18][200];
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_fmcDca[iS],200,"fmcDca_xy_prim_%s",nameSpec[iS]);
-      snprintf(title_fmcDca[iS],200,"primary %s;DCA_{xy} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
-      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[0][0][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],200,-0.5,0.5,Nmultbin,0,100,100,0,5);
-      else fmcDca[0][0][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1,-0.5,0.5,1,0,100,1,0,5);
+      snprintf(title_fmcDca[iS],200,"primary %s;DCA_{xy};p_{T} (GeV/c)",nameSpec[iS]);
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[0][0][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],NDCAxybins,-0.5,0.5,50,0,5);
+      else fmcDca[0][0][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],1,-0.5,0.5,1,0,5);
       
       snprintf(name_fmcDca[iS],200,"fmcDca_z_prim_%s",nameSpec[iS]);
-      snprintf(title_fmcDca[iS],200,"primary %s;DCA_{z} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
-      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
-	if(DCAzMax>9.99 && DCAzMax<10.01) fmcDca[0][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1000,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
-	else fmcDca[0][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],100,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
-      }
-      else fmcDca[0][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1,-DCAzMax,DCAzMax,1,0,100,1,0,5);
+      snprintf(title_fmcDca[iS],200,"primary %s;DCA_{z};p_{T} (GeV/c)",nameSpec[iS]);
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[0][1][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],NDCAzbins,-DCAzMax,DCAzMax,50,0,5);
+      else fmcDca[0][1][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],1,-DCAzMax,DCAzMax,1,0,5);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_fmcDca[iS],200,"fmcDca_xy_secMat_%s",nameSpec[iS]);
-      snprintf(title_fmcDca[iS],200,"secondary %s from mat.;DCA_{xy} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
-      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[1][0][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],200,-0.5,0.5,Nmultbin,0,100,100,0,5);
-      else fmcDca[1][0][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1,-0.5,0.5,1,0,100,1,0,5);
+      snprintf(title_fmcDca[iS],200,"secondary %s from mat.;DCA_{xy};p_{T} (GeV/c)",nameSpec[iS]);
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[1][0][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],NDCAxybins,-0.5,0.5,50,0,5);
+      else fmcDca[1][0][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],1,-0.5,0.5,1,0,5);
       
       snprintf(name_fmcDca[iS],200,"fmcDca_z_secMat_%s",nameSpec[iS]);
-      snprintf(title_fmcDca[iS],200,"secondary %s from mat.;DCA_{z} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
-      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
-	if(DCAzMax>9.99 && DCAzMax<10.01) fmcDca[1][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1000,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
-	else fmcDca[1][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],100,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
-      }
-      else fmcDca[1][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1,-DCAzMax,DCAzMax,1,0,100,1,0,5);
+      snprintf(title_fmcDca[iS],200,"secondary %s from mat.;DCA_{z};p_{T} (GeV/c)",nameSpec[iS]);
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[1][1][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],NDCAzbins,-DCAzMax,DCAzMax,50,0,5);
+      else fmcDca[1][1][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],1,-DCAzMax,DCAzMax,1,0,5);
     }
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_fmcDca[iS],200,"fmcDca_xy_secWeak_%s",nameSpec[iS]);
-      snprintf(title_fmcDca[iS],200,"secondary %s from w.d.;DCA_{xy} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
-      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[2][0][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],200,-0.5,0.5,Nmultbin,0,100,100,0,5);
-      else fmcDca[2][0][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1,-0.5,0.5,1,0,100,1,0,5);
+      snprintf(title_fmcDca[iS],200,"secondary %s from w.d.;DCA_{xy};p_{T} (GeV/c)",nameSpec[iS]);
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[2][0][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],NDCAxybins,-0.5,0.5,50,0,5);
+      else fmcDca[2][0][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],1,-0.5,0.5,1,0,5);
       
       snprintf(name_fmcDca[iS],200,"fmcDca_z_secWeak_%s",nameSpec[iS]);
-      snprintf(title_fmcDca[iS],200,"secondary %s from w.d.;DCA_{z} (cm);V0M Multiplicity Percentile;p_{T} (GeV/c)",nameSpec[iS]);
-      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) {
-	if(DCAzMax>9.99 && DCAzMax<10.01) fmcDca[2][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1000,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
-	else fmcDca[2][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],100,-DCAzMax,DCAzMax,Nmultbin,0,100,100,0,5);
-      }
-      else fmcDca[2][1][iS]=new TH3F(name_fmcDca[iS],title_fmcDca[iS],1,-DCAzMax,DCAzMax,1,0,100,1,0,5);
+      snprintf(title_fmcDca[iS],200,"secondary %s from w.d.;DCA_{z};p_{T} (GeV/c)",nameSpec[iS]);
+      if(iS==4 || iS==4+9 || iS==5 || iS==5+9) fmcDca[2][1][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],NDCAzbins,-DCAzMax,DCAzMax,50,0,5);
+      else fmcDca[2][1][iS]=new TH2F(name_fmcDca[iS],title_fmcDca[iS],1,-DCAzMax,DCAzMax,1,0,5);
     }
     
     Char_t name_fmcNsigmaTOF[18][200];
@@ -413,40 +573,40 @@ for(Int_t i=0;i<7;i++) {
       snprintf(name_fmcNsigmaTOF[iS],200,"fmcNsigmaTOF_prim_equalLabel_%s",nameSpec[iS]);
       snprintf(title_fmcNsigmaTOF[iS],200,"primary %s, TOFlabel == label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
       if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
-	fmcNsigmaTOF[0][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],200,0,10,1000,-50,50);
-      else fmcNsigmaTOF[0][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,0,10,1,-50,50);
+	fmcNsigmaTOF[0][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],Nptbins,ptMin,ptMax,Nsigmabins,sigmaMin,sigmaMax);
+      else fmcNsigmaTOF[0][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,ptMin,ptMax,1,sigmaMin,sigmaMax);
       
       snprintf(name_fmcNsigmaTOF[iS],200,"fmcNsigmaTOF_secMat_equalLabel_%s",nameSpec[iS]);
       snprintf(title_fmcNsigmaTOF[iS],200,"secondary %s from mat., TOFlabel == label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
       if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
-	fmcNsigmaTOF[1][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],200,0,10,1000,-50,50);
-      else fmcNsigmaTOF[1][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,0,10,1,-50,50);
+	fmcNsigmaTOF[1][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],Nptbins,ptMin,ptMax,Nsigmabins,sigmaMin,sigmaMax);
+      else fmcNsigmaTOF[1][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,ptMin,ptMax,1,sigmaMin,sigmaMax);
       
       snprintf(name_fmcNsigmaTOF[iS],200,"fmcNsigmaTOF_secWeak_equalLabel_%s",nameSpec[iS]);
       snprintf(title_fmcNsigmaTOF[iS],200,"secondary %s from w.d., TOFlabel == label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
       if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
-	fmcNsigmaTOF[2][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],200,0,10,1000,-50,50);
-      else fmcNsigmaTOF[2][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,0,10,1,-50,50);
+	fmcNsigmaTOF[2][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],Nptbins,ptMin,ptMax,Nsigmabins,sigmaMin,sigmaMax);
+      else fmcNsigmaTOF[2][0][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,ptMin,ptMax,1,sigmaMin,sigmaMax);
     }
     
     for(Int_t iS=0;iS<18;iS++) {
       snprintf(name_fmcNsigmaTOF[iS],200,"fmcNsigmaTOF_prim_differentLabel_%s",nameSpec[iS]);
       snprintf(title_fmcNsigmaTOF[iS],200,"primary %s, TOFlabel != label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
       if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
-	fmcNsigmaTOF[0][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],200,0,10,1000,-50,50);
-      else fmcNsigmaTOF[0][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,0,10,1,-50,50);
+	fmcNsigmaTOF[0][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],Nptbins,ptMin,ptMax,Nsigmabins,sigmaMin,sigmaMax);
+      else fmcNsigmaTOF[0][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,ptMin,ptMax,1,sigmaMin,sigmaMax);
       
       snprintf(name_fmcNsigmaTOF[iS],200,"fmcNsigmaTOF_secMat_differentLabel_%s",nameSpec[iS]);
       snprintf(title_fmcNsigmaTOF[iS],200,"secondary %s from mat., TOFlabel != label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
       if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
-	fmcNsigmaTOF[1][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],200,0,10,1000,-50,50);
-      else fmcNsigmaTOF[1][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,0,10,1,-50,50);
+	fmcNsigmaTOF[1][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],Nptbins,ptMin,ptMax,Nsigmabins,sigmaMin,sigmaMax);
+      else fmcNsigmaTOF[1][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,ptMin,ptMax,1,sigmaMin,sigmaMax);
       
       snprintf(name_fmcNsigmaTOF[iS],200,"fmcNsigmaTOF_secWeak_differentLabel_%s",nameSpec[iS]);
       snprintf(title_fmcNsigmaTOF[iS],200,"secondary %s from w.d., TOFlabel != label;p_{T} (GeV/c);n_{#sigma}^{TOF}",nameSpec[iS]);
       if(iS==2 || iS==2+9 || iS==3 || iS==3+9 || iS==4 || iS==4+9 || iS==5 || iS==5+9)
-	fmcNsigmaTOF[2][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],200,0,10,1000,-50,50);
-      else fmcNsigmaTOF[2][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,0,10,1,-50,50);
+	fmcNsigmaTOF[2][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],Nptbins,ptMin,ptMax,Nsigmabins,sigmaMin,sigmaMax);
+      else fmcNsigmaTOF[2][1][iS] = new TH2F(name_fmcNsigmaTOF[iS],title_fmcNsigmaTOF[iS],1,ptMin,ptMax,1,sigmaMin,sigmaMax);
     }
     
   }//Only for MC (end)
@@ -482,20 +642,36 @@ for(Int_t i=0;i<7;i++) {
   for(Int_t i=0;i<2;i++) fList->Add(fdEdxVSp[i]);
   for(Int_t i=0;i<9;i++) fList->Add(hDeDxExp[i]);
   
-  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[2+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[3+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fSparseNsigmaTPC[4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fSparseNsigmaTPC[5+9*i]);
 
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[0][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[0][2+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[0][3+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[0][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[0][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[1][2+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[1][3+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[1][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPC[1][5+9*i]);
+
+  for(Int_t i=0;i<2;i++) fList->Add(fSparseDcaxy[4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fSparseDcaxy[5+9*i]);
   
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fDca[1][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDcaxy[0][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDcaxy[0][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDcaxy[1][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDcaxy[1][5+9*i]);
+  
+  for(Int_t i=0;i<2;i++) fList->Add(fDcaz[4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fDcaz[5+9*i]);
   
   for(Int_t i=0;i<7;i++) {
-    fList->Add(fDcawTOF[i][5]);
-    fList->Add(fDcawTOF[i][5+9]);
+    fList->Add(fDcawTOF_0[i][5]);
+    fList->Add(fDcawTOF_0[i][5+9]);
+  }
+  for(Int_t i=0;i<14;i++) {
+    fList->Add(fDcawTOF_1[i][5]);
+    fList->Add(fDcawTOF_1[i][5+9]);
   }
 
   for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTOF[2+9*i]);
@@ -508,11 +684,24 @@ for(Int_t i=0;i<7;i++) {
 
   for(Int_t i=0;i<2;i++) fList->Add(fBetaTOFvspt[i]);
   for(Int_t i=0;i<9;i++) fList->Add(hBetaExp[i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fM2tof[i]);
-  
-  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[4+9*i]);
-  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fM2tof[0][i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fM2tof[1][i]);
 
+  for(Int_t i=0;i<2;i++) fList->Add(fSparseM2vspt[4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fSparseM2vspt[5+9*i]);
+
+  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[0][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[0][5+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[1][4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fM2vspt[1][5+9*i]);
+  
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPCwTOF[2+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPCwTOF[3+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPCwTOF[4+9*i]);
+  for(Int_t i=0;i<2;i++) fList->Add(fNsigmaTPCwTOF[5+9*i]);
+  
+  fList->Add(htemp[0]);
+  
   //Only for MC:
   if(isMC) {
     fList->Add(hpdg[0]);
@@ -631,12 +820,13 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
   hV0mult->Fill(mult);
   //------------------------- Event selection (end)
 
-  Int_t Ntracklets = fPPVsMultUtils->GetStandardReferenceMultiplicity(fEvent, kFALSE);//kFALSE because I made the event selection before
+  Float_t Ntracklets = (Float_t) fPPVsMultUtils->GetStandardReferenceMultiplicity(fEvent, kFALSE);//kFALSE because I made the event selection before
   hTracklets->Fill(Ntracklets);
   hTrackletsVsV0mult->Fill(mult,Ntracklets);
   
-  //Used only to fill fDCAwTOF
+  //It is used only to fill fDCAwTOF
   Int_t iMultBin=this->GetMultiplicityBin(mult);
+  Int_t iTrackletsBin=this->GetTrackletsBin(Ntracklets);
   
   //------------------------------- Loop on MC particles
   if(isMC) {
@@ -670,13 +860,13 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
       if(kSpec<0) continue;
       
       if(isPrimary) {
-	hpt[0][0][kSpec]->Fill(pt,mult);
+	hpt[0][0][kSpec]->Fill(pt,Ntracklets,mult);
       }
       else if(isSecMat) {
-	hpt[0][1][kSpec]->Fill(pt,mult); 
+	hpt[0][1][kSpec]->Fill(pt,Ntracklets,mult); 
       }
       else if(isSecWeak) {
-	hpt[0][2][kSpec]->Fill(pt,mult); 
+	hpt[0][2][kSpec]->Fill(pt,Ntracklets,mult); 
       }
     }
   }//------------------------------- Loop on MC particles (end)
@@ -745,22 +935,22 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
       
       if(kSpec>-1){
 	if(isPrimary) {
-	  hpt[1][0][kSpec]->Fill(t_pt,mult);
+	  hpt[1][0][kSpec]->Fill(t_pt,Ntracklets,mult);
 	  
-	  fmcDca[0][0][kSpec]->Fill(DCAxy,mult,t_pt);
-	  fmcDca[0][1][kSpec]->Fill(DCAz,mult,t_pt);
+	  fmcDca[0][0][kSpec]->Fill(DCAxy,t_pt);
+	  fmcDca[0][1][kSpec]->Fill(DCAz,t_pt);
 	}
 	else if(isSecMat) {
-	  hpt[1][1][kSpec]->Fill(t_pt,mult);
+	  hpt[1][1][kSpec]->Fill(t_pt,Ntracklets,mult);
 
-	  fmcDca[1][0][kSpec]->Fill(DCAxy,mult,t_pt);
-	  fmcDca[1][1][kSpec]->Fill(DCAz,mult,t_pt);
+	  fmcDca[1][0][kSpec]->Fill(DCAxy,t_pt);
+	  fmcDca[1][1][kSpec]->Fill(DCAz,t_pt);
 	}
 	else if(isSecWeak) {
-	  hpt[1][2][kSpec]->Fill(t_pt,mult);
+	  hpt[1][2][kSpec]->Fill(t_pt,Ntracklets,mult);
 
-	  fmcDca[2][0][kSpec]->Fill(DCAxy,mult,t_pt);
-	  fmcDca[2][1][kSpec]->Fill(DCAz,mult,t_pt);
+	  fmcDca[2][0][kSpec]->Fill(DCAxy,t_pt);
+	  fmcDca[2][1][kSpec]->Fill(DCAz,t_pt);
 	}
       }
     }// reconstructed MC particles (end)
@@ -775,26 +965,53 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     this->PtCorr(pt, nsigmaTPC);
     
     for(Int_t iS=0;iS<9;iS++){
-      if(charge>0) fNsigmaTPC[iS]->Fill(pt,mult,nsigmaTPC[iS]);
-      else if(charge<0) fNsigmaTPC[iS+9]->Fill(pt,mult,nsigmaTPC[iS]);
+      if(charge>0) {
+	fNsigmaTPC[0][iS]->Fill(pt,mult,nsigmaTPC[iS]);
+	fNsigmaTPC[1][iS]->Fill(pt,Ntracklets,nsigmaTPC[iS]);
+	Double_t value[4]={nsigmaTPC[iS], pt, mult, Ntracklets};
+	fSparseNsigmaTPC[iS]->Fill(value);
+      }
+      else if(charge<0) {
+	fNsigmaTPC[0][iS+9]->Fill(pt,mult,nsigmaTPC[iS]);
+	fNsigmaTPC[1][iS+9]->Fill(pt,Ntracklets,nsigmaTPC[iS]);
+	Double_t value[4]={nsigmaTPC[iS], pt, mult, Ntracklets};
+	fSparseNsigmaTPC[iS+9]->Fill(value);
+      }
     }
 
     //DCA filled:
     for(Int_t iS=0;iS<9;iS++){
       if(TMath::Abs(nsigmaTPC[iS])<3) {
 	if(charge>0) {
-	  fDca[0][iS]->Fill(DCAxy,mult,pt);
-	  fDca[1][iS]->Fill(DCAz,mult,pt);
+	  fDcaxy[0][iS]->Fill(DCAxy,mult,pt);
+	  fDcaxy[1][iS]->Fill(DCAxy,Ntracklets,pt);
+	  
+	  Double_t value[4]={DCAxy, pt, mult, Ntracklets};
+	  fSparseDcaxy[iS]->Fill(value);
+	  
+	  fDcaz[iS]->Fill(DCAz,pt);
+
+	  if(iS==5 && pt<5) htemp[0]->Fill(Ntracklets);
 	}
 	else if(charge<0) {
-	  fDca[0][iS+9]->Fill(DCAxy,mult,pt);
-	  fDca[1][iS+9]->Fill(DCAz,mult,pt);
+	  fDcaxy[0][iS+9]->Fill(DCAxy,mult,pt);
+	  fDcaxy[1][iS+9]->Fill(DCAxy,Ntracklets,pt);
+
+	  Double_t value[4]={DCAxy, pt, mult, Ntracklets};
+	  fSparseDcaxy[iS+9]->Fill(value);
+	  
+	  fDcaz[iS+9]->Fill(DCAz,pt);
 	}
       }
     }
     
     //TOF matching required:
     if(!this->IsTOFmatching(track)) continue;
+    
+    for(Int_t iS=0;iS<9;iS++){
+      if(charge>0) fNsigmaTPCwTOF[iS]->Fill(pt,nsigmaTPC[iS]);
+      else if(charge<0) fNsigmaTPCwTOF[iS+9]->Fill(pt,nsigmaTPC[iS]);
+    }
     
     Double_t nsigmaTOF[9];
     Double_t beta = this->GetBeta(track, pt, nsigmaTOF);
@@ -809,22 +1026,43 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
     //mass determination:
     Double_t m2 = this->GetM2(p, beta);
     
-    if(charge>0) fM2tof[0]->Fill(pt,mult,m2);
-    else if(charge<0) fM2tof[1]->Fill(pt,mult,m2);
+    if(charge>0) {
+      fM2tof[0][0]->Fill(pt,mult,m2);
+      fM2tof[1][0]->Fill(pt,Ntracklets,m2);
+    }
+    else if(charge<0) {
+      fM2tof[0][1]->Fill(pt,mult,m2);
+      fM2tof[1][1]->Fill(pt,Ntracklets,m2);
+    }
     
     for(Int_t iS=0;iS<9;iS++){
       if(TMath::Abs(nsigmaTPC[iS])<3) {
 	if(charge>0) {
-	  fM2vspt[iS]->Fill(pt,mult,m2);
-	 
-	  fDcawTOF[0][iS]->Fill(DCAxy,m2,pt);
-	  fDcawTOF[iMultBin][iS]->Fill(DCAxy,m2,pt);
+	  fM2vspt[0][iS]->Fill(pt,mult,m2);
+	  fM2vspt[1][iS]->Fill(pt,Ntracklets,m2);
+
+	  Double_t value[5]={m2, pt, DCAxy, mult, Ntracklets};
+	  fSparseM2vspt[iS]->Fill(value);
+
+	  //printf("%i %i\n",mult,iMultBin);
+	  fDcawTOF_0[0][iS]->Fill(DCAxy,m2,pt);
+	  if(iMultBin>0) fDcawTOF_0[iMultBin][iS]->Fill(DCAxy,m2,pt);
+	  
+	  fDcawTOF_1[0][iS]->Fill(DCAxy,m2,pt);
+	  if(iTrackletsBin>0) fDcawTOF_1[iTrackletsBin][iS]->Fill(DCAxy,m2,pt);
 	}
 	else if(charge<0) {
-	  fM2vspt[iS+9]->Fill(pt,mult,m2);
+	  fM2vspt[0][iS+9]->Fill(pt,mult,m2);
+	  fM2vspt[1][iS+9]->Fill(pt,Ntracklets,m2);
+	  
+	  Double_t value[5]={m2, pt, DCAxy, mult, Ntracklets};
+	  fSparseM2vspt[iS+9]->Fill(value);
 
-	  fDcawTOF[0][iS+9]->Fill(DCAxy,m2,pt);
-	  fDcawTOF[iMultBin][iS+9]->Fill(DCAxy,m2,pt);
+	  fDcawTOF_0[0][iS+9]->Fill(DCAxy,m2,pt);
+	  if(iMultBin>0) fDcawTOF_0[iMultBin][iS+9]->Fill(DCAxy,m2,pt);
+
+	  fDcawTOF_1[0][iS+9]->Fill(DCAxy,m2,pt);
+	  if(iTrackletsBin>0) fDcawTOF_1[iTrackletsBin][iS+9]->Fill(DCAxy,m2,pt);
 	}
       }
     }
@@ -836,24 +1074,24 @@ void AliAnalysisNuclMult::UserExec(Option_t *)
       if(kSpec>-1) {
 	
 	if(isPrimary) {
-	  hpt[2][0][kSpec]->Fill(t_pt,mult);
+	  hpt[2][0][kSpec]->Fill(t_pt,Ntracklets,mult);
 	  //good match at TOF
 	  if(isTOFgoodMatch) {
-	    hpt[3][0][kSpec]->Fill(t_pt,mult);
+	    hpt[3][0][kSpec]->Fill(t_pt,Ntracklets,mult);
 	  }
 	}
 	else if(isSecMat) {
-	  hpt[2][1][kSpec]->Fill(t_pt,mult);
+	  hpt[2][1][kSpec]->Fill(t_pt,Ntracklets,mult);
 	  //good match at TOF
 	  if(isTOFgoodMatch) {
-	    hpt[3][1][kSpec]->Fill(t_pt,mult);
+	    hpt[3][1][kSpec]->Fill(t_pt,Ntracklets,mult);
 	  }
 	}
 	else if(isSecWeak) {
-	  hpt[2][2][kSpec]->Fill(t_pt,mult);
+	  hpt[2][2][kSpec]->Fill(t_pt,Ntracklets,mult);
 	  //good match at TOF
 	  if(isTOFgoodMatch) {
-	    hpt[3][2][kSpec]->Fill(t_pt,mult);
+	    hpt[3][2][kSpec]->Fill(t_pt,Ntracklets,mult);
 	  }
 	}
 	
@@ -913,13 +1151,24 @@ Bool_t AliAnalysisNuclMult::IsInsideFullMultRange(Float_t multiplicity) {
 //_____________________________________________________________________________
 Int_t AliAnalysisNuclMult::GetMultiplicityBin(Float_t multiplicity) {
 
-  Int_t iMultBinT=0;
+  Int_t iMultBinT=-1;
   for(Int_t iM=1;iM<7;iM++) {
     if(multiplicity > multMin[iM] && multiplicity < multMax[iM]) iMultBinT=iM;
   }
   Int_t iMultBin=iMultBinT;
   
   return iMultBin;
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisNuclMult::GetTrackletsBin(Int_t Ntracklets) {
+
+  Int_t iTrackletsBinT=-1;
+  for(Int_t iM=1;iM<14;iM++) {
+    if(Ntracklets >= trackletsMin[iM] && Ntracklets < trackletsMax[iM]) iTrackletsBinT=iM;
+  }
+  Int_t iTrackletsBin=iTrackletsBinT;
+  
+  return iTrackletsBin;
 }
 //_____________________________________________________________________________
 Double_t AliAnalysisNuclMult::GetRapidity(AliVTrack *track) {
