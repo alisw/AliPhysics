@@ -53,9 +53,6 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
   TH2D *hTPCdEdxCorr;		//!
-  TH2I *hTOFtrigCorr;		//!
-  TH2D *hFOinner;		//!
-  TH2D *hFOouter;		//!
   
   Double_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime, fZNCtime, fPIDsigma;
   Int_t fChannel, fSign, fRunNumber;
@@ -65,7 +62,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 3); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 4); 
 };
 
 #endif
