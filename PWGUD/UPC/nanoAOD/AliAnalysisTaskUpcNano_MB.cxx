@@ -38,7 +38,6 @@
 #include "AliAODPid.h"
 #include "AliAODVertex.h"
 #include "AliAODMCParticle.h"
-#include "AliTOFTriggerMask.h"
 
 // my headers
 #include "AliAnalysisTaskUpcNano_MB.h"
