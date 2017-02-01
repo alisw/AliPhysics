@@ -74,6 +74,8 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
 	  combinedName += suffix;
   }
   cout<<"combinedName: "<<combinedName<<endl;
+  TString contName(combinedName);
+  contName += "_histos";
 
   //-------------------------------------------------------
   // Init the task and do settings
@@ -114,8 +116,8 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   //AnalysisTask->SetUseAliAnaUtils(kTRUE);  //brauch ich sowas? taskDiJet->SetTriggerClass(trigClass.Data());
 
   //..new task for run2 (neue cut klasse, ask Markus)
-  //AnalysisTask->SetNCentBins(5);     //for PbPb run2 data
-  //AnalysisTask->SetUseNewCentralityEstimation(kTRUE);      //for PbPb run2 data
+  //AnalysisTask->SetNCentBins(5);                     //..for PbPb run2 data
+  //AnalysisTask->SetUseNewCentralityEstimation(kTRUE);//..for PbPb run2 data
 
   if(AnalysisTask->GetTrackContainer(trackName))
   {
@@ -140,8 +142,12 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   AnalysisTask->SetEvtTriggerType(evtTriggerType);   //..Trigger to be used for filling same event histograms
   AnalysisTask->SetEvtMixType(evtMixingType);        //..Trigger to be used to fill tracks into the pool (no GA trigger!!)
   AnalysisTask->SetNLM(1);                           //..Maximum of number of local maxima
-  AnalysisTask->SetM02(0,0.4);                       //..Ranges of allowed cluster shapes in the analysis
-  AnalysisTask->SetRmvMatchedTrack(1);               //..Removes all clusters that have a matched track
+  if(InputGammaOrPi0==0)
+  {
+	  AnalysisTask->SetM02(0.1,0.4);                 //..Ranges of allowed cluster shapes in the analysis
+	  AnalysisTask->SetRmvMatchedTrack(1);           //..Removes all clusters that have a matched track
+  }
+
   //for later AnalysisTask->SetEffHistGamma(THnF *h);
   //for later AnalysisTask->SetEffHistHadron(THnF *h);
 
@@ -152,12 +158,9 @@ AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
   
   // Create containers for input/output
   AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
-
-  TString contName(combinedName);
-  contName += "_histos";
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), 
-							    TList::Class(),AliAnalysisManager::kOutputContainer,
-							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(),TList::Class(),
+		  	  	  	  	  	  	  	  	  	  	  	  	   AliAnalysisManager::kOutputContainer,
+		  	  	  	  	  	  	  	  	  	  	  	  	   Form("%s", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectInput  (AnalysisTask, 0,  cinput1 );
   mgr->ConnectOutput (AnalysisTask, 1, coutput1 );
 

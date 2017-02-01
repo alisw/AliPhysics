@@ -73,14 +73,16 @@ virtual ~AliAnalysisTaskGammaHadron();
   //..Constants
   Double_t                    fRtoD;                     ///< conversion of rad to degree
   static const Int_t          kNIdentifier=3;            ///< number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
-  vector<Int_t>               fVector_G_Bins;            ///< vector that contains the bins of the G historgram
-  vector<Double_t>            fVector_ZT_Bins;           ///< vector that contains the bins of the Zt historgram
-  vector<Double_t>            fVector_XI_Bins;           ///< vector that contains the bins of the Xi historgram
-  Double_t                    fZtStep;                   ///< Bin width for the zT histograms
-  Double_t                    fXiStep;                   ///< Bin width for the Xi histograms
-  Int_t                       fNoGammaBins;              ///< Bins in gamma pT
-  Int_t                       fNoZtBins;                 ///< Bins in Zt
-  Int_t                       fNoXiBins;                 ///< Bins in Xi
+  static const Int_t          kNvertBins=20;             ///< vertex bins in which the ME are mixed
+  static const Int_t          kNcentBins=8;              ///< centrality bins in which the ME are mixed
+  static const Int_t          kNoGammaBins=9;            ///< Bins in gamma pT
+  static const Int_t          kNoZtBins=7;               ///< Bins in Zt
+  static const Int_t          kNoXiBins=8;               ///< Bins in Xi
+  Double_t                    fArray_G_Bins[10];         ///< 10=kNoGammaBins+1
+  Double_t                    fArray_ZT_Bins[8];         ///< 8=kNoZtBins+1
+  Double_t                    fArray_XI_Bins[9];         ///< 9=kNoXiBins+1
+  Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
+
   //..cuts
   Double_t                    fClShapeMin;               ///< Minimum cluster shape
   Double_t                    fClShapeMax;               ///< Maximum cluster shape
@@ -124,16 +126,22 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH1					   **fHistptTriggXi[3];        //!<! pt distr. of the trigger as a function of Xi
 
   TH1 					    *fHistPi0;                 //!<!
+  TH1 					    *fHistEvsPt;               //!<! E vs pT
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
   TH1 					   **fHistBinCheckZt;          //!<! plot Zt distribution for ideal binning
   TH1 					   **fHistBinCheckXi;          //!<! plot Xi distribution for ideal binning
-  TH2					   **fHistDEtaDPhiG[3];        //!<! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
-  TH2					   **fHistDEtaDPhiZT[3];       //!<! No of g-h pairs in the deta eta delta phi plane for certain zT values
-  TH2					   **fHistDEtaDPhiXI[3];       //!<! No of g-h pairs in the deta eta delta phi plane for certain Xi values
+  TH2					   **fHistDEtaDPhiG[3][10];    //!<! No of g-h pairs in the deta eta delta phi plane for certain gamma energies
+  TH2					   **fHistDEtaDPhiZT[3][8];    //!<! No of g-h pairs in the deta eta delta phi plane for certain zT values
+  TH2					   **fHistDEtaDPhiXI[3][9];    //!<! No of g-h pairs in the deta eta delta phi plane for certain Xi values
   TH2                      **fHistDEtaDPhiGammaQA;     //!<! Distribution of gammas in delta phi delta eta
   TH2                      **fHistDEtaDPhiTrackQA;     //!<! Distribution of tracks in delta phi delta eta
   TH2                      **fHistCellsCluster;        //!<! Number of cells in cluster as function of energy
   TH2                      **fHistClusterShape;        //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape0;        //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape1;        //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape2;        //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape3;        //!<! Cluster shape vs energy
+  TH2                      **fHistClusterShape4;        //!<! Cluster shape vs energy
   TH2                      **fHistClusterTime;         //!<! Cluster time vs energy
 
   TH2                	    *fHPoolReady;              //!<! Check how many Jobs start mixing
