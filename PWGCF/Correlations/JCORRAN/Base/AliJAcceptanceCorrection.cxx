@@ -38,7 +38,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection() :
     fDEtaDPhiNearLoaded(false),
     fDEtaDPhi3DNearLoaded(false),
     fLeadingParticleCorrelation(true),
-    fTestMode(false)
+    fTestMode(false),
+    fUseSafeRadius(false)
 {
   // default constructor
   Generate3DAcceptanceCorrection();
@@ -58,7 +59,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(AliJCard *inputCard) :
     fDEtaDPhiNearLoaded(false),
     fDEtaDPhi3DNearLoaded(false),
     fLeadingParticleCorrelation(true),
-    fTestMode(false)
+    fTestMode(false),
+    fUseSafeRadius(false)
 {
   // Constructor with JCard
   Generate3DAcceptanceCorrection();
@@ -78,7 +80,8 @@ AliJAcceptanceCorrection::AliJAcceptanceCorrection(const AliJAcceptanceCorrectio
     fDEtaDPhiNearLoaded(a.fDEtaDPhiNearLoaded),
     fDEtaDPhi3DNearLoaded(a.fDEtaDPhi3DNearLoaded),
     fLeadingParticleCorrelation(a.fLeadingParticleCorrelation),
-    fTestMode(a.fTestMode)
+    fTestMode(a.fTestMode),
+    fUseSafeRadius(a.fUseSafeRadius)
 {
   //copy constructor
 }
@@ -110,6 +113,7 @@ AliJAcceptanceCorrection&  AliJAcceptanceCorrection::operator=(const AliJAccepta
     fDEtaDPhi3DNearLoaded = a.fDEtaDPhi3DNearLoaded;
     fLeadingParticleCorrelation = a.fLeadingParticleCorrelation;
     fTestMode = a.fTestMode;
+    fUseSafeRadius = a.fUseSafeRadius;
   }
   return *this;
 }
@@ -526,7 +530,8 @@ double AliJAcceptanceCorrection::GetAcceptanceCorrection3DNearSideInclusiveBin(d
   double denominator = nearSideLength / (nearSideLength + outsideAcceptance);
   
   // For the test mode, do not do the proper correction here. Just normalize to interval [0,1]
-  if(fTestMode){
+  // This can be done also inside radius of Pi/2, since 3D near side distortions need to be taken into account only in the edges
+  if(fTestMode || ( fUseSafeRadius && (deltaEta*deltaEta+deltaPhi*deltaPhi < TMath::Pi()*TMath::Pi()/4))){
     double etaRange = fCard->Get("EtaRange");
     denominator = nearSideLength / (2*sqrt(2)*etaRange);
   }

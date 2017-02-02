@@ -68,6 +68,7 @@ eventBC -1 # select only events in BC modulo 4; -1 to disable
 
 #======= Jussi's jT analysis =======
 EnableKlongBins 0 # 0 = Do not fill klong bins. 1 = Fill klong bins
+EnablePtaBins 0 # 0 = Do not fill pta bins. 1 = Fill pta bins
 DoResonancePythia 0 # 0 = Regular PYTHIA8 run. 1 = Generate two gluon initial state in PYTHIA8
 NRandomizationTrials 20 # Number of pairs generated from found background pair
 LeadingParticleSystematics 0 # 0 = regular run, 1 = do systematic error estimate for missed leading particles
@@ -81,5 +82,6 @@ QualityControlLevel     0 # 0 = no additional quality control histograms, 1 = qu
 HitsPerBinAcceptance   500 # Number of hits per bin required for acceptance correction histograms
 UseZVertexBins 0 # 0 = integrate over z-vertex bins, 1 = Do acceptance correction in z-vertex bins
 AcceptanceTestMode 0 # 0 = always use this in analysis, 1 = test mode, mixed event distribution not properly corrected in 3D near side to see the effect of correction
+OnlyMixedEventInSafeRadius 0 # 0 = use always 3D near side calculation to correct mixed event, 1 = use directly mixed event in the radius R < Pi/2, because in this area mixed event gives directly the correct correction. Outside this radius, correct mixed event using calculation
 EnableDeltaEtaDeltaPhiHistograms 1 # Set 1 to fill 2D deltaEta deltaPhi histograms and 0 not to fill them. Must be 1 if the result file will be used as an input for acceptance correction
 

@@ -210,9 +210,8 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
   // Set the number of hits per bin required in the acceptance correction histograms
   int hitsPerBin = fcard->Get("HitsPerBinAcceptance");
   fAcceptanceCorrection->SetMinCountsPerBinInclusive(hitsPerBin);
-  if(fcard->Get("AcceptanceTestMode") == 1){
-    fAcceptanceCorrection->SetTestMode(true);
-  }
+  if(fcard->Get("AcceptanceTestMode") == 1) fAcceptanceCorrection->SetTestMode(true);
+  if(fcard->Get("OnlyMixedEventInSafeRadius") == 1) fAcceptanceCorrection->SetSafeRadius(true);
   
   // Create the class doing correlation analysis
   fcorrelations = new AliJJtCorrelations( fcard, fhistos);
@@ -634,7 +633,7 @@ void AliJJtAnalysis::UserExec(){
 			//-------------------------------------------------------------
 		} // end assoc loop
 	} // end trigg loop
-  
+
 	// ===== Event mixing =====
   fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, noAllChargedTracks, fevt, fbLPCorrel);
 

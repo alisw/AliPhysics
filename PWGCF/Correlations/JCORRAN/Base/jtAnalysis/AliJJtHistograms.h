@@ -58,6 +58,7 @@ public:
   AliJTH2D fhDphiDetaKlong;    //! 2D histogram from deltaPhi-deltaEta plane in klong bins
   AliJTH2D fhDphiDetaXlong;    //! 2D histogram from deltaPhi-deltaEta plane in xlong bins
   AliJTH2D fhDphiDetaPta;      //! 2D histogram from deltaPhi-deltaEta plane in pta bins
+  AliJTH2D fhDphiDetaTrackMerge; //! 2D histogram for track merging correction
   
   // JV // One dimensional deltaEta histograms for acceptance correction
   AliJTH1D fhDetaNearMixAcceptance;   //! Mixed event uncorrected deltaEta histogram for acceptance correction

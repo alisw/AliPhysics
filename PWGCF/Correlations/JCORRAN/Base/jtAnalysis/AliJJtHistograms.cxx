@@ -29,6 +29,7 @@ AliJJtHistograms::AliJJtHistograms(AliJCard* cardP) :
   fhDphiDetaKlong(),
   fhDphiDetaXlong(),
   fhDphiDetaPta(),
+  fhDphiDetaTrackMerge(),
   fhDetaNearMixAcceptance(),
   fhDphiDetaBgKlongEta(),
   fhDphiDetaBgKlongR(),
@@ -130,6 +131,7 @@ AliJJtHistograms::AliJJtHistograms(const AliJJtHistograms& obj) :
   fhDphiDetaKlong(obj.fhDphiDetaKlong),
   fhDphiDetaXlong(obj.fhDphiDetaXlong),
   fhDphiDetaPta(obj.fhDphiDetaPta),
+  fhDphiDetaTrackMerge(obj.fhDphiDetaTrackMerge),
   fhDetaNearMixAcceptance(obj.fhDetaNearMixAcceptance),
   fhDphiDetaBgKlongEta(obj.fhDphiDetaBgKlongEta),
   fhDphiDetaBgKlongR(obj.fhDphiDetaBgKlongR),
@@ -425,6 +427,14 @@ void AliJJtHistograms::CreateCorrelationHistograms()
         << TH2D( "hDphiDetaXlong", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
         <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fXEBin  << "END";
     
+    if(fCard->Get("TrackMergeSystematics")==1){
+      
+      fhDphiDetaTrackMerge
+        << TH2D( "hDphiDetaTrackMerge", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
+        <<  fCentBin << fVtxBin << fPTtBin << fXEBin  << "END";
+      
+    }
+    
   }
   
   if(fenable2DHistos){
@@ -536,89 +546,94 @@ void AliJJtHistograms::CreateCorrelationHistograms()
   
   // Histograms in pta bins
 
-  fhJTPta
-      << TH1D( "hJTPta", "",  nJT, logBinsJt)
-      <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
-
-  fhJTPtaBg
-      << TH1D( "hJTPtaBg", "",  nJT, logBinsJt)
-      <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
-
-  fhJTPtaBgR
-      << TH1D( "hJTPtaBgR", "",  nJT, logBinsJt)
-      <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+  // Fill pTa bins only if they are enebled from JCard
+  if(fCard->Get("EnablePtaBins")==1){
   
-  fhJTPtaBgPhi
-      << TH1D( "hJTPtaBgPhi", "",  nJT, logBinsJt)
-      <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPta
+        << TH1D( "hJTPta", "",  nJT, logBinsJt)
+        <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
 
-  fhJTPtaLikeSign
-      << TH1D( "hJTPtaLikeSign", "",  nJT, logBinsJt)
-      <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBg
+        << TH1D( "hJTPtaBg", "",  nJT, logBinsJt)
+        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-  fhJTPtaBgLikeSign
-      << TH1D( "hJTPtaBgLikeSign", "",  nJT, logBinsJt)
-      <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
-
-  fhJTPtaBgRLikeSign
-      << TH1D( "hJTPtaBgRLikeSign", "",  nJT, logBinsJt)
-      <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgR
+        << TH1D( "hJTPtaBgR", "",  nJT, logBinsJt)
+        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
   
-  fhJTPtaBgPhiLikeSign
-      << TH1D( "hJTPtaBgPhiLikeSign", "",  nJT, logBinsJt)
-      <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgPhi
+        << TH1D( "hJTPtaBgPhi", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-  fhJTPtaUnlikeSign
-      << TH1D( "hJTPtaUnlikeSign", "",  nJT, logBinsJt)
-      <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaLikeSign
+        << TH1D( "hJTPtaLikeSign", "",  nJT, logBinsJt)
+        <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
 
-  fhJTPtaBgUnlikeSign
-      << TH1D( "hJTPtaBgUnlikeSign", "",  nJT, logBinsJt)
-      <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgLikeSign
+        << TH1D( "hJTPtaBgLikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
 
-  fhJTPtaBgRUnlikeSign
-      << TH1D( "hJTPtaBgRUnlikeSign", "",  nJT, logBinsJt)
-      <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgRLikeSign
+        << TH1D( "hJTPtaBgRLikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
   
-  fhJTPtaBgPhiUnlikeSign
-      << TH1D( "hJTPtaBgPhiUnlikeSign", "",  nJT, logBinsJt)
-      <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgPhiLikeSign
+        << TH1D( "hJTPtaBgPhiLikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-  fhBgAssocPtaEta
-      << TH1D( "hBgAssocPtaEta", "",  nUEBins, uEBinBorders)
-      <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaUnlikeSign
+        << TH1D( "hJTPtaUnlikeSign", "",  nJT, logBinsJt)
+        <<  fTypBin << fCentBin << fPTtBin << fPTaBin  << "END";
 
-  fhBgAssocPtaR
-      << TH1D( "hBgAssocPtaR", "",  nUEBins, uEBinBorders)
-      <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgUnlikeSign
+        << TH1D( "hJTPtaBgUnlikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+
+    fhJTPtaBgRUnlikeSign
+        << TH1D( "hJTPtaBgRUnlikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
   
-  fhBgAssocPtaPhi
-      << TH1D( "hBgAssocPtaPhi", "",  nUEBins, uEBinBorders)
-      <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+    fhJTPtaBgPhiUnlikeSign
+        << TH1D( "hJTPtaBgPhiUnlikeSign", "",  nJT, logBinsJt)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
 
-  // Only create deltaEta deltaPhi histograms if they are enabled in the JCard
-  if(fCard->Get("EnableDeltaEtaDeltaPhiHistograms")==1){
+    fhBgAssocPtaEta
+        << TH1D( "hBgAssocPtaEta", "",  nUEBins, uEBinBorders)
+        <<  fCentBin << fEtaGapBin << fPTtBin << fPTaBin  << "END";
+
+    fhBgAssocPtaR
+        << TH1D( "hBgAssocPtaR", "",  nUEBins, uEBinBorders)
+        <<  fCentBin << fRGapBin << fPTtBin << fPTaBin  << "END";
   
-    fhDphiDetaPta
-        << TH2D( "hDphiDetaPta", "", 400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-        <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
+    fhBgAssocPtaPhi
+        << TH1D( "hBgAssocPtaPhi", "",  nUEBins, uEBinBorders)
+        <<  fCentBin << fPhiGapBin << fPTtBin << fPTaBin  << "END";
+
+    // Only create deltaEta deltaPhi histograms if they are enabled in the JCard
+    if(fCard->Get("EnableDeltaEtaDeltaPhiHistograms")==1){
+  
+      fhDphiDetaPta
+          << TH2D( "hDphiDetaPta", "", 400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
+          <<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
     
-  }
+    }
     
-  if(fenable2DHistos){
+    if(fenable2DHistos){
       
-    fhDphiDetaBgPtaEta
-        << TH2D( "hDphiDetaBgPtaEta", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-        <<  fCentBin << fPTtBin << fPTaBin  << "END";
+      fhDphiDetaBgPtaEta
+          << TH2D( "hDphiDetaBgPtaEta", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
+          <<  fCentBin << fPTtBin << fPTaBin  << "END";
 
-    fhDphiDetaBgPtaR
-        << TH2D( "hDphiDetaBgPtaR", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-        <<  fCentBin << fPTtBin << fPTaBin  << "END";
+      fhDphiDetaBgPtaR
+          << TH2D( "hDphiDetaBgPtaR", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
+          <<  fCentBin << fPTtBin << fPTaBin  << "END";
   
-    fhDphiDetaBgPtaPhi
-        << TH2D( "hDphiDetaBgPtaPhi", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
-        <<  fCentBin << fPTtBin << fPTaBin  << "END";
+      fhDphiDetaBgPtaPhi
+          << TH2D( "hDphiDetaBgPtaPhi", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 320, -kJPi/2, kJPi/2)
+          <<  fCentBin << fPTtBin << fPTaBin  << "END";
       
+    }
+    
   }
   
   // Histograms for checking the acceptance correction is done correctly
