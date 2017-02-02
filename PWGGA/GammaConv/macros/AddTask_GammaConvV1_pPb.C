@@ -936,12 +936,12 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
   } else if (trainConfig == 145) {
     cuts.AddCut("80000113", "00200009217000003260400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //qT 0.05 1D
     cuts.AddCut("80000113", "00200009217000009260400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //qT 0.03 2D
-    cuts.AddCut("80000113", "00200009217000002000260400", "0162103500000000");  //new standard eta=0.9 y=0.8 //qT 0.07 1D
+    cuts.AddCut("80000113", "00200009217000002260400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //qT 0.07 1D
     cuts.AddCut("80000113", "00200009217000008220400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //chi2 and psi Pair 1D
   } else if (trainConfig == 146) {
     cuts.AddCut("80000123", "00200009217000003260400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //qT 0.05 1D
     cuts.AddCut("80000123", "00200009217000009260400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //qT 0.03 2D
-    cuts.AddCut("80000123", "00200009217000002000260400", "0162103500000000");  //new standard eta=0.9 y=0.8 //qT 0.07 1D
+    cuts.AddCut("80000123", "00200009217000002260400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //qT 0.07 1D
     cuts.AddCut("80000123", "00200009217000008220400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //chi2 and psi Pair 1D
   } else if (trainConfig == 147) {
     cuts.AddCut("80000113", "00200009217000008160400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //chi2 50  2D
