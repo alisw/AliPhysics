@@ -932,7 +932,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
         if(!fReadMC) {
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
-	    if(!fAlreadyFilled) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
+	    if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
             if(!fMixing && !fAlreadyFilled) {
  	      ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
 	      ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
@@ -945,7 +945,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
             Int_t pdgDgD0toKpi[2]={321,211};
     	    Int_t labD0 = d->MatchToMC(421,mcArray,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not
             if (labD0>-1) {
-  	      if(!fAlreadyFilled) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
+  	      if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
               if(!fMixing && !fAlreadyFilled) {
 		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
                 ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
