@@ -257,13 +257,9 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
     for ( Int_t ich=0; ich<4; ich++ ) {
       // Get the efficiency graph for the different conditions
       // as well as the list of histograms to build the efficiency
-      std::vector<TGraphAsymmErrors*> checkEffList;
-      checkEffList.reserve(nSysts);
-      std::vector<TGraphAsymmErrors*> refEffList;
-      refEffList.reserve(3);
-      std::vector<TH1*> histoList, systHistoList;
-      histoList.reserve(nSysts*4);
-      systHistoList.reserve(4);
+      TGraphAsymmErrors* checkEffList[nSysts];
+      TH1* histoList[nSysts*4];
+      TH1* systHistoList[4];
       for ( Int_t isyst=0; isyst<nSysts; isyst++ ) {
         effHistos = obj->GetEffHistoList(systKeys[isyst].c_str());
         for ( Int_t icount=0; icount<4; icount++ ) {
@@ -278,6 +274,7 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
         Int_t iden = 4*isyst+AliTrigChEffOutput::kAllTracks;
         checkEffList[isyst] = new TGraphAsymmErrors(histoList[inum],histoList[iden],"e0");
       } // loop on systematics
+      TGraphAsymmErrors* refEffList[3];
       for ( Int_t icount=0; icount<3; icount++ ) {
         refEffList[icount] = new TGraphAsymmErrors(histoList[icount],histoList[AliTrigChEffOutput::kAllTracks],"e0");
       }
@@ -333,10 +330,8 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
           }
         }
       } // loop on points
-      for ( TGraphAsymmErrors* obj : checkEffList ) delete obj;
-      checkEffList.clear();
-      for ( TGraphAsymmErrors* obj : refEffList ) delete obj;
-      refEffList.clear();
+      for ( Int_t it=0; it<nSysts; it++ ) delete checkEffList[it];
+      for ( Int_t it=0; it<3; it++ ) delete refEffList[it];
     } // loop on chambers
     obj->AddEffHistoList("Systematics",systematicList);
   } // loop on merged efficiencies
