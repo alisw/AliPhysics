@@ -1,4 +1,5 @@
-AliAnalysisTask AddTaskHFETPCTOFRun2(
+//AliAnalysisTask AddTaskHFETPCTOFRun2(
+AliAnalysisHFETPCTOF AddTaskHFETPCTOFRun2( ///Zaida recommendation
 
 			Bool_t 	isMC 			= kFALSE, 
 			Bool_t 	isAOD 			= kFALSE,
@@ -20,8 +21,7 @@ AliAnalysisTask AddTaskHFETPCTOFRun2(
 	
 	//_______________________
 	//Config Task
-	//gROOT->LoadMacro("ConfigHFETPCTOF.C");
-	gROOT->LoadMacro("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/pp/ConfigHFETPCTOF.C");
+	gROOT->LoadMacro("ConfigHFETPCTOF.C");
 	AliAnalysisHFETPCTOF *task = ConfigHFETPCTOF(isMC,isAOD,isPP);
 	
 	//_______________________
@@ -34,9 +34,23 @@ AliAnalysisTask AddTaskHFETPCTOFRun2(
 	
 	mgr->AddTask(task);
 	
+	//added to run on grid
+    //==================================================================================
+    TString containerName = mgr->GetCommonFileName();
+    containerName += ":HFE_Camila";
+    //containerName += Form("_%d_%d_%d_%d",triggerIndex,configIndex,centralityIndex,EMCalThreshould);
+    
+    
+    //Create containers for input/output
+    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput = mgr->CreateContainer("hist", TList::Class(),    AliAnalysisManager::kOutputContainer, containerName.Data());
+    // end of modifications to run on grid
+    //==================================================================================
+	
+	
 	//Create containers for input/output
-	AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-	AliAnalysisDataContainer *coutput = mgr->CreateContainer("hist",  TList::Class(),    AliAnalysisManager::kOutputContainer, "OutPutDataMC.root");
+	//AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+	//AliAnalysisDataContainer *coutput = mgr->CreateContainer("hist",  TList::Class(),    AliAnalysisManager::kOutputContainer, "OutPutDataMC.root");
 
 	//Connect input/output
 	mgr->ConnectInput(task, 0, cinput);
