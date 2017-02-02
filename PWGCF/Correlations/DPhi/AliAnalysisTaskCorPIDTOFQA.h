@@ -8,7 +8,10 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDResponse.h"
 
+
 class AliAODTrack;
+//class AliEmcalTrackSelection;
+
 
 class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE  
 {
@@ -23,31 +26,59 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	virtual Double_t        Beta(AliAODTrack *track);
 	virtual Double_t        tof_minus_tpion(AliAODTrack *track);
 	virtual Double_t        get_mass_squared(AliAODTrack *track);
-	
+	const Double_t pi = 3.1415926535897932384626434;
+
+	Double_t deut_curves[2][2][3];  // [charge][mean,sigma][par]
+	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x) ",       1.1, 4.4);
+
+//	squiggly-boo
     private:
 
         AliAODEvent*            fAOD;               //! input event
         TList*                  fOutputList;        //! output list
-	AliPIDResponse*         fPIDResponse;       //! PID response object          //// added by Brennan
-	TH1F*                   fHistPt;            //! pt histogram
+	AliPIDResponse*         fPIDResponse;
+//	AliEmcalTrackSelection* fTrackSelection;
 
-	TH2F*                   cent_ntracks;       //!                              //// added by Brennan
-	TH2F*                   m_squared_pos_raw;  //!                              //// added by Brennan
-	TH2F*                   m_squared_pos_cut;  //!                              //// added by Brennan
-	TH2F*                   m_squared_pos;      //!                              //// added by Brennan
-	TH2F*                   m_squared_neg_raw;  //!                              //// added by Brennan
-	TH2F*                   m_squared_neg_cut;  //!                              //// added by Brennan
-	TH2F*                   m_squared_neg;      //!                              //// added by Brennan
-//	TH1F*                   species_num;        //!                              //// added by Brennan
-	TH2F*                   beta_vs_mom;        //!                              //// added by Brennan
-//	TH2F*                   sigma_vs_p;         //!                              //// added by Brennan
-	TH2F*                   dtof_dEdx;          //!                              //// added by Brennan
-	TH1F*                   mapped_ttof;        //!                              //// added by Brennan
-	TH2F*                   m_squared_pos_deut; //!                              //// added by Brennan
-	TH2F*                   m_squared_neg_deut; //!                              //// added by Brennan
-	TH2F*                   plength_vs_mom;     //!                              //// added by Brennan
-	TH2F*                   ttof_vs_mom;        //!                              //// added by Brennan
-	TH2F*                   deltat_vs_mom;      //!                              //// added by Brennan
+	
+	TH1F*                   fHistPt;
+	
+	TH2F*                   cent_ntracks;
+	TH2F*                   m_squared_pos;
+	TH2F*                   m_squared_pos_cut_T;
+	TH2F*                   m_squared_pos_cut_A;
+	TH2F*                   m_squared_pos_cut_B;
+	TH2F*                   m_squared_neg;
+	TH2F*                   m_squared_neg_cut_T;
+	TH2F*                   m_squared_neg_cut_A;
+	TH2F*                   m_squared_neg_cut_B;
+	TH2F*                   plength_vs_mom_pos;
+	TH2F*                   plength_vs_mom_neg;
+	TH2F*                   ttof_vs_mom_pos;
+	TH2F*                   ttof_vs_mom_neg;
+	TH2F*                   beta_vs_mom_pos;
+	TH2F*                   beta_vs_mom_neg;
+	TH2F*                   deltat_vs_mom_pos;
+	TH2F*                   deltat_vs_mom_neg;
+	TH2F*                   deut_dphi_T;
+	TH2F*                   deut_dphi_A;
+	TH2F*                   deut_dphi_B;
+	TH2F*                   deut_dphi_pos_T;
+	TH2F*                   deut_dphi_pos_A;
+	TH2F*                   deut_dphi_pos_B;
+	TH2F*                   deut_dphi_neg_T;
+	TH2F*                   deut_dphi_neg_A;
+	TH2F*                   deut_dphi_neg_B;
+	TH1I*                   deuterons_per_event;
+	TH1I*                   deuterons_per_event_pos;
+	TH1I*                   deuterons_per_event_neg;
+	TH1F*                   track_phi;
+	TH1F*                   track_phi_hybrid;
+	TH1F*                   track_eta;
+	TH1F*                   track_eta_hybrid;	
+	TH2F*                   deut_dphi_deta_p0510;
+	TH2F*                   deut_dphi_deta_p1020;
+	TH2F*                   deut_dphi_deta_p2030;
+	TH2F*                   deut_dphi_deta_p1050;
 	
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
