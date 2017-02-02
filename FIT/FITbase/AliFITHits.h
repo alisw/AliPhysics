@@ -23,7 +23,14 @@ public:
     fMCP(999),
     fParticle(0),
     fEtot(0),
-    fTime(0)
+    fTime(0),
+    fCharge(999),
+    fPx(999),
+    fPy(999),
+    fPz(999),
+    fEloss(999),
+    fTlength(999),
+    fNphot(999)
     { ((AliFITHits &) o).Copy(*this);}
   
 
@@ -33,6 +40,13 @@ public:
   Float_t Particle() const {return fParticle;} 
   Double_t Etot() const {return fEtot;}
   Float_t Time() const {return fTime;}
+  Float_t Charge() const {return fCharge;};
+  Float_t Px() const {return fPx;};
+  Float_t Py() const {return fPy;};
+  Float_t Pz() const {return fPz;};
+  Float_t Eloss() const {return fEloss;};
+  Float_t Tlength() const {return fTlength;};
+  Int_t   Nphot() const {return fNphot;}
 
 private:
   Int_t      fVolume;   //T0 arm mark
@@ -41,7 +55,13 @@ private:
   Int_t      fParticle; //Primary particle ID
   Double_t   fEtot;     //Energy of primary particle at the entrance to radiator 
   Float_t    fTime;     //Primary particle TOF 
- 
+  Float_t    fCharge;
+  Float_t    fPx;
+  Float_t    fPy;
+  Float_t    fPz;
+  Float_t    fEloss;
+  Float_t    fTlength;
+  Int_t      fNphot;
    
    ClassDef(AliFITHits,1)  //Hits for detector T0
 };

@@ -38,12 +38,28 @@ protected:
   Int_t fIdSens1; // Sensetive volume  in T0
   Int_t fIdSens2; // Sensetive volume  in T0
   TGraph *fPMTeff; //pmt registration effeicincy
+  Int_t GetCellId(Int_t *vol);
+
+  //V0+
+  Int_t nSectors, nRings;
+  Int_t fIdV0Plus[8][5];//Sensitive volumes [nSectors][nRings], if modified then update the construct in .cxx
+  Int_t fCellId;//Scintillator cell number
+  Int_t fSenseless;//Senseless for T0+
+
+private: 
+
+  //V0+ parameters related to geometry
+  Double_t fV0PlusR0, fV0PlusR1, fV0PlusR2, fV0PlusR3, fV0PlusR4, fV0PlusR5, fV0PlusR6;
+  Double_t fV0PlusSciWd, fV0PlusFraWd, fV0PlusZposition;
+  Float_t fV0PlusnMeters; 
+  
+  //V0+ parameters related to light production:
+  Double_t fV0PlusLightYield;       // Lightyield in BC404 (from V0A)
+  Double_t fV0PlusLightAttenuation; // LightAttenuation in fibers (from V0A)
+  Double_t fV0PlusFibToPhot;        // Loss in Fibers - Photocathode Connection (from V0A)
  
   ClassDef(AliFITv5,1)  //Class for FIT version 5
 };
 
 
 #endif
-
-
-
