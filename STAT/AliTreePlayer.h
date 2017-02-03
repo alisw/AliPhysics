@@ -19,7 +19,7 @@ public:
   AliTreePlayer(const char *name, const char *title);
   static TObjArray  * selectMetadata(TTree * tree, TString query, Int_t verbose);
   static TObjArray  * selectTreeInfo(TTree* tree, TString query,Int_t verbose); 
-  static void selectWhatWhereOrderBy(TTree * tree, TString what, TString where, TString orderBy,  Int_t firstentry, Int_t nentries, TString outputFormat, TString outputName);
+  static Int_t selectWhatWhereOrderBy(TTree * tree, TString what, TString where, TString orderBy,  Int_t firstentry, Int_t nentries, TString outputFormat, TString outputName);
   static TString  printSelectedTreeInfo(TTree*tree, TString infoType,  TString regExpFriend, TString regExpTag, Int_t verbose);
   // to add
   // Metadata query from the TStatToolkit (GetMetadata, AddMetadata)

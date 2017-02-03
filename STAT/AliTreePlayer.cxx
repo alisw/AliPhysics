@@ -349,7 +349,7 @@ TString  AliTreePlayer::printSelectedTreeInfo(TTree*tree, TString infoType,  TSt
 }
 
 
-void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString where, TString /*orderBy*/,  Int_t firstentry, Int_t nentries, TString outputFormat, TString outputName){
+Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString where, TString /*orderBy*/,  Int_t firstentry, Int_t nentries, TString outputFormat, TString outputName){
   //
   // Select entry similar to the SQL select
   //    tree instead - SQL FROM statement used
@@ -367,13 +367,20 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
   */
   if (tree==NULL || tree->GetPlayer()==NULL){
     ::Error("AliTreePlayer::selectWhatWhereOrderBy","Input tree not defiend");
-    return;
+    return -1;
   }
   // limit number of entries - shorter version of the TTreePlayer::GetEntriesToProcess - but not fully correct ()
   if (firstentry +nentries >tree->GetEntriesFriend()) nentries=tree->GetEntriesFriend()-firstentry;
   if (tree->GetEntryList()){ //
     if (tree->GetEntryList()->GetN()<nentries) nentries=tree->GetEntryList()->GetN();
   }
+  //
+  Int_t  tnumber = -1;
+  Bool_t isHTML=outputFormat.Contains("html",TString::kIgnoreCase );
+  Bool_t isCSV=outputFormat.Contains("csv",TString::kIgnoreCase);
+  Bool_t isElastic=outputFormat.Contains("elastic",TString::kIgnoreCase);
+  Bool_t isJSON=outputFormat.Contains("json",TString::kIgnoreCase)||isElastic;
+
   //
   FILE *default_fp = stdout;
   if (outputName.Length()>0){
@@ -392,7 +399,7 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
     TObjArray * arrayDesc = TString(fArray->At(iCol)->GetName()).Tokenize(";");
     if (arrayDesc->GetEntries()<=0) {
       ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid descriptor %s", arrayDesc->At(iCol)->GetName());
-      return;
+      //return -1;
     }
     TString  fieldName=arrayDesc->At(0)->GetName();    // variable content
     if (fieldName.Contains(indexPattern)){             // variable is index 
@@ -402,6 +409,10 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
       isIndex[iCol]=kFALSE;
     }
     TTreeFormula * formula = new TTreeFormula(fieldName.Data(), fieldName.Data(), tree);
+    if (formula->GetTree()==NULL){
+      ::Error("AliTreePlayer::selectWhatWhereOrderBy","Invalid formula %s, parsed from the original string %s",fieldName.Data(),what.Data());
+      if (isJSON==kFALSE) return -1;
+    }
     TString  printFormat="";                       // printing format          - column 1 - use default if not specified
     TString  colName=arrayDesc->At(0)->GetName();  // variable name in ouptut  - column 2 - using defaut ("variable name") as in input
     TString  outputFormat="";                      // output column format specification for TLeaf (see also reading using TTree::ReadFile)
@@ -458,12 +469,6 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
          }
   }
 
-  //
-  Int_t  tnumber = -1;
-  Bool_t isHTML=outputFormat.Contains("html",TString::kIgnoreCase );
-  Bool_t isCSV=outputFormat.Contains("csv",TString::kIgnoreCase);
-  Bool_t isElastic=outputFormat.Contains("elastic",TString::kIgnoreCase);
-  Bool_t isJSON=outputFormat.Contains("json",TString::kIgnoreCase)||isElastic;
 
   // print header
   if (isHTML){
@@ -523,6 +528,7 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
 	}
       }
       for (Int_t icol=0; icol<nCols; icol++){
+	if (rFormulaList[icol]->GetTree()==NULL) continue;
 	Int_t nData=rFormulaList[icol]->GetNdata();
 	if (isElastic==kFALSE){
 	  fprintf(default_fp,"\t\"%s\":",rFormulaList[icol]->GetName());
@@ -612,7 +618,7 @@ void AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString w
   }
   
   if (default_fp!=stdout) fclose (default_fp);
-
+  return selected;
 }
 
 
