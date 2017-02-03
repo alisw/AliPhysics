@@ -39,8 +39,11 @@
 #pragma link C++ class AliPBBase+;
 #pragma link C++ class AliPBTracks+;
 #pragma link C++ class AliPBUtils+;
+#pragma link C++ class AliCEPBase+;
+#pragma link C++ class AliCEPUtils+;
 #pragma link C++ class CEPEventBuffer+;
 #pragma link C++ class CEPTrackBuffer+;
+#pragma link C++ class AliAnalysisTaskCEP+;
 #pragma link C++ class AliAnalysisTaskf0f2+;
 #pragma link C++ class AliAnalysisPseudoRapidityDensity+;
 #pragma link C++ class AliSPDGeometryUtils+;

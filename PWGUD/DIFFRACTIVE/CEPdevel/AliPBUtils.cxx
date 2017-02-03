@@ -418,6 +418,7 @@ Bool_t AliPBUtils::CutEvent(const AliESDEvent *ESDEvent, TH1 *hspd,
 	if(hpriVtxX) hpriVtxX->Fill(vertex->GetX());
 	if(hpriVtxY) hpriVtxY->Fill(vertex->GetY());
 	if(hpriVtxZ) hpriVtxZ->Fill(vertex->GetZ());
+  
 	return kTRUE;
 
 }
@@ -952,7 +953,6 @@ Int_t AliPBUtils::FMDHitCombinations(const AliESDEvent* ESDEvent,
 
 
 //==============================================================================
-//------------------------------------------------------------------------------
 void AliPBUtils::SPDLoadGeom(Int_t run)
 {
 	// method to get the gGeomanager

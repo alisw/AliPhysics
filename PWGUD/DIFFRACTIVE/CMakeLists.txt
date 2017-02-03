@@ -60,6 +60,9 @@ set(SRCS
     CEPdevel/AliPBTracks.cxx
     CEPdevel/AliPBUtils.cxx
     CEPdevel/AliAnalysisTaskPB.cxx
+    CEPdevel/AliCEPBase.cxx
+    CEPdevel/AliCEPUtils.cxx
+    CEPdevel/AliAnalysisTaskCEP.cxx
     Resonance/AliAnalysisTaskf0f2.cxx
     Resonance/AliAnalysisPseudoRapidityDensity.cxx
    )

@@ -16,18 +16,20 @@ ClassImp(CEPTrackBuffer)
 // ----------------------------------------------------------------------------
 CEPTrackBuffer::CEPTrackBuffer()
   : TObject()
-  , fisSoft(-1)
-  , fChargeSign(0)
-  , fMomentum(TVector3(0,0,0))
-  , fPID(0)
-  , fPIDTPCStatus(CEPTrackBuffer::kdumval)
-  , fPIDTPCSignal(0)
-  , fPIDTOFStatus(CEPTrackBuffer::kdumval)
-  , fPIDTOFSignal(0)
-  , fPIDBayesStatus(CEPTrackBuffer::kdumval)
-  , fMCPID(0)
-  , fMCMass(0)
-  , fMCMomentum(TVector3(0,0,0))
+  , fTrackStatus(AliCEPBase::kTTUnknown)
+  , fChargeSign(AliCEPBase::kdumval)
+  , fTPCnclsS(AliCEPBase::kdumval)
+  , fZv(-999.9)
+  , fMomentum(TVector3(-999.9,-999.9,-999.9))
+  , fPID(AliCEPBase::kdumval)
+  , fPIDTPCStatus(AliCEPBase::kdumval)
+  , fPIDTPCSignal(-999.9)
+  , fPIDTOFStatus(AliCEPBase::kdumval)
+  , fPIDTOFSignal(-999.9)
+  , fPIDBayesStatus(AliCEPBase::kdumval)
+  , fMCPID(AliCEPBase::kdumval)
+  , fMCMass(-999.9)
+  , fMCMomentum(TVector3(-999.9,-999.9,-999.9))
 {
 
   this->Reset();
@@ -45,38 +47,40 @@ void CEPTrackBuffer::Reset()
 {
 
   // general information
-  fisSoft = 0;   // 0: is not, 1: is soft, -1: undefined
-  fChargeSign = CEPTrackBuffer::kdumval;
-  fMomentum = TVector3(0,0,0);
+  fTrackStatus = AliCEPBase::kTTUnknown;
+  fChargeSign  = AliCEPBase::kdumval;
+  fTPCnclsS    = AliCEPBase::kdumval;
+  fZv          = -999.9;
+  fMomentum    = TVector3(-999.9,-999.9,-999.9);
   
   // PID information
-  fPID = CEPTrackBuffer::kdumval;
+  fPID = AliCEPBase::kdumval;
   
   // ... from TPC
-  fPIDTPCStatus = CEPTrackBuffer::kdumval;
-  fPIDTPCSignal = CEPTrackBuffer::kdumval;
+  fPIDTPCStatus = AliCEPBase::kdumval;
+  fPIDTPCSignal = AliCEPBase::kdumval;
   for(Int_t ii=0;ii<AliPID::kSPECIES;ii++) {
-    fPIDTPCnSigma[ii]     = CEPTrackBuffer::kdumval;
-    fPIDTPCnSigmaProb[ii] = CEPTrackBuffer::kdumval;
+    fPIDTPCnSigma[ii]     = AliCEPBase::kdumval;
+    fPIDTPCnSigmaProb[ii] = AliCEPBase::kdumval;
   }
   
   // ... from TOF
-  fPIDTOFStatus = CEPTrackBuffer::kdumval;
-  fPIDTOFSignal = CEPTrackBuffer::kdumval;
+  fPIDTOFStatus = AliCEPBase::kdumval;
+  fPIDTOFSignal = AliCEPBase::kdumval;
   for(Int_t ii=0;ii<AliPID::kSPECIES;ii++) {
-    fPIDTOFnSigma[ii]     = CEPTrackBuffer::kdumval;
-    fPIDTOFnSigmaProb[ii] = CEPTrackBuffer::kdumval;
+    fPIDTOFnSigma[ii]     = AliCEPBase::kdumval;
+    fPIDTOFnSigmaProb[ii] = AliCEPBase::kdumval;
   }
   
   // ... Bayes
-  fPIDBayesStatus = CEPTrackBuffer::kdumval;
+  fPIDBayesStatus = AliCEPBase::kdumval;
   for(Int_t ii=0;ii<AliPID::kSPECIES;ii++) {
-    fPIDBayesProb[ii]     = CEPTrackBuffer::kdumval;
+    fPIDBayesProb[ii]     = AliCEPBase::kdumval;
   }
   
   // MC truth
-  fMCPID = CEPTrackBuffer::kdumval;
-  fMCMass = CEPTrackBuffer::kdumval;
+  fMCPID = AliCEPBase::kdumval;
+  fMCMass = -999.9;
   fMCMomentum = TVector3(0,0,0);
 
 }
@@ -95,7 +99,7 @@ void CEPTrackBuffer::SetPIDTPCnSigma(Int_t part, Float_t nsig)
 }
 
 // ----------------------------------------------------------------------------
-void CEPTrackBuffer::CEPTrackBuffer::SetPIDTPCProbability(Int_t part, Float_t prob)
+void CEPTrackBuffer::SetPIDTPCProbability(Int_t part, Float_t prob)
 {
 
   if (part < AliPID::kSPECIES) {
@@ -136,7 +140,7 @@ void CEPTrackBuffer::SetPIDTOFProbability(Int_t part, Float_t prob)
 }
 
 // ----------------------------------------------------------------------------
-void CEPTrackBuffer::CEPTrackBuffer::SetPIDBayesProbability(Int_t part, Float_t prob)
+void CEPTrackBuffer::SetPIDBayesProbability(Int_t part, Float_t prob)
 {
 
   if (part < AliPID::kSPECIES) {
@@ -153,7 +157,7 @@ void CEPTrackBuffer::CEPTrackBuffer::SetPIDBayesProbability(Int_t part, Float_t 
 Float_t CEPTrackBuffer::GetPIDTPCnSigma(Int_t part)
 {
 
-  Float_t nsig = CEPTrackBuffer::kdumval;
+  Float_t nsig = AliCEPBase::kdumval;
   
   if (part < AliPID::kSPECIES) {
     nsig = fPIDTPCnSigma[part];
@@ -170,7 +174,7 @@ Float_t CEPTrackBuffer::GetPIDTPCnSigma(Int_t part)
 Float_t CEPTrackBuffer::GetPIDTPCProbability(Int_t part)
 {
 
-  Float_t prob = CEPTrackBuffer::kdumval;
+  Float_t prob = AliCEPBase::kdumval;
   
   if (part < AliPID::kSPECIES) {
     prob = fPIDTPCnSigmaProb[part];
@@ -187,7 +191,7 @@ Float_t CEPTrackBuffer::GetPIDTPCProbability(Int_t part)
 Float_t CEPTrackBuffer::GetPIDTOFnSigma(Int_t part)
 {
 
-  Float_t nsig = CEPTrackBuffer::kdumval;
+  Float_t nsig = AliCEPBase::kdumval;
   
   if (part < AliPID::kSPECIES) {
     nsig = fPIDTOFnSigma[part];
@@ -204,7 +208,7 @@ Float_t CEPTrackBuffer::GetPIDTOFnSigma(Int_t part)
 Float_t CEPTrackBuffer::GetPIDTOFProbability(Int_t part)
 {
 
-  Float_t prob = CEPTrackBuffer::kdumval;
+  Float_t prob = AliCEPBase::kdumval;
   
   if (part < AliPID::kSPECIES) {
     prob = fPIDTOFnSigmaProb[part];
@@ -221,7 +225,7 @@ Float_t CEPTrackBuffer::GetPIDTOFProbability(Int_t part)
 Float_t CEPTrackBuffer::GetPIDBayesProbability(Int_t part)
 {
 
-  Float_t prob = CEPTrackBuffer::kdumval;
+  Float_t prob = AliCEPBase::kdumval;
   
   if (part < AliPID::kSPECIES) {
     prob = fPIDBayesProb[part];

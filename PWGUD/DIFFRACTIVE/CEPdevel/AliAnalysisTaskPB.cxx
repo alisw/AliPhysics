@@ -1258,6 +1258,8 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	// for now only implemented on ESDs
   AliStack *stack;
   if (fMCEvent) {
+	  DetermineMCprocessType();
+    
     evbuf->SetMCGenerator(fMCGenerator);
     evbuf->SetMCProcessType(fMCprocess);
 
@@ -1270,11 +1272,10 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
         prot1 = stack->Particle(0);
       }
     }
-    evbuf->SetMCVertexPos(prot1->Vx(),prot1->Vy(),prot1->Vz());
+    evbuf->SetMCVtxPos(prot1->Vx(),prot1->Vy(),prot1->Vz());
   }
     
 	Int_t nMCprimaries = 0;
-	DetermineMCprocessType();
   if (fAnalysisStatus & AliPBBase::kBitTHnMC) {
     nMCprimaries = DoMCTruth();
 	}
@@ -1364,11 +1365,11 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 
 	// TRIGGER ANALYSIS -------------------------------------------------------
 	AliTriggerAnalysis *fTrigger = new AliTriggerAnalysis;
-	Bool_t IsMBOR  = (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kMB1)) ? kTRUE : kFALSE;
-	Bool_t IsMBAND = (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0AND)) ? kTRUE : kFALSE;
+	Bool_t isMBOR  = (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kMB1)) ? kTRUE : kFALSE;
+	Bool_t isMBAND = (fTrigger->IsOfflineTriggerFired(fESDEvent,AliTriggerAnalysis::kV0AND)) ? kTRUE : kFALSE;
 
-  evbuf->SetMBOR(IsMBOR);
-  evbuf->SetMBAND(IsMBAND);
+  //evbuf->SetMBOR(IsMBOR);
+  //evbuf->SetMBAND(IsMBAND);
   /*
 	if (!IsMBOR) {
 		PostOutputs();
@@ -1380,7 +1381,11 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	//= GAP ======================================================================
 	// determine the complete gap configuration (for all gap-tagging detectors)
 	Bool_t gapcond = DetermineGap();
-  
+  fCurrentGapCondition = 
+    (fCurrentGapCondition & ~(AliCEPBase::kBitMBOR)) | (isMBOR*AliCEPBase::kBitMBOR);
+  fCurrentGapCondition = 
+    (fCurrentGapCondition & ~(AliCEPBase::kBitMBAND)) | (isMBAND*AliCEPBase::kBitMBAND);
+
   evbuf->SetGapCondition(fCurrentGapCondition);
     
   //if (!gapcond) {
@@ -1394,7 +1399,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 
 	//= VERTEX COINCIDENCE AND POSITION ==========================================
 	AnalyzeVtx();
-  evbuf->SetVertexPos(fVtxX,fVtxY,fVtxZ);
+  evbuf->SetVtxPos(fVtxX,fVtxY,fVtxZ);
 
 	//= TRACK CUTS ===============================================================
 	// counts tracks after cuts were applied
@@ -1410,10 +1415,10 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
 	MartinSel->InitDefaultTrackCuts(1);// 1 = b and c, 0 = d and e
 	TArrayI Mindices;
 	Int_t NMartinSel = MartinSel->GetNumberOfITSTPCtracks(fESDEvent,Mindices);
-  evbuf->SetnumMSelection(NMartinSel);
+  // evbuf->SetnMSelection(NMartinSel);
 
   DoMultiplicityStudy(nMCprimaries); // fill corresponding histograms
-  evbuf->SetnumResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
+  evbuf->SetnResiduals(fResidualTrackletsCB+fResidualTrackletsFW);
   
 	if (fMAllTrackMass &&
 	    (fGapInformation[kV0FMDSPDTPC] == AliPBBase::kBinDG)) {
@@ -1498,7 +1503,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
       
       // create new track
       CEPTrackBuffer *trk = new CEPTrackBuffer();
-      trk->SetisSoft(0);
+      trk->SetTrackStatus(AliCEPBase::kTTITSpure,kFALSE);
       trk->SetChargeSign((Int_t)tmptrk->Charge());
       tmptrk->GetPxPyPz(mom);
       trk->SetMomentum(TVector3(mom));
@@ -1561,7 +1566,7 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
       
       // create new track
       CEPTrackBuffer *trk = new CEPTrackBuffer();
-      trk->SetisSoft(1);
+      trk->SetTrackStatus(AliCEPBase::kTTITSpure,kTRUE);
       trk->SetChargeSign((Int_t)tmptrk->Charge());
       tmptrk->GetPxPyPz(mom);
       trk->SetMomentum(TVector3(mom));

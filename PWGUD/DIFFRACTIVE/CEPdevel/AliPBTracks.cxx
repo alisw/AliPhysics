@@ -122,13 +122,13 @@ AliPBTracks::~AliPBTracks()
 
 
 //------------------------------------------------------------------------------
-Bool_t AliPBTracks::ProcessEvent(
+Bool_t AliPBTracks::ProcessEvent (
   AliAODEvent* aodEvent,
   AliESDEvent* esdEvent,
   Bool_t doSoft /* = kTRUE */)
 {
 	//
-  // this function controlls the processing of an event - selection of tracks -,
+  // this function controls the processing of an event - selection of tracks -,
   // after the processing is done, the results can be used via the getters
   
 	if ((aodEvent && esdEvent) || (!aodEvent && !esdEvent)) {

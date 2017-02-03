@@ -78,7 +78,7 @@ protected:
 	                                // |eta| < 0.9
 	Int_t fNtrackletsForward; // tracklets not assigned to tracks with |eta| > 0.9
 
-	TObjArray* fTracks; // storage for the standard tracks
+	TObjArray* fTracks;     // storage for the standard tracks
 	TObjArray* fSoftTracks; // storage for the soft tracks
 private:
 	// following functions are only implemented to obey the coding conventions,
