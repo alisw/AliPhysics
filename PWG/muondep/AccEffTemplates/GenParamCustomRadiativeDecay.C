@@ -58,8 +58,8 @@ Double_t PtCustom( const Double_t *px, const Double_t */*dummy*/ )
   p1 = VAR_GENPARAMCUSTOM_PT_P1; // 18.05;
   p2 = VAR_GENPARAMCUSTOM_PT_P2; // 2.05;
   p3 = VAR_GENPARAMCUSTOM_PT_P3; // 3.34;
-//  return p0 *x / TMath::Power( p1 + TMath::Power(x,p2), p3 );
-  return p0 *x / TMath::Power( 1. + TMath::Power(x/p1,p2), p3 );
+  return p0 *x / TMath::Power( p1 + TMath::Power(x,p2), p3 );
+//  return p0 *x / TMath::Power( 1. + TMath::Power(x/p1,p2), p3 );
 }
 
 //-------------------------------------------------------------------------
@@ -70,8 +70,8 @@ Double_t YCustom( const Double_t *py, const Double_t */*dummy*/ )
   Float_t p0,p1;
   p0 = VAR_GENPARAMCUSTOM_Y_P0; // 4.08e5;
   p1 = VAR_GENPARAMCUSTOM_Y_P1; // 7.1e4;
-//  return p0 + p1*y;
-  return p0*TMath::Exp(-(1./2.)*TMath::Power(((y)/p1),2));
+  return p0 + p1*y;
+//  return p0*TMath::Exp(-(1./2.)*TMath::Power(((y)/p1),2));
 }
 
 //-------------------------------------------------------------------------
