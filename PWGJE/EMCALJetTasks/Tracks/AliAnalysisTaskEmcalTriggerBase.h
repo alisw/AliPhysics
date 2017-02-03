@@ -200,7 +200,7 @@ public:
    * are ignored, and the trigger selection code is not run.
    * @param[in] exclusivemb If true only min. bias events are analyzed
    */
-  void SetExclusiveMinBias(Bool_t exclusivemb) { fExclusiveMinBias = kTRUE; }
+  void SetExclusiveMinBias(Bool_t exclusivemb) { fExclusiveMinBias = exclusivemb; }
 
 protected:
 
