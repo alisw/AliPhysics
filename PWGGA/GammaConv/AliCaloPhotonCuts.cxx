@@ -4181,6 +4181,16 @@ void AliCaloPhotonCuts::CorrectEMCalNonLinearity(AliVCluster* cluster, Int_t isM
         else if( fCurrentMC==k14j4 ) //v2
           energy /= FunctionNL_kSDM(energy, 0.974525*0.986, -4.00247, -0.453046);
         
+	// pp 5.02 TeV LHC15n
+	else if( fCurrentMC==k16k5a ) {
+	  if(fClusterType==3) energy /= FunctionNL_kSDM(energy, 0.980211, -4.374598, -0.171988);
+          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.984876, -9.999609, -4.999891);
+	}
+	else if( fCurrentMC==k16k5b ) {
+          if(fClusterType==3) energy /= FunctionNL_kSDM(energy, 0.981417, -2.772002, -0.955616);
+          if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.980275, -3.172374, -0.730326);
+	}
+
         else fPeriodNameAvailable = kFALSE;
       }
       break;
