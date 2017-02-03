@@ -21,9 +21,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliRawEventHeaderBase.h"
-#include "AliESDVZERO.h"
 #include "AliESDFMD.h"
-#include "AliESDAD.h"
 
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -33,6 +31,194 @@
 ClassImp(AliAnalysisTaskDiffCrossSections);
 ClassImp(AliAnalysisTaskDiffCrossSections::TreeData);
 ClassImp(AliAnalysisTaskDiffCrossSections::MCInfo);
+ClassImp(AliAnalysisTaskDiffCrossSections::PseudoTrack);
+ClassImp(AliAnalysisTaskDiffCrossSections::PseudoTracks);
+
+Int_t AliAnalysisTaskDiffCrossSections::PseudoTrack::Compare(const TObject *obj) const {
+  if (this == obj)
+    return 0;
+  const PseudoTrack *p = (const PseudoTrack*)obj;
+  if (fEta == p->Eta())
+    return 0;
+  return (*this < *p ? -1 : +1);
+}
+void AliAnalysisTaskDiffCrossSections::PseudoTrack::Print(Option_t* ) const {
+  Printf("PT (eta=%5.2f phi=%5.2f charge=%8.2f charge2=%8.2f detFlags=0x%04X)", fEta, fPhi, fCharge, fCharge2, fDetFlags);
+}
+AliAnalysisTaskDiffCrossSections::PseudoTracks::PseudoTracks()
+  : TObject()
+  , fCounter(0)
+  , fTracks("AliAnalysisTaskDiffCrossSections::PseudoTrack", 10000) {
+  //
+}
+AliAnalysisTaskDiffCrossSections::PseudoTracks::~PseudoTracks() {
+  //
+}
+
+Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::GetEntries() const {
+  return fTracks.GetEntries();
+}
+void  AliAnalysisTaskDiffCrossSections::PseudoTracks::AddTrack(const PseudoTrack& t) {
+  if (fCounter >= fTracks.GetSize())
+    fTracks.Expand(fCounter+100);
+
+  new (fTracks[fCounter++]) PseudoTrack(t);
+}
+void  AliAnalysisTaskDiffCrossSections::PseudoTracks::Clear(Option_t *opt) {
+  fCounter = 0;
+  fTracks.Clear(opt);
+}
+void  AliAnalysisTaskDiffCrossSections::PseudoTracks::Delete(Option_t *opt) {
+  fCounter = 0;
+  fTracks.Delete(opt);
+}
+const AliAnalysisTaskDiffCrossSections::PseudoTrack& AliAnalysisTaskDiffCrossSections::PseudoTracks::operator[](Int_t idx) const {
+  const PseudoTrack* p = dynamic_cast<const PseudoTrack* >(fTracks.At(idx));
+  if (!p)
+    AliFatalF("idx=%d is outside of the allowed range [0,%d)", idx, fTracks.GetSize());
+  return *p;
+}
+
+TVector3 GetADPseudoTrack(Int_t ch) {
+  const Double_t z[2] = {
+    -1954.4, // C-side
+    +1696.7  // A-side
+  };
+  const Double_t innerRadius[2] = {
+    3.6, // C-side
+    6.2  // A-side
+  };
+  const Int_t signX[4] = { +1,-1,-1,+1 };
+  const Int_t signY[4] = { +1,+1,-1,-1 };
+
+  const Bool_t isForAcceptance = ch<0;
+  ch = (ch<0 ? -ch : ch);
+  const Int_t side   = ch/8;
+  const Int_t module = (ch%4);
+
+  if (isForAcceptance)
+    return TVector3(0, innerRadius[side], z[side]);
+
+  TVector2 v(0,0);
+  const Int_t maxIter=100*1000;
+  Int_t counter=0;
+  for (; v.Mod() < innerRadius[side] && counter<maxIter; ++counter) {
+    v.Set(gRandom->Uniform(0.54, 18.1+0.54),
+	  gRandom->Uniform(0.0,  21.4));
+  }
+  // if (counter == maxIter)
+  //   AliFatalGeneral("AD", "counter == maxIter");
+  return TVector3(signX[module]*v.X(),
+		  signY[module]*v.Y(),
+		  z[side]);
+}
+
+void AliAnalysisTaskDiffCrossSections::PseudoTracks::FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR, const TVector3 &vertexPosition) const {
+  // default is for V0:
+  etaAccL = -3.7; // ADC: -7.15
+  etaAccR = +5.1; // ADA: +6.40
+  if ((mask & kAD) != 0) {
+    const Double_t phiVertex = vertexPosition.Phi();
+    if ((mask & kADC) != 0) {
+      TVector3 vL = GetADPseudoTrack(-1);
+      vL.RotateZ(-TMath::Pi()/2 + phiVertex);
+      etaAccL = (vL - vertexPosition).Eta();
+    }
+    if ((mask & kADA) != 0) {
+      TVector3 vR = GetADPseudoTrack(-9);
+      vR.RotateZ(-TMath::Pi()/2 + phiVertex);
+      etaAccR = (vR - vertexPosition).Eta();
+    }
+  }
+}
+void AliAnalysisTaskDiffCrossSections::PseudoTracks::FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR) const {
+  etaAccL = ((mask & kADC) ? -7.15 : -3.7);
+  etaAccR = ((mask & kADA) ? +6.40 : +5.1);
+}
+
+Bool_t SelectAll(const AliAnalysisTaskDiffCrossSections::PseudoTrack &t) {
+  return kTRUE;
+}
+
+Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::ClassifyEventBits(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
+									UInt_t mask, const TBits& bits) const {
+  iEtaL = iEtaR = -1;
+  etaGap = etaGapCenter = 0.0f;
+
+  Int_t eventType = 0; // -1 -> 1L, +1 -> 1R, +2 -> 2A
+  AliDebugF(5, "ClassifyEvent: nT=%d mask=0x%04X", fTracks.GetEntries(), mask);
+
+  if (!fTracks.GetEntries()) // no pseudo-tracks
+    return eventType;
+
+  Float_t etaAccL, etaAccR;
+  FindAcceptance(mask, etaAccL, etaAccR);
+
+  // boundaries of acceptance:
+  AliDebugF(5, "etaAccLR= %.3f %.3f", etaAccL, etaAccR);
+  fTracks.Sort();
+
+  // find etaL,etaR indices
+  for (Int_t i=0, n=fTracks.GetEntries(); i<n; ++i) {
+    const PseudoTrack &t = GetTrackAt(i);
+    if ((t.DetFlags() & mask) == 0 || !bits.TestBitNumber(i))
+      continue;
+
+    if (AliDebugLevelClass() >= 5)
+      t.Print();
+
+    iEtaL = (iEtaL == -1 ? i : iEtaL);
+    iEtaR = i;
+  }
+  AliDebugF(5, "ClassifyEvent: iL,iR=%d,%d", iEtaL, iEtaR);
+  if (iEtaL == -1) // no pseudo-tracks passing cuts
+    return eventType;
+
+  const PseudoTrack &tL = GetTrackAt(iEtaL);
+  const PseudoTrack &tR = GetTrackAt(iEtaR);
+  const Bool_t isOneTrack = (tR.Eta() - tL.Eta() < 0.5 &&
+			     TMath::Abs(std::fmod(tR.Phi()-tL.Phi(), TMath::Pi())) < TMath::Pi()/2);
+  if (isOneTrack) {
+    const Float_t etaCenter = 0.5*(tL.Eta() + tR.Eta());
+    eventType = 2*(etaCenter > 0.0f) - 1;
+    AliDebugF(5, "eventType=%2d center=%6.3f etaLR=%6.3f,%6.3f",
+	   eventType, etaCenter, tL.Eta(), tR.Eta());
+  } else {
+    const Float_t dL = tL.Eta() - etaAccL;
+    const Float_t dR = etaAccR - tR.Eta();
+    etaGap = etaGapCenter = 0.0;
+    for (Int_t i=0, n=fTracks.GetEntries(); i<n; ++i) {
+      const PseudoTrack &t1 = GetTrackAt(i);
+      if ((t1.DetFlags() & mask) == 0 || !bits.TestBitNumber(i))
+	continue;
+      for (Int_t j=i+1, n=fTracks.GetEntries(); j<n; ++j) {
+	const PseudoTrack &t2 = GetTrackAt(j);
+	if ((t2.DetFlags() & mask) != 0 && bits.TestBitNumber(j)) {
+	  if (t2.Eta() - t1.Eta() > etaGap) {
+	    etaGap       =      t2.Eta() - t1.Eta();
+	    etaGapCenter = 0.5*(t1.Eta() + t1.Eta());
+	  }
+	  break;
+	}
+      }
+    }
+    if (etaGap > dL && etaGap > dR) {
+      eventType =  2;
+    } else if ((TMath::Abs(tL.Eta()) < 1.0f &&
+		TMath::Abs(tR.Eta()) < 1.0f)) {
+      eventType =  2;
+    } else if (tR.Eta() < +1.0f) {
+      eventType = -1;
+    } else if (tL.Eta() > -1.0f) {
+      eventType = +1;
+    } else {
+      eventType =  2;
+    }
+    AliDebugF(5, "eventType=%2d gap=%6.3f etaLR=%6.3f,%6.3f dLR=%6.3f,%6.3f",
+	   eventType, etaGap, tL.Eta(), tR.Eta(), dL, dR);
+  }
+  return eventType;
+}
 
 void AliAnalysisTaskDiffCrossSections::MCInfo::Fill(const AliMCEvent* mcEvent, TString mcType) {
   fEventType = fEventTypeGen = kInvalid;
@@ -264,7 +450,7 @@ Bool_t AliAnalysisTaskDiffCrossSections::MCInfo::FindSingleDiffraction(AliStack 
   if (i < 0)
     return kFALSE;
 
-  Printf("i=%4d idx= %4d,%4d y=%6.3f,%6.3f pdg=%4i,%4i", i, idx[0], idx[1], y[0], y[1], pdg[0], pdg[1]);
+  AliDebugF(5, "i=%4d idx= %4d,%4d y=%6.3f,%6.3f pdg=%4i,%4i", i, idx[0], idx[1], y[0], y[1], pdg[0], pdg[1]);
 
   const TParticle  *psel = stack->Particle(i);
   const TLorentzVector v = GetV(psel);
@@ -457,10 +643,16 @@ void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
     t->Branch("FastOrMap",    &fFastOrMap,    32000, 0);
   if (fUseBranch.Contains("FiredChipMap"))
     t->Branch("FiredChipMap", &fFiredChipMap, 32000, 0);
+  if (fUseBranch.Contains("ESDVZERO"))
+    t->Branch("ESDVZERO", &fESDVZERO, 32000, 0);
+  if (fUseBranch.Contains("ESDAD"))
+    t->Branch("ESDAD", &fESDAD, 32000, 0);
   if (fIsMC)
     t->Branch("AliAnalysisTaskDG::MCInfo", &fMCInfo);
 
   t->Branch("eventType",    &fEventType);
+  t->Branch("idxEtaL",      &fIdxEtaL);
+  t->Branch("idxEtaR",      &fIdxEtaR);
   t->Branch("etaL",         &fEtaL);
   t->Branch("etaR",         &fEtaR);
   t->Branch("etaGap",       &fEtaGap);
@@ -535,17 +727,18 @@ TVector3 AliAnalysisTaskDiffCrossSections::GetRandomVtxPosition() const {
   return TVector3((fMeanVtxPos + fMeanVtxU*TVectorD(3, rnd)).GetMatrixArray());
 }
 TVector3 GetV0PseudoTrack(Int_t ch) {
+  // https://arxiv.org/pdf/1306.3130v2.pdf
   const Double_t r1[2][4] = {
-    { 4.6, 7.1, 11.7, 19.5 }, // C-side ring 0-4
+    { 4.5, 7.3, 11.9, 19.5 }, // C-side ring 0-4
     { 4.3, 7.7, 13.9, 22.8 }  // A-side ring 0-4
   };
   const Double_t r2[2][4] = {
-    { 7.1, 11.6, 19.1, 32.0 }, // C-side ring 0-4
+    { 7.1, 11.7, 19.3, 32.0 }, // C-side ring 0-4
     { 7.5, 13.7, 22.6, 41.2 }, // A-side ring 0-4
   };
-  const Double_t z[2] = {
-    -87.15, // C_side
-    329.00  // A-side
+  const Double_t z[2][4] = {
+    { -86, -87, -88, -88 }, // C-side ring 0-4
+    { 329, 329, 329, 329 }  // A-side ring 0-4
   };
 
   const Bool_t isForAcceptance = ch<0;
@@ -555,47 +748,13 @@ TVector3 GetV0PseudoTrack(Int_t ch) {
   const Int_t sector = (ch%8);
 
   if (isForAcceptance)
-    return TVector3(0, r1[1][ring], z[side]);
+    return TVector3(0, r1[1][ring], z[side][ring]);
 
   const Double_t r   = gRandom->Uniform(r1[side][ring], r2[side][ring]);
   const Double_t phi = gRandom->Uniform(sector*TMath::Pi()/4, (1+sector)*TMath::Pi()/4);
   return TVector3(r*TMath::Cos(phi),
 		  r*TMath::Sin(phi),
-		  z[side]);
-}
-
-TVector3 GetADPseudoTrack(Int_t ch) {
-  const Double_t z[2] = {
-    -1954.4, // C-side
-    +1696.7  // A-side
-  };
-  const Double_t innerRadius[2] = {
-    3.6, // C-side
-    6.2  // A-side
-  };
-  const Int_t signX[4] = { +1,-1,-1,+1 };
-  const Int_t signY[4] = { +1,+1,-1,-1 };
-
-  const Bool_t isForAcceptance = ch<0;
-  ch = (ch<0 ? -ch : ch);
-  const Int_t side   = ch/8;
-  const Int_t module = (ch%4);
-
-  if (isForAcceptance)
-    return TVector3(0, innerRadius[side], z[side]);
-
-  TVector2 v(0,0);
-  const Int_t maxIter=100*1000;
-  Int_t counter=0;
-  for (; v.Mod() < innerRadius[side] && counter<maxIter; ++counter) {
-    v.Set(gRandom->Uniform(0.54, 18.1+0.54),
-	  gRandom->Uniform(0.0,  21.4));
-  }
-  // if (counter == maxIter)
-  //   AliFatalGeneral("AD", "counter == maxIter");
-  return TVector3(signX[module]*v.X(),
-		  signY[module]*v.Y(),
-		  z[side]);
+		  z[side][ring]);
 }
 
 void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
@@ -641,10 +800,12 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   }
 
   if (!fIsMC) {
-    std::unique_ptr<const TObjArray> split(fTriggerSelection.Tokenize("|"));
+    TString tok = "";;
+    Ssiz_t from = 0;
     Bool_t selected = kFALSE;
-    for (Int_t i=0, n=split->GetEntries(); i<n && !selected; ++i)
-      selected = esdEvent->GetFiredTriggerClasses().Contains(split->At(i)->GetName());
+    while (fTriggerSelection.Tokenize(tok, from, "|") && !selected) {
+      selected |= esdEvent->GetFiredTriggerClasses().Contains(tok);
+    }
 
     AliInfo(Form("selected: %d %s", selected, esdEvent->GetFiredTriggerClasses().Data()));
     if (!selected)
@@ -679,30 +840,58 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   if (esdVertex->GetNContributors() < 1)
     vertexPosition = GetRandomVtxPosition();
 
+  UInt_t mask = 0; // for selecting pseudo-tracks
+  fTreeData.fPseudoTracks.Clear();
+
   std::vector<Double_t> eta;
   std::vector<Double_t> phi;
 
   // SPD
   if (fDetectorsUsed.Contains("SPD") && mult) {
+    mask |= PseudoTracks::kSPD;
     for (Int_t i=0, n=mult->GetNumberOfTracklets(); i<n; ++i) {
       phi.push_back(mult->GetPhi(i));
       eta.push_back(mult->GetEta(i));
+      fTreeData.fPseudoTracks.AddTrack(PseudoTrack(mult->GetEta(i),
+						   mult->GetPhi(i),
+						   1.0f, // charge=1 for SPD
+						   0.0f,
+						   PseudoTracks::kSPD |
+						   PseudoTracks::kOffline));
     }
   }
   // VZERO
   const AliESDVZERO *esdVZERO = esdEvent->GetVZEROData();
   if (fDetectorsUsed.Contains("V0") && esdVZERO) {
+    fESDVZERO = *esdVZERO;
+    mask |= PseudoTracks::kV0C;
+    mask |= PseudoTracks::kV0A;
     for (Int_t ch=0; ch<64; ++ch) {
       if (esdVZERO->GetBBFlag(ch)) {
 	const TVector3 v = GetV0PseudoTrack(ch)-vertexPosition;
 	phi.push_back(v.Phi());
 	eta.push_back(v.Eta());
+	const Bool_t isOffline = (ch < 32
+				  ? esdVZERO->BBTriggerV0C(ch%32)
+				  : esdVZERO->BBTriggerV0A(ch%32));
+	fTreeData.fPseudoTracks.AddTrack(PseudoTrack(v.Eta(),
+						     v.Phi(),
+						     esdVZERO->GetAdc(ch),
+						     0.0f,
+						     (ch< 32)*PseudoTracks::kV0C |
+						     (ch>=32)*PseudoTracks::kV0A |
+						     PseudoTracks::kOnline | (isOffline*PseudoTracks::kOffline)));
       }
     }
   }
   // FMD
   const AliESDFMD* esdFMD = esdEvent->GetFMDData();
   if (fDetectorsUsed.Contains("FMD") && esdFMD) {
+    mask |= PseudoTracks::kFMD1;
+    mask |= PseudoTracks::kFMD2i;
+    mask |= PseudoTracks::kFMD2o;
+    mask |= PseudoTracks::kFMD3i;
+    mask |= PseudoTracks::kFMD3o;
     for (UShort_t d=1; d<4; ++d) {
       const UShort_t nRng(d == 1 ? 1 : 2);
       for (UShort_t i=0; i<nRng; ++i) {
@@ -716,6 +905,16 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 	      continue;
 	    phi.push_back(esdFMD->Phi(d, r, s, t)*TMath::Pi()/180.0);
 	    eta.push_back(esdFMD->Eta(d, r, s, t));
+	    fTreeData.fPseudoTracks.AddTrack(PseudoTrack(esdFMD->Eta(d, r, s, t),
+							 esdFMD->Phi(d, r, s, t)*TMath::Pi()/180.0,
+							 fmdMult,
+							 0.0f,
+							 (d==1)       *PseudoTracks::kFMD1  |
+							 (d==2)*(i==0)*PseudoTracks::kFMD2i |
+							 (d==2)*(i==1)*PseudoTracks::kFMD2o |
+							 (d==3)*(i==0)*PseudoTracks::kFMD3i |
+							 (d==3)*(i==1)*PseudoTracks::kFMD3o |
+							 PseudoTracks::kOffline));
 	  }
 	}
       }
@@ -724,6 +923,9 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   // AD
   const AliESDAD *esdAD = esdEvent->GetADData();
   if (fDetectorsUsed.Contains("AD") && esdAD) {
+    fESDAD = *esdAD;
+    mask |= PseudoTracks::kADC;
+    mask |= PseudoTracks::kADA;
     for (Int_t side=0; side<2; ++side) {
       if (side==0 && !fDetectorsUsed.Contains("ADC"))
 	continue;
@@ -731,83 +933,28 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 	continue;
       for (Int_t module=0; module<4; ++module) {
 	const Int_t ch = 8*side + module;
-	if (esdAD->GetBBFlag(ch) &&
-	    esdAD->GetBBFlag(ch+4)) {
+	if (esdAD->GetBBFlag(ch) && esdAD->GetBBFlag(ch+4)) {
 	  const TVector3 v = GetADPseudoTrack(ch)-vertexPosition;
 	  phi.push_back(v.Phi());
 	  eta.push_back(v.Eta());
+	  const Bool_t isOffline = (side == 0
+				    ? (esdAD->BBTriggerADC(ch%8) && esdAD->BBTriggerADC((ch+4)%8))
+				    : (esdAD->BBTriggerADC(ch%8) && esdAD->BBTriggerADC((ch+4)%8)));
+	  fTreeData.fPseudoTracks.AddTrack(PseudoTrack(v.Eta(),
+						       v.Phi(),
+						       esdAD->GetAdc(ch),
+						       esdAD->GetAdc(ch+4),
+						       (ch< 8)*PseudoTracks::kADC |
+						       (ch>=8)*PseudoTracks::kADA |
+						       PseudoTracks::kOnline | (isOffline*PseudoTracks::kOffline)));
 	}
       }
     }
   }
 
-  // default is for V0:
-  Double_t etaAccL = -3.7;
-  Double_t etaAccR = +5.1;
-  if (fDetectorsUsed.Contains("AD")) {
-    const Double_t phiVertex = vertexPosition.Phi();
-    if (fDetectorsUsed.Contains("ADC")) {
-      TVector3 vL = GetADPseudoTrack(-1);
-      vL.RotateZ(-TMath::Pi()/2 + phiVertex);
-      etaAccL = (vL - vertexPosition).Eta();
-    }
-    if (fDetectorsUsed.Contains("ADA")) {
-      TVector3 vR = GetADPseudoTrack(-9);
-      vR.RotateZ(-TMath::Pi()/2 + phiVertex);
-      etaAccR = (vR - vertexPosition).Eta();
-    }
-  }
-
-  fEtaL = fEtaR = fEtaGap = fEtaGapCenter = 0.0;
-  fEventType = 0;
-  if (!eta.empty()) {
-    std::sort(eta.begin(), eta.end());
-    std::sort(phi.begin(), phi.end());
-    fEtaL = eta.front();
-    fEtaR = eta.back();
-
-    TString line = "eta: ";
-    for (Int_t i=0; i<eta.size(); ++i) {
-      line += TString::Format("%6.3f ", eta[i]);
-    }
-    AliDebugF(5, "%s", line.Data());
-
-    const Double_t phiMin = phi.front();
-    const Double_t phiMax = phi.back();
-    // the following is OK for SPD,FMD,V0 but presumably needs to be generalized for AD
-    const Bool_t isOneTrack = (fEtaR - fEtaL < 0.5 &&
-			       TMath::Abs(std::fmod(phiMax-phiMin, TMath::Pi())) < TMath::Pi()/2);
-    if (isOneTrack) {
-      const Double_t etaCenter = 0.5*(fEtaL + fEtaR);
-      fEventType = 2*(etaCenter > 0.0) - 1;
-      AliDebugF(5, "eventType=%2d center=%6.3f etaLR=%6.3f,%6.3f",
-		fEventType, etaCenter, fEtaL, fEtaR);
-    } else {
-      const Double_t dL = fEtaL - etaAccL;
-      const Double_t dR = etaAccR - fEtaR;
-      fEtaGap = 0.0;
-      for (std::vector<double>::const_iterator i=eta.begin(), j=i+1, jend=eta.end(); j!=jend; ++i, ++j) {
-	if (*j - *i > fEtaGap) {
-	  fEtaGap       =      *j - *i;
-	  fEtaGapCenter = 0.5*(*j + *i);
-	}
-      }
-      if (fEtaGap > dL && fEtaGap > dR) {
-	fEventType = 2;
-      } else if ((TMath::Abs(fEtaL) < 1 &&
-		  TMath::Abs(fEtaR) < 1)) {
-	fEventType = 2;
-      } else if (fEtaR < +1) {
-	fEventType = -1;
-      } else if (fEtaL > -1) {
-	fEventType = +1;
-      } else {
-	fEventType = 2;
-      }
-      AliDebugF(5, "eventType=%2d gap=%6.3f etaLR=%6.3f,%6.3f dLR=%6.3f,%6.3f",
-		fEventType, fEtaGap, fEtaL, fEtaR, dL, dR);
-    }
-  }
+  fEventType = fTreeData.fPseudoTracks.ClassifyEvent(fIdxEtaL, fIdxEtaR, fEtaGap, fEtaGapCenter, mask, SelectAll);
+  fEtaL = (fIdxEtaL >= 0 ? fTreeData.fPseudoTracks[fIdxEtaL].Eta() : -999.0f);
+  fEtaR = (fIdxEtaR >= 0 ? fTreeData.fPseudoTracks[fIdxEtaR].Eta() : -999.0f);
 
   fTE->Fill();
   PostData(1, fTE);
