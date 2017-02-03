@@ -195,6 +195,13 @@ public:
    */
   void SetTriggerAcceptanceOADB(const TString &nameAcceptanceOADB) { fNameAcceptanceOADB = nameAcceptanceOADB; }
 
+  /**
+   * Run event loop only on min. bias events. In this case EMCAL triggers
+   * are ignored, and the trigger selection code is not run.
+   * @param[in] exclusivemb If true only min. bias events are analyzed
+   */
+  void SetExclusiveMinBias(Bool_t exclusivemb) { fExclusiveMinBias = kTRUE; }
+
 protected:
 
   /**
@@ -370,6 +377,7 @@ protected:
   Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
   Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
+  Bool_t                          fExclusiveMinBias;          ///< Only look at Min. Bias trigger
 
 private:
   AliAnalysisTaskEmcalTriggerBase(const AliAnalysisTaskEmcalTriggerBase &);
