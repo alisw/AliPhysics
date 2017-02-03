@@ -84,7 +84,7 @@ AliJHistogramInterface::AliJHistogramInterface(AliJCard *cardP) :
     fKLongBin  .Set("KLong", "L",  "%.1f<k_{#parallel}<%.1f").SetBin(fCard->GetVector("KlongBorders"));
     fRGapBin   .Set("RGap",  "R",  "%.1f<R_{gap}<%.1f").SetBin(fCard->GetVector("RGapThresholds"));
     fEtaGapBin .Set("EtaGap", "E", "%.1f<#eta_{gap}<%.1f").SetBin(fCard->GetVector("EtaGapThresholds"));
-    fPhiGapBin .Set("PhiGap", "P", "%.1f<#phi_{gap}<%.1f" ).SetBin(fCard->GetVector("EtaGapThresholds"));
+    fPhiGapBin .Set("PhiGap", "P", "%.1f<#phi_{gap}<%.1f" ).SetBin(fCard->GetVector("PhiGapThresholds"));
     fMassBin   .Set("Mass",   "M", "%.1f<M_{jj}<%.1f").SetBin(fCard->GetVector("PairInvariantMassBins"));
     fTypBin    .Set("Type",   "D", "", AliJBin::kSingle ).SetBin( "0 1" );
     fTypBin3   .Set("Type3",   "D", "", AliJBin::kSingle ).SetBin( "0 1 2 3" );
