@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include "TPad.h"
 using namespace std;
 using std::cout;
 using std::setw;
@@ -283,6 +284,39 @@ void TriggerHighPtV0( const char * chinput,  const char * filter, Long_t nEvents
 }
 
 
+void GetRawSummary(){
+  //
+  // Compare content of the raw data files with the raw gids
+  // Input:
+  //   gidrawTree.list  - raw 
+  //   ref.list         - list of files with refernce triggers 
+  // Assumption - all files are in local directory
+  // 
+  // Output: 
+  //   log file with KeyValue of events summary
+  TObjArray *refArray=(gSystem->GetFromPipe("cat ref.list")).Tokenize("\n");
+  TTree  *treeRaw = new TTree;
+  treeRaw->ReadFile("gidrawTree.list","",'\t');
+  treeRaw->BuildIndex("gid");
+  ::Info("GetRawSummary.KeyValue.RawAll","%d",Int_t(treeRaw->GetEntries()));
+  for  (Int_t iRef=0; iRef<refArray->GetEntries(); iRef++){
+    TTree * tree = new TTree;
+    tree->ReadFile(refArray->At(iRef)->GetName());
+    TString tName = TString(refArray->At(iRef)->GetName()).ReplaceAll(".list","").ReplaceAll("filtered","");
+    tree->SetName(tName);
+    tree->BuildIndex("gid");
+    tree->AddFriend(treeRaw,"RAW");    
+    treeRaw->AddFriend(tree,TString::Format("T%d",iRef).Data());
+    Int_t nFiltered=tree->GetEntries();
+    Int_t nRaws0=treeRaw->Draw("gid%10000",TString::Format("gid==T%d.gid",iRef),"goff");
+    Int_t nRaws1=tree->Draw("gid%10000","gid==RAW.gid","goff");
+    ::Info(TString::Format("GetRawSummary.KeyValue.Filter%sAll",tName.Data()),"%d", nFiltered);
+    ::Info(TString::Format("GetRawSummary.KeyValue.Filter%sRaw0",tName.Data()),"%d",nRaws0);
+    ::Info(TString::Format("GetRawSummary.KeyValue.Filter%sRaw1",tName.Data()),"%d",nRaws1);
+    ::Info(TString::Format("GetRawSummary.KeyValue.Filter%sRatio",tName.Data()),"%f",nRaws1/Double_t(nFiltered));
+  }
+}
+
 void SummarizeLogs(const char * logTreeFile="log.tree"){
   //
   // Input parsed log files 
@@ -291,11 +325,11 @@ void SummarizeLogs(const char * logTreeFile="log.tree"){
   TTree logTree;
   logTree.ReadFile(logTreeFile,"name/C:key/C:value/d",'\t');  
   //
-  logTree->SetAlias("nEvents","value");
+  logTree.SetAlias("nEvents","value");
   logTree.SetMarkerStyle(21);
   logTree.SetMarkerColor(1);
   logTree.Draw("value:name","(strstr(key,\"TriggerHighPt.NEventsAll\")!=0)");
-  gPad->SetBottomeMargin(0.25);
+  gPad->SetBottomMargin(0.25);
   logTree.SetMarkerColor(2);
   logTree.Draw("value*100:name","(strstr(key,\"PtSelected\")!=0)","same");
   logTree.SetMarkerColor(4);
