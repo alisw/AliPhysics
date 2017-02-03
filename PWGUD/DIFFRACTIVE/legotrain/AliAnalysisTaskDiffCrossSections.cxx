@@ -196,7 +196,7 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::ClassifyEventBits(Int_t &i
 	if ((t2.DetFlags() & mask) != 0 && bits.TestBitNumber(j)) {
 	  if (t2.Eta() - t1.Eta() > etaGap) {
 	    etaGap       =      t2.Eta() - t1.Eta();
-	    etaGapCenter = 0.5*(t1.Eta() + t1.Eta());
+	    etaGapCenter = 0.5*(t2.Eta() + t1.Eta());
 	  }
 	  break;
 	}
