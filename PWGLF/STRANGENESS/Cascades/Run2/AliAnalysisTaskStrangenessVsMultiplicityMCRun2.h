@@ -367,6 +367,13 @@ private:
     Float_t fTreeCascVarBachPyMC; //!
     Float_t fTreeCascVarBachPzMC; //!
     
+    Float_t fTreeCascVarV0DecayX; //!
+    Float_t fTreeCascVarV0DecayY; //!
+    Float_t fTreeCascVarV0DecayZ; //!
+    Float_t fTreeCascVarCascadeDecayX; //!
+    Float_t fTreeCascVarCascadeDecayY; //!
+    Float_t fTreeCascVarCascadeDecayZ; //!
+    
     Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p) 
     //Track Labels (check for duplicates, etc)
     Int_t fTreeCascVarNegIndex; //!

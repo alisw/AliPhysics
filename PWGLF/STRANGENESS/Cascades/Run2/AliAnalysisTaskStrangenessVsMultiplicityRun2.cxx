@@ -262,6 +262,12 @@ fTreeCascVarPosPz(0),
 fTreeCascVarBachPx(0),
 fTreeCascVarBachPy(0),
 fTreeCascVarBachPz(0),
+fTreeCascVarV0DecayX(0),
+fTreeCascVarV0DecayY(0),
+fTreeCascVarV0DecayZ(0),
+fTreeCascVarCascadeDecayX(0),
+fTreeCascVarCascadeDecayY(0),
+fTreeCascVarCascadeDecayZ(0),
 fTreeCascVarV0Lifetime(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
@@ -424,6 +430,12 @@ fTreeCascVarPosPz(0),
 fTreeCascVarBachPx(0),
 fTreeCascVarBachPy(0),
 fTreeCascVarBachPz(0),
+fTreeCascVarV0DecayX(0),
+fTreeCascVarV0DecayY(0),
+fTreeCascVarV0DecayZ(0),
+fTreeCascVarCascadeDecayX(0),
+fTreeCascVarCascadeDecayY(0),
+fTreeCascVarCascadeDecayZ(0),
 fTreeCascVarV0Lifetime(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
@@ -667,6 +679,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
             fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
             fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+            // Decay positions
+            fTreeCascade->Branch("fTreeCascVarV0DecayX",&fTreeCascVarV0DecayX,"fTreeCascVarV0DecayX/F");
+            fTreeCascade->Branch("fTreeCascVarV0DecayY",&fTreeCascVarV0DecayY,"fTreeCascVarV0DecayY/F");
+            fTreeCascade->Branch("fTreeCascVarV0DecayZ",&fTreeCascVarV0DecayZ,"fTreeCascVarV0DecayZ/F");
+            fTreeCascade->Branch("fTreeCascVarCascadeDecayX",&fTreeCascVarCascadeDecayX,"fTreeCascVarCascadeDecayX/F");
+            fTreeCascade->Branch("fTreeCascVarCascadeDecayY",&fTreeCascVarCascadeDecayY,"fTreeCascVarCascadeDecayY/F");
+            fTreeCascade->Branch("fTreeCascVarCascadeDecayZ",&fTreeCascVarCascadeDecayZ,"fTreeCascVarCascadeDecayZ/F");
+            
             fTreeCascade->Branch("fTreeCascVarV0Lifetime",&fTreeCascVarV0Lifetime,"fTreeCascVarV0Lifetime/F");
         
             //Track Labels (check for duplicates, etc)
@@ -1402,6 +1422,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         xi->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );
         lXiRadius			= TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
 
+        fTreeCascVarCascadeDecayX = lPosXi[0];
+        fTreeCascVarCascadeDecayY = lPosXi[1];
+        fTreeCascVarCascadeDecayZ = lPosXi[2];
+        
         // - II.Step 3 : around the tracks : Bach + V0 (ESD)
         // ~ Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
         //-------------
@@ -1606,6 +1630,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
         xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
         lV0RadiusXi		= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
+        
+        fTreeCascVarV0DecayX = lPosV0Xi[0];
+        fTreeCascVarV0DecayY = lPosV0Xi[1];
+        fTreeCascVarV0DecayZ = lPosV0Xi[2];
         
         //========================================================================================
         //Calculate V0 lifetime for adaptive decay radius cut
