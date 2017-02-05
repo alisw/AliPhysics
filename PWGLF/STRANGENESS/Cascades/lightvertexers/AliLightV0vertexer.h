@@ -30,7 +30,9 @@ public:
     static void SetDefaultMinClusters(Double_t lMaxEta);
     void SetMaxEta(Double_t lMaxEta);
     void SetMinClusters(Double_t lMaxEta);
-
+    
+    //Experimental implementation of V0 refit functionality 
+    void SetDoRefit( Bool_t lDoRefit ) { fkDoRefit = lDoRefit; }
     
 private:
     static
@@ -59,6 +61,8 @@ private:
     Double_t fMaxEta;       // maximum eta value for track pre-selection
     Double_t fMinClusters;  // minimum single-track clusters value (>=)
     
+    Bool_t fkDoRefit; //improve precision with a V0 refit (+ calculate chi2)
+    
     ClassDef(AliLightV0vertexer,3)  // V0 verterxer
 };
 
@@ -72,7 +76,8 @@ fCPAmin(fgCPAmin),
 fRmin(fgRmin),
 fRmax(fgRmax),
 fMaxEta(fgMaxEta),
-fMinClusters(fgMinClusters)
+fMinClusters(fgMinClusters),
+fkDoRefit(kTRUE)
 {
 }
 
