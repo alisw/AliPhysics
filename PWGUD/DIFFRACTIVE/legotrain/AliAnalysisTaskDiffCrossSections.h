@@ -156,6 +156,16 @@ public:
       , fCharge2(charge2)
       , fDetFlags(detFlags) {}
 
+    PseudoTrack(const PseudoTrack& t)
+      : TObject(t)
+      , fEta(t.fEta)
+      , fPhi(t.fPhi)
+      , fCharge(t.fCharge)
+      , fCharge2(t.fCharge2)
+      , fDetFlags(t.fDetFlags) {}
+
+    virtual ~PseudoTrack() {}
+
     virtual void   Print(Option_t *option="") const;
     virtual Int_t  Compare(const TObject *obj) const;
     virtual Bool_t IsSortable() const { return kTRUE; }
@@ -168,6 +178,8 @@ public:
     Bool_t  operator<(const PseudoTrack& t) const { return fEta < t.fEta; }
   protected:
   private:
+    PseudoTrack& operator=(const PseudoTrack&); // not implemented
+
     Float_t fEta;      // pseudo-rapidity
     Float_t fPhi;      // phi (rad)
     Float_t fCharge;   // charge (=1 for SPD)
@@ -209,11 +221,14 @@ public:
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR, const TVector3 &vertexPosition) const;
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR) const;
 
+    void Sort() { fTracks.Sort(); }
+
     template<typename F> // F is a function (object) of type Bool_t f(const PseudoTrack&)
     Int_t ClassifyEvent(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
 			UInt_t mask, F& f) const {
-      TBits bits(fTracks.GetEntries());
-      for (Int_t i=0, n=fTracks.GetEntries(); i<n; ++i)
+      const Int_t nt = fTracks.GetEntriesFast();
+      TBits bits(nt);
+      for (Int_t i=0; i<nt; ++i)
 	if (f(GetTrackAt(i)))
 	  bits.SetBitNumber(i);
       return ClassifyEventBits(iEtaL, iEtaR, etaGap, etaGapCenter, mask, bits);
@@ -222,8 +237,8 @@ public:
     Int_t ClassifyEventBits(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
 			    UInt_t mask, const TBits& bits) const;
   private:
-    PseudoTracks(const PseudoTracks& );
-    PseudoTracks& operator=(const PseudoTracks& );
+    PseudoTracks(const PseudoTracks& ); // not implemented
+    PseudoTracks& operator=(const PseudoTracks& ); // not implemented
 
     Int_t                fCounter; //!
     mutable TClonesArray fTracks;
@@ -253,6 +268,10 @@ public:
     UInt_t       fPhysSelBits;
     Bool_t       fIsIncompleteDAQ;
     Bool_t       fIsSPDClusterVsTrackletBG;
+  private:
+    TreeData(const TreeData&); // not implemented
+    TreeData& operator=(const TreeData&); // not implemented
+
     ClassDef(TreeData, 5);
   } ;
 

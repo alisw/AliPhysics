@@ -56,7 +56,7 @@ AliAnalysisTaskDiffCrossSections::PseudoTracks::~PseudoTracks() {
 }
 
 Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::GetEntries() const {
-  return fTracks.GetEntries();
+  return fTracks.GetEntriesFast();
 }
 void  AliAnalysisTaskDiffCrossSections::PseudoTracks::AddTrack(const PseudoTrack& t) {
   if (fCounter >= fTracks.GetSize())
@@ -73,7 +73,7 @@ void  AliAnalysisTaskDiffCrossSections::PseudoTracks::Delete(Option_t *opt) {
   fTracks.Delete(opt);
 }
 const AliAnalysisTaskDiffCrossSections::PseudoTrack& AliAnalysisTaskDiffCrossSections::PseudoTracks::operator[](Int_t idx) const {
-  const PseudoTrack* p = dynamic_cast<const PseudoTrack* >(fTracks.At(idx));
+  const PseudoTrack* p = reinterpret_cast<const PseudoTrack* >(fTracks.At(idx));
   if (!p)
     AliFatalF("idx=%d is outside of the allowed range [0,%d)", idx, fTracks.GetSize());
   return *p;
@@ -146,20 +146,30 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::ClassifyEventBits(Int_t &i
   etaGap = etaGapCenter = 0.0f;
 
   Int_t eventType = 0; // -1 -> 1L, +1 -> 1R, +2 -> 2A
-  AliDebugF(5, "ClassifyEvent: nT=%d mask=0x%04X", fTracks.GetEntries(), mask);
+  const Int_t nt = fTracks.GetEntriesFast();
+  AliDebugF(5, "ClassifyEvent: nT=%d mask=0x%04X", nt, mask);
 
-  if (!fTracks.GetEntries()) // no pseudo-tracks
+  if (nt == 0) // no pseudo-tracks
     return eventType;
 
   Float_t etaAccL, etaAccR;
   FindAcceptance(mask, etaAccL, etaAccR);
-
   // boundaries of acceptance:
   AliDebugF(5, "etaAccLR= %.3f %.3f", etaAccL, etaAccR);
-  fTracks.Sort();
+
+  // make sure that fTracks is sorted
+  Float_t etaLast=0;
+  Bool_t isSorted = kTRUE;
+  for (Int_t i=0; i<nt && isSorted; ++i) {
+    const PseudoTrack &t = GetTrackAt(i);
+    isSorted = (i ? t.Eta() >= etaLast : kTRUE);
+    etaLast = t.Eta();
+  }
+  if (!isSorted)
+    fTracks.Sort();
 
   // find etaL,etaR indices
-  for (Int_t i=0, n=fTracks.GetEntries(); i<n; ++i) {
+  for (Int_t i=0; i<nt; ++i) {
     const PseudoTrack &t = GetTrackAt(i);
     if ((t.DetFlags() & mask) == 0 || !bits.TestBitNumber(i))
       continue;
@@ -170,6 +180,7 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::ClassifyEventBits(Int_t &i
     iEtaL = (iEtaL == -1 ? i : iEtaL);
     iEtaR = i;
   }
+
   AliDebugF(5, "ClassifyEvent: iL,iR=%d,%d", iEtaL, iEtaR);
   if (iEtaL == -1) // no pseudo-tracks passing cuts
     return eventType;
@@ -187,11 +198,11 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::ClassifyEventBits(Int_t &i
     const Float_t dL = tL.Eta() - etaAccL;
     const Float_t dR = etaAccR - tR.Eta();
     etaGap = etaGapCenter = 0.0;
-    for (Int_t i=0, n=fTracks.GetEntries(); i<n; ++i) {
+    for (Int_t i=0; i<nt; ++i) {
       const PseudoTrack &t1 = GetTrackAt(i);
       if ((t1.DetFlags() & mask) == 0 || !bits.TestBitNumber(i))
 	continue;
-      for (Int_t j=i+1, n=fTracks.GetEntries(); j<n; ++j) {
+      for (Int_t j=i+1; j<nt; ++j) {
 	const PseudoTrack &t2 = GetTrackAt(j);
 	if ((t2.DetFlags() & mask) != 0 && bits.TestBitNumber(j)) {
 	  if (t2.Eta() - t1.Eta() > etaGap) {
@@ -638,7 +649,7 @@ AliAnalysisTaskDiffCrossSections::~AliAnalysisTaskDiffCrossSections()
 }
 
 void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
-  t->Branch("AliAnalysisTaskDG::TreeData", &fTreeData);
+  t->Branch("TreeData", &fTreeData);
   if (fUseBranch.Contains("FastOrMap"))
     t->Branch("FastOrMap",    &fFastOrMap,    32000, 0);
   if (fUseBranch.Contains("FiredChipMap"))
@@ -648,7 +659,7 @@ void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
   if (fUseBranch.Contains("ESDAD"))
     t->Branch("ESDAD", &fESDAD, 32000, 0);
   if (fIsMC)
-    t->Branch("AliAnalysisTaskDG::MCInfo", &fMCInfo);
+    t->Branch("MCInfo", &fMCInfo);
 
   t->Branch("eventType",    &fEventType);
   t->Branch("idxEtaL",      &fIdxEtaL);
