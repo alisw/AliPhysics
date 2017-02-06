@@ -63,6 +63,10 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   void SetFillSparseForExpert(Bool_t a=kFALSE) { fFillSparseForExpert=a; }
   void SetUseTriggerSelection(Bool_t a=kFALSE) {fUseTriggerSelection=a;}
 
+  void SetUsePtWeights(Int_t opt=0, Float_t scaling=1.){ fUseptWeights=opt; fScalingFactPtWeight=scaling;}
+  void ConfigurePtWeights();
+  
+
  private:
   
   AliAnalysisTaskSEImpParResSparse(const AliAnalysisTaskSEImpParResSparse &source);
@@ -85,7 +89,6 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   AliTriggerConfiguration *fTrigConfig; // trigger configuration (read from OCDB)
   TString      fOCDBPath; // to the OCDB
   AliESDtrackCuts *fESDtrackCuts; // track cuts 
-  TList *fOutput;  //! 
   TH1F  *fNentries;   //! histogram of number of events
   TH1F  *fMultiplicity; //!
   Bool_t fUseCutGeoNcrNcl; /// flag for enabling/disabling geometrical cut on TPC track
@@ -105,8 +108,12 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   THnSparseF *fImpParzSparsePtEtaPhi; //!<! sparse
   THnSparseF *fImpParPullzSparsePtEtaPhi; //!<! sparse
   TH1F *fPtDistrib; //!<!
+  TH1F *fhPtWeights;           // histo with pt weights
+  Int_t fUseptWeights;  //0 no weights, 1 pp weights, 2 pPb weights, 3 PbPb weights
+  Float_t fScalingFactPtWeight;
+  TList *fOutput;  //! 
 
-  ClassDef(AliAnalysisTaskSEImpParResSparse,1); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  ClassDef(AliAnalysisTaskSEImpParResSparse,2); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif
