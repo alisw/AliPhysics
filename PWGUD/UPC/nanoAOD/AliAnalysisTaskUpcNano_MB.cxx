@@ -498,19 +498,19 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   	  fPIDsigma = nSigmaDistProton;
   	  vJPsiCandidate = vProton[0]+vProton[1];
   	  fChannel = 2;
-  	  if(nHighPt > 0) FillTree(fTreeJPsi,vJPsiCandidate);
+  	  FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
   if(nSigmaDistMuon < nSigmaDistElectron && (isMC || trigger.Contains("CCUP8-B"))){
   	  fPIDsigma = nSigmaDistMuon; 
   	  vJPsiCandidate = vMuon[0]+vMuon[1];
   	  fChannel = 1;
-  	  if(nHighPt > 0) FillTree(fTreeJPsi,vJPsiCandidate);
+  	  FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
   if(nSigmaDistMuon > nSigmaDistElectron && (isMC || trigger.Contains("CCUP8-B"))){ 
   	  fPIDsigma = nSigmaDistElectron;
   	  vJPsiCandidate = vElectron[0]+vElectron[1];
   	  fChannel = -1;
-  	  if(nHighPt > 0) FillTree(fTreeJPsi,vJPsiCandidate);
+  	  FillTree(fTreeJPsi,vJPsiCandidate);
   	  }
 
   if(nSigmaDistMuon > nSigmaDistElectron &&(isMC || trigger.Contains("CCUP9-B"))){
