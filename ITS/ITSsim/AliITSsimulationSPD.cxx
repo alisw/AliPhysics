@@ -21,6 +21,7 @@
 #include <TGeoGlobalMagField.h>
 #include <TH1.h>
 #include <TString.h>
+#include <TGeoMatrix.h>
 #include "AliITS.h"
 #include "AliITSdigitSPD.h"
 #include "AliITShit.h"
@@ -29,6 +30,7 @@
 #include "AliITSCalibrationSPD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsimulationSPD.h"
+#include "AliITSgeomTGeo.h"
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliMagF.h"
@@ -160,8 +162,9 @@ Bool_t AliITSsimulationSPD::SetTanLorAngle(Double_t WeightHole) {
   AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
   if (!fld) AliFatal("The field is not initialized");
   Double_t bz = fld->SolenoidField();
-  fTanLorAng = TMath::Tan(WeightHole*simpar->LorentzAngleHole(bz) +
-    WeightEle*simpar->LorentzAngleElectron(bz));
+  // RS: "-" sign to account for the fact that e.g. holes move against local Y axis 
+  fTanLorAng = -TMath::Tan(WeightHole*simpar->LorentzAngleHole(bz) +
+			   WeightEle*simpar->LorentzAngleElectron(bz));
   return kTRUE;
 }
 //______________________________________________________________________
@@ -407,7 +410,9 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
  Double_t hitTimeMax = hitWin[1]*(Double_t)fStrobeLenght*kBunchLenght + (Double_t)fStrobePhase;
  Double_t foTimeMin = foWin[0]*(Double_t)fStrobeLenght*kBunchLenght + (Double_t)fStrobePhase;
  Double_t foTimeMax = foWin[1]*(Double_t)fStrobeLenght*kBunchLenght + (Double_t)fStrobePhase;
-
+ // if module local Z is inverted wrt lab Z, it will see opposite B in its frame
+ double tanLorAngMod = AliITSgeomTGeo::GetMatrix(fModule)->GetRotationMatrix()[8]>0 ? fTanLorAng:-fTanLorAng;
+ 
  for(h=0;h<nhits;h++){
   if(AliDebugLevel()>0) {
    AliDebug(1,Form("Hits, %d", h));
@@ -441,7 +446,7 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
     sig = simpar->SigmaDiffusion1D(TMath::Abs(thick + y)); 
     sigx=sig;
     sigz=sig*fda;
-    if (fLorentz) ld=(y+thick)*fTanLorAng;
+    if (fLorentz) ld=(y+thick)*tanLorAngMod;
     SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
    } // end for t
   } else { // st == 0.0 deposit it at this point
@@ -454,7 +459,7 @@ void AliITSsimulationSPD::HitToSDigit(AliITSmodule *mod){
    sig = simpar->SigmaDiffusion1D(TMath::Abs(thick + y));
    sigx=sig;
    sigz=sig*fda;
-   if (fLorentz) ld=(y+thick)*fTanLorAng;
+   if (fLorentz) ld=(y+thick)*tanLorAngMod;
    SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
   } // end if st>0.0
 
@@ -562,7 +567,9 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
  Double_t hitTimeMax = hitWin[1]*(Double_t)fStrobeLenght*kBunchLenght + (Double_t)fStrobePhase;
  Double_t foTimeMin = foWin[0]*(Double_t)fStrobeLenght*kBunchLenght + (Double_t)fStrobePhase;
  Double_t foTimeMax = foWin[1]*(Double_t)fStrobeLenght*kBunchLenght + (Double_t)fStrobePhase;
-
+ // if module local Z is inverted wrt lab Z, it will see opposite B in its frame
+ double tanLorAngMod = AliITSgeomTGeo::GetMatrix(fModule)->GetRotationMatrix()[8]>0 ? fTanLorAng:-fTanLorAng;
+ 
  for(h=0;h<nhits;h++){
   if(AliDebugLevel()>0) {
    AliDebug(1,Form("Hits, %d", h));
@@ -595,7 +602,7 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
    sig = simpar->SigmaDiffusion1D(TMath::Abs(thick + y));
    sigx=sig;
    sigz=sig*fda;
-   if (fLorentz) ld=(y+thick)*fTanLorAng;
+   if (fLorentz) ld=(y+thick)*tanLorAngMod;
    SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
    //                cout << "sigx sigz " << sigx << " " << sigz << endl; // dom
   } // end for i // End Integrate over t
@@ -610,7 +617,7 @@ void AliITSsimulationSPD::HitToSDigitFast(AliITSmodule *mod){
    sig = simpar->SigmaDiffusion1D(TMath::Abs(thick + y));
    sigx=sig;
    sigz=sig*fda;
-   if (fLorentz) ld=(y+thick)*fTanLorAng;
+   if (fLorentz) ld=(y+thick)*tanLorAngMod;
    SpreadChargeAsym(x,z,ix,iz,el,sigx,sigz,ld,idtrack,h);
   } // end if st>0.0
 

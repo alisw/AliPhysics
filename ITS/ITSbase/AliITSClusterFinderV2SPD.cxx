@@ -116,7 +116,10 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
     }
     else {
       Float_t magField = field->SolenoidField();
-      tanLorentzAngle=repa->GetTanLorentzAngleHolesSPD() * magField / defaultField ;
+      // in B+ holes move clockwise, hence - sign.
+      tanLorentzAngle = -repa->GetTanLorentzAngleHolesSPD() * magField / defaultField ;
+      // if module local Z is inverted wrt lab Z, it will see opposite B in its frame 
+      if (mT2L->GetRotationMatrix()[8]<0) tanLorentzAngle = -tanLorentzAngle;
     }
   }
   //
