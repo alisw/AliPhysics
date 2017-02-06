@@ -599,24 +599,20 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
-  fReadMC ? fNentries->GetXaxis()->SetBinLabel(3,"nD0Selected") : fNentries->GetXaxis()->SetBinLabel(3,"Dstar<-D0");
-  fNentries->GetXaxis()->SetBinLabel(4,"nEventsGoodVtxS");
+  fReadMC ? fNentries->GetXaxis()->SetBinLabel(3,"nTrueD0Selected(MC)") : fNentries->GetXaxis()->SetBinLabel(3,"Dstar<-D0");
+  fNentries->GetXaxis()->SetBinLabel(4,"nEventsGoodVtxPrim");
   fNentries->GetXaxis()->SetBinLabel(5,"ptbin = -1");
   fNentries->GetXaxis()->SetBinLabel(6,"no daughter");
-  if(fSys==0) fNentries->GetXaxis()->SetBinLabel(7,"nCandSel(Tr)");
-  if(fReadMC && fSys==0){
-    fNentries->GetXaxis()->SetBinLabel(12,"K");
-    fNentries->GetXaxis()->SetBinLabel(13,"Lambda");
-  }
-  fNentries->GetXaxis()->SetBinLabel(14,"Pile-up Rej");
-  fNentries->GetXaxis()->SetBinLabel(15,"N. of 0SMH");
-  if(fSys==1) fNentries->GetXaxis()->SetBinLabel(16,"Nev in centr");
-  if(fIsRejectSDDClusters) fNentries->GetXaxis()->SetBinLabel(17,"SDD-Cls Rej");
-  fNentries->GetXaxis()->SetBinLabel(18,"Phys.Sel.Rej");
-  fNentries->GetXaxis()->SetBinLabel(19,"nEventsSelected");
-  fNentries->GetXaxis()->SetBinLabel(20,"D0 failed to be filled");
-  if(fReadMC) fNentries->GetXaxis()->SetBinLabel(21,"nEvsWithProdMech");
-  fNentries->GetXaxis()->SetBinLabel(22,"mismatch AOD/dAOD");
+  if(fSys==0) fNentries->GetXaxis()->SetBinLabel(7,"nCandSel(QualTr)");
+  fNentries->GetXaxis()->SetBinLabel(8,"Pile-up Rej");
+  fNentries->GetXaxis()->SetBinLabel(9,"N. of 0SMH");
+  fNentries->GetXaxis()->SetBinLabel(10,"zVtx>10cm");
+  if(fIsRejectSDDClusters) fNentries->GetXaxis()->SetBinLabel(11,"SDD-Cls Rej");
+  fNentries->GetXaxis()->SetBinLabel(12,"Phys.Sel.Rej (tr.mask)");
+  fNentries->GetXaxis()->SetBinLabel(13,"nEventsSelected");
+  fNentries->GetXaxis()->SetBinLabel(14,"D0 failed to be filled");
+  if(fReadMC) fNentries->GetXaxis()->SetBinLabel(15,"nEvsWithProdMech");
+  fNentries->GetXaxis()->SetBinLabel(16,"mismatch AOD/dAOD");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(4)->GetContainer()->GetName()));
@@ -664,7 +660,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     Int_t matchingAODdeltaAODlevel = AliRDHFCuts::CheckMatchingAODdeltaAODevents();
     if (matchingAODdeltaAODlevel<0 || (matchingAODdeltaAODlevel==0 && fAODProtection==1)) {
       // AOD/deltaAOD trees have different number of entries || TProcessID do not match while it was required
-      fNentries->Fill(21);
+      fNentries->Fill(15);
       return;
     }
   }
@@ -736,14 +732,14 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD, C0SMH-B-NOPF-ALL
   TString trigclass=aod->GetFiredTriggerClasses();
-  if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNentries->Fill(14);
+  if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNentries->Fill(8);
 
   //Call IsEventSelected only for Reco! (and Data of course)
   if(fRecoD0 && !fCutsD0->IsEventSelected(aod)) {
     if(fCutsD0->GetWhyRejection()==1) // rejected for pileup
-      fNentries->Fill(13);
-    if(fSys==1 && (fCutsD0->GetWhyRejection()==2 || fCutsD0->GetWhyRejection()==3)) fNentries->Fill(15);
-    if(fCutsD0->GetWhyRejection()==7) fNentries->Fill(17);
+      fNentries->Fill(7);
+    if(fCutsD0->GetWhyRejection()==6) fNentries->Fill(9);
+    if(fCutsD0->GetWhyRejection()==7) fNentries->Fill(11);
     return;
   }
 
@@ -754,7 +750,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
     if(aod->GetTriggerMask()==0 && (aod->GetRunNumber()>=195344 && aod->GetRunNumber()<=195677)) return;
   }
 
-  fNentries->Fill(18); //event selected after selection
+  fNentries->Fill(12); //event selected after selection
 
   //Setting PIDResponse for associated tracks
   fCorrelatorTr->SetPidAssociated();
@@ -780,7 +776,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       if(fDebug > 2) std::cout << "The MC event " << eventType << " not interesting for this analysis: skipping" << std::endl;
       return; 
     }
-    fNentries->Fill(20); //event with particular production type                
+    fNentries->Fill(14); //event with particular production type                
   
   } //end of selection
 
@@ -799,7 +795,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       }
       if(TESTBIT(track->GetITSClusterMap(),2) || TESTBIT(track->GetITSClusterMap(),3) ){
 	skipEvent=kTRUE;
-	fNentries->Fill(16);
+	fNentries->Fill(10);
 	break;
       }
     }
@@ -896,7 +892,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
 
       if(!(vHF->FillRecoCand(aod,d))) {//Fill the data members of the candidate only if they are empty.   
-        fNentries->Fill(19); //monitor how often this fails 
+        fNentries->Fill(13); //monitor how often this fails 
         continue;
       }
 
@@ -911,7 +907,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
         nSelectedloose++;
         nSelectedtight++;      
         if(fSys==0){
-  	  if(fCutsD0->IsSelected(d,AliRDHFCuts::kTracks,aod))fNentries->Fill(6);       
+  	  if(fCutsD0->IsSelected(d,AliRDHFCuts::kTracks,aod)) fNentries->Fill(6);       
         }  
         Int_t ptbin=fCutsD0->PtBin(d->Pt());
         if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds

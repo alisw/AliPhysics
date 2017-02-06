@@ -17,8 +17,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
 
   TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",out8name="",out9name="",inname="";
   filename = AliAnalysisManager::GetCommonFileName();
-  filename += ":PWG3_D2H_";
-  filename+="D0InvMass";
+  filename += ":";
+  filename+="D0hCorrel";
   if(flagD0D0bar==1)filename+="D0";
   if(flagD0D0bar==2)filename+="D0bar";
   //list mass
@@ -42,7 +42,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   if(flagD0D0bar==1)out5name+="D0";
   if(flagD0D0bar==2)out5name+="D0bar";
   //correlation further studies
-  out6name ="MCStudyPlots";
+  out6name ="debugPlots";
   if(flagD0D0bar==1)out6name+="D0";
   if(flagD0D0bar==2)out6name+="D0bar";
   //correlated trk cuts
@@ -176,8 +176,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   corrCuts->PrintAll();
 
   TString centr="";
-  if(minC!=0 || maxC!=0) centr = Form("%.0f%.0f",minC,maxC);
-  else centr = Form("%.0f%.0f",RDHFD0Corrs->GetMinCentrality(),RDHFD0Corrs->GetMaxCentrality());
+  if(minC!=0 || maxC!=0) centr = Form("_%.0f%.0f",minC,maxC);
+  else centr = Form("_%.0f%.0f",RDHFD0Corrs->GetMinCentrality(),RDHFD0Corrs->GetMaxCentrality());
   out1name+=centr;
   out2name+=centr;
   out3name+=centr;
