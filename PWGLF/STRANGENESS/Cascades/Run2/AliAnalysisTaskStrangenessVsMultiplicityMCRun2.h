@@ -86,6 +86,9 @@ public:
     void SetUseLightVertexers ( Bool_t lUseLightVertexers = kTRUE) {
         fkUseLightVertexer = lUseLightVertexers;
     }
+    void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
+        fkDoV0Refit = lDoV0Refit;
+    }
 //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
@@ -216,7 +219,8 @@ private:
     
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
-    Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones 
+    Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
+    Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit() to improve precision 
     
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     

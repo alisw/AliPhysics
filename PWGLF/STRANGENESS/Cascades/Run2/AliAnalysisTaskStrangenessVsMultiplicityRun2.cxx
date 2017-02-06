@@ -142,6 +142,7 @@ fDownScaleFactorCascade ( 0.001  ),
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
+fkDoV0Refit       ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -311,6 +312,7 @@ fDownScaleFactorCascade ( 0.001  ),
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
+fkDoV0Refit       ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -932,6 +934,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         } else {
             //Instantiate vertexer object
             AliLightV0vertexer lV0vtxer;
+            //Set do or don't do V0 refit for improved precision 
+            lV0vtxer.SetDoRefit( kFALSE );
+            if (fkDoV0Refit) lV0vtxer.SetDoRefit(kTRUE);
             //Set Cuts
             lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lV0vtxer.SetCuts(fV0VertexerSels);
