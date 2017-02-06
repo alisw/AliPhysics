@@ -157,7 +157,14 @@ public:
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
     void AddConfiguration( AliCascadeResult *lCascadeResult );
-    //Standard configurations 
+//---------------------------------------------------------------------------------------
+    //Functions for analysis Bookkeepinp
+    // 1- Configure standard vertexing
+    void SetupStandardVertexing();
+    // 2- Standard Topological Selection QA Sweeps
+    void AddTopologicalQAV0();
+    void AddTopologicalQACascade();
+    // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration();
     void AddStandardCascadeConfiguration();
 //---------------------------------------------------------------------------------------

@@ -2107,6 +2107,44 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliCascadeR
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::SetupStandardVertexing()
+//Meant to store standard re-vertexing configuration
+{
+    //Tell the task to re-run vertexers
+    SetRunVertexers(kTRUE);
+    
+    //V0-Related topological selections
+    SetV0VertexerDCAFirstToPV(0.05);
+    SetV0VertexerDCASecondtoPV(0.05);
+    SetV0VertexerDCAV0Daughters(1.20);
+    SetV0VertexerCosinePA(0.98);
+    SetV0VertexerMinRadius(2.0);
+    SetV0VertexerMaxRadius(200);
+    
+    //Cascade-Related topological selections
+    SetCascVertexerMinV0ImpactParameter(0.05);
+    SetCascVertexerV0MassWindow(0.006);
+    SetCascVertexerDCABachToPV(0.02);
+    SetCascVertexerDCACascadeDaughters(1.2);
+    SetCascVertexerCascadeMinRadius(.8);
+    SetCascVertexerCascadeCosinePA(.98);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQAV0()
+//Add all configurations to do QA of topological variables for the V0 analysis
+{
+    
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade()
+//Add all configurations to do QA of topological variables for the V0 analysis
+{
+    
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
 //Meant to add some standard V0 analysis Configuration + its corresponding systematics
 {
@@ -2143,12 +2181,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
     // K0SHORT SELECTIONS
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
-    lcutsV0[0][0][ 0] =  0.1;    lcutsV0[0][1][ 0] =   0.1; lcutsV0[0][2][0] = 0.15; //DCANegToPV
-    lcutsV0[0][0][ 1] =  0.1;    lcutsV0[0][1][ 1] =   0.1; lcutsV0[0][2][1] = 0.15; //DCAPosToPV
-    lcutsV0[0][0][ 2] =  1.0;    lcutsV0[0][1][ 2] =   0.8; lcutsV0[0][2][2] =  0.7; //DCAV0Daughters
-    lcutsV0[0][0][ 3] = .998;    lcutsV0[0][1][ 3] = 0.999; lcutsV0[0][2][3] =.9995; //V0CosPA
-    lcutsV0[0][0][ 4] = 2.00;    lcutsV0[0][1][ 4] =  5.00; lcutsV0[0][2][4] = 8.00; //V0Radius
-    lcutsV0[0][0][ 5] =   15;    lcutsV0[0][1][ 5] =    10; lcutsV0[0][2][5] =    7; //Proper Lifetime (in cm)
+    lcutsV0[0][0][ 0] = 0.06;    lcutsV0[0][1][ 0] =   0.1; lcutsV0[0][2][0] = 0.17; //DCANegToPV
+    lcutsV0[0][0][ 1] = 0.06;    lcutsV0[0][1][ 1] =   0.1; lcutsV0[0][2][1] = 0.17; //DCAPosToPV
+    lcutsV0[0][0][ 2] = 0.95;    lcutsV0[0][1][ 2] =   0.8; lcutsV0[0][2][2] =  0.7; //DCAV0Daughters
+    lcutsV0[0][0][ 3] =.9986;    lcutsV0[0][1][ 3] = 0.999; lcutsV0[0][2][3] =.9992; //V0CosPA
+    lcutsV0[0][0][ 4] = 4.50;    lcutsV0[0][1][ 4] =  5.00; lcutsV0[0][2][4] = 5.50; //V0Radius
+    lcutsV0[0][0][ 5] =   12;    lcutsV0[0][1][ 5] =    10; lcutsV0[0][2][5] =    8; //Proper Lifetime (in cm)
     lcutsV0[0][0][ 6] =   70;    lcutsV0[0][1][ 6] =    70; lcutsV0[0][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[0][0][ 7] =  0.7;    lcutsV0[0][1][ 7] =   0.8; lcutsV0[0][2][7] = 0.85; //Least Ratio CrdRows/Findable
     lcutsV0[0][0][ 8] =  4.0;    lcutsV0[0][1][ 8] =   3.0; lcutsV0[0][2][8] =  2.5; //TPC dE/dx
@@ -2159,30 +2197,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
     lcutsV0[1][0][ 0] =  0.1;    lcutsV0[1][1][ 0] =   0.2; lcutsV0[1][2][0] = 0.30; //DCANegToPV
-    lcutsV0[1][0][ 1] =  0.1;    lcutsV0[1][1][ 1] =   0.1; lcutsV0[1][2][1] = 0.15; //DCAPosToPV
-    lcutsV0[1][0][ 2] =  1.0;    lcutsV0[1][1][ 2] =   0.8; lcutsV0[1][2][2] =  0.7; //DCAV0Daughters
-    lcutsV0[1][0][ 3] = .998;    lcutsV0[1][1][ 3] = 0.999; lcutsV0[1][2][3] =.9995; //V0CosPA
-    lcutsV0[1][0][ 4] = 2.00;    lcutsV0[1][1][ 4] =  5.00; lcutsV0[1][2][4] = 8.00; //V0Radius
-    lcutsV0[1][0][ 5] =   25;    lcutsV0[1][1][ 5] =    20; lcutsV0[1][2][5] =   15; //Proper Lifetime (in cm)
+    lcutsV0[1][0][ 1] = 0.08;    lcutsV0[1][1][ 1] =   0.1; lcutsV0[1][2][1] = 0.13; //DCAPosToPV
+    lcutsV0[1][0][ 2] =  1.0;    lcutsV0[1][1][ 2] =   0.8; lcutsV0[1][2][2] = 0.65; //DCAV0Daughters
+    lcutsV0[1][0][ 3] =.9984;    lcutsV0[1][1][ 3] = 0.999; lcutsV0[1][2][3] =.9992; //V0CosPA
+    lcutsV0[1][0][ 4] = 4.00;    lcutsV0[1][1][ 4] =  5.00; lcutsV0[1][2][4] = 6.00; //V0Radius
+    lcutsV0[1][0][ 5] =   24;    lcutsV0[1][1][ 5] =    20; lcutsV0[1][2][5] =   17; //Proper Lifetime (in cm)
     lcutsV0[1][0][ 6] =   70;    lcutsV0[1][1][ 6] =    70; lcutsV0[1][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[1][0][ 7] =  0.7;    lcutsV0[1][1][ 7] =   0.8; lcutsV0[1][2][7] = 0.85; //Least Ratio CrdRows/Findable
     lcutsV0[1][0][ 8] =  4.0;    lcutsV0[1][1][ 8] =   3.0; lcutsV0[1][2][8] =  2.5; //TPC dE/dx
     //================================================================================
-
+    
     //================================================================================
     // ANTILAMBDA SELECTIONS
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
-    lcutsV0[2][0][ 0] =  0.1;    lcutsV0[2][1][ 0] =   0.1; lcutsV0[2][2][0] = 0.15; //DCANegToPV
+    lcutsV0[2][0][ 0] = 0.08;    lcutsV0[2][1][ 0] =   0.1; lcutsV0[2][2][0] = 0.13; //DCANegToPV
     lcutsV0[2][0][ 1] =  0.1;    lcutsV0[2][1][ 1] =   0.2; lcutsV0[2][2][1] = 0.30; //DCAPosToPV
-    lcutsV0[2][0][ 2] =  1.0;    lcutsV0[2][1][ 2] =   0.8; lcutsV0[2][2][2] =  0.7; //DCAV0Daughters
-    lcutsV0[2][0][ 3] = .998;    lcutsV0[2][1][ 3] = 0.999; lcutsV0[2][2][3] =.9995; //V0CosPA
-    lcutsV0[2][0][ 4] = 2.00;    lcutsV0[2][1][ 4] =  5.00; lcutsV0[2][2][4] = 8.00; //V0Radius
-    lcutsV0[2][0][ 5] =   25;    lcutsV0[2][1][ 5] =    20; lcutsV0[2][2][5] =   15; //Proper Lifetime (in cm)
+    lcutsV0[2][0][ 2] =  1.0;    lcutsV0[2][1][ 2] =   0.8; lcutsV0[2][2][2] = 0.65; //DCAV0Daughters
+    lcutsV0[2][0][ 3] =.9984;    lcutsV0[2][1][ 3] = 0.999; lcutsV0[2][2][3] =.9992; //V0CosPA
+    lcutsV0[2][0][ 4] = 4.00;    lcutsV0[2][1][ 4] =  5.00; lcutsV0[2][2][4] = 6.00; //V0Radius
+    lcutsV0[2][0][ 5] =   24;    lcutsV0[2][1][ 5] =    20; lcutsV0[2][2][5] =   17; //Proper Lifetime (in cm)
     lcutsV0[2][0][ 6] =   70;    lcutsV0[2][1][ 6] =    70; lcutsV0[2][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[2][0][ 7] =  0.7;    lcutsV0[2][1][ 7] =   0.8; lcutsV0[2][2][7] = 0.85; //Least Ratio CrdRows/Findable
     lcutsV0[2][0][ 8] =  4.0;    lcutsV0[2][1][ 8] =   3.0; lcutsV0[2][2][8] =  2.5; //TPC dE/dx
     //================================================================================
+
     
     //STEP 3: Creation of output objects
     
