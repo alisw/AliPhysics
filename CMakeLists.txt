@@ -1,6 +1,7 @@
 #--------------------------------------------------------------------------#
 # Set Basic CMake Configuration                                            #
 #--------------------------------------------------------------------------#
+// fiddling with the make file
 
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 
