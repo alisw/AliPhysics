@@ -21,4 +21,4 @@ add_subdirectory(StrangenessInJets)
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWGJE)
 
-message(STATUS "PWGJE enabled")
+message(STATUS "PWGJET enabled")
