@@ -23,6 +23,7 @@
 <img src="gif/AliFITv5Class.gif">
 */
 //End Html
+// Alla.Maevskaya@cern.ch
 //
 // V0+ part by Lizardo Valencia Palomo    lvalenci@cern.ch          //
 //                                                                  //

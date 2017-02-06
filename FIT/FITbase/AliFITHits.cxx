@@ -69,13 +69,19 @@ ClassImp(AliFITHits)
 
 
   AliFITHits::AliFITHits(): AliHit(),
-			fVolume(999),  
-			fPmt(999),    
-			fMCP(999), 
-			fParticle(0),
-			fEtot(0),     
-			fTime(0)  
-  
+  fVolume(999),  
+  fPmt(999),    
+  fMCP(999), 
+  fParticle(0),
+  fEtot(0),     
+  fTime(0),
+  fCharge(999),
+  fPx(999),
+  fPy(999),
+  fPz(999),
+  fEloss(999),
+  fTlength(999),
+  fNphot(999)
 {
   //
   //  printf(" @@@ default AliFITHits::AliFITHits\n");
@@ -87,7 +93,14 @@ AliFITHits::AliFITHits(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
   fMCP(999),   
   fParticle(0),
   fEtot(0),     
-  fTime(0)  
+  fTime(0),
+  fCharge(999),
+  fPx(999),
+  fPy(999),
+  fPz(999),
+  fEloss(999),
+  fTlength(999),
+  fNphot(999)
 {
 //Normal T0 hit ctor
     // printf(" @@@ AliFITHits::AliFITHits constructor \n");
@@ -100,5 +113,12 @@ AliFITHits::AliFITHits(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits):
     fEtot=Double_t (hits[3]);
     fParticle=Int_t (hits[4]);
     fTime=hits[5];
+    fCharge = hits[6];
+    fPx = hits[7];
+    fPy = hits[8];
+    fPz = hits[9];
+    fEloss = hits[10];
+    fTlength = hits[11];
+    fNphot = hits[12];
   }
 
