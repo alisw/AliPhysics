@@ -1,6 +1,20 @@
 #ifndef ALIHFINVMASSFITTER_H
 #define ALIHFINVMASSFITTER_H
 
+/* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+
+
+/////////////////////////////////////////////////////////////
+///
+/// \class AliHFInvMassFitter
+/// \brief AliHFInvMassFitter class for the fit of 
+///  invariant mass distribution of charm hadrons
+///
+/// \author Author: F.Prino, A. Rossi, C. Bianchin
+/////////////////////////////////////////////////////////////
+
+
 #include <TNamed.h>
 
 class TF1;
@@ -23,6 +37,13 @@ class AliHFInvMassFitter : public TNamed {
   void SetUseLikelihoodWithWeightsFit(){fFitOption="WL,E";}
   void SetUseChi2Fit(){fFitOption="E";}
   void SetFitOption(TString opt){fFitOption=opt.Data();};
+  void SetParticlePdgMass(Double_t mass){fMassParticle=mass;}
+  Double_t GetParticlePdgMass(){return fMassParticle;}
+  void SetPolDegreeForBackgroundFit(Int_t deg){
+    if(fTypeOfFit4Bkg!=6) AliFatal("fTypeOfFit4Bkg should be set to 6 to use higher order polynomials\n");
+    fPolDegreeBkg=deg;
+    SetNumberOfParams();
+  }
   void SetInitialGaussianMean(Double_t mean) {fMass=mean;} 
   void SetInitialGaussianSigma(Double_t sigma) {fSigmaSgn=sigma;} 
   void SetFixGaussianMean(Double_t mean){
@@ -85,6 +106,8 @@ class AliHFInvMassFitter : public TNamed {
   TF1*  CreateSignalFitFunction(TString fname, Double_t integral);
   TF1*  CreateSecondPeakFunction(TString fname, Double_t integral);
   TF1* CreateTotalFitFunction(TString fname);
+  Bool_t PrepareHighPolFit(TF1 *fback);
+  Double_t BackFitFuncPolHelper(Double_t *x,Double_t *par);
 
   void DrawFit();
 
@@ -92,6 +115,9 @@ class AliHFInvMassFitter : public TNamed {
   Double_t  fMinMass;          /// lower mass limit
   Double_t  fMaxMass;          /// upper mass limit
   Int_t     fTypeOfFit4Bkg;    /// background fit func
+  Int_t     fPolDegreeBkg;     /// degree of polynomial expansion for back fit (option 6 for back)
+  Int_t     fCurPolDegreeBkg;  /// help variable
+  Double_t  fMassParticle;     /// pdg value of particle mass
   Int_t     fTypeOfFit4Sgn;    /// signal fit func
   Double_t  fMass;             /// signal gaussian mean value
   Double_t  fMassErr;          /// unc on signal gaussian mean value  
@@ -110,7 +136,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fBkgFuncSb;        /// background fit function (1st step)
   TF1*      fBkgFunc;          /// background fit function (1st step)
   TF1*      fBkgFuncRef;       /// background fit function (2nd step)
-  Bool_t fSecondPeak;          /// swicth off/on second peak (for D+->KKpi in Ds)
+  Bool_t fSecondPeak;          /// switch off/on second peak (for D+->KKpi in Ds)
   Double_t fSecMass;           /// position of the 2nd peak
   Double_t fSecWidth;          /// width of the 2nd peak
   Bool_t fFixSecMass;          /// flag to fix the position of the 2nd peak
@@ -119,7 +145,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fFuncTot;          /// total fit function 
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,1); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,2); /// class for invariant mass fit
   /// \endcond
 };
 
