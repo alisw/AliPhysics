@@ -82,7 +82,7 @@ using namespace std;            // std namespace: so you can do things like 'cou
 //Int_t DeuteronCandidates = 0;
 
 
-//Double_t pi = 3.1415926535897932384626434;
+
 
 
 //Double_t deut_curves[2][2][3];  // [charge][mean,sigma][par]
@@ -298,6 +298,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 {
+
+//    	Double_t pi = 3.1415926535897932384626434;
 //    NEvents++;
     // user exec
     // this function is called once for each event
@@ -321,49 +323,30 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 //  fPIDResponse->SetTOFResponse(fAOD,AliPIDResponse::kT0_T0);
 //  fPIDResponse->SetTOFResponse(fAOD,AliPIDResponse::kBest_T0);
 
-
-    
     
     //////////////////////////////////////// MULTIPLICITY PART ////////////////////////////////////////
-/*    
-    AliMultSelection *MultSelection = static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection"));
 
-//    AliMultSelection *MultSelection=0;
-    MultSelection=(AliMultSelection*) fAOD->FindListObject("MultSelection");
-
-//  if(!MultSelection) return kTRUE;
-//  if(MultSelection->IsEventSelected()) return kTRUE;
-//  return kFALSE;
-    
-//  AliMultSelectionTask * MultSelection = AddTaskMultSelection(kFALSE); // user mode:    
-//  use the default calibration for runs which have not yet been calibrated
-//  MultSelection->SetUseDefaultCalib(kTRUE); // data
-    
-    //output to file to check if calibration existed in this dataset
-    if (MultSelection) {   fout<<"MULTSELECTION OBJECT WORKED"<<endl;   }
-    else               {   fout<<"MULTSELECTION OBJECT didn't WORK"<<endl;   }
-*/  
     cent_ntracks->Fill(fAOD->GetCentrality()->GetCentralityPercentile("V0M"), iTracks);
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
-    int NDeuterons          = 0;
-    int NDeuterons_pos      = 0;
-    int NDeuterons_neg      = 0;
-    int deut_flag_T         = 0;
-    int deut_flag_A         = 0;
-    int deut_flag_B         = 0;
-    int deut_track_num_T[20];               // it is highly improbable an event will be found with an excess of 20 deuteron candidates
-    int deut_track_num_pos_T[20];
-    int deut_track_num_neg_T[20];
-    int deut_track_num_A[20];
-    int deut_track_num_pos_A[20];
-    int deut_track_num_neg_A[20];
-    int deut_track_num_B[20];
-    int deut_track_num_pos_B[20];
-    int deut_track_num_neg_B[20];
+    int NDeuterons           = 0;
+    int NDeuterons_pos       = 0;
+    int NDeuterons_neg       = 0;
+    int deut_flag_T          = 0;
+    int deut_flag_A          = 0;
+    int deut_flag_B          = 0;
+    int deut_track_num_T     = -9999;;
+    int deut_track_num_pos_T = -9999;;
+//    int deut_track_num_neg_T = -9999;;
+    int deut_track_num_A     = -9999;;
+//    int deut_track_num_pos_A = -9999;;
+//    int deut_track_num_neg_A = -9999;;
+    int deut_track_num_B     = -9999;;
+//    int deut_track_num_pos_B = -9999;;
+//    int deut_track_num_neg_B = -9999;;
     int associated_tracks   = 0;
 
     struct track_node        // linked list, for efficient, dynamically allocated memory use
@@ -378,25 +361,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     conductor = root;
 
 
-    
-    for(int j = 0; j<10; j++)
-    {
-	deut_track_num_T[j]     = -9999;
-	deut_track_num_pos_T[j] = -9999;
-	deut_track_num_neg_T[j] = -9999;
-	deut_track_num_A[j]     = -9999;
-	deut_track_num_pos_A[j] = -9999;
-	deut_track_num_neg_A[j] = -9999;
-	deut_track_num_B[j]     = -9999;
-	deut_track_num_pos_B[j] = -9999;
-	deut_track_num_neg_B[j] = -9999;
-    }
 
     // loop over all these tracks
     for(Int_t i(0); i < iTracks; i++)
     {
 //	NTracks++;
-	
+
+
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
         if(!track) continue;                                                       // if we failed, skip this track
 	if(!(track->IsHybridGlobalConstrainedGlobal())){   continue;   }
@@ -404,7 +375,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 //	if(!(track->TestFilterBit(AliAODTrack::kTrkGlobal)) ) { continue; }
 
-//	if(!fTrackSelection->IsTrackAccepted(track)){   continue;   }  // markus' code
+//	if(!fTrackSelection->IsTrackAccepted(track)){   continue;   }  // from markus' code
 //	if(!(track->TestFilterBit(AliAODTrack::klsHybridTPCCG)) ) { continue; }
 //	DCA_XY->Fill(track->XAtDCA(), track->YAtDCA());
 
@@ -429,7 +400,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	{
 	    AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC, track, (AliPID::EParticleType) 0, nsigmaTPC);
 	    AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF, track, (AliPID::EParticleType) 0, nsigmaTOF);
-	    Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);/* && trk->IsOn(AliESDtrack::kTPCpid)*/;
+	    Bool_t tpcIsOk = (statusTPC == AliPIDResponse::kDetPidOk);     /* && trk->IsOn(AliESDtrack::kTPCpid)*/;
 	    Bool_t tofIsOk = (statusTOF == AliPIDResponse::kDetPidOk);
 
 	    if(tpcIsOk  && tofIsOk){   isModGlobal = 1;   }
@@ -461,8 +432,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	Double_t phi = track->Phi();
 	Double_t eta = track->Eta();
 	
-	if(phi <  -pi/2)    phi = phi + 2*pi;			if(phi <  -pi/2)    phi = phi + 2*pi;
-	if(phi > 3*pi/2)    phi = phi - 2*pi;			if(phi > 3*pi/2)    phi = phi - 2*pi;
+	if(phi <  -TMath::PiOver2())    phi = phi + TMath::TwoPi();			if(phi <  -TMath::PiOver2())    phi = phi + TMath::TwoPi();
+	if(phi > 3*TMath::PiOver2())    phi = phi - TMath::TwoPi();			if(phi > 3*TMath::PiOver2())    phi = phi - TMath::TwoPi();
 
 	fHistPt->Fill(track->Pt());
 	track_phi_hybrid->Fill(phi);
@@ -486,9 +457,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    {
 		m_squared_pos->Fill(mom,m2tof);
 		plength_vs_mom_pos->Fill(mom, length);
-		ttof_vs_mom_pos->Fill(mom, time_of_flight);
-		beta_vs_mom_pos->Fill(mom, Beta(track));
-		deltat_vs_mom_pos->Fill(mom, tof_minus_tpion(track));
+		ttof_vs_mom_pos->Fill(   mom, time_of_flight);
+		beta_vs_mom_pos->Fill(   mom, Beta(track));
+		deltat_vs_mom_pos->Fill( mom, tof_minus_tpion(track));
 
 		if(mom >= 1.1  &&  mom < 4.4)
 		{
@@ -500,21 +471,23 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
 		    {
 			m_squared_pos_cut_T->Fill(mom,m2tof);
-			deut_track_num_T[NDeuterons] = i;			NDeuterons++;
-			deut_track_num_pos_T[NDeuterons_pos] = i;		NDeuterons_pos++;
+			deut_track_num_T = i;
+		     /* deut_track_num_pos_T = i; */
+			NDeuterons++;
+			NDeuterons_pos++;
 			deut_flag_T = 1;
 		    }
 		    else if(m2tof < deut_mean -1 + cut_width * deut_sigma  &&   m2tof > deut_mean -1 - cut_width * deut_sigma)
 		    {
 			m_squared_pos_cut_A->Fill(mom,m2tof);
 			deut_flag_A = 1;
-			deut_track_num_A[NDeuterons] = i;
+			deut_track_num_A = i;
 		    }
 		    else if(m2tof < deut_mean +1 + cut_width * deut_sigma  &&   m2tof > deut_mean +1 - cut_width * deut_sigma)
 		    {
 			m_squared_pos_cut_B->Fill(mom,m2tof);
 			deut_flag_B = 1;
-			deut_track_num_B[NDeuterons] = i;
+			deut_track_num_B = i;
 		    }		    
 		}
 	    }
@@ -537,21 +510,23 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    if(m2tof < deut_mean + cut_width * deut_sigma  &&   m2tof > deut_mean - cut_width * deut_sigma)
 		    {
 			m_squared_neg_cut_T->Fill(mom,m2tof);
-			deut_track_num_T[NDeuterons] = i;			NDeuterons++;
-			deut_track_num_neg_T[NDeuterons_neg] = i;		NDeuterons_neg++;
+			deut_track_num_T = i;
+		    /*	deut_track_num_neg_T = i;*/
+			NDeuterons++;
+			NDeuterons_neg++;
 			deut_flag_T = 1;
 		    }
 		    else if(m2tof < deut_mean -1 + cut_width * deut_sigma  &&   m2tof > deut_mean -1 - cut_width * deut_sigma)
 		    {
 			m_squared_neg_cut_A->Fill(mom,m2tof);
 			deut_flag_A = 1;
-			deut_track_num_A[NDeuterons] = i;
+			deut_track_num_A = i;
 		    }
 		    else if(m2tof < deut_mean +1 + cut_width * deut_sigma  &&   m2tof > deut_mean +1 - cut_width * deut_sigma)
 		    {
 			m_squared_neg_cut_B->Fill(mom,m2tof);
 			deut_flag_B = 1;
-			deut_track_num_B[NDeuterons] = i;
+			deut_track_num_B = i;
 		    }
 		    
 		}
@@ -570,52 +545,95 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     if(deut_flag_T > 0)
     {
 //	DeuteronCandidates++;
-	int j = deut_track_num_T[0];
+	int j = deut_track_num_T;
 
 	AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-	Double_t deut_phi = track->Phi();
-	Double_t deut_mom = track->P();
-	Short_t  charge   = track->Charge();
-	Double_t deut_eta = track->Eta();
-	conductor = root->next;
-	if (conductor != 0)
+	if(!track) {}
+	else
 	{
-	    while(conductor->next != 0)
+	    Double_t deut_phi = track->Phi();
+	    Double_t deut_mom = track->P();
+	    Short_t  charge   = track->Charge();
+	    Double_t deut_eta = track->Eta();
+	    conductor = root->next;
+	    if (conductor != 0)
 	    {
+		while(conductor->next != 0)
+		{
+		    int k = conductor->track_num;
+		    conductor = conductor->next;
+		    
+		    if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
+		    {
+//		    NAssociatedTracks++;
+			AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
+			if(!track){}                                                               // if we failed, skip this track
+			else
+			{
+			    Double_t mom            = track->P();
+			    Double_t phi            = track->Phi();
+			    
+
+			    if(mom > 1.0  &&  mom < 5.0)
+			    {
+				Double_t dphi = deut_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				
+				deut_dphi_T->Fill(deut_mom, dphi);
+				
+				if(charge>0) {   deut_dphi_pos_T->Fill(deut_mom, dphi);   }
+				if(charge<0) {   deut_dphi_neg_T->Fill(deut_mom, dphi);   }
+				
+			    }
+			    if(deut_mom >= 3.25  &&  deut_mom < 4.25)
+			    {
+				Double_t eta  = track->Eta();
+				Double_t dphi = deut_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				
+				
+				if(     mom >= 0.5  &&  mom < 1.0){   deut_dphi_deta_p0510->Fill(dphi, deut_eta - eta);    }
+				else if(mom >= 1.0  &&  mom < 2.0){   deut_dphi_deta_p1020->Fill(dphi, deut_eta - eta);    }
+				else if(mom >= 2.0  &&  mom < 3.0){   deut_dphi_deta_p2030->Fill(dphi, deut_eta - eta);    }
+				if(     mom >= 1.0  &&  mom < 5.0){   deut_dphi_deta_p1050->Fill(dphi, deut_eta - eta);    }
+			    }
+			}
+		    }
+		}
+	    
 		int k = conductor->track_num;
 		conductor = conductor->next;
-
+//	    NAssociatedTracks++;
 		if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
 		{
-//		    NAssociatedTracks++;
 		    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
 		    if(!track){}                                                               // if we failed, skip this track
 		    else
 		    {
 			Double_t mom            = track->P();
 			Double_t phi            = track->Phi();
-
-
+			
 			if(mom > 1.0  &&  mom < 5.0)
 			{
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -pi/2)    dphi = dphi + 2*pi;			if(dphi <  -pi/2)    dphi = dphi + 2*pi;
-			    if(dphi > 3*pi/2)    dphi = dphi - 2*pi;			if(dphi > 3*pi/2)    dphi = dphi - 2*pi;
-
-			    deut_dphi_T->Fill(deut_mom, dphi);
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();		if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();		if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    
+			    deut_dphi_T->Fill(deut_mom, dphi);
 			    if(charge>0) {   deut_dphi_pos_T->Fill(deut_mom, dphi);   }
 			    if(charge<0) {   deut_dphi_neg_T->Fill(deut_mom, dphi);   }
-
 			}
 			if(deut_mom >= 3.25  &&  deut_mom < 4.25)
 			{
-			    Double_t eta  = track->Eta();
+			    Double_t eta            = track->Eta();
+			    
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -pi/2)    dphi = dphi + 2*pi;			if(dphi <  -pi/2)    dphi = dphi + 2*pi;
-			    if(dphi > 3*pi/2)    dphi = dphi - 2*pi;			if(dphi > 3*pi/2)    dphi = dphi - 2*pi;
-
-
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    
+			    
 			    if(     mom >= 0.5  &&  mom < 1.0){   deut_dphi_deta_p0510->Fill(dphi, deut_eta - eta);    }
 			    else if(mom >= 1.0  &&  mom < 2.0){   deut_dphi_deta_p1020->Fill(dphi, deut_eta - eta);    }
 			    else if(mom >= 2.0  &&  mom < 3.0){   deut_dphi_deta_p2030->Fill(dphi, deut_eta - eta);    }
@@ -624,190 +642,204 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		    }
 		}
 	    }
-
-	    int k = conductor->track_num;
-	    conductor = conductor->next;
-//	    NAssociatedTracks++;
-	    if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
-	    {
-		AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-		if(!track){}                                                               // if we failed, skip this track
-		else
-		{
-		    Double_t mom            = track->P();
-		    Double_t phi            = track->Phi();
-		    
-		    if(mom > 1.0  &&  mom < 5.0)
-		    {
-			Double_t dphi = deut_phi - phi;
-			if(dphi <  -pi/2)    dphi = dphi + pi;			if(dphi <  -pi/2)    dphi = dphi + pi;
-			if(dphi > 3*pi/2)    dphi = dphi - pi;			if(dphi > 3*pi/2)    dphi = dphi - pi;
-			
-			deut_dphi_T->Fill(deut_mom, dphi);
-			if(charge>0) {   deut_dphi_pos_T->Fill(deut_mom, dphi);   }
-			if(charge<0) {   deut_dphi_neg_T->Fill(deut_mom, dphi);   }
-		    }
-		    if(deut_mom >= 3.25  &&  deut_mom < 4.25)
-		    {
-			Double_t eta            = track->Eta();
-			
-			Double_t dphi = deut_phi - phi;
-			if(dphi <  -pi/2)    dphi = dphi + 2*pi;			if(dphi <  -pi/2)    dphi = dphi + 2*pi;
-			if(dphi > 3*pi/2)    dphi = dphi - 2*pi;			if(dphi > 3*pi/2)    dphi = dphi - 2*pi;
-			
-
-			if(     mom >= 0.5  &&  mom < 1.0){   deut_dphi_deta_p0510->Fill(dphi, deut_eta - eta);    }
-			else if(mom >= 1.0  &&  mom < 2.0){   deut_dphi_deta_p1020->Fill(dphi, deut_eta - eta);    }
-			else if(mom >= 2.0  &&  mom < 3.0){   deut_dphi_deta_p2030->Fill(dphi, deut_eta - eta);    }
-			if(     mom >= 1.0  &&  mom < 5.0){   deut_dphi_deta_p1050->Fill(dphi, deut_eta - eta);    }
-		    }
-		}
-	    }
 	}
-    }  // end of deuteron correlation
+    }  // end of deuteron correlation PRIMARY LOOP
 
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     if(deut_flag_A > 0)
     {
 //	DeuteronCandidates++;
-	int j = deut_track_num_A[0];
+	int j = deut_track_num_A;
 
 	AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-	Double_t deut_phi = track->Phi();
-	Double_t deut_mom = track->P();
-	Short_t  charge   = track->Charge();
-	
-	conductor = root->next;
-	if (conductor != 0)
+	if(!track) {}
+	else
 	{
-	    while(conductor->next != 0)
+	    Double_t deut_phi = track->Phi();
+	    Double_t deut_mom = track->P();
+	    Short_t  charge   = track->Charge();
+	    Double_t deut_eta = track->Eta();
+	    conductor = root->next;
+	    if (conductor != 0)
 	    {
+		while(conductor->next != 0)
+		{
+		    int k = conductor->track_num;
+		    conductor = conductor->next;
+		    
+		    if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
+		    {
+//		    NAssociatedTracks++;
+			AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
+			if(!track){}                                                               // if we failed, skip this track
+			else
+			{
+			    Double_t mom            = track->P();
+			    Double_t phi            = track->Phi();
+
+			    if(mom > 1.0  &&  mom < 5.0)
+			    {
+				Double_t dphi = deut_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				
+				deut_dphi_A->Fill(deut_mom, dphi);
+				
+				if(charge>0) {   deut_dphi_pos_A->Fill(deut_mom, dphi);   }
+				if(charge<0) {   deut_dphi_neg_A->Fill(deut_mom, dphi);   }
+			    }
+			    if(deut_mom >= 3.25  &&  deut_mom < 4.25)
+			    {
+				Double_t eta  = track->Eta();
+				Double_t dphi = deut_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    }
+			}
+		    }
+		}
+	    
 		int k = conductor->track_num;
 		conductor = conductor->next;
-
+//	    NAssociatedTracks++;
 		if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
 		{
-//		    NAssociatedTracks++;
 		    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
 		    if(!track){}                                                               // if we failed, skip this track
 		    else
 		    {
 			Double_t mom            = track->P();
 			Double_t phi            = track->Phi();
-
+			
 			if(mom > 1.0  &&  mom < 5.0)
 			{
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -pi/2)    dphi = dphi + 2*pi;			if(dphi <  -pi/2)    dphi = dphi + 2*pi;
-			    if(dphi > 3*pi/2)    dphi = dphi - 2*pi;			if(dphi > 3*pi/2)    dphi = dphi - 2*pi;
-
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();		if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();		if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    
 			    deut_dphi_A->Fill(deut_mom, dphi);
 			    if(charge>0) {   deut_dphi_pos_A->Fill(deut_mom, dphi);   }
 			    if(charge<0) {   deut_dphi_neg_A->Fill(deut_mom, dphi);   }
 			}
-		    }
-		}
-	    }
-
-	    int k = conductor->track_num;
-	    conductor = conductor->next;
-//	    NAssociatedTracks++;
-	    if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
-	    {
-		AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-		if(!track){}                                                               // if we failed, skip this track
-		else
-		{
-		    Double_t mom            = track->P();
-		    Double_t phi            = track->Phi();
-		    
-		    if(mom > 1.0  &&  mom < 5.0)
-		    {
-			Double_t dphi = deut_phi - phi;
-			if(dphi <  -pi/2)    dphi = dphi + pi;			if(dphi <  -pi/2)    dphi = dphi + pi;
-			if(dphi > 3*pi/2)    dphi = dphi - pi;			if(dphi > 3*pi/2)    dphi = dphi - pi;
-			
-			deut_dphi_A->Fill(deut_mom, dphi);
-			if(charge>0) {   deut_dphi_pos_A->Fill(deut_mom, dphi);   }
-			if(charge<0) {   deut_dphi_neg_A->Fill(deut_mom, dphi);   }
+			if(deut_mom >= 3.25  &&  deut_mom < 4.25)
+			{
+			    Double_t eta            = track->Eta();
+			    Double_t dphi = deut_phi - phi;
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    
+			}
 		    }
 		}
 	    }
 	}
-    }  // end of deuteron correlation
+    }  // end of deuteron correlation A LOOP
+
+
+
     
-    // mark B
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     if(deut_flag_B > 0)
     {
 //	DeuteronCandidates++;
-	int j = deut_track_num_B[0];
+	int j = deut_track_num_B;
 
 	AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-	Double_t deut_phi = track->Phi();
-	Double_t deut_mom = track->P();
-	Short_t  charge   = track->Charge();
-	
-	conductor = root->next;
-	if (conductor != 0)
+	if(!track) {}
+	else
 	{
-	    while(conductor->next != 0)
+	    Double_t deut_phi = track->Phi();
+	    Double_t deut_mom = track->P();
+	    Short_t  charge   = track->Charge();
+	    Double_t deut_eta = track->Eta();
+	    conductor = root->next;
+	    if (conductor != 0)
 	    {
+		while(conductor->next != 0)
+		{
+		    int k = conductor->track_num;
+		    conductor = conductor->next;
+		    
+		    if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
+		    {
+//		    NAssociatedTracks++;
+			AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
+			if(!track){}                                                               // if we failed, skip this track
+			else
+			{
+			    Double_t mom            = track->P();
+			    Double_t phi            = track->Phi();
+
+			    if(mom > 1.0  &&  mom < 5.0)
+			    {
+				Double_t dphi = deut_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				
+				deut_dphi_B->Fill(deut_mom, dphi);
+				
+				if(charge>0) {   deut_dphi_pos_B->Fill(deut_mom, dphi);   }
+				if(charge<0) {   deut_dphi_neg_B->Fill(deut_mom, dphi);   }
+			    }
+			    if(deut_mom >= 3.25  &&  deut_mom < 4.25)
+			    {
+				Double_t eta  = track->Eta();
+				Double_t dphi = deut_phi - phi;
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    }
+			}
+		    }
+		}
+	    
 		int k = conductor->track_num;
 		conductor = conductor->next;
-
+//	    NAssociatedTracks++;
 		if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
 		{
-//		    NAssociatedTracks++;
 		    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
 		    if(!track){}                                                               // if we failed, skip this track
 		    else
 		    {
 			Double_t mom            = track->P();
 			Double_t phi            = track->Phi();
-
+			
 			if(mom > 1.0  &&  mom < 5.0)
 			{
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -pi/2)    dphi = dphi + 2*pi;			if(dphi <  -pi/2)    dphi = dphi + 2*pi;
-			    if(dphi > 3*pi/2)    dphi = dphi - 2*pi;			if(dphi > 3*pi/2)    dphi = dphi - 2*pi;
-
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();		if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();		if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    
 			    deut_dphi_B->Fill(deut_mom, dphi);
 			    if(charge>0) {   deut_dphi_pos_B->Fill(deut_mom, dphi);   }
 			    if(charge<0) {   deut_dphi_neg_B->Fill(deut_mom, dphi);   }
 			}
-		    }
-		}
-	    }
-
-	    int k = conductor->track_num;
-	    conductor = conductor->next;
-//	    NAssociatedTracks++;
-	    if(k != j)  // if the k-th track is not the j-th track which is the deuteron of interest
-	    {
-		AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(k));         // get a track (type AliAODTrack) from the event
-		if(!track){}                                                               // if we failed, skip this track
-		else
-		{
-		    Double_t mom            = track->P();
-		    Double_t phi            = track->Phi();
-		    
-		    if(mom > 1.0  &&  mom < 5.0)
-		    {
-			Double_t dphi = deut_phi - phi;
-			if(dphi <  -pi/2)    dphi = dphi + pi;			if(dphi <  -pi/2)    dphi = dphi + pi;
-			if(dphi > 3*pi/2)    dphi = dphi - pi;			if(dphi > 3*pi/2)    dphi = dphi - pi;
-			
-			deut_dphi_B->Fill(deut_mom, dphi);
-			if(charge>0) {   deut_dphi_pos_B->Fill(deut_mom, dphi);   }
-			if(charge<0) {   deut_dphi_neg_B->Fill(deut_mom, dphi);   }
+			if(deut_mom >= 3.25  &&  deut_mom < 4.25)
+			{
+			    Double_t eta            = track->Eta();
+			    Double_t dphi = deut_phi - phi;
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    
+			}
 		    }
 		}
 	    }
 	}
-    }  // end of deuteron correlation    
-                                                        // continue until all the tracks are processed
+    }  // end of deuteron correlation B LOOP
+
+
+
+    
+                                                     // continue until all the tracks are processed
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
                                                         // it to a file

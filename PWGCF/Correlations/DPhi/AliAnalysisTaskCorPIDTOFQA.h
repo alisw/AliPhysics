@@ -26,19 +26,16 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	virtual Double_t        Beta(AliAODTrack *track);
 	virtual Double_t        tof_minus_tpion(AliAODTrack *track);
 	virtual Double_t        get_mass_squared(AliAODTrack *track);
-	const Double_t pi = 3.1415926535897932384626434;
 
-	Double_t deut_curves[2][2][3];  // [charge][mean,sigma][par]
-	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x) ",       1.1, 4.4);
 
-//	squiggly-boo
+	Double_t deut_curves[2][2][3];  /* [charge][mean,sigma][par]  */
+	TF1 *fit_deut_curve = new TF1("fit_m_mean",   "[0] + [1]*x + [2]/sqrt(x)",  1.1, 4.4);
+
     private:
 
         AliAODEvent*            fAOD;               //! input event
         TList*                  fOutputList;        //! output list
 	AliPIDResponse*         fPIDResponse;
-//	AliEmcalTrackSelection* fTrackSelection;
-
 	
 	TH1F*                   fHistPt;
 	
