@@ -748,7 +748,7 @@ Bool_t AliAnalysisTaskChargedJetsHadronCF::Run()
 
       Double_t vetoJetPt = 0.;
       if(vetoJet)
-        vetoJetPt = vetoJet->Pt();
+        vetoJetPt = vetoJet->Pt() - vetoJet->Area()*fJetsCont->GetRhoVal();
 
       if(!currentCut.IsCutFulfilled(jet->Pt(), refJet->Pt(), fCent, ptRatio, vetoJetPt))
         continue;
