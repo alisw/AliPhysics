@@ -601,7 +601,7 @@ void  AliOfflineTrigger::ExtractSelected(const char *rawFile, Int_t verbose){
     isSelected=(fTrgGIDEventNr[gid]==iEvent && fTrgGIDTimeStamp[gid]>0);   // gid in the list of triggered events
     fCounterFileInput++;
     if (!isSelected) continue;
-    if (verbose&1>0) {
+    if ((verbose&1)>0) {
       ::Info(" AliOfflineTrigger::ExtractSelected", "%s\t%d\t%llu\t%d\t%s",rawFile,iEvent,gid,fTrgGIDTimeStamp[fRAWEventNrGID[iEvent]], TTimeStamp(fTrgGIDTimeStamp[fRAWEventNrGID[iEvent]]).AsString("short"));
     }
     AliSysInfo::AddStamp(TString::Format("%s_BR",rawFile).Data(), 10, fCounterFileInput,fCounterFileInput);    
