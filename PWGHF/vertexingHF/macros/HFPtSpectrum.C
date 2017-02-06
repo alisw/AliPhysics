@@ -1012,6 +1012,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     hStatUncEffcFD->Write();
     hStatUncEffbFD->Write();
   }
+  systematics->Write();
 
   // Draw the cross-section 
   //  spectra->DrawSpectrum(gPrediction);
