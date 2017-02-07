@@ -45,6 +45,8 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fToleranceVeto(0.01),
    fSwitch(0),
    fLife(0),
+   fLowRadius(0),
+   fHighRadius(0),
    fMaxDCAVertex(0.3),
    fMinCosPointAngle(0.95),
    fMaxDaughtersDCA(0.5),
@@ -75,6 +77,8 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fToleranceVeto(copy.fToleranceVeto),
    fSwitch(copy.fSwitch),
    fLife(copy.fLife),
+   fLowRadius(copy.fLowRadius),
+   fHighRadius(copy.fHighRadius),
    fMaxDCAVertex(copy.fMaxDCAVertex),
    fMinCosPointAngle(copy.fMinCosPointAngle),
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
@@ -120,6 +124,8 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fToleranceVeto = copy.fToleranceVeto;
    fSwitch = copy.fSwitch;
    fLife  = copy.fLife;
+   fLowRadius = copy.fLowRadius;
+   fHighRadius  = copy.fHighRadius;
    fMaxDCAVertex = copy.fMaxDCAVertex;
    fMinCosPointAngle = copy.fMinCosPointAngle;
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
@@ -239,7 +245,7 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    Double_t v0Position[3]; // from $ALICE_ROOT/ANALYSIS/AliESDV0Cuts.cxx
    v0->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
    Double_t radius = TMath::Sqrt(TMath::Power(v0Position[0],2) + TMath::Power(v0Position[1],2));
-   if (radius < 0.5)  {
+   if ( ( radius < fLowRadius ) || ( radius > fHighRadius ) ) {
      AliDebugClass(2, "Failed fiducial volume");
      return kFALSE;   
    }
@@ -533,7 +539,7 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
    }
 
    Double_t radius = v0->RadiusV0();
-   if ( radius < 0.5 )  {
+   if ( ( radius < fLowRadius ) || ( radius > fHighRadius ) ){
      AliDebugClass(2, "Failed fiducial volume");
      return kFALSE;   
    }

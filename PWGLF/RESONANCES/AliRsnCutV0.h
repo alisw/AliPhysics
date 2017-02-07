@@ -29,6 +29,8 @@ public:
    void           SetToleranceVeto(Double_t value)         {fToleranceVeto = value;}
    void           SetSwitch(Bool_t value)                  {fSwitch = value;}
    void           SetfLife(Double_t value)                 {fLife = value;}
+   void           SetfLowRadius(Double_t value)            {fLowRadius = value;}
+   void           SetfHighRadius(Double_t value)           {fHighRadius = value;}    
    void           SetMaxDCAVertex(Double_t value)          {fMaxDCAVertex = value;}
    void           SetMinCosPointingAngle(Double_t value)   {fMinCosPointAngle = value;}
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
@@ -58,6 +60,8 @@ protected:
    Double_t         fToleranceVeto;    // Competing V0 Rejection. Read the note in AliRsnCutV0.cxx for more info.
    Bool_t           fSwitch;           // Switch for using Competing V0 Rejection
    Double_t         fLife;             // Lifetime for positive track
+   Double_t         fLowRadius;        // Lower Limit on Fiducial Volume
+   Double_t         fHighRadius;       // Higher Limit on Fiducial Volume
    Double_t         fMaxDCAVertex;     // max allowed DCA from primary vertex
    Double_t         fMinCosPointAngle; // min allowed cosine of pointing angle
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers

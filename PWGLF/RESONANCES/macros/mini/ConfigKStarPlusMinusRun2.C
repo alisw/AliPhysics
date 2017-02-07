@@ -23,6 +23,8 @@ Bool_t ConfigKStarPlusMinusRun2
    Float_t                 massTol,
    Float_t                 massTolVeto, 
    Float_t                 pLife, 
+   Float_t                 radiuslow,
+   Float_t                 radiushigh,    
    Bool_t                  Switch,     
    Float_t                 k0sDCA,
    Float_t                 k0sCosPoinAn,
@@ -78,7 +80,9 @@ Bool_t ConfigKStarPlusMinusRun2
    cutK0s->SetTolerance(massTol);
    cutK0s->SetToleranceVeto(massTolVeto);   //Rejection range for Competing V0 Rejection
    cutK0s->SetSwitch(Switch);    
-   cutK0s->SetfLife(pLife);    
+   cutK0s->SetfLife(pLife); 
+   cutK0s->SetfLowRadius(radiuslow); 
+   cutK0s->SetfHighRadius(radiushigh); 
    cutK0s->SetMaxRapidity(2.0);
    //
    AliRsnCutSet *cutSetK0s = new AliRsnCutSet("setK0s", AliRsnTarget::kDaughter);
