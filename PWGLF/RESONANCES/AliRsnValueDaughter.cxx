@@ -34,10 +34,17 @@
 //
 //  authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //           M. Vala (martin.vala@cern.ch)
+// modified: Kunal Garg (kgarg@cern.ch)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <Riostream.h>
+
+
+#include <TFormula.h>
+#include <TBits.h>
+
+
 #include "AliVVertex.h"
 #include "AliMultiplicity.h"
 #include "AliESDtrackCuts.h"
@@ -138,6 +145,8 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kV0Pt:        	        return "V0TransverseMomentum";
       case kV0NPt:        	        return "V0NegativeDaughterTransverseMomentum";
       case kV0PPt:        	        return "V0PositiveDaughterTransverseMomentum";
+      case kV0DCAXY:                return "V0TracksDCAXY";
+      case kV0Lifetime:             return "V0Lifetime";
       case kDaughterDCA:  	        return "V0DaughterDCA";
       case kCosPointAng:  	        return "V0CosineOfPointingAngle";
       case kLambdaProtonPIDCut:         return "V0LambdaProtonNsigma";
@@ -558,7 +567,11 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
      else {
        fComputedValue = -999;
        return kFALSE;
-     }	 	 
+     }	 	
+           
+           
+           
+           
 
    case kV0Mass:
      if(v0esd) {
@@ -642,6 +655,79 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        return kFALSE;
      }	 	 
 
+          
+   case kV0DCAXY:
+     if(v0esd){
+        AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+        UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0ESD->GetNindex());
+        AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
+         if(!nTrack) return kFALSE;
+         
+         Float_t b[2], bCov[3];
+         nTrack->GetImpactParameters(b, bCov);
+         fComputedValue =  b[0];
+       return kTRUE;
+     }	 	 
+       if(v0aod) {// NOTE. Not implemented for AOD
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+     else { 
+       fComputedValue = -999;
+       return kFALSE;
+     }	     
+           
+           
+      
+   case kV0Lifetime:
+     if(v0esd){
+         AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+         Double_t lMass = v0ESD->GetEffMass();   //Mass of V0 particle
+         
+         Double_t tV0mom[3];
+         v0ESD->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
+         Double_t lV0TotalMomentum = TMath::Sqrt(
+                                        tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );  //Total Momentum of V0 particle
+         
+         Double_t v0Position[3]; 
+         v0ESD->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
+                  
+         
+         AliESDEvent    *lESDEvent = fEvent->GetRefESD();
+   
+   Double_t xPrimaryVertex = -999.9;
+   Double_t yPrimaryVertex = -999.9;
+   Double_t zPrimaryVertex = -999.9;
+   
+   
+   xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
+   yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
+   zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
+   
+
+         
+         
+         Double_t lLength = TMath::Sqrt(TMath::Power(v0Position[0]- xPrimaryVertex,2) + TMath::Power(v0Position[1] - yPrimaryVertex,2)+ TMath::Power(v0Position[2]- zPrimaryVertex,2));     //Distance of V0 from primary vertex
+         
+         fComputedValue= TMath::Abs(lMass*lLength/lV0TotalMomentum);
+         return kTRUE;
+         }
+           if(v0aod) {// NOTE. Not implemented for AOD
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+     else { 
+       fComputedValue = -999;
+       return kFALSE;
+     }	     
+                
+           
+           
+           
+           
+           
+           
+           
    case kDaughterDCA:
      if(v0esd) {
        AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);

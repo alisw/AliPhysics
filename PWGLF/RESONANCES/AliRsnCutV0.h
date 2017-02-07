@@ -26,6 +26,9 @@ public:
    void           SetESDtrackCuts(AliESDtrackCuts *cuts)   {fESDtrackCuts = cuts;}
    void           SetHypothesis(Int_t code);
    void           SetTolerance(Double_t value)             {fTolerance = value;}
+   void           SetToleranceVeto(Double_t value)         {fToleranceVeto = value;}
+   void           SetSwitch(Bool_t value)                  {fSwitch = value;}
+   void           SetfLife(Double_t value)                 {fLife = value;}
    void           SetMaxDCAVertex(Double_t value)          {fMaxDCAVertex = value;}
    void           SetMinCosPointingAngle(Double_t value)   {fMinCosPointAngle = value;}
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
@@ -52,6 +55,9 @@ protected:
    Int_t            fHypothesis;       // PDG code corresponding to expected V0 hypothesis
    Double_t         fMass;             // mass corresponding to hypothesis
    Double_t         fTolerance;        // tolerance in the difference between computed and expected mass
+   Double_t         fToleranceVeto;    // Competing V0 Rejection. Read the note in AliRsnCutV0.cxx for more info.
+   Bool_t           fSwitch;           // Switch for using Competing V0 Rejection
+   Double_t         fLife;             // Lifetime for positive track
    Double_t         fMaxDCAVertex;     // max allowed DCA from primary vertex
    Double_t         fMinCosPointAngle; // min allowed cosine of pointing angle
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
