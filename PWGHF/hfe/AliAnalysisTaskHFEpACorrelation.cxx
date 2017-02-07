@@ -19,7 +19,7 @@
 //      Task for Heavy-flavour electron analysis in pPb collisions    //
 //      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 //																	  //
-//		version: Nov 18, 2016.	     						          //
+//		version: Fev 6, 2016.	     						          //
 //                                                                    //
 //	    Authors 							                          //
 //		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -83,6 +83,7 @@
 #include "AliVTrack.h"
 #include "AliEventPoolManager.h"
 #include "TObjArray.h"
+#include "AliMultSelection.h"
 //include to use reader as Lucile does
 #include "AliAODHeader.h"
 #include "AliAnalysisUtils.h"
@@ -321,6 +322,7 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation(const char *nam
 ,fEtaCutElectronBKLSMainSources_WithMotherW(0)
 ,fEtaCutElectronBKLSMainSources_WithMotherW_NW(0)
 ,fUseGlobalTracksHadron(kTRUE)
+,fCentralityValue(-1)
 {
     //Named constructor
     // Define input and output slots here
@@ -548,6 +550,7 @@ AliAnalysisTaskHFEpACorrelation::AliAnalysisTaskHFEpACorrelation()
 ,fEtaCutElectronBKLSMainSources_WithMotherW(0)
 ,fEtaCutElectronBKLSMainSources_WithMotherW_NW(0)
 ,fUseGlobalTracksHadron(kTRUE)
+,fCentralityValue(-1)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -1338,28 +1341,44 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
     if(!fIspp){
         if(fHasCentralitySelection)
         {
-            Float_t centrality = -1;
-            
-            if(fIsAOD)
+            fCentralityValue = -1;
+            //Run 2 (:
+            if (fAOD->GetRunNumber()>200000)
             {
-                //fCentrality = fAOD->GetHeader()->GetCentralityP();
-                fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+                AliMultSelection *MultSelection = 0x0;
+                MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+                if(!MultSelection)
+                {
+                    AliWarning("AliMultSelection object not found!");
+                }
+                else
+                {
+                    if (fEstimator==1)
+                    {
+                        fCentralityValue =  MultSelection->GetMultiplicityPercentile("ZNA");
+                    }
+                    else
+                    {
+                        fCentralityValue = MultSelection->GetMultiplicityPercentile("V0A");
+                    }
+                    
+                }
             }
             else
             {
-                fCentrality = fESD->GetCentrality();
+                //Run 1 centrality
+                fCentrality = ((AliAODHeader*)fAOD->GetHeader())->GetCentralityP();
+                if(fEstimator==1)
+                    fCentralityValue = fCentrality->GetCentralityPercentile("ZNA");
+                else
+                    fCentralityValue = fCentrality->GetCentralityPercentile("V0A");
             }
             
-            if(fEstimator==1) centrality = fCentrality->GetCentralityPercentile("ZEMvsZDC");
-            else centrality = fCentrality->GetCentralityPercentile("V0A");
+            fCentralityHist->Fill(fCentralityValue);
             
-            //printf("Centrality ZDC= %f VOA= %f  ZNA = %f ZNC = %f  ZPA = %f TRK = %f \n", fCentrality->GetCentralityPercentile("ZEMvsZDC") , fCentrality->GetCentralityPercentile("V0A"),fCentrality->GetCentralityPercentile("ZNA"), fCentrality->GetCentralityPercentile("ZNC"), fCentrality->GetCentralityPercentile("ZPA"), fCentrality->GetCentralityPercentile("TRK") );
+            if(fCentralityValue<fCentralityMin || fCentralityValue>fCentralityMax) return;
             
-            fCentralityHist->Fill(centrality);
-            
-            if(centrality<fCentralityMin || centrality>fCentralityMax) return;
-            
-            fCentralityHistPass->Fill(centrality);
+            fCentralityHistPass->Fill(fCentralityValue);
         }
     }
     //______________________________________________________________________
@@ -1813,9 +1832,9 @@ void AliAnalysisTaskHFEpACorrelation::UserExec(Option_t *)
         }
         else
         {
-            fPool = fPoolMgr->GetEventPool(fCentrality->GetCentralityPercentile("V0A"), fZvtx); // Get the buffer associated with the current centrality and z-vtx
+            fPool = fPoolMgr->GetEventPool(fCentralityValue, fZvtx); // Get the buffer associated with the current centrality and z-vtx
             
-            if(!fPool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentrality->GetCentralityPercentile("V0A"), fZvtx));
+            if(!fPool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f", fCentralityValue, fZvtx));
             
             fPool->UpdatePool(SelectedHadrons()); // fill the tracks in the event buffer. The ownership is handed over to the event mixing class. We are not allowed to delete tracksClone anymore!
         }
@@ -2125,9 +2144,9 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
         }
         else
         {
-            fPool = fPoolMgr->GetEventPool(fCentrality->GetCentralityPercentile("V0A"), fZvtx); // Get the buffer associated with the current centrality and z-vtx
+            fPool = fPoolMgr->GetEventPool(fCentralityValue, fZvtx); // Get the buffer associated with the current centrality and z-vtx
             
-            if(!fPool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f",fCentrality->GetCentralityPercentile("V0A"), fZvtx));
+            if(!fPool) AliFatal(Form("No pool found for centrality = %f, zVtx = %f",fCentralityValue, fZvtx));
         }
         if(fPool->GetCurrentNEvents() >= 5) // start mixing when 5 events are in the buffer
         {

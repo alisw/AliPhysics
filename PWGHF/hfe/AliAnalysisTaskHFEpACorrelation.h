@@ -180,6 +180,7 @@ private:
     AliCentrality			*fCentrality; //!
     Double_t				fCentralityMin;
     Double_t				fCentralityMax;
+    Double_t				fCentralityValue;
     Bool_t					fHasCentralitySelection;
     TH1F					*fCentralityHist; //!
     TH1F					*fCentralityHistPass; //!
