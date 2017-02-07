@@ -733,6 +733,8 @@ public:
   Bool_t GetCalculateCRCZDC() const {return this->fCalculateCRCZDC;};
   void SetCalculateEbEFlow(Bool_t const cCRC) {this->fCalculateEbEFlow = cCRC;};
   Bool_t GetCalculateEbEFlow() const {return this->fCalculateEbEFlow;};
+  void SetStoreZDCQVecVtxPos(Bool_t const cCRC) {this->fStoreZDCQVecVtxPos = cCRC;};
+  Bool_t GetStoreZDCQVecVtxPos() const {return this->fStoreZDCQVecVtxPos;};
   void SetUseVZERO(Bool_t const cCRC) {this->fUseVZERO = cCRC;};
   Bool_t GetUseVZERO() const {return this->fUseVZERO;};
   void SetUseZDC(Bool_t const cCRC) {this->fUseZDC = cCRC;};
@@ -1538,7 +1540,7 @@ private:
   TH1D *fZDCEPHist[20][3];  //! Run-by-run ZDCQvecHist
   TF1* fFitPol0EP; //!
   TProfile3D *fZDCVtxHist[4]; //! Run-by-run vtxZDCQvec
-//  TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
+  TProfile3D *fZDCVtxCenHist[10][4]; //! Run-by-run vtxZDCQvec
   TF1 *fZDCFitSec[4]; //! Run-by-run fit ZDCQvecHist
   TH1D *fZDCESEMinHist[2]; //!
   TH1D *fZDCESEMaxHist[2]; //!
@@ -1560,6 +1562,7 @@ private:
 //  TH3D* fhZNCenDis[fCRCMaxnRun][2]; //! ZN spectra
   TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
   const static Int_t fkCRCnCQVecVtxPos = 4;
+  Bool_t fStoreZDCQVecVtxPos; //
   TProfile3D *fCRCZDCQVecVtxPos[fCRCMaxnRun][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec
   TProfile3D *fCRCZDCQVecVtxPosCen[fCRCMaxnRun][fCRCMaxnCen][fkCRCnCQVecVtxPos]; //! Vtx positions re-centered Qvec in cen bins
   //  TProfile2D *fCRCZDCResCenEn; //!

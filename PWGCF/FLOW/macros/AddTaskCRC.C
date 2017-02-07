@@ -31,7 +31,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
                              Bool_t bRescaleZDC=kFALSE,
-                             Bool_t bSetQAZDC=kFALSE,
+                             Bool_t bSetStoreZDCQVecVtxPos=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
                              Bool_t bCenFlattening=kTRUE,
@@ -91,6 +91,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   Bool_t bRequireTOFSignal=kFALSE;
   Int_t bCutTPCbound=0;
   Bool_t bUsePhiEtaCuts=kFALSE;
+  Bool_t bSetQAZDC=kTRUE;
   
  // define CRC suffix
  TString CRCsuffix = ":CRC";
@@ -431,6 +432,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
   if (ZDCCalibFileName != "" && bUseZDC) {
     taskQC->SetRecenterZDC(kTRUE);
   }
+ taskQC->SetStoreZDCQVecVtxPos(bSetStoreZDCQVecVtxPos);
  taskQC->SetNUAforCRC(kTRUE);
  taskQC->SetCRCEtaRange(-0.8,0.8);
  taskQC->SetUseCRCRecenter(bUseCRCRecenter);

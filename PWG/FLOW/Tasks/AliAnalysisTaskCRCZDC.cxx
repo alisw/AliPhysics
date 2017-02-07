@@ -710,7 +710,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       if(!fMultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
-      }else{
+      } else {
         centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
         centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
         centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
