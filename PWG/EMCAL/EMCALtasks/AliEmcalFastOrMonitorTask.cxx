@@ -97,6 +97,11 @@ void AliEmcalFastOrMonitorTask::UserCreateOutputObjects() {
   fHistos->CreateTH2("hFastOrColRowFrequencyL1", "FastOr Frequency (col-row) at Level0", kMaxCol, -0.5, kMaxCol - 0.5, kMaxRow, -0.5, kMaxRow - 0.5);
   fHistos->CreateTH2("hEnergyFastorCell", "Sum of cell energy vs. fastor Energy", 1000, 0., 20., 1000 , 0., 20.);
 
+  // Helper histograms checking the mask status of cells and FastORs
+  fHistos->CreateTH1("hMaskedFastors", "Index of masked FastOR; FastOR index; Counts", 3001, -0.5, 3000.5);
+  fHistos->CreateTH1("hMaskedCells", "Index of masked cell; Cell index; Counts", 20001, -0.5, 20000.5);
+  fHistos->CreateTH1("hCellEnergyCount", "Counts of non-0 cell entries; Cell index; Counts", 20001, -0.5, 20000.5);
+
   // THnSparse for fastor-by-fastor energy decalibration
   TAxis fastorIDAxis(4992, -0.5, 4991.5), offlineaxis(200, 0., 20.), onlineaxis(200, 0., 20.), cellmaskaxis(5, -0.5, 4.5);
   const TAxis *sparseaxis[4] = {&fastorIDAxis, &offlineaxis, &onlineaxis, &cellmaskaxis};
@@ -136,6 +141,7 @@ void AliEmcalFastOrMonitorTask::RunChanged(Int_t newrun){
       for(auto masked : *maskedfastors){
         TParameter<int> *fastOrAbsID = static_cast<TParameter<int> *>(masked);
         fMaskedFastors.push_back(fastOrAbsID->GetVal());
+        fHistos->FillTH1("hMaskedFastors", fastOrAbsID->GetVal());
       }
       std::sort(fMaskedFastors.begin(), fMaskedFastors.end(), std::less<int>());
     }
@@ -150,11 +156,16 @@ void AliEmcalFastOrMonitorTask::RunChanged(Int_t newrun){
       for(auto mod : *maskhistos){
         TH2 *modhist = static_cast<TH2 *>(mod);
         TString modname = modhist->GetName();
+        AliDebugStream(1) << "Reading bad channels from histogram " << modname << std::endl;
         modname.ReplaceAll("EMCALBadChannelMap_Mod", "");
         Int_t modid = modname.Atoi();
         for(int icol = 0; icol < 48; icol++){
           for(int irow = 0; irow < 24; irow++){
-            if(modhist->GetBinContent(icol+1, irow+1) > 0.) fMaskedCells.push_back(fGeom->GetAbsCellIdFromCellIndexes(modid, irow, icol));
+            if(modhist->GetBinContent(icol, irow) > 0.){
+              int cellindex = fGeom->GetAbsCellIdFromCellIndexes(modid, irow, icol);
+              fMaskedCells.push_back(cellindex);
+              fHistos->FillTH1("hMaskedCells", cellindex);
+            }
           }
         }
       }
@@ -238,10 +249,16 @@ void AliEmcalFastOrMonitorTask::LoadEventCellData(){
    for(int icell = 0; icell < emccells->GetNumberOfCells(); icell++){
      int position = emccells->GetCellNumber(icell);
      double amplitude = emccells->GetAmplitude(icell);
-     int absFastor, col, row;
-     fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);
-     fGeom->GetPositionInEMCALFromAbsFastORIndex(absFastor, col, row);
-     fCellData(col, row) += amplitude;
+     if(amplitude > 0){
+       fHistos->FillTH1("hCellEnergyCount", position);
+       if(std::find(fMaskedCells.begin(), fMaskedCells.end(), position) != fMaskedCells.end()){
+         AliErrorStream() << "Non-0 cell energy " << amplitude << " found for masked cell " << position << std::endl;
+       }
+       int absFastor, col, row;
+       fGeom->GetTriggerMapping()->GetFastORIndexFromCellIndex(position, absFastor);
+       fGeom->GetPositionInEMCALFromAbsFastORIndex(absFastor, col, row);
+       fCellData(col, row) += amplitude;
+     }
    }
 }
 
