@@ -168,8 +168,8 @@ public:
     // 1- Configure standard vertexing
     void SetupStandardVertexing();
     // 2- Standard Topological Selection QA Sweeps
-    void AddTopologicalQAV0();
-    void AddTopologicalQACascade();
+    void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
+    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
     // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration();
     void AddStandardCascadeConfiguration();
