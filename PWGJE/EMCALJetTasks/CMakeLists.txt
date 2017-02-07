@@ -154,6 +154,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetPatchTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
+    UserTasks/AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
     UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerMatcher.cxx

@@ -74,6 +74,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetSparseMaker+;
 #pragma link C++ class AliAnalysisTaskEmcalTmpSparseMaker+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
 #pragma link C++ class AliAnalysisTaskEmcalJetTagger+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerMatcher+;
