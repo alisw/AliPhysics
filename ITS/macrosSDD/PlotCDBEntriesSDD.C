@@ -35,10 +35,10 @@ void MakePalette(){
 }
 
 
-void PlotCDBEntriesSDD(Int_t nrun=238145, Bool_t optVerbose=kFALSE){
+void PlotCDBEntriesSDD(Int_t nrun=267165, Int_t year=2016, Bool_t optVerbose=kFALSE){
   TGrid::Connect("alien:");
   AliCDBManager * man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
+  man->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB",year));
   man->SetRun(nrun);
   AliCDBEntry *pedpul = man->Get("ITS/Calib/CalibSDD");
   AliCDBEntry *inject = man->Get("ITS/Calib/DriftSpeedSDD");
@@ -696,11 +696,11 @@ void PlotDriftSpeed(AliCDBEntry *inject, Bool_t optVerbose){
   tleft->Draw();
   tright->Draw();
 
-  TCanvas* c3;
-  c3=new TCanvas("c3","Params vs. mod",900,900);
-  c3->Divide(2,2);
+  TCanvas* c3p;
+  c3p=new TCanvas("c3p","Params vs. mod",900,900);
+  c3p->Divide(2,2);
   
-  c3->cd(1);
+  c3p->cd(1);
   gPad->SetLeftMargin(0.14);
   poldegvsmod0->SetMarkerStyle(20);
   poldegvsmod0->Draw("AP");
@@ -712,7 +712,7 @@ void PlotDriftSpeed(AliCDBEntry *inject, Bool_t optVerbose){
   poldegvsmod1->Draw("SAMEP");
   tleft->Draw();
   tright->Draw();
-  c3->cd(2);
+  c3p->cd(2);
   gPad->SetLeftMargin(0.14);
   anmaxvsmod0->SetMarkerStyle(20);
   anmaxvsmod0->Draw("AP");
@@ -724,7 +724,7 @@ void PlotDriftSpeed(AliCDBEntry *inject, Bool_t optVerbose){
   anmaxvsmod1->Draw("SAMEP");
   tleft->Draw();
   tright->Draw();
-  c3->cd(3);
+  c3p->cd(3);
   gPad->SetLeftMargin(0.14);
   dvcevsmod0->SetMarkerStyle(20);
   dvcevsmod0->Draw("AP");
@@ -736,7 +736,7 @@ void PlotDriftSpeed(AliCDBEntry *inject, Bool_t optVerbose){
   dvcevsmod1->Draw("SAMEP");
   tleft->Draw();
   tright->Draw();
-  c3->cd(4);
+  c3p->cd(4);
   gPad->SetLeftMargin(0.14);
   dveevsmod0->SetMarkerStyle(20);
   dveevsmod0->Draw("AP");
@@ -820,7 +820,7 @@ void PlotOfflineCalib(AliCDBEntry *resp){
 
   printf("Charge vs. Time correction factor = %f\n",r->GetChargevsTime());
 
-  TCanvas* c1=new TCanvas("c1","Time Zero");
+  TCanvas* c1tz=new TCanvas("c1tz","Time Zero");
   hTimeZero->SetStats(0);
   hTimeZero->Draw("P");
   hTimeZero->GetXaxis()->SetTitle("Module Id");
@@ -828,11 +828,11 @@ void PlotOfflineCalib(AliCDBEntry *resp){
   TLatex* tt=new TLatex(0.2,0.8,Form("Average Tzero = %.2f",averTz));
   tt->SetNDC();
   tt->Draw();
-  c1->Modified();
+  c1tz->Modified();
 
-  TCanvas* c2=new TCanvas("c2","Vdrift Corr",800,900);
-  c2->Divide(1,2);
-  c2->cd(1);
+  TCanvas* c2c=new TCanvas("c2c","Vdrift Corr",800,900);
+  c2c->Divide(1,2);
+  c2c->cd(1);
   hVdriftCorrLeft->SetStats(0);
   hVdriftCorrLeft->Draw("P");
   hVdriftCorrRight->Draw("PSAME");
@@ -846,22 +846,24 @@ void PlotOfflineCalib(AliCDBEntry *resp){
   tc1->SetNDC();
   tc1->SetTextColor(4);
   tc1->Draw();
-  c2->cd(2);
+  c2c->cd(2);
   hdistVdriftCorrLeft->SetLineColor(2);
   hdistVdriftCorrLeft->GetXaxis()->SetTitle("Vdrift correction (#mum/ns)");
   hdistVdriftCorrLeft->Draw(); 
-  c2->Update();
+  gPad->Update();
   TPaveStats *stL=(TPaveStats*)hdistVdriftCorrLeft->GetListOfFunctions()->FindObject("stats");
   stL->SetY1NDC(0.71);
   stL->SetY2NDC(0.9);
   stL->SetTextColor(2);
   hdistVdriftCorrRight->SetLineColor(4);
   hdistVdriftCorrRight->Draw("SAMES");
-  c2->Update();
+  gPad->Update();
   TPaveStats *stR=(TPaveStats*)hdistVdriftCorrRight->GetListOfFunctions()->FindObject("stats");
   stR->SetY1NDC(0.51);
   stR->SetY2NDC(0.7);
   stR->SetTextColor(4);
+  gPad->Modified();
+  gPad->Update();
 
   TCanvas* c3=new TCanvas("c3","ADC calib",800,900);
   c3->Divide(1,2);
