@@ -242,6 +242,7 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
     const int numCentBins  = fcard->GetNoOfBins(kCentrType);
     const int numPttBins   = fcard->GetNoOfBins(kTriggType);
     const int numZvertex   = fcard->GetNoOfBins(kZVertType);
+    const int numXlongBins = fcard->GetNoOfBins(kXeType);
     
     fhistos->fhAcceptanceTraditional2D[0][0][1]->Fill(0.0,0.0);
     int nBinsEta = fhistos->fhAcceptanceTraditional2D[0][0][1]->GetNbinsX();
@@ -329,6 +330,39 @@ void AliJJtAnalysis::UserCreateOutputObjects(){
         
       } // trigger loop
     } // centrality loop
+    
+    
+    if(fcard->Get("TrackMergeSystematics") == 1){
+      
+      // Construct the track merge correction histogram from the obtained track merge correction values
+      for(int iCent = 0; iCent < numCentBins; iCent++){
+        for(int iPtt = 0; iPtt < numPttBins; iPtt++){
+          for(int iXlong = 0; iXlong < numXlongBins; iXlong++){
+            for(int iEta = 0; iEta < nBinsEta; iEta++){
+              for(int iPhi = 0; iPhi < nBinsPhi; iPhi++){
+                etaValue = binWidthEta/2.0 + iEta*binWidthEta - minValueEta;
+                phiValue = binWidthPhi/2.0 + iPhi*binWidthPhi - minValuePhi;
+                for(int iZ = 0; iZ < numZvertex; iZ++){
+                  correction = fAcceptanceCorrection->GetTrackMergeCorrection(etaValue,phiValue,iCent,iZ,iPtt,iXlong);
+                  if(correction < 1e-6){
+                    fhistos->fhDphiDetaTrackMergeCorrection[iCent][iZ][iPtt][iXlong]->Fill(etaValue,phiValue,0);
+                  } else {
+                    fhistos->fhDphiDetaTrackMergeCorrection[iCent][iZ][iPtt][iXlong]->Fill(etaValue,phiValue,1.0/correction);
+                  }
+                }
+              } // phi loop
+            } // eta loop
+          } // xLong loop
+          
+          // In case the histogram is rebinned in acceptance correction class, we need to
+          // normalize the distribution to one here
+          //double maxValue = fhistos->fhAcceptance3DNearSide[iCent][iPtt][0]->GetMaximum();
+          //if(maxValue > 0) fhistos->fhAcceptance3DNearSide[iCent][iPtt][0]->Scale(1.0/maxValue);
+          
+        } // trigger loop
+      } // centrality loop
+      
+    } // Track merge systematics
     
   } // End of quality control check
   

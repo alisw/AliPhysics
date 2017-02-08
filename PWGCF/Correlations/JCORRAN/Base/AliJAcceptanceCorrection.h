@@ -41,6 +41,7 @@ public:
   
   double GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int triggerBin);  // Acceptance correction using near side and sampling definitions as given in parameters
   double GetAcceptanceCorrection(int nearSideDefinition, int samplingMethod, double deltaEta, double deltaPhi, int centralityBin, int zVertexBin, int triggerBin);  // Acceptance correction using near side and sampling definitions as given in parameters
+  double GetTrackMergeCorrection(double deltaEta, double deltaPhi, int iCent, int iZVertex, int iPtt, int iXlong); // Getter for track merge correction
   
   AliJAcceptanceCorrection& operator=(const AliJAcceptanceCorrection& a); // Equal sign operator
   TH2D *GetAcceptanceHistogram(){return fDEtaDPhi3DNearAcceptanceCalculation;} // Getter for calculated acceptance
@@ -56,6 +57,7 @@ private:
   void NormalizeAcceptanceInclusive(AliJTH2D &acceptanceHisto, corrType assocType, double peakValue); // Normalize two dimensional histograms to interval [0,peakValue]
   void NormalizeAcceptanceTraditionalInclusive(AliJTH2D &acceptanceHisto, corrType assocType); // Normalize two dimensional histograms to interval [0,1]
   void NormalizeAcceptance3DNearSideInclusive(AliJTH2D &acceptanceHisto, corrType assocType); // Normalize two dimensional 3D near side histograms according to acceptance limits
+  void NormalizeTrackMerge(AliJTH2D &trackMergeHisto, corrType assocType); // Calculate and normalize the track merge correction histograms
   void Generate3DAcceptanceCorrection(); // Calculate 3D near side acceptance correction and store it in 2D histogram
   int GetRebin(double counts, int nBins, int dimension); // Get rebinning factor for histogram
   void RebinAndNormalize(TH2 *histogram, double peakValue); // Rebin and normalize two dimensional histogram
@@ -66,6 +68,7 @@ private:
   AliJTH1D fDEtaNearAcceptance;       // DeltaEta acceptance histogram for the near side
   AliJTH2D fDEtaDPhiNearAcceptance;   // DeltaEta DeltaPhi acceptance histogram for the near side
   AliJTH2D fDEtaDPhi3DNearAcceptance; // DeltaEta DeltaPhi acceptance histogram for the 3D near side
+  AliJTH2D fDEtaDPhiTrackMerge;       // DeltaEta DeltaPhi histogram for track merge correction
   
   TH2D *fDEtaDPhi3DNearAcceptanceCalculation; // Calculated acceptance correction histogram for 3D near side
   
@@ -74,6 +77,7 @@ private:
   bool fDEtaNearLoaded; // Tells whether the one dimensional traditional near side mixed event histogram is loaded or not
   bool fDEtaDPhiNearLoaded; // Tells whether the two dimensional traditional near side mixed event histogram is loaded or not
   bool fDEtaDPhi3DNearLoaded; // Tells whether the two dimensional 3D near side mixed event histogram is loaded or not
+  bool fDEtaDPhiTrackMergeLoaded; // Tells whether the two dimensional track merge correction histograms are loaded or not
   bool fLeadingParticleCorrelation; // Tells whether the acceptance histograms are done with leading particle
   bool fTestMode; // True = mixed event distributions not properly corrected in 3D near side. This setting can be used to test the effect of doing this correctly vs. doing thing wrong
   bool fUseSafeRadius; // False = use always 3D near side calculation to correct mixed event, True = use directly mixed event in the radius R < Pi/2, because in this area mixed event gives directly the correct correction. Outside this radius, correct mixed event using calculation

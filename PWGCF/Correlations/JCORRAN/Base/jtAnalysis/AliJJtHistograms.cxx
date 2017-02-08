@@ -116,6 +116,7 @@ AliJJtHistograms::AliJJtHistograms(AliJCard* cardP) :
   fhAcceptanceTraditional(),
   fhAcceptanceTraditional2D(),
   fhAcceptance3DNearSide(),
+  fhDphiDetaTrackMergeCorrection(),
   fmaxEtaRange(0),
   fenable2DHistos(false),
   fEnableAcceptanceQAHistos(false)
@@ -218,6 +219,7 @@ AliJJtHistograms::AliJJtHistograms(const AliJJtHistograms& obj) :
   fhAcceptanceTraditional(obj.fhAcceptanceTraditional),
   fhAcceptanceTraditional2D(obj.fhAcceptanceTraditional2D),
   fhAcceptance3DNearSide(obj.fhAcceptance3DNearSide),
+  fhDphiDetaTrackMergeCorrection(obj.fhDphiDetaTrackMergeCorrection),
   fmaxEtaRange(obj.fmaxEtaRange),
   fenable2DHistos(obj.fenable2DHistos),
   fEnableAcceptanceQAHistos(obj.fEnableAcceptanceQAHistos)
@@ -432,6 +434,14 @@ void AliJJtHistograms::CreateCorrelationHistograms()
       fhDphiDetaTrackMerge
         << TH2D( "hDphiDetaTrackMerge", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
         <<  fCentBin << fVtxBin << fPTtBin << fXEBin  << "END";
+      
+      if(fCard->Get("QualityControlLevel") > 0){
+        
+        fhDphiDetaTrackMergeCorrection
+          << TH2D( "hDphiDetaTrackMergeCorrection", "",  400*fmaxEtaRange, -2*fmaxEtaRange, 2*fmaxEtaRange, 640, -kJPi, kJPi)
+          <<  fCentBin << fVtxBin << fPTtBin << fXEBin  << "END";
+        
+      }
       
     }
     

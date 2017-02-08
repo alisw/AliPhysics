@@ -196,6 +196,7 @@ public:
   AliJTH2D fhAcceptance3DNearSide; //! Acceptance correction check for 3D near side deltaEta deltaPhi distribution
   AliJTH2D fhAcceptanceTraditional2DZ; //! Z-vertex binned acceptance correction check for traditional deltaEta deltaPhi distribution
   AliJTH2D fhAcceptance3DNearSideZ; //! Z-vertex binned acceptance correction check for 3D near side deltaEta deltaPhi distribution
+  AliJTH2D fhDphiDetaTrackMergeCorrection; //! Track merge correction check
 
   
 protected:

@@ -454,7 +454,14 @@ void AliJJtCorrelations::FillJtDistributionHistograms(fillType fTyp, int assocTy
   } else {
     geometricAcceptanceCorrection = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,fDeltaEta,fDeltaPhiPiPi,fCentralityBin,fpttBin);
   }
-  double weight = jt > 1e-3 ? geometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
+  double trackMergeCorrection = 1;
+  
+  // Note: z vertex binning not implemented. Only works for xlong bins.
+  if(fDoTrackMergingCorrection && assocType == 1 && iBin >= 0){
+    trackMergeCorrection = fAcceptanceCorrection->GetTrackMergeCorrection(fDeltaEta, fDeltaPhiPiPi, fCentralityBin, 0, fpttBin, iBin);
+  }
+  
+  double weight = jt > 1e-3 ? trackMergeCorrection * geometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
   double invariantMass = sqrt(2*(vTrigger->P()*vAssoc->P()-vTrigger->Vect().Dot(vAssoc->Vect())));
   
   // Fill the calculated values to histograms
@@ -514,6 +521,9 @@ void AliJJtCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, 
   // Find the phi difference in the interval ]-Pi,Pi]
   double dPhiRndm = atan2(sin(vTrigger->Phi()-vAssoc->Phi()), cos(vTrigger->Phi()-vAssoc->Phi()));
   
+  // If we do track merge correction, apply the cut condition for the generated pair
+  
+  
   // Find the acceptance correction for the found particle pair
   double geoAccCorrRndm = 0;
   if(fUseZVertexBinsAcceptance){
@@ -522,20 +532,29 @@ void AliJJtCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, 
     geoAccCorrRndm = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,dEtaRndm,dPhiRndm,fCentralityBin,fpttBin);
   }
   
+  double trackMergeCorrection = 1;
+  
+  // Note: z vertex binning not implemented. Only works for xlong bins.
+  // Can give wrong results for R-gap background. For systematic check
+  // this is not a problem since only the default eta-gap is used.
+  if(fDoTrackMergingCorrection && assocType == 1 && iBin >= 0){
+    trackMergeCorrection = fAcceptanceCorrection->GetTrackMergeCorrection(dEtaRndm, dPhiRndm, fCentralityBin, 0, fpttBin, iBin);
+  }
+  
   // Fill the background histograms
   if(iBin>=0){ //
     if(jt>1e-3) { //here we used and BgFidCut
       for(int iGap=0; iGap<=maxGap; iGap++){
-        hBackground[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+        hBackground[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, trackMergeCorrection * geoAccCorrRndm * fTrackPairEfficiency/jt);
         // To save memory, only save the histogram fro reference gap
         if(fill2DBackground && iGap == 5) hBackground2D[fCentralityBin][fpttBin][iBin]->Fill(dEtaRndm, dPhiRndm, fTrackPairEfficiency);
         hPtAssoc[fCentralityBin][iGap][fpttBin][iBin]->Fill(fpta, fTrackPairEfficiency);
         
         // Fill the background histogram for signed pairs
         if(fIsLikeSign){
-          hBackgroundLikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+          hBackgroundLikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, trackMergeCorrection * geoAccCorrRndm * fTrackPairEfficiency/jt);
         } else {
-          hBackgroundUnlikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+          hBackgroundUnlikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, trackMergeCorrection * geoAccCorrRndm * fTrackPairEfficiency/jt);
         }
       }
     }
