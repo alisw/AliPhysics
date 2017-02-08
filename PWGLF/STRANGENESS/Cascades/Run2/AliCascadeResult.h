@@ -29,6 +29,9 @@ public:
     // Binning in ( centrality , momentum ) can be chosen and invariant mass is fixed at defaults 
     AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins);
     
+    //Settable centrality / momentum / invmass binning
+    AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass);
+    
     //Specific uses
     AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName);
     AliCascadeResult(const AliCascadeResult& lCopyMe, TString lNewName);
@@ -239,7 +242,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 18)
+    ClassDef(AliCascadeResult, 19)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -257,6 +260,7 @@ private:
     // 15 - Adjustments for gen-purpose functionality
     // 16 - Addition of ITSrefit track requirement for cross-checks
     // 17 - Addition of eta window selection
-    // 18 - Max chi2/clusters, min track length added for cross-checking 
+    // 18 - Max chi2/clusters, min track length added for cross-checking
+    // 19 - Settable invariant mass binning constructor
 };
 #endif

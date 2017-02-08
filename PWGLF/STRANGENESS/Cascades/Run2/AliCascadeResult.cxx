@@ -185,6 +185,70 @@ fCutVarV0CosPA_Const(1)
     fHisto->Sumw2();
 }
 //________________________________________________________________
+AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
+AliVWeakResult(name,title),
+fMassHypo(lMassHypo),
+//V0 Cuts
+fCutDCANegToPV(0.1),
+fCutDCAPosToPV(0.1),
+fCutDCAV0Daughters(1.0),
+fCutV0CosPA(0.998),
+fCutV0Radius(5.0),
+//Cascade Cuts
+fCutDCAV0ToPV(0.05),
+fCutV0Mass(0.010),
+fCutDCABachToPV(0.03),
+fCutDCACascDaughters(2.0),
+fCutCascCosPA(0.95),
+fCutCascRadius(0.4),
+fCutDCABachToBaryon(-1),
+fCutBachBaryonCosPA(+2),
+fCutMinV0Lifetime(-2),
+fCutMaxV0Lifetime(1e+6),
+//Miscellaneous
+fCutProperLifetime(1000),
+fCutTPCdEdx(4.0),
+fCutXiRejection(0.008),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE),
+fCutMCSelectBump(kFALSE),
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfClusters(70),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
+fCutUseVariableCascCosPA(kFALSE),
+fCutVarCascCosPA_Exp0Const(0),
+fCutVarCascCosPA_Exp0Slope(0),
+fCutVarCascCosPA_Exp1Const(0),
+fCutVarCascCosPA_Exp1Slope(0),
+fCutVarCascCosPA_Const(1),
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
+{
+    // Constructor
+    Double_t lThisMass = GetMass();
+    
+    //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
+    const Long_t lNMassBinsConst = lNMassBins;
+    
+    Double_t lMassWindow = (lMaxMass - lMinMass)/2.0 ;
+    Double_t lMassDelta = (lMassWindow * 2.) / lNMassBinsConst;
+    Double_t lMassBins[lNMassBinsConst+1];
+    
+    for( Long_t ibound = 0; ibound<lNMassBinsConst+1; ibound++) lMassBins[ibound] = (lThisMass-lMassWindow) + ( ( (Double_t) ibound )*lMassDelta );
+    
+    //Main output histogram: Centrality, mass, transverse momentum: Variable binning
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNPtBins, lPtBins, lNMassBinsConst, lMassBins );
+    fHisto->Sumw2();
+}
+//________________________________________________________________
 AliCascadeResult::AliCascadeResult(const AliCascadeResult& lCopyMe, TString lNewName)
 : AliVWeakResult(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
