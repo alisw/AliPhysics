@@ -76,6 +76,52 @@ LevyTsallis(const Char_t *name, Double_t mass, Double_t n = 5., Double_t C = 0.1
 }
 
 /*****************************************************************/
+/* TRUE-TSALLIS */
+/* See: L. Marques, E. Andrade-II, and A. Deppman  */
+/* Phys. Rev. D 87, 114022 – Published 27 June 2013 */
+/* for explanation why this is a more correct formulation */
+/* Added by Lee Barnby - lbarnby@cern.ch
+/*****************************************************************/
+Double_t
+TrueTsallis_Func(const Double_t *x, Double_t *p)
+{
+    /* dN/dpt */
+    Double_t pt = x[0];
+    Double_t mass = p[0];
+    Double_t mt = TMath::Sqrt(pt * pt + mass * mass);
+    Double_t q = p[1];
+    Double_t T = p[2];
+    Double_t dNdy = p[3];
+    
+    Double_t part1 = pt*mt;
+    Double_t part2 = part1/T;
+    Double_t part3 = (2.-q)*(3.-2.*q);
+    Double_t part4 = (2.-q)*mass*mass + 2.*mass*T +2.*T*T;
+    Double_t part5 = part3/part4;
+    
+    Double_t part6 = 1. + (q-1.)*mass/T;
+    Double_t part7 = TMath::Power(part6, 1./(q-1.));
+    
+    Double_t part8 = 1. + (q-1.)*mt/T;
+    Double_t part9 = TMath::Power(part8, -q/(q-1.));
+    return part2 * dNdy * part5 * part7 * part9;
+}
+
+TF1*
+TrueTsallis(const Char_t *name, Double_t mass, Double_t q = 1.1., Double_t T = 0.1, Double_t dNdy = 0.2)
+{
+    TF1 *fTrueTsallis = new TF1(name, TrueTsallis_Func, 0., 10., 4);
+    fTrueTsallis->SetParameters(mass, q, T, dNdy);
+    fTrueTsallis->SetParNames("mass", "q", "T", "dN/dy");
+    fTrueTsallis->FixParameter(0, mass);
+    fTrueTsallis->SetParLimits(1, 1., 2.);
+    fTrueTsallis->SetParLimits(2, 1.e-3, 10.e3);
+    fTrueTsallis->SetParLimits(3, 1.e-8, 1.e8);
+    return fTrueTsallis;
+    
+}
+
+/*****************************************************************/
 /* BOLTZMANN-GIBBS BLAST-WAVE */
 /*****************************************************************/
 
