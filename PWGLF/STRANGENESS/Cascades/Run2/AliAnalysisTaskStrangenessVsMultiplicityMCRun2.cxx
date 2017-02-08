@@ -3057,6 +3057,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     lLifetimeCut[2] =  8.0;
     lLifetimeCut[3] =  8.0;
     
+    Float_t lMass[4];
+    lMass[0] = 1.322;
+    lMass[1] = 1.322;
+    lMass[2] = 1.672;
+    lMass[3] = 1.672;
+    
     TString lParticleName[] = {"XiMinus", "XiPlus",  "OmegaMinus", "OmegaPlus"};
     
     //Number of steps used for the variable sweeps
@@ -3065,7 +3071,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQACascade(Int
     //Central results: Stored in indices 0, 1, 2, 3 (careful!)
     for(Int_t i = 0 ; i < 4 ; i ++){
         //Central result, customized binning: the one to use, usually
-        lCascadeResult[lN] = new AliCascadeResult( Form("%s_VertexerLevel",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] = new AliCascadeResult( Form("%s_VertexerLevel",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits,100,lMass[i]-0.050,lMass[i]+0.050);
         
         //Default cuts: use vertexer level ones
         //Setters for V0 Cuts
