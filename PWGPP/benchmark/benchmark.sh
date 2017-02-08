@@ -2297,6 +2297,167 @@ EOF
   return $?
 )
 
+goSummaryToHTML() {(
+set -e
+# Header
+cat <<EOF
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Release validation summary</title>
+<style>
+/* Body font */
+body { font: 14px sans-serif; }
+
+/* Links */
+a { text-decoration: none;
+    color: #CC444B; }
+
+/* All tables */
+table.report td { border-right: 2px solid #AAA; }
+table.report tr > td:last-of-type { border-right: 0; }
+table.report th { color: white; }
+table.report th,
+table.report td { padding: 7px 10px 7px 10px; }
+table.report { border-collapse: collapse; }
+
+/* All tables: alternate rows */
+table.report tr:nth-of-type(odd) { background-color: white; }
+table.report tr:nth-of-type(even) { background-color: #F0F2EF; }
+
+/* Summary tables: align numbers */
+table.summary td:nth-of-type(5) { text-align: right; }
+table.fullsummary td:nth-of-type(3) { text-align: right; }
+
+/* File in full summary */
+tr.emph td { font-weight: bold;
+             text-align: left !important; }
+
+/* Table 1 */
+div.group:nth-of-type(1) h2,
+div.group:nth-of-type(1) h3 { color: #F63E02; }
+div.group:nth-of-type(1) table.report th { background: #F63E02; }
+div.group:nth-of-type(1) table.report td { border-right-color: #F63E02; }
+div.group:nth-of-type(1) table.report tr.emph { color: #F63E02; }
+
+/* Table 2 */
+div.group:nth-of-type(2) h2,
+div.group:nth-of-type(2) h3 { color: #FF6201; }
+div.group:nth-of-type(2) table.report th { background: #FF6201; }
+div.group:nth-of-type(2) table.report td { border-right-color: #FF6201; }
+div.group:nth-of-type(2) table.report tr.emph { color: #FF6201; }
+
+/* Table 3 */
+div.group:nth-of-type(3) h2,
+div.group:nth-of-type(3) h3 { color: #FAA300; }
+div.group:nth-of-type(3) table.report th { background: #FAA300; }
+div.group:nth-of-type(3) table.report td { border-right-color: #FAA300; }
+div.group:nth-of-type(1) table.report tr.emph { color: #FAA300; }
+
+/* Table 4 */
+div.group:nth-of-type(4) h2,
+div.group:nth-of-type(4) h3 { color: #F7B538; }
+div.group:nth-of-type(4) table.report th { background: #F7B538; }
+div.group:nth-of-type(4) table.report td { border-right-color: #F7B538; }
+div.group:nth-of-type(1) table.report tr.emph { color: #F7B538; }
+
+</style>
+</head>
+<body>
+EOF
+
+# Error summary
+cat <<EOF
+<div class="group">
+<h2>Error summary</h2>
+<table class="report summary">
+<tr><th>Error type</th><th>Run</th><th>Pass</th><th>Files</th><th>Count</th></tr>
+EOF
+while read F; do
+  F=$( echo $F | sed -e 's!\(.*\) *: run \([0-9]\+\) \([^ ]\+\) *\([^(]\+\) *( *\([0-9]\+\).*$!\1|\2|\3|\4|\5!g' )
+  TYPE=$(echo $F|cut -d\| -f1)
+  RUN=$(echo $F|cut -d\| -f2)
+  PASS=$(echo $F|cut -d\| -f3|sed -e 's/cpass2/ppass/')
+  FILES=$(echo $F|cut -d\| -f4|xargs echo)
+  COUNT=$(echo $F|cut -d\| -f5)
+
+  echo "<tr><td>$TYPE</td><td>$RUN</td><td>$PASS</td><td>$FILES</td><td>$COUNT</td></tr>"
+done < <(awk '/error summary:/,/detailed summary:/' summary.log | grep -v '======' | grep ': run')
+printf "</table>\n</div>\n"
+
+# Detailed summary
+echo "<div class=\"group\">"
+echo "<h2>Detailed summary</h2>"
+RUN=
+PASS=
+COUNT=
+while read F; do
+  [[ $F == run* ]] && { RUN=$(echo $F|cut -d' ' -f2); PASS=; continue; }
+  if [[ $F == *cpass* ]]; then
+    if [[ ! $PASS ]]; then
+      [[ $COUNT ]] && echo "</table>"
+      cat <<EOF
+<h3>Run $RUN</h3>
+<table class="report fullsummary">
+<tr><th>Pass</th><th>File</th><th>Count</th></tr>
+EOF
+    fi
+    PASS=$(echo $F|sed -e 's/[^a-z0-9 ]//g')
+  elif [[ $F == '->ERRORS'* ]]; then
+    F=$(echo $F|cut -d: -f2-)
+    FILE=$(echo $F|cut -d' ' -f1)
+    OK=$(echo $F|cut -d' ' -f2|sed -e 's/OK://g')
+    BAD=$(echo $F|cut -d' ' -f3|sed -e 's/BAD://g')
+    [[ $OK ]] || OK=0
+    [[ $BAD ]] || BAD=0
+    echo "<tr class=\"emph\"><td>$FILE</td><td>$OK OK</td><td>$BAD bad</td></tr>"
+  else
+    COUNT=$(echo $F|cut -d' ' -f1)
+    FILE=$(echo $F|cut -d' ' -f3-)
+    echo "<tr><td>$PASS</td><td>$FILE</td><td>$COUNT</td></tr>"
+  fi
+done < <(awk '/detailed summary:/,/list of bad logs:/' summary.log | grep -v '======' | grep -v -- '___' | sed -e '/^$/d')
+[[ $COUNT ]] && echo "</table>"
+echo "</div>"
+
+# Bad logs
+cat <<EOF
+<div class="group">
+<h2>Logs with errors</h2>
+<table class="report badfiles">
+<tr><th>Log file</th><th>Error type</th></tr>
+EOF
+while read F; do
+  FILE=$(echo $F|cut -d' ' -f1|sed -e 's!^.*/\(AliPhysics-[^/]\+\)/!!g')
+  ERROR=$(echo $F|cut -d' ' -f2-)
+  FILE="<a href=\"$FILE\">$FILE</a>"
+  echo "<tr><td>$FILE</td><td>$ERROR</td></tr>"
+done < <(awk '/bad logs:/,/core files:/' summary.log | grep -v '======' | grep ://)
+printf "</table>\n</div>\n"
+
+# Core files
+cat <<EOF
+<div class="group">
+<h2>Core files</h2>
+<table class="report badfiles">
+<tr><th>Core file</th></tr>
+EOF
+while read F; do
+  FILE=$(echo $F|cut -d' ' -f1|sed -e 's!^.*/\(AliPhysics-[^/]\+\)/!!g')
+  FILE="<a href=\"$FILE\">$FILE</a>"
+  echo "<tr><td>$FILE</td></tr>"
+done < <(awk '/core files:/,/^$/' summary.log | grep -v '======' | grep ://)
+printf "</table>\n</div>\n"
+
+# Footer
+cat <<EOF
+</body>
+</html>
+EOF
+set +e
+)}
+
 goMakeSummary()
 (
   # All the final stuff goes in here for ease of use:
@@ -2349,6 +2510,7 @@ goMakeSummary()
   #  * Simplified log will be on summary.log.
   rm -f summary.log
   goSummarizeMetaFiles "$metadir" | tee -a summary.log
+  goSummaryToHTML > summary.html
 
   if [[ $simplifiedSummary == 1 ]]; then
     maxCopyTries=1 remoteCpTimeout=120 xCopy -f -d $PWD $commonOutputPath/running_time
@@ -2356,7 +2518,7 @@ goMakeSummary()
     alilog_info "[END] goMakeSummary() (stopping after simplified summary) with following parameters $*"
     exec 1>&3 3>&-
     exec 2>&1
-    xCopy -f -d $commonOutputPath summary.log summary_full.log
+    xCopy -f -d $commonOutputPath summary.log summary_full.log summary.html
     goCheckSummary
     return $?
   fi
