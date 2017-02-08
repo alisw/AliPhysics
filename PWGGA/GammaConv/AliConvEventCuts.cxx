@@ -577,7 +577,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   Double_t distZMax     = 0;
   if(fInputEvent->IsA()==AliESDEvent::Class()){
     Int_t nPileVert = ((AliESDEvent*)fInputEvent)->GetNumberOfPileupVerticesSPD();
-    hNPileupVertices->Fill(nPileVert);
+    if (hNPileupVertices) hNPileupVertices->Fill(nPileVert);
     if (nPileVert > 0){
       for(Int_t i=0; i<nPileVert;i++){
         const AliESDVertex* pv  = ((AliESDEvent*)fInputEvent)->GetPileupVertexSPD(i);
@@ -591,7 +591,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
           }
         }
       }
-      hPileupVertexToPrimZ->Fill(distZMax);
+      if (hPileupVertexToPrimZ) hPileupVertexToPrimZ->Fill(distZMax);
     }  
   }
   
@@ -605,13 +605,13 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
     if(fRemovePileUp){
       if(fUtils->IsPileUpEvent(fInputEvent)){
         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-        hPileupVertexToPrimZSPDPileup->Fill(distZMax);
+        if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
         fEventQuality = 6;
         return kFALSE;
       }
       if (fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-        hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
+        if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
         fEventQuality = 11;
         return kFALSE;
       }  
@@ -619,13 +619,13 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   } else if(fRemovePileUp){
     if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      hPileupVertexToPrimZSPDPileup->Fill(distZMax);
+      if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       fEventQuality = 6;
       return kFALSE;
     }
     if (fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
-      hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
+      if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       fEventQuality = 11;
       return kFALSE;
     }  
@@ -3231,7 +3231,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   Double_t distZMax     = 0;
   if(InputEvent->IsA()==AliESDEvent::Class()){
     Int_t nPileVert = ((AliESDEvent*)InputEvent)->GetNumberOfPileupVerticesSPD();
-    hNPileupVertices->Fill(nPileVert);
+    if (hNPileupVertices) hNPileupVertices->Fill(nPileVert);
     if (nPileVert > 0){
       for(Int_t i=0; i<nPileVert;i++){
         const AliESDVertex* pv= ((AliESDEvent*)InputEvent)->GetPileupVertexSPD(i);
@@ -3245,27 +3245,27 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
           }
         }
       }
-      hPileupVertexToPrimZ->Fill(distZMax);
+      if (hPileupVertexToPrimZ) hPileupVertexToPrimZ->Fill(distZMax);
     }  
   }
 
   if( isHeavyIon != 2 && GetIsFromPileup()){
     if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
-      hPileupVertexToPrimZSPDPileup->Fill(distZMax);
+      if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }
     if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
-      hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
+      if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
   }
   if(isHeavyIon == 2 && GetIsFromPileup()){
     if(fUtils->IsPileUpEvent(InputEvent) ){
-      hPileupVertexToPrimZSPDPileup->Fill(distZMax);
+      if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }
     if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
-      hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
+      if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
   }
