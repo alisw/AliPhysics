@@ -1,3 +1,10 @@
+======== Data directory ==========================
+The data directory which contained root and text files from GEM scans and MC
+simulations was moved to tpcdrop on alien:
+/alice/cern.ch/user/t/tpcdrop/calib/Run3MC/SpaceCharge/TPCupgrade/data
+
+So far, these files had not been used
+
 ======== Continuous readout toy simulation =======
 
 loadlibs.C    //modified version of the one used for GEMtest code. I haven't looked into this so it probably contains a lot of stuff that is not needed
