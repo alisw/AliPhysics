@@ -108,6 +108,7 @@ public:
     void SetFirstBinNum(Int_t num=0) {fFirstBinNum=num;}
     void SetNumSelD(Int_t sel) {fNumSelD=sel;}
     void SetNumSelTr(Int_t sel) {fNumSelTr=sel;}
+    void SetCentralitySelection(Double_t min, Double_t max) {fMinCent=min; fMaxCent=max;} //activated only if both values are != 0
     void SetDebugLevel(Int_t deb=0) {fDebug=deb;}
 
     Bool_t Correlate();
@@ -137,16 +138,18 @@ private:
 
     Int_t fNBinsPt;			//number of D-meson pT bins
     Int_t fnPools;			//number of ME pools (total)
-    Int_t fnMultPools;			//number of ME pools (multiplicity)
-    Int_t fnzVtxPools;			//number of ME pools (z vertex)
+    Int_t fnMultPools;		//number of ME pools (multiplicity)
+    Int_t fnzVtxPools;		//number of ME pools (z vertex)
 	Int_t fFirstBinNum;		//number of first bin for the name of the output plots
 	Int_t fNumSelD;			//number of selection for D meson (0=default selection; 1,2,3,... = alternate selections)
-	Int_t fNumSelTr;			//number of selection for assoc tracks (0=default selection; 1,2,3,... = alternate selections)
+	Int_t fNumSelTr;		//number of selection for assoc tracks (0=default selection; 1,2,3,... = alternate selections)
     Int_t fDebug;
 
     Int_t fMinD;			//start of loop on D mesons
     Int_t fMaxD;			//end of loop on D mesons
-    Int_t fMaxTracks;			//maximum number of tracks (of the tree, i.e. integrated over everything) to be used in ME correlations
+    Int_t fMaxTracks;		//maximum number of tracks (of the tree, i.e. integrated over everything) to be used in ME correlations
+    Double_t fMinCent;		//minimum centrality 
+    Double_t fMaxCent;		//maximum centrality 
 
     std::vector<Double_t>  fPtBinsDLow;	//lower edges of D-meson pT bins
     std::vector<Double_t>  fPtBinsDUp; 	//upper edges of D-meson pT bins

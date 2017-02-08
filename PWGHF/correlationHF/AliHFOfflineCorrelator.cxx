@@ -75,6 +75,8 @@ fnMultPools(0),
 fnzVtxPools(0),
 fFirstBinNum(0),
 fMaxTracks(-1),
+fMinCent(0.),
+fMaxCent(0.),
 fNumSelD(-1),
 fNumSelTr(-1),
 fDebug(0),
@@ -128,6 +130,8 @@ fnMultPools(source.fnMultPools),
 fnzVtxPools(source.fnzVtxPools),
 fFirstBinNum(source.fFirstBinNum),
 fMaxTracks(source.fMaxTracks),
+fMinCent(source.fMinCent),
+fMaxCent(source.fMaxCent),
 fNumSelD(source.fNumSelD),
 fNumSelTr(source.fNumSelTr),
 fDebug(source.fDebug),
@@ -184,6 +188,8 @@ fnMultPools = orig.fnMultPools;
 fnzVtxPools = orig.fnzVtxPools;
 fFirstBinNum = orig.fFirstBinNum;
 fMaxTracks = orig.fMaxTracks;
+fMinCent = orig.fMinCent;
+fMaxCent = orig.fMaxCent;
 fNumSelD = orig.fNumSelD;
 fNumSelTr = orig.fNumSelTr;
 fDebug = orig.fDebug;
@@ -504,6 +510,7 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
     Int_t ptBinD = PtBin(brD->pT_D);
     if(ptBinD<0) continue;  
     if(fNumSelD>=0 && (brD->sel_D>>fNumSelD)%2!=1) continue; //important in case of multiple selection (default selection is 0)
+    if(fMinCent!=0 && fMaxCent!=0) {if(brD->mult_D < fMinCent || brD->mult_D > fMaxCent) continue;} //skip triggers outside centrality range
     
     poolD = GetPoolBin(brD->mult_D,brD->zVtx_D); 
 
@@ -526,6 +533,7 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
 
       if(fNumSelTr>=0 && (brTr->sel_Tr>>fNumSelTr)%2!=1) continue; //important in case of multiple selection (default selection is 0)
+	  if(fMinCent!=0 && fMaxCent!=0) {if(brTr->mult_Tr < fMinCent || brTr->mult_Tr > fMaxCent) continue;} //skip tracks outside centrality range
 
       poolTr = GetPoolBin(brTr->mult_Tr,brTr->zVtx_Tr);
       if(poolD<0 || poolTr<0 || poolD!=poolTr) continue;  //skips if pools of D and tracks do not match, or if pool number is wrong
