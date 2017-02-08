@@ -427,7 +427,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	int      id             = 14;
 	Double_t deut_mean      = 0.0;
 	Double_t deut_sigma     = 0.0;
-	Double_t cut_width      = 2.0;
+	Double_t cut_width      = 1.0;
 
 	Double_t phi = track->Phi();
 	Double_t eta = track->Eta();
@@ -577,8 +577,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			    if(mom > 1.0  &&  mom < 5.0)
 			    {
 				Double_t dphi = deut_phi - phi;
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 				
 				deut_dphi_T->Fill(deut_mom, dphi);
 				
@@ -590,8 +592,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			    {
 				Double_t eta  = track->Eta();
 				Double_t dphi = deut_phi - phi;
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 				
 				
 				if(     mom >= 0.5  &&  mom < 1.0){   deut_dphi_deta_p0510->Fill(dphi, deut_eta - eta);    }
@@ -618,8 +622,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(mom > 1.0  &&  mom < 5.0)
 			{
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();		if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();		if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    
 			    deut_dphi_T->Fill(deut_mom, dphi);
 			    if(charge>0) {   deut_dphi_pos_T->Fill(deut_mom, dphi);   }
@@ -630,8 +636,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			    Double_t eta            = track->Eta();
 			    
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    
 			    
 			    if(     mom >= 0.5  &&  mom < 1.0){   deut_dphi_deta_p0510->Fill(dphi, deut_eta - eta);    }
@@ -685,8 +693,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			    if(mom > 1.0  &&  mom < 5.0)
 			    {
 				Double_t dphi = deut_phi - phi;
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 				
 				deut_dphi_A->Fill(deut_mom, dphi);
 				
@@ -697,8 +707,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			    {
 				Double_t eta  = track->Eta();
 				Double_t dphi = deut_phi - phi;
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    }
 			}
 		    }
@@ -719,8 +731,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(mom > 1.0  &&  mom < 5.0)
 			{
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();		if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();		if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    
 			    deut_dphi_A->Fill(deut_mom, dphi);
 			    if(charge>0) {   deut_dphi_pos_A->Fill(deut_mom, dphi);   }
@@ -730,8 +744,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			{
 			    Double_t eta            = track->Eta();
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    
 			}
 		    }
@@ -781,8 +797,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			    if(mom > 1.0  &&  mom < 5.0)
 			    {
 				Double_t dphi = deut_phi - phi;
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 				
 				deut_dphi_B->Fill(deut_mom, dphi);
 				
@@ -793,8 +811,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			    {
 				Double_t eta  = track->Eta();
 				Double_t dphi = deut_phi - phi;
-				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+				if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    }
 			}
 		    }
@@ -815,8 +835,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(mom > 1.0  &&  mom < 5.0)
 			{
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();		if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();		if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    
 			    deut_dphi_B->Fill(deut_mom, dphi);
 			    if(charge>0) {   deut_dphi_pos_B->Fill(deut_mom, dphi);   }
@@ -826,8 +848,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			{
 			    Double_t eta            = track->Eta();
 			    Double_t dphi = deut_phi - phi;
-			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();			if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
-			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();			if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi <  -TMath::PiOver2())    dphi = dphi + TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
+			    if(dphi > 3*TMath::PiOver2())    dphi = dphi - TMath::TwoPi();
 			    
 			}
 		    }
