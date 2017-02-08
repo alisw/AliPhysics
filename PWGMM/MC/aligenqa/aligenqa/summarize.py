@@ -3,7 +3,7 @@ import settings
 
 from rootpy.io import root_open
 
-from hmtfmc import roofie, utils
+from aligenqa import roofie, utils
 
 
 def summarize(args):

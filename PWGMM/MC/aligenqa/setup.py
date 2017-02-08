@@ -1,16 +1,16 @@
 from setuptools import setup
 from glob import glob
 
-install_requires = ['rootpy==0.8.2.dev0', 'argparse']
+install_requires = ['rootpy==0.8.2', 'argparse']
 # tests_require = ['nose']
 
 setup(
-    name='hmtfmc',
+    name='aligenqa',
     version='0.0.1',
     description="Provides tools for post-processing of MC multiplicity estimator studies",
     author='Christian Bourjau',
     author_email='christian.bourjau@cern.ch',
-    packages=['hmtfmc'],
+    packages=['aligenqa'],
     long_description=open('README.md').read(),
     scripts=glob('scripts/*'),
     classifiers=[

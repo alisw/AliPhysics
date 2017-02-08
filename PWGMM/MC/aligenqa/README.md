@@ -1,6 +1,6 @@
 # MC generator comparisons
 
-This readme discribes how to run the post analysis on the the `AnalysisResults.root` file produced by `/PWG/HMTF/macros/AddTaskHMTFMCMultEst.C`
+This readme discribes how to run the post analysis on the the `AnalysisResults.root` file produced by `$ALICE_PHYSICS/PWG/HMTF/macros/AddTaskHMTFMCMultEst.C`
 
 ## Running the post analysis on lxplus
 
@@ -12,11 +12,11 @@ The post processing is implemented in python. Unfortunately, the python installa
 	$ # Create a new alien token:
 	$ alien-token-init
 
-This makes the executable `hmtfmc` avialable on the command line. It is self documented:
+This makes the executable `aligenqa` avialable on the command line. It is self documented:
 
 ``` shell
-$ hmtfmc --help
-usage: hmtfmc [-h] [-v] {prepare_plots,summarize,compare} ...
+$ aligenqa --help
+usage: aligenqa [-h] [-v] {prepare_plots,summarize,compare} ...
 
 positional arguments:
   {prepare_plots,summarize,compare}
@@ -31,10 +31,10 @@ optional arguments:
 This steps produces all plots and saves them in the downloaded AnalysisResults.root file. This step needs to be taken before creating the summary or comparison slides. For example:
 
 ``` shell
-$ mkdir ~/hmtfmc_results
-$ cd ~/hmtfmc_results
-$ hmtfmc prepare_plots --help
-usage: hmtfmc prepare_plots [-h] input_file
+$ mkdir ~/aligenqa_results
+$ cd ~/aligenqa_results
+$ aligenqa prepare_plots --help
+usage: aligenqa prepare_plots [-h] input_file
 
 This will download AnalysisResults.root from the given alien path into the
 current directory. The file name is composed of the train id and generator
@@ -49,7 +49,7 @@ positional arguments:
 optional arguments:
   -h, --help  show this help message and exit
 
-$ hmtfmc prepare_plots /alice/cern.ch/user/a/alitrain/PWGZZ/MCGen_pp/393_20160210-1718/merge/AnalysisResults.root
+$ aligenqa prepare_plots /alice/cern.ch/user/a/alitrain/PWGZZ/MCGen_pp/393_20160210-1718/merge/AnalysisResults.root
 ```
 	
 Now, there is a file called 393_AnalysisResults.root (393 being the train number). The file contains all the plots at this points
@@ -59,8 +59,8 @@ Now, there is a file called 393_AnalysisResults.root (393 being the train number
 Assuming that the previously downloaded file was for "Dipsy 13 TeV Ropes", the following will create the summary slides. Again, `--help` is available.
 
 ``` shell
-$ hmtfmc summarize --help
-usage: hmtfmc summarize [-h] [--gen_name GEN_NAME] input_file
+$ aligenqa summarize --help
+usage: aligenqa summarize [-h] [--gen_name GEN_NAME] input_file
 
 Create summary slides for all triggers of a given generator. Remember to use
 quotes if the generator name contains spaces and be careful with special
@@ -74,7 +74,7 @@ optional arguments:
   --gen_name GEN_NAME  Name of the generator and tune. If not given, deduced
                        from filename
 
-$ hmtfmc summary 393_AnalysisResults.root "Dipsy 13TeV Ropes"
+$ aligenqa summary --gen_name "Dipsy 13TeV Ropes" 393_AnalysisResults.root
 ```
 
 the summary slides can now be found in the aptly called folders created in the current directory
@@ -83,8 +83,8 @@ the summary slides can now be found in the aptly called folders created in the c
 Two generators and/or tuning can be compared as follows
 
 ```shell
-$ hmtfmc compare --help
-usage: hmtfmc compare [-h] [--generator_name1 GENERATOR_NAME1]
+$ aligenqa compare --help
+usage: aligenqa compare [-h] [--generator_name1 GENERATOR_NAME1]
                       [--generator_name2 GENERATOR_NAME2]
                       input_file1 {Inel,InelGt0,V0AND} input_file2
                       {Inel,InelGt0,V0AND}
@@ -106,7 +106,7 @@ optional arguments:
   --generator_name2 GENERATOR_NAME2
                         Overwrite name and tune of second generator
 
-$ hmtfmc compare 393_AnalysisResults.root Inel "Dipsy INEL" 393_AnalysisResults.root InelGt0 "Dipsy V0AND"
+$ aligenqa compare 393_AnalysisResults.root Inel "Dipsy INEL" 393_AnalysisResults.root InelGt0 "Dipsy V0AND"
 ```
 
 ## Customization
@@ -115,8 +115,8 @@ Customization of the created plots can be achieved as follows:
 - Percentile bins, considered triggers (INEL, V0AND, INEL>0) and estimators:
   This is centralized in the `settings.py` file. If an estimator is not available in a given `AnalysisResults.root` file, it is simply ignored.
   
-- Plots that are created with `$ hmtfmc prepare_plots`:
-  Customization can be found in `plotting.py` and to a small extend in the `hmtfmc` file itself.
+- Plots that are created with `$ aligenqa prepare_plots`:
+  Customization can be found in `plotting.py` and to a small extend in the `aligenqa` file itself.
   
 - Plots that are included in the summary slides:
   This can be customized the file `summarize.py`

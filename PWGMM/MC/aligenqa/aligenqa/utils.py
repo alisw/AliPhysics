@@ -209,6 +209,7 @@ def get_generator_name_from_train(alien_path):
         alien_path = "alien:/" + alien_path
     path_to_env = os.path.join(os.path.split(alien_path)[0], "..", "env.sh")
     cp_cmd = ['alien_cp', '-m', '-s', path_to_env, ".env.sh"]
+    print "copying with: %s"%cp_cmd
     subprocess.check_call(cp_cmd)
     with open(".env.sh") as f:
         for line in f.readlines():

@@ -10,11 +10,11 @@ import sys
 
 from rootpy import log, ROOT
 
-from hmtfmc.plotting import Plotting
-from hmtfmc import utils, compare, summarize, settings
+from aligenqa.plotting import Plotting
+from aligenqa import utils, compare, summarize, settings
 
 
-log = log["/hmtfmc"]  # set name of this script in logger
+log = log["/aligenqa"]  # set name of this script in logger
 
 
 class formatter_class(argparse.ArgumentDefaultsHelpFormatter,
@@ -41,6 +41,7 @@ def prepare_plots(args):
     train_number = re.match(r'.*/(\d+_\d{8}-\d{4})', args.input_file).groups()[-1]
     _, fext = os.path.splitext(os.path.basename(args.input_file))
     local_path = os.path.abspath(os.path.join("./", "{0}-{1}{2}".format(train_number, gen_name, fext)))
+    print "Trying to copy {0} to {1}".format(args.input_file, local_path)
     utils.download_file(args.input_file, local_path)
     print "Copied {0} to {1}".format(args.input_file, local_path)
 

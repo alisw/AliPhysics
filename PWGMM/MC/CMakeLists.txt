@@ -1,5 +1,5 @@
 # **************************************************************************
-# * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
+# * Copyright(c) 1998-2014, ALICE Experiment at CERN, All rights reserved. *
 # *                                                                        *
 # * Author: The ALICE Off-line Project.                                    *
 # * Contributors are mentioned in the code where appropriate.              *
@@ -11,15 +11,13 @@
 # * appear in the supporting documentation. The authors make no claims     *
 # * about the suitability of this software for any purpose. It is          *
 # * provided "as is" without express or implied warranty.                  *
-# **************************************************************************/
+# **************************************************************************
 
-#Module
-set(MODULE PWGMM)
+# Module
+set(MODULE PWGMMUE)
 add_definitions(-D_MODULE_="${MODULE}")
 
-add_subdirectory(Lumi)
-add_subdirectory(Mult)
-add_subdirectory(UE)
-add_subdirectory(MC)
-
-message(STATUS "PWGMM enabled")
+install(DIRECTORY
+  aligenqa
+  DESTINATION PWGMM/MC/
+  )
