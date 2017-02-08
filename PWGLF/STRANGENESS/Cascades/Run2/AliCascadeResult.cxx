@@ -232,9 +232,6 @@ fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1)
 {
-    // Constructor
-    Double_t lThisMass = GetMass();
-    
     //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
     const Long_t lNMassBinsConst = lNMassBins;
     
@@ -242,7 +239,7 @@ fCutVarV0CosPA_Const(1)
     Double_t lMassDelta = (lMassWindow * 2.) / lNMassBinsConst;
     Double_t lMassBins[lNMassBinsConst+1];
     
-    for( Long_t ibound = 0; ibound<lNMassBinsConst+1; ibound++) lMassBins[ibound] = (lThisMass-lMassWindow) + ( ( (Double_t) ibound )*lMassDelta );
+    for( Long_t ibound = 0; ibound<lNMassBinsConst+1; ibound++) lMassBins[ibound] = lMinMass + ( ( (Double_t) ibound )*lMassDelta );
     
     //Main output histogram: Centrality, mass, transverse momentum: Variable binning
     fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNPtBins, lPtBins, lNMassBinsConst, lMassBins );

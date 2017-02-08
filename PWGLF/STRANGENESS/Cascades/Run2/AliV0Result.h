@@ -27,6 +27,9 @@ public:
     //Variable-Binning Constructor:
     // Binning in ( centrality , momentum ) can be chosen and invariant mass is fixed at defaults
     AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins);
+
+    //Settable centrality / momentum / invmass binning
+    AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass);
     
     //Specific uses
     AliV0Result(AliV0Result *lCopyMe, TString lNewName );

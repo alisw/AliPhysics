@@ -152,6 +152,53 @@ fCutVarV0CosPA_Const(1)
     fHisto->Sumw2();
 }
 //________________________________________________________________
+AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
+AliVWeakResult(name,title),
+fMassHypo(lMassHypo),
+fCutV0Radius(5.0),
+fCutDCANegToPV(0.1),
+fCutDCAPosToPV(0.1),
+fCutDCAV0Daughters(1.0),
+fCutV0CosPA(0.998),
+fCutProperLifetime(10),
+fCutCompetingV0Rejection(-1),
+fCutArmenteros(kTRUE),
+fCutTPCdEdx(3.0),
+fCutMinBaryonMomentum(-1),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCLambdaFromPrimaryXi(kFALSE),
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE),
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfCrossedRows(70),
+fCutLeastNumberOfCrossedRowsOverFindable(0.8),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
+fHistoFeeddown(0), //do not initialize by default
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
+{
+    // Constructor
+    Double_t lMassWindow = (lMaxMass-lMinMass)/2.0 ;
+    
+    //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
+    const Long_t lNMassBinsConst = lNMassBins;
+    Double_t lMassDelta = (lMassWindow * 2.) / lNMassBins;
+    Double_t lMassBins[lNMassBinsConst+1];
+    
+    for( Long_t ibound = 0; ibound<lNMassBinsConst+1; ibound++) lMassBins[ibound] = lMinMass + ( ( (Double_t) ibound )*lMassDelta );
+    
+    //Main output histogram: Centrality, mass, transverse momentum
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNPtBins, lPtBins, lNMassBins, lMassBins );
+    fHisto->Sumw2();
+}
+//________________________________________________________________
 AliV0Result::AliV0Result(const AliV0Result& lCopyMe, TString lNewName)
 : AliVWeakResult(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
