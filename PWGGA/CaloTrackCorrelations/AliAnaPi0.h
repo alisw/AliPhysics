@@ -384,6 +384,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   TH1F *   fhPrimPi0E ;                //!<! Spectrum of Primary
   TH1F *   fhPrimPi0Pt ;               //!<! Spectrum of Primary
+  TH1F *   fhPrimPi0PtInCalo ;         //!<! Spectrum of Primary, meson in calo acceptance
   TH1F *   fhPrimPi0AccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
@@ -408,6 +409,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   TH1F *   fhPrimEtaE ;                //!<! Spectrum of Primary
   TH1F *   fhPrimEtaPt ;               //!<! Spectrum of Primary
+  TH1F *   fhPrimEtaPtInCalo ;         //!<! Spectrum of Primary, meson in calo acceptance
   TH1F *   fhPrimEtaAccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
@@ -436,13 +438,15 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0PtStatus ;         //!<! Spectrum of generated pi0 vs pi0 status
 
   // Per Generator in Cocktail
-  TH1F *   fhPrimPi0PtPerGenerator[10] ;               //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimPi0PtPerGenerator[10] ;               //!<! Spectrum of primary with |y| < 1
+  TH1F *   fhPrimPi0PtInCaloPerGenerator[10] ;         //!<! Spectrum of primary with pi0 in calo
   TH1F *   fhPrimPi0AccPtPerGenerator[10] ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
   TH2F *   fhPrimPi0PhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimPi0YPerGenerator[10] ;                //!<! Rapidity distribution of primary particles  vs pT
 
-  TH1F *   fhPrimEtaPtPerGenerator[10] ;               //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimEtaPtPerGenerator[10] ;               //!<! Spectrum of primary with |y| < 1
+  TH1F *   fhPrimEtaPtInCaloPerGenerator[10] ;         //!<! Spectrum of primary with eta in calo
   TH1F *   fhPrimEtaAccPtPerGenerator[10] ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
   TH2F *   fhPrimEtaPhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT

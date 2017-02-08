@@ -85,7 +85,7 @@ fhCentrality(0x0),           fhCentralityNoPair(0x0),
 fhEventPlaneResolution(0x0),
 fhRealOpeningAngle(0x0),     fhRealCosOpeningAngle(0x0),   fhMixedOpeningAngle(0x0),     fhMixedCosOpeningAngle(0x0),
 // MC histograms
-fhPrimPi0E(0x0),             fhPrimPi0Pt(0x0),
+fhPrimPi0E(0x0),             fhPrimPi0Pt(0x0),             fhPrimPi0PtInCalo(0x0),
 fhPrimPi0AccE(0x0),          fhPrimPi0AccPt(0x0),          fhPrimPi0AccPtPhotonCuts(0x0),
 fhPrimPi0Y(0x0),             fhPrimPi0AccY(0x0),
 fhPrimPi0Yeta(0x0),          fhPrimPi0YetaYcut(0x0),       fhPrimPi0AccYeta(0x0),
@@ -94,7 +94,7 @@ fhPrimPi0OpeningAngle(0x0),  fhPrimPi0OpeningAnglePhotonCuts(0x0),
 fhPrimPi0OpeningAngleAsym(0x0),fhPrimPi0CosOpeningAngle(0x0),
 fhPrimPi0PtCentrality(0),    fhPrimPi0PtEventPlane(0),
 fhPrimPi0AccPtCentrality(0), fhPrimPi0AccPtEventPlane(0),
-fhPrimEtaE(0x0),             fhPrimEtaPt(0x0),             
+fhPrimEtaE(0x0),             fhPrimEtaPt(0x0),             fhPrimEtaPtInCalo(0x0),        
 fhPrimEtaAccE(0x0),          fhPrimEtaAccPt(0x0),          fhPrimEtaAccPtPhotonCuts(0x0),
 fhPrimEtaY(0x0),             fhPrimEtaAccY(0x0),
 fhPrimEtaYeta(0x0),          fhPrimEtaYetaYcut(0x0),       fhPrimEtaAccYeta(0x0),
@@ -206,12 +206,14 @@ fhReSecondaryCellOutTimeWindow(0), fhMiSecondaryCellOutTimeWindow(0)
     }
     
     fhPrimPi0PtPerGenerator   [igen] = 0;  
+    fhPrimPi0PtInCaloPerGenerator[igen] = 0;  
     fhPrimPi0AccPtPerGenerator[igen] = 0; 
     fhPrimPi0AccPtPhotonCutsPerGenerator[igen] = 0;
     fhPrimPi0PhiPerGenerator  [igen] = 0;
     fhPrimPi0YPerGenerator    [igen] = 0;
     
     fhPrimEtaPtPerGenerator   [igen] = 0;
+    fhPrimEtaPtInCaloPerGenerator[igen] = 0;
     fhPrimEtaAccPtPerGenerator[igen] = 0;
     fhPrimEtaAccPtPhotonCutsPerGenerator[igen] = 0;
     fhPrimEtaPhiPerGenerator  [igen] = 0;
@@ -414,7 +416,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
                                nptbins,ptmin,ptmax) ;
     fhPrimPi0Pt   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPrimPi0Pt) ;
-
+    
     fhPrimPi0Y      = new TH2F("hPrimPi0Rapidity","Rapidity of primary #pi^{0}",
                                nptbins,ptmin,ptmax,netabinsopen,-2, 2) ;
     fhPrimPi0Y   ->SetYTitle("#it{Rapidity}");
@@ -440,7 +442,12 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimPi0Phi) ;
     
     if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
-    {
+    {      
+      fhPrimPi0PtInCalo     = new TH1F("hPrimPi0PtInCalo","Primary #pi^{0} #it{p}_{T} , in calorimeter acceptance",
+                                       nptbins,ptmin,ptmax) ;
+      fhPrimPi0PtInCalo   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimPi0PtInCalo) ;
+
       fhPrimPi0AccE  = new TH1F("hPrimPi0AccE","Primary #pi^{0} #it{E} with both photons in acceptance",
                                 nptbins,ptmin,ptmax) ;
       fhPrimPi0AccE->SetXTitle("#it{E} (GeV)");
@@ -514,6 +521,11 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
     {
+      fhPrimEtaPtInCalo     = new TH1F("hPrimEtaPtInCalo","Primary #eta #it{p}_{T}, in calorimeter acceptance",
+                                 nptbins,ptmin,ptmax) ;
+      fhPrimEtaPtInCalo   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPrimEtaPtInCalo) ;
+      
       fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",
                                 nptbins,ptmin,ptmax) ;
       fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
@@ -2169,6 +2181,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
         {
+          fhPrimPi0PtInCaloPerGenerator[igen-1]     = new TH1F
+          (Form("hPrimPi0PtInCalo%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Primary #pi^{0} #it{p}_{T}, in calorimeter acc. %s",GetCocktailGenNameToCheck(igen).Data()),
+           nptbins,ptmin,ptmax) ;
+          fhPrimPi0PtInCaloPerGenerator[igen-1]   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPrimPi0PtInCaloPerGenerator[igen-1]) ;
+
           fhPrimPi0AccPtPerGenerator[igen-1]  = new TH1F
           (Form("hPrimPi0AccPt%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
            Form("Primary #pi^{0} #it{p}_{T} with both photons in acceptance, generator %s",GetCocktailGenNameToCheck(igen).Data()),
@@ -2212,6 +2231,13 @@ TList * AliAnaPi0::GetCreateOutputObjects()
         
         if ( IsRealCaloAcceptanceOn() || IsFiducialCutOn() )
         {
+          fhPrimEtaPtInCaloPerGenerator[igen-1]     = new TH1F
+          (Form("hPrimEtaPtInCalo%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
+           Form("Primary #eta #it{p}_{T}, in calorimeter acceptance %s",GetCocktailGenNameToCheck(igen).Data()),
+           nptbins,ptmin,ptmax) ;
+          fhPrimEtaPtInCaloPerGenerator[igen-1]   ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          outputContainer->Add(fhPrimEtaPtInCaloPerGenerator[igen-1]) ;
+          
           fhPrimEtaAccPtPerGenerator[igen-1]  = new TH1F
           (Form("hPrimEtaAccPt%s%s",add.Data(),GetCocktailGenNameToCheck(igen).Data()),
            Form("Primary #eta #it{p}_{T} with both photons in acceptance, generator %s",GetCocktailGenNameToCheck(igen).Data()),
@@ -2489,6 +2515,8 @@ void AliAnaPi0::FillAcceptanceHistograms()
   {
     if ( !GetReader()->AcceptParticleMCLabel( i ) ) continue ;
     
+    Bool_t inacceptance = kTRUE;
+    
     if(GetReader()->ReadStack())
     {
       primStack = stack->Particle(i) ;
@@ -2502,6 +2530,9 @@ void AliAnaPi0::FillAcceptanceHistograms()
       if( primStack->Energy() < 0.4 ) continue;
       
       pdg       = primStack->GetPdgCode();
+      // Select only pi0 or eta
+      if( pdg != 111 && pdg != 221) continue ;
+      
       nDaught   = primStack->GetNDaughters();
       iphot1    = primStack->GetDaughter(0) ;
       iphot2    = primStack->GetDaughter(1) ;
@@ -2518,8 +2549,16 @@ void AliAnaPi0::FillAcceptanceHistograms()
       primStack->Momentum(fMCPrimMesonMom);
       
       mesonY = 0.5*TMath::Log((primStack->Energy()+primStack->Pz())/(primStack->Energy()-primStack->Pz())) ;
+      
+      if ( IsFiducialCutOn() || IsRealCaloAcceptanceOn() ) 
+      {
+        // Check if pi0 enters the calo
+        if(IsRealCaloAcceptanceOn() && !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), primStack )) inacceptance = kFALSE;
+        if(IsFiducialCutOn() && inacceptance && !GetFiducialCut()->IsInFiducialCut(fMCPrimMesonMom.Eta(), fMCPrimMesonMom.Phi(), GetCalorimeter())) inacceptance = kFALSE;
+      }
+      else inacceptance = kFALSE;
     }
-    else
+    else // AODs
     {
       primAOD = (AliAODMCParticle *) mcparticles->At(i);
       if(!primAOD)
@@ -2532,6 +2571,9 @@ void AliAnaPi0::FillAcceptanceHistograms()
       if( primAOD->E() < 0.4 ) continue;
       
       pdg     = primAOD->GetPdgCode();
+      // Select only pi0 or eta
+      if( pdg != 111 && pdg != 221) continue ;
+      
       nDaught = primAOD->GetNDaughters();
       iphot1  = primAOD->GetFirstDaughter() ;
       iphot2  = primAOD->GetLastDaughter() ;
@@ -2545,11 +2587,16 @@ void AliAnaPi0::FillAcceptanceHistograms()
       fMCPrimMesonMom.SetPxPyPzE(primAOD->Px(),primAOD->Py(),primAOD->Pz(),primAOD->E());
       
       mesonY = 0.5*TMath::Log((primAOD->E()+primAOD->Pz())/(primAOD->E()-primAOD->Pz())) ;
+      
+      if ( IsFiducialCutOn() || IsRealCaloAcceptanceOn() ) 
+      {
+        // Check if pi0 enters the calo
+        if(IsRealCaloAcceptanceOn() && !GetCaloUtils()->IsMCParticleInCalorimeterAcceptance( GetCalorimeter(), primAOD )) inacceptance = kFALSE;
+        if(IsFiducialCutOn() && inacceptance && !GetFiducialCut()->IsInFiducialCut(fMCPrimMesonMom.Eta(), fMCPrimMesonMom.Phi(), GetCalorimeter())) inacceptance = kFALSE;
+      }
+      else inacceptance = kFALSE;
     }
-    
-    // Select only pi0 or eta
-    if( pdg != 111 && pdg != 221) continue ;
-    
+        
     mesonPt  = fMCPrimMesonMom.Pt () ;
     mesonE   = fMCPrimMesonMom.E  () ;
     mesonYeta= fMCPrimMesonMom.Eta() ;
@@ -2600,9 +2647,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
       fhPrimPi0Y   ->Fill(mesonPt, mesonY   , GetEventWeight()) ;
       fhPrimPi0Yeta->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
       
-      if(IsStudyClusterOverlapsPerGeneratorOn())
-        fhPrimPi0YPerGenerator[genType]->Fill(mesonPt, mesonY, GetEventWeight()) ;
+      if(inacceptance) fhPrimPi0PtInCalo->Fill(mesonPt,GetEventWeight());
       
+      if(IsStudyClusterOverlapsPerGeneratorOn())
+      {
+        fhPrimPi0YPerGenerator[genType]->Fill(mesonPt, mesonY, GetEventWeight()) ;  
+        if(inacceptance) fhPrimPi0PtInCaloPerGenerator[genType]->Fill(mesonPt,GetEventWeight());
+      }
     }
     else if(pdg == 221)
     {
@@ -2630,9 +2681,14 @@ void AliAnaPi0::FillAcceptanceHistograms()
       fhPrimEtaY   ->Fill(mesonPt, mesonY   , GetEventWeight()) ;
       fhPrimEtaYeta->Fill(mesonPt, mesonYeta, GetEventWeight()) ;
       
+      if(inacceptance) fhPrimEtaPtInCalo->Fill(mesonPt,GetEventWeight());
+      
       if(IsStudyClusterOverlapsPerGeneratorOn())
+      {
         fhPrimEtaYPerGenerator[genType]->Fill(mesonPt, mesonY, GetEventWeight()) ;
-    }
+        if(inacceptance) fhPrimEtaPtInCaloPerGenerator[genType]->Fill(mesonPt,GetEventWeight());
+      }
+     }
     
     // Origin of meson
     if(fFillOriginHisto && TMath::Abs(mesonY) < 0.7)
