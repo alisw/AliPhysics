@@ -2,7 +2,7 @@
 // Task to estimate the number of gamma-hadron
 // statistic available in the Pb+Pb run.
 //
-// Author: E. Epple
+// Author: E. Epple, based on code by  B. Sahlmueller and C. Loizides
 
 #include <Riostream.h>
 #include <TClonesArray.h>
@@ -35,6 +35,7 @@
 #include "AliVVZERO.h"
 #include "AliESDUtils.h"
 #include "AliEventPoolManager.h"
+#include "AliMCEvent.h"
 
 
 using std::cout;
@@ -452,10 +453,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	//   Tyler's Special Histograms
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	fHistClusPairInvarMasspT= new TH2F("fHistClusPairInvarMasspT","fHistClusPairInvarMasspT", 500, 0, 0.5, 250, 0, 50);
-	fHistClusPairInvarMasspT->GetXaxis()->SetTitle("M_{#gamma#gamma}");
-	fHistClusPairInvarMasspT->GetYaxis()->SetTitle("p_{T}_{#pi^{0}}");
-	fOutput->Add(fHistClusPairInvarMasspT);
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//   Eliane's Special Histograms
@@ -859,6 +856,8 @@ Int_t AccClus=0;
 
                                                     //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 
+	if( fMCorData==0)	ProcessMC();
+
 	return kTRUE;
 }
 //________________________________________________________________________
@@ -1116,6 +1115,58 @@ clustersClone = CloneClustersTObjArray(clustersCont);
   return;
 }
 //<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
+void AliAnalysisTaskGammaHadron::ProcessMC()
+{
+  std::cout<<" MCWHEEEEEEEEEEEEE! "<<std::endl;
+   if (fMCorData==1)
+    return;
+
+AliMCEvent *mcEvent = MCEvent();
+  if (!mcEvent){
+    cout << "no MC event" << endl;
+    return;
+  }
+
+  // get vertex
+  const AliVVertex *evtVtx = mcEvent->GetPrimaryVertex();
+  if (!evtVtx)
+    return;
+
+    // read event
+  mcEvent->PreReadAll();
+
+   // get number of MC particles
+  Int_t nTracks = mcEvent->GetNumberOfPrimaries();
+
+    std::cout<<" nTracks "<<nTracks<<std::endl;
+
+    // loop through MC particles
+  for (Int_t iTrack = 0; iTrack<nTracks; ++iTrack) {
+    // get particle at index iTrack
+    AliMCParticle *mcP = static_cast<AliMCParticle*>(mcEvent->GetTrack(iTrack));
+    if (!mcP)
+      continue;
+
+    std::cout<<" pdg "<<mcP->PdgCode()<<std::endl;
+
+     // pion or eta meson or direct photon
+    if(mcP->PdgCode() == 111) {
+    } else if(mcP->PdgCode() == 221) {
+    } else if(mcP->PdgCode() == 22 ) {
+    } else
+      continue;
+
+     Double_t dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX())*(mcP->Xv()-evtVtx->GetX()) +
+                              (mcP->Yv()-evtVtx->GetY())*(mcP->Yv()-evtVtx->GetY()));
+    if(dR > 0.1)
+      continue;
+
+
+  }
+
+
+}
+//<<<<<><<<<<<<<<><<<<<<<<<<><<<<<<<<<<<<><<<<<<<<<<<<<<><<<<<<<<<<<<<<<<<<<<<>
 Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracksArray,Bool_t SameMix, Double_t InputWeight)
 {
   if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack()"<<endl;
@@ -1219,6 +1270,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 						CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
 						fHistPi0->Fill(CaloClusterVecpi0.M());
 						fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt(),0.5);  //eventually divide by 2
+						std::cout<<CaloClusterVecpi0.M()<<" "<<CaloClusterVecpi0.Pt()<<std::endl;
 						fMAngle->Fill(CaloClusterVecpi0.M(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
 						fPtAngle->Fill(CaloClusterVecpi0.Pt(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
 						if((CaloClusterVecpi0.M()>=Pi0Mass-Pi0Window) && (CaloClusterVecpi0.M()<=Pi0Mass+Pi0Window)){

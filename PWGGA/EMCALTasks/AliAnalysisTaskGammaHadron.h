@@ -98,6 +98,7 @@ virtual ~AliAnalysisTaskGammaHadron();
 
  protected:
 
+  virtual void                ProcessMC()                                                   ;
   void                        InitArrays()                                                  ;
   // EMCal framework functions
   Bool_t                      Run()                                                         ;
@@ -179,8 +180,6 @@ virtual ~AliAnalysisTaskGammaHadron();
   TList                      *fOutputListQA;           //!<! Output list
 
   // Histograms -
-  TH2                       *fHistClusPairInvarMasspT; //!<! Tyler's histogram
-
 
   TH1  					    *fHistNoClusPt;            //!<! ?No of calorimeter Clusters as a function of p_T
   TH1					   **fHistptAssHadronG[3];     //!<! pt distr. of the associated hadron as a function of Eg
@@ -190,8 +189,9 @@ virtual ~AliAnalysisTaskGammaHadron();
   TH1					   **fHistptTriggZt[3];        //!<! pt distr. of the trigger as a function of Zt
   TH1					   **fHistptTriggXi[3];        //!<! pt distr. of the trigger as a function of Xi
 
+  TH2                       *fHistClusPairInvarMasspT; //!<! Tyler's histogram
+
   TH1 					    *fHistPi0;                 //!<!
-  TH2                                       *fHistClusPairInvarMasspT; //!<!
   TH2                                       *fHistClusPairInvarMasspTMIX; //!<!
   TH2                                       *fHistClusPairInvarMasspTMIXolap; //!<!
   TH2                                       *fMAngle; //!<!
