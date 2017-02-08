@@ -2171,16 +2171,26 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQAV0(Int_t lRec
     lLifetimeCut[1] = 30.0;
     lLifetimeCut[2] = 30.0;
     
+    Float_t lMass[3];
+    lMass[0] = 0.497;
+    lMass[1] = 1.116;
+    lMass[2] = 1.116;
+    
+    Float_t lMWindow[3];
+    lMWindow[0] = 0.075;
+    lMWindow[1] = 0.050;
+    lMWindow[2] = 0.050;
+    
     //Array of results
-    AliV0Result *lV0Result[500];
+    AliV0Result *lV0Result[5000];
     Long_t lNV0 = 0;
     
     //Central results: Stored in indices 0, 1, 2 (careful!)
     for(Int_t i = 0 ; i < 3 ; i ++){
         //Central result, customized binning: the one to use, usually
-        lV0Result[lNV0] = new AliV0Result( Form("%s_Central",lParticleName[i].Data() ),lMassHypoV0[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
-        if ( i>0 )
-            lV0Result[lNV0]->InitializeFeeddownMatrix( lPtbinnumb, lPtbinlimits, lPtbinnumbCascade, lPtbinlimitsCascade, lCentbinnumb, lCentbinlimits );
+        lV0Result[lNV0] = new AliV0Result( Form("%s_Central",lParticleName[i].Data() ),lMassHypoV0[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits, 100,lMass[i]-lMWindow[i],lMass[i]+lMWindow[i]);
+        //if ( i>0 ) not neeed for real data
+        //    lV0Result[lNV0]->InitializeFeeddownMatrix( lPtbinnumb, lPtbinlimits, lPtbinnumbCascade, lPtbinlimitsCascade, lCentbinnumb, lCentbinlimits );
         
         //Setters for V0 Cuts
         lV0Result[lNV0]->SetCutDCANegToPV            ( 0.05 ) ;
