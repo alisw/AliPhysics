@@ -57,6 +57,15 @@ class AliHFInvMassFitter : public TNamed {
   void SetFixSignalYield(Double_t yield){
     fFixedRawYield=yield;
   }
+  void SetNSigma4SideBands(Double_t ns=4.){
+    fNSigma4SideBands=ns;
+  }
+  Bool_t SetTemplateReflections(const TH1 *h, TString opt,Double_t minRange,Double_t maxRange);
+  void SetInitialReflOverS(Double_t rovers){fRflOverSig=rovers;}
+  void     SetFixReflOverS(Double_t rovers){
+    SetInitialReflOverS(rovers);
+    fFixRflOverSig=kTRUE;
+  }
   void IncludeSecondGausPeak(Double_t mass, Bool_t fixm, Double_t width, Bool_t fixw){
     fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width;
     fFixSecMass=fixm;  fFixSecWidth=fixw;
@@ -68,24 +77,26 @@ class AliHFInvMassFitter : public TNamed {
   Double_t GetSigma()const {return fSigmaSgn;}
   Double_t GetSigmaUncertainty()const { return fSigmaSgnErr;}
   TF1*     GetBackgroundFullRangeFunc(){return fBkgFunc;}
-  TF1*     GetBackgroundRecalcFunc(){return fBkgFuncRef;}
-  TF1*     GetMassFunc(){return fFuncTot;}
+  TF1*     GetBackgroundRecalcFunc(){return fBkgFuncRefit;}
+  TF1*     GetMassFunc(){return fTotFunc;}
   Double_t GetChiSquare() const{
-    if(fFuncTot) return fFuncTot->GetChisquare();
+    if(fTotFunc) return fTotFunc->GetChisquare();
     else return -1;
   }
   Double_t GetReducedChiSquare() const{
-    if(fFuncTot) return fFuncTot->GetChisquare()/fFuncTot->GetNDF();
+    if(fTotFunc) return fTotFunc->GetChisquare()/fTotFunc->GetNDF();
     else return -1;
   }
   Double_t GetFitProbability() const{
-    if(fFuncTot) return fFuncTot->GetProb();  
+    if(fTotFunc) return fTotFunc->GetProb();
     else return -1;
   }
     
   Bool_t   MassFitter(Bool_t draw=kTRUE);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
   Double_t FitFunction4Bkg (Double_t* x, Double_t* par);
+  Double_t FitFunction4Refl(Double_t *x,Double_t *par);
+  Double_t FitFunction4BkgAndRefl(Double_t *x,Double_t *par);
   Double_t FitFunction4SecPeak (Double_t* x, Double_t* par);
   Double_t FitFunction4Mass (Double_t* x, Double_t* par);
   virtual  void     Signal(Double_t nOfSigma,Double_t &signal,Double_t &errsignal) const;
@@ -105,6 +116,8 @@ class AliHFInvMassFitter : public TNamed {
   TF1*  CreateBackgroundFitFunction(TString fname, Double_t integral);
   TF1*  CreateSignalFitFunction(TString fname, Double_t integral);
   TF1*  CreateSecondPeakFunction(TString fname, Double_t integral);
+  TF1* CreateReflectionFunction(TString fname);
+  TF1* CreateBackgroundPlusReflectionFunction(TString fname);
   TF1* CreateTotalFitFunction(TString fname);
   Bool_t PrepareHighPolFit(TF1 *fback);
   Double_t BackFitFuncPolHelper(Double_t *x,Double_t *par);
@@ -126,26 +139,37 @@ class AliHFInvMassFitter : public TNamed {
   Bool_t    fFixedMean;        /// switch for fix mean of gaussian 
   Bool_t    fFixedSigma;       /// switch for fix Sigma of gaussian 
   Double_t  fFixedRawYield;    /// initialization for wa yield
-  Int_t     fNSigPars;         /// fit parameters in signal fit function
-  Int_t     fNBkgPars;         /// fit parameters in background fit function
+  Int_t     fNParsSig;         /// fit parameters in signal fit function
+  Int_t     fNParsBkg;         /// fit parameters in background fit function
   Bool_t    fOnlySideBands;    /// kTRUE = only side bands considered
+  Double_t  fNSigma4SideBands; /// number of sigmas to veto the signal peak
   TString   fFitOption;        /// L, LW or Chi2
   Double_t  fRawYield;         /// signal gaussian integral
   Double_t  fRawYieldErr;      /// err on signal gaussian integral
   TF1*      fSigFunc;          /// Signal fit function 
-  TF1*      fBkgFuncSb;        /// background fit function (1st step)
-  TF1*      fBkgFunc;          /// background fit function (1st step)
-  TF1*      fBkgFuncRef;       /// background fit function (2nd step)
-  Bool_t fSecondPeak;          /// switch off/on second peak (for D+->KKpi in Ds)
-  Double_t fSecMass;           /// position of the 2nd peak
-  Double_t fSecWidth;          /// width of the 2nd peak
-  Bool_t fFixSecMass;          /// flag to fix the position of the 2nd peak
-  Bool_t fFixSecWidth;         /// flag to fix the width of the 2nd peak
+  TF1*      fBkgFuncSb;        /// background fit function (1st step, side bands only)
+  TF1*      fBkgFunc;          /// background fit function (1st step, extended in peak region) 
+  TF1*      fBkgFuncRefit;     /// background fit function (2nd step)
+  Bool_t    fReflections;      /// flag use/not use reflections
+  Int_t     fNParsRfl;         /// fit parameters in reflection fit function
+  Double_t  fRflOverSig;       /// reflection/signal
+  Bool_t    fFixRflOverSig;    /// switch for fix refl/signal
+  TH1F*     fHistoTemplRfl;    /// histogram with reflection template
+  Bool_t    fSmoothRfl;        /// switch for smoothing of reflection template
+  Double_t  fRawYieldHelp;     /// internal variable for fit with reflections
+  TF1*      fRflFunc;          /// fit function for reflections
+  TF1*      fBkRFunc;          /// fit function for reflections
+  Bool_t    fSecondPeak;       /// switch off/on second peak (for D+->KKpi in Ds)
+  Int_t     fNParsSec          ;/// fit parameters in 2nd peak fit function
+  Double_t  fSecMass;          /// position of the 2nd peak
+  Double_t  fSecWidth;         /// width of the 2nd peak
+  Bool_t    fFixSecMass;       /// flag to fix the position of the 2nd peak
+  Bool_t    fFixSecWidth;      /// flag to fix the width of the 2nd peak
   TF1*      fSecFunc;          /// fit function for second peak
-  TF1*      fFuncTot;          /// total fit function 
+  TF1*      fTotFunc;          /// total fit function
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,2); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,3); /// class for invariant mass fit
   /// \endcond
 };
 
