@@ -319,22 +319,59 @@ void GetRawSummary(){
 
 void SummarizeLogs(const char * logTreeFile="log.tree"){
   //
-  // Input parsed log files 
-  // obtained as        egrep KeyValue 0002*/lists/*.log | sed s_":I-KeyValue."_"\t"_ >  log.tree
+  // Input parsed log files  obtained as  e.g
+  // egrep KeyValue /lustre/nyx/alice/users/marsland/alice-tpc-notes/JIRA/PWGPP-126/filtering/2015/LHC15n/*/lists/makeOfflineTriggerList.log | sed s_":I-KeyValue."_"\t"_ | gawk '{print $1"\t"$2"\t"$3}' >log.tree
+  // egrep KeyValue 2015/LHC15n/*/lists/makeOfflineTriggerList.log | sed s_/lists/__ |sed s_makeOfflineTriggerList.log__ | sed s_":I-KeyValue."_"\t"_ | gawk '{print $1"\t"$2"\t"$3}' >~/log.tree
   //
   TTree logTree;
-  logTree.ReadFile(logTreeFile,"name/C:key/C:value/d",'\t');  
+  logTree.ReadFile(logTreeFile,"name/C:key/C:value/d",'\t'); 
+  TGraph *grAll    = TStatToolkit::MakeGraphSparse(&logTree, "value:name","(strstr(key,\"TriggerHighPt.NEventsAll\")!=0)",25,1,1);
+  TGraph *grHighPt = TStatToolkit::MakeGraphSparse(&logTree, "1000*value:name","(strstr(key,\"PtSelected\")!=0)",25,2,1);
+  TGraph *grV0s    = TStatToolkit::MakeGraphSparse(&logTree, "1000*value:name","(strstr(key,\"V0Selected\")!=0)",25,4,1);
+  TGraph *grMult   = TStatToolkit::MakeGraphSparse(&logTree, "100*value:name","(strstr(key,\"HighMultiplicitySelected\")!=0)",25,6,1);
   //
-  logTree.SetAlias("nEvents","value");
-  logTree.SetMarkerStyle(21);
-  logTree.SetMarkerColor(1);
-  logTree.Draw("value:name","(strstr(key,\"TriggerHighPt.NEventsAll\")!=0)");
-  gPad->SetBottomMargin(0.25);
-  logTree.SetMarkerColor(2);
-  logTree.Draw("value*100:name","(strstr(key,\"PtSelected\")!=0)","same");
-  logTree.SetMarkerColor(4);
-  logTree.Draw("value*100:name","(strstr(key,\"V0Selected\")!=0)","same");
-  //
-  //Int_t sumAll=
+  TLegend *legend = new TLegend(0.1,0.85,0.6,0.88);
+  legend->SetNColumns(4);
+  legend->SetBorderSize(0);
+  grAll->Draw("alp"); grHighPt->Draw("lp");   grV0s->Draw("lp"); grMult->Draw("lp");
+  legend->AddEntry(grAll,"Events all","p");
+  legend->AddEntry(grHighPt,"# High pt x 1000","p");
+  legend->AddEntry(grV0s,"# V0s x 1000","p");
+  legend->AddEntry(grMult,"#High mult x 100","p");
+  legend->Draw();
 
+}
+
+
+void checkReconstuctedTrigger(){
+  /*
+    TFile *f = TFile::Open("/lustre/nyx/alice/users/marsland/alice-tpc-notes/JIRA/PWGPP-126/filtering/2016/LHC16t/benchmark/test2/2016/LHC16t/000267165/cpass0/211_rawSelected0/AliESDs.root");
+    TTree * esdTree= (TTree*)f->Get("esdTree");
+  */
+  TTree* esdTree = AliXRDPROOFtoolkit::MakeChain("esd.list","esdTree",0, 2000);
+  esdTree->SetAlias("gid","((AliESDHeader.fPeriodNumber<<36)+(AliESDHeader.fOrbitNumber<<12)+AliESDHeader.fBunchCrossNumber)"); 
+  esdTree->BuildIndex("gid");
+  esdTree->Scan("gid%1000","","",3);
+  //
+  //
+  //
+  TTree treeHighPt,treeHighPtV0,treeHighMilt;
+  treeHighPt.ReadFile("filteredHighPt.list","",'\t');
+  treeHighPt.BuildIndex("gid");
+  treeHighPt.AddFriend(esdTree,"E");
+  esdTree->Scan("gid%1000","","",3);
+  treeHighPt->Draw("Tracks[].Pt()>>hisPt(100, 2,30)","gid==E.gid&&Tracks[].fFlags&&0x44==0x44&&Tracks[].fTPCncls>100","",10000);
+  gPad->SaveAs("TracksPt.png");
+  //
+  // High mult
+  //
+  TTree treeHighMult;
+  treeHighMult.ReadFile("filteredMult.list","",'\t');
+  treeHighMult.BuildIndex("gid");
+  treeHighMult.AddFriend(esdTree,"E");  
+  treeHighMult.Draw("E.SPDVertex.fNContributors>>hisContibutors","gid==E.gid","");
+  gPad->SaveAs("SPDVertexfNContributors.png");
+
+  
+  
 }
