@@ -224,6 +224,58 @@ ProcessfilterLog(){
 }
 
 
+gitRawListFromAlien(){
+    #  Example usage 
+    #  ( source $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.sh; gitRawListFromAlien /alice/cern.ch/user/p/pwg_pp/triggeredRaw/alice/data/2015/LHC15n/000244540/ > rawSummary.log )
+    # Input:
+    #    alien path for run filtered data as stored on 
+    # Output:
+    #   gidraw.tree               - list with files+gids 
+    #   *.download.log            - download log files
+    #   info written to std out    - in example above redirected to the rawSummary.log
+    #   
+    alienPath=$1   
+    source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh
+    
+    # 1.) cache triggered lists locall
+    alilog "gitRawList. Step0. DownloadList.Begin"
+    for a in `alien_ls $alienPath/lists/filtered*.list`; do echo $alienPath/lists/$a; done  > trigger.list
+    alilog "gitRawList. Step0. DownloadList. cat trigger.list" |tee  trigger.download.log
+    cat trigger.list
+    $ALICE_ROOT/../src/STEER/Utilities/alienSync.sh alienFindCommand="cat trigger.list"
+    alilog "gitRawList. Step0. DownloadList.End"
+    #
+    # 2.) get raw gids - use ls 0stead of find - (it is faster at minimum find is now working very slow)
+    #
+    alilog "gitRawList. Step1. DownloadLogs.Begin"
+    for a in `alien_ls $alienPath`; do echo $alienPath/$a/filter.log; done  > filterlog.list
+    alilog "gitRawList. Step0. DownloadList. cat filterlog.list"
+    cat filterlog.list
+    $ALICE_ROOT/../src/STEER/Utilities/alienSync.sh alienFindCommand="cat filterlog.list" | tee filterlog.download.log
+    alilog "gitRawList. Step1. DownloadLogs.End"
+    #
+    # 2.) Extract event information
+    #
+    alilog "gitRawList. Step2. ParseLog.Begin"
+    echo fname/C:gid/L > gidraw.tree
+    find -iname filter.log | xargs cat | grep  AliOfflineTrigger::ExtractSelected: | grep -v N_{trig} | grep -v "Xrd: "| gawk {'printf ("%5s\t%s\n", $3, $5)'}  | sed s_.*raw/__>> gidraw.tree
+    echo fname/C:nevents/L > nevents.tree
+    find -iname filter.log | xargs cat | grep -v "Xrd: "|  grep  "{trig}" |sed s_.root.*{trig}=_"\ "_g | sed s_.*raw/__ >>nevents.tree
+    alilog "gitRawList. Step2. ParseLog.End"
+    # 3. Summarize content
+    # Number of skipped files
+    nFilesSkipped=`find -iname filter.log | xargs cat | grep -c "E-TAlienFile::Open: No more images to try - giving up"`
+    nFilesProcessed=`find -iname filter.log | xargs cat |  grep  "I- AliOfflineTrigger::ExtractSelected" | grep -c N_{trig}`
+    nFilesEmpty=`find -iname filter.log | xargs cat |  grep  "I- AliOfflineTrigger::ExtractSelected" | grep -c N_{trig}=0`
+    nEvents=`find -iname filter.log | xargs cat | grep -v "Xrd: "|  grep  "I- AliOfflineTrigger::ExtractSelected" | grep -v N_{trig}|grep -c root`
+    alilog   "gitRawList.nFilesSkipped\t$nFilesSkipped"
+    alilog   "gitRawList.nFilesProcessed\t$nFilesProcessed"
+    alilog   "gitRawList.nFilesEmpty\t$nFilesEmpty"
+    alilog   "gitRawList.nEvents\t$nEvents"
+}
+
+
+
 
 ###############################################################################
 main()
