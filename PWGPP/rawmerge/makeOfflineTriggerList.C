@@ -319,27 +319,67 @@ void GetRawSummary(){
 
 void SummarizeLogs(const char * logTreeFile="log.tree"){
   //
-  // Input parsed log files  obtained as  e.g
-  // egrep KeyValue /lustre/nyx/alice/users/marsland/alice-tpc-notes/JIRA/PWGPP-126/filtering/2015/LHC15n/*/lists/makeOfflineTriggerList.log | sed s_":I-KeyValue."_"\t"_ | gawk '{print $1"\t"$2"\t"$3}' >log.tree
-  // egrep KeyValue 2015/LHC15n/*/lists/makeOfflineTriggerList.log | sed s_/lists/__ |sed s_makeOfflineTriggerList.log__ | sed s_":I-KeyValue."_"\t"_ | gawk '{print $1"\t"$2"\t"$3}' >~/log.tree
+  // Input data assumed to be in fromatted csv file with header
+  //     year/d:period/C:run/d:name/C:key/C:value/I
+  // Input parsed log files  obtained using script - where the logPath is the prefix path to the log directories  
+  // ( source $ALICE_PHYSICS/../src/PWGPP/rawmerge/makeOfflineTriggerList.sh; ProcessfilterLog $logPath )
+
   //
   TTree logTree;
-  logTree.ReadFile(logTreeFile,"name/C:key/C:value/d",'\t'); 
-  TGraph *grAll    = TStatToolkit::MakeGraphSparse(&logTree, "value:name","(strstr(key,\"TriggerHighPt.NEventsAll\")!=0)",25,1,1);
-  TGraph *grHighPt = TStatToolkit::MakeGraphSparse(&logTree, "1000*value:name","(strstr(key,\"PtSelected\")!=0)",25,2,1);
-  TGraph *grV0s    = TStatToolkit::MakeGraphSparse(&logTree, "1000*value:name","(strstr(key,\"V0Selected\")!=0)",25,4,1);
-  TGraph *grMult   = TStatToolkit::MakeGraphSparse(&logTree, "100*value:name","(strstr(key,\"HighMultiplicitySelected\")!=0)",25,6,1);
+  logTree.ReadFile(logTreeFile,"",'\t');  
+  if (logTree->GetEntries()<=0){
+    ::Error("makeOfflineTriggerList.SummarizeLogs","Invalid input file %s. No entries. Exiting",logTreeFile);
+    return;
+  }
+  char cperiod[1000];
+  TBranch * br = logTree.GetBranch("period");
+  if (br==NULL){
+    ::Error("makeOfflineTriggerList.SummarizeLogs","Invalid input file %s. Missing branch period. Exiting",logTreeFile);
+    return;
+  }
+  br->SetAddress(cperiod);
+  br->GetEntry(0);
+  AliExternalInfo info; info.fVerbose=0;
+  TTree *logbookTree =info.GetTree("Logbook",cperiod,"","Logbook.detector:TPC:detector==\"TPC\"");
+  logTree.BuildIndex("run");
+  logTree.AddFriend(logbookTree,"Logbook");
+  logTree.AddFriend(logbookTree->GetFriend("Logbook.detector_TPC"),"LogbookTPC");
   //
-  TLegend *legend = new TLegend(0.1,0.85,0.6,0.88);
-  legend->SetNColumns(4);
+  TGraph *grLogbook= TStatToolkit::MakeGraphSparse(&logTree, "Logbook.totalEventsPhysics:run","Logbook.run==run",25,1,1);
+  TGraph *grLogbookTPC= TStatToolkit::MakeGraphSparse(&logTree, "LogbookTPC.eventCountPhysics:run","run==LogbookTPC.run",21,2,1);
+  TGraph *grAll    = TStatToolkit::MakeGraphSparse(&logTree, "value:run","(strstr(key,\"TriggerHighPt.NEventsAll\")!=0)",21,4,1);
+  TGraph *grHighPt = TStatToolkit::MakeGraphSparse(&logTree, "100*value:run","(strstr(key,\"PtSelected\")!=0)",22,6,1);
+  TGraph *grV0s    = TStatToolkit::MakeGraphSparse(&logTree, "100*value:run","(strstr(key,\"V0Selected\")!=0)",23,7,1);
+  TGraph *grMult   = TStatToolkit::MakeGraphSparse(&logTree, "100*value:run","(strstr(key,\"HighMultiplicitySelected\")!=0)",24,8,1);
+  TGraph * graphs[6]={grLogbook,grLogbookTPC,  grAll, grHighPt, grV0s, grMult};
+  Double_t minY=grAll->GetY()[0], maxY=grAll->GetY()[0];
+
+  for (Int_t igr=0; igr<6; igr++){
+    Double_t gmin=TMath::MinElement(graphs[igr]->GetN(),graphs[igr]->GetY());
+    Double_t gmax=TMath::MaxElement(graphs[igr]->GetN(),graphs[igr]->GetY());
+    if (minY>gmin) minY=gmin;
+    if (maxY<gmax) maxY=gmax;
+  }
+  grLogbook->SetMaximum(maxY+(maxY-minY)*0.5);
+  grLogbook->SetMinimum(0);
+  //
+  TCanvas *canvasStat= new TCanvas("canvasStat","canvasStat",1400,600);
+  canvasStat->SetRightMargin(0.05);
+  TLegend *legend = new TLegend(0.11,0.70,0.6,0.88,TString::Format("Offline trigger counters period %s  (makeOfflineTriggerList:SummarizeLogs)",cperiod).Data());
+  legend->SetNColumns(3);
   legend->SetBorderSize(0);
-  grAll->Draw("alp"); grHighPt->Draw("lp");   grV0s->Draw("lp"); grMult->Draw("lp");
-  legend->AddEntry(grAll,"Events all","p");
-  legend->AddEntry(grHighPt,"# High pt x 1000","p");
-  legend->AddEntry(grV0s,"# V0s x 1000","p");
+  grLogbook->GetYaxis()->SetTitle("# Events");
+  grLogbook->GetXaxis()->SetTitle("run");
+  grLogbook->Draw("alp");   grLogbookTPC->Draw("lp"); grAll->Draw("lp"); grHighPt->Draw("lp");   grV0s->Draw("lp"); grMult->Draw("lp");
+  legend->AddEntry(grLogbook,"Logbook #totalEventsPhysics","p");
+  legend->AddEntry(grLogbookTPC,"TPC #totalEventsPhysics","p");
+  legend->AddEntry(grAll,"ESD. #Events processed ","p");
+  legend->AddEntry(grHighPt,"# High pt x 100","p");
+  legend->AddEntry(grV0s,"# V0s x 100","p");
   legend->AddEntry(grMult,"#High mult x 100","p");
   legend->Draw();
-
+  canvasStat->SaveAs("makeOfflineTriggerListEventSummary.png");
+  canvasStat->SaveAs("makeOfflineTriggerListEventSummary.pdf");
 }
 
 

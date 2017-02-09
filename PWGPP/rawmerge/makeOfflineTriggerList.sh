@@ -205,15 +205,22 @@ DirCheckCreate()
 }
 ###########################################################################################################
 ProcessfilterLog(){
-    logPath=$1    
-    source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh     
-    egrep KeyValue $logPath/*/lists/makeOfflineTriggerList.log |sed s_":I-KeyValue."_"\t"_ | gawk '{print $1"\t"$2"\t"$3}' >  summary1.log
-    echo name/C:key/C:value/d:year/d:period/c:run/d >summary2.log
-    cat summary1.log | \
+    # input parameter  - path to the log prefix
+    # log files to be parsed  $logPath/*/lists/makeOfflineTriggerList.log
+    # example usage ( source $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.sh; ProcessfilterLog /lustre/nyx/alice/users/marsland/alice-tpc-notes/JIRA/PWGPP-126/filtering/2016/LHC16t/ )
+    # 
+    logPath=$1;  
+    source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;     
+    egrep KeyValue $logPath/*/lists/makeOfflineTriggerList.log |sed s_":I-KeyValue."_"\t"_ | gawk '{print $1"\t"$2"\t"$3}' >  tmpsummary.log
+    echo year/d:period/C:run/d:name/C:key/C:value/I >log.tree
+    cat tmpsummary.log | \
 	while read line; do
 	    guessRunData $line
-	    echo $line $year $period $runNumber
-    done >> summary.log
+	    printf "$year\t$period\t$runNumber\t$line\n"
+    done >> log.tree
+    echo ".L $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.C" >command.sh
+    echo "SummarizeLogs()" >>command.sh
+    aliroot -b <command.sh  | tee ProcessfilterLog.log
 }
 
 
