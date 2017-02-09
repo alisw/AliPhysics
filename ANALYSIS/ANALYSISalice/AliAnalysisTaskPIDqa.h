@@ -24,6 +24,7 @@ class AliPIDResponse;
 class TList;
 class AliVEvent;
 class AliESDv0KineCuts;
+class AliMultSelectionBase;
 
 class AliAnalysisTaskPIDqa : public AliAnalysisTaskSE {
   
@@ -125,8 +126,8 @@ private:
 
   // Fill TRD Histograms - called in FillTRDqa
   void FillTRDHistogramsBasic(TList *sublistTRD, Int_t scenario, AliVTrack *track);
-  void FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t scenario, AliVTrack *track, Int_t centrality);
-  void FillTRDHistogramsNsigma(TList *sublistTRD, Int_t scenario, AliVTrack *track, Int_t centrality);
+  void FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t scenario, AliVTrack *track, Float_t centrality);
+  void FillTRDHistogramsNsigma(TList *sublistTRD, Int_t scenario, AliVTrack *track, Float_t centrality);
   void FillTRDHistogramsSignal(TList *sublistTRD, Int_t scenario, AliVTrack *track);
 
 

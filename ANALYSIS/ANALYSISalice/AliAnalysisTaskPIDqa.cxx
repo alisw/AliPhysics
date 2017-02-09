@@ -43,7 +43,7 @@
 #include <AliAODEvent.h>
 #include <AliESDv0.h>
 #include <AliAODv0.h>
-#include <AliCentrality.h>
+#include <AliMultSelectionBase.h>
 #include <AliESDv0KineCuts.h>
 #include <AliESDtrackCuts.h>
 
@@ -1406,7 +1406,7 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsBasic(TList *sublistTRD, Int_t scena
 
 
 //______________________________________________________________________________
-void AliAnalysisTaskPIDqa::FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t scenario, AliVTrack *track, Int_t centrality)
+void AliAnalysisTaskPIDqa::FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t scenario, AliVTrack *track, Float_t centrality)
 {
   //
   // Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
@@ -1578,7 +1578,7 @@ void AliAnalysisTaskPIDqa::FillTRDHistogramsLikelihood(TList *sublistTRD, Int_t 
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskPIDqa::FillTRDHistogramsNsigma(TList *sublistTRD, Int_t scenario, AliVTrack *track, Int_t cent)
+void AliAnalysisTaskPIDqa::FillTRDHistogramsNsigma(TList *sublistTRD, Int_t scenario, AliVTrack *track, Float_t cent)
 {
   //
   // Fill PID qa histograms for the TRD: Fill the histograms for TRD Nsigma for different settings
@@ -1763,7 +1763,7 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
     AliESDtrackCuts *esdTrackCuts = 0x0;  // ESD track Cuts (ref mult is in AliESDtrackCuts)
 
     Double_t eta=0.;    // track eta
-    Int_t centralityFper=99; // centrality
+    Float_t centralityFper=-1; // centrality
 
     // Check for MC
     scMCtruth=(MCEvent()!=0x0);
@@ -1774,9 +1774,13 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
     if (analysisType == "ESD") {
 	fESDevent = dynamic_cast<AliESDEvent*>( InputEvent() );
 	esdTrackCuts = new AliESDtrackCuts("esdTrackCuts");
+	// Get and set centrality (new framework)
+	centralityFper = AliMultSelectionBase::GetMultiplicityPercentileWithFallback(fESDevent,"V0M");
     }
     else if (analysisType == "AOD") {
 	fAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
+	// Get and set centrality (new framework)
+	centralityFper = AliMultSelectionBase::GetMultiplicityPercentileWithFallback(fAODevent,"V0M");
 	// disable V0 scenario, because V0s are not available for AODs in this current implementation
 	scV0=0;
     }
@@ -1793,20 +1797,7 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
     if (scMCtruth) scCounter++;
     if (scV0) scCounter++;
 
-    // Get centrality for ESDs
-    if ( analysisType == "ESD" && esdTrackCuts ) {
-	AliCentrality *esdCentrality = fESDevent->GetCentrality();
-	centralityFper = (Int_t) esdCentrality->GetCentralityPercentile("V0M");
-    }
-
-    // Get centrality for AODs
-    if ( analysisType == "AOD" && fAODevent ) {
-	AliAODHeader * header=dynamic_cast<AliAODHeader*>(fAODevent->GetHeader());
-	if(!header) AliFatal("Not a standard AOD");
-	AliCentrality *aodCentrality = header->GetCentralityP();
-	centralityFper = (Int_t) aodCentrality->GetCentralityPercentile("V0M");
-    }
-
+ 
     Int_t ntracks = event->GetNumberOfTracks();
     for(Int_t itrack = 0; itrack <  ntracks; itrack++){
 	AliVTrack *track = (AliVTrack *)event->GetTrack(itrack);

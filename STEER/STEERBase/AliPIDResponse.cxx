@@ -51,7 +51,7 @@
 #include "AliPIDResponse.h"
 #include "AliDetectorPID.h"
 
-#include "AliCentrality.h"
+#include "AliMultSelectionBase.h"
 
 ClassImp(AliPIDResponse);
 
@@ -624,15 +624,9 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass, TString recoP
   //TOF resolution
   SetTOFResponse(event, (AliPIDResponse::EStartTimeType_t)fTOFPIDParams->GetStartTimeMethod());
 
-
   // Get and set centrality
-  AliCentrality *centrality = event->GetCentrality();
-  if(centrality){
-    fCurrCentrality = centrality->GetCentralityPercentile("V0M");
-  }
-  else{
-    fCurrCentrality = -1;
-  }
+  fCurrCentrality = -1;
+  fCurrCentrality = AliMultSelectionBase::GetMultiplicityPercentileWithFallback(event,"V0M");
 
   // Set centrality percentile for EMCAL
   fEMCALResponse.SetCentrality(fCurrCentrality);
