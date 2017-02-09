@@ -1023,10 +1023,10 @@ public:
   // v1
   void SetFlowSPZDCv1Pro(TProfile* const TP, Int_t const r) {this->fFlowSPZDCv1Pro[r] = TP;};
   TProfile* GetFlowSPZDCv1Pro(Int_t const r) const {return this->fFlowSPZDCv1Pro[r];};
-  void SetFlowSPZDCv1etaPro(TProfile* const TP, Int_t const c, Int_t const r) {this->fFlowSPZDCv1etaPro[c][r] = TP;};
-  TProfile* GetFlowSPZDCv1etaPro(Int_t const c, Int_t const r) const {return this->fFlowSPZDCv1etaPro[c][r];};
-  void SetFlowSPZDCv1etaHist(TH1D* const TP, Int_t const c, Int_t const r) {this->fFlowSPZDCv1etaHist[c][r] = TP;};
-  TH1D* GetFlowSPZDCv1etaHist(Int_t const c, Int_t const r) const {return this->fFlowSPZDCv1etaHist[c][r];};
+  void SetFlowSPZDCv1etaPro(TProfile* const TP, Int_t const c, Int_t const k, Int_t const r) {this->fFlowSPZDCv1etaPro[c][k][r] = TP;};
+  TProfile* GetFlowSPZDCv1etaPro(Int_t const c, Int_t const k, Int_t const r) const {return this->fFlowSPZDCv1etaPro[c][k][r];};
+  void SetFlowSPZDCv1etaHist(TH1D* const TP, Int_t const c, Int_t const k, Int_t const r) {this->fFlowSPZDCv1etaHist[c][k][r] = TP;};
+  TH1D* GetFlowSPZDCv1etaHist(Int_t const c, Int_t const k, Int_t const r) const {return this->fFlowSPZDCv1etaHist[c][k][r];};
   
   // Flow SP VZ
   void SetFlowSPVZList(TList* const TL) {this->fFlowSPVZList = TL;};
@@ -1559,7 +1559,7 @@ private:
   TProfile *fCRCZDCQVecACorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-A
   TProfile *fCRCZDCQVecCCorr[fCRCMaxnRun][2]; //! Q Vectors ZDCN-C
 //  TH2D *fCRCZDCQVecEP[fCRCMaxnRun][4]; //! ZN event planes
-//  TH3D* fhZNCenDis[fCRCMaxnRun][2]; //! ZN spectra
+  TH3D* fhZNCenDis[2]; //! ZDC 2D Q-vector distribution vs centrality
   TProfile *fCRCZDCQVecRes[fCRCMaxnRun][8]; //! Q Vectors Resolution Terms
   const static Int_t fkCRCnCQVecVtxPos = 4;
   Bool_t fStoreZDCQVecVtxPos; //
@@ -1711,8 +1711,9 @@ private:
   
   TProfile *fFlowSPZDCv1Pro[4]; //!
   const static Int_t fkNHistv1eta = 17;
-  TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHistv1eta]; //!
-  TH1D *fFlowSPZDCv1etaHist[fCRCMaxnCen][fkNHistv1eta]; //!
+  const static Int_t fkNHarv1eta = 3;
+  TProfile *fFlowSPZDCv1etaPro[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
+  TH1D *fFlowSPZDCv1etaHist[fCRCMaxnCen][fkNHarv1eta][fkNHistv1eta]; //!
   const static Int_t fkNHistQVecCorrv1eta = 10;
 //  TProfile2D *fCRCQVecEtaHist[fCRCMaxnRun][fkNHistQVecCorrv1eta]; //!
 //  TProfile2D *fTPCEtaHist[fkNHistQVecCorrv1eta]; //!

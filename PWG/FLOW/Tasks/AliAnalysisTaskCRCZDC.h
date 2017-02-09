@@ -159,8 +159,10 @@ public:
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone(); fUseTowerEq=kTRUE;};
   TList* GetTowerEqList() const {return this->fTowerEqList;};
-  void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone();};
+  void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone(); fUseBadTowerCalib=kTRUE;};
   TList* GetBadTowerCalibList() const {return this->fBadTowerCalibList;};
+  void SetZDCSpectraCorrList(TList* const kList) {this->fZDCSpectraCorrList = (TList*)kList->Clone(); fUseZDCSpectraCorr=kTRUE;};
+  TList* GetZDCSpectraCorrList() const {return this->fZDCSpectraCorrList;};
   virtual Int_t GetCenBin(Double_t Centrality);
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
   Bool_t plpMV(const AliAODEvent* aod);
@@ -319,7 +321,12 @@ private:
   TList *fTowerEqList;   // list with weights
   TH1D *fTowerGainEq[2][5]; //!
   TList *fBadTowerStuffList; //! list for storing calib files
+  Bool_t fUseBadTowerCalib; //
   TList *fBadTowerCalibList; // list with original calib files
+  Bool_t fUseZDCSpectraCorr; //
+  TList *fZDCSpectraCorrList; //
+  TF1 *FitSpecCorMu[8]; //!
+  TF1 *FitSpecCorSi[8]; //!
   TH2D *fBadTowerCalibHist[100]; //!
   Int_t fCachedRunNum;   //
   

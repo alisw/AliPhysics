@@ -30,7 +30,7 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
                              Bool_t bUsePtWeights=kFALSE,
                              TString PtWeightsFileName="",
                              TString sPhiEtaWeight="off",
-                             Bool_t bRescaleZDC=kFALSE,
+                             Bool_t bCorrSpecZDC=kFALSE,
                              Bool_t bSetStoreZDCQVecVtxPos=kFALSE,
                              Int_t MinMulZN=1,
                              TString ZDCESEFileName="",
@@ -194,6 +194,25 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
       exit(1);
     }
     delete ZDCBadTowerFile;
+  }
+  if(bCorrSpecZDC) {
+    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCSpectraCorr.root";
+    TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
+    if(!ZDCRecFile) {
+      cout << "ERROR: ZDC Spectra Calibration not found!" << endl;
+      exit(1);
+    }
+    gROOT->cd();
+    TList* ZDCRecList = (TList*)(ZDCRecFile->FindObjectAny("ZDCSpectraCorr"));
+    if(ZDCRecList) {
+      taskFE->SetZDCSpectraCorrList(ZDCRecList);
+      cout << "ZDC Spectra Calibration set (from " <<  ZDCRecFileName.Data() << ")" << endl;
+    }
+    else {
+      cout << "ERROR: ZDCSpectraCorrList not found!" << endl;
+      exit(1);
+    }
+    delete ZDCRecFile;
   }
   
   // add the task to the manager
@@ -598,25 +617,25 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     }
     delete ZDCCalibFile;
   } // end of if(bUseZDC)
-  if(bRescaleZDC) {
-    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCRescaling.root";
-    TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
-    if(!ZDCRecFile) {
-      cout << "ERROR: ZDC calibration (rescaling) not found!" << endl;
-      exit(1);
-    }
-    gROOT->cd();
-    TList* ZDCRecList = (TList*)(ZDCRecFile->FindObjectAny("ZDC Rescaling"));
-    if(ZDCRecList) {
-      taskQC->SetCRCZDCResList(ZDCRecList);
-      cout << "ZDC calibration (rescaling) set (from " <<  ZDCRecFileName.Data() << ")" << endl;
-    }
-    else {
-      cout << "ERROR: ZDCResList not found!" << endl;
-      exit(1);
-    }
-    delete ZDCRecFile;
-  }
+//  if(bRescaleZDC) {
+//    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCRescaling.root";
+//    TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
+//    if(!ZDCRecFile) {
+//      cout << "ERROR: ZDC calibration (rescaling) not found!" << endl;
+//      exit(1);
+//    }
+//    gROOT->cd();
+//    TList* ZDCRecList = (TList*)(ZDCRecFile->FindObjectAny("ZDC Rescaling"));
+//    if(ZDCRecList) {
+//      taskQC->SetCRCZDCResList(ZDCRecList);
+//      cout << "ZDC calibration (rescaling) set (from " <<  ZDCRecFileName.Data() << ")" << endl;
+//    }
+//    else {
+//      cout << "ERROR: ZDCResList not found!" << endl;
+//      exit(1);
+//    }
+//    delete ZDCRecFile;
+//  }
 
 
   if(sPhiEtaWeight=="def") {
