@@ -1003,17 +1003,15 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     if( !trk ) continue;
     if(fTracking == 0){
       if(!(trk->TestFilterBit(1<<0))) continue;
-
-      if(!(trk->GetStatus() & AliAODTrack::kTPCrefit) ) continue;
-      if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      if(trk->GetTPCNcls() < 20)continue;
+      if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
+      
       fNLooseTracks++;
       }
     if(fTracking == 1){
       if(!(trk->TestFilterBit(1<<1))) continue;
       
       if(!(trk->GetStatus() & AliAODTrack::kITSrefit) ) continue;
-      fNLooseTracks++;
+      //fNLooseTracks++;
       }  
   }//Track loop -loose cuts
   
@@ -1026,8 +1024,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
     if( !trk ) continue;
     
     if(fTracking == 0){
-      if(!(trk->TestFilterBit(1<<0))) continue;
-      if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
+      if(!(trk->TestFilterBit(1<<4))) continue;
+      //if(!trk->HasPointOnITSLayer(0)||!trk->HasPointOnITSLayer(1)) continue;
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
