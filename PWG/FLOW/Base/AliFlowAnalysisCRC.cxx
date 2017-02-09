@@ -588,9 +588,9 @@ void AliFlowAnalysisCRC::Make(AliFlowEventSimple* anEvent)
     Double_t QARe = fZDCFlowVect[1].X();
     Double_t QAIm = fZDCFlowVect[1].Y();
     Double_t QMA  = fZDCFlowVect[1].GetMult();
-    if(QMC>0. && QMA>0. && sqrt(QCReR*QCReR+QCImR*QCImR)>1.E-6 && sqrt(QAReR*QAReR+QAImR*QAImR)>1.E-6) {
-      fhZNCenDis[0]->Fill(fCentralityEBE,QCReR,QCImR);
-      fhZNCenDis[1]->Fill(fCentralityEBE,QAReR,QAImR);
+    if(QMC>0. && QMA>0. && sqrt(QCRe*QCRe+QCIm*QCIm)>1.E-6 && sqrt(QARe*QARe+QAIm*QAIm)>1.E-6) {
+      fhZNCenDis[0]->Fill(fCentralityEBE,QCRe,QCIm);
+      fhZNCenDis[1]->Fill(fCentralityEBE,QARe,QAIm);
     }
   }
   // ZDC-C (eta < -8.8)
