@@ -1091,12 +1091,13 @@ AliClusterContainer* clustersCont  = GetClusterContainer(0);
  if (!clustersCont) return;
 TObjArray* clustersClone=0x0;
 clustersClone = CloneClustersTObjArray(clustersCont);
- TObjArray *clusters =clustersClone;// fEsdClusters;
+ TObjArray *clusters =clustersClone;
 
   // TObjArray *clusters = fEsdClusters;
   // if (!clusters)
   //   clusters = fAodClusters;
 
+ if (!clusters) return;
   Int_t nclus = 0;
   nclus = clusters->GetEntries();
   nclus = thisEvent.nHits;
@@ -1270,7 +1271,6 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 						CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
 						fHistPi0->Fill(CaloClusterVecpi0.M());
 						fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt(),0.5);  //eventually divide by 2
-						std::cout<<CaloClusterVecpi0.M()<<" "<<CaloClusterVecpi0.Pt()<<std::endl;
 						fMAngle->Fill(CaloClusterVecpi0.M(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
 						fPtAngle->Fill(CaloClusterVecpi0.Pt(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
 						if((CaloClusterVecpi0.M()>=Pi0Mass-Pi0Window) && (CaloClusterVecpi0.M()<=Pi0Mass+Pi0Window)){
