@@ -563,7 +563,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
 
     pt = vtrack->Pt();
     Double_t weight=pt<fhPtWeights->GetBinLowEdge(fhPtWeights->GetNbinsX()+1) ? fhPtWeights->GetBinContent(fhPtWeights->FindBin(pt)) : 1.;
-    if( ((Double_t)pt*10000.)-((Int_t)(pt*10000.))>weight) continue;
+    if (pt > 1000.) continue;
+    if( ((Double_t)pt*10000.)-((Long_t)(pt*10000.))>weight) continue;
     
     pullrphi[1]=pt;
     pointrphi[1]=pt;
