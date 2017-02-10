@@ -2957,7 +2957,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQAV0(Int_t lR
     // Variable 1: DCA Neg to PV
     Float_t lMaxDCANegToPV = 20.00;
     
-    for(Int_t i = 0 ; i < 4 ; i ++){
+    for(Int_t i = 0 ; i < 3 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCANegToPVSweep",icut) );
             //Add result to pool
@@ -2970,7 +2970,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQAV0(Int_t lR
     // Variable 2: DCA Pos to PV
     Float_t lMaxDCAPosToPV = 20.00;
     
-    for(Int_t i = 0 ; i < 4 ; i ++){
+    for(Int_t i = 0 ; i < 3 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAPosToPVSweep",icut) );
             //Add result to pool
@@ -2983,7 +2983,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQAV0(Int_t lR
     // Variable 3: DCA V0 Daughters
     Float_t lMaxDCAV0Daughters = 1.20;
     
-    for(Int_t i = 0 ; i < 4 ; i ++){
+    for(Int_t i = 0 ; i < 3 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0DaughtersSweep",icut) );
             //Add result to pool
@@ -3003,7 +3003,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQAV0(Int_t lR
     for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
         lV0CosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaV0PA );
     }
-    for(Int_t i = 0 ; i < 4 ; i ++){
+    for(Int_t i = 0 ; i < 3 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0CosPASweep",icut) );
             //Add result to pool
@@ -3015,7 +3015,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddTopologicalQAV0(Int_t lR
     // Variable 5: V0 Radius
     Float_t lMinV0Radius = 2.0;
     Float_t lMaxV0Radius = 20.00;
-    for(Int_t i = 0 ; i < 4 ; i ++){
+    for(Int_t i = 0 ; i < 3 ; i ++){
         for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
             lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0RadiusSweep",icut) );
             //Add result to pool
