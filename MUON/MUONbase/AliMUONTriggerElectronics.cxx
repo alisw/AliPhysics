@@ -368,11 +368,13 @@ void AliMUONTriggerElectronics::LoadMasks(AliMUONCalibrationData* calibData)
       if (cardNumber) // skip empty slots
       {
         AliMUONVCalibParam* localBoardMasks = calibData->LocalTriggerBoardMasks(cardNumber);
-        for ( Int_t i = 0; i < localBoardMasks->Size(); ++i )
-        {
-          UShort_t lmask = static_cast<UShort_t>(localBoardMasks->ValueAsInt(i) & 0xFFFF);
-          b->Mask(i,lmask);
-        }
+	if (localBoardMasks) {
+	  for ( Int_t i = 0; i < localBoardMasks->Size(); ++i )
+	    {
+	      UShort_t lmask = static_cast<UShort_t>(localBoardMasks->ValueAsInt(i) & 0xFFFF);
+	      b->Mask(i,lmask);
+	    }
+	}
       }
     }
     ++irb;
