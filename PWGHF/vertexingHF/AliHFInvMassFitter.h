@@ -60,7 +60,7 @@ class AliHFInvMassFitter : public TNamed {
   void SetNSigma4SideBands(Double_t ns=4.){
     fNSigma4SideBands=ns;
   }
-  Bool_t SetTemplateReflections(const TH1 *h, TString opt,Double_t minRange,Double_t maxRange);
+  TH1F* SetTemplateReflections(const TH1 *h, TString opt,Double_t minRange,Double_t maxRange);
   void SetInitialReflOverS(Double_t rovers){fRflOverSig=rovers;}
   void     SetFixReflOverS(Double_t rovers){
     SetInitialReflOverS(rovers);
@@ -106,7 +106,7 @@ class AliHFInvMassFitter : public TNamed {
   void DrawHere(TVirtualPad* c);
   void Significance(Double_t nOfSigma, Double_t &significance,Double_t &errsignificance) const;
   void Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const;
-
+  void PrintFunctions();
  private:
   AliHFInvMassFitter(const AliHFInvMassFitter &source);
   AliHFInvMassFitter& operator=(const AliHFInvMassFitter& source); 

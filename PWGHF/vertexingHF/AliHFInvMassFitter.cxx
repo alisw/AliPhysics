@@ -292,7 +292,7 @@ Bool_t AliHFInvMassFitter::MassFitter(Bool_t draw){
     for(Int_t ipar=0; ipar<fNParsRfl; ipar++){
       fRflFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar+fNParsBkg+fNParsSig+fNParsSec));
       fRflFunc->SetParError(ipar,fTotFunc->GetParError(ipar+fNParsBkg+fNParsSig+fNParsSec));
-      fBkRFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar+fNParsBkg));
+      fBkRFunc->SetParameter(ipar+fNParsBkg,fTotFunc->GetParameter(ipar+fNParsBkg+fNParsSig+fNParsSec));
     }
     for(Int_t ipar=0; ipar<fNParsBkg; ipar++) fBkRFunc->SetParameter(ipar,fTotFunc->GetParameter(ipar));
     fRflFunc->SetLineColor(kGreen+1);
@@ -477,8 +477,8 @@ TF1* AliHFInvMassFitter::CreateBackgroundPlusReflectionFunction(TString fname){
     fbr->SetParName(ipar,fBkgFunc->GetParName(ipar));
   }
   for(Int_t ipar=0; ipar<fNParsRfl; ipar++){
-    fbr->SetParameter(ipar+fNParsBkg+fNParsSig+fNParsSec,fRflFunc->GetParameter(ipar));
-    fbr->SetParName(ipar+fNParsBkg+fNParsSig+fNParsSec,fRflFunc->GetParName(ipar));
+    fbr->SetParameter(ipar+fNParsBkg,fRflFunc->GetParameter(ipar));
+    fbr->SetParName(ipar+fNParsBkg,fRflFunc->GetParName(ipar));
     // par limits not set because this function is not used for fitting but only for drawing
   }
   return fbr;
@@ -907,7 +907,7 @@ Double_t AliHFInvMassFitter::BackFitFuncPolHelper(Double_t *x,Double_t *par){
   return back;
 }
 // _______________________________________________________________________
-Bool_t AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Double_t minRange,Double_t maxRange){
+TH1F* AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Double_t minRange,Double_t maxRange){
   /// Method to create the reflection invariant mass distributions from MC templates
   /// option could be: 
   ///    "template"                use MC histograms
@@ -918,7 +918,7 @@ Bool_t AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doub
 
   if(!h){
     fReflections=kFALSE;
-    return kFALSE;
+    return 0x0;
   }
   fHistoTemplRfl=(TH1F*)h->Clone("hTemplRfl");
   opt.ToLower();
@@ -926,7 +926,7 @@ Bool_t AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doub
   printf("\n--- Reflection templates from simulation ---\n");
   if(opt.Contains("templ")){
     printf("   ---> Reflection contribution using directly the histogram from simulation\n");
-    return fReflections;
+    return fHistoTemplRfl;
   }
 
   TF1 *f=0x0;
@@ -980,7 +980,9 @@ Bool_t AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doub
     // no good option passed
     printf("   ---> Bad option for reflection configuration -> reflections will not be included in the fit\n");
     fReflections=kFALSE;
-    return fReflections;
+    delete fHistoTemplRfl;
+    fHistoTemplRfl=0x0;
+    return 0x0;
   }
 
   // Fill fHistoTemplRfl with values of fit function
@@ -996,10 +998,42 @@ Bool_t AliHFInvMassFitter::SetTemplateReflections(const TH1 *h, TString opt,Doub
       else fHistoTemplRfl->SetBinError(j,0.001*fHistoTemplRfl->GetBinContent(j));
     }
     fReflections=kTRUE;
+    return fHistoTemplRfl;
   }else{
     printf("   ---> Fit to MC template for reflection failed -> reflections will not be included in the fit\n");
     fReflections=kFALSE;
+    delete fHistoTemplRfl;
+    fHistoTemplRfl=0x0;
+    return 0x0;
   }
-  return fReflections;
+  return 0x0;
 }
-
+// _______________________________________________________________________
+void AliHFInvMassFitter::PrintFunctions(){
+  /// dump the function parameters
+  ///
+  if(fBkgFunc){
+    printf("--- Background function in 1st step fit to side bands ---\n");
+    fBkgFunc->Print();
+  }
+  if(fTotFunc){
+    printf("--- Total fit function from 2nd step fit ---\n");
+    fTotFunc->Print();
+  }
+  if(fBkgFuncRefit){
+    printf("--- Background function in 2nd step fit ---\n");
+    fBkgFuncRefit->Print();
+  }
+  if(fRflFunc){
+    printf("--- Reflections ---\n");
+    fRflFunc->Print();
+  }
+  if(fBkRFunc){
+    printf("--- Background + reflections ---\n");
+    fBkRFunc->Print();
+  }
+  if(fSecFunc){
+    printf("--- Additional Gaussian peak ---\n");
+    fSecFunc->Print();
+  }
+}
