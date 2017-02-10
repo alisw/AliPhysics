@@ -394,9 +394,9 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
   TObjString **columnNameList   = new TObjString*[nCols];
   TObjString **outputFormatList = new TObjString*[nCols];     // root header formatting
   Bool_t isIndex[nCols];
-  Bool_t isParrent[nCols];
+  Bool_t isParent[nCols];
   TPRegexp indexPattern("^%I"); // pattern for index  
-  TPRegexp parrentPattern("^%P"); // pattern for parrent index  
+  TPRegexp parentPattern("^%P"); // pattern for parent index  
   for (Int_t iCol=0; iCol<nCols; iCol++){    
     TObjArray * arrayDesc = TString(fArray->At(iCol)->GetName()).Tokenize(";");
     if (arrayDesc->GetEntries()<=0) {
@@ -410,11 +410,11 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
     }else{
       isIndex[iCol]=kFALSE;
     }
-    if (fieldName.Contains(parrentPattern)){             // variable is parrent 
-      isParrent[iCol]=kTRUE;
-      indexPattern.Substitute(fieldName,"");
+    if (fieldName.Contains(parentPattern)){             // variable is parent 
+      isParent[iCol]=kTRUE;
+      parentPattern.Substitute(fieldName,"");
     }else{
-      isParrent[iCol]=kFALSE;
+      isParent[iCol]=kFALSE; 
     }
 
     TTreeFormula * formula = new TTreeFormula(fieldName.Data(), fieldName.Data(), tree);
@@ -542,14 +542,18 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
 	if (isElastic==kFALSE){
 	  fprintf(default_fp,"\t\"%s\":",rFormulaList[icol]->GetName());
 	}else{
-	  if (isIndex[icol]==kFALSE && isParrent[icol]==kFALSE){  
+	  if (isIndex[icol]==kFALSE && isParent[icol]==kFALSE){  
 	    TString fieldName(rFormulaList[icol]->GetName());
 	    fieldName.ReplaceAll(".","%_");
-	    fprintf(default_fp,"\t\"%s\":",fieldName.Data());
+	    if (icol>0 && isIndex[icol-1]==kFALSE && isParent[icol-1]==kFALSE ){
+	      fprintf(default_fp,"\t,\"%s\":",fieldName.Data());
+	    }else{
+	      fprintf(default_fp,"\t\"%s\":",fieldName.Data());
+	    }
 	  }
 	}
 	if (nData<=1){
-	  if (isIndex[icol]==kFALSE&&isParrent[icol]==kFALSE){
+	  if ((isIndex[icol]==kFALSE)&&(isParent[icol]==kFALSE)){
 	    if (isElastic && rFormulaList[icol]->IsString()){
 	      fprintf(default_fp,"\t\"%s\"",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
 	    }else{
@@ -561,14 +565,13 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
 	    if (isIndex[icol+1]){
 	      fprintf(default_fp,".");
 	    }else 
-	      if (isParrent[icol+1]==kFALSE){
+	      if (isParent[icol+1]==kFALSE){
 		fprintf(default_fp,"\"}}\n{");
 	      }
 	  }
-	  if (isParrent[icol]){
-	    fprintf(default_fp,", \"parrent\": %s\"}}\n{",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));
-	  }
-	  
+	  if (isParent[icol]==kTRUE){ 
+	    fprintf(default_fp,"\", \"parent\": \"%s\"}}\n{",rFormulaList[icol]->PrintValue(0,0,printFormatList[icol]->GetName()));	    
+	  }	  
 	}else{
 	  fprintf(default_fp,"\t[");
 	  for (Int_t iData=0; iData<nData;iData++){
@@ -580,7 +583,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
 	    }
 	  }
 	}
-	if (icol<nCols-1 && isIndex[icol]==kFALSE) fprintf(default_fp,",");
+	//	if (icol<nCols-1 && (isIndex[icol]==kFALSE && isParent[icol]==kFALSE) ) fprintf(default_fp,",");
 	//fprintf(default_fp,"\n");
       }
     }
@@ -1040,13 +1043,12 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
 
 
 
-TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression, Int_t verbose){
+TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString drawExpression,  TObjArray *keepArray, Int_t verbose){
   //
   //
   // Example usage:
   /*
-    TPad *pad= 0;
-    TString drawExpression="";
+    TPad *pad= 0;    TString drawExpression="";
     drawExpression="[1,1,1]:" 
     drawExpression+="hisPtAll(0,10)(0)(errpl);hisPtITS(0,10)(0)(err);hisPtPhiThetaAll(0,10,-3.2,3.2,-1.2,1.2)(0)(err):";
     drawExpression+="hisAlpha(-3.2,3.2)(0)(errpl);hisPtPhiThetaAll(0,10,-3.2,3.2,-1.2,1.2)(1)(err):";
@@ -1078,6 +1080,7 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
   delete padRows;
   //
   //
+  TPRegexp isPadOption("^%O");
   for (Int_t iPad=0; iPad<nPads; iPad++){
     if (drawList->At(iPad+1)==NULL) break;
     //TVirtualPad  *cPad = 
@@ -1085,7 +1088,24 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
     TLegend * legend = new TLegend(0.11,0.75, 0.89,0.89, TString::Format("Pad%d",iPad));
     legend->SetNColumns(2);
     legend->SetBorderSize(0);
-    TObjArray * padDrawList= TString(drawList->At(iPad+1)->GetName()).Tokenize(";");
+    TString padSetup=drawList->At(iPad+1)->GetName();
+    TString padOption="";
+    Bool_t isTimeX=kFALSE, isTimeY=kFALSE;
+    
+    if (padSetup.Contains(isPadOption)){      
+      padOption=TString(&padSetup[2]);
+      padOption.Remove(padOption.First(";"));
+      padOption.ToLower();
+      if (padOption.Contains("logy")) pad->cd(iPad+1)->SetLogy();
+      if (padOption.Contains("logx")) pad->cd(iPad+1)->SetLogx();
+      if (padOption.Contains("gridy")) pad->cd(iPad+1)->SetGridy();
+      if (padOption.Contains("gridx")) pad->cd(iPad+1)->SetGridx();
+      if (padOption.Contains("timex")) isTimeX=kTRUE;
+      if (padOption.Contains("timey")) isTimeY=kTRUE;
+      padSetup.Remove(0,padSetup.First(';')+1);	
+    }
+
+    TObjArray * padDrawList= padSetup.Tokenize(";");
     Double_t hisMin=0, hisMax=-1;
     TH1 * hisToDraw=0;
     TGraphErrors * grToDraw=0;
@@ -1099,10 +1119,10 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
       }    
       Int_t ndim=his->GetNdimensions();      
       TString rangeDescription(hisDescription->At(1)->GetName());
-      Int_t ndimRange= (rangeDescription.CountChar(',')+1)/2;
+      Int_t ndimRange= (rangeDescription.CountChar(','))/2;
       if (ndimRange>0){
 	TObjArray *rangeArray=rangeDescription.Tokenize(",");
-	for (Int_t iDim=0; iDim<ndimRange; iDim+=2){
+	for (Int_t iDim=0; iDim<ndimRange; iDim++){
 	  if (rangeArray->At(iDim*2)->GetName()[0]=='U') {
 	    Double_t min=TString(&(rangeArray->At(iDim*2)->GetName()[1])).Atof();
 	    Double_t max=TString(&(rangeArray->At(iDim*2+1)->GetName()[1])).Atof();
@@ -1136,29 +1156,37 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
 	for (Int_t iProj=0; iProj<8; iProj++){
 	  if (drawOption.Contains(projType[iProj])){
 	    gr=TStatToolkit::MakeStat1D(his2D,0,1.0,iProj,21+ihis,ihis+1);
+	    gr->SetName(padDrawList->At(ihis)->GetName());
+	    gr->SetTitle(padDrawList->At(ihis)->GetName());
+	    gr->GetXaxis()->SetTitle(his2D->GetXaxis()->GetTitle());
+	    gr->GetYaxis()->SetTitle(his2D->GetYaxis()->GetTitle());
 	    drawOption.ReplaceAll(projType[iProj].Data(),"");
 	  }	
 	}
 	delete his2D;
       }
       if (gr){
-	if (hisMax<hisMin) hisMin=gr->GetMinimum();  hisMax=gr->GetMaximum();
-	if (hisMax<gr->GetMaximum()) hisMax=gr->GetMaximum();
-	if (hisMin>gr->GetMinimum()) hisMin=gr->GetMinimum();		
+	Double_t grMinI=TMath::MinElement(gr->GetN(),gr->GetY())-3.*TMath::Median(gr->GetN(),gr->GetEY());
+	Double_t grMaxI=TMath::MaxElement(gr->GetN(),gr->GetY())+3.*TMath::Median(gr->GetN(),gr->GetEY());
+	if (hisMax<hisMin) {hisMin=grMinI;  hisMax=grMaxI;}
+	if (hisMax<grMaxI) hisMax=grMaxI;
+	if (hisMin>grMinI) hisMin=grMinI;		
 	if (ihis==0)  {
 	  grToDraw = gr;
 	  gr->Draw((drawOption+"a").Data());
-	  legend->AddEntry(gr);
+	  legend->AddEntry(gr,"","p");
 	}
 	else{
 	  gr->Draw(drawOption.Data());
-	  legend->AddEntry(gr);
+	  legend->AddEntry(gr,"", "p");
 	}
+	if (keepArray) keepArray->AddLast(gr);
       }
       if (hProj){
 	hProj->SetMarkerColor(ihis+1);
 	hProj->SetLineColor(ihis+1);
 	hProj->SetMarkerStyle(21+ihis);
+	if (keepArray) keepArray->AddLast(hProj);
 	//
 	if (hisMax<hisMin) hisMin=hProj->GetMinimum();  hisMax=hProj->GetMaximum();
 	if (hisMax<hProj->GetMaximum()) hisMax=hProj->GetMaximum();
@@ -1176,15 +1204,27 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
     } 
     pad->cd(iPad+1);
     if (hisToDraw!=NULL){      
-      hisToDraw->SetMaximum(hisMax+(hisMax-hisMin)/3);
+      hisToDraw->SetMaximum(hisMax+(hisMax-hisMin)/2.);
       hisToDraw->SetMinimum(hisMin);
+      if ((verbose&0x8)>0){
+	::Info("AliTreePlayer::DrawHistograms:","Pad %d. %s  SetMinimum(%f). SetMaximum(%f)",iPad,padDrawList->At(0)->GetName(), hisMin,hisMax+(hisMax-hisMin)/2.);
+      }
+      if (isTimeX) hisToDraw->GetXaxis()->SetTimeDisplay(1);
+      if (isTimeY) hisToDraw->GetYaxis()->SetTimeDisplay(1);
       pad->cd(iPad+1)->Modified();
       pad->cd(iPad+1)->Update();
       legend->Draw("same");
     }
     if (grToDraw!=NULL){      
-      grToDraw->SetMaximum(hisMax+(hisMax-hisMin)/3);
-      grToDraw->SetMinimum(hisMin);
+      grToDraw->SetMaximum(hisMax+(hisMax-hisMin)/2.);
+      grToDraw->SetMinimum(hisMin-(hisMax-hisMin)/3.);
+      if (isTimeX) grToDraw->GetXaxis()->SetTimeDisplay(1);
+      if (isTimeY) grToDraw->GetYaxis()->SetTimeDisplay(1);
+
+      if ((verbose&0x8)>0){
+	::Info("AliTreePlayer::DrawHistograms:","Pad %d. %s  SetMinimum(%f). SetMaximum(%f)",iPad,padDrawList->At(0)->GetName(), hisMax+(hisMax-hisMin)/2.,hisMin-(hisMax-hisMin)/3.);
+      }
+      
       pad->cd(iPad+1)->Modified();
       pad->cd(iPad+1)->Update();
       legend->Draw("same");
