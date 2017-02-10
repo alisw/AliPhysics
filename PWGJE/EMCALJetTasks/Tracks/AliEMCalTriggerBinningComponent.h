@@ -6,7 +6,7 @@
 #include <TArrayD.h>
 #include <TBinning.h>
 #include <TNamed.h>
-#include <Riosfwd.h>
+#include <iosfwd>
 
 class TObjArray;
 

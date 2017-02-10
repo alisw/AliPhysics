@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include <Riosfwd.h>
+#include <iosfwd>
 #include <TArrayS.h>
 #include <TMath.h>
 #include <TClonesArray.h>
