@@ -24,7 +24,7 @@ fi
 if [ "$RUNG4" = "1" ]; then 
   G4OUTDIR=g4/lego_$DET
   rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log
-  aliroot -b -q  sim.C\($NEVENTS,\"$G4CONFIG\",\"$DET\"\)  2>&1 | tee sim.log
+  aliroot -b -q  simG4.C\($NEVENTS,\"$G4CONFIG\",\"$DET\"\)  2>&1 | tee sim.log
   rm -fr $G4OUTDIR
   mkdir -p $G4OUTDIR
   mv *.root *.log $G4OUTDIR

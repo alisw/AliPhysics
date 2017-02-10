@@ -54,15 +54,6 @@ enum PprRad_t
     kGluonRadiation, kNoGluonRadiation
 };
 
-enum PprTrigConf_t
-{
-    kDefaultPPTrig, kDefaultPbPbTrig
-};
-
-const char * pprTrigConfName[] = {
-    "p-p","Pb-Pb"
-};
-
 // This part for configuration    
 
 static PprRun_t srun = kPythia6;
@@ -1091,16 +1082,16 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
         AliGenSTRANGElib *lib = new AliGenSTRANGElib();
         Int_t particle;
         // Xi
-        particle = kXiMinus;
-        AliGenParam *genXi = new AliGenParam(16,particle,lib->GetPt(particle),lib->GetY(particle),lib->GetIp(particle));
+        particle = AliGenSTRANGElib::kXiMinus;
+        AliGenParam *genXi = new AliGenParam(16,lib,particle);
         genXi->SetPtRange(0., 12.);
         genXi->SetYRange(-1.1, 1.1);
         genXi->SetForceDecay(kNoDecay);	
         
         //
         // Omega
-        particle = kOmegaMinus;
-        AliGenParam *genOmega = new AliGenParam(10,particle,lib->GetPt(particle),lib->GetY(particle),lib->GetIp(particle));     
+        particle = AliGenSTRANGElib::kOmegaMinus;
+        AliGenParam *genOmega = new AliGenParam(10,lib,particle);     
         genOmega->SetPtRange(0, 12.);
         genOmega->SetYRange(-1.1, 1.1);
         genOmega->SetForceDecay(kNoDecay);

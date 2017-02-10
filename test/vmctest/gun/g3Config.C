@@ -11,14 +11,7 @@ void Config()
 
   // AliRoot setup
   //
-  gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/gun/commonConfig.C");
   commonConfig();
-
-  // Load Geant3 + Geant3 VMC libraries
-  //
-#if defined(__CINT__)
-    gSystem->Load("libgeant321");
-#endif
 
   // Create TGeant3
   //  
@@ -27,7 +20,6 @@ void Config()
   // AliRoot event generator
   // (it has to be created after MC, as it may use decayer via VMC)
   //
-  gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/gun/genExtFileConfig.C");
   genExtFileConfig();
 
   cout << "Running g3Config.C finished ... " << endl;

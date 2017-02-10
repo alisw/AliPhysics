@@ -3,7 +3,7 @@
 // Macro for running simulation in test/vmctest/ppbench.
 // From test/ppbench. 
 
-void sim(Int_t nev, const char * config) {
+void simG4(Int_t nev, const char * config) {
   // Load Pythia related libraries
   gSystem->Load("liblhapdf");      // Parton density functions
   gSystem->Load("libEGPythia6");   // TGenerator interface
@@ -12,8 +12,8 @@ void sim(Int_t nev, const char * config) {
   gSystem->Load("libHIJING");
   gSystem->Load("libTHijing");
 
-  // Load Geant3 library
-  gSystem->Load("libgeant321");
+  // Load Geant4 libraries
+  gROOT->Macro("$G4VMCINSTALL/share/examples/macro/g4libs.C");
 
   // AliRoot setup
   //

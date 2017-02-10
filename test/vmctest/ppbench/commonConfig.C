@@ -24,10 +24,8 @@ enum ConfigVersion_t {
 // Options 
 static AliMagF::BMap_t smag = AliMagF::k5kG;
 static PprTrigConf_t strig = kDefaultPPTrig; // default PP trigger configuration
-static TString comment;
 
 // Functions
-void  LoadPythia();
 
 void commonConfig(ConfigVersion_t configVersion = kConfigV0)
 {
@@ -37,12 +35,6 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   gRandom->SetSeed(123456); // Set 0 to use the currecnt time
   AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
-
-  //=======================================================================
-  // Load Pythia libraries
-  //=======================================================================
-
-  LoadPythia();
 
   //=======================================================================
   // ALICE steering object (AliRunLoader)
@@ -75,7 +67,6 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   AliMagF* field = new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG);
   TGeoGlobalMagField::Instance()->SetField(field);
 
-  printf("\n \n Comment: %s \n \n", comment.Data());
 
   // ============================= 
   // Modules
@@ -285,13 +276,4 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   AliLog::Message(AliLog::kInfo, "End of Config", "Config.C", "Config.C", "Config()"," Config.C", __LINE__);
 
   cout << "Running commonConfig.C finished ... " << endl;
-}
-
-void LoadPythia()
-{
-  // Load Pythia related libraries
-  gSystem->Load("liblhapdf");      // Parton density functions
-  gSystem->Load("libEGPythia6");   // TGenerator interface
-  gSystem->Load("libpythia6");     // Pythia
-  gSystem->Load("libAliPythia6");  // ALICE specific implementations
 }

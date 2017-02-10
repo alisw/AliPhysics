@@ -12,7 +12,6 @@ void Config()
 
   // AliRoot setup
   //
-  gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/gun/commonConfig.C");
   commonConfig();
 
   // TPC primary ionization 
@@ -26,14 +25,13 @@ void Config()
 
   // Load Geant4 + Geant4 VMC libraries
   //
-  std::string g4libmacro("$G4VMCINSTALL/share/examples/macro/g4libs.C");
-  if (gClassTable->GetID("TGeant4") == -1) {
-    // Load Geant4 libraries 
-    if (!gInterpreter->IsLoaded(g4libmacro.c_str())) {
-      gROOT->LoadMacro(g4libmacro.c_str());
-      gInterpreter->ProcessLine("g4libs()");
-    }
-  }    
+  // if (gClassTable->GetID("TGeant4") == -1) {
+  //   // Load Geant4 libraries 
+  //   if (!gInterpreter->IsLoaded(g4libmacro.c_str())) {
+  //     gROOT->LoadMacro(g4libmacro.c_str());
+  //     gInterpreter->ProcessLine("g4libs()");
+  //   }
+  // }    
 
   // Create Geant4 VMC
   //  
@@ -157,7 +155,6 @@ G4ProcessTable::Insert : arguments are 0 pointer
   // AliRoot event generator
   // (it has to be created after MC, as it may use decayer via VMC)
   //
-  gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/gun/genExtFileConfig.C");
   genExtFileConfig();
 
   cout << "Running g4Config.C finished ... " << endl;

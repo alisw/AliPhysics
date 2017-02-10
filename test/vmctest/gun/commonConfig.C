@@ -16,20 +16,12 @@ const char * pprTrigConfName[] = {
     "p-p","Pb-Pb"
 };
 
-enum ConfigVersion_t {
-    kConfigV0,  // default configuration  
-    kConfigV1   // configuration for LHC 2010 production
-};
-
 // Options 
 static AliMagF::BMap_t smag = AliMagF::k5kG;
 static PprTrigConf_t strig = kDefaultPPTrig; // default PP trigger configuration
 static TString comment;
 
-// Functions
-void  LoadPythia();
-
-void commonConfig(ConfigVersion_t configVersion = kConfigV0)
+void commonConfig(Bool_t isConfig2010 = kFALSE)
 {
   cout << "Running commonConfig.C ... " << endl;
 
@@ -37,12 +29,6 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   gRandom->SetSeed(123456); // Set 0 to use the currecnt time
   AliLog::Message(AliLog::kInfo, Form("Seed for random number generation = %d",gRandom->GetSeed()), "Config.C", "Config.C", "Config()","Config.C", __LINE__);
 
-
-  //=======================================================================
-  // Load Pythia libraries
-  //=======================================================================
-
-  LoadPythia();
 
   //=======================================================================
   // ALICE steering object (AliRunLoader)
@@ -202,7 +188,7 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
       //=================== TRD parameters ============================
 
       AliTRD *TRD = new AliTRDv1("TRD", "TRD slow simulator");
-      if ( configVersion == kConfigV1 ) {
+      if ( isConfig2010 ) {
         AliTRDgeometry *geoTRD = TRD->GetGeometry();
         // Partial geometry: modules at 0,1,7,8,9,16,17
         // starting at 3h in positive direction
@@ -236,9 +222,9 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
 
   if (iPHOS)
   {
-     if ( configVersion == kConfigV0 ) 
+     if ( !isConfig2010 ) 
        AliPHOS *PHOS = new AliPHOSv1("PHOS", "Run1");
-     else if ( configVersion == kConfigV1 )  
+     else  
        AliPHOS *PHOS = new AliPHOSv1("PHOS", "noCPV_Modules123"); 
   }
 
@@ -258,9 +244,9 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   if (iEMCAL)
   {
       //=================== EMCAL parameters ============================
-    if ( configVersion == kConfigV0 ) 
+    if ( !isConfig2010 ) 
       AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
-    else if ( configVersion == kConfigV1 )  
+    else  
       AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
   }
 
@@ -281,11 +267,3 @@ void commonConfig(ConfigVersion_t configVersion = kConfigV0)
   cout << "Running commonConfig.C finished ... " << endl;
 }
 
-void LoadPythia()
-{
-  // Load Pythia related libraries
-  gSystem->Load("liblhapdf");      // Parton density functions
-  gSystem->Load("libEGPythia6");   // TGenerator interface
-  gSystem->Load("libpythia6");     // Pythia
-  gSystem->Load("libAliPythia6");  // ALICE specific implementations
-}

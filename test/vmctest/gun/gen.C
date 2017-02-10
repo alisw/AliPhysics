@@ -6,34 +6,8 @@
 //
 // By I. Hrivnacova, IPN Orsay
 
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include <Riostream.h>
-#include <TH1F.h>
-#include <TStopwatch.h>
-#include <TDatime.h>
-#include <TRandom.h>
-#include <TDatabasePDG.h>
-#include <TParticle.h>
-#include <TArrayI.h>
-
-#include "AliGenerator.h"
-#include "AliPDG.h"
-#include "AliRunLoader.h"
-#include "AliRun.h"
-#include "AliStack.h"
-#include "AliHeader.h"
-#include "PYTHIA6/AliGenPythia.h"
-#include "PYTHIA6/AliPythia.h"
-#endif
-
-void gen(Int_t nev = 1, char* filename = "galice.root")
+void gen(Int_t nev = 1)
 {
-  // Load libraries
-  // gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT");
-  gSystem->Load("liblhapdf");      // Parton density functions
-  gSystem->Load("libEGPythia6");   // TGenerator interface
-  gSystem->Load("libpythia6");     // Pythia
-  gSystem->Load("libAliPythia6");  // ALICE specific implementations
 
   AliPDG::AddParticlesToPdgDataBase();
   TDatabasePDG::Instance();
@@ -55,7 +29,6 @@ void gen(Int_t nev = 1, char* filename = "galice.root")
   AliHeader* header = rl->GetHeader();
   
   //  Create and Initialize Generator
-  gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/gun/genGunConfig.C");
   AliGenerator* gener = genGunConfig();
 
   // Go to galice.root

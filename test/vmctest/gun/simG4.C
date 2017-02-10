@@ -3,15 +3,15 @@
 // Macro for running simulation in test/vmctest/gun.
 // From test/gun. 
 
-void sim(Int_t nev, const char * config) {
+void simG4(Int_t nev, const char * config) {
   // Load Geant3 + Geant3 VMC libraries
   //
   gSystem->Load("liblhapdf");      // Parton density functions
   gSystem->Load("libEGPythia6");   // TGenerator interface
   gSystem->Load("libpythia6");     // Pythia
   gSystem->Load("libAliPythia6");  // ALICE specific implementations
-  gSystem->Load("libgeant321");
 
+  gROOT->Macro("$G4VMCINSTALL/share/examples/macro/g4libs.C");
   // AliRoot setup
   //
   gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/gun/commonConfig.C");

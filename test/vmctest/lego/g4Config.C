@@ -6,13 +6,12 @@
 // By I. Hrivnacova, IPN Orsay
  	
 
-void Config(const TString& det)
+void Config(const char * det)
 {
   cout << "Running g4Config.C ... " << endl;
 
   // AliRoot setup
   //
-  gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/lego/commonConfig.C");
   commonConfig(det);
 
   // TPC primary ionization 
@@ -26,14 +25,14 @@ void Config(const TString& det)
 
   // Load Geant4 + Geant4 VMC libraries
   //
-  std::string g4libmacro("$G4VMCINSTALL/share/examples/macro/g4libs.C");
-  if (gClassTable->GetID("TGeant4") == -1) {
-    // Load Geant4 libraries
-    if (!gInterpreter->IsLoaded(g4libmacro.c_str())) {
-      gROOT->LoadMacro(g4libmacro.c_str());
-      gInterpreter->ProcessLine("g4libs()");
-    }
-  }
+  // std::string g4libmacro("$G4VMCINSTALL/share/examples/macro/g4libs.C");
+  // if (gClassTable->GetID("TGeant4") == -1) {
+  //   // Load Geant4 libraries
+  //   if (!gInterpreter->IsLoaded(g4libmacro.c_str())) {
+  //     gROOT->LoadMacro(g4libmacro.c_str());
+  //     gInterpreter->ProcessLine("g4libs()");
+  //   }
+  // }
 
   // Create Geant4 VMC
   //  

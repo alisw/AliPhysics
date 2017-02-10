@@ -31,7 +31,7 @@ fi
 
 if [ "$RUNG4" = "1" ]; then 
   rm -rf *.root *.dat *.log fort* hlt hough raw* recraw/*.root recraw/*.log
-  aliroot -b -q  sim.C\($NEVENTS,\""$G4CONFIG"\"\)  2>&1 | tee sim.log
+  aliroot -b -q  simG4.C\($NEVENTS,\""$G4CONFIG"\"\)  2>&1 | tee sim.log
   aliroot -b -q rec.C      2>&1 | tee rec.log
   aliroot -b -q ${ALICE_ROOT}/STEER/macros/CheckESD.C  2>&1 | tee check.log
   rm -fr $G4OUTDIR
