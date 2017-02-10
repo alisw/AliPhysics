@@ -126,13 +126,21 @@ public:
 
   struct VtxInfo {
     VtxInfo()
-      : fZ(0)
+      : fX(0)
+      , fY(0)
+      , fZ(0)
       , fNcontr(-4) {}
 
     void Fill(const AliESDVertex*);
 
-    Double32_t fZ;      // [-32,32,7]
-    Char_t     fNcontr; //
+    TVector3 GetVtxPosition() const {
+      return TVector3(fX, fY, fZ);
+    }
+
+    Float_t fX;
+    Float_t fY;
+    Float_t fZ;
+    Char_t  fNcontr;
   } ;
 
   struct FMDInfo {
@@ -245,6 +253,9 @@ public:
     ClassDef(PseudoTracks, 1);
   } ;
 
+  static TVector3 GetADPseudoTrack(Int_t ch);
+  static TVector3 GetV0PseudoTrack(Int_t ch);
+
   class TreeData : public TObject {
   public:
     TreeData()
@@ -272,7 +283,7 @@ public:
     TreeData(const TreeData&); // not implemented
     TreeData& operator=(const TreeData&); // not implemented
 
-    ClassDef(TreeData, 5);
+    ClassDef(TreeData, 6);
   } ;
 
   class MCInfo : public TObject {

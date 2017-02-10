@@ -79,7 +79,7 @@ const AliAnalysisTaskDiffCrossSections::PseudoTrack& AliAnalysisTaskDiffCrossSec
   return *p;
 }
 
-TVector3 GetADPseudoTrack(Int_t ch) {
+TVector3 AliAnalysisTaskDiffCrossSections::GetADPseudoTrack(Int_t ch) {
   const Double_t z[2] = {
     -1954.4, // C-side
     +1696.7  // A-side
@@ -504,10 +504,13 @@ void AliAnalysisTaskDiffCrossSections::EventInfo::Fill(const AliESDEvent* esdEve
 
 void AliAnalysisTaskDiffCrossSections::VtxInfo::Fill(const AliESDVertex *vtx) {
   if (vtx) {
+    fX      = vtx->GetX();
+    fY      = vtx->GetY();
     fZ      = vtx->GetZ();
     fNcontr = vtx->GetNContributors();
-    AliInfoClass("NULL != vtx");
   } else {
+    fX      =  0.0f;
+    fY      =  0.0f;
     fZ      =  0.0f;
     fNcontr = -4;
     AliErrorClass("NULL == vtx");
@@ -547,12 +550,12 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent,
     fBG[1] += (esdAD->GetBGFlag(ch+8) && esdAD->GetBGFlag(ch+12));
     for (Int_t j=0; j<4; ++j) {
       fBBFlags[ch+4*j] += esdAD->GetBBFlag(ch + 4*j);
-      fCharges[ch+4*j] += esdAD->GetMultiplicity(ch + 4*j);
+      fCharges[ch+4*j] += esdAD->GetAdc(ch + 4*j);
     }
   }
   fCharge[0] = fCharge[1] = 0.0;
   for (Int_t ch=0; ch<16; ++ch)
-    fCharge[ch/8] += esdAD->GetMultiplicity(ch);
+    fCharge[ch/8] += esdAD->GetAdc(ch);
 }
 void AliAnalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
   fDecisionOnline[0]  = trigAna.V0Trigger(esdEvent, AliTriggerAnalysis::kCSide, kFALSE);
@@ -578,9 +581,9 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent,
   for (Int_t ch=0; ch<64; ++ch) {
     fBB[ch/32] += esdV0->GetBBFlag(ch);
     fBG[ch/32] += esdV0->GetBGFlag(ch);
-    fCharge[ch/32] += esdV0->GetMultiplicity(ch);
+    fCharge[ch/32] += esdV0->GetAdc(ch);
     fBBFlags[ch/4] += esdV0->GetBBFlag(ch);
-    fCharges[ch/4] += esdV0->GetMultiplicity(ch);
+    fCharges[ch/4] += esdV0->GetAdc(ch);
   }
 }
 void AliAnalysisTaskDiffCrossSections::FMDInfo::Fill(const AliESDEvent *esdEvent, Float_t fmdMultLowCut) {
@@ -737,7 +740,7 @@ TVector3 AliAnalysisTaskDiffCrossSections::GetRandomVtxPosition() const {
   };
   return TVector3((fMeanVtxPos + fMeanVtxU*TVectorD(3, rnd)).GetMatrixArray());
 }
-TVector3 GetV0PseudoTrack(Int_t ch) {
+TVector3 AliAnalysisTaskDiffCrossSections::GetV0PseudoTrack(Int_t ch) {
   // https://arxiv.org/pdf/1306.3130v2.pdf
   const Double_t r1[2][4] = {
     { 4.5, 7.3, 11.9, 19.5 }, // C-side ring 0-4
@@ -848,8 +851,12 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   TVector3 vertexPosition(esdVertex->GetX(),
 			  esdVertex->GetY(),
 			  esdVertex->GetZ());
-  if (esdVertex->GetNContributors() < 1)
+  if (esdVertex->GetNContributors() < 1) {
     vertexPosition = GetRandomVtxPosition();
+    fTreeData.fVtxInfo.fX = vertexPosition.X();
+    fTreeData.fVtxInfo.fY = vertexPosition.Y();
+    fTreeData.fVtxInfo.fZ = vertexPosition.Z();
+  }
 
   UInt_t mask = 0; // for selecting pseudo-tracks
   fTreeData.fPseudoTracks.Clear();
