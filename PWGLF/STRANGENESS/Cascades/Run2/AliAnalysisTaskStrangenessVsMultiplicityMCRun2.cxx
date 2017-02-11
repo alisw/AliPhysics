@@ -145,6 +145,7 @@ fMaxPtToSave( 100.00 ) ,
 fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ), 
+fkExtraCleanup    ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -374,6 +375,7 @@ fMaxPtToSave( 100.00 ) ,
 fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
+fkExtraCleanup    ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -1282,6 +1284,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         //Daughter Eta for Eta selection, afterwards
         fTreeVariableNegEta = nTrack->Eta();
         fTreeVariablePosEta = pTrack->Eta();
+        
+        if ( fkExtraCleanup ){
+            if( TMath::Abs(fTreeVariableNegEta)>0.8 || TMath::Abs(fTreeVariableNegEta)>0.8 ) continue;
+            if( TMath::Abs(lRapK0Short        )>0.5 && TMath::Abs(lRapLambda         )>0.5 ) continue;
+        }
 
         // Filter like-sign V0 (next: add counter and distribution)
         if ( pTrack->GetSign() == nTrack->GetSign()) {
@@ -2509,6 +2516,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                                          TMath::Power( lPosXi[2] - lBestPrimaryVtxPos[2] , 2)
                                      );
         fTreeCascVarDistOverTotMom /= (lXiTotMom+1e-13);
+        
+        if ( fkExtraCleanup ){
+            //Meant to provide extra level of cleanup
+            if( TMath::Abs(fTreeCascVarPosEta)>0.8 || TMath::Abs(fTreeCascVarNegEta)>0.8 || TMath::Abs(fTreeCascVarBachEta)>0.8 ) continue;
+            if( TMath::Abs(fTreeCascVarRapXi)>0.5 && TMath::Abs(fTreeCascVarRapOmega)>0.5 ) continue;
+            if ( fkPreselectDedx ){
+                Bool_t lPassesPreFilterdEdx = kFALSE;
+                //XiMinus Pre-selection
+                if( TMath::Abs(fTreeCascVarPosNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 5.0 && fTreeCascVarCharge == -1 ) lPassesPreFilterdEdx = kTRUE;
+                if( TMath::Abs(fTreeCascVarPosNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 5.0 && fTreeCascVarCharge == +1 ) lPassesPreFilterdEdx = kTRUE;
+                if(TMath::Abs(fTreeCascVarPosNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 5.0 && fTreeCascVarCharge == -1  ) lPassesPreFilterdEdx = kTRUE;
+                if(TMath::Abs(fTreeCascVarPosNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 5.0 && fTreeCascVarCharge == +1) lPassesPreFilterdEdx = kTRUE;
+                if( !lPassesPreFilterdEdx ) continue;
+            }
+        }
 
         //All vars not specified here: specified elsewhere!
 
