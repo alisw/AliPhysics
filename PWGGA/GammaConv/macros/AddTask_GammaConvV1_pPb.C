@@ -69,8 +69,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
                                 Float_t   maxFacPtHard                = 3.,                             // maximum factor between hardest jet and ptHard generated
                                 TString   periodNameV0Reader          = "",
                                 Bool_t    runLightOutput              = kFALSE,                         // switch to run light output (only essential histograms for afterburner)
-                                Int_t     enableMatBudWeightsPi0        = 0,                              // 1 = three radial bins, 2 = 10 radial bins
-                                TString   filenameMatBudWeights         = "MCInputFileMaterialBudgetWeights.root",
+                                Bool_t    runTHnSparse                = kTRUE,                          // switch on THNsparse
+                                Int_t     enableMatBudWeightsPi0      = 0,                              // 1 = three radial bins, 2 = 10 radial bins
+                                TString   filenameMatBudWeights       = "MCInputFileMaterialBudgetWeights.root",
                                 TString   additionalTrainConfig       = "0"                             // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
@@ -320,13 +321,39 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     cuts.AddCut("80000123", "00200009217000008260400000", "0162103500000000");  //new standard eta=0.9 y=0.8 //no MCP smearing
     cuts.AddCut("80000123", "00200009317200003290000000", "0162103500900000");  //old standard eta=0.9 y=0.8
     cuts.AddCut("80000123", "00200009217000008260400000", "0162103500800000");  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
-  
+
+  } else if (trainConfig == 120) {
+    cuts.AddCut("80200113", "00200009300000008260400000", "0162103500000000"); // -3 < kappa <  5
+    cuts.AddCut("80200113", "00200009500000008260400000", "0162103500000000"); // -5 < kappa < 10
+    cuts.AddCut("80200113", "00200009600000008260400000", "0162103500000000"); // -3 < kappa < 10
+    cuts.AddCut("80200113", "00200009700000008260400000", "0162103500000000"); //  0 < kappa < 10
+  } else if (trainConfig == 121) {
+    cuts.AddCut("82400113", "00200009300000008260400000", "0162103500000000"); // -3 < kappa <  5
+    cuts.AddCut("82400113", "00200009500000008260400000", "0162103500000000"); // -5 < kappa < 10
+    cuts.AddCut("82400113", "00200009600000008260400000", "0162103500000000"); // -3 < kappa < 10
+    cuts.AddCut("82400113", "00200009700000008260400000", "0162103500000000"); //  0 < kappa < 10
+  } else if (trainConfig == 122) {
+    cuts.AddCut("84600113", "00200009300000008260400000", "0162103500000000"); // -3 < kappa <  5
+    cuts.AddCut("84600113", "00200009500000008260400000", "0162103500000000"); // -5 < kappa < 10
+    cuts.AddCut("84600113", "00200009600000008260400000", "0162103500000000"); // -3 < kappa < 10
+    cuts.AddCut("84600113", "00200009700000008260400000", "0162103500000000"); //  0 < kappa < 10
+  } else if (trainConfig == 122) {
+    cuts.AddCut("86000113", "00200009300000008260400000", "0162103500000000"); // -3 < kappa <  5
+    cuts.AddCut("86000113", "00200009500000008260400000", "0162103500000000"); // -5 < kappa < 10
+    cuts.AddCut("86000113", "00200009600000008260400000", "0162103500000000"); // -3 < kappa < 10
+    cuts.AddCut("86000113", "00200009700000008260400000", "0162103500000000"); //  0 < kappa < 10
+    
   //--------- purity studies (kappa cut)    -------------------------//
   } else if (trainConfig == 131) {
     cuts.AddCut("80000113", "00200009300000008260400000", "0162103500000000"); // -3 < kappa <  5
     cuts.AddCut("80000113", "00200009500000008260400000", "0162103500000000"); // -5 < kappa < 10
     cuts.AddCut("80000113", "00200009600000008260400000", "0162103500000000"); // -3 < kappa < 10
     cuts.AddCut("80000113", "00200009700000008260400000", "0162103500000000"); //  0 < kappa < 10
+  } else if (trainConfig == 132) {
+    cuts.AddCut("80200113", "00200009217000008260400000", "0162103500000000"); // 0-20%
+    cuts.AddCut("82400113", "00200009217000008260400000", "0162103500000000"); // 20-40%
+    cuts.AddCut("84600113", "00200009217000008260400000", "0162103500000000"); // 40-60%
+    cuts.AddCut("86000113", "00200009217000008260400000", "0162103500000000"); // 60-100%
   
   // default cuts MB without MC smearing    
   } else if (trainConfig == 133) {
@@ -674,23 +701,22 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
     
     analysisCuts[i] = new AliConversionPhotonCuts();
-    if ( trainConfig == 131 ){
+    if ( trainConfig == 131 || trainConfig == 120 || trainConfig == 121 || trainConfig == 122 || trainConfig == 123){
       analysisCuts[i]->SetSwitchToKappaInsteadOfNSigdEdxTPC(kTRUE);
     }
 
     if (enableMatBudWeightsPi0 > 0){
-        if (isMC > 0){
-            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
-                initializedMatBudWeigths_existing = kTRUE;}
-            else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
-        }
-        else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+      if (isMC > 0){
+        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
+          initializedMatBudWeigths_existing = kTRUE;}
+        else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
+      } else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     if ((trainConfig == 193 || trainConfig == 194 || trainConfig == 195 || trainConfig == 196 )&& i==3 ) {
-            analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
+      analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
     }
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
@@ -698,7 +724,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     if (trainConfig == 189 || trainConfig == 190 || trainConfig == 191 || trainConfig == 192) {
-            analysisMesonCuts[i]->SetOpeningAngleCut(0.0);
+      analysisMesonCuts[i]->SetOpeningAngleCut(0.0);
     }
     analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
@@ -706,9 +732,8 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                 = 1,      
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
-  if (trainConfig == 189 || trainConfig == 190 || trainConfig == 191 || trainConfig == 192 || trainConfig == 197 || trainConfig == 198) {
-    task->SetDoTHnSparse(kFALSE);
-  }
+  
+  task->SetDoTHnSparse(runTHnSparse);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);

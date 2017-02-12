@@ -133,6 +133,14 @@ void AddTask_GammaConvFlow_pPb(
   
   if (trainConfig == 1){
     cuts.AddCut("80000013", "00200009000000008260400000");
+  } else if (trainConfig == 2){
+    cuts.AddCut("80200013", "00200009000000008260400000");
+  } else if (trainConfig == 3){
+    cuts.AddCut("82400013", "00200009000000008260400000");
+  } else if (trainConfig == 4){
+    cuts.AddCut("84600013", "00200009000000008260400000");
+  } else if (trainConfig == 5){
+    cuts.AddCut("86000013", "00200009000000008260400000");
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
