@@ -132,7 +132,7 @@ void AddTask_GammaConvFlow_pPb(
   CutHandlerConvFlow cuts;
   
   if (trainConfig == 1){
-    cuts.AddCut("80000013", "00200009007000008260400000");
+    cuts.AddCut("80000013", "00200009000000008260400000");
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
