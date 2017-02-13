@@ -338,6 +338,8 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
         for(Int_t ism =0; ism < 20; ism++)
         {
           fhLam0EMCALRegionPerSM[i][ieta][iphi][ism] = 0; 
+          fhConeSumPtTrackEMCALRegionPerSM  [i][ieta][iphi][ism] = 0; 
+          fhConeSumPtClusterEMCALRegionPerSM[i][ieta][iphi][ism] = 0; 
         }
       }
     }
@@ -4585,12 +4587,28 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             {
               fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism] = 
               new TH2F(Form("hLam0_%s_eta%d_phi%d_sm%d",isoName[iso].Data(),ieta,iphi,ism),
-                       Form("%s, cluster from converted photon, #it{p}_{T} vs #lambda_{0}^{2}, sm %d, region eta %d, phi %d",
+                       Form("%s, #it{p}_{T} vs #lambda_{0}^{2}, sm %d, region eta %d, phi %d",
                             isoTitle[iso].Data(),ism,ieta,iphi),
                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
               fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]->SetYTitle("#lambda_{0}^{2}");
               fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]->SetXTitle("#it{p}_{T} (GeV)");
               outputContainer->Add(fhLam0EMCALRegionPerSM[iso][ieta][iphi][ism]) ;
+              
+              fhConeSumPtTrackEMCALRegionPerSM[iso][ieta][iphi][ism]  = new TH2F
+              (Form("hConePtSumTrack_%s_eta%d_phi%d_sm%d",isoName[iso].Data(),ieta,iphi,ism),
+               Form("%s, track #Sigma #it{p}_{T}, sm %d, region eta %d, phi %d",isoTitle[iso].Data(),ism,ieta,iphi),
+               nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+              fhConeSumPtTrackEMCALRegionPerSM[iso][ieta][iphi][ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+              fhConeSumPtTrackEMCALRegionPerSM[iso][ieta][iphi][ism]->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+              outputContainer->Add(fhConeSumPtTrackEMCALRegionPerSM[iso][ieta][iphi][ism]) ;
+
+              fhConeSumPtClusterEMCALRegionPerSM[iso][ieta][iphi][ism]  = new TH2F
+              (Form("hConePtSumCluster_%s_eta%d_phi%d_sm%d",isoName[iso].Data(),ieta,iphi,ism),
+               Form("%s, track #Sigma #it{p}_{T}, sm %d, region eta %d, phi %d",isoTitle[iso].Data(),ism,ieta,iphi),
+               nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+              fhConeSumPtClusterEMCALRegionPerSM[iso][ieta][iphi][ism]->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+              fhConeSumPtClusterEMCALRegionPerSM[iso][ieta][iphi][ism]->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+              outputContainer->Add(fhConeSumPtClusterEMCALRegionPerSM[iso][ieta][iphi][ism]) ;
             } // ism
           } // iphi 
         } // ieta
