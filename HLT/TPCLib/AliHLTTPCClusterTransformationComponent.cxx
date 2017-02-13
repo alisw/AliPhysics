@@ -136,6 +136,8 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
 
   if (iResult>=0 && argc>0)
     iResult=ConfigureFromArgumentString(argc, argv);
+    
+  if (AliHLTTPCFastTransform::GetUseOrigTransform()) fOfflineMode = 1;
 
   AliTPCcalibDB *calib=AliTPCcalibDB::Instance();  
   if(!calib){
