@@ -124,8 +124,6 @@ Int_t AliCascadeVertexerUncheckedCharges::V0sTracks2CascadeVertices(AliESDEvent 
         if (TMath::Abs(lMassAsLambda-massLambda)>fMassWin &&
             TMath::Abs(lMassAsAntiLambda-massLambda)>fMassWin) continue;
         
-        //
-        
         for (Int_t j=0; j<ntr; j++) {//loop on tracks
             Int_t bidx=trk[j];
             //Check if different tracks are used all times
