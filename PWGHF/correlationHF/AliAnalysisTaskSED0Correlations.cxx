@@ -2495,7 +2495,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
       if(mD0bar > fLSBLowLim.at(ptbin) && mD0bar < fLSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 1.60; fillSpWeigD0bar[1] = 1.60;} //in LSB bin!
       if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 2.18; fillSpWeigD0[1] = 2.18;} //in RSB bin!
       if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 2.18; fillSpWeigD0bar[1] = 2.18;} //in RSB bin!
-    } //in this way if sidebands overlap with signal range in Mass axis, the signal range overlapping bins will be void. But this creates no problems: the real signal region (from the fit) cannot ever overlap with sideband region
+    } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
     else if(!fSpeed) { // Full Minv range in THnSparse!
       if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
       if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
@@ -2598,7 +2598,7 @@ void AliAnalysisTaskSED0Correlations::FillSparsePlots(TClonesArray* mcArray, Dou
       if(mD0bar > fLSBLowLim.at(ptbin) && mD0bar < fLSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 1.60;} //in LSB bin!
       if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) {allowD0 = 1; fillSpPhiD0[1] = 2.18;} //in RSB bin!
       if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) {allowD0bar = 1; fillSpPhiD0bar[1] = 2.18;} //in RSB bin!
-    } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void.  But this creates no problems: the real signal region (from the fit) cannot ever overlap with sideband region
+    } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
     else if(!fSpeed) { // Full Minv range in THnSparse!
       if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
       if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
@@ -2830,7 +2830,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0(AliAODRecoDecayHF2Prong* d, Ali
     if(mD0bar > fLSBLowLim.at(ptbin) && mD0bar < fLSBUppLim.at(ptbin)) allowD0bar = 1; //in LSB bin!
     if(mD0 > fRSBLowLim.at(ptbin) && mD0 < fRSBUppLim.at(ptbin)) allowD0 = 1; //in RSB bin!
     if(mD0bar > fRSBLowLim.at(ptbin) && mD0bar < fRSBUppLim.at(ptbin)) allowD0bar = 1; //in RSB bin!
-  } //even if there's overlap with signal range in Mass axis, there's no problems: the real signal region (from the fit) cannot ever overlap with sideband region
+  } //in this way if sidebands overlap with signal range in Mass axis, those overlapping bins will be void. But this creates no problems...
   else if(!fSpeed) { // Full Minv range in THnSparse!
     if((fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3)) allowD0 = 1;   
     if((fIsSelectedCandidate == 2 || fIsSelectedCandidate == 3)) allowD0bar = 1;
@@ -2912,16 +2912,47 @@ void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
 */
 
     //skip D-meson trigger daughters
-    Short_t trigID = -1;
+    Short_t trigID = -1, trigID2 = -1, trigID3 = -1, trigID4 = -1;
+    Int_t FoundTrig=0;
     for(Int_t iID=0; iID<(int)fDaughTrackID.size(); iID++) {
-      if(track->GetID() == fDaughTrackID.at(iID)) trigID = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+      if(FoundTrig==0 && track->GetID() == fDaughTrackID.at(iID)) {
+		  trigID = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+		  FoundTrig++;
+	  }
+      if(FoundTrig==1 && track->GetID() == fDaughTrackID.at(iID)) {
+		  trigID2 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+		  FoundTrig++;
+	  }
+      if(FoundTrig==2 && track->GetID() == fDaughTrackID.at(iID)) {
+		  trigID3 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+		  FoundTrig++;
+	  }	  
+      if(FoundTrig==3 && track->GetID() == fDaughTrackID.at(iID)) {
+		  trigID4 = fDaughTrigNum.at(iID); //associates corresponding trigID to daughters
+		  FoundTrig++;
+	  }		  
     }
 
     //tags soft pions in the same way as daughter tracks (for the corresponding trigger)
     for(Int_t iID=0; iID<(int)fSoftPiTrackID.size(); iID++) {
-      if(track->GetID() == fSoftPiTrackID.at(iID)) trigID = fSoftPiTrigNum.at(iID);
-    }    
-
+      if(FoundTrig==0 && track->GetID() == fSoftPiTrackID.at(iID)) {
+		  trigID = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
+		  FoundTrig++;
+	  }
+      if(FoundTrig==1 && track->GetID() == fSoftPiTrackID.at(iID)) {
+		  trigID2 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
+		  FoundTrig++;
+	  }
+      if(FoundTrig==2 && track->GetID() == fSoftPiTrackID.at(iID)) {
+		  trigID3 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
+		  FoundTrig++;
+	  }	 
+      if(FoundTrig==3 && track->GetID() == fSoftPiTrackID.at(iID)) {
+		  trigID4 = fSoftPiTrigNum.at(iID); //associates corresponding trigID to daughters
+		  FoundTrig++;
+	  }	 
+    }
+    
     if(!AcceptTrackForMEOffline(track->Pt())) continue;
 
     //Fill TTree for accepted candidates

@@ -72,6 +72,9 @@ class AliHFCorrelationBranchTr : public TObject
     UInt_t   orbit_Tr;
     UShort_t BC_Tr;
     Short_t  IDtrig_Tr;
+    Short_t  IDtrig2_Tr;
+    Short_t  IDtrig3_Tr;
+    Short_t  IDtrig4_Tr;
     Short_t  sel_Tr;
 
     ClassDef(AliHFCorrelationBranchTr,1);

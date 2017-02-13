@@ -55,6 +55,9 @@ period_Tr(0),
 orbit_Tr(0),
 BC_Tr(0),
 IDtrig_Tr(0),
+IDtrig2_Tr(0),
+IDtrig3_Tr(0),
+IDtrig4_Tr(0),
 sel_Tr(0)
 {
 
@@ -531,6 +534,9 @@ Bool_t AliHFOfflineCorrelator::CorrelateSingleFile(Int_t iFile) {
       if(fAnType==kME && (brD->period_D==brTr->period_Tr && brD->orbit_D==brTr->orbit_Tr && brD->BC_D==brTr->BC_Tr)) continue; //skips D and tracks from same event in SE 
 
       if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
+      if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig2_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
+      if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig3_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
+      if(fAnType==kSE && brD->IDtrig_D==brTr->IDtrig4_Tr) continue; //skips D0 daughter association with their own trigger (or own soft-pion, for the D0)
 
       if(fNumSelTr>=0 && (brTr->sel_Tr>>fNumSelTr)%2!=1) continue; //important in case of multiple selection (default selection is 0)
 	  if(fMinCent!=0 && fMaxCent!=0) {if(brTr->mult_Tr < fMinCent || brTr->mult_Tr > fMaxCent) continue;} //skip tracks outside centrality range
