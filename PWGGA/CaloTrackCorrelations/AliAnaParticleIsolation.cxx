@@ -5739,13 +5739,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Int_t   iSM        = aod->GetSModNumber();
     
     AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d",pt, eta, phi, isolated));
-        
-    //
-    // Conversion radius in MC
-    //
-    if(IsDataMC() && fStudyMCConversionRadius) 
-      StudyMCConversionRadius(pt, iSM, isolated, m02, mcTag, aod->GetLabel());
-    
+            
     //---------------------------------------------------------------
     // Fill pt/sum pT distribution of particles in cone or in UE band
     //---------------------------------------------------------------
@@ -5805,6 +5799,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
                         m02, coneptsumTrack, coneptsumCluster, 
                         isolated, aod->GetCaloLabel(0), iSM);
         
+    //---------------------------------------------------------------
+    // Conversion radius in MC
+    //---------------------------------------------------------------
+    if(IsDataMC() && fStudyMCConversionRadius) 
+      StudyMCConversionRadius(pt, iSM, isolated, m02, mcTag, aod->GetLabel());
+
     //---------------------------------------------------------------
     // Fill Shower shape and track matching histograms
     //---------------------------------------------------------------
@@ -7016,43 +7016,39 @@ void AliAnaParticleIsolation::StudyMCConversionRadius
   if(GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD() )
     fhMCConversionVertexTRD[isolated]->Fill(pt,prodR,GetEventWeight());
   
-  if(fFillSSHisto)
+  Int_t convR = -1;
+  if      ( prodR < 75.  ) convR = 0;
+  else if ( prodR < 275. ) convR = 1;
+  else if ( prodR < 375. ) convR = 2;
+  else if ( prodR < 400. ) convR = 3;
+  else if ( prodR < 430. ) convR = 4;
+  else                     convR = 5;
+  
+  if ( convR >= 0 )
   {
-    Int_t convR = -1;
-    if      ( prodR < 75.  ) convR = 0;
-    else if ( prodR < 275. ) convR = 1;
-    else if ( prodR < 375. ) convR = 2;
-    else if ( prodR < 400. ) convR = 3;
-    else if ( prodR < 430. ) convR = 4;
-    else                     convR = 5;
-    
-    if ( convR >= 0 )
-    {
+    fhMCConversionLambda0Rcut[convR][isolated]->Fill(pt,m02,GetEventWeight());
+    if ( GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD() )
       fhMCConversionLambda0Rcut[convR][isolated]->Fill(pt,m02,GetEventWeight());
-      if ( GetCalorimeter() == kEMCAL && GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD() )
-        fhMCConversionLambda0Rcut[convR][isolated]->Fill(pt,m02,GetEventWeight());
-      
-      //
-      // EMCAL SM regions
-      //
-      //            if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionHistograms )
-      //            {              
-      //              Int_t etaRegion = -1, phiRegion = -1;
-      //              
-      //              if ( cluster ) GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
-      //              
-      //              if( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
-      //              {
-      //                fhLam0EMCALRegionMCConvRcut[isolated][etaRegion][phiRegion][convR]->Fill(pt,m02, GetEventWeight());
-      //                
-      //                if ( GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD()  )
-      //                  fhLam0EMCALRegionTRDMCConvRcut[isolated][etaRegion][phiRegion][convR]->Fill(pt, m02, GetEventWeight());
-      //                
-      //              } // region found
-      //            } // check region
-      
-    } // convR > 0
     
-  }
+    //
+    // EMCAL SM regions
+    //
+    //            if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionHistograms )
+    //            {              
+    //              Int_t etaRegion = -1, phiRegion = -1;
+    //              
+    //              if ( cluster ) GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
+    //              
+    //              if( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
+    //              {
+    //                fhLam0EMCALRegionMCConvRcut[isolated][etaRegion][phiRegion][convR]->Fill(pt,m02, GetEventWeight());
+    //                
+    //                if ( GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD()  )
+    //                  fhLam0EMCALRegionTRDMCConvRcut[isolated][etaRegion][phiRegion][convR]->Fill(pt, m02, GetEventWeight());
+    //                
+    //              } // region found
+    //            } // check region
+    
+  } // convR > 0
 } 
 
