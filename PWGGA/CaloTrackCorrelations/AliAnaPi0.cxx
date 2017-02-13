@@ -2608,11 +2608,13 @@ void AliAnaPi0::FillAcceptanceHistograms()
     Int_t genType = GetNCocktailGenNamesToCheck()-2; // bin 0 is not null 
     if(IsStudyClusterOverlapsPerGeneratorOn())
     {
-      for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
-      {
-        (GetReader()->GetMC())->GetCocktailGenerator(i,genName);
+      //(GetReader()->GetMC())->GetCocktailGenerator(i,genName);
+      Int_t index = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
 
-        if ( genName.Contains(GetCocktailGenNameToCheck(igen)) )
+      for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
+      {       
+        if ( GetCocktailGenNameToCheck(igen).Contains(genName) && 
+            ( GetCocktailGenIndexToCheck(igen) < 0 || index == GetCocktailGenIndexToCheck(igen)) )
         {
           genType = igen-1;
           break;
@@ -3446,11 +3448,12 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     // Get the generators names of each cluster and background generator tag
     //
     TString genName1 = "", genName2 = "", genNameBkg1 = "", genNameBkg2 = "";
-    Int_t genBkgTag1 = GetCocktailGeneratorBackgroundTag(cluster1, mctag1, genName1, genNameBkg1);
+    Int_t index1 = -1, index2 = -1, indexBkg1 = -1, indexBkg2 = -1;
+    Int_t genBkgTag1 = GetCocktailGeneratorBackgroundTag(cluster1, mctag1, genName1, index1, genNameBkg1, indexBkg1);
     if     (genBkgTag1 == -1) return;
     else if(genBkgTag1  >  3) printf("Bkg1 generator tag larger than 3; Main %s Bkg %s\n",genName1.Data(),genNameBkg1.Data());
 
-    Int_t genBkgTag2 = GetCocktailGeneratorBackgroundTag(cluster2, mctag2, genName2, genNameBkg2);
+    Int_t genBkgTag2 = GetCocktailGeneratorBackgroundTag(cluster2, mctag2, genName2, index2, genNameBkg2, indexBkg2);
     if     (genBkgTag2 == -1) return;
     else if(genBkgTag2  >  3) printf("Bkg2 generator tag larger than 3; Main %s Bkg %s\n",genName2.Data(),genNameBkg2.Data());
     
@@ -3460,7 +3463,8 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(Int_t index1,  Int_t index2,
     Int_t genType = GetNCocktailGenNamesToCheck()-1;
     for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
     {
-      if ( genName1.Contains(GetCocktailGenNameToCheck(igen)) )
+      if ( GetCocktailGenNameToCheck(igen).Contains(genName1) && 
+          ( GetCocktailGenIndexToCheck(igen) < 0 || index1 == GetCocktailGenIndexToCheck(igen)))
       {
         genType = igen;
         break;

@@ -395,17 +395,19 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
   // CAREFUL if used for Run2 with DCal.
   if(phi < 3.15 - radius && phi > 1.4 + radius && TMath::Abs(eta) < 0.7-radius)
   {
-    TString genName, genNameBkg;
+    TString genName , genNameBkg ;
+    Int_t   genIndex, genIndexBkg;
     Int_t genBkgTag = -1;
     
-    TString genName2, genNameBkg2;
+    TString genName2 , genNameBkg2 ;
+    Int_t   genIndex2, genIndexBkg2;
     Int_t genBkgTag2 = -1;
 
     if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() )
     {
       AliVCluster * calo = (AliVCluster*) (clusterList->At(icalo));
       
-      genBkgTag = GetCocktailGeneratorBackgroundTag(calo, mctag, genName, genNameBkg);
+      genBkgTag = GetCocktailGeneratorBackgroundTag(calo, mctag, genName, genIndex, genNameBkg, genIndexBkg);
       
      }
     
@@ -441,12 +443,14 @@ void AliAnaPhoton::ActivityNearCluster(Int_t icalo, Float_t en,
             
       Float_t distance = TMath::Sqrt( dEta*dEta + dPhi*dPhi );
       
-      genNameBkg2 = "";
-      genName2    = "";
-      genBkgTag2  = -1;
+      genNameBkg2  = "";
+      genName2     = "";
+      genIndexBkg2 = -1;
+      genIndex2    = -1;
+      genBkgTag2   = -1;
       if( IsDataMC() && IsStudyClusterOverlapsPerGeneratorOn() && calo2->GetNLabels() > 0 && distance < 0.4)
       {
-        genBkgTag2 = GetCocktailGeneratorBackgroundTag(calo2, -1, genName2, genNameBkg2);
+        genBkgTag2 = GetCocktailGeneratorBackgroundTag(calo2, -1, genName2, genIndex2, genNameBkg2, genIndexBkg2);
 
         if( !genName.Contains("ijing") && !genName2.Contains("ijing")) fhDistance2AddedSignals     ->Fill(en,distance,GetEventWeight());
         if( !genName.Contains("ijing") &&  genName2.Contains("ijing")) fhDistanceAddedSignalsHijing->Fill(en,distance,GetEventWeight());
@@ -656,8 +660,9 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
 {
   //
   // Check the generators inside the cluster
-  TString genName = "", genNameBkg = "";
-  Int_t genBkgTag = GetCocktailGeneratorBackgroundTag(calo, mctag, genName, genNameBkg);
+  TString genName  = "", genNameBkg  = "";
+  Int_t   genIndex = -1, genIndexBkg = -1;
+  Int_t genBkgTag = GetCocktailGeneratorBackgroundTag(calo, mctag, genName, genIndex, genNameBkg, genIndexBkg);
   if     (genBkgTag == -1) return;
   else if(genBkgTag  >  3) printf("Bkg generator tag larger than 3\n");
   
@@ -694,7 +699,8 @@ void AliAnaPhoton::CocktailGeneratorsClusterOverlaps(AliVCluster* calo, Int_t mc
   Int_t genType = GetNCocktailGenNamesToCheck()-1;
   for(Int_t igen = 1; igen < GetNCocktailGenNamesToCheck(); igen++)
   {
-    if ( genName.Contains(GetCocktailGenNameToCheck(igen)) )
+    if ( GetCocktailGenNameToCheck(igen).Contains(genName) && 
+        ( GetCocktailGenIndexToCheck(igen) < 0 || genIndex == GetCocktailGenIndexToCheck(igen)) )
     {
       genType = igen;
       break;
