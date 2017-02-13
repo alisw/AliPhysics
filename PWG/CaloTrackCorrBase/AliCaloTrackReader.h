@@ -671,10 +671,15 @@ public:
   
   virtual void     SetNameOfMCGeneratorsToAccept(Int_t ig, TString name) 
   { if ( ig < 5 || ig >= 0 ) fMCGenerToAccept[ig] = name ; }  
+  virtual void     SetIndexOfMCGeneratorsToAccept(Int_t ig, Int_t index) 
+  { if ( ig < 5 || ig >= 0 ) fMCGenerIndexToAccept[ig] = index ; }  
   virtual TString GetNameOfMCGeneratorsToAccept(Int_t ig)   const { return fMCGenerToAccept[ig] ; }
+  virtual Int_t   GetIndexOfMCGeneratorsToAccept(Int_t ig)  const { return fMCGenerIndexToAccept[ig] ; }
   
   Bool_t           AcceptParticleMCLabel(Int_t mcLabel)     const ;
-  
+  Int_t            GetCocktailGeneratorAndIndex(Int_t index, TString & nameGen) const ;
+  TString          GetGeneratorNameAndIndex(Int_t index, Int_t & genIndex) const ;
+
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
   
@@ -944,6 +949,7 @@ public:
   // MC labels to accept
   Int_t            fNMCGenerToAccept;              ///<  Number of MC generators that should not be included in analysis
   TString          fMCGenerToAccept[5];            ///<  List with name of generators that should not be included
+  Int_t            fMCGenerIndexToAccept[5];       ///<  List with index of generators that should not be included
 
   TString          fMCGenerEventHeaderToAccept;    ///<  Accept events that contain at least this event header name
   

@@ -139,8 +139,7 @@ fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeade
   for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE  [i]= 0x0 ;  
   for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPt    [i]= 0x0 ;    
-  for(Int_t j = 0; j < 5; j++) fMCGenerToAccept    [j] =  "";
-
+  for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept  [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
   
   InitParameters();
 }
@@ -280,18 +279,130 @@ Bool_t  AliCaloTrackReader::AcceptParticleMCLabel(Int_t mcLabel) const
   if( !fMC || fNMCGenerToAccept <= 0 ) return kTRUE;
   
   TString genName;
-  fMC->GetCocktailGenerator(mcLabel,genName);
+  Int_t genIndex;
+  genIndex = GetCocktailGeneratorAndIndex(mcLabel, genName);
+  //fMC->GetCocktailGenerator(mcLabel,genName);
   
   Bool_t generOK = kFALSE;
   for(Int_t ig = 0; ig < fNMCGenerToAccept; ig++) 
   {
-    if ( genName.Contains(fMCGenerToAccept[ig]) ) generOK = kTRUE;
+    if ( fMCGenerToAccept[ig].Contains(genName) ) generOK = kTRUE;
+    
+    if ( generOK && fMCGenerIndexToAccept[ig] >= 0 && fMCGenerToAccept[ig] != genIndex) generOK = kFALSE;
   }
   
   if ( !generOK ) AliDebug(1, Form("skip label %d, gen %s",mcLabel,genName.Data()) );
 
   return generOK;
 }
+
+//_____________________________________________________________________
+/// Get the name of the generator that generated a given primary particle 
+/// Copy of AliMCEvent::GetCocktailGeneratorAndIndex(), modified to get the 
+/// the generator index in the cocktail
+///
+/// \param index: mc label index
+/// \param nameGen: cocktail generator name for this index
+/// \return cocktail generator index
+//_____________________________________________________________________
+Int_t AliCaloTrackReader::GetCocktailGeneratorAndIndex(Int_t index, TString & nameGen) const
+{
+  //method that gives the generator for a given particle with label index (or that of the corresponding primary)
+  AliVParticle* mcpart0 = (AliVParticle*) GetMC()->GetTrack(index);
+  Int_t genIndex = -1;
+  
+  if(!mcpart0)
+  {
+    printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",index);
+    return -1;
+  }
+  
+  nameGen = GetGeneratorNameAndIndex(index,genIndex);
+  
+  if(nameGen.Contains("nococktailheader") ) return -1;
+  
+  Int_t lab=index;
+  
+  while(nameGen.IsWhitespace())
+  {
+    AliVParticle* mcpart = (AliVParticle*) GetMC()->GetTrack(lab);
+    
+    if(!mcpart)
+    {
+      printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",lab);
+      break;
+    }
+    
+    Int_t mother=0;
+    mother = mcpart->GetMother();
+    
+    if(mother<0)
+    {
+      printf("AliMCEvent - BREAK: Reached primary particle without valid mother\n");
+      break;
+    }
+    
+    AliVParticle* mcmom = (AliVParticle*) GetMC()->GetTrack(mother);
+    if(!mcmom)
+    {
+      printf("AliMCEvent-BREAK: No valid AliMCParticle mother at label %i\n",mother);
+      break;
+    }
+    
+    lab=mother;
+    
+    nameGen = GetGeneratorNameAndIndex(mother,genIndex);
+  }
+  
+  return genIndex;
+}
+//_____________________________________________________________________
+/// Get the name of the generator that generated a given primary particle 
+/// Copy of AliMCEvent::GetGenerator(), modified to get the 
+/// the generator index in the cocktail
+///
+/// \param index: mc label index
+/// \param genIndex: cocktail generator name for this index
+/// \return cocktail generator name string
+//_____________________________________________________________________
+TString AliCaloTrackReader::GetGeneratorNameAndIndex(Int_t index, Int_t & genIndex) const
+{
+  Int_t nsumpart = GetMC()->GetNumberOfPrimaries();
+  
+  genIndex = -1;
+  
+  TList* lh = GetMC()->GetCocktailList();
+  if(!lh)
+  { 
+    TString noheader="nococktailheader";
+    return noheader;
+  }
+  
+  Int_t nh = lh->GetEntries();
+  
+  for (Int_t i = nh-1; i >= 0; i--)
+  {
+    AliGenEventHeader* gh = (AliGenEventHeader*)lh->At(i);
+    
+    TString genname = gh->GetName();
+    
+    Int_t npart=gh->NProduced();
+    
+    if (i == 0) npart = nsumpart;
+    
+    if(index < nsumpart && index >= (nsumpart-npart)) 
+    { 
+      genIndex = i ;
+      return genname;
+    }
+    
+    nsumpart-=npart;
+  }
+  
+  TString empty="";
+  return empty;
+}
+
 
 //_____________________________________________________
 /// Reject events that pass the physics selection
@@ -1291,7 +1402,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   {
     cen = GetEventCentrality();
       
-    if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
+    if(cen > fCentralityBin[1] || cen <= fCentralityBin[0]) return kFALSE; //reject events out of bin.
     
     AliDebug(1,"Pass centrality rejection");
     
