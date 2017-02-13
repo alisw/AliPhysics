@@ -30,7 +30,6 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODPWG4Particle.h"
-#include "AliMCEvent.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrBaseClass) ;
@@ -376,19 +375,24 @@ TString  AliAnaCaloTrackCorrBaseClass::GetBaseParametersList()
 /// \return tag : 0-no other generator, 1 hijing, 2 other generator, 3 both hijing and other
 //_____________________________________________________________________
 Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluster * cluster, Int_t mctag,
-                                                                      TString & genName, TString & genNameBkg)
+                                                                      TString & genName   , Int_t & index,
+                                                                      TString & genNameBkg, Int_t & indexBkg)
 {
   if(cluster->GetNLabels() == 0 || cluster->GetLabel() < 0 ) return -1;
 
-  (GetReader()->GetMC())->GetCocktailGenerator(cluster->GetLabel(), genName);
-  
-  //printf("Generator?: %s\n",genName.Data());
+  //(GetReader()->GetMC())->
+  index = GetReader()->GetCocktailGeneratorAndIndex(cluster->GetLabel(), genName);
+  //TString genNameOrg;
+  //(GetReader()->GetMC())->GetCocktailGenerator(cluster->GetLabel(), genNameOrg);
+ 
+  //printf("Generator?: %s, index %d\n",genName.Data(), index);
   
   Bool_t overlapGener       = kFALSE;
   Bool_t overlapGenerHIJING = kFALSE;
   Bool_t overlapGenerOther  = kFALSE;
   
   genNameBkg = "";
+  indexBkg = -1;
   
   const UInt_t nlabels = cluster->GetNLabels();
   //Int_t noverlapsGen = 0;
@@ -397,16 +401,20 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
   {
     Int_t label2 = cluster->GetLabels()[ilabel];
     TString genName2;
-    (GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
-    
+    //(GetReader()->GetMC())->GetCocktailGenerator(label2,genName2);
+    Int_t index2 = GetReader()->GetCocktailGeneratorAndIndex(label2, genName2);
+
     //if(genName2 != genName2Prev) noverlapsGen++;
     
     if(genName2 != genName) 
     {
       //genName2Prev = genName2;
       
-      if(!genNameBkg.Contains(genName2))
+      if(!genNameBkg.Contains(genName2) && indexBkg != index2)
+      {
         genNameBkg = Form("%s_%s",genNameBkg.Data(), genName2.Data());
+        indexBkg = index2;
+      }
       
       overlapGener = kTRUE; 
       
@@ -435,8 +443,10 @@ Int_t AliAnaCaloTrackCorrBaseClass::GetCocktailGeneratorBackgroundTag(AliVCluste
   for(Int_t iover = 0; iover < noverlaps; iover++)
   {
     TString genName2;
-    (GetReader()->GetMC())->GetCocktailGenerator(overlab[iover],genName2);
-    if ( genName2==genName )
+    //(GetReader()->GetMC())->GetCocktailGenerator(overlab[iover],genName2);
+    Int_t index2 = GetReader()->GetCocktailGeneratorAndIndex(overlab[iover], genName2);
+
+    if ( genName2==genName  && index==index2)
     {
       if ( !genName.Contains("ijing") ) sameGenOverlap   = kTRUE;
       else                              sameGenOverlapHI = kTRUE;  
@@ -722,6 +732,9 @@ void AliAnaCaloTrackCorrBaseClass::InitParameters()
   
   for(Int_t igen = 7; igen < 10; igen++)
     fCocktailGenNames[igen] = "";
+  
+  for(Int_t igen = 0; igen < 10; igen++)
+    fCocktailGenIndeces[igen] = -1;
 }
 
 //__________________________________________________________________

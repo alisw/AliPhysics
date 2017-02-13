@@ -368,9 +368,14 @@ public:
   
   void                               SetCocktailGenNameToCheck(Int_t i, TString v){ if(i < 10) fCocktailGenNames[i] = v   ; }
   TString                            GetCocktailGenNameToCheck(Int_t i)     const { if(i < 10) return fCocktailGenNames[i]; 
-                                                                                    else       return ""                  ; }
+    else       return ""                  ; }
+  void                               SetCocktailGenIndexToCheck(Int_t i, Int_t v) { if(i < 10) fCocktailGenIndeces[i] = v ; }
+  Int_t                              GetCocktailGenIndexToCheck(Int_t i)    const { if(i < 10) return fCocktailGenIndeces[i]; 
+    else       return -1                  ; }
+  
   Int_t                              GetCocktailGeneratorBackgroundTag(AliVCluster * clus, Int_t mctag,
-                                                                       TString & genName, TString & genNameBkg);
+                                                                       TString & genName   , Int_t & index,
+                                                                       TString & genNameBkg, Int_t & indexBkg);
   
 private:    
   
@@ -421,6 +426,7 @@ private:
   Bool_t                     fStudyClusterOverlapsPerGenerator; ///<  In case of coctail generators, check the content of the cluster
   Int_t                      fNCocktailGenNames;                ///<  Number of generators to study
   TString                    fCocktailGenNames[10];             ///<  Array with name of generators to study, first must be always empty
+  Int_t                      fCocktailGenIndeces[10];           ///<  Array with indeces of generators to study
   
   /// Copy constructor not implemented.
   AliAnaCaloTrackCorrBaseClass(              const AliAnaCaloTrackCorrBaseClass & bc) ; 
