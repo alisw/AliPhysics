@@ -40,6 +40,7 @@ public:
     void SetMinClusters(Int_t lMinClusters);
     void SetSwitchCharges(Bool_t lOption);
     void SetUseOnTheFlyV0 (Bool_t lOption);
+    void SetRotateBachelor (Bool_t lOption);
 private:
   static
   Double_t fgChi2max;   // maximal allowed chi2 
@@ -71,6 +72,7 @@ private:
     Int_t fMinClusters;  // minimum single-track clusters value (>=)
     Bool_t fSwitchCharges; //switch to change bachelor charge
     Bool_t fUseOnTheFlyV0; //switch to use on-the-fly V0s (HIGHLY EXPERIMENTAL)
+    Bool_t fRotateBachelor; //Rotate bachelor track randomly
   
   ClassDef(AliCascadeVertexerUncheckedCharges,3)  // cascade verterxer 
 };
@@ -88,7 +90,8 @@ fRmax(fgRmax),
 fMaxEta(fgMaxEta),
 fMinClusters(fgMinClusters),
 fSwitchCharges(fgSwitchCharges),
-fUseOnTheFlyV0(fgUseOnTheFlyV0)
+fUseOnTheFlyV0(fgUseOnTheFlyV0),
+fRotateBachelor(kFALSE)
 {
 }
 
@@ -140,6 +143,9 @@ inline void AliCascadeVertexerUncheckedCharges::SetSwitchCharges(Bool_t lOption)
 }
 inline void AliCascadeVertexerUncheckedCharges::SetUseOnTheFlyV0(Bool_t lOption) {
     fUseOnTheFlyV0 = lOption;
+}
+inline void AliCascadeVertexerUncheckedCharges::SetRotateBachelor(Bool_t lOption) {
+    fRotateBachelor = lOption;
 }
 
 #endif

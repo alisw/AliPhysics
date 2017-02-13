@@ -89,6 +89,9 @@ public:
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
+    void SetRotateBachelor ( Bool_t lRotBach = kTRUE) {
+        fkRotateBachelor = lRotBach;
+    }
 //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
@@ -219,6 +222,7 @@ private:
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
     Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
     Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    Bool_t    fkRotateBachelor;         //if true, attempts rotating bachelor tracks inside vertexing
     
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     

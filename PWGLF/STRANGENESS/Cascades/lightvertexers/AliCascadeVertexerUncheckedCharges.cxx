@@ -24,6 +24,7 @@
 //modified by R. Vernet  3/7/2006 : causality
 //modified by I. Belikov 24/11/2006 : static setter for the default cuts
 
+#include "TRandom3.h"
 #include "AliESDEvent.h"
 #include "AliESDcascade.h"
 #include "AliCascadeVertexerUncheckedCharges.h"
@@ -67,6 +68,9 @@ Int_t AliCascadeVertexerUncheckedCharges::V0sTracks2CascadeVertices(AliESDEvent 
     Double_t b=event->GetMagneticField();
     Int_t nV0=(Int_t)event->GetNumberOfV0s();
     
+    TRandom3 lPRNG;
+    lPRNG.SetSeed(0);
+    
     //stores relevant V0s in an array
     TObjArray vtcs(nV0);
     Int_t i;
@@ -88,6 +92,12 @@ Int_t AliCascadeVertexerUncheckedCharges::V0sTracks2CascadeVertices(AliESDEvent 
     TArrayI trk(nentr); Int_t ntr=0;
     for (i=0; i<nentr; i++) {
         AliESDtrack *esdtr=event->GetTrack(i);
+        
+        if( fRotateBachelor ){
+            //Highly experimental... is expected to screw everything up.
+            esdtr->Rotate( lPRNG.Uniform( 0.3333*TMath::Pi(), 1.6667*TMath::Pi() ) );
+        }
+        
         ULong_t status=esdtr->GetStatus();
         
         if ((status&AliESDtrack::kITSrefit)==0)

@@ -146,6 +146,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit       ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkRotateBachelor  ( kFALSE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -321,6 +322,7 @@ fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit       ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
+fkRotateBachelor  ( kFALSE ), 
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -1349,7 +1351,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
             AliCascadeVertexerUncheckedCharges lCascVtxer;
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
             lCascVtxer.SetCuts(fCascadeVertexerSels);
+            //If requested, combine bachelor with on-the-fly V0s (experimental)
             if( fkUseOnTheFlyV0Cascading ) lCascVtxer.SetUseOnTheFlyV0(kTRUE);
+            //Not done trying crazy stuff yet: attempt random bachelor track rotation if requested
+            if( fkRotateBachelor         ) lCascVtxer.SetRotateBachelor(kTRUE);
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
         }
     }
