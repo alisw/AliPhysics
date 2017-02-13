@@ -55,7 +55,7 @@ AliAnaParticleIsolation::AliAnaParticleIsolation() :
 AliAnaCaloTrackCorrBaseClass(),
 fIsoDetector(-1),                 fIsoDetectorString(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
-fFillTMHisto(0),                  fFillSSHisto(1),                          fFillEMCALRegionSSHistograms(0),
+fFillTMHisto(0),                  fFillSSHisto(1),                          fFillEMCALRegionHistograms(0),
 fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
 fFillOverlapHistograms(0),        fStudyFECCorrelation(0),                  
 fStudyTracksInCone(0),            fStudyMCConversionRadius(0),
@@ -338,7 +338,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
         
         for(Int_t ism =0; ism < 20; ism++)
         {
-          fhLam0EMCALRegionPerSM[i][ieta][iphi][ism] = 0; 
+          fhLam0EMCALRegionPerSM            [i][ieta][iphi][ism] = 0; 
           fhConeSumPtTrackEMCALRegionPerSM  [i][ieta][iphi][ism] = 0; 
           fhConeSumPtClusterEMCALRegionPerSM[i][ieta][iphi][ism] = 0; 
         }
@@ -4556,7 +4556,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         } // NLM
       } // SS histo
       
-      if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms)
+      if(GetCalorimeter() == kEMCAL && fFillEMCALRegionHistograms)
       {
         for(Int_t ieta = 0; ieta < 4; ieta++) 
         {  
@@ -4670,7 +4670,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
           }
         }
           
-//          if(GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms)
+//          if(GetCalorimeter() == kEMCAL && fFillEMCALRegionHistograms)
 //          {
 //            for(Int_t ieta = 0; ieta < 4; ieta++) 
 //            {  
@@ -5733,56 +5733,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     Bool_t  isolated   = aod->IsIsolated();
     Float_t energy     = aod->E();
-    Float_t phi        = aod->Phi();
+    Float_t phi        = GetPhi(aod->Phi());
     Float_t eta        = aod->Eta();
     Float_t m02        = aod->GetM02();
     Int_t   iSM        = aod->GetSModNumber();
     
     AliDebug(1,Form("pt %1.1f, eta %1.1f, phi %1.1f, Isolated %d",pt, eta, phi, isolated));
-    
-    //
-    // EMCAL SM regions
-    //
-    AliVCluster *cluster = 0;
-    if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms && fFillSSHisto)
-    {
-      // Get original cluster, needed to feed the subregion selection method
-      
-      Int_t iclus = -1;
-      cluster = FindCluster(GetEMCALClusters(),aod->GetCaloLabel(0),iclus);
-
-      Int_t etaRegion = -1, phiRegion = -1;
-      
-      GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
-      
-      if(etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3) 
-      {
-//        fhLam0EMCALRegion[isolated][etaRegion][phiRegion]->Fill(pt, m02, GetEventWeight());
-//        
-//        if(GetFirstSMCoveredByTRD() >= 0 && iSM >= GetFirstSMCoveredByTRD()  )
-//        {
-//          fhLam0EMCALRegionTRD[isolated][etaRegion][phiRegion]->Fill(pt, m02, GetEventWeight());
-//        }
         
-        fhLam0EMCALRegionPerSM[isolated][etaRegion][phiRegion][iSM]->Fill(pt, m02, GetEventWeight());
-      }
-      
-      if(m02 >=0.3 && m02 <= 0.4)
-      {
-        Float_t ptLimit[] = {2,3,4,5,6,8,10,12};
-        Int_t ptbin = -1;
-        for(Int_t ipt = 0; ipt < 7; ipt++)  
-        {
-          if( pt >= ptLimit[ipt] && pt < ptLimit[ipt+1]  )
-          {
-            ptbin = ipt;
-            break;
-          }
-        }
-        if(ptbin >= 0) fhEtaPhiLam0BinPtBin[isolated][ptbin]->Fill(eta, phi, GetEventWeight());
-      }
-    }
-    
     //
     // Conversion radius in MC
     //
@@ -5840,6 +5797,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     
     //  printf("Histograms analysis : cluster pt = %f, etaBandTrack = %f, etaBandCluster = %f, isolation = %d\n",aod->Pt(),etaBandptsumTrackNorm,etaBandptsumClusterNorm,aod->IsIsolated());
     
+    //---------------------------------------------------------------
+    // EMCAL SM regions
+    //---------------------------------------------------------------
+    if(fFillEMCALRegionHistograms && GetCalorimeter() == kEMCAL) 
+      StudyEMCALRegions(pt, phi, eta, 
+                        m02, coneptsumTrack, coneptsumCluster, 
+                        isolated, aod->GetCaloLabel(0), iSM);
         
     //---------------------------------------------------------------
     // Fill Shower shape and track matching histograms
@@ -6953,11 +6917,64 @@ void AliAnaParticleIsolation::SetTriggerDetector(Int_t det)
   else AliFatal(Form("Detector < %d > not known!", det));
 }
 
+//_________________________________________________________
+/// Check shower shape and cluster/trac sum pT in cone 
+/// in different EMCal regions. Also check the cluster eta-phi
+/// distribution in shower shape tail.
+///
+/// \param pt: cluster pT
+/// \param m02: shower shape long
+/// \param coneptsumTrack: sum of tracks pT in cone
+/// \param coneptsumCluster: sum of clusters pT in cone
+/// \param isolated: bool
+/// \param label: cluster mc label
+/// 
+//_________________________________________________________
+void AliAnaParticleIsolation::StudyEMCALRegions
+(Float_t pt,  Float_t phi, Float_t eta, Float_t m02, 
+ Float_t coneptsumTrack, Float_t coneptsumCluster, 
+ Bool_t isolated, Int_t clIndex, Int_t iSM) 
+{
+  // Get original cluster, needed to feed the subregion selection method
+  Int_t iclus = -1;
+  AliVCluster *cluster = FindCluster(GetEMCALClusters(),clIndex,iclus);
+  
+  // Get the predefined regions
+  Int_t etaRegion = -1, phiRegion = -1;
+  GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
+  
+  if ( etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3 ) 
+  {
+    fhLam0EMCALRegionPerSM            [isolated][etaRegion][phiRegion][iSM]->Fill(pt, m02, GetEventWeight());
+    fhConeSumPtTrackEMCALRegionPerSM  [isolated][etaRegion][phiRegion][iSM]->Fill(pt, coneptsumTrack  , GetEventWeight());
+    fhConeSumPtClusterEMCALRegionPerSM[isolated][etaRegion][phiRegion][iSM]->Fill(pt, coneptsumCluster, GetEventWeight());
+  }
+  
+  // Check eta-phi distribution for shower shape tail region
+  if ( m02 >=0.3 && m02 <= 0.4 )
+  {
+    Float_t ptLimit[] = {2,3,4,5,6,8,10,12};
+    Int_t ptbin = -1;
+    for(Int_t ipt = 0; ipt < 7; ipt++)  
+    {
+      if( pt >= ptLimit[ipt] && pt < ptLimit[ipt+1]  )
+      {
+        ptbin = ipt;
+        break;
+      }
+    }
+    
+    if ( ptbin >= 0 ) 
+      fhEtaPhiLam0BinPtBin[isolated][ptbin]->Fill(eta, phi, GetEventWeight());
+  }
+}
+
 
 //_________________________________________________________
 /// Check shower shape for different conversion radius
 ///
 /// \param pt: cluster pT
+/// \param isolated: bool
 /// \param iSM: supermodule number
 /// \param m02: shower shape long
 /// \param mcTag: mc particle type tag
@@ -7018,7 +7035,7 @@ void AliAnaParticleIsolation::StudyMCConversionRadius
       //
       // EMCAL SM regions
       //
-      //            if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionSSHistograms )
+      //            if ( GetCalorimeter() == kEMCAL && fFillEMCALRegionHistograms )
       //            {              
       //              Int_t etaRegion = -1, phiRegion = -1;
       //              

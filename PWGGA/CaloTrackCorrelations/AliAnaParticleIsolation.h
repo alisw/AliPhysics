@@ -90,6 +90,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph, Int_t mcIndex ) ;
   
+  void         StudyEMCALRegions(Float_t pt, Float_t phi, Float_t eta, Float_t m02, 
+                                 Float_t coneptsumTrack, Float_t coneptsumCluster, 
+                                 Bool_t isolated, Int_t clIndex, Int_t iSM) ;
+  
   void         StudyMCConversionRadius(Float_t  pt, Bool_t isolated, Int_t iSM, 
                                        Float_t m02, Int_t     mcTag, Int_t label) ;
   
@@ -131,8 +135,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
   void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
-  void         SwitchOnFillEMCALRegionSSHistograms() { fFillEMCALRegionSSHistograms = kTRUE  ; }
-  void         SwitchOffFillEMCALRegionSSHistograms(){ fFillEMCALRegionSSHistograms = kFALSE ; }  
+  void         SwitchOnFillEMCALRegionHistograms()   { fFillEMCALRegionHistograms = kTRUE  ; }
+  void         SwitchOffFillEMCALRegionHistograms()  { fFillEMCALRegionHistograms = kFALSE ; }  
   
   Bool_t       IsLeadingOnlyOn()               const { return fLeadingOnly       ; }
   void         SwitchOnLeadingOnly()                 { fLeadingOnly    = kTRUE   ; }
@@ -221,7 +225,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
-  Bool_t   fFillEMCALRegionSSHistograms ;             ///<  Fill shower shape histograms in EMCal slices
+  Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
   Bool_t   fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction.
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
