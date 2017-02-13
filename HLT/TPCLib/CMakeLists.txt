@@ -152,6 +152,7 @@ set(SRCS
     transform/AliHLTTPCSpline2D3D.cxx
     transform/AliHLTTPCSpline2D3DObject.cxx
     transform/AliHLTTPCFastTransformObject.cxx
+    test/AliHLTTPCRawClusterDumpComponent.cxx
    )
 
 # Headers from sources

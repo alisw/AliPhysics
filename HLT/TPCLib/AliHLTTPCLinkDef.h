@@ -92,6 +92,7 @@
 #pragma link C++ class AliHLTTPCHWClusterDecoderComponent+;
 #pragma link C++ class AliHLTTPCSpline2D3DObject+;
 #pragma link C++ class AliHLTTPCFastTransformObject+;
+#pragma link C++ class AliHLTTPCRawClusterDumpComponent+;
 #endif // __CINT__
 //
 // EOF

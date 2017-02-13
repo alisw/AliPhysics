@@ -64,6 +64,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCClusterTransformationComponent.h"
 #include "AliHLTTPCClusterTransformationPrepareComponent.h"
 #include "AliHLTTPCOfflinePreprocessorWrapperComponent.h"
+#include "test/AliHLTTPCRawClusterDumpComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -422,6 +423,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCClusterTransformationComponent);
   pHandler->AddComponent(new AliHLTTPCClusterTransformationPrepareComponent);
   pHandler->AddComponent(new AliHLTTPCOfflinePreprocessorWrapperComponent);
+  pHandler->AddComponent(new AliHLTTPCRawClusterDumpComponent);
   return 0;
 }
 
