@@ -85,7 +85,16 @@ class AliAnalysisMuonUtility : public TObject {
 
   // Utilities for MC
   static TString GetTrackHistory ( const AliVParticle* track, const AliMCEvent* mcEvent, Bool_t verbose = kFALSE );
-  
+
+  // Utilities for smeared tracks
+  static void SetUseSmearedTracks ( Bool_t useSmearedTracks, Bool_t verbose = kTRUE );
+  /// Get name of smeared track list
+  static const char* GetSmearedTrackListName () { return fSmearedTrackListName; }
+
+private:
+  static Bool_t fUseSmearedTracks; //!<! Flag to use smeared tracks
+  static const char* fSmearedTrackListName; //!<! Name of the smeared track objects in the InputEvent
+
   ClassDef(AliAnalysisMuonUtility, 0);
 };
 

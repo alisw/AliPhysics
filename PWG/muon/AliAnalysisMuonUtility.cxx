@@ -59,6 +59,9 @@ ClassImp(AliAnalysisMuonUtility) // Class implementation in ROOT context
 /// \endcond
 
 
+Bool_t AliAnalysisMuonUtility::fUseSmearedTracks = kFALSE;
+const char* AliAnalysisMuonUtility::fSmearedTrackListName = "smearedMuonTracks";
+
 //________________________________________________________________________
 Bool_t AliAnalysisMuonUtility::IsAODEvent ( const AliVEvent* event )
 {
@@ -230,6 +233,12 @@ Int_t AliAnalysisMuonUtility::GetNTracks ( const AliVEvent* event )
   //
   /// Return the number of tracks in event
   //
+  if ( fUseSmearedTracks ) {
+    TObjArray* smearedTrackList = static_cast<TObjArray*>(event->FindListObject(fSmearedTrackListName));
+    if ( smearedTrackList ) return smearedTrackList->GetEntriesFast();
+    else return 0;
+  }
+
   return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetNumberOfTracks() : static_cast<const AliESDEvent*>(event)->GetNumberOfMuonTracks();
 }
 
@@ -239,13 +248,15 @@ AliVParticle* AliAnalysisMuonUtility::GetTrack ( Int_t itrack, const AliVEvent* 
   //
   /// Get the current track
   //
-  AliVParticle* track = 0x0;
-  if ( IsAODEvent(event) ) track = static_cast<const AliAODEvent*>(event)->GetTrack(itrack);
-  else {
-    AliESDEvent* esdEvent = const_cast<AliESDEvent*>(static_cast<const AliESDEvent*> (event));
-    track = esdEvent->GetMuonTrack(itrack);
+  if ( fUseSmearedTracks ) {
+    TObjArray* smearedTrackList = static_cast<TObjArray*>(event->FindListObject(fSmearedTrackListName));
+    if ( smearedTrackList ) return static_cast<AliVParticle*>(smearedTrackList->At(itrack));
+    else return NULL;
   }
-  return track;
+
+  if ( IsAODEvent(event) ) return static_cast<const AliAODEvent*>(event)->GetTrack(itrack);
+
+  return const_cast<AliESDEvent*>(static_cast<const AliESDEvent*> (event))->GetMuonTrack(itrack);
 }
 
 //________________________________________________________________________
@@ -585,4 +596,15 @@ Bool_t AliAnalysisMuonUtility::SetSparseRange(AliCFGridSparse* gridSparse,
   gridSparse->SetRangeUser(ivar, axis->GetBinCenter(minVarBin), axis->GetBinCenter(maxVarBin));
   
   return kTRUE;
+}
+
+//_______________________________________________________________________
+void AliAnalysisMuonUtility::SetUseSmearedTracks ( Bool_t useSmearedTracks, Bool_t verbose)
+{
+  //
+  /// Set flag to use semared tracks instead of standard ones
+  /// Requires the use of AliTaskMuonTrackSmearing
+  //
+  fUseSmearedTracks = useSmearedTracks;
+  if ( verbose ) AliInfoClass(Form("Use smeared tracks set to %i",fUseSmearedTracks));
 }

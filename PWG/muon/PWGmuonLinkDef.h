@@ -77,5 +77,8 @@
 #pragma link C++ class AliAnalysisTaskLMREventFilter+;
 #pragma link C++ class AliLMREvent+;
 #pragma link C++ class AliLMRMuon+;
+
+#pragma link C++ class AliMuonTrackSmearing+;
+#pragma link C++ class AliTaskMuonTrackSmearing+;
 #endif
 
