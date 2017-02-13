@@ -1946,6 +1946,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
             Float_t lNegdEdx = 100;
             Float_t lPosdEdx = 100;
             Float_t lBachdEdx = 100;
+            Float_t lV0Mass = 100;
             Short_t  lCharge = -2;
             Float_t lprpx, lprpy, lprpz, lpipx, lpipy, lpipz;
             lpipx = fTreeCascVarBachPx;
@@ -1992,6 +1993,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
             
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiMinus     ){
                 lCharge  = -1;
+                if ( lCascadeResult->GetSwapBachelorCharge() ) lCharge = +1;
                 lMass    = fTreeCascVarMassAsXi;
                 lRap     = fTreeCascVarRapXi;
                 lPDGMass = 1.32171;
@@ -2001,9 +2003,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lprpx = fTreeCascVarPosPx;
                 lprpy = fTreeCascVarPosPy;
                 lprpz = fTreeCascVarPosPz;
+                lV0Mass = fTreeCascVarV0MassLambda;
+                if (lCascadeResult->GetSwapBaryon() ){
+                    lV0Mass = fTreeCascVarV0MassAntiLambda;
+                    lNegdEdx = fTreeCascVarNegNSigmaProton;
+                    lPosdEdx = fTreeCascVarPosNSigmaPion;
+                }
+                
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiPlus      ){
                 lCharge  = +1;
+                if ( lCascadeResult->GetSwapBachelorCharge() ) lCharge = -1;
                 lMass    = fTreeCascVarMassAsXi;
                 lRap     = fTreeCascVarRapXi;
                 lPDGMass = 1.32171;
@@ -2013,9 +2023,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lprpx = fTreeCascVarNegPx;
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
+                lV0Mass = fTreeCascVarV0MassAntiLambda;
+                if (lCascadeResult->GetSwapBaryon() ){
+                    lV0Mass = fTreeCascVarV0MassLambda;
+                    lNegdEdx = fTreeCascVarNegNSigmaPion;
+                    lPosdEdx = fTreeCascVarPosNSigmaProton;
+                }
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaMinus     ){
                 lCharge  = -1;
+                if ( lCascadeResult->GetSwapBachelorCharge() ) lCharge = +1;
                 lMass    = fTreeCascVarMassAsOmega;
                 lRap     = fTreeCascVarRapOmega;
                 lPDGMass = 1.67245;
@@ -2025,9 +2042,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lprpx = fTreeCascVarPosPx;
                 lprpy = fTreeCascVarPosPy;
                 lprpz = fTreeCascVarPosPz;
+                lV0Mass = fTreeCascVarV0MassLambda;
+                if (lCascadeResult->GetSwapBaryon() ){
+                    lV0Mass = fTreeCascVarV0MassAntiLambda;
+                    lNegdEdx = fTreeCascVarNegNSigmaProton;
+                    lPosdEdx = fTreeCascVarPosNSigmaPion;
+                }
             }
             if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaPlus      ){
                 lCharge  = +1;
+                if ( lCascadeResult->GetSwapBachelorCharge() ) lCharge = -1;
                 lMass    = fTreeCascVarMassAsOmega;
                 lRap     = fTreeCascVarRapOmega;
                 lPDGMass = 1.67245;
@@ -2037,6 +2061,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 lprpx = fTreeCascVarNegPx;
                 lprpy = fTreeCascVarNegPy;
                 lprpz = fTreeCascVarNegPz;
+                lV0Mass = fTreeCascVarV0MassAntiLambda;
+                if (lCascadeResult->GetSwapBaryon() ){
+                    lV0Mass = fTreeCascVarV0MassLambda;
+                    lNegdEdx = fTreeCascVarNegNSigmaPion;
+                    lPosdEdx = fTreeCascVarPosNSigmaProton;
+                }
             }
             
             if (
@@ -2058,7 +2088,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub::UserExec(Option_t *)
                 fTreeCascVarV0Radius > lCascadeResult->GetCutV0Radius() &&
                 // - Cascade Selections
                 fTreeCascVarDCAV0ToPrimVtx > lCascadeResult->GetCutDCAV0ToPV() &&
-                TMath::Abs(fTreeCascVarV0Mass-1.116) < lCascadeResult->GetCutV0Mass() &&
+                TMath::Abs(lV0Mass-1.116) < lCascadeResult->GetCutV0Mass() &&
                 fTreeCascVarDCABachToPrimVtx > lCascadeResult->GetCutDCABachToPV() &&
                 fTreeCascVarDCACascDaughters < lCascadeResult->GetCutDCACascDaughters() &&
                 fTreeCascVarCascCosPointingAngle > lCascCosPACut &&

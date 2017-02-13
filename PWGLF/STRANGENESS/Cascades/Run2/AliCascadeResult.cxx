@@ -41,6 +41,8 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fSwapBachCharge(kFALSE),
+fSwapBaryon(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
@@ -94,6 +96,8 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fSwapBachCharge(kFALSE),
+fSwapBaryon(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
@@ -149,6 +153,8 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fSwapBachCharge(kFALSE),
+fSwapBaryon(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
@@ -213,6 +219,8 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fSwapBachCharge(kFALSE),
+fSwapBaryon(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
@@ -275,6 +283,9 @@ fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
 fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties),
 fCutMCSelectBump(lCopyMe.fCutMCSelectBump),
+//Rsn-like bg subtraction
+fSwapBachCharge(lCopyMe.fSwapBachCharge),
+fSwapBaryon(lCopyMe.fSwapBaryon),
 //Track selections
 fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
@@ -340,6 +351,10 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutMCPDGCodeAssociation = lCopyMe -> GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
     fCutMCSelectBump         = lCopyMe -> GetCutMCSelectBump();
+    
+    //Rsn-like bg subtraction (experimental)
+    fSwapBachCharge = lCopyMe -> GetSwapBachelorCharge();
+    fSwapBaryon     = lCopyMe -> GetSwapBaryon();
     
     //Track cuts
     fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
@@ -416,6 +431,10 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
     fCutMCSelectBump      = lCopyMe.GetCutMCSelectBump();
+    
+    //Rsn-like bg subtraction (experimental)
+    fSwapBachCharge = lCopyMe.GetSwapBachelorCharge();
+    fSwapBaryon     = lCopyMe.GetSwapBaryon();
     
     //Track cuts
     fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
@@ -608,6 +627,9 @@ void AliCascadeResult::Print()
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
     cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
     cout<<" MC Select bump.....: "<<fCutMCSelectBump<<endl;
+    
+    cout<<" Swap bach charge...: "<<fSwapBachCharge<<endl;
+    cout<<" Swap lam/lambar....: "<<fSwapBaryon<<endl; 
     cout<<"========================================"<<endl;
     return;
 }

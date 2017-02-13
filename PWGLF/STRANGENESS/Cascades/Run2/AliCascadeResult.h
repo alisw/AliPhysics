@@ -73,6 +73,10 @@ public:
     void SetCutMCUseMCProperties    ( Bool_t lCut ) { fCutMCUseMCProperties    = lCut; }
     void SetCutMCSelectBump         ( Bool_t lCut ) { fCutMCSelectBump         = lCut; }
     
+    //Rsn-like bg subtraction (experimental
+    void SetSwapBachelorCharge         ( Bool_t lCut ) { fSwapBachCharge = lCut; }
+    void SetSwapBaryon                 ( Bool_t lCut ) { fSwapBaryon     = lCut; }
+    
     //Track Quality
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
@@ -146,6 +150,10 @@ public:
     Bool_t GetCutMCUseMCProperties    () const { return fCutMCUseMCProperties; }
     Bool_t GetCutMCSelectBump         () const { return fCutMCSelectBump; }
     
+    //Rsn-like bg subtraction (experimental
+    Bool_t GetSwapBachelorCharge         () const { return fSwapBachCharge; }
+    Bool_t GetSwapBaryon                 () const { return fSwapBaryon;     }
+    
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
@@ -214,6 +222,9 @@ private:
     Bool_t fCutMCUseMCProperties; //Use true MC pT, y
     Bool_t fCutMCSelectBump; //select bachelor and baryon from a single lambda decay
     
+    Bool_t fSwapBachCharge; //select bachelor with improper signal for desired particle (bg)
+    Bool_t fSwapBaryon; //select lambda/antilambda improperly for desired particle (bg)
+    
     //Track selections
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
     Double_t fCutLeastNumberOfClusters; //min number of TPC clusters
@@ -242,7 +253,7 @@ private:
     
     TH3F *fHisto; //Histogram for storing output with these configurations
     
-    ClassDef(AliCascadeResult, 19)
+    ClassDef(AliCascadeResult, 20)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -262,5 +273,6 @@ private:
     // 17 - Addition of eta window selection
     // 18 - Max chi2/clusters, min track length added for cross-checking
     // 19 - Settable invariant mass binning constructor
+    // 20 - Configuration flags for rsn-like bg estimation (experimental) 
 };
 #endif
