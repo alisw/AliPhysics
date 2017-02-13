@@ -93,12 +93,12 @@ int MakeTrendZDC(char *infile, int run) {
   Double_t ZEM1_mean = 0.;
   Double_t ZEM2_mean = 0.;  
   
-  Int_t fhZNCpmcEntries = fhZNCpmc->GetEntries();
-  Int_t fhZNApmcEntries = fhZNApmc->GetEntries();
-  Int_t fhZPCpmcEntries = fhZPCpmc->GetEntries();
-  Int_t fhZPApmcEntries = fhZPApmc->GetEntries();
-  Int_t fhZEM1SpectrumEntries = fhZEM1Spectrum->GetEntries();
-  Int_t fhZEM2SpectrumEntries = fhZEM2Spectrum->GetEntries();  
+  Int_t fhZNCpmcEntries = fhZNCpmc ? fhZNCpmc->GetEntries() : 0;
+  Int_t fhZNApmcEntries = fhZNApmc ? fhZNApmc->GetEntries() : 0;
+  Int_t fhZPCpmcEntries = fhZPCpmc ? fhZPCpmc->GetEntries() : 0;
+  Int_t fhZPApmcEntries = fhZPApmc ? fhZPApmc->GetEntries() : 0;
+  Int_t fhZEM1SpectrumEntries = fhZEM1Spectrum ? fhZEM1Spectrum->GetEntries() : 0;
+  Int_t fhZEM2SpectrumEntries = fhZEM2Spectrum ? fhZEM2Spectrum->GetEntries() : 0;  
   
   if (fhZNCpmcEntries>0) ZNC_mean = fhZNCpmc->GetMean();
   if (fhZNApmcEntries>0) ZNA_mean = fhZNApmc->GetMean();
@@ -107,18 +107,18 @@ int MakeTrendZDC(char *infile, int run) {
   if (fhZEM1SpectrumEntries>0) ZEM1_mean = fhZEM1Spectrum->GetMean();
   if (fhZEM2SpectrumEntries>0) ZEM2_mean = fhZEM2Spectrum->GetMean(); 
   
-  Double_t ZNC_XCent = fhZNCCentroid->GetMean(1);
-  Double_t ZNC_YCent = fhZNCCentroid->GetMean(2);    
-  Double_t ZNA_XCent = fhZNACentroid->GetMean(1);
-  Double_t ZNA_YCent = fhZNACentroid->GetMean(2);
-  Double_t ZNC_XCent_err = fhZNCCentroid->GetRMS(1);
-  Double_t ZNC_YCent_err = fhZNCCentroid->GetRMS(2);    
-  Double_t ZNA_XCent_err = fhZNACentroid->GetRMS(1);
-  Double_t ZNA_YCent_err = fhZNACentroid->GetRMS(2);     
-  Double_t ZN_TDC_Sum = fhTDCZNSum->GetMean();
-  Double_t ZN_TDC_Diff = fhTDCZNDiff->GetMean();  
-  Double_t ZN_TDC_Sum_err = fhTDCZNSum->GetRMS();
-  Double_t ZN_TDC_Diff_err = fhTDCZNDiff->GetRMS();    
+  Double_t ZNC_XCent = fhZNCCentroid ? fhZNCCentroid->GetMean(1) : 0.;
+  Double_t ZNC_YCent = fhZNCCentroid ? fhZNCCentroid->GetMean(2) : 0.;    
+  Double_t ZNA_XCent = fhZNACentroid ? fhZNACentroid->GetMean(1) : 0.;
+  Double_t ZNA_YCent = fhZNACentroid ? fhZNACentroid->GetMean(2) : 0.;
+  Double_t ZNC_XCent_err = fhZNCCentroid ? fhZNCCentroid->GetRMS(1) : 0.;
+  Double_t ZNC_YCent_err = fhZNCCentroid ? fhZNCCentroid->GetRMS(2) : 0.;    
+  Double_t ZNA_XCent_err = fhZNACentroid ? fhZNACentroid->GetRMS(1) : 0.;
+  Double_t ZNA_YCent_err = fhZNACentroid ? fhZNACentroid->GetRMS(2) : 0.;     
+  Double_t ZN_TDC_Sum = fhTDCZNSum ? fhTDCZNSum->GetMean() : 0.;
+  Double_t ZN_TDC_Diff = fhTDCZNDiff ? fhTDCZNDiff->GetMean() : 0.;  
+  Double_t ZN_TDC_Sum_err = fhTDCZNSum ? fhTDCZNSum->GetRMS() : 0.;
+  Double_t ZN_TDC_Diff_err = fhTDCZNDiff ? fhTDCZNDiff->GetRMS() : 0.;    
   
   TTree * ttree=new TTree("trending","tree of trending variables");
   ttree->Branch("run",&run,"run/I");
@@ -146,27 +146,27 @@ int MakeTrendZDC(char *infile, int run) {
 
   printf("==============  Saving histograms for run %i ===============\n",run);
   
-  fhTDCZNC->Write();      
-  fhTDCZNA->Write();      
-  fhTDCZNSum->Write();    
-  fhTDCZNDiff->Write();   
-  fhZNCSumQ->Write();     
-  fhZNASumQ->Write();     
-  fhZPCSumQ->Write();     
-  fhZPASumQ->Write();     
-  fhZEM1Spectrum->Write();
-  fhZEM2Spectrum->Write();
-  fhZNCpmc->Write();      
-  fhZNApmc->Write();      
-  fhZPCpmc->Write();      
-  fhZPApmc->Write();      
-  fhZNCCentroid->Write(); 
-  fhZNACentroid->Write(); 
-  fhPMCZNCemd->Write();   
-  fhPMCZNAemd->Write();   
-  fDebunch->Write();      
-  fhTDCZNAcorr->Write();  
-  fhTDCZNCcorr->Write();
+  if (fhTDCZNC) fhTDCZNC->Write();      
+  if (fhTDCZNA) fhTDCZNA->Write();      
+  if (fhTDCZNSum) fhTDCZNSum->Write();    
+  if (fhTDCZNDiff) fhTDCZNDiff->Write();   
+  if (fhZNCSumQ) fhZNCSumQ->Write();     
+  if (fhZNASumQ) fhZNASumQ->Write();     
+  if (fhZPCSumQ) fhZPCSumQ->Write();     
+  if (fhZPASumQ) fhZPASumQ->Write();     
+  if (fhZEM1Spectrum) fhZEM1Spectrum->Write();
+  if (fhZEM2Spectrum) fhZEM2Spectrum->Write();
+  if (fhZNCpmc) fhZNCpmc->Write();      
+  if (fhZNApmc) fhZNApmc->Write();      
+  if (fhZPCpmc) fhZPCpmc->Write();      
+  if (fhZPApmc) fhZPApmc->Write();      
+  if (fhZNCCentroid) fhZNCCentroid->Write(); 
+  if (fhZNACentroid) fhZNACentroid->Write(); 
+  if (fhPMCZNCemd) fhPMCZNCemd->Write();   
+  if (fhPMCZNAemd) fhPMCZNAemd->Write();   
+  if (fDebunch) fDebunch->Write();      
+  if (fhTDCZNAcorr) fhTDCZNAcorr->Write();  
+  if (fhTDCZNCcorr) fhTDCZNCcorr->Write();
     
   ttree->Fill();
   printf("==============  Saving trending quantities in tree for run %i ===============\n",run);
