@@ -90,6 +90,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph, Int_t mcIndex ) ;
   
+  void         StudyMCConversionRadius(Float_t  pt, Bool_t isolated, Int_t iSM, 
+                                       Float_t m02, Int_t     mcTag, Int_t label) ;
+  
   // Analysis Setters and Getters
   
   TString      GetTriggerDetectorString()      const { return fIsoDetectorString ; }
@@ -179,6 +182,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyTracksInCone()           { fStudyTracksInCone = kTRUE  ; }
   void         SwitchOffStudyTracksInCone()          { fStudyTracksInCone = kFALSE ; }
 
+  void         SwitchOnStudyMCConversionRadius()     { fStudyMCConversionRadius = kTRUE  ; }
+  void         SwitchOffStudyMCConversionRadius()    { fStudyMCConversionRadius = kFALSE ; }
+
   // Study of pT cut in cone
   void         SwitchOnStudyPtCutInCone()            { fStudyPtCutInCone = kTRUE ; }
   void         SwitchOffStudyPtCutInCone()           { fStudyPtCutInCone = kFALSE; }
@@ -221,7 +227,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillOverlapHistograms;                    ///<  Fill histograms that depend on number of overlaps
   Bool_t   fStudyFECCorrelation;                      ///<  Study 4 FEC channels cross correlation
   Bool_t   fStudyTracksInCone;                        ///<  Study tracks depending on different track info
-
+  Bool_t   fStudyMCConversionRadius;                  ///<  Study shower shape depending the conversion radius
+  
   Bool_t   fFillTaggedDecayHistograms;                ///<  Fill histograms for clusters tagged as decay.
   Int_t    fNDecayBits ;                              ///<  In case of study of decay triggers, select the decay bit.
   UInt_t   fDecayBits[AliNeutralMesonSelection::fgkMaxNDecayBits] ; ///< In case of study of decay triggers, select the decay. bit
