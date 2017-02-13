@@ -2966,6 +2966,9 @@ void AliAnalysisTaskSED0Correlations::FillTreeTracks(AliAODEvent* aod) {
     fBranchTr->orbit_Tr = (UInt_t)aod->GetOrbitNumber();
     fBranchTr->BC_Tr = (UShort_t)aod->GetBunchCrossNumber();
     fBranchTr->IDtrig_Tr = (Short_t)trigID;
+    fBranchTr->IDtrig2_Tr = (Short_t)trigID2;
+    fBranchTr->IDtrig3_Tr = (Short_t)trigID3;
+    fBranchTr->IDtrig4_Tr = (Short_t)trigID4;
     fBranchTr->sel_Tr = (Short_t)1; //******DUMMY FOR THE MOMENT******* - To be used for multiple selection fills (2^n = 1 if selction n is ok)
     fTreeTr->Fill();
 
