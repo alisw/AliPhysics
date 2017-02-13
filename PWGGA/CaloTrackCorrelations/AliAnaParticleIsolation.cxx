@@ -112,10 +112,12 @@ fhConeSumPtEtaUESub(0),                     fhConeSumPtPhiUESub(0),
 fhConeSumPtEtaUESubTrigEtaPhi(0),           fhConeSumPtPhiUESubTrigEtaPhi(0),
 fhConeSumPtEtaUESubTrackCell(0),            fhConeSumPtPhiUESubTrackCell(0),
 fhConeSumPtEtaUESubTrackCellTrigEtaPhi(0),  fhConeSumPtPhiUESubTrackCellTrigEtaPhi(0),
+fhConeSumPtEtaUENormCluster(0),             fhConeSumPtPhiUENormCluster(0),
 fhConeSumPtEtaUESubCluster(0),              fhConeSumPtPhiUESubCluster(0),
 fhConeSumPtEtaUESubClusterTrigEtaPhi(0),    fhConeSumPtPhiUESubClusterTrigEtaPhi(0),
 fhConeSumPtEtaUESubCell(0),                 fhConeSumPtPhiUESubCell(0),
 fhConeSumPtEtaUESubCellTrigEtaPhi(0),       fhConeSumPtPhiUESubCellTrigEtaPhi(0),
+fhConeSumPtEtaUENormTrack(0),               fhConeSumPtPhiUENormTrack(0),
 fhConeSumPtEtaUESubTrack(0),                fhConeSumPtPhiUESubTrack(0),
 fhConeSumPtEtaUESubTrackTrigEtaPhi(0),      fhConeSumPtPhiUESubTrackTrigEtaPhi(0),
 fhFractionTrackOutConeEta(0),               fhFractionTrackOutConeEtaTrigEtaPhi(0),
@@ -849,11 +851,13 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
     
     coneptsumTrackSubPhi = coneptsumTrack - phiUEptsumTrackNorm;
     coneptsumTrackSubEta = coneptsumTrack - etaUEptsumTrackNorm;
-    
+        
     etaBandptsumTrackNorm = etaUEptsumTrackNorm;
     
+    fhConeSumPtPhiUENormTrack          ->Fill(ptTrig ,          phiUEptsumTrackNorm , GetEventWeight());
     fhConeSumPtPhiUESubTrack           ->Fill(ptTrig ,          coneptsumTrackSubPhi, GetEventWeight());
     fhConeSumPtPhiUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubPhi *GetEventWeight()); // check
+    fhConeSumPtEtaUENormTrack          ->Fill(ptTrig ,          etaUEptsumTrackNorm , GetEventWeight());
     fhConeSumPtEtaUESubTrack           ->Fill(ptTrig ,          coneptsumTrackSubEta, GetEventWeight());
     fhConeSumPtEtaUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubEta *GetEventWeight()); // check
     
@@ -924,8 +928,10 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
     
     etaBandptsumClusterNorm = etaUEptsumClusterNorm;
     
+    fhConeSumPtPhiUENormCluster          ->Fill(ptTrig ,          phiUEptsumClusterNorm , GetEventWeight());
     fhConeSumPtPhiUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubPhi, GetEventWeight());
     fhConeSumPtPhiUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubPhi *GetEventWeight()); // check
+    fhConeSumPtEtaUENormCluster          ->Fill(ptTrig ,          etaUEptsumClusterNorm , GetEventWeight());
     fhConeSumPtEtaUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubEta, GetEventWeight());
     fhConeSumPtEtaUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubEta *GetEventWeight()); // check
     
@@ -3230,6 +3236,20 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       
       if(fFillUEBandSubtractHistograms)
       {
+        fhConeSumPtEtaUENormCluster  = new TH2F("hConeSumPtEtaUENormCluster",
+                                              Form("Clusters #Sigma #it{p}_{T} in normalized #eta band, #it{R} =  %2.2f",r),
+                                              nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
+        fhConeSumPtEtaUENormCluster->SetYTitle("#Sigma #it{p}_{T}^{#eta-band}_{norm}");
+        fhConeSumPtEtaUENormCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtEtaUENormCluster) ;
+        
+        fhConeSumPtPhiUENormCluster  = new TH2F("hConeSumPtPhiUENormCluster",
+                                              Form("Clusters #Sigma #it{p}_{T} in normalized phi band, #it{R} =  %2.2f",r),
+                                              nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
+        fhConeSumPtPhiUENormCluster->SetYTitle("#Sigma #it{p}_{T}^{#varphi-band}_{norm}");
+        fhConeSumPtPhiUENormCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtPhiUENormCluster) ;
+        
         fhConeSumPtEtaUESubCluster  = new TH2F("hConeSumPtEtaUESubCluster",
                                                Form("Clusters #Sigma #it{p}_{T} after bkg subtraction from eta band in the isolation cone for #it{R} =  %2.2f",r),
                                                nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
@@ -3845,6 +3865,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPhiBandTrack->SetXTitle("#eta");
         fhPhiBandTrack->SetYTitle("#phi");
         outputContainer->Add(fhPhiBandTrack) ;
+
+        fhConeSumPtEtaUENormTrack  = new TH2F("hConeSumPtEtaUENormTrack",
+                                             Form("Tracks #Sigma #it{p}_{T} in normalized #eta band, #it{R} =  %2.2f",r),
+                                             nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
+        fhConeSumPtEtaUENormTrack->SetYTitle("#Sigma #it{p}_{T}^{#eta-band}_{norm}");
+        fhConeSumPtEtaUENormTrack->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtEtaUENormTrack) ;
+        
+        fhConeSumPtPhiUENormTrack  = new TH2F("hConeSumPtPhiUENormTrack",
+                                             Form("Tracks #Sigma #it{p}_{T} in normalized phi band, #it{R} =  %2.2f",r),
+                                             nptbins,ptmin,ptmax,2*nptsumbins,-ptsummax,ptsummax);
+        fhConeSumPtPhiUENormTrack->SetYTitle("#Sigma #it{p}_{T}^{#varphi-band}_{norm}");
+        fhConeSumPtPhiUENormTrack->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhConeSumPtPhiUENormTrack) ;
+
         
         fhConeSumPtEtaUESubTrack  = new TH2F("hConeSumPtEtaUESubTrack",
                                              Form("Tracks #Sigma #it{p}_{T} after bkg subtraction from eta band in the isolation cone for #it{R} =  %2.2f",r),
