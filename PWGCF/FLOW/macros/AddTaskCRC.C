@@ -196,7 +196,8 @@ AliAnalysisTask * AddTaskCRC(Double_t ptMin=0.2,
     delete ZDCBadTowerFile;
   }
   if(bCorrSpecZDC) {
-    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/15o_ZDCSpectraCorr.root";
+    TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+    if(bCorrectForBadChannel) ZDCRecFileName += "15o_ZDCSpectraCorr_BadCh.root";
     TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
     if(!ZDCRecFile) {
       cout << "ERROR: ZDC Spectra Calibration not found!" << endl;

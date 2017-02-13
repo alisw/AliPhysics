@@ -202,6 +202,8 @@ fSpectraMCList(NULL),
 fBadTowerStuffList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
+fhZNSpectraCor(0x0),
+fhZNSpectraPow(0x0),
 fhZNBCCorr(0x0)
 {
   for(int i=0; i<5; i++){
@@ -224,7 +226,8 @@ fhZNBCCorr(0x0)
     fBadTowerCalibHist[c] = NULL;
   }
   for(Int_t i=0; i<8; i++) {
-    FitSpecCorMu[i] = NULL;
+    SpecCorMu1[i] = NULL;
+    SpecCorMu2[i] = NULL;
     FitSpecCorSi[i] = NULL;
   }
   this->InitializeRunArrays();
@@ -344,8 +347,12 @@ fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
 fUseZDCSpectraCorr(kFALSE),
 fZDCSpectraCorrList(NULL),
+fSpectraMCList(NULL),
+fBadTowerStuffList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
+fhZNSpectraCor(0x0),
+fhZNSpectraPow(0x0),
 fhZNBCCorr(0x0)
 {
   
@@ -369,7 +376,8 @@ fhZNBCCorr(0x0)
     fBadTowerCalibHist[c] = NULL;
   }
   for(Int_t i=0; i<8; i++) {
-    FitSpecCorMu[i] = NULL;
+    SpecCorMu1[i] = NULL;
+    SpecCorMu2[i] = NULL;
     FitSpecCorSi[i] = NULL;
   }
   this->InitializeRunArrays();
@@ -533,25 +541,39 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   }
   if(fZDCSpectraCorrList) {
     for(Int_t i=0; i<8; i++) {
-      TH1D* SpecCorMu = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorMu[%d]",i));
-      TF1* FisrtFit = new TF1("FirstFit","pol9",0.,100.);
-      SpecCorMu->Fit(FisrtFit,"QRN","",0.,80.);
-      for (Int_t bx=1; bx<=SpecCorMu->GetNbinsX(); bx++) {
-        if(fabs(SpecCorMu->GetBinContent(bx)-FisrtFit->Eval(SpecCorMu->GetXaxis()->GetBinCenter(bx))) > SpecCorMu->GetBinContent(bx)*0.02) SpecCorMu->SetBinContent(bx,0.);
-      }
-      FitSpecCorMu[i] = new TF1(Form("FitSpecCorMu[%d]",i),"pol9",0.,100.);
-      SpecCorMu->Fit(FitSpecCorMu[i],"QRN","",0.,80.);
-      fOutput->Add(FitSpecCorMu[i]);
+      SpecCorMu1[i] = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorMu1[%d]",i));
+      fOutput->Add(SpecCorMu1[i]);
+      SpecCorMu2[i] = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorMu2[%d]",i));
+      fOutput->Add(SpecCorMu2[i]);
     }
     for(Int_t i=0; i<8; i++) {
       TH1D* SpecCorMu = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorSi[%d]",i));
       TF1* FisrtFit = new TF1("FirstFit","pol5",0.,100.);
       SpecCorMu->Fit(FisrtFit,"QRN","",10.,80.);
       for (Int_t bx=1; bx<=SpecCorMu->GetNbinsX(); bx++) {
-        if(fabs(SpecCorMu->GetBinContent(bx)-FisrtFit->Eval(SpecCorMu->GetXaxis()->GetBinCenter(bx))) > SpecCorMu->GetBinContent(bx)*0.04) SpecCorMu->SetBinContent(bx,0.);
+        if(SpecCorMu->GetXaxis()->GetBinCenter(bx)>5. && SpecCorMu->GetXaxis()->GetBinCenter(bx)<75.) {
+          if(fabs(SpecCorMu->GetBinContent(bx)-FisrtFit->Eval(SpecCorMu->GetXaxis()->GetBinCenter(bx))) > SpecCorMu->GetBinContent(bx)*0.01) SpecCorMu->SetBinContent(bx,0.);
+        }
       }
-      SpecCorMu->Draw("same");
-      FitSpecCorSi[i] = new TF1(Form("FitSpecCorSi[%d]",i),"pol5",0.,100.);
+      for (Int_t bx=1; bx<=SpecCorMu->GetNbinsX(); bx++) {
+        if(SpecCorMu->GetBinContent(bx)==0. && SpecCorMu->GetXaxis()->GetBinCenter(bx)<79.) {
+          Double_t xmin=0.,xmax=0.;
+          Int_t cmin=0,cmax=0;
+          while(xmin==0.) {
+            cmin++;
+            xmin = SpecCorMu->GetBinContent(bx-cmin);
+          }
+          while(xmax==0.) {
+            cmax++;
+            xmax = SpecCorMu->GetBinContent(bx+cmax);
+          }
+          SpecCorMu->SetBinContent(bx,(xmin+xmax)/2.);
+        }
+        if(SpecCorMu->GetXaxis()->GetBinCenter(bx)>79.) {
+          SpecCorMu->SetBinContent(bx,SpecCorMu->GetBinContent(SpecCorMu->GetXaxis()->FindBin(78.5)));
+        }
+      }
+      FitSpecCorSi[i] = new TF1(Form("FitSpecCorSi[%d]",i),"pol7",0.,100.);
       SpecCorMu->Fit(FitSpecCorSi[i],"QRN","",0.,80.);
       fOutput->Add(FitSpecCorSi[i]);
     }
@@ -559,6 +581,10 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   
   fhZNSpectra = new TH3D("fhZNSpectra","fhZNSpectra",100,0.,100.,8,0.,8.,1000,0.,1.E5);
   fOutput->Add(fhZNSpectra);
+  fhZNSpectraCor = new TH3D("fhZNSpectraCor","fhZNSpectraCor",100,0.,100.,8,0.,8.,1000,0.,1.E5);
+  fOutput->Add(fhZNSpectraCor);
+  fhZNSpectraPow = new TH3D("fhZNSpectraPow","fhZNSpectraPow",100,0.,100.,8,0.,8.,1000,0.,TMath::Power(1.E5,fZDCGainAlpha));
+  fOutput->Add(fhZNSpectraPow);
   fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
   fOutput->Add(fhZNBCCorr);
   
@@ -1411,18 +1437,21 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           
           // get energy
           EZNC = towZNC[i+1];
-          if(fUseZDCSpectraCorr) {
-            Double_t mu1 = FitSpecCorMu[i]->Eval(centrperc);
-            Double_t cor1 = FitSpecCorSi[i]->Eval(centrperc);
-            EZNC = exp( (log(EZNC) - mu1*(1.-cor1))/cor1 );
-          }
           fhZNSpectra->Fill(centrperc,i+0.5,EZNC);
+          if(fUseZDCSpectraCorr) {
+            Double_t mu1 = SpecCorMu1[i]->Interpolate(centrperc);
+            Double_t mu2 = SpecCorMu2[i]->Interpolate(centrperc);
+            Double_t cor1 = FitSpecCorSi[i]->Eval(centrperc);
+            EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 );
+            fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
+          }
           
           // build centroid
           wZNC = TMath::Power(EZNC, fZDCGainAlpha);
           numXZNC += x[i]*wZNC;
           numYZNC += y[i]*wZNC;
           denZNC += wZNC;
+          fhZNSpectraPow->Fill(centrperc,i+0.5,wZNC);
           
           // get energy
           if(i==1) {
@@ -1433,18 +1462,21 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           } else {
             EZNA = towZNA[i+1];
           }
-          if(fUseZDCSpectraCorr) {
-            Double_t mu1 = FitSpecCorMu[i+4]->Eval(centrperc);
-            Double_t cor1 = FitSpecCorSi[i+4]->Eval(centrperc);
-            EZNA = exp( (log(EZNA) - mu1*(1.-cor1))/cor1 );
-          }
           fhZNSpectra->Fill(centrperc,i+4.5,EZNA);
+          if(fUseZDCSpectraCorr) {
+            Double_t mu1 = SpecCorMu1[i+4]->Interpolate(centrperc);
+            Double_t mu2 = SpecCorMu2[i+4]->Interpolate(centrperc);
+            Double_t cor1 = FitSpecCorSi[i+4]->Eval(centrperc);
+            EZNA = exp( (log(EZNA) - mu1 + mu2*cor1)/cor1 );
+            fhZNSpectraCor->Fill(centrperc,i+4.5,EZNA);
+          }
           
           // build centroid
           wZNA = TMath::Power(EZNA, fZDCGainAlpha);
           numXZNA += x[i]*wZNA;
           numYZNA += y[i]*wZNA;
           denZNA += wZNA;
+          fhZNSpectraPow->Fill(centrperc,i+4.5,wZNA);
         }
         // store distribution for unfolding
         if(RunNum<245829) {

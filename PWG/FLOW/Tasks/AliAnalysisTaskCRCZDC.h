@@ -289,6 +289,8 @@ private:
   TH2F *fhZNApmcvscentr;   	//! ZNA vs. centrality
   
   TH3D *fhZNSpectra;   	//! ZNA vs. centrality
+  TH3D *fhZNSpectraCor;   	//! ZNA vs. centrality
+  TH3D *fhZNSpectraPow;   	//! ZNA vs. centrality
   TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
   
   const static Int_t fCRCMaxnRun = 211;
@@ -325,7 +327,8 @@ private:
   TList *fBadTowerCalibList; // list with original calib files
   Bool_t fUseZDCSpectraCorr; //
   TList *fZDCSpectraCorrList; //
-  TF1 *FitSpecCorMu[8]; //!
+  TH1D *SpecCorMu1[8]; //!
+  TH1D *SpecCorMu2[8]; //!
   TF1 *FitSpecCorSi[8]; //!
   TH2D *fBadTowerCalibHist[100]; //!
   Int_t fCachedRunNum;   //
