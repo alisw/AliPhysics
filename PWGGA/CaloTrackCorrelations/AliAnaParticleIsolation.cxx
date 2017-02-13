@@ -4174,23 +4174,8 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPhiBandNormClustervsTrack->SetYTitle("#Sigma #it{p}_{T} track");
         outputContainer->Add(fhPhiBandNormClustervsTrack) ;
         
-        fhConeSumPtEtaUESubClustervsTrack   = new TH2F("hConePtSumEtaUESubClustervsTrack",
-                                                       Form("Track vs Cluster #Sigma #it{p}_{T} UE sub eta band in isolation cone for #it{R} =  %2.2f",r),
-                                                       2*nptsumbins,-ptsummax,ptsummax,2*nptsumbins,-ptsummax,ptsummax);
-        fhConeSumPtEtaUESubClustervsTrack->SetXTitle("#Sigma #it{p}_{T} cluster");
-        fhConeSumPtEtaUESubClustervsTrack->SetYTitle("#Sigma #it{p}_{T} track");
-        outputContainer->Add(fhConeSumPtEtaUESubClustervsTrack) ;
-        
-        fhConeSumPtPhiUESubClustervsTrack   = new TH2F("hConePhiUESubPtSumClustervsTrack",
-                                                       Form("Track vs Cluster #Sigma #it{p}_{T} UE sub phi band in isolation cone for #it{R} =  %2.2f",r),
-                                                       2*nptsumbins,-ptsummax,ptsummax,2*nptsumbins,-ptsummax,ptsummax);
-        fhConeSumPtPhiUESubClustervsTrack->SetXTitle("#Sigma #it{p}_{T} cluster");
-        fhConeSumPtPhiUESubClustervsTrack->SetYTitle("#Sigma #it{p}_{T} track");
-        outputContainer->Add(fhConeSumPtPhiUESubClustervsTrack) ;
-        
         if(fFillCellHistograms)
         {
-          
           fhConeSumPtEtaUESubCellvsTrack   = new TH2F("hConePtSumEtaUESubCellvsTrack",
                                                       Form("Track vs Cell #Sigma #it{p}_{T} UE sub eta band in isolation cone for #it{R} =  %2.2f",r),
                                                       2*nptsumbins,-ptsummax,ptsummax,2*nptsumbins,-ptsummax,ptsummax);
