@@ -406,7 +406,7 @@ AliTPCclusterMI &c)
     c.SetSigmaY2(mi2);
     c.SetSigmaZ2(mj2);
     c.SetType(0);
-    AddCluster(c,(Float_t*)vmatrix,k);
+    AddCluster(c,(Float_t*)vmatrix,k,true);
     return;     
   }
   //
@@ -435,7 +435,7 @@ AliTPCclusterMI &c)
   c.SetSigmaY2(mi2);
   c.SetSigmaZ2(mj2);
   c.SetType(Char_t(overlap)+1);
-  AddCluster(c,(Float_t*)vmatrix,k);
+  AddCluster(c,(Float_t*)vmatrix,k,true);
 
   //unfolding 2
   meani-=i0;
@@ -589,7 +589,7 @@ Float_t AliTPCclusterer::FitMax(Float_t vmatrix[5][5], Float_t y, Float_t z, Flo
   return max;
 }
 
-void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * /*matrix*/, Int_t /*pos*/){
+void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * /*matrix*/, Int_t /*pos*/,Bool_t markedge){
   //
   //
   // Transform cluster to the rotated global coordinata
@@ -642,7 +642,7 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
     c.SetZ(x[2]);
   }
   //
-  if (ki<=1 || ki>=fMaxPad-1 || kj==1 || kj==fMaxTime-2) {
+  if (markedge && (ki<=1 || ki>=fMaxPad-1 || kj==1 || kj==fMaxTime-2)) {
     c.SetType(-(c.GetType()+3));  //edge clusters
   }
   if (fLoop==2) c.SetType(100);
@@ -1569,7 +1569,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
         
 	nClusterSectorGood++;
 	// Note: cluster is simply adjusted, not cloned nor added to any additional array
-	AddCluster(*cluster, false, NULL, 0);
+	AddCluster(*cluster, false, NULL, 0, true);
       }
       // remove the empty slots from the array
       clusterArray->Compress();

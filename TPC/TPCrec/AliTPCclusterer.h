@@ -65,9 +65,9 @@ private:
   Float_t  GetSigmaY2(Int_t iz);
   Float_t  GetSigmaZ2(Int_t iz);
   Float_t  FitMax(Float_t vmatrix[5][5], Float_t y, Float_t z, Float_t sigmay, Float_t sigmaz);
-  void AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t *matrix = NULL, Int_t pos = 0);  // add the cluster to the array
-  void AddCluster(AliTPCclusterMI &c, Float_t *matrix = NULL, Int_t pos = 0) {  // add the cluster to the array
-    return AddCluster(c, true, matrix, pos);
+  void AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t *matrix = NULL, Int_t pos = 0, Bool_t markedge = false);  // add the cluster to the array
+  void AddCluster(AliTPCclusterMI &c, Float_t *matrix = NULL, Int_t pos = 0, Bool_t markedge = false) {  // add the cluster to the array
+    return AddCluster(c, true, matrix, pos, markedge);
   }
   void UnfoldCluster(Float_t * matrix[7], Float_t recmatrix[5][5], 
 		     Float_t & meani, Float_t & meanj, Float_t & sum, Float_t &overlap );
