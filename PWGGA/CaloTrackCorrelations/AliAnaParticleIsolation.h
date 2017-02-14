@@ -205,8 +205,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnStudyEtaCutInCone()           { fStudyEtaCutInCone = kTRUE ; }
   void         SwitchOffStudyEtaCutInCone()          { fStudyEtaCutInCone = kFALSE; }
 
-  void         SetNPtCutInCone(Int_t n)              { if(n < 19) fNPtCutsInCone = n ; }
-  void         SetPtCutInConeAt(Int_t i,Float_t l)   { if(i <= fNPtCutsInCone) fPtCutInCone[i] = l; }
+  void         SetNPtCutInCone(Int_t n)           { if(n < 19) fNPtCutsInCone = n ; }
+  void         SetMinPtCutInConeAt(Int_t i,Float_t l){ if(i <= fNPtCutsInCone) fMinPtCutInCone[i] = l; }  
+  void         SetMaxPtCutInConeAt(Int_t i,Float_t l){ if(i <= fNPtCutsInCone) fMaxPtCutInCone[i] = l; }
 
   void         SetNEtaCutInCone(Int_t n)             { if(n < 10) fNEtaCutsInCone = n ; }
   void         SetEtaCutInConeAt(Int_t i,Float_t l)  { if(i <= fNEtaCutsInCone) fEtaCutInCone[i] = l; }
@@ -276,7 +277,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Bool_t   fStudyPtCutInCone;                         ///<  Activate study of track/cluster min pT on sum of pT in cone
   Int_t    fNPtCutsInCone;                            ///<  Number of track/cluster min pT cut to test in cone for sum pT calculation.
-  Float_t  fPtCutInCone[20];                          ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
+  Float_t  fMinPtCutInCone[20];                       ///<  List of track/cluster min pT cut to test in cone for sum pT calculation.
+  Float_t  fMaxPtCutInCone[20];                       ///<  List of track/cluster max pT cut to test in cone for sum pT calculation.
 
   Bool_t   fStudyEtaCutInCone;                        ///<  Activate study of track/cluster max eta on sum of pT in cone
   Int_t    fNEtaCutsInCone;                           ///<  Number of track/cluster max eta cut to test in cone for sum pT calculation.
@@ -666,10 +668,14 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtClusterEMCALRegionPerSM[2][4][3][20]; //!<! Cluster pT sum in cone vs  trigger pT, in different EMCal regions
   TH2F *   fhEtaPhiLam0BinPtBin[2][7];                   //!<! Cluster eta/phi for a given l0 bin (0.3-0.4) and different E bins 2-3,3-4,4-5,5-6,6-8,8-10,10-12
 
-  TH2F *   fhConeSumPtClusterPerPtCut;                   //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeSumPtClusterPerPtCutLargePtTrig;        //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
-  TH2F *   fhConeSumPtTrackPerPtCut;                     //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
-  TH2F *   fhConeSumPtTrackPerPtCutLargePtTrig;          //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeSumPtClusterPerMinPtCut;                //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtClusterPerMinPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeSumPtTrackPerMinPtCut;                  //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis.
+  TH2F *   fhConeSumPtTrackPerMinPtCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different min pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeSumPtClusterPerMaxPtCut;                //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis.
+  TH2F *   fhConeSumPtClusterPerMaxPtCutLargePtTrig;     //!<! Clusters Sum Pt in the cone for different max pT cuts, x axis. Trigger pT > 10 GeV fixed
+  TH2F *   fhConeSumPtTrackPerMaxPtCut;                  //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis.
+  TH2F *   fhConeSumPtTrackPerMaxPtCutLargePtTrig;       //!<! Tracks Sum Pt in the cone for different max pT cuts, x axis. Trigger pT > 10 GeV fixed
   TH2F *   fhConeSumPtTrackPerEtaCut;                    //!<! Tracks Sum Pt in the cone for different min eta cuts, x axis.
   TH2F *   fhConeSumPtTrackPerEtaCutLargePtTrig;         //!<! Tracks Sum Pt in the cone for different min eta cuts, x axis. Trigger pT > 10 GeV fixed
   
