@@ -18,7 +18,7 @@
 #include <TList.h>
 #include <TObjString.h>
 #include <TH2F.h>
-#include <TH3F.h>
+//#include <TH3F.h>
 #include <TClass.h>
 #include <TH2F.h>
 #include "TParticle.h"
@@ -56,7 +56,9 @@ AliAnaCaloTrackCorrBaseClass(),
 fIsoDetector(-1),                 fIsoDetectorString(""),
 fReMakeIC(0),                     fMakeSeveralIC(0),
 fFillTMHisto(0),                  fFillSSHisto(1),                          fFillEMCALRegionHistograms(0),
-fFillUEBandSubtractHistograms(1), fFillCellHistograms(0),
+fFillUEBandSubtractHistograms(1), 
+fUseEtaUEBandInIsolation(0),      fUsePhiUEBandInIsolation(0), 
+fFillCellHistograms(0),
 fFillOverlapHistograms(0),        fStudyFECCorrelation(0),                  
 fStudyTracksInCone(0),            fStudyMCConversionRadius(0),
 fFillTaggedDecayHistograms(0),    fNDecayBits(0),
@@ -99,7 +101,8 @@ fhEtaBandTrack(0),                fhPhiBandTrack(0),
 fhEtaBandCell(0),                 fhPhiBandCell(0),
 fhConePtLead(0),                  fhConePtLeadCluster(0),                   fhConePtLeadTrack(0),
 fhConePtLeadClustervsTrack(0),    fhConePtLeadClusterTrackFrac(0),
-fhConeSumPt(0),                   fhPtLambda0Eiso(0),                       fhConeSumPtCellTrack(0),
+fhConeSumPt(0),                   //fhPtLambda0Eiso(0),                       
+fhConeSumPtCellTrack(0),
 fhConeSumPtCell(0),               fhConeSumPtCluster(0),                    fhConeSumPtTrack(0),
 fhConeSumPtEtaBandUECluster(0),             fhConeSumPtPhiBandUECluster(0),
 fhConeSumPtEtaBandUETrack(0),               fhConeSumPtPhiBandUETrack(0),
@@ -802,8 +805,8 @@ void AliAnaParticleIsolation::CalculateTrackUEBand(AliAODPWG4ParticleCorrelation
 /// Normalize phi/eta band per area unit
 //_____________________________________________________________________________________________________________________________________
 void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
-                                                                  Float_t coneptsumCell,          Float_t coneptsumTrack,
-                                                                  Float_t &etaBandptsumTrackNorm, Float_t &etaBandptsumClusterNorm)
+                                                                  Float_t coneptsumCell,  Float_t coneptsumTrack,
+                                                                  Float_t &sumEtaUESub ,  Float_t &sumPhiUESub)
 {
   Float_t etaUEptsumTrack   = 0 ;
   Float_t phiUEptsumTrack   = 0 ;
@@ -832,7 +835,6 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
   Float_t coneptsumTrackSubEta = 0 ;
   Float_t coneptsumTrackSubPhiNorm = 0 ;
   Float_t coneptsumTrackSubEtaNorm = 0 ;
-  etaBandptsumTrackNorm = 0 ;
   
   if ( partTypeInCone != AliIsolationCut::kOnlyNeutral )
   {
@@ -854,9 +856,7 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
     
     coneptsumTrackSubPhi = coneptsumTrack - phiUEptsumTrackNorm;
     coneptsumTrackSubEta = coneptsumTrack - etaUEptsumTrackNorm;
-        
-    etaBandptsumTrackNorm = etaUEptsumTrackNorm;
-    
+  
     fhConeSumPtPhiUENormTrack          ->Fill(ptTrig ,          phiUEptsumTrackNorm , GetEventWeight());
     fhConeSumPtPhiUESubTrack           ->Fill(ptTrig ,          coneptsumTrackSubPhi, GetEventWeight());
     fhConeSumPtPhiUESubTrackTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumTrackSubPhi *GetEventWeight()); // check
@@ -894,7 +894,6 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
   Float_t coneptsumCellSubEta    = 0 ;
   Float_t coneptsumCellSubPhiNorm = 0 ;
   Float_t coneptsumCellSubEtaNorm = 0 ;
-  etaBandptsumClusterNorm = 0;
   
   if ( partTypeInCone != AliIsolationCut::kOnlyCharged )
   {
@@ -928,9 +927,7 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
     
     coneptsumClusterSubPhi = coneptsumCluster - phiUEptsumClusterNorm;
     coneptsumClusterSubEta = coneptsumCluster - etaUEptsumClusterNorm;
-    
-    etaBandptsumClusterNorm = etaUEptsumClusterNorm;
-    
+        
     fhConeSumPtPhiUENormCluster          ->Fill(ptTrig ,          phiUEptsumClusterNorm , GetEventWeight());
     fhConeSumPtPhiUESubCluster           ->Fill(ptTrig ,          coneptsumClusterSubPhi, GetEventWeight());
     fhConeSumPtPhiUESubClusterTrigEtaPhi ->Fill(etaTrig, phiTrig, coneptsumClusterSubPhi *GetEventWeight()); // check
@@ -1026,15 +1023,15 @@ void AliAnaParticleIsolation::CalculateNormalizeUEBandPerUnitArea(AliAODPWG4Part
     }
   }
   
+  sumPhiUESub = coneptsumClusterSubPhi + coneptsumTrackSubPhi;
+  sumEtaUESub = coneptsumClusterSubEta + coneptsumTrackSubEta;
+  
   if ( partTypeInCone == AliIsolationCut::kNeutralAndCharged )
   {
     // --------------------------- //
     // Tracks and clusters in cone //
     // --------------------------- //
-    
-    Double_t sumPhiUESub = coneptsumClusterSubPhi + coneptsumTrackSubPhi;
-    Double_t sumEtaUESub = coneptsumClusterSubEta + coneptsumTrackSubEta;
-    
+        
     fhConeSumPtPhiUESub          ->Fill(ptTrig ,          sumPhiUESub, GetEventWeight());
     fhConeSumPtPhiUESubTrigEtaPhi->Fill(etaTrig, phiTrig, sumPhiUESub *GetEventWeight()); // check
     fhConeSumPtEtaUESub          ->Fill(ptTrig ,          sumEtaUESub, GetEventWeight());
@@ -1372,6 +1369,8 @@ void AliAnaParticleIsolation::CalculateCaloCellSignalInCone(AliAODPWG4ParticleCo
                                                             Float_t & coneptsumCell)
 {
   if( GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kOnlyCharged ) return ;
+  
+  if( !fFillCellHistograms ) return ;
   
   Float_t conesize = GetIsolationCut()->GetConeSize();
   
@@ -2082,6 +2081,8 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms(AliA
   // Shower shape dependent histograms
   if(fFillSSHisto)
   {
+    //fhPtLambda0Eiso->Fill(pt, m02, coneptsum);
+
     fhELambda0 [isolated]->Fill(energy, m02, GetEventWeight());
     fhPtLambda0[isolated]->Fill(pt,     m02, GetEventWeight());
     //fhELambda1 [isolated]->Fill(energy, m20);
@@ -2315,7 +2316,9 @@ TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar, buffersize,"Calorimeter: %s;",GetCalorimeterString().Data()) ;
   parList+=onePar ;
-  snprintf(onePar, buffersize,"Isolation Cand Detector: %s;",fIsoDetectorString.Data()) ;
+  snprintf(onePar, buffersize,"Isolation Cand. Detector: %s;",fIsoDetectorString.Data()) ;
+  parList+=onePar ;
+  snprintf(onePar, buffersize,"UE cone pT subtraction: eta %d, phi %d; histo UE %d",fUseEtaUEBandInIsolation, fUsePhiUEBandInIsolation, fFillUEBandSubtractHistograms) ;
   parList+=onePar ;
   snprintf(onePar, buffersize,"fReMakeIC =%d (Flag for reisolation during histogram filling);",fReMakeIC) ;
   parList+=onePar ;
@@ -2667,13 +2670,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhConeSumPt->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
     outputContainer->Add(fhConeSumPt) ;
     
-    fhPtLambda0Eiso = new TH3F
-    (Form("hPtLambda0Eiso"),
-     Form("ABCD 3D Matrix: #it{p}_{T} vs #lambda_{0}^{2} vs E_{T}^{iso}, %s",parTitle.Data()),70,0.,70.,200,0.,2.,110,-10.,100.);
-    fhPtLambda0Eiso->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-    fhPtLambda0Eiso->SetYTitle("#lambda_{0}^{2}");
-    fhPtLambda0Eiso->SetZTitle("E_{T}^{iso} (GeV/c)");
-    outputContainer->Add(fhPtLambda0Eiso) ;
+//    fhPtLambda0Eiso = new TH3F
+//    (Form("hPtLambda0Eiso"),
+//     Form("ABCD 3D Matrix: #it{p}_{T} vs #lambda_{0}^{2} vs E_{T}^{iso}, %s",parTitle.Data()),70,0.,70.,200,0.,2.,110,-10.,100.);
+//    fhPtLambda0Eiso->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+//    fhPtLambda0Eiso->SetYTitle("#lambda_{0}^{2}");
+//    fhPtLambda0Eiso->SetZTitle("E_{T}^{iso} (GeV/c)");
+//    outputContainer->Add(fhPtLambda0Eiso) ;
     
     fhConeSumPtTrigEtaPhi  = new TH2F("hConePtSumTrigEtaPhi",
                                       Form("Trigger #eta vs #phi, #Sigma #it{p}_{T} in isolation cone for #it{R} =  %2.2f",r),
@@ -5749,13 +5752,12 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Float_t coneptsumCluster = 0;
     Float_t coneptsumTrack   = 0;
     Float_t coneptsumCell    = 0;
-    Float_t etaBandptsumClusterNorm = 0;
-    Float_t etaBandptsumTrackNorm   = 0;
+    Float_t coneptsumSubEtaBand = 0;
+    Float_t coneptsumSubPhiBand = 0;
     
     CalculateTrackSignalInCone   (aod,coneptsumTrack  , coneptLeadTrack  );
     CalculateCaloSignalInCone    (aod,coneptsumCluster, coneptLeadCluster);
-    if(fFillCellHistograms)
-      CalculateCaloCellSignalInCone(aod,coneptsumCell   );
+    CalculateCaloCellSignalInCone(aod,coneptsumCell);
     
     if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged)
     {
@@ -5776,8 +5778,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     fhConeSumPt              ->Fill(pt,       coneptsumTrack+coneptsumCluster, GetEventWeight());
     fhConeSumPtTrigEtaPhi    ->Fill(eta, phi, coneptsumTrack+coneptsumCluster *GetEventWeight()); // check
 
-    fhPtLambda0Eiso          ->Fill(pt, m02, coneptsumTrack+coneptsumCluster);
-
     Float_t coneptLead = coneptLeadTrack;
     if(coneptLeadCluster > coneptLeadTrack) coneptLead = coneptLeadCluster;
     fhConePtLead->Fill(pt, coneptLead, GetEventWeight());
@@ -5785,11 +5785,38 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     AliDebug(1,Form("Particle %d Energy Sum in Isolation Cone %2.2f, Leading pT in cone %2.2f",
              iaod, coneptsumTrack+coneptsumCluster, coneptLead));
     
-    //normalize phi/eta band per area unit
+    //---------------------------------------------------------------
+    // Normalize phi/eta band per area unit
+    //---------------------------------------------------------------
     if(fFillUEBandSubtractHistograms)
-      CalculateNormalizeUEBandPerUnitArea(aod, coneptsumCluster, coneptsumCell, coneptsumTrack, etaBandptsumTrackNorm, etaBandptsumClusterNorm) ;
-    
-    //  printf("Histograms analysis : cluster pt = %f, etaBandTrack = %f, etaBandCluster = %f, isolation = %d\n",aod->Pt(),etaBandptsumTrackNorm,etaBandptsumClusterNorm,aod->IsIsolated());
+    {
+      CalculateNormalizeUEBandPerUnitArea(aod, coneptsumCluster, coneptsumCell, coneptsumTrack, coneptsumSubEtaBand, coneptsumSubPhiBand) ;
+      
+      //---------------------------------------------------------------
+      // Recheck isolation, depending on subtracted energy from UE bands
+      // Think how to move all this to AliIsolationCut
+      //---------------------------------------------------------------
+      if ( fUseEtaUEBandInIsolation || fUsePhiUEBandInIsolation )
+      {
+        isolated = kFALSE; // re-init, think how to de-activate the first isolation checks
+        
+        if ( fUseEtaUEBandInIsolation && coneptsumSubEtaBand < GetIsolationCut()->GetSumPtThreshold() ) isolated = kTRUE;
+        
+        if ( fUsePhiUEBandInIsolation && coneptsumSubPhiBand < GetIsolationCut()->GetSumPtThreshold() ) isolated = kTRUE;
+        
+        AliDebug(1,
+                 Form("cluster pt = %2.2f, cone pt sum = %2.2f (track %2.2f, cluster %2.2f), \n"
+                      "\t cone pt sum - eta band = %f (on? %d), cone pt sum - phi band  %f (on? %d);"
+                      "\t isolation = org %d, new %d\n",
+                      aod->Pt(), coneptsumTrack+coneptsumCluster, coneptsumTrack, coneptsumCluster,
+                      coneptsumSubEtaBand, fUseEtaUEBandInIsolation,
+                      coneptsumSubPhiBand, fUsePhiUEBandInIsolation,
+                      aod->IsIsolated(), isolated)
+                 );
+        
+        aod->SetIsolated(isolated);
+      }
+    }
     
     //---------------------------------------------------------------
     // EMCAL SM regions
@@ -6857,6 +6884,7 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
   printf("Make Several Isolation    = %d \n",  fMakeSeveralIC) ;
   printf("Calorimeter for isolation = %s \n",  GetCalorimeterString().Data()) ;
   printf("Detector for candidate isolation = %s \n", fIsoDetectorString.Data()) ;
+  printf("Subtract UE from cone sum pT = eta %d, phi %d; histo fill %d \n", fUseEtaUEBandInIsolation, fUsePhiUEBandInIsolation, fFillUEBandSubtractHistograms) ;
   
   if(fMakeSeveralIC)
   {
