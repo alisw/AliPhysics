@@ -248,7 +248,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       if (pStr)
       {
         if (pStr->GetString().Contains("-propagate-split-cluster-flag")) fPropagateSplitClusterFlag = 1;
-		if (pStr->GetString().Contains("-propagate-edge-cluster-flag")) fPropagateEdgeClusterFlag = 1;
+        if (pStr->GetString().Contains("-propagate-edge-cluster-flag")) fPropagateEdgeClusterFlag = 1;
         if (pStr->GetString().Contains("-mark-edge-clusters")) fMarkEdgeClusters = 1;
       }
     }

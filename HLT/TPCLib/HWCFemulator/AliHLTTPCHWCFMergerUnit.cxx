@@ -227,6 +227,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
       fInput.fT2 += s.fT2;
       fInput.fP += s.fP;
       fInput.fP2 += s.fP2;
+      fInput.fBorder |= s.fBorder;
       fInput.fMC.insert(fInput.fMC.end(), s.fMC.begin(), s.fMC.end());
       if( !fMatchTimeFollow ) fInput.fTMean = s.fTMean;    
       ret = 0;

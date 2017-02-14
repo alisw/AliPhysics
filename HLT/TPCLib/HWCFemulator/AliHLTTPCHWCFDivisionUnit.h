@@ -55,6 +55,7 @@ class AliHLTTPCHWCFDivisionUnit :public AliHLTLogging
   /** set tagging of deconvoluted clusters
    **/
   void SetTagDeconvolutedClusters( AliHLTUInt32_t b ){ fTagDeconvolutedClusters = b; }
+  void SetTagEdgeClusters( AliHLTUInt32_t b ){ fTagEdgeClusters = b; }
 
  /** initialise */
   int Init();
@@ -78,7 +79,9 @@ class AliHLTTPCHWCFDivisionUnit :public AliHLTLogging
   AliHLTUInt32_t fTagDeconvolutedClusters; // way to tag deconvoluted clusters 
                                            // 0: no tagging 
                                            // 1: tag pad, tag time if one of the time sequences is deconvoluted 
-                                           // 2: tag pad, tag time if 2 consecutive time sequences are deconvoluted 
+                                           // 2: tag pad, tag time if 2 consecutive time sequences are deconvoluted
+										   // 3: slightly more complicated heuristics combining option 1 and 2
+  AliHLTUInt32_t fTagEdgeClusters; // tag edge clusters
   const AliHLTTPCHWCFClusterFragment *fkInput; // current input 
   AliHLTTPCHWCFCluster fOutput;  // current output
   int  fDebug; // debug level

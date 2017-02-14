@@ -68,6 +68,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fUseTimeFollow(0),
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
+  fTagEdgeClusters(0),
   fProcessingRCU2Data(0),
   fUseGain(0),
   fNoiseSuppression(0),
@@ -110,6 +111,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fUseTimeFollow(0),
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
+  fTagEdgeClusters(0),
   fProcessingRCU2Data(0),
   fUseGain(0),
   fNoiseSuppression(0),
@@ -261,6 +263,7 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fUseTimeFollow = 1;
   fChargeFluctuation = 0;
   fTagDeconvolutedClusters = 0;
+  fTagEdgeClusters = 0;
   fProcessingRCU2Data = 0;
   fUseGain = 1;
   fDebug = 0;
@@ -448,6 +451,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
  
+    if ( argument.CompareTo( "-tag-edge-clusters" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fTagEdgeClusters  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Tag Edge Clusters is set to: %d", fTagEdgeClusters );
+      continue;
+    }
+ 
     if ( argument.CompareTo( "-rcu2-data" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fProcessingRCU2Data  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
@@ -462,7 +472,7 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
 
-	if ( argument.CompareTo( "-temp-buffer" ) == 0 ) {
+    if ( argument.CompareTo( "-temp-buffer" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fEnableTempBuffer  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       HLTInfo( "Temporary buffer set to: %d", fEnableTempBuffer );
@@ -693,6 +703,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 		fCFEmulator.Init(fCFSupport.GetMapping(slice, patch), configWord1, configWord2);
 
 		fCFEmulator.SetTagDeconvolutedClusters(fTagDeconvolutedClusters);
+		fCFEmulator.SetTagEdgeClusters(fTagEdgeClusters);
 		fCFEmulator.SetProcessingRCU2Data(fProcessingRCU2Data);
 		fCFEmulator.SetNoiseSuppression(fNoiseSuppression);
 		fCFEmulator.SetNoiseSuppressionMinimum(fNoiseSuppressionMinimum);

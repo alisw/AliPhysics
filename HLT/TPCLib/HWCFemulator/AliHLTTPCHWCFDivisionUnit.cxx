@@ -121,14 +121,13 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   
   fOutput.fFlag = 1;
 
-  // bit 23 is 0, bits 30,31 are 1
+  // bit 23 is 0 (used for edge tag later), bits 30,31 are 1
   fOutput.fRowQ = (((AliHLTUInt32_t) 0x3)<<30) + ((fkInput->fRow &0x3f)<<24) + ((fkInput->fQmax)&0x7FFFFF);
 
-  // bits 30,31 are 0
+  // bits 30,31 are 0 (used for deconvote tag later)
   fOutput.fQ = fkInput->fQ & 0x3FFFFFFF;
 
   // set is_deconvoluted flag at bit 31 for pad direction, at bit 30 for time direction
-  
   switch( fTagDeconvolutedClusters ){
   case 0:
     break;
@@ -158,6 +157,11 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
 
   default:
     HLTError("Unknown HW cluster tagging option %d",fTagDeconvolutedClusters);
+  }
+  
+  if (fTagEdgeClusters)
+  {
+    if (fkInput->fBorder) fOutput.fRowQ |= (0x1 << 23);
   }
 
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;
@@ -211,4 +215,3 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
 
   return &fOutput;
 }
-
