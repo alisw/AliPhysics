@@ -189,105 +189,105 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
   fHistPtHard->Sumw2();
     fOutputContainer->Add(fHistPtHard);
   
-  fHistPtYPi0                 = new TH2F("Pt_Y_Pi0","Pt_Y_Pi0", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0                 = new TH2F("Pt_Y_Pi0","Pt_Y_Pi0", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0->Sumw2();
   fOutputContainer->Add(fHistPtYPi0);
 
-  fHistPtYPiPl                = new TH2F("Pt_Y_PiPl","Pt_Y_PiPl", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPiPl                = new TH2F("Pt_Y_PiPl","Pt_Y_PiPl", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPiPl->Sumw2();
   fOutputContainer->Add(fHistPtYPiPl);
 
-  fHistPtYPiMi                = new TH2F("Pt_Y_PiMi","Pt_Y_PiMi", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPiMi                = new TH2F("Pt_Y_PiMi","Pt_Y_PiMi", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPiMi->Sumw2();
   fOutputContainer->Add(fHistPtYPiMi);
   
-  fHistPtYEta                 = new TH2F("Pt_Y_Eta","Pt_Y_Eta", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEta                 = new TH2F("Pt_Y_Eta","Pt_Y_Eta", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEta->Sumw2();
   fOutputContainer->Add(fHistPtYEta);
 
-  fHistPtYEtaPrim             = new TH2F("Pt_Y_EtaPrim","Pt_Y_EtaPrim", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaPrim             = new TH2F("Pt_Y_EtaPrim","Pt_Y_EtaPrim", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaPrim->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrim);
 
-  fHistPtYOmega               = new TH2F("Pt_Y_Omega","Pt_Y_Omega", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYOmega               = new TH2F("Pt_Y_Omega","Pt_Y_Omega", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYOmega->Sumw2();
   fOutputContainer->Add(fHistPtYOmega);
   
-  fHistPtYPi0FromEta          = new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0FromEta          = new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0FromEta->Sumw2();
   fOutputContainer->Add(fHistPtYPi0FromEta);
 
-  fHistPtYPi0FromLambda       = new TH2F("Pt_Y_Pi0FromLambda","Pt_Y_Pi0FromLambda", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0FromLambda       = new TH2F("Pt_Y_Pi0FromLambda","Pt_Y_Pi0FromLambda", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0FromLambda->Sumw2();
   fOutputContainer->Add(fHistPtYPi0FromLambda);
 
-  fHistPtYPi0FromK            = new TH2F("Pt_Y_Pi0FromK","Pt_Y_Pi0FromK", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0FromK            = new TH2F("Pt_Y_Pi0FromK","Pt_Y_Pi0FromK", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0FromK->Sumw2();
   fOutputContainer->Add(fHistPtYPi0FromK);
 
-  fHistPtYPiPlFromK           = new TH2F("Pt_Y_PiPlFromK","Pt_Y_PiPlFromK", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPiPlFromK           = new TH2F("Pt_Y_PiPlFromK","Pt_Y_PiPlFromK", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPiPlFromK->Sumw2();
   fOutputContainer->Add(fHistPtYPiPlFromK);
 
-  fHistPtYPiMiFromK           = new TH2F("Pt_Y_PiMiFromK","Pt_Y_PiMiFromK", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPiMiFromK           = new TH2F("Pt_Y_PiMiFromK","Pt_Y_PiMiFromK", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPiMiFromK->Sumw2();
   fOutputContainer->Add(fHistPtYPiMiFromK);
 
   
-  fHistPtYPi0GG               = new TH2F("Pt_Y_Pi0GG","Pt_Y_Pi0GG", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0GG               = new TH2F("Pt_Y_Pi0GG","Pt_Y_Pi0GG", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0GG->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GG);
-  fHistPtYPi0GGPCMAcc         = new TH2F("Pt_Y_Pi0GGPCMAcc","Pt_Y_Pi0GGPCMAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0GGPCMAcc         = new TH2F("Pt_Y_Pi0GGPCMAcc","Pt_Y_Pi0GGPCMAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0GGPCMAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGPCMAcc);
-  fHistPtYPi0GGEMCAcc         = new TH2F("Pt_Y_Pi0GGEMCAcc","Pt_Y_Pi0GGEMCAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0GGEMCAcc         = new TH2F("Pt_Y_Pi0GGEMCAcc","Pt_Y_Pi0GGEMCAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0GGEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGEMCAcc);
-  fHistPtYPi0GGPHOAcc         = new TH2F("Pt_Y_Pi0GGPHOAcc","Pt_Y_Pi0GGPHOAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0GGPHOAcc         = new TH2F("Pt_Y_Pi0GGPHOAcc","Pt_Y_Pi0GGPHOAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0GGPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGPHOAcc);
-  fHistPtYPi0GGPCMEMCAcc      = new TH2F("Pt_Y_Pi0GGPCMEMCAcc","Pt_Y_Pi0GGPCMEMCAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0GGPCMEMCAcc      = new TH2F("Pt_Y_Pi0GGPCMEMCAcc","Pt_Y_Pi0GGPCMEMCAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0GGPCMEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGPCMEMCAcc);
-  fHistPtYPi0GGPCMPHOAcc      = new TH2F("Pt_Y_Pi0GGPCMPHOAcc","Pt_Y_Pi0GGPCMPHOAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYPi0GGPCMPHOAcc      = new TH2F("Pt_Y_Pi0GGPCMPHOAcc","Pt_Y_Pi0GGPCMPHOAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYPi0GGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYPi0GGPCMPHOAcc);
 
-  fHistPtYEtaGG               = new TH2F("Pt_Y_EtaGG","Pt_Y_EtaGG", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaGG               = new TH2F("Pt_Y_EtaGG","Pt_Y_EtaGG", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaGG->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGG);
-  fHistPtYEtaGGPCMAcc         = new TH2F("Pt_Y_EtaGGPCMAcc","Pt_Y_EtaGGPCMAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaGGPCMAcc         = new TH2F("Pt_Y_EtaGGPCMAcc","Pt_Y_EtaGGPCMAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaGGPCMAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGPCMAcc);
-  fHistPtYEtaGGEMCAcc         = new TH2F("Pt_Y_EtaGGEMCAcc","Pt_Y_EtaGGEMCAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaGGEMCAcc         = new TH2F("Pt_Y_EtaGGEMCAcc","Pt_Y_EtaGGEMCAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaGGEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGEMCAcc);
-  fHistPtYEtaGGPHOAcc         = new TH2F("Pt_Y_EtaGGPHOAcc","Pt_Y_EtaGGPHOAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaGGPHOAcc         = new TH2F("Pt_Y_EtaGGPHOAcc","Pt_Y_EtaGGPHOAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaGGPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGPHOAcc);
-  fHistPtYEtaGGPCMEMCAcc      = new TH2F("Pt_Y_EtaGGPCMEMCAcc","Pt_Y_EtaGGPCMEMCAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaGGPCMEMCAcc      = new TH2F("Pt_Y_EtaGGPCMEMCAcc","Pt_Y_EtaGGPCMEMCAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaGGPCMEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGPCMEMCAcc);
-  fHistPtYEtaGGPCMPHOAcc      = new TH2F("Pt_Y_EtaGGPCMPHOAcc","Pt_Y_EtaGGPCMPHOAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaGGPCMPHOAcc      = new TH2F("Pt_Y_EtaGGPCMPHOAcc","Pt_Y_EtaGGPCMPHOAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaGGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaGGPCMPHOAcc);
 
-  fHistPtYEtaPrimGG           = new TH2F("Pt_Y_EtaPrimGG","Pt_Y_EtaPrimGG", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaPrimGG           = new TH2F("Pt_Y_EtaPrimGG","Pt_Y_EtaPrimGG", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaPrimGG->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrimGG);
-  fHistPtYEtaPrimGGPCMAcc     = new TH2F("Pt_Y_EtaPrimGGPCMAcc","Pt_Y_EtaPrimGGPCMAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaPrimGGPCMAcc     = new TH2F("Pt_Y_EtaPrimGGPCMAcc","Pt_Y_EtaPrimGGPCMAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaPrimGGPCMAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrimGGPCMAcc);
-  fHistPtYEtaPrimGGEMCAcc     = new TH2F("Pt_Y_EtaPrimGGEMCAcc","Pt_Y_EtaPrimGGEMCAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaPrimGGEMCAcc     = new TH2F("Pt_Y_EtaPrimGGEMCAcc","Pt_Y_EtaPrimGGEMCAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaPrimGGEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrimGGEMCAcc);
-  fHistPtYEtaPrimGGPHOAcc     = new TH2F("Pt_Y_EtaPrimGGPHOAcc","Pt_Y_EtaPrimGGPHOAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaPrimGGPHOAcc     = new TH2F("Pt_Y_EtaPrimGGPHOAcc","Pt_Y_EtaPrimGGPHOAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaPrimGGPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrimGGPHOAcc);
-  fHistPtYEtaPrimGGPCMEMCAcc  = new TH2F("Pt_Y_EtaPrimGGPCMEMCAcc","Pt_Y_EtaPrimGGPCMEMCAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaPrimGGPCMEMCAcc  = new TH2F("Pt_Y_EtaPrimGGPCMEMCAcc","Pt_Y_EtaPrimGGPCMEMCAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaPrimGGPCMEMCAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrimGGPCMEMCAcc);
-  fHistPtYEtaPrimGGPCMPHOAcc  = new TH2F("Pt_Y_EtaPrimGGPCMPHOAcc","Pt_Y_EtaPrimGGPCMPHOAcc", 500,0, 50, 160, -0.8, 0.8);
+  fHistPtYEtaPrimGGPCMPHOAcc  = new TH2F("Pt_Y_EtaPrimGGPCMPHOAcc","Pt_Y_EtaPrimGGPCMPHOAcc", 1000,0, 100, 160, -0.8, 0.8);
   fHistPtYEtaPrimGGPCMPHOAcc->Sumw2();
   fOutputContainer->Add(fHistPtYEtaPrimGGPCMPHOAcc);
 

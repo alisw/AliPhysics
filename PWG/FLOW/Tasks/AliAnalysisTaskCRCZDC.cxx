@@ -159,6 +159,7 @@ fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
+fRejectPileUpTight(kFALSE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator(kV0M),
@@ -191,12 +192,18 @@ fPileUpCount(0x0),
 fPileUpMultSelCount(0x0),
 fMultTOFLowCut(0x0),
 fMultTOFHighCut(0x0),
+fUseTowerEq(kFALSE),
 fTowerEqList(NULL),
+fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
+fUseZDCSpectraCorr(kFALSE),
+fZDCSpectraCorrList(NULL),
 fSpectraMCList(NULL),
 fBadTowerStuffList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
+fhZNSpectraCor(0x0),
+fhZNSpectraPow(0x0),
 fhZNBCCorr(0x0)
 {
   for(int i=0; i<5; i++){
@@ -217,6 +224,11 @@ fhZNBCCorr(0x0)
   }
   for(Int_t c=0; c<100; c++) {
     fBadTowerCalibHist[c] = NULL;
+  }
+  for(Int_t i=0; i<8; i++) {
+    SpecCorMu1[i] = NULL;
+    SpecCorMu2[i] = NULL;
+    FitSpecCorSi[i] = NULL;
   }
   this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(1);
@@ -291,6 +303,7 @@ fAnalysisInput(kAOD),
 fIsMCInput(kFALSE),
 fUseMCCen(kTRUE),
 fRejectPileUp(kTRUE),
+fRejectPileUpTight(kFALSE),
 fCentrLowLim(0.),
 fCentrUpLim(100.),
 fCentrEstimator(kV0M),
@@ -328,10 +341,18 @@ fPileUpCount(0x0),
 fPileUpMultSelCount(0x0),
 fMultTOFLowCut(0x0),
 fMultTOFHighCut(0x0),
+fUseTowerEq(kFALSE),
 fTowerEqList(NULL),
+fUseBadTowerCalib(kFALSE),
 fBadTowerCalibList(NULL),
+fUseZDCSpectraCorr(kFALSE),
+fZDCSpectraCorrList(NULL),
+fSpectraMCList(NULL),
+fBadTowerStuffList(NULL),
 fCachedRunNum(0),
 fhZNSpectra(0x0),
+fhZNSpectraCor(0x0),
+fhZNSpectraPow(0x0),
 fhZNBCCorr(0x0)
 {
   
@@ -353,6 +374,11 @@ fhZNBCCorr(0x0)
   }
   for(Int_t c=0; c<100; c++) {
     fBadTowerCalibHist[c] = NULL;
+  }
+  for(Int_t i=0; i<8; i++) {
+    SpecCorMu1[i] = NULL;
+    SpecCorMu2[i] = NULL;
+    FitSpecCorSi[i] = NULL;
   }
   this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(iseed);
@@ -389,6 +415,7 @@ AliAnalysisTaskCRCZDC::~AliAnalysisTaskCRCZDC()
   delete fCutsEvent;
   if (fTowerEqList)  delete fTowerEqList;
   if (fBadTowerCalibList) delete fBadTowerCalibList;
+  if (fZDCSpectraCorrList) delete fZDCSpectraCorrList;
   if (fAnalysisUtil) delete fAnalysisUtil;
   if (fQAList) delete fQAList;
   if (fCutContainer) fCutContainer->Delete(); delete fCutContainer;
@@ -399,20 +426,16 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
 {
   for(Int_t r=0;r<fCRCMaxnRun;r++) {
     fCRCQVecListRun[r] = NULL;
-    //    fZNCTower[r] = NULL;
-    //    fZNATower[r] = NULL;
+    for(Int_t k=0;k<fCRCnTow;k++) {
+      fZNCTower[r][k] = NULL;
+      fZNATower[r][k] = NULL;
+    }
   }
   //   for(Int_t i=0;i<fnCen;i++) {
   //     fPtPhiEtaRbRFB128[r][i] = NULL;
   //     fPtPhiEtaRbRFB768[r][i] = NULL;
   //   }
   // }
-  //  for(Int_t k=0;k<fCRCnTow;k++) {
-  //    fhnTowerGain[k] = NULL;
-  //    for(Int_t i=0;i<fnCen;i++) {
-  //      fhnTowerGainVtx[i][k] = NULL;
-  //    }
-  //  }
 }
 
 //________________________________________________________________________
@@ -478,7 +501,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fPileUpCount->GetXaxis()->SetBinLabel(6,"missingVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(7,"inconsistentVtx");
   fPileUpCount->GetXaxis()->SetBinLabel(8,"multESDTPCDif");
-  fPileUpCount->GetXaxis()->SetBinLabel(9,"multTrkTOF");
+  fPileUpCount->GetXaxis()->SetBinLabel(9,"extraPileUpMultSel");
   fOutput->Add(fPileUpCount);
   fPileUpMultSelCount = new TH1F("fPileUpMultSelCount", "fPileUpMultSelCount", 8, 0., 8.);
   fPileUpMultSelCount->GetXaxis()->SetBinLabel(1,"IsNotPileup");
@@ -516,9 +539,52 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       fBadTowerStuffList->Add(fBadTowerCalibHist[c]);
     }
   }
+  if(fZDCSpectraCorrList) {
+    for(Int_t i=0; i<8; i++) {
+      SpecCorMu1[i] = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorMu1[%d]",i));
+      fOutput->Add(SpecCorMu1[i]);
+      SpecCorMu2[i] = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorMu2[%d]",i));
+      fOutput->Add(SpecCorMu2[i]);
+    }
+    for(Int_t i=0; i<8; i++) {
+      TH1D* SpecCorMu = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorSi[%d]",i));
+      TF1* FisrtFit = new TF1("FirstFit","pol5",0.,100.);
+      SpecCorMu->Fit(FisrtFit,"QRN","",10.,80.);
+      for (Int_t bx=1; bx<=SpecCorMu->GetNbinsX(); bx++) {
+        if(SpecCorMu->GetXaxis()->GetBinCenter(bx)>5. && SpecCorMu->GetXaxis()->GetBinCenter(bx)<75.) {
+          if(fabs(SpecCorMu->GetBinContent(bx)-FisrtFit->Eval(SpecCorMu->GetXaxis()->GetBinCenter(bx))) > SpecCorMu->GetBinContent(bx)*0.01) SpecCorMu->SetBinContent(bx,0.);
+        }
+      }
+      for (Int_t bx=1; bx<=SpecCorMu->GetNbinsX(); bx++) {
+        if(SpecCorMu->GetBinContent(bx)==0. && SpecCorMu->GetXaxis()->GetBinCenter(bx)<79.) {
+          Double_t xmin=0.,xmax=0.;
+          Int_t cmin=0,cmax=0;
+          while(xmin==0.) {
+            cmin++;
+            xmin = SpecCorMu->GetBinContent(bx-cmin);
+          }
+          while(xmax==0.) {
+            cmax++;
+            xmax = SpecCorMu->GetBinContent(bx+cmax);
+          }
+          SpecCorMu->SetBinContent(bx,(xmin+xmax)/2.);
+        }
+        if(SpecCorMu->GetXaxis()->GetBinCenter(bx)>79.) {
+          SpecCorMu->SetBinContent(bx,SpecCorMu->GetBinContent(SpecCorMu->GetXaxis()->FindBin(78.5)));
+        }
+      }
+      FitSpecCorSi[i] = new TF1(Form("FitSpecCorSi[%d]",i),"pol7",0.,100.);
+      SpecCorMu->Fit(FitSpecCorSi[i],"QRN","",0.,80.);
+      fOutput->Add(FitSpecCorSi[i]);
+    }
+  }
   
   fhZNSpectra = new TH3D("fhZNSpectra","fhZNSpectra",100,0.,100.,8,0.,8.,1000,0.,1.E5);
   fOutput->Add(fhZNSpectra);
+  fhZNSpectraCor = new TH3D("fhZNSpectraCor","fhZNSpectraCor",100,0.,100.,8,0.,8.,1000,0.,1.E5);
+  fOutput->Add(fhZNSpectraCor);
+  fhZNSpectraPow = new TH3D("fhZNSpectraPow","fhZNSpectraPow",100,0.,100.,8,0.,8.,1000,0.,TMath::Power(1.E5,fZDCGainAlpha));
+  fOutput->Add(fhZNSpectraPow);
   fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
   fOutput->Add(fhZNBCCorr);
   
@@ -529,7 +595,7 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     fSpectraMCList->SetName("Spectra");
     fOutput->Add(fSpectraMCList);
     
-    Float_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,9.,20.};
+    Double_t xmin[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.,1.2,1.4,1.6,1.8,2.,2.33,2.66,3.,3.5,4.,5.,6.,9.,20.};
     for(Int_t j=0; j<2; j++) {
       for(Int_t c=0; c<10; c++) {
         fPtSpecGen[j][c] = new TH1F(Form("fPtSpecGen[%d][%d]",j,c), Form("fPtSpecGen[%d][%d]",j,c), 23, xmin);
@@ -547,6 +613,8 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   }
   
   fAnalysisUtil = new AliAnalysisUtils();
+  fAnalysisUtil->SetUseMVPlpSelection(kTRUE);
+  fAnalysisUtil->SetUseOutOfBunchPileUp(kTRUE);
   
   for(int i=0; i<5; i++){
     char hname[20];
@@ -618,52 +686,46 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   // 12 low IR: 244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392
   // 80 high IR ("CentralBarrelTracking" good runs): 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246676, 246675, 246540, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683
   
-  Int_t dRun15h[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
+  Int_t dRun15o[] = {244917, 244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
+  
+  Int_t dRun15ov6[] = {244918, 244975, 244980, 244982, 244983, 245064, 245066, 245068, 246390, 246391, 246392, 246994, 246991, 246989, 246984, 246982, 246980, 246948, 246945, 246928, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246495, 246493, 246488, 246487, 246434, 246431, 246428, 246424, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245705, 245702, 245700, 245692, 245683};
   
   if(fDataSet==k2010) {fCRCnRun=92;}
   if(fDataSet==k2011) {fCRCnRun=119;}
   if(fDataSet==k2015) {fCRCnRun=90;}
+  if(fDataSet==k2015v6) {fCRCnRun=91;}
   if(fDataSet==kAny) {fCRCnRun=1;}
   
   Int_t d=0;
   for(Int_t r=0; r<fCRCnRun; r++) {
     if(fDataSet==k2010)   fRunList[d] = dRun10h[r];
     if(fDataSet==k2011)   fRunList[d] = dRun11h[r];
-    if(fDataSet==k2015)   fRunList[d] = dRun15h[r];
+    if(fDataSet==k2015)   fRunList[d] = dRun15o[r];
+    if(fDataSet==k2015v6) fRunList[d] = dRun15ov6[r];
     if(fDataSet==kAny) fRunList[d] = 1;
     d++;
   }
   
-  //  for(Int_t k=0;k<fCRCnTow;k++) {
-  //    fhnTowerGain[k] = new TProfile(Form("fhnTowerGain[%d]",k),
-  //                                   Form("fhnTowerGain[%d]",k),100,0.,100.,"s");
-  //    fhnTowerGain[k]->Sumw2();
-  //    fOutput->Add(fhnTowerGain[k]);
-  //  }
-  //  for(Int_t k=0;k<fCRCnTow;k++) {
-  //    for(Int_t i=0;i<fnCen;i++) {
-  //      fhnTowerGainVtx[i][k] = new TProfile3D(Form("fhnTowerGainVtx[%d][%d]",i,k),
-  //                                             Form("fhnTowerGainVtx[%d][%d]",i,k),20,-0.035,0.015,20,0.145,0.220,10,-10.,10.,"s");
-  //      fhnTowerGainVtx[i][k]->Sumw2();
-  //      fOutput->Add(fhnTowerGainVtx[i][k]);
-  //    }
-  //  }
-  
   Double_t ptmin[] = {0.2,0.4,0.6,0.8,1.,1.2,1.4,1.8,2.2,3.,4.,6.,8.,12.,20.};
   Double_t phimin[] = {0.,TMath::Pi()/8.,2*TMath::Pi()/8.,3*TMath::Pi()/8.,4*TMath::Pi()/8.,5*TMath::Pi()/8.,6*TMath::Pi()/8.,7*TMath::Pi()/8.,8*TMath::Pi()/8.,9*TMath::Pi()/8.,10*TMath::Pi()/8.,11*TMath::Pi()/8.,12*TMath::Pi()/8.,13*TMath::Pi()/8.,14*TMath::Pi()/8.,15*TMath::Pi()/8.,16*TMath::Pi()/8.};
   Double_t etamin[] = {-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8};
+  
   for(Int_t r=0;r<fCRCnRun;r++) {
     fCRCQVecListRun[r] = new TList();
     fCRCQVecListRun[r]->SetName(Form("Run %d",fRunList[r]));
     fCRCQVecListRun[r]->SetOwner(kTRUE);
     fOutput->Add(fCRCQVecListRun[r]);
     
-    //    fZNCTower[r] = new TProfile(Form("fZNCTower[%d]",fRunList[r]),Form("fZNCTower[%d]",fRunList[r]),100,0.,100.,"s");
-    //    fZNCTower[r]->Sumw2();
-    //    fCRCQVecListRun[r]->Add(fZNCTower[r]);
-    //    fZNATower[r] = new TProfile(Form("fZNATower[%d]",fRunList[r]),Form("fZNATower[%d]",fRunList[r]),100,0.,100.,"s");
-    //    fZNATower[r]->Sumw2();
-    //    fCRCQVecListRun[r]->Add(fZNATower[r]);
+    if(!fUseTowerEq) {
+      for(Int_t k=0;k<fCRCnTow;k++) {
+        fZNCTower[r][k] = new TProfile(Form("fZNCTower[%d][%d]",fRunList[r],k),Form("fZNCTower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZNCTower[r][k]->Sumw2();
+        fCRCQVecListRun[r]->Add(fZNCTower[r][k]);
+        fZNATower[r][k] = new TProfile(Form("fZNATower[%d][%d]",fRunList[r],k),Form("fZNATower[%d][%d]",fRunList[r],k),100,0.,100.,"s");
+        fZNATower[r][k]->Sumw2();
+        fCRCQVecListRun[r]->Add(fZNATower[r][k]);
+      }
+    }
     
     //   for(Int_t i=0;i<fnCen;i++) {
     //     fPtPhiEtaRbRFB128[r][i] = new TH3F(Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),Form("fPtPhiEtaRbRFB128[%d][%d]",r,i),14, ptmin, 16, phimin, 16, etamin);
@@ -705,8 +767,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   if (fAnalysisType == "AUTOMATIC") {
     
     // get centrality
-    Float_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
-    if(fDataSet!=k2015) {
+    Double_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
+    if(fDataSet!=k2015 && fDataSet!=k2015v6) {
       centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
       centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
       centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
@@ -716,7 +778,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       if(!fMultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
-      }else{
+      } else {
         centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
         centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
         centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
@@ -728,27 +790,30 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if (InputEvent()) {
       if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
       if(fRejectPileUp) {
-        if(fDataSet!=k2015) {
+        if(fDataSet!=k2015 && fDataSet!=k2015v6) {
+          
+          Bool_t BisPileup=kFALSE;
+          
           // check anyway pileup
           if (plpMV(aod)) {
             fPileUpCount->Fill(0.5);
+            BisPileup=kTRUE;
           }
           
           Short_t isPileup = aod->IsPileupFromSPD(3);
           if (isPileup != 0) {
             fPileUpCount->Fill(1.5);
+            BisPileup=kTRUE;
           }
           
           if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
             fPileUpCount->Fill(2.5);
+            BisPileup=kTRUE;
           }
           
           if (aod->IsIncompleteDAQ())  {
             fPileUpCount->Fill(3.5);
-          }
-          
-          if(fabs(centrV0M-centrCL1)>7.5)  {
-            fPileUpCount->Fill(4.5);
+            BisPileup=kTRUE;
           }
           
           // check vertex consistency
@@ -757,6 +822,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           
           if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
             fPileUpCount->Fill(5.5);
+            BisPileup=kTRUE;
           }
           
           double covTrc[6], covSPD[6];
@@ -772,9 +838,15 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           
           if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
             fPileUpCount->Fill(6.5);
+            BisPileup=kTRUE;
           }
           
-          if (fAnalysisUtil->IsPileUpEvent(InputEvent())) return;
+          if (fAnalysisUtil->IsPileUpEvent(InputEvent())) {
+            fPileUpCount->Fill(7.5);
+            BisPileup=kTRUE;
+          }
+          
+//        if(BisPileup) return;
         } else {
           // pileup from AliMultSelection
           if(!fMultSelection->GetThisEventIsNotPileup()) fPileUpMultSelCount->Fill(0.5);
@@ -872,19 +944,27 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
             
           } // end of for (Int_t it = 0; it < nTracks; it++)
           
-          Float_t multTPCn = multTPC;
-          Float_t multEsdn = multEsd;
-          Float_t multESDTPCDif = multEsdn - multTPCn*3.38;
+          Double_t multTPCn = multTPC;
+          Double_t multEsdn = multEsd;
+          Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
           
-          if (multESDTPCDif > 15000.) {
+          if (multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
             fPileUpCount->Fill(7.5);
             BisPileup=kTRUE;
           }
           
-//          if (Float_t(multTrkTOFBefC) < fMultTOFLowCut->Eval(Float_t(multTrkBefC)) || Float_t(multTrkTOFBefC) > fMultTOFHighCut->Eval(Float_t(multTrkBefC))) {
-//            fPileUpCount->Fill(8.5);
-//            BisPileup=kTRUE;
-//          }
+          if(fRejectPileUpTight) {
+            if(BisPileup==kFALSE) {
+              if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
+              if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
+              if(BisPileup) fPileUpCount->Fill(8.5);
+            }
+          }
           
           if(BisPileup) return;
         }
@@ -955,8 +1035,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     }
     
     // get centrality (from AliMultSelection or AliCentrality)
-    Float_t centr = 300;
-    if(fDataSet==k2015) {
+    Double_t centr = 300;
+    if(fDataSet==k2015 || fDataSet==k2015v6) {
       fMultSelection = (AliMultSelection*)aod->FindListObject("MultSelection");
       if(!fMultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
@@ -1288,24 +1368,24 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     
     if(hdr->IsEventSelected() && AliVEvent::kAny) {
       
-      Float_t centrperc = fFlowEvent->GetCentrality();
+      Double_t centrperc = fFlowEvent->GetCentrality();
       Int_t cenb = (Int_t)centrperc;
       
       AliAODTracklets *trackl = aod->GetTracklets();
       Int_t nTracklets = trackl->GetNumberOfTracklets();
       
       AliAODVZERO *vzeroAOD = aod->GetVZEROData();
-      Float_t multV0A = vzeroAOD->GetMTotV0A();
-      Float_t multV0C = vzeroAOD->GetMTotV0C();
+      Double_t multV0A = vzeroAOD->GetMTotV0A();
+      Double_t multV0C = vzeroAOD->GetMTotV0C();
       
       AliAODZDC *aodZDC = aod->GetZDCData();
       
-      Float_t energyZNC  = (Float_t) (aodZDC->GetZNCEnergy());
-      Float_t energyZPC  = (Float_t) (aodZDC->GetZPCEnergy());
-      Float_t energyZNA  = (Float_t) (aodZDC->GetZNAEnergy());
-      Float_t energyZPA  = (Float_t) (aodZDC->GetZPAEnergy());
-      Float_t energyZEM1 = (Float_t) (aodZDC->GetZEM1Energy());
-      Float_t energyZEM2 = (Float_t) (aodZDC->GetZEM2Energy());
+      Double_t energyZNC  = (Double_t) (aodZDC->GetZNCEnergy());
+      Double_t energyZPC  = (Double_t) (aodZDC->GetZPCEnergy());
+      Double_t energyZNA  = (Double_t) (aodZDC->GetZNAEnergy());
+      Double_t energyZPA  = (Double_t) (aodZDC->GetZPAEnergy());
+      Double_t energyZEM1 = (Double_t) (aodZDC->GetZEM1Energy());
+      Double_t energyZEM2 = (Double_t) (aodZDC->GetZEM2Energy());
       
       const Double_t * towZNCraw = aodZDC->GetZNCTowerEnergy();
       const Double_t * towZNAraw = aodZDC->GetZNATowerEnergy();
@@ -1317,7 +1397,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       Double_t towZNC[5]={0.}, towZNA[5]={0.};
       
       Double_t ZNCcalib=1., ZNAcalib=1.;
-      if(fTowerEqList) {
+      if(fUseTowerEq) {
         if(RunNum!=fCachedRunNum) {
           for(Int_t i=0; i<5; i++) {
             fTowerGainEq[0][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNCTower[%d][%d]",RunNum,i)));
@@ -1332,11 +1412,13 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
         for(Int_t i=0; i<5; i++) {
           towZNC[i] = towZNCraw[i];
           towZNA[i] = towZNAraw[i];
+          fZNCTower[RunBin][i]->Fill(centrperc,towZNC[i]);
+          fZNATower[RunBin][i]->Fill(centrperc,towZNA[i]);
         }
       }
       
       if(RunNum>=245829) towZNA[2] = 0.;
-      Float_t zncEnergy=0., znaEnergy=0.;
+      Double_t zncEnergy=0., znaEnergy=0.;
       for(Int_t i=0; i<5; i++){
         zncEnergy += towZNC[i];
         znaEnergy += towZNA[i];
@@ -1345,29 +1427,56 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fFlowEvent->SetZNCEnergy(towZNC[0]);
       fFlowEvent->SetZNAEnergy(towZNA[0]);
       
-      const Float_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-      const Float_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-      Float_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC;
-      Float_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA;
+      const Double_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+      const Double_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+      Double_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC, EZNC;
+      Double_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA, EZNA, BadChOr;
       
       if (fUseMCCen) {
         for(Int_t i=0; i<4; i++){
-          wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
+          
+          // get energy
+          EZNC = towZNC[i+1];
+          fhZNSpectra->Fill(centrperc,i+0.5,EZNC);
+          if(fUseZDCSpectraCorr) {
+            Double_t mu1 = SpecCorMu1[i]->Interpolate(centrperc);
+            Double_t mu2 = SpecCorMu2[i]->Interpolate(centrperc);
+            Double_t cor1 = FitSpecCorSi[i]->Eval(centrperc);
+            EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 );
+            fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
+          }
+          
+          // build centroid
+          wZNC = TMath::Power(EZNC, fZDCGainAlpha);
           numXZNC += x[i]*wZNC;
           numYZNC += y[i]*wZNC;
           denZNC += wZNC;
-          fhZNSpectra->Fill(centrperc,i+0.5,towZNC[i+1]);
+          fhZNSpectraPow->Fill(centrperc,i+0.5,wZNC);
           
+          // get energy
           if(i==1) {
-            wZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
-            if(fBadTowerCalibHist[cenb]) wZNA = GetBadTowerResp(wZNA, fBadTowerCalibHist[cenb]);
-            wZNA = TMath::Power(wZNA, fZDCGainAlpha);
+            EZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
+            if(fUseBadTowerCalib && fBadTowerCalibHist[cenb]) {
+              EZNA = GetBadTowerResp(EZNA, fBadTowerCalibHist[cenb]);
+            }
+          } else {
+            EZNA = towZNA[i+1];
           }
-          else wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
+          fhZNSpectra->Fill(centrperc,i+4.5,EZNA);
+          if(fUseZDCSpectraCorr) {
+            Double_t mu1 = SpecCorMu1[i+4]->Interpolate(centrperc);
+            Double_t mu2 = SpecCorMu2[i+4]->Interpolate(centrperc);
+            Double_t cor1 = FitSpecCorSi[i+4]->Eval(centrperc);
+            EZNA = exp( (log(EZNA) - mu1 + mu2*cor1)/cor1 );
+            fhZNSpectraCor->Fill(centrperc,i+4.5,EZNA);
+          }
+          
+          // build centroid
+          wZNA = TMath::Power(EZNA, fZDCGainAlpha);
           numXZNA += x[i]*wZNA;
           numYZNA += y[i]*wZNA;
           denZNA += wZNA;
-          fhZNSpectra->Fill(centrperc,i+4.5,(i!=1?towZNA[i+1]:towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4]));
+          fhZNSpectraPow->Fill(centrperc,i+4.5,wZNA);
         }
         // store distribution for unfolding
         if(RunNum<245829) {
@@ -1376,7 +1485,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           fhZNBCCorr->Fill(centrperc,trueE,recoE);
         }
         if(denZNC!=0){
-          Float_t nSpecnC = zncEnergy/Enucl;
+          Double_t nSpecnC = zncEnergy/Enucl;
           cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
           xyZNC[0] = cZNC*numXZNC/denZNC;
           xyZNC[1] = cZNC*numYZNC/denZNC;
@@ -1385,7 +1494,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           xyZNC[0] = xyZNC[1] = 999.;
         }
         if(denZNA!=0){
-          Float_t nSpecnA = znaEnergy/Enucl;
+          Double_t nSpecnA = znaEnergy/Enucl;
           cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
           xyZNA[0] = cZNA*numXZNA/denZNA;
           xyZNA[1] = cZNA*numYZNA/denZNA;
@@ -1432,8 +1541,8 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       
       // ******************************************************************************
       
-      Float_t tdcSum = aodZDC->GetZDCTimeSum();
-      Float_t tdcDiff = aodZDC->GetZDCTimeDiff();
+      Double_t tdcSum = aodZDC->GetZDCTimeSum();
+      Double_t tdcDiff = aodZDC->GetZDCTimeDiff();
       fhDebunch->Fill(tdcDiff, tdcSum);
       
       for(int i=0; i<5; i++){
@@ -1452,7 +1561,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
       fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);
       fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);
-      fhZDCvsTracklets->Fill((Float_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
+      fhZDCvsTracklets->Fill((Double_t) (nTracklets), energyZNA+energyZPA+energyZNC+energyZPC);
       
       Double_t asymmetry = -999.;
       if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);

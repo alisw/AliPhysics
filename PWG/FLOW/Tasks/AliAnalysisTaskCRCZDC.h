@@ -56,6 +56,7 @@ public:
   enum DataSet { k2010,
     k2011,
     k2015,
+    k2015v6,
     kAny
   };
   
@@ -150,15 +151,18 @@ public:
   void SetMCInput() {fIsMCInput = kTRUE;}
   void SetUseMCCen( Bool_t kB ) { fUseMCCen = kB; }
   void SetRejectPileUp( Bool_t kB ) { fRejectPileUp = kB; }
+  void SetRejectPileUpTight( Bool_t kB ) { fRejectPileUpTight = kB; }
   void SetCentralityRange(Float_t centrlow=0., Float_t centrup=100.) {fCentrLowLim=centrlow;
     fCentrUpLim=centrup;}
   void SetCentralityEstimator(CentrEstimator centrest) {fCentrEstimator=centrest;}
   void SetDataSet(DataSet cDataSet) {fDataSet = cDataSet;}
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
-  void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone();};
+  void SetTowerEqList(TList* const kList) {this->fTowerEqList = (TList*)kList->Clone(); fUseTowerEq=kTRUE;};
   TList* GetTowerEqList() const {return this->fTowerEqList;};
-  void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone();};
+  void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone(); fUseBadTowerCalib=kTRUE;};
   TList* GetBadTowerCalibList() const {return this->fBadTowerCalibList;};
+  void SetZDCSpectraCorrList(TList* const kList) {this->fZDCSpectraCorrList = (TList*)kList->Clone(); fUseZDCSpectraCorr=kTRUE;};
+  TList* GetZDCSpectraCorrList() const {return this->fZDCSpectraCorrList;};
   virtual Int_t GetCenBin(Double_t Centrality);
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
   Bool_t plpMV(const AliAODEvent* aod);
@@ -251,6 +255,7 @@ private:
   Float_t  fCentrUpLim;		// centrality upper limit
   CentrEstimator  fCentrEstimator;     // string for the centrality estimator
   Bool_t   fRejectPileUp;
+  Bool_t   fRejectPileUpTight;
   //
   TList       *fOutput;	   	//! list send on output slot 0
   //
@@ -284,20 +289,21 @@ private:
   TH2F *fhZNApmcvscentr;   	//! ZNA vs. centrality
   
   TH3D *fhZNSpectra;   	//! ZNA vs. centrality
+  TH3D *fhZNSpectraCor;   	//! ZNA vs. centrality
+  TH3D *fhZNSpectraPow;   	//! ZNA vs. centrality
   TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
   
   const static Int_t fCRCMaxnRun = 211;
-  const static Int_t fCRCnTow = 8;
+  const static Int_t fCRCnTow = 5;
   const static Int_t fnCen = 10;
   Int_t fCRCnRun;
   Float_t fZDCGainAlpha;
   DataSet fDataSet;
   Int_t fRunList[fCRCMaxnRun];                   //! Run list
-  // TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
-  // TProfile3D *fhnTowerGainVtx[fnCen][fCRCnTow]; //! towers gain vtx
+//  TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
-  // TProfile *fZNCTower[fCRCMaxnRun];		//! ZNC tower spectra
-  // TProfile *fZNATower[fCRCMaxnRun];		//! ZNA tower spectra
+  TProfile *fZNCTower[fCRCMaxnRun][fCRCnTow];		//! ZNC tower spectra
+  TProfile *fZNATower[fCRCMaxnRun][fCRCnTow];		//! ZNA tower spectra
   TClonesArray* fStack; //!
   TList *fSpectraMCList;   //! list with pt spectra
   TH1F *fPtSpecGen[2][10];		//! PtSpecGen
@@ -313,10 +319,17 @@ private:
   TF1 *fMultTOFHighCut; //!
   
   AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
+  Bool_t fUseTowerEq; //
   TList *fTowerEqList;   // list with weights
   TH1D *fTowerGainEq[2][5]; //!
   TList *fBadTowerStuffList; //! list for storing calib files
+  Bool_t fUseBadTowerCalib; //
   TList *fBadTowerCalibList; // list with original calib files
+  Bool_t fUseZDCSpectraCorr; //
+  TList *fZDCSpectraCorrList; //
+  TH1D *SpecCorMu1[8]; //!
+  TH1D *SpecCorMu2[8]; //!
+  TF1 *FitSpecCorSi[8]; //!
   TH2D *fBadTowerCalibHist[100]; //!
   Int_t fCachedRunNum;   //
   

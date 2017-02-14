@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKEFFCONTPIDBF1_cxx
-#define ALIANALYSISTASKEFFCONTPIDBF1_cxx
+#ifndef ALIANALYSISTASKEFFCONTPIDBF_cxx
+#define ALIANALYSISTASKEFFCONTPIDBF_cxx
 
 // ---------------------------------------------------------------------
 //

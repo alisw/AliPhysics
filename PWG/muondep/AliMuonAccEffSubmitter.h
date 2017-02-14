@@ -176,6 +176,8 @@ public:
   
   void UseAODMerging(Bool_t flag);
 
+  Bool_t SetupCollision ( Double_t cmsEnergy, Int_t lhapdf = 10800, const char *nucleons = "pp", const char *collSystem = "pp", Int_t npdf = 0, Int_t npdfErr = 1 );
+  Bool_t SetupPowheg ( const char *particle, const char *version = "r3178-5" );
   void SetupPythia6 ( const char *version );
   void SetupPythia8 ( const char *version, const char* configStrings = "" );
   

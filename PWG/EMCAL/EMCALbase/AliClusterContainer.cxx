@@ -319,7 +319,7 @@ Bool_t AliClusterContainer::ApplyClusterCuts(const AliVCluster* clus, UInt_t &re
   }
   
   Bool_t bInAcceptance = clus->IsEMCAL();
-  if (fIncludePHOS) bInAcceptance = clus->IsEMCAL() || clus->IsPHOS();
+  if (fIncludePHOS) bInAcceptance = clus->IsEMCAL() || (clus->GetType() == AliVCluster::kPHOSNeutral);
   if (!bInAcceptance) {
       rejectionReason |= kIsEMCalCut;
       return kFALSE;

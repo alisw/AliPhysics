@@ -42,6 +42,7 @@ set(SRCS
   AliEmcalTriggerQATask.cxx
   AliEMCALTriggerOfflineQAPP.cxx
   AliEMCALTriggerPatchADCInfoAP.cxx
+  AliEMCALTriggerPatchInfoV1.cxx
   )
 
 # Headers from sources

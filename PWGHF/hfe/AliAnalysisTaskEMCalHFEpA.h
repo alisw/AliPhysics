@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: August 18th, 2016.      							  //
+	//		version: January 26th, 2017.      							  //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -19,6 +19,7 @@
 
 class TH1F;
 class TH2F;
+class TH3F;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDtrack;
@@ -415,6 +416,9 @@ private:
 	TH2F				**fTPCnsigma_p_eta4;
 	
 	TH2F				*fTPCnsigma_p_TPC;
+	
+	TH2F				**fTPCnsigma_p_TPC_pt;
+	
 	TH2F				*fTPCnsigma_p_TPC_on_EMCal_acc;
 	TH2F				*fTPCnsigma_p_TPC_EoverP_cut;
 	
@@ -426,6 +430,13 @@ private:
 	TH2F				*fTPCnsigma_pt_2D3_tof;
 	TH2F				*fTPCnsigma_pt_2D4;
 	TH2F				*fTPCnsigma_pt_2D5;
+	
+	TH2F				*fpt_versus_p;
+	TH2F				*fpt_versus_p_tracks;
+	TH2F				*fpt_versus_p_MC;
+
+	
+	
 	
 		//centrality
 	TH2F				*fTPCnsigma_pt_2D3_0;
@@ -660,6 +671,7 @@ private:
 	
 	
 	TH1F				*fPtMCparticleRecoHfe1;
+	TH1F				*fPtMCparticleRecoHfe1_unfolding;
 	
 		//centrality
 	TH1F				*fPtMCparticleRecoHfe1_0;
@@ -701,6 +713,7 @@ private:
 		TH1F				*fPtMC_TPC_All_3;
 	
 	TH1F				*fPtMC_TPC_Selected;
+	TH1F				*fPtMC_TPC_Selected_unfolding;
 	
 		//centrality
 	TH1F				*fPtMC_TPC_Selected_0;

@@ -96,8 +96,8 @@ AliMTRChEffAnalysis::~AliMTRChEffAnalysis()
   //
   delete fConditions;
   delete fNamer;
-  fRunMap.clear();
-  fMergedMap.clear();
+  for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fRunMap ) delete obj;
+  for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) delete obj;
 }
 
 //________________________________________________________________________
@@ -243,7 +243,7 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
 
   TString currName = "";
   Double_t xref=0., yref=0., xpt=0., ypt=0.;
-  Double_t nSigmas = 2.;
+  Double_t nSigmas = 1.;
 
   for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) {
 
@@ -257,13 +257,9 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
     for ( Int_t ich=0; ich<4; ich++ ) {
       // Get the efficiency graph for the different conditions
       // as well as the list of histograms to build the efficiency
-      std::vector<TGraphAsymmErrors*> checkEffList;
-      checkEffList.reserve(nSysts);
-      std::vector<TGraphAsymmErrors*> refEffList;
-      refEffList.reserve(3);
-      std::vector<TH1*> histoList, systHistoList;
-      histoList.reserve(nSysts*4);
-      systHistoList.reserve(4);
+      TGraphAsymmErrors* checkEffList[nSysts];
+      TH1* histoList[nSysts*4];
+      TH1* systHistoList[4];
       for ( Int_t isyst=0; isyst<nSysts; isyst++ ) {
         effHistos = obj->GetEffHistoList(systKeys[isyst].c_str());
         for ( Int_t icount=0; icount<4; icount++ ) {
@@ -278,6 +274,7 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
         Int_t iden = 4*isyst+AliTrigChEffOutput::kAllTracks;
         checkEffList[isyst] = new TGraphAsymmErrors(histoList[inum],histoList[iden],"e0");
       } // loop on systematics
+      TGraphAsymmErrors* refEffList[3];
       for ( Int_t icount=0; icount<3; icount++ ) {
         refEffList[icount] = new TGraphAsymmErrors(histoList[icount],histoList[AliTrigChEffOutput::kAllTracks],"e0");
       }
@@ -333,8 +330,8 @@ Bool_t AliMTRChEffAnalysis::BuildSystematicMap ()
           }
         }
       } // loop on points
-      checkEffList.clear();
-      refEffList.clear();
+      for ( Int_t it=0; it<nSysts; it++ ) delete checkEffList[it];
+      for ( Int_t it=0; it<3; it++ ) delete refEffList[it];
     } // loop on chambers
     obj->AddEffHistoList("Systematics",systematicList);
   } // loop on merged efficiencies
@@ -534,8 +531,6 @@ void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
 
   AliInfo("Comparing the merged efficiencies");
 
-
-
   TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
   TString titles = "";
 
@@ -548,6 +543,37 @@ void AliMTRChEffAnalysis::CompareMergedEfficiencies ( const char* opt ) const
   titles.Remove(TString::kTrailing,',');
 
   CompareEfficiencies(&effHistoList, titles.Data(), opt, "MergedComp");
+}
+
+//________________________________________________________________________
+Int_t AliMTRChEffAnalysis::ComputeAndCompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix ) const
+{
+  /// Copute the efficiency for the selected condition and compare them
+  TString srcs(sources);
+  TObjArray* sourceList = srcs.Tokenize(",");
+  TObjArray effHistoLists;
+  effHistoLists.SetOwner();
+
+  TObjArray* condition = static_cast<TObjArray*>(fConditions->At(0));
+  if ( ! condition ) {
+    AliError("The method requires to set an efficiency confition with SetEffConditions");
+    return -1;
+  }
+
+  TIter next(sourceList);
+  TObjString* src = 0x0;
+  while ( (src = static_cast<TObjString*>(next())) ) {
+    if ( ! src->String().EndsWith(".root") ) {
+      AliError("The method reads files with the output of AliAnalysisTaskTrigChEff and re-compute the efficiency");
+      return -1;
+    }
+    AliTrigChEffOutput trigOut(src->GetName());
+    TList* readList = GetEffHistoList(&trigOut,condition);
+    if ( ! readList ) continue;
+    effHistoLists.Add(readList);
+  }
+
+  return CompareEfficiencies(&effHistoLists, titles, opt, canvasNameSuffix);
 }
 
 
@@ -1700,7 +1726,10 @@ Bool_t AliMTRChEffAnalysis::MergeOutput ( TArrayI runRanges, Double_t averageSta
   Int_t nRanges = mergedRanges.GetSize()/2;
 
 
-  if ( fMergedMap.size() > 0 ) fMergedMap.clear();
+  if ( fMergedMap.size() > 0 ) {
+    for ( AliMTRChEffAnalysis::AliMTRChEffInnerObj* obj : fMergedMap ) delete obj;
+    fMergedMap.clear();
+  }
 
   for ( Int_t irange=0; irange<nRanges; irange++ ) {
     Int_t firstRun = mergedRanges[2*irange];
@@ -1961,7 +1990,7 @@ Bool_t AliMTRChEffAnalysis::RecoverEfficiency ( const char* runList, const char*
   } // loop on merged objects
 
   // Delete objects
-
+  for ( TList* obj : systLists ) delete obj;
   readEffLists.clear();
   delete rList;
 
@@ -2181,8 +2210,8 @@ AliMTRChEffAnalysis::AliMTRChEffInnerObj::AliMTRChEffInnerObj ( const char* file
 AliMTRChEffAnalysis::AliMTRChEffInnerObj::~AliMTRChEffInnerObj ()
 {
   /// Destructor
+  for ( auto& mapEntry : fEffLists ) delete mapEntry.second;
   fEffLists.clear();
-  fSortKeys.clear();
 }
 
 //___________________________________________________________________________
@@ -2210,6 +2239,9 @@ Bool_t AliMTRChEffAnalysis::AliMTRChEffInnerObj::AddEffHistoList ( const char* c
 //___________________________________________________________________________
 Bool_t AliMTRChEffAnalysis::AliMTRChEffInnerObj::RemoveEffHistoList ( const char* condition )
 {
-  /// Add efficiency list for specific condition
+  /// Remove condition from the efficiency list
+  auto const& mapEntry = fEffLists.find(condition);
+  if ( mapEntry == fEffLists.end() ) return kFALSE;
+  delete mapEntry->second;
   return fEffLists.erase(condition);
 }

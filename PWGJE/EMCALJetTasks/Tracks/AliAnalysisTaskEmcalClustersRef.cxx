@@ -88,7 +88,7 @@ AliAnalysisTaskEmcalClustersRef::~AliAnalysisTaskEmcalClustersRef() {
 void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
 
   EnergyBinning energybinning;
-  TLinearBinning smbinning(21, -0.5, 20.5), etabinning(100, -0.7, 0.7), timebinning(1000, -500e-9, 500e-9);
+  TLinearBinning smbinning(21, -0.5, 20.5), etabinning(100, -0.7, 0.7), timebinning(1000, -500e-9, 500e-9), ncellbinning(101, -0.5, 100.5);
   TString optionstring = fEnableSumw2 ? "s" : "";
 
   /*
@@ -114,6 +114,8 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
     fHistos->CreateTH2("hEtaEnergy" + trg, "Cluster energy vs. eta for trigger class " + trg, etabinning, energybinning, optionstring);
     fHistos->CreateTH2("hEtaET" + trg, "Cluster transverse energy vs. eta for trigger class " + trg, etabinning, energybinning, optionstring);
     fHistos->CreateTH2("hTimeEnergy" + trg, "Cluster time vs. energy for trigger class " + trg, timebinning, energybinning, optionstring);
+    fHistos->CreateTH2("hNCellEnergy" + trg, "Cluster number of cells vs energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
+    fHistos->CreateTH2("hNCellET" + trg, "Cluster number of cells vs transverse energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
     fHistos->CreateTH2("hEtaEnergyFired" + trg, "Cluster energy vs. eta for trigger class " + trg + ", firing the trigger", etabinning, energybinning, optionstring);
     fHistos->CreateTH2("hEtaETFired" + trg, "Cluster transverse energy vs. eta for trigger class " + trg + ", firing the trigger", etabinning, energybinning, optionstring);
     for(int ism = 0; ism < 20; ism++){
@@ -223,13 +225,13 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
       if(trg.Contains("DG2")) selpatches = &dg2patches;
       if(trg.Contains("EG1")) selpatches = &eg1patches;
       if(trg.Contains("DG1")) selpatches = &dg1patches;
-      FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), nullptr);
+      FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), clust->GetNCells(), nullptr);
     }
   }
   return true;
 }
 
-void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, double clustertime, TList *fTriggerPatches){
+void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, double clustertime, int ncell, TList *fTriggerPatches){
   Bool_t hasTriggerPatch = fTriggerPatches  ? CorrelateToTrigger(eta, phi, fTriggerPatches) : kFALSE;
   Int_t supermoduleID = -1, sector = -1;
   Double_t weight = GetTriggerWeight(triggerclass);
@@ -241,6 +243,8 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
   fHistos->FillTH2("hEtaEnergy" + triggerclass, eta, energy, weight);
   fHistos->FillTH2("hEtaET" + triggerclass, eta, transverseenergy, weight);
   fHistos->FillTH2("hTimeEnergy" + triggerclass, clustertime, energy, weight);
+  fHistos->FillTH2("hNCellEnergy" + triggerclass, ncell, energy, weight);
+  fHistos->FillTH2("hNCellET" + triggerclass, ncell, transverseenergy, weight);
   if(supermoduleID >= 0){
     fHistos->FillTH2("hClusterEnergySM" + triggerclass, supermoduleID, energy, weight);
     fHistos->FillTH2("hClusterETSM" + triggerclass, supermoduleID, transverseenergy, weight);

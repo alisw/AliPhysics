@@ -75,7 +75,12 @@ Bool_t isTOFdet 		= kFALSE
 	}//Minimum number of clusters on ITS
 	
 	//Additional Cuts
-	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
+	if(!isEMCal){
+		hfecuts->SetPtRange(0.5, 1e6);
+	}
+	else{	
+		hfecuts->SetPtRange(2, 1e6);//Transversal momentum range in GeV/c
+	}
 	
 	//testing this line for the DCA cut
 	//hfecuts->SetRequireDCAToVertex();
@@ -103,7 +108,7 @@ Bool_t isTOFdet 		= kFALSE
 	task->SetHFECuts(hfecuts);
 	task->SetCorrelationAnalysis(kFALSE);
 	task->SetAODanalysis(isAOD);
-	task->SetEventMixing(kTRUE);
+	task->SetEventMixing(kFALSE);
 	
 		//centrality
 	task->SetCentralityEstimator(centralityEstimator);
@@ -151,6 +156,21 @@ Bool_t isTOFdet 		= kFALSE
 		    task->SetTPCcal_cut_max(3);
 			
 	}
+	
+	if((period == "b" || period == "c") && !isEMCal){
+		
+		printf("======================================================================================\n ");
+		printf("\n\n Running on 13b or 13c period!!! WITH CALIBRATION for TPCnsigma mean and width      \n\n  \n\n ");
+		printf("======================================================================================\n ");
+		
+		task->SetTPCCalibration();
+		task->SetTPC_mean_sigma(0.09, 1.03);
+			// task->SetTPC_mean_sigma(0.63, 1.17);
+		
+		task->SetTPCcal_cut_min(0);
+		task->SetTPCcal_cut_max(3);
+	}
+	
 	
 	if(period == "e" || period == "f"){
 		task->SetTPCCalibration_eta(kTRUE);
@@ -269,7 +289,7 @@ Bool_t isTOFdet 		= kFALSE
 	if(centralityIndex==2) task->SetCentrality(40,60);
 	if(centralityIndex==3) task->SetCentrality(60,80);
 	if(centralityIndex==4) task->SetCentrality(80,100);
-	if(centralityIndex==5) task->SetCentrality(0,100);
+		//if(centralityIndex==5) task->SetCentrality(0,100);
 	
 	if(centralityIndex==6) task->SetCentrality(0,10);
 	if(centralityIndex==7) task->SetCentrality(10,20);
@@ -331,7 +351,7 @@ Bool_t isTOFdet 		= kFALSE
 	}
 	else if (configIndex==71){ 
 		params[0] = -0.5;
-		if(period == "d"){
+		if(period == "d" || period == "b" || period == "c"){
 			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
 			task->SetTPCcal_cut_min(-0.5);
 		}
@@ -347,7 +367,7 @@ Bool_t isTOFdet 		= kFALSE
 	}	
 	else if (configIndex==73){ 
 		params[0] = 0.25;
-		if(period == "d"){
+		if(period == "d" || period == "b" || period == "c"){
 			params[0] = -3; //looser cut. Real cut applied inside the task define by line below:
 			task->SetTPCcal_cut_min(0.25);
 			
@@ -376,7 +396,15 @@ Bool_t isTOFdet 		= kFALSE
 			
 		}
 		
-		if(!isEMCal)params[0] = 0.09;
+		if(!isEMCal)params[0] = 0;
+		
+		
+		if((period == "b" || period =="c") && !isEMCal){
+			params[0] = -1; //looser cut. Real cut applied inside the task define by line below:
+			task->SetTPCcal_cut_min(0);
+		}
+		
+		
 	
 	}
 
@@ -409,9 +437,6 @@ Bool_t isTOFdet 		= kFALSE
 	}
 	else{
 		Double_t max=3.0;
-		if(!isEMCal){
-			Double_t max=3.18;
-		}
 		if(period =="e"||period =="f"){
 			
 			if(configIndex==200){
@@ -423,6 +448,11 @@ Bool_t isTOFdet 		= kFALSE
 		if(period =="d"){
 				Double_t max=5;//looser cut for hfe package. Real cut inside the task.
 				task->SetTPCcal_cut_max(3);
+		}
+		
+		if((period == "b" || period =="c") && !isEMCal){
+			Double_t max=5;//looser cut for hfe package. Real cut inside the task.
+			task->SetTPCcal_cut_max(3);
 		}
 	}
 	

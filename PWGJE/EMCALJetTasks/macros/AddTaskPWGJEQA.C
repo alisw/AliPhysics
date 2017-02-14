@@ -6,7 +6,7 @@ AliAnalysisTaskPWGJEQA* AddTaskPWGJEQA(
                                        const char* ncells             = "usedefault",
                                        const char *nGenLev            = "mcparticles",
                                        Bool_t      doTrackQA          = kTRUE,
-                                       Bool_t      doCaloQA          = kTRUE,
+                                       Bool_t      doCaloQA           = kTRUE,
                                        Bool_t      doJetQA            = kTRUE,
                                        Bool_t      doEventQA          = kTRUE,
                                        Double_t    trackPtCut         = 0.15,

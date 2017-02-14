@@ -1165,7 +1165,6 @@ const Int_t maxMCLabelCounter = 20000;
   Short_t chargeMC[maxMCLabelCounter];
   Int_t pidMC[maxMCLabelCounter];
 */
-  //Centrality stuff
     
 
 //  Printf("Centrality selection: %lf - %lf",fCentralityPercentileMin,fCentralityPercentileMax);
@@ -1242,9 +1241,11 @@ const Int_t maxMCLabelCounter = 20000;
 //cout<<"MCAOD ---- Eta : "<<vEta<<'\t'<<"Phi :"<<vPhi<<'\t'<<"Pt:"<<vPt<<endl;
 
 
-     vPionY = log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPion*MassPion + vPt*vPt) ); // convert eta to y
-     vKaonY = log( ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassKaon*MassKaon + vPt*vPt) ); // convert eta to y
-     vProtonY = log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassProton*MassProton + vPt*vPt) ); // convert eta to y
+     //vPionY = log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPion*MassPion + vPt*vPt) ); // convert eta to y
+     vPionY = 0.5*log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) )); // convert eta to y
+     vKaonY = 0.5*log( ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) )); // convert eta to y
+     vProtonY = 0.5*log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) ) ); // convert eta to y
+
 
      if(fRapidityInsteadOfEta){
 
@@ -1256,9 +1257,26 @@ const Int_t maxMCLabelCounter = 20000;
            vYCut=999.0;//continue;
           }
  
-
-      if(vYCut < fMinEta || vYCut > fMaxEta) continue;
  }
+
+
+
+if(fRapidityInsteadOfEta){
+
+if(fParticleType_ == kPion_){
+
+if( vPionY < fMinEta || vPionY > fMaxEta)  continue;
+}
+
+else  if(fParticleType_==kKaon_){
+if( vKaonY < fMinEta || vKaonY > fMaxEta)  continue;
+}
+
+else  if(fParticleType_==kProton_){
+if( vProtonY < fMinEta || vProtonY > fMaxEta)  continue;
+}
+
+}
 
 //cout<<"eta fro efiiciein for MCAOd"<<vEta<<endl;
            if(TMath::Abs(pdgCode) == 211){
@@ -1594,15 +1612,15 @@ if(pdgCodeReco == 11) continue;
 //cout<<"MCAODReco ---- Eta : "<<vEtaReco<<'\t'<<"Phi :"<<vPhiReco<<'\t'<<"Pt:"<<vPtReco<<endl;
 
 
-     vPionYReco = log( ( sqrt(MassPion*MassPion + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) + vPtReco*sinh(vEtaReco) ) / sqrt(MassPion*MassPion + vPtReco*vPtReco) ); // convert eta to y
-     vKaonYReco = log( ( sqrt(MassKaon*MassKaon + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) + vPtReco*sinh(vEtaReco) ) / sqrt(MassKaon*MassKaon + vPtReco*vPtReco) ); // convert eta to y
-     vProtonYReco = log( ( sqrt(MassProton*MassProton + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) + vPtReco*sinh(vEtaReco) ) / sqrt(MassProton*MassProton + vPtReco*vPtReco) ); // convert eta to y
+     vPionYReco = 0.5*log( ( sqrt(MassPion*MassPion + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) + vPtReco*sinh(vEtaReco) ) / ( sqrt(MassPion*MassPion + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) - vPtReco*sinh(vEtaReco) ) ); // convert eta to y
+     vKaonYReco = 0.5*log( ( sqrt(MassKaon*MassKaon + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) + vPtReco*sinh(vEtaReco) ) /  ( sqrt(MassKaon*MassKaon + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) - vPtReco*sinh(vEtaReco) ) ); // convert eta to y
+     vProtonYReco = 0.5*log( ( sqrt(MassProton*MassProton + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) + vPtReco*sinh(vEtaReco) ) / ( sqrt(MassProton*MassProton + vPtReco*vPtReco*cosh(vEtaReco)*cosh(vEtaReco)) - vPtReco*sinh(vEtaReco) ) ); // convert eta to y
 
 
  /*      if(fRapidityInsteadOfEta){
        if( (vPionYReco < fMinEta || vPionYReco >fMaxEta) || (vKaonYReco < fMinEta || vKaonYReco >fMaxEta) || (vProtonYReco < fMinEta || vProtonYReco >fMaxEta) ) continue;
 }*/
-
+/*
  if(fRapidityInsteadOfEta){
 
 
@@ -1616,6 +1634,26 @@ if(pdgCodeReco == 11) continue;
 
       if(vYReco < fMinEta || vYReco > fMaxEta) continue;
  }
+*/
+
+
+if(fRapidityInsteadOfEta){
+
+if(fParticleType_ == kPion_){
+
+if( vPionYReco < fMinEta || vPionYReco > fMaxEta)  continue;
+}
+
+else  if(fParticleType_==kKaon_){
+if( vKaonYReco < fMinEta || vKaonYReco > fMaxEta)  continue;
+}
+
+else  if(fParticleType_==kProton_){
+if( vProtonYReco< fMinEta || vProtonYReco > fMaxEta)  continue;
+}
+
+}
+
 
 //cout<<"MCAODreco Eta "<<vEtaReco<<'\t'<<"Pt"<<vPtReco<<'\t'<<"Phi"<<vPhiReco<<endl;
 
@@ -1956,17 +1994,17 @@ fHistdEdxTPCKaonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),dEdx);
 
 fHistBetaTOFKaonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),beta);
 
-fHistNsigmaTPCTOFKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[2]);
+fHistNsigmaTPCTOFKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[3]);
 }
 
 if(fDetectorPID_ == kTPC_ ){
 fHistdEdxTPCKaonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),dEdx);
-fHistNsigmaTPCKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[2]);
+fHistNsigmaTPCKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[3]);
 }
 
 if(fDetectorPID_ == kTOF_ ){
 fHistBetaTOFKaonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),beta);
-fHistNsigmaTOFKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[2]);
+fHistNsigmaTOFKaonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[3]);
 }
 
 fZvertexRecoKaon->Fill(fVertexZ);
@@ -2030,17 +2068,17 @@ fHistdEdxTPCProtonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),dEdx);
 
 fHistBetaTOFProtonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),beta);
 
-fHistNsigmaTPCTOFProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[2]);
+fHistNsigmaTPCTOFProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[4]);
 }
 
 if(fDetectorPID_ == kTPC_ ){
 fHistdEdxTPCProtonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),dEdx);
-fHistNsigmaTPCProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[2]);
+fHistNsigmaTPCProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[4]);
 }
 
 if(fDetectorPID_ == kTOF_ ){
 fHistBetaTOFProtonAfterPIDCut->Fill(trackAOD->Pt()*trackAOD->Charge(),beta);
-fHistNsigmaTOFProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[2]);
+fHistNsigmaTOFProtonAfterPIDCut->Fill(trackAOD->Pt(),nsigmaSpecies[4]);
 }
 
 fZvertexRecoProton->Fill(fVertexZ);

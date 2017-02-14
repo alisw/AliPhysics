@@ -11,6 +11,7 @@
 #include <THnSparse.h>
 #include <TVector3.h>
 #include <TFile.h>
+#include <TGrid.h>
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -24,7 +25,27 @@
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
 
-ClassImp(AliAnalysisTaskEmcalJetHMEC)
+/// \cond CLASSIMP
+ClassImp(AliAnalysisTaskEmcalJetHMEC);
+/// \endcond
+
+// 0-10% centrality: Semi-Good Runs
+Double_t AliAnalysisTaskEmcalJetHMEC::p0_10SG[17] = {0.906767, 0.0754127, 1.11638, -0.0233078, 0.795454, 0.00935385, -0.000327857, 1.08903, 0.0107272, 0.443252, -0.143411, 0.965822, 0.359156, -0.581221, 1.0739, 0.00632828, 0.706356};
+// 10-30% centrality: Semi-Good Runs
+Double_t AliAnalysisTaskEmcalJetHMEC::p10_30SG[17] = {0.908011, 0.0769254, 1.11912, -0.0249449, 0.741488, 0.0361252, -0.00367954, 1.10424, 0.011472, 0.452059, -0.133282, 0.980633, 0.358222, -0.620256, 1.06871, 0.00564449, 0.753168};
+// 30-50% centrality: Semi-Good Runs
+Double_t AliAnalysisTaskEmcalJetHMEC::p30_50SG[17] = {0.958708, 0.0799197, 1.10817, -0.0357678, 0.75051, 0.0607808, -0.00929713, 0.998801, 0.00692244, 0.615452, -0.0480328, 0.968431, 0.321634, -0.619066, 1.03412, 0.00656201, 0.798666};
+// 50-90% centrality: Semi-Good Runs
+Double_t AliAnalysisTaskEmcalJetHMEC::p50_90SG[17] = {0.944565, 0.0807258, 1.12709, -0.0324746, 0.666452, 0.0842476, -0.00963837, 1.02829, 0.00666852, 0.549625, -0.0603107, 0.981374, 0.309374, -0.619181, 1.05367, 0.005925, 0.744887};
+
+// 0-10% centrality: Good Runs
+Double_t AliAnalysisTaskEmcalJetHMEC::p0_10G[17] = {0.971679, 0.0767571, 1.13355, -0.0274484, 0.856652, 0.00536795, 3.90795e-05, 1.06889, 0.011007, 0.447046, -0.146626, 0.919777, 0.192601, -0.268515, 1.00243, 0.00620849, 0.709477};
+// 10-30% centrality: Good Runs
+Double_t AliAnalysisTaskEmcalJetHMEC::p10_30G[17] = {0.97929, 0.0776039, 1.12213, -0.0300645, 0.844722, 0.0134788, -0.0012333, 1.07955, 0.0116835, 0.456608, -0.132743, 0.930964, 0.174175, -0.267154, 0.993118, 0.00574892, 0.765256};
+// 30-50% centrality: Good Runs
+Double_t AliAnalysisTaskEmcalJetHMEC::p30_50G[17] = {0.997696, 0.0816769, 1.14341, -0.0353734, 0.752151, 0.0744259, -0.0102926, 1.01561, 0.00713274, 0.57203, -0.0640248, 0.947747, 0.102007, -0.194698, 0.999164, 0.00568476, 0.7237};
+// 50-90% centrality: Good Runs
+Double_t AliAnalysisTaskEmcalJetHMEC::p50_90G[17] = {0.97041, 0.0813559, 1.12151, -0.0368797, 0.709327, 0.0701501, -0.00784043, 1.06276, 0.00676173, 0.53607, -0.0703117, 0.982534, 0.0947881, -0.18073, 1.03229, 0.00580109, 0.737801};
 
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() : 
@@ -35,9 +56,10 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC() :
   fNMixingTracks(50000), fMinNTracksMixedEvents(5000), fMinNEventsMixedEvents(5), fNCentBinsMixedEvent(10),
   fPoolMgr(0), 
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
-  fDoEffCorrection(0), fEffFunctionCorrection(0),
-  fEmbeddingCorrectionHist(0),
-  fNoMixedEventEmbeddingCorrection(kFALSE),
+  fDisableFastPartition(kFALSE),
+  fDoEffCorrection(0),
+  fJESCorrectionHist(0),
+  fNoMixedEventJESCorrection(kFALSE),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fHistTrackPt(0),
   fHistJetEtaPhi(0), 
@@ -59,9 +81,10 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
   fNMixingTracks(50000), fMinNTracksMixedEvents(5000), fMinNEventsMixedEvents(5), fNCentBinsMixedEvent(10),
   fPoolMgr(0), 
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
-  fDoEffCorrection(0), fEffFunctionCorrection(0),
-  fEmbeddingCorrectionHist(0),
-  fNoMixedEventEmbeddingCorrection(kFALSE),
+  fDisableFastPartition(kFALSE),
+  fDoEffCorrection(0),
+  fJESCorrectionHist(0),
+  fNoMixedEventJESCorrection(kFALSE),
   fDoLessSparseAxes(0), fDoWiderTrackBin(0),
   fHistTrackPt(0),
   fHistJetEtaPhi(0), 
@@ -72,6 +95,8 @@ AliAnalysisTaskEmcalJetHMEC::AliAnalysisTaskEmcalJetHMEC(const char *name) :
 {
   // Constructor
   InitializeArraysToZero();
+  // Ensure that additional general histograms are created
+  SetMakeGeneralHistograms(kTRUE);
 }
 
 //________________________________________________________________________
@@ -96,7 +121,6 @@ void AliAnalysisTaskEmcalJetHMEC::InitializeArraysToZero()
 void AliAnalysisTaskEmcalJetHMEC::UserCreateOutputObjects() {
   // Called once 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-  OpenFile(1);
 
   // Create histograms
   fHistTrackPt = new TH1F("fHistTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
@@ -245,23 +269,22 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   AliClusterContainer * clusters = GetClusterContainer(0);
   if (!clusters) {
     AliError(Form("%s: Unable to retrieve clusters!", GetName()));
-    return kTRUE;
+    return kFALSE;
   }
 
   // Retrieve tracks
   AliTrackContainer * tracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracksForCorrelations"));
   if (!tracks) {
     AliError(Form("%s: Unable to retrieve tracks!", GetName()));
-    return kTRUE;
+    return kFALSE;
   }
 
   // Retrieve jets
   AliJetContainer * jets = GetJetContainer(0);
   if (!jets) {
     AliError(Form("%s: Unable to retrieve jets!", GetName()));
-    return kTRUE;
+    return kFALSE;
   }
-
 
   // Used to calculate the angle betwene the jet and the hadron
   TVector3 jetVector;
@@ -289,9 +312,19 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
   // Determine the trigger for the current event
   UInt_t eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
+  // Handle fast partition if selected
+  if ((eventTrigger & AliVEvent::kFastOnly) && fDisableFastPartition) {
+    AliDebug(4, TString::Format("%s: Fast partition disabled", GetName()));
+    if (fGeneralHistograms) {
+      fHistEventRejection->Fill("Fast Partition", 1);
+    }
+    return kFALSE;
+  }
+
   for (auto jet : jets->accepted()) {
     // Selects only events that we are interested in (ie triggered)
     if (!(eventTrigger & fTriggerType)) continue;
+    AliDebug(5, TString::Format("%s: Jet accepted!\nJet: %s", GetName(), jet->toString().Data()));
 
     // Jet properties
     // Determine if we have the lead jet
@@ -350,6 +383,7 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
         // Calculate single particle tracking efficiency for correlations
         efficiency = EffCorrection(track.Eta(), track.Pt());
+        AliDebug(6, TString::Format("%s: efficiency: %f", GetName(), efficiency));
 
         if (biasedJet == kTRUE) {
           fHistJetHBias[fCentBin][jetPtBin][etaBin]->Fill(deltaPhi, track.Pt());
@@ -467,10 +501,10 @@ Bool_t AliAnalysisTaskEmcalJetHMEC::Run() {
 
                 if(fDoLessSparseAxes) {  // check if we want all the axis filled
                   Double_t triggerEntries[6] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet)};
-                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventEmbeddingCorrection);
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
                 } else {
                   Double_t triggerEntries[7] = {eventActivity, jet->Pt(), track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), deltaR};
-                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventEmbeddingCorrection);
+                  FillHist(fhnMixedEvents, triggerEntries, 1./(nMix*efficiency), fNoMixedEventJESCorrection);
                 }
               }
             }
@@ -665,8 +699,35 @@ TObjArray* AliAnalysisTaskEmcalJetHMEC::CloneAndReduceTrackList()
   return tracksClone;
 }
 
-//________________________________________________________________________
+/**
+ * Utility function to apply the efficiency correction. This function always uses fBeamType, which
+ * is preferred when speed is desired (ie for analysis). The function below is used for external
+ * testing of the efficiency correction.
+ *
+ * @param trackETA Eta of the track
+ * @param trackPT pT of the track
+ *
+ * @return Track efficiency of the track (the entry should be weighted as 1/(return value))
+ */
 Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t trackPT) const {
+  return EffCorrection(trackETA, trackPT, fBeamType);
+}
+
+/**
+ * Determine the efficiency correction for a given track pT and eta. fDoEffCorrection determines
+ * the mode of the correction:
+ * - 0 disables the correction.
+ * - 1 enables the correction. In Pb-Pb, this will automatically select the proper efficiency based
+ *   on run list (Good vs Semi-good) and centrality.
+ * - 2-9 Explicitly select an Pb-Pb efficiency correction function. It will not be automatically
+ *   selected later!
+ *
+ * @param trackETA Eta of the track
+ * @param trackPT pT of the track
+ *
+ * @return Track efficiency of the track (the entry should be weighted as 1/(return value))
+ */
+Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t trackPT, AliAnalysisTaskEmcal::BeamType beamType) const {
   // default (current) parameters
   // x-variable = track pt, y-variable = track eta
   Double_t x = trackPT;
@@ -681,40 +742,27 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
 
   Int_t effSwitch = fDoEffCorrection;
 
-  if (fBeamType != AliAnalysisTaskEmcal::kpp) {
-    if(effSwitch < 1) {
+  if (beamType != AliAnalysisTaskEmcal::kpp) {
+    if(effSwitch == 1) {
+      // Semi-Good OROC C08 Runlists
       if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170152 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309)) runSwitchGood = 0;
 
+      // Good Runlists
       if ((runNUM == 167902 || runNUM == 167903 || runNUM == 167915 || runNUM == 167920 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081)) runSwitchGood = 1;
 
       // Determine which efficiency to use.
       // This is just a way to map all possible values of the cent bin and runSwitchGood to a unique flag.
       // 4 is the number of cent bins, and we want to index the effSwitch starting at 2.
-      effSwitch = 2 + runSwitchGood*4 + fCentBin;
+      if (runSwitchGood != -999) {
+        effSwitch = 2 + runSwitchGood*4 + fCentBin;
+      }
     }
-
-    // 0-10% centrality: Semi-Good Runs
-    Double_t p0_10SG[17] = {0.906767, 0.0754127, 1.11638, -0.0233078, 0.795454, 0.00935385, -0.000327857, 1.08903, 0.0107272, 0.443252, -0.143411, 0.965822, 0.359156, -0.581221, 1.0739, 0.00632828, 0.706356};
-    // 10-30% centrality: Semi-Good Runs
-    Double_t p10_30SG[17] = {0.908011, 0.0769254, 1.11912, -0.0249449, 0.741488, 0.0361252, -0.00367954, 1.10424, 0.011472, 0.452059, -0.133282, 0.980633, 0.358222, -0.620256, 1.06871, 0.00564449, 0.753168};
-    // 30-50% centrality: Semi-Good Runs
-    Double_t p30_50SG[17] = {0.958708, 0.0799197, 1.10817, -0.0357678, 0.75051, 0.0607808, -0.00929713, 0.998801, 0.00692244, 0.615452, -0.0480328, 0.968431, 0.321634, -0.619066, 1.03412, 0.00656201, 0.798666};
-    // 50-90% centrality: Semi-Good Runs
-    Double_t p50_90SG[17] = {0.944565, 0.0807258, 1.12709, -0.0324746, 0.666452, 0.0842476, -0.00963837, 1.02829, 0.00666852, 0.549625, -0.0603107, 0.981374, 0.309374, -0.619181, 1.05367, 0.005925, 0.744887};
-
-    // 0-10% centrality: Good Runs
-    Double_t p0_10G[17] = {0.971679, 0.0767571, 1.13355, -0.0274484, 0.856652, 0.00536795, 3.90795e-05, 1.06889, 0.011007, 0.447046, -0.146626, 0.919777, 0.192601, -0.268515, 1.00243, 0.00620849, 0.709477};
-    // 10-30% centrality: Good Runs
-    Double_t p10_30G[17] = {0.97929, 0.0776039, 1.12213, -0.0300645, 0.844722, 0.0134788, -0.0012333, 1.07955, 0.0116835, 0.456608, -0.132743, 0.930964, 0.174175, -0.267154, 0.993118, 0.00574892, 0.765256};
-    // 30-50% centrality: Good Runs
-    Double_t p30_50G[17] = {0.997696, 0.0816769, 1.14341, -0.0353734, 0.752151, 0.0744259, -0.0102926, 1.01561, 0.00713274, 0.57203, -0.0640248, 0.947747, 0.102007, -0.194698, 0.999164, 0.00568476, 0.7237};
-    // 50-90% centrality: Good Runs
-    Double_t p50_90G[17] = {0.97041, 0.0813559, 1.12151, -0.0368797, 0.709327, 0.0701501, -0.00784043, 1.06276, 0.00676173, 0.53607, -0.0703117, 0.982534, 0.0947881, -0.18073, 1.03229, 0.00580109, 0.737801};
 
     // set up a switch for different parameter values...
     switch(effSwitch) {
       case 1 :
         // first switch value - TRefficiency not used so = 1
+        // In this case, the run number isn't in any run list, so efficiency = 1
         TRefficiency = 1.0;
         break;
 
@@ -776,6 +824,7 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
 
       default :
         // no Efficiency Switch option selected.. therefore don't correct, and set eff = 1
+        // ie. The efficiency correction is disabled.
         TRefficiency = 1.0;
     }
   }
@@ -813,33 +862,30 @@ Double_t AliAnalysisTaskEmcalJetHMEC::EffCorrection(Double_t trackETA, Double_t 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetHMEC::FillHist(TH1 * hist, Double_t fillValue, Double_t weight, Bool_t noCorrection)
 {
-  if (fEmbeddingCorrectionHist == 0 || noCorrection == kTRUE)
+  if (fJESCorrectionHist == 0 || noCorrection == kTRUE)
   {
-    AliDebugStream(3) << std::boolalpha << "Using normal weights: EmbeddingHist: " << (fEmbeddingCorrectionHist ? fEmbeddingCorrectionHist->GetName() : "Null") << ", noCorrection: " << noCorrection << std::endl;
-    // TEMP INTENTIONAL
-    //fEmbeddingCorrectionHist->GetName();
-    // ENDTEMP
+    AliDebugStream(3) << GetName() << ":" << hist->GetName() << ": " << std::boolalpha << "Using normal weights: JESHist: " << (fJESCorrectionHist ? fJESCorrectionHist->GetName() : "Null") << ", noCorrection: " << noCorrection << std::endl;
     hist->Fill(fillValue, weight);
   }
   else
   {
     // Determine where to get the values in the correction hist
-    Int_t xBin = fEmbeddingCorrectionHist->GetXaxis()->FindBin(fillValue);
+    Int_t xBin = fJESCorrectionHist->GetXaxis()->FindBin(fillValue);
 
     std::vector <Double_t> yBinsContent;
-    AliDebug(3, TString::Format("Attempt to access weights from embedding correction hist for jet pt %f!", fillValue));
-    AccessSetOfYBinValues(fEmbeddingCorrectionHist, xBin, yBinsContent);
+    AliDebug(3, TString::Format("%s: Attempt to access weights from JES correction hist %s with jet pt %f!", GetName(), hist->GetName(), fillValue));
+    AccessSetOfYBinValues(fJESCorrectionHist, xBin, yBinsContent);
     AliDebug(3, TString::Format("weights size: %zd", yBinsContent.size()));
 
     // Loop over all possible bins to contribute.
     // If content is 0 then calling Fill won't make a difference
-    for (Int_t index = 1; index <= fEmbeddingCorrectionHist->GetYaxis()->GetNbins(); index++)
+    for (Int_t index = 1; index <= fJESCorrectionHist->GetYaxis()->GetNbins(); index++)
     {
       // Don't bother trying to fill in the weight is 0
       if (yBinsContent.at(index-1) > 0) {
         // Determine the value to fill based on the center of the bins.
         // This in principle allows the binning between the correction and hist to be different
-        Double_t fillLocation = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
+        Double_t fillLocation = fJESCorrectionHist->GetYaxis()->GetBinCenter(index); 
         AliDebug(4, TString::Format("fillLocation: %f, weight: %f", fillLocation, yBinsContent.at(index-1)));
         // minus 1 since loop starts at 1
         hist->Fill(fillLocation, weight*yBinsContent.at(index-1));
@@ -855,12 +901,9 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(TH1 * hist, Double_t fillValue, Doubl
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue, Double_t weight, Bool_t noCorrection)
 {
-  if (fEmbeddingCorrectionHist == 0 || noCorrection == kTRUE)
+  if (fJESCorrectionHist == 0 || noCorrection == kTRUE)
   {
-    AliDebugStream(3) << std::boolalpha << "Using normal weights: EmbeddingHist: " << (fEmbeddingCorrectionHist ? fEmbeddingCorrectionHist->GetName() : "Null") << ", noCorrection: " << noCorrection << std::endl;
-    // TEMP INTENTIONAL
-    //fEmbeddingCorrectionHist->GetName();
-    // ENDTEMP
+    AliDebugStream(3) << GetName() << ":" << hist->GetName() << ": " << std::boolalpha << "Using normal weights: JESHist: " << (fJESCorrectionHist ? fJESCorrectionHist->GetName() : "Null") << ", noCorrection: " << noCorrection << std::endl;
     hist->Fill(fillValue, weight);
   }
   else
@@ -869,22 +912,22 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue
     Double_t jetPt = fillValue[1];
 
     // Determine where to get the values in the correction hist
-    Int_t xBin = fEmbeddingCorrectionHist->GetXaxis()->FindBin(jetPt);
+    Int_t xBin = fJESCorrectionHist->GetXaxis()->FindBin(jetPt);
 
     std::vector <Double_t> yBinsContent;
-    AliDebug(3, TString::Format("Attempt to access weights from embedding correction hist for jet pt %f!", jetPt));
-    AccessSetOfYBinValues(fEmbeddingCorrectionHist, xBin, yBinsContent);
+    AliDebug(3, TString::Format("%s: Attempt to access weights from JES correction hist %s with jet pt %f!", GetName(), hist->GetName(), jetPt));
+    AccessSetOfYBinValues(fJESCorrectionHist, xBin, yBinsContent);
     AliDebug(3, TString::Format("weights size: %zd", yBinsContent.size()));
 
     // Loop over all possible bins to contribute.
     // If content is 0 then calling Fill won't make a difference
-    for (Int_t index = 1; index <= fEmbeddingCorrectionHist->GetYaxis()->GetNbins(); index++)
+    for (Int_t index = 1; index <= fJESCorrectionHist->GetYaxis()->GetNbins(); index++)
     {
       // Don't bother trying to fill in the weight is 0
       if (yBinsContent.at(index-1) > 0) {
         // Determine the value to fill based on the center of the bins.
         // This in principle allows the binning between the correction and hist to be different
-        fillValue[1] = fEmbeddingCorrectionHist->GetYaxis()->GetBinCenter(index); 
+        fillValue[1] = fJESCorrectionHist->GetYaxis()->GetBinCenter(index); 
         AliDebug(4,TString::Format("fillValue[1]: %f, weight: %f", fillValue[1], yBinsContent.at(index-1)));
         // minus 1 since loop starts at 1
         hist->Fill(fillValue, weight*yBinsContent.at(index-1));
@@ -894,7 +937,7 @@ void AliAnalysisTaskEmcalJetHMEC::FillHist(THnSparse * hist, Double_t *fillValue
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetHMEC::AccessSetOfYBinValues(TH2F * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor)
+void AliAnalysisTaskEmcalJetHMEC::AccessSetOfYBinValues(TH2D * hist, Int_t xBin, std::vector <Double_t> & yBinsContent, Double_t scaleFactor)
 {
   for (Int_t index = 1; index <= hist->GetYaxis()->GetNbins(); index++)
   {
@@ -910,8 +953,103 @@ void AliAnalysisTaskEmcalJetHMEC::AccessSetOfYBinValues(TH2F * hist, Int_t xBin,
 }
 
 /**
+ * Attempt to retrieve and initialize the jet energy scale correction histogram with a given name.
+ * If successfully initialized, "_JESCorr" is added to the task name before the last underscore
+ * (which is usually the suffix).
+ *
+ * @param filename Name of file which contais the JES correction histogram.
+ * @param histName Name of the JES correction histogram in the file.
+ * @param trackBias The track bias used to create the JES correction histogram. Usually should match
+ *     the track bias set in the task. The string ("_track%.2f", trackBias) will be appended to the hist name
+ *     if this value is not set to be disabled.
+ * @param clusterBias The cluster bias used to create the JES correction histogram. Usually should match
+ *     the track bias set in the task. The string ("_clus%.2f", clusterBias) will be appended to the hist name
+ *     if this value is not set to be disabled.
+ *
+ * @return kTRUE if the histogram is successfully retrieve and initialized.
+ */
+Bool_t AliAnalysisTaskEmcalJetHMEC::RetrieveAndInitializeJESCorrectionHist(TString filename, TString histName, Double_t trackBias, Double_t clusterBias)
+{
+  // Initialize grid connection if necessary
+  if (filename.Contains("alien://") && !gGrid) {
+    TGrid::Connect("alien://");
+  }
+
+  // Setup hist name if a track or cluster bias was defined.
+  // NOTE: This can always be disabled by setting kDisableBias.
+  //       We arbitrarily add 0.1 to test since the values are doubles and cannot be
+  //       tested directly for equality. If we are still less than disable bins, then
+  //       it has been set and we should format it.
+  // NOTE: To ensure we can disable, we don't just take the member values!
+  // NOTE: The histBaseName will be attempted if the formatted name cannot be found.
+  TString histBaseName = histName;
+  if (trackBias + 0.1 < AliAnalysisTaskEmcalJetHMEC::kDisableBias) {
+    histName = TString::Format("%s_Track%.2f", histName.Data(), trackBias);
+  }
+  if (clusterBias + 0.1 < AliAnalysisTaskEmcalJetHMEC::kDisableBias) {
+    histName = TString::Format("%s_Clus%.2f", histName.Data(), clusterBias);
+  }
+
+  // Open file containing the correction
+  TFile * jesCorrectionFile = TFile::Open(filename);
+  if (!jesCorrectionFile || jesCorrectionFile->IsZombie()) {
+    AliError(TString::Format("%s: Could not open JES correction file %s", GetName(), filename.Data()));
+    return kFALSE;
+  }
+
+  // Retrieve the histogram containing the correction and safely add it to the task.
+  TH2D * JESCorrectionHist = dynamic_cast<TH2D*>(jesCorrectionFile->Get(histName.Data()));
+  if (JESCorrectionHist) {
+    AliInfo(TString::Format("%s: JES correction hist name \"%s\" loaded from file %s.", GetName(), histName.Data(), filename.Data()));
+  }
+  else {
+    AliError(TString::Format("%s: JES correction hist name \"%s\" not found in file %s.", GetName(), histName.Data(), filename.Data()));
+
+    // Attempt the base name instead of the formatted hist name
+    JESCorrectionHist = dynamic_cast<TH2D*>(jesCorrectionFile->Get(histBaseName.Data()));
+    if (JESCorrectionHist) {
+      AliInfo(TString::Format("%s: JES correction hist name \"%s\" loaded from file %s.", GetName(), histBaseName.Data(), filename.Data()));
+      histName = histBaseName;
+    }
+    else
+    {
+      AliError(TString::Format("%s: JES correction with base hist name %s not found in file %s.", GetName(), histBaseName.Data(), filename.Data()));
+      return kFALSE;
+    }
+  }
+
+  // Clone to ensure that the hist is available
+  TH2D * tempHist = static_cast<TH2D *>(JESCorrectionHist->Clone());
+  tempHist->SetDirectory(0);
+  SetJESCorrectionHist(tempHist);
+
+  // Close file
+  jesCorrectionFile->Close();
+
+  // Append to task name for clarity
+  // Unfortunately, this doesn't change the name of the output list (it would need to be
+  // changed in the AnalysisManager output container), so the suffix is still important
+  // if this correction is manually configured!
+  TString tempName = GetName();
+  TString tag = "_JESCorr";
+  // Append the tag if it isn't already included
+  if (tempName.Index(tag) == -1) {
+    // Insert before the suffix
+    Ssiz_t suffixLocation = tempName.Last('_');
+    tempName.Insert(suffixLocation, tag.Data());
+
+    // Set the new name
+    AliDebug(3, TString::Format("%s: Setting task name to %s", GetName(), tempName.Data()));
+    SetName(tempName.Data());
+  }
+
+  // Successful
+  return kTRUE;
+}
+
+/**
  * AddTask for the jet-hadron task. We benefit for actually having compiled code, as opposed to
- * struggle with CINT.
+ * struggling with CINT.
  */
 AliAnalysisTaskEmcalJetHMEC * AliAnalysisTaskEmcalJetHMEC::AddTaskEmcalJetHMEC(
    const char *nTracks,
@@ -929,16 +1067,14 @@ AliAnalysisTaskEmcalJetHMEC * AliAnalysisTaskEmcalJetHMEC::AddTaskEmcalJetHMEC(
    UInt_t trigEvent,
    UInt_t mixEvent,
    // Options
-   const char *CentEst,
-   const Int_t nCentBins,
    const Double_t trackEta,
    const Bool_t lessSparseAxes,
    const Bool_t widerTrackBin,
    // Corrections
    const Int_t doEffCorrSW,
-   const Bool_t embeddingCorrection,
-   const char * embeddingCorrectionFilename,
-   const char * embeddingCorrectionHistName,
+   const Bool_t JESCorrection,
+   const char * JESCorrectionFilename,
+   const char * JESCorrectionHistName,
    const char *suffix
    )
 {
@@ -1033,38 +1169,18 @@ AliAnalysisTaskEmcalJetHMEC * AliAnalysisTaskEmcalJetHMEC::AddTaskEmcalJetHMEC(
   correlationTask->SetTriggerType(trigEvent);
   correlationTask->SetMixedEventTriggerType(mixEvent);
   // Options
-  correlationTask->SetCentralityEstimator(CentEst);
-  correlationTask->SetNCentBins(nCentBins);
+  correlationTask->SetNCentBins(5);
   correlationTask->SetVzRange(-10,10);
   correlationTask->SetDoLessSparseAxes(lessSparseAxes);
   correlationTask->SetDoWiderTrackBin(widerTrackBin);
   // Corrections
   correlationTask->SetDoEffCorr(doEffCorrSW);
-  if (embeddingCorrection == kTRUE)
+  if (JESCorrection == kTRUE)
   {
-    // Open file containing the correction
-    TFile * embeddingCorrectionFile = TFile::Open(embeddingCorrectionFilename);
-    if (!embeddingCorrectionFile || embeddingCorrectionFile->IsZombie()) {
-      AliErrorClass(TString::Format("Could not open embedding correction file %s", embeddingCorrectionFilename));
-      return NULL;
+    Bool_t result = correlationTask->RetrieveAndInitializeJESCorrectionHist(JESCorrectionFilename, JESCorrectionHistName, correlationTask->GetTrackBias(), correlationTask->GetClusterBias());
+    if (!result) {
+      AliErrorClass("Failed to successfully retrieve and initialize the JES correction! Task initialization continuing without JES correction (can be set manually later).");
     }
-
-    // Retrieve the histogram containing the correction and save add it to the task.
-    TH2F * embeddingCorrectionHist = dynamic_cast<TH2F*>(embeddingCorrectionFile->Get(embeddingCorrectionHistName));
-    if (embeddingCorrectionHist) {
-      AliInfoClass(TString::Format("Embedding correction %s loaded from file %s.", embeddingCorrectionHistName, embeddingCorrectionFilename));
-    }
-    else {
-      AliErrorClass(TString::Format("Embedding correction %s not found in file %s.", embeddingCorrectionHistName, embeddingCorrectionFilename));
-      return NULL;
-    }
-
-    // Clone to ensure have the hist available
-    TH2F * tempHist = static_cast<TH2F *>(embeddingCorrectionHist->Clone());
-    tempHist->SetDirectory(0);
-    correlationTask->SetEmbeddingCorrectionHist(tempHist);
-
-    embeddingCorrectionFile->Close();
   }
 
   // Jet parameters determined by how we ran the jet finder
@@ -1113,7 +1229,7 @@ AliAnalysisTaskEmcalJetHMEC * AliAnalysisTaskEmcalJetHMEC::AddTaskEmcalJetHMEC(
 
   // Create containers for input/output
   mgr->ConnectInput (correlationTask, 0, mgr->GetCommonInputContainer() );
-  AliAnalysisDataContainer * cojeth = mgr->CreateContainer(name,
+  AliAnalysisDataContainer * cojeth = mgr->CreateContainer(correlationTask->GetName(),
                 TList::Class(),
                 AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));

@@ -41,10 +41,11 @@
 enum decay { kD0Kpi, kDplusKpipi, kDstarD0pi, kDsKKpi, kLctopKpi, kLcK0Sp};
 enum centrality{ kpp8, kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
+enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
-enum particularity{ kTopological, kLowPt, kPass4, kBDT };
+enum particularity{ kTopological, kLowPt, kPP7TeVPass4, kBDT };
 
 void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 		    const char *mcfilename="FeedDownCorrectionMC.root",
@@ -53,6 +54,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 		    const char *outfilename="HFPtSpectrum.root",
 		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[pb]
 		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false,
+            Int_t Energy=k276,
 		    Int_t ccestimator = kV0M,
 		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="",
 		    Int_t rapiditySlice=kdefault,
@@ -82,7 +84,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
   //
   Double_t tab = 1., tabUnc = 0.;
-  if( ccestimator == kV0M ) {
+  if( (ccestimator == kV0M) && (Energy==k276) ) {
     if ( cc == k07half ) {
       tab = 24.81; tabUnc = 0.8037;
     } else if ( cc == k010 ) {
@@ -115,7 +117,12 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
       tab = 0.0690; tabUnc = 0.0062;
     }
   }
-
+  if( (ccestimator == kV0M) && (Energy==k5dot023) ) {
+     if ( cc == k3050 ) {
+       tab = 3.76; tabUnc = 0.13;
+     }
+  }
+    
   // pPb Glauber (A. Toia)
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
   if( cc == kpPb0100 ){
@@ -457,22 +464,29 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   //
   else if( cc!=kpp7 )  {
     systematics->SetCollisionType(1);
-    if ( cc == k07half ) systematics->SetCentrality("07half");
-    else if ( cc == k010 )  systematics->SetCentrality("010");
-    else if ( cc == k1020 )  systematics->SetCentrality("1020");
-    else if ( cc == k020 )  systematics->SetCentrality("020");
-    else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
-      systematics->SetCentrality("2040");
-      systematics->SetIsPbPb2010EnergyScan(true);
+    if(Energy==k276){
+        if ( cc == k07half ) systematics->SetCentrality("07half");
+        else if ( cc == k010 )  systematics->SetCentrality("010");
+        else if ( cc == k1020 )  systematics->SetCentrality("1020");
+        else if ( cc == k020 )  systematics->SetCentrality("020");
+        else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
+            systematics->SetCentrality("2040");
+            systematics->SetIsPbPb2010EnergyScan(true);
+        }
+        else if ( cc == k3050 ) {
+            if (isRaavsEP == kPhiIntegrated) systematics->SetCentrality("4080");
+            else if (isRaavsEP == kInPlane) systematics->SetCentrality("3050InPlane");
+            else if (isRaavsEP == kOutOfPlane) systematics->SetCentrality("3050OutOfPlane");
+        }
+        else if ( cc == k4060 || cc == k4050 || cc == k5060 )  systematics->SetCentrality("4060");
+        else if ( cc == k6080 )  systematics->SetCentrality("6080");
+        else if ( cc == k4080 ) systematics->SetCentrality("4080");
+    } else if (Energy==k5dot023){
+        if ( cc == k3050 ) {
+            systematics->SetRunNumber(15);
+            systematics->SetCentrality("3050");
+        }
     }
-    else if ( cc == k3050 ) {
-      if (isRaavsEP == kPhiIntegrated) systematics->SetCentrality("4080");
-      else if (isRaavsEP == kInPlane) systematics->SetCentrality("3050InPlane");
-      else if (isRaavsEP == kOutOfPlane) systematics->SetCentrality("3050OutOfPlane");
-    }
-    else if ( cc == k4060 || cc == k4050 || cc == k5060 )  systematics->SetCentrality("4060");
-    else if ( cc == k6080 )  systematics->SetCentrality("6080");
-    else if ( cc == k4080 ) systematics->SetCentrality("4080");
     else {
       cout << " Systematics not yet implemented " << endl;
       return;
@@ -481,12 +495,12 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   if(analysisSpeciality==kLowPt){
     systematics->SetIsLowPtAnalysis(true);
   }
-  else if(analysisSpeciality==kPass4){
+  else if(analysisSpeciality==kPP7TeVPass4){
     systematics->SetIsPass4Analysis(kTRUE);
   }
-	else if(analysisSpeciality==kBDT){
-		systematics->SetIsBDTAnalysis(kTRUE);
-	}
+  else if(analysisSpeciality==kBDT){
+    systematics->SetIsBDTAnalysis(kTRUE);
+  }
   //
   systematics->Init(decay);
   spectra->SetSystematicUncertainty(systematics);
@@ -998,6 +1012,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     hStatUncEffcFD->Write();
     hStatUncEffbFD->Write();
   }
+  systematics->Write();
 
   // Draw the cross-section 
   //  spectra->DrawSpectrum(gPrediction);

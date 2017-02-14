@@ -20,11 +20,12 @@ enum EValue_t {
   kMean,
   kMeanStat,
   kMeanSysHi,
-  kMeanSysLo
+  kMeanSysLo, 
+  kExtra
 };
 
 
-void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean,Bool_t printinfo=kFALSE);
+void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean, Double_t &extra, Bool_t printinfo=kFALSE);
 TH1* YieldMean_LowExtrapolationHisto(TH1 *h, TF1 *f, Double_t min, Double_t binwidth = 0.01);
 TH1 * YieldMean_HighExtrapolationHisto(TH1 *h, TF1 *f, Double_t max, Double_t binwidth = 0.1);
 TH1 * YieldMean_ReturnRandom(TH1 *hin);
@@ -53,8 +54,8 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   TVirtualFitter::SetMaxIterations(1000000);
 
   /* create output histo */
-  Double_t integral, mean;
-  TH1 *hout = new TH1D("hout", "", 8, 0, 8);
+  Double_t integral, mean, extra;
+  TH1 *hout = new TH1D("hout", "", 9, 0, 9);
   TH1 *hlo, *hhi;
   
   /* create histo with stat+sys errors */
@@ -88,9 +89,10 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
 
   hlo = YieldMean_LowExtrapolationHisto(htot, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(htot, f, max, hiprecision);
-  YieldMean_IntegralMean(htot, hlo, hhi, integral, mean,kTRUE);
+  YieldMean_IntegralMean(htot, hlo, hhi, integral, mean, extra, kTRUE);
   hout->SetBinContent(kYield, integral);
   hout->SetBinContent(kMean, mean);
+  hout->SetBinContent(kExtra, extra);
 
   /*
    * STATISTICS
@@ -127,7 +129,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
     TH1 *hrndlo = YieldMean_ReturnCoherentRandom(hlo);
     TH1 *hrndhi = YieldMean_ReturnCoherentRandom(hhi);
     /* integrate */
-    YieldMean_IntegralMean(hrnd, hrndlo, hrndhi, integral, mean);
+    YieldMean_IntegralMean(hrnd, hrndlo, hrndhi, integral, mean, extra);
     hIntegral_tmp->Fill(integral);
     hMean_tmp->Fill(mean);
     delete hrnd;
@@ -148,7 +150,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
     TH1 *hrndlo = YieldMean_ReturnCoherentRandom(hlo);
     TH1 *hrndhi = YieldMean_ReturnCoherentRandom(hhi);
     /* integrate */
-    YieldMean_IntegralMean(hrnd, hrndlo, hrndhi, integral, mean);
+    YieldMean_IntegralMean(hrnd, hrndlo, hrndhi, integral, mean, extra);
     hIntegral->Fill(integral);
     hMean->Fill(mean);
     delete hrnd;
@@ -198,7 +200,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hhigh, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hhigh, f, max, hiprecision);
-  YieldMean_IntegralMean(hhigh, hlo, hhi, integral, mean);
+  YieldMean_IntegralMean(hhigh, hlo, hhi, integral, mean, extra);
   integral = TMath::Abs(integral - hout->GetBinContent(kYield));
   hout->SetBinContent(kYieldSysHi, integral);
 
@@ -223,7 +225,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hhard, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hhard, f, max, hiprecision);
-  YieldMean_IntegralMean(hhard, hlo, hhi, integral, mean);
+  YieldMean_IntegralMean(hhard, hlo, hhi, integral, mean, extra);
   mean = TMath::Abs(mean - hout->GetBinContent(kMean));
   hout->SetBinContent(kMeanSysHi, mean);
 
@@ -248,7 +250,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hlow, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hlow, f, max, hiprecision);
-  YieldMean_IntegralMean(hlow, hlo, hhi, integral, mean);
+  YieldMean_IntegralMean(hlow, hlo, hhi, integral, mean, extra);
   integral = TMath::Abs(integral - hout->GetBinContent(kYield));
   hout->SetBinContent(kYieldSysLo, integral);
 
@@ -273,7 +275,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hsoft, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hsoft, f, max, hiprecision);
-  YieldMean_IntegralMean(hsoft, hlo, hhi, integral, mean);
+  YieldMean_IntegralMean(hsoft, hlo, hhi, integral, mean, extra);
   mean = TMath::Abs(mean - hout->GetBinContent(kMean));
   hout->SetBinContent(kMeanSysLo, mean);
 
@@ -472,7 +474,7 @@ YieldMean_ReturnExtremeHisto(TH1 *hin, Float_t sign)
   return hmax;
 }
 
-void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean,Bool_t printinfo)
+void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean, Double_t &extra, Bool_t printinfo)
 {
   
   /*
@@ -482,6 +484,7 @@ void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, 
   Double_t cont, err, width, cent;
   Double_t I = 0., IX = 0., Ierr = 0., IXerr = 0., Ilerr = 0., IXlerr = 0.;
   Double_t M = 0., Merr = 0., Mlerr = 0., C;
+  Double_t E = 0;
   Double_t dataonly=0.0;
 
   /* integrate the data */
@@ -507,6 +510,7 @@ void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, 
  	   if (err <= 0.) continue;
  	   I += cont;
  	   IX += cont * cent;
+ 	   E += cont;
  	 }
  }
   /* integrate high */
@@ -522,11 +526,13 @@ void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, 
  	   if (err <= 0.) continue;
  	   I += cont;
  	   IX += cont * cent;
+     E += cont;
  	 }
 }
   /* set values */
   integral = I;
   mean = IX / I;
+  extra = E;
   if(printinfo)	
   	cout<<"low+high data only = "<<dataonly<<" total = "<<I<<" ratio= "<<dataonly/I<<endl; 	
 }

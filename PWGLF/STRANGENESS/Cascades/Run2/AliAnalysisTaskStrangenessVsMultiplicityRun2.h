@@ -45,6 +45,7 @@ class AliCascadeResult;
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
 //#include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
 public:
@@ -81,6 +82,16 @@ public:
     }
     void SetUseLightVertexers ( Bool_t lUseLightVertexers = kTRUE) {
         fkUseLightVertexer = lUseLightVertexers;
+    }
+    void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
+        fkDoV0Refit = lDoV0Refit;
+    }
+    void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
+        fkExtraCleanup = lExtraCleanup;
+    }
+//---------------------------------------------------------------------------------------
+    void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
+        fkDoExtraEvSels = lUseExtraEvSels;
     }
 //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
@@ -152,7 +163,14 @@ public:
     //Superlight mode: add another configuration, please
     void AddConfiguration( AliV0Result      *lV0Result      );
     void AddConfiguration( AliCascadeResult *lCascadeResult );
-    //Standard configurations 
+//---------------------------------------------------------------------------------------
+    //Functions for analysis Bookkeepinp
+    // 1- Configure standard vertexing
+    void SetupStandardVertexing();
+    // 2- Standard Topological Selection QA Sweeps
+    void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
+    void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
+    // 3 - Standard analysis configurations + systematics
     void AddStandardV0Configuration();
     void AddStandardCascadeConfiguration();
 //---------------------------------------------------------------------------------------
@@ -175,6 +193,10 @@ private:
     AliPIDResponse *fPIDResponse;     // PID response object
     AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
+    
+    //Implementation of event selection utility 
+    AliEventCuts fEventCuts; /// Event cuts class
+
     TRandom3 *fRand; 
 
     //Objects Controlling Task Behaviour
@@ -186,6 +208,7 @@ private:
     Bool_t fkUseOnTheFlyV0Cascading; 
     Bool_t fkDebugWrongPIDForTracking; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
+    Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
@@ -194,6 +217,8 @@ private:
     //Objects Controlling Task Behaviour: has to be streamed!
     Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts *** only for CASCADES! ***
     Bool_t    fkUseLightVertexer;       // if true, use AliLightVertexers instead of regular ones
+    Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
+    Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
     
     AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
     
@@ -239,6 +264,8 @@ private:
     Float_t fTreeVariableDistOverTotMom;//!
     Int_t   fTreeVariableLeastNbrCrossedRows;//!
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
+    Float_t fTreeVariableMaxChi2PerCluster; //!
+    Float_t fTreeVariableMinTrackLength; //!
 
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
@@ -286,6 +313,8 @@ private:
     Float_t fTreeCascVarWrongCosPA;                   //!
     Int_t   fTreeCascVarLeastNbrClusters;             //!
     Float_t fTreeCascVarDistOverTotMom;               //!
+    Float_t fTreeCascVarMaxChi2PerCluster; //!
+    Float_t fTreeCascVarMinTrackLength; //! 
 
     //TPC dEdx
     Float_t fTreeCascVarNegNSigmaPion;   //!
@@ -327,7 +356,14 @@ private:
     Float_t fTreeCascVarBachPx; //!
     Float_t fTreeCascVarBachPy; //!
     Float_t fTreeCascVarBachPz; //!
-    Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p) 
+    
+    Float_t fTreeCascVarV0DecayX; //!
+    Float_t fTreeCascVarV0DecayY; //!
+    Float_t fTreeCascVarV0DecayZ; //!
+    Float_t fTreeCascVarCascadeDecayX; //!
+    Float_t fTreeCascVarCascadeDecayY; //!
+    Float_t fTreeCascVarCascadeDecayZ; //!
+    Float_t fTreeCascVarV0Lifetime; //! //V0 lifetime (actually, mL/p)
     //Track Labels (check for duplicates, etc)
     Int_t fTreeCascVarNegIndex; //!
     Int_t fTreeCascVarPosIndex; //!

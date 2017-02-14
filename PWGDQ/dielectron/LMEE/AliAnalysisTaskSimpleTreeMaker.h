@@ -80,7 +80,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   void SetMC(Bool_t answer){ fIsMC = answer; }
 
   //Set to request centrality value for events
-  void SetIsIonColl(Bool_t answer){ isIonColl = answer; }
+  void SetIsIonColl(Bool_t answer){ fIsIonColl = answer; }
     
     //Track cut setters. StandardITSTPC2011 cuts used if nothing specified
   void SetTPCminClusters(Int_t number){
@@ -124,15 +124,20 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   }
 
   void SetGridPID(std::string string){
-    gridPID = std::stoi(string);
+    fGridPID = std::stoi(string);
   }
   void GRIDanalysis(Bool_t answer){
-    isGRIDanalysis = answer;
+    fIsGRIDanalysis = answer;
   }
+  void createV0tree( Bool_t answer ){
+    fIsV0tree = answer;
+  }
+  Bool_t isV0daughterAccepted(AliESDtrack* track);
+
   
  private:
  
-  Double_t IsEventAccepted(AliESDEvent *event);
+  Int_t IsEventAccepted(AliESDEvent *event);
   //Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   
   AliAnalysisTaskSimpleTreeMaker(const AliAnalysisTaskSimpleTreeMaker&); // not implemented
@@ -178,11 +183,14 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   Double_t fPSigTPCMax;
 
   Bool_t fPionPIDcutTPC;
-  Bool_t isIonColl;
+  Bool_t fIsIonColl;
+
+  Bool_t fIsV0tree;
+  TH2F* fArmPlot;
 
   //Grid PID
-  Bool_t isGRIDanalysis;
-  Int_t gridPID;
+  Bool_t fIsGRIDanalysis;
+  Int_t fGridPID;
 
   ClassDef(AliAnalysisTaskSimpleTreeMaker, 1); //
 

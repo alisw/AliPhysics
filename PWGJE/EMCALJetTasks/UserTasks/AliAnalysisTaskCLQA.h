@@ -12,6 +12,7 @@ class TNtupleD;
 class TTree;
 
 #include "AliAnalysisTaskEmcal.h"
+#include "Cumulants.h"
 
 class AliNtupHetInfo;
 class AliNtupCumInfo;
@@ -28,10 +29,12 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   void                        SetCumParams(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax);
   void                        SetDoCumulants(Bool_t b, Bool_t bn=0) { fDoCumulants     = b; fDoCumNtuple = bn; }
   void                        SetDoMuonTracking(Bool_t b)           { fDoMuonTracking  = b; }
+  void                        SetDoTrackProp(Bool_t b)              { fDoProp          = b; }
   void                        SetDoTracking(Bool_t b)               { fDoTracking      = b; }
-  void                        SetDo2013VertexCut(Bool_t b)          { fDo2013VertexCut = b; }
+  void                        SetDoVertexCut(Bool_t b)              { fDoVertexCut     = b; }
   void                        SetHetParams(Double_t Etmin);
   void                        SetDoHet(Bool_t b)                    { fDoHet           = b; }
+  void                        SetQCEtaGap(Double_t e)               { fQC4EG           = e; }
 
   void                        UserCreateOutputObjects();
 
@@ -39,14 +42,16 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   Bool_t                      FillHistograms();
   Bool_t                      RetrieveEventObjects();
   Bool_t                      Run();
+  void                        RunCumulants();
   void                        RunCumulants(Double_t Mmin, Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax);
   void                        RunHet(Double_t Etmin);
 
-  Bool_t                      fDo2013VertexCut;  // if true then use 2013 pA vertex check (only if 2013 pPb run)
+  Bool_t                      fDoVertexCut;      // if true then use special (pileup) vertex checks
   Bool_t                      fDoTracking;       // if true run tracking analysis
   Bool_t                      fDoMuonTracking;   // if true run muon tracking analysis
   Bool_t                      fDoCumulants;      // if true run cumulant analysis
   Bool_t                      fDoCumNtuple;      // if true save cumulant ntuple
+  Bool_t                      fDoProp;           // if true do track propagation
   Bool_t                      fDoHet;            // if true run het analysis
   Double_t                    fCumPtMin;         // minimum pt for cumulants
   Double_t                    fCumPtMax;         // maximum pt for cumulants
@@ -54,6 +59,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   Double_t                    fCumEtaMax;        // maximum eta for cumulants
   Double_t                    fCumMmin;          // minimum number of tracks for cumulants 
   Int_t                       fCumMbins;         // number of bins for M
+  Double_t                    fQC4EG;            // value for etagap (+-fQC4EG)
   Double_t                    fHetEtmin;         // minimum et cut for het
   TH1F                       *fCentCL1In;        // input for MC based CL1 centrality
   TH1F                       *fCentV0AIn;        // input for MC based V0A centrality
@@ -63,7 +69,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   TTree                      *fNtupHet;          //!ntuple for het analysis
   AliNtupHetInfo             *fNtupHetInfo;      //!object holding het info
   TH1                        *fHists[1000];      //!pointers to histograms
-
+  Cumulants                  *fCum;              //!pointer to cumulant class
  private:
   Double_t                    DeltaPhi(Double_t phia, Double_t phib,
                                        Double_t rangeMin = -TMath::Pi()/2, 
@@ -71,7 +77,7 @@ class AliAnalysisTaskCLQA : public AliAnalysisTaskEmcal {
   AliAnalysisTaskCLQA(const AliAnalysisTaskCLQA&);            // not implemented
   AliAnalysisTaskCLQA &operator=(const AliAnalysisTaskCLQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskCLQA, 7) // Constantin's Task
+  ClassDef(AliAnalysisTaskCLQA, 9) // Constantin's Task
 };
 
 class AliNtupHetInfo {

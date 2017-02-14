@@ -45,6 +45,7 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fDeltaEta(0),
   fXlong(0),
   fZBin(0),
+  fMagneticFieldPolarity(0),
   fNearSide(true),
   fNearSide3D(true),
   fEtaGapBin(0),
@@ -53,14 +54,20 @@ AliJJtCorrelations::AliJJtCorrelations( AliJCard *cardIn, AliJJtHistograms *hist
   fCentralityBin(0),
   fXlongBin(0),
   fUseKlongBins(false),
+  fUsePtaBins(false),
   fNTrial(20),
   fIsLikeSign(false),
-  fUseZVertexBinsAcceptance(false)
+  fUseZVertexBinsAcceptance(false),
+  fDoTrackMergingCorrection(false),
+  fTrackMergeCut(0)
 {
   // constructor
   fmaxEtaRange = fcard->Get("EtaRange");
   if(fcard->Get("EnableKlongBins") == 1) fUseKlongBins = true;
+  if(fcard->Get("EnablePtaBins") == 1) fUsePtaBins = true;
   fNTrial = fcard->Get("NRandomizationTrials");
+  if(fcard->Get("TrackMergeSystematics") == 1) fDoTrackMergingCorrection = true;
+  fTrackMergeCut = fcard->Get("TrackMergeCut");
   
   frandom = new TRandom3(); // Random number generator for background randomization
   frandom->SetSeed(0);
@@ -91,6 +98,7 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fDeltaEta(0),
   fXlong(0),
   fZBin(0),
+  fMagneticFieldPolarity(0),
   fNearSide(true),
   fNearSide3D(true),
   fEtaGapBin(0),
@@ -100,8 +108,11 @@ AliJJtCorrelations::AliJJtCorrelations() :
   fXlongBin(0),
   fNTrial(20),
   fUseKlongBins(false),
+  fUsePtaBins(false),
   fIsLikeSign(false),
-  fUseZVertexBinsAcceptance(false)
+  fUseZVertexBinsAcceptance(false),
+  fDoTrackMergingCorrection(false),
+  fTrackMergeCut(0)
 {
   // default constructor
 }
@@ -129,6 +140,7 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fDeltaEta(in.fDeltaEta),
   fXlong(in.fXlong),
   fZBin(in.fZBin),
+  fMagneticFieldPolarity(in.fMagneticFieldPolarity),
   fNearSide(in.fNearSide),
   fNearSide3D(in.fNearSide3D),
   fEtaGapBin(in.fEtaGapBin),
@@ -138,8 +150,11 @@ AliJJtCorrelations::AliJJtCorrelations(const AliJJtCorrelations& in) :
   fXlongBin(in.fXlongBin),
   fNTrial(in.fNTrial),
   fUseKlongBins(in.fUseKlongBins),
+  fUsePtaBins(in.fUsePtaBins),
   fIsLikeSign(in.fIsLikeSign),
-  fUseZVertexBinsAcceptance(in.fUseZVertexBinsAcceptance)
+  fUseZVertexBinsAcceptance(in.fUseZVertexBinsAcceptance),
+  fDoTrackMergingCorrection(in.fDoTrackMergingCorrection),
+  fTrackMergeCut(in.fTrackMergeCut)
 {
   // The pointers to card and histos are just copied. I think this is safe, since they are not created by
   // AliJJtCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
@@ -167,6 +182,7 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fDeltaEta = in.fDeltaEta;
   fXlong = in.fXlong;
   fZBin = in.fZBin;
+  fMagneticFieldPolarity = in.fMagneticFieldPolarity;
   fNearSide = in.fNearSide;
   fNearSide3D = in.fNearSide3D;
   fEtaGapBin = in.fEtaGapBin;
@@ -175,6 +191,7 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fCentralityBin = in.fCentralityBin;
   fXlongBin = in.fXlongBin;
   fUseKlongBins = in.fUseKlongBins;
+  fUsePtaBins = in.fUsePtaBins;
   fNTrial = in.fNTrial;
   fIsLikeSign = in.fIsLikeSign;
   fnReal = in.fnReal;
@@ -182,6 +199,8 @@ AliJJtCorrelations& AliJJtCorrelations::operator=(const AliJJtCorrelations& in){
   fsamplingMethod = in.fsamplingMethod;
   fmaxEtaRange = in.fmaxEtaRange;
   fUseZVertexBinsAcceptance = in.fUseZVertexBinsAcceptance;
+  fDoTrackMergingCorrection = in.fDoTrackMergingCorrection;
+  fTrackMergeCut = in.fTrackMergeCut;
   
   // The pointers to card and histos are just copied. I think this is safe, since they are not created by
   // AliJJtCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
@@ -203,6 +222,40 @@ AliJJtCorrelations::~AliJJtCorrelations(){
 
 }
 
+/*
+ * Calculate deltaPhi*
+ *
+ *  Float_t phi1 = azimuthal angle of the trigger particle
+ *  Float_t pt1 = transverse momentum of the trigger particle
+ *  Float_t charge1 = charge of the trigger particle
+ *  Float_t phi2 = azimuthal angle of the associated particle
+ *  Float_t pt2 = transverse momentum of the associated particle
+ *  Float_t charge2 = charge of the associated particle
+ *  Float_t radius = radius inside TPC
+ *  Float_t bSign = magnetic field polarisation
+ */
+Float_t AliJJtCorrelations::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign){
+  //
+  // calculates dphistar
+  //
+  
+  Float_t dphistar = phi1 - phi2 - charge1 * bSign * TMath::ASin(0.075 * radius / pt1) + charge2 * bSign * TMath::ASin(0.075 * radius / pt2);
+  
+  // circularity
+  //   if (dphistar > 2 * kPi)
+  //     dphistar -= 2 * kPi;
+  //   if (dphistar < -2 * kPi)
+  //     dphistar += 2 * kPi;
+  
+  if (dphistar > TMath::Pi())
+    dphistar = TMath::Pi() * 2 - dphistar;
+  if (dphistar < -TMath::Pi())
+    dphistar = -TMath::Pi() * 2 - dphistar;
+  if (dphistar > TMath::Pi()) // might look funny but is needed
+    dphistar = TMath::Pi() * 2 - dphistar;
+  
+  return dphistar;
+}
 
 /*
  * Histogram filled based on correlation type. Only calls the main histogram filler in case of correct correlation type.
@@ -282,6 +335,49 @@ void AliJJtCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, i
     exit(-1);
     //return;
   }
+
+  // Track merging check for systematic error estimation
+  if ((TMath::Abs(fDeltaEta) < fTrackMergeCut * 2.5 * 3) && fDoTrackMergingCorrection){
+
+    double triggerCharge = ftk1->GetCharge();
+    double associatedCharge = ftk2->GetCharge();
+    double twoTrackCutMinRadius = 0.039; // Value from Monika Kofarago
+    
+    // check first boundaries to see if is worth to loop and find the minimum
+    Float_t dphistar1 = GetDPhiStar(fPhiTrigger, fptt, triggerCharge, fPhiAssoc, fpta, associatedCharge, twoTrackCutMinRadius, fMagneticFieldPolarity);
+    Float_t dphistar2 = GetDPhiStar(fPhiTrigger, fptt, triggerCharge, fPhiAssoc, fpta, associatedCharge, 2.5, fMagneticFieldPolarity);
+    
+    const Float_t kLimit = fTrackMergeCut * 3;
+    
+    Float_t dphistarminabs = 1e5;
+    Float_t dphistarmin = 1e5;
+    if (TMath::Abs(dphistar1) < kLimit || TMath::Abs(dphistar2) < kLimit || dphistar1 * dphistar2 < 0){
+      for (Double_t rad=twoTrackCutMinRadius; rad<2.51; rad+=0.01){
+        Float_t dphistar = GetDPhiStar(fPhiTrigger, fptt, triggerCharge, fPhiAssoc, fpta, associatedCharge, rad, fMagneticFieldPolarity);
+        
+        Float_t dphistarabs = TMath::Abs(dphistar);
+        
+        if (dphistarabs < dphistarminabs){
+          dphistarmin = dphistar;
+          dphistarminabs = dphistarabs;
+        }
+      }
+      
+      // Remove the pair if deltaPhi* and deltaEta values are too close
+      if (dphistarminabs < fTrackMergeCut && TMath::Abs(fDeltaEta) < fTrackMergeCut){
+        
+        // Do not fill the histograms for real events if we want to make track merge cut
+        // For mixed event we need to fill everything to get proper acceptance correction
+        if(fTyp == kReal) return;
+
+        // For mixed event, we need to make correction from each xlong bin to properly
+        // take into account the track merging effect
+        if(fNearSide3D && fXlongBin >= 0){
+          fhistos->fhDphiDetaTrackMerge[fCentralityBin][fZBin][fpttBin][fXlongBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
+        }
+      }
+    }
+  }
   
   
   // ===================================================================
@@ -358,7 +454,14 @@ void AliJJtCorrelations::FillJtDistributionHistograms(fillType fTyp, int assocTy
   } else {
     geometricAcceptanceCorrection = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,fDeltaEta,fDeltaPhiPiPi,fCentralityBin,fpttBin);
   }
-  double weight = jt > 1e-3 ? geometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
+  double trackMergeCorrection = 1;
+  
+  // Note: z vertex binning not implemented. Only works for xlong bins.
+  if(fDoTrackMergingCorrection && assocType == 1 && iBin >= 0){
+    trackMergeCorrection = fAcceptanceCorrection->GetTrackMergeCorrection(fDeltaEta, fDeltaPhiPiPi, fCentralityBin, 0, fpttBin, iBin);
+  }
+  
+  double weight = jt > 1e-3 ? trackMergeCorrection * geometricAcceptanceCorrection * fTrackPairEfficiency/jt : 0;
   double invariantMass = sqrt(2*(vTrigger->P()*vAssoc->P()-vTrigger->Vect().Dot(vAssoc->Vect())));
   
   // Fill the calculated values to histograms
@@ -418,6 +521,9 @@ void AliJJtCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, 
   // Find the phi difference in the interval ]-Pi,Pi]
   double dPhiRndm = atan2(sin(vTrigger->Phi()-vAssoc->Phi()), cos(vTrigger->Phi()-vAssoc->Phi()));
   
+  // If we do track merge correction, apply the cut condition for the generated pair
+  
+  
   // Find the acceptance correction for the found particle pair
   double geoAccCorrRndm = 0;
   if(fUseZVertexBinsAcceptance){
@@ -426,20 +532,29 @@ void AliJJtCorrelations::FillJtBackgroundHistograms(int assocType, int gapType, 
     geoAccCorrRndm = fAcceptanceCorrection->GetAcceptanceCorrection(assocType,fsamplingMethod,dEtaRndm,dPhiRndm,fCentralityBin,fpttBin);
   }
   
+  double trackMergeCorrection = 1;
+  
+  // Note: z vertex binning not implemented. Only works for xlong bins.
+  // Can give wrong results for R-gap background. For systematic check
+  // this is not a problem since only the default eta-gap is used.
+  if(fDoTrackMergingCorrection && assocType == 1 && iBin >= 0){
+    trackMergeCorrection = fAcceptanceCorrection->GetTrackMergeCorrection(dEtaRndm, dPhiRndm, fCentralityBin, 0, fpttBin, iBin);
+  }
+  
   // Fill the background histograms
   if(iBin>=0){ //
     if(jt>1e-3) { //here we used and BgFidCut
       for(int iGap=0; iGap<=maxGap; iGap++){
-        hBackground[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+        hBackground[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, trackMergeCorrection * geoAccCorrRndm * fTrackPairEfficiency/jt);
         // To save memory, only save the histogram fro reference gap
         if(fill2DBackground && iGap == 5) hBackground2D[fCentralityBin][fpttBin][iBin]->Fill(dEtaRndm, dPhiRndm, fTrackPairEfficiency);
         hPtAssoc[fCentralityBin][iGap][fpttBin][iBin]->Fill(fpta, fTrackPairEfficiency);
         
         // Fill the background histogram for signed pairs
         if(fIsLikeSign){
-          hBackgroundLikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+          hBackgroundLikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, trackMergeCorrection * geoAccCorrRndm * fTrackPairEfficiency/jt);
         } else {
-          hBackgroundUnlikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, geoAccCorrRndm * fTrackPairEfficiency/jt);
+          hBackgroundUnlikeSign[fCentralityBin][iGap][fpttBin][iBin]->Fill(jt, trackMergeCorrection * geoAccCorrRndm * fTrackPairEfficiency/jt);
         }
       }
     }
@@ -488,7 +603,7 @@ void AliJJtCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, Al
   if(fNearSide3D) FillJtDistributionHistograms(fTyp,1,&vTrigger,&vAssoc,fhistos->fhJT,fhistos->fhJTLikeSign,fhistos->fhJTUnlikeSign,fhistos->fhInvariantMassXe,fhistos->fhInvariantMassXeLikeSign,fhistos->fhInvariantMassXeUnlikeSign);
   
   // Fill the jT histograms for pta binning. Require traditional near side
-  if(fNearSide) FillJtDistributionHistograms(fTyp,2,&vTrigger,&vAssoc,fhistos->fhJTPta,fhistos->fhJTPtaLikeSign,fhistos->fhJTPtaUnlikeSign,fhistos->fhInvariantMassPta,fhistos->fhInvariantMassPtaLikeSign,fhistos->fhInvariantMassPtaUnlikeSign);
+  if(fNearSide && fUsePtaBins) FillJtDistributionHistograms(fTyp,2,&vTrigger,&vAssoc,fhistos->fhJTPta,fhistos->fhJTPtaLikeSign,fhistos->fhJTPtaUnlikeSign,fhistos->fhInvariantMassPta,fhistos->fhInvariantMassPtaLikeSign,fhistos->fhInvariantMassPtaUnlikeSign);
   
   //-------------------------------------
   // Rapidity/R/Phi Gap background
@@ -596,7 +711,7 @@ void AliJJtCorrelations::FillJtHistograms(fillType fTyp, AliJBaseTrack *ftk1, Al
       
       
       // Only fill the pTa background histograms, if the original pair was in traditional near side. Note that the background histogram filler method also checks, that the newly generated pair is on the traditional near side.
-      if(fNearSide){
+      if(fNearSide && fUsePtaBins){
         
         // Fill background histograms for pta binning, eta gap
         FillJtBackgroundHistograms(2,0,&vThrustRndm,&vAssocRndm,fhistos->fhJTPtaBg,fhistos->fhJTPtaBgLikeSign,fhistos->fhJTPtaBgUnlikeSign,fhistos->fhBgAssocPtaEta,fhistos->fhDphiDetaBgPtaEta,fill2DBackground);
@@ -641,7 +756,7 @@ void AliJJtCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp)
   // No acceptance correction here, since we want to see tha structure caused by acceptance effects
   
   // Fill the histogram in pTa bins
-  if(fNearSide){
+  if(fNearSide && fUsePtaBins){
     fhistos->fhDphiDetaPta[fTyp][fCentralityBin][fZBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhiPiPi, fTrackPairEfficiency);
   }
   

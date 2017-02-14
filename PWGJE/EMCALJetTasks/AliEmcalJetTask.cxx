@@ -807,12 +807,28 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
       jetAcceptanceType |= AliEmcalJet::kEMCALfid;
   }
   
-  // Check if DCAL
+  // Check if DCAL (i.e. eta-phi rectangle spanning DCal, which includes most of PHOS)
   if( IsJetInDcal(eta, phi, 0) ) {
     jetAcceptanceType |= AliEmcalJet::kDCAL;
     // Check if DCALfid
     if( IsJetInDcal(eta, phi, r) )
       jetAcceptanceType |= AliEmcalJet::kDCALfid;
+  }
+  
+  // Check if DCALonly (i.e. ONLY DCal, does not include any of PHOS region)
+  if( IsJetInDcalOnly(eta, phi, 0) ) {
+    jetAcceptanceType |= AliEmcalJet::kDCALonly;
+    // Check if DCALonlyfid
+    if( IsJetInDcalOnly(eta, phi, r) )
+      jetAcceptanceType |= AliEmcalJet::kDCALonlyfid;
+  }
+  
+  // Check if PHOS
+  if( IsJetInPhos(eta, phi, 0) ) {
+    jetAcceptanceType |= AliEmcalJet::kPHOS;
+    // Check if PHOSfid
+    if( IsJetInPhos(eta, phi, r) )
+      jetAcceptanceType |= AliEmcalJet::kPHOSfid;
   }
  
   return jetAcceptanceType;
@@ -840,13 +856,59 @@ Bool_t AliEmcalJetTask::IsJetInEmcal(Double_t eta, Double_t phi, Double_t r)
 }
 
 /**
- * Returns whether or not jet with given eta, phi, R is in DCal.
+ * Returns whether or not jet with given eta, phi, R is in DCal region (note: spans most of PHOS as well).
  */
 Bool_t AliEmcalJetTask::IsJetInDcal(Double_t eta, Double_t phi, Double_t r)
 {
   if (!fGeom) return kFALSE;
   if (eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r ) {
     if ( phi < fGeom->GetDCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetDCALPhiMin() * TMath::DegToRad() + r)
+      return kTRUE;
+  }
+  return kFALSE;
+}
+
+/**
+ * Returns whether or not jet with given eta, phi, R is in DCal (note: ONLY DCal -- none of PHOS included).
+ * Assumes DCAL_8SM geometry.
+ * For r=0, use the entire DCal acceptance, including both of the connecting 1/3 SMs.
+ * For r>0, use only the two "disjoint" fiducial regions of the DCal (i.e. ignore the connecting portions of the 1/3 SMs)
+ */
+Bool_t AliEmcalJetTask::IsJetInDcalOnly(Double_t eta, Double_t phi, Double_t r)
+{
+  if (!fGeom) return kFALSE;
+  
+  if (eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r) {
+    if ( phi < fGeom->GetDCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetDCALPhiMin() * TMath::DegToRad() + r) {
+      
+      if (TMath::Abs(eta) > fGeom->GetDCALInnerExtandedEta() + r) {
+        return kTRUE;
+      }
+      if (r < 1e-6) {
+        if (phi > fGeom->GetEMCGeometry()->GetDCALStandardPhiMax() * TMath::DegToRad())
+          return kTRUE;
+      }
+      
+    }
+  }
+  
+  return kFALSE;
+}
+
+/**
+ * Returns whether or not jet with given eta, phi, R is in PHOS.
+ */
+Bool_t AliEmcalJetTask::IsJetInPhos(Double_t eta, Double_t phi, Double_t r)
+{
+  Double_t etaMax = 0.130;
+  Double_t etaMin = -0.130;
+  Double_t phiMax = 320;
+  Double_t phiMin = 260; // Run 1
+  if (fRunNumber > 209121)
+    phiMin = 250; // Run 2
+  
+  if (eta < etaMax - r && eta > etaMin + r ) {
+    if (phi < phiMax * TMath::DegToRad() - r && phi > phiMin * TMath::DegToRad() + r)
       return kTRUE;
   }
   return kFALSE;

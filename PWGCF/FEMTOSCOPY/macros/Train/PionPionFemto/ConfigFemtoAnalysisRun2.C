@@ -32,6 +32,15 @@ struct MacroParams {
   std::vector<unsigned char> pair_codes;
   float qinv_bin_size_MeV;
   float qinv_max_GeV;
+
+  UInt_t delta_phi_bin_count;
+  Float_t delta_phi_min;
+  Float_t delta_phi_max;
+
+  UInt_t delta_eta_bin_count;
+  Float_t delta_eta_min;
+  Float_t delta_eta_max;
+
   bool do_qinv_cf;
   bool do_q3d_cf;
   bool do_deltaeta_deltaphi_cf;
@@ -73,6 +82,15 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_trueq_cf = true;
   macro_config.qinv_bin_size_MeV = 5.0f;
   macro_config.qinv_max_GeV = 1.0f;
+
+  macro_config.delta_phi_bin_count = 72;
+  macro_config.delta_phi_min = -0.1;
+  macro_config.delta_phi_max =  0.1;
+
+  macro_config.delta_eta_bin_count = 72;
+  macro_config.delta_eta_min = -0.1;
+  macro_config.delta_eta_max =  0.1;
+
 
   // Read parameter string and update configurations
   BuildConfiguration(param_str, analysis_config, cut_config, macro_config);
@@ -165,19 +183,23 @@ ConfigFemtoAnalysis(const TString& param_str="")
         analysis->AddCorrFctn(avgsep_cf);
       }
 
-      if (macro_config.do_deltaeta_deltaphi_cf) {
+      if (macro_config.do_deltaeta_deltaphi_cf && !analysis_config.is_mc_analysis) {
         AliFemtoCorrFctnDPhiStarDEta *deta_dphi_cf = new AliFemtoCorrFctnDPhiStarDEta("_", cut_config.pair_phi_star_radius,
               // 100, 0.0, 1.6,
               // 100, 0.0, 2.0
               // 200, 0.0, 0.5,
               // 200, 0.0, 0.5
-              75, -0.1, 0.1,
-              75, -0.1, 0.1
+              macro_config.delta_phi_bin_count, macro_config.delta_phi_min, macro_config.delta_phi_max,
+	      macro_config.delta_eta_bin_count, macro_config.delta_eta_min, macro_config.delta_eta_max
         );
         deta_dphi_cf->SetMagneticFieldSign(1);
-
         analysis->AddCorrFctn(deta_dphi_cf);
       }
+
+      const float QINV_MIN_VAL = 0.0,
+                  QINV_MAX_VAL = macro_config.qinv_max_GeV;
+
+      const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       if (macro_config.do_qinv_cf) {
         TString cf_title = TString("_qinv_") + pair_type_str;
@@ -189,6 +211,19 @@ ConfigFemtoAnalysis(const TString& param_str="")
       if (analysis_config.is_mc_analysis) {
           model_manager = new AliFemtoModelManager();
           model_manager->AcceptWeightGenerator(new AliFemtoModelWeightGeneratorBasic());
+      }
+
+      if (analysis_config.is_mc_analysis && macro_config.do_deltaeta_deltaphi_cf) {
+        AliFemtoModelCorrFctnDEtaDPhiStar *mc_deta_dphistar_cf =
+          AliFemtoModelCorrFctnDEtaDPhiStar::Build()
+            .GroupOutput(true)
+            .Radius(cut_config.pair_phi_star_radius)
+            .Phi(macro_config.delta_phi_bin_count, macro_config.delta_phi_min, macro_config.delta_phi_max)
+            .Eta(macro_config.delta_eta_bin_count, macro_config.delta_eta_min, macro_config.delta_eta_max)
+            .Build();
+        mc_deta_dphistar_cf->ConnectToManager(model_manager);
+
+        analysis->AddCorrFctn(mc_deta_dphistar_cf);
       }
 
       if (macro_config.do_trueq_cf) {

@@ -57,6 +57,7 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
+  fVtxDiff(-999.),
   fUtils(),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -93,6 +94,7 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   fVtxType(kVtxTracks),
   fRequire13sel(kFALSE),
   f2015IsIncompleteDAQ(kFALSE),
+  fVtxDiff(-999.),
   fUtils(),
   fRequireV0and(0),
   fTriggerAnalysis(0x0),
@@ -129,7 +131,7 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
   //
   // check the cuts
   //
-  
+
   if(event->IsA() == AliESDEvent::Class())      return IsSelectedESD(event);
   else if(event->IsA() == AliAODEvent::Class()) return IsSelectedAOD(event);
   else return kFALSE;
@@ -140,12 +142,12 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
   //
   // check the cuts
   //
-  
+
   AliESDEvent *ev=dynamic_cast<AliESDEvent*>(event);
   if (!ev) return kFALSE;
 
   if (fCentMin<fCentMax){
-    
+
     if(fRun2==kFALSE){
       AliCentrality *centrality=ev->GetCentrality();
       Double_t centralityF=-1;
@@ -177,7 +179,7 @@ Bool_t AliDielectronEventCuts::IsSelectedESD(TObject* event)
   }
 
   if ((fRequireVtx||fVtxZmin<fVtxZmax||fMinVtxContributors>0)&&!fkVertex) return kFALSE;
-  
+
 
   if (fMinVtxContributors>0){
     Int_t nCtrb = fkVertex->GetNContributors();
@@ -269,7 +271,7 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   //
   // check the cuts
   //
-  
+
   AliAODEvent *ev=dynamic_cast<AliAODEvent*>(event);
   if (!ev) return kFALSE;
 
@@ -313,12 +315,12 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
 
   if (fCentMin<fCentMax){
     AliCentrality *centrality=ev->GetCentrality();
-    Double_t centralityF=-1;	  
+    Double_t centralityF=-1;
     if(fRun2==kFALSE){
-      
+
       if (centrality) centralityF = centrality->GetCentralityPercentile("V0M");
     }else if(fRun2==kTRUE){
-      
+
       //new centrality
       AliMultSelection *multSelection = (AliMultSelection*) ev->FindListObject("MultSelection");
       if ( multSelection ){
@@ -326,8 +328,8 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
       } else{
 	AliDebug(10,"Run 2 Multiplicity selection selected.Didn't find AliMultSelection!");
 	}
-    }      
-      
+    }
+
     if (centralityF<fCentMin || centralityF>=fCentMax) return kFALSE;
   }
 
@@ -342,7 +344,7 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   }
 
   if ((fRequireVtx||fVtxZmin<fVtxZmax||fMinVtxContributors>0)&&!fkVertexAOD) return kFALSE;
-  
+
   if (fMinVtxContributors>0){
     Int_t nCtrb = fkVertexAOD->GetNContributors();
     if (nCtrb<fMinVtxContributors){
@@ -355,7 +357,7 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
       //}
     }
   }
-  
+
 
   if (fVtxZmin<fVtxZmax){
     Double_t zvtx=fkVertexAOD->GetZ();
@@ -394,7 +396,7 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
       return kFALSE;
   }
   */
-  
+
   // correlation cut Ntrks vs. multV0
   if(fparMean && fparSigma) {
     Double_t nTrks  = ev->GetNumberOfTracks();
@@ -414,6 +416,22 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
     Double_t minCut = fparMinVtxContributors->Eval(nContribGbl);
     Double_t maxCut = fparMaxVtxContributors->Eval(nContribGbl);
     if(nContribTPC > maxCut || nContribTPC < minCut) return kFALSE;
+  }
+
+  // cut on the differnece of Vtx_trk and Vtx_SPD to reject pile-up Events
+  if(fVtxDiff > -990.){
+    const AliVVertex* vtTrc = ev->GetPrimaryVertex();
+    const AliVVertex* vtSPD = ev->GetPrimaryVertexSPD();
+    double covTrc[6],covSPD[6];
+    vtTrc->GetCovarianceMatrix(covTrc);
+    vtSPD->GetCovarianceMatrix(covSPD);
+    double dz = vtTrc->GetZ()-vtSPD->GetZ();
+    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+    double errTrc = TMath::Sqrt(covTrc[5]);
+    double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+    if (TMath::Abs(dz)>fVtxDiff || nsigTot>10 || nsigTrc>20){
+      return kFALSE;
+    }
   }
 
   return kTRUE;
@@ -499,7 +517,7 @@ void AliDielectronEventCuts::Print(const Option_t* /*option*/) const
   if(fparMean&&fparSigma) {
     printf("Cut %02d: multplicity vs. #tracks correlation +-%.1f sigma inclusion \n", iCut, fcutSigma); iCut++; }
   if(fRequire13sel){
-    printf("Cut %02d: vertex and event selection for 2013 pPb data taking required \n",iCut);   iCut++; } 
+    printf("Cut %02d: vertex and event selection for 2013 pPb data taking required \n",iCut);   iCut++; }
   if(fRequireV0and) {
     printf("Cut %02d: require V0and type: %c \n", iCut, fRequireV0and);            iCut++; }
   if(f2015IsIncompleteDAQ){
@@ -516,36 +534,36 @@ Bool_t AliDielectronEventCuts::IsTRDTriggerFired( const AliVEvent* event, const 
 // checks if for the given event the given TRD trigger has fired
 // in trackMatched will be stored if the triggered track could be matched to a global track (late conversion rejection)
 // in bin the bin in the eventStatTrigger histogram to be filles for this event will be stored
-  
-  
+
+
   Bool_t ret = kFALSE;
-  
+
   const UInt_t se = 1 << 0;
   const UInt_t seMatchReq = 1 << 1;
   const UInt_t qu = 1 << 2;
   const UInt_t quMatchReq = 1 << 3;
-  
+
   AliTRDTriggerAnalysis trdSelection;
   trdSelection.CalcTriggers( event );
-  
+
 /**
   triggerResult variable is defined in the following way:
-  
+
   0: not triggered
   1: se, match not required
   2: se, match required
   4: qu, match not required
   8: qu, match required
-  
+
 **/
-  
+
   Int_t triggerResult = trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE);
   triggerResult += ( trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU) << 2 );
 
 
-  trdSelection.SetRequireMatch(kTRUE);  
+  trdSelection.SetRequireMatch(kTRUE);
   trdSelection.CalcTriggers( event );
-  
+
   triggerResult += ( trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE) << 1 );
   triggerResult += ( trdSelection.HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU) << 3 );
   // calculate return value depending on required trigger

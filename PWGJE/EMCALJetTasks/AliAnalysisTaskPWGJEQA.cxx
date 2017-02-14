@@ -731,23 +731,31 @@ void AliAnalysisTaskPWGJEQA::ExecOnce()
   AliAnalysisTaskEmcalJet::ExecOnce();
   
   // Load the PHOS geometry
-  Int_t runNum = InputEvent()->GetRunNumber();
-  if(runNum<209122) //Run1
-    fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP");
-  else
-    fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2");
-  
+  fPHOSGeo = AliPHOSGeometry::GetInstance();
   if (fPHOSGeo) {
-    AliOADBContainer geomContainer("phosGeo");
-    geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
-    TObjArray* matrixes = (TObjArray*)geomContainer.GetObject(runNum,"PHOSRotationMatrixes");
-    for(Int_t mod=0; mod<6; mod++) {
-      if(!matrixes->At(mod)) continue;
-      fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod);
-      printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo);
-      ((TGeoHMatrix*)matrixes->At(mod))->Print();
+    AliInfo("Found instance of PHOS geometry!");
+  }
+  else {
+    AliInfo("Creating PHOS geometry!");
+    Int_t runNum = InputEvent()->GetRunNumber();
+    if(runNum<209122) //Run1
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP");
+    else
+      fPHOSGeo =  AliPHOSGeometry::GetInstance("Run2");
+    
+    if (fPHOSGeo) {
+      AliOADBContainer geomContainer("phosGeo");
+      geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
+      TObjArray* matrixes = (TObjArray*)geomContainer.GetObject(runNum,"PHOSRotationMatrixes");
+      for(Int_t mod=0; mod<6; mod++) {
+        if(!matrixes->At(mod)) continue;
+        fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod);
+        printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo);
+        ((TGeoHMatrix*)matrixes->At(mod))->Print();
+      }
     }
   }
+  
 }
 
 //________________________________________________________________________

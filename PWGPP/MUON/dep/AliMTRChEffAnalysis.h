@@ -47,6 +47,7 @@ class AliMTRChEffAnalysis : public TObject {
   Int_t CompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "" ) const;
   Int_t CompareEfficiencyMethods ( const char* source, const char* opt, const char* canvasNameSuffix = "" ) const;
   void CompareMergedEfficiencies ( const char* opt ) const;
+  Int_t ComputeAndCompareEfficiencies ( const char* sources, const char* titles, const char* opt, const char* canvasNameSuffix = "") const;
 
   Bool_t AddSystematicCondition ( const char* physSel, const char* trigClassName, const char* centrality, Int_t itrackSel, Int_t imatch, Int_t imethod );
   Bool_t SetDefaultEffConditions ();

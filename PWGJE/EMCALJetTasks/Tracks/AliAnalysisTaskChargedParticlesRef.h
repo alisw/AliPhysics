@@ -174,13 +174,14 @@ protected:
   /**
    * Fill track (kinematic) histograms
    * @param[in] eventclass Trigger class fired
+   * @param[in] posCharge True if charge is positive, false if charge is negative
    * @param[in] pt track \f$ p_{t} \f$
    * @param[in] etalab Track \f$ \eta \f$ in lab frame
    * @param[in] etacent Track \f$ \eta \f$ in cms frame
    * @param[in] phi Track \f$ \eta \f$ in lab frame
    * @param[in] inEmcal Track in EMCAL \f$ \phi \f$ acceptance
    */
-  void FillTrackHistos(const TString &eventclass, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal);
+  void FillTrackHistos(const TString &eventclass, Bool_t posCharge, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal);
 
   /**
    * Fill PID-related histograms

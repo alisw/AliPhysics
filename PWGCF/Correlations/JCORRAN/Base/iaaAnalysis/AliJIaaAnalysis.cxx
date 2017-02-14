@@ -42,227 +42,227 @@
 ClassImp(AliJIaaAnalysis)
 
 AliJIaaAnalysis::AliJIaaAnalysis() :
-  TObject(),
-  fExecLocal(kTRUE),
-  fFirstEvent(kTRUE),
-  fjtrigg((particleType)-100),
-  fjassoc((particleType)-100),
-  fcard(0),
-  finputFile(0),
-  fInclusiveFile(""),
-  fevt(0),
-  fhistos(0),
-  fcorrelations(0),
-  fAcceptanceCorrection(0x0),
-  fassocPool(0),
-  fphotonList(0),
-  fchargedHadronList(0),
-  fpizeroList(0),
-  ftriggList(0),
-  fassocList(0),
-  finputList(0),
-  fdmg(0),
-  feventHeader(0),
-  frunHeader(0),
-  fcent(0),
-  fbTriggCorrel(0),
-  fbLPCorrel(0),
-  fMinimumPt(0),
-  fEventBC(0),
-  fEfficiency(0),
-  fRunTable(0),
-  fHadronSelectionCut(0)
+	TObject(),
+	fExecLocal(kTRUE),
+	fFirstEvent(kTRUE),
+	fjtrigg((particleType)-100),
+	fjassoc((particleType)-100),
+	fcard(0),
+	finputFile(0),
+	fInclusiveFile(""),
+	fevt(0),
+	fhistos(0),
+	fcorrelations(0),
+	fAcceptanceCorrection(0x0),
+	fassocPool(0),
+	fphotonList(0),
+	fchargedHadronList(0),
+	fpizeroList(0),
+	ftriggList(0),
+	fassocList(0),
+	finputList(0),
+	fdmg(0),
+	feventHeader(0),
+	frunHeader(0),
+	fcent(0),
+	fbTriggCorrel(0),
+	fbLPCorrel(0),
+	fMinimumPt(0),
+	fEventBC(0),
+	fEfficiency(0),
+	fRunTable(0),
+	fHadronSelectionCut(0)
 {
-    // constructor
+	// constructor
 }
 
 AliJIaaAnalysis::AliJIaaAnalysis(Bool_t execLocal) :
-  TObject(),
-  fExecLocal(execLocal),
-  fFirstEvent(kTRUE),
-  fjtrigg((particleType)-100),
-  fjassoc((particleType)-100),
-  fcard(0),
-  finputFile(0),
-  fInclusiveFile(""),
-  fevt(0),
-  fhistos(0),
-  fcorrelations(0),
-  fAcceptanceCorrection(0x0),
-  fassocPool(0),
-  fphotonList(0),
-  fchargedHadronList(0),
-  fpizeroList(0),
-  ftriggList(0),
-  fassocList(0),
-  finputList(0),
-  fdmg(0),
-  feventHeader(0),
-  frunHeader(0),
-  fcent(0),
-  fbTriggCorrel(0),
-  fbLPCorrel(0),
-  fMinimumPt(0),
-  fEventBC(0),
-  fEfficiency(0),
-  fRunTable(0),
-  fHadronSelectionCut(0)
+	TObject(),
+	fExecLocal(execLocal),
+	fFirstEvent(kTRUE),
+	fjtrigg((particleType)-100),
+	fjassoc((particleType)-100),
+	fcard(0),
+	finputFile(0),
+	fInclusiveFile(""),
+	fevt(0),
+	fhistos(0),
+	fcorrelations(0),
+	fAcceptanceCorrection(0x0),
+	fassocPool(0),
+	fphotonList(0),
+	fchargedHadronList(0),
+	fpizeroList(0),
+	ftriggList(0),
+	fassocList(0),
+	finputList(0),
+	fdmg(0),
+	feventHeader(0),
+	frunHeader(0),
+	fcent(0),
+	fbTriggCorrel(0),
+	fbLPCorrel(0),
+	fMinimumPt(0),
+	fEventBC(0),
+	fEfficiency(0),
+	fRunTable(0),
+	fHadronSelectionCut(0)
 {
-    // constructor
+	// constructor
 }
 
 AliJIaaAnalysis::~AliJIaaAnalysis(){
-    // destructor
-  
-  delete fhistos;
-  delete fAcceptanceCorrection;
-  delete fcorrelations;
-  
-  delete fassocPool;
-  
-  delete fphotonList;
-  delete fchargedHadronList;
-  delete fpizeroList;
-  delete ftriggList;
-  delete fassocList;
-  
-  delete fdmg;
-  delete fEfficiency;
+	// destructor
+
+	delete fhistos;
+	delete fAcceptanceCorrection;
+	delete fcorrelations;
+
+	delete fassocPool;
+
+	delete fphotonList;
+	delete fchargedHadronList;
+	delete fpizeroList;
+	delete ftriggList;
+	delete fassocList;
+
+	delete fdmg;
+	delete fEfficiency;
 }
 
 AliJIaaAnalysis::AliJIaaAnalysis(const AliJIaaAnalysis& obj) :
-  TObject(),
-  fExecLocal(obj.fExecLocal),
-  fFirstEvent(obj.fFirstEvent),
-  fjtrigg(obj.fjtrigg),
-  fjassoc(obj.fjassoc),
-  fcard(obj.fcard),
-  finputFile(obj.finputFile),
-  fInclusiveFile(obj.fInclusiveFile),
-  fevt(obj.fevt),
-  fhistos(obj.fhistos),
-  fcorrelations(obj.fcorrelations),
-  fAcceptanceCorrection(obj.fAcceptanceCorrection),
-  fassocPool(obj.fassocPool),
-  fphotonList(obj.fphotonList),
-  fchargedHadronList(obj.fchargedHadronList),
-  fpizeroList(obj.fpizeroList),
-  ftriggList(obj.ftriggList),
-  fassocList(obj.fassocList),
-  finputList(obj.finputList),
-  fdmg(obj.fdmg),
-  feventHeader(obj.feventHeader),
-  frunHeader(obj.frunHeader),
-  fcent(obj.fcent),
-  fbTriggCorrel(obj.fbTriggCorrel),
-  fbLPCorrel(obj.fbLPCorrel),
-  fMinimumPt(obj.fMinimumPt),
-  fEventBC(obj.fEventBC),
-  fEfficiency(obj.fEfficiency),
-  fRunTable(obj.fRunTable),
-  fHadronSelectionCut(obj.fHadronSelectionCut)
+	TObject(),
+	fExecLocal(obj.fExecLocal),
+	fFirstEvent(obj.fFirstEvent),
+	fjtrigg(obj.fjtrigg),
+	fjassoc(obj.fjassoc),
+	fcard(obj.fcard),
+	finputFile(obj.finputFile),
+	fInclusiveFile(obj.fInclusiveFile),
+	fevt(obj.fevt),
+	fhistos(obj.fhistos),
+	fcorrelations(obj.fcorrelations),
+	fAcceptanceCorrection(obj.fAcceptanceCorrection),
+	fassocPool(obj.fassocPool),
+	fphotonList(obj.fphotonList),
+	fchargedHadronList(obj.fchargedHadronList),
+	fpizeroList(obj.fpizeroList),
+	ftriggList(obj.ftriggList),
+	fassocList(obj.fassocList),
+	finputList(obj.finputList),
+	fdmg(obj.fdmg),
+	feventHeader(obj.feventHeader),
+	frunHeader(obj.frunHeader),
+	fcent(obj.fcent),
+	fbTriggCorrel(obj.fbTriggCorrel),
+	fbLPCorrel(obj.fbLPCorrel),
+	fMinimumPt(obj.fMinimumPt),
+	fEventBC(obj.fEventBC),
+	fEfficiency(obj.fEfficiency),
+	fRunTable(obj.fRunTable),
+	fHadronSelectionCut(obj.fHadronSelectionCut)
 {
-  // copy constructor
-  JUNUSED(obj);
+	// copy constructor
+	JUNUSED(obj);
 }
 
 AliJIaaAnalysis& AliJIaaAnalysis::operator=(const AliJIaaAnalysis& obj){
-  // equal sign operator
-  JUNUSED(obj);
-  return *this;
+	// equal sign operator
+	JUNUSED(obj);
+	return *this;
 }
 
 
 void AliJIaaAnalysis::Initialize() const{
-    // init
+	// init
 
 }
 
 void AliJIaaAnalysis::UserCreateOutputObjects(){
-  // local init
-  
-  
-  cout << "jtAnalysis user create output objects ----------------" << endl;
-  
-  fHadronSelectionCut =int ( fcard->Get("HadronSelectionCut"));
-  
-  // Initialize the histograms needed to store the output
-  fhistos = new AliJIaaHistograms( fcard );
-  //if(fcard->Get("QualityControlLevel")>1) fhistos->Set2DHistoCreate(true);
-  //if(fcard->Get("QualityControlLevel")>0) fhistos->SetAcceptanceCorrectionQA(true);
-  fhistos->CreateEventTrackHistos();
-  fhistos->CreateCorrelationHistograms();
-  
-  fhistos->fHMG->Print();
-  
-  fEventBC = (Int_t)(fcard->Get( "eventBC" ));
-  
-  // Create a class for acceptance correction
-  fAcceptanceCorrection = new AliJAcceptanceCorrection(fcard);
-  
-  // Set the number of hits per bin required in the acceptance correction histograms
-  int hitsPerBin = fcard->Get("HitsPerBinAcceptance");
-  fAcceptanceCorrection->SetMinCountsPerBinInclusive(hitsPerBin);
-  if(fcard->Get("AcceptanceTestMode") == 1){
-    fAcceptanceCorrection->SetTestMode(true);
-  }
-  
-  // Create the class doing correlation analysis
-  fcorrelations = new AliJIaaCorrelations( fcard, fhistos);
-  cout<<endl<< " -----" <<endl;
-  
-  // If inclusive file is specified, set inclusive sampling for correlation analysis and
-  // read the inclusive histograms for the acceptance correction and histogram class
-  if( fInclusiveFile.Length() ) {
-    fhistos->ReadInclusiveHistos(fInclusiveFile);
-    fcorrelations->SetSamplingInclusive(); //kperp background and triangle. Default is flat
-    fAcceptanceCorrection->ReadMixedEventHistograms(fInclusiveFile);
-    cout<<"Background and acceptance sampling from " << fInclusiveFile <<endl;
-  } else {
-    cout << "Background and acceptance sampled from flat distributions." <<endl;
-  }
-  cout<< " -----" <<endl <<endl;
-  
-  // Tell the correlation analysis to use the defined acceptance correction
-  fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
-  if(fcard->Get("UseZVertexBins") == 1){
-    fcorrelations->UseZVertexAcceptance(true);
-  }
-  
-  
-  // EventPool for Mixing
-  fassocPool   = new AliJEventPool( fcard, fhistos, fcorrelations, fjassoc);
-  
-  fphotonList = new TClonesArray(kParticleProtoType[kJPhoton],1500);
-  fchargedHadronList  = new TClonesArray(kParticleProtoType[kJHadron],1500);
-  fpizeroList = new TClonesArray(kParticleProtoType[kJPizero],1500);
-  ftriggList  = new TClonesArray(kParticleProtoType[fjtrigg],1500);
-  fassocList  = new TClonesArray(kParticleProtoType[fjassoc],1500);
-  finputList = NULL;
-  
-  fdmg = new AliJDataManager(fcard, fhistos, fcorrelations, fExecLocal);
-  fdmg->SetExecLocal( fExecLocal );
-  
-  //==== Read the Data files =====
-  if( fExecLocal ){
-    fdmg->ChainInputStream(finputFile);
-    
-    // for grid running, numberEvents is filled by the encapsulating
-    // grid task, which has access to the input handlers and can
-    // extract event numbers out of it
-    int nEvents = fdmg->GetNEvents();
-    frunHeader = fdmg->GetRunHeader();
-    cout<<"RunID = "<<frunHeader->GetRunNumber()<< " Looping over "<<nEvents<<" events"<<endl;
-    
-  } else {
-    fdmg->SetRunHeader( frunHeader );
-    frunHeader = fdmg->GetRunHeader();
-  }
+	// local init
+
+
+	cout << "jtAnalysis user create output objects ----------------" << endl;
+
+	fHadronSelectionCut =int ( fcard->Get("HadronSelectionCut"));
+
+	// Initialize the histograms needed to store the output
+	fhistos = new AliJIaaHistograms( fcard );
+	//if(fcard->Get("QualityControlLevel")>1) fhistos->Set2DHistoCreate(true);
+	//if(fcard->Get("QualityControlLevel")>0) fhistos->SetAcceptanceCorrectionQA(true);
+	fhistos->CreateEventTrackHistos();
+	fhistos->CreateCorrelationHistograms();
+
+	fhistos->fHMG->Print();
+
+	fEventBC = (Int_t)(fcard->Get( "eventBC" ));
+
+	// Create a class for acceptance correction
+	fAcceptanceCorrection = new AliJAcceptanceCorrection(fcard);
+
+	// Set the number of hits per bin required in the acceptance correction histograms
+	int hitsPerBin = fcard->Get("HitsPerBinAcceptance");
+	fAcceptanceCorrection->SetMinCountsPerBinInclusive(hitsPerBin);
+	if(fcard->Get("AcceptanceTestMode") == 1){
+		fAcceptanceCorrection->SetTestMode(true);
+	}
+
+	// Create the class doing correlation analysis
+	fcorrelations = new AliJIaaCorrelations( fcard, fhistos);
+	cout<<endl<< " -----" <<endl;
+
+	// If inclusive file is specified, set inclusive sampling for correlation analysis and
+	// read the inclusive histograms for the acceptance correction and histogram class
+	if( fInclusiveFile.Length() ) {
+		fhistos->ReadInclusiveHistos(fInclusiveFile);
+		fcorrelations->SetSamplingInclusive(); //kperp background and triangle. Default is flat
+		fAcceptanceCorrection->ReadMixedEventHistograms(fInclusiveFile);
+		cout<<"Background and acceptance sampling from " << fInclusiveFile <<endl;
+	} else {
+		cout << "Background and acceptance sampled from flat distributions." <<endl;
+	}
+	cout<< " -----" <<endl <<endl;
+
+	// Tell the correlation analysis to use the defined acceptance correction
+	fcorrelations->SetAcceptanceCorrection(fAcceptanceCorrection);
+	if(fcard->Get("UseZVertexBins") == 1){
+		fcorrelations->UseZVertexAcceptance(true);
+	}
+
+
+	// EventPool for Mixing
+	fassocPool   = new AliJEventPool( fcard, fhistos, fcorrelations, fjassoc);
+
+	fphotonList = new TClonesArray(kParticleProtoType[kJPhoton],1500);
+	fchargedHadronList  = new TClonesArray(kParticleProtoType[kJHadron],1500);
+	fpizeroList = new TClonesArray(kParticleProtoType[kJPizero],1500);
+	ftriggList  = new TClonesArray(kParticleProtoType[fjtrigg],1500);
+	fassocList  = new TClonesArray(kParticleProtoType[fjassoc],1500);
+	finputList = NULL;
+
+	fdmg = new AliJDataManager(fcard, fhistos, fcorrelations, fExecLocal);
+	fdmg->SetExecLocal( fExecLocal );
+
+	//==== Read the Data files =====
+	if( fExecLocal ){
+		fdmg->ChainInputStream(finputFile);
+
+		// for grid running, numberEvents is filled by the encapsulating
+		// grid task, which has access to the input handlers and can
+		// extract event numbers out of it
+		int nEvents = fdmg->GetNEvents();
+		frunHeader = fdmg->GetRunHeader();
+		cout<<"RunID = "<<frunHeader->GetRunNumber()<< " Looping over "<<nEvents<<" events"<<endl;
+
+	} else {
+		fdmg->SetRunHeader( frunHeader );
+		frunHeader = fdmg->GetRunHeader();
+	}
 
 	//==== Efficiency ====
 	fEfficiency = new AliJEfficiency;
 	fEfficiency->SetMode( fcard->Get("EfficiencyMode") ); // 0:NoEff, 1:Period 2:RunNum 3:Auto
-	if(fExecLocal) { 
+	if(fExecLocal) {
 		fEfficiency->SetDataPath("/mnt/flustre/alice/taxi_jcorran/2013/EFF/data"); // Efficiency root file location local or alien
 	} else {
 		fEfficiency->SetDataPath("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data"); // Efficiency root file location local or alien
@@ -274,7 +274,7 @@ void AliJIaaAnalysis::UserCreateOutputObjects(){
 	fMinimumPt = fcard->GetBinBorder(kAssocType, 0);
 
 	// Initialize counters
-  fcent = -1;
+	fcent = -1;
 	fhistos->fHMG->WriteConfig();
 	fFirstEvent = kTRUE;
 	fevt = -1;
@@ -284,20 +284,20 @@ void AliJIaaAnalysis::UserCreateOutputObjects(){
 }
 
 void AliJIaaAnalysis::UserExec(){
-  
-  // Variables needed inside loops
-  AliJBaseTrack *triggerTrack;    // Track for the trigger particle
-  AliJBaseTrack *associatedTrack; // Track for the associated particle
-  double ptt;                     // pT of the trigger particle
-  double effCorr;                 // Efficiency correction
-  int iptt;                       // Index of trigger pT bin
-  int ipta;                       // Index of associated pT bin
-  
+
+	// Variables needed inside loops
+	AliJBaseTrack *triggerTrack;    // Track for the trigger particle
+	AliJBaseTrack *associatedTrack; // Track for the associated particle
+	double ptt;                     // pT of the trigger particle
+	double effCorr;                 // Efficiency correction
+	int iptt;                       // Index of trigger pT bin
+	int ipta;                       // Index of associated pT bin
+
 	// event loop
 	fevt++;
 
 	if( fFirstEvent ) {
-    
+
 		// ==== Set the RunTable only in the first event ====
 		fRunTable = &AliJRunTable::GetSpecialInstance();
 		fRunTable->SetRunNumber( frunHeader->GetRunNumber() );
@@ -305,35 +305,37 @@ void AliJIaaAnalysis::UserExec(){
 		cout << "sqrts = "<< sqrtS << ",runnumber = "<< frunHeader->GetRunNumber() << endl;
 		fEfficiency->SetRunNumber( frunHeader->GetRunNumber() );
 		fEfficiency->Load();
+		double b_polarity = (frunHeader->GetL3MagnetFieldIntensity() < 0) ? -1 : 1;
+		fcorrelations->SetMagneticFieldPolarity(b_polarity);
 		fFirstEvent = kFALSE;
 	}
 
-  // Load the event to Data Manager and count events
+	// Load the event to Data Manager and count events
 	fdmg->LoadEvent(fevt);
 	fhistos->fhEvents->Fill( 0 );
 
 	if(!fdmg->IsGoodEvent()) return;  // Vertex cut applied in IsGoodEvent and histo saved there too
 
-  // Read event header and z-vertex position
+	// Read event header and z-vertex position
 	feventHeader  = fdmg->GetEventHeader();
 	double zVert    = feventHeader->GetZVertex();
 	//----------------------------------------------------------
 
-  // Read the trigger mask
+	// Read the trigger mask
 	UInt_t triggermaskJCorran = feventHeader->GetTriggerMaskJCorran();
 
-  if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
+	if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
 		fhistos->fhEvents->Fill( 5 );
-  }
+	}
 
 	// select only some BC%4
-  if( feventHeader->GetBunchCrossNumber() % 4 != fEventBC && fEventBC > -1 ){
+	if( feventHeader->GetBunchCrossNumber() % 4 != fEventBC && fEventBC > -1 ){
 		return;
-  }
+	}
 
-  if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
+	if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
 		fhistos->fhEvents->Fill( 6 );
-  }
+	}
 
 	if(fRunTable->IsHeavyIon() || fRunTable->IsPA()){
 		fcent = feventHeader->GetCentrality();
@@ -344,16 +346,16 @@ void AliJIaaAnalysis::UserExec(){
 	int cBin        = fcard->GetBin(kCentrType, fcent);
 	if(cBin<0) return;
 
-  if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
+	if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
 		fhistos->fhEvents->Fill( 7 );
-  }
+	}
 
 	int zBin        = fcard->GetBin(kZVertType, zVert); //should be alway >0; checked in fdmg->IsGoodEvent()
 
 	// do not fill MB in case of MB mixing
-  if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
+	if( fdmg->IsSelectedTrigger((int) triggermaskJCorran)){
 		fhistos->fhZVert[cBin]->Fill(zVert);
-  }
+	}
 
 	//------------------------------------------------------------------
 	// Triggers and associated
@@ -375,8 +377,8 @@ void AliJIaaAnalysis::UserExec(){
 		}
 	}
 
-	//---- assign input list ---- 
-	if(fjtrigg==kJPizero)      finputList = fpizeroList;  
+	//---- assign input list ----
+	if(fjtrigg==kJPizero)      finputList = fpizeroList;
 	else if(fjtrigg==kJHadron) finputList = fchargedHadronList;
 	else if(fjtrigg==kJPhoton) finputList = fphotonList;
 	int noAllTriggTracks = finputList->GetEntries();
@@ -425,7 +427,7 @@ void AliJIaaAnalysis::UserExec(){
 	//--------------------------------------------------
 	fassocList->Clear();
 	int noAssocs=0;
-	if(fjassoc==kJPizero) finputList = fpizeroList;  
+	if(fjassoc==kJPizero) finputList = fpizeroList;
 	else if(fjassoc==kJHadron) finputList = fchargedHadronList;
 	else if(fjassoc==kJPhoton) finputList = fphotonList;
 
@@ -437,7 +439,7 @@ void AliJIaaAnalysis::UserExec(){
 		associatedTrack = (AliJBaseTrack*)finputList->At(itrack);
 		associatedTrack->SetAssocBin( fcard->GetBin(kAssocType, associatedTrack->Pt()) );
 
-		if(associatedTrack->IsInAssocBin()){ 
+		if(associatedTrack->IsInAssocBin()){
 
 			ipta  = associatedTrack->GetAssocBin();
 			effCorr = 1.0/associatedTrack->GetTrackEff();
@@ -459,21 +461,26 @@ void AliJIaaAnalysis::UserExec(){
 	if(noAssocs>0 ) fassocPool->AcceptList(fassocList, fcent, zVert, noAllChargedTracks, fevt);
 
 	//------------------------------------------------------------------
-	// Do the Correlation 
+	// Do the Correlation
 	//----------------------ooooo---------------------------------------
 	int nTriggerTracks=-1;
 	nTriggerTracks = fbTriggCorrel ? noTriggs : 1;
-	if(fbLPCorrel && !lpTrackCounter->Exists()) return;
+	if(fbLPCorrel && !lpTrackCounter->Exists())
+	{
+		delete lpTrackCounter;
+        //delete fbLPCorrel;
+		return;
+	}
 	triggerTrack = NULL;
 
-	for(int ii=0;ii<nTriggerTracks;ii++){ // trigger loop 
+	for(int ii=0;ii<nTriggerTracks;ii++){ // trigger loop
 		if (fbTriggCorrel)  triggerTrack = (AliJBaseTrack*)ftriggList->At(ii);
 		if (fbLPCorrel)     triggerTrack = (AliJBaseTrack*)ftriggList->At(lpTrackCounter->GetIndex());
 
 		ptt = triggerTrack->Pt();
 		iptt   = triggerTrack->GetTriggBin();
 		if(iptt<0) {
-			cout<<"Not registered trigger ! I better stop here." <<endl; 
+			cout<<"Not registered trigger ! I better stop here." <<endl;
 			exit(-1);
 		}
 		effCorr = 1.0/triggerTrack->GetTrackEff();
@@ -487,15 +494,15 @@ void AliJIaaAnalysis::UserExec(){
 			//-------------------------------------------------------------
 		} // end assoc loop
 	} // end trigg loop
-  
+
 	// ===== Event mixing =====
-  fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, noAllChargedTracks, fevt, fbLPCorrel);
+	fassocPool->Mix(ftriggList, kAzimuthFill, fcent, zVert, noAllChargedTracks, fevt, fbLPCorrel);
 
 	//--------------------------------------------------------------
 	// End of the Correlation
 	//--------------------------------------------------------------
-  
-  delete lpTrackCounter;
+
+	delete lpTrackCounter;
 
 
 }
@@ -522,5 +529,5 @@ particleType  AliJIaaAnalysis::GetParticleType(char *inchar){
 double AliJIaaAnalysis::DeltaPhi(double phi1, double phi2) {
 	// dphi
 	double res =  atan2(sin(phi1-phi2), cos(phi1-phi2));
-	return res>-kJPi*9./20. ? res : kJTwoPi+res ; 
+	return res>-kJPi*0.5 ? res : kJTwoPi+res ;
 }

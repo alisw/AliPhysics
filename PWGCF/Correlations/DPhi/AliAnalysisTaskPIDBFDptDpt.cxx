@@ -73,153 +73,164 @@ ClassImp(AliAnalysisTaskPIDBFDptDpt)
 AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt()
 : AliAnalysisTaskSE(),
   fNSigmaPID( 2 ),
+  ptUpperLimit( 2.0 ),
+  electronNSigmaVeto( 1.0 ),
   fRemoveTracksT0Fill( 0 ),
   fHasTOFPID( 0 ),
-fAODEvent(0),
-fESDEvent(0),
-fInputHandler(0),
-fPIDResponse(0x0),
-_outputHistoList(0),
-_twoPi         ( 2.0 * 3.1415927),
-_eventCount    ( 0),
-_debugLevel    ( 0),
-_singlesOnly   ( 0),
-_useWeights    ( 0),
-_useRapidity   ( 0),
-_sameFilter    ( false),
-_rejectPileup  ( 1),
-_rejectPairConversion ( 0),
-_vertexZMin           ( -6),
-_vertexZMax           (  6),
-_vertexZWidth         (0.5),
-_etaWidth             (0.1),
-_vertexXYMin          ( -10),
-_vertexXYMax          (  10),
-_centralityMethod     (  4),
-_centralityMin        (  0.),
-_centralityMax        (  0.),
-_requestedCharge_1    (   1),
-_requestedCharge_2    (  -1),
-_dcaZMin              ( -3),
-_dcaZMax              (  3.),
-_dcaXYMin             ( -2.4),
-_dcaXYMax             (  2.4),
-_dedxMin              ( 0),
-_dedxMax              ( 100000),
-_nClusterMin          ( 80),
-_trackFilterBit       (0),
-fAnalysisType         ( "RealData" ),
-fSystemType           ( "PbPb" ),
-fExcludeResonancesInMC ( kFALSE ),
-fExcludeElectronsInMC ( kFALSE ),
-particleSpecies       ( 0 ),
-_tpcnclus             ( 50),
-_chi2ndf              (5.),
-_field    ( 1.),
-_nTracks  ( 0 ),
-_mult0    ( 0 ),
-_mult1    ( 0 ),
-_mult2    ( 0 ),
-_mult3    ( 0 ),
-_mult4    ( 0 ),
-_mult4a    ( 0 ),
-_mult5    ( 0 ),
-_mult6    ( 0 ),
-arraySize ( 5000),
-_id_1(0),
-_charge_1(0),
-_iEtaPhi_1(0),
-_iPt_1(0),
-_pt_1(0),
-_px_1(0),
-_py_1(0),
-_pz_1(0),
-_correction_1(0),
-_dedx_1(0),
-_id_2(0),
-_charge_2(0),
-_iEtaPhi_2(0),
-_iPt_2(0),
-_pt_2(0),
-_px_2(0),
-_py_2(0),
-_pz_2(0),
-_correction_2(0),
-_dedx_2(0),
-_correctionWeight_1(0),
-_correctionWeight_2(0),
-_nBins_M0(500),       _min_M0(0),        _max_M0(10000),          _width_M0(20),
-_nBins_M1(500),       _min_M1(0),        _max_M1(10000),          _width_M1(20),
-_nBins_M2(500),       _min_M2(0),        _max_M2(10000),          _width_M2(20),
-_nBins_M3(500),       _min_M3(0),        _max_M3(10000),          _width_M3(20),
-_nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
-_nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
-_nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
-_nBins_vertexZ(120),   _min_vertexZ(-6), _max_vertexZ(6),        _width_vertexZ(0.1),
+  fAODEvent(0),
+  fESDEvent(0),
+  fInputHandler(0),
+  fPIDResponse(0x0),
+  _outputHistoList(0),
+  _twoPi         ( 2.0 * 3.1415927),
+  _eventCount    ( 0),
+  _debugLevel    ( 0),
+  _singlesOnly   ( 0),
+  PIDparticle   ( 0),
+  NoContamination   ( 0),
+  _useWeights    ( 0),
+  _useRapidity   ( 0),
+  _sameFilter    ( false),
+  _rejectPileup  ( 1),
+  _rejectPairConversion ( 0),
+  _vertexZMin           ( -6),
+  _vertexZMax           (  6),
+  _vertexZWidth         (0.5),
+  _etaWidth             (0.1),
+  _vertexXYMin          ( -10),
+  _vertexXYMax          (  10),
+  _centralityMethod     (  4),
+  _centralityMin        (  0.),
+  _centralityMax        (  0.),
+  _requestedCharge_1    (   1),
+  _requestedCharge_2    (  -1),
+  _dcaZMin              ( -3),
+  _dcaZMax              (  3.),
+  _dcaXYMin             ( -2.4),
+  _dcaXYMax             (  2.4),
+  _dedxMin              ( 0),
+  _dedxMax              ( 100000),
+  _nClusterMin          ( 80),
+  _trackFilterBit       (0),
+  fAnalysisType         ( "RealData" ),
+  fSystemType           ( "PbPb" ),
+  fExcludeResonancesInMC ( kFALSE ),
+  fExcludeElectronsInMC ( kFALSE ),
+  particleSpecies       ( 0 ),
+  _tpcnclus             ( 50),
+  _chi2ndf              (5.),
+  _field    ( 1.),
+  _nTracks  ( 0 ),
+  _mult0    ( 0 ),
+  _mult1    ( 0 ),
+  _mult2    ( 0 ),
+  _mult3    ( 0 ),
+  _mult4    ( 0 ),
+  _mult4a    ( 0 ),
+  _mult5    ( 0 ),
+  _mult6    ( 0 ),
+  arraySize ( 5000),
+  _id_1(0),
+  _charge_1(0),
+  _iEtaPhi_1(0),
+  _iPt_1(0),
+  _pt_1(0),
+  _px_1(0),
+  _py_1(0),
+  _pz_1(0),
+  _correction_1(0),
+  _dedx_1(0),
+  _id_2(0),
+  _charge_2(0),
+  _iEtaPhi_2(0),
+  _iPt_2(0),
+  _pt_2(0),
+  _px_2(0),
+  _py_2(0),
+  _pz_2(0),
+  _correction_2(0),
+  _dedx_2(0),
+  _correctionWeight_1(0),
+  _correctionWeight_2(0),
+  _nBins_M0(500),       _min_M0(0),        _max_M0(10000),          _width_M0(20),
+  _nBins_M1(500),       _min_M1(0),        _max_M1(10000),          _width_M1(20),
+  _nBins_M2(500),       _min_M2(0),        _max_M2(10000),          _width_M2(20),
+  _nBins_M3(500),       _min_M3(0),        _max_M3(10000),          _width_M3(20),
+  _nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
+  _nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
+  _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
+  _nBins_vertexZ(120),   _min_vertexZ(-6), _max_vertexZ(6),        _width_vertexZ(0.1),
 
-_nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
-_nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
-_nBins_eta_1(0),      _min_eta_1(0),  _max_eta_1(0),           _width_eta_1(0.1),
+  _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
+  _nBins_phi_1(36),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/36.),
+  _nBins_eta_1(0),      _min_eta_1(0),  _max_eta_1(0),           _width_eta_1(0.1),
 
-_nBins_etaPhi_1(0),
-_nBins_etaPhiPt_1(0),
-_nBins_zEtaPhiPt_1(0),
+  _nBins_etaPhi_1(0),
+  _nBins_etaPhiPt_1(0),
+  _nBins_zEtaPhiPt_1(0),
 
-_nBins_pt_2(18),     _min_pt_2(0.2),     _max_pt_2(2.0),          _width_pt_2(0.1),
-_nBins_phi_2(72),    _min_phi_2(0),      _max_phi_2(2.*3.1415927),_width_phi_2(2.*3.1415927/72),
-_nBins_eta_2(0),     _min_eta_2(0),     _max_eta_2(0),           _width_eta_2(0.1),
+  _nBins_pt_2(18),     _min_pt_2(0.2),     _max_pt_2(2.0),          _width_pt_2(0.1),
+  _nBins_phi_2(36),    _min_phi_2(0),      _max_phi_2(2.*3.1415927),_width_phi_2(2.*3.1415927/36.),
+  _nBins_eta_2(0),     _min_eta_2(0),     _max_eta_2(0),           _width_eta_2(0.1),
 
-_nBins_etaPhi_2(0),
-_nBins_etaPhiPt_2(0),
-_nBins_zEtaPhiPt_2(0),
-_nBins_etaPhi_12(0),
-__n1_1(0),
-__n1_2(0),
-__n2_12(0),
-__s1pt_1(0),
-__s1pt_2(0),
-__s2ptpt_12(0),
-__s2NPt_12(0),
-__s2PtN_12(0),
-__n1Nw_1(0),
-__n1Nw_2(0),
-__n2Nw_12(0),
-__s1ptNw_1(0),
-__s1ptNw_2(0),
-__s2ptptNw_12(0),
-__s2NPtNw_12(0),
-__s2PtNNw_12(0),
-__n1_1_vsPt(0),
-__n1_1_vsEtaPhi(0),
-__s1pt_1_vsEtaPhi(0),
-__n1_1_vsZEtaPhiPt(0),
-__n1_2_vsPt(0),
-__n1_2_vsEtaPhi(0),
-__s1pt_2_vsEtaPhi(0),
-__n1_2_vsZEtaPhiPt(0),
-__n2_12_vsPtPt(0),
-__n2_12_vsEtaPhi(0),
-__s2ptpt_12_vsEtaPhi(0),
-__s2PtN_12_vsEtaPhi(0),
-__s2NPt_12_vsEtaPhi(0),
-_weight_1      ( 0    ),
-_weight_2      ( 0    ),
-_eventAccounting ( 0),
-_m0 ( 0),
-_m1 ( 0),
-_m2 ( 0),
-_m3 ( 0),
-_m4 ( 0),
-_m5 ( 0),
-_m6 ( 0),
-_vertexZ ( 0),
+  _nBins_etaPhi_2(0),
+  _nBins_etaPhiPt_2(0),
+  _nBins_zEtaPhiPt_2(0),
+  _nBins_etaPhi_12(0),
+  __n1_1(0),
+  __n1_2(0),
+  __n2_12(0),
+  __s1pt_1(0),
+  __s1pt_2(0),
+  __s2ptpt_12(0),
+  __s2NPt_12(0),
+  __s2PtN_12(0),
+  __n1Nw_1(0),
+  __n1Nw_2(0),
+  __n2Nw_12(0),
+  __s1ptNw_1(0),
+  __s1ptNw_2(0),
+  __s2ptptNw_12(0),
+  __s2NPtNw_12(0),
+  __s2PtNNw_12(0),
+  __n1_1_vsPt(0),
+  __n1_1_vsEtaPhi(0),
+  __s1pt_1_vsEtaPhi(0),
+  __n1_1_vsZEtaPhiPt(0),
+  __n1_2_vsPt(0),
+  __n1_2_vsEtaPhi(0),
+  __s1pt_2_vsEtaPhi(0),
+  __n1_2_vsZEtaPhiPt(0),
+  __n2_12_vsPtPt(0),
+  __n2_12_vsEtaPhi(0),
+  __s2ptpt_12_vsEtaPhi(0),
+  __s2PtN_12_vsEtaPhi(0),
+  __s2NPt_12_vsEtaPhi(0),
+  _weight_1      ( 0    ),
+  _weight_2      ( 0    ),
+  _eventAccounting ( 0),
+  _m0 ( 0),
+  _m1 ( 0),
+  _m2 ( 0),
+  _m3 ( 0),
+  _m4 ( 0),
+  _m5 ( 0),
+  _m6 ( 0),
+  _vertexZ ( 0),
 
   _Ncluster1  ( 0),
   _Ncluster2  ( 0),
 
   _t0_1d (0),
   _timeTOF_1d (0),
+  _realTOF_1d (0),
   _trackLength (0),
+  _trackLength_GetIntegratedLength(0),
+  _t0_1d_POI (0),
+  _timeTOF_1d_POI (0),
+  _realTOF_1d_POI (0),
+  _trackLength_POI (0),
+  _trackLength_GetIntegratedLength_POI(0),
 
   _nsigmakaon_1d (0),
   _nsigmaTOFkaon_1d (0), 
@@ -233,6 +244,8 @@ _vertexZ ( 0),
   _beta_p_POI_AliHelperPID (0),
   _inverse_beta_p_POI_AliHelperPID (0),
   _msquare_p_POI_AliHelperPID (0),
+  _nSigmaTOF_p_POI (0),
+  _nSigmaTOF_p (0),
 
   _dedx_p_AliHelperPID_no_Undefined (0),
   _beta_p_AliHelperPID_no_Undefined (0),
@@ -252,302 +265,311 @@ _vertexZ ( 0),
   _phidis_POI_AliHelperPID ( 0),
   _phidis_before_any_cuts ( 0),
 
-_dcaz   ( 0),
-_dcaxy  ( 0),
-_n1_1_vsPt         ( 0),
-_n1_1_vsEtaVsPhi   ( 0),
-_s1pt_1_vsEtaVsPhi ( 0),
-_n1_1_vsZVsEtaVsPhiVsPt ( 0),
-_n1_1_vsM          ( 0),
-_s1pt_1_vsM        ( 0),
-_n1Nw_1_vsM        ( 0),
-_s1ptNw_1_vsM      ( 0),
-_dedxVsP_1         ( 0),
-_corrDedxVsP_1     ( 0),
-_betaVsP_1         ( 0),
-_n1_2_vsPt         ( 0),
-_n1_2_vsEtaVsPhi   ( 0),
-_s1pt_2_vsEtaVsPhi ( 0),
-_n1_2_vsZVsEtaVsPhiVsPt ( 0),
-_n1_2_vsM          ( 0),
-_s1pt_2_vsM        ( 0),
-_n1Nw_2_vsM        ( 0),
-_s1ptNw_2_vsM      ( 0),
-_dedxVsP_2         ( 0),
-_corrDedxVsP_2     ( 0),
-_betaVsP_2         ( 0),
-_n2_12_vsEtaPhi    ( 0),
-_n2_12_vsPtVsPt    ( 0),
-_s2PtPt_12_vsEtaPhi( 0),
-_s2PtN_12_vsEtaPhi ( 0),
-_s2NPt_12_vsEtaPhi ( 0),
-_n2_12_vsM         ( 0),
-_s2PtPt_12_vsM     ( 0),
-_s2PtN_12_vsM      ( 0),
-_s2NPt_12_vsM      ( 0),
-_n2Nw_12_vsM       ( 0),
-_s2PtPtNw_12_vsM   ( 0),
-_s2PtNNw_12_vsM    ( 0),
-_s2NPtNw_12_vsM    ( 0),
-_invMass           ( 0),
-_invMassElec       ( 0),
-n1Name("NA"),
-n1NwName("NA"),
-n2Name("NA"),
-n2NwName("NA"),
-n3Name("NA"),
-n1n1Name("NA"),
-n1n1n1Name("NA"),
-n2n1Name("NA"),
-r1Name("NA"),
-r2Name("NA"),
-r3Name("NA"),
-r2r1Name("NA"),
-c2Name("NA"),
-c3Name("NA"),
-d3Name("NA"),
-p3Name("NA"),
-cName("NA"),
+  _dcaz   ( 0),
+  _dcaxy  ( 0),
+  _n1_1_vsPt         ( 0),
+  _n1_1_vsEtaVsPhi   ( 0),
+  _s1pt_1_vsEtaVsPhi ( 0),
+  _n1_1_vsZVsEtaVsPhiVsPt ( 0),
+  _n1_1_vsM          ( 0),
+  _s1pt_1_vsM        ( 0),
+  _n1Nw_1_vsM        ( 0),
+  _s1ptNw_1_vsM      ( 0),
+  _dedxVsP_1         ( 0),
+  _corrDedxVsP_1     ( 0),
+  _betaVsP_1         ( 0),
+  _n1_2_vsPt         ( 0),
+  _n1_2_vsEtaVsPhi   ( 0),
+  _s1pt_2_vsEtaVsPhi ( 0),
+  _n1_2_vsZVsEtaVsPhiVsPt ( 0),
+  _n1_2_vsM          ( 0),
+  _s1pt_2_vsM        ( 0),
+  _n1Nw_2_vsM        ( 0),
+  _s1ptNw_2_vsM      ( 0),
+  _dedxVsP_2         ( 0),
+  _corrDedxVsP_2     ( 0),
+  _betaVsP_2         ( 0),
+  _n2_12_vsEtaPhi    ( 0),
+  _n2_12_vsPtVsPt    ( 0),
+  _s2PtPt_12_vsEtaPhi( 0),
+  _s2PtN_12_vsEtaPhi ( 0),
+  _s2NPt_12_vsEtaPhi ( 0),
+  _n2_12_vsM         ( 0),
+  _s2PtPt_12_vsM     ( 0),
+  _s2PtN_12_vsM      ( 0),
+  _s2NPt_12_vsM      ( 0),
+  _n2Nw_12_vsM       ( 0),
+  _s2PtPtNw_12_vsM   ( 0),
+  _s2PtNNw_12_vsM    ( 0),
+  _s2NPtNw_12_vsM    ( 0),
+  _invMass           ( 0),
+  _invMassElec       ( 0),
+  n1Name("NA"),
+  n1NwName("NA"),
+  n2Name("NA"),
+  n2NwName("NA"),
+  n3Name("NA"),
+  n1n1Name("NA"),
+  n1n1n1Name("NA"),
+  n2n1Name("NA"),
+  r1Name("NA"),
+  r2Name("NA"),
+  r3Name("NA"),
+  r2r1Name("NA"),
+  c2Name("NA"),
+  c3Name("NA"),
+  d3Name("NA"),
+  p3Name("NA"),
+  cName("NA"),
 
-intR2Name("NA"),
-binCorrName("NA"),
-intBinCorrName("NA"),
+  intR2Name("NA"),
+  binCorrName("NA"),
+  intBinCorrName("NA"),
 
-countsName("NA"),
-part_1_Name("NA"),
-part_2_Name("NA"),
-part_3_Name("NA"),
-pair_12_Name("NA"),
-pair_13_Name("NA"),
-pair_23_Name("NA"),
-tripletName("NA"),
+  countsName("NA"),
+  part_1_Name("NA"),
+  part_2_Name("NA"),
+  part_3_Name("NA"),
+  pair_12_Name("NA"),
+  pair_13_Name("NA"),
+  pair_23_Name("NA"),
+  tripletName("NA"),
 
-avg("NA"),
-avgName("NA"),
-sumName("NA"),
-s1ptName("NA"),
-s1ptNwName("NA"),
-s1DptName("NA"),
+  avg("NA"),
+  avgName("NA"),
+  sumName("NA"),
+  s1ptName("NA"),
+  s1ptNwName("NA"),
+  s1DptName("NA"),
 
-s2PtPtName("NA"),
-s2NPtName("NA"),
-s2PtNName("NA"),
-s2DptDptName("NA"),
+  s2PtPtName("NA"),
+  s2NPtName("NA"),
+  s2PtNName("NA"),
+  s2DptDptName("NA"),
 
-s2PtPtNwName("NA"),
-s2NPtNwName("NA"),
-s2PtNNwName("NA"),
+  s2PtPtNwName("NA"),
+  s2NPtNwName("NA"),
+  s2PtNNwName("NA"),
 
-ptName("NA"),
-ptptName("NA"),
-pt1pt1Name("NA"),
-DptName("NA"),
-DptDptName("NA"),
-RDptDptName("NA"),
-nPtName("NA"),
-ptNName("NA"),
-seanName("NA"),
+  ptName("NA"),
+  ptptName("NA"),
+  pt1pt1Name("NA"),
+  DptName("NA"),
+  DptDptName("NA"),
+  RDptDptName("NA"),
+  nPtName("NA"),
+  ptNName("NA"),
+  seanName("NA"),
 
-_title_counts("NA"),
+  _title_counts("NA"),
 
-_title_m0("NA"),
-_title_m1("NA"),
-_title_m2("NA"),
-_title_m3("NA"),
-_title_m4("NA"),
-_title_m5("NA"),
-_title_m6("NA"),
+  _title_m0("NA"),
+  _title_m1("NA"),
+  _title_m2("NA"),
+  _title_m3("NA"),
+  _title_m4("NA"),
+  _title_m5("NA"),
+  _title_m6("NA"),
 
-_title_eta_1("NA"),
-_title_phi_1("NA"),
-_title_pt_1("NA"),
-_title_etaPhi_1("NA"),
-_title_n_1("NA"),
-_title_SumPt_1("NA"),
-_title_AvgPt_1("NA"),
-_title_AvgN_1("NA"),
-_title_AvgSumPt_1("NA"),
+  _title_eta_1("NA"),
+  _title_phi_1("NA"),
+  _title_pt_1("NA"),
+  _title_etaPhi_1("NA"),
+  _title_n_1("NA"),
+  _title_SumPt_1("NA"),
+  _title_AvgPt_1("NA"),
+  _title_AvgN_1("NA"),
+  _title_AvgSumPt_1("NA"),
 
-_title_eta_2("NA"),
-_title_phi_2("NA"),
-_title_pt_2("NA"),
-_title_etaPhi_2("NA"),
-_title_n_2("NA"),
-_title_SumPt_2("NA"),
-_title_AvgPt_2("NA"),
-_title_AvgN_2("NA"),
-_title_AvgSumPt_2("NA"),
+  _title_eta_2("NA"),
+  _title_phi_2("NA"),
+  _title_pt_2("NA"),
+  _title_etaPhi_2("NA"),
+  _title_n_2("NA"),
+  _title_SumPt_2("NA"),
+  _title_AvgPt_2("NA"),
+  _title_AvgN_2("NA"),
+  _title_AvgSumPt_2("NA"),
 
-_title_etaPhi_12("NA"),
+  _title_etaPhi_12("NA"),
 
-_title_AvgN2_12("NA"),
-_title_AvgSumPtPt_12("NA"),
-_title_AvgSumPtN_12("NA"),
-_title_AvgNSumPt_12("NA"),
+  _title_AvgN2_12("NA"),
+  _title_AvgSumPtPt_12("NA"),
+  _title_AvgSumPtN_12("NA"),
+  _title_AvgNSumPt_12("NA"),
 
-vsZ("NA"),
-vsM("NA"),
-vsPt("NA"),
-vsPhi("NA"),
-vsEta("NA"),
-vsEtaPhi("NA"),
-vsPtVsPt("NA")
+  vsZ("NA"),
+  vsM("NA"),
+  vsPt("NA"),
+  vsPhi("NA"),
+  vsEta("NA"),
+  vsEtaPhi("NA"),
+  vsPtVsPt("NA")
 {
-    printf("Default constructor called \n");
-    
+    printf("Default constructor called \n");  
     printf("passed \n ");
-    
 }
 
 AliAnalysisTaskPIDBFDptDpt::AliAnalysisTaskPIDBFDptDpt(const TString & name)
 : AliAnalysisTaskSE(name),
   fNSigmaPID( 2 ),
+  ptUpperLimit( 2.0 ),
+  electronNSigmaVeto( 1.0 ),
   fRemoveTracksT0Fill( 0 ),
   fHasTOFPID( 0 ),
-fAODEvent(0),
-fESDEvent(0),
-fInputHandler(0),
-fPIDResponse(0),
-_outputHistoList(0),
-_twoPi         ( 2.0 * 3.1415927),
-_eventCount    ( 0),
-_debugLevel    ( 0),
-_singlesOnly   ( 0),
-_useWeights    ( 0),
-_useRapidity   ( 0),
-_sameFilter    ( false),
-_rejectPileup  ( 1),
-_rejectPairConversion ( 0),
-_vertexZMin           ( -6.),
-_vertexZMax           (  6.),
-_vertexZWidth         (0.5 ),
-_etaWidth             (0.1),
-_vertexXYMin          ( -10.),
-_vertexXYMax          (  10.),
-_centralityMethod     (  4),
-_centralityMin        (  0.),
-_centralityMax        (  1.),
-_requestedCharge_1    (   1),
-_requestedCharge_2    (  -1),
-_dcaZMin              ( -3),
-_dcaZMax              (  3.),
-_dcaXYMin             ( -2.4),
-_dcaXYMax             (  2.4),
-_dedxMin              ( 0),
-_dedxMax              ( 100000),
-_nClusterMin          ( 80),
-_trackFilterBit       ( 0),
-fAnalysisType         ( "RealData" ),
-fSystemType           ( "PbPb" ),
-fExcludeResonancesInMC ( kFALSE ),
-fExcludeElectronsInMC ( kFALSE ),
-particleSpecies       ( 0 ),
-_tpcnclus             ( 50),
-_chi2ndf              (5.),
-_field    ( 1.),
-_nTracks  ( 0 ),
-_mult0    ( 0 ),
-_mult1    ( 0 ),
-_mult2    ( 0 ),
-_mult3    ( 0 ),
-_mult4    ( 0 ),
-_mult4a    ( 0 ),
-_mult5    ( 0 ),
-_mult6    ( 0 ),
-arraySize ( 5000),
-_id_1(0),
-_charge_1(0),
-_iEtaPhi_1(0),
-_iPt_1(0),
-_pt_1(0),
-_px_1(0),
-_py_1(0),
-_pz_1(0),
-_correction_1(0),
-_dedx_1(0),
-_id_2(0),
-_charge_2(0),
-_iEtaPhi_2(0),
-_iPt_2(0),
-_pt_2(0),
-_px_2(0),
-_py_2(0),
-_pz_2(0),
-_correction_2(0),
-_dedx_2(0),
-_correctionWeight_1(0),
-_correctionWeight_2(0),
-_nBins_M0(500),       _min_M0(0),        _max_M0(10000),          _width_M0(20),
-_nBins_M1(500),       _min_M1(0),        _max_M1(10000),          _width_M1(20),
-_nBins_M2(500),       _min_M2(0),        _max_M2(10000),          _width_M2(20),
-_nBins_M3(500),       _min_M3(0),        _max_M3(10000),          _width_M3(20),
-_nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
-_nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
-_nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
-_nBins_vertexZ(120),   _min_vertexZ(-6), _max_vertexZ(6),        _width_vertexZ(0.1),
+  fAODEvent(0),
+  fESDEvent(0),
+  fInputHandler(0),
+  fPIDResponse(0),
+  _outputHistoList(0),
+  _twoPi         ( 2.0 * 3.1415927),
+  _eventCount    ( 0),
+  _debugLevel    ( 0),
+  _singlesOnly   ( 0),
+  PIDparticle    ( 0),
+  NoContamination   ( 0),
+  _useWeights    ( 0),
+  _useRapidity   ( 0),
+  _sameFilter    ( false),
+  _rejectPileup  ( 1),
+  _rejectPairConversion ( 0),
+  _vertexZMin           ( -6.),
+  _vertexZMax           (  6.),
+  _vertexZWidth         (0.5 ),
+  _etaWidth             (0.1),
+  _vertexXYMin          ( -10.),
+  _vertexXYMax          (  10.),
+  _centralityMethod     (  4),
+  _centralityMin        (  0.),
+  _centralityMax        (  1.),
+  _requestedCharge_1    (   1),
+  _requestedCharge_2    (  -1),
+  _dcaZMin              ( -3),
+  _dcaZMax              (  3.),
+  _dcaXYMin             ( -2.4),
+  _dcaXYMax             (  2.4),
+  _dedxMin              ( 0),
+  _dedxMax              ( 100000),
+  _nClusterMin          ( 80),
+  _trackFilterBit       ( 0),
+  fAnalysisType         ( "RealData" ),
+  fSystemType           ( "PbPb" ),
+  fExcludeResonancesInMC ( kFALSE ),
+  fExcludeElectronsInMC ( kFALSE ),
+  particleSpecies       ( 0 ),
+  _tpcnclus             ( 50),
+  _chi2ndf              (5.),
+  _field    ( 1.),
+  _nTracks  ( 0 ),
+  _mult0    ( 0 ),
+  _mult1    ( 0 ),
+  _mult2    ( 0 ),
+  _mult3    ( 0 ),
+  _mult4    ( 0 ),
+  _mult4a    ( 0 ),
+  _mult5    ( 0 ),
+  _mult6    ( 0 ),
+  arraySize ( 5000),
+  _id_1(0),
+  _charge_1(0),
+  _iEtaPhi_1(0),
+  _iPt_1(0),
+  _pt_1(0),
+  _px_1(0),
+  _py_1(0),
+  _pz_1(0),
+  _correction_1(0),
+  _dedx_1(0),
+  _id_2(0),
+  _charge_2(0),
+  _iEtaPhi_2(0),
+  _iPt_2(0),
+  _pt_2(0),
+  _px_2(0),
+  _py_2(0),
+  _pz_2(0),
+  _correction_2(0),
+  _dedx_2(0),
+  _correctionWeight_1(0),
+  _correctionWeight_2(0),
+  _nBins_M0(500),       _min_M0(0),        _max_M0(10000),          _width_M0(20),
+  _nBins_M1(500),       _min_M1(0),        _max_M1(10000),          _width_M1(20),
+  _nBins_M2(500),       _min_M2(0),        _max_M2(10000),          _width_M2(20),
+  _nBins_M3(500),       _min_M3(0),        _max_M3(10000),          _width_M3(20),
+  _nBins_M4(100),       _min_M4(0),        _max_M4(1),              _width_M4(0.01),
+  _nBins_M5(100),       _min_M5(0),        _max_M5(1),              _width_M5(0.01),
+  _nBins_M6(100),       _min_M6(0),        _max_M6(1),              _width_M6(0.01),
+  _nBins_vertexZ(120),   _min_vertexZ(-6), _max_vertexZ(6),        _width_vertexZ(0.1),
 
-_nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
-_nBins_phi_1(72),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/72.),
-_nBins_eta_1(0),      _min_eta_1(0),    _max_eta_1(0),           _width_eta_1(0.1),
+  _nBins_pt_1(18),      _min_pt_1(0.2),    _max_pt_1(2.0),          _width_pt_1(0.1),
+  _nBins_phi_1(36),     _min_phi_1(0),     _max_phi_1(2.*3.1415927),_width_phi_1(2.*3.1415927/36.),
+  _nBins_eta_1(0),      _min_eta_1(0),    _max_eta_1(0),           _width_eta_1(0.1),
 
-_nBins_etaPhi_1(0),
-_nBins_etaPhiPt_1(0),
-_nBins_zEtaPhiPt_1(0),
+  _nBins_etaPhi_1(0),
+  _nBins_etaPhiPt_1(0),
+  _nBins_zEtaPhiPt_1(0),
 
-_nBins_pt_2(18),     _min_pt_2(0.2),     _max_pt_2(2.0),          _width_pt_2(0.1),
-_nBins_phi_2(72),    _min_phi_2(0),      _max_phi_2(2.*3.1415927),_width_phi_2(2.*3.1415927/72),
-_nBins_eta_2(0),    _min_eta_2(0),     _max_eta_2(0),           _width_eta_2(0.1),
+  _nBins_pt_2(18),     _min_pt_2(0.2),     _max_pt_2(2.0),          _width_pt_2(0.1),
+  _nBins_phi_2(36),    _min_phi_2(0),      _max_phi_2(2.*3.1415927),_width_phi_2(2.*3.1415927/36.),
+  _nBins_eta_2(0),    _min_eta_2(0),     _max_eta_2(0),           _width_eta_2(0.1),
 
-_nBins_etaPhi_2(0),
-_nBins_etaPhiPt_2(0),
-_nBins_zEtaPhiPt_2(0),
-_nBins_etaPhi_12(0),
-__n1_1(0),
-__n1_2(0),
-__n2_12(0),
-__s1pt_1(0),
-__s1pt_2(0),
-__s2ptpt_12(0),
-__s2NPt_12(0),
-__s2PtN_12(0),
-__n1Nw_1(0),
-__n1Nw_2(0),
-__n2Nw_12(0),
-__s1ptNw_1(0),
-__s1ptNw_2(0),
-__s2ptptNw_12(0),
-__s2NPtNw_12(0),
-__s2PtNNw_12(0),
-__n1_1_vsPt(0),
-__n1_1_vsEtaPhi(0),
-__s1pt_1_vsEtaPhi(0),
-__n1_1_vsZEtaPhiPt(0),
-__n1_2_vsPt(0),
-__n1_2_vsEtaPhi(0),
-__s1pt_2_vsEtaPhi(0),
-__n1_2_vsZEtaPhiPt(0),
-__n2_12_vsPtPt(0),
-__n2_12_vsEtaPhi(0),
-__s2ptpt_12_vsEtaPhi(0),
-__s2PtN_12_vsEtaPhi(0),
-__s2NPt_12_vsEtaPhi(0),
-_weight_1        ( 0    ),
-_weight_2        ( 0    ),
-_eventAccounting ( 0),
-_m0 ( 0),
-_m1 ( 0),
-_m2 ( 0),
-_m3 ( 0),
-_m4 ( 0),
-_m5 ( 0),
-_m6 ( 0),
-_vertexZ ( 0),
-_Ncluster1  ( 0),
-_Ncluster2  ( 0),
+  _nBins_etaPhi_2(0),
+  _nBins_etaPhiPt_2(0),
+  _nBins_zEtaPhiPt_2(0),
+  _nBins_etaPhi_12(0),
+  __n1_1(0),
+  __n1_2(0),
+  __n2_12(0),
+  __s1pt_1(0),
+  __s1pt_2(0),
+  __s2ptpt_12(0),
+  __s2NPt_12(0),
+  __s2PtN_12(0),
+  __n1Nw_1(0),
+  __n1Nw_2(0),
+  __n2Nw_12(0),
+  __s1ptNw_1(0),
+  __s1ptNw_2(0),
+  __s2ptptNw_12(0),
+  __s2NPtNw_12(0),
+  __s2PtNNw_12(0),
+  __n1_1_vsPt(0),
+  __n1_1_vsEtaPhi(0),
+  __s1pt_1_vsEtaPhi(0),
+  __n1_1_vsZEtaPhiPt(0),
+  __n1_2_vsPt(0),
+  __n1_2_vsEtaPhi(0),
+  __s1pt_2_vsEtaPhi(0),
+  __n1_2_vsZEtaPhiPt(0),
+  __n2_12_vsPtPt(0),
+  __n2_12_vsEtaPhi(0),
+  __s2ptpt_12_vsEtaPhi(0),
+  __s2PtN_12_vsEtaPhi(0),
+  __s2NPt_12_vsEtaPhi(0),
+  _weight_1        ( 0    ),
+  _weight_2        ( 0    ),
+  _eventAccounting ( 0),
+  _m0 ( 0),
+  _m1 ( 0),
+  _m2 ( 0),
+  _m3 ( 0),
+  _m4 ( 0),
+  _m5 ( 0),
+  _m6 ( 0),
+  _vertexZ ( 0),
+  _Ncluster1  ( 0),
+  _Ncluster2  ( 0),
 
   _t0_1d (0),
   _timeTOF_1d (0),
+  _realTOF_1d (0),
   _trackLength (0),
+  _trackLength_GetIntegratedLength(0),
+  _t0_1d_POI (0),
+  _timeTOF_1d_POI (0),
+  _realTOF_1d_POI (0),
+  _trackLength_POI (0),
+  _trackLength_GetIntegratedLength_POI(0),
   
   _nsigmakaon_1d (0),
   _nsigmaTOFkaon_1d (0), 
@@ -561,6 +583,8 @@ _Ncluster2  ( 0),
   _beta_p_POI_AliHelperPID (0),
   _inverse_beta_p_POI_AliHelperPID (0),
   _msquare_p_POI_AliHelperPID (0),
+  _nSigmaTOF_p_POI (0),
+  _nSigmaTOF_p (0),
 
   _dedx_p_AliHelperPID_no_Undefined (0),
   _beta_p_AliHelperPID_no_Undefined (0),
@@ -580,158 +604,155 @@ _Ncluster2  ( 0),
   _phidis_POI_AliHelperPID ( 0),
   _phidis_before_any_cuts ( 0),
 
-_dcaz ( 0),
-_dcaxy ( 0),
-_n1_1_vsPt         ( 0),
-_n1_1_vsEtaVsPhi   ( 0),
-_s1pt_1_vsEtaVsPhi ( 0),
-_n1_1_vsZVsEtaVsPhiVsPt ( 0),
-_n1_1_vsM          ( 0),
-_s1pt_1_vsM        ( 0),
-_n1Nw_1_vsM        ( 0),
-_s1ptNw_1_vsM      ( 0),
-_dedxVsP_1         ( 0),
-_corrDedxVsP_1     ( 0),
-_betaVsP_1         ( 0),
-_n1_2_vsPt         ( 0),
-_n1_2_vsEtaVsPhi   ( 0),
-_s1pt_2_vsEtaVsPhi ( 0),
-_n1_2_vsZVsEtaVsPhiVsPt ( 0),
-_n1_2_vsM          ( 0),
-_s1pt_2_vsM        ( 0),
-_n1Nw_2_vsM        ( 0),
-_s1ptNw_2_vsM      ( 0),
-_dedxVsP_2         ( 0),
-_corrDedxVsP_2     ( 0),
-_betaVsP_2         ( 0),
-_n2_12_vsEtaPhi    ( 0),
-_n2_12_vsPtVsPt    ( 0),
-_s2PtPt_12_vsEtaPhi( 0),
-_s2PtN_12_vsEtaPhi ( 0),
-_s2NPt_12_vsEtaPhi ( 0),
-_n2_12_vsM         ( 0),
-_s2PtPt_12_vsM     ( 0),
-_s2PtN_12_vsM      ( 0),
-_s2NPt_12_vsM      ( 0),
-_n2Nw_12_vsM       ( 0),
-_s2PtPtNw_12_vsM   ( 0),
-_s2PtNNw_12_vsM    ( 0),
-_s2NPtNw_12_vsM    ( 0),
-_invMass           ( 0),
-_invMassElec       ( 0),
-n1Name("NA"),
-n1NwName("NA"),
-n2Name("NA"),
-n2NwName("NA"),
-n3Name("NA"),
-n1n1Name("NA"),
-n1n1n1Name("NA"),
-n2n1Name("NA"),
-r1Name("NA"),
-r2Name("NA"),
-r3Name("NA"),
-r2r1Name("NA"),
-c2Name("NA"),
-c3Name("NA"),
-d3Name("NA"),
-p3Name("NA"),
-cName("NA"),
+  _dcaz ( 0),
+  _dcaxy ( 0),
+  _n1_1_vsPt         ( 0),
+  _n1_1_vsEtaVsPhi   ( 0),
+  _s1pt_1_vsEtaVsPhi ( 0),
+  _n1_1_vsZVsEtaVsPhiVsPt ( 0),
+  _n1_1_vsM          ( 0),
+  _s1pt_1_vsM        ( 0),
+  _n1Nw_1_vsM        ( 0),
+  _s1ptNw_1_vsM      ( 0),
+  _dedxVsP_1         ( 0),
+  _corrDedxVsP_1     ( 0),
+  _betaVsP_1         ( 0),
+  _n1_2_vsPt         ( 0),
+  _n1_2_vsEtaVsPhi   ( 0),
+  _s1pt_2_vsEtaVsPhi ( 0),
+  _n1_2_vsZVsEtaVsPhiVsPt ( 0),
+  _n1_2_vsM          ( 0),
+  _s1pt_2_vsM        ( 0),
+  _n1Nw_2_vsM        ( 0),
+  _s1ptNw_2_vsM      ( 0),
+  _dedxVsP_2         ( 0),
+  _corrDedxVsP_2     ( 0),
+  _betaVsP_2         ( 0),
+  _n2_12_vsEtaPhi    ( 0),
+  _n2_12_vsPtVsPt    ( 0),
+  _s2PtPt_12_vsEtaPhi( 0),
+  _s2PtN_12_vsEtaPhi ( 0),
+  _s2NPt_12_vsEtaPhi ( 0),
+  _n2_12_vsM         ( 0),
+  _s2PtPt_12_vsM     ( 0),
+  _s2PtN_12_vsM      ( 0),
+  _s2NPt_12_vsM      ( 0),
+  _n2Nw_12_vsM       ( 0),
+  _s2PtPtNw_12_vsM   ( 0),
+  _s2PtNNw_12_vsM    ( 0),
+  _s2NPtNw_12_vsM    ( 0),
+  _invMass           ( 0),
+  _invMassElec       ( 0),
+  n1Name("NA"),
+  n1NwName("NA"),
+  n2Name("NA"),
+  n2NwName("NA"),
+  n3Name("NA"),
+  n1n1Name("NA"),
+  n1n1n1Name("NA"),
+  n2n1Name("NA"),
+  r1Name("NA"),
+  r2Name("NA"),
+  r3Name("NA"),
+  r2r1Name("NA"),
+  c2Name("NA"),
+  c3Name("NA"),
+  d3Name("NA"),
+  p3Name("NA"),
+  cName("NA"),
 
-intR2Name("NA"),
-binCorrName("NA"),
-intBinCorrName("NA"),
+  intR2Name("NA"),
+  binCorrName("NA"),
+  intBinCorrName("NA"),
 
-countsName("NA"),
-part_1_Name("NA"),
-part_2_Name("NA"),
-part_3_Name("NA"),
-pair_12_Name("NA"),
-pair_13_Name("NA"),
-pair_23_Name("NA"),
-tripletName("NA"),
+  countsName("NA"),
+  part_1_Name("NA"),
+  part_2_Name("NA"),
+  part_3_Name("NA"),
+  pair_12_Name("NA"),
+  pair_13_Name("NA"),
+  pair_23_Name("NA"),
+  tripletName("NA"),
 
-avg("NA"),
-avgName("NA"),
-sumName("NA"),
-s1ptName("NA"),
-s1ptNwName("NA"),
-s1DptName("NA"),
+  avg("NA"),
+  avgName("NA"),
+  sumName("NA"),
+  s1ptName("NA"),
+  s1ptNwName("NA"),
+  s1DptName("NA"),
 
-s2PtPtName("NA"),
-s2NPtName("NA"),
-s2PtNName("NA"),
-s2DptDptName("NA"),
+  s2PtPtName("NA"),
+  s2NPtName("NA"),
+  s2PtNName("NA"),
+  s2DptDptName("NA"),
 
-s2PtPtNwName("NA"),
-s2NPtNwName("NA"),
-s2PtNNwName("NA"),
+  s2PtPtNwName("NA"),
+  s2NPtNwName("NA"),
+  s2PtNNwName("NA"),
 
-ptName("NA"),
-ptptName("NA"),
-pt1pt1Name("NA"),
-DptName("NA"),
-DptDptName("NA"),
-RDptDptName("NA"),
-nPtName("NA"),
-ptNName("NA"),
-seanName("NA"),
+  ptName("NA"),
+  ptptName("NA"),
+  pt1pt1Name("NA"),
+  DptName("NA"),
+  DptDptName("NA"),
+  RDptDptName("NA"),
+  nPtName("NA"),
+  ptNName("NA"),
+  seanName("NA"),
 
-_title_counts("NA"),
+  _title_counts("NA"),
 
-_title_m0("NA"),
-_title_m1("NA"),
-_title_m2("NA"),
-_title_m3("NA"),
-_title_m4("NA"),
-_title_m5("NA"),
-_title_m6("NA"),
+  _title_m0("NA"),
+  _title_m1("NA"),
+  _title_m2("NA"),
+  _title_m3("NA"),
+  _title_m4("NA"),
+  _title_m5("NA"),
+  _title_m6("NA"),
 
-_title_eta_1("NA"),
-_title_phi_1("NA"),
-_title_pt_1("NA"),
-_title_etaPhi_1("NA"),
-_title_n_1("NA"),
-_title_SumPt_1("NA"),
-_title_AvgPt_1("NA"),
-_title_AvgN_1("NA"),
-_title_AvgSumPt_1("NA"),
+  _title_eta_1("NA"),
+  _title_phi_1("NA"),
+  _title_pt_1("NA"),
+  _title_etaPhi_1("NA"),
+  _title_n_1("NA"),
+  _title_SumPt_1("NA"),
+  _title_AvgPt_1("NA"),
+  _title_AvgN_1("NA"),
+  _title_AvgSumPt_1("NA"),
 
-_title_eta_2("NA"),
-_title_phi_2("NA"),
-_title_pt_2("NA"),
-_title_etaPhi_2("NA"),
-_title_n_2("NA"),
-_title_SumPt_2("NA"),
-_title_AvgPt_2("NA"),
-_title_AvgN_2("NA"),
-_title_AvgSumPt_2("NA"),
+  _title_eta_2("NA"),
+  _title_phi_2("NA"),
+  _title_pt_2("NA"),
+  _title_etaPhi_2("NA"),
+  _title_n_2("NA"),
+  _title_SumPt_2("NA"),
+  _title_AvgPt_2("NA"),
+  _title_AvgN_2("NA"),
+  _title_AvgSumPt_2("NA"),
 
-_title_etaPhi_12("NA"),
+  _title_etaPhi_12("NA"),
 
-_title_AvgN2_12("NA"),
-_title_AvgSumPtPt_12("NA"),
-_title_AvgSumPtN_12("NA"),
-_title_AvgNSumPt_12("NA"),
+  _title_AvgN2_12("NA"),
+  _title_AvgSumPtPt_12("NA"),
+  _title_AvgSumPtN_12("NA"),
+  _title_AvgNSumPt_12("NA"),
 
-vsZ("NA"),
-vsM("NA"),
-vsPt("NA"),
-vsPhi("NA"),
-vsEta("NA"),
-vsEtaPhi("NA"),
-vsPtVsPt("NA")
+  vsZ("NA"),
+  vsM("NA"),
+  vsPt("NA"),
+  vsPhi("NA"),
+  vsEta("NA"),
+  vsEtaPhi("NA"),
+  vsPtVsPt("NA")
 {
   // Au-Au added this block of code to use his own PID functions
   for( Int_t ipart = 0; ipart < 4; ipart++ )
-    for( Int_t ipid = 0; ipid <= 2; ipid++ )
+    for( Int_t ipid = 0; ipid < 2; ipid++ )
       fnsigmas[ipart][ipid] = 999.;
   
-    printf("2nd constructor called ");
-    
-    DefineOutput(0, TList::Class());
-    
-    printf("passed  ");
-    
+    printf("2nd constructor called ");    
+    DefineOutput(0, TList::Class());   
+    printf("passed  ");   
 }
 
 AliAnalysisTaskPIDBFDptDpt::~AliAnalysisTaskPIDBFDptDpt()
@@ -1002,9 +1023,16 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");    
       name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
       name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
-      name = "T0";   _t0_1d    = createHisto1F(name,name, 1000, 0, 1000, "T0","counts");
-      name = "timeTOF";   _timeTOF_1d    = createHisto1F(name,name, 80000, 0, 80000, "timeTOF","counts"); 
-      name = "trackLength";   _trackLength    = createHisto1F(name,name, 1000, 0, 1000, "track Length","counts");   
+      name = "T0";       _t0_1d    = createHisto1F(name,name, 20000, -10000, 10000, "T0","counts");
+      name = "timeTOF";  _timeTOF_1d    = createHisto1F(name,name, 32000, -2000, 30000, "timeTOF","counts");
+      name = "realTOF";   _realTOF_1d    = createHisto1F(name,name, 32000, -2000, 30000, "realTOF","counts");
+      name = "trackLength";   _trackLength    = createHisto1F(name,name, 20000, -10, 10, "track Length","counts");
+      name = "trackLength_GetIntegratedLength";   _trackLength_GetIntegratedLength = createHisto1F(name,name, 20000, -1000, 1000, "track Length by GetIntegratedLength()","counts");
+      name = "T0_POI";       _t0_1d_POI    = createHisto1F(name,name, 20000, -10000, 10000, "T0","counts");
+      name = "timeTOF_POI";  _timeTOF_1d_POI    = createHisto1F(name,name, 32000, -2000, 30000, "timeTOF","counts");
+      name = "realTOF_POI";   _realTOF_1d_POI    = createHisto1F(name,name, 32000, -2000, 30000, "realTOF","counts");
+      name = "trackLength_POI";   _trackLength_POI    = createHisto1F(name,name, 20000, -10, 10, "track Length","counts");
+      name = "trackLength_GetIntegratedLength_POI";   _trackLength_GetIntegratedLength_POI = createHisto1F(name,name, 20000, -1000, 1000, "track Length by GetIntegratedLength()","counts");
       name = "dedx_p";   _dedx_p = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
       name = "beta_p";   _beta_p = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
       name = "inverse_beta_p";   _inverse_beta_p = createHisto2F(name,name, 500, 0, 5, 200, 0.6, 2.6,  "p", "1/#beta","counts");
@@ -1013,6 +1041,8 @@ void  AliAnalysisTaskPIDBFDptDpt::createHistograms()
       name = "nsigmaTOFkaon_1d";   _nsigmaTOFkaon_1d    = createHisto1F(name,name, 2000, 0, 200, "nsigmaTOFkaon","counts");  
       name = "msquare_p_POI_AliHelperPID";   _msquare_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
       name = "msquare_p_AliHelperPID_no_Undefined";   _msquare_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 500, 0, 5,  200, -0.5, 1.5,  "p", "mass square","counts");
+      name = "nSigmaTOF_p";       _nSigmaTOF_p     = createHisto2F(name,name, 500, 0, 5, 120, -20, 100.0, "p", "nSigmaTOF","counts");
+      name = "nSigmaTOF_p_POI";   _nSigmaTOF_p_POI = createHisto2F(name,name, 500, 0, 5, 80, -4.0, 4.0,  "p", "nSigmaTOF_POI","counts");
       name = "dedx_p_POI_AliHelperPID";   _dedx_p_POI_AliHelperPID = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");
       name = "dedx_p_AliHelperPID_no_Undefined";   _dedx_p_AliHelperPID_no_Undefined = createHisto2F(name,name, 1980, 0.2, 20,  200, 0, 200,  "p", "dedx","counts");    
       name = "beta_p_POI_AliHelperPID";   _beta_p_POI_AliHelperPID = createHisto2F(name,name, 500, 0, 5,  100, 0.1, 1.1,  "p", "beta","counts");
@@ -1114,8 +1144,7 @@ void  AliAnalysisTaskPIDBFDptDpt::finalizeHistograms()
 
 
 void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
-{
-    
+{    
     int    k1,k2;
     int    iPhi, iEta, iEtaPhi, iPt, charge;
     float  q, phi, pt, eta, y, y_direct, mass, corr, corrPt, px, py, pz, dedx,p,l, timeTOF, beta, t0, msquare; // Au-Au put p here to make _dedx_p and _beta_p plots. 
@@ -1133,7 +1162,11 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
     const  AliAODVertex*	vertex;
     int    nClus;
     bool   bitOK;
-
+    const float mpion   = 0.139570; // GeV/c2
+    const float mkaon   = 0.493677; // GeV/c2
+    const float mproton = 0.938272; // GeV/c2
+    Double_t c = TMath::C() * 1.E-9;// m/ns
+    
     float slope_vZ = 0;
     float vZ_bin_center = 0;
     int iVertexZ_plus1 = 0;
@@ -1293,7 +1326,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
             py     = t -> Py();
             pz     = t -> Pz();
             eta    = t -> Eta();
-            dedx   = t -> GetTPCsignal();
+	    if ( fAnalysisType == "RealData" )    dedx = t -> GetTPCsignal();
+	    else if ( fAnalysisType == "MCAODreco" )  dedx = fPIDResponse -> GetTPCsignalTunedOnData( t );
 	    
 	    // QA for all the particles in the event
 	    if ( _singlesOnly )
@@ -1304,18 +1338,29 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 		CheckTOF( t );
 		if ( fHasTOFPID )
 		  {
+		    _t0_1d -> Fill( fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+		    if ( fAnalysisType == "RealData" )
+		      {
+			_timeTOF_1d -> Fill( t->GetTOFsignal() );
+			_realTOF_1d -> Fill( t->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+		      }
+		    else if ( fAnalysisType == "MCAODreco" )
+		      {
+			_timeTOF_1d -> Fill( t->GetTOFsignalTunedOnData() );
+			_realTOF_1d -> Fill( t->GetTOFsignalTunedOnData() - fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+		      }
+		    _trackLength -> Fill( fPIDResponse->GetTOFResponse().GetExpectedSignal(t, AliPID::kElectron)*1E-3*c );
+		    _trackLength_GetIntegratedLength -> Fill( t -> GetIntegratedLength() );
 		    _msquare_p -> Fill( p, massSquareCalculation(t) );
 		    _beta_p -> Fill( p, TOFBetaCalculation(t) );
+		    _nSigmaTOF_p -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+		    _inverse_beta_p -> Fill( p, 1./TOFBetaCalculation(t)  );
 		  }
-		else
-		  {
-		    _dedx_p -> Fill( p, dedx );    
-		  }
+		else  _dedx_p -> Fill( p, dedx );
 	      }
 	    
 	    // Kinematics cuts begins:
 	    if( charge == 0 ) continue;
-	    // if( pt < _min_pt_1 || pt > _max_pt_1 ) continue;
 	    
 	    Double_t pos[3];
 	    t -> GetXYZ(pos);
@@ -1332,44 +1377,111 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    
 	    if ( _singlesOnly )    _Ncluster1 -> Fill( nClus );
 	    //_Ncluster2->Fill(nClus);   //_Ncluster2 same with _Ncluster1
-	    
-	    // PID cuts
-	    Int_t IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
-	    if ( IDrec != particleSpecies ) continue; // select POI	    
 
-	    const float mpion   = 0.139570; // GeV/c2
-	    const float mkaon   = 0.493677; // GeV/c2
-	    const float mproton = 0.938272; // GeV/c2
-	    if ( particleSpecies == 0 )  mass = mpion;
-	    if ( particleSpecies == 1 )  mass = mkaon;
-	    if ( particleSpecies == 2 )  mass = mproton;
-	    y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y // CAVEAT: y is not right for non-POI @ this step
-	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
-	    
-	    // QA for POI
-	    if ( _singlesOnly )
+//******************************************************************************************************************************************************************
+	    if ( PIDparticle )
 	      {
-		_dcaz                      -> Fill( DCAZ );
-		_dcaxy                     -> Fill( DCAXY );
-		_etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
-		_ydis_POI_AliHelperPID     -> Fill( y );
-		_phidis_POI_AliHelperPID   -> Fill( phi );
-		//_vZ_y_Pt_POI_AliHelperPID  -> Fill( vertexZ, y, pt );
-		//_vZ_y_eta_POI_AliHelperPID -> Fill( vertexZ, y, eta );
+		Int_t IDrec = TellParticleSpecies( t ); //returns 0, 1, 2 for Pion, Kaon, Proton, respectively.
 
-		CheckTOF( t );
-		if ( fHasTOFPID )
+
+		// QA for all identified hadrons
+		if ( IDrec != 999 )
 		  {
-		    _msquare_p_POI_AliHelperPID -> Fill( p, massSquareCalculation(t) );
-		    _beta_p_POI_AliHelperPID -> Fill( p, TOFBetaCalculation(t) );
+		    if ( _singlesOnly )
+		      {
+			CheckTOF( t );
+			if ( fHasTOFPID  && ( pt > ptTOFlowerBoundary ) && ( pt <= ptUpperLimit ) )
+			  {
+			    _beta_p_AliHelperPID_no_Undefined -> Fill( p, TOFBetaCalculation(t) );
+			    _inverse_beta_p_AliHelperPID_no_Undefined -> Fill( p, 1./TOFBetaCalculation(t) );
+			    _msquare_p_AliHelperPID_no_Undefined -> Fill( p, massSquareCalculation(t) );
+			  }
+			else if ( ( pt >= _min_pt_1 ) && ( pt <= ptTOFlowerBoundary ) )   _dedx_p_AliHelperPID_no_Undefined -> Fill( p, dedx );
+		      }
 		  }
-		else
+
+		
+		if ( IDrec != particleSpecies ) continue; // select POI
+		
+		// This block of code used to get PdgCode for MC reco tracks
+		if ( fAnalysisType == "MCAODreco" && NoContamination == 1 )
 		  {
-		    _dedx_p_POI_AliHelperPID -> Fill( p, dedx );    
+		    Int_t lab =  t -> GetLabel();
+		    //cout << "step 1 Au-Au: particle Label: " << lab << endl;
+		    TClonesArray * arr = dynamic_cast<TClonesArray*>( fAODEvent -> FindListObject( "mcparticles" ) );
+		    if( !arr ) continue;
+		    //cout << "step 2 Au-Au: arr: " << arr->GetEntriesFast() << endl;
+		    AliAODMCParticle * particle = ( AliAODMCParticle * ) arr -> At( TMath::Abs(lab) );
+		    //cout << "step 3 Au-Au: particle ID: " << particle -> GetPdgCode() << endl;
+		    if ( TMath::Abs(particle->GetPdgCode()) != 211 ) continue;
+		    //cout << "step 4 Au-Au: pion ID: " << particle -> GetPdgCode() << endl;
+		  }
+		
+		if ( particleSpecies == 0 )  mass = mpion;
+		if ( particleSpecies == 1 )  mass = mkaon;
+		if ( particleSpecies == 2 )  mass = mproton;
+		y = log( ( sqrt(mass*mass + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(mass*mass + pt*pt) ); // convert eta to y // CAVEAT: y is not right for non-POI @ this step
+		if( y < _min_eta_1 || y > _max_eta_1 ) continue;
+
+		//Filling QA plots ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		// QA for POI
+		if ( _singlesOnly )
+		  {
+		    _dcaz                      -> Fill( DCAZ );
+		    _dcaxy                     -> Fill( DCAXY );
+		    _etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
+		    _ydis_POI_AliHelperPID     -> Fill( y );
+		    _phidis_POI_AliHelperPID   -> Fill( phi );
+		    //_vZ_y_Pt_POI_AliHelperPID  -> Fill( vertexZ, y, pt );
+		    //_vZ_y_eta_POI_AliHelperPID -> Fill( vertexZ, y, eta );
+		    
+		    CheckTOF( t );
+		    if ( fHasTOFPID  && ( pt > ptTOFlowerBoundary ) && ( pt <= ptUpperLimit ) )
+		      {
+			_t0_1d_POI -> Fill( fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+			if ( fAnalysisType == "RealData" )
+			  {
+			    _timeTOF_1d_POI -> Fill( t->GetTOFsignal() );
+			    _realTOF_1d_POI -> Fill( t->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+			  }
+			else if ( fAnalysisType == "MCAODreco" )
+			  {
+			    _timeTOF_1d_POI -> Fill( t->GetTOFsignalTunedOnData() );
+			    _realTOF_1d_POI -> Fill( t->GetTOFsignalTunedOnData() - fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+			  }
+			_trackLength_POI -> Fill( fPIDResponse->GetTOFResponse().GetExpectedSignal(t, AliPID::kElectron)*1E-3*c );
+			_trackLength_GetIntegratedLength_POI -> Fill( t -> GetIntegratedLength() );
+			_nSigmaTOF_p_POI -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+			_msquare_p_POI_AliHelperPID -> Fill( p, massSquareCalculation(t) );
+			_beta_p_POI_AliHelperPID -> Fill( p, TOFBetaCalculation(t) );
+			_inverse_beta_p_POI_AliHelperPID -> Fill( p, 1./TOFBetaCalculation(t) );
+		      }
+		    else if ( ( pt >= _min_pt_1 ) && ( pt <= ptTOFlowerBoundary ) )   _dedx_p_POI_AliHelperPID -> Fill( p, dedx );
 		  }
 	      }
+	    else //all charged particles 
+	      {
+		if( pt < _min_pt_1 || pt > ptUpperLimit ) continue;
+		CalculateTPCNSigmasElectron( t );
+		Double_t nsigmaElectron = 999.;
+		nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
+		if( ( pt >= _min_pt_1 ) && ( pt <= ptTOFlowerBoundary ) && ( nsigmaElectron < electronNSigmaVeto ) )    continue;  // reject TPC region electrons
+		if( eta < _min_eta_1 || eta > _max_eta_1 ) continue;
+
+		// QA for POI
+		if ( _singlesOnly )
+		  {
+		    _dcaz                      -> Fill( DCAZ );
+		    _dcaxy                     -> Fill( DCAXY );
+		    _etadis_POI_AliHelperPID   -> Fill( eta );
+		    _phidis_POI_AliHelperPID   -> Fill( phi );
+		    _dedx_p_POI_AliHelperPID   -> Fill( p, dedx ); 
+		  }
+	      }   
+	    //Filling QA plots ends ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	    
-	    if ( _useRapidity )  eta = y;  //switch from eta to y	    
+	    if ( _useRapidity )  eta = y;  //switch from eta to y
+//*************************************************************************************************************************************************************
 	    
             //Particle 1
             if ( _requestedCharge_1 == charge )
@@ -1398,71 +1510,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                 iEtaPhi = iEta * _nBins_phi_1 + iPhi;
                 iZEtaPhiPt = iVertexP1 + iEtaPhi * _nBins_pt_1 + iPt;
 
-		//#########################################################################################################################################################
-		// This block of code is to correct the weight values for each particle in terms of rapidity y using linear distribution between adjacent y bins
-		// these 2 commented out lines are what I had before the correction
-		/*   if ( _correctionWeight_1 )   corr = _correctionWeight_1[ iZEtaPhiPt ];
-		     else   corr = 1;   */
-		if ( _correctionWeight_1 )
-		{
-		  iEta_plus1 = iEta + 1;
-		  iEtaPhi_Etaplus1 = iEta_plus1 * _nBins_phi_1 + iPhi;
-		  iZEtaPhiPt_Etaplus1 = iVertexP1 + iEtaPhi_Etaplus1 * _nBins_pt_1 + iPt;
-
-		  iEta_minus1 = iEta - 1;
-		  iEtaPhi_Etaminus1 = iEta_minus1 * _nBins_phi_1 + iPhi;
-		  iZEtaPhiPt_Etaminus1 = iVertexP1 + iEtaPhi_Etaminus1 * _nBins_pt_1 + iPt;
-
-		  y_bin_center = _min_eta_1 + _etaWidth * ( iEta + 0.5 );
-
-		  if ( eta > y_bin_center )
-		    {
-		      if ( iEta < ( _nBins_eta_1 - 1 ) )       slope_y = ( _correctionWeight_1[ iZEtaPhiPt_Etaplus1 ] - _correctionWeight_1[ iZEtaPhiPt ] ) / _etaWidth;
-		      else if ( iEta == ( _nBins_eta_1 - 1) )  slope_y = ( _correctionWeight_1[ iZEtaPhiPt ] - _correctionWeight_1[ iZEtaPhiPt_Etaminus1 ] ) / _etaWidth;
-		    }
-		  else
-		    {
-		      if ( iEta > 0 )                          slope_y = ( _correctionWeight_1[ iZEtaPhiPt ] - _correctionWeight_1[ iZEtaPhiPt_Etaminus1 ] ) / _etaWidth;
-		      else if ( iEta == 0 )                    slope_y = ( _correctionWeight_1[ iZEtaPhiPt_Etaplus1 ] - _correctionWeight_1[ iZEtaPhiPt ] ) / _etaWidth;
-		    }
-		  corr = _correctionWeight_1[ iZEtaPhiPt ] + ( eta - y_bin_center ) * slope_y;
-		}		               
-                else   corr = 1;
-		//#########################################################################################################################################################
-
-		/*
-		//*********************************************************************************************************************************************************
-		// This block of code is to correct the weight values for each particle in terms of vertexZ using linear distribution between adjacent vZ bins
-		// these 2 commented out lines are what I had before the correction
-		//   if ( _correctionWeight_1 )   corr = _correctionWeight_1[ iZEtaPhiPt ];
-		//   else   corr = 1;
-		if ( _correctionWeight_1 )
-		{
-		  iVertexZ_plus1 = iVertex + 1;
-		  iVertexP1_vZplus1 = iVertexZ_plus1 * _nBins_etaPhiPt_1;
-		  iZEtaPhiPt_vZplus1 = iVertexP1_vZplus1 + iEtaPhi * _nBins_pt_1 + iPt;
-
-		  iVertexZ_minus1 = iVertex - 1;
-		  iVertexP1_vZminus1 = iVertexZ_minus1 * _nBins_etaPhiPt_1;
-		  iZEtaPhiPt_vZminus1 = iVertexP1_vZminus1 + iEtaPhi * _nBins_pt_1 + iPt;
-		  		  		  
-		  vZ_bin_center = _min_vertexZ + _width_vertexZ * ( iVertex + 0.5 ); 
-
-		  if ( vertexZ > vZ_bin_center )
-		    {
-		      if (iVertex < ( _nBins_vertexZ - 1 ))  slope_vZ = ( _correctionWeight_1[ iZEtaPhiPt_vZplus1 ] - _correctionWeight_1[ iZEtaPhiPt ] ) / _width_vertexZ;
-		      else if (iVertex==(_nBins_vertexZ-1))  slope_vZ = ( _correctionWeight_1[ iZEtaPhiPt ] - _correctionWeight_1[ iZEtaPhiPt_vZminus1 ] ) / _width_vertexZ;
-		    }
-		  else
-		    {
-		      if ( iVertex > 0 )                     slope_vZ = ( _correctionWeight_1[ iZEtaPhiPt ] - _correctionWeight_1[ iZEtaPhiPt_vZminus1 ] ) / _width_vertexZ;
-		      else if ( iVertex == 0 )               slope_vZ = ( _correctionWeight_1[ iZEtaPhiPt_vZplus1 ] - _correctionWeight_1[ iZEtaPhiPt ] ) / _width_vertexZ;
-		    }
-		  corr = _correctionWeight_1[ iZEtaPhiPt ] + ( vertexZ - vZ_bin_center ) * slope_vZ;
-		}		               
-                else   corr = 1;
-		//*********************************************************************************************************************************************************
-		*/		
+		if ( _correctionWeight_1 )   corr = _correctionWeight_1[ iZEtaPhiPt ];
+		else   corr = 1;				
 
                 if ( iZEtaPhiPt < 0 || iZEtaPhiPt >= _nBins_zEtaPhiPt_1 )
                 {
@@ -1534,71 +1583,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                     continue;
                 }
 
-		//#########################################################################################################################################################
-		// This block of code is to correct the weight values for each particle in terms of rapidity y using linear distribution between adjacent y bins
-		// these 2 commented out lines are what I had before the correction
-		//   if ( _correctionWeight_2 )   corr = _correctionWeight_2[ iZEtaPhiPt ];
-		//   else   corr = 1;
-		if ( _correctionWeight_2 )
-		{
-		  iEta_plus1 = iEta + 1;
-		  iEtaPhi_Etaplus1 = iEta_plus1 * _nBins_phi_2 + iPhi;
-		  iZEtaPhiPt_Etaplus1 = iVertexP2 + iEtaPhi_Etaplus1 * _nBins_pt_2 + iPt;
-
-		  iEta_minus1 = iEta - 1;
-		  iEtaPhi_Etaminus1 = iEta_minus1 * _nBins_phi_2 + iPhi;
-		  iZEtaPhiPt_Etaminus1 = iVertexP2 + iEtaPhi_Etaminus1 * _nBins_pt_2 + iPt;
-
-		  y_bin_center = _min_eta_2 + _etaWidth * ( iEta + 0.5 );
-
-		  if ( eta > y_bin_center )
-		    {
-		      if ( iEta < ( _nBins_eta_2 - 1 ) )       slope_y = ( _correctionWeight_2[ iZEtaPhiPt_Etaplus1 ] - _correctionWeight_2[ iZEtaPhiPt ] ) / _etaWidth;
-		      else if ( iEta == ( _nBins_eta_2 - 1) )  slope_y = ( _correctionWeight_2[ iZEtaPhiPt ] - _correctionWeight_2[ iZEtaPhiPt_Etaminus1 ] ) / _etaWidth;
-		    }
-		  else
-		    {
-		      if ( iEta > 0 )                          slope_y = ( _correctionWeight_2[ iZEtaPhiPt ] - _correctionWeight_2[ iZEtaPhiPt_Etaminus1 ] ) / _etaWidth;
-		      else if ( iEta == 0 )                    slope_y = ( _correctionWeight_2[ iZEtaPhiPt_Etaplus1 ] - _correctionWeight_2[ iZEtaPhiPt ] ) / _etaWidth;
-		    }
-		  corr = _correctionWeight_2[ iZEtaPhiPt ] + ( eta - y_bin_center ) * slope_y;
-		}		               
-                else   corr = 1;
-		//#########################################################################################################################################################
-		
-		/*
-		//*********************************************************************************************************************************************************
-		// This block of code is to correct the weight values for each particle in terms of vertexZ using linear distribution between adjacent vZ bins
-		// these 2 commented out lines are what I had before the correction
-		//   if ( _correctionWeight_2 )   corr = _correctionWeight_2[ iZEtaPhiPt ];
-		//   else   corr = 1;
-		if ( _correctionWeight_2 )
-		{
-		  iVertexZ_plus1 = iVertex + 1;
-		  iVertexP2_vZplus1 = iVertexZ_plus1 * _nBins_etaPhiPt_2;
-		  iZEtaPhiPt_vZplus1 = iVertexP2_vZplus1 + iEtaPhi * _nBins_pt_2 + iPt;
-
-		  iVertexZ_minus1 = iVertex - 1;
-		  iVertexP1_vZminus1 = iVertexZ_minus1 * _nBins_etaPhiPt_2;
-		  iZEtaPhiPt_vZminus1 = iVertexP1_vZminus1 + iEtaPhi * _nBins_pt_2 + iPt;
-		  		  		  
-		  vZ_bin_center = _min_vertexZ + _width_vertexZ * ( iVertex + 0.5 ); 
-
-		  if ( vertexZ > vZ_bin_center )
-		    {
-		      if (iVertex < ( _nBins_vertexZ - 1 ))  slope_vZ = ( _correctionWeight_2[ iZEtaPhiPt_vZplus1 ] - _correctionWeight_2[ iZEtaPhiPt ] ) / _width_vertexZ;
-		      else if (iVertex==(_nBins_vertexZ-1))  slope_vZ = ( _correctionWeight_2[ iZEtaPhiPt ] - _correctionWeight_2[ iZEtaPhiPt_vZminus1 ] ) / _width_vertexZ;
-		    }
-		  else
-		    {
-		      if ( iVertex > 0 )                     slope_vZ = ( _correctionWeight_2[ iZEtaPhiPt ] - _correctionWeight_2[ iZEtaPhiPt_vZminus1 ] ) / _width_vertexZ;
-		      else if ( iVertex == 0 )               slope_vZ = ( _correctionWeight_2[ iZEtaPhiPt_vZplus1 ] - _correctionWeight_2[ iZEtaPhiPt ] ) / _width_vertexZ;
-		    }
-		  corr = _correctionWeight_2[ iZEtaPhiPt ] + ( vertexZ - vZ_bin_center ) * slope_vZ;
-		}		               
-                else   corr = 1;
-		//*********************************************************************************************************************************************************
-		*/		
+		if ( _correctionWeight_2 )   corr = _correctionWeight_2[ iZEtaPhiPt ];
+	        else   corr = 1;		
 
                 if (_singlesOnly)
                 {
@@ -1658,7 +1644,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 
 	    //cout << "step 1 Au-Au: q = " << q << endl; 
 	    
-            charge = int( q );
+            charge = int( q/3. ); // particle charges are 3s in HIJING truth
 
 	    //cout << "step 2 Au-Au: charge = " << charge << endl;
 	    
@@ -1668,6 +1654,12 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    //y_direct = t -> Y(); // rapidity
 	    y      = t -> Y();
 
+	    if ( _singlesOnly )
+	      {
+		_etadis_before_any_cuts -> Fill( eta );
+		_phidis_before_any_cuts -> Fill( phi );
+	      }
+	    
 	    /*
 	    const float mpion = 0.1395701835; // GeV/c2
 	    const float mkaon = 0.493667; // GeV/c2
@@ -1687,7 +1679,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 
 	    // Kinematics cuts:
 	    if( charge == 0 ) continue;
-            if( pt < _min_pt_1 || pt > _max_pt_1 ) continue;         
+            if( pt < _min_pt_1 || pt > ptUpperLimit ) continue;         
 	    if( y < _min_eta_1 || y > _max_eta_1 ) continue;
 
 	/*
@@ -1705,7 +1697,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	*/    
 	    
 	    // fill track QA histograms
-	    if ( _singlesOnly )    _y_Pt_AllCh_MCAODTruth -> Fill( y, pt ); // All Charged particles	    
+	    if ( _singlesOnly )  _y_Pt_AllCh_MCAODTruth -> Fill( y, pt ); // All Charged particles	    
 
 	    if( particleSpecies == 0 )
 	      { if( TMath::Abs( t -> GetPdgCode() ) != 211  )  continue; }
@@ -1714,11 +1706,15 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    else if( particleSpecies == 2 )
 	      { if( TMath::Abs( t -> GetPdgCode() ) != 2212 )  continue; }
 	    else   return;
-	    
-	    //cout << "step 3 Au-Au: particle ID: " << t -> GetPdgCode() << endl; 
 
-	    if ( _singlesOnly )    _y_Pt_POI_MCAODTruth -> Fill( y, pt ); //POI	    
-
+	    if ( _singlesOnly )
+	      {
+		_etadis_POI_AliHelperPID   -> Fill( eta );    //Eta dist. for POI distribution after AliHelperPID cuts
+		_ydis_POI_AliHelperPID     -> Fill( y );
+		_phidis_POI_AliHelperPID   -> Fill( phi );
+		_y_Pt_POI_MCAODTruth -> Fill( y, pt ); //POI
+	    }
+	    //cout << "step 3 Au-Au: particle ID: " << t -> GetPdgCode() << endl;
 	    
 	    //Exclude resonances
 	    if( fExcludeResonancesInMC )
@@ -1746,16 +1742,15 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
 	    if( fExcludeElectronsInMC ) {
 	      if( TMath::Abs( t -> GetPdgCode() ) == 11 ) continue;
 	    }
-	    */
-	    
+	    */	    
+
 	    if ( _useRapidity )  eta = y;  //switch from eta to y	    
 
 	    //cout << "step 5 Au-Au" << endl;
 	    
             //Particle 1
-	    // if ( _requestedCharge_1 == charge )
+	    if ( _requestedCharge_1 == charge )
 	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
-	    if ( q > 0 )
             {
                 iPhi   = int( phi/_width_phi_1);
                 
@@ -1798,8 +1793,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                                 
                 if (_singlesOnly)
                 {
-		    __n1_1_vsPt[iPt]               += corr;       //cout << "step 9 Au-Au: __n1_1_vsPt[iPt] = " << __n1_1_vsPt[iPt] << endl;
-                    __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;   
+		  __n1_1_vsPt[iPt]               += corr;       //cout << "step 9 Au-Au: __n1_1_vsPt[iPt] = " << __n1_1_vsPt[iPt] << endl;
+		  __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;   
                 }
                 else
                 {
@@ -1826,10 +1821,10 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-            }//if ( q > 0 )
+            } // if ( _requestedCharge_1 == charge )
             
-            if ( q < 0 )
-	      //&& dedx >=  _dedxMin && dedx < _dedxMax)
+            if ( !_sameFilter && _requestedCharge_2 == charge )
+	      //&& dedx >=  _dedxMin && dedx < _dedxMax)  
             {
                 iPhi   = int( phi/_width_phi_2);
                 
@@ -1865,8 +1860,8 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                 
                 if (_singlesOnly)
                 {
-                    __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;
-                    __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
+		  __n1_2_vsPt[iPt]               += corr;       //cout << "step 15" << endl;
+		  __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;
                 }
                 else
                 {
@@ -1893,7 +1888,7 @@ void  AliAnalysisTaskPIDBFDptDpt::UserExec(Option_t */*option*/)
                         return;
                     }
                 }
-            } //if ( q < 0 )
+            } //if ( !_sameFilter && _requestedCharge_2 == charge )
         } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
      } //end of "if ( fAnalysisType == "MCAOD" )" 
   } //if( fAODEvent )
@@ -2489,6 +2484,17 @@ void AliAnalysisTaskPIDBFDptDpt::CalculateNSigmas( AliVTrack * trk )   //defines
     }
 }
 
+//____________________________________________________________________________________________________
+void AliAnalysisTaskPIDBFDptDpt::CalculateTPCNSigmasElectron( AliVTrack * trk )   //defines data member fnsigmas
+{  
+  // Compute nsigma for each hypthesis
+  AliVParticle * inEvHMain = dynamic_cast < AliVParticle * > ( trk );
+  // --- TPC
+  Double_t nsigmaTPCkElectron = fPIDResponse -> NumberOfSigmasTPC( inEvHMain, AliPID::kElectron );
+  //set data member fnsigmas
+  fnsigmas[3][0] = nsigmaTPCkElectron;
+}
+
 //________________________________________________________________________________________________________
 void AliAnalysisTaskPIDBFDptDpt::CheckTOF( AliVTrack * trk )     //check if the particle has TOF Matching
 { 
@@ -2512,16 +2518,16 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //func
 
   CheckTOF( trk );
   
-  if( fHasTOFPID )
+  if( fHasTOFPID && ( trk->Pt() > ptTOFlowerBoundary ) )
     {
       nsigmaPion     =  TMath::Abs( fnsigmas[0][1] ); //Pion_TOF
       nsigmaKaon     =  TMath::Abs( fnsigmas[1][1] ); //Kaon_TOF
       nsigmaProton   =  TMath::Abs( fnsigmas[2][1] ); //Proton_TOF
       nsigmaElectron =  TMath::Abs( fnsigmas[3][1] ); //Electron_TOF
 
-      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->Pt() > 0.2 ) && ( trk->P() < 1.6 ) )	 return 0; //Pion
-      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->Pt() > 0.2 ) && ( trk->P() < 1.6 ) )    return 1; //Kaon
-      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( trk->Pt() > 0.4 ) && ( trk->P() < 3.0 ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->Pt() <= ptUpperLimit ) )  return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( trk->Pt() <= ptUpperLimit ) )  return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( trk->Pt() <= ptUpperLimit ) && ( massSquareCalculation(trk) > 0.6 ) && ( massSquareCalculation(trk) < 1.1 ) )   return 2; //Proton // need to add mass square cut in the source code as well!!!
     }
   else
     {
@@ -2530,9 +2536,9 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //func
       nsigmaProton   =  TMath::Abs( fnsigmas[2][0] ); //Proton_TPC
       nsigmaElectron =  TMath::Abs( fnsigmas[3][0] ); //Electron_TPC
 
-      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > 1 ) && (  trk->Pt() > 0.2 ) && ( trk->Pt() < 0.6 ) )   return 0; //Pion
-      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > 1 ) && (  trk->Pt() > 0.2 ) && ( trk->Pt() < 0.6 ) )   return 1; //Kaon
-      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaElectron > 1 ) && (  trk->Pt() > 0.4 ) && ( trk->Pt() < 1.0 ) )   return 2; //Proton
+      if( ( nsigmaPion < fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 0; //Pion
+      if( ( nsigmaKaon < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaProton > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 1; //Kaon
+      if( ( nsigmaProton < fNSigmaPID ) && ( nsigmaPion > fNSigmaPID ) && ( nsigmaKaon > fNSigmaPID ) && ( nsigmaElectron > electronNSigmaVeto ) && ( trk->Pt() >= _min_pt_1 ) && ( trk->Pt() <= ptTOFlowerBoundary ) )   return 2; //Proton
     }
 
   // else, return undefined
@@ -2542,7 +2548,10 @@ Int_t AliAnalysisTaskPIDBFDptDpt::TellParticleSpecies( AliVTrack * trk )  //func
 //________________________________________________________________________________________________________________
 Double_t AliAnalysisTaskPIDBFDptDpt::TOFBetaCalculation( AliVTrack * track ) const
 {
-  Double_t tofTime = track -> GetTOFsignal();
+  Double_t tofTime = 0;
+  if ( fAnalysisType == "MCAODreco" )       tofTime = track -> GetTOFsignalTunedOnData();
+  else if ( fAnalysisType == "RealData" )   tofTime = track -> GetTOFsignal();  
+
   Double_t c = TMath::C() * 1.E-9;// m/ns
   Float_t startTime = fPIDResponse -> GetTOFResponse().GetStartTime( track->P() );//in ps
   Double_t length = fPIDResponse -> GetTOFResponse().GetExpectedSignal( track, AliPID::kElectron ) * 1E-3 * c;

@@ -56,6 +56,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetZgAxis(Int_t b)                                              { fZgAxis            = b         ; }
   void                        SetdRAxis(Int_t b)                                              { fdRAxis            = b         ; }
   void                        SetPtgAxis(Int_t b)                                             { fPtgAxis           = b         ; }
+  void                        SetDBCAxis(Int_t b)                                             { fDBCAxis           = b         ; }
 
  protected:
   void                        ExecOnce();
@@ -88,6 +89,7 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Int_t                       fZgAxis;                                 // add Zg axis in matching THnSparse (default=0)
   Int_t                       fdRAxis;                                 // add dR axis in matching THnSparse (default=0)
   Int_t                       fPtgAxis;                                // add Ptg axis in matching THnSparse (default=0)
+  Int_t                       fDBCAxis;                                // add DBC (number of soft dropped branches) axis in matching THnSparse (default=0)
 
   Bool_t                      fIsJet1Rho;                              //!whether the jet1 collection has to be average subtracted
   Bool_t                      fIsJet2Rho;                              //!whether the jet2 collection has to be average subtracted
@@ -168,6 +170,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 27) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 28) // Jet response matrix producing task
 };
 #endif

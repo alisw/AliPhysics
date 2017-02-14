@@ -76,9 +76,10 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetTPCEP(){SetEventPlaneMethod(kTPCVZERO);}
   void SetEventPlanesCompatibility(Float_t comp) {fEventPlanesComp=comp;}
   void SetUseNewQnCorrFw(Bool_t flag) {fUseNewQnCorrFw=flag;}
-  void SetRecomputeTPCEventPlane(Bool_t opt, Bool_t usePtWei){
+  void SetRecomputeTPCEventPlane(Bool_t opt, Bool_t usePtWei, Double_t etagap=-1.){
     fOnTheFlyTPCEP=opt;
     fUsePtWeights=usePtWei;
+    fEtaGapInTPCHalves=etagap;
   }
   Float_t GetEventPlanesCompatibility()const {return fEventPlanesComp;}
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
@@ -94,13 +95,14 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
 
   void SetSeparateD0D0bar(Bool_t separate) {fSeparateD0D0bar=separate;}
   void Setq2Method(Int_t q2method) {fq2Meth=q2method;}
+  void Setq2Smearing(TString smearingfilepath, TString histoname, Int_t smearingaxis);
   
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
-    
+
  private:
     
   AliAnalysisTaskSEHFv2(const AliAnalysisTaskSEHFv2 &source);
@@ -119,7 +121,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void ComputeTPCEventPlane(AliAODEvent* aod, Double_t &rpangleTPC, Double_t &rpangleTPCpos,Double_t &rpangleTPCneg) const;
 
   void CreateSparseForEvShapeAnalysis();
-  Double_t Getq2(TList* qnlist);
+  Double_t Getq2(TList* qnlist, Int_t q2meth);
   
   TH1F* fHistEvPlaneQncorrTPC[3];   //! histogram for EP
   TH1F* fHistEvPlaneQncorrVZERO[3]; //! histogram for EP
@@ -155,11 +157,15 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Int_t fq2Meth;                //flag to select q2 method
   Bool_t fSeparateD0D0bar;      //flag to activate the separation of D0 from D0bar in the THnSparse
   Bool_t fOnTheFlyTPCEP;        // flag to compute the TPC EP in the task
+  Double_t fEtaGapInTPCHalves;  // eta gap between two halves of TPC (only if fOnTheFlyTPCEP)
   Bool_t fUsePtWeights;         // use pt weights for TPC EP if fOnTheFlyTPCEP is activated
-
+  TH2F* fq2SmearingHisto;       //-> 2D histo for q2smearing
+  Bool_t fq2Smearing;           // flag to activate q2 smearing
+  Int_t fq2SmearingAxis;        // axis of the smearing histogram corresponding to the q2 used for the analysis
+  
   AliAnalysisTaskSEHFv2::FlowMethod fFlowMethod;
     
-  ClassDef(AliAnalysisTaskSEHFv2,8); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFv2,10); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

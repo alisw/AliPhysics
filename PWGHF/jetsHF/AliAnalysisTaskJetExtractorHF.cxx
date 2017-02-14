@@ -48,8 +48,10 @@
 #include "AliVParticle.h"
 #include "TRandom3.h"
 #include "AliAnalysisTaskEmcalJet.h"
+#include "AliESDtrackCuts.h"
 
-#include "AliAnalysisTaskJetExtractor.h"
+#include "AliHFJetsTaggingVertex.h"
+#include "AliAnalysisTaskJetExtractorHF.h"
 
 //________________________________________________________________________
 AliBasicJet::~AliBasicJet() 
@@ -76,16 +78,17 @@ AliBasicJetSecondaryVertex::~AliBasicJetSecondaryVertex()
 }
 
 /// \cond CLASSIMP
-ClassImp(AliAnalysisTaskJetExtractor)
+ClassImp(AliAnalysisTaskJetExtractorHF)
 /// \endcond
 //________________________________________________________________________
-AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
-  AliAnalysisTaskEmcalJet("AliAnalysisTaskJetExtractor", kTRUE),
+AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskJetExtractorHF", kTRUE),
   fJetsCont(0),
   fTracksCont(0),
   fJetsTree(0),
   fJetsTreeBuffer(0),
   fRandom(0),
+  fVtxTagger(0),
   fCurrentNJetsInEvents(0),
   fCurrentJetTypeHM(0),
   fCurrentJetTypeIC(0),
@@ -108,8 +111,11 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fInitialCollisionMatchingRadius(0.3),
   fTruthParticleArrayName("mcparticles"),
   fSecondaryVertexMaxChi2(1e10),
-  fSecondaryVertexMaxDispersion(0.02),
-  fAddPIDSignal(kFALSE)
+  fSecondaryVertexMaxDispersion(0.05),
+  fAddPIDSignal(kFALSE),
+  fCalculateSecondaryVertices(kFALSE),
+  fUseJetTaggingHFMethod(kTRUE),
+  fVertexerCuts(0)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -117,13 +123,14 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
 }
 
 //________________________________________________________________________
-AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
+AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fJetsCont(0),
   fTracksCont(0),
   fJetsTree(0),
   fJetsTreeBuffer(0),
   fRandom(0),
+  fVtxTagger(0),
   fCurrentNJetsInEvents(0),
   fCurrentJetTypeHM(0),
   fCurrentJetTypeIC(0),
@@ -146,8 +153,11 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fInitialCollisionMatchingRadius(0.3),
   fTruthParticleArrayName("mcparticles"),
   fSecondaryVertexMaxChi2(1e10),
-  fSecondaryVertexMaxDispersion(0.02),
-  fAddPIDSignal(kFALSE)
+  fSecondaryVertexMaxDispersion(0.05),
+  fAddPIDSignal(kFALSE),
+  fCalculateSecondaryVertices(kFALSE),
+  fUseJetTaggingHFMethod(kTRUE),
+  fVertexerCuts(0)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
@@ -155,13 +165,13 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
 }
 
 //________________________________________________________________________
-AliAnalysisTaskJetExtractor::~AliAnalysisTaskJetExtractor()
+AliAnalysisTaskJetExtractorHF::~AliAnalysisTaskJetExtractorHF()
 {
   // Destructor.
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
+void AliAnalysisTaskJetExtractorHF::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
@@ -201,7 +211,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::ExecOnce() {
+void AliAnalysisTaskJetExtractorHF::ExecOnce() {
 
   AliAnalysisTaskEmcalJet::ExecOnce();
 
@@ -209,10 +219,19 @@ void AliAnalysisTaskJetExtractor::ExecOnce() {
   fJetsTree = new TTree("ExtractedJets", "ExtractedJets");
   fJetsTree->Branch("Jets", "AliBasicJet", &fJetsTreeBuffer, 1000);
   fOutput->Add(fJetsTree);
+
+  // ### Prepare vertexer
+  if(fCalculateSecondaryVertices)
+  {
+    if(!fVertexerCuts)
+      AliFatal("VertexerCuts not given but secondary vertex calculation turned on.");
+    fVtxTagger = new AliHFJetsTaggingVertex();
+    fVtxTagger->SetCuts(fVertexerCuts);
+  }
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskJetExtractor::IsJetSelected(AliEmcalJet* jet)
+Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
 {
   // ######## Check if cuts for extraction have been passed
 
@@ -266,7 +285,7 @@ Bool_t AliAnalysisTaskJetExtractor::IsJetSelected(AliEmcalJet* jet)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::AddJetToTree(AliEmcalJet* jet)
+void AliAnalysisTaskJetExtractorHF::AddJetToTree(AliEmcalJet* jet)
 {
   // Load vertex if possible
   Double_t vtxX = 0;
@@ -289,7 +308,7 @@ void AliAnalysisTaskJetExtractor::AddJetToTree(AliEmcalJet* jet)
     eventID = eventIDHeader->GetEventIdAsLong();
 
   // ### Actually add the basic jet
-  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fCurrentJetTypeIC, fCurrentJetTypeHM, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent);
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fCurrentJetTypeIC, fCurrentJetTypeHM, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent);
 
   // Add constituents
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
@@ -297,25 +316,25 @@ void AliAnalysisTaskJetExtractor::AddJetToTree(AliEmcalJet* jet)
     AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
     if(!particle) continue;
 
-    // Secondary vertex analysis
+    // Impact parameter analysis
     Double_t z     = GetTrackImpactParameter(myVertex, dynamic_cast<AliAODTrack*>(particle));
 
     basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), particle->Xv(), particle->Yv(), particle->Zv(), z);
     AddPIDInformation(particle, *basicJet.GetJetConstituent(basicJet.GetNumbersOfConstituents()-1));
   }
 
-  // Add secondary vertices to jet (from AOD.VertexingHF)
+  // Add secondary vertices to jet (from AOD.VertexingHF or calculated)
   AddSecondaryVertices(myVertex, jet, basicJet);
 
-  // Field currently not used
-  basicJet.SetTruePt(0);
+  // Field currently misused
+  basicJet.SetTruePt(jet->Pt());
 
   fJetsTreeBuffer = &basicJet;
   fJetsTree->Fill();
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::FillEventControlHistograms()
+void AliAnalysisTaskJetExtractorHF::FillEventControlHistograms()
 {
   // ### Event control plots
   FillHistogram("hTrackCount", fTracksCont->GetNAcceptedParticles(), fCent);
@@ -324,7 +343,7 @@ void AliAnalysisTaskJetExtractor::FillEventControlHistograms()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::FillJetControlHistograms(AliEmcalJet* jet)
+void AliAnalysisTaskJetExtractorHF::FillJetControlHistograms(AliEmcalJet* jet)
 {
   // ### Jet control plots
   FillHistogram("hJetPtRaw", jet->Pt(), fCent); 
@@ -350,7 +369,7 @@ void AliAnalysisTaskJetExtractor::FillJetControlHistograms(AliEmcalJet* jet)
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskJetExtractor::Run()
+Bool_t AliAnalysisTaskJetExtractorHF::Run()
 {
   CalculateEventProperties();
 
@@ -373,59 +392,103 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::AddSecondaryVertices(const AliVVertex* vtx, AliEmcalJet* jet, AliBasicJet& basicJet)
+void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, AliBasicJet& basicJet)
 {
-  if(!vtx)
+  if(!primVtx)
     return;
 
   // Create ESD vertex from the existing AliVVertex
-  Double_t vtxPos[3]   = {vtx->GetX(), vtx->GetY(), vtx->GetZ()};
+  Double_t vtxPos[3]   = {primVtx->GetX(), primVtx->GetY(), primVtx->GetZ()};
   Double_t covMatrix[6] = {0};
-  vtx->GetCovarianceMatrix(&covMatrix[0]);
-  AliESDVertex* esdVtx = new AliESDVertex(&vtxPos[0], &covMatrix[0], vtx->GetChi2(), vtx->GetNContributors());
+  primVtx->GetCovarianceMatrix(covMatrix);
+  AliESDVertex* esdVtx = new AliESDVertex(vtxPos, covMatrix, primVtx->GetChi2(), primVtx->GetNContributors());
 
-  // Load HF vertex branch from AOD event, if possible
-  TClonesArray* secVertexArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("VerticesHF"));
-  if(!secVertexArr)
-    return;
+  TClonesArray* secVertexArr = 0;
+  vctr_pair_dbl_int arrDispersion;
+  arrDispersion.reserve(5);
+  if(fCalculateSecondaryVertices)
+  {
+    //###########################################################################
+    // ********* Calculate secondary vertices
+    // Derived from AliAnalysisTaskEmcalJetBtagSV
+    secVertexArr = new TClonesArray("AliAODVertex");
+    Int_t nDauRejCount = 0;
+    Int_t nVtx = fVtxTagger->FindVertices(jet,
+                                         fTracksCont->GetArray(),
+                                         (AliAODEvent*)InputEvent(),
+                                         esdVtx,
+                                         InputEvent()->GetMagneticField(),
+                                         secVertexArr,
+                                         0,
+                                         arrDispersion,
+                                         nDauRejCount);
+
+
+    if(nVtx < 0)
+    {
+      secVertexArr->Clear();
+      delete secVertexArr;
+      return;
+    }
+    //###########################################################################
+  }
+  else // Load HF vertex branch from AOD event, if possible
+  {
+    secVertexArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("VerticesHF"));
+    if(!secVertexArr)
+      return;
+  }
 
   // Loop over all potential secondary vertices
   for(Int_t i=0; i<secVertexArr->GetEntriesFast(); i++)
   {
-    AliAODVertex* vtx = (AliAODVertex*)(secVertexArr->UncheckedAt(i));
-    // Only select three-prong vertices
-    if((strcmp(vtx->GetParent()->ClassName(), "AliAODRecoDecayHF3Prong")))
-      continue;
+    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArr->UncheckedAt(i));
+    if(!fCalculateSecondaryVertices)
+      if((strcmp(secVtx->GetParent()->ClassName(), "AliAODRecoDecayHF3Prong")))
+        continue;
 
     // Calculate vtx distance
-    Double_t effX = vtx->GetX() - esdVtx->GetX();
-    Double_t effY = vtx->GetY() - esdVtx->GetY();
-    Double_t effZ = vtx->GetZ() - esdVtx->GetZ();
-    Double_t vtxDistance = TMath::Sqrt(effX*effX + effY*effY + effZ*effZ);
+    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+    Double_t effZ = secVtx->GetZ() - esdVtx->GetZ();
 
-    // Vertex dispersion
-    Double_t dispersion = 0.;
-    for(Int_t j=0; j<vtx->GetNDaughters(); j++)
-    {
-      if(!vtx->GetDaughter(j))
-        continue;
-      Double_t impact = GetTrackImpactParameter(vtx, dynamic_cast<AliAODTrack*>(vtx->GetDaughter(j)));
-      dispersion += impact*impact;
-    }
-    dispersion = TMath::Sqrt(dispersion);
+    // ##### Vertex properties
+    // vertex dispersion
+    Double_t dispersion = arrDispersion[i].first;
+
+    // invariant mass
+    Double_t mass = fVtxTagger->GetVertexInvariantMass(secVtx);
+
+    // signed length
+    Double_t Lxy  = TMath::Sqrt(effX*effX + effY*effY);
+    Double_t jetP[3]; jet->PxPyPz(jetP);
+    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+    if (signLxy < 0.) Lxy *= -1.;
+
+    Double_t sigmaLxy  = 0;
+    AliAODVertex* aodVtx = (AliAODVertex*)(primVtx);
+    if (aodVtx)
+      sigmaLxy = aodVtx->ErrorDistanceXYToVertex(secVtx);
 
     // Add secondary vertices if they fulfill the conditions
-    if( (dispersion > fSecondaryVertexMaxDispersion) || (TMath::Abs(vtx->GetChi2perNDF()) > fSecondaryVertexMaxChi2) )
+    if( (dispersion > fSecondaryVertexMaxDispersion) || (TMath::Abs(secVtx->GetChi2perNDF()) > fSecondaryVertexMaxChi2) )
       continue;
 
-    basicJet.AddSecondaryVertex(vtx->GetX(), vtx->GetY(), vtx->GetZ(), TMath::Abs(vtx->GetChi2perNDF()), dispersion);
+    basicJet.AddSecondaryVertex(secVtx->GetX(), secVtx->GetY(), secVtx->GetZ(), TMath::Abs(secVtx->GetChi2perNDF()), dispersion, mass, Lxy, sigmaLxy);
+
+    //cout << Form("(%3.3f, %3.3f, %3.3f), r=%3.3f, chi2=%3.3f, dispersion=%3.3f", effX, effY, effZ, vtxDistance, TMath::Abs(vtx->GetChi2perNDF()), dispersion) << endl;
   }
 
+  if(fCalculateSecondaryVertices)
+  {
+    secVertexArr->Clear();
+    delete secVertexArr;
+  }
   delete esdVtx;
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskJetExtractor::GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track)
+Double_t AliAnalysisTaskJetExtractorHF::GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track)
 {
   Double_t z = 0;
   // Impact parameter z
@@ -441,13 +504,16 @@ Double_t AliAnalysisTaskJetExtractor::GetTrackImpactParameter(const AliVVertex* 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::CalculateJetProperties(AliEmcalJet* jet)
+void AliAnalysisTaskJetExtractorHF::CalculateJetProperties(AliEmcalJet* jet)
 {
-  CalculateJetType(jet, fCurrentJetTypeIC, fCurrentJetTypeHM);
+  if(fUseJetTaggingHFMethod)
+    CalculateJetType_HFMethod(jet, fCurrentJetTypeIC, fCurrentJetTypeHM);
+  else
+    CalculateJetType(jet, fCurrentJetTypeIC, fCurrentJetTypeHM);
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::CalculateEventProperties()
+void AliAnalysisTaskJetExtractorHF::CalculateEventProperties()
 {
   fCurrentNJetsInEvents = 0;
   GetLeadingJets("rho", fCurrentLeadingJet, fCurrentSubleadingJet);
@@ -455,10 +521,10 @@ void AliAnalysisTaskJetExtractor::CalculateEventProperties()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM)
+void AliAnalysisTaskJetExtractorHF::CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM)
 {
-  typeIC = -1;
-  typeHM = -1;
+  typeIC = 0;
+  typeHM = 0;
 
   // Set type if initial parton information is available
   if(fFoundIC)
@@ -478,7 +544,7 @@ void AliAnalysisTaskJetExtractor::CalculateJetType(AliEmcalJet* jet, Int_t& type
     if(!fTruthParticleArray)
       return;
 
-    typeHM = 0;
+    typeHM = 1; // light jet until something else was found
     for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
     {
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(i));
@@ -509,7 +575,7 @@ void AliAnalysisTaskJetExtractor::CalculateJetType(AliEmcalJet* jet, Int_t& type
   // As fallback, the MC stack will be tried
   else if(MCEvent() && (MCEvent()->Stack()))
   {
-    typeHM = 0;
+    typeHM = 1; // light jet until something else was found
     AliStack* stack = MCEvent()->Stack();
     // Go through the whole particle stack
     for(Int_t i=0; i<stack->GetNtrack(); i++)
@@ -542,7 +608,42 @@ void AliAnalysisTaskJetExtractor::CalculateJetType(AliEmcalJet* jet, Int_t& type
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent)
+void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM)
+{
+  Double_t radius = fHadronMatchingRadius;
+  TClonesArray* fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
+  if(!fTruthParticleArray)
+    return;
+
+  typeIC = 0;
+  typeHM = 0;
+
+  AliAODMCParticle* parton[2];
+
+  parton[0] = (AliAODMCParticle*) fVtxTagger->IsMCJetParton(fTruthParticleArray, jet, radius);  // method 1
+  parton[1] = (AliAODMCParticle*) fVtxTagger->IsMCJetMeson(fTruthParticleArray, jet, radius);   // method 2
+
+  if (parton[0]) {
+    Int_t pdg = TMath::Abs(parton[0]->PdgCode());
+
+    if      ((pdg == 21) || (pdg == 1) || (pdg == 2)) typeIC = 1; // light jets
+    else if (pdg == 3 ) typeIC = 3; // s-jets
+    else if (pdg == 4 ) typeIC = 4; // c-jets
+    else if (pdg == 5 ) typeIC = 5; // b-jets
+  }
+
+  if (!parton[1])
+    typeHM = 1;
+  else {
+    Int_t pdg = TMath::Abs(parton[1]->PdgCode());
+    if ((pdg >= 400 && pdg <= 500) || (pdg >= 4000 && pdg <= 5000)) typeHM = 4;
+    else if ((pdg >= 500 && pdg <= 600) || (pdg >= 5000 && pdg <= 6000)) typeHM = 5;
+  }
+
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractorHF::AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent)
 {
   // On demand and if we have AODs, add the particle PID signal object
   // Add the truth values if available
@@ -600,7 +701,7 @@ void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, AliB
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::GetLeadingJets(const char* opt, AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading)
+void AliAnalysisTaskJetExtractorHF::GetLeadingJets(const char* opt, AliEmcalJet*& jetLeading, AliEmcalJet*& jetSubLeading)
 {
   // Customized from AliJetContainer::GetLeadingJet()
   // Get the leading+subleading jet; if opt contains "rho" the sorting is according to pt-A*rho
@@ -650,7 +751,7 @@ void AliAnalysisTaskJetExtractor::GetLeadingJets(const char* opt, AliEmcalJet*& 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::CalculateInitialCollisionJets()
+void AliAnalysisTaskJetExtractorHF::CalculateInitialCollisionJets()
 {
   // Get the initial parton infromation
   Double_t initialParton1_eta = -999.;
@@ -765,7 +866,7 @@ void AliAnalysisTaskJetExtractor::CalculateInitialCollisionJets()
 
 
 //________________________________________________________________________
-inline void AliAnalysisTaskJetExtractor::FillHistogram(const char * key, Double_t x)
+inline void AliAnalysisTaskJetExtractorHF::FillHistogram(const char * key, Double_t x)
 {
   TH1* tmpHist = static_cast<TH1*>(fOutput->FindObject(key));
   if(!tmpHist)
@@ -778,7 +879,7 @@ inline void AliAnalysisTaskJetExtractor::FillHistogram(const char * key, Double_
 }
 
 //________________________________________________________________________
-inline void AliAnalysisTaskJetExtractor::FillHistogram(const char * key, Double_t x, Double_t y)
+inline void AliAnalysisTaskJetExtractorHF::FillHistogram(const char * key, Double_t x, Double_t y)
 {
   TH1* tmpHist = static_cast<TH1*>(fOutput->FindObject(key));
   if(!tmpHist)
@@ -794,7 +895,7 @@ inline void AliAnalysisTaskJetExtractor::FillHistogram(const char * key, Double_
 }
 
 //________________________________________________________________________
-inline void AliAnalysisTaskJetExtractor::FillHistogram(const char * key, Double_t x, Double_t y, Double_t add)
+inline void AliAnalysisTaskJetExtractorHF::FillHistogram(const char * key, Double_t x, Double_t y, Double_t add)
 {
   TH2* tmpHist = static_cast<TH2*>(fOutput->FindObject(key));
   if(!tmpHist)
@@ -807,7 +908,7 @@ inline void AliAnalysisTaskJetExtractor::FillHistogram(const char * key, Double_
 }
 
 //________________________________________________________________________
-inline void AliAnalysisTaskJetExtractor::FillHistogram3D(const char * key, Double_t x, Double_t y, Double_t z, Double_t add)
+inline void AliAnalysisTaskJetExtractorHF::FillHistogram3D(const char * key, Double_t x, Double_t y, Double_t z, Double_t add)
 {
   TH3* tmpHist = static_cast<TH3*>(fOutput->FindObject(key));
   if(!tmpHist)
@@ -824,7 +925,7 @@ inline void AliAnalysisTaskJetExtractor::FillHistogram3D(const char * key, Doubl
 
 
 //________________________________________________________________________
-template <class T> T* AliAnalysisTaskJetExtractor::AddHistogram1D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, const char* xTitle, const char* yTitle)
+template <class T> T* AliAnalysisTaskJetExtractorHF::AddHistogram1D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, const char* xTitle, const char* yTitle)
 {
   T* tmpHist = new T(name, title, xBins, xMin, xMax);
 
@@ -840,7 +941,7 @@ template <class T> T* AliAnalysisTaskJetExtractor::AddHistogram1D(const char* na
 }
 
 //________________________________________________________________________
-template <class T> T* AliAnalysisTaskJetExtractor::AddHistogram2D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, Int_t yBins, Double_t yMin, Double_t yMax, const char* xTitle, const char* yTitle, const char* zTitle)
+template <class T> T* AliAnalysisTaskJetExtractorHF::AddHistogram2D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, Int_t yBins, Double_t yMin, Double_t yMax, const char* xTitle, const char* yTitle, const char* zTitle)
 {
   T* tmpHist = new T(name, title, xBins, xMin, xMax, yBins, yMin, yMax);
   tmpHist->GetXaxis()->SetTitle(xTitle);
@@ -856,7 +957,7 @@ template <class T> T* AliAnalysisTaskJetExtractor::AddHistogram2D(const char* na
 }
 
 //________________________________________________________________________
-template <class T> T* AliAnalysisTaskJetExtractor::AddHistogram3D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, Int_t yBins, Double_t yMin, Double_t yMax, Int_t zBins, Double_t zMin, Double_t zMax, const char* xTitle, const char* yTitle, const char* zTitle)
+template <class T> T* AliAnalysisTaskJetExtractorHF::AddHistogram3D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, Int_t yBins, Double_t yMin, Double_t yMax, Int_t zBins, Double_t zMin, Double_t zMax, const char* xTitle, const char* yTitle, const char* zTitle)
 {
   T* tmpHist = new T(name, title, xBins, xMin, xMax, yBins, yMin, yMax, zBins, zMin, zMax);
   tmpHist->GetXaxis()->SetTitle(xTitle);
@@ -872,7 +973,7 @@ template <class T> T* AliAnalysisTaskJetExtractor::AddHistogram3D(const char* na
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractor::Terminate(Option_t *) 
+void AliAnalysisTaskJetExtractorHF::Terminate(Option_t *) 
 {
   // Called once at the end of the analysis.
 }

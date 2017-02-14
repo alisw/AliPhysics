@@ -1,9 +1,0 @@
-*_C.d
-*_C.so
-test_*
-*.png
-dndeta_*.C
-export_*.C
-runTrain
-*.root
-

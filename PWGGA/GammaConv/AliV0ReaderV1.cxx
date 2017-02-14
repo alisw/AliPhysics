@@ -1258,22 +1258,31 @@ void AliV0ReaderV1::CountTracks(){
   // }
 
   if(fInputEvent->IsA()==AliESDEvent::Class()){
+    static AliESDtrackCuts *EsdTrackCuts = 0x0;
+    static int prevRun = -1;
     // Using standard function for setting Cuts
     Int_t runNumber = fInputEvent->GetRunNumber();
-    AliESDtrackCuts *EsdTrackCuts = 0x0;
-    // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
-    if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-    // else if run2 data use 2015 PbPb cuts
-    }else if (runNumber>=209122){
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
-    // else use 2011 version of track cuts
-    }else{
-      EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+
+    if (prevRun!=runNumber) {
+      delete EsdTrackCuts;
+      EsdTrackCuts = 0;
+      prevRun = runNumber;
     }
-    EsdTrackCuts->SetMaxDCAToVertexZ(2);
-    EsdTrackCuts->SetEtaRange(-0.8, 0.8);
-    EsdTrackCuts->SetPtRange(0.15);
+    if (!EsdTrackCuts) {
+      // if LHC11a or earlier or if LHC13g or if LHC12a-i -> use 2010 cuts
+      if( (runNumber<=146860) || (runNumber>=197470 && runNumber<=197692) || (runNumber>=172440 && runNumber<=193766) ){
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+	// else if run2 data use 2015 PbPb cuts
+      }else if (runNumber>=209122){
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	// else use 2011 version of track cuts
+      }else{
+	EsdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+      }
+      EsdTrackCuts->SetMaxDCAToVertexZ(2);
+      EsdTrackCuts->SetEtaRange(-0.8, 0.8);
+      EsdTrackCuts->SetPtRange(0.15);
+    }
     fNumberOfPrimaryTracks = 0;
     for(Int_t iTracks = 0; iTracks < fInputEvent->GetNumberOfTracks(); iTracks++){
       AliESDtrack* curTrack = (AliESDtrack*) fInputEvent->GetTrack(iTracks);
@@ -1282,8 +1291,6 @@ void AliV0ReaderV1::CountTracks(){
       //if(fMCEvent && !(fEventCuts->IsParticleFromBGEvent(TMath::Abs(curTrack->GetLabel()),fMCEvent->Stack(),fInputEvent))) continue;
       fNumberOfPrimaryTracks++;
     }
-    delete EsdTrackCuts;
-    EsdTrackCuts=0x0;
   }
   else if(fInputEvent->IsA()==AliAODEvent::Class()){
     fNumberOfPrimaryTracks = 0;

@@ -15,7 +15,7 @@ export ALICE_PHYSICS="/cvmfs/alice.cern.ch/x86_64-2.6-gnu-4.1.2/Packages/AliPhys
 
 # source python virtual env
 mkdir -p ~/.virtualenvs
-virtualenv -q ~/.virtualenvs/hmtfmc
-source ~/.virtualenvs/hmtfmc/bin/activate
-pip uninstall -q -y hmtfmc
+virtualenv -q ~/.virtualenvs/aligenqa
+source ~/.virtualenvs/aligenqa/bin/activate
+pip uninstall -q -y aligenqa
 pip install --upgrade -e $ALICE_PHYSICS"/PWG/HMTF/post_process/post_process/"

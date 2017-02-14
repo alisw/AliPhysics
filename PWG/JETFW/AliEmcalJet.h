@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include <Riosfwd.h>
+#include <iosfwd>
 #include <TArrayS.h>
 #include <TMath.h>
 #include <TClonesArray.h>
@@ -50,6 +50,8 @@ class AliEmcalJet : public AliVParticle
    * @brief Bit definition for jet geometry acceptance. Cut implemented in AliJetContainer
    * by comparing jet's bits (set in jet finder) to container's bits (set by user).
    * If user doesn't set jet acceptance cut value, no cut is performed (equivalent to kUser).
+   * The boundaries defined for each bit should be taken as approximate (within a couple
+   * cells) -- the user should verify the definitions if precision is crucial.
    * If you create jets outside of the standard jet finder, you may have to manually set these
    * acceptance bits if you want to use the acceptance selection cut in the jet container
    * e.g. "jet->SetJetAcceptanceType(fJetTask->FindJetAcceptanceType(eta,phi,r));".
@@ -59,9 +61,13 @@ class AliEmcalJet : public AliVParticle
     kTPCfid           = 1<<1,     ///< TPC fiducial acceptance (each eta edge narrowed by jet R)
     kEMCAL            = 1<<2,     ///< EMCal acceptance
     kEMCALfid         = 1<<3,     ///< EMCal fiducial acceptance (each eta, phi edge narrowed by jet R)
-    kDCAL             = 1<<4,     ///< DCal acceptance
+    kDCAL             = 1<<4,     ///< DCal acceptance -- spans entire rectangular region in eta-phi (including most of PHOS)
     kDCALfid          = 1<<5,     ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
-    kUser             = 1<<6      ///< Full acceptance, i.e. no acceptance cut applied -- left to user
+    kDCALonly         = 1<<6,     ///< DCal acceptance -- spans ONLY DCal (no PHOS or gap)
+    kDCALonlyfid      = 1<<7,     ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kPHOS             = 1<<8,     ///< PHOS acceptance
+    kPHOSfid          = 1<<9,     ///< PHOS fiducial acceptance (each eta, phi edge narrowed by jet R)
+    kUser             = 1<<10     ///< Full acceptance, i.e. no acceptance cut applied -- left to user
   };
   
   /**
@@ -316,7 +322,7 @@ class AliEmcalJet : public AliVParticle
   };
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJet,18);
+  ClassDef(AliEmcalJet,19);
   /// \endcond
 };
 

@@ -336,7 +336,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     trkQualityCut->SetTPCmaxChi2(3.5);
   }
   
-  trkQualityCut->SetPtRange(0.15, 20.0);
+  trkQualityCut->SetPtRange(0.15, 200.0);
   trkQualityCut->SetEtaRange(-0.8, 0.8);
   
   Printf(Form("::::: SetCustomQualityCut:: using custom track quality cuts #%i",customQualityCutsID));

@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKJETEXTRACTOR_H
-#define ALIANALYSISTASKJETEXTRACTOR_H
+#ifndef ALIANALYSISTASKJETEXTRACTORHF_H
+#define ALIANALYSISTASKJETEXTRACTORHF_H
 
 /* Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -8,27 +8,28 @@ class THn;
 class AliAODVertex;
 class AliBasicJet;
 class AliBasicJetConstituent;
+class AliRDHFJetsCutsVertex;
 
 //###############################################################################################################################################3
 
 /**
- * \class AliAnalysisTaskJetExtractor
+ * \class AliAnalysisTaskJetExtractorHF
  * \brief Extract jets to tree
  *
  * This task extracts jets (including constituents) to a tree for further
- * analysis, e.g. to create a ML dataset
+ * analysis, e.g. to create a ML dataset. This task is written for HF jets
  * 
  *
  * \author Ruediger Haake <ruediger.haake@cern.ch>, CERN
- * \date Dec 15, 2016
+ * \date Jan 16, 2017
  */
 // 
-class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskJetExtractorHF : public AliAnalysisTaskEmcalJet {
  public:
 
-  AliAnalysisTaskJetExtractor();
-  AliAnalysisTaskJetExtractor(const char *name);
-  virtual ~AliAnalysisTaskJetExtractor();
+  AliAnalysisTaskJetExtractorHF();
+  AliAnalysisTaskJetExtractorHF(const char *name);
+  virtual ~AliAnalysisTaskJetExtractorHF();
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
 
@@ -48,6 +49,9 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetSecondaryVertexMaxChi2(Double_t val   )     { fSecondaryVertexMaxChi2 = val; }
   void                        SetSecondaryVertexMaxDispersion(Double_t val)  { fSecondaryVertexMaxDispersion = val; }
   void                        SetAddPIDSignal(Bool_t val)  { fAddPIDSignal = val; }
+  void                        SetCalculateSecondaryVertices(Bool_t val)  { fCalculateSecondaryVertices = val; }
+  void                        SetUseJetTaggingHFMethod(Bool_t val)  { fUseJetTaggingHFMethod = val; }
+  void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)  { fVertexerCuts = val; }
 
   void                        SetExtractionCutListPIDHM(const char* val)
   { 
@@ -76,6 +80,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
     fExtractionCutUseIC = kTRUE;
     fExtractionCutUseHM = kFALSE;
   }
+
   // ##################
 
  protected:
@@ -95,8 +100,9 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
   void                        CalculateJetProperties(AliEmcalJet* jet);
   void                        CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
+  void                        CalculateJetType_HFMethod(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM);
   Double_t                    GetTrackImpactParameter(const AliVVertex* vtx, AliAODTrack* track);
-  void                        AddSecondaryVertices(const AliVVertex* vtx, AliEmcalJet* jet, AliBasicJet& basicJet);
+  void                        AddSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, AliBasicJet& basicJet);
   void                        AddPIDInformation(AliVParticle* particle, AliBasicJetConstituent& constituent);
 
 
@@ -106,6 +112,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   TTree*                      fJetsTree;                                //!<! Jets that will be saved to a tree (optionally)
   void*                       fJetsTreeBuffer;                          //!<!  buffer for one jet (that will be saved to the tree)
   TRandom3*                   fRandom;                                  ///< random number generator
+  AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
 
   // ################## CURRENT PROPERTIES
   Int_t                       fCurrentNJetsInEvents;                    ///< number of jets in event
@@ -137,6 +144,9 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
   Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
   Bool_t                      fAddPIDSignal;                            ///< Add pid signal to each jet constituent
+  Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)
+  Bool_t                      fUseJetTaggingHFMethod;                   ///< Use same jet tagging method as HF group
+  AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
 
 
   // ######### HISTOGRAM FUNCTIONS
@@ -150,11 +160,11 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
 
 
  private:
-  AliAnalysisTaskJetExtractor(const AliAnalysisTaskJetExtractor&);            // not implemented
-  AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
+  AliAnalysisTaskJetExtractorHF(const AliAnalysisTaskJetExtractorHF&);            // not implemented
+  AliAnalysisTaskJetExtractorHF &operator=(const AliAnalysisTaskJetExtractorHF&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 1) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractorHF, 3) // Jet extraction task
   /// \endcond
 };
 
@@ -267,9 +277,9 @@ class AliBasicJetConstituent
 class AliBasicJetSecondaryVertex
 {
   public:
-    AliBasicJetSecondaryVertex() : fVx(0), fVy(0), fVz(0), fChi2(0), fDispersion(0) {}
-    AliBasicJetSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2, Float_t dispersion)
-    : fVx(vx), fVy(vy), fVz(vz), fChi2(chi2), fDispersion(dispersion)
+    AliBasicJetSecondaryVertex() : fVx(0), fVy(0), fVz(0), fMass(0), fLxy(0), fSigmaLxy(0), fChi2(0), fDispersion(0) {}
+    AliBasicJetSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2, Float_t dispersion, Float_t mass, Float_t lxy, Float_t sigmalxy)
+    : fVx(vx), fVy(vy), fVz(vz), fMass(mass), fLxy(lxy), fSigmaLxy(sigmalxy), fChi2(chi2), fDispersion(dispersion)
     {
     }
     ~AliBasicJetSecondaryVertex();
@@ -278,6 +288,10 @@ class AliBasicJetSecondaryVertex
     Float_t Vy()        { return fVy; }
     Float_t Vz()        { return fVz; }
 
+    Float_t Mass()      { return fMass; }
+    Float_t Lxy()       { return fLxy; }
+    Float_t SigmaLxy()  { return fSigmaLxy; }
+
     Float_t Chi2()      { return fChi2; }
     Float_t Dispersion(){ return fDispersion; }
   private:
@@ -285,6 +299,9 @@ class AliBasicJetSecondaryVertex
     Float_t fVx;         ///< vertex X
     Float_t fVy;         ///< vertex Y
     Float_t fVz;         ///< vertex Z
+    Float_t fMass;       ///< Invariant mass of vertex daughters
+    Float_t fLxy;        ///< Signed decay length in XY
+    Float_t fSigmaLxy;   ///< Sigma of decay length in XY
     Float_t fChi2;       ///< Chi2/ndf for vertex
     Float_t fDispersion; ///< Dispersion of vertex
 };
@@ -342,9 +359,9 @@ class AliBasicJet
 
     // Basic secondary vertex functions
     AliBasicJetSecondaryVertex* GetSecondaryVertex(Int_t index) { return &fSecondaryVertices[index]; }
-    void                      AddSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2=0, Float_t dispersion=0)
+    void                      AddSecondaryVertex(Float_t vx, Float_t vy, Float_t vz, Float_t chi2=0, Float_t dispersion=0, Float_t mass=0, Float_t lxy=0, Float_t sigmalxy=0)
     {
-      AliBasicJetSecondaryVertex vtx (vx, vy, vz, chi2, dispersion);
+      AliBasicJetSecondaryVertex vtx (vx, vy, vz, chi2, dispersion, mass, lxy, sigmalxy);
       AddSecondaryVertex(&vtx);
     }
     void                      AddSecondaryVertex(AliBasicJetSecondaryVertex* vtx) {fSecondaryVertices.push_back(*vtx);}

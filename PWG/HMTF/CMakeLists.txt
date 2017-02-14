@@ -27,6 +27,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskHMTFMCMultEst.cxx
+  AliAnalysisTrackingUncertaintiesHMTF.cxx
   AliEventClassifierBase.cxx
   AliEventClassifierMult.cxx
   AliEventClassifierMPI.cxx
@@ -80,6 +81,7 @@ install(FILES ${HDRS} DESTINATION include)
 ## Installing the macros
 install (FILES
   macros/AddTaskHMTFMCMultEst.C
+  macros/AddTaskTrackingUncertHMTF.C
   DESTINATION PWG/HMTF/macros)
 
 set (INPUT_FILES

@@ -315,7 +315,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
 	femtoReaderAOD->Set1DCorrectionsProtons(f1DcorrectionsProtonsMinus);
       }
 
-      
+
       if(f1DcorrectionsAll) {
 	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections all"<<f1DcorrectionsAll;
 	femtoReaderAOD->Set1DCorrectionsAll(f1DcorrectionsAll);
@@ -329,7 +329,7 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
 	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections lambas Minus"<<f1DcorrectionsLambdasMinus;
 	femtoReaderAOD->Set1DCorrectionsLambdas(f1DcorrectionsLambdasMinus);
       }
-      
+
       fAODheader = dynamic_cast<AliAODHeader *>(fAOD->GetHeader());
       if (!fAODheader) AliFatal("Not a standard AOD");
       femtoReaderAOD->SetAODheader(fAODheader);
@@ -441,7 +441,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
 
       hd = dynamic_cast<AliGenCocktailEventHeader *>(mctruth->MCEvent()->GenEventHeader());
       header = dynamic_cast<AliGenEventHeader *>(mctruth->MCEvent()->Header()->GenEventHeader());
-      
+
       if (hd) {
 
         //  AliInfo ("Got MC cocktail event header %p\n", (void *) hd);

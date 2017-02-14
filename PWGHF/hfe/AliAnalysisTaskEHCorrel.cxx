@@ -102,6 +102,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fMultiplicity(-1),
   fTracks_tender(0),
   fCaloClusters_tender(0),
+  fApplyAddPileUpCuts(kFALSE),
   fUseTender(kFALSE),
   fCentralityMin(0),
   fCentralityMax(20),
@@ -126,6 +127,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fInvmassCut(0.1),
   fFlagHadSPDkAny(kFALSE),
   fFlagHadITSNCls(kFALSE),
+  fFlagHadFiducialCut(kFALSE),
+  fFlagHadPosEtaOnly(kFALSE),
+  fFlagHadNegEtaOnly(kFALSE),
   fTPCnSigmaHadMin(-10),
   fTPCnSigmaHadMax(-3.5),
   fHadCutCase(2),
@@ -238,6 +242,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fMultiplicity(-1),
   fTracks_tender(0),
   fCaloClusters_tender(0),
+  fApplyAddPileUpCuts(kFALSE),
   fUseTender(kFALSE),
   fEMCEG1(kFALSE),
   fEMCEG2(kFALSE),
@@ -260,6 +265,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fInvmassCut(0.1),
   fFlagHadSPDkAny(kFALSE),
   fFlagHadITSNCls(kFALSE),
+  fFlagHadFiducialCut(kFALSE),
+  fFlagHadPosEtaOnly(kFALSE),
+  fFlagHadNegEtaOnly(kFALSE),
   fTPCnSigmaHadMin(-10),
   fTPCnSigmaHadMax(-3.5),
   fHadCutCase(1),
@@ -587,7 +595,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   fInclsElecPt = new TH1F("fInclsElecPt","p_{T} distribution of inclusive electrons;p_{T} (GeV/c);counts",500,0,50);
   fOutputList->Add(fInclsElecPt);
 
-  fNElecInEvt = new TH1F("fNElecInEvt","No of electrons in the event; N^{ele};counts",100,0,100);
+  fNElecInEvt = new TH1F("fNElecInEvt","No of electrons in the event; N^{ele};counts",20,-0.5,19.5);
   fOutputList->Add(fNElecInEvt);
 
   fHadEop = new TH2F("fHadEop", "E/p distribution for hadrons;p_{T} (GeV/c);E/p", 200,0,20,60, 0.0, 3.0);
@@ -737,15 +745,6 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   }
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fpVtx = fVevent->GetPrimaryVertex();
-    
-//////////////
-//if Tender //
-//////////////
-if(fUseTender){
-    //new branches with calibrated tracks and clusters
-     fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
-    fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
-    }
 
   ///////////////////
   //PID initialised//
@@ -767,6 +766,10 @@ if(fUseTender){
   //event selection///
   ////////////////////
   if(!PassEventSelect(fVevent)) return;
+    
+    if(fApplyAddPileUpCuts){
+        if(!PassAddtionalPileUpCuts()) return;
+    }
 
   /////////////////
   // Centrality ///
@@ -780,6 +783,15 @@ if(fUseTender){
   //Get VtxZ and Cent Bin//
   /////////////////////////
   GetVtxZCentralityBin();
+    
+    //////////////
+    //if Tender //
+    //////////////
+    if(fUseTender){
+        //new branches with calibrated tracks and clusters
+        fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("AODFilterTracks"));
+        fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters"));
+    }
 
   //////////////////////
   //EMcal cluster info//
@@ -895,7 +907,7 @@ if(fUseTender){
       if(!fElectTrack) continue;
       fInclsElecPt->Fill(TrkPt);
       fNEle++;
-
+    
       ///////////////////
       //E-H Correlation//
       ///////////////////
@@ -1152,7 +1164,19 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   if(fFlagHadITSNCls){
     if(HadTrack->GetITSNcls() < 3) return kFALSE;
   }
+    
+  if(fFlagHadFiducialCut){
+    if(HadTrack->Eta()< -0.8 || HadTrack->Eta()>0.8) return kFALSE;
+  }
+ 
+  if(fFlagHadPosEtaOnly){
+        if(HadTrack->Eta()< 0 || HadTrack->Eta()>0.9) return kFALSE;
+  }
 
+    if(fFlagHadNegEtaOnly){
+        if(HadTrack->Eta()< -0.9 || HadTrack->Eta()>0) return kFALSE;
+    }
+    
   return kTRUE;
 }
 //___________________________________________
@@ -1311,6 +1335,34 @@ Bool_t AliAnalysisTaskEHCorrel::PassEventSelect(AliVEvent *fVevent)
   fNevents->Fill(2); //events after z vtx cut
 
   return kTRUE;
+}
+//___________________________________________
+Bool_t AliAnalysisTaskEHCorrel::PassAddtionalPileUpCuts()
+{
+    //additional cuts to reject pile-up
+    Int_t nTPCout=0;
+    Float_t mTotV0=0;
+    
+    //get multiplicity
+    AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
+    Float_t mTotV0A=v0data->GetMTotV0A();
+    Float_t mTotV0C=v0data->GetMTotV0C();
+    mTotV0=mTotV0A+mTotV0C;
+    
+    //get no of tracks with kTPCout
+    Int_t ntracksEv = fAOD->GetNumberOfTracks();
+    for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+        AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if(!track) {AliFatal("Not a standard AOD");}
+        if(track->GetID()<0)continue;
+        if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
+        else continue;
+    }
+    Double_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
+    
+    if(mTotV0 < mV0Cut) return kFALSE;
+    
+    return kTRUE;
 }
 //___________________________________________
 void AliAnalysisTaskEHCorrel::CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass)

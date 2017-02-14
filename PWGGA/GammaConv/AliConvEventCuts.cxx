@@ -121,6 +121,10 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hCentralityNotFlat(NULL),
   //hCentralityVsNumberOfPrimaryTracks(NULL),
   hVertexZ(NULL),
+  hNPileupVertices(NULL),
+  hPileupVertexToPrimZ(NULL),
+  hPileupVertexToPrimZSPDPileup(NULL),
+  hPileupVertexToPrimZTrackletvsHits(NULL),
   hEventPlaneAngle(NULL),
   fEventPlaneAngle(0),
   hTriggerClass(NULL),
@@ -224,6 +228,10 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hCentralityNotFlat(ref.hCentralityNotFlat),
   //hCentralityVsNumberOfPrimaryTracks(ref.hCentralityVsNumberOfPrimaryTracks),
   hVertexZ(ref.hVertexZ),
+  hNPileupVertices(ref.hNPileupVertices),
+  hPileupVertexToPrimZ(ref.hPileupVertexToPrimZ),
+  hPileupVertexToPrimZSPDPileup(ref.hPileupVertexToPrimZSPDPileup),
+  hPileupVertexToPrimZTrackletvsHits(ref.hPileupVertexToPrimZTrackletvsHits),
   hEventPlaneAngle(ref.hEventPlaneAngle),
   fEventPlaneAngle(ref.fEventPlaneAngle),
   hTriggerClass(NULL),
@@ -360,9 +368,19 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   //hCentralityVsNumberOfPrimaryTracks=new TH2F(Form("Centrality vs Primary Tracks %s",GetCutNumber().Data()),"Centrality vs Primary Tracks ",400,0,100,4000,0,4000);
   //fHistograms->Add(hCentralityVsNumberOfPrimaryTracks); commented on 3.3.2015 because it's in the main Task
 
-  hVertexZ=new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
+  hVertexZ              = new TH1F(Form("VertexZ %s",GetCutNumber().Data()),"VertexZ",1000,-50,50);
   fHistograms->Add(hVertexZ);
 
+  hNPileupVertices      = new TH1F(Form("NPileupVertices %s",GetCutNumber().Data()),"NPileupVertices",30,-0.5,29.5);
+  fHistograms->Add(hNPileupVertices);
+
+  hPileupVertexToPrimZ  = new TH1F(Form("PileupVertexDistance %s",GetCutNumber().Data()),"PileupVertexDistance",600,-15,15);
+  fHistograms->Add(hPileupVertexToPrimZ);
+  hPileupVertexToPrimZSPDPileup  = new TH1F(Form("PileupVertexDistance_SPDPileup %s",GetCutNumber().Data()),"PileupVertexDistance_SPDPileup",600,-15,15);
+  fHistograms->Add(hPileupVertexToPrimZSPDPileup);
+  hPileupVertexToPrimZTrackletvsHits  = new TH1F(Form("PileupVertexDistance_TrackletvsHits %s",GetCutNumber().Data()),"PileupVertexDistance_TrackletvsHits",600,-15,15);
+  fHistograms->Add(hPileupVertexToPrimZTrackletvsHits);
+  
   if(fIsHeavyIon == 1){
     hEventPlaneAngle = new TH1F(Form("EventPlaneAngle %s",GetCutNumber().Data()),"EventPlaneAngle",60, 0, TMath::Pi());
     fHistograms->Add(hEventPlaneAngle);
@@ -554,6 +572,28 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   Int_t nClustersLayer1 = fInputEvent->GetNumberOfITSClusters(1);
   Int_t nTracklets      = fInputEvent->GetMultiplicity()->GetNumberOfTracklets();
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
+
+  
+  Double_t distZMax     = 0;
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    Int_t nPileVert = ((AliESDEvent*)fInputEvent)->GetNumberOfPileupVerticesSPD();
+    if (hNPileupVertices) hNPileupVertices->Fill(nPileVert);
+    if (nPileVert > 0){
+      for(Int_t i=0; i<nPileVert;i++){
+        const AliESDVertex* pv  = ((AliESDEvent*)fInputEvent)->GetPileupVertexSPD(i);
+        Int_t nc2               = pv->GetNContributors();
+        if(nc2>=3){
+          Double_t z1     = ((AliESDEvent*)fInputEvent)->GetPrimaryVertexSPD()->GetZ();
+          Double_t z2     = pv->GetZ();
+          Double_t distZ  = z2-z1;
+          if (TMath::Abs(distZMax) <  TMath::Abs(distZ) ){
+            distZMax      = distZ;
+          }
+        }
+      }
+      if (hPileupVertexToPrimZ) hPileupVertexToPrimZ->Fill(distZMax);
+    }  
+  }
   
   // Pile Up Rejection
   if (fIsHeavyIon == 2){
@@ -565,11 +605,13 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
     if(fRemovePileUp){
       if(fUtils->IsPileUpEvent(fInputEvent)){
         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+        if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
         fEventQuality = 6;
         return kFALSE;
       }
       if (fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
         if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+        if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
         fEventQuality = 11;
         return kFALSE;
       }  
@@ -577,11 +619,13 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *fInputEvent, AliVEvent *fMCE
   } else if(fRemovePileUp){
     if(fInputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+      if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       fEventQuality = 6;
       return kFALSE;
     }
     if (fUtils->IsSPDClusterVsTrackletBG(fInputEvent)){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
+      if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       fEventQuality = 11;
       return kFALSE;
     }  
@@ -3184,19 +3228,44 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
   if(hSPDClusterTrackletBackgroundBefore) hSPDClusterTrackletBackgroundBefore->Fill(nTracklets, (nClustersLayer0 + nClustersLayer1));
 
   
+  Double_t distZMax     = 0;
+  if(InputEvent->IsA()==AliESDEvent::Class()){
+    Int_t nPileVert = ((AliESDEvent*)InputEvent)->GetNumberOfPileupVerticesSPD();
+    if (hNPileupVertices) hNPileupVertices->Fill(nPileVert);
+    if (nPileVert > 0){
+      for(Int_t i=0; i<nPileVert;i++){
+        const AliESDVertex* pv= ((AliESDEvent*)InputEvent)->GetPileupVertexSPD(i);
+        Int_t nc2             = pv->GetNContributors();
+        if(nc2>=3){
+          Double_t z1 = ((AliESDEvent*)InputEvent)->GetPrimaryVertexSPD()->GetZ();
+          Double_t z2 = pv->GetZ();
+          Double_t distZ  = z2-z1;
+          if (TMath::Abs(distZMax) <  TMath::Abs(distZ) ){
+            distZMax      = distZ;
+          }
+        }
+      }
+      if (hPileupVertexToPrimZ) hPileupVertexToPrimZ->Fill(distZMax);
+    }  
+  }
+
   if( isHeavyIon != 2 && GetIsFromPileup()){
     if(InputEvent->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
+      if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }
     if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
+      if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
   }
   if(isHeavyIon == 2 && GetIsFromPileup()){
     if(fUtils->IsPileUpEvent(InputEvent) ){
+      if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
     }
     if (fUtils->IsSPDClusterVsTrackletBG(InputEvent)){
+      if (hPileupVertexToPrimZTrackletvsHits) hPileupVertexToPrimZTrackletvsHits->Fill(distZMax);
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
   }
@@ -4208,6 +4277,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC16h8b") == 0){
     fPeriodEnum = kLHC16h8b;
     fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16k5a") == 0){
+    fPeriodEnum = kLHC16k5a;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16k5b") == 0){
+    fPeriodEnum = kLHC16k5b;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16k3a") == 0){
+    fPeriodEnum = kLHC16k3a;
+    fEnergyEnum = k5TeV;
+  } else if (periodName.CompareTo("LHC16k3a2") == 0){
+    fPeriodEnum = kLHC16k3a2;
+    fEnergyEnum = k5TeV;
   } else if (periodName.Contains("LHC15k1a1")){
     fPeriodEnum = kLHC15k1a1;
     fEnergyEnum = kPbPb5TeV;
@@ -4249,6 +4330,12 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kPbPb5TeV;
   } else if (periodName.Contains("LHC16h2c")){
     fPeriodEnum = kLHC16h2c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.CompareTo("LHC16k3b") == 0){
+    fPeriodEnum = kLHC16k3b;
+    fEnergyEnum = kPbPb5TeV;
+  } else if (periodName.CompareTo("LHC16k3b2") == 0){
+    fPeriodEnum = kLHC16k3b2;
     fEnergyEnum = kPbPb5TeV;
   // MC upgrade 
   } else if (periodName.Contains("LHC13d19")){

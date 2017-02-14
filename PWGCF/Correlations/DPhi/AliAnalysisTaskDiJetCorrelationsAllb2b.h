@@ -291,6 +291,10 @@ private:
     Bool_t    fBkgSEBothSide;
     
     TH1F     *fHistNEvents;
+    TH1F     *fHistTrackCutsQA;
+    TH1F     *f256Phi;
+    TH1F     *f512Phi;
+    TH1F     *f768Phi;
     TH1F     *fHistCent;
     TH1F     *fHistT1CorrTrack;
     TH1F     *fHistT2CorrTrack;
@@ -313,6 +317,8 @@ private:
     TH2F *fControlConvResT2;//!control res hist T2
     TH2F *fControlConvResMT1;//! control res histo T1 mixed
     TH2F *fControlConvResMT2;//!control res histo T2 mixed
+    
+    TH2F *fEtaPhi;//!eta-phi
     
     TH1F *fEffCheck;
     

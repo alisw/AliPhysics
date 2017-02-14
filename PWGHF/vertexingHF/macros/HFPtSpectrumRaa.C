@@ -56,7 +56,7 @@ enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08, k01to05 };
-enum particularity{ kTopological, kLowPt };
+enum particularity{ kTopological, kLowPt, kPP7TeVPass4 };
 
 
 Bool_t printout = false;
@@ -127,7 +127,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }
   // Values from Alberica's twiki:
   //   https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
-  if( ccestimator == kV0M ) {
+  if( (ccestimator == kV0M) && (Energy==k276) ) {
     if ( cc == k07half ) {
       Tab = 24.81; TabSyst = 0.8037;
     } else if ( cc == k010 ) {
@@ -160,6 +160,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
       Tab = 0.0690; TabSyst = 0.0062;
     }
   }
+  if( (ccestimator == kV0M) && (Energy==k5dot023) ) {
+      if ( cc == k3050 ) {
+          Tab = 3.76; TabSyst = 0.13;
+      }
+  }
+
 
   // pPb Glauber (A. Toia)
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
@@ -229,6 +235,9 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   if(analysisSpeciality==kLowPt){
      systematicsPP->SetIsLowPtAnalysis(true);
   }
+  if(analysisSpeciality==kPP7TeVPass4){
+     systematicsPP->SetIsPass4Analysis(true);
+  }
   systematicsPP->Init(decay);
 
   //
@@ -268,21 +277,28 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   // Call the systematics uncertainty class for a given decay
   AliHFSystErr *systematicsAB = new AliHFSystErr();
   systematicsAB->SetCollisionType(1);
-  if ( cc == k07half ) systematicsAB->SetCentrality("07half");
-  else if ( cc == k010 ) systematicsAB->SetCentrality("010");
-  else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
-  else if ( cc == k020 ) systematicsAB->SetCentrality("020");
-  else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
-    systematicsAB->SetCentrality("2040");
-    systematicsAB->SetIsPbPb2010EnergyScan(true);
-  }
-  else if ( cc == k4060 || cc == k4050 || cc == k5060 ) systematicsAB->SetCentrality("4060");
-  else if ( cc == k6080 || cc == k5080 ) systematicsAB->SetCentrality("6080");
-  else if ( cc == k4080 ) systematicsAB->SetCentrality("4080");
-  else if ( cc == k3050 ) {
-    if (isRaavsEP == kPhiIntegrated) systematicsAB->SetCentrality("4080");
-    else if (isRaavsEP == kInPlane) systematicsAB->SetCentrality("3050InPlane");
-    else if (isRaavsEP == kOutOfPlane) systematicsAB->SetCentrality("3050OutOfPlane");
+  if(Energy==k276){
+      if ( cc == k07half ) systematicsAB->SetCentrality("07half");
+      else if ( cc == k010 ) systematicsAB->SetCentrality("010");
+      else if ( cc == k1020 ) systematicsAB->SetCentrality("1020");
+      else if ( cc == k020 ) systematicsAB->SetCentrality("020");
+      else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
+          systematicsAB->SetCentrality("2040");
+          systematicsAB->SetIsPbPb2010EnergyScan(true);
+      }
+      else if ( cc == k4060 || cc == k4050 || cc == k5060 ) systematicsAB->SetCentrality("4060");
+      else if ( cc == k6080 || cc == k5080 ) systematicsAB->SetCentrality("6080");
+      else if ( cc == k4080 ) systematicsAB->SetCentrality("4080");
+      else if ( cc == k3050 ) {
+          if (isRaavsEP == kPhiIntegrated) systematicsAB->SetCentrality("4080");
+          else if (isRaavsEP == kInPlane) systematicsAB->SetCentrality("3050InPlane");
+          else if (isRaavsEP == kOutOfPlane) systematicsAB->SetCentrality("3050OutOfPlane");
+      }
+  } else if (Energy==k5dot023){
+      if ( cc == k3050 ){
+          systematicsAB->SetRunNumber(15);
+          systematicsAB->SetCentrality("3050");
+      }
   }
   //
   else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
@@ -941,6 +957,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     cout<<" Global syst  +"<< systgbhUnc <<" - "<<  systgblUnc << " = + "<< systgbhUnc/value <<" - "<<  systgblUnc/value << " %" <<endl; 
     //
   }
+    
+  cout<<endl<<"  Calculation finished, now drawing"<<endl<<endl;
 
 
   gROOT->SetStyle("Plain");
@@ -952,11 +970,12 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   hRABvsRb->Draw("colz");
   cRABvsRb->Update();
 
-  TCanvas *cRABvsRbvsPt = new TCanvas("cRABvsRbvsPt","RAB vs Rb vs pt");
-  hRABCharmVsRBeautyVsPt->Draw("lego3z");
-  cRABvsRbvsPt->Update();
+//  TCanvas *cRABvsRbvsPt = new TCanvas("cRABvsRbvsPt","RAB vs Rb vs pt");
+//  hRABCharmVsRBeautyVsPt->Draw("lego3z");
+//  cRABvsRbvsPt->Update();
 
-
+    
+  cout<< "    Drawing feed-down contribution"<<endl;
   TCanvas *cRABvsRbFDl = new TCanvas("RABvsRbFDl","RAB vs Rb (FD low)");
   hRABvsRbFDlow->Draw("cont4z");
   cRABvsRbFDl->Update();
@@ -1070,7 +1089,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   legrcb->Draw();
   cRABptEloss->Update();
 
-
+    
+  cout<< "    Drawing summary results"<<endl;
   TCanvas * cRABpt = new TCanvas("cRABpt","RAB vs pt, no hypothesis");
   hRABEloss10->Draw("");
   cRABpt->Update();
@@ -1275,6 +1295,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   // Write the information to a file
   //
+  cout<<endl<< "  Save results in the output file"<<endl<<endl;
   TFile * out = new TFile(outfile,"recreate");
 
   ntupleRAB->Write();

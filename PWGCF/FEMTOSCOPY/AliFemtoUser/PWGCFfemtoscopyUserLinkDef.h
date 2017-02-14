@@ -102,6 +102,10 @@
 #pragma link C++ class AliFemtoCutMonitorPionPion::Pion+;
 #pragma link C++ class AliFemtoCutMonitorPionPion::Pair+;
 
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar+;
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar::Parameters+;
+#pragma link C++ class AliFemtoModelCorrFctnDEtaDPhiStar::Builder+;
+
 #pragma link C++ class AliFemtoNSigmaFilter+;
 #pragma link C++ class AliFemtoV0TrackCutNSigmaFilter+;
 

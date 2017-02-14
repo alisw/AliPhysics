@@ -3,6 +3,7 @@
 
 #include <AliAnalysisTaskSE.h>
 #include <AliPIDResponse.h>
+#include "THnSparse.h"
 
 class TH2F;
 class TH2I;
@@ -100,28 +101,39 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
 
   TH2F *fdEdxVSp[2];                              //! dedx vs pTPC
   TProfile *hDeDxExp[9];                          //! TPC splines
-  TH3F *fNsigmaTPC[18];                           //! NsigmaTPC vs. pT
 
-  TH3F *fDca[2][18];                              //! DCAxy, DCAz
-  TH3F *fDcawTOF[7][18];                          //!
+  THnSparseF *fSparseNsigmaTPC[18];               //!
+  TH3F *fNsigmaTPC[2][18];                        //! NsigmaTPC vs. pT
+  TH2F *fNsigmaTPCwTOF[18];                       //!
   
+  THnSparseF *fSparseDcaxy[18];                   //!
+  TH3F *fDcaxy[2][18];                            //!
+  TH3F *fDcawTOF_0[7][18];                        //!
+  TH3F *fDcawTOF_1[14][18];                       //!
+  
+  TH2F *fDcaz[18];                                //!
+
   TH2F *fNsigmaTOF[18];                           //! NsigmaTOF vs. pT
   TH2F *fBetaTOFvspt[2];                          //! beta (TOF) vs pT
   TProfile *hBetaExp[9];                          //! TOF expected beta
-  
-  TH3F *fM2tof[2];                                //! M2 vs pT
-  TH3F *fM2vspt[18];                              //! M2 vs pT (TPC cut)
 
+  THnSparseF *fSparseM2vspt[18];                  //!
+  
+  TH3F *fM2tof[2][2];                             //! M2 vs pT
+  TH3F *fM2vspt[2][18];                           //! M2 vs pT (TPC cut)
+  
   TH3F *fNsigmas[18];                             //!
+
+  TH1F *htemp[1];                                 //!
 
   //Only for MC:
   TH2F *hpdg[1];                                  //! pdg label (after event selection)
 
-  TH2F *hpt[4][3][18];                            //! pT distributions
+  TH3F *hpt[4][3][18];                            //! pT distributions
 
   TH2F *fptRecoVsTrue[2][18];                     //! pT reco vs. true
 
-  TH3F *fmcDca[3][2][18];                         //! DCAxy, DCAz
+  TH2F *fmcDca[3][2][18];                         //! DCAxy, DCAz
 
   TH2F *fmcNsigmaTOF[3][2][18];                   //!
 
@@ -130,7 +142,8 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   Bool_t IsInsideFullMultRange(Float_t multiplicity);
 
   Int_t GetMultiplicityBin(Float_t multiplicity);
-
+  Int_t GetTrackletsBin(Int_t Ntracklets);
+  
   Double_t GetRapidity(AliVTrack *track);
 
   Bool_t AcceptTrack(AliVTrack *track, Double_t &DCAxy, Double_t &DCAz);
@@ -155,7 +168,7 @@ class AliAnalysisNuclMult : public AliAnalysisTaskSE {
   Bool_t IsTOFgoodmatching(AliVTrack *track, Int_t label, Double_t nsigmaTOF[9], Int_t kSpec, Double_t t_pt, Bool_t isPrimary, Bool_t isSecMat, Bool_t isSecWeak);
   //---
   
-  ClassDef(AliAnalysisNuclMult, 8);
+  ClassDef(AliAnalysisNuclMult, 9);
 };
 
 #endif

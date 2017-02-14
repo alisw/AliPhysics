@@ -65,6 +65,7 @@
 #include "AliMultSelection.h"
 #include "AliMultSelectionCuts.h"
 #include "AliPPVsMultUtils.h"
+#include "AliTOFGeometry.h"
 #ifdef USETREECLASS
 #include "TClonesArray.h"
 #include "AliAnTOFtrack.h"
@@ -169,11 +170,12 @@ fChannelmode(chan),
 fCutmode(cuts),
 fSimpleCutmode(simplecuts),
 fBuilTPCTOF(kFALSE),
+fBuilDCAchi2(kFALSE),
 fUseTPCShift(kFALSE),
 fPerformance(kFALSE),
 fSelectBit(AliVEvent::kINT7),
 
-tb(),
+tb(),//TBenchmark
 hPerformanceTime(0x0),
 hPerformanceCPUTime(0x0),
 
@@ -185,6 +187,7 @@ hEvtVtxXY(0x0),
 hEvtVtxZ(0x0),
 hNTrk(0x0),
 hPadDist(0x0),
+hTOFDist(0x0),
 hBeta(0x0),
 hBetaNoMismatch(0x0),
 hBetaNoMismatchEtaCut(0x0),
@@ -417,6 +420,7 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
         hNumPrimMCTrueMatch[charge][species][mult] = 0x0;
         hNumPrimMCTrueMatchYCut[charge][species][mult] = 0x0;
         hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = 0x0;
+        hNumPrimMCConsistentMatchYCut[charge][species][mult] = 0x0;
       }
       
     }
@@ -485,6 +489,7 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
     for(Int_t charge = 0; charge < kCharges; charge++){
       for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
         hTOF[ptbin][charge][species] = 0x0;
+        hTOFNoYCut[ptbin][charge][species] = 0x0;
         hTOFSigma[ptbin][charge][species] = 0x0;
         hTOFNoMismatch[ptbin][charge][species] = 0x0;
         hTOFSigmaNoMismatch[ptbin][charge][species] = 0x0;
@@ -499,6 +504,7 @@ void AliAnalysisTaskTOFSpectra::Init(){//Sets everything to default values
       for(Int_t ptbin = 0; ptbin < kPtBins; ptbin++){//Pt loop
         for(Int_t mult = 0; mult < kEvtMultBins; mult++){//Multiplicity loop
           hDCAxy[charge][species][ptbin][mult] = 0x0;
+          hDCAxyGoldenChi2[charge][species][ptbin][mult] = 0x0;
         }
         hDCAxyPrimMC[charge][species][ptbin] = 0x0;
         hDCAxySecStMC[charge][species][ptbin] = 0x0;
@@ -769,6 +775,9 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
     
     hPadDist = new TH2F("hPadDist", "Distribution in the pads;#DeltaX_{pad} (cm);#DeltaZ_{pad} (cm)", 400, -10, 10, 400, -10, 10);
     fListHist->AddLast(hPadDist);
+
+    hTOFDist = new TH2F("hTOFDist", "Distribution in the TOF;Sector;Strip", 18, 0, 18, 91, 0, 91);
+    fListHist->AddLast(hTOFDist);
     
     if(fPerformance){
       hBeta = new TH2F("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), 400, 0., 10., 400, 0., 1.5);
@@ -848,6 +857,9 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
           const TString hname = Form("%s%s_%i", pC[charge].Data(), pS[species].Data(), ptbin);
           hTOF[ptbin][charge][species] = new TH1F(Form("hTOF%s", hname.Data()), Form("TOF %s%s %s;%s;Counts", pC[charge].Data(), pS[species].Data(), ptinterval.Data(), tofsignalstringSpecies[2+species].Data()), 1000, -10000, 10000);
           fListHist->AddLast(hTOF[ptbin][charge][species]);
+          
+          hTOFNoYCut[ptbin][charge][species] = new TH1F(Form("hTOFNoYCut%s", hname.Data()), Form("TOF w/o Y cut %s%s %s;%s;Counts", pC[charge].Data(), pS[species].Data(), ptinterval.Data(), tofsignalstringSpecies[2+species].Data()), 1000, -10000, 10000);
+          fListHist->AddLast(hTOFNoYCut[ptbin][charge][species]);
           
           hTOFSigma[ptbin][charge][species] = new TH1F(Form("hTOFSigma%s", hname.Data()), Form("TOF Sigma %s%s %s;%s;Counts", pC[charge].Data(), pS[species].Data(), ptinterval.Data(), nsigmastringSpecies[2+species].Data()), 1000, -300, 300);
           fListHist->AddLast(hTOFSigma[ptbin][charge][species]);
@@ -1003,6 +1015,11 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
             hDCAxy[charge][species][ptbin][mult] = new TH1F(Form("hDCAxy%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1], mult), fDCAXYbins, DCAXYbin);
             hDCAxy[charge][species][ptbin][mult]->Sumw2();
             fListHist->AddLast(hDCAxy[charge][species][ptbin][mult]);
+            
+            if(!fBuilDCAchi2) continue;
+            hDCAxyGoldenChi2[charge][species][ptbin][mult] = new TH1F(Form("hDCAxyGoldenChi2%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy w Golden Chi2 Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin+1], mult), fDCAXYbins, DCAXYbin);
+            hDCAxyGoldenChi2[charge][species][ptbin][mult]->Sumw2();
+            fListHist->AddLast(hDCAxyGoldenChi2[charge][species][ptbin][mult]);
           }
         }
       }
@@ -1138,6 +1155,10 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects(){
             hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = new TH1F(Form("hNumPrimMCTrueMatchYCutTPC_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
             hNumPrimMCTrueMatchYCutTPC[charge][species][mult]->Sumw2();
             fListHist->AddLast(hNumPrimMCTrueMatchYCutTPC[charge][species][mult]);
+            
+            hNumPrimMCConsistentMatchYCut[charge][species][mult] = new TH1F(Form("hNumPrimMCConsistentMatchYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
+            hNumPrimMCConsistentMatchYCut[charge][species][mult]->Sumw2();
+            fListHist->AddLast(hNumPrimMCConsistentMatchYCut[charge][species][mult]);
           }
         }
       }
@@ -1434,6 +1455,12 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
   hEvtMultAftEvSel->Fill(fEvtMult);
   
   //
+  // TOF geometrical variables
+  //
+  Int_t det[5];
+  Float_t coord[3];
+  
+  //
   // track loop
   //
   StartTimePerformance(4);
@@ -1625,22 +1652,6 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         //
         fCombinedSigma[species] = TMath::Sqrt(fTPCSigma[species + kpi]*fTPCSigma[species + kpi] + fTOFSigma[species + kpi]*fTOFSigma[species + kpi]);
         
-        //
-        //If requested
-        //Histograms with T-Texp-T0 with and without mismatch
-        //
-        #ifdef BUILDTOFDISTRIBUTIONS// Build TOF distributions only if requested
-        const Double_t Tdiff = fTOFTime-fT0TrkTime-fTOFExpTime[species + kpi];
-        const Double_t TdiffSigma = Tdiff/fTOFExpSigma[species + kpi];
-        hTOF[fBinPtIndex][fSign][species]->Fill(Tdiff);
-        hTOFSigma[fBinPtIndex][fSign][species]->Fill(TdiffSigma);
-        
-        //Skip if the TPC signal is not for pions/kaons or protons
-        if(fTPCSigma[kpi] > 5 && fTPCSigma[kK] > 5 && fTPCSigma[kp] > 5) continue;
-        
-        hTOFNoMismatch[fBinPtIndex][fSign][species]->Fill(Tdiff);
-        hTOFSigmaNoMismatch[fBinPtIndex][fSign][species]->Fill(TdiffSigma);
-        #endif
       }
       
       //
@@ -1652,6 +1663,15 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         
         //Pure sample selected via TOF and TPC 2 sigma cut
         hDCAxy[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
+        
+        //
+        //DCA - with golden chi2 cut
+        //
+        if(!fBuilDCAchi2) continue;
+        if(track->GetChi2TPCConstrainedVsGlobal(vertex) < fESDtrackCutsPrm->GetMaxChi2TPCConstrainedGlobal()){
+          hDCAxyGoldenChi2[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
+        }
+          
       }
       
       if(fPdgIndex != -999 && TMath::Abs(fRapidity[fPdgIndex]) < fRapidityCut){//MC info If the track is a Pion or a Kaon or a Proton
@@ -1851,6 +1871,29 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       hNTrk->Fill(15);
       
       //
+      //If requested
+      //Histograms with T-Texp-T0 with and without mismatch
+      //
+      #ifdef BUILDTOFDISTRIBUTIONS// Build TOF distributions only if requested
+      for(Int_t species = 0; fTOFout && fTime && species < kSpecies; species++){
+        const Double_t Tdiff = fTOFTime-fT0TrkTime-fTOFExpTime[species + kpi];
+        const Double_t TdiffSigma = Tdiff/fTOFExpSigma[species + kpi];
+        hTOFNoYCut[fBinPtIndex][fSign][species]->Fill(Tdiff);
+        
+        //Rapidity cut
+        if(TMath::Abs(fRapidity[species]) >= fRapidityCut) continue;
+        hTOF[fBinPtIndex][fSign][species]->Fill(Tdiff);
+        hTOFSigma[fBinPtIndex][fSign][species]->Fill(TdiffSigma);
+        
+        //Skip if the TPC signal is not for pions/kaons or protons
+        if(fTPCSigma[kpi] > 5 && fTPCSigma[kK] > 5 && fTPCSigma[kp] > 5) continue;
+        
+        hTOFNoMismatch[fBinPtIndex][fSign][species]->Fill(Tdiff);
+        hTOFSigmaNoMismatch[fBinPtIndex][fSign][species]->Fill(TdiffSigma);
+      }
+      #endif
+      
+      //
       //Matching efficiency plots
       //Numerator
       for(Int_t i = 0; i < 3; i++){//Loop on pi/k/p
@@ -1870,13 +1913,18 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
         if(fProdInfo == 0 ){//Primaries
           hNumMatchPrimMC[fSign][fPdgIndex]->Fill(fPt);
           if(TMath::Abs(fRapidityMC) < fRapidityCut) hNumMatchPrimMCYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
-          if(fMCTOFMatch == 0 || (fMCTOFMatch > 0 && fTOFSigma[kpi + fPdgIndex] < 2.)){//True match in TOF
+          if(fMCTOFMatch == 0){//True match in TOF
             hNumPrimMCTrueMatch[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
             if(TMath::Abs(fRapidityMC) < fRapidityCut){
               hNumPrimMCTrueMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
               if((TMath::Abs(fTPCSigma[kpi]) < 5) && (TMath::Abs(fTPCSigma[kK]) < 5) && (TMath::Abs(fTPCSigma[kp]) < 5)) hNumPrimMCTrueMatchYCutTPC[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
             }
             
+          }
+          else if(fMCTOFMatch > 0 && fTOFSigma[kpi + fPdgIndex] < 2.){//Consistent match in TOF
+            if(TMath::Abs(fRapidityMC) < fRapidityCut){
+              hNumPrimMCConsistentMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+            }
           }
         }
       }
@@ -1925,6 +1973,11 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t *){
       
       //fine plot test matching efficiency
       hPadDist->Fill(fTOFImpactDX, fTOFImpactDZ);
+      AliTOFGeometry::GetVolumeIndices(fTOFchan, det);
+      coord[0] = AliTOFGeometry::GetX(det);
+      coord[1] = AliTOFGeometry::GetY(det);
+      coord[2] = AliTOFGeometry::GetZ(det);
+      hTOFDist->Fill(AliTOFGeometry::GetStrip(coord), AliTOFGeometry::GetSector(coord));
       hTOFResidualX->Fill(fTOFImpactDX);
       hTOFResidualZ->Fill(fTOFImpactDZ);
       hTOFChannel->Fill(fTOFchan);
@@ -2260,10 +2313,12 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseMCTracks(){//Returns kTRUE if it reache
   
   if(fPdgIndex < 0) return kFALSE;//Pi/K/P only!
   hDenMatchMultTrk[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+  if(fTRDout == kTRUE) hDenMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+  else hDenMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
   if((fTOFout == kTRUE) && (fTime == kTRUE)){
     hNumMatchMultTrk[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
-    if(fTRDout == kTRUE) {hNumMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);}
-    if(fTRDout == kFALSE) {hNumMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);}
+    if(fTRDout == kTRUE) hNumMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+    else hNumMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
   }
   
   

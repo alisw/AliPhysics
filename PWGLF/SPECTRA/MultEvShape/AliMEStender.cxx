@@ -394,6 +394,8 @@ void AliMEStender::UserExec(Option_t */*opt*/)
   // printf("counter = %i \t fTracks = %i\n\n", counter, fTracks->GetEntries());
   // printf("event index = %i\n", fESD->GetEventNumberInFile());
 
+  // leading particle
+  fEvInfo->FindLeadingParticle(fTracks);
   // shape
   fEvInfo->MakeDirectivity(fTracks);
   // fill event QA
@@ -493,6 +495,8 @@ void AliMEStender::UserExec(Option_t */*opt*/)
     }
   }
 
+  // leading particle
+  fMCevInfo->FindLeadingParticle(fMCtracks);
   // shape
   fMCevInfo->MakeDirectivity(fMCtracks);
   // fill event QA

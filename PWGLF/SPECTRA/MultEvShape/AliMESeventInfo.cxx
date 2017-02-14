@@ -189,14 +189,23 @@ Bool_t AliMESeventInfo::LeadingParticleDirection(TObjArray* tracks, Double_t pxy
   if(!(ntracks=tracks->GetEntries())) return kFALSE;
 
   Double_t ptmax(0.);
-  AliVParticle *track(NULL);
+  Double_t etamax(0.);
+  Double_t phimax(0.);
+  // AliVParticle *track(NULL);
+  AliMEStrackInfo *track(NULL);
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
-    if(!(track = dynamic_cast<AliVParticle*> (tracks->At(iTracks)))) continue;
+    // if(!(track = dynamic_cast<AliVParticle*> (tracks->At(iTracks)))) continue;
+    if(!(track = dynamic_cast<AliMEStrackInfo*> (tracks->At(iTracks)))) continue;
+    if(TMath::Abs(track->Eta()) >= 0.8) continue;
+    if(! track->HasOrigin(AliMEStrackInfo::kPrimary) ) continue;
     if(track->Pt()<ptmax) continue;
     pxy[0] = track->Px();
     pxy[1] = track->Py();
     ptmax  = track->Pt();
+    etamax = track->Eta();
+    phimax = track->Phi();
   }
+
   return kTRUE;
 }
 

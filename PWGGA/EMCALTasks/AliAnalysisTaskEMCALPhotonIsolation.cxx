@@ -59,6 +59,7 @@ fAOD(0),
 fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
+fmcHeader(0),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -225,6 +226,7 @@ fAOD(0),
 fVevent(0),
 fNCluster(0),
 fAODMCParticles(0),
+fmcHeader(0),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -1052,14 +1054,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     // delete output USEFUL LATER FOR CONTAINER CREATION !!
     //fOutClusters->Delete();
   Int_t index=0;
-  
+
   if(fIsMC){
     AliAODMCHeader *mcHeader;
     
     fAODMCParticles = static_cast <TClonesArray*>(InputEvent()->FindListObject(AliAODMCParticle::StdBranchName()));
     
-    mcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindObject(AliAODMCHeader::StdBranchName()));
-      //AliError(Form("Passe analyze MC"));
+    fmcHeader = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+//    Printf("%d",fmcHeader->GetEventType());
     if (!fIsMC)
       return kFALSE;
       //AliInfo(Form("It's a MC analysis %e",fAODMCParticles));
@@ -1070,12 +1072,18 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     
       //cout<<"there's a List of particles"<<endl;
       //DO THIS ALSO FOR ESDs
-    
+
     if(fAODMCParticles->GetEntries() < 1){
       AliError("number of MC particles insufficient");
       return kFALSE;
     }
-    AnalyzeMC();
+//    Printf("%d",fMCtruth);
+//    Printf("Passe analyze MC");
+
+    if(fMCtruth || (fmcHeader->GetEventType()==14 || fmcHeader->GetEventType()==29)){
+//      Printf("Analysing mc");
+      AnalyzeMC();
+    }
   }
   
   if (fisLCAnalysis) {

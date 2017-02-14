@@ -155,7 +155,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC15k1a1,       // LHC15o low IR firstPhysics
         kLHC15k1a2,       // LHC15o low IR firstPhysics
         kLHC15k1a3,       // LHC15o low IR firstPhysics
-	kLHC16j7,         // LHC15o low IR pass4
+        kLHC16j7,         // LHC15o low IR pass4
         kLHC16g1,         // anchored LHC15o pass1 - general purpose
         kLHC16g1a,        // anchored LHC15o pass1 - general purpose 0-10%
         kLHC16g1b,        // anchored LHC15o pass1 - general purpose 10-50%
@@ -170,7 +170,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16h3b,         // anchored LHC15n pass2 - jet-jet second chunck
         kLHC16h8a,        // anchored LHC15n pass2 - general purpose Pythia8
         kLHC16h8b,        // anchored LHC15n pass2 - general purpose Pythia6
-        
+        kLHC16k3a,        // anchored LHC15n pass2 - gen. purpose Pyt6wpileup
+        kLHC16k3b,        // anchored LHC15o pass3 - gen. purpose Pyt6wpileup
+        kLHC16k3a2,       // anchored LHC15n pass2 - gen. purpose Pyt6wopileup
+        kLHC16k3b2,       // anchored LHC15o pass3 - gen. purpose Pyt6wopileup
+        kLHC16k5a,        // anchored LHC15n pass3 - general purpose Pythia8
+        kLHC16k5b,        // anchored LHC15n pass3 - general purpose Pythia6
         // MC upgrade
         kLHC13d19,        // upgrade 5.5TeV PbPb
         
@@ -467,6 +472,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1D*                       hCentralityNotFlat;                     // centrality distribution loaded for cent. flattening
       //TH2F*                      hCentralityVsNumberOfPrimaryTracks;    // centrality distribution for selected events
       TH1F*                       hVertexZ;                               // vertex z distribution for selected events
+      TH1F*                       hNPileupVertices;                       // number of SPD pileup vertices
+      TH1F*                       hPileupVertexToPrimZ;                   // distance of SPD pileup vertex to prim vertex in z
+      TH1F*                       hPileupVertexToPrimZSPDPileup;          // distance of SPD pileup vertex to prim vertex in z for SPD pileup flagged events
+      TH1F*                       hPileupVertexToPrimZTrackletvsHits;     // distance of SPD pileup vertex to prim vertex in z for Tracklet vs Hits flagged events
       TH1F*                       hEventPlaneAngle;                       //
       Double_t                    fEventPlaneAngle;                       // EventPlaneAngle
       TH1F*                       hTriggerClass;                          // fired offline trigger class
@@ -513,7 +522,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
      
   private:
 
-      ClassDef(AliConvEventCuts,22)
+      ClassDef(AliConvEventCuts,24)
 };
 
 

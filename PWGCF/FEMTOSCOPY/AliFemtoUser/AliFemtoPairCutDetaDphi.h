@@ -152,6 +152,7 @@ void AliFemtoPairCutDetaDphi::SetCutTechnique(Technique t)
 inline
 AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi():
   AliFemtoShareQualityPairCut()
+  , fCurrentMagneticField(0.0)
   , fR(1.6f)
   , fDeltaEtaMin(0.0)
   , fDeltaPhiMin(0.0)
@@ -164,9 +165,11 @@ AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi():
 inline
 AliFemtoPairCutDetaDphi::AliFemtoPairCutDetaDphi(Float_t min_eta, Float_t min_phi, Float_t radius):
   AliFemtoShareQualityPairCut()
+  , fCurrentMagneticField(0.0)
   , fR(radius)
   , fDeltaEtaMin(min_eta)
   , fDeltaPhiMin(min_phi)
+  , fCutTechnique(Simple)
 {
   // no-op
 }

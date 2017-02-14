@@ -70,8 +70,9 @@ AliFemtoManager::~AliFemtoManager()
 AliFemtoManager& AliFemtoManager::operator=(const AliFemtoManager& aManager)
 {
   // assignment operator
-  if (this == &aManager)
+  if (this == &aManager) {
     return *this;
+  }
 
   fEventReader = aManager.fEventReader;
   AliFemtoSimpleAnalysisIterator tAnalysisIter;

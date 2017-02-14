@@ -336,7 +336,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80000013","1111141056032230000","0163403100000050"); // tm pt dependent var 1
     cuts.AddCut("80000013","1111141058032230000","0163403100000050"); // tm pt dependent var 2
     cuts.AddCut("80000013","1111141059032230000","0163403100000050"); // tm pt dependent var 3
-  
+  } else if(trainConfig == 46){ // centrality dependent and NL variations
+    cuts.AddCut("80200013","1111100053032230000","0163403100000050"); // 0-20% no NL
+    cuts.AddCut("80200013","1111141053032230000","0163403100000050"); // 0-20% standard NL
+    cuts.AddCut("82600013","1111100053032230000","0163403100000050"); // 20-60% no NL
+    cuts.AddCut("82600013","1111141053032230000","0163403100000050"); // 20-60% standard NL
+    cuts.AddCut("86000013","1111100053032230000","0163403100000050"); // 60-100% no NL
+    cuts.AddCut("86000013","1111141053032230000","0163403100000050"); // 60-100% standard NL
+
   //EMC7
   } else if(trainConfig == 50){ // default cutstring and first set of variations nonlinearity
     cuts.AddCut("80052013","1111141051032230000","0163403100000050"); // default

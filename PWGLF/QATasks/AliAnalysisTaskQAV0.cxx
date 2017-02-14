@@ -57,6 +57,7 @@ class AliAODv0;
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliV0vertexer.h"
+#include "AliLightV0vertexer.h"
 #include "AliCascadeVertexer.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
@@ -123,6 +124,7 @@ fTrigType(AliVEvent::kINT7),
   //Task Control / Utils
   fPIDResponse(0),
   fkRunV0Vertexer ( kFALSE ),
+  fkUseLightV0Vertexer ( kFALSE ),
   fdEdxCut (3) 
 {
   // Dummy Constructor
@@ -170,6 +172,7 @@ fTrigType(AliVEvent::kINT7),
   //Task Control / Utils
   fPIDResponse(0),
   fkRunV0Vertexer ( kFALSE ),
+  fkUseLightV0Vertexer ( kFALSE ),
   fdEdxCut (3) 
 {
   // Constructor
@@ -329,19 +332,27 @@ void AliAnalysisTaskQAV0::UserExec(Option_t *)
       AliWarning("ERROR: lESDevent not available \n");
       return;
    }
-  
-  //------------------------------------------------
-  // Rerun V0 vertexer, if asked for
-  // --- WARNING: Be careful when using in PbPb
-  //------------------------------------------------
-  if( fkRunV0Vertexer ){
-    lESDevent->ResetV0s();
-    AliV0vertexer lV0vtxer;
-    lV0vtxer.SetCuts(fV0VertexerSels);
-    lV0vtxer.Tracks2V0vertices(lESDevent);
-  }
-
-  fHistEvent->Fill(0.5); 
+    
+    //------------------------------------------------
+    // Rerun V0 vertexer, if asked for
+    // --- WARNING: Be careful when using in PbPb
+    //------------------------------------------------
+    if( fkRunV0Vertexer ){
+        if(!fkUseLightV0Vertexer){
+            lESDevent->ResetV0s();
+            AliV0vertexer lV0vtxer;
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+        }
+        if(fkUseLightV0Vertexer){
+            lESDevent->ResetV0s();
+            AliLightV0vertexer lV0vtxer;
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+        }
+    }
+    
+    fHistEvent->Fill(0.5);
 
 //------------------------------------------------
 // Physics Selection

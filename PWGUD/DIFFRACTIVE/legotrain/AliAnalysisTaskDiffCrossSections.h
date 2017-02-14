@@ -6,8 +6,6 @@ class TH1;
 class TTree;
 class TList;
 
-class AliESDAD;
-class AliESDVZERO;
 class AliESDFMD;
 class AliMCEvemt;
 class AliESDEvent;
@@ -22,6 +20,8 @@ class AliStack;
 #include <TMatrixD.h>
 
 #include "AliESDVertex.h"
+#include "AliESDVZERO.h"
+#include "AliESDAD.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h"
 #include "AliAnalysisUtils.h"
@@ -103,6 +103,10 @@ public:
 	fBB[i] = fBG[i] = -1;
 	fDecisionOnline[i] = fDecisionOffline[i] = -1;
       }
+      for (Int_t i=0; i<16; ++i) {
+	fBBFlags[i] = 0;
+	fCharge[i]  = 0;
+      }
     }
 
     void FillAD(const AliESDEvent *, AliTriggerAnalysis &);
@@ -112,21 +116,31 @@ public:
 
     Float_t    fTime[2];            //
     Float_t    fCharge[2];          //
-    Short_t    fBB[2];              //
-    Short_t    fBG[2];              //
+    Short_t    fBB[2];              // number of BB flags (for AD: coincidences) per side
+    Short_t    fBG[2];              // number of BG flags (for AD: coincidences) per side
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
+    UChar_t    fBBFlags[16];        //
+    UShort_t   fCharges[16];        //
   } ;
 
   struct VtxInfo {
     VtxInfo()
-      : fZ(0)
+      : fX(0)
+      , fY(0)
+      , fZ(0)
       , fNcontr(-4) {}
 
     void Fill(const AliESDVertex*);
 
-    Double32_t fZ;      // [-32,32,7]
-    Char_t     fNcontr; //
+    TVector3 GetVtxPosition() const {
+      return TVector3(fX, fY, fZ);
+    }
+
+    Float_t fX;
+    Float_t fY;
+    Float_t fZ;
+    Char_t  fNcontr;
   } ;
 
   struct FMDInfo {
@@ -139,6 +153,109 @@ public:
     Int_t   fMult[5];   // A-side: 1,2i,2o; C-side: 3i,3o
   } ;
 
+  // single pseudo-track
+  class PseudoTrack : public TObject {
+  public:
+    PseudoTrack(Float_t eta=0, Float_t phi=0, Float_t charge=0, Float_t charge2=0, UInt_t detFlags=0)
+      : TObject()
+      , fEta(eta)
+      , fPhi(phi)
+      , fCharge(charge)
+      , fCharge2(charge2)
+      , fDetFlags(detFlags) {}
+
+    PseudoTrack(const PseudoTrack& t)
+      : TObject(t)
+      , fEta(t.fEta)
+      , fPhi(t.fPhi)
+      , fCharge(t.fCharge)
+      , fCharge2(t.fCharge2)
+      , fDetFlags(t.fDetFlags) {}
+
+    virtual ~PseudoTrack() {}
+
+    virtual void   Print(Option_t *option="") const;
+    virtual Int_t  Compare(const TObject *obj) const;
+    virtual Bool_t IsSortable() const { return kTRUE; }
+
+    Float_t Eta() const { return fEta; }
+    Float_t Phi() const { return fPhi; }
+    UInt_t  DetFlags() const { return fDetFlags; }
+    Float_t Charge() const { return fCharge; }
+    Float_t Charge2() const { return fCharge2; }
+    Bool_t  operator<(const PseudoTrack& t) const { return fEta < t.fEta; }
+  protected:
+  private:
+    PseudoTrack& operator=(const PseudoTrack&); // not implemented
+
+    Float_t fEta;      // pseudo-rapidity
+    Float_t fPhi;      // phi (rad)
+    Float_t fCharge;   // charge (=1 for SPD)
+    Float_t fCharge2;  // charge (=0 for SPD,FMD,VZERO) for 2nd layer of AD
+    UInt_t  fDetFlags; // flags indicating from which detector this pseudo-track is + online/offline information
+    ClassDef(PseudoTrack, 1);
+  } ;
+
+  class PseudoTracks : public TObject {
+  public:
+    enum { // used in PseudoTrack::fDetFlags
+      kSPD     = (1<< 0),
+      kV0C     = (1<< 1),
+      kV0A     = (1<< 2),
+      kV0      = kV0C | kV0A,
+      kADC     = (1<< 3),
+      kADA     = (1<< 4),
+      kAD      = kADC | kADA,
+      kFMD1    = (1<< 5),
+      kFMD2i   = (1<< 6),
+      kFMD2o   = (1<< 7),
+      kFMD3i   = (1<< 8),
+      kFMD3o   = (1<< 9),
+      kFMD     = kFMD1 | kFMD2i | kFMD2o | kFMD3i | kFMD3o,
+      kOnline  = (1<<30),
+      kOffline = (1<<31)
+    };
+
+    PseudoTracks();
+    virtual ~PseudoTracks();
+
+    Int_t GetEntries() const;
+    void  AddTrack(const PseudoTrack&);
+    virtual void  Clear(Option_t *opt="");
+    virtual void  Delete(Option_t *opt="");
+    const PseudoTrack& operator[](Int_t ) const;
+    const PseudoTrack& GetTrackAt(Int_t i) const { return this->operator[](i); }
+
+    void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR, const TVector3 &vertexPosition) const;
+    void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR) const;
+
+    void Sort() { fTracks.Sort(); }
+
+    template<typename F> // F is a function (object) of type Bool_t f(const PseudoTrack&)
+    Int_t ClassifyEvent(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
+			UInt_t mask, F& f) const {
+      const Int_t nt = fTracks.GetEntriesFast();
+      TBits bits(nt);
+      for (Int_t i=0; i<nt; ++i)
+	if (f(GetTrackAt(i)))
+	  bits.SetBitNumber(i);
+      return ClassifyEventBits(iEtaL, iEtaR, etaGap, etaGapCenter, mask, bits);
+    }
+  protected:
+    Int_t ClassifyEventBits(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
+			    UInt_t mask, const TBits& bits) const;
+  private:
+    PseudoTracks(const PseudoTracks& ); // not implemented
+    PseudoTracks& operator=(const PseudoTracks& ); // not implemented
+
+    Int_t                fCounter; //!
+    mutable TClonesArray fTracks;
+    ClassDef(PseudoTracks, 1);
+  } ;
+
+  static TVector3 GetADPseudoTrack(Int_t ch);
+  static TVector3 GetV0PseudoTrack(Int_t ch);
+
   class TreeData : public TObject {
   public:
     TreeData()
@@ -148,19 +265,25 @@ public:
       , fV0Info()
       , fFMDInfo()
       , fADInfo()
+      , fPseudoTracks()
       , fPhysSelBits(0)
       , fIsIncompleteDAQ(kFALSE)
       , fIsSPDClusterVsTrackletBG(kFALSE) {}
 
-    EventInfo fEventInfo;
-    VtxInfo   fVtxInfo;
-    ADV0      fV0Info;
-    FMDInfo   fFMDInfo;
-    ADV0      fADInfo;
-    UInt_t    fPhysSelBits;
-    Bool_t    fIsIncompleteDAQ;
-    Bool_t    fIsSPDClusterVsTrackletBG;
-    ClassDef(TreeData, 3);
+    EventInfo    fEventInfo;
+    VtxInfo      fVtxInfo;
+    ADV0         fV0Info;
+    FMDInfo      fFMDInfo;
+    ADV0         fADInfo;
+    PseudoTracks fPseudoTracks;
+    UInt_t       fPhysSelBits;
+    Bool_t       fIsIncompleteDAQ;
+    Bool_t       fIsSPDClusterVsTrackletBG;
+  private:
+    TreeData(const TreeData&); // not implemented
+    TreeData& operator=(const TreeData&); // not implemented
+
+    ClassDef(TreeData, 6);
   } ;
 
   class MCInfo : public TObject {
@@ -217,18 +340,23 @@ private:
   TTree           *fTE;                  //!
   TBits            fFastOrMap;           //!
   TBits            fFiredChipMap;        //!
+  AliESDVZERO      fESDVZERO;            //!
+  AliESDAD         fESDAD;               //!
   TreeData         fTreeData;            //!
   MCInfo           fMCInfo;              //!
 
   TVectorD         fMeanVtxPos;          //!
   TMatrixD         fMeanVtxCov;          //!
   TMatrixD         fMeanVtxU;            //!
-  Int_t            fEventType;    //!
-  Double_t         fEtaL;         //!
-  Double_t         fEtaR;         //!
-  Double_t         fEtaGap;       //!
-  Double_t         fEtaGapCenter; //!
-  ClassDef(AliAnalysisTaskDiffCrossSections, 1);
+
+  Int_t            fEventType;    //! -1 -> 1L, +1 -> 1R, +2 -> 2A
+  Int_t            fIdxEtaL;      //! index of etaL in fTreeData.fTracks
+  Int_t            fIdxEtaR;      //! index of etaR in fTreeData.fTracks
+  Float_t          fEtaL;         //!
+  Float_t          fEtaR;         //!
+  Float_t          fEtaGap;       //!
+  Float_t          fEtaGapCenter; //!
+  ClassDef(AliAnalysisTaskDiffCrossSections, 2);
 } ;
 
 #endif // ALIANALYSISTASKDIFFCROSSSECTIONS_H

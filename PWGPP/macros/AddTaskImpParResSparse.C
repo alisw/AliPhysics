@@ -36,6 +36,7 @@ AliAnalysisTaskSEImpParResSparse *AddTaskImpParResSparse(Bool_t readMC=kFALSE,
   d0ResTask->SetSkipTrack(skipTrack);
   d0ResTask->SetMultiplicityRange(minmult,maxmult);
   d0ResTask->SetFillSparseForExpert(fillexpertSparse);
+  d0ResTask->SetUsePtWeights(0,1.);
   if(usetriggersel){
     d0ResTask->SetUseTriggerSelection(usetriggersel);
     d0ResTask->SetTriggerClass("");

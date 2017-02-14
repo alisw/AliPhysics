@@ -89,7 +89,6 @@ fUseZDCESESpecWeights(kFALSE),
 fWeightsList(NULL),
 fWeightsListChDep(NULL),
 fWeightsListVtxDep(NULL),
-fPhiEtaCutsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
 fnBinsForCorrelations(10000),
@@ -103,6 +102,7 @@ fCalculateCRC2(kFALSE),
 fCalculateCRCVZ(kFALSE),
 fCalculateCRCZDC(kFALSE),
 fCalculateEbEFlow(kFALSE),
+fStoreZDCQVecVtxPos(kFALSE),
 fCRC2nEtaBins(6),
 fCalculateFlowQC(kFALSE),
 fCalculateFlowZDC(kFALSE),
@@ -240,7 +240,6 @@ fUseZDCESESpecWeights(kFALSE),
 fWeightsList(NULL),
 fWeightsListChDep(NULL),
 fWeightsListVtxDep(NULL),
-fPhiEtaCutsList(NULL),
 fMultiplicityWeight(NULL),
 fMultiplicityIs(AliFlowCommonConstants::kRP),
 fnBinsForCorrelations(0),
@@ -254,6 +253,7 @@ fCalculateCRC2(kFALSE),
 fCalculateCRCVZ(kFALSE),
 fCalculateCRCZDC(kFALSE),
 fCalculateEbEFlow(kFALSE),
+fStoreZDCQVecVtxPos(kFALSE),
 fCRC2nEtaBins(6),
 fCalculateFlowQC(kFALSE),
 fCalculateFlowZDC(kFALSE),
@@ -366,6 +366,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
   if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
+  if(fDataSet.EqualTo("2015v6")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015v6);
   if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);
@@ -379,6 +380,7 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
   fQC->SetCalculateCRCVZ(fCalculateCRCVZ);
   fQC->SetCalculateCRCZDC(fCalculateCRCZDC);
   fQC->SetCalculateEbEFlow(fCalculateEbEFlow);
+  fQC->SetStoreZDCQVecVtxPos(fStoreZDCQVecVtxPos);
   fQC->SetCRC2nEtaBins(fCRC2nEtaBins);
   fQC->SetCalculateFlowQC(fCalculateFlowQC);
   fQC->SetFlowQCCenBin(fFlowQCCenBin);
@@ -425,7 +427,6 @@ void AliAnalysisTaskCRC::UserCreateOutputObjects()
     if(fWeightsListVtxDep) fQC->SetWeightsListVtxDep(fWeightsListVtxDep);
   }
   if(fUsePhiEtaCuts) fQC->SetUsePhiEtaCuts(fUsePhiEtaCuts);
-  if(fPhiEtaCutsList) fQC->SetPhiEtaCutsList(fPhiEtaCutsList);
   // Event weights:
   if(!fMultiplicityWeight->Contains("combinations")) {
     fQC->SetMultiplicityWeight(fMultiplicityWeight->Data());
@@ -550,6 +551,7 @@ void AliAnalysisTaskCRC::Terminate(Option_t *)
   if(fDataSet.EqualTo("2010")) fQC->SetDataSet(AliFlowAnalysisCRC::k2010);
   if(fDataSet.EqualTo("2011")) fQC->SetDataSet(AliFlowAnalysisCRC::k2011);
   if(fDataSet.EqualTo("2015")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015);
+  if(fDataSet.EqualTo("2015v6")) fQC->SetDataSet(AliFlowAnalysisCRC::k2015v6);
   if(fInteractionRate.EqualTo("high")) fQC->SetInteractionRate(AliFlowAnalysisCRC::kHigh);
   if(fInteractionRate.EqualTo("low"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kLow);
   if(fInteractionRate.EqualTo("pos"))  fQC->SetInteractionRate(AliFlowAnalysisCRC::kPos);

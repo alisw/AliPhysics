@@ -98,8 +98,12 @@ ClassImp(AliAnalysisTaskBeautyCal)
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
-  fPi3040(0),
-  fEta3040(0),
+  //fPi3040(0),
+  //fEta3040(0),
+  fPi3040_0(0),
+  fPi3040_1(0),
+  fEta3040_0(0),
+  fEta3040_1(0),
   fOutputList(0),
   fNevents(0),
   fCent(0),
@@ -227,8 +231,12 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
-  fPi3040(0),
-  fEta3040(0),
+  //fPi3040(0),
+  //fEta3040(0),
+  fPi3040_0(0),
+  fPi3040_1(0),
+  fEta3040_0(0),
+  fEta3040_1(0),
   fOutputList(0),
   fNevents(0),
   fCent(0), 
@@ -388,12 +396,26 @@ void AliAnalysisTaskBeautyCal::UserCreateOutputObjects()
   ////////////////////////
   //  Define weight for pho reco
   ////////////////////////
-
+  
+  /*
+  // HIJING weight
   fPi3040 = new TF1("fPi3040","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
   fPi3040->SetParameters(7.42299e+01,5.54794e-01,1.50584e+00,1.90916e+01,4.32718e+00);
 
   fEta3040 = new TF1("fEta3040","[0]*x/pow([1]+x/[2]+x*x/[3],[4])");
   fEta3040->SetParameters(3.35675e+01,3.23948e-01,2.31469e+00,1.46099e+01,3.87158e+00);
+
+  */
+
+  fPi3040_0 = new TF1("fPi3040_0","[0]*x/pow([1]+x/[2],[3])");
+  fPi3040_0->SetParameters(0.937028,0.674846,9.02659,10.);
+  fPi3040_1 = new TF1("fPi3040_1","[0]*x/pow([1]+x/[2],[3])");
+  fPi3040_1->SetParameters(2.7883,0.,2.5684,5.63827);
+
+  fEta3040_0 = new TF1("fEta3040_0","[0]*x/pow([1]+x/[2],[3])");
+  fEta3040_0->SetParameters(2.26982,0.75242,7.12772,10.);
+  fEta3040_1 = new TF1("fEta3040_1","[0]*x/pow([1]+x/[2],[3])");
+  fEta3040_1->SetParameters(2.57403,0.,2.28527,5.659);
 
   ////////////////
   //Output list//
@@ -783,6 +805,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
   fNevents->Fill(0); //all events
 
+  // remove event 1
   Double_t Zvertex = -100, Xvertex = -100, Yvertex = -100;
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
   //Double_t NcontV = pVtx->GetNContributors();
@@ -798,6 +821,33 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
   //cout << TMath::Abs(dz) << " ; " << nsigTot << " ; " << nsigTrc << endl;
   if (TMath::Abs(dz)>0.2 || nsigTot>10 || nsigTrc>20)return;
   
+  // remove event2
+
+    Int_t nTPCout=0;
+    Float_t mTotV0=0;
+    
+    AliAODVZERO* v0data=(AliAODVZERO*) fAOD->GetVZEROData();
+    Float_t mTotV0A=v0data->GetMTotV0A();
+    Float_t mTotV0C=v0data->GetMTotV0C();
+    mTotV0=mTotV0A+mTotV0C;
+    
+    Int_t ntracksEv = fAOD->GetNumberOfTracks();
+    for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+        AliAODTrack * track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(itrack));
+        if(!track) {AliFatal("Not a standard AOD");}
+        if(track->GetID()<0)continue;
+        if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
+        else continue;
+    }
+    Float_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout); //function to apply to pile-up rejection
+   
+     //Bool_t fEnablePileupRejVZEROTPCout = kFALSE;
+
+     if(fEnablePileupRejVZEROTPCout)
+       {
+        if(mTotV0<mV0Cut) return;
+       }
+
   fNevents->Fill(1); //events with 2 tracks
 
   Zvertex = pVtx->GetZ();
@@ -900,9 +950,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
 
       fEMCClsEtaPhi->Fill(emceta,emcphi);
       // remove some bad runs
-      if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
-      if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
-      if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
+      //if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
+      //if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
+      //if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
 
       Double_t clustE = clust->E();
       fHistClustE->Fill(clustE);
@@ -1149,8 +1199,31 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       }
 
     Double_t WeightPho = -1.0;
-    if(iEmbPi0)WeightPho = fPi3040->Eval(pTmom);
-    if(iEmbEta)WeightPho = fEta3040->Eval(pTmom);
+    //if(iEmbPi0)WeightPho = fPi3040->Eval(pTmom);
+    //if(iEmbEta)WeightPho = fEta3040->Eval(pTmom);
+    if(iEmbPi0)
+       {
+        if(pTmom<4.0)
+          {
+           WeightPho = fPi3040_0->Eval(pTmom);
+          }
+        if(pTmom>4.0)
+          {
+           WeightPho = fPi3040_1->Eval(pTmom);
+          }
+       }
+    if(iEmbEta)
+       {
+        if(pTmom<4.0)
+          {
+           WeightPho = fEta3040_0->Eval(pTmom);
+          }
+        if(pTmom>4.0)
+          {
+           WeightPho = fEta3040_1->Eval(pTmom);
+          }
+       }
+         
 
     ////////////////////
     //Track properties//
@@ -1214,9 +1287,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
       // remove some bad runs
-      if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
-      if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
-      if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
+      //if((emcphi>2.24 && emcphi<2.28) && (emceta>-0.51 && emceta<-0.49))continue;
+      //if((emcphi>2.2 && emcphi<2.28)  && (emceta>-0.05 && emceta<-0.04))continue;
+      //if((emcphi>2.88 && emcphi<2.92) && (emceta> 0.11 && emceta< 0.13))continue;
 
       Double_t clustMatchE = clustMatch->E();
       //fClsEAftMatch->Fill(clustMatchE);
@@ -1302,7 +1375,9 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(atrack->GetTPCNCrossedRows() < 120) continue; 
       if(atrack->GetTPCchi2() > 4) continue; 
       //if(atrack->GetITSchi2() > 36) continue; 
-      if(atrack->GetITSchi2() > 25) continue; 
+      //if(atrack->GetITSchi2() > 26) continue; 
+      //cout << "itschi2 = " << fitschi2 << endl;
+      if(atrack->GetITSchi2() > fitschi2) continue; 
  
       if(fTPCnSigma > -1 && fTPCnSigma < 3 && m20>m20mim && m20<m20max)fHistEop->Fill(track->Pt(),eop);
       if(fTPCnSigma < -3.5 && m20>m20mim && m20<m20max)fHistEopHad->Fill(track->Pt(),eop);

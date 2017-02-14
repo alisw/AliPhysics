@@ -45,6 +45,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     virtual void   Terminate(Option_t *);
 
     Bool_t  PassEventSelect(AliVEvent *fVevent);
+    Bool_t  PassAddtionalPileUpCuts();
     void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
     void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
     void    CheckCentrality(AliAODEvent* fAOD, Bool_t &centralitypass);
@@ -84,8 +85,14 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    SetHadSPDkAny(Bool_t HadSPDkAny) {fFlagHadSPDkAny = HadSPDkAny;};
     void    SetHadLargeITSNCls(Bool_t HadLargITSNCls) {fFlagHadITSNCls = HadLargITSNCls;};
     
+    void    SetHadFiducialCut(Bool_t HadFiducialCut) {fFlagHadFiducialCut = HadFiducialCut;};
+    void    SetHadPosEtaOnly(Bool_t HadPosEtaOnly) {fFlagHadPosEtaOnly = HadPosEtaOnly;};
+    void    SetHadNegEtaOnly(Bool_t HadNegEtaOnly) {fFlagHadNegEtaOnly = HadNegEtaOnly;};
+    
     void    SetMEBinChange(Bool_t MEBinChange) {fFlagMEBinChange = MEBinChange;};
     void    SetElecSPDkFirst(Bool_t EleSPDkFirst) {fFlagEleSPDkFirst = EleSPDkFirst;};
+    
+    void    SetAdditionalPileUpCuts(Bool_t addpilupcuts) {fApplyAddPileUpCuts = addpilupcuts;};
 
   private:
     AliVEvent 		    *fVevent;//!V event object
@@ -97,6 +104,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TClonesArray        *fTracks_tender;//Tender tracks
     TClonesArray        *fCaloClusters_tender;//Tender cluster
 
+    Bool_t              fApplyAddPileUpCuts;//
     Bool_t              fUseTender;// switch to add tender
     Double_t            fCentrality;//!
     Double_t            fCentralityMin;//
@@ -123,6 +131,9 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Double_t            fInvmassCut;//
     Bool_t              fFlagHadSPDkAny;//
     Bool_t              fFlagHadITSNCls;//
+    Bool_t              fFlagHadFiducialCut;//
+    Bool_t              fFlagHadPosEtaOnly;//
+    Bool_t              fFlagHadNegEtaOnly;//
     Double_t            fTPCnSigmaHadMin;//
     Double_t            fTPCnSigmaHadMax;//
     Int_t               fHadCutCase;//

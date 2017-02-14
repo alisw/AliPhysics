@@ -62,7 +62,8 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fNameAcceptanceOADB(),
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
-  fEnableDCALTriggers(true)
+  fEnableDCALTriggers(true),
+  fExclusiveMinBias(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
@@ -90,7 +91,8 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fNameAcceptanceOADB(),
   fSelectNoiseEvents(false),
   fRejectNoiseEvents(false),
-  fEnableDCALTriggers(true)
+  fEnableDCALTriggers(true),
+  fExclusiveMinBias(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
@@ -170,6 +172,14 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
       emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
+
+  if(fExclusiveMinBias){
+    // do not perform EMCAL trigger selection in case only
+    // min. bias trigger is requested:w
+    if(isMinBias) fSelectedTriggers.push_back("MB");
+    return;
+  }
+
   for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcalTriggers[itrg] = true;
   if(!isMC){
     // In case of data select events as bunch-bunch (-B-) events.
@@ -285,75 +295,81 @@ void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
     fDownscaleOADB = new AliOADBContainer("AliEmcalDownscaleFactors");
     fDownscaleOADB->InitFromFile(fNameDownscaleOADB.Data(), "AliEmcalDownscaleFactors");
   }
-  // Load OADB container with masked fastors (in case fastor masking is switched on)
-  if(fNameMaskedFastorOADB.Length() && (fRejectNoiseEvents || fSelectNoiseEvents)){
-    if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
-    fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
-    fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
-  }
 
-  // Setting online threshold for trigger
-  if(!OnlineThresholdsInitialized()){
-    if(fInputEvent->GetRunNumber() >= 15344 && fInputEvent->GetRunNumber() <= 197388){
-      if(!GetOnlineTriggerThresholdByName("EG1")) SetOnlineTriggerThreshold("EG1", 140);
-      if(!GetOnlineTriggerThresholdByName("EG2")) SetOnlineTriggerThreshold("EG2", 89);
-      if(!GetOnlineTriggerThresholdByName("EJ1")) SetOnlineTriggerThreshold("EJ1", 260);
-      if(!GetOnlineTriggerThresholdByName("EJ2")) SetOnlineTriggerThreshold("EJ2", 127);
-      SetOnlineTriggerThreshold("DG1", 0);
-      SetOnlineTriggerThreshold("DG2", 0);
-      SetOnlineTriggerThreshold("DJ1", 0);
-      SetOnlineTriggerThreshold("DJ2", 0);
-      SetOnlineTriggerThreshold("EMC7", 0);
-      SetOnlineTriggerThreshold("DMC7", 0);
-    }
-  }
+  if(!fExclusiveMinBias){
+    // Load EMCAL trigger OADB in case EMCAL triggers
+    // are enabled
 
-  // Load acceptance OADB
-  if(fNameAcceptanceOADB.Length() && fTriggerSelection){
-    AliDebugStream(1) << GetName() << ": Loading acceptance map from OADB file " <<  fNameAcceptanceOADB << std::endl;
-    AliOADBContainer acceptanceCont("AliEmcalTriggerAcceptance");
-    acceptanceCont.InitFromFile(fNameAcceptanceOADB.Data(), "AliEmcalTriggerAcceptance");
-    TObjArray *acceptanceMaps = dynamic_cast<TObjArray *>(acceptanceCont.GetObject(fInputEvent->GetRunNumber()));
-    TH2 *map(nullptr);
-    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG1")))){
-      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG1" << std::endl;
-      map->SetDirectory(nullptr);
-      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG1, map);
+    // Load OADB container with masked fastors (in case fastor masking is switched on)
+    if(fNameMaskedFastorOADB.Length() && (fRejectNoiseEvents || fSelectNoiseEvents)){
+      if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
+      fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
+      fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
     }
-    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG2")))){
-      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG2" << std::endl;
-      map->SetDirectory(nullptr);
-      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG2, map);
+
+    // Setting online threshold for trigger
+    if(!OnlineThresholdsInitialized()){
+      if(fInputEvent->GetRunNumber() >= 15344 && fInputEvent->GetRunNumber() <= 197388){
+        if(!GetOnlineTriggerThresholdByName("EG1")) SetOnlineTriggerThreshold("EG1", 140);
+        if(!GetOnlineTriggerThresholdByName("EG2")) SetOnlineTriggerThreshold("EG2", 89);
+        if(!GetOnlineTriggerThresholdByName("EJ1")) SetOnlineTriggerThreshold("EJ1", 260);
+        if(!GetOnlineTriggerThresholdByName("EJ2")) SetOnlineTriggerThreshold("EJ2", 127);
+        SetOnlineTriggerThreshold("DG1", 0);
+        SetOnlineTriggerThreshold("DG2", 0);
+        SetOnlineTriggerThreshold("DJ1", 0);
+        SetOnlineTriggerThreshold("DJ2", 0);
+        SetOnlineTriggerThreshold("EMC7", 0);
+        SetOnlineTriggerThreshold("DMC7", 0);
+      }
     }
-    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG1")))){
-      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG1" << std::endl;
-      map->SetDirectory(nullptr);
-      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
-    }
-    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG2")))){
-      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG2" << std::endl;
-      map->SetDirectory(nullptr);
-      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
-    }
-    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ1")))){
-      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ1" << std::endl;
-      map->SetDirectory(nullptr);
-      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ1, map);
-    }
-    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ2")))){
-      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ2" << std::endl;
-      map->SetDirectory(nullptr);
-      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ2, map);
-    }
-    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ1")))){
-      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ1" << std::endl;
-      map->SetDirectory(nullptr);
-      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
-    }
-    if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ2")))){
-      AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ2" << std::endl;
-      map->SetDirectory(nullptr);
-      fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+
+    // Load acceptance OADB
+    if(fNameAcceptanceOADB.Length() && fTriggerSelection){
+      AliDebugStream(1) << GetName() << ": Loading acceptance map from OADB file " <<  fNameAcceptanceOADB << std::endl;
+      AliOADBContainer acceptanceCont("AliEmcalTriggerAcceptance");
+      acceptanceCont.InitFromFile(fNameAcceptanceOADB.Data(), "AliEmcalTriggerAcceptance");
+      TObjArray *acceptanceMaps = dynamic_cast<TObjArray *>(acceptanceCont.GetObject(fInputEvent->GetRunNumber()));
+      TH2 *map(nullptr);
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG1")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG1" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG2")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG2" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG2, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG1")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG1" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG2")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG2" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ1")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ1" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ2")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ2" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ2, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ1")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ1" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+      }
+      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ2")))){
+        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ2" << std::endl;
+        map->SetDirectory(nullptr);
+        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
+      }
     }
   }
 }
@@ -362,25 +378,27 @@ void AliAnalysisTaskEmcalTriggerBase::RunChanged(Int_t runnumber){
   if(fDownscaleOADB){
     fDownscaleFactors = static_cast<TObjArray *>(fDownscaleOADB->GetObject(runnumber));
   }
-  if(fMaskedFastorOADB){
-   fMaskedFastors.clear();
-   TObjArray *ids = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber));
-   for(auto m : *ids){
-     TParameter<int> *id = static_cast<TParameter<int> *>(m);
-     fMaskedFastors.push_back(id->GetVal());
-   }
- }
+  if(!fExclusiveMinBias){
+    if(fMaskedFastorOADB){
+      fMaskedFastors.clear();
+      TObjArray *ids = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber));
+      for(auto m : *ids){
+        TParameter<int> *id = static_cast<TParameter<int> *>(m);
+        fMaskedFastors.push_back(id->GetVal());
+      }
+    }
+  }
 }
 
 std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(){
   // Exclusive means classes without lower trigger classes (which are downscaled) -
   // in order to make samples statistically independent: MBExcl means MinBias && !EMCAL trigger
-  std::vector<TString> triggers = {
-    "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2", "EMC7excl", "EG2excl", "EJ2excl", "EJ1excl", "EG1excl"
-  };
-  std::vector<TString> dcaltriggers = {
-      "DMC7", "DJ1", "DJ2", "DG1", "DG2", "DMC7excl", "DG2excl", "DJ2excl", "DJ1excl", "DG1excl"
-  };
+  std::vector<TString> triggers = {"MB"}; // Min. Bias always enabled
+  const std::array<TString, 10> emcaltriggers = {"EMC7", "EJ1", "EJ2", "EG1", "EG2", "EMC7excl", "EG2excl", "EJ2excl", "EJ1excl", "EG1excl"},
+                                dcaltriggers = {"DMC7", "DJ1", "DJ2", "DG1", "DG2", "DMC7excl", "DG2excl", "DJ2excl", "DJ1excl", "DG1excl"};
+  if(!fExclusiveMinBias){
+    for(const auto &t : emcaltriggers) triggers.push_back(t);
+  }
   if(fEnableDCALTriggers){
     for(const auto &t : dcaltriggers) triggers.push_back(t);
   }

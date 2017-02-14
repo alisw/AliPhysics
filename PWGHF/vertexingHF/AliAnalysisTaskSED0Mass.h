@@ -70,6 +70,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetPIDCheck(Bool_t flag) { fPIDCheck=flag; }
   void SetUseQuarkLevelTag(Bool_t opt){fUseQuarkTagInKine=opt;}
   void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetPileupRejectionVZEROTPCout(Bool_t flag) {fEnablePileupRejVZEROTPCout=flag;}
 
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
@@ -140,9 +141,12 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   THnSparseF *fhStudyImpParSingleTrackCand;  //!<! sparse with imp par residual cuts for Data
   THnSparseF *fhStudyImpParSingleTrackFd;   //!<! sparse with imp par residual cuts for MC
   TList	   *fDetSignal;		//!<!Detector signal histograms (on output slot 8)
+  TH2F *fhMultVZEROTPCoutTrackCorrNoCut;  //!<!
+  TH2F *fhMultVZEROTPCoutTrackCorr;  //!<!
+  Bool_t    fEnablePileupRejVZEROTPCout;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0Mass,22); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,23); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 

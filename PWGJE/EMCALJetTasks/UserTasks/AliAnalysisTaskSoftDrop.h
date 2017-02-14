@@ -47,6 +47,7 @@ class AliAnalysisTaskSoftDrop : public AliAnalysisTaskEmcalJet {
   TH2                        *fhCorrPtZg;               //!<! distribution of zg, jet pt-diff
   TH2                        *fhCorrPtRg;               //!<! distribution of groomed jet radius, jet pt-diff
   TH2                        *fhCorrPtPtfrac;           //!<! distribution of ptfrac, jet pt-diff
+  TH2                        *fhCorrPtDropCount;        //!<! distribution of dropped branches number, jet pt-diff
 
   AliJetContainer            *fJetsCont;                   //!Jets
   AliParticleContainer       *fTracksCont;                 //!Tracks

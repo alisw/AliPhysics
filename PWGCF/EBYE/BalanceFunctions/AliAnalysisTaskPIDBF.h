@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKPIDBF1_H
-#define ALIANALYSISTASKPIDBF1_H
+#ifndef ALIANALYSISTASKPIDBF_H
+#define ALIANALYSISTASKPIDBF_H
 
 // Analysis task for the PID BF code:
 // Base Class : AliBalancePsi.cxx

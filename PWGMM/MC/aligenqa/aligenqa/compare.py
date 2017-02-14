@@ -3,7 +3,7 @@ import re
 from rootpy import ROOT
 from rootpy.io import root_open
 
-from hmtfmc import roofie, utils
+from aligenqa import roofie, utils
 
 
 def _reduce_single_canvases(results_dirs, gen_names, get_canvas_func, legend_regex):

@@ -25,7 +25,7 @@ public:
   void     SetTriggerAlias(TTree* tree, const char * trigger);
   static   TTree*    MakeDiffTree(const char *refTree, const char *friendTrees);
   //  Filtered trees trigger 
-  void  ExtractSelected(const char *rawList, const char * triggerList, const char * outputName, Int_t maxCounter,  Int_t verbose=1);
+  void  ExtractSelected(const char *rawList, const char * triggerList, const char * outputName, Long_t maxCounter,  Int_t verbose=1);
   void  LoadTriggerList(const char * triggerList);
   Int_t LoadMapFromRawData(const char *rawFile="raw.root", Int_t verbose=1);
   void  ExtractSelected(const char *rawFile="raw.root", Int_t verbose=1);

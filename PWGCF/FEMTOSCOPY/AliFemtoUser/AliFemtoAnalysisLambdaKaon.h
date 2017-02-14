@@ -233,8 +233,8 @@ struct XiCutParams
          maxPtV0;
   bool onFlyStatusV0;
   double maxV0DecayLength;
-  double minV0DaughtersToPrimVertex,
-         maxV0DaughtersToPrimVertex;
+  double minV0PosDaughterToPrimVertex,
+         minV0NegDaughterToPrimVertex;
   double maxDcaV0Daughters;
   double etaV0Daughters;
   double minPtPosV0Daughter,

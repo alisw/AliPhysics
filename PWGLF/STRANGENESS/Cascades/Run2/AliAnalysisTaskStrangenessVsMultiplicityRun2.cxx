@@ -108,6 +108,7 @@ class AliAODv0;
 #include "AliGenEventHeader.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityRun2.h"
@@ -131,6 +132,7 @@ fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ),
 fkDebugBump(kFALSE),
+fkDoExtraEvSels(kTRUE),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -140,6 +142,8 @@ fDownScaleFactorCascade ( 0.001  ),
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
+fkDoV0Refit       ( kTRUE ),
+fkExtraCleanup    ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -170,6 +174,8 @@ fTreeVariableAlphaV0(0),
 fTreeVariablePtArmV0(0),
 fTreeVariableNegEta(0),
 fTreeVariablePosEta(0),
+fTreeVariableMaxChi2PerCluster(0),
+fTreeVariableMinTrackLength(0),
 
 fTreeVariableNSigmasPosProton(0),
 fTreeVariableNSigmasPosPion(0),
@@ -244,6 +250,8 @@ fTreeCascVarBachDCAz(-1),
 //fTreeCascVarPosTotMom(-1),
 //fTreeCascVarNegTotMom(-1),
 //fTreeCascVarBachTotMom(-1),
+fTreeCascVarMaxChi2PerCluster(0),
+fTreeCascVarMinTrackLength(0),
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -256,6 +264,12 @@ fTreeCascVarPosPz(0),
 fTreeCascVarBachPx(0),
 fTreeCascVarBachPy(0),
 fTreeCascVarBachPz(0),
+fTreeCascVarV0DecayX(0),
+fTreeCascVarV0DecayY(0),
+fTreeCascVarV0DecayZ(0),
+fTreeCascVarCascadeDecayX(0),
+fTreeCascVarCascadeDecayY(0),
+fTreeCascVarCascadeDecayZ(0),
 fTreeCascVarV0Lifetime(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
@@ -289,6 +303,7 @@ fkPreselectDedx ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDebugWrongPIDForTracking ( kFALSE ), //also for cascades...
 fkDebugBump( kFALSE ),
+fkDoExtraEvSels(kTRUE),
 
 //---> Flags controlling Cascade TTree output
 fkSaveCascadeTree       ( kTRUE  ),
@@ -298,6 +313,8 @@ fDownScaleFactorCascade ( 0.001  ),
 //---> Flags controlling Vertexers
 fkRunVertexers    ( kFALSE ),
 fkUseLightVertexer ( kTRUE ),
+fkDoV0Refit       ( kTRUE ),
+fkExtraCleanup    ( kTRUE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -328,6 +345,8 @@ fTreeVariableAlphaV0(0),
 fTreeVariablePtArmV0(0),
 fTreeVariableNegEta(0),
 fTreeVariablePosEta(0),
+fTreeVariableMaxChi2PerCluster(0),
+fTreeVariableMinTrackLength(0),
 
 fTreeVariableNSigmasPosProton(0),
 fTreeVariableNSigmasPosPion(0),
@@ -401,6 +420,8 @@ fTreeCascVarBachDCAz(-1),
 //fTreeCascVarPosTotMom(-1),
 //fTreeCascVarNegTotMom(-1),
 //fTreeCascVarBachTotMom(-1),
+fTreeCascVarMaxChi2PerCluster(0),
+fTreeCascVarMinTrackLength(0),
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -413,6 +434,12 @@ fTreeCascVarPosPz(0),
 fTreeCascVarBachPx(0),
 fTreeCascVarBachPy(0),
 fTreeCascVarBachPz(0),
+fTreeCascVarV0DecayX(0),
+fTreeCascVarV0DecayY(0),
+fTreeCascVarV0DecayZ(0),
+fTreeCascVarCascadeDecayX(0),
+fTreeCascVarCascadeDecayY(0),
+fTreeCascVarCascadeDecayZ(0),
 fTreeCascVarV0Lifetime(0),
 //Track Labels (check for duplicates, etc)
 fTreeCascVarNegIndex(0),
@@ -551,6 +578,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePtArmV0",&fTreeVariablePtArmV0,"fTreeVariablePtArmV0/F");
         fTreeV0->Branch("fTreeVariableLeastNbrCrossedRows",&fTreeVariableLeastNbrCrossedRows,"fTreeVariableLeastNbrCrossedRows/I");
         fTreeV0->Branch("fTreeVariableLeastRatioCrossedRowsOverFindable",&fTreeVariableLeastRatioCrossedRowsOverFindable,"fTreeVariableLeastRatioCrossedRowsOverFindable/F");
+        fTreeV0->Branch("fTreeVariableMaxChi2PerCluster",&fTreeVariableMaxChi2PerCluster,"fTreeVariableMaxChi2PerCluster/F");
+        fTreeV0->Branch("fTreeVariableMinTrackLength",&fTreeVariableMinTrackLength,"fTreeVariableMinTrackLength/F");
         fTreeV0->Branch("fTreeVariableDistOverTotMom",&fTreeVariableDistOverTotMom,"fTreeVariableDistOverTotMom/F");
         fTreeV0->Branch("fTreeVariableNSigmasPosProton",&fTreeVariableNSigmasPosProton,"fTreeVariableNSigmasPosProton/F");
         fTreeV0->Branch("fTreeVariableNSigmasPosPion",&fTreeVariableNSigmasPosPion,"fTreeVariableNSigmasPosPion/F");
@@ -609,6 +638,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeCascade->Branch("fTreeCascVarDCABachToBaryon",&fTreeCascVarDCABachToBaryon,"fTreeCascVarDCABachToBaryon/F");
         fTreeCascade->Branch("fTreeCascVarWrongCosPA",&fTreeCascVarWrongCosPA,"fTreeCascVarWrongCosPA/F");
         fTreeCascade->Branch("fTreeCascVarLeastNbrClusters",&fTreeCascVarLeastNbrClusters,"fTreeCascVarLeastNbrClusters/I");
+        fTreeCascade->Branch("fTreeCascVarMaxChi2PerCluster",&fTreeCascVarMaxChi2PerCluster,"fTreeCascVarMaxChi2PerCluster/F");
+        fTreeCascade->Branch("fTreeCascVarMinTrackLength",&fTreeCascVarMinTrackLength,"fTreeCascVarMinTrackLength/F");
         //-----------MULTIPLICITY-INFO--------------------
         fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
         fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
@@ -652,6 +683,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachPx",&fTreeCascVarBachPx,"fTreeCascVarBachPx/F");
             fTreeCascade->Branch("fTreeCascVarBachPy",&fTreeCascVarBachPy,"fTreeCascVarBachPy/F");
             fTreeCascade->Branch("fTreeCascVarBachPz",&fTreeCascVarBachPz,"fTreeCascVarBachPz/F");
+            // Decay positions
+            fTreeCascade->Branch("fTreeCascVarV0DecayX",&fTreeCascVarV0DecayX,"fTreeCascVarV0DecayX/F");
+            fTreeCascade->Branch("fTreeCascVarV0DecayY",&fTreeCascVarV0DecayY,"fTreeCascVarV0DecayY/F");
+            fTreeCascade->Branch("fTreeCascVarV0DecayZ",&fTreeCascVarV0DecayZ,"fTreeCascVarV0DecayZ/F");
+            fTreeCascade->Branch("fTreeCascVarCascadeDecayX",&fTreeCascVarCascadeDecayX,"fTreeCascVarCascadeDecayX/F");
+            fTreeCascade->Branch("fTreeCascVarCascadeDecayY",&fTreeCascVarCascadeDecayY,"fTreeCascVarCascadeDecayY/F");
+            fTreeCascade->Branch("fTreeCascVarCascadeDecayZ",&fTreeCascVarCascadeDecayZ,"fTreeCascVarCascadeDecayZ/F");
+            
             fTreeCascade->Branch("fTreeCascVarV0Lifetime",&fTreeCascVarV0Lifetime,"fTreeCascVarV0Lifetime/F");
         
             //Track Labels (check for duplicates, etc)
@@ -699,6 +738,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
 
+    fEventCuts.AddQAplotsToList(fListHist);
+    
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
         fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",2,0,2);
@@ -707,13 +748,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fListHist->Add(fHistEventCounter);
     }
     
-    
     if(! fHistCentrality ) {
         //Histogram Output: Event-by-Event
         fHistCentrality = new TH1D( "fHistCentrality", "WARNING: no pileup rejection applied!;Centrality;Event Count",100,0,100);
         fListHist->Add(fHistCentrality);
     }
-
+    
     //Superlight mode output
     if ( !fListV0 ){
         fListV0 = new TList();
@@ -824,6 +864,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         return;
     }
     
+    AliVEvent *ev = InputEvent();
+    if( fkDoExtraEvSels ) {
+        if( !fEventCuts.AcceptEvent(ev) ) {
+            PostData(1, fListHist    );
+            PostData(2, fListV0      );
+            PostData(3, fListCascade );
+            if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
+            if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
+            if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
+            return;
+        }
+    }
+    
     fHistEventCounter->Fill(1.5);
     
     //Bookkeep event number for debugging
@@ -859,7 +912,41 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
     Double_t fMinV0Pt = 0;
     Double_t fMaxV0Pt = 100;
-
+    
+    //------------------------------------------------
+    // Rerun V0 Vertexer!
+    // WARNING: this will only work if the
+    // special "use on the fly cascading" flag
+    // is disabled!
+    //------------------------------------------------
+    
+    if( fkRunVertexers && !fkUseOnTheFlyV0Cascading ) {
+        //Only reset if not using on-the-fly (or else nothing passes)
+        lESDevent->ResetV0s();
+        
+        //Decide between regular and light vertexer (default: light)
+        if ( ! fkUseLightVertexer ){
+            //Instantiate vertexer object
+            AliV0vertexer lV0vtxer;
+            //Set Cuts
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            //Redo
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+        } else {
+            //Instantiate vertexer object
+            AliLightV0vertexer lV0vtxer;
+            //Set do or don't do V0 refit for improved precision 
+            lV0vtxer.SetDoRefit( kFALSE );
+            if (fkDoV0Refit) lV0vtxer.SetDoRefit(kTRUE);
+            //Set Cuts
+            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+            lV0vtxer.SetCuts(fV0VertexerSels);
+            //Redo
+            lV0vtxer.Tracks2V0vertices(lESDevent);
+        }
+    }
+    
     Int_t nv0s = 0;
     nv0s = lESDevent->GetNumberOfV0s();
 
@@ -918,6 +1005,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         //Daughter Eta for Eta selection, afterwards
         fTreeVariableNegEta = nTrack->Eta();
         fTreeVariablePosEta = pTrack->Eta();
+        
+        if ( fkExtraCleanup ){
+            if( TMath::Abs(fTreeVariableNegEta)>0.8 || TMath::Abs(fTreeVariableNegEta)>0.8 ) continue;
+            if( TMath::Abs(lRapK0Short        )>0.5 && TMath::Abs(lRapLambda         )>0.5 ) continue;
+        }
 
         // Filter like-sign V0 (next: add counter and distribution)
         if ( pTrack->GetSign() == nTrack->GetSign()) {
@@ -962,7 +1054,34 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
         //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
         if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
-
+        
+        //Extra track quality: Chi2/cluster for cross-checks
+        Float_t lBiggestChi2PerCluster = -1;
+        
+        Float_t lPosChi2PerCluster = 1000;
+        Float_t lNegChi2PerCluster = 1000;
+        
+        if( pTrack->GetTPCNcls() > 0 ) lPosChi2PerCluster = pTrack->GetTPCchi2() / ((Float_t)pTrack->GetTPCNcls());
+        if( nTrack->GetTPCNcls() > 0 ) lNegChi2PerCluster = nTrack->GetTPCchi2() / ((Float_t)nTrack->GetTPCNcls());
+        
+        if ( lPosChi2PerCluster  > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lPosChi2PerCluster;
+        if ( lNegChi2PerCluster  > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lNegChi2PerCluster;
+        
+        fTreeVariableMaxChi2PerCluster = lBiggestChi2PerCluster;
+        
+        //Extra track quality: min track length
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
+        
+        if (pTrack->GetInnerParam()) lPosTrackLength = pTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        if (nTrack->GetInnerParam()) lNegTrackLength = nTrack->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        
+        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
+        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        
+        fTreeVariableMinTrackLength = lSmallestTrackLength;
+        
         //End track Quality Cuts
         //________________________________________________________________________
 
@@ -1093,6 +1212,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             Float_t lPosdEdx = 100;
             Float_t lBaryonMomentum = -0.5;
             
+            //========================================================================
+            //Setting up: Variable V0 CosPA
+            Float_t lV0CosPACut = lV0Result -> GetCutV0CosPA();
+            Float_t lVarV0CosPApar[5];
+            lVarV0CosPApar[0] = lV0Result->GetCutVarV0CosPAExp0Const();
+            lVarV0CosPApar[1] = lV0Result->GetCutVarV0CosPAExp0Slope();
+            lVarV0CosPApar[2] = lV0Result->GetCutVarV0CosPAExp1Const();
+            lVarV0CosPApar[3] = lV0Result->GetCutVarV0CosPAExp1Slope();
+            lVarV0CosPApar[4] = lV0Result->GetCutVarV0CosPAConst();
+            Float_t lVarV0CosPA = TMath::Cos(
+                                             lVarV0CosPApar[0]*TMath::Exp(lVarV0CosPApar[1]*fTreeVariablePt) +
+                                             lVarV0CosPApar[2]*TMath::Exp(lVarV0CosPApar[3]*fTreeVariablePt) +
+                                             lVarV0CosPApar[4]);
+            if( lV0Result->GetCutUseVarV0CosPA() ){
+                //Only use if tighter than the non-variable cut
+                if( lVarV0CosPA > lV0CosPACut ) lV0CosPACut = lVarV0CosPA;
+            }
+            //========================================================================
+            
             if ( lV0Result->GetMassHypothesis() == AliV0Result::kK0Short     ){
                 lMass    = fTreeVariableInvMassK0s;
                 lRap     = fTreeVariableRapK0Short;
@@ -1122,8 +1260,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 lOnFlyStatus == 0 &&
                 
                 //Check 2: Basic Acceptance cuts
-                TMath::Abs(fTreeVariableNegEta)<0.8 &&
-                TMath::Abs(fTreeVariablePosEta)<0.8 &&
+                lV0Result->GetCutMinEtaTracks() < fTreeVariableNegEta && fTreeVariableNegEta < lV0Result->GetCutMaxEtaTracks() &&
+                lV0Result->GetCutMinEtaTracks() < fTreeVariablePosEta && fTreeVariablePosEta < lV0Result->GetCutMaxEtaTracks() &&
                 TMath::Abs(lRap) < 0.5 &&
                 
                 //Check 3: Topological Variables
@@ -1131,7 +1269,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeVariableDcaNegToPrimVertex > lV0Result->GetCutDCANegToPV() &&
                 fTreeVariableDcaPosToPrimVertex > lV0Result->GetCutDCAPosToPV() &&
                 fTreeVariableDcaV0Daughters < lV0Result->GetCutDCAV0Daughters() &&
-                fTreeVariableV0CosineOfPointingAngle > lV0Result->GetCutV0CosPA() &&
+                fTreeVariableV0CosineOfPointingAngle > lV0CosPACut &&
                 fTreeVariableDistOverTotMom*lPDGMass < lV0Result->GetCutProperLifetime() &&
                 fTreeVariableLeastNbrCrossedRows > lV0Result->GetCutLeastNumberOfCrossedRows() &&
                 fTreeVariableLeastRatioCrossedRowsOverFindable > lV0Result->GetCutLeastNumberOfCrossedRowsOverFindable() &&
@@ -1142,9 +1280,26 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 //Check 5: TPC dEdx selections
                 TMath::Abs(lNegdEdx)<lV0Result->GetCutTPCdEdx() &&
                 TMath::Abs(lPosdEdx)<lV0Result->GetCutTPCdEdx() &&
-            
+                
                 //Check 6: Armenteros-Podolanski space cut (for K0Short analysis)
-                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) )
+                ( ( lV0Result->GetCutArmenteros() == kFALSE || lV0Result->GetMassHypothesis() != AliV0Result::kK0Short ) || ( fTreeVariablePtArmV0*5>TMath::Abs(fTreeVariableAlphaV0) ) ) &&
+                
+                //Check 7: kITSrefit track selection if requested
+                (
+                 ( (fTreeVariableNegTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeVariablePosTrackStatus & AliESDtrack::kITSrefit) )
+                 ||
+                 !lV0Result->GetCutUseITSRefitTracks()
+                 )&&
+                
+                //Check 8: Max Chi2/Clusters if not absurd
+                ( lV0Result->GetCutMaxChi2PerCluster()>1e+3 ||
+                 fTreeVariableMaxChi2PerCluster < lV0Result->GetCutMaxChi2PerCluster()
+                 ) &&
+                //Check 9: Min Track Length if positive
+                ( lV0Result->GetCutMinTrackLength()<0 || //this is a bit paranoid...
+                 fTreeVariableMinTrackLength > lV0Result->GetCutMinTrackLength()
+                 )
                 )
             {
                 //This satisfies all my conditionals! Fill histogram
@@ -1162,40 +1317,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     //------------------------------------------------
 
     if( fkRunVertexers ) {
+        //Remove existing cascades
         lESDevent->ResetCascades();
-        
-        //Only reset if not using on-the-fly (or else nothing passes)
-        if( !fkUseOnTheFlyV0Cascading ) lESDevent->ResetV0s();
         
         //Decide between regular and light vertexer (default: light)
         if ( ! fkUseLightVertexer ){
-            AliV0vertexer lV0vtxer;
+            //Instantiate vertexer object
             AliCascadeVertexer lCascVtxer;
-            
-            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-
-            lV0vtxer.SetCuts(fV0VertexerSels);
             lCascVtxer.SetCuts(fCascadeVertexerSels);
-            
-            lV0vtxer.Tracks2V0vertices(lESDevent);
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
         } else {
-            AliLightV0vertexer lV0vtxer;
             AliLightCascadeVertexer lCascVtxer;
-            
-            lV0vtxer.SetDefaultCuts(fV0VertexerSels);
             lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
-            
-            lV0vtxer.SetCuts(fV0VertexerSels);
             lCascVtxer.SetCuts(fCascadeVertexerSels);
-            
-            if( fkUseOnTheFlyV0Cascading ) lCascVtxer.SetUseOnTheFlyV0(kTRUE); 
-            
-            //Only revertex if not using on-the-fly
-            if( !fkUseOnTheFlyV0Cascading ) lV0vtxer.Tracks2V0vertices(lESDevent);
-            
-            //Always redo cascades
+            if( fkUseOnTheFlyV0Cascading ) lCascVtxer.SetUseOnTheFlyV0(kTRUE);
             lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
         }
     }
@@ -1298,6 +1434,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         xi->GetXYZcascade( lPosXi[0],  lPosXi[1], lPosXi[2] );
         lXiRadius			= TMath::Sqrt( lPosXi[0]*lPosXi[0]  +  lPosXi[1]*lPosXi[1] );
 
+        fTreeCascVarCascadeDecayX = lPosXi[0];
+        fTreeCascVarCascadeDecayY = lPosXi[1];
+        fTreeCascVarCascadeDecayZ = lPosXi[2];
+        
         // - II.Step 3 : around the tracks : Bach + V0 (ESD)
         // ~ Necessary variables for ESDcascade data members coming from the ESDv0 part (inheritance)
         //-------------
@@ -1443,11 +1583,40 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             AliDebug(1, "Pb / Bach.   track has less than 70 TPC clusters ... continue!");
             continue;
         }
+        
+        Float_t lPosChi2PerCluster = pTrackXi->GetTPCchi2() / ((Float_t) lPosTPCClusters);
+        Float_t lNegChi2PerCluster = nTrackXi->GetTPCchi2() / ((Float_t) lNegTPCClusters);
+        Float_t lBachChi2PerCluster = bachTrackXi->GetTPCchi2() / ((Float_t) lBachTPCClusters);
+        
         Int_t leastnumberofclusters = 1000;
+        Float_t lBiggestChi2PerCluster = -1;
+        
+        //Pick minimum
         if( lPosTPCClusters < leastnumberofclusters ) leastnumberofclusters = lPosTPCClusters;
         if( lNegTPCClusters < leastnumberofclusters ) leastnumberofclusters = lNegTPCClusters;
         if( lBachTPCClusters < leastnumberofclusters ) leastnumberofclusters = lBachTPCClusters;
 
+        //Pick maximum
+        if( lPosChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lPosChi2PerCluster;
+        if( lNegChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lNegChi2PerCluster;
+        if( lBachChi2PerCluster > lBiggestChi2PerCluster ) lBiggestChi2PerCluster = lBachChi2PerCluster;
+        
+        //Extra track quality: min track length
+        Float_t lSmallestTrackLength = 1000;
+        Float_t lPosTrackLength = -1;
+        Float_t lNegTrackLength = -1;
+        Float_t lBachTrackLength = -1;
+        
+        if (pTrackXi->GetInnerParam()) lPosTrackLength = pTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        if (nTrackXi->GetInnerParam()) lNegTrackLength = nTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        if (bachTrackXi->GetInnerParam()) lBachTrackLength = bachTrackXi->GetLengthInActiveZone(1, 2.0, 220.0, lESDevent->GetMagneticField());
+        
+        if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
+        if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
+        if ( lBachTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lBachTrackLength;
+        
+        fTreeCascVarMinTrackLength = lSmallestTrackLength;
+        
         lInvMassLambdaAsCascDghter	= xi->GetEffMass();
         // This value shouldn't change, whatever the working hyp. is : Xi-, Xi+, Omega-, Omega+
         lDcaV0DaughtersXi 		= xi->GetDcaV0Daughters();
@@ -1473,6 +1642,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 
         xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
         lV0RadiusXi		= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
+        
+        fTreeCascVarV0DecayX = lPosV0Xi[0];
+        fTreeCascVarV0DecayY = lPosV0Xi[1];
+        fTreeCascVarV0DecayZ = lPosV0Xi[2];
         
         //========================================================================================
         //Calculate V0 lifetime for adaptive decay radius cut
@@ -1626,7 +1799,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarV0CosPointingAngleSpecial = lV0CosineOfPointingAngleXiSpecial;
         fTreeCascVarV0Radius = lV0RadiusXi;
         fTreeCascVarLeastNbrClusters = leastnumberofclusters;
-
+        fTreeCascVarMaxChi2PerCluster = lBiggestChi2PerCluster;
+        
         //Copy Multiplicity information
         fTreeCascVarCentrality = fCentrality;
 
@@ -1636,6 +1810,21 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                                          TMath::Power( lPosXi[2] - lBestPrimaryVtxPos[2] , 2)
                                      );
         fTreeCascVarDistOverTotMom /= (lXiTotMom+1e-13);
+        
+        if ( fkExtraCleanup ){
+            //Meant to provide extra level of cleanup
+            if( TMath::Abs(fTreeCascVarPosEta)>0.8 || TMath::Abs(fTreeCascVarNegEta)>0.8 || TMath::Abs(fTreeCascVarBachEta)>0.8 ) continue;
+            if( TMath::Abs(fTreeCascVarRapXi)>0.5 && TMath::Abs(fTreeCascVarRapOmega)>0.5 ) continue;
+            if ( fkPreselectDedx ){
+                Bool_t lPassesPreFilterdEdx = kFALSE;
+                //XiMinus Pre-selection
+                if( fTreeCascVarMassAsXi<1.32+0.250&&fTreeCascVarMassAsXi>1.32-0.250 && TMath::Abs(fTreeCascVarPosNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 5.0 && fTreeCascVarCharge == -1 ) lPassesPreFilterdEdx = kTRUE;
+                if( fTreeCascVarMassAsXi<1.32+0.250&&fTreeCascVarMassAsXi>1.32-0.250 && TMath::Abs(fTreeCascVarPosNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 5.0 && fTreeCascVarCharge == +1 ) lPassesPreFilterdEdx = kTRUE;
+                if(fTreeCascVarMassAsOmega<1.68+0.250&&fTreeCascVarMassAsOmega>1.68-0.250 && TMath::Abs(fTreeCascVarPosNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 5.0 && fTreeCascVarCharge == -1  ) lPassesPreFilterdEdx = kTRUE;
+                if(fTreeCascVarMassAsOmega<1.68+0.250&&fTreeCascVarMassAsOmega>1.68-0.250 && TMath::Abs(fTreeCascVarPosNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 5.0 && fTreeCascVarCharge == +1) lPassesPreFilterdEdx = kTRUE;
+                if( !lPassesPreFilterdEdx ) continue;
+            }
+        }
 
         //All vars not specified here: specified elsewhere!
 
@@ -1661,19 +1850,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         if( fkSaveCascadeTree && lKeepCascade &&
            (
             (//START XI SELECTIONS
-             (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075) &&
-             (//dE/dx Pre-selection for Xi, if requested
-              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 7.0 && fTreeCascVarCharge == -1  ) ) ||
-              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 7.0 && fTreeCascVarCharge == +1) )
-              )//end dE/dx Pre-selection
+             (fTreeCascVarMassAsXi<1.32+0.075&&fTreeCascVarMassAsXi>1.32-0.075)
              )//end Xi Selections
             ||
             (//START OMEGA SELECTIONS
-             (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075) &&
-             (//dE/dx Pre-selection for Xi, if requested
-              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 7.0 && fTreeCascVarCharge == -1  ) ) ||
-              (!fkPreselectDedx || (TMath::Abs(fTreeCascVarPosNSigmaPion) < 7.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 7.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 7.0 && fTreeCascVarCharge == +1) )
-              )//end dE/dx Pre-selection
+             (fTreeCascVarMassAsOmega<1.68+0.075&&fTreeCascVarMassAsOmega>1.68-0.075)
              )//end Xi Selections
             )
            )
@@ -1801,9 +1982,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 fTreeCascVarCharge == lCharge &&
                 
                 //Check 2: Basic Acceptance cuts
-                TMath::Abs(fTreeCascVarPosEta)<0.8 &&
-                TMath::Abs(fTreeCascVarNegEta)<0.8 &&
-                TMath::Abs(fTreeCascVarBachEta)<0.8 &&
+                lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarPosEta && fTreeCascVarPosEta < lCascadeResult->GetCutMaxEtaTracks() &&
+                lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarNegEta && fTreeCascVarNegEta < lCascadeResult->GetCutMaxEtaTracks() &&
+                lCascadeResult->GetCutMinEtaTracks() < fTreeCascVarBachEta && fTreeCascVarBachEta < lCascadeResult->GetCutMaxEtaTracks() &&
                 TMath::Abs(lRap) < 0.5 &&
                 
                 //Check 3: Topological Variables
@@ -1830,7 +2011,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 TMath::Abs(lPosdEdx )<lCascadeResult->GetCutTPCdEdx() &&
                 TMath::Abs(lBachdEdx)<lCascadeResult->GetCutTPCdEdx() &&
                 
-                //Check 5: Xi rejection for Omega analysis
+                //Check 5: Xi rejection for Omega analysis 
                 ( ( lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaMinus && lCascadeResult->GetMassHypothesis() != AliCascadeResult::kOmegaPlus  ) || ( TMath::Abs( fTreeCascVarMassAsXi - 1.32171 ) > lCascadeResult->GetCutXiRejection() ) ) &&
                 
                 //Check 6: Experimental DCA Bachelor to Baryon cut
@@ -1842,8 +2023,27 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                 //Check 8: Min/Max V0 Lifetime cut
                 ( ( fTreeCascVarV0Lifetime > lCascadeResult->GetCutMinV0Lifetime() ) &&
                 ( fTreeCascVarV0Lifetime < lCascadeResult->GetCutMaxV0Lifetime() ||
-                 lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) )
+                 lCascadeResult->GetCutMaxV0Lifetime() > 1e+3 ) ) &&
                 
+                //Check 9: kITSrefit track selection if requested
+                (
+                 ( (fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit) &&
+                  (fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit)
+                  )
+                 ||
+                 !lCascadeResult->GetCutUseITSRefitTracks()
+                 ) &&
+                
+                //Check 10: Max Chi2/Clusters if not absurd
+                ( lCascadeResult->GetCutMaxChi2PerCluster()>1e+3 ||
+                 fTreeCascVarMaxChi2PerCluster < lCascadeResult->GetCutMaxChi2PerCluster()
+                 )&&
+                
+                //Check 11: Min Track Length if positive
+                ( lCascadeResult->GetCutMinTrackLength()<0 || //this is a bit paranoid...
+                 fTreeCascVarMinTrackLength > lCascadeResult->GetCutMinTrackLength()
+                 )
                 ){
                 //This satisfies all my conditionals! Fill histogram
                 histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
@@ -1926,6 +2126,463 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliCascadeR
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::SetupStandardVertexing()
+//Meant to store standard re-vertexing configuration
+{
+    //Tell the task to re-run vertexers
+    SetRunVertexers(kTRUE);
+    SetDoV0Refit(kTRUE); 
+    
+    //V0-Related topological selections
+    SetV0VertexerDCAFirstToPV(0.05);
+    SetV0VertexerDCASecondtoPV(0.05);
+    SetV0VertexerDCAV0Daughters(1.20);
+    SetV0VertexerCosinePA(0.98);
+    SetV0VertexerMinRadius(0.9);
+    SetV0VertexerMaxRadius(200);
+    
+    //Cascade-Related topological selections
+    SetCascVertexerMinV0ImpactParameter(0.05);
+    SetCascVertexerV0MassWindow(0.006);
+    SetCascVertexerDCABachToPV(0.02);
+    SetCascVertexerDCACascadeDaughters(1.2);
+    SetCascVertexerCascadeMinRadius(.8);
+    SetCascVertexerCascadeCosinePA(.98);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQAV0(Int_t lRecNumberOfSteps)
+//Add all configurations to do QA of topological variables for the V0 analysis
+{
+    // STEP 1: Decide on binning (needed to improve on memory consumption)
+    
+    // pT binning
+    Double_t lPtbinlimits[] ={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+        2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.5, 8.0, 10, 12, 15};
+    Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
+    
+    Double_t lPtbinlimitsCascade[] ={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
+        2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.5, 5.0, 5.5, 6.5, 8.0, 10, 12, 14, 17, 20};
+    Long_t lPtbinnumbCascade = sizeof(lPtbinlimitsCascade)/sizeof(Double_t) - 1;
+    
+    // centrality binning
+    Double_t lCentbinlimits[] = {0, 10};
+    Long_t lCentbinnumb = sizeof(lCentbinlimits)/sizeof(Double_t) - 1;
+    
+    // TStrings for output names
+    TString lParticleName[] = {"K0Short", "Lambda",  "AntiLambda"};
+    
+    //STEP 3: Creation of output objects
+    
+    //Map to mass hypothesis
+    AliV0Result::EMassHypo lMassHypoV0[3];
+    lMassHypoV0[0] = AliV0Result::kK0Short;
+    lMassHypoV0[1] = AliV0Result::kLambda;
+    lMassHypoV0[2] = AliV0Result::kAntiLambda;
+    
+    Float_t lLifetimeCut[3];
+    lLifetimeCut[0] = 20.0;
+    lLifetimeCut[1] = 30.0;
+    lLifetimeCut[2] = 30.0;
+    
+    Float_t lMass[3];
+    lMass[0] = 0.497;
+    lMass[1] = 1.116;
+    lMass[2] = 1.116;
+    
+    Float_t lMWindow[3];
+    lMWindow[0] = 0.075;
+    lMWindow[1] = 0.050;
+    lMWindow[2] = 0.050;
+    
+    //Array of results
+    AliV0Result *lV0Result[5000];
+    Long_t lNV0 = 0;
+    
+    //Central results: Stored in indices 0, 1, 2 (careful!)
+    for(Int_t i = 0 ; i < 3 ; i ++){
+        //Central result, customized binning: the one to use, usually
+        lV0Result[lNV0] = new AliV0Result( Form("%s_Central",lParticleName[i].Data() ),lMassHypoV0[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits, 100,lMass[i]-lMWindow[i],lMass[i]+lMWindow[i]);
+        //if ( i>0 ) not neeed for real data
+        //    lV0Result[lNV0]->InitializeFeeddownMatrix( lPtbinnumb, lPtbinlimits, lPtbinnumbCascade, lPtbinlimitsCascade, lCentbinnumb, lCentbinlimits );
+        
+        //Setters for V0 Cuts
+        lV0Result[lNV0]->SetCutDCANegToPV            ( 0.05 ) ;
+        lV0Result[lNV0]->SetCutDCAPosToPV            ( 0.05 ) ;
+        lV0Result[lNV0]->SetCutDCAV0Daughters        ( 1.2 ) ;
+        lV0Result[lNV0]->SetCutV0CosPA               ( 0.98 ) ;
+        lV0Result[lNV0]->SetCutV0Radius              ( 0.9 ) ;
+        
+        //Miscellaneous
+        lV0Result[lNV0]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( 70 ) ;
+        lV0Result[lNV0]->SetCutLeastNumberOfCrossedRowsOverFindable               ( 0.8 ) ;
+        lV0Result[lNV0]->SetCutTPCdEdx               ( 4 ) ;
+        
+        //Add result to pool
+        lNV0++;
+    }
+    
+    //Will now proceed to sweep individual variables
+    //Number of steps used for the variable sweeps
+    const Int_t lNumberOfSteps = lRecNumberOfSteps;
+    
+    //________________________________________________________
+    // Variable 1: DCA Neg to PV
+    Float_t lMaxDCANegToPV = 20.00;
+    
+    for(Int_t i = 0 ; i < 3 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCANegToPVSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCANegToPV / ((Float_t) lNumberOfSteps) ;
+            lV0Result[lNV0] -> SetCutDCANegToPV ( lThisCut );
+            lNV0++;
+        }
+    }
+    //________________________________________________________
+    // Variable 2: DCA Pos to PV
+    Float_t lMaxDCAPosToPV = 20.00;
+    
+    for(Int_t i = 0 ; i < 3 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAPosToPVSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAPosToPV / ((Float_t) lNumberOfSteps) ;
+            lV0Result[lNV0] -> SetCutDCAPosToPV ( lThisCut );
+            lNV0++;
+        }
+    }
+    //________________________________________________________
+    // Variable 3: DCA V0 Daughters
+    Float_t lMaxDCAV0Daughters = 1.20;
+    
+    for(Int_t i = 0 ; i < 3 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0DaughtersSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAV0Daughters / ((Float_t) lNumberOfSteps) ;
+            lV0Result[lNV0] -> SetCutDCAV0Daughters ( lThisCut );
+            lNV0++;
+        }
+    }
+    //________________________________________________________
+    // Variable 4: V0 CosPA
+    Float_t lMinV0CosPA = 0.98;
+    Float_t lMaxV0CosPA = 1.00;
+    Double_t lV0CosPAVals[lNumberOfSteps];
+    Double_t lMinV0PA = 0.0;
+    Double_t lMaxV0PA = TMath::ACos(lMinV0CosPA);
+    Double_t lDeltaV0PA = lMaxV0PA / ((Double_t)(lNumberOfSteps));
+    for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
+        lV0CosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaV0PA );
+    }
+    for(Int_t i = 0 ; i < 3 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0CosPASweep",icut) );
+            //Add result to pool
+            lV0Result[lNV0] -> SetCutV0CosPA ( lV0CosPAVals[icut] );
+            lNV0++;
+        }
+    }
+    //________________________________________________________
+    // Variable 5: V0 Radius
+    Float_t lMinV0Radius = 2.0;
+    Float_t lMaxV0Radius = 20.00;
+    for(Int_t i = 0 ; i < 3 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0RadiusSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = lMinV0Radius + (lMaxV0Radius-lMinV0Radius)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+            lV0Result[lNV0] -> SetCutV0Radius ( lThisCut );
+            lNV0++;
+        }
+    }
+    for (Int_t iconf = 0; iconf<lNV0; iconf++)
+        AddConfiguration(lV0Result[iconf]);
+    
+    cout<<"Added "<<lNV0<<" V0 configurations to output."<<endl;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t lRecNumberOfSteps)
+//Add all configurations to do QA of topological variables for the V0 analysis
+{
+    // STEP 1: Decide on binning (needed to improve on memory consumption)
+    
+    // pT binning
+    Double_t lPtbinlimits[] = {0.0,0.1,0.2,0.3, 0.4, 0.5, 0.6,
+    0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
+        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,
+       4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
+    //Double_t lPtbinlimits[] = {0.2,0.3, 0.4, 0.5, 0.6,
+    //    0.7,0.8,.9,1.0,1.2, 1.4, 1.6, 1.8 ,2.0,
+    //    2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0,
+    //    4.4,4.8,5.0,6.0,7.0,8.0,9.0,10.,11.,12.};
+
+    //Double_t lPtbinlimits[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2,
+    //3.6, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.5, 8.5, 10, 12};
+    
+    Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
+    
+    // centrality binning
+    Double_t lCentbinlimits[] = {0, 10}; //optimize in 0-10%
+    Long_t lCentbinnumb = sizeof(lCentbinlimits)/sizeof(Double_t) - 1;
+    
+    //Just a counter and one array, please. Nothing else needed
+    AliCascadeResult *lCascadeResult[5000];
+    Long_t lN = 0;
+    
+    //Map to mass hypothesis
+    AliCascadeResult::EMassHypo lMassHypo[4];
+    lMassHypo[0] = AliCascadeResult::kXiMinus;
+    lMassHypo[1] = AliCascadeResult::kXiPlus;
+    lMassHypo[2] = AliCascadeResult::kOmegaMinus;
+    lMassHypo[3] = AliCascadeResult::kOmegaPlus;
+    
+    Float_t lLifetimeCut[4];
+    lLifetimeCut[0] = 15.0;
+    lLifetimeCut[1] = 15.0;
+    lLifetimeCut[2] =  8.0;
+    lLifetimeCut[3] =  8.0;
+
+    Float_t lMass[4];
+    lMass[0] = 1.322;
+    lMass[1] = 1.322;
+    lMass[2] = 1.672;
+    lMass[3] = 1.672;
+    
+    TString lParticleName[] = {"XiMinus", "XiPlus",  "OmegaMinus", "OmegaPlus"};
+    
+    //Number of steps used for the variable sweeps
+    const Int_t lNumberOfSteps = lRecNumberOfSteps;
+    
+    //Central results: Stored in indices 0, 1, 2, 3 (careful!)
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        //Central result, customized binning: the one to use, usually
+        lCascadeResult[lN] = new AliCascadeResult( Form("%s_VertexerLevel",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits,100,lMass[i]-0.050,lMass[i]+0.050);
+        
+        //Default cuts: use vertexer level ones
+        //Setters for V0 Cuts
+        lCascadeResult[lN]->SetCutDCANegToPV            ( 0.05 ) ;
+        lCascadeResult[lN]->SetCutDCAPosToPV            ( 0.05 ) ;
+        lCascadeResult[lN]->SetCutDCAV0Daughters        (  1.2 ) ;
+        lCascadeResult[lN]->SetCutV0CosPA               ( 0.98 ) ;
+        lCascadeResult[lN]->SetCutV0Radius              (  2.0 ) ;
+        //Setters for Cascade Cuts
+        lCascadeResult[lN]->SetCutDCAV0ToPV             ( 0.05 ) ;
+        lCascadeResult[lN]->SetCutV0Mass                ( 0.006 ) ;
+        lCascadeResult[lN]->SetCutDCABachToPV           ( 0.02 ) ;
+        lCascadeResult[lN]->SetCutDCACascDaughters      ( 1.2 ) ;
+        lCascadeResult[lN]->SetCutCascRadius            ( 0.8 ) ;
+        lCascadeResult[lN]->SetCutCascCosPA             ( 0.98 ) ;
+        //Miscellaneous
+        lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
+        lCascadeResult[lN]->SetCutLeastNumberOfClusters ( 70.0 ) ;
+        lCascadeResult[lN]->SetCutTPCdEdx               ( 4.0 ) ;
+        lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
+        lCascadeResult[lN]->SetCutBachBaryonCosPA        ( 0.999928 ) ;
+        //Add result to pool
+        lN++;
+    }
+
+    //Will now proceed to sweep individual variables
+    
+    //________________________________________________________
+    // Variable 1: DCA Neg to PV
+    Float_t lMaxDCANegToPV = 20.00;
+    
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCANegToPVSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCANegToPV / ((Float_t) lNumberOfSteps) ;
+            lCascadeResult[lN] -> SetCutDCANegToPV ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 2: DCA Pos to PV
+    Float_t lMaxDCAPosToPV = 20.00;
+    
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAPosToPVSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAPosToPV / ((Float_t) lNumberOfSteps) ;
+            lCascadeResult[lN] -> SetCutDCAPosToPV ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 3: DCA V0 Daughters
+    Float_t lMaxDCAV0Daughters = 1.20;
+    
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0DaughtersSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAV0Daughters / ((Float_t) lNumberOfSteps) ;
+            lCascadeResult[lN] -> SetCutDCAV0Daughters ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 4: V0 CosPA
+    Float_t lMinV0CosPA = 0.98;
+    Float_t lMaxV0CosPA = 1.00;
+    Double_t lV0CosPAVals[lNumberOfSteps];
+    Double_t lMinV0PA = 0.0;
+    Double_t lMaxV0PA = TMath::ACos(lMinV0CosPA);
+    Double_t lDeltaV0PA = lMaxV0PA / ((Double_t)(lNumberOfSteps));
+    for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
+        lV0CosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaV0PA );
+    }
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0CosPASweep",icut) );
+            //Add result to pool
+            lCascadeResult[lN] -> SetCutV0CosPA ( lV0CosPAVals[icut] );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 5: V0 Radius
+    Float_t lMinV0Radius = 2.0;
+    Float_t lMaxV0Radius = 20.00;
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"V0RadiusSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = lMinV0Radius + (lMaxV0Radius-lMinV0Radius)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+            lCascadeResult[lN] -> SetCutV0Radius ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 6:
+    Float_t lMaxDCAV0ToPV = 1.0;
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCAV0ToPVSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCAV0ToPV / ((Float_t) lNumberOfSteps) ;
+            lCascadeResult[lN] -> SetCutDCAV0ToPV ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 7: DCA Bach To PV
+    Float_t lMaxDCABachToPV = 6.00;
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCABachToPVSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCABachToPV / ((Float_t) lNumberOfSteps) ;
+            lCascadeResult[lN] -> SetCutDCABachToPV ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 8: DCA Casc Daughters
+    Float_t lMaxDCACascDaughters = 1.20;
+    
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"DCACascDaughtersSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = ((Float_t)icut+1)*lMaxDCACascDaughters / ((Float_t) lNumberOfSteps) ;
+            lCascadeResult[lN] -> SetCutDCACascDaughters ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 9: Cascade Radius
+    Float_t lMinCascRadius = 0.8;
+    Float_t lMaxCascRadius = 20.00;
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascRadiusSweep",icut) );
+            //Add result to pool
+            Float_t lThisCut = lMinCascRadius + (lMaxCascRadius-lMinCascRadius)*(((Float_t)icut)+1)/((Float_t)lNumberOfSteps);
+            lCascadeResult[lN] -> SetCutCascRadius ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 10: Cascade CosPA
+    Float_t lMinCascCosPA = 0.98;
+    Float_t lMaxCascCosPA = 1.00;
+    Double_t lCascCosPAVals[lNumberOfSteps];
+    Double_t lMinCascPA = 0.0;
+    Double_t lMaxCascPA = TMath::ACos(lMinCascCosPA);
+    Double_t lDeltaCascPA = lMaxCascPA / ((Double_t)(lNumberOfSteps));
+    for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
+        lCascCosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaCascPA );
+    }
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascCosPASweep",icut) );
+            //Add result to pool
+            lCascadeResult[lN] -> SetCutCascCosPA ( lCascCosPAVals[icut] );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 11: Bach-Baryon CosPA
+    Float_t lMinBBCosPA = 0.995;
+    Float_t lMaxBBCosPA = 1.000;
+    Double_t lBBCosPAVals[lNumberOfSteps];
+    Double_t lMinBBPA = 0.0;
+    Double_t lMaxBBPA = TMath::ACos(lMinBBCosPA);
+    Double_t lDeltaBBPA = lMaxBBPA / ((Double_t)(lNumberOfSteps));
+    for(Int_t iStep = 0; iStep<lNumberOfSteps; iStep++){
+        lBBCosPAVals[iStep] = TMath::Cos( ((Float_t)(iStep+1))*lDeltaBBPA );
+    }
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lNumberOfSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"BBCosPASweep",icut) );
+            //Add result to pool
+            lCascadeResult[lN] -> SetCutBachBaryonCosPA ( lBBCosPAVals[icut] );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 12: Cascade Lifetime Sweep
+    Float_t lMinLifetime = 0.00;
+    Float_t lMaxLifetime = 20.00;
+    Int_t lLifetimeSteps = 20;
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lLifetimeSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"CascLifetimeSweep",icut) );
+            Float_t lThisCut = lMinLifetime + (lMaxLifetime-lMinLifetime)*(((Float_t)icut)+1)/((Float_t)lLifetimeSteps);
+            //Add result to pool
+            lCascadeResult[lN] -> SetCutProperLifetime ( lThisCut );
+            lN++;
+        }
+    }
+    //________________________________________________________
+    // Variable 13: V0 Lifetime Sweep
+    Float_t lMinV0Lifetime = 0.00;
+    Float_t lMaxV0Lifetime = 40.00;
+    Int_t lV0LifetimeSteps = 40;
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        for(Int_t icut = 0; icut<lV0LifetimeSteps; icut++){
+            lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_%s_%i",lParticleName[i].Data(),"MaxV0LifetimeSweep",icut) );
+            Float_t lThisCut = lMinV0Lifetime + (lMaxV0Lifetime-lMinV0Lifetime)*(((Float_t)icut)+1)/((Float_t)lV0LifetimeSteps);
+            //Add result to pool
+            lCascadeResult[lN] -> SetCutMaxV0Lifetime ( lThisCut );
+            lN++;
+        }
+    }
+    
+    for (Int_t iconf = 0; iconf<lN; iconf++)
+        AddConfiguration(lCascadeResult[iconf]);
+    
+    cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
 //Meant to add some standard V0 analysis Configuration + its corresponding systematics
 {
@@ -1962,12 +2619,12 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
     // K0SHORT SELECTIONS
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
-    lcutsV0[0][0][ 0] =  0.1;    lcutsV0[0][1][ 0] =   0.1; lcutsV0[0][2][0] = 0.15; //DCANegToPV
-    lcutsV0[0][0][ 1] =  0.1;    lcutsV0[0][1][ 1] =   0.1; lcutsV0[0][2][1] = 0.15; //DCAPosToPV
-    lcutsV0[0][0][ 2] =  1.0;    lcutsV0[0][1][ 2] =   0.8; lcutsV0[0][2][2] =  0.7; //DCAV0Daughters
-    lcutsV0[0][0][ 3] = .998;    lcutsV0[0][1][ 3] = 0.999; lcutsV0[0][2][3] =.9995; //V0CosPA
-    lcutsV0[0][0][ 4] = 2.00;    lcutsV0[0][1][ 4] =  5.00; lcutsV0[0][2][4] = 8.00; //V0Radius
-    lcutsV0[0][0][ 5] =   15;    lcutsV0[0][1][ 5] =    10; lcutsV0[0][2][5] =    7; //Proper Lifetime (in cm)
+    lcutsV0[0][0][ 0] = 0.06;    lcutsV0[0][1][ 0] =   0.1; lcutsV0[0][2][0] = 0.17; //DCANegToPV
+    lcutsV0[0][0][ 1] = 0.06;    lcutsV0[0][1][ 1] =   0.1; lcutsV0[0][2][1] = 0.17; //DCAPosToPV
+    lcutsV0[0][0][ 2] = 0.95;    lcutsV0[0][1][ 2] =   0.8; lcutsV0[0][2][2] =  0.7; //DCAV0Daughters
+    lcutsV0[0][0][ 3] =.9986;    lcutsV0[0][1][ 3] = 0.999; lcutsV0[0][2][3] =.9992; //V0CosPA
+    lcutsV0[0][0][ 4] = 4.50;    lcutsV0[0][1][ 4] =  5.00; lcutsV0[0][2][4] = 5.50; //V0Radius
+    lcutsV0[0][0][ 5] =   12;    lcutsV0[0][1][ 5] =    10; lcutsV0[0][2][5] =    8; //Proper Lifetime (in cm)
     lcutsV0[0][0][ 6] =   70;    lcutsV0[0][1][ 6] =    70; lcutsV0[0][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[0][0][ 7] =  0.7;    lcutsV0[0][1][ 7] =   0.8; lcutsV0[0][2][7] = 0.85; //Least Ratio CrdRows/Findable
     lcutsV0[0][0][ 8] =  4.0;    lcutsV0[0][1][ 8] =   3.0; lcutsV0[0][2][8] =  2.5; //TPC dE/dx
@@ -1978,30 +2635,31 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration()
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
     lcutsV0[1][0][ 0] =  0.1;    lcutsV0[1][1][ 0] =   0.2; lcutsV0[1][2][0] = 0.30; //DCANegToPV
-    lcutsV0[1][0][ 1] =  0.1;    lcutsV0[1][1][ 1] =   0.1; lcutsV0[1][2][1] = 0.15; //DCAPosToPV
-    lcutsV0[1][0][ 2] =  1.0;    lcutsV0[1][1][ 2] =   0.8; lcutsV0[1][2][2] =  0.7; //DCAV0Daughters
-    lcutsV0[1][0][ 3] = .998;    lcutsV0[1][1][ 3] = 0.999; lcutsV0[1][2][3] =.9995; //V0CosPA
-    lcutsV0[1][0][ 4] = 2.00;    lcutsV0[1][1][ 4] =  5.00; lcutsV0[1][2][4] = 8.00; //V0Radius
-    lcutsV0[1][0][ 5] =   25;    lcutsV0[1][1][ 5] =    20; lcutsV0[1][2][5] =   15; //Proper Lifetime (in cm)
+    lcutsV0[1][0][ 1] = 0.08;    lcutsV0[1][1][ 1] =   0.1; lcutsV0[1][2][1] = 0.13; //DCAPosToPV
+    lcutsV0[1][0][ 2] =  1.0;    lcutsV0[1][1][ 2] =   0.8; lcutsV0[1][2][2] = 0.65; //DCAV0Daughters
+    lcutsV0[1][0][ 3] =.9984;    lcutsV0[1][1][ 3] = 0.999; lcutsV0[1][2][3] =.9992; //V0CosPA
+    lcutsV0[1][0][ 4] = 4.00;    lcutsV0[1][1][ 4] =  5.00; lcutsV0[1][2][4] = 6.00; //V0Radius
+    lcutsV0[1][0][ 5] =   24;    lcutsV0[1][1][ 5] =    20; lcutsV0[1][2][5] =   17; //Proper Lifetime (in cm)
     lcutsV0[1][0][ 6] =   70;    lcutsV0[1][1][ 6] =    70; lcutsV0[1][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[1][0][ 7] =  0.7;    lcutsV0[1][1][ 7] =   0.8; lcutsV0[1][2][7] = 0.85; //Least Ratio CrdRows/Findable
     lcutsV0[1][0][ 8] =  4.0;    lcutsV0[1][1][ 8] =   3.0; lcutsV0[1][2][8] =  2.5; //TPC dE/dx
     //================================================================================
-
+    
     //================================================================================
     // ANTILAMBDA SELECTIONS
     //--------------------------------------------------------------------------------
     //                  LOOSE                        CENTRAL                   TIGHT
-    lcutsV0[2][0][ 0] =  0.1;    lcutsV0[2][1][ 0] =   0.1; lcutsV0[2][2][0] = 0.15; //DCANegToPV
+    lcutsV0[2][0][ 0] = 0.08;    lcutsV0[2][1][ 0] =   0.1; lcutsV0[2][2][0] = 0.13; //DCANegToPV
     lcutsV0[2][0][ 1] =  0.1;    lcutsV0[2][1][ 1] =   0.2; lcutsV0[2][2][1] = 0.30; //DCAPosToPV
-    lcutsV0[2][0][ 2] =  1.0;    lcutsV0[2][1][ 2] =   0.8; lcutsV0[2][2][2] =  0.7; //DCAV0Daughters
-    lcutsV0[2][0][ 3] = .998;    lcutsV0[2][1][ 3] = 0.999; lcutsV0[2][2][3] =.9995; //V0CosPA
-    lcutsV0[2][0][ 4] = 2.00;    lcutsV0[2][1][ 4] =  5.00; lcutsV0[2][2][4] = 8.00; //V0Radius
-    lcutsV0[2][0][ 5] =   25;    lcutsV0[2][1][ 5] =    20; lcutsV0[2][2][5] =   15; //Proper Lifetime (in cm)
+    lcutsV0[2][0][ 2] =  1.0;    lcutsV0[2][1][ 2] =   0.8; lcutsV0[2][2][2] = 0.65; //DCAV0Daughters
+    lcutsV0[2][0][ 3] =.9984;    lcutsV0[2][1][ 3] = 0.999; lcutsV0[2][2][3] =.9992; //V0CosPA
+    lcutsV0[2][0][ 4] = 4.00;    lcutsV0[2][1][ 4] =  5.00; lcutsV0[2][2][4] = 6.00; //V0Radius
+    lcutsV0[2][0][ 5] =   24;    lcutsV0[2][1][ 5] =    20; lcutsV0[2][2][5] =   17; //Proper Lifetime (in cm)
     lcutsV0[2][0][ 6] =   70;    lcutsV0[2][1][ 6] =    70; lcutsV0[2][2][6] =   80; //Least Nbr Crossed Rows
     lcutsV0[2][0][ 7] =  0.7;    lcutsV0[2][1][ 7] =   0.8; lcutsV0[2][2][7] = 0.85; //Least Ratio CrdRows/Findable
     lcutsV0[2][0][ 8] =  4.0;    lcutsV0[2][1][ 8] =   3.0; lcutsV0[2][2][8] =  2.5; //TPC dE/dx
     //================================================================================
+
     
     //STEP 3: Creation of output objects
     
@@ -2120,8 +2778,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     // STEP 1: Decide on binning (needed to improve on memory consumption)
     
     // pT binning
-    Double_t lPtbinlimits[] = {0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
-        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0};
+    Double_t lPtbinlimits[] = {0.4, 0.5, 0.6, 0.7,0.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,
+        2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0,5.5,6.0,7.0,8.0,9.0,10.,11.,12.};
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
     
     // centrality binning

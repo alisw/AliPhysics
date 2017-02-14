@@ -69,7 +69,8 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties():
   fJetShapeOpeningAnglektSecondSub(0),
   fSoftDropZg(0),
   fSoftDropdR(0),
-  fSoftDropPtfrac(0)
+  fSoftDropPtfrac(0),
+  fSoftDropDropCount(0)
 {
 }
 
@@ -129,7 +130,8 @@ AliEmcalJetShapeProperties::AliEmcalJetShapeProperties(const AliEmcalJetShapePro
   fJetShapeOpeningAnglektSecondSub(jet.fJetShapeOpeningAnglektSecondSub),
   fSoftDropZg(jet.fSoftDropZg),
   fSoftDropdR(jet.fSoftDropdR),
-  fSoftDropPtfrac(jet.fSoftDropPtfrac)
+  fSoftDropPtfrac(jet.fSoftDropPtfrac),
+  fSoftDropDropCount(jet.fSoftDropDropCount)
 
 {
 }
@@ -192,6 +194,7 @@ AliEmcalJetShapeProperties& AliEmcalJetShapeProperties::operator=(const AliEmcal
   fSoftDropZg = jet.fSoftDropZg;
   fSoftDropdR = jet.fSoftDropdR;
   fSoftDropPtfrac = jet.fSoftDropPtfrac;
+  fSoftDropDropCount = jet.fSoftDropDropCount;
 
   return *this;
 }

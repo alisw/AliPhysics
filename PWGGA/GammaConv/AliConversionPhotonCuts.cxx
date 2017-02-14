@@ -2566,7 +2566,7 @@ Bool_t AliConversionPhotonCuts::SetKappaTPCCut(Int_t kappaCut){   // Set Cut
     break;
   case 7: //
     fKappaMaxCut=10;
-    fKappaMinCut=-0;
+    fKappaMinCut=0;
     break;
   default:
     AliError("KappaTPCCut not defined");

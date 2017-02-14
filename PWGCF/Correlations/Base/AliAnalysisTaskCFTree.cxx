@@ -172,6 +172,10 @@ fMapping(0x0)
   fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
   fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuPdca);
 
+  fEventCuts.SetManualMode();
+  fEventCuts.SetupRun2pp();
+  fEventCuts.fTriggerMask = AliVEvent::kAny; // to accept all triggers at this step
+
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
   DefineOutput(2,TTree::Class());

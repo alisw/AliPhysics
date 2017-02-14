@@ -22,4 +22,6 @@ add_subdirectory(CME/TwoPwrtRP)
 install(DIRECTORY macros DESTINATION PWGCF/FLOW)
 
 # Install calibration data
-install(DIRECTORY database DESTINATION PWGCF/FLOW)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/database)
+  install(DIRECTORY database DESTINATION PWGCF/FLOW)
+endif()

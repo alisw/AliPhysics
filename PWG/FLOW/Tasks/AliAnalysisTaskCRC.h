@@ -119,8 +119,6 @@ public:
   Bool_t GetUsePhiEtaWeightsChDep() const {return this->fUsePhiEtaWeightsChDep;};
   void SetUsePhiEtaWeightsVtxDep(Bool_t const uPhiEtaW) {this->fUsePhiEtaWeightsVtxDep = uPhiEtaW;};
   Bool_t GetUsePhiEtaWeightsVtxDep() const {return this->fUsePhiEtaWeightsVtxDep;};
-  void SetPhiEtaCutsList(TList* const wlist) {this->fPhiEtaCutsList = wlist;}
-  TList* GetPhiEtaCutsList() const {return this->fPhiEtaCutsList;}
   void SetUsePhiEtaCuts(Bool_t const uPhiEtaW) {this->fUsePhiEtaCuts = uPhiEtaW;};
   Bool_t GetUsePhiEtaCuts() const {return this->fUsePhiEtaCuts;};
   void SetUseZDCESEMulWeights(Bool_t const uPhiEtaW) {this->fUseZDCESEMulWeights = uPhiEtaW;};
@@ -176,6 +174,8 @@ public:
   Bool_t GetCalculateCRCZDC() const {return this->fCalculateCRCZDC;};
   void SetCalculateEbEFlow(Bool_t const cCRC) {this->fCalculateEbEFlow = cCRC;};
   Bool_t GetCalculateEbEFlow() const {return this->fCalculateEbEFlow;};
+  void SetStoreZDCQVecVtxPos(Bool_t const cCRC) {this->fStoreZDCQVecVtxPos = cCRC;};
+  Bool_t GetStoreZDCQVecVtxPos() const {return this->fStoreZDCQVecVtxPos;};
   void SetCRC2nEtaBins(Int_t NB) {this->fCRC2nEtaBins = NB;};
   Int_t GetCRC2nEtaBins() {return this->fCRC2nEtaBins;};
   void SetCalculateFlowQC(Bool_t const cCRC) {this->fCalculateFlowQC = cCRC;};
@@ -293,7 +293,6 @@ private:
   TList *fWeightsList;                // list with weights
   TList *fWeightsListChDep;           // list with weights ch dep
   TList *fWeightsListVtxDep;          // list with weights vtx dep
-  TList *fPhiEtaCutsList;             //
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
   AliFlowCommonConstants::ERefMultSource fMultiplicityIs;           // by default "#RPs", other supported options are "RefMultFromESD" = ref. mult. from ESD, and "#POIs"
@@ -317,6 +316,7 @@ private:
   Bool_t fCalculateCRCVZ;
   Bool_t fCalculateCRCZDC;
   Bool_t fCalculateEbEFlow;
+  Bool_t fStoreZDCQVecVtxPos;
   Int_t fCRC2nEtaBins; // CRC2 n eta bins
   Bool_t fCalculateFlowQC;
   Bool_t fCalculateFlowZDC;

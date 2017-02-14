@@ -1076,6 +1076,7 @@ Int_t AliFJWrapper::CreateSoftDrop() {
   if (fSoftDrop) { delete fSoftDrop; } // protect against memory leaks
   
   fSoftDrop   = new fj::contrib::SoftDrop(fBeta,fZcut);
+  fSoftDrop->set_verbose_structure(kTRUE);
   
   #endif
   return 0;

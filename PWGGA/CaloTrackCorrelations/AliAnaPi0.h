@@ -384,6 +384,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   TH1F *   fhPrimPi0E ;                //!<! Spectrum of Primary
   TH1F *   fhPrimPi0Pt ;               //!<! Spectrum of Primary
+  TH1F *   fhPrimPi0PtInCalo ;         //!<! Spectrum of Primary, meson in calo acceptance
   TH1F *   fhPrimPi0AccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
@@ -408,6 +409,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
     
   TH1F *   fhPrimEtaE ;                //!<! Spectrum of Primary
   TH1F *   fhPrimEtaPt ;               //!<! Spectrum of Primary
+  TH1F *   fhPrimEtaPtInCalo ;         //!<! Spectrum of Primary, meson in calo acceptance
   TH1F *   fhPrimEtaAccE ;             //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPt ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPtPhotonCuts ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
@@ -436,13 +438,15 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimPi0PtStatus ;         //!<! Spectrum of generated pi0 vs pi0 status
 
   // Per Generator in Cocktail
-  TH1F *   fhPrimPi0PtPerGenerator[10] ;               //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimPi0PtPerGenerator[10] ;               //!<! Spectrum of primary with |y| < 1
+  TH1F *   fhPrimPi0PtInCaloPerGenerator[10] ;         //!<! Spectrum of primary with pi0 in calo
   TH1F *   fhPrimPi0AccPtPerGenerator[10] ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
   TH2F *   fhPrimPi0PhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimPi0YPerGenerator[10] ;                //!<! Rapidity distribution of primary particles  vs pT
 
-  TH1F *   fhPrimEtaPtPerGenerator[10] ;               //!<! Spectrum of primary with accepted daughters
+  TH1F *   fhPrimEtaPtPerGenerator[10] ;               //!<! Spectrum of primary with |y| < 1
+  TH1F *   fhPrimEtaPtInCaloPerGenerator[10] ;         //!<! Spectrum of primary with eta in calo
   TH1F *   fhPrimEtaAccPtPerGenerator[10] ;            //!<! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPtPhotonCutsPerGenerator[10] ;  //!<! Spectrum of primary with accepted daughters, photon pt or angle cuts
   TH2F *   fhPrimEtaPhiPerGenerator[10] ;              //!<! Azimutal distribution of primary particles  vs pT
@@ -483,6 +487,11 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   /// Real eta pairs, reconstructed pt vs generated pt of pair, apply cut on eta mass
   TH2F **  fhMCEtaPtTruePtRecMassCut;  //![fNPtCuts*fNAsymCuts*fNCellNCuts]
 
+  TH2F *   fhMCPi0PerCentrality;       //!<! Real pi0 pairs, reco pT vs centrality 
+  TH2F *   fhMCPi0PerCentralityMassCut;//!<! Real pi0 pairs, reco pT vs centrality, mass cut around pi0 
+  TH2F *   fhMCEtaPerCentrality;       //!<! Real eta pairs, reco pT vs centrality  
+  TH2F *   fhMCEtaPerCentralityMassCut;//!<! Real eta pairs, reco pT vs centrality, mass cut around eta 
+  
   TH2F *   fhMCPi0PtTruePtRecRat;      //!<! Real pi0 pairs, reco pT vs pT ratio reco / generated 
   TH2F *   fhMCPi0PtTruePtRecDif;      //!<! Real pi0 pairs, reco pT vs pT difference generated - reco 
   TH2F *   fhMCPi0PtRecOpenAngle;      //!<! Real pi0 pairs, reco pT vs reco opening angle 
@@ -565,11 +574,15 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
 
   TH2F *  fhPairGeneratorsBkgMass               [10][10]; //!<! Mass for a pair of clusters depending bkg type
   TH2F *  fhPairGeneratorsBkgMassMCPi0          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCPi0          [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCPi0MassCut   [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, pi0 true pairs, mass cut
   TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
   TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0 [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs  
-  TH2F *  fhPairGeneratorsBkgMassMCEta          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, pi0 true pairs
-  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEta[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs
-  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEta [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs
+  TH2F *  fhPairGeneratorsBkgMassMCEta          [10][10]; //!<! Mass for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCEta          [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgCentMCEtaMassCut   [10][10]; //!<! Centrality for a pair of clusters with depending bkg type, eta true pairs, mass cut
+  TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCEta[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, eta true pairs
+  TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCEta [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, eta true pairs
   
   TH2F *  fhPairGeneratorsBkgEPrimRecoRatioMCPi0MassCut[10][10]; //!<! pT reco / pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window
   TH2F *  fhPairGeneratorsBkgEPrimRecoDiffMCPi0MassCut [10][10]; //!<! pT reco - pT primary for a pair of clusters with depending bkg type, pi0 true pairs, pi0 mass window

@@ -96,6 +96,9 @@ AliAnalysisTaskSE(),
   fImpParzSparsePtEtaPhi(0),
   fImpParPullzSparsePtEtaPhi(0),
   fPtDistrib(0),
+  fhPtWeights(0x0),
+  fUseptWeights(0),
+  fScalingFactPtWeight(1.0),
   fOutput(0)
 {
   //
@@ -139,6 +142,9 @@ AliAnalysisTaskSEImpParResSparse::AliAnalysisTaskSEImpParResSparse(const char *n
   fImpParzSparsePtEtaPhi(0),
   fImpParPullzSparsePtEtaPhi(0),
   fPtDistrib(0),
+  fhPtWeights(0x0),
+  fUseptWeights(0),
+  fScalingFactPtWeight(1.0),
   fOutput(0)
 {
   //
@@ -169,6 +175,7 @@ AliAnalysisTaskSEImpParResSparse::~AliAnalysisTaskSEImpParResSparse()
   delete fImpParzSparsePtEtaPhi;
   delete fImpParPullzSparsePtEtaPhi;
   delete fPtDistrib;
+  delete fhPtWeights;
 
 } 
 //______________________________________________________________________________________________________
@@ -293,6 +300,11 @@ void AliAnalysisTaskSEImpParResSparse::UserCreateOutputObjects()
   fPtDistrib = new TH1F("fhpTdistr",";p_{T} (GeV/c)",500,0.1,25.);
   BinLogPtAxis(fPtDistrib);
   fOutput->Add(fPtDistrib);
+
+  fhPtWeights = new TH1F("hptw",";p_{T} (GeV/c);weight",50,0.1,25.);
+  BinLogPtAxis(fhPtWeights);
+  ConfigurePtWeights();
+  fOutput->Add(fhPtWeights);
   
   if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0., 40.);
   if(!fMultiplicity) fMultiplicity = new TH1F("fMultiplicity", "number of hits in SPD layer 1", 100, 0., 10000.);
@@ -549,6 +561,20 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
       }
     }
 
+    pt = vtrack->Pt();
+    Double_t weight=pt<fhPtWeights->GetBinLowEdge(fhPtWeights->GetNbinsX()+1) ? fhPtWeights->GetBinContent(fhPtWeights->FindBin(pt)) : 1.;
+    if (pt > 1000.) continue;
+    if( ((Double_t)pt*10000.)-((Long_t)(pt*10000.))>weight) continue;
+    
+    pullrphi[1]=pt;
+    pointrphi[1]=pt;
+    pointrphi1[1]=pt;
+    pointrphi2[1]=pt;
+    pullz[1]=pt;
+    pointz[1]=pt;
+    pointz1[1]=pt;
+    pointz2[1]=pt;
+
     eta = vtrack->Eta();
     if(eta<-0.8 || eta>0.8) continue;
     if(eta<0.) {
@@ -586,15 +612,6 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     pointz2[2]=phibin;
     //Printf("phibin %d",phibin);
 
-    pt = vtrack->Pt();
-    pullrphi[1]=pt;
-    pointrphi[1]=pt;
-    pointrphi1[1]=pt;
-    pointrphi2[1]=pt;
-    pullz[1]=pt;
-    pointz[1]=pt;
-    pointz1[1]=pt;
-    pointz2[1]=pt;
 
     Float_t magField=event->GetMagneticField();
     if(magField<0.) {pointrphi1[3]=0.; pointz1[3]=0.;}
@@ -934,4 +951,40 @@ Bool_t AliAnalysisTaskSEImpParResSparse::IsTrackSelected(AliVTrack *track, AliVV
   }
   return retval;
 }
+//----------------------------------------------------------------------------------
+void AliAnalysisTaskSEImpParResSparse::ConfigurePtWeights(){
 
+  if(fUseptWeights==0){ // no weights
+    for(Int_t i=0; i<fhPtWeights->GetNbinsX(); i++){
+      fhPtWeights->SetBinContent(i+1,1.);
+    }
+  }
+  else if(fUseptWeights==1){ //pp weights
+    for(Int_t i=0; i<fhPtWeights->GetXaxis()->FindBin(7.); i++){
+      fhPtWeights->SetBinContent(i+1,0.01);
+    }
+    for(Int_t i=fhPtWeights->GetXaxis()->FindBin(7.); i<fhPtWeights->GetNbinsX(); i++){
+      fhPtWeights->SetBinContent(i+1,1.);
+    }
+  }
+  else if(fUseptWeights==2){ //pPb weights
+    for(Int_t i=0; i<fhPtWeights->GetXaxis()->FindBin(7.); i++){
+      fhPtWeights->SetBinContent(i+1,0.001);
+    }
+    for(Int_t i=fhPtWeights->GetXaxis()->FindBin(7.); i<fhPtWeights->GetNbinsX(); i++){
+      fhPtWeights->SetBinContent(i+1,0.5);
+    }
+  }
+  else if(fUseptWeights==3){ //PbPb weights
+    for(Int_t i=0; i<fhPtWeights->GetXaxis()->FindBin(7.); i++){
+      fhPtWeights->SetBinContent(i+1,0.0001);
+    }
+    for(Int_t i=fhPtWeights->GetXaxis()->FindBin(7.); i<fhPtWeights->GetNbinsX(); i++){
+      fhPtWeights->SetBinContent(i+1,0.05);
+    }
+  }
+
+  fhPtWeights->Scale(1./fScalingFactPtWeight);
+  
+  
+}

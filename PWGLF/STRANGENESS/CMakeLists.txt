@@ -58,6 +58,7 @@ set(SRCS
   Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
   Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRun2.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityRsnLikeBgSub.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
   Cascades/AliAnalysisTaskPPVsMultCrossCheckMC.cxx
   Cascades/AliAnalysisTaskpANormalizationCheckMC.cxx
@@ -67,6 +68,7 @@ set(SRCS
   Cascades/AliAnalysisTaskCheckPerformanceCascadepp.cxx
   Cascades/lightvertexers/AliLightV0vertexer.cxx
   Cascades/lightvertexers/AliLightCascadeVertexer.cxx
+  Cascades/lightvertexers/AliCascadeVertexerUncheckedCharges.cxx
   Cascades/Run2/AliVWeakResult.cxx
   Cascades/Run2/AliV0Result.cxx
   Cascades/Run2/AliCascadeResult.cxx
@@ -136,4 +138,6 @@ install(DIRECTORY Cascades/Run2/macros DESTINATION PWGLF/STRANGENESS/Cascades/Ru
 install(DIRECTORY Correlations/macros DESTINATION PWGLF/STRANGENESS/Correlations)
 install(DIRECTORY LambdaK0/macros DESTINATION PWGLF/STRANGENESS/LambdaK0)
 install(DIRECTORY LambdaK0PbPb DESTINATION  PWGLF/STRANGENESS)
-install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)
+  install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
+endif()

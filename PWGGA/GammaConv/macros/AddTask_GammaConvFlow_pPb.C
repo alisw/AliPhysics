@@ -54,7 +54,7 @@ void AddTask_GammaConvFlow_pPb(
                                 TString additionalTrainConfig = "0"                           // additional counter for trainconfig, always has to be last parameter
                               ) {
   
-  Int_t isHeavyIon = 0
+  Int_t isHeavyIon = 2;
   
   // make use of train subwagon feature
   if (additionalTrainConfig.Atoi() > 0){
@@ -132,7 +132,15 @@ void AddTask_GammaConvFlow_pPb(
   CutHandlerConvFlow cuts;
   
   if (trainConfig == 1){
-    cuts.AddCut("80000013", "00200009007000008260400000");
+    cuts.AddCut("80000013", "00200009000000008260400000");
+  } else if (trainConfig == 2){
+    cuts.AddCut("80200013", "00200009000000008260400000");
+  } else if (trainConfig == 3){
+    cuts.AddCut("82400013", "00200009000000008260400000");
+  } else if (trainConfig == 4){
+    cuts.AddCut("84600013", "00200009000000008260400000");
+  } else if (trainConfig == 5){
+    cuts.AddCut("86000013", "00200009000000008260400000");
   } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;

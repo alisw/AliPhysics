@@ -102,7 +102,10 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
   fhStudyImpParSingleTrackSign(0), 
   fhStudyImpParSingleTrackCand(0), 
   fhStudyImpParSingleTrackFd(0), 
-  fDetSignal(0)
+  fDetSignal(0),
+  fhMultVZEROTPCoutTrackCorrNoCut(0x0),
+  fhMultVZEROTPCoutTrackCorr(0x0),
+  fEnablePileupRejVZEROTPCout(kFALSE)
 {
   /// Default constructor
   for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
@@ -149,7 +152,10 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fhStudyImpParSingleTrackSign(0),
   fhStudyImpParSingleTrackCand(0),
   fhStudyImpParSingleTrackFd(0),
-  fDetSignal(0)
+  fDetSignal(0),
+  fhMultVZEROTPCoutTrackCorrNoCut(0x0),
+  fhMultVZEROTPCoutTrackCorr(0x0),
+  fEnablePileupRejVZEROTPCout(kFALSE)
 {
   /// Default constructor
 
@@ -225,6 +231,15 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
   delete fhStudyImpParSingleTrackSign;
   delete fhStudyImpParSingleTrackCand;
   delete fhStudyImpParSingleTrackFd;
+
+  if(fhMultVZEROTPCoutTrackCorrNoCut){
+    delete fhMultVZEROTPCoutTrackCorrNoCut;
+    fhMultVZEROTPCoutTrackCorrNoCut = 0;
+  }
+  if (fhMultVZEROTPCoutTrackCorr) {
+    delete fhMultVZEROTPCoutTrackCorr;
+    fhMultVZEROTPCoutTrackCorr = 0;
+  }
  
 }  
 
@@ -1023,6 +1038,16 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     fDetSignal->Add(TPCSigAftPID);
   }
 
+  
+  fhMultVZEROTPCoutTrackCorrNoCut = new TH2F("hMultVZEROTPCoutTrackCorrNoCut", ";Tracks with kTPCout on;VZERO multiplicity", 1000, 0., 30000., 1000, 0., 40000.);
+  fhMultVZEROTPCoutTrackCorr = new TH2F("hMultVZEROTPCoutTrackCorr", ";Tracks with kTPCout on;VZERO multiplicity", 1000, 0., 30000., 1000, 0., 40000.);
+  fDistr->Add(fhMultVZEROTPCoutTrackCorrNoCut);
+  fDistr->Add(fhMultVZEROTPCoutTrackCorr);
+  
+
+
+  
+
   // Post the data
   PostData(1,fOutputMass);
   PostData(2,fDistr);
@@ -1124,6 +1149,27 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     }
   }
   //printf("VERTEX Z %f %f\n",vtx1->GetZ(),mcHeader->GetVtxZ());
+
+  Int_t nTPCout=0;
+  Float_t mTotV0=0;
+  AliAODVZERO* v0data=(AliAODVZERO*)((AliAODEvent*)aod)->GetVZEROData();
+  Float_t mTotV0A=v0data->GetMTotV0A();
+  Float_t mTotV0C=v0data->GetMTotV0C();
+  mTotV0=mTotV0A+mTotV0C;
+  Int_t ntracksEv = aod->GetNumberOfTracks();
+  for(Int_t itrack=0; itrack<ntracksEv; itrack++) { // loop on tacks
+    //    ... get the track
+    AliAODTrack * track = dynamic_cast<AliAODTrack*>(aod->GetTrack(itrack));
+    if(!track) {AliFatal("Not a standard AOD");}
+    if(track->GetID()<0)continue;
+    if((track->GetFlags())&(AliESDtrack::kTPCout)) nTPCout++;
+    else continue;
+  }
+  if(fhMultVZEROTPCoutTrackCorrNoCut) fhMultVZEROTPCoutTrackCorrNoCut->Fill(nTPCout,mTotV0);
+  Float_t mV0Cut=-2200.+(2.5*nTPCout)+(0.000012*nTPCout*nTPCout);
+  if(fEnablePileupRejVZEROTPCout){
+    if(mTotV0<mV0Cut) return;	
+  }
   
   //histogram filled with 1 for every AOD
   fNentries->Fill(0);
@@ -1162,7 +1208,11 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     }
     if (skipEvent) return;
   }
+
   
+  if(fhMultVZEROTPCoutTrackCorr)fhMultVZEROTPCoutTrackCorr->Fill(nTPCout,mTotV0);
+  
+
   // AOD primary vertex
   AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
 

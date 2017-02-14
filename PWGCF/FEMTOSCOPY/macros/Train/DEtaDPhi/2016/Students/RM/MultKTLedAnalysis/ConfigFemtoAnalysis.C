@@ -176,6 +176,24 @@ AliFemtoManager* ConfigFemtoAnalysis(const char* params)
           tWeight->SetSquare();
           tWeight->SetT0ApproxOff();
       }
+       else if(weightSetting==5)
+      {
+          tWeight->SetQuantumOn();
+          tWeight->SetCoulOn();
+          tWeight-> SetStrongOff();
+          tWeight->Set3BodyOff();
+          tWeight->SetSquare();
+          tWeight->SetT0ApproxOff();
+      }
+       else if(weightSetting==6)
+      {
+          tWeight->SetQuantumOn();
+          tWeight->SetCoulOn();
+          tWeight-> SetStrongOn();
+          tWeight->Set3BodyOff();
+          tWeight->SetSquare();
+          tWeight->SetT0ApproxOff();
+      }
 	    else 
       {
           tWeight->SetQuantumOff();

@@ -41,11 +41,13 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
   TString outputFileName = AliAnalysisManager::GetCommonFileName();  
 
   AliAnalysisDataContainer *coutTree = mgr->CreateContainer("Tree", TTree::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  AliAnalysisDataContainer *coutHisto = mgr->CreateContainer("Histo", TH1F::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutHisto1 = mgr->CreateContainer("Histo", TH1F::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutHisto2 = mgr->CreateContainer("Arm. Plot", TH2F::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
   mgr->ConnectInput(taskESD, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskESD, 1, coutTree);
-  mgr->ConnectOutput(taskESD, 2, coutHisto);
+  mgr->ConnectOutput(taskESD, 2, coutHisto1);
+  mgr->ConnectOutput(taskESD, 3, coutHisto2);
 
  return taskESD;
 }

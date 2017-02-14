@@ -2,11 +2,12 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Double_t centMin=0, D
                                   Bool_t EleSPDkFirst=kFALSE, Bool_t trigElePtcut=kFALSE,Bool_t MEBinChange=kFALSE,
                                   Int_t MinNClsPE=80, Double_t PtPE=0.3, Double_t invmasscut=0.1,
                                   Int_t MinNClsHad=80, Bool_t HadSPDkAny=kFALSE, Bool_t HadLargITSNCls=kFALSE,
+                                  Bool_t HadFiducialCut = kFALSE, Bool_t HadPosEtaOnly=kFALSE, Bool_t HadNegEtaOnly = kFALSE,
                                   Int_t MinTPCNClsE=90, Double_t nsigMin=-1, Double_t nsigMax=3,
                                   Double_t m02Min=0.01,  Double_t m02Max=0.35, Double_t eovpMin=0.9, Double_t eovpMax=1.2,
                                   Bool_t useTender = kFALSE,
                                   Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
-                                  Int_t PhysSel = AliVEvent::kINT7, Int_t hadCutCase=2, Bool_t trigElePtcut=kFALSE)
+                                  Int_t PhysSel = AliVEvent::kINT7, Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2, Bool_t trigElePtcut=kFALSE)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -52,10 +53,14 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Double_t centMin=0, D
   taskHFEeh->SetHadMinTPCNCls(MinNClsHad);
   taskHFEeh->SetHadSPDkAny(HadSPDkAny);
   taskHFEeh->SetHadLargeITSNCls(HadLargITSNCls);
+  taskHFEeh->SetHadFiducialCut(HadFiducialCut);
+  taskHFEeh->SetHadPosEtaOnly(HadPosEtaOnly);
+  taskHFEeh->SetHadNegEtaOnly(HadNegEtaOnly);
   taskHFEeh->SetMEBinChange(MEBinChange);
   taskHFEeh->SetTriggerElePtCut(trigElePtcut);
   taskHFEeh->SetElecSPDkFirst(EleSPDkFirst);
   taskHFEeh->SetTenderSwitch(useTender);
+  taskHFEeh->SetAdditionalPileUpCuts(AddPileUpCut);
     
   TString containerName = mgr->GetCommonFileName();
   TString SubcontainerName = ContNameExt;

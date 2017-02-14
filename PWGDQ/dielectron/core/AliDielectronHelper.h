@@ -28,7 +28,7 @@ TVectorD* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
 TVectorD* MakeArbitraryBinning(const char* bins);
 
   void     GetMaxPtAndPhi(const AliVEvent *ev, Double_t &ptMax, Double_t &phiOfptMax);
-  Int_t    GetNch(const AliMCEvent *ev=0x0, Double_t eta=0.9);
+  Int_t    GetNch(const AliMCEvent *ev=0x0, Double_t eta=0.9, Bool_t excludeJpsiDaughters = kFALSE);
   Int_t    GetNacc(const AliVEvent *ev=0x0);
   Double_t GetITSTPCMatchEff(const AliVEvent *ev=0x0);
   Int_t    GetNaccTrcklts(const AliVEvent *ev=0x0, Double_t etaRange=1.6);

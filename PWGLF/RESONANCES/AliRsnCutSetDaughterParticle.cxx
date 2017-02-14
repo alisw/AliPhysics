@@ -703,6 +703,40 @@ void AliRsnCutSetDaughterParticle::Init()
 
 
 
+	// PID cuts for Lstar analysis at 13 tev pp :
+	case    AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV_test1 :      
+	if (fPID==AliPID::kProton) {
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.15, 1.1);
+	}
+	if (fPID==AliPID::kKaon) {
+	//	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+	
+	iCutTPCNSigma->AddPIDRange(6.,0.15,0.3);
+	iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+	}
+	
+	AddCut(fCutQuality);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTPCNSigma);
+	
+	// set TPC+TOF PID
+
+	iCutTPCTOFNSigma->SinglePIDRange(3.0);
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 10);
+
+
+	AddCut(iCutTPCTOFNSigma);
+	AddCut(iCutTOFNSigma);
+      
+	// scheme:
+	// quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+	SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+	break;
+
+
+
+
 
 	// PID cuts for Lstar analysis at 13 tev pp :
 	case    AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV_test :      
@@ -735,7 +769,7 @@ void AliRsnCutSetDaughterParticle::Init()
 	break;
 
 
-
+	
 
 
 	// PID cuts for Lstar analysis at 13 tev pp  with electron rejection:
@@ -763,6 +797,45 @@ void AliRsnCutSetDaughterParticle::Init()
 	// set TPC+TOF PID
 
 	iCutTPCTOFNSigma->SinglePIDRange(5.0);
+	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 10);
+
+
+	AddCut(iCutTPCTOFNSigma);
+	AddCut(iCutTOFNSigma);
+      
+	// scheme:
+	// quality & [ (TOF & TPCTOF) || (!TOFmatch & TPConly) ]
+	// SetCutScheme( Form("%s&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCTOFNSigma->GetName(), iCutTPCNSigmaElectronRejection->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ;
+            
+    SetCutScheme( Form("%s&(!%s)&((%s&%s)|((!%s)&%s))",fCutQuality->GetName(), iCutTPCNSigmaElectronRejection->GetName(), iCutTPCTOFNSigma->GetName(), iCutTOFNSigma->GetName(), iCutTOFMatch->GetName(), iCutTPCNSigma->GetName()) ) ; // requested by Priyanka
+	break;
+
+
+	// PID cuts for Lstar analysis at 13 tev pp  with electron rejection:
+      case    AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV_test2 :      
+	// Set electron rejection cut - 3sigma TPC
+	iCutTPCNSigmaElectronRejection->SinglePIDRange(3.0);
+	
+
+      if (fPID==AliPID::kProton) {
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.15, 1.1);
+	}
+	if (fPID==AliPID::kKaon) {
+	//	iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.0, 0.6);
+	
+	iCutTPCNSigma->AddPIDRange(6.,0.15,0.3);
+	iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
+	iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+	}
+	
+	AddCut(fCutQuality);
+	AddCut(iCutTPCNSigmaElectronRejection);
+	AddCut(iCutTOFMatch);
+	AddCut(iCutTPCNSigma);
+	
+	// set TPC+TOF PID
+
+	iCutTPCTOFNSigma->SinglePIDRange(3.0);
 	iCutTOFNSigma->AddPIDRange(fNsigmaTOF, 0.0, 10);
 
 

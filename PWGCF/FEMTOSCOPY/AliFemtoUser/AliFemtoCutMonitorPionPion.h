@@ -111,7 +111,8 @@ namespace AliFemtoCutMonitorPionPion {
     TH2F *fYPt;
     TH2F *fPtPhi;
     TH2F *fEtaPhi;
-    TH2F *fChiTpcIts;
+    TH1F *fChi2Tpc;
+    //TH2F *fChiTpcIts;
     TH2F *fdEdX;
     TH2F *fImpact;
 

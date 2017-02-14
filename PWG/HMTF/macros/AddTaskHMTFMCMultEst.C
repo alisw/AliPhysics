@@ -4,20 +4,22 @@
 #include "AliAnalysisTaskHMTFMCMultEst.h"
 #endif
 
-AliAnalysisTaskHMTFMCMultEst *AddTaskHMTFMCMultEst(Int_t globalTrigger) {
+AliAnalysisTaskHMTFMCMultEst *AddTaskHMTFMCMultEst(Int_t globalTrigger, const std::string &name = "") {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskHMTFMCMultEst", "No analysis manager to connect to.");
     return NULL;
   }
   TString sumsName;
-  if (globalTrigger == 0)
+  if (name.size() != 0)
+    sumsName = name;
+  else if (globalTrigger == 0)
     sumsName = TString("SumsInel");
   else if (globalTrigger == 1)
     sumsName = TString("SumsInelGt0");
   else if (globalTrigger == 2)
     sumsName = TString("SumsV0AND");
-  
+
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer(sumsName,
 			 TList::Class(),

@@ -539,7 +539,7 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
       hME_Sideb[iPool][iBin] = GetCorrelHisto(kME,kSideb,iPool,iBin,thrMin,thrMax);
       if(fSubtractSoftPiME) {
         hME_Sign_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax,2); //2 = pick only bin2 of softpi axis (#5), i.e. pick the fake softpions
-        hME_Sideb_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSign,iPool,iBin,thrMin,thrMax,2);
+        hME_Sideb_SoftPi[iPool][iBin] = GetCorrelHisto(kME,kSideb,iPool,iBin,thrMin,thrMax,2);
       }
 
       //Scale bkg plots by ratio of signal region/sidebands
@@ -554,21 +554,45 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
 
       if(fDebug>=1) { 
 	TCanvas *c = new TCanvas(Form("cInput_%d_%d_%1.1fto%1.1f",iPool,iBin,thrMin,thrMax),Form("InputCorr_%s_pool%d_bin%d_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),iPool,iBin,thrMin,thrMax),100,100,1200,900);
-	c->Divide(2,2);
-	c->cd(1);
-	hSE_Sign[iPool][iBin]->SetMinimum(0);
-	hSE_Sign[iPool][iBin]->Draw("lego2");
-	c->cd(2);
-	hME_Sign[iPool][iBin]->SetMinimum(0);
-	hME_Sign[iPool][iBin]->Draw("lego2");
-	c->cd(3);
-	hSE_Sideb[iPool][iBin]->SetMinimum(0);
-	hSE_Sideb[iPool][iBin]->Draw("lego2");
-	c->cd(4);
-	hME_Sideb[iPool][iBin]->SetMinimum(0);
-	hME_Sideb[iPool][iBin]->Draw("lego2");
-	c->SaveAs(Form("Output_png/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f.png",fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax));
-	c->SaveAs(Form("Output_Root/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f.root",fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax));
+	if(fSubtractSoftPiME) {
+	  c->Divide(3,2);
+	  c->cd(1);
+	  hSE_Sign[iPool][iBin]->SetMinimum(0);
+	  hSE_Sign[iPool][iBin]->Draw("lego2");
+	  c->cd(2);
+	  hME_Sign[iPool][iBin]->SetMinimum(0);
+	  hME_Sign[iPool][iBin]->Draw("lego2");
+	  c->cd(3);
+	  hME_Sign_SoftPi[iPool][iBin]->SetMinimum(0);
+	  hME_Sign_SoftPi[iPool][iBin]->Draw("lego2");
+	  c->cd(4);
+	  hSE_Sideb[iPool][iBin]->SetMinimum(0);
+	  hSE_Sideb[iPool][iBin]->Draw("lego2");
+	  c->cd(5);
+	  hME_Sideb[iPool][iBin]->SetMinimum(0);
+	  hME_Sideb[iPool][iBin]->Draw("lego2");
+	  c->cd(6);
+	  hME_Sideb_SoftPi[iPool][iBin]->SetMinimum(0);
+	  hME_Sideb_SoftPi[iPool][iBin]->Draw("lego2");
+	  c->SaveAs(Form("Output_png/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f.png",fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax));
+	  c->SaveAs(Form("Output_Root/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f.root",fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax));
+	} else {
+	  c->Divide(2,2);
+	  c->cd(1);
+	  hSE_Sign[iPool][iBin]->SetMinimum(0);
+	  hSE_Sign[iPool][iBin]->Draw("lego2");
+  	  c->cd(2);
+	  hME_Sign[iPool][iBin]->SetMinimum(0);
+	  hME_Sign[iPool][iBin]->Draw("lego2");
+	  c->cd(3);
+	  hSE_Sideb[iPool][iBin]->SetMinimum(0);
+	  hSE_Sideb[iPool][iBin]->Draw("lego2");
+	  c->cd(4);
+	  hME_Sideb[iPool][iBin]->SetMinimum(0);
+	  hME_Sideb[iPool][iBin]->Draw("lego2");
+  	  c->SaveAs(Form("Output_png/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f.png",fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax));
+  	  c->SaveAs(Form("Output_Root/InputCorr_%s_Canvas_pool%d_pTbin%d_thr%1.1fto%1.1f.root",fDmesonLabel.Data(),iPool,fFirstpTbin+iBin,thrMin,thrMax));
+	}
       }
 
       if(iBin==0) {
@@ -736,12 +760,20 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
     c1D_Norm->SaveAs(Form("Output_Root/h1D_%s_Canvas_Normalized_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax));
   }
 
+
+  //Draw 1D plots (Signal region, not normalized)
+  TCanvas *cFinNotNorm = new TCanvas(Form("cFinNotNorm_%1.1fto%1.1f",thrMin,thrMax),Form("cFinNotNorm_%s_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1200,700);
+  SetHistoCorrStyle(h1D_Subtr);
+  h1D_Subtr->Draw(); 
+  cFinNotNorm->SaveAs(Form("Output_png/AzimCorrDistr_NotNorm_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Ntrig_%.3f.png",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,Snorm));
+  cFinNotNorm->SaveAs(Form("Output_Root/AzimCorrDistr_NotNorm_%s_Canvas_PtIntBins%dto%d_PoolInt_thr%1.1fto%1.1f_Ntrig_%.3f.root",fDmesonLabel.Data(),fFirstpTbin,fLastpTbin,thrMin,thrMax,Snorm));
+
   //Apply normalization to number of triggers
   h1D_SubtrNorm = (TH1D*)h1D_Subtr->Clone("h1D_SubtrNorm");
   h1D_SubtrNorm->Scale(1./Snorm);
   h1D_SubtrNorm->SetTitle("Signal region after sideb. subt. corr. - Normalized to # of triggers");  
 
-  //Draw 1D plots (Signal region, Sidebands, S-SB)
+  //Draw 1D plots (Signal region, normalized)
   TCanvas *cFinal = new TCanvas(Form("cFinal_%1.1fto%1.1f",thrMin,thrMax),Form("cFinal_%s_IntPools_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1200,700);
   SetHistoCorrStyle(h1D_SubtrNorm);
   h1D_SubtrNorm->Draw(); 

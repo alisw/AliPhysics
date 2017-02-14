@@ -881,7 +881,7 @@ Bool_t  AliCalorimeterUtils::GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdC
   Int_t sm = fEMCALGeo->GetSuperModuleNumber(absId);
 
   // Get first absId of SM
-  Int_t absIdSMMin = fEMCALGeo->GetAbsCellIdFromCellIndexes(sm,0,0)-1; // Check the shift!
+  Int_t absIdSMMin = fEMCALGeo->GetAbsCellIdFromCellIndexes(sm,0,1); // for absIds, first is in col 1, module/tower ordering map ...
 
   // Get reference n and correlated 3
   for(Int_t k = 0; k < 4; k++ )

@@ -35,13 +35,20 @@ fCutMinV0Lifetime(-2),
 fCutMaxV0Lifetime(1e+6),
 //Miscellaneous
 fCutProperLifetime(1000),
-fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fSwapBachCharge(kFALSE),
+fSwapBaryon(kFALSE),
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfClusters(70),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -83,13 +90,20 @@ fCutMinV0Lifetime(-2),
 fCutMaxV0Lifetime(1e+6),
 //Miscellaneous
 fCutProperLifetime(1000),
-fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fSwapBachCharge(kFALSE),
+fSwapBaryon(kFALSE),
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfClusters(70),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -133,13 +147,20 @@ fCutMinV0Lifetime(-2),
 fCutMaxV0Lifetime(1e+6),
 //Miscellaneous
 fCutProperLifetime(1000),
-fCutLeastNumberOfClusters(70),
 fCutTPCdEdx(4.0),
 fCutXiRejection(0.008),
 fCutMCPhysicalPrimary(kTRUE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
 fCutMCSelectBump(kFALSE),
+fSwapBachCharge(kFALSE),
+fSwapBaryon(kFALSE),
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfClusters(70),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
 fCutUseVariableCascCosPA(kFALSE),
 fCutVarCascCosPA_Exp0Const(0),
 fCutVarCascCosPA_Exp0Slope(0),
@@ -170,6 +191,69 @@ fCutVarV0CosPA_Const(1)
     fHisto->Sumw2();
 }
 //________________________________________________________________
+AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
+AliVWeakResult(name,title),
+fMassHypo(lMassHypo),
+//V0 Cuts
+fCutDCANegToPV(0.1),
+fCutDCAPosToPV(0.1),
+fCutDCAV0Daughters(1.0),
+fCutV0CosPA(0.998),
+fCutV0Radius(5.0),
+//Cascade Cuts
+fCutDCAV0ToPV(0.05),
+fCutV0Mass(0.010),
+fCutDCABachToPV(0.03),
+fCutDCACascDaughters(2.0),
+fCutCascCosPA(0.95),
+fCutCascRadius(0.4),
+fCutDCABachToBaryon(-1),
+fCutBachBaryonCosPA(+2),
+fCutMinV0Lifetime(-2),
+fCutMaxV0Lifetime(1e+6),
+//Miscellaneous
+fCutProperLifetime(1000),
+fCutTPCdEdx(4.0),
+fCutXiRejection(0.008),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE),
+fCutMCSelectBump(kFALSE),
+fSwapBachCharge(kFALSE),
+fSwapBaryon(kFALSE),
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfClusters(70),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
+fCutUseVariableCascCosPA(kFALSE),
+fCutVarCascCosPA_Exp0Const(0),
+fCutVarCascCosPA_Exp0Slope(0),
+fCutVarCascCosPA_Exp1Const(0),
+fCutVarCascCosPA_Exp1Slope(0),
+fCutVarCascCosPA_Const(1),
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
+{
+    //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
+    const Long_t lNMassBinsConst = lNMassBins;
+    
+    Double_t lMassWindow = (lMaxMass - lMinMass)/2.0 ;
+    Double_t lMassDelta = (lMassWindow * 2.) / lNMassBinsConst;
+    Double_t lMassBins[lNMassBinsConst+1];
+    
+    for( Long_t ibound = 0; ibound<lNMassBinsConst+1; ibound++) lMassBins[ibound] = lMinMass + ( ( (Double_t) ibound )*lMassDelta );
+    
+    //Main output histogram: Centrality, mass, transverse momentum: Variable binning
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNPtBins, lPtBins, lNMassBinsConst, lMassBins );
+    fHisto->Sumw2();
+}
+//________________________________________________________________
 AliCascadeResult::AliCascadeResult(const AliCascadeResult& lCopyMe, TString lNewName)
 : AliVWeakResult(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
@@ -192,7 +276,6 @@ fCutMinV0Lifetime(lCopyMe.fCutMinV0Lifetime),
 fCutMaxV0Lifetime(lCopyMe.fCutMaxV0Lifetime),
 //Miscellaneous
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
-fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutXiRejection(lCopyMe.fCutXiRejection),
 //MC specific
@@ -200,6 +283,17 @@ fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
 fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties),
 fCutMCSelectBump(lCopyMe.fCutMCSelectBump),
+//Rsn-like bg subtraction
+fSwapBachCharge(lCopyMe.fSwapBachCharge),
+fSwapBaryon(lCopyMe.fSwapBaryon),
+//Track selections
+fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
+fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
+fCutMinEtaTracks(lCopyMe.fCutMinEtaTracks),
+fCutMaxEtaTracks(lCopyMe.fCutMaxEtaTracks),
+fCutMaxChi2PerCluster(lCopyMe.fCutMaxChi2PerCluster),
+fCutMinTrackLength(lCopyMe.fCutMinTrackLength),
+
 fCutUseVariableCascCosPA(lCopyMe.fCutUseVariableCascCosPA),
 fCutVarCascCosPA_Exp0Const(lCopyMe.fCutVarCascCosPA_Exp0Const),
 fCutVarCascCosPA_Exp0Slope(lCopyMe.fCutVarCascCosPA_Exp0Slope),
@@ -249,7 +343,6 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     
     //Miscellaneous
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
-    fCutLeastNumberOfClusters = lCopyMe->GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
     fCutXiRejection = lCopyMe->GetCutXiRejection();
     
@@ -258,6 +351,18 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutMCPDGCodeAssociation = lCopyMe -> GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
     fCutMCSelectBump         = lCopyMe -> GetCutMCSelectBump();
+    
+    //Rsn-like bg subtraction (experimental)
+    fSwapBachCharge = lCopyMe -> GetSwapBachelorCharge();
+    fSwapBaryon     = lCopyMe -> GetSwapBaryon();
+    
+    //Track cuts
+    fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
+    fCutLeastNumberOfClusters= lCopyMe -> GetCutLeastNumberOfClusters();
+    fCutMinEtaTracks = lCopyMe -> GetCutMinEtaTracks();
+    fCutMaxEtaTracks = lCopyMe -> GetCutMaxEtaTracks();
+    fCutMaxChi2PerCluster = lCopyMe -> GetCutMaxChi2PerCluster();
+    fCutMinTrackLength = lCopyMe -> GetCutMinTrackLength();
     
     //Variable CascCosPA
     fCutUseVariableCascCosPA = lCopyMe -> GetCutUseVarCascCosPA();
@@ -318,7 +423,6 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     
     //Miscellaneous
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
-    fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
     fCutXiRejection = lCopyMe.GetCutXiRejection();
     
@@ -327,6 +431,18 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
     fCutMCSelectBump      = lCopyMe.GetCutMCSelectBump();
+    
+    //Rsn-like bg subtraction (experimental)
+    fSwapBachCharge = lCopyMe.GetSwapBachelorCharge();
+    fSwapBaryon     = lCopyMe.GetSwapBaryon();
+    
+    //Track cuts
+    fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
+    fCutLeastNumberOfClusters = lCopyMe.GetCutLeastNumberOfClusters();
+    fCutMinEtaTracks = lCopyMe.GetCutMinEtaTracks();
+    fCutMaxEtaTracks = lCopyMe.GetCutMaxEtaTracks();
+    fCutMaxChi2PerCluster = lCopyMe.GetCutMaxChi2PerCluster();
+    fCutMinTrackLength = lCopyMe.GetCutMinTrackLength();
     
     //Variable CascCosPA
     fCutUseVariableCascCosPA = lCopyMe.GetCutUseVarCascCosPA();
@@ -417,9 +533,16 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if( TMath::Abs( fCutMaxV0Lifetime - lCompareCascade->GetCutMaxV0Lifetime() ) > 1e-6 ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutProperLifetime - lCompareCascade->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfClusters - lCompareCascade->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompareCascade->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutXiRejection - lCompareCascade->GetCutXiRejection() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    //Track cuts
+    if( TMath::Abs( fCutLeastNumberOfClusters - lCompareCascade->GetCutLeastNumberOfClusters() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutUseITSRefitTracks - lCompareCascade->GetCutUseITSRefitTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinEtaTracks - lCompareCascade->GetCutMinEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxEtaTracks - lCompareCascade->GetCutMaxEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxChi2PerCluster - lCompareCascade->GetCutMaxChi2PerCluster() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinTrackLength - lCompareCascade->GetCutMinTrackLength() ) > 1e-6 ) lReturnValue = kFALSE;
     
     //Variable CascCosPA
     if ( TMath::Abs(fCutUseVariableCascCosPA - lCompareCascade->GetCutUseVarCascCosPA()) > 1e-6 ) lReturnValue = kFALSE;
@@ -490,21 +613,30 @@ void AliCascadeResult::Print()
     cout<<" Max V0 Lifetime....: "<<fCutMaxV0Lifetime<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
-    cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Xi Rej (for Omega).: "<<fCutXiRejection<<endl;
+    
+    cout<<" Use ITSref tracks..: "<<fCutUseITSRefitTracks<<endl;
+    cout<<" Nbr Clusters.......: "<<fCutLeastNumberOfClusters<<endl;
+    cout<<" Min track eta......: "<<fCutMinEtaTracks<<endl;
+    cout<<" Max track eta......: "<<fCutMaxEtaTracks<<endl;
+    cout<<" Max chi2/cluster...: "<<fCutMaxChi2PerCluster<<endl;
+    cout<<" Min Track Length...: "<<fCutMinTrackLength<<endl;
     
     cout<<" MC PDG Association.: "<<fCutMCPDGCodeAssociation<<endl;
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
     cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
     cout<<" MC Select bump.....: "<<fCutMCSelectBump<<endl;
+    
+    cout<<" Swap bach charge...: "<<fSwapBachCharge<<endl;
+    cout<<" Swap lam/lambar....: "<<fSwapBaryon<<endl; 
     cout<<"========================================"<<endl;
     return;
 }
 
 //________________________________________________________________
 Double_t AliCascadeResult::GetMass () const
-//Get Mass under expected hypothesis
+//Get Mass under expected hypothesis 
 //N.B. masses are rounded within 1MeV/c^2 just to simplify binning
 {
     Double_t lReturnValue = 0;

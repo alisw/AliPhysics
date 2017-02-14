@@ -71,6 +71,10 @@ fAlpha(0),
 fBkgSE(kTRUE),
 fBkgSEBothSide(kTRUE),
 fHistNEvents(0),
+fHistTrackCutsQA(0),
+f256Phi(0),
+f512Phi(0),
+f768Phi(0),
 fHistCent(0),
 fHistT1CorrTrack(0),
 fHistT2CorrTrack(0),
@@ -88,6 +92,7 @@ fControlConvResT1(0x0),
 fControlConvResT2(0x0),
 fControlConvResMT1(0x0),
 fControlConvResMT2(0x0),
+fEtaPhi(0),
 fEffCheck(0),
 fNoMixedEvents(0),
 fMixStatCentorMult(0),
@@ -130,6 +135,10 @@ fAlpha(0),
 fBkgSE(kTRUE),
 fBkgSEBothSide(kTRUE),
 fHistNEvents(0),
+fHistTrackCutsQA(0),
+f256Phi(0),
+f512Phi(0),
+f768Phi(0),
 fHistCent(0),
 fHistT1CorrTrack(0),
 fHistT2CorrTrack(0),
@@ -147,6 +156,7 @@ fControlConvResT1(0x0),
 fControlConvResT2(0x0),
 fControlConvResMT1(0x0),
 fControlConvResMT2(0x0),
+fEtaPhi(0),
 fEffCheck(0),
 fNoMixedEvents(0),
 fMixStatCentorMult(0),
@@ -193,6 +203,10 @@ fAlpha(source.fAlpha),
 fBkgSE(source.fBkgSE),
 fBkgSEBothSide(source.fBkgSEBothSide),
 fHistNEvents(source.fHistNEvents),
+fHistTrackCutsQA(source.fHistTrackCutsQA),
+f256Phi(source.f256Phi),
+f512Phi(source.f512Phi),
+f768Phi(source.f768Phi),
 fHistCent(source.fHistCent),
 fHistT1CorrTrack(source.fHistT1CorrTrack),
 fHistT2CorrTrack(source.fHistT2CorrTrack),
@@ -210,6 +224,7 @@ fControlConvResT1(source.fControlConvResT1),
 fControlConvResT2(source.fControlConvResT2),
 fControlConvResMT1(source.fControlConvResMT1),
 fControlConvResMT2(source.fControlConvResMT2),
+fEtaPhi(source.fEtaPhi),
 fEffCheck(source.fEffCheck),
 fNoMixedEvents(source.fNoMixedEvents),
 fMixStatCentorMult(source.fMixStatCentorMult),
@@ -229,7 +244,12 @@ AliAnalysisTaskDiJetCorrelationsAllb2b::~AliAnalysisTaskDiJetCorrelationsAllb2b(
     if(fOutputQA) {delete fOutputQA; fOutputQA = 0;}
     if(fOutputCorr) {delete fOutputCorr; fOutputCorr = 0;}
     if(fHistNEvents) {delete fHistNEvents; fHistNEvents = 0;}
+    if(fHistTrackCutsQA) {delete fHistTrackCutsQA; fHistTrackCutsQA = 0;}
+    if(f256Phi) {delete f256Phi; f256Phi = 0;}
+    if(f512Phi) {delete f512Phi; f512Phi = 0;}
+    if(f768Phi) {delete f768Phi; f768Phi = 0;}
     if(fHistCent) {delete fHistCent; fHistCent = 0;}
+    if(fEtaPhi) {delete fEtaPhi; fEtaPhi = 0;}
     if(fEffCheck){delete fEffCheck; fEffCheck = 0;}
     if(fThnEff) {delete fThnEff; fThnEff = 0;}
     if(fNoMixedEvents) {delete fNoMixedEvents; fNoMixedEvents = 0;}
@@ -272,6 +292,10 @@ AliAnalysisTaskDiJetCorrelationsAllb2b& AliAnalysisTaskDiJetCorrelationsAllb2b::
     fBkgSE = orig.fBkgSE;
     fBkgSEBothSide = orig.fBkgSEBothSide;
     fHistNEvents = orig.fHistNEvents;
+    fHistTrackCutsQA = orig.fHistTrackCutsQA;
+    f256Phi = orig.f256Phi;
+    f512Phi = orig.f512Phi;
+    f768Phi = orig.f768Phi;
     fHistCent = orig.fHistCent;
     fHistT1CorrTrack = orig.fHistT1CorrTrack;
     fHistT2CorrTrack = orig.fHistT2CorrTrack;
@@ -284,6 +308,7 @@ AliAnalysisTaskDiJetCorrelationsAllb2b& AliAnalysisTaskDiJetCorrelationsAllb2b::
     fMEMaxPoolEvent = orig.fMEMaxPoolEvent;
     fMEMinTracks = orig.fMEMinTracks;
     fMEMinEventToMix = orig.fMEMinEventToMix;
+    fEtaPhi = orig.fEtaPhi;
     fEffCheck = orig.fEffCheck;
     fNoMixedEvents = orig.fNoMixedEvents;
     fMixStatCentorMult = orig.fMixStatCentorMult;
@@ -307,21 +332,48 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::UserCreateOutputObjects()
     fOutputCorr->SetOwner();
     fOutputCorr->SetName("CorrelationsHistograms");
     
-    fHistNEvents = new TH1F("fHistNEvents", "number of events ", 10, -0.5, 9.5);
+    fHistNEvents = new TH1F("fHistNEvents", "number of events ", 3, 0, 3);
     fHistNEvents->GetXaxis()->SetBinLabel(1,"nEvents analyzed");
-    fHistNEvents->GetXaxis()->SetBinLabel(2,"Rejected due Null Vtx and B");
+    fHistNEvents->GetXaxis()->SetBinLabel(2,"zVtx > 10, good quality");
     fHistNEvents->GetXaxis()->SetBinLabel(3,"Within choosen centrality");
-    fHistNEvents->GetXaxis()->SetBinLabel(4,"With Good Vertex");
-    fHistNEvents->GetXaxis()->SetBinLabel(5,"With Good SPDVertex");
-    fHistNEvents->GetXaxis()->SetBinLabel(6,"nTrack all chosen");
-    fHistNEvents->GetXaxis()->SetBinLabel(7,"nTrack Trigger1");
-    fHistNEvents->GetXaxis()->SetBinLabel(8,"nTrack Trigger2");
-    fHistNEvents->GetXaxis()->SetBinLabel(9,"nEvents with T1");
-    fHistNEvents->GetXaxis()->SetBinLabel(10,"number of DiJet");
     fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
-    fHistNEvents->Sumw2();
+    //fHistNEvents->Sumw2();
     fHistNEvents->SetMinimum(0);
     fOutputQA->Add(fHistNEvents);
+    
+    fHistTrackCutsQA = new TH1F("fHistTrackCutsQA", "Track cuts ", 4, 0, 4);
+    fHistTrackCutsQA->GetXaxis()->SetBinLabel(1,"AllTracks");
+    fHistTrackCutsQA->GetXaxis()->SetBinLabel(2,"Filterbit");
+    fHistTrackCutsQA->GetXaxis()->SetBinLabel(3,"#eta");
+    fHistTrackCutsQA->GetXaxis()->SetBinLabel(4,"p_{T}");
+    fHistTrackCutsQA->GetXaxis()->SetNdivisions(1,kFALSE);
+   // fHistTrackCutsQA->Sumw2();
+    fHistTrackCutsQA->SetMinimum(0);
+    fOutputQA->Add(fHistTrackCutsQA);
+    
+
+    f256Phi = new TH1F("f256Phi", "f256Phi - phi distribution ",108, 0, 2*TMath::Pi());
+    
+    f256Phi->GetXaxis()->SetTitle("#phi");
+    f256Phi->Sumw2();
+    f256Phi->SetMinimum(0);
+    fOutputQA->Add(f256Phi);
+    
+    f512Phi = new TH1F("f512Phi", "f512Phi - phi distribution ",108, 0, 2*TMath::Pi());
+    
+    f512Phi->GetXaxis()->SetTitle("#phi");
+    f512Phi->Sumw2();
+    f512Phi->SetMinimum(0);
+    fOutputQA->Add(f512Phi);
+    
+    f768Phi = new TH1F("f768Phi", "f768Phi - phi distribution ",108, 0, 2*TMath::Pi());
+    
+    f768Phi->GetXaxis()->SetTitle("#phi");
+    f768Phi->Sumw2();
+    f768Phi->SetMinimum(0);
+    fOutputQA->Add(f768Phi);
+    
+
     
     if (fSetSystemValue) fHistCent = new TH1F("fHistCent", "centrality distribution", 100, 0, 100);
     
@@ -353,6 +405,9 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::UserCreateOutputObjects()
     
     fEffCheck = new TH1F("fEffCheck","eff values: for check",10, 0, 10.0);
     fOutputQA->Add(fEffCheck);
+    
+    fEtaPhi = new TH2F("fEtaPhi","#eta - #phi distribution",90,-1.8, 1.8,108, 0,2*TMath::Pi());
+    fOutputQA->Add(fEtaPhi);
     
     fNoMixedEvents = new TH1F("fNoMixedEvents","Mixed event stat",1, 0, 1) ;
     fOutputQA->Add(fNoMixedEvents);
@@ -440,6 +495,37 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
    if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
     Float_t bSign = 0;
     bSign = (aod->GetMagneticField() > 0) ? 1 : -1;
+  //  fHistNEvents->Fill(1);
+ 
+    
+    
+    //Require 1 vertex (no TPC stand-alone) with a minimum number of tracks and z-coordinate in a limited range
+    Double_t zVertex = 0;
+    
+    Int_t nVertex = aod->GetNumberOfVertices();
+    if( nVertex > 0 ) {
+        AliAODVertex* vertex = (AliAODVertex*)aod->GetPrimaryVertex();
+        Int_t nTracksPrim = vertex->GetNContributors();
+        zVertex = vertex->GetZ();
+        
+        // Reject TPC only vertex
+        TString name(vertex->GetName());
+        if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return;
+        
+        // Select a quality vertex by number of tracks?
+        if( nTracksPrim < 1 || TMath::Abs(zVertex) >= 10.0) {
+            return;
+        }
+        // TODO remove vertexer Z events with dispersion > 0.02: Doesn't work for AOD at present
+        //if (strcmp(vertex->GetTitle(), "AliVertexerZ") == 0 && vertex->GetDispersion() > 0.02)
+        //  return kFALSE;
+        
+    }
+    
+    
+    fHistQA[0]->Fill(zVertex);
+    //cout<<"zvertex:"<<zVertex<<endl;
+    
     fHistNEvents->Fill(1);
     
     
@@ -449,7 +535,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         centralityObj = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP();
         fCentrOrMult = centralityObj->GetCentralityPercentile("V0M");
         
-       
+        
         
         if (fCentrOrMult == 0)
             
@@ -487,38 +573,11 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
     
     fHistNEvents->Fill(2); //
     fHistCent->Fill(fCentrOrMult);
-  
+    
     
    
     
-    //Require 1 vertex (no TPC stand-alone) with a minimum number of tracks and z-coordinate in a limited range
-    Double_t zVertex = 0;
-    
-    Int_t nVertex = aod->GetNumberOfVertices();
-    if( nVertex > 0 ) {
-        AliAODVertex* vertex = (AliAODVertex*)aod->GetPrimaryVertex();
-        Int_t nTracksPrim = vertex->GetNContributors();
-        zVertex = vertex->GetZ();
-        
-        // Reject TPC only vertex
-        TString name(vertex->GetName());
-        if (name.CompareTo("PrimaryVertex") && name.CompareTo("SPDVertex"))return;
-        
-        // Select a quality vertex by number of tracks?
-        if( nTracksPrim < 1 || TMath::Abs(zVertex) >= 10.0) {
-            return;
-        }
-        // TODO remove vertexer Z events with dispersion > 0.02: Doesn't work for AOD at present
-        //if (strcmp(vertex->GetTitle(), "AliVertexerZ") == 0 && vertex->GetDispersion() > 0.02)
-        //  return kFALSE;
-        
-    }
-    
   
-    fHistQA[0]->Fill(zVertex);
-   // cout<<"zvertex:"<<zVertex<<endl;
-    
-    fHistNEvents->Fill(4);
     
     TObjArray* fTrackArray = new TObjArray;
     
@@ -565,12 +624,29 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         
         AliAODTrack* fAodTracks = (AliAODTrack*)aod->GetTrack(iTracks);
         if (!fAodTracks)continue;
-        
+        fHistTrackCutsQA->Fill(0);
+        if(fAodTracks->TestFilterBit(256)) {f256Phi->SetMarkerStyle(27);
+            f256Phi->SetMarkerColor(kRed);
+            f256Phi->Fill(fAodTracks->Phi());
+        }
+      
+        if(fAodTracks->TestFilterBit(512)) {f512Phi->SetMarkerStyle(30);
+            f512Phi->SetMarkerColor(kMagenta);
+            f512Phi->Fill(fAodTracks->Phi());
+        }
         if(fSetFilterBit) if (!fAodTracks->TestFilterBit(fbit)) continue;
-        if(fAodTracks->Eta() < -0.9 || fAodTracks->Eta() > 0.9)continue;
-        if (fAodTracks->Pt() < 0.5 || fAodTracks->Pt() > 20.)continue;
+        if(fAodTracks->TestFilterBit(fbit)) {f768Phi->SetMarkerStyle(24);
+            f768Phi->SetMarkerColor(kGreen);
+            f768Phi->Fill(fAodTracks->Phi());
+        }
         
-        fHistNEvents->Fill(5);
+        fHistTrackCutsQA->Fill(1);
+        if(fAodTracks->Eta() < -0.9 || fAodTracks->Eta() > 0.9)continue;
+        fHistTrackCutsQA->Fill(2);
+        if (fAodTracks->Pt() < 0.5 || fAodTracks->Pt() > 20.)continue;
+        fHistTrackCutsQA->Fill(3);
+        
+      //  fHistNEvents->Fill(5);
         fHistQA[1]->Fill(fAodTracks->GetTPCClusterInfo(2,1));
         fHistQA[3]->Fill(fAodTracks->DCA());
         fHistQA[4]->Fill(fAodTracks->ZAtDCA());
@@ -578,7 +654,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         fHistQA[6]->Fill(fAodTracks->Pt());
         fHistQA[7]->Fill(fAodTracks->Phi());
         fHistQA[8]->Fill(fAodTracks->Eta());
-        
+        fEtaPhi->Fill(fAodTracks->Eta(), fAodTracks->Phi());
         
         if(fRecoOrMontecarlo){ // reconstruction of data and MC
             if(fReadMC){
@@ -595,11 +671,11 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
             }else
                 fTrackArray->Add(fAodTracks); //Storing all tracks for Data
         }
-        fHistNEvents->Fill(6);
+        //fHistNEvents->Fill(6);
     }
     
-    fHistNEvents->Fill(8);
-    
+   // fHistNEvents->Fill(8);
+ 
     for(Int_t entryT1=0; entryT1<fTrackArray->GetEntries(); entryT1++){
         
         TObject* obj = fTrackArray->At(entryT1);
@@ -616,7 +692,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                 AliAODTrack* fAodTracksT2 = (AliAODTrack*)obj1;
                 if(fAodTracksT2->Pt() >= fTrigger2pTLowThr && fAodTracksT2->Pt() <= fTrigger2pTHighThr){
                     
-                    fHistNEvents->Fill(9);
+                    //fHistNEvents->Fill(9);
                     Double_t TrigDPhi12 =  AssignCorrectPhiRange(fAodTracksT1->Phi()-fAodTracksT2->Phi());
                     
                     //check if trigger particles have a delta phi = pi +/- alpha
@@ -641,14 +717,21 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
                         
                     }
                     
-                    fHistTrigDPhi->Fill(TrigDPhi12);
-                    if(ftwoplus1){
+                    
+                    if(ftwoplus1 && !fBkgSE && TMath::Abs(TrigDPhi12)>(fAlpha)) continue;
+                       
+                       
+                    
+                    if(ftwoplus1 && fBkgSE){
                         
                         if(!fBkgSEBothSide && TMath::Abs(TrigDPhi12)>(fAlpha)) continue;
                         if(fBkgSEBothSide && TMath::Abs(TrigDPhi12)>(fAlpha/2)) continue;
                     
                     }
                     
+                    fHistTrigDPhi->Fill(TrigDPhi12);
+                    
+                 
                     
                     Double_t effvalueT1 = GetTrackWeight( fAodTracksT1->Eta(), fAodTracksT1->Pt(),fCentrOrMult, zVertex);
                     Double_t effvalueT2 = GetTrackWeight( fAodTracksT2->Eta(), fAodTracksT2->Pt(), fCentrOrMult, zVertex);
@@ -761,7 +844,7 @@ void  AliAnalysisTaskDiJetCorrelationsAllb2b::UserExec(Option_t *)
         
         
     }
-    
+   
 }
 
 //_____________________|Terminate
@@ -877,15 +960,15 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::DefineHistoNames(){
     
     Double_t Pi = TMath::Pi();
     //QA histograms
-    fHistQA[0] = new TH1F("fHistZVtx", "Z vertex distribution", 10, -10., 10.);
-    fHistQA[1] = new TH1F("fHistnTPCCluster", "n TPC Cluster", 10, 0., 200.);
-    fHistQA[2] = new TH1F("fHistnTPCClusterF", "n TPC Cluster findable", 10, 0., 200.);
-    fHistQA[3] = new TH1F("fHistDCAXY", "dca-XY", 10, -5., 5.);
-    fHistQA[4] = new TH1F("fHistDCAZ", "dca-Z", 10, -5., 5.);
-    fHistQA[5] = new TH1F("fHistChi2TPC", "Chi2 TPC", 10, 0., 10.);
-    fHistQA[6] = new TH1F("fHistpT", "pT distribution",100,0.,20.);
-    fHistQA[7] = new TH1F("fHistPhi", "Phi distribution" , 10, -0.5, 2*Pi+0.5);
-    fHistQA[8] = new TH1F("fHistEta", "Eta distribution" , 10, -2, 2);
+    fHistQA[0] = new TH1F("fHistZVtx", "Z vertex distribution", 1000, -10., 10.);
+    fHistQA[1] = new TH1F("fHistnTPCCluster", "n TPC Cluster", 200, 0., 200.);
+    fHistQA[2] = new TH1F("fHistnTPCClusterF", "n TPC Cluster findable", 200, 0., 200.);
+    fHistQA[3] = new TH1F("fHistDCAXY", "dca-XY", 1000, -3., 3.);
+    fHistQA[4] = new TH1F("fHistDCAZ", "dca-Z", 1000, -3., 3.);
+    fHistQA[5] = new TH1F("fHistChi2TPC", "Chi2 TPC", 100, 0., 10.);
+    fHistQA[6] = new TH1F("fHistpT", "pT distribution",1000,0.,20.);
+    fHistQA[7] = new TH1F("fHistPhi", "Phi distribution" , 108, 0,2*TMath::Pi());
+    fHistQA[8] = new TH1F("fHistEta", "Eta distribution" , 200, -2, 2);
     
     for( Int_t i = 0; i < 9; i++)
     {
@@ -990,9 +1073,13 @@ void AliAnalysisTaskDiJetCorrelationsAllb2b::DefineHistoNames(){
     
     //Catgry2: Correlations Plots for SE and ME (T1, T2)
     //const Int_t pTAssoBin = Int_t(fTrigger1pTHighThr-0.5)*4;
-    Int_t    fBinsTrgCorr[5] = {nBinsCentorMult,    10,   18,               36,   10};
+   /* Int_t    fBinsTrgCorr[5] = {nBinsCentorMult,    10,   18,               36,   10};
     Double_t  fMinTrgCorr[5] = {fMinCentorMult,  -10.0, -1.8, -0.5*TMath::Pi(),  0.5};
-    Double_t  fMaxTrgCorr[5] = {fMaxCentorMult,   10.0,  1.8,  1.5*TMath::Pi(),   10};
+    Double_t  fMaxTrgCorr[5] = {fMaxCentorMult,   10.0,  1.8,  1.5*TMath::Pi(),   10};*/
+    
+    Int_t    fBinsTrgCorr[5] = {nBinsCentorMult,    10,   17,               36,   10};
+    Double_t  fMinTrgCorr[5] = {fMinCentorMult,  -10.0, -1.7, -0.5*TMath::Pi(),  0.5};
+    Double_t  fMaxTrgCorr[5] = {fMaxCentorMult,   10.0,  1.7,  1.5*TMath::Pi(),   10};
     THnTrig1CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg1CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta1-DPhi1-T1-T2-Trk",5, fBinsTrgCorr, fMinTrgCorr, fMaxTrgCorr);
     if(ftwoplus1) THnTrig2CentZvtxDEtaDPhi   = new THnSparseD(nameThnTrg2CentZvtxDEtaDPhi.Data(),"Cent-zVtx-DEta2-DPhi2-T1-T2-Trk",5, fBinsTrgCorr, fMinTrgCorr, fMaxTrgCorr);
     

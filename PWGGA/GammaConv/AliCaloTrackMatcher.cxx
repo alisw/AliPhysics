@@ -165,7 +165,7 @@ void AliCaloTrackMatcher::Initialize(Int_t runNumber){
   fSecMap_TrID_ClID_AlreadyTried.clear();
 
   if(fRunNumber == -1 || fRunNumber != runNumber){
-    if(fClusterType == 1){
+    if(fClusterType == 1 || fClusterType == 3){
       fGeomEMCAL = AliEMCALGeometry::GetInstanceFromRunNumber(runNumber);
       if(!fGeomEMCAL){ AliFatal("EMCal geometry not initialized!");}
     }else if(fClusterType == 2){
@@ -183,8 +183,8 @@ void AliCaloTrackMatcher::UserExec(Option_t *){
 
   //DebugV0Matching();
 
-  // do processing only for EMCal (1) or PHOS (2) clusters, otherwise do nothing
-  if(fClusterType == 1 || fClusterType == 2){
+  // do processing only for EMCal (1), DCal (3) or PHOS (2) clusters, otherwise do nothing
+  if(fClusterType == 1 || fClusterType == 2 || fClusterType == 3){
     Initialize(fInputEvent->GetRunNumber());
     ProcessEvent(fInputEvent);
   }
@@ -198,7 +198,7 @@ void AliCaloTrackMatcher::UserExec(Option_t *){
 void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
   Int_t nClus = event->GetNumberOfCaloClusters();
   Int_t nModules = 0;
-  if(fClusterType == 1) nModules = fGeomEMCAL->GetNumberOfSuperModules();
+  if(fClusterType == 1 || fClusterType == 3) nModules = fGeomEMCAL->GetNumberOfSuperModules();
   else if(fClusterType == 2) nModules = fGeomPHOS->GetNModules();
 
   AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(event);
@@ -241,7 +241,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     Float_t eta, phi, pt;
 
     //propagate tracks to emc surfaces
-    if(fClusterType == 1){
+    if(fClusterType == 1 || fClusterType == 3){
       if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 440., 0.139, 20., eta, phi, pt)) {
         delete trackParam;
         fHistControlMatches->Fill(2.,inTrack->Pt());
@@ -254,11 +254,25 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
         continue;
       }
       // Save some time and memory in case of no DCal present
-      if( nModules < 13 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())){
+      if( fClusterType == 1 && nModules < 13 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())){
         delete trackParam;
         fHistControlMatches->Fill(3.,inTrack->Pt());
         continue;
       }
+      // Save some time and memory in case of run2
+      if( nModules > 12 ){
+        if (fClusterType == 3 && ( phi < 250*TMath::DegToRad() || phi > 340*TMath::DegToRad())){
+          delete trackParam;
+	  fHistControlMatches->Fill(3.,inTrack->Pt());
+          continue;
+        } 
+        if( fClusterType == 1 && ( phi < 70*TMath::DegToRad() || phi > 190*TMath::DegToRad())){
+          delete trackParam;
+          fHistControlMatches->Fill(3.,inTrack->Pt());
+          continue;
+        }
+      }
+
     }else if(fClusterType == 2){
       if( !AliTrackerBase::PropagateTrackToBxByBz(&emcParam, 460., 0.139, 20, kTRUE, 0.8, -1)){
         delete trackParam;
@@ -288,7 +302,7 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       Double_t clusterR = TMath::Sqrt( clsPos[0]*clsPos[0] + clsPos[1]*clsPos[1] );
 
       AliExternalTrackParam trackParamTmp(emcParam);//Retrieve the starting point every time before the extrapolation
-      if(fClusterType == 1){
+      if(fClusterType == 1 || fClusterType == 3){
         if (!cluster->IsEMCAL()) continue;
         if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trackParamTmp, cluster, 0.139, 5., dEta, dPhi)){fHistControlMatches->Fill(4.,inTrack->Pt()); continue;}
       }else if(fClusterType == 2){
@@ -344,7 +358,7 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
 //cout << "running matching! - " << inSecTrack->GetID() << "/" << cluster->GetID() << endl;
   //if match has not yet been computed, go on:
   Int_t nModules = 0;
-  if(fClusterType == 1) nModules = fGeomEMCAL->GetNumberOfSuperModules();
+  if(fClusterType == 1 || fClusterType == 3) nModules = fGeomEMCAL->GetNumberOfSuperModules();
   else if(fClusterType == 2) nModules = fGeomPHOS->GetNModules();
 
   AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(event);

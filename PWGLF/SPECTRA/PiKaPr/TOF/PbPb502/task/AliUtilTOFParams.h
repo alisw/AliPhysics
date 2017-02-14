@@ -90,6 +90,7 @@ namespace AliUtilTOFParams {
   const Double_t MultBin[nMultBin] = { 0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100};
   const TString MultBinString[nMultBin] = { "0to5", "5to10", "10to20", "20to30", "30to40", "40to50", "50to60", "60to70", "70to80", "80to90", "90to100", "MB"};
   const TString MultBinStringInSquare[nMultBin] = { "[0-5]%", "[5-10]%", "[10-20]%", "[20-30]%", "[30-40]%", "[40-50]%", "[50-60]%", "[60-70]%", "[70-80]%", "[80-90]%", "[90-100]%", "MB"};
+  const TString MultBinStringDash[nMultBin] = { "0-5%", "5-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%", "MB"};
   // const Int_t multcolor[nMultBin] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1};//Blue Central
   const Int_t multcolor[nMultBin] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1};//Red Central
   const Int_t multdraw[nMultBin] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -138,11 +139,6 @@ namespace AliUtilTOFParams {
   const TString CutVarsName[nCutVars + 1] = {"TPCRows_60", "TPCRows_80", "TrkChi2_5", "TrkChi2_3", "DCAz_3", "DCAz_1", "DCAxy_10", "DCAxy_11", "DCAxy_09", "DCAxy_0", "GeoCut_0", "GeoCut_1", ""};
   const TString CutVarsTitle[nCutVars + 1] = {"TPCRows 60", "TPCRows 80", "Chi2 5", "Chi2 3", "DCAz 3", "DCAz 1", "DCAxy x10", "DCAxy x0.9", "DCAxy x1.1", "DCAxy x0.1", "GeoCut 0", "GeoCut 1", "Std"};
   const TString primfunct = "0.0105+0.0350/pt^1.1";//Standard pt dependence of the DCAxy cut
-  
-  //Corrections
-  const Bool_t truematch = kTRUE;//Use the matching efficiency with the true match
-  const Int_t nCorr = 3;//Number of corrections applied to the final spectra
-  const TString CorrName[nCorr] = {truematch ? "T_Matching" : "Matching", "Tracking", "Primaries"};
   
   const UInt_t nMCs_Hi = 2;//Number of different MC productions for PbPb
   const UInt_t nMCs_pp = 2;//Number of different MC productions for pp

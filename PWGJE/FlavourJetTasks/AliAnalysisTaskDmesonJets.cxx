@@ -23,6 +23,7 @@
 #include <TMath.h>
 #include <THashList.h>
 #include <TFile.h>
+#include <TRandom3.h>
 
 // Aliroot general
 #include "AliLog.h"
@@ -287,7 +288,8 @@ AliAnalysisTaskDmesonJets::AliJetInfoSummary::AliJetInfoSummary(const AliDmesonJ
   fEta(0),
   fPhi(0),
   fR(0),
-  fZ(0)
+  fZ(0),
+  fN(0)
 {
   Set(source, n);
 }
@@ -300,6 +302,7 @@ void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Reset()
   fPhi = 0;
   fR = 0;
   fZ = 0;
+  fN = 0;
 }
 
 /// Set the current object using an instance of AliDmesonJetInfo as its source
@@ -316,6 +319,7 @@ void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Set(const AliDmesonJetInfo& s
   fPhi = (*it).second.Phi_0_2pi();
   fR = source.GetDistance(n);
   fZ = source.GetZ(n);
+  fN = (*it).second.GetNConstituents();
 }
 
 /// Set the current object using an instance of AliJetInfo as its source
@@ -326,6 +330,7 @@ void AliAnalysisTaskDmesonJets::AliJetInfoSummary::Set(const AliJetInfo& source)
   fPt = source.Pt();
   fEta = source.Eta();
   fPhi = source.Phi_0_2pi();
+  fN = source.GetNConstituents();
   fR = 0;
   fZ = 0;
 }
@@ -671,6 +676,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine() :
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fRandomGen(0),
+  fTrackEfficiency(0),
   fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
@@ -713,6 +720,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(ECandidateType_t type,
   fJetDefinitions(),
   fPtBinWidth(0.5),
   fMaxPt(100),
+  fRandomGen(0),
+  fTrackEfficiency(0),
   fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
@@ -752,6 +761,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine::AnalysisEngine(const AliAnalysisTaskD
   fJetDefinitions(source.fJetDefinitions),
   fPtBinWidth(source.fPtBinWidth),
   fMaxPt(source.fMaxPt),
+  fRandomGen(source.fRandomGen),
+  fTrackEfficiency(source.fTrackEfficiency),
   fDataSlotNumber(-1),
   fTree(0),
   fCurrentDmesonJetInfo(0),
@@ -818,6 +829,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsD0toKpi();
       fRDHFCuts->SetStandardCutsPP2010();
+      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
       fRDHFCuts->SetUsePhysicsSelection(kFALSE);
       fRDHFCuts->SetTriggerClass("","");
     }
@@ -834,6 +846,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsD0toKpi();
       fRDHFCuts->SetStandardCutsPP2010();
+      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
       fRDHFCuts->SetUsePhysicsSelection(kFALSE);
       fRDHFCuts->SetTriggerClass("","");
     }
@@ -852,6 +865,7 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::SetCandidateProperties(Double_t 
     if (!fRDHFCuts) {
       fRDHFCuts = new AliRDHFCutsDStartoKpipi();
       fRDHFCuts->SetStandardCutsPP2010();
+      fRDHFCuts->GetPidHF()->SetOldPid(kFALSE);
       fRDHFCuts->SetUsePhysicsSelection(kFALSE);
       fRDHFCuts->SetTriggerClass("","");
     }
@@ -911,6 +925,9 @@ const char* AliAnalysisTaskDmesonJets::AnalysisEngine::GetName() const
     break;
   case kMCTruth:
     name += "_MCTruth";
+    break;
+  case kWrongPID:
+    name += "_WrongPID";
     break;
   default:
     break;
@@ -1039,7 +1056,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
   // If the analysis require knowledge of the MC truth, look for generated D meson matched to reconstructed candidate
   // Checks also the origin, and if it matches the rejected origin mask, return false
-  if (fMCMode == kBackgroundOnly || fMCMode == kSignalOnly) {
+  if (fMCMode == kBackgroundOnly || fMCMode == kSignalOnly || fMCMode == kWrongPID) {
     Int_t mcLab = Dcand->MatchToMC(fCandidatePDG, fMCContainer->GetArray(), fNDaughters, fPDGdaughters.GetArray());
     DmesonJet.fMCLabel = mcLab;
 
@@ -1063,7 +1080,8 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
     if (fMCMode == kNoMC ||
         (MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) ||
-        (MCtruthPdgCode != fCandidatePDG && fMCMode == kBackgroundOnly)) {
+        (MCtruthPdgCode != fCandidatePDG && fMCMode == kBackgroundOnly) ||
+        (MCtruthPdgCode == -fCandidatePDG && fMCMode == kWrongPID)) {
       // both background and signal are requested OR (it is a true D0 AND signal is requested) OR (it is NOT a D0 and background is requested)
       AliDebug(10,"Selected as D0");
       invMassD = Dcand->InvMassD0();
@@ -1077,7 +1095,8 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
     if (fMCMode == kNoMC ||
         (MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) ||
-        (MCtruthPdgCode != -fCandidatePDG && fMCMode == kBackgroundOnly)) {
+        (MCtruthPdgCode != -fCandidatePDG && fMCMode == kBackgroundOnly) ||
+        (MCtruthPdgCode == fCandidatePDG && fMCMode == kWrongPID)) {
       // both background and signal are requested OR (it is a true D0bar AND signal is requested) OR (it is NOT a D0bar and background is requested)
       AliDebug(10,"Selected as D0bar");
       invMassD = Dcand->InvMassD0bar();
@@ -1091,13 +1110,13 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::ExtractD0Attributes(const AliA
 
     // Accept the correct mass hypothesis for signal-only and the wrong one for background-only
     if ((MCtruthPdgCode == fCandidatePDG && fMCMode == kSignalOnly) ||
-        (MCtruthPdgCode == -fCandidatePDG && fMCMode == kBackgroundOnly)) {
+        (MCtruthPdgCode == -fCandidatePDG && (fMCMode == kBackgroundOnly || fMCMode == kWrongPID))) {
       if (i != 0) return kFALSE;
       AliDebug(10, "MC truth is D0");
       invMassD = Dcand->InvMassD0();
     }
     else if ((MCtruthPdgCode == -fCandidatePDG && fMCMode == kSignalOnly) ||
-             (MCtruthPdgCode == fCandidatePDG && fMCMode == kBackgroundOnly)) {
+             (MCtruthPdgCode == fCandidatePDG && (fMCMode == kBackgroundOnly || fMCMode == kWrongPID))) {
       if (i != 1) return kFALSE;
       AliDebug(10, "MC truth is D0bar");
       invMassD = Dcand->InvMassD0bar();
@@ -1469,7 +1488,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
   if (fTrackContainer && jetDef.fJetType != AliJetContainer::kNeutralJet) {
     fTrackContainer->SetDMesonCandidate(Dcand);
     hname = TString::Format("%s/%s/fHistTrackRejectionReason", GetName(), jetDef.GetName());
-    AddInputVectors(fTrackContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)));
+    AddInputVectors(fTrackContainer, 100, static_cast<TH2*>(fHistManager->FindObject(hname)), fTrackEfficiency);
 
     hname = TString::Format("%s/%s/fHistDMesonDaughterNotInJet", GetName(), jetDef.GetName());
     TH1* histDaughterNotInJet = static_cast<TH1*>(fHistManager->FindObject(hname));
@@ -1529,7 +1548,7 @@ Bool_t AliAnalysisTaskDmesonJets::AnalysisEngine::FindJet(AliAODRecoDecayHF2Pron
 /// Adds all the particles contained in the container into the fastjet wrapper
 ///
 /// \param cont Pointer to a valid AliEmcalContainer object
-void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist)
+void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContainer* cont, Int_t offset, TH2* rejectHist, Double_t eff)
 {
   auto itcont = cont->all_momentum();
   for (AliEmcalIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
@@ -1537,6 +1556,13 @@ void AliAnalysisTaskDmesonJets::AnalysisEngine::AddInputVectors(AliEmcalContaine
     if (!cont->AcceptObject(it.current_index(), rejectionReason)) {
       if (rejectHist) rejectHist->Fill(AliEmcalContainer::GetRejectionReasonBitPosition(rejectionReason), it->first.Pt());
       continue;
+    }
+    if (fRandomGen && eff > 0 && eff < 1) {
+      Double_t rnd = fRandomGen->Rndm();
+      if (eff < rnd) {
+        if (rejectHist) rejectHist->Fill(6, it->first.Pt());
+        continue;
+      }
     }
     Int_t uid = offset >= 0 ? it.current_index() + offset: -it.current_index() - offset;
     fFastJetWrapper->AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
@@ -2120,6 +2146,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets() :
   fHistManager(),
   fApplyKinematicCuts(kTRUE),
   fNOutputTrees(0),
+  fTrackEfficiency(0),
   fAodEvent(0),
   fFastJetWrapper(0),
   fMCContainer(0)
@@ -2138,6 +2165,7 @@ AliAnalysisTaskDmesonJets::AliAnalysisTaskDmesonJets(const char* name, Int_t nOu
   fHistManager(name),
   fApplyKinematicCuts(kTRUE),
   fNOutputTrees(nOutputTrees),
+  fTrackEfficiency(0),
   fAodEvent(0),
   fFastJetWrapper(0),
   fMCContainer(0)
@@ -2237,8 +2265,8 @@ AliAnalysisTaskDmesonJets::AnalysisEngine* AliAnalysisTaskDmesonJets::AddAnalysi
     ::Info("AliAnalysisTaskDmesonJets::AddAnalysisEngine", "An analysis engine '%s' with %lu jet definitions has been found. The total number of analysis engines is %lu. A new jet definition '%s' is being added.", found_eng->GetName(), found_eng->fJetDefinitions.size(), fAnalysisEngines.size(), jetDef.GetName());
     found_eng->AddJetDefinition(jetDef);
 
-    if (cuts && found_eng->fRDHFCuts != 0) {
-      ::Warning("AliAnalysisTaskDmesonJets::AddAnalysisEngine", "D meson cuts were already defined for this D meson type. They will be overwritten.");
+    if (cuts) {
+      if (found_eng->fRDHFCuts != 0) ::Warning("AliAnalysisTaskDmesonJets::AddAnalysisEngine", "D meson cuts were already defined for this D meson type. They will be overwritten.");
       found_eng->SetRDHFCuts(cuts);
     }
   }
@@ -2496,10 +2524,16 @@ void AliAnalysisTaskDmesonJets::ExecOnce()
   fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(0));
   if (!fMCContainer) fMCContainer = dynamic_cast<AliHFAODMCParticleContainer*>(GetParticleContainer(1));
 
+  TRandom* rnd = 0;
+  if (fTrackEfficiency > 0 && fTrackEfficiency < 1) rnd = new TRandom3(0);
+
   for (auto &params : fAnalysisEngines) {
 
     params.fAodEvent = fAodEvent;
     params.fFastJetWrapper = fFastJetWrapper;
+    params.fTrackEfficiency = fTrackEfficiency;
+    params.fRandomGen = rnd;
+
     if (fAodEvent) params.Init(fGeom, fAodEvent->GetRunNumber());
 
     if (params.fMCMode != kMCTruth && fAodEvent) {
@@ -2880,7 +2914,6 @@ AliAnalysisTaskDmesonJets* AliAnalysisTaskDmesonJets::AddTaskDmesonJets(TString 
   }
 
   AliAnalysisTaskDmesonJets* jetTask = new AliAnalysisTaskDmesonJets(name, nMaxTrees);
-  jetTask->SetVzRange(-10,10);
 
   if (!ntracks.IsNull()) {
     AliHFTrackContainer* trackCont = new AliHFTrackContainer(ntracks);

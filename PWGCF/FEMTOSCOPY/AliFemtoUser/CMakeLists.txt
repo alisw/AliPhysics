@@ -50,6 +50,7 @@ set(SRCS
   AliFemtoModelCorrFctn3DSpherical.cxx
   AliFemtoModelCorrFctn3DLCMSSpherical.cxx
   AliFemtoModelCorrFctnDEtaDPhi.cxx
+  AliFemtoModelCorrFctnDEtaDPhiStar.cxx
   AliFemtoCorrFctnDEtaDPhiWithWeights.cxx
   AliFemtoQinvCorrFctnWithWeights.cxx
   AliFemtoModelCorrFctnDEtaDPhiWithWeights.cxx

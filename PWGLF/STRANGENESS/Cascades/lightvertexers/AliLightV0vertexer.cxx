@@ -128,7 +128,12 @@ Int_t AliLightV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
             if (TMath::Abs(pt.Eta())>fMaxEta) continue;
             
             AliESDv0 vertex(nt,nidx,pt,pidx);
-            if (vertex.GetChi2V0() > fChi2max) continue;
+            
+            //Experimental: refit V0 if asked to do so 
+            if( fkDoRefit ) vertex.Refit();
+            
+            //No selection: it was not previously applied, don't  apply now. 
+            //if (vertex.GetChi2V0() > fChi2max) continue;
             
             Double_t x=vertex.Xv(), y=vertex.Yv();
             Double_t r2=x*x + y*y;

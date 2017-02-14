@@ -22,8 +22,6 @@ fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
 fCutV0CosPA(0.998),
 fCutProperLifetime(10),
-fCutLeastNumberOfCrossedRows(70),
-fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
@@ -32,7 +30,20 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
-fHistoFeeddown(0)
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfCrossedRows(70),
+fCutLeastNumberOfCrossedRowsOverFindable(0.8),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
+fHistoFeeddown(0),
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Dummy Constructor - not to be used! 
     //Main output histogram: Centrality, mass, transverse momentum
@@ -51,8 +62,6 @@ fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
 fCutV0CosPA(0.998),
 fCutProperLifetime(10),
-fCutLeastNumberOfCrossedRows(70),
-fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
@@ -61,7 +70,20 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
-fHistoFeeddown(0) //do not initialize by default
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfCrossedRows(70),
+fCutLeastNumberOfCrossedRowsOverFindable(0.8),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
+fHistoFeeddown(0), //do not initialize by default
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -87,8 +109,6 @@ fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
 fCutV0CosPA(0.998),
 fCutProperLifetime(10),
-fCutLeastNumberOfCrossedRows(70),
-fCutLeastNumberOfCrossedRowsOverFindable(0.8),
 fCutCompetingV0Rejection(-1),
 fCutArmenteros(kTRUE),
 fCutTPCdEdx(3.0),
@@ -97,7 +117,20 @@ fCutMCPhysicalPrimary(kTRUE),
 fCutMCLambdaFromPrimaryXi(kFALSE),
 fCutMCPDGCodeAssociation(kTRUE),
 fCutMCUseMCProperties(kTRUE),
-fHistoFeeddown(0) //do not initialize by default
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfCrossedRows(70),
+fCutLeastNumberOfCrossedRowsOverFindable(0.8),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
+fHistoFeeddown(0), //do not initialize by default
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -119,6 +152,53 @@ fHistoFeeddown(0) //do not initialize by default
     fHisto->Sumw2();
 }
 //________________________________________________________________
+AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
+AliVWeakResult(name,title),
+fMassHypo(lMassHypo),
+fCutV0Radius(5.0),
+fCutDCANegToPV(0.1),
+fCutDCAPosToPV(0.1),
+fCutDCAV0Daughters(1.0),
+fCutV0CosPA(0.998),
+fCutProperLifetime(10),
+fCutCompetingV0Rejection(-1),
+fCutArmenteros(kTRUE),
+fCutTPCdEdx(3.0),
+fCutMinBaryonMomentum(-1),
+fCutMCPhysicalPrimary(kTRUE),
+fCutMCLambdaFromPrimaryXi(kFALSE),
+fCutMCPDGCodeAssociation(kTRUE),
+fCutMCUseMCProperties(kTRUE),
+fCutUseITSRefitTracks(kFALSE),
+fCutLeastNumberOfCrossedRows(70),
+fCutLeastNumberOfCrossedRowsOverFindable(0.8),
+fCutMinEtaTracks(-0.8),
+fCutMaxEtaTracks(+0.8),
+fCutMaxChi2PerCluster(1e+5),
+fCutMinTrackLength(-1),
+fHistoFeeddown(0), //do not initialize by default
+fCutUseVariableV0CosPA(kFALSE),
+fCutVarV0CosPA_Exp0Const(0),
+fCutVarV0CosPA_Exp0Slope(0),
+fCutVarV0CosPA_Exp1Const(0),
+fCutVarV0CosPA_Exp1Slope(0),
+fCutVarV0CosPA_Const(1)
+{
+    // Constructor
+    Double_t lMassWindow = (lMaxMass-lMinMass)/2.0 ;
+    
+    //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
+    const Long_t lNMassBinsConst = lNMassBins;
+    Double_t lMassDelta = (lMassWindow * 2.) / lNMassBins;
+    Double_t lMassBins[lNMassBinsConst+1];
+    
+    for( Long_t ibound = 0; ibound<lNMassBinsConst+1; ibound++) lMassBins[ibound] = lMinMass + ( ( (Double_t) ibound )*lMassDelta );
+    
+    //Main output histogram: Centrality, mass, transverse momentum
+    fHisto = new TH3F(Form("fHisto_%s",GetName()),"", lNCentBins, lCentBins, lNPtBins, lPtBins, lNMassBins, lMassBins );
+    fHisto->Sumw2();
+}
+//________________________________________________________________
 AliV0Result::AliV0Result(const AliV0Result& lCopyMe, TString lNewName)
 : AliVWeakResult(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
@@ -128,15 +208,28 @@ fCutDCAPosToPV(lCopyMe.fCutDCAPosToPV),
 fCutDCAV0Daughters(lCopyMe.fCutDCAV0Daughters),
 fCutV0CosPA(lCopyMe.fCutV0CosPA),
 fCutProperLifetime(lCopyMe.fCutProperLifetime),
-fCutLeastNumberOfCrossedRows(lCopyMe.fCutLeastNumberOfCrossedRows),
-fCutLeastNumberOfCrossedRowsOverFindable(lCopyMe.fCutLeastNumberOfCrossedRowsOverFindable),
 fCutCompetingV0Rejection(lCopyMe.fCutCompetingV0Rejection),
 fCutArmenteros(lCopyMe.fCutArmenteros),
 fCutTPCdEdx(lCopyMe.fCutTPCdEdx),
 fCutMCPhysicalPrimary(lCopyMe.fCutMCPhysicalPrimary),
 fCutMCLambdaFromPrimaryXi(lCopyMe.fCutMCLambdaFromPrimaryXi),
 fCutMCPDGCodeAssociation(lCopyMe.fCutMCPDGCodeAssociation),
-fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties)
+fCutMCUseMCProperties(lCopyMe.fCutMCUseMCProperties),
+
+fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
+fCutLeastNumberOfCrossedRows(lCopyMe.fCutLeastNumberOfCrossedRows),
+fCutLeastNumberOfCrossedRowsOverFindable(lCopyMe.fCutLeastNumberOfCrossedRowsOverFindable),
+fCutMinEtaTracks(lCopyMe.fCutMinEtaTracks),
+fCutMaxEtaTracks(lCopyMe.fCutMaxEtaTracks),
+fCutMaxChi2PerCluster(lCopyMe.fCutMaxChi2PerCluster),
+fCutMinTrackLength(lCopyMe.fCutMinTrackLength),
+
+fCutUseVariableV0CosPA(lCopyMe.fCutUseVariableV0CosPA),
+fCutVarV0CosPA_Exp0Const(lCopyMe.fCutVarV0CosPA_Exp0Const),
+fCutVarV0CosPA_Exp0Slope(lCopyMe.fCutVarV0CosPA_Exp0Slope),
+fCutVarV0CosPA_Exp1Const(lCopyMe.fCutVarV0CosPA_Exp1Const),
+fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
+fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const)
 {
     SetName( lNewName.Data() ); 
     
@@ -169,8 +262,6 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutDCAV0Daughters = lCopyMe->GetCutDCAV0Daughters();
     fCutV0CosPA = lCopyMe->GetCutV0CosPA();
     fCutProperLifetime = lCopyMe->GetCutProperLifetime();
-    fCutLeastNumberOfCrossedRows = lCopyMe->GetCutLeastNumberOfCrossedRows();
-    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe->GetCutLeastNumberOfCrossedRowsOverFindable();
     fCutCompetingV0Rejection = lCopyMe->GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe->GetCutArmenteros();
     fCutTPCdEdx = lCopyMe->GetCutTPCdEdx();
@@ -180,6 +271,23 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutMCLambdaFromPrimaryXi = lCopyMe->GetCutMCLambdaFromPrimaryXi();
     fCutMCPDGCodeAssociation = lCopyMe->GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties    = lCopyMe -> GetCutMCUseMCProperties();
+    
+    //Track cuts 
+    fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
+    fCutLeastNumberOfCrossedRows = lCopyMe->GetCutLeastNumberOfCrossedRows();
+    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe->GetCutLeastNumberOfCrossedRowsOverFindable();
+    fCutMinEtaTracks = lCopyMe -> GetCutMinEtaTracks();
+    fCutMaxEtaTracks = lCopyMe -> GetCutMaxEtaTracks();
+    fCutMaxChi2PerCluster = lCopyMe -> GetCutMaxChi2PerCluster();
+    fCutMinTrackLength = lCopyMe -> GetCutMinTrackLength();
+    
+    //Variable V0CosPA
+    fCutUseVariableV0CosPA = lCopyMe -> GetCutUseVarV0CosPA();
+    fCutVarV0CosPA_Exp0Const = lCopyMe -> GetCutVarV0CosPAExp0Const();
+    fCutVarV0CosPA_Exp0Slope = lCopyMe -> GetCutVarV0CosPAExp0Slope();
+    fCutVarV0CosPA_Exp1Const = lCopyMe -> GetCutVarV0CosPAExp1Const();
+    fCutVarV0CosPA_Exp1Slope = lCopyMe -> GetCutVarV0CosPAExp1Slope();
+    fCutVarV0CosPA_Const = lCopyMe -> GetCutVarV0CosPAConst();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -221,8 +329,6 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters();
     fCutV0CosPA = lCopyMe.GetCutV0CosPA();
     fCutProperLifetime = lCopyMe.GetCutProperLifetime();
-    fCutLeastNumberOfCrossedRows = lCopyMe.GetCutLeastNumberOfCrossedRows();
-    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe.GetCutLeastNumberOfCrossedRowsOverFindable(),
     fCutCompetingV0Rejection = lCopyMe.GetCutCompetingV0Rejection();
     fCutArmenteros = lCopyMe.GetCutArmenteros();
     fCutTPCdEdx = lCopyMe.GetCutTPCdEdx();
@@ -232,6 +338,23 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutMCLambdaFromPrimaryXi = lCopyMe.GetCutMCLambdaFromPrimaryXi();
     fCutMCPDGCodeAssociation = lCopyMe.GetCutMCPDGCodeAssociation();
     fCutMCUseMCProperties = lCopyMe.GetCutMCUseMCProperties();
+    
+    //Track Cuts
+    fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
+    fCutLeastNumberOfCrossedRows = lCopyMe.GetCutLeastNumberOfCrossedRows();
+    fCutLeastNumberOfCrossedRowsOverFindable = lCopyMe.GetCutLeastNumberOfCrossedRowsOverFindable();
+    fCutMinEtaTracks = lCopyMe.GetCutMinEtaTracks();
+    fCutMaxEtaTracks = lCopyMe.GetCutMaxEtaTracks();
+    fCutMaxChi2PerCluster = lCopyMe.GetCutMaxChi2PerCluster();
+    fCutMinTrackLength = lCopyMe.GetCutMinTrackLength();
+    
+    //Variable V0CosPA
+    fCutUseVariableV0CosPA = lCopyMe.GetCutUseVarV0CosPA();
+    fCutVarV0CosPA_Exp0Const = lCopyMe.GetCutVarV0CosPAExp0Const();
+    fCutVarV0CosPA_Exp0Slope = lCopyMe.GetCutVarV0CosPAExp0Slope();
+    fCutVarV0CosPA_Exp1Const = lCopyMe.GetCutVarV0CosPAExp1Const();
+    fCutVarV0CosPA_Exp1Slope = lCopyMe.GetCutVarV0CosPAExp1Slope();
+    fCutVarV0CosPA_Const = lCopyMe.GetCutVarV0CosPAConst();
     
     if (fHisto) {
         delete fHisto;
@@ -307,12 +430,28 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( TMath::Abs( fCutV0Radius - lCompareV0->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutProperLifetime - lCompareV0->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompareV0->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
-    if( TMath::Abs( fCutLeastNumberOfCrossedRowsOverFindable - lCompareV0->GetCutLeastNumberOfCrossedRowsOverFindable() ) > 1e-6 ) lReturnValue = kFALSE;
+
     //if( fCutCompetingV0Rejection != lCompareV0->GetCutCompetingV0Rejection() ) lReturnValue = kFALSE;
     if( fCutArmenteros != lCompareV0->GetCutArmenteros() ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutTPCdEdx - lCompareV0->GetCutTPCdEdx() ) > 1e-6 && lCheckdEdx ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMinBaryonMomentum - lCompareV0->GetCutMinBaryonMomentum() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    //Track Selections
+    if( TMath::Abs( fCutUseITSRefitTracks - lCompareV0->GetCutUseITSRefitTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRows - lCompareV0->GetCutLeastNumberOfCrossedRows() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutLeastNumberOfCrossedRowsOverFindable - lCompareV0->GetCutLeastNumberOfCrossedRowsOverFindable() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinEtaTracks - lCompareV0->GetCutMinEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxEtaTracks - lCompareV0->GetCutMaxEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxChi2PerCluster - lCompareV0->GetCutMaxChi2PerCluster() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMinTrackLength - lCompareV0->GetCutMinTrackLength() ) > 1e-6 ) lReturnValue = kFALSE;
+    
+    //Variable V0CosPA
+    if ( TMath::Abs(fCutUseVariableV0CosPA - lCompareV0->GetCutUseVarV0CosPA()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp0Const - lCompareV0->GetCutVarV0CosPAExp0Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp0Slope - lCompareV0->GetCutVarV0CosPAExp0Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp1Const - lCompareV0->GetCutVarV0CosPAExp1Const()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Exp1Slope - lCompareV0->GetCutVarV0CosPAExp1Slope()) > 1e-6 ) lReturnValue = kFALSE;
+    if ( TMath::Abs(fCutVarV0CosPA_Const  - lCompareV0->GetCutVarV0CosPAConst()) > 1e-6 ) lReturnValue = kFALSE;
     
     return lReturnValue;
 }
@@ -335,11 +474,17 @@ void AliV0Result::Print()
     cout<<" DCA Pos to PV......: "<<fCutDCAPosToPV<<endl;
     cout<<" DCA V0 Daughters...: "<<fCutDCAV0Daughters<<endl;
     cout<<" V0 Cos PA..........: "<<fCutV0CosPA<<endl;
+    cout<<" Use Var V0CosPA....: "<<fCutUseVariableV0CosPA<<endl;
+    if( fCutUseVariableV0CosPA ){
+        cout<<" ^--Exp. 0 Const....: "<<fCutVarV0CosPA_Exp0Const<<endl;
+        cout<<" ^--Exp. 0 Slope....: "<<fCutVarV0CosPA_Exp0Slope<<endl;
+        cout<<" ^--Exp. 1 Const....: "<<fCutVarV0CosPA_Exp1Const<<endl;
+        cout<<" ^--Exp. 1 Slope....: "<<fCutVarV0CosPA_Exp1Slope<<endl;
+        cout<<" ^--Constant........: "<<fCutVarV0CosPA_Const<<endl;
+    }
     cout<<" V0 2D Radius.......: "<<fCutV0Radius<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
-    cout<<" Nbr Crossed Rows...: "<<fCutLeastNumberOfCrossedRows<<endl;
-    cout<<" Nbr Crsd Rows / Fdb: "<<fCutLeastNumberOfCrossedRowsOverFindable<<endl;
     cout<<" Armenteros (for K0): "<<fCutArmenteros<<endl;
     cout<<" TPC dEdx (sigmas)..: "<<fCutTPCdEdx<<endl;
     cout<<" Min baryon momentum: "<<fCutMinBaryonMomentum<<endl;
@@ -348,6 +493,13 @@ void AliV0Result::Print()
     cout<<" MC Phys Primary....: "<<fCutMCPhysicalPrimary<<endl;
     cout<<" Lambda from Xi.....: "<<fCutMCLambdaFromPrimaryXi<<endl;
     cout<<" MC Use MC pT, y....: "<<fCutMCUseMCProperties<<endl;
+    cout<<" Use ITSref tracks..: "<<fCutUseITSRefitTracks<<endl;
+    cout<<" Nbr Crossed Rows...: "<<fCutLeastNumberOfCrossedRows<<endl;
+    cout<<" Nbr Crsd Rows / Fdb: "<<fCutLeastNumberOfCrossedRowsOverFindable<<endl;
+    cout<<" Min track eta......: "<<fCutMinEtaTracks<<endl;
+    cout<<" Max track eta......: "<<fCutMaxEtaTracks<<endl;
+    cout<<" Max chi2/clusters..: "<<fCutMaxChi2PerCluster<<endl;
+    cout<<" Min Track Length...: "<<fCutMinTrackLength<<endl;
     cout<<"========================================"<<endl;
     return;
 }

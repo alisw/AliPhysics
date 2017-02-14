@@ -70,6 +70,7 @@ public:
     void SetAssPtCut (Double_t AssPtCut) {fAssPtCut = AssPtCut;};
     void SetITSnCut (Int_t ITSncut) {fITSncut = ITSncut;};
     void SetAssTPCnCut (Int_t AssTPCnCut) {fAssTPCnCut = AssTPCnCut;};
+    void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
     void SetSigmaITScut(Double_t SigmaITScut) {fSigmaITScut = SigmaITScut;};
     void SetSigmaTOFcut(Double_t SigmaTOFcut) {fSigmaTOFcut = SigmaTOFcut;};
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
@@ -81,6 +82,7 @@ public:
     void SetSScut(Bool_t SScut) {fSScut = SScut;};
     void SetAssITSrefitCut(Bool_t AssITSrefitCut) {fAssITSrefitCut = AssITSrefitCut;};
     void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
+    void SetPileUpCut(Bool_t EnablePileupRejVZEROTPCout){fEnablePileupRejVZEROTPCout = EnablePileupRejVZEROTPCout;};
     void SelectPhotonicElectron(Int_t iTracks,AliAODTrack *track,Bool_t &fFlagPhotonicElec, Bool_t &fFlagPhotonicElecBCG,Double_t weight, Int_t iCent, Int_t iHijing, Int_t iDecay, Double_t EovP, Double_t fTPCnSigma, Double_t evPlaneV0);
     void GetWeightAndDecay(AliAODMCParticle *particle, Int_t iCent, Int_t &decay, Double_t &weight);
     Bool_t InclElecTrackCuts(AliAODTrack *ietrack);
@@ -112,6 +114,7 @@ private:
     Double_t              fAssPtCut;          // pt cut for associated electron
     Int_t                 fITSncut;             // ITC number of clusters for tagged electrons
     Int_t                 fAssTPCnCut;		// TPC number of clusters for associated electron
+    Int_t                 fTPCnCut;         // TPC number of clusters for tagged electron
     Bool_t                fAssITSrefitCut;	// ITS refit for associated electron
     Bool_t                fUseNewEP;          // Use new EP framework
     Bool_t                fUseTender;          // Use tender
@@ -124,6 +127,7 @@ private:
     Double_t              fCutM02;
     Double_t              fCutM20;
     Bool_t                fSScut;
+    Bool_t                fEnablePileupRejVZEROTPCout;
     
     // AliESDEvent        	*fESD;	            	 //! ESD object
     AliAODEvent           *fAOD;                  //! AOD object
@@ -189,6 +193,8 @@ private:
     
     TH1F                  *fTrackPtBefTrkCuts;	//! Track pt before track cuts
     TH1F                  *fTrackPtAftTrkCuts;	//! Track pt after track cuts
+    TH1F                  *fChargedParticlePhi;         //! Track phi
+    TH1F                  *fElectronPhi;                //! electron phi
     
     TH1F                  *fCent;			//! centrality distribution
     TH1F                  *fCentAftFlt;		//! centrality distribution after centrality flattening

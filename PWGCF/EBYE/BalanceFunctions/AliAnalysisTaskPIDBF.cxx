@@ -1745,9 +1745,10 @@ TObjArray* AliAnalysisTaskPIDBF::GetAcceptedTracks(AliVEvent *event, Double_t gC
       }
       
 
-   vPionYReco = log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPion*MassPion + vPt*vPt) ); // convert eta to y
-   vKaonYReco = log( ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassKaon*MassKaon + vPt*vPt) ); // convert eta to y
-   vProtonYReco = log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassProton*MassProton + vPt*vPt) ); // convert eta to y
+   //vPionYReco = log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPion*MassPion + vPt*vPt) ); // convert eta to y
+   vPionYReco = 0.5*log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) /  ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) ) ); // convert eta to y
+   vKaonYReco = 0.5*log( ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) ) ); // convert eta to y
+   vProtonYReco = 0.5*log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) /  ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) )); // convert eta to y
 
 if(fUsePID && fRapidityInsteadOfEta){
 
@@ -2306,9 +2307,11 @@ else {
 
    if (TMath::Abs(pdgCodeMC)==11) continue;
    
-   vPionYReco = log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPion*MassPion + vPt*vPt) ); // convert eta to y
-   vKaonYReco = log( ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassKaon*MassKaon + vPt*vPt) ); // convert eta to y
-   vProtonYReco = log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassProton*MassProton + vPt*vPt) ); // convert eta to y
+   //vProtonYReco = log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassProton*MassProton + vPt*vPt) ); // convert eta to y
+     vPionYReco = .5*log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) /  ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) ) ); // convert eta to y
+   vKaonYReco = .5*log( ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) ) ); // convert eta to y
+   vProtonYReco = .5*log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) /  ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) )); // convert eta to y
+
 
  if(fUsePID && fRapidityInsteadOfEta){
 
@@ -2320,9 +2323,26 @@ else {
            vY=999.0;//continue;
           }
 
-
-      if(vY < fEtaMin || vY > fEtaMax) continue;
  }
+
+
+if(fUsePID && fRapidityInsteadOfEta){
+
+if(fParticleType_ == kPion_){
+
+if( vPionYReco < fEtaMin || vPionYReco > fEtaMax)  continue;
+}
+
+else  if(fParticleType_==kKaon_){
+if( vKaonYReco < fEtaMin || vKaonYReco > fEtaMax)  continue;
+}
+
+else  if(fParticleType_==kProton_){
+if( vProtonYReco < fEtaMin || vProtonYReco > fEtaMax)  continue;
+}
+
+}
+
 
 	// Remove neutral tracks
 	//Exclude resonances
@@ -2374,6 +2394,8 @@ else {
 
 //cout<<"eta from MCAOD"<<vEta<<endl;
 
+if(fUsePID){
+
 
      if (fParticleType_ == kPion_){
     
@@ -2395,6 +2417,8 @@ else {continue;}
 if(fRapidityInsteadOfEta){
 fHistRapidity->Fill(vY,gCentrality);
 }
+
+} // end of PID
 
         // fill QA histograms
         fHistPt->Fill(vPt,gCentrality);
@@ -2694,10 +2718,13 @@ if (!recoMC->IsPhysicalPrimary()) continue;
 if(pdgCodeReco == 11) continue;
 
 
-   vPionYReco = log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPion*MassPion + vPt*vPt) ); // convert eta to y
-   vKaonYReco = log( ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassKaon*MassKaon + vPt*vPt) ); // convert eta to y
-   vProtonYReco = log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassProton*MassProton + vPt*vPt) ); // convert eta to y
+//   vPionYReco = log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / sqrt(MassPion*MassPion + vPt*vPt) ); // convert eta to y
 
+     vPionYReco = .5*log( ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) /  ( sqrt(MassPion*MassPion + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) ) ); // convert eta to y
+   vKaonYReco = .5*log( ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) / ( sqrt(MassKaon*MassKaon + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) ) ); // convert eta to y
+   vProtonYReco = .5*log( ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) + vPt*sinh(vEta) ) /  ( sqrt(MassProton*MassProton + vPt*vPt*cosh(vEta)*cosh(vEta)) - vPt*sinh(vEta) )); // convert eta to y
+
+/*
 if(fRapidityInsteadOfEta){
 
 
@@ -2711,6 +2738,27 @@ if(fRapidityInsteadOfEta){
 
       if(vY < fEtaMin || vY > fEtaMax) continue;
  }
+
+*/
+
+if(fUsePID && fRapidityInsteadOfEta){
+
+if(fParticleType_ == kPion_){
+
+if( vPionYReco < fEtaMin || vPionYReco > fEtaMax)  continue;
+}
+
+else  if(fParticleType_==kKaon_){
+if( vKaonYReco < fEtaMin || vKaonYReco > fEtaMax)  continue;
+}
+
+else  if(fParticleType_==kProton_){
+if( vProtonYReco < fEtaMin || vProtonYReco > fEtaMax)  continue;
+}
+
+}
+
+
 
 //cout<<"BF Eta "<<vEta<<'\t'<<"Pt"<<vPt<<'\t'<<"Phi"<<vPhi<<endl;
 

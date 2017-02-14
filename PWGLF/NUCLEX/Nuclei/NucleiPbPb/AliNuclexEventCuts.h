@@ -1,8 +1,10 @@
 #ifndef _AliNuclexEventCuts_h_
 #define _AliNuclexEventCuts_h_
 
+#include <TF1.h>
 #include <TList.h>
 #include <TNamed.h>
+#include <cmath>
 #include <string>
 using std::string;
 
@@ -13,15 +15,19 @@ class TList;
 class TH1D;
 class TH1I;
 class TH2D;
+class TH2F;
 
 class AliNuclexEventCutsContainer : public TNamed {
   public:
     AliNuclexEventCutsContainer() : TNamed("AliNuclexEventCutsContainer","AliNuclexEventCutsContainer"),
+    fEventId(0u),
     fMultESD(-1),
     fMultTrkFB32(-1),
     fMultTrkFB32Acc(-1),
+    fMultTrkFB32TOF(-1),
     fMultTrkTPC(-1) {}
 
+    unsigned long fEventId;
     int fMultESD;
     int fMultTrkFB32;
     int fMultTrkFB32Acc;
@@ -33,7 +39,7 @@ class AliNuclexEventCutsContainer : public TNamed {
 class AliNuclexEventCuts : public TList {
   public:
     AliNuclexEventCuts(bool savePlots = false);
-
+    virtual ~AliNuclexEventCuts() { if (fMultiplicityV0McorrCut) delete fMultiplicityV0McorrCut; }
     enum CutsBin {
       kNoCuts = 0,
       kDAQincomplete,
@@ -43,13 +49,15 @@ class AliNuclexEventCuts : public TList {
       kVertexQuality,
       kPileUp,
       kMultiplicity,
+      kCorrelations,
       kAllCuts
     };
 
 
     bool   AcceptEvent (AliVEvent *ev);
     bool   PassedCut (AliNuclexEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
-    void   AddQAplotsToList(TList *qaList = 0x0);
+    void   AddQAplotsToList(TList *qaList = 0x0, bool addCorrelationPlots = false);
+    void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   SetManualMode (bool man = true) { fManualMode = man; }
     void   SetupLHC11h();
     void   SetupLHC15o();
@@ -97,6 +105,12 @@ class AliNuclexEventCuts : public TList {
     double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
     double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
     double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
+    double        fTOFvsFB32correlationPars[4];   ///< Polynomial parametrisation of the correlation between FB32+TOF tracks and FB32 tracks
+    double        fTOFvsFB32sigmaPars[6];         ///< Polynomial parametrisation of the rms of the correlation between FB32+TOF tracks and FB32 tracks
+    double        fTOFvsFB32nSigmaCut[2];         ///< N sigma cut in the FB32+TOF vs FB32 plane
+    double        fESDvsTPConlyLinearCut[2];      ///< Linear cut in the ESD track vs TPC only track plane
+    TF1          *fMultiplicityV0McorrCut;        //!<! Cut on the FB128 vs V0M plane
+    double        fFB128vsTrklLinearCut[2];       ///< Cut on the FB128 vs Tracklet plane
 
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
@@ -107,6 +121,7 @@ class AliNuclexEventCuts : public TList {
   private:
     void          AutomaticSetup ();
     void          ComputeTrackMultiplicity(AliVEvent *ev);
+    template<typename F> F PolN(F x, F* coef, int n);
 
     bool          fManualMode;                    ///< if true the cuts are not loaded automatically looking at the run number
     bool          fSavePlots;                     ///< if true the plots are automatically added to this object
@@ -117,6 +132,11 @@ class AliNuclexEventCuts : public TList {
     float         fCentPercentiles[2];            ///< Centrality percentiles
     AliVVertex   *fPrimaryVertex;                 //!<! Primary vertex pointer
 
+    ///
+    bool          fNewEvent;                      ///<  True if the AliVEvent identifier in the AcceptEvent and fIdentifier are different
+    /// Overrides
+    bool          fOverrideAutoTriggerMask;       ///<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
+
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1I* fCutStats;               //!<! Cuts statistics
     TH1D* fVtz[2];                 //!<! Vertex z distribution
@@ -125,8 +145,21 @@ class AliNuclexEventCuts : public TList {
     TH2D* fEstimCorrelation[2];    //!<! Correlation between centrality estimators
     TH2D* fMultCentCorrelation[2]; //!<! Correlation between main centrality estimator and multiplicity
 
+    TH2F* fTOFvsFB32[2];           //!<!
+    TH2F* fTPCvsAll[2];            //!<!
+    TH2F* fMultvsV0M[2];           //!<!
+    TH2F* fTPCvsTrkl[2];           //!<!
+
     ClassDef(AliNuclexEventCuts,1)
 };
+
+template<typename F> F AliNuclexEventCuts::PolN(F x,F* coef, int n) {
+  if (n < 1) ::Fatal("AliNuclexEventCuts::PolN","PolN should be used only for n>=1.");
+  F ret = coef[0] + coef[1] * x;
+  for (int i = 2; i <= n; ++i)
+    ret += coef[i] * std::pow(x,i);
+  return ret;
+}
 
 #endif
 

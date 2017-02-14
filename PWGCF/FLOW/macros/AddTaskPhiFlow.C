@@ -34,7 +34,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         Int_t harm = 2, // harmonic vn
         UInt_t poi_filter = 32, // aod filterbits
         UInt_t rp_filter = 1,
-        Bool_t event_mixing = kTRUE,
+        Bool_t event_mixing = kFALSE,
         Bool_t highPtMode = kFALSE, // use with caution !!! disables invariant mass fit method
         Float_t deltaPhiMass = 0.0003, // dM in which to look for phi 
         Float_t POIPtMax = 4., // max pt of daughterp particles
@@ -239,7 +239,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kFALSE, // select flow analys
         if(debug) cout << "    --> kGlobal RP's " << cutsRP << endl;
     }
     if(VZERO_SP) { // use vzero sub analysis
-        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
+        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
         cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
         cutsRP->SetApplyRecentering(kTRUE);
         cutsRP->SetParamType(AliFlowTrackCuts::kVZERO);//HotfixHI);

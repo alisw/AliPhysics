@@ -127,9 +127,9 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
-    UserTasks/AliAnalysisTaskJetExtractor.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronToy.cxx
+    UserTasks/Cumulants.cxx
     UserTasks/AliAnalysisTaskCLQA.cxx
     UserTasks/AliAnalysisTaskDcalDijetPerf.cxx
     UserTasks/AliAnalysisTaskDeltaPtJEmb.cxx
@@ -154,6 +154,7 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalJetPatchTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetSparseMaker.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectra.cxx
+    UserTasks/AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetSpectraMECpA.cxx
     UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
     UserTasks/AliAnalysisTaskEmcalJetTriggerMatcher.cxx
@@ -214,6 +215,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
+	UserTasks/AliAnalysisTaskRecoilJetYield.cxx
         UserTasks/AliAnalysisTaskJetSubstructure.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx

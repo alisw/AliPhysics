@@ -22,6 +22,8 @@
 /// \author Adam Kisiel <Adam.Kisiel@cern.ch>, OSU
 ///
 
+#pragma once
+
 #ifndef ALIANALYSISTASKFEMTO_H
 #define ALIANALYSISTASKFEMTO_H
 
@@ -57,28 +59,46 @@
 
 class AliAnalysisTaskFemto : public AliAnalysisTaskSE { //AliAnalysisTask
 public:
+
+  /// Default parameters initialize all values to zero (NULL) and empty strings
+  ///
+  /// Do not use this constructor - objects created with it have no way to set
+  /// the configuration macro or parameters. Use an alternative constructor.
   AliAnalysisTaskFemto();
+
+  /// Full Constructor - Set the name of the task, configuration macro filename
+  /// and paramters, and optional verbosity flag.
   AliAnalysisTaskFemto(TString name, TString aConfigMacro, TString aConfigParams, Bool_t aVerbose=kFALSE);
+
+  /// Construct with task name, configuration filename, and verbosity flag.
+  ///
+  /// The paramters are set to the empty string.
   AliAnalysisTaskFemto(TString name, TString aConfigMacro, Bool_t aVerbose=kFALSE);
+
+  /// Copy Constructor - should not be used
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
   virtual ~AliAnalysisTaskFemto();
 
   AliAnalysisTaskFemto& operator=(const AliAnalysisTaskFemto& aFemtoTask);
 
+  /// ConnectInputData
   virtual void ConnectInputData(Option_t *);
   virtual void CreateOutputObjects();
   virtual void Exec(Option_t *option);
   virtual void Terminate(Option_t *);
   virtual void FinishTaskOutput();
 
+  /// Set the femtomanager containing this task's analyses.
+  void SetFemtoManager(AliFemtoManager *aManager);
+
   void SetFemtoReaderESD(AliFemtoEventReaderESDChain *aReader);
   void SetFemtoReaderESDKine(AliFemtoEventReaderESDChainKine *aReader);
   void SetFemtoReaderAOD(AliFemtoEventReaderAODChain *aReader);
   void SetFemtoReaderStandard(AliFemtoEventReaderStandard *aReader);
-  void SetFemtoManager(AliFemtoManager *aManager);
   void SetFemtoReaderKinematics(AliFemtoEventReaderKinematicsChain *aReader);
   void SetFemtoReaderKinematicsESD(AliFemtoEventReaderKinematicsChainESD *aReader);
   void SetFemtoReaderAODKinematics(AliFemtoEventReaderAODKinematicsChain *aReader);
+
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);

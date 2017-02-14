@@ -27,7 +27,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
  public:
     
   enum {
-    kNumberOfAxes = 9
+    kNumberOfAxes = 8
   };
   enum ESpecies_t {
     kSpecElectron = BIT(0),
@@ -59,6 +59,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetTriggerMask(ULong64_t mask=0)   {fTriggerMask  = mask;}
   void           SetSpecie(ULong64_t specie=0)      {fspecie = specie;}
   void           SetRequireTrackVtx(Bool_t flag)    {fRequireVtxTracks = flag;}
+  void           SetUsePtLogScale(Bool_t flag)      {fUsePtLogAxis = flag;}
     
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
@@ -91,6 +92,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
+  Bool_t   fUsePtLogAxis;           //flage to use log scale on pt axis in match. eff. sparse
     
   TList           * fListHist;      //! output list for histograms
   AliESDtrackCuts * fESDtrackCuts;  //! cut set which is under study
@@ -99,7 +101,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 1); 
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 2);
 };
 
 #endif

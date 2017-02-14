@@ -56,6 +56,8 @@ public:
     kTPCTOFpidLstar,         //cuts for L* in pPb
     kTPCTOFpidLstar13ppTeV, // cuts for L* pp 13 tev
     kTPCTOFpidLstar13ppTeV_test, // cuts for L* pp 13 tev
+    kTPCTOFpidLstar13ppTeV_test1, // cuts for L* pp 13 tev with 3 sigma TOF veto
+    kTPCTOFpidLstar13ppTeV_test2, // cuts for L* pp 13 tev with eRej and 3 sigma TOF veto
     kTPCTOFpidLstar13ppTeVERejection, // cuts for L* pp 13 tev with e rejection
     kTPCTOFpidLstarPbPb2011, //cuts for L* in PbPb
     kTPCTOFpidLstarPbPb2011elRej,//cuts for L* in AA with electron rejection

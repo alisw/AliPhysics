@@ -45,9 +45,17 @@
   //
   AliOfflineTrigger trigger("default", 30,100000000);
   trigger.LoadTriggerList("gidesdTrigger.list");
-
   trigger.ExtractSelected("raw.list", "gidesdTrigger.list", "rawSelected[].root",1000000, 1  );
   //
+  // 6.) Example to compare content of the raw filtered data with input flitered list as used in the filterning produnction
+  TTree * tree = AliOfflineTrigger::MakeDiffTree("gidrawTree.list","filteredHighPt.list;filteredHighPtV0s.list;filteredMult.list");
+  Int_t entriesAll=tree->GetEntries();
+  Int_t entriesHighPt = tree->Draw("gid/10.","(gid==T0.gid)","goff");
+  Int_t entriesHighPtV0 = tree->Draw("gid/10.","(gid==T1.gid)","goff");
+  Int_t entriesMult = tree->Draw("gid/10.","(gid==T2.gid)","goff");
+  ::Info("AliOfflineTrigger::MakeDiffTree.KeyValue","All:%d",entriesAll);
+  ::Info("AliOfflineTrigger::MakeDiffTree.KeyValue","entriesHighPt+entriesHighPtV0+entriesMult:%d",entriesHighPt+entriesHighPtV0+entriesMult);  
+
 */
 
 
@@ -72,7 +80,8 @@
 #include "AliOfflineTrigger.h"
 #include "AliSysInfo.h"
 #include "TTimeStamp.h"
-
+#include "TAlienCollection.h"
+#include "TPRegexp.h"
 using std::cout;
 using std::endl;
 
@@ -189,63 +198,99 @@ void  AliOfflineTrigger::DumpGIDRAWTree(const char *rawFile){
 
   if (rawFile==NULL) return;
   if (TPRegexp("^alien").Match(rawFile) && gGrid==0)  TGrid::Connect("alien");
-
-  TFile * finput =TFile::Open(rawFile);
-  if (finput==NULL){
-    ::Error("dumpRAWGIDTree","rawFile %s not accessible",rawFile);
-    return;
+  TFile * finput=NULL;
+  TTree * tree=NULL;
+  TPRegexp expRoot(".root$");
+  TPRegexp expList(".list$");
+  TObjArray *fileList=NULL;
+  
+  if (TString(rawFile).Contains(expRoot)){
+    fileList = new TObjArray(1);
+    fileList->AddLast(new TObjString(rawFile));
   }
-  TTree * tree = (TTree*)finput->Get("RAW");
-  if (tree==NULL){
-    ::Error("dumpRAWGIDTree","rawFile %s  does not contained requested tree",rawFile);
-    return;
+  if (TString(rawFile).Contains(expList)){  
+    fileList = gSystem->GetFromPipe(TString::Format("cat %s", rawFile)).Tokenize("\n");
   }
-  TString chunkName=rawFile;
-  TPRegexp reg0(".*/");
-  reg0.Substitute(chunkName,"");
-  TPRegexp reg1(".root$");
-  reg1.Substitute(chunkName,"");
-
-  AliRawVEvent*    fEvent=0;              // (super) event
-  tree->SetBranchStatus("TPC*",kFALSE);
-  tree->SetBranchStatus("TRD*",kFALSE);
-  tree->SetBranchStatus("rawevent",kTRUE);
-  TBranch *fBranch = tree->GetBranch("rawevent");  // as in AliRawReaderRoot::AliRawReaderRoot  
-  fBranch->SetAddress(&fEvent);  
-  if (fDefaultTreeCache>0) {
-    tree->SetCacheSize(fDefaultTreeCache);
-    //tree->AddBranchToCache("*",kFALSE); 
+  if (fileList==NULL){
+    ::Error("dumpRAWGIDTree","Invalid input r %s",rawFile);
   }
-  Int_t nevents=tree->GetEntries();
-
   std::ofstream file_out("gidrawTree.list");
   //  file_out<<"gid/D:eventCounter/D:period/D:orbit/D:bcid/D:fname/C:eventID/D\n";  // print headaer
   //file_out<<"fname/C:eventCounter/D:gid/D:timeStamp/D:period/D:orbit/D:bcid/D:eventID/D"<<endl;  // print header
   file_out<<"fname/C:eventCounter/i:gid/l:timeStamp/i:period/i:orbit/i:bcid/i:eventID/i"<<endl;  // print header
 
-  for (Int_t ievent=0; ievent<nevents; ievent++){
-    fBranch->GetEntry(ievent);
-    Int_t run = fEvent->GetHeader()->Get("RunNb");
+  Int_t nFiles=  fileList->GetEntries();
+  for (Int_t iFile=0; iFile<nFiles; iFile++){
+    if (TPRegexp("^alien").Match(fileList->At(iFile)->GetName()) && gGrid==0)  TGrid::Connect("alien");    
+    finput =TFile::Open(fileList->At(iFile)->GetName());
+    if (finput==NULL){
+      ::Error("dumpRAWGIDTree","rawFile %s not accessible", fileList->At(iFile)->GetName());
+      continue;
+    }
+    tree = (TTree*)finput->Get("RAW");
+    if (tree==NULL){
+      ::Error("dumpRAWGIDTree","rawFile %s  does not contained requested tree",rawFile);
+      continue;
+    }
+  
+    TString chunkName=fileList->At(iFile)->GetName();
+    TPRegexp yearExp("./20.*/");
+    Int_t indexShort=chunkName.Index(yearExp);
+    TString chunkShort(&(chunkName[indexShort+7]));
     //
-    const UInt_t *id  = fEvent->GetHeader()->GetP("Id");                             // copy of AliRawReaderRoot::GetEventId()
-    ULong64_t  period = id ? (((id)[0]>>4)&0x0fffffff): 0;                           // AliRawReader::Get<>
-    ULong64_t  orbit  = id ? ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)) : 0; // AliRawReader::Get<>
-    ULong64_t  bcID   =  id ? ((id)[1]&0x00000fff) : 0;                              // AliRawReader::Get<>
-    ULong64_t  gid    = (((ULong64_t)period << 36) | ((ULong64_t)orbit << 12) |(ULong64_t)bcID); // AliRawReader::GetEventIdAsLong() 
-    UInt_t     timeStamp=fEvent->GetHeader()->Get("Timestamp");  
-    //
-    file_out<<    // dump contet
-      chunkName.Data()<<       // chunkName
-      "\t"<< ievent<<           // event counter
-      "\t"<<gid<<               // gid
-      "\t"<<timeStamp<<         // time stamp
-      "\t"<< period<<           // period
-      "\t"<< orbit<<            // orbit 
-      "\t"<< bcID<<             // bcID
-      "\t"<<ievent<<            // event ID  - for the tree ir is the same as counter
-      endl;
+    TPRegexp reg0(".*/");
+    reg0.Substitute(chunkName,"");
+    TPRegexp reg1(".root$");
+    reg1.Substitute(chunkName,"");
     
-    if (ievent%100==0)     printf("EventNumber\t%d\t%llu\n",ievent,gid);
+    AliRawVEvent*    fEvent=0;              // (super) event
+    tree->SetBranchStatus("TPC*",kFALSE);
+    tree->SetBranchStatus("TRD*",kFALSE);
+    tree->SetBranchStatus("rawevent",kTRUE);
+    TBranch *fBranch = tree->GetBranch("rawevent");  // as in AliRawReaderRoot::AliRawReaderRoot  
+    //    fBranch->SetAddress(&fEvent);  
+    if (fDefaultTreeCache>0) {
+      tree->SetCacheSize(fDefaultTreeCache);
+      //tree->AddBranchToCache("*",kFALSE); 
+    }
+    Int_t nevents=tree->GetEntries();
+    
+    AliSysInfo::AddStamp(TString::Format("%s_0",chunkShort.Data()).Data(), 1, fCounterFileInput,fCounterFileInput);    
+    for (Int_t ievent=0; ievent<nevents; ievent++){
+      fBranch->SetAddress(&fEvent);  
+      fBranch->GetEntry(ievent);
+      AliRawEventHeaderBase *header = fEvent->GetHeader();
+      Int_t run = header->Get("RunNb");
+      //
+      const UInt_t *id  = header->GetP("Id");                             // copy of AliRawReaderRoot::GetEventId()
+      ULong64_t  period = id ? (((id)[0]>>4)&0x0fffffff): 0;                           // AliRawReader::Get<>
+      ULong64_t  orbit  = id ? ((((id)[0]<<20)&0xf00000)|(((id)[1]>>12)&0xfffff)) : 0; // AliRawReader::Get<>
+      ULong64_t  bcID   =  id ? ((id)[1]&0x00000fff) : 0;                              // AliRawReader::Get<>
+      ULong64_t  gid    = (((ULong64_t)period << 36) | ((ULong64_t)orbit << 12) |(ULong64_t)bcID); // AliRawReader::GetEventIdAsLong() 
+      UInt_t     timeStamp=header->Get("Timestamp");  
+      delete fEvent;
+      fEvent=NULL;
+      //
+      AliSysInfo::AddStamp(TString::Format("%s",chunkShort.Data()).Data(), 2, iFile, ievent);
+      file_out<<    // dump contet
+	chunkShort.Data()<<       // chunkName
+	"\t"<< ievent<<           // event counter
+	"\t"<<gid<<               // gid
+	"\t"<<timeStamp<<         // time stamp
+	"\t"<< period<<           // period
+	"\t"<< orbit<<            // orbit 
+	"\t"<< bcID<<             // bcID
+	"\t"<<ievent<<            // event ID  - for the tree ir is the same as counter
+	endl;      
+      if (ievent%100==0)     printf("EventNumber\t%d\t%llu\n",ievent,gid);      
+    }
+    AliSysInfo::AddStamp(TString::Format("%s_1",chunkShort.Data()).Data(), 3, fCounterFileInput,fCounterFileInput);
+    delete fBranch;
+    delete fEvent;
+    delete tree;
+    finput->Close();
+    delete finput;
+    AliSysInfo::AddStamp(TString::Format("%s_2",chunkShort.Data()).Data(), 4, fCounterFileInput,fCounterFileInput);
   }
 }
 
@@ -326,9 +371,9 @@ void AliOfflineTrigger::TestDiffGIDList(){
   TTree * treeGIDESD=new TTree;
   TTree * treeGIDRAWReader=new TTree;
   TTree * treeGIDRAWTree=new TTree;
-  treeGIDRAWReader->ReadFile("gidrawReeader.list");
-  treeGIDRAWTree->ReadFile("gidrawTree.list");
-  treeGIDESD->ReadFile("gidesd.list");
+  treeGIDRAWReader->ReadFile("gidrawReeader.list","",'\t');
+  treeGIDRAWTree->ReadFile("gidrawTree.list","",'\t');
+  treeGIDESD->ReadFile("gidesd.list","",'\t');
 
   treeGIDESD->BuildIndex("gid");
   treeGIDRAWTree->BuildIndex("gid");
@@ -369,11 +414,11 @@ TTree*    AliOfflineTrigger::MakeDiffTree(const char *refTree, const char *frien
   TObjArray * array=TString(friendTrees).Tokenize(";");
   Int_t ntrees=array->GetEntries();
   TTree * tree= new TTree();
-  tree->ReadFile(refTree);
+  tree->ReadFile(refTree,"",'\t');
   tree->BuildIndex("gid");
   for (Int_t jf=0; jf<ntrees; jf++){
     TTree * ftree= new TTree;
-    ftree->ReadFile(array->At(jf)->GetName());
+    ftree->ReadFile(array->At(jf)->GetName(),"",'\t');
     ftree->BuildIndex("gid");
     tree->AddFriend(ftree,TString::Format("T%d",jf));
   }
@@ -393,7 +438,7 @@ void AliOfflineTrigger::LoadTriggerList(const char * triggerList){
     const char * triggerList = "gidesd.list"
   */
   TTree * tree= new TTree();
-  tree->ReadFile(triggerList);
+  tree->ReadFile(triggerList,"",'\t');
   Int_t entries=tree->GetEntries();
   if (entries<=0) {
     ::Error("AliOfflineTrigger::LoadTriggerList","Invalid input trigger list\t%s", triggerList);
@@ -425,6 +470,7 @@ void AliOfflineTrigger::LoadTriggerList(const char * triggerList){
     fTrgGIDEventNr[gid]=i;                               
     fTrgGIDTimeStamp[gid]=timeStamp;                   // for consitency check
   }
+  delete tree;
 }
 
 
@@ -499,7 +545,9 @@ Int_t AliOfflineTrigger::LoadMapFromRawData(const char *rawFile, Int_t verbose){
     }
     gidOld=gid;
   }
+  tree->SetCacheSize(0);
   delete tree; 
+  delete finput;
   return nTriggered;
 }
 
@@ -510,6 +558,9 @@ void  AliOfflineTrigger::ExtractSelected(const char *rawFile, Int_t verbose){
   // Extract selected events from raw data file
   //    Trigger list has to be loaded before filtering
   //
+  AliRawVEvent*    fEvent=0;              // event
+  TBranch *fEventBranch = 0;              // branch for event header   
+
   if (fRawTriggerFile==NULL){
     ::Error("AliOfflineTrigger::ExtractSelected","Output file not intitialized");
     return;
@@ -532,36 +583,47 @@ void  AliOfflineTrigger::ExtractSelected(const char *rawFile, Int_t verbose){
   if (finput==NULL){
     ::Info(" AliOfflineTrigger::ExtractSelected", "Tree in file %s not exist or not accessible within TimeOut %d", rawFile, fDefaultTimeOut);
   }
+  
+  fEventBranch = itree->GetBranch("rawevent");  // as in AliRawReaderRoot::AliRawReaderRoot  
+  fEventBranch->SetAddress(&fEvent);           // access event header
+
+
   if (fRawTriggerTree==NULL){
     fRawTriggerFile->cd();
     fRawTriggerTree=itree->CloneTree(0);
   }
   Int_t nEvents=itree->GetEntries();
+  Int_t size= itree->GetEntry(0);
+  fRawTriggerTree->CopyAddresses(itree);
   for (Int_t iEvent=0; iEvent<nEvents; iEvent++){
     ULong64_t gid=fRAWEventNrGID[iEvent];
     Bool_t isSelected = kFALSE;
-    isSelected=(fTrgGIDEventNr[gid]==iEvent);   // gid in the list of triggered events
+    isSelected=(fTrgGIDEventNr[gid]==iEvent && fTrgGIDTimeStamp[gid]>0);   // gid in the list of triggered events
     fCounterFileInput++;
     if (!isSelected) continue;
-    if (verbose&1>0) {
+    if ((verbose&1)>0) {
       ::Info(" AliOfflineTrigger::ExtractSelected", "%s\t%d\t%llu\t%d\t%s",rawFile,iEvent,gid,fTrgGIDTimeStamp[fRAWEventNrGID[iEvent]], TTimeStamp(fTrgGIDTimeStamp[fRAWEventNrGID[iEvent]]).AsString("short"));
     }
     AliSysInfo::AddStamp(TString::Format("%s_BR",rawFile).Data(), 10, fCounterFileInput,fCounterFileInput);    
-    Int_t size= itree->GetEntry(iEvent);
+    size= itree->GetEntry(iEvent);
     AliSysInfo::AddStamp(TString::Format("%s_ER",rawFile).Data(), 11, fCounterFileInput,fCounterFileInput);    
     Int_t readEntry=itree->GetReadEntry();   
-    fRawTriggerTree->CopyAddresses(itree);
+    //fRawTriggerTree->CopyAddresses(itree);
     AliSysInfo::AddStamp(TString::Format("%s_BF",rawFile).Data(), 100, fCounterFileInput,fCounterFileInput);
     fRawTriggerTree->Fill();
     AliSysInfo::AddStamp(TString::Format("%s_EF",rawFile).Data(), 101, fCounterFileInput,fCounterFileInput);
-    fCounterFileOutput++;
+    fCounterFileOutput++;    
   }
+  itree->ResetBranchAddresses();
+  delete fEvent;
+  delete itree;
+  delete finput;
   fCounterFileInput++;
 }
 
 
  
-void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * triggerList, const char * outputName, Int_t maxSize,  Int_t verbose){
+void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * triggerList, const char * outputName, Long_t maxSize,  Int_t verbose){
   //
   /*
    const char *rawList="raw.list";
@@ -570,7 +632,17 @@ void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * trig
    Int_t maxSize=100000000;  // max size of raw trees before moving to next file
    verbose=2
   */
-  TObjArray* rawArray = gSystem->GetFromPipe(TString::Format("cat %s", rawList)).Tokenize("\n");  
+  TObjArray* rawArray = 0;
+  if (TPRegexp(".xml$").Match(rawList)){
+    TAlienCollection *coll = (TAlienCollection *)TAlienCollection::Open(rawList);
+    Int_t nFiles =  coll->GetNofGroups();
+    rawArray=new TObjArray(nFiles);
+    while( coll->Next()){
+      rawArray->AddLast(new TObjString(coll->GetTURL()));
+    }
+  }else{
+    rawArray = gSystem->GetFromPipe(TString::Format("cat %s", rawList)).Tokenize("\n");  
+  }
   Int_t nFiles=rawArray->GetEntries();
   if (nFiles<=0){
     ::Error("AliOfflineTrigger::ExtractSelected","Empty input list");
@@ -579,10 +651,11 @@ void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * trig
   for (Int_t iFile=0; iFile<nFiles; iFile++){
     if (fRawTriggerTree!=NULL){
       if (fRawTriggerTree->GetZipBytes()>maxSize){ // close file if content bigger than max Size
+	fRawTriggerFile->cd();
 	fRawTriggerTree->Write();
-	fRawTriggerFile->Close();
+	fRawTriggerTree->ResetBranchAddresses();
 	delete fRawTriggerTree;
-	delete fRawTriggerFile;
+	fRawTriggerFile->Close();
 	fRawTriggerFile=NULL;
 	fRawTriggerTree=NULL;
 	fCounterFileOutput++;
@@ -593,12 +666,14 @@ void   AliOfflineTrigger::ExtractSelected(const char *rawList, const char * trig
       fName.ReplaceAll("[]",TString::Format("%d",fCounterFileOutput));
       fRawTriggerFile= TFile::Open(fName.Data(),"recreate");      
     }
-    ExtractSelected(rawArray->At(iFile)->GetName(),verbose);
+    ExtractSelected(rawArray->At(iFile)->GetName(),verbose); 
   }
-  if (fRawTriggerTree!=NULL){
+  if (fRawTriggerTree!=NULL){  
+    fRawTriggerFile->cd();
     fRawTriggerTree->Write();
+    fRawTriggerTree->ResetBranchAddresses();
     fRawTriggerFile->Close();
-    //  delete fRawTriggerTree;
+    //delete fRawTriggerTree;
     delete fRawTriggerFile;
     fRawTriggerFile=NULL;
     fRawTriggerTree=NULL;

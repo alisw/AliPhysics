@@ -1,4 +1,4 @@
-AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut,Double_t AssPtCut, Int_t AssTPCnCut, Int_t  ITSncut, Bool_t AssITSrefitCut, Int_t TPCnCut, Bool_t UseNewEP, Bool_t UseTender,Int_t period, TString passV0, TString passTPC,Bool_t TimeCut,Bool_t WeightSyst,Bool_t SystTOFcut, Double_t CutM02, Double_t CutM20, Bool_t SScut){
+AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut,Double_t AssPtCut, Int_t AssTPCnCut, Int_t  ITSncut, Bool_t AssITSrefitCut, Int_t TPCnCut, Bool_t UseNewEP, Bool_t UseTender,Int_t period, TString passV0, TString passTPC,Bool_t TimeCut,Bool_t WeightSyst,Bool_t SystTOFcut, Double_t CutM02, Double_t CutM20, Bool_t SScut, Bool_t EnablePileupRejVZEROTPCout){
   //
   // HFE standard task configuration
   //
@@ -11,7 +11,7 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   hfecuts->SetMinRatioTPCclusters(0.6);
   hfecuts->SetMaxChi2perClusterTPC(3.5);
   hfecuts->SetTPCmodes(AliHFEextraCuts::kFound, AliHFEextraCuts::kFoundOverFindable);
-  hfecuts->SetMinNClustersITS(3);
+  //hfecuts->SetMinNClustersITS(ITSncut);
   hfecuts->SetCutITSpixel(AliHFEextraCuts::kAny);
   hfecuts->SetCheckITSLayerStatus(kFALSE);
   hfecuts->SetVertexRange(10.);
@@ -24,6 +24,7 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   task->SetHFECuts(hfecuts);
   task->SetAssPtCut(AssPtCut);
   task->SetAssTPCnCut(AssTPCnCut);
+  task->SetTPCnCut(TPCnCut);
   task->SetITSnCut(ITSncut);
   task->SetAssITSrefitCut(AssITSrefitCut);
   task->SetPeriod(period);
@@ -40,6 +41,7 @@ AliAnalysisTaskFlowTPCEMCalEP* ConfigHFE_FLOW_TPCEMCal_EP(Bool_t useMC, Double_t
   task->SetCutM02(CutM02);
   task->SetCutM20(CutM20);
   task->SetSScut(SScut);
+  task->SetPileUpCut(EnablePileupRejVZEROTPCout);
     
   // Define PID
   AliHFEpid *pid = task->GetPID();

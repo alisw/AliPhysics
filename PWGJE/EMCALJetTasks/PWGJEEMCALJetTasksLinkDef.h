@@ -45,14 +45,6 @@
 #pragma link C++ class AliAnalysisTaskBackFlucRandomCone+;
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA+;
-#pragma link C++ class AliAnalysisTaskJetExtractor+;
-#pragma link C++ class AliBasicPID+;
-#pragma link C++ class std::vector<AliBasicPID>+;
-#pragma link C++ class AliBasicJetConstituent+;
-#pragma link C++ class std::vector<AliBasicJetConstituent>+;
-#pragma link C++ class AliBasicJetSecondaryVertex+;
-#pragma link C++ class std::vector<AliBasicJetSecondaryVertex>+;
-#pragma link C++ class AliBasicJet+;
 #pragma link C++ class AliAnalysisTaskChargedJetsHadronCF+;
 #pragma link C++ class AliChargedJetsHadronCFCuts+;
 #pragma link C++ class AliAnalysisTaskChargedJetsHadronToy+;
@@ -82,6 +74,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetSparseMaker+;
 #pragma link C++ class AliAnalysisTaskEmcalTmpSparseMaker+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
+#pragma link C++ class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;
 #pragma link C++ class AliAnalysisTaskEmcalJetTagger+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerMatcher+;
@@ -150,7 +143,6 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecTrackAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerRecJetAnalysisComponent+;
-
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerWeightHandler+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerPtHardWeight+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliEMCalTriggerAnaClassManager+;
@@ -200,6 +192,8 @@
 #pragma link C++ class HighPtTracks::AliReducedMatchedTrack+;
 #pragma link C++ class AliAnalysisTaskJetsEvshape+;
 #pragma link C++ class AliJetEmbeddingSelRhoTask+;
+#pragma link C++ class Cumulants+;
+#pragma link C++ class VPart+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliEmcalJetUtility+;
@@ -215,6 +209,7 @@
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
 #pragma link C++ class AliAnalysisTaskHJetSpectra+;
 #pragma link C++ class AliAnalysisTaskSubJetFraction+;
+#pragma link C++ class AliAnalysisTaskRecoilJetYield+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet+;
 #pragma link C++ class HighPtTracks::AliHighPtReconstructionEfficiency+;
