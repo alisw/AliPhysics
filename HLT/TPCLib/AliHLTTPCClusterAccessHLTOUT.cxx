@@ -56,6 +56,7 @@ AliHLTTPCClusterAccessHLTOUT::AliHLTTPCClusterAccessHLTOUT()
   , fCurrentSector(-1)
   , fCurrentRow(-1)
   , fPropagateSplitClusterFlag(0)
+  , fPropagateEdgeClusterFlag(0)
   , fMarkEdgeClusters(0)
   , fpDecoder(NULL)
   , fTPCParam(NULL)
@@ -125,7 +126,7 @@ TObject* AliHLTTPCClusterAccessHLTOUT::FindObject(const char *name) const
   /// inherited from TObject: return the cluster array if name id "clusterarray"
   if (strcmp(name, "clusterarray")==0) {
     if (fCurrentSector<0) return NULL;
-    return fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag, fMarkEdgeClusters);
+    return fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag, fPropagateEdgeClusterFlag, fMarkEdgeClusters);
   }
   return TObject::FindObject(name);
 }
@@ -135,7 +136,7 @@ void AliHLTTPCClusterAccessHLTOUT::Copy(TObject &object) const
   /// inherited from TObject: supports writing of data to AliTPCClustersRow
   AliTPCClustersRow* rowcl=dynamic_cast<AliTPCClustersRow*>(&object);
   if (rowcl) {
-    fClusters->FillSectorArray(rowcl->GetArray(), fCurrentSector, fCurrentRow, fPropagateSplitClusterFlag, fMarkEdgeClusters);
+    fClusters->FillSectorArray(rowcl->GetArray(), fCurrentSector, fCurrentRow, fPropagateSplitClusterFlag, fPropagateEdgeClusterFlag, fMarkEdgeClusters);
     return;
   }
   return TObject::Copy(object);
@@ -210,7 +211,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 
   if (fClusters->HaveData()) {
     // cluster container already filled
-//     TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag, fMarkEdgeClusters);
+//     TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag, fPropagateEdgeClusterFlag, fMarkEdgeClusters);
 //     if (!pArray) {
 //       AliError(Form("can not get cluster array for sector %d", sector));
 //       return -ENOBUFS;
@@ -243,6 +244,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       if (pStr)
       {
         if (pStr->GetString().Contains("-propagate-split-cluster-flag")) fPropagateSplitClusterFlag = 1;
+		if (pStr->GetString().Contains("-propagate-edge-cluster-flag")) fPropagateEdgeClusterFlag = 1;
         if (pStr->GetString().Contains("-mark-edge-clusters")) fMarkEdgeClusters = 1;
       }
     }
@@ -426,7 +428,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 //   if (fVerbosity>0) {
 //     int nConvertedClusters=0;
 //     for (int s=0; s<72; s++) {
-//       TObjArray* pArray=fClusters->GetSectorArray(s, fPropagateSplitClusterFlag, fMarkEdgeClusters);
+//       TObjArray* pArray=fClusters->GetSectorArray(s, fPropagateSplitClusterFlag, fPropagateEdgeClusterFlag, fMarkEdgeClusters);
 //       if (!pArray) continue;
 //       nConvertedClusters+=pArray->GetEntriesFast();
 //     }
@@ -434,7 +436,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 //   }
 
   fClusters->MarkValid();
-//   TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag, fMarkEdgeClusters);
+//   TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector, fPropagateSplitClusterFlag, fPropagateEdgeClusterFlag, fMarkEdgeClusters);
 //   if (!pArray) {
 //     AliError(Form("can not get cluster array for sector %d", sector));
 //     return -ENOBUFS;
@@ -527,18 +529,18 @@ void  AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::Clear(Option_t* opti
   }
 }
 
-TObjArray* AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::GetSectorArray(unsigned sector, int propagateSplitClusterFlag, int markEdgeClusters) const
+TObjArray* AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::GetSectorArray(unsigned sector, int propagateSplitClusterFlag, int propagateEdgeClusterFlag, int markEdgeClusters) const
 {
   /// get the cluster array for a sector
   if (fClusterMaps.size()<=sector) return NULL;
   if (fSectorArray &&
-      FillSectorArray(fSectorArray, sector, -1, propagateSplitClusterFlag, markEdgeClusters)<0) {
+      FillSectorArray(fSectorArray, sector, -1, propagateSplitClusterFlag, propagateEdgeClusterFlag, markEdgeClusters)<0) {
     fSectorArray->Clear();
   }
   return fSectorArray;
 }
 
-int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row, int propagateSplitClusterFlag, int markEdgeClusters) const
+int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row, int propagateSplitClusterFlag, int propagateEdgeClusterFlag, int markEdgeClusters) const
 {
   /// fill the cluster array for a sector and specific row if specified
   if (!pSectorArray) return -EINVAL;
@@ -564,7 +566,11 @@ int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClone
       pCluster->SetType((int) map[i].fCluster.GetFlagSplitPad() + ((int) map[i].fCluster.GetFlagSplitTime() << 1));
     }
     
-    if (markEdgeClusters)
+    if (propagateEdgeClusterFlag && map[i].fCluster.GetFlagEdge())
+    {
+        pCluster->SetType(-(pCluster->GetType() + 3));
+    }
+    else if (markEdgeClusters)
     {
       int fullRow = pCluster->GetRow();
       if (sector > 36) fullRow += AliHLTTPCGeometry::GetFirstRow(2);

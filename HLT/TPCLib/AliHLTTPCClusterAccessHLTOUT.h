@@ -109,6 +109,11 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   /// scan parameters
   /// known: sector=<n> row=<n>
   int ScanParameters(const char* params);
+  
+  //Expose treatment of flags
+  bool GetPropagateSplitClusterFlag() {return(fPropagateSplitClusterFlag);}
+  bool GetPropagateEdgeClusterFlag() {return(fPropagateEdgeClusterFlag);}
+  bool GetMarkEdgeClusterFlag() {return(fMarkEdgeClusters);}
 
   /// helper struct to store cluster in a map together with MC info
   struct AliRawClusterEntry {
@@ -201,9 +206,9 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
     /// internal cleanup
     virtual void  Clear(Option_t * option="");
     /// get the cluster array for a sector
-    TObjArray* GetSectorArray(unsigned sector, int propagateSplitClusterFlag = 0, int markEdgeClusters = 0) const;
+    TObjArray* GetSectorArray(unsigned sector, int propagateSplitClusterFlag = 0, int propagateEdgeClusterFlag = 0, int markEdgeClusters = 0) const;
     /// fill the cluster array for a sector and specific row if specified
-    int FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row=-1, int propagateSplitClusterFlag = 0, int markEdgeClusters = 0) const;
+    int FillSectorArray(TClonesArray* pSectorArray, unsigned sector, int row=-1, int propagateSplitClusterFlag = 0, int propagateEdgeClusterFlag = 0, int markEdgeClusters = 0) const;
     /// print info
     virtual void Print(Option_t *option=NULL) const;
 
@@ -241,6 +246,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   int fCurrentSector; //! current sector
   int fCurrentRow; //! current row
   int fPropagateSplitClusterFlag; //! propagate flags for split clusters
+  int fPropagateEdgeClusterFlag; //!
   int fMarkEdgeClusters; //! mark edge clusters during decoding
   AliHLTTPCDataCompressionDecoder* fpDecoder; //! decoder instance
   AliTPCParam* fTPCParam; //! pointer to TPC param
