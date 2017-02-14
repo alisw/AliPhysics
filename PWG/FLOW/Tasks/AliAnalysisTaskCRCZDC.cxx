@@ -229,6 +229,7 @@ fhZNBCCorr(0x0)
     SpecCorMu1[i] = NULL;
     SpecCorMu2[i] = NULL;
     FitSpecCorSi[i] = NULL;
+    SpecCorAv[i] = NULL;
   }
   this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(1);
@@ -379,6 +380,7 @@ fhZNBCCorr(0x0)
     SpecCorMu1[i] = NULL;
     SpecCorMu2[i] = NULL;
     FitSpecCorSi[i] = NULL;
+    SpecCorAv[i] = NULL;
   }
   this->InitializeRunArrays();
   fMyTRandom3 = new TRandom3(iseed);
@@ -545,6 +547,8 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
       fOutput->Add(SpecCorMu1[i]);
       SpecCorMu2[i] = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorMu2[%d]",i));
       fOutput->Add(SpecCorMu2[i]);
+      SpecCorAv[i] = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorAv[%d]",i));
+      fOutput->Add(SpecCorAv[i]);
     }
     for(Int_t i=0; i<8; i++) {
       TH1D* SpecCorMu = (TH1D*)fZDCSpectraCorrList->FindObject(Form("SpecCorSi[%d]",i));
@@ -1441,8 +1445,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           if(fUseZDCSpectraCorr) {
             Double_t mu1 = SpecCorMu1[i]->Interpolate(centrperc);
             Double_t mu2 = SpecCorMu2[i]->Interpolate(centrperc);
+            Double_t av = SpecCorAv[i]->Interpolate(centrperc);
             Double_t cor1 = FitSpecCorSi[i]->Eval(centrperc);
-            EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 );
+            EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 ) + av;
             fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
           }
           
@@ -1466,8 +1471,9 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
           if(fUseZDCSpectraCorr) {
             Double_t mu1 = SpecCorMu1[i+4]->Interpolate(centrperc);
             Double_t mu2 = SpecCorMu2[i+4]->Interpolate(centrperc);
+            Double_t av = SpecCorAv[i+4]->Interpolate(centrperc);
             Double_t cor1 = FitSpecCorSi[i+4]->Eval(centrperc);
-            EZNA = exp( (log(EZNA) - mu1 + mu2*cor1)/cor1 );
+            EZNA = exp( (log(EZNA) - mu1 + mu2*cor1)/cor1 ) + av;
             fhZNSpectraCor->Fill(centrperc,i+4.5,EZNA);
           }
           
