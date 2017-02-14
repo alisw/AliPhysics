@@ -572,7 +572,7 @@ int AliHLTTPCClusterAccessHLTOUT::AliRawClusterContainer::FillSectorArray(TClone
       if (pCluster->GetPad() < 1.2 + pCluster->GetSigmaY2() || pCluster->GetPad() > maxPad - 1.2 - pCluster->GetSigmaY2())
       {
         //printf("Cluster Sector %d Row %d Pad %f Time %f Sigma %f MaxPad %d\n", sector, (int) pCluster->GetRow(), pCluster->GetPad(), pCluster->GetTimeBin(), (float) pCluster->GetSigmaY2(), maxPad);
-        pCluster->SetType(pCluster->GetType() | 0x84);
+        pCluster->SetType(-(pCluster->GetType() + 3));
       }
     }
 
