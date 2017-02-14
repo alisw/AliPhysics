@@ -282,6 +282,7 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
   static int nCluDeconvolutedPad = 0;
   static int nCluDeconvolutedPadAndTime = 0;
   static int nCluDeconvolutedPadOrTime = 0;
+  static int nCluEdge = 0;
 
   for( unsigned long ndx=0; ndx<evtData.fBlockCnt; ndx++ ){
      
@@ -378,10 +379,15 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 	      nCluDeconvolutedTime++;
 	      c.SetFlagSplitTime();
 	    }
+	    if( cl.IsEdge() )
+	    {
+	      nCluEdge++;
+	      c.SetFlagEdge();
+	    }
 	    if( cl.IsDeconvolutedPad() && cl.IsDeconvolutedTime() ) nCluDeconvolutedPadAndTime++;
 	    if( cl.IsDeconvolutedPad() || cl.IsDeconvolutedTime() ) nCluDeconvolutedPadOrTime++;
 	  }
-	}	
+	}
       }
       // fill into HLT output data
       AliHLTComponentBlockData bdRawClusters;
@@ -400,8 +406,8 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 
   double tmp = nCluTotal>0 ?100./nCluTotal :0;
 
-  HLTInfo(" decoded clusters total %d, deconvoluted pad %f\%, time %f\%, pd&&tm %f\%, pd||tm %f\%",
-	  nCluTotal,(nCluDeconvolutedPad*tmp), (nCluDeconvolutedTime*tmp), (nCluDeconvolutedPadAndTime*tmp), (nCluDeconvolutedPadOrTime*tmp) );
+  HLTInfo(" decoded clusters total %d, deconvoluted pad %f\%, time %f\%, pd&&tm %f\%, pd||tm %f, edge %f\%\%",
+	  nCluTotal,(nCluDeconvolutedPad*tmp), (nCluDeconvolutedTime*tmp), (nCluDeconvolutedPadAndTime*tmp), (nCluDeconvolutedPadOrTime*tmp), (nCluEdge*tmp));
 
   if( fDoMerge && fpClusterMerger ){
     fpClusterMerger->Clear();
@@ -487,4 +493,3 @@ void AliHLTTPCHWClusterDecoderComponent::PrintDebug(AliHLTUInt32_t *buffer, Int_
     printf("\n");
   }
 } // end of PrintDebug
-

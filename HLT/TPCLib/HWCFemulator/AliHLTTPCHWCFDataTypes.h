@@ -97,7 +97,7 @@ AliHLTTPCHWCFCluster(): fFlag(0), fRowQ(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0),
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
   AliHLTUInt32_t fRowQ; // bits 30-31 = 0x3
                         // bits 24-29 = row number
-                        // bit  23    = 0 (not used) 
+                        // bit  23    = flag: edge cluster 
                         // bits 0 -22 = max adc value as fixed point integer,
                         //              with 12 bits after the point
   AliHLTUInt32_t fQ;    // 0-29 total charge as fixed point integer, 12 bits after the point

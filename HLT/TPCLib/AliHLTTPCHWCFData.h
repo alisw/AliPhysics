@@ -42,7 +42,7 @@ class TArrayC;
  *   word 0: header (big endian 32bit unsigned)
  *           bit 31-30: 0x11 indicates cluster
  *           bit 29-24: row number in partition
- *           bit 23: empty
+ *           bit 23: is set when the cluster is an edge cluster
  *           bit 22-0: Qmax, fixed point number with 6 bits after the point
  *   word 1: bit 31: is set when cluster is deconvoluted in pad direction
  *           bit 30: is set when cluster is deconvoluted in time direction
@@ -72,6 +72,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
   Int_t    GetQMax(int i)    const;
   Bool_t   IsDeconvolutedPad(int i) const;
   Bool_t   IsDeconvolutedTime(int i) const;
+  Bool_t   IsEdge(int i) const;
 
   int CheckVersion();
   bool CheckAssumption(int format, const AliHLTUInt8_t* pData, int size) const;
@@ -145,6 +146,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     Int_t    GetQMax()    const {return -1;}
     Bool_t   IsDeconvolutedPad() const {return 0;}
     Bool_t   IsDeconvolutedTime() const {return 0;}
+    Bool_t   IsEdge() const {return 0;}
   };
 
   struct AliHLTTPCHWClusterV1 {
@@ -170,6 +172,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     Int_t    GetQMax()    const;
     Bool_t   IsDeconvolutedPad() const;
     Bool_t   IsDeconvolutedTime() const;
+    Bool_t   IsEdge() const;
   };
 
   template<typename T>
@@ -192,6 +195,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     Int_t    GetQMax(int i)    const {return fpClusterArray[i]->GetQMax();}
     Bool_t   IsDeconvolutedPad(int i) const {return fpClusterArray[i]->IsDeconvolutedPad();}
     Bool_t   IsDeconvolutedTime(int i) const {return fpClusterArray[i]->IsDeconvolutedTime();}
+    Bool_t   IsEdge(int i) const {return fpClusterArray[i]->IsEdge();}
     
   private:
     const T* fpClusterArray; //! array of clusters
@@ -280,6 +284,12 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
       } return -1;
     }
 
+	Bool_t    IsEdge()    const {
+      switch (fVersion) {
+      case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(fData)->IsEdge();
+      case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(fData)->IsEdge();
+      } return -1;
+    }
   protected:
   private:
     const AliHLTUInt8_t* fData; //! data

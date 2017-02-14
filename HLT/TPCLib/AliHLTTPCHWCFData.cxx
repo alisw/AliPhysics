@@ -274,6 +274,19 @@ Bool_t    AliHLTTPCHWCFData::IsDeconvolutedTime(int i)    const
   return -1;
 }
 
+Bool_t    AliHLTTPCHWCFData::IsEdge(int i)    const
+{
+  // get IsDeconvolutedTime flag
+  if (fVersion>=0 && CheckBounds(i)) {
+    switch (fVersion) {
+    case 0: return reinterpret_cast<const AliHLTTPCHWClusterV0*>(Get(i))->IsEdge();
+    case 1: return reinterpret_cast<const AliHLTTPCHWClusterV1*>(Get(i))->IsEdge();
+    default:
+      ALIHLTERRORGUARD(1, "invalid format version %d", fVersion);
+    }
+  }
+  return -1;
+}
 
 void AliHLTTPCHWCFData::Print(const char* option)
 {
@@ -298,6 +311,7 @@ void AliHLTTPCHWCFData::Print(const char* option)
       cout << /* setw(8) <<*/ " " << GetQMax(i);
       cout << /* setw(2) <<*/ " " << IsDeconvolutedPad(i);
       cout << /* setw(2) <<*/ " " << IsDeconvolutedTime(i);
+      cout << /* setw(2) <<*/ " " << IsEdge(i);
       cout << endl;
     }
   }
@@ -398,4 +412,11 @@ Bool_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::IsDeconvolutedTime()    const
   // bit 30 of word 1
   AliHLTUInt32_t word1=AliHLTTPCHWCFEmulator::ReadBigEndian(fWord1);
   return (word1 >> 30) & 0x1;
+}
+
+Bool_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::IsEdge()    const
+{
+  // bit 30 of word 1
+  AliHLTUInt32_t header=AliHLTTPCHWCFEmulator::ReadBigEndian(fWord1);
+  return (header >> 23) & 0x1;
 }

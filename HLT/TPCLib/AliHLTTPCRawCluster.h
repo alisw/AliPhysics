@@ -67,7 +67,8 @@ struct AliHLTTPCRawCluster {
   short fPadRow;
   unsigned short fFlags; //Flags: (1 << 0): Split in pad direction
                          //       (1 << 1): Split in time direction
-                         //During cluster merging, flags are or'd
+                         //       (1 << 2): Edge Cluster
+                         //During cluster merging, flags are OR'd
   float fPad;
   float fTime;
   float fSigmaPad2;
@@ -85,6 +86,7 @@ struct AliHLTTPCRawCluster {
   Bool_t  GetFlagSplitPad() const {return (fFlags & (1 << 0));}
   Bool_t  GetFlagSplitTime() const {return (fFlags & (1 << 1));}
   Bool_t  GetFlagSplitAny() const {return (fFlags & 3);}
+  Bool_t  GetFlagEdge() const {return (fFlags & (1 << 2));}
   unsigned short GetFlags() const {return(fFlags);}
 
   void SetPadRow(Short_t padrow)  {fPadRow=padrow;}
@@ -99,6 +101,7 @@ struct AliHLTTPCRawCluster {
   void SetFlags(unsigned short flags) {fFlags = flags;}
   void SetFlagSplitPad() {fFlags |= (1 << 0);}
   void SetFlagSplitTime() {fFlags |= (1 << 1);}
+  void SetFlagEdge() {fFlags |= (1 << 2);}
 };
 typedef struct AliHLTTPCRawCluster AliHLTTPCRawCluster;
 
