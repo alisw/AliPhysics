@@ -842,7 +842,7 @@ int AliHLTTPCRawSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
  
       AliHLTTPCClusterFlagsData* clusterFlagsData = (AliHLTTPCClusterFlagsData*) (outputPtr + size);
       clusterFlagsData->fVersion = 1;
-      clusterFlagsData->fNumberOfFlags = 2;
+      clusterFlagsData->fNumberOfFlags = 3;
 
       unsigned int tmpVal = 0;
       unsigned int tmppos = 0;
