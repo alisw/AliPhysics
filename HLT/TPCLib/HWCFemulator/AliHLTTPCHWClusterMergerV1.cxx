@@ -336,6 +336,7 @@ int AliHLTTPCHWClusterMergerV1::Merge()
       
 	c1->SetPad( w1*c1->GetPad() + w2*c2->GetPad() );
 	c1->SetTime( w1*c1->GetTime() + w2*c2->GetTime() );
+	c1->fFlags |= c2->fFlags;
       
 	// merge MC labels
 	if( mc1 && mc2 ){
@@ -415,4 +416,3 @@ int AliHLTTPCHWClusterMergerV1::Merge()
   if (iResult<0) return iResult;
   return count;
 }
-
