@@ -319,7 +319,7 @@ unsigned short AliHLTTPCDataCompressionDecoder::GetNextClusterFlag()
   if (fCurrentClusterFlags->fVersion == 0) return(0); //Shipping of cluster flags was disabled during reconstruction
   if (fCurrentClusterFlags->fVersion >= 2)
   {
-    HLTError("Invalid version for compression of cluster flags. Version in the Data: %d, maximum version supported by this AliRoot Version: %d", fCurrentClusterFlags->fVersion, 2);
+    HLTError("Invalid version for compression of cluster flags. Version in the Data: %d, maximum version supported by this AliRoot Version: %d", fCurrentClusterFlags->fVersion, 1);
     return(0);
   }
   if (fCurrentClusterFlags->fVersion == 1)
