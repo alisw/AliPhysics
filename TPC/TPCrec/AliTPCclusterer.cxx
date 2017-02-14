@@ -1529,6 +1529,9 @@ Int_t AliTPCclusterer::ReadHLTClusters()
       TObjArray* clusterArray=fRowCl->GetArray();
       if (!clusterArray) continue;
       AliDebug(4,Form("Reading %d clusters from HLT for sector %d row %d", clusterArray->GetEntriesFast(), fSector, fRow));
+      
+      int edge_flags_set = 0;
+      pClusterAccess->Execute("get_edge_flags_set", NULL, &edge_flags_set);
 
       for (Int_t i=0; i<clusterArray->GetEntriesFast(); i++) {
 	if (!clusterArray->At(i)) 
@@ -1569,7 +1572,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
         
 	nClusterSectorGood++;
 	// Note: cluster is simply adjusted, not cloned nor added to any additional array
-	AddCluster(*cluster, false, NULL, 0, true);
+	AddCluster(*cluster, false, NULL, 0, !edge_flags_set);
       }
       // remove the empty slots from the array
       clusterArray->Compress();

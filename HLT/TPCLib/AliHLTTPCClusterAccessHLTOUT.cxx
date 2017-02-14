@@ -103,6 +103,10 @@ void AliHLTTPCClusterAccessHLTOUT::Execute(const char *method,  const char *para
     if (error) *error=iResult;
     return;
   }
+  if (strcmp(method, "get_edge_flags_set")==0) {
+    *error = GetPropagateEdgeClusterFlag() || GetMarkEdgeClusterFlag();
+    return;
+  }
   if (strcmp(method, "verbosity")==0) {
     int iResult=0;
     if (params) {
