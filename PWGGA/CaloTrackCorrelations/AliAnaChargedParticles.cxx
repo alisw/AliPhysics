@@ -101,6 +101,15 @@ fhPtNPileUpSPDVtxBC0(0), fhPtNPileUpTrkVtxBC0(0)
     fhPtDCAVtxInBC0PileUpNoTOFHit [i] = 0 ;
   }
   
+  for(Int_t i = 0; i < 18; i++)
+  {
+    for(Int_t j = 0; j < 2; j++)
+    {
+      fhPtPerRegion   [i][j] = 0;
+      fhSumPtPerRegion[i][j] = 0;
+    }
+  }
+  
   // MC
   for(Int_t imcPart = 0; imcPart < 6; imcPart++)
   {
@@ -244,6 +253,27 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhPt  = new TH1F ("hPt","#it{p}_{T} distribution", nptbins,ptmin,ptmax); 
   fhPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPt);
+  
+  for(Int_t i = 0; i < 18; i++)
+  {
+    for(Int_t j = 0; j < 2; j++)
+    {
+      fhPtPerRegion[i][j] = new TH1F 
+      (Form("hPt_Sector%d_Side%d",i,j),
+       Form("#it{p}_{T} distribution per region (%d,%d)",i,j), 
+       nptbins,ptmin,ptmax); 
+      fhPtPerRegion[i][j]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhPtPerRegion[i][j]);
+      
+      fhSumPtPerRegion[i][j] = new TH1F 
+      (Form("hSumPt_Sector%d_Side%d",i,j),
+       Form("#Sigma #it{p}_{T} distribution per region (%d,%d)",i,j), 
+       nptbins,ptmin,ptmax); 
+      fhSumPtPerRegion[i][j]->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      outputContainer->Add(fhSumPtPerRegion[i][j]);
+    }
+  }
+
   
   fhPtNoCut  = new TH1F ("hPtNoCut","#it{p}_{T} distribution, raw tracks", nptbins,ptmin,ptmax);
   fhPtNoCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -1301,6 +1331,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
   Float_t pt  = 0;
   Float_t phi = 0;
   Float_t eta = 0;
+  Float_t sum[18][2];
+  for(Int_t i = 0; i < 18; i++) 
+    for(Int_t j = 0; j < 2; j++) 
+      sum[i][j] = 0;  
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
@@ -1311,6 +1345,15 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     phi = track->Phi();
     
     fhPt->Fill(pt, GetEventWeight());
+    
+    Int_t  sector = GetTrackSector(phi);
+    Bool_t side   = GetTrackSide  (eta);
+
+    //printf("track eta %2.2f, side %d, phi %2.2f sector %d\n",
+    //       eta, GetTrackSide(eta), phi, GetTrackSector(phi));
+    
+    fhPtPerRegion[sector][side]->Fill(pt, GetEventWeight());
+    sum[sector][side]+=pt;
     
     if(track->GetChargedBit())
     {
@@ -1372,4 +1415,12 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     } // Work with stack also
     
   } // aod branch loop
+  
+  for(Int_t i = 0; i < 18; i++) 
+  {
+    for(Int_t j = 0; j < 2; j++) 
+    {
+      fhSumPtPerRegion[i][j]->Fill(sum[i][j], GetEventWeight());
+    }
+  }
 }
