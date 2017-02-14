@@ -331,12 +331,16 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhEtaPhiInPerpCone ;                        //!<! Eta vs. phi of tracks in perpendicular cone
   TH2F *   fhEtaPhiInPerpConeTOFBC0 ;                  //!<! Eta vs. phi of tracks in perpendicular cone, with TOF BC=0.
   
-  TH2F *   fhEtaBandCluster ;                          //!<! Accumulated pT in Eta band to estimate UE in cone, only clusters.
-  TH2F *   fhPhiBandCluster ;                          //!<! Accumulated pT in Phi band to estimate UE in cone, only clusters.
-  TH2F *   fhEtaBandTrack   ;                          //!<! Accumulated pT in Eta band to estimate UE in cone, only tracks.
-  TH2F *   fhPhiBandTrack   ;                          //!<! Accumulated pT in Phi band to estimate UE in cone, only tracks.
-  TH2F *   fhEtaBandCell ;                             //!<! Accumulated pT in Eta band to estimate UE in cone, only cells.
-  TH2F *   fhPhiBandCell ;                             //!<! Accumulated pT in Phi band to estimate UE in cone, only cells.
+  TH2F *   fhEtaBandClusterEtaPhi ;                    //!<! Eta vs Phi in Eta band to estimate UE in cone, only clusters. 
+  TH2F *   fhPhiBandClusterEtaPhi ;                    //!<! Eta vs Phi in Phi band to estimate UE in cone, only clusters.
+  TH2F *   fhEtaBandTrackEtaPhi   ;                    //!<! Eta vs Phi in Eta band to estimate UE in cone, only tracks.
+  TH2F *   fhPhiBandTrackEtaPhi   ;                    //!<! Eta vs Phi in Phi band to estimate UE in cone, only tracks. 
+  TH2F *   fhEtaBandClusterPt ;                        //!<! pT in Eta band to estimate UE in cone, only clusters.
+  TH2F *   fhPhiBandClusterPt ;                        //!<! pT in Phi band to estimate UE in cone, only clusters.
+  TH2F *   fhEtaBandTrackPt   ;                        //!<! pT in Eta band to estimate UE in cone, only tracks.
+  TH2F *   fhPhiBandTrackPt   ;                        //!<! pT in Phi band to estimate UE in cone, only tracks.
+  TH2F *   fhEtaBandCell ;                             //!<! Row vs Column in Eta band to estimate UE in cone, only cells.
+  TH2F *   fhPhiBandCell ;                             //!<! Row vs Column in Phi band to estimate UE in cone, only cells.
 
   TH2F *   fhConePtLead ;                              //!<! Cluster and tracks leading pt in the cone.
   TH2F *   fhConePtLeadCluster ;                       //!<! Clusters leading pt in the cone.
