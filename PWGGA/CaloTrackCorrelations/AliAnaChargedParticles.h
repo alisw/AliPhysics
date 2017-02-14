@@ -68,8 +68,8 @@ class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   TH1F * fhPtCutDCA;                        //!<! pT distribution, Apply DCA cut
   TH1F * fhPtCutDCABCOK;                    //!<! pT distribution, Apply DCA cut, BC=0 or -100
 
-  TH2F * fhPtPerRegion[2];                  //!<! pT distribution in TPC regions, y axis sector, array side
-  TH2F * fhSumPtPerRegion[2];               //!<! pT distribution in TPC regions, y axis sector, array side
+  TH1F * fhPtPerRegion   [18][2];           //!<! pT distribution in TPC regions
+  TH1F * fhSumPtPerRegion[18][2];           //!<! pT distribution in TPC regions
   
   TH1F * fhPtNotPrimary;                    //!<! pT spectra of tracks not declared as primary (AOD)
   TH1F * fhPtNotSharedClusterCut;           //!<! pT spectra of tracks not passing the shared clusters cut (AOD)
