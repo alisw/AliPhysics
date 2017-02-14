@@ -1444,22 +1444,22 @@ Int_t AliTPCclusterer::ReadHLTClusters()
   //
 
   if (!fHLTClusterAccess) {
-  TClass* pCl=NULL;
-  ROOT::NewFunc_t pNewFunc=NULL;
-  do {
-    pCl=TClass::GetClass("AliHLTTPCClusterAccessHLTOUT");
-  } while (!pCl && gSystem->Load("libAliHLTTPC")==0);
-  if (!pCl || (pNewFunc=pCl->GetNew())==NULL) {
-    AliError("can not load class description of AliHLTTPCClusterAccessHLTOUT, aborting ...");
-    return -1;
-  }
+    TClass* pCl=NULL;
+    ROOT::NewFunc_t pNewFunc=NULL;
+    do {
+      pCl=TClass::GetClass("AliHLTTPCClusterAccessHLTOUT");
+    } while (!pCl && gSystem->Load("libAliHLTTPC")==0);
+    if (!pCl || (pNewFunc=pCl->GetNew())==NULL) {
+      AliError("can not load class description of AliHLTTPCClusterAccessHLTOUT, aborting ...");
+      return -1;
+    }
   
-  void* p=(*pNewFunc)(NULL);
-  if (!p) {
-    AliError("unable to create instance of AliHLTTPCClusterAccessHLTOUT");
-    return -2;
-  }
-  fHLTClusterAccess=reinterpret_cast<TObject*>(p);
+    void* p=(*pNewFunc)(NULL);
+    if (!p) {
+      AliError("unable to create instance of AliHLTTPCClusterAccessHLTOUT");
+      return -2;
+    }
+    fHLTClusterAccess=reinterpret_cast<TObject*>(p);
   }
 
   TObject* pClusterAccess=fHLTClusterAccess;
