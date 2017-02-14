@@ -416,7 +416,7 @@ Bool_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::IsDeconvolutedTime()    const
 
 Bool_t    AliHLTTPCHWCFData::AliHLTTPCHWClusterV1::IsEdge()    const
 {
-  // bit 30 of word 1
-  AliHLTUInt32_t header=AliHLTTPCHWCFEmulator::ReadBigEndian(fWord1);
+  // bit 23 of header
+  AliHLTUInt32_t header=AliHLTTPCHWCFEmulator::ReadBigEndian(fHeader);
   return (header >> 23) & 0x1;
 }
