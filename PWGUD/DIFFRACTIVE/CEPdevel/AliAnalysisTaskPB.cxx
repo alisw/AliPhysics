@@ -1207,17 +1207,6 @@ void AliAnalysisTaskPB::UserExec(Option_t *)
   if (fMCEvent) fPhysicsSelection->SetAnalyzeMC(kTRUE);
   evbuf->SetPhyssel(fPhysicsSelection->IsCollisionCandidate(fESDEvent)>0);
   
-  // check event with AliInputEventHandler
-	AliInputEventHandler *inputHandler = (AliInputEventHandler*)
-		AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-	if (!inputHandler) {
-    if (!inputHandler->IsEventSelected()) {
-      evbuf->SetEvHandlersel(kFALSE);
-    }
-  } else {
-    evbuf->SetEvHandlersel(kTRUE);
-  }
-
 	//= ANALYZE ONLY PHOJET CD EVENTS ============================================
 	if (fAnalysisStatus & AliPBBase::kBitCDonly) {
 		if (fMCEvent) {

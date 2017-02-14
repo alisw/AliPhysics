@@ -129,6 +129,16 @@ Bool_t AliMultiplicitySelectionCP::InitV0Daughters(AliESDEvent *esd)
 
 Int_t AliMultiplicitySelectionCP::GetNumberOfITSTPCtracks(AliESDEvent *esd, TArrayI &indices)
 {
+  
+  // selects CEP tracks (Martin's selection)
+  // possible return values
+  //  >0: number of selected tracks
+  //  -1: tracks with large number of shared clusters
+  //  -2: selected tracks with out-of-eta-range
+  //  -3: selected tracks which do not pass default track cuts
+  //  -4: more tracklets or ITSpure tracks than selected tracks
+  //  -5: not all fired chips are associated with a selected track
+  //  -6: reference multiplicity > number of selected tracks
   // initialisation
   //  return -1000;
   indices.Set(esd->GetNumberOfTracks());
