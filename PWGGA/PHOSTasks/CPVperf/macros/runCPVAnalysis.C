@@ -1,8 +1,8 @@
 void runCPVAnalysis(const char *runmode = "full")
 {
     // set if you want to run the analysis locally (kTRUE), or on grid (kFALSE)
-    Bool_t local = kFALSE;
-    // Bool_t local = kTRUE;
+    // Bool_t local = kFALSE;
+     Bool_t local = kTRUE;
     // if you run on grid, specify test mode (kTRUE) or full grid model (kFALSE)
     // Bool_t gridTest = kTRUE;
     Bool_t gridTest = kFALSE;
@@ -16,8 +16,6 @@ void runCPVAnalysis(const char *runmode = "full")
     AliESDInputHandler *esdH = new AliESDInputHandler();
     mgr->SetInputEventHandler(esdH);
 
-    // // compile the class (locally)
-    gROOT->LoadMacro("AliAnalysisTaskCPV.cxx++g");
 
     //PID task
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
@@ -32,7 +30,6 @@ void runCPVAnalysis(const char *runmode = "full")
     // load the addtask macro
     gROOT->LoadMacro("AddTaskCPV.C");
     // create an instance of your analysis task
-    Printf("YK is here\n");
     AliAnalysisTaskCPV *task = AddTaskCPV();
     task->SetRCPV(428.3);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -56,9 +53,6 @@ void runCPVAnalysis(const char *runmode = "full")
 	alienHandler->SetCheckCopy(kFALSE);
         // also specify the include (header) paths on grid
         alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
-        // // make sure your source files get copied to grid
-        alienHandler->SetAdditionalLibs("AliAnalysisTaskCPV.cxx AliAnalysisTaskCPV.h");
-        alienHandler->SetAnalysisSource("AliAnalysisTaskCPV.cxx");
         // select the aliphysics version. all other packages
         // are LOADED AUTOMATICALLY!
         alienHandler->SetAliPhysicsVersion("vAN-20170215-1");

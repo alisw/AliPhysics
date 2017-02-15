@@ -478,7 +478,7 @@ void AliAnalysisTaskCPV::UserExec(Option_t *)
   const Double_t kZmax = fPHOSGeo->GetCPVBoxSize(2); //Size of the CPV module
   const Double_t kAlpha0=270./180.*TMath::Pi() ; //angle of the center of CPV module M=3
 
-  Printf("AliAnalysisTaskCPV::UserExec(): rCPV=%.1f cm\n",frCPV);
+  // Printf("AliAnalysisTaskCPV::UserExec(): rCPV=%.1f cm\n",frCPV);
 
 //=====================  prepare and count ITSTPCtracks in CPV acceptance  ===================
   AliESDtrack** ITSTPCtracks = new  AliESDtrack*[ntr];
