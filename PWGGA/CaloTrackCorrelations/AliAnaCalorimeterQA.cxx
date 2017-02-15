@@ -2655,8 +2655,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhPt);
   
-  fhPhi  = new TH1F ("hPhi","#phi reconstructed clusters ",nphibins,phimin,phimax);
-  fhPhi->SetXTitle("#phi (rad)");
+  fhPhi  = new TH1F ("hPhi","#varphi reconstructed clusters ",nphibins,phimin,phimax);
+  fhPhi->SetXTitle("#varphi (rad)");
   outputContainer->Add(fhPhi);
   
   fhEta  = new TH1F ("hEta","#eta reconstructed clusters ",netabins,etamin,etamax);
@@ -2667,19 +2667,19 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   {
     if(fFillAllTH3)
     {
-      fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
+      fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #varphi vs energy, reconstructed clusters",
                              netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
       fhEtaPhiE->SetXTitle("#eta ");
-      fhEtaPhiE->SetYTitle("#phi (rad)");
+      fhEtaPhiE->SetYTitle("#varphi (rad)");
       fhEtaPhiE->SetZTitle("#it{E} (GeV) ");
       outputContainer->Add(fhEtaPhiE);
     }
     else 
     {
-      fhEtaPhi  = new TH2F ("hEtaPhi","#eta vs #phi for #it{E} > 0.5 GeV, reconstructed clusters",
+      fhEtaPhi  = new TH2F ("hEtaPhi","#eta vs #varphi for #it{E} > 0.5 GeV, reconstructed clusters",
                             netabins,etamin,etamax,nphibins,phimin,phimax); 
       fhEtaPhi->SetXTitle("#eta ");
-      fhEtaPhi->SetYTitle("#phi (rad)");
+      fhEtaPhi->SetYTitle("#varphi (rad)");
       outputContainer->Add(fhEtaPhi);
     }
   }
@@ -2827,10 +2827,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     {"No main cell corr., no other inside cluster" , "No main cell corr., 1 cell correl in cluster" , "No main cell corr., >=2 cell correl in cluster",
      "Main cell corr. & no other inside cluster"   , "Main cell corr. & 1 cell corr. inside cluster", "Main cell corr. & >=2 cell corr. inside cluster"};
     
-    fhEtaPhiFECCorrControl  = new TH2F ("hEtaPhiFECCorrControl","#eta vs #phi for FEC correlation selected clusters",
+    fhEtaPhiFECCorrControl  = new TH2F ("hEtaPhiFECCorrControl","#eta vs #varphi for FEC correlation selected clusters",
                           netabins,etamin,etamax,nphibins,phimin,phimax); 
     fhEtaPhiFECCorrControl->SetXTitle("#eta ");
-    fhEtaPhiFECCorrControl->SetYTitle("#phi (rad)");
+    fhEtaPhiFECCorrControl->SetYTitle("#varphi (rad)");
     outputContainer->Add(fhEtaPhiFECCorrControl);
     
     for(Int_t i = 0; i < 4; i++)
@@ -3156,10 +3156,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhBadClusterEnergy->SetXTitle("#it{E}_{cluster} (GeV) ");
     outputContainer->Add(fhBadClusterEnergy);
 
-    fhBadClusterEtaPhi  = new TH2F ("hBadClusterEtaPhi","Bad cluster, #eta vs #phi, #it{E} > 0.5 GeV", 
+    fhBadClusterEtaPhi  = new TH2F ("hBadClusterEtaPhi","Bad cluster, #eta vs #varphi, #it{E} > 0.5 GeV", 
                                     netabins,etamin,etamax,nphibins,phimin,phimax); 
     fhBadClusterEtaPhi->SetXTitle("#eta ");
-    fhBadClusterEtaPhi->SetXTitle("#phi (rad) ");
+    fhBadClusterEtaPhi->SetXTitle("#varphi (rad) ");
     outputContainer->Add(fhBadClusterEtaPhi);
     
     fhBadClusterLambda0  = new TH2F ("hBadClusterLambda0","Bad cluster,shower shape, #lambda^{2}_{0} vs E",
@@ -3573,14 +3573,14 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTrackMatchedDEtaNeg->SetYTitle("d#eta");
     fhTrackMatchedDEtaNeg->SetXTitle("#it{E}_{cluster} (GeV)");
     
-    fhTrackMatchedDPhiNeg  = new TH2F("hTrackMatchedDPhiNeg","d#phi of cluster-negative track vs cluster energy",
+    fhTrackMatchedDPhiNeg  = new TH2F("hTrackMatchedDPhiNeg","d#varphi of cluster-negative track vs cluster energy",
                                    nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDPhiNeg->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhiNeg->SetYTitle("d#varphi (rad)");
     fhTrackMatchedDPhiNeg->SetXTitle("#it{E}_{cluster} (GeV)");
     
-    fhTrackMatchedDEtaDPhiNeg  = new TH2F("hTrackMatchedDEtaDPhiNeg","d#eta vs d#phi of cluster- negative track vs cluster energy",
+    fhTrackMatchedDEtaDPhiNeg  = new TH2F("hTrackMatchedDEtaDPhiNeg","d#eta vs d#varphi of cluster- negative track vs cluster energy",
                                        nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDEtaDPhiNeg->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhiNeg->SetYTitle("d#varphi (rad)");
     fhTrackMatchedDEtaDPhiNeg->SetXTitle("d#eta");
     
     fhTrackMatchedDEtaPos  = new TH2F("hTrackMatchedDEtaPos","d#eta of cluster-positive track vs cluster energy",
@@ -3588,14 +3588,14 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTrackMatchedDEtaPos->SetYTitle("d#eta");
     fhTrackMatchedDEtaPos->SetXTitle("#it{E}_{cluster} (GeV)");
     
-    fhTrackMatchedDPhiPos  = new TH2F("hTrackMatchedDPhiPos","d#phi of cluster-positive track vs cluster energy",
+    fhTrackMatchedDPhiPos  = new TH2F("hTrackMatchedDPhiPos","d#varphi of cluster-positive track vs cluster energy",
                                       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDPhiPos->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhiPos->SetYTitle("d#varphi (rad)");
     fhTrackMatchedDPhiPos->SetXTitle("#it{E}_{cluster} (GeV)");
     
-    fhTrackMatchedDEtaDPhiPos  = new TH2F("hTrackMatchedDEtaDPhiPos","d#eta vs d#phi of cluster-positive track vs cluster energy",
+    fhTrackMatchedDEtaDPhiPos  = new TH2F("hTrackMatchedDEtaDPhiPos","d#eta vs d#varphi of cluster-positive track vs cluster energy",
                                           nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax);
-    fhTrackMatchedDEtaDPhiPos->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhiPos->SetYTitle("d#varphi (rad)");
     fhTrackMatchedDEtaDPhiPos->SetXTitle("d#eta");
 
     
@@ -3604,9 +3604,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTrackMatchedDEtaNegMod->SetXTitle("d#eta");
     fhTrackMatchedDEtaNegMod->SetYTitle("Module");
     
-    fhTrackMatchedDPhiNegMod  = new TH2F("hTrackMatchedDPhiNegPerModule","d#phi of cluster-negative track vs module, E > 0.5 GeV",
+    fhTrackMatchedDPhiNegMod  = new TH2F("hTrackMatchedDPhiNegPerModule","d#varphi of cluster-negative track vs module, E > 0.5 GeV",
                                          nresetabins,resetamin,resetamax,fNModules,0,fNModules);
-    fhTrackMatchedDPhiNegMod->SetXTitle("d#phi (rad)");
+    fhTrackMatchedDPhiNegMod->SetXTitle("d#varphi (rad)");
     fhTrackMatchedDPhiNegMod->SetYTitle("Module");
     
     fhTrackMatchedDEtaPosMod  = new TH2F("hTrackMatchedDEtaPosPerModule","d#eta of cluster-positive track vs module, E > 0.5 GeV",
@@ -3614,9 +3614,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhTrackMatchedDEtaPosMod->SetXTitle("d#eta");
     fhTrackMatchedDEtaPosMod->SetYTitle("Module");
     
-    fhTrackMatchedDPhiPosMod  = new TH2F("hTrackMatchedDPhiPosPerModule","d#phi of cluster-positive track vs module, E > 0.5 GeV",
+    fhTrackMatchedDPhiPosMod  = new TH2F("hTrackMatchedDPhiPosPerModule","d#varphi of cluster-positive track vs module, E > 0.5 GeV",
                                          nresetabins,resetamin,resetamax,fNModules,0,fNModules);
-    fhTrackMatchedDPhiPosMod->SetXTitle("d#phi (rad)");
+    fhTrackMatchedDPhiPosMod->SetXTitle("d#varphi (rad)");
     fhTrackMatchedDPhiPosMod->SetYTitle("Module");
   
     outputContainer->Add(fhTrackMatchedDEtaNeg) ;
@@ -3639,8 +3639,8 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhPtCharged->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhPtCharged);
     
-    fhPhiCharged  = new TH1F ("hPhiCharged","#phi reconstructed clusters, matched with track",nphibins,phimin,phimax);
-    fhPhiCharged->SetXTitle("#phi (rad)");
+    fhPhiCharged  = new TH1F ("hPhiCharged","#varphi reconstructed clusters, matched with track",nphibins,phimin,phimax);
+    fhPhiCharged->SetXTitle("#varphi (rad)");
     outputContainer->Add(fhPhiCharged);
     
     fhEtaCharged  = new TH1F ("hEtaCharged","#eta reconstructed clusters, matched with track",netabins,etamin,etamax);
@@ -3649,19 +3649,19 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
     if(fFillAllTH3)
     {
-      fhEtaPhiECharged  = new TH3F ("hEtaPhiECharged","#eta vs #phi, reconstructed clusters, matched with track",
+      fhEtaPhiECharged  = new TH3F ("hEtaPhiECharged","#eta vs #varphi, reconstructed clusters, matched with track",
                                     netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
       fhEtaPhiECharged->SetXTitle("#eta ");
-      fhEtaPhiECharged->SetYTitle("#phi ");
+      fhEtaPhiECharged->SetYTitle("#varphi ");
       fhEtaPhiECharged->SetZTitle("#it{E} (GeV) ");
       outputContainer->Add(fhEtaPhiECharged);	
     }
     else
     {
-      fhEtaPhiCharged  = new TH2F ("hEtaPhiCharged","#eta vs #phi for #it{E} > 0.5 GeV, reconstructed clusters, with matched track",
+      fhEtaPhiCharged  = new TH2F ("hEtaPhiCharged","#eta vs #varphi for #it{E} > 0.5 GeV, reconstructed clusters, with matched track",
                             netabins,etamin,etamax,nphibins,phimin,phimax); 
       fhEtaPhiCharged->SetXTitle("#eta ");
-      fhEtaPhiCharged->SetYTitle("#phi (rad)");
+      fhEtaPhiCharged->SetYTitle("#varphi (rad)");
       outputContainer->Add(fhEtaPhiCharged);
     }
     
@@ -3775,7 +3775,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhIMDCALPHOS->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
       outputContainer->Add(fhIMDCALPHOS);
 
-      fhIMDCALPHOSSame  = new TH2F ("hIMDCALPHOSSame","Cluster pairs in DCAL-PHOS Invariant mass vs reconstructed pair #it{p}_{T}, ncell > 1, same #phi sector",
+      fhIMDCALPHOSSame  = new TH2F ("hIMDCALPHOSSame","Cluster pairs in DCAL-PHOS Invariant mass vs reconstructed pair #it{p}_{T}, ncell > 1, same #varphi sector",
                                     nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
       fhIMDCALPHOSSame->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
       fhIMDCALPHOSSame->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
@@ -3790,7 +3790,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
       fhIMEMCALPHOS->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
       outputContainer->Add(fhIMEMCALPHOS);
       
-      fhIMEMCALPHOSSame  = new TH2F ("hIMEMCALPHOSSame","Cluster pairs in DCAL-PHOS Invariant mass vs reconstructed pair #it{p}_{T}, ncell > 1, same #phi sector",
+      fhIMEMCALPHOSSame  = new TH2F ("hIMEMCALPHOSSame","Cluster pairs in DCAL-PHOS Invariant mass vs reconstructed pair #it{p}_{T}, ncell > 1, same #varphi sector",
                                      nptbins,ptmin,ptmax,nmassbins,massmin,massmax); 
       fhIMEMCALPHOSSame->SetXTitle("#it{p}_{T, cluster pairs} (GeV) ");
       fhIMEMCALPHOSSame->SetYTitle("M_{cluster pairs} (GeV/#it{c}^{2})");
@@ -3973,19 +3973,19 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     
     if(fFillAllTH3)
     {
-      fhEtaPhiAmpCell  = new TH3F ("hEtaPhiAmpCell","Cell #eta vs cell #phi vs cell energy",
+      fhEtaPhiAmpCell  = new TH3F ("hEtaPhiAmpCell","Cell #eta vs cell #varphi vs cell energy",
                                    netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
       fhEtaPhiAmpCell->SetXTitle("#eta ");
-      fhEtaPhiAmpCell->SetYTitle("#phi (rad)");
+      fhEtaPhiAmpCell->SetYTitle("#varphi (rad)");
       fhEtaPhiAmpCell->SetZTitle("#it{E} (GeV) ");
       outputContainer->Add(fhEtaPhiAmpCell);
     }
     else
     {
-      fhEtaPhiCell  = new TH2F ("hEtaPhiCell","Cell #eta vs cell #phi vs cell energy",
+      fhEtaPhiCell  = new TH2F ("hEtaPhiCell","Cell #eta vs cell #varphi vs cell energy",
                                 netabins,etamin,etamax,nphibins,phimin,phimax); 
       fhEtaPhiCell->SetXTitle("#eta ");
-      fhEtaPhiCell->SetYTitle("#phi (rad)");
+      fhEtaPhiCell->SetYTitle("#varphi (rad)");
       outputContainer->Add(fhEtaPhiCell);
     }
   }
@@ -4456,9 +4456,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         outputContainer->Add(fhRecoMCDeltaE[iPart][iCh]);
         
         fhRecoMCDeltaPhi[iPart][iCh]  = new TH2F (Form("hRecoMCDeltaPhi_%s_Match%d",particleName[iPart].Data(),iCh),
-                                                  Form("Generated - Reconstructed #phi, %s, Matched %d",particleName[iPart].Data(),iCh),
+                                                  Form("Generated - Reconstructed #varphi, %s, Matched %d",particleName[iPart].Data(),iCh),
                                                   nptbins, ptmin, ptmax, nphibins*2,-phimax,phimax); 
-        fhRecoMCDeltaPhi[iPart][iCh]->SetYTitle("#Delta #phi (rad)");
+        fhRecoMCDeltaPhi[iPart][iCh]->SetYTitle("#Delta #varphi (rad)");
         fhRecoMCDeltaPhi[iPart][iCh]->SetXTitle("#it{E}_{reconstructed} (GeV)");
         outputContainer->Add(fhRecoMCDeltaPhi[iPart][iCh]);
         
@@ -4477,10 +4477,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
         outputContainer->Add(fhRecoMCE[iPart][iCh]);	  
         
         fhRecoMCPhi[iPart][iCh]  = new TH2F (Form("hRecoMCPhi_%s_Match%d",particleName[iPart].Data(),iCh),
-                                             Form("#phi distribution, reconstructed vs generated, %s, Matched %d",particleName[iPart].Data(),iCh),
+                                             Form("#varphi distribution, reconstructed vs generated, %s, Matched %d",particleName[iPart].Data(),iCh),
                                              nphibins,phimin,phimax, nphibins,phimin,phimax); 
-        fhRecoMCPhi[iPart][iCh]->SetXTitle("#phi_{reconstructed} (rad)");
-        fhRecoMCPhi[iPart][iCh]->SetYTitle("#phi_{generated} (rad)");
+        fhRecoMCPhi[iPart][iCh]->SetXTitle("#varphi_{reconstructed} (rad)");
+        fhRecoMCPhi[iPart][iCh]->SetYTitle("#varphi_{generated} (rad)");
         outputContainer->Add(fhRecoMCPhi[iPart][iCh]);
         
         fhRecoMCEta[iPart][iCh]  = new TH2F (Form("hRecoMCEta_%s_Match%d",particleName[iPart].Data(),iCh),
@@ -4505,13 +4505,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
                                      nptbins,ptmin,ptmax);
 
       fhGenMCEtaPhi[iPart] = new TH2F(Form("hGenMCEtaPhi_%s",particleName[iPart].Data()),
-                                      Form("Y vs #phi of generated %s",particleName[iPart].Data()),
+                                      Form("Y vs #varphi of generated %s",particleName[iPart].Data()),
                                       200,-1,1,360,0,TMath::TwoPi());
     	
       fhGenMCE [iPart]    ->SetXTitle("#it{E} (GeV)");
       fhGenMCPt[iPart]    ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhGenMCEtaPhi[iPart]->SetXTitle("#eta");
-      fhGenMCEtaPhi[iPart]->SetYTitle("#phi (rad)");
+      fhGenMCEtaPhi[iPart]->SetYTitle("#varphi (rad)");
 
       outputContainer->Add(fhGenMCE     [iPart]);
       outputContainer->Add(fhGenMCPt    [iPart]);
@@ -4525,13 +4525,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
                                         Form("#it{p}_{T} of generated %s",particleName[iPart].Data()),
                                         nptbins,ptmin,ptmax);
       fhGenMCAccEtaPhi[iPart] = new TH2F(Form("hGenMCAccEtaPhi_%s",particleName[iPart].Data()),
-                                         Form("Y vs #phi of generated %s",particleName[iPart].Data()),
+                                         Form("Y vs #varphi of generated %s",particleName[iPart].Data()),
                                          netabins,etamin,etamax,nphibins,phimin,phimax);
     	
       fhGenMCAccE [iPart]    ->SetXTitle("#it{E} (GeV)");
       fhGenMCAccPt[iPart]    ->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       fhGenMCAccEtaPhi[iPart]->SetXTitle("#eta");
-      fhGenMCAccEtaPhi[iPart]->SetYTitle("#phi (rad)");
+      fhGenMCAccEtaPhi[iPart]->SetYTitle("#varphi (rad)");
       
       outputContainer->Add(fhGenMCAccE     [iPart]);
       outputContainer->Add(fhGenMCAccPt    [iPart]);
@@ -4645,9 +4645,9 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     {
       fhEBinClusterEtaPhi[ie] = new TH2F
       (Form("hEBin%d_Cluster_EtaPhi",ie),
-       Form("#eta vs #phi, cluster, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
+       Form("#eta vs #varphi, cluster, %2.2f<#it{p}_{T}<%2.2f GeV/#it{c}",fEBinCuts[ie],fEBinCuts[ie+1]),
        netabins,etamin,etamax,nphibins,phimin,phimax);
-      fhEBinClusterEtaPhi[ie]->SetYTitle("#phi (rad)");
+      fhEBinClusterEtaPhi[ie]->SetYTitle("#varphi (rad)");
       fhEBinClusterEtaPhi[ie]->SetXTitle("#eta");
       outputContainer->Add(fhEBinClusterEtaPhi[ie]) ;
       
