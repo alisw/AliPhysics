@@ -30,9 +30,9 @@
 
 #include "TH1I.h"
 
-class AliCEPBase
-{
-public:
+class AliCEPBase : public TObject {
+
+  public:
 
   // define some constants
   static const Int_t kdumval = -999;

@@ -43,60 +43,60 @@
 #include "AliESDv0.h"
 #include "AliCEPBase.h"
 
-class AliCEPUtils
-{
-private:
+class AliCEPUtils : public TObject {
 
-  Int_t fTPCnclsS;        // Maximum number of accepted shared clusters in TPC
-  Double_t fTrackDCA;     // Maximum distance of track to vertex
-  Double_t fTrackDCAz;    // Maximum distance of track to vertex in z-direction
-  Double_t fTrackEtaMin;  // EtaMin, used in second loop
-  Double_t fTrackEtaMax;  // EtaMax, used in second loop
-  TList *fTrackCutListPrim; // TList with primary track selection cuts
+  private:
 
-  TArrayI *v0daughters;   //! 
+    Int_t fTPCnclsS;        // Maximum number of accepted shared clusters in TPC
+    Double_t fTrackDCA;     // Maximum distance of track to vertex
+    Double_t fTrackDCAz;    // Maximum distance of track to vertex in z-direction
+    Double_t fTrackEtaMin;  // EtaMin, used in second loop
+    Double_t fTrackEtaMax;  // EtaMax, used in second loop
+    TList *fTrackCutListPrim; // TList with primary track selection cuts
 
-public:
+    TArrayI *v0daughters;   //! 
 
-	AliCEPUtils();
-	~AliCEPUtils();
-  
-  static TH1F* GetHistStatsFlow();
-  void SetTPCnclsS(Int_t n = 3) { fTPCnclsS = n; } 
-  void SetTrackDCA(Double_t d = 500.) {fTrackDCA = d;} 
-  void SetTrackDCAz(Double_t d = 6.) {fTrackDCAz = d;} 
-  void SetTrackEtaRange(Double_t min=-0.9, Double_t max = 0.9) {
-    fTrackEtaMin = min;
-    fTrackEtaMax = max;
-  }
-  
-  void InitTrackCuts(Bool_t IsRun1, Int_t clusterCut);
-  void AddTrackCut(AliESDtrackCuts* cut) {
-    fTrackCutListPrim->AddLast((TObject*)cut);
-  }
+  public:
 
-	static Int_t GetEventType(const AliESDEvent *ESDEvent);
-	static void SPDLoadGeom(Int_t run);
-  static void DetermineMCprocessType (
-    AliMCEvent *MCEvent, TString MCgen, Int_t MCproc);
-  Int_t AnalyzeTracks(AliESDEvent* ESDEvent,
-    TObjArray* fTracks,TArrayI* fTrackStatus);
+  	AliCEPUtils();
+  	~AliCEPUtils();
+    
+    static TH1F* GetHistStatsFlow();
+    void SetTPCnclsS(Int_t n = 3) { fTPCnclsS = n; } 
+    void SetTrackDCA(Double_t d = 500.) {fTrackDCA = d;} 
+    void SetTrackDCAz(Double_t d = 6.) {fTrackDCAz = d;} 
+    void SetTrackEtaRange(Double_t min=-0.9, Double_t max = 0.9) {
+      fTrackEtaMin = min;
+      fTrackEtaMax = max;
+    }
+    
+    void InitTrackCuts(Bool_t IsRun1, Int_t clusterCut);
+    void AddTrackCut(AliESDtrackCuts* cut) {
+      fTrackCutListPrim->AddLast((TObject*)cut);
+    }
 
-  UInt_t GetVtxPos(AliESDEvent *ESDEvent, TVector3 *vtxpos);
+  	static Int_t GetEventType(const AliESDEvent *ESDEvent);
+  	static void SPDLoadGeom(Int_t run);
+    static void DetermineMCprocessType (
+      AliMCEvent *MCEvent, TString MCgen, Int_t MCproc);
+    Int_t AnalyzeTracks(AliESDEvent* ESDEvent,
+      TObjArray* fTracks,TArrayI* fTrackStatus);
 
-  Bool_t checkstatus(UInt_t stat, UInt_t mask, UInt_t pattern);
-  Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern);
-  Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern, TArrayI *indices);
-  Int_t countstatus(TArrayI *stats,
-    TArrayI *masks, TArrayI *patterns);
-  Int_t countstatus(TArrayI *stats,
-    TArrayI *masks, TArrayI *patterns, TArrayI* indices);
+    UInt_t GetVtxPos(AliESDEvent *ESDEvent, TVector3 *vtxpos);
 
-  Int_t GetCEPTracks(AliESDEvent *ESDEvent, TArrayI *stats, TArrayI* indices);
-  Int_t GetResiduals(AliESDEvent* fESDEvent);
-  Bool_t TestFiredChips(AliESDEvent *esd, TArrayI *indices);
-  
-	ClassDef(AliCEPUtils, 1);
+    Bool_t checkstatus(UInt_t stat, UInt_t mask, UInt_t pattern);
+    Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern);
+    Int_t countstatus(TArrayI *stats, UInt_t mask, UInt_t pattern, TArrayI *indices);
+    Int_t countstatus(TArrayI *stats,
+      TArrayI *masks, TArrayI *patterns);
+    Int_t countstatus(TArrayI *stats,
+      TArrayI *masks, TArrayI *patterns, TArrayI* indices);
+
+    Int_t GetCEPTracks(AliESDEvent *ESDEvent, TArrayI *stats, TArrayI* indices);
+    Int_t GetResiduals(AliESDEvent* fESDEvent);
+    Bool_t TestFiredChips(AliESDEvent *esd, TArrayI *indices);
+    
+  	ClassDef(AliCEPUtils, 1);
 
 };
 

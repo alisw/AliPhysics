@@ -52,6 +52,7 @@ AliAnalysisTaskCEP::AliAnalysisTaskCEP(const char* name,
   , fLHCPeriod(TString(""))
   , fRun(-1)
 	, fAnalysisStatus(state)
+  , fESDRun(0x0)
   , fESDEvent(0x0)
   , fCEPEvent(0x0)
   , fTracks(0x0)
@@ -414,7 +415,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   //  1: from SPD
   //  2: from tracks
   Int_t kVertexType = fCEPUtil->GetVtxPos(fESDEvent,&fVtxPos);
-  printf("VtxPos 2 %f %f %f \n",fVtxPos.X(),fVtxPos.Y(),fVtxPos.Z());
   
   // get trigger information using AliTriggerAnalysis.IsOfflineTriggerFired
   // kSPDGFOBits: SPD (any fired chip)

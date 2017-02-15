@@ -167,7 +167,6 @@ UInt_t AliCEPUtils::GetVtxPos(AliESDEvent *fESDEvent, TVector3 *fVtxPos)
   
   // set the vertex position fVtxPos
   fVtxPos->SetXYZ(vertex->GetX(),vertex->GetY(),vertex->GetZ());
-  printf("VtxPos 1 %f %f %f \n",vertex->GetX(),vertex->GetY(),vertex->GetZ());
   
   return fVtxType;
   
