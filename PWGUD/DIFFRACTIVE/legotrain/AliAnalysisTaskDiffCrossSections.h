@@ -226,6 +226,8 @@ public:
     const PseudoTrack& operator[](Int_t ) const;
     const PseudoTrack& GetTrackAt(Int_t i) const { return this->operator[](i); }
 
+    Int_t RemoveTracks(UInt_t mask); // removes all tracks matching mask; returns number of removed pseudo-tracks
+
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR, const TVector3 &vertexPosition) const;
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR) const;
 
@@ -248,9 +250,8 @@ public:
     PseudoTracks(const PseudoTracks& ); // not implemented
     PseudoTracks& operator=(const PseudoTracks& ); // not implemented
 
-    Int_t                fCounter; //!
     mutable TClonesArray fTracks;
-    ClassDef(PseudoTracks, 1);
+    ClassDef(PseudoTracks, 2);
   } ;
 
   static TVector3 GetADPseudoTrack(Int_t ch);

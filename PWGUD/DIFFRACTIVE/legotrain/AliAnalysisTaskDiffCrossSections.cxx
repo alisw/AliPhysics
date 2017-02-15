@@ -47,7 +47,6 @@ void AliAnalysisTaskDiffCrossSections::PseudoTrack::Print(Option_t* ) const {
 }
 AliAnalysisTaskDiffCrossSections::PseudoTracks::PseudoTracks()
   : TObject()
-  , fCounter(0)
   , fTracks("AliAnalysisTaskDiffCrossSections::PseudoTrack", 10000) {
   //
 }
@@ -58,19 +57,30 @@ AliAnalysisTaskDiffCrossSections::PseudoTracks::~PseudoTracks() {
 Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::GetEntries() const {
   return fTracks.GetEntriesFast();
 }
-void  AliAnalysisTaskDiffCrossSections::PseudoTracks::AddTrack(const PseudoTrack& t) {
-  if (fCounter >= fTracks.GetSize())
-    fTracks.Expand(fCounter+100);
-
-  new (fTracks[fCounter++]) PseudoTrack(t);
+void AliAnalysisTaskDiffCrossSections::PseudoTracks::AddTrack(const PseudoTrack& t) {
+  new (fTracks[fTracks.GetEntriesFast()]) PseudoTrack(t);
 }
 void  AliAnalysisTaskDiffCrossSections::PseudoTracks::Clear(Option_t *opt) {
-  fCounter = 0;
   fTracks.Clear(opt);
 }
 void  AliAnalysisTaskDiffCrossSections::PseudoTracks::Delete(Option_t *opt) {
-  fCounter = 0;
   fTracks.Delete(opt);
+}
+Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::RemoveTracks(UInt_t mask) {
+  Int_t nRemoved = 0;
+  if (mask) {
+    for (Int_t i=0, nt=fTracks.GetEntriesFast(); i<nt; ++i) {
+      if (GetTrackAt(i).DetFlags() & mask) {
+	fTracks.RemoveAt(i);
+	++nRemoved;
+      }
+    }
+  }
+  if (nRemoved) {
+    fTracks.Compress();
+    fTracks.Sort();
+  }
+  return nRemoved;
 }
 const AliAnalysisTaskDiffCrossSections::PseudoTrack& AliAnalysisTaskDiffCrossSections::PseudoTracks::operator[](Int_t idx) const {
   const PseudoTrack* p = reinterpret_cast<const PseudoTrack* >(fTracks.At(idx));
