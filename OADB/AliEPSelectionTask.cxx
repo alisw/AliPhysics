@@ -39,6 +39,7 @@
 #include <TArrayF.h>
 
 #include "AliAnalysisManager.h"
+#include "AliDataFile.h"
 #include "AliVEvent.h"
 #include "AliESD.h"
 #include "AliESDEvent.h"
@@ -913,9 +914,9 @@ void AliEPSelectionTask::SetOADBandPeriod()
      if (!fUserphidist) { // if it's already set and custom class is required, we use the one provided by the user
 
         if (fAnalysisInput.CompareTo("AOD")==0){
-           oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.aod.root", AliAnalysisManager::GetOADBPath()));
+           oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist.aod.root");
            } else if (fAnalysisInput.CompareTo("ESD")==0){
-           oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
+           oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist.root");
            }
 
        TFile foadb(oadbfilename);
@@ -933,7 +934,7 @@ void AliEPSelectionTask::SetOADBandPeriod()
       if (!fUserphidist) {
       // if it's already set and custom class is required, we use the one provided by the user
 
-      oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist2011.root", AliAnalysisManager::GetOADBPath()));
+      oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/epphidist2011.root");
       TFile *foadb = TFile::Open(oadbfilename);
       if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
 
@@ -948,7 +949,7 @@ void AliEPSelectionTask::SetOADBandPeriod()
       }
 
       if(fUseRecentering) {
-	oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/eprecentering.root", AliAnalysisManager::GetOADBPath()));
+        oadbfilename = AliDataFile::GetFileNameOADB("COMMON/EVENTPLANE/data/eprecentering.root");
 	TFile *foadb = TFile::Open(oadbfilename);
 	if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
 

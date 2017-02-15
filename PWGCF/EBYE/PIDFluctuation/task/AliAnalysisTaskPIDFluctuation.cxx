@@ -570,9 +570,6 @@ AliAnalysisTaskPIDFluctuation::InitPID(AliVEvent *event)
       fPID = new AliAODpidUtil(mcFlag);
     else 
       return kFALSE;
-    
-    /* set OADB path */
-    fPID->SetOADBPath("$ALICE_ROOT/OADB");
   }
 
   /* init ESD PID */

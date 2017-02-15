@@ -26,6 +26,7 @@
 #include "AliVParticle.h"
 #include "AliLog.h"
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 #include "AliAnalysisManager.h"
 #include "AliTrackFixTenderSupply.h"
 #include "AliOADBTrackFix.h"
@@ -171,8 +172,8 @@ Bool_t AliTrackFixTenderSupply::LoadOADBObjects()
 {
   // Load OADB parameters
   TString fileName = fOADBObjPath;
-  if (fileName.BeginsWith("$OADB")) fileName.ReplaceAll("$OADB",Form("%s/",AliAnalysisManager::GetOADBPath()));
-  gSystem->ExpandPathName(fileName);
+  fileName = AliDataFile::GetFileNameOADB(fileName.ReplaceAll("$OADB", "").Data());
+
   AliInfo(Form("Loading correction parameters %s from %s",fOADBObjName.Data(),fileName.Data()));
   //
   fOADBCont = new AliOADBContainer("OADB");

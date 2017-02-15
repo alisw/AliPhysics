@@ -90,7 +90,6 @@ class AliAnalysisTaskProton : public AliAnalysisTaskSE {
  private:
   Int_t   EventNo;   
 
-  TString fOADBPath;                   // OADB path to use
   AliPIDResponse *fPIDResponse;        //! PID response Handler
   Int_t   fRun;                        //! current run number
   Int_t   fOldRun;                     //! current run number

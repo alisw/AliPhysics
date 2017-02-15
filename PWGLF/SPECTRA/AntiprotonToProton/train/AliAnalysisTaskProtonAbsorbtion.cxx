@@ -72,7 +72,7 @@ AliAnalysisTaskProtonAbsorbtion::AliAnalysisTaskProtonAbsorbtion()
   fCFManagerProtonsPrimMulti(0), fCFManagerAntiProtonsPrimMulti(0),
 fMinTPCClusters(0),fMinITSClusters(0), fMaxChi2PerTPCCluster(0.), fMaxDCAXY(0),
     fPIDMode(kSigma), fNBoundP(0), fNSigma1(0), fNSigma2(0), fNRatio1(0), fNRatio2(0),
-nbinsPtPrim(6), fLowPtPrim(0.45), fHighPtPrim(1.05), fPIDResponse(0), fOADBPath(0), fList(0), containerProtonsPrim(0), containerAntiProtonsPrim(0), containerProtonsPrimMulti(0), containerAntiProtonsPrimMulti(0), nbinsYPrim(5), fLowYPrim(-0.5), fHighYPrim(0.5), nbinsYMulti(100), fLowYMulti(0), fHighYMulti(100), mintrackrefsTPC(1), MAXCent(100), MINCent(0), fDebugMode(kFALSE), fMaxDCAZ(1.), fMaxChi2PerITSCluster(36), fMaxDCAXYFlag(kTRUE), fMaxDCAZFlag(kFALSE)
+nbinsPtPrim(6), fLowPtPrim(0.45), fHighPtPrim(1.05), fPIDResponse(0), fList(0), containerProtonsPrim(0), containerAntiProtonsPrim(0), containerProtonsPrimMulti(0), containerAntiProtonsPrimMulti(0), nbinsYPrim(5), fLowYPrim(-0.5), fHighYPrim(0.5), nbinsYMulti(100), fLowYMulti(0), fHighYMulti(100), mintrackrefsTPC(1), MAXCent(100), MINCent(0), fDebugMode(kFALSE), fMaxDCAZ(1.), fMaxChi2PerITSCluster(36), fMaxDCAXYFlag(kTRUE), fMaxDCAZFlag(kFALSE)
 {
   // Dummy constructor
 }
@@ -85,7 +85,7 @@ AliAnalysisTaskProtonAbsorbtion::AliAnalysisTaskProtonAbsorbtion(const char *nam
   fCFManagerProtonsPrimMulti(0), fCFManagerAntiProtonsPrimMulti(0),
  fMinTPCClusters(0),fMinITSClusters(0), fMaxChi2PerTPCCluster(0.), fMaxDCAXY(0),
     fPIDMode(kSigma), fNBoundP(0), fNSigma1(0), fNSigma2(0), fNRatio1(0), fNRatio2(0),
-nbinsPtPrim(6), fLowPtPrim(0.45), fHighPtPrim(1.05), fPIDResponse(0), fOADBPath(0), fList(0), containerProtonsPrim(0), containerAntiProtonsPrim(0), containerProtonsPrimMulti(0), containerAntiProtonsPrimMulti(0), nbinsYPrim(5), fLowYPrim(-0.5), fHighYPrim(0.5), nbinsYMulti(100), fLowYMulti(0), fHighYMulti(100), mintrackrefsTPC(1), MAXCent(100), MINCent(0), fDebugMode(kFALSE), fMaxDCAZ(1.), fMaxChi2PerITSCluster(36), fMaxDCAXYFlag(kTRUE), fMaxDCAZFlag(kFALSE)
+nbinsPtPrim(6), fLowPtPrim(0.45), fHighPtPrim(1.05), fPIDResponse(0), fList(0), containerProtonsPrim(0), containerAntiProtonsPrim(0), containerProtonsPrimMulti(0), containerAntiProtonsPrimMulti(0), nbinsYPrim(5), fLowYPrim(-0.5), fHighYPrim(0.5), nbinsYMulti(100), fLowYMulti(0), fHighYMulti(100), mintrackrefsTPC(1), MAXCent(100), MINCent(0), fDebugMode(kFALSE), fMaxDCAZ(1.), fMaxChi2PerITSCluster(36), fMaxDCAXYFlag(kTRUE), fMaxDCAZFlag(kFALSE)
 {
   // Constructor
   // Define output slots only here
@@ -122,9 +122,6 @@ void AliAnalysisTaskProtonAbsorbtion::UserCreateOutputObjects()
   inputHandler->CreatePIDResponse(kFALSE);
   fPIDResponse=inputHandler->GetPIDResponse();
   if (!fPIDResponse) AliFatal("PIDResponse object was not created");
-
-  fPIDResponse->SetOADBPath(AliAnalysisManager::GetOADBPath());
-  if (!fOADBPath.IsNull()) fPIDResponse->SetOADBPath(fOADBPath.Data());
 
   // Create histograms
   // Called once

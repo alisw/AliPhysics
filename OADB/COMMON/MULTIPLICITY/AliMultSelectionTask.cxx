@@ -52,6 +52,7 @@ class AliESDAD; //AD
 #include "TSystem.h"
 //#include "AliLog.h"
 
+#include "AliDataFile.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
@@ -1667,7 +1668,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
 
     //Determine location of file to open: default OADB
-    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
+    TString fileName = AliDataFile::GetFileNameOADB(Form("COMMON/MULTIPLICITY/data/OADB-%s.root", lPeriodName.Data()));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
 
     //Full Manual Bypass Mode (DEBUG ONLY)
@@ -1732,7 +1733,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning("Extra option detected: Load estimators from OADB file called: ");
         AliWarning(Form(" path: %s", fAlternateOADBForEstimators.Data() ));
 
-        TString fileNameAlter =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), fAlternateOADBForEstimators.Data() ));
+        TString fileNameAlter = Form("COMMON/MULTIPLICITY/data/OADB-%s.root", fAlternateOADBForEstimators.Data());
 
         //Full Manual Bypass Mode (DEBUG ONLY)
         if ( fAlternateOADBFullManualBypassMC.EqualTo("")==kFALSE ) {
@@ -2209,7 +2210,7 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
 Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const { 
     //This helper function checks if an OADB exists for the production named lProdName
     //Determine file name 
-    TString fileName = Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lProdName.Data() );
+    TString fileName = AliDataFile::GetFileNameOADB(Form("COMMON/MULTIPLICITY/data/OADB-%s.root", lProdName.Data()));
 
     Bool_t lInverseThis = !gSystem->AccessPathName(fileName.Data());
     return lInverseThis;

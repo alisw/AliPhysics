@@ -10,6 +10,7 @@
 #include <TSystem.h>
 #include <TGraphAsymmErrors.h>
 #include <AliAnalysisManager.h>
+#include "AliDataFile.h"
 #include <AliAODEvent.h>
 #include <AliAODHandler.h>
 #include <AliAODInputHandler.h>
@@ -282,8 +283,8 @@ AliForwarddNdetaTask::Finalize()
 {
   // See if we can find the empirical correction so that the bins may
   // apply it
-  TString oadb(gSystem->ConcatFileName(AliAnalysisManager::GetOADBPath(),
-				       "PWGLF/FORWARD/CORRECTIONS/data"));
+  TString oadb(AliDataFile::GetFileNameOADB("PWGLF/FORWARD/CORRECTIONS/data"));
+
   const char* dirs[] = {
     "${PWD}",
     "${FWD}",

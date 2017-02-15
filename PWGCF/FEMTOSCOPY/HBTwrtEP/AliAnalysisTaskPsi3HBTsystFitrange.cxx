@@ -1331,7 +1331,6 @@ void AliAnalysisTaskPsi3HBTsystFitrange::UserExec(Option_t *)
 
 	AliAODpidUtil * pidres = aodH->GetAODpidUtil();
 	pidres -> SetUseTPCMultiplicityCorrection(kTRUE);
-	pidres -> SetOADBPath("$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCPIDResponse_special.root");
 	pidres -> SetCustomTPCetaMaps("$ALICE_PHYSICS/OADB/COMMON/PID/data/TPCetaMaps_special.root");
 	pidres -> SetUseTPCEtaCorrection(kTRUE);
 

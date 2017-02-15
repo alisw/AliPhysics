@@ -13,6 +13,7 @@
 #include <TString.h>
 #include <TFile.h>
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
 #include "AliEventplane.h"
@@ -292,8 +293,7 @@ AliFMDEventPlaneFinder::SetupForData(const TAxis& etaAxis)
   if (!fUsePhiWeights) return;
   
   if (fOADBFileName.Length()==0)
-    fOADBFileName = Form("%s/PWGLF/FORWARD/FMDEVENTPLANE/data/fmdEPoadb.root", 
-     			AliAnalysisManager::GetOADBPath());
+    fOADBFileName = AliDataFile::GetFileNameOADB("PWGLF/FORWARD/FMDEVENTPLANE/data/fmdEPoadb.root");
 
   TFile foadb(fOADBFileName);
   if(!foadb.IsOpen()) {
