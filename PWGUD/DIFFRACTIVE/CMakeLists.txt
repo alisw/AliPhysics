@@ -56,10 +56,9 @@ set(SRCS
     DGTrigger/AliTriggerStudy0STP.cxx
     CEPdevel/CEPEventBuffer.cxx
     CEPdevel/CEPTrackBuffer.cxx
-    CEPdevel/AliPBBase.cxx
-    CEPdevel/AliPBTracks.cxx
-    CEPdevel/AliPBUtils.cxx
-    CEPdevel/AliAnalysisTaskPB.cxx
+    CEPdevel/AliCEPBase.cxx
+    CEPdevel/AliCEPUtils.cxx
+    CEPdevel/AliAnalysisTaskCEP.cxx
     Resonance/AliAnalysisTaskf0f2.cxx
     Resonance/AliAnalysisPseudoRapidityDensity.cxx
    )
