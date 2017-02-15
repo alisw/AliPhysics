@@ -34,6 +34,7 @@ class AliHLTTPCHWClusterMergerV1 : public AliHLTLogging
   ~AliHLTTPCHWClusterMergerV1();
 
   Int_t Init( Bool_t processingRCU2Data );
+  void SetCheckEdgeFlag(int o) {fCheckEdgeFlag = o;}
 
   void SetDataPointer(  AliHLTUInt8_t *data ){ fpData=data; }
 
@@ -96,6 +97,8 @@ class AliHLTTPCHWClusterMergerV1 : public AliHLTLogging
   AliHLTUInt8_t *fpData;
   AliHLTComponentBlockData **fRawClusterBlocks; //!
   AliHLTComponentBlockData **fMCBlocks; //!
+  
+  bool fCheckEdgeFlag; //Check edge flag
 };
 
 #endif //ALIHLTTPCHWCLUSTERMERGERV1_H

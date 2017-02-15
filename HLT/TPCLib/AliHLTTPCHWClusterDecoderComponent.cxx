@@ -62,6 +62,7 @@ fDoMerge(1),
 fAlreadyMerged(0),
 fTPCPresent(0),
 fProcessingRCU2Data(0),
+fCheckEdgeFlag(0),
 fAddRandomClusters(0),
 fBenchmark("HWClusterDecoder")
 {
@@ -216,6 +217,12 @@ int AliHLTTPCHWClusterDecoderComponent::ScanConfigurationArgument(int argc, cons
     return 1;
   }
 
+  if (argument.CompareTo("-check-edge-flag") == 0)
+  {
+    fCheckEdgeFlag = 1;
+    return 1;
+  }
+
   if (argument.CompareTo("-add-random-clusters") == 0)
   {
     if (i + 1 >= argc)
@@ -254,6 +261,7 @@ int AliHLTTPCHWClusterDecoderComponent::InitClusterMerger()
     delete fpClusterMerger;
     fpClusterMerger = 0;
   }
+  fpClusterMerger->SetCheckEdgeFlag(fCheckEdgeFlag);
   return iResult;
 }
 

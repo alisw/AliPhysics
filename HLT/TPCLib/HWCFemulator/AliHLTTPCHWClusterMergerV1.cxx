@@ -252,6 +252,8 @@ int AliHLTTPCHWClusterMergerV1::Merge()
       
       for( UInt_t iCluster=0; iCluster<clusters->fCount; iCluster++){
 	AliHLTTPCRawCluster &cluster = clusters->fClusters[iCluster];
+	
+	if (fCheckEdgeFlag && !cluster.GetFlagEdge()) continue;
 
 	// check if the cluster is at the branch border    
 	Int_t patchRow = cluster.GetPadRow();	
