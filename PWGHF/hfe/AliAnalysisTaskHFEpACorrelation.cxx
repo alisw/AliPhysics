@@ -1917,7 +1917,7 @@ void AliAnalysisTaskHFEpACorrelation::ElectronHadronCorrelation(AliVTrack *track
     fNonHFE->SetAlgorithm("DCA"); //KF
     
     fNonHFE->SetUseGlobalTracks();
-    fNonHFE->SetNClustITS(2);
+    //fNonHFE->SetNClustITS(2); Remove ITS cut from the partner. It generates aditional problems for NonID Background subtraction. 
     fNonHFE->SetDCAPartnerCuts(fDCAcutr, fDCAcutz);
     fNonHFE->SetEtaCutForPart(fEtaCutMin, fEtaCutMax);
     fNonHFE->SetTPCNclsForPID(60);
