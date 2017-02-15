@@ -16,6 +16,7 @@
 
 
 #include <TNamed.h>
+#include "AliLog.h"
 
 class TF1;
 class TH1F;

@@ -22,7 +22,6 @@
 #include <TStyle.h>
 #include <TPaveText.h>
 
-#include "AliLog.h"
 #include "AliVertexingHFUtils.h"
 #include "AliHFInvMassFitter.h"
 
