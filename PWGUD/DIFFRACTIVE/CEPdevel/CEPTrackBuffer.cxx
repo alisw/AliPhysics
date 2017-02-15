@@ -88,8 +88,8 @@ void CEPTrackBuffer::Reset()
   }
   
   // MC truth
-  fMCPID = CEPTrackBuffer::kdumval;
-  fMCMass = CEPTrackBuffer::kdumval;
+  fMCPID      = CEPTrackBuffer::kdumval;
+  fMCMass     = CEPTrackBuffer::kdumval;
   fMCMomentum = TVector3(0,0,0);
 
 }

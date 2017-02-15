@@ -22,15 +22,14 @@ CEPEventBuffer::CEPEventBuffer()
   , fOrbitNumber(AliCEPBase::kdumval)
   , fBunchCrossNumber(AliCEPBase::kdumval)
   , fCollissionType(AliCEPBase::kBinEventUnknown)
+  , fMagnField(AliCEPBase::kdumval)
   , fFiredTriggerClasses(TString(""))
-  , fMagnField(-999.9)
-  , fPhysel(kFALSE)
   , fEventCutsel(kFALSE)
+  , fPhysel(kFALSE)
   , fisPileup(kFALSE)
   , fisClusterCut(kFALSE)
   , fisDGTrigger(kFALSE)
   , fGapCondition(AliCEPBase::kBitBaseLine)
-  , fCEPTracks(new TObjArray())
   , fnTracklets(0)
   , fnTracks(0)
   , fnTracksCombined(0)
@@ -43,9 +42,8 @@ CEPEventBuffer::CEPEventBuffer()
   , fMCProcessType(AliCEPBase::kdumval)
   , fMCGenerator("")
   , fMCVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
+  , fCEPTracks(new TObjArray())
 {
-
-  // printf("A CEPEventBuffer was created...\n");
 
 }
 
@@ -53,7 +51,8 @@ CEPEventBuffer::CEPEventBuffer()
 CEPEventBuffer::~CEPEventBuffer()
 {
 
-	if (fCEPTracks) {
+	// delete fCEPTracks and all the tracks it contains
+  if (fCEPTracks) {
 		fCEPTracks->SetOwner(kTRUE);
 		fCEPTracks->Clear();
 		delete fCEPTracks;
@@ -74,7 +73,7 @@ void CEPEventBuffer::Reset()
   fOrbitNumber     = AliCEPBase::kdumval;
   fBunchCrossNumber= AliCEPBase::kdumval;
   fCollissionType  = AliCEPBase::kBinEventUnknown;
-  fMagnField       = -999.9;
+  fMagnField       = AliCEPBase::kdumval;
   fFiredTriggerClasses = TString("");
 
   // general event features
@@ -84,23 +83,24 @@ void CEPEventBuffer::Reset()
   fisClusterCut    = kFALSE;
   fisDGTrigger     = kFALSE;
 
-  // clear the track list
-  fCEPTracks->Clear();
-  fnTracks        = 0;
-  fnTracksITSpure = 0;
-  fnTracksCombined= 0;
   fnTracklets     = 0;
+  fnTracks        = 0;
+  fnTracksCombined= 0;
+  fnTracksITSpure = 0;
   fnResiduals     = 0;
   fnMSelection    = 0;
   fnV0            = 0;
   fVtxType        = -1;
-  fVtxPos         = TVector3(-999.9,-999.9,-999.9);
+  fVtxPos         = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
 
   // Monte Carlo information
   fMCProcessType = AliCEPBase::kdumval;
   fMCGenerator   = "";
-  fMCVtxPos      = TVector3(-999.9,-999.9,-999.9);
+  fMCVtxPos      = TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval);
     
+  // clear the track list
+  fCEPTracks->SetOwner(kTRUE);
+  fCEPTracks->Clear();
  }
 
 // ----------------------------------------------------------------------------
