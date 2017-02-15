@@ -7,15 +7,18 @@ using std::array;
 #include <vector>
 using std::vector;
 
+#include <TClonesArray.h>
 #include <TH1D.h>
 #include <TH1I.h>
 #include <TH2D.h>
 #include <TH2F.h>
 
 #include <AliAnalysisManager.h>
+#include <AliAODMCParticle.h>
 #include <AliCentrality.h>
 #include <AliESDtrackCuts.h>
 #include <AliInputEventHandler.h>
+#include <AliMCEventHandler.h>
 #include <AliMultSelection.h>
 #include <AliVEventHandler.h>
 #include <AliVMultiplicity.h>
@@ -32,6 +35,7 @@ ClassImp(AliNuclexEventCuts);
 ///
 AliNuclexEventCuts::AliNuclexEventCuts(bool saveplots) : TList(),
   fUtils{},
+  fMC{false},
   fRequireTrackVertex{false},
   fMinVtz{-1000.f},
   fMaxVtz{1000.f},
@@ -95,7 +99,7 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
   if (!fManualMode && current_run != fCurrentRun) {
     ::Info("AliNuclexEventCuts::AcceptEvent","Current run (%i) is different from the previous (%i): setting automatically the corresponding event cuts.",current_run,fCurrentRun);
     fCurrentRun = current_run;
-    AutomaticSetup();
+    AutomaticSetup(ev);
   }
 
   if (fSavePlots && !this->Last()) {
@@ -165,13 +169,13 @@ bool AliNuclexEventCuts::AcceptEvent(AliVEvent *ev) {
     const auto& x = fCentPercentiles[1];
     const double center = x * fEstimatorsCorrelationCoef[1] + fEstimatorsCorrelationCoef[0];
     const double sigma = fEstimatorsSigmaPars[0] + fEstimatorsSigmaPars[1] * x + fEstimatorsSigmaPars[2] * x * x + fEstimatorsSigmaPars[3] * x * x * x;
-    if ((!fUseEstimatorsCorrelationCut ||
+    if ((!fUseEstimatorsCorrelationCut || fMC ||
           (fCentPercentiles[0] >= center - fDeltaEstimatorNsigma[0] * sigma && fCentPercentiles[0] <= center + fDeltaEstimatorNsigma[1] * sigma))
         && fCentPercentiles[0] >= fMinCentrality
         && fCentPercentiles[0] <= fMaxCentrality) fFlag |= BIT(kMultiplicity);
   } else fFlag |= BIT(kMultiplicity);
 
-  if (fUseVariablesCorrelationCuts) {
+  if (fUseVariablesCorrelationCuts && !fMC) {
     ComputeTrackMultiplicity(ev);
     const double fb32 = fContainer.fMultTrkFB32;
     const double fb32acc = fContainer.fMultTrkFB32Acc;
@@ -257,7 +261,17 @@ void AliNuclexEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlot
 
 }
 
-void AliNuclexEventCuts::AutomaticSetup() {
+void AliNuclexEventCuts::AutomaticSetup(AliVEvent *ev) {
+  if (dynamic_cast<AliAODEvent*>(ev)) {
+    TClonesArray *stack = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    fMC = (stack) ? true : false;
+  } else if (!dynamic_cast<AliESDEvent*>(ev))
+    AliFatal("I don't find the AOD event nor the ESD one, aborting.");
+  else {
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    fMC = (eventHandler) ? true : false;
+  }
+
   if (fCurrentRun >= 166423 && fCurrentRun <= 170593) {
     SetupLHC11h();
     return;
@@ -275,7 +289,7 @@ void AliNuclexEventCuts::AutomaticSetup() {
     return;
   }
 
-  ::Fatal("AliNuclexEventCuts::AutomaticSetup","Automatic period detection failed, please use the manual mode.");
+  ::Fatal("AliNuclexEventCuts::AutomaticSetup","Automatic period detection failed, please use the manual mode. If you need this period in AliNuclexEventCuts send an email to the DPG event selection mailing list.");
 }
 
 float AliNuclexEventCuts::GetCentrality (unsigned int estimator) const {
