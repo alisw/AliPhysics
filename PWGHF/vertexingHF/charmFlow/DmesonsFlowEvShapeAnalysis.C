@@ -45,18 +45,23 @@
 //GLOBAL VARIABLES
 //to be set
 //input file name
-const TString infilename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EvShape_VZERO_CentAxis.root";
-const TString suffix="_Topod0Cut_QoverM_VZERO_EvShape";
+const TString infilename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_EvShape_TwoEtaHalves.root";
+const TString suffix="_Topod0Cut_QoverM_TwoEtaHalves_VZERO_EvShape";
+//const TString infilename="$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_EvShape_NonFlowTests_EP_ResoNonFlow.root";
+//const TString suffix="_Topod0Cut_QoverM_DPosEta_q2NegTPC_VZERO_EvShape";
+//const TString infilename = "$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_step2_EvShape_VZERO_CentAxis.root";
+//const TString suffix = "_Topod0Cut_QoverM_VZERO_EvShape";
+//const TString infilename = "$HOME/cernbox/ALICE_WORK/Files/Trains/Run2/LHC15o/AnalysisResults_v2_3050_EvShape_q2TPCSmearing_2.root";
+//const TString suffix = "_Topod0Cut_QoverM_q2TPC_VZERO_EvShape";
 const TString partname="Dplus";
 const Int_t minCent=30;
 const Int_t maxCent=50;
 
-const TString outputdir="Cent3050/v2/EvShape/CutCentDep";
+const TString outputdir="Cent3050/v2/EvShape/q2Smearing";
 
 //ptbins of the analysis
 const Int_t nPtBins=5;
 const Int_t nPtLims=nPtBins+1;
-//const Double_t PtLims[nPtLims] = {2.,3.,4.,5.,6.,8.,12.,16.,24.};
 const Double_t PtLims[nPtLims] = {3.,4.,6.,8.,12.,16.};
 
 //phi bins
@@ -70,7 +75,7 @@ const Double_t q2largelimit=3.2;
 
 //percentage of events with smaller/larger q2 (both for centrality integrated and centrality dependent cut)
 const Double_t q2smallpercevents=0.60;
-const Double_t q2largepercevents=0.2;
+const Double_t q2largepercevents=0.20;
 
 //EP resolution
 const Int_t evPlane=AliEventPlaneResolutionHandler::kVZERO;
@@ -79,7 +84,7 @@ const Bool_t useNcollWeight=kFALSE;
 const Bool_t useAliHandlerForRes=kFALSE;
 
 // mass fit configuration
-const Int_t rebin[]={3,4,4,4,4,4,4,4,4,4};
+const Int_t rebin[]={3,4,4,6,6};
 enum {kGaus=0, kDoubleGaus, kReflTempl};
 const Int_t types=kGaus;//kReflTempl;
 const Int_t typeb=AliHFMassFitter::kExpo; //Background: 0=expo, 1=linear, 2=pol2
@@ -87,20 +92,20 @@ Bool_t useTemplD0Refl=kFALSE;
 TString rflFitType="DoubleGaus";
 TString fileNameMCD0refl="./reflections/reflections_fitted_DoubleGaus.root";
 const Bool_t fixAlsoMass=kFALSE;
-const Double_t minMassForFit[]={1.72,1.72,1.72,1.72,1.68};
-const Double_t maxMassForFit[]={2.05,2.05,2.05,2.05,2.20};
+const Double_t minMassForFit[]={1.72,1.70,1.70,1.70,1.70};
+const Double_t maxMassForFit[]={2.02,2.05,2.05,2.15,2.15};
 const Double_t nSigmaForCounting=3.5;
 
 //not to be set
 enum CutMethod{kAbsCut,kPercCut,kPercCutVsCent}; //kAbsCut->absolute cut values, kPercCut->cut according to the % of events with smaller/larger q2, kPercCutVsCent->cut according to the % of events with smaller/larger q2 in finer centrality bins
-enum SmallOrLarge{kSmall,kLarge};
+enum SmallOrLarge{kSmall,kLarge,kIntegrated};
 enum AnalysisMethod{kEventPlane,kEventPlaneInOut,kScalarProd};
 
 //in-out efficiency
 const Double_t effInOverEffOut=1.03;
 
-const Int_t colors[]={kBlack,kBlue+1,kRed+1,kGreen+2,kMagenta+3,kOrange+7,kCyan+2,kViolet+5,kYellow+2,kBlue-7,kGreen,kMagenta,kAzure,kRed+2};
-const Int_t markers[]={kFullCircle,kFullSquare,kFullDiamond,kFullTriangleUp,kFullTriangleDown,kOpenCircle,kOpenSquare,kOpenDiamond,kOpenTriangleUp,kOpenTriangleDown};
+const Int_t colors[]={kRed,kBlue,kGray};
+const Int_t markers[]={kFullSquare,kFullCircle,kFullDiamond,kOpenSquare,kOpenCircle,kOpenDiamond};
 
 //_____________________________________________________________________________________________
 //FUNCTION PROTOTYPES
@@ -160,27 +165,27 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
   else if(analysismeth==kEventPlaneInOut) {analysismethname="InOut";}
   else if(analysismeth==kScalarProd) {analysismethname="ScalarProduct";}
   
-  Int_t q2region[2] = {kSmall,kLarge};
-  TString q2regionname[2] = {"q2Small","q2Large"};
+  Int_t q2region[3] = {kSmall,kLarge,kIntegrated};
+  TString q2regionname[3] = {"q2Small","q2Large","q2Int"};
   
   SetStyle();
   
-  //graphs for v2 in the two q2 regions
+  //graphs for v2 in the two q2 regions and q2-integrated
   TCanvas *cv2fs =new TCanvas("cv2fs","v2 Fit with fixed sigma",1920,1080);
-  TCanvas **cv2 =new TCanvas*[2];
-  TGraphAsymmErrors **gv2=new TGraphAsymmErrors*[2];
-  TGraphAsymmErrors **gv2fs=new TGraphAsymmErrors*[2];
-  TGraphAsymmErrors **gv2BC1=new TGraphAsymmErrors*[2];
-  TGraphAsymmErrors **gv2BC2=new TGraphAsymmErrors*[2];
-  TGraphAsymmErrors **gRelSystEff=new TGraphAsymmErrors*[2];
-  Double_t ymin[2]={1.,1.};
-  Double_t ymax[2]={-1.,-1.};
+  TCanvas **cv2 =new TCanvas*[3];
+  TGraphAsymmErrors **gv2=new TGraphAsymmErrors*[3];
+  TGraphAsymmErrors **gv2fs=new TGraphAsymmErrors*[3];
+  TGraphAsymmErrors **gv2BC1=new TGraphAsymmErrors*[3];
+  TGraphAsymmErrors **gv2BC2=new TGraphAsymmErrors*[3];
+  TGraphAsymmErrors **gRelSystEff=new TGraphAsymmErrors*[3];
+  Double_t ymin[3]={1.,1.,1.};
+  Double_t ymax[3]={-1.,-1.,-1.};
   
-  TLegend* leg = new TLegend(0.6,0.7,0.85,0.85);
+  TLegend* leg = new TLegend(0.6,0.6,0.85,0.85);
   leg->SetFillStyle(0);
   leg->SetTextSize(0.05);
   
-  TLegend** legsyst = new TLegend*[2];
+  TLegend** legsyst = new TLegend*[3];
   
   TString outname=Form("%s/v2Output_%d_%d_%s%s_q2Small%.2f_q2Large%.2f.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2smalllimit,q2largelimit);
   TString percsuffix="perc";
@@ -188,10 +193,10 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
   if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {outname=Form("%s/v2Output_%d_%d_%s%s_q2Small%0.f%s_q2Large%0.f%s.root",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2smallpercevents*100,percsuffix.Data(),q2largepercevents*100,percsuffix.Data());}
   TFile outfile(outname.Data(),"RECREATE"); //outputfile
 
-  Double_t q2cut[2] = {q2smalllimit,q2largelimit};
-  Double_t q2perccut[2] = {q2smallpercevents*100,q2largepercevents*100};
+  Double_t q2cut[3] = {q2smalllimit,q2largelimit,0};
+  Double_t q2perccut[3] = {q2smallpercevents*100,q2largepercevents*100,100};
 
-  for(Int_t iq2=0; iq2<2; iq2++) {
+  for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
     if(analysismeth!=kScalarProd) {
       //load resolution and mass lists
       TList* masslist=(TList*)LoadMassHistos(hMassPtPhiq2Centr,smallcutvalues,largecutvalues,q2region[iq2],analysismeth);
@@ -207,7 +212,7 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
       Int_t maxCentTimesTen=maxCent*10;
       TH2F* hmasspt=0x0;
       for(Int_t iCent=0; iCent<ncentbins; iCent++) {
-        Applyq2Cut(hMassPtPhiq2Centr,smallcutvalues[iCent],largecutvalues[iCent],q2region[iq2]);
+        if(iq2!=kIntegrated) {Applyq2Cut(hMassPtPhiq2Centr,smallcutvalues[iCent],largecutvalues[iCent],q2region[iq2]);}
         TH2F* htmp=(TH2F*)hMassPtPhiq2Centr->Projection(0,1);
         if(iCent==0) {hmasspt=(TH2F*)htmp->Clone();}
         else {hmasspt->Add(htmp);}
@@ -239,9 +244,8 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
           Printf("R OVER S = %f",sOverRef);
           fitter->SetFixReflOverS(sOverRef,kTRUE);
         }
-        cout << "ciao" << endl;
+        fitter->SetUseLikelihoodFit();
         fitter->MassFitter(kFALSE);
-        cout << "ciao" << endl;
         Double_t massFromFit=fitter->GetMean();
         Double_t sigmaFromFit=fitter->GetSigma();
         TF1* funcB2=fitter->GetBackgroundRecalcFunc();
@@ -341,41 +345,46 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
       gv2BC2[iq2]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
       gRelSystEff[iq2]->SetName(Form("gRelSystEff_%s",q2regionname[iq2].Data()));
       gRelSystEff[iq2]->SetTitle("SystErrEff");
-      gv2[iq2]->SetMarkerStyle(markers[iq2]);
+      gv2[iq2]->SetMarkerStyle(markers[0]);
       gv2[iq2]->SetMarkerSize(1.5);
       gv2[iq2]->SetMarkerColor(colors[iq2]);
       gv2[iq2]->SetLineColor(colors[iq2]);
       gv2[iq2]->SetLineWidth(2);
-      gv2fs[iq2]->SetMarkerStyle(markers[iq2+2]);
+      gv2fs[iq2]->SetMarkerStyle(markers[1]);
       gv2fs[iq2]->SetMarkerSize(1.5);
-      gv2fs[iq2]->SetMarkerColor(colors[iq2+2]);
-      gv2fs[iq2]->SetLineColor(colors[iq2+2]);
+      gv2fs[iq2]->SetMarkerColor(colors[iq2]+1);
+      gv2fs[iq2]->SetLineColor(colors[iq2]+1);
       gv2fs[iq2]->SetLineWidth(2);
-      gv2BC1[iq2]->SetMarkerStyle(markers[iq2+5]);
+      gv2BC1[iq2]->SetMarkerStyle(markers[3]);
       gv2BC1[iq2]->SetMarkerSize(1.5);
-      gv2BC1[iq2]->SetMarkerColor(colors[iq2+5]);
-      gv2BC1[iq2]->SetLineColor(colors[iq2+5]);
+      gv2BC1[iq2]->SetMarkerColor(colors[iq2]+2);
+      gv2BC1[iq2]->SetLineColor(colors[iq2]+2);
       gv2BC1[iq2]->SetLineWidth(2);
-      gv2BC2[iq2]->SetMarkerStyle(markers[iq2+7]);
+      gv2BC2[iq2]->SetMarkerStyle(markers[4]);
       gv2BC2[iq2]->SetMarkerSize(1.5);
-      gv2BC2[iq2]->SetMarkerColor(colors[iq2+7]);
-      gv2BC2[iq2]->SetLineColor(colors[iq2+7]);
+      gv2BC2[iq2]->SetMarkerColor(colors[iq2]+3);
+      gv2BC2[iq2]->SetLineColor(colors[iq2]+3);
       gv2BC2[iq2]->SetLineWidth(2);
-      gRelSystEff[iq2]->SetMarkerStyle(markers[iq2]);
+      gRelSystEff[iq2]->SetMarkerStyle(markers[0]);
       gRelSystEff[iq2]->SetMarkerSize(1.5);
-      gRelSystEff[iq2]->SetMarkerColor(colors[iq2]);
-      gRelSystEff[iq2]->SetLineColor(colors[iq2]);
+      gRelSystEff[iq2]->SetMarkerColor(colors[0]);
+      gRelSystEff[iq2]->SetLineColor(colors[iq2]+4);
       gRelSystEff[iq2]->SetLineWidth(2);
       
       TString title="";
-      if(cutmeth==kAbsCut) {
-        TString sign[2] = {"<",">"};
-        title=Form("%s %s %0.1f",hq2VsCentr->GetYaxis()->GetTitle(),sign[iq2].Data(),q2cut[iq2]);
+      if(iq2!=kIntegrated) {
+        if(cutmeth==kAbsCut) {
+          TString sign[2] = {"<",">"};
+          title=Form("%s %s %0.1f",hq2VsCentr->GetYaxis()->GetTitle(),sign[iq2].Data(),q2cut[iq2]);
+        }
+        else {
+          Double_t perc[2] = {q2smallpercevents*100,q2largepercevents*100};
+          TString reg[2] = {"small-","large-"};
+          title=Form("%0.f%% %s %s",perc[iq2],reg[iq2].Data(),hq2VsCentr->GetYaxis()->GetTitle());
+        }
       }
       else {
-        Double_t perc[2] = {q2smallpercevents*100,q2largepercevents*100};
-        TString reg[2] = {"small-","large-"};
-        title=Form("%0.f%% %s %s",perc[iq2],reg[iq2].Data(),hq2VsCentr->GetYaxis()->GetTitle());
+        title=Form("%s-integrated",hq2VsCentr->GetYaxis()->GetTitle());
       }
       leg->AddEntry(gv2fs[iq2],title.Data(),"lpe");
       
@@ -406,13 +415,13 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
       if(ymin[iq2]>tmp-1.5*TMath::Abs(tmp)) ymin[iq2]=tmp-1.5*TMath::Abs(tmp);
       
       tmp=TMath::MaxElement(gv2[iq2]->GetN(),gv2[iq2]->GetY());
-      if(ymax[iq2]<tmp+1.5*TMath::Abs(tmp)) ymax[iq2]=tmp+1.5*TMath::Abs(tmp);
+      if(ymax[iq2]<tmp+1.5*TMath::Abs(tmp)) ymax[iq2]=tmp+1.2*TMath::Abs(tmp);
       tmp=TMath::MaxElement(gv2fs[iq2]->GetN(),gv2fs[iq2]->GetY());
-      if(ymax[iq2]<tmp+1.5*TMath::Abs(tmp)) ymax[iq2]=tmp+1.5*TMath::Abs(tmp);
+      if(ymax[iq2]<tmp+1.5*TMath::Abs(tmp)) ymax[iq2]=tmp+1.2*TMath::Abs(tmp);
       tmp=TMath::MaxElement(gv2BC1[iq2]->GetN(),gv2BC1[iq2]->GetY());
-      if(ymax[iq2]<tmp+1.5*TMath::Abs(tmp)) ymax[iq2]=tmp+1.5*TMath::Abs(tmp);
+      if(ymax[iq2]<tmp+1.5*TMath::Abs(tmp)) ymax[iq2]=tmp+1.2*TMath::Abs(tmp);
       tmp=TMath::MaxElement(gv2BC2[iq2]->GetN(),gv2BC2[iq2]->GetY());
-      if(ymax[iq2]<tmp+1.5*TMath::Abs(tmp)) ymax[iq2]=tmp+1.5*TMath::Abs(tmp);
+      if(ymax[iq2]<tmp+1.5*TMath::Abs(tmp)) ymax[iq2]=tmp+1.2*TMath::Abs(tmp);
    
       gv2[iq2]->GetYaxis()->SetRangeUser(ymin[iq2],ymax[iq2]);
       
@@ -421,10 +430,10 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
       cv2[iq2]->SaveAs(outname.Data());
 
       cv2fs->cd();
-      TString drawopt="AP";
-      if(iq2==1) drawopt="P";
+      TString drawopt="P";
+      if(iq2==kSmall) drawopt+="A";
       gv2fs[iq2]->Draw(drawopt.Data());
-      if(iq2==1) leg->Draw("same");
+      if(iq2==kIntegrated) leg->Draw("same");
     }
     else {
       cerr << "Scalar product not yet implemented. Exit" << endl;
@@ -442,11 +451,13 @@ Int_t DmesonsFlowEvShapeAnalysis(Int_t cutmeth, Int_t analysismeth) {
   cv2[1]->Write();
   outfile.Close();
   
-  Double_t min=ymin[0];
-  if(min>ymin[1]) min=ymin[1];
-  Double_t max=ymax[0];
-  if(max<ymax[1]) max=ymax[1];
-  gv2fs[0]->GetYaxis()->SetRangeUser(min,max);
+  Double_t min=ymin[kSmall];
+  if(min>ymin[kLarge]) min=ymin[kLarge];
+  if(min>ymin[kIntegrated]) min=ymin[kIntegrated];
+  Double_t max=ymax[kLarge];
+  if(max<ymax[kSmall]) max=ymax[kSmall];
+  if(max<ymax[kIntegrated]) max=ymax[kIntegrated];
+  gv2fs[kSmall]->GetYaxis()->SetRangeUser(min,max);
   
 
   outname=Form("%s/v2fsOutput_%d_%d_%s%s_q2Small%.2f_q2Large%.2f.pdf",outputdir.Data(),minCent,maxCent,analysismethname.Data(),suffix.Data(),q2smalllimit,q2largelimit);
@@ -489,7 +500,7 @@ void Drawq2VsCent(Int_t cutmeth) {
   TString q2name = hq2->GetXaxis()->GetTitle();
   hq2->SetTitle("");
   hq2->GetYaxis()->SetTitle(Form("dN_{ev}/d%s",hq2->GetXaxis()->GetTitle()));
-  hq2->SetLineColor(colors[0]);
+  hq2->SetLineColor(kBlack);
   
   TH1F** hq2centbin = new TH1F*[ncentbins];
   
@@ -507,7 +518,7 @@ void Drawq2VsCent(Int_t cutmeth) {
     hLargeLimitVsCent->SetBinContent(iCent+1,largecutvalues[iCent]);
   }
   
-  TLegend* leg = new TLegend(0.55,0.7,0.89,0.89);
+  TLegend* leg = new TLegend(0.55,0.6,0.89,0.89);
   leg->SetFillStyle(0);
   leg->SetTextSize(0.045);
 
@@ -535,8 +546,9 @@ void Drawq2VsCent(Int_t cutmeth) {
   hq2->Draw();
   leg->AddEntry(hq2,Form("%d - %d %%",minCent,maxCent));
   Int_t selcentbins[3] = {0,ncentbins/2-1,ncentbins-1};
+  Int_t colorline[3] = {kRed,kBlue,kGreen+2};
   for(Int_t iCent=0; iCent<3; iCent++) {
-    hq2centbin[selcentbins[iCent]]->SetLineColor(colors[iCent+1]);
+    hq2centbin[selcentbins[iCent]]->SetLineColor(colorline[iCent]);
     hq2centbin[selcentbins[iCent]]->Draw("same");
     Double_t min=(Double_t)minCent+selcentbins[iCent]*centwidth;
     Double_t max=(Double_t)minCent+(selcentbins[iCent]+1)*centwidth;
@@ -559,9 +571,9 @@ void Drawq2VsCent(Int_t cutmeth) {
     TH1F* hq2smallcut=(TH1F*)hq2->Clone();
     TH1F* hq2largecut=(TH1F*)hq2->Clone();
     hq2smallcut->SetLineWidth(0);
-    hq2smallcut->SetFillColorAlpha(kBlue+1,0.6);
+    hq2smallcut->SetFillColorAlpha(colors[0]+1,0.6);
     hq2largecut->SetLineWidth(0);
-    hq2largecut->SetFillColorAlpha(kRed+1,0.6);
+    hq2largecut->SetFillColorAlpha(colors[1]+1,0.6);
   
     Double_t totnum= 0.;
     for(Int_t iBin=1; iBin<=smallthresholdbin; iBin++) {
@@ -600,10 +612,10 @@ void Drawq2VsCent(Int_t cutmeth) {
     hq2largecutcentbin[iCent]=(TH1F*)hq2centbin[iCent]->Clone();
     hq2smallcutcentbin[iCent]->SetLineWidth(0);
     hq2smallcutcentbin[iCent]->SetLineColor(kBlack);
-    hq2smallcutcentbin[iCent]->SetFillColorAlpha(kBlue+1,0.6);
+    hq2smallcutcentbin[iCent]->SetFillColorAlpha(colors[0]+1,0.6);
     hq2largecutcentbin[iCent]->SetLineWidth(0);
     hq2largecutcentbin[iCent]->SetLineColor(kBlack);
-    hq2largecutcentbin[iCent]->SetFillColorAlpha(kRed+1,0.6);
+    hq2largecutcentbin[iCent]->SetFillColorAlpha(colors[1]+1,0.6);
   }
   
   TCanvas* cq2CutVsCent = new TCanvas("cq2CutVsCent","",1920,1080);
@@ -648,16 +660,19 @@ void Drawq2VsCent(Int_t cutmeth) {
   }
   cout << endl;
   
-  cq2->SaveAs(Form("%s/Nev_vs_q2.pdf",outputdir.Data()));
+  cq2->SaveAs(Form("%s/Nev_vs_q2%s.pdf",outputdir.Data(),suffix.Data()));
+  cq2->SaveAs(Form("%s/Nev_vs_q2%s.root",outputdir.Data(),suffix.Data()));
   
-  TString outname=Form("%s/q2Selection_q2Large%0.2f_q2Small%0.2f.pdf",outputdir.Data(),q2smalllimit,q2largelimit);
+  TString outname=Form("%s/q2Selection%s_q2Small%0.2f_q2Large%0.2f.pdf",outputdir.Data(),suffix.Data(),q2smalllimit,q2largelimit);
   TString percsuffix="perc";
   if(cutmeth==kPercCutVsCent) percsuffix="percVsCent";
-  if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {outname=Form("%s/q2Selection_q2Large%0.f%s_q2Small%0.f%s.pdf",outputdir.Data(),q2smallpercevents*100,percsuffix.Data(),q2largepercevents*100,percsuffix.Data());}
+  if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {outname=Form("%s/q2Selection%s_q2Small%0.f%s_q2Large%0.f%s.pdf",outputdir.Data(),suffix.Data(),q2smallpercevents*100,percsuffix.Data(),q2largepercevents*100,percsuffix.Data());}
   if(cutmeth!=kPercCutVsCent) {cq2Cut->SaveAs(outname.Data());}
   outname.ReplaceAll("q2Selection","q2SelectionVsCent");
   cq2CutVsCent->SaveAs(outname.Data());
   outname.ReplaceAll("q2SelectionVsCent","q2_vs_Centrality");
+  cq2VsCent->SaveAs(outname.Data());
+  outname.ReplaceAll(".pdf",".root");
   cq2VsCent->SaveAs(outname.Data());
 }
 
@@ -689,7 +704,7 @@ void DrawResolution(Int_t cutmeth) {
     intlargecutvalues.push_back(-1.);
   }
   
-  Int_t q2region[2] = {kSmall,kLarge};
+  Int_t q2region[3] = {kSmall,kLarge,kIntegrated};
   
   TGraphErrors** gRes = new TGraphErrors*[3];
   TF1** fRes = new TF1*[3];
@@ -699,11 +714,8 @@ void DrawResolution(Int_t cutmeth) {
   TString suffixcentr=Form("centr%d_%d",minCent,maxCent);
   TString q2suffix[3] = {"q2Small","q2Large","q2Int"};
   
-  for(Int_t iq2=0; iq2<3; iq2++) {
-    if(iq2!=3) {resolist=(TList*)LoadResolutionHistos(datalist,smallcutvalues,largecutvalues,q2region[iq2]);}
-    if(iq2==3) {
-      resolist=(TList*)LoadResolutionHistos(datalist,intsmallcutvalues,intlargecutvalues,kSmall); //resolution integrated in q2
-    }
+  for(Int_t iq2=kSmall; iq2<=kIntegrated; iq2++) {
+    resolist=(TList*)LoadResolutionHistos(datalist,smallcutvalues,largecutvalues,q2region[iq2]);
     gRes[iq2]=(TGraphErrors*)resolist->FindObject("gResolVsCent");
     gRes[iq2]->SetName(Form("gResolVsCent%s",q2suffix[iq2].Data()));
     gRes[iq2]->GetYaxis()->SetTitle("Event Plane resolution R_{2}");
@@ -711,9 +723,9 @@ void DrawResolution(Int_t cutmeth) {
     gRes[iq2]->SetTitle("");
     gRes[iq2]->SetMarkerSize(1.5);
     gRes[iq2]->SetLineWidth(2);
-    gRes[iq2]->SetMarkerStyle(markers[iq2+1]);
-    gRes[iq2]->SetMarkerColor(colors[iq2+1]);
-    gRes[iq2]->SetLineColor(colors[iq2+1]);
+    gRes[iq2]->SetMarkerStyle(markers[iq2]);
+    gRes[iq2]->SetMarkerColor(colors[iq2]+1);
+    gRes[iq2]->SetLineColor(colors[iq2]+1);
     TH1F* hevplresos[3];
     TString namereso[3]={"ResoVsq2","Reso2Vsq2","Reso3Vsq2"};
     Int_t nSubRes=1;
@@ -793,7 +805,13 @@ TList* LoadTList(Int_t &ncentbins) {
   else {cerr << "Error: Wrong TDirectoryFile name " << dirname << ". Exit." << endl; return 0x0;}
   if(!list) {cerr << "Error: Wrong TList name " << listname << ". Exit." << endl; return 0x0;}
   
-  ncentbins=(list->GetEntries()-10)/3; //-10: 6 EP distributions, 3 Events vs. centrality, 1 THnSparse, /3: 3 resolution histos for each centrality bin
+  TH2F* hTest = (TH2F*)list->FindObject("hq2TPCFullEtaVsPosEta");
+  if(!hTest) {
+    ncentbins=(list->GetEntries()-10)/3; //-10: 6 EP distributions, 3 Events vs. centrality, 1 THnSparse, /3: 3 resolution histos for each centrality bin
+  }
+  else {
+    ncentbins=(list->GetEntries()-10)/6;
+  }
   
   infile->Close();
   cout<<"Input file closed."<< endl;
@@ -816,7 +834,14 @@ THnSparseF* LoadSparseFromList(TList* inputlist) {
 //GET q2 VS. CENTRALITY HISTO
 TH2F* GetHistoq2VsCentr(TList* inputlist) {
   
-  Int_t ncentbins=(inputlist->GetEntries()-10)/3;
+  Int_t ncentbins=0;
+  TH2F* hTest = (TH2F*)inputlist->FindObject("hq2TPCFullEtaVsPosEta");
+  if(!hTest) {
+    ncentbins=(inputlist->GetEntries()-10)/3; //-10: 6 EP distributions, 3 Events vs. centrality, 1 THnSparse, /3: 3 resolution histos for each centrality bin
+  }
+  else {
+    ncentbins=(inputlist->GetEntries()-10)/6;
+  }
   Double_t centwidth = (Double_t)(maxCent-minCent)/ncentbins;
   Double_t mincentpermil=minCent*10;
   Double_t maxcentpermil=(minCent+centwidth)*10;
@@ -903,7 +928,7 @@ TList* LoadMassHistos(THnSparseF* sparse, vector<Double_t> smallcutvalues, vecto
         else if(fSparseVers==1) {
           for(Int_t iCent=0; iCent<ncentbins; iCent++) {
             ApplyCut(sparse,minCent+(iCent*centwidth),minCent+(iCent*centwidth)+1,centaxis); //apply centrality cut (to have a q2 cut centrality dependent)
-            Applyq2Cut(sparse,smallcutvalues[iCent],largecutvalues[iCent],smallorlarge); //apply q2 cut centrality dependent
+            if(smallorlarge!=kIntegrated) {Applyq2Cut(sparse,smallcutvalues[iCent],largecutvalues[iCent],smallorlarge);} //apply q2 cut centrality dependent
             hMassTmp[iCent]=(TH1F*)sparse->Projection(0);
             if(iCent>0) {hMassTmp[0]->Add(hMassTmp[iCent]);}
             ResetAxes(sparse,centaxis); //release centrality cut
@@ -924,7 +949,7 @@ TList* LoadMassHistos(THnSparseF* sparse, vector<Double_t> smallcutvalues, vecto
     }
     else if(analysismeth==kEventPlaneInOut){
       if(fSparseVers==0) {
-        Applyq2Cut(sparse,smallcutvalues[0],largecutvalues[0],smallorlarge); //apply q2 cut
+        if(smallorlarge!=kIntegrated) {Applyq2Cut(sparse,smallcutvalues[0],largecutvalues[0],smallorlarge);} //apply q2 cut
         ApplyCut(sparse,0.,TMath::Pi()/4,phiaxis); //apply deltaphi cut
         hMassTmp[0]=(TH1F*)sparse->Projection(0);
         ResetAxes(sparse,phiaxis); //release deltaphi cut
@@ -946,7 +971,7 @@ TList* LoadMassHistos(THnSparseF* sparse, vector<Double_t> smallcutvalues, vecto
         ApplyCut(sparse,0.,TMath::Pi()/4,phiaxis); //apply deltaphi cut
         for(Int_t iCent=0; iCent<ncentbins; iCent++) {
           ApplyCut(sparse,minCent+(iCent*centwidth),minCent+(iCent*centwidth)+1,centaxis); //apply centrality cut (to have a q2 cut centrality dependent)
-          Applyq2Cut(sparse,smallcutvalues[iCent],largecutvalues[iCent],smallorlarge); //apply q2 cut centrality dependent
+          if(smallorlarge!=kIntegrated) {Applyq2Cut(sparse,smallcutvalues[iCent],largecutvalues[iCent],smallorlarge);} //apply q2 cut centrality dependent
           hMassTmp[iCent]=(TH1F*)sparse->Projection(0);
           if(iCent>0) {hMassTmp[0]->Add(hMassTmp[iCent]);}
           ResetAxes(sparse,centaxis); //release centrality cut
@@ -960,7 +985,7 @@ TList* LoadMassHistos(THnSparseF* sparse, vector<Double_t> smallcutvalues, vecto
         ApplyCut(sparse,3./4*TMath::Pi(),TMath::Pi(),phiaxis); //apply deltaphi cut
         for(Int_t iCent=0; iCent<ncentbins; iCent++) {
           ApplyCut(sparse,minCent+(iCent*centwidth),minCent+(iCent*centwidth)+1,centaxis); //apply centrality cut (to have a q2 cut centrality dependent)
-          Applyq2Cut(sparse,smallcutvalues[iCent],largecutvalues[iCent],smallorlarge); //apply q2 cut centrality dependent
+          if(smallorlarge!=kIntegrated) {Applyq2Cut(sparse,smallcutvalues[iCent],largecutvalues[iCent],smallorlarge);} //apply q2 cut centrality dependent
           hMassTmp1[iCent]=(TH1F*)sparse->Projection(0);
           if(iCent>0) {hMassTmp1[0]->Add(hMassTmp1[iCent]);}
           ResetAxes(sparse,centaxis); //release centrality cut
@@ -977,7 +1002,7 @@ TList* LoadMassHistos(THnSparseF* sparse, vector<Double_t> smallcutvalues, vecto
         ApplyCut(sparse,TMath::Pi()/4,3./4*TMath::Pi(),phiaxis); //apply deltaphi cut
         for(Int_t iCent=0; iCent<ncentbins; iCent++) {
           ApplyCut(sparse,minCent+(iCent*centwidth),minCent+(iCent*centwidth)+1,centaxis); //apply centrality cut (to have a q2 cut centrality dependent)
-          Applyq2Cut(sparse,smallcutvalues[iCent],largecutvalues[iCent],smallorlarge); //apply q2 cut centrality dependent
+          if(smallorlarge!=kIntegrated) {Applyq2Cut(sparse,smallcutvalues[iCent],largecutvalues[iCent],smallorlarge);} //apply q2 cut centrality dependent
           hMassTmp2[iCent]=(TH1F*)sparse->Projection(0);
           if(iCent>0) {hMassTmp2[0]->Add(hMassTmp2[iCent]);}
           ResetAxes(sparse,centaxis); //release centrality cut
@@ -1024,7 +1049,14 @@ TList* LoadResolutionHistos(TList *inputlist, vector<Double_t> smallcutvalues, v
     ,451.409,392.853,340.493,294.426,252.385,215.484,183.284
     ,155.101,130.963};
   
-  Int_t ncentbins = (inputlist->GetEntries()-10)/3;
+  Int_t ncentbins=0;
+  TH2F* hTest = (TH2F*)inputlist->FindObject("hq2TPCFullEtaVsPosEta");
+  if(!hTest) {
+    ncentbins=(inputlist->GetEntries()-10)/3; //-10: 6 EP distributions, 3 Events vs. centrality, 1 THnSparse, /3: 3 resolution histos for each centrality bin
+  }
+  else {
+    ncentbins=(inputlist->GetEntries()-10)/6;
+  }
   Double_t centwidth = (Double_t)(maxCent-minCent)/ncentbins;
   
   Double_t minCentTimesTen=minCent*10;
@@ -1068,6 +1100,10 @@ TList* LoadResolutionHistos(TList *inputlist, vector<Double_t> smallcutvalues, v
         if(binmaxsmallregion==binmin) {
           binmin += 1; //avoid overlap between the two q2-regions
         }
+      }
+      else if(smallorlarge==kIntegrated) {
+        binmin=1;
+        binmax=htmpresosvsq2[iRes]->GetYaxis()->FindBin(htmpresosvsq2[iRes]->GetYaxis()->GetNbins()+1); //takes also overflow entries
       }
       htmpresos[iRes]=(TH1F*)htmpresosvsq2[iRes]->ProjectionX(Form("hEvPlane%s%s",namereso[iRes].Data(),suffixcentr.Data()),binmin,binmax);
       if(htmpresos[iRes]){
@@ -1170,7 +1206,8 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
   Double_t q2cut=-1;
   Double_t q2perccut=-1.;
   if(smallorlarge==kSmall) {q2regionname="q2Small"; q2cut=q2smalllimit; q2perccut=q2smallpercevents*100;}
-  if(smallorlarge==kLarge) {q2regionname="q2Large"; q2cut=q2largelimit; q2perccut=q2largepercevents*100;}
+  else if(smallorlarge==kLarge) {q2regionname="q2Large"; q2cut=q2largelimit; q2perccut=q2largepercevents*100;}
+  else if(smallorlarge==kIntegrated) {q2regionname="q2Int"; q2cut=0.; q2perccut=100;}
   
   TFile* infile = TFile::Open(infilename.Data(),"READ");
   TDirectoryFile* dir=0x0;
@@ -1243,6 +1280,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       }
       fitter->SetInitialGaussianMean(massD);
       fitter->SetInitialGaussianSigma(0.012);
+      fitter->SetUseLikelihoodFit();
       Bool_t ok=fitter->MassFitter(kFALSE);
       Double_t sigmaforcounting=0;
       Double_t meanforcounting=0;
@@ -1290,6 +1328,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       fitter->SetFixReflOverS(sOverRef,kTRUE);
     }
     fitter->SetInitialGaussianMean(massD);
+    fitter->SetUseLikelihoodFit();
     Bool_t ok=fitter->MassFitter(kFALSE);
     if(ok){
       if(nPtBins==1) {fitter->DrawHere(cPhiInteg->cd(),3,1);}
@@ -1315,6 +1354,7 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
       fitter2->SetInitialGaussianMean(massD);
       fitter2->SetFixGaussianSigma(sigma);
       if(fixAlsoMass) fitter2->SetFixGaussianMean(massFromFit);
+      fitter2->SetUseLikelihoodFit();
       Bool_t ok2=fitter2->MassFitter(kFALSE);
       Double_t signal=0,esignal=0;
       if(ok2){
@@ -1332,6 +1372,12 @@ void FillSignalGraph(TList *masslist,TGraphAsymmErrors **gSignal,TGraphAsymmErro
     Form("%s/InvMassDeltaPhi_fs%s_%s%.2f.root",outputdir.Data(),suffix.Data(),q2regionname.Data(),q2cut),
     Form("%s/InvMassfullphi%s.pdf",outputdir.Data(),suffix.Data())};
  
+  if(smallorlarge==kIntegrated) {
+    for(Int_t iFile=0; iFile<3; iFile++) {
+      outnames[iFile].ReplaceAll("0.00","");
+    }
+  }
+  
   TString percsuffix="perc";
   if(cutmeth==kPercCutVsCent) percsuffix="percVsCent";
   if(cutmeth==kPercCut || cutmeth==kPercCutVsCent) {
@@ -1541,7 +1587,7 @@ void SetStyle() {
 }
 
 //_____________________________________________________________________________________________
-//DRAWING REFLECTION HISTOS FOR D0
+//LOAD REFLECTION HISTOS FOR D0
 Bool_t LoadD0toKpiMCHistos(TList *outlist){
   
   TFile *f=new TFile(fileNameMCD0refl.Data(),"READ");
