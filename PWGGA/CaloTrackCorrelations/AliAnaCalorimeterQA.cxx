@@ -1128,7 +1128,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
-  Float_t m20    = clus->GetM20();
+//Float_t m20    = clus->GetM20();
   Int_t   ncells = clus->GetNCells();
     
   //
@@ -1149,7 +1149,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
   Int_t sameRow2 = 0;
   
   // Get second highest energy cell
-  Int_t absId2ndMax = -1;
+//Int_t absId2ndMax = -1;
   Float_t emax = 0;
   Bool_t sameTCard2ndMax = kFALSE;
   Int_t  rowDiff2 = -100;
@@ -1242,7 +1242,7 @@ void AliAnaCalorimeterQA::ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloC
     if ( eCell > emax ) 
     {
       emax        = eCell;
-      absId2ndMax = absId;
+      //absId2ndMax = absId;
       if(sameTCard)
       {
         sameTCard2ndMax = kTRUE;
