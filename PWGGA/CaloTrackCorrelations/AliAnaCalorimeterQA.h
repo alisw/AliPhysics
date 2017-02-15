@@ -92,7 +92,8 @@ public:
   void         ExoticHistograms(Int_t absIdMax, Float_t ampMax,
                                 AliVCluster *clus, AliVCaloCells* cells);
   
-  void         ChannelCorrelationInFEC(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax) const ;
+  void         ChannelCorrelationInFEC  (AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax) const ;
+  void         ChannelCorrelationInTCard(AliVCluster* clus, AliVCaloCells * cells, Bool_t matched, Int_t absIdMax) const ;
   
   Float_t      GetECross(Int_t absId, AliVCaloCells* cells,Float_t dtcut = 10000);
   
@@ -195,6 +196,9 @@ public:
   void SwitchOnStudyFECCorrelation()            { fStudyFECCorrelation = kTRUE  ; }
   void SwitchOffStudyFECCorrelation()           { fStudyFECCorrelation = kFALSE ; }
 
+  void SwitchOnStudyTCardCorrelation()          { fStudyTCardCorrelation = kTRUE  ; }
+  void SwitchOffStudyTCardCorrelation()         { fStudyTCardCorrelation = kFALSE ; }
+  
   void SwitchOnStudyM02Dependence()             { fStudyM02Dependence = kTRUE  ; }
   void SwitchOffStudyM02Dependence()            { fStudyM02Dependence = kFALSE ; }
   
@@ -237,6 +241,7 @@ public:
   Bool_t   fStudyExotic;                        ///<  Study the exotic cluster for different cuts, not QA related
   Bool_t   fStudyWeight;                        ///<  Study the energy weight used in different cluster calculations, not QA related
   Bool_t   fStudyFECCorrelation;                ///<  Study 4 FEC channels cross correlation
+  Bool_t   fStudyTCardCorrelation;              ///<  Study TCard channels cross correlation
   Bool_t   fStudyM02Dependence;                 ///<  TH3 histograms where M02 and energy are 2 axes and 
   
   // Parameters
@@ -320,6 +325,7 @@ public:
   TH2F *   fhNCellsPerCluster;                  //!<! N cells per cluster vs cluster energy 
   TH2F *   fhNCellsPerClusterNoCut;             //!<! N cells per cluster vs cluster energy, before cuts 
 
+  // FEC correl!
   TH2F *   fhNCellsPerClusterWithWeight;        //!<! N cells per cluster vs cluster energy, select cells with significant weight
   TH2F *   fhNCellsPerClusterRatioWithWeight;   //!<! N cells per cluster / N cells per cluster with significant weigth  vs cluster energy
   
@@ -336,13 +342,15 @@ public:
   TH2F *   fhClusterMaxCellDiff;                //!<! Difference between cluster energy and energy of cell with more energy, good clusters only
   TH2F *   fhClusterMaxCellDiffNoCut;           //!<! Difference between cluster energy and energy of cell with more energy, no bad cluster rejection
 
-//  TH2F *   fhClusterMaxCellDiffAverageTime;     //!<! Difference between cluster average time and time of cell with more energy
-//  TH2F *   fhClusterMaxCellDiffWeightedTime;    //!<! Difference between cluster weighted time and time of cell with more energy
+//TH2F *   fhClusterMaxCellDiffAverageTime;     //!<! Difference between cluster average time and time of cell with more energy
+//TH2F *   fhClusterMaxCellDiffWeightedTime;    //!<! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhClusterMaxCellECross;              //!<! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
   
+//TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
   TH2F *   fhLambda0;                           //!<! Cluster Lambda0 vs Energy
   TH2F *   fhLambda1;                           //!<! Cluster Lambda1 vs Energy  
 
+  // FEC correlation
   TH2F *   fhLambda0MaxFECPair;                 //!<! Cluster Lambda0 vs Energy, main cell is pair in eta col in FEC correlated convention
   TH2F *   fhLambda1MaxFECPair;                 //!<! Cluster Lambda1 vs Energy, main cell is pair in eta col in FEC correlated convention
 
@@ -381,7 +389,33 @@ public:
 
   TH2F *   fhEtaPhiFECCorrControl;              //!<! eta-phi cluster location control histogram
 
-//TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
+  
+  // TCard correlation
+  TH2F *   fhEtaPhiTCardCorrNoSelection;                //!<! eta-phi cluster for those selected for TCard correlation studies
+  TH2F *   fhLambda0TCardCorrNoSelection;               //!<! Cluster m02 vs E for clusters selected for TCard correlation studies
+  TH2F *   fhNCellsTCardCorrNoSelection;                //!<! Ncells per cluster vs cluster energy, clusters selected for TCard correlation studies
+  TH2F *   fhNCellsTCardCorrWithWeightNoSelection;      //!<! Ncells per cluster vs cluster energy, select cells with w>0.01, clusters selected for TCard correlation studies
+  TH2F *   fhNCellsTCardCorrRatioWithWeightNoSelection; //!<! Ncells per cluster/Ncells per cluster with w>0.01 vs cl. energy, clusters selected for TCard correlation studies
+
+  TH2F *   fhLambda0TCardCorrelN[6];                     //!<! Cluster m02 vs E, max cell correlated with 0 to 5, N cells in TCard                
+  TH2F *   fhNCellsTCardCorrelN [6];                     //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with 0 to 5, N cells in TCard
+
+  TH2F *   fhLambda0TCardCorrel[7];                      //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard               
+  TH2F *   fhNCellsTCardCorrel [7];                      //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
+
+  TH2F *   fhLambda0TCardCorrelNearRow[6];               //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard, one correl. cell is 1 row away               
+  TH2F *   fhNCellsTCardCorrelNearRow [6];               //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard, one correl. cell is 1 row away 
+  
+  TH2F *   fhLambda0TCardCorrel2ndMax[4];                //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard, 2nd max also in TCard               
+  TH2F *   fhNCellsTCardCorrel2ndMax [4];                //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard, 2nd Max in TCard
+
+  TH2F *   fhLambda0TCardCorrelOtherTCard[7];            //!<! Cluster m02 vs E, max cell correlated with different combinations of cells in TCard               
+  TH2F *   fhNCellsTCardCorrelOtherTCard [7];            //!<! Cluster Ncells vs E, select cells with w > 0.01, max cell correlated with different combinations of cells in TCard
+
+  TH2F *   fhTCardCorrECellMaxDiff[10];                  //!<! Cell max energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
+  TH2F *   fhTCardCorrEClusterDiff[10];                  //!<! Cluster energy - secondary cell energy in cluster vs cluster energy, different secondary cell selections depending on TCard
+  TH2F *   fhTCardCorrECellMaxRat [10];                  //!<! Secondary cell energy in cluster / cell max energy vs cluster energy, different secondary cell selections depending on TCard
+  TH2F *   fhTCardCorrEClusterRat [10];                  //!<! Secondary cell energy in cluster / cluster energy - vs cluster energy, different secondary cell selections depending on TCard
   
   // Bad clusters histograms
   
