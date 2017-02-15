@@ -642,7 +642,7 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
     c.SetZ(x[2]);
   }
   //
-  if (markedge && (ki<=1 || ki>=fMaxPad-1 || kj<=1 || kj>=fMaxTime-2)) {
+  if (c.GetType() >= 0 && ((markedge && (ki<=1 || ki>=fMaxPad-1)) || (kj<=1 || kj>=fMaxTime-2))) {
     c.SetType(-(c.GetType()+3));  //edge clusters
   }
   if (fLoop==2) c.SetType(100);
