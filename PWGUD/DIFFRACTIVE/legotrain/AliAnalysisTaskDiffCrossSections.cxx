@@ -553,7 +553,7 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent,
   fTime[0] = esdAD->GetADCTime();
   fTime[1] = esdAD->GetADATime();
 
-  fBBOnline[0]  = fBBOnline[1]  = fBGOnline[0]  = fBGOnline[1] = 0;
+  fBBOnline[0]  = fBBOnline[1]  = fBGOnline[0]  = fBGOnline[1]  = 0;
   fBBOffline[0] = fBBOffline[1] = fBGOffline[0] = fBGOffline[1] = 0;
   for (Int_t ch=0; ch<16; ++ch)
     fBBFlagsOnline[ch] = fBBFlagsOffline[ch] = fCharges[ch] = 0;
@@ -561,12 +561,12 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent,
   for (Int_t ch=0; ch<4; ++ch) {
     fBBOnline[0]  += (esdAD->GetBBFlag(ch  )  && esdAD->GetBBFlag(ch+ 4));
     fBBOnline[1]  += (esdAD->GetBBFlag(ch+8)  && esdAD->GetBBFlag(ch+12));
-    fBBOffline[0] += (esdAD->BBTriggerADC(ch) && esdAD->BBTriggerADC(ch+4));
-    fBBOffline[1] += (esdAD->BBTriggerADA(ch) && esdAD->BBTriggerADA(ch+4));
+    fBBOffline[0] += (esdAD->BBTriggerADC(ch  ) && esdAD->BBTriggerADC(ch+ 4));
+    fBBOffline[1] += (esdAD->BBTriggerADA(ch+8) && esdAD->BBTriggerADA(ch+12));
     fBGOnline[0]  += (esdAD->GetBGFlag(ch  )  && esdAD->GetBGFlag(ch+ 4));
     fBGOnline[1]  += (esdAD->GetBGFlag(ch+8)  && esdAD->GetBGFlag(ch+12));
-    fBGOffline[0] += (esdAD->BGTriggerADC(ch) && esdAD->BGTriggerADC(ch+4));
-    fBGOffline[1] += (esdAD->BGTriggerADA(ch) && esdAD->BGTriggerADA(ch+4));
+    fBGOffline[0] += (esdAD->BGTriggerADC(ch  ) && esdAD->BGTriggerADC(ch+ 4));
+    fBGOffline[1] += (esdAD->BGTriggerADA(ch+8) && esdAD->BGTriggerADA(ch+12));
     for (Int_t j=0; j<4; ++j) {
       fBBFlagsOnline [ch+4*j] += esdAD->GetBBFlag(ch + 4*j);
       fBBFlagsOffline[ch+4*j] += (ch+4*j < 8
@@ -969,8 +969,8 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   const AliESDAD *esdAD = esdEvent->GetADData();
   if (fDetectorsUsed.Contains("AD") && esdAD) {
     fESDAD = *esdAD;
-    mask |= PseudoTracks::kADC;
-    mask |= PseudoTracks::kADA;
+    mask |= fDetectorsUsed.Contains("ADC")*PseudoTracks::kADC;
+    mask |= fDetectorsUsed.Contains("ADA")*PseudoTracks::kADA;
     for (Int_t side=0; side<2; ++side) {
       if (side==0 && !fDetectorsUsed.Contains("ADC"))
 	continue;
