@@ -262,6 +262,7 @@ protected:
    * @brief Fill track histograms
    * @param[in] eventclass Trigger class fired
    * @param[in] weight \f$ p_{t} \f$-hard dependent weight
+   * @param[in] posCharge Switch whether track charge is positive or negative
    * @param[in] pt track \f$ p_{t} \f$
    * @param[in] etalab Track \f$ \eta \f$ in lab frame
    * @param[in] etacent Track \f$ \eta \f$ in cms frame
@@ -269,7 +270,7 @@ protected:
    * @param[in] inEmcal Track in EMCAL \f$ \phi \f$ acceptance
    * @param[in] pid True particle species
    */
-  void FillTrackHistos(const TString &eventclass, Double_t weight, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal, const TString &pid);
+  void FillTrackHistos(const TString &eventclass, Double_t weight, Bool_t posCharge, Double_t pt, Double_t eta, Double_t etacent, Double_t phi, Bool_t inEmcal, const TString &pid);
 
   /**
    * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
