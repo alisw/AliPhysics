@@ -35,7 +35,7 @@
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit()
   : 
-  fSinglePadSuppression(1), fClusterLowerLimit(0), fClusterQMaxLowerLimit(0), fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0),fDebugFile(0)
+  fSinglePadSuppression(1), fClusterLowerLimit(0), fClusterQMaxLowerLimit(0), fTagDeconvolutedClusters(0), fCorrectEdgeClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0),fDebugFile(0)
 {
   //constructor 
 }
@@ -53,7 +53,7 @@ AliHLTTPCHWCFDivisionUnit::~AliHLTTPCHWCFDivisionUnit()
 
 AliHLTTPCHWCFDivisionUnit::AliHLTTPCHWCFDivisionUnit(const AliHLTTPCHWCFDivisionUnit&)
   : 
-  fSinglePadSuppression(1),fClusterLowerLimit(0),fClusterQMaxLowerLimit(0),fTagDeconvolutedClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0), fDebugFile(0)
+  fSinglePadSuppression(1),fClusterLowerLimit(0),fClusterQMaxLowerLimit(0),fTagDeconvolutedClusters(0), fCorrectEdgeClusters(0), fkInput(0),fOutput(), fDebug(0), fDebugNtuple(0), fDebugFile(0)
 {
 }
 
@@ -163,12 +163,26 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
   {
     if (fkInput->fBorder) fOutput.fRowQ |= (0x1 << 23);
   }
+  
 
   *((AliHLTFloat32_t*)&fOutput.fP) = (float)fkInput->fP/q;
   *((AliHLTFloat32_t*)&fOutput.fT) = (float)fkInput->fT/q;
   *((AliHLTFloat32_t*)&fOutput.fP2) = (float)fkInput->fP2/q;
   *((AliHLTFloat32_t*)&fOutput.fT2) = (float)fkInput->fT2/q;
  
+  if (fCorrectEdgeClusters)
+  {
+    if (fkInput->fEdge)
+    {
+      AliHLTFloat32_t& cog = *((AliHLTFloat32_t*)&fOutput.fP);
+      AliHLTFloat32_t peak = (float)fkInput->fLargestQPad;
+      if (cog < 30 ? (cog > peak) : (cog < peak))
+      {
+        cog = peak;  
+      }
+    }
+  }
+  
   // MC part
 
   AliHLTTPCClusterMCWeight emptyWeight;

@@ -139,9 +139,11 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
   // bit  15 : is the pad active
   // bits 16->28 : gain calibration as 13 bit fixed point,
   //               with 1 bit position before decimal point
+  // bit  29 : flag for edge pad (border pad at sector edge) 
 
   const AliHLTUInt32_t  kBorderFlag = (1 << 14); 
   const AliHLTUInt32_t  kActiveFlag = (1 << 15); 
+  const AliHLTUInt32_t  kEdgeFlag = (1 << 29); 
   
   if( slice<0 || slice>=fgkNSlices ){
      HLTFatal("Wrong slice number %d, no mapping is provided.", slice);
@@ -209,7 +211,7 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
     }
 
     if( maxHWAdd > 0xFFF ){
-      HLTError("Max hardware address exceeded for patch %d, max number is %d, number from mapping file is %d.",patch, 0xFFF, maxHWAdd+1);	
+      HLTError("Max hardware address exceeded for patch %d, max number is %d, number from mapping file is %d.",patch, 0xFFF, maxHWAdd+1);
       break;
     }
 
@@ -243,24 +245,24 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
 	break;
       }
       if (hwAdd>maxHWAdd) {
-	HLTError("hardware address exceeds max hwAddress %d, mapping file %s corrupted?", maxHWAdd, filename.Data());	
+	HLTError("hardware address exceeds max hwAddress %d, mapping file %s corrupted?", maxHWAdd, filename.Data());
 	break;
       }
 
       if( row < offsetSchemeB ){
-	HLTError("row number %d below minimum %d for patch %d, mapping file %s corrupted?", row, offsetSchemeB, patch, filename.Data());	
+	HLTError("row number %d below minimum %d for patch %d, mapping file %s corrupted?", row, offsetSchemeB, patch, filename.Data());
 	break;	  
       }	
 
       row -= offsetSchemeB;
 	
       if( row > 0x3F ){
-	HLTError("row number %d withing patch exceed the maximum %d for patch %d, mapping file %s corrupted?", row, 0x3F, patch, filename.Data());	
+	HLTError("row number %d withing patch exceed the maximum %d for patch %d, mapping file %s corrupted?", row, 0x3F, patch, filename.Data());
 	break;	  
       }
 
       if( pad > 0xFF ){
-	HLTError("pad number %d exceed the maximum %d for patch %d, mapping file %s corrupted?", pad, 0xFF, patch, filename.Data());	
+	HLTError("pad number %d exceed the maximum %d for patch %d, mapping file %s corrupted?", pad, 0xFF, patch, filename.Data());
 	break;	  
       }
 
@@ -279,11 +281,13 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
 
       AliHLTUInt32_t configWord = ( (row & 0x3F) << 8 ) | (pad & 0xFF);
       if ( active ) configWord |= kActiveFlag;
-      configWord |= (gainCalib & 0x1FFF) << 16;	
+      configWord |= (gainCalib & 0x1FFF) << 16;
+      
+      if (pad == 0 || pad == AliHLTTPCGeometry::GetNPads(AliHLTTPCGeometry::GetFirstRow(patch) + row) - 1) configWord |= kEdgeFlag;
 
       mapping[1+hwAdd] = configWord;
 	
-      AliHLTUInt32_t branch = (hwAdd >> 11) & 0x1;	
+      AliHLTUInt32_t branch = (hwAdd >> 11) & 0x1;
       if( fProcessingRCU2Data ) branch = 0;
       rowBranchPadHw[nRead] = (row<<25) | (branch<<24) | (pad<<16) | hwAdd;
 
@@ -307,12 +311,11 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
       int rowBranchPad = rowBranchPadHw[i]>>16;
       if( rowBranchPad != rowBranchPadLast+1 ){
 	mapping[1+(rowBranchPadHw[i] & 0xFFF)] |= kBorderFlag;
-	if( i>0 ) mapping[1+(rowBranchPadHw[i-1] & 0xFFF)] |= kBorderFlag;	  
+	if( i>0 ) mapping[1+(rowBranchPadHw[i-1] & 0xFFF)] |= kBorderFlag;  
       }
       rowBranchPadLast = rowBranchPad;
     }
     mapping[1+(rowBranchPadHw[nRead-1] & 0xFFF)] |= kBorderFlag;
-    
   } while(0);
   
   inFile.close();

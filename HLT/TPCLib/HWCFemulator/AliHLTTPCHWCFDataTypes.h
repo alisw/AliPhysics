@@ -43,7 +43,7 @@ struct AliHLTTPCHWCFBunch
 {
   //* constructor **/
   AliHLTTPCHWCFBunch(): fFlag(0), fRow(0), fPad(0), fBranch(0), fBorder(0),
-			fGain(0), fData()
+			fEdge(0), fGain(0), fData()
   {}
 
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
@@ -51,6 +51,7 @@ struct AliHLTTPCHWCFBunch
   AliHLTUInt32_t fPad;  // pad number
   bool fBranch;         // 0  - pad belongs to branch A, 1 - pad belongs to branch B
   bool fBorder;         // is the pad at the border of its branch
+  bool fEdge;           // is the pad at the sector edge
   AliHLTUInt64_t fGain; // gain correction factor 
                         //   (fixed point integer with kFixedPoint bits after the point)
   std::vector<AliHLTTPCHWCFDigit> fData;      // signals
@@ -60,8 +61,8 @@ typedef struct AliHLTTPCHWCFBunch AliHLTTPCHWCFBunch;
 struct AliHLTTPCHWCFClusterFragment
 {
   //* constructor **/
-  AliHLTTPCHWCFClusterFragment():  fFlag(0), fRow(0), fPad(0), fBranch(0), fBorder(0),
-    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0),fLastQ(0), fNPads(0), fSlope(0), fNDeconvolutedTime(0), fIsDeconvolutedPad(0),fConsecutiveTimeDeconvolution(0), fMC()
+  AliHLTTPCHWCFClusterFragment():  fFlag(0), fRow(0), fPad(0), fBranch(0), fBorder(0), fEdge(0),
+    fQmax(0), fQ(0), fT(0), fP(0), fT2(0), fP2(0), fTMean(0), fLastQ(0), fLargestQ(0), fLargestQPad(0), fNPads(0), fSlope(0), fNDeconvolutedTime(0), fIsDeconvolutedPad(0),fConsecutiveTimeDeconvolution(0), fMC()
   {}
 
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
@@ -69,6 +70,7 @@ struct AliHLTTPCHWCFClusterFragment
   AliHLTUInt32_t fPad;  // pad number
   bool fBranch;         // 0  - pad belongs to branch A, 1 - pad belongs to branch B
   bool fBorder;         // is the pad at the border of its branch
+  bool fEdge;           // is the pad at the sector edge
   AliHLTUInt64_t fQmax; // max charge, fixed point integer
   AliHLTUInt64_t fQ;    // total charge, fixed point integer
   AliHLTUInt64_t fT;    // sum of time*charge , fixed point integer
@@ -78,6 +80,8 @@ struct AliHLTTPCHWCFClusterFragment
   AliHLTUInt64_t fTMean;// mean time, used for merging neighbouring pads
   AliHLTUInt64_t fLastQ; // for merged fragments, charge of the last (highest pad value)
                          //    fragment bein merged, needed for deconvolution
+  AliHLTUInt64_t fLargestQ; //for merging: charge of the cluster fragment with the largest Q
+  AliHLTUInt32_t fLargestQPad; //for merging: pad that had the cluster fragment with the largest Q
   AliHLTUInt32_t fNPads; // how many pads are in the cluster 
   bool fSlope;           // for merged fragments, ==1 if fLastQ decreases
                          //   ( needed for deconvolution )

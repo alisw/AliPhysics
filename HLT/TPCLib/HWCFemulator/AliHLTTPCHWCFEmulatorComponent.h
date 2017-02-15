@@ -169,6 +169,7 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   AliHLTUInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
   AliHLTUInt32_t fTagDeconvolutedClusters; // tag deconvoluted dclusters
   AliHLTUInt32_t fTagEdgeClusters; // tag edge clusters
+  int fCorrectEdgeClusters; //correct edge clusters by shifting to peak
   Bool_t fProcessingRCU2Data; // processing of RCU2 data - no split in two input branches
   Bool_t fUseGain; // Use gain correction factor from OCDB
   Double_t fIORatioCorrection; // multiplier for data size ratio Output/Input 

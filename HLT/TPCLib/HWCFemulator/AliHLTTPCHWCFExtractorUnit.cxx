@@ -189,6 +189,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
       fBunch->fRow = (configWord>>8) & 0x3F;
       fBunch->fPad =  configWord & 0xFF;
       fBunch->fBorder = (configWord>>14) & 0x1;
+      fBunch->fEdge = (configWord>>29) & 0x1;
       if( !( (configWord>>15) & 0x1 ) ) fBunch->fFlag = 0;// channel not active
       fBunch->fGain = (configWord>>16 ) & 0x1FFF;
     }
@@ -223,6 +224,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
 	  fBunch->fPad = oldBunch->fPad;
 	  fBunch->fBranch = oldBunch->fBranch;
 	  fBunch->fBorder = oldBunch->fBorder;
+	  fBunch->fEdge = oldBunch->fEdge;
 	  fBunch->fGain = oldBunch->fGain;
 	  fBunch->fData.clear();	  
 	  fBunchNumWordsLeft = word10;

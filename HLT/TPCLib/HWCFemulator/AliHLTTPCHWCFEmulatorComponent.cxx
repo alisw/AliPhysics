@@ -69,6 +69,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
   fTagEdgeClusters(0),
+  fCorrectEdgeClusters(0),
   fProcessingRCU2Data(0),
   fUseGain(0),
   fNoiseSuppression(0),
@@ -112,6 +113,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fChargeFluctuation(0),
   fTagDeconvolutedClusters(0),
   fTagEdgeClusters(0),
+  fCorrectEdgeClusters(0),
   fProcessingRCU2Data(0),
   fUseGain(0),
   fNoiseSuppression(0),
@@ -264,6 +266,7 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fChargeFluctuation = 0;
   fTagDeconvolutedClusters = 0;
   fTagEdgeClusters = 0;
+  fCorrectEdgeClusters = 0;
   fProcessingRCU2Data = 0;
   fUseGain = 1;
   fDebug = 0;
@@ -455,6 +458,13 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fTagEdgeClusters  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
       HLTInfo( "Tag Edge Clusters is set to: %d", fTagEdgeClusters );
+      continue;
+    }
+
+    if ( argument.CompareTo( "-correct-edge-clusters" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fCorrectEdgeClusters  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Correct Edge Clusters is set to: %d", fCorrectEdgeClusters );
       continue;
     }
  
@@ -704,6 +714,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 
 		fCFEmulator.SetTagDeconvolutedClusters(fTagDeconvolutedClusters);
 		fCFEmulator.SetTagEdgeClusters(fTagEdgeClusters);
+		fCFEmulator.SetCorrectEdgeClusters(fCorrectEdgeClusters);
 		fCFEmulator.SetProcessingRCU2Data(fProcessingRCU2Data);
 		fCFEmulator.SetNoiseSuppression(fNoiseSuppression);
 		fCFEmulator.SetNoiseSuppressionMinimum(fNoiseSuppressionMinimum);

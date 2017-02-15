@@ -113,6 +113,7 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
   fOutput.fPad = fkBunch->fPad;
   fOutput.fBranch = fkBunch->fBranch;
   fOutput.fBorder = fkBunch->fBorder;
+  fOutput.fEdge = fkBunch->fEdge;
   fOutput.fGain = fkBunch->fGain;
   fOutput.fData.clear();
   fOutput.fData.insert(fOutput.fData.end(),fkBunch->fData.begin(), fkBunch->fData.end());
