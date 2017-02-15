@@ -97,16 +97,7 @@ public:
     };
 
     ADV0() {
-      for (Int_t i=0; i<2; ++i) {
-	fTime[i] = -10240.0f;
-	fCharge[i] = 0.0;
-	fBB[i] = fBG[i] = -1;
-	fDecisionOnline[i] = fDecisionOffline[i] = -1;
-      }
-      for (Int_t i=0; i<16; ++i) {
-	fBBFlags[i] = 0;
-	fCharge[i]  = 0;
-      }
+      FillInvalid();
     }
 
     void FillAD(const AliESDEvent *, AliTriggerAnalysis &);
@@ -116,12 +107,16 @@ public:
 
     Float_t    fTime[2];            //
     Float_t    fCharge[2];          //
-    Short_t    fBB[2];              // number of BB flags (for AD: coincidences) per side
-    Short_t    fBG[2];              // number of BG flags (for AD: coincidences) per side
+    UChar_t    fBBOnline[2];        // number of BB flags (for AD: coincidences) per side
+    UChar_t    fBBOffline[2];       // number of BB flags (for AD: coincidences) per side
+    UChar_t    fBGOnline[2];        // number of BG flags (for AD: coincidences) per side
+    UChar_t    fBGOffline[2];       // number of BG flags (for AD: coincidences) per side
     Double32_t fDecisionOnline[2];  //[-1,3,2]
     Double32_t fDecisionOffline[2]; //[-1,3,2]
-    UChar_t    fBBFlags[16];        //
-    UShort_t   fCharges[16];        //
+    UChar_t    fBBFlagsOnline[64];  //
+    UChar_t    fBBFlagsOffline[64]; //
+    UShort_t   fCharges[64];        //
+    Float_t    fTimes[64];          //
   } ;
 
   struct VtxInfo {
@@ -284,7 +279,7 @@ public:
     TreeData(const TreeData&); // not implemented
     TreeData& operator=(const TreeData&); // not implemented
 
-    ClassDef(TreeData, 6);
+    ClassDef(TreeData, 8);
   } ;
 
   class MCInfo : public TObject {

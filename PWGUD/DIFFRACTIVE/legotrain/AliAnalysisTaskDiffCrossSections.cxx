@@ -43,7 +43,7 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTrack::Compare(const TObject *obj)
   return (*this < *p ? -1 : +1);
 }
 void AliAnalysisTaskDiffCrossSections::PseudoTrack::Print(Option_t* ) const {
-  Printf("PT (eta=%5.2f phi=%5.2f charge=%8.2f charge2=%8.2f detFlags=0x%04X)", fEta, fPhi, fCharge, fCharge2, fDetFlags);
+  Printf("PT (eta=%5.2f phi=%5.2f charge=%8.2f charge2=%8.2f detFlags=0x%08X)", fEta, fPhi, fCharge, fCharge2, fDetFlags);
 }
 AliAnalysisTaskDiffCrossSections::PseudoTracks::PseudoTracks()
   : TObject()
@@ -157,7 +157,7 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::ClassifyEventBits(Int_t &i
 
   Int_t eventType = 0; // -1 -> 1L, +1 -> 1R, +2 -> 2A
   const Int_t nt = fTracks.GetEntriesFast();
-  AliDebugF(5, "ClassifyEvent: nT=%d mask=0x%04X", nt, mask);
+  AliDebugF(5, "ClassifyEvent: nT=%d mask=0x%08X", nt, mask);
 
   if (nt == 0) // no pseudo-tracks
     return eventType;
@@ -528,10 +528,14 @@ void AliAnalysisTaskDiffCrossSections::VtxInfo::Fill(const AliESDVertex *vtx) {
 }
 
 void AliAnalysisTaskDiffCrossSections::ADV0::FillInvalid() {
-  fTime[0] = fTime[1] = -10240.0f;
-  fCharge[0] = fCharge[1] = fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1.0f;
-  for (Int_t ch=0; ch<16; ++ch)
-    fBBFlags[ch] = fCharges[ch] = -1;
+  for (Int_t i=0; i<2; ++i) {
+    fTime[i] = -10240.0f;
+    fCharge[i] = fBBOnline[i] = fBBOffline[i] = fBGOnline[i] = fBGOffline[i] = -1;
+  }
+  for (Int_t ch=0; ch<64; ++ch) {
+    fBBFlagsOnline[ch] = fBBFlagsOffline[ch] = fCharges[ch] = -1;
+    fTimes[ch] = -10240.0f;
+  }
 }
 
 void AliAnalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent, AliTriggerAnalysis &trigAna) {
@@ -549,18 +553,27 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillAD(const AliESDEvent *esdEvent,
   fTime[0] = esdAD->GetADCTime();
   fTime[1] = esdAD->GetADATime();
 
-  fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
+  fBBOnline[0]  = fBBOnline[1]  = fBGOnline[0]  = fBGOnline[1] = 0;
+  fBBOffline[0] = fBBOffline[1] = fBGOffline[0] = fBGOffline[1] = 0;
   for (Int_t ch=0; ch<16; ++ch)
-    fBBFlags[ch] = fCharges[ch] = 0;
+    fBBFlagsOnline[ch] = fBBFlagsOffline[ch] = fCharges[ch] = 0;
 
   for (Int_t ch=0; ch<4; ++ch) {
-    fBB[0] += (esdAD->GetBBFlag(ch  ) && esdAD->GetBBFlag(ch+ 4));
-    fBB[1] += (esdAD->GetBBFlag(ch+8) && esdAD->GetBBFlag(ch+12));
-    fBG[0] += (esdAD->GetBGFlag(ch  ) && esdAD->GetBGFlag(ch+ 4));
-    fBG[1] += (esdAD->GetBGFlag(ch+8) && esdAD->GetBGFlag(ch+12));
+    fBBOnline[0]  += (esdAD->GetBBFlag(ch  )  && esdAD->GetBBFlag(ch+ 4));
+    fBBOnline[1]  += (esdAD->GetBBFlag(ch+8)  && esdAD->GetBBFlag(ch+12));
+    fBBOffline[0] += (esdAD->BBTriggerADC(ch) && esdAD->BBTriggerADC(ch+4));
+    fBBOffline[1] += (esdAD->BBTriggerADA(ch) && esdAD->BBTriggerADA(ch+4));
+    fBGOnline[0]  += (esdAD->GetBGFlag(ch  )  && esdAD->GetBGFlag(ch+ 4));
+    fBGOnline[1]  += (esdAD->GetBGFlag(ch+8)  && esdAD->GetBGFlag(ch+12));
+    fBGOffline[0] += (esdAD->BGTriggerADC(ch) && esdAD->BGTriggerADC(ch+4));
+    fBGOffline[1] += (esdAD->BGTriggerADA(ch) && esdAD->BGTriggerADA(ch+4));
     for (Int_t j=0; j<4; ++j) {
-      fBBFlags[ch+4*j] += esdAD->GetBBFlag(ch + 4*j);
-      fCharges[ch+4*j] += esdAD->GetAdc(ch + 4*j);
+      fBBFlagsOnline [ch+4*j] += esdAD->GetBBFlag(ch + 4*j);
+      fBBFlagsOffline[ch+4*j] += (ch+4*j < 8
+				  ? esdAD->BBTriggerADC(ch+4*j)
+				  : esdAD->BBTriggerADA(ch+4*j-8));
+      fCharges[ch+4*j] = esdAD->GetAdc (ch + 4*j);
+      fTimes[ch+4*j]   = esdAD->GetTime(ch + 4*j);
     }
   }
   fCharge[0] = fCharge[1] = 0.0;
@@ -583,17 +596,22 @@ void AliAnalysisTaskDiffCrossSections::ADV0::FillV0(const AliESDEvent *esdEvent,
   fTime[0] = esdV0->GetV0CTime();
   fTime[1] = esdV0->GetV0ATime();
 
-  fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
+  fBBOnline[0]  = fBBOnline[1]  = fBGOnline[0]  = fBGOnline[1] = 0;
+  fBBOffline[0] = fBBOffline[1] = fBGOffline[0] = fBGOffline[1] = 0;
   fCharge[0] = fCharge[1] = 0.0;
   for (Int_t ch=0; ch<16; ++ch)
-    fBBFlags[ch] = fCharges[ch] = 0;
+    fBBFlagsOnline[ch] = fBBFlagsOffline[ch] = fCharges[ch] = 0;
 
   for (Int_t ch=0; ch<64; ++ch) {
-    fBB[ch/32] += esdV0->GetBBFlag(ch);
-    fBG[ch/32] += esdV0->GetBGFlag(ch);
-    fCharge[ch/32] += esdV0->GetAdc(ch);
-    fBBFlags[ch/4] += esdV0->GetBBFlag(ch);
-    fCharges[ch/4] += esdV0->GetAdc(ch);
+    fBBOnline[ch/32]  += esdV0->GetBBFlag(ch);
+    fBGOnline[ch/32]  += esdV0->GetBGFlag(ch);
+    fBBOffline[ch/32] += (ch < 32 ? esdV0->BBTriggerV0C(ch) : esdV0->BBTriggerV0A(ch-32));
+    fBGOffline[ch/32] += (ch < 32 ? esdV0->BGTriggerV0C(ch) : esdV0->BGTriggerV0A(ch-32));
+    fCharge[ch/32]   += esdV0->GetAdc(ch);
+    fBBFlagsOnline [ch] = esdV0->GetBBFlag(ch);
+    fBBFlagsOffline[ch] = (ch < 32 ? esdV0->BBTriggerV0C(ch) : esdV0->BBTriggerV0A(ch-32));
+    fCharges[ch] = esdV0->GetAdc(ch);
+    fTimes[ch]   = esdV0->GetTime(ch);
   }
 }
 void AliAnalysisTaskDiffCrossSections::FMDInfo::Fill(const AliESDEvent *esdEvent, Float_t fmdMultLowCut) {
@@ -687,8 +705,7 @@ void AliAnalysisTaskDiffCrossSections::UserCreateOutputObjects()
 {
   TDirectory *owd = gDirectory;
   OpenFile(1);
-  fTE = new TTree;
-  fTE->SetName(GetTreeName());
+  fTE = new TTree(GetTreeName(), GetTreeName());
   SetBranches(fTE);
   PostData(1, fTE);
   owd->cd();
@@ -966,8 +983,8 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 	  phi.push_back(v.Phi());
 	  eta.push_back(v.Eta());
 	  const Bool_t isOffline = (side == 0
-				    ? (esdAD->BBTriggerADC(ch%8) && esdAD->BBTriggerADC((ch+4)%8))
-				    : (esdAD->BBTriggerADC(ch%8) && esdAD->BBTriggerADC((ch+4)%8)));
+				    ? (esdAD->BBTriggerADC(module) && esdAD->BBTriggerADC(module+4))
+				    : (esdAD->BBTriggerADA(module) && esdAD->BBTriggerADA(module+4)));
 	  fTreeData.fPseudoTracks.AddTrack(PseudoTrack(v.Eta(),
 						       v.Phi(),
 						       esdAD->GetAdc(ch),
