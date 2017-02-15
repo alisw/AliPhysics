@@ -62,6 +62,9 @@ class AliCalorimeterUtils : public TObject {
   
   Bool_t        GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdCorr[4]) const ;
   
+  Bool_t        IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
+                                  Int_t & rowDiff, Int_t & colDiff) const ;
+  
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells)  ;
   
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
