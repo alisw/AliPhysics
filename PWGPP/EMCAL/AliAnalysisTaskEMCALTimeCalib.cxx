@@ -1304,10 +1304,19 @@ const  Double_t upperLimit[]={
   if(file==0x0) return;
 
   TH1F *ccBC[4];
+  Bool_t shouldBeEmpty[4];
+  Int_t emptyCounter;
   for(Int_t i = 0; i < kNBCmask; i++){
     ccBC[i]=(TH1F*) file->Get(Form("hAllTimeAvBC%d",i));
+    shouldBeEmpty[i]=kFALSE;
+    emptyCounter=0;
+    for(Int_t j=0;j<upperLimit[19];j++){
+      if(ccBC[i]->GetBinContent(j)>0.) emptyCounter++;
+    }
+    if(emptyCounter<1500) shouldBeEmpty[i]=kTRUE;
+    cout<<"Non-zero channels "<<emptyCounter<<" BC"<<i<<" should be empty: "<<shouldBeEmpty[i]<<endl;
   }
-  
+
   TH1C *hRun=new TH1C(Form("h%d",runNumber),Form("h%d",runNumber),19,0,19);
   Int_t fitResult=0;
   Double_t minimumValue=10000.;
@@ -1325,6 +1334,10 @@ const  Double_t upperLimit[]={
   for(Int_t i=0;i<20;i++){
     minimumValue=10000;
     for(j=0;j<kNBCmask;j++){
+      if(shouldBeEmpty[j]) {
+	meanBC[j]=-1;
+	continue;
+      }
       fitResult=ccBC[j]->Fit("f1","CQ","",lowerLimit[i],upperLimit[i]);
       if(fitResult<0){
 	//hRun->SetBinContent(i,0);//correct it please
@@ -1366,7 +1379,26 @@ const  Double_t upperLimit[]={
     }
     if(!orderTest)
       printf("run %d, SM %d, min index %d meanBC %f %f %f %f, order ok? %d\n",runNumber,i,minimumIndex,meanBC[0],meanBC[1],meanBC[2],meanBC[3],orderTest);
-  }
+
+    //patch for runs with not filled one, two or three BCs
+    //manual patch for LHC16q - pPb@5TeV - only BC0 is filled and phase rotate
+    if(shouldBeEmpty[0] || shouldBeEmpty[1] || shouldBeEmpty[2] || shouldBeEmpty[3]){
+    Double_t newMean = meanBC[minimumIndex]-600;
+    if(newMean<=12.5) hRun->SetBinContent(i,minimumIndex);
+    else {
+      Int_t minIndexTmp=-1;
+      if(newMean/25. - (Int_t)(newMean/25.) <0.5)
+	minIndexTmp = (Int_t)(newMean/25.);
+      else
+	minIndexTmp = 1+(Int_t)(newMean/25.);
+
+      hRun->SetBinContent(i,(4-minIndexTmp+minimumIndex)%4);
+      //cout<<newMean/25.<<" int "<<(Int_t)(newMean/25.)<<" dif "<< newMean/25.-(Int_t)(newMean/25.)<<endl;
+      }
+    cout << "run with missing BC; new L1 phase set to " << hRun->GetBinContent(i)<<endl;
+    }//end of patch for LHC16q and other runs with not filled BCs
+  }//end of loop over SM
+
   delete f1;
   TFile *fileNew=new TFile(outputFile.Data(),"update");
   hRun->Write();
