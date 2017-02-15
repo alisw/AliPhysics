@@ -1473,9 +1473,9 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   
   Double_t maxmult;
   
-  Int_t nd0bins=15;
-  Double_t d0min=0.;
-  Double_t d0max=300;
+  Int_t nd0bins;
+  Double_t d0min;
+  Double_t d0max;
   
   Int_t nptmindaubins;
   Double_t minptmindau;
@@ -1508,12 +1508,16 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   if(fSystem==1) {
     maxmult=5000;
 
+    nd0bins=18;
+    d0min=0.;
+    d0max=180;
+    
     nptmindaubins=1;
     minptmindau=0.2;
     maxptmindau=1.2;
       
-    nsigvertbins=8;
-    minsigvert=0.016;
+    nsigvertbins=10;
+    minsigvert=0.012;
     maxsigvert=0.032;
       
     ndeclbins=35;
@@ -1539,6 +1543,10 @@ void AliAnalysisTaskSEDplus::CreateCutVarsSparses(){
   else {
     maxmult=200;
 
+    nd0bins=60;
+    d0min=0.;
+    d0max=300;
+    
     nptmindaubins=10;
     minptmindau=0.2;
     maxptmindau=1.2;
