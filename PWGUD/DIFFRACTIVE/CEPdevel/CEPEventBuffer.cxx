@@ -39,11 +39,10 @@ CEPEventBuffer::CEPEventBuffer()
   , fnMSelection(0)
   , fnV0(0)
   , fVtxType(-1)
-  , fVtxPos(TVector3(-999.9,-999.9,-999.9))
+  , fVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
   , fMCProcessType(AliCEPBase::kdumval)
   , fMCGenerator("")
-  , fVertexPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
-  , fMCVertexPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
+  , fMCVtxPos(TVector3(CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval,CEPTrackBuffer::kdumval))
 {
 
   // printf("A CEPEventBuffer was created...\n");
@@ -54,11 +53,6 @@ CEPEventBuffer::CEPEventBuffer()
 CEPEventBuffer::~CEPEventBuffer()
 {
 
-  //this->Reset();
-  // printf("A CEPEventBuffer was reset...\n");
-  //for (Int_t ii=0; ii<ftrb.GetEntries(); ii++)  {
-  //  ftrb[ii]->Delete();
-  //}
 	if (fCEPTracks) {
 		fCEPTracks->SetOwner(kTRUE);
 		fCEPTracks->Clear();
@@ -66,10 +60,6 @@ CEPEventBuffer::~CEPEventBuffer()
 		fCEPTracks = 0x0;
 	}
 
-  //fCEPTracks->Delete();
-  //delete fCEPTracks;
-  //fCEPTracks = 0x0;
-  
 }
 
 // ----------------------------------------------------------------------------
@@ -120,13 +110,12 @@ void CEPEventBuffer::AddTrack(CEPTrackBuffer* trk)
   // add track to next element
   fCEPTracks->Add(trk);
   fnTracks++;
-  // printf("<I - CEPEventBuffer::AddTrack> %i\n",fnTracks);
   
-  // update track counter
-  if (trk->GetisSoft()) {
-    fnumSoftTracks++;
+  // update track counters
+  if (trk->GetTrackStatus() & AliCEPBase::kTTITSpure) {
+    fnTracksITSpure++;
   } else {
-    fnumTracks++;
+    fnTracksCombined++;
   }
   
 }

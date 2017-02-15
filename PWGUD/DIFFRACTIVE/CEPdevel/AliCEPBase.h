@@ -48,7 +48,7 @@ public:
 		kBinEventE,             // no beam (empty event)
 
 		// track status bits
-		kTTUnknown   = 0,
+		kTTUnknown         = 0,
     kTTTOFBunchCrossing= (1<< 0), // TOFBunchCrossing==0
     kTTTPCScluster     = (1<< 1), // number of TPC shared clusters <= fTPCnclsS(3)
     kTTDCA             = (1<< 2), // DCA to vertex is < 500

@@ -2,15 +2,9 @@
 #define CEPEVENTBUFFER
 
 #include "TObject.h"
-<<<<<<< HEAD
-#include "TList.h"
-#include "AliPBBase.h"
-#include "TClonesArray.h"
-=======
 #include "TObjArray.h"
 #include "TArrayI.h"
 #include "AliCEPBase.h"
->>>>>>> update of AliAnalysisTaskCEP, AliCEPBase, and AliCEPUtils
 #include "CEPTrackBuffer.h"
 
 class CEPEventBuffer : public TObject {
