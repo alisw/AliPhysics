@@ -163,6 +163,7 @@ private:
   Bool_t fProcessingRCU2Data; // processing of RCU2 data - clusters are not split into two input branches, only merge at patch borders
   Bool_t fCheckEdgeFlag; //Consider only clusters with edge flag set
   int fAddRandomClusters; // Add random clusters for stress tests
+  int fSignificantBitsCharge; //Number of significant bits to be stored for cluster charge
 
   AliHLTComponentBenchmark fBenchmark; // benchmarks
 };

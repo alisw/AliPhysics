@@ -64,6 +64,7 @@ fTPCPresent(0),
 fProcessingRCU2Data(0),
 fCheckEdgeFlag(0),
 fAddRandomClusters(0),
+fSignificantBitsCharge(0),
 fBenchmark("HWClusterDecoder")
 {
   // see header file for class documentation
@@ -232,6 +233,17 @@ int AliHLTTPCHWClusterDecoderComponent::ScanConfigurationArgument(int argc, cons
     }
     HLTWarning("TEST MODE - Adding Random Clusters");
     fAddRandomClusters = atoi(argv[i + 1]);
+    return 2;
+  }
+  
+  if (argument.CompareTo("-significant-bits-charge") == 0)
+  {
+    if (i + 1 >= argc)
+    {
+      HLTError("Argument missing for -significant-bits-charge");
+      return -EINVAL;
+    }
+    fSignificantBitsCharge = atoi(argv[i + 1]);
     return 2;
   }
 
@@ -464,6 +476,37 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
     int nMerged = fpClusterMerger->Merge();
     fpClusterMerger->Clear();
     HLTInfo("Merged %d clusters",nMerged);   
+  }
+  
+  if (fSignificantBitsCharge)
+  {
+#if defined(__GNUC__) || defined(__clang__)
+    for( UInt_t i=origOutputBlocksSize; i<outputBlocks.size(); i++){
+      AliHLTTPCRawClusterData* clusters = (AliHLTTPCRawClusterData*)( origOutputPtr + outputBlocks[i].fOffset);
+      for (int j = 0;j < clusters->fCount;j++)
+      {
+        unsigned int val = clusters->fClusters[j].fCharge;
+        int ldz = sizeof(unsigned int) * 8 - __builtin_clz(val);
+        if (val && ldz > fSignificantBitsCharge)
+        {
+          if (val & (1 << (ldz - fSignificantBitsCharge - 1))) val += (1 << (ldz - fSignificantBitsCharge - 1));
+          val &= ((1 << ldz) - 1) ^ ((1 << (ldz - fSignificantBitsCharge)) - 1);
+          clusters->fClusters[j].fCharge = val;
+        }
+        
+        val = clusters->fClusters[j].fQMax;
+        ldz = sizeof(unsigned int) * 8 - __builtin_clz(val);
+        if (val && ldz > fSignificantBitsCharge)
+        {
+          if (val & (1 << (ldz - fSignificantBitsCharge - 1))) val += (1 << (ldz - fSignificantBitsCharge - 1));
+          val &= ((1 << ldz) - 1) ^ ((1 << (ldz - fSignificantBitsCharge)) - 1);
+          clusters->fClusters[j].fQMax = val;
+        }
+      }
+    }
+#else
+    HLTWarning("Using compiler that does not support clz, disabling significant bit truncation for HLT clusters");
+#endif
   }
 
   AliHLTTPCRawClustersDescriptor desc; 
