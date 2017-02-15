@@ -77,7 +77,7 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::RemoveTracks(UInt_t mask) 
     }
   }
   if (nRemoved) {
-    fTracks.Compress();
+    // avoid calling TClonesArray::Compress() which is expensive
     fTracks.Sort();
   }
   return nRemoved;
